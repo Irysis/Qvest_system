@@ -66,11 +66,16 @@ ccr_to_date <- function(x, kind = "date") {
       yy <- sub(pat, "\\1", s[okm]); mm <- sub(pat, "\\2", s[okm])
       first <- suppressWarnings(as.Date(paste0(yy, "-", mm, "-01")))
       good <- !is.na(first)
-      # 월말 = 다음달 1일 - 1일 (벡터화)
+      # 월말 = 다음달 1일 − 1일.
+      # ★고유값에만 적용한 뒤 match 로 되돌린다 (2026-07-26 성능 수리): 종전엔 행마다
+      #   seq() 를 불러, data_ym 이 6,470,000행/고유 124개월인 nps 패널에서 감사 자체가
+      #   사실상 끝나지 않았다. 감시기가 감시 대상보다 느려서 안 도는 것도 침묵의 한 형태다.
       nxt <- rep(as.Date(NA), length(first))
       if (any(good)) {
-        nxt[good] <- as.Date(vapply(first[good], function(f)
+        u <- unique(first[good])
+        u_end <- as.Date(vapply(u, function(f)
           as.character(seq(f, by = "month", length.out = 2L)[2L] - 1L), character(1)))
+        nxt[good] <- u_end[match(first[good], u)]
       }
       out[okm] <- nxt
     }

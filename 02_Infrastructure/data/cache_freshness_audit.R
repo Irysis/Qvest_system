@@ -35,11 +35,19 @@ source(file.path(PROJECT_ROOT, "02_Infrastructure/data/cache_registry_runner.R")
 # 내용-도달 판정부 (P2-02/P2-03 수리, 2026-07-26) — date_col kind/semantics + 라벨-코호트 커버리지.
 source(file.path(PROJECT_ROOT, "02_Infrastructure/data/cache_content_reach.R"))
 
+#' @param caches_override 위반 주입 테스트용 — registry 대신 쓸 cache 엔트리 리스트.
+#'   지정 시 orphan 스캔과 IC 프론티어 절은 건너뛴다(주입 registry 에선 무의미).
+#' @param today 기준일 주입 (테스트 결정성). 기본 Sys.Date().
+#' @param persist FALSE 면 observability/로그/알림상태 파일을 쓰지 않는다 — 테스트가
+#'   정본 산출물을 오염시키지 않도록. ★검사가 감시 대상을 건드리면 그 검사는 증거가 아니다.
 cache_freshness_audit <- function(telegram_alert = TRUE,
                                     warn_lag_multiplier = 1.0,
-                                    critical_lag_multiplier = 2.0) {
-  caches <- cache_registry_load()
-  today <- Sys.Date()
+                                    critical_lag_multiplier = 2.0,
+                                    caches_override = NULL,
+                                    today = Sys.Date(),
+                                    persist = TRUE) {
+  caches <- if (!is.null(caches_override)) caches_override else cache_registry_load()
+  today <- as.Date(today)
   today_ts <- Sys.time()
 
   # ─── 거래일 캘린더 (2026-07-17 주말/휴일 오탐 제거) ─────────────────────────
@@ -151,15 +159,10 @@ cache_freshness_audit <- function(telegram_alert = TRUE,
     # data freshness via date_col
     data_lag <- NA_integer_
     if (!is.null(c$date_col)) {
-      dt <- tryCatch({
-        if (grepl("\\.parquet$", cache_path)) {
-          as.data.table(read_parquet(cache_path))
-        } else if (grepl("\\.csv$", cache_path)) {
-          fread(cache_path)
-        } else if (grepl("\\.rds$", cache_path)) {
-          as.data.table(readRDS(cache_path))
-        } else NULL
-      }, error = function(e) NULL)
+      # date_col 1개만 읽는다 (ccr_read_cols = col_select + 실패 시 전량 read 폴백).
+      # 2026-07-26: 종전엔 parquet 전량 read 라, date_col 을 새로 선언한 대용량 패널
+      # (nps_headcount_raw 6.47M행 × 11열 등)이 그대로 감사 비용이 됐다.
+      dt <- ccr_read_cols(cache_path, c$date_col)
       if (!is.null(dt) && c$date_col %in% names(dt)) {
         # date_col_kind: "date"(기본) | "ym"("YYYY-MM") | "ym_compact"("YYYYMM")
         # date_semantics: "observation"(기본) | "period_end"(기간 라벨 — 음수 lag clamp)
@@ -451,7 +454,7 @@ cache_freshness_audit <- function(telegram_alert = TRUE,
   #   guard 와 동일 operand (달력 종료 · 그달 RAWDATA 최종 거래일) — 상세 및 유예 규칙은
   #   02_Infrastructure/data/ic_frontier_check.R 헤더 참조.
   #   당월 진행 중 전월 IC 가 최신인 상태는 정상(OK)으로 판정한다.
-  tryCatch({
+  if (is.null(caches_override)) tryCatch({
     source(file.path(PROJECT_ROOT, "02_Infrastructure/data/ic_frontier_check.R"))
     fr <- ic_frontier_check(today = today)
     results[[fr$path]] <- fr
@@ -467,7 +470,8 @@ cache_freshness_audit <- function(telegram_alert = TRUE,
 
   # ─── (2) Orphan detection: .cache files NOT in registry ─────────────────────
   cache_dir <- file.path(PROJECT_ROOT, ".cache")
-  if (dir.exists(cache_dir)) {
+  # 주입 registry 에서는 orphan 개념이 성립하지 않는다(등록집합이 부분집합) → 스킵.
+  if (is.null(caches_override) && dir.exists(cache_dir)) {
     all_files <- list.files(cache_dir, pattern = "\\.(parquet|csv|rds)$",
                              recursive = FALSE, full.names = FALSE)
     all_paths <- paste0(".cache/", all_files)
@@ -509,24 +513,26 @@ cache_freshness_audit <- function(telegram_alert = TRUE,
     results = unname(results)
   )
 
-  obs_dir <- file.path(PROJECT_ROOT, "qepm", "observability")
-  dir.create(obs_dir, showWarnings = FALSE, recursive = TRUE)
-  latest_path <- file.path(obs_dir, "cache_freshness_latest.json")
-  write_json(audit, latest_path, pretty = TRUE, auto_unbox = TRUE, na = "null")
+  if (isTRUE(persist)) {
+    obs_dir <- file.path(PROJECT_ROOT, "qepm", "observability")
+    dir.create(obs_dir, showWarnings = FALSE, recursive = TRUE)
+    latest_path <- file.path(obs_dir, "cache_freshness_latest.json")
+    write_json(audit, latest_path, pretty = TRUE, auto_unbox = TRUE, na = "null")
 
-  # Append to daily log
-  log_path <- file.path(PROJECT_ROOT, ".cache", "freshness_log.json")
-  existing <- if (file.exists(log_path)) {
-    tryCatch(jsonlite::fromJSON(log_path, simplifyVector = FALSE), error = function(e) list())
-  } else list()
-  existing[[length(existing) + 1L]] <- list(
-    ran_at = audit$ran_at,
-    summary = by_sev,
-    crit_paths = sapply(Filter(function(r) r$severity == "CRITICAL", results), function(r) r$path),
-    warn_paths = sapply(Filter(function(r) r$severity == "WARN", results), function(r) r$path)
-  )
-  if (length(existing) > 365) existing <- tail(existing, 365)  # 1 year cap
-  write_json(existing, log_path, pretty = TRUE, auto_unbox = TRUE, na = "null")
+    # Append to daily log
+    log_path <- file.path(PROJECT_ROOT, ".cache", "freshness_log.json")
+    existing <- if (file.exists(log_path)) {
+      tryCatch(jsonlite::fromJSON(log_path, simplifyVector = FALSE), error = function(e) list())
+    } else list()
+    existing[[length(existing) + 1L]] <- list(
+      ran_at = audit$ran_at,
+      summary = by_sev,
+      crit_paths = sapply(Filter(function(r) r$severity == "CRITICAL", results), function(r) r$path),
+      warn_paths = sapply(Filter(function(r) r$severity == "WARN", results), function(r) r$path)
+    )
+    if (length(existing) > 365) existing <- tail(existing, 365)  # 1 year cap
+    write_json(existing, log_path, pretty = TRUE, auto_unbox = TRUE, na = "null")
+  }
 
   # ─── (4) Telegram alert if WARN/CRITICAL ───────────────────────────────────
   cat(sprintf("\n=== Cache Freshness Audit (%s) ===\n", audit$ran_at))
@@ -572,6 +578,10 @@ cache_freshness_audit <- function(telegram_alert = TRUE,
     cat(sprintf("[cache_freshness] 알림 집합 불변 (직전 발송 %.1f일 전) — 발송 억제 (7일 리마인더 대기)\n",
                 days_since_sent))
   }
+
+  # persist=FALSE (위반 주입 테스트)에서는 발송·상태쓰기 둘 다 금지 — 검사가 실제
+  # 텔레그램을 쏘거나 dedup 서명을 오염시키면 그 검사는 부작용이지 증거가 아니다.
+  telegram_alert <- isTRUE(telegram_alert) && isTRUE(persist)
 
   if (telegram_alert && length(alert_items) > 0 && !is.na(send_reason)) {
     tryCatch({

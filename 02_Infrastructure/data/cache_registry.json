@@ -367,13 +367,14 @@
       "entry_fn": "(orchestrated)",
       "schedule": "daily",
       "file_pattern": "^factor_db_[0-9]{6}\\.parquet$",
-      "date_col": null,
-      "max_lag_days": 40,
+      "date_col": "Date",
+      "max_lag_days": 14,
       "depends_on": [
         ".cache/RAWDATA.parquet"
       ],
       "tier": 2,
-      "_note": "월간 Factor DB 디렉토리 (1파일=1개월, 437파일 1990~). freshness=최신 파일명 YYYYMM 월말 기준 (전월 기대 → lag ≤40 정상, 초과=한 달 이상 미빌드). 빌더는 daily_refresh [6a] update_factor_db_daily() — 이름과 달리 '월간' DB 현재월 빌드 함수. 2026-06-10 P1 등재. ★당월 파일 intra-month 신선도(2026-07-25 D2): 당월 스냅샷 Date가 RAWDATA 최신 거래일 대비 7일 초과 지연 시 update_factor_db_daily()가 최신 거래일 sig_date로 자동 force 재빌드(주간 케이던스, fail-soft). 종전엔 당월 파일이 첫 빌드일에 동결돼 월말까지 스테일(실측: 202607이 07-03에 3주 동결) — 당월 스냅샷 실효 SLA ~8d"
+      "_content_note": "2026-07-26 P2-02 수리 — **이 항목이 3주 동결을 매일 FRESH 로 보고하던 지점**. 종전: date_col 미선언 → 파일명 YYYYMM 의 월말로 lag = max(0, today − 월말) = 당월 내내 0. 파일 내용을 한 번도 읽지 않았다. 이제 date_col='Date' 로 최신 매칭 파일의 max(Date)를 읽는다. ★SLA 40 → 14 동반 변경: 40 은 '파일명-월말' 축에서 '한 달 이상 미빌드'를 잡으려 잡은 값이라 내용 축에는 과대(내용 lag 은 RAWDATA 를 따라 매일 움직임). 14 의 근거 = 실측 2건: (a) 직전 14개 완료월 전부 content max == 그 달 최종 거래일(shortfall 0d) — 완료월은 월말에서 정확히 멈춘다, (b) 월-전환 구간 최대 lag 실측 ~10d (202605 최종거래일 05-29 → 익월 8일 = 10d). 14d = 그 위 4d 여유(연휴 클러스터 대비). D2 주간 강제 재빌드(당월 스냅샷이 RAWDATA 최신 거래일 대비 7d 초과 지연 시 force)와 정합 — 정상 운영이면 lag 은 8d 를 넘지 않는다. 실사고 재현: 07-03 동결 시 07-18(lag 15)에 STALE_WARN, 07-31(lag 28)에 CRITICAL — 종전엔 영원히 FRESH.",
+      "_note": "월간 Factor DB 디렉토리 (1파일=1개월, 439파일 1990~). 빌더는 daily_refresh [6a] update_factor_db_daily() — 이름과 달리 '월간' DB 현재월 빌드 함수. 2026-06-10 P1 등재. ★당월 파일 intra-month 신선도(2026-07-25 D2): 당월 스냅샷 Date가 RAWDATA 최신 거래일 대비 7일 초과 지연 시 update_factor_db_daily()가 최신 거래일 sig_date로 자동 force 재빌드(주간 케이던스, fail-soft). 종전엔 당월 파일이 첫 빌드일에 동결돼 월말까지 스테일(실측: 202607이 07-03에 3주 동결) — 당월 스냅샷 실효 SLA ~8d"
     },
     {
       "path": ".cache/factor_db_daily/",
