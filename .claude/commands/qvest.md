@@ -1,11 +1,11 @@
 ---
 name: qvest
-description: "Qvest 시스템 구동 (QEPM v8.1 6-Agent + 3-Mode) — Work Task 기반 리서치 엔진 부트스트랩"
+description: "Qvest 시스템 구동 (v8.3 · Fable 5-Native · 4-Mode +RAMP) — Work Task 기반 리서치 엔진 부트스트랩"
 disable-model-invocation: true
 user-invocable: true
 ---
 
-# Qvest — QEPM v8.1 Work Task System
+# Qvest — Work Task System (현행 버전은 CLAUDE.md Active Version이 정본 — 2026-07-26 v8.3)
 
 전천후 포트폴리오 수확을 위한 QEPM 기반 자율 리서치 시스템.
 
@@ -32,26 +32,17 @@ bash 02_Infrastructure/ops/bootstrap.sh
 /reload-plugins
 ```
 
-### 3. 시스템 상태 확인 (v8.1 기준)
+### 3. 시스템 상태 확인
 
-**Agent Registry** (.claude/agents/ 자동 감지):
-- **`alpha-research`** — Alpha Research Agent (신규, Scout 대체)
-- **`risk-research`** — Risk Research Agent (격상)
-- **`optimizer-research`** — Optimizer Research Agent (신규)
-- `forge` — 3-agent 산출물 통합 + backtest
-- `judge` — S6 Gate 0~18 검증
-- `governor` — PG0~PG3 admission
-- `architect` — 아키텍처 진단
-- `blender` — (기존, v6에서 Optimizer에 통합 검토)
-- `scout` — (archived, Alpha Research로 흡수)
+**★정본은 파일시스템 실측이다** — 아래 스냅샷은 2026-07-26 부팅감사 기준이며, 검수는 항상
+`ls .claude/agents/ .claude/skills/` + 부팅 `Skills:`/`[hook-integrity]` 라인으로 한다
+(구판이 9종 열거로 2주 낙후됐던 재발 방지 — 열거 갱신보다 위임이 강하다).
 
-**Skills**:
-- 신규 4종: `worktask` / `alpha-research` / `risk-research` / `optimizer-research`
-- 통합: `qvest-telegram` v6 SOT (구 `telegram-protocol` deprecate) / `simplify` 3-agent 인식
-- 유지: `pit-validation` / `factor-db-access` / `axiom-io` / `kr-inverse-pattern-miner` / `commit-commands` / `codex` 등
-- 삭제됨 (2026-07-05): `s0-idea-sourcing`~`s7-disposition` stage skill 8종 (v55 S0-S7 파이프라인, 미사용 레거시 정리 — 역사는 git·`qvest_legacy_boundary.md` 보존)
+**Agent Registry** (2026-07-26 실측 14종): 6-agent 코어(`alpha-research`/`risk-research`/`optimizer-research`/`forge`/`judge`/`governor`) + 모드 진입(`alpha-search` ②·`ramp-orchestrator` ④·`dispatch-orchestrator` ③) + 온디맨드(`architect`/`blender`/`execution`/`monitoring`/`strategy-implementer`). scout는 파일 자체가 없음(alpha-research 흡수 완료).
 
-**Hooks 5-Tier 방어선 (v6.31 Charter v1.2 Positive Hook 패러다임)**:
+**Skills** (2026-07-26 실측 — 디렉토리형 + 단일 .md 혼재): 6-agent별 리서치 skill + `qvest-worktask`(구 `worktask` 개명) / `qvest-telegram` **v7** SOT / `cleaner` / `factor-db-discovery` / `factor-rotation` / `ramp` / `kr-inverse-pattern-miner` / `simplify` / qvest-*-style 4종 / `qvest-cert-paths` / `qvest-hook-debug` 등. `commit-commands`·`codex`·`telegram-protocol`은 **부재**(폐지 — 본 문서 하단 Legacy 절 참조). 삭제 이력(2026-07-05): s0~s7 stage skill 8종.
+
+**Hooks 5-Tier 방어선 (v6.31 발췌 — ★전수 아님)**: 현행 등록 = **46 distinct .sh**(직접 29 + 라우터 dispatch 18 − 중복 1, 2026-07-26 실측. `ast_spec_gate`·`research_continuity_guard`·`discovery_graduation_gate`·`backtest_contract_audit` 등 30건은 아래 발췌에 없음). 전수 SOT = `.claude/settings.json` + `02_Infrastructure/docs/rules/harness.md`. `sr_provenance_pre_certifier`는 2026-07-24 dispatch 해제됨(아래 Tier 5 서술은 역사 발췌).
 - Tier 1 (전역 hard block — system integrity 위협 영역만): `safety_guard`, `axiom_enforcement_hook`, `sr_provenance_check` (`ProductionSchedule[N]m` fabrication label hard block), `schedule_fidelity_check` (run_all.R fabrication hard block), `governor_concord_certifier` (admission graduation 우회 hard block)
 - Tier 2 (Agent): `agent_role_guard` (Alpha/Risk/Opt 경계), `worktask_sequence_enforcer` (WT 순서), `axiom_context_inject` (AX 공리 주입 — v8.0 WS5-3, unified_agent_guard[v52] 폐기 대체)
 - Tier 3 (Write/Edit hard mandate): `worktask_constraint_enforcer` (25종/bounds/Σw=1), `worktask_spec_validator`, `milestone_commit`
