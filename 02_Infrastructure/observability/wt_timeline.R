@@ -236,6 +236,16 @@ rebuild_active_book <- function() {
     return(invisible(FALSE))
   }
   count <- 0
+  matched_via_lineage <- 0
+  n_admitted <- length(bs$admitted_ids %||% list())
+  # 계보 폴백용 resolver — 측정 정본(measurement_basis_audit v1.12) 재사용, 사본 금지
+  if (!exists(".lineage_related", inherits = TRUE)) {
+    for (cand in c("02_Infrastructure/portfolio/measurement_basis_audit.R",
+                   file.path(Sys.getenv("CLAUDE_PROJECT_DIR", ""),
+                             "02_Infrastructure/portfolio/measurement_basis_audit.R"))) {
+      if (nzchar(cand) && file.exists(cand)) { try(source(cand), silent = TRUE); break }
+    }
+  }
   for (str_id in bs$admitted_ids) {
     str_id <- as.character(str_id)
     # find lineage WT_id
@@ -246,14 +256,42 @@ rebuild_active_book <- function() {
       ga_data <- tryCatch(fromJSON(ga, simplifyVector = FALSE),
                            error = function(e) NULL)
       if (is.null(ga_data)) next
-      if (identical(ga_data$str_id, str_id) ||
-          str_id %in% names(ga_data$allocation_decided %||% list())) {
-        save_wt_timeline(wt)
-        count <- count + 1
+      #──────────────────────────────────────────────────────────────────────
+      # (2026-07-26 WTL-1/WTL-5 수리, probe② 감사 확정 · 도훈 승인)
+      #   join 키가 1세대 스키마(str_id)뿐이었다. 2세대 governor_admission 은
+      #   "strategy_id" 를 쓰고, 현행 admitted id 'STR_1715_on_M4gAE_R05_noLayer4_PG2'
+      #   는 어느 governor_admission.json 에도 없다(07-19 D3 수동 swap-in 은 ga 미발행 —
+      #   event_D3_swapin.json 만 존재). 결과: 매치 0 → "[OK] rebuilt 0" → 부팅
+      #   "0 active book WTs" 가 **정상처럼** 출력됐고, active book 관측이 07-02 이후
+      #   침묵 사망이었다(timelines/ 최신이 07-18 WT-D20260714_006).
+      #   수리: ① 키 확장(str_id %||% strategy_id) ② 계보 토큰경계 폴백(CBA-01 동일 처방)
+      #   ③ WTL-5: save 성공만 계상.
+      #──────────────────────────────────────────────────────────────────────
+      ga_sid <- as.character(ga_data$str_id %||% ga_data$strategy_id %||% "")
+      hit <- identical(ga_sid, str_id) ||
+             str_id %in% names(ga_data$allocation_decided %||% list())
+      if (!hit && nzchar(ga_sid) && exists(".lineage_related", inherits = TRUE)) {
+        legacy_root <- sub("(_WT|_Iter|_M|_S|_v).*$", "", str_id)
+        hit <- isTRUE(.lineage_related(str_id, ga_sid, legacy_root))
+        if (hit) matched_via_lineage <- matched_via_lineage + 1
+      }
+      if (hit) {
+        # WTL-5: save_wt_timeline 이 FALSE(빌드 실패)여도 구판은 count 를 올려
+        #   "rebuilt N" 이 성공 수가 아니라 **매치 수**였다. 성공만 계상.
+        if (isTRUE(save_wt_timeline(wt))) count <- count + 1
+        else cat(sprintf("[WARN] timeline 저장 실패: %s (count 미계상)\n", wt))
       }
     }
   }
-  cat(sprintf("[OK] rebuilt %d active book timelines\n", count))
+  cat(sprintf("[OK] rebuilt %d active book timelines%s\n", count,
+              if (matched_via_lineage > 0)
+                sprintf(" (계보 폴백 매치 %d)", matched_via_lineage) else ""))
+  # ★핵심 가드: admitted 가 있는데 매치 0 = 관측 사망이지 "정상 0" 이 아니다.
+  if (n_admitted > 0 && count == 0) {
+    cat(sprintf(paste0("[WARN] admitted %d건인데 lineage 매치 0 — active book 관측 사망. ",
+                       "governor_admission 스키마(str_id/strategy_id) 또는 ga 미발행 확인 ",
+                       "(수동 swap-in WT 는 event_*.json 만 남길 수 있음)\n"), n_admitted))
+  }
   invisible(count)
 }
 
