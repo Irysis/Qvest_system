@@ -76,10 +76,13 @@ LOG_FH <- NULL
 log_msg <- function(msg) invisible(msg)      # 조용히
 # 정본 파일의 모듈 상수 — 하드코딩 사본을 만들지 않고 원본에서 읽어 온다
 # (사본을 두면 원본이 바뀔 때 이 테스트가 조용히 낡는다 = 이번 세션의 반복 부류)
+#   ★여러 줄에 걸친 선언(CERT_TYPES 는 3줄)이 있으므로 라인 단위 grep+parse 는 깨진다
+#     (실측: "unexpected end of input"). 상수 블록 구간을 통째로 파싱한다.
 .src_head <- readLines(file.path(PROJ, .MARKER), warn = FALSE)
-for (.ln in grep("^(CERT_TYPES|CHARTER_REF)\\s*<-", .src_head, value = TRUE)) {
-  eval(parse(text = .ln))
-}
+.b0 <- grep("^CERT_TYPES\\s*<-", .src_head)[1]
+.b1 <- grep("^CHARTER_REF\\s*<-", .src_head)[1]
+stopifnot(!is.na(.b0), !is.na(.b1))
+eval(parse(text = paste(.src_head[.b0:.b1], collapse = "\n")))
 stopifnot(exists("CHARTER_REF"), exists("CERT_TYPES"))
 src <- readLines(file.path(PROJ, .MARKER), warn = FALSE)
 i0 <- grep("^record_governance_log <- function", src)
