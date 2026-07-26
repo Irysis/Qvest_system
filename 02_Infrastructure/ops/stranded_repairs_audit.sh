@@ -96,7 +96,13 @@ while IFS='|' read -r wt br; do
   [ -d "$wt" ] || continue
   N_WT=$((N_WT + 1))
   sb="${br#refs/heads/}"
-  short="$(basename "$sb")"
+  # ★라벨은 브랜치명이 아니라 **worktree 디렉터리명**을 쓴다.
+  #   실측(2026-07-26): frosty-torvalds-5e24f0 디렉터리가 claude/angry-bhabha-b50a41 브랜치를
+  #   체크아웃한 상태였고, 브랜치명으로 라벨링하니 "존재하지 않는 worktree"로 보고돼
+  #   소멸한 유령처럼 보였다. 디렉터리와 브랜치는 이름이 다를 수 있다 — 한 이름으로 두 정체성을
+  #   가리키지 말 것(오늘 반복 적발한 계통).
+  short="$(basename "$wt")"
+  brshort="$(basename "$sb")"
 
   ahead=$(git -C "$PROJECT" rev-list --count "${MAIN_REF}..${sb}" 2>/dev/null || echo 0)
   ct=$(git -C "$PROJECT" log -1 --format=%ct "$sb" 2>/dev/null || echo 0)
@@ -161,6 +167,7 @@ while IFS='|' read -r wt br; do
     [ -n "$WT_JSON" ] && WT_JSON="$WT_JSON,"
     WT_JSON="$WT_JSON
     {
+      \"worktree\":\"$(jesc "$short")\",
       \"branch\":\"$(jesc "$sb")\",
       \"path\":\"$(jesc "$wt")\",
       \"ahead_of_main\":${ahead:-0},
