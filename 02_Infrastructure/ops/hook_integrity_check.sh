@@ -47,6 +47,26 @@ if [ -f "$POLICY" ]; then
   N_DISPATCH=$(grep -c '"script"' "$POLICY" 2>/dev/null || echo "?")
 fi
 
+# ── (2026-07-26 probe① 도훈 승인) dispatch 필수 훅 baseline 대조 ──────────────
+# 구판은 dispatch=N을 찍기만 하고 기대와 대조하지 않았다 — 라우터 policy에서 게이트급
+# 훅이 조용히 빠져도 숫자만 바뀌고 경보 0 (부팅감사 커버리지 갭 ③). AX-002 동급/게이트급
+# 훅만 필수 목록으로 못박는다(전수 18 아님 — 신규 등재는 자유, '해제'만 잡는 래칫).
+REQUIRED_DISPATCH=(
+  "safety_guard.sh"                 # Tier1 보호선
+  "axiom_enforcement_hook.sh"       # AX 강제
+  "discovery_graduation_gate.sh"    # HARD 3종 fail-closed
+  "backtest_contract_audit.sh"      # 자체합성 차단
+  "ast_spec_gate.sh"                # AST v1.1 기계 게이트 (2026-07-25 등재)
+  "legacy_write_block.sh"           # legacy 격리
+  "worktask_constraint_enforcer.sh" # 25종/bounds/Σw=1
+)
+DISPATCH_MISS=""
+if [ -f "$POLICY" ]; then
+  for _rd in "${REQUIRED_DISPATCH[@]}"; do
+    grep -q "\"$_rd\"" "$POLICY" 2>/dev/null || DISPATCH_MISS="$DISPATCH_MISS$_rd "
+  done
+fi
+
 # ── 이 트리 settings.json 에 worktree 폴백이 있는가 ─────────────────────────
 FALLBACK="미적용"
 if [ -f "$SETTINGS" ] && grep -q 'QM_ROOT//' "$SETTINGS" 2>/dev/null; then
@@ -67,6 +87,9 @@ fi
 # ── 판정 ───────────────────────────────────────────────────────────────────
 if [ "$ROUTER_OK" = "1" ]; then
   echo "[hook-integrity] router=OK dispatch=${N_DISPATCH}훅 · worktree폴백=${FALLBACK} · py=$(basename "$PYX")"
+  if [ -n "$DISPATCH_MISS" ]; then
+    echo "[hook-integrity] ★필수 dispatch 훅 결손: ${DISPATCH_MISS}— router policy에서 게이트급 훅이 빠짐 (등재 해제는 도훈 승인 사항)"
+  fi
   if [ "$FALLBACK" = "미적용" ]; then
     echo "[hook-integrity] ⚠ 이 트리 settings.json 에 worktree 폴백이 없습니다 — main 병합 시 복구됩니다." >&2
     echo "[hook-integrity]   (지금 라우터가 도는 건 이 셸의 env 덕이지 settings.json 덕이 아닙니다)" >&2

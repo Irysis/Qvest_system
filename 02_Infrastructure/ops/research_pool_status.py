@@ -132,7 +132,13 @@ def collect(root):
         out["age_days"] = _age_days(route_d)
         rj = _load(route_path) or {}
         out["counts_by_route"] = rj.get("counts_by_route", {}) or {}
-        out["n_papers"] = rj.get("n_papers")
+        # (2026-07-26 probe① 수리) 생산자 route json에 n_papers 키가 없다(실키 = papers 리스트).
+        # 구판은 없는 키 조회 → None → 부팅 라인 "papers ?" 영구 표시 (필드명 불일치 =
+        # 조용한 빈 값 부류, search-index 907행 사건과 동형). 리스트 길이로 폴백.
+        _np = rj.get("n_papers")
+        if _np is None and isinstance(rj.get("papers"), list):
+            _np = len(rj["papers"])
+        out["n_papers"] = _np
         out["n_arxiv"] = rj.get("n_arxiv")
         out["n_curated"] = rj.get("n_curated")
         cands = rj.get("factor_candidates_all", []) or []

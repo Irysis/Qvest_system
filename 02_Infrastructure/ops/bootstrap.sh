@@ -450,18 +450,34 @@ if [ -f "$QV8_CLI" ]; then
   # qvest_v8_ready CLI exit code 0=PASS / 1=FAIL / 2=WARN — 모두 정상 JSON 반환. 'true'로 exit code 무시.
   bash "$QV8_CLI" --no-write --json > "$V8_TMP" 2>/dev/null || true
   [ -s "$V8_TMP" ] || echo "{}" > "$V8_TMP"
+  # (2026-07-26 probe① 도훈 승인) warn 축 노출 + 자가검산 — 구판은 pass/fail/skip만 파싱해
+  # soak WARN(critical, human 확인 의무)이 이름 없이 상태문자 "WARN"에만 묻혔고,
+  # pass+fail+warn+skip ≠ 총 check수여도 침묵(파싱 결손 불가시)이었다.
   V8_PARSED=$(python3 -c "
 import json, sys
 try:
     d = json.load(sys.stdin)
     s = d.get('summary', {})
-    print(f\"{d.get('overall','?')}|{s.get('pass','?')}|{s.get('fail','?')}|{s.get('skip','?')}\")
+    checks = d.get('checks', []) or []
+    warns = ';'.join(str(c.get('name','?')) for c in checks
+                     if str(c.get('status','')).upper() == 'WARN')
+    print(f\"{d.get('overall','?')}|{s.get('pass','?')}|{s.get('fail','?')}|{s.get('warn','?')}|{s.get('skip','?')}|{len(checks)}|{warns}\")
 except Exception:
-    print('?|?|?|?')
-" < "$V8_TMP" 2>/dev/null || echo "?|?|?|?")
+    print('?|?|?|?|?|?|')
+" < "$V8_TMP" 2>/dev/null || echo "?|?|?|?|?|?|")
   rm -f "$V8_TMP"
-  IFS='|' read -r V8_OVERALL V8_PASS V8_FAIL V8_SKIP <<< "$V8_PARSED"
-  echo "[boot] v8 readiness (--no-write, 16 check incl v8_architecture): $V8_OVERALL — pass=$V8_PASS fail=$V8_FAIL skip=$V8_SKIP (e2e+timeline SKIP 정상, memory_health cached)"
+  IFS='|' read -r V8_OVERALL V8_PASS V8_FAIL V8_WARN V8_SKIP V8_NCHK V8_WARN_NAMES <<< "$V8_PARSED"
+  echo "[boot] v8 readiness (--no-write, ${V8_NCHK:-?} check incl v8_architecture): $V8_OVERALL — pass=$V8_PASS fail=$V8_FAIL warn=$V8_WARN skip=$V8_SKIP (e2e+timeline SKIP 정상, memory_health cached)"
+  if [ "${V8_WARN:-0}" != "0" ] && [ "${V8_WARN:-?}" != "?" ] && [ -n "$V8_WARN_NAMES" ]; then
+    echo "[boot]    warn 항목: ${V8_WARN_NAMES//;/ · } (soak류 = human 확인 의무)"
+  fi
+  # 자가검산: 파싱된 4축 합 ≠ 총 check수 → 파서/스키마 드리프트로 축이 새는 중
+  if [ "${V8_NCHK:-?}" != "?" ] && [ "${V8_PASS:-?}" != "?" ]; then
+    V8_SUM=$(( ${V8_PASS:-0} + ${V8_FAIL:-0} + ${V8_WARN:-0} + ${V8_SKIP:-0} ))
+    if [ "$V8_SUM" != "$V8_NCHK" ]; then
+      echo "[boot] WARN: readiness 자가검산 불일치 — pass+fail+warn+skip=$V8_SUM ≠ checks=$V8_NCHK (파서/스키마 드리프트, 축 결손 의심)"
+    fi
+  fi
   if [ "${V8_FAIL:-99}" != "0" ] && [ "${V8_FAIL:-99}" != "?" ]; then
     echo "[boot] WARN: v8_readiness FAIL — bash 02_Infrastructure/tools/qvest_v8_ready --strict 직접 실행 권장"
   fi
@@ -629,6 +645,16 @@ try:
                  if r.get('path') in KEY and r.get('severity') in ('WARN', 'CRITICAL')]
     line = "DataFresh:  %s · OK %s / WARN %s / CRITICAL %s" % (
         ran or '?', s.get('OK', '?'), s.get('WARN', '?'), s.get('CRITICAL', '?'))
+    # (2026-07-26 probe① 도훈 승인) 감사 산출물 자신의 나이 검증 — audit이 멈추면
+    # 낡은 스냅샷이 무기한 "FRESH"로 재보고되던 갭(감시가 감시 대상보다 먼저 죽는 부류).
+    try:
+        import datetime as _dt
+        _ra = _dt.datetime.fromisoformat(str(d.get('ran_at', ''))[:19])
+        _age_h = (_dt.datetime.now() - _ra).total_seconds() / 3600.0
+        if _age_h > 36:
+            line += "  ★audit 산출 자체가 %.0fh 낡음(36h+) — daily_refresh Step5 정지 의심, 아래 값은 과거 상태" % _age_h
+    except Exception:
+        line += "  ★audit ran_at 파싱 불가 — 나이 미상(신선 취급 금지)"
     if crit:
         line += " — crit: " + ", ".join((os.path.basename(c.rstrip('/')) or c) for c in crit[:4])
     print(line)
@@ -660,7 +686,13 @@ fi
 MR_LOCK="/tmp/qm_morning_run_$(date +%Y%m%d).lock"
 if [ -f "$MR_LOCK" ]; then
   MR_T=$(stat -c %y "$MR_LOCK" 2>/dev/null | cut -d'.' -f1 | cut -d' ' -f2)
-  MORNING_STATUS="MorningRun:  $(date +%Y-%m-%d) 실행됨 (${MR_T:-?}) — paper/router/dispatch + 평일 brief/regime"
+  # (2026-07-26 probe①) lock=시작 증명일 뿐 — done 마커로 완주/중도사망 구분 (구판은 시작=실행됨 오보)
+  if [ -f "${MR_LOCK}.done" ]; then
+    MR_D=$(cat "${MR_LOCK}.done" 2>/dev/null | head -1)
+    MORNING_STATUS="MorningRun:  $(date +%Y-%m-%d) 완주 (시작 ${MR_T:-?} → 종료 ${MR_D:-?}) — paper/router/dispatch + 평일 brief/regime"
+  else
+    MORNING_STATUS="MorningRun:  $(date +%Y-%m-%d) ★시작됨(${MR_T:-?})·완주 마커 없음 — 진행 중이거나 중도 사망 (/tmp/qm_morning_run.log tail 확인)"
+  fi
 else
   MORNING_STATUS="MorningRun:  $(date +%Y-%m-%d) 미실행 (오늘 lock 부재 — 스케줄러 미발화/미도래. 수동: bash 02_Infrastructure/ops/morning_run.sh manual)"
 fi

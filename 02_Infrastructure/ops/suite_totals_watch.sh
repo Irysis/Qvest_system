@@ -38,15 +38,29 @@ PY="$(_py)"
 collect() {
   mkdir -p "$DIR/.cache"
   local hooks regime contract continuity
+  local hooks_out regime_out cont_out hooks_fail regime_fail continuity_fail
 
-  hooks=$(cd "$DIR" && CLAUDE_PROJECT_DIR="$DIR" bash 08_Tests/hooks/run_all_hooks.sh 2>/dev/null \
-          | grep -oE 'FINAL: [0-9]+ pass / [0-9]+ fail / [0-9]+ total' | grep -oE '[0-9]+ total' | grep -oE '[0-9]+')
-  regime=$(cd "$DIR" && CLAUDE_PROJECT_DIR="$DIR" Rscript 08_Tests/regime/run_all.R 2>/dev/null \
-          | grep -oE 'of [0-9]+ total' | grep -oE '[0-9]+')
+  # (2026-07-26 probe① 도훈 승인) fail 축 동시 수집 — 구판은 total만 봐서
+  # total=pass+fail 구조상 FAIL이 나도 총계 불변 = 회귀가 감시를 그냥 통과했다.
+  hooks_out=$(cd "$DIR" && CLAUDE_PROJECT_DIR="$DIR" bash 08_Tests/hooks/run_all_hooks.sh 2>/dev/null \
+          | grep -oE 'FINAL: [0-9]+ pass / [0-9]+ fail / [0-9]+ total' | head -1)
+  hooks=$(printf '%s' "$hooks_out" | grep -oE '[0-9]+ total' | grep -oE '[0-9]+')
+  hooks_fail=$(printf '%s' "$hooks_out" | grep -oE '[0-9]+ fail' | grep -oE '[0-9]+')
+  regime_out=$(cd "$DIR" && CLAUDE_PROJECT_DIR="$DIR" Rscript 08_Tests/regime/run_all.R 2>/dev/null)
+  regime=$(printf '%s' "$regime_out" | grep -oE 'of [0-9]+ total' | grep -oE '[0-9]+')
+  regime_fail=$(printf '%s' "$regime_out" | grep -oE '[0-9]+ failed' | grep -oE '[0-9]+' | head -1)
   contract=$(cd "$DIR" && CLAUDE_PROJECT_DIR="$DIR" Rscript 08_Tests/contract_regression/run_contract_regression.R 2>/dev/null \
           | grep -oE 'cases=[0-9]+' | grep -oE '[0-9]+' | head -1)
-  continuity=$([ -x "$PY" ] && "$PY" "$DIR/02_Infrastructure/tests/test_continuity_gate.py" 2>/dev/null \
-          | grep -oE 'BATTERY: [0-9]+/[0-9]+' | grep -oE '/[0-9]+' | tr -d '/')
+  cont_out=$([ -x "$PY" ] && "$PY" "$DIR/02_Infrastructure/tests/test_continuity_gate.py" 2>/dev/null \
+          | grep -oE 'BATTERY: [0-9]+/[0-9]+' | head -1)
+  continuity=$(printf '%s' "$cont_out" | grep -oE '/[0-9]+' | tr -d '/')
+  continuity_fail=""
+  if [ -n "$cont_out" ]; then
+    local _cp _ct
+    _cp=$(printf '%s' "$cont_out" | grep -oE '[0-9]+/' | tr -d '/')
+    _ct=$(printf '%s' "$cont_out" | grep -oE '/[0-9]+' | tr -d '/')
+    [ -n "$_cp" ] && [ -n "$_ct" ] && continuity_fail=$((_ct - _cp))
+  fi
 
   # 빈 값 = 수집 실패 → 0 이 아니라 null 로 남긴다(0 으로 적으면 그 자체가 거짓 경보/거짓 안심)
   printf '{\n' > "$LATEST"
@@ -54,9 +68,12 @@ collect() {
   printf '  "hooks": %s,\n'      "${hooks:-null}"      >> "$LATEST"
   printf '  "regime": %s,\n'     "${regime:-null}"     >> "$LATEST"
   printf '  "contract_regression": %s,\n' "${contract:-null}" >> "$LATEST"
-  printf '  "continuity": %s\n'  "${continuity:-null}" >> "$LATEST"
+  printf '  "continuity": %s,\n'  "${continuity:-null}" >> "$LATEST"
+  printf '  "hooks_fail": %s,\n'      "${hooks_fail:-null}"      >> "$LATEST"
+  printf '  "regime_fail": %s,\n'     "${regime_fail:-null}"     >> "$LATEST"
+  printf '  "continuity_fail": %s\n'  "${continuity_fail:-null}" >> "$LATEST"
   printf '}\n' >> "$LATEST"
-  echo "[suite-totals] 수집: hooks=${hooks:-?} regime=${regime:-?} contract=${contract:-?} continuity=${continuity:-?}"
+  echo "[suite-totals] 수집: hooks=${hooks:-?}(fail ${hooks_fail:-?}) regime=${regime:-?}(fail ${regime_fail:-?}) contract=${contract:-?} continuity=${continuity:-?}(fail ${continuity_fail:-?})"
   echo "[suite-totals] → $LATEST"
 }
 
@@ -91,6 +108,15 @@ if ts:
     except Exception:
         pass
 
+# (2026-07-26 probe①) fail 축 — total 불변이어도 FAIL>0 은 회귀다. 수집 실패(null)는
+# 구식 latest(fail 축 도입 전) 호환으로 조용히 통과시키지 않고 이름으로 표시.
+fails = {k: v for k, v in l.items() if k.endswith("_fail")}
+fail_hits = [(k, v) for k, v in fails.items() if isinstance(v, int) and v > 0]
+if fail_hits:
+    print("[suite-totals] ★FAIL>0 감지 — 총계 불변이어도 회귀:", file=sys.stderr)
+    for k, v in fail_hits:
+        print("  - %-20s fail=%d" % (k, v), file=sys.stderr)
+
 keys = [k for k in b if k not in ("collected_at", "note")]
 drops, unknown, ok = [], [], []
 for k in keys:
@@ -108,9 +134,9 @@ if drops:
     print("  점검: 해당 러너를 직접 돌려 케이스가 실행되는지 확인(총계 0 = 계측 사망)", file=sys.stderr)
 if unknown:
     print("[suite-totals] ⚠ 수집 실패(null): %s — 수치 없음은 '정상'이 아니다" % ", ".join(unknown), file=sys.stderr)
-if not drops and not unknown:
+if not drops and not unknown and not fail_hits:
     print("[suite-totals] OK " + " · ".join("%s=%s" % (k, v) for k, v in ok))
-sys.exit(1 if drops else 0)
+sys.exit(1 if (drops or fail_hits) else 0)
 PYEOF
 }
 

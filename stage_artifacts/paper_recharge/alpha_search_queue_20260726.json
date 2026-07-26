@@ -2,32 +2,40 @@
   "date": "20260726",
   "autorun": 0,
   "max_alpha": 2,
-  "candidates": [],
+  "candidates": [
+    {
+      "paper_id": "2607.14174",
+      "factor_name": "dart_risk_section_sentiment",
+      "factor_title": "DART 사업보고서 위험요인 섹션 지도학습 감성 점수",
+      "source": "arxiv",
+      "verdict": "testable",
+      "promoted_date": "20260726",
+      "promoted_by": "tier-2 recheck",
+      "impl_sketch": "DART API → 위험요인 섹션 추출 → mecab-ko 형태소 분석 → Ke et al.(2020) 지도학습 어휘(수익률 레이블) → per-firm p̂∈[0,1] → 횡단면 랭킹 → long leg. PIT: 3/31 익년(C4). 양방향 테스트 의무.",
+      "pit_lag": "annual_3_31",
+      "data_requirements": ["DART 사업보고서 HTML", "RAWDATA 수익률(레이블용)"],
+      "status": "PENDING"
+    }
+  ],
   "n_processed_this_run": 0,
   "n_adopted": 0,
   "n_quarantine": 0,
   "n_skipped_batch434": 0,
-  "status": "EMPTY_QUEUE",
-  "note": "07-26 alpha_search 소비자 런 -- testable 미소비 건수 0. 기존 2건(2606.08569 p_index / 2606.04576 ReSGA) 모두 이전 세션(2026-06-20~21) 처리 완료·QUARANTINE(PORT_t 음·robustness FAIL). 최근 route 파일(07-20~07-24) n_factor_candidates=0. done.json 형식 버그(배열->dict) 수정 완료.",
+  "status": "READY",
+  "note": "07-26 tier-2 재검 결과 1건 승격(dart_risk_section_sentiment). 기존 quarantine 2건(2606.08569/2606.04576) 재큐 금지 유지. 신규 tier-2 입력 3건 처리(promoted 1, infeasible 2).",
   "uncertain_assessment": {
     "2606.07450_price_network_centrality": {
       "tier1_verdict": "uncertain",
       "consumer_assessment": "batch_434 guard 해당 -- 논문 본문이 수익예측력을 미검증(섹터분류 정확도만 검증). 구현 시 논문 기술 외 신호 날조가 됨. infeasible 재분류 권고 (tier-2 confirm 필요)",
       "action": "tier-2 recheck: infeasible 확정 여부 검토"
-    },
-    "2606.23596_body_tail_leg": {
-      "tier1_verdict": "uncertain (kr_feasible=true, 07-01 버전)",
-      "consumer_assessment": "시장 수준(body/tail 분해) 팩터 -- 종목 횡단 신호 사상 불명. 논문 정독 필요. 자본 판정 전 per-stock 신호 수식 확인 의무",
-      "action": "tier-2 deep recheck: 논문 읽기 → testable/infeasible 판정"
     }
   },
   "next_action": {
-    "tier1": "신규 arxiv 논문 라우팅 필요 (최신 route = 07-24, 2일 공백). paper_router_run.sh QVEST_PAPER_ROUTER_ENABLE=1 재가동.",
+    "tier1": "신규 arxiv 논문 라우팅 필요 (최신 route = 07-24, 2일 공백). paper_router_run.sh QVEST_PAPER_ROUTER_ENABLED=1 재가동.",
     "tier2_priority": [
-      "2606.07450 -- infeasible 확정 여부 (batch_434 가드). 낮은 EV",
-      "2606.23596 -- per-stock 신호 사상 판정 (논문 정독). 중간 EV (kr_feasible=true 단서)"
+      "2606.07450 -- infeasible 확정 여부 (batch_434 가드, 낮은 EV)"
     ],
     "frontier": "FQ-002 계약수주 magnitude / FQ-003 공매도잔고(도훈 QW export 대기) / FQ-004 감사의견 P2 confound-controlled 재측정 -- 비-return 신규 원천 주력",
-    "done_json_fix": "done.json 형식 수정 완료: 순수 배열 -> {processed:[...], records:[...]} -- shell script .get('processed',[]) 파싱 정합 복원(구 형식은 except 분기에서 done=set() 빈 셋 탈출 -> 재처리 위험)"
+    "alpha_search_candidate": "dart_risk_section_sentiment 백테 착수 가능. DART 텍스트 파이프라인 신규 구축 필요 — 착수 전 DART API HTML 취득 가능성 확인 권고."
   }
 }

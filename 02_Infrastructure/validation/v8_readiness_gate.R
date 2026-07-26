@@ -96,52 +96,161 @@ mk_check <- function(id, name, status, details = "", evidence_path = NULL) {
 # 14 Checks
 # ─────────────────────────────────────────────────────────────────
 
+#──────────────────────────────────────────────────────────────────────────────
+# Hook dry-run 배터리 — 결과 파일 위치 + 판정 (2026-07-26 수리)
+#
+# [기전] 구현은 `08_Tests/hooks/results.json` 을 읽었으나, 러너는 2026-07-25
+#   artifact-storage 이관 이후 `.cache/test_results/hook_dryrun_results.json` 에
+#   쓴다(run_all_hooks.sh:53-57). 구 경로는 그 이후 **영구 부재** →
+#   배터리가 127 pass / 0 fail 로 통과해도 게이트는 그것을 못 보고
+#   no_write 에선 WARN("검증 불충분"), run 모드에선 FAIL("results.json 생성 실패")
+#   을 냈다. 즉 이 체크의 판정이 **배터리 실측과 무관**했다(대리 판정).
+#
+# [설계] ① 러너 산출 경로가 정본, 구 경로는 fallback 으로만 남긴다(구 체크아웃/
+#   외부 CI 호환). **둘 다 부재 = 명시 FAIL** — "결과가 없다"는 "통과"가 아니다.
+#   ② 총계 하드코딩(구 `pass >= 17`)은 제거한다. 스위트가 늘 때마다 라벨과 문턱을
+#   같이 고쳐야 하는 동형 함정이고(30/30 → 17/17 → 실제 127 로 이미 두 번 표류),
+#   **총계 래칫은 suite_totals_watch.sh 가 전담**한다
+#   (06_Registry/suite_totals_baseline.json, 감소 시 exit 1). 게이트는
+#   "실패 0 + 계측이 살아 있었는가" 만 본다.
+#   ③ 단 `total_pass == 0` / `tests[] == 0` 은 통과가 아니라 **계측 사망**이므로
+#   여기서 FAIL 로 잡는다(러너 자신의 UNREPORTED 가드와 이중 방어).
+#──────────────────────────────────────────────────────────────────────────────
+HOOK_DRYRUN_NAME <- "Hook dry-run 배터리 (총계 = 러너 산출)"
+HOOK_DRYRUN_RESULT_RELS <- c(
+  ".cache/test_results/hook_dryrun_results.json",  # 현행 정본 (run_all_hooks.sh)
+  "08_Tests/hooks/results.json"                    # 구 경로 (fallback)
+)
+# no_write 모드는 러너를 안 돌리므로 판정이 과거 산출에 기댄다. daily_refresh 가
+# 매일 suite_totals_watch --collect 로 러너를 돌리므로(주기 1일), 이 임계를 넘긴
+# 캐시는 "현재 상태의 증거"가 아니다 → PASS 아닌 WARN.
+HOOK_DRYRUN_MAX_AGE_DAYS <- 7
+
+.hook_dryrun_find_results <- function(project_root) {
+  for (rel in HOOK_DRYRUN_RESULT_RELS) {
+    p <- file.path(project_root, rel)
+    if (file.exists(p)) {
+      return(list(found = TRUE, path = p, rel = rel,
+                  mtime = file.info(p)$mtime))
+    }
+  }
+  list(found = FALSE, path = NA_character_, rel = NA_character_,
+       mtime = as.POSIXct(NA))
+}
+
+# 판정 = PASS/FAIL + 실패 수 + 계측 생존. 문턱(총계 하한) 없음 — 위 설계 ②.
+.hook_dryrun_verdict <- function(data) {
+  bad <- function(reason) list(ok = FALSE, reason = reason, summary = reason)
+  if (is.null(data) || !is.list(data)) return(bad("결과 JSON parse 실패"))
+  tp <- suppressWarnings(as.numeric(data$total_pass %||% NA))
+  tf <- suppressWarnings(as.numeric(data$total_fail %||% NA))
+  n_suites <- NROW(data$tests %||% NULL)
+  if (length(tp) != 1L || length(tf) != 1L || is.na(tp) || is.na(tf)) {
+    return(bad("total_pass/total_fail 필드 부재 또는 비수치 (계측 산출 손상)"))
+  }
+  summary <- sprintf("%g pass / %g fail / suite %d", tp, tf, n_suites)
+  if (tf != 0) {
+    return(list(ok = FALSE,
+                reason = sprintf("%s — 실패 %g건", summary, tf),
+                summary = summary))
+  }
+  if (tp <= 0) {
+    return(list(ok = FALSE,
+                reason = sprintf("%s — total_pass=0 = 계측 사망(통과 아님)", summary),
+                summary = summary))
+  }
+  if (n_suites <= 0) {
+    return(list(ok = FALSE,
+                reason = sprintf("%s — tests[] 비어 있음 = 스위트 0건 실행", summary),
+                summary = summary))
+  }
+  st <- data$status %||% ""
+  if (nzchar(st) && !identical(toupper(st), "PASS")) {
+    return(list(ok = FALSE,
+                reason = sprintf("%s — status 필드='%s' 불일치(산출 손상/수기 편집 의심)",
+                                 summary, st),
+                summary = summary))
+  }
+  list(ok = TRUE, reason = "", summary = summary)
+}
+
 check_hook_dryrun <- function(project_root, no_write = FALSE) {
-  results_path <- file.path(project_root, "08_Tests/hooks/results.json")
-  hook_runner <- file.path(project_root, "08_Tests/hooks/run_all_hooks.sh")
+  runner_rel <- "08_Tests/hooks/run_all_hooks.sh"
+  hook_runner <- file.path(project_root, runner_rel)
   if (!file.exists(hook_runner)) {
-    return(mk_check("hook_dryrun", "Hook dry-run 17/17",
+    return(mk_check("hook_dryrun", HOOK_DRYRUN_NAME,
                     "FAIL", "run_all_hooks.sh 부재"))
   }
+  searched <- paste(HOOK_DRYRUN_RESULT_RELS, collapse = " | ")
+
   if (no_write) {
-    if (file.exists(results_path)) {
-      data <- tryCatch(fromJSON(results_path, simplifyVector = TRUE),
-                        error = function(e) NULL)
-      if (!is.null(data) && is.numeric(data$total_fail) &&
-          data$total_fail == 0 && (data$total_pass %||% 0) >= 17) {
-        return(mk_check("hook_dryrun", "Hook dry-run 17/17",
-                        "PASS",
-                        sprintf("cached results.json: %d/%d (no_write — re-run skip)",
-                                data$total_pass, data$total_pass + data$total_fail),
-                        results_path))
-      }
+    found <- .hook_dryrun_find_results(project_root)
+    if (!found$found) {
+      # 조용한 통과 금지: 러너를 안 돌렸고 캐시도 없으면 '미검증'이며, 미검증은 실패다.
+      return(mk_check("hook_dryrun", HOOK_DRYRUN_NAME,
+                      "FAIL",
+                      sprintf("결과 파일 부재 (탐색: %s) — no_write 는 러너를 돌리지 않으므로 미검증 = 통과 아님",
+                              searched)))
     }
-    return(mk_check("hook_dryrun", "Hook dry-run 17/17",
-                    "WARN", "no_write — runner skip + cached results 검증 불충분"))
+    data <- tryCatch(fromJSON(found$path, simplifyVector = TRUE),
+                     error = function(e) NULL)
+    v <- .hook_dryrun_verdict(data)
+    age_days <- as.numeric(difftime(Sys.time(), found$mtime, units = "days"))
+    if (!isTRUE(v$ok)) {
+      return(mk_check("hook_dryrun", HOOK_DRYRUN_NAME,
+                      "FAIL",
+                      sprintf("%s [%s]", v$reason, found$rel),
+                      found$path))
+    }
+    if (is.finite(age_days) && age_days > HOOK_DRYRUN_MAX_AGE_DAYS) {
+      return(mk_check("hook_dryrun", HOOK_DRYRUN_NAME,
+                      "WARN",
+                      sprintf("%s — 단 캐시 %.1f일 경과(>%d일): 현재 상태 증거 아님 (daily_refresh/suite_totals_watch --collect 확인) [%s]",
+                              v$summary, age_days, HOOK_DRYRUN_MAX_AGE_DAYS,
+                              found$rel),
+                      found$path))
+    }
+    return(mk_check("hook_dryrun", HOOK_DRYRUN_NAME,
+                    "PASS",
+                    sprintf("%s (cached %.1fh 경과, no_write — 재실행 skip) [%s]",
+                            v$summary, age_days * 24, found$rel),
+                    found$path))
   }
-  out <- run_cmd("bash", c(hook_runner), timeout_sec = 120L)
-  if (!file.exists(results_path)) {
-    return(mk_check("hook_dryrun", "Hook dry-run 17/17",
-                    "FAIL", "results.json 생성 실패"))
+
+  # run 모드: 러너를 직접 돌린 뒤, **이번 실행이 갱신한 산출**만 판정 근거로 삼는다.
+  # (구 산출이 남아 있으면 러너가 죽어도 옛 성공을 현재 성공으로 오독 — 존재=유효 함정)
+  t0 <- Sys.time()
+  out <- run_cmd("bash", c(runner_rel), timeout_sec = 900L, wd = project_root)
+  found <- .hook_dryrun_find_results(project_root)
+  if (!found$found) {
+    return(mk_check("hook_dryrun", HOOK_DRYRUN_NAME,
+                    "FAIL",
+                    sprintf("결과 파일 생성 실패 (rc=%s, 탐색: %s)", out$rc, searched)))
   }
-  data <- tryCatch(fromJSON(results_path, simplifyVector = TRUE),
-                    error = function(e) NULL)
-  if (is.null(data)) {
-    return(mk_check("hook_dryrun", "Hook dry-run 17/17",
-                    "FAIL", "results.json parse 실패", results_path))
+  # 파일시스템 시각 해상도/시계 오차 여유 5초.
+  if (is.finite(as.numeric(found$mtime)) &&
+      as.numeric(difftime(found$mtime, t0, units = "secs")) < -5) {
+    return(mk_check("hook_dryrun", HOOK_DRYRUN_NAME,
+                    "FAIL",
+                    sprintf("러너가 결과를 갱신하지 못함 (rc=%s, mtime=%s < 실행시작=%s) — 구 산출 재사용 차단",
+                            out$rc,
+                            format(found$mtime, "%Y-%m-%dT%H:%M:%S"),
+                            format(t0, "%Y-%m-%dT%H:%M:%S")),
+                    found$path))
   }
-  total_pass <- data$total_pass %||% 0
-  total_fail <- data$total_fail %||% -1
-  if (total_fail == 0 && total_pass >= 17) {
-    return(mk_check("hook_dryrun", "Hook dry-run 17/17",
-                    "PASS", sprintf("%d pass / 0 fail", total_pass),
-                    results_path))
+  data <- tryCatch(fromJSON(found$path, simplifyVector = TRUE),
+                   error = function(e) NULL)
+  v <- .hook_dryrun_verdict(data)
+  if (!isTRUE(v$ok)) {
+    return(mk_check("hook_dryrun", HOOK_DRYRUN_NAME,
+                    "FAIL",
+                    sprintf("%s (rc=%s) [%s]", v$reason, out$rc, found$rel),
+                    found$path))
   }
-  mk_check("hook_dryrun", "Hook dry-run 17/17",
-           "FAIL",
-           sprintf("%d pass / %d fail (요구: fail=0, pass>=17 — v8.2 codex_round_gate 제거)",
-                   total_pass, total_fail),
-           results_path)
+  mk_check("hook_dryrun", HOOK_DRYRUN_NAME,
+           "PASS",
+           sprintf("%s (rc=%s) [%s]", v$summary, out$rc, found$rel),
+           found$path)
 }
 
 check_e2e_kernel <- function(project_root, no_write = FALSE) {

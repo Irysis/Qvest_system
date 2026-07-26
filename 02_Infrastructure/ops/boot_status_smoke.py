@@ -63,6 +63,12 @@ def chk_research_pool(root):
     lines = m.render(o)
     if any("reader 오류" in l for l in lines):
         return False, "리더 예외: " + lines[0][:90]
+    # (2026-07-26 probe① 도훈 승인) docstring (b)의 placeholder 단언을 실제로 구현 —
+    # 계약만 있고 구현이 없어 "papers ?"가 5/5 OK로 통과했다(약속된 검출의 미구현).
+    # placeholder '?' = 공백/구분자에 둘러싸인 단독 토큰 (한국어 문장 물음표와 구분).
+    ph = [l for l in lines if re.search(r"(?:^|[ =(/·])\?(?:$|[ )/·,])", l)]
+    if ph:
+        return False, "placeholder '?' 잔존: " + ph[0][:80]
     # available=False(데이터 없음)는 정상 SKIP; 그 외엔 첫 라인 요약
     return True, lines[0][:80]
 

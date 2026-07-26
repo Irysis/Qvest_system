@@ -79,10 +79,26 @@ if (!exists("%||%")) {
   } else NULL
 })
 
+#' 길이-1 유한 Date 로 정규화. 실패·비유한(-Inf: 빈 벡터 max 의 산물)은 NA Date.
+#' (정본 ic_pair_completeness.R::.ic_as_date1 과 같은 규약 — 여기선 파일 I/O 결과에도 쓴다)
+.icfc_as_date1 <- function(x) {
+  if (is.null(x) || length(x) == 0L) return(structure(NA_real_, class = "Date"))
+  x <- x[1L]
+  d <- suppressWarnings(tryCatch(as.Date(x), error = function(e) NA))
+  if (length(d) != 1L || is.na(d) || !is.finite(as.numeric(d))) {
+    return(structure(NA_real_, class = "Date"))
+  }
+  as.Date(d)
+}
+
 #' pair 완결 술어 — guard 2조건 OR 의 부정. (전역 이름 미생성: `.icfc_` 접두)
 #' 정본이 있으면 위임, 없으면 같은 규약을 미러링(fail-safe).
 .icfc_pair_complete <- function(sig_d_t1, raw_dates, today = Sys.Date()) {
-  sig_d_t1 <- as.Date(sig_d_t1)
+  sig_d_t1 <- .icfc_as_date1(sig_d_t1)
+  # fail-closed: sig 판정 불가면 '완결'이 아니다 (정본 .ic_pair_complete 와 동일 규약).
+  # 미러가 이 분기를 안 갖고 있으면 NA sig 에서 as.Date("NA-01") → seq() 로 죽어,
+  # 위임이 끊긴 순간(폴백 가동) 판정이 크래시로 바뀐다.
+  if (is.na(sig_d_t1)) return(FALSE)
   m_t1 <- format(sig_d_t1, "%Y-%m")
   in_m <- raw_dates[format(raw_dates, "%Y-%m") == m_t1]
   raw_m_last <- if (length(in_m) > 0L) max(in_m) else as.Date(NA)       # ②
@@ -163,13 +179,19 @@ ic_frontier_check <- function(ic_path = NULL,
 
   # 실제 IC 프론티어
   ic_max <- if (!is.null(ic_max_date_override)) {
-    as.Date(ic_max_date_override)
+    .icfc_as_date1(ic_max_date_override)
   } else if (file.exists(ic_path)) {
     tryCatch({
       d <- as.data.table(read_parquet(ic_path, col_select = "Date"))
-      max(as.Date(d$Date), na.rm = TRUE)
+      suppressWarnings(max(as.Date(d$Date), na.rm = TRUE))
     }, error = function(e) as.Date(NA))
   } else as.Date(NA)
+
+  # 0행 parquet 은 read 에 성공한다 — max(numeric(0)) = **-Inf** 이고 is.na(-Inf) 는 FALSE 라
+  # 그대로 흘러가 format() 이 "-Inf", .mi() 가 NA, `if (lag_months < 0L)` 에서 abort 했다
+  # (실측 2026-07-26: "missing value where TRUE/FALSE needed"). 판정 불가는 크래시가 아니라
+  # UNKNOWN 으로 떨어져야 한다 — 감시기가 죽으면 소비처 tryCatch 가 사유를 삼킨다.
+  ic_max <- .icfc_as_date1(ic_max)
 
   if (is.na(ic_max)) {
     res$status <- "IC_FRONTIER_UNKNOWN"; res$severity <- "WARN"

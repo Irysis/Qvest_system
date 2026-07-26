@@ -1,0 +1,60 @@
+{
+  "date": "20260726",
+  "n_input": 3,
+  "promoted": [
+    {
+      "paper_id": "2607.14174",
+      "factor_name": "dart_risk_section_sentiment",
+      "factor_title": "DART 사업보고서 위험요인 섹션 지도학습 감성 점수",
+      "paper_title": "How Much of a 10-K Matters? Aggregation-Dependent Value of Full-Text versus Risk-Factor Sentiment",
+      "source": "arxiv",
+      "verdict": "testable",
+      "in_our_inventory": false,
+      "closest_existing": "MA06_Risk_Sentiment_1Y (정의: 1Y 시장 누적수익률 기반 리스크 선호 프록시 — 텍스트 기반 아님. DART 공시 텍스트 감성 팩터는 레지스트리 전체 미존재)",
+      "novelty_note": "Ke et al. (2020) 지도학습 어휘 프레임워크를 DART 사업보고서 위험요인 섹션에 적용하는 첫 번째 종목별 감성 신호. LM 사전 기반 MA06 계열과 메커니즘 완전 상이(지도 어휘 학습 vs 사전 매칭). 레지스트리 373팩터 내 DART 텍스트 기반 신호 없음.",
+      "kr_feasibility": "high",
+      "pit_compliance": "C4 ✓ — 사업보고서 연간 제출 기한 익년 3/31 (FY Dec31 기준). 신호는 3/31 이후부터 적용 가능.",
+      "impl_sketch": "1) DART API → 사업보고서 HTML(K200∪KQ150 전종목, 연도별) 취득 2) 위험요인 섹션 파싱: '사업의 위험등' 헤딩 → 다음 헤딩까지 추출(논문 EDGAR Item1A 추출 방식 동일 구조) 3) mecab-ko 형태소 분석 → 명사/형용사 추출 → 문서-어휘 행렬 D 4) 어휘 점수 f_w = [w 등장 문서 중 수익률 양성 레이블 비율], 임계값 alpha+/alpha- = 0.20 5) 긍·부정 토픽 분포 O+/O- 추정(Ke et al. Eq.4: OLS projection) 6) 신규 공시 감성점수 p̂ = penalized log-likelihood 최적화(Eq.5, λ=0.1) 7) 횡단면 p̂ 랭킹 → long leg 선별 8) 부호: empirical 양방향 테스트 의무(긍정 감성 고점수가 양의 수익 vs 음의 수익 모두 검정, 논문이 방향 보장 안 함) 9) 연간 1회 업데이트(3월 말 이후 적용, 분기 신호가 아님)",
+      "risk_notes": [
+        "Korean NLP 파이프라인 신규 구축 필요 (mecab-ko 또는 konlpy)",
+        "학습 코퍼스 규모: K200∪KQ150 ~350종목 × 연도, Nasdaq-100 94종목 대비 절대 규모는 유사하나 섹터 다양성 높음",
+        "DART HTML 파싱 파이프라인: 사업보고서 섹션 구조가 기업마다 비표준 — 헤딩 패턴 정규화 필요",
+        "어휘 학습 레이블: 수익률 기준 이진 라벨 — 훈련/검증 PIT 분리 필수(C1)",
+        "연간 업데이트 주기 = 턴오버 낮음 (연 1회 신호 갱신)"
+      ],
+      "direction": "empirical — 사전 고정 방향 없음. 긍정 감성(p̂ high)이 수익 양의 방향일 가능성 높으나 논문도 양·음 모두 검정. 백테 양방향 의무."
+    }
+  ],
+  "confirmed_infeasible": [
+    {
+      "paper_id": "2607.21170",
+      "factor_name": "tda_isolation_score",
+      "paper_title": "Portfolio Optimization under Dynamic Rebalancing via Topological Data Analysis and News Sentiments",
+      "verdict": "infeasible",
+      "reason_summary": "필수 4차원 입력(Refinitiv 뉴스 FinBERT 감성) KR 인프라 부재 + 논문 신호가 횡단면 수익 예측자 아닌 포트폴리오 구성 메커니즘",
+      "reason_detail": "논문의 TDA 포인트 클라우드는 RSI + Stochastic Oscillator + MACD + FinBERT(Refinitiv 뉴스) 4차원. 논문 저자가 명시: '기술지표만으로는 시장 인식 급변을 반영 불가 — 감성이 필수'. KR 인프라에 Refinitiv 뉴스 없음. 뉴스 차원 없이 기술지표 3D만 사용 시 (1) 논문 방법론 이탈, (2) TDA 신호 = 군집화 후 Sharpe 상위 선별 메커니즘으로 독립 횡단면 alpha claim 없음. 'tda_isolation_score' 명칭은 논문에 없음 — 티어-1 라우터 힌트에 불과. 논문 실증: 군집 품질 지표(AARI 0.70~0.80) 보고하나 종목별 IC/Port_t 검정 전무. 배치434 가드 적용 아님(날조 금지 대상이 아닌 설계 부재).",
+      "in_our_inventory": false,
+      "closest_existing": "없음 — TDA 기반 팩터 레지스트리 전무"
+    },
+    {
+      "paper_id": "2606.15473",
+      "factor_name": "llm_bayesian_regime_belief",
+      "paper_title": "Belief at Risk: Quantifying Agentic AI Model Risk with LLM-Inferred Bayesian State Filters",
+      "verdict": "infeasible",
+      "reason_summary": "종목 횡단면 알파 없음(시장 레짐 타이밍) + 외부 OpenAI API 의존 + 논문 목적이 AI 거버넌스 프레임워크(알파 생성 아님)",
+      "reason_detail": "①신호 구조: LLM이 4개 레짐(Risk-on/Neutral/Risk-off/Crisis) 사후확률 벡터를 생성 → Bayesian filter → w_t = P(RO)+0.5P(N)-0.5P(RF)-P(C) × SPY 수익률 — 단일 시장 지수 노출 스케일링, 종목 횡단면 신호 없음. ②인프라: OpenAI API 일간 호출 필요(외부 과금 서비스, KR 생산 인프라 외) ③논문 목적: 에이전트 AI의 model risk 정량화 거버넌스 프레임워크 — 포트폴리오 연구가 아닌 AI 리스크 관리 논문. 실증 SR=0.411은 예시용 사례연구. ④오버레이 재해석도 불가: 기존 BearProb 레짐 오버레이가 유사 기능 커버, 07-05 strict-PIT 검증 후 소멸(기존 측정 기록 있음). LLM 레짐 감지를 overlay로 재구성해도 외부 API 의존성 해소 불가.",
+      "in_our_inventory": false,
+      "closest_existing": "BearProb 오버레이 계열(레짐 감지 접근 유사) — 07-05 strict-PIT 실측 결과 소멸. LLM 방식 추가해도 API 의존성 문제 잔존."
+    }
+  ],
+  "redundant": [],
+  "still_uncertain": [],
+  "summary": {
+    "n_promoted": 1,
+    "n_infeasible": 2,
+    "n_redundant": 0,
+    "n_still_uncertain": 0,
+    "promoted_factors": ["dart_risk_section_sentiment (2607.14174)"],
+    "processing_note": "jina read_url 402 → arxiv MCP 전환. 2607.21170 전문(87,987자) 서브에이전트 분할독. 2607.14174/2606.15473 전문 메인 직접 정독."
+  }
+}

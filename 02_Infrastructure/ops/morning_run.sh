@@ -93,3 +93,6 @@ DOW=$(date +%u)   # 1=Mon .. 7=Sun
 
   echo "================ morning_run done @ $(date) ================"
 } >> "$LOG" 2>&1
+# (2026-07-26 probe① 도훈 승인) 완주 마커 — lock은 '시작'만 증명한다(once-per-day 선점).
+# 중도 사망 시 lock만 남아 부팅이 "실행됨"으로 오보하던 갭 → done 마커로 시작/완주 구분.
+date '+%H:%M:%S' > "${LOCK}.done" 2>/dev/null || true
