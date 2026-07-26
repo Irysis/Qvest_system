@@ -103,6 +103,31 @@ sched_check_credentials() {
   echo "unknown"
 }
 
+# ── python 인터프리터 견고 해석 (bare `python3` = Windows Store 스텁 함정)
+#    스텁은 "Python " 한 줄 찍고 종료한다 → 명령치환 결과가 빈 문자열 → 호출부의 ${N:-0} 이
+#    이를 0 으로 삼켜 "대기 없음" 정상 skip 으로 위장한다. ★총계 0 은 성공이 아니라 계측 사망일 수 있다.
+#    존재(command -v)로 판별하지 말 것 — 스텁도 존재한다. 반드시 실행으로 확인.
+sched_resolve_python() {
+  local c
+  for c in "${QVEST_PY:-}" \
+           "/c/Users/99922/AppData/Local/Programs/Python/Python312/python.exe" \
+           "$(command -v python3 2>/dev/null)" \
+           "$(command -v python 2>/dev/null)"; do
+    [ -n "$c" ] || continue
+    "$c" -c 'import sys' >/dev/null 2>&1 && { printf '%s' "$c"; return 0; }
+  done
+  return 1
+}
+
+# ── 카운트 산출물 무결성 검사: 숫자가 아니면 '0' 으로 강등하지 말고 실패로 다룬다.
+#    반환 0=정상(숫자) / 1=계측 실패
+sched_assert_count() {
+  case "${1:-}" in
+    ''|*[!0-9]*) return 1 ;;
+    *)           return 0 ;;
+  esac
+}
+
 # ── 경보 본문 주석 조립 (자동복구 축 + 연속실패 에스컬레이션 + 조치 안내) — 3 호출부 공통.
 #    ★에스컬레이션이 있어야 "같은 톤 반복 → 학습된 무시"가 끊긴다.
 #      실사고: alpha_queue 가 5회 연속 동일 401 경보를 같은 문구로 보내는 동안 8일 방치(07-19~26).

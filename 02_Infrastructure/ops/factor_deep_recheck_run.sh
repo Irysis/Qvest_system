@@ -18,7 +18,13 @@ if [ "${QVEST_FACTOR_RECHECK_ENABLE:-0}" != "1" ]; then log "disabled (QVEST_FAC
 
 # 1) uncertain 큐 빌드 (route JSON들에서 수집 · dedup · 재검분 제외)
 QUEUE="$SD/factor_recheck_queue_${TODAY}.json"
-N=$(python3 - "$SD" "$QUEUE" "$TODAY" <<'PY'
+# (2026-07-26) bare `python3` = Windows Store 스텁 함정 — 빈 출력이 ${N:-0} 로 0 이 되어
+#   "대기 없음" 정상 skip 으로 위장한다. 견고 해석 + 숫자 검사 후에만 신뢰.
+source "$(dirname "${BASH_SOURCE[0]:-$0}")/_sched_failure_classify.sh" 2>/dev/null || true
+PYBIN=""
+command -v sched_resolve_python >/dev/null 2>&1 && PYBIN=$(sched_resolve_python || true)
+[ -n "$PYBIN" ] || PYBIN="python3"
+N=$("$PYBIN" - "$SD" "$QUEUE" "$TODAY" <<'PY'
 import json, sys, glob, os
 sd, out = sys.argv[1], sys.argv[2]
 today = sys.argv[3] if len(sys.argv) > 3 else None
@@ -49,8 +55,14 @@ json.dump({"date":today,"n":len(items),"items":items},
 print(len(items))
 PY
 )
+if command -v sched_assert_count >/dev/null 2>&1 && ! sched_assert_count "$N"; then
+  log "★uncertain 산정 실패 (N='$N', PYBIN=$PYBIN) — 계측 사망. 0 으로 간주하지 않고 중단."
+  command -v sched_alert_emit >/dev/null 2>&1 && sched_alert_emit "factor_recheck" "count_measurement_failed" \
+    "uncertain 산정이 비숫자('$N') 반환 — python 인터프리터 해석 실패 추정(PYBIN=$PYBIN)."
+  exit 0
+fi
 N="${N:-0}"
-log "uncertain 큐: $N건 → $QUEUE"
+log "uncertain 큐: $N건 → $QUEUE (PYBIN=$(basename "$PYBIN"))"
 if [ "$N" -eq 0 ] && [ "${QVEST_FACTOR_RECHECK_FORCE:-0}" != "1" ]; then
   log "uncertain 0 — skip (FORCE=1로 강제)"; exit 0
 fi

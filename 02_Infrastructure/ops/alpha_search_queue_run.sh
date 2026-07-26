@@ -72,7 +72,14 @@ RS
 if [ "${QVEST_ALPHA_QUEUE_ENABLE:-0}" != "1" ]; then log "disabled (QVEST_ALPHA_QUEUE_ENABLE!=1) — skip"; exit 0; fi
 
 # pending 카운트: 큐 candidates + route testable − done
-N=$(python3 - "$SD" <<'PY'
+# (2026-07-26) bare `python3` 는 PATH 에 python312 가 없는 컨텍스트에서 Windows Store 스텁으로
+#   해석돼 빈 출력을 낸다 → 구 `N="${N:-0}"` 가 이를 0 으로 삼켜 "대기 없음" 정상 skip 으로 위장.
+#   실측: 스텁 경로 N=0 / 참값 3. ★총계 0 = 계측 사망일 수 있으므로 숫자 검사 후에만 신뢰한다.
+source "$(dirname "${BASH_SOURCE[0]:-$0}")/_sched_failure_classify.sh" 2>/dev/null || true
+PYBIN=""
+command -v sched_resolve_python >/dev/null 2>&1 && PYBIN=$(sched_resolve_python || true)
+[ -n "$PYBIN" ] || PYBIN="python3"
+N=$("$PYBIN" - "$SD" <<'PY'
 import json, sys, glob, os
 sd=sys.argv[1]
 done=set()
@@ -101,8 +108,15 @@ for f in glob.glob(os.path.join(sd,"alpha_search_route_*.json")):
 print(len(pend))
 PY
 )
+# ★계측 사망을 0 으로 삼키지 않는다 — 숫자가 아니면 skip 이 아니라 경보 후 중단.
+if command -v sched_assert_count >/dev/null 2>&1 && ! sched_assert_count "$N"; then
+  log "★pending 산정 실패 (N='$N', PYBIN=$PYBIN) — 계측 사망. 0 으로 간주하지 않고 중단."
+  scheduler_alert "alpha_queue" "count_measurement_failed" \
+    "pending 산정이 비숫자('$N') 반환 — python 인터프리터 해석 실패 추정(PYBIN=$PYBIN). 큐가 조용히 skip 되는 것을 막기 위해 중단. PATH 에 python312 부재 또는 Windows Store 스텁 가능."
+  exit 0
+fi
 N="${N:-0}"
-log "pending testable(큐+route−done): $N"
+log "pending testable(큐+route−done): $N (PYBIN=$(basename "$PYBIN"))"
 if [ "$N" -eq 0 ] && [ "${QVEST_ALPHA_QUEUE_FORCE:-0}" != "1" ]; then
   log "pending 0 — skip (FORCE=1로 강제)"; exit 0
 fi
