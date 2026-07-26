@@ -61,20 +61,67 @@ sched_failure_guidance() {
 
 # ── 연속 실패 카운트 (같은 사유 N회 연속 = 학습된 무시 방지용 에스컬레이션)
 #    경보 마커 파일명 규칙 {comp}_{reason}_{YYYYMMDD}.alert 를 세어 추정.
+#    ★전기간 개수가 아니라 **오늘부터 거꾸로 이어지는 연속 일수**를 센다.
+#      전기간 합계로 세면 이미 해소된 과거 실패(예: 07-19~24 401, 07-26 해소)가 영구히
+#      남아 가짜 격상 경보를 만든다 — "해소됐는데 3일째 실패" 같은 거짓말.
+#      연속이 끊기면(하루라도 마커 없음) 자동으로 0 이 되므로 별도 만료 처리가 불필요하다.
 sched_failure_streak() {
   local comp="${1:-}" reason="${2:-}" adir="${3:-}"
-  [ -z "$adir" ] || [ ! -d "$adir" ] && { echo 0; return 0; }
-  ls -1 "$adir"/${comp}_${reason}_*.alert 2>/dev/null | wc -l | tr -d ' '
+  { [ -z "$adir" ] || [ ! -d "$adir" ]; } && { echo 0; return 0; }
+  local n=0 i=0 d
+  while [ "$i" -lt 60 ]; do            # 최대 60일 역추적 (무한루프 방지)
+    d=$(date -d "-${i} day" +%Y%m%d 2>/dev/null) || break
+    if [ -f "$adir/${comp}_${reason}_${d}.alert" ]; then
+      n=$((n + 1))
+    elif [ "$i" -gt 0 ]; then
+      break                            # 오늘 마커는 아직 없을 수 있으니 i=0 만 관대하게
+    fi
+    i=$((i + 1))
+  done
+  echo "$n"
 }
 
 # ── 자격증명 사전 점검 (실행 前 감지 — 실패하고 나서 알리지 말고 미리 알린다)
 #    ★토큰 값은 절대 출력하지 않는다. 존재/빈값/만료시각만 판정.
 #    반환: ok / no_refresh_token / expired / missing / unknown
+# ── env 토큰 사용기간 추적 (2026-07-26 ② — 만료 선제 감지)
+#    setup-token 산출 토큰은 파일과 달리 expiresAt 이 없어 **만료를 미리 알 수 없다**.
+#    실패해야 알게 되는 구조라 8일 침묵이 재발할 수 있다 → 지문(sha256 앞 12자)으로
+#    "언제부터 이 토큰을 쓰고 있나"를 기록해 경과일로 사전 경고한다.
+#    ★토큰 값 자체는 저장하지 않는다. 지문만.
+SCHED_TOKEN_WARN_DAYS="${SCHED_TOKEN_WARN_DAYS:-75}"
+sched_token_age_days() {
+  local tok="${CLAUDE_CODE_OAUTH_TOKEN:-}"
+  [ -n "$tok" ] || { echo -1; return 0; }
+  local state="${QM_ROOT:-$HOME}/.cache/token_state.json"
+  local fp; fp=$(printf '%s' "$tok" | sha256sum 2>/dev/null | cut -c1-12)
+  [ -n "$fp" ] || { echo -1; return 0; }
+  local now; now=$(date +%s)
+  local prev_fp prev_ts
+  if [ -f "$state" ]; then
+    prev_fp=$(grep -oE '"fingerprint"[[:space:]]*:[[:space:]]*"[^"]*"' "$state" 2>/dev/null | sed -E 's/.*"([^"]*)"$/\1/')
+    prev_ts=$(grep -oE '"first_seen_epoch"[[:space:]]*:[[:space:]]*[0-9]+' "$state" 2>/dev/null | grep -oE '[0-9]+$')
+  fi
+  if [ "$prev_fp" != "$fp" ] || [ -z "${prev_ts:-}" ]; then
+    mkdir -p "$(dirname "$state")" 2>/dev/null
+    printf '{\n  "_doc": "env 토큰 사용기간 추적 — 값 미저장, sha256 앞 12자 지문만. 생성 _sched_failure_classify.sh",\n  "fingerprint": "%s",\n  "first_seen_epoch": %s,\n  "first_seen": "%s"\n}\n' \
+      "$fp" "$now" "$(date '+%Y-%m-%d %H:%M:%S')" > "$state" 2>/dev/null
+    echo 0; return 0
+  fi
+  echo $(( (now - prev_ts) / 86400 ))
+}
+
 sched_check_credentials() {
   # ★환경변수 인증이 최우선 — 파일 저장소를 통째로 우회한다(claude.exe 가 두 변수 모두 지원, 실측).
   #   이 분기가 없으면 setup-token 을 env 로 쓰는 정상 구성에서 낡은 파일만 보고 오차단한다.
   #   (2026-07-26: 본 함수 자체의 결함이었음 — 검사 대상을 잘못 잡는 계통의 재발)
-  [ -n "${CLAUDE_CODE_OAUTH_TOKEN:-}" ] && { echo "ok"; return 0; }
+  if [ -n "${CLAUDE_CODE_OAUTH_TOKEN:-}" ]; then
+    local age; age=$(sched_token_age_days)
+    if [ "${age:-0}" -ge "$SCHED_TOKEN_WARN_DAYS" ] 2>/dev/null; then
+      echo "ok_token_aging"; return 0    # 통과시키되 갱신 권고 (차단 아님)
+    fi
+    echo "ok"; return 0
+  fi
   [ -n "${ANTHROPIC_API_KEY:-}" ]       && { echo "ok"; return 0; }
   local cred="${CLAUDE_CREDENTIALS_PATH:-${CLAUDE_CONFIG_DIR:+$CLAUDE_CONFIG_DIR/.credentials.json}}"
   cred="${cred:-$HOME/.claude/.credentials.json}"
@@ -153,10 +200,18 @@ sched_failure_annotate() {
 #    도훈 텔레그램에 경보가 갔다. 판정 자체는 옳았으나 **수신자에게는 오경보**다.
 #    → 대화형 TTY 에서 돈 실행은 마커만 남기고 발송을 생략한다(진단 정보는 보존).
 #    강제: QVEST_ALERT_FORCE=1 (수동인데도 보내고 싶을 때) / QVEST_NO_ALERT=1 (항상 억제)
+# 대화형(사람이 직접 실행) 판별 — 별도 함수로 분리해 억제 분기를 시험 가능하게 둔다.
+#   (pty 를 만들 수 없는 환경에서도 이 함수를 덮어써 분기 자체를 검증할 수 있음)
+sched_is_interactive() { [ -t 0 ] || [ -t 1 ]; }
+
 sched_alert_should_send() {
   [ "${QVEST_NO_ALERT:-0}" = "1" ] && return 1
   [ "${QVEST_ALERT_FORCE:-0}" = "1" ] && return 0
-  [ -t 0 ] || [ -t 1 ] && return 1     # TTY 결합 = 사람이 직접 실행 → 발송 생략
+  # ⚠ `[ A ] || [ B ] && return 1` 은 (A||B)&&C 로 묶여 돌긴 하나 우선순위 의존이라 오해하기 쉽다.
+  #   이 분기가 "진짜 경보가 나가느냐"를 가르므로 명시 if 로 쓴다.
+  if sched_is_interactive; then
+    return 1                            # TTY 결합 = 사람이 직접 실행 → 발송 생략
+  fi
   return 0
 }
 
