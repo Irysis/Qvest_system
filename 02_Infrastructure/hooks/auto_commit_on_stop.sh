@@ -3,7 +3,10 @@
 if [ -z "${QVEST_PY_BIN:-}" ]; then
   QVEST_PY_BIN="${QVEST_PY:-}"; QVEST_PY_BIN="${QVEST_PY_BIN//\//}"
   { [ -n "$QVEST_PY_BIN" ] && [ -x "$QVEST_PY_BIN" ]; } || QVEST_PY_BIN="/c/Users/99922/OneDrive/Quant_Module_Moltbot/.venv_qvest_ml/Scripts/python.exe"
-  [ -x "$QVEST_PY_BIN" ] || QVEST_PY_BIN="$(command -v python.exe 2>/dev/null || echo python3)"
+  # (2026-07-26 v2) 최후 폴백 bare python3 제거 — Windows Store 스텁이 실행돼 "Python" 스팸을
+  # 남기던 잔여 트랩(구 로그 /tmp/auto_commit_on_stop.log 2026-07-03 실증). 미가용이면 빈 값 →
+  # _json_msg 가 bash-only 이스케이프로 폴백.
+  [ -x "$QVEST_PY_BIN" ] || QVEST_PY_BIN="$(command -v python.exe 2>/dev/null || true)"
   export QVEST_PY_BIN
 fi
 #==============================================================================
@@ -15,12 +18,17 @@ fi
 # 동작:
 #   1. secret 스캔 (Telegram token / API key / .env staging)
 #   2. git add -A (gitignore 자동 적용)
-#   3. 신규 파일 >100개면 코어 경로만 선별 커밋 + 나머지 skip (HYG-01 2026-07-03,
-#      구 전체-abort가 973회 연속 abort 유발 → 강등. 마커: /tmp/auto_commit_abort_marker.txt)
+#   3. 대량-신규 격리 밸브 v2 (2026-07-26 근본 재설계 — 본문 주석 참조):
+#      단일 디렉터리에 신규(A) > BULK_DIR_THRESHOLD 집중 시 그 디렉터리의 A만 unstage.
+#      M/D는 절대 격리하지 않음. 원장 .cache/auto_commit_quarantine.json → bootstrap §4h-3 WARN.
+#      (v1 HYG-01 2026-07-03: NEW>100 → 코어경로만 — 누적 백로그를 재는 측정 결함으로 영구
+#       개방(CORE_ONLY_STAGED 171회)·코어 밖 M/D 영구 미커밋 → v2로 대체)
 #   4. commit with [auto-commit] prefix + timestamp
 #
 # 로그: /tmp/auto_commit.log
 # 우회 env: QVEST_SKIP_AUTO_COMMIT=1
+# 테스트 오버라이드 (08_Tests/hooks/test_auto_commit_valve.sh 전용):
+#   QVEST_AC_PROJECT / QVEST_AC_LOG / QVEST_AC_MARKER / QVEST_AC_BULK_THRESHOLD
 #==============================================================================
 
 trap 'echo "{}"; exit 0' ERR
@@ -30,8 +38,22 @@ set -u
 export PYTHONUTF8=1
 
 INPUT=$(cat 2>/dev/null || echo '{}')
-LOG="/tmp/auto_commit.log"
+LOG="${QVEST_AC_LOG:-/tmp/auto_commit.log}"
+AC_MARKER="${QVEST_AC_MARKER:-/tmp/auto_commit_abort_marker.txt}"
 TS="$(date '+%Y-%m-%d %H:%M:%S')"
+
+# ─── additionalContext JSON 이스케이프 ───────────────────────────────
+# python 가용 시 surrogate-scrub 경로(v8.1.2 API 400 수리 유지), 미가용 시 bash-only 폴백.
+# bare python3(Windows Store 스텁)는 어떤 경로에서도 실행하지 않는다.
+_json_msg() {
+  local s="$1"
+  if [ -n "${QVEST_PY_BIN:-}" ] && [ -x "$QVEST_PY_BIN" ]; then
+    printf '%s' "$s" | "$QVEST_PY_BIN" -c "import sys,json; t=sys.stdin.buffer.read().decode('utf-8','replace'); print(json.dumps(''.join(ch if not(0xD800<=ord(ch)<=0xDFFF) else '?' for ch in t)))" 2>/dev/null && return 0
+  fi
+  # 자작 메시지(ASCII+한글)라 surrogate 없음 전제 — 최소 이스케이프만.
+  s=${s//\\/\\\\}; s=${s//\"/\\\"}; s=${s//$'\n'/\\n}; s=${s//$'\r'/}; s=${s//$'\t'/\\t}
+  printf '"%s"' "$s"
+}
 
 # 우회 env
 if [ "${QVEST_SKIP_AUTO_COMMIT:-0}" = "1" ]; then
@@ -39,7 +61,9 @@ if [ "${QVEST_SKIP_AUTO_COMMIT:-0}" = "1" ]; then
   echo '{}'; exit 0
 fi
 
-PROJECT=$(ls -d /c/Users/99922/OneDrive/Quant_Module_Moltbot /mnt/c/Users/99922/OneDrive/Quant_Module_Moltbot /g/Quant_Module_Moltbot /mnt/g/Quant_Module_Moltbot /mnt/c/Users/*/OneDrive/바탕\ 화면/Quant_Module_Moltbot 2>/dev/null | head -1)
+# QVEST_AC_PROJECT = 테스트 sandbox 오버라이드 (미설정 시 기존 후보 탐색 그대로)
+PROJECT="${QVEST_AC_PROJECT:-}"
+[ -n "$PROJECT" ] || PROJECT=$(ls -d /c/Users/99922/OneDrive/Quant_Module_Moltbot /mnt/c/Users/99922/OneDrive/Quant_Module_Moltbot /g/Quant_Module_Moltbot /mnt/g/Quant_Module_Moltbot /mnt/c/Users/*/OneDrive/바탕\ 화면/Quant_Module_Moltbot 2>/dev/null | head -1)
 if [ -z "$PROJECT" ] || [ ! -e "$PROJECT/.git" ]; then
   echo '{}'; exit 0
 fi
