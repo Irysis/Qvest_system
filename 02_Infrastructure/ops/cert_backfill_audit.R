@@ -71,12 +71,48 @@ CHARTER_REF <- "v1.2 §10 (backfilled by cert_backfill_audit.R)"
 #==============================================================================
 # 1. Lineage discovery — str_id로부터 모든 관련 WT 발견
 #==============================================================================
+#──────────────────────────────────────────────────────────────────────────────
+# (2026-07-26 CBA-01 수리, probe② 감사 확정) 이 파일의 resolver 는 형제 파일
+#   measurement_basis_audit.R 이 v1.12(07-24)에서 고친 **절단 버그를 그대로 갖고 있었다**.
+#   str_id_root <- sub("(_WT|_Iter|_M|_S|_v).*$", "", str_id) 는 현행 북
+#   'STR_1715_on_M4gAE_R05_noLayer4_PG2' 를 첫 '_M' 에서 잘라 'STR_1715_on' 으로 만들고,
+#   substring 매칭이 terminal ga str_id 와 어긋난다.
+#   ★실측 확정(2026-07-26): `Admitted IDs: STR_1715_on_M4gAE_R05_noLayer4_PG2` 인데
+#     `Targets: 0 WT(s)` — coherence 가 DRIFTED 로 떨어지는 순간 --auto 백필은 0건 처리
+#     후 "0 cert(s) issued" 만 출력하고, bootstrap WARN 이 권하는 --manual 도 같은
+#     resolver 라 똑같이 0건. 즉 **자동수리 계층 전체가 현행 북에 대해 구조적 no-op** 였다.
+#   수리: 수리된 resolver(.lineage_anchor / .lineage_related — 토큰 경계 매칭)를
+#   재사용한다. 그 함수들은 08_Tests/portfolio/test_lineage_resolver.R(24 assert,
+#   위반 주입 5축)이 이미 지키고 있어 여기서 별도 사본을 만들지 않는다.
+#   ※ 형제 파일을 source 하면 CLI entrypoint 는 commandArgs(trailingOnly)>0 가드로
+#     발화하지 않는다(확인). 로드 실패 시엔 legacy 절단 root 로 폴백하되 로그를 남긴다.
+#──────────────────────────────────────────────────────────────────────────────
+.cba_load_resolver <- function() {
+  if (exists(".lineage_related", inherits = TRUE)) return(TRUE)
+  mba <- file.path(PROJECT_ROOT, "02_Infrastructure/portfolio/measurement_basis_audit.R")
+  if (!file.exists(mba)) return(FALSE)
+  ok <- tryCatch({ source(mba); exists(".lineage_related", inherits = TRUE) },
+                 error = function(e) FALSE)
+  isTRUE(ok)
+}
+
 audit_str_lineage <- function(str_id, wt_root) {
   wt_dirs <- list.dirs(wt_root, full.names = TRUE, recursive = FALSE)
   wt_dirs <- wt_dirs[grepl("/WT-", wt_dirs)]
 
-  # str_id 정규화 (suffix 제거: STR_1715_WT016_Iter31_GridBestProd → STR_1715)
+  # legacy 절단 root — 비-STR 계열 fallback 전용 (STR-family 는 anchor 가 대체)
   str_id_root <- sub("(_WT|_Iter|_M|_S|_v).*$", "", str_id)
+  .have_resolver <- .cba_load_resolver()
+  if (!.have_resolver) {
+    log_msg(sprintf(paste0("WARN: lineage resolver 로드 실패 — legacy 절단 root('%s') 폴백. ",
+                           "오버레이 접미 id 는 매칭 실패 가능(CBA-01 재발)"), str_id_root))
+  }
+  # 계보 일치 판정 단일 진입점: resolver 가용 시 토큰경계 anchor, 아니면 구 substring
+  .lin_match <- function(candidate) {
+    if (!nzchar(as.character(candidate %||% ""))) return(FALSE)
+    if (.have_resolver) return(isTRUE(.lineage_related(str_id, candidate, str_id_root)))
+    grepl(str_id, candidate, fixed = TRUE) || grepl(str_id_root, candidate, fixed = TRUE)
+  }
 
   matched <- list()
   for (wd in wt_dirs) {
