@@ -135,8 +135,7 @@ SUITES=(
   #   무보고였다: 디렉토리형은 파일명 월말로 lag=0(내용 미열람), 단일파일은 mtime 만.
   #   A축이 동결·코호트 결손을 주입하고, D축이 판정부를 무력화해 A가 통과로 뒤집히는지
   #   대조한다 — "경보 0건"이 건강인지 계측 사망인지는 그렇게만 갈린다.
-  # [TEMP-VIOLATION-INJECTION 2026-07-26 임무V] 아래 1줄을 일시 제거해 --check 경보 실효 확인 중. 즉시 원복 예정.
-  # "08_Tests/data/test_cache_content_reach.R"
+  "08_Tests/data/test_cache_content_reach.R"
 )
 
 _suite_cmd() {
