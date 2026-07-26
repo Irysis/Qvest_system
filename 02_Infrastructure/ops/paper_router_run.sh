@@ -42,9 +42,9 @@ scheduler_alert(){
     echo "log=$LOG"
   } > "$marker"
   log "alert marker 기록: $marker"
-  # (2026-07-26) 수동 실행 오경보 차단 — TTY 결합이면 마커만 남기고 텔레그램 생략.
+  # (2026-07-26) 무인 선언(QVEST_UNATTENDED=1)이 없는 실행은 마커만 남기고 텔레그램 생략.
   if command -v sched_alert_should_send >/dev/null 2>&1 && ! sched_alert_should_send; then
-    log "alert telegram skip: 수동 실행(TTY) — 마커만 보존. 발송하려면 QVEST_ALERT_FORCE=1"
+    log "alert telegram skip: 무인 선언 없음 — 마커만 보존. 발송하려면 QVEST_ALERT_FORCE=1"
     return 0
   fi
   local RS_BIN
@@ -168,6 +168,12 @@ timeout 3000 "$CLAUDE_BIN" -p "$PROMPT_TEXT" \
   --dangerously-skip-permissions >> "$LOG" 2>&1
 rc=$?
 log "claude -p exit=$rc"
+# (2026-07-26) 성공하면 해당 컴포넌트의 미해소 마커를 아카이브 — 사유 해소 후에도 마커가
+#   남으면 다음 실패가 과거와 이어져 streak 을 부풀리고 가짜 격상을 낸다(삭제 아닌 이동).
+if [ "$rc" -eq 0 ] && command -v sched_mark_resolved >/dev/null 2>&1; then
+  _mv=$(sched_mark_resolved "paper_router" "$BASE/.cache/scheduler_alerts")
+  [ -n "${_mv:-}" ] && log "해소: 미해소 마커 ${_mv}건 _resolved/ 로 아카이브"
+fi
 # v3 침묵 정지 경보화: 기존엔 실패가 로그에만 남고 exit 0 종료(07-08 spend-limit 5일 침묵 정지).
 if [ "$rc" -ne 0 ]; then
   # (2026-07-25) 사유 판정 공통 헬퍼 이관 — auth_expired 를 spend_limit 과 분리(조치가 정반대).

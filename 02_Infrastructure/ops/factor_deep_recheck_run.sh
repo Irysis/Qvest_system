@@ -90,6 +90,12 @@ timeout 3000 "$CLAUDE_BIN" -p "$PROMPT_TEXT" \
   --dangerously-skip-permissions >> "$LOG" 2>&1
 rc=$?
 log "claude -p exit=$rc"
+# (2026-07-26) 성공하면 해당 컴포넌트의 미해소 마커를 아카이브 — 사유 해소 후에도 마커가
+#   남으면 다음 실패가 과거와 이어져 streak 을 부풀리고 가짜 격상을 낸다(삭제 아닌 이동).
+if [ "$rc" -eq 0 ] && command -v sched_mark_resolved >/dev/null 2>&1; then
+  _mv=$(sched_mark_resolved "factor_recheck" "$BASE/.cache/scheduler_alerts")
+  [ -n "${_mv:-}" ] && log "해소: 미해소 마커 ${_mv}건 _resolved/ 로 아카이브"
+fi
 # (2026-07-25) 사유 분류 + 경보 배선. 종전엔 사유는 판정하면서 발송이 없어 실패가 조용히 묻혔다
 #   (alpha/paper 는 경보 보유, 이 스크립트만 미보유 — 07-25 전수 점검서 적발).
 if [ "$rc" -ne 0 ]; then

@@ -196,6 +196,25 @@ sched_failure_annotate() {
   printf '자동복구=%s | 연속=%s | %s%s' "$auto" "${streak:-0}" "$esc" "$guide"
 }
 
+# ── 성공 시 해당 컴포넌트의 미해소 마커를 아카이브 (2026-07-26)
+#    왜 필요한가: streak 은 마커 파일의 날짜 연속성으로 센다. 사유가 해소돼도 마커가 남으면
+#    다음 실패가 과거와 이어져 "2일 연속"으로 잘못 세고 가짜 격상을 낸다.
+#    ★삭제가 아니라 이동 — 사고 이력은 보존해야 사후 추적이 된다.
+#    호출 지점 = 잡이 실제로 성공한 직후(exit 0 경로).
+sched_mark_resolved() {
+  local comp="${1:-}" adir="${2:-}"
+  [ -n "$comp" ] || return 0
+  [ -n "$adir" ] && [ -d "$adir" ] || return 0
+  local arch="$adir/_resolved"; mkdir -p "$arch" 2>/dev/null || return 0
+  local n=0 f
+  for f in "$adir/${comp}_"*.alert; do
+    [ -f "$f" ] || continue
+    mv -f "$f" "$arch/" 2>/dev/null && n=$((n + 1))
+  done
+  [ "$n" -gt 0 ] && printf '%s\n' "$n"
+  return 0
+}
+
 # ── 경보 발행 (마커 + 텔레그램). alpha/paper 의 검증된 scheduler_alert 와 동일 계약.
 #    ★기존 2곳의 자체 정의는 건드리지 않는다(작동 중) — 미보유 스크립트만 이 경로를 쓴다.
 #    caller 는 BASE / LOG / TODAY 를 정의해 두어야 한다.

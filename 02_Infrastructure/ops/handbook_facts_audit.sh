@@ -31,6 +31,9 @@ for a in "$@"; do [ "$a" = "--diff" ] && DO_DIFF=1; done
 PY="${QVEST_PY:-}"
 [ -z "$PY" ] && [ -x "$PROJECT/.venv_qvest_ml/Scripts/python.exe" ] && PY="$PROJECT/.venv_qvest_ml/Scripts/python.exe"
 
+# JSON 문자열 안전화 — 이 필드는 파일명 목록(콤마 구분)이라 역슬래시·따옴표가 나올 일이 없다.
+# 이스케이프를 sed 로 짜다 두 번 깨뜨렸으므로(2026-07-26) 아예 위험 문자를 제거하는 쪽이 안전하다.
+jesc() { printf '%s' "${1:-}" | tr -d '"\\' | tr -d '\r\n'; }
 n() { printf '%s' "${1:-0}" | tr -d ' \n\r'; }
 # JSON 배열/객체 엔트리 개수 (파이썬 없으면 0)
 jcount() { # $1=file $2=key(옵션, 없으면 최상위 배열)
@@ -137,6 +140,20 @@ AGE_DAYS=0; [ -n "${FIRST_CT:-}" ] && AGE_DAYS=$(( ($(date +%s) - FIRST_CT) / 86
 COMMITS=$(git -C "$PROJECT" rev-list --count HEAD 2>/dev/null || echo 0)
 LIVE_TRACKS=$(ls -d "$PROJECT"/06_Registry/live_track/*/ 2>/dev/null | wc -l); LIVE_TRACKS=$(n "$LIVE_TRACKS")
 
+# ── 무인 선언 누락 감시 (2026-07-26)
+#    경보 발송은 QVEST_UNATTENDED=1 선언이 있는 실행만 인정한다(allow-list).
+#    .bat 에서 이 export 가 빠지면 **그 잡의 진짜 경보가 조용히 죽는다** — 억제 방향 결함이라
+#    아무 증상 없이 지나간다. 누락 수를 상시 계측해 회귀를 잡는다.
+BAT_TOTAL=0; BAT_MISSING=0; BAT_MISSING_LIST=""
+for _b in "$PROJECT"/02_Infrastructure/ops/scheduler/*.bat; do
+  [ -f "$_b" ] || continue
+  BAT_TOTAL=$((BAT_TOTAL + 1))
+  if ! grep -qi 'QVEST_UNATTENDED' "$_b" 2>/dev/null; then
+    BAT_MISSING=$((BAT_MISSING + 1))
+    BAT_MISSING_LIST="${BAT_MISSING_LIST:+$BAT_MISSING_LIST,}$(basename "$_b")"
+  fi
+done
+
 mkdir -p "$(dirname "$OUT")"
 cat > "$OUT" <<JSON
 {
@@ -173,7 +190,10 @@ cat > "$OUT" <<JSON
       "hygiene_warnings": $HYG_WARN,
       "stranded_lost": $STR_LOST,
       "stranded_collisions": $STR_COLL,
-      "stranded_stale_worktrees": $STR_STALE
+      "stranded_stale_worktrees": $STR_STALE,
+      "scheduler_bats": $BAT_TOTAL,
+      "scheduler_bats_missing_unattended": $BAT_MISSING,
+      "scheduler_bats_missing_list": "$(jesc "$BAT_MISSING_LIST")"
     }
   }
 }
