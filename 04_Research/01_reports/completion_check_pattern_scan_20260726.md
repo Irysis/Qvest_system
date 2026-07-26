@@ -38,23 +38,25 @@ P1의 원문 기전: *"달력이 끝났나"와 "이 파일이 그 달을 끝까�
 
 `✗` = 동형 결함 / `○` = 정합(대조군)
 
-| ID | 지점 (파일:라인) | 현재 판정 기준 | 형 | 판정 | 실현 |
-|---|---|---|---|---|---|
-| P2-01 | `data/daily_refresh.sh:337` · `data/dart_daily_incremental.R:33,47` | `years = as.integer(format(Sys.Date(), "%Y"))` | A | ✗ | **실현** |
-| P2-02 | `data/cache_freshness_audit.R:110-117` | 파일명 YYYYMM → 월말 → `data_lag = max(0, today - m_end)` | B | ✗ | **실현** |
-| P2-03 | `data/cache_freshness_audit.R:127-128,150` | `date_col` 없으면 `lag <- mtime_lag` | C | ✗ | **실현** |
-| P2-04 | `factor_db/factor_db_builder.R:1192-1207` | `setdiff(gap_yms, cached_ym)` + `last_first <- max(cached_ym)` | B·D | ✗ | 잠재 |
-| P2-05 | `factor_db/factor_db_connector.R:189-202` | 요청 sig_date의 YYYYMM 파일을 무검증 반환, 부재 시 `max(ym_avail <= ym_tag)` | B | ✗ | 잠재 |
-| P2-06 | `ramp/factor_validation.R:27-36` | `asof_close(d) = max(rawdata[Date <= d]$Date)` — 상한 없음 | A | ✗ | 잠재 |
-| P2-07 | `data/refresh_nonreturn_sources.py:219-223,236` | 이번 달 파일명 스냅샷 존재 → no-op | B | ✗ | 잠재 |
-| P2-08 | `data/daily_refresh.sh:331,433,459` (+ 락 `25-33`) | `DAY_OF_MONTH="01"` / `DAY_OF_WEEK="1"` — 캐치업 없음 | A | ✗ | 정황 |
-| P2-09 | `data/trading_calendar.R:295-308` | `hour >= 16 && today %in% cal$Date` → 종가 확정 | A | ✗ | 잠재 |
-| P2-10 | `data/krx_build_rawdata.R:55,64` | `cutoff <- Sys.Date() - 60L` 밖은 검사 없음 | A | ✗ | 과거 실사례 |
-| P2-11 | `data/trading_calendar.R:232-240` | `bm_max > cal_max`일 때만 재빌드 | D | ✗ | 잠재 |
-| P2-12 | `data/incremental_update_file.R:37-57,524` | mtime 북마크를 성공 여부와 무관하게 전진 | C | ✗ | 잠재 |
-| P2-13 | `data/incremental_update_file.R:206-212,237` | 12개 메트릭의 증분 창을 `eps_1y` 하나의 max로 결정 | D | ✗ | 잠재 |
-| P2-14 | `data/daily_refresh.sh:99` | `--start_date "$(date -d '10 days ago')"` 고정창 | A | ✗ | 잠재 |
-| P2-15 | `data/incremental_cache_update.R:32-36,43,95,129,151` | `.xlsx_newer()` = mtime(xlsx) > mtime(parquet) | C | ✗ | 잠재 |
+> **수리 반영 (2026-07-26 밤)**: 아래 표의 판정은 **스캔 시점(07-26 낮)** 기준 원문입니다. 이후 P2-01·02·03이 수리·검증되었습니다 — 현행 상태는 **§8 수리 반영 현황**을 정본으로 보십시오.
+
+| ID | 지점 (파일:라인) | 현재 판정 기준 | 형 | 판정 | 실현 | 수리 |
+|---|---|---|---|---|---|---|
+| P2-01 | `data/daily_refresh.sh:337` · `data/dart_daily_incremental.R:33,47` | `years = as.integer(format(Sys.Date(), "%Y"))` | A | ✗ | **실현** | ✅ 07-26 |
+| P2-02 | `data/cache_freshness_audit.R:110-117` | 파일명 YYYYMM → 월말 → `data_lag = max(0, today - m_end)` | B | ✗ | **실현** | ✅ 07-26 |
+| P2-03 | `data/cache_freshness_audit.R:127-128,150` | `date_col` 없으면 `lag <- mtime_lag` | C | ✗ | **실현** | ✅ 07-26 |
+| P2-04 | `factor_db/factor_db_builder.R:1192-1207` | `setdiff(gap_yms, cached_ym)` + `last_first <- max(cached_ym)` | B·D | ✗ | 잠재 | ❌ 미수리 |
+| P2-05 | `factor_db/factor_db_connector.R:189-202` | 요청 sig_date의 YYYYMM 파일을 무검증 반환, 부재 시 `max(ym_avail <= ym_tag)` | B | ✗ | 잠재 | ❌ 미수리 |
+| P2-06 | `ramp/factor_validation.R:27-36` | `asof_close(d) = max(rawdata[Date <= d]$Date)` — 상한 없음 | A | ✗ | 잠재 | ❌ 미수리 |
+| P2-07 | `data/refresh_nonreturn_sources.py:219-223,236` | 이번 달 파일명 스냅샷 존재 → no-op | B | ✗ | 잠재 | ❌ 미수리 |
+| P2-08 | `data/daily_refresh.sh:331,433,459` (+ 락 `25-33`) | `DAY_OF_MONTH="01"` / `DAY_OF_WEEK="1"` — 캐치업 없음 | A | ✗ | 정황 | ❌ 미수리 |
+| P2-09 | `data/trading_calendar.R:295-308` | `hour >= 16 && today %in% cal$Date` → 종가 확정 | A | ✗ | 잠재 | ❌ 미수리 |
+| P2-10 | `data/krx_build_rawdata.R:55,64` | `cutoff <- Sys.Date() - 60L` 밖은 검사 없음 | A | ✗ | 과거 실사례 | ❌ 미수리 |
+| P2-11 | `data/trading_calendar.R:232-240` | `bm_max > cal_max`일 때만 재빌드 | D | ✗ | 잠재 | ❌ 미수리 |
+| P2-12 | `data/incremental_update_file.R:37-57,524` | mtime 북마크를 성공 여부와 무관하게 전진 | C | ✗ | 잠재 | ❌ 미수리 |
+| P2-13 | `data/incremental_update_file.R:206-212,237` | 12개 메트릭의 증분 창을 `eps_1y` 하나의 max로 결정 | D | ✗ | 잠재 | ❌ 미수리 |
+| P2-14 | `data/daily_refresh.sh:99` | `--start_date "$(date -d '10 days ago')"` 고정창 | A | ✗ | 잠재 | ❌ 미수리 |
+| P2-15 | `data/incremental_cache_update.R:32-36,43,95,129,151` | `.xlsx_newer()` = mtime(xlsx) > mtime(parquet) | C | ✗ | 잠재 | ❌ 미수리 |
 | — | `data/krx_build_rawdata.R:33-49` `krx_detect_gap()` | 저장 데이터 max Date vs 목표일 | — | ○ | — |
 | — | `data/krx_build_rawdata.R:55-76` `krx_detect_interior_gaps()` (집합 비교부) | 기대 거래일 집합 `setdiff` 실측 | — | ○ | — |
 | — | `data/cache_freshness_audit.R:53-56` `.trading_lag()` | 캘린더 커버리지 밖이면 fallback (lag 증가 안 함) | — | ○ | — |
