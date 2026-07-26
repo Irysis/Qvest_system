@@ -135,9 +135,7 @@ audit_str_lineage <- function(str_id, wt_root) {
         dl <- fp$deployment_lineage %||% list()
         al <- fp$alpha_lineage_chain %||% list()
         lineage_text <- paste(unlist(dl), unlist(al), collapse = " ")
-        if (nchar(lineage_text) > 0 &&
-            (grepl(str_id, lineage_text, fixed = TRUE) ||
-             grepl(str_id_root, lineage_text, fixed = TRUE))) {
+        if (nchar(lineage_text) > 0 && .lin_match(lineage_text)) {
           fp_lineage_match <- TRUE
         }
       }
@@ -148,13 +146,10 @@ audit_str_lineage <- function(str_id, wt_root) {
     if (identical(ga_str_id, str_id)) {
       is_match <- TRUE
       role <- ga$wt_type %||% "unknown"
-    } else if (nchar(ga_str_id) > 0 &&
-               (grepl(str_id, ga_str_id, fixed = TRUE) ||
-                grepl(str_id_root, ga_str_id, fixed = TRUE))) {
+    } else if (nchar(ga_str_id) > 0 && .lin_match(ga_str_id)) {
       is_match <- TRUE
       role <- "lineage_partial_match"
-    } else if (grepl(str_id, discovery_of, fixed = TRUE) ||
-               grepl(str_id_root, discovery_of, fixed = TRUE)) {
+    } else if (.lin_match(discovery_of)) {
       is_match <- TRUE
       role <- "discovery_or_upgrade_via_lineage"
     } else if (fp_lineage_match) {

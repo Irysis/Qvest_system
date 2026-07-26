@@ -1,10 +1,10 @@
 {
-  "ran_at": "2026-07-26T19:20:25+0900",
-  "n_total": 48,
+  "ran_at": "2026-07-26T19:43:34+0900",
+  "n_total": 52,
   "summary": {
-    "OK": 38,
-    "WARN": 10,
-    "CRITICAL": 0
+    "OK": 49,
+    "WARN": 0,
+    "CRITICAL": 3
   },
   "results": [
     {
@@ -208,14 +208,14 @@
       "schedule": "monthly",
       "max_lag_days": 35,
       "registered": true,
-      "mtime_lag": 26,
+      "mtime_lag": 0,
       "data_lag": null,
-      "lag_used": 26,
-      "lag_basis": "mtime(undeclared)",
-      "status": "NO_COVERAGE_CHECK",
-      "severity": "WARN",
-      "reach_declared": "undeclared",
-      "note": "date_col / coverage_check / no_content_check 중 어느 것도 선언되지 않음 — mtime 만으로 판정 중이라 내용 결손(빈 파일·잘린 파일·과거만 담긴 파일)을 구조적으로 감지 못 함. registry 선언 필요"
+      "lag_used": 0,
+      "lag_basis": "mtime(+coverage_check)",
+      "status": "FRESH",
+      "severity": "OK",
+      "reach_declared": "coverage_check",
+      "note": "신선도는 mtime 축, 내용 도달은 <path>::coverage 항목이 판정"
     },
     {
       "path": ".cache/dart/dart_raw_quarterly.parquet",
@@ -226,11 +226,11 @@
       "mtime_lag": 11,
       "data_lag": null,
       "lag_used": 11,
-      "lag_basis": "mtime(undeclared)",
-      "status": "NO_COVERAGE_CHECK",
-      "severity": "WARN",
-      "reach_declared": "undeclared",
-      "note": "date_col / coverage_check / no_content_check 중 어느 것도 선언되지 않음 — mtime 만으로 판정 중이라 내용 결손(빈 파일·잘린 파일·과거만 담긴 파일)을 구조적으로 감지 못 함. registry 선언 필요"
+      "lag_basis": "mtime(+coverage_check)",
+      "status": "FRESH",
+      "severity": "OK",
+      "reach_declared": "coverage_check",
+      "note": "신선도는 mtime 축, 내용 도달은 <path>::coverage 항목이 판정"
     },
     {
       "path": ".cache/dart/insider_trades.parquet",
@@ -256,11 +256,11 @@
       "mtime_lag": 26,
       "data_lag": null,
       "lag_used": 26,
-      "lag_basis": "mtime(undeclared)",
-      "status": "NO_COVERAGE_CHECK",
-      "severity": "WARN",
-      "reach_declared": "undeclared",
-      "note": "date_col / coverage_check / no_content_check 중 어느 것도 선언되지 않음 — mtime 만으로 판정 중이라 내용 결손(빈 파일·잘린 파일·과거만 담긴 파일)을 구조적으로 감지 못 함. registry 선언 필요"
+      "lag_basis": "mtime(+coverage_check)",
+      "status": "FRESH",
+      "severity": "OK",
+      "reach_declared": "coverage_check",
+      "note": "신선도는 mtime 축, 내용 도달은 <path>::coverage 항목이 판정"
     },
     {
       "path": ".cache/fundamental_merged.parquet",
@@ -271,11 +271,11 @@
       "mtime_lag": 1,
       "data_lag": null,
       "lag_used": 1,
-      "lag_basis": "mtime(undeclared)",
-      "status": "NO_COVERAGE_CHECK",
-      "severity": "WARN",
-      "reach_declared": "undeclared",
-      "note": "date_col / coverage_check / no_content_check 중 어느 것도 선언되지 않음 — mtime 만으로 판정 중이라 내용 결손(빈 파일·잘린 파일·과거만 담긴 파일)을 구조적으로 감지 못 함. registry 선언 필요"
+      "lag_basis": "mtime(+coverage_check)",
+      "status": "FRESH",
+      "severity": "OK",
+      "reach_declared": "coverage_check",
+      "note": "신선도는 mtime 축, 내용 도달은 <path>::coverage 항목이 판정"
     },
     {
       "path": ".cache/ic_matrix_expanding.parquet",
@@ -311,19 +311,18 @@
       "path": ".cache/factor_db/",
       "tier": 2,
       "schedule": "daily",
-      "max_lag_days": 40,
+      "max_lag_days": 14,
       "registered": true,
       "latest_file": "factor_db_202607.parquet",
       "n_files": 439,
-      "lag_basis": "filename_month_end_estimate",
-      "lag_note_worse_of": "mtime_lag(1) > data_lag(0) — mtime 축 채택(동결 감지). 구판은 data_lag 를 써서 이 상태를 신선으로 보고했다",
+      "content_max_date": "2026-07-24",
+      "lag_basis": "content",
       "mtime_lag": 1,
-      "data_lag": 0,
-      "lag_used": 1,
-      "status": "FILENAME_ESTIMATE_ONLY",
-      "severity": "WARN",
-      "reach_declared": "undeclared",
-      "note": "파일명 YYYYMM 월말 추정 lag — 내용 미열람 (당월 파일이 어느 날짜에 얼어붙어도 lag=0). registry 에 date_col 선언 필요"
+      "data_lag": 2,
+      "lag_used": 2,
+      "status": "FRESH",
+      "severity": "OK",
+      "reach_declared": "date_col"
     },
     {
       "path": ".cache/factor_db_daily/",
@@ -423,14 +422,15 @@
       "schedule": "daily",
       "max_lag_days": 7,
       "registered": true,
+      "content_max_date": "2026-07-31",
+      "lag_basis": "content+trading_days",
+      "lag_note_worse_of": "mtime_lag(3) > data_lag(0) — mtime 축 채택(동결 감지). 구판은 data_lag 를 써서 이 상태를 신선으로 보고했다",
       "mtime_lag": 3,
-      "data_lag": null,
-      "lag_used": 3,
-      "lag_basis": "mtime(undeclared)",
-      "status": "NO_COVERAGE_CHECK",
-      "severity": "WARN",
-      "reach_declared": "undeclared",
-      "note": "date_col / coverage_check / no_content_check 중 어느 것도 선언되지 않음 — mtime 만으로 판정 중이라 내용 결손(빈 파일·잘린 파일·과거만 담긴 파일)을 구조적으로 감지 못 함. registry 선언 필요"
+      "data_lag": 0,
+      "lag_used": 1,
+      "status": "FRESH",
+      "severity": "OK",
+      "reach_declared": "date_col"
     },
     {
       "path": ".cache/fundamental_dart_quarterly.parquet",
@@ -441,11 +441,11 @@
       "mtime_lag": 0,
       "data_lag": null,
       "lag_used": 0,
-      "lag_basis": "mtime(undeclared)",
-      "status": "NO_COVERAGE_CHECK",
-      "severity": "WARN",
-      "reach_declared": "undeclared",
-      "note": "date_col / coverage_check / no_content_check 중 어느 것도 선언되지 않음 — mtime 만으로 판정 중이라 내용 결손(빈 파일·잘린 파일·과거만 담긴 파일)을 구조적으로 감지 못 함. registry 선언 필요"
+      "lag_basis": "mtime(declared)",
+      "status": "MTIME_ONLY",
+      "severity": "OK",
+      "reach_declared": "mtime_only_declared",
+      "note": "내용 도달 축 미선언(명시) — 2026-07-26 P2-03 — 도달 축을 **현재 선언할 수 없음**(면제 아님, 가시화). 이 캐시의 코호트 축은 (bsns_year, quarter)인데 quarter 라벨 자체가 신뢰 불가다: data_collector_dart_quarterly.R 의 REPRT_MAP 이 11014→quarter 1, 11013→quarter 3 으로 매핑하는데, 접수일 실측(rcept_no 앞 8자리 median)은 11013=05-15(=1분기) · 11014=11-14(=3분기)로 **정반대**다. 그 결과 실측 2026-07-26 기준 bsns_year 2026 은 quarter3=614 / quarter1·2=부재 — 7월에 3분기가 차 있는 모순 형태다. 여기에 due_rule 을 붙이면 (a) 코드 매핑을 따르면 6개월 어긋난 기한으로 오탐/누락, (b) 실측 매핑을 따르면 **알려진 버그를 registry 에 박아 넣어** 나중에 코드가 고쳐지면 조용히 틀린 선언이 된다. quarter 라벨 결함이 해소되면 상류 dart_raw_quarterly 와 같은 due_rule 을 quarter 축으로 옮겨 선언할 것. 그때까지 결손 감지는 상류 두 캐시(dart_raw_quarterly::coverage / dart_raw_financials::coverage)가 담당한다."
     },
     {
       "path": ".cache/indices.parquet",
@@ -585,11 +585,11 @@
       "mtime_lag": 1,
       "data_lag": null,
       "lag_used": 1,
-      "lag_basis": "mtime(undeclared)",
-      "status": "NO_COVERAGE_CHECK",
-      "severity": "WARN",
-      "reach_declared": "undeclared",
-      "note": "date_col / coverage_check / no_content_check 중 어느 것도 선언되지 않음 — mtime 만으로 판정 중이라 내용 결손(빈 파일·잘린 파일·과거만 담긴 파일)을 구조적으로 감지 못 함. registry 선언 필요"
+      "lag_basis": "mtime(declared)",
+      "status": "MTIME_ONLY",
+      "severity": "OK",
+      "reach_declared": "mtime_only_declared",
+      "note": "내용 도달 축 미선언(명시) — 2026-07-26 P2-03 — 횡단면 스냅샷이라 시간축 컬럼이 구조적으로 없다(실측 header: Factor_Name/ic_all/ic_bad/ic_good/conditional_value/recent_3y_icir/n_months/used/category). 라벨-코호트 축도 없음(회계 라벨 아님). 따라서 신선도 축은 mtime(주간 재산출이 멈췄나)이 정본이고, 내용 결손(팩터 수 급감·전 열 NA)은 이 축이 아니라 행/열 sanity 로 재야 한다 — 현행 value_checks 는 parquet 전용이라 .csv 에 미적용(VALUE_SKIP). 후속: value_checks 의 csv 지원 또는 producer 측 산출 검증."
     },
     {
       "path": ".cache/regime_forecast_series.parquet",
@@ -653,14 +653,14 @@
       "schedule": "monthly",
       "max_lag_days": 75,
       "registered": true,
+      "content_max_date": "2026-05-31",
+      "lag_basis": "content",
       "mtime_lag": 2,
-      "data_lag": null,
-      "lag_used": 2,
-      "lag_basis": "mtime(undeclared)",
-      "status": "NO_COVERAGE_CHECK",
-      "severity": "WARN",
-      "reach_declared": "undeclared",
-      "note": "date_col / coverage_check / no_content_check 중 어느 것도 선언되지 않음 — mtime 만으로 판정 중이라 내용 결손(빈 파일·잘린 파일·과거만 담긴 파일)을 구조적으로 감지 못 함. registry 선언 필요"
+      "data_lag": 56,
+      "lag_used": 56,
+      "status": "FRESH",
+      "severity": "OK",
+      "reach_declared": "date_col"
     },
     {
       "path": "stage_artifacts/method_frontier/firm_level_scaffold/fq073/customs_hs_monthly.parquet",
@@ -668,14 +668,14 @@
       "schedule": "monthly",
       "max_lag_days": 45,
       "registered": true,
+      "content_max_date": "2026-06-30",
+      "lag_basis": "content",
       "mtime_lag": 1,
-      "data_lag": null,
-      "lag_used": 1,
-      "lag_basis": "mtime(undeclared)",
-      "status": "NO_COVERAGE_CHECK",
-      "severity": "WARN",
-      "reach_declared": "undeclared",
-      "note": "date_col / coverage_check / no_content_check 중 어느 것도 선언되지 않음 — mtime 만으로 판정 중이라 내용 결손(빈 파일·잘린 파일·과거만 담긴 파일)을 구조적으로 감지 못 함. registry 선언 필요"
+      "data_lag": 26,
+      "lag_used": 26,
+      "status": "FRESH",
+      "severity": "OK",
+      "reach_declared": "date_col"
     },
     {
       "path": ".cache/RAWDATA.parquet::value",
@@ -703,6 +703,131 @@
       "abs_ret_max_abs": 0.1223,
       "status": "VALUE_PASS",
       "severity": "OK"
+    },
+    {
+      "path": ".cache/dart/dart_raw_financials.parquet::coverage",
+      "tier": 2,
+      "schedule": "monthly",
+      "registered": true,
+      "check": "label_cohort_coverage",
+      "status": "COVERAGE_FAIL",
+      "severity": "CRITICAL",
+      "note": "11011: 라벨 2025(기한 2026-03-31) 450건 = 직전 2024(714건) 대비 63.0% < 80%",
+      "groups": [
+        {
+          "group": "11011",
+          "expected_label": 2025,
+          "due_date": "2026-03-31",
+          "reference_label": 2024,
+          "n_expected": 450,
+          "n_reference": 714,
+          "ratio": 0.6303,
+          "min_ratio": 0.8,
+          "status": "COVERAGE_LOW"
+        }
+      ]
+    },
+    {
+      "path": ".cache/dart/dart_raw_quarterly.parquet::coverage",
+      "tier": 2,
+      "schedule": "daily",
+      "registered": true,
+      "check": "label_cohort_coverage",
+      "status": "COVERAGE_FAIL",
+      "severity": "CRITICAL",
+      "note": "11011: 라벨 2025(기한 2026-03-31) 103건 = 직전 2024(621건) 대비 16.6% < 80%",
+      "groups": [
+        {
+          "group": "11011",
+          "expected_label": 2025,
+          "due_date": "2026-03-31",
+          "reference_label": 2024,
+          "n_expected": 103,
+          "n_reference": 621,
+          "ratio": 0.1659,
+          "min_ratio": 0.8,
+          "status": "COVERAGE_LOW"
+        },
+        {
+          "group": "11012",
+          "expected_label": 2025,
+          "due_date": "2025-08-14",
+          "reference_label": 2024,
+          "n_expected": 618,
+          "n_reference": 622,
+          "ratio": 0.9936,
+          "min_ratio": 0.8,
+          "status": "COVERAGE_OK"
+        },
+        {
+          "group": "11013",
+          "expected_label": 2026,
+          "due_date": "2026-05-15",
+          "reference_label": 2025,
+          "n_expected": 2676,
+          "n_reference": 619,
+          "ratio": 4.3231,
+          "min_ratio": 0.8,
+          "status": "COVERAGE_OK"
+        },
+        {
+          "group": "11014",
+          "expected_label": 2025,
+          "due_date": "2025-11-14",
+          "reference_label": 2024,
+          "n_expected": 617,
+          "n_reference": 623,
+          "ratio": 0.9904,
+          "min_ratio": 0.8,
+          "status": "COVERAGE_OK"
+        }
+      ]
+    },
+    {
+      "path": ".cache/fundamental_dart.parquet::coverage",
+      "tier": 2,
+      "schedule": "monthly",
+      "registered": true,
+      "check": "label_cohort_coverage",
+      "status": "COVERAGE_FAIL",
+      "severity": "CRITICAL",
+      "note": "(all): 라벨 2025(기한 2026-03-31) 50건 = 직전 2024(714건) 대비 7.0% < 80%",
+      "groups": [
+        {
+          "group": "(all)",
+          "expected_label": 2025,
+          "due_date": "2026-03-31",
+          "reference_label": 2024,
+          "n_expected": 50,
+          "n_reference": 714,
+          "ratio": 0.07,
+          "min_ratio": 0.8,
+          "status": "COVERAGE_LOW"
+        }
+      ]
+    },
+    {
+      "path": ".cache/fundamental_merged.parquet::coverage",
+      "tier": 2,
+      "schedule": "monthly",
+      "registered": true,
+      "check": "label_cohort_coverage",
+      "status": "COVERAGE_PASS",
+      "severity": "OK",
+      "note": "도달 코호트 1그룹 전부 기준 충족 (grace 45d, min_ratio 0.80)",
+      "groups": [
+        {
+          "group": "(all)",
+          "expected_label": 2025,
+          "due_date": "2026-03-31",
+          "reference_label": 2024,
+          "n_expected": 2688,
+          "n_reference": 2703,
+          "ratio": 0.9945,
+          "min_ratio": 0.8,
+          "status": "COVERAGE_OK"
+        }
+      ]
     },
     {
       "path": ".cache/factor_db/factor_ic_monthly.parquet::frontier",
