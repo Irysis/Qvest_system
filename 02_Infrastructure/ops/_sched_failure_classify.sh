@@ -60,8 +60,8 @@ sched_failure_autorecovers() {
 sched_failure_guidance() {
   case "${1:-}" in
     auth_expired) echo "★사람 조치 필요 — 헤드리스 실행용 자격증명이 만료됐고 자동 갱신되지 않습니다. 터미널에서 claude 재로그인 후 차기 런부터 정상화됩니다. 방치하면 무기한 정지." ;;
-    spend_limit)  echo "구독 한도 소진 — 월 리셋 시 자동 해소됩니다. 큐 pending 은 보존되어 차기 성공 런에서 재소비됩니다." ;;
-    rate_limit)   echo "레이트 리밋 — 차기 런에서 자동 재시도됩니다. 조치 불필요." ;;
+    spend_limit)  echo "사용률 창 소진 — 에러 문구는 'monthly spend limit' 이지만 실측상 5시간 롤링 창이며 수십 분 내 자동 롤오버됩니다(2026-07-26 실측: 18:18 100% → 18:23 0%). 조치 불필요, 잠시 후 자동 재시도. 큐 pending 은 보존됩니다." ;;
+    rate_limit)   echo "레이트 리밋 — 롤링 창 회복 후 자동 재시도됩니다. 조치 불필요." ;;
     ok)           echo "정상." ;;
     *)            echo "원인 미분류 — 로그 확인 필요. 자동복구 여부 미상이므로 반복 시 수동 점검." ;;
   esac
@@ -72,13 +72,27 @@ sched_failure_guidance() {
 #    spend_limit 은 월 리셋까지 안 풀리므로 당일 재시도가 무의미하고,
 #    auth_expired 는 사람 조치가 있어야 풀리므로 1회만 열어 조치 후 다음 트리거가 잡게 한다.
 #    반대로 크래시·rate limit 은 즉시 재시도 가치가 크다.
+#    ★2026-07-26 정정: `spend limit` 을 "월 단위라 당일 회복 불가"로 보고 상한 0(재시도 금지)로
+#      뒀는데 **오답이었다**. 실측(plan-usage-history.json): 사용률은 fh(5시간 창)/sd(7일 창)
+#      **롤링 윈도우**이고, 18:18 fh=100% 로 막혔다가 **18:23 fh=0% 로 자동 롤오버**해 즉시 회복됐다.
+#      에러 문구가 "monthly spend limit" 이라 월 단위로 오독한 것 — 문구를 기전으로 착각했다.
+#      ∴ 이 사유야말로 **잠시 후 재시도가 가장 유효**하다. 상한을 넉넉히 준다.
 sched_retry_cap() {
   case "${1:-}" in
-    spend_limit|spend_limit_fallback_*) echo 0 ;;   # 월 리셋까지 무의미
-    auth_expired|credentials_*)         echo 1 ;;   # 사람 조치 후 1회 기회
-    rate_limit)                         echo 3 ;;   # 일시적 — 적극 재시도
+    spend_limit|spend_limit_fallback_*) echo 4 ;;   # 5시간 창 롤오버로 자동 회복 — 재시도 유효
+    rate_limit)                         echo 4 ;;   # 동일 성격
+    auth_expired|credentials_*)         echo 1 ;;   # 사람 조치 필요 — 조치 후 1회 기회
     count_measurement_failed)           echo 1 ;;   # 환경 문제 — 반복해도 같음
     *)                                  echo 3 ;;   # 미분류·크래시
+  esac
+}
+
+# ── 재시도 전 대기 권고초 (창 롤오버를 기다려야 의미가 있는 사유)
+#    5시간 창은 분 단위로 롤오버하므로 즉시 재시도는 같은 벽에 부딪힌다.
+sched_retry_backoff_sec() {
+  case "${1:-}" in
+    spend_limit|spend_limit_fallback_*|rate_limit) echo 900 ;;  # 15분 후 재시도 권고
+    *)                                             echo 0 ;;
   esac
 }
 
