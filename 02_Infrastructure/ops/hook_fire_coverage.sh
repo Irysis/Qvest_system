@@ -52,7 +52,10 @@ emit_line() { if [ "$MODE" = "--boot" ]; then echo "[boot] $1"; else echo "$1"; 
 #   ★판정 전에 회전한다 — 회전이 관측창을 줄이면 위 window 가드가 자동으로 보류로 돌린다.
 #──────────────────────────────────────────────────────────────────────────────
 ROTATE_MAX="${QVEST_HFC_ROTATE_MAX:-20000}"
-_n_now=$(grep -c . "$LEDGER" 2>/dev/null || echo 0)
+# ★grep -c 는 대상이 여러 개거나 실패하면 여러 줄/비정수를 낸다 — 정수 비교가 깨진다
+#   (실측 에러: integer expected). 숫자만 남기고 기본값을 준다.
+_n_now=$(grep -c . "$LEDGER" 2>/dev/null | head -1 | tr -dc '0-9')
+_n_now=${_n_now:-0}
 if [ "${_n_now:-0}" -gt "$ROTATE_MAX" ]; then
   _keep=$(( ROTATE_MAX / 2 ))
   if tail -n "$_keep" "$LEDGER" > "$LEDGER.rot.tmp" 2>/dev/null; then
@@ -70,7 +73,8 @@ if [ ! -f "$LEDGER" ]; then
   emit_line "WARN: hook-fire 원장 부재 ($LEDGER) — 발화 0 이 아니라 **미측정**. _shared_parse.sh 자동 emit 배선 확인"
   echo '{"test":"hook_fire_coverage","pass":0,"fail":1,"total":1}'; exit 1
 fi
-N_ROWS=$(grep -c . "$LEDGER" 2>/dev/null || echo 0)
+N_ROWS=$(grep -c . "$LEDGER" 2>/dev/null | head -1 | tr -dc '0-9')
+N_ROWS=${N_ROWS:-0}
 LED_AGE_D=$(( ( $(date +%s) - $(stat -c %Y "$LEDGER" 2>/dev/null || echo 0) ) / 86400 ))
 if [ "$N_ROWS" -eq 0 ]; then
   emit_line "WARN: hook-fire 원장 0행 — 미측정(자동 emit 미발화 의심)"

@@ -151,6 +151,10 @@ SUITES=(
   #   ※ 등재가 늦은 이유: 병렬 세션의 [TEMP-VIOLATION-INJECTION 임무V]가 총계-감소 경보를
   #     실측하는 동안 suite 추가는 총계를 올려 그 측정을 가린다 — 원복 확인 후 등재.
   "08_Tests/ops/test_tier1_silent_failures.R"
+  # 2026-07-26 추가: events.jsonl 원장 소비면(발화0 감지) 위반 주입 —
+  #   관측창 가드(2분 된 원장으로 "7일 발화 0" WARN 하던 오탐)·미측정≠0·회전·미커버 게이트
+  #   이름 노출. 이 감시기가 침묵하면 "발화 0" 지문 자체를 놓친다.
+  "08_Tests/ops/test_hook_fire_coverage.sh"
 )
 
 _suite_cmd() {
