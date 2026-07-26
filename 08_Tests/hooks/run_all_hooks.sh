@@ -104,6 +104,10 @@ SUITES=(
   "08_Tests/hooks/test_r_portability.R"
   "08_Tests/factor_db/test_ic_completion_guard.R"
   "08_Tests/factor_db/test_build_hash_provenance.R"
+  # 2026-07-26 추가: auto-commit 밸브 v2(디렉터리-단위 A-only 격리 — v1 영구개방 사고 재발 방지)
+  "08_Tests/hooks/test_auto_commit_valve.sh"
+  # 2026-07-26 추가: measurement_basis_audit v1.12 계보 resolver (worktree 좌초 회수분의 정본 회귀 가드)
+  "08_Tests/portfolio/test_lineage_resolver.R"
 )
 
 _suite_cmd() {

@@ -9,7 +9,7 @@
 # 검증 축 (sandbox git repo에서 훅 전체를 실 구동 — 로직 재현이 아니라 실물 실행):
 #   T1  단일-디렉터리 bulk → 그 디렉터리 A만 격리, M/D + 소량 A는 커밋, 원장 기록
 #   T2  확산형(총량>문턱, 단일-dir 집중 없음) → 격리 없이 전량 커밋 (v1 과잉처벌 제거 확인)
-#   T3  ★이빨: 문턱 무력화(=100000) 시 T1과 같은 입력이 전량 커밋 —
+#   T3  ★위반 주입: 문턱 무력화(=100000) 시 T1과 같은 입력이 전량 커밋 —
 #       T1의 '격리됨' assertion이 밸브 기전에서 나온 것임을 실증 (죽은 검사 방지)
 #   T4  secret abort 보존 — 추적 파일에 토큰 패턴 주입 시 커밋 0 (회귀 방지)
 #   T5  문턱 이하 → 전량 커밋 + 원장 부재
@@ -104,11 +104,11 @@ chk "T2 확산형 120A 전량 커밋"          "2" "$(n_commits "$SB")"
 chk "T2 untracked 잔존 0"              "0" "$(n_untracked "$SB")"
 chk "T2 원장 부재"                     "no" "$([ -f "$SB/.cache/auto_commit_quarantine.json" ] && echo yes || echo no)"
 
-# ── T3. ★이빨 — 문턱 무력화 시 같은 입력이 전량 커밋 ─────────────────────────
+# ── T3. ★위반 주입 — 문턱 무력화 시 같은 입력이 전량 커밋 ─────────────────────────
 SB=$(new_repo); mk_bulk_shape "$SB"
 run_hook "$SB" 100000 > /dev/null
-chk "T3 이빨: 밸브 off 시 bulk/ 커밋됨" "120" "$(in_head "$SB" 'bulk/')"
-chk "T3 이빨: untracked 0"             "0"   "$(n_untracked "$SB")"
+chk "T3 위반 주입: 밸브 off 시 bulk/ 커밋됨" "120" "$(in_head "$SB" 'bulk/')"
+chk "T3 위반 주입: untracked 0"             "0"   "$(n_untracked "$SB")"
 
 # ── T4. secret abort 보존 ────────────────────────────────────────────────────
 SB=$(new_repo)

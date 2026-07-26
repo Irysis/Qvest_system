@@ -182,4 +182,7 @@ if (file.exists(bs_path) && dir.exists(wt_root)) {
 cat("=== test_lineage_resolver (measurement_basis_audit v1.12) ===\n")
 cat(paste(results, collapse = "\n"), "\n")
 cat(sprintf("PASS=%d FAIL=%d\n", PASS, FAIL))
+# run_all_hooks.sh 배터리 규약 — 마지막 줄 JSON 요약
+cat(sprintf('{"test":"lineage_resolver","pass":%d,"fail":%d,"total":%d}\n',
+            PASS, FAIL, PASS + FAIL))
 if (FAIL > 0) quit(status = 1)
