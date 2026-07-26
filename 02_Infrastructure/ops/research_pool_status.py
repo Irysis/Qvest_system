@@ -30,6 +30,7 @@ import sys
 import json
 import glob
 import datetime
+import collections   # (2026-07-26 RPS-06) papers[].source 분해 파생용
 
 STAGE_REL = os.path.join("stage_artifacts", "paper_recharge")
 MARKER_REL = os.path.join(".cache", "research_pool_last_seen.json")
@@ -139,12 +140,42 @@ def collect(root):
         if _np is None and isinstance(rj.get("papers"), list):
             _np = len(rj["papers"])
         out["n_papers"] = _np
+        #──────────────────────────────────────────────────────────────────────
+        # (2026-07-26 RPS-01/RPS-06 수리) ★위 n_papers 수리가 **한 필드에서 멈춰 있었다**.
+        #   같은 계약 위반이 세 곳 더 있었다 — 생산자 계약(paper_router_prompt.md:40)이
+        #   선언한 키는 {date, counts_by_route, n_factor_candidates, papers:[{source,
+        #   factor_candidate:{name,verdict,...}}]} 뿐이고 n_arxiv/n_curated/
+        #   factor_candidates_all 은 **계약에 없다**(route 13건 중 06-19/20/26 3건만 보유,
+        #   07-01 이후 10건 전부 부재).
+        #   증상: src 분해가 경고 없이 사라지고(부팅 `papers 30` 뒤 `= arxiv 30` 소실),
+        #   testable 카운트가 0으로 읽혔다(실제 papers[] 기준 4건).
+        #   → 계약 위치에서 파생하고, 구 top-level 키는 폴백으로만 둔다.
+        #   ★교훈: 필드명 불일치 수리는 **같은 파일의 형제 필드를 전수 확인**해야 한다
+        #     (CBA-01 = 형제 파일 미전파, 이건 형제 필드 미전파 — 같은 부류).
+        #──────────────────────────────────────────────────────────────────────
+        _papers = rj.get("papers") if isinstance(rj.get("papers"), list) else []
         out["n_arxiv"] = rj.get("n_arxiv")
         out["n_curated"] = rj.get("n_curated")
-        cands = rj.get("factor_candidates_all", []) or []
+        if (out["n_arxiv"] is None and out["n_curated"] is None) and _papers:
+            _srcs = collections.Counter(
+                str(p.get("source", "")).split(":")[0] for p in _papers)
+            out["n_arxiv"] = _srcs.get("arxiv")
+            out["n_curated"] = _srcs.get("curated")
+
+        cands = rj.get("factor_candidates_all") or None
+        if cands is None:
+            cands = [(p.get("factor_candidate") or {}) for p in _papers]
         testable = [c for c in cands if str(c.get("verdict", "")).lower() == "testable"]
         out["n_factor_testable"] = len(testable)
-        out["factor_testable_names"] = [c.get("name", c.get("id", "?")) for c in testable]
+        out["factor_testable_names"] = [
+            c.get("name") or c.get("factor_name") or c.get("id") or "(무명)"
+            for c in testable]
+        # 교차검증축: 생산자 top-level n_testable 과 파생 카운트가 어긋나면 숫자를 믿지 말고
+        #   불일치 자체를 노출한다(조용히 한쪽을 채택하면 어느 쪽이 틀렸는지 영구 미상).
+        _nt_declared = rj.get("n_testable")
+        if isinstance(_nt_declared, int) and _nt_declared != out["n_factor_testable"]:
+            out["testable_mismatch"] = "declared=%d derived=%d" % (
+                _nt_declared, out["n_factor_testable"])
 
     # 2. 수집 산출(최신) — 라우터 미반영 신규 감지
     coll_path, coll_d = _latest(stage, "mcp_discovery_*.json")
