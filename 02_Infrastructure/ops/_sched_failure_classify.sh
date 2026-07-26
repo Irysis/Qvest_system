@@ -93,7 +93,11 @@ SCHED_TOKEN_WARN_DAYS="${SCHED_TOKEN_WARN_DAYS:-75}"
 sched_token_age_days() {
   local tok="${CLAUDE_CODE_OAUTH_TOKEN:-}"
   [ -n "$tok" ] || { echo -1; return 0; }
-  local state="${QM_ROOT:-$HOME}/.cache/token_state.json"
+  # ★상태파일 위치가 호출 경로마다 갈리면 매번 "신규 토큰"으로 판정돼 경과일이 영원히 0 이 되고
+  #   감시가 조용히 죽는다(2026-07-26 실측: QM_ROOT 있음→프로젝트/.cache, 없음→$HOME/.cache).
+  #   resolve_project.sh 가 세우는 BASE/PROJECT 를 중간 폴백으로 넣어 단일 위치로 수렴시킨다.
+  local root="${QM_ROOT:-${BASE:-${PROJECT:-${CLAUDE_PROJECT_DIR:-$HOME}}}}"
+  local state="$root/.cache/token_state.json"
   local fp; fp=$(printf '%s' "$tok" | sha256sum 2>/dev/null | cut -c1-12)
   [ -n "$fp" ] || { echo -1; return 0; }
   local now; now=$(date +%s)
