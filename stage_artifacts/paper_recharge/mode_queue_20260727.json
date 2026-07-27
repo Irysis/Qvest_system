@@ -1,0 +1,99 @@
+{
+  "schema_version": "mode_queue_v1",
+  "date": "20260727",
+  "generated_by": "paper_router_v2",
+  "queue": {
+    "optimizer": [
+      {
+        "arxiv_id": "2607.21170",
+        "title": "Portfolio Optimization under Dynamic Rebalancing via Topological Data Analysis and News Sentiments",
+        "note": "TDA 군집화 기반 포트 구성 (persistence diagram distance). α̂ 고정 A/B 대상. gudhi/ripser Python 필요",
+        "priority": 2
+      },
+      {
+        "arxiv_id": "2607.18813",
+        "title": "Mixing-Law Uncertainty in Multivariate Normal Mean-Variance Mixtures: Semi-parametric Estimation and Robust Cumulative-Prospect Decisions",
+        "note": "6개 mixing law 준모수 추정 + robust CVP 최적화. 분배 모호집합 내 worst-case 모델로 포트 결정. α̂ 고정 A/B",
+        "priority": 2
+      },
+      {
+        "arxiv_id": "2607.18001",
+        "title": "AlphaZeroBeta: Deep Reinforcement Learning for Market-Neutral Portfolios",
+        "note": "CNN-GRU + Recurrent PPO. 복합 보상(위험조정초과수익+상관+비용). long leg 가중만 KR 적용. α̂ 고정 A/B",
+        "priority": 2
+      },
+      {
+        "arxiv_id": "2607.15195",
+        "title": "SciPhy Reinforcement Learning for Portfolio Optimization",
+        "note": "HJB → PINN 단일 오프라인 학습. target holding 이산화, 미시구조 비용 모델. α̂ 고정 A/B",
+        "priority": 2
+      },
+      {
+        "arxiv_id": "2607.15317",
+        "title": "Asymptotic fractional-order stochastic dominance with bounded relative risk aversion",
+        "note": "분수위 확률지배 자산선택 이론. 장기 로그정규 가정. α̂ 고정 A/B",
+        "priority": 3
+      },
+      {
+        "arxiv_id": "2606.11318",
+        "title": "Mean-Variance Optimization in Ambiguous Financial Markets with Learning",
+        "note": "모호성 회피 MVO + 베이지안 드리프트 학습. Maccheroni et al. 기준 분산 분해 가중. α̂ 고정 A/B",
+        "priority": 2
+      },
+      {
+        "arxiv_id": "2606.09104",
+        "title": "Addressing Market Regime Changes and Heavy-Tailed Returns in Portfolio Optimization via Bayesian VAR and Elliptical Black-Litterman",
+        "note": "BAVAR-BLED (TD3). t-분포 공분산 + 레짐 인식 BL뷰 + 트랜스포머 뷰 구성. α̂ 고정 A/B",
+        "priority": 2
+      }
+    ],
+    "risk": [
+      {
+        "arxiv_id": "2607.20343",
+        "title": "Path-Space Model Risk via Signature-Induced Optimal Transport",
+        "note": "서명/OT 기반 경로 공간 모델 위험. robust 기댓값/확률 범위 이론적 도출",
+        "priority": 2
+      },
+      {
+        "arxiv_id": "2607.16450",
+        "title": "Portfolio Optimization under Heavy Tails and Asymmetric Volatility: Evidence from Taiwan-Exposed ETFs",
+        "note": "Hill 꼬리지수 + GJR-GARCH 비대칭 변동성. CVaR vs MV 비교. 반도체 집중 ETF 꼬리위험 진단",
+        "priority": 2
+      },
+      {
+        "arxiv_id": "2607.13112",
+        "title": "Anchored Geodesic Analysis for Multivariate Extremes",
+        "note": "AGCA: 극단 각도 법칙 차원축소. 포트 capped-excess/VaR 근사 오차 1.25%. 꼬리 의존 구조 분석",
+        "priority": 2
+      },
+      {
+        "arxiv_id": "2606.15473",
+        "title": "Belief at Risk: Quantifying Agentic AI Model Risk with LLM-Inferred Bayesian State Filters",
+        "note": "POMDP + LLM 베이지안 필터로 에이전트 AI 모델 위험 정량화. 레짐 확률 + VaR/CVaR 스타일 측정",
+        "priority": 3
+      }
+    ],
+    "regime": [
+      {
+        "arxiv_id": "2607.19497",
+        "title": "The Science and Practice of Trend-Following Systems",
+        "note": "추세추종 이론 통합 (ARFIMA, 저주파 스펙트럼 질량 = 추세알파). 국면 탐지 + overlay 소스. ★factor overlay: spec_mass_lowfreq_60d testable",
+        "priority": 1,
+        "factor_overlay_flagged": "spec_mass_lowfreq_60d"
+      },
+      {
+        "arxiv_id": "2607.19005",
+        "title": "Observable Matrix Dynamics of Stocks",
+        "note": "상관행렬 스펙트럼 + 수익률/변동성 순위 마코프 체인. 위기 선행 탐지(내생 2008 O/외생 2020 X). 섹터 로테이션 기전 분석",
+        "priority": 2
+      },
+      {
+        "arxiv_id": "2606.09025",
+        "title": "Continuous Cash-Overlay Filters for a Static Growth--Defensive Risk Sleeve",
+        "note": "slow-tail + V-shape 현금 오버레이 필터. US VIX/금리/크레딧 기반 → VKOSPI+KR 국채(FRED/ECOS) KR 버전 가능. C5 PIT 의무",
+        "priority": 2
+      }
+    ]
+  },
+  "dispatch_note": "paper_research_dispatch.R [morning_run 0.6] 소비 예정. optimizer=α̂ 고정 A/B 자동실행+ΔIR게이트. risk/regime=분석 flag"
+}

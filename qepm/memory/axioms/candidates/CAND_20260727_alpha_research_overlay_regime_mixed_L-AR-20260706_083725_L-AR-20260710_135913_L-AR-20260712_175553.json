@@ -1,0 +1,188 @@
+{
+  "schema_version": "v54_ax_p0_mode",
+  "candidate_id": "CAND_20260727_alpha_research_overlay_regime_mixed_L-AR-20260706_083725_L-AR-20260710_135913_L-AR-20260712_175553",
+  "research_mode": "alpha_research",
+  "metric_type": "proxy",
+  "type": "methodological",
+  "polarity": "mixed",
+  "statement_draft": "[방법론 혼재(방향불명) 규칙 초안] family=overlay_regime, tags=E,,,R, supporting=9건 L-code. (promote.R 5축 검증에서 범위·메커니즘·OOS 확정 필요)",
+  "supporting_l_codes": [
+    "L-AR-20260706_083725",
+    "L-AR-20260710_135913",
+    "L-AR-20260712_175553",
+    "L-AR-20260715_034738",
+    "L-AR-20260715_050851",
+    "L-AR-20260718_232144",
+    "L-AR-20260719_003748",
+    "L-AR-20260719_005642",
+    "L-AR-20260719_020140"
+  ],
+  "scope_draft": {
+    "market": "KR",
+    "factor_family": "overlay_regime",
+    "regime": null,
+    "construction_types": null
+  },
+  "evidence_draft": {
+    "independent_l_codes": 9,
+    "independent_strategies": 9,
+    "strategies": [
+      "WT-D20260718_004_transformer_regime_overlay",
+      "WT-D20260718_007_unsupervised_anomaly_overlay",
+      "AR_corr_recovery_crashdyn_20260706",
+      "WT-D20260718_007_r2_anomaly_overlay_refinement",
+      "FQ-017_m1_overlay_drain",
+      "R37_insider_megatier_TOP30_power_vs_death",
+      "WT-D20260718_007_D3_forge_calmar_graduation",
+      "WT-D20260710_003",
+      "R40_insider_safe_exit_censoring_stress"
+    ],
+    "effect_direction_consistency": null,
+    "note": "evidence_draft — promote.R 5축 검증에서 hurdle_result/grade_a_catalog 교차검증으로 확정",
+    "n_eff_signatures": 6,
+    "independent_constructions": 6,
+    "constructions": [
+      "cross_sectional_selection",
+      "dynamic_timing_overlay",
+      "insider_netbuy_safe_exit_censoring + ON_event_outcome_census(SUSTAIN/EXIT_obs/cov_lost/CENSORED) + differential_censoring(ON vs OFF) + worstcase_imputation(-20/-30/-50/-80/-100%) + multimonth_forward_trajectory(h=0..3 paired_NW) + terminal_truncation_guard",
+      "insider_netbuy_safe_tripwire_megatier_diagnosis + power_analysis + heterogeneity_test + pooled_permutation",
+      "joint_packaging_sweep",
+      "overlay_stock_exclusion_tilt"
+    ],
+    "metric_types": [
+      "backtested",
+      "canonical_screen",
+      "proxy"
+    ]
+  },
+  "falsification_draft": {
+    "attempts": [
+      {
+        "test": "RAW vs RESID full-period IC 부호 대조",
+        "result": "falsified",
+        "effect_retained": 0,
+        "note": "raw -0.0119 / resid +0.0115 부호 반대=abs-corr 잔차화 sign-flip"
+      },
+      {
+        "test": "2017+ subsample sign persistence(gate)",
+        "result": "falsified",
+        "effect_retained": 0,
+        "note": "RAW 2017+ t=-0.57 noise / RESID full t=1.70 미달인데 2017+만 t=3.54=subsample-mining"
+      },
+      {
+        "test": "lag+1 placebo(fwd 1M 추가 shift)",
+        "result": "falsified",
+        "effect_retained": 0,
+        "note": "RESID lead2 t=1.93 ~ lead1 t=1.70 (미감쇠=persistence, clean 1M forward 아님); RAW lead2 t=-0.04 정상감쇠"
+      },
+      {
+        "test": "PIT C1/C5/concurrent 검토(코드 감사)",
+        "result": "survived",
+        "effect_retained": 1,
+        "note": "trailing daily only·forward=next_ym·동월 concurrent 없음=PIT clean(스크린 FAIL은 진짜 신호부재)"
+      },
+      {
+        "test": "직교성 vs score_eff",
+        "result": "survived",
+        "effect_retained": 1,
+        "note": "pooled -0.076<0.4 직교하나 '직교!=수익'(measurement-graduation §6)"
+      },
+      "IS-only lock; DSR sweep n=26 = 0.457 FAIL; holdout preregistered interval FALSIFIED(OOS SR < q05); placebo 200 pass(비판별 — full-sample IS 지배); continuous 3-block jackknife 3rd block negative; inverted control; dual-basis decomposition",
+      "PIT 4종 전통과: assert_overlay_pit HARD PASS / lag1 스트레스 무붕괴(느린 연간신호) / strict-PIT A/B 인플레 -20~-22%(현재가 오히려 보수적=look-ahead 아님) / IC(-z1,fwd_excess) +2.80 PIT정상방향. paired NW-t 4암 전부 <2.0(최대 LARGE_tilt 1.27)",
+      {
+        "test": "book A/B paired NW-t(TF vs M4, 221mo)",
+        "result": "falsified",
+        "effect_retained": "−0.863 비유의 음·SR/calmar 전부 열위"
+      },
+      {
+        "test": "PIT 3종(assert_overlay_pit·lag1·strict-PIT A/B)",
+        "result": "survived",
+        "effect_retained": "0/221 clean=genuine negative(leakage 아님)"
+      },
+      {
+        "test": "detector-only(TF_only vs M4_only)",
+        "result": "falsified",
+        "effect_retained": "TF_only MDD −40.7%=bare 수준(crash 못 자름)"
+      },
+      {
+        "test": "crisis 발화 상관 진단(36 crisis month)",
+        "result": "falsified",
+        "effect_retained": "TF가 COVID/GFC/2022 미발화·강세장 방어=anti-correlated"
+      },
+      {
+        "test": "crisis 발화 root-cause(WT-004 실패 지점)",
+        "result": "survived",
+        "effect_retained": "2008 9/9·10/36 crisis·상관 2배=OOD 구조해결"
+      },
+      {
+        "test": "book calmar/MDD paired(AE vs M4)",
+        "result": "survived",
+        "effect_retained": "calmar 2.196>2.069·전 부기간 robust(excl2008도)"
+      },
+      {
+        "test": "paired 월별 초과수익 NW-t",
+        "result": "falsified",
+        "effect_retained": "−1.49 비유의=return win 아님(tail-risk만)"
+      },
+      {
+        "test": "PIT 3종(assert_overlay_pit·strict·lag1)",
+        "result": "survived",
+        "effect_retained": "0/221 clean·표본외 발화율↑=외삽=genuine"
+      },
+      {
+        "test": "D1 τ 재매칭(exposure-budget confound 제거)",
+        "result": "falsified",
+        "effect_retained": "paired −1.62 악화=과잉발화는 신호값"
+      },
+      {
+        "test": "D2 grind 낙폭지속 신호 결합",
+        "result": "falsified",
+        "effect_retained": "paired −2.21 악화=grind 방어 수익손실"
+      },
+      {
+        "test": "D3 교집합 M4∩AE",
+        "result": "survived",
+        "effect_retained": "파레토 지배(calmar 2.284·부호반전 +0.49)이나 비유의=calmar-only"
+      },
+      {
+        "test": "paired ≥+2 유의화(3방향 종합)",
+        "result": "falsified",
+        "effect_retained": "전부 <+2=타이밍 오버레이 return-graduation 상한 확정"
+      },
+      {
+        "test": "build_bt_result forge-authoritative calmar vs 인컴번트",
+        "result": "survived",
+        "effect_retained": "D3 2.289>M4 2.073 파레토 지배·PASS 0.64"
+      },
+      {
+        "test": "oos_retention v2 HARD",
+        "result": "falsified",
+        "effect_retained": "0.283<0.5 FAIL·단 인컴번트 0.282 동일=carrier 병목(오버레이 판별자 아님)"
+      },
+      {
+        "test": "holdout 사전등록 반증검정",
+        "result": "survived",
+        "effect_retained": "PASS_LOW_INFO(SR 1.792 ∈ 봉인구간)"
+      },
+      {
+        "test": "production parity(인컴번트 base)",
+        "result": "survived",
+        "effect_retained": "r1 EXACT SR 1.8088·동월 vintage 미사용"
+      }
+    ],
+    "note": "L-code 기록 반증 시도 실값 집계"
+  },
+  "mechanism_draft": {
+    "economic_explanation": "insider net-buy SAFE 신호의 대형주(TOP30) 약함이 표본부족(power)인가 진짜 mega signal-death(cap-tier localization)인가. 결과: attenuation(death) 우세 — TOP30 표본이 mid-효과 검출 검정력 100%인데도 t=1.30(power 가설 falsified)·이질성 NW-t 2.50~3.70 유의·CI가 mid 배제. 잔여 소효과(3.8%/yr)는 검출 문턱 이하+최근레짐 국한. 복합(INS01+INS02)은 corr 0.80~0.85 중복으로 무이득. cap-tier localization의 monitoring-면 발현. (멤버 가설 9건 — promote.R에서 일치성 재검증)",
+    "mechanism_type": "information",
+    "causal_plausibility": null
+  },
+  "oos_validation_draft": {
+    "oos_months": 221.0,
+    "oos_effect_vs_is": 0.141,
+    "note": "L-code oos_retention 실값 2건 median (IS65/OOS35 활성SR retention) + oos_months 실값 8건 median — promote.R essence_score 경유 재확정"
+  },
+  "cluster_members_count": 9,
+  "status": "pending_5axis",
+  "created_at": "2026-07-27T11:43:43+00:00"
+}

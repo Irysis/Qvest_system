@@ -1,0 +1,352 @@
+{
+  "schema_version": "paper_router_v2",
+  "date": "20260727",
+  "backlog_dates": null,
+  "counts_by_route": {
+    "alpha": 3,
+    "optimizer": 7,
+    "risk": 4,
+    "regime": 3,
+    "skip": 11,
+    "total": 28
+  },
+  "n_factor_candidates": 4,
+  "n_factor_testable": 2,
+  "curated_new_processed": 0,
+  "curated_total_processed": 15,
+  "autorun_candidates": [
+    {
+      "id": "resid_info_vol",
+      "source_arxiv_id": "2606.08141",
+      "title": "Residual Informative Volume",
+      "definition": "20-day OLS residual of log(Vol+1) ~ log(|Ret|+1e-4) per stock, z-scored cross-sectionally. Proxy for non-volatility-driven trading (informed activity beyond price-move-induced volume).",
+      "direction": "long_high_resid (informed buying hypothesis; empirical test both)",
+      "pit_lag": "signal_date = last trading day of month t-1",
+      "kr_feasible": true,
+      "priority": 1
+    },
+    {
+      "id": "spec_mass_lowfreq_60d",
+      "source_arxiv_id": "2607.19497",
+      "title": "Low-Frequency Spectral Mass (60d)",
+      "definition": "Proportion of periodogram mass at frequencies f < 1/30 (period > 30 days) using trailing 60 trading-day daily log returns per stock. Higher = more persistent autocorrelation = stronger trend-following property.",
+      "direction": "long_high_spectral_mass (trend persistence hypothesis)",
+      "pit_lag": "signal_date = last trading day of month t-1",
+      "kr_feasible": true,
+      "priority": 2
+    }
+  ],
+  "papers": [
+    {
+      "title": "Latent Fragility and Clustered Withdrawals in Dynamic Banks Runs",
+      "id": "arxiv:2607.22317",
+      "source": "arxiv",
+      "route": "skip",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "은행런 이론 (mean-field game, econ.TH) — 횡단면 종목 신호 없음"
+    },
+    {
+      "title": "Optimal Surplus Management for Insurers under Stochastic Interest Rates and Jump-Driven Liabilities",
+      "id": "arxiv:2607.21687",
+      "source": "arxiv",
+      "route": "skip",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "보험사 잉여금 최적화 (HJB, actuarial) — KR 주식 팩터 연관 없음"
+    },
+    {
+      "title": "Portfolio Optimization under Dynamic Rebalancing via Topological Data Analysis and News Sentiments",
+      "id": "arxiv:2607.21170",
+      "source": "arxiv",
+      "route": "optimizer",
+      "kr_feasible": true,
+      "factor_candidate": null,
+      "reason": "TDA 기반 포트폴리오 군집화 구성 방법론 — optimizer 에이전트 소스 (개별 종목 신호 X, 구성법)",
+      "optimizer_note": "TDA persistence diagram distance로 비상관 자산 선택. 구현 복잡(gudhi/ripser 필요), alpha 고정 A/B 대상"
+    },
+    {
+      "title": "Path-Space Model Risk via Signature-Induced Optimal Transport",
+      "id": "arxiv:2607.20343",
+      "source": "arxiv",
+      "route": "risk",
+      "kr_feasible": true,
+      "factor_candidate": null,
+      "reason": "서명(signature)/OT 기반 모델 위험 측정 프레임워크 — risk 에이전트 소스"
+    },
+    {
+      "title": "Retail Trader's Ruin: An Anatomy of Popular Signal Failure",
+      "id": "arxiv:2607.20093",
+      "source": "arxiv",
+      "route": "skip",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "트렌드/오실레이터/캔들/볼륨/캘린더 5개 신호군 검증 — 4개 REFUTED, 모멘텀 INCONCLUSIVE. 타이밍 룰(단일 종목 시계열) 검증이며 KR 횡단면 종목선택 팩터 X"
+    },
+    {
+      "title": "The Science and Practice of Trend-Following Systems",
+      "id": "arxiv:2607.19497",
+      "source": "arxiv",
+      "route": "regime",
+      "kr_feasible": true,
+      "factor_candidate": {
+        "name": "spec_mass_lowfreq_60d",
+        "def": "trailing 60일 일별 로그수익률의 periodogram에서 f<1/30 (주기 30일 이상) 구간의 PSD 질량 비율. 높을수록 개별 종목의 저주파 자기상관 구조가 강함 = trend 지속성 더 높음",
+        "novel": true,
+        "kr_feasible": true,
+        "verdict": "testable",
+        "confidence": "medium",
+        "closest_db_factor": "M16_Trend_Factor (MA 기반 추세신호, 다름 — 주파수 도메인 접근 없음)",
+        "implementation": "R: spec.pgram(ret_60d, taper=0, plot=FALSE) → pgram$spec[pgram$freq < 1/30] / sum(pgram$spec). 월말 lag-1 PIT 적용"
+      },
+      "reason": "추세추종 시스템의 이론적 분석 — 저주파 스펙트럼 질량 = 추세알파의 원천. ARFIMA/ARFIMA 분석. 추세탐지/타이밍 소스(regime), 저주파 스펙트럼 질량을 횡단면 팩터로 전용 가능(factor overlay)"
+    },
+    {
+      "title": "Observable Matrix Dynamics of Stocks",
+      "id": "arxiv:2607.19005",
+      "source": "arxiv",
+      "route": "regime",
+      "kr_feasible": true,
+      "factor_candidate": {
+        "name": "return_ranking_persistence",
+        "def": "Markov chain transition matrix on 5-quintile return ranking — diagonal entry p(rank_t = rank_{t-1}) per stock",
+        "novel": false,
+        "kr_feasible": true,
+        "verdict": "redundant",
+        "closest_db_factor": "M08_Residual_Mom, M01_Mom_12_1 — 수익률 순위 지속성은 모멘텀과 실질 동치",
+        "confidence": "low"
+      },
+      "reason": "상관행렬 거리 행렬 스펙트럼 + 수익률/변동성 순위 마코프 체인으로 위기 탐지 — regime 소스. 수익률 순위 지속성 = 모멘텀 중복"
+    },
+    {
+      "title": "Cloud failure and cyber insurance: calibration of stress scenarios and diversification",
+      "id": "arxiv:2607.18815",
+      "source": "arxiv",
+      "route": "skip",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "사이버보험 스트레스 시나리오 — 주식 팩터 연관 없음"
+    },
+    {
+      "title": "Mixing-Law Uncertainty in Multivariate Normal Mean-Variance Mixtures: Semi-parametric Estimation and Robust Cumulative-Prospect Decisions",
+      "id": "arxiv:2607.18813",
+      "source": "arxiv",
+      "route": "optimizer",
+      "kr_feasible": true,
+      "factor_candidate": null,
+      "reason": "Multivariate NMM 준모수 추정 + 분배 강건 포트폴리오 결정 — optimizer 소스. α̂ 고정 A/B 대상",
+      "optimizer_note": "6개 mixing law 비교 + robust CVP 최적화. holdout density score 기반 모호집합 정의 방법론"
+    },
+    {
+      "title": "Dead Reckoning: Counting Your Customers Who Never Say Goodbye",
+      "id": "arxiv:2607.18623",
+      "source": "arxiv",
+      "route": "skip",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "고객 생애가치/비계약 상거래 생존분석 — KR 주식 팩터 연관 없음"
+    },
+    {
+      "title": "Prediction of bank transaction fraud using TabNet an adaptive deep learning architecture",
+      "id": "arxiv:2607.18616",
+      "source": "arxiv",
+      "route": "skip",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "은행 거래 사기탐지 (TabNet) — 금융기관 운영, 주식 팩터 아님"
+    },
+    {
+      "title": "AlphaZeroBeta: Deep Reinforcement Learning for Market-Neutral Portfolios",
+      "id": "arxiv:2607.18001",
+      "source": "arxiv",
+      "route": "optimizer",
+      "kr_feasible": true,
+      "factor_candidate": null,
+      "reason": "CNN-GRU + Recurrent PPO 기반 시장중립 포트폴리오 구성 — optimizer 소스. 롱숏 기반이지만 long leg 가중 방법론은 long-only에 적용 가능. α̂ 고정 A/B 대상",
+      "optimizer_note": "복합 보상함수(위험조정수익+벤치 상관+거래비용), CNN-GRU 정책, rolling walk-forward 검증"
+    },
+    {
+      "title": "Portfolio Optimization under Heavy Tails and Asymmetric Volatility: Evidence from Taiwan-Exposed ETFs",
+      "id": "arxiv:2607.16450",
+      "source": "arxiv",
+      "route": "risk",
+      "kr_feasible": true,
+      "factor_candidate": {
+        "name": "hill_tail_index_60d",
+        "def": "trailing 60일 일별 수익률의 Hill 꼬리 지수 추정 (하방 꼬리). 낮을수록 더 두꺼운 꼬리 = 극단 하방위험 큼",
+        "novel": true,
+        "kr_feasible": true,
+        "verdict": "uncertain",
+        "closest_db_factor": "D05_Realized_Skew (왜도), D03_Vol_20d — Hill 지수는 별도 꼬리 두께 측정이나 방향 불명확",
+        "confidence": "low",
+        "note": "논문이 ETF 포트폴리오 레벨에서만 적용 — 개별 종목 횡단면 신호로서의 예측력 불확실"
+      },
+      "reason": "중꼬리/GJR-GARCH/CVaR 포트폴리오 최적화 — risk 에이전트 소스 (꼬리 위험 진단, 비대칭 변동성 모델링)"
+    },
+    {
+      "title": "SciPhy Reinforcement Learning for Portfolio Optimization",
+      "id": "arxiv:2607.15195",
+      "source": "arxiv",
+      "route": "optimizer",
+      "kr_feasible": true,
+      "factor_candidate": null,
+      "reason": "Physics-Informed NN + HJB 방정식 기반 포트폴리오 최적화 (PINN offline sweep) — optimizer 소스. α̂ 고정 A/B 대상",
+      "optimizer_note": "연속시간 HJB → pathwise 투영 → PINN 단일 오프라인 학습. target holding 이산화, 거래비용 미시구조 반영"
+    },
+    {
+      "title": "Asymptotic fractional-order stochastic dominance with bounded relative risk aversion",
+      "id": "arxiv:2607.15317",
+      "source": "arxiv",
+      "route": "optimizer",
+      "kr_feasible": true,
+      "factor_candidate": null,
+      "reason": "분수위 확률지배 이론 (장기투자 자산선택) — optimizer 소스. 의사결정 프레임워크 (α̂ 고정 A/B 대상)"
+    },
+    {
+      "title": "How Much of a 10-K Matters? Aggregation-Dependent Value of Full-Text versus Risk-Factor Sentiment",
+      "id": "arxiv:2607.14174",
+      "source": "arxiv",
+      "route": "alpha",
+      "kr_feasible": false,
+      "factor_candidate": {
+        "name": "dart_risk_sentiment_score",
+        "def": "DART 사업보고서 위험요인(Item 2) 텍스트의 부정어 감성 스코어 (Loughran-McDonald 사전 KR 버전). 부정적 스코어 높을수록 미래 수익률 하락 예측",
+        "novel": true,
+        "kr_feasible": false,
+        "verdict": "uncertain",
+        "closest_db_factor": "없음 (DB에 텍스트/NLP 팩터 전무)",
+        "confidence": "low",
+        "note": "KR 구현 장벽: ① DART 사업보고서 텍스트 파싱 파이프라인 미구축 ② 한국어 Loughran-McDonald 사전 부재. 인프라 신설 필요. 논문 결과(개별기업 레벨에서 Item 1A 섹션 우수)는 KR 사업보고서에 직접 이식 가능한 방향성 제공"
+      },
+      "reason": "10-K 위험요인 섹션 감성 추출 → 개별 종목 수익률/변동성 예측 — alpha 소스. KR DART 이식 가능하나 NLP 인프라 필요 (인프라 갭으로 uncertain)"
+    },
+    {
+      "title": "Measuring Sentiment News with Transformer-Based Language Models",
+      "id": "arxiv:2607.13968",
+      "source": "arxiv",
+      "route": "skip",
+      "kr_feasible": false,
+      "factor_candidate": {
+        "name": "news_sentiment_finbert_daily",
+        "def": "FinBERT 문장-레벨 감성 분류 집계 → 기사-레벨, 일별 감성 지수 (Factiva 143,755 기사 학습). 개별종목 일별 감성 → 월별 집계 팩터",
+        "novel": true,
+        "kr_feasible": false,
+        "verdict": "uncertain",
+        "closest_db_factor": "없음",
+        "confidence": "low",
+        "note": "alt-data: KR 금융뉴스 피드(네이버/블룸버그 KR) 미구축. Factiva KR 라이선스 없음. 인프라 갭"
+      },
+      "reason": "FinBERT 기반 금융뉴스 감성 지수 — 대체데이터(뉴스 피드) 의존, KR 인프라 미구축으로 skip"
+    },
+    {
+      "title": "Anchored Geodesic Analysis for Multivariate Extremes",
+      "id": "arxiv:2607.13112",
+      "source": "arxiv",
+      "route": "risk",
+      "kr_feasible": true,
+      "factor_candidate": null,
+      "reason": "극단 의존 차원축소 (AGCA) — 포트 꼬리 위험 근사 오차 이론. risk 에이전트 소스 (VaR/CVaR 근사 방법론)"
+    },
+    {
+      "title": "When Directional Accuracy Lies: A Base-Rate-Honest Benchmark for LoRA-Adapted TimesFM on Equity Forecasting",
+      "id": "arxiv:2607.12248",
+      "source": "arxiv",
+      "route": "skip",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "LoRA TimesFM 방향성 정확도 벤치마크 — LLM 파인튜닝 방법론 검증, 결과 all-negative. 구현가능 팩터 없음"
+    },
+    {
+      "title": "A Novel Hybrid Quantum Reservoir Computing (nHQRC) for Phase Transition Detection in Non-Equilibrium Dynamical Systems",
+      "id": "arxiv:2607.16281",
+      "source": "arxiv",
+      "route": "skip",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "양자 컴퓨팅 기반 국면전환 탐지 — 실용 인프라 없음, skip"
+    },
+    {
+      "title": "What Useful Alphas?",
+      "id": "arxiv:2607.06502",
+      "source": "arxiv",
+      "route": "alpha",
+      "kr_feasible": true,
+      "factor_candidate": null,
+      "reason": "~200개 학술 이상현상 팩터 검증 메타 연구 (Chen & Welch 2022 기반) — post-2005 비-마이크로캡 7bp까지 붕괴 확인. 구현 팩터 없으나 우리 시스템의 단독 팩터 실패 패턴과 정합하는 중요 음성 지식. 실패지식 방화벽(INV-7) 우회 없이 '학술 팩터 Zoo가 대형주에서 무효'를 실증 → 비-수익 원천 집중 mandate 지지",
+      "insight": "POST-2005 non-microcap alpha: 학술 이상현상 200건 → 단 7bp/월. 우리 16/16 단독팩터 FAIL과 정합"
+    },
+    {
+      "title": "From Gravity to Confinement: Wealth Redistribution as Optimal Drift Design in the Fokker-Planck Framework",
+      "id": "arxiv:2607.06153",
+      "source": "arxiv",
+      "route": "skip",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "Fokker-Planck 기반 부의 재분배 정책 이론 — 거시경제/정책 이론, 주식 팩터 아님"
+    },
+    {
+      "title": "Fund2Persona: A Framework for Building and Refining Financial Advisor Personas from Fund Disclosure Data",
+      "id": "arxiv:2606.29793",
+      "source": "arxiv",
+      "route": "skip",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "LLM 기반 금융어드바이저 페르소나 — LLM 에이전트 응용, 주식 팩터 아님"
+    },
+    {
+      "title": "Belief at Risk: Quantifying Agentic AI Model Risk with LLM-Inferred Bayesian State Filters",
+      "id": "arxiv:2606.15473",
+      "source": "arxiv",
+      "route": "risk",
+      "kr_feasible": true,
+      "factor_candidate": null,
+      "reason": "에이전트 AI 모델 위험 정량화 (POMDP + LLM 베이지안 필터) — risk 에이전트 소스 (모델 위험 관리, 국면 레짐 확률 진단)"
+    },
+    {
+      "title": "Mean-Variance Optimization in Ambiguous Financial Markets with Learning",
+      "id": "arxiv:2606.11318",
+      "source": "arxiv",
+      "route": "optimizer",
+      "kr_feasible": true,
+      "factor_candidate": null,
+      "reason": "모호성 회피 MVO + 베이지안 드리프트 학습 — optimizer 소스. 모호성 모수 λ 로 불확실성 가중 MVO 구현. α̂ 고정 A/B 대상"
+    },
+    {
+      "title": "Addressing Market Regime Changes and Heavy-Tailed Returns in Portfolio Optimization via Bayesian VAR and Elliptical Black-Litterman",
+      "id": "arxiv:2606.09104",
+      "source": "arxiv",
+      "route": "optimizer",
+      "kr_feasible": true,
+      "factor_candidate": null,
+      "reason": "BAVAR-BLED: 레짐 인식 + 중꼬리 BL 모델 (TD3 DRL) — optimizer 소스. t-분포 공분산 추정 + 레짐 인식 BL 뷰. α̂ 고정 A/B 대상"
+    },
+    {
+      "title": "Continuous Cash-Overlay Filters for a Static Growth--Defensive Risk Sleeve: Slow-Tail Compensation, V-Shape Crash Brakes, Walk-Forward Validation, and Max-Cash Combination",
+      "id": "arxiv:2606.09025",
+      "source": "arxiv",
+      "route": "regime",
+      "kr_feasible": true,
+      "factor_candidate": null,
+      "reason": "VIX/금리/크레딧/DD 기반 현금-오버레이 필터 (slow-tail + V-shape 브레이크) — regime 소스. US VIX 의존이나 VKOSPI+KR 국채금리(FRED/ECOS)로 KR 버전 구성 가능. C5 타이밍 PIT 필수"
+    },
+    {
+      "title": "A Structural Matrix Autoregressive Model for the Joint Dynamics of Volume, Volatility, and Returns",
+      "id": "arxiv:2606.08141",
+      "source": "arxiv",
+      "route": "alpha",
+      "kr_feasible": true,
+      "factor_candidate": {
+        "name": "resid_info_vol",
+        "def": "월별 trailing 20일 OLS residual of log(Volume+1) ~ log(|Return|+1e-4) per stock. 양의 잔차 = 변동성 대비 초과 거래량 = 정보 거래 활동 지시자. 횡단면 z-score 후 상위 분위 long",
+        "novel": true,
+        "kr_feasible": true,
+        "verdict": "testable",
+        "closest_db_factor": "L03_Volume_Mom (볼륨 모멘텀, 다름), L05_Dollar_Volume (수준, 다름) — 변동성 조건부 잔차 볼륨은 DB에 없음",
+        "confidence": "medium",
+        "implementation": "R: per stock per month, lm(log(Vol+1) ~ log(abs(Ret)+1e-4), data=tail(daily_data,20)) → residuals 20일 평균 또는 t-1일 값. KR RAWDATA Vol+Ret 사용. PIT: t-1 lag 적용",
+        "source_insight": "SMAR 논문: 변동성이 거래량의 primary driver (정보충격 → 가격변동 → 거래). 변동성 설명분 제거 후 잔차는 noise-vs-information 분리기"
+      },
+      "reason": "SMAR: 거래량-변동성-수익률 joint dynamics — alpha 소스. 변동성 조건부 잔차 볼륨이 정보 거래 지시자로 횡단면 팩터 testable. AUTORUN 우선순위 1"
+    }
+  ]
+}

@@ -660,19 +660,22 @@
     "STR_AS_20260726_174804_23216": {
       "strategy_id": "STR_AS_20260726_174804_23216",
       "grade": "C",
-      "role": null,
+      "role": {},
       "origin_mode": "alpha_search",
       "sim_result_path": "stage_artifacts/module_quarantine/STR_AS_20260726_174804_23216/sim_result.rds",
       "n_days": 5295,
-      "date_range": ["2005-02-03", "2026-07-24"],
+      "date_range": [
+        "2005-02-03",
+        "2026-07-24"
+      ],
       "registered_at": "2026-07-26T17:55:50+09:00",
       "metric_type": "proxy",
       "fr_eligible": false,
       "frozen": false,
-      "source_contract_id": null,
+      "source_contract_id": {},
       "module_hash": "3567f2fa4666f791311ef1bd16d45aad",
-      "build_version": null,
-      "cost_model_version": null,
+      "build_version": {},
+      "cost_model_version": {},
       "bt_result_path": "stage_artifacts/alpha_search/20260726_174804_23216/bt_result.rds",
       "contract": {
         "policy": "v8.1_fr_input_floor",
@@ -683,12 +686,84 @@
         "strategy_idea": "수익률 FFT 파워 스펙트럼 저주파수 에너지 비율(f<=1/60)이 높은 종목 매수 — 장기 트렌드 지속성 강한 구조 (Sepp-Lucic 2026, arxiv:2607.19497)",
         "score": 20.5,
         "f_grade_reasons": [],
-        "fmt_codes": ["FMT-01", "FMT-04"],
+        "fmt_codes": [
+          "FMT-01",
+          "FMT-04"
+        ],
         "bt_result_path": "stage_artifacts/alpha_search/20260726_174804_23216/bt_result.rds",
+        "bt_contract_status": "OK"
+      }
+    },
+    "STR_AS_20260727_202754_49064": {
+      "strategy_id": "STR_AS_20260727_202754_49064",
+      "grade": "C",
+      "role": {},
+      "origin_mode": "alpha_search",
+      "sim_result_path": "stage_artifacts/module_quarantine/STR_AS_20260727_202754_49064/sim_result.rds",
+      "n_days": 5296,
+      "date_range": [
+        "2005-02-03",
+        "2026-07-27"
+      ],
+      "registered_at": "2026-07-27T20:33:15+09:00",
+      "metric_type": "proxy",
+      "fr_eligible": false,
+      "frozen": false,
+      "source_contract_id": {},
+      "module_hash": "ff037462fcf68b385302caab00aff902",
+      "build_version": {},
+      "cost_model_version": {},
+      "bt_result_path": "stage_artifacts/alpha_search/20260727_202754_49064/bt_result.rds",
+      "contract": {
+        "policy": "v8.1_fr_input_floor",
+        "contract_pass": false,
+        "eligibility_reason": "metric_type != backtested; contract_pass != TRUE; frozen != TRUE; source_contract_id missing; build_version missing; cost_model_version missing"
+      },
+      "meta": {
+        "strategy_idea": "저주파 스펙트럼 질량(Sepp-Lucic 2026): trailing 60거래일 일별 log-return periodogram에서 저주파(f<1/30, 주기>30일) PSD 비중 — 값이 클수록 추세 지속성이 강해 미래 수익률을 예측함.",
+        "score": 15.3,
+        "f_grade_reasons": [],
+        "fmt_codes": [
+          "FMT-01",
+          "FMT-04",
+          "FMT-07"
+        ],
+        "bt_result_path": "stage_artifacts/alpha_search/20260727_202754_49064/bt_result.rds",
+        "bt_contract_status": "OK"
+      }
+    },
+    "STR_AS_20260727_202818_45232": {
+      "strategy_id": "STR_AS_20260727_202818_45232",
+      "grade": "F",
+      "role": null,
+      "origin_mode": "alpha_search",
+      "sim_result_path": "stage_artifacts/module_quarantine/STR_AS_20260727_202818_45232/sim_result.rds",
+      "n_days": 5296,
+      "date_range": ["2005-02-03", "2026-07-27"],
+      "registered_at": "2026-07-27T20:42:15+09:00",
+      "metric_type": "proxy",
+      "fr_eligible": false,
+      "frozen": false,
+      "source_contract_id": null,
+      "module_hash": "92e1fea63ed439f3be95b4e8321b262e",
+      "build_version": null,
+      "cost_model_version": null,
+      "bt_result_path": "stage_artifacts/alpha_search/20260727_202818_45232/bt_result.rds",
+      "contract": {
+        "policy": "v8.1_fr_input_floor",
+        "contract_pass": false,
+        "eligibility_reason": "metric_type != backtested; contract_pass != TRUE; frozen != TRUE; source_contract_id missing; build_version missing; cost_model_version missing"
+      },
+      "meta": {
+        "strategy_idea": "변동성 통제 거래량 서프라이즈 — 252d OLS로 vol 예측분 제거한 log거래량 잔차. 양(+) 잔차 = 정보주도 거래 급증 신호",
+        "score": 0,
+        "f_grade_reasons": ["게이트 사유: Structural drawdown (55%+ episodes>=6, max_underwater>=252d): MDD 67.2%, 45%+ episodes=12/15, max_underwater=483/252", "FMT-01 Structural MDD: MDD 67.2% > 45% — 선택 종목군의 위기 동반급락(구조적 꼬리위험)", "FMT-02 Factor Degeneration: IR -0.38 < -0.1 & 초과CAGR -7.0%p < 0 — KR에서 팩터 방향 역작동 의심", "알파 부재: 정보비율 -0.38로 벤치 대비 기여가 음수/미약", "초과수익 부족: 벤치 대비 -7.0%p"],
+        "fmt_codes": ["FMT-01", "FMT-02"],
+        "bt_result_path": "stage_artifacts/alpha_search/20260727_202818_45232/bt_result.rds",
         "bt_contract_status": "OK"
       }
     }
   },
-  "last_updated": "2026-07-26T17:55:50+09:00",
-  "n_modules": 17
+  "last_updated": "2026-07-27T20:42:15+09:00",
+  "n_modules": 19
 }

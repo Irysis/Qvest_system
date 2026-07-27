@@ -1,0 +1,87 @@
+{
+  "paper_id": "2607.16450",
+  "paper_title": "Portfolio Optimization under Heavy Tails and Asymmetric Volatility: Evidence from Taiwan-Exposed ETFs",
+  "factor_name": "hill_tail_index",
+  "strategy_name": "HILL_TAIL_IDX_v1",
+  "strategy_id": "STR_AS_20260727_202021_26592",
+  "engine_path": "02_Infrastructure/alpha_search/fe_hill_tail_index.R",
+  "run_date": "20260727",
+  "impl_spec": {
+    "signal": "Hill estimator tail index, alpha_hill = 1/mean(log(X_k)-log(X_{k+1})), k=15, rolling 252d",
+    "factor_direction": "Score = -alpha_hill (fatter tail = lower alpha_hill = higher rank)",
+    "pit_lag": "rolling 252d window ending prior month-end, all lagged",
+    "universe": "K200_KQ150",
+    "n_holdings": 20,
+    "weight_method": "equal",
+    "commission": 0.0015,
+    "paper_tests_this_directly": false,
+    "novel_hypothesis_note": "Paper uses Hill index as risk measure for ETF portfolio optimization (tail risk estimation), not as cross-sectional return predictor. This test applies it as a cross-sectional alpha factor: stocks with fatter tails (lower Hill index) earn higher future returns (risk premium hypothesis). Direction ambiguous per paper.",
+    "fidelity_note": "논문이 Hill 지수를 ETF 포트폴리오 최적화의 리스크 측정도구로 사용한 것을 KR 개별종목 횡단면 알파 팩터로 재해석한 구현. 논문 직접 구현이 아닌 팩터 아이디어 추출 검증."
+  },
+  "pit_pass": true,
+  "contract_pass": true,
+  "robustness_pass": false,
+  "fidelity_pass": null,
+  "port_t": 0.77,
+  "oos_retention": 0.77,
+  "calmar": 0.22,
+  "grade": "F",
+  "score": 11,
+  "pass": false,
+  "notable": true,
+  "run_success": true,
+  "error": null,
+  "metrics": {
+    "CAGR_pct": 9.9,
+    "SR": 0.83,
+    "MDD_pct": -44.7,
+    "IR": 0.21,
+    "Turnover_pct": 112.3,
+    "BM_CAGR_pct": 14.91,
+    "BM_SR": 0.64,
+    "excess_CAGR_pct": -5.01,
+    "PORT_t": 0.77,
+    "OOS_retention": 0.77,
+    "Calmar": 0.22,
+    "DSR": null
+  },
+  "factor_analysis": {
+    "FF3_alpha_ann_pct": 2.1,
+    "FF3_alpha_t": 0.37,
+    "FF5_alpha_ann_pct": 2.3,
+    "FF5_alpha_t": 0.43,
+    "Carhart4_alpha_ann_pct": 2.2,
+    "Carhart4_alpha_t": 0.39,
+    "FM_lambda": 0.0003,
+    "FM_t": 0.20,
+    "IC_mean": 0.0067,
+    "ICIR": 0.0737
+  },
+  "hard_gate_verdict": {
+    "PORT_t_pass": false,
+    "OOS_retention_pass": true,
+    "Calmar_pass": false,
+    "overall": "FAIL"
+  },
+  "screening": {
+    "screen_pass": false,
+    "FMT_code": "FMT-02",
+    "FMT_label": "초과수익 음수 및 낮은 CAGR"
+  },
+  "verdict_notes": [
+    "PORT_t = 0.77 << 2.95 기준 미달. 꼬리 두꺼운 종목이 더 높은 수익을 내는 위험 프리미엄 가설이 KR K200/KQ150 유니버스에서 성립하지 않음.",
+    "OOS_retention = 0.77 (≥0.70 PASS) — IS→OOS 신호 감쇠는 없으나 신호 자체가 약해 HARD PORT_t 게이트 미달.",
+    "FF3/FF5/Carhart 알파 t값 모두 < 1 (비유의). Fama-MacBeth t=0.20 비유의. IC_mean=0.0067 (사실상 0).",
+    "논문(2607.16450)은 Hill 지수를 위험 측정 도구로 사용. 이를 횡단면 알파 신호로 전환 시 KR 시장에서 예측력 없음 확인.",
+    "CAGR 9.9% vs BM 14.91% = 초과 -5.01%p. 꼬리 두꺼운 종목 선택이 오히려 수익에 불리함.",
+    "주목할 만한 실패(notable=TRUE): PIT-clean + 의미있는 음성 실증. L-code 적립 완료."
+  ],
+  "revival_conditions": [
+    "역방향 가설 검증: 꼬리 얇은 종목(alpha_hill 높음) 선택 = Score를 +alpha_hill로 전환",
+    "극단 분위 집중: alpha_hill < 2.0 또는 > 10.0 극단값 종목에서 cross-sectional 효과 재검증",
+    "Hill 지수 변화율 팩터: 꼬리 두께 변화(월별 delta_alpha_hill)가 예측력 보유 여부"
+  ],
+  "l_code_path": "stage_artifacts/l_code/alpha_search/l_code_STR_AS_20260727_202021_26592.json",
+  "out_dir": "stage_artifacts/alpha_search/20260727_202021_26592",
+  "verified_by": "Q-Lead AlphaSearch 2607.16450 20260727"
+}

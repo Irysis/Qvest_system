@@ -1,0 +1,95 @@
+{
+  "schema_version": "v54_ax_p0_mode",
+  "candidate_id": "CAND_20260727_alpha_research_momentum_negative_L-AR-20260621_105345_L-AR-20260621_105345B_L-AR-20260621_161747",
+  "research_mode": "alpha_research",
+  "metric_type": "estimated",
+  "type": "empirical",
+  "polarity": "negative",
+  "statement_draft": "[실증 실패 규칙 초안] family=momentum, tags=MOMENTUM,KR_LONGONLY,NON_RETURN, supporting=14건 L-code. (promote.R 5축 검증에서 범위·메커니즘·OOS 확정 필요)",
+  "supporting_l_codes": [
+    "L-AR-20260621_105345",
+    "L-AR-20260621_105345B",
+    "L-AR-20260621_161747",
+    "L-AR-20260621_163658",
+    "L-AR-20260621_172656",
+    "L-AR-20260621_180336",
+    "L-AR-20260621_192350",
+    "L-AR-20260621_201229",
+    "L-AR-20260621_213456",
+    "L-AR-20260621_220827",
+    "L-AR-20260629_225254",
+    "L-AR-20260704_114303",
+    "L-AR-20260710_103312",
+    "L-AR-20260710_234439"
+  ],
+  "scope_draft": {
+    "market": "KR",
+    "factor_family": "momentum",
+    "regime": null,
+    "construction_types": null
+  },
+  "evidence_draft": {
+    "independent_l_codes": 14,
+    "independent_strategies": 14,
+    "strategies": [
+      "HURST_MOM_WT-D20260621_001",
+      "C23_OTHERCORP_ACCUM_WT-D20260621_005",
+      "WT-D20260629_001_gapfreq",
+      "WT-D20260710_001",
+      "WT-D20260710_005",
+      "CENSUSV3_VAL_RD_WC_AB",
+      "C22_QUIET_ACCUM_WT-D20260621_004",
+      "C25_SIGNEDFLOWRUN_WT-D20260621_007",
+      "C27b_BUYBACK_DECISION_DRIFT_WT-D20260621_010",
+      "C29_INDEX_INCLUSION_FRONTRUN_WT-D20260621_011",
+      "C26_OVERNIGHT_MOM_WT-D20260621_008",
+      "C24_LIQ_IMPROVE_WT-D20260621_006",
+      "PCDM_WT-D20260621_002",
+      "C27_BUYBACK_YIELD_CONFIRMED_WT-D20260621_009"
+    ],
+    "effect_direction_consistency": null,
+    "note": "evidence_draft — promote.R 5축 검증에서 hurdle_result/grade_a_catalog 교차검증으로 확정",
+    "n_eff_signatures": 14,
+    "independent_constructions": 14,
+    "constructions": [
+      "amihud_slope_liquidity_trend",
+      "buyback_decision_drift_eventtime_dart",
+      "buyback_yield_momentum_confirmed_carry",
+      "disclosure_quality_exclusion",
+      "flow_price_divergence_residual",
+      "index_inclusion_frontrun_drift",
+      "momentum_quality_conditioning",
+      "multi_axis_composite_midcap_emphasis",
+      "othercorp_strategic_accumulation",
+      "overnight_intraday_decomposition",
+      "peer_relative_residual_momentum",
+      "signed_flow_run_length",
+      "single_factor_long_only",
+      "single_sleeve_long_only_topN"
+    ],
+    "metric_types": [
+      "backtested",
+      "canonical_screen"
+    ]
+  },
+  "falsification_draft": {
+    "attempts": [
+      "lag1(t-1) rank-IC 0.028 < real 0.053(동월 누출 없음, PIT graceful); placebo ~0.004; 축·가중 변형 4후보 IS-only 선택(OOS 미조회); liq 2e8 vs 5e7 non-binding(score_eff 2.7488 동일); EW-대비 port_t 4.10(신호 실재 확증)이나 cap-w 2.08 = 전이 실패.",
+      "exclusion 3형태+rate+size-neutral 5구성; lag1 스트레스(부호 유지=PIT); placebo q95 등재; dual-basis(EW도 음); strict 정의 동일 null; n_trials=7 기록"
+    ],
+    "note": "L-code 기록 반증 시도 실값 집계"
+  },
+  "mechanism_draft": {
+    "economic_explanation": "KR restatement frequency proxies firm size/filing volume, not governance decay; excluding frequent restaters removes mega-cap momentum winners. No latent governance alpha after size-neutralization. (멤버 가설 14건 — promote.R에서 일치성 재검증)",
+    "mechanism_type": "structural",
+    "causal_plausibility": null
+  },
+  "oos_validation_draft": {
+    "oos_months": 267.5,
+    "oos_effect_vs_is": -1.24,
+    "note": "L-code oos_retention 실값 5건 median (IS65/OOS35 활성SR retention) + oos_months 실값 2건 median — promote.R essence_score 경유 재확정"
+  },
+  "cluster_members_count": 14,
+  "status": "pending_5axis",
+  "created_at": "2026-07-27T11:43:43+00:00"
+}

@@ -142,7 +142,7 @@ FIRED=$(awk -F'\t' -v cut="$CUT" 'NF>=2 && substr($2,1,10) >= cut {print $1}' \
 #──────────────────────────────────────────────────────────────────────────────
 # 관측창 = **관측을 시작한 시점**부터. 원장 최초 행이 아니다(회전이 그것을 지운다).
 #   사이드카 옆에 첫 관측 시각을 1회 기록해 회전과 무관하게 창을 센다.
-OBS_START_F="${SIDECAR%.tsv}_obs_start.txt"
+OBS_START_F="${QVEST_HFC_OBS_START:-${SIDECAR%.tsv}_obs_start.txt}"
 [ -f "$OBS_START_F" ] || date +%Y-%m-%dT%H:%M:%S > "$OBS_START_F" 2>/dev/null || true
 OLDEST=$(head -1 "$OBS_START_F" 2>/dev/null | grep -oE '[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9:]{8}')
 WINDOW_H=0
