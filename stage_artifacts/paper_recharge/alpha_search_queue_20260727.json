@@ -2,12 +2,13 @@
   "date": "20260727",
   "runtime_vars": {"TODAY": "20260727", "MAX_ALPHA": 2},
   "source_files": [
-    "stage_artifacts/paper_recharge/alpha_search_route_20260726.json",
+    "stage_artifacts/paper_recharge/alpha_search_route_20260727.json",
     "stage_artifacts/paper_recharge/factor_recheck_queue_20260727.json"
   ],
-  "n_processed": 2,
+  "n_processed": 3,
   "n_adopted": 0,
-  "n_quarantine": 2,
+  "n_quarantine": 3,
+  "n_skipped_done_list": 1,
   "candidates": [
     {
       "paper_id": "2607.16450",
@@ -47,13 +48,44 @@
       "oos_retention": -0.58,
       "grade": "F",
       "notable": false,
-      "mechanism_diagnosis": "vol-adjusted volume residual = 거래량에서 변동성 기여분을 제거한 정보충격 구성요소. KR에서 이 잔차가 수익 예측력 없음(IC=-0.004, PORT_t=-1.45 음수). 고회전율(996%/년)은 신호 불안정성 반영. 예외: COVID(+7.4%p) + EU위기(+14.2%p) 극단 이벤트에서만 포착 → 평상시가 아닌 충격형 이벤트에서만 정보충격 채널 활성화. D3 dead class 확증.",
+      "mechanism_diagnosis": "vol-adjusted volume residual = 거래량에서 변동성 기여분을 제거한 정보충격 구성요소. KR에서 이 잔차가 수익 예측력 없음(IC=-0.004, PORT_t=-1.45 음수). 고회전율(996%/년)은 신호 불안정성 반영. 예외: COVID/EU위기 극단 이벤트에서만 포착. D3 dead class 확증.",
       "next_probe": [
-        "이벤트-조건부 트리거: Vol-surprise가 상위 5%ile 극단 급등인 달만 선별 → 단순 monthly 팩터가 아닌 충격 검출기로 재설계 (D3 dead 회피, 이벤트 충격 채널로 재해석)",
-        "COVID/EU위기 공통점 진단: 두 기간 모두 대형 정보 불확실성 구간 → '불확실성 충격 × vol-surprise 교집합' 신호가 평시 신호보다 정보가치 상회하는지 검증"
+        "이벤트-조건부 트리거: Vol-surprise가 상위 5%ile 극단 급등인 달만 선별 → 충격 검출기로 재설계",
+        "불확실성 충격 × vol-surprise 교집합 신호 구조 검증"
+      ]
+    },
+    {
+      "paper_id": "2607.19497",
+      "factor_name": "spec_mass_lowfreq_60d",
+      "strategy_id": "STR_AS_20260727_202754_49064",
+      "route_priority": 2,
+      "autorun": true,
+      "L1_pit": "PASS",
+      "L2_contract": "PASS",
+      "L3_robustness": "FAIL",
+      "L4_fidelity": "PASS",
+      "L5_gate": "QUARANTINE",
+      "gate_failed_layers": "robustness",
+      "port_t": null,
+      "oos_retention": 0.263,
+      "calmar": 0.207,
+      "grade": "C",
+      "score": 15.3,
+      "notable": true,
+      "mechanism_diagnosis": "저주파 스펙트럼 질량(Sepp-Lucic 2026) — trailing 60거래일 periodogram f<1/30 질량 비율. 추세 지속성 강한 종목 선별 가설. CAGR 12.7%/FF3 α 4.28%yr 신호 존재. 그러나 MDD 61.4% 구조적 + BM상관 0.76 + OOS 붕괴(0.263) + post-2017 SR -0.55. 알파 근거 존재하나 벤치 아티팩트·국면 필터 부재가 근본 한계.",
+      "next_probe": [
+        "MDD 레버 overlay: 신호력(CAGR 12.7%, FF3 α 4.28%/yr) 존재 → OVERLAY_CANDIDATE 라우팅 후 국면/DD overlay 적용으로 MDD 61.4%→35% 목표",
+        "저변동성 subset(vol 하위 3분위) 조건부 검증 — 추세 지속성이 저변동성 종목서 더 명확한지 확인"
       ]
     }
   ],
+  "skipped": [
+    {
+      "paper_id": "2606.08141",
+      "factor_name": "resid_info_vol",
+      "reason": "paper_id already in done list (vol_adj_volume_surprise processed same session). resid_info_vol auto_verify exists but skipped per done-list dedup."
+    }
+  ],
   "quarantine_log": "stage_artifacts/paper_recharge/auto_quarantine_20260727.json",
-  "completed_at": "2026-07-27T20:51:00+0900"
+  "completed_at": "2026-07-27T21:21:00+0900"
 }

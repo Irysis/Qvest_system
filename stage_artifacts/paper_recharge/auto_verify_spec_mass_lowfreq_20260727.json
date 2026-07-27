@@ -2,7 +2,16 @@
   "run_id": "STR_AS_20260727_202754_49064",
   "strategy_name": "spec_mass_lowfreq_60d",
   "paper": "Sepp & Lucic (2026) arXiv:2607.19497",
+  "paper_id": "2607.19497",
   "factor_name": "spec_mass_lowfreq_60d",
+  "pit_pass": true,
+  "contract_pass": true,
+  "robustness_pass": false,
+  "fidelity_pass": true,
+  "fidelity_issues": "논문 검증 레벨 불일치(기술적 구현 충실): 논문은 시스템/포트폴리오 레벨 분석이나 spec.pgram 계산 자체는 라벨-실행 일치. batch_434 미해당(라벨=실행).",
+  "fidelity_confidence": "medium",
+  "fidelity_checked_by": "independent_verifier_q_lead_inline",
+  "robustness_fail_reason": "OOS_retention=0.263 < 0.5 (L3 threshold). Calmar=0.207 < 0.64 HARD.",
   "factor_description": "trailing 60거래일 일별 log-return periodogram에서 저주파(f<1/30, 주기>30일) PSD 합 / 전체 PSD 합",
   "pit_check": "CLEAN",
   "grade": "C",
@@ -23,7 +32,7 @@
     "FF3_alpha_annual_pct": 4.28,
     "FF3_alpha_tstat": 1.47,
     "Carhart4_alpha_annual_pct": 3.26,
-    "Carhart4_alpha_tstat": 1.10,
+    "Carhart4_alpha_tstat": 1.1,
     "FF5_alpha_annual_pct": 3.87,
     "FF5_alpha_tstat": 1.32,
     "FMB_lambda_tstat": 2.68
@@ -36,5 +45,9 @@
     "annual_returns": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/alpha_search/20260727_202754_49064/annual_returns.png"
   },
   "hypothesis_index_lookup": "spectral(히트 1건: NCO Spectral Clustering — 공분산 추정, 별개 가설) / frequency(히트: 약세예측 엔진, 별개) — 스펙트럼 질량 팩터 신규",
-  "created_at": "2026-07-27"
+  "created_at": "2026-07-27",
+  "gate_decision": "QUARANTINE",
+  "gate_failed_layers": "robustness",
+  "gate_rule": "PIT hard + contract&robustness&fidelity all PASS (unattended 4/4, fail-closed)",
+  "gate_checked_at": "2026-07-27T21:20:08+0900"
 }
