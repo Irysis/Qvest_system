@@ -1,0 +1,83 @@
+{
+  "schema_version": "auto_verify_v1",
+  "run_id": "STR_AS_20260727_204043_17032",
+  "strategy_name": "RESID_INFO_VOL",
+  "paper": "arXiv:2606.08141 — Bucci, Palomba, Rossi (2026) SMAR 모델",
+  "date": "20260727",
+  "hypothesis": "변동성 조건부 잔차 볼륨(20일 OLS 잔차)이 높은 종목 = 정보 거래 활동 신호 → 미래 수익률 양의 예측력",
+  "grade": "F",
+  "score": 3.4,
+  "pass": false,
+  "notable": true,
+  "pit_pass": true,
+  "port_t_nw_lag3": -0.487,
+  "metrics": {
+    "CAGR": 8.33,
+    "AnnVol": 24.64,
+    "Sharpe": 0.338,
+    "MDD": 62.08,
+    "IR": -0.150,
+    "Calmar": 0.134,
+    "Turnover_Ann": 1026.1,
+    "BM_Corr": 0.718,
+    "IC": 0.0024,
+    "ICIR": 0.026,
+    "IC_pos_rate": 0.506,
+    "OOS_retention": 0.01,
+    "IS_SR": 0.566,
+    "OOS_SR": 0.003
+  },
+  "factor_analysis": {
+    "FF3_alpha_t": 0.213,
+    "Carhart4_alpha_t": -0.128,
+    "FF5_alpha_t": -0.032
+  },
+  "fail_pattern": ["FMT-01", "FMT-02", "FMT-04"],
+  "fail_reasons": {
+    "FMT-01": "MDD 62.1%로 구조적 낙폭 (45%+ episodes 19/15 초과, max_underwater 485일/252일 초과)",
+    "FMT-02": "알파 소진 — 최근 3Y SR 0.131 / 전기간 SR 0.338 = 0.39비율 (post-2017 감쇠)",
+    "FMT-04": "BM상관 0.718 고상관 + MDD>35%"
+  },
+  "mechanism_diagnosis": {
+    "primary": "KR 횡단면 IC ≈ 0 (0.0024) — 잔차 볼륨이 KR K200∪KQ150 내 종목선별력 無",
+    "turnover_trap": "OLS 잔차는 일별 노이즈가 극심 → 연 1026% 회전율 → 15bps×1026% = ~307bps/yr 비용만으로 초과수익 잠식",
+    "oos_collapse": "IS SR 0.566 → OOS SR 0.003 (retention 0.01): 학습 기간 특이 패턴에 과적합, 실전 일반화 실패",
+    "theory_gap": "SMAR 모델이 식별한 '변동성→거래량' 관계는 시장-수준 공통충격 기전 — 종목 간 횡단면 예측력과 별개"
+  },
+  "next_probe": [
+    {
+      "id": "P1",
+      "desc": "월간 평균 잔차 볼륨 (일별 OLS 잔차의 월평균) — 회전율 극감 기대",
+      "priority": 1,
+      "rationale": "일별 노이즈를 월 평균으로 스무딩하면 1026%→~120% 회전율로 비용 문제 완화 가능"
+    },
+    {
+      "id": "P2",
+      "desc": "잔차 볼륨 극음값 exclusion 필터 (선택 아닌 배제) — 정보 매도 포착",
+      "priority": 2,
+      "rationale": "선택(long 잔차 높음)보다 배제(잔차 극음 = 정보 매도 신호)가 회전율 낮고 기전 이론과도 정합"
+    },
+    {
+      "id": "P3",
+      "desc": "시총 tier 조건부 (mid-cap 한정) — cap-w 트랩 우회 검증",
+      "priority": 3,
+      "rationale": "cap-w 유니버스서 mega-cap 희석 제거, 정보거래 이론은 mid-cap서 더 타당"
+    }
+  ],
+  "consumption_face_check": {
+    "factor_ranking": "FAIL — IC 0.0024, PORT_t -0.487",
+    "universe_filter": "POSSIBLE — 극음 잔차 볼륨 exclusion 플래그 (P2 별도 검증 필요)",
+    "overlay_regime_input": "미검증",
+    "risk_model": "해당없음",
+    "monitoring_signal": "해당없음",
+    "screening_label": "조건부 — 비정상 high residual 이벤트 선별 (일별 이벤트 모니터링)",
+    "cross_mode": "해당없음"
+  },
+  "l_code": "L-AS-20260727_204043_17032",
+  "l_code_path": "stage_artifacts/l_code/alpha_search/l_code_STR_AS_20260727_204043_17032.json",
+  "output_dir": "stage_artifacts/alpha_search/20260727_204043_17032/",
+  "telegram_sent": true,
+  "telegram_bytes": 2603,
+  "quarantine": true,
+  "note": "PORT_t -0.487 (< 1.5 기준). 의미있는 실패 미달이나 자동 L-code 적립 완료. 텔레그램 harness 자동 발송."
+}

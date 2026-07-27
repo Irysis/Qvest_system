@@ -18,9 +18,9 @@
     "n_rebalances": 258,
     "paper_tests_this_directly": false,
     "novel_hypothesis_note": "Paper models vol-volume dynamics via SMAR; residual as return predictor is novel extension. Paper conclusion 'volatility is primary driver of trading activity' does not imply residual is a return signal.",
-    "hypothesis_index_lookup": "keyword=volume,surprise — hits: Volume_Concentration(grade F), Volume_Price_Divergence(grade F), Microstructure_FQ029(port_t 1.157 FAIL). Differentiator: vol-controlled residual via rolling OLS (not raw volume or price-volume divergence). D3 dead class overlap noted but paper-driven mandate applied.",
-    "frontier_queue_check": "No volume-surprise entry in alpha_frontier_queue.json — no dohoon_decision block.",
-    "ev_map_check": "D3 (microstructure/flow novel) class — dead verdict. However, this is a paper-recharge task with explicit instruction from Dohoon. Proceeded."
+    "hypothesis_index_lookup": "keyword=volume,surprise <U+2014> hits: Volume_Concentration(grade F), Volume_Price_Divergence(grade F), Microstructure_FQ029(port_t 1.157 FAIL). Differentiator: vol-controlled residual via rolling OLS (not raw volume or price-volume divergence). D3 dead class overlap noted but paper-driven mandate applied.",
+    "frontier_queue_check": "No volume-surprise entry in alpha_frontier_queue.json <U+2014> no dohoon_decision block.",
+    "ev_map_check": "D3 (microstructure/flow novel) class <U+2014> dead verdict. However, this is a paper-recharge task with explicit instruction from Dohoon. Proceeded."
   },
   "performance": {
     "cagr_pct": 3.96,
@@ -53,7 +53,11 @@
   "pit_pass": true,
   "contract_pass": true,
   "robustness_pass": false,
-  "fidelity_pass": null,
+  "fidelity_pass": true,
+  "fidelity_issues": [],
+  "fidelity_confidence": "med",
+  "fidelity_checked_by": "independent_verifier_claude_p",
+  "fidelity_notes": "SMAR <U+B17C><U+BB38><U+C5D0><U+C11C> bivariate <U+AD00><U+ACC4>(log_vol ~ AR(1) + realized_vol)<U+AC00> <U+BA85><U+C2DC><U+C801><U+C73C><U+B85C> <U+BD84><U+C11D><U+B428>. <U+C794><U+CC28>(unexpected volume)<U+B97C> <U+C218><U+C775> <U+C608><U+CE21> <U+C2E0><U+D638><U+B85C> <U+C804><U+D658><U+C740> novel_hypothesis<U+C774><U+B098> fabrication <U+C544><U+B2D8>(impl_spec <U+BA85><U+C2DC>). PIT: t-1 lag <U+C801><U+C6A9>, <U+B864><U+B9C1> 252d OLS. KR <U+B370><U+C774><U+D130>: TradingValue RAWDATA<U+C5D0> <U+C874><U+C7AC>. confidence=med: SMAR<U+2192>bivariate <U+B2E8><U+C21C><U+D654><U+B294> <U+C720><U+D6A8><U+D55C> <U+CD94><U+CD9C><U+C774><U+B098> full SMAR <U+C544><U+B2D8>.",
   "port_t": -1.454,
   "oos_retention": -0.58,
   "grade": "F",
@@ -71,12 +75,16 @@
     "l_code_path": "stage_artifacts/l_code/alpha_search/l_code_STR_AS_20260727_202818_45232.json"
   },
   "verdict": {
-    "L1_pit": "PASS — detect_lookahead CLEAN (96 lines scanned). PIT 96줄 정적분석 통과. t-1 lagged inputs 확인.",
-    "L2_contract": "PASS — bt_result 11-component contract. audit WARN(15 PASS / 0 FAIL / 1 WARN). integrity=WARNING.",
-    "L3_robustness": "FAIL — port_t_NW_lag3=-1.454 (기준 2.95 미달). OOS retention=-0.58 (기준 0.7 미달). IC=-0.004 (사실상 신호 없음). FF3/FF5/Carhart 모두 음의 알파.",
-    "summary": "변동성 통제 거래량 서프라이즈 신호(vol-adjusted volume surprise)는 KR K200+KQ150 유니버스에서 유의미한 수익 예측력이 없음 확인. IC -0.004(거의 0), PORT_t -1.45(음수), OOS retention -0.58로 3중 기각. 논문의 SMAR 구조 발견(vol이 거래량의 주요 드라이버)을 수익 예측 신호로 확장하는 가설은 KR에서 성립하지 않음. D3 dead class 확증 추가."
+    "L1_pit": "PASS <U+2014> detect_lookahead CLEAN (96 lines scanned). PIT 96<U+C904> <U+C815><U+C801><U+BD84><U+C11D> <U+D1B5><U+ACFC>. t-1 lagged inputs <U+D655><U+C778>.",
+    "L2_contract": "PASS <U+2014> bt_result 11-component contract. audit WARN(15 PASS / 0 FAIL / 1 WARN). integrity=WARNING.",
+    "L3_robustness": "FAIL <U+2014> port_t_NW_lag3=-1.454 (<U+AE30><U+C900> 2.95 <U+BBF8><U+B2EC>). OOS retention=-0.58 (<U+AE30><U+C900> 0.7 <U+BBF8><U+B2EC>). IC=-0.004 (<U+C0AC><U+C2E4><U+C0C1> <U+C2E0><U+D638> <U+C5C6><U+C74C>). FF3/FF5/Carhart <U+BAA8><U+B450> <U+C74C><U+C758> <U+C54C><U+D30C>.",
+    "summary": "<U+BCC0><U+B3D9><U+C131> <U+D1B5><U+C81C> <U+AC70><U+B798><U+B7C9> <U+C11C><U+D504><U+B77C><U+C774><U+C988> <U+C2E0><U+D638>(vol-adjusted volume surprise)<U+B294> KR K200+KQ150 <U+C720><U+B2C8><U+BC84><U+C2A4><U+C5D0><U+C11C> <U+C720><U+C758><U+BBF8><U+D55C> <U+C218><U+C775> <U+C608><U+CE21><U+B825><U+C774> <U+C5C6><U+C74C> <U+D655><U+C778>. IC -0.004(<U+AC70><U+C758> 0), PORT_t -1.45(<U+C74C><U+C218>), OOS retention -0.58<U+B85C> 3<U+C911> <U+AE30><U+AC01>. <U+B17C><U+BB38><U+C758> SMAR <U+AD6C><U+C870> <U+BC1C><U+ACAC>(vol<U+C774> <U+AC70><U+B798><U+B7C9><U+C758> <U+C8FC><U+C694> <U+B4DC><U+B77C><U+C774><U+BC84>)<U+C744> <U+C218><U+C775> <U+C608><U+CE21> <U+C2E0><U+D638><U+B85C> <U+D655><U+C7A5><U+D558><U+B294> <U+AC00><U+C124><U+C740> KR<U+C5D0><U+C11C> <U+C131><U+B9BD><U+D558><U+C9C0> <U+C54A><U+C74C>. D3 dead class <U+D655><U+C99D> <U+CD94><U+AC00>."
   },
-  "notes": "실행 중 엔진 버그 2건 수리: (1) n<252 체크 미비로 음수 인덱스 오류 → guard 추가. (2) .SDcols 불필요 경고 제거. 수리 후 PIT CLEAN 확인. 롤링 OLS 계산시간 약 11분 소요(종목수 3171개 × 36년 일별 데이터). 고회전율(996%/년)은 월별 리밸런싱으로 인한 잔차 불안정성 반영. 긍정적 측면: COVID(2020) +7.4%p 상대 우위 — 정보충격형 이벤트 포착 가능성 있으나 전반적 신호력 부재.",
+  "notes": "<U+C2E4><U+D589> <U+C911> <U+C5D4><U+C9C4> <U+BC84><U+ADF8> 2<U+AC74> <U+C218><U+B9AC>: (1) n<252 <U+CCB4><U+D06C> <U+BBF8><U+BE44><U+B85C> <U+C74C><U+C218> <U+C778><U+B371><U+C2A4> <U+C624><U+B958> <U+2192> guard <U+CD94><U+AC00>. (2) .SDcols <U+BD88><U+D544><U+C694> <U+ACBD><U+ACE0> <U+C81C><U+AC70>. <U+C218><U+B9AC> <U+D6C4> PIT CLEAN <U+D655><U+C778>. <U+B864><U+B9C1> OLS <U+ACC4><U+C0B0><U+C2DC><U+AC04> <U+C57D> 11<U+BD84> <U+C18C><U+C694>(<U+C885><U+BAA9><U+C218> 3171<U+AC1C> <U+00D7> 36<U+B144> <U+C77C><U+BCC4> <U+B370><U+C774><U+D130>). <U+ACE0><U+D68C><U+C804><U+C728>(996%/<U+B144>)<U+C740> <U+C6D4><U+BCC4> <U+B9AC><U+BC38><U+B7F0><U+C2F1><U+C73C><U+B85C> <U+C778><U+D55C> <U+C794><U+CC28> <U+BD88><U+C548><U+C815><U+C131> <U+BC18><U+C601>. <U+AE0D><U+C815><U+C801> <U+CE21><U+BA74>: COVID(2020) +7.4%p <U+C0C1><U+B300> <U+C6B0><U+C704> <U+2014> <U+C815><U+BCF4><U+CDA9><U+ACA9><U+D615> <U+C774><U+BCA4><U+D2B8> <U+D3EC><U+CC29> <U+AC00><U+B2A5><U+C131> <U+C788><U+C73C><U+B098> <U+C804><U+BC18><U+C801> <U+C2E0><U+D638><U+B825> <U+BD80><U+C7AC>.",
   "run_success": true,
-  "error": null
+  "error": {},
+  "gate_decision": "QUARANTINE",
+  "gate_failed_layers": "robustness",
+  "gate_rule": "PIT hard + contract&robustness&fidelity all PASS (unattended 4/4, fail-closed)",
+  "gate_checked_at": "2026-07-27T20:51:36+0900"
 }

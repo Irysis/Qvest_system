@@ -16,12 +16,16 @@
     "commission": 0.0015,
     "paper_tests_this_directly": false,
     "novel_hypothesis_note": "Paper uses Hill index as risk measure for ETF portfolio optimization (tail risk estimation), not as cross-sectional return predictor. This test applies it as a cross-sectional alpha factor: stocks with fatter tails (lower Hill index) earn higher future returns (risk premium hypothesis). Direction ambiguous per paper.",
-    "fidelity_note": "논문이 Hill 지수를 ETF 포트폴리오 최적화의 리스크 측정도구로 사용한 것을 KR 개별종목 횡단면 알파 팩터로 재해석한 구현. 논문 직접 구현이 아닌 팩터 아이디어 추출 검증."
+    "fidelity_note": "<U+B17C><U+BB38><U+C774> Hill <U+C9C0><U+C218><U+B97C> ETF <U+D3EC><U+D2B8><U+D3F4><U+B9AC><U+C624> <U+CD5C><U+C801><U+D654><U+C758> <U+B9AC><U+C2A4><U+D06C> <U+CE21><U+C815><U+B3C4><U+AD6C><U+B85C> <U+C0AC><U+C6A9><U+D55C> <U+AC83><U+C744> KR <U+AC1C><U+BCC4><U+C885><U+BAA9> <U+D6A1><U+B2E8><U+BA74> <U+C54C><U+D30C> <U+D329><U+D130><U+B85C> <U+C7AC><U+D574><U+C11D><U+D55C> <U+AD6C><U+D604>. <U+B17C><U+BB38> <U+C9C1><U+C811> <U+AD6C><U+D604><U+C774> <U+C544><U+B2CC> <U+D329><U+D130> <U+C544><U+C774><U+B514><U+C5B4> <U+CD94><U+CD9C> <U+AC80><U+C99D>."
   },
   "pit_pass": true,
   "contract_pass": true,
   "robustness_pass": false,
-  "fidelity_pass": null,
+  "fidelity_pass": true,
+  "fidelity_issues": [],
+  "fidelity_confidence": "high",
+  "fidelity_checked_by": "independent_verifier_claude_p",
+  "fidelity_notes": "Hill estimator <U+ACF5><U+C2DD>(alpha_hill=1/mean(log(X_k)-log(X_{k+1})), k=15) <U+B17C><U+BB38><U+C5D0> <U+C815><U+D655><U+D788> <U+AE30><U+C220><U+B428>. <U+CF54><U+B4DC><U+AC00> <U+ACF5><U+C2DD><U+C744> <U+C815><U+D655><U+D788> <U+AD6C><U+D604>. <U+C218><U+C775> <U+C608><U+CE21> <U+C2E0><U+D638><U+B85C><U+C758> <U+C804><U+D658><U+C740> novel_hypothesis<U+C774><U+B098> batch_434 fabrication <U+C544><U+B2D8>(impl_spec<U+C5D0> <U+BA85><U+C2DC>). PIT: 252d <U+B864><U+B9C1> <U+C708><U+B3C4><U+C6B0> past data<U+B9CC>. KR <U+B370><U+C774><U+D130>: <U+C77C><U+BCC4> Close <U+C874><U+C7AC>. 5<U+AC1C> <U+CCB4><U+D06C> <U+BAA8><U+B450> <U+D1B5><U+ACFC>.",
   "port_t": 0.77,
   "oos_retention": 0.77,
   "calmar": 0.22,
@@ -30,7 +34,7 @@
   "pass": false,
   "notable": true,
   "run_success": true,
-  "error": null,
+  "error": {},
   "metrics": {
     "CAGR_pct": 9.9,
     "SR": 0.83,
@@ -43,7 +47,7 @@
     "PORT_t": 0.77,
     "OOS_retention": 0.77,
     "Calmar": 0.22,
-    "DSR": null
+    "DSR": {}
   },
   "factor_analysis": {
     "FF3_alpha_ann_pct": 2.1,
@@ -53,7 +57,7 @@
     "Carhart4_alpha_ann_pct": 2.2,
     "Carhart4_alpha_t": 0.39,
     "FM_lambda": 0.0003,
-    "FM_t": 0.20,
+    "FM_t": 0.2,
     "IC_mean": 0.0067,
     "ICIR": 0.0737
   },
@@ -66,22 +70,15 @@
   "screening": {
     "screen_pass": false,
     "FMT_code": "FMT-02",
-    "FMT_label": "초과수익 음수 및 낮은 CAGR"
+    "FMT_label": "<U+CD08><U+ACFC><U+C218><U+C775> <U+C74C><U+C218> <U+BC0F> <U+B0AE><U+C740> CAGR"
   },
-  "verdict_notes": [
-    "PORT_t = 0.77 << 2.95 기준 미달. 꼬리 두꺼운 종목이 더 높은 수익을 내는 위험 프리미엄 가설이 KR K200/KQ150 유니버스에서 성립하지 않음.",
-    "OOS_retention = 0.77 (≥0.70 PASS) — IS→OOS 신호 감쇠는 없으나 신호 자체가 약해 HARD PORT_t 게이트 미달.",
-    "FF3/FF5/Carhart 알파 t값 모두 < 1 (비유의). Fama-MacBeth t=0.20 비유의. IC_mean=0.0067 (사실상 0).",
-    "논문(2607.16450)은 Hill 지수를 위험 측정 도구로 사용. 이를 횡단면 알파 신호로 전환 시 KR 시장에서 예측력 없음 확인.",
-    "CAGR 9.9% vs BM 14.91% = 초과 -5.01%p. 꼬리 두꺼운 종목 선택이 오히려 수익에 불리함.",
-    "주목할 만한 실패(notable=TRUE): PIT-clean + 의미있는 음성 실증. L-code 적립 완료."
-  ],
-  "revival_conditions": [
-    "역방향 가설 검증: 꼬리 얇은 종목(alpha_hill 높음) 선택 = Score를 +alpha_hill로 전환",
-    "극단 분위 집중: alpha_hill < 2.0 또는 > 10.0 극단값 종목에서 cross-sectional 효과 재검증",
-    "Hill 지수 변화율 팩터: 꼬리 두께 변화(월별 delta_alpha_hill)가 예측력 보유 여부"
-  ],
+  "verdict_notes": ["PORT_t = 0.77 << 2.95 <U+AE30><U+C900> <U+BBF8><U+B2EC>. <U+AF2C><U+B9AC> <U+B450><U+AEBC><U+C6B4> <U+C885><U+BAA9><U+C774> <U+B354> <U+B192><U+C740> <U+C218><U+C775><U+C744> <U+B0B4><U+B294> <U+C704><U+D5D8> <U+D504><U+B9AC><U+BBF8><U+C5C4> <U+AC00><U+C124><U+C774> KR K200/KQ150 <U+C720><U+B2C8><U+BC84><U+C2A4><U+C5D0><U+C11C> <U+C131><U+B9BD><U+D558><U+C9C0> <U+C54A><U+C74C>.", "OOS_retention = 0.77 (<U+2265>0.70 PASS) <U+2014> IS<U+2192>OOS <U+C2E0><U+D638> <U+AC10><U+C1E0><U+B294> <U+C5C6><U+C73C><U+B098> <U+C2E0><U+D638> <U+C790><U+CCB4><U+AC00> <U+C57D><U+D574> HARD PORT_t <U+AC8C><U+C774><U+D2B8> <U+BBF8><U+B2EC>.", "FF3/FF5/Carhart <U+C54C><U+D30C> t<U+AC12> <U+BAA8><U+B450> < 1 (<U+BE44><U+C720><U+C758>). Fama-MacBeth t=0.20 <U+BE44><U+C720><U+C758>. IC_mean=0.0067 (<U+C0AC><U+C2E4><U+C0C1> 0).", "<U+B17C><U+BB38>(2607.16450)<U+C740> Hill <U+C9C0><U+C218><U+B97C> <U+C704><U+D5D8> <U+CE21><U+C815> <U+B3C4><U+AD6C><U+B85C> <U+C0AC><U+C6A9>. <U+C774><U+B97C> <U+D6A1><U+B2E8><U+BA74> <U+C54C><U+D30C> <U+C2E0><U+D638><U+B85C> <U+C804><U+D658> <U+C2DC> KR <U+C2DC><U+C7A5><U+C5D0><U+C11C> <U+C608><U+CE21><U+B825> <U+C5C6><U+C74C> <U+D655><U+C778>.", "CAGR 9.9% vs BM 14.91% = <U+CD08><U+ACFC> -5.01%p. <U+AF2C><U+B9AC> <U+B450><U+AEBC><U+C6B4> <U+C885><U+BAA9> <U+C120><U+D0DD><U+C774> <U+C624><U+D788><U+B824> <U+C218><U+C775><U+C5D0> <U+BD88><U+B9AC><U+D568>.", "<U+C8FC><U+BAA9><U+D560> <U+B9CC><U+D55C> <U+C2E4><U+D328>(notable=TRUE): PIT-clean + <U+C758><U+BBF8><U+C788><U+B294> <U+C74C><U+C131> <U+C2E4><U+C99D>. L-code <U+C801><U+B9BD> <U+C644><U+B8CC>."],
+  "revival_conditions": ["<U+C5ED><U+BC29><U+D5A5> <U+AC00><U+C124> <U+AC80><U+C99D>: <U+AF2C><U+B9AC> <U+C587><U+C740> <U+C885><U+BAA9>(alpha_hill <U+B192><U+C74C>) <U+C120><U+D0DD> = Score<U+B97C> +alpha_hill<U+B85C> <U+C804><U+D658>", "<U+ADF9><U+B2E8> <U+BD84><U+C704> <U+C9D1><U+C911>: alpha_hill < 2.0 <U+B610><U+B294> > 10.0 <U+ADF9><U+B2E8><U+AC12> <U+C885><U+BAA9><U+C5D0><U+C11C> cross-sectional <U+D6A8><U+ACFC> <U+C7AC><U+AC80><U+C99D>", "Hill <U+C9C0><U+C218> <U+BCC0><U+D654><U+C728> <U+D329><U+D130>: <U+AF2C><U+B9AC> <U+B450><U+AED8> <U+BCC0><U+D654>(<U+C6D4><U+BCC4> delta_alpha_hill)<U+AC00> <U+C608><U+CE21><U+B825> <U+BCF4><U+C720> <U+C5EC><U+BD80>"],
   "l_code_path": "stage_artifacts/l_code/alpha_search/l_code_STR_AS_20260727_202021_26592.json",
   "out_dir": "stage_artifacts/alpha_search/20260727_202021_26592",
-  "verified_by": "Q-Lead AlphaSearch 2607.16450 20260727"
+  "verified_by": "Q-Lead AlphaSearch 2607.16450 20260727",
+  "gate_decision": "QUARANTINE",
+  "gate_failed_layers": "robustness",
+  "gate_rule": "PIT hard + contract&robustness&fidelity all PASS (unattended 4/4, fail-closed)",
+  "gate_checked_at": "2026-07-27T20:51:34+0900"
 }

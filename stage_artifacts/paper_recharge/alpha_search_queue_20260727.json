@@ -1,0 +1,59 @@
+{
+  "date": "20260727",
+  "runtime_vars": {"TODAY": "20260727", "MAX_ALPHA": 2},
+  "source_files": [
+    "stage_artifacts/paper_recharge/alpha_search_route_20260726.json",
+    "stage_artifacts/paper_recharge/factor_recheck_queue_20260727.json"
+  ],
+  "n_processed": 2,
+  "n_adopted": 0,
+  "n_quarantine": 2,
+  "candidates": [
+    {
+      "paper_id": "2607.16450",
+      "factor_name": "hill_tail_index",
+      "strategy_id": "STR_AS_20260727_202021_26592",
+      "route_priority": 3,
+      "autorun": false,
+      "L1_pit": "PASS",
+      "L2_contract": "PASS",
+      "L3_robustness": "FAIL",
+      "L4_fidelity": "PASS",
+      "L5_gate": "QUARANTINE",
+      "gate_failed_layers": "robustness",
+      "port_t": 0.77,
+      "oos_retention": 0.77,
+      "grade": "F",
+      "notable": true,
+      "mechanism_diagnosis": "Hill 꼬리 지수 = 극단값 분포의 두께 측정. 꼬리 두꺼운 종목이 위험 프리미엄을 받는다는 가설이 KR K200/KQ150에서 비성립. IC≈0(0.0067), FF3/FF5 알파 t<1 → 신호 자체가 횡단면 수익 예측력 없음. 위험-수익 상충이 KR long-only에서 tail risk 채널로 구현되지 않음 확인.",
+      "next_probe": [
+        "역방향 테스트: Score=+alpha_hill(꼬리 얇은 종목) — 위험 회피형 알파 채널 가능성. 저-꼬리 종목이 오히려 오버슈팅 회복 수익을 내는 구조",
+        "regime-conditional: 위기 구간(BearProb>0.5)에서만 Hill 지수 팩터 발동 — 평상시 0, 위기시 high-tail = 기관 회피 = 오버솔드 반등 포착"
+      ]
+    },
+    {
+      "paper_id": "2606.08141",
+      "factor_name": "vol_adj_volume_surprise",
+      "strategy_id": "STR_AS_20260727_202818_45232",
+      "route_priority": 4,
+      "autorun": false,
+      "L1_pit": "PASS",
+      "L2_contract": "PASS",
+      "L3_robustness": "FAIL",
+      "L4_fidelity": "PASS",
+      "L5_gate": "QUARANTINE",
+      "gate_failed_layers": "robustness",
+      "port_t": -1.454,
+      "oos_retention": -0.58,
+      "grade": "F",
+      "notable": false,
+      "mechanism_diagnosis": "vol-adjusted volume residual = 거래량에서 변동성 기여분을 제거한 정보충격 구성요소. KR에서 이 잔차가 수익 예측력 없음(IC=-0.004, PORT_t=-1.45 음수). 고회전율(996%/년)은 신호 불안정성 반영. 예외: COVID(+7.4%p) + EU위기(+14.2%p) 극단 이벤트에서만 포착 → 평상시가 아닌 충격형 이벤트에서만 정보충격 채널 활성화. D3 dead class 확증.",
+      "next_probe": [
+        "이벤트-조건부 트리거: Vol-surprise가 상위 5%ile 극단 급등인 달만 선별 → 단순 monthly 팩터가 아닌 충격 검출기로 재설계 (D3 dead 회피, 이벤트 충격 채널로 재해석)",
+        "COVID/EU위기 공통점 진단: 두 기간 모두 대형 정보 불확실성 구간 → '불확실성 충격 × vol-surprise 교집합' 신호가 평시 신호보다 정보가치 상회하는지 검증"
+      ]
+    }
+  ],
+  "quarantine_log": "stage_artifacts/paper_recharge/auto_quarantine_20260727.json",
+  "completed_at": "2026-07-27T20:51:00+0900"
+}

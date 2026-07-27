@@ -1,0 +1,28 @@
+{
+  "date": "20260727",
+  "quarantine_entries": [
+    {
+      "paper_id": "2607.16450",
+      "factor_name": "hill_tail_index",
+      "gate_failed_layers": "robustness",
+      "port_t": 0.77,
+      "quarantine_reason": "PORT_t=0.77 << 2.95 HARD. 꼬리 두꺼운 종목 위험 프리미엄 가설 KR 비성립.",
+      "revival_conditions": [
+        "역방향(Score=+alpha_hill) 검증",
+        "극단 alpha_hill < 2.0 또는 > 10.0 분위 집중",
+        "delta_alpha_hill(월별 변화율) 팩터 검증"
+      ]
+    },
+    {
+      "paper_id": "2606.08141",
+      "factor_name": "vol_adj_volume_surprise",
+      "gate_failed_layers": "robustness",
+      "port_t": -1.454,
+      "quarantine_reason": "PORT_t=-1.454(음수). OOS retention=-0.58. D3 dead class 추가 확증.",
+      "revival_conditions": [
+        "이벤트-조건부 트리거: 상위 5%ile 극단 vol-surprise 달만 선별",
+        "불확실성 충격 × vol-surprise 교집합 신호 구조 검증"
+      ]
+    }
+  ]
+}
