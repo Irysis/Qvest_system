@@ -29,9 +29,17 @@ suppressPackageStartupMessages({
 })
 ROOT <- Sys.getenv("QM_ROOT", Sys.getenv("CLAUDE_PROJECT_DIR", "C:/Users/99922/OneDrive/Quant_Module_Moltbot"))
 COST <- 0.0015
-BOOK_ID <- "STR_1715_on_M4_R05_noLayer4_PG2"
-LT  <- file.path(ROOT, "06_Registry/live_track", BOOK_ID)
-dir.create(LT, showWarnings = FALSE, recursive = TRUE)
+## ── 출력 레인 = admitted 북 (도훈 mandate 2026-08-01 하드코딩 제거) ─────────────
+##   구판: BOOK_ID 를 구 슬롯 2-3 id 로 고정 → 2026-07-19 D3 swap-in 이후 이 스크립트는
+##   구 레인에만 쓰고, monitor(admitted 레인을 읽음)는 07-19 에 멈춘 사본을 봤다 —
+##   시리즈가 최신인데 결손으로 보이는 어긋남의 원인.
+source(file.path(ROOT, "02_Infrastructure/portfolio/resolve_admitted_slot.R"))
+PRIOR_BOOK_ID <- "STR_1715_on_M4_R05_noLayer4_PG2"
+.slotres <- tryCatch(resolve_admitted_slot(root = ROOT, fallback_id = PRIOR_BOOK_ID),
+                     error = function(e) NULL)
+BOOK_ID  <- if (!is.null(.slotres)) .slotres$id else PRIOR_BOOK_ID
+if (is.null(.slotres)) cat(sprintf("[extend][WARN] admitted 해석 실패 — 구 레인 %s 폴백\n", BOOK_ID))
+LT  <- live_track_lane(BOOK_ID, root = ROOT, carry_from = PRIOR_BOOK_ID)
 OUT <- file.path(LT, "live_book_series.csv")
 
 cat("============================================================\n")
@@ -98,6 +106,36 @@ if (file.exists(RDS_ANCHOR)) {
   cat(sprintf("[2b] 계약 rds 앵커 적용: %d/%d월 rds 고정, 나머지 신규월만 재계산\n",
               p[ret_net_source != "panel_recompute", .N], nrow(p)))
 } else cat("[2b][warn] 계약 rds 부재 — 앵커 스킵(전체 재계산 사용, monitoring 불일치 재발 가능)\n")
+
+## --- 2c. ★D3(M4gAE) 산식 분기 가드 (2026-08-02) — 조용히 틀린 북을 쓰지 않는다 ---
+## admitted 북이 D3 변형이면 신규월 배율은 m4 가 아니라 gate 다:
+##   gate = 0.70 if (m4<0.999 AND ae_fire==1) else 1.00,  ret = β × gate × ret_orig − cost.
+## 역사(rds 앵커 269개월)는 admission 이 승인한 기준이라 손대지 않는다. 문제는 **신규월**:
+## 본 스크립트의 재계산은 β×m4 (2-3 산식)이므로, 신규월에서 m4 배율 ≠ gate 배율이면
+## 그대로 쓰는 순간 배포되지 않은 북의 수익을 기록하게 된다 → 그 달은 **중단**이 정답.
+## (오늘 실측: 신규월 2026-07·08 모두 m4_lag=1.0 · ae_fire=0 → gate=1.0, 두 산식 동치.)
+if (grepl("M4gAE", BOOK_ID, fixed = TRUE)) {
+  AEP <- file.path(ROOT, "stage_artifacts/WT_D20260718_007/ae_regime_signal_ext.parquet")
+  if (!file.exists(AEP)) stop("[2c] D3 북인데 AE 신호 파일 부재: ", AEP)
+  ae <- as.data.table(arrow::read_parquet(AEP))
+  ae[, decision_date := as.Date(decision_date)]
+  new_m <- p[ret_net_source == "panel_recompute"]   # rds 앵커 밖 = 신규월 (2b 라벨 기준)
+  if (nrow(new_m)) {
+    for (i in seq_len(nrow(new_m))) {
+      ad <- as.Date(new_m$anchor_date[i])
+      aer <- ae[decision_date <= ad][which.max(decision_date)]
+      fire <- if (nrow(aer)) as.integer(aer$fire_seq[1]) else 0L
+      m4v  <- new_m$m4[i]
+      gate <- if (isTRUE(m4v < 0.999) && fire == 1L) 0.70 else 1.00
+      if (abs(gate - m4v) > 1e-9)
+        stop(sprintf(paste0("[2c] ★신규월 %s 에서 D3 gate(%.2f) != m4 배율(%.4f) — 두 산식이 갈라졌다.\n",
+                            "     이 달부터는 β×m4 재계산으로 D3 북을 기록할 수 없다. D3 전용 시리즈 산출 배선 필요."),
+                     new_m$realized_ym[i], gate, m4v))
+      cat(sprintf("[2c] 신규월 %s: m4=%.4f · ae_fire=%d → gate=%.2f — 산식 동치 확인\n",
+                  new_m$realized_ym[i], m4v, fire, gate))
+    }
+  } else cat("[2c] 신규월 없음 — gate 분기 검사 대상 없음\n")
+}
 
 ## --- 3. return_ym 부여 + 정렬 가드 (어제 버그 #1 물리 차단) ---
 cat("[3] add_return_ym + assert_panel_alignment (return_ym β vs KOSPI200 ≥0.5)\n")
