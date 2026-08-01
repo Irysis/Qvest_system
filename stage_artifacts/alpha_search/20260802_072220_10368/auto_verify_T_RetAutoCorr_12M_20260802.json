@@ -1,0 +1,82 @@
+{
+  "strategy_name": "T_RetAutoCorr_12M",
+  "strategy_id": "STR_AS_20260802_072220_10368",
+  "run_id": "20260802_072220_10368",
+  "paper": "arxiv:2607.19497 — Sepp & Lucic 2026, The Science and Practice of Trend-Following Systems",
+  "paper_signal": "E[TF_return] ∝ autocorr_rho + drift^2 → 월간 lag-1 자기상관 높은 종목 = 추세추종 알파 우위",
+  "verification_date": "2026-08-02",
+
+  "L1_PIT": {
+    "status": "PASS",
+    "detail": "detect_lookahead() CLEAN (103 lines scanned). 신호: 과거 12개월 월별 수익률(t-12~t-1)의 lag-1 자기상관만 사용. 당월 수익률(C1/C2) 미참조. 전체 표본 통계 미사용(rolling by-group). PIT check = CLEAN."
+  },
+
+  "L2_contract": {
+    "status": "PASS",
+    "detail": "audit_bt_result 16 checks PASS=14, FAIL=0, WARN=2 (non-critical). integrity=WARNING(warn only). build_bt_result 10-component 완성. metric_type=backtested."
+  },
+
+  "L3_robustness": {
+    "oos_retention": 0.161,
+    "oos_status": "FAIL (< 0.5 hard threshold)",
+    "placebo": "not_run",
+    "M01_momentum_IC_corr": "Fama-MacBeth 회귀: Score lambda t=2.50*, Mom t=1.48(비유의). 별도 IC 상관은 미산출이나 momentum과 서로 다른 방향으로 유의 — redundant 아님. FMB에서 두 신호 동시 투입 시 Mom 비유의 = autocorr 신호가 momentum 복사가 아님.",
+    "status": "FAIL",
+    "detail": "OOS retention 0.16 (기준 0.5 하한 미달). 알파 감쇠: pre-2017 SR 0.59 → post-2017 SR -0.75 — FMT-07 알파 소진 패턴."
+  },
+
+  "L4_fidelity": {
+    "status": "PASS",
+    "detail": "논문 핵심 E[TF_return] ∝ autocorr을 월간 12개월 lag-1 자기상관으로 충실 구현. 횡단면 long-only top-20 ivol-가중. PIT lag=1 준수. 논문은 선물 추세추종 이론이나 cross-section 주식 적용 = 가설 확장 (명시됨)."
+  },
+
+  "key_metrics": {
+    "CAGR_pct": 9.72,
+    "BM_CAGR_excess_pp": -1.16,
+    "Sharpe": 0.517,
+    "Sharpe_hurdle": 0.420,
+    "MDD_pct": 55.42,
+    "Calmar": 0.175,
+    "IR": -0.065,
+    "Turnover_annual_pct": 325.7,
+    "BM_corr": 0.753,
+    "PORT_t_NW_lag3": -0.295,
+    "OOS_retention": 0.161,
+    "IC_mean": 0.0129,
+    "ICIR": 0.173,
+    "IC_pos_rate_pct": 58.0
+  },
+
+  "factor_analysis": {
+    "FF3_alpha_annual_pct": 1.82,
+    "FF3_alpha_tstat": 0.665,
+    "FF3_adj_R2": 0.590,
+    "Carhart4_alpha_annual_pct": 1.30,
+    "Carhart4_alpha_tstat": 0.464,
+    "FF5_alpha_annual_pct": 1.29,
+    "FF5_alpha_tstat": 0.453,
+    "FMB_Score_lambda_t": 2.501,
+    "FMB_Score_significant": true,
+    "FMB_Mom_t": 1.479,
+    "FMB_Mom_significant": false,
+    "M01_redundant": false,
+    "note": "FF3/FF5/Carhart 대비 알파 t값 모두 1 미만(비유의). FMB에서 Score 단독 t=2.50* — 단변량 횡단면 가격력은 존재하나 멀티팩터 정합성 없음."
+  },
+
+  "stress_periods": {
+    "GFC_2008": {"strat": -0.259, "bm": -0.365, "alpha": 0.106},
+    "COVID_2020": {"strat": -0.127, "bm": -0.047, "alpha": -0.080},
+    "Rate_2022": {"strat": -0.188, "bm": -0.261, "alpha": 0.073},
+    "EuDebt_2011": {"strat": 0.366, "bm": 0.068, "alpha": 0.298}
+  },
+
+  "verdict": "QUARANTINE",
+  "verdict_reason": "Grade F. PORT_t=-0.295 (기준 2.95 미달, p=0.77). OOS retention 0.16 (0.5 하한 미달). MDD 55.4% (기준 25% 초과). 알파 감쇠 pre→post-2017 역전. 멀티팩터 알파 t < 1. 자본 투입 자격 없음.",
+  "screen_pass": false,
+  "notable_finding": "FMB Score t=2.50*: 순수 횡단면 가격력은 통계적으로 실재(단변량). 그러나 long-only top-20 포트폴리오로 전환하면 PORT_t=-0.295로 신호→수익 전이 차단. 신호-포트폴리오 번역 실패 패턴 (DIST-AR-003 유사). 스트레스 방어력은 양호(GFC/EuDebt/2022 outperform).",
+  "next_probe": [
+    "방향 반전 검토: 낮은 autocorr(=추세 미약) 종목 매수 역발상 신호",
+    "overlay 재라우팅: MDD 55%의 주원인 = 위기 동조 → BearProb overlay 결합 시 국면필터 효과 검증 (OVERLAY_CANDIDATE 후보)"
+  ],
+  "l_code": "L-AS-20260802_072220_10368"
+}

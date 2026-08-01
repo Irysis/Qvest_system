@@ -1,0 +1,93 @@
+{
+  "schema_version": "1.0",
+  "run_date": "20260802",
+  "source": "paper_router_v2 AUTORUN",
+  "quarantined": [
+    {
+      "id": "C_VolRankStability_3M",
+      "arxiv_id": "2607.27461",
+      "factor_code": "C_VolRankStability",
+      "hypothesis": "3개월 변동성 랭크 차분 신호 (rank_t - rank_t-3, 양수 = 개선 종목 long)",
+      "gate_decision": "QUARANTINE",
+      "gate_decision_source": "auto_alpha_gate.R",
+      "metric_type": "proxy",
+      "metrics": {
+        "cagr": 0.067,
+        "sharpe": 0.275,
+        "mdd": 0.621,
+        "ir": -0.234,
+        "calmar": 0.108,
+        "oos_retention": 0.045,
+        "annual_turnover": 4.158,
+        "bm_correlation": 0.718
+      },
+      "hard_fails": ["mdd_gt_45pct", "oos_retention_lt_0p5", "calmar_lt_0p64", "ir_negative"],
+      "fmt_codes": ["FMT-01", "FMT-02", "FMT-04"],
+      "failure_mechanism": "KR K200∪KQ150에서 3개월 vol rank 개선 종목이 위기 국면 동조 급락(GFC -47%, 금리쇼크 -34%). 신호 방향 역작동 — 논문 vol rank Markov 지속성이 미국 시장 발견임. OOS retention 0.045: IS(2005-2018) 소량 작동 → OOS(2019-2026) 완전 소멸.",
+      "prior_experiment": {
+        "id": "STR_AS_20260726_174643_26276",
+        "variant": "VOL_RANK_STABILITY_v1 (정적 순위 안정성 역수)",
+        "sharpe": 0.167,
+        "mdd": 0.554,
+        "oos_retention": 0.004,
+        "judgment": "F"
+      },
+      "next_probe": [
+        {"fq_id": "FQ-092", "desc": "vol_rank 역방향 신호 (rank 상승 = 고변동성 모멘텀 long)"},
+        {"fq_id": "FQ-093", "desc": "OVERLAY_CANDIDATE — vol rank 상승 속도 → 위기 조기 경보 입력"}
+      ],
+      "artifact_paths": {
+        "factor_engine": "04_Research/strategies/AS_C_VolRankStability_20260802/factor_engine.R",
+        "run_dir": "stage_artifacts/alpha_search/20260802_072242_49024/",
+        "auto_verify": "stage_artifacts/alpha_search/auto_verify_C_VolRankStability_20260802.json",
+        "lcode": "stage_artifacts/l_code/alpha_search/l_code_STR_AS_20260802_072242_49024.json"
+      },
+      "tg_sent": true
+    },
+    {
+      "id": "T_RetAutoCorr_12M",
+      "arxiv_id": "2607.19497",
+      "factor_code": "T_RetAutoCorr_12M",
+      "hypothesis": "월간 수익률 lag-1 자기상관 12개월 rolling, 횡단면 (양의 autocorr 종목 long)",
+      "gate_decision": "QUARANTINE",
+      "gate_decision_source": "auto_alpha_gate.R",
+      "metric_type": "backtested",
+      "metrics": {
+        "cagr": 0.0972,
+        "sharpe": 0.517,
+        "mdd": 0.554,
+        "ir": -0.065,
+        "calmar": 0.175,
+        "port_t_nw_lag3": -0.295,
+        "oos_retention": 0.161,
+        "ic_mean": 0.0129,
+        "icir": 0.173,
+        "annual_turnover": 3.26,
+        "bm_correlation": 0.753,
+        "fmb_score_t": 2.50,
+        "fmb_mom_t": 1.48
+      },
+      "hard_fails": ["port_t_lt_2p95", "oos_retention_lt_0p5", "calmar_lt_0p64"],
+      "fmt_codes": ["FMT-01", "FMT-04", "FMT-07"],
+      "failure_mechanism": "FMB Score t=2.50* 횡단면 가격력 실재하나 long-only top-20 번역 시 PORT_t=-0.295 (DIST-AR-003 신호-포트폴리오 전이 차단). MDD 55.4%: COVID 국면 역방향(-8%p). post-2017 SR 붕괴(-0.75). M01 모멘텀과 비중복(FMB 동시투입 Score t=2.50* 독립 유의).",
+      "notable_finding": "FMB t=2.50*는 신호 자체의 횡단면 유효성 증거 — signal 자체는 살아있음. 포트폴리오 번역 레이어가 사망. OVERLAY_CANDIDATE 또는 역방향 검토 대상.",
+      "next_probe": [
+        {"fq_id": "FQ-094", "desc": "역방향 신호 (낮은 autocorr = 평균회귀 구간 종목 long)"},
+        {"fq_id": "FQ-095", "desc": "OVERLAY_CANDIDATE — BearProb overlay 결합 (FMB 2.50* 신호력 + MDD 레버)"}
+      ],
+      "artifact_paths": {
+        "factor_engine": "04_Research/strategies/AS_T_RetAutoCorr_12M_20260802/factor_engine.R",
+        "run_dir": "stage_artifacts/alpha_search/20260802_072220_10368/",
+        "auto_verify": "stage_artifacts/alpha_search/auto_verify_T_RetAutoCorr_12M_20260802.json",
+        "lcode": "stage_artifacts/l_code/alpha_search/l_code_STR_AS_20260802_072220_10368.json",
+        "charts": [
+          "stage_artifacts/alpha_search/20260802_072220_10368/equity_curve.png",
+          "stage_artifacts/alpha_search/20260802_072220_10368/annual_returns.png"
+        ],
+        "multifactor": "stage_artifacts/alpha_search/20260802_072220_10368/analysis_multifactor.csv",
+        "fmb": "stage_artifacts/alpha_search/20260802_072220_10368/analysis_fmb_summary.csv"
+      },
+      "tg_sent": true
+    }
+  ]
+}

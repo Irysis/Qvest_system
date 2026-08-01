@@ -859,19 +859,22 @@
     "STR_AS_20260802_021901_32432": {
       "strategy_id": "STR_AS_20260802_021901_32432",
       "grade": "F",
-      "role": null,
+      "role": {},
       "origin_mode": "alpha_search",
       "sim_result_path": "stage_artifacts/module_quarantine/STR_AS_20260802_021901_32432/sim_result.rds",
       "n_days": 5300,
-      "date_range": ["2005-02-03", "2026-07-31"],
+      "date_range": [
+        "2005-02-03",
+        "2026-07-31"
+      ],
       "registered_at": "2026-08-02T02:24:21+09:00",
       "metric_type": "proxy",
       "fr_eligible": false,
       "frozen": false,
-      "source_contract_id": null,
+      "source_contract_id": {},
       "module_hash": "cd4ce927d3ac7611fede0d3564c5656f",
-      "build_version": null,
-      "cost_model_version": null,
+      "build_version": {},
+      "cost_model_version": {},
       "bt_result_path": "stage_artifacts/alpha_search/20260802_021901_32432/bt_result.rds",
       "contract": {
         "policy": "v8.1_fr_input_floor",
@@ -881,13 +884,98 @@
       "meta": {
         "strategy_idea": "저주파 스펙트럼 질량(추세 지속성) 상위 종목을 저변동성 하위 3분위 안에서만 선택 — 추세 알파를 낙폭 계층에서 분리 (Sepp-Lucic 2026, arXiv:2607.19497 / 07-27 base spec_mass_lowfreq_60d next_probe #2: MDD 61.4% 병목이 변동성 노출인지 신호 자체인지 분리 식별)",
         "score": 11.1,
-        "f_grade_reasons": ["FMT-01 Structural MDD: MDD 57.5% > 45% — 선택 종목군의 위기 동반급락(구조적 꼬리위험)", "FMT-02 Factor Degeneration: IR -0.25 < -0.1 & 초과CAGR -3.9%p < 0 — KR에서 팩터 방향 역작동 의심", "FMT-04 Regime Blindness: MDD 57.5% > 35% & BM상관 0.74 >= 0.7 — 위기국면 동조 낙폭(국면필터 부재)", "알파 부재: 정보비율 -0.25로 벤치 대비 기여가 음수/미약", "초과수익 부족: 벤치 대비 -3.9%p"],
-        "fmt_codes": ["FMT-01", "FMT-02", "FMT-04"],
+        "f_grade_reasons": [
+          "FMT-01 Structural MDD: MDD 57.5% > 45% — 선택 종목군의 위기 동반급락(구조적 꼬리위험)",
+          "FMT-02 Factor Degeneration: IR -0.25 < -0.1 & 초과CAGR -3.9%p < 0 — KR에서 팩터 방향 역작동 의심",
+          "FMT-04 Regime Blindness: MDD 57.5% > 35% & BM상관 0.74 >= 0.7 — 위기국면 동조 낙폭(국면필터 부재)",
+          "알파 부재: 정보비율 -0.25로 벤치 대비 기여가 음수/미약",
+          "초과수익 부족: 벤치 대비 -3.9%p"
+        ],
+        "fmt_codes": [
+          "FMT-01",
+          "FMT-02",
+          "FMT-04"
+        ],
         "bt_result_path": "stage_artifacts/alpha_search/20260802_021901_32432/bt_result.rds",
+        "bt_contract_status": "OK"
+      }
+    },
+    "STR_AS_20260802_072220_10368": {
+      "strategy_id": "STR_AS_20260802_072220_10368",
+      "grade": "F",
+      "role": {},
+      "origin_mode": "alpha_search",
+      "sim_result_path": "stage_artifacts/module_quarantine/STR_AS_20260802_072220_10368/sim_result.rds",
+      "n_days": 5300,
+      "date_range": [
+        "2005-02-03",
+        "2026-07-31"
+      ],
+      "registered_at": "2026-08-02T07:26:33+09:00",
+      "metric_type": "proxy",
+      "fr_eligible": false,
+      "frozen": false,
+      "source_contract_id": {},
+      "module_hash": "4982e415c31deb882f1ad524042b7d57",
+      "build_version": {},
+      "cost_model_version": {},
+      "bt_result_path": "stage_artifacts/alpha_search/20260802_072220_10368/bt_result.rds",
+      "contract": {
+        "policy": "v8.1_fr_input_floor",
+        "contract_pass": false,
+        "eligibility_reason": "metric_type != backtested; contract_pass != TRUE; frozen != TRUE; source_contract_id missing; build_version missing; cost_model_version missing"
+      },
+      "meta": {
+        "strategy_idea": "monthly return lag-1 autocorr cross-section: arxiv:2607.19497 Sepp-Lucic 2026 E[TF_return] ∝ autocorr rho+drift^2, stocks with positive 12m lag-1 monthly return autocorr have trend-following alpha",
+        "score": 10.9,
+        "f_grade_reasons": [
+          "FMT-01 Structural MDD: MDD 55.4% > 45% — 선택 종목군의 위기 동반급락(구조적 꼬리위험)",
+          "FMT-04 Regime Blindness: MDD 55.4% > 35% & BM상관 0.75 >= 0.7 — 위기국면 동조 낙폭(국면필터 부재)",
+          "FMT-07 Publication Decay: 활성SR pre-2017 0.59 -> post-2017 -0.75 — 논문발표 후 알파 소진 패턴",
+          "알파 부재: 정보비율 -0.07로 벤치 대비 기여가 음수/미약",
+          "초과수익 부족: 벤치 대비 -1.2%p"
+        ],
+        "fmt_codes": [
+          "FMT-01",
+          "FMT-04",
+          "FMT-07"
+        ],
+        "bt_result_path": "stage_artifacts/alpha_search/20260802_072220_10368/bt_result.rds",
+        "bt_contract_status": "OK"
+      }
+    },
+    "STR_AS_20260802_072242_49024": {
+      "strategy_id": "STR_AS_20260802_072242_49024",
+      "grade": "F",
+      "role": null,
+      "origin_mode": "alpha_search",
+      "sim_result_path": "stage_artifacts/module_quarantine/STR_AS_20260802_072242_49024/sim_result.rds",
+      "n_days": 5300,
+      "date_range": ["2005-02-03", "2026-07-31"],
+      "registered_at": "2026-08-02T07:28:00+09:00",
+      "metric_type": "proxy",
+      "fr_eligible": false,
+      "frozen": false,
+      "source_contract_id": null,
+      "module_hash": "1d69a19b00a03648be6cc19bcaa73065",
+      "build_version": null,
+      "cost_model_version": null,
+      "bt_result_path": "stage_artifacts/alpha_search/20260802_072242_49024/bt_result.rds",
+      "contract": {
+        "policy": "v8.1_fr_input_floor",
+        "contract_pass": false,
+        "eligibility_reason": "metric_type != backtested; contract_pass != TRUE; frozen != TRUE; source_contract_id missing; build_version missing; cost_model_version missing"
+      },
+      "meta": {
+        "strategy_idea": "3M vol rank delta signal — arxiv:2607.27461 Halperin 2026: Markov vol rank, long improved rank",
+        "score": 0,
+        "f_grade_reasons": ["게이트 사유: Structural drawdown (45%+ episodes>=15, 55%+ episodes>=6): MDD 62.1%, 45%+ episodes=28/15, max_underwater=126/252", "FMT-01 Structural MDD: MDD 62.1% > 45% — 선택 종목군의 위기 동반급락(구조적 꼬리위험)", "FMT-02 Factor Degeneration: IR -0.23 < -0.1 & 초과CAGR -4.2%p < 0 — KR에서 팩터 방향 역작동 의심", "FMT-04 Regime Blindness: MDD 62.1% > 35% & BM상관 0.72 >= 0.7 — 위기국면 동조 낙폭(국면필터 부재)", "알파 부재: 정보비율 -0.23로 벤치 대비 기여가 음수/미약"],
+        "fmt_codes": ["FMT-01", "FMT-02", "FMT-04"],
+        "bt_result_path": "stage_artifacts/alpha_search/20260802_072242_49024/bt_result.rds",
         "bt_contract_status": "OK"
       }
     }
   },
-  "last_updated": "2026-08-02T02:24:21+09:00",
-  "n_modules": 22
+  "last_updated": "2026-08-02T07:28:00+09:00",
+  "n_modules": 24
 }

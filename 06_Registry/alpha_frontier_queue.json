@@ -1,7 +1,7 @@
 {
  "schema_version": "1.0",
  "sot": "02_Infrastructure/docs/qvest_v8_3_alpha_discovery_sot.md §4",
- "updated": "2026-08-02 (FQ-090/091 추가 — AS-20260802-R1 alpha-search 라운드 next_probe P1/P2 등재. 앞선 오기 정정: FQ-076/077 은 동시 진행 세션이 만든 별건이며 본 라운드 소산 아님) 2026-08-02 (FQ-073 config_scoped_negative — WT-D20260802_001 alpha-research 실측. AST v1.1 첫 실전 관통 + ast_leaf_table_bugs ALB-001~007 적립)",
+ "updated": "2026-08-02 (FQ-092~095 추가 — paper_router_v2 AUTORUN C_VolRankStability·T_RetAutoCorr_12M 양 건 QUARANTINE 후 next_probe 4건 등재. FQ-092: vol rank 역방향. FQ-093: vol rank overlay. FQ-094: autocorr 역방향. FQ-095: autocorr × BearProb overlay); 2026-08-02 (FQ-090/091 추가 — AS-20260802-R1 alpha-search 라운드 next_probe P1/P2 등재. 앞선 오기 정정: FQ-076/077 은 동시 진행 세션이 만든 별건이며 본 라운드 소산 아님) 2026-08-02 (FQ-073 config_scoped_negative — WT-D20260802_001 alpha-research 실측. AST v1.1 첫 실전 관통 + ast_leaf_table_bugs ALB-001~007 적립)",
  "consume_rule": "새 발굴 리서치 착수 전: hypothesis_index lookup → 본 큐 확인 → owner/status 갱신. 완료 시 result_ref(L-code/보고서) 기입. dohoon_decision 항목은 세션 임의 착수 금지.",
  "entries": [
   {
@@ -1819,6 +1819,75 @@
     "L-AS-20260802_025436",
     "stage_artifacts/alpha_search/20260727_202754_49064",
     "stage_artifacts/alpha_search/20260802_021901_32432"
+   ]
+  },
+  {
+   "id": "FQ-092",
+   "lane": "screen_tier_recall",
+   "title": "vol rank 역방향 신호 — 순위 상승(고변동성 모멘텀) long",
+   "hypothesis": "vol_rank_lag3 - vol_rank_t > 0 (= 변동성 순위 상승 = 상대 변동성 증가 종목) 를 매수하는 역방향 가설 — C_VolRankStability_3M(정방향 개선 long)이 KR에서 역작동했으므로 신호 반전 여부 검증. IS SR 0.45 방향에서 역신호 잠재 가능성.",
+   "ev_rationale": "20260802 C_VolRankStability 정방향 QUARANTINE(SR 0.275, IR -0.234) — KR에서 신호가 역작동한다면 역방향이 양성. 단 고변동성 모멘텀 자체는 KR에서 실증 미검증. prior: 낮은 사전확률(역 신호는 경험적).",
+   "wall_check": "cap-tier 국소화 벽 동일 적용. vol rank 변화 자체가 시장 β와 높은 상관(C_Vol MDD 62.1% GFC 동조)이라면 역방향도 대칭 낙폭 위험.",
+   "data_gate": "없음 — 가격 데이터만",
+   "owner": "Q-Lead (AUTORUN 20260802 next_probe)",
+   "status": "frontier_open",
+   "next_action": "alpha-search: factor_engine.R 신호 부호 flip → canonical_screen_bt → 5-layer gate",
+   "source_refs": [
+    "parent: C_VolRankStability_3M QUARANTINE 20260802 (stage_artifacts/paper_recharge/auto_quarantine_20260802.json)",
+    "arxiv: 2607.27461 (Three Matrices)",
+    "prior_failure: STR_AS_20260802_072242_49024 (C_VolRankStability_3M, grade F, SR 0.275)"
+   ]
+  },
+  {
+   "id": "FQ-093",
+   "lane": "overlay_recall",
+   "title": "vol rank 상승 속도 → 위기 조기 경보 overlay 입력",
+   "hypothesis": "vol rank 상승 속도(단면 평균 vol_rank_t - vol_rank_lag3)를 종목 선별이 아닌 국면 신호로 소비 — 포트폴리오 전체의 vol rank 상승이 빠를 때 포지션 축소 트리거(BearProb 보완). CSAD형 횡단면 분산 지표와 유사한 활용.",
+   "ev_rationale": "신호 자체의 alpha력은 null이나 위기 국면 전 vol rank 분산 증가는 이론적으로 선행 지표 가능성. C_VolRankStability MDD 62.1% 기전 = 고변동성 업종 순환 동조 → 이 신호가 역방향으로 경보 기능 가능.",
+   "wall_check": "PIT C5 오버레이 타이밍 엄수 (홀딩월 시작 전 데이터만). OVERLAY_CANDIDATE 라우팅 — standalone 자본 graduation 불가.",
+   "data_gate": "없음 — 가격 데이터만",
+   "owner": "Q-Lead (AUTORUN 20260802 next_probe)",
+   "status": "frontier_open",
+   "next_action": "FQ-091 저주파 spectral mass overlay(유사 궤도) 측정 후 병행 검토. 단독 착수 전 FQ-091 결과 확인 권장.",
+   "source_refs": [
+    "parent: C_VolRankStability_3M QUARANTINE 20260802",
+    "related: FQ-091 저주파 스펙트럼 × 국면 overlay",
+    "arxiv: 2607.27461 (Three Matrices), 2607.27063 (CSAD herding indicator)"
+   ]
+  },
+  {
+   "id": "FQ-094",
+   "lane": "screen_tier_recall",
+   "title": "T_RetAutoCorr_12M 역방향 — 낮은 autocorr(평균회귀) 종목 long",
+   "hypothesis": "월간 수익률 lag-1 자기상관이 낮거나 음수인 종목(= 추세 미약·평균회귀 구간) 매수 — 정방향(고 autocorr long)이 KR long-only PORT_t=-0.295로 전이 차단됐으므로 역방향 검증. FMB Score t=2.50*는 신호력 존재 증거라 역방향도 유의 가능성.",
+   "ev_rationale": "정방향 FMB t=2.50*이나 PORT_t=-0.295 (DIST-AR-003 신호-포트폴리오 전이 차단). KR 추세추종이 평균회귀보다 약한 구조라면 역방향이 오히려 long-only 친화적. COVID 역방향(-8%p) 원인 분석 후 역신호 구성.",
+   "wall_check": "cap-tier 국소화 벽. autocorr 신호의 low-autocorr = 고변동성 종목 과도표현 위험 → 유동성 필터 엄수.",
+   "data_gate": "없음 — 가격 데이터만",
+   "owner": "Q-Lead (AUTORUN 20260802 next_probe)",
+   "status": "frontier_open",
+   "next_action": "alpha-search: T_RetAutoCorr_12M 부호 flip(AutoCorr 낮을수록 high rank) → canonical_screen_bt",
+   "source_refs": [
+    "parent: T_RetAutoCorr_12M QUARANTINE 20260802 (stage_artifacts/paper_recharge/auto_quarantine_20260802.json)",
+    "arxiv: 2607.19497 (Science and Practice of Trend-Following)",
+    "prior_failure: STR_AS_20260802_072220_10368 (T_RetAutoCorr_12M, grade F, PORT_t -0.295)"
+   ]
+  },
+  {
+   "id": "FQ-095",
+   "lane": "overlay_recall",
+   "title": "T_RetAutoCorr_12M × BearProb overlay 결합 — FMB 2.50* 신호력 + MDD 레버",
+   "hypothesis": "FMB Score t=2.50*로 횡단면 신호력이 실재하나 MDD 55.4%(FMT-04 국면필터 부재)가 standalone 기각 원인 → BearProb overlay(위기국면 포지션 축소)와 결합 시 꼬리 위험 제거 후 신호력 보존 가능한가. OVERLAY_CANDIDATE 경로.",
+   "ev_rationale": "FMB 동시투입 Score t=2.50*(M01 모멘텀 독립 유의) = 신호 자체는 살아있음. MDD 55.4% 기전 = 국면필터 부재로 위기 동조. BearProb는 시스템 입증 MDD 레버(기존 overlay). 3/4 스트레스 구간 outperform(GFC +10.6%p, 금리 +7.3%, 유럽부채 +29.8%) — COVID만 역방향.",
+   "wall_check": "PIT C5 오버레이 타이밍. OVERLAY_CANDIDATE 라우팅 — standalone 자본 graduation 불가. BearProb overlay 현 측정과의 cap-w 충돌 주의(FQ-091 연동).",
+   "data_gate": "없음 — BearProb 기존 인프라 + 가격 데이터",
+   "owner": "Q-Lead (AUTORUN 20260802 next_probe)",
+   "status": "frontier_open",
+   "next_action": "기존 BearProb overlay A/B 테스트 프레임(overlay_pit_guard 경유) 재사용. FQ-091 측정 병행 권장(공통 국면필터 레버). lag1 스트레스 필수(C5 엄수).",
+   "source_refs": [
+    "parent: T_RetAutoCorr_12M QUARANTINE 20260802",
+    "signal_strength: FMB Score t=2.50* (analysis_fmb_summary.csv, STR_AS_20260802_072220_10368)",
+    "related: FQ-091 저주파 spectral mass × 국면 overlay (공통 테마)",
+    "arxiv: 2607.19497 (Science and Practice of Trend-Following)"
    ]
   }
  ]

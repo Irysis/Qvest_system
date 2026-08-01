@@ -1,0 +1,89 @@
+{
+  "schema_version": "v54_ax_p0_mode",
+  "candidate_id": "CAND_20260801_alpha_search_technical_price_negative_L-AS-20260802_025436",
+  "research_mode": "alpha_search",
+  "metric_type": "estimated",
+  "type": "empirical",
+  "polarity": "negative",
+  "statement_draft": "[실증 실패 규칙 초안] family=technical_price, tags=ALPHA_SEARCH,DUAL_BASIS,VALIDATED_HARD_FAIL, supporting=1건 L-code. (promote.R 5축 검증에서 범위·메커니즘·OOS 확정 필요)",
+  "supporting_l_codes": [
+    "L-AS-20260802_025436"
+  ],
+  "scope_draft": {
+    "market": "KR",
+    "factor_family": "technical_price",
+    "regime": null,
+    "construction_types": null
+  },
+  "evidence_draft": {
+    "independent_l_codes": 1,
+    "independent_strategies": 1,
+    "strategies": [
+      "AS_ROUND_20260802_DUALBASIS"
+    ],
+    "effect_direction_consistency": null,
+    "note": "evidence_draft — promote.R 5축 검증에서 hurdle_result/grade_a_catalog 교차검증으로 확정",
+    "n_eff_signatures": 1,
+    "independent_constructions": 1,
+    "constructions": [
+      "single_factor_long_only"
+    ],
+    "metric_types": [
+      "canonical_screen"
+    ]
+  },
+  "falsification_draft": {
+    "attempts": [
+      {
+        "test": "canonical_screen_bt 실측 재측정(4arm, cap-w 권위 basis)",
+        "result": "falsified",
+        "effect_retained": 0,
+        "detail": "cap-w PORT_t 최대 1.048 << 2.95 HARD"
+      },
+      {
+        "test": "dual-basis EW-유니버스 대비(v8.3 기각 전 의무)",
+        "result": "falsified",
+        "effect_retained": 0,
+        "detail": "EW-uni PORT_t 최대 1.509 — cap-w 대비 상향이나 문턱 미달"
+      },
+      {
+        "test": "cap-tier(MEGA/MID/OTHER) 분해 — mega-cap 벤치 아티팩트 가설",
+        "result": "falsified",
+        "effect_retained": 0,
+        "detail": "보유 비중 OTHER 86~96% / MEGA 1.4~4.7% — 벤치 아티팩트로 설명 불가"
+      },
+      {
+        "test": "저변동성 조건부(MDD 레버 가설) paired NW lag-3 t",
+        "result": "falsified",
+        "effect_retained": 0,
+        "detail": "paired t=-2.434 유의하게 열화(월 -0.577%p) — MDD 레버 가설 반증"
+      },
+      {
+        "test": "60거래일 평활(전이 효율 레버 가설) paired NW lag-3 t — ★자가 적대검증 C1",
+        "result": "inconclusive",
+        "effect_retained": "NA",
+        "detail": "paired t=1.189 유의하지 않음 — 1차 해석('4.8배 전이 레버')을 미검정 가설로 격하"
+      },
+      {
+        "test": "벤치 무결성 통제(2026-07 RAWDATA BM_Ret 오염 경보)",
+        "result": "survived",
+        "effect_retained": 1,
+        "detail": "bench_dt는 유니버스 Close/Size 현장구성 + BM_DT는 benchmark.parquet — 2026-06-30 벤치 -22.76%로 정본 정합(오염값 -17.70% 아님)"
+      }
+    ],
+    "note": "L-code 기록 반증 시도 실값 집계"
+  },
+  "mechanism_draft": {
+    "economic_explanation": "① 잔차거래량(SMAR): rank-IC가 평활 전후 불변(0.00236→0.00214, 둘 다 t<0.5)이라 횡단 신호 자체가 0. cap-w PORT_t가 0.219→1.048로 오른 것은 회전율 1026%→662% 감소와 동행하나 paired NW t=1.189로 유의하지 않아 전이 효율 개선으로 **귀속할 수 없다**. 추가로 M60은 회전율만이 아니라 신호 내용(1일 서프라이즈 → 지속 수준)도 바꾸므로 식별이 미달이다 — 동일 신호 위 보유밴드/리밸주기 A/B가 정합 설계. ② 추세-저주파(Sepp-Lucic): 저변동성 하위 절단 시 MDD는 61.4%→57.5%로 3.9%p만 줄고 IC 0.0138→0.0081(t 2.39→1.24), FF3 알파 +4.28%/yr→-0.87%/yr, cap-w PORT_t 0.756→-0.958, paired t=-2.434(유의). 낙폭은 고변동성 종목 선택이 아니라 벤치마크 동조(BM상관 0.74 유지) 에서 오고 추세 지속성 알파는 고변동 구간에 국소한다. 저변동성 조건부는 MDD 레버로 반증되고 남은 레버는 국면/낙폭 오버레이 계열뿐이다. ★구현 caveat(자가검증 C3): 저변동성 절단은 LiqPass 전체 패널 기준 하위 3분위라 지수 유니버스 내 실효 비율은 약 47%(의도 33%)로 덜 공격적이었다 — MDD 결론은 보수적 방향.",
+    "mechanism_type": "friction",
+    "causal_plausibility": null
+  },
+  "oos_validation_draft": {
+    "oos_months": 258.0,
+    "oos_effect_vs_is": -0.059,
+    "note": "L-code oos_retention 실값 1건 median (IS65/OOS35 활성SR retention) + oos_months 실값 1건 median — promote.R essence_score 경유 재확정"
+  },
+  "cluster_members_count": 1,
+  "status": "pending_5axis",
+  "created_at": "2026-08-01T22:29:13+00:00"
+}

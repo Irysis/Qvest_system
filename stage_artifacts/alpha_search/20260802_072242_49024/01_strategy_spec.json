@@ -1,0 +1,21 @@
+{
+  "run_id": "ASBT_20260802_072242_49024",
+  "strategy_id": "STR_AS_20260802_072242_49024",
+  "strategy_name": "C_VolRankStability_3M",
+  "strategy_family": "alpha_search",
+  "signal_description": "3M vol rank delta signal — arxiv:2607.27461 Halperin 2026: Markov vol rank, long improved rank",
+  "universe_rule": "K200_KQ150 + 20d avg trading value >= 2e8 KRW (t-1 PIT)",
+  "rebalance_frequency": "monthly",
+  "signal_date_rule": "month_end_signal",
+  "execution_date_rule": "t_plus_1_first_trading_day",
+  "weighting_method": "ivol",
+  "max_position_weight": 0.2,
+  "max_leverage": 1,
+  "cash_rule": "fully_invested_after_floor_shares",
+  "cost_model": "v2.4_delta_15bps",
+  "missing_data_rule": "exclude_na_scores",
+  "risk_controls": "buffer_zone(keep_n=40, entry_n=20)",
+  "lookahead_prevention": "detect_lookahead static scan CLEAN (PIT C1-C15)",
+  "survivorship_bias_control": "RAWDATA PIT membership / time-varying universe filters",
+  "factor_engine_path": "04_Research/strategies/AS_C_VolRankStability_20260802/factor_engine.R"
+}
