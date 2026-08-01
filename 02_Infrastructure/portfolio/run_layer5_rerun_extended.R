@@ -173,6 +173,9 @@ setorder(m_valid, Date, -score_eff)
 top20 <- m_valid[, head(.SD, 20), by = Date]
 
 # Per Date: R05_z portfolio average + regime (per Date all-same design)
+# ★결정 재료 NA 경고 (2026-08-02): R05 z 소스(WT_D20260512_003, 동결)가 최근 신호일을 커버하지
+#   못하면 z=NA → zlt 판정 불능 → β가 조용히 무-발화 가지(0.50)로 무뎌진다 — 실사고: 2026-07 sig
+#   z=NA 로 시리즈가 배포(0.30) 대신 0.50 을 곱함. NA 를 침묵 소화하지 않고 여기서 드러낸다.
 p_r05 <- top20[, .(R05_z_avg_top20 = mean(R05_Tail_Risk_Z, na.rm = TRUE),
                     R05_z_min_top20 = min(R05_Tail_Risk_Z, na.rm = TRUE),
                     n_top20 = .N,
@@ -180,6 +183,12 @@ p_r05 <- top20[, .(R05_z_avg_top20 = mean(R05_Tail_Risk_Z, na.rm = TRUE),
                     regime = regime_state[1]),
                 by = Date]
 setorder(p_r05, Date)
+.na_z <- p_r05[n_R05_valid == 0L]
+if (nrow(.na_z))
+  cat(sprintf(paste0("  [WARN] ★R05 z 전결측 신호일 %d건: %s\n",
+                     "         → 해당 월 zlt 판정 불능 — β 가 무-발화 가지로 무뎌짐 (배포 manifest 와 대조 필요).\n",
+                     "         원인 후보: R05 z 소스(WT_D20260512_003, 동결) 미연장.\n"),
+              nrow(.na_z), paste(tail(as.character(.na_z$Date), 4), collapse = ", ")))
 p_r05[, realized_ym := format(Date + months(1), "%Y-%m")]
 
 cat(sprintf("  R05_z_avg portfolio summary:\n"))

@@ -88,6 +88,13 @@ cleanup <- function() unlink(TMP_ABS, recursive = TRUE, force = TRUE)
   p <- file.path(PROJ, rel)
   dir.create(dirname(p), recursive = TRUE, showWarnings = FALSE)
   write_parquet(dt, p)
+  # ★mtime 도 TODAY 로 고정 (2026-08-02 수리). 구판은 TODAY 만 얼리고 파일 mtime 은
+  #   실시간이라, 하루 지날 때마다 mtime_lag 가 1씩 음수로 벌어졌다(08-01 실측 -6).
+  #   A3 는 "mtime 은 멀쩡한데(lag 0) 내용이 낡아 **내용 축**이 잡는다" 를 증명하는
+  #   케이스이고 mtime_lag==0 이 그 전제다 — 그 조건을 완화하면 케이스가 증명하던 것
+  #   (mtime 이 아니라 내용이 잡았다) 자체가 사라진다. 그래서 전제를 고쳐 세운다.
+  #   정오로 박아 시간대 절삭이 날짜를 하루 밀지 않게 한다.
+  Sys.setFileTime(p, as.POSIXct(paste(TODAY, "12:00:00"), tz = ""))
   invisible(rel)                          # 최상위 호출 시 자동출력 방지(요약 파싱 노이즈)
 }
 .entry <- function(path, ...) {
@@ -106,6 +113,17 @@ cleanup <- function() unlink(TMP_ABS, recursive = TRUE, force = TRUE)
 }
 
 cat("=== A. 위반 주입 (결손을 실제로 잡는가) ===\n")
+
+# ── A0. 픽스처 결정성 — mtime 이 벽시계가 아니라 TODAY 에 고정돼 있는가 ────────
+#    TODAY 는 얼려놓고 파일 mtime 만 실시간이면 mtime 축이 하루에 1일씩 떠내려간다.
+#    2026-08-01 실측: A3 의 mtime_lag = -6 (테스트 작성일 07-26 로부터 6일 경과분).
+#    "시간이 지나면 썩는 픽스처" = 감시기가 감시 대상보다 먼저 죽는 부류. 여기서 못박는다.
+.mt_probe <- .wp(data.table(Date = TODAY, v = 1), file.path(TMP_REL, "_mtime_probe.parquet"))
+.mt_got <- as.Date(format(file.mtime(file.path(PROJ, .mt_probe)), "%Y-%m-%d"))
+chk("A0 픽스처 mtime 이 TODAY 로 고정 (벽시계 비의존)",
+    identical(.mt_got, TODAY),
+    sprintf("mtime=%s TODAY=%s — .wp() 의 Sys.setFileTime 핀이 빠졌거나 무력",
+            .mt_got, TODAY))
 
 # ── A1. 디렉토리형: 당월 파일이 월중 스냅샷에서 동결 (P2-02 실사고 재현) ──────
 #    factor_db_202607 이 Date=2026-07-03 에 얼어붙은 상태. 수리 전에는 파일명 202607 →

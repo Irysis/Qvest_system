@@ -36,6 +36,10 @@ cleanup() { rm -rf "$FX"; }   # top-level on.exit 금지 규율의 bash 등가 �
 #     창을 요구해, 관측창은 충족되는데 발화는 창 밖이라 T1 이 모순이었다(실측 FAIL).
 #     현실 형태 = 원장은 오래 전부터 있고(anchor) 발화는 최근. 두 축을 분리해 만든다.
 ANCHOR_DAYS=30
+
+# 관측창 스탬프 경로 — mk_ledger(쓰기)와 run_chk(주입)가 **같은 식**을 쓰도록 1곳에 둔다.
+_obs_start_path() { printf '%s' "${1%.jsonl}_sc_obs_start.txt"; }
+
 mk_ledger() {
   local f="$1" off="$2"; shift 2
   local a_ts r_ts
@@ -49,6 +53,13 @@ mk_ledger() {
     printf '{"timestamp":"%s","event_type":"hook_fired","hook_name":"%s","decision":"fired","latency_ms":0}\n' \
       "$r_ts" "$h" >> "$f"
   done
+  # ★관측창 스탬프도 같은 anchor 시각으로 세운다 (2026-08-02 수리).
+  #   구판은 anchor **원장 행**만 심고 스탬프를 안 세웠다 — 검사기가 2026-07-26 에
+  #   "관측창 = 원장 최초 행" → "관측창 = 관측 시작 스탬프"(회전이 원장을 지우므로)로
+  #   바뀌었는데 픽스처가 옛 모델에 남아 있었던 것. 스탬프가 없으면 검사기가 그것을
+  #   **'지금'으로 새로 만들어** 관측창 0h → T1/T2/T7/T9b 가 전부 '판정 보류'로 떨어졌다.
+  #   ("anchor 로 창을 벌린다"는 픽스처의 의도는 그대로 두고, 표현 수단만 현행 설계에 맞춘다.)
+  date -d "$ANCHOR_DAYS days ago" +%Y-%m-%dT%H:%M:%S > "$(_obs_start_path "$f")" 2>/dev/null
 }
 
 run_chk() { # $1=ledger $2=days [$3=rotate_max]
@@ -57,8 +68,11 @@ run_chk() { # $1=ledger $2=days [$3=rotate_max]
   #   이 세션 test_auto_commit_valve 에서 같은 함정을 이미 겪었는데 재발시켰다 —
   #   조건부 환경변수는 항상 env(1) 로 넘긴다.
   # 사이드카·관측시작 파일도 픽스처 옆으로 격리 — 정본을 건드리면 그 검사는 증거가 아니다
+  # ★OBS_START 도 **명시 주입**한다. 검사기 기본값(SIDECAR 이름에서 파생)에 기대면
+  #   그 파생식이 바뀌는 순간 픽스처가 조용히 정본 스탬프를 보거나 새 스탬프를 만든다.
   local -a envs=("QVEST_HFC_LEDGER=$1" "QVEST_HFC_DAYS=$2" "QVEST_HFC_EXPECTED=a.sh b.sh"
-                 "QVEST_HFC_SIDECAR=${1%.jsonl}_sc.tsv")
+                 "QVEST_HFC_SIDECAR=${1%.jsonl}_sc.tsv"
+                 "QVEST_HFC_OBS_START=$(_obs_start_path "$1")")
   [ -n "${3:-}" ] && envs+=("QVEST_HFC_ROTATE_MAX=$3")
   OUT=$(env "${envs[@]}" bash "$CHK" --boot 2>&1)
   return $?
@@ -89,6 +103,16 @@ else bad "T3 ★관측창 가드" "WARN 으로 오탐: ${OUT:0:140}"; fi
 if ! run_chk "$L" 0 && echo "$OUT" | grep -q "발화 0회"; then
   ok "T3b 관측창 충족 시 실판정으로 전환"
 else bad "T3b 실판정 전환" "${OUT:0:140}"; fi
+
+# T3c ★관측창의 **출처**를 못박는다 (2026-08-02 추가) — 원장 최초 행이 아니라 스탬프다.
+#   원장 anchor 는 30일 전인데 스탬프만 '지금'이면 보류여야 한다. 이 축이 없으면
+#   "관측창 = 원장 최초 행" 으로 되돌아가는 회귀를 아무도 못 잡는다 — 그 모델은 원장이
+#   회전으로 잘리는 순간 창이 못 차서 **영구 보류**(감시기 무기능)가 된다(T9 와 같은 병).
+L="$FX/t3c.jsonl"; mk_ledger "$L" 1 "a.sh" "b.sh"
+date +%Y-%m-%dT%H:%M:%S > "$(_obs_start_path "$L")"
+if run_chk "$L" 7 && echo "$OUT" | grep -q "판정 보류"; then
+  ok "T3c ★관측창 출처 = 스탬프 (원장 최초 행 아님)"
+else bad "T3c 관측창 출처" "원장 anchor 로 창이 벌어짐(구 모델 회귀): ${OUT:0:140}"; fi
 
 # T4 원장 부재 → 미측정
 if ! run_chk "$FX/none.jsonl" 7 && echo "$OUT" | grep -q "미측정"; then

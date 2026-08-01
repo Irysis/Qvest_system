@@ -48,7 +48,11 @@ try(arrow::set_io_thread_count(2L), silent = TRUE)
 ROOT     <- Sys.getenv("QM_ROOT", "C:/Users/99922/OneDrive/Quant_Module_Moltbot")
 PIN_TAG  <- "WT-D20260718_007_r1"
 PIN_DIR  <- file.path(ROOT, ".cache/pins", PIN_TAG)
-AE_PARQ  <- file.path(ROOT, "stage_artifacts/WT_D20260718_007/ae_regime_signal.parquet")  # 상류 AE 신호(소비)
+## ★소스 교체 (2026-08-02 동결-소스 전수 스캔에서 적발): 구판은 r1 동결본(ae_regime_signal.parquet,
+##   종점 2026-05-01 — D3 졸업 근거 고정핀)을 읽었다. 트립와이어는 **살아있는 신호**를 봐야 한다 —
+##   동결본 소비 상태로는 6월 이후 AE 발화(실측: 06·07·08 연속 fire=1)를 영원히 못 본다.
+##   월간 연장본(_ext, ae_regime_monthly.py가 갱신·published-row 변경 시 중단 가드 보유)으로 교체.
+AE_PARQ  <- file.path(ROOT, "stage_artifacts/WT_D20260718_007/ae_regime_signal_ext.parquet")  # 상류 AE 신호(소비, live)
 M4_CSV   <- file.path(PIN_DIR, "period_returns_layer5.csv")                                # M4 BOCPD(동일 pin)
 OUT      <- file.path(ROOT, "qepm/observability/ae_crisis_tripwire_latest.json")
 TL_CSV   <- file.path(ROOT, "qepm/observability/ae_crisis_tripwire_timeline.csv")           # 차트용 타임라인
