@@ -1,0 +1,63 @@
+{
+  "paper_id": "2607.19497",
+  "factor_id": "T_RetAutoCorr_12M",
+  "strategy_name": "T_RetAutoCorr_12M",
+  "strategy_id": "STR_AS_20260802_074951_39404",
+  "strategy_idea": "월간 수익률 lag-1 자기상관(12m 롤링) 횡단면 신호 — 추세 지속 종목 매수. arxiv:2607.19497 Sepp & Lucic 2026. 저주파 스펙트럼 질량 = 양의 자기상관 우위를 KR long-only 종목 단면으로 이식.",
+  "source_paper": "arxiv:2607.19497",
+  "prior_factor_from_same_paper": "spec_mass_lowfreq_60d (2026-07-27, QUARANTINE)",
+  "impl_spec": {
+    "formula": "cor(ret[t-12:t-2], ret[t-11:t-1]) — lag-1 자기상관, 12m 롤링창(11 pairs)",
+    "universe": "K200_KQ150 (K200∪KQ150 PIT 시변, 논문 대비 KR 치환)",
+    "rebal": "monthly (월말 신호→다음달 초 리밸런싱)",
+    "pit_lag": "t-1 (월말 t 시점에 ret[t-12:t-1] 사용, PIT-safe)",
+    "long_only": "long-leg only (논문 L/S → long-only 사상 명시)",
+    "n_holdings": 20,
+    "weight_method": "equal",
+    "commission": "15bps one-way",
+    "start_date": "2005-01-01"
+  },
+  "engine_path": "04_Research/strategies/AS_T_RetAutoCorr_20260802/factor_engine.R",
+  "verify_layers": {
+    "L1_pit_pass": true,
+    "L1_detail": "lookahead_detector CLEAN — 74 lines scanned, no lookahead pattern detected. 신호는 i행(월 t)에서 ret_m[(i-12):(i-2)]/[(i-11):(i-1)] 과거 데이터만 사용.",
+    "L2_contract_pass": true,
+    "L2_detail": "audit_bt_result 16 checks — PASS=14 FAIL=0 WARN=2, integrity=WARNING (not FAIL). Warning 2건: 고회전율 정상범위 초과·rolling metrics 일부 구간 경고.",
+    "L3_robustness_pass": false,
+    "L3_detail": "IS SR 0.528 / OOS SR 0.129 → oos_retention=0.24 < 0.5 threshold (FAIL). Calmar=0.150 < 0.64 HARD (FAIL). MDD=61.2% > 45% 구조적 낙폭. post-2017 급감: 3Y SR 0.191 vs full SR 0.366 = ratio 0.52 (decaying).",
+    "L4_fidelity_pass": true,
+    "L4_detail": "[inline self-check] 논문 formula corr(ret[t-12:t-2], ret[t-11:t-1]) 그대로 구현. 12m 롤링창, 11 pairs, PIT lag=1. L/S→long-leg 사상 명시. 유니버스 KR 치환 명시. paper_fidelity_verifier_prompt.md 부재로 subprocess L4 미실행 — inline 검증으로 대체."
+  },
+  "metrics": {
+    "port_t": null,
+    "port_t_note": "forge 미실행 — alpha-search 모드 PORT_t는 proxy 수준 미산출",
+    "oos_retention": 0.24,
+    "calmar": 0.15,
+    "cagr_pct": 9.18,
+    "sharpe": 0.366,
+    "mdd_pct": 61.22,
+    "ir": -0.099,
+    "excess_cagr_pct": -1.70,
+    "bm_corr": 0.749,
+    "turnover_ann_pct": 287.6,
+    "fmb_score_t": 2.74,
+    "fmb_score_lambda": 0.00178,
+    "ic_mean": 0.0137,
+    "icir": 0.181,
+    "ic_pos_rate_pct": 57.6
+  },
+  "gate_decision": "QUARANTINE",
+  "gate_failed_layers": "L3_robustness",
+  "quarantine_reason": "OOS retention=0.24 << 0.5 threshold. Calmar=0.150 << 0.64 HARD. MDD 61.2% 구조적 낙폭. post-2017 급감(SR 0.191 vs 0.366, ratio 0.52). 동일 논문 spec_mass_lowfreq_60d와 같은 패턴(paper-level 소진 가능성). 단, FMB Score t=2.74* = 크로스섹션 프리미엄 통계 유의 — 소비면 frontier 주목.",
+  "notable": true,
+  "mechanism_diagnosis": "월간 수익률 자기상관 KR 横断面 프리미엄: FMB t=2.74* (p<0.01). 하지만 long-only 포트 구조에서 고MDD(61.2%), 고BM상관(0.749), 음IR. 추세지속 종목 선별 → 고모멘텀·고변동성 편향 → KR 시장에서 MDD 증폭. post-2017 급감은 factor zoo 포화 or 2020~2021 regime shift로 추세 지속성 약화 가능성.",
+  "next_probe": [
+    "FQ-094: autocorr 역방향(고자기상관 → 과매수/반전 가능성) — 신호 부호 반전 테스트",
+    "FQ-095: autocorr × BearProb 오버레이 — 양성 자기상관이 강세장에서 더 강할지 검증"
+  ],
+  "frontier_registered": ["FQ-094", "FQ-095"],
+  "l_code": "l_code_STR_AS_20260802_074951_39404",
+  "out_dir": "stage_artifacts/alpha_search/20260802_074951_39404",
+  "processed_date": "20260802",
+  "created_at": "2026-08-02"
+}

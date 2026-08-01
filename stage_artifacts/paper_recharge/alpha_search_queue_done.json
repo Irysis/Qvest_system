@@ -6,7 +6,8 @@
     "2607.16450",
     "2606.08141",
     "2607.19497",
-    "2607.19005"
+    "2607.19005",
+    "2607.27461"
   ],
   "records": [
     {
@@ -105,8 +106,45 @@
       "verify_path": "stage_artifacts/alpha_search/20260726_174643_26276/hurdle_result.json",
       "quarantine_reason": "변동성 순위 안정성(Markov 지속성) KR 비성립 — Sharpe 0.167 / IR -0.488 / MDD 55.4% / Calmar 0.067. 07-26 실행됐으나 done 원장 미기입 상태였음 (2026-08-02 AS-20260802-R1 세션이 소급 등재; 등재 누락 자체는 alpha_search_queue_run.sh done-writer 결함으로 별건 추적).",
       "ledger_backfilled_by": "AS-20260802-R1 (2026-08-02)"
+    },
+    {
+      "paper_id": "2607.27461",
+      "paper_title": "Are Three Matrices All You Need To Beat the Market? Observable Matrix Dynamics for Portfolio Optimization",
+      "factor_id": "C_VolRankStability",
+      "factor_name": "C_VolRankStability_3M",
+      "strategy_id": "STR_AS_20260802_072242_49024",
+      "gate_decision": "QUARANTINE",
+      "gate_failed_layers": "L3_robustness",
+      "port_t": null,
+      "oos_retention": 0.045,
+      "calmar": 0.108,
+      "grade": "F",
+      "score": 0,
+      "processed_date": "20260802",
+      "verify_path": "stage_artifacts/paper_recharge/auto_verify_C_VolRankStability_20260802.json",
+      "quarantine_reason": "OOS retention=0.045 << 0.5. Calmar=0.108 << 0.64 HARD. MDD 62.1% 구조적 낙폭. vol rank 3m 변화 신호 KR 비성립 (prior: 정적 안정성 역수도 FAIL — arxiv:2607.19005). vol rank 계열 통합 2-hits negative.",
+      "session_note": "오늘 AS-20260802 세션 착수 전 병렬 세션에서 이미 실행됨(07:22~07:42). done 원장 소급 기입."
+    },
+    {
+      "paper_id": "2607.19497",
+      "factor_id": "T_RetAutoCorr_12M",
+      "paper_title": "The Science and Practice of Trend-Following Systems",
+      "factor_name": "T_RetAutoCorr_12M",
+      "strategy_id": "STR_AS_20260802_074951_39404",
+      "gate_decision": "QUARANTINE",
+      "gate_failed_layers": "L3_robustness",
+      "port_t": null,
+      "oos_retention": 0.24,
+      "calmar": 0.15,
+      "grade": "F",
+      "score": 7.3,
+      "processed_date": "20260802",
+      "verify_path": "stage_artifacts/paper_recharge/auto_verify_T_RetAutoCorr_12M_20260802.json",
+      "quarantine_reason": "OOS retention=0.24 < 0.5. Calmar=0.15 < 0.64 HARD. MDD 61.2% 구조적 낙폭. post-2017 급감(SR ratio 0.52). 동 논문 spec_mass_lowfreq_60d QUARANTINE에 이어 2번째 신호도 같은 패턴. FMB t=2.74* 크로스섹션 유의하나 standalone 배포 불가.",
+      "notable": true,
+      "l_code": "l_code_STR_AS_20260802_074951_39404"
     }
   ],
-  "schema_note": "processed = list of paper_id strings (set-like). records = human-readable audit trail.",
-  "last_updated": "20260727"
+  "schema_note": "processed = list of paper_id strings (set-like, paper 단위 dedup). records = 전체 시도 감사 로그(동일 paper에서 여러 factor 추출 시 factor_id로 구분). last_updated 갱신 의무.",
+  "last_updated": "20260802"
 }
