@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "sot": "02_Infrastructure/docs/qvest_v8_3_alpha_discovery_sot.md §4",
-  "updated": "2026-07-26 (FQ-074/075 추가 — dart_risk_section_sentiment quarantine 후 재경로: 전문 vs MD&A+사업개요 지도학습 감성. FQ-064 실측 재현 + 풀-귀속 분해 → config-scoped negative 확정도 이 세션)",
+  "updated": "2026-08-02",
   "consume_rule": "새 발굴 리서치 착수 전: hypothesis_index lookup → 본 큐 확인 → owner/status 갱신. 완료 시 result_ref(L-code/보고서) 기입. dohoon_decision 항목은 세션 임의 착수 금지.",
   "entries": [
     {
@@ -1514,7 +1514,6 @@
     },
     {
       "id": "FQ-074",
-
       "lane": "text_non_return",
       "title": "DART 사업보고서 전문 지도학습 감성 (Ke et al. 2020 방법론 KR 적용)",
       "hypothesis": "사업보고서 전체 텍스트에서 Ke et al.(2020) 지도학습 어휘(수익률 레이블)로 산출한 per-firm 감성 점수 p̂∈[0,1]이 횡단 알파를 가짐. 논문(2607.14174) full-filing 모델에 직접 대응 — 위험요인 섹션이 아닌 전문 사용.",
@@ -1545,6 +1544,233 @@
         "paper: 2607.14174 How Much of a 10-K Matters",
         "quarantine: auto_quarantine_20260726.json dart_risk_section_sentiment → MD&A 재경로",
         "infra_evidence: TOC 추출 성공 실증(54 TOC items, III·IV 섹션 확인)"
+      ]
+    },
+    {
+      "id": "FQ-076",
+      "lane": "text_non_return",
+      "title": "위험-서술 텍스트 피어 네트워크 — 산업분류 아닌 '언어'로 만든 종목 연결구조",
+      "hypothesis": "DART 사업보고서 위험/사업 서술 섹션의 용어벡터 코사인 유사도로 종목-피어 그룹을 구성하고, 피어군의 t-1 수익을 spillover 신호로 소비하면 횡단 알파를 가진다.",
+      "ev_rationale": "논문은 10-K 위험요인 '언어'로 만든 피어 네트워크가 SIC 산업분류 대비 수익예측력 증분을 가짐을 보고. KR은 산업분류가 대기업집단·겸업으로 특히 거칠어 언어-피어의 증분 여지가 더 크다고 가정(검증 안 됨 (가정)).",
+      "wall_check": "비-return 링크구조. ★FQ-074/075(지도학습 감성)와 축이 다름 — 저쪽은 tone(부호), 본 건은 종목간 **연결구조**. 벽 대조: 스필오버는 개별 종목 스코어가 아니라 그룹-레벨 전파라 cap-w 전이벽에 다르게 걸릴 수 있음(미측정).",
+      "data_gate": "FQ-074 코퍼스 빌드 공유. 추가 필요분 = 섹션 term-vector 화(mecab-ko 미설치 — 설치 또는 char-ngram 대체).",
+      "owner": "paper-intake-audit 2026-08-02",
+      "status": "frontier_open",
+      "next_action": "FQ-074 코퍼스 완료 후 term-vector → 피어 그래프 → peer lagged return spillover 를 canonical_screen_bt 로 실측",
+      "source_refs": [
+        "paper: Jian Yuan; Yiming Zhang, 'Risk-based peer networks and return predictability: Evidence from textual analysis on 10-K filings', J. Empirical Finance 88:101754, 2026-08-01, DOI 10.1016/j.jempfin.2026.101754",
+        "dedup: hypothesis_index 'peer network' 0 hit"
+      ]
+    },
+    {
+      "id": "FQ-077",
+      "lane": "text_non_return",
+      "title": "공급망 1-hop 텍스트 임베딩 전파 (매출처/매입처 그래프)",
+      "hypothesis": "DART 사업보고서 서술 임베딩의 주성분을 KRX 매출처·매입처 링크로 1-hop 전파한 network-augmented 팩터가 횡단 알파를 가진다.",
+      "ev_rationale": "논문(S&P500 255사, 2011-2025)은 FinBERT 임베딩의 공급망 전파 팩터가 Fama-MacBeth NW t=-2.64, FF5 alpha 7.27%/yr(t=2.30) 이며 placebo·섹터중립·OOS 를 통과했다고 보고. 비-return 원천 2종(텍스트 + 거래처 링크) 결합이라 v8.3 주력 lane 정합.",
+      "wall_check": "비-return. ★벽 대조: 07-13 실측 '벽은 재료가 아니라 long-only 횡단선택→cap-w 전이 자체'. 본 건의 delta 는 재료가 아니라 **네트워크 전파로 신호의 횡단 분포 자체를 바꾼다**는 점 — 전이층에 다르게 걸리는지가 검증 대상(미측정).",
+      "data_gate": "거래처 링크 = DART 사업보고서 '주요 매출처/매입처' 서술 파싱 필요(구조화 필드 아님, 신규 파서). 커버리지 census 선행 의무.",
+      "owner": "paper-intake-audit 2026-08-02",
+      "status": "frontier_open",
+      "next_action": "① 거래처 링크 census(커버리지 %) → ② 커버리지 충분 시 임베딩 전파 팩터 구현 → canonical 게이트",
+      "source_refs": [
+        "paper: Asef Yilki, 'Supply Chain Propagation of Textual Signals: LLM Embeddings and Cross-Sectional Return Predictability', arXiv:2606.29290, 2026-06-28 (q-fin.PR — 구 크롤 카테고리 밖)",
+        "dedup: hypothesis_index 'supply chain'/'공급망' 0 hit"
+      ]
+    },
+    {
+      "id": "FQ-078",
+      "lane": "non_return",
+      "title": "insider 거래 magnitude 정규화 + symbolic(상징적) 하위 tercile 제거",
+      "hypothesis": "임원 매수를 '보유대비·시총대비 금액'으로 정규화해 하위 tercile(상징적 매수)을 제거한 뒤 스코어링하면, 미정규화 insider 스코어 대비 신호가 개선된다.",
+      "ev_rationale": "논문은 경제적으로 사소한 '상징적' 내부자 매수(시그널링 목적)와 실질 매수를 분리하면 후자에만 정보가 집중됨을 보고. Qvest insider 라인(R9~R42)은 **건수/순매수 기반**으로 측정했고 magnitude 분리 cut 은 미탐색.",
+      "wall_check": "비-return. ★prior 필수: R9 실측 'insider × 선별풀 = config-scoped negative(한계기여 4중 전부 paired <=+0.73)' — pool-랭킹 면은 이미 음성. 본 건은 **동일 pool-랭킹 면의 재시도가 아니라 신호 정의 자체의 재구성**(잡음 하위 tercile 제거)이며, 개선 실패 시 FQ-049/050 monitoring 소비면으로 회수.",
+      "data_gate": "DART exec-insider 역사 파서 산출물 기보유(FQ-001 완료분). 금액·보유주식수 필드 존재 확인 필요.",
+      "owner": "paper-intake-audit 2026-08-02",
+      "status": "frontier_open",
+      "next_action": "insider 패널에 magnitude 정규화 컬럼 추가 → 하위 tercile 제거 arm vs 전체 arm paired 비교(동일 기질 통제)",
+      "source_refs": [
+        "paper: Xin Wang; Yumu Yang; Yue Sun, 'Opportunistic insider trading: An analysis of symbolic insider purchases', Int'l Review of Economics & Finance 108:105190, 2026-06-01, DOI 10.1016/j.iref.2026.105190",
+        "prior: memory project-insider-monitoring-line-20260715 (pool-선별 KILL, monitoring 유효)",
+        "dedup: hypothesis_index 'symbolic insider' 0 hit"
+      ]
+    },
+    {
+      "id": "FQ-079",
+      "lane": "non_return",
+      "title": "insider 공시지연 gap 가중 + 거래 시퀀스(run-length/방향지속) 인코딩",
+      "hypothesis": "임원 거래를 독립 이벤트가 아니라 기업-레벨 시퀀스로 보고 (a) 거래일→공시일 gap 의 역수로 가중하고 (b) 최근 12개월 run-length/방향지속을 인코딩하면 단건 스코어 대비 신호가 강해진다.",
+      "ev_rationale": "논문 2건: 공시 gap 이 길수록 정보성이 약해짐(FRL) / 거래를 firm-level 시퀀스로 보면 특히 매도 신호가 t+1 월간 수익에 유효(SSRN). 둘 다 Qvest 가 이미 파싱해 둔 필드(거래일·공시일·방향)만으로 구성 가능.",
+      "wall_check": "비-return. gap 은 순수 타이밍 변수라 PIT-safe(공시일 이후에만 소비 = C5 정합). ★prior: R9 pool-랭킹 음성 — 본 건 delta 는 **시간구조**(단건→시퀀스, 지연가중) 이며 재료 추가 없음.",
+      "data_gate": "기보유 insider 패널로 즉시 가능(거래일·공시일 양 필드 존재 확인 선행).",
+      "owner": "paper-intake-audit 2026-08-02",
+      "status": "frontier_open",
+      "next_action": "① 필드 존재 확인 → ② gap 가중·시퀀스 인코딩 2 arm → ③ 단건 baseline 대비 paired 비교",
+      "source_refs": [
+        "paper: Y. Sha; B. Li, 'Predicting Insider Trading with Short-Horizon Returns and Disclosure Timing', Finance Research Letters, 2026 (ScienceDirect S154461232600975X) — ⚠ 정확 월 미해결(도구 메타데이터 연도만)",
+        "paper: D. Katselas; J. Drienko; J. Paranji, 'All Strings Attached: Firm-Level Insider-Trade Sequences and the Power of Sell Signals', SSRN 6504055",
+        "dedup: hypothesis_index 'disclosure gap'/'insider sequence' 0 hit"
+      ]
+    },
+    {
+      "id": "FQ-080",
+      "lane": "non_return",
+      "title": "이벤트-조건부 insider — 구조조정/손상 공시 창 안의 내부자 매수만",
+      "hypothesis": "DART 구조조정·손상·사업재편 공시 후 [0,+60일] 창 안에서 발생한 임원 순매수만 스코어링하면, 무조건부 insider 스코어보다 신호가 강하다.",
+      "ev_rationale": "논문(J Corp Finance 99:103006)은 다운사이징 진행 기업의 내부자 거래가 무조건부 대비 더 날카로운 신호를 담는다고 보고 — 내부자가 '남들이 모르는 재편의 성패'를 아는 국면이라는 기전. DART 는 내부자 신고와 재편 공시를 **같은 시스템**에서 제공해 결합 비용이 낮다.",
+      "wall_check": "비-return. ★DIST-AR-003 부활 발화(event-time fresh-cohort: DART event-log 연속 fresh 구성)와 정합 — 부활 조건 충족 방향의 구체 실현안.",
+      "data_gate": "DART 공시유형 코드로 재편/손상 이벤트 추출 필요. FQ-004(담보/질권·감사의견 census)와 크롤 인프라 공유.",
+      "owner": "paper-intake-audit 2026-08-02",
+      "status": "frontier_open",
+      "next_action": "① 재편/손상 공시유형 census → ② 이벤트 창 결합 → ③ 무조건부 baseline 대비 paired",
+      "source_refs": [
+        "paper: Dallin M. Alldredge; Lee E. Biggerstaff; D. Brian Blank, 'Tell me you have a plan! Insider trade signals from firms undergoing corporate downsizing', J. Corporate Finance 99:103006, 2026-06-01, DOI 10.1016/j.jcorpfin.2026.103006",
+        "revival: DIST-AR-003 event-time fresh-cohort 발화"
+      ]
+    },
+    {
+      "id": "FQ-081",
+      "lane": "book_enhancement",
+      "title": "DuPont 산업-상대 조건부 (ΔPM·ΔATO 를 절대가 아니라 산업내 경쟁위치로 조건화)",
+      "hypothesis": "ΔProfit Margin 과 ΔAsset Turnover 를 KRX 업종내 demean 하고 '업종상대 PM/ATO 수준'과 교호항을 두면, 무조건부 fundamental 팩터가 실패한 자리에서 신호가 살아난다.",
+      "ev_rationale": "논문(99,938 firm-years, 1981-2020)은 ΔPM 이 ΔATO 보다 훨씬 빠르게 평균회귀하기 때문에 **무조건부로 보면 약해 보이고**, 업종상대 경쟁위치로 조건화하면 둘 다 정보성을 회복한다고 보고. 이는 Qvest 의 'standalone fundamental 16/16 FAIL' posterior 에 대한 직접적 기전 설명 후보.",
+      "wall_check": "고정 축 준수(재료 추가 없음 — 기보유 재무제표). ★prior: AX-004/DIST-QPM-003 = quality single-signal long-only 실패. 본 건 delta = **단일신호 재시도가 아니라 조건화 축 도입**. 실패 시 DIST-QPM-003 supporting 으로 회수.",
+      "data_gate": "기보유 KR 재무제표 DB 로 즉시 가능. C4 lag(annual = 익년 3/31) 준수 의무.",
+      "owner": "paper-intake-audit 2026-08-02",
+      "status": "frontier_open",
+      "next_action": "업종내 demean + 수준 교호 2 arm 구성 → canonical_screen_bt → cap-w PORT_t / dual-basis EW 대비 동시 산출",
+      "source_refs": [
+        "paper: Shanhong Wu; Jing Jiang, 'Earnings Predictability of DuPont Factors: Impact of Mean Reversion and Competitiveness', J. Risk and Financial Management 19(6):408, 2026-06-04, DOI 10.3390/jrfm19060408",
+        "dedup: hypothesis_index 'dupont' 0 hit"
+      ]
+    },
+    {
+      "id": "FQ-082",
+      "lane": "non_return",
+      "title": "애널리스트 cross-extrapolative 잔차 — 피어 리비전으로 직교화한 성분",
+      "hypothesis": "종목별 컨센서스 리비전을 '해당 종목을 커버하는 애널리스트가 담당한 다른 기업들의 리비전'으로 회귀해 남은 잔차만 스코어로 쓰면, 원 리비전 대비 알파가 개선된다.",
+      "ev_rationale": "논문(Management Science)은 애널리스트가 자신이 커버하는 **다른** 기업의 정보를 부적절하게 외삽한다는 편의를 문서화. 그렇다면 원 리비전에는 종목 고유정보와 외삽 잡음이 섞여 있고, 잡음을 제거한 잔차가 더 순수한 신호라는 예측이 따라 나온다.",
+      "wall_check": "비-return(컨센서스). 기존 크롤 질의 'earnings revision momentum analyst consensus' 는 **숫자 리비전**만 겨냥해 이 구조를 못 잡았다. ★벽 대조: 재료 동일(컨센서스), delta 는 직교화 — 07-13 '벽=재료 아닌 전이' 진단상 통과 보장 없음(미측정).",
+      "data_gate": "애널리스트-기업 커버리지 매핑 필요. QuantiWise 컨센서스에 애널리스트/증권사 식별자 존재 여부 확인 선행(불확실 — 미확인).",
+      "owner": "paper-intake-audit 2026-08-02",
+      "status": "frontier_open",
+      "next_action": "① 커버리지 매핑 가용성 확인 → ② 가용 시 피어-리비전 회귀 잔차 구성 → ③ 원 리비전 baseline 대비 paired",
+      "source_refs": [
+        "paper: R.W. Renjie; P. Verwijmeren, 'Cross-extrapolative beliefs: Evidence from equity analysts', Management Science, DOI 10.1287/mnsc.2024.04903 — ⚠ 정확 월 미해결",
+        "dedup: hypothesis_index 'cross-extrapolat' 0 hit"
+      ]
+    },
+    {
+      "id": "FQ-083",
+      "lane": "non_return",
+      "title": "영문 컨퍼런스콜 개시 = 외국인 접근성 이벤트 (KR 실증 논문 직접 이식)",
+      "hypothesis": "기업이 영문 컨퍼런스콜/IR 을 처음 제공하기 시작한 분기를 더미로 잡고 이후 1~4분기 외국인 지분 변화를 예측하는 신호로 소비하면 횡단 tilt 가 유효하다.",
+      "ev_rationale": "논문은 KR 상장사 2002-2022 실증으로 영문 콜 제공 이후 외국인 보유·거래량이 상승함을 보고 — **한국 시장 자체 증거**라 이식 리스크가 가장 낮은 부류. 개시는 이산 이벤트라 PIT 처리가 단순.",
+      "wall_check": "비-return·firm-level 이산 이벤트. ★prior: 외국인 '순매수 랭킹' 계열은 Anti-Herding FAIL(STR_AS_20260613_073448). 본 건은 flow 랭킹이 아니라 **기업 행동(공시 접근성) 이벤트** 라 축이 다름.",
+      "data_gate": "영문 IR 제공 여부 = DART/IR 공시 메타데이터. 커버리지·시작일 식별 가능성 census 선행 필요(미확인).",
+      "owner": "paper-intake-audit 2026-08-02",
+      "status": "frontier_open",
+      "next_action": "① 영문 IR 제공 메타데이터 census → ② 개시 이벤트 식별 가능 시 더미 구성 → ③ 이벤트 창 tilt 실측",
+      "source_refs": [
+        "paper: R. Kim; K.H. Park, 'English Earnings Conference Calls and Foreign Investors in the Korean Stock Market', Asia-Pacific J. Financial Studies, DOI 10.1111/ajfs.70039 — ⚠ 정확 월 미해결(연도 단위 메타데이터)",
+        "dedup: hypothesis_index 'conference call'/'컨퍼런스콜' 0 hit"
+      ]
+    },
+    {
+      "id": "FQ-084",
+      "lane": "non_return",
+      "title": "차익거래자 활동 조건부 게이트 — 팩터 스코어를 '외국인·공매도가 활동하는 종목'에서만 인정",
+      "hypothesis": "외국인 순매수와 공매도 활동을 결합한 net arbitrage 지표가 높은 종목 부분집합에서만 기존 팩터 스코어를 인정(게이트)하면, 전체 유니버스 스코어링 대비 실현 PORT_t 가 개선된다.",
+      "ev_rationale": "논문은 KOSPI/KOSDAQ 실증으로 **차익거래자가 활동하는 종목에서 anomaly 수익이 유의하게 크다**고 보고. 즉 flow 를 알파 원천이 아니라 '어디서 anomaly 가 작동하는가'의 조건부 게이트로 쓴다.",
+      "wall_check": "비-return. ★★prior 2건 필수 대조: (a) 개인 순매수 contrarian 단일팩터 = DIST-QPM-005 알파 부재 (b) 기관/외국인 과매수 회피 Anti-Herding = FAIL. 두 선례는 **flow 를 스코어로 쓴 것**이고 본 건은 flow 를 **게이트/조건부**로 쓴다 — 이 구분이 유일한 delta 이며, 실패 시 flow 축은 게이트 면까지 config-scoped negative 로 확정된다(정보 가치 있음).",
+      "data_gate": "외국인 순매수 = KRX 투자주체별 매매(보유). 공매도 잔고 = FQ-003 lane 과 데이터 공유 — FQ-003 진행상태 확인 후 착수.",
+      "owner": "paper-intake-audit 2026-08-02",
+      "status": "frontier_open",
+      "next_action": "FQ-003 공매도 데이터 확보 상태 확인 → net arbitrage 지표 구성 → 기존 챔피언 스코어에 게이트 적용해 paired 비교",
+      "source_refs": [
+        "paper: J. Jeong; J. Eo; J. Kang, 'Net arbitrage trading by foreign investors and short sellers and stock returns: Evidence from the Korean stock market', Pacific-Basin Finance Journal (ScienceDirect S0927538X26000855) — ⚠ 정확 월 미해결",
+        "prior: DIST-QPM-005 (개인 contrarian 알파 부재) / STR_AS_20260613_073448 Anti-Herding FAIL / STR_AS_20260613_061838 외국인 국면 MARGINAL",
+        "related: FQ-003 공매도잔고 lane"
+      ]
+    },
+    {
+      "id": "FQ-085",
+      "lane": "non_return",
+      "title": "KOSPI200 개별종목 옵션-내재 특성 (skew / IV-spread) 횡단 랭킹",
+      "hypothesis": "KOSPI200 구성종목 중 개별 옵션이 상장된 종목에 대해 옵션-내재 스큐와 IV 스프레드를 횡단 랭킹 신호로 쓰면 기초주식 수익 예측력을 가진다.",
+      "ev_rationale": "논문(Management Science)은 옵션 특성이 기초주식 횡단 수익을 예측함을 보고. 주식 수익에서 파생되지 않은 별개 시장의 가격정보라 v8.3 '비-return 원천' 정의에 부합한다.",
+      "wall_check": "★고정 축 주의: 개별주식 옵션 상장 종목이 K200 일부에 그쳐 **유니버스 커버리지가 구조적으로 부분집합** — 25종 배포 유니버스에서 유효 신호가 되려면 커버리지 census 가 선결. 커버리지 미달 시 screen-tier/monitoring 으로만 회수.",
+      "data_gate": "KR 개별주식옵션 데이터 보유 여부 미확인. 데이터 게이트 = census 결과에 종속.",
+      "owner": "paper-intake-audit 2026-08-02",
+      "status": "frontier_open",
+      "next_action": "① 개별주식옵션 데이터 보유·커버리지 census → ② 커버리지 충분 시에만 신호 구성",
+      "source_refs": [
+        "paper: A. Neuhierl; X. Tang; R.T. Varneskov, 'Do option characteristics predict the underlying stock returns in the cross-section?', Management Science, DOI 10.1287/mnsc.2024.04720 — ⚠ 정확 월 미해결",
+        "dedup: hypothesis_index 'option-implied'/'옵션 내재' 0 hit"
+      ]
+    },
+    {
+      "id": "FQ-086",
+      "lane": "non_return",
+      "title": "가족/창업자 지배구조 유형 (DART 최대주주·임원현황) — 조건부(위기) 평가",
+      "hypothesis": "DART 최대주주 및 특수관계인·임원현황으로 '창업자 주도 / 지배구조 착근형 가족지배 / 다세대 가족지배' 유형을 구성하면, 위기 국면 조건부로 수익·위험 차이를 갖는다.",
+      "ev_rationale": "논문(8,634 firm-years)은 창업자 CEO 통제가 시장건전성 플래그를 9.5% 낮추고 다세대 가족지배는 47.1% 높이는 등 **유형별로 부호가 갈린다**고 보고. KR 은 가족지배가 지배적 형태라 유형 분산이 크다.",
+      "wall_check": "비-return·저빈도 특성. ★AX-001 정합 프레임 의무 — 전기간 SR 이 아니라 위기구간 alpha + Core 대비 MDD + bad/normal IC ratio 로 평가. 논문 종속변수가 수익이 아니라 감시 플래그이므로 **수익 관련성은 미검**(가정).",
+      "data_gate": "DART 지배구조/최대주주 공시 파싱 필요(신규). FQ-004 크롤 인프라 공유 가능.",
+      "owner": "paper-intake-audit 2026-08-02",
+      "status": "frontier_open",
+      "next_action": "① 최대주주·임원 필드 census → ② 유형 분류기 구성 → ③ AX-001 조건부 프레임으로 평가",
+      "source_refs": [
+        "paper: Douglas Cumming; Esteban Hernandez; Shan Ji, 'Not All Family Firms Are Alike: How Founder-Led and Governance-Entrenched Family Control Shape the Trading Environment Around the Firm', arXiv:2607.10876, 2026-07-12 (econ.GN — 구 크롤 카테고리 밖)",
+        "dedup: hypothesis_index 'family firm'/'가족기업' 0 hit"
+      ]
+    },
+    {
+      "id": "FQ-087",
+      "lane": "method_frontier",
+      "title": "변동성-랭크는 예측 가능하고 수익-랭크는 아니다 — 예측 대상 교체",
+      "hypothesis": "월간 수익 랭크 대신 **변동성 랭크**의 Markov 전이를 예측해 선별/사이징 입력으로 쓰면, 수익 예측 기반 구성 대비 Calmar/MDD 가 개선된다.",
+      "ev_rationale": "논문은 수익 랭크가 거의 예측 불가인 반면 변동성 랭크는 한 스텝 앞 예측이 가능하다는 비대칭을 핵심 실증으로 제시하고, 잔차 거리 기반 분산화를 얹어 OOS Sharpe 1.06/1.32(시장 0.78/1.14, 5bps 순)를 보고.",
+      "wall_check": "★고정 축 안. return-derived 재료이나 **예측 대상 자체를 바꾸는** 축이라 07-13 'construction 미세조정 소진' 지대와 구분. ★prior: MDD 무료레버 3라운드 결론 = overlay/timing 유일(weighting·selection 아님) — 본 건은 selection 재시도이므로 그 prior 에 정면으로 걸린다. 반증되면 해당 결론이 4라운드째 강화됨(정보 가치).",
+      "data_gate": "기보유 RAWDATA 로 즉시 가능(일간 수익만 필요).",
+      "owner": "paper-intake-audit 2026-08-02",
+      "status": "frontier_open",
+      "next_action": "변동성 랭크 전이행렬 추정 → 선별/사이징 입력 교체 arm → EW baseline 대비 Calmar·MDD paired",
+      "source_refs": [
+        "paper: Igor Halperin, 'Are Three Matrices All You Need To Beat the Market? Observable Matrix Dynamics for Portfolio Optimization', arXiv:2607.27461, 2026-07-29 (q-fin.PM — 카테고리는 크롤됐으나 9질의 어휘로 도달 불가였음)",
+        "prior: memory project-mdd-lever-overlay-only-3rounds-20260718"
+      ]
+    },
+    {
+      "id": "FQ-088",
+      "lane": "method_frontier",
+      "title": "decision-time 전용 macro vintage kNN 아날로그 팩터 랭킹 (LLM 불요)",
+      "hypothesis": "아카이브된 실시간 macro nowcast vintage 로 과거 유사 국면을 kNN 검색해 팩터/슬리브를 월간 랭킹하면, PIT 무결 상태에서 유효한 랭킹력을 가진다.",
+      "ev_rationale": "논문은 decision-time 정보만 쓴 월말 팩터 랭킹에서 median monthly Spearman rank IC +0.154 를 보고하되, **비-LLM kNN macro-analog baseline 이 동등한 median IC 를 회복**한다고 명시 — 즉 신호원은 LLM 이 아니라 retrieval + 실시간 인플레 vintage 다. 저비용 재현이 가능하다는 뜻.",
+      "wall_check": "★고정 축 안(Lane3 factor-rotation 입력). ★prior: DIST-RAMP-006(regime-조건부 팩터배분 천장 ~2.85) 및 HMM 2-state 오버레이 FAIL(STR_AS_20260613_062356) — 본 건 delta 는 잠재 국면변수를 두지 않고 **vintage 아날로그 검색**으로 대체한다는 점. 평균 IC 부트스트랩 CI 가 0 을 포함한다는 논문 자체 한계 명시.",
+      "data_gate": "FRED/ECOS **아카이브 vintage** 확보 여부가 결정적(현재값이 아니라 당시 발표값). vintage 미보유 시 본 건은 PIT 상 성립 불가 — census 선행 의무.",
+      "owner": "paper-intake-audit 2026-08-02",
+      "status": "frontier_open",
+      "next_action": "① FRED ALFRED/ECOS vintage 가용성 census → ② 가용 시 kNN 아날로그 랭커 구성 → ③ 기존 국면엔진 대비 비교",
+      "source_refs": [
+        "paper: Mao Guan; Qian Chen, 'Leakage-Aware Benchmarking of LLM Forecasting: Real-Time Nowcasts as the Decision-Time Input for Macro Factor Ranking', arXiv:2606.22719, 2026-06-21 (q-fin.ST — 카테고리는 크롤됐으나 PIT/vintage 어휘가 9질의에 없어 도달 불가)",
+        "prior: DIST-RAMP-006 / STR_AS_20260613_062356 HMM FAIL"
+      ]
+    },
+    {
+      "id": "FQ-089",
+      "lane": "text_non_return",
+      "title": "공시 품질 다차원 변화 — 분량·가독성에 '위험↔전략 정합도' 축 추가",
+      "hypothesis": "기업별 위험공시의 (a) 분량 (b) 가독성 (c) **위험서술과 경영전략 서술의 주제 정합도** 연간 변화를 저빈도 횡단 특성으로 쓰면 신호를 갖는다.",
+      "ev_rationale": "논문은 일본어 19,770 firm-years(FY2015-FY2024) 로 세 축을 동시 측정해, 분량은 늘고 가독성은 낮아지며 정보구조는 개선되나 서술 구체성은 정체됨을 보고. **CJK 공시 관행·개혁시기가 KR 과 가장 가까운 인접시장**이라 지표 이식성이 높다.",
+      "wall_check": "비-return. ★FQ-012/FQ-021(가독성 레벨/변화) 대비 delta = **위험↔전략 정합도 축이 신규**. FQ-012 는 m1 문장길이만 실신호(cap-w 2.35<2.95, screen-tier)로 회수됐으므로 본 건도 screen-tier 회수 가능성을 사전 인정.",
+      "data_gate": "FQ-074 코퍼스 공유. 정합도 산출에 토픽모델 또는 임베딩 필요.",
+      "owner": "paper-intake-audit 2026-08-02",
+      "status": "frontier_open",
+      "next_action": "FQ-074 코퍼스 후 3축 산출 → FQ-012 기존 m1 대비 증분만 평가(중복 축 재측정 금지)",
+      "source_refs": [
+        "paper: Nobuhiro Aikawa; Mitsuo Yoshida, 'Assessing Post-Reform Changes in Risk Disclosure Quality with a Multidimensional Text Analysis Approach', arXiv:2606.26522, 2026-06-25 (cs.CL + cs.DL — 구 크롤 카테고리 밖)",
+        "related: FQ-012 / FQ-021 (가독성 축 — 중복 회피)"
       ]
     }
   ]

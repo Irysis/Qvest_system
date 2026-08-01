@@ -314,8 +314,21 @@ run_mcp_probe <- function() {
   script <- file.path(PROJECT_ROOT, "02_Infrastructure", "tools", "paper_recharge_mcp.py")
   cmd <- sprintf("%s %s --project-root %s --out %s --max-results-per-query 5",
                  shQuote(py), shQuote(script), shQuote(PROJECT_ROOT), shQuote(out))
+  # [수리 2026-08-02 ②] 신선도 검사 — 구현은 산출 파일이 **이번 실행으로 쓰였는지**를
+  #   확인하지 않았다. 같은 날 앞선 실행이 파일을 남긴 뒤 이번 python 이 죽으면
+  #   fromJSON(out) 이 **직전 파일을 읽어 status=mcp_ok 을 반환**한다(계측 사망이 정상
+  #   완료로 위장). 07-26 로그가 같은 날 2회 실행되며 동일 candidates 를 보고한 구간이
+  #   이 경로에 해당할 수 있다(단정 불가 — 당시 python 성공 여부는 로그로 확정 못 함).
+  #   실행 전 mtime 을 잡아 두고, 실행 후 갱신되지 않았으면 stale 로 명시 강등한다.
+  mtime_before <- if (file.exists(out)) file.info(out)$mtime else NA
   status <- system(cmd, ignore.stdout = TRUE, ignore.stderr = TRUE)
+  stale <- file.exists(out) && !is.na(mtime_before) &&
+           identical(file.info(out)$mtime, mtime_before)
   obj <- tryCatch(fromJSON(out, simplifyVector = FALSE), error = function(e) list(status = "read_failed"))
+  if (isTRUE(stale)) {
+    obj$status <- sprintf("stale_not_rewritten(py=%s,exit=%s)", basename(py), status)
+    obj$candidates <- list()
+  }
   # 산출 파일 부재 = 계측 사망이지 "후보 0"이 아니다. 둘을 같은 candidates=0 으로
   # 표시하면 침묵 정지가 정상 완료로 위장된다 → 사유를 status 에 실어 상류로 올린다.
   if (identical(obj$status, "read_failed")) {
