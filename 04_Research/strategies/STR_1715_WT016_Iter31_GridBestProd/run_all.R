@@ -665,7 +665,26 @@ for (k in seq_along(oos_dates_seq)) {
     data.table(period_end=d_curr, port_ret=port_ret_oos, n_held=nrow(m_w))
   prev_d <- d_curr
 }
-oos_dt <- rbindlist(oos_periods)
+## ★빈 확장 구간 방어 (2026-08-01 수리)
+##   last_sig(신호일)가 raw 데이터 종점보다 앞서면 — 월초 리밸 직후의 정상 상태다
+##   (예: sig 2026-08-01 vs raw max 2026-07-31) — 위 루프의 `if (d_curr <= prev_d) next`가
+##   전부 스킵해 oos_periods 가 빈 리스트가 된다. rbindlist(list()) 는 **컬럼 없는** 0행
+##   data.table 이라 곧바로 setorder(period_end) 가 죽었다:
+##     Error in setorderv: some columns are not in the data.table: [period_end]
+##   ★실측 피해: 이 크래시로 walk-forward 271개월(2026-07-31까지)을 계산해놓고도
+##     03_period_returns.csv 를 쓰지 못해 파일이 269개월(2026-06)에 동결 →
+##     base 패널·live_book_series·페이퍼 NAV·차트가 전부 2개월 뒤처졌다.
+##     그런데 모니터는 "신규 실현월 없음 — 설정 정상"으로 보고했다(침묵 실패).
+##   확장이 비는 것 자체는 정상이므로 중단하지 않고, **같은 스키마의 0행**으로 이어간다.
+if (length(oos_periods) == 0L) {
+  cat(sprintf("  OOS 확장 없음 — last_sig(%s) > raw 종점(%s). 월초 리밸 직후 정상 상태.\n",
+              as.character(last_sig), as.character(oos_end)))
+  oos_dt <- data.table(period_end = as.Date(character(0)),
+                       port_ret   = numeric(0),
+                       n_held     = integer(0))
+} else {
+  oos_dt <- rbindlist(oos_periods)
+}
 setorder(oos_dt, period_end)
 oos_dt[, YM := format(period_end, "%Y-%m")]
 perf_oos <- compute_perf(oos_dt$port_ret, "V31_OOS_24_26", n_cands=0L)
