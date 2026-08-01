@@ -202,6 +202,11 @@ SUITES=(
   #   수리 후 동일 패키지 leaf_count 0→4 · op_count 1→12. B1(빈 순회 ≠ PASS)이
   #   근본 방어이고, C1(실제 look-ahead 검거)이 검증 본체의 생존 지문이다.
   "08_Tests/hooks/test_ast_verify_dialect.sh"
+  # 2026-08-02 추가: 논문 라우터 트리거 축. 실사고 = recharge 가 mcp_candidates=38 로 정상
+  #   수집했는데 후보가 전부 이미 registry 에 있어 downloaded=0 이 됐고, 라우터는 downloaded
+  #   만 봐서 38편이 좌초했다. downloaded 는 "PDF 를 새로 받았나"이지 "라우팅할 재료가
+  #   있나"가 아니다. 무인 스케줄러 경로라 검사가 없으면 조용히 되돌아간다.
+  "08_Tests/ops/test_paper_router_trigger.sh"
 )
 
 _suite_cmd() {

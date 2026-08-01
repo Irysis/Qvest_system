@@ -130,10 +130,24 @@ if [ ! -f "$DISC" ]; then
   fi
 fi
 
-if [ "$DL" -eq 0 ] && [ "$curated_pending" -eq 0 ] && [ -z "$BACKLOG_DATES" ] && [ "${QVEST_PAPER_ROUTER_FORCE:-0}" != "1" ]; then
-  log "no new arxiv downloads (downloaded=$DL), no pending curated, no backlog — skip (QVEST_PAPER_ROUTER_FORCE=1 로 강제)"; exit 0
+# ── [2026-08-02 수리] 라우팅 대상 판정을 downloaded 스탬프 단독에서 벗어나게 한다 ────
+#  실사고: 08-02 recharge 는 mcp_status=mcp_ok · mcp_candidates=38 로 정상 수집했는데
+#  후보가 전부 이미 registry 에 있어(skipped_duplicate_or_registered=53) downloaded=0 이 됐다.
+#  라우터는 downloaded 만 보므로 "새 논문 없음"으로 skip → **38편이 라우팅되지 못하고 좌초**.
+#  downloaded 는 "PDF 를 새로 내려받았나"이지 "라우팅할 재료가 있나"가 아니다. 이미 받아둔
+#  논문도 route JSON 이 없으면 소비되지 않은 것이다 — 산출물(candidates)과 소비 흔적(route JSON)을
+#  직접 본다. FQ-010("논문 인입 라인 재가동 + 큐 소비 배선") 실체.
+UNROUTED_TODAY=0
+MC=$(grep -oE 'mcp_candidates=[0-9]+' "$STAMP" 2>/dev/null | head -1 | cut -d= -f2); MC="${MC:-0}"
+if [ "$MC" -gt 0 ] && [ ! -f "$BASE/stage_artifacts/paper_recharge/alpha_search_route_${TODAY}.json" ]; then
+  UNROUTED_TODAY=1
+  log "unrouted 포착: $TODAY mcp_candidates=$MC · downloaded=$DL · route JSON 없음 — 라우팅 대상 (downloaded=0 이어도 미소비)"
 fi
-log "trigger: downloaded=$DL curated_pending=$curated_pending backlog=[${BACKLOG_DATES:-none}]"
+
+if [ "$DL" -eq 0 ] && [ "$UNROUTED_TODAY" -eq 0 ] && [ "$curated_pending" -eq 0 ] && [ -z "$BACKLOG_DATES" ] && [ "${QVEST_PAPER_ROUTER_FORCE:-0}" != "1" ]; then
+  log "no new arxiv downloads (downloaded=$DL), no unrouted candidates (mcp_candidates=$MC), no pending curated, no backlog — skip (QVEST_PAPER_ROUTER_FORCE=1 로 강제)"; exit 0
+fi
+log "trigger: downloaded=$DL unrouted_today=$UNROUTED_TODAY(mcp_candidates=$MC) curated_pending=$curated_pending backlog=[${BACKLOG_DATES:-none}]"
 
 # v3 dry 모드: 대상 산정(백로그 포함)까지만 검증하고 claude 미호출
 if [ "${QVEST_PAPER_ROUTER_DRYRUN:-0}" = "1" ]; then

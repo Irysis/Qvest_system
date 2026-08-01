@@ -130,6 +130,58 @@ PY
 out=$(run_hook "$(mk_payload "$C2")")
 if is_block "$out"; then bad "C2 구식 패키지 하위호환 통과" "block 발행됨: $out"; else ok "C2 구식 패키지 하위호환 통과(advisory)"; fi
 
+echo "--- D. schema 정본 표현이 게이트를 통과하는가 (ALB-005/006 수리) ---"
+# D1: schema 정본 위치 factors[].ast 만 (top-level ast 없음)
+D1=$("${QVEST_PY:-python}" - "$GOOD" <<'PY'
+import json,sys
+d=json.loads(sys.argv[1])
+ast=d.pop("factor_definition")["ast"]
+d["factors"]=[{"name":"F1","ast":ast}]
+sys.stdout.write(json.dumps(d,ensure_ascii=False))
+PY
+)
+out=$(run_hook "$(mk_payload "$D1")")
+if is_block "$out"; then bad "D1 factors[].ast (schema 정본 위치) 통과" "block: $out"; else ok "D1 ★factors[].ast (schema 정본 위치) 통과 — ALB-006"; fi
+
+# D2: 다중 팩터 중 뒤쪽에 𝒪 밖 연산자 → 전 팩터 검사되어야 block
+D2=$("${QVEST_PY:-python}" - "$GOOD" <<'PY'
+import json,sys
+d=json.loads(sys.argv[1])
+ast=d.pop("factor_definition")["ast"]
+bad_ast={"op":"LEAD","args":[{"leaf":"FIELD","name":"V01_BM"},{"const":1}]}
+d["factors"]=[{"name":"F1","ast":ast},{"name":"F2","ast":bad_ast}]
+sys.stdout.write(json.dumps(d,ensure_ascii=False))
+PY
+)
+out=$(run_hook "$(mk_payload "$D2")")
+if is_block "$out"; then ok "D2 ★다중 팩터 중 2번째의 𝒪 밖 연산자 검거 — 첫 팩터만 보고 통과시키지 않음"; else bad "D2 다중 팩터 전량 검사" "통과됨: $out"; fi
+
+# D3: 구 schema 형(falsification 문자열) → 정본 타입 확정으로 block 유지
+D3=$("${QVEST_PY:-python}" - "$GOOD" <<'PY'
+import json,sys
+d=json.loads(sys.argv[1])
+d["hypothesis"]["falsification"]="수출비중 하위 그룹에서 신호가 소멸"
+sys.stdout.write(json.dumps(d,ensure_ascii=False))
+PY
+)
+out=$(run_hook "$(mk_payload "$D3")")
+if is_block "$out"; then ok "D3 자유 서술 문자열 falsification → block (정본=객체배열)"; else bad "D3 문자열 falsification 반려" "통과됨: $out"; fi
+
+# D4: schema 파일 자체가 정본 타입으로 개정됐는지 (문서-구현 동기)
+SCHEMA_T=$("${QVEST_PY:-python}" -c "
+import json,io,sys
+d=json.load(io.open(r'$ROOT/02_Infrastructure/worktask/schema.json',encoding='utf-8'))
+print(d['definitions']['ast_hypothesis']['properties']['falsification']['type'])
+" 2>/dev/null)
+if [ "$SCHEMA_T" = "array" ]; then ok "D4 schema.json falsification = array (게이트와 동일 정본)"; else bad "D4 schema-게이트 타입 동기" "schema=$SCHEMA_T"; fi
+SCHEMA_PIT=$("${QVEST_PY:-python}" -c "
+import json,io
+d=json.load(io.open(r'$ROOT/02_Infrastructure/worktask/schema.json',encoding='utf-8'))
+s=json.dumps(d,ensure_ascii=False)
+print('yes' if '\"pit\"' in s and 'sig_date' in s else 'no')
+" 2>/dev/null)
+if [ "$SCHEMA_PIT" = "yes" ]; then ok "D5 schema.json 에 pit.sig_date 정의 존재 (게이트 요구와 일치)"; else bad "D5 schema pit 정의" "got $SCHEMA_PIT"; fi
+
 echo
 printf 'PASS=%d FAIL=%d\n' "$PASS" "$FAIL"
 printf '{"test":"ast_spec_gate","pass":%d,"fail":%d,"total":%d}\n' "$PASS" "$FAIL" "$((PASS+FAIL))"

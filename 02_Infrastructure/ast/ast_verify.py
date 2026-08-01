@@ -210,6 +210,7 @@ class AstVerifier:
         self.leaf_count = 0
         self.dialect_args_used = False   # ALB-001: ast_compile.R 방언("args") 순회 여부
         self.parity_unverified = []      # ALB-002: production_parity_verified=false 리프(정직 선언)
+        self.unmapped_restatement = []   # ALB-003: field_map 미등재로 개정위험 확인 불가한 리프
         self.op_count = 0
 
     @staticmethod
@@ -440,6 +441,24 @@ class AstVerifier:
                 gi = self.field_map_groups[gid]
                 if gi["restatement_prone"] and not gi["vintage_available"]:
                     self._mark_restatement(path, desc, "ast_field_map:%s" % gid, under_pin)
+            else:
+                # ── ALB-003 수리 (2026-08-02): 미등재 리프의 조용한 skip 금지 ──────
+                #  종전엔 group_id 가 없거나 map 밖이면 restatement 검사를 그냥 건너뛰었다.
+                #  그 결과 **개정 위험이 가장 큰 원천이 무경고 통과**했다(실사례: 관세 수출
+                #  패널 — 매월 전 이력을 무기한 개정하는데 restatement_leaves 가 빈 배열).
+                #  위험과 검사 커버리지가 반비례하는 구조다.
+                #  확인 **불가**를 확인 **완료**로 취급하지 않는다 — 외부 저장 패널은
+                #  vintage 보장을 증명하지 못하면 보수적으로 restatement 로 표시한다.
+                #  (WARN_RESTATEMENT = 통과 + 스펙 플래그이므로 과차단이 아니다. SOT §4)
+                if not (node.get("vintage_available") is True):
+                    self.unmapped_restatement.append({"path": path, "leaf": desc, "group_id": gid})
+                    self._mark_restatement(
+                        path, desc,
+                        "unmapped:%s" % (gid or "no_group_id"), under_pin)
+                    self.notes.append(
+                        "%s: field_map 미등재 STORED_SCORE — 개정(restatement) 위험을 확인할 수 "
+                        "없어 보수적으로 표시했다. 해소하려면 ast_field_map 등재 또는 리프에 "
+                        "vintage_available=true 를 근거와 함께 선언할 것." % path)
             if node.get("embedded_data_through"):
                 edt = parse_date(node["embedded_data_through"])
                 if edt > self.t_d - _dt.timedelta(days=1):
@@ -676,6 +695,7 @@ def main(argv=None):
         # 2026-08-02: 방언·parity 가시화 (ALB-001/002/007)
         "dialect_args_used": v.dialect_args_used,
         "parity_unverified": v.parity_unverified,
+        "unmapped_restatement": v.unmapped_restatement,
         "op_count": v.op_count,
         "violations": v.violations,
         "contract_failures": v.contract_failures,

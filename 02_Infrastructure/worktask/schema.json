@@ -230,9 +230,26 @@
           }
         },
         "falsification": {
-          "type": "string",
-          "minLength": 10,
-          "description": "반증 조건 — 성과 동어반복 금지. field_dictionary(06_Registry/ast_field_map_v0.json) 내 필드로 확인 가능한 부수 관측만 (ast_spec_gate.sh ② — 밖 필드 참조 = block)"
+          "type": "array",
+          "minItems": 1,
+          "description": "반증 조건 배열 — 성과 동어반복 금지. 각 원소는 field_dictionary(factor_registry 팩터명 ∪ 06_Registry/ast_field_map_v0.json group_id) 내 필드를 **지목**해야 한다. [ALB-005 수리 2026-08-02] 종전 정의는 {type:string}이었는데 ast_spec_gate.sh ①은 객체배열을 요구해 **두 계층을 동시에 만족하는 패키지가 존재하지 않았다**(스키마를 따르면 게이트 block, 게이트를 따르면 스키마 위반). 정본을 객체배열로 확정한다 — 자유 서술 문자열은 그럴듯해 보여도 누구도 확인할 수 없어 반증 조건 구실을 못 한다(실사례: '수출비중 하위 그룹에서 신호가 소멸' → field_dictionary 밖 반려).",
+          "items": {
+            "type": "object",
+            "description": "field / fields / field_ref / leaf / group_id / factor 중 하나 이상으로 필드를 지목 (게이트 fals_fields 수용 키셋과 동일)",
+            "anyOf": [
+              {"required": ["field"]}, {"required": ["fields"]}, {"required": ["field_ref"]},
+              {"required": ["leaf"]}, {"required": ["group_id"]}, {"required": ["factor"]}
+            ],
+            "properties": {
+              "field": {"type": "string", "description": "factor_registry 팩터명 또는 ast_field_map group_id (예: V02_EP)"},
+              "fields": {"type": "array", "items": {"type": "string"}},
+              "field_ref": {"type": "string"},
+              "leaf": {"type": "string"},
+              "group_id": {"type": "string"},
+              "factor": {"type": "string"},
+              "expectation": {"type": "string", "description": "그 필드에서 무엇이 관측되어야 가설이 살아 있는가 — 성과 지표 재진술 금지"}
+            }
+          }
         },
         "regime_scope": {
           "type": "object",
@@ -254,9 +271,18 @@
         {
           "if": {"required": ["spec_version"], "properties": {"spec_version": {"const": "ast_v1.1"}}},
           "then": {
-            "required": ["hypothesis", "verdict"],
+            "required": ["hypothesis", "verdict", "pit"],
             "properties": {
               "hypothesis": {"$ref": "#/definitions/ast_hypothesis"},
+              "pit": {
+                "type": "object",
+                "required": ["sig_date"],
+                "description": "[ALB-006 수리 2026-08-02] PIT 기준시점. ast_spec_gate.sh ③의 in-process ast_verify 가 pkg.pit.sig_date 를 요구하는데 스키마에 정의가 없어 **게이트가 스키마 미정의 키를 요구**하는 계약 표면 분열 상태였다. 기준시점 없이는 리프 avail_ts 상향 전파가 성립하지 않으므로 v1.1 필수.",
+                "properties": {
+                  "sig_date": {"type": "string", "description": "신호 산출 기준일 YYYY-MM-DD — 이 시점에 알 수 있었던 데이터만 리프로 허용"},
+                  "decision_ts": {"type": "string", "description": "의사결정 시각 (미지정 시 sig_date)"}
+                }
+              },
               "verdict": {
                 "type": "string",
                 "enum": ["designed", "economic_void", "blocked_by_capability"],

@@ -26,7 +26,7 @@
 
 | 층 | 형식 | 비고 |
 |---|---|---|
-| 가설 | 구조화 JSON — **mechanism{agent, friction, path} 3필드 + falsification + regime_scope 필수** | "시장이 비효율적" 류(주체·마찰 무명명)는 기계 반려. falsification은 field_dictionary 내 필드로 확인 가능한 부수 관측만(성과 동어반복 금지). regime_scope.weakens_or_reverses_in 빈 배열 금지 |
+| 가설 | 구조화 JSON — **mechanism{agent, friction, path} 3필드 + falsification + regime_scope + pit{sig_date} 필수** | "시장이 비효율적" 류(주체·마찰 무명명)는 기계 반려. **falsification 정본 = 객체배열**(각 원소가 `field`/`fields`/`field_ref`/`leaf`/`group_id`/`factor` 중 하나로 field_dictionary 내 필드를 지목 — 2026-08-02 ALB-005 수리로 확정. 종전 schema는 string, gate는 배열을 요구해 **두 계층을 동시에 만족하는 패키지가 없었다**). 성과 동어반복 금지. regime_scope.weakens_or_reverses_in 빈 배열 금지. AST 위치는 `factors[].ast`(다중 팩터 정본) 또는 top-level — 게이트가 **전 팩터를 각각** 검사한다(ALB-006 수리) |
 | 팩터 정의 | **AST** (formulaic lane 의무) — 단 escape 리프 4종 허용 | §2 |
 | 결합 규칙 | enum (기존 Z_Score_Aligned 결합 컨벤션 계승) | 트리 기계장치 불요 |
 

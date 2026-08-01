@@ -189,13 +189,40 @@ if not isinstance(worin, list) or not worin:
     block("regime_scope.weakens_or_reverses_in 부재/빈 배열 — 약화·역전 국면 명시 필수 (SOT par.1)")
 
 # ── ② AST 연산자 in-library 검사 (escape 리프 제외) ───────────────────────────
-def extract_ast(p):
+def extract_asts(p):
+    # [ALB-006 수리 2026-08-02] schema 정본 위치 factors[].ast 를 포함해 전량 수집.
+    # 종전 extract_ast 는 top-level/factor_definition/spec 3곳만 봐서, 스키마가 정한
+    # 다중-팩터 표현(factors[] 배열)을 쓰면 ast-노드-부재 로 block 됐다 — 즉 다중 팩터
+    # 패키지가 게이트를 통과할 정본 표현이 없었다. 다중이면 전 팩터를 검사한다
+    # (하나만 보고 통과시키면 나머지는 무검증 = 빈 검사와 같다).
+    # ※ 이 블록은 bash 의 python -c 작은따옴표 문자열 안이다 — 주석에 작은따옴표 금지.
+    out = []
     for holder in (p, p.get("factor_definition") or {}, p.get("spec") or {}):
         if isinstance(holder, dict) and isinstance(holder.get("ast"), dict):
-            return holder["ast"]
-    return None
+            out.append(holder["ast"])
+    for f in (p.get("factors") or []):
+        if isinstance(f, dict) and isinstance(f.get("ast"), dict):
+            out.append(f["ast"])
+    # 동일 트리가 top-level 과 factors[] 에 병기된 경우 중복 검사 회피
+    uniq, seen = [], set()
+    for a in out:
+        k = id(a)
+        try:
+            k = json.dumps(a, sort_keys=True, ensure_ascii=False)
+        except Exception:
+            pass
+        if k in seen:
+            continue
+        seen.add(k)
+        uniq.append(a)
+    return uniq
 
-ast_root = extract_ast(pkg)
+def extract_ast(p):
+    a = extract_asts(p)
+    return a[0] if a else None
+
+ast_roots = extract_asts(pkg)
+ast_root = ast_roots[0] if ast_roots else None
 if ast_root is None:
     block("ast 노드 부재 (top-level/factor_definition/spec) — v1.1 팩터 정의는 AST 의무 "
           "(formulaic lane + escape 리프 4종, SOT par.1/par.2)")
@@ -224,7 +251,8 @@ def collect_ops(node, acc):
                 collect_ops(c, acc)
 
 ops = []
-collect_ops(ast_root, ops)
+for _a in ast_roots:          # ALB-006: 다중 팩터면 전 팩터의 연산자를 수집
+    collect_ops(_a, ops)
 outside = sorted({o for o in ops if o not in ALLOWED_OPS})
 if outside:
     block("𝒪 밖 연산자 {%s} — operator_library.json 미등재 (escape 리프 4종만 예외). "
@@ -240,8 +268,20 @@ try:
     with open(av.DEFAULT_FIELD_MAP, encoding="utf-8") as f:
         field_map = json.load(f)
     sig_d, td = av.extract_pit_dates(pkg, None, None)
+    # ALB-006: 다중 팩터는 **각각** 검증한다 — 하나만 보고 통과시키면 나머지는 무검증이고,
+    #   그건 "위반 없음"이 아니라 "검사 안 함"이다(ALB-007 과 같은 실패 형태).
+    #   팩터마다 새 verifier 를 써서 위반 누적이 섞이지 않게 하고, 위반이 나온 첫 팩터를 보고한다.
+    verdict = "PASS"
     verifier = av.AstVerifier(registry, field_map, td)
-    verdict, _max_avail = verifier.run(ast_root, sig_d)
+    for _idx, _a in enumerate(ast_roots):
+        _vf = av.AstVerifier(registry, field_map, td)
+        _vd, _ = _vf.run(_a, sig_d)
+        if _vd == "FAIL_LOOKAHEAD" or (_vd == "FAIL_CONTRACT" and verdict == "PASS"):
+            verdict, verifier = _vd, _vf
+            if _vd == "FAIL_LOOKAHEAD":
+                break
+        elif _vd == "WARN_RESTATEMENT" and verdict == "PASS":
+            verdict, verifier = _vd, _vf
 except Exception as e:
     block("ast_verify 실행 실패(%s: %s) — PIT 정적검증 불가 (fail-closed). "
           "pit.sig_date/decision_ts 및 AST 리프 형상 확인" % (type(e).__name__, scrub(e)))

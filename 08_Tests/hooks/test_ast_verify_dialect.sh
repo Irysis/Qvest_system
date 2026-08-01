@@ -88,7 +88,7 @@ echo "=== test_ast_verify_dialect (방언 수용 + 빈 순회 차단) ==="
 echo "--- A. 양성 대조: 컴파일러 방언 정상 트리 ---"
 P=$(mkpkg good); run "$P"
 V=$(field "$TMP/out.json" verdict); LC=$(field "$TMP/out.json" leaf_count); OC=$(field "$TMP/out.json" op_count)
-[ "$V" = "PASS" ] && ok "A1 컴파일러 방언 정상 트리 → PASS" || bad "A1 컴파일러 방언 정상 트리 → PASS" "got $V"
+case "$V" in PASS|WARN_RESTATEMENT) ok "A1 컴파일러 방언 정상 트리 → 통과($V)";; *) bad "A1 컴파일러 방언 정상 트리 통과" "got $V";; esac
 [ "${LC:-0}" -gt 0 ] 2>/dev/null && ok "A2 ★리프를 실제로 셌다 (leaf_count=$LC)" || bad "A2 리프 계수" "leaf_count=$LC — 빈 순회 PASS 재발"
 [ "${OC:-0}" -gt 1 ] 2>/dev/null && ok "A3 연산자 순회 (op_count=$OC)" || bad "A3 연산자 순회" "op_count=$OC"
 [ "$(field "$TMP/out.json" dialect_args_used)" = "True" ] && ok "A4 args 방언 사용 플래그 노출" || bad "A4 args 방언 플래그" ""
@@ -108,8 +108,10 @@ P=$(mkpkg parity_missing); run "$P"; V=$(field "$TMP/out.json" verdict)
 [ "$V" = "FAIL_CONTRACT" ] && ok "D1 production_parity_verified 키 부재 → FAIL_CONTRACT(선언 회피)" \
   || bad "D1 선언 회피 차단" "got $V"
 P=$(mkpkg parity_false); run "$P"; V=$(field "$TMP/out.json" verdict); PU=$(field "$TMP/out.json" parity_unverified)
-[ "$V" = "PASS" ] && ok "D2 ★false 는 정직 선언으로 통과 (신규 비-return 원천 진입 경로 확보)" \
-  || bad "D2 정직 false 통과" "got $V — v8.3 주력 lane 이 기계로 막힘"
+case "$V" in
+  PASS|WARN_RESTATEMENT) ok "D2 ★false 는 정직 선언으로 통과 (신규 비-return 원천 진입 경로 확보, $V)" ;;
+  *) bad "D2 정직 false 통과" "got $V — v8.3 주력 lane 이 기계로 막힘" ;;
+esac
 [ "${PU:-0}" -gt 0 ] 2>/dev/null && ok "D3 미검증 사실을 parity_unverified 로 전달(§7b judge 입력)" \
   || bad "D3 parity 플래그 전달" "got $PU"
 
@@ -118,9 +120,15 @@ P=$(mkpkg bad_k); run "$P"; V=$(field "$TMP/out.json" verdict)
 [ "$V" = "FAIL_CONTRACT" ] && ok "E1 k 가 어디에도 없으면 FAIL_CONTRACT (병합이 검사를 죽이지 않음)" \
   || bad "E1 k 결측 검거" "got $V"
 
+echo "--- G. ALB-003: 미등재 리프의 개정위험을 조용히 건너뛰지 않는가 ---"
+P=$(mkpkg good); run "$P"
+UR=$(field "$TMP/out.json" unmapped_restatement); V=$(field "$TMP/out.json" verdict)
+[ "${UR:-0}" -gt 0 ] 2>/dev/null && ok "G1 ★field_map 미등재 STORED_SCORE 를 unmapped_restatement 로 표면화 (=$UR)"   || bad "G1 미등재 리프 표면화" "got $UR — 개정위험 확인 불가가 '위험 없음'으로 통과"
+[ "$V" = "WARN_RESTATEMENT" ] && ok "G2 판정이 WARN_RESTATEMENT (통과 + 스펙 플래그 — 과차단 아님)"   || bad "G2 WARN_RESTATEMENT 판정" "got $V"
+
 echo "--- F. 음성 통제 ---"
 P=$(mkpkg good); run "$P"; V=$(field "$TMP/out.json" verdict)
-[ "$V" = "PASS" ] && ok "F1 B~E 주입 후에도 정상 입력은 PASS (검사기 생존)" || bad "F1 검사기 생존" "got $V"
+case "$V" in PASS|WARN_RESTATEMENT) ok "F1 B~E 주입 후에도 정상 입력은 통과 (검사기 생존)";; *) bad "F1 검사기 생존" "got $V";; esac
 
 echo
 printf 'PASS=%d FAIL=%d\n' "$PASS" "$FAIL"
