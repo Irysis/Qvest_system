@@ -1,0 +1,141 @@
+#==============================================================================
+# report_correction.R — Self-Adversarial Challenge C1 해소 후 정정 보고
+#   앞 브리핑(02:50)의 "회전율 평활 = 전이 효율 레버 실재(4.8배)" 주장을
+#   paired NW lag-3 t 검정 결과로 **하향 정정**한다.
+#==============================================================================
+suppressPackageStartupMessages({ library(data.table); library(jsonlite) })
+`%||%` <- function(a, b) if (is.null(a) || length(a) == 0L || (length(a) == 1L && is.na(a))) b else a
+ROOT <- Sys.getenv("QM_ROOT", "C:/Users/99922/OneDrive/Quant_Module_Moltbot")
+setwd(ROOT)
+INFRA <- file.path(ROOT, "02_Infrastructure")
+source(file.path(INFRA, "config.R"))
+source(file.path(INFRA, "telegram", "telegram_notify.R"))
+source(file.path(INFRA, "telegram", "tg_chart_pack.R"))
+source(file.path(INFRA, "axiom", "lcode_emit.R"))
+OUT <- file.path(ROOT, "stage_artifacts", "alpha_search_dualbasis_20260802")
+
+pt  <- fread(file.path(OUT, "paired_test_20260802.csv"))
+tab <- fread(file.path(OUT, "round_summary_20260802.csv"))
+print(pt[, .(tag, n, mean_diff_monthly, t_nw_lag3, significant)])
+
+ch <- tg_chart_sweep(
+  labels = c("60일평활 − 원논문 (잔차거래량)", "저변동성조건부 − 원논문 (추세-저주파)"),
+  values = round(pt$t_nw_lag3, 3), out_dir = OUT,
+  title = "변형 − 원논문 paired 차이 검정 (NW lag-3 t, 258개월)",
+  value_label = "paired t값 (|t|>=1.96 이면 유의)", hline = 1.96,
+  hline_label = "유의 문턱 1.96", filename = "paired_t_20260802.png")
+
+# ── L-code 정정 재적립 (동일 strategy_id 덮어쓰기) ──────────────────────────
+emit_lcode(
+  mode = "alpha_search",
+  strategy_id = "AS_ROUND_20260802_DUALBASIS",
+  grade = "F",
+  metric_type = "canonical_screen",
+  construction_type = "single_factor_long_only",
+  selection_type = "chain",
+  family = "technical_price",
+  core_reference = paste(
+    "2026-08-02 alpha-search 라운드: 07-27 QUARANTINE 2건(Sepp-Lucic 2026 저주파 스펙트럼 질량 /",
+    "Bucci et al. 2026 SMAR 잔차 거래량)의 documented next_probe 소비 + 4-arm canonical dual-basis",
+    "재측정 + Self-Adversarial paired 검정(C1)."),
+  lesson_text = paste(
+    "07-27 QUARANTINE 2건은 proxy(hurdle_gate)에서만 기각되고 canonical/dual-basis 미측정이었다.",
+    "4-arm 전부 canonical_screen_bt 실측 — cap-w PORT_t 최대 1.048(잔차거래량-60일평활),",
+    "EW-유니버스 대비 최대 1.509, 4arm 전부 자본 문턱 2.95 미달. cap-tier 분해상 보유 86~96%가",
+    "OTHER(시총 31위+) tier라 mega-cap 벤치 아티팩트로 설명되지 않는다.",
+    "★자가 적대검증이 결론 1건을 뒤집었다: 'PORT_t 0.219→1.048(4.8배)이므로 회전율 평활 =",
+    "전이 효율 레버'라는 1차 해석은 **유의하지 않은 두 t값의 비율**이었고, 두 arm의 월간 순수익",
+    "차이에 직접 paired NW lag-3 t를 걸자 t=1.189로 **유의하지 않았다**(연 +4.25%p 차이는",
+    "표본 잡음과 구분 불가). 전이 레버는 실측이 아니라 **미검정 가설**로 격하한다.",
+    "반면 저변동성 조건부의 열화는 paired t=-2.434로 **유의**하여, 저변동성 절단이 MDD 레버가",
+    "아니라 알파 파괴라는 판정은 통계적으로 확립됐다."),
+  mechanism_hypothesis = paste(
+    "① 잔차거래량(SMAR): rank-IC가 평활 전후 불변(0.00236→0.00214, 둘 다 t<0.5)이라 횡단",
+    "신호 자체가 0. cap-w PORT_t가 0.219→1.048로 오른 것은 회전율 1026%→662% 감소와 동행하나",
+    "paired NW t=1.189로 유의하지 않아 전이 효율 개선으로 **귀속할 수 없다**. 추가로 M60은",
+    "회전율만이 아니라 신호 내용(1일 서프라이즈 → 지속 수준)도 바꾸므로 식별이 미달이다",
+    "— 동일 신호 위 보유밴드/리밸주기 A/B가 정합 설계.",
+    "② 추세-저주파(Sepp-Lucic): 저변동성 하위 절단 시 MDD는 61.4%→57.5%로 3.9%p만 줄고",
+    "IC 0.0138→0.0081(t 2.39→1.24), FF3 알파 +4.28%/yr→-0.87%/yr, cap-w PORT_t 0.756→-0.958,",
+    "paired t=-2.434(유의). 낙폭은 고변동성 종목 선택이 아니라 벤치마크 동조(BM상관 0.74 유지)",
+    "에서 오고 추세 지속성 알파는 고변동 구간에 국소한다. 저변동성 조건부는 MDD 레버로 반증되고",
+    "남은 레버는 국면/낙폭 오버레이 계열뿐이다.",
+    "★구현 caveat(자가검증 C3): 저변동성 절단은 LiqPass 전체 패널 기준 하위 3분위라",
+    "지수 유니버스 내 실효 비율은 약 47%(의도 33%)로 덜 공격적이었다 — MDD 결론은 보수적 방향."),
+  falsification_attempts = list(
+    list(test = "canonical_screen_bt 실측 재측정(4arm, cap-w 권위 basis)",
+         result = "falsified", effect_retained = 0,
+         detail = "cap-w PORT_t 최대 1.048 << 2.95 HARD"),
+    list(test = "dual-basis EW-유니버스 대비(v8.3 기각 전 의무)",
+         result = "falsified", effect_retained = 0,
+         detail = "EW-uni PORT_t 최대 1.509 — cap-w 대비 상향이나 문턱 미달"),
+    list(test = "cap-tier(MEGA/MID/OTHER) 분해 — mega-cap 벤치 아티팩트 가설",
+         result = "falsified", effect_retained = 0,
+         detail = "보유 비중 OTHER 86~96% / MEGA 1.4~4.7% — 벤치 아티팩트로 설명 불가"),
+    list(test = "저변동성 조건부(MDD 레버 가설) paired NW lag-3 t",
+         result = "falsified", effect_retained = 0,
+         detail = "paired t=-2.434 유의하게 열화(월 -0.577%p) — MDD 레버 가설 반증"),
+    list(test = "60거래일 평활(전이 효율 레버 가설) paired NW lag-3 t — ★자가 적대검증 C1",
+         result = "inconclusive", effect_retained = "NA",
+         detail = "paired t=1.189 유의하지 않음 — 1차 해석('4.8배 전이 레버')을 미검정 가설로 격하"),
+    list(test = "벤치 무결성 통제(2026-07 RAWDATA BM_Ret 오염 경보)",
+         result = "survived", effect_retained = 1,
+         detail = "bench_dt는 유니버스 Close/Size 현장구성 + BM_DT는 benchmark.parquet — 2026-06-30 벤치 -22.76%로 정본 정합(오염값 -17.70% 아님)")
+  ),
+  portfolio_alpha_t = max(tab$capw_t, na.rm = TRUE),
+  oos_retention = max(tab$ew_oos, na.rm = TRUE),
+  oos_months = 258L,
+  tags = c("ALPHA_SEARCH", "DUAL_BASIS", "VALIDATED_HARD_FAIL", "CHAIN_ITERATION",
+           "SELF_ADVERSARIAL_CORRECTED"),
+  metrics = list(
+    n_months = 258L, n_arms = 4L,
+    capw_port_t_max = max(tab$capw_t, na.rm = TRUE),
+    ew_port_t_max = max(tab$ew_t, na.rm = TRUE),
+    paired_t_m60_vs_base = pt$t_nw_lag3[1],
+    paired_t_lowvol_vs_base = pt$t_nw_lag3[2],
+    challenge_note = "stage_artifacts/alpha_search_dualbasis_20260802/challenge_note.md",
+    degenerate_cell_warning = "round_summary_20260802.csv 의 spec_mass_lowvol ew_oos=-118.0 은 분모 퇴화값 — 인용 금지",
+    next_probe = paste(
+      "P1 전이 레버 식별 재설계 — 동일 신호 위 보유밴드/리밸주기만 바꾸는 A/B로 회전율 효과를 격리",
+      "(본 라운드 M60은 신호 내용까지 바뀌어 식별 미달, paired t=1.19 비유의);",
+      "P2 추세-저주파 OVERLAY_CANDIDATE 라우팅 — 국면/DD overlay MDD 레버 A/B(overlay_pit_guard HARD + lag1 스트레스);",
+      "P3 추세-저주파 2017 전후 구조 절단 규명 — EW-uni post2017 t 0.068 대 전기간 1.405, FQ-055 감쇠 함수형 진단 재적용")
+  ),
+  project_root = ROOT
+)
+cat("[correction] L-code 정정 재적립 완료\n")
+
+tg_agent_brief(
+  agent = "AlphaSearch",
+  title = "자가 적대검증 결과 — 앞 보고의 '전이 레버' 주장 하향 정정",
+  sections = list(
+    list(type = "summary", emoji = "🔁",
+         body = "앞 보고에서 유망하다고 적은 항목 하나가 자체 재검증에서 근거 부족으로 밝혀졌습니다."),
+    list(type = "bullet", emoji = "📖", heading = "쉬운 설명",
+         items = c(
+           "앞 보고: 거래 회전을 줄였더니 성과 지표가 4.8배로 보였다고 알렸습니다",
+           "문제: 두 값 다 애초에 '우연과 구분 안 되는' 크기라 그 비율은 근거가 못 됩니다",
+           "재검증: 두 방식의 월별 수익 차이를 직접 검정하니 t값 1.19로 유의하지 않음",
+           "의미: 유망 신호가 아니라 미검증 가설로 내립니다. 판정은 그대로 자본 미배정")),
+    list(type = "kv", emoji = "📊", heading = "재검정 결과 (258개월)",
+         kv = list(
+           "회전율 평활 대 원논문" = sprintf("월 %+.3f%%p / t %.2f — 유의하지 않음",
+                                             100*pt$mean_diff_monthly[1], pt$t_nw_lag3[1]),
+           "저변동성 대 원논문"    = sprintf("월 %+.3f%%p / t %.2f — 유의하게 나쁨",
+                                             100*pt$mean_diff_monthly[2], pt$t_nw_lag3[2]),
+           "검정 방식"             = "짝지은 월별 차이 · Newey-West 지연 3",
+           "벤치마크 동일성"       = "두 방식 동일 벤치 확인(가정 아닌 검사)")),
+    list(type = "bullet", emoji = "🚩", heading = "함께 정정하는 것",
+         items = c(
+           "저변동성 절단 실효 비율 47% — 의도한 33%보다 덜 잘렸음(결론은 보수적 방향)",
+           "요약표의 표본외 유지율 -118 값은 분모 퇴화값이라 인용 금지",
+           "변형 2건은 논문 검증이 아니라 기전 프로브 — 논문 판정 근거는 원본 2건")),
+    list(type = "bullet", emoji = "➡️", heading = "다음",
+         items = c(
+           "회전율 효과는 동일 신호 위 보유기간만 바꾸는 설계로 다시 격리 측정",
+           "추세 신호는 국면/낙폭 오버레이 후보 라우팅 유지",
+           "저변동성 조건부는 낙폭 완화 수단이 아님이 통계적으로 확립됨"))
+  ),
+  charts = ch
+)
+cat("[correction] telegram 정정 발송 완료\n")

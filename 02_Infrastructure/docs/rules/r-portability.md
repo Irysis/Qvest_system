@@ -54,6 +54,14 @@ Windows R은 `/mnt/c/...`를 **현재 드라이브 기준** `C:/mnt/c/...`로 �
 
 - 루트 후보 판정에 `dir.exists()`만 쓰지 말 것 → **marker 파일**로 검증:
   `file.exists(file.path(cand, "02_Infrastructure/hooks/qvest_hook_router.py"))`
+  쉘 등가: `[ -f "$cand/02_Infrastructure/hooks/qvest_hook_router.py" ]`.
+  **marker 미충족 후보는 수락이 아니라 다음 tier로 낙하**시키고, 기각 사실을 stderr로 알릴 것 —
+  조용한 fall-through는 이 계통의 재발 기전이다(정본: `resolve_project.sh::_qvest_root_ok`).
+  ★**정규화를 검사보다 먼저** 할 것. `-d`/`dir.exists`는 역슬래시 루트(`C:\Users\…`)도 통과시키므로,
+  검사 뒤에 정규화하면 검사가 자기가 고쳐 쓸 문자열을 읽은 셈이 된다.
+  2026-08-01 실사고: User scope `QM_ROOT`가 역슬래시라 `daily_refresh.sh`의 `setwd("$BASE")` 6지점이
+  R 소스문자열에서 `\U`로 파싱돼 halt → `run_r`은 체인을 계속하므로 **5개 스텝만 침묵 실패**
+  (KTRI v3 · MSM · regime_daily_v2 · SJM · cache_freshness_audit).
 - 절대경로 판정에 `startsWith(p, "/")` 쓰지 말 것 → drive-letter·UNC·`~`를 인식할 것:
   `grepl("^([A-Za-z]:)?[/\\\\]", p) || grepl("^~", p)`
 - 임시 디렉토리는 `"/tmp/..."`(→`C:/tmp/...`) 대신 `tempfile()`.
@@ -65,10 +73,19 @@ Windows R은 `/mnt/c/...`를 **현재 드라이브 기준** `C:/mnt/c/...`로 �
 
 | 계열 | 파일 |
 |---|---|
-| `CLAUDE_PROJECT_DIR` → `QM_ROOT` (**표준**) | `cert_rules.R .qvest_find_root` · `essence_backfill.R` · `distilled.R` · `close_round.R` · `constraint_firewall.R` |
-| `QM_ROOT` → `CLAUDE_PROJECT_DIR` (예외) | `config.R:13-20` |
+| `CLAUDE_PROJECT_DIR` → `QM_ROOT` (**표준**) | `cert_rules.R .qvest_find_root` · `essence_backfill.R` · `distilled.R` · `close_round.R` · `constraint_firewall.R` · **`hooks/resolve_project.sh`**(2026-08-01) |
+| `QM_ROOT` → `CLAUDE_PROJECT_DIR` (예외) | `config.R:13-20` · **`ops/resolve_project.sh`**(2026-08-01 도훈 결정 — 아래 사유) |
 
 호출자와 피호출 모듈이 다른 계열이면 **worktree 실행에서 root가 갈린다** — 테스트는 main에 상대경로로 쓰고 모듈은 worktree에서 찾아 **존재하는 파일이 "package not found"로 기각**된다(실측). main 단독 실행에선 두 값이 같아 **잠복**하므로, worktree 검증에서만 터진다. 신규 코드는 표준 계열을 따를 것.
+
+#### 쉘 resolver 2벌의 계열 분기 (2026-08-01 도훈 결정 — 미수리 아님)
+
+`resolve_project.sh`는 `ops/`(28 소비자)와 `hooks/`(pipeline_trigger 등) 두 벌이고, **우선순위가 의도적으로 다르다.** 감사 시 ops 판을 금칙 ④ 미수리로 재적발하지 말 것.
+
+- **hooks 판 = CPD-first (표준)**. `settings.json`의 훅 command 30곳이 전부 `DIR=${CLAUDE_PROJECT_DIR:-${QM_ROOT:-$PWD}}`로 worktree를 고르는데, 그 훅이 sourcing하는 resolver가 QM_ROOT(=main)를 답하면 **코드는 worktree·데이터 루트는 main**으로 갈린다. 실측 경로 `settings.json:105 → pipeline_trigger.sh:18 → stage_dispatch.py`: 미병합 worktree 사본이 main의 정본 WT mailbox에 `mkdir`·이동·`Popen`을 건다.
+- **ops 판 = QM_ROOT-first 유지**. 스케줄러 10종·`daily_refresh.sh`·PG2 러너 등 28 소비자의 루트 해석 의미를 바꾸지 않기 위함. 실측상 그쪽은 CPD가 `QM_ROOT`로 핀되거나(`.bat` 10종 전부, `run_pg2_rebalance_full.sh:25` 등) 아예 미설정(Bash 툴·`bootstrap.sh:14` 시점)이라 **flip해도 no-op**이지만, 프로덕션 데몬의 root 해석 의미를 무변경으로 두는 쪽을 택했다.
+- ★ 참고: 금칙 ④의 원 근거("`~/.Renviron`이 QM_ROOT를 고정해 export로 못 덮는다")는 **R 한정**이다. 쉘에서는 `export QM_ROOT`가 정상 동작하므로 그 논거는 쉘 resolver에 그대로 전이되지 않는다.
+- 강제: `08_Tests/hooks/test_resolve_project_marker.sh`가 이 분기를 **양방향으로** 검사한다(hooks=CPD 우선 ∧ ops=QM_ROOT 우선). 한쪽만 검사하면 "둘을 통합" 리팩터가 조용히 통과한다.
 
 ### (동반) bare `python3` 금지
 별도 규칙으로 이미 확립 — `python3`는 Windows Store 스텁("Python" 출력 후 rc 49). `QVEST_PY` → venv 순 해석.
@@ -113,6 +130,17 @@ Windows R은 `/mnt/c/...`를 **현재 드라이브 기준** `C:/mnt/c/...`로 �
 - **신규 위반 → FAIL** (baseline 밖 항목)
 - **baseline 역행 방지**: 수리돼 사라진 항목이 baseline에 남아 있으면 FAIL(`--write-baseline`으로 갱신 요구). 원장은 **줄어드는 방향으로만** 움직인다.
 - `run_all_hooks.sh` 배터리 편입 — 매 실행 검사(현행 **34/34**, 소요 ~10s).
+
+`08_Tests/hooks/test_resolve_project_marker.sh` — 쉘 resolver 2벌의 **루트 marker 게이트**(금칙 ③)와
+**계열 분기**(금칙 ④ 위 절)를 검사한다. `test_r_portability.R`은 `.R`만 스캔하므로 `.sh` resolver를
+구조적으로 못 본다 — 그 공백을 메우는 자매 검사기다. `run_all_hooks.sh` 배터리 편입(현행 **11/11**).
+
+- 축: 위반 주입(marker 없는 후보 수락 여부) × 2벌 · 기각 WARN 발화 · 양성 통제 · 역슬래시 정규화 ·
+  self-inference 기각→glob 낙하 · **우선순위 양방향**(hooks=CPD ∧ ops=QM_ROOT) · CPD도 marker 게이트 통과 요구
+- **돌연변이 축 내장**: 게이트를 구판 `[ -d "$c" ]`로 되돌린 사본을 만들어 위반 주입 축이 실제로
+  뒤집히는지 확인한다. 안 뒤집히면 그 "통과"는 계측 사망이다 — 오탐 제거와 검사 사망은 겉보기가 같다.
+- 위반 주입 fixture는 `02_Infrastructure/`를 갖췄으나 marker는 없는 임시 디렉토리를 쓴다.
+  구 branch 2가 `-d "$_cand/02_Infrastructure"`만 봤으므로, 이게 없으면 헐거운 검사도 통과한다.
 
 **위반 주입 5종 내장**(위반 주입 테스트): 금칙 4종 각각의 합성 위반 fixture를 실제로 잡는지 + 정본 패턴을 오검출하지 않는지 자체 검증. 실효 실증 — 최초 구현의 검출기 ①은 `system2\([^)]*env=`였는데 인자 안의 `)`(예: `args = c("-c", code)`)에서 멈춰 **다중행 호출을 놓쳤고, 위반 주입 테스트가 이를 적발**했다(괄호 균형 파서로 교체 후 `data/build_cache.R` 등 추가 검출). 래칫 검출력도 실증 — 합성 위반 주입 시 `exit 1`, 제거 시 `exit 0`.
 

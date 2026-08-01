@@ -210,6 +210,15 @@ R 은 **최상위**에서 줄바꿈을 만나면 `if` 문을 닫는다 → 다�
 ### 위반 주입 테스트
 원 형태를 임시 파일에 재주입 → `CAUGHT: ...:3:9: unexpected 'else'`. 수리본 → `PARSE_OK r18_block`.
 
+### 실행 실측 (end-to-end, 읽기전용 · `QVEST_REFRESH_TG=0` 발송 차단)
+수리 전에는 파싱 단계에서 죽어 **한 분기도 실행되지 못했다**. 수리 후 양 분기 정상 산출:
+```
+DR_FAILED_SO_FAR="없음"      → [Daily Refresh v2 완료]
+DR_FAILED_SO_FAR="r18(rc=1)" → [Daily Refresh v2 ★부분실패 — r18(rc=1)]
+공통: RAWDATA 2026-07-31까지 (2763 tickers) / 총 14,045,583 rows
+```
+★ 부분실패 분기가 실제로 실패 목록을 본문에 싣는 것까지 확인 — DR-01 수리의 원래 의도가 이제 도달한다.
+
 ### 구조 수리 — 이 부류를 다시 놓치지 않게
 **저장소에 내장 R 블록을 실행 전에 검사하는 장치가 0건이었다.** 구문 오류는 그 스텝이 실제로 도는 새벽에, 로그 안에서만 드러난다.
 
@@ -285,17 +294,36 @@ worktree 4 · 미커밋 4 · 미병합 0 · 3일+ 방치 3 | 유실 6 · 부분 
 
 ---
 
-## 재측정 최종 수치
+## 재측정 최종 수치 (전부 실행 실측)
 
 | 스위트 | 수리 전 | 수리 후 |
 |---|---|---|
-| `run_all_hooks.sh` | 338 pass / **2 fail** / 340 | **401 pass / 0 fail / 401** |
-| `test_r_portability` | 5 / **2** / 7 | **7 / 0 / 7** (baseline 52→50) |
+| `run_all_hooks.sh` | 338 pass / **2 fail** / 340 | **403 pass / 0 fail / 403** · `STATUS: ✅ ALL PASS` |
+| `test_r_portability` | 5 / **2** / 7 | **7 / 0 / 7** (원장 52→50) |
 | `test_daily_refresh_r_blocks` (신설) | — | **31 / 0 / 31** |
-| `qvest_v8_ready --strict` | 14 pass / **1 fail** / 1 warn | **15 pass / 0 fail / 1 warn**(soak_record — human) |
-| 예약작업 | `★실패` 5종 나열 | `실패 1 · 정지 1`(사건 1건으로 접힘) → DailyRefresh 수리 |
+| `test_ast_sidecar` (동시 세션 신설분 수리) | — | **24 / 0 / 24** |
+| `qvest_v8_ready --strict` | Overall **FAIL** · 14 pass / **1 fail** / 1 warn | Overall **WARN** · **15 pass / 0 fail / 1 warn / 0 skip** |
+| `hook_dryrun` 체크 | `[FAIL] 338 pass / 2 fail / suite 19 (rc=2)` | `[PASS] 403 pass / 0 fail / suite 22 (rc=0)` |
+| 예약작업 | `★실패` 5종 개별 나열 | `실패 1 · 정지 1`(사건 1건으로 접힘) → DailyRefresh 수리 |
 
-*(위 hooks/v8 최종치는 본 문서 말미 "최종 검증" 절의 실행 결과로 확정)*
+**총계 증분 회계** (340 → 403, +63): 본 세션 신설 `test_daily_refresh_r_blocks` **+31** · 병렬 Q-Lead 신설 `test_ast_spec_gate.sh`(+8) + `test_ast_sidecar.R`(+24) **+32**. 감소분 0.
+
+### 래칫 기준선 재승격 (SUITES 편입 시 의무 — harness.md)
+`06_Registry/suite_totals_baseline.json` **hooks 296 → 403** (regime 5 · contract_regression 54 · continuity 31 불변, fail 축 전부 0).
+승격 후 `--check` → `OK … [수집 0.0h 전 · 현재 트리와 동일]`.
+
+★ 승격 전 기준선이 296이었다 = 실측(403)보다 **107 낮았다**. 그 상태에서는 스위트가 100건 넘게 조용히 사라져도 래칫이 울지 않는다. 재승격이 의무인 이유가 이것이다.
+
+### 래칫 차단 실효 (승격 후 위반 주입 — 종료코드는 파이프 없이 측정)
+| 주입 | 출력 | rc |
+|---|---|---|
+| 기준 상태 | `OK hooks=403 …` | 0 |
+| 총계 감소 403→362 | `★총계 감소 — … hooks 403 → 362 (-41)` | **1** |
+| FAIL>0(총계 불변) | `★FAIL>0 — 총계 불변이어도 회귀: hooks_fail fail=3` | **1** |
+| 수집 실패(null) | `⚠ 수집 실패(null): hooks — 수치 없음은 '정상'이 아니다` | 0(경고) |
+| 원복 | `OK hooks=403 …` | 0 |
+
+> ⚠ 자기 교정 1건: 최초 이 표를 `... | tail -3; RC=$?` 로 재려다 **전부 rc=0** 을 얻었다 — 파이프 뒤 `$?` 는 `tail` 의 코드다(계약이 금지한 패턴). 파이프 없이 재측정해 정정. *검사기를 재는 내 계측이 먼저 틀린 사례.*
 
 ---
 
@@ -303,7 +331,8 @@ worktree 4 · 미커밋 4 · 미병합 0 · 3일+ 방치 3 | 유실 6 · 부분 
 
 | 항목 | 왜 남았나 |
 |---|---|
-| `soak_record` WARN | **human 확인 의무** — 3일 내 게이트 2회+ 통과 필요. 코드 수리 대상 아님 |
+| `soak_record` WARN | **human 확인 의무** — 요구 `recent>=2 + critical=0`, 현재 `recent_3d=1 critical=1`. critical 1건 = 오늘 02:0x 의 FAIL 판정 기록(이번에 수리한 그 실패). 게이트를 3일 내 2회 이상 통과시키면 자연 해소 — 코드 수리 대상 아님 |
+| `--check` 의 null 종료코드 | 수집 실패(null)는 경고만 내고 **rc=0** 이다(기존 설계). 오늘 02:32 수집이 실제로 `hooks=null` 을 냈다(병렬 세션의 SUITES 편집과 동시 실행된 일시 현상 — 02:40 재수집 시 403 정상). 문구는 "수치 없음은 정상이 아니다"인데 종료코드는 통과 — 불일치. 부팅이 경고를 표시하므로 침묵은 아니나, 종료코드 의미 변경은 부팅 probe 처리에 영향이 있어 **단독 변경하지 않음**(도훈 판단) |
 | 예약작업 종료 **주체** 이름 | `TaskScheduler/Operational` 로그가 꺼져 있어 사후 규명 구조적 불가. 활성화 = **시스템 설정 변경** → 도훈 판단 |
 | `serene-liskov-598614` 6파일 병합 | **자동 병합 금지** 지시. `run_all_hooks.sh` 병합점 겹침 주의 |
 | 3개 stale worktree prune | `prune_candidates: 0`(미커밋 잔존) + 자동 prune 금지 |

@@ -163,6 +163,16 @@ SUITES=(
   #   관측창 가드(2분 된 원장으로 "7일 발화 0" WARN 하던 오탐)·미측정≠0·회전·미커버 게이트
   #   이름 노출. 이 감시기가 침묵하면 "발화 0" 지문 자체를 놓친다.
   "08_Tests/ops/test_hook_fire_coverage.sh"
+  # 2026-08-01 추가: resolve_project.sh 루트 marker 게이트 위반 주입 (r-portability 금칙 ③).
+  #   원 결함 = QM_ROOT 분기가 `[ -d ]` 만 봐서 역슬래시 루트(`C:\Users\...`)를 수락 →
+  #   daily_refresh 의 setwd("$BASE") 6지점이 R 소스문자열 `\U` 파싱으로 halt,
+  #   5개 스텝(KTRI v3·MSM·regime_daily_v2·SJM·cache_freshness_audit)이 **침묵 실패**.
+  #   ★ ops/ 판과 hooks/ 판 **두 벌 모두**에 게이트를 요구한다 — 동명 2벌은 주석이 아니라
+  #     이 검사기가 동기화를 강제한다. 돌연변이(게이트를 -d 로 되돌린 사본) 축 포함.
+  #   [2026-08-02 병합] 08-01 worktree(serene-liskov-598614)에 미커밋 좌초해 main 미반영
+  #     상태였다 — 메모리는 "검사기 11/11 완료"로 기록했으나 main marker 참조는 0건이었다.
+  #     '수리했는데 main에 없음' 실사고 계통(date32 writer·lcode harvester 전례) 재발.
+  "08_Tests/hooks/test_resolve_project_marker.sh"
   # 2026-08-01 추가: 배포 홀딩 제약 검사기 위반 주입 —
   #   월간 리밸 Gate C 는 "CSV 생성 + 5행"만 봐서 전월 재출력·제약 위반이 통과했다
   #   (감사 실측: 하드 제약 4종이 배포 체인 어디서도 산출물에 대해 검증되지 않음).
@@ -177,6 +187,21 @@ SUITES=(
   #   두 검사 다 양성 대조 + 위반 주입 양방향이라, 죽으면 총계가 떨어져 드러난다.
   "08_Tests/hooks/test_ast_spec_gate.sh"
   "08_Tests/contract_regression/test_ast_sidecar.R"
+  # 2026-08-02 추가: 벤치마크 2소스 정합 감시 위반 주입.
+  #   ★등재 사유 = 실사고: RAWDATA.parquet::BM_Ret 과 benchmark.parquet::BM_Ret 은
+  #   독립 생성 경로(krx_build_rawdata.R:223 자체계산 vs incremental_update_file.R:181 조인)인데
+  #   정합 검사가 없어 2026-07 에 8일이 갈렸다. 4일은 RAWDATA 가 정확히 0 —
+  #   07-28 폭락 -11.55% 가 0으로 소실됐고, 값이 0이면 "그날 안 움직였다"로 읽혀
+  #   결손이 정상 데이터로 위장된다(월 누적 -17.70% vs 정본 -23.63%, 5.93%p).
+  #   07-25 date32 writer 불일치(조인 silent all-NA·7일 방치·감지장치 0)와 같은 계통.
+  "08_Tests/data/test_benchmark_source_parity.R"
+  # 2026-08-02 추가: ast_verify 방언 수용 + 빈 순회 차단 (ALB-007 CRITICAL 수리 고정).
+  #   원 결함 = 정적검증기가 컴파일러 방언(args/type:leaf/params)을 순회 못 해
+  #   **leaf_count=0 으로 PASS 를 발행** — 실행되는 트리의 PIT 검증이 사실상 사망.
+  #   "위반 0"과 "검사 0"이 같은 출력이라 단일 실행으로는 판별 불가였다.
+  #   수리 후 동일 패키지 leaf_count 0→4 · op_count 1→12. B1(빈 순회 ≠ PASS)이
+  #   근본 방어이고, C1(실제 look-ahead 검거)이 검증 본체의 생존 지문이다.
+  "08_Tests/hooks/test_ast_verify_dialect.sh"
 )
 
 _suite_cmd() {

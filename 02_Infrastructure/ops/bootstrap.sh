@@ -523,6 +523,28 @@ if [ -f "$AST_SC_R" ]; then
   fi
 fi
 
+# ── 벤치마크 2소스 정합 (2026-08-02 신설) ────────────────────────────────────
+#  ★신설 사유(실사고): RAWDATA.parquet::BM_Ret 과 benchmark.parquet::BM_Ret 은 독립
+#  생성 경로(krx_build_rawdata.R:223 자체계산 / incremental_update_file.R:181 조인)인데
+#  정합 검사가 없었다. 2026-07 에 8일이 갈렸고 4일은 RAWDATA 가 정확히 0 —
+#  07-28 폭락 -11.55% 가 0으로 소실(월 누적 -17.70% vs 정본 -23.63%, 5.93%p 괴리).
+#  값 0 은 "그날 안 움직였다"로 읽혀 결손이 정상 데이터로 위장된다. 소스가 둘이면
+#  정합 검사가 있어야 한다 — 07-25 date32 writer 계통(감지장치 0, 7일 방치)의 재발.
+#  최근 400일만 대조(전 기간 스캔은 14M행 — 부팅 지연 회피. 과거 구간은 배터리가 담당).
+BSP_R="$PROJECT/02_Infrastructure/validation/benchmark_source_parity.R"
+if [ -f "$BSP_R" ]; then
+  BSP_OUT=$(cd "$PROJECT" && Rscript 02_Infrastructure/validation/benchmark_source_parity.R 400 2>/dev/null | tr -d '\r' | grep -m1 '^\[benchmark_source_parity\]')
+  if [ -n "$BSP_OUT" ]; then
+    case "$BSP_OUT" in
+      *CRITICAL*) echo "[boot] WARN: ${BSP_OUT#\[benchmark_source_parity\] } — 정본=benchmark.parquet. 7월 등 해당 구간 포함 측정 전 bench 소스 확인" ;;
+      *UNMEASURED*) echo "[boot] WARN: 벤치 정합 미측정 (소스 부재) — '정상'과 구분할 것" ;;
+      *) echo "[boot] 벤치 2소스 정합: ${BSP_OUT#\[benchmark_source_parity\] }" ;;
+    esac
+  else
+    echo "[boot] WARN: 벤치 정합 검사 산출 실패 — 계측 사망과 정상을 구분 불가"
+  fi
+fi
+
 # 7c. Layer 2 — DRIFTED/WARNING 감지 시 cert backfill audit auto 호출
 CERT_BACKFILL_R="$PROJECT/02_Infrastructure/ops/cert_backfill_audit.R"
 if [[ "$MBA_TIER" == "DRIFTED" || "$MBA_TIER" == "WARNING" ]] && [ -f "$CERT_BACKFILL_R" ]; then

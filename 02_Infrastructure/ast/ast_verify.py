@@ -208,6 +208,8 @@ class AstVerifier:
         self.staleness_flags = []
         self.notes = []
         self.leaf_count = 0
+        self.dialect_args_used = False   # ALB-001: ast_compile.R 방언("args") 순회 여부
+        self.parity_unverified = []      # ALB-002: production_parity_verified=false 리프(정직 선언)
         self.op_count = 0
 
     @staticmethod
@@ -405,11 +407,30 @@ class AstVerifier:
             self.t_d = saved_td
             return twe
         if kind == "STORED_SCORE":
-            prov = node.get("provenance") or {}
+            # ALB-001 (2026-08-02): provenance 위치 방언 이중 수용.
+            #  문서형 = node["provenance"] / ast_compile.R = node["contract"].
+            #  종전엔 앞쪽만 봐서, 계약을 **정확히 채운** 패키지도 "provenance 결측"으로
+            #  반려됐다 — 검사기가 있는 곳을 안 봐서 나는 거짓 위반이다.
+            prov = node.get("provenance") or node.get("contract") or {}
             missing = [f for f in ("store_build_hash", "generator_code_path", "generated_at")
                        if not prov.get(f)]
-            if node.get("production_parity_verified") is not True:
+            # ── ALB-002 수리 (2026-08-02): 선언 회피와 정직한 false 를 구분한다 ──
+            #  종전 `is not True` 는 **false 선언을 결측과 동일 취급**했다. 그러면
+            #  production 대응물이 아직 없는 신규 리서치 패널은 (a) 정직히 false → FAIL_CONTRACT
+            #  (b) true → 거짓 주장, 둘뿐이라 **정직한 진입 경로가 존재하지 않는다.**
+            #  이는 v8.3 이 주력으로 선언한 '비-return 신규 원천' lane 을 기계가 막는 형태다.
+            #  규범 정합: measurement-graduation §7b 의 production-코드-권위는 **incumbent base
+            #  비교 측정**에 걸리는 요건이지, 신규 후보 패널의 존재 자격이 아니다.
+            #  → 키 부재 = 계약 결측(선언 회피) / false = 통과 + 미검증 플래그(judge·governor 입력).
+            ppv = prov.get("production_parity_verified",
+                           node.get("production_parity_verified"))
+            if ppv is None:
                 missing.append("production_parity_verified")
+            elif ppv is not True:
+                self.parity_unverified.append({"path": path, "leaf": desc})
+                self.notes.append(
+                    "%s: production_parity_verified=false — 정직 선언으로 통과시키되 "
+                    "incumbent base 비교(§7b)에는 이 패널을 쓸 수 없다(judge·governor 입력)." % path)
             if missing:
                 self._fail_contract(path, kind, missing,
                                     "STORED_SCORE 계약 결측 — provenance 3필드 + production_parity_verified 의무 "
@@ -457,9 +478,23 @@ class AstVerifier:
         if not isinstance(node, dict):
             self._fail_contract(path, "?", [], "노드 형상 오류(비 dict): %r" % (node,))
             return t
-        if "leaf" in node:
+        # ── ALB-001/007 수리 (2026-08-02): 리프 방언 이중 수용 ──────────────────
+        #  문서형 방언 : {"leaf": "FIELD", ...}
+        #  컴파일러 방언: {"type": "leaf", "class": "STORED_SCORE", ...}  (ast_compile.R)
+        #  종전엔 앞쪽만 인식해 컴파일러 트리에서 leaf_count 가 0이 되고, 리프가
+        #  연산자로 오인돼 "𝒪 밖 연산자 None" 이 나거나(수리 중간 상태) 순회 자체가
+        #  멈춰 빈 PASS 가 나왔다. PIT 정적검증의 본체가 리프 avail_ts 이므로,
+        #  리프를 못 세면 이 검증기는 아무것도 검증하지 않는다.
+        if ("leaf" in node) or (node.get("type") == "leaf"):
             self.leaf_count += 1
-            kind = node["leaf"]
+            kind = node.get("leaf") or node.get("class")
+            if kind is not None:
+                kind = str(kind)
+            if "leaf" not in node:
+                # 하위 resolver 들이 node["leaf"] 를 직접 읽으므로 진입 지점에서 정규화한다
+                # (사본 — 입력 트리는 건드리지 않는다).
+                node = dict(node)
+                node["leaf"] = kind
             if kind == "FIELD":
                 return self._resolve_field_leaf(node, t, path, clamp_asof, under_pin)
             if kind == "REGISTRY":
@@ -472,7 +507,27 @@ class AstVerifier:
 
         op = node.get("op")
         self.op_count += 1
-        children = node.get("children", [])
+        # ALB-001 (2026-08-02): 연산자 파라미터 위치 방언 이중 수용.
+        #  문서형 = {"op":"TS_LAG", "k":21, "unit":"d"} (최상위)
+        #  ast_compile.R = {"op":"TS_LAG", "params":{"k":12}} (하위 묶음)
+        #  종전엔 최상위만 읽어 k/window/unit 이 전부 None 으로 보였고, 정상 트리가
+        #  "TS_LAG k 비정수/결측" 으로 반려됐다. 최상위 명시값이 우선하도록 병합한다.
+        if isinstance(node.get("params"), dict):
+            _merged = dict(node["params"])
+            _merged.update(node)
+            node = _merged
+        # ── ALB-001/007 수리 (2026-08-02): 노드 방언 이중 수용 ──────────────────
+        #  ast_compile.R 은 자식을 "args" 로, 본 검증기 문서형은 "children" 으로 쓴다.
+        #  종전엔 "children" 만 읽어 컴파일러가 실제로 실행하는 트리에서 자식 순회가
+        #  0이 되고, 위반이 없어서가 아니라 **아무것도 보지 않아서** PASS 가 나왔다.
+        #  (실측: leaf_count=0 · op_count=1 로 PASS — WT-D20260802_001 라운드 적발)
+        children = node.get("children")
+        if children is None:
+            children = node.get("args")
+            if children is not None:
+                self.dialect_args_used = True
+        if children is None:
+            children = []
         if op not in O_ALL:
             self._fail_contract(path, "OP", [],
                                 "𝒪 밖 연산자 %r — SOT §2 확장 규율(operator_backlog 경유)·ast_spec_gate ④ 대상" % op)
@@ -527,6 +582,16 @@ class AstVerifier:
     # ---- 진입점 -------------------------------------------------------------
     def run(self, ast_root, sig_date):
         max_avail = self._verify(ast_root, sig_date, "root")
+        # ── ALB-007 근본 방어 (2026-08-02): 빈 순회를 PASS 로 반환하지 않는다 ────
+        #  리프를 하나도 못 본 검증은 "위반 없음"이 아니라 "판정 불가"다. 방언이
+        #  또 갈리든 트리 형상이 바뀌든, 검사가 죽으면 통과가 아니라 계약 실패로
+        #  드러나야 한다 — 오탐 제거와 검사 사망은 겉보기가 같다.
+        if self.leaf_count == 0:
+            self._fail_contract(
+                "root", "TRAVERSAL", [],
+                "리프 0개 순회 — 빈 검증은 PASS 가 될 수 없다(ALB-007). "
+                "노드 방언(children/args) 불일치 또는 트리 형상 오류를 의심하라. "
+                "op_count=%d" % self.op_count)
         if self.violations:
             verdict = "FAIL_LOOKAHEAD"
         elif self.contract_failures:
@@ -608,6 +673,9 @@ def main(argv=None):
         "decision_ts": str(td),
         "max_avail_ts": str(max_avail),
         "leaf_count": v.leaf_count,
+        # 2026-08-02: 방언·parity 가시화 (ALB-001/002/007)
+        "dialect_args_used": v.dialect_args_used,
+        "parity_unverified": v.parity_unverified,
         "op_count": v.op_count,
         "violations": v.violations,
         "contract_failures": v.contract_failures,

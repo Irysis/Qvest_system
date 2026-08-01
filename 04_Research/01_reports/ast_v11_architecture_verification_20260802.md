@@ -13,7 +13,7 @@
 
 | 계층 | 역할 | 07-25~08-02 상태 | 근거 |
 |---|---|---|---|
-| Step 1~3 (게이트·컴파일러·정적검증) | **예방** — 잘못 설계할 수 없게 | ✅ 작동 | 위반 주입 8/8 block |
+| Step 1~3 (게이트·컴파일러·정적검증) | **예방** — 잘못 설계할 수 없게 | ⚠️ **절반만** 작동 → 수리 | 게이트 8/8 block · **정적검증은 빈 순회 PASS(§2-6)** |
 | Step 4 (구조특징 로깅) | **관측** — 무엇이 통했는지 축적 | ❌ 실전 캡처 0 → 수리 | live_with_ast 0 실측 |
 | Step 5 (complexity_prior 주입) | **학습** — 실력이 실제로 오르는 지점 | ⛔ 미도달 (Step 4 종속) | N=0 < 30 |
 
@@ -135,6 +135,38 @@ essence_score 는 **proxy hurdle 사다리를 통과한 소수만** 경유한다
 `live_with_ast` 는 여전히 0이다. AST 구조특징은 alpha-research 가 `ast_compile` manifest 를 넘겨야 채워지며, WT-D20260802_001 라운드가 그 1호를 만드는 중이다.
 
 ---
+
+## 2-6. ★정적검증기(ast_verify)는 실행되는 트리에서 죽어 있었다 — WT 라운드가 적발, 당일 수리
+
+§1의 "Step 1~3 작동" 판정은 **게이트(`ast_spec_gate.sh`)의 스펙 검사**에 대해서만 참이었다. 그 아래 **PIT 정적검증기 `ast_verify.py` 는 컴파일러가 실제로 실행하는 트리를 순회하지 못했다.** WT-D20260802_001 alpha-research 라운드가 두 방언을 나란히 돌려 비교하다 적발했다(단일 실행으로는 판별 불가 — 깨끗한 PASS로 보인다).
+
+**증상**: 동일 패키지에 대해 `leaf_count=0 · op_count=1 · verdict=PASS`. 리프를 하나도 보지 않고 통과를 발행했다. 오늘 밤 **세 번째 같은 계통** — "위반 0"과 "검사 0"이 같은 출력.
+
+**원인 = 방언 4중 불일치** (컴파일러 `ast_compile.R` vs 검증기 `ast_verify.py`):
+
+| 축 | 컴파일러 | 검증기(구) | 결과 |
+|---|---|---|---|
+| 자식 | `args` | `children` | 순회 0 |
+| 리프 | `{"type":"leaf","class":...}` | `{"leaf":...}` | 리프 미인식 |
+| 파라미터 | `params:{k:12}` | 최상위 `k` | 정상 트리가 "k 결측" 반려 |
+| provenance | `contract` | `provenance` | 계약을 채웠는데 "결측" |
+
+**수리 (2026-08-02)**:
+1. **근본 방어 — 빈 순회는 PASS가 될 수 없다.** `leaf_count == 0` 이면 `FAIL_CONTRACT`. 방언이 또 갈리든 트리 형상이 바뀌든, 검사가 죽으면 통과가 아니라 계약 실패로 드러난다.
+2. 4축 방언 이중 수용(진입 지점 정규화 — 하위 resolver 무수정).
+3. **ALB-002 동반 수리**: `production_parity_verified` 가 `is not True` 로 판정돼 **정직한 `false` 선언이 결측과 동일 취급**됐다. 그러면 production 대응물이 없는 신규 패널은 (a) 정직히 false → FAIL (b) true → 거짓 주장 뿐이라 **정직한 진입 경로가 존재하지 않는다** — v8.3이 주력으로 선언한 비-return 신규 원천 lane을 기계가 막는 형태였다. 규범 정합: §7b의 production-코드-권위는 **incumbent base 비교**에 걸리는 요건이지 신규 후보의 존재 자격이 아니다. → 키 부재 = 계약 결측 / `false` = 통과 + `parity_unverified` 플래그(judge·governor 입력).
+
+**수리 전후 (동일 실제 패키지)**:
+```
+전: leaf_count=0  op_count=1   verdict=PASS          ← 빈 순회 위장
+후: leaf_count=4  op_count=12  verdict=PASS          ← 실제 검증 후 통과
+    max_avail_ts=decision_ts=2026-07-31 · violations=0 · parity_unverified=4
+```
+같은 "PASS"지만 의미가 다르다.
+
+**강제**: `08_Tests/hooks/test_ast_verify_dialect.sh` **12/12 PASS** — B1(빈 순회 ≠ PASS)이 근본 방어, **C1(동월 vintage 주입 → FAIL_LOOKAHEAD)이 PIT 검증 본체의 생존 지문**, D2(정직 false 통과), E1(k 진짜 결측은 여전히 반려 = 병합이 검사를 죽이지 않음), F1 음성 통제. 배터리 편입.
+
+**남은 ALB** (`06_Registry/ast_leaf_table_bugs.jsonl`, WT 라운드가 원장 신설): ALB-003(미등재 리프의 restatement 검사 조용한 skip — 가장 개정이 심한 원천이 무경고 통과) · ALB-004(rawdata 가용성 t+0/t+1 불일치) · ALB-005/006(schema.json ↔ gate 의 falsification 타입·AST 위치·`pit.sig_date` 불일치 — 두 계층을 동시에 만족하는 패키지가 없다).
 
 ## 3. 부수 실측 — 하네스가 내 코드의 금칙을 잡았다
 
