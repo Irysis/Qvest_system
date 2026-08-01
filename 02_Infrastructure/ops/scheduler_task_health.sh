@@ -105,15 +105,19 @@ fi
 
 nbad=$( [ -n "$BAD" ]   && echo "$BAD"   | wc -w || echo 0 )
 nst=$(  [ -n "$STALE" ] && echo "$STALE" | wc -w || echo 0 )
-log "예약작업 $N개 · 실패 ${nbad} · 정체 ${nst}"
+log "예약작업 $N개 · 실패 ${nbad} · 정체 ${nst}${SHUTDOWN:+ · 정지 1}"
+[ -n "$SHUTDOWN" ] && log "  ※$SHUTDOWN — 개별 작업 실패가 아니라 하나의 사건으로 계수"
 [ -n "$BAD" ]   && log "  ★실패: $BAD"
 [ -n "$STALE" ] && log "  ★정체: $STALE"
 
 # 3) 경보 — 무인 선언 시에만 (TTY 추론 아님. 내 시험 실행이 도훈 텔레그램으로 새는 사고 재발방지)
-if { [ -n "$BAD" ] || [ -n "$STALE" ]; } && command -v sched_is_unattended >/dev/null 2>&1 && sched_is_unattended; then
+#    시스템 정지는 그 자체로 경보 대상 — 4일간 무인 실행이 0 이었다는 뜻이기 때문(08-01 실측).
+#    단 작업 수만큼이 아니라 **1건**으로 낸다.
+if { [ -n "$BAD" ] || [ -n "$STALE" ] || [ -n "$SHUTDOWN" ]; } && command -v sched_is_unattended >/dev/null 2>&1 && sched_is_unattended; then
   if command -v sched_alert_emit >/dev/null 2>&1; then
     det=""
-    [ -n "$BAD" ]   && det="실패: $BAD"
+    [ -n "$SHUTDOWN" ] && det="$SHUTDOWN"
+    [ -n "$BAD" ]   && det="${det}${det:+ | }실패: $BAD"
     [ -n "$STALE" ] && det="${det}${det:+ | }정체: $STALE"
     sched_alert_emit "task_health" "scheduled_task_unhealthy" \
       "$det | 상세 06_Registry/scheduler_task_health.json (작업 스크립트가 실행 자체를 못 한 경우 — 스크립트 내부 계측은 이 상황을 볼 수 없음)"
