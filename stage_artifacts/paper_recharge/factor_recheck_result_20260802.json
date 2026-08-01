@@ -1,0 +1,54 @@
+{
+  "date": "20260802",
+  "n_input": 4,
+  "n_genuinely_new": 1,
+  "n_dedup_skipped": 3,
+  "dedup_skipped": [
+    {
+      "paper_id": "arxiv:2607.16450",
+      "factor_hint": "hill_tail_index_60d",
+      "prior_done_date": "20260727",
+      "prior_verdict": "infeasible",
+      "prior_note": "ETF-level tail risk 논문(KR 개별종목 아님). 추가로 alpha_search_queue_20260727에서 경험적 QUARANTINE 확정(PORT_t=0.77, grade=F). 재판정 불필요."
+    },
+    {
+      "paper_id": "arxiv:2607.14174",
+      "factor_hint": "dart_risk_sentiment_score",
+      "prior_done_date": "20260726",
+      "prior_verdict": "testable→QUARANTINE",
+      "prior_note": "20260726 testable 승격 후 alpha_search_queue_20260726에서 batch_434_data_structural_mismatch(KR 사업보고서 위험요인 전용 섹션 구조적 부재). 20260727 dedup_skipped 재확인. FQ-074/075 등재 완료."
+    },
+    {
+      "paper_id": "arxiv:2607.13968",
+      "factor_hint": "news_sentiment_finbert_daily",
+      "prior_done_date": "20260727",
+      "prior_verdict": "infeasible",
+      "prior_note": "시장 전체 일별 거시 무드지수 논문(종목별 횡단면 팩터 아님). Factiva 독점 구독 필요. 재판정 불필요."
+    }
+  ],
+  "promoted": [],
+  "confirmed_infeasible": [
+    {
+      "paper_id": "2607.26859",
+      "title": "No Data Is Not No Risk: Visibility Aware Graph-Based Inference of Business Conduct Risk",
+      "source": "arxiv",
+      "factor_hint": "CorporateOwnershipConductRisk",
+      "verdict": "infeasible",
+      "verdict_date": "20260802",
+      "infeasible_reasons": [
+        "labeled_data_bottleneck: RepRisk AG 독점 conduct incident DB 필요 — KR 350종목 기준 ~27 labeled positives(7.7% rate) 추정, GNN 학습 최소 규모 미달(논문 = 22,990 labeled positives 전 세계 297,642 커버 DB 사용)",
+        "no_return_evidence: 논문 목표변수=미래 conduct incident 발생(Lift/AUC-PR/NDCG). 주가수익 예측력(IC, PORT_t, alpha t-stat) 전무 — 수익 예측력 별도 검증 필요하나 labeled DB 없으면 선행 조건 미충족",
+        "proprietary_node_features: 7개 node features 중 'historical incident information'·'observability-related indicators'가 RepRisk 독점 DB 파생 — 대체 소스 없음",
+        "scale_mismatch: 논문 그래프 11.37M entities·14.1M 관계(전 세계 ownership graph). KR만으로는 그래프 희소성(sparsity) 극심 → graph propagation 신호 소멸 가능성 높음"
+      ],
+      "novelty_note": "소유그래프 전파 기반 conduct risk 추론은 KB DB 373팩터와 완전 별개 — 개념 신규성 있음. 단 인프라 제약 구조적.",
+      "revival_condition": "RepRisk/KCGS 유료 구독 또는 FSC·FTC·FSS 제재 공시 구조화 DB(history 5년+ 커버) 구축 시 재검토. FQ 등재 조건: KR 커버 labeled positive 최소 100건 이상 확보.",
+      "prior_reason_assessment": "prior_reason 정확('DART 소유그래프 구성은 가능하나 KR compliance incident labeled DB 부재') — labeled DB 없으면 PU node classification 성립 안 됨. 정밀 재검 결과 동일 결론."
+    }
+  ],
+  "redundant": [],
+  "still_uncertain": [],
+  "alpha_search_queue_updated": false,
+  "alpha_search_queue_note": "promoted 0건 — 신규 alpha_search_queue 항목 없음",
+  "summary": "입력 4건 중 3건 dedup(이미 처리된 paper_id), 신규 1건(2607.26859) confirmed_infeasible. promoted 0건."
+}
