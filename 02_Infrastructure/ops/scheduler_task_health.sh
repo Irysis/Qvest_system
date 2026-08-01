@@ -81,8 +81,14 @@ for lbl, items in groups.items():
     if len(items) < 3: continue
     span = (max(i[0] for i in items) - min(i[0] for i in items)).total_seconds()
     if span <= 300:
-        when = min(i[0] for i in items).strftime("%m-%d %H:%M")
-        shutdown = "시스템 정지 추정 %s — 작업 %d개가 동일 사유·동일 시각(%.0f초 이내)" % (when, len(items), span)
+        t0 = min(i[0] for i in items)
+        when = t0.strftime("%m-%d %H:%M")
+        # 시간 위치로 두 후보를 제시만 한다(선택은 사람). 최근(6h 이내) = 머신 가동 중 몰살일 확률↑
+        hrs = (datetime.datetime.now() - t0).total_seconds() / 3600.0
+        hint = ("부팅/가동 중 동시 강제종료 의심 — 실제 실패" if hrs < 6
+                else "머신 정지 시각의 사후 흔적일 수 있음")
+        shutdown = "동시 다발 종료 %s — 작업 %d개가 동일 사유(%s)·%.0f초 창. %s" % (
+            when, len(items), lbl, span, hint)
         names = set(i[1] for i in items)
         bad = [b for b in bad if b.split("(")[0] not in names]
         break
