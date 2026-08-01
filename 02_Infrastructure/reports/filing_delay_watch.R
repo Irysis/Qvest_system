@@ -66,7 +66,36 @@ try(arrow::set_io_thread_count(2L), silent = TRUE)
 
 ROOT <- "C:/Users/99922/OneDrive/Quant_Module_Moltbot"
 ## 현행 배포 보유 (book_state.json::live 배포와 동일 — PG2 리밸 시 이 상수만 최신 weights csv로 교체)
-HOLDINGS_CSV <- file.path(ROOT, "05_Production/2.Factor_Model/2-3.STR_1715_on_M4_R05_noLayer4_PG2/02_holdings_universe/20260701_noLayer4_weights_cap_0p20.csv")  # read-only
+## ── 현행 배포 보유 — 파일명·슬롯을 하드코딩하지 않는다 (도훈 mandate 2026-08-01) ──────
+##   구판: ".../2-3.../20260701_noLayer4_weights_cap_0p20.csv" 고정.
+##   ① 날짜가 20260701 에 박혀 있어 **매달 낡아갔다**(리밸해도 7월 보유를 계속 읽음).
+##   ② 슬롯도 2-3 고정이라 2026-07-19 D3 swap-in(admitted = 슬롯 2-4) 이후 구 변형을 봤다.
+##   → admitted 슬롯을 book_state 에서 해석하고, 그 안의 **최신 홀딩 파일**을 고른다.
+##      해석 실패 시에만 종전 경로로 폴백(감시가 죽지 않게) + 경고.
+HOLDINGS_CSV <- local({
+  .fallback <- file.path(ROOT, "05_Production/2.Factor_Model",
+                         "2-3.STR_1715_on_M4_R05_noLayer4_PG2/02_holdings_universe")
+  .hu <- tryCatch({
+    bs  <- jsonlite::fromJSON(file.path(ROOT, "qepm/mailbox/governor/book_state.json"))
+    ids <- bs[["admitted_ids"]]          # ★keyed 접근 — grep 하면 admitted_ids_prior_* 형제 키가 섞인다
+    if (is.list(ids)) ids <- unlist(ids)
+    stopifnot(length(ids) == 1L)
+    base <- file.path(ROOT, "05_Production/2.Factor_Model")
+    hit  <- grep(sprintf("^[0-9]+-[0-9]+\\.%s$", ids[1]), list.dirs(base, full.names = FALSE, recursive = FALSE), value = TRUE)
+    stopifnot(length(hit) == 1L)         # 0건/복수면 임의 선택 금지 → 폴백
+    file.path(base, hit, "02_holdings_universe")
+  }, error = function(e) { cat(sprintf("[filing_delay] admitted 슬롯 해석 실패(%s) — 슬롯 2-3 폴백\n", conditionMessage(e))); .fallback })
+  wf <- list.files(.hu, pattern = "_weights_cap_0p20\\.csv$", full.names = TRUE)
+  if (!length(wf)) { cat("[filing_delay] 홀딩 파일 없음 — 폴백 디렉토리 재탐색\n")
+                     wf <- list.files(.fallback, pattern = "_weights_cap_0p20\\.csv$", full.names = TRUE) }
+  stopifnot(length(wf) > 0L)
+  ## 파일명 YYYYMMDD 접두 = 사전순 최신 (mtime 아님 — 재생성에 흔들리지 않게).
+  ## ★which.max(basename)는 쓰지 말 것 — 문자를 숫자로 강제변환해 NA 를 낸다(실측 2026-08-01).
+  p <- wf[order(basename(wf))][length(wf)]
+  stopifnot(is.character(p), length(p) == 1L, !is.na(p), file.exists(p))
+  cat(sprintf("[filing_delay] 보유 소비: %s\n", basename(p)))
+  p
+})  # read-only
 INV_PARQUET  <- file.path(ROOT, "stage_artifacts/WT_D20260711_002/filings_inventory.parquet")   # lineage A
 DISC_DIR     <- file.path(ROOT, "stage_artifacts/WT-D20260710_005/disc_ck")                     # lineage B
 CENSUS_RDS   <- file.path(ROOT, "stage_artifacts/WT_D20260713_008/census.rds")                  # 문턱 provenance soft-check용

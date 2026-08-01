@@ -4,37 +4,39 @@
 ##   변경점: BOOK_ID/HU(슬롯2-3)/홀딩패턴(_noLayer4_)/LT(noLayer4 live_track)/ledger seed(2-3 03_period_returns, ret_net·date→ym).
 suppressPackageStartupMessages({library(data.table); library(arrow); library(jsonlite)})
 ROOT <- Sys.getenv("QM_ROOT", Sys.getenv("CLAUDE_PROJECT_DIR","C:/Users/99922/OneDrive/Quant_Module_Moltbot"))
-BOOK_ID <- "STR_1715_on_M4_R05_noLayer4_PG2"
-HU <- file.path(ROOT,"05_Production/2.Factor_Model/2-3.STR_1715_on_M4_R05_noLayer4_PG2/02_holdings_universe")
-LT <- file.path(ROOT,"06_Registry/live_track",BOOK_ID); dir.create(LT,showWarnings=FALSE,recursive=TRUE)
+source(file.path(ROOT,"02_Infrastructure/portfolio/resolve_admitted_slot.R"))
+PRIOR_BOOK_ID <- "STR_1715_on_M4_R05_noLayer4_PG2"   # 이관 원본(이력 승계용) — 갱신 불요
+.slotres <- tryCatch(resolve_admitted_slot(root=ROOT, fallback_id=PRIOR_BOOK_ID), error=function(e) NULL)
+BOOK_ID  <- if (!is.null(.slotres)) .slotres$id else PRIOR_BOOK_ID
+HU <- if (!is.null(.slotres)) .slotres$holdings_dir else
+        file.path(ROOT,"05_Production/2.Factor_Model",paste0("2-3.",PRIOR_BOOK_ID),"02_holdings_universe")
+LT <- live_track_lane(BOOK_ID, root=ROOT, carry_from=PRIOR_BOOK_ID)
 send_tg <- Sys.getenv("NOLAYER4_DAILY_TG", Sys.getenv("FAITH_DAILY_TG","1"))=="1"
 
-## 0) ★배포 북 정합 가드 (2026-08-01) — 이 스크립트가 마킹하는 북이 실제 admitted 북인가.
-##    2026-07-19 D3 swap-in 으로 admitted 는 STR_1715_on_M4gAE_R05_noLayer4_PG2(슬롯 2-4)로
-##    바뀌었는데 아래 BOOK_ID/HU 는 구 슬롯 2-3 에 묶여 있다. 두 산출이 우연히 동일한 달에는
-##    티가 안 나지만(2026-08: m4 미발화 → gate=1.00), m4 발화월에는 **배포되지 않은 북을
-##    매일 마킹**하게 된다. 이관은 live_track NAV 이력 소속을 바꾸는 별건 결정이라 여기서는
-##    **불일치를 드러내기만** 한다 — 조용히 틀린 북을 마킹하는 것보다 낫다.
-.admitted <- tryCatch({
-  bs <- jsonlite::fromJSON(file.path(ROOT,"qepm/mailbox/governor/book_state.json"))
-  ids <- bs[["admitted_ids"]]          # ★keyed 접근 — grep 하면 admitted_ids_prior_* 형제 키
-  if (is.list(ids)) ids <- unlist(ids) #   (구 2-3 ID 보유) 를 함께 끌어온다(실측 24곳)
-  ids
-}, error=function(e) NULL)
-if (is.null(.admitted) || length(.admitted) != 1L) {
-  cat(sprintf("[nolayer4-daily][WARN] admitted_ids 판독 실패/복수(%s) — 북 정합 미확인\n",
-              paste(.admitted, collapse=",")))
-} else if (!identical(.admitted[1], BOOK_ID)) {
-  cat(sprintf(paste0("[nolayer4-daily][WARN] ★마킹 북 != admitted 북\n",
-                     "   admitted = %s\n   marking  = %s (슬롯2-3 하드코딩)\n",
-                     "   → m4 발화월에는 배포되지 않은 북을 마킹함. live_track 이관 결정 필요.\n"),
-              .admitted[1], BOOK_ID))
+## 0) ★배포 북 정합 (2026-08-01 수리) — 마킹 대상은 이제 admitted 북에서 **해석**된다.
+##    사건: 2026-07-19 D3 swap-in 으로 admitted 가 ..._M4gAE_...(슬롯 2-4)로 바뀌었는데
+##    이 스크립트는 슬롯 2-3 에 묶여 있었다. gate=1.00 인 달에는 두 북 산출이 같아 티가 안 나고,
+##    m4 발화월에만 **배포되지 않은 북을 매일 마킹**하게 된다 — 조용히 틀리는 유형.
+##    이제 남은 위험은 "해석 자체가 실패해 폴백으로 내려간 경우"뿐이므로 그것만 경고한다.
+if (is.null(.slotres)) {
+  cat(sprintf(paste0("[nolayer4-daily][WARN] ★admitted 슬롯 해석 실패 — 구 북 %s 폴백으로 마킹 중.\n",
+                     "   book_state.json / 05_Production 슬롯 구성 확인 필요.\n"), BOOK_ID))
 }
 
-## 1) 최신 noLayer4 배포 홀딩 (리밸 date = 파일명)
-wf <- list.files(HU, pattern="_noLayer4_weights_cap_0p20\\.csv$", full.names=TRUE)
-if(!length(wf)){cat("[nolayer4-daily] 배포 홀딩 없음 — 월간 리밸(forward_weights_R05_noLayer4.R) 선행 필요.\n"); quit(save="no")}
-wf <- wf[which.max(file.mtime(wf))]; reb_date <- as.Date(gsub(".*/(\\d{8})_.*","\\1",wf),format="%Y%m%d")
+## 1) 최신 배포 홀딩 = admitted 슬롯의 최신 파일 (리밸 date = 파일명)
+##    구판 3중 결함 (도훈 mandate 2026-08-01 "날짜 하드코딩은 다 없애라"):
+##      ① HU 가 슬롯 2-3 고정 → 교체 후 배포되지 않은 북을 매일 마킹
+##      ② 패턴 `_noLayer4_` 고정 → 슬롯 2-4 의 `20260801_M4gAE_...` 을 **0건**으로 보고 종료
+##      ③ `which.max(file.mtime())` → 파일 재생성/복사에 최신 판정이 뒤집힘
+##    → 해석기(정확일치 슬롯 + 파일명 사전순)로 교체. 실패 시 구 경로 폴백 후 경고.
+wf <- if (!is.null(.slotres)) .slotres$holdings else {
+  .w <- list.files(HU, pattern="_weights_cap_0p20\\.csv$", full.names=TRUE)
+  if (length(.w)) .w[order(basename(.w))][length(.w)] else character(0)
+}
+if(!length(wf)){cat("[nolayer4-daily] 배포 홀딩 없음 — 월간 리밸 선행 필요.\n"); quit(save="no")}
+reb_date <- as.Date(gsub(".*/(\\d{8})_.*","\\1",wf),format="%Y%m%d")
+if (is.na(reb_date)) { cat(sprintf("[nolayer4-daily] 보유 파일명에서 리밸일 파싱 실패: %s\n", basename(wf))); quit(save="no") }
+cat(sprintf("[nolayer4-daily] 마킹 대상: %s (리밸 %s)\n", basename(wf), reb_date))
 W <- fread(wf); stk <- W[Ticker!="CASH" & Weight>0]; invested <- sum(stk$Weight); cash <- 1-invested
 
 ## 2) RAWDATA 일별 (리밸 이후) — 신선 캐시
@@ -52,7 +54,11 @@ mtd <- sum(m$Weight*m$cum, na.rm=TRUE); dayret <- sum(m$Weight*m$dret, na.rm=TRU
 ##   DTD=dayret(일간) / MTD=mtd(당월) 는 위에서 산출. QTD/YTD = 원장 완료월 × (1+현 MTD).
 led_path <- file.path(LT, "book_monthly_ledger.csv")
 if (!file.exists(led_path)) {
-  btf <- tryCatch(fread(file.path(ROOT,"05_Production/2.Factor_Model/2-3.STR_1715_on_M4_R05_noLayer4_PG2/04_backtest_results/03_period_returns.csv")), error=function(e) NULL)
+  ## 원장 seed 도 admitted 슬롯에서 (구판 슬롯 2-3 고정 — 교체 후 구 북 수익으로 seed 했다)
+  .pr <- if (!is.null(.slotres)) file.path(.slotres$slot_dir,"04_backtest_results/03_period_returns.csv")
+         else file.path(ROOT,"05_Production/2.Factor_Model",paste0("2-3.",PRIOR_BOOK_ID),
+                        "04_backtest_results/03_period_returns.csv")
+  btf <- tryCatch(fread(.pr), error=function(e) NULL)
   dym <- format(reb_date, "%Y-%m")
   if (!is.null(btf) && "date" %in% names(btf) && "ret_net" %in% names(btf)) {
     btf[, ym := substr(as.character(date), 1, 7)]

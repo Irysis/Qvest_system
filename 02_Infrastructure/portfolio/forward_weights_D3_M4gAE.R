@@ -21,7 +21,9 @@ suppressPackageStartupMessages({library(data.table); library(arrow); library(jso
 options(scipen=999)
 ROOT <- Sys.getenv("CLAUDE_PROJECT_DIR", Sys.getenv("QM_ROOT", "C:/Users/99922/OneDrive/Quant_Module_Moltbot"))
 source(file.path(ROOT, "02_Infrastructure/factor_db/factor_db_connector.R"))
-AS_OF <- as.Date(Sys.getenv("PG2_AS_OF", "2026-07-01"))
+## AS_OF 기본값은 하드코딩하지 않는다 (도훈 mandate 2026-08-01) — 미지정 시 **당월 1일**.
+## 구판 기본값 "2026-07-01" 은 8월 리밸에서 env 를 빼먹으면 조용히 7월 비중을 재산출했다.
+AS_OF <- as.Date(Sys.getenv("PG2_AS_OF", format(Sys.Date(), "%Y-%m-01")))
 OUT <- Sys.getenv("PG2_OUT_DIR", file.path(ROOT, "qepm/mailbox/worktask/WT-D20260719_001/output"))   ## PG2_OUT_DIR로 production 배치 override
 dir.create(OUT, showWarnings=FALSE, recursive=TRUE)
 N_TARGET<-20; LAMBDA<-1.5; UB<-0.20; LIQ<-2e8

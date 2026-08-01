@@ -113,6 +113,8 @@ SUITES=(
   "08_Tests/hooks/test_auto_commit_valve.sh"
   # 2026-07-26 추가: measurement_basis_audit v1.12 계보 resolver (worktree 좌초 회수분의 정본 회귀 가드)
   "08_Tests/portfolio/test_lineage_resolver.R"
+  # 2026-08-01 추가: 운용 슬롯/보유파일 해석기 위반 주입 (라이브 추적이 배포된 북을 보는지의 가드)
+  "08_Tests/portfolio/test_resolve_admitted_slot.R"
   # 2026-07-26 추가: 부팅 자기-정합 검사(boot_currency_check) 위반 주입 — 부팅 최신화 자동 배선의 가드
   "08_Tests/hooks/test_boot_currency.sh"
   # 2026-07-26 추가: cache_freshness worse-of lag 위반 주입 (CFA-02 수리 가드).

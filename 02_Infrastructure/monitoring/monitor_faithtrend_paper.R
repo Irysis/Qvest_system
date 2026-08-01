@@ -14,7 +14,21 @@ navf <- file.path(LT,"paper_nav.csv"); pnav <- fread(navf)
 faith_path <- file.path(ROOT,"05_Production/2.Factor_Model/2-2.STR_1715_FaithTrend_on_M4_R05_overlay_PG2/04_backtest_results/period_returns_layer5_faith.csv")
 faith <- fread(faith_path); setorder(faith, realized_ym)
 tracked <- if ("realized_ym" %in% names(pnav)) pnav[event=="REALIZED" & !is.na(realized_ym), realized_ym] else character(0)
-new_rows <- faith[!(realized_ym %in% tracked) & realized_ym > "2026-06"]   # deploy 이후 신규 실현월만
+## ── deploy 컷오프 + 결손 감지 (도훈 mandate 2026-08-01 "날짜 하드코딩은 다 없애라") ──
+##   구판: `realized_ym > "2026-06"` 고정 — 매달 손으로 늘려야 했고, 안 늘리면 조용히 낡는다.
+##   컷오프는 paper_nav 의 DEPLOY_START 에서 파생한다. 아울러 nolayer4 미러와 동일하게
+##   "신규 없음"을 무조건 정상이라 부르지 않는다(시리즈 종점이 기대 실현월에 닿았는지 확인).
+.dep_row  <- pnav[event=="DEPLOY_START"]
+DEPLOY_YM <- if (nrow(.dep_row)) substr(as.character(.dep_row$date[1]), 1, 7) else min(faith$realized_ym)
+CUTOFF_YM <- format(as.Date(paste0(DEPLOY_YM, "-01")) - 1, "%Y-%m")
+new_rows  <- faith[!(realized_ym %in% tracked) & realized_ym > CUTOFF_YM]
+
+EXPECT_YM  <- format(Sys.Date(), "%Y-%m")
+SERIES_MAX <- max(faith$realized_ym, na.rm = TRUE)
+.lag_m <- length(seq(as.Date(paste0(SERIES_MAX,"-01")), as.Date(paste0(EXPECT_YM,"-01")), by="month")) - 1L
+if (.lag_m > 0L)
+  cat(sprintf("[%s][faith] ★시리즈 결손 %d개월 — 종점 %s, 기대 %s (상류 백테 최신화 필요)\n",
+              as.character(Sys.Date()), .lag_m, SERIES_MAX, EXPECT_YM))
 
 alert <- FALSE; msg_lines <- c()
 if (nrow(new_rows)==0L) {
