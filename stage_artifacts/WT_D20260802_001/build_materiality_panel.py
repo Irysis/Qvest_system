@@ -149,16 +149,21 @@ def main():
                                 denom.flow_ttm_usd * fx_map[ym] / denom.denom_krw, np.nan)
         mm = m.merge(denom[["hs4", "R_h", "denom_krw", "flow_ttm_usd"]], on="hs4", how="inner")
         mm = mm[mm.R_h.notna()]
+        # credibility 보정: R_h > 1 = 매핑 상장사 매출로 흐름을 설명 못함(비상장·해외·오매핑)
+        #   → 그 버킷 신호의 firm 귀속 신뢰도가 낮다. min(R, 1/R) 은 R=1(흐름과 노출매출이
+        #   동급 = 매핑이 흐름을 설명)에서 최대, 양방향(사소함 / 설명불가)으로 감쇠.
+        mm["R_cred"] = np.minimum(mm.R_h, np.where(mm.R_h > 0, 1.0 / mm.R_h, 0.0))
         agg = mm.groupby("Ticker", as_index=False).apply(
             lambda g: pd.Series({
                 "value": float((g.weight * g.R_h).sum()),
+                "value_cred": float((g.weight * g.R_cred).sum()),
                 "wcov": float(g.weight.sum()),          # relevance 산출된 버킷 weight 커버리지
                 "n_hs": int(len(g)),
             }), include_groups=False)
         agg = agg[agg.wcov > 0]
         agg["Date"] = asof
         agg["avail_ts"] = pd.Timestamp(avail_ts_of(ym))
-        out.append(agg[["Date", "Ticker", "value", "wcov", "n_hs"]].assign(
+        out.append(agg[["Date", "Ticker", "value", "value_cred", "wcov", "n_hs"]].assign(
             avail_ts=pd.Timestamp(avail_ts_of(ym))))
         diag_rows.append({"ym": ym, "n_firms": int(len(agg)),
                           "n_rev_firms": int(rev.Ticker.isin(fmap.Ticker).sum()),
@@ -167,7 +172,7 @@ def main():
                           "share_gt1": float((agg.value > 1).mean())})
 
     panel = pd.concat(out, ignore_index=True)
-    panel = panel[["Date", "Ticker", "value", "avail_ts", "wcov", "n_hs"]].sort_values(
+    panel = panel[["Date", "Ticker", "value", "value_cred", "avail_ts", "wcov", "n_hs"]].sort_values(
         ["Ticker", "Date"]).reset_index(drop=True)
     bad = (panel.avail_ts < panel.Date).sum()
     if bad:
