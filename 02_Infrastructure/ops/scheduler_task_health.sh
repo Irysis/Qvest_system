@@ -56,7 +56,35 @@ for t in tasks:
     ms, ag = t.get("max_stale_days"), t.get("age_days")
     if ms and ag is not None and ag > ms:
         stale.append("%s(%.0f일>%s)" % (t.get("task"), ag, ms))
-print(json.dumps({"n": len(tasks), "bad": bad, "stale": stale}, ensure_ascii=False))
+
+# (2026-08-01) 머신 정지를 N건의 개별 실패로 세지 않는다.
+#   실측: 07-27 20:11 에 PC 가 멈추자 그때 걸려 있던 작업 6개가 전부 동일 rc(0xC000013A)·동일 시각으로
+#   남았다. 이걸 그대로 보고하면 "실패 6" 이 되어 하나의 사건에 경보 6개가 나가고, 정작
+#   *개별* 작업 실패가 그 소음에 묻힌다. 동일 rc_label 이 3건 이상이고 최종실행 시각이
+#   5분 이내로 몰려 있으면 = 시스템 정지 1건으로 접는다(사실을 지우는 게 아니라 하나로 세는 것).
+def _ts(s):
+    try: return datetime.datetime.strptime(s, "%Y-%m-%dT%H:%M:%S")
+    except Exception: return None
+groups = {}
+for t in tasks:
+    if not t.get("enabled", True) or not int(t.get("rc") or 0):
+        continue
+    lbl = t.get("rc_label")
+    if lbl in ("still_running", "never_run"):
+        continue
+    ts = _ts(t.get("last_run") or "")
+    if ts: groups.setdefault(lbl, []).append((ts, t.get("task")))
+shutdown = ""
+for lbl, items in groups.items():
+    if len(items) < 3: continue
+    span = (max(i[0] for i in items) - min(i[0] for i in items)).total_seconds()
+    if span <= 300:
+        when = min(i[0] for i in items).strftime("%m-%d %H:%M")
+        shutdown = "시스템 정지 추정 %s — 작업 %d개가 동일 사유·동일 시각(%.0f초 이내)" % (when, len(items), span)
+        names = set(i[1] for i in items)
+        bad = [b for b in bad if b.split("(")[0] not in names]
+        break
+print(json.dumps({"n": len(tasks), "bad": bad, "stale": stale, "shutdown": shutdown}, ensure_ascii=False))
 PY
 )
 if [ -z "${VERDICT:-}" ]; then
