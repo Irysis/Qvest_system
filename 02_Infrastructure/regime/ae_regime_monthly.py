@@ -50,8 +50,14 @@ DEFAULT_PIN = ".cache/pins/WT-D20260718_007_r1"
 SRC = "stage_artifacts/WT_D20260718_007/ae_regime_extend.py"            # 동결 원본(읽기만)
 
 KEY = "decision_date"
-# parity 대조 대상 — 이 컬럼들이 과거 행에서 바뀌면 중단. 판정에 직접 쓰이는 값만 고른다.
-PARITY_COLS = ["fire_seq", "ae_seq", "tau_seq", "last_feat_date"]
+# ── parity 2계층 (2026-08-01 도훈 A안 승인) ────────────────────────────────
+#   실측 근거: 핀 07-16→07-24 전진 시 FRED 과거 개정 1,544셀(StL_Fin_Stress 1,303 등)로
+#   ae_seq 221/223행 · tau_seq 223/223행이 이동했으나, **fire_seq·exposure_seq 는 0/223 불변**
+#   (Δ 중앙값 +0.0000 · 최대 0.0465 vs 임계 ~1.05 → 발화/미발화 뒤집힘 0건).
+#   → 점수 미세 이동으로 배관을 막으면 AE 가 영구 동결된다(신선도 상실이 더 큰 위험).
+#     대신 **판정이 바뀌는 순간에는 여전히 멈춘다** — 게이트를 없앤 게 아니라 조인 것.
+DECISION_COLS = ["fire_seq", "exposure_seq", "last_feat_date"]   # 변경 = hard block
+SCORE_COLS = ["ae_seq", "tau_seq"]                               # 변경 = 로그만 (크기 보고)
 
 
 # 핀 전진용 라이브 원본 (2026-08-01 실측으로 확인한 경로)
@@ -151,32 +157,53 @@ def run_walkforward(decisions: list[str], pin_dir: str, out_path: str):
     g["main"]()
 
 
+def _changed(o: pd.DataFrame, n: pd.DataFrame, common, col):
+    """공통 행에서 col 이 바뀐 인덱스 + 변화 크기."""
+    a, b = o.loc[common, col], n.loc[common, col]
+    if pd.api.types.is_numeric_dtype(a):
+        af, bf = a.astype(float), b.astype(float)
+        bad = common[~np.isclose(af, bf, rtol=1e-9, atol=1e-12, equal_nan=True)]
+        mx = float(np.nanmax(np.abs(bf - af))) if len(bad) else 0.0
+    else:
+        bad = common[a.astype(str).values != b.astype(str).values]
+        mx = float("nan")
+    return bad, mx
+
+
 def parity_check(old_path: str, new_df: pd.DataFrame) -> tuple[bool, str]:
-    """이미 발행된 행이 바뀌었는가. 바뀌면 FRED 과거 개정이 실재한다는 신호."""
+    """2계층 parity — 판정(DECISION_COLS)이 바뀌면 중단, 점수(SCORE_COLS)는 로그만.
+
+    "과거는 안 바뀔 것"이라는 믿음을 "무엇이 얼마나 바뀌었는지 측정"으로 바꾼다.
+    """
     if not os.path.exists(old_path):
         return True, "기존 파일 없음 — parity 대조 생략(최초 생성)"
-    old = pq.read_table(old_path).to_pandas()
-    o = old.set_index(KEY)
+    o = pq.read_table(old_path).to_pandas().set_index(KEY)
     n = new_df.set_index(KEY)
     common = o.index.intersection(n.index)
     if len(common) == 0:
         return True, "공통 결정일 없음"
-    diffs = []
-    for c in PARITY_COLS:
+
+    hard = []
+    for c in DECISION_COLS:
         if c not in o.columns or c not in n.columns:
             continue
-        a, b = o.loc[common, c], n.loc[common, c]
-        if pd.api.types.is_numeric_dtype(a):
-            bad = common[~np.isclose(a.astype(float), b.astype(float),
-                                     rtol=1e-9, atol=1e-12, equal_nan=True)]
-        else:
-            bad = common[a.astype(str).values != b.astype(str).values]
+        bad, _ = _changed(o, n, common, c)
         if len(bad):
             ex = ", ".join(str(pd.Timestamp(x).date()) for x in bad[:4])
-            diffs.append(f"{c}: {len(bad)}행 변경 (예: {ex})")
-    if diffs:
-        return False, " / ".join(diffs)
-    return True, f"과거 {len(common)}행 불변 확인"
+            hard.append(f"{c}: {len(bad)}행 (예: {ex})")
+
+    soft = []
+    for c in SCORE_COLS:
+        if c not in o.columns or c not in n.columns:
+            continue
+        bad, mx = _changed(o, n, common, c)
+        if len(bad):
+            soft.append(f"{c} {len(bad)}/{len(common)}행(최대 Δ{mx:.4f})")
+
+    note = f"과거 {len(common)}행 · 판정 " + ("★변경 " + " / ".join(hard) if hard else "불변")
+    if soft:
+        note += " · 점수 " + ", ".join(soft) + " (FRED 과거 개정 반영 — A안 채택으로 통과)"
+    return (not hard), note
 
 
 def main() -> int:
