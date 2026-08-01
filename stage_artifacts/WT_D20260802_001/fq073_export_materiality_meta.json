@@ -1,0 +1,95 @@
+{
+  "panel": "fq073_export_materiality.parquet",
+  "generated_at": "2026-08-02 03:50:18",
+  "generator_code_path": "stage_artifacts/WT_D20260802_001/build_materiality_panel.py",
+  "rows": 37847,
+  "n_firms": 314,
+  "n_months": 124,
+  "date_min": "2016-03-31",
+  "date_max": "2026-06-30",
+  "value_semantics": "M_i = Σ_h w_ih x [Flow_h(TTM,USD) x FX / Σ_j (Rev_j x w_jh)] = 추정 수출 의존도(매출 대비 수출노출 비중). scale-free 분수 — Rev_i 소거로 시총 단조 아님. 상한 1 부과는 AST CLIP 담당.",
+  "avail_rule": "avail_ts = data_ym(M) + 1개월의 15일 (R1 export 패널과 동일)",
+  "revenue_pit": "fundamental_dart.Revenue, Factor_Date <= 데이터월 말 (Factor_Date=익년 3/31, C4)",
+  "distribution": {
+    "M_median_overall": 0.5596514756403548,
+    "M_p10": 0.09253620703533018,
+    "M_p90": 4.4101472218061355,
+    "share_gt_1": 0.3997410626998177,
+    "share_lt_0p05": 0.04021454804872249
+  },
+  "monthly_diag_head": [
+    {
+      "ym": "2016-03",
+      "n_firms": 295,
+      "n_rev_firms": 178,
+      "M_med": 0.44629961014685704,
+      "M_p90": 7.365169314423894,
+      "share_gt1": 0.4135593220338983
+    },
+    {
+      "ym": "2016-04",
+      "n_firms": 295,
+      "n_rev_firms": 178,
+      "M_med": 0.44402889157598,
+      "M_p90": 7.284541395259013,
+      "share_gt1": 0.4135593220338983
+    },
+    {
+      "ym": "2016-05",
+      "n_firms": 295,
+      "n_rev_firms": 178,
+      "M_med": 0.4489491438039763,
+      "M_p90": 7.339232450874079,
+      "share_gt1": 0.4135593220338983
+    }
+  ],
+  "monthly_diag_tail": [
+    {
+      "ym": "2026-04",
+      "n_firms": 314,
+      "n_rev_firms": 297,
+      "M_med": 0.6046816553149074,
+      "M_p90": 3.568389916056552,
+      "share_gt1": 0.34394904458598724
+    },
+    {
+      "ym": "2026-05",
+      "n_firms": 314,
+      "n_rev_firms": 297,
+      "M_med": 0.6192405359937211,
+      "M_p90": 3.609472630891632,
+      "share_gt1": 0.34394904458598724
+    },
+    {
+      "ym": "2026-06",
+      "n_firms": 314,
+      "n_rev_firms": 297,
+      "M_med": 0.6442311445179341,
+      "M_p90": 3.770752953709486,
+      "share_gt1": 0.34394904458598724
+    }
+  ],
+  "sources": {
+    "customs_hs_monthly.parquet": {
+      "sha1": "c0e181fa54b5a7edeab432d3d13da6871f27de70",
+      "vintage_basis": "revised_asof_pull"
+    },
+    "firm_hs_crosswalk.parquet": {
+      "sha1": "c6d7c8b6cdb1bab575837a61f953df0e1599d4e6",
+      "map_vintage_mode": "static_current"
+    },
+    "fundamental_dart.parquet": {
+      "sha1": "76ef8c286401ad57235c6b7a4133d5d2f3b82924",
+      "pit": "Factor_Date=익년 3/31"
+    },
+    "ecos_krw_usd.parquet": {
+      "sha1": "ae98ce7bc2717df294ea5ea43715921437933baf"
+    }
+  },
+  "known_pit_exposures": [
+    "C1_C3_static_business_mix",
+    "C6_survivorship_current_listed_pool",
+    "customs_revised_vintage"
+  ],
+  "store_build_hash": "39be5d69d39c7d19b1073ed62d664bb60978148a"
+}
