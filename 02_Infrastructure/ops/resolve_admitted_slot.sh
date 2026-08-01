@@ -77,7 +77,47 @@ if os.path.isdir(hu):
             tags.add(m.group(1))
 if len(tags) != 1:
     print(f"ERR 슬롯 {slot} 의 파일 TAG 가 {len(tags)}종 (1종이어야): {sorted(tags)}"); raise SystemExit
-print(f"OK {sid}|{slot}|{tags.pop()}")
+tag = tags.pop()
+
+# ── 생성기 경로 ─────────────────────────────────────────────────────────────
+# ★슬롯의 01_reproducible_code 를 **파일명 패턴으로 발견하지 않는다.** 실측(2026-08-01):
+#   2-1 은 forward_weights_M4only_DEPRECATED_20260617.R + forward_weights_R05_AR.R,
+#   2-2 는 _R05_AR.R + _R05_FAITH.R 로 각각 2건 — 패턴 매칭은 폐기본까지 후보로 올려
+#   임의 선택이 된다(naive substring 과 같은 계통).
+# 대신 **인프라측 미러**를 정본 호출 경로로 쓴다. 05_Production 은 수정 금지이지만
+#   호출은 가능하고, 미러는 그 사본이라 실행 결과가 같다 — 단 "같다"를 믿지 않고
+#   sha1 로 대조한다(2026-08-01 실측: D3 미러 == production 사본, sha1 1c432a77...).
+#   미러가 없거나 어긋나면 중단한다. 잘못된 생성기로 배포하느니 멈추는 게 낫다.
+import hashlib
+root = os.path.dirname(os.path.dirname(base))          # <root>/05_Production/.. → <root>
+mirror_dir = os.path.join(root, "02_Infrastructure/portfolio")
+prod_dir = os.path.join(base, slot, "01_reproducible_code")
+cands = []
+if os.path.isdir(prod_dir):
+    cands = [f for f in sorted(os.listdir(prod_dir)) if f.endswith(".R")]
+def sha(p):
+    return hashlib.sha1(open(p, "rb").read()).hexdigest()
+mirror = None
+if os.path.isdir(mirror_dir):
+    for mf in sorted(os.listdir(mirror_dir)):
+        if not mf.endswith(".R"):
+            continue
+        mp = os.path.join(mirror_dir, mf)
+        for cf in cands:
+            cp = os.path.join(prod_dir, cf)
+            try:
+                if sha(mp) == sha(cp):
+                    mirror = mp
+                    break
+            except Exception:
+                pass
+        if mirror:
+            break
+if not mirror:
+    print(f"ERR 슬롯 {slot} 생성기의 인프라 미러를 찾지 못함 "
+          f"(02_Infrastructure/portfolio 에 production 사본과 sha1 일치하는 .R 없음). "
+          f"미러를 만들거나 호출 경로를 명시할 것 — 패턴 추측으로 진행하지 않음"); raise SystemExit
+print(f"OK {sid}|{slot}|{tag}|{os.path.relpath(mirror, root).replace(os.sep, '/')}")
 PYEOF
 )"
 
@@ -85,9 +125,11 @@ PYEOF
     OK\ *)
       out="${out#OK }"
       ADMITTED_ID="${out%%|*}"; out="${out#*|}"
-      local slot="${out%%|*}"; HOLD_TAG="${out#*|}"
+      local slot="${out%%|*}"; out="${out#*|}"
+      HOLD_TAG="${out%%|*}"; local gen="${out#*|}"
       SLOT_DIR="$root/05_Production/2.Factor_Model/$slot"
-      export ADMITTED_ID SLOT_DIR HOLD_TAG
+      GEN_SCRIPT="$root/$gen"
+      export ADMITTED_ID SLOT_DIR HOLD_TAG GEN_SCRIPT
       return 0 ;;
     *)
       echo "[slot] ${out:-ERR 해석기 무출력}" >&2
@@ -102,6 +144,7 @@ if [ "${BASH_SOURCE[0]:-$0}" = "${0}" ]; then
     echo "ADMITTED_ID=$ADMITTED_ID"
     echo "SLOT_DIR=$SLOT_DIR"
     echo "HOLD_TAG=$HOLD_TAG"
+    echo "GEN_SCRIPT=$GEN_SCRIPT"
   else
     exit 1
   fi
