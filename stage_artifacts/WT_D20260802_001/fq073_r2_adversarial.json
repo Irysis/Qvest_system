@@ -1,0 +1,69 @@
+{
+  "C2_tier_score_coverage": {
+    "metric_type": "diagnostic",
+    "by_tier": {
+      "MEGA": [
+        {
+          "tier": "MEGA",
+          "n_univ": 1398,
+          "n_scored": 874,
+          "cover": 0.6252,
+          "avg_scored_per_month": 7.73
+        }
+      ],
+      "MID": [
+        {
+          "tier": "MID",
+          "n_univ": 2796,
+          "n_scored": 979,
+          "cover": 0.3501,
+          "avg_scored_per_month": 8.66
+        }
+      ],
+      "OTHER": [
+        {
+          "tier": "OTHER",
+          "n_univ": 45161,
+          "n_scored": 18487,
+          "cover": 0.4094,
+          "avg_scored_per_month": 163.6
+        }
+      ]
+    },
+    "verdict": "REBUTTED — MEGA 커버리지 0.6252 (월평균 7.73/10 종목이 스코어 보유) 로 OTHER(0.4094) 보다 오히려 높다. top-25 슬롯 대비 대형주 후보가 부족해서 선택되지 않은 것이 아니다 — 선택 가능한데 선택되지 않았다."
+  },
+  "C1_bucket_tie_structure": {
+    "metric_type": "diagnostic",
+    "n_firms_single_hs4": 180,
+    "n_firms_multi_hs4": 135,
+    "n_buckets": 92,
+    "n_buckets_single_firm": 42,
+    "median_firms_per_bucket": 2,
+    "max_firms_per_bucket": 27,
+    "n_firms_in_shared_buckets": 273,
+    "verdict": "ACCEPT — M_i = Σ_h w_ih·R_h 에서 R_h 는 버킷 수준이고 Rev_i 는 소거된다. 따라서 단일-HS4 매핑 기업(180/315)끼리는 같은 버킷 안에서 여전히 동점이다. 실측: distinct_ratio 0.6439 -> 0.6488 (거의 무변화). '5% vs 80% 노출' 구분은 **버킷 간**으로만 실현됐고 **버킷 내**에서는 실현되지 않았다."
+  },
+  "C4_large_cap_restricted": {
+    "R2_G1_mat_surprise": {
+      "metric_type": "canonical_screen",
+      "universe": "cap_rank<=100 within K200uKQ150",
+      "portfolio_alpha_t_nw_lag3": -0.7791,
+      "p": 0.4359,
+      "n_months": 112,
+      "turnover_annual": 8.194,
+      "ew_universe_port_t": -0.6814,
+      "n_scored_avg": 47.6
+    },
+    "R2_G5_mat_sue_sm6": {
+      "metric_type": "canonical_screen",
+      "universe": "cap_rank<=100 within K200uKQ150",
+      "portfolio_alpha_t_nw_lag3": -0.2436,
+      "p": 0.8075,
+      "n_months": 95,
+      "turnover_annual": 3.495,
+      "ew_universe_port_t": 0.7635,
+      "n_scored_avg": 48.5
+    },
+    "verdict": "대형 tier 안으로 유니버스를 제한해도 알파는 없다(0 근방). R1 F5(-0.33)와 동일 결론."
+  }
+}

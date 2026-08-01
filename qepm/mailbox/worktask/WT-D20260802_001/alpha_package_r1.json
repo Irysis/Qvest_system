@@ -1,0 +1,981 @@
+{
+  "task_id": "WT-D20260802_001",
+  "as_of_date": "2026-08-02",
+  "forecast_horizon": "1M",
+  "spec_version": "ast_v1.1",
+  "hypothesis": {
+    "statement": "관세청 HS 월별 수출을 DART 사업부문 제품믹스로 종목에 귀속한 '수출 nowcast 서프라이즈'는 분기 재무제표(45일+ 지연)보다 선행하는 firm-level 펀더멘털 flow이며, 특히 KOSPI200 대형 제조·반도체·화학 종목에 직접 귀속되므로 return-derived 후보들이 소멸한 cap-tier x cap-w 전이 벽을 넘을 수 있다.",
+    "mechanism": {
+      "agent": "국내외 sell-side 애널리스트 및 기관 트레이더 — KR 대형 제조사 커버리지에서 분기 실적 공시(45일+ 지연)를 실적 갱신의 주된 앵커로 삼는 참여자군. 월별 통관 수출은 그보다 빠르나 HS코드-기업 귀속표가 공개 존재하지 않아 대부분 소비하지 않는다.",
+      "friction": "① 귀속 비용 — HS 10자리 14,153개를 사업보고서 제품 텍스트와 매핑해야 하며 이 작업의 시장가격이 TRASS/Aicel 유료 벤더의 존재로 실증된다. ② KR 공매도 제약 — 수출 부진의 negative 정보는 가격에 반영되기 어려워 long 쪽으로 비대칭. ③ 월간 이산 공표 — 연속 재평가 대상이 아니라 갱신 시점에 정보가 몰린다.",
+      "path": "데이터월 M 수출 서프라이즈 → M+1월 15일 1차 현행화 공표 → M+1 거래월말 스코어 배치 → 홀딩월 M+2 동안 후속 컨센서스 영업이익 상향 및 분기 실적 발표를 통해 가격 반영"
+    },
+    "falsification": "수출 서프라이즈 상위 5분위 종목의 후속 3M 컨센서스 영업이익 추정치(op_profit_fy1, field_dictionary C-CONSENSUS-QW)가 하위 5분위 대비 유의하게(t>=2) 상향되지 않으면 '수출→실적기대' 경로가 끊어진 것이므로 기전 기각. (가격·성과를 참조하지 않는 부수 관측)",
+    "regime_scope": {
+      "holds_in": [
+        "neutral",
+        "expansion"
+      ],
+      "weakens_or_reverses_in": [
+        "crisis",
+        "krw_shock"
+      ],
+      "boundary_rationale": "수출액은 USD 표시다. 급격한 환율 국면에서는 USD 수출 증가가 KRW 실적 증가와 괴리되어 신호-실적 연결이 끊긴다. 또한 위기 국면은 유동성 청산이 펀더멘털 정보를 압도한다. 경계는 '통관 통계의 표시통화'라는 메커니즘 속성에서 도출된 것이지 사후 성과 관찰이 아니다."
+    }
+  },
+  "factors": [
+    {
+      "factor_id": "F1_export_surprise",
+      "ast": {
+        "type": "op",
+        "op": "CS_ZSCORE",
+        "args": [
+          {
+            "type": "op",
+            "op": "CS_WINSORIZE",
+            "args": [
+              {
+                "type": "op",
+                "op": "SUB",
+                "args": [
+                  {
+                    "type": "op",
+                    "op": "SUB",
+                    "args": [
+                      {
+                        "type": "op",
+                        "op": "LOG",
+                        "args": [
+                          {
+                            "type": "leaf",
+                            "class": "STORED_SCORE",
+                            "source": "stored_panel",
+                            "field": "export_exposure_usd",
+                            "contract": {
+                              "path": "stage_artifacts/WT_D20260802_001/fq073_export_exposure_chapter.parquet",
+                              "value_col": "value",
+                              "store_build_hash": "21b45aae617b8c473db2fd20598aec4a89bbd3e9",
+                              "generator_code_path": "stage_artifacts/WT_D20260802_001/build_export_panel.py",
+                              "generated_at": "2026-08-02 02:23:09",
+                              "production_parity_verified": false,
+                              "avail_offset_days": null
+                            }
+                          }
+                        ]
+                      },
+                      {
+                        "type": "op",
+                        "op": "LOG",
+                        "args": [
+                          {
+                            "type": "op",
+                            "op": "TS_LAG",
+                            "args": [
+                              {
+                                "type": "leaf",
+                                "class": "STORED_SCORE",
+                                "source": "stored_panel",
+                                "field": "export_exposure_usd",
+                                "contract": {
+                                  "path": "stage_artifacts/WT_D20260802_001/fq073_export_exposure_chapter.parquet",
+                                  "value_col": "value",
+                                  "store_build_hash": "21b45aae617b8c473db2fd20598aec4a89bbd3e9",
+                                  "generator_code_path": "stage_artifacts/WT_D20260802_001/build_export_panel.py",
+                                  "generated_at": "2026-08-02 02:23:09",
+                                  "production_parity_verified": false,
+                                  "avail_offset_days": null
+                                }
+                              }
+                            ],
+                            "params": {
+                              "k": 12
+                            }
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "type": "op",
+                    "op": "TS_MEAN",
+                    "args": [
+                      {
+                        "type": "op",
+                        "op": "SUB",
+                        "args": [
+                          {
+                            "type": "op",
+                            "op": "LOG",
+                            "args": [
+                              {
+                                "type": "leaf",
+                                "class": "STORED_SCORE",
+                                "source": "stored_panel",
+                                "field": "export_exposure_usd",
+                                "contract": {
+                                  "path": "stage_artifacts/WT_D20260802_001/fq073_export_exposure_chapter.parquet",
+                                  "value_col": "value",
+                                  "store_build_hash": "21b45aae617b8c473db2fd20598aec4a89bbd3e9",
+                                  "generator_code_path": "stage_artifacts/WT_D20260802_001/build_export_panel.py",
+                                  "generated_at": "2026-08-02 02:23:09",
+                                  "production_parity_verified": false,
+                                  "avail_offset_days": null
+                                }
+                              }
+                            ]
+                          },
+                          {
+                            "type": "op",
+                            "op": "LOG",
+                            "args": [
+                              {
+                                "type": "op",
+                                "op": "TS_LAG",
+                                "args": [
+                                  {
+                                    "type": "leaf",
+                                    "class": "STORED_SCORE",
+                                    "source": "stored_panel",
+                                    "field": "export_exposure_usd",
+                                    "contract": {
+                                      "path": "stage_artifacts/WT_D20260802_001/fq073_export_exposure_chapter.parquet",
+                                      "value_col": "value",
+                                      "store_build_hash": "21b45aae617b8c473db2fd20598aec4a89bbd3e9",
+                                      "generator_code_path": "stage_artifacts/WT_D20260802_001/build_export_panel.py",
+                                      "generated_at": "2026-08-02 02:23:09",
+                                      "production_parity_verified": false,
+                                      "avail_offset_days": null
+                                    }
+                                  }
+                                ],
+                                "params": {
+                                  "k": 12
+                                }
+                              }
+                            ]
+                          }
+                        ]
+                      }
+                    ],
+                    "params": {
+                      "window": 12
+                    }
+                  }
+                ]
+              }
+            ],
+            "params": {
+              "p": 0.02
+            }
+          }
+        ]
+      },
+      "role": "core_signal",
+      "restatement_exposure": 1,
+      "restatement_note": "관세청 원천은 '매월 15일경 전월까지의 자료를 전체 현행화, 개정 종료일 없음'(data.go.kr 15101609 원문) = 저장소 내 최고 수준 restatement 원천. 단 field_map 미등재로 ast_verify 는 restatement_leaves=[] 로 통과시켰다 (ALB-003)."
+    }
+  ],
+  "combination_rule": "single_factor",
+  "verdict": "designed",
+  "pit": {
+    "sig_date": "2026-07-31",
+    "decision_ts": "2026-07-31"
+  },
+  "falsification": [
+    {
+      "field": "C-CONSENSUS-QW",
+      "observation": "수출 서프라이즈 Q5 종목의 후속 3M op_profit_fy1 컨센서스 개정이 Q1 대비 유의(t>=2) 상향되지 않으면 기전 기각",
+      "executed": true,
+      "result_t_stat": 1.969,
+      "result_spread_logrev": 0.01494,
+      "verdict": "MECHANISM_NOT_SUPPORTED — 선언한 부수 관측(컨센 상향)이 유의하지 않다. 가격 이전 단계에서 기전이 끊긴다 = 반증 조건 충족."
+    }
+  ],
+  "ast": {
+    "type": "op",
+    "op": "CS_ZSCORE",
+    "args": [
+      {
+        "type": "op",
+        "op": "CS_WINSORIZE",
+        "args": [
+          {
+            "type": "op",
+            "op": "SUB",
+            "args": [
+              {
+                "type": "op",
+                "op": "SUB",
+                "args": [
+                  {
+                    "type": "op",
+                    "op": "LOG",
+                    "args": [
+                      {
+                        "type": "leaf",
+                        "class": "STORED_SCORE",
+                        "source": "stored_panel",
+                        "field": "export_exposure_usd",
+                        "contract": {
+                          "path": "stage_artifacts/WT_D20260802_001/fq073_export_exposure_chapter.parquet",
+                          "value_col": "value",
+                          "store_build_hash": "21b45aae617b8c473db2fd20598aec4a89bbd3e9",
+                          "generator_code_path": "stage_artifacts/WT_D20260802_001/build_export_panel.py",
+                          "generated_at": "2026-08-02 02:23:09",
+                          "production_parity_verified": false,
+                          "avail_offset_days": null
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "type": "op",
+                    "op": "LOG",
+                    "args": [
+                      {
+                        "type": "op",
+                        "op": "TS_LAG",
+                        "args": [
+                          {
+                            "type": "leaf",
+                            "class": "STORED_SCORE",
+                            "source": "stored_panel",
+                            "field": "export_exposure_usd",
+                            "contract": {
+                              "path": "stage_artifacts/WT_D20260802_001/fq073_export_exposure_chapter.parquet",
+                              "value_col": "value",
+                              "store_build_hash": "21b45aae617b8c473db2fd20598aec4a89bbd3e9",
+                              "generator_code_path": "stage_artifacts/WT_D20260802_001/build_export_panel.py",
+                              "generated_at": "2026-08-02 02:23:09",
+                              "production_parity_verified": false,
+                              "avail_offset_days": null
+                            }
+                          }
+                        ],
+                        "params": {
+                          "k": 12
+                        }
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "op",
+                "op": "TS_MEAN",
+                "args": [
+                  {
+                    "type": "op",
+                    "op": "SUB",
+                    "args": [
+                      {
+                        "type": "op",
+                        "op": "LOG",
+                        "args": [
+                          {
+                            "type": "leaf",
+                            "class": "STORED_SCORE",
+                            "source": "stored_panel",
+                            "field": "export_exposure_usd",
+                            "contract": {
+                              "path": "stage_artifacts/WT_D20260802_001/fq073_export_exposure_chapter.parquet",
+                              "value_col": "value",
+                              "store_build_hash": "21b45aae617b8c473db2fd20598aec4a89bbd3e9",
+                              "generator_code_path": "stage_artifacts/WT_D20260802_001/build_export_panel.py",
+                              "generated_at": "2026-08-02 02:23:09",
+                              "production_parity_verified": false,
+                              "avail_offset_days": null
+                            }
+                          }
+                        ]
+                      },
+                      {
+                        "type": "op",
+                        "op": "LOG",
+                        "args": [
+                          {
+                            "type": "op",
+                            "op": "TS_LAG",
+                            "args": [
+                              {
+                                "type": "leaf",
+                                "class": "STORED_SCORE",
+                                "source": "stored_panel",
+                                "field": "export_exposure_usd",
+                                "contract": {
+                                  "path": "stage_artifacts/WT_D20260802_001/fq073_export_exposure_chapter.parquet",
+                                  "value_col": "value",
+                                  "store_build_hash": "21b45aae617b8c473db2fd20598aec4a89bbd3e9",
+                                  "generator_code_path": "stage_artifacts/WT_D20260802_001/build_export_panel.py",
+                                  "generated_at": "2026-08-02 02:23:09",
+                                  "production_parity_verified": false,
+                                  "avail_offset_days": null
+                                }
+                              }
+                            ],
+                            "params": {
+                              "k": 12
+                            }
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ],
+                "params": {
+                  "window": 12
+                }
+              }
+            ]
+          }
+        ],
+        "params": {
+          "p": 0.02
+        }
+      }
+    ]
+  },
+  "self_pit_check": {
+    "performed": true,
+    "leaves_checked": [
+      {
+        "leaf": "STORED_SCORE:fq073_export_exposure",
+        "availability_rule": "manual_export/derived — avail_ts = data_ym(M)+1개월 15일 (PIT_plan_fq073 §1-c 1차 현행화). 패널 내 avail_ts 컬럼이 권위(암묵 0 아님)",
+        "restatement_prone": true,
+        "vintage_available": false
+      },
+      {
+        "leaf": "FIELD:rawdata:Sector (F4 전용)",
+        "availability_rule": "A1_RAWDATA_OHLCVS_daily — verify 기준 t+1. TS_LAG(1d) 적용으로 준수",
+        "restatement_prone": true,
+        "vintage_available": false
+      }
+    ],
+    "verdict": "warn_restatement",
+    "verdict_rationale": "타이밍(C5) 은 clean — 버퍼 14~17일 실측, assert_overlay_pit HARD PASS, lag1 스트레스 무변화. 그러나 ① customs 개정판 기반(first-release 소급 복원 불가) ② crosswalk static_current (2024-25 사업보고서 1 vintage를 전 역사 귀속 = C1/C3) 두 노출이 실재하므로 clean 선언 불가."
+  },
+  "alpha_vector": {
+    "A000660": 1.852387,
+    "A000990": 1.852387,
+    "A005930": 1.852387,
+    "A032820": 1.852387,
+    "A080220": 1.852387,
+    "A131970": 1.852387,
+    "A253590": 1.852387,
+    "A399720": 1.852387,
+    "A001430": 1.844503,
+    "A348210": 1.829214,
+    "A036540": 1.809949,
+    "A042700": 1.797361,
+    "A232140": 1.793858,
+    "A009970": 1.330033,
+    "A069260": 1.033325,
+    "A060280": 0.925841,
+    "A006400": 0.918103,
+    "A014680": 0.918103,
+    "A036830": 0.918103,
+    "A137400": 0.918103,
+    "A357780": 0.918103,
+    "A373220": 0.918103,
+    "A093370": 0.914159,
+    "A014820": 0.908778,
+    "A003670": 0.904537,
+    "A178320": 0.878774,
+    "A121600": 0.874783,
+    "A010950": 0.842972,
+    "A096770": 0.842972,
+    "A443060": 0.842972,
+    "A457190": 0.842972,
+    "A097950": 0.822698,
+    "A065350": 0.80842,
+    "A031980": 0.782412,
+    "A082270": 0.782412,
+    "A084370": 0.782412,
+    "A183300": 0.782412,
+    "A240810": 0.782412,
+    "A319660": 0.782412,
+    "A005420": 0.741824,
+    "A066970": 0.741824,
+    "A247540": 0.741824,
+    "A348370": 0.741824,
+    "A450080": 0.741824,
+    "A068270": 0.693703,
+    "A145020": 0.693703,
+    "A207940": 0.693703,
+    "A302440": 0.693703,
+    "A285130": 0.692849,
+    "A036930": 0.682351,
+    "A095610": 0.664045,
+    "A267250": 0.652602,
+    "A361610": 0.648075,
+    "A237690": 0.621916,
+    "A403870": 0.599092,
+    "A007390": 0.592795,
+    "A011170": 0.591472,
+    "A445680": 0.587633,
+    "A214430": 0.564223,
+    "A025900": 0.5525,
+    "A086520": 0.52075,
+    "A071970": 0.503083,
+    "A082740": 0.503083,
+    "A089030": 0.489878,
+    "A166090": 0.481544,
+    "A171090": 0.457903,
+    "A222080": 0.445801,
+    "A011790": 0.431713,
+    "A011780": 0.424714,
+    "A161580": 0.406841,
+    "A039030": 0.394425,
+    "A036810": 0.371819,
+    "A000210": 0.351453,
+    "A066570": 0.34062,
+    "A006260": 0.336432,
+    "A085660": 0.324693,
+    "A189300": 0.275357,
+    "A030530": 0.266002,
+    "A002380": 0.250438,
+    "A056190": 0.240616,
+    "A323280": 0.240616,
+    "A014620": 0.22988,
+    "A112610": 0.213512,
+    "A058470": 0.210957,
+    "A214150": 0.210957,
+    "A000080": 0.147742,
+    "A064760": 0.142102,
+    "A101490": 0.085491,
+    "A005290": 0.084181,
+    "A034220": 0.084181,
+    "A213420": 0.084181,
+    "A272290": 0.084181,
+    "A281740": 0.083609,
+    "A039200": 0.07208,
+    "A214450": 0.07208,
+    "A290650": 0.07208,
+    "A033780": 0.067227,
+    "A032500": 0.064126,
+    "A078600": 0.064126,
+    "A218410": 0.064126,
+    "A003030": 0.058535,
+    "A028300": 0.037607,
+    "A008930": 0.016604,
+    "A002790": 0.012755,
+    "A018290": 0.012755,
+    "A048410": 0.012755,
+    "A090430": 0.012755,
+    "A192820": 0.012755,
+    "A241710": 0.012755,
+    "A278470": 0.012755,
+    "A352480": 0.012755,
+    "A268280": 0.006418,
+    "A161890": 0.001183,
+    "A010120": -0.01385,
+    "A051900": -0.016299,
+    "A251970": -0.027403,
+    "A074600": -0.02791,
+    "A010130": -0.051368,
+    "A120110": -0.068075,
+    "A004000": -0.096972,
+    "A006650": -0.125093,
+    "A010060": -0.149446,
+    "A073240": -0.170767,
+    "A161390": -0.170767,
+    "A417200": -0.186839,
+    "A002840": -0.190497,
+    "A051910": -0.21764,
+    "A005850": -0.235865,
+    "A298050": -0.243145,
+    "A025320": -0.271095,
+    "A012330": -0.27578,
+    "A018880": -0.27578,
+    "A204320": -0.27578,
+    "A009830": -0.280706,
+    "A298380": -0.325772,
+    "A128940": -0.333833,
+    "A001440": -0.341548,
+    "A000100": -0.344019,
+    "A000250": -0.344019,
+    "A003090": -0.344019,
+    "A006280": -0.344019,
+    "A009420": -0.344019,
+    "A068760": -0.344019,
+    "A069620": -0.344019,
+    "A087010": -0.344019,
+    "A185750": -0.344019,
+    "A195940": -0.344019,
+    "A008730": -0.350693,
+    "A108490": -0.352921,
+    "A383220": -0.367967,
+    "A011210": -0.387828,
+    "A000670": -0.39271,
+    "A009540": -0.402953,
+    "A015750": -0.404808,
+    "A000150": -0.433533,
+    "A007660": -0.433533,
+    "A009150": -0.433533,
+    "A011070": -0.433533,
+    "A067310": -0.433533,
+    "A222800": -0.433533,
+    "A131290": -0.446955,
+    "A280360": -0.449156,
+    "A005380": -0.454138,
+    "A000270": -0.458843,
+    "A001800": -0.472073,
+    "A271560": -0.472073,
+    "A420770": -0.504527,
+    "A204270": -0.50856,
+    "A007310": -0.523827,
+    "A056080": -0.52677,
+    "A277810": -0.52677,
+    "A388720": -0.52677,
+    "A454910": -0.52677,
+    "A098460": -0.527818,
+    "A140860": -0.527818,
+    "A058610": -0.549583,
+    "A096530": -0.553686,
+    "A137310": -0.553686,
+    "A003240": -0.559271,
+    "A298020": -0.588187,
+    "A214370": -0.590089,
+    "A003230": -0.624495,
+    "A004370": -0.639422,
+    "A001680": -0.711348,
+    "A005300": -0.739674,
+    "A017960": -0.74749,
+    "A010140": -0.752078,
+    "A033500": -0.752078,
+    "A004020": -0.758376,
+    "A005490": -0.758376,
+    "A009520": -0.758376,
+    "A103140": -0.823315,
+    "A050890": -0.829659,
+    "A006040": -0.866538,
+    "A079550": -0.955754,
+    "A329180": -0.971542,
+    "A003380": -1.183445,
+    "A241560": -1.327627,
+    "A456040": -1.810796,
+    "A033100": -1.828095,
+    "A062040": -1.828095,
+    "A267260": -1.828095,
+    "A298040": -1.828095,
+    "A021240": -1.947084,
+    "A034020": -2.013444,
+    "A017800": -2.294387,
+    "A012450": -2.584211,
+    "A272210": -3.164859,
+    "A300720": -3.183166,
+    "A002030": -3.335522,
+    "A007340": -3.335522,
+    "A038500": -3.335522,
+    "A047810": -3.335522,
+    "A083650": -3.335522
+  },
+  "confidence_vector": {
+    "A000660": 0.7928,
+    "A000990": 0.6928,
+    "A005930": 0.7928,
+    "A032820": 0.3553,
+    "A080220": 0.4303,
+    "A131970": 0.5803,
+    "A253590": 0.4012,
+    "A399720": 0.4303,
+    "A001430": 0.6428,
+    "A348210": 0.5095,
+    "A036540": 0.7053,
+    "A042700": 0.4303,
+    "A232140": 0.4012,
+    "A009970": 0.4553,
+    "A069260": 0.7928,
+    "A060280": 0.4553,
+    "A006400": 0.7928,
+    "A014680": 0.7928,
+    "A036830": 0.7928,
+    "A137400": 0.6053,
+    "A357780": 0.6053,
+    "A373220": 0.5428,
+    "A093370": 0.7928,
+    "A014820": 0.7928,
+    "A003670": 0.7387,
+    "A178320": 0.6553,
+    "A121600": 0.5303,
+    "A010950": 0.7928,
+    "A096770": 0.7928,
+    "A443060": 0.3803,
+    "A457190": 0.4303,
+    "A097950": 0.7928,
+    "A065350": 0.4012,
+    "A031980": 0.5178,
+    "A082270": 0.7303,
+    "A084370": 0.7428,
+    "A183300": 0.5553,
+    "A240810": 0.7928,
+    "A319660": 0.5762,
+    "A005420": 0.4803,
+    "A066970": 0.7595,
+    "A247540": 0.6803,
+    "A348370": 0.5303,
+    "A450080": 0.4553,
+    "A068270": 0.7887,
+    "A145020": 0.7928,
+    "A207940": 0.7803,
+    "A302440": 0.5803,
+    "A285130": 0.7512,
+    "A036930": 0.7928,
+    "A095610": 0.7803,
+    "A267250": 0.7845,
+    "A361610": 0.5803,
+    "A237690": 0.7928,
+    "A403870": 0.5053,
+    "A007390": 0.7553,
+    "A011170": 0.7928,
+    "A445680": 0.3428,
+    "A214430": 0.3553,
+    "A025900": 0.7928,
+    "A086520": 0.7553,
+    "A071970": 0.3553,
+    "A082740": 0.3553,
+    "A089030": 0.4303,
+    "A166090": 0.5803,
+    "A171090": 0.4012,
+    "A222080": 0.6053,
+    "A011790": 0.7928,
+    "A011780": 0.7928,
+    "A161580": 0.3803,
+    "A039030": 0.7928,
+    "A036810": 0.5803,
+    "A000210": 0.7928,
+    "A066570": 0.7928,
+    "A006260": 0.7928,
+    "A085660": 0.6803,
+    "A189300": 0.5303,
+    "A030530": 0.6678,
+    "A002380": 0.7928,
+    "A056190": 0.7928,
+    "A323280": 0.3803,
+    "A014620": 0.5678,
+    "A112610": 0.6053,
+    "A058470": 0.7928,
+    "A214150": 0.6553,
+    "A000080": 0.7928,
+    "A064760": 0.7928,
+    "A101490": 0.6053,
+    "A005290": 0.4428,
+    "A034220": 0.4428,
+    "A213420": 0.4428,
+    "A272290": 0.4428,
+    "A281740": 0.4887,
+    "A039200": 0.7303,
+    "A214450": 0.7928,
+    "A290650": 0.6053,
+    "A033780": 0.7928,
+    "A032500": 0.6928,
+    "A078600": 0.6053,
+    "A218410": 0.7053,
+    "A003030": 0.5178,
+    "A028300": 0.7928,
+    "A008930": 0.7928,
+    "A002790": 0.7928,
+    "A018290": 0.4803,
+    "A048410": 0.6553,
+    "A090430": 0.7928,
+    "A192820": 0.7928,
+    "A241710": 0.5262,
+    "A278470": 0.4012,
+    "A352480": 0.4387,
+    "A268280": 0.3803,
+    "A161890": 0.7928,
+    "A010120": 0.7928,
+    "A051900": 0.7928,
+    "A251970": 0.3553,
+    "A074600": 0.5887,
+    "A010130": 0.7928,
+    "A120110": 0.7928,
+    "A004000": 0.7928,
+    "A006650": 0.7928,
+    "A010060": 0.7928,
+    "A073240": 0.7928,
+    "A161390": 0.7928,
+    "A417200": 0.4303,
+    "A002840": 0.4012,
+    "A051910": 0.7928,
+    "A005850": 0.7178,
+    "A298050": 0.5803,
+    "A025320": 0.4303,
+    "A012330": 0.7928,
+    "A018880": 0.7928,
+    "A204320": 0.7928,
+    "A009830": 0.7928,
+    "A298380": 0.6803,
+    "A128940": 0.7928,
+    "A001440": 0.5803,
+    "A000100": 0.7928,
+    "A000250": 0.7303,
+    "A003090": 0.6053,
+    "A006280": 0.7928,
+    "A009420": 0.7928,
+    "A068760": 0.7928,
+    "A069620": 0.7928,
+    "A087010": 0.5053,
+    "A185750": 0.7928,
+    "A195940": 0.5553,
+    "A008730": 0.4803,
+    "A108490": 0.3553,
+    "A383220": 0.5303,
+    "A011210": 0.7928,
+    "A000670": 0.772,
+    "A009540": 0.7928,
+    "A015750": 0.7678,
+    "A000150": 0.7928,
+    "A007660": 0.3553,
+    "A009150": 0.7928,
+    "A011070": 0.7928,
+    "A067310": 0.5303,
+    "A222800": 0.5803,
+    "A131290": 0.5803,
+    "A280360": 0.5053,
+    "A005380": 0.7928,
+    "A000270": 0.7928,
+    "A001800": 0.7928,
+    "A271560": 0.7762,
+    "A420770": 0.4053,
+    "A204270": 0.5303,
+    "A007310": 0.7928,
+    "A056080": 0.3553,
+    "A277810": 0.4803,
+    "A388720": 0.3553,
+    "A454910": 0.4303,
+    "A098460": 0.7928,
+    "A140860": 0.5803,
+    "A058610": 0.4553,
+    "A096530": 0.7928,
+    "A137310": 0.5303,
+    "A003240": 0.7303,
+    "A298020": 0.5803,
+    "A214370": 0.697,
+    "A003230": 0.5387,
+    "A004370": 0.7928,
+    "A001680": 0.7928,
+    "A005300": 0.7928,
+    "A017960": 0.3803,
+    "A010140": 0.7928,
+    "A033500": 0.3803,
+    "A004020": 0.7928,
+    "A005490": 0.7928,
+    "A009520": 0.4803,
+    "A103140": 0.7928,
+    "A050890": 0.3803,
+    "A006040": 0.4803,
+    "A079550": 0.7803,
+    "A329180": 0.5553,
+    "A003380": 0.7553,
+    "A241560": 0.7303,
+    "A456040": 0.3762,
+    "A033100": 0.4303,
+    "A062040": 0.3553,
+    "A267260": 0.4553,
+    "A298040": 0.497,
+    "A021240": 0.7928,
+    "A034020": 0.7928,
+    "A017800": 0.7928,
+    "A012450": 0.7928,
+    "A272210": 0.6053,
+    "A300720": 0.5303,
+    "A002030": 0.3553,
+    "A007340": 0.4178,
+    "A038500": 0.5803,
+    "A047810": 0.7345,
+    "A083650": 0.3553
+  },
+  "signal_matrix_ref": "stage_artifacts/WT_D20260802_001/alpha_scores_F1_export_surprise.parquet",
+  "factor_specs": [
+    {
+      "factor_family": "Fundamental_Flow_NonReturn",
+      "proxy": "customs_HS_export_surprise_via_DART_segment_crosswalt",
+      "formula": "CS_ZSCORE(CS_WINSORIZE(G - TS_MEAN(G,12), 0.02)), G = LOG(x) - LOG(TS_LAG(x,12)), x = Sum_h w_ih * HS4_monthly_export_USD",
+      "lag_rule": "data_ym M -> usable M+1/15 -> score M+1 month-end -> holding M+2 (buffer 14~17d)",
+      "winsorization": "cross-sectional 2% both tails",
+      "neutralization": "none (F4 = sector-neutral variant)",
+      "economic_rationale": "firm-level 통관 수출은 분기 재무제표보다 선행하는 실물 매출 flow이며, 귀속 비용이 차익거래 마찰로 작동한다",
+      "weight_theta": 1,
+      "redundancy_cluster_id": "nonreturn_customs_export_fq073",
+      "source": "new_designed",
+      "references": [
+        "FQ-073 frontier queue",
+        "PIT_plan_fq073.md (2026-07-25)"
+      ]
+    }
+  ],
+  "diagnostics": {
+    "canonical_port_t_nw_lag3": -1.7078,
+    "canonical_port_t_pvalue": 0.0877,
+    "canonical_n_months": 112,
+    "metric_type": "canonical_screen",
+    "rank_ic": -0.00336,
+    "icir": -0.028,
+    "harvey_t_stat": -0.296,
+    "monotonicity": null,
+    "subperiod_stability": {
+      "2016-01-01_2019-12-31": -1.71,
+      "2020-01-01_2022-12-31": 1.531,
+      "2023-01-01_2026-12-31": -2.586
+    },
+    "turnover_proxy": 12.884,
+    "post_neutralization_ic": null,
+    "information_ratio": -0.5121,
+    "net_sr": -0.5121,
+    "gross_0bps_port_t": -1.3592,
+    "dual_basis": {
+      "cap_w_port_t": -1.7078,
+      "ew_universe_port_t": -1.6048,
+      "cap_tier_weight_share": {
+        "MEGA": 0.05946903,
+        "MID": 0.05132743,
+        "OTHER": 0.88920354,
+        "UNRANKED": 0
+      },
+      "cap_tier_contrib_annualized": {
+        "MEGA": 0.01853596,
+        "MID": 0.00451481,
+        "OTHER": 0.05691867,
+        "UNRANKED": 0
+      },
+      "verdict": "EW-대비도 음수 — cap-w 벤치 아티팩트 아님. cap-tier 는 OTHER 88.9% 로 소형주 국소화 재현."
+    },
+    "large_cap_restricted_F5": {
+      "metric_type": "canonical_screen",
+      "universe": "cap_rank<=100 within K200uKQ150",
+      "portfolio_alpha_t_nw_lag3": -0.3279,
+      "p": 0.743,
+      "n_months": 112,
+      "information_ratio": -0.1096,
+      "turnover_annual": 7.846,
+      "n_scored_avg": 49.5,
+      "ew_universe_port_t": 0.2409
+    },
+    "effective_cross_section": {
+      "metric_type": "diagnostic",
+      "n_firms_scored_avg": 182.8,
+      "n_distinct_scores_avg": 116.5,
+      "distinct_ratio": 0.6439,
+      "note": "distinct_ratio < 1 = 동일 HS4 버킷 종목이 구분 불가(동점). 'firm-level' 신호의 실제 해상도."
+    },
+    "falsification_test": {
+      "H63d": {
+        "horizon_days": 63,
+        "q5_minus_q1_logrev": 0.01494,
+        "t_stat": 1.969,
+        "n_months": 113,
+        "q5_mean": 0.01784,
+        "q1_mean": 0.0029,
+        "n_obs": 18413,
+        "metric_type": "diagnostic_falsification"
+      },
+      "H126d": {
+        "horizon_days": 126,
+        "q5_minus_q1_logrev": 0.0129,
+        "t_stat": 1.352,
+        "n_months": 113,
+        "q5_mean": 0.02291,
+        "q1_mean": 0.01001,
+        "n_obs": 18183,
+        "metric_type": "diagnostic_falsification"
+      }
+    },
+    "falsification_verdict": "MECHANISM_NOT_SUPPORTED — 선언한 부수 관측(컨센 상향)이 유의하지 않다. 가격 이전 단계에서 기전이 끊긴다 = 반증 조건 충족.",
+    "dynamic_pit": {
+      "lag1": {
+        "metric_type": "canonical_screen",
+        "base_port_t": -1.7078,
+        "lag1_port_t": -1.7053,
+        "n_months": 111,
+        "interpretation": "base 와 lag1 의 격차가 크면 동월 누출 의심. 본 라운드 base 가 음수라 누출 인플레 여지 없음 — 확인 목적."
+      },
+      "strict_ab": {
+        "metric_type": "canonical_screen",
+        "base_port_t": -1.7078,
+        "strict_port_t": -1.7053,
+        "inflation_base_minus_strict": -0.0024,
+        "verdict": "NO_INFLATION",
+        "note": "strict lane = 데이터월 한 달 추가 지연. 인플레(base-strict)가 크면 타이밍 경계 누출."
+      },
+      "vintage_swap": {
+        "n_snapshots": 2,
+        "snapshots": [
+          "customs_hs_20260726.parquet",
+          "customs_hs_20260801.parquet"
+        ],
+        "n_cells": 289792,
+        "changed_share": 0,
+        "max_ym_a": "2026-06",
+        "max_ym_b": "2026-06",
+        "verdict": "NO_REVISION_OBSERVED_IN_WINDOW — 두 스냅샷(6일 간격, 개정일 15일 미포함) 사이 개정 0. 개정폭 미측정(무증거≠무개정)."
+      },
+      "label_direction_cor": 1
+    },
+    "ast_verify": {
+      "honest": "FAIL_CONTRACT (production_parity_verified)",
+      "counterfactual_parity_true": "PASS",
+      "lookahead_violations_after_fix": 0,
+      "first_run_caught": "F4 sector-neutral FAIL_LOOKAHEAD (rawdata Sector t+1) — TS_LAG(1d)로 수정"
+    },
+    "n_iterations": 5,
+    "selection_type": "chain",
+    "deflated_sharpe_ratio": null,
+    "dsr_note": "selection_type=chain (가설주도 순차 대조군) — measurement-graduation §3 상 DSR 게이트 부적용. 수치도 미산출(전 후보 음수라 진단 무의미)."
+  },
+  "selection_objective": "canonical_port_t",
+  "alpha_discovery_count": 0,
+  "challenge_flags": [
+    {
+      "id": "CF-01",
+      "severity": "HIGH",
+      "flag": "crosswalk static_current = C1/C3 사업구성 look-ahead. 원 크로스워크 자체가 gate_eligible=FALSE 로 라벨링. 본 측정은 진단 lane이며 graduation 판정 자격 없음."
+    },
+    {
+      "id": "CF-02",
+      "severity": "HIGH",
+      "flag": "'상한(upper bound)' 논증의 한계 — 매핑 vintage 오류는 favorable bias 가 아니라 attenuating noise 일 개연이 크다. 따라서 '상한이 음수이므로 clean lane 도 음수'는 강한 신호에만 성립하고 약한 신호는 배제하지 못한다 (self-adversarial ACCEPT)."
+    },
+    {
+      "id": "CF-03",
+      "severity": "HIGH",
+      "flag": "rank-IC ~ 0 (-0.0034, t -0.30) 인데 top-25 PORT_t = -1.71. 광범위 횡단면 신호가 아니라 극단 tail 선택 효과. top-25 가 최고변동 niche HS4 버킷(소형주)을 구조적으로 선택 — 수출 정보가 아니라 lottery-stock 페널티를 재측정했을 개연."
+    },
+    {
+      "id": "CF-04",
+      "severity": "MEDIUM",
+      "flag": "회전율 1288%/yr — Production Constraints 상 TO<=1100% 초과. 양(+) 신호였더라도 현 horizon 에서는 구현 불가."
+    },
+    {
+      "id": "CF-05",
+      "severity": "MEDIUM",
+      "flag": "regime_scope 예측 반증 — crisis 에서 약화를 예측했으나 2020-22(COVID) 부기간 PORT_t 는 +1.53 으로 유일한 양수 구간. 메커니즘에서 도출한 국면 경계가 데이터와 어긋난다."
+    },
+    {
+      "id": "CF-06",
+      "severity": "MEDIUM",
+      "flag": "유효 횡단면 해상도 0.644 — 월평균 183 종목 중 서로 다른 스코어 116개. 동일 HS4 단일매핑 종목은 구분 불가하므로 'firm-level' 주장이 64%만 실현됨."
+    },
+    {
+      "id": "CF-07",
+      "severity": "MEDIUM",
+      "flag": "survivorship — crosswalk 474사는 현재 상장 기업 기반. 과거 유니버스의 상장폐지 종목은 스코어 풀에 부재(C6)."
+    },
+    {
+      "id": "CF-08",
+      "severity": "LOW",
+      "flag": "vintage-swap 무증거 — 스냅샷 2개가 6일 간격이고 개정일(15일)을 포함하지 않아 개정폭 미측정. 무증거는 무개정이 아니다."
+    },
+    {
+      "id": "CF-09",
+      "severity": "INFO",
+      "flag": "AST 계층 결함 4건 적립 — 06_Registry/ast_leaf_table_bugs.jsonl ALB-001~004 (방언 분기 / production_parity 범위 / field_map 미등재 무검사 / rawdata 가용성 불일치)."
+    }
+  ],
+  "verdict_summary": {
+    "result": "config_scoped_negative",
+    "lane": "LANE_UPPER_BOUND (static_current 매핑 + revised vintage)",
+    "gate_eligible": false,
+    "statement": "본 config(월간 HS4 서프라이즈 x static_current 크로스워크 x top-25 cap-w EW long-only x 15bps)에서 FQ-073 은 양(+)의 알파를 산출하지 않는다. 4개 신호형 전부 cap-w·EW 양 basis 에서 음수이며, 대형주 제한(F5)에서는 음수가 사라지되 알파도 없다(PORT_t -0.33, p 0.74). 선언한 반증 검정에서 컨센서스 영업이익 상향은 방향은 맞으나(Q5 +1.78% vs Q1 +0.29%) 사전등록 기준 t>=2 에 미달(t=1.969) — 기전의 1차 링크는 약하게 존재하고 2차 링크(가격 전이)는 부재. 구조 판결 아님 — 미검 축은 next_probe 참조."
+  }
+}

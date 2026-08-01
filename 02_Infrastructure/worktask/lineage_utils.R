@@ -18,19 +18,35 @@ suppressPackageStartupMessages({
 `%||%` <- function(a, b) if (!is.null(a)) a else b
 
 # ─── Git state ──────────────────────────────────────────
+#  [2026-08-02 수리 — r-portability 계통] 종전 `system("git ... 2>/dev/null", intern=TRUE)` 는
+#  Windows 에서 **항상 실패**했다: R 의 system() 은 cmd.exe 로 넘기는데 cmd 에 `/dev/null` 이
+#  없어 "파일 이름, 디렉터리 이름 또는 볼륨 레이블 구문이 잘못되었습니다"(status 128)가 난다.
+#  tryCatch 가 그걸 삼켜 **git_commit 이 조용히 "unknown" 으로 결손**됐다 — 계보 추적이
+#  무증상으로 죽어 있었다(WT-D20260802_001 R2 라운드 적발).
+#  정본: system2() 로 인자를 분리하고 stderr 는 R 레벨에서 버린다(쉘 리다이렉션 의존 제거).
+#  실패는 "unknown" 으로 두되 **호출자가 구분할 수 있게** git_state_error 를 함께 싣는다 —
+#  결손을 정상값처럼 반환하면 그게 이 결함의 재발 형태다.
+.git_try <- function(args) {
+  tryCatch({
+    out <- suppressWarnings(system2("git", args, stdout = TRUE, stderr = FALSE))
+    st  <- attr(out, "status")
+    if (!is.null(st) && st != 0L) NULL else out
+  }, error = function(e) NULL)
+}
+
 capture_git_state <- function() {
-  sha <- tryCatch(
-    system("git rev-parse HEAD 2>/dev/null", intern = TRUE),
-    error = function(e) "unknown"
-  )
-  dirty <- tryCatch({
-    diff_out <- system("git status --porcelain 2>/dev/null", intern = TRUE)
-    length(diff_out) > 0
-  }, error = function(e) NA)
+  sha_raw <- .git_try(c("rev-parse", "HEAD"))
+  sha <- if (is.null(sha_raw) || !length(sha_raw)) "unknown" else trimws(sha_raw)
+
+  status_raw <- .git_try(c("status", "--porcelain"))
+  dirty <- if (is.null(status_raw)) NA else (length(status_raw) > 0)
 
   list(
     git_commit = sha[1] %||% "unknown",
-    git_dirty = dirty
+    git_dirty = dirty,
+    # 결손을 정상값처럼 반환하지 않는다 — 소비자가 "미측정"과 "깨끗한 트리"를 구분할 수 있어야 한다.
+    git_state_error = if (identical(sha[1], "unknown") || is.na(dirty))
+      "git 조회 실패 — 계보 미측정(정상 상태 아님)" else NULL
   )
 }
 

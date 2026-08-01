@@ -1,197 +1,821 @@
 {
   "task_id": "WT-D20260802_001",
-  "generated_at": "2026-08-02 02:46:15",
+  "round": "R2",
+  "generated_at": "2026-08-02 04:12:01",
   "metric_type": "canonical_screen",
   "lane": "LANE_UPPER_BOUND",
   "gate_eligible": false,
+  "selection_type": "chain",
+  "n_trials": 6,
+  "base_rate": {
+    "universe": {
+      "OTHER": 0.9149,
+      "MID": 0.0568,
+      "MEGA": 0.0284
+    },
+    "score_pool_primary": {
+      "OTHER": 0.9089,
+      "MID": 0.0481,
+      "MEGA": 0.043
+    },
+    "note": "K200uKQ150 에서 MEGA=10 / MID=20 종목은 정의상 고정이므로 OTHER base ~0.91. 보유 tier 비중은 이 base 대비 lift 로 읽어야 한다."
+  },
   "factors": [
     {
-      "name": "F1_export_surprise",
-      "canonical_port_t_nw_lag3": -1.7078,
-      "ew_universe_port_t": -1.6048,
-      "turnover_annual": 12.884,
+      "name": "R2_G1_mat_surprise",
+      "canonical_port_t_nw_lag3": -1.2005,
+      "common_window_port_t": -1.1973,
+      "ew_universe_port_t": -1.1034,
+      "turnover_annual": 12.5182,
+      "turnover_constraint_pass": false,
       "n_months": 112,
+      "cap_tier_weight_share": {
+        "MEGA": 0.044248,
+        "MID": 0.040354,
+        "OTHER": 0.915398,
+        "UNRANKED": 0
+      },
       "selected": true,
-      "mechanism_note": "PRIMARY — 레벨은 이미 가격 반영이라는 메커니즘의 직접 표현(서프라이즈)"
+      "mechanism_note": "PRIMARY(P1) — materiality x 서프라이즈. 균등배분을 경제적 노출 크기로 재척도. cap-tier 판별 담당"
     },
     {
-      "name": "F2_export_yoy_level",
-      "canonical_port_t_nw_lag3": -1.2236,
-      "ew_universe_port_t": -0.8072,
-      "turnover_annual": 11.593,
-      "n_months": 124,
-      "selected": false,
-      "mechanism_note": "대조군: 서프라이즈가 성장 레벨보다 나은가"
-    },
-    {
-      "name": "F3_export_accel",
-      "canonical_port_t_nw_lag3": -1.1291,
-      "ew_universe_port_t": -0.7982,
-      "turnover_annual": 15.561,
-      "n_months": 121,
-      "selected": false,
-      "mechanism_note": "대조군: 3M 가속이 별도 정보인가"
-    },
-    {
-      "name": "F4_export_surprise_secneutral",
-      "canonical_port_t_nw_lag3": -1.2141,
-      "ew_universe_port_t": -0.9792,
-      "turnover_annual": 13.019,
+      "name": "R2_G1c_matcred_surprise",
+      "canonical_port_t_nw_lag3": -1.1905,
+      "common_window_port_t": -1.242,
+      "ew_universe_port_t": -1.2894,
+      "turnover_annual": 12.5352,
+      "turnover_constraint_pass": false,
       "n_months": 112,
+      "cap_tier_weight_share": {
+        "MEGA": 0.035752,
+        "MID": 0.03115,
+        "OTHER": 0.933097,
+        "UNRANKED": 0
+      },
       "selected": false,
-      "mechanism_note": "대조군: FQ-066/067 sector-rotation negative 대비 firm-level 증분 분리"
+      "mechanism_note": "대조 A — credibility 보정 materiality min(R,1/R). R_h>1(매핑이 흐름을 설명 못함)을 감쇠"
+    },
+    {
+      "name": "R2_G2_sue",
+      "canonical_port_t_nw_lag3": -1.2704,
+      "common_window_port_t": -1.2103,
+      "ew_universe_port_t": -0.7373,
+      "turnover_annual": 16.1251,
+      "turnover_constraint_pass": false,
+      "n_months": 100,
+      "cap_tier_weight_share": {
+        "MEGA": 0.050693,
+        "MID": 0.044356,
+        "OTHER": 0.90495,
+        "UNRANKED": 0
+      },
+      "selected": false,
+      "mechanism_note": "대조 B — 변동성 표준화만. R1 진단(효과가 고변동 니치 버킷 꼬리에 몰림)의 직접 대조"
+    },
+    {
+      "name": "R2_G3_mat_sue",
+      "canonical_port_t_nw_lag3": -0.6676,
+      "common_window_port_t": -0.6196,
+      "ew_universe_port_t": 0.0945,
+      "turnover_annual": 13.8059,
+      "turnover_constraint_pass": false,
+      "n_months": 100,
+      "cap_tier_weight_share": {
+        "MEGA": 0.039604,
+        "MID": 0.033267,
+        "OTHER": 0.927129,
+        "UNRANKED": 0
+      },
+      "selected": false,
+      "mechanism_note": "결합 — materiality x SUE (2x2 귀속설계의 both-on 칸)"
+    },
+    {
+      "name": "R2_G4_mat_sue_sm3",
+      "canonical_port_t_nw_lag3": -0.7666,
+      "common_window_port_t": -0.6487,
+      "ew_universe_port_t": -0.1122,
+      "turnover_annual": 7.1224,
+      "turnover_constraint_pass": true,
+      "n_months": 98,
+      "cap_tier_weight_share": {
+        "MEGA": 0.046465,
+        "MID": 0.03596,
+        "OTHER": 0.917576,
+        "UNRANKED": 0
+      },
+      "selected": false,
+      "mechanism_note": "P2 — 3M 평활. R1 회전율 1288%/yr 의 제약(1100%) 초과 해소 시도"
+    },
+    {
+      "name": "R2_G5_mat_sue_sm6",
+      "canonical_port_t_nw_lag3": 0.1374,
+      "common_window_port_t": 0.1374,
+      "ew_universe_port_t": 1.446,
+      "turnover_annual": 5.085,
+      "turnover_constraint_pass": true,
+      "n_months": 95,
+      "cap_tier_weight_share": {
+        "MEGA": 0.052083,
+        "MID": 0.035,
+        "OTHER": 0.912917,
+        "UNRANKED": 0
+      },
+      "selected": false,
+      "mechanism_note": "P2 사다리 2단 — 6M 평활. 고빈도 성분이 본체인지 판별"
+    }
+  ],
+  "common_window": {
+    "months": 96,
+    "from": "2018-08-31",
+    "to": "2026-07-31",
+    "results": {
+      "R2_G1_mat_surprise": {
+        "metric_type": "canonical_screen",
+        "portfolio_alpha_t_nw_lag3": -1.1973,
+        "p": 0.2312,
+        "n_months": 95,
+        "information_ratio": -0.4083,
+        "net_sr": -0.4083,
+        "turnover_annual": 12.525,
+        "ew_universe_port_t": -0.7294,
+        "ew_post2017_t": -0.7294,
+        "cap_tier_weight_share": {
+          "MEGA": 0.04125,
+          "MID": 0.032917,
+          "OTHER": 0.925833,
+          "UNRANKED": 0
+        },
+        "cap_tier_contrib_annualized": {
+          "MEGA": 0.009675,
+          "MID": -0.004373,
+          "OTHER": 0.096336,
+          "UNRANKED": 0
+        }
+      },
+      "R2_G1c_matcred_surprise": {
+        "metric_type": "canonical_screen",
+        "portfolio_alpha_t_nw_lag3": -1.242,
+        "p": 0.2142,
+        "n_months": 95,
+        "information_ratio": -0.4462,
+        "net_sr": -0.4462,
+        "turnover_annual": 12.435,
+        "ew_universe_port_t": -1.0395,
+        "ew_post2017_t": -1.0395,
+        "cap_tier_weight_share": {
+          "MEGA": 0.032083,
+          "MID": 0.025417,
+          "OTHER": 0.9425,
+          "UNRANKED": 0
+        },
+        "cap_tier_contrib_annualized": {
+          "MEGA": 0.001691,
+          "MID": -0.000748,
+          "OTHER": 0.085234,
+          "UNRANKED": 0
+        }
+      },
+      "R2_G2_sue": {
+        "metric_type": "canonical_screen",
+        "portfolio_alpha_t_nw_lag3": -1.2103,
+        "p": 0.2262,
+        "n_months": 95,
+        "information_ratio": -0.4056,
+        "net_sr": -0.4056,
+        "turnover_annual": 16.155,
+        "ew_universe_port_t": -0.569,
+        "ew_post2017_t": -0.569,
+        "cap_tier_weight_share": {
+          "MEGA": 0.051667,
+          "MID": 0.040833,
+          "OTHER": 0.9075,
+          "UNRANKED": 0
+        },
+        "cap_tier_contrib_annualized": {
+          "MEGA": 0.01454,
+          "MID": -0.002033,
+          "OTHER": 0.100956,
+          "UNRANKED": 0
+        }
+      },
+      "R2_G3_mat_sue": {
+        "metric_type": "canonical_screen",
+        "portfolio_alpha_t_nw_lag3": -0.6196,
+        "p": 0.5356,
+        "n_months": 95,
+        "information_ratio": -0.2051,
+        "net_sr": -0.2051,
+        "turnover_annual": 13.905,
+        "ew_universe_port_t": 0.241,
+        "ew_post2017_t": 0.241,
+        "cap_tier_weight_share": {
+          "MEGA": 0.038333,
+          "MID": 0.03,
+          "OTHER": 0.931667,
+          "UNRANKED": 0
+        },
+        "cap_tier_contrib_annualized": {
+          "MEGA": 0.008185,
+          "MID": -0.003943,
+          "OTHER": 0.140506,
+          "UNRANKED": 0
+        }
+      },
+      "R2_G4_mat_sue_sm3": {
+        "metric_type": "canonical_screen",
+        "portfolio_alpha_t_nw_lag3": -0.6487,
+        "p": 0.5165,
+        "n_months": 95,
+        "information_ratio": -0.2407,
+        "net_sr": -0.2407,
+        "turnover_annual": 7.125,
+        "ew_universe_port_t": 0.0836,
+        "ew_post2017_t": 0.0836,
+        "cap_tier_weight_share": {
+          "MEGA": 0.045417,
+          "MID": 0.034583,
+          "OTHER": 0.92,
+          "UNRANKED": 0
+        },
+        "cap_tier_contrib_annualized": {
+          "MEGA": 0.012511,
+          "MID": -0.000594,
+          "OTHER": 0.116163,
+          "UNRANKED": 0
+        }
+      },
+      "R2_G5_mat_sue_sm6": {
+        "metric_type": "canonical_screen",
+        "portfolio_alpha_t_nw_lag3": 0.1374,
+        "p": 0.8907,
+        "n_months": 95,
+        "information_ratio": 0.0493,
+        "net_sr": 0.0493,
+        "turnover_annual": 5.085,
+        "ew_universe_port_t": 1.446,
+        "ew_post2017_t": 1.446,
+        "cap_tier_weight_share": {
+          "MEGA": 0.052083,
+          "MID": 0.035,
+          "OTHER": 0.912917,
+          "UNRANKED": 0
+        },
+        "cap_tier_contrib_annualized": {
+          "MEGA": 0.024088,
+          "MID": -0.005917,
+          "OTHER": 0.170256,
+          "UNRANKED": 0
+        }
+      },
+      "B0": {
+        "metric_type": "canonical_screen",
+        "portfolio_alpha_t_nw_lag3": -1.398,
+        "p": 0.1621,
+        "n_months": 95,
+        "information_ratio": -0.4518,
+        "net_sr": -0.4518,
+        "turnover_annual": 12.995,
+        "ew_universe_port_t": -0.8374,
+        "ew_post2017_t": -0.8374,
+        "cap_tier_weight_share": {
+          "MEGA": 0.056667,
+          "MID": 0.04625,
+          "OTHER": 0.897083,
+          "UNRANKED": 0
+        },
+        "cap_tier_contrib_annualized": {
+          "MEGA": 0.016867,
+          "MID": 0.004219,
+          "OTHER": 0.081168,
+          "UNRANKED": 0
+        }
+      }
+    }
+  },
+  "tier_lift_table": [
+    {
+      "variant": "B0_R1_F1",
+      "MEGA": 0.059469,
+      "MID": 0.051327,
+      "OTHER": 0.889204,
+      "UNRANKED": 0,
+      "lift_pool_MEGA": 1.384,
+      "lift_univ_MEGA": 2.097,
+      "lift_pool_MID": 1.066,
+      "lift_univ_MID": 0.904,
+      "lift_pool_OTHER": 0.978,
+      "lift_univ_OTHER": 0.972
+    },
+    {
+      "variant": "R2_G1_mat_surprise",
+      "MEGA": 0.044248,
+      "MID": 0.040354,
+      "OTHER": 0.915398,
+      "UNRANKED": 0,
+      "lift_pool_MEGA": 1.03,
+      "lift_univ_MEGA": 1.56,
+      "lift_pool_MID": 0.838,
+      "lift_univ_MID": 0.711,
+      "lift_pool_OTHER": 1.007,
+      "lift_univ_OTHER": 1.001
+    },
+    {
+      "variant": "R2_G1c_matcred_surprise",
+      "MEGA": 0.035752,
+      "MID": 0.03115,
+      "OTHER": 0.933097,
+      "UNRANKED": 0,
+      "lift_pool_MEGA": 0.832,
+      "lift_univ_MEGA": 1.261,
+      "lift_pool_MID": 0.647,
+      "lift_univ_MID": 0.549,
+      "lift_pool_OTHER": 1.027,
+      "lift_univ_OTHER": 1.02
+    },
+    {
+      "variant": "R2_G2_sue",
+      "MEGA": 0.050693,
+      "MID": 0.044356,
+      "OTHER": 0.90495,
+      "UNRANKED": 0,
+      "lift_pool_MEGA": 1.18,
+      "lift_univ_MEGA": 1.787,
+      "lift_pool_MID": 0.922,
+      "lift_univ_MID": 0.781,
+      "lift_pool_OTHER": 0.996,
+      "lift_univ_OTHER": 0.989
+    },
+    {
+      "variant": "R2_G3_mat_sue",
+      "MEGA": 0.039604,
+      "MID": 0.033267,
+      "OTHER": 0.927129,
+      "UNRANKED": 0,
+      "lift_pool_MEGA": 0.922,
+      "lift_univ_MEGA": 1.396,
+      "lift_pool_MID": 0.691,
+      "lift_univ_MID": 0.586,
+      "lift_pool_OTHER": 1.02,
+      "lift_univ_OTHER": 1.013
+    },
+    {
+      "variant": "R2_G4_mat_sue_sm3",
+      "MEGA": 0.046465,
+      "MID": 0.03596,
+      "OTHER": 0.917576,
+      "UNRANKED": 0,
+      "lift_pool_MEGA": 1.081,
+      "lift_univ_MEGA": 1.638,
+      "lift_pool_MID": 0.747,
+      "lift_univ_MID": 0.633,
+      "lift_pool_OTHER": 1.01,
+      "lift_univ_OTHER": 1.003
+    },
+    {
+      "variant": "R2_G5_mat_sue_sm6",
+      "MEGA": 0.052083,
+      "MID": 0.035,
+      "OTHER": 0.912917,
+      "UNRANKED": 0,
+      "lift_pool_MEGA": 1.212,
+      "lift_univ_MEGA": 1.836,
+      "lift_pool_MID": 0.727,
+      "lift_univ_MID": 0.616,
+      "lift_pool_OTHER": 1.004,
+      "lift_univ_OTHER": 0.998
     }
   ],
   "diagnostics": {
     "effective_cross_section": {
-      "metric_type": "diagnostic",
-      "n_firms_scored_avg": 182.8,
-      "n_distinct_scores_avg": 116.5,
-      "distinct_ratio": 0.6439,
-      "note": "distinct_ratio < 1 = 동일 HS4 버킷 종목이 구분 불가(동점). 'firm-level' 신호의 실제 해상도."
+      "B0_R1_F1": {
+        "metric_type": "diagnostic",
+        "n_firms_scored_avg": 182.8,
+        "n_distinct_scores_avg": 116.5,
+        "distinct_ratio": 0.6439
+      },
+      "R2_G1_mat_surprise": {
+        "metric_type": "diagnostic",
+        "n_firms_scored_avg": 180,
+        "n_distinct_scores_avg": 115.4,
+        "distinct_ratio": 0.6488
+      },
+      "R2_G5_mat_sue_sm6": {
+        "metric_type": "diagnostic",
+        "n_firms_scored_avg": 187.3,
+        "n_distinct_scores_avg": 118.9,
+        "distinct_ratio": 0.6399
+      },
+      "note": "distinct_ratio 1.0 = 모든 종목이 서로 다른 값(진짜 firm-level). R1 은 0.644 로 동일 HS4 버킷 동점이 36%."
     },
     "rank_ic": {
-      "metric_type": "advisory",
-      "rank_ic": -0.00336,
-      "icir": -0.028,
-      "ic_t_stat": -0.296,
-      "n_months": 112
+      "B0_R1_F1": {
+        "metric_type": "advisory",
+        "rank_ic": -0.00336,
+        "icir": -0.028,
+        "ic_t_stat": -0.296,
+        "n_months": 112
+      },
+      "R2_G1": {
+        "metric_type": "advisory",
+        "rank_ic": -0.00206,
+        "icir": -0.0175,
+        "ic_t_stat": -0.185,
+        "n_months": 112
+      },
+      "R2_G4": {
+        "metric_type": "advisory",
+        "rank_ic": 0.00573,
+        "icir": 0.0437,
+        "ic_t_stat": 0.432,
+        "n_months": 98
+      },
+      "R2_G5": {
+        "metric_type": "advisory",
+        "rank_ic": 0.01714,
+        "icir": 0.1275,
+        "ic_t_stat": 1.242,
+        "n_months": 95
+      }
     },
-    "F5_large_cap_restricted": {
-      "metric_type": "canonical_screen",
-      "universe": "cap_rank<=100 within K200uKQ150",
-      "portfolio_alpha_t_nw_lag3": -0.3279,
-      "p": 0.743,
-      "n_months": 112,
-      "information_ratio": -0.1096,
-      "turnover_annual": 7.846,
-      "n_scored_avg": 49.5,
-      "ew_universe_port_t": 0.2409
-    },
-    "dynamic_lag1_stress": {
-      "metric_type": "canonical_screen",
-      "base_port_t": -1.7078,
-      "lag1_port_t": -1.7053,
-      "n_months": 111,
-      "interpretation": "base 와 lag1 의 격차가 크면 동월 누출 의심. 본 라운드 base 가 음수라 누출 인플레 여지 없음 — 확인 목적."
-    },
-    "dynamic_strict_pit_ab": {
-      "metric_type": "canonical_screen",
-      "base_port_t": -1.7078,
-      "strict_port_t": -1.7053,
-      "inflation_base_minus_strict": -0.0024,
-      "verdict": "NO_INFLATION",
-      "note": "strict lane = 데이터월 한 달 추가 지연. 인플레(base-strict)가 크면 타이밍 경계 누출."
-    },
-    "dynamic_vintage_swap": {
-      "n_snapshots": 2,
-      "snapshots": [
-        "customs_hs_20260726.parquet",
-        "customs_hs_20260801.parquet"
-      ],
-      "n_cells": 289792,
-      "changed_share": 0,
-      "max_ym_a": "2026-06",
-      "max_ym_b": "2026-06",
-      "verdict": "NO_REVISION_OBSERVED_IN_WINDOW — 두 스냅샷(6일 간격, 개정일 15일 미포함) 사이 개정 0. 개정폭 미측정(무증거≠무개정)."
-    },
-    "gross_vs_net": {
-      "metric_type": "canonical_screen",
-      "net_15bps_port_t": -1.7078,
-      "gross_0bps_port_t": -1.3592,
-      "turnover_annual": 12.884,
-      "cost_drag_annual": 0.0193,
-      "verdict": "SIGNAL_NEGATIVE_GROSS — 비용 제거해도 음수. 비용 탓 아님."
+    "dynamic_pit": {
+      "R2_G1": {
+        "metric_type": "canonical_screen",
+        "base_port_t": -1.2005,
+        "lag1_strict_port_t": -0.9647,
+        "inflation_base_minus_strict": -0.2358,
+        "n_months_base": 112,
+        "n_months_lag1": 111,
+        "verdict": "NO_INFLATION"
+      },
+      "R2_G4": {
+        "metric_type": "canonical_screen",
+        "base_port_t": -0.7666,
+        "lag1_strict_port_t": 0.4431,
+        "inflation_base_minus_strict": -1.2097,
+        "n_months_base": 98,
+        "n_months_lag1": 97,
+        "verdict": "NO_INFLATION"
+      },
+      "R2_G5": {
+        "metric_type": "canonical_screen",
+        "base_port_t": 0.1374,
+        "lag1_strict_port_t": -0.0479,
+        "inflation_base_minus_strict": 0.1852,
+        "n_months_base": 95,
+        "n_months_lag1": 94,
+        "verdict": "NO_INFLATION"
+      },
+      "note": "lag1 = 신호를 추가 1개월 지연(strict lane). 본 라운드 후보는 부호가 0 근방이라 누출 인플레 여지는 애초 작다 — 확인 목적."
     },
     "subperiod_port_t": {
-      "2016-01-01_2019-12-31": -1.71,
-      "2020-01-01_2022-12-31": 1.531,
-      "2023-01-01_2026-12-31": -2.586
+      "R2_G1": {
+        "2016-01-01_2019-12-31": -1.292,
+        "2020-01-01_2022-12-31": 1.586,
+        "2023-01-01_2026-12-31": -1.672
+      },
+      "R2_G5": {
+        "2016-01-01_2019-12-31": 1.738,
+        "2020-01-01_2022-12-31": 2.536,
+        "2023-01-01_2026-12-31": -1.373
+      }
+    },
+    "falsification": {
+      "B0_R1_F1": {
+        "H63d": {
+          "horizon_days": 63,
+          "q5_minus_q1_logrev": 0.01494,
+          "t_stat": 1.969,
+          "n_months": 113,
+          "q5_mean": 0.01784,
+          "q1_mean": 0.0029,
+          "n_obs": 18413,
+          "metric_type": "diagnostic_falsification"
+        },
+        "H126d": {
+          "horizon_days": 126,
+          "q5_minus_q1_logrev": 0.0129,
+          "t_stat": 1.352,
+          "n_months": 113,
+          "q5_mean": 0.02291,
+          "q1_mean": 0.01001,
+          "n_obs": 18183,
+          "metric_type": "diagnostic_falsification"
+        }
+      },
+      "R2_G1_mat_surprise": {
+        "H63d": {
+          "horizon_days": 63,
+          "q5_minus_q1_logrev": 0.00604,
+          "t_stat": 0.744,
+          "n_months": 113,
+          "q5_mean": 0.01398,
+          "q1_mean": 0.00794,
+          "n_obs": 18093,
+          "metric_type": "diagnostic_falsification"
+        },
+        "H126d": {
+          "horizon_days": 126,
+          "q5_minus_q1_logrev": 0.0046,
+          "t_stat": 0.535,
+          "n_months": 113,
+          "q5_mean": 0.02401,
+          "q1_mean": 0.01941,
+          "n_obs": 17863,
+          "metric_type": "diagnostic_falsification"
+        }
+      },
+      "R2_G5_mat_sue_sm6": {
+        "H63d": {
+          "horizon_days": 63,
+          "q5_minus_q1_logrev": 0.00479,
+          "t_stat": 0.541,
+          "n_months": 96,
+          "q5_mean": 0.01895,
+          "q1_mean": 0.01416,
+          "n_obs": 15877,
+          "metric_type": "diagnostic_falsification"
+        },
+        "H126d": {
+          "horizon_days": 126,
+          "q5_minus_q1_logrev": -0.00433,
+          "t_stat": -0.387,
+          "n_months": 96,
+          "q5_mean": 0.01593,
+          "q1_mean": 0.02026,
+          "n_obs": 15664,
+          "metric_type": "diagnostic_falsification"
+        }
+      },
+      "verdict": "MECHANISM_NOT_SUPPORTED — 사전등록 문턱(t>=2) 미달. materiality 가중으로도 링크1이 유의 수준에 이르지 못한다."
+    },
+    "materiality_profile": {
+      "metric_type": "diagnostic",
+      "n_rows": 22019,
+      "n_months": 124,
+      "spearman_vs_neg_cap_rank": {
+        "M_raw": -0.21,
+        "M_clip": -0.1942,
+        "M_cred": 0.0193
+      },
+      "by_tier": {
+        "MEGA": {
+          "n": 935,
+          "M_raw_mean": 0.493,
+          "M_clip_mean": 0.45,
+          "M_cred_mean": 0.418,
+          "share_M_gt_1": 0.114
+        },
+        "MID": {
+          "n": 1127,
+          "M_raw_mean": 0.581,
+          "M_clip_mean": 0.406,
+          "M_cred_mean": 0.347,
+          "share_M_gt_1": 0.094
+        },
+        "OTHER": {
+          "n": 19957,
+          "M_raw_mean": 1.665,
+          "M_clip_mean": 0.537,
+          "M_cred_mean": 0.318,
+          "share_M_gt_1": 0.328
+        }
+      },
+      "interpretation": "M_raw 는 소형주에서 오히려 크다(단일 소형사가 거대 HS4 버킷에 매핑되면 분모가 작아 폭발) = 귀속 실패의 지문. CLIP(0,1) 로 경제적 상한을 걸어도 시총과의 관계는 여전히 약한 음(-)이며, credibility 보정(min(R,1/R))에서만 시총 중립이 된다. 어느 정규화도 신호를 대형 tier 로 이동시키지 않는다 — 대형주 편입은 정규화가 만들 수 있는 것이 아니었다."
     }
   },
-  "falsification": {
-    "falsification_declared": "수출 서프라이즈 상위 종목의 후속 컨센서스 영업이익(op_profit_fy1) 추정치가 상향되지 않으면 기전 기각",
-    "field_dictionary_ref": "C-CONSENSUS-QW (ast_field_map_v0.json / fundamentals)",
-    "results": {
-      "H63d": {
-        "horizon_days": 63,
-        "q5_minus_q1_logrev": 0.01494,
-        "t_stat": 1.969,
-        "n_months": 113,
-        "q5_mean": 0.01784,
-        "q1_mean": 0.0029,
-        "n_obs": 18413,
-        "metric_type": "diagnostic_falsification"
+  "adversarial": {
+    "C2_tier_score_coverage": {
+      "metric_type": "diagnostic",
+      "by_tier": {
+        "MEGA": [
+          {
+            "tier": "MEGA",
+            "n_univ": 1398,
+            "n_scored": 874,
+            "cover": 0.6252,
+            "avg_scored_per_month": 7.73
+          }
+        ],
+        "MID": [
+          {
+            "tier": "MID",
+            "n_univ": 2796,
+            "n_scored": 979,
+            "cover": 0.3501,
+            "avg_scored_per_month": 8.66
+          }
+        ],
+        "OTHER": [
+          {
+            "tier": "OTHER",
+            "n_univ": 45161,
+            "n_scored": 18487,
+            "cover": 0.4094,
+            "avg_scored_per_month": 163.6
+          }
+        ]
       },
-      "H126d": {
-        "horizon_days": 126,
-        "q5_minus_q1_logrev": 0.0129,
-        "t_stat": 1.352,
-        "n_months": 113,
-        "q5_mean": 0.02291,
-        "q1_mean": 0.01001,
-        "n_obs": 18183,
-        "metric_type": "diagnostic_falsification"
-      }
+      "verdict": "REBUTTED — MEGA 커버리지 0.6252 (월평균 7.73/10 종목이 스코어 보유) 로 OTHER(0.4094) 보다 오히려 높다. top-25 슬롯 대비 대형주 후보가 부족해서 선택되지 않은 것이 아니다 — 선택 가능한데 선택되지 않았다."
     },
-    "verdict": "MECHANISM_NOT_SUPPORTED — 선언한 부수 관측(컨센 상향)이 유의하지 않다. 가격 이전 단계에서 기전이 끊긴다 = 반증 조건 충족."
+    "C1_bucket_tie_structure": {
+      "metric_type": "diagnostic",
+      "n_firms_single_hs4": 180,
+      "n_firms_multi_hs4": 135,
+      "n_buckets": 92,
+      "n_buckets_single_firm": 42,
+      "median_firms_per_bucket": 2,
+      "max_firms_per_bucket": 27,
+      "n_firms_in_shared_buckets": 273,
+      "verdict": "ACCEPT — M_i = Σ_h w_ih·R_h 에서 R_h 는 버킷 수준이고 Rev_i 는 소거된다. 따라서 단일-HS4 매핑 기업(180/315)끼리는 같은 버킷 안에서 여전히 동점이다. 실측: distinct_ratio 0.6439 -> 0.6488 (거의 무변화). '5% vs 80% 노출' 구분은 **버킷 간**으로만 실현됐고 **버킷 내**에서는 실현되지 않았다."
+    },
+    "C4_large_cap_restricted": {
+      "R2_G1_mat_surprise": {
+        "metric_type": "canonical_screen",
+        "universe": "cap_rank<=100 within K200uKQ150",
+        "portfolio_alpha_t_nw_lag3": -0.7791,
+        "p": 0.4359,
+        "n_months": 112,
+        "turnover_annual": 8.194,
+        "ew_universe_port_t": -0.6814,
+        "n_scored_avg": 47.6
+      },
+      "R2_G5_mat_sue_sm6": {
+        "metric_type": "canonical_screen",
+        "universe": "cap_rank<=100 within K200uKQ150",
+        "portfolio_alpha_t_nw_lag3": -0.2436,
+        "p": 0.8075,
+        "n_months": 95,
+        "turnover_annual": 3.495,
+        "ew_universe_port_t": 0.7635,
+        "n_scored_avg": 48.5
+      },
+      "verdict": "대형 tier 안으로 유니버스를 제한해도 알파는 없다(0 근방). R1 F5(-0.33)와 동일 결론."
+    }
   },
   "panel_provenance": {
-    "panel": "fq073_export_exposure_chapter.parquet",
-    "generated_at": "2026-08-02 02:23:09",
-    "generator_code_path": "stage_artifacts/WT_D20260802_001/build_export_panel.py",
-    "rows": 43100,
-    "n_firms": 315,
-    "n_months": 138,
-    "date_min": "2015-01-31",
-    "date_max": "2026-06-30",
-    "gate": "consume_ok_chapter",
-    "value_semantics": "firm-month 수출노출 USD = Σ_h normalized_weight(i,h) x HS4 월수출액. raw level — YoY/서프라이즈/표준화는 AST가 수행.",
-    "avail_rule": "avail_ts = data_ym(M) + 1개월의 15일 (PIT_plan_fq073 §1-c 1차 현행화)",
-    "sources": {
-      "customs_hs_monthly.parquet": {
-        "sha1": "c0e181fa54b5a7edeab432d3d13da6871f27de70",
-        "vintage_basis": "revised_asof_pull",
-        "caveat": "API에 vintage 파라미터 없음 — first-release 소급 복원 불가. 개정이 무기한 반복되므로 역사 구간은 개정판 기반(원천 성질)."
+    "export_exposure": {
+      "panel": "fq073_export_exposure_chapter.parquet",
+      "generated_at": "2026-08-02 02:23:09",
+      "generator_code_path": "stage_artifacts/WT_D20260802_001/build_export_panel.py",
+      "rows": 43100,
+      "n_firms": 315,
+      "n_months": 138,
+      "date_min": "2015-01-31",
+      "date_max": "2026-06-30",
+      "gate": "consume_ok_chapter",
+      "value_semantics": "firm-month 수출노출 USD = Σ_h normalized_weight(i,h) x HS4 월수출액. raw level — YoY/서프라이즈/표준화는 AST가 수행.",
+      "avail_rule": "avail_ts = data_ym(M) + 1개월의 15일 (PIT_plan_fq073 §1-c 1차 현행화)",
+      "sources": {
+        "customs_hs_monthly.parquet": {
+          "sha1": "c0e181fa54b5a7edeab432d3d13da6871f27de70",
+          "vintage_basis": "revised_asof_pull",
+          "caveat": "API에 vintage 파라미터 없음 — first-release 소급 복원 불가. 개정이 무기한 반복되므로 역사 구간은 개정판 기반(원천 성질)."
+        },
+        "firm_hs_crosswalk.parquet": {
+          "sha1": "c6d7c8b6cdb1bab575837a61f953df0e1599d4e6",
+          "map_vintage_mode": "static_current",
+          "caveat": "2024-04~2025-11 사업보고서 1 vintage를 전 역사에 귀속 = C1/C3 사업구성 look-ahead. gate_eligible=False (원 크로스워크 자체 라벨)."
+        }
       },
-      "firm_hs_crosswalk.parquet": {
-        "sha1": "c6d7c8b6cdb1bab575837a61f953df0e1599d4e6",
-        "map_vintage_mode": "static_current",
-        "caveat": "2024-04~2025-11 사업보고서 1 vintage를 전 역사에 귀속 = C1/C3 사업구성 look-ahead. gate_eligible=False (원 크로스워크 자체 라벨)."
-      }
+      "known_pit_exposures": [
+        "C1_C3_static_business_mix",
+        "C6_survivorship_current_listed_pool",
+        "customs_revised_vintage"
+      ],
+      "store_build_hash": "21b45aae617b8c473db2fd20598aec4a89bbd3e9"
     },
-    "known_pit_exposures": [
-      "C1_C3_static_business_mix",
-      "C6_survivorship_current_listed_pool",
-      "customs_revised_vintage"
-    ],
-    "store_build_hash": "21b45aae617b8c473db2fd20598aec4a89bbd3e9"
+    "materiality": {
+      "panel": "fq073_export_materiality.parquet",
+      "generated_at": "2026-08-02 03:53:16",
+      "generator_code_path": "stage_artifacts/WT_D20260802_001/build_materiality_panel.py",
+      "rows": 37847,
+      "n_firms": 314,
+      "n_months": 124,
+      "date_min": "2016-03-31",
+      "date_max": "2026-06-30",
+      "value_semantics": "M_i = Σ_h w_ih x [Flow_h(TTM,USD) x FX / Σ_j (Rev_j x w_jh)] = 추정 수출 의존도(매출 대비 수출노출 비중). scale-free 분수 — Rev_i 소거로 시총 단조 아님. 상한 1 부과는 AST CLIP 담당.",
+      "avail_rule": "avail_ts = data_ym(M) + 1개월의 15일 (R1 export 패널과 동일)",
+      "revenue_pit": "fundamental_dart.Revenue, Factor_Date <= 데이터월 말 (Factor_Date=익년 3/31, C4)",
+      "distribution": {
+        "M_median_overall": 0.55965148,
+        "M_p10": 0.09253621,
+        "M_p90": 4.41014722,
+        "share_gt_1": 0.39974106,
+        "share_lt_0p05": 0.04021455
+      },
+      "monthly_diag_head": [
+        {
+          "ym": "2016-03",
+          "n_firms": 295,
+          "n_rev_firms": 178,
+          "M_med": 0.44629961,
+          "M_p90": 7.36516931,
+          "share_gt1": 0.41355932
+        },
+        {
+          "ym": "2016-04",
+          "n_firms": 295,
+          "n_rev_firms": 178,
+          "M_med": 0.44402889,
+          "M_p90": 7.2845414,
+          "share_gt1": 0.41355932
+        },
+        {
+          "ym": "2016-05",
+          "n_firms": 295,
+          "n_rev_firms": 178,
+          "M_med": 0.44894914,
+          "M_p90": 7.33923245,
+          "share_gt1": 0.41355932
+        }
+      ],
+      "monthly_diag_tail": [
+        {
+          "ym": "2026-04",
+          "n_firms": 314,
+          "n_rev_firms": 297,
+          "M_med": 0.60468166,
+          "M_p90": 3.56838992,
+          "share_gt1": 0.34394904
+        },
+        {
+          "ym": "2026-05",
+          "n_firms": 314,
+          "n_rev_firms": 297,
+          "M_med": 0.61924054,
+          "M_p90": 3.60947263,
+          "share_gt1": 0.34394904
+        },
+        {
+          "ym": "2026-06",
+          "n_firms": 314,
+          "n_rev_firms": 297,
+          "M_med": 0.64423114,
+          "M_p90": 3.77075295,
+          "share_gt1": 0.34394904
+        }
+      ],
+      "sources": {
+        "customs_hs_monthly.parquet": {
+          "sha1": "c0e181fa54b5a7edeab432d3d13da6871f27de70",
+          "vintage_basis": "revised_asof_pull"
+        },
+        "firm_hs_crosswalk.parquet": {
+          "sha1": "c6d7c8b6cdb1bab575837a61f953df0e1599d4e6",
+          "map_vintage_mode": "static_current"
+        },
+        "fundamental_dart.parquet": {
+          "sha1": "76ef8c286401ad57235c6b7a4133d5d2f3b82924",
+          "pit": "Factor_Date=익년 3/31"
+        },
+        "ecos_krw_usd.parquet": {
+          "sha1": "ae98ce7bc2717df294ea5ea43715921437933baf"
+        }
+      },
+      "known_pit_exposures": [
+        "C1_C3_static_business_mix",
+        "C6_survivorship_current_listed_pool",
+        "customs_revised_vintage"
+      ],
+      "store_build_hash": "39be5d69d39c7d19b1073ed62d664bb60978148a"
+    }
   },
   "ast_verify_verdicts": {
-    "F1_honest": "FAIL_CONTRACT",
-    "F1_counterfactual_parity_true": "PASS",
-    "F2": "FAIL_CONTRACT",
-    "F3": "FAIL_CONTRACT",
-    "F4": "FAIL_CONTRACT",
-    "note": "전 FAIL_CONTRACT 사유는 동일 — STORED_SCORE production_parity_verified. ALB-002."
+    "R2_G1_mat_surprise": "WARN_RESTATEMENT",
+    "R2_G1c_matcred_surprise": "WARN_RESTATEMENT",
+    "R2_G2_sue": "WARN_RESTATEMENT",
+    "R2_G3_mat_sue": "WARN_RESTATEMENT",
+    "R2_G4_mat_sue_sm3": "WARN_RESTATEMENT",
+    "R2_G5_mat_sue_sm6": "WARN_RESTATEMENT",
+    "violations": 0,
+    "contract_failures": 0,
+    "note": "R1 의 FAIL_CONTRACT 5건(production_parity_verified) 전량 해소 — ALB-002 수리 반영. leaf_count 5~9 로 실검증(R1 F1 은 0)."
   },
   "graduation_hard_gates": {
     "portfolio_alpha_t_nw": {
       "required": 2.95,
-      "observed_canonical": -1.7078,
+      "observed_canonical_primary": -1.2005,
+      "observed_canonical_best_variant": 0.1374,
       "status": "FAIL",
-      "note": "forge-authoritative 아님 — canonical screen 실측"
+      "note": "forge-authoritative 아님 — canonical screen 실측. 승격 후보 제출 없음."
     },
     "oos_retention": {
       "required": 0.7,
       "observed": null,
       "status": "NOT_COMPUTED",
-      "note": "PORT_t 음수로 forge 승격 미도달 — 산출 무의미"
+      "note": "PORT_t 가 0 근방이라 forge 승격 미도달 — 산출 무의미"
     },
     "calmar": {
       "required": 0.64,
       "observed": null,
       "status": "NOT_COMPUTED"
     }
+  },
+  "production_constraints": {
+    "turnover_annual_limit": 11,
+    "primary_G1": 12.5182,
+    "G4_sm3": 7.1224,
+    "G5_sm6": 5.085,
+    "verdict": "P2 충족 — 평활 3M/6M 변형이 제약 이내(712%/508%). R1(1288%)은 초과였다."
   }
 }

@@ -1,0 +1,197 @@
+{
+  "task_id": "WT-D20260802_001",
+  "generated_at": "2026-08-02 02:46:15",
+  "metric_type": "canonical_screen",
+  "lane": "LANE_UPPER_BOUND",
+  "gate_eligible": false,
+  "factors": [
+    {
+      "name": "F1_export_surprise",
+      "canonical_port_t_nw_lag3": -1.7078,
+      "ew_universe_port_t": -1.6048,
+      "turnover_annual": 12.884,
+      "n_months": 112,
+      "selected": true,
+      "mechanism_note": "PRIMARY — 레벨은 이미 가격 반영이라는 메커니즘의 직접 표현(서프라이즈)"
+    },
+    {
+      "name": "F2_export_yoy_level",
+      "canonical_port_t_nw_lag3": -1.2236,
+      "ew_universe_port_t": -0.8072,
+      "turnover_annual": 11.593,
+      "n_months": 124,
+      "selected": false,
+      "mechanism_note": "대조군: 서프라이즈가 성장 레벨보다 나은가"
+    },
+    {
+      "name": "F3_export_accel",
+      "canonical_port_t_nw_lag3": -1.1291,
+      "ew_universe_port_t": -0.7982,
+      "turnover_annual": 15.561,
+      "n_months": 121,
+      "selected": false,
+      "mechanism_note": "대조군: 3M 가속이 별도 정보인가"
+    },
+    {
+      "name": "F4_export_surprise_secneutral",
+      "canonical_port_t_nw_lag3": -1.2141,
+      "ew_universe_port_t": -0.9792,
+      "turnover_annual": 13.019,
+      "n_months": 112,
+      "selected": false,
+      "mechanism_note": "대조군: FQ-066/067 sector-rotation negative 대비 firm-level 증분 분리"
+    }
+  ],
+  "diagnostics": {
+    "effective_cross_section": {
+      "metric_type": "diagnostic",
+      "n_firms_scored_avg": 182.8,
+      "n_distinct_scores_avg": 116.5,
+      "distinct_ratio": 0.6439,
+      "note": "distinct_ratio < 1 = 동일 HS4 버킷 종목이 구분 불가(동점). 'firm-level' 신호의 실제 해상도."
+    },
+    "rank_ic": {
+      "metric_type": "advisory",
+      "rank_ic": -0.00336,
+      "icir": -0.028,
+      "ic_t_stat": -0.296,
+      "n_months": 112
+    },
+    "F5_large_cap_restricted": {
+      "metric_type": "canonical_screen",
+      "universe": "cap_rank<=100 within K200uKQ150",
+      "portfolio_alpha_t_nw_lag3": -0.3279,
+      "p": 0.743,
+      "n_months": 112,
+      "information_ratio": -0.1096,
+      "turnover_annual": 7.846,
+      "n_scored_avg": 49.5,
+      "ew_universe_port_t": 0.2409
+    },
+    "dynamic_lag1_stress": {
+      "metric_type": "canonical_screen",
+      "base_port_t": -1.7078,
+      "lag1_port_t": -1.7053,
+      "n_months": 111,
+      "interpretation": "base 와 lag1 의 격차가 크면 동월 누출 의심. 본 라운드 base 가 음수라 누출 인플레 여지 없음 — 확인 목적."
+    },
+    "dynamic_strict_pit_ab": {
+      "metric_type": "canonical_screen",
+      "base_port_t": -1.7078,
+      "strict_port_t": -1.7053,
+      "inflation_base_minus_strict": -0.0024,
+      "verdict": "NO_INFLATION",
+      "note": "strict lane = 데이터월 한 달 추가 지연. 인플레(base-strict)가 크면 타이밍 경계 누출."
+    },
+    "dynamic_vintage_swap": {
+      "n_snapshots": 2,
+      "snapshots": [
+        "customs_hs_20260726.parquet",
+        "customs_hs_20260801.parquet"
+      ],
+      "n_cells": 289792,
+      "changed_share": 0,
+      "max_ym_a": "2026-06",
+      "max_ym_b": "2026-06",
+      "verdict": "NO_REVISION_OBSERVED_IN_WINDOW — 두 스냅샷(6일 간격, 개정일 15일 미포함) 사이 개정 0. 개정폭 미측정(무증거≠무개정)."
+    },
+    "gross_vs_net": {
+      "metric_type": "canonical_screen",
+      "net_15bps_port_t": -1.7078,
+      "gross_0bps_port_t": -1.3592,
+      "turnover_annual": 12.884,
+      "cost_drag_annual": 0.0193,
+      "verdict": "SIGNAL_NEGATIVE_GROSS — 비용 제거해도 음수. 비용 탓 아님."
+    },
+    "subperiod_port_t": {
+      "2016-01-01_2019-12-31": -1.71,
+      "2020-01-01_2022-12-31": 1.531,
+      "2023-01-01_2026-12-31": -2.586
+    }
+  },
+  "falsification": {
+    "falsification_declared": "수출 서프라이즈 상위 종목의 후속 컨센서스 영업이익(op_profit_fy1) 추정치가 상향되지 않으면 기전 기각",
+    "field_dictionary_ref": "C-CONSENSUS-QW (ast_field_map_v0.json / fundamentals)",
+    "results": {
+      "H63d": {
+        "horizon_days": 63,
+        "q5_minus_q1_logrev": 0.01494,
+        "t_stat": 1.969,
+        "n_months": 113,
+        "q5_mean": 0.01784,
+        "q1_mean": 0.0029,
+        "n_obs": 18413,
+        "metric_type": "diagnostic_falsification"
+      },
+      "H126d": {
+        "horizon_days": 126,
+        "q5_minus_q1_logrev": 0.0129,
+        "t_stat": 1.352,
+        "n_months": 113,
+        "q5_mean": 0.02291,
+        "q1_mean": 0.01001,
+        "n_obs": 18183,
+        "metric_type": "diagnostic_falsification"
+      }
+    },
+    "verdict": "MECHANISM_NOT_SUPPORTED — 선언한 부수 관측(컨센 상향)이 유의하지 않다. 가격 이전 단계에서 기전이 끊긴다 = 반증 조건 충족."
+  },
+  "panel_provenance": {
+    "panel": "fq073_export_exposure_chapter.parquet",
+    "generated_at": "2026-08-02 02:23:09",
+    "generator_code_path": "stage_artifacts/WT_D20260802_001/build_export_panel.py",
+    "rows": 43100,
+    "n_firms": 315,
+    "n_months": 138,
+    "date_min": "2015-01-31",
+    "date_max": "2026-06-30",
+    "gate": "consume_ok_chapter",
+    "value_semantics": "firm-month 수출노출 USD = Σ_h normalized_weight(i,h) x HS4 월수출액. raw level — YoY/서프라이즈/표준화는 AST가 수행.",
+    "avail_rule": "avail_ts = data_ym(M) + 1개월의 15일 (PIT_plan_fq073 §1-c 1차 현행화)",
+    "sources": {
+      "customs_hs_monthly.parquet": {
+        "sha1": "c0e181fa54b5a7edeab432d3d13da6871f27de70",
+        "vintage_basis": "revised_asof_pull",
+        "caveat": "API에 vintage 파라미터 없음 — first-release 소급 복원 불가. 개정이 무기한 반복되므로 역사 구간은 개정판 기반(원천 성질)."
+      },
+      "firm_hs_crosswalk.parquet": {
+        "sha1": "c6d7c8b6cdb1bab575837a61f953df0e1599d4e6",
+        "map_vintage_mode": "static_current",
+        "caveat": "2024-04~2025-11 사업보고서 1 vintage를 전 역사에 귀속 = C1/C3 사업구성 look-ahead. gate_eligible=False (원 크로스워크 자체 라벨)."
+      }
+    },
+    "known_pit_exposures": [
+      "C1_C3_static_business_mix",
+      "C6_survivorship_current_listed_pool",
+      "customs_revised_vintage"
+    ],
+    "store_build_hash": "21b45aae617b8c473db2fd20598aec4a89bbd3e9"
+  },
+  "ast_verify_verdicts": {
+    "F1_honest": "FAIL_CONTRACT",
+    "F1_counterfactual_parity_true": "PASS",
+    "F2": "FAIL_CONTRACT",
+    "F3": "FAIL_CONTRACT",
+    "F4": "FAIL_CONTRACT",
+    "note": "전 FAIL_CONTRACT 사유는 동일 — STORED_SCORE production_parity_verified. ALB-002."
+  },
+  "graduation_hard_gates": {
+    "portfolio_alpha_t_nw": {
+      "required": 2.95,
+      "observed_canonical": -1.7078,
+      "status": "FAIL",
+      "note": "forge-authoritative 아님 — canonical screen 실측"
+    },
+    "oos_retention": {
+      "required": 0.7,
+      "observed": null,
+      "status": "NOT_COMPUTED",
+      "note": "PORT_t 음수로 forge 승격 미도달 — 산출 무의미"
+    },
+    "calmar": {
+      "required": 0.64,
+      "observed": null,
+      "status": "NOT_COMPUTED"
+    }
+  }
+}

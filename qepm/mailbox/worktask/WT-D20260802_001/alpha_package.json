@@ -1,16 +1,17 @@
 {
   "task_id": "WT-D20260802_001",
+  "round": "R2",
   "as_of_date": "2026-08-02",
   "forecast_horizon": "1M",
   "spec_version": "ast_v1.1",
   "hypothesis": {
-    "statement": "관세청 HS 월별 수출을 DART 사업부문 제품믹스로 종목에 귀속한 '수출 nowcast 서프라이즈'는 분기 재무제표(45일+ 지연)보다 선행하는 firm-level 펀더멘털 flow이며, 특히 KOSPI200 대형 제조·반도체·화학 종목에 직접 귀속되므로 return-derived 후보들이 소멸한 cap-tier x cap-w 전이 벽을 넘을 수 있다.",
+    "statement": "R1 은 HS4 산업 수출 성장을 그 버킷에 매핑된 모든 기업에 균등 배분했다. 그 결과 신호 강도가 기업의 경제적 노출이 아니라 버킷의 변동성에 지배됐다는 것이 R1 진단이다. 따라서 각 기업의 HS4 노출을 **경제적 크기(수출 의존도)**로 재척도하면 ① 선택이 고변동 니치 버킷에서 실질 수출기업으로 이동하고 ② 그 이동이 cap-tier 분포에 나타난다 — 이것이 R1 의 소형주 국소화가 크로스워크 아티팩트인지 수출 신호 자체의 성질인지를 가른다.",
     "mechanism": {
-      "agent": "국내외 sell-side 애널리스트 및 기관 트레이더 — KR 대형 제조사 커버리지에서 분기 실적 공시(45일+ 지연)를 실적 갱신의 주된 앵커로 삼는 참여자군. 월별 통관 수출은 그보다 빠르나 HS코드-기업 귀속표가 공개 존재하지 않아 대부분 소비하지 않는다.",
-      "friction": "① 귀속 비용 — HS 10자리 14,153개를 사업보고서 제품 텍스트와 매핑해야 하며 이 작업의 시장가격이 TRASS/Aicel 유료 벤더의 존재로 실증된다. ② KR 공매도 제약 — 수출 부진의 negative 정보는 가격에 반영되기 어려워 long 쪽으로 비대칭. ③ 월간 이산 공표 — 연속 재평가 대상이 아니라 갱신 시점에 정보가 몰린다.",
-      "path": "데이터월 M 수출 서프라이즈 → M+1월 15일 1차 현행화 공표 → M+1 거래월말 스코어 배치 → 홀딩월 M+2 동안 후속 컨센서스 영업이익 상향 및 분기 실적 발표를 통해 가격 반영"
+      "agent": "국내외 sell-side 애널리스트 및 기관 트레이더 — KR 제조사 커버리지에서 분기 실적 공시(45일+ 지연)를 실적 갱신의 주된 앵커로 삼는 참여자군. 월별 통관 수출은 그보다 빠르나 HS코드-기업 귀속표가 공개 존재하지 않아 대부분 소비하지 않는다.",
+      "friction": "① 귀속 비용 — HS 10자리 14,153개를 사업보고서 제품 텍스트와 매핑해야 하며 그 시장가격이 TRASS/Aicel 유료 벤더의 존재로 실증된다. ② KR 공매도 제약으로 수출 부진의 negative 정보는 가격 반영이 비대칭. ③ 월간 이산 공표 — 정보가 갱신 시점에 몰린다. R2 추가: ④ 노출 크기 추정 비용 — 산업 수출을 개별 기업 매출로 환산하려면 부문 매출·수출 의존도가 필요하고 이는 표준 필드가 아니라 서술문에 흩어져 있다.",
+      "path": "데이터월 M 수출 서프라이즈 x 기업 수출의존도 → M+1월 15일 1차 현행화 공표 → M+1 거래월말 스코어 배치 → 홀딩월 M+2 동안 컨센서스 영업이익 상향과 실적 발표로 가격 반영. 의존도 가중은 pass-through 크기(ΔRevenue/Revenue ≈ 수출의존도 x 수출성장)를 직접 표현한다."
     },
-    "falsification": "수출 서프라이즈 상위 5분위 종목의 후속 3M 컨센서스 영업이익 추정치(op_profit_fy1, field_dictionary C-CONSENSUS-QW)가 하위 5분위 대비 유의하게(t>=2) 상향되지 않으면 '수출→실적기대' 경로가 끊어진 것이므로 기전 기각. (가격·성과를 참조하지 않는 부수 관측)",
+    "falsification": "materiality 가중 상위 5분위 종목의 후속 3M 컨센서스 영업이익(op_profit_fy1, field_dictionary C-CONSENSUS-QW)이 하위 5분위 대비 유의(t>=2) 상향되지 않으면 기전 기각. R2 강화 조건: materiality 가 실제 경제적 노출을 잡는다면 이 링크는 R1 무가중(t=1.969) 대비 **강해져야** 한다. 약해지면 materiality 구성 자체가 반증된다.",
     "regime_scope": {
       "holds_in": [
         "neutral",
@@ -20,12 +21,12 @@
         "crisis",
         "krw_shock"
       ],
-      "boundary_rationale": "수출액은 USD 표시다. 급격한 환율 국면에서는 USD 수출 증가가 KRW 실적 증가와 괴리되어 신호-실적 연결이 끊긴다. 또한 위기 국면은 유동성 청산이 펀더멘털 정보를 압도한다. 경계는 '통관 통계의 표시통화'라는 메커니즘 속성에서 도출된 것이지 사후 성과 관찰이 아니다."
+      "boundary_rationale": "수출액은 USD 표시다. 급격한 환율 국면에서는 USD 수출 증가가 KRW 실적 증가와 괴리되어 신호-실적 연결이 끊긴다. 위기 국면은 유동성 청산이 펀더멘털 정보를 압도한다. 경계는 '통관 통계의 표시통화'와 '청산 우위'라는 메커니즘 속성에서 도출된 것이지 사후 성과 관찰이 아니다. 다만 R1·R2 실측 모두 2020-22(COVID) 부기간이 유일한 양(+) 구간으로 이 경계와 어긋난다 — CF-05 참조."
     }
   },
   "factors": [
     {
-      "factor_id": "F1_export_surprise",
+      "factor_id": "R2_G1_mat_surprise",
       "ast": {
         "type": "op",
         "op": "CS_ZSCORE",
@@ -36,68 +37,11 @@
             "args": [
               {
                 "type": "op",
-                "op": "SUB",
+                "op": "MUL",
                 "args": [
                   {
                     "type": "op",
                     "op": "SUB",
-                    "args": [
-                      {
-                        "type": "op",
-                        "op": "LOG",
-                        "args": [
-                          {
-                            "type": "leaf",
-                            "class": "STORED_SCORE",
-                            "source": "stored_panel",
-                            "field": "export_exposure_usd",
-                            "contract": {
-                              "path": "stage_artifacts/WT_D20260802_001/fq073_export_exposure_chapter.parquet",
-                              "value_col": "value",
-                              "store_build_hash": "21b45aae617b8c473db2fd20598aec4a89bbd3e9",
-                              "generator_code_path": "stage_artifacts/WT_D20260802_001/build_export_panel.py",
-                              "generated_at": "2026-08-02 02:23:09",
-                              "production_parity_verified": false,
-                              "avail_offset_days": null
-                            }
-                          }
-                        ]
-                      },
-                      {
-                        "type": "op",
-                        "op": "LOG",
-                        "args": [
-                          {
-                            "type": "op",
-                            "op": "TS_LAG",
-                            "args": [
-                              {
-                                "type": "leaf",
-                                "class": "STORED_SCORE",
-                                "source": "stored_panel",
-                                "field": "export_exposure_usd",
-                                "contract": {
-                                  "path": "stage_artifacts/WT_D20260802_001/fq073_export_exposure_chapter.parquet",
-                                  "value_col": "value",
-                                  "store_build_hash": "21b45aae617b8c473db2fd20598aec4a89bbd3e9",
-                                  "generator_code_path": "stage_artifacts/WT_D20260802_001/build_export_panel.py",
-                                  "generated_at": "2026-08-02 02:23:09",
-                                  "production_parity_verified": false,
-                                  "avail_offset_days": null
-                                }
-                              }
-                            ],
-                            "params": {
-                              "k": 12
-                            }
-                          }
-                        ]
-                      }
-                    ]
-                  },
-                  {
-                    "type": "op",
-                    "op": "TS_MEAN",
                     "args": [
                       {
                         "type": "op",
@@ -112,6 +56,7 @@
                                 "class": "STORED_SCORE",
                                 "source": "stored_panel",
                                 "field": "export_exposure_usd",
+                                "embedded_data_through": "2026-06-30",
                                 "contract": {
                                   "path": "stage_artifacts/WT_D20260802_001/fq073_export_exposure_chapter.parquet",
                                   "value_col": "value",
@@ -137,6 +82,7 @@
                                     "class": "STORED_SCORE",
                                     "source": "stored_panel",
                                     "field": "export_exposure_usd",
+                                    "embedded_data_through": "2026-06-30",
                                     "contract": {
                                       "path": "stage_artifacts/WT_D20260802_001/fq073_export_exposure_chapter.parquet",
                                       "value_col": "value",
@@ -150,15 +96,108 @@
                                 ],
                                 "params": {
                                   "k": 12
-                                }
+                                },
+                                "unit": "m"
                               }
                             ]
                           }
                         ]
+                      },
+                      {
+                        "type": "op",
+                        "op": "TS_MEAN",
+                        "args": [
+                          {
+                            "type": "op",
+                            "op": "SUB",
+                            "args": [
+                              {
+                                "type": "op",
+                                "op": "LOG",
+                                "args": [
+                                  {
+                                    "type": "leaf",
+                                    "class": "STORED_SCORE",
+                                    "source": "stored_panel",
+                                    "field": "export_exposure_usd",
+                                    "embedded_data_through": "2026-06-30",
+                                    "contract": {
+                                      "path": "stage_artifacts/WT_D20260802_001/fq073_export_exposure_chapter.parquet",
+                                      "value_col": "value",
+                                      "store_build_hash": "21b45aae617b8c473db2fd20598aec4a89bbd3e9",
+                                      "generator_code_path": "stage_artifacts/WT_D20260802_001/build_export_panel.py",
+                                      "generated_at": "2026-08-02 02:23:09",
+                                      "production_parity_verified": false,
+                                      "avail_offset_days": null
+                                    }
+                                  }
+                                ]
+                              },
+                              {
+                                "type": "op",
+                                "op": "LOG",
+                                "args": [
+                                  {
+                                    "type": "op",
+                                    "op": "TS_LAG",
+                                    "args": [
+                                      {
+                                        "type": "leaf",
+                                        "class": "STORED_SCORE",
+                                        "source": "stored_panel",
+                                        "field": "export_exposure_usd",
+                                        "embedded_data_through": "2026-06-30",
+                                        "contract": {
+                                          "path": "stage_artifacts/WT_D20260802_001/fq073_export_exposure_chapter.parquet",
+                                          "value_col": "value",
+                                          "store_build_hash": "21b45aae617b8c473db2fd20598aec4a89bbd3e9",
+                                          "generator_code_path": "stage_artifacts/WT_D20260802_001/build_export_panel.py",
+                                          "generated_at": "2026-08-02 02:23:09",
+                                          "production_parity_verified": false,
+                                          "avail_offset_days": null
+                                        }
+                                      }
+                                    ],
+                                    "params": {
+                                      "k": 12
+                                    },
+                                    "unit": "m"
+                                  }
+                                ]
+                              }
+                            ]
+                          }
+                        ],
+                        "params": {
+                          "window": 12
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "type": "op",
+                    "op": "CLIP",
+                    "args": [
+                      {
+                        "type": "leaf",
+                        "class": "STORED_SCORE",
+                        "source": "stored_panel",
+                        "field": "export_materiality",
+                        "embedded_data_through": "2026-06-30",
+                        "contract": {
+                          "path": "stage_artifacts/WT_D20260802_001/fq073_export_materiality.parquet",
+                          "value_col": "value",
+                          "store_build_hash": "39be5d69d39c7d19b1073ed62d664bb60978148a",
+                          "generator_code_path": "stage_artifacts/WT_D20260802_001/build_materiality_panel.py",
+                          "generated_at": "2026-08-02 03:53:16",
+                          "production_parity_verified": false,
+                          "avail_offset_days": null
+                        }
                       }
                     ],
                     "params": {
-                      "window": 12
+                      "lo": 0,
+                      "hi": 1
                     }
                   }
                 ]
@@ -171,8 +210,358 @@
         ]
       },
       "role": "core_signal",
-      "restatement_exposure": 1,
-      "restatement_note": "관세청 원천은 '매월 15일경 전월까지의 자료를 전체 현행화, 개정 종료일 없음'(data.go.kr 15101609 원문) = 저장소 내 최고 수준 restatement 원천. 단 field_map 미등재로 ast_verify 는 restatement_leaves=[] 로 통과시켰다 (ALB-003)."
+      "restatement_exposure": 2,
+      "restatement_note": "STORED_SCORE 리프 2종(수출노출·materiality)이 모두 관세청 원천 파생. 관세청은 '매월 15일경 전월까지 자료를 전체 현행화, 개정 종료일 없음' — 저장소 내 최고 수준 restatement 원천. ast_verify 는 ALB-003 수리 이후 미등재 리프를 보수적으로 WARN_RESTATEMENT 로 표시한다(R1 은 조용히 통과했다)."
+    },
+    {
+      "factor_id": "R2_G5_mat_sue_sm6",
+      "ast": {
+        "type": "op",
+        "op": "CS_ZSCORE",
+        "args": [
+          {
+            "type": "op",
+            "op": "CS_WINSORIZE",
+            "args": [
+              {
+                "type": "op",
+                "op": "TS_MEAN",
+                "args": [
+                  {
+                    "type": "op",
+                    "op": "MUL",
+                    "args": [
+                      {
+                        "type": "op",
+                        "op": "DIV",
+                        "args": [
+                          {
+                            "type": "op",
+                            "op": "SUB",
+                            "args": [
+                              {
+                                "type": "op",
+                                "op": "SUB",
+                                "args": [
+                                  {
+                                    "type": "op",
+                                    "op": "LOG",
+                                    "args": [
+                                      {
+                                        "type": "leaf",
+                                        "class": "STORED_SCORE",
+                                        "source": "stored_panel",
+                                        "field": "export_exposure_usd",
+                                        "embedded_data_through": "2026-06-30",
+                                        "contract": {
+                                          "path": "stage_artifacts/WT_D20260802_001/fq073_export_exposure_chapter.parquet",
+                                          "value_col": "value",
+                                          "store_build_hash": "21b45aae617b8c473db2fd20598aec4a89bbd3e9",
+                                          "generator_code_path": "stage_artifacts/WT_D20260802_001/build_export_panel.py",
+                                          "generated_at": "2026-08-02 02:23:09",
+                                          "production_parity_verified": false,
+                                          "avail_offset_days": null
+                                        }
+                                      }
+                                    ]
+                                  },
+                                  {
+                                    "type": "op",
+                                    "op": "LOG",
+                                    "args": [
+                                      {
+                                        "type": "op",
+                                        "op": "TS_LAG",
+                                        "args": [
+                                          {
+                                            "type": "leaf",
+                                            "class": "STORED_SCORE",
+                                            "source": "stored_panel",
+                                            "field": "export_exposure_usd",
+                                            "embedded_data_through": "2026-06-30",
+                                            "contract": {
+                                              "path": "stage_artifacts/WT_D20260802_001/fq073_export_exposure_chapter.parquet",
+                                              "value_col": "value",
+                                              "store_build_hash": "21b45aae617b8c473db2fd20598aec4a89bbd3e9",
+                                              "generator_code_path": "stage_artifacts/WT_D20260802_001/build_export_panel.py",
+                                              "generated_at": "2026-08-02 02:23:09",
+                                              "production_parity_verified": false,
+                                              "avail_offset_days": null
+                                            }
+                                          }
+                                        ],
+                                        "params": {
+                                          "k": 12
+                                        },
+                                        "unit": "m"
+                                      }
+                                    ]
+                                  }
+                                ]
+                              },
+                              {
+                                "type": "op",
+                                "op": "TS_MEAN",
+                                "args": [
+                                  {
+                                    "type": "op",
+                                    "op": "SUB",
+                                    "args": [
+                                      {
+                                        "type": "op",
+                                        "op": "LOG",
+                                        "args": [
+                                          {
+                                            "type": "leaf",
+                                            "class": "STORED_SCORE",
+                                            "source": "stored_panel",
+                                            "field": "export_exposure_usd",
+                                            "embedded_data_through": "2026-06-30",
+                                            "contract": {
+                                              "path": "stage_artifacts/WT_D20260802_001/fq073_export_exposure_chapter.parquet",
+                                              "value_col": "value",
+                                              "store_build_hash": "21b45aae617b8c473db2fd20598aec4a89bbd3e9",
+                                              "generator_code_path": "stage_artifacts/WT_D20260802_001/build_export_panel.py",
+                                              "generated_at": "2026-08-02 02:23:09",
+                                              "production_parity_verified": false,
+                                              "avail_offset_days": null
+                                            }
+                                          }
+                                        ]
+                                      },
+                                      {
+                                        "type": "op",
+                                        "op": "LOG",
+                                        "args": [
+                                          {
+                                            "type": "op",
+                                            "op": "TS_LAG",
+                                            "args": [
+                                              {
+                                                "type": "leaf",
+                                                "class": "STORED_SCORE",
+                                                "source": "stored_panel",
+                                                "field": "export_exposure_usd",
+                                                "embedded_data_through": "2026-06-30",
+                                                "contract": {
+                                                  "path": "stage_artifacts/WT_D20260802_001/fq073_export_exposure_chapter.parquet",
+                                                  "value_col": "value",
+                                                  "store_build_hash": "21b45aae617b8c473db2fd20598aec4a89bbd3e9",
+                                                  "generator_code_path": "stage_artifacts/WT_D20260802_001/build_export_panel.py",
+                                                  "generated_at": "2026-08-02 02:23:09",
+                                                  "production_parity_verified": false,
+                                                  "avail_offset_days": null
+                                                }
+                                              }
+                                            ],
+                                            "params": {
+                                              "k": 12
+                                            },
+                                            "unit": "m"
+                                          }
+                                        ]
+                                      }
+                                    ]
+                                  }
+                                ],
+                                "params": {
+                                  "window": 12
+                                }
+                              }
+                            ]
+                          },
+                          {
+                            "type": "op",
+                            "op": "TS_STD",
+                            "args": [
+                              {
+                                "type": "op",
+                                "op": "SUB",
+                                "args": [
+                                  {
+                                    "type": "op",
+                                    "op": "SUB",
+                                    "args": [
+                                      {
+                                        "type": "op",
+                                        "op": "LOG",
+                                        "args": [
+                                          {
+                                            "type": "leaf",
+                                            "class": "STORED_SCORE",
+                                            "source": "stored_panel",
+                                            "field": "export_exposure_usd",
+                                            "embedded_data_through": "2026-06-30",
+                                            "contract": {
+                                              "path": "stage_artifacts/WT_D20260802_001/fq073_export_exposure_chapter.parquet",
+                                              "value_col": "value",
+                                              "store_build_hash": "21b45aae617b8c473db2fd20598aec4a89bbd3e9",
+                                              "generator_code_path": "stage_artifacts/WT_D20260802_001/build_export_panel.py",
+                                              "generated_at": "2026-08-02 02:23:09",
+                                              "production_parity_verified": false,
+                                              "avail_offset_days": null
+                                            }
+                                          }
+                                        ]
+                                      },
+                                      {
+                                        "type": "op",
+                                        "op": "LOG",
+                                        "args": [
+                                          {
+                                            "type": "op",
+                                            "op": "TS_LAG",
+                                            "args": [
+                                              {
+                                                "type": "leaf",
+                                                "class": "STORED_SCORE",
+                                                "source": "stored_panel",
+                                                "field": "export_exposure_usd",
+                                                "embedded_data_through": "2026-06-30",
+                                                "contract": {
+                                                  "path": "stage_artifacts/WT_D20260802_001/fq073_export_exposure_chapter.parquet",
+                                                  "value_col": "value",
+                                                  "store_build_hash": "21b45aae617b8c473db2fd20598aec4a89bbd3e9",
+                                                  "generator_code_path": "stage_artifacts/WT_D20260802_001/build_export_panel.py",
+                                                  "generated_at": "2026-08-02 02:23:09",
+                                                  "production_parity_verified": false,
+                                                  "avail_offset_days": null
+                                                }
+                                              }
+                                            ],
+                                            "params": {
+                                              "k": 12
+                                            },
+                                            "unit": "m"
+                                          }
+                                        ]
+                                      }
+                                    ]
+                                  },
+                                  {
+                                    "type": "op",
+                                    "op": "TS_MEAN",
+                                    "args": [
+                                      {
+                                        "type": "op",
+                                        "op": "SUB",
+                                        "args": [
+                                          {
+                                            "type": "op",
+                                            "op": "LOG",
+                                            "args": [
+                                              {
+                                                "type": "leaf",
+                                                "class": "STORED_SCORE",
+                                                "source": "stored_panel",
+                                                "field": "export_exposure_usd",
+                                                "embedded_data_through": "2026-06-30",
+                                                "contract": {
+                                                  "path": "stage_artifacts/WT_D20260802_001/fq073_export_exposure_chapter.parquet",
+                                                  "value_col": "value",
+                                                  "store_build_hash": "21b45aae617b8c473db2fd20598aec4a89bbd3e9",
+                                                  "generator_code_path": "stage_artifacts/WT_D20260802_001/build_export_panel.py",
+                                                  "generated_at": "2026-08-02 02:23:09",
+                                                  "production_parity_verified": false,
+                                                  "avail_offset_days": null
+                                                }
+                                              }
+                                            ]
+                                          },
+                                          {
+                                            "type": "op",
+                                            "op": "LOG",
+                                            "args": [
+                                              {
+                                                "type": "op",
+                                                "op": "TS_LAG",
+                                                "args": [
+                                                  {
+                                                    "type": "leaf",
+                                                    "class": "STORED_SCORE",
+                                                    "source": "stored_panel",
+                                                    "field": "export_exposure_usd",
+                                                    "embedded_data_through": "2026-06-30",
+                                                    "contract": {
+                                                      "path": "stage_artifacts/WT_D20260802_001/fq073_export_exposure_chapter.parquet",
+                                                      "value_col": "value",
+                                                      "store_build_hash": "21b45aae617b8c473db2fd20598aec4a89bbd3e9",
+                                                      "generator_code_path": "stage_artifacts/WT_D20260802_001/build_export_panel.py",
+                                                      "generated_at": "2026-08-02 02:23:09",
+                                                      "production_parity_verified": false,
+                                                      "avail_offset_days": null
+                                                    }
+                                                  }
+                                                ],
+                                                "params": {
+                                                  "k": 12
+                                                },
+                                                "unit": "m"
+                                              }
+                                            ]
+                                          }
+                                        ]
+                                      }
+                                    ],
+                                    "params": {
+                                      "window": 12
+                                    }
+                                  }
+                                ]
+                              }
+                            ],
+                            "params": {
+                              "window": 12
+                            }
+                          }
+                        ],
+                        "params": {
+                          "eps": 1e-08
+                        }
+                      },
+                      {
+                        "type": "op",
+                        "op": "CLIP",
+                        "args": [
+                          {
+                            "type": "leaf",
+                            "class": "STORED_SCORE",
+                            "source": "stored_panel",
+                            "field": "export_materiality",
+                            "embedded_data_through": "2026-06-30",
+                            "contract": {
+                              "path": "stage_artifacts/WT_D20260802_001/fq073_export_materiality.parquet",
+                              "value_col": "value",
+                              "store_build_hash": "39be5d69d39c7d19b1073ed62d664bb60978148a",
+                              "generator_code_path": "stage_artifacts/WT_D20260802_001/build_materiality_panel.py",
+                              "generated_at": "2026-08-02 03:53:16",
+                              "production_parity_verified": false,
+                              "avail_offset_days": null
+                            }
+                          }
+                        ],
+                        "params": {
+                          "lo": 0,
+                          "hi": 1
+                        }
+                      }
+                    ]
+                  }
+                ],
+                "params": {
+                  "window": 6
+                }
+              }
+            ],
+            "params": {
+              "p": 0.02
+            }
+          }
+        ]
+      },
+      "role": "turnover_constrained_variant",
+      "restatement_exposure": 2,
+      "restatement_note": "동일 리프 2종 + 6M 평활. Production Constraints 회전율 1100%/yr 충족(508%)."
     }
   ],
   "combination_rule": "single_factor",
@@ -184,11 +573,12 @@
   "falsification": [
     {
       "field": "C-CONSENSUS-QW",
-      "observation": "수출 서프라이즈 Q5 종목의 후속 3M op_profit_fy1 컨센서스 개정이 Q1 대비 유의(t>=2) 상향되지 않으면 기전 기각",
+      "observation": "materiality 가중 Q5 종목의 후속 3M op_profit_fy1 컨센서스 개정이 Q1 대비 유의(t>=2) 상향되지 않으면 기전 기각. 추가로 R1 무가중(t=1.969) 대비 강화되어야 한다.",
       "executed": true,
-      "result_t_stat": 1.969,
-      "result_spread_logrev": 0.01494,
-      "verdict": "MECHANISM_NOT_SUPPORTED — 선언한 부수 관측(컨센 상향)이 유의하지 않다. 가격 이전 단계에서 기전이 끊긴다 = 반증 조건 충족."
+      "result_t_stat_r1_unweighted": 1.969,
+      "result_t_stat_r2_materiality": 0.744,
+      "result_spread_logrev": 0.00604,
+      "verdict": "MECHANISM_NOT_SUPPORTED — 사전등록 문턱(t>=2) 미달. materiality 가중으로도 링크1이 유의 수준에 이르지 못한다."
     }
   ],
   "ast": {
@@ -201,68 +591,11 @@
         "args": [
           {
             "type": "op",
-            "op": "SUB",
+            "op": "MUL",
             "args": [
               {
                 "type": "op",
                 "op": "SUB",
-                "args": [
-                  {
-                    "type": "op",
-                    "op": "LOG",
-                    "args": [
-                      {
-                        "type": "leaf",
-                        "class": "STORED_SCORE",
-                        "source": "stored_panel",
-                        "field": "export_exposure_usd",
-                        "contract": {
-                          "path": "stage_artifacts/WT_D20260802_001/fq073_export_exposure_chapter.parquet",
-                          "value_col": "value",
-                          "store_build_hash": "21b45aae617b8c473db2fd20598aec4a89bbd3e9",
-                          "generator_code_path": "stage_artifacts/WT_D20260802_001/build_export_panel.py",
-                          "generated_at": "2026-08-02 02:23:09",
-                          "production_parity_verified": false,
-                          "avail_offset_days": null
-                        }
-                      }
-                    ]
-                  },
-                  {
-                    "type": "op",
-                    "op": "LOG",
-                    "args": [
-                      {
-                        "type": "op",
-                        "op": "TS_LAG",
-                        "args": [
-                          {
-                            "type": "leaf",
-                            "class": "STORED_SCORE",
-                            "source": "stored_panel",
-                            "field": "export_exposure_usd",
-                            "contract": {
-                              "path": "stage_artifacts/WT_D20260802_001/fq073_export_exposure_chapter.parquet",
-                              "value_col": "value",
-                              "store_build_hash": "21b45aae617b8c473db2fd20598aec4a89bbd3e9",
-                              "generator_code_path": "stage_artifacts/WT_D20260802_001/build_export_panel.py",
-                              "generated_at": "2026-08-02 02:23:09",
-                              "production_parity_verified": false,
-                              "avail_offset_days": null
-                            }
-                          }
-                        ],
-                        "params": {
-                          "k": 12
-                        }
-                      }
-                    ]
-                  }
-                ]
-              },
-              {
-                "type": "op",
-                "op": "TS_MEAN",
                 "args": [
                   {
                     "type": "op",
@@ -277,6 +610,7 @@
                             "class": "STORED_SCORE",
                             "source": "stored_panel",
                             "field": "export_exposure_usd",
+                            "embedded_data_through": "2026-06-30",
                             "contract": {
                               "path": "stage_artifacts/WT_D20260802_001/fq073_export_exposure_chapter.parquet",
                               "value_col": "value",
@@ -302,6 +636,7 @@
                                 "class": "STORED_SCORE",
                                 "source": "stored_panel",
                                 "field": "export_exposure_usd",
+                                "embedded_data_through": "2026-06-30",
                                 "contract": {
                                   "path": "stage_artifacts/WT_D20260802_001/fq073_export_exposure_chapter.parquet",
                                   "value_col": "value",
@@ -315,15 +650,108 @@
                             ],
                             "params": {
                               "k": 12
-                            }
+                            },
+                            "unit": "m"
                           }
                         ]
                       }
                     ]
+                  },
+                  {
+                    "type": "op",
+                    "op": "TS_MEAN",
+                    "args": [
+                      {
+                        "type": "op",
+                        "op": "SUB",
+                        "args": [
+                          {
+                            "type": "op",
+                            "op": "LOG",
+                            "args": [
+                              {
+                                "type": "leaf",
+                                "class": "STORED_SCORE",
+                                "source": "stored_panel",
+                                "field": "export_exposure_usd",
+                                "embedded_data_through": "2026-06-30",
+                                "contract": {
+                                  "path": "stage_artifacts/WT_D20260802_001/fq073_export_exposure_chapter.parquet",
+                                  "value_col": "value",
+                                  "store_build_hash": "21b45aae617b8c473db2fd20598aec4a89bbd3e9",
+                                  "generator_code_path": "stage_artifacts/WT_D20260802_001/build_export_panel.py",
+                                  "generated_at": "2026-08-02 02:23:09",
+                                  "production_parity_verified": false,
+                                  "avail_offset_days": null
+                                }
+                              }
+                            ]
+                          },
+                          {
+                            "type": "op",
+                            "op": "LOG",
+                            "args": [
+                              {
+                                "type": "op",
+                                "op": "TS_LAG",
+                                "args": [
+                                  {
+                                    "type": "leaf",
+                                    "class": "STORED_SCORE",
+                                    "source": "stored_panel",
+                                    "field": "export_exposure_usd",
+                                    "embedded_data_through": "2026-06-30",
+                                    "contract": {
+                                      "path": "stage_artifacts/WT_D20260802_001/fq073_export_exposure_chapter.parquet",
+                                      "value_col": "value",
+                                      "store_build_hash": "21b45aae617b8c473db2fd20598aec4a89bbd3e9",
+                                      "generator_code_path": "stage_artifacts/WT_D20260802_001/build_export_panel.py",
+                                      "generated_at": "2026-08-02 02:23:09",
+                                      "production_parity_verified": false,
+                                      "avail_offset_days": null
+                                    }
+                                  }
+                                ],
+                                "params": {
+                                  "k": 12
+                                },
+                                "unit": "m"
+                              }
+                            ]
+                          }
+                        ]
+                      }
+                    ],
+                    "params": {
+                      "window": 12
+                    }
+                  }
+                ]
+              },
+              {
+                "type": "op",
+                "op": "CLIP",
+                "args": [
+                  {
+                    "type": "leaf",
+                    "class": "STORED_SCORE",
+                    "source": "stored_panel",
+                    "field": "export_materiality",
+                    "embedded_data_through": "2026-06-30",
+                    "contract": {
+                      "path": "stage_artifacts/WT_D20260802_001/fq073_export_materiality.parquet",
+                      "value_col": "value",
+                      "store_build_hash": "39be5d69d39c7d19b1073ed62d664bb60978148a",
+                      "generator_code_path": "stage_artifacts/WT_D20260802_001/build_materiality_panel.py",
+                      "generated_at": "2026-08-02 03:53:16",
+                      "production_parity_verified": false,
+                      "avail_offset_days": null
+                    }
                   }
                 ],
                 "params": {
-                  "window": 12
+                  "lo": 0,
+                  "hi": 1
                 }
               }
             ]
@@ -340,642 +768,1273 @@
     "leaves_checked": [
       {
         "leaf": "STORED_SCORE:fq073_export_exposure",
-        "availability_rule": "manual_export/derived — avail_ts = data_ym(M)+1개월 15일 (PIT_plan_fq073 §1-c 1차 현행화). 패널 내 avail_ts 컬럼이 권위(암묵 0 아님)",
+        "availability_rule": "manual_export/derived — avail_ts = data_ym(M)+1개월 15일. 패널 내 avail_ts 컬럼이 권위(암묵 0 아님)",
         "restatement_prone": true,
         "vintage_available": false
       },
       {
-        "leaf": "FIELD:rawdata:Sector (F4 전용)",
-        "availability_rule": "A1_RAWDATA_OHLCVS_daily — verify 기준 t+1. TS_LAG(1d) 적용으로 준수",
+        "leaf": "STORED_SCORE:fq073_export_materiality",
+        "availability_rule": "동일 avail 규약(M+1/15). 분모 Revenue 는 fundamental_dart Factor_Date=익년 3/31(C4) 이며 데이터월 말 기준으로만 조회 = avail_ts 보다 항상 이른 보수적 컷",
         "restatement_prone": true,
         "vintage_available": false
       }
     ],
     "verdict": "warn_restatement",
-    "verdict_rationale": "타이밍(C5) 은 clean — 버퍼 14~17일 실측, assert_overlay_pit HARD PASS, lag1 스트레스 무변화. 그러나 ① customs 개정판 기반(first-release 소급 복원 불가) ② crosswalk static_current (2024-25 사업보고서 1 vintage를 전 역사 귀속 = C1/C3) 두 노출이 실재하므로 clean 선언 불가."
+    "verdict_rationale": "타이밍(C5)은 clean — 버퍼 14~17일 실측, assert_overlay_pit HARD PASS, lag1 스트레스 전 변형 NO_INFLATION. 그러나 ① customs 개정판 기반(first-release 소급 복원 불가) ② crosswalk static_current(2024-25 사업보고서 1 vintage 를 전 역사 귀속 = C1/C3) 두 노출이 R1 그대로 잔존한다. R2 는 이 노출을 해소하지 않았다 — P3(vintage 크로스워크)는 미착수. 따라서 clean 선언 불가, gate_eligible=FALSE 승계."
   },
   "alpha_vector": {
-    "A000660": 1.852387,
-    "A000990": 1.852387,
-    "A005930": 1.852387,
-    "A032820": 1.852387,
-    "A080220": 1.852387,
-    "A131970": 1.852387,
-    "A253590": 1.852387,
-    "A399720": 1.852387,
-    "A001430": 1.844503,
-    "A348210": 1.829214,
-    "A036540": 1.809949,
-    "A042700": 1.797361,
-    "A232140": 1.793858,
-    "A009970": 1.330033,
-    "A069260": 1.033325,
-    "A060280": 0.925841,
-    "A006400": 0.918103,
-    "A014680": 0.918103,
-    "A036830": 0.918103,
-    "A137400": 0.918103,
-    "A357780": 0.918103,
-    "A373220": 0.918103,
-    "A093370": 0.914159,
-    "A014820": 0.908778,
-    "A003670": 0.904537,
-    "A178320": 0.878774,
-    "A121600": 0.874783,
-    "A010950": 0.842972,
-    "A096770": 0.842972,
-    "A443060": 0.842972,
-    "A457190": 0.842972,
-    "A097950": 0.822698,
-    "A065350": 0.80842,
-    "A031980": 0.782412,
-    "A082270": 0.782412,
-    "A084370": 0.782412,
-    "A183300": 0.782412,
-    "A240810": 0.782412,
-    "A319660": 0.782412,
-    "A005420": 0.741824,
-    "A066970": 0.741824,
-    "A247540": 0.741824,
-    "A348370": 0.741824,
-    "A450080": 0.741824,
-    "A068270": 0.693703,
-    "A145020": 0.693703,
-    "A207940": 0.693703,
-    "A302440": 0.693703,
-    "A285130": 0.692849,
-    "A036930": 0.682351,
-    "A095610": 0.664045,
-    "A267250": 0.652602,
-    "A361610": 0.648075,
-    "A237690": 0.621916,
-    "A403870": 0.599092,
-    "A007390": 0.592795,
-    "A011170": 0.591472,
-    "A445680": 0.587633,
-    "A214430": 0.564223,
-    "A025900": 0.5525,
-    "A086520": 0.52075,
-    "A071970": 0.503083,
-    "A082740": 0.503083,
-    "A089030": 0.489878,
-    "A166090": 0.481544,
-    "A171090": 0.457903,
-    "A222080": 0.445801,
-    "A011790": 0.431713,
-    "A011780": 0.424714,
-    "A161580": 0.406841,
-    "A039030": 0.394425,
-    "A036810": 0.371819,
-    "A000210": 0.351453,
-    "A066570": 0.34062,
-    "A006260": 0.336432,
-    "A085660": 0.324693,
-    "A189300": 0.275357,
-    "A030530": 0.266002,
-    "A002380": 0.250438,
-    "A056190": 0.240616,
-    "A323280": 0.240616,
-    "A014620": 0.22988,
-    "A112610": 0.213512,
-    "A058470": 0.210957,
-    "A214150": 0.210957,
-    "A000080": 0.147742,
-    "A064760": 0.142102,
-    "A101490": 0.085491,
-    "A005290": 0.084181,
-    "A034220": 0.084181,
-    "A213420": 0.084181,
-    "A272290": 0.084181,
-    "A281740": 0.083609,
-    "A039200": 0.07208,
-    "A214450": 0.07208,
-    "A290650": 0.07208,
-    "A033780": 0.067227,
-    "A032500": 0.064126,
-    "A078600": 0.064126,
-    "A218410": 0.064126,
-    "A003030": 0.058535,
-    "A028300": 0.037607,
-    "A008930": 0.016604,
-    "A002790": 0.012755,
-    "A018290": 0.012755,
-    "A048410": 0.012755,
-    "A090430": 0.012755,
-    "A192820": 0.012755,
-    "A241710": 0.012755,
-    "A278470": 0.012755,
-    "A352480": 0.012755,
-    "A268280": 0.006418,
-    "A161890": 0.001183,
-    "A010120": -0.01385,
-    "A051900": -0.016299,
-    "A251970": -0.027403,
-    "A074600": -0.02791,
-    "A010130": -0.051368,
-    "A120110": -0.068075,
-    "A004000": -0.096972,
-    "A006650": -0.125093,
-    "A010060": -0.149446,
-    "A073240": -0.170767,
-    "A161390": -0.170767,
-    "A417200": -0.186839,
-    "A002840": -0.190497,
-    "A051910": -0.21764,
-    "A005850": -0.235865,
-    "A298050": -0.243145,
-    "A025320": -0.271095,
-    "A012330": -0.27578,
-    "A018880": -0.27578,
-    "A204320": -0.27578,
-    "A009830": -0.280706,
-    "A298380": -0.325772,
-    "A128940": -0.333833,
-    "A001440": -0.341548,
-    "A000100": -0.344019,
-    "A000250": -0.344019,
-    "A003090": -0.344019,
-    "A006280": -0.344019,
-    "A009420": -0.344019,
-    "A068760": -0.344019,
-    "A069620": -0.344019,
-    "A087010": -0.344019,
-    "A185750": -0.344019,
-    "A195940": -0.344019,
-    "A008730": -0.350693,
-    "A108490": -0.352921,
-    "A383220": -0.367967,
-    "A011210": -0.387828,
-    "A000670": -0.39271,
-    "A009540": -0.402953,
-    "A015750": -0.404808,
-    "A000150": -0.433533,
-    "A007660": -0.433533,
-    "A009150": -0.433533,
-    "A011070": -0.433533,
-    "A067310": -0.433533,
-    "A222800": -0.433533,
-    "A131290": -0.446955,
-    "A280360": -0.449156,
-    "A005380": -0.454138,
-    "A000270": -0.458843,
-    "A001800": -0.472073,
-    "A271560": -0.472073,
-    "A420770": -0.504527,
-    "A204270": -0.50856,
-    "A007310": -0.523827,
-    "A056080": -0.52677,
-    "A277810": -0.52677,
-    "A388720": -0.52677,
-    "A454910": -0.52677,
-    "A098460": -0.527818,
-    "A140860": -0.527818,
-    "A058610": -0.549583,
-    "A096530": -0.553686,
-    "A137310": -0.553686,
-    "A003240": -0.559271,
-    "A298020": -0.588187,
-    "A214370": -0.590089,
-    "A003230": -0.624495,
-    "A004370": -0.639422,
-    "A001680": -0.711348,
-    "A005300": -0.739674,
-    "A017960": -0.74749,
-    "A010140": -0.752078,
-    "A033500": -0.752078,
-    "A004020": -0.758376,
-    "A005490": -0.758376,
-    "A009520": -0.758376,
-    "A103140": -0.823315,
-    "A050890": -0.829659,
-    "A006040": -0.866538,
-    "A079550": -0.955754,
-    "A329180": -0.971542,
-    "A003380": -1.183445,
-    "A241560": -1.327627,
-    "A456040": -1.810796,
-    "A033100": -1.828095,
-    "A062040": -1.828095,
-    "A267260": -1.828095,
-    "A298040": -1.828095,
-    "A021240": -1.947084,
-    "A034020": -2.013444,
-    "A017800": -2.294387,
-    "A012450": -2.584211,
-    "A272210": -3.164859,
-    "A300720": -3.183166,
-    "A002030": -3.335522,
-    "A007340": -3.335522,
-    "A038500": -3.335522,
-    "A047810": -3.335522,
-    "A083650": -3.335522
+    "A000660": 2.078699,
+    "A000990": 2.078699,
+    "A005930": 2.078699,
+    "A032820": 2.078699,
+    "A042700": 2.078699,
+    "A080220": 2.078699,
+    "A131970": 2.078699,
+    "A232140": 2.078699,
+    "A253590": 2.078699,
+    "A348210": 2.078699,
+    "A399720": 2.078699,
+    "A060280": 1.909607,
+    "A178320": 1.835006,
+    "A065350": 1.723495,
+    "A031980": 1.682273,
+    "A082270": 1.682273,
+    "A084370": 1.682273,
+    "A183300": 1.682273,
+    "A240810": 1.682273,
+    "A319660": 1.682273,
+    "A285130": 1.540316,
+    "A036930": 1.523676,
+    "A095610": 1.494662,
+    "A361610": 1.469349,
+    "A068270": 1.400793,
+    "A145020": 1.400793,
+    "A207940": 1.400793,
+    "A302440": 1.400793,
+    "A403870": 1.391711,
+    "A445680": 1.37355,
+    "A214430": 1.336444,
+    "A069260": 1.268289,
+    "A071970": 1.239538,
+    "A082740": 1.239538,
+    "A089030": 1.218608,
+    "A086520": 1.194339,
+    "A171090": 1.167928,
+    "A222080": 1.148747,
+    "A166090": 1.100087,
+    "A161580": 1.086995,
+    "A039030": 1.067316,
+    "A036810": 1.031485,
+    "A189300": 0.878593,
+    "A056190": 0.823529,
+    "A323280": 0.823529,
+    "A014620": 0.806512,
+    "A058470": 0.776521,
+    "A214150": 0.776521,
+    "A036540": 0.7316,
+    "A064760": 0.667385,
+    "A101490": 0.577658,
+    "A005420": 0.575624,
+    "A066970": 0.575624,
+    "A247540": 0.575624,
+    "A348370": 0.575624,
+    "A450080": 0.575624,
+    "A005290": 0.575581,
+    "A034220": 0.575581,
+    "A213420": 0.575581,
+    "A272290": 0.575581,
+    "A085660": 0.55456,
+    "A028300": 0.501761,
+    "A268280": 0.452326,
+    "A039200": 0.44242,
+    "A214450": 0.44242,
+    "A290650": 0.44242,
+    "A011780": 0.429115,
+    "A251970": 0.398721,
+    "A237690": 0.374339,
+    "A010950": 0.368606,
+    "A096770": 0.368606,
+    "A443060": 0.368606,
+    "A457190": 0.368606,
+    "A007390": 0.334942,
+    "A120110": 0.334256,
+    "A000210": 0.224089,
+    "A010060": 0.205283,
+    "A002840": 0.140218,
+    "A008930": 0.090567,
+    "A011170": 0.088388,
+    "A121600": 0.067586,
+    "A025320": 0.01247,
+    "A010120": -0.039417,
+    "A002790": -0.047048,
+    "A018290": -0.047048,
+    "A048410": -0.047048,
+    "A090430": -0.047048,
+    "A192820": -0.047048,
+    "A241710": -0.047048,
+    "A278470": -0.047048,
+    "A352480": -0.047048,
+    "A011790": -0.057373,
+    "A281740": -0.058754,
+    "A112610": -0.086862,
+    "A001440": -0.099198,
+    "A008730": -0.113693,
+    "A108490": -0.117223,
+    "A131290": -0.266267,
+    "A161890": -0.275801,
+    "A267250": -0.293533,
+    "A051900": -0.31634,
+    "A006400": -0.326167,
+    "A014680": -0.326167,
+    "A036830": -0.326167,
+    "A137400": -0.326167,
+    "A357780": -0.326167,
+    "A373220": -0.326167,
+    "A420770": -0.357518,
+    "A204270": -0.36391,
+    "A033780": -0.379006,
+    "A056080": -0.392773,
+    "A277810": -0.392773,
+    "A388720": -0.392773,
+    "A454910": -0.392773,
+    "A098460": -0.394434,
+    "A140860": -0.394434,
+    "A001430": -0.396538,
+    "A058610": -0.428932,
+    "A074600": -0.440288,
+    "A003240": -0.444288,
+    "A097950": -0.44721,
+    "A214370": -0.493133,
+    "A014820": -0.500026,
+    "A096530": -0.514605,
+    "A137310": -0.514605,
+    "A006260": -0.515195,
+    "A032500": -0.516644,
+    "A078600": -0.516644,
+    "A218410": -0.516644,
+    "A093370": -0.518671,
+    "A030530": -0.519175,
+    "A003670": -0.542063,
+    "A009970": -0.586062,
+    "A005850": -0.644467,
+    "A000270": -0.644519,
+    "A012330": -0.664636,
+    "A018880": -0.664636,
+    "A204320": -0.664636,
+    "A003030": -0.665601,
+    "A015750": -0.671269,
+    "A002380": -0.678908,
+    "A000080": -0.696769,
+    "A073240": -0.712649,
+    "A161390": -0.712649,
+    "A005380": -0.715913,
+    "A298380": -0.71659,
+    "A003230": -0.721785,
+    "A010130": -0.72604,
+    "A004000": -0.733431,
+    "A009540": -0.743726,
+    "A007310": -0.745725,
+    "A017960": -0.748336,
+    "A010140": -0.749885,
+    "A033500": -0.749885,
+    "A009830": -0.756927,
+    "A128940": -0.761259,
+    "A006650": -0.763141,
+    "A011210": -0.764068,
+    "A298050": -0.775783,
+    "A004370": -0.781861,
+    "A000670": -0.791828,
+    "A051910": -0.796848,
+    "A000150": -0.799951,
+    "A007660": -0.799951,
+    "A009150": -0.799951,
+    "A011070": -0.799951,
+    "A067310": -0.799951,
+    "A222800": -0.799951,
+    "A383220": -0.800722,
+    "A000100": -0.826334,
+    "A000250": -0.826334,
+    "A003090": -0.826334,
+    "A006280": -0.826334,
+    "A009420": -0.826334,
+    "A068760": -0.826334,
+    "A069620": -0.826334,
+    "A087010": -0.826334,
+    "A185750": -0.826334,
+    "A195940": -0.826334,
+    "A280360": -0.832858,
+    "A025900": -0.833362,
+    "A001800": -0.833843,
+    "A271560": -0.833843,
+    "A001680": -0.849593,
+    "A298020": -0.849807,
+    "A066570": -0.851773,
+    "A005300": -0.856524,
+    "A004020": -0.866233,
+    "A005490": -0.866233,
+    "A009520": -0.866233,
+    "A103140": -0.87225,
+    "A050890": -0.87285,
+    "A006040": -0.876725,
+    "A003380": -0.881478,
+    "A079550": -0.920493,
+    "A300720": -1.016082,
+    "A038500": -1.039336,
+    "A034020": -1.041997,
+    "A002030": -1.059005,
+    "A329180": -1.067465,
+    "A021240": -1.267989,
+    "A007340": -1.356069,
+    "A272210": -1.400217,
+    "A012450": -1.587161,
+    "A241560": -1.662128,
+    "A017800": -1.768875,
+    "A033100": -1.768875,
+    "A047810": -1.768875,
+    "A062040": -1.768875,
+    "A083650": -1.768875,
+    "A267260": -1.768875,
+    "A298040": -1.768875,
+    "A456040": -1.768875
   },
   "confidence_vector": {
-    "A000660": 0.7928,
-    "A000990": 0.6928,
-    "A005930": 0.7928,
-    "A032820": 0.3553,
-    "A080220": 0.4303,
-    "A131970": 0.5803,
-    "A253590": 0.4012,
-    "A399720": 0.4303,
-    "A001430": 0.6428,
-    "A348210": 0.5095,
-    "A036540": 0.7053,
-    "A042700": 0.4303,
-    "A232140": 0.4012,
-    "A009970": 0.4553,
-    "A069260": 0.7928,
-    "A060280": 0.4553,
-    "A006400": 0.7928,
-    "A014680": 0.7928,
-    "A036830": 0.7928,
-    "A137400": 0.6053,
-    "A357780": 0.6053,
-    "A373220": 0.5428,
-    "A093370": 0.7928,
-    "A014820": 0.7928,
-    "A003670": 0.7387,
-    "A178320": 0.6553,
-    "A121600": 0.5303,
-    "A010950": 0.7928,
-    "A096770": 0.7928,
-    "A443060": 0.3803,
-    "A457190": 0.4303,
-    "A097950": 0.7928,
-    "A065350": 0.4012,
-    "A031980": 0.5178,
-    "A082270": 0.7303,
-    "A084370": 0.7428,
-    "A183300": 0.5553,
-    "A240810": 0.7928,
-    "A319660": 0.5762,
-    "A005420": 0.4803,
-    "A066970": 0.7595,
-    "A247540": 0.6803,
-    "A348370": 0.5303,
-    "A450080": 0.4553,
-    "A068270": 0.7887,
-    "A145020": 0.7928,
-    "A207940": 0.7803,
-    "A302440": 0.5803,
-    "A285130": 0.7512,
-    "A036930": 0.7928,
-    "A095610": 0.7803,
-    "A267250": 0.7845,
-    "A361610": 0.5803,
-    "A237690": 0.7928,
-    "A403870": 0.5053,
-    "A007390": 0.7553,
-    "A011170": 0.7928,
-    "A445680": 0.3428,
-    "A214430": 0.3553,
-    "A025900": 0.7928,
-    "A086520": 0.7553,
-    "A071970": 0.3553,
-    "A082740": 0.3553,
-    "A089030": 0.4303,
-    "A166090": 0.5803,
-    "A171090": 0.4012,
-    "A222080": 0.6053,
-    "A011790": 0.7928,
-    "A011780": 0.7928,
-    "A161580": 0.3803,
-    "A039030": 0.7928,
-    "A036810": 0.5803,
-    "A000210": 0.7928,
-    "A066570": 0.7928,
-    "A006260": 0.7928,
-    "A085660": 0.6803,
-    "A189300": 0.5303,
-    "A030530": 0.6678,
-    "A002380": 0.7928,
-    "A056190": 0.7928,
-    "A323280": 0.3803,
-    "A014620": 0.5678,
-    "A112610": 0.6053,
-    "A058470": 0.7928,
-    "A214150": 0.6553,
-    "A000080": 0.7928,
-    "A064760": 0.7928,
-    "A101490": 0.6053,
-    "A005290": 0.4428,
-    "A034220": 0.4428,
-    "A213420": 0.4428,
-    "A272290": 0.4428,
-    "A281740": 0.4887,
-    "A039200": 0.7303,
-    "A214450": 0.7928,
-    "A290650": 0.6053,
-    "A033780": 0.7928,
-    "A032500": 0.6928,
-    "A078600": 0.6053,
-    "A218410": 0.7053,
-    "A003030": 0.5178,
-    "A028300": 0.7928,
-    "A008930": 0.7928,
-    "A002790": 0.7928,
-    "A018290": 0.4803,
-    "A048410": 0.6553,
-    "A090430": 0.7928,
-    "A192820": 0.7928,
-    "A241710": 0.5262,
-    "A278470": 0.4012,
-    "A352480": 0.4387,
-    "A268280": 0.3803,
-    "A161890": 0.7928,
-    "A010120": 0.7928,
-    "A051900": 0.7928,
-    "A251970": 0.3553,
-    "A074600": 0.5887,
-    "A010130": 0.7928,
-    "A120110": 0.7928,
-    "A004000": 0.7928,
-    "A006650": 0.7928,
-    "A010060": 0.7928,
-    "A073240": 0.7928,
-    "A161390": 0.7928,
-    "A417200": 0.4303,
-    "A002840": 0.4012,
-    "A051910": 0.7928,
-    "A005850": 0.7178,
-    "A298050": 0.5803,
-    "A025320": 0.4303,
-    "A012330": 0.7928,
-    "A018880": 0.7928,
-    "A204320": 0.7928,
-    "A009830": 0.7928,
-    "A298380": 0.6803,
-    "A128940": 0.7928,
-    "A001440": 0.5803,
-    "A000100": 0.7928,
-    "A000250": 0.7303,
-    "A003090": 0.6053,
-    "A006280": 0.7928,
-    "A009420": 0.7928,
-    "A068760": 0.7928,
-    "A069620": 0.7928,
-    "A087010": 0.5053,
-    "A185750": 0.7928,
-    "A195940": 0.5553,
-    "A008730": 0.4803,
-    "A108490": 0.3553,
-    "A383220": 0.5303,
-    "A011210": 0.7928,
-    "A000670": 0.772,
-    "A009540": 0.7928,
-    "A015750": 0.7678,
-    "A000150": 0.7928,
-    "A007660": 0.3553,
-    "A009150": 0.7928,
-    "A011070": 0.7928,
-    "A067310": 0.5303,
-    "A222800": 0.5803,
-    "A131290": 0.5803,
-    "A280360": 0.5053,
-    "A005380": 0.7928,
-    "A000270": 0.7928,
-    "A001800": 0.7928,
-    "A271560": 0.7762,
-    "A420770": 0.4053,
-    "A204270": 0.5303,
-    "A007310": 0.7928,
-    "A056080": 0.3553,
-    "A277810": 0.4803,
-    "A388720": 0.3553,
-    "A454910": 0.4303,
-    "A098460": 0.7928,
-    "A140860": 0.5803,
-    "A058610": 0.4553,
-    "A096530": 0.7928,
-    "A137310": 0.5303,
-    "A003240": 0.7303,
-    "A298020": 0.5803,
-    "A214370": 0.697,
-    "A003230": 0.5387,
-    "A004370": 0.7928,
-    "A001680": 0.7928,
-    "A005300": 0.7928,
-    "A017960": 0.3803,
-    "A010140": 0.7928,
-    "A033500": 0.3803,
-    "A004020": 0.7928,
-    "A005490": 0.7928,
-    "A009520": 0.4803,
-    "A103140": 0.7928,
-    "A050890": 0.3803,
-    "A006040": 0.4803,
-    "A079550": 0.7803,
-    "A329180": 0.5553,
-    "A003380": 0.7553,
-    "A241560": 0.7303,
-    "A456040": 0.3762,
-    "A033100": 0.4303,
-    "A062040": 0.3553,
-    "A267260": 0.4553,
-    "A298040": 0.497,
-    "A021240": 0.7928,
-    "A034020": 0.7928,
-    "A017800": 0.7928,
-    "A012450": 0.7928,
-    "A272210": 0.6053,
-    "A300720": 0.5303,
-    "A002030": 0.3553,
-    "A007340": 0.4178,
-    "A038500": 0.5803,
-    "A047810": 0.7345,
-    "A083650": 0.3553
+    "A000660": 0.7952,
+    "A000990": 0.6952,
+    "A005930": 0.7952,
+    "A032820": 0.3577,
+    "A042700": 0.4327,
+    "A080220": 0.4327,
+    "A131970": 0.5827,
+    "A232140": 0.4036,
+    "A253590": 0.4036,
+    "A348210": 0.5119,
+    "A399720": 0.4327,
+    "A060280": 0.4577,
+    "A178320": 0.6577,
+    "A065350": 0.4036,
+    "A031980": 0.5202,
+    "A082270": 0.7327,
+    "A084370": 0.7452,
+    "A183300": 0.5577,
+    "A240810": 0.7952,
+    "A319660": 0.5786,
+    "A285130": 0.7536,
+    "A036930": 0.7952,
+    "A095610": 0.7827,
+    "A361610": 0.5827,
+    "A068270": 0.7911,
+    "A145020": 0.7952,
+    "A207940": 0.7827,
+    "A302440": 0.5827,
+    "A403870": 0.5077,
+    "A445680": 0.3452,
+    "A214430": 0.3577,
+    "A069260": 0.7952,
+    "A071970": 0.3577,
+    "A082740": 0.3577,
+    "A089030": 0.4327,
+    "A086520": 0.7577,
+    "A171090": 0.4036,
+    "A222080": 0.6077,
+    "A166090": 0.5827,
+    "A161580": 0.3827,
+    "A039030": 0.7952,
+    "A036810": 0.5827,
+    "A189300": 0.5327,
+    "A056190": 0.7952,
+    "A323280": 0.3827,
+    "A014620": 0.5702,
+    "A058470": 0.7952,
+    "A214150": 0.6577,
+    "A036540": 0.7077,
+    "A064760": 0.7952,
+    "A101490": 0.6077,
+    "A005420": 0.4827,
+    "A066970": 0.7619,
+    "A247540": 0.6827,
+    "A348370": 0.5327,
+    "A450080": 0.4577,
+    "A005290": 0.4452,
+    "A034220": 0.4452,
+    "A213420": 0.4452,
+    "A272290": 0.4452,
+    "A085660": 0.6827,
+    "A028300": 0.7952,
+    "A268280": 0.3827,
+    "A039200": 0.7327,
+    "A214450": 0.7952,
+    "A290650": 0.6077,
+    "A011780": 0.7952,
+    "A251970": 0.3577,
+    "A237690": 0.7952,
+    "A010950": 0.7952,
+    "A096770": 0.7952,
+    "A443060": 0.3827,
+    "A457190": 0.4327,
+    "A007390": 0.7577,
+    "A120110": 0.7952,
+    "A000210": 0.7952,
+    "A010060": 0.7952,
+    "A002840": 0.4036,
+    "A008930": 0.7952,
+    "A011170": 0.7952,
+    "A121600": 0.5327,
+    "A025320": 0.4327,
+    "A010120": 0.3369,
+    "A002790": 0.7952,
+    "A018290": 0.4827,
+    "A048410": 0.6577,
+    "A090430": 0.7952,
+    "A192820": 0.7952,
+    "A241710": 0.5286,
+    "A278470": 0.4036,
+    "A352480": 0.4411,
+    "A011790": 0.7952,
+    "A281740": 0.4911,
+    "A112610": 0.6077,
+    "A001440": 0.5827,
+    "A008730": 0.4827,
+    "A108490": 0.3577,
+    "A131290": 0.5827,
+    "A161890": 0.7952,
+    "A267250": 0.7869,
+    "A051900": 0.7952,
+    "A006400": 0.7952,
+    "A014680": 0.7952,
+    "A036830": 0.7952,
+    "A137400": 0.6077,
+    "A357780": 0.6077,
+    "A373220": 0.5452,
+    "A420770": 0.4077,
+    "A204270": 0.5327,
+    "A033780": 0.7952,
+    "A056080": 0.3577,
+    "A277810": 0.4827,
+    "A388720": 0.3577,
+    "A454910": 0.4327,
+    "A098460": 0.7952,
+    "A140860": 0.5827,
+    "A001430": 0.3369,
+    "A058610": 0.4577,
+    "A074600": 0.5911,
+    "A003240": 0.7327,
+    "A097950": 0.7952,
+    "A214370": 0.6994,
+    "A014820": 0.7952,
+    "A096530": 0.7952,
+    "A137310": 0.5327,
+    "A006260": 0.7952,
+    "A032500": 0.6952,
+    "A078600": 0.6077,
+    "A218410": 0.7077,
+    "A093370": 0.7952,
+    "A030530": 0.6702,
+    "A003670": 0.7411,
+    "A009970": 0.4577,
+    "A005850": 0.7202,
+    "A000270": 0.7952,
+    "A012330": 0.7952,
+    "A018880": 0.7952,
+    "A204320": 0.7952,
+    "A003030": 0.5202,
+    "A015750": 0.7702,
+    "A002380": 0.7952,
+    "A000080": 0.7952,
+    "A073240": 0.7952,
+    "A161390": 0.7952,
+    "A005380": 0.7952,
+    "A298380": 0.6827,
+    "A003230": 0.5411,
+    "A010130": 0.7952,
+    "A004000": 0.7952,
+    "A009540": 0.7952,
+    "A007310": 0.7952,
+    "A017960": 0.3827,
+    "A010140": 0.7952,
+    "A033500": 0.3827,
+    "A009830": 0.7952,
+    "A128940": 0.7952,
+    "A006650": 0.7952,
+    "A011210": 0.7952,
+    "A298050": 0.5827,
+    "A004370": 0.7952,
+    "A000670": 0.7744,
+    "A051910": 0.7952,
+    "A000150": 0.7952,
+    "A007660": 0.3577,
+    "A009150": 0.7952,
+    "A011070": 0.7952,
+    "A067310": 0.5327,
+    "A222800": 0.5827,
+    "A383220": 0.5327,
+    "A000100": 0.7952,
+    "A000250": 0.7327,
+    "A003090": 0.6077,
+    "A006280": 0.7952,
+    "A009420": 0.7952,
+    "A068760": 0.7952,
+    "A069620": 0.7952,
+    "A087010": 0.5077,
+    "A185750": 0.7952,
+    "A195940": 0.5577,
+    "A280360": 0.5077,
+    "A025900": 0.7952,
+    "A001800": 0.7369,
+    "A271560": 0.7369,
+    "A001680": 0.7952,
+    "A298020": 0.5827,
+    "A066570": 0.7952,
+    "A005300": 0.7952,
+    "A004020": 0.7952,
+    "A005490": 0.7952,
+    "A009520": 0.4827,
+    "A103140": 0.7952,
+    "A050890": 0.3827,
+    "A006040": 0.4827,
+    "A003380": 0.7577,
+    "A079550": 0.7827,
+    "A300720": 0.5327,
+    "A038500": 0.5827,
+    "A034020": 0.7952,
+    "A002030": 0.3577,
+    "A329180": 0.5577,
+    "A021240": 0.7952,
+    "A007340": 0.4202,
+    "A272210": 0.6077,
+    "A012450": 0.7952,
+    "A241560": 0.7327,
+    "A017800": 0.7952,
+    "A033100": 0.4327,
+    "A047810": 0.7369,
+    "A062040": 0.3577,
+    "A083650": 0.3577,
+    "A267260": 0.4577,
+    "A298040": 0.4994,
+    "A456040": 0.3327
   },
-  "signal_matrix_ref": "stage_artifacts/WT_D20260802_001/alpha_scores_F1_export_surprise.parquet",
+  "signal_matrix_ref": "stage_artifacts/WT_D20260802_001/alpha_scores.parquet",
   "factor_specs": [
     {
       "factor_family": "Fundamental_Flow_NonReturn",
-      "proxy": "customs_HS_export_surprise_via_DART_segment_crosswalt",
-      "formula": "CS_ZSCORE(CS_WINSORIZE(G - TS_MEAN(G,12), 0.02)), G = LOG(x) - LOG(TS_LAG(x,12)), x = Sum_h w_ih * HS4_monthly_export_USD",
+      "proxy": "customs_HS_export_surprise x estimated_export_dependence",
+      "formula": "CS_ZSCORE(CS_WINSORIZE(S x CLIP(M,0,1), 0.02)); S = G - TS_MEAN(G,12), G = LOG(x) - LOG(TS_LAG(x,12)), x = Σ_h w_ih·Flow_h; M = Σ_h w_ih·[Flow_h(TTM,USD)·FX / Σ_j Rev_j·w_jh]",
       "lag_rule": "data_ym M -> usable M+1/15 -> score M+1 month-end -> holding M+2 (buffer 14~17d)",
       "winsorization": "cross-sectional 2% both tails",
-      "neutralization": "none (F4 = sector-neutral variant)",
-      "economic_rationale": "firm-level 통관 수출은 분기 재무제표보다 선행하는 실물 매출 flow이며, 귀속 비용이 차익거래 마찰로 작동한다",
+      "neutralization": "none",
+      "economic_rationale": "1차 pass-through: ΔRevenue/Revenue ≈ 수출의존도 x 수출성장. 의존도 M 은 Rev_i 가 소거되는 scale-free 분수라 시총에 기계적으로 단조가 아니다 (시총 단조 가중치를 쓰면 cap-tier 판별이 순환논증이 되므로 의도적으로 배제).",
       "weight_theta": 1,
       "redundancy_cluster_id": "nonreturn_customs_export_fq073",
       "source": "new_designed",
       "references": [
         "FQ-073 frontier queue",
-        "PIT_plan_fq073.md (2026-07-25)"
+        "PIT_plan_fq073.md (2026-07-25)",
+        "WT-D20260802_001 R1 alpha_package_r1.json"
       ]
     }
   ],
   "diagnostics": {
-    "canonical_port_t_nw_lag3": -1.7078,
-    "canonical_port_t_pvalue": 0.0877,
+    "canonical_port_t_nw_lag3": -1.2005,
+    "canonical_port_t_pvalue": 0.2299,
     "canonical_n_months": 112,
     "metric_type": "canonical_screen",
-    "rank_ic": -0.00336,
-    "icir": -0.028,
-    "harvey_t_stat": -0.296,
+    "rank_ic": -0.00206,
+    "icir": -0.0175,
+    "harvey_t_stat": -0.185,
     "monotonicity": null,
     "subperiod_stability": {
-      "2016-01-01_2019-12-31": -1.71,
-      "2020-01-01_2022-12-31": 1.531,
-      "2023-01-01_2026-12-31": -2.586
+      "2016-01-01_2019-12-31": -1.292,
+      "2020-01-01_2022-12-31": 1.586,
+      "2023-01-01_2026-12-31": -1.672
     },
-    "turnover_proxy": 12.884,
+    "turnover_proxy": 12.5182,
     "post_neutralization_ic": null,
-    "information_ratio": -0.5121,
-    "net_sr": -0.5121,
-    "gross_0bps_port_t": -1.3592,
+    "information_ratio": -0.3793,
+    "net_sr": -0.3793,
     "dual_basis": {
-      "cap_w_port_t": -1.7078,
-      "ew_universe_port_t": -1.6048,
+      "cap_w_port_t": -1.2005,
+      "ew_universe_port_t": -1.1034,
       "cap_tier_weight_share": {
-        "MEGA": 0.05946903,
-        "MID": 0.05132743,
-        "OTHER": 0.88920354,
+        "MEGA": 0.044248,
+        "MID": 0.040354,
+        "OTHER": 0.915398,
         "UNRANKED": 0
       },
       "cap_tier_contrib_annualized": {
-        "MEGA": 0.01853596,
-        "MID": 0.00451481,
-        "OTHER": 0.05691867,
+        "MEGA": 0.012157,
+        "MID": -0.001228,
+        "OTHER": 0.086191,
         "UNRANKED": 0
       },
-      "verdict": "EW-대비도 음수 — cap-w 벤치 아티팩트 아님. cap-tier 는 OTHER 88.9% 로 소형주 국소화 재현."
-    },
-    "large_cap_restricted_F5": {
-      "metric_type": "canonical_screen",
-      "universe": "cap_rank<=100 within K200uKQ150",
-      "portfolio_alpha_t_nw_lag3": -0.3279,
-      "p": 0.743,
-      "n_months": 112,
-      "information_ratio": -0.1096,
-      "turnover_annual": 7.846,
-      "n_scored_avg": 49.5,
-      "ew_universe_port_t": 0.2409
-    },
-    "effective_cross_section": {
-      "metric_type": "diagnostic",
-      "n_firms_scored_avg": 182.8,
-      "n_distinct_scores_avg": 116.5,
-      "distinct_ratio": 0.6439,
-      "note": "distinct_ratio < 1 = 동일 HS4 버킷 종목이 구분 불가(동점). 'firm-level' 신호의 실제 해상도."
-    },
-    "falsification_test": {
-      "H63d": {
-        "horizon_days": 63,
-        "q5_minus_q1_logrev": 0.01494,
-        "t_stat": 1.969,
-        "n_months": 113,
-        "q5_mean": 0.01784,
-        "q1_mean": 0.0029,
-        "n_obs": 18413,
-        "metric_type": "diagnostic_falsification"
+      "base_rate": {
+        "universe": {
+          "OTHER": 0.9149,
+          "MID": 0.0568,
+          "MEGA": 0.0284
+        },
+        "score_pool_primary": {
+          "OTHER": 0.9089,
+          "MID": 0.0481,
+          "MEGA": 0.043
+        },
+        "note": "K200uKQ150 에서 MEGA=10 / MID=20 종목은 정의상 고정이므로 OTHER base ~0.91. 보유 tier 비중은 이 base 대비 lift 로 읽어야 한다."
       },
-      "H126d": {
-        "horizon_days": 126,
-        "q5_minus_q1_logrev": 0.0129,
-        "t_stat": 1.352,
-        "n_months": 113,
-        "q5_mean": 0.02291,
-        "q1_mean": 0.01001,
-        "n_obs": 18183,
-        "metric_type": "diagnostic_falsification"
+      "verdict": "★R2 핵심 — cap-tier 는 base rate 대비로 읽어야 한다. K200∪KQ150 에서 MEGA=10·MID=20 종목은 정의상 고정이므로 OTHER base ≈ 0.915(유니버스)·0.909(스코어풀)다. R1 의 OTHER 0.889 는 base 아래(lift 0.978)이고 MEGA 0.0595 는 base 위(lift_pool 1.384 / lift_univ 2.097) — 즉 R1 은 '소형주 국소화'가 아니라 오히려 약한 대형주 초과편입이었다. materiality 재척도 후 OTHER 0.915(lift 1.007)·MEGA 0.0442(lift_pool 1.030) 로 **대형 tier 쪽 이동은 없었고 오히려 base 중립으로 되돌아갔다**."
+    },
+    "r2_variant_table": {
+      "B0_R1_F1": {
+        "metric_type": "canonical_screen",
+        "portfolio_alpha_t_nw_lag3": -1.7078,
+        "p": 0.0877,
+        "n_months": 112,
+        "information_ratio": -0.5121,
+        "net_sr": -0.5121,
+        "turnover_annual": 12.8835,
+        "ew_universe_port_t": -1.6048,
+        "ew_post2017_t": -1.6048,
+        "cap_tier_weight_share": {
+          "MEGA": 0.059469,
+          "MID": 0.051327,
+          "OTHER": 0.889204,
+          "UNRANKED": 0
+        },
+        "cap_tier_contrib_annualized": {
+          "MEGA": 0.018536,
+          "MID": 0.004515,
+          "OTHER": 0.056919,
+          "UNRANKED": 0
+        }
+      },
+      "R2_G1_mat_surprise": {
+        "metric_type": "canonical_screen",
+        "portfolio_alpha_t_nw_lag3": -1.2005,
+        "p": 0.2299,
+        "n_months": 112,
+        "information_ratio": -0.3793,
+        "net_sr": -0.3793,
+        "turnover_annual": 12.5182,
+        "ew_universe_port_t": -1.1034,
+        "ew_post2017_t": -1.1034,
+        "cap_tier_weight_share": {
+          "MEGA": 0.044248,
+          "MID": 0.040354,
+          "OTHER": 0.915398,
+          "UNRANKED": 0
+        },
+        "cap_tier_contrib_annualized": {
+          "MEGA": 0.012157,
+          "MID": -0.001228,
+          "OTHER": 0.086191,
+          "UNRANKED": 0
+        }
+      },
+      "R2_G1c_matcred_surprise": {
+        "metric_type": "canonical_screen",
+        "portfolio_alpha_t_nw_lag3": -1.1905,
+        "p": 0.2338,
+        "n_months": 112,
+        "information_ratio": -0.3931,
+        "net_sr": -0.3931,
+        "turnover_annual": 12.5352,
+        "ew_universe_port_t": -1.2894,
+        "ew_post2017_t": -1.2894,
+        "cap_tier_weight_share": {
+          "MEGA": 0.035752,
+          "MID": 0.03115,
+          "OTHER": 0.933097,
+          "UNRANKED": 0
+        },
+        "cap_tier_contrib_annualized": {
+          "MEGA": 0.005316,
+          "MID": 0.001168,
+          "OTHER": 0.081414,
+          "UNRANKED": 0
+        }
+      },
+      "R2_G2_sue": {
+        "metric_type": "canonical_screen",
+        "portfolio_alpha_t_nw_lag3": -1.2704,
+        "p": 0.204,
+        "n_months": 100,
+        "information_ratio": -0.414,
+        "net_sr": -0.414,
+        "turnover_annual": 16.1251,
+        "ew_universe_port_t": -0.7373,
+        "ew_post2017_t": -0.7373,
+        "cap_tier_weight_share": {
+          "MEGA": 0.050693,
+          "MID": 0.044356,
+          "OTHER": 0.90495,
+          "UNRANKED": 0
+        },
+        "cap_tier_contrib_annualized": {
+          "MEGA": 0.013689,
+          "MID": -0.00432,
+          "OTHER": 0.088657,
+          "UNRANKED": 0
+        }
+      },
+      "R2_G3_mat_sue": {
+        "metric_type": "canonical_screen",
+        "portfolio_alpha_t_nw_lag3": -0.6676,
+        "p": 0.5044,
+        "n_months": 100,
+        "information_ratio": -0.2145,
+        "net_sr": -0.2145,
+        "turnover_annual": 13.8059,
+        "ew_universe_port_t": 0.0945,
+        "ew_post2017_t": 0.0945,
+        "cap_tier_weight_share": {
+          "MEGA": 0.039604,
+          "MID": 0.033267,
+          "OTHER": 0.927129,
+          "UNRANKED": 0
+        },
+        "cap_tier_contrib_annualized": {
+          "MEGA": 0.006067,
+          "MID": -0.004683,
+          "OTHER": 0.126854,
+          "UNRANKED": 0
+        }
+      },
+      "R2_G4_mat_sue_sm3": {
+        "metric_type": "canonical_screen",
+        "portfolio_alpha_t_nw_lag3": -0.7666,
+        "p": 0.4433,
+        "n_months": 98,
+        "information_ratio": -0.2793,
+        "net_sr": -0.2793,
+        "turnover_annual": 7.1224,
+        "ew_universe_port_t": -0.1122,
+        "ew_post2017_t": -0.1122,
+        "cap_tier_weight_share": {
+          "MEGA": 0.046465,
+          "MID": 0.03596,
+          "OTHER": 0.917576,
+          "UNRANKED": 0
+        },
+        "cap_tier_contrib_annualized": {
+          "MEGA": 0.012746,
+          "MID": -0.001767,
+          "OTHER": 0.099251,
+          "UNRANKED": 0
+        }
+      },
+      "R2_G5_mat_sue_sm6": {
+        "metric_type": "canonical_screen",
+        "portfolio_alpha_t_nw_lag3": 0.1374,
+        "p": 0.8907,
+        "n_months": 95,
+        "information_ratio": 0.0493,
+        "net_sr": 0.0493,
+        "turnover_annual": 5.085,
+        "ew_universe_port_t": 1.446,
+        "ew_post2017_t": 1.446,
+        "cap_tier_weight_share": {
+          "MEGA": 0.052083,
+          "MID": 0.035,
+          "OTHER": 0.912917,
+          "UNRANKED": 0
+        },
+        "cap_tier_contrib_annualized": {
+          "MEGA": 0.024088,
+          "MID": -0.005917,
+          "OTHER": 0.170256,
+          "UNRANKED": 0
+        }
       }
     },
-    "falsification_verdict": "MECHANISM_NOT_SUPPORTED — 선언한 부수 관측(컨센 상향)이 유의하지 않다. 가격 이전 단계에서 기전이 끊긴다 = 반증 조건 충족.",
+    "common_window_table": {
+      "months": 96,
+      "from": "2018-08-31",
+      "to": "2026-07-31",
+      "results": {
+        "R2_G1_mat_surprise": {
+          "metric_type": "canonical_screen",
+          "portfolio_alpha_t_nw_lag3": -1.1973,
+          "p": 0.2312,
+          "n_months": 95,
+          "information_ratio": -0.4083,
+          "net_sr": -0.4083,
+          "turnover_annual": 12.525,
+          "ew_universe_port_t": -0.7294,
+          "ew_post2017_t": -0.7294,
+          "cap_tier_weight_share": {
+            "MEGA": 0.04125,
+            "MID": 0.032917,
+            "OTHER": 0.925833,
+            "UNRANKED": 0
+          },
+          "cap_tier_contrib_annualized": {
+            "MEGA": 0.009675,
+            "MID": -0.004373,
+            "OTHER": 0.096336,
+            "UNRANKED": 0
+          }
+        },
+        "R2_G1c_matcred_surprise": {
+          "metric_type": "canonical_screen",
+          "portfolio_alpha_t_nw_lag3": -1.242,
+          "p": 0.2142,
+          "n_months": 95,
+          "information_ratio": -0.4462,
+          "net_sr": -0.4462,
+          "turnover_annual": 12.435,
+          "ew_universe_port_t": -1.0395,
+          "ew_post2017_t": -1.0395,
+          "cap_tier_weight_share": {
+            "MEGA": 0.032083,
+            "MID": 0.025417,
+            "OTHER": 0.9425,
+            "UNRANKED": 0
+          },
+          "cap_tier_contrib_annualized": {
+            "MEGA": 0.001691,
+            "MID": -0.000748,
+            "OTHER": 0.085234,
+            "UNRANKED": 0
+          }
+        },
+        "R2_G2_sue": {
+          "metric_type": "canonical_screen",
+          "portfolio_alpha_t_nw_lag3": -1.2103,
+          "p": 0.2262,
+          "n_months": 95,
+          "information_ratio": -0.4056,
+          "net_sr": -0.4056,
+          "turnover_annual": 16.155,
+          "ew_universe_port_t": -0.569,
+          "ew_post2017_t": -0.569,
+          "cap_tier_weight_share": {
+            "MEGA": 0.051667,
+            "MID": 0.040833,
+            "OTHER": 0.9075,
+            "UNRANKED": 0
+          },
+          "cap_tier_contrib_annualized": {
+            "MEGA": 0.01454,
+            "MID": -0.002033,
+            "OTHER": 0.100956,
+            "UNRANKED": 0
+          }
+        },
+        "R2_G3_mat_sue": {
+          "metric_type": "canonical_screen",
+          "portfolio_alpha_t_nw_lag3": -0.6196,
+          "p": 0.5356,
+          "n_months": 95,
+          "information_ratio": -0.2051,
+          "net_sr": -0.2051,
+          "turnover_annual": 13.905,
+          "ew_universe_port_t": 0.241,
+          "ew_post2017_t": 0.241,
+          "cap_tier_weight_share": {
+            "MEGA": 0.038333,
+            "MID": 0.03,
+            "OTHER": 0.931667,
+            "UNRANKED": 0
+          },
+          "cap_tier_contrib_annualized": {
+            "MEGA": 0.008185,
+            "MID": -0.003943,
+            "OTHER": 0.140506,
+            "UNRANKED": 0
+          }
+        },
+        "R2_G4_mat_sue_sm3": {
+          "metric_type": "canonical_screen",
+          "portfolio_alpha_t_nw_lag3": -0.6487,
+          "p": 0.5165,
+          "n_months": 95,
+          "information_ratio": -0.2407,
+          "net_sr": -0.2407,
+          "turnover_annual": 7.125,
+          "ew_universe_port_t": 0.0836,
+          "ew_post2017_t": 0.0836,
+          "cap_tier_weight_share": {
+            "MEGA": 0.045417,
+            "MID": 0.034583,
+            "OTHER": 0.92,
+            "UNRANKED": 0
+          },
+          "cap_tier_contrib_annualized": {
+            "MEGA": 0.012511,
+            "MID": -0.000594,
+            "OTHER": 0.116163,
+            "UNRANKED": 0
+          }
+        },
+        "R2_G5_mat_sue_sm6": {
+          "metric_type": "canonical_screen",
+          "portfolio_alpha_t_nw_lag3": 0.1374,
+          "p": 0.8907,
+          "n_months": 95,
+          "information_ratio": 0.0493,
+          "net_sr": 0.0493,
+          "turnover_annual": 5.085,
+          "ew_universe_port_t": 1.446,
+          "ew_post2017_t": 1.446,
+          "cap_tier_weight_share": {
+            "MEGA": 0.052083,
+            "MID": 0.035,
+            "OTHER": 0.912917,
+            "UNRANKED": 0
+          },
+          "cap_tier_contrib_annualized": {
+            "MEGA": 0.024088,
+            "MID": -0.005917,
+            "OTHER": 0.170256,
+            "UNRANKED": 0
+          }
+        },
+        "B0": {
+          "metric_type": "canonical_screen",
+          "portfolio_alpha_t_nw_lag3": -1.398,
+          "p": 0.1621,
+          "n_months": 95,
+          "information_ratio": -0.4518,
+          "net_sr": -0.4518,
+          "turnover_annual": 12.995,
+          "ew_universe_port_t": -0.8374,
+          "ew_post2017_t": -0.8374,
+          "cap_tier_weight_share": {
+            "MEGA": 0.056667,
+            "MID": 0.04625,
+            "OTHER": 0.897083,
+            "UNRANKED": 0
+          },
+          "cap_tier_contrib_annualized": {
+            "MEGA": 0.016867,
+            "MID": 0.004219,
+            "OTHER": 0.081168,
+            "UNRANKED": 0
+          }
+        }
+      }
+    },
+    "tier_lift_table": [
+      {
+        "variant": "B0_R1_F1",
+        "MEGA": 0.059469,
+        "MID": 0.051327,
+        "OTHER": 0.889204,
+        "UNRANKED": 0,
+        "lift_pool_MEGA": 1.384,
+        "lift_univ_MEGA": 2.097,
+        "lift_pool_MID": 1.066,
+        "lift_univ_MID": 0.904,
+        "lift_pool_OTHER": 0.978,
+        "lift_univ_OTHER": 0.972
+      },
+      {
+        "variant": "R2_G1_mat_surprise",
+        "MEGA": 0.044248,
+        "MID": 0.040354,
+        "OTHER": 0.915398,
+        "UNRANKED": 0,
+        "lift_pool_MEGA": 1.03,
+        "lift_univ_MEGA": 1.56,
+        "lift_pool_MID": 0.838,
+        "lift_univ_MID": 0.711,
+        "lift_pool_OTHER": 1.007,
+        "lift_univ_OTHER": 1.001
+      },
+      {
+        "variant": "R2_G1c_matcred_surprise",
+        "MEGA": 0.035752,
+        "MID": 0.03115,
+        "OTHER": 0.933097,
+        "UNRANKED": 0,
+        "lift_pool_MEGA": 0.832,
+        "lift_univ_MEGA": 1.261,
+        "lift_pool_MID": 0.647,
+        "lift_univ_MID": 0.549,
+        "lift_pool_OTHER": 1.027,
+        "lift_univ_OTHER": 1.02
+      },
+      {
+        "variant": "R2_G2_sue",
+        "MEGA": 0.050693,
+        "MID": 0.044356,
+        "OTHER": 0.90495,
+        "UNRANKED": 0,
+        "lift_pool_MEGA": 1.18,
+        "lift_univ_MEGA": 1.787,
+        "lift_pool_MID": 0.922,
+        "lift_univ_MID": 0.781,
+        "lift_pool_OTHER": 0.996,
+        "lift_univ_OTHER": 0.989
+      },
+      {
+        "variant": "R2_G3_mat_sue",
+        "MEGA": 0.039604,
+        "MID": 0.033267,
+        "OTHER": 0.927129,
+        "UNRANKED": 0,
+        "lift_pool_MEGA": 0.922,
+        "lift_univ_MEGA": 1.396,
+        "lift_pool_MID": 0.691,
+        "lift_univ_MID": 0.586,
+        "lift_pool_OTHER": 1.02,
+        "lift_univ_OTHER": 1.013
+      },
+      {
+        "variant": "R2_G4_mat_sue_sm3",
+        "MEGA": 0.046465,
+        "MID": 0.03596,
+        "OTHER": 0.917576,
+        "UNRANKED": 0,
+        "lift_pool_MEGA": 1.081,
+        "lift_univ_MEGA": 1.638,
+        "lift_pool_MID": 0.747,
+        "lift_univ_MID": 0.633,
+        "lift_pool_OTHER": 1.01,
+        "lift_univ_OTHER": 1.003
+      },
+      {
+        "variant": "R2_G5_mat_sue_sm6",
+        "MEGA": 0.052083,
+        "MID": 0.035,
+        "OTHER": 0.912917,
+        "UNRANKED": 0,
+        "lift_pool_MEGA": 1.212,
+        "lift_univ_MEGA": 1.836,
+        "lift_pool_MID": 0.727,
+        "lift_univ_MID": 0.616,
+        "lift_pool_OTHER": 1.004,
+        "lift_univ_OTHER": 0.998
+      }
+    ],
+    "effective_cross_section": {
+      "B0_R1_F1": {
+        "metric_type": "diagnostic",
+        "n_firms_scored_avg": 182.8,
+        "n_distinct_scores_avg": 116.5,
+        "distinct_ratio": 0.6439
+      },
+      "R2_G1_mat_surprise": {
+        "metric_type": "diagnostic",
+        "n_firms_scored_avg": 180,
+        "n_distinct_scores_avg": 115.4,
+        "distinct_ratio": 0.6488
+      },
+      "R2_G5_mat_sue_sm6": {
+        "metric_type": "diagnostic",
+        "n_firms_scored_avg": 187.3,
+        "n_distinct_scores_avg": 118.9,
+        "distinct_ratio": 0.6399
+      },
+      "note": "distinct_ratio 1.0 = 모든 종목이 서로 다른 값(진짜 firm-level). R1 은 0.644 로 동일 HS4 버킷 동점이 36%."
+    },
+    "materiality_profile": {
+      "metric_type": "diagnostic",
+      "n_rows": 22019,
+      "n_months": 124,
+      "spearman_vs_neg_cap_rank": {
+        "M_raw": -0.21,
+        "M_clip": -0.1942,
+        "M_cred": 0.0193
+      },
+      "by_tier": {
+        "MEGA": {
+          "n": 935,
+          "M_raw_mean": 0.493,
+          "M_clip_mean": 0.45,
+          "M_cred_mean": 0.418,
+          "share_M_gt_1": 0.114
+        },
+        "MID": {
+          "n": 1127,
+          "M_raw_mean": 0.581,
+          "M_clip_mean": 0.406,
+          "M_cred_mean": 0.347,
+          "share_M_gt_1": 0.094
+        },
+        "OTHER": {
+          "n": 19957,
+          "M_raw_mean": 1.665,
+          "M_clip_mean": 0.537,
+          "M_cred_mean": 0.318,
+          "share_M_gt_1": 0.328
+        }
+      },
+      "interpretation": "M_raw 는 소형주에서 오히려 크다(단일 소형사가 거대 HS4 버킷에 매핑되면 분모가 작아 폭발) = 귀속 실패의 지문. CLIP(0,1) 로 경제적 상한을 걸어도 시총과의 관계는 여전히 약한 음(-)이며, credibility 보정(min(R,1/R))에서만 시총 중립이 된다. 어느 정규화도 신호를 대형 tier 로 이동시키지 않는다 — 대형주 편입은 정규화가 만들 수 있는 것이 아니었다."
+    },
+    "falsification_test": {
+      "B0_R1_F1": {
+        "H63d": {
+          "horizon_days": 63,
+          "q5_minus_q1_logrev": 0.01494,
+          "t_stat": 1.969,
+          "n_months": 113,
+          "q5_mean": 0.01784,
+          "q1_mean": 0.0029,
+          "n_obs": 18413,
+          "metric_type": "diagnostic_falsification"
+        },
+        "H126d": {
+          "horizon_days": 126,
+          "q5_minus_q1_logrev": 0.0129,
+          "t_stat": 1.352,
+          "n_months": 113,
+          "q5_mean": 0.02291,
+          "q1_mean": 0.01001,
+          "n_obs": 18183,
+          "metric_type": "diagnostic_falsification"
+        }
+      },
+      "R2_G1_mat_surprise": {
+        "H63d": {
+          "horizon_days": 63,
+          "q5_minus_q1_logrev": 0.00604,
+          "t_stat": 0.744,
+          "n_months": 113,
+          "q5_mean": 0.01398,
+          "q1_mean": 0.00794,
+          "n_obs": 18093,
+          "metric_type": "diagnostic_falsification"
+        },
+        "H126d": {
+          "horizon_days": 126,
+          "q5_minus_q1_logrev": 0.0046,
+          "t_stat": 0.535,
+          "n_months": 113,
+          "q5_mean": 0.02401,
+          "q1_mean": 0.01941,
+          "n_obs": 17863,
+          "metric_type": "diagnostic_falsification"
+        }
+      },
+      "R2_G5_mat_sue_sm6": {
+        "H63d": {
+          "horizon_days": 63,
+          "q5_minus_q1_logrev": 0.00479,
+          "t_stat": 0.541,
+          "n_months": 96,
+          "q5_mean": 0.01895,
+          "q1_mean": 0.01416,
+          "n_obs": 15877,
+          "metric_type": "diagnostic_falsification"
+        },
+        "H126d": {
+          "horizon_days": 126,
+          "q5_minus_q1_logrev": -0.00433,
+          "t_stat": -0.387,
+          "n_months": 96,
+          "q5_mean": 0.01593,
+          "q1_mean": 0.02026,
+          "n_obs": 15664,
+          "metric_type": "diagnostic_falsification"
+        }
+      },
+      "verdict": "MECHANISM_NOT_SUPPORTED — 사전등록 문턱(t>=2) 미달. materiality 가중으로도 링크1이 유의 수준에 이르지 못한다."
+    },
+    "falsification_verdict": "MECHANISM_NOT_SUPPORTED — 사전등록 문턱(t>=2) 미달. materiality 가중으로도 링크1이 유의 수준에 이르지 못한다.",
     "dynamic_pit": {
-      "lag1": {
+      "R2_G1": {
         "metric_type": "canonical_screen",
-        "base_port_t": -1.7078,
-        "lag1_port_t": -1.7053,
-        "n_months": 111,
-        "interpretation": "base 와 lag1 의 격차가 크면 동월 누출 의심. 본 라운드 base 가 음수라 누출 인플레 여지 없음 — 확인 목적."
+        "base_port_t": -1.2005,
+        "lag1_strict_port_t": -0.9647,
+        "inflation_base_minus_strict": -0.2358,
+        "n_months_base": 112,
+        "n_months_lag1": 111,
+        "verdict": "NO_INFLATION"
       },
-      "strict_ab": {
+      "R2_G4": {
         "metric_type": "canonical_screen",
-        "base_port_t": -1.7078,
-        "strict_port_t": -1.7053,
-        "inflation_base_minus_strict": -0.0024,
-        "verdict": "NO_INFLATION",
-        "note": "strict lane = 데이터월 한 달 추가 지연. 인플레(base-strict)가 크면 타이밍 경계 누출."
+        "base_port_t": -0.7666,
+        "lag1_strict_port_t": 0.4431,
+        "inflation_base_minus_strict": -1.2097,
+        "n_months_base": 98,
+        "n_months_lag1": 97,
+        "verdict": "NO_INFLATION"
       },
-      "vintage_swap": {
-        "n_snapshots": 2,
-        "snapshots": [
-          "customs_hs_20260726.parquet",
-          "customs_hs_20260801.parquet"
-        ],
-        "n_cells": 289792,
-        "changed_share": 0,
-        "max_ym_a": "2026-06",
-        "max_ym_b": "2026-06",
-        "verdict": "NO_REVISION_OBSERVED_IN_WINDOW — 두 스냅샷(6일 간격, 개정일 15일 미포함) 사이 개정 0. 개정폭 미측정(무증거≠무개정)."
+      "R2_G5": {
+        "metric_type": "canonical_screen",
+        "base_port_t": 0.1374,
+        "lag1_strict_port_t": -0.0479,
+        "inflation_base_minus_strict": 0.1852,
+        "n_months_base": 95,
+        "n_months_lag1": 94,
+        "verdict": "NO_INFLATION"
       },
-      "label_direction_cor": 1
+      "note": "lag1 = 신호를 추가 1개월 지연(strict lane). 본 라운드 후보는 부호가 0 근방이라 누출 인플레 여지는 애초 작다 — 확인 목적."
+    },
+    "label_direction_cor": 1,
+    "adversarial_measurements": {
+      "C2_tier_score_coverage": {
+        "metric_type": "diagnostic",
+        "by_tier": {
+          "MEGA": [
+            {
+              "tier": "MEGA",
+              "n_univ": 1398,
+              "n_scored": 874,
+              "cover": 0.6252,
+              "avg_scored_per_month": 7.73
+            }
+          ],
+          "MID": [
+            {
+              "tier": "MID",
+              "n_univ": 2796,
+              "n_scored": 979,
+              "cover": 0.3501,
+              "avg_scored_per_month": 8.66
+            }
+          ],
+          "OTHER": [
+            {
+              "tier": "OTHER",
+              "n_univ": 45161,
+              "n_scored": 18487,
+              "cover": 0.4094,
+              "avg_scored_per_month": 163.6
+            }
+          ]
+        },
+        "verdict": "REBUTTED — MEGA 커버리지 0.6252 (월평균 7.73/10 종목이 스코어 보유) 로 OTHER(0.4094) 보다 오히려 높다. top-25 슬롯 대비 대형주 후보가 부족해서 선택되지 않은 것이 아니다 — 선택 가능한데 선택되지 않았다."
+      },
+      "C1_bucket_tie_structure": {
+        "metric_type": "diagnostic",
+        "n_firms_single_hs4": 180,
+        "n_firms_multi_hs4": 135,
+        "n_buckets": 92,
+        "n_buckets_single_firm": 42,
+        "median_firms_per_bucket": 2,
+        "max_firms_per_bucket": 27,
+        "n_firms_in_shared_buckets": 273,
+        "verdict": "ACCEPT — M_i = Σ_h w_ih·R_h 에서 R_h 는 버킷 수준이고 Rev_i 는 소거된다. 따라서 단일-HS4 매핑 기업(180/315)끼리는 같은 버킷 안에서 여전히 동점이다. 실측: distinct_ratio 0.6439 -> 0.6488 (거의 무변화). '5% vs 80% 노출' 구분은 **버킷 간**으로만 실현됐고 **버킷 내**에서는 실현되지 않았다."
+      },
+      "C4_large_cap_restricted": {
+        "R2_G1_mat_surprise": {
+          "metric_type": "canonical_screen",
+          "universe": "cap_rank<=100 within K200uKQ150",
+          "portfolio_alpha_t_nw_lag3": -0.7791,
+          "p": 0.4359,
+          "n_months": 112,
+          "turnover_annual": 8.194,
+          "ew_universe_port_t": -0.6814,
+          "n_scored_avg": 47.6
+        },
+        "R2_G5_mat_sue_sm6": {
+          "metric_type": "canonical_screen",
+          "universe": "cap_rank<=100 within K200uKQ150",
+          "portfolio_alpha_t_nw_lag3": -0.2436,
+          "p": 0.8075,
+          "n_months": 95,
+          "turnover_annual": 3.495,
+          "ew_universe_port_t": 0.7635,
+          "n_scored_avg": 48.5
+        },
+        "verdict": "대형 tier 안으로 유니버스를 제한해도 알파는 없다(0 근방). R1 F5(-0.33)와 동일 결론."
+      }
     },
     "ast_verify": {
-      "honest": "FAIL_CONTRACT (production_parity_verified)",
-      "counterfactual_parity_true": "PASS",
-      "lookahead_violations_after_fix": 0,
-      "first_run_caught": "F4 sector-neutral FAIL_LOOKAHEAD (rawdata Sector t+1) — TS_LAG(1d)로 수정"
+      "R2_G1_mat_surprise": "WARN_RESTATEMENT",
+      "R2_G1c_matcred_surprise": "WARN_RESTATEMENT",
+      "R2_G2_sue": "WARN_RESTATEMENT",
+      "R2_G3_mat_sue": "WARN_RESTATEMENT",
+      "R2_G4_mat_sue_sm3": "WARN_RESTATEMENT",
+      "R2_G5_mat_sue_sm6": "WARN_RESTATEMENT",
+      "leaf_count_range": "5~9 (R1 F1 은 leaf_count=0 으로 빈 PASS 였다 — ALB-007 수리 후 실검증)",
+      "violations": 0,
+      "contract_failures": 0,
+      "parity_unverified_count": "5~9 (정직 선언 false — ALB-002 수리로 통과+플래그)",
+      "unmapped_restatement_count": "5~9 (field_map 미등재 STORED_SCORE — ALB-003 수리로 표면화)",
+      "dialect_args_used": true,
+      "note": "R1 대비 변화: 단일 방언(컴파일러 트리 그대로)으로 검증. R1 의 FAIL_CONTRACT 5건은 전부 해소."
     },
-    "n_iterations": 5,
+    "n_iterations": 6,
     "selection_type": "chain",
     "deflated_sharpe_ratio": null,
-    "dsr_note": "selection_type=chain (가설주도 순차 대조군) — measurement-graduation §3 상 DSR 게이트 부적용. 수치도 미산출(전 후보 음수라 진단 무의미)."
+    "dsr_note": "6 변형은 사전선언 귀속설계(materiality on/off x 변동성표준화 on/off 의 2x2 + 평활 사다리 2단)이며 argmax 로 최종안을 고르는 sweep 이 아니다 — measurement-graduation §3 상 selection_type=chain, DSR 게이트 부적용. 더 결정적으로 **어떤 변형도 승격 후보로 제출하지 않는다** (전 변형 PORT_t < 2.95, 최고치도 p=0.891). 따라서 선택 편향이 개입할 판정 자체가 없다. n_trials=6 은 사후 감사용으로 기록."
   },
   "selection_objective": "canonical_port_t",
   "alpha_discovery_count": 0,
   "challenge_flags": [
     {
-      "id": "CF-01",
+      "id": "R2-CF-01",
       "severity": "HIGH",
-      "flag": "crosswalk static_current = C1/C3 사업구성 look-ahead. 원 크로스워크 자체가 gate_eligible=FALSE 로 라벨링. 본 측정은 진단 lane이며 graduation 판정 자격 없음."
+      "flag": "★라운드 전제 자체가 base rate 오류 — R1 의 'OTHER 88.9% = 소형주 국소화' 판독은 K200∪KQ150 의 OTHER base 0.915(정의상 MEGA 10 + MID 20 고정)와 대조하지 않은 결과다. 실제로 R1 은 MEGA lift 2.097(유니버스 대비)로 약한 대형주 초과편입이었다. R2 는 이 오독을 정정한다 (self-adversarial ACCEPT)."
     },
     {
-      "id": "CF-02",
+      "id": "R2-CF-02",
       "severity": "HIGH",
-      "flag": "'상한(upper bound)' 논증의 한계 — 매핑 vintage 오류는 favorable bias 가 아니라 attenuating noise 일 개연이 크다. 따라서 '상한이 음수이므로 clean lane 도 음수'는 강한 신호에만 성립하고 약한 신호는 배제하지 못한다 (self-adversarial ACCEPT)."
+      "flag": "materiality 는 **버킷 수준**이라 버킷 내 동점을 깨지 못한다. M_i = Σ_h w_ih·R_h 에서 Rev_i 가 소거되므로 단일-HS4 매핑 기업(180/315)끼리는 여전히 동일 스코어다. 실측 distinct_ratio 0.6439 → 0.6488(무변화). '5% vs 80% 노출' 구분은 버킷 간으로만 실현됐고 버킷 내에서는 실현되지 않았다 — 이 라운드가 P1 을 절반만 집행했음을 인정한다 (ACCEPT)."
     },
     {
-      "id": "CF-03",
+      "id": "R2-CF-03",
       "severity": "HIGH",
-      "flag": "rank-IC ~ 0 (-0.0034, t -0.30) 인데 top-25 PORT_t = -1.71. 광범위 횡단면 신호가 아니라 극단 tail 선택 효과. top-25 가 최고변동 niche HS4 버킷(소형주)을 구조적으로 선택 — 수출 정보가 아니라 lottery-stock 페널티를 재측정했을 개연."
+      "flag": "반증 검정이 materiality 에 불리 — 링크1(수출→컨센 영업이익 상향) t 가 R1 무가중 1.969 → R2 materiality 가중 0.744 로 **약해졌다**. materiality 가 실제 경제적 노출을 잡았다면 강해져야 했다. 사전등록한 R2 강화 조건에 대한 명시적 반증 (ACCEPT)."
     },
     {
-      "id": "CF-04",
+      "id": "R2-CF-04",
       "severity": "MEDIUM",
-      "flag": "회전율 1288%/yr — Production Constraints 상 TO<=1100% 초과. 양(+) 신호였더라도 현 horizon 에서는 구현 불가."
+      "flag": "변형 간 n_months 불일치(112 → 95)로 개선처럼 보일 수 있어 공통창(96개월 2018-08~2026-07) 재측정을 병기했다. 공통창에서도 B0 -1.398 → G5 +0.137 로 방향은 유지되나, G5 의 p=0.891 은 '개선'이 아니라 '0 과 구분 불가'다 (REBUTTAL — 근거 병기)."
     },
     {
-      "id": "CF-05",
+      "id": "R2-CF-05",
       "severity": "MEDIUM",
-      "flag": "regime_scope 예측 반증 — crisis 에서 약화를 예측했으나 2020-22(COVID) 부기간 PORT_t 는 +1.53 으로 유일한 양수 구간. 메커니즘에서 도출한 국면 경계가 데이터와 어긋난다."
+      "flag": "G4(3M 평활)의 lag1 스트레스가 base(-0.767)보다 높다(+0.443, 인플레 -1.21). 누출 방향은 아니지만(누출이면 base > lag1) 선언한 'M+2 홀딩월 반영' 타이밍이 데이터와 맞지 않음을 시사. 메커니즘의 시점 주장은 미확립 상태로 남는다."
     },
     {
-      "id": "CF-06",
+      "id": "R2-CF-06",
       "severity": "MEDIUM",
-      "flag": "유효 횡단면 해상도 0.644 — 월평균 183 종목 중 서로 다른 스코어 116개. 동일 HS4 단일매핑 종목은 구분 불가하므로 'firm-level' 주장이 64%만 실현됨."
+      "flag": "PIT 노출 R1 그대로 잔존 — crosswalk static_current(C1/C3) + customs 개정판 vintage + C6 survivorship. R2 의 materiality 분모(Rev_j·w_jh)도 **같은 static 크로스워크 가중치**를 쓰므로 노출이 해소가 아니라 승계된다. gate_eligible=FALSE."
     },
     {
-      "id": "CF-07",
+      "id": "R2-CF-07",
       "severity": "MEDIUM",
-      "flag": "survivorship — crosswalk 474사는 현재 상장 기업 기반. 과거 유니버스의 상장폐지 종목은 스코어 풀에 부재(C6)."
+      "flag": "M>1(수출의존도 정의 위반) 이 패널의 40.0% — 매핑된 상장사 매출로 흐름을 설명하지 못하는 구간이 그만큼 넓다. CLIP(0,1)은 이를 '최대 의존도'로 saturate 시키는데, 오히려 귀속 실패 신호일 수 있다. credibility 보정판(G1c, min(R,1/R))을 대조군으로 병기했고 결과는 더 나쁘다(-1.190). 어느 처리도 결론을 바꾸지 않는다 (PARTIAL — 인정 + 대조 실측 병기)."
     },
     {
-      "id": "CF-08",
+      "id": "R2-CF-08",
       "severity": "LOW",
-      "flag": "vintage-swap 무증거 — 스냅샷 2개가 6일 간격이고 개정일(15일)을 포함하지 않아 개정폭 미측정. 무증거는 무개정이 아니다."
+      "flag": "FX(TTM 월평균 KRW/USD)는 횡단면 공통 스칼라라 랭킹에 무영향이나 CLIP 경계는 시간에 따라 움직인다 — saturate 되는 기업 수가 환율에 약하게 의존한다. 영향 미측정."
     },
     {
-      "id": "CF-09",
+      "id": "R2-CF-09",
       "severity": "INFO",
-      "flag": "AST 계층 결함 4건 적립 — 06_Registry/ast_leaf_table_bugs.jsonl ALB-001~004 (방언 분기 / production_parity 범위 / field_map 미등재 무검사 / rawdata 가용성 불일치)."
+      "flag": "AST 계층 수리 검증 — R1 이 적립한 ALB-001/002/003/005/006/007 수리 후 첫 라운드. 6 스펙 전량 WARN_RESTATEMENT(통과+플래그), leaf_count 5~9(R1 F1 은 0 = 빈 PASS), violations 0, contract_failures 0. 단일 방언으로 축소(두 벌 유지 폐지). ast_sidecar live_with_ast 5 → 11."
+    },
+    {
+      "id": "R2-CF-10",
+      "severity": "INFO",
+      "flag": "자기 적대검증 C2 는 실측으로 REBUTTED — 'cap-tier 가 안 움직인 건 크로스워크에 대형주가 없어서'라는 반론은 틀렸다. MEGA 커버리지 0.625(월평균 7.73/10 종목 스코어 보유)로 OTHER(0.409)보다 높다. 25 슬롯에 대형주를 넣을 여지가 실재하는데 선택되지 않았다."
     }
   ],
   "verdict_summary": {
     "result": "config_scoped_negative",
     "lane": "LANE_UPPER_BOUND (static_current 매핑 + revised vintage)",
     "gate_eligible": false,
-    "statement": "본 config(월간 HS4 서프라이즈 x static_current 크로스워크 x top-25 cap-w EW long-only x 15bps)에서 FQ-073 은 양(+)의 알파를 산출하지 않는다. 4개 신호형 전부 cap-w·EW 양 basis 에서 음수이며, 대형주 제한(F5)에서는 음수가 사라지되 알파도 없다(PORT_t -0.33, p 0.74). 선언한 반증 검정에서 컨센서스 영업이익 상향은 방향은 맞으나(Q5 +1.78% vs Q1 +0.29%) 사전등록 기준 t>=2 에 미달(t=1.969) — 기전의 1차 링크는 약하게 존재하고 2차 링크(가격 전이)는 부재. 구조 판결 아님 — 미검 축은 next_probe 참조."
+    "p1_answer": "materiality 재척도 후에도 보유 cap-tier 는 대형 tier 로 이동하지 않았다 (MEGA 0.0595 → 0.0442, OTHER 0.889 → 0.915). 다만 R1 의 'OTHER 88.9% = 소형주 국소화'라는 전제 자체가 base rate 오류였다 — 스코어풀 OTHER base 는 0.909 이므로 R1 도 R2 도 tier 구성은 base 근방이다. 따라서 정확한 판정은 '아티팩트냐 신호의 성질이냐'가 아니라 **'수출 신호에는 애초에 cap-tier 를 움직일 횡단면 선택력이 없다'** 이다. MEGA 커버리지 0.625(월 7.73종목)로 선택 여지는 실재했다.",
+    "p2_answer": "회전율 제약은 해소된다 — 3M 평활 712%/yr, 6M 평활 508%/yr 로 모두 1100% 이내. 평활이 신호를 죽이지 않았고 오히려 음(-)을 제거했다(PORT_t -1.708 → +0.137, EW-uni -1.605 → +1.446). 즉 R1 의 음수는 상당부분 고빈도 성분 + 비용의 산물이었다. 단 +0.137(p 0.891)은 알파가 아니라 0 이다.",
+    "statement": "본 config(월간 HS4 서프라이즈 x 수출의존도 재척도 x static_current 크로스워크 x top-25 cap-w EW long-only x 15bps)에서 FQ-073 은 양(+)의 알파를 산출하지 않는다. R1 대비 실질 변화는 ①음수의 소멸(-1.708 → +0.137, 원인은 materiality 30% + 변동성표준화 + 평활) ②회전율 제약 충족 ③cap-tier 전제의 정정. 변하지 않은 것은 ①알파 부재(전 변형 |t| < 1.3, PORT_t 2.95 HARD 미달) ②firm-level 해상도(distinct_ratio 0.64 그대로) ③PIT 노출(C1/C3 static mix, C6, customs 개정) ④반증 검정 미지지(오히려 약화). 구조 판결 아님 — 미검 축은 next_probe 참조.",
+    "next_probe": [
+      {
+        "id": "NP-R2-1",
+        "priority": "P1",
+        "probe": "버킷 내 해상도 확보 — firm-level 수출 의존도 직접 추출. DART 사업보고서 '매출실적' 표의 수출/내수 행을 파싱해 기업별 수출비중 패널을 만든다. R1 probe 는 정규식 상한 18.4%(58/315, 중앙값 56.65%)를 확인했다. 이 축이 열려야 M 이 버킷 수준을 벗어나 firm-level 이 된다 — 현재 distinct_ratio 0.64 의 천장이 여기다.",
+        "rationale": "R2-CF-02 가 확정한 구조적 병목. 정규화로는 절대 못 넘는다 = 데이터 축."
+      },
+      {
+        "id": "NP-R2-2",
+        "priority": "P1",
+        "probe": "P3 vintage 크로스워크 — pull_dart_products.py 가 이미 연도-파라미터화(FQ073_BGN/END)돼 있으므로 effective_from 다행 구조로 재구축. 현재 C1/C3 노출을 해소하면 gate_eligible 가 열리고, '상한 lane 이 음수'라는 R1/R2 논증의 attenuating-noise 반론(R1 CF-02)도 판별 가능해진다.",
+        "rationale": "R2 는 P3 를 미착수로 남겼다. gate 자격의 전제."
+      },
+      {
+        "id": "NP-R2-3",
+        "priority": "P2",
+        "probe": "평활 6M 이 음수를 제거한 기전 규명 — 고빈도 성분이 (a) 비용 (b) 단기 반전 (c) 버킷 변동성 중 무엇인가. gross(0bps) vs net 재측정 + 신호 자기상관 구조 + 월별 회전 기여 분해. 이 규명은 FQ-073 밖 다른 월간 flow 신호에 이식 가능한 지식이다.",
+        "rationale": "R2 최대 실측 변화(-1.708→+0.137)의 원인이 미귀속 상태."
+      },
+      {
+        "id": "NP-R2-4",
+        "priority": "P2",
+        "probe": "소비면 이식 — 수출 서프라이즈를 랭킹 팩터가 아니라 ①유니버스 필터 (수출 급감 버킷 제외) ②monitoring tripwire(보유 종목의 수출 버킷 급변 경보) ③국면 입력(총수출 모멘텀 = macro overlay 후보)으로 소비. 횡단면 선택력이 없다는 것이 시계열 정보가 없다는 뜻은 아니다.",
+        "rationale": "answer-principles 4호 소비면 7종 순회 — 랭킹 실패가 폐기 사유가 아니다."
+      }
+    ]
   }
 }

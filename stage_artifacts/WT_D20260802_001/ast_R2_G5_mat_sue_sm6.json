@@ -1,0 +1,344 @@
+{
+ "type": "op",
+ "op": "CS_ZSCORE",
+ "args": [
+  {
+   "type": "op",
+   "op": "CS_WINSORIZE",
+   "args": [
+    {
+     "type": "op",
+     "op": "TS_MEAN",
+     "args": [
+      {
+       "type": "op",
+       "op": "MUL",
+       "args": [
+        {
+         "type": "op",
+         "op": "DIV",
+         "args": [
+          {
+           "type": "op",
+           "op": "SUB",
+           "args": [
+            {
+             "type": "op",
+             "op": "SUB",
+             "args": [
+              {
+               "type": "op",
+               "op": "LOG",
+               "args": [
+                {
+                 "type": "leaf",
+                 "class": "STORED_SCORE",
+                 "source": "stored_panel",
+                 "field": "export_exposure_usd",
+                 "embedded_data_through": "2026-06-30",
+                 "contract": {
+                  "path": "stage_artifacts/WT_D20260802_001/fq073_export_exposure_chapter.parquet",
+                  "value_col": "value",
+                  "store_build_hash": "21b45aae617b8c473db2fd20598aec4a89bbd3e9",
+                  "generator_code_path": "stage_artifacts/WT_D20260802_001/build_export_panel.py",
+                  "generated_at": "2026-08-02 02:23:09",
+                  "production_parity_verified": false,
+                  "avail_offset_days": null
+                 }
+                }
+               ]
+              },
+              {
+               "type": "op",
+               "op": "LOG",
+               "args": [
+                {
+                 "type": "op",
+                 "op": "TS_LAG",
+                 "args": [
+                  {
+                   "type": "leaf",
+                   "class": "STORED_SCORE",
+                   "source": "stored_panel",
+                   "field": "export_exposure_usd",
+                   "embedded_data_through": "2026-06-30",
+                   "contract": {
+                    "path": "stage_artifacts/WT_D20260802_001/fq073_export_exposure_chapter.parquet",
+                    "value_col": "value",
+                    "store_build_hash": "21b45aae617b8c473db2fd20598aec4a89bbd3e9",
+                    "generator_code_path": "stage_artifacts/WT_D20260802_001/build_export_panel.py",
+                    "generated_at": "2026-08-02 02:23:09",
+                    "production_parity_verified": false,
+                    "avail_offset_days": null
+                   }
+                  }
+                 ],
+                 "params": {
+                  "k": 12
+                 },
+                 "unit": "m"
+                }
+               ]
+              }
+             ]
+            },
+            {
+             "type": "op",
+             "op": "TS_MEAN",
+             "args": [
+              {
+               "type": "op",
+               "op": "SUB",
+               "args": [
+                {
+                 "type": "op",
+                 "op": "LOG",
+                 "args": [
+                  {
+                   "type": "leaf",
+                   "class": "STORED_SCORE",
+                   "source": "stored_panel",
+                   "field": "export_exposure_usd",
+                   "embedded_data_through": "2026-06-30",
+                   "contract": {
+                    "path": "stage_artifacts/WT_D20260802_001/fq073_export_exposure_chapter.parquet",
+                    "value_col": "value",
+                    "store_build_hash": "21b45aae617b8c473db2fd20598aec4a89bbd3e9",
+                    "generator_code_path": "stage_artifacts/WT_D20260802_001/build_export_panel.py",
+                    "generated_at": "2026-08-02 02:23:09",
+                    "production_parity_verified": false,
+                    "avail_offset_days": null
+                   }
+                  }
+                 ]
+                },
+                {
+                 "type": "op",
+                 "op": "LOG",
+                 "args": [
+                  {
+                   "type": "op",
+                   "op": "TS_LAG",
+                   "args": [
+                    {
+                     "type": "leaf",
+                     "class": "STORED_SCORE",
+                     "source": "stored_panel",
+                     "field": "export_exposure_usd",
+                     "embedded_data_through": "2026-06-30",
+                     "contract": {
+                      "path": "stage_artifacts/WT_D20260802_001/fq073_export_exposure_chapter.parquet",
+                      "value_col": "value",
+                      "store_build_hash": "21b45aae617b8c473db2fd20598aec4a89bbd3e9",
+                      "generator_code_path": "stage_artifacts/WT_D20260802_001/build_export_panel.py",
+                      "generated_at": "2026-08-02 02:23:09",
+                      "production_parity_verified": false,
+                      "avail_offset_days": null
+                     }
+                    }
+                   ],
+                   "params": {
+                    "k": 12
+                   },
+                   "unit": "m"
+                  }
+                 ]
+                }
+               ]
+              }
+             ],
+             "params": {
+              "window": 12
+             }
+            }
+           ]
+          },
+          {
+           "type": "op",
+           "op": "TS_STD",
+           "args": [
+            {
+             "type": "op",
+             "op": "SUB",
+             "args": [
+              {
+               "type": "op",
+               "op": "SUB",
+               "args": [
+                {
+                 "type": "op",
+                 "op": "LOG",
+                 "args": [
+                  {
+                   "type": "leaf",
+                   "class": "STORED_SCORE",
+                   "source": "stored_panel",
+                   "field": "export_exposure_usd",
+                   "embedded_data_through": "2026-06-30",
+                   "contract": {
+                    "path": "stage_artifacts/WT_D20260802_001/fq073_export_exposure_chapter.parquet",
+                    "value_col": "value",
+                    "store_build_hash": "21b45aae617b8c473db2fd20598aec4a89bbd3e9",
+                    "generator_code_path": "stage_artifacts/WT_D20260802_001/build_export_panel.py",
+                    "generated_at": "2026-08-02 02:23:09",
+                    "production_parity_verified": false,
+                    "avail_offset_days": null
+                   }
+                  }
+                 ]
+                },
+                {
+                 "type": "op",
+                 "op": "LOG",
+                 "args": [
+                  {
+                   "type": "op",
+                   "op": "TS_LAG",
+                   "args": [
+                    {
+                     "type": "leaf",
+                     "class": "STORED_SCORE",
+                     "source": "stored_panel",
+                     "field": "export_exposure_usd",
+                     "embedded_data_through": "2026-06-30",
+                     "contract": {
+                      "path": "stage_artifacts/WT_D20260802_001/fq073_export_exposure_chapter.parquet",
+                      "value_col": "value",
+                      "store_build_hash": "21b45aae617b8c473db2fd20598aec4a89bbd3e9",
+                      "generator_code_path": "stage_artifacts/WT_D20260802_001/build_export_panel.py",
+                      "generated_at": "2026-08-02 02:23:09",
+                      "production_parity_verified": false,
+                      "avail_offset_days": null
+                     }
+                    }
+                   ],
+                   "params": {
+                    "k": 12
+                   },
+                   "unit": "m"
+                  }
+                 ]
+                }
+               ]
+              },
+              {
+               "type": "op",
+               "op": "TS_MEAN",
+               "args": [
+                {
+                 "type": "op",
+                 "op": "SUB",
+                 "args": [
+                  {
+                   "type": "op",
+                   "op": "LOG",
+                   "args": [
+                    {
+                     "type": "leaf",
+                     "class": "STORED_SCORE",
+                     "source": "stored_panel",
+                     "field": "export_exposure_usd",
+                     "embedded_data_through": "2026-06-30",
+                     "contract": {
+                      "path": "stage_artifacts/WT_D20260802_001/fq073_export_exposure_chapter.parquet",
+                      "value_col": "value",
+                      "store_build_hash": "21b45aae617b8c473db2fd20598aec4a89bbd3e9",
+                      "generator_code_path": "stage_artifacts/WT_D20260802_001/build_export_panel.py",
+                      "generated_at": "2026-08-02 02:23:09",
+                      "production_parity_verified": false,
+                      "avail_offset_days": null
+                     }
+                    }
+                   ]
+                  },
+                  {
+                   "type": "op",
+                   "op": "LOG",
+                   "args": [
+                    {
+                     "type": "op",
+                     "op": "TS_LAG",
+                     "args": [
+                      {
+                       "type": "leaf",
+                       "class": "STORED_SCORE",
+                       "source": "stored_panel",
+                       "field": "export_exposure_usd",
+                       "embedded_data_through": "2026-06-30",
+                       "contract": {
+                        "path": "stage_artifacts/WT_D20260802_001/fq073_export_exposure_chapter.parquet",
+                        "value_col": "value",
+                        "store_build_hash": "21b45aae617b8c473db2fd20598aec4a89bbd3e9",
+                        "generator_code_path": "stage_artifacts/WT_D20260802_001/build_export_panel.py",
+                        "generated_at": "2026-08-02 02:23:09",
+                        "production_parity_verified": false,
+                        "avail_offset_days": null
+                       }
+                      }
+                     ],
+                     "params": {
+                      "k": 12
+                     },
+                     "unit": "m"
+                    }
+                   ]
+                  }
+                 ]
+                }
+               ],
+               "params": {
+                "window": 12
+               }
+              }
+             ]
+            }
+           ],
+           "params": {
+            "window": 12
+           }
+          }
+         ],
+         "params": {
+          "eps": 1e-08
+         }
+        },
+        {
+         "type": "op",
+         "op": "CLIP",
+         "args": [
+          {
+           "type": "leaf",
+           "class": "STORED_SCORE",
+           "source": "stored_panel",
+           "field": "export_materiality",
+           "embedded_data_through": "2026-06-30",
+           "contract": {
+            "path": "stage_artifacts/WT_D20260802_001/fq073_export_materiality.parquet",
+            "value_col": "value",
+            "store_build_hash": "39be5d69d39c7d19b1073ed62d664bb60978148a",
+            "generator_code_path": "stage_artifacts/WT_D20260802_001/build_materiality_panel.py",
+            "generated_at": "2026-08-02 03:53:16",
+            "production_parity_verified": false,
+            "avail_offset_days": null
+           }
+          }
+         ],
+         "params": {
+          "lo": 0.0,
+          "hi": 1.0
+         }
+        }
+       ]
+      }
+     ],
+     "params": {
+      "window": 6
+     }
+    }
+   ],
+   "params": {
+    "p": 0.02
+   }
+  }
+ ]
+}
