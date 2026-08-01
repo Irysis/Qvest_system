@@ -9,6 +9,28 @@ HU <- file.path(ROOT,"05_Production/2.Factor_Model/2-3.STR_1715_on_M4_R05_noLaye
 LT <- file.path(ROOT,"06_Registry/live_track",BOOK_ID); dir.create(LT,showWarnings=FALSE,recursive=TRUE)
 send_tg <- Sys.getenv("NOLAYER4_DAILY_TG", Sys.getenv("FAITH_DAILY_TG","1"))=="1"
 
+## 0) ★배포 북 정합 가드 (2026-08-01) — 이 스크립트가 마킹하는 북이 실제 admitted 북인가.
+##    2026-07-19 D3 swap-in 으로 admitted 는 STR_1715_on_M4gAE_R05_noLayer4_PG2(슬롯 2-4)로
+##    바뀌었는데 아래 BOOK_ID/HU 는 구 슬롯 2-3 에 묶여 있다. 두 산출이 우연히 동일한 달에는
+##    티가 안 나지만(2026-08: m4 미발화 → gate=1.00), m4 발화월에는 **배포되지 않은 북을
+##    매일 마킹**하게 된다. 이관은 live_track NAV 이력 소속을 바꾸는 별건 결정이라 여기서는
+##    **불일치를 드러내기만** 한다 — 조용히 틀린 북을 마킹하는 것보다 낫다.
+.admitted <- tryCatch({
+  bs <- jsonlite::fromJSON(file.path(ROOT,"qepm/mailbox/governor/book_state.json"))
+  ids <- bs[["admitted_ids"]]          # ★keyed 접근 — grep 하면 admitted_ids_prior_* 형제 키
+  if (is.list(ids)) ids <- unlist(ids) #   (구 2-3 ID 보유) 를 함께 끌어온다(실측 24곳)
+  ids
+}, error=function(e) NULL)
+if (is.null(.admitted) || length(.admitted) != 1L) {
+  cat(sprintf("[nolayer4-daily][WARN] admitted_ids 판독 실패/복수(%s) — 북 정합 미확인\n",
+              paste(.admitted, collapse=",")))
+} else if (!identical(.admitted[1], BOOK_ID)) {
+  cat(sprintf(paste0("[nolayer4-daily][WARN] ★마킹 북 != admitted 북\n",
+                     "   admitted = %s\n   marking  = %s (슬롯2-3 하드코딩)\n",
+                     "   → m4 발화월에는 배포되지 않은 북을 마킹함. live_track 이관 결정 필요.\n"),
+              .admitted[1], BOOK_ID))
+}
+
 ## 1) 최신 noLayer4 배포 홀딩 (리밸 date = 파일명)
 wf <- list.files(HU, pattern="_noLayer4_weights_cap_0p20\\.csv$", full.names=TRUE)
 if(!length(wf)){cat("[nolayer4-daily] 배포 홀딩 없음 — 월간 리밸(forward_weights_R05_noLayer4.R) 선행 필요.\n"); quit(save="no")}

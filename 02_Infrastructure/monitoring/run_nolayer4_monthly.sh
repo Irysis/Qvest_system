@@ -24,6 +24,34 @@ echo "=== noLayer4 월간 트래킹 $AS_OF ($(date)) ===" | tee "$LOG"
 #    (내부: _recompute_alpha_asof.R + STR_1715 run_all.R + m4 factor_engine → m4_extended.csv/alpha 신선)
 kill_stray; PG2_AS_OF="$AS_OF" bash "$B23/run_pg2_forward_noLayer4.sh" >> "$LOG" 2>&1 || echo "[warn] run_pg2_forward_noLayer4 비정상(로그 확인)" | tee -a "$LOG"
 
+# 1b) ★deployed 슬롯 생성기 — book_state.admitted_ids 가 슬롯 2-3 이 아닐 때만 추가 실행.
+#     2026-07-19 D3 swap-in 이후 admitted = STR_1715_on_M4gAE_R05_noLayer4_PG2(슬롯 2-4)인데
+#     이 실행기는 슬롯 2-3 만 돌리고 있었다 — m4 발화월(실측 37개월 중 36개월)에는
+#     30% de-risk 가 누락된 **틀린 비중**이 배포된다. 2026-08 은 m4 미발화라 두 산출이
+#     바이트 동일이었을 뿐이다.
+#     ★[1]과 [1b]는 체인이 아니라 **형제**다 — 2-4 생성기는 2-3 의 weights 를 읽지 않고
+#       [1]이 만든 같은 alpha/m4 패널을 읽는다. 그래서 [1] 은 계속 필요하다(연료 + base 시리즈).
+#     ★05_Production 무수정: 인프라 미러(GEN_SCRIPT)를 호출한다. 해석기가 production 사본과
+#       sha1 대조까지 마친 경로만 반환한다.
+. "$QM_ROOT/02_Infrastructure/ops/resolve_admitted_slot.sh"
+if resolve_admitted_slot; then
+  echo "── [1b] deployed 슬롯: $ADMITTED_ID → ${SLOT_DIR##*/} (tag=$HOLD_TAG)" | tee -a "$LOG"
+  if [ "${SLOT_DIR##*/}" = "2-3.STR_1715_on_M4_R05_noLayer4_PG2" ]; then
+    echo "   admitted == 슬롯2-3 → [1] 산출이 곧 배포본 (추가 실행 없음)" | tee -a "$LOG"
+  else
+    kill_stray
+    QM_ROOT="$QM_ROOT" CLAUDE_PROJECT_DIR="$QM_ROOT" PG2_AS_OF="$AS_OF" \
+    PG2_OUT_DIR="$SLOT_DIR/02_holdings_universe" \
+    R_DATATABLE_NUM_THREADS=1 OMP_NUM_THREADS=1 ARROW_IO_THREADS=1 \
+      "$RSCRIPT" --no-save "$GEN_SCRIPT" >> "$LOG" 2>&1 \
+      || echo "[warn] deployed 생성기($( basename "$GEN_SCRIPT")) 비정상 — Gate C/D 가 최종 검증" | tee -a "$LOG"
+  fi
+else
+  # fail-closed: 해석 실패 시 구 슬롯으로 조용히 되돌아가지 않는다.
+  echo "XX [1b] admitted 슬롯 해석 실패 — 배포본 미산출. book_state/슬롯 구성 확인 필요" | tee -a "$LOG"
+  exit 12
+fi
+
 # 2) base 오버레이 패널 최신화 (β_R05/m4/ret_orig per realized_ym) — run_layer5_rerun_extended.R.
 #    ★extend_nolayer4_series의 연료. 이 스텝이 없으면 base 패널이 정적→새 실현월이 시리즈에 안 쌓임.
 #    (step 1의 m4_extended.csv + STR_1715 PR 확장이 선행돼야 여기서 새 realized_ym 생성됨.)

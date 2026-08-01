@@ -31,11 +31,17 @@ PY="$QM_ROOT/.venv_qvest_ml/Scripts/python.exe"
 RSCRIPT="$(command -v Rscript || echo '/c/Program Files/R/R-4.5.2/bin/Rscript.exe')"
 LOGD="$QM_ROOT/.cache/pg2_rebalance_logs"; mkdir -p "$LOGD"
 LOG="$LOGD/full_$(date +%Y%m%d_%H%M).log"
-# ── 배포 슬롯 / 산출 파일명 ────────────────────────────────────────────────
-#   슬롯별 파일명 규칙: ${DT}_<TAG>_weights_cap_0p20.csv · ${DT}_<TAG>_manifest.json
-#   (2-3 → TAG=noLayer4 / 2-4 → TAG=M4gAE)
-SLOT_DIR="$QM_ROOT/05_Production/2.Factor_Model/2-3.STR_1715_on_M4_R05_noLayer4_PG2"
-HOLD_TAG="noLayer4"
+# ── 배포 슬롯 / 산출 파일명 — book_state.admitted_ids 에서 해석 ────────────
+#   구판은 슬롯 2-3 을 하드코딩했다. 2026-07-19 D3 swap-in 으로 admitted 가
+#   STR_1715_on_M4gAE_R05_noLayer4_PG2(슬롯 2-4)로 바뀐 뒤에도 계속 구 변형을 산출했다.
+#   2026-08 은 m4 미발화로 두 슬롯 산출이 바이트 동일이라 무해했을 뿐 —
+#   m4 발화월(실측 37개월 중 36개월, 97.3%)에는 자동화가 30% de-risk 를 누락한다.
+#   해석은 정확 매칭 + fail-closed. 실패 시 여기서 멈춘다(구 슬롯으로 되돌아가지 않음).
+#   ★슬롯 선택에 .lineage_anchor() 계열을 쓰지 말 것 — 그 함수는 설계상 2-3·2-4 를
+#     같은 STR_1715 앵커로 병합해(measurement_basis_audit.R:89-99) 구분 불능이 된다.
+. "$QM_ROOT/02_Infrastructure/ops/resolve_admitted_slot.sh"
+resolve_admitted_slot || { echo "XX ABORT [slot] admitted 슬롯 해석 실패 — 배포 대상 불명확" >&2; exit 11; }
+#   해석 결과: ADMITTED_ID / SLOT_DIR / HOLD_TAG / GEN_SCRIPT (인프라 미러, production 사본과 sha1 일치 검증됨)
 HOLD_DIR="$SLOT_DIR/02_holdings_universe"
 HOLD="$HOLD_DIR/${DT}_${HOLD_TAG}_weights_cap_0p20.csv"
 MANIFEST="$HOLD_DIR/${DT}_${HOLD_TAG}_manifest.json"
@@ -52,6 +58,8 @@ say(){ echo "$1" | tee -a "$LOG"; }
 abort(){ say "XX ABORT [$1] (exit $3): $2"; exit "$3"; }
 
 say "===== PG2 rebalance FULL | AS_OF=$AS_OF | $(date '+%Y-%m-%d %H:%M:%S') ====="
+say "slot: $ADMITTED_ID → ${SLOT_DIR##*/} (tag=$HOLD_TAG)"
+say "gen : ${GEN_SCRIPT#$QM_ROOT/}"
 say "log: $LOG"
 
 # ── [0] QuantiWise refresh + Gate A ─────────────────────────────────────────
