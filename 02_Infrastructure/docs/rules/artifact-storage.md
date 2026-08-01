@@ -20,6 +20,13 @@
 **각 위치의 정확한 역할 + 예시**:
 
 - **① `stage_artifacts/<mode>/<run_id>/`** — 실험 런 단위 산출(중간 검증 json, 런 로그, verdict, challenge_note 등). 런이 끝나면 그 디렉토리는 감사 증거로 동결된다. 재현이 필요하면 새 run_id로 다시 실행한다(기존 런 덮어쓰기 금지). 예: `stage_artifacts/WT-D20260621_004/`, `stage_artifacts/reports/drawdown_frequency_kr_baseline_20260612.md`(레거시 평면 배치는 retain — 신규는 `<mode>/<run_id>/` 계층 의무).
+
+  - **예외: 운영 소비 신호 (2026-08-01 도훈 승인)**. 본 조항이 동결하는 것은 *감사 증거*이지, 그 디렉토리에 놓여 있을 뿐인 *운영 상태 파일*이 아니다. **05_Production 코드가 정기적으로 읽는 산출물**은 동결에서 제외하고 **정기 갱신을 허용**한다 — 갱신하지 않으면 배포가 낡은 값으로 돈다. 판별 기준은 §3 `_` private 모듈 예외와 동일한 **실소비자 유무**(파일 위치가 아니라 `git grep` 참조).
+    - 현행 1건 — `stage_artifacts/WT_D20260718_007/ae_regime_signal_ext.parquet`
+      (소비자: `05_Production/.../2-4.STR_1715_on_M4gAE_R05_noLayer4_PG2/01_reproducible_code/forward_weights_R05_noLayer4_M4gAE.R:48` + 인프라 미러 `02_Infrastructure/portfolio/forward_weights_D3_M4gAE.R`. D3 게이트의 AE 발화 판정 입력)
+    - **왜 이전이 아니라 예외인가**: 소비자가 `05_Production`(NEVER-modify)에 있어 읽기 경로를 바꿀 수 없다. 신호를 `06_Registry/`로 옮기려면 생성기를 고쳐야 하는데 그건 더 강한 금지다.
+    - **갱신 규약 3항**: ⓐ 같은 런의 다른 파일(모델·로그·verdict)은 **동결 유지** — 예외는 등재된 파일에 한정 ⓑ 갱신은 **append 의미론** — 이미 발행된 행의 값이 바뀌면 중단하고 사람 판단(실측 근거: 라이브 FRED가 과거를 개정한다. `StL_Fin_Stress` 1,303셀·2000-01-14부터, `Chi_Fin_Cond` 206셀) ⓒ 갱신 주체는 `02_Infrastructure/` 의 운영 스크립트 — 동결 디렉토리 안의 일회성 실험 스크립트를 고쳐 쓰지 않는다.
+
 - **② `outputs/<pipeline>/`** — 파이프라인 재실행이 항상 같은 자리에 다시 만드는 데이터(parquet/rds/csv). "이 파일의 최신본은 어디인가"에 대한 단일 답. 예: `outputs/ramp/pure_factor_scores.parquet`, `outputs/ramp/factor_group_scores.parquet`. 버전 병렬 보관 금지 — 구본이 필요하면 §4 Retention의 격리 절차를 따른다.
 - **③ `06_Registry/`** — 레지스트리·큐·상태 파일. 코드가 계약으로 읽는다. 예: `module_catalog.json`, `strategy_registry.json`, `live_track/<ID>/holdout_interval.json`, `overlay_candidate_queue.json`. 쓰기는 반드시 해당 writer 함수(`registry_writer.R`, `register_module` 등) 경유 — 손편집 금지.
 - **④ `04_Research/<topic>/`** — 사람용 보고서·분석 md·차트·리서치 스크립트. 주제 디렉토리 하나에 모은다. 예: `04_Research/pg2_forensics/b1_summary.md`, `04_Research/factor_rotation/fof_first_slice/superfactor_literature_survey_20260703.md`.
