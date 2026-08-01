@@ -75,7 +75,27 @@
 
 ## §5 Phase 2 — 구조특징 로깅 (적립은 즉시, 분석은 N≥30)
 
-**배선점 = essence_score() 내부 append-only 사이드카** `06_Registry/ast_structure_log.jsonl` (전 graduation 판정 경유라 capture 구조 보장 + oos_retention_splits 유실 문제 동시 해소):
+> **★ 개정 (2026-08-02, Q-Lead 야간 라운드 — M4 전제 실측 반증 + 배선점 확장)**
+> 아래 원문의 "essence_score() 단독 배선점 = 전 graduation 판정 경유라 capture 구조 보장"은 **실측으로 반증됐다**. 8일간 무증상이었고 정기 검사도 통과했으나 **실전 레코드가 0건**이었다.
+> - **실측 (2026-08-02 01:5x~02:2x)**: `06_Registry/ast_structure_log.jsonl` 399행 중 `ast_features` non-null **0** / `strategy_id` non-null **0**. 21행씩 동일-분 클러스터이며 2026-07-27·08-01 두 블록의 값 시퀀스가 **완전 동일** = 테스트 배터리 반복 산물. 실전 캡처 **0건**.
+> - **원인 1 (설계)**: `02_Infrastructure/alpha_search/run_alpha_search.R:330` 권위측정 사다리 — `if (grade %in% c("A","A_NOVEL","A_DEF","B","B_DEF") || screen_remeasure)` 일 때만 `.authoritative_remeasure()` → `essence_score()` 를 호출한다. 즉 essence_score 는 **proxy hurdle 사다리를 통과한 소수만** 경유한다. 2026-07-27 alpha-search 3라운드는 grade F/C·`screen_pass=FALSE` 라 사다리를 생략했고 기록이 남지 않았다. 이는 본 절이 명문으로 요구한 **"governor 거절분 포함 전량 로깅(생존편향 방지)"의 정반대** 구조다 — 생존자만 남는다.
+> - **원인 2 (커버리지)**: `canonical_screen_bt()` 는 essence_score 를 호출하지 않는다(주석 언급뿐). alpha 스크리닝 1급 지표 PORT_t 가 나오는 경로가 사이드카 미도달이었다.
+> - **원인 3 (호출측)**: main 저장소 `essence_score()` 호출자 **35곳 전수**가 `ast_features`/`strategy_id` 를 전달하지 않았다(시그니처만 존재).
+> - **원인 4 (트리 분기)**: worktree 6개 중 5개의 `essence_score.R` 이 사이드카 없는 구판.
+> - **위험**: 이 상태로 Step 5 에 진입하면 `N=399 ≥ 30` 으로 오판해 **합성 데이터로 complexity_prior 를 추정**하고 그 숫자를 alpha 프롬프트에 주입하게 된다(AX-002 급).
+>
+> **수리 (2026-08-02)**:
+> 1. 단일 writer 신설 `02_Infrastructure/contracts/ast_sidecar.R` — `ast_sidecar_log(lane, strategy_id, ast_features, metrics, extra)`.
+> 2. **배선점 확장**: `lane="essence"`(essence_score) + `lane="canonical_screen"`(canonical_screen_bt 반환 직전). 후자는 **기각분이 반드시 지나는 지점**이라 생존편향 요건을 실제로 만족한다.
+> 3. **실전/테스트 분리**: `run_context` 필드(기본 `live`, 배터리는 `QVEST_RUN_CONTEXT=test`) + `schema="ast_structure_log_v2"` 태그. 정직 카운터 `ast_sidecar_status()` 가 `live` / `live_with_ast` / `legacy_unlabeled` 를 분리 보고한다 — **Step 5 의 N 은 `live_with_ast` 로 센다.**
+> 4. **침묵 실패 제거**: 구판은 `try(silent=TRUE)` + `dir.exists()` 조건이라 실패가 무흔적이었다. 신판은 stderr WARN + `06_Registry/.ast_sidecar_failures.log` 에 남긴다.
+> 5. **루트 resolver marker 검증**: `CLAUDE.md` + `06_Registry` 동시 존재로 검증(경로 정규화 선행). 존재검사로 정체성검사를 대체하지 않는다.
+> 6. **강제**: `08_Tests/contract_regression/test_ast_sidecar.R` — 양성 대조 + 위반 주입 **24/24 PASS**(가짜 루트 기각·기각분 포착·구판 행 live 미계상·음성 통제 포함).
+>
+> **개정 후 정직 실측**: `total=401 · live=0 · live_with_ast=0 · legacy_unlabeled=399`. **실전 표본은 0에서 다시 시작한다** — 구판 399행은 `schema` 필드 부재로 자동 배제되며 원장은 무변경 보존(append-only 원칙).
+> **잔여**: run_alpha_search 사다리 자체는 비용 절약 설계라 유지하되, 스크리닝 lane 배선으로 커버리지를 확보했다. 부팅 상태라인 노출(재발 감지)은 후속.
+
+**배선점 (원문 — 2026-08-02 개정으로 확장됨)**: `essence_score()` 내부 append-only 사이드카 `06_Registry/ast_structure_log.jsonl` (~~전 graduation 판정 경유라 capture 구조 보장~~ → **반증됨, 위 개정 참조**. oos_retention_splits 유실 해소 효과는 유효):
 
 ```json
 { "strategy_id", "ts",
@@ -126,7 +146,12 @@ Step 3 ✅ 완료 (2026-07-25 — S2c/S2d):
         · parity(신규 컴파일러 vs factor DB): M01 rank corr ~0.95-0.97·M04 ~1.0(ic_sign 부호)·V01 1.0
         · 𝒪 확장 규율 첫 가동: BL-001(fundamental 리프 소스 부재) → 06_Registry/ast_operator_backlog.json
         ─── 손익분기 도달 (§4 3중 예방 + verify() + 게이트 실배선) ───
-Step 4 ✅ 배선 완료 (2026-07-25): essence_score()에 ast_features/strategy_id/active_regime 인자 +
+Step 4 ⚠️ 배선 완료 but **실전 캡처 0** (2026-07-25 배선 → 2026-08-02 결함 적발·수리).
+        ★ 8일간 무증상·정기검사 통과 상태로 실전 레코드 0건이었다(399행 전부 테스트 배터리).
+          근본 = essence_score 가 proxy 사다리 통과분만 경유(생존편향) + canonical_screen 미배선
+          + 호출자 35곳 전수 인자 미전달 + worktree 5/6 구판. 상세·수리 = §5 개정 절.
+          수리 후 정직 실측 live_with_ast=0 → **Step 5 의 N 은 여기서부터 다시 쌓인다.**
+        (원 배선 내용) essence_score()에 ast_features/strategy_id/active_regime 인자 +
         06_Registry/ast_structure_log.jsonl append-only 사이드카 — 채점 무관여(양 모드 identical 실증)·
         fail-soft·비-AST 산출도 전량 로깅(ast_features null = escape 커버리지 표식, 생존편향 방지).
         judge/governor verdict는 strategy_id 사후 조인. **분석은 N≥30부터** (§5 규율 불변)

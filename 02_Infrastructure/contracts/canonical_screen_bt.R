@@ -190,7 +190,10 @@ canonical_screen_bt <- function(scores_dt, returns_dt, bench_dt,
                                  liq_dt = NULL, liq_min = 2e8,
                                  run_id = "canonical_screen", strategy_id = "canonical_screen",
                                  periods_per_year = 12L,
-                                 diag_dual_basis = TRUE, size_dt = NULL) {
+                                 diag_dual_basis = TRUE, size_dt = NULL,
+                                 ast_features = NULL) {
+  # ast_features: [2026-08-02 additive] ast_compile manifest 구조특징 list.
+  #   판정에 일절 관여하지 않는다 — Step 4 사이드카 기록 전용(NULL = 비-AST 표식).
   # periods_per_year: 리밸/마킹 빈도 (월간=12 기본. 분기 리밸·분기수익 측정=4).
   #   3개월-horizon 신호를 분기 리밸 sleeve로 운용 시 4가 자연 cadence — 월간 마킹 강제 아님.
   stopifnot(all(c("Date","Ticker","score") %in% names(scores_dt)))
@@ -296,6 +299,51 @@ canonical_screen_bt <- function(scores_dt, returns_dt, bench_dt,
       error = function(e) list(available = FALSE, metric_type = "canonical_screen_diag",
                                error = paste0("diag_cap_tier failed: ", conditionMessage(e))))
   }
+
+  # ── [2026-08-02 신규] AST v1.1 Step 4 사이드카 — screening lane 배선 ────────
+  #  왜 여기인가: essence_score() 는 run_alpha_search.R:330 권위측정 사다리
+  #  (grade A/B 또는 screen_pass) 를 통과한 소수만 경유한다 — 실측으로 확인된
+  #  생존편향 구조. SOT §5 가 명문 요구한 "거절분 포함 전량 로깅"을 만족하려면
+  #  **기각분이 반드시 지나는** 스크리닝 판정 지점에서 잡아야 한다.
+  #  판정 무관여·fail-soft·append-only (본 함수 반환값 불변).
+  try({
+    if (!exists("ast_sidecar_log", mode = "function")) {
+      .cands <- c(Sys.getenv("CLAUDE_PROJECT_DIR", unset = ""),
+                  Sys.getenv("QM_ROOT", unset = ""), getwd())
+      for (.c0 in .cands) {
+        if (!nzchar(.c0)) next
+        .c0 <- gsub("\\\\", "/", .c0)
+        if (!(file.exists(file.path(.c0, "CLAUDE.md")) &&
+              dir.exists(file.path(.c0, "06_Registry")))) next
+        .sc <- file.path(.c0, "02_Infrastructure", "contracts", "ast_sidecar.R")
+        if (file.exists(.sc)) { source(.sc); break }
+      }
+    }
+    if (exists("ast_sidecar_log", mode = "function")) {
+      .ew <- out$diag_ew_universe
+      ast_sidecar_log(
+        lane = "canonical_screen",
+        strategy_id = strategy_id,
+        ast_features = ast_features,          # 호출자가 AST manifest 를 주면 기록, 아니면 NULL 표식
+        metrics = list(
+          metric_type = "canonical_screen",
+          port_t = out$portfolio_alpha_t_nw_lag3,
+          net_ir = out$information_ratio,
+          net_sr = out$net_sr,
+          alpha_annualized = out$alpha_annualized,
+          turnover_annual = out$turnover_annual
+        ),
+        extra = list(
+          run_id = run_id, n_months = out$n_months, top_n = top_n,
+          cost_bps_oneway = cost_bps_oneway,
+          # dual-basis: cap-w 판정 옆에 EW-유니버스 대비를 같이 남긴다(v8.3 기각 전 확인 의무)
+          diag_ew_port_t = if (is.list(.ew)) .ew$portfolio_alpha_t_nw_lag3 else NULL,
+          diag_cap_tier_available = isTRUE(out$diag_cap_tier$available)
+        )
+      )
+    }
+  }, silent = TRUE)
+
   out
 }
 

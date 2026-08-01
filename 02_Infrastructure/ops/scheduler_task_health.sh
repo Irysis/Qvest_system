@@ -77,21 +77,68 @@ for t in tasks:
     ts = _ts(t.get("last_run") or "")
     if ts: groups.setdefault(lbl, []).append((ts, t.get("task")))
 shutdown = ""
+cotermination = None
+resume = _ts(d.get("last_resume") or "")
+by_name = {t.get("task"): t for t in tasks}
 for lbl, items in groups.items():
     if len(items) < 3: continue
     span = (max(i[0] for i in items) - min(i[0] for i in items)).total_seconds()
     if span <= 300:
         t0 = min(i[0] for i in items)
         when = t0.strftime("%m-%d %H:%M")
-        # 시간 위치로 두 후보를 제시만 한다(선택은 사람). 최근(6h 이내) = 머신 가동 중 몰살일 확률↑
-        hrs = (datetime.datetime.now() - t0).total_seconds() / 3600.0
-        hint = ("부팅/가동 중 동시 강제종료 의심 — 실제 실패" if hrs < 6
-                else "머신 정지 시각의 사후 흔적일 수 있음")
-        shutdown = "동시 다발 종료 %s — 작업 %d개가 동일 사유(%s)·%.0f초 창. %s" % (
-            when, len(items), lbl, span, hint)
         names = set(i[1] for i in items)
+
+        # (2026-08-02 개정) ★분류를 **증거**로 한다 — 경과 시간이 아니라.
+        #   구판은 hrs<6 이면 "실제 실패", 아니면 "정지 흔적"이라고 라벨을 뒤집었다.
+        #   경과 시간은 원인에 대해 아무 정보가 없다 — 같은 사건이 6시간 뒤에 다른 라벨이
+        #   된다. 이 저장소가 반복해서 고쳐온 "잘못된 것을 재는 검사기" 계열이다.
+        #   대신 재개(resume) 시각과의 근접성을 본다: 재개 직후 15분 안에 동시 시작 =
+        #   밀린 트리거 일괄 발화(StartWhenAvailable) 서명.
+        mins_after_resume = None
+        if resume:
+            dt_r = (t0 - resume).total_seconds()
+            if dt_r >= 0: mins_after_resume = dt_r / 60.0
+
+        if mins_after_resume is not None and mins_after_resume <= 15.0:
+            cls  = "catchup_burst_after_resume"
+            hint = ("시스템 재개(%s) 후 %.0f분에 동시 시작 — 밀린 트리거 일괄 발화(catch-up) 서명. "
+                    "정지 기간 동안 무인 실행이 0이었다는 뜻" % (resume.strftime("%m-%d %H:%M"), mins_after_resume))
+        else:
+            cls  = "unclassified"
+            hint = "재개 직후 아님 — 개별 실패/머신 정지 양쪽 가능. 원인 단정 금지"
+
+        # 가설 소거 — 기록만으로 반증되는 것은 여기서 잘라낸다(매번 라이브 조회 불필요).
+        ruled_out = []
+        cl_tasks = [by_name.get(n) or {} for n in names]
+        if cl_tasks and all(t.get("stop_on_battery") is False for t in cl_tasks):
+            ruled_out.append("배터리 정책(StopIfGoingOnBatteries=false)")
+        if cl_tasks and all((t.get("logon_type") or "") == "Interactive" for t in cl_tasks):
+            hint += " · 전 작업 LogonType=Interactive = 세션 종료 시 함께 죽는 수명"
+
+        shutdown = "동시 다발 종료 %s — 작업 %d개가 동일 사유(%s)·%.0f초 창. %s%s" % (
+            when, len(items), lbl, span, hint,
+            (" [소거: %s]" % ", ".join(ruled_out)) if ruled_out else "")
+        cotermination = {
+            "when": t0.strftime("%Y-%m-%dT%H:%M:%S"), "n": len(items), "rc_label": lbl,
+            "span_sec": int(span), "tasks": sorted(names), "classification": cls,
+            "minutes_after_resume": (round(mins_after_resume, 1) if mins_after_resume is not None else None),
+            "ruled_out": ruled_out, "hint": hint,
+            # 사망 주체를 이름으로 지목하려면 이 로그가 켜져 있어야 한다. 꺼져 있으면
+            # 사후 규명이 **불가능**하므로 "미확정"이 정직한 판정이다(추정 금지).
+            "terminator_identifiable": bool(d.get("tasksched_oplog_enabled")),
+        }
         bad = [b for b in bad if b.split("(")[0] not in names]
         break
+
+# ★판정을 원장에 되쓴다 — 소비자(bootstrap)가 raw rc 로 **다시 판정하지 않게**.
+#   08-02 실측: 부팅 4i 가 이 클러스터링을 모른 채 원시 rc 만 보고 5건을 개별 "★실패"로
+#   보고했다(권위 스크립트는 같은 데이터로 "실패 1 · 정지 1"). 렌더러가 둘이면 판정도 둘이다.
+d["cotermination"] = cotermination
+try:
+    io.open(sys.argv[1], "w", encoding="utf-8").write(json.dumps(d, ensure_ascii=False, indent=2))
+except Exception:
+    pass   # 되쓰기 실패가 판정 자체를 막지는 않는다(원장은 보조 표면)
+
 print(json.dumps({"n": len(tasks), "bad": bad, "stale": stale, "shutdown": shutdown}, ensure_ascii=False))
 PY
 )

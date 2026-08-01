@@ -1,0 +1,41 @@
+{
+  "l_code": "L-AS-20260802_021901_32432",
+  "strategy_id": "STR_AS_20260802_021901_32432",
+  "grade": "F",
+  "core_reference": "저주파 스펙트럼 질량(추세 지속성) 상위 종목을 저변동성 하위 3분위 안에서만 선택 — 추세 알파를 낙폭 계층에서 분리 (Sepp-Lucic 2026, arXiv:2607.19497 / 07-27 base spec_mass_lowfreq_60d next_probe #2: MDD 61.4% 병목이 변동성 노출인지 신호 자체인지 분리 식별)",
+  "lesson_text": "SPEC_MASS_LOWVOL: 등급 F, 연복리 7.0% (벤치마크 대비 -3.9%p), 샤프 0.35. 명확한 실패 패턴 — 역방향 가설 탐색 후보.",
+  "tags": ["ALPHA_SEARCH", "FAST_VALIDATION", "VALIDATED_HARD_FAIL"],
+  "created_at": "2026-08-02",
+  "research_mode": "alpha_search",
+  "created_by": "AlphaSearch",
+  "metric_type": "proxy",
+  "construction_type": "momentum",
+  "lcode_schema_version": 2,
+  "cagr_pct": 6.98,
+  "sharpe": 0.351,
+  "mdd_pct": 57.46,
+  "excess_cagr": -3.9,
+  "mechanism_hypothesis": "가설 '저주파 스펙트럼 질량(추세 지속성) 상위 종목을 저변동성 하위 3분위 안에서만 선택 — 추세 알파를 낙폭 계층에서 분리 (Sepp-Lucic 2026, arXiv:260' — 검증 결과 지배 요인: FMT-01(MDD 57.5% > 45% — 선택 종목군의 위기 동반급락(구조적 꼬리위험)); FMT-02(IR -0.25 < -0.1 & 초과CAGR -3.9%p < 0 — KR에서 팩터 방향 역작동 의심); FMT-04(MDD 57.5% > 35% & BM상관 0.74 >= 0.7 — 위기국면 동조 낙폭(국면필터 부재))",
+  "data_supported_conclusion": "측정치(proxy — run_hurdle_gate): CAGR 7.0% (BM 대비 -3.9%p), 샤프 0.35, MDD -57.5%, IR -0.25, 회전율 연 774%, OOS retention 0.30.",
+  "next_probe": "MDD 축 탈락(57.5%) — 신호력 보존 시 OVERLAY_CANDIDATE 라우트(국면/DD overlay는 S5/QEPM 단계) 또는 저변동 결합 재검증.",
+  "fmt_codes": [
+    "FMT-01",
+    "FMT-02",
+    "FMT-04"
+  ],
+  "oos_retention": 0.297,
+  "falsification_attempts": [
+    {
+      "test": "PIT 정적스캔(detect_lookahead)",
+      "result": "survived",
+      "effect_retained": 1,
+      "detail": "CLEAN — 위반 시 백테 중단 정책으로 emit 시점 통과 보장"
+    },
+    {
+      "test": "IS65/OOS35 활성SR retention (hurdle D062, proxy) — 과적합 반증 시도",
+      "result": "falsified",
+      "effect_retained": 0.297,
+      "detail": "retention 0.30 (measurement-graduation §3 하한 0.5 기준)"
+    }
+  ]
+}

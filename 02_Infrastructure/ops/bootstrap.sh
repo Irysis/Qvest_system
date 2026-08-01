@@ -344,14 +344,25 @@ try:
 except Exception as e:
     print("PARSE_FAIL %s" % type(e).__name__); raise SystemExit
 ts = d.get("measured_at", "")
+# (2026-08-02) ★판정을 여기서 다시 만들지 않는다 — 원장에 기록된 판정을 *소비*한다.
+#   실사고: 이 블록이 원시 rc 만 보고 5건을 개별 "★실패"로 보고하는 동안, 같은 데이터를
+#   읽는 권위 스크립트(scheduler_task_health.sh)는 "실패 1 · 정지(동시종료) 1"로 판정했다.
+#   같은 사실에 렌더러가 둘이면 판정도 둘이 된다 — 부팅은 더 놀라운 쪽을 보여줬다.
+co = d.get("cotermination") or {}
+co_names = set(co.get("tasks") or [])
 bad, stale = [], []
 for t in d.get("tasks") or []:
     if not t.get("enabled", True): continue
+    if t.get("task") in co_names: continue      # 하나의 사건으로 접힌 항목 — 개별 계수 금지
     if int(t.get("rc") or 0) and t.get("rc_label") not in ("still_running", "never_run"):
         bad.append("%s=%s" % (t.get("task", "?").replace("Qvest_", ""), t.get("rc_label")))
     ms, ag = t.get("max_stale_days"), t.get("age_days")
     if ms and ag is not None and ag > ms:
         stale.append("%s(%.0f일)" % (t.get("task", "?").replace("Qvest_", ""), ag))
+co_txt = ""
+if co_names:
+    co_txt = "동시종료 %d건 %s [%s]" % (co.get("n") or len(co_names),
+             (co.get("when") or "")[5:16].replace("T", " "), co.get("classification") or "미분류")
 # 측정 자체가 오래됐으면 그것부터 알린다 — 낡은 GREEN이 제일 위험하다
 age_h = ""
 try:
@@ -359,15 +370,16 @@ try:
     h = (datetime.datetime.now() - dt).total_seconds() / 3600.0
     if h > 26: age_h = " ★측정 %.0f시간 전(수집 담체도 멈춤 의심)" % h
 except Exception: pass
-print("%s|%s|%s" % ("·".join(bad), "·".join(stale), age_h))
+print("%s|%s|%s|%s" % ("·".join(bad), "·".join(stale), age_h, co_txt))
 ' "$STH" 2>/dev/null)
   if [ "${STH_LINE:-}" = "PARSE_FAIL" ] || [ -z "${STH_LINE:-}" ]; then
     echo "[boot] ★예약작업 상태 판독 실패 — $STH 확인"
   else
-    STH_BAD="${STH_LINE%%|*}"; STH_REST="${STH_LINE#*|}"
-    STH_STALE="${STH_REST%%|*}"; STH_AGE="${STH_REST#*|}"
-    if [ -n "$STH_BAD" ] || [ -n "$STH_STALE" ] || [ -n "$STH_AGE" ]; then
-      echo "[boot] 예약작업:${STH_BAD:+ ★실패 $STH_BAD}${STH_STALE:+ · ★정체 $STH_STALE}${STH_AGE}"
+    STH_BAD="${STH_LINE%%|*}";   STH_R1="${STH_LINE#*|}"
+    STH_STALE="${STH_R1%%|*}";   STH_R2="${STH_R1#*|}"
+    STH_AGE="${STH_R2%%|*}";     STH_COTERM="${STH_R2#*|}"
+    if [ -n "$STH_BAD" ] || [ -n "$STH_STALE" ] || [ -n "$STH_AGE" ] || [ -n "$STH_COTERM" ]; then
+      echo "[boot] 예약작업:${STH_BAD:+ ★실패 $STH_BAD}${STH_STALE:+ · ★정체 $STH_STALE}${STH_COTERM:+ · $STH_COTERM}${STH_AGE}"
       echo "    → 상세: 06_Registry/scheduler_task_health.json · 재측정: bash 02_Infrastructure/ops/scheduler_task_health.sh"
     fi
   fi
@@ -484,6 +496,30 @@ if [ -f "$BS_PATH" ] && [ -f "$MBA_R" ]; then
   else
     echo "[boot] WARN: coherence 출력에 Book score/Tier 부재 (exit 0) — 출력 포맷 드리프트 의심"
     echo "[boot]    출력 말미: $(printf '%s' "$MBA_RAW" | tail -2 | tr '\n' ' ' | cut -c1-160)"
+  fi
+fi
+
+# ── AST v1.1 Step 4 사이드카 실전 캡처 노출 (2026-08-02 신설) ──────────────────
+#  ★신설 사유(실사고): Step 4 는 07-25 배선 후 8일간 아무 경고 없이 **실전 레코드 0건**
+#  이었다. 원장은 399행이라 겉보기엔 "쌓이고 있음"이었으나 전량 테스트 배터리 산물이었고,
+#  그 상태로 Step 5(N>=30 -> complexity_prior 추정 -> alpha 프롬프트 주입)에 진입하면
+#  합성 데이터로 사전분포를 만들게 된다. 부팅이 이 수치를 보지 않았기에 아무도 몰랐다.
+#  → live_with_ast(실전 구조특징 표본)를 상시 노출한다. 총행수가 아니라 **실전 수**가 지문이다.
+AST_SC_R="$PROJECT/02_Infrastructure/contracts/ast_sidecar.R"
+if [ -f "$AST_SC_R" ]; then
+  # cd 후 상대경로 — QM_ROOT 미설정 세션에서도 동작(경로 하드코딩·환경변수 의존 회피)
+  AST_SC_OUT=$(cd "$PROJECT" && Rscript -e 'source("02_Infrastructure/contracts/ast_sidecar.R"); s <- ast_sidecar_status(); cat(sprintf("total=%s live=%s live_with_ast=%s legacy=%s", s$total, s$live, s$live_with_ast, s$legacy_unlabeled))' 2>/dev/null | tr -d '\r' | tail -1)
+  if [ -n "$AST_SC_OUT" ]; then
+    AST_LWA=$(printf '%s' "$AST_SC_OUT" | grep -oE 'live_with_ast=[0-9]+' | cut -d= -f2)
+    if [ "${AST_LWA:-0}" -ge 30 ] 2>/dev/null; then
+      echo "[boot] AST sidecar: $AST_SC_OUT — ★Step 5 진입 조건(N>=30) 충족, complexity_prior 추정 가능"
+    elif [ "${AST_LWA:-0}" -gt 0 ] 2>/dev/null; then
+      echo "[boot] AST sidecar: $AST_SC_OUT — 실전 적립 중 (Step 5 는 live_with_ast>=30 부터)"
+    else
+      echo "[boot] AST sidecar: $AST_SC_OUT — 실전 캡처 0 (배선은 존재. 라운드가 계약 경유를 안 하면 0 유지)"
+    fi
+  else
+    echo "[boot] WARN: AST sidecar 상태 산출 실패 — 계측 사망과 '아직 0' 을 구분 불가"
   fi
 fi
 

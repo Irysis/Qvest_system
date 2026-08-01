@@ -1,6 +1,6 @@
 # 06_Registry INDEX
 
-> 자동 생성 2026-08-02 00:37 — 큐레이션 원본: `06_Registry/index_descriptions.json` (role/status/category 수동 보완처) · 재생성: `Rscript 02_Infrastructure/tools/build_artifact_index.R` (daily_refresh 말미 자동). 본 파일 직접 수정 금지 — 재생성 시 덮어씀.
+> 자동 생성 2026-08-02 02:26 — 큐레이션 원본: `06_Registry/index_descriptions.json` (role/status/category 수동 보완처) · 재생성: `Rscript 02_Infrastructure/tools/build_artifact_index.R` (daily_refresh 말미 자동). 본 파일 직접 수정 금지 — 재생성 시 덮어씀.
 
 ## 데이터 (9)
 
@@ -8,7 +8,7 @@
 |---|---|---|---|---|
 | `index_descriptions.json` | 존별 INDEX 큐레이션 DB (본 파일 — 사람 수동 보완, build_artifact_index.R이 소비해 INDEX.md 4개 생성) | active | 2026-07-26 | 45KB |
 | `hygiene_report.json` | 일간 파일위생 감사 리포트 (ops/artifact_hygiene_audit.R 산출 — 자동정리 삭제 기록 + artifact-storage.md 위반 감지) | active | 2026-08-01 | 1KB |
-| `artifact_index.json` | build_artifact_index.R이 daily_refresh 말미 자동 재생성하는 전체 산출물 기계가독 인덱스 | active | 2026-08-01 | 329KB |
+| `artifact_index.json` | build_artifact_index.R이 daily_refresh 말미 자동 재생성하는 전체 산출물 기계가독 인덱스 | active | 2026-08-01 | 330KB |
 | `book_carrier/` | PG2 book 수익 캐리어(carrier_STR_1715_*) + H1/H1b/H2 오버레이·가중 A/B 실측 결과 저장소 | active | 2026-06-18 | 727KB |
 | `idea_registry.json` | 구 S0 아이디어 소싱 레지스트리 — telegram_notify.R이 아직 참조하나 갱신은 06-08 정지 | legacy | 2026-06-07 | 40KB |
 | `live_track/STR_1715_on_M4_R05_noLayer4_PG2/` | 현행 PG2 book(noLayer4) 라이브 페이퍼트래킹 — daily_nav/paper_nav/holdout_interval, TaskScheduler 월간 소비 | active | 2026-08-01 | 156KB |
@@ -23,7 +23,7 @@
 | `factor_rotation_registry.json` | factor-rotation 모드 FR_XXXX 등록 레지스트리(현행 v6146B, 06-13 갱신) | active | 2026-06-13 | 6KB |
 | `live_track/STR_1715_AR_on_M4_R05_overlay_PG2/` | holdout falsification 1호 등록(구간 [0.39,3.16]) 라이브트랙 — measurement-graduation §3 규약상 불변 봉인 | active | 2026-07-13 | 2KB |
 | `module_catalog.json` | register_module 공용계약의 모듈 카탈로그(SOT) — 계약 floor 통과 모듈 표준 등록부, 07-03 갱신 | active | 2026-07-08 | 511KB |
-| `module_quarantine.json` | register_module 계약 미충족 산출물 격리 보존소(v8.1 헌법이 보존 명시) | active | 2026-07-27 | 38KB |
+| `module_quarantine.json` | register_module 계약 미충족 산출물 격리 보존소(v8.1 헌법이 보존 명시) | active | 2026-08-01 | 42KB |
 | `overlay_candidate_queue.json` | screen_route=OVERLAY_CANDIDATE 라우팅 큐(게이트 2계층 소비 경로) — 07-03 갱신 | active | 2026-07-10 | 23KB |
 
 ## 훅 (1)
@@ -36,7 +36,7 @@
 
 | 항목 | 정체 | status | 최근 | 크기 |
 |---|---|---|---|---|
-| `hypothesis_index.json` | alpha-search 가설/검증 이력 인덱스(중복 가설 방지용) — 07-04 갱신 중 | active | 2026-08-01 | 672KB |
+| `hypothesis_index.json` | alpha-search 가설/검증 이력 인덱스(중복 가설 방지용) — 07-04 갱신 중 | active | 2026-08-01 | 673KB |
 | `paper_registry.json` | 논문 리서치 파이프라인 레지스트리(수집→라우터→alpha-search 큐) — 07-03 갱신 | active | 2026-07-27 | 276KB |
 
 ## 모드-FR (3)
@@ -71,7 +71,7 @@
 | 항목 | 정체 | status | 최근 | 크기 |
 |---|---|---|---|---|
 | `{knowledge_index.json, knowledge_index.md}` | 지식 순차 인덱스(Law/Distilled/L-code 1..N 뷰) — weekly_cleaner_sweep [3.6] build_knowledge_index가 주간 재생성 | active | 2026-08-01 | 249KB |
-| `distilled_knowledge.json` | Distilled 탐색지도 카드 SOT(DIST-*) — negative 지식의 재도전 대상 보관(INV-7) | active | 2026-07-27 | 243KB |
+| `distilled_knowledge.json` | Distilled 탐색지도 카드 SOT(DIST-*) — negative 지식의 재도전 대상 보관(INV-7) | active | 2026-08-01 | 243KB |
 | `knowledge_recheck_queue.json` | 지식 재검 큐 — 부활신호/재도전 후보 대기열 | active | 2026-07-18 | 8KB |
 | `revival_signals.json` | 부활신호 정의·발화 상태(INV-7) — settled-negative를 시스템이 먼저 un-bury하는 트리거 | active | 2026-07-18 | 7KB |
 | `lcode_family_override.json` | L-code family 수동 오버라이드 — 하버스터 word-boundary 추론 보정(07-18 substring FP 수리 동반) | active | 2026-07-18 | 52KB |
@@ -110,7 +110,7 @@
 | 항목 | 정체 | status | 최근 | 크기 |
 |---|---|---|---|---|
 | `ast_operator_backlog.json` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-07-25 | 1KB |
-| `ast_structure_log.jsonl` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-08-01 | 128KB |
+| `ast_structure_log.jsonl` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-08-01 | 136KB |
 | `scheduler_task_health.json` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-08-01 | 5KB |
 | `suite_totals_baseline.json` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-07-26 | 371B |
 

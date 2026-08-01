@@ -75,7 +75,20 @@ suppressPackageStartupMessages({
   library(lubridate)
 })
 
-BASE_DIR <- Sys.getenv("CLAUDE_PROJECT_DIR", Sys.getenv("QM_ROOT", "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot"))
+# 루트 해석: r-portability.md 금칙 ③④ — 선행 '/' 하드코딩 폴백 금지(Windows R 은
+# "/mnt/c/..." 를 현재 드라이브 기준 "C:/mnt/c/..." 로 해석해 빈 잔재 디렉터리에
+# 조용히 안착한다) + 후보는 marker 파일로 *정체성*을 검증한다(dir.exists 는 존재만 본다).
+BASE_DIR <- local({
+  .cands  <- c(Sys.getenv("CLAUDE_PROJECT_DIR", ""), Sys.getenv("QM_ROOT", ""))
+  .cands  <- .cands[nzchar(.cands)]
+  .marker <- "02_Infrastructure/hooks/qvest_hook_router.py"
+  .hit    <- .cands[file.exists(file.path(.cands, .marker))]
+  if (!length(.hit)) {
+    stop("project root 해석 실패 — CLAUDE_PROJECT_DIR 또는 QM_ROOT 를 marker(",
+         .marker, ") 보유 경로로 설정하세요")
+  }
+  .hit[1]
+})
 WT_DIR   <- file.path(BASE_DIR,
   "qepm/mailbox/worktask/WT-H20260513_001")
 OUT_DIR  <- file.path(WT_DIR, "output")

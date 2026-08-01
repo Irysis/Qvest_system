@@ -1,0 +1,58 @@
+{
+  "schema": "ast_verify/v1",
+  "strategy_id": "WT_D20260802_001_FQ073_F4_export_surprise_secneutral",
+  "package_path": "C:\\Users\\99922\\OneDrive\\Quant_Module_Moltbot\\stage_artifacts\\WT_D20260802_001\\ast_verify_input_F4_export_surprise_secneutral.json",
+  "checked_at": "2026-08-02T02:28:27",
+  "sources": {
+    "factor_registry": "C:\\Users\\99922\\OneDrive\\Quant_Module_Moltbot\\02_Infrastructure\\factor_db\\factor_registry.json",
+    "ast_field_map": "C:\\Users\\99922\\OneDrive\\Quant_Module_Moltbot\\06_Registry\\ast_field_map_v0.json",
+    "field_map_version": "v0"
+  },
+  "verdict": "FAIL_CONTRACT",
+  "sig_date": "2026-07-31",
+  "decision_ts": "2026-07-31",
+  "max_avail_ts": "2026-07-31",
+  "leaf_count": 5,
+  "op_count": 14,
+  "violations": [],
+  "contract_failures": [
+    {
+      "path": "root.CS_ZSCORE/0.CS_NEUTRALIZE/0.CS_WINSORIZE/0.SUB/0.SUB/0.LOG/0",
+      "leaf_type": "STORED_SCORE",
+      "missing": [
+        "production_parity_verified"
+      ],
+      "detail": "STORED_SCORE 계약 결측 — provenance 3필드 + production_parity_verified 의무 (§7b 기계화, 저장 패널 FIELD 위장 금지)"
+    },
+    {
+      "path": "root.CS_ZSCORE/0.CS_NEUTRALIZE/0.CS_WINSORIZE/0.SUB/0.SUB/1.LOG/0.TS_LAG[k=12m]/0",
+      "leaf_type": "STORED_SCORE",
+      "missing": [
+        "production_parity_verified"
+      ],
+      "detail": "STORED_SCORE 계약 결측 — provenance 3필드 + production_parity_verified 의무 (§7b 기계화, 저장 패널 FIELD 위장 금지)"
+    },
+    {
+      "path": "root.CS_ZSCORE/0.CS_NEUTRALIZE/0.CS_WINSORIZE/0.SUB/1.TS_MEAN/0.SUB/0.LOG/0",
+      "leaf_type": "STORED_SCORE",
+      "missing": [
+        "production_parity_verified"
+      ],
+      "detail": "STORED_SCORE 계약 결측 — provenance 3필드 + production_parity_verified 의무 (§7b 기계화, 저장 패널 FIELD 위장 금지)"
+    },
+    {
+      "path": "root.CS_ZSCORE/0.CS_NEUTRALIZE/0.CS_WINSORIZE/0.SUB/1.TS_MEAN/0.SUB/1.LOG/0.TS_LAG[k=12m]/0",
+      "leaf_type": "STORED_SCORE",
+      "missing": [
+        "production_parity_verified"
+      ],
+      "detail": "STORED_SCORE 계약 결측 — provenance 3필드 + production_parity_verified 의무 (§7b 기계화, 저장 패널 FIELD 위장 금지)"
+    }
+  ],
+  "restatement_leaves": [],
+  "discrepancy_used": [],
+  "staleness_flags": [],
+  "notes": [
+    "root.CS_ZSCORE/0.CS_NEUTRALIZE/1.TS_LAG[k=1d]/0: Sector는 A1 내 투영 사본 — 원천은 A2/A3 (map A1 notes)"
+  ]
+}

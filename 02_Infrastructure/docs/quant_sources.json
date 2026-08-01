@@ -1,7 +1,6 @@
 {
   "description": "퀀트 리서치 텍스트 소스 — arxiv(논문), jina(블로그/칼럼), RSS(뉴스)",
   "updated": "2026-03-14",
-
   "arxiv_queries": {
     "description": "arxiv MCP로 정기 검색할 주제 (논문 수집 메인)",
     "queries": [
@@ -13,25 +12,59 @@
       "post-earnings announcement drift SUE PEAD",
       "short-term reversal momentum cross-section equity",
       "accruals investment asset growth anomaly stock",
-      "regime switching factor timing equity rotation"
+      "regime switching factor timing equity rotation",
+      "insider trading executive share transaction stock returns",
+      "corporate disclosure filing text sentiment stock returns",
+      "annual report risk factor language cross-section returns",
+      "short selling short interest securities lending stock returns",
+      "supply chain network customer supplier return predictability",
+      "earnings conference call transcript tone equity returns",
+      "institutional ownership investor flow imbalance cross-section",
+      "corporate event buyback M&A announcement drift returns",
+      "analyst forecast dispersion revision text equity",
+      "large language model NLP financial disclosure asset pricing",
+      "Korea KOSPI KOSDAQ stock market anomaly cross-section",
+      "emerging Asian equity market factor evidence",
+      "transaction cost capacity crowding factor investing constraint",
+      "long-only constrained concentrated portfolio construction",
+      "point-in-time look-ahead bias leakage backtest evaluation equity"
     ],
-    "_queries_note": "2026-06-18 Q: 횡단면 주식 위주로 재초점(8 equity + 1 regime). 구 '...risk parity portfolio construction'·'sector rotation timing'·'emerging market portfolio' 등 방법/매크로 puller 제거 — optimizer/risk 방법론은 cross-list로만 유입(router가 분기). 수집 수율↑ 목적.",
-    "categories": ["q-fin.PM", "q-fin.ST", "q-fin.RM", "q-fin.GN"],
+    "_queries_note": "2026-08-02 논문 인입 커버리지 감사: 구 9질의(횡단면 return-derived 어휘 전용) + q-fin 4카테고리로는 insider/공시텍스트/공매도/공급망/기업이벤트/한국시장/비용·수용력/PIT-방법론 8개 주제가 구조적으로 도달 불가였다(질의어에 해당 단어가 없고, 해당 문헌의 1차 분류 cs.CL/cs.LG/econ.EM/q-fin.PR 이 카테고리 목록 밖). 카테고리 확장은 호출 수를 늘리지 않고(호출=질의 수), 질의는 9→24. 구 2026-06-18 축소 노트의 전제('방법론은 cross-list 로 유입')는 카테고리가 4종뿐이라 성립하지 않았다.",
+    "categories": [
+      "q-fin.PM",
+      "q-fin.ST",
+      "q-fin.RM",
+      "q-fin.GN",
+      "q-fin.PR",
+      "q-fin.TR",
+      "q-fin.CP",
+      "q-fin.MF",
+      "q-fin.EC"
+    ],
     "max_results_per_query": 10,
-    "recency_days": 180
+    "recency_days": 180,
+    "max_queries": 40,
+    "_categories_note": "2026-08-02 실측 3회 반복 후 확정: q-fin 4종 -> q-fin 전 9계열(PR/TR/CP/MF/EC 추가)만 확장. econ.*/stat.*/cs.* 를 검색축에 넣는 안은 **위반 검사에서 두 번 기각**했다 — (1) cs.* 포함 시 후보 75건 중 금융 무관(화학/로보틱스/비전/종양학)이 대부분, (2) econ/stat 포함 시 61건 중 테니스 서브/AMOC 기후/Covid 기부/연합학습이 상위. 원인: arxiv-mcp 의 categories 인자가 느슨하고(코드 주석 32-35행 기존 관측) sort_by=date 가 질의 적합도와 무관하게 신착을 반환 -> 넓은 카테고리는 그대로 firehose 가 된다. q-fin 은 그 자체로 주제 자기제한적이라 안전. 비-q-fin 문헌(cs.CL 공시텍스트 등)은 검색축이 아니라 **확장 질의어 + 결과측 _FINANCE_EXACT cross-list** 로만 받는다."
   },
-
   "notable_authors": {
     "description": "저명저자 = 트리아지 랭킹 신호 (2026-06-18 Q, 별도 수집 아님 — 키워드 MCP가 이미 저명저자 on-topic 논문을 q-fin+recency로 수집하므로 중복 수집 폐기). 신규 논문 alpha-search 후보 채점 시 저자가 이 리스트에 있으면 가점. 활성 리스트 = seed ∪ 다운로드 저자빈도 자동 리프레시(stage_artifacts/paper_recharge/notable_authors.json, count>=refresh_min_count). 시드 = 부트스트랩 앵커.",
     "seed": [
-      "Marcos Lopez de Prado", "Bryan Kelly", "Dacheng Xiu", "Markus Pelger",
-      "Stefan Nagel", "Ralph Koijen", "Serhiy Kozak", "Svetlana Bryzgalova",
-      "Guanhao Feng", "Lasse Heje Pedersen", "Tobias Moskowitz", "Andrew Y. Chen"
+      "Marcos Lopez de Prado",
+      "Bryan Kelly",
+      "Dacheng Xiu",
+      "Markus Pelger",
+      "Stefan Nagel",
+      "Ralph Koijen",
+      "Serhiy Kozak",
+      "Svetlana Bryzgalova",
+      "Guanhao Feng",
+      "Lasse Heje Pedersen",
+      "Tobias Moskowitz",
+      "Andrew Y. Chen"
     ],
     "max_authors": 24,
     "refresh_min_count": 3
   },
-
   "blog_sources": {
     "description": "jina로 수집할 퀀트/매크로 블로그·칼럼 (논문 외 실무 인사이트)",
     "rss_feeds": {
@@ -101,25 +134,33 @@
       }
     }
   },
-
   "collection_policy": {
     "arxiv": {
       "role": "primary",
       "frequency": "weekly",
       "action": "search → filter by relevance → download PDF → register in paper_registry.json",
-      "tools": ["arxiv MCP", "jina read_url (PDF fallback)"]
+      "tools": [
+        "arxiv MCP",
+        "jina read_url (PDF fallback)"
+      ]
     },
     "blogs": {
       "role": "secondary",
       "frequency": "weekly",
       "action": "fetch RSS → extract links → jina read_url → summarize → register in idea_registry.json",
-      "tools": ["jina search_web", "jina read_url", "WebFetch (RSS)"]
+      "tools": [
+        "jina search_web",
+        "jina read_url",
+        "WebFetch (RSS)"
+      ]
     },
     "news": {
       "role": "monitoring",
       "frequency": "daily",
       "action": "scan headlines → flag regime-relevant events",
-      "tools": ["jina search_web"]
+      "tools": [
+        "jina search_web"
+      ]
     }
   }
 }

@@ -1,0 +1,165 @@
+{
+ "type": "op",
+ "op": "CS_ZSCORE",
+ "args": [
+  {
+   "type": "op",
+   "op": "CS_NEUTRALIZE",
+   "args": [
+    {
+     "type": "op",
+     "op": "CS_WINSORIZE",
+     "args": [
+      {
+       "type": "op",
+       "op": "SUB",
+       "args": [
+        {
+         "type": "op",
+         "op": "SUB",
+         "args": [
+          {
+           "type": "op",
+           "op": "LOG",
+           "args": [
+            {
+             "type": "leaf",
+             "class": "STORED_SCORE",
+             "source": "stored_panel",
+             "field": "export_exposure_usd",
+             "contract": {
+              "path": "stage_artifacts/WT_D20260802_001/fq073_export_exposure_chapter.parquet",
+              "value_col": "value",
+              "store_build_hash": "21b45aae617b8c473db2fd20598aec4a89bbd3e9",
+              "generator_code_path": "stage_artifacts/WT_D20260802_001/build_export_panel.py",
+              "generated_at": "2026-08-02 02:23:09",
+              "production_parity_verified": false,
+              "avail_offset_days": null
+             }
+            }
+           ]
+          },
+          {
+           "type": "op",
+           "op": "LOG",
+           "args": [
+            {
+             "type": "op",
+             "op": "TS_LAG",
+             "args": [
+              {
+               "type": "leaf",
+               "class": "STORED_SCORE",
+               "source": "stored_panel",
+               "field": "export_exposure_usd",
+               "contract": {
+                "path": "stage_artifacts/WT_D20260802_001/fq073_export_exposure_chapter.parquet",
+                "value_col": "value",
+                "store_build_hash": "21b45aae617b8c473db2fd20598aec4a89bbd3e9",
+                "generator_code_path": "stage_artifacts/WT_D20260802_001/build_export_panel.py",
+                "generated_at": "2026-08-02 02:23:09",
+                "production_parity_verified": false,
+                "avail_offset_days": null
+               }
+              }
+             ],
+             "params": {
+              "k": 12
+             }
+            }
+           ]
+          }
+         ]
+        },
+        {
+         "type": "op",
+         "op": "TS_MEAN",
+         "args": [
+          {
+           "type": "op",
+           "op": "SUB",
+           "args": [
+            {
+             "type": "op",
+             "op": "LOG",
+             "args": [
+              {
+               "type": "leaf",
+               "class": "STORED_SCORE",
+               "source": "stored_panel",
+               "field": "export_exposure_usd",
+               "contract": {
+                "path": "stage_artifacts/WT_D20260802_001/fq073_export_exposure_chapter.parquet",
+                "value_col": "value",
+                "store_build_hash": "21b45aae617b8c473db2fd20598aec4a89bbd3e9",
+                "generator_code_path": "stage_artifacts/WT_D20260802_001/build_export_panel.py",
+                "generated_at": "2026-08-02 02:23:09",
+                "production_parity_verified": false,
+                "avail_offset_days": null
+               }
+              }
+             ]
+            },
+            {
+             "type": "op",
+             "op": "LOG",
+             "args": [
+              {
+               "type": "op",
+               "op": "TS_LAG",
+               "args": [
+                {
+                 "type": "leaf",
+                 "class": "STORED_SCORE",
+                 "source": "stored_panel",
+                 "field": "export_exposure_usd",
+                 "contract": {
+                  "path": "stage_artifacts/WT_D20260802_001/fq073_export_exposure_chapter.parquet",
+                  "value_col": "value",
+                  "store_build_hash": "21b45aae617b8c473db2fd20598aec4a89bbd3e9",
+                  "generator_code_path": "stage_artifacts/WT_D20260802_001/build_export_panel.py",
+                  "generated_at": "2026-08-02 02:23:09",
+                  "production_parity_verified": false,
+                  "avail_offset_days": null
+                 }
+                }
+               ],
+               "params": {
+                "k": 12
+               }
+              }
+             ]
+            }
+           ]
+          }
+         ],
+         "params": {
+          "window": 12
+         }
+        }
+       ]
+      }
+     ],
+     "params": {
+      "p": 0.02
+     }
+    },
+    {
+     "type": "op",
+     "op": "TS_LAG",
+     "args": [
+      {
+       "type": "leaf",
+       "class": "FIELD",
+       "source": "rawdata",
+       "field": "Sector"
+      }
+     ],
+     "params": {
+      "k": 1
+     }
+    }
+   ]
+  }
+ ]
+}

@@ -34,7 +34,11 @@ def _load_json(path: Path, default: Any) -> Any:
 # 비-퀀트 논문(math.AP/hep-ex/astro-ph/cs.CV/q-bio 등)이 후보로 leak 됨. 반환된 raw
 # categories 로 퀀트/계량경제/통계-ML 인접만 통과시킨다.
 _FINANCE_PREFIXES = ("q-fin", "econ", "stat.")
-_FINANCE_EXACT = {"cs.lg", "cs.ai", "cs.ce", "math.oc"}
+# (2026-08-02) cs.cl 추가 — 규제공시 텍스트(사업보고서/위험요인/컨퍼런스콜) 계열 논문은
+#   1차 분류가 cs.CL 인 경우가 많아 기존 집합에서 전량 탈락했다. v8.3 주력 프론티어가
+#   비-return 원천(공시·텍스트)인데 그 문헌면이 결과측 필터에서 잘리고 있었다.
+#   scope 배제(_OUT_OF_SCOPE_SIGNALS)는 그대로라 crypto/파생가격 등은 계속 트림된다.
+_FINANCE_EXACT = {"cs.lg", "cs.ai", "cs.ce", "cs.cl", "math.oc"}
 
 
 def _is_finance_relevant(categories: Any) -> bool:
@@ -273,7 +277,17 @@ def main() -> int:
     mcp_config = _load_json(root / ".mcp.json", {})
     quant_sources = _load_json(root / "02_Infrastructure/docs/quant_sources.json", {})
     arxiv_cfg = ((quant_sources.get("arxiv_queries") or {}))
-    queries = list((arxiv_cfg.get("queries") or [])[:9])
+    # (2026-08-02) 하드 상한 [:9] 제거 — config 에 질의를 추가해도 앞 9개만 쓰여
+    #   설정 확장이 조용히 무시되던 자리(설정과 실행의 불일치). 상한은 config
+    #   `max_queries` 로 명시 이관하고 기본은 넉넉히 둔다. 호출 수 = 질의 수이므로
+    #   비용은 질의 개수에만 선형(카테고리 확장은 호출 수를 늘리지 않는다).
+    try:
+        _qcap = int(arxiv_cfg.get("max_queries") or 0)
+    except (TypeError, ValueError):
+        _qcap = 0
+    if _qcap <= 0:
+        _qcap = 40
+    queries = list((arxiv_cfg.get("queries") or [])[:_qcap])
     categories = list(arxiv_cfg.get("categories") or ["q-fin.PM", "q-fin.ST", "q-fin.RM", "q-fin.GN"])
 
     # config 의 recency_days / max_results_per_query 배선 (기존엔 무시되던 필드, 2026-06-18 Q).

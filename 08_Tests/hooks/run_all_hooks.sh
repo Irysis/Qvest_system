@@ -122,6 +122,12 @@ SUITES=(
   #   FRESH 로 보고됐다 — 동결을 보는 유일 축(mtime)이 폐기되던 구조.
   #   caches_override/today/persist 주입 파라미터의 첫 소비자(노출만 돼 있고 케이스 0건이었음).
   "08_Tests/data/test_cache_freshness_worse_of.R"
+  # 2026-08-02 추가: 무인 일일 체인(daily_refresh.sh)에 내장된 run_r 'R 코드' 블록의
+  #   **구문 사전검사**. 실사고: r18(완료/부분실패 통보) 블록의 최상위 if/else 가 두 줄로
+  #   쪼개져 "unexpected 'else'" 로 죽었고 — 하필 그 블록이 실패를 알리는 스텝이라
+  #   DailyRefresh rc=1 만 남고 실패 요약은 텔레그램에 도달하지 못했다.
+  #   내장 R 을 실행 전에 보는 장치가 저장소에 0건이었다(구문 오류는 새벽 로그에만 드러남).
+  "08_Tests/data/test_daily_refresh_r_blocks.R"
   # 2026-07-26 추가(T4): readiness gate 의 hook_dryrun 체크 위반 주입.
   #   그 체크는 이 러너의 산출을 읽는다 — 즉 여기가 **자기 소비자를 감시하는 자리**다.
   #   원 결함이 정확히 "러너가 산출 경로를 옮겼는데 게이트가 못 따라옴"이었으므로
@@ -163,6 +169,14 @@ SUITES=(
   #   deployed_holdings_check.py 가 그 마지막 방어선이므로, 이 검사기가 죽으면
   #   "전부 OK" 와 "아무것도 안 잼" 이 겉보기에 같아진다. T13 음성 통제 포함.
   "08_Tests/portfolio/test_deployed_holdings_check.sh"
+  # 2026-08-02 추가: AST v1.1 계층 2종 (Step 3 게이트 + Step 4 사이드카).
+  #   ★등재 사유 = 실사고: Step 4 사이드카는 07-25 배선 후 8일간 정기검사를 통과하면서
+  #   실전 레코드가 0건이었다(399행 전부 테스트 배터리 산물. essence_score 가 proxy 사다리
+  #   통과분만 경유 = 생존편향 + canonical_screen 미배선). 게이트 전용 위반 주입 테스트도
+  #   부재해 "조건부 훅이라 트리거 미도달"과 "차단 실효 사망"을 판별할 수단이 없었다.
+  #   두 검사 다 양성 대조 + 위반 주입 양방향이라, 죽으면 총계가 떨어져 드러난다.
+  "08_Tests/hooks/test_ast_spec_gate.sh"
+  "08_Tests/contract_regression/test_ast_sidecar.R"
 )
 
 _suite_cmd() {

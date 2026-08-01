@@ -72,14 +72,43 @@ foreach ($t in (Get-ScheduledTask -ErrorAction SilentlyContinue | Where-Object {
     exec_time_limit = "$($t.Settings.ExecutionTimeLimit)"
     enabled         = [bool]$t.Settings.Enabled
     triggers        = ($trig -join ',')
+    # 2026-08-02: recorded so a co-termination verdict can RULE OUT hypotheses from the
+    # record instead of requiring a live query. Interactive = session-scoped lifetime
+    # (logoff/session teardown kills it -> 0xC000013A). stop_on_battery falsifies the
+    # battery-policy hypothesis. start_when_available explains catch-up bursts on resume.
+    logon_type           = "$($t.Principal.LogonType)"
+    stop_on_battery      = [bool]$t.Settings.StopIfGoingOnBatteries
+    start_when_available = [bool]$t.Settings.StartWhenAvailable
   }
 }
 
+# Most recent resume-from-sleep and last boot. A burst of tasks all starting within minutes
+# AFTER a resume is the catch-up signature (StartWhenAvailable replaying missed triggers),
+# not N independent failures. Recording it lets the verdict be evidence-based rather than
+# inferred from how long ago the burst happened - elapsed time says nothing about cause.
+$lastResume = $null
+$ev = Get-WinEvent -FilterHashtable @{LogName='System'; ProviderName='Microsoft-Windows-Power-Troubleshooter'; Id=1} -MaxEvents 1 -ErrorAction SilentlyContinue
+if ($ev) { $lastResume = $ev.TimeCreated.ToString('yyyy-MM-ddTHH:mm:ss') }
+$lastBoot = $null
+$os = Get-CimInstance Win32_OperatingSystem -ErrorAction SilentlyContinue
+if ($os -and $os.LastBootUpTime) { $lastBoot = ([datetime]$os.LastBootUpTime).ToString('yyyy-MM-ddTHH:mm:ss') }
+
+# Whether the Task Scheduler operational log is on. When it is off, the terminating agent
+# of a hard-kill is NOT recoverable after the fact - the verdict must say "unidentified"
+# rather than guess. (Measured 08-02: disabled, which is why the 07-26 investigation could
+# not name the killer.) Enabling it is a system setting change - operator decision, not ours.
+$opLogEnabled = $null
+$ol = Get-WinEvent -ListLog 'Microsoft-Windows-TaskScheduler/Operational' -ErrorAction SilentlyContinue
+if ($ol) { $opLogEnabled = [bool]$ol.IsEnabled }
+
 $out = [pscustomobject]@{
-  schema_version = 1
-  measured_at    = (Get-Date).ToString('yyyy-MM-ddTHH:mm:ss')
-  n_tasks        = $rows.Count
-  tasks          = @($rows | Sort-Object task)
+  schema_version         = 2
+  measured_at            = (Get-Date).ToString('yyyy-MM-ddTHH:mm:ss')
+  n_tasks                = $rows.Count
+  last_resume            = $lastResume
+  last_boot              = $lastBoot
+  tasksched_oplog_enabled = $opLogEnabled
+  tasks                  = @($rows | Sort-Object task)
 }
 
 $json = $out | ConvertTo-Json -Depth 5

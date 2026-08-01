@@ -1,0 +1,64 @@
+{
+  "effective_cross_section": {
+    "metric_type": "diagnostic",
+    "n_firms_scored_avg": 182.8,
+    "n_distinct_scores_avg": 116.5,
+    "distinct_ratio": 0.6439,
+    "note": "distinct_ratio < 1 = 동일 HS4 버킷 종목이 구분 불가(동점). 'firm-level' 신호의 실제 해상도."
+  },
+  "rank_ic": {
+    "metric_type": "advisory",
+    "rank_ic": -0.00336,
+    "icir": -0.028,
+    "ic_t_stat": -0.296,
+    "n_months": 112
+  },
+  "F5_large_cap_restricted": {
+    "metric_type": "canonical_screen",
+    "universe": "cap_rank<=100 within K200uKQ150",
+    "portfolio_alpha_t_nw_lag3": -0.3279,
+    "p": 0.743,
+    "n_months": 112,
+    "information_ratio": -0.1096,
+    "turnover_annual": 7.846,
+    "n_scored_avg": 49.5,
+    "ew_universe_port_t": 0.2409
+  },
+  "dynamic_lag1_stress": {
+    "metric_type": "canonical_screen",
+    "base_port_t": -1.7078,
+    "lag1_port_t": -1.7053,
+    "n_months": 111,
+    "interpretation": "base 와 lag1 의 격차가 크면 동월 누출 의심. 본 라운드 base 가 음수라 누출 인플레 여지 없음 — 확인 목적."
+  },
+  "dynamic_strict_pit_ab": {
+    "metric_type": "canonical_screen",
+    "base_port_t": -1.7078,
+    "strict_port_t": -1.7053,
+    "inflation_base_minus_strict": -0.0024,
+    "verdict": "NO_INFLATION",
+    "note": "strict lane = 데이터월 한 달 추가 지연. 인플레(base-strict)가 크면 타이밍 경계 누출."
+  },
+  "dynamic_vintage_swap": {
+    "n_snapshots": 2,
+    "snapshots": ["customs_hs_20260726.parquet", "customs_hs_20260801.parquet"],
+    "n_cells": 289792,
+    "changed_share": 0,
+    "max_ym_a": "2026-06",
+    "max_ym_b": "2026-06",
+    "verdict": "NO_REVISION_OBSERVED_IN_WINDOW — 두 스냅샷(6일 간격, 개정일 15일 미포함) 사이 개정 0. 개정폭 미측정(무증거≠무개정)."
+  },
+  "gross_vs_net": {
+    "metric_type": "canonical_screen",
+    "net_15bps_port_t": -1.7078,
+    "gross_0bps_port_t": -1.3592,
+    "turnover_annual": 12.884,
+    "cost_drag_annual": 0.0193,
+    "verdict": "SIGNAL_NEGATIVE_GROSS — 비용 제거해도 음수. 비용 탓 아님."
+  },
+  "subperiod_port_t": {
+    "2016-01-01_2019-12-31": -1.71,
+    "2020-01-01_2022-12-31": 1.531,
+    "2023-01-01_2026-12-31": -2.586
+  }
+}

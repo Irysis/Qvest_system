@@ -380,32 +380,52 @@ essence_score <- function(bt_result, n_trials_cumulative = NULL,
   )
 
   # ── AST v1.1 Step 4 사이드카 (SOT §5) — append-only, 채점 무관여, fail-soft ──
+  #  2026-08-02 수리: 인라인 writer → 단일 writer ast_sidecar_log() 위임.
+  #    구판 결함 3종: (1) 루트 resolver 가 dir.exists() 만 신뢰 (2) try(silent) + 조건부
+  #    스킵이라 **기록 실패가 무흔적** (3) lane 개념 부재로 canonical_screen 경로 미포착.
+  #    상세 근거 = 02_Infrastructure/contracts/ast_sidecar.R 헤더 주석.
   if (isTRUE(sidecar_log)) {
     try({
-      if (requireNamespace("jsonlite", quietly = TRUE)) {
-        .root <- Sys.getenv("QM_ROOT", unset = Sys.getenv("CLAUDE_PROJECT_DIR", unset = "."))
-        .reg  <- file.path(.root, "06_Registry")
-        if (dir.exists(.reg)) {
-          .sid <- strategy_id
-          if (is.null(.sid)) .sid <- tryCatch(as.character(bt_result$manifest$strategy_id[[1]]),
-                                              error = function(e) NA_character_)
-          .rec <- list(
-            ts = format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z"),
-            strategy_id = if (is.null(.sid) || !length(.sid)) NA_character_ else .sid,
-            ast_features = ast_features,           # NULL이면 JSON에서 결측 — 비-AST 산출 표식
+      if (!exists("ast_sidecar_log", mode = "function")) {
+        # 후보 루트를 marker(CLAUDE.md + 06_Registry)로 검증해 채택 — 존재검사 대체 금지.
+        #  sys.frame()$ofile 은 중첩 source 시 바깥 스크립트를 가리켜 신뢰 불가(기지 트랩).
+        .cands <- c(Sys.getenv("CLAUDE_PROJECT_DIR", unset = ""),
+                    Sys.getenv("QM_ROOT", unset = ""), getwd())
+        for (.c0 in .cands) {
+          if (!nzchar(.c0)) next
+          .c0 <- gsub("\\\\", "/", .c0)
+          if (!(file.exists(file.path(.c0, "CLAUDE.md")) &&
+                dir.exists(file.path(.c0, "06_Registry")))) next
+          .sc <- file.path(.c0, "02_Infrastructure", "contracts", "ast_sidecar.R")
+          if (file.exists(.sc)) { source(.sc); break }
+        }
+      }
+      if (exists("ast_sidecar_log", mode = "function")) {
+        .sid <- strategy_id
+        if (is.null(.sid)) .sid <- tryCatch(as.character(bt_result$manifest$strategy_id[[1]]),
+                                            error = function(e) NA_character_)
+        .rid <- tryCatch(as.character(bt_result$manifest$run_id[[1]]),
+                         error = function(e) NA_character_)
+        ast_sidecar_log(
+          lane = "essence",
+          strategy_id = .sid,
+          ast_features = ast_features,          # NULL = 비-AST 산출 표식(커버리지 절단)
+          metrics = list(
             grade = grade,
             metric_type = .res$metric_type,
             port_t = .rn(port_t), oos_retention = .rn(oos_retention),
-            oos_retention_splits = round(oos_retention_splits, 3),
             dsr = .rn(dsr), calmar = .rn(calmar), net_ir = .rn(net_ir),
             sharpe = .rn(sharpe), cagr = .rn(cagr), mdd = .rn(mdd),
-            selection_type = selection_type, n_trials_cumulative = n_trials_cumulative,
-            active_regime = active_regime,
             hard_fail = hard_fail
+          ),
+          extra = list(
+            run_id = if (is.null(.rid) || !length(.rid)) NA_character_ else .rid,
+            oos_retention_splits = round(oos_retention_splits, 3),
+            selection_type = selection_type,
+            n_trials_cumulative = n_trials_cumulative,
+            active_regime = active_regime
           )
-          cat(jsonlite::toJSON(.rec, auto_unbox = TRUE, null = "null", na = "null"), "\n",
-              sep = "", file = file.path(.reg, "ast_structure_log.jsonl"), append = TRUE)
-        }
+        )
       }
     }, silent = TRUE)
   }

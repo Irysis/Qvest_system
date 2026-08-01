@@ -1,0 +1,68 @@
+{
+ "strategy_id": "WT_D20260802_001_FQ073_F3_export_accel",
+ "pit": {
+  "sig_date": "2026-07-31",
+  "decision_ts": "2026-07-31"
+ },
+ "ast": {
+  "op": "CS_ZSCORE",
+  "children": [
+   {
+    "op": "CS_WINSORIZE",
+    "children": [
+     {
+      "op": "TS_DELTA",
+      "children": [
+       {
+        "op": "SUB",
+        "children": [
+         {
+          "op": "LOG",
+          "children": [
+           {
+            "leaf": "STORED_SCORE",
+            "name": "fq073_export_exposure",
+            "provenance": {
+             "store_build_hash": "21b45aae617b8c473db2fd20598aec4a89bbd3e9",
+             "generator_code_path": "stage_artifacts/WT_D20260802_001/build_export_panel.py",
+             "generated_at": "2026-08-02 02:23:09"
+            },
+            "production_parity_verified": false,
+            "embedded_data_through": "2026-06-30"
+           }
+          ]
+         },
+         {
+          "op": "LOG",
+          "children": [
+           {
+            "op": "TS_LAG",
+            "children": [
+             {
+              "leaf": "STORED_SCORE",
+              "name": "fq073_export_exposure",
+              "provenance": {
+               "store_build_hash": "21b45aae617b8c473db2fd20598aec4a89bbd3e9",
+               "generator_code_path": "stage_artifacts/WT_D20260802_001/build_export_panel.py",
+               "generated_at": "2026-08-02 02:23:09"
+              },
+              "production_parity_verified": false,
+              "embedded_data_through": "2026-06-30"
+             }
+            ],
+            "k": 12,
+            "unit": "m"
+           }
+          ]
+         }
+        ]
+       }
+      ],
+      "k": 3
+     }
+    ],
+    "p": 0.02
+   }
+  ]
+ }
+}

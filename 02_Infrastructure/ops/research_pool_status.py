@@ -134,6 +134,9 @@ def collect(root):
         "queue_done_n": 0,
         "gate_adopt": 0,
         "gate_quarantine": 0,
+        "gate_src": None,       # 집계 권위 출처: ledger / auto_verify
+        "gate_drift": None,     # 원장 vs 파생 glob 불일치 표식 (숨기지 않고 surface)
+        "alpha_queue_autorun_src": None,
         "is_new": False,
         "age_days": None,
     }
@@ -211,7 +214,23 @@ def collect(root):
         cands = aj.get("candidates", []) or []
         out["alpha_queue_n"] = len(cands)
         out["alpha_queue_date"] = aq_d
-        out["alpha_queue_autorun"] = aj.get("autorun")
+        # (2026-08-02 RPS-06 수리) 생산자 스키마 드리프트 — 2026-07-27 산출부터 최상위
+        #   `autorun` 키가 사라지고 실행 파라미터가 `runtime_vars`(TODAY/MAX_ALPHA)로 옮겨졌다.
+        #   구판 리더는 top-level `autorun` 만 봐서 전건 None → 부팅 라인이 "autorun=?" 를
+        #   상시 표시했고, boot_status_smoke 의 placeholder 단언이 이를 정확히 FAIL 로
+        #   보고하고 있었다(= 스모크가 깨진 게 아니라 **진짜 결손을 가리키고 있었다**).
+        #   autorun 의 의미 = 이번 라운드에 자동 spawn 된 후보 수. 권위 생산자는 라우터의
+        #   `autorun_candidates` 리스트이므로, 구 키 → 큐 리스트 → 라우터 리스트 순으로 해석한다.
+        #   (factor_name/created_at 사건과 동형 — 필드명 불일치는 예외 없이 조용한 빈 값이 된다.)
+        _ar = aj.get("autorun")
+        if _ar is None and isinstance(aj.get("autorun_candidates"), list):
+            _ar = len(aj["autorun_candidates"])
+        if _ar is None and route_path:
+            _rj = _load(route_path)
+            if isinstance(_rj, dict) and isinstance(_rj.get("autorun_candidates"), list):
+                _ar = len(_rj["autorun_candidates"])
+                out["alpha_queue_autorun_src"] = "route"
+        out["alpha_queue_autorun"] = _ar
         # (2026-07-26 probe① 수리) 생산자 스키마는 후보 최상위 factor_name/factor_title 이다
         #   (실측 alpha_search_queue_20260726.json). 구판은 factor_candidate.name → id 만 봐서
         #   두 키 모두 부재 → 전건 "?" → 부팅 AlphaQueue 라인이 이름 대신 "?"를 상시 표시했다.
@@ -228,13 +247,44 @@ def collect(root):
     # 3b. (gap④) alpha 큐 자동백테 처리 결과 — alpha_search_queue_done + auto_verify gate
     dq = _load(os.path.join(stage, "alpha_search_queue_done.json"))
     out["queue_done_n"] = len(_processed_list(dq))
+    # (2026-08-02 RPS-07 수리) 구현은 판정 집계를 **원장이 아니라 파생 산출**
+    #   (auto_verify_*.json glob)에서 셌다. 두 계열은 어긋난다 — 실측 2026-08-02:
+    #     원장 alpha_search_queue_done.json::records = 6건 전부 QUARANTINE
+    #     auto_verify glob = 7파일이나 gate_decision 키 보유분은 5건
+    #       · auto_verify_2607.14174.json  = 스키마 상이(gate_decision 없이 L1_pit_pass 등)
+    #       · auto_verify_resid_info_vol_20260727.json = 미게이트(진행 중)
+    #       · 2607.19497 은 파일명이 paper_id 아닌 factor 명(auto_verify_spec_mass_lowfreq_*)
+    #   → 화면은 "QUAR 5" 를 표시했으나 실제 격리는 6건. 스키마·명명 드리프트가
+    #     조용한 **누락 집계**로 나타나던 자리다(집계 대상 오인 계통).
+    #   원장(gate_decision 을 전건 보유)을 1차 권위로 세우고, 파생 glob 은 교차검증으로만
+    #   쓴다. 둘이 어긋나면 숨기지 말고 드리프트 표식을 올린다.
+    _led = dq.get("records", []) if isinstance(dq, dict) else []
+    _led_adopt = _led_quar = 0
+    for r in _led:
+        if not isinstance(r, dict):
+            continue
+        d = str(r.get("gate_decision", "")).upper()
+        if d == "ADOPT":
+            _led_adopt += 1
+        elif d == "QUARANTINE":
+            _led_quar += 1
+    _vf_adopt = _vf_quar = 0
     for vf in glob.glob(os.path.join(stage, "auto_verify_*.json")):
         vj = _load(vf)
         dec = str(vj.get("gate_decision", "")).upper() if isinstance(vj, dict) else ""
         if dec == "ADOPT":
-            out["gate_adopt"] += 1
+            _vf_adopt += 1
         elif dec == "QUARANTINE":
-            out["gate_quarantine"] += 1
+            _vf_quar += 1
+    if _led:
+        out["gate_adopt"], out["gate_quarantine"] = _led_adopt, _led_quar
+        out["gate_src"] = "ledger"
+        if (_vf_adopt, _vf_quar) != (_led_adopt, _led_quar):
+            out["gate_drift"] = "auto_verify %d/%d vs 원장 %d/%d" % (
+                _vf_adopt, _vf_quar, _led_adopt, _led_quar)
+    else:
+        out["gate_adopt"], out["gate_quarantine"] = _vf_adopt, _vf_quar
+        out["gate_src"] = "auto_verify"
 
     # 4. mode 큐(최신) — QEPM 연료
     # (2026-07-26 RPS-04 수리) 구현은 날짜를 버려(`_`) mode 큐가 route 보다 과거여도
@@ -339,6 +389,10 @@ def render(o):
         #   라벨이 없어 '이번 런 실적'으로 읽혔다. 범위를 이름으로 밝힌다.
         gate = " · 처리 누적 %d (ADOPT %d/QUAR %d)" % (
             o["queue_done_n"], o["gate_adopt"], o["gate_quarantine"])
+        # (2026-08-02 RPS-07) 원장↔파생 불일치는 조용히 넘기지 않는다 — 명명/스키마
+        #   드리프트로 판정이 누락 집계되던 자리이므로 한 줄로 드러낸다.
+        if o.get("gate_drift"):
+            gate += " ⚠드리프트(%s)" % o["gate_drift"]
     if o["n_factor_testable"] > 0 or o["alpha_queue_n"] > 0:
         names = ", ".join(o["factor_testable_names"][:3]) or aq_names or "?"
         lines.append("  AlphaQueue:  testable route %d / 소비큐 %d (%s) — %s%s%s" % (

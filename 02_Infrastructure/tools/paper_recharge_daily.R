@@ -278,8 +278,35 @@ register_existing_recharge_pdfs <- function(scan_root) {
 
 run_mcp_probe <- function() {
   out <- file.path(stage_root, sprintf("mcp_discovery_%s.json", today))
-  py <- Sys.which("python3")
-  if (!nzchar(py)) py <- Sys.which("python")
+  # [수리 2026-08-02] bare Sys.which("python3") = Windows Store 스텁(WindowsApps
+  #   AppInstallerPythonRedirector). 스텁은 "Python" 한 줄만 찍고 **exit 0** 으로 끝나며
+  #   산출 파일을 쓰지 않는다 → system()이 성공(0)으로 보이고 fromJSON(out)만 실패해
+  #   status="read_failed" candidates=0 = "신규 논문 없음"과 구분 불가한 침묵 정지.
+  #   실측: 2026-07-28~08-02 인입 0건이 전부 이 경로(논문 부재 아님 — 실인터프리터로
+  #   같은 스크립트 재실행 시 mcp_ok / candidates=34, 2026-07-30 게재분 포함).
+  #   QVEST_PY 우선 해석은 이 저장소의 기존 표준(state_machine.R:255 / cert_rules.R:442 /
+  #   v8_readiness_gate.R:352 동형) — 본 파일만 미적용 잔존분이었다.
+  py_candidates <- c(
+    Sys.getenv("QVEST_PY", ""),
+    file.path(PROJECT_ROOT, ".venv_qvest_ml", "Scripts", "python.exe"),
+    Sys.which("python3"),
+    Sys.which("python")
+  )
+  # [주의] Sys.which()는 Windows에서 8.3 단축경로를 돌려준다 — 실측:
+  #   "C:\\Users\\99922\\AppData\\Local\\MICROS~1\\WINDOW~1\\python3.exe".
+  #   따라서 긴 이름 "WindowsApps" 로만 매칭하면 스텁을 **한 건도 못 잡는다**(검사 사망).
+  #   normalizePath()로 긴 이름 복원 후 판정하고, 정규화 실패 시 단축형도 함께 본다.
+  is_store_stub <- function(p) {
+    if (!nzchar(p)) return(FALSE)
+    lp <- tryCatch(normalizePath(p, winslash = "/", mustWork = FALSE),
+                   error = function(e) p)
+    grepl("WindowsApps", lp, fixed = TRUE) ||
+      grepl("WINDOW~1",  toupper(p), fixed = TRUE)
+  }
+  py <- ""
+  for (cand in py_candidates) {
+    if (nzchar(cand) && file.exists(cand) && !is_store_stub(cand)) { py <- cand; break }
+  }
   if (!nzchar(py)) {
     write(toJSON(list(status = "python_unavailable"), pretty = TRUE, auto_unbox = TRUE), out)
     return(list(status = "python_unavailable", out = out, candidates = 0L))
@@ -289,10 +316,17 @@ run_mcp_probe <- function() {
                  shQuote(py), shQuote(script), shQuote(PROJECT_ROOT), shQuote(out))
   status <- system(cmd, ignore.stdout = TRUE, ignore.stderr = TRUE)
   obj <- tryCatch(fromJSON(out, simplifyVector = FALSE), error = function(e) list(status = "read_failed"))
+  # 산출 파일 부재 = 계측 사망이지 "후보 0"이 아니다. 둘을 같은 candidates=0 으로
+  # 표시하면 침묵 정지가 정상 완료로 위장된다 → 사유를 status 에 실어 상류로 올린다.
+  if (identical(obj$status, "read_failed")) {
+    obj$status <- sprintf("read_failed(py=%s,exit=%s,out_exists=%s)",
+                          basename(py), status, file.exists(out))
+  }
   list(
     status = obj$status %||% sprintf("exit_%s", status),
     out = out,
-    candidates = length(obj$candidates %||% list())
+    candidates = length(obj$candidates %||% list()),
+    py = py
   )
 }
 

@@ -778,19 +778,22 @@
     "STR_AS_20260727_204043_17032": {
       "strategy_id": "STR_AS_20260727_204043_17032",
       "grade": "F",
-      "role": null,
+      "role": {},
       "origin_mode": "alpha_search",
       "sim_result_path": "stage_artifacts/module_quarantine/STR_AS_20260727_204043_17032/sim_result.rds",
       "n_days": 5296,
-      "date_range": ["2005-02-03", "2026-07-27"],
+      "date_range": [
+        "2005-02-03",
+        "2026-07-27"
+      ],
       "registered_at": "2026-07-27T20:50:47+09:00",
       "metric_type": "proxy",
       "fr_eligible": false,
       "frozen": false,
-      "source_contract_id": null,
+      "source_contract_id": {},
       "module_hash": "44f468c5b8bd82b6e4b0487fe7b99331",
-      "build_version": null,
-      "cost_model_version": null,
+      "build_version": {},
+      "cost_model_version": {},
       "bt_result_path": "stage_artifacts/alpha_search/20260727_204043_17032/bt_result.rds",
       "contract": {
         "policy": "v8.1_fr_input_floor",
@@ -800,13 +803,91 @@
       "meta": {
         "strategy_idea": "변동성 대비 초과 거래량(OLS 잔차)이 높은 종목 = 정보가 있는 투자자 진입 신호 -> 미래 수익률 양의 예측력 (Bucci et al. 2026 SMAR 모델 KR 적용)",
         "score": 3.4,
-        "f_grade_reasons": ["게이트 사유: Structural drawdown (45%+ episodes>=15, 55%+ episodes>=6, max_underwater>=252d): MDD 62.1%, 45%+ episodes=19/15, max_underwater=485/252", "FMT-01 Structural MDD: MDD 62.1% > 45% — 선택 종목군의 위기 동반급락(구조적 꼬리위험)", "FMT-02 Factor Degeneration: IR -0.15 < -0.1 & 초과CAGR -2.7%p < 0 — KR에서 팩터 방향 역작동 의심", "FMT-04 Regime Blindness: MDD 62.1% > 35% & BM상관 0.72 >= 0.7 — 위기국면 동조 낙폭(국면필터 부재)", "알파 부재: 정보비율 -0.15로 벤치 대비 기여가 음수/미약"],
-        "fmt_codes": ["FMT-01", "FMT-02", "FMT-04"],
+        "f_grade_reasons": [
+          "게이트 사유: Structural drawdown (45%+ episodes>=15, 55%+ episodes>=6, max_underwater>=252d): MDD 62.1%, 45%+ episodes=19/15, max_underwater=485/252",
+          "FMT-01 Structural MDD: MDD 62.1% > 45% — 선택 종목군의 위기 동반급락(구조적 꼬리위험)",
+          "FMT-02 Factor Degeneration: IR -0.15 < -0.1 & 초과CAGR -2.7%p < 0 — KR에서 팩터 방향 역작동 의심",
+          "FMT-04 Regime Blindness: MDD 62.1% > 35% & BM상관 0.72 >= 0.7 — 위기국면 동조 낙폭(국면필터 부재)",
+          "알파 부재: 정보비율 -0.15로 벤치 대비 기여가 음수/미약"
+        ],
+        "fmt_codes": [
+          "FMT-01",
+          "FMT-02",
+          "FMT-04"
+        ],
         "bt_result_path": "stage_artifacts/alpha_search/20260727_204043_17032/bt_result.rds",
+        "bt_contract_status": "OK"
+      }
+    },
+    "STR_AS_20260802_021210_1868": {
+      "strategy_id": "STR_AS_20260802_021210_1868",
+      "grade": "F",
+      "role": {},
+      "origin_mode": "alpha_search",
+      "sim_result_path": "stage_artifacts/module_quarantine/STR_AS_20260802_021210_1868/sim_result.rds",
+      "n_days": 5300,
+      "date_range": [
+        "2005-02-03",
+        "2026-07-31"
+      ],
+      "registered_at": "2026-08-02T02:16:48+09:00",
+      "metric_type": "proxy",
+      "fr_eligible": false,
+      "frozen": false,
+      "source_contract_id": {},
+      "module_hash": "b51f69451b63838a70ca9b11fced9b2f",
+      "build_version": {},
+      "cost_model_version": {},
+      "bt_result_path": "stage_artifacts/alpha_search/20260802_021210_1868/bt_result.rds",
+      "contract": {
+        "policy": "v8.1_fr_input_floor",
+        "contract_pass": false,
+        "eligibility_reason": "metric_type != backtested; contract_pass != TRUE; frozen != TRUE; source_contract_id missing; build_version missing; cost_model_version missing"
+      },
+      "meta": {
+        "strategy_idea": "변동성으로 설명되지 않는 잔차 거래량의 60거래일 지속 수준이 높은 종목 매수 — 정보거래 활동의 일시적 서프라이즈가 아니라 지속 수준을 포착 (Bucci et al. 2026 SMAR, arXiv:2606.08141 / 07-27 base RESID_INFO_VOL next_probe P1: 회전율 트랩 분리 식별)",
+        "score": 12.1,
+        "f_grade_reasons": [
+          "게이트 사유: Structural drawdown (55%+ episodes>=6): MDD 59.9%, 45%+ episodes=11/15, max_underwater=44/252",
+          "FMT-01 Structural MDD: MDD 59.9% > 45% — 선택 종목군의 위기 동반급락(구조적 꼬리위험)"
+        ],
+        "fmt_codes": "FMT-01",
+        "bt_result_path": "stage_artifacts/alpha_search/20260802_021210_1868/bt_result.rds",
+        "bt_contract_status": "OK"
+      }
+    },
+    "STR_AS_20260802_021901_32432": {
+      "strategy_id": "STR_AS_20260802_021901_32432",
+      "grade": "F",
+      "role": null,
+      "origin_mode": "alpha_search",
+      "sim_result_path": "stage_artifacts/module_quarantine/STR_AS_20260802_021901_32432/sim_result.rds",
+      "n_days": 5300,
+      "date_range": ["2005-02-03", "2026-07-31"],
+      "registered_at": "2026-08-02T02:24:21+09:00",
+      "metric_type": "proxy",
+      "fr_eligible": false,
+      "frozen": false,
+      "source_contract_id": null,
+      "module_hash": "cd4ce927d3ac7611fede0d3564c5656f",
+      "build_version": null,
+      "cost_model_version": null,
+      "bt_result_path": "stage_artifacts/alpha_search/20260802_021901_32432/bt_result.rds",
+      "contract": {
+        "policy": "v8.1_fr_input_floor",
+        "contract_pass": false,
+        "eligibility_reason": "metric_type != backtested; contract_pass != TRUE; frozen != TRUE; source_contract_id missing; build_version missing; cost_model_version missing"
+      },
+      "meta": {
+        "strategy_idea": "저주파 스펙트럼 질량(추세 지속성) 상위 종목을 저변동성 하위 3분위 안에서만 선택 — 추세 알파를 낙폭 계층에서 분리 (Sepp-Lucic 2026, arXiv:2607.19497 / 07-27 base spec_mass_lowfreq_60d next_probe #2: MDD 61.4% 병목이 변동성 노출인지 신호 자체인지 분리 식별)",
+        "score": 11.1,
+        "f_grade_reasons": ["FMT-01 Structural MDD: MDD 57.5% > 45% — 선택 종목군의 위기 동반급락(구조적 꼬리위험)", "FMT-02 Factor Degeneration: IR -0.25 < -0.1 & 초과CAGR -3.9%p < 0 — KR에서 팩터 방향 역작동 의심", "FMT-04 Regime Blindness: MDD 57.5% > 35% & BM상관 0.74 >= 0.7 — 위기국면 동조 낙폭(국면필터 부재)", "알파 부재: 정보비율 -0.25로 벤치 대비 기여가 음수/미약", "초과수익 부족: 벤치 대비 -3.9%p"],
+        "fmt_codes": ["FMT-01", "FMT-02", "FMT-04"],
+        "bt_result_path": "stage_artifacts/alpha_search/20260802_021901_32432/bt_result.rds",
         "bt_contract_status": "OK"
       }
     }
   },
-  "last_updated": "2026-07-27T20:50:47+09:00",
-  "n_modules": 20
+  "last_updated": "2026-08-02T02:24:21+09:00",
+  "n_modules": 22
 }

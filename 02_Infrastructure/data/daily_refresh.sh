@@ -532,8 +532,14 @@ run_r '
   last_d <- max(raw$Date)
   n_tickers <- uniqueN(raw[Date == last_d]$Ticker)
   .fails <- Sys.getenv("DR_FAILED_SO_FAR", "없음")
-  .hdr <- if (identical(.fails, "없음")) "[Daily Refresh v2 완료]"
-          else sprintf("[Daily Refresh v2 ★부분실패 — %s]", .fails)
+  # 최상위 if/else 는 반드시 중괄호로 묶는다 — R 은 줄바꿈에서 if 문을 닫아버려
+  # 다음 줄의 else 가 고아가 된다("unexpected else"). 이 블록이 죽으면 일일 성공/실패
+  # 통보 자체가 발송되지 않는다(2026-08-02 실측: DailyRefresh rc=1 의 단독 원인).
+  .hdr <- if (identical(.fails, "없음")) {
+    "[Daily Refresh v2 완료]"
+  } else {
+    sprintf("[Daily Refresh v2 ★부분실패 — %s]", .fails)
+  }
   msg <- sprintf("%s\nRAWDATA: %s까지 (%d tickers)\n총 %s rows",
                  .hdr, last_d, n_tickers, format(nrow(raw), big.mark=","))
   if (Sys.getenv("QVEST_REFRESH_TG", "0") == "1") {     # v8.1.1 telegram guard

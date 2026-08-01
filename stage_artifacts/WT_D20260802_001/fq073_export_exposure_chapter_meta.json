@@ -1,0 +1,31 @@
+{
+  "panel": "fq073_export_exposure_chapter.parquet",
+  "generated_at": "2026-08-02 02:23:09",
+  "generator_code_path": "stage_artifacts/WT_D20260802_001/build_export_panel.py",
+  "rows": 43100,
+  "n_firms": 315,
+  "n_months": 138,
+  "date_min": "2015-01-31",
+  "date_max": "2026-06-30",
+  "gate": "consume_ok_chapter",
+  "value_semantics": "firm-month 수출노출 USD = Σ_h normalized_weight(i,h) x HS4 월수출액. raw level — YoY/서프라이즈/표준화는 AST가 수행.",
+  "avail_rule": "avail_ts = data_ym(M) + 1개월의 15일 (PIT_plan_fq073 §1-c 1차 현행화)",
+  "sources": {
+    "customs_hs_monthly.parquet": {
+      "sha1": "c0e181fa54b5a7edeab432d3d13da6871f27de70",
+      "vintage_basis": "revised_asof_pull",
+      "caveat": "API에 vintage 파라미터 없음 — first-release 소급 복원 불가. 개정이 무기한 반복되므로 역사 구간은 개정판 기반(원천 성질)."
+    },
+    "firm_hs_crosswalk.parquet": {
+      "sha1": "c6d7c8b6cdb1bab575837a61f953df0e1599d4e6",
+      "map_vintage_mode": "static_current",
+      "caveat": "2024-04~2025-11 사업보고서 1 vintage를 전 역사에 귀속 = C1/C3 사업구성 look-ahead. gate_eligible=False (원 크로스워크 자체 라벨)."
+    }
+  },
+  "known_pit_exposures": [
+    "C1_C3_static_business_mix",
+    "C6_survivorship_current_listed_pool",
+    "customs_revised_vintage"
+  ],
+  "store_build_hash": "21b45aae617b8c473db2fd20598aec4a89bbd3e9"
+}
