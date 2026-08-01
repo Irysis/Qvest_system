@@ -54,9 +54,63 @@ KEY = "decision_date"
 PARITY_COLS = ["fire_seq", "ae_seq", "tau_seq", "last_feat_date"]
 
 
+# 핀 전진용 라이브 원본 (2026-08-01 실측으로 확인한 경로)
+PIN_SOURCES = {
+    "fred_macro_wide.parquet": ".cache/fred_macro_wide.parquet",
+    "benchmark.parquet": ".cache/benchmark.parquet",
+    "carrier_STR_1715_AR_on_M4_R05_overlay_PG2.parquet":
+        "06_Registry/book_carrier/carrier_STR_1715_AR_on_M4_R05_overlay_PG2.parquet",
+    "period_returns_layer5.csv":
+        "05_Production/2.Factor_Model/2-1.STR_1715_AR_on_M4_R05_overlay_PG2/"
+        "04_backtest_results/period_returns_layer5.csv",
+}
+FROZEN_PIN = DEFAULT_PIN   # r1 = D3 졸업 근거 핀. 절대 덮지 않는다.
+
+
 def die(code: int, msg: str):
     print(f"[ae-monthly] ERROR {msg}")
     sys.exit(code)
+
+
+def advance_pin(as_of: pd.Timestamp) -> str:
+    """월별 새 핀 태그를 만들어 라이브 원본을 복사한다.
+
+    ★r1(`WT-D20260718_007_r1`)은 D3 졸업 근거라 **덮지 않는다** — 새 태그를 만든다.
+    ★왜 전진이 필요한가: 핀을 고정하면 패널 종점(2026-07-16) 이후 모든 결정이 같은 end
+      인덱스를 잡아 ae_seq 가 상수로 얼어붙고, loose==strict 가 되어 스크립트 자체의
+      look-ahead A/B 계측기까지 침묵한다(실측 확인).
+    ★왜 위험한가: 라이브 FRED 는 **과거를 개정**한다. 2026-08-01 실측 — 핀(07-16) 대비
+      라이브(07-24) 사이 공통 8,220일 구간에서 1,544셀 변경. StL_Fin_Stress 1,303셀
+      (2000-01-14부터) · Chi_Fin_Cond 206셀 — 둘 다 AE 입력 피처다.
+      그래서 전진 자체는 허용하되 **parity 게이트가 반드시 뒤를 막는다**.
+    """
+    tag = f"ae_monthly_{as_of.strftime('%Y%m')}"
+    tag_dir = os.path.join(".cache/pins", tag)
+    if os.path.isdir(tag_dir) and os.path.exists(os.path.join(tag_dir, "manifest.json")):
+        print(f"[ae-monthly] 핀 {tag} 이미 존재 — 재사용 (핀은 태그당 불변)")
+        return tag_dir
+    os.makedirs(tag_dir, exist_ok=True)
+    import hashlib
+    import json
+    import shutil
+    files = []
+    for base, src in PIN_SOURCES.items():
+        if not os.path.exists(src):
+            die(2, f"핀 원본 부재: {src} (기대 basename {base})")
+        dst = os.path.join(tag_dir, base)
+        shutil.copy2(src, dst)
+        raw = open(dst, "rb").read()
+        files.append({"basename": base, "md5": hashlib.md5(raw).hexdigest(),
+                      "size_bytes": len(raw), "source": src})
+    json.dump({"tag": tag,
+               "created_at": as_of.strftime("%Y-%m-%d") + " (AS_OF 기준)",
+               "provenance": f"월간 리밸 핀 전진 — 라이브 원본 복사. 동결 근거핀({FROZEN_PIN}) 미변경. "
+                             f"과거 개정 검출은 parity 게이트가 담당.",
+               "files": files},
+              open(os.path.join(tag_dir, "manifest.json"), "w", encoding="utf-8"),
+              ensure_ascii=False, indent=2)
+    print(f"[ae-monthly] 핀 전진 → {tag} ({len(files)}파일 복사)")
+    return tag_dir
 
 
 def load_frozen_source() -> str:
@@ -128,7 +182,11 @@ def parity_check(old_path: str, new_df: pd.DataFrame) -> tuple[bool, str]:
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--as-of", required=True, help="홀딩월 1일 (예: 2026-09-01). 결정일 = 이 날짜")
-    ap.add_argument("--pin-dir", default=DEFAULT_PIN)
+    ap.add_argument("--pin-dir", default=None,
+                    help="핀 디렉토리 명시. 미지정 시 --advance-pin 여부에 따라 결정")
+    ap.add_argument("--advance-pin", action="store_true",
+                    help="라이브 원본으로 월별 새 핀을 만들어 사용 (r1 동결 유지). "
+                         "리밸런싱 배선의 기본 경로 — 도훈 지시 2026-08-01")
     ap.add_argument("--dry-run", action="store_true", help="산출만 하고 기존 파일 미교체")
     a = ap.parse_args()
 
@@ -148,7 +206,14 @@ def main() -> int:
             return 0
         print(f"[ae-monthly] 기존 max decision_date = {cur[KEY].max().date()} → {dec_str} 추가")
 
-    pin_dir = a.pin_dir
+    if a.pin_dir:
+        pin_dir = a.pin_dir
+    elif a.advance_pin:
+        pin_dir = advance_pin(as_of)
+    else:
+        pin_dir = DEFAULT_PIN
+        print(f"[ae-monthly] 동결 핀 사용 ({pin_dir}) — 신선도 한계 있음. "
+              f"리밸런싱 경로는 --advance-pin 을 쓴다")
     for f in ("fred_macro_wide.parquet", "benchmark.parquet",
               "carrier_STR_1715_AR_on_M4_R05_overlay_PG2.parquet"):
         p = os.path.join(pin_dir, f)
