@@ -31,7 +31,16 @@ PY="$QM_ROOT/.venv_qvest_ml/Scripts/python.exe"
 RSCRIPT="$(command -v Rscript || echo '/c/Program Files/R/R-4.5.2/bin/Rscript.exe')"
 LOGD="$QM_ROOT/.cache/pg2_rebalance_logs"; mkdir -p "$LOGD"
 LOG="$LOGD/full_$(date +%Y%m%d_%H%M).log"
-HOLD="$QM_ROOT/05_Production/2.Factor_Model/2-3.STR_1715_on_M4_R05_noLayer4_PG2/02_holdings_universe/${DT}_noLayer4_weights_cap_0p20.csv"
+# ── 배포 슬롯 / 산출 파일명 ────────────────────────────────────────────────
+#   슬롯별 파일명 규칙: ${DT}_<TAG>_weights_cap_0p20.csv · ${DT}_<TAG>_manifest.json
+#   (2-3 → TAG=noLayer4 / 2-4 → TAG=M4gAE)
+SLOT_DIR="$QM_ROOT/05_Production/2.Factor_Model/2-3.STR_1715_on_M4_R05_noLayer4_PG2"
+HOLD_TAG="noLayer4"
+HOLD_DIR="$SLOT_DIR/02_holdings_universe"
+HOLD="$HOLD_DIR/${DT}_${HOLD_TAG}_weights_cap_0p20.csv"
+MANIFEST="$HOLD_DIR/${DT}_${HOLD_TAG}_manifest.json"
+PREV_DT="$(date -d "$AS_OF -1 month" +%Y%m01)"
+PREV_HOLD="$HOLD_DIR/${PREV_DT}_${HOLD_TAG}_weights_cap_0p20.csv"
 
 SKIP_REFRESH=0; ONLY_WEIGHTS=0
 for a in "$@"; do case "$a" in
@@ -72,11 +81,57 @@ if [ "$ONLY_WEIGHTS" != "1" ]; then
   say "[1] ingest + factor DB (daily_refresh.sh)..."
   QVEST_REFRESH_TG=0 bash "02_Infrastructure/data/daily_refresh.sh" >> "$LOG" 2>&1 \
     || say "[warn] daily_refresh 종료코드!=0 (Gate B/알파 hard-stop이 검증)"
-  FDB="$(ls -1t .cache/factor_db/factor_db_2*.parquet 2>/dev/null | head -1)"
-  [ -n "$FDB" ] || abort "GateB-factordb" "factor_db 파일 없음" 20
-  FDB_DAY="$(date -r "$FDB" +%Y%m%d 2>/dev/null || echo 0)"; TODAY="$(date +%Y%m%d)"
-  say "  Gate B: latest=$(basename "$FDB") mtime=$FDB_DAY (today=$TODAY)"
-  [ "$FDB_DAY" = "$TODAY" ] || say "[warn] factor_db가 오늘 재빌드 안 됨 -> 알파가 stale 팩터DB 사용 가능. 알파 hard-stop(결측만) 통과해도 fundamental이 옛값일 수 있으니 daily_refresh 로그 확인 권장."
+  # ── [1b] sig-month factor DB 강제 재빌드 + IC 재계산 (2026-08-01 추가) ─────
+  #   왜: daily_refresh [6a] 의 update_factor_db_daily() 는 today <- Sys.Date() 기준이라
+  #   **당월만** 빌드한다(factor_db_builder.R:1361-1364). 그런데 월초 리밸의 sig_date 는
+  #   *전월* 말일 → 소비 파일은 전월 DB다. gap-scan(.fdb_gap_months)은 '없는 달'만 잡고
+  #   '있지만 월중 앵커'는 못 잡는다. 실측(2026-08-01): factor_db_202607 의 Date 단일값이
+  #   2026-07-24 로, 월말이 아니었다(07-26 빌드 당시 RAWDATA 가 07-24 까지였던 탓).
+  #   그대로 두면 종목 선정과 β_R05 가 **둘 다 5거래일 낡은 Z-score** 로 계산된다.
+  #   ★순서 의존: 앵커를 고친 *뒤* IC 를 돌려야 한다. 앵커가 월중이면
+  #   ic_pair_completeness 가 file_partial 로 pair 를 건너뛰어 IC 가 전진하지 않는다.
+  SIG_YM="$(date -d "$AS_OF -1 day" +%Y%m)"
+  SIG_DATE="$("$PY" - "$SIG_YM" <<'PYEOF'
+import sys, pyarrow.parquet as pq, pandas as pd
+ym = sys.argv[1]
+b = pd.to_datetime(pq.read_table(".cache/benchmark.parquet", columns=["Date"]).to_pandas()["Date"])
+m = b[b.dt.strftime("%Y%m") == ym]
+print(m.max().strftime("%Y-%m-%d") if len(m) else "")
+PYEOF
+)"
+  [ -n "$SIG_DATE" ] || abort "GateB-sigdate" "sig month $SIG_YM 의 거래일을 benchmark 에서 찾지 못함" 21
+  say "[1b] sig-month factor DB 강제 재빌드 (sig_ym=$SIG_YM sig_date=$SIG_DATE)"
+  _T="$(mktemp /tmp/qm_fdb_XXXX.R)"
+  printf '%s\n' \
+    "setwd('$QM_ROOT')" \
+    "source('02_Infrastructure/factor_db/factor_db_builder.R')" \
+    "build_factor_db('$SIG_DATE', force = TRUE)" \
+    "compute_all_factor_ic_monthly()" > "$_T"
+  "$RSCRIPT" --no-save "$_T" >> "$LOG" 2>&1 || say "[warn] sig-month 재빌드/IC rc!=0 (Gate B 가 내용으로 검증)"
+  rm -f "$_T"
+
+  # ── Gate B = 앵커 **내용** 검사 (mtime 아님) ────────────────────────────────
+  #   구판은 `ls -1t | head -1` 로 가장 최근 factor_db 를 골라 mtime 만 봤다. 월초에 실행하면
+  #   그건 오늘 만들어진 *당월* DB(예: 202608)라 **소비하지 않는 파일**을 검사하고 초록을 냈다.
+  #   게다가 warn-only 라 abort 도 없었다. 파일이 있다/최근이다 는 "맞는 신호일로 만들어졌나"를
+  #   재지 못한다 — 잴 것을 재도록 앵커 Date 를 직접 검사하고 미달 시 중단한다.
+  GB="$("$PY" - "$SIG_YM" "$SIG_DATE" <<'PYEOF'
+import sys, os, pyarrow.parquet as pq, pandas as pd
+ym, sig = sys.argv[1], sys.argv[2]
+p = f".cache/factor_db/factor_db_{ym}.parquet"
+if not os.path.exists(p):
+    print(f"BAD 파일 부재 {p}"); raise SystemExit
+try:
+    d = pd.to_datetime(pq.read_table(p, columns=["Date"]).to_pandas()["Date"])
+    u = sorted(d.dt.strftime("%Y-%m-%d").unique())
+    print(("OK " if u[-1] == sig else "BAD ") + f"anchor={u[-1]} (기대 {sig}) rows={len(d)} uniq={len(u)}")
+except Exception as e:
+    print(f"BAD read_error={e}")
+PYEOF
+)"
+  say "  Gate B: $GB"
+  echo "$GB" | grep -q "^OK" \
+    || abort "GateB-anchor" "factor_db_$SIG_YM 앵커가 $SIG_DATE 아님 ($GB) — 알파·β_R05 가 낡은 신호일로 계산되는 것을 차단" 22
 else
   say "[1] 인제스트/팩터DB 스킵 (--only-weights)"
 fi
@@ -87,6 +142,27 @@ PG2_AS_OF="$AS_OF" bash "02_Infrastructure/monitoring/run_nolayer4_monthly.sh" >
   || say "[warn] run_nolayer4_monthly 일부 step warn (Gate C가 최종 검증)"
 [ -f "$HOLD" ] && [ "$(wc -l < "$HOLD")" -ge 5 ] \
   || abort "GateC-weights" "홀딩 CSV 미생성/부실: $HOLD (run_pg2_forward alpha/m4/beta 실패 가능 - 로그 확인)" 30
+
+# ── [3] Gate D — 하드 제약 + 재계산 정합 (2026-08-01 추가) ──────────────────
+#   왜: Gate C 는 "파일이 생겼고 5행 이상"만 본다 → **전월 값이 그대로 재출력돼도 통과**하고,
+#   하드 제약(25종·long-only·bounds·Σw=1·유동성)은 배포 체인 어디서도 산출물에 대해
+#   검사되지 않았다(2026-08-01 감사: "구성상 만족일 뿐 검증 0건"). 구성이 맞다는 것과
+#   산출물이 맞다는 것은 다르다 — 산출물을 직접 잰다.
+#   전월 지문 대조로 '조용한 재출력'까지 검거한다. hard FAIL 이면 중단.
+say "[3] Gate D: 배포 홀딩 제약·정합 검증 (deployed_holdings_check.py)"
+_DHC_ARGS=(--as-of "$AS_OF" --holdings "$HOLD" --manifest "$MANIFEST")
+if [ -f "$PREV_HOLD" ]; then
+  _DHC_ARGS+=(--prev-holdings "$PREV_HOLD")
+else
+  say "  [warn] 전월 홀딩 부재($PREV_HOLD) — 재계산 지문 대조 SKIP(조용한 재출력 미검)"
+fi
+"$PY" "$QM_ROOT/02_Infrastructure/validation/deployed_holdings_check.py" "${_DHC_ARGS[@]}" 2>&1 | tee -a "$LOG"
+_DHC_RC="${PIPESTATUS[0]}"
+case "$_DHC_RC" in
+  0) say "  Gate D: PASS" ;;
+  2) abort "GateD-missing" "검증 대상 산출물 판독 불가 (홀딩/매니페스트)" 41 ;;
+  *) abort "GateD-constraints" "하드 제약/정합 위반 — 위 FAIL 항목 확인 (비중 배포 금지)" 40 ;;
+esac
 
 # ── 결과 리포트 ─────────────────────────────────────────────────────────────
 say ""

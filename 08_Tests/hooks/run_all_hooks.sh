@@ -155,6 +155,12 @@ SUITES=(
   #   관측창 가드(2분 된 원장으로 "7일 발화 0" WARN 하던 오탐)·미측정≠0·회전·미커버 게이트
   #   이름 노출. 이 감시기가 침묵하면 "발화 0" 지문 자체를 놓친다.
   "08_Tests/ops/test_hook_fire_coverage.sh"
+  # 2026-08-01 추가: 배포 홀딩 제약 검사기 위반 주입 —
+  #   월간 리밸 Gate C 는 "CSV 생성 + 5행"만 봐서 전월 재출력·제약 위반이 통과했다
+  #   (감사 실측: 하드 제약 4종이 배포 체인 어디서도 산출물에 대해 검증되지 않음).
+  #   deployed_holdings_check.py 가 그 마지막 방어선이므로, 이 검사기가 죽으면
+  #   "전부 OK" 와 "아무것도 안 잼" 이 겉보기에 같아진다. T13 음성 통제 포함.
+  "08_Tests/portfolio/test_deployed_holdings_check.sh"
 )
 
 _suite_cmd() {
