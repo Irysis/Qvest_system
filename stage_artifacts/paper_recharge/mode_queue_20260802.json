@@ -1,0 +1,74 @@
+{
+  "date": "20260802",
+  "schema_version": "paper_router_v2",
+  "generated_at": "20260802",
+  "optimizer": [
+    {
+      "arxiv_id": "2607.28230",
+      "title": "Boundary-Induced Apparent Risk Aversion in Nonergodic Multiplicative Growth",
+      "route": "optimizer",
+      "memo": "Kelly fraction 최적 노출 이론 — 흡수 경계 기하학이 state-dependent 위험회피 유발. absorbing-boundary geometry → optimizer 포지션 sizing 연구 소스. alpha_fixed 조건에서 A/B 적용 가능.",
+      "tags": ["kelly", "ergodic", "position_sizing", "risk_aversion"]
+    },
+    {
+      "arxiv_id": "2607.27461",
+      "title": "Are Three Matrices All You Need To Beat the Market? Observable Matrix Dynamics for Portfolio Optimization",
+      "route": "optimizer",
+      "memo": "가격·거래량·시총 3행렬(상관거리행렬 + 수익률/변동성 Markov 체인)로 동적 포트폴리오 구성. 수익률 랭크는 예측불가, 변동성 랭크는 예측가능 — optimizer에서 Markov 전이 확률 기반 sizing 실험 가능. STEP2에서 C_VolRankStability(alpha) 분리 추출됨.",
+      "tags": ["dynamic_portfolio", "markov_chain", "vol_rank", "correlation_distance"]
+    },
+    {
+      "arxiv_id": "2607.01705",
+      "title": "Portfolio Optimization under Fast and Slow Latent Mean-Reverting and Momentum Drift",
+      "route": "optimizer",
+      "memo": "부분정보 포트폴리오 최적화 — 잠재 드리프트(빠른/느린 평균회귀+모멘텀)의 수학적 기초. MACD형 신호가 최적 드리프트 추정기로 자연 발생함을 증명. optimizer 규모결정에 EMA 기반 latent drift estimate 활용 가능. (M19_MACD는 DB 중복 — 팩터 아닌 sizing 방법론 소스.)",
+      "tags": ["latent_drift", "MACD", "mean_reversion", "momentum", "partial_information"]
+    }
+  ],
+  "risk": [
+    {
+      "arxiv_id": "2607.27588",
+      "title": "Local Stochastic Rough Volatility: Pathwise Filtering and the Conditional Density Equation",
+      "route": "risk",
+      "memo": "rough Heston 기반 local-stoch vol 조건부 밀도 SPDE의 pathwise 변환. Itô-Wentzell 축소 → deterministic PDE with path-dependent coefficients. Rao-Blackwellized calibration 연결. KR 변동성 모형 개선 참조.",
+      "tags": ["rough_vol", "stochastic_vol", "fokker_planck", "risk_model"]
+    },
+    {
+      "arxiv_id": "2607.25459",
+      "title": "Emergent Latent-State Computation under Stochastic Volatility",
+      "route": "risk",
+      "memo": "Transformer 내부 잠재 변동성 상태 표현 분석. 2단계 계산 구조: hidden state → 잠재 vol 인코딩 → readout. long-cycle regime에서 explicit latent state filter 등장. ML 기반 vol 예측기 해석 방법론.",
+      "tags": ["stochastic_vol", "transformer", "mechanistic_interpretability", "latent_state"]
+    },
+    {
+      "arxiv_id": "2607.25189",
+      "title": "Long-memory GARCH via a two-dimensional Markov chain",
+      "route": "risk",
+      "memo": "2D Markov state로 long-memory vol 포착 — Foster-Lyapunov 조건 + Harris 재귀성 증명. KR 실현변동성의 장기기억 특성에 직접 적용 가능. DCC-Markov 확장 가능성.",
+      "tags": ["GARCH", "long_memory", "Markov_chain", "vol_persistence"]
+    },
+    {
+      "arxiv_id": "2607.24410",
+      "title": "The Fundamental Structure of Risk: From Characteristics to Covariance",
+      "route": "risk",
+      "memo": "특성 기반 동적 팩터모형(CD-DFM) — 펀더멘탈 특성 → 잠재 팩터 노출 + 공분산 추정기 E2E 학습. Stein covariance loss + factor reconstruction. zero-shot 신규 자산 임베딩. KR 재무 특성 DB → Σ 개선 연구 참조.",
+      "tags": ["covariance_estimation", "characteristic_driven", "deep_learning", "factor_model"]
+    }
+  ],
+  "regime": [
+    {
+      "arxiv_id": "2607.27063",
+      "title": "Herding, Momentum, and Reversal in China's A-Share Market",
+      "route": "regime",
+      "memo": "군집투자(herding) + 정보전파 지연 → 모멘텀/반전 에이전트 기반 시뮬레이션. CSAD + LSV + rolling tail-based herding indicator(Johnson S_U 변환). KR시장 군집 지표 overlay 가능: CSAD_KR = cross-sectional absolute deviation of daily returns → regime signal. KR 강세장/위기시 군집 강화 → BearProb overlay 보완 후보.",
+      "tags": ["herding", "CSAD", "momentum", "reversal", "regime_indicator", "information_diffusion"]
+    },
+    {
+      "arxiv_id": "2607.19497",
+      "title": "The Science and Practice of Trend-Following Systems",
+      "route": "regime",
+      "memo": "TF 시스템 통합 이론: TF 알파 = 저주파 스펙트럼 질량 과잉(= 수익률 양의 자기상관). Poisson 커널 스펙트럼 표현, closed-form SR, 비용 최적 span, TF 수익 정편향. KR 월간 수익률 spectral mass → 국면 탐지 overlay. STEP2: T_RetAutoCorr_12M(cross-section) 분리 추출됨.",
+      "tags": ["trend_following", "autocorrelation", "spectral_mass", "ARFIMA", "skewness", "managed_futures"]
+    }
+  ]
+}

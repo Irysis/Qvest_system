@@ -1,0 +1,36 @@
+{
+  "strategy_name": "C_VolRankStability_3M",
+  "strategy_idea": "3개월 변동성 랭크 변화 신호 — arxiv:2607.27461 Halperin 2026: vol rank는 Markov 체인으로 1개월 예측 가능, 3개월 전 대비 순위가 낮아진(개선된) 종목 long",
+  "factor_engine_path": "04_Research/strategies/AS_C_VolRankStability_20260802/factor_engine.R",
+  "source_paper": "arxiv:2607.27461",
+  "prior_run": {
+    "id": "STR_AS_20260726_174643_26276",
+    "signal": "vol rank stability 역수 (순위 안정적으로 낮은 종목)",
+    "grade": "F",
+    "sharpe": 0.167,
+    "cagr": 3.71,
+    "mdd": 55.37
+  },
+  "differentiator": "신호 변경: 정적 안정성(역수) → 동적 변화(3개월 랭크 차분). 논문도 다름(2607.19005 → 2607.27461). 매수 기준: 과거 순위 낮던 종목 유지 → 최근 3개월에 상대 변동성이 개선된 종목",
+  "checks": {
+    "L1_PIT": {
+      "C1_rolling_only": "frollapply n=252 rolling std (전표본 금지)",
+      "C2_no_same_day": "월말 rvol 값 사용, 당월 수익률 미참조",
+      "C10_liq_t1": "LiqPass는 AvgTV20 (20일 전 데이터 기반, PIT 적용됨)",
+      "shift_convention": "shift(vol_rank, 3L, type='lag') = 3개월 전 값 (data_table_shift_convention 정합)"
+    },
+    "L2_contract": "audit_bt_result PASS 의무 (run_alpha_search 내부 자동 처리)",
+    "L3_robustness": "oos_retention >= 0.5 목표 + hurdle grade 확인",
+    "L4_fidelity": "논문 핵심 vol rank Markov 지속성 — 3개월 lag로 충분한 신호 시간지평 포착"
+  },
+  "run_params": {
+    "n_holdings": 20,
+    "weight_method": "ivol",
+    "universe": "K200_KQ150",
+    "start_date": "2005-01-01",
+    "commission": 0.0015,
+    "factor_analysis": true
+  },
+  "status": "PENDING",
+  "created_at": "2026-08-02"
+}

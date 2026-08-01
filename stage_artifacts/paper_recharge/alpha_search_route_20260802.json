@@ -1,0 +1,481 @@
+{
+  "date": "20260802",
+  "schema_version": "paper_router_v2",
+  "source_a_count": 38,
+  "source_b_new": 0,
+  "counts_by_route": {
+    "alpha": 5,
+    "optimizer": 3,
+    "risk": 4,
+    "regime": 2,
+    "skip": 24
+  },
+  "n_factor_candidates": 2,
+  "factor_candidates_testable": [
+    {
+      "factor_id": "C_VolRankStability",
+      "name": "Vol Rank Stability (3m rank change)",
+      "source_paper": "arxiv:2607.27461",
+      "source_route": "optimizer",
+      "step2_overlay": true,
+      "definition": "Cross-sectional volatility rank change over 3 months. For each stock at month t: compute 12m trailing realized vol (from daily returns) → cross-sectional rank (1=lowest vol) → signal = -(rank_t - rank_{t-3}). Negative rank change = vol rank improving = buy signal. PIT lag=1 (prior month end data).",
+      "kr_feasible": true,
+      "novel": true,
+      "db_closest": "C-family low-vol factors (IVOL, realized vol) — rank-transition angle not in DB",
+      "verdict": "testable",
+      "confidence": 0.78,
+      "autorun_priority": 1
+    },
+    {
+      "factor_id": "T_RetAutoCorr_12M",
+      "name": "Monthly Return Autocorrelation (12m lag-1)",
+      "source_paper": "arxiv:2607.19497",
+      "source_route": "regime",
+      "step2_overlay": true,
+      "definition": "Lag-1 autocorrelation of monthly returns over trailing 12m window. For each stock at month t: corr(ret[t-12:t-2], ret[t-11:t-1]) cross-section. High positive autocorrelation = persistent trend = buy signal. PIT lag=1 (use returns through t-1).",
+      "kr_feasible": true,
+      "novel": "uncertain — T15_AutoCorr (21d daily) exists; monthly frequency at cross-section may differ. possibly correlated with M01 momentum.",
+      "db_closest": "T15_AutoCorr (21d daily) + M01 momentum family",
+      "verdict": "testable",
+      "confidence": 0.55,
+      "autorun_priority": 2
+    }
+  ],
+  "papers": [
+    {
+      "arxiv_id": "2607.28577",
+      "title": "Train Often, Deploy Selectively: Forward-Gated Model Replacement in Crypto Markets",
+      "source": "arxiv",
+      "route": "skip",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "Crypto perpetual futures — KR equity 범위 밖"
+    },
+    {
+      "arxiv_id": "2607.28410",
+      "title": "Can Large Language Models Execute Parent Orders?",
+      "source": "arxiv",
+      "route": "skip",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "HFT/intraday order execution, Shenzhen SSE Level-1 data — KR equity 범위 밖"
+    },
+    {
+      "arxiv_id": "2607.28230",
+      "title": "Boundary-Induced Apparent Risk Aversion in Nonergodic Multiplicative Growth",
+      "source": "arxiv",
+      "route": "optimizer",
+      "kr_feasible": true,
+      "factor_candidate": null,
+      "reason": "Kelly fraction / ergodic portfolio sizing theory → optimizer-research 소스. 종목선택 신호 없음."
+    },
+    {
+      "arxiv_id": "2607.28215",
+      "title": "Almost stochastic dominance via optimal transport",
+      "source": "arxiv",
+      "route": "skip",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "순수 수리이론 (분포 순서 관계) — 투자 신호 없음"
+    },
+    {
+      "arxiv_id": "2607.28127",
+      "title": "FinSMART: Financial Sentiment Analysis for Algorithmic Trading through Market-Aligned Reinforcement Learning",
+      "source": "arxiv",
+      "route": "alpha",
+      "kr_feasible": false,
+      "factor_candidate": {
+        "name": "RL-aligned sentiment signal",
+        "def": "RL-trained LLM sentiment on financial news, optimized with market outcomes",
+        "novel": true,
+        "kr_feasible": false,
+        "verdict": "infeasible",
+        "reason": "KR 금융 텍스트 말뭉치 + RL학습 파이프라인 인프라 부재"
+      },
+      "reason": "RL로 최적화된 감성분석 알파 논문 — KR 구현 불가(텍스트 인프라 없음)"
+    },
+    {
+      "arxiv_id": "2607.27859",
+      "title": "ZAPs: A Reward Attribution Framework for DeFi Ecosystems",
+      "source": "arxiv",
+      "route": "skip",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "DeFi/크립토 — KR equity 범위 밖"
+    },
+    {
+      "arxiv_id": "2607.27853",
+      "title": "FinanceHarness: Autonomous Financial Deep Research Framework",
+      "source": "arxiv",
+      "route": "skip",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "LLM 에이전트 벤치마크 — 투자 신호 없음"
+    },
+    {
+      "arxiv_id": "2607.27814",
+      "title": "Pricing and Semi-static Hedging of Green Pay-as-produced Power Purchase Agreements",
+      "source": "arxiv",
+      "route": "skip",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "에너지 파생상품 — KR equity 범위 밖"
+    },
+    {
+      "arxiv_id": "2607.27649",
+      "title": "Multi-maturity consistency of option prices under bounded bid-ask spreads",
+      "source": "arxiv",
+      "route": "skip",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "옵션 가격결정 이론 — 종목선택 신호 없음"
+    },
+    {
+      "arxiv_id": "2607.27611",
+      "title": "AWARE-FX: An Auditable Knowledge-Guided AI System for Measuring Corporate Foreign-Exchange Hedging Disclosure",
+      "source": "arxiv",
+      "route": "alpha",
+      "kr_feasible": false,
+      "factor_candidate": {
+        "name": "FX hedging disclosure intensity score",
+        "def": "NLP-based firm-year FX hedging disclosure measure from annual report text",
+        "novel": true,
+        "kr_feasible": false,
+        "verdict": "infeasible",
+        "reason": "KR 사업보고서 NLP 파이프라인 부재 — DART 파일 텍스트 추출 가능하나 도메인 특화 NLP 없음"
+      },
+      "reason": "기업 FX 헤징 공시 NLP 측정 논문 — 개념은 KR 적용 가능하나 현 인프라 불가"
+    },
+    {
+      "arxiv_id": "2607.27588",
+      "title": "Local Stochastic Rough Volatility: Pathwise Filtering and the Conditional Density Equation",
+      "source": "arxiv",
+      "route": "risk",
+      "kr_feasible": true,
+      "factor_candidate": null,
+      "reason": "rough Heston 조건부 밀도 수리분석 → risk-research 소스(vol 모델링)"
+    },
+    {
+      "arxiv_id": "2607.27569",
+      "title": "Consuming Values",
+      "source": "arxiv",
+      "route": "skip",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "결제카드 소비 데이터 기반 기업 사회적 입장 분석 — alt-data 불가"
+    },
+    {
+      "arxiv_id": "2607.27544",
+      "title": "Lucky or Good? Outcome Noise, Effective Sample Size, and the Attribution of Skill",
+      "source": "arxiv",
+      "route": "skip",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "기술/운 귀인 통계방법론 — 투자 신호 없음"
+    },
+    {
+      "arxiv_id": "2607.27461",
+      "title": "Are Three Matrices All You Need To Beat the Market? Observable Matrix Dynamics for Portfolio Optimization",
+      "source": "arxiv",
+      "route": "optimizer",
+      "kr_feasible": true,
+      "factor_candidate": {
+        "name": "VolRankStability",
+        "def": "3m change in cross-sectional trailing vol rank (12m realized vol). Stocks with improving vol rank (= becoming relatively less volatile) get high score. Signal = -(rank_t - rank_{t-3}). DB에 없는 신호.",
+        "novel": true,
+        "kr_feasible": true,
+        "verdict": "testable",
+        "confidence": 0.78,
+        "autorun_priority": 1,
+        "key_finding": "vol rank Markov chain is forecastable 1-step ahead; return rank is not. → long side: stocks predicted to maintain/improve low-vol rank."
+      },
+      "reason": "가격·거래량·시총 3행렬로 동적 포트폴리오 최적화. optimizer route. STEP2: vol rank 예측가능성이 KR long-only 신호로 추출 가능 — testable."
+    },
+    {
+      "arxiv_id": "2607.27188",
+      "title": "Inverse Learning of Latent Risk-Neutral Densities from Irregular Option Quotes",
+      "source": "arxiv",
+      "route": "skip",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "옵션 내재 밀도 역산 — 옵션 데이터 필요"
+    },
+    {
+      "arxiv_id": "2607.27070",
+      "title": "Where does the criticality live? Early-warning signals are event-heterogeneous across seven crypto-perpetual liquidation cascades",
+      "source": "arxiv",
+      "route": "skip",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "크립토 청산 cascade 분석 — KR equity 범위 밖"
+    },
+    {
+      "arxiv_id": "2607.27063",
+      "title": "Herding, Momentum, and Reversal in China's A-Share Market: An Agent-Based Network Model with Information Diffusion",
+      "source": "arxiv",
+      "route": "regime",
+      "kr_feasible": true,
+      "factor_candidate": {
+        "name": "market_herding_indicator",
+        "def": "CSAD 또는 LSV-측정치 기반 시장급 군집투자 지표. Johnson S_U 변환 꼬리 기반 herding indicator.",
+        "novel": false,
+        "kr_feasible": false,
+        "verdict": "infeasible",
+        "reason": "CSAD는 시장 수준(종목 단면 랭킹 불가). LSV는 기관 fund 거래 데이터 필요."
+      },
+      "reason": "군집투자·모멘텀·반전 중국 A주 에이전트 모형 → regime/overlay 소스. 종목수준 신호 추출 불가."
+    },
+    {
+      "arxiv_id": "2607.27039",
+      "title": "Forcing and duality-corrected contracts for volatility control",
+      "source": "arxiv",
+      "route": "skip",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "주인-대리인 vol control 수리이론 — 투자 신호 없음"
+    },
+    {
+      "arxiv_id": "2607.27019",
+      "title": "Multi-Asset Liquidation in Dark Pools with Adverse Selection",
+      "source": "arxiv",
+      "route": "skip",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "다크풀 실행이론 — 투자 신호 없음"
+    },
+    {
+      "arxiv_id": "2607.26859",
+      "title": "No Data Is Not No Risk: Visibility Aware Graph-Based Inference of Business Conduct Risk",
+      "source": "arxiv",
+      "route": "alpha",
+      "kr_feasible": false,
+      "factor_candidate": {
+        "name": "CorporateOwnershipConductRisk",
+        "def": "소유구조 그래프 GCN으로 향후 경영사고(compliance incidents) 예측. KR: DART 대주주 데이터로 소유그래프 구성 가능.",
+        "novel": true,
+        "kr_feasible": false,
+        "verdict": "uncertain",
+        "reason": "DART 소유그래프 구성은 가능하나 KR compliance incident labeled DB 부재 — 학습 데이터 없음"
+      },
+      "reason": "소유구조 그래프 기반 경영위험 예측 논문. alpha route. STEP2: KR 구현은 labeled incident DB 부재로 uncertain."
+    },
+    {
+      "arxiv_id": "2607.26792",
+      "title": "Crossing-Free Probabilistic K-Line Forecasts Without Retraining",
+      "source": "arxiv",
+      "route": "skip",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "OHLC 예측 reconciliation — 종목 단면 랭킹 신호 없음"
+    },
+    {
+      "arxiv_id": "2607.26405",
+      "title": "Multi-Currency AMMs for Decentralized FOREX Markets: Feasibility & Optimal Design",
+      "source": "arxiv",
+      "route": "skip",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "FX/DeFi — KR equity 범위 밖"
+    },
+    {
+      "arxiv_id": "2607.26245",
+      "title": "OpenMarket: A Synchronized Polymarket-Binance Dataset",
+      "source": "arxiv",
+      "route": "skip",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "크립토/예측시장 데이터셋 — KR equity 범위 밖"
+    },
+    {
+      "arxiv_id": "2607.25459",
+      "title": "Emergent Latent-State Computation under Stochastic Volatility",
+      "source": "arxiv",
+      "route": "risk",
+      "kr_feasible": true,
+      "factor_candidate": null,
+      "reason": "Transformer 잠재변동성 표현 해석 → risk-research 소스(vol 모델링 방법론)"
+    },
+    {
+      "arxiv_id": "2607.25189",
+      "title": "Long-memory GARCH via a two-dimensional Markov chain",
+      "source": "arxiv",
+      "route": "risk",
+      "kr_feasible": true,
+      "factor_candidate": null,
+      "reason": "장기기억 GARCH-Markov 변동성 모형 → risk-research 소스(vol 모델링)"
+    },
+    {
+      "arxiv_id": "2607.25162",
+      "title": "Quantum Transformer BSDE Solver via Multi-Layer Fully-Connected Variational Quantum Circuits",
+      "source": "arxiv",
+      "route": "skip",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "양자컴퓨팅 BSDE solver — 투자 신호 없음"
+    },
+    {
+      "arxiv_id": "2607.24973",
+      "title": "Discrete dividends after maturity adjust the stock and strike prices",
+      "source": "arxiv",
+      "route": "skip",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "배당 옵션 가격결정 이론 — 종목 단면 신호 없음"
+    },
+    {
+      "arxiv_id": "2607.24410",
+      "title": "The Fundamental Structure of Risk: From Characteristics to Covariance",
+      "source": "arxiv",
+      "route": "risk",
+      "kr_feasible": true,
+      "factor_candidate": {
+        "name": "CharacteristicDrivenLatentFactor",
+        "def": "펀더멘탈 특성 인코더로 학습된 잠재팩터 — 공분산 추정기의 부산물.",
+        "novel": false,
+        "kr_feasible": false,
+        "verdict": "infeasible",
+        "reason": "S&P500 학습 모델. KR 재학습 필요 + 입력 특성이 기존 팩터DB와 중복."
+      },
+      "reason": "특성 기반 동적 팩터모형(CD-DFM)으로 공분산 추정 → risk-research 소스. 알파 신호는 없음."
+    },
+    {
+      "arxiv_id": "2607.21687",
+      "title": "Optimal Surplus Management for Insurers under Stochastic Interest Rates and Jump-Driven Liabilities",
+      "source": "arxiv",
+      "route": "skip",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "보험사 잉여 최적화 (보험계리) — KR equity 범위 밖"
+    },
+    {
+      "arxiv_id": "2607.20168",
+      "title": "Quantum Kernels and the Cross-Section of Stock Returns: Anatomy of a Vanishing Advantage",
+      "source": "arxiv",
+      "route": "alpha",
+      "kr_feasible": true,
+      "factor_candidate": {
+        "name": null,
+        "def": null,
+        "novel": false,
+        "kr_feasible": false,
+        "verdict": "infeasible",
+        "reason": "PIT 프로토콜 방법론 논문. 47개 anomaly 특성 사용 — 모두 기존 DB 존재. 양자 커널 = null finding."
+      },
+      "reason": "중국 A주 횡단면 수익률 예측 양자커널 vs 고전 A/B — alpha route (cross-section methodology). 신규 팩터 없음."
+    },
+    {
+      "arxiv_id": "2607.20093",
+      "title": "Retail Trader's Ruin: An Anatomy of Popular Signal Failure",
+      "source": "arxiv",
+      "route": "alpha",
+      "kr_feasible": true,
+      "factor_candidate": {
+        "name": null,
+        "def": null,
+        "novel": false,
+        "kr_feasible": false,
+        "verdict": "infeasible",
+        "reason": "기존 신호(추세·오실레이터·봉형·거래량·캘린더) 검증 논문. 신규 팩터 없음. 방법론 유용(INCONCLUSIVE 분류 체계)."
+      },
+      "reason": "소매 투자자 신호 실패 해부 — alpha route (신호 평가 방법론). 4/6 REFUTED, 2/6 INCONCLUSIVE (trend+momentum)."
+    },
+    {
+      "arxiv_id": "2607.19497",
+      "title": "The Science and Practice of Trend-Following Systems",
+      "source": "arxiv",
+      "route": "regime",
+      "kr_feasible": true,
+      "factor_candidate": {
+        "name": "T_RetAutoCorr_12M",
+        "def": "월간 수익률 lag-1 자기상관(12m 롤링 윈도우). 각 종목별 cross-section. TF 알파 = 저주파 스펙트럼 질량 과잉 → 양의 자기상관 종목이 추세추종 수익 우위. PIT lag=1. T15_AutoCorr(21d daily)과 구별: 월간 빈도 cross-section.",
+        "novel": "uncertain — T15_AutoCorr(21d) 존재하나 월간 빈도 분리 가능성 있음. M-family 모멘텀과 상관 높을 수 있음.",
+        "kr_feasible": true,
+        "verdict": "testable",
+        "confidence": 0.55,
+        "autorun_priority": 2
+      },
+      "reason": "추세추종 시스템 통합 이론 — regime route. STEP2: 월간 수익률 자기상관이 KR 횡단면 신호로 추출 가능 — testable."
+    },
+    {
+      "arxiv_id": "2607.18623",
+      "title": "Dead Reckoning: Counting Your Customers Who Never Say Goodbye",
+      "source": "arxiv",
+      "route": "skip",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "고객 생존 분석 (CLV 모델링) — 주식 투자 신호 없음"
+    },
+    {
+      "arxiv_id": "2607.12156",
+      "title": "(Early) AI Compute Asset Pricing",
+      "source": "arxiv",
+      "route": "skip",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "AI 컴퓨트 선물 새 자산군 — KR equity 범위 밖"
+    },
+    {
+      "arxiv_id": "2607.16281",
+      "title": "A Novel Hybrid Quantum Reservoir Computing (nHQRC) for Phase Transition Detection",
+      "source": "arxiv",
+      "route": "skip",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "양자 저수지 컴퓨팅 — 실용화 불가"
+    },
+    {
+      "arxiv_id": "2607.08531",
+      "title": "Optimal Prediction of Resistance and Support Levels under Constant Elasticity of Variance Processes",
+      "source": "arxiv",
+      "route": "skip",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "CEV 지지/저항 수준 순수 이론 — 종목 단면 신호 없음"
+    },
+    {
+      "arxiv_id": "2607.06153",
+      "title": "From Gravity to Confinement: Wealth Redistribution as Optimal Drift Design in the Fokker-Planck Framework",
+      "source": "arxiv",
+      "route": "skip",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "소득분배/세금 경제학 이론 — 투자 신호 없음"
+    },
+    {
+      "arxiv_id": "2607.01705",
+      "title": "Portfolio Optimization under Fast and Slow Latent Mean-Reverting and Momentum Drift",
+      "source": "arxiv",
+      "route": "optimizer",
+      "kr_feasible": true,
+      "factor_candidate": {
+        "name": "MACD_cross_section",
+        "def": "잠재 드리프트 추정기로서 MACD 신호 — (EMA12-EMA26)/EMA26 횡단면 랭킹",
+        "novel": false,
+        "kr_feasible": true,
+        "verdict": "redundant",
+        "reason": "M19_MACD 이미 DB 존재 — 중복"
+      },
+      "reason": "빠른/느린 EMA 기반 잠재 드리프트 추정의 수학적 기초 — optimizer route (MACD 최적 sizing). MACD 팩터는 DB 중복."
+    }
+  ],
+  "curated_new_processed": 0,
+  "curated_note": "15건 전부 curated_routed.json에 기등록(last_run 20260705) — 신규 처리 없음",
+  "autorun_candidates": [
+    {
+      "priority": 1,
+      "factor_id": "C_VolRankStability",
+      "source_paper": "arxiv:2607.27461",
+      "route_source": "optimizer_step2_overlay",
+      "confidence": 0.78
+    },
+    {
+      "priority": 2,
+      "factor_id": "T_RetAutoCorr_12M",
+      "source_paper": "arxiv:2607.19497",
+      "route_source": "regime_step2_overlay",
+      "confidence": 0.55
+    }
+  ],
+  "generated_at": "20260802",
+  "generator": "paper_router_v2"
+}
