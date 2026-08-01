@@ -35,7 +35,10 @@ ROOT <- "C:/Users/99922/OneDrive/Quant_Module_Moltbot"
 ## 계약 recon (book_state.json::rerun_20260702_*::clean_rds 포인터와 동일).
 ## PG2 recon 갱신 시 이 상수만 최신 canonical recon rds로 교체.
 RECON_RDS  <- file.path(ROOT, "qepm/mailbox/worktask/WT-D20260702_002/output/bt_result_C_noL4_CLEAN_ann12.rds")
-PANEL_CSV  <- file.path(ROOT, "05_Production/2.Factor_Model/2-2.STR_1715_FaithTrend_on_M4_R05_overlay_PG2/04_backtest_results/period_returns_layer5_faith.csv")  # read-only
+## 패널 소스 교체 (2026-08-02 프로덕션 정리 1단계): 구 faith 슬롯(2-2) 사본 → WT-H rerun 정본.
+## 세 사본은 동일 STR_1715/M4/R05 base 공유(extend_nolayer4_series [1] 주석·alignment verify [A]) —
+## faith 슬롯은 look-ahead KILL 로 철거되었고, 이 스크립트가 쓰는 컬럼은 base 공통분뿐이다.
+PANEL_CSV  <- file.path(ROOT, "qepm/mailbox/worktask/WT-H20260513_001/output/period_returns_layer5.csv")  # read-only
 BOOK_STATE <- file.path(ROOT, "qepm/mailbox/governor/book_state.json")  # read-only (당월 manifest 주석용)
 OUT_DIR    <- file.path(ROOT, "qepm/mailbox/monitoring/kalman_beta_drift")
 dir.create(OUT_DIR, showWarnings = FALSE, recursive = TRUE)
@@ -48,6 +51,11 @@ bt  <- readRDS(RECON_RDS)
 pr  <- as.data.table(bt$period_returns)[, .(date = as.Date(date), book = ret_net)]
 bmt <- as.data.table(bt$benchmark_returns)[, .(date = as.Date(date), bm = benchmark_ret)]
 pan <- fread(PANEL_CSV)
+## 컬럼 정규화 (extend_nolayer4_series 와 동일 — 파생 아님, 단순 rename):
+## WT-H rerun 패널은 beta_R05_V5 / m4_weight_lag 명명. 구 faith 패널(beta_R05/m4)과 동치.
+if ("beta_R05_V5"   %in% names(pan) && !("beta_R05" %in% names(pan))) setnames(pan, "beta_R05_V5",   "beta_R05")
+if ("m4_weight_lag" %in% names(pan) && !("m4"       %in% names(pan))) setnames(pan, "m4_weight_lag", "m4")
+stopifnot(all(c("beta_R05", "m4") %in% names(pan)))
 pan[, anchor_date := as.Date(anchor_date)]
 pan <- pan[, .(date = anchor_date, realized_ym, regime, beta_R05, m4)]
 pan[, invested := beta_R05 * m4]                       # 배포 의도 노출 (manifest)
