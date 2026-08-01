@@ -49,10 +49,10 @@ cat("============================================================\n")
 ## --- 1. base 오버레이 패널 로드 (β_R05/m4/ret_orig/regime per realized_ym) ---
 ## 우선순위: WT-H rerun 산출(가장 신선, run_layer5_rerun_extended.R) > 2-2 faith 패널(동일 base) > 2-1 사본.
 ## 세 소스 모두 동일 STR_1715/M4/R05 base 공유 — beta_R05_V5 == faith beta_R05 검증됨(alignment verify [A]).
-## (2026-08-02 프로덕션 정리 1단계: 2-2 faith 슬롯 철거 — 폴백 후보에서 제거. look-ahead KILL 북)
+## (2026-08-02 프로덕션 정리: 2-2 faith·2-1 정적 사본 폴백 제거 — 철거 대상 슬롯.
+##  단일 소스 원칙: WT-H rerun 정본이 없으면 낡은 사본으로 조용히 내려가지 말고 여기서 멈춘다.)
 cand <- c(
-  file.path(ROOT, "qepm/mailbox/worktask/WT-H20260513_001/output/period_returns_layer5.csv"),
-  file.path(ROOT, "05_Production/2.Factor_Model/2-1.STR_1715_AR_on_M4_R05_overlay_PG2/04_backtest_results/period_returns_layer5.csv")
+  file.path(ROOT, "qepm/mailbox/worktask/WT-H20260513_001/output/period_returns_layer5.csv")
 )
 base_path <- cand[file.exists(cand)][1]
 if (is.na(base_path)) stop("[extend] base 오버레이 패널 부재 — run_layer5_rerun_extended.R 선행 필요.")

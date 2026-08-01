@@ -11,7 +11,7 @@ export CLAUDE_PROJECT_DIR="$QM_ROOT"
 export R_DATATABLE_NUM_THREADS=1 OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 ARROW_IO_THREADS=1
 cd "$QM_ROOT"
 B23="05_Production/2.Factor_Model/2-3.STR_1715_on_M4_R05_noLayer4_PG2/01_reproducible_code"
-B21="05_Production/2.Factor_Model/2-1.STR_1715_AR_on_M4_R05_overlay_PG2/01_reproducible_code"
+# B21(2-1 슬롯) 참조 제거 (2026-08-02) — base 패널 빌더는 02_Infrastructure/portfolio/ 로 이전
 RSCRIPT="$(command -v Rscript || echo '/c/Program Files/R/R-4.5.2/bin/Rscript.exe')"
 LOGD="$QM_ROOT/.cache/nolayer4_track_logs"; mkdir -p "$LOGD"
 AS_OF="${PG2_AS_OF:-$(date +%Y-%m)-01}"
@@ -55,7 +55,14 @@ fi
 # 2) base 오버레이 패널 최신화 (β_R05/m4/ret_orig per realized_ym) — run_layer5_rerun_extended.R.
 #    ★extend_nolayer4_series의 연료. 이 스텝이 없으면 base 패널이 정적→새 실현월이 시리즈에 안 쌓임.
 #    (step 1의 m4_extended.csv + STR_1715 PR 확장이 선행돼야 여기서 새 realized_ym 생성됨.)
-kill_stray; "$RSCRIPT" --no-save "$QM_ROOT/$B21/run_layer5_rerun_extended.R" >> "$LOG" 2>&1 || echo "[warn] base 패널(run_layer5_rerun_extended) 비정상" | tee -a "$LOG"
+#    2026-08-02 정본 이전: 구 2-1 슬롯 원본(종료월 하드코딩) → 02_Infrastructure/portfolio/
+#    (종료월 동적화 반영본). 2-1 슬롯은 철거 대상 — 여기서 더는 참조하지 않는다.
+#    ★종점 앵커 정규화 선행: STR_1715 확장 종점(월말 raw 끝) 행을 장부 규약으로 정규화
+#    (완결월→다음달 1일 재라벨 / 진행월→제거). 없으면 ym 중복 → 조인 2배 증식 (08-01 실사고).
+"$RSCRIPT" --no-save "$QM_ROOT/02_Infrastructure/portfolio/normalize_terminal_anchor.R" \
+  "$QM_ROOT/04_Research/strategies/STR_1715_WT016_Iter31_GridBestProd/output/03_period_returns.csv" \
+  >> "$LOG" 2>&1 || { echo "XX [2] 종점 앵커 정규화 실패 — 패널 빌드 중단(중복 라벨 방지)" | tee -a "$LOG"; exit 21; }
+kill_stray; "$RSCRIPT" --no-save "$QM_ROOT/02_Infrastructure/portfolio/run_layer5_rerun_extended.R" >> "$LOG" 2>&1 || echo "[warn] base 패널(run_layer5_rerun_extended) 비정상" | tee -a "$LOG"
 
 # 3) ★noLayer4 오버레이-시리즈 확장 (제거된 faith_overlay 자리 = Layer4 없이 β_R05×m4 재계산).
 #    단일 vintage 통째 재계산 → live_track/live_book_series.csv (05_Production 정적코드 미수정).

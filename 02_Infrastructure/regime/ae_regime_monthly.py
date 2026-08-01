@@ -66,9 +66,9 @@ PIN_SOURCES = {
     "benchmark.parquet": ".cache/benchmark.parquet",
     "carrier_STR_1715_AR_on_M4_R05_overlay_PG2.parquet":
         "06_Registry/book_carrier/carrier_STR_1715_AR_on_M4_R05_overlay_PG2.parquet",
+    # 2026-08-02 정리 2단계: 2-1 정적 사본(철거 대상) → WT-H rerun 정본(매월 재생성)
     "period_returns_layer5.csv":
-        "05_Production/2.Factor_Model/2-1.STR_1715_AR_on_M4_R05_overlay_PG2/"
-        "04_backtest_results/period_returns_layer5.csv",
+        "qepm/mailbox/worktask/WT-H20260513_001/output/period_returns_layer5.csv",
 }
 FROZEN_PIN = DEFAULT_PIN   # r1 = D3 졸업 근거 핀. 절대 덮지 않는다.
 
