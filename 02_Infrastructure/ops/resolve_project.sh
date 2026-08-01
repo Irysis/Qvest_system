@@ -26,6 +26,16 @@ if [ -z "$PROJECT" ] || [ ! -d "$PROJECT" ]; then
   echo "[ERROR] Quant_Module_Moltbot 디렉토리를 찾을 수 없습니다 (QM_ROOT 환경변수를 설정하세요)" >&2
   return 1 2>/dev/null || exit 1
 fi
+# ── 구분자 정규화 (2026-08-01) — 역슬래시 루트가 R **소스코드 문자열**로 주입되면
+#    "C:\Users\..." 의 \U 가 유니코드 이스케이프로 파싱돼 스크립트가 죽는다.
+#    실측: QM_ROOT(User scope)가 역슬래시라 daily_refresh 의 setwd("$BASE") 6지점이
+#      Error: '\U' used without hex digits in character string (<input>:1:13)
+#    로 halt → run_r 는 체인을 계속하므로 **개별 스텝만 침묵 실패**한다(2026-08-01 실측
+#    r8/r9/r11/r12/r14 = KTRI v3 · MSM · regime_daily_v2 · SJM · cache_freshness_audit).
+#    ★ dir.exists 류 존재 검사는 역슬래시 루트도 통과시킨다 — 형식은 존재가 보증하지 않는다.
+#    슬래시 형태는 R·bash(MSYS)·Python 전부 정상이므로 여기서 한 번만 정규화한다.
+PROJECT="${PROJECT//\\//}"
+
 # 스크립트별 변수명 호환
 PROJECT_ROOT="$PROJECT"
 BASE="$PROJECT"
