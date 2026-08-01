@@ -43,7 +43,7 @@ fi
 PYBIN=""; command -v sched_resolve_python >/dev/null 2>&1 && PYBIN=$(sched_resolve_python || true)
 [ -n "$PYBIN" ] || PYBIN="python3"
 VERDICT=$("$PYBIN" - "$OUT" <<'PY'
-import json, sys, io
+import json, sys, io, datetime
 d = json.load(io.open(sys.argv[1], encoding="utf-8-sig"))
 tasks = d.get("tasks") or []
 if isinstance(tasks, dict): tasks = [tasks]        # ConvertTo-Json 은 1건이면 객체로 낸다
@@ -97,6 +97,7 @@ fi
 N=$(printf '%s' "$VERDICT"     | "$PYBIN" -c 'import json,sys;print(json.load(sys.stdin)["n"])')
 BAD=$(printf '%s' "$VERDICT"   | "$PYBIN" -c 'import json,sys;print(" ".join(json.load(sys.stdin)["bad"]))')
 STALE=$(printf '%s' "$VERDICT" | "$PYBIN" -c 'import json,sys;print(" ".join(json.load(sys.stdin)["stale"]))')
+SHUTDOWN=$(printf '%s' "$VERDICT" | "$PYBIN" -c 'import json,sys;print(json.load(sys.stdin).get("shutdown",""))')
 if command -v sched_assert_count >/dev/null 2>&1 && ! sched_assert_count "$N"; then
   log "★ 작업 수가 비숫자('$N') — 계측 사망."; exit 1
 fi
