@@ -98,7 +98,30 @@ if os.path.isdir(prod_dir):
 def sha(p):
     return hashlib.sha1(open(p, "rb").read()).hexdigest()
 mirror = None
-if os.path.isdir(mirror_dir):
+## ── 1순위: 핀 레지스트리 (2026-08-02 신설 — 실사고 수리) ─────────────────────
+## 구 계약("production 사본과 바이트 동일한 미러")은 미러의 의도된 개선(AS_OF 동적화·
+## q20 소스 교체, 커밋 24757817)과 양립 불가 — 개선 직후 [1b]가 exit 12 로 죽는 것을
+## E2E 리허설 검증이 적발했다. 새 계약: 핀 파일의 sha1 과 일치해야 통과 — 핀 갱신
+## 커밋이 곧 승인 흔적이고, 무단/사고성 드리프트는 여전히 fail-closed 차단된다.
+pins_path = os.path.join(root, "02_Infrastructure/ops/generator_pins.json")
+if os.path.isfile(pins_path):
+    try:
+        import json as _json
+        pin = _json.load(open(pins_path, encoding="utf-8")).get(sid)
+    except Exception as e:
+        print(f"ERR generator_pins.json 파싱 실패({e}) — 핀 레지스트리 손상, 진행 중단"); raise SystemExit
+    if pin:
+        mp = os.path.join(root, pin["mirror"])
+        if not os.path.isfile(mp):
+            print(f"ERR 핀된 미러 부재: {pin['mirror']}"); raise SystemExit
+        actual = sha(mp)
+        if actual != pin["sha1"]:
+            print(f"ERR 핀된 미러 sha1 불일치 — 미러가 핀 갱신 없이 변경됨 "
+                  f"(핀 {pin['sha1'][:12]} vs 실측 {actual[:12]}). "
+                  f"의도된 변경이면 generator_pins.json 을 실측 sha1 로 갱신할 것"); raise SystemExit
+        mirror = mp
+## ── 2순위(핀 없는 id): 구 계약 — production 사본과 바이트 동일한 미러 탐색 ──
+if mirror is None and os.path.isdir(mirror_dir):
     for mf in sorted(os.listdir(mirror_dir)):
         if not mf.endswith(".R"):
             continue
@@ -115,8 +138,8 @@ if os.path.isdir(mirror_dir):
             break
 if not mirror:
     print(f"ERR 슬롯 {slot} 생성기의 인프라 미러를 찾지 못함 "
-          f"(02_Infrastructure/portfolio 에 production 사본과 sha1 일치하는 .R 없음). "
-          f"미러를 만들거나 호출 경로를 명시할 것 — 패턴 추측으로 진행하지 않음"); raise SystemExit
+          f"(핀 레지스트리에 {sid} 항목 없음 + production 사본과 sha1 일치하는 .R 도 없음). "
+          f"generator_pins.json 에 핀을 등록하거나 미러를 정합할 것 — 패턴 추측으로 진행하지 않음"); raise SystemExit
 print(f"OK {sid}|{slot}|{tag}|{os.path.relpath(mirror, root).replace(os.sep, '/')}")
 PYEOF
 )"

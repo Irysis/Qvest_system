@@ -1,0 +1,17 @@
+{
+  "_readme": [
+    "배포 생성기 미러 핀 레지스트리 — resolve_admitted_slot.sh 가 소비.",
+    "규약: admitted_id → {mirror, sha1, pinned, note}. 미러 파일을 수정하면 반드시 이 핀을 같이 갱신한다",
+    "(sha1sum <mirror> 값으로). 핀 불일치 = fail-closed 차단 — 무단/사고성 드리프트 방지가 목적이고,",
+    "의도된 개선은 핀 갱신 커밋이 곧 승인 흔적이다. 핀이 없는 id 는 구 규약(production 사본과",
+    "바이트 동일한 미러 탐색)으로 낙하한다.",
+    "배경(2026-08-02 실사고): 미러 개선(AS_OF 동적화 + q20 소스 교체) 직후 구 sha1-동일 계약이",
+    "파탄나 월간 실행기 [1b]가 exit 12 — E2E 리허설 검증에서 적발. 개선과 바이트-동일 계약은 양립 불가."
+  ],
+  "STR_1715_on_M4gAE_R05_noLayer4_PG2": {
+    "mirror": "02_Infrastructure/portfolio/forward_weights_D3_M4gAE.R",
+    "sha1": "8af4844b9681bac28c8bb8a91bb22d27b9779e60",
+    "pinned": "2026-08-02",
+    "note": "production 2-4 사본(1c432a77, 2026-07-19 admitted) 대비 변경 2건: ① AS_OF 기본값 2026-07-01 하드코딩 → 당월 1일 동적(도훈 mandate 08-01 하드코딩 제거; 실행기는 항상 PG2_AS_OF 명시라 결정 무영향) ② q20 소스 2-1 정적사본(2026-06 동결) → WT-H rerun 정본(실측 Δq20=-0.0005, 2026-08 zlt 판정 동일 TRUE — 판정 뒤집힘 없음 확인 후 교체, 2-1 슬롯 철거 준비)"
+  }
+}
