@@ -240,8 +240,9 @@ SUITES=(
   #   ★"N 이 줄었다"도 증거가 아니다(검사기를 죽여도 N 은 준다). 그래서 done-hit 제외(A축)와
   #     신규 testable 검거(B축)를 **양방향**으로 걸고, 수리 전 블록을 음성 기준으로 함께
   #     돌려 이 검사가 결함을 실제로 구별하는지 매 실행 확인한다(구별 8건).
-  #   검사 대상은 사본이 아니라 원본 .sh 의 heredoc 추출 — 마커가 깨지면 FATAL(exit 2)로
-  #     중단한다("조용히 0건 검사"가 초록으로 보이는 것을 막는다).
+  #   검사 대상은 사본이 아니라 원본 술어 — 2026-08-02 공용 모듈 승격 이후 원본 =
+  #     02_Infrastructure/ops/research_pool_predicates.py (구판은 .sh 의 heredoc 추출).
+  #     소비자가 정본을 경유하는지는 W축(배선 단언)이 함께 확인한다.
   "08_Tests/ops/test_alpha_queue_pending.py"
   # 2026-08-02 추가: factor_deep_recheck 큐 산정 위반 주입 — 위 alpha_queue 수리 직후
   #   **동형 스캔이 같은 결함을 실행 트리거에서** 찾아낸 자리다(형제 파일 미전파 계통).
@@ -258,6 +259,19 @@ SUITES=(
   #   D축(미해석 키 경고)이 "0편"과 "못 읽음"을 가르는 유일 지문이고,
   #   E축이 생산자 프롬프트 계약까지 걸어 소비자만 고치고 끝나는 것을 막는다.
   "08_Tests/ops/test_mode_queue_dispatch_schema.R"
+  # 2026-08-02 추가: 부팅 리더(research_pool_status.py) 3축 위반 주입 + 술어 공용화 배선.
+  #   ★위 세 suite 가 지키는 술어를 **리더는 자기 안에 얕게 재구현**하고 있었다 — 그래서
+  #     소비자 3종은 수리됐는데 리더만 틀린 채로 매일 부팅 라인에 광고했다:
+  #       축1 "testable route 2"(그날 QUARANTINE 완료분) — done 미차감 + `_latest` 한 파일만.
+  #            진짜 미소비분은 과거 파일에 있어 아예 안 잡혔다(정본 술어 참값 1).
+  #       축2 "recheck잔여 3" — 참값 0. 큐 'arxiv:' 접두를 done bare 와 raw 비교.
+  #       축3 mode_queue 최상위-only — 07-27 queue{} 중첩 판을 재생하면 0/0/0.
+  #   ★수리 형태 = 술어를 02_Infrastructure/ops/research_pool_predicates.py 로 승격(도훈
+  #     사전등록 조건 "세 번째 소비자가 나타나면 공용 모듈 승격 재판정" 발효 — 리더가 3번째).
+  #     그래서 이 suite 의 W축은 **배선 단언**이다: 리더가 정본을 경유하는가 + 술어를 다시
+  #     적지 않았는가(정규화 정규식 재출현 감시). 모듈만 초록이고 소비자가 자기 술어를
+  #     되살리면 승격이 무효화되는데, 그 상태는 다른 어떤 검사에도 안 보인다.
+  "08_Tests/ops/test_research_pool_status_axes.py"
 )
 
 # (2026-08-02) .py 분기 추가 — 종전엔 확장자 무관 `bash` 로 던져 파이썬 suite 가

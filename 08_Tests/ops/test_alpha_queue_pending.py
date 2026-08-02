@@ -17,8 +17,13 @@
   더해 legacy(수리 전) 블록을 음성 기준으로 함께 돌려, 이 검사가 실제로 결함을
   구별하는지("teeth")를 매 실행 확인한다. legacy 가 전부 PASS 하면 검사가 무력한 것이다.
 
-★검사 대상 = 사본이 아니라 **원본 .sh 의 heredoc 을 추출**해 돌린다.
+★검사 대상 = 사본이 아니라 **원본 술어**를 돌린다.
   (사본 검사는 드리프트한다 — 원본만 고치고 사본이 계속 초록을 내는 부류.)
+  2026-08-02 공용 모듈 승격 이후 원본 = `02_Infrastructure/ops/research_pool_predicates.py`
+  (구판은 .sh 의 heredoc 이었다). 술어가 소비자마다 재구현돼 같은 결함이 소비자 수만큼
+  독립 재발했기 때문에 정의를 한 곳으로 모았고, 검사도 그 한 곳을 겨눈다.
+  ★더해 **배선 단언**을 둔다 — 소비자 .sh 가 실제로 이 모듈을 경유하는지.
+    모듈만 초록이고 소비자가 자기 술어를 되살리면 이 검사 전체가 무의미해진다.
 
 실행:
   "$QVEST_PY" 08_Tests/ops/test_alpha_queue_pending.py
@@ -36,6 +41,10 @@ ROOT = os.path.abspath(os.path.join(HERE, "..", ".."))
 # 돌연변이 검사(검사기 자신이 살아 있는지)용 오버라이드. 평시엔 비워 둔다.
 TARGET = os.environ.get("QVEST_QUEUE_RUN_SH") or os.path.join(
     ROOT, "02_Infrastructure", "ops", "alpha_search_queue_run.sh")
+PRED = os.environ.get("QVEST_PREDICATES_PY") or os.path.join(
+    ROOT, "02_Infrastructure", "ops", "research_pool_predicates.py")
+# 정본 술어를 가리키는 센티넬(문자열 블록과 구분). run() 이 CLI 로 돌린다.
+MODULE = object()
 
 # 수리 전 구현(2026-08-02 이전). 음성 기준 전용 — 여기를 "고치지" 말 것.
 LEGACY = r'''
@@ -68,26 +77,34 @@ print(len(pend))
 '''
 
 
-def extract_block():
-    """원본 .sh 에서 pending 산정 heredoc 을 추출한다."""
+def check_wiring():
+    """★배선 단언 — 소비자 .sh 가 정본 술어를 경유하는가 (술어 재분기 방지축).
+
+    이 검사가 없으면: 모듈은 초록인데 .sh 가 자기 heredoc 술어를 되살려도 아무도 모른다
+    (= 승격이 무효화되고 08-02 3연발 구조로 되돌아간다). 존재 검사가 아니라 **경유 검사**다.
+    """
+    fails = []
+    if not os.path.isfile(PRED):
+        fails.append("술어 정본 부재: %s" % PRED)
+        return fails
     with open(TARGET, encoding="utf-8") as fh:
         src = fh.read()
-    m = re.search(r"^N=\$\(\"\$PYBIN\" - \"\$SD\" <<'PY'\n(.*?)^PY$",
-                  src, re.S | re.M)
-    if not m:
-        sys.stderr.write(
-            "FATAL: %s 에서 pending heredoc 을 찾지 못했다 — 마커가 바뀌었으면\n"
-            "       이 추출기부터 고칠 것(조용히 0건 검사하는 것을 막기 위해 중단).\n" % TARGET)
-        sys.exit(2)
-    body = m.group(1)
-    if "print(len(pend))" not in body:
-        sys.stderr.write("FATAL: 추출 블록에 최종 출력이 없다 — 추출 범위 오류.\n")
-        sys.exit(2)
-    return body
+    if not re.search(r"research_pool_predicates\.py.*\n?.*alpha-pending|alpha-pending", src):
+        fails.append("소비자가 정본 술어를 호출하지 않는다 (alpha-pending 호출 부재): %s"
+                     % os.path.relpath(TARGET, ROOT))
+    # heredoc 술어의 부활 감시 — 마커(`<<'PY'`)가 코드 라인으로 되살아나면 재분기다.
+    if re.search(r"^[^#\n]*<<'PY'", src, re.M):
+        fails.append("★heredoc 술어가 되살아났다 — 정의가 다시 2벌로 갈렸다: %s"
+                     % os.path.relpath(TARGET, ROOT))
+    return fails
 
 
 def run(block, files, expect_stderr=None):
-    """픽스처 디렉터리를 만들고 블록을 돌려 N 을 돌려준다."""
+    """픽스처 디렉터리를 만들고 술어를 돌려 N 을 돌려준다.
+
+    block is MODULE  → 정본 모듈을 CLI 로 실행(원본 검사)
+    block is str     → 그 소스를 stdin 으로 실행(legacy 음성 기준 전용)
+    """
     with tempfile.TemporaryDirectory() as td:
         for name, obj in files.items():
             with open(os.path.join(td, name), "w", encoding="utf-8") as fh:
@@ -95,8 +112,11 @@ def run(block, files, expect_stderr=None):
                     fh.write(obj)          # 손상 JSON 주입용 raw
                 else:
                     json.dump(obj, fh, ensure_ascii=False)
-        p = subprocess.run([sys.executable, "-", td], input=block,
-                           capture_output=True, text=True)
+        if block is MODULE:
+            cmd, inp = [sys.executable, PRED, "alpha-pending", td], None
+        else:
+            cmd, inp = [sys.executable, "-", td], block
+        p = subprocess.run(cmd, input=inp, capture_output=True, text=True)
         if p.returncode != 0:
             return ("ERR:" + p.stderr.strip()[-200:], p.stderr)
         out = p.stdout.strip()
@@ -267,10 +287,16 @@ CASES = [
 
 
 def main():
-    block = extract_block()
+    block = MODULE
     fails, teeth_fail = [], []
-    print("대상: %s" % os.path.relpath(TARGET, ROOT))
+    print("술어 정본: %s" % os.path.relpath(PRED, ROOT))
+    print("소비자 배선: %s" % os.path.relpath(TARGET, ROOT))
     print("=" * 78)
+    for w in check_wiring():
+        fails.append(("W 배선", "정본 경유", w, ""))
+        print("  [FAIL] W 배선 — %s" % w)
+    if not check_wiring():
+        print("  [PASS] W 배선: 소비자가 정본 술어를 경유 (heredoc 재분기 없음)")
     for name, files, expect, legacy_differs in CASES:
         got, err = run(block, files)
         ok = (got == expect)
@@ -297,7 +323,7 @@ def main():
     for n, e, g, err in fails:
         print("  - %s: 기대 %s / 실측 %s %s" % (n, e, g, err))
     n_fail = len(fails) + len(teeth_fail)
-    n_pass = len(CASES) - len(fails)
+    n_pass = (len(CASES) + 1) - len(fails)      # +1 = 배선 단언
     print("PASS %d / FAIL %d  (legacy 구별 %d건 — 검사에 이빨 있음)"
           % (n_pass, n_fail, sum(1 for c in CASES if c[3] is True)))
     # run_all_hooks.sh 집계용 요약 라인 — 이 줄이 없으면 러너가 UNREPORTED(=1 fail)로 계상한다.

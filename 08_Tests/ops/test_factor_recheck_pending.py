@@ -20,7 +20,11 @@
   (C) 산출 큐 파일에 기록되는 id 가 정규화형인가 (하류 재오염 차단)
   legacy(수리 전) 블록을 음성 기준으로 동반 실행 — 전부 PASS 하면 검사가 무력한 것이다.
 
-★검사 대상 = 사본이 아니라 원본 .sh 의 heredoc 추출.
+★검사 대상 = 사본이 아니라 원본 술어.
+  2026-08-02 공용 모듈 승격 이후 원본 = `02_Infrastructure/ops/research_pool_predicates.py`
+  (구판은 .sh 의 heredoc). 위 원 결함이 alpha_search_queue_run.sh 와 **독립으로 재발**한 것이
+  승격 사유였다 — 술어가 2벌이면 수리도 2벌이어야 하고, 그 동기화는 아무도 보증하지 않았다.
+  ★배선 단언 동반 — 소비자 .sh 가 실제로 정본을 경유하는지(모듈만 초록인 상태 방지).
 
 실행: "$QVEST_PY" 08_Tests/ops/test_factor_recheck_pending.py
 """
@@ -36,6 +40,9 @@ ROOT = os.path.abspath(os.path.join(HERE, "..", ".."))
 # 돌연변이 검사(검사기 자신이 살아 있는지)용 오버라이드. 평시엔 비워 둔다.
 TARGET = os.environ.get("QVEST_RECHECK_RUN_SH") or os.path.join(
     ROOT, "02_Infrastructure", "ops", "factor_deep_recheck_run.sh")
+PRED = os.environ.get("QVEST_PREDICATES_PY") or os.path.join(
+    ROOT, "02_Infrastructure", "ops", "research_pool_predicates.py")
+MODULE = object()   # 정본 술어 센티넬 (legacy 문자열 블록과 구분)
 
 # 수리 전 구현(2026-08-02 이전). 음성 기준 전용 — 여기를 "고치지" 말 것.
 LEGACY = r'''
@@ -69,25 +76,28 @@ print(len(items))
 '''
 
 
-def extract_block():
+def check_wiring():
+    """★배선 단언 — 소비자 .sh 가 정본 술어를 경유하는가 (술어 재분기 방지축)."""
+    fails = []
+    if not os.path.isfile(PRED):
+        fails.append("술어 정본 부재: %s" % PRED)
+        return fails
     with open(TARGET, encoding="utf-8") as fh:
         src = fh.read()
-    m = re.search(r"^N=\$\(\"\$PYBIN\" - \"\$SD\" \"\$QUEUE\" \"\$TODAY\" <<'PY'\n(.*?)^PY$",
-                  src, re.S | re.M)
-    if not m:
-        sys.stderr.write(
-            "FATAL: %s 에서 uncertain 큐 heredoc 을 찾지 못했다 — 마커가 바뀌었으면\n"
-            "       이 추출기부터 고칠 것(조용히 0건 검사하는 것을 막기 위해 중단).\n" % TARGET)
-        sys.exit(2)
-    body = m.group(1)
-    if "print(len(items))" not in body:
-        sys.stderr.write("FATAL: 추출 블록에 최종 출력이 없다 — 추출 범위 오류.\n")
-        sys.exit(2)
-    return body
+    if "recheck-build" not in src:
+        fails.append("소비자가 정본 술어를 호출하지 않는다 (recheck-build 호출 부재): %s"
+                     % os.path.relpath(TARGET, ROOT))
+    if re.search(r"^[^#\n]*<<'PY'", src, re.M):
+        fails.append("★heredoc 술어가 되살아났다 — 정의가 다시 2벌로 갈렸다: %s"
+                     % os.path.relpath(TARGET, ROOT))
+    return fails
 
 
 def run(block, files):
-    """픽스처 디렉터리를 만들고 블록을 돌려 (N, 산출 items) 를 돌려준다."""
+    """픽스처 디렉터리를 만들고 술어를 돌려 (N, 산출 items) 를 돌려준다.
+
+    block is MODULE → 정본 모듈 CLI(recheck-build) / block is str → legacy 음성 기준.
+    """
     with tempfile.TemporaryDirectory() as td:
         sd = os.path.join(td, "sd")
         os.makedirs(sd)
@@ -98,8 +108,11 @@ def run(block, files):
                 else:
                     json.dump(obj, fh, ensure_ascii=False)
         out = os.path.join(td, "queue_out.json")
-        p = subprocess.run([sys.executable, "-", sd, out, "20260802"],
-                           input=block, capture_output=True, text=True)
+        if block is MODULE:
+            cmd, inp = [sys.executable, PRED, "recheck-build", sd, out, "20260802"], None
+        else:
+            cmd, inp = [sys.executable, "-", sd, out, "20260802"], block
+        p = subprocess.run(cmd, input=inp, capture_output=True, text=True)
         if p.returncode != 0:
             return ("ERR:" + p.stderr.strip()[-160:], [])
         items = []
@@ -204,10 +217,17 @@ WRITE_CASES = [
 
 
 def main():
-    block = extract_block()
+    block = MODULE
     fails, teeth_fail = [], []
-    print("대상: %s" % os.path.relpath(TARGET, ROOT))
+    print("술어 정본: %s" % os.path.relpath(PRED, ROOT))
+    print("소비자 배선: %s" % os.path.relpath(TARGET, ROOT))
     print("=" * 78)
+    _w = check_wiring()
+    for w in _w:
+        fails.append((("W 배선"), "정본 경유", w))
+        print("  [FAIL] W 배선 — %s" % w)
+    if not _w:
+        print("  [PASS] W 배선: 소비자가 정본 술어를 경유 (heredoc 재분기 없음)")
     for name, files, expect, legacy_differs in CASES:
         got, _ = run(block, files)
         ok = (got == expect)
@@ -236,7 +256,7 @@ def main():
         if not ok:
             fails.append((name, expect_id, got))
 
-    total = len(CASES) + len(WRITE_CASES)
+    total = len(CASES) + len(WRITE_CASES) + 1      # +1 = 배선 단언
     print("=" * 78)
     if teeth_fail:
         print("★검사 무력 경보 — legacy 가 아래를 구별하지 못했다(검사 사망 의심):")
