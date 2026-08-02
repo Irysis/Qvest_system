@@ -221,7 +221,7 @@ for (v in list(list(nm = "leak_Mend", ed = expo_leak), list(nm = "expo_lag1", ed
 }
 ab_leak <- overlay_lookahead_ab(res_var$leak_Mend$base_abs_sr, rbo$abs_net_sr,
                                 metric_name = "base absSR (leak vs strict)")
-say(ab_leak$message)
+cat("[wt016] ", ab_leak$message, "\n", sep = "")
 
 # ── 11. EW top-25 dual-basis (overlay-ON) ────────────────────────────────────
 ew_w <- function(W) copy(W)[, w := 1 / .N, by = Date]
