@@ -43,6 +43,8 @@
 - **alpha-search 후보** = (route=alpha ∧ kr_feasible) OR (factor_candidate.verdict=testable). AUTORUN=1이면 우선순위 상위 **최대 MAX_ALPHA편** 자동 alpha-search + **5층 자동 검증게이트**(아래). AUTORUN=0이면 큐만.
   - 각 후보: **구현** factor_engine.R(impl_spec 수식·유니버스·리밸·PIT lag·long-only; 부적합/선택신호부재면 코드생성 금지·quarantine·skip = batch_434 가드) → **실행** `run_alpha_search()` → bt_result+grade+PIT → **verdict 수집**(`auto_verify_<id>.json`: L1 pit_pass=lookahead+C1~15 / L2 contract_pass=audit_bt_result≠FAIL / L3 robustness_pass=essence_score oos_retention≥0.5∧placebo non-FAIL) → **L4** 독립 충실성(`claude -p` + `paper_fidelity_verifier_prompt.md` → fidelity_pass) → **L5** 결정게이트 `Rscript 02_Infrastructure/ops/auto_alpha_gate.R <verify.json>`: ADOPT→L-code 적립+텔레그램 "✅verified" / QUARANTINE→적립금지+`auto_quarantine_${TODAY}.json` append+"⚠️검증FAIL". **게이트는 auto_alpha_gate.R가 결정(fail-closed), 너가 임의 ADOPT 금지.**
 - **optimizer/risk/regime route** → `stage_artifacts/paper_recharge/mode_queue_${TODAY}.json`(모드별). **후속 `paper_research_dispatch.R`(morning_run [0.6])가 소비**: optimizer=Σ-가중 A/B 자동+ΔIR게이트, risk/regime=분석 flag. optimizer는 "α̂ 고정 A/B" 메모 포함.
+  - ★**정본 형태 = 평면**(2026-08-02 명문화): `{date, schema_version, generated_at, optimizer:[…], risk:[…], regime:[…]}`. **3키를 `queue`{} 등 컨테이너 안에 넣지 말 것.** 실사고 `mode_queue_20260727.json` 이 `queue{optimizer,risk,regime}` 로 내는 바람에 소비자가 0/0/0 으로 읽어 **14편(opt 7·risk 4·regime 3)이 조용히 드롭**됐다(`research_status_20260727.json::actions=[]`). 소비자는 현재 `queue{}` 도 관용 수용하지만 그건 과거 산출 구제용이지 계약이 아니다.
+  - ★`schema_version` 은 **형태 식별자**다 — 생산자 이름(`paper_router_v2`)을 넣지 말 것. 07-27=`mode_queue_v1` / 08-02=`paper_router_v2` 로 어긋나 있어 이 필드로는 형태를 구별할 수 없었다(그래서 소비자가 모양으로 해석한다).
 - **skip** → 로그만.
 
 ## STEP 4 — 텔레그램 (리서치 소스 배분 요약)
