@@ -1,0 +1,125 @@
+{
+  "task_id": "WT-D20260802_017",
+  "as_of_date": "2026-08-02",
+  "forecast_horizon": "1M",
+  "spec_version": "ast_v1.1",
+  "pit": {
+    "sig_date": "2026-04-30",
+    "decision_ts": "2026-05-04",
+    "note": "마지막 의사결정월(홀딩 2026-05, decision 2026-05-04)의 라벨 = 2026-04 월말. 전 269개월 라벨월말 RegDate < 홀딩월 시작 assert_overlay_pit HARD PASS (간격 median 1일) + 위반 주입(홀딩월 라벨) 시 stop 발화 실증"
+  },
+  "hypothesis": {
+    "statement": "WT-015에서 배분 소비로는 손실이었던 unified 국면 라벨(CRISIS active +4.98%)을 overlay 노출 조절로 소비하면 현행 M4×R05 대비 양(+)의 한계기여가 있다 (FQ-115).",
+    "mechanism": {
+      "agent": "3-Layer Cascade 국면 엔진(MSM+FRED+KTRI+VEA)이 식별하는 시장 전체 위기 상태 — 위기월에 벤치·포트가 동반 하락하므로 노출 축소가 active를 보전",
+      "friction": "KR long-only 제약으로 공매도 불가 — β 축소(현금화)가 유일한 하락 방어 레버이며 차익거래로 즉시 소거되지 않는 시장-타이밍 정보",
+      "path": "월말 라벨 → 익월 노출 스칼라 g(CRISIS 0.40/CAUTION 0.70) 곱셈 → 하락월 손실 축소로 active 반영"
+    },
+    "falsification": [
+      {
+        "group_id": "A4_benchmark_kospi200",
+        "observation": "라벨∈{CRISIS,CAUTION}월이 실현 하락월(벤치 월수익<0)을 무작위 이상으로 포착하지 못하면(recall ≤ base rate, fisher 비유의) 기전 기각 — 노출 축소가 방향 없는 노이즈 스케일링이 됨"
+      },
+      {
+        "group_id": "E7_unified_regime_3layer",
+        "observation": "CRISIS 라벨월의 실현 벤치 평균이 0 이상(위기 아님)이면 라벨이 위기 상태를 표상하지 않음 — 기전의 전제(위기월 동반 하락) 기각"
+      }
+    ],
+    "regime_scope": {
+      "holds_in": ["crisis"],
+      "weakens_or_reverses_in": ["recovery", "risk_on"],
+      "boundary_rationale": "기전상 가치는 실현 하락월에만 발생. 회복/상승 국면에서 라벨이 발화하면(지연 지표화) 노출 축소가 반등 참여를 차단해 역효과"
+    }
+  },
+  "factors": [
+    {
+      "factor_id": "F1_regime_exposure_scalar",
+      "ast": {
+        "op": "MUL",
+        "args": [
+          {"leaf": "SPECIAL_OP", "escape_contract": {"code_path": "05_Production/2.Factor_Model/2-1.STR_1715_AR_on_M4_R05_overlay_PG2/04_backtest_results/period_returns_layer5.csv :: m4_weight_lag × beta_R05_V5 (현행 2-3 noLayer4 공식)", "walk_forward": "production 기록 lag 컬럼 — 각 월 시작 전 확정값"}},
+          {"leaf": "SPECIAL_OP", "escape_contract": {"code_path": ".cache/unified_regime_signal.parquet :: Category(m-1 월말) → g{CRISIS .40, CAUTION .70, else 1.0}", "walk_forward": "라벨월말 RegDate < 홀딩월 시작 assert HARD"}}
+        ]
+      },
+      "role": "overlay_exposure",
+      "restatement_exposure": 0
+    }
+  ],
+  "combination_rule": "single_factor",
+  "verdict": "designed",
+  "verdict_empirical": "NEGATIVE — 한계기여 없음(점추정 유해). paired t −1.85 / ΔIR −0.22 / EW기저 −2.04 / lag2 −2.57 / 비용반영 −1.87",
+  "self_pit_check": {
+    "performed": true,
+    "leaves_checked": [
+      {"leaf": "unified_regime_signal:Category", "availability_rule": "월말 산출(RegDate=월말) — 홀딩월 시작 전 가용, 간격 median 1일 실측", "restatement_prone": false},
+      {"leaf": "layer5:m4_weight_lag×beta_R05_V5", "availability_rule": "production 기록 lag 값 — 월 시작 전 확정", "restatement_prone": false}
+    ],
+    "verdict": "clean"
+  },
+  "alpha_vector": null,
+  "confidence_vector": null,
+  "signal_matrix_ref": "stage_artifacts/WT_D20260802_017/alpha_scores.parquet (오버레이 노출 스케줄 Date/Category/g/e_book/e_cand — 횡단면 알파 아님)",
+  "factor_specs": [
+    {
+      "factor_family": "regime_overlay",
+      "proxy": "unified Category → 곱셈 노출 g(사전 고정 단일 스케줄)",
+      "formula": "e_cand(t) = e_book(t) × g(Category_{m-1}); g = {CRISIS 0.40, CAUTION 0.70, NEUTRAL 1.0, RISK_ON 1.0}",
+      "lag_rule": "라벨 = 홀딩월 시작 직전 월말 (assert_overlay_pit HARD + 위반 주입 발화 실증)",
+      "winsorization": "n/a",
+      "neutralization": "n/a",
+      "economic_rationale": "위기 상태 조건부 β 축소 — long-only에서 유일한 하락 방어 레버(overlay)",
+      "weight_theta": 1.0,
+      "references": ["WT-D20260802_015 (CRISIS active +4.98% 단서)", "h2_regime_overlay_ab 2026-06-18 (선행 negative)"]
+    }
+  ],
+  "diagnostics": {
+    "canonical_port_t_nw_lag3": null,
+    "canonical_port_t_note": "overlay 라운드 — 측정 경로는 weighted_screen_bt(동일 contract build_benchmark_compare, NW lag-3, metric_type=weighted_screen). canonical top-N 스크리닝 비적용(홀딩·가중은 book carrier 고정, 알파 객체 = 노출 스칼라)",
+    "weighted_screen_book_port_t": 6.18,
+    "weighted_screen_cand_port_t": 5.08,
+    "paired_marginal_t_nw_lag3": -1.85,
+    "paired_marginal_mean_ann_pct": -2.38,
+    "delta_ir_cand_minus_book": -0.22,
+    "paired_marginal_t_ew_basis": -2.04,
+    "paired_marginal_t_lag2_stress": -2.57,
+    "paired_marginal_t_cost_stress": -1.87,
+    "label_bmneg_recall": 0.10,
+    "label_bmneg_precision": 0.39,
+    "bmneg_base_rate": 0.41,
+    "label_bmneg_fisher_p": 1.0,
+    "deepdown_bm_lt_m8pct_recall": 0.20,
+    "deepdown_fisher_p": 0.196,
+    "oracle_diag_port_t": 7.87,
+    "oracle_paired_t_vs_book": 1.18,
+    "n_months": 269,
+    "turnover_equity_annual": 10.3,
+    "overlay_exposure_churn_increment_annual": 0.22,
+    "rank_ic": null,
+    "icir": null,
+    "monotonicity": null,
+    "subperiod_stability": null,
+    "harvey_t_stat": null,
+    "post_neutralization_ic": null,
+    "dsr_note": "selection_type=chain, n_trials=1 — DSR 게이트 비발동"
+  },
+  "selection_objective": "canonical_port_t",
+  "selection_objective_note": "사전등록 판별 = paired NW lag-3 t(한계기여) — 단일 규칙, 후보 간 선택 없음(n_trials=1)",
+  "method_shopping_log": {
+    "alpha_agent": {
+      "candidates_tried": 1,
+      "method_log": [
+        {"name": "regime_x_book_multiplicative_g40_70", "paired_marginal_t": -1.85, "selected": true, "note": "사전등록 단일 규칙 — 판정 대상이지 채택 아님(부정 판정)"}
+      ]
+    }
+  },
+  "challenge_flags": [
+    "VERDICT_NEGATIVE: 사전등록 판별 규칙상 '중복·노이즈'(paired t −1.85, 유해 문턱 −2.0 미도달)이나 방향 일관 부정 — EW 기저 −2.04·lag2 −2.57·비용 스트레스 −1.87. 독립 한계기여 없음, 점추정 유해",
+    "LABEL_NO_CRISIS_SIGNAL: 라벨→실현하락 판별력 0 (BM<0 recall 0.10 < base 0.41, fisher p=1.0; BM<−8%에서도 recall 0.20, p=0.196). CRISIS 라벨월 15개월의 실현 벤치 연율 +90% — 라벨은 지연 지표(2009·2020 반등월, 2026 멜트업에 발화)",
+    "WT015_CRISIS_ALPHA_RESOLVED: WT-015의 CRISIS active +4.98%는 방어 성공이 아니라 라벨 우연 — CRISIS 라벨월이 반등/멜트업 월에 몰려 있어 생긴 것. 본 carrier에서 CRISIS 라벨월 노출 축소는 active를 −25.0%→−64.1%(연율)로 악화",
+    "CONSUMPTION_SURFACE_INTACT: 오라클(실현 BM<0 완전예지) 진단 — paired +1.18, MDD −23.3%→−9.2%, +2.1%/yr. 소비면(overlay 감β)은 유효하나 라벨이 접근 불가 — 병목은 소비 경로가 아니라 라벨 품질",
+    "COVERAGE_LIMIT: carrier 2026-05 홀딩월까지(7월 폭락 미포함). 2026-06월말 라벨=CRISIS라 7월은 방어했을 것이나 2~6월 연속 CRISIS(멜트업 오발화) 누적 비용이 선행 — stopped-clock. 부활 조건에 등재"
+  ],
+  "metric_type": "weighted_screen",
+  "n_trials": 1,
+  "selection_type": "chain"
+}

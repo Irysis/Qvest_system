@@ -112,7 +112,36 @@ if (is.null(sr)) {
       sprintf("FQ-004 미검출 — 2026-08-02 수동 게이트가 잡은 건을 기계가 못 잡음 (n=%d)", sr$n_flag))
 }
 
-unlink(c(r1, r2, r3, r4, r5), recursive = TRUE)
+# ── ⑦ 부정 선언이 긍정 매칭으로 뒤집히지 않는다 (2026-08-02 오탐 수리 고정) ──
+#   원결함: hay 에 lane 을 넣었고 norm() 이 "_" 를 공백으로 바꾸므로
+#   lane="non_return" → 토큰 {non, return} → 그 "return" 이 D1(횡단 return-파생) dead 와
+#   매칭됐다. 즉 **비-return 이라고 선언한 FQ 가 그 선언 때문에 return-파생 dead 경고**를
+#   받았다(실측 6건 중 5건). v8.3 주력 lane 이 비-return 원천이라 검사기가 전략 방향을
+#   정확히 거꾸로 유도하던 상태.
+D1 <- dc("D1 횡단 return-파생 single_long_only 전 family")
+#   (a) 비-return lane 선언 → return-파생 dead 부적용
+r6 <- mk_root(list(qe("FQ-T06", "DART 담보 질권 공시 신호", lane = "non_return",
+                      hyp = "비-return 원천 횡단 신호")), list(D1), list(LIVE_CARD))
+s6 <- frontier_coherence_scan(r6)
+d6 <- if (nrow(s6$rows)) s6$rows[id == "FQ-T06", dead_hit] else character(0)
+if (!length(d6) || !nzchar(d6)) {
+  ok("negation_not_flipped", "비-return 선언 FQ 에 return-파생 dead 미적용")
+} else {
+  bad("negation_not_flipped", sprintf("부정 선언이 긍정 매칭으로 뒤집힘: %s", substr(d6, 1, 50)))
+}
+#   (b) ★검사 사망 통제 — 같은 dead 가 진짜 return-파생 FQ 는 여전히 잡아야 한다.
+#       (a) 만 있으면 "return-파생 dead 를 통째로 꺼버린" 수리와 구별되지 않는다.
+r7 <- mk_root(list(qe("FQ-T07", "횡단 모멘텀 return 파생 single 신호", lane = "alpha",
+                      hyp = "return 파생 횡단 팩터")), list(D1), list(LIVE_CARD))
+s7 <- frontier_coherence_scan(r7)
+d7 <- if (nrow(s7$rows)) s7$rows[id == "FQ-T07", dead_hit] else character(0)
+if (length(d7) && nzchar(d7)) {
+  ok("dead_axis_still_alive", "진짜 return-파생 FQ 는 여전히 검출 (오탐 제거 ≠ 검사 사망)")
+} else {
+  bad("dead_axis_still_alive", "return-파생 dead 축이 통째로 죽음 — 수리가 검사를 껐다")
+}
+
+unlink(c(r1, r2, r3, r4, r5, r6, r7), recursive = TRUE)
 cat(sprintf("TOTAL: %d pass / %d fail\n", PASS, FAIL))
 cat(toJSON(list(test = "frontier_coherence", pass = PASS, fail = FAIL,
                 total = PASS + FAIL), auto_unbox = TRUE), "\n", sep = "")
