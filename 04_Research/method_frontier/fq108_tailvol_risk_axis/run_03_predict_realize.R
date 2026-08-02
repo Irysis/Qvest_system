@@ -213,6 +213,22 @@ for (t_ym in reb_months) {
     # ---- A_base (처치 없음) ----
     v_list <- list(A_base = sd0^2)
 
+    # ---- H_hybrid (사후 추가, 탐색용 — 사전등록 판정규칙 대상 아님) -----------
+    #  파라미터 없는 교과서 하이브리드: 상관=장기창(불변), 분산=장기·단기 기하평균.
+    #  A2 계열의 pooled-회귀 핸디캡(레벨 추적 상실) 없이 '단기 꼬리-vol 배선'의
+    #  운영형(operational form)을 그대로 잰다.
+    v_hyb <- exp(0.5 * xv + 0.5 * s63)
+    v_list[["H_hybrid"]] <- v_hyb
+
+    # ---- X_perfect (★위반 주입 2 — 결정적 canary) -----------------------------
+    #  v̂_i = 홀딩월 t+1 의 실현 종목분산 그 자체(완전 미래참조).
+    #  이것조차 유의하게 개선을 못 내면 = 측정계 사망(검정력 부재). 판정 대상 아님.
+    rvi <- SRV[.(hkey, elig), rv]
+    if (mean(is.finite(rvi)) > 0.8) {
+      rvi[!is.finite(rvi)] <- median(rvi[is.finite(rvi)])
+      v_list[["X_perfect"]] <- rvi
+    }
+
     if (n_train_months >= MIN_TRAIN_MONTHS) {
       for (tr in names(TREATMENTS)) {
         vars <- TREATMENTS[[tr]]
