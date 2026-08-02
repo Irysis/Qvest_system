@@ -900,6 +900,19 @@ fi
 #      출고돼 사용자가 부팅 때 발견하던 회귀(class A 백슬래시 -c unicodeescape '?' / class B JSON
 #      스키마드리프트 SKIP)를 *추가 시점*에 차단. advisory(loud, BOOT_FAILS 비계상 — 상태 표시는
 #      시스템 게이트가 아님). 스크립트는 pre-commit/CI 게이트로도 사용 가능(exit=FAIL 개수).
+# 8j. (2026-08-02) screening tier 라벨 소비 backlog 노출 — WT-D20260802_005 적발.
+#      hurdle_gate 가 screen_route=STANDALONE_TRACK 을 발급했으나 소비자 코드가 0건이라
+#      Chen-Welch(proxy Grade A, PORT_t 2.584)가 3주+ standalone 판정 없이 방치됐다.
+#      ★"라벨만 있고 아무도 안 읽는" 상태를 없애려면 원장만으로는 부족하다 —
+#       그 원장을 사람이 보는 표면에 띄워야 한다. advisory(부팅 무중단).
+#      ★★건수 0 은 여기서 '없음'이 아니다: 스캐너가 죽으면 UNREPORTED 로 표기된다.
+STANDALONE_TRACK_STATUS=""
+STQ_R="$PROJECT/02_Infrastructure/portfolio/standalone_track_queue.R"
+if [ -f "$STQ_R" ]; then
+  STANDALONE_TRACK_STATUS=$(cd "$PROJECT" && Rscript "$STQ_R" --status-line 2>/dev/null | tr -d '\r' | grep -m1 'StandaloneTrk:' | sed 's/^[[:space:]]*//' || true)
+  [ -z "$STANDALONE_TRACK_STATUS" ] && STANDALONE_TRACK_STATUS="StandaloneTrk: UNREPORTED — 큐 빌더가 상태라인을 못 냄 (Rscript $STQ_R 로 사유 확인)"
+fi
+
 SMOKE_STATUS=""
 SMOKE_SCRIPT="$PROJECT/02_Infrastructure/ops/boot_status_smoke.py"
 if [ -f "$SMOKE_SCRIPT" ] && python3 -c 'import sys' >/dev/null 2>&1; then
@@ -994,6 +1007,11 @@ else
   echo "DataFresh:  SKIP (cache_freshness_latest.json 부재 — daily_refresh 후 표시)"
 fi
 [ -n "$MORNING_STATUS" ] && echo "$MORNING_STATUS"
+if [ -n "$STANDALONE_TRACK_STATUS" ]; then
+  echo "$STANDALONE_TRACK_STATUS"
+else
+  echo "StandaloneTrk: SKIP (standalone_track_queue.R 부재 — 신규 클론)"
+fi
 [ -n "$SMOKE_STATUS" ] && echo "$SMOKE_STATUS"
 command -v free >/dev/null 2>&1 && free -m | awk '/Mem:/ {printf "RAM:        %.0f%%\n", $3/$2*100}' || true
 # (Remote tmux rc 라인 제거 v8.0 — inbound listener 폐지)

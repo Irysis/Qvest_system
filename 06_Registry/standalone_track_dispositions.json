@@ -1,0 +1,19 @@
+{
+  "schema_version": "standalone_track_dispositions_v1",
+  "sot": "02_Infrastructure/portfolio/standalone_track_queue.R — 이 파일에 기록된 strategy_id 는 standalone_track_queue.json 의 미처분(backlog) 목록에서 빠진다.",
+  "created": "2026-08-02 (WT-D20260802_005 배관 수리 — screen_route=STANDALONE_TRACK 소비자 0 결함)",
+  "why": "screening tier 라벨은 '이 후보는 standalone 졸업 심사 자격이 있다'는 표시일 뿐 판정이 아니다. 판정을 어디에도 안 적으면 라벨이 영구 미처분으로 남는다(Chen-Welch 3주+ 방치의 기전). 여기가 그 판정을 적는 자리다.",
+  "how_to": {
+    "형식": "dispositions['<strategy_id>'] = { verdict, at, basis, ref }",
+    "verdict 값": [
+      "graduation_pass — HARD 3종(PORT_t>=2.95 / oos_retention>=0.7 / calmar>=0.64) 통과, governor admission 대상",
+      "graduation_reject — HARD 미달. basis 에 어느 축이 막았는지 기록",
+      "screen_tier_routed — 자본 졸업은 불가하나 overlay/FR 등 다른 소비면으로 라우팅",
+      "dossier_in_flight — full-pipeline dossier 진행 중",
+      "superseded — 후속 전략이 같은 신호를 흡수"
+    ],
+    "basis 의무": "measurement-graduation §1 — 판정 수치는 forge-authoritative(build_bt_result) 또는 canonical_screen_bt 실측만. proxy 손계산으로 처분 기록 금지(AX-002 동급).",
+    "주의": "FR 풀 등재(module_catalog fr_eligible=TRUE)는 처분이 아니다 — module_catalog 의 소비자는 factor-rotation 뿐이며, standalone 졸업 심사와 무관하다."
+  },
+  "dispositions": {}
+}

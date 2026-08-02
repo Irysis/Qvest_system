@@ -115,6 +115,12 @@ SUITES=(
   "08_Tests/portfolio/test_lineage_resolver.R"
   # 2026-08-01 추가: 운용 슬롯/보유파일 해석기 위반 주입 (라이브 추적이 배포된 북을 보는지의 가드)
   "08_Tests/portfolio/test_resolve_admitted_slot.R"
+  # 2026-08-02 추가: screening tier 라벨(screen_route) 소비 배관의 차단 실효.
+  #   hurdle_gate 가 STANDALONE_TRACK 을 발급했는데 소비자 코드가 0건이라
+  #   Chen-Welch(STR_AS_20260709_074129_30048, proxy Grade A)가 3주+ 판정 없이 방치됐다.
+  #   ★배관을 놓는 것만으로는 재발이 안 막힌다 — 배관이 조용히 죽으면 미처분이 0 으로
+  #    떨어지고 그 0 이 "밀린 후보 없음"으로 읽힌다. 위반 주입 + 오발화 확인 양쪽을 잰다.
+  "08_Tests/portfolio/test_standalone_track_queue.R"
   # 2026-08-02 추가: artifact lineage 의 git 상태 기록 계약.
   #   구 capture_git_state() 가 셸 리다이렉션을 argv 로 주입해 git status 가 통째로 실패했고,
   #   `length(out) > 0` 이 **항상 FALSE** → "clean tree" 로 위장했다(2026-06~08 79건 전량 FALSE).
