@@ -78,35 +78,63 @@ frontier_coherence_scan <- function(root = .fc_root()) {
     stop("[coherence] DISTILLED_NEG 카드 0건 — 스키마 불일치로 카드 축이 죽었을 가능성. ",
          "0 을 '충돌 없음'으로 보고하지 않는다. distilled_knowledge.json 필드명 확인 필요.")
 
+  ## ★2026-08-02 수리 — 도메인 공통어가 매칭을 만들던 결함(dead 축 lane 오염과 같은 계통):
+  ##   card 매칭 표본에서 FQ-090↔DIST-AR-003 이 [신호, ic, port] 로, FQ-043↔DIST-AR-009 가
+  ##   [value, 월말, 동일] 로 걸렸다 — 전부 이 저장소 문서 어디에나 나오는 말이다. 반면
+  ##   FQ-004↔DIST-AR-018 은 [감사의견, going, concern] 로 **주제어가 겹친 정탐**이다.
+  ##   공통어를 세지 않아야 정탐만 남는다.
+  ## 하드코딩 목록 대신 **빈도로 판정**한다(IDF 발상): 카드 절반 이상에 등장하는 토큰은
+  ##   변별력이 없다. 목록을 손으로 관리하면 새 공통어가 생길 때마다 오탐이 돌아온다.
+  .tk_all <- unlist(lapply(dcards, `[[`, "tk"))
+  .df <- table(.tk_all)
+  STOPW <- names(.df)[.df >= max(2L, ceiling(length(dcards) * 0.5))]
+  ## 안전판: 불용어가 전체 토큰의 다수를 먹으면 카드 축이 사실상 죽는다(오탐 제거 ≠ 검사 사망).
+  if (length(STOPW) > length(unique(.tk_all)) * 0.3)
+    stop("[coherence] 불용어가 토큰의 30% 초과 — 카드 축 무력화 위험. 임계 재검토 필요.")
+
   OPEN <- c("frontier_open", "parser_gated", "data_gate_measured")
-  ## ★2026-08-02 수리 — 대상 선정이 조용히 19% 를 빠뜨리던 결함:
+  ## ★2026-08-02 수리 — 대상 선정이 open 후보의 19% 를 조용히 빼놓던 결함:
   ##   status 는 자유서술이라 'frontier_open' 이 **접미**로 오는 판이 흔하다
-  ##   (config_scoped_negative_frontier_open 7건 · precheck_negative_frontier_open 1건).
-  ##   구판은 startsWith 만 봐서 이 8건(open 후보 43 중 19%)을 스캔조차 안 했다.
-  ##   구판이 signal_round_negative_frontier_open 하나를 **손으로** OPEN 에 넣어둔 것이
-  ##   "이 부류는 대상이다"라는 작성자 의도의 증거다 — 변형이 늘 때마다 손으로 따라가는
-  ##   구조라 누락이 기본값이었다. 포함-기반으로 교체(설정-scoped negative 라도 frontier 가
-  ##   열려 있으면 착수 전 정합 스크린 대상이다). settled/done/closed 계열은 이 토큰을
-  ##   갖지 않아 오편입 없음(실측 122 entries).
+  ##   (config_scoped_negative_frontier_open 7건 · precheck_negative_frontier_open 1건 = 8건).
+  ##   구판은 startsWith 만 봐서 이 8건을 스캔조차 안 했다. 구판이 변형 하나
+  ##   (signal_round_negative_frontier_open)를 **손으로** OPEN 에 넣어둔 것이 "이 부류는 대상"
+  ##   이라는 의도의 증거 — 변형이 늘 때마다 손으로 따라가는 구조라 누락이 기본값이었다.
+  ##   포함-기반으로 교체(설정-scoped negative 라도 frontier 가 열려 있으면 착수 전 대상).
+  ##   settled/done/closed 계열은 이 토큰을 갖지 않아 오편입 없음(실측 122 entries).
   is_open_status <- function(s) any(startsWith(s, OPEN)) || grepl("frontier_open", s, fixed = TRUE)
   rows <- list()
   for (e in Q$entries) {
     st <- g(e, "status")
     if (!is_open_status(st)) next                 # 이미 확정/차단된 항목은 대상 아님
-    hay <- toks(paste(g(e, "title"), g(e, "lane"), g(e, "hypothesis")))
+    ## ★2026-08-02 수리 — 부정 선언이 긍정 매칭으로 뒤집히던 결함:
+    ##   구판은 hay 에 lane 을 넣었다. norm() 이 "_" 를 공백으로 바꾸므로
+    ##   lane="non_return" → 토큰 {non, return} 이 되고, 그 "return" 이 D1(횡단 return-파생)
+    ##   dead 의 "return" 과 매칭됐다. 결과: **비-return 이라고 선언한 FQ 가 바로 그 선언 때문에
+    ##   return-파생 dead 로 경고**받는다(실측 6건 중 5건이 이 오탐 — FQ-002/076/077/083/089).
+    ##   v8.3 주력 lane 이 비-return 원천이라, 이 오탐은 검사기가 전략 방향을 정확히 거꾸로
+    ##   유도한다. 수리 = ① lane 을 hay 에서 제외(lane 은 내용이 아니라 분류 라벨이다)
+    ##   ② lane/본문이 비-return 을 선언하면 return-파생 dead 는 구조적으로 부적용.
+    lane_raw <- g(e, "lane")
+    body_raw <- paste(g(e, "title"), g(e, "hypothesis"))
+    declares_non_return <- grepl("non[_ -]?return", lane_raw, ignore.case = TRUE) ||
+                           grepl("non[_ -]?return|비[- ]?return|비-?수익|비수익", body_raw, ignore.case = TRUE)
+    hay <- toks(body_raw)                       # lane 제외 (오염원)
     if (!length(hay)) next
 
     hit_dead <- character(0)
     for (dc in dead) {
+      # 비-return 선언 FQ 에 return-파생 dead 를 씌우지 않는다(모순 배제).
+      if (declares_non_return && grepl("return", dc$class, ignore.case = TRUE)) next
       ov <- intersect(hay, dc$tk)
       if (length(ov) >= 2L) hit_dead <- c(hit_dead, sprintf("%s [%s]", substr(dc$class, 1, 40),
                                                             paste(ov, collapse = ",")))
     }
     hit_card <- character(0)
     for (dc in dcards) {
-      ov <- intersect(hay, dc$tk)
+      ov <- setdiff(intersect(hay, dc$tk), STOPW)   # 도메인 공통어 제외 (아래 STOPW 주석)
       if (length(ov) >= 3L) hit_card <- c(hit_card, sprintf("%s [%s]", dc$id, paste(ov, collapse = ",")))
     }
+    ## lane 은 판정에서 뺐지만 보고에는 남긴다 — 사람이 오탐을 눈으로 거를 축이 필요하다.
     if (!length(hit_dead) && !length(hit_card)) next
     rows[[length(rows) + 1L]] <- data.table(
       id = g(e, "id"), status = st, lane = g(e, "lane"),
