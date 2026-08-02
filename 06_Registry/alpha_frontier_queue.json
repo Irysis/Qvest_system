@@ -1,7 +1,7 @@
 {
  "schema_version": "1.0",
  "sot": "02_Infrastructure/docs/qvest_v8_3_alpha_discovery_sot.md §4",
- "updated": "2026-08-02 (FQ-123 사전 확인 — WT-020 권고 정정: D42는 252일 장기축이라 부적합, D35_RealVol_63d가 MAX5와 동일 창 1순위. 총 126건)",
+ "updated": "2026-08-02 (FQ-121 사전 확인 — 양-전이 성분 3개 확인(POS2 는 2개만 사용), POS3 병행 필요 + V06_EB 는 0 근방이라 자격 판정도 섭동 분포로. 총 126건)",
  "consume_rule": "새 발굴 리서치 착수 전: hypothesis_index lookup → 본 큐 확인 → owner/status 갱신. 완료 시 result_ref(L-code/보고서) 기입. dohoon_decision 항목은 세션 임의 착수 금지.",
  "entries": [
   {
@@ -2281,7 +2281,8 @@
    "data_gate": "없음 (WT-009 패널 + 하네스 재사용)",
    "owner": "미배정",
    "status": "frontier_open",
-   "registered": "2026-08-02 alpha-research WT-D20260802_021 (FQ-116 NP-1 파생)"
+   "registered": "2026-08-02 alpha-research WT-D20260802_021 (FQ-116 NP-1 파생)",
+   "precheck_measured": "★착수 전 사전 확인 (2026-08-02 Q-Lead, WT-021 grinold_contrast 표 직접 판독). **양-전이 성분은 3개다**(WT-021 의 POS2 는 2개만 썼다): V01_SECREL(IC +0.0165/t 2.88 → PORT_t +1.42) · M01_PATHQ(IC +0.0129/t 1.29 → PORT_t +2.05) · D03_EWMA(IC +0.0414/t 3.71 → PORT_t -1.73, sign_break) · Q01_EB(IC +0.0157/t 2.21 → PORT_t -0.21, sign_break) · V06_EB(IC +0.0292/t 3.32 → PORT_t +0.32). ⇒ 성분 자격(PORT_t>0) 통과 = 3개(V01_SECREL, M01_PATHQ, V06_EB), 탈락 = 2개(D03_EWMA, Q01_EB, 둘 다 sign_break). ★라운드 설계 함의: POS2(2성분) 대신 **POS3(3성분) 도 함께 재야** '성분 수'와 '성분 자격'의 효과가 분리된다 — POS2 만 재면 breadth 증가 효과와 자격 게이트 효과가 섞인다. ★단 V06_EB 는 PORT_t +0.32 로 0 근방이라 WT-013 섭동 취약 구간 — 자격 판정 자체를 섭동 분포로 걸어야 한다(FQ-109 규약). D03_EWMA 는 IC t 3.71 로 5팩터 중 최강인데 PORT_t -1.73 꼴찌 = sign_break 의 대표 사례이고 FQ-122(비-slot 소비) 대상."
   },
   {
    "id": "FQ-122",
