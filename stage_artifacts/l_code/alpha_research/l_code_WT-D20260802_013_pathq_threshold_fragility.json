@@ -1,0 +1,43 @@
+{
+  "l_code": "L-AR-20260802_204802",
+  "strategy_id": "WT-D20260802_013_M01_PATHQ_RESID",
+  "grade": "F",
+  "core_reference": "alpha_validation stage_artifacts/WT_D20260802_013/alpha_validation.json / close_round WT-D20260802_013_PATHQ_VOL_RESIDUAL / 선행 WT-D20260802_009",
+  "lesson_text": "M01_PATHQ(경로효율 momentum) vol-잔차 순수판 = 문턱 미달로 registry 교체안 철회 + ★판정 프레임 자체의 결함 실증.\n① 사전등록 문턱 그대로 집행: RESID paired NW t +1.717 < 2.0 → 교체안 미상정(M01_Mom_12_1 표준 유지). parity 검증으로 하네스 동질성 확인(PATHQ 재측정 +2.028 = WT-009 기록 정확 일치).\n② ★기전 귀속이 사전 혐의와 다름: vol-tilt 아티팩트가 아니다 — PATHQ의 D03z 적재 CS Spearman -0.060(저변동 반대 부호)이라 편승할 vol 성분 자체가 없었고, 잔차화 순효과도 RESID vs PATHQ paired -0.015(self-cor 0.974)로 사실상 동일 팩터. RESID standalone PORT_t +2.141 >= PATHQ 2.050 = 성과가 죽은 것도 아님.\n③ ★★최대 수확 = 멤버십-섭동 placebo: 노이즈 잔차화(미소 섭동) 5시드의 paired t가 {2.057, 2.796, 2.486, 1.866, 2.535}, sd 0.378로 흩어진다. top-25 멤버십이 종목 몇 개 바뀌는 것만으로 문턱을 넘나든다 → 원판 +2.028은 견고한 통과가 아니라 문턱 근방의 단일 draw였다. 즉 '아티팩트라서 죽은 게 아니라 애초 교체 근거가 견고하지 않았다'.\n④ 부기간: RESID pre-2015 +3.20 / post-2017 +0.18, placebo 전 시드 동형 = 잔차화 무관 구조 특성(decay-pattern). 최근 10년 개선은 0과 구분 불가 = 교체 실익 부재의 독립 제2 근거.\n⑤ 방법론 결론: 교체·채택류 판정은 단일 paired t가 아니라 멤버십-섭동 분포의 하한(q05)으로 사전등록해야 한다(FQ-109). 단일값 문턱은 top-25 이산 선별에서 구조적으로 불안정.\n⑥ 부수 규약: 혐의 진단(vol-tilt)과 실제 기전이 다를 수 있으므로 혐의를 확인하는 통제와 대안을 배제하는 통제를 함께 건다 — 이번엔 vol 적재 측정이 혐의를 즉시 반증했고 placebo가 진짜 원인을 냈다.",
+  "tags": [
+    "threshold_single_draw_fragility",
+    "membership_perturbation_placebo",
+    "replacement_withdrawn",
+    "suspicion_vs_actual_mechanism",
+    "decay_pattern_pre2015_concentration"
+  ],
+  "created_at": "2026-08-02",
+  "research_mode": "alpha_research",
+  "created_by": "emit:qlead_collection",
+  "metric_type": "canonical_screen",
+  "construction_type": "residualized_factor_replacement_test",
+  "mechanism_hypothesis": "top-25 long-only 이산 선별에서 paired 통계량은 멤버십 경계 종목의 교체에 민감하다. 문턱 근방(±0.4 이내) 통과는 신호 강도가 아니라 draw의 우연을 반영할 수 있으며, 섭동 분포를 재기 전에는 두 경우가 구별되지 않는다. 경로효율 개선분 자체는 실재하나(RESID standalone 2.141) 그 개선이 문턱을 안정적으로 넘지는 못한다.",
+  "lcode_schema_version": 2,
+  "n_trials": 1,
+  "selection_type": "chain",
+  "record_type": "performance",
+  "paired_t_resid": 1.717,
+  "paired_t_parity_pathq": 2.028,
+  "placebo_5seed_sd": 0.378,
+  "placebo_5seed_min": 1.866,
+  "placebo_5seed_max": 2.796,
+  "vol_loading_pathq_d03": -0.06,
+  "resid_vs_pathq_paired": -0.015,
+  "resid_self_cor": 0.974,
+  "port_t_resid": 2.141,
+  "sub_pre2015": 3.2,
+  "sub_post2017": 0.18,
+  "turnover_annual": 7.93,
+  "falsification_attempts": "사전등록 문턱 측정 전 고정 + 그대로 집행(사후 완화 없음); vol 적재 직접 측정으로 혐의 검정; 잔차화 순효과 paired 분리; ★멤버십-섭동 placebo 5시드(노이즈 잔차화)로 문턱 안정성 실측; parity 재측정으로 하네스 동질성; F2 jump-기여 재검(+1.92, 여전히 NOT_SUPPORTED); dual-basis + lag1",
+  "next_probe": [
+    "FQ-109 교체류 판정 규약 강화 — 멤버십-섭동 분포 q05를 사전등록 기준으로. 과거 문턱-근방 판정 재검 재료",
+    "FQ-110 jump-share 직접 팩터화 — 12-1 창 상위-5 |일간| 기여 비중 자체를 신호로(F2 borderline +1.92 표적 검증)",
+    "pre-2015 편중 기전 분해 — EW-uni post-2017 +1.37~1.54 잔존 신호가 시사하는 바"
+  ],
+  "next_probe_note": "소비면: registry 교체 보류 확정 / screen-tier는 RESID 2.141로 통과권(자본 트랙 부적격) / risk-model 이식 비적합(적재 -0.06) / 방법론 q05 규약은 앞으로의 모든 교체·채택 판정에 복리 적용"
+}

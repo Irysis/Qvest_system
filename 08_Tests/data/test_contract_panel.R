@@ -141,6 +141,34 @@ if (!r3$ok) {
   bad("empty_input_refused", "빈 입력인데 패널이 생성됨 — '빈 결과 = 정상' 재발")
 }
 
+# ⑥ 엔진 fan-out assert 위반 주입 (2026-08-02 신설 — 구 assert 는 모순 조건으로 발화 불가였다)
+#   패널에 (ym,Ticker) 중복 행을 주입 → factor_engine_contract.R 이 stop 해야 한다.
+#   위반 주입 없이 "통과"만 보면 오탐 제거와 검사 사망을 구분 못 한다.
+eng_test <- local({
+  o4 <- file.path(tempdir(), paste0("ctrdup_", as.integer(Sys.time()), ".parquet"))
+  dup <- data.table(ym = c("202601", "202601"), Ticker = tk[1],
+                    n_contracts = 1L, amt_sum = 100, ratio_rev_sum = 0.1,
+                    amend_n = 0L, round_n = 0L, fx_n = 0L,
+                    w_n = 1, w_amt = 100, w_ratio = 0.1, w_amend = 0,
+                    window_m = 1L, scope = "all", metric_type = "raw_disclosure", built_at = "t")
+  write_parquet(dup, o4)
+  # 최소 RAWDATA (엔진이 요구하는 컬럼만)
+  RAWDATA <- data.table(Date = as.Date(c("2026-01-30", "2026-01-31")), Ticker = tk[1],
+                        Size = 1e12, LiqPass = TRUE)
+  old_cp <- Sys.getenv("CONTRACT_PANEL", unset = NA_character_)
+  Sys.setenv(CONTRACT_PANEL = o4)
+  r <- tryCatch({ source(file.path(PROJ, "02_Infrastructure/alpha_search/factor_engine_contract.R"), local = TRUE); "no_stop" },
+                error = function(e) conditionMessage(e))
+  if (is.na(old_cp)) Sys.unsetenv("CONTRACT_PANEL") else Sys.setenv(CONTRACT_PANEL = old_cp)
+  unlink(o4, force = TRUE)
+  r
+})
+if (grepl("중복", eng_test)) {
+  ok("engine_dup_injection_blocked", "패널 (ym,Ticker) 중복 주입 → 엔진 stop 발화")
+} else {
+  bad("engine_dup_injection_blocked", sprintf("주입이 통과됨: %s", substr(eng_test, 1, 80)))
+}
+
 unlink(c(d, d_empty), recursive = TRUE); unlink(c(o, o1, o2, o3), force = TRUE)
 cat(sprintf("TOTAL: %d pass / %d fail\n", PASS, FAIL))
 cat(jsonlite::toJSON(list(test = "contract_panel", pass = PASS, fail = FAIL,

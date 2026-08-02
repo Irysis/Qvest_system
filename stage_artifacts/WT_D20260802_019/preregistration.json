@@ -1,0 +1,61 @@
+{
+  "task_id": "WT-D20260802_019",
+  "registered_at": "2026-08-02T22:05:00+09:00",
+  "registered_before_measurement": true,
+  "title": "실현-하락 nowcast 대체 라벨 — 오라클 상금 회수 시도 (FQ-118, WT-017 NP-2)",
+  "inherited_frame": {
+    "from": "stage_artifacts/WT_D20260802_017/{preregistration.json, run_wt017_regime_overlay.R}",
+    "carrier": "06_Registry/book_carrier/carrier_STR_1715_AR_on_M4_R05_overlay_PG2.parquet (269m, 2004-02~2026-06 eval; production-parity §7b. 2026-06/07 홀딩월 미포함 — 7월 폭락 표본 밖, 정직 병기)",
+    "book_exposure": "e_book(t) = m4_weight_lag(t) × beta_R05_V5(t) — 05_Production 2-1 period_returns_layer5.csv read-only (현행 2-3 noLayer4 공식, WT-017 동일)",
+    "paired_frame": "WT-017 arm/paired 프레임 그대로 승계 — BARE/BOOK/CAND/NOWCAST_ONLY/LAG_STRESS/ORACLE(진단전용)/EW기저. 비교 직접 가능",
+    "oracle_anchor_wt017": {"paired_t": 1.18, "mean_d_ann_pct": 2.14, "abs_mdd": -0.092, "abs_sr": 2.162, "note": "실현 BM<0 완전예지 g=0.40 — look-ahead 상한. 회수율 분모"}
+  },
+  "primary_spec_frozen": {
+    "axis_shift": "예측이 아니라 nowcast — '다음 달이 빠질까'가 아니라 '지금 (홀딩월 시작 직전 시점에) 벤치가 하락 상태에 있나'를 트레일링 관측만으로 잰다",
+    "rule_single_fixed": "DD_STATE(t) = [ 벤치 누적 TR 지수(cutoff_t) ≤ (1 − 0.10) × max(지수, 트레일링 252거래일 창 종점=cutoff_t) ] — 발화 시 g=0.40, 미발화 시 g=1.00. e_cand(t) = e_book(t) × g(DD_STATE)",
+    "parameters_fixed": {
+      "dd_threshold": 0.10,
+      "dd_threshold_rationale": "문헌 정본 'correction' 문턱(고점 대비 −10%) — KR 데이터로 튜닝하지 않은 외생 상수. 열거/argmax 없음",
+      "trailing_window_trading_days": 252,
+      "window_rationale": "12개월 트레일링 고점 — TS-momentum/Faber 타이밍 문헌 표준 창. 창이 굴러가므로 고점 롤오프로 상태가 자동 해제(MSM 지연-지표 병리의 완화 장치)",
+      "g_on": 0.40,
+      "g_on_rationale": "WT-017 DIAG_ORACLE과 동일 스케줄(실현 BM<0월 g=0.40) 승계 — 소비면 신규 자유도 0, 회수율 = (CAND−BOOK)/(ORACLE−BOOK) 직접 비교 가능",
+      "insufficient_history_rule": "cutoff 이전 가용 거래일 < 252이면 가용 전체(expanding)로 고점 계산 — 결정적 규칙, 자유 파라미터 아님. 해당 월수 기록"
+    },
+    "label_source": ".cache/benchmark.parquet 일간 BM_Ret → 누적 TR 지수 (WT-017과 동일 소스 — 정합)",
+    "cutoff_definition": "cutoff_t = max{ 벤치 거래일 d : d < decision_date(홀딩월 시작) } — 트레일링 창 종점 = cutoff_t. 홀딩월 데이터 진입 = 즉시 look-ahead",
+    "n_trials": 1,
+    "selection_type": "chain (단일 사전등록 규칙, no-sweep — DSR 게이트 비발동, 수치는 진단 기록)"
+  },
+  "label_quality_pretest_frozen": {
+    "order": "성과 측정 전에 먼저 판정 — WT-017 동일 지표",
+    "metrics": "라벨 ON월의 실현 홀딩월 BM<0에 대한 recall / precision / base_rate / fisher_p",
+    "fail_line": "recall ≤ base_rate(≈0.41) 이면 라벨 판별력 부재로 사전 결론 — 성과 수치는 참고 병기로 강등 (현 MSM 라벨 실패 기준선: recall 0.10 vs base 0.41, fisher p=1.0)",
+    "pass_line": "recall > base_rate ∧ fisher_p < 0.05 = 판별력 실재 — 성과 판정을 1급으로 채택"
+  },
+  "judgment_frame_frozen": {
+    "primary_discriminant": "paired NW lag-3 t of d_t = active_cand − active_book + ΔIR = IR_cand − IR_book (WT-017 규칙 승계)",
+    "verdict_rule": "독립 한계기여 = paired t ≥ +2.0 ∧ ΔIR ≥ +0.05 / 유해 = paired t ≤ −2.0 / 그 외 = 중복·노이즈. 사후 이동 금지",
+    "recovery_rate_mandate": "회수율_return = mean_d_ann(CAND−BOOK) / mean_d_ann(ORACLE−BOOK, 본 실행 재산출값) · 회수율_MDD = (MDD_book − MDD_cand)/(MDD_book − MDD_oracle). 0%여도 정직 보고",
+    "cost_axis": "overlay 노출 변경 회전 증분 |Δe| 15bps delta-cost 스트레스 paired 재판정 병기 (WT-017 방식) + 연 회전 실측(상한 11.0/yr)",
+    "ax001_conditional": "crisis_alpha(라벨 ON월 active) + BOOK 대비 MDD + bad(BM<0)/normal월 active 비교 전항"
+  },
+  "diagnostics_no_selection": [
+    "DD 문턱 5%/15% 변형 + 실현변동성 상위분위(21d vol > expanding 80th pctile) + 단월 nowcast(라벨월 BM<0) — **라벨 품질 지표(recall/precision/fisher)만 병기**, 성과 arm 미실행·선택 사용 금지. primary 변경 시 사전등록 위반",
+    "STRESS_LAG: cutoff를 1개월 앞당긴(라벨 정보를 한 달 더 늦춘) 스트레스 성과 arm — 누출 지문 검사(leak 방향이 더 좋으면 의심)",
+    "strict A/B: 현 cutoff(< decision_date) = strict 정의와 동일함을 명시 기록"
+  ],
+  "pit_verification_plan": {
+    "hard_assert": "assert_overlay_pit(used_cutoff = cutoff_t, holding_start = decision_date) — 전 월 HARD",
+    "violation_injection": "cutoff를 홀딩월 말(eval_date 기준)으로 오염시킨 벡터 주입 → stop 발화 실증 의무 (WT-017 동일 프레임)",
+    "window_endpoint_check": "트레일링 창에서 실제 사용된 최대 거래일 max_date_used < decision_date 를 월별 직접 확인·기록",
+    "lag_stress": "위 STRESS_LAG — base보다 leak 방향이 좋으면 누출 지문",
+    "known_hazard": "BearProb 2026-07-05/06 동월 look-ahead 실사고 — placebo/OOS/DSR 전부 통과하고 lag+strict A/B만 판별했던 선례가 본 계획의 직접 근거"
+  },
+  "honest_posterior_preregistered": [
+    "nowcast는 정의상 하락이 이미 시작된 뒤 켜진다 — 하락 초입(고점→−10% 도달 전)을 구조적으로 놓치고, 바닥 반등 후에도 지수가 고점 −10% 안쪽으로 복귀할 때까지 꺼지지 않아 회복 초입 손실(whipsaw) — MSM CRISIS의 '반등월 발화' 병리와 부분 동형일 사전 posterior",
+    "vol-target 스케줄 6-18 H2 실패 + WT-017 국면 곱셈 negative(−1.85) + β_R05_V5가 이미 book 내부 국면을 소비 중(이중 축소 위험) — 반대 증거 3건",
+    "찬성 증거: 오라클 상금 실재(+2.14%/yr, MDD 14.1pp) + KR 하락월 군집(2008/2011/2020/2022)에서 DD-state ON월의 BM<0 농축 가능 + 12M 롤링 창의 자동 해제가 MSM류 영구 지연을 완화"
+  ],
+  "capital_claim": "없음 — overlay 변경은 도훈 수동 영역. graduation 비해당"
+}

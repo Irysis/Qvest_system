@@ -31,7 +31,9 @@ suppressPackageStartupMessages({ library(arrow) })
   hit <- cands[file.exists(file.path(cands, "02_Infrastructure/hooks/qvest_hook_router.py"))]
   if (!length(hit)) stop("project root 미발견"); hit[1]
 }
-.PANEL <- file.path(.fe_root(), ".cache/dart/contract_panel.parquet")
+# CONTRACT_PANEL env 는 검사기 fixture 주입용 (실운영 = 기본 경로. builder 의 CONTRACT_PANEL_OUT 과 동형 장치)
+.PANEL <- Sys.getenv("CONTRACT_PANEL",
+                     unset = file.path(.fe_root(), ".cache/dart/contract_panel.parquet"))
 if (!file.exists(.PANEL))
   stop("[fe_contract] 패널 부재 — build_contract_panel.R 먼저 실행. ",
        "빈 신호를 0 으로 채워 '알파 없음'으로 판정하지 않는다(미측정 != 신호부재).")
@@ -61,10 +63,16 @@ RAWDATA[, .ym := format(Date, "%Y%m")]
 
 FACTORS <- .J[LiqPass == TRUE & is.finite(.Score) & .Score > 0, .(Date, Ticker, Score = .Score)]
 
-# ── PIT assert: 시그널 날짜가 패널 월을 앞서지 않는지 (미래 패널월 조인 금지) ──
-.chk <- merge(FACTORS[, .(Date, Ticker, sig_ym = format(Date, "%Y%m"))],
-              .P[, .(Ticker, ym)], by = "Ticker", allow.cartesian = TRUE)
-if (nrow(.chk[ym > sig_ym & ym == sig_ym]) > 0) stop("[fe_contract] PIT 위반: 미래 패널월 조인")
+# ── 조인 무결성 assert (2026-08-02 수리) ──
+# 구판 `ym > sig_ym & ym == sig_ym` 은 모순 조건 = 항상 0행 = 절대 발화 불가 —
+# "빈 결과 = 합격" 계통의 재발 형태였다. 미래월 조인은 equality-key merge 라 구조적으로
+# 불가능하므로(패널 ym == 시그널 ym), 이 계층의 **실재하는** 위험 = 패널 (ym,Ticker) 중복이
+# merge fan-out 으로 같은 시그널 날짜에 행을 복제해 랭킹을 왜곡하는 것. 그것을 검사한다.
+# 상류 PIT(rcept 컷오프·정정 제외·롤링 미래누출)의 보증 = 08_Tests/data/test_contract_panel.R.
+if (anyDuplicated(.P[, .(ym, Ticker)]) > 0)
+  stop("[fe_contract] 패널 (ym,Ticker) 중복 — merge fan-out 으로 신호 행 복제 위험")
+if (anyDuplicated(FACTORS[, .(Date, Ticker)]) > 0)
+  stop("[fe_contract] FACTORS (Date,Ticker) 중복 — 조인 fan-out 발생")
 cat(sprintf("[fe_contract] FACTORS rows=%d | signal dates=%d | 월평균 종목수=%.1f\n",
             nrow(FACTORS), uniqueN(FACTORS$Date),
             nrow(FACTORS) / max(1L, uniqueN(FACTORS$Date))))
