@@ -104,6 +104,26 @@ ALL_RESULTS=()
 TOTAL_PASS=0
 TOTAL_FAIL=0
 
+#──────────────────────────────────────────────────────────────────────────────
+# 제3상태 `skipped` (2026-08-02 신설)
+#
+# 왜: 어떤 축은 이 트리에 없는 산출물(.cache/*, venv 등 gitignore 대상)을 전제한다.
+#   worktree 에서 그 전제가 없을 때 종전엔 두 갈래로만 갈렸다 —
+#     ① 실패로 계상  → "계약 위반"과 "전제 부재"가 같은 빨강이 된다(오진단).
+#     ② 조용히 통과  → 이 저장소가 12회 수리한 "빈 결과 = 합격" 계통 그대로다.
+#   둘 다 틀렸다. 전제 부재는 **판정 없음**이고, 판정 없음은 그 자체로 보고돼야 한다.
+#
+# 계약: suite 요약 JSON 은 pass/fail 외에 다음을 낼 수 있다.
+#   "skipped": <미실행 검사 수>,
+#   "skips": [{"axis":"...","reason":"...","missing":"<없는 절대경로>"}]
+#   ★ total = pass + fail (실제로 판정한 수). skipped 는 total 에 포함하지 않는다 —
+#     포함하면 "몇 건을 실제로 쟀나"가 다시 흐려진다.
+#   ★ skipped 는 종료코드에 영향을 주지 않는다(전제 부재는 회귀가 아니다). 대신
+#     FINAL 줄과 결과 JSON 양쪽에 항상 드러나 pass/fail 어느 쪽으로도 흡수되지 않는다.
+#──────────────────────────────────────────────────────────────────────────────
+TOTAL_SKIP=0
+SKIP_LINES=()
+
 run_test() {
   local name="$1"
   local cmd="$2"
@@ -117,12 +137,12 @@ run_test() {
 import json, sys
 try:
     d = json.loads(sys.stdin.read())
-    print("PARSED|" + str(d.get("test","?")) + "|" + str(d.get("pass",0)) + "|" + str(d.get("fail",0)) + "|" + str(d.get("total",0)))
+    print("PARSED|" + str(d.get("test","?")) + "|" + str(d.get("pass",0)) + "|" + str(d.get("fail",0)) + "|" + str(d.get("total",0)) + "|" + str(d.get("skipped",0)))
 except Exception as e:
     print("PARSE_ERROR|" + str(e))
-' | while IFS='|' read -r marker test_name pass fail total; do
+' | while IFS='|' read -r marker test_name pass fail total skipped; do
     if [[ "$marker" == "PARSED" ]]; then
-      ALL_RESULTS+=("{\"test\":\"$test_name\",\"pass\":$pass,\"fail\":$fail,\"total\":$total}")
+      ALL_RESULTS+=("{\"test\":\"$test_name\",\"pass\":$pass,\"fail\":$fail,\"total\":$total,\"skipped\":$skipped}")
       TOTAL_PASS=$((TOTAL_PASS + pass))
       TOTAL_FAIL=$((TOTAL_FAIL + fail))
     fi
@@ -169,6 +189,14 @@ SUITES=(
   #   "ALL CLEAN: 0 files scanned"·"INFRA_PIT_SCAN PASS: 0 files" 를 냈다 —
   #   스캔 0회가 PIT 통과 판정이 되는 자리(AX-002 동급). 돌연변이로 검출력 실증(3축 반전).
   "08_Tests/hooks/test_lookahead_unscanned.R"
+  # 2026-08-02 추가: 전제 부재 제3상태(skipped) 계약.
+  #   worktree 에 자기-앵커로 배터리를 돌리면 17건이 붉었는데 전부 gitignore 산출물
+  #   (.cache/*, venv) 전제였다 — 그중 deployed_holdings_check 는 14건 **전부 exit 49**,
+  #   즉 검사기 미실행인데 "배포 제약 위반 14건 미검거"로 읽혔다(양성 대조 T0 도 같은 49).
+  #   전제 부재를 fail 로 세면 오진단, pass 로 세면 "빈 결과 = 합격" 재발 —
+  #   그래서 제3상태를 뒀고, 이 검사가 그 제3상태의 차단 실효를 잰다
+  #   (전제 있을 때 위반 검거 / 없을 때 사유+경로와 함께 skip / 러너 FINAL 노출).
+  "08_Tests/hooks/test_prereq_skip_contract.sh"
   # 2026-08-02 추가: FQ-002 계약 패널 빌더 로직(합성 픽스처, API 무호출).
   #   크롤 1시간 태우기 전에 정정 제외·parse실패 제외·trailing 창·빈입력 거부를 확정한다.
   "08_Tests/data/test_contract_panel.R"
@@ -437,8 +465,30 @@ for test_script in "${SUITES[@]}"; do
   if echo "$OUT" | "$QVEST_PY_BIN" -c 'import json,sys; d=json.loads(sys.stdin.read()); exit(0 if "test" in d else 1)' 2>/dev/null; then
     PASS=$(echo "$OUT" | "$QVEST_PY_BIN" -c 'import json,sys; print(json.load(sys.stdin).get("pass",0))')
     FAIL=$(echo "$OUT" | "$QVEST_PY_BIN" -c 'import json,sys; print(json.load(sys.stdin).get("fail",0))')
+    SKIP=$(echo "$OUT" | "$QVEST_PY_BIN" -c 'import json,sys; print(json.load(sys.stdin).get("skipped",0))')
     TOTAL_PASS=$((TOTAL_PASS + PASS))
     TOTAL_FAIL=$((TOTAL_FAIL + FAIL))
+    TOTAL_SKIP=$((TOTAL_SKIP + SKIP))
+    # 전제 부재 사유는 **경로까지** 보존한다. "무언가 없어서 건너뜀"은 조치 불가능한
+    # 보고이고, 조치 불가능한 보고는 결국 무시된다(= 조용한 통과와 같아진다).
+    if [[ "$SKIP" -gt 0 ]]; then
+      # ★ Windows 파이썬 stdout 은 CRLF — `read -r` 은 CR 을 값에 남긴다. 그 CR 이
+      #   결과 JSON 문자열 안으로 들어가면 "Invalid control character" 로 **파일 전체가
+      #   파싱 불가**가 된다(소비자 입장에선 결과가 통째로 사라진다).
+      #   [[reference-rscript-stdout-crlf-bash-compare]] 계통 — 여기서 잘라낸다.
+      while IFS= read -r _sl; do
+        _sl="${_sl%$'\r'}"
+        [[ -n "$_sl" ]] && SKIP_LINES+=("$(basename "$test_script") :: $_sl")
+      done < <(echo "$OUT" | "$QVEST_PY_BIN" -c '
+import json,sys
+d = json.load(sys.stdin)
+sk = d.get("skips") or []
+if not sk:
+    print("(사유 미기재 — suite 가 skips[] 를 안 냈다)")
+for s in sk:
+    print("%s — %s [missing: %s]" % (s.get("axis","?"), s.get("reason","?"), s.get("missing","?")))
+' 2>/dev/null)
+    fi
     if [[ -n "$TESTS_JSON" ]]; then TESTS_JSON+=","; fi
     TESTS_JSON+="$OUT"
   else
@@ -463,17 +513,33 @@ cat > "$RESULTS_FILE" <<EOF
   "ran_at": "$(date -Iseconds)",
   "total_pass": $TOTAL_PASS,
   "total_fail": $TOTAL_FAIL,
+  "total_skipped": $TOTAL_SKIP,
   "total": $((TOTAL_PASS + TOTAL_FAIL)),
   "status": "$(if [[ $TOTAL_FAIL -eq 0 ]]; then echo PASS; else echo FAIL; fi)",
+  "skips": [$(_j=""; for _l in ${SKIP_LINES[@]+"${SKIP_LINES[@]}"}; do
+                 _e="${_l//\\/\\\\}"; _e="${_e//\"/\\\"}"
+                 if [[ -n "$_j" ]]; then _j+=","; fi; _j+="\"$_e\""
+               done; printf '%s' "$_j")],
   "tests": [$TESTS_JSON]
 }
 EOF
 
 echo ""
 echo "════════════════════════════════════════"
-echo "FINAL: $TOTAL_PASS pass / $TOTAL_FAIL fail / $((TOTAL_PASS + TOTAL_FAIL)) total"
+# 건너뛴 축은 FINAL 위에 **먼저** 나열한다 — 숫자만 남으면 다음 사람은 그 숫자가
+# 무엇의 부재인지 알 수 없고, 알 수 없는 항목은 무시된다.
+if (( TOTAL_SKIP > 0 )); then
+  echo "⊘ SKIPPED $TOTAL_SKIP건 — 이 트리에 전제 산출물이 없어 판정하지 않음(통과 아님·실패 아님):"
+  for _l in ${SKIP_LINES[@]+"${SKIP_LINES[@]}"}; do echo "    $_l"; done
+  echo "────────────────────────────────────────"
+fi
+echo "FINAL: $TOTAL_PASS pass / $TOTAL_FAIL fail / $TOTAL_SKIP skipped / $((TOTAL_PASS + TOTAL_FAIL)) total"
 if [[ $TOTAL_FAIL -eq 0 ]]; then
-  echo "STATUS: ✅ ALL PASS"
+  if (( TOTAL_SKIP > 0 )); then
+    echo "STATUS: ✅ ALL PASS (단, $TOTAL_SKIP건 미판정 — 위 SKIPPED 목록)"
+  else
+    echo "STATUS: ✅ ALL PASS"
+  fi
 else
   echo "STATUS: ❌ FAIL ($TOTAL_FAIL test failures)"
 fi

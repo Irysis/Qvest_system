@@ -51,6 +51,9 @@ RAWDATA[, .ym := format(Date, "%Y-%m")]
 .rv_monthly <- RAWDATA[Date %in% .month_ends & LiqPass == TRUE & is.finite(.rv20),
                         .(Date, Ticker, rv20 = .rv20)]
 
+# 정리: RAWDATA 임시 컬럼 제거 (폴백 참조 문제 방지)
+RAWDATA[, c(".ret", ".rv20", ".ym") := NULL]
+
 # ---- Step 5: 유니버스 내 Cross-sectional vol rank (quintile bin) ------------
 # rank: 1 = 최저변동성(가장 방어적), N = 최고변동성
 # bin: 1~5 (quintile)
@@ -61,55 +64,51 @@ RAWDATA[, .ym := format(Date, "%Y-%m")]
 .rv_monthly[, .bin := as.integer(.bin)]
 
 # ---- Step 6: Markov transition matrix 추정 + 다음 기 예측 순위 계산 ----------
-# mc_dates: 월별 정렬
+# 전이 쌍 생성: 각 ticker에서 연속된 월말 쌍 (t → t+1)
+# cartesian 문제 방지: shift by Ticker+Date
+.rv_ordered <- copy(.rv_monthly)
+setkey(.rv_ordered, Ticker, Date)
+.rv_ordered[, bin_tp1 := shift(.bin, n = -1L, type = "lead"), by = Ticker]
+.rv_ordered[, Date_next := shift(Date, n = -1L, type = "lead"), by = Ticker]
+# 유효 전이 쌍: 다음 달 말일이 15~50일 후인 경우만
+.rv_ordered[, .dt := as.numeric(Date_next - Date)]
+.pairs <- .rv_ordered[!is.na(bin_tp1) & .dt >= 15L & .dt <= 50L,
+                       .(Date, Ticker, bin_t = .bin, bin_tp1)]
+
+cat(sprintf("[VoltRank_MC] 전이 쌍 수: %d\n", nrow(.pairs)))
+
+# 각 신호 날짜 t에 대해 rolling 12개월 전이 데이터로 T 행렬 추정
 .ym_order <- sort(unique(.rv_monthly$Date))
 
-# 각 날짜 t에서 rolling 과거 12개월 전이 데이터로 T 행렬 추정
-# "t → t+1" 전이: (t 시점 bin) → (t+1 시점 bin) 로 카운트
-# 예측 대상 = t+1 (다음 달), 신호 계산 시점 = t (현재 월말)
-
 .compute_mc_score <- function() {
-  # 전이 쌍 생성 (ticker 기준 lag join)
-  .rv_with_next <- .rv_monthly[, .(Date, Ticker, bin_t = .bin)]
-  .rv_next      <- .rv_monthly[, .(Date, Ticker, bin_tp1 = .bin)]
-  setkey(.rv_with_next, Ticker, Date)
-  setkey(.rv_next,      Ticker, Date)
-
-  # 다음 달 bin 붙이기 (next Date 기준)
-  .pairs <- merge(
-    .rv_with_next,
-    .rv_next[, .(Ticker, Date_next = Date, bin_tp1)],
-    by = "Ticker"
-  )
-  # Date_next가 Date 직후 월말인 경우만 유효
-  # 월말 간격: 정확히 다음 달 말일에 해당하는 쌍만 선택
-  .pairs[, .dt := as.numeric(Date_next - Date)]
-  .pairs <- .pairs[.dt >= 15L & .dt <= 50L]  # 15~50일 = 한 달 간격
-
-  # 각 신호 날짜 t에 대해 rolling 12개월 이내 (t-12M ~ t-1M) 전이 쌍으로 추정
   .result <- vector("list", length(.ym_order))
+
   for (i in seq_along(.ym_order)) {
     sig_date  <- .ym_order[i]
     cutoff_lo <- sig_date - 375L  # 약 12.5개월 전 (보수적)
-    cutoff_hi <- sig_date - 1L    # 신호 날짜 직전까지만
+    cutoff_hi <- sig_date - 1L    # 신호 날짜 직전까지만 (PIT)
 
     .sub <- .pairs[Date >= cutoff_lo & Date <= cutoff_hi]
 
-    if (nrow(.sub) < 50L) {
+    .snap_cur <- .rv_monthly[Date == sig_date & is.finite(.bin),
+                              .(Date, Ticker, bin_t = .bin, rv20)]
+    if (nrow(.snap_cur) == 0L) next
+
+    if (nrow(.sub) < 30L) {
       # 전이 데이터 부족 → 단순 rv20 역순 폴백
-      .snap <- .rv_monthly[Date == sig_date, .(Date, Ticker, Score = -.rv20)]
-      if (nrow(.snap) > 0L) {
-        .result[[i]] <- .snap
-        cat(sprintf("[VoltRank_MC] %s: MC 폴백(단순 low-vol) n_pairs=%d\n",
+      .snap_cur[, Score := -rv20]
+      .result[[i]] <- .snap_cur[, .(Date, Ticker, Score)]
+      if (i <= 5L || i %% 24L == 0L) {
+        cat(sprintf("[VoltRank_MC] %s: 단순 low-vol 폴백 (n_pairs=%d)\n",
                     format(sig_date), nrow(.sub)))
       }
       next
     }
 
     # 전이행렬 T[from, to] 추정 (Laplace 스무딩 +1)
-    .counts <- matrix(1L, nrow = .N_BINS, ncol = .N_BINS)  # Laplace smoothing
+    .counts <- matrix(1L, nrow = .N_BINS, ncol = .N_BINS)
     for (r in seq_len(nrow(.sub))) {
-      f <- .sub$bin_t[r]
+      f    <- .sub$bin_t[r]
       t_to <- .sub$bin_tp1[r]
       if (is.finite(f) && is.finite(t_to) &&
           f >= 1L && f <= .N_BINS && t_to >= 1L && t_to <= .N_BINS) {
@@ -119,22 +118,17 @@ RAWDATA[, .ym := format(Date, "%Y-%m")]
     .row_sums <- rowSums(.counts)
     .T <- sweep(.counts, 1, .row_sums, "/")  # row 정규화 → 전이확률
 
-    # 현재 날짜의 각 종목 bin → 다음 달 예측 기대 순위
-    .snap_cur <- .rv_monthly[Date == sig_date & is.finite(.bin),
-                              .(Date, Ticker, bin_t = .bin)]
-    if (nrow(.snap_cur) == 0L) next
-
-    .snap_cur[, .pred_rank := {
-      prob_next <- .T[bin_t, ]                     # 전이확률 행벡터
-      sum(prob_next * seq_len(.N_BINS))            # 기대 bin
+    # 현재 bin 기반 다음 달 예측 기대 bin (낮을수록 저변동 예측)
+    .snap_cur[, Score := {
+      prob_next <- .T[bin_t, ]
+      -sum(prob_next * seq_len(.N_BINS))  # 음수: 낮을수록 저변동 예측
     }, by = seq_len(nrow(.snap_cur))]
 
-    # Score = 음의 예측 기대 순위 (낮을수록 저변동 예측 → 매수 우선)
-    .snap_cur[, Score := -.pred_rank]
-    .snap_cur[, Date := sig_date]
     .result[[i]] <- .snap_cur[, .(Date, Ticker, Score)]
   }
-  rbindlist(.result, use.names = TRUE, fill = FALSE)
+
+  .out <- rbindlist(.result, use.names = TRUE, fill = FALSE)
+  .out
 }
 
 cat("[VoltRank_MC] Markov transition matrix 추정 중...\n")
@@ -142,7 +136,7 @@ FACTORS <- tryCatch(
   .compute_mc_score(),
   error = function(e) {
     cat(sprintf("[VoltRank_MC] MC 오류, 단순 low-vol 폴백: %s\n", e$message))
-    .rv_monthly[is.finite(.rv20), .(Date, Ticker, Score = -.rv20)]
+    .rv_monthly[is.finite(rv20), .(Date, Ticker, Score = -rv20)]
   }
 )
 
@@ -152,15 +146,10 @@ if (!is.data.table(FACTORS) || nrow(FACTORS) == 0L) {
 }
 FACTORS <- FACTORS[is.finite(Score)]
 
-# ---- 정리 -------------------------------------------------------------------
-RAWDATA[, c(".ret", ".rv20", ".ym") := NULL]
-
 cat(sprintf("[VoltRank_MC] FACTORS rows=%d | signal dates=%d | tickers=%d\n",
             nrow(FACTORS), uniqueN(FACTORS$Date), uniqueN(FACTORS$Ticker)))
-
-# 점검: 최초 신호 날짜 및 최근 5개 점수 분포 출력
 cat(sprintf("[VoltRank_MC] date range: %s ~ %s\n",
-            min(FACTORS$Date), max(FACTORS$Date)))
+            format(min(FACTORS$Date)), format(max(FACTORS$Date))))
 cat(sprintf("[VoltRank_MC] score range: %.4f ~ %.4f (mean %.4f)\n",
             min(FACTORS$Score, na.rm=TRUE),
             max(FACTORS$Score, na.rm=TRUE),

@@ -577,13 +577,37 @@ fi
 #  정합 검사가 있어야 한다 — 07-25 date32 writer 계통(감지장치 0, 7일 방치)의 재발.
 #  최근 400일만 대조(전 기간 스캔은 14M행 — 부팅 지연 회피. 과거 구간은 배터리가 담당).
 BSP_R="$PROJECT/02_Infrastructure/validation/benchmark_source_parity.R"
+# (2026-08-03 경합 수리) 이 블록은 위에서 **백그라운드로 띄운** daily_refresh 와 같은 파일
+#   (.cache/rawdata.parquet · benchmark.parquet)을 읽는다. 리프레시가 그 파일을 재생성하는
+#   중이면 검사가 소스를 못 봐서 UNMEASURED 가 뜨고, 그 라벨이 "소스 부재"로 보고된다.
+#   실측(08-03 07:06 부팅): UNMEASURED 로 보고됐으나 같은 트리에서 수동 실행하면
+#   **OK — 공통 8,998일 일치·불일치 0·max_abs_diff 0**. 즉 라벨이 실제 상태와 무관했다.
+#   ★"측정 못 했다"가 "부재"로 굳으면 이 축은 매 부팅 무의미해진다(감시기는 멀쩡한데
+#     보고만 죽는 형태 — 이 저장소의 '빈 결과 = 특정 라벨' 계통).
+#   두 소스가 **실재하는데** UNMEASURED 면 경합으로 보고 1회 재시도한다. 진짜 부재면 그대로 보고.
+_bsp_run() { (cd "$PROJECT" && Rscript 02_Infrastructure/validation/benchmark_source_parity.R 400 2>/dev/null | tr -d '\r' | grep -m1 '^\[benchmark_source_parity\]'); }
 if [ -f "$BSP_R" ]; then
-  BSP_OUT=$(cd "$PROJECT" && Rscript 02_Infrastructure/validation/benchmark_source_parity.R 400 2>/dev/null | tr -d '\r' | grep -m1 '^\[benchmark_source_parity\]')
+  BSP_OUT=$(_bsp_run)
+  case "$BSP_OUT" in
+    *UNMEASURED*)
+      if [ -f "$PROJECT/.cache/rawdata.parquet" ] && [ -f "$PROJECT/.cache/benchmark.parquet" ]; then
+        sleep 5
+        BSP_RETRY=$(_bsp_run)
+        [ -n "$BSP_RETRY" ] && BSP_OUT="$BSP_RETRY"
+        BSP_RACE=1
+      fi
+      ;;
+  esac
   if [ -n "$BSP_OUT" ]; then
     case "$BSP_OUT" in
       *CRITICAL*) echo "[boot] WARN: ${BSP_OUT#\[benchmark_source_parity\] } — 정본=benchmark.parquet. 7월 등 해당 구간 포함 측정 전 bench 소스 확인" ;;
-      *UNMEASURED*) echo "[boot] WARN: 벤치 정합 미측정 (소스 부재) — '정상'과 구분할 것" ;;
-      *) echo "[boot] 벤치 2소스 정합: ${BSP_OUT#\[benchmark_source_parity\] }" ;;
+      *UNMEASURED*)
+        if [ "${BSP_RACE:-0}" = "1" ]; then
+          echo "[boot] WARN: 벤치 정합 미측정 — 소스 2종은 실재하나 재시도 후에도 미측정(리프레시 장기 점유 또는 스키마 문제). '정상'과 구분할 것"
+        else
+          echo "[boot] WARN: 벤치 정합 미측정 (소스 실물 부재 확인) — '정상'과 구분할 것"
+        fi ;;
+      *) echo "[boot] 벤치 2소스 정합: ${BSP_OUT#\[benchmark_source_parity\] }${BSP_RACE:+ (리프레시 경합 후 재시도분)}" ;;
     esac
   else
     echo "[boot] WARN: 벤치 정합 검사 산출 실패 — 계측 사망과 정상을 구분 불가"
