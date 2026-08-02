@@ -1,7 +1,7 @@
 {
  "schema_version": "1.0",
  "sot": "02_Infrastructure/docs/qvest_v8_3_alpha_discovery_sot.md §4",
- "updated": "2026-08-02",
+ "updated": "2026-08-02 (WT-016 필터×overlay 실배치 관문 통과[capability_established] · WT-017 국면 overlay 소비 negative + 라벨 지연 확정 + 오라클 상금 실재. 파생 FQ-117 라벨 기전 / FQ-118 nowcast 대체 라벨[EV 최상위] 등재. 총 118건)",
  "consume_rule": "새 발굴 리서치 착수 전: hypothesis_index lookup → 본 큐 확인 → owner/status 갱신. 완료 시 result_ref(L-code/보고서) 기입. dohoon_decision 항목은 세션 임의 착수 금지.",
  "entries": [
   {
@@ -2121,10 +2121,15 @@
    "ev_rationale": "WT-014 NP-1(P1). 필터의 실배치 가능성을 결정하는 관문 — 현 book 구성과 함께 재는 것이 정직한 평가.",
    "wall_check": "비적용 — 기존 book 구성 위 필터 한계기여 측정. 자본 결정은 도훈 수동.",
    "data_gate": "없음 (WT-014 패널 + R05 exposure_dt 현행분)",
-   "owner": "alpha-research (WT-D20260802_016)",
-   "status": "in_flight",
+   "owner": "Q-Lead (WT-D20260802_016 판정 수집 2026-08-02)",
+   "status": "capability_established",
    "in_flight_since": "2026-08-02 (WT-D20260802_016 착수 — overlay(M4xR05_V5) exposure_dt 포함판 2x2 paired 사전등록 라운드)",
-   "registered": "2026-08-02 Q-Lead (WT-D20260802_014 NP-1 파생)"
+   "registered": "2026-08-02 Q-Lead (WT-D20260802_014 NP-1 파생)",
+   "verdict": "실배치 관문 통과 (2026-08-02, WT-D20260802_016). overlay-ON paired NW lag-3 t +1.551 / ΔIR +0.1284 — 사전등록 닫힘 기준(t<1) 비발동, bare 대비 편익 76% 보존. 2×2에서 필터×overlay 셀이 absSR 0.962·MDD -33.03%로 최고. 상호작용 t -1.14 = overlay가 필터 기여를 유의하게 지우지 못함. MDD 분해: overlay 15.6pp + 필터 추가 7.3pp = 축이 다른 부분 독립(종목선택 vs 노출조절). CRISIS 역효과는 크기 61% 흡수되나 부호·t 잔존. lag1 편익 소멸 불변(리밸 지연 불허). PIT: assert 256/256 PASS + 위반 주입 FIRED + leak 변형 열세(look-ahead 이득 부재). 사전등록 parity STOP 1회 발동 후 진단으로 배선 무결 확정(silent override 없음). gate_eligible=FALSE — 특성화이며 실배치는 governor+도훈.",
+   "revival_conditions": [
+    "실배치 시 라이브 필터-delta가 지속 음수면 재판정",
+    "리밸 지연이 불가피한 운용 조건 발생 시 fast-decay로 편익 소멸 — 재확인 필요"
+   ]
   },
   {
    "id": "FQ-112",
@@ -2189,6 +2194,30 @@
    "owner": "미배정",
    "status": "frontier_open",
    "registered": "2026-08-02 Q-Lead (WT-D20260802_015 NP-2 파생)"
+  },
+  {
+   "id": "FQ-117",
+   "lane": "mechanism_probe",
+   "title": "국면 라벨 지연-지표 기전 규명 — MSM_Crisis_Prob 연속값의 실현-하락 선행력",
+   "hypothesis": "WT-017 확정: 현 CRISIS 라벨은 위기 '후' 반등월에 켜지는 지연 지표(BM<0 recall 0.10 < base 0.41, fisher p=1.0, 라벨월 벤치 연율 +90.1%). 이산 라벨이 아니라 **MSM_Crisis_Prob 연속값**의 실현-하락 선행력을 직접 실측하고, 발화 시점을 위기 전/중/후로 분해하면 지연의 원인이 임계화인지 모델 자체인지 갈린다. FQ-114(tripwire 침묵 국면 귀속)와 결합 가능.",
+   "ev_rationale": "WT-017 NP-1(P1). 라벨이 병목임이 확정됐으므로 기전 규명이 대체 라벨 설계(FQ-118)의 사전 지식. 저비용(기존 라벨 엔진 산출물 재판독).",
+   "wall_check": "비적용 — 라벨 진단. 자본 주장 없음.",
+   "data_gate": "없음 (regime 캐시 + 벤치 시계열 현행분)",
+   "owner": "미배정",
+   "status": "frontier_open",
+   "registered": "2026-08-02 Q-Lead (WT-D20260802_017 NP-1 파생)"
+  },
+  {
+   "id": "FQ-118",
+   "lane": "overlay",
+   "title": "★실현-하락 nowcast 대체 라벨 — 오라클 상금(+2.1%/yr·MDD 절반)에 접근",
+   "hypothesis": "WT-017 오라클 진단(실현 BM<0 완전예지, look-ahead 상한 전용): MDD -23.3%→-9.2%·absSR 1.711→2.162·+2.1%/yr — **overlay 감β 소비면과 상금은 실재하고 현 라벨만 접근을 못 한다**. 트레일링 낙폭/변동성 기반 단순 nowcast 규칙(예측이 아니라 '지금 빠지고 있나'를 재는 축)을 동일 사전등록 스케줄로 재측정하면 상금의 일부를 회수하는가.",
+   "ev_rationale": "WT-017 NP-2(P1) — **현재 큐 최상위 EV**. 상금이 오라클로 정량화된 드문 사례이고(대부분의 lane은 상한을 모른다), 소비 배관(overlay)이 이미 실재. vol-target 스케줄 실패 선례(6-18 H2)와는 '하락월 판별 목표'라는 각도로 차별.",
+   "wall_check": "overlay는 실증된 유일한 long-only β 레버. 단 M4×R05가 near-optimal 3중 확인이라 **대체가 아니라 한계기여**로 재야 함(WT-017 프레임 승계).",
+   "data_gate": "없음 (벤치·rawdata 현행분)",
+   "owner": "미배정",
+   "status": "frontier_open",
+   "registered": "2026-08-02 Q-Lead (WT-D20260802_017 NP-2 파생 — 오라클 상금 실측 근거)"
   }
  ]
 }

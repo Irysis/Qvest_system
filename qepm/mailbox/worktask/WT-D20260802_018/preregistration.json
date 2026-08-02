@@ -1,0 +1,44 @@
+{
+  "task_id": "WT-D20260802_018",
+  "registered_at": "2026-08-02",
+  "registered_before_crawl": true,
+  "selection_type": "chain",
+  "n_trials": 1,
+  "hypothesis": "공시 계약금액의 상대 규모(계약금액/최근매출액)가 long-side directional 알파다. occurrence-only(발생 여부)는 null(t=0.59, settled) — magnitude가 다른 유일한 이유는 '규모가 정보량'이라는 가설. 반대 증거: 큰 계약일수록 공시 당일 가격 반영이 빠를 수 있음(둘 다 기록, 정직 posterior).",
+  "primary_signal": {
+    "name": "CTR_MAG_3M",
+    "formula": "sum over disclosures d in trailing window of ratio_to_revenue(d) = contract_amount(d) / recent_revenue(d)",
+    "denominator": "recent_revenue (공시 동봉 최근매출액 — 시총 조인 없는 네이티브 분모)",
+    "event_set": "단일판매·공급계약 체결 공시, is_correction==FALSE (최초 체결값만), parse_status=='OK', is_amendment==FALSE (변경계약 제외 — 보수적)",
+    "amendment_rule": "파서 자유텍스트 패턴 '변경계약|계약금액 변경|기존 계약|최초 계약' hit 시 is_amendment=TRUE → 제외. 판별 불가(파싱 실패)분도 제외(포함 아님). 제외 건수는 커버리지 보고에 명시.",
+    "window": "trailing 3 calendar months: rcept_dt in [holding_month_start - 3mo, holding_month_start) — 홀딩월 시작 전 정보만 (PIT C5)",
+    "signal_date_basis": "rcept_dt (공시 접수일). 계약 체결일 사용 금지 (look-ahead).",
+    "cross_section": "signal 보유 종목만 rank (비보유 = NA, IC는 covered names 내 Spearman)",
+    "direction_hypothesis": "positive (큰 계약이 좋다)"
+  },
+  "verdict_criteria": {
+    "primary": "월별 Spearman rank-IC (signal vs 홀딩월 수익률, covered names 내) — 부호가 사전등록 방향(+)이고 |t| 기준 판정. t = mean(IC)/sd(IC)*sqrt(n_months), NW lag-3 병기.",
+    "port_t_role": "참고 전용 — 파일럿 36개월 + 이벤트-희소라 표본이 얇음. canonical_screen_bt 실측은 수행·기록하되 파일럿 판정 권위 아님.",
+    "expansion_rule": "IC 부호가 양(+)이고 |t|가 의미 있으면 전구간(259개월) 확장 검토. 부호 역전 또는 |t| 미미 = 그 자체가 결론, 확장 안 함.",
+    "no_sweep_declaration": "분모 A/B(recent_revenue vs 시총), 윈도우 변형(1M/6M)은 진단 병기 전용 — 어느 쪽이 좋은지로 primary를 바꾸지 않는다(바꾸면 sweep 재분류)."
+  },
+  "diagnostics_preregistered": [
+    {"name": "CTR_MAG_3M_mcap", "purpose": "분모 B 진단: contract_amount / market_cap(t-1). primary 선택에 사용 금지."},
+    {"name": "window_1M / window_6M", "purpose": "윈도우 강건성 진단. 선택에 사용 금지."},
+    {"name": "correction_AB", "purpose": "누출 검증: Panel A(최초 체결값만) vs Panel B(정정값을 최초 공시일에 소급 주입). B가 유의하게 좋으면 누출 지문 — 실전은 최초값만 가용."},
+    {"name": "lag1_stress", "purpose": "신호 1개월 shift 적용판 — base 대비 붕괴 시 동월 누출 의심 (C5 의무)."},
+    {"name": "coverage", "purpose": "월별 신호 보유 종목 수 + top-25 선별 영향 월 비율 (WT-014 발동률 프레임)."},
+    {"name": "dual_basis", "purpose": "cap-w + EW-universe + cap-tier(MEGA/MID) 분해 (v8.3 M2)."}
+  ],
+  "correction_matching_rule": "기재정정(is_correction==TRUE) rcept를 같은 corp_code의 직전 180일 내 가장 최근 최초 체결 공시에 매칭. 매칭 실패분은 Panel B에서 제외(보수적). 매칭 결과 건수 보고.",
+  "crawl_budget": {
+    "pilot_window": "2023-08 ~ 2026-07 (36개월)",
+    "estimated_calls": 3100,
+    "daily_budget": 7000,
+    "full_period_forbidden": "파일럿 판정 전 전구간(22,533 호출) 크롤 금지"
+  },
+  "posterior_honesty": {
+    "against": "occurrence-only null(t=0.59)은 반대 증거. 공시 당일 즉시 반영(efficient reaction)이면 magnitude도 null.",
+    "for": "규모가 정보량 가설 — 매출 대비 대형 계약은 이익 전망 개정이 느리게 반영될 수 있음(KR 공매도 제약 + 애널리스트 커버리지 얇은 중소형)."
+  }
+}
