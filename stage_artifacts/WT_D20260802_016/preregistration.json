@@ -1,0 +1,55 @@
+{
+  "task_id": "WT-D20260802_016",
+  "registered_at": "2026-08-02 (측정 전 고정 — 이 파일 작성 시점에 overlay-ON 성과수치 일절 미산출. WT-014 승계 수치만 인용)",
+  "selection_type": "preregistered_single_primary",
+  "n_trials": 1,
+  "lineage": "WT-D20260802_014 NP-1 = FQ-111 (복권형 제외-필터 x overlay 포함판). WT-014 실측 승계: 무필터 base anchor PORT_t 3.0583(268m parity), 필터 ΔIR +0.1692(paired t 1.565), 편익 NEUTRAL 집중(t +2.28)·CRISIS 음수(Δ -0.33%/월, t -1.78), lag1 시 편익 소멸(ΔIR -0.0356).",
+  "primary": {
+    "name": "overlay-ON paired: MAX5_63 상위 10% 제외-필터 유/무 (동일 exposure 하 paired NW lag-3 t + ΔIR)",
+    "definition": "WT-014 하네스 verbatim(cleanT1 score_eff top-25 cap_norm(Size), 15bps, paired 공통월)에 현 book 실현 β_combined exposure를 양팔 동일 적용한 뒤, 월별 (active_f_ov − active_b_ov)에 NW lag-3 t + ΔIR = IR_f_ov − IR_b_ov.",
+    "filter_rule": "WT-014 사전등록 그대로 — MAX5_63(WT-010 ot_panel.max5 동결분, 재계산 없음) 횡단면 90% 분위 이상 배제, X=0.10 단일 고정. X sweep 없음.",
+    "overlay_definition": "exposure(홀딩월 M) = m4_weight_lag x beta_threshold_lag x beta_R05_V5, 원천 = 05_Production/.../04_backtest_results/period_returns_layer5.csv (production 산출물 read-only 소비, auto_weighting_ab.R::build_overlay_exposure와 동일 정의 — 현 book 실현 β_combined V5). 조인 키 = return_ym(진짜 수익월) == 홀딩월(month(d0)+1). anchor_date/realized_ym 조인 절대 금지(BearProb 07-06 실사고 구조).",
+    "overlay_cost_label": "overlay β-schedule 리밸 비용은 양팔 동일 적용되어 paired 비교에서 상쇄 — 생략(weighted_screen_bt exposure_dt 규약 라벨). 종목-계층 회전 비용 15bps는 양팔 각자 실부과."
+  },
+  "design_2x2": {
+    "cells": "{overlay OFF, ON} x {필터 OFF, ON}. OFF행 = WT-014 공통월 재현(rb/rf). 상호작용 = d_ov − d_bare = (e_t − 1) x d_bare_t, paired NW t 병기.",
+    "role": "진단 병기 전용 — 어느 셀도 선택/채택에 사용 금지. 판정은 primary(overlay-ON paired) 단일."
+  },
+  "decision_criteria": {
+    "i_close_rule": "overlay-ON paired NW lag-3 t < 1 이면 이 base(현 book 선별+overlay 구성)에 대한 소비면 ② 닫힘 — WT-014 close_round 부활 조건 그대로 선고정.",
+    "ii_delta_ir": "ΔIR_ov ≥ +0.05 여부 병기 (weighted_screen basis — net_active_recon_v1 book recon IR 아님, basis 라벨 의무).",
+    "iii_no_capital_claim": "자본 주장 없음 — admission = governor + 도훈 수동. 본 라운드 = 실배치 관문 특성화."
+  },
+  "honest_priors_both_sides": {
+    "overlap_hypothesis": "필터 MDD 개선(11.4pp)과 overlay MDD 방어는 같은 위험(위기월 하방)을 두 번 줄이는 중복일 수 있다 — 이 경우 overlay-ON에서 필터 한계기여가 축소·소멸(paired t 하락). abs MDD 4셀 비교로 관측.",
+    "orthogonal_hypothesis": "필터 = 종목 선택 축(복권형 배제), overlay = 노출 조절 축(β 스칼라) — 축이 달라 독립 기여 성립 가능. 특히 CRISIS 역효과(Δ -0.33%/월)는 e≈0.3~0.5로 축소되어 paired t가 bare(1.565)보다 오히려 상승할 수 있다(음수 꼬리 감쇠).",
+    "mechanical_note": "paired 차이의 구조상 d_ov,t = e_t x d_bare,t (양팔 동일 exposure 곱셈) — overlay-ON 판정은 bare 월별 Δ를 e_t로 재가중한 검정과 수학적으로 동일. e_t가 CRISIS에서 낮으므로 CRISIS 음수월 다운웨이트가 사전 예상 경로."
+  },
+  "preregistered_robustness_non_selective": {
+    "regime_decomposition": "unified_regime_signal 홀딩월 매핑(WT-014 step 9 동일) — CRISIS/CAUTION/NEUTRAL/RISK_ON별 d_ov NW t. CRISIS 역효과 흡수 여부가 판별점.",
+    "lag1_filter_stress": "max5 1개월 지연판(WT-014 step 10 동일)에 overlay 적용 — overlay-ON에서도 편익 소멸하는지.",
+    "exposure_timing_leak_ab": "strict(현 매핑: 신호컷 = 홀딩월 M 시작 전) vs leak 변형(e(M+1)을 M에 적용 = 홀딩월 말 정보 사용, anchor_date 조인이 유발하는 방향) — leak이 strict보다 유리하게 나오면 인플레 방향 실증(overlay_lookahead_ab).",
+    "exposure_lag1": "e(M−1)을 M에 적용한 stale판 — exposure 신호 감쇠 진단.",
+    "dual_basis_ew": "EW top-25(w=1/25) 양팔 + 동일 exposure — cap-w primary와 방향 일치 확인.",
+    "cap_tier": "cap-tier 분해는 WT-014 canonical diag(bare) 재인용 + 'exposure는 월별 스칼라라 횡단면 tier 귀속을 바꾸지 않음' 구조 명기.",
+    "turnover": "종목-계층 연환산 회전 실측 보고(양팔) — exposure는 종목-계층 회전 불변(β-schedule 회전은 book-계층, 라벨)."
+  },
+  "pit_declaration": {
+    "C5_overlay": "exposure(홀딩월 M) 신호컷 = M−1월말 EOM (production shift 구조: β_R05 t−1 EOM 결정→t 적용, m4_weight/beta_threshold shift(1)). assert_overlay_pit(used_cutoff = M−1월말, holding_start = M월 1일) HARD 통과 의무.",
+    "violation_injection": "used_cutoff = M월말(동월 누출 변형)을 주입해 assert_overlay_pit가 실제 stop() 발화하는지 실증 — 발화 실패 시 가드 사망으로 판정하고 STOP.",
+    "C5_filter": "max5 창 = d0(전월말) 이하 63거래일 하드슬라이스 — WT-014 판정 승계(간격 1거래일).",
+    "join_rule": "layer5 조인은 return_ym(수익월)만 사용. anchor_date(홀딩월 다음달 첫 거래일)/realized_ym(기록월) 조인 금지.",
+    "ret_firewall": "저장 Ret/저장 max5/저장 layer5만 소비 — 재계산 금지."
+  },
+  "stop_conditions": {
+    "base_anchor": "무필터 bare 268m PORT_t가 3.0583 ± 0.01 재현 실패 시 즉시 STOP (§7b — WT-014 동일).",
+    "overlay_parity": "overlay-ON 무필터판 월수익 vs layer5 ret_L5_V5(V5, 동일 수익월)의 상관 < 0.95 시 STOP 후 배선 진단 보고 (비용·db 규약 차이로 완전일치는 기대하지 않음 — 수준 차이는 기록).",
+    "pit_guard_dead": "위반 주입 시 assert_overlay_pit 미발화."
+  },
+  "chain_qualification": {
+    "iteration_policy": "iteration 없음 — 단일 primary 1회 측정. X·exposure 변형은 전부 사전등록 진단 병기, 선택 사용 금지.",
+    "oos_policy": "holdout 미조회. 전기간 실측 + 사전등록 분해만.",
+    "dsr": "sweep 아님(n_trials=1) — DSR 게이트 부적용, 산출 생략 사유 = 단일 시험"
+  },
+  "capital_claim": "없음 — book_state 무변경, governor 판단 없음."
+}
