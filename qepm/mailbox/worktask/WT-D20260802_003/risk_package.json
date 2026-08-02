@@ -16,10 +16,11 @@
     ],
     "collinearity_note": "pooled 60m z-cor>0.97 근사-중복(D01~R12 cor=1.000 완전중복 포함) — rank 결핍 방지 drop, twin이 위험 대표",
     "rationale": "universe p=348 > n=120 -> 직접 추정은 linear LW mu*I 퇴화 영역(FQ-057). factor 구조로 회피. Omega는 p<<n — linear LW 비바인딩 무해(p<=25 posterior). lw_nls 후보 병기 실측.",
-    "sigma_cond": 645.1,
+    "sigma_cond": 500,
     "sigma_psd": true,
     "factor_coverage": 0.382,
-    "units": "monthly return covariance"
+    "units": "monthly return covariance",
+    "sigma_cond_before_floor": 645.1
   },
   "method_shopping_log": {
     "risk_agent": {
@@ -60,7 +61,23 @@
       "icir_pool_mean_36m": 0.625,
       "ppure_pool_mean_full": 0.4738,
       "ppure_pool_mean_36m": 0.3515,
-      "pairs_gt_08": ["C04_ESBR~C01_SUE(0.84)", "V15_NetDebt_Adj_EP~V02_EP(0.94)", "D58_Vol_Asymmetry~L32_Ret_Vol_Corr(0.84)", "V15_NetDebt_Adj_EP~V14_EBIT_EV(0.93)", "V02_EP~V14_EBIT_EV(0.92)", "D22_Tracking_Error~D01_IdioVol(0.98)", "D22_Tracking_Error~R12_Idiosyncratic_Risk(0.98)", "D01_IdioVol~R12_Idiosyncratic_Risk(1.00)", "D22_Tracking_Error~D56_Up_Vol(0.94)", "D01_IdioVol~D56_Up_Vol(0.96)", "R12_Idiosyncratic_Risk~D56_Up_Vol(0.96)", "D22_Tracking_Error~SE01_Volatility_Uncertainty(0.90)", "D01_IdioVol~SE01_Volatility_Uncertainty(0.93)", "R12_Idiosyncratic_Risk~SE01_Volatility_Uncertainty(0.93)", "D56_Up_Vol~SE01_Volatility_Uncertainty(0.94)"],
+      "pairs_gt_08": [
+        "C04_ESBR~C01_SUE(0.84)",
+        "V15_NetDebt_Adj_EP~V02_EP(0.94)",
+        "D58_Vol_Asymmetry~L32_Ret_Vol_Corr(0.84)",
+        "V15_NetDebt_Adj_EP~V14_EBIT_EV(0.93)",
+        "V02_EP~V14_EBIT_EV(0.92)",
+        "D22_Tracking_Error~D01_IdioVol(0.98)",
+        "D22_Tracking_Error~R12_Idiosyncratic_Risk(0.98)",
+        "D01_IdioVol~R12_Idiosyncratic_Risk(1.00)",
+        "D22_Tracking_Error~D56_Up_Vol(0.94)",
+        "D01_IdioVol~D56_Up_Vol(0.96)",
+        "R12_Idiosyncratic_Risk~D56_Up_Vol(0.96)",
+        "D22_Tracking_Error~SE01_Volatility_Uncertainty(0.90)",
+        "D01_IdioVol~SE01_Volatility_Uncertainty(0.93)",
+        "R12_Idiosyncratic_Risk~SE01_Volatility_Uncertainty(0.93)",
+        "D56_Up_Vol~SE01_Volatility_Uncertainty(0.94)"
+      ],
       "jaccard_icir_ppure": 0.094
     },
     "diversification": {
@@ -400,13 +417,31 @@
     }
   },
   "diagnostics": {
-    "condition_number": 645.1,
+    "condition_number": 500,
     "shrinkage_used": true,
     "shrinkage_method": "ledoit_wolf",
-    "factor_correlation_warnings": ["C04_ESBR~C01_SUE(0.84)", "V15_NetDebt_Adj_EP~V02_EP(0.94)", "D58_Vol_Asymmetry~L32_Ret_Vol_Corr(0.84)", "V15_NetDebt_Adj_EP~V14_EBIT_EV(0.93)", "V02_EP~V14_EBIT_EV(0.92)", "D22_Tracking_Error~D01_IdioVol(0.98)", "D22_Tracking_Error~R12_Idiosyncratic_Risk(0.98)", "D01_IdioVol~R12_Idiosyncratic_Risk(1.00)", "D22_Tracking_Error~D56_Up_Vol(0.94)", "D01_IdioVol~D56_Up_Vol(0.96)", "R12_Idiosyncratic_Risk~D56_Up_Vol(0.96)", "D22_Tracking_Error~SE01_Volatility_Uncertainty(0.90)", "D01_IdioVol~SE01_Volatility_Uncertainty(0.93)", "R12_Idiosyncratic_Risk~SE01_Volatility_Uncertainty(0.93)", "D56_Up_Vol~SE01_Volatility_Uncertainty(0.94)"],
+    "factor_correlation_warnings": [
+      "C04_ESBR~C01_SUE(0.84)",
+      "V15_NetDebt_Adj_EP~V02_EP(0.94)",
+      "D58_Vol_Asymmetry~L32_Ret_Vol_Corr(0.84)",
+      "V15_NetDebt_Adj_EP~V14_EBIT_EV(0.93)",
+      "V02_EP~V14_EBIT_EV(0.92)",
+      "D22_Tracking_Error~D01_IdioVol(0.98)",
+      "D22_Tracking_Error~R12_Idiosyncratic_Risk(0.98)",
+      "D01_IdioVol~R12_Idiosyncratic_Risk(1.00)",
+      "D22_Tracking_Error~D56_Up_Vol(0.94)",
+      "D01_IdioVol~D56_Up_Vol(0.96)",
+      "R12_Idiosyncratic_Risk~D56_Up_Vol(0.96)",
+      "D22_Tracking_Error~SE01_Volatility_Uncertainty(0.90)",
+      "D01_IdioVol~SE01_Volatility_Uncertainty(0.93)",
+      "R12_Idiosyncratic_Risk~SE01_Volatility_Uncertainty(0.93)",
+      "D56_Up_Vol~SE01_Volatility_Uncertainty(0.94)"
+    ],
     "regime_correlation_ref": "stage_artifacts/WT_D20260802_003/regime_correlation.parquet",
     "fm_window_months": 120,
-    "metric_type": "canonical_screen 파생(기전 실측) + estimated(Sigma 구조 추정)"
+    "metric_type": "canonical_screen 파생(기전 실측) + estimated(Sigma 구조 추정)",
+    "condition_number_before_floor": 645.1,
+    "conditioning": "eigen_floor(target cond<=500): 6/348 eigenvalues floored, rel Frobenius delta=0.00069 — PSD 유지, BOmegaB'+D 구조 대비 미세 변형(문서화)"
   },
   "challenge_flags": [
     {
@@ -418,6 +453,11 @@
       "id": "RF-WT003-MECH",
       "severity": "HIGH",
       "flag": "조합 가중 위험 집중 실측: theta n_eff=1.25 (EW 20), DR_theta=1.05, arm~C04 단일팩터 cor=0.66 — 분산 효과 사실상 부재. 가중 정렬 = 사실상 단일팩터 선택"
+    },
+    {
+      "id": "RF-WT003-TE-CRASH",
+      "severity": "MEDIUM",
+      "flag": "Iran_War(2026-02~04) active -41.8% (ret_net -7.6% vs BM +33.5%) — SMALL-국소 알파의 벤치 megacap 랠리 추적 실패형 TE-crash. active skew -2.70, CF-VaR99(active) 30.4%/m. 시장하락 위험 아닌 벤치-괴리 위험"
     }
   ]
 }

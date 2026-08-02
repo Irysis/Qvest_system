@@ -683,7 +683,8 @@ def main(argv=None):
     with open(args.field_map, encoding="utf-8") as f:
         field_map = json.load(f)
 
-    ast_root = extract_ast(pkg)
+    ast_roots = extract_asts(pkg)
+    ast_root = ast_roots[0] if ast_roots else None
     result = {
         "schema": "ast_verify/v1",
         "strategy_id": pkg.get("strategy_id"),
