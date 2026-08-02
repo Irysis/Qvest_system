@@ -2140,9 +2140,19 @@
    "wall_check": "비적용 — 위험모델 위생 계층(⑧행). 성과 병목 아님.",
    "data_gate": "없음 (rawdata 일간 + WT-014 신호 패널)",
    "owner": "WT-D20260802_020",
-   "status": "in_flight",
+   "status": "capability_established",
    "in_flight_since": "2026-08-02 (WT-D20260802_020 착수 — 종목-레벨 crash 예측력 사전등록: 익월 횡단면 하위 10% 라벨, D01/D02/D03/D45 통제 후 FM 증분 + CRISIS 긴장 해소)",
-   "registered": "2026-08-02 Q-Lead (WT-D20260802_014 소비면 순회 잔여면)"
+   "registered": "2026-08-02 Q-Lead (WT-D20260802_014 소비면 순회 잔여면)",
+   "verdict": "특성화 positive (2026-08-02, WT-D20260802_020). 252d 표준 위험 축(D01/D02/D03/D45) 통제 후 crash 발생률 증분 실재 — FM NW t +13.15(사전등록 기준 2.0), top-decile 발생률 2.11배(21.4% vs 10.1%, t +17.7), 십분위 단조 3.9%→21.6%, 절대문턱(-20%) 강건 t +8.4, 전 tier 유의(MEGA t 2.5 / MID 3.4 / OTHER 17.0). ★해석 제약: 동일 63d 창 vol63+dsd63 통제 시 소멸(t +0.95) — 증분의 정체 = MAX5 고유 아닌 단기창 꼬리-변동성 정보. ★CRISIS 긴장 해소: 발생률 예측은 전 국면 성립(CRISIS b t +2.33, lift +10.1pp t +3.89)하되 평균수익은 스트레스 국면에서 상방 꼬리 상쇄(CAUTION ret_spread +1.76%/월 t +2.08) — '발생률 소비(위험지표) vs 평균 소비(배제 필터)'의 분리가 정답. 포트 tail tripwire 근거 확보(사전 노출 Wilcoxon p 0.001, 선형 무유의 — 문턱형만). PIT: 라벨 방향 독립 재계산 cor 1.0000 + 위반 주입 FIRED. risk_package 이식은 설계 제안 문서(risk_integration_proposal.md)까지 — 실배선 없음. 배관 플래그 2건(screen_inputs 최종월 부분월 절단 · bench 2소스 35개월 >1%p) 전달.",
+   "next_probes": [
+    "NP-1: DB-native 단기 vol(D34_RealVol_21d/D42_EWMA_Vol) 통제 재시험 — 기존 DB 자원으로 충분한지 판정 (충분 시 신규 팩터 불요, 배선만)",
+    "NP-2: monitoring tripwire 사전등록 라운드 — 포트 max5-z 노출 문턱 발화 규칙 hit rate/false alarm 실측",
+    "NP-3(조건부): CAUTION lottery 보유 편익(t +2.08)의 국면-조건부 소비 — FR/RAMP 이식 후보"
+   ],
+   "revival_conditions": [
+    "NP-1에서 D34/D42가 증분 흡수 실패 시 — 63d 창 특이성 실증으로 max5/vol63 직산 축 재부상",
+    "라이브에서 crash-name 오경보율이 실측 십분위 매핑과 괴리 시 재판정"
+   ]
   },
   {
    "id": "FQ-113",
