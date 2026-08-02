@@ -1,0 +1,196 @@
+{
+  "task_id": "WT-D20260802_016",
+  "generated_at": "2026-08-02 20:26:34",
+  "metric_type": "weighted_screen (cap_norm top-25 + book exposure_dt) — 라벨 병기",
+  "gate_eligible": false,
+  "selection_type": "preregistered_single_primary",
+  "n_trials": 1,
+  "preregistration": "stage_artifacts/WT_D20260802_016/preregistration.json (측정 전 고정)",
+  "base_anchor": {
+    "target": 3.0583,
+    "observed": 3.0583,
+    "status": "PASS — WT-014/parity 하네스 재현 정확 (268m)"
+  },
+  "primary": {
+    "name": "MAX5_X10_exclusion_under_book_overlay_V5",
+    "close_rule": "overlay-ON paired t < 1 → 이 base 소비면 ② 닫힘 (사전등록)",
+    "paired_t_nw_lag3_overlay_on": 1.551,
+    "close_rule_fired": false,
+    "delta_ir_overlay_on": 0.1284,
+    "delta_ir_threshold": 0.05,
+    "delta_ir_basis": "weighted_screen cap_norm(Size) top-25 net 15bps x book 실현 β_combined — net_active_recon_v1 아님",
+    "mean_delta_active_monthly": 0.00127,
+    "n_months": 256
+  },
+  "cells_2x2": {
+    "base_bare": {
+      "port_t": 2.879,
+      "ir": 0.6428,
+      "abs_sr": 0.755,
+      "abs_cagr": 0.1802,
+      "abs_mdd": -0.5587,
+      "turnover_annual": 13.81
+    },
+    "filt_bare": {
+      "port_t": 3.62,
+      "ir": 0.812,
+      "abs_sr": 0.829,
+      "abs_cagr": 0.2035,
+      "abs_mdd": -0.4443,
+      "turnover_annual": 13.54
+    },
+    "base_overlay": {
+      "port_t": 1.886,
+      "ir": 0.41,
+      "abs_sr": 0.874,
+      "abs_cagr": 0.1655,
+      "abs_mdd": -0.4034
+    },
+    "filt_overlay": {
+      "port_t": 2.458,
+      "ir": 0.5384,
+      "abs_sr": 0.962,
+      "abs_cagr": 0.1837,
+      "abs_mdd": -0.3303
+    },
+    "bare_reference": {
+      "delta_ir": 0.1692,
+      "paired_t": 1.565,
+      "note": "WT-014 재현 정확 (ΔIR +0.1692 / t +1.565)"
+    },
+    "interaction": {
+      "paired_t": -1.141,
+      "mean_monthly": -0.00039,
+      "verdict": "overlay는 필터 기여를 유의하게 지우지 못함(t -1.14) — 점추정 축소 -24%는 e̅ 0.79 재가중의 산술 결과"
+    },
+    "mdd_overlap": {
+      "overlay_alone_pp": 15.6,
+      "filter_alone_pp": 11.4,
+      "filter_on_top_of_overlay_pp": 7.3,
+      "verdict": "부분 중복(필터 MDD 편익 36% 흡수) — 잔여 7.3pp 독립 기여. 축이 다름(종목선택 vs 노출조절) 가설이 우세"
+    }
+  },
+  "regime_conditional": [
+    {
+      "Category": "RISK_ON",
+      "n": 200,
+      "mean_e": 0.858985,
+      "mean_d_bare": 0.00136641,
+      "t_bare": 1.05207119,
+      "mean_d_ov": 0.00100725,
+      "t_ov": 0.99834123
+    },
+    {
+      "Category": "NEUTRAL",
+      "n": 30,
+      "mean_e": 0.6079247,
+      "mean_d_bare": 0.0055388,
+      "t_bare": 2.28040114,
+      "mean_d_ov": 0.00414744,
+      "t_ov": 1.89456787
+    },
+    {
+      "Category": "CAUTION",
+      "n": 13,
+      "mean_e": 0.59309497,
+      "mean_d_bare": 0.00216463,
+      "t_bare": 0.95901875,
+      "mean_d_ov": 0.00125602,
+      "t_ov": 0.91092093
+    },
+    {
+      "Category": "CRISIS",
+      "n": 13,
+      "mean_e": 0.381612,
+      "mean_d_bare": -0.00328391,
+      "t_bare": -1.78363666,
+      "mean_d_ov": -0.00129287,
+      "t_ov": -1.59375307
+    }
+  ],
+  "ax001_conditional": {
+    "crisis_delta_monthly_bare": -0.00328391,
+    "crisis_delta_monthly_overlay": -0.00129287,
+    "crisis_t_bare": -1.78363666,
+    "crisis_t_overlay": -1.59375307,
+    "crisis_mean_exposure": 0.381612,
+    "verdict": "판별 질문(CRISIS 역효과가 β 축소와 상쇄되는가) 답: 크기는 61% 흡수(-0.33 → -0.13%/월, e̅ 0.38), 부호·t는 잔존(-1.78 → -1.59). 편익 NEUTRAL 집중 구조 보존(t +2.28 → +1.89). AX-001 조건부 병기 이행."
+  },
+  "lag1_stress": {
+    "delta_ir": -0.0244,
+    "paired_t": -0.439,
+    "verdict": "overlay-ON에서도 1개월 지연 시 편익 소멸(ΔIR -0.024, t -0.44) — WT-014 bare와 동일 fast-decay. 리밸 지연 불허."
+  },
+  "exposure_timing_diagnostics": {
+    "strict_current": {
+      "delta_ir": 0.1284,
+      "paired_t": 1.551,
+      "base_abs_sr": 0.8736
+    },
+    "leak_M_end": {
+      "delta_ir": 0.121,
+      "paired_t": 1.543,
+      "base_abs_sr": 0.7952
+    },
+    "expo_lag1": {
+      "delta_ir": 0.122,
+      "paired_t": 1.495,
+      "base_abs_sr": 0.7114
+    },
+    "lookahead_ab": {
+      "inflation": -0.0898,
+      "suspected": false,
+      "verdict": "leak(동월누출 방향) 변형이 strict보다 오히려 나쁨(absSR 0.795 vs 0.874, 인플레 -9.0%) — 현 타이밍에 look-ahead 이득 부재. paired Δ는 타이밍 변형에 강건(0.121~0.128)"
+    }
+  },
+  "dual_basis": {
+    "ew_top25_overlay_on": {
+      "base_port_t": 2.188,
+      "filt_port_t": 2.498,
+      "delta_ir": 0.0643,
+      "paired_t": 1.088
+    },
+    "cap_tier": {
+      "source": "WT-014 canonical diag 승계 (exposure는 월별 스칼라 — 횡단면 tier 귀속 불변, 구조 명기)",
+      "base_contrib_ann": {
+        "MEGA": 0.0185,
+        "MID": 0.0196,
+        "OTHER": 0.202
+      },
+      "filt_contrib_ann": {
+        "MEGA": 0.0194,
+        "MID": 0.025,
+        "OTHER": 0.207
+      },
+      "note": "필터 증분은 MID(+0.54%p)·OTHER(+0.5%p) 발원, MEGA 미미 아님-표기: +0.09%p (소폭)"
+    },
+    "verdict": "cap-w ΔIR +0.128 / EW +0.064 동방향 — basis 아티팩트 아님 (EW는 약함, cap_norm 판이 primary)"
+  },
+  "overlay_parity_diagnosis": {
+    "prereg_stop_fired": true,
+    "portfolio_level_cor": 0.6684,
+    "diagnosis": {
+      "alignment": "β-스캔: return_ym+k 조인 k=0에서만 cor 0.71(타 offset ≤0.10, realized_ym 조인 0.06) — 월 정렬 정확",
+      "exposure_wiring": "행-수준 cor(e, ret_L5_V5/ret_orig)=0.9996, max|diff|=0.035, 잔차는 overlay 스위칭 비용 항(resid-db cor -0.81) — exposure 배선 정확",
+      "root_cause": "기준의 보조가정 오류: book ret_orig = AR 전략 계층(월평균 +1.81%p 고수익) vs 내 base = WT-014 parity 스크린 계층. 계층이 다른 두 시계열의 identity를 요구한 기준 설계 오류 — 배선 결함 아님",
+      "disposition": "사전등록 규정(STOP 후 배선 진단 보고) 이행 — 진단 2축으로 배선 무결 확정 후 측정 유효 판정. challenge_note C1 기록"
+    }
+  },
+  "exposure_coverage": {
+    "n_months": 256,
+    "n_na": 0,
+    "months_e_lt_1": 149,
+    "share_e_lt_1": 0.582,
+    "mean_exposure": 0.7918
+  },
+  "pit_verification": {
+    "assert_overlay_pit": "PASS — 신호컷(M-1월말) < 홀딩월 시작, 256/256행",
+    "violation_injection": "FIRED — 컷오프를 M월말로 주입 시 stop() 발화 확인 (가드 생존 실증)",
+    "strict_pit_ab": "leak 변형 열세(-9.0%) — look-ahead 인플레 부재",
+    "c5_filter": "max5 창 종점 d0(전월말), 간격 1거래일 — WT-014 판정 승계"
+  },
+  "graduation_hard_gates": {
+    "note": "본 라운드 = 실배치 관문 특성화 — forge 미제출, graduation 판정 비대상. 수준값(filt/overlay PORT_t 2.458 등)은 incumbent 알파+overlay 포함 수치 — 필터 기여는 Δ로만 평가",
+    "capital_claim": "없음 (실배치/admission = governor + 도훈 수동)"
+  }
+}

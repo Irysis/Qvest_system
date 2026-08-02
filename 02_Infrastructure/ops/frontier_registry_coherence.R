@@ -83,11 +83,25 @@ frontier_coherence_scan <- function(root = .fc_root()) {
   for (e in Q$entries) {
     st <- g(e, "status")
     if (!any(startsWith(st, OPEN))) next          # 이미 확정/차단된 항목은 대상 아님
-    hay <- toks(paste(g(e, "title"), g(e, "lane"), g(e, "hypothesis")))
+    ## ★2026-08-02 수리 — 부정 선언이 긍정 매칭으로 뒤집히던 결함:
+    ##   구판은 hay 에 lane 을 넣었다. norm() 이 "_" 를 공백으로 바꾸므로
+    ##   lane="non_return" → 토큰 {non, return} 이 되고, 그 "return" 이 D1(횡단 return-파생)
+    ##   dead 의 "return" 과 매칭됐다. 결과: **비-return 이라고 선언한 FQ 가 바로 그 선언 때문에
+    ##   return-파생 dead 로 경고**받는다(실측 6건 중 5건이 이 오탐 — FQ-002/076/077/083/089).
+    ##   v8.3 주력 lane 이 비-return 원천이라, 이 오탐은 검사기가 전략 방향을 정확히 거꾸로
+    ##   유도한다. 수리 = ① lane 을 hay 에서 제외(lane 은 내용이 아니라 분류 라벨이다)
+    ##   ② lane/본문이 비-return 을 선언하면 return-파생 dead 는 구조적으로 부적용.
+    lane_raw <- g(e, "lane")
+    body_raw <- paste(g(e, "title"), g(e, "hypothesis"))
+    declares_non_return <- grepl("non[_ -]?return", lane_raw, ignore.case = TRUE) ||
+                           grepl("non[_ -]?return|비[- ]?return|비-?수익|비수익", body_raw, ignore.case = TRUE)
+    hay <- toks(body_raw)                       # lane 제외 (오염원)
     if (!length(hay)) next
 
     hit_dead <- character(0)
     for (dc in dead) {
+      # 비-return 선언 FQ 에 return-파생 dead 를 씌우지 않는다(모순 배제).
+      if (declares_non_return && grepl("return", dc$class, ignore.case = TRUE)) next
       ov <- intersect(hay, dc$tk)
       if (length(ov) >= 2L) hit_dead <- c(hit_dead, sprintf("%s [%s]", substr(dc$class, 1, 40),
                                                             paste(ov, collapse = ",")))
@@ -97,6 +111,7 @@ frontier_coherence_scan <- function(root = .fc_root()) {
       ov <- intersect(hay, dc$tk)
       if (length(ov) >= 3L) hit_card <- c(hit_card, sprintf("%s [%s]", dc$id, paste(ov, collapse = ",")))
     }
+    ## lane 은 판정에서 뺐지만 보고에는 남긴다 — 사람이 오탐을 눈으로 거를 축이 필요하다.
     if (!length(hit_dead) && !length(hit_card)) next
     rows[[length(rows) + 1L]] <- data.table(
       id = g(e, "id"), status = st, lane = g(e, "lane"),
