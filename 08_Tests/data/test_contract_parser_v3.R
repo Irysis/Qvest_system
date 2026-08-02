@@ -22,8 +22,6 @@
 # 실행: Rscript 08_Tests/data/test_contract_parser_v3.R
 # 마지막 줄 = 요약 JSON (러너가 이 줄만 읽는다 — 없으면 UNREPORTED=1 fail)
 #==============================================================================
-suppressWarnings(suppressMessages({ }))
-
 # ── 루트 해석: 테스트 러너는 self-first (r-portability ④-b) ────────────────────
 .tp_root <- function() {
   self <- ""
@@ -90,8 +88,15 @@ fx_2017 <- function(amt = "1,623,647,591", rev = "141,979,321,639", pct = "1.14"
 }
 
 as_utf8  <- function(s) { Encoding(s) <- "UTF-8"; charToRaw(enc2utf8(s)) }
-as_cp949 <- function(s) { r <- iconv(enc2utf8(s), from = "UTF-8", to = "CP949", toRaw = TRUE)[[1]]
-                          if (is.null(r)) stop("CP949 인코딩 실패(로케일 문제)"); r }
+as_cp949 <- function(s) {
+  r <- iconv(enc2utf8(s), from = "UTF-8", to = "CP949", toRaw = TRUE)[[1]]
+  if (is.null(r)) {   # 자기진단: 어느 글자가 CP949 에 없는지 지목한다(무언의 halt 금지)
+    bad <- Filter(function(ch) is.null(iconv(ch, "UTF-8", "CP949", toRaw = TRUE)[[1]]),
+                  strsplit(enc2utf8(s), "")[[1]])
+    stop(sprintf("픽스처에 CP949 미대응 문자: %s", paste(unique(bad), collapse = " ")))
+  }
+  r
+}
 
 #──────────────────────────────────────────────────────────────────────────────
 # 최소 ZIP(store) 빌더 — 실 파이프(parse_contract_bytes)를 관통시키기 위함.
@@ -297,8 +302,4 @@ cat(sprintf("\n=== %d pass / %d fail / %d skipped ===\n", PASS, FAIL, SKIP))
 if (FAIL) cat("실패 축:", paste(FAILED, collapse = ", "), "\n")
 esc <- function(s) gsub('"', '\\\\"', s)
 skj <- if (length(SKIPS)) paste0(',"skips":[', paste(vapply(SKIPS, function(s)
-  sprintf('{"axis":"%s","reason":"%s","missing":"%s"}', esc(s$axis), esc(s$reason), esc(s$missing)),
-  character(1)), collapse = ","), "]") else ""
-cat(sprintf('{"test":"contract_parser_v3","pass":%d,"fail":%d,"total":%d,"skipped":%d%s}\n',
-            PASS, FAIL, PASS + FAIL, SKIP, skj))
-quit(status = if (FAIL) 1L else 0L)
+  sprintf('{"axis":"%s","reason":"%s","missing":"%s"}', esc(s$ax
