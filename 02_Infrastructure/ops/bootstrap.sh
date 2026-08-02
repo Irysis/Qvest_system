@@ -300,11 +300,25 @@ if command -v git >/dev/null 2>&1 && git -C "$PROJECT" rev-parse --git-dir >/dev
       fi
     done <<< "$(git -C "$wt" --no-optional-locks status --porcelain 2>/dev/null | sed 's/^...//;s/^/X /')"
 
-    if [ "${wt_missing:-0}" -gt 0 ] 2>/dev/null; then
+    # ── 두 축을 AND 로 묶는다 (2026-08-02 2차 정정) ──────────────────────────
+    #  1차 수리에서 '연차 → main부재'로 축을 바꿨더니, 이번엔 **진행 중인 작업**까지
+    #  ★로 잡혔다(08-02 실측: compassionate-cerf/funny-haslett = 그날 아침 시작한
+    #  background task 2건의 신규 테스트 파일). main부재만으로는 '좌초'와 '진행 중'을
+    #  구분하지 못한다 — serene-liskov 는 완료 후 이틀 방치였고 이 둘은 몇 시간 전 시작이다.
+    #  ∴ 활동성 축이 여전히 필요하되, 기준은 **브랜치 커밋 시각이 아니라 작업 파일 mtime**
+    #  이어야 한다(커밋 없이 미커밋만 쌓이는 형태가 정확히 문제였으므로).
+    #  판정 = main부재 > 0  AND  최근 작업 흔적 없음(WT_IDLE_HOURS 초과).
+    WT_IDLE_HOURS="${WT_IDLE_HOURS:-12}"
+    wt_last=$(find "$wt" -type f -not -path '*/.git/*' -not -name '*.log' -printf '%T@\n' 2>/dev/null | sort -rn | head -1 | cut -d. -f1)
+    wt_idle_h=$(( ${wt_last:-0} > 0 ? ($(date +%s) - ${wt_last:-0}) / 3600 : 9999 ))
+
+    if [ "${wt_missing:-0}" -gt 0 ] 2>/dev/null && [ "${wt_idle_h:-9999}" -ge "$WT_IDLE_HOURS" ] 2>/dev/null; then
       WTV_STALE=$((WTV_STALE + 1))
-      WTV_LINES="${WTV_LINES}    [★미반영 ${wt_missing}파일] $(basename "$sb"): main 에 없는 파일 존재 (age ${age}d, 미커밋 ${dirty})$([ "${ahead:-0}" -gt 0 ] && echo " + 미병합 ${ahead}커밋")\n"
+      WTV_LINES="${WTV_LINES}    [★좌초 ${wt_missing}파일·${wt_idle_h}h 무활동] $(basename "$wt")  (브랜치 $(basename "$sb"), 미커밋 ${dirty})$([ "${ahead:-0}" -gt 0 ] && echo " + 미병합 ${ahead}커밋")\n"
+    elif [ "${wt_missing:-0}" -gt 0 ] 2>/dev/null; then
+      WTV_LINES="${WTV_LINES}    [작업중 ${wt_idle_h}h] $(basename "$wt")  (브랜치 $(basename "$sb")): main 부재 ${wt_missing}파일 — 진행 중으로 판정, 병합 대상 아님\n"
     elif [ "${ahead:-0}" -gt 0 ] 2>/dev/null || [ "${dirty:-0}" -gt 0 ] 2>/dev/null; then
-      WTV_LINES="${WTV_LINES}    [내용반영됨 ${age}d] $(basename "$sb"): 미커밋 ${dirty}파일 · main 부재 0 · 상이 ${wt_differs}(main 이 앞설 수 있음)$([ "${ahead:-0}" -gt 0 ] && echo " + 미병합 ${ahead}커밋")\n"
+      WTV_LINES="${WTV_LINES}    [내용반영됨 ${wt_idle_h}h] $(basename "$wt")  (브랜치 $(basename "$sb")): 미커밋 ${dirty} · main부재 0 · 상이 ${wt_differs}(main 이 앞설 수 있음)\n"
     fi
   done <<< "$(git -C "$PROJECT" worktree list --porcelain 2>/dev/null | awk '/^worktree /{w=$2} /^branch /{print w"|"$2}')"
 
