@@ -64,7 +64,7 @@ TAIL <- '</body></html>'
 
 # 거래소공시 표준형 (2018-06 삼성중공업 실측 서식). amt/rev/pct 를 인자로 받는다.
 fx_standard <- function(amt = "266,100,000,000", rev = "7,901,200,000,000", pct = "3.4") {
-  paste0(HEAD, '<table><tr><td>1. 판매・공급계약 구분</td><td>공사수주</td></tr>',
+  paste0(HEAD, '<table><tr><td>1. 판매ㆍ공급계약 구분</td><td>공사수주</td></tr>',
          '<tr><td>2. 계약내역</td><td>계약금액(원)</td><td>', amt, '</td>',
          '<td>최근매출액(원)</td><td>', rev, '</td>',
          '<td>매출액대비(%)</td><td>', pct, '</td></tr>',
