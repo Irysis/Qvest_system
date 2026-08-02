@@ -121,28 +121,69 @@ run(){ "$PY" "$CHK" --as-of "${AS_OF:-2026-08-01}" --holdings "$1" --manifest "$
 echo "── T0 양성 대조 (규약 만족 → PASS) ───────────────────────────────────────"
 chk "T0 정상 입력은 통과" "0" "$(run "$TD/cur.csv" "$TD/man.json" "$TD/prev.csv")"
 
-echo "── T1~T4 홀딩 제약 위반 주입 ─────────────────────────────────────────────"
+echo "── T1~T4 홀딩 제약 위반 주입 (단일-제약) ─────────────────────────────────"
+# ★2026-08-02 교락 수리: 구판 픽스처는 Σw=1 을 맞추려 **CASH 를 조정**했다. 그러면
+#   매니페스트 정합(cash == 1-invested)이 **먼저** 발화해 제약 검사를 그늘에 가린다.
+#   실측: 하드 제약 4종 검사를 코드에서 통째로 지워도 v_names/v_neg/v_ub 가 여전히 rc=1
+#   → T1~T3 이 "통과"인 채로 25종·long-only·상한이 **미검사**였다.
+#   ("위반 주입이 발화했다" ≠ "그 제약을 쟀다" — 다른 검사가 낸 1 일 수 있다.)
+#   수리 = CASH 를 0.70 에 고정하고 **주식 쪽만** 변형해 목표 제약 하나만 위반시킨다.
 "$PY" - "$TD" <<'PYEOF'
 import pandas as pd, os, sys
 TD = sys.argv[1]; h = pd.read_csv(os.path.join(TD, "cur.csv"))
-# 종목수: 26종으로
-ex = pd.DataFrame({"rank": range(90, 106), "Ticker": [f"X{i:05d}" for i in range(16)],
-                   "Name": "주입", "Sector": "t", "Weight": 0.001})
-a = pd.concat([h, ex], ignore_index=True); a.loc[a.Ticker == "CASH", "Weight"] = 0.70 - 0.001*16
-a.to_csv(os.path.join(TD, "v_names.csv"), index=False)
-b = h.copy(); b.loc[b.Ticker == "A000002", "Weight"] = -0.01
-b.loc[b.Ticker == "CASH", "Weight"] = 0.74
-b.to_csv(os.path.join(TD, "v_neg.csv"), index=False)
-c = h.copy(); c.loc[c.Ticker == "A000003", "Weight"] = 0.35
-c.loc[c.Ticker == "CASH", "Weight"] = 0.70 - 0.32
-c.to_csv(os.path.join(TD, "v_ub.csv"), index=False)
-d = h.copy(); d.loc[d.Ticker == "CASH", "Weight"] = 0.60
-d.to_csv(os.path.join(TD, "v_sum.csv"), index=False)
+def put(name, df): df.to_csv(os.path.join(TD, name), index=False)
+
+# T1 종목수만: 주식 26종 × (0.30/26) — 주식합 0.30 유지, CASH 0.70, Σw=1
+rows = [{"rank": 0, "Ticker": "CASH", "Name": "CASH", "Sector": "Cash", "Weight": 0.70}]
+for i in range(1, 27):
+    rows.append({"rank": i, "Ticker": f"A{i:06d}", "Name": f"N{i}", "Sector": "t",
+                 "Weight": 0.30/26})
+put("v_names.csv", pd.DataFrame(rows))
+
+# T2 음수만: A2 = 0.03→-0.01 (Δ -0.04) 이므로 A1 = 0.03→0.07 (Δ +0.04) 로 정확히 상계.
+#   주식합 0.30 유지, CASH 0.70, 최대 0.07 < 0.20 → long_only 만 위반.
+#   (구판은 A1 을 0.04 로 둬 Δ가 +0.01 뿐이라 주식합 0.27 → Σw 검사가 함께 발화했다.
+#    이 산술 오류를 잡은 게 위 단일-제약 단언이다 — 단언이 없으면 그늘을 못 본다.)
+b = h.copy()
+b.loc[b.Ticker == "A000002", "Weight"] = -0.01
+b.loc[b.Ticker == "A000001", "Weight"] = 0.07
+put("v_neg.csv", b)
+
+# T3 상한만: A3 = 0.25(>0.20), 나머지 9종이 0.05 를 균분. 주식합 0.30, CASH 0.70
+c = h.copy()
+c.loc[c.Ticker == "A000003", "Weight"] = 0.25
+oth = (c.Ticker != "CASH") & (c.Ticker != "A000003")
+c.loc[oth, "Weight"] = 0.05/int(oth.sum())
+put("v_ub.csv", c)
+
+# T4 Σw만: A1 을 0.03→0.05 (주식합 0.32). CASH 0.70 그대로 → Σw=1.02, cash 정합은 통과
+d = h.copy()
+d.loc[d.Ticker == "A000001", "Weight"] = 0.05
+put("v_sum.csv", d)
 PYEOF
-chk "T1 종목수 25 초과 검거"  "1" "$(run "$TD/v_names.csv" "$TD/man.json" "$TD/prev.csv")"
-chk "T2 음수 비중 검거"        "1" "$(run "$TD/v_neg.csv"   "$TD/man.json" "$TD/prev.csv")"
-chk "T3 개별 상한 초과 검거"   "1" "$(run "$TD/v_ub.csv"    "$TD/man.json" "$TD/prev.csv")"
-chk "T4 Sum(w)!=1 검거"        "1" "$(run "$TD/v_sum.csv"   "$TD/man.json" "$TD/prev.csv")"
+
+# 단일-제약 단언 — rc 뿐 아니라 **어느 검사가 발화했는지**까지 고정한다.
+#   rc=1 만 보면 그늘에 가린 미검사를 다시 놓친다(위 교락이 정확히 그 형태였다).
+runf(){ "$PY" "$CHK" --as-of "${AS_OF:-2026-08-01}" --holdings "$1" --manifest "$TD/man.json" \
+          --prev-holdings "$TD/prev.csv" --skip-liquidity 2>&1; }
+chk_single(){ # $1=케이스명 $2=픽스처 $3=목표 제약의 FAIL 정규식
+  # 단언 = "발화한 hard FAIL 이 **전부** 목표 제약의 것" (≥1건 ∧ 무관 FAIL 0건).
+  #   개수를 1 로 고정하지 않는 이유: max_names 는 실질보유/주식행수 2줄로 표현된다
+  #   — 같은 제약의 2줄과 '다른 제약이 그늘을 만든 2줄'을 구분해야 하므로 소속으로 잰다.
+  local out tot hit
+  out="$(runf "$2")"
+  tot="$(printf '%s\n' "$out" | grep -c '^  FAIL')"
+  hit="$(printf '%s\n' "$out" | grep -E "^  FAIL.*($3)" | grep -c .)"
+  if [ "$hit" -ge 1 ] && [ "$tot" = "$hit" ]; then
+    PASS=$((PASS+1)); echo "  ok   $1"
+  else
+    FAIL=$((FAIL+1)); echo "  FAIL $1 (hard FAIL 총 ${tot}건 중 목표 ${hit}건 — 무관 발화가 그늘을 만듦): $(printf '%s\n' "$out" | grep '^  FAIL' | tr '\n' ' ')"
+  fi
+}
+chk_single "T1 종목수 25 초과만 검거"  "$TD/v_names.csv" "실질 보유|주식 행수"
+chk_single "T2 음수 비중만 검거"       "$TD/v_neg.csv"   "음수 비중"
+chk_single "T3 개별 상한 초과만 검거"  "$TD/v_ub.csv"    "상한 초과"
+chk_single "T4 Sum(w)!=1 만 검거"      "$TD/v_sum.csv"   "Sum\(w\)"
 
 echo "── T5~T9 매니페스트 위반 주입 ────────────────────────────────────────────"
 "$PY" - "$TD" <<'PYEOF'
@@ -223,6 +264,56 @@ if [ -z "${DHC_SELFTEST:-}" ]; then
     *'"preflight":"canary"'*) chk "T16 죽은 검사기는 카나리아가 차단" "1" "1" ;;
     *) chk "T16 죽은 검사기는 카나리아가 차단" "1" "0(발행=$OUT16)" ;;
   esac
+
+  # ── T17 돌연변이 1:1 대응 — 각 하드 제약을 지우면 해당 케이스가 실제로 뒤집히는가 ──
+  # 이것이 "그 제약을 쟀다"의 유일한 직접 증거다. 단일-제약 픽스처라 목표 검사를 제거하면
+  # 해당 케이스는 rc 0(무검거)이 되어야 한다 — 다른 검사가 대신 1을 내면 교락이 남은 것.
+  # (구판 실측: 4종 검사를 통째로 지워도 v_names/v_neg/v_ub 가 rc=1 → 4종 전부 미검사였다.)
+  echo "── T17 돌연변이 1:1 대응 (제약 제거 → 해당 케이스 뒤집힘) ────────────────"
+  # 돌연변이는 **호출 하나만 무력화**한다(구간 삭제 금지).
+  #   ★구간 삭제판을 먼저 짰다가 밟았다: 앵커~다음 chk 사이를 지우니 그 사이의
+  #     `n_over = ...` 대입까지 사라져 NameError → rc=1. 그런데 rc=1 은 "여전히 검거"의
+  #     기대값이라 **깨진 돌연변이가 '제약이 살아있다'로 읽혔다** — 이 파일이 고치는
+  #     종료코드 충돌이 돌연변이 하네스 안에서 재현된 것. 그래서 ①치환식 무력화(구조 보존)
+  #     ②돌연변이가 clean 입력에서 rc=0 인지 먼저 확인(살아있는 돌연변이인가) 두 겹을 둔다.
+  mutate(){ # $1=출력태그, 나머지=무력화할 chk 앵커들 → 돌연변이 경로를 stdout
+    local tag="$1"; shift
+    "$PY" - "$CHK" "$TD" "$tag" "$@" <<'PYEOF'
+import sys, os
+src = open(sys.argv[1], encoding="utf-8").read()
+TD, tag, anchors = sys.argv[2], sys.argv[3], sys.argv[4:]
+# chk 와 같은 시그니처의 무해 함수를 주입(구조·대입 전부 보존)
+defn = "    def chk(cond, ok, bad, hard=True):"
+src = src.replace(defn, "    _nochk = lambda *a, **k: None\n" + defn, 1)
+for a in anchors:
+    if a not in src: raise SystemExit("앵커 미발견: " + a)
+    src = src.replace(a, a.replace("chk(", "_nochk(", 1), 1)
+out = os.path.join(TD, "mut_%s.py" % tag)
+open(out, "w", encoding="utf-8").write(src)
+print(out)
+PYEOF
+  }
+  mut_case(){ # $1=이름 $2=태그 $3=픽스처 $4...=앵커들
+    local nm="$1" tag="$2" fx="$3"; shift 3
+    local m rc rc0
+    m="$(mutate "$tag" "$@")" || { FAIL=$((FAIL+1)); echo "  FAIL $nm (돌연변이 생성 실패)"; return; }
+    # ①살아있는 돌연변이인가 — clean 입력에서 rc=0 이어야 한다(깨진 돌연변이의 rc=1 배제)
+    "$PY" "$m" --as-of 2026-08-01 --holdings "$TD/cur.csv" --manifest "$TD/man.json" \
+       --prev-holdings "$TD/prev.csv" --skip-liquidity >/dev/null 2>&1; rc0=$?
+    if [ "$rc0" != "0" ]; then
+      FAIL=$((FAIL+1)); echo "  FAIL $nm (돌연변이가 clean 입력에서 rc=$rc0 — 돌연변이가 깨진 것이지 제약 판정이 아님)"; return
+    fi
+    # ②그 제약을 정말 쟀다면, 제거 후 이 케이스는 검거되지 않아야(rc=0) 한다
+    "$PY" "$m" --as-of 2026-08-01 --holdings "$fx" --manifest "$TD/man.json" \
+       --prev-holdings "$TD/prev.csv" --skip-liquidity >/dev/null 2>&1; rc=$?
+    if [ "$rc" = "0" ]; then PASS=$((PASS+1)); echo "  ok   $nm"
+    else FAIL=$((FAIL+1)); echo "  FAIL $nm (제약 제거 후에도 rc=$rc — 다른 검사가 그늘을 만들어 이 케이스는 해당 제약을 재지 않는다)"; fi
+  }
+  mut_case "T17a max_names 제거 → T1 뒤집힘"   names "$TD/v_names.csv" \
+           'chk(len(held) <= C["max_names"]' 'chk(len(eq) <= C["max_names"]'
+  mut_case "T17b long_only 제거 → T2 뒤집힘"   neg   "$TD/v_neg.csv"   'chk(n_neg == 0'
+  mut_case "T17c upper_bound 제거 → T3 뒤집힘" ub    "$TD/v_ub.csv"    'chk(n_over == 0'
+  mut_case "T17d sum_w 제거 → T4 뒤집힘"       sum   "$TD/v_sum.csv"   'chk(abs(df.Weight.sum()'
 fi
 
 echo ""
