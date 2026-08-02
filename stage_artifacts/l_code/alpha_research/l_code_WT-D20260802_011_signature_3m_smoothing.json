@@ -1,0 +1,40 @@
+{
+  "l_code": "L-AR-20260802_134403",
+  "strategy_id": "WT-D20260802_011_SIG_APV63_SM3",
+  "grade": "F",
+  "core_reference": "alpha_validation stage_artifacts/WT_D20260802_011/alpha_validation.json / challenge_note qepm/mailbox/worktask/WT-D20260802_011/challenge_note.md / close_round WT-D20260802_011_SIGNATURE_3M_SMOOTHING",
+  "lesson_text": "경로 시그니처 A_PV_63 3M 평활판(WT-006 NP-2) = config-scoped negative(평활 경로) + 스펙트럼 분해 신규 실측.\n① 회전 관문은 달성: 연 10.53 <= 11.0(base 15.78 대비 -33%) — 평활은 회전 제약 충족 수단으로 유효.\n② 수익 신호 소멸: cap-w PORT_t -0.268(base +1.225, 보존율 -0.219) / EW-uni -0.454 양 basis 공멸 / 6M 진단 +0.369 무소생 / Gaussian 치환 placebo 5시드 대역 [-1.222,-0.242] 내부 = 부호 반전이 아니라 무신호 기저 드리프트 대역 진입.\n③ 핵심 스펙트럼 분해: 같은 스코어(SM3-base rank-cor 0.720)에서 수익축은 죽고 flow 링크는 무손실 보존 — 신호 상위 종목 후속 홀딩월 기관+외인 순매수 NW t +4.09(base +4.076, 보존율 1.005, n=257). 즉 flow-예측 성분은 저빈도, 수익 성분은 고빈도(반감기 <1개월). WT-006 lag1 붕괴(1.225→0.237)의 정량 확정판.\n④ 판별 프레임 확립: '신호가 죽었다'와 '소비 경로가 틀렸다'를 분리하는 절차 — 성분별 보존율(수익 -0.22 vs flow 1.00)이 소비면을 지정한다. top-25 월간 배포에는 신호속도가 구조 부적합 = 벽이 아니라 주파수 불일치(전이-벽 계열과 별개 축).\n⑤ AX-001 병기: bad/normal IC ratio 0.85, crisis active t -1.38 — 방어성 없음.",
+  "tags": [
+    "signature_smoothing_refuted",
+    "spectrum_decomposition_return_vs_flow",
+    "short_halflife_quantified",
+    "flow_link_preserved_2rounds",
+    "frequency_mismatch_not_wall",
+    "turnover_constraint_met_signal_lost"
+  ],
+  "created_at": "2026-08-02",
+  "research_mode": "alpha_research",
+  "created_by": "emit:qlead_collection",
+  "metric_type": "canonical_screen",
+  "construction_type": "signal_smoothing_ab",
+  "mechanism_hypothesis": "시그니처의 수익 예측 성분은 반감기 <1개월의 고빈도 정보(경로-순서 미시구조) — 3M 평활 = 의도적 지연으로 이 성분만 선택 제거. flow-예측 성분(기관+외인 후속 유입)은 저빈도 확산 과정이라 평활에 강건. 하나의 스코어에 주파수가 다른 두 성분이 공존하며 소비면이 달라야 한다.",
+  "lcode_schema_version": 2,
+  "n_trials": 1,
+  "selection_type": "chain",
+  "record_type": "performance",
+  "portfolio_alpha_t": -0.268,
+  "ew_universe_port_t": -0.454,
+  "base_port_t": 1.225,
+  "retention_port_t_ratio": -0.219,
+  "retention_flow_ratio": 1.005,
+  "flow_link_t_nw": 4.09,
+  "turnover_annual": 10.53,
+  "n_months": 257,
+  "falsification_attempts": "사전등록 단일 primary(3M, 창 고정 — 6M은 진단 병기); 정직 posterior 양방(단반감기=반대·FQ-073 R2 6M 전례=찬성) 사전 기록; Gaussian 치환 placebo 5시드 동일 파이프라인; lag1 스트레스; flow falsification 재실측(base 프레임 재사용); dual-basis + cap-tier; WT-006 패널 재계산 0회(승계 무결)",
+  "next_probe": [
+    "FQ-105 flow-예측 monitoring tripwire — 2라운드 연속 t≈+4.1 저빈도 성분을 수급 유입 경보로 소비 (insider SAFE R34~R42 프레임 재사용)",
+    "FQ-106 신호 age별(0/1/2/3개월) 반감기 곡선 — 당월 성분 단독 게이트 근접 여부, base 패널 재사용 bt 2회 저비용",
+    "A_TP 역방향(WT-006 승계 미착수) — 시그니처 area 계열 잔여 축"
+  ],
+  "next_probe_note": "소비면: monitoring 적합·강화(평활 강건성으로 월간 갱신 충분)/screening flow-prediction lane 근거 강화/스펙트럼 분해 판별 프레임 지식화"
+}

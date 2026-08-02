@@ -1,0 +1,41 @@
+{
+  "l_code": "L-AR-20260802_134401",
+  "strategy_id": "WT-D20260802_009_SMARTBETA5_TUNING",
+  "grade": "C",
+  "core_reference": "alpha_validation stage_artifacts/WT_D20260802_009/alpha_validation.json / challenge_note qepm/mailbox/worktask/WT-D20260802_009/challenge_note.md / close_round WT-D20260802_009_SMARTBETA_5_TUNING",
+  "lesson_text": "대표 스마트베타 5종 고급수리기법 튜닝(사전등록 paired A/B, no-flip·no-sweep, 팩터당 1개) = 1/5 조건부 통과 + '순도≠수익' 역-실측.\n① paired NW t: Value 섹터內 재표준화 -0.774 / Momentum 경로효율(frog-in-the-pan) +2.028(문턱 2.0 충족) / LowVol EWMA-63d -1.737 / Quality EB수축 +1.136 / Dividend EB수축 -1.364.\n② 핵심 역-실측: 반증 검정(성과-독립)은 4/5 지지(섹터HHI t+3.34·EWMA vol-예측 MSE 0.00181→0.00133 승률 91.8%·EB 노이즈-식별 t+13.4/+44.6)인데 수익 paired는 1/5만 통과 — 측정 순도가 수익으로 전이 안 되는 지점(Value·LowVol)은 base 팩터 수익의 원천이 순수 신호가 아니라 구조 베팅(섹터·변동성 방향)이라는 직접 증거.\n③ M01_PATHQ(단독 PORT_t 2.050 vs base 1.299)는 조건부: F2 jump-기여 반증 미지지(t+1.05) + 개선 pre-2015 편중(+2.84/-0.85/+0.96) = vol-tilt 아티팩트 혐의 → vol-잔차 순수판(FQ-107/WT-013) 통과 전 registry 교체 반대. 교체 시 회전 증분 7.22→7.89 x/yr 명기.\n④ 부수 능력: 튜닝이 5종 팩터 간 상관을 낮춤(mean|offdiag| 0.209→0.145) — breadth 훼손 없음(P1 섹터-상대화 주도). EWMA vol 예측 능력은 확립됐으나 랭킹 소비면에서 열화 = '확립 능력 vs 소비면 불일치' 계열(위험-축 이식 FQ-108).\n⑤ 정직 사고: 1차 측정 무효(유니버스 선-제한 누락)를 random-25 통제로 자가 적발·전량 재측정(설계 변경 0). ast_compile 1개월 stale 결함 적발(93/258달, 칩 task_5fef96aa) — 자체 패널은 parity로 규약-정합 확정.",
+  "tags": [
+    "smartbeta_tuning_paired_ab",
+    "purity_not_equal_return",
+    "structural_bet_revealed",
+    "pathq_conditional_replacement",
+    "ewma_vol_capability_surface_mismatch",
+    "correlation_improvement_breadth"
+  ],
+  "created_at": "2026-08-02",
+  "research_mode": "alpha_research",
+  "created_by": "emit:qlead_collection",
+  "metric_type": "canonical_screen",
+  "construction_type": "registry_factor_refinement_paired_ab",
+  "mechanism_hypothesis": "수리적 정제는 '측정 순도'를 높이지만 base 팩터의 실현 수익이 구조 베팅(섹터 정적 베팅·변동성 방향)에서 오는 경우 순도 상승 = 수익 원천 제거. 정제가 수익을 늘리는 유일 케이스(경로효율)는 정보 내용 자체를 바꾸는 변환이며, 그마저 vol-tilt 성분 판별 전까지 기전 미확증.",
+  "lcode_schema_version": 2,
+  "n_trials": 5,
+  "selection_type": "chain",
+  "record_type": "performance",
+  "paired_t_p2_momentum": 2.028,
+  "pathq_port_t": 2.050,
+  "base_m01_port_t": 1.299,
+  "cor_offdiag_base_to_tuned": "0.209->0.145",
+  "f2_jump_verdict": "NOT_SUPPORTED",
+  "pathq_pre2015_paired_t": 2.84,
+  "turnover_pathq_x_yr": 7.89,
+  "n_months": 295,
+  "falsification_attempts": "사전등록 5쌍 고정(측정 전, no-flip·no-sweep); 성과-독립 반증 검정 5종(F1 섹터HHI/F2 jump-기여/F3 vol-MSE/F4·F5 EB 노이즈-식별); random-25 통제로 1차 측정 무효 자가 적발; lag1 감쇠 base/tuned 대칭(-46%/-44%) 차등 누출 배제; dual-basis + cap-tier 분해",
+  "next_probe": [
+    "FQ-107 M01_PATHQ vol-잔차 순수판 — vol-성분 D03z 월별 CS 잔차화 후 paired 재측정 (WT-013 착수, 교체 판정 유일 경로)",
+    "FQ-108 EWMA-63d vol을 risk Σ/vol-targeting 입력으로 이식 — QLIKE/DM 위험-축 A/B",
+    "EB 강수축판(월별 empirical tau^2) — P4 방향양성(+1.14) 강화",
+    "섹터-상대 value 다팩터 풀 재평가 — 단독 무효이나 상관 개선 주도, 풀-수준 기여 별도 측정"
+  ],
+  "next_probe_note": "소비면: registry 교체 후보(도훈 confirm, FQ-107 선행)/risk Σ 이식 재료/breadth 개선분 다팩터 조합 소비/'순도≠수익' 판별 프레임 확립"
+}
