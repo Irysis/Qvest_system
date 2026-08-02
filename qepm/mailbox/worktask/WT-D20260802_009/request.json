@@ -1,0 +1,85 @@
+{
+  "task_id": "WT-D20260802_009",
+  "wt_type": "discovery",
+  "pg1_eligibility": "certificate_required",
+  "discovery_of": null,
+  "graduation_criteria": {
+    "description": "Discovery → Deployment 전환 조건. discovery_graduation_gate.sh 강제. v8.x WS2 재설계(2026-05-29): rank-IC 계열은 long-only 실현 alpha와 어긋나(16후보 calibration 실측: rank_ic가 FLOW 거짓탈락+NN/TECH 거짓통과) advisory로 강등, portfolio-alpha t(forge NW lag-3)를 hard로. DSR hard는 sweep형 selection만(2026-06-10 개정 — chain/단일은 advisory). hard 기준은 forge-authoritative 값(alpha-stage proxy 아님)에 적용.",
+    "min_rank_ic": 0.04,
+    "min_rank_ic_rationale": "KR top-universe benchmark. <0.04는 IC 약함. (v8.x severity=advisory — long-only 실현 alpha 미전이)",
+    "min_icir": 0.2,
+    "min_icir_rationale": "Alpha Lab Gate. (v8.x severity=advisory)",
+    "min_subperiod_stability": 0.5,
+    "min_subperiod_stability_rationale": "3개 subperiod 안정성. (v8.x severity=advisory)",
+    "max_drawdown_days": 100,
+    "max_drawdown_days_rationale": "100일 이상 drawdown 지속 시 alpha decay 의심. (severity=advisory)",
+    "min_harvey_t_stat": 3,
+    "min_harvey_t_stat_rationale": "rank-IC Harvey-t. (v8.x severity=advisory — rank-IC t는 portfolio-alpha t와 구분, 후자가 권위)",
+    "min_deflated_sharpe_ratio": 0.5,
+    "min_deflated_sharpe_ratio_rationale": "Bailey-Lopez de Prado DSR — multi-testing 보정 SR. (severity=HARD는 sweep형 selection만 — ML스윕/optimizer서치/앙상블·사전등록 grid. 가설주도 chain/단일검증은 advisory 강등+진단산출. 도훈 mandate 2026-05-31/2026-06-10, measurement-graduation §3)",
+    "min_portfolio_alpha_t_nw": 2.95,
+    "min_portfolio_alpha_t_nw_rationale": "★v8.x 신규 HARD. forge-authoritative 실현 portfolio-alpha t (NW lag-3, forge_package.portfolio_alpha_t_nw_lag3). Harvey-Liu-Zhu 2016 hurdle. rank-IC t 아님. 게이트 핵심 판별(16후보 중 FLOW만 통과=정확).",
+    "min_oos_retention": 0.7,
+    "min_oos_retention_rationale": "★v2.5 HARD 배선(문턱은 measurement-graduation §3 2026-05-31/06-10 기존값). 활성 Sharpe OOS/IS retention — anchored 3분할 {55/65/75} 중앙값(essence_score.R oos_stat_version=v2). ≥0.7 단독 PASS / <0.5 무조건 FAIL / [0.5,0.7) band는 보강증거 2/3 조건부 PASS(판정 권위=essence_score.R, 훅은 warn). forge-authoritative 값에만 적용 — 단일전략 과적합 방어 주책임.",
+    "min_calmar": 0.64,
+    "min_calmar_rationale": "★v2.5 HARD 배선(문턱은 measurement-graduation §3 2026-05-31 기존값). Calmar = CAGR/|MDD| ≥ 0.64 (=16%/25%, 제2목표 CAGR16·MDD25에서 도출한 위험조정 게이트). forge-authoritative 값에만 적용.",
+    "severity": {
+      "rank_ic": "advisory",
+      "icir": "advisory",
+      "subperiod_stability": "advisory",
+      "harvey_t_stat": "advisory",
+      "deflated_sharpe_ratio": "hard",
+      "portfolio_alpha_t_nw": "hard",
+      "oos_retention": "hard",
+      "calmar": "hard"
+    },
+    "severity_rationale": "hard = block(우회불가), advisory = warn(screening). hard 4종(DSR/portfolio_alpha_t_nw/oos_retention/calmar)은 forge-authoritative 값에만 적용 — alpha-stage proxy로 graduation 선언 금지(v8.x WS1 정합). DSR hard는 sweep형 selection 한정, oos_retention은 <0.5 무조건 block + [0.5,0.7) band 조건부(measurement-graduation §3)."
+  },
+  "theme": null,
+  "hypothesis_title": "대표 스마트베타 5종 수리 튜닝 — 표준 정의 vs 수학 정제판 paired A/B (도훈 지시)",
+  "hypothesis_description": "동기(도훈 지시 08-02: '대표 스마트베타 5종에 고급수리기법 적용 튜닝'). 축의 정체: 신팩터 발굴(슈퍼팩터 7방법 全 screen-tier 벽)도 조합(멀티팩터 102건 수렴)도 아닌 **개별 대표 팩터의 정의 내 수리 정제** — 팩터가 재는 대상은 유지하되 추정·정규화·가중의 수학만 고도화. 대표 5종(factor DB 실재 기준): Value(V01_BM 계열) / Momentum(M01 계열) / Low-Vol(D03/IVOL 계열) / Quality(GP·수익성 계열) / Dividend(V06_fDY 계열). 튜닝 후보(팩터당 1개 사전등록 — argmax 스윕 금지): 분포 정규화(rank-Gaussianize·왜도 보정), 횡단 shrinkage(James-Stein/EB), 경로-질 가중(WT-006 signature_lib 재사용 — 같은 순변화라도 직선 경로와 왕복 경로 구분), 강건 변동성 추정(EWMA/MAD), 섹터-강건 정규화 순서 정교화. 판정 = 팩터별 paired(튜닝 vs 표준, NW lag-3) — 5개 독립 가설(팩터별 chain), 튜닝판 간 조합 없음. 선행 지식 주입: Barroso 변동성 스케일링 MARGINAL·Vol-of-Vol PASS(튜닝 계열 부분 생존 실증) / WT-003 breadth 기전(튜닝판들이 서로 중복이면 후속 조합 무의미 — 튜닝 전후 상관 변화 실측 의무) / WT-006 시그니처 직교 실증(경로-질 재료의 정리-수준 검증 완료). 경계: WT-004(변동성 조합)가 병렬 진행 중 — Low-Vol 튜닝은 '추정 고도화'로 한정하고 조합 축 침범 금지.",
+  "hypothesis_source": "user_defined",
+  "as_of_date": "2026-08-02",
+  "forecast_horizon": "1M",
+  "rebalance_frequency": "monthly",
+  "universe_definition": {
+    "label": "KOSPI200_KOSDAQ150_intersection",
+    "liquidity_min_won_20d_avg": 50000000,
+    "max_names_total": 500
+  },
+  "benchmark_definition": "KOSPI200_total_return",
+  "data_lag_rules": {
+    "fundamental": "quarterly 45d (재무제표 발표 지연)",
+    "fundamental_annual": "annual May (연간 재무제표 5월 리밸런싱)",
+    "price": "t-1 close",
+    "investor_flow": "t-1 settlement (QuantiWise)",
+    "macro": "t-1 FRED (외부 매크로 lag)",
+    "ic_history": "Usable_Date <= sig_date (Factor DB 강제)"
+  },
+  "cost_model_version": "v2.4_kr_retail_15bps",
+  "current_portfolio": "STR_1631_80_STR_1656_20",
+  "hard_mandate": {
+    "pit_enforcement": "C1-C15 all enforced",
+    "liquidity_floor_won_20d_avg": 50000000,
+    "mandate_restrictions": {
+      "no_short_legal_kr": true,
+      "no_cross_market": true,
+      "kr_domestic_only": true
+    },
+    "long_only_mandate": "configurable"
+  },
+  "hard_constraints": {
+    "max_names": null,
+    "weight_bounds": [
+      0,
+      1
+    ],
+    "sector_active_weight_cap": null,
+    "liquidity_min_won_20d_avg": 50000000
+  },
+  "soft_penalties": [],
+  "capacity_limits": {
+    "adv_multiplier": 0.1,
+    "capacity_max_aum_won": 100000000000
+  }
+}

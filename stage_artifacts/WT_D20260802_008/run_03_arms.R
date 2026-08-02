@@ -5,6 +5,7 @@ suppressPackageStartupMessages({library(data.table); library(arrow); library(jso
 setDTthreads(2); try(arrow::set_io_thread_count(2), silent = TRUE)
 QM <- "C:/Users/99922/OneDrive/Quant_Module_Moltbot"; setwd(QM)
 TD <- "stage_artifacts/WT_D20260802_008"
+source("02_Infrastructure/contracts/backtest_result_contract.R")  # ★선로드 — 중첩 source 시 canonical_screen_bt 내부 .CANON_DIR 해석이 바깥 스크립트 dir 로 틀어짐
 source("02_Infrastructure/contracts/canonical_screen_bt.R")
 
 SI   <- readRDS("stage_artifacts/WT_D20260714_004/screen_inputs.rds")
