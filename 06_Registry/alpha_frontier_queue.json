@@ -1,7 +1,7 @@
 {
  "schema_version": "1.0",
  "sot": "02_Infrastructure/docs/qvest_v8_3_alpha_discovery_sot.md §4",
- "updated": "2026-08-02 (FQ-119 착수 전 소비 지점 census — 라벨 소비 3지점 특정, 현 book 은 라벨×z 조합이라 관문을 라벨 단독에 걸면 오탐. 총 120건)",
+ "updated": "2026-08-02 (FQ-120 사전 진단 — 하락 에피소드 중앙 2일·월간이 13.4% 소거하나 월내 낙폭도 익월 예측 무정보(lift +0.036, p=0.475). 스케일 문제 아님 = 비-return 방어 원천 EV 상승. 총 120건)",
  "consume_rule": "새 발굴 리서치 착수 전: hypothesis_index lookup → 본 큐 확인 → owner/status 갱신. 완료 시 result_ref(L-code/보고서) 기입. dohoon_decision 항목은 세션 임의 착수 금지.",
  "entries": [
   {
@@ -2194,8 +2194,11 @@
    "ev_rationale": "WT-015 NP-2(P1). 이 기전은 다팩터 조합 lane 전체의 전제를 좌우 — WT-004(변동성 조합)·WT-009(5종 튜닝)·본 건이 모두 같은 방향을 가리키므로 규명 EV 높다.",
    "wall_check": "top-25 long-only slot 제약은 고정 축 — 제약 완화가 아니라 '주어진 25 slot을 어떻게 채우나'의 문제로 다룰 것(INV-7 제약 방화벽).",
    "data_gate": "없음 (WT-009/015 패널 재사용)",
-   "owner": "WT-D20260802_021 alpha-research (2026-08-02 스폰 — 기전 판별 3후보 사전등록 분해: slot 잠식/평균화 뭉갬/유효 종목수 이질. primary=기전 판별, 성과 개선 아님)",
-   "status": "in_flight",
+   "owner": "WT-D20260802_021 alpha-research (2026-08-02 완료)",
+   "status": "measured_20260802_mechanism_identified",
+   "result_ref": "stage_artifacts/WT_D20260802_021/alpha_validation.json — M1 slot 잠식 지배(gap -8.27%/yr의 75%, 귀속규칙 강건 59~78%) / M2 평균화 독립기여 기각(POS2 검정 +0.37 > 사전 -1.0) / M3 커버리지 기각(|t|=0.88<1). Grinold 깨지는 항 = TC(전이): IC 5/5 양성인데 tail-전이 2/5 음성(D03_EWMA IC t +3.71·PORT_t -1.73). 설계 원칙 확립: 조합 자격 = 성분별 canonical PORT_t>0 (rank-IC 무효), 전이-음성 팩터는 비-slot 소비면으로. POS2 probe(M01+V01 EW) 2.491 — in-sample·채택 후보 아님",
+   "next_probe_derived": "FQ-121 (IS-only 성분 게이트 OOS 확인) / FQ-122 (전이-음성 팩터 비-slot 소비)",
+   "revival_conditions": "5팩터 EW-류 재도전은 D03_EWMA/Q01_EB tail-전이 양전 실측 시에만. 조합 lane 자체는 FQ-119 성립 시 전이-양성 성분 한정으로 열림",
    "registered": "2026-08-02 Q-Lead (WT-D20260802_015 NP-2 파생)"
   },
   {
@@ -2247,8 +2250,9 @@
    "wall_check": "월내 cadence 는 회전·비용 구조를 바꾸므로 **고정 축 변경 제안이 아니라** 별도 운용 결정(도훈) 사안. 본 프로브는 진단까지만.",
    "data_gate": "없음 (benchmark.parquet 일간)",
    "owner": "미배정",
-   "status": "frontier_open",
-   "registered": "2026-08-02 Q-Lead (WT-D20260802_019 NP-2 파생)"
+   "status": "precheck_negative_frontier_open",
+   "registered": "2026-08-02 Q-Lead (WT-D20260802_019 NP-2 파생)",
+   "precheck_measured": "★착수 전 사전 진단 실측 (2026-08-02 Q-Lead, benchmark 일간 9,439행 1990-01~2026-07, metric_type=diagnostic·성과 주장 아님). **결론: '스케일 문제'가 아니라 가격 축 자체가 익월 예측에 무정보.** ① 연속 하락일 에피소드 2,265건 — **중앙 2일·평균 2.01일**, 5일 이상은 7.4%뿐. 하락은 며칠 단위로 뭉치고 길게 지속되지 않는다. ② **월간 집계는 실제로 소거한다**: 월간 수익이 양수인데 월내 최대낙폭 −5% 이상인 달이 **59/439(13.4%)**, −10% 이상인데 월간 양수인 달도 13개. 즉 월간 관측이 월내 낙폭을 상당 부분 못 본다(dd_in↔ret_m cor +0.533). ③ ★그러나 **그 더 세밀한 정보가 익월을 예측하지 못한다**: 월내 낙폭 하위 20% 달의 익월 하락 확률 **0.511 vs base 0.475, lift +0.036, fisher p=0.475**(비유의). ⇒ WT-019 의 '트레일링 가격-상태 라벨 무판별'이 관측 해상도 탓이 아님이 확인됐다. **비-return 방어 데이터원의 상대 EV 가 확정적으로 상승**(WT-019 frontier_update 의 조건부가 실측으로 뒷받침). ★정직 경계: 본 진단은 여전히 '월간 리밸 프레임'에서 익월을 묻는다. **월내 cadence 자체의 가치**(월중에 대응해 그 달 낙폭을 줄이는 것)는 미검 — 회전·비용 구조를 바꾸므로 도훈 결정 사항이고 이 진단으로는 답할 수 없다. 라운드를 열려면 그 축을 명시 분리할 것."
   }
  ]
 }
