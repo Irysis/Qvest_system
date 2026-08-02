@@ -1,0 +1,423 @@
+{
+  "task_id": "WT-D20260802_003",
+  "as_of_date": "2026-08-02",
+  "exposure_matrix_ref": "stage_artifacts/WT_D20260802_003/exposure_matrix.parquet",
+  "factor_covariance_ref": "stage_artifacts/WT_D20260802_003/factor_covariance.parquet",
+  "specific_risk_ref": "stage_artifacts/WT_D20260802_003/specific_risk.parquet",
+  "security_covariance_ref": "stage_artifacts/WT_D20260802_003/covariance.parquet",
+  "selection_objective": "condition_number",
+  "sigma_estimator": {
+    "structure": "Sigma = B Omega B' + D (MKT + 18 factor cross-sectional FM, 120m window)",
+    "omega_method": "ledoit_wolf",
+    "omega_cond": 1202,
+    "collinearity_dropped": [
+      "D01_IdioVol",
+      "R12_Idiosyncratic_Risk"
+    ],
+    "collinearity_note": "pooled 60m z-cor>0.97 근사-중복(D01~R12 cor=1.000 완전중복 포함) — rank 결핍 방지 drop, twin이 위험 대표",
+    "rationale": "universe p=348 > n=120 -> 직접 추정은 linear LW mu*I 퇴화 영역(FQ-057). factor 구조로 회피. Omega는 p<<n — linear LW 비바인딩 무해(p<=25 posterior). lw_nls 후보 병기 실측.",
+    "sigma_cond": 645.1,
+    "sigma_psd": true,
+    "factor_coverage": 0.382,
+    "units": "monthly return covariance"
+  },
+  "method_shopping_log": {
+    "risk_agent": {
+      "candidates_tried": 3,
+      "parallel_exec": false,
+      "method_log": [
+        {
+          "name": "sample",
+          "condition": 2265.4,
+          "psd": true,
+          "selected": false
+        },
+        {
+          "name": "ledoit_wolf",
+          "condition": 1202,
+          "psd": true,
+          "selected": true
+        },
+        {
+          "name": "lw_nls",
+          "condition": 1527,
+          "psd": true,
+          "selected": false
+        }
+      ]
+    }
+  },
+  "mechanism_diagnosis": {
+    "question": "2x2 비대칭(선별 slot 2.61 vs 가중 slot 1.34)이 위험 구조로 설명되는가",
+    "theta_concentration": {
+      "hhi": 0.8014,
+      "n_eff": 1.248,
+      "top_factor": "C04_ESBR",
+      "top_theta": 0.8911
+    },
+    "factor_active_correlation": {
+      "icir_pool_mean_full": 0.5762,
+      "icir_pool_mean_36m": 0.625,
+      "ppure_pool_mean_full": 0.4738,
+      "ppure_pool_mean_36m": 0.3515,
+      "pairs_gt_08": ["C04_ESBR~C01_SUE(0.84)", "V15_NetDebt_Adj_EP~V02_EP(0.94)", "D58_Vol_Asymmetry~L32_Ret_Vol_Corr(0.84)", "V15_NetDebt_Adj_EP~V14_EBIT_EV(0.93)", "V02_EP~V14_EBIT_EV(0.92)", "D22_Tracking_Error~D01_IdioVol(0.98)", "D22_Tracking_Error~R12_Idiosyncratic_Risk(0.98)", "D01_IdioVol~R12_Idiosyncratic_Risk(1.00)", "D22_Tracking_Error~D56_Up_Vol(0.94)", "D01_IdioVol~D56_Up_Vol(0.96)", "R12_Idiosyncratic_Risk~D56_Up_Vol(0.96)", "D22_Tracking_Error~SE01_Volatility_Uncertainty(0.90)", "D01_IdioVol~SE01_Volatility_Uncertainty(0.93)", "R12_Idiosyncratic_Risk~SE01_Volatility_Uncertainty(0.93)", "D56_Up_Vol~SE01_Volatility_Uncertainty(0.94)"],
+      "jaccard_icir_ppure": 0.094
+    },
+    "diversification": {
+      "DR_ew": 1.212,
+      "DR_theta": 1.046,
+      "n_eff_risk_ew": 1.47,
+      "n_eff_risk_theta": 1.1
+    },
+    "theta_variance_share": {
+      "C04_ESBR": 0.9328,
+      "XF_GD02_OpProfit_Growth": 0.0619,
+      "C05_ESCR": 0.0053,
+      "C01_SUE": 0,
+      "C08_Coverage": 0
+    },
+    "single_factor_equivalence": {
+      "cor_arm_vs_C04": 0.6604,
+      "nwt_arm": 1.338,
+      "nwt_C04_standalone": 1.643,
+      "cor_arm_vs_baseEW": 0.8987
+    },
+    "redundancy_proxy": {
+      "cor_thetaComp_vs_PpureEW": 0.764,
+      "cor_icirEW_vs_PpureEW": 0.6551,
+      "metric_type": "proxy (factor-level r6 composite, not security-level bt)"
+    },
+    "regime_cor_shift": {
+      "crisis": 0.5283,
+      "normal": 0.59,
+      "n_crisis_months": 23
+    }
+  },
+  "risk_summary": {
+    "top_common_risks": {
+      "specific": 0.536,
+      "L11_Kyle_Lambda": 0.226,
+      "XF_LL05_WorkingCapital": 0.087,
+      "L42_Vol_Skewness": 0.039,
+      "C08_Coverage": 0.039,
+      "C03_EPS_Chg_3m": 0.029
+    },
+    "crowding_flags": [],
+    "crowding_score_per_factor": [
+      {
+        "factor_name": "L11_Kyle_Lambda",
+        "crowding_score": 0.475909,
+        "hhi_top": 0.750915,
+        "vol_concentration": 0.002537,
+        "passive_overlap_proxy": 1,
+        "demand_elasticity_proxy": 0,
+        "n_universe": 3900,
+        "n_top": 20
+      },
+      {
+        "factor_name": "D22_Tracking_Error",
+        "crowding_score": 0.447306,
+        "hhi_top": 0.741021,
+        "vol_concentration": 0,
+        "passive_overlap_proxy": 0.9,
+        "demand_elasticity_proxy": 0,
+        "n_universe": 3900,
+        "n_top": 20
+      },
+      {
+        "factor_name": "L42_Vol_Skewness",
+        "crowding_score": 0.380433,
+        "hhi_top": 0.434647,
+        "vol_concentration": 0.000153,
+        "passive_overlap_proxy": 1,
+        "demand_elasticity_proxy": 0,
+        "n_universe": 3900,
+        "n_top": 20
+      },
+      {
+        "factor_name": "C04_ESBR",
+        "crowding_score": 0.36779,
+        "hhi_top": 0.392311,
+        "vol_concentration": 0.000389,
+        "passive_overlap_proxy": 1,
+        "demand_elasticity_proxy": 0,
+        "n_universe": 3900,
+        "n_top": 20
+      },
+      {
+        "factor_name": "C03_EPS_Chg_3m",
+        "crowding_score": 0.36283,
+        "hhi_top": 0.376101,
+        "vol_concentration": 0,
+        "passive_overlap_proxy": 1,
+        "demand_elasticity_proxy": 0,
+        "n_universe": 3900,
+        "n_top": 20
+      },
+      {
+        "factor_name": "XF_LL05_WorkingCapital",
+        "crowding_score": 0.358484,
+        "hhi_top": 0.361615,
+        "vol_concentration": 0,
+        "passive_overlap_proxy": 1,
+        "demand_elasticity_proxy": 0,
+        "n_universe": 3900,
+        "n_top": 20
+      },
+      {
+        "factor_name": "C08_Coverage",
+        "crowding_score": 0.343164,
+        "hhi_top": 0.352023,
+        "vol_concentration": 0.000228,
+        "passive_overlap_proxy": 0.95,
+        "demand_elasticity_proxy": 0,
+        "n_universe": 3900,
+        "n_top": 20
+      },
+      {
+        "factor_name": "D33_Beta_Persistence",
+        "crowding_score": 0.309518,
+        "hhi_top": 0.281727,
+        "vol_concentration": 0,
+        "passive_overlap_proxy": 0.9,
+        "demand_elasticity_proxy": 0,
+        "n_universe": 3900,
+        "n_top": 20
+      },
+      {
+        "factor_name": "D01_IdioVol",
+        "crowding_score": 0.295976,
+        "hhi_top": 0.19492,
+        "vol_concentration": 0,
+        "passive_overlap_proxy": 0.95,
+        "demand_elasticity_proxy": 0,
+        "n_universe": 3900,
+        "n_top": 20
+      },
+      {
+        "factor_name": "R12_Idiosyncratic_Risk",
+        "crowding_score": 0.295976,
+        "hhi_top": 0.19492,
+        "vol_concentration": 0,
+        "passive_overlap_proxy": 0.95,
+        "demand_elasticity_proxy": 0,
+        "n_universe": 3900,
+        "n_top": 20
+      },
+      {
+        "factor_name": "D58_Vol_Asymmetry",
+        "crowding_score": 0.287138,
+        "hhi_top": 0.123793,
+        "vol_concentration": 0,
+        "passive_overlap_proxy": 1,
+        "demand_elasticity_proxy": 0,
+        "n_universe": 3900,
+        "n_top": 20
+      },
+      {
+        "factor_name": "V02_EP",
+        "crowding_score": 0.279841,
+        "hhi_top": 0.182802,
+        "vol_concentration": 0,
+        "passive_overlap_proxy": 0.9,
+        "demand_elasticity_proxy": 0,
+        "n_universe": 3900,
+        "n_top": 20
+      },
+      {
+        "factor_name": "SE01_Volatility_Uncertainty",
+        "crowding_score": 0.279024,
+        "hhi_top": 0.096747,
+        "vol_concentration": 0,
+        "passive_overlap_proxy": 1,
+        "demand_elasticity_proxy": 0,
+        "n_universe": 3900,
+        "n_top": 20
+      },
+      {
+        "factor_name": "V15_NetDebt_Adj_EP",
+        "crowding_score": 0.275029,
+        "hhi_top": 0.125096,
+        "vol_concentration": 0,
+        "passive_overlap_proxy": 0.95,
+        "demand_elasticity_proxy": 0,
+        "n_universe": 3900,
+        "n_top": 20
+      },
+      {
+        "factor_name": "C01_SUE",
+        "crowding_score": 0.27427,
+        "hhi_top": 0.122566,
+        "vol_concentration": 0,
+        "passive_overlap_proxy": 0.95,
+        "demand_elasticity_proxy": 0,
+        "n_universe": 3900,
+        "n_top": 20
+      },
+      {
+        "factor_name": "C05_ESCR",
+        "crowding_score": 0.274083,
+        "hhi_top": 0.121942,
+        "vol_concentration": 0,
+        "passive_overlap_proxy": 0.95,
+        "demand_elasticity_proxy": 0,
+        "n_universe": 3900,
+        "n_top": 20
+      },
+      {
+        "factor_name": "D56_Up_Vol",
+        "crowding_score": 0.264822,
+        "hhi_top": 0.091075,
+        "vol_concentration": 0,
+        "passive_overlap_proxy": 0.95,
+        "demand_elasticity_proxy": 0,
+        "n_universe": 3900,
+        "n_top": 20
+      },
+      {
+        "factor_name": "L32_Ret_Vol_Corr",
+        "crowding_score": 0.264626,
+        "hhi_top": 0.173754,
+        "vol_concentration": 0,
+        "passive_overlap_proxy": 0.85,
+        "demand_elasticity_proxy": 0,
+        "n_universe": 3900,
+        "n_top": 20
+      },
+      {
+        "factor_name": "V14_EBIT_EV",
+        "crowding_score": 0.251124,
+        "hhi_top": 0.128746,
+        "vol_concentration": 0,
+        "passive_overlap_proxy": 0.85,
+        "demand_elasticity_proxy": 0,
+        "n_universe": 3900,
+        "n_top": 20
+      },
+      {
+        "factor_name": "XF_GD02_OpProfit_Growth",
+        "crowding_score": 0.248936,
+        "hhi_top": 0.121453,
+        "vol_concentration": 0,
+        "passive_overlap_proxy": 0.85,
+        "demand_elasticity_proxy": 0,
+        "n_universe": 3900,
+        "n_top": 20
+      }
+    ],
+    "liquidity_flags": [],
+    "stress_tests": {
+      "GFC": {
+        "cum_active": 0.3741,
+        "cum_ret_net": 0.1422,
+        "cum_benchmark": -0.1504,
+        "coverage": 0.83,
+        "reliability": "UNRELIABLE(coverage<85%)"
+      },
+      "Euro_Debt": {
+        "cum_active": -0.0244,
+        "cum_ret_net": -0.102,
+        "cum_benchmark": -0.078,
+        "coverage": 1,
+        "reliability": "ok"
+      },
+      "China_Shock": {
+        "cum_active": -0.123,
+        "cum_ret_net": -0.1526,
+        "cum_benchmark": -0.0347,
+        "coverage": 1,
+        "reliability": "ok"
+      },
+      "US_China_Trade": {
+        "cum_active": 0.1129,
+        "cum_ret_net": -0.0127,
+        "cum_benchmark": -0.1108,
+        "coverage": 1,
+        "reliability": "ok"
+      },
+      "COVID": {
+        "cum_active": -0.072,
+        "cum_ret_net": -0.0228,
+        "cum_benchmark": 0.0741,
+        "coverage": 1,
+        "reliability": "ok"
+      },
+      "Rate_Hike": {
+        "cum_active": 0.0917,
+        "cum_ret_net": -0.0097,
+        "cum_benchmark": -0.0928,
+        "coverage": 1,
+        "reliability": "ok"
+      },
+      "Iran_War": {
+        "cum_active": -0.4181,
+        "cum_ret_net": -0.0763,
+        "cum_benchmark": 0.3349,
+        "coverage": 1,
+        "reliability": "ok"
+      }
+    },
+    "market_down_5": -0.0374,
+    "tail_risk_ref": "stage_artifacts/WT_D20260802_003/tail_risk.json",
+    "cap_tier_decomposition": {
+      "basis": "cap_w_and_ew_uni",
+      "portfolio_basis": "canonical top-25 EW deployment snapshot @2026-06-30 (측정용 — weight 제안 아님)",
+      "tiers": [
+        {
+          "tier": "MEGA",
+          "holdings_share": 0.12,
+          "alpha_share": 0.147,
+          "active_risk_share_capw": 0.772,
+          "active_risk_share_ewuni": 0.159,
+          "signal_alive": true
+        },
+        {
+          "tier": "MID",
+          "holdings_share": 0.08,
+          "alpha_share": 0.101,
+          "active_risk_share_capw": 0.027,
+          "active_risk_share_ewuni": 0.074,
+          "signal_alive": true
+        },
+        {
+          "tier": "SMALL",
+          "holdings_share": 0.8,
+          "alpha_share": 0.753,
+          "active_risk_share_capw": 0.201,
+          "active_risk_share_ewuni": 0.767,
+          "signal_alive": true
+        }
+      ],
+      "te_ann_capw": 0.1971,
+      "te_ann_ewuni": 0.1057,
+      "dual_basis_divergence_gap": 0.613,
+      "dual_basis_divergence_flag": true
+    },
+    "concentration": {
+      "sector_hhi_top25": 0.165,
+      "n_eff_names": 25,
+      "n_sectors": 11
+    }
+  },
+  "diagnostics": {
+    "condition_number": 645.1,
+    "shrinkage_used": true,
+    "shrinkage_method": "ledoit_wolf",
+    "factor_correlation_warnings": ["C04_ESBR~C01_SUE(0.84)", "V15_NetDebt_Adj_EP~V02_EP(0.94)", "D58_Vol_Asymmetry~L32_Ret_Vol_Corr(0.84)", "V15_NetDebt_Adj_EP~V14_EBIT_EV(0.93)", "V02_EP~V14_EBIT_EV(0.92)", "D22_Tracking_Error~D01_IdioVol(0.98)", "D22_Tracking_Error~R12_Idiosyncratic_Risk(0.98)", "D01_IdioVol~R12_Idiosyncratic_Risk(1.00)", "D22_Tracking_Error~D56_Up_Vol(0.94)", "D01_IdioVol~D56_Up_Vol(0.96)", "R12_Idiosyncratic_Risk~D56_Up_Vol(0.96)", "D22_Tracking_Error~SE01_Volatility_Uncertainty(0.90)", "D01_IdioVol~SE01_Volatility_Uncertainty(0.93)", "R12_Idiosyncratic_Risk~SE01_Volatility_Uncertainty(0.93)", "D56_Up_Vol~SE01_Volatility_Uncertainty(0.94)"],
+    "regime_correlation_ref": "stage_artifacts/WT_D20260802_003/regime_correlation.parquet",
+    "fm_window_months": 120,
+    "metric_type": "canonical_screen 파생(기전 실측) + estimated(Sigma 구조 추정)"
+  },
+  "challenge_flags": [
+    {
+      "id": "RF-R5",
+      "severity": "MEDIUM",
+      "flag": "factor active cor>0.8 pairs 15: C04_ESBR~C01_SUE(0.84); V15_NetDebt_Adj_EP~V02_EP(0.94); D58_Vol_Asymmetry~L32_Ret_Vol_Corr(0.84); V15_NetDebt_Adj_EP~V14_EBIT_EV(0.93)"
+    },
+    {
+      "id": "RF-WT003-MECH",
+      "severity": "HIGH",
+      "flag": "조합 가중 위험 집중 실측: theta n_eff=1.25 (EW 20), DR_theta=1.05, arm~C04 단일팩터 cor=0.66 — 분산 효과 사실상 부재. 가중 정렬 = 사실상 단일팩터 선택"
+    }
+  ]
+}

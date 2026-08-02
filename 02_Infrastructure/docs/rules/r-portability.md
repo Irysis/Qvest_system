@@ -122,7 +122,7 @@ Windows R은 `/mnt/c/...`를 **현재 드라이브 기준** `C:/mnt/c/...`로 �
 **✅ 동반 수리(같은 계열)**: `run_all_hooks.sh` 집계가 요약을 `tail -1`로 집던 탓에 마지막 줄이 경고·stderr 인터리브로 밀리면 그 suite가 UNREPORTED(=1 fail)로 계상되고 **통과 건수가 통째로 사라졌다**(실측 1/7 빈도: `27/0/27` ↔ `17/1/18`, 드롭분 = seq_gate 10건). → **뒤에서부터 첫 유효 요약 JSON 라인**을 집도록 교체. 계약 검사기가 이 배터리 위에 얹히므로, 집계가 flaky하면 계약도 flaky해진다.
 ⚠ 다만 러너는 여전히 **각 suite를 2회 실행**한다(표시용 `run_test` + 집계 루프). 중복 실행 제거는 미수리 — 부작용 있는 suite에서 위험.
 
-**✅ 동반 수리 2 — 금칙 ③의 테스트-하네스 재발 (2026-08-02, `4c74ba12`)**: `test_ast_spec_gate.sh` D4/D5가 `$ROOT`를 **Windows python**에 그대로 넘겼다. 그런데 이 문서가 안내하는 실행형 `CLAUDE_PROJECT_DIR="$PWD"`는 Git Bash에서 **MSYS 형 `/c/...`**를 만들고, Windows python은 그 경로를 열지 못한다. 거기에 `2>/dev/null`이 `FileNotFoundError`를 삼켜 빈 값이 되면서 **schema.json은 멀쩡한데 "게이트-schema 동기 실패"로 오보**했다(배터리 495 중 2 fail의 정체 — 읽는 사람을 schema 수정으로 오도한다). → mixed 형 정본 idiom `cygpath -m`(`bootstrap.sh:20-22`) 적용 + `2>&1 | tail -1`로 실패 사유 표면화. 변형 fixture(`falsification`→`string`, `sig_date` 제거)로 검사가 여전히 FAIL함을 확인(오탐 제거이지 검사 사망이 아님).
+**✅ 동반 수리 2 — 금칙 ③의 테스트-하네스 재발 (2026-08-02, `4c74ba12`)**: `test_ast_spec_gate.sh` D4/D5가 `$ROOT`를 **Windows python**에 그대로 넘겼다. 그런데 이 문서가 안내하는 실행형 `CLAUDE_PROJECT_DIR="$PWD"`는 Git Bash에서 **MSYS 형 `/c/...`**를 만들고, Windows python은 그 경로를 열지 못한다. 거기에 `2>/dev/null`이 `FileNotFoundError`를 삼켜 빈 값이 되면서 **schema.json은 멀쩡한데 "게이트-schema 동기 실패"로 오보**했다(배터리 2 fail의 정체 — 읽는 사람을 schema 수정으로 오도한다). → mixed 형 정본 idiom `cygpath -m`(`bootstrap.sh:20-22`) 적용 + `2>&1 | tail -1`로 실패 사유 표면화. 변형 fixture(`falsification`→`string`, `sig_date` 제거)로 검사가 여전히 FAIL함을 확인(오탐 제거이지 검사 사망이 아님).
 ★**계약 확장**: 금칙 ③은 `.R` 안의 리터럴만이 아니라 **bash → Windows python 인자 전달**에서도 재발한다. `test_r_portability.R`은 `.R`만 스캔하므로 이 표면을 구조적으로 못 본다(`.sh` resolver 공백을 자매 검사기가 메우는 것과 같은 구조). 쉘에서 경로를 python·R에 넘길 때는 `cygpath -m`을 거칠 것 — POSIX 형은 bash에선 유효하고 Windows 인터프리터에선 무효라, **한쪽에서만 죽어 환경 의존 red로 보인다**.
 
 ---
@@ -133,7 +133,9 @@ Windows R은 `/mnt/c/...`를 **현재 드라이브 기준** `C:/mnt/c/...`로 �
 
 - **신규 위반 → FAIL** (baseline 밖 항목)
 - **baseline 역행 방지**: 수리돼 사라진 항목이 baseline에 남아 있으면 FAIL(`--write-baseline`으로 갱신 요구). 원장은 **줄어드는 방향으로만** 움직인다.
-- `run_all_hooks.sh` 배터리 편입 — 매 실행 검사. 실측(2026-08-02): **이 suite 자체 = 7/7**(래칫 2축 + 위반 주입 4종 + 오검출 통제 1), **배터리 전체 = 495/495 · 28 suite**. 구 표기 "34/34"는 발효 시점(2026-07-25) 배터리 규모이며 지시 대상이 불명확했다 — 아래 자매 검사기 줄의 `11/11`은 *suite* 수치라 같은 문구가 서로 다른 것을 가리키고 있었다. 이제 둘 다 라벨을 붙인다.
+- `run_all_hooks.sh` 배터리 편입 — 매 실행 검사. **이 suite 자체 = 7/7**(래칫 2축 + 위반 주입 4종 + 오검출 통제 1 — 축 구성이 바뀔 때만 움직이는 안정 수치).
+  ★**배터리 전체 통과 수는 여기 적지 않는다.** 구 표기 "34/34"(발효 2026-07-25)가 스테일이 된 이유가 이것이다 — 다른 세션이 suite를 계속 붙여 2026-08-02 하루에도 34→459→495→501로 움직였다(30분 만에 495→501 실측). 문서에 박은 순간 썩는 수치이고, 어긋남을 계약 위반으로 오독하게 만든다. **판정 기준은 "배터리 전체 PASS 여부"이지 통과 *건수*가 아니다.** 건수 정본은 `.cache/test_results/hook_dryrun_results.json`.
+  ★아래 자매 검사기 줄의 `11/11`은 *suite* 수치인데 구 문구가 이 줄과 똑같아 서로 다른 것을 가리키고 있었다 — 이제 둘 다 라벨을 붙인다.
 
 `08_Tests/hooks/test_resolve_project_marker.sh` — 쉘 resolver 2벌의 **루트 marker 게이트**(금칙 ③)와
 **계열 분기**(금칙 ④ 위 절)를 검사한다. `test_r_portability.R`은 `.R`만 스캔하므로 `.sh` resolver를

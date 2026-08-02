@@ -4,7 +4,19 @@ setDTthreads(2); QM <- "C:/Users/99922/OneDrive/Quant_Module_Moltbot"; setwd(QM)
 TD <- "stage_artifacts/WT_D20260802_002"
 MB <- "qepm/mailbox/worktask/WT-D20260802_002"
 
-A <- as.data.table(read_parquet(file.path(TD, "alpha_scores.parquet"))); A[, Date := as.Date(Date)]
+## ★ 대상 파일을 read 하지 않는다 — Windows arrow mmap 이 열려 있으면 같은 경로 write 가
+##   IOError 1224 로 실패한다(실측). run_04 와 동일 레시피로 원천에서 재구성한다.
+SI0 <- readRDS("stage_artifacts/WT_D20260714_004/screen_inputs.rds")
+.liq <- as.data.table(SI0$liqf); .fwd <- as.data.table(SI0$fwd_ret)
+A <- as.data.table(read_parquet(file.path(TD, "gate_panel.parquet"))); A[, Date := as.Date(Date)]
+A <- merge(A, .liq[, .(Date, Ticker, adv2 = adv)], by = c("Date", "Ticker"), all.x = TRUE)
+A <- A[is.na(adv2) | adv2 >= 2e8][is.finite(score) & is.finite(fa_share_l0)]; A[, adv2 := NULL]
+A <- merge(A, .fwd[, .(Date, Ticker, Ret_1m_f = Ret_1m)], by = c("Date", "Ticker"), all.x = TRUE)
+if ("Ret_1m" %in% names(A)) A[, Ret_1m := NULL]
+setnames(A, "Ret_1m_f", "Ret_1m")
+A[, gate := frank(-fa_share_l0, ties.method = "first") <= ceiling(.N / 2), by = Date]
+setnames(A, "score", "alpha_score_base")
+A <- A[, .(Date, Ticker, alpha_score_base, fa_share_l0, fa_share_l1, gate, adv, Size, Ret_1m)]
 AR <- readRDS(file.path(TD, "arms_results.rds")); DG <- readRDS(file.path(TD, "diagnostics.rds"))
 AD <- readRDS(file.path(TD, "adversarial.rds")); AT <- readRDS(file.path(TD, "ast_run.rds"))
 GB <- readRDS(file.path(TD, "gate_build_diag.rds"))

@@ -1,0 +1,39 @@
+=== WT-D20260802_003 RISK — start 2026-08-02 10:43:02 ===
+theta received: C04_ESBR=0.8911 / C05_ESCR=0.0285 / XF_GD02_OpProfit_Growth=0.0805
+theta HHI=0.8014  n_eff=1.248  (EW n_eff=20)
+PART1: pool active matrix 221 x 20 (NA 0.1%)
+ICIR pool mean pairwise active-cor: full=0.5762  trailing36=0.6250  pairs>0.8: 15
+Ppure pool (top-20 by anchor tt): mean pairwise cor full=0.4738 trailing36=0.3515 | Jaccard(ICIR,Ppure)=0.094
+Diversification ratio (36m active cov): EW=1.212 (n_eff_risk=1.47) vs theta=1.046 (n_eff_risk=1.10)
+theta composite variance share: C04_ESBR=0.933 / XF_GD02_OpProfit_Growth=0.062 / C05_ESCR=0.005
+W_portt arm vs C04 standalone: cor=0.6604 | NW-t: arm=1.338 C04alone=1.643 | cor(arm, base_EW)=0.8987
+redundancy (factor-level proxy): cor(theta_comp, PpureEW)=0.7640 | cor(icirEW, PpureEW)=0.6551
+regime cor shift (pool active): crisis(n=23)=0.5283 vs normal(n=198)=0.5900
+PART2: FM window 2016-06-30 ~ 2026-05-31 (120 months)
+collinearity: dropped D01_IdioVol,R12_Idiosyncratic_Risk -> FM_SET 18 factors
+factor returns: 120 months x 19 (MKT+18)
+Omega candidate sample       cond=2265.4 psd=TRUE
+Omega candidate ledoit_wolf  cond=1202.0 psd=TRUE
+Omega candidate lw_nls       cond=1527.0 psd=TRUE
+Omega selected: ledoit_wolf (cond=1202.0) — p=21 << n=120, linear LW 비바인딩 영역(FQ-057 p>n 퇴화 비해당)
+D: 306/348 names direct (>=24m resid), fallback median=0.010353
+B: 348 x 19, missing z cells=279 (-> 0 neutral)
+Sigma 348x348: cond=645.1 psd=TRUE factor_coverage(mean var share)=0.382
+artifacts written: exposure/factor_cov/specific/covariance (+mailbox copy)
+tier MEGA  | hold=0.120 alpha_share=0.147 | active_risk_share cap-w=0.772 ew-uni=0.159
+tier MID   | hold=0.080 alpha_share=0.101 | active_risk_share cap-w=0.027 ew-uni=0.074
+tier SMALL | hold=0.800 alpha_share=0.753 | active_risk_share cap-w=0.201 ew-uni=0.767
+dual_basis divergence: max tier gap=0.613 -> flag=TRUE | TE(ann): cap-w=0.197 ew-uni=0.106
+top-25 sector HHI=0.165 (n_sectors=11) n_eff_names=25
+crowding top: L11_Kyle_Lambda=0.48 / D22_Tracking_Error=0.45 / L42_Vol_Skewness=0.38 / C04_ESBR=0.37 / C03_EPS_Chg_3m=0.36
+crowding flags (>=0.75): none
+tail: active VaR95(hist)=0.065 ES95=0.121 VaR99=0.124 CF-VaR99=0.304 | skew=-2.70
+stress GFC            act=+0.374 ret=+0.142 bm=-0.150 cov=0.83 [UNRELIABLE]
+stress Euro_Debt      act=-0.024 ret=-0.102 bm=-0.078 cov=1.00 
+stress China_Shock    act=-0.123 ret=-0.153 bm=-0.035 cov=1.00 
+stress US_China_Trade act=+0.113 ret=-0.013 bm=-0.111 cov=1.00 
+stress COVID          act=-0.072 ret=-0.023 bm=+0.074 cov=1.00 
+stress Rate_Hike      act=+0.092 ret=-0.010 bm=-0.093 cov=1.00 
+stress Iran_War       act=-0.418 ret=-0.076 bm=+0.335 cov=1.00 
+market_down_5 (beta=0.75 implied): -0.0374
+risk_package.json written

@@ -4,9 +4,9 @@
   "forecast_horizon": "1M",
   "spec_version": "ast_v1.1",
   "pit": {
-    "sig_date": "2026-04-30",
-    "decision_ts": "2026-04-30",
-    "note": "패널 최종 sig_date = 2026-04-30(d0). 게이트 관측창은 month(d0) 종료까지 — 홀딩월(2026-05) 데이터 0 사용."
+    "sig_date": "2026-03-31",
+    "decision_ts": "2026-03-31",
+    "note": "패널 최종 sig_date(d0) = 2026-03-31 (cleanT1 AS_OF 2026-04-01 의 직전 월말). 게이트 관측창은 2026-03 말까지 — 홀딩월(2026-04) 데이터 0 사용."
   },
   "hypothesis": {
     "statement": "팩터 스코어가 가격에 반영되려면 그 종목에 정보를 가격으로 옮길 거래주체가 있어야 한다. KR 에서 그 대표가 외국인이므로, 스코어를 그대로 둔 채 외국인 활동이 실재하는 종목으로 적용 유니버스를 조건화하면 동일 신호에서 IC→PORT_t 전이가 개선된다. (실측 결과 이 가설은 방향까지 반증되었다 — verdict_empirical 참조)",
@@ -148,9 +148,9 @@
   },
   "alpha_vector": {
     "_note": "본 라운드는 신규 α̂ 를 생성하지 않는다 — base 스코어(STR_1715 core, production_parity_verified)를 verbatim 상속하고 적용 유니버스만 조건화했다. 따라서 alpha_vector = base 스코어의 최종 sig_date(2026-04-30) 단면이며 게이트 적용판을 병기한다. 전체 시계열 = stage_artifacts/WT_D20260802_002/alpha_scores.parquet",
-    "_basis": "score_eff (cleanT1), 2026-04-30 d0 단면",
+    "_basis": "score_eff (cleanT1), 2026-03-31 d0 단면 (348종목, 게이트 통과 174)",
     "_gate_applied": false,
-    "_ref": "stage_artifacts/WT_D20260802_002/alpha_vector_2026_04_30.json",
+    "_ref": "stage_artifacts/WT_D20260802_002/alpha_vector_2026_03_31.json",
     "_inheritance": "alpha_inheritance_cor = 1.0 vs incumbent STR_1715_on_M4gAE_R05_noLayer4_PG2 (설계상 의도 — request 가 base 신호 신규 생성을 금지)"
   },
   "confidence_vector": {
@@ -339,7 +339,20 @@
         "mean_ic": 0.037,
         "nw_t": 4.44
       },
-      "interpretation": "★핵심 기전. base 스코어의 횡단 예측력은 외국인 활동이 낮을수록 강하다(단조). 가설이 상정한 '전달 주체' 효과보다 '차익거래 한계/소외기업' 효과가 지배한다 — 외국인이 활발한 종목에서는 수정·서프라이즈 정보가 이미 반영되어 잔여 알파가 적다."
+      "interpretation": "서술적 관찰(기전 단정 아님): base 스코어의 횡단 예측력이 외국인 활동 사분위에서 단조 감소한다. ★단 self-adversarial C7 이 이 관찰의 인과 귀속을 기각했다 — size 5분위 내 이중정렬에서 (저활동 IC - 고활동 IC) gap = +0.0087, NW lag-3 t = +1.11(비유의)이고 최소 size 분위에서는 부호가 역전(-0.0073)한다. 즉 원시 기울기의 상당분은 size 효과이며, '알파가 외국인 소외 구간에 국소화된다'는 설명은 지지되지 않는다. 포트폴리오 수준 손해는 견고(E_gate_sizeneut 2.425 < placebo min 2.488)하나 그 원인 귀속은 미해결(open).",
+      "size_controlled": {
+        "gap_mean": 0.0087,
+        "gap_nw_t": 1.11,
+        "months": 266,
+        "gap_by_size_quintile": [
+          -0.0073,
+          0.0172,
+          0.0109,
+          0.0068,
+          0.0083
+        ],
+        "verdict": "MECHANISM_ATTRIBUTION_UNRESOLVED"
+      }
     },
     "gate_variable_standalone": {
       "fa_share_own_rank_ic": 0.0413,
@@ -351,6 +364,13 @@
       "top25_pass_minus_drop_monthly": -0.001,
       "top25_pass_minus_drop_nw_t": -0.3,
       "interpretation": "게이트는 base top-25 픽의 51.2% 를 제거하는데, 제거되는 종목들의 실현수익이 남는 종목보다 낮지 않다(t=-0.30). 즉 이득 없이 상위 픽 절반을 하위 랭크로 교체 → 순수 희석이 손실 기전."
+    },
+    "denominator_robustness": {
+      "concern": "Close(수정주가) x Vol(원거래량) 혼용 분모",
+      "gate_residualized_on_adv_port_t": 2.645,
+      "base": 3.478,
+      "original_gate": 2.198,
+      "verdict": "결론 불변 (두 분모 모두 base 대비 열위)"
     }
   },
   "controls_verdict": {
@@ -413,6 +433,24 @@
       "severity": "LOW",
       "flag": "AST_MEDIAN_BOUNDARY_DIFF",
       "detail": "컴파일러 경로(CS_RANK>0.5, 중앙값 정확히 0.5 는 SIGN=0 으로 제외) vs 손빌드(ceiling(N/2), 중앙값 포함) 가 홀수-N 월의 중앙값 종목 129셀에서 다름. Jaccard 0.9967, 겹치는 39,001 셀 max|Δ|=0. PORT_t 2.198(손빌드) vs 2.219(컴파일러) — 판정 불변."
+    },
+    {
+      "id": "CF-08",
+      "severity": "HIGH",
+      "flag": "HYPOTHESIS_PREMISE_VOID",
+      "detail": "가설 전제('외국인 활동 희박 종목의 존재')가 배포 유니버스에서 성립하지 않음 — fa_breadth 94.3% 포화. self-adversarial C2 에서 자기적발. 본 라운드의 negative 는 '조건화 전략의 반증'이 아니라 '이 유니버스에서는 이 조건화 축 자체가 판별력을 갖지 못한다'로 읽어야 한다."
+    },
+    {
+      "id": "CF-09",
+      "severity": "MEDIUM",
+      "flag": "MECHANISM_ATTRIBUTION_UNRESOLVED",
+      "detail": "게이트의 손해는 통계적으로 확립(placebo 20/20 밖, 단측 p<=0.048)되었으나 그 원인은 미설명. 1차 설명(IC 국소화)은 self-adversarial C7 에서 size 통제 후 기각(t=1.11)."
+    },
+    {
+      "id": "CF-10",
+      "severity": "MEDIUM",
+      "flag": "INFRA_CONTRACT_SPLIT_FOUND",
+      "detail": "① ast_verify.py CLI extract_ast(627행)가 factors[] 를 보지 않아 스키마 정본 표현이 FAIL_CONTRACT(ast 노드 부재)로 떨어짐 — ast_spec_gate.sh 의 ALB-006 수리가 CLI 진입점에 미반영. ② ast_verify.py 에 const 노드 핸들러 부재 — operator_library.json grammar 가 node_types.const 를 정의하고 ast_compile.R 이 정상 처리하는데 verifier 는 op=None 으로 보아 '𝒪 밖 연산자' FAIL_CONTRACT. 재현: SUB(CS_RANK(x), {type:const,value:0.5}). 둘 다 alpha 에이전트 권한 밖 — architect/Q-Lead 수리 대상."
     }
   ],
   "next_probe": [
@@ -464,5 +502,13 @@
     ],
     "preregistration": "stage_artifacts/WT_D20260802_002/preregistration.json",
     "challenge_note": "stage_artifacts/WT_D20260802_002/challenge_note.md"
-  }
+  },
+  "premise_check": {
+    "premise": "외국인 활동이 희박한 종목이 배포 유니버스에 존재한다",
+    "test": "fa_breadth = 직전 3개월 중 외국인 순매수 != 0 인 거래일 비율",
+    "measured": "94.3% 의 종목-월에서 정확히 1.000 (5분위수 0.984)",
+    "verdict": "PREMISE_VOID_IN_DEPLOYMENT_UNIVERSE",
+    "implication": "K200 U KQ150 ∩ 유동성 2e8 안에서는 외국인이 사실상 모든 종목을 매일 거래한다. 따라서 본 라운드가 실제로 검정한 것은 '참여 유무' 조건화가 아니라 '순불균형 강도' 조건화다. 가설의 원문 기전(전달 주체의 부재)은 이 유니버스에서 검정 불가능하며, 검정하려면 유동성 하한 아래 종목까지 내려가야 하는데 그것은 배포 제약(고정 축) 밖이다."
+  },
+  "challenge_note_ref": "stage_artifacts/WT_D20260802_002/challenge_note.md"
 }

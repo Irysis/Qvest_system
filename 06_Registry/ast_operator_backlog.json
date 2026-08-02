@@ -15,6 +15,16 @@
       "evidence": "S2d parity 실측: V01_BM = TotalEquity/Size (compute_value.R:126-130) 를 AST 정의-레벨로 재합성 불가 → FIELD_REGISTRY_PTR passthrough parity(rho=1.0)로 대체. 02_Infrastructure/ast/tests/parity_factor_db_result.json definition_gaps 참조",
       "unblock_condition": "leaf_sources에 fundamental_merged 소스 추가 (avail 규칙 = quarterly+45d / annual 익년 3/31 Step 0 확정치, Factor_Date 기반 avail_ts 공급) — Q4 전기간 재빌드(도훈 confirm 대기) 이후 착수 권장",
       "consumer": "Step 2 후속 (컴파일러 리프 소스 확장)"
+    },
+    {
+      "id": "ALB-INV-001",
+      "raised_at": "2026-08-02",
+      "raised_by": "alpha-research WT-D20260802_002 (FQ-084)",
+      "kind": "leaf_source_gap",
+      "blocker": "투자자 수급(투자주체별 순매수)이 operator_library.json leaf_sources 에 없다. 현행 4종 = factor_db_monthly / factor_db_daily / rawdata / stored_panel. .cache/investor_stock/investor_wide.parquet (Foreign/Individual/Institutional/OtherCorp, 2000-01-04~2026-07-24, 10.4M rows, field_map A6_investor_flow_stock_daily) 를 FIELD 리프로 지목할 방법이 없어 STORED_SCORE escape 로 우회해야 한다.",
+      "unblock_requirement": "leaf_sources 에 investor_flow_daily 추가 — accessor 표준화(현재 직접 parquet read), avail_rule = at_date(장마감 후 확정, t-1 소비), restatement_prone=false, value_semantics = 일간 순매수대금(KRW, 부호 있음). C15 정합을 위해 load_investor_flow() 접근자 신설이 선행 조건.",
+      "impact": "escape_leaf_count 가 불필요하게 증가해 Phase 2 구조특징 사전분포의 커버리지가 절단된다.",
+      "workaround_used": "STORED_SCORE(stored_panel) + production_parity_verified=false 정직 선언"
     }
   ]
 }
