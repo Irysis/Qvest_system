@@ -1,0 +1,33 @@
+{
+  "alpha_agent": {
+    "candidates_tried": 2,
+    "selection_type": "chain",
+    "note": "선택 후보 = 조합 2종(C_ORTH primary 사전등록 / C_ALL5 robustness). 단일 5종x2 lane + Core는 request 명시 A/B 기준선(선택 후보 아님). 측정 구성 총 15 (n_trials 기록).",
+    "method_log": [
+      {
+        "name": "C_ORTH_def (D03+D41+D55 등가중, 방어배향)",
+        "canonical_port_t": -0.84,
+        "crisis_alpha_m": -5.26,
+        "selected": true,
+        "why": "사전등록 primary — 직교 축만 결합(상관 0.8 규칙, 성과 무참조)"
+      },
+      {
+        "name": "C_ALL5_def (5축 등가중, 방어배향)",
+        "canonical_port_t": -1.02,
+        "crisis_alpha_m": -5.7,
+        "selected": false,
+        "why": "수준축 3종 rho 0.91+ 중복 — 참조 전용(사전등록)"
+      }
+    ],
+    "baselines_ab": [
+      "D03_RealVol",
+      "D01_IdioVol",
+      "D41_Vol_of_Vol",
+      "D45_Downside_Dev",
+      "D55_Vol_Trend"
+    ],
+    "n_trials_measured": 15,
+    "parallel_exec": true,
+    "n_workers": 6
+  }
+}

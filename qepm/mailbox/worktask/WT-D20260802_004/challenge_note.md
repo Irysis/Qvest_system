@@ -75,4 +75,57 @@
 
 ---
 
-*(이하 eval 확정 후 추가: AX-001 3축 실측표 + 판정 + next_probe)*
+## 4. AX-001 v2 조건부 3축 실측 (eval 확정 — metric_type=canonical_screen, 258개월, top-25 EW, 15bps, liq 2e8)
+
+### 4-1. crisis_alpha (CRISIS 16월 / 5에피소드)
+
+| 구성 (def lane) | crisis α %/월 (NW t) | 에피소드 +/전체 | 하락형 위기(BM<0) 누적 active |
+|---|---|---|---|
+| D03_RealVol_def | −4.94 (−1.03) | 4/5 | **+24.4%** |
+| D41_Vol_of_Vol_def | −4.08 (−1.04) | 3/5 | +19.0% |
+| D55_Vol_Trend_def | −2.88 (−1.02) | 3/5 | +11.4% |
+| **C_ORTH_def (조합)** | **−5.26 (−1.26)** | 2/5 | **+8.4%** |
+| C_ALL5_def (조합) | −5.70 (−1.09) | 3/5 | +23.7% |
+| CORE_M01 (참조) | −5.10 (−2.02) | 1/5 | −13.2% |
+
+**에피소드 분해가 판정의 열쇠**: 하락형 위기 4건(GFC 2008-10~2009-03 · 2011-09 · COVID 2020-03/04 · 2025-11)에선 방어 lane 전 구성이 누적 양(+) active — **episodic 방어는 실재**. 그러나 5번째 에피소드 2026-02~07은 **CRISIS 라벨인데 벤치 누적 +33.7%(초대형주 반도체 멜트업)** — 여기서 C_ORTH_def −92.5% cum active로 평균이 지배됨. C_ALL5≈D03(ρ 0.96 수준축 지배)이므로 C_ALL5의 +23.7%는 조합 효과가 아니라 D03 복제.
+
+### 4-2. Core 대비 MDD (full-period, PerformanceAnalytics::maxDrawdown)
+
+def lane MDD 60.4~80.4% vs Core(M01 top-25) 59.5% / BM 47.1% → **complement 전 구성 음수(−0.8~−20.8pp) FAIL**. 원인은 크래시가 아니라 **만성 음(−) drift 누적**(def lane netSR −0.20~−0.32) — 방어 팩터를 standalone 슬리브로 상시 보유하는 구조 자체가 위기 보호분을 압도하는 비용.
+
+### 4-3. bad/normal IC ratio
+
+방어 배향 IC: 전기간 −0.047~−0.053, **bad(BM_Ret<0) 월 IC −0.108~−0.139 (더 음수)** → 축 방향 자체 FAIL (ratio 산술은 부호 혼합으로 무의미 — 수치 인용 금지, 두 IC 별도 보고). KR 하락월 횡단면에서 저변동 종목이 더 못함 — "저변동 = 방어" 직관이 이 유니버스에선 성립하지 않음의 직접 실측.
+
+### 4-4. 판정 (config-scoped, 사유 명시)
+
+1. **(가설 본체) 조합 > 단일 crisis_alpha: 기각** — regime-라벨 축에서도(−5.26 vs −2.88), 하락형-위기 한정 축에서도(+8.4% vs +24.4%) 조합이 단일 최선을 넘지 못함.
+2. **(재평가) 선례 FAIL의 AX-001 위반 채점: 확정** (§0-1) — 단 올바른 조건부 채점으로도 승격 불가 판정은 동일하며 **사유가 다름**(구: 전기간 MDD hard / 신: 만성 drift + 조합 무개선 + bad-IC 역방향). 채점 위반 판별과 팩터 실격은 독립 명제 — 둘 다 성립.
+3. **실재하는 것**: 하락형 위기 episodic 방어(+5~10%/에피소드, 4/4 에피소드 D03 양수). 소비처는 standalone 아닌 **overlay/국면-조건부 입력** — "방어는 오버레이만"(07-03 방어팩터 DB 전수) 확증과 정합, 반증 아님.
+4. **현 config 수렴** (config = K200∪KQ150 · top-25 EW · 월간 · 15bps · regime-라벨 조건부): 이 측정틀에서 변동성 조합의 방어 승격 경로 없음 + 부활 조건 명시 — ① 위기 정의를 실현-하락 기반으로 교체한 재판정에서 MDD-complement 축이 뒤집히는 실측 ② overlay-게이트 결합(위기 게이트 발화 시에만 tilt)에서 book-marginal 기여 실측 ③ KR 저변동 이상현상의 구조 변화 신호(vol IC 부호 반전 지속).
+
+## 5. next_probe (≥2) + 소비면 7종 순회
+
+**next_probe**:
+1. **AX-001 hook family 오분류 수리** (governance): hurdle `detected_family="other"`가 defense 계열을 AX-001 enforcement 우회시킴 (§0-1 실측). family 탐지를 hypothesis_signature 우선으로 보강 — 별도 배관 태스크로 등재.
+2. **위기 정의 이원화 표준**: 2026-02~07(CRISIS 라벨 ∧ BM +33.7%) 실사례가 crisis_alpha 축을 구조 오염 — AX-001 절차에 regime-라벨 축과 실현-하락(BM_Ret<0 / drawdown-state) 축 병기 의무를 제안. 본 라운드는 이미 이원 보고로 선례 제공.
+3. **falsification 미측정분 실측**: CRISIS 월 고변동 quintile 개인 순매수 강도(investor_wide) — 복권 수요 기전의 agent 성분 직접 검증 (본 패키지 falsification[1] 사전 지목).
+4. **(조건부) overlay-입력화**: D03 저변동 tilt × 기존 위기 게이트 결합의 book-marginal 실측 — optimizer/FR 소비면 (FQ 등재 후보, alpha 역할 밖).
+
+**소비면 7종**: ① 팩터 랭킹 — 부적합(만성 음 drift) ② 유니버스 필터 — 미측정(저변동 필터는 역효과 방향) ③ **오버레이/국면 입력 — 후보** (하락형 위기 episodic 방어 실측) ④ **위험모델 — 유용**: 수준축 3종(D03/D01/D45) ρ 0.91~0.97 실측은 risk agent의 vol-축 중복 처리 근거 ⑤ **monitoring — 후보**: regime-라벨 vs 실현시장 괴리(2026-02~07형) tripwire ⑥ 선별 라벨 — screen_route=OVERLAY_CANDIDATE ⑦ 타 모드 이식 — FR-RCMA 방어 specialist 요건(만성 drift) 미충족.
+
+## 6. (h) 77건 선례 대비 차별점 (정직 평가)
+
+- **최초**: 조건부 3축(crisis_alpha/MDD-complement/bad-normal IC) 실측 — 선례 88건 매칭 중 0건이 이 축을 계산.
+- **최초**: 에피소드 분해로 "하락형 위기 방어 실재"와 "멜트업-라벨 오염"을 분리 — 선례의 단일 평균 채점으론 불가한 구분.
+- **최초**: 방향정렬의 고변동-롱 실측 문서화(expanding IC +0.11~0.14) + 양 lane 병행 — 선례 LowVol류가 "왜" 전기간에서 죽는지의 기전(저변동 롱 = KR에서 만성 역풍) 특정.
+- **한계 정직**: standalone 승격 관점의 결론은 선례와 동일(불가). 새 지식은 판정 사유의 교체(채점 위반 → 기전 실측)와 소비처 특정(overlay 입력)이지, 새 배포 가능 alpha가 아님.
+
+## 7. 검증 무결성
+
+- parity: defensive AST 5축 max|diff| 0.0e0 / combo 4종 ≤1.8e-15 — 전부 PASS (컴파일러 대조 검증 완료).
+- selection_type=chain (전 설계 사전등록, argmax 0회) / n_trials=15 기록 / DSR 게이트 비적용(비-sweep).
+- live_with_ast: 33 (본 WT +15, VOLC 접두 — Step 5 조건 30 초과 달성).
+- Rule 1 (failure_rules) 발동 명시: 기대 alpha 음수 → Risk 단계 진행 비권고, status ABORTED 기록.
+

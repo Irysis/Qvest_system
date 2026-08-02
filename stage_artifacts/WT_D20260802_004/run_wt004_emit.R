@@ -166,7 +166,20 @@ alpha_package <- list(
     selection_note = "조합방식·멤버십 전부 사전등록(등가중 + 상관 0.8 규칙, 성과 무참조). argmax 선택 없음. DSR = sweep 아님 → 게이트 비적용, n_trials 기록."
   ),
   selection_objective = "canonical_port_t",
-  challenge_flags = list()   # emit 후 challenge_note와 함께 갱신
+  alpha_inheritance_cor = round(abs(inh), 4),
+  alpha_inheritance_note = sprintf("C_ORTH_def vs Core(M01) 월별 횡단면 Spearman 평균 %.4f — |cor| < 0.95 충족", inh),
+  challenge_flags = list(
+    list(id = "CF-1", severity = "HIGH",
+         flag = "가설 기각 — 조합(C_ORTH_def)의 crisis_alpha(-5.26%/월, NW t -1.26)가 단일 최선(D55_def -2.88%/월)보다 나쁨. 하락형 위기(BM<0 에피소드 4건)만 봐도 조합 누적 active(+8.4%)가 단일 최선(D03_def +24.4%)을 넘지 못함. 조합 개선 없음."),
+    list(id = "CF-2", severity = "HIGH",
+         flag = "failure_rules Rule 1 발동 — 방어 lane 전기간 기대 alpha 음수(netSR -0.20~-0.32, PORT_t -0.39~-1.31), 비용 대비 기대 alpha ratio < 2 충족 불가. standalone 슬리브 부적격. Risk 단계 진행 비권고 (REJECT recommendation)."),
+    list(id = "CF-3", severity = "MEDIUM",
+         flag = "국면 라벨 오염 — 2026-02~07 에피소드가 CRISIS 라벨이나 벤치 누적 +33.7%(초대형주 멜트업). regime-라벨 기반 crisis_alpha 축이 이 에피소드에 지배됨(-92.5% cum active). 하락형 위기(GFC/COVID/2025-11)에선 방어 lane 전 구성 양(+) active 실측 — episodic 방어 신호는 실재하되 overlay/국면-조건부 소비면만 유효(방어팩터 DB 전수 07-03 확증과 정합)."),
+    list(id = "CF-4", severity = "MEDIUM",
+         flag = "방향정렬 실측 — connector 정본(Z_Score_Aligned, expanding IC)은 변동성 팩터를 '고변동 롱'으로 배향(IC +0.11~0.14 전 구간 안정). 방어 배향은 AST MUL(-1) 구조 선언 + 양 lane 병행 측정으로 처리. canonical lane도 전 구성 PORT_t 음수 — 어느 배향도 top-25 실현 alpha 없음."),
+    list(id = "CF-5", severity = "LOW",
+         flag = "선례 채점 판별(a) — LowVol/BlitzVanVliet/Defense+quality 등 defense 계열 FAIL 최소 5건이 전기간 SR/CAGR/MDD 채점(조건부 축 0개) = AX-001 위반 채점이었음. 단 본 라운드 조건부 재평가로도 승격 불가 판정 동일(사유는 다름 — 만성 음의 drift + 조합 무개선). LowVol hurdle detected_family='other' 오분류로 AX-001 hook 우회 정황 — 거버넌스 수리 대상.")
+  )
 )
 
 write_json(alpha_package, file.path(MB, "alpha_package.json"), pretty = TRUE, auto_unbox = TRUE,
