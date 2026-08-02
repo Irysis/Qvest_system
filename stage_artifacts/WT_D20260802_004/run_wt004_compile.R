@@ -48,8 +48,9 @@ for (f in ALL6) {
   write_json(leaf_of(f), file.path(OUT, sprintf("ast_%s_canonical.json", f)),
              auto_unbox = TRUE, pretty = TRUE)
 }
+const_neg1 <- list(type = "const", value = -1)
 for (f in F5) {
-  write_json(list(type = "op", op = "MUL", args = list(leaf_of(f), -1)),
+  write_json(list(type = "op", op = "MUL", args = list(leaf_of(f), const_neg1)),
              file.path(OUT, sprintf("ast_%s_defensive.json", f)),
              auto_unbox = TRUE, pretty = TRUE)
 }

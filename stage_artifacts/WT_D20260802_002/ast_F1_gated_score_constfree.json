@@ -1,0 +1,60 @@
+{
+  "type": "op",
+  "op": "WHERE",
+  "args": [
+    {
+      "type": "leaf",
+      "class": "STORED_SCORE",
+      "source": "stored_panel",
+      "field": "alpha_score_base",
+      "avail_offset_days": 0,
+      "restatement_prone": true,
+      "contract": {
+        "path": "stage_artifacts/WT_D20260802_002/ast_input_panel.parquet",
+        "value_col": "alpha_score_base",
+        "avail_offset_days": 0,
+        "store_build_hash": "064c809b5d06c0f59e8929a24274946ba913eb9f",
+        "generator_code_path": "05_Production/2.Factor_Model/2-3.STR_1715_on_M4_R05_noLayer4_PG2/01_reproducible_code/_recompute_alpha_asof.R (경유: stage_artifacts/WT_D20260714_004/_build_score.R verbatim port)",
+        "generated_at": "2026-07-14 17:57:33",
+        "production_parity_verified": true,
+        "parity_evidence": "05_Production/2.Factor_Model/2-1.STR_1715_AR_on_M4_R05_overlay_PG2/02_holdings_universe/alpha_scores_str1715_268m_cleanT1_meta.json (spearman(prod,recon)=1.0 4개 표본월, cap-w top25 PORT_t 3.058 parity)"
+      }
+    },
+    {
+      "type": "op",
+      "op": "SIGN",
+      "args": [
+        {
+          "type": "op",
+          "op": "CS_DEMEAN",
+          "args": [
+            {
+              "type": "op",
+              "op": "CS_RANK",
+              "args": [
+                {
+                  "type": "leaf",
+                  "class": "STORED_SCORE",
+                  "source": "stored_panel",
+                  "field": "fa_share_l0",
+                  "avail_offset_days": 0,
+                  "restatement_prone": false,
+                  "contract": {
+                    "path": "stage_artifacts/WT_D20260802_002/ast_input_panel.parquet",
+                    "value_col": "fa_share_l0",
+                    "avail_offset_days": 0,
+                    "store_build_hash": "064c809b5d06c0f59e8929a24274946ba913eb9f",
+                    "generator_code_path": "stage_artifacts/WT_D20260802_002/run_02_build_gate.R",
+                    "generated_at": "2026-08-02",
+                    "production_parity_verified": false,
+                    "parity_note": "본 라운드에서 신규 생성한 진단 패널 — production 코드 경로 파생이 아니다. 정직 선언(false). base 스코어 리프만 parity 검증됨."
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

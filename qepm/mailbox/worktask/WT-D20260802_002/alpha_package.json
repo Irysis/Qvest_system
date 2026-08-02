@@ -42,15 +42,21 @@
       }
     ],
     "regime_scope": {
-      "holds_in": ["neutral", "expansion"],
-      "weakens_or_reverses_in": ["crisis", "post_2017_megacap_regime"],
+      "holds_in": [
+        "neutral",
+        "expansion"
+      ],
+      "weakens_or_reverses_in": [
+        "crisis",
+        "post_2017_megacap_regime"
+      ],
       "boundary_rationale": "메커니즘 도출 경계: 위기 국면은 외국인 유동성 청산이 정보 전달을 압도해 활동량이 정보성과 무관해진다. 또한 2017년 이후 KR 은 외국인 자금이 초대형 반도체 축에 집중되는 국면이라 '외국인 활동'이 종목별 정보 전달이 아니라 인덱스 패시브 흐름의 대리변수로 변질된다. 실측도 이 경계와 정합 — 게이트 유니버스의 EW-대비 post2017 t 는 0.755 로 base 1.943 대비 붕괴."
     }
   },
   "factors": [
     {
       "factor_id": "F1_gated_base_score",
-      "ast_file": "stage_artifacts/WT_D20260802_002/ast_F1_gated_score.json",
+      "ast_file": "stage_artifacts/WT_D20260802_002/ast_F1_gated_score_constfree.json",
       "ast": {
         "type": "op",
         "op": "WHERE",
@@ -70,7 +76,7 @@
               "generator_code_path": "05_Production/2.Factor_Model/2-3.STR_1715_on_M4_R05_noLayer4_PG2/01_reproducible_code/_recompute_alpha_asof.R (경유: stage_artifacts/WT_D20260714_004/_build_score.R verbatim port)",
               "generated_at": "2026-07-14 17:57:33",
               "production_parity_verified": true,
-              "parity_evidence": "alpha_scores_str1715_268m_cleanT1_meta.json — spearman(prod, recon)=1.0 (표본월 4), cap-w top25 PORT_t 3.058 parity"
+              "parity_evidence": "05_Production/2.Factor_Model/2-1.STR_1715_AR_on_M4_R05_overlay_PG2/02_holdings_universe/alpha_scores_str1715_268m_cleanT1_meta.json (spearman(prod,recon)=1.0 4개 표본월, cap-w top25 PORT_t 3.058 parity)"
             }
           },
           {
@@ -79,7 +85,7 @@
             "args": [
               {
                 "type": "op",
-                "op": "SUB",
+                "op": "CS_DEMEAN",
                 "args": [
                   {
                     "type": "op",
@@ -100,12 +106,11 @@
                           "generator_code_path": "stage_artifacts/WT_D20260802_002/run_02_build_gate.R",
                           "generated_at": "2026-08-02",
                           "production_parity_verified": false,
-                          "parity_note": "본 라운드 신규 진단 패널 — production 코드 경로 파생 아님. 정직 선언(false). 게이트 변수는 판정 base 가 아니라 조건화 변수이므로 §7b base-권위 요건 대상 아님."
+                          "parity_note": "본 라운드에서 신규 생성한 진단 패널 — production 코드 경로 파생이 아니다. 정직 선언(false). base 스코어 리프만 parity 검증됨."
                         }
                       }
                     ]
-                  },
-                  { "type": "const", "value": 0.5 }
+                  }
                 ]
               }
             ]
@@ -114,7 +119,8 @@
       },
       "role": "universe_conditioner",
       "restatement_exposure": 1,
-      "note": "base 스코어 리프는 verbatim 상속 — 신호 가공 0. WHERE 조건부만이 본 라운드의 신규 구조."
+      "note": "base 스코어 리프는 verbatim 상속 — 신호 가공 0. WHERE 조건부만이 본 라운드의 신규 구조.",
+      "ast_note": "정본 = const-free 표현 SIGN(CS_DEMEAN(CS_RANK(g))). 초안 SUB(CS_RANK(g), 0.5) 와 컴파일 산출이 셀 39,001개 max|Δ|=0 으로 완전 동일함을 실측 확인(run_07_ast_constfree.R). 노드 1개·자유 파라미터 1개 감소. 초안은 stage_artifacts/WT_D20260802_002/ast_F1_gated_score.json 에 보존."
     }
   ],
   "combination_rule": "single_factor",
@@ -162,7 +168,10 @@
       "neutralization": "none (base 상속 — 본 라운드 미변경)",
       "economic_rationale": "애널리스트 수정·어닝서프라이즈의 점진 반영(PEAD 계열) + 수익성 안정성 방어축. 본 라운드가 신규 발굴한 것이 아니라 현직 book 의 검증된 신호를 base 로 상속했다.",
       "weight_theta": 1.0,
-      "references": ["Bernard-Thomas 1989 (PEAD)", "Novy-Marx 2013 (profitability)"],
+      "references": [
+        "Bernard-Thomas 1989 (PEAD)",
+        "Novy-Marx 2013 (profitability)"
+      ],
       "source": "db_existing_production_inherited",
       "redundancy_cluster_id": "CLUSTER_STR1715_CORE_INCUMBENT",
       "redundancy_note": "incumbent 와 동일 클러스터 — 신규 팩터 아님(Factor Zoo 축소 원칙 정합: 발굴이 아니라 기존 신호의 적용면 검증)"
@@ -177,7 +186,9 @@
       "economic_rationale": "정보→가격 전달 주체의 존재 강도. 방향(순매수 부호)을 쓰지 않는 것이 선례 4건과의 구조적 차이.",
       "weight_theta": 0.0,
       "weight_theta_note": "스코어에 가중 0 — 이 변수는 α̂ 성분이 아니라 유니버스 조건(WHERE cond)으로만 진입한다.",
-      "references": ["J. Jeong, J. Eo, J. Kang, 'Net arbitrage trading by foreign investors and short sellers and stock returns: Evidence from the Korean stock market', Pacific-Basin Finance Journal"],
+      "references": [
+        "J. Jeong, J. Eo, J. Kang, 'Net arbitrage trading by foreign investors and short sellers and stock returns: Evidence from the Korean stock market', Pacific-Basin Finance Journal"
+      ],
       "source": "new_designed",
       "redundancy_cluster_id": "CLUSTER_KR_INVESTOR_FLOW",
       "redundancy_note": "선례 4건(Investor Flow Foreign NetBuy FAIL / Anti-Herding FAIL / DIST-QPM-005 개인 contrarian / 외국인 국면 MARGINAL)과 동일 데이터 클러스터. 차이 = flow 를 signal 이 아니라 conditioner 로 쓴 점 + 방향불변 활동량."
@@ -192,16 +203,28 @@
     "metric_type": "canonical_screen",
     "rank_ic": 0.0393,
     "rank_ic_base_no_gate": 0.0485,
-    "icir": 0.290,
+    "icir": 0.29,
     "icir_base_no_gate": 0.451,
     "harvey_t_stat": 5.11,
     "harvey_t_stat_note": "rank-IC NW lag-3 t (ADVISORY — portfolio-alpha t 와 명확히 구분). base 무게이트 = 7.70. rank-IC t 가 5.11 로 여전히 높지만 실현 PORT_t 는 2.198 로 붕괴 — Cycle 2 교훈(IC t ≠ portfolio-alpha t)의 재현 사례.",
     "monotonicity": 0.67,
     "subperiod_stability": 0.45,
     "subperiod_detail": {
-      "P1_2004_2014": { "mean_ic": 0.0536, "t": 4.46, "n": 133 },
-      "P2_2015_2019": { "mean_ic": 0.0242, "t": 1.84, "n": 60 },
-      "P3_2020_2026": { "mean_ic": 0.0261, "t": 2.14, "n": 75 }
+      "P1_2004_2014": {
+        "mean_ic": 0.0536,
+        "t": 4.46,
+        "n": 133
+      },
+      "P2_2015_2019": {
+        "mean_ic": 0.0242,
+        "t": 1.84,
+        "n": 60
+      },
+      "P3_2020_2026": {
+        "mean_ic": 0.0261,
+        "t": 2.14,
+        "n": 75
+      }
     },
     "turnover_proxy": 11.67,
     "turnover_proxy_unit": "annual turnover (Σ|Δw|×12) — 제약 11.0/yr 대비 초과, base 12.45 대비로는 감소",
@@ -237,34 +260,85 @@
       "B_gate": 2.175,
       "B_gate_low": 4.583,
       "B_gate_lag1": 2.746,
-      "C_liq_matched": 3.310,
+      "C_liq_matched": 3.31,
       "D_size_matched": 2.733,
       "E_gate_sizeneut": 2.734
     },
     "placebo_random_50pct": {
-      "n_draws": 20, "mean": 3.481, "sd": 0.546, "q05": 2.497, "q50": 3.576, "q95": 4.315, "max": 4.444,
+      "n_draws": 20,
+      "mean": 3.481,
+      "sd": 0.546,
+      "q05": 2.497,
+      "q50": 3.576,
+      "q95": 4.315,
+      "max": 4.444,
       "interpretation": "B_gate 2.198 < q05 2.497 → 게이트는 무작위 절반 축소보다도 나쁘다(하위 5% 밖). B_gate_low 3.869 는 q50~q95 사이 = 무작위와 구분 불가(개선 아님)."
     },
     "paired_nw_lag3_vs_base": {
-      "B_gate": { "mean_diff_ann": -0.0405, "nw_t": -1.945 },
-      "B_gate_low": { "mean_diff_ann": 0.0329, "nw_t": 1.436 },
-      "B_gate_lag1": { "mean_diff_ann": -0.0277, "nw_t": -1.336 },
-      "C_liq_matched": { "mean_diff_ann": -0.0038, "nw_t": -0.203 },
-      "D_size_matched": { "mean_diff_ann": -0.0156, "nw_t": -0.731 },
-      "E_gate_sizeneut": { "mean_diff_ann": -0.0326, "nw_t": -1.687 }
+      "B_gate": {
+        "mean_diff_ann": -0.0405,
+        "nw_t": -1.945
+      },
+      "B_gate_low": {
+        "mean_diff_ann": 0.0329,
+        "nw_t": 1.436
+      },
+      "B_gate_lag1": {
+        "mean_diff_ann": -0.0277,
+        "nw_t": -1.336
+      },
+      "C_liq_matched": {
+        "mean_diff_ann": -0.0038,
+        "nw_t": -0.203
+      },
+      "D_size_matched": {
+        "mean_diff_ann": -0.0156,
+        "nw_t": -0.731
+      },
+      "E_gate_sizeneut": {
+        "mean_diff_ann": -0.0326,
+        "nw_t": -1.687
+      }
     },
     "cap_tier_decomposition": {
       "tier_def": "MEGA = cap rank 1-10 / MID = 11-30 / OTHER = 31+",
-      "A_base": { "w_MEGA": 0.0601, "w_MID": 0.0870, "w_OTHER": 0.8528, "contrib_ann_OTHER": 0.1978 },
-      "B_gate": { "w_MEGA": 0.0849, "w_MID": 0.1087, "w_OTHER": 0.8063, "contrib_ann_OTHER": 0.1549 },
-      "D_size_matched": { "w_MEGA": 0.1076, "w_MID": 0.1527, "w_OTHER": 0.7397, "contrib_ann_OTHER": 0.1601 },
+      "A_base": {
+        "w_MEGA": 0.0601,
+        "w_MID": 0.087,
+        "w_OTHER": 0.8528,
+        "contrib_ann_OTHER": 0.1978
+      },
+      "B_gate": {
+        "w_MEGA": 0.0849,
+        "w_MID": 0.1087,
+        "w_OTHER": 0.8063,
+        "contrib_ann_OTHER": 0.1549
+      },
+      "D_size_matched": {
+        "w_MEGA": 0.1076,
+        "w_MID": 0.1527,
+        "w_OTHER": 0.7397,
+        "contrib_ann_OTHER": 0.1601
+      },
       "interpretation": "게이트는 포트를 대형 tier 쪽으로 밀어올리고(MEGA 6.0%→8.5%, MID 8.7%→10.9%) 알파의 실제 서식지인 OTHER tier 의 연율 gross 기여를 19.78%→15.49% 로 깎는다. 기존 cap-tier 트랩(알파는 벤치 저비중 tier 에 국소화) 지식과 정합."
     },
     "ic_by_foreign_activity_quartile": {
-      "Q1_low": { "mean_ic": 0.0518, "nw_t": 5.93 },
-      "Q2": { "mean_ic": 0.0525, "nw_t": 5.92 },
-      "Q3": { "mean_ic": 0.0410, "nw_t": 4.17 },
-      "Q4_high": { "mean_ic": 0.0370, "nw_t": 4.44 },
+      "Q1_low": {
+        "mean_ic": 0.0518,
+        "nw_t": 5.93
+      },
+      "Q2": {
+        "mean_ic": 0.0525,
+        "nw_t": 5.92
+      },
+      "Q3": {
+        "mean_ic": 0.041,
+        "nw_t": 4.17
+      },
+      "Q4_high": {
+        "mean_ic": 0.037,
+        "nw_t": 4.44
+      },
       "interpretation": "★핵심 기전. base 스코어의 횡단 예측력은 외국인 활동이 낮을수록 강하다(단조). 가설이 상정한 '전달 주체' 효과보다 '차익거래 한계/소외기업' 효과가 지배한다 — 외국인이 활발한 종목에서는 수정·서프라이즈 정보가 이미 반영되어 잔여 알파가 적다."
     },
     "gate_variable_standalone": {
@@ -274,8 +348,8 @@
     },
     "mechanism_damage_path": {
       "top25_gate_pass_rate": 0.488,
-      "top25_pass_minus_drop_monthly": -0.0010,
-      "top25_pass_minus_drop_nw_t": -0.30,
+      "top25_pass_minus_drop_monthly": -0.001,
+      "top25_pass_minus_drop_nw_t": -0.3,
       "interpretation": "게이트는 base top-25 픽의 51.2% 를 제거하는데, 제거되는 종목들의 실현수익이 남는 종목보다 낮지 않다(t=-0.30). 즉 이득 없이 상위 픽 절반을 하위 랭크로 교체 → 순수 희석이 손실 기전."
     }
   },
@@ -298,13 +372,48 @@
   "selection_type": "chain",
   "alpha_discovery_count": 0,
   "challenge_flags": [
-    { "id": "CF-01", "severity": "HIGH", "flag": "PREREGISTERED_HYPOTHESIS_FALSIFIED", "detail": "사전등록 necessary 조건(B_gate > A_base) 이 반대 방향으로 결정적 미충족. cap-w 3.478→2.198, EW-uni 4.218→2.175 (양 basis 일치). paired NW t = -1.95." },
-    { "id": "CF-02", "severity": "HIGH", "flag": "ROLE_CARD_MISMATCH_RECLASSIFY", "detail": "wt_type=discovery 인데 alpha_inheritance_cor = 1.0 (base 신호 verbatim 상속 = request 설계 요구). alpha_discovery_certificate 발급 자격 없음. governance_log 에 reclassify_proposal 기록 — 적정 분류는 'universe_conditioning_test'(기존 4종 어디에도 정확히 대응하지 않음)." },
-    { "id": "CF-03", "severity": "MEDIUM", "flag": "PARTIAL_SCOPE_HALF_PAPER", "detail": "공매도 축 데이터 부재로 논문 원안의 절반만 검정. 반쪽 결과를 전체 검증으로 승계 금지." },
-    { "id": "CF-04", "severity": "MEDIUM", "flag": "ADVISORY_METRIC_DIVERGENCE", "detail": "게이트 유니버스의 rank-IC harvey-t 는 5.11 로 여전히 유의하나 실현 PORT_t 는 2.198 로 붕괴. IC 계열 단독 판정 금지 근거 재확인(Cycle 2 교훈 재현)." },
-    { "id": "CF-05", "severity": "MEDIUM", "flag": "STORED_SCORE_PARITY_UNVERIFIED_LEAF", "detail": "게이트 변수 리프의 production_parity_verified = false (본 라운드 신규 파생 패널). 정직 선언이며 위장 아님. base 스코어 리프만 parity 검증됨 — §7b base 권위 요건은 충족." },
-    { "id": "CF-06", "severity": "LOW", "flag": "TURNOVER_ABOVE_MANDATE", "detail": "게이트판 연회전율 11.67 (제약 11.0/yr 초과). base 12.45 대비로는 감소이나 두 판 모두 제약 초과 — 이는 canonical top-25 EW screening 규격의 성질이며 optimizer 단계 turnover penalty 미적용 상태의 값이다." },
-    { "id": "CF-07", "severity": "LOW", "flag": "AST_MEDIAN_BOUNDARY_DIFF", "detail": "컴파일러 경로(CS_RANK>0.5, 중앙값 정확히 0.5 는 SIGN=0 으로 제외) vs 손빌드(ceiling(N/2), 중앙값 포함) 가 홀수-N 월의 중앙값 종목 129셀에서 다름. Jaccard 0.9967, 겹치는 39,001 셀 max|Δ|=0. PORT_t 2.198(손빌드) vs 2.219(컴파일러) — 판정 불변." }
+    {
+      "id": "CF-01",
+      "severity": "HIGH",
+      "flag": "PREREGISTERED_HYPOTHESIS_FALSIFIED",
+      "detail": "사전등록 necessary 조건(B_gate > A_base) 이 반대 방향으로 결정적 미충족. cap-w 3.478→2.198, EW-uni 4.218→2.175 (양 basis 일치). paired NW t = -1.95."
+    },
+    {
+      "id": "CF-02",
+      "severity": "HIGH",
+      "flag": "ROLE_CARD_MISMATCH_RECLASSIFY",
+      "detail": "wt_type=discovery 인데 alpha_inheritance_cor = 1.0 (base 신호 verbatim 상속 = request 설계 요구). alpha_discovery_certificate 발급 자격 없음. governance_log 에 reclassify_proposal 기록 — 적정 분류는 'universe_conditioning_test'(기존 4종 어디에도 정확히 대응하지 않음)."
+    },
+    {
+      "id": "CF-03",
+      "severity": "MEDIUM",
+      "flag": "PARTIAL_SCOPE_HALF_PAPER",
+      "detail": "공매도 축 데이터 부재로 논문 원안의 절반만 검정. 반쪽 결과를 전체 검증으로 승계 금지."
+    },
+    {
+      "id": "CF-04",
+      "severity": "MEDIUM",
+      "flag": "ADVISORY_METRIC_DIVERGENCE",
+      "detail": "게이트 유니버스의 rank-IC harvey-t 는 5.11 로 여전히 유의하나 실현 PORT_t 는 2.198 로 붕괴. IC 계열 단독 판정 금지 근거 재확인(Cycle 2 교훈 재현)."
+    },
+    {
+      "id": "CF-05",
+      "severity": "MEDIUM",
+      "flag": "STORED_SCORE_PARITY_UNVERIFIED_LEAF",
+      "detail": "게이트 변수 리프의 production_parity_verified = false (본 라운드 신규 파생 패널). 정직 선언이며 위장 아님. base 스코어 리프만 parity 검증됨 — §7b base 권위 요건은 충족."
+    },
+    {
+      "id": "CF-06",
+      "severity": "LOW",
+      "flag": "TURNOVER_ABOVE_MANDATE",
+      "detail": "게이트판 연회전율 11.67 (제약 11.0/yr 초과). base 12.45 대비로는 감소이나 두 판 모두 제약 초과 — 이는 canonical top-25 EW screening 규격의 성질이며 optimizer 단계 turnover penalty 미적용 상태의 값이다."
+    },
+    {
+      "id": "CF-07",
+      "severity": "LOW",
+      "flag": "AST_MEDIAN_BOUNDARY_DIFF",
+      "detail": "컴파일러 경로(CS_RANK>0.5, 중앙값 정확히 0.5 는 SIGN=0 으로 제외) vs 손빌드(ceiling(N/2), 중앙값 포함) 가 홀수-N 월의 중앙값 종목 129셀에서 다름. Jaccard 0.9967, 겹치는 39,001 셀 max|Δ|=0. PORT_t 2.198(손빌드) vs 2.219(컴파일러) — 판정 불변."
+    }
   ],
   "next_probe": [
     {

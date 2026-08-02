@@ -1,27 +1,67 @@
 {
-  "schema": "ast_verify/v1",
-  "strategy_id": null,
-  "package_path": "C:\\Users\\99922\\OneDrive\\Quant_Module_Moltbot\\qepm\\mailbox\\worktask\\WT-D20260802_002\\alpha_package.json",
-  "checked_at": "2026-08-02T10:27:56",
-  "sources": {
-    "factor_registry": "C:\\Users\\99922\\OneDrive\\Quant_Module_Moltbot\\02_Infrastructure\\factor_db\\factor_registry.json",
-    "ast_field_map": "C:\\Users\\99922\\OneDrive\\Quant_Module_Moltbot\\06_Registry\\ast_field_map_v0.json",
-    "field_map_version": "v0"
-  },
-  "verdict": "FAIL_CONTRACT",
-  "contract_failures": [
+  "schema": "ast_verify_multifactor/v1",
+  "package": "C:\\Users\\99922\\OneDrive\\Quant_Module_Moltbot\\qepm\\mailbox\\worktask\\WT-D20260802_002\\alpha_package.json",
+  "overall_verdict": "WARN_RESTATEMENT",
+  "n_ast_roots": 1,
+  "per_factor": [
     {
-      "path": "root",
-      "leaf_type": "PACKAGE",
-      "missing": [
-        "ast"
+      "schema": "ast_verify/v1",
+      "strategy_id": "FQ084_F1_gated_base_score",
+      "package_path": "C:\\Users\\99922\\AppData\\Local\\Temp\\tmp918jqb8c.json",
+      "checked_at": "2026-08-02T10:31:17",
+      "sources": {
+        "factor_registry": "C:\\Users\\99922\\OneDrive\\Quant_Module_Moltbot\\02_Infrastructure\\factor_db\\factor_registry.json",
+        "ast_field_map": "C:\\Users\\99922\\OneDrive\\Quant_Module_Moltbot\\06_Registry\\ast_field_map_v0.json",
+        "field_map_version": "v0"
+      },
+      "verdict": "WARN_RESTATEMENT",
+      "sig_date": "2026-04-30",
+      "decision_ts": "2026-04-30",
+      "max_avail_ts": "2026-04-30",
+      "leaf_count": 2,
+      "dialect_args_used": true,
+      "parity_unverified": [
+        {
+          "path": "root.WHERE/1.SIGN/0.CS_DEMEAN/0.CS_RANK/0",
+          "leaf": "STORED_SCORE[]"
+        }
       ],
-      "detail": "package에 ast 노드 부재 (top-level/factor_definition/spec)"
+      "unmapped_restatement": [
+        {
+          "path": "root.WHERE/0",
+          "leaf": "STORED_SCORE[]",
+          "group_id": null
+        },
+        {
+          "path": "root.WHERE/1.SIGN/0.CS_DEMEAN/0.CS_RANK/0",
+          "leaf": "STORED_SCORE[]",
+          "group_id": null
+        }
+      ],
+      "op_count": 4,
+      "violations": [],
+      "contract_failures": [],
+      "restatement_leaves": [
+        {
+          "path": "root.WHERE/0",
+          "leaf": "STORED_SCORE[]",
+          "source": "unmapped:no_group_id"
+        },
+        {
+          "path": "root.WHERE/1.SIGN/0.CS_DEMEAN/0.CS_RANK/0",
+          "leaf": "STORED_SCORE[]",
+          "source": "unmapped:no_group_id"
+        }
+      ],
+      "discrepancy_used": [],
+      "staleness_flags": [],
+      "notes": [
+        "root.WHERE/0: field_map 미등재 STORED_SCORE — 개정(restatement) 위험을 확인할 수 없어 보수적으로 표시했다. 해소하려면 ast_field_map 등재 또는 리프에 vintage_available=true 를 근거와 함께 선언할 것.",
+        "root.WHERE/1.SIGN/0.CS_DEMEAN/0.CS_RANK/0: production_parity_verified=false — 정직 선언으로 통과시키되 incumbent base 비교(§7b)에는 이 패널을 쓸 수 없다(judge·governor 입력).",
+        "root.WHERE/1.SIGN/0.CS_DEMEAN/0.CS_RANK/0: field_map 미등재 STORED_SCORE — 개정(restatement) 위험을 확인할 수 없어 보수적으로 표시했다. 해소하려면 ast_field_map 등재 또는 리프에 vintage_available=true 를 근거와 함께 선언할 것."
+      ],
+      "factor_id": "F1_gated_base_score"
     }
   ],
-  "violations": [],
-  "restatement_leaves": [],
-  "discrepancy_used": [],
-  "staleness_flags": [],
-  "notes": []
+  "wrapper_rationale": "ast_verify.py CLI extract_ast(627행)는 factors[] 를 보지 않는다 — ast_spec_gate.sh 의 ALB-006 수리(extract_asts)가 CLI 진입점에 미반영. 본 wrapper 는 게이트와 동일 수집 규칙을 재현할 뿐 패키지를 변형하지 않는다."
 }

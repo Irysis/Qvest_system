@@ -129,10 +129,14 @@ feats[["CORE_M01"]] <- read_feats(sprintf("ast_manifest_%s_canonical.json", CORE
 # 조합 AST 선언 + probe 컴파일 (manifest 취득 + parity)
 source("02_Infrastructure/ast/ast_compile.R")
 leaf_of <- function(f) list(type = "leaf", class = "FIELD", source = "factor_db_monthly", field = f)
+const_neg1 <- list(type = "const", value = -1)
 mk_combo_ast <- function(members, sign_) {
-  args <- lapply(members, function(f)
-    if (sign_ < 0) list(type = "op", op = "MUL", args = list(leaf_of(f), -1)) else leaf_of(f))
-  list(type = "op", op = "ADD", args = args)
+  nodes <- lapply(members, function(f)
+    if (sign_ < 0) list(type = "op", op = "MUL", args = list(leaf_of(f), const_neg1)) else leaf_of(f))
+  # ADD는 arity 2 가능성 — 이진 중첩으로 결합 (n-ary 미지원 대비)
+  acc <- nodes[[1]]
+  for (i in seq_along(nodes)[-1]) acc <- list(type = "op", op = "ADD", args = list(acc, nodes[[i]]))
+  acc
 }
 probe_dates <- SIG[format(SIG, "%Y-%m") %in% c("2008-11","2015-06","2020-03","2024-12")]
 UNIV_probe <- unique(rbindlist(lapply(pan[F5], function(d) d[Date %in% probe_dates, .(Date, Ticker)])))
