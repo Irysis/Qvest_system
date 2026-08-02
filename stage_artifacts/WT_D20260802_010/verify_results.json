@@ -1,0 +1,53 @@
+{
+  "task_id": "WT-D20260802_010",
+  "generated_at": "2026-08-02 12:47:08",
+  "n_pass": 9,
+  "n_total": 9,
+  "results": [
+    {
+      "test": "T1 Gaussian location W1=|dmu|",
+      "pass": true,
+      "detail": "W1=0.500000 (이론 0.5)"
+    },
+    {
+      "test": "T2 Gaussian scale W1=|ds|*sqrt(2/pi)",
+      "pass": true,
+      "detail": "W1=0.797884 (이론 0.797885)"
+    },
+    {
+      "test": "T3 Uniform pair + translation",
+      "pass": true,
+      "detail": "W1=0.50000 (0.5) / 0.70000 (0.7)"
+    },
+    {
+      "test": "T4 1D barycenter = quantile mean (exact)",
+      "pass": true,
+      "detail": "max|diff|=4.44e-16"
+    },
+    {
+      "test": "T5 affine invariance (norm quantiles exact)",
+      "pass": true,
+      "detail": "max|diff|=6.66e-16"
+    },
+    {
+      "test": "T6 decomposition identity (loc-scale)",
+      "pass": true,
+      "detail": "max|diff|=0.00e+00 (rtail=dmu+ds*zbar_R 재현)"
+    },
+    {
+      "test": "T7 grid bias + sampling noise floor (문서화)",
+      "pass": true,
+      "detail": "K31 vs K2001 bias=-0.750% | n=63 동일분포 W1 노이즈 med=0.167 p90=0.269"
+    },
+    {
+      "test": "T8a injection: L2-instead-of-L1 caught",
+      "pass": true,
+      "detail": "BROKEN=1.0000 vs 이론 0.7979 (불일치 검출=TRUE)"
+    },
+    {
+      "test": "T8b injection: unsorted-quantile caught",
+      "pass": true,
+      "detail": "분위 단조성 위반 검출=TRUE"
+    }
+  ]
+}
