@@ -1,0 +1,218 @@
+{
+  "task_id": "WT-D20260802_021",
+  "strategy_id": "WT_D20260802_021_FQ116_COMPOSITE_MECHANISM",
+  "as_of_date": "2026-08-02",
+  "forecast_horizon": "1M",
+  "spec_version": "ast_v1.1",
+  "pit": {
+    "sig_date": "2026-06-30",
+    "decision_ts": "2026-08-02"
+  },
+  "hypothesis": {
+    "statement": "다팩터 합성(튜닝 5팩터 EW 정적, WT-015 실측 PORT_t 0.338)이 단일 최강(M01_PATHQ 2.050)에 지는 이유는 3후보 기전(M1 slot 잠식 / M2 평균화 뭉갬 / M3 커버리지 이질) 중 어느 것인가 — slot 점유 분해로 판별한다. primary = 기전 판별(성과 개선 아님). 사전등록 stage_artifacts/WT_D20260802_021/preregistration.json (측정 전 고정).",
+    "mechanism": {
+      "agent": "EW 합성 스크리너 자체 — top-25 slot이 희소자원인 구현에서 rank-IC 양성이지만 tail-전이 음성인 팩터(D03_EWMA IC t +3.71 / PORT_t −1.73, Q01_EB IC t +2.21 / PORT_t −0.21)가 z 평균을 통해 slot 배분권을 행사하는 배합 주체",
+      "friction": "top-25 long-only 구현(고정 축)에서는 합성 스코어의 극단 우측 꼬리만 소비됨 — 전 분포 통계인 rank-IC와 꼬리-전이(PORT_t)의 괴리가 배합 단계에서 교정되지 않음 (KR 공매도 제약으로 중간·좌측 분포의 IC는 수익화 불가)",
+      "path": "합성 z 평균 → 다수 팩터 합의 종목이 단일 최강 팩터의 꼬리 종목을 slot에서 밀어냄(월평균 20.6/25 교체) → 밀어 넣은 종목의 실현 수익이 밀려난 종목 대비 열위 → 합성 포트 손실"
+    },
+    "falsification": [
+      {
+        "observation": "합성 top-25와 단일(M01 계열) top-25의 overlap이 20/25 이상이면 slot 잠식 자체가 소량 = M1 기각. 실측 4.4/25 (월평균 20.6 slot 교체) — 잠식 실재",
+        "fields": ["M01_Mom_12_1"]
+      },
+      {
+        "observation": "양-전이 성분(M01 계열 + V01 섹터상대 계열)만의 2팩터 EW 조합이 단일 대비 paired NW t ≤ −1.0으로 여전히 열위면 평균화 자체가 독립 손실 기전(M2). 실측 +0.37 — M2 독립 기여 기각",
+        "fields": ["M01_Mom_12_1", "V01_BM"]
+      },
+      {
+        "observation": "팩터 커버리지 이질(배당 계열 V06 결측월 11% 포함) 상위 1/3 월의 합성-단일 gap이 하위 1/3과 다르지 않으면(|NW t|<1) M3 기각. 실측 t −0.88 — 기각",
+        "fields": ["V06_fDY", "D03_RealVol", "Q01_GPA"]
+      }
+    ],
+    "regime_scope": {
+      "holds_in": ["RISK_ON", "NEUTRAL", "CAUTION", "CRISIS"],
+      "weakens_or_reverses_in": ["국면 무관이 기전상 예측 — 약화 국면을 특정하지 않는 것 자체가 판별 특징 (아래 rationale)"],
+      "boundary_rationale": "slot 잠식은 시장 국면이 아니라 선별 구조(top-N 희소성 + 팩터별 tail-전이 부호)에서 나오므로 전 국면 성립이 기전상 예측. 실측 정합: d_net full t −1.91, pre2017 t −1.65, post2017 t −1.11 — 부기간 무관 동부호. 국면 의존이 관측됐다면 구조 기전이 기각되는 방향이었음"
+    }
+  },
+  "factors": [
+    {
+      "factor_id": "EW5_COMPOSITE_DIAGNOSED",
+      "role": "분해 대상 (WT-015 C1_EW_STATIC_TUNED 재구성 — parity 0.00e+00 검증)",
+      "restatement_exposure": 2,
+      "ast": {
+        "op": "CS_ZSCORE",
+        "args": [
+          {
+            "leaf": "STORED_SCORE",
+            "field": "wt009_tuned5_ew_mean_z",
+            "embedded_data_through": "2026-06-30",
+            "provenance": {
+              "store_build_hash": "sha256:020968f4b1feae4a (tuned_panel.parquet) + sha256:21423965a685bb51 (base_panel.parquet)",
+              "generator_code_path": "stage_artifacts/WT_D20260802_009/run_wt009_tuned.R (walk-forward, WT-009 lag1 스트레스로 동월 누출 부재 실증)",
+              "generated_at": "2026-08-02",
+              "production_parity_verified": false,
+              "parity_note": "정직 선언: 05_Production 대응물 없는 리서치 패널 (§7b — incumbent base 비교에 사용 금지). 본 라운드 자체 parity는 WT-015 canonical 저장 period_returns 대비 재구성 ret_net max|diff|=0.00e+00 실증",
+              "consumer_rule": "월별 유니버스 재-z 후 EW 평균(비결측 >=3) — WT-015 §5 동일 규칙"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "factor_id": "POS2_EW_PROBE",
+      "role": "기전 검증 probe (M01_PATHQ + V01_SECREL EW — 채택 후보 아님, 사전 예측 고정)",
+      "restatement_exposure": 1,
+      "ast": {
+        "op": "CS_ZSCORE",
+        "args": [
+          {
+            "leaf": "STORED_SCORE",
+            "field": "wt009_tuned_pos2_ew_mean_z",
+            "embedded_data_through": "2026-06-30",
+            "provenance": {
+              "store_build_hash": "sha256:020968f4b1feae4a (tuned_panel.parquet: M01_PATHQ, V01_SECREL)",
+              "generator_code_path": "stage_artifacts/WT_D20260802_009/run_wt009_tuned.R",
+              "generated_at": "2026-08-02",
+              "production_parity_verified": false,
+              "parity_note": "정직 선언: 리서치 패널 — incumbent base 비교 비사용. canonical_screen_bt 직접 실측(selected_ret_coverage 0.9999)",
+              "consumer_rule": "월별 유니버스 재-z 후 2팩터 EW(양쪽 비결측 필수)"
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "combination_rule": "z_score_aligned_equal_weight",
+  "combination_note": "본 라운드는 조합 제안이 아니라 기존 조합(WT-015 C1 EW 정적)의 손실 기전 분해. 분해 항등식 d_gross,t = (1/25)(Σ_IN r − Σ_OUT r) 수치 검증 max err 5.6e-17.",
+  "verdict": "designed",
+  "self_pit_check": {
+    "performed": true,
+    "leaves_checked": [
+      {
+        "leaf": "stage_artifacts/WT_D20260802_009/{base,tuned}_panel.parquet",
+        "availability_rule": "walk-forward 산출 패널 재소비 (WT-009 lag1 스트레스 실증 승계). 저장 파생 패널 provenance 명시(§4-1) + 본 라운드 parity gate(재구성 ret_net = WT-015 저장값, 0.00e+00)로 소비 경로 자체를 재검증. embedded_data_through 2026-06-30 <= t_d-1",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "A1_rawdata:Ret/Close (build_monthly_forward_returns)",
+        "availability_rule": "fixed: 신호월 t 월말 확정 스코어 → 홀딩월 t+1 forward 1M 실현수익 (WT-015 하네스 동일 vintage)",
+        "restatement_prone": true
+      }
+    ],
+    "verdict": "clean",
+    "verdict_rationale": "신규 신호 구축 0 — 승계 패널 재소비. C1: 분해에 full-sample 통계 미사용(월별 횡단면 분해 + 사후 실현수익 귀속은 진단이며 신호 아님). 선택 재구성은 canonical 규칙 그대로(liq t-1, top-25) + parity 0.00e+00으로 재구성-저장 일치 실증."
+  },
+  "alpha_vector": {
+    "A088350": 1.6773, "A025980": 1.4461, "A032640": 1.284, "A032190": 1.1547,
+    "A215200": 1.0468, "A300720": 0.9633, "A316140": 0.8766, "A078930": 0.7249,
+    "A001680": 0.7216, "A081660": 0.7139, "A282330": 0.707, "A005930": 0.6929,
+    "A021240": 0.6816, "A007070": 0.6774, "A278470": 0.6599, "A383220": 0.6432,
+    "A035250": 0.639, "A069260": 0.632, "A001800": 0.6279, "A004990": 0.6202,
+    "A033780": 0.596, "A000080": 0.58, "A012750": 0.5684, "A326030": 0.5354,
+    "A053800": 0.5267, "A138930": 0.5219, "A024110": 0.5156, "A015750": 0.5038,
+    "A017670": 0.5017, "A139130": 0.4781, "A000270": 0.4779, "A137310": 0.4722,
+    "A017800": 0.4707, "A009240": 0.4702, "A071320": 0.4665, "A036460": 0.4416,
+    "A078340": 0.4404, "A028670": 0.4369, "A267250": 0.4342, "A030000": 0.4334
+  },
+  "alpha_vector_note": "진단 대상 EW5 합성의 최신월(2026-06-30) 상위 40 — ★채택 후보 아님(본 라운드가 이 합성의 손실 기전을 확정). 소비 금지, 기록용.",
+  "confidence_vector_note": "일괄 0.25 — 진단-부정 합성이므로 낮은 confidence 명시",
+  "confidence_vector": {
+    "A088350": 0.25, "A025980": 0.25, "A032640": 0.25, "A032190": 0.25,
+    "A215200": 0.25, "A300720": 0.25, "A316140": 0.25, "A078930": 0.25,
+    "A001680": 0.25, "A081660": 0.25, "A282330": 0.25, "A005930": 0.25,
+    "A021240": 0.25, "A007070": 0.25, "A278470": 0.25, "A383220": 0.25,
+    "A035250": 0.25, "A069260": 0.25, "A001800": 0.25, "A004990": 0.25,
+    "A033780": 0.25, "A000080": 0.25, "A012750": 0.25, "A326030": 0.25,
+    "A053800": 0.25, "A138930": 0.25, "A024110": 0.25, "A015750": 0.25,
+    "A017670": 0.25, "A139130": 0.25, "A000270": 0.25, "A137310": 0.25,
+    "A017800": 0.25, "A009240": 0.25, "A071320": 0.25, "A036460": 0.25,
+    "A078340": 0.25, "A028670": 0.25, "A267250": 0.25, "A030000": 0.25
+  },
+  "signal_matrix_ref": "stage_artifacts/WT_D20260802_021/alpha_scores.parquet",
+  "factor_specs": [
+    {
+      "factor_family": "Composite_Mechanism_Diagnosis",
+      "proxy": "EW5(V01_SECREL+M01_PATHQ+D03_EWMA+Q01_EB+V06_EB) 분해 + POS2(M01_PATHQ+V01_SECREL) probe",
+      "formula": "d_t = active(EW5) − active(M01단일) = (1/25)(Σ_IN r − Σ_OUT r); IN 종목 advocate(argmax z) 귀속",
+      "lag_rule": "신호월 t 월말 → 홀딩월 t+1 (승계 하네스 동일)",
+      "winsorization": "입력 팩터 단계 3std (WT-009)",
+      "neutralization": "V01_SECREL만 섹터중립 (WT-009 정의)",
+      "economic_rationale": "rank-IC(전분포 통계)와 top-25 tail-전이(PORT_t)의 팩터별 괴리 — IC 양성·전이 음성 팩터가 z 평균 경유로 slot 배분권을 행사해 손실. Clarke-de Silva-Thorley 2002 TC 항의 팩터별 부호 분해",
+      "weight_theta": 1,
+      "references": ["Grinold 1989 Fundamental Law", "Clarke-de Silva-Thorley 2002 FAJ (Transfer Coefficient)", "L-AR-20260802_204803 (단일 지배 3회 정합)"]
+    }
+  ],
+  "diagnostics": {
+    "canonical_port_t_nw_lag3": 2.491,
+    "canonical_port_t_pvalue": 0.0128,
+    "canonical_n_months": 295,
+    "canonical_note": "POS2 probe arm (본 라운드 유일 신규 canonical 실측, metric_type=canonical_screen) — 기전 검증용, 채택 후보 아님. 진단 대상 EW5=0.338/단일=2.050은 WT-015 실측 승계",
+    "metric_type": "canonical_screen",
+    "gap_decomposition": {
+      "gap_gross_ann_pct": -8.27, "gap_net_ann_pct": -7.87,
+      "gap_net_nw_t": -1.91, "gap_net_post2017_t": -1.11, "gap_net_pre2017_t": -1.65,
+      "cost_side_ann_pct": 0.4, "overlap_mean": 4.44, "overlap_median": 4, "slots_swapped_mean": 20.6,
+      "identity_max_err": 5.6e-17, "parity_gate": 0.0
+    },
+    "m1_slot_cannibalization": {
+      "verdict": "SUPPORTED_DOMINANT",
+      "advocate_attr_ann_pct": {"Q01_EB": -4.02, "V01_SECREL": -1.68, "D03_EWMA": -1.2, "V06_EB": -1.0, "M01_PATHQ": -0.38},
+      "neg_factor_share_of_gap": 0.75,
+      "neg_share_robustness": {"prop_attribution": 0.78, "strict_neg2_argmax": 0.63, "strict_neg2_prop": 0.59},
+      "inout_nw_t": -2.01
+    },
+    "m2_averaging_flattening": {
+      "verdict": "REJECTED_as_independent_loss (현상은 실재, 손실 기전 아님)",
+      "comp_pick_m01_pctile_median": 0.639, "comp_pick_m01_pctile_ge90_share": 0.18,
+      "m01_bucket_monthly_active_pct": {"rk1_25": 0.86, "rk26_50": 0.52, "rk51_100": 0.19},
+      "grad_t_b1_b2": 1.31, "prereg_threshold": 1.5,
+      "pos2_test": "M2 독립 기여 예측(paired t<=-1.0) 기각 — 실측 +0.37"
+    },
+    "m3_coverage_heterogeneity": {
+      "verdict": "REJECTED (이질은 실재, gap 동인 아님)",
+      "het_gt20pct_month_share": 0.65, "v06_absent_month_share": 0.11,
+      "d_gross_hi_lo_tercile_t": -0.88,
+      "abs_z_share": {"V01_SECREL": 0.258, "Q01_EB": 0.241, "V06_EB": 0.185, "D03_EWMA": 0.162, "M01_PATHQ": 0.154}
+    },
+    "pos2_probe": {
+      "port_t": 2.491, "net_sr": 0.541, "ir": 0.541, "turnover_annual": 7.12,
+      "paired_vs_single_t": 0.37, "paired_vs_single_ann_pct": 1.06,
+      "gap_recovery_insample": 1.26,
+      "ew_uni_t": 3.56, "ew_uni_post2017_t": 1.41, "ew_uni_oos_retention_approx": 0.61,
+      "cap_tier_weight_share": {"MEGA": 0.027, "MID": 0.039, "OTHER": 0.934, "UNRANKED": 0}
+    },
+    "grinold_term_break": {
+      "broken_term": "TC (transfer coefficient) — IC도 breadth도 아님",
+      "table": [
+        {"factor": "V01_SECREL", "mean_ic": 0.0165, "ic_nw_t": 2.88, "port_t_wt009": 1.42, "transfer_sign_break": false},
+        {"factor": "M01_PATHQ", "mean_ic": 0.0129, "ic_nw_t": 1.29, "port_t_wt009": 2.05, "transfer_sign_break": false},
+        {"factor": "D03_EWMA", "mean_ic": 0.0414, "ic_nw_t": 3.71, "port_t_wt009": -1.73, "transfer_sign_break": true},
+        {"factor": "Q01_EB", "mean_ic": 0.0157, "ic_nw_t": 2.21, "port_t_wt009": -0.21, "transfer_sign_break": true},
+        {"factor": "V06_EB", "mean_ic": 0.0292, "ic_nw_t": 3.32, "port_t_wt009": 0.32, "transfer_sign_break": false}
+      ],
+      "note": "IC 최상위 D03_EWMA(IC t +3.71)가 PORT_t 최하위(−1.73) — rank-IC는 전분포 통계, top-25는 극단 우측 꼬리만 소비. 양-전이 성분끼리는 breadth가 약하게 작동(POS2 ≥ 단일, EW-uni t 2.38→3.56)"
+    }
+  },
+  "selection_objective": "canonical_port_t",
+  "alpha_discovery_count": 0,
+  "method_shopping_log": {
+    "alpha_agent": {
+      "candidates_tried": 1,
+      "method_log": [
+        {"name": "FQ116_MECHANISM_DECOMPOSITION", "canonical_port_t": 2.491, "selected": true, "note": "단일 사전등록 분해 + POS2 probe 1회(사전 예측 고정). argmax 없음 — 기전 판별 라운드"}
+      ]
+    }
+  },
+  "challenge_flags": [
+    {"id": "CF-01", "severity": "MEDIUM", "flag": "POS2 회복률 126%는 in-sample 상한(성분이 동표본 WT-009 PORT_t로 선별됨) — 설계 원칙 운용은 IS-only 성분 게이트 + OOS 조합 확인 필요 (challenge_note C4 ACCEPT)"},
+    {"id": "CF-02", "severity": "MEDIUM", "flag": "NEG share 75%는 advocate 귀속 규칙 의존 — 강건 범위 59~78% (비례 귀속 78% / V06 재분류 엄격판 59~63%, C1 PARTIAL·C2 ACCEPT)"},
+    {"id": "CF-03", "severity": "INFO", "flag": "M2 판별: 현상(합성 픽 M01 중앙값 0.639)은 실재하나 POS2 검정으로 독립 손실 기전 기각 — 꼬리 기울기 t 1.31은 사전 문턱 1.5 미달 그대로 처리 (C3 ACCEPT, 사후 완화 없음)"},
+    {"id": "CF-04", "severity": "INFO", "flag": "alpha_vector는 진단-부정 EW5 합성의 기록용 — 소비 금지. alpha_discovery_count=0, 자본 주장 없음"}
+  ],
+  "verdict_summary": {
+    "result": "MECHANISM_IDENTIFIED — M1 slot 잠식 지배(75%, 강건 59~78%) / M2 독립기여 기각 / M3 기각",
+    "gate_eligible": false,
+    "statement": "합성이 지는 이유는 '섞기' 자체가 아니라 '누구와 섞는가'다. rank-IC 양성·tail-전이 음성 팩터(D03_EWMA, Q01_EB)가 z 평균 경유로 top-25 slot 배분권을 행사(월 20.6/25 교체, overlap 4.4/25)해 gap −8.27%/yr의 75%를 설명. 양-전이 성분만의 조합(POS2)은 손실이 소멸하고 단일을 약하게 상회(+1.06%/yr, t +0.37 n.s., in-sample) — Grinold에서 깨지는 항은 IC도 breadth도 아닌 TC(팩터별 부호). 설계 원칙: 조합 자격 = 성분별 canonical PORT_t > 0 (rank-IC 무효), 전이-음성·IC-양성 팩터는 slot 없는 소비면(제외필터/위험축/타이브레이커)으로."
+  }
+}

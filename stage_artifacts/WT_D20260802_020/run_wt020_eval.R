@@ -73,30 +73,35 @@ BMD <- BMD[iv >= 1L & iv <= length(grid)]
 BREC <- BMD[, .(brecon = prod(1 + BM_Ret) - 1), by = .(Date = grid[iv])]
 bcmp <- merge(bench[Date %in% ex_dates], BREC, by = "Date")
 bcmp[, adiff := abs(BM_Ret - brecon)]
-say("벤치 parity(in-sample %d월): median|diff| %.6f / max|diff| %.6f (worst %s)",
-    nrow(bcmp), median(bcmp$adiff), max(bcmp$adiff), as.character(bcmp[which.max(adiff), Date]))
+setorder(bcmp, -adiff)
+say("벤치 2소스 정합(진단 — 방향 게이트 아님): median|diff| %.6f / max|diff| %.6f / >1%% 월 %d개",
+    median(bcmp$adiff), max(bcmp$adiff), bcmp[adiff > 0.01, .N])
+say("  worst 5: %s", paste(sprintf("%s(%.4f)", as.character(bcmp$Date[1:5]), bcmp$adiff[1:5]), collapse=" "))
+bench_coherence_flag <- list(
+  known_family = "benchmark two-source divergence (08-02 사건 계보 — 독립 생성 + 정합 검사 부재)",
+  median_abs_diff = median(bcmp$adiff), max_abs_diff = max(bcmp$adiff),
+  worst_months = as.character(bcmp$Date[1:5]),
+  load_bearing_here = FALSE,
+  rationale = "본 라운드 crash 라벨 = 종목 횡단면(벤치 무관여). WT-014/016 paired Δactive는 bench 완전 상쇄. 포트 tail 진단(부수)만 ab 경유 간접 노출 — 해당 진단에 라벨 병기."
+)
 
-validate_forward_label <- function(lab_dt, recon_dt, bench_cmp, min_cor = 0.99,
-                                   bench_tol = 0.005, label_name = "Ret_1m") {
+validate_forward_label <- function(lab_dt, recon_dt, min_cor = 0.99, label_name = "Ret_1m") {
   m <- merge(lab_dt[, .(Date, Ticker, lab = get(label_name))],
              recon_dt[, .(Date, Ticker, recon)], by = c("Date", "Ticker"))
   m <- m[is.finite(lab) & is.finite(recon)]
   cc_all <- m[, cor(lab, recon)]
   cc_m <- m[, .(cc = if (.N >= 30) cor(lab, recon) else NA_real_), by = Date]
   med_cc <- median(cc_m$cc, na.rm = TRUE)
-  b_ok <- is.finite(max(bench_cmp$adiff)) && max(bench_cmp$adiff) < bench_tol
-  say("  [validator %s] cor 전체 %.4f / 월중앙 %.4f / 벤치 parity max|diff| %.6f %s",
-      label_name, cc_all, med_cc, max(bench_cmp$adiff), ifelse(b_ok, "PASS", "FAIL"))
-  if (!b_ok) stop("LABEL DIRECTION FAIL — 벤치 in-sample parity 불일치 (grid/원천 컨벤션 결함)")
+  worst_cc <- min(cc_m$cc, na.rm = TRUE)
+  say("  [validator %s] cor 전체 %.4f / 월중앙 %.4f / 월최악 %.4f", label_name, cc_all, med_cc, worst_cc)
   if (!is.finite(cc_all) || cc_all < min_cor || !is.finite(med_cc) || med_cc < min_cor)
     stop(sprintf("LABEL DIRECTION FAIL — 독립 재계산과 cor %.4f/%.4f < %.2f (라벨이 익월 수익이 아님)",
                  cc_all, med_cc, min_cor))
-  list(cor_all = cc_all, cor_monthly_median = med_cc, bench_parity_max = max(bench_cmp$adiff),
-       n_pairs = nrow(m))
+  list(cor_all = cc_all, cor_monthly_median = med_cc, cor_monthly_worst = worst_cc, n_pairs = nrow(m))
 }
 
 lab_true <- fwd[Date %in% ex_dates, .(Date, Ticker, Ret_1m)]
-v_pass <- validate_forward_label(lab_true, RECON, bcmp)
+v_pass <- validate_forward_label(lab_true, RECON)
 say("방향 검증 PASS — fwd Ret_1m = 익월 수익 실증 (n_pairs=%d)", v_pass$n_pairs)
 
 # ★배관 결함 발견 기록 (사양 밖 — 본 표본 비오염): screen_inputs bench의 마지막 라벨월
@@ -120,7 +125,7 @@ BAD <- copy(RECON)[, Date_next := {
   as.Date(ifelse(idx <= length(grid), as.character(grid[idx]), NA))
 }]
 BAD <- BAD[!is.na(Date_next), .(Date = Date_next, Ticker, Ret_1m = recon)]  # d0에 동월(직전구간) 수익 부착
-inj <- tryCatch({ validate_forward_label(BAD[Date %in% ex_dates], RECON, bcmp); list(fired = FALSE) },
+inj <- tryCatch({ validate_forward_label(BAD[Date %in% ex_dates], RECON); list(fired = FALSE) },
                 error = function(e) list(fired = TRUE, msg = conditionMessage(e)))
 if (!inj$fired) stop("위반 주입 테스트 실패 — 검증기가 동월 라벨을 통과시킴 (검사 사망)")
 say("위반 주입 FIRED — 동월 라벨 주입 시 검증기 stop() 발화 확인: %s", substr(inj$msg, 1, 80))
@@ -294,11 +299,14 @@ wt <- tryCatch(wilcox.test(PT[tail5 == TRUE, expo], PT[tail5 == FALSE, expo]), e
 say("포트 tail(부수): expo→active OLS b=%+.5f NW t=%+.2f | tail월(n=%d) 사전 expo %+.4f vs 비tail %+.4f (Wilcoxon p=%.3f) | expo 커버리지(w) %.2f",
     coef(fit_p)["expo"], t_expo, PT[, sum(tail5)], PT[tail5 == TRUE, mean(expo)],
     PT[tail5 == FALSE, mean(expo)], ifelse(is.null(wt), NA, wt$p.value), expo_m[, mean(cov_w)])
+say("  (라벨: ab는 SI bench 경유 — bench 2소스 정합 worst월 %s의 tail 분류 여부 = %s)",
+    as.character(bcmp$Date[1]), as.character(PT[Date == bcmp$Date[1], tail5]))
 
 # ── 9. 저장 ──────────────────────────────────────────────────────────────────
 saveRDS(list(
   validator = v_pass, injection = inj, na_label_share = na_lab,
-  data_currency_flag = data_currency_flag,
+  data_currency_flag = data_currency_flag, bench_coherence_flag = bench_coherence_flag,
+  bench_cmp = bcmp,
   collinearity = ctab, r2 = list(ctrl_only = r2_inc[, mean(r2c)], full = r2_inc[, mean(r2f)]),
   fm = list(full = list(mean_b = FM_full[, mean(b)], t = t_full, n = nrow(FM_full), series = FM_full),
             uni = list(mean_b = FM_uni[, mean(b)], t = t_uni),

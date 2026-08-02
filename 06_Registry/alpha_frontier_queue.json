@@ -1,7 +1,7 @@
 {
  "schema_version": "1.0",
  "sot": "02_Infrastructure/docs/qvest_v8_3_alpha_discovery_sot.md §4",
- "updated": "2026-08-02 (WT-019 nowcast 라벨 — 라벨 품질 사전 검정 단계 기각(recall 0.351<base 0.413). 트레일링 가격-상태 라벨은 KR 월간 하락 판별 불가 구조 판정. 파생 FQ-119 라벨 자격 관문 / FQ-120 시간 스케일 진단 등재. 총 120건)",
+ "updated": "2026-08-02 (FQ-119 착수 전 소비 지점 census — 라벨 소비 3지점 특정, 현 book 은 라벨×z 조합이라 관문을 라벨 단독에 걸면 오탐. 총 120건)",
  "consume_rule": "새 발굴 리서치 착수 전: hypothesis_index lookup → 본 큐 확인 → owner/status 갱신. 완료 시 result_ref(L-code/보고서) 기입. dohoon_decision 항목은 세션 임의 착수 금지.",
  "entries": [
   {
@@ -2235,7 +2235,8 @@
    "data_gate": "없음 (WT-017/019 산출물 + 기존 소비 지점 코드)",
    "owner": "미배정",
    "status": "frontier_open",
-   "registered": "2026-08-02 Q-Lead (WT-D20260802_019 NP-1 파생)"
+   "registered": "2026-08-02 Q-Lead (WT-D20260802_019 NP-1 파생)",
+   "precheck_measured": "★착수 전 소비 지점 census (2026-08-02 Q-Lead, read-only 코드 조사). 국면 라벨을 읽는 지점 3곳: ① `02_Infrastructure/ops/auto_regime_overlay_ab.R` — CAT_EXPOSURE 스케줄(RISK_ON/NEUTRAL 1.00 · CAUTION 0.70 · CRISIS/RISK_OFF 0.40) = **라벨 단독 트리거** ② `02_Infrastructure/portfolio/regime_module_admission.R` — 국면별 모듈 admission ③ `02_Infrastructure/portfolio/forward_weights_D3_M4gAE.R:78` — **실배포 비중 산출**. ★★핵심 발견: 현 book 의 beta_R05 는 라벨 단독이 아니라 **라벨 × z 조합**이다 — `fcase(REGIME=='CRISIS'&zlt, 0.30, REGIME=='CRISIS', 0.50, REGIME=='CAUTION'&zlt, 0.50, REGIME=='CAUTION', 0.70, REGIME %in% c('BULL','NORMAL')&zlt, 0.85, default=1.0)` (zlt = R05_z_avg < q20 하위 20% 분위). ⇒ **관문 설계가 달라진다**: 라벨 자체에 관문을 걸면 현 book(WT-017 실측에서 BOOK 단독이 전 구성 지배, absSR 1.711)도 함께 차단되는 오탐이 난다. 관문은 **'라벨을 단독 트리거로 쓰는 소비'**(①번 형태)에 걸어야 하고, 라벨×연속축 조합(③번)은 별도 판정 — 실제로 왜 무판별 라벨을 쓰는 book overlay 가 작동하는지가 라운드의 부수 질문이 된다(가설: z 축이 실질 판별을 하고 라벨은 강도 조절만)."
   },
   {
    "id": "FQ-120",

@@ -1,0 +1,120 @@
+{
+  "task_id": "WT-D20260802_021",
+  "generated_at": "2026-08-02T21:30:00+0900",
+  "fq_ref": "FQ-116",
+  "metric_type": "canonical_screen",
+  "gate_eligible": false,
+  "selection_type": "chain",
+  "n_trials": 1,
+  "preregistration": "stage_artifacts/WT_D20260802_021/preregistration.json (측정 전 고정)",
+  "round_type": "mechanism_probe — 성과 개선 아닌 기전 판별. 자본 주장 없음",
+  "inherited_assets": {
+    "panels": "stage_artifacts/WT_D20260802_009/{base,tuned}_panel.parquet (재계산 없이 재소비)",
+    "arms": "stage_artifacts/WT_D20260802_015/wt015_results.rds (C1_EW 0.338 / C3_SINGLE 2.050 canonical 실측 승계)",
+    "parity_gate": "재구성 ret_net vs WT-015 저장값 max|diff| = 0.00e+00 (EW·M01 양쪽) — PASS",
+    "identity_check": "d_gross,t = (1/25)(Σ_IN r − Σ_OUT r) max err 5.55e-17 — PASS"
+  },
+  "gap_measured": {
+    "gap_gross_ann_pct": -8.27,
+    "gap_net_ann_pct": -7.87,
+    "gap_net_nw_t": -1.91,
+    "gap_net_pre2017_t": -1.65,
+    "gap_net_post2017_t": -1.11,
+    "cost_side_ann_pct": 0.40,
+    "cost_note": "회전은 합성(5.18/yr)이 단일(7.89/yr)보다 낮아 비용 축은 합성에 유리 — gap은 전적으로 gross(선별) 축"
+  },
+  "mechanism_verdicts": {
+    "M1_slot_cannibalization": {
+      "verdict": "SUPPORTED_DOMINANT",
+      "prereg_criteria": "(a) overlap<15/25 AND (b) NEG advocate 기여가 gap의 >=50%",
+      "observed": {
+        "overlap_mean": 4.44, "overlap_median": 4, "slots_swapped_mean": 20.6,
+        "inout_nw_t": -2.01,
+        "advocate_attr_ann_pct": {"Q01_EB": -4.02, "V01_SECREL": -1.68, "D03_EWMA": -1.2, "V06_EB": -1.0, "M01_PATHQ": -0.38},
+        "neg_share_argmax": 0.75,
+        "neg_share_robustness": {"prop_attribution": 0.78, "strict_neg2_argmax": 0.63, "strict_neg2_prop": 0.59}
+      }
+    },
+    "M2_averaging_flattening": {
+      "verdict": "REJECTED_as_independent_loss",
+      "prereg_criteria": "(a) 합성픽 M01 백분위 중앙값<0.80 AND (b) 꼬리 기울기 NW t>=1.5; POS2 검정 paired t<=-1.0이면 독립 기여",
+      "observed": {
+        "comp_pick_m01_pctile_median": 0.639,
+        "comp_pick_m01_pctile_ge90_share": 0.18,
+        "m01_bucket_monthly_active_pct": {"rk1_25": 0.86, "rk26_50": 0.52, "rk51_100": 0.19},
+        "grad_t_b1_b2": 1.31,
+        "pos2_paired_vs_single_t": 0.37,
+        "note": "(a) 충족·(b) 문턱 미달(1.31<1.5, 사후 완화 없음). 결정판별 = POS2: 양-전이만 섞으면 손실 소멸 → 평균화는 손실의 독립 기전 아님. 부수 관측: 합성픽 중 M01 상위 decile 실현 active −0.06% < (0.5,0.8] 구간 +0.64%"
+      }
+    },
+    "M3_coverage_heterogeneity": {
+      "verdict": "REJECTED",
+      "prereg_criteria": "(a) 이질 실재 AND (b) 이질 상위/하위 tercile d_gross 차 |NW t|>=2; |t|<1이면 기각",
+      "observed": {
+        "het_gt20pct_month_share": 0.65,
+        "v06_absent_month_share": 0.11,
+        "d_gross_monthly_lo_tercile_pct": -0.108,
+        "d_gross_monthly_hi_tercile_pct": -0.874,
+        "hi_lo_nw_t": -0.88,
+        "abs_z_share": {"V01_SECREL": 0.258, "Q01_EB": 0.241, "V06_EB": 0.185, "D03_EWMA": 0.162, "M01_PATHQ": 0.154},
+        "note": "이질은 실재(방향도 일치)하나 사전 기각 문턱(|t|<1)에 걸림 — gap 동인으로 불충분. 최강 팩터 M01의 |z| 발언권이 5팩터 중 최하(0.154)라는 관측은 M1 경로의 보조 정황"
+      }
+    }
+  },
+  "pos2_probe": {
+    "definition": "M01_PATHQ + V01_SECREL EW (양-전이 성분만) — 사전등록 예측 고정, 채택 후보 아님",
+    "port_t": 2.491, "pvalue": 0.0128, "net_sr": 0.541, "ir": 0.541,
+    "turnover_annual": 7.12, "n_months": 295, "selected_ret_coverage": 0.9999,
+    "paired_vs_single_t": 0.37, "paired_vs_single_ann_pct": 1.06,
+    "gap_recovery_insample": 1.26,
+    "prereg_prediction_check": "M1 지배 예측(회복>=60%) 충족 — 126% (in-sample 라벨, challenge C4). M2 독립 기여 예측(t<=-1.0) 기각 — +0.37",
+    "dual_basis": {"ew_uni_t": 3.56, "ew_uni_post2017_t": 1.41, "ew_uni_oos_retention_approx": 0.61},
+    "cap_tier_weight_share": {"MEGA": 0.027, "MID": 0.039, "OTHER": 0.934, "UNRANKED": 0},
+    "honesty": "PORT_t 2.49 < HARD 2.95 / paired vs single 비유의 / in-sample 성분 선별 — 새 후보 주장 아님"
+  },
+  "grinold_contrast": {
+    "broken_term": "TC (transfer coefficient)",
+    "table": [
+      {"factor": "V01_SECREL", "mean_ic": 0.0165, "ic_nw_t": 2.88, "standalone_port_t": 1.42, "sign_break": false},
+      {"factor": "M01_PATHQ", "mean_ic": 0.0129, "ic_nw_t": 1.29, "standalone_port_t": 2.05, "sign_break": false},
+      {"factor": "D03_EWMA", "mean_ic": 0.0414, "ic_nw_t": 3.71, "standalone_port_t": -1.73, "sign_break": true},
+      {"factor": "Q01_EB", "mean_ic": 0.0157, "ic_nw_t": 2.21, "standalone_port_t": -0.21, "sign_break": true},
+      {"factor": "V06_EB", "mean_ic": 0.0292, "ic_nw_t": 3.32, "standalone_port_t": 0.32, "sign_break": false}
+    ],
+    "statement": "IC 항 정상(5/5 양성, 4/5 유의) · breadth 항 정상(양-전이끼리는 조합이 단일 이상: POS2 EW-uni t 2.38→3.56) · 깨지는 항 = TC — top-25 long-only는 합성 분포의 극단 우측 꼬리만 소비하는데 rank-IC는 전분포 통계라 팩터별 꼬리-전이 부호(2/5 음성)를 보지 못함. Grinold 전제 중 '무제약 구현(TC=1)'이 실측과 어긋나는 항"
+  },
+  "design_principles": {
+    "p1_composition_gate": "조합 자격 = 성분별 canonical PORT_t > 0 (IS 구간). rank-IC는 자격 증거로 무효 — D03_EWMA(IC t +3.71, PORT_t −1.73)가 반례 실측",
+    "p2_transfer_positive_only": "양-전이 성분끼리의 조합은 안전하고 약하게 가산적 (+1.06%/yr n.s., 분산 개선 EW-uni t 2.38→3.56)",
+    "p3_negative_transfer_consumption": "전이-음성·IC-양성 팩터는 slot을 주지 말 것 — 비-slot 소비면(제외 필터 / 위험모델 축 / 동순위 타이브레이커)으로 라우팅",
+    "p4_tooling": "advocate 분해(IN 종목 argmax-z 귀속)는 조합 설계 전 slot 배분 사전 시뮬레이션 도구로 재사용 가능"
+  },
+  "inv7_wall_compliance": "top-25는 고정 축으로 서술 — 제약 귀속 없음. 판별 결과는 '25 slot을 채울 자격'의 문제(성분별 tail-전이 부호)로 귀속",
+  "next_probe": [
+    "NP-1: 전이-양성 게이트의 IS-only 운용판 — 성분 게이트를 IS 구간 canonical PORT_t로 걸고 OOS에서 조합을 확인 (POS2의 in-sample 편향 제거 + '조합 전 단일 대조군 의무화'의 기계화)",
+    "NP-2: 전이-음성·IC-양성 팩터의 비-slot 소비 실측 — D03_EWMA를 additive z가 아니라 M01 꼬리 내 동순위 타이브레이커 / 제외 필터로 소비 시 단일 대비 한계기여 paired 측정",
+    "NP-3 (선택): IC 분포-국소화 지도 — 팩터별 rank-bucket 조건부 실현 active 곡선을 factor DB 표준 진단으로 상설화 → tail-전이 부호를 조합 설계 전에 예측"
+  ],
+  "consumption_scan_7": {
+    "factor_ranking": "조합 자격 게이트 원칙(P1)으로 즉시 소비 — 다팩터 lane 설계 규칙",
+    "universe_filter": "NP-2 (전이-음성 팩터의 제외필터 전환)",
+    "overlay_regime_input": "비적합 — 본 라운드는 배합 구조 기전",
+    "risk_model_beta_budget": "D03 계열(저변동)은 alpha slot이 아닌 위험 축 입력으로 재배치 권고 — risk-research 소비면",
+    "monitoring": "비적합",
+    "screening_label": "hurdle_gate/screen_route에 'transfer_negative_component' 라벨 근거 제공",
+    "cross_mode": "RAMP/FR 조합 설계에 동일 성분 게이트 이식 후보"
+  },
+  "revival_conditions": "① 5팩터 EW-류 재도전은 D03_EWMA/Q01_EB의 tail-전이가 양전하는 실측 부활신호(예: 저변동 프리미엄 국면 전환, EW-유니버스 기준 tail bucket 양전) 시에만 ② NP-1 IS-only 게이트판이 OOS에서 성립하면 조합 lane 자체는 열림(전이-양성 성분 한정)",
+  "graduation_hard_gates": {
+    "portfolio_alpha_t_nw": {"required": 2.95, "observed_probe": 2.491, "status": "N/A — 기전 라운드, 자본 판정 아님 (probe는 후보 아님)"},
+    "oos_retention": {"required": 0.7, "observed_approx_pos2": 0.61, "status": "DIAG_ONLY"},
+    "calmar": {"required": 0.64, "observed": null, "status": "NOT_COMPUTED (forge 미제출)"}
+  },
+  "production_constraints": {
+    "turnover_annual_limit": 11,
+    "observed": {"EW5": 5.18, "single_M01": 7.89, "POS2": 7.12},
+    "verdict": "전 arm 상한 이내"
+  },
+  "challenge_note": "qepm/mailbox/worktask/WT-D20260802_021/challenge_note.md (concern 5: ACCEPT 2 / ACCEPT부분 1 / PARTIAL 1 / REBUTTAL 1)",
+  "sidecar_live_with_ast": {"before": {"live": 411, "live_with_ast": 54}, "after": {"live": 412, "live_with_ast": 55}}
+}
