@@ -1111,7 +1111,16 @@ tg_agent_brief <- function(agent,
   if (!isTRUE(dry_run)) {
     scope_key <- if (!is.null(lock_scope)) lock_scope else {
       # Extract WT-id or title prefix
-      wt_match <- regmatches(title, regexpr("WT-[DP]?[0-9]{8}_?[0-9]*", title))
+      # ★perl=TRUE 필수 (금칙 ⑥, 02_Infrastructure/docs/rules/r-portability.md).
+      #   Windows TRE 는 매치 위치를 UTF-16 코드유닛으로 돌려주는데 regmatches 는
+      #   코드포인트로 자른다 → title 의 WT-id **앞**에 이모지가 N개 있으면 추출 창이
+      #   N칸 밀려 lock scope_key 가 열화한다(실측: WT-D20260802_012 → T-D20260802_012
+      #   → 0802_012 R43). 중복 발송 차단이 조용히 무력해지는 형태다.
+      #   현재는 **잠복이지 발화 아님**: stage_artifacts + qepm/mailbox 의 title="..." 452건
+      #   중 non-BMP 포함은 1건뿐이고(WT-D20260426_004 … R2 Final ⚖️🔒) 그마저 이모지가
+      #   WT-id **뒤**라 선행 non-BMP = 0 (2026-08-02 실측). 머리말에 이모지를 넣는 관행이
+      #   title 로 번지는 순간 발화하므로 한 토큰으로 미리 닫는다.
+      wt_match <- regmatches(title, regexpr("WT-[DP]?[0-9]{8}_?[0-9]*", title, perl = TRUE))
       if (length(wt_match) > 0 && nzchar(wt_match[1])) {
         sprintf("%s_%s", agent, wt_match[1])
       } else {

@@ -1,8 +1,8 @@
 # R 측 Windows 이식성 계약 (확장 rule)
 
 **발효**: 2026-07-25 (도훈 지시 "승격해"). **위반 = AX-002 동급**(계측이 죽은 채 GREEN을 보고하면 프로세스 우회와 같다).
-**적용**: 이 리포지토리의 모든 `.R` — 외부 프로세스 호출 / 정리(cleanup) 로직 / 경로·루트 해석을 작성·수정할 때.
-**로드 시점**: R에서 `system2`·`system`을 쓰거나, cleanup을 등록하거나, 프로젝트 루트를 해석할 때 (on-demand).
+**적용**: 이 리포지토리의 모든 `.R` — 외부 프로세스 호출 / 정리(cleanup) 로직 / 경로·루트 해석 / **오프셋 기반 정규식 추출**을 작성·수정할 때.
+**로드 시점**: R에서 `system2`·`system`을 쓰거나, cleanup을 등록하거나, 프로젝트 루트를 해석하거나, `regmatches`로 부분문자열을 뽑을 때 (on-demand).
 **자매 규칙**: `.claude/rules/python-policy.md`(Python 측 — R/Python 1급 + PIT·계약 동일적용). 본 문서는 그 R 측 호출 규약 공백을 메운다.
 
 ---
@@ -15,7 +15,9 @@
 
 ---
 
-## 금칙 5종 (위반 시 수리 의무)
+## 금칙 6종 (위반 시 수리 의무)
+
+> **공통 기전 한 줄**: ①~⑤는 "결손을 정상값으로 내려앉힘", ⑥은 "**정상값 모양의 오답**". 방향은 반대지만 급소는 같다 — 호출자가 보는 것이 실패처럼 안 보인다.
 
 ### ① `system2(..., env = ...)` 금지
 Windows에서 `env=` 문자열은 환경변수로 설정되지 않고 **명령줄 첫 인자로 앞에 붙는다**. 실측:
@@ -152,6 +154,37 @@ if (st != 0L) { ... }        # 결손을 값으로 내려앉히지 말 것
 - 셸이 정말 필요하면 `shell()`을 쓰되 `/dev/null`이 아니라 `NUL`.
 - **미측정은 `FALSE`/`0`이 아니라 `NA`(→ JSON `null`) + 명시 라벨**로 기록할 것. 정본 선례: `worktask/lineage_utils.R::capture_git_state()`(`git_commit="UNAVAILABLE"` · `git_dirty=NA` · `git_state_error=<사유+exit code>`).
 
+### ⑥ `regmatches()` 는 TRE 색인 위에서 쓰지 말 것 (`perl=` / `fixed=` / `useBytes=TRUE`)
+Windows R의 기본 정규식 엔진(TRE)은 매치 위치를 **`wchar_t` = UTF-16 코드유닛**으로 보고하는데, `regmatches()`·`substr()`은 **코드포인트**로 자른다. 매치보다 **앞**에 non-BMP 문자(이모지 U+1F4CC 등)가 N개 있으면 추출 창이 정확히 **N칸 오른쪽으로 밀린다**. 2026-08-02 실측(R 4.5.2 ucrt · `Korean_Korea.utf8` · codepage 65001):
+
+```
+msg <- paste0("📡📅📌📖📊🚩 Gate D &lt; 2.95 판정 1. 결과")   # non-BMP 6개 선행
+regexpr("&[a-zA-Z]+;", msg)              → 21  (실제 15)  match.length 4
+regmatches(msg, ...)                     → ".95 "        ← 그럴듯한 쓰레기
+regexpr("&[a-zA-Z]+;", msg, perl = TRUE) → 15  ✔          regmatches → "&lt;"
+```
+
+★위험한 건 **길이가 맞는다**는 점이다. `match.length`는 정상(4)이라 결과가 오류가 아니라 **말이 되는 다른 문자열**로 나온다 — 예외도, 경고도, 빈 값도 없다. 그래서 이 계통은 `tryCatch`·`nzchar` 가드를 전부 통과한다.
+
+실사고: `telegram/telegram_notify.R`의 미지원 HTML entity 스캔이 `&lt;`(실제 char 1664)를 TRE 보고 1670에서 잘라 `턱 1.`을 뽑았다. `/tmp/qvest_tg_entity_warn.log`의 07-26~08-02 경보 **20건 전량이 이 유령**이다. ★반대 방향이 더 나쁘다 — 창이 밀리면 **진짜** 미지원 entity는 결코 이름이 불리지 않는다(발화해야 할 때 조용해지는 형태).
+
+**대체 (정본)**: 색인을 만드는 쪽에 엔진을 지정한다. `regmatches` 자체엔 인자가 없다 — 위치를 만든 `gregexpr`/`regexpr`/`regexec` 호출에 붙여야 한다.
+
+```r
+risky <- regmatches(msg, gregexpr("&[a-zA-Z]+;", msg, perl = TRUE))[[1]]   # PCRE2 = 코드포인트
+m <- regexpr("WT-[DP]?[0-9]{8}", title, perl = TRUE); wt <- regmatches(title, m)
+lengths(regmatches(src, gregexpr("{", src, fixed = TRUE)))                 # fixed 도 안전
+```
+
+**★기준 ① — count-only는 위반이 아니다 (감사 시 지적하지 말 것).**
+밀리는 것은 **위치**이지 **개수**가 아니다. TRE도 UTF-16 공간에서 같은 수의 매치를 찾으므로 `length(regmatches(...))` / `lengths(regmatches(...))`처럼 **개수로만 소비되는 자리는 무해**하다(실측: 위 fixture에서 TRE 1건 = PCRE 1건). 검사기는 이 자리를 제외한다 — 무해한 항목을 원장에 넣으면 원장이 부풀고, **시끄러운 래칫은 죽은 래칫과 겉보기가 같아진다**. 순진한 `grep regmatches`는 표면을 과대평가한다.
+
+**★기준 ② — non-BMP가 매치 *앞*에 와야 발화한다.** 뒤에 오면 무영향(실측: TRE 8 = PCRE 8). 다만 이건 **런타임 데이터에 달려 있어 정적으로 판정할 수 없다** → 검사기는 이 축으로 걸러내지 않는다. 그래서 원장 등재의 의미는 "이 자리가 위험하다"가 아니라 **"이 자리는 이 계통에 노출돼 있다"**이다. 실측 예: `stage_artifacts`+`qepm/mailbox`의 `title="..."` 452건 중 non-BMP 포함은 1건, 그마저 이모지가 WT-id **뒤**라 선행 0 — 그래서 아래 `scope_key` 결함은 **잠복**이었다.
+
+**적용 방침 — 일괄 개서 금지.** 기준 ②가 정적 판정 불가이므로 원장의 44건 대부분은 실제로는 무해할 개연성이 크다. 금칙 ⑥의 래칫은 **새 위반을 막는 장치**이지 기존 44건 개서 지시가 아니다. 개별 수리는 "이 문자열에 이모지/non-BMP가 실제로 섞이는가"를 확인한 자리부터.
+
+**✅ 수리 1건 (잠복 결함, 2026-08-02)**: `telegram_notify.R`의 중복발송 lock `scope_key` 생성이 TRE로 WT-id를 뽑았다. 이모지가 WT-id 앞에 오면 키가 열화한다 — 실측 재현: `WT-D20260802_012` → 이모지 1개 `T-D20260802_012 ` → 2개 `-D20260802_012 R`. 키가 갈리면 **같은 브리핑이 중복 발송된다**(단일 발송 강제가 조용히 무력화). 현재 title에 선행 non-BMP가 0건이라 미발화 상태였고, 수리는 `perl=TRUE` 한 토큰.
+
 ### (동반) bare `python3` 금지
 별도 규칙으로 이미 확립 — `python3`는 Windows Store 스텁("Python" 출력 후 rc 49). `QVEST_PY` → venv 순 해석.
 메모리 `reference-python3-windows-stub-use-qvest-py` · 훅은 `_shared_parse.sh` `QVEST_PY_BIN` 체인.
@@ -170,6 +203,18 @@ if (st != 0L) { ... }        # 결손을 값으로 내려앉히지 말 것
 
 **발효 시점 원장 = 60건(worktree 생성분, 위 사유로 폐기).** 금칙별 분포는 baseline 파일 참조. ★수치가 초기 육안 grep(≈12건)보다 5배 큰 이유: 육안 스캔은 `/mnt/c/Users/User|바탕 화면`만 봤고, 계약 검출기는 `"/tmp/` 리터럴과 resolver 우선순위 역전까지 본다. **검사기를 만들고 나서야 표면의 실제 크기를 알았다** — 이것이 문서-only 규칙을 인정하지 않는 이유다.
 
+**금칙 ⑥ 시드 (2026-08-02 추가, 이 브랜치 실측)** — 검사기 출력 `금칙 ⑥ census` 줄이 정본:
+
+```
+regmatches site 69개 = safe(perl/fixed/useBytes) 23
+                     + TRE 46 [count-only 2(기준① 제외) / 값추출 44 → 원장 seed]
+```
+
+- 원장 등재 = `entries`에 `<파일>:6` **19건** + `code6_sites`에 **파일당 site 수**(합 44).
+  ★entries만으로는 부족하다 — 키가 "파일:금칙코드"라 **이미 등재된 파일에 위반을 하나 더 넣어도 집합이 안 변한다**. regmatches를 많이 쓰는 파일이 바로 그 파일들이므로, 새 위반이 가장 나기 쉬운 자리에 정확히 사각이 생긴다. 그래서 ⑥만 **개수까지** 고정한다(줄 번호가 아니라 개수라, 위·아래 편집으로 줄이 밀려도 오탐 없음). 위반 주입으로 실증: 등재 파일 `distilled.R`에 site 1개 추가 → `code6_sites_grew … 1→2` FAIL, `novel_violation`은 **침묵**(=집합 래칫의 사각을 개수 래칫이 메운다).
+- **count-only 2건은 일부러 뺐다**(기준 ①). 무해한 항목으로 원장을 부풀리면 래칫이 시끄러워지고, **시끄러운 래칫은 죽은 래칫과 겉보기가 같다**.
+- ⚠ 이 44는 **이 브랜치(`claude/sad-benz-0cd52e`) 시점** 수치다. 다른 세션이 `telegram_notify.R` entity 스캔을 수리 중이며(미병합 worktree), 병합 후 대상 브랜치에서 `--write-baseline` 재생성이 필요하다 — 위 ⚠ 항목의 트리-종속 규약 그대로.
+
 아래 표는 그중 **판단이 필요한 항목**만 발췌한다(전량은 baseline).
 
 | 상태 | 위치 | 금칙 | 비고 |
@@ -179,6 +224,8 @@ if (st != 0L) { ... }        # 결손을 값으로 내려앉히지 말 것
 | ✅ 수리 | `worktask/lineage_utils.R` | ⑤ | 2026-08-02. `git_dirty`가 2026-06~08 **79건 전량 `false`로 위장**(미측정). 수리 후 미측정 = `UNAVAILABLE`/`null` + `git_state_error`. 소급 수정 없음(역사 보존) |
 | ✅ 수리 | `ops/update_research_philosophy.R:104` | ⑤ | 2026-08-02. `system("git add -A && git commit …", intern=FALSE)` → `&&` 이하가 `git add`의 pathspec이 되어 **auto-baseline 커밋이 한 번도 생성되지 않았고** exit status마저 버려졌다. ★그 상태에서 `.git_rollback()`의 `git reset --hard <이전 SHA>`는 미커밋 작업을 파괴한다 — 안전장치가 정반대로 작동 |
 | ✅ 수리 | `ops/cert_backfill_audit.R:697` | ⑤ | 2026-07-26 CBA-06(선행 수리). `"2>&1 \| grep -E …"`가 내부 Rscript의 리터럴 argv로 전달 |
+| ✅ 수리 | `telegram/telegram_notify.R:1114` | ⑥ | 2026-08-02. 중복발송 lock `scope_key`를 TRE로 뽑던 자리 → `perl=TRUE`. 이모지가 WT-id 앞에 오면 키 열화(`WT-D20260802_012`→`T-D20260802_012`→`-D20260802_012 R`, 재현 실측) → 단일 발송 강제가 조용히 무력화. title 452건 중 선행 non-BMP 0건이라 **잠복**이었다 |
+| ○ 잠복(원장 44) | `regmatches` TRE 색인 19파일 | ⑥ | 기준 ②(선행 non-BMP 실재 여부)가 정적 판정 불가 → **일괄 개서 금지**. 래칫은 신규 유입 차단용 |
 | ✅ 수리 | `worktask/cert_rules.R:444,430` | ①③ | `d384c016` |
 | ✅ 수리 | `08_Tests/integration/*.R` 3종 | ②③④ | `f18f6c90`·`d384c016` |
 | ⚠ **미수리(실동작 영향)** | `tools/paper_recharge_daily.R:60` | ② | 최상위 `on.exit(unlink(lock_dir))` → **lock 영구 미해제**. 이후 실행이 stale lock(<3600s)을 보고 `quit(status=0)`로 **조용히 skip** |
@@ -199,11 +246,12 @@ if (st != 0L) { ... }        # 결손을 값으로 내려앉히지 말 것
 
 ## 강제 (teeth)
 
-`08_Tests/hooks/test_r_portability.R` — 라이브 존을 스캔해 금칙 5종을 검출하고 **baseline 래칫**으로 판정한다:
+`08_Tests/hooks/test_r_portability.R` — 라이브 존을 스캔해 금칙 6종을 검출하고 **baseline 래칫**으로 판정한다:
 
 - **신규 위반 → FAIL** (baseline 밖 항목)
 - **baseline 역행 방지**: 수리돼 사라진 항목이 baseline에 남아 있으면 FAIL(`--write-baseline`으로 갱신 요구). 원장은 **줄어드는 방향으로만** 움직인다.
-- `run_all_hooks.sh` 배터리 편입 — 매 실행 검사. **이 suite 자체 = 7/7**(래칫 2축 + 위반 주입 4종 + 오검출 통제 1 — 축 구성이 바뀔 때만 움직이는 안정 수치).
+- **금칙 ⑥ 전용 개수 래칫**: `code6_sites`의 파일당 site 수가 늘면 `code6_sites_grew` FAIL(신규 유입), 줄면 baseline 갱신 요구. 집합 래칫이 못 보는 "등재 파일 내부 증가"를 메운다.
+- `run_all_hooks.sh` 배터리 편입 — 매 실행 검사. **이 suite 자체 = 22/22**(래칫 3축 + 위반 주입 12종 + 오검출 통제 1 + 기준① 판별 5 + 함정 전제 실측 1 — 축 구성이 바뀔 때만 움직이는 수치. 금칙 ⑥ 편입 전은 12).
   ★**배터리 전체 통과 수는 여기 적지 않는다.** 구 표기 "34/34"(발효 2026-07-25)가 스테일이 된 이유가 이것이다 — 다른 세션이 suite를 계속 붙여 2026-08-02 하루에도 34→459→495→501로 움직였다(30분 만에 495→501 실측). 문서에 박은 순간 썩는 수치이고, 어긋남을 계약 위반으로 오독하게 만든다. **판정 기준은 "배터리 전체 PASS 여부"이지 통과 *건수*가 아니다.** 건수 정본은 `.cache/test_results/hook_dryrun_results.json`.
   ★아래 자매 검사기 줄의 `11/11`은 *suite* 수치인데 구 문구가 이 줄과 똑같아 서로 다른 것을 가리키고 있었다 — 이제 둘 다 라벨을 붙인다.
 
@@ -242,7 +290,13 @@ Python 하드코딩 폴백 부재). **두 검사기를 합쳐야 계약 전체�
   (`injected_dirty_not_false` · `json_dirty_null` · `json_error_label_present` · `seed_task_deterministic`).
   안 뒤집혔다면 그 11/11은 계측 사망이다.
 
-**위반 주입 8종 내장**(위반 주입 테스트): 금칙 5종 각각의 합성 위반 fixture(⑤는 redirect·chain·pipe 3형태)를 실제로 잡는지 + 정본 패턴을 오검출하지 않는지 자체 검증. 실효 실증 — 최초 구현의 검출기 ①은 `system2\([^)]*env=`였는데 인자 안의 `)`(예: `args = c("-c", code)`)에서 멈춰 **다중행 호출을 놓쳤고, 위반 주입 테스트가 이를 적발**했다(괄호 균형 파서로 교체 후 `data/build_cache.R` 등 추가 검출). 래칫 검출력도 실증 — 합성 위반 주입 시 `exit 1`, 제거 시 `exit 0`.
+**위반 주입 12종 내장**(위반 주입 테스트): 금칙 6종 각각의 합성 위반 fixture(⑤는 redirect·chain·pipe·env-prefix 5형태, ⑥은 inline·변수형·regexec 3형태)를 실제로 잡는지 + 정본 패턴을 오검출하지 않는지 자체 검증.
+
+**금칙 ⑥ 전용 2축 (2026-08-02 신설)**:
+- **기준 ① 판별력 5축**: 같은 호출을 count-only / 값-추출 두 형태로 넣어 **판정이 갈리는지** 본다. 한쪽만 두면 "제외 로직이 항상 켜져 아무것도 안 잡는 상태"와 겉보기가 같다. ★이 축이 **개발 중 내 결함을 잡았다** — 초판의 count-only 판정이 `all(사용처 == length)`였는데, **한 번도 쓰이지 않는 변수**가 빈 집합으로 그 조건을 공허하게 만족해 무해로 빠졌다(위반 주입에서 등재 파일에 site를 심었는데 래칫이 침묵). `any(is_len)` 필수 조건으로 폐쇄. **"빈 결과가 합격으로 읽힘"이 검사기 자신에게서 재발한 사례**다.
+- **함정 전제 실측 1축**: 계약이 근거로 삼는 현상("Windows TRE = UTF-16 오프셋")을 규칙이 아니라 **런타임에서 직접 잰다**. non-BMP 6개 선행 → TRE 추출 `.95` ≠ PCRE `&lt;`. 전제가 이 기계에서 거짓이면 금칙 ⑥은 근거 없는 규칙이므로, 전제를 상수로 박지 않고 매 실행 재확인한다.
+
+★**검사기 자신이 금칙 ⑥을 앓지 않게** 내부 `gregexpr`은 전부 `perl=TRUE`다. 기본 TRE로 오프셋을 받으면 호출 본문을 자르는 파서가 UTF-16 오프셋을 코드포인트로 해석해, **자기가 잡는 결함을 자기가 앓는다**. 실효 실증 — 최초 구현의 검출기 ①은 `system2\([^)]*env=`였는데 인자 안의 `)`(예: `args = c("-c", code)`)에서 멈춰 **다중행 호출을 놓쳤고, 위반 주입 테스트가 이를 적발**했다(괄호 균형 파서로 교체 후 `data/build_cache.R` 등 추가 검출). 래칫 검출력도 실증 — 합성 위반 주입 시 `exit 1`, 제거 시 `exit 0`.
 
 > 검사기 자체가 "잘못된 것을 재는" 실패가 이 리포지토리의 반복 부류다(존재→유효성, substring→ID, mtime→최신성). 그래서 위반 주입 테스트 없는 검사기는 이 계약에서 인정하지 않는다. 위 ① 사례가 그 규정의 첫 회수다.
 
@@ -253,5 +307,5 @@ Python 하드코딩 폴백 부재). **두 검사기를 합쳐야 계약 전체�
 ## 참조
 - `.claude/rules/python-policy.md`(자매) · `answer-principles.md`(자체합성·회피표현) · `measurement-graduation.md`
 - 정본 선례: `02_Infrastructure/worktask/state_machine.R:248-252`(env) · `cert_rules.R:430-437`(절대경로·QVEST_PY)
-- 메모리: `reference-r-windows-system2-onexit-traps` · `reference-python3-windows-stub-use-qvest-py` · `reference-rscript-e-korean-segfault`
+- 메모리: `reference-r-windows-system2-onexit-traps` · `reference-python3-windows-stub-use-qvest-py` · `reference-rscript-e-korean-segfault` · **`reference-r-windows-tre-utf16-offset-trap`**(금칙 ⑥ 원전 — ★한글은 무관하다. `[a-zA-Z]`는 한글을 매치하지 않으므로 로케일 지목은 오진이었고, 원인은 **이모지 위치**다. 이 반증을 재유도하지 말 것)
 - 커밋: `f18f6c90` → `97730b4c` / `d384c016` → `2cfa7100`

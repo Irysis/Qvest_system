@@ -1,7 +1,7 @@
 {
  "schema_version": "1.0",
  "sot": "02_Infrastructure/docs/qvest_v8_3_alpha_discovery_sot.md §4",
- "updated": "2026-08-03 (FQ-129 자격 검정 FAIL: CAUTION recall 0.096 < base 0.457 · p 0.388 → FQ-115 와 동일 처분. 국면 lane 은 라벨 자격 확보 전까지 닫힘. 총 130건)",
+ "updated": "2026-08-03 (FQ-108 위험-축 대각 채널 NO_INCREMENT·흡수 97.5% — 축은 미소진. 파생 FQ-108b 상관채널 / 108c CVaR·tripwire / 108d z-형태 손실 등재. 총 133건)",
  "consume_rule": "새 발굴 리서치 착수 전: hypothesis_index lookup → 본 큐 확인 → owner/status 갱신. 완료 시 result_ref(L-code/보고서) 기입. dohoon_decision 항목은 세션 임의 착수 금지.",
  "entries": [
   {
@@ -2101,10 +2101,16 @@
    "ev_rationale": "WT-009 NP-2(P1). '확립 능력과 소비면의 불일치'는 WT-011 스펙트럼 분해와 같은 각도 — 신호가 죽은 게 아니라 소비 경로가 틀렸다. 위험-축은 QLIKE/DM 진단이라 저비용.",
    "wall_check": "비적용 — 위험모델 위생 계층(성과 병목 아님, ⑧행). 자본 주장 없음.",
    "data_gate": "없음 (rawdata 일간 현행분)",
-   "owner": "미배정",
-   "status": "frontier_open",
+   "owner": "Q-Lead (판정 수집 2026-08-03)",
+   "status": "config_scoped_negative_frontier_open",
    "registered": "2026-08-02 Q-Lead (WT-D20260802_009 NP-2 파생)",
-   "precheck_measured": "★착수 전 사전 확인 실측 (2026-08-03 Q-Lead, read-only 10분): **전제가 뒤집혔다**. factor_registry.json(373팩터)에 D34_RealVol_21d · **D35_RealVol_63d**(WT-020이 자체 계산한 vol63과 동일 창) · D36_RealVol_126d · D42_EWMA_Vol(252d λ0.94) · D41_Vol_of_Vol · D45_Downside_Dev 전부 **이미 등재**. ⇒ '신규 팩터를 만들까'는 질문이 아니다. ★더 중요한 발견: D35 참조가 factor_db 내부 4곳(compute_defense.R · phase6.R · registry · bak)뿐 = **소비자 0**. 위험모델·랭킹 어디서도 쓰지 않는다 — '없어서 못 쓴 게 아니라 있는데 안 쓴 것'. 이 저장소의 반복 계통(screen_route 소비자 0 · lifecycle.status reader 0)과 동형. ⇒ 라운드 재설계: ① D35를 load_month_factors() 경유로 소비 배선 ② 배선 시 MAX5 증분이 실제로 흡수되는가(WT-020 상관 0.939 재현) ③ 흡수되면 신규 팩터 불요 확정."
+   "precheck_measured": "★착수 전 사전 확인 실측 (2026-08-03 Q-Lead, read-only 10분): **전제가 뒤집혔다**. factor_registry.json(373팩터)에 D34_RealVol_21d · **D35_RealVol_63d**(WT-020이 자체 계산한 vol63과 동일 창) · D36_RealVol_126d · D42_EWMA_Vol(252d λ0.94) · D41_Vol_of_Vol · D45_Downside_Dev 전부 **이미 등재**. ⇒ '신규 팩터를 만들까'는 질문이 아니다. ★더 중요한 발견: D35 참조가 factor_db 내부 4곳(compute_defense.R · phase6.R · registry · bak)뿐 = **소비자 0**. 위험모델·랭킹 어디서도 쓰지 않는다 — '없어서 못 쓴 게 아니라 있는데 안 쓴 것'. 이 저장소의 반복 계통(screen_route 소비자 0 · lifecycle.status reader 0)과 동형. ⇒ 라운드 재설계: ① D35를 load_month_factors() 경유로 소비 배선 ② 배선 시 MAX5 증분이 실제로 흡수되는가(WT-020 상관 0.939 재현) ③ 흡수되면 신규 팩터 불요 확정.",
+   "verdict": "대각 채널 증분 없음 · 축은 미소진 (2026-08-03). PRIMARY DM t +0.724 (NO_INCREMENT). 흡수 97.5% — linear LW 기저 t -6.166 vs lw_nls 기저 -2.235(퇴화 보정분일 뿐). rv63 통제 시 증분 R² 0.1722→0.0099 부호 반전(spearman 0.9967) = z 경로가 레벨 경로에 열등. ★대각은 병목이 아님: 종목-레벨 +17.2%p 가 포트 총분산으로 전이 안 됨(집중 북은 상관·시장 지배). 미측정 = 상관 채널·CVaR/tripwire 소비면.",
+   "revival_conditions": [
+    "FQ-108b 상관 채널이 유의하면 위험-축 재개",
+    "실 book 이 집중형→EW·분산형으로 전환되면 EW 셀(t -3.588) 적용 가능",
+    "factor_db 가 vol 계열을 레벨 형태로 노출하면 z-형태 제약 해소(FQ-108d)"
+   ]
   },
   {
    "id": "FQ-109",
@@ -2427,6 +2433,42 @@
    "owner": "미배정",
    "status": "frontier_open",
    "registered": "2026-08-03 Q-Lead (WT-D20260803_001 NP-2 파생)"
+  },
+  {
+   "id": "FQ-108b",
+   "lane": "risk_axis",
+   "title": "★위험모델 상관(C) 채널 — 대각이 아닌 곳. FQ-108 PRIMARY tie 의 기전이 직접 지목",
+   "hypothesis": "FQ-108 은 상관행렬 C 를 전 arm 고정하고 대각만 교체했고, PRIMARY tie 의 기전 진단이 '집중 20종 북(HHI 0.115)의 총분산은 상관·시장 성분이 지배 — 대각은 병목이 아니다'로 귀결됐다. ⇒ 같은 재료를 **상관 채널**(tier/섹터 damping·factor-구조 C·regime-조건부 C)로 소비하면 개선이 나오는가. 대각에서 이미 소진된 정보와 겹치지 않는다는 점이 사전 근거.",
+   "ev_rationale": "FQ-108 NP-2(P1). 본 라운드가 명시적으로 남긴 유일한 미측정 축이고, 기전 진단이 직접 지목했다.",
+   "wall_check": "FQ-057 은 상관 추정기(lw_nls) 자체는 ADOPT 확정 — 본 건은 추정기 교체가 아니라 구조 부여. 중복 아님.",
+   "data_gate": "없음 (FQ-108 패널·하네스 재사용)",
+   "owner": "미배정",
+   "status": "frontier_open",
+   "registered": "2026-08-03 Q-Lead (FQ-108 NP-2 파생)"
+  },
+  {
+   "id": "FQ-108c",
+   "lane": "consume_surface",
+   "title": "발생률 예측력(t 12.10)의 CVaR/ES·tripwire 소비 — 분산이 아닌 꼬리 채널",
+   "hypothesis": "FQ-108 확정: crash 발생률 lift +4.22pp(t 12.10)·rv63 통제 후에도 +1.21pp(t 5.67) 잔존. 그런데 이 힘이 **분산 예측**으로는 전이되지 않았다(대각은 병목 아님). 발생률은 2차 모멘트가 아니라 **꼬리 사건**이므로 CVaR/ES·stress·per-holding tripwire 가 정합 소비면이다. CRISIS 는 n_months=2 로 검정 불가 → CAUTION(t 2.18)부터.",
+   "ev_rationale": "FQ-108 NP-3(P1). '재료는 살아있는데 소비 지점이 틀렸다' 계열의 다음 후보 — insider SAFE tripwire 프레임 재사용 가능.",
+   "wall_check": "monitoring 소비면은 cap-tier 벽 비경유(R33 선례). 자본 주장 아님.",
+   "data_gate": "없음",
+   "owner": "미배정",
+   "status": "frontier_open",
+   "registered": "2026-08-03 Q-Lead (FQ-108 NP-3 파생)"
+  },
+  {
+   "id": "FQ-108d",
+   "lane": "infra_diagnostic",
+   "title": "★vol/tail 8종의 z-형태 정보손실 일괄 진단 — 'D35 소비자 0' 해석 정정",
+   "hypothesis": "FQ-108 부수 발견: `load_month_factors` 는 `Z_Score_Aligned`(횡단면 z)만 반환해 **변동성의 레벨을 소거**한다. 실측으로 z 경로가 rawdata 레벨 경로보다 열등했다(B_d35 vs F_sv63 t +2.011). ⇒ D34/35/36/41/42/45/47/50 8종이 위험모델 입력으로 **형태가 부적합**할 수 있고, '소비자 0'의 일부는 무관심이 아니라 형태 불일치다. 8종 각각에 대해 z vs 레벨 정보량 격차를 정량화하고 레벨 노출 필요 여부를 판정.",
+   "ev_rationale": "FQ-108 NP-4(P2). 08-03 아침 Q-Lead 의 '있는데 안 쓴 것' 단정을 정정하는 근거이자, factor_db 소비 인터페이스의 구조 제약을 드러낸다.",
+   "wall_check": "인프라 진단 — 자본 주장 없음. C15 규약(로더 경유) 자체는 유지, 반환 형태 확장 여부가 쟁점.",
+   "data_gate": "없음",
+   "owner": "미배정",
+   "status": "frontier_open",
+   "registered": "2026-08-03 Q-Lead (FQ-108 NP-4 파생)"
   }
  ]
 }
