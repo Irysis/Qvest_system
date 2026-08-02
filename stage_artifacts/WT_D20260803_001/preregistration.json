@@ -1,0 +1,63 @@
+{
+  "task_id": "WT-D20260803_001",
+  "registered_at": "2026-08-03 (측정 전 고정 — 이 파일 작성 시점에 본 라운드 FM 상호작용 수치 일절 미산출. WT-014/016/020/022 승계 수치만 인용)",
+  "selection_type": "preregistered_single_primary_chain",
+  "n_trials": 1,
+  "mandate": "WT-D20260802_022 NP-1 승계 (P1). 단일 판별 질문: rank-tilt base의 최상위 랭크 후보 안에서 MAX5(63일 상위 5일 수익 평균) 상위가 승자 표지인가. 승계 근거: WT-022 배제된 base top-20이 대체 종목보다 월 +1.16% 우위 (3.28% vs 2.12%, NW t 1.54, n=248) — 문턱 미달이었음을 명기.",
+  "qlead_amendment_20260803": "Q-Lead 사전 확인 통지 반영 (측정 전 수신): (1) 63일 창 동일 통제는 자체 계산 금지 — load_month_factors() 경유 D35_RealVol_63d + D45_Downside_Dev 로 대체 (C15 규약). (2) 상호작용 검정에서 D35 통제 전/후 병기 + rank×D35 흡수 판별암(Arm C) 추가 — WT-020 실측(동일 63일 창 통제 시 MAX5 증분 소멸 t 13.15→0.95, cor(max5,vol63)=0.939)에 따라 상호작용이 유의해도 rank×단기변동성 상호작용 통제 후 남는지가 'MAX5 고유' 주장의 진짜 판별점. (3) D35 계열은 factor DB에 등재돼 있으나 소비자 0 (factor_db 내부 4곳 참조뿐) — '없어서 못 쓴 게 아니라 있는데 안 쓴 것'을 판정문에 명시.",
+  "primary": {
+    "name": "FM_interaction_alpha_rank_x_max5",
+    "definition": "Fama-MacBeth 월별 횡단면 회귀 (d0 = 전월말 거래일 그리드, 후보 프레임 = 해당 홀딩월 sig_label에서 score_eff finite인 production 후보 전 종목): Ret_1m ~ zrank + zmax5 + zrank:zmax5 + D35_RealVol_63d + D45_Downside_Dev + zsize + zliq. 판정 통계량 = zrank:zmax5 계수 월별 시계열의 NW lag-3 t (상수 회귀).",
+    "variables": {
+      "Ret_1m": "screen_inputs.rds (WT_D20260714_004) fwd_ret — 익월(그리드 (d0, d0_next]) 수익. 독립 재계산(rawdata 일간 Ret 복리) 대비 방향 검증 cor >= 0.99 필수 + 동월 라벨 위반 주입 1종 발화 의무 (WT-020 검증기 재사용)",
+      "zrank": "후보 프레임 내 score_eff 순위(frank)의 월내 winsorized z — production tilt가 rank 기반이므로 rank를 z화. score_eff 소스 = stage_artifacts/WT_D20260425_010/alpha_scores.parquet (WT-022 GATE A에서 production 03_period_returns.csv 대비 max|Δ|=5.13e-16 재현 — production_parity_verified 계보)",
+      "zmax5": "stage_artifacts/WT_D20260802_014/alpha_scores.parquet max5 (WT-010 ot_panel 동결분, 재계산 없음) 월내 winsorized z",
+      "D35_RealVol_63d, D45_Downside_Dev": "load_month_factors(d0) 경유 Z_Score_Aligned (C15). IC-정렬 방향 — 부호는 판정에 비관여, 흡수력만 소비",
+      "zsize": "screen_inputs SIZE — log(Size) 월내 winsorized z",
+      "zliq": "screen_inputs liqf adv — log(adv) 월내 winsorized z"
+    },
+    "sample": "d0 <= 2026-03-31 (WT-020 data_currency_flag: screen_inputs d0 >= 2026-04-30 라벨 소비 금지 — 부분월 결함). 월별 complete-case n >= 100 게이트. max5 결측 종목 제외 + 결측률 기록.",
+    "decision_rule_fixed": {
+      "winner_marker": "t_interaction >= +2.0 → 승자 표지 확정 (고랭크에서 MAX5 양의 기여) → 방향 반전 소비 1건 측정 (conditional arm)",
+      "inconclusive": "|t_interaction| < 2.0 → 미확정 — WT-022의 +1.16%는 우연 범위. 그 자체가 결론 (소비 측정 없음)",
+      "exclusion_frame": "t_interaction <= -2.0 → 배제 프레임 지지"
+    },
+    "attribution_gate_fixed": "Arm C (아래 d3)에서 zrank:zmax5가 zrank:D35 + zrank:D45 병렬 투입 후에도 t >= 2.0 생존해야만 'MAX5 고유 승자 표지' 라벨 허용. 생존 실패 시 결론 = '고랭크 × 단기변동성 상호작용의 재표현' (신규 축 주장 금지) — 단, primary 유의 자체는 유효하며 소비 arm은 primary 기준으로 진행 (라벨만 attribution 결과를 따름).",
+    "threshold_proximity_rule": "★WT-013/FQ-109 규약: primary |t| ∈ [1.5, 2.5]면 섭동 분포 병기 의무 — 월별 후보 프레임 5% 무작위 탈락 × 5 seeds 재추정 → t 분포 q05/q95 보고. 단일 draw로 결론 금지."
+  },
+  "preregistered_diagnostics_non_selective": {
+    "d1_no_vol_controls": "D35/D45 제외판 (Ret_1m ~ zrank + zmax5 + zrank:zmax5 + zsize + zliq) — D35 통제 전/후 병기 (Q-Lead 지시 2).",
+    "d2_lag1_stress": "zmax5를 전월 d0 값으로 지연 — 상호작용 t 붕괴 여부 (동월 누출 판별).",
+    "d3_interaction_controls (Arm C)": "primary + zrank:D35 + zrank:D45 병렬 투입 — attribution gate.",
+    "d4_placebo": "월내 max5 무작위 순열 × 5 seeds — 상호작용 t 분포가 0 근방이어야 검정 실효.",
+    "d5_toprank_subset": "월별 score_eff 상위 40종 한정 FM: Ret_1m ~ zmax5 + D35 + D45 + zsize (rank 제거 — 상위 안에서 max5 주효과). '최상위 랭크 후보 안에서'의 국소 직접 검정.",
+    "d6_subperiod": "3분할 (2005-2011 / 2012-2018 / 2019-2026) + pre/post-2017 상호작용 계수 병기.",
+    "d7_regime": "홀딩월 unified_regime Category별 상호작용 계수 평균·t + AX-001 조건부 병기 (CRISIS 셀).",
+    "d8_cap_tier": "후보 프레임 Size 순위 tier (MEGA top10 / MID 11-30 / OTHER) 내 FM — dual-basis의 cap-tier 축.",
+    "d9_double_sort": "rank 5분위 × max5 5분위 평균 익월수익 격자 (기술 서술 — 선택 비사용)."
+  },
+  "conditional_consumption_arm": {
+    "trigger": "primary t_interaction >= +2.0 에서만 실행. 미달 시 미실행이 결론.",
+    "definition": "WT-022 실코드 하네스 재사용 (Iter31 §5 walk-forward VERBATIM + noLayer4 overlay). base = 무변경 production 재현 (GATE A parity max|Δ| <= 1e-8 필수, production_parity_verified). variant = top-30 score_eff 후보 중 MAX5 상위 십분위(후보 프레임 분위) 우선 승격 후 top-20 선정 (배제의 정확한 거울상 — 가산 tilt 1건만, sweep 없음).",
+    "metric": "ΔIR (net_active_recon_v1) + paired NW lag-3 t + dual-basis (EW arm) + lag1 + 회전 실측.",
+    "adoption_rule": "ΔIR >= +0.05 ∧ paired t > 0 → 상신 권고 / 그 외 철회. ★재구성 base ΔIR은 상신 근거 금지 (WT-022 실사고: 근사 +0.169 → 실코드 -0.149 반전)."
+  },
+  "pit_declaration": {
+    "C5_C10": "max5 창 종점 d0 = 전월말 거래일 (t-1 종가까지) < 홀딩월 시작. 라벨 = (d0, d0_next] 익월 수익 — 신호·통제 전부 d0 이전 데이터만.",
+    "C14_C15": "D35/D45는 load_month_factors(d0) 경유 (Usable_Date <= d0 로더 강제). parquet 직접 read 금지.",
+    "violation_injection": "동월 수익을 라벨로 위장 주입 → 방향 검증기 stop() 발화 확인 의무 (미발화 = 검사 사망 = STOP).",
+    "ret_firewall": "저장 Ret(rawdata)·동결 max5·저장 score_eff 패널만 소비 — 재계산 금지.",
+    "vintage": "입력 파일 mtime·경로 기록 (§7 pinning)."
+  },
+  "chain_qualification": {
+    "iteration_policy": "iteration 없음 — 단일 primary 1회 측정. 변형 전부 사전등록 진단.",
+    "oos_policy": "holdout 미조회. 전기간 실측 + 사전등록 분해만.",
+    "dsr": "sweep 아님 (n_trials=1) — DSR 게이트 부적용, 산출 생략 사유 = 단일 시험"
+  },
+  "honest_priors_both_sides": {
+    "against": "승계 t 1.54는 문턱 미달. WT-020: 동일창 통제 시 max5 증분 소멸(crash 라벨 t 13.15→0.95) + 전기간 수익 스프레드 t -0.12. 상호작용이 유의하지 않을 사전 확률이 상당하다. D35 통제가 상호작용까지 흡수할 가능성도 상당.",
+    "for": "WT-022 dropped-vs-added는 top-20 국소 표본(월 ~3.8종 스왑)이라 검정력 낮음 — 전 후보 프레임 상호작용은 표본이 ~100배라 같은 기전이 실재하면 t가 설 수 있다. WT-020 boom lift(+5.4pp t +9.4)는 상방 꼬리 실재 증거.",
+    "asymmetry_note": "미확정이어도 정보 이득: WT-022 +1.16%가 우연 범위로 확정되면 '배제 프레임 재검토' 부담이 소멸하고 MAX5 재료는 위험모델 소비면(WT-020 NP)으로 단일화된다."
+  },
+  "capital_claim": "없음 — book_state 무변경, governor 미접촉, Σ/weights 산출 없음 (FM 회귀 + 조건부 스크린 특성화만)."
+}
