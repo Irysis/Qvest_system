@@ -32,9 +32,9 @@ asof_cov <- function(q_dates_dt, cutoff_shift_months = 0L) {
   Q[, cut_date := if (cutoff_shift_months == 0L) Date else {
     d <- as.POSIXlt(Date); d$mon <- d$mon - cutoff_shift_months; as.Date(d)
   }]
-  qq <- Q[, .(Ticker, Date = cut_date)]
-  setkey(qq, Ticker, Date)
+  qq <- Q[, .(Ticker, Date = cut_date)]           # ★unkeyed — on= 조인은 i 행순서 보존
   j <- cov[qq, on = .(Ticker, Date), roll = 30]   # 마지막 관측(<= cut, 30일 이내), 없으면 NA
+  stopifnot(nrow(j) == nrow(Q), identical(j$Ticker, qq$Ticker))  # 정렬 정합 가드 (run_02 스크램블 재발 방지)
   Q[, cov_val := fifelse(is.na(j$coverage), 0, j$coverage)]
   Q[, cut_date := NULL][]
 }
