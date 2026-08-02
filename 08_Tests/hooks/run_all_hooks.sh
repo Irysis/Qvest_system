@@ -418,6 +418,15 @@ SUITES=(
   #     매 실행 확인하고(공허화 방지), D축이 "추출물은 entity 모양이어야 한다"는
   #     자기검증 계약을 건다 — 색인 붕괴가 '위반 없음'으로 읽히던 자리.
   "08_Tests/hooks/test_telegram_entity_scan.R"
+  # 2026-08-02 추가: strategy_analyzer §7-G 날짜축 정합 판정의 "빈 결과 ≠ 합격" 계약.
+  #   원 결함 = `Sample_Aligned <- length(strat_only)==0 && length(bm_only)==0` —
+  #   전략·벤치 시계열이 **둘 다 비면** 양쪽 setdiff 가 비어 TRUE("완벽 정렬")가 됐다.
+  #   같은 리포트의 Sample_Overlap 은 0 인데 하류가 읽는 건 불리언이라 자기모순이 안 보이고,
+  #   감싸는 tryCatch 도 못 잡는다(빈 xts 는 오류가 아니라 warning 만 낸다).
+  #   ★C축(구 한 줄 재주입)이 픽스처가 결함을 실제로 건드리는지 매 실행 대조하고,
+  #     B축(양성 통제)이 과잉교정("항상 NA")을 잡는다 — 판정 사망과 위반 부재는 겉보기가 같다.
+  #   돌연변이 3종으로 검출력 실증(구판복원 1fail / 항상NA 3fail / 함수개명 FATAL).
+  "08_Tests/contract_regression/test_sample_alignment_empty.R"
 )
 
 # (2026-08-02) .py 분기 추가 — 종전엔 확장자 무관 `bash` 로 던져 파이썬 suite 가
