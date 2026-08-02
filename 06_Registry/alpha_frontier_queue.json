@@ -29,12 +29,14 @@
    "hypothesis": "공시 계약금액의 상대 규모(금액/시총)가 long-side directional 알파 — occurrence-only는 null(t=0.59)이었으나 magnitude는 genuinely 미검증(real prior)",
    "ev_rationale": "07-06 4-프로브에서 2번째 deferred lead로 지정. long-side·directional — short-side-견인 벽(no-short 미하베스트) 회피 가능성",
    "wall_check": "long-side 신호라 'short-side-견인 × no-short' 벽 회피 시도. IC→PORT_t 전이는 미검증",
-   "data_gate": "FQ-001과 동일 document.xml 파이프 — insider 크롤 완료 시 파서 재사용",
-   "owner": {},
-   "status": "parser_gated",
-   "next_action": "insider 크롤 완료 시 계약금액 추출 병행 → canonical 측정",
+   "data_gate": "OPEN (2026-08-02 실측). pblntf_ty='I'(거래소공시) 확정 — A/B/C/D/E/F/J 7종 전부 0건(insider 가 'E'로 0건 받은 실사고 사전 차단). 발생률: 유니버스 348사 교집합 87건/월, 체결·정정제외 40건/월. 전구간 2005-01~2026-07 259개월 → document.xml 22,533 호출(3.2일) / 체결만 10,360(1.5일) @ 일 7,000 예산. 파서 3/3 클린 추출(rcept 20260731800547·800210·800216). 단위: 계약금액·최근매출액 모두 '(원)' 동일(분모 변환 불요). 공시가 최근매출액을 동봉 → 시총 조인 없이 네이티브 분모 사용 가능. 주의: 한화오션 주석 '억원 미만 반올림'(대형계약 정밀도 손실) / HD현대마린엔진 '계약일 최초고시환율 적용'(외화계약 PIT 정상) / 신규-변경계약 구조화 구분자 부재 — 자유텍스트 비고 파싱만 가능, 표본 3건 중 1건이 변경계약.",
+   "owner": "Q-Lead (2026-08-02 데이터 게이트 실측 — 파일럿 크롤 대기)",
+   "status": "data_gate_measured",
+   "next_action": "파일럿 크롤(최근 36개월 ~3,100 호출, 반나절) → 분모 A/B(계약금액/최근매출액 vs /시총) IC 부호·크기 검정 → 살아있으면 전구간 확장. 정정 A/B 누출검증 병행(기재정정이 공급계약류 410건 중 212건=52%: 최초 체결값 패널 vs 정정반영 패널 성과차 = 누출 지문).",
    "source_refs": [
-    "memory: next_session_task 07-06 ★2번째 deferred lead"
+    "memory: next_session_task 07-06 ★2번째 deferred lead",
+    "close_round FQ002-data-gate-opened-20260802",
+    "research_ev_map.json D4: 'occurrence-형은 소진 — magnitude-형(FQ-002)만 미검'"
    ]
   },
   {
