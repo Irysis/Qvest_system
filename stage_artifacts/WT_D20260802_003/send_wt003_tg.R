@@ -29,8 +29,9 @@ tg_agent_brief(
                    "lag-1 스트레스 통과(2.57→2.48) — 미래참조 누출 반증 완료",
                    "하네스 정합: R6 앵커 2.6124 정확 재현(오차 0.0000)")),
     list(type = "bullet", emoji = "➡️", heading = "다음",
-         items = c("판정: 기전 양성 + config-scoped negative(천장 미달) — 정렬 정보의 지배적 통로는 '선별' 재확인",
-                   "next_probe: 실현성과-정렬 가중 x 비-return 패널(내부자 공시) / 소비면: 선별-정렬 챔피언 위 재적용은 R10 null로 제외",
+         items = c("판정: 기전 양성 + config 한정 negative(천장 미달) — 지배 통로는 '선별' 재확인",
+                   "next_probe 1: 실현성과-정렬 가중을 비-return 패널(내부자 공시)에 적용",
+                   "next_probe 2: 가중형 완만화(sqrt)·풀 크기 축은 조건부 — 채택은 도훈 판단",
                    "Q-Lead 수신 → Ledger 적립 + risk 단계 전이 여부 판단"))),
   charts = charts)
 cat("TG_SENT\n")

@@ -23,6 +23,9 @@ suppressPackageStartupMessages({
 
 ROOT <- Sys.getenv("QM_ROOT", "C:/Users/99922/OneDrive/Quant_Module_Moltbot")
 setwd(ROOT)
+# [WT005] CPD는 훅에만 있고 Bash 툴 환경엔 없다(memory: reference-cpd-set-in-hooks-unset-in-bash-tool).
+# fe_factor_combo.R가 CLAUDE_PROJECT_DIR 기본값 "G:/..."로 factor_db_connector를 찾으므로 주입.
+if (!nzchar(Sys.getenv("CLAUDE_PROJECT_DIR"))) Sys.setenv(CLAUDE_PROJECT_DIR = ROOT)
 INFRA <- file.path(ROOT, "02_Infrastructure")
 source(file.path(INFRA, "config.R"))
 source(file.path(INFRA, "backtest_harness.R"))          # load_rawdata
