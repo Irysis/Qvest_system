@@ -78,11 +78,21 @@ frontier_coherence_scan <- function(root = .fc_root()) {
     stop("[coherence] DISTILLED_NEG 카드 0건 — 스키마 불일치로 카드 축이 죽었을 가능성. ",
          "0 을 '충돌 없음'으로 보고하지 않는다. distilled_knowledge.json 필드명 확인 필요.")
 
-  OPEN <- c("frontier_open", "parser_gated", "data_gate_measured", "signal_round_negative_frontier_open")
+  OPEN <- c("frontier_open", "parser_gated", "data_gate_measured")
+  ## ★2026-08-02 수리 — 대상 선정이 조용히 19% 를 빠뜨리던 결함:
+  ##   status 는 자유서술이라 'frontier_open' 이 **접미**로 오는 판이 흔하다
+  ##   (config_scoped_negative_frontier_open 7건 · precheck_negative_frontier_open 1건).
+  ##   구판은 startsWith 만 봐서 이 8건(open 후보 43 중 19%)을 스캔조차 안 했다.
+  ##   구판이 signal_round_negative_frontier_open 하나를 **손으로** OPEN 에 넣어둔 것이
+  ##   "이 부류는 대상이다"라는 작성자 의도의 증거다 — 변형이 늘 때마다 손으로 따라가는
+  ##   구조라 누락이 기본값이었다. 포함-기반으로 교체(설정-scoped negative 라도 frontier 가
+  ##   열려 있으면 착수 전 정합 스크린 대상이다). settled/done/closed 계열은 이 토큰을
+  ##   갖지 않아 오편입 없음(실측 122 entries).
+  is_open_status <- function(s) any(startsWith(s, OPEN)) || grepl("frontier_open", s, fixed = TRUE)
   rows <- list()
   for (e in Q$entries) {
     st <- g(e, "status")
-    if (!any(startsWith(st, OPEN))) next          # 이미 확정/차단된 항목은 대상 아님
+    if (!is_open_status(st)) next                 # 이미 확정/차단된 항목은 대상 아님
     hay <- toks(paste(g(e, "title"), g(e, "lane"), g(e, "hypothesis")))
     if (!length(hay)) next
 

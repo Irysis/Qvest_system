@@ -112,7 +112,33 @@ if (is.null(sr)) {
       sprintf("FQ-004 미검출 — 2026-08-02 수동 게이트가 잡은 건을 기계가 못 잡음 (n=%d)", sr$n_flag))
 }
 
-unlink(c(r1, r2, r3, r4, r5), recursive = TRUE)
+# ── ⑥ 대상 선정 범위: status 의 frontier_open 이 **접미**여도 스캔 대상인가 ──────
+#   실사고(2026-08-02): OPEN 예측자가 startsWith 라 config_scoped_negative_frontier_open(7건)·
+#   precheck_negative_frontier_open(1건) = open 후보의 19% 가 **스캔조차 안 됐다**.
+#   구판이 signal_round_negative_frontier_open 하나를 손으로 넣어둔 것이 포함 의도의 증거였고,
+#   변형이 늘 때마다 손으로 따라가는 구조라 누락이 기본값이었다. 실측: 후보 12 → 24건.
+#   ★음성 통제 동반 — settled/done 계열까지 빨아들이면 이번엔 반대로 무력해진다.
+r6 <- mk_root(list(qe("FQ-T06a", "오버레이 국면 결합 재시도", status = "config_scoped_negative_frontier_open"),
+                   qe("FQ-T06b", "오버레이 국면 결합 재시도", status = "precheck_negative_frontier_open"),
+                   qe("FQ-T06c", "오버레이 국면 결합 재시도", status = "settled_negative"),
+                   qe("FQ-T06d", "오버레이 국면 결합 재시도", status = "done_consumed")),
+              list(dc("D2 시장타이밍 오버레이 초월 국면")), list(LIVE_CARD))
+s6 <- frontier_coherence_scan(r6)
+got6 <- if (is.null(s6$rows) || !nrow(s6$rows)) character(0) else s6$rows$id
+if (all(c("FQ-T06a", "FQ-T06b") %in% got6)) {
+  ok("open_status_suffix_in_scope", "frontier_open 이 접미인 status 도 스캔 대상")
+} else {
+  bad("open_status_suffix_in_scope",
+      sprintf("접미형 누락 — 대상 선정이 19%%를 조용히 버린다 (검출=%s)", paste(got6, collapse = ",")))
+}
+if (!any(c("FQ-T06c", "FQ-T06d") %in% got6)) {
+  ok("settled_status_excluded", "settled/done 계열은 여전히 제외 (범위 과확장 아님)")
+} else {
+  bad("settled_status_excluded",
+      sprintf("확정 항목이 대상에 편입됨 — 스크린이 노이즈로 무력화 (검출=%s)", paste(got6, collapse = ",")))
+}
+
+unlink(c(r1, r2, r3, r4, r5, r6), recursive = TRUE)
 cat(sprintf("TOTAL: %d pass / %d fail\n", PASS, FAIL))
 cat(toJSON(list(test = "frontier_coherence", pass = PASS, fail = FAIL,
                 total = PASS + FAIL), auto_unbox = TRUE), "\n", sep = "")
