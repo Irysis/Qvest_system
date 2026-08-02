@@ -96,11 +96,19 @@ mk_fake_root(){
 
 echo "══ A. deployed_holdings_check — 해석기 능력 판정 + 위반 검거 실효 ══════════"
 DHC="$PROJ/08_Tests/portfolio/test_deployed_holdings_check.sh"
+# ★축 수 기대값은 리터럴로 박지 않는다 (2026-08-03 정정). 구판은 14 로 박아 뒀는데
+#   그 사이 대상 파일이 21축(돌연변이 축 T17a~d 등)으로 자라 검사가 **자기 상수 때문에**
+#   빨개졌다 — 결함이 아니라 노후한 기대값이었다. 반대로 `grep -c '^chk "T'` 같은 정적
+#   세기도 못 쓴다(들여쓴/루프 안 호출을 놓쳐 10 을 센다 = 거짓 수).
+#   대신 대상이 **스스로 선언한** N_AXES 를 읽고, 그 값이 참인지는 A1c(전제 충족 실행의
+#   pass 수)와 A3(전제 부재 실행의 skipped 수)가 **양쪽에서 측정으로** 대조한다.
+_DHC_N="$(grep -oE '^N_AXES=[0-9]+' "$DHC" | head -1 | cut -d= -f2)"
+[ -n "$_DHC_N" ] || _DHC_N="MISSING(N_AXES 미선언 — skip 이 몇 건 미판정인지 주장할 근거 없음)"
 A_OUT="$TD/a_present.txt"
 CLAUDE_PROJECT_DIR="$PROJ" bash "$DHC" > "$A_OUT" 2>&1
 chk "A1_present_no_skip"  "0"  "$(fld skipped "$A_OUT")"
 chk "A1b_present_no_fail" "0"  "$(fld fail "$A_OUT")"
-chk "A1c_present_pass14"  "14" "$(fld pass "$A_OUT")"
+chk "A1c_present_pass_N"  "$_DHC_N" "$(fld pass "$A_OUT")"
 
 # ★핵심: T1~T9 는 **일부러 넣은 제약/매니페스트 위반**이다. 이 축들이 실제로 검거되는지
 #  확인하지 않으면 "14 pass"가 공허할 수 있다(구 상태에선 T0~T13 이 전부 exit 49 로
@@ -124,11 +132,20 @@ fi
 FAKE_A="$TD/fake_a"; mk_fake_root "$FAKE_A"
 cp "$PROJ/02_Infrastructure/validation/deployed_holdings_check.py" \
    "$FAKE_A/02_Infrastructure/validation/" 2>/dev/null || true
+# ★대상 스크립트 **사본을 가짜 트리 안에서** 돌린다 (2026-08-03 정정).
+#   DHC 의 루트 앵커는 self-first 다(BASH_SOURCE/../..). main 에 있는 원본을 그대로
+#   실행하면 env 를 아무리 비워도 PROJ 가 **main** 으로 잡혀 main 의 venv 가 발견된다 —
+#   즉 이 축은 "전제 부재"를 한 번도 만들지 못한 채 초록/빨강을 논하고 있었다.
+#   ★파일명은 유지한다 — 이름을 바꿔 복사하면 스크립트의 main-guard(basename 일치)가
+#     조용히 no-op 이 되어 "출력 0바이트 + exit 0" 이 성공으로 읽힌다
+#     ([[reference-script-mainguard-basename-copy-noop]]).
+mkdir -p "$FAKE_A/08_Tests/portfolio"
+cp "$DHC" "$FAKE_A/08_Tests/portfolio/$(basename "$DHC")"
 A2_OUT="$TD/a_absent.txt"
 ( cd "$FAKE_A" && CLAUDE_PROJECT_DIR="$FAKE_A" QM_ROOT="$FAKE_A" QVEST_PY="" QVEST_PY_BIN="" \
-    bash "$DHC" ) > "$A2_OUT" 2>&1
+    bash "$FAKE_A/08_Tests/portfolio/$(basename "$DHC")" ) > "$A2_OUT" 2>&1
 A2_RC=$?
-chk "A3_absent_skipped14" "14" "$(fld skipped "$A2_OUT")"
+chk "A3_absent_skippedN"  "$_DHC_N" "$(fld skipped "$A2_OUT")"
 chk "A3b_absent_pass0"    "0"  "$(fld pass "$A2_OUT")"
 chk "A3c_absent_fail0"    "0"  "$(fld fail "$A2_OUT")"
 chk "A3d_absent_rc0"      "0"  "$A2_RC"
@@ -138,7 +155,7 @@ case "$(fld skips_missing "$A2_OUT")" in
 esac
 
 # 축 수 상수 드리프트 가드 — skip 이 "14건 미판정"이라 주장하는데 실제 축이 15개면 거짓말
-_n_chk="$(grep -c '^chk "T' "$DHC")"
+_n_chk="$_DHC_N"
 chk "A4_axis_count_constant" "$_n_chk" "$(grep -o 'N_AXES=[0-9]*' "$DHC" | head -1 | cut -d= -f2)"
 
 echo ""

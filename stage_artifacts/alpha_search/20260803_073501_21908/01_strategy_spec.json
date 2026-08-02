@@ -1,0 +1,21 @@
+{
+  "run_id": "ASBT_20260803_073501_21908",
+  "strategy_id": "STR_AS_20260803_073501_21908",
+  "strategy_name": "VoltRank_MC",
+  "strategy_family": "alpha_search",
+  "signal_description": "Halperin(2026) arxiv:2607.27461 — 변동성 순위 Markov transition matrix로 다음달 저변동 종목 예측, long-only K200KQ150. MC 전이확률 기반 예측 순위 신호.",
+  "universe_rule": "K200_KQ150 + 20d avg trading value >= 2e8 KRW (t-1 PIT)",
+  "rebalance_frequency": "monthly",
+  "signal_date_rule": "month_end_signal",
+  "execution_date_rule": "t_plus_1_first_trading_day",
+  "weighting_method": "equal",
+  "max_position_weight": 0.2,
+  "max_leverage": 1,
+  "cash_rule": "fully_invested_after_floor_shares",
+  "cost_model": "v2.4_delta_15bps",
+  "missing_data_rule": "exclude_na_scores",
+  "risk_controls": "buffer_zone(keep_n=50, entry_n=25)",
+  "lookahead_prevention": "detect_lookahead static scan CLEAN (PIT C1-C15)",
+  "survivorship_bias_control": "RAWDATA PIT membership / time-varying universe filters",
+  "factor_engine_path": "04_Research/method_frontier/VoltRank_MC/fe_voltrank_mc.R"
+}

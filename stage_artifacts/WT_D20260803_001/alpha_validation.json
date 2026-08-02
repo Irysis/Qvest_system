@@ -1,0 +1,243 @@
+{
+  "task_id": "WT-D20260803_001",
+  "generated_at": "2026-08-03 07:45:21",
+  "metric_type": "fm_cross_sectional (사전등록 FM 회귀 실측 — 성과수치 아님)",
+  "gate_eligible": false,
+  "selection_type": "preregistered_single_primary_chain",
+  "n_trials": 1,
+  "preregistration": "stage_artifacts/WT_D20260803_001/preregistration.json (측정 전 고정 + Q-Lead 통제 소스 개정 반영)",
+  "input_vintage": [
+    {
+      "input": "max5",
+      "path": "stage_artifacts/WT_D20260802_014/alpha_scores.parquet",
+      "mtime": "2026-08-02 13:50:45.626123"
+    },
+    {
+      "input": "alpha",
+      "path": "stage_artifacts/WT_D20260425_010/alpha_scores.parquet",
+      "mtime": "2026-08-02 01:01:39.428236"
+    },
+    {
+      "input": "si",
+      "path": "stage_artifacts/WT_D20260714_004/screen_inputs.rds",
+      "mtime": "2026-07-14 16:24:58.396803"
+    },
+    {
+      "input": "ctrl",
+      "path": "stage_artifacts/WT_D20260803_001/controls_panel_d35.parquet",
+      "mtime": "2026-08-03 07:37:02.809639"
+    },
+    {
+      "input": "raw",
+      "path": ".cache/RAWDATA.parquet",
+      "mtime": "2026-08-03 07:05:10.471806"
+    },
+    {
+      "input": "regime",
+      "path": ".cache/unified_regime_signal.parquet",
+      "mtime": "2026-08-03 07:22:24.625471"
+    }
+  ],
+  "pit_guards": {
+    "label_direction": {
+      "pass": true,
+      "cor_all": 1,
+      "n_pairs": 71214
+    },
+    "violation_injection": {
+      "fired": true,
+      "note": "동월 수익 라벨 위장 주입 → 검증기 stop() 발화 (cor 0.0066)"
+    },
+    "c14_c15": "D35/D45 = load_month_factors(d0) 경유 (Usable_Date <= d0 로더 강제)",
+    "data_currency": "d0 <= 2026-03-31 (WT-020 flag: screen_inputs d0 >= 2026-04-30 라벨 소비 금지)"
+  },
+  "primary": {
+    "name": "FM_interaction_alpha_rank_x_max5",
+    "arm_B_with_d35_d45": {
+      "mean_b": 0.000142,
+      "t_nw_lag3": 0.234,
+      "n_months": 256
+    },
+    "arm_A_no_vol_controls": {
+      "t_nw_lag3": -0.083
+    },
+    "arm_C_rank_x_d35_parallel": {
+      "t_nw_lag3": 1.281,
+      "note": "b_int 점추정 +0.00242로 증가하나 공선성(cor zmax5~D35 = -0.918)으로 SE 팽창 — attribution gate는 primary 미확정으로 미발동"
+    },
+    "lag1_stress": {
+      "t_nw_lag3": 1.188
+    },
+    "main_effects": {
+      "zrank_t": 6.23,
+      "zmax5_t": -1.07
+    },
+    "eff_at_rank_q90": {
+      "mean": -0.00166,
+      "t_nw": -0.887
+    },
+    "decision_rule": "t >= +2.0 승자표지 / |t| < 2.0 미확정 / t <= -2.0 배제 지지 (사전 고정)",
+    "verdict": "INCONCLUSIVE — WT-022 +1.16%/월(t 1.54)은 우연 범위 확정. 소비 arm trigger 미충족으로 미실행",
+    "threshold_proximity": "t +0.234 — [1.5, 2.5] 밖이라 섭동 분포 조건 미충족 (사전등록 규약 준수)"
+  },
+  "diagnostics_preregistered": {
+    "placebo_t_5seeds": [-0.65, 0.72, 0.73, -0.53, -1.2],
+    "top40_local": {
+      "with_controls_t": 0.342,
+      "no_controls_t": -0.225
+    },
+    "subperiod": [
+      {
+        "window": "p1",
+        "n": 85,
+        "mean_b": -0.00040925,
+        "t_nw": -0.41367919
+      },
+      {
+        "window": "p2",
+        "n": 84,
+        "mean_b": 0.00004278,
+        "t_nw": 0.04437909
+      },
+      {
+        "window": "p3",
+        "n": 87,
+        "mean_b": 0.00077531,
+        "t_nw": 0.66705583
+      },
+      {
+        "window": "pre2017",
+        "n": 145,
+        "mean_b": 0.00016219,
+        "t_nw": 0.21542295
+      },
+      {
+        "window": "post2017",
+        "n": 111,
+        "mean_b": 0.00011479,
+        "t_nw": 0.11598895
+      }
+    ],
+    "regime": [
+      {
+        "Category": "RISK_ON",
+        "n": 200,
+        "mean_b": -0.0003957,
+        "t_nw": -0.6510034
+      },
+      {
+        "Category": "NEUTRAL",
+        "n": 30,
+        "mean_b": 0.00015293,
+        "t_nw": 0.06792593
+      },
+      {
+        "Category": "CAUTION",
+        "n": 13,
+        "mean_b": 0.00633124,
+        "t_nw": 2.04664677
+      },
+      {
+        "Category": "CRISIS",
+        "n": 13,
+        "mean_b": 0.00219265,
+        "t_nw": 0.686217
+      }
+    ],
+    "ax001_conditional": {
+      "crisis": [
+        {
+          "Category": "CRISIS",
+          "n": 13,
+          "mean_b": 0.00219265,
+          "t_nw": 0.686217
+        }
+      ],
+      "note": "CRISIS 셀 b +0.00219 t +0.69 (n=13) — 방향 양(+)이나 비유의. CAUTION 셀 t +2.05는 WT-020(CAUTION ret_spread t +2.08)과 독립 2회 정합 — 승격 아닌 next_probe (다중검정: 진단 셀 20+ 중 2개 |t|>2는 무효과 하 기대 범위)"
+    },
+    "cap_tier": [
+      {
+        "tier": "MEGA",
+        "spec": "reduced_low_power",
+        "n_months": 256,
+        "mean_b": 0.0189478,
+        "t_nw": 2.76095229
+      },
+      {
+        "tier": "MID",
+        "spec": "reduced_low_power",
+        "n_months": 256,
+        "mean_b": -0.0017939,
+        "t_nw": -0.67882204
+      },
+      {
+        "tier": "OTHER",
+        "spec": "full",
+        "n_months": 256,
+        "mean_b": -0.00011707,
+        "t_nw": -0.17557566
+      },
+      {
+        "tier": "TOP30_combined",
+        "spec": "reduced_low_power",
+        "n_months": 256,
+        "mean_b": 0.00127094,
+        "t_nw": 0.61672662
+      }
+    ],
+    "double_sort_spread_by_rank": [
+      {
+        "q_rank": 1,
+        "mean_spread": 0.00108309,
+        "t_nw": 0.20493294
+      },
+      {
+        "q_rank": 2,
+        "mean_spread": 0.00517601,
+        "t_nw": 1.08475986
+      },
+      {
+        "q_rank": 3,
+        "mean_spread": 0.00188633,
+        "t_nw": 0.39935483
+      },
+      {
+        "q_rank": 4,
+        "mean_spread": 0.00520136,
+        "t_nw": 1.13875351
+      },
+      {
+        "q_rank": 5,
+        "mean_spread": 0.00878314,
+        "t_nw": 1.54384761
+      }
+    ],
+    "collinearity_monthly_mean": {
+      "zmax5_d35": -0.918,
+      "zmax5_d45": -0.616,
+      "zmax5_zrank": 0.068
+    }
+  },
+  "d35_consumption_fact": "D35_RealVol_63d: factor DB 등재(2026-03-24, active)이나 본 라운드 이전 소비자 0 (factor_db 내부 4곳 참조뿐) — '없어서 못 쓴 게 아니라 있는데 안 쓴 것'. 본 라운드 = 첫 리서치 소비 (Q-Lead 지시 3)",
+  "next_probe": {
+    "np1": "CAUTION 국면-조건부 MAX5 소비 사전등록 라운드 — WT-020(ret_spread +1.76%/월 t+2.08) + 본 라운드(CAUTION b_int +0.0063 t+2.05) 독립 2회 정합. 검정력 확보 설계(CAUTION 정의 확장 또는 pooled 패널 + 국면 더미 상호작용)로 FQ 등재",
+    "np2": "MEGA tier 상호작용 재검 (t +2.76, 축약 스펙 저검정력) — pooled panel(월 FE + 종목 클러스터 SE)로 vol 통제 포함 full-spec 검정. WT-022 cap-tier MEGA Δ기여 +0.73%/yr 방향 정합 여부 확인",
+    "np3": "D35_RealVol_63d 소비 배선 — 위험모델(Σ/β예산) 입력으로 첫 배선 (WT-020 NP-3 risk_integration_proposal과 합류, risk-research 소비면). 생산-소비 단절 계통의 회수 사례"
+  },
+  "revival_conditions": [
+    "np1 CAUTION-조건부 사전등록 검정 유의(|t|>=2) 시 국면-조건부 방향 반전(가산 tilt) 재도전",
+    "np2 mega-cap full-spec 검정 t >= 2 시 mega-cap 한정 상호작용 소비 재도전",
+    "비선형/문턱형 상호작용(top-decile max5 × top-rank 이진 셀) 신규 증거 발화 시 — 본 라운드는 선형 z-상호작용 config-scoped",
+    "book stock layer가 size-weighted로 교체되면 WT-014/016 필터 직접 이식 재검 (WT-022 승계 불변)"
+  ],
+  "consumption_face_7": {
+    "factor_ranking": "가산 tilt 부정 (본 라운드) — 배제(WT-022 철회)와 가산 모두 근거 없음 → rank-tilt book 무변경이 실측 정답",
+    "universe_filter": "배제 프레임 재지지 없음 (t <= -2.0 아님) — WT-022 철회 유지, size-weighted screen 한정 라벨 불변",
+    "overlay_regime_input": "CAUTION 조건부 셀 2회 정합 — np1로 사전등록 대상화 (살아있음)",
+    "risk_model_beta_budget": "MAX5 재료의 정공 소비면 재확인 — 63d 꼬리변동성 Σ 입력 (WT-020 NP-3, np3로 D35 배선 합류)",
+    "monitoring_signal": "MAX5 경보 무근거 유지 (WT-022 닫힘 승계)",
+    "screening_label": "변경 없음 — WT-014/016 screen_route size-weighted 전용 부기 유지",
+    "other_mode_transplant": "FR/RAMP size-weighted 모듈 이식 가능성 불변 (WT-022 NP-2) + mega-cap 프레임 재검은 np2"
+  },
+  "capital_claim": "없음 — book_state 무변경, governor 미접촉, Σ/weights 산출 없음"
+}

@@ -53,10 +53,24 @@ CHK="${DHC_FORCE_CHK:-$PROJ/02_Infrastructure/validation/deployed_holdings_check
 _py_works() { [ -n "${1:-}" ] && [ -x "$1" ] && "$1" -c 'import pandas,pyarrow' >/dev/null 2>&1; }
 PY=""
 if [ -n "${DHC_FORCE_PY:-}" ]; then _PY_CANDS=("${DHC_FORCE_PY}")   # 자기검사 주입구(T14/T15)
-else _PY_CANDS=("${QVEST_PY_BIN:-}" "${QVEST_PY:-}" \
-                "$PROJ/.venv_qvest_ml/Scripts/python.exe" \
-                "$_QM_ENV/.venv_qvest_ml/Scripts/python.exe" \
-                "/c/Users/99922/OneDrive/Quant_Module_Moltbot/.venv_qvest_ml/Scripts/python.exe"); fi
+else
+  # main 체크아웃의 venv 도 후보다(worktree 엔 junction 이 없을 수 있다). 단 경로를
+  # **하드코딩하지 않는다** — 선행 `/` 절대경로 박기는 r-portability 금칙 ③ 이고,
+  # 여기선 부작용이 하나 더 있다: 어떤 트리에서 돌려도 main 의 venv 가 잡히므로
+  # "전제 부재" 상태를 **만들 수 없게** 되어 skip 계약을 검증할 수단이 사라진다
+  # (실측 2026-08-03: 빈 가짜 루트에서도 main venv 가 잡혀 skip 축이 전부 빨강).
+  # 정본 = git 이 알려주는 공통 git-dir 에서 역산 (경로 추측·dir.exists 신뢰 금지).
+  _MAIN_ROOT=""
+  if _gcd="$(git -C "$PROJ" rev-parse --git-common-dir 2>/dev/null)" && [ -n "$_gcd" ]; then
+    case "$_gcd" in /*|[A-Za-z]:*) : ;; *) _gcd="$PROJ/$_gcd" ;; esac
+    [ -d "$_gcd" ] && _MAIN_ROOT="$(dirname "$(cd "$_gcd" && pwd)")"
+  fi
+  _PY_CANDS=("${QVEST_PY_BIN:-}" "${QVEST_PY:-}" \
+             "$PROJ/.venv_qvest_ml/Scripts/python.exe" \
+             "$_QM_ENV/.venv_qvest_ml/Scripts/python.exe" \
+             ${_MAIN_ROOT:+"$_MAIN_ROOT/.venv_qvest_ml/Scripts/python.exe"} \
+             ${_MAIN_ROOT:+"$_MAIN_ROOT/.venv_qvest_ml/bin/python"})
+fi
 for _c in "${_PY_CANDS[@]}"; do
   _c="${_c//\\//}"
   if _py_works "$_c"; then PY="$_c"; break; fi
@@ -94,9 +108,20 @@ preflight_skip() { # $1=사유 $2=없는 경로
   printf '"skips":[{"axis":"ALL(%s축)","reason":"%s","missing":"%s"}]}\n' "$N_AXES" "$1" "$2"
   exit 0
 }
-[ -n "$PY" ] || preflight_skip \
-  "pandas/pyarrow 를 갖춘 python 해석기 부재 (후보: ${_PY_CANDS[*]}) — bare python3=Store 스텁(rc49)은 후보 제외" \
-  "$PROJ/.venv_qvest_ml/Scripts/python.exe"
+# ★"지정했는데 깨졌다" 와 "이 트리에 없다" 를 가른다 (2026-08-03).
+#   DHC_FORCE_PY 가 있는데 프로브를 통과 못 했다면 그건 **주입된 결함**이다(자기검사
+#   T14/T15 가 정확히 그 상황을 만든다: 스텁 rc49 · pandas 없는 해석기 rc1).
+#   호출자가 "이걸 쓰라"고 지목한 것이 깨진 것이므로 전제 부재가 아니라 차단 대상 —
+#   여기서 skip 을 내면 T15 가 경고한 '10/14 거짓 초록'이 이번엔 '전량 skip'으로
+#   되살아난다(죽은 검사기가 조용해지는 형태). 발견 실패로 무해해 보이는 쪽이 더 위험하다.
+if [ -z "$PY" ]; then
+  if [ -n "${DHC_FORCE_PY:-}" ]; then
+    preflight_fail "지정된 해석기가 pandas/pyarrow 프로브 실패: ${DHC_FORCE_PY} — 전제 부재 아님(호출자가 지목한 해석기가 깨짐)" "no_python"
+  fi
+  preflight_skip \
+    "pandas/pyarrow 를 갖춘 python 해석기 부재 (후보: ${_PY_CANDS[*]}) — bare python3=Store 스텁(rc49)은 후보 제외" \
+    "$PROJ/.venv_qvest_ml/Scripts/python.exe"
+fi
 [ -f "$CHK" ] || preflight_fail "검사기 파일 부재: $CHK (추적 파일 — 전제 부재 아님)" "no_checker"
 # 카나리아 — `--help` 는 모듈 최상단 import(pandas) 를 지나 argparse 까지 도달해야 rc=0.
 #   Store 스텁 rc=49 / import 실패 rc=1 / 스크립트 부재 rc=2 와 전부 구분된다.
