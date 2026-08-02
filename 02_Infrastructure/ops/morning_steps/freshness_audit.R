@@ -74,7 +74,11 @@ cat(sprintf("Audit saved: %s\n", audit_path))
 #     더 중요한 건 그 하위 프로세스가 조용히 죽으면 호출자가 **빈 문자열**을 받고
 #     그걸 "stale 없음"으로 읽을 수 있다는 점이다(실측으로 그 상태를 봤다).
 #     판정을 만든 바로 그 프로세스가 판정을 직접 뱉는 게 가장 짧은 신뢰 경로다.
-cat(sprintf("EDC_RESULT stale=%d as_of=%s\n", length(stale_items), as.character(as_of)))
+cat(sprintf("EDC_RESULT stale=%d as_of=%s items=%s\n",
+            length(stale_items), as.character(as_of),
+            if (length(stale_items)) paste(vapply(audits, function(a)
+              if (isTRUE(a$status %in% c("STALE","MISSING"))) a$name else "",
+              character(1)) |> (\(x) x[nzchar(x)])(), collapse = ",") else "-"))
 
 # Stale 시 Telegram alert (mrs_daily 의 07:30 brief 전에)
 if (length(stale_items) > 0) {
