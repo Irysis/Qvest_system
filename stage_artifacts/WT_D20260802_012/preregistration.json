@@ -1,0 +1,72 @@
+{
+  "wt": "WT-D20260802_012",
+  "round": "R43",
+  "mode": "monitoring 진단 (insider SAFE 보조 tripwire 증분)",
+  "parent": "WT-D20260802_007 NP-1 (P1) — INS_MAGQ3 capital 미달(cap-w PORT_t 1.371) 신호의 1순위 소비면",
+  "lineage": "R33(capability) → R34(북확증) → R36(coverage/form) → R37(tier) → R38(상태기계·청산대칭) → R40(검열·horizon) → R41/R42(배선·live) → R43(본 라운드: 보조축 증분)",
+  "claim_scope": "자본 아님 — per-holding 안전 특성화(monitoring). alpha/Σ/weight 미산출. book_state 무변경.",
+  "base_source": {
+    "rds": "stage_artifacts/WT_D20260715_005/_r36_objects.rds :: uni",
+    "provenance": "R36 uni = production clean T-1 파생, production_parity_verified PORT_t 3.058 (§7b 정합), PIT C5 상속. R38/R40이 동일 base 사용 — 프레임 동일성 확보 목적의 의도적 상속.",
+    "vintage_note": "R36 build 2026-07-15 vintage. hold_ym 200502~202604 (255개월, 77,629 name-months). 2026-05~07 월은 본 base 밖 — 증분 판정은 202604까지 표본 조건부(정직 라벨).",
+    "censoring_pin": ".cache/pin/rawdata_r9_pin_20260715.parquet"
+  },
+  "signals": {
+    "A_live": {
+      "name": "INS02_OffBuyBreadth6m",
+      "source": "outputs/ramp/insider_factor_scores.parquet (z, build_insider_factor_panel.R)",
+      "threshold": 1,
+      "note": "현행 live tripwire 문턱 INS_NB_THR=1.0 (R33 frozen — sweep 금지). filing_delay_watch.R Part C 와 동일 소스·동일 문턱."
+    },
+    "AUX_new": {
+      "name": "INS_MAGQ3",
+      "source": "stage_artifacts/WT_D20260802_007/insider_axes_panel.parquet",
+      "transform": "WT-007 AST 그대로: CS_WINSORIZE(3sd) → CS_ZSCORE, 월별 횡단, orient=+1 (run_wt007_eval.R::cs_z 재사용 — 자체 재정의 금지)",
+      "threshold": 1,
+      "threshold_rationale": "A축 INS_NB_THR=1.0 과 동일 문턱으로 사전 고정 — 보조축 문턱 sweep/튜닝 금지(과제 mandate)."
+    },
+    "combination_primary": "A_prime = A_live OR AUX_new (합집합) — 'A′-only 신규 SAFE 집합'이 판별 대상이므로 union이 primary form",
+    "combination_contrast": "AND(교집합) 형태는 대조 기록만 — no-flip: 결과가 좋아도 primary 로 승격하지 않는다",
+    "pit": "두 축 공히 신호월 m(rcept 접수월) → 홀딩월 hold_ym = m+1. 홀딩월 시작 전 데이터만 (C5). ramp 축은 build_insider_factor_panel.R, MAGQ3 축은 build_axes() 에서 truncation-invariance 각각 기검증(승계)."
+  },
+  "state_machine": {
+    "definition": "R38/R39 상속: 연속 hold_ym(m-1→m) + 양월 covered 에서만 전이 판정. ENTRY(on_t∧¬on_p) / SUSTAIN(on_t∧on_p) / EXIT(¬on_t∧on_p) / OFF(¬on_t∧¬on_p)",
+    "coverage_A": "INS02 non-NA",
+    "coverage_Aprime": "INS02 non-NA OR MAGQ3 non-NA (합집합 커버리지)",
+    "note": "coverage 정의가 A/A′ 간 다르므로 전이 유효행 수가 달라진다 — 커버리지 변화가 판정 (i) 의 대상."
+  },
+  "diagnostics": {
+    "D1_coverage": "(i) A vs A′ 커버리지 변화: 감시월수 · covered name-months · SAFE name-months · 월평균 SAFE 이름수 · 현 북 보유종목 발화 변화",
+    "D2_primary": "R38-스타일 월별-paired NW lag-3: (SUSTAIN 평균 − OFF 평균) 시계열의 t. A / A′ 각각, MID habitat(sz_tercile=='mid', R38 동일 슬라이스). 성과 채점 아님 — 안전 특성 진단.",
+    "D3_increment": "(ii) 4분할 disjoint 그룹 (한 축 이상 covered 행에서): BOTH(a∧b) / A_ONLY(a∧¬b) / MAG_ONLY(¬a∧b) / NEITHER(¬a∧¬b). MAG_ONLY = A′-only 신규 SAFE 집합. 월별-paired NW-t vs NEITHER + R40-identical risk_metrics(downside=mean(r[r<0]) · tail=mean(r< -0.15) · vol=sd(r))",
+    "D4_homogeneity": "MAG_ONLY vs A_SAFE(BOTH∪A_ONLY) 월별-paired NW-t — |t|<2 = A-SAFE와 동질(증분 유효 방향) / t<=-2 = A-SAFE보다 열등",
+    "D5_tier": "(iii) tier 분해: megatier TOP30(MEGA, R37 저신뢰) vs REST(MID_OTHER, R37 강건). 각 그룹 paired-t 재산출",
+    "D6_lag1": "lag1 스트레스: 상태/그룹을 홀딩월 +1 로 밀어 재측정 — 붕괴 시 동월누출 의심",
+    "D7_censoring": "R40 프레임 검열/생존 편향: pin rawdata 월간 패널(rmon) 기준 MAG_ONLY vs NEITHER 의 uni 이탈률·진성폐지율 + 차등검열 prop-test + terminal right-truncation 제외 + worst-case(-100%) 대입 재판정",
+    "D8_injection": "위반 주입 테스트: (IT-1) 문턱 경계 z∈{0.999,1.000,1.001} → flag {0,1,1} 기대 / (IT-2) 문턱 돌연변이(1.0→0.5) 시 flag 집합이 반드시 변해야 함(불변 = 비교 사망) / (IT-3) 상태기계에 합성 티커 주입 후 ENTRY/SUSTAIN/EXIT/OFF 정확 산출 + both_cov 요건 제거 돌연변이가 assert 를 발화시키는지 확인. 하나라도 미발화 = stop()"
+  },
+  "decision_rules_prefixed": {
+    "power_floor": "MAG_ONLY 그룹: n_months >= 60 AND 월평균 이름수 >= 3. 미달 시 UNDERPOWERED (증분 주장 금지)",
+    "increment_verdict": {
+      "INCREMENT_ADVERSE": "t_inc <= -2.0 OR tail(MAG_ONLY) > tail(NEITHER) * 1.25  [R38 hangover 컨벤션]",
+      "INCREMENT_VALID_RETURN": "t_inc >= +2.0",
+      "INCREMENT_RISK_ONLY": "|t_inc| < 2.0 AND downside(MAG_ONLY) >= downside(NEITHER) AND tail(MAG_ONLY) <= tail(NEITHER)  [R38 risk_sticky 컨벤션]",
+      "INCREMENT_NULL": "그 외 — OFF 와 구별 불가"
+    },
+    "t_inc_definition": "MAG_ONLY vs NEITHER 월별-paired NW lag-3 t, basis=Ret_1m, MID habitat",
+    "wiring_recommendation_gate": "배선 제안(설계도)은 INCREMENT_VALID_RETURN 또는 INCREMENT_RISK_ONLY 이고 tier 분해에서 REST(MID_OTHER) 에서 성립할 때만. 그 외 = '배선 변경 제안 없음'. 어떤 경우에도 실배선은 본 라운드 범위 밖(Q-Lead 수집 후 별도).",
+    "no_flip": "primary form(union) · 문턱(1.0/1.0) · habitat(MID) · basis(Ret_1m) 전부 측정 전 고정. 대조축(AND form / exc basis / ALL slice)은 기록만 하고 판정 승격 금지."
+  },
+  "guards": {
+    "boundary_forbidden": "05_Production/ · 01_Literature/ 수정 금지. filing_delay_watch.R · insider_safe_live_track.R 수정 금지(참조 전용). book_state.json 무변경. outputs/ramp 무변경.",
+    "role": "monitoring — 전략수정/weight/Σ/Judge 재판정/포지션조정 금지",
+    "self_synthesis": "수익 합성 금지 — 실현 지표는 base uni 의 Ret_1m/exc 를 R40-identical 정의로 요약만"
+  },
+  "selection_type": "chain",
+  "n_trials": 1,
+  "selection_note": "가설주도 단일 config (WT-007 NP-1 지정 형태). sweep 아님 → DSR 게이트 비발동. 자본 게이트 대상 아님(monitoring 진단).",
+  "vintage_pin": ".cache/pin/rawdata_r9_pin_20260715.parquet",
+  "pin_mtime": "2026-07-15 00:21:02.834291",
+  "as_of": "2026-08-02",
+  "config_hash": "65021a0ee557df78"
+}
