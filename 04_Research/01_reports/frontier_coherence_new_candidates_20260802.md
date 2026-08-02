@@ -46,9 +46,37 @@ R24 까지 소비해 판정을 냈다**. 카드 본문이 그 라운드를 직�
 동일 실측을 인용한다("중·대형 극단지각 15에피소드는 12M 내 심각사건 0건, 신호는 소형주 국한").
 → 부활 신호가 실제로 발화 가능한 상태.
 
-## 남은 4건에 대한 지침
+## 판정 상세 — FQ-039 (dead 축 + 카드 2종 동시 저촉)
 
-미판정 4건(FQ-024/026/039/120)은 착수 전 3단 게이트로 사람이 판정해야 한다. 특히 **FQ-039** 는
-dead 축(D6 composite/packaging)과 카드 2종에 동시 저촉이라 우선 확인 대상이다.
+**저촉은 정탐이다.** FQ-039 는 PG2 `score_eff` **composite** 에 8번째 팩터를 z-blend 하자는
+제안이고, D6 는 정확히 "composite/packaging (mega-cap 앵커·joint packaging·MID-tier composite)
+07-10 천장 확정"이다(joint packaging 승자 IS 3.282 → OOS −1.634 붕괴, sweep-DSR 0.457 FAIL).
+
+단 FQ-039 자신이 그 선례를 **정직하게 인용**하고 차별점 4개(R6 deployzone 실현-PORT_t 라벨 07-11 ·
+ΔIR window-matched control 07-13 · R16 신규 팩터 미검 · composite z-blend 소비형태 미검)를 들어
+INV-7 경로-scoped 논리를 제대로 밟았다 — 그 자체로는 재도전 자격이 있다.
+
+**★그런데 저촉보다 강한 사유가 원문에 있다: 이 항목은 이미 이관·해소됐다.**
+`next_action` = "frontier 분기 FQ-040·FQ-041 로 이관". 두 자식의 현재 상태:
+
+| 자식 | status | 내용 |
+|---|---|---|
+| FQ-040 (R26 P2) | `screening_pass_reversed_lookahead_base` | R27 screening PASS 가 **base look-ahead 로 반전** |
+| FQ-041 (R26 P1) | `config_scoped_negative` | SETTLED R28 — "R26 IS-positive = look-ahead 아티팩트" |
+
+즉 R26 의 양성 신호는 자식 라운드에서 **저장 패널 동월 look-ahead 아티팩트**로 판정됐다
+(2026-07-14 사건, `project-stored-panel-samemonth-lookahead` 계열). 부모인 FQ-039 만
+`config_scoped_negative_frontier_open` 으로 남아 있어, 큐만 보고 집으면 이미 반증된 라인을 연다.
+
+### 이 판정이 드러낸 스크린 갭 (제안)
+
+현 스크린은 **큐 × EV지도 × Distilled 카드** 3면만 본다. FQ-039 의 실제 사유는 **큐 × 큐
+(부모-자식 상태 일관성)** 이었고 그 축은 없다 — 계보는 `next_action` 본문에 자연어로만 있다.
+제안 4번째 축: *"자식이 전부 종결(settled/negative/reversed)인데 부모가 open"* 을 탐지.
+FQ-039 는 그 축의 실사례 픽스처가 된다.
+
+## 남은 3건에 대한 지침
+
+미판정 3건(FQ-024/026/120)은 착수 전 3단 게이트로 사람이 판정해야 한다.
 스크린 재실행: `Rscript 02_Infrastructure/ops/frontier_registry_coherence.R --json`
 (수리는 브랜치 `claude/confident-pasteur-53fafb` 7f9e4ff1 — main 미반영 시 접미형 7건이 다시 안 보인다).
