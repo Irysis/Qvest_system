@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "sot": "02_Infrastructure/docs/qvest_v8_3_alpha_discovery_sot.md §4",
-  "updated": "2026-08-02 (FQ-081 DuPont 업종-상대 조건화 measured config-scoped negative + 파생 FQ-090/091/092 등재)",
+  "updated": "2026-08-02 (FQ-081 DuPont 업종-상대 조건화 measured config-scoped negative + 파생 FQ-099/100/101 등재)",
   "consume_rule": "새 발굴 리서치 착수 전: hypothesis_index lookup → 본 큐 확인 → owner/status 갱신. 완료 시 result_ref(L-code/보고서) 기입. dohoon_decision 항목은 세션 임의 착수 금지.",
   "entries": [
     {
@@ -1668,7 +1668,7 @@
       ],
       "result_summary": "3-arm (A 무조건부 / B 업종내 demean / C demean+수준x변화 교호), 결합기 공통 = 확장창 Fama-MacBeth. canonical_screen_bt top-25 EW long-only, 2005-01~2026-07, K200uKQ150, 15bps. cap-w PORT_t(NW3) A -0.798 / B -0.579 / C -0.413 (HARD 2.95 전량 미달). paired 증분 A->B +1.29%p/yr t=0.63, B->C +0.95%p/yr t=0.35, A->C +2.24%p/yr t=0.73 — 방향 일관하나 0과 구별 불가, 두 실패 arm 간 차이라 비율 해석 금지. dual-basis: EW-유니버스 기준 PORT_t A -1.564 / B -1.041 / C -0.497 (cap-w보다 나쁨) → mega-cap 벤치 아티팩트 설명 배제. cap-tier 보유비중 MEGA 0.02~0.03 / OTHER 0.92. 2005-2015 cap-w +1.41이 EW기준 -0.04로 소멸. 부호반전 arm도 전부 음수(방향 오설정 아님). EW-z 합 arm A0/B0 -0.615/-0.570 (결합기 탓 아님). hurdle grade C / score 17.4 / FAIL / screen_pass FALSE.",
       "known_defect": "분기(XLSX) TTM 을 '직전 4개 관측' 합으로 구성 — 실측 6.46%(6,260/96,975) 가 연속 4분기 아님. 최다 케이스는 연 1회 보고 종목의 4년 합(ATO 최대 4배 과대). 본 config 는 clean 아님 → 구조 판결 아님.",
-      "revival_condition": "INV-7: ① gap-aware TTM 재구성(FQ-090) 후 재측정에서 arm C cap-w PORT_t 가 EW-basis 동반 개선을 보이거나, ② DART 분기 백필로 2016+ vintage 신선도가 180일→60일 이하로 회복되면 재도전. 그 전까지는 이 구성에 한정된 미달로만 소비."
+      "revival_condition": "INV-7: ① gap-aware TTM 재구성(FQ-099) 후 재측정에서 arm C cap-w PORT_t 가 EW-basis 동반 개선을 보이거나, ② DART 분기 백필로 2016+ vintage 신선도가 180일→60일 이하로 회복되면 재도전. 그 전까지는 이 구성에 한정된 미달로만 소비."
     },
     {
       "id": "FQ-082",
@@ -1946,6 +1946,53 @@
       "owner": {},
       "ev_rationale": "WT-003 risk 실측: ICIR 풀 실효 breadth 1.25(HHI 0.8014) = relevance 선별이 근사-중복을 체계적으로 수집(cor>0.8 15쌍). breadth 기전이 맞다면 de-cor 선별만으로 Ppure 수준(~2.6)에 접근해야 한다 — 반증가능 설계. 기존 A/B 러너 재사용 1라운드 비용. 선행: factor DB de-dup(task_f76b8875) 완료 후가 정확(완전중복 D01=R12 가 선별 통계를 오염 중).",
       "registered": "2026-08-02 Q-Lead"
+    },
+    {
+      "id": "FQ-099",
+      "lane": "data_repair",
+      "title": "gap-aware TTM 재구성 (fundamental_merged 분기 누적 결함 수리)",
+      "hypothesis": "분기 원천 TTM 을 '직전 4개 관측' 이 아니라 '연속 4분기' 로 재구성하면, 연 1회 보고 종목의 4년-합(ATO 최대 4배 과대) 오염이 제거되어 재무 delta 팩터의 횡단면 신호가 달라진다.",
+      "ev_rationale": "FQ-081 실측에서 6.46%(6,260/96,975) 관측이 비연속. 최다 케이스 간격 12분기 = 연 1회 보고 종목. PM 은 비율 보존이나 ATO 는 직접 오염. 이 결함은 FQ-081 뿐 아니라 fundamental delta 를 쓰는 모든 후속 라운드의 공통 입력.",
+      "wall_check": "고정 축 준수(재료 추가 없음 — 기보유 재무 패널의 구성 수리). 제약 완화 아님.",
+      "data_gate": "기보유 .cache/fundamental_merged.parquet. Factor_Date 기준 C4 lag 는 이미 정합(분기 +45d / 연간 +90d = 익년 3/31, 실측 확인 2026-08-02).",
+      "owner": "미배정 (FQ-081 라운드 파생 2026-08-02)",
+      "status": "frontier_open",
+      "next_action": "Period 분기 인덱스 연속성 검사 후 TTM 재구성 → FQ-081 3-arm 재측정(paired 증분 재검정) → 차이 실측",
+      "source_refs": [
+        "FQ-081 challenge_note.md C5",
+        "stage_artifacts/alpha_search/20260802_115851_45708/challenge_note.md"
+      ]
+    },
+    {
+      "id": "FQ-100",
+      "lane": "book_enhancement",
+      "title": "업종-중립 순이익률 *수준* (i_PM) — 변화가 아니라 수준의 시대-안정 순위력",
+      "hypothesis": "업종내 demean 한 순이익률 *수준* 은 2005-2015 / 2016+ 양 시대에서 동일한 크기의 횡단면 순위력을 유지한다(감쇠 없음). 이는 FQ-081 이 검증한 '변화' 축과 다른 사실이며, 별건으로 PORT_t 전이를 시험할 가치가 있다.",
+      "ev_rationale": "FQ-081 부산물 실측: i_PM rank-IC 전기간 +0.0143 / ICIR 0.52, 2005-2015 +0.0141 · 2016+ +0.0145 — post-2017 감쇠 cohort 패턴에 반하는 드문 안정성. 반면 ΔPM 계열은 업종내 IC +0.0012(2016+ -0.0091).",
+      "wall_check": "★prior: AX-004 / DIST-QPM-003 = quality single-signal long-only 실패. delta = '업종-중립화 + 수준' 이며 무조건부 quality 단독 재시도가 아님. rank-IC 는 advisory — PORT_t 전이가 별개 게이트임을 사전 인지(16/16 전이 벽 posterior).",
+      "data_gate": "기보유. FQ-099 수리 후 착수 권장(ATO 오염과 무관한 PM 계열이라 선행 가능).",
+      "owner": "미배정 (FQ-081 라운드 파생 2026-08-02)",
+      "status": "frontier_open",
+      "next_action": "i_PM 단독 + 기존 book 대비 잔차-직교 2 arm → canonical_screen_bt cap-w PORT_t + dual-basis. 실패 시 DIST-QPM-003 supporting 회수.",
+      "source_refs": [
+        "FQ-081 subdiag rank-IC 표",
+        "stage_artifacts/alpha_search/FQ081_diag/"
+      ]
+    },
+    {
+      "id": "FQ-101",
+      "lane": "data_hygiene",
+      "title": "fundamental_merged 미래 Factor_Date 행 (Period 202612 / Factor_Date 2027-03-31) 라벨 점검",
+      "hypothesis": "FY2026 미종료 시점(2026-08)에 Period 202612 · Factor_Date 2027-03-31 행이 존재한다. 비-12월 결산 법인의 라벨링인지, REPRT_MAP 매핑 오류인지 판별이 필요하다.",
+      "ev_rationale": "본 라운드 오염은 0(Factor_Date 가 미래라 어떤 sig_date 에도 유입 불가). 다만 memory project-p2-realized-defects-repaired-20260726 의 'REPRT_MAP 뒤집힘 look-ahead 혐의' 와 같은 계통일 수 있어 별건 확인 대상.",
+      "wall_check": "데이터 위생 — 알파 가설 아님. 예산 소액.",
+      "data_gate": "기보유.",
+      "owner": "미배정 (FQ-081 라운드 파생 2026-08-02)",
+      "status": "frontier_open",
+      "next_action": "해당 24~26 종목의 결산월 확인 → 정상(비12월 결산)이면 문서화, 오류면 파서 수리",
+      "source_refs": [
+        "FQ-081 challenge_note.md C9"
+      ]
     }
   ]
 }
