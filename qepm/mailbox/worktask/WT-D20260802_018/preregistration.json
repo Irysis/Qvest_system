@@ -2,6 +2,7 @@
   "task_id": "WT-D20260802_018",
   "registered_at": "2026-08-02",
   "registered_before_crawl": true,
+  "reconciliation_note_pre_data": "본 파일 최초판 작성 직후, 크롤 전 고정된 선행 사전등록(04_Research/method_frontier/fq002_contract_magnitude_prereg.md — 데이터 게이트 세션 산출)이 발견됨. 상충 2점을 데이터 도착 전에 조정: ① 윈도우 3M(본 파일 초판) → 12M(선행 등록 채택 — 40건/월 희소성 산술 근거 명시, 1개월 창=이벤트 더미). ② 변경계약: 선행 등록 SCOPE=all(혼합 판정, 분리는 next_probe)을 primary로 채택하고, 부모 지시 '판별 불가분 보수적 제외'는 parse_status!=OK 제외로 충족(값 판별 불가 행은 imputation 없이 제외). is_amendment 서브패널(new_only)은 진단 병기. 두 조정 모두 셀 값을 보기 전 확정 — argmax 선택 아님. 이하 primary_signal.window/event_set 서술 중 상충분은 본 노트가 우선.",
   "selection_type": "chain",
   "n_trials": 1,
   "hypothesis": "공시 계약금액의 상대 규모(계약금액/최근매출액)가 long-side directional 알파다. occurrence-only(발생 여부)는 null(t=0.59, settled) — magnitude가 다른 유일한 이유는 '규모가 정보량'이라는 가설. 반대 증거: 큰 계약일수록 공시 당일 가격 반영이 빠를 수 있음(둘 다 기록, 정직 posterior).",

@@ -43,12 +43,32 @@
  ],
  "next_probe_note": "소비면 7종 순회 완료: overlay 입력(후보)/위험모델 vol축 중복 정보(유용)/monitoring 라벨-시장 괴리 tripwire(후보)/팩터랭킹·FR-RCMA(부적합)/유니버스 필터(미측정)/선별 라벨(OVERLAY_CANDIDATE)",
  "measurement_caveat": {
-  "status": "PARTIAL_RECOMPUTE_REQUIRED",
+  "status": "RECOMPUTED_CONCLUSIONS_HOLD",
   "defect_ref": "ALB-008 (ast_compile factor_db_monthly 캘린더 월말 라벨 → 36.3% 월 1개월 stale, lag 방향·look-ahead 아님)",
   "verdict_unaffected": "정성 판정(grade F, 'top-25 실현 alpha 없음')·축② 직교성·축⑥ 방향정렬/IC 는 유지 — 동일 셀 실측에서 rank-IC Δ<=8.6e-4(수리 후 오히려 소폭 낮음), 직교성 ρ Δ<=2.4e-3",
-  "recompute_required": "축③④ 포트폴리오 수준 수치(crisis_alpha −5.26%/월, 하락 에피소드 누적 +8.4% vs D03 +24.4%, MDD-complement, turnover) — 스테일 월 top-25 자카드 0.419~0.835 로 선별이 실제로 갈린다. 패널 재컴파일(수리 provider) 후 재산출 필요. 또한 저장 패널은 첫 월(2004-12-30) 소실로 258월 기준",
+  "recompute_required": "[해소] 축3/4 재산출 완료 2026-08-02 — 수리판 패널 + 원 유니버스 그리드, run_wt004_eval.R 정의 복제. 원 산출물 무변경(읽기 전용).",
   "evidence": "04_Research/01_reports/ast_asof_stale_impact_20260802.md",
   "fix_ref": "branch claude/confident-pasteur-53fafb 075a613c/04b526af (2026-08-02 시점 main 미반영)",
-  "recorded_at": "2026-08-02"
+  "recorded_at": "2026-08-02",
+  "recompute_result": {
+   "qualitative": "전부 유지 — 방어 배향 전 구성 PORT_t 음수, 조합이 단일 최선에 crisis_alpha·하락에피 양쪽 미달, C_ORTH 멤버십 {D03,D41,D55} 동일, 관측월 258→259(소실월 복원)",
+   "primary_C_ORTH_def": {
+    "port_t": "-0.842 -> -0.859",
+    "crisis_alpha_monthly_pct": "-5.26 -> -5.05",
+    "down_episode_cum_active_pct": "8.4 -> 7.1",
+    "mdd_complement_pp": "-18.2 -> -21.7",
+    "turnover_annual_pct": "619 -> 666"
+   },
+   "corrections": [
+    "D55_Vol_Trend_def PORT_t +0.207 -> -0.195 (부호 반전, 둘 다 무의미 수준이나 기록 정정)",
+    "D55_Vol_Trend_def MDD-complement -0.8pp -> +0.3pp → 본문 3의 'MDD-complement 전 구성 음수'는 전칭 아님(6/7 음수, D55 ~= 0)",
+    "회전율 전 구성 과소 계상(포트 레벨 +3~15%, CORE_M01 628->720%/yr) — 15bps/leg 비용이 그만큼 덜 잡혀 있었음",
+    "CORE_M01 참조 PORT_t +0.988 -> +1.427, crisis_alpha -5.10 -> -3.60 (모멘텀이 de-stale 이득 최대)"
+   ],
+   "evidence": [
+    "04_Research/01_reports/wt004_axis34_recompute_20260802.json",
+    "04_Research/01_reports/wt004_axis34_sidebyside_20260802.json"
+   ]
+  }
  }
 }
