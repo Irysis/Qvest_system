@@ -1,7 +1,7 @@
 {
  "schema_version": "1.0",
  "sot": "02_Infrastructure/docs/qvest_v8_3_alpha_discovery_sot.md §4",
- "updated": "2026-08-02 (WT-012 insider MAGQ3 tripwire 증분 기각 + R43-F1 침묵 49.8% 적발. 파생 FQ-113 선택률-정합 문턱 / FQ-114 침묵 국면 귀속 등재. 총 114건)",
+ "updated": "2026-08-02 (WT-015 국면-조건부 로테이션 재탕-이하 판정 — 튜닝 입력이 로테이션을 악화, 단일 최강이 전 조합 지배. 파생 FQ-115 국면 overlay 소비 / FQ-116 합성 손실 기전 등재. 총 116건)",
  "consume_rule": "새 발굴 리서치 착수 전: hypothesis_index lookup → 본 큐 확인 → owner/status 갱신. 완료 시 result_ref(L-code/보고서) 기입. dohoon_decision 항목은 세션 임의 착수 금지.",
  "entries": [
   {
@@ -2160,6 +2160,30 @@
    "owner": "미배정",
    "status": "frontier_open",
    "registered": "2026-08-02 Q-Lead (WT-D20260802_012 R43-F1 파생)"
+  },
+  {
+   "id": "FQ-115",
+   "lane": "consume_surface",
+   "title": "국면 정보의 배분-아닌 소비면 — CRISIS active +4.98%를 overlay/위험예산 입력으로",
+   "hypothesis": "WT-015 실측: 국면 라벨을 팩터 배분 비중으로 쓰면 손실(로테이션 0.904 < base 1.403 < 단일 2.050)이나, CRISIS 라벨 25개월의 active 연율은 **+4.98%로 유일한 양(+) 신호**다(벤치 +0.2%). 국면 정보가 죽은 게 아니라 배분 레버로 전이가 안 되는 것 — 같은 정보를 overlay 노출 조절/위험예산 입력으로 소비하면 유효한가. M4xR05 현행 overlay와 중복인지 한계기여로 판별.",
+   "ev_rationale": "WT-015 NP-1(P1). '소비 경로가 판정을 바꾼다' 계열 3번째 적용 — WT-011(수익축 vs flow축)·WT-014(랭킹 vs 필터)에 이어 배분 vs overlay. 기존 overlay 배관 재사용.",
+   "wall_check": "overlay는 실증된 유일한 long-only β 레버(v8.3)이나 M4xR05가 이미 near-optimal 3중 확인 — 한계기여가 있어야 의미. 중복이면 그 자체가 판정.",
+   "data_gate": "없음 (WT-015 국면 라벨 + 현행 overlay 배관)",
+   "owner": "미배정",
+   "status": "frontier_open",
+   "registered": "2026-08-02 Q-Lead (WT-D20260802_015 NP-1 파생)"
+  },
+  {
+   "id": "FQ-116",
+   "lane": "mechanism_probe",
+   "title": "5팩터 합성 자체가 손실인 기전 — 단일 지배가 breadth 이론과 어긋나는 지점",
+   "hypothesis": "WT-015: 단일 최강(M01_PATHQ 2.050)이 EW 정적 합성(0.338)·로테이션(0.904)을 **모두 지배**한다. Grinold breadth 이론대로면 직교 팩터를 섞을수록 IR이 올라야 하는데 반대다. 기전 후보: ① 약한 팩터가 top-25 slot을 잠식(가중 slot 천장 = 풀 최강 원소 t, 08-02 확립 지식) ② 합성 z가 순위를 평균으로 뭉개 극단 신호 소실 ③ 팩터별 유효 종목수 이질. slot 점유 분해로 판별.",
+   "ev_rationale": "WT-015 NP-2(P1). 이 기전은 다팩터 조합 lane 전체의 전제를 좌우 — WT-004(변동성 조합)·WT-009(5종 튜닝)·본 건이 모두 같은 방향을 가리키므로 규명 EV 높다.",
+   "wall_check": "top-25 long-only slot 제약은 고정 축 — 제약 완화가 아니라 '주어진 25 slot을 어떻게 채우나'의 문제로 다룰 것(INV-7 제약 방화벽).",
+   "data_gate": "없음 (WT-009/015 패널 재사용)",
+   "owner": "미배정",
+   "status": "frontier_open",
+   "registered": "2026-08-02 Q-Lead (WT-D20260802_015 NP-2 파생)"
   }
  ]
 }
