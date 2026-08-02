@@ -107,34 +107,59 @@ if (file.exists(RDS_ANCHOR)) {
               p[ret_net_source != "panel_recompute", .N], nrow(p)))
 } else cat("[2b][warn] 계약 rds 부재 — 앵커 스킵(전체 재계산 사용, monitoring 불일치 재발 가능)\n")
 
-## --- 2c. ★D3(M4gAE) 산식 분기 가드 (2026-08-02) — 조용히 틀린 북을 쓰지 않는다 ---
-## admitted 북이 D3 변형이면 신규월 배율은 m4 가 아니라 gate 다:
-##   gate = 0.70 if (m4<0.999 AND ae_fire==1) else 1.00,  ret = β × gate × ret_orig − cost.
-## 역사(rds 앵커 269개월)는 admission 이 승인한 기준이라 손대지 않는다. 문제는 **신규월**:
-## 본 스크립트의 재계산은 β×m4 (2-3 산식)이므로, 신규월에서 m4 배율 ≠ gate 배율이면
-## 그대로 쓰는 순간 배포되지 않은 북의 수익을 기록하게 된다 → 그 달은 **중단**이 정답.
-## (오늘 실측: 신규월 2026-07·08 모두 m4_lag=1.0 · ae_fire=0 → gate=1.0, 두 산식 동치.)
-if (grepl("M4gAE", BOOK_ID, fixed = TRUE)) {
-  AEP <- file.path(ROOT, "stage_artifacts/WT_D20260718_007/ae_regime_signal_ext.parquet")
-  if (!file.exists(AEP)) stop("[2c] D3 북인데 AE 신호 파일 부재: ", AEP)
-  ae <- as.data.table(arrow::read_parquet(AEP))
-  ae[, decision_date := as.Date(decision_date)]
-  new_m <- p[ret_net_source == "panel_recompute"]   # rds 앵커 밖 = 신규월 (2b 라벨 기준)
-  if (nrow(new_m)) {
-    for (i in seq_len(nrow(new_m))) {
-      ad <- as.Date(new_m$anchor_date[i])
-      aer <- ae[decision_date <= ad][which.max(decision_date)]
-      fire <- if (nrow(aer)) as.integer(aer$fire_seq[1]) else 0L
-      m4v  <- new_m$m4[i]
-      gate <- if (isTRUE(m4v < 0.999) && fire == 1L) 0.70 else 1.00
-      if (abs(gate - m4v) > 1e-9)
-        stop(sprintf(paste0("[2c] ★신규월 %s 에서 D3 gate(%.2f) != m4 배율(%.4f) — 두 산식이 갈라졌다.\n",
-                            "     이 달부터는 β×m4 재계산으로 D3 북을 기록할 수 없다. D3 전용 시리즈 산출 배선 필요."),
-                     new_m$realized_ym[i], gate, m4v))
-      cat(sprintf("[2c] 신규월 %s: m4=%.4f · ae_fire=%d → gate=%.2f — 산식 동치 확인\n",
-                  new_m$realized_ym[i], m4v, fire, gate))
+## --- 2c. ★신규월 = 배포 manifest 앵커 (2026-08-02 도훈 승인 "1번 진행") ---
+## 원칙(§7b 정합): 실현월의 시리즈 배율은 재계산이 아니라 **배포가 실제 쓴 결정값**이다.
+## 실사고 2건이 근거 — ① 재계산의 R05 z 소스(동결)가 NA 로 무뎌져 7월 β 0.30→0.50 왜곡
+## ② D3 는 gate 가 m4 를 대체해 재계산(β×m4)과 산식 자체가 다르다.
+## 방식: 신규월(rds 앵커 밖) 각각에 대해, 그 달의 **수익월 1일 배포 manifest** 의 invested 로
+##   ret = invested × ret_orig − |Δinvested| × COST 재산출. manifest 탐색 = admitted 슬롯 →
+##   직전 슬롯(2-3, swap-in 이전 월분) 순. 부재 시 재계산 유지 + 명시 WARN (침묵 승격 금지).
+if (TRUE) {
+  .fm_base <- file.path(ROOT, "05_Production/2.Factor_Model")
+  .man_dirs <- c(
+    if (exists(".slotres") && !is.null(.slotres)) .slotres$holdings_dir else NULL,
+    file.path(.fm_base, paste0("2-3.", PRIOR_BOOK_ID), "02_holdings_universe"))
+  .find_manifest <- function(dep_ym) {           # dep_ym = 수익월 "YYYY-MM" (그 1일 배포)
+    pat <- paste0("^", gsub("-", "", dep_ym), "[0-9]{2}_.*_manifest\\.json$")
+    for (d in .man_dirs) {
+      if (!dir.exists(d)) next
+      f <- list.files(d, pattern = pat, full.names = TRUE)
+      if (length(f)) return(f[order(basename(f))][1])   # 같은 월 복수면 사전순 첫 파일(일자 최소 = 월초 배포)
     }
-  } else cat("[2c] 신규월 없음 — gate 분기 검사 대상 없음\n")
+    NULL
+  }
+  new_m <- which(p$ret_net_source == "panel_recompute")   # rds 앵커 밖 = 신규월 (2b 라벨)
+  if (length(new_m)) {
+    prev_inv <- NA_real_
+    for (i in new_m) {
+      ## 수익월 = 장부월(anchor) 직전월 (return_ym 은 [3]에서야 생성되므로 여기서 직접 산출)
+      dep_ym <- format(as.Date(p$anchor_date[i]) - 15L, "%Y-%m")
+      mf <- .find_manifest(dep_ym)
+      if (is.null(mf)) {
+        cat(sprintf(paste0("[2c][WARN] ★신규월 %s: 수익월 %s 배포 manifest 부재 — 재계산치 유지 (%.4f).\n",
+                           "          재계산은 z 결손/산식 차이로 무뎌질 수 있음 — 배포 실측과 대조 필요.\n"),
+                    p$realized_ym[i], dep_ym, p$ret_noLayer4[i]))
+        prev_inv <- p$beta_R05[i] * p$m4[i]
+        next
+      }
+      mj  <- jsonlite::fromJSON(mf)
+      inv <- as.numeric(mj[["invested"]])
+      if (!is.finite(inv) || inv < 0 || inv > 1)
+        stop(sprintf("[2c] manifest invested 값 이상(%s): %s", as.character(inv), mf))
+      ## 직전월 노출: 직전 신규월의 앵커 invested, 없으면(첫 신규월) 직전 행의 β×m4 근사
+      if (!is.finite(prev_inv)) {
+        j <- i - 1L
+        prev_inv <- if (j >= 1L) p$beta_R05[j] * p$m4[j] else inv
+      }
+      ret_a <- inv * p$ret_orig[i] - abs(inv - prev_inv) * COST
+      cat(sprintf("[2c] 신규월 %s ← manifest %s: invested=%.4f · ret %.4f→%.4f (재계산 대비 %+.2f%%p)\n",
+                  p$realized_ym[i], basename(mf), inv, p$ret_noLayer4[i], ret_a,
+                  100 * (ret_a - p$ret_noLayer4[i])))
+      p[i, `:=`(ret_noLayer4 = ret_a,
+                ret_net_source = sprintf("manifest_anchor(%s)", basename(mf)))]
+      prev_inv <- inv
+    }
+  } else cat("[2c] 신규월 없음 — manifest 앵커 대상 없음\n")
 }
 
 ## --- 3. return_ym 부여 + 정렬 가드 (어제 버그 #1 물리 차단) ---
