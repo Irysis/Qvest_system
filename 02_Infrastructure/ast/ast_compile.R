@@ -819,16 +819,66 @@ ast_leaf_provider_canonical <- function() {
       first_need <- seq(first_m, by = "-1 month", length.out = hist_p + 1L)[hist_p + 1L]
       last_m <- as.Date(cut(max(ed), "month"))
       mseq <- seq(first_need, last_m, by = "month")
-      sig_dates <- seq(min(mseq), by = "month", length.out = length(mseq) + 1L)[-1] - 1L  # 각 월 말일
-      out <- vector("list", length(sig_dates))
-      for (i in seq_along(sig_dates)) {
+      # 요청 sig_date = 각 월 캘린더 말일. 파일 해석은 YYYYMM 만 쓰므로 월 선택에는
+      # 영향 없고, 방향정렬(Usable_Date <= sig_date) 창만 정한다.
+      req_dates <- seq(min(mseq), by = "month", length.out = length(mseq) + 1L)[-1] - 1L
+      # ★ 행 라벨은 요청일이 아니라 커넥터가 보고한 **패널 as-of**(월 파일 Date =
+      #   거래일 월말)를 쓴다. 캘린더 월말로 합성하면 eval 그리드(거래일 월말)보다
+      #   늦은 라벨이 되어 AS_OF 조인이 전월 값을 당긴다 = 1개월 stale
+      #   (실측 2026-08-02: 2004-12~2026-06 중 94/259 월 = 36.3% 가 거래말<캘린더말.
+      #    WT_D20260802_009 probe_parity2.R 로 stale 방향 실증 — max|diff|=0 vs 전월값).
+      #   lag 방향이라 look-ahead 는 아니나 신호가 한 달 낡아 측정이 감쇠한다.
+      out <- vector("list", length(req_dates))
+      asof_v <- rep(as.Date(NA), length(req_dates))
+      dup_months <- character(0)
+      for (i in seq_along(req_dates)) {
         lm <- tryCatch(
-          load_month_factors(sig_dates[i], factor_names = leaf$field),
+          load_month_factors(req_dates[i], factor_names = leaf$field),
           error = function(e) NULL)
-        if (!is.null(lm) && nrow(lm)) {
-          out[[i]] <- data.table(Date = sig_dates[i], Ticker = lm$Ticker,
-                                 value = lm$Z_Score_Aligned)
+        if (is.null(lm) || !nrow(lm)) next
+        asof <- attr(lm, "factor_db_asof_date")
+        # fail-closed: as-of 미보고 시 요청일로 되돌리지 않는다 (그 되돌림이 본 결함)
+        if (is.null(asof) || length(asof) != 1L || is.na(asof)) {
+          stop(sprintf(paste0("[ast_compile] factor_db_monthly '%s' @%s: 커넥터가 패널 as-of ",
+                              "(attr factor_db_asof_date) 를 보고하지 않음 — 캘린더 월말 라벨 ",
+                              "합성 금지(1개월 stale 재발). factor_db_connector.R v2.4+ 필요."),
+                      leaf$field, format(req_dates[i])))
         }
+        asof <- as.Date(asof)
+        if (asof > req_dates[i]) {
+          stop(sprintf(paste0("[ast_compile] factor_db_monthly '%s': 패널 as-of %s 가 요청 ",
+                              "sig_date %s 보다 미래 — 미래 vintage 로드(look-ahead) 거부"),
+                      leaf$field, format(asof), format(req_dates[i])))
+        }
+        # 월 파일 결손 시 커넥터가 closest-earlier 파일로 대체 → 같은 as-of 중복.
+        # 중복 라벨은 (Date,Ticker) 불변식 위반이므로 최초 1건만 쓰고 결손을 알린다
+        # (LOCF 는 AS_OF 조인이 담당 — 여기서 값을 복제해 신선한 척 하지 않는다).
+        if (any(!is.na(asof_v) & asof_v == asof)) {
+          dup_months <- c(dup_months, format(req_dates[i], "%Y-%m"))
+          next
+        }
+        asof_v[i] <- asof
+        out[[i]] <- data.table(Date = asof, Ticker = lm$Ticker,
+                               value = lm$Z_Score_Aligned)
+      }
+      if (length(dup_months)) {
+        warning(sprintf(paste0("[ast_compile] factor_db_monthly '%s': 월 DB 결손으로 ",
+                               "이전 월 패널이 대체 반환된 월 %d건 (%s%s) — 해당 월은 AS_OF ",
+                               "LOCF 로 이월됨. final_max_staleness_days 설정 권장."),
+                        leaf$field, length(dup_months),
+                        paste(head(dup_months, 6), collapse = ", "),
+                        if (length(dup_months) > 6) " ..." else ""))
+      }
+      if (!is.null(ctx$.rec)) {
+        ok <- !is.na(asof_v)
+        ctx$.rec$asof[[.leaf_id(leaf)]] <- list(
+          label_source = "connector_asof (factor_db Date column, 거래일 월말)",
+          n_months = sum(ok),
+          asof_first = if (any(ok)) format(min(asof_v[ok])) else NA_character_,
+          asof_last  = if (any(ok)) format(max(asof_v[ok])) else NA_character_,
+          n_asof_before_request = sum(ok & asof_v < req_dates),
+          n_month_gap_fallback = length(dup_months)
+        )
       }
       return(rbindlist(out[!vapply(out, is.null, logical(1))]))
     }
@@ -899,7 +949,7 @@ ast_compile <- function(ast, eval_dates, universe = NULL, provider = NULL,
   ana <- .ast_analyze(ast, lib)   # 검증 + features + 리프/히스토리 (위반 시 stop)
 
   if (is.null(provider)) provider <- ast_leaf_provider_canonical()
-  rec <- new.env(parent = emptyenv()); rec$rows <- list()
+  rec <- new.env(parent = emptyenv()); rec$rows <- list(); rec$asof <- list()
   ctx <- list(eval_dates = as.Date(eval_dates),
               history_periods = ana$history,
               .rec = rec)
@@ -925,7 +975,10 @@ ast_compile <- function(ast, eval_dates, universe = NULL, provider = NULL,
 
   leaves_manifest <- lapply(ana$leaves, function(l) {
     c(l, list(required_history_periods = ana$history[[l$id]] %||% 0L,
-              n_rows_loaded = rec$rows[[l$id]] %||% NA_integer_))
+              n_rows_loaded = rec$rows[[l$id]] %||% NA_integer_,
+              # 라벨 출처 감사면 — 월간 팩터 리프의 Date 라벨이 커넥터 as-of 인지 확인용
+              # (합성 캘린더 월말 = 1개월 stale 결함의 지문)
+              asof_label = rec$asof[[l$id]] %||% NULL))
   })
 
   manifest <- list(

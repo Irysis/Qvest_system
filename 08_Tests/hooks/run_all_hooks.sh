@@ -258,6 +258,17 @@ SUITES=(
   #   D축(미해석 키 경고)이 "0편"과 "못 읽음"을 가르는 유일 지문이고,
   #   E축이 생산자 프롬프트 계약까지 걸어 소비자만 고치고 끝나는 것을 막는다.
   "08_Tests/ops/test_mode_queue_dispatch_schema.R"
+  # 2026-08-02 추가: AST factor_db_monthly 리프의 행 라벨 = 커넥터 as-of 계약.
+  #   실사고 = provider 가 월 팩터 행을 **캘린더 월말**로 합성 라벨했는데 eval 그리드는
+  #   **거래일 월말**(RAWDATA 기준)이라, 거래말<캘린더말 인 94/259 월(36.3%)에서
+  #   AS_OF 조인이 전월 값을 당겼다 — 1개월 stale(lag 방향이라 look-ahead 아님, 측정 감쇠).
+  #   ★8일간 안 잡힌 이유가 이 검사의 존재 이유다: 기존 parity 검사가 EVAL_DATES 를
+  #   provider 와 **같은 좌표계**(캘린더 월말)로 잡아 결함이 상쇄돼 rho=1.0 이 나왔다
+  #   (검사가 옳은 값을 재는데 잘못된 좌표계에 서 있던 경우). 그래서 본 검사는 eval
+  #   그리드를 factor DB 와 무관한 RAWDATA 거래일에서 만든다.
+  #   C축(구판 라벨 재현 → 검사가 실제 FAIL 하나)이 검출력 실증, B축이 fail-closed
+  #   (as-of 미보고 시 요청일 라벨로 되돌리지 않음 — 되돌림이 곧 원 결함).
+  "08_Tests/contract_regression/test_ast_monthly_asof_label.R"
 )
 
 # (2026-08-02) .py 분기 추가 — 종전엔 확장자 무관 `bash` 로 던져 파이썬 suite 가
