@@ -1,0 +1,43 @@
+{
+  "l_code": "L-AR-20260802_213556",
+  "strategy_id": "WT-D20260802_020_MAX5_CRASH_INCIDENCE",
+  "grade": null,
+  "core_reference": "stage_artifacts/WT_D20260802_020/{alpha_validation.json, wt020_eval_results.rds, preregistration.json}",
+  "lesson_text": "MAX5의 위험-축 소비 특성화(FQ-112, 소비면 4): (1) 252d 표준 위험 축(D01/D02/D03/D45) 통제 후 종목-레벨 crash(익월 횡단면 하위 10%) 발생률 증분 실재 — FM NW t +13.15, top-decile 발생률 2.11배(21.4% vs 10.1%), 십분위 단조 3.9%→21.6%, 절대문턱(-20%) 강건 t +8.43. (2) ★증분의 정체 = 63d 단기창 꼬리-변동성 정보 — 동일창 vol63+dsd63 통제 시 소멸(t +0.95). 'MAX5 고유 lottery 정보' 서사 기각: 위험모델 관점에서 필요한 것은 max5가 아니라 단기창 변동성 축. (3) ★CRISIS 긴장 해소(WT-014 배제 역효과 t −1.78 vs crash 예측): 발생률 예측은 전 국면 성립(CRISIS t +3.89 lift +10.1pp)하되 평균수익은 스트레스 국면에서 상방 꼬리가 상쇄(CAUTION ret_spread +1.76%/월 t +2.08, boom_lift +7.4pp) — '발생률 vs 평균'의 소비 형태 분리가 정답. 배제 필터(평균 소비)는 NEUTRAL 국한, 위험지표(발생률 소비)는 전 국면. (4) cap-tier: OTHER lift +11.0pp(t 17.0) / MID +5.3pp(t 3.4) / MEGA +4.7pp(t 2.5) — 소형 국소 아님(전 tier 유의, 강도는 소형 우세). (5) 포트-레벨(진단): top-25 max5-z 노출이 하위 5% active 월 이전에 유의 상승(사전 노출 +0.273 vs −0.077, Wilcoxon p 0.001) — monitoring tripwire 근거. 선형 OLS는 무유의(t −0.75) — 문턱형 소비가 적합. (6) 배관 발견 2건: screen_inputs(WT_D20260714_004) bench 최종 라벨월 = 빌드일 절단 부분월(-0.2001 vs 정본 -0.2363, d0>=2026-04-30 라벨 소비 금지 플래그) + bench 2소스 35개월 >1%p 괴리(worst 2026-03-31 4.49pp) — 본 측정 비오염(라벨 방향 독립 재계산 cor 1.0000 + 위반 주입 FIRED).",
+  "tags": [
+    "max5",
+    "lottery",
+    "crash_prediction",
+    "risk_axis",
+    "fama_macbeth",
+    "short_window_vol",
+    "regime_conditional",
+    "fq112"
+  ],
+  "created_at": "2026-08-02 21:35:56",
+  "research_mode": "alpha_research",
+  "created_by": "alpha-research (WT-D20260802_020)",
+  "metric_type": "fm_cross_sectional",
+  "construction_type": "risk_axis_characterization",
+  "mechanism_hypothesis": "복권수요 fat-tail x 변동성 클러스터링 — 252d 위험 축의 창 관성이 63d 꼬리 정보를 희석",
+  "lcode_schema_version": "v2",
+  "n_trials": 1,
+  "selection_type": "preregistered_single_primary",
+  "record_type": "consume_surface_characterization",
+  "fm_full_t": 13.148,
+  "fm_same_window_t": 0.954,
+  "crash_lift": 0.1123,
+  "crash_lift_t": 17.66,
+  "boom_lift": 0.0543,
+  "ret_spread_t": -0.12,
+  "crisis_fm_t": 2.33,
+  "caution_ret_spread_t": 2.08,
+  "n_months": 256,
+  "falsification_attempts": 2,
+  "next_probe": [
+    "NP-1: DB-native 단기 vol 통제 재시험 — D34_RealVol_21d/D42_EWMA_Vol을 통제에 추가한 FM으로 'DB 기존 자원으로 충분한가' 판정 (충분하면 신규 팩터 불요, 배선만)",
+    "NP-2: monitoring tripwire 사전등록 라운드 — 포트 max5-z 노출 문턱(예: +0.25) 발화 규칙의 hit rate/false alarm 실측 (Wilcoxon p 0.001 승계)",
+    "NP-3(조건부): 스트레스 국면 lottery 보유 편익(CAUTION ret_spread t +2.08)의 국면-조건부 소비 — FR/RAMP 모드 이식 후보"
+  ],
+  "next_probe_note": "소비면 순회: 1(랭킹)=WT-010 기각 / 2(필터)=WT-014 / 3(오버레이)=WT-016 / 4(위험모델)=본 라운드 / 5(monitoring)=NP-2 / 6(선별 라벨)=WT-014 / 7(타 모드)=NP-3"
+}
