@@ -114,10 +114,10 @@ sig_features_pv <- function(close, vol, min_days = 40L) {
   S <- sig3_fast(D)
   L <- logsig3(S)
   c(n_days = n,
-    A_pv = levy_area(S, 2L, 3L),
-    lvl1_p = S$s1[2L], lvl1_v = S$s1[3L],
-    A_tp = levy_area(S, 1L, 2L), A_tv = levy_area(S, 1L, 3L),
-    logsig3_ppv = L$l3[2L, 2L, 3L], logsig3_pvv = L$l3[2L, 3L, 3L])
+    A_pv = unname(levy_area(S, 2L, 3L)),
+    lvl1_p = unname(S$s1[2L]), lvl1_v = unname(S$s1[3L]),
+    A_tp = unname(levy_area(S, 1L, 2L)), A_tv = unname(levy_area(S, 1L, 3L)),
+    logsig3_ppv = unname(L$l3[2L, 2L, 3L]), logsig3_pvv = unname(L$l3[2L, 3L, 3L]))
 }
 
 # A_pv 단독(경량 — 창 강건성 21/126용)
