@@ -130,6 +130,21 @@ if (length(encs)) { cat("[reg] doc_encoding 분포: "); print(table(encs, useNA 
 if (length(chks)) { cat("[reg] ratio_check 분포: "); print(table(chks, useNA = "ifany")) }
 if (length(news)) { cat("[reg] v3 parse_status 분포: "); print(table(news, useNA = "ifany")) }
 
+# ★ratio_check(공시 동봉 매출액대비% 대조)는 회귀 판정이 아니라 **무결성 진단**이다.
+#   정정공시는 상단에 "정정 전/후" 비교표가 실려 라벨-인접 추출이 구조적으로 흔들린다
+#   (실측 20230809800003: `계약금액(원)` 뒤 첫 숫자가 "2. 계약내역"의 2 → amt=2).
+#   구판은 이 오값을 조용히 OK 로 기록했다. 아래 교차표가 그 표면 크기를 노출한다.
+if (length(audit)) {
+  A <- rbindlist(audit, fill = TRUE)
+  cat("\n[reg] ratio_check × is_correction 교차표:\n")
+  print(dcast(A[, .N, by = .(is_correction, ratio_check)], is_correction ~ ratio_check,
+              value.var = "N", fill = 0))
+  sus <- A[ratio_check == "MISMATCH" & is_correction == FALSE]
+  cat(sprintf("[reg] 비정정 MISMATCH = %d건 (신호 패널에 실제로 들어가는 행)\n", nrow(sus)))
+  if (nrow(sus)) print(head(sus[order(contract_amount)], 15))
+  fwrite(A, file.path(ROOT, sprintf(".cache/dart/contract_integrity_%s_%s.csv", START, END)))
+}
+
 OUTF <- file.path(ROOT, sprintf(".cache/dart/contract_regression_%s_%s.csv", START, END))
 if (length(diffs)) {
   DF <- rbindlist(diffs, fill = TRUE)
