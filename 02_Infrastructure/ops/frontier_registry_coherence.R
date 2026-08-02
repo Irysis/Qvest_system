@@ -52,18 +52,31 @@ frontier_coherence_scan <- function(root = .fc_root()) {
 
   dead <- lapply(M$dead_classes, function(x) list(class = g(x, "class"),
                                                   verdict = g(x, "verdict"), tk = toks(g(x, "class"))))
-  # distilled 카드: DISTILLED_NEG 만 (positive 카드는 차단 사유가 아니다)
+  # distilled 카드 — 실제 스키마 (2026-08-02 실측):
+  #   entries[] 각각이 dist_id / polarity(negative|conditional|mixed|positive|unknown)
+  #   / status(distilled|pending_5axis|expired|quarantined_evidence) / statement_refined / expiry.
+  #   ★`verdict` 필드는 **없다**. 초판이 verdict~"NEG" 로 걸러 0건을 반환했고,
+  #    그 0 이 '충돌 없음'으로 읽혀 카드 축이 통째로 죽어 있었다(이 저장소 반복 결함의 자기 재현).
+  #   차단 자격 = polarity negative ∧ status distilled ∧ 미만료. expired 카드는 게이트하지 않는다.
+  today <- Sys.Date()
   dcards <- list()
-  if (!is.null(D)) {
-    ents <- D$cards %||% D$entries %||% D
-    for (x in ents) {
+  if (!is.null(D) && length(D$entries)) {
+    for (x in D$entries) {
       if (!is.list(x)) next
-      vd <- g(x, "verdict")
-      if (!grepl("NEG", vd)) next
-      dcards[[length(dcards) + 1L]] <- list(id = g(x, "dist_id") %||% g(x, "id"),
-                                            title = g(x, "title"), tk = toks(g(x, "title")))
+      if (!identical(g(x, "polarity"), "negative")) next
+      if (!identical(g(x, "status"), "distilled")) next
+      ex <- suppressWarnings(as.Date(g(x, "expiry")))
+      if (!is.na(ex) && ex < today) next
+      txt <- paste(g(x, "statement_refined"), g(x, "family"))
+      dcards[[length(dcards) + 1L]] <- list(id = g(x, "dist_id"),
+                                            title = substr(txt, 1, 80), tk = toks(txt))
     }
   }
+  # ★양성 대조: 카드가 0건이면 그것은 '충돌 없음'이 아니라 **파싱 실패 의심**이다.
+  #   distilled_knowledge 에 negative 카드가 하나도 없는 상태는 실무상 있을 수 없다.
+  if (!length(dcards))
+    stop("[coherence] DISTILLED_NEG 카드 0건 — 스키마 불일치로 카드 축이 죽었을 가능성. ",
+         "0 을 '충돌 없음'으로 보고하지 않는다. distilled_knowledge.json 필드명 확인 필요.")
 
   OPEN <- c("frontier_open", "parser_gated", "data_gate_measured", "signal_round_negative_frontier_open")
   rows <- list()
