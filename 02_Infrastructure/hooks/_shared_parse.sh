@@ -141,35 +141,41 @@ fi
 
 # (v8.1.2 2026-06-11) bytes 경유 UTF-8 명시 디코딩 + stdout UTF-8 고정 — locale(cp949) 의존이던
 # 파싱을 결정론화. (현 런타임은 surrogateescape 왕복으로 우연히 무사했음 — env 운에 의존 금지)
+# ★2026-08-02 수리 — 줄-기반 추출 폐기 (AX-001 미발화 조사에서 적발).
+#   구 구현은 6개 필드를 각각 한 줄로 출력하고 `sed -n '<n>p'` 로 뽑았다. 그런데
+#   content / command / prompt 는 **여러 줄일 수 있다**. 다중행 content 가 들어오면
+#     ① CONTENT 는 첫 줄만 남고 (pretty JSON 파일이면 문자 그대로 "{" 한 글자)
+#     ② 그 아래 줄들이 5·6행 자리를 밀어내 AGENT_NAME/AGENT_PROMPT 까지 오염된다.
+#   결과는 침묵 실패다 — 훅은 정상 종료하고 아무 패턴도 매치하지 않으니 "위반 없음"으로
+#   읽힌다. 실측: write_json(pretty=TRUE) 산출물 전량에서 CONTENT 길이 = 1.
+#   수리는 shell 대입문을 python 이 shlex.quote 로 만들어 eval — 개행/인용부호를 그대로
+#   보존하고 추가 프로세스도 늘지 않는다(구판의 sed 서브셸 7회보다 오히려 적다).
 PARSED=$(printf '%s' "$INPUT" | "$QVEST_PY_BIN" -c "
-import sys, json
+import sys, json, shlex
 sys.stdout.reconfigure(encoding='utf-8', errors='replace')
+def emit(k, v):
+    print('%s=%s' % (k, shlex.quote(v if isinstance(v, str) else '')))
 try:
     d = json.loads(sys.stdin.buffer.read().decode('utf-8', 'replace'))
     ti = d.get('tool_input', {}) or {}
-    # Lines 1-6: tool_name, file_path, command, content_preview, agent_name, agent_prompt_preview
-    print(d.get('tool_name', ''))
-    print(ti.get('file_path', ''))
-    print(ti.get('command', ''))
+    emit('TOOL_NAME', d.get('tool_name', ''))
+    emit('FILE_PATH', ti.get('file_path', ''))
+    emit('COMMAND', ti.get('command', ''))
     # content는 Write 도구의 경우 전체, Edit은 new_string
     content = ti.get('content') or ti.get('new_string') or ''
     # 1500자 preview (패턴 매칭 용도만, full은 불필요)
-    print(content[:1500])
+    emit('CONTENT', content[:1500])
     # Agent tool용
-    print(ti.get('subagent_type') or ti.get('name') or '')
-    prompt = ti.get('prompt') or ''
-    print(prompt[:1500])
+    emit('AGENT_NAME', ti.get('subagent_type') or ti.get('name') or '')
+    emit('AGENT_PROMPT', (ti.get('prompt') or '')[:1500])
 except Exception:
-    for _ in range(6):
-        print('')
-" 2>/dev/null || printf '\n\n\n\n\n\n')
+    for _k in ('TOOL_NAME','FILE_PATH','COMMAND','CONTENT','AGENT_NAME','AGENT_PROMPT'):
+        print(\"%s=''\" % _k)
+" 2>/dev/null || printf "TOOL_NAME=''\nFILE_PATH=''\nCOMMAND=''\nCONTENT=''\nAGENT_NAME=''\nAGENT_PROMPT=''\n")
 
-export TOOL_NAME=$(printf '%s\n' "$PARSED" | sed -n '1p')
-export FILE_PATH=$(printf '%s\n' "$PARSED" | sed -n '2p')
-export COMMAND=$(printf '%s\n' "$PARSED" | sed -n '3p')
-export CONTENT=$(printf '%s\n' "$PARSED" | sed -n '4p')
-export AGENT_NAME=$(printf '%s\n' "$PARSED" | sed -n '5p')
-export AGENT_PROMPT=$(printf '%s\n' "$PARSED" | sed -n '6p')
+TOOL_NAME=''; FILE_PATH=''; COMMAND=''; CONTENT=''; AGENT_NAME=''; AGENT_PROMPT=''
+eval "$PARSED"
+export TOOL_NAME FILE_PATH COMMAND CONTENT AGENT_NAME AGENT_PROMPT
 export AGENT_NAME_LC=$(printf '%s' "$AGENT_NAME" | tr 'A-Z' 'a-z')
 
 #──────────────────────────────────────────────────────────────────────────────

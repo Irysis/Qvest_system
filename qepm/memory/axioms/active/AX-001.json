@@ -51,19 +51,24 @@
       "(hurdle_result|s6_judge|s7_).*\\.json"
     ],
     "regex": [
-      "defense|defence",
-      "\"grade\".*\"F\""
+      "\"(detected_family|role|role_label|family|strategy_family|expected_role)\"\\s*:\\s*\"(defense|defence)\"|\"hypothesis_signature\"\\s*:\\s*\"(defense|defence)\\||\"ax001_status\"\\s*:\\s*\"UNCONDITIONAL_REJECTION\"|\"in_scope\"\\s*:\\s*true",
+      "\"grade\"\\s*:\\s*\"(F|C|D)\"|\"hard_fail\"\\s*:\\s*true|\"verdict\"\\s*:\\s*\"(FAIL|REJECT)\""
     ],
     "require": [
-      "crisis",
-      "stress",
-      "conditional",
-      "bad_normal",
-      "regime"
+      "\"ax001_status\"\\s*:\\s*\"(CONDITIONAL_EVALUATED|NOT_IN_SCOPE)\"",
+      "crisis_alpha",
+      "bad_normal"
     ],
-    "reason": "Defense 전략을 전기간 SR만으로 Grade F 판정 금지. 위기 구간 alpha + Core 대비 MDD + bad/normal IC ratio 조건부 평가 필수",
-    "semantics": "regex 전부 매치(AND) AND require 중 0개 존재 시 발화 — legacy 하드코딩(axiom_enforcement_hook.sh AX-001 절)과 동일 의미론",
-    "backfilled": "2026-07-04 AXM-03 — legacy 하드코딩 패턴에서 도출, 신규 금지사항 없음. enforcement_mode block은 .claude/rules/axioms.md Hook 강제 절 + axiom_sot_map.json 기왕 문서화(일부 패턴 hard-block 실증)와 정렬"
+    "reason": "Defense 전략을 전기간 SR/CAGR/MDD만으로 기각 판정 금지. 위기 구간 alpha + Core 대비 MDD + bad/normal IC ratio 조건부 평가 필수",
+    "semantics": "regex 전부 매치(AND) AND require 중 0개 존재 시 발화. ★패턴은 필드'명'이 아니라 분류'값'을 본다 — 구판은 defense를 필드명(statistical_defense/defense_metrics)이, stress를 채점항목명(score_breakdown.stress)이 각각 100% 충족시켜 hurdle_result 559/559에서 발화 불능이었다(2026-08-02 실측).",
+    "backfilled": "2026-07-04 AXM-03 — legacy 하드코딩 패턴에서 도출, 신규 금지사항 없음. enforcement_mode block은 .claude/rules/axioms.md Hook 강제 절 + axiom_sot_map.json 기왕 문서화(일부 패턴 hard-block 실증)와 정렬",
+    "repaired_20260802": {
+      "trigger": "WT-D20260802_004 alpha 라운드 — AS_LowVol_BlitzVanVliet2007 등 방어 계열이 조건부 평가 없이 전기간 채점으로 기각되는데 AX-001 미발화",
+      "measured_before": "hurdle_result.json 559건 중 훅 발화 가능 0건 (0.0%). 원인 2중: (1) regex \"defense|defence\"를 항상 존재하는 필드명 statistical_defense/defense_metrics가 559/559 충족 → 판별력 0 (2) require의 stress를 항상 존재하는 채점항목 score_breakdown.stress가 559/559 충족 → 영구 면제",
+      "producer_side": "PreToolUse[Write|Edit] 훅은 Claude Write 툴 경로만 덮는데 hurdle_result.json은 R write_json()이 쓴다 → 정상 alpha-search 산출물은 훅 시야 밖. 실제 방어선은 hurdle_gate.R의 ax001 블록(생산자 측 자기판정)이고 본 훅은 수기 작성분에 대한 2차선",
+      "grade_condition": "구 \"grade\":\"F\" 단독 → 기각 판정 일반(F|C|D 또는 hard_fail=true)으로 확장. 실측 15건 중 7건이 grade C + hard_fail 조합이라 F-only 조건을 빠져나갔다",
+      "test": "08_Tests/hooks/test_ax001_defense_scope.R (위반 주입 + 차단 실효)"
+    }
   },
   "evidence_audit_20260704": {
     "audit_id": "knowledge_provenance_audit_20260704",

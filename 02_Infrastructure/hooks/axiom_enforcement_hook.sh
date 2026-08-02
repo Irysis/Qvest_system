@@ -91,13 +91,18 @@ for f in sorted(set(glob.glob(os.path.join(active_dir, '**', 'AX-*.json'), recur
 fi
 
 # ─── AX-001 (legacy fallback): Defense 전기간 SR 기준 금지 ───────────────────
-# hurdle_result.json 또는 s6_judge에서 defense 전략을 전기간 SR만으로 Grade F 판정.
+# hurdle_result.json 또는 s6_judge에서 defense 전략을 전기간 지표만으로 기각 판정.
 # 동적 경로(AX-001.json enforcement_hook)와 동일 의미론 — python 부재/실패 시 안전망.
+# ★2026-08-02 수리: 패턴이 필드'명'이 아니라 분류'값'을 보도록 교체.
+#   구판은 defense를 상시 필드명(statistical_defense/defense_metrics)이, stress를
+#   상시 채점항목명(score_breakdown.stress)이 충족시켜 실제 산출물 559/559에서
+#   발화 불능이었다. grade 조건도 F 단독 → 기각 일반(F|C|D 또는 hard_fail)으로 확장.
 if echo "$FILE_PATH" | grep -qE "(hurdle_result|s6_judge|s7_).*\.json"; then
-  if echo "$CONTENT" | grep -qiE "defense|Defence"; then
-    if echo "$CONTENT" | grep -qiE '"grade".*"F"' && ! echo "$CONTENT" | grep -qiE "crisis|stress|conditional|bad_normal|regime"; then
-      echo "$(date +%H:%M:%S) AX-001_WARN: $FILE_PATH — Defense Grade F without conditional eval (legacy path)" >> "$LOG"
-      printf '{"decision":"block","reason":"[AX-001] Defense 전략을 전기간 SR만으로 Grade F 판정 금지. 위기 구간 alpha + Core 대비 MDD + bad/normal IC ratio 조건부 평가 필수."}'
+  if echo "$CONTENT" | grep -qiE '"(detected_family|role|role_label|family|strategy_family|expected_role)"[[:space:]]*:[[:space:]]*"(defense|defence)"|"hypothesis_signature"[[:space:]]*:[[:space:]]*"(defense|defence)\||"ax001_status"[[:space:]]*:[[:space:]]*"UNCONDITIONAL_REJECTION"|"in_scope"[[:space:]]*:[[:space:]]*true'; then
+    if echo "$CONTENT" | grep -qiE '"grade"[[:space:]]*:[[:space:]]*"(F|C|D)"|"hard_fail"[[:space:]]*:[[:space:]]*true|"verdict"[[:space:]]*:[[:space:]]*"(FAIL|REJECT)"' \
+       && ! echo "$CONTENT" | grep -qiE '"ax001_status"[[:space:]]*:[[:space:]]*"(CONDITIONAL_EVALUATED|NOT_IN_SCOPE)"|crisis_alpha|bad_normal'; then
+      echo "$(date +%H:%M:%S) AX-001_WARN: $FILE_PATH — Defense rejection without conditional eval (legacy path)" >> "$LOG"
+      printf '{"decision":"block","reason":"[AX-001] Defense 전략을 전기간 SR/CAGR/MDD만으로 기각 판정 금지. 위기 구간 alpha + Core 대비 MDD + bad/normal IC ratio 조건부 평가 필수."}'
       exit 0
     fi
   fi

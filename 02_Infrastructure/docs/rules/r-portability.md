@@ -81,6 +81,7 @@ Windows R은 `/mnt/c/...`를 **현재 드라이브 기준** `C:/mnt/c/...`로 �
 
 호출자와 피호출 모듈이 다른 계열이면 **worktree 실행에서 root가 갈린다** — 테스트는 main에 상대경로로 쓰고 모듈은 worktree에서 찾아 **존재하는 파일이 "package not found"로 기각**된다(실측). main 단독 실행에선 두 값이 같아 **잠복**하므로, worktree 검증에서만 터진다. 신규 코드는 표준 계열을 따를 것.
 
+<<<<<<< C:/Users/99922/AppData/Local/Temp/tmp.L8OTBAVArd/ours
 #### 쉘 resolver 2벌의 계열 분기 (2026-08-01 도훈 결정 — 미수리 아님)
 
 `resolve_project.sh`는 `ops/`(28 소비자)와 `hooks/`(pipeline_trigger 등) 두 벌이고, **우선순위가 의도적으로 다르다.** 감사 시 ops 판을 금칙 ④ 미수리로 재적발하지 말 것.
@@ -90,6 +91,7 @@ Windows R은 `/mnt/c/...`를 **현재 드라이브 기준** `C:/mnt/c/...`로 �
 - ★ 참고: 금칙 ④의 원 근거("`~/.Renviron`이 QM_ROOT를 고정해 export로 못 덮는다")는 **R 한정**이다. 쉘에서는 `export QM_ROOT`가 정상 동작하므로 그 논거는 쉘 resolver에 그대로 전이되지 않는다.
 - 강제: `08_Tests/hooks/test_resolve_project_marker.sh`가 이 분기를 **양방향으로** 검사한다(hooks=CPD 우선 ∧ ops=QM_ROOT 우선). 한쪽만 검사하면 "둘을 통합" 리팩터가 조용히 통과한다.
 
+<<<<<<< C:/Users/99922/AppData/Local/Temp/tmp.qegWmQqxYb/ours
 #### ④-b 예외: **테스트 러너는 self-first** (2026-08-02) — 이 계약의 단일 정본
 
 위 ④는 *공유 resolver*(프로덕션 소비자)의 규칙이다. **테스트 러너·검사 배터리에는 정반대 규칙이 적용된다: 후보 1순위 = 스크립트 자신의 위치**(R `--file=` dirname / Python `__file__` / bash `BASH_SOURCE`), env는 그 뒤. 표지 검증은 tier마다 그대로 건다(self도 예외 아님 — 표지 없는 위치의 사본은 기각).
@@ -123,6 +125,30 @@ Windows R은 `/mnt/c/...`를 **현재 드라이브 기준** `C:/mnt/c/...`로 �
 
 두 검사기 다 배터리 편입. 축 = 프롤로그 추출 · 위반 주입(QM_ROOT ∧ CPD가 표지 보유 타 트리) · 자기 트리 시 무경보 · **돌연변이**(순서를 env-first로 되돌려 축이 뒤집히는지) · 표지 없는 self 기각→낙하+경보 · Python 하드코딩 폴백 부재(정적).
 
+||||||| C:/Users/99922/AppData/Local/Temp/tmp.qegWmQqxYb/base
+=======
+#### ④-b 예외: **테스트 러너는 self-first** (2026-08-02)
+
+위 ④는 *공유 resolver*(프로덕션 소비자)의 규칙이다. **테스트 러너·검사 배터리에는 정반대 규칙이 적용된다: 후보 1순위 = 스크립트 자신의 위치**(R `--file=` dirname / Python `__file__` / bash `BASH_SOURCE`), env는 그 뒤. 표지 검증은 tier마다 그대로 건다.
+
+사유 — Bash 툴 환경에서 `CLAUDE_PROJECT_DIR`은 **미설정**(훅 안에서만 세워진다)이고 `QM_ROOT`는 `~/.Renviron`이 **main 트리**로 고정한다. 그래서 env-first 러너를 worktree에서 돌리면 **worktree의 수리본이 아니라 main의 구판을 검사**한다. 파급은 "고쳤는데 main엔 없다"의 정반대 짝 — **안 고친 것을 고쳤다고 읽게 만든다.**
+
+★**표지 검증은 이 갈림을 판별하지 못한다** — main도 worktree도 표지를 갖는다. 가르는 것은 오직 후보 **순서**뿐이다.
+★자기 트리와 갈리면 stderr로 `⚠ ANCHOR OVERRIDE`를 발화한다(낙하 자체는 정당할 수 있으나 침묵하면 "어느 트리를 쟀나"가 로그에 안 남는다).
+★`QM_ROOT`는 R에서 **쉘로 덮이지 않으므로**(④ 본문) 이 결함은 env 덮어쓰기로 재현도 회피도 불가하다 — 검증은 "worktree에만 있는 여분 테스트 파일" 탐침이나 표지를 갖춘 합성 트리로 한다.
+
+| 러너 | 상태 | 실측 (수리 전) |
+|---|---|---|
+| `08_Tests/hooks/run_all_hooks.sh` | 수리(2026-08-02) | worktree 실행이 main suite를 검사 |
+| `08_Tests/regime/run_all.R` | 수리(2026-08-02) | worktree 6파일 / main 5파일인데 worktree 실행 → `Test files found: 5` (main 것). 신설 테스트는 실행조차 안 됨 |
+| `02_Infrastructure/tests/test_continuity_gate.py` | 수리(2026-08-02) | cwd=worktree인데 `ROOT`=main → `G.__file__`·`load_cases()` 전부 main. 게다가 표지 검증 없이 **하드코딩 main 경로**가 최종 폴백이었다 |
+
+- 소비자 무영향: `02_Infrastructure/ops/suite_totals_watch.sh:45-55`는 `CLAUDE_PROJECT_DIR="$DIR"`를 명시 설정하고 `$DIR`로 cd해 **그 트리의 사본**을 부르므로 self-first로 바뀌어도 같은 답이 나온다.
+- **앵커 순서는 단일 감사 가능한 줄로 노출할 것** (`.qv_order` / `_ANCHOR_ORDER`). 기계가 읽고 갈아끼울 수 없으면 검출력을 실증할 수 없다.
+- 강제: `08_Tests/hooks/test_runner_anchor_selffirst.sh` (배터리 편입, **이 suite 자체 = 15/15** 2026-08-02 실측). 축 = 프롤로그 추출 · 위반 주입(QM_ROOT ∧ CPD가 표지 보유 타 트리) · 자기 트리 시 무경보 · **돌연변이**(순서를 env-first로 되돌려 축이 뒤집히는지) · 표지 없는 self 기각→낙하+경보 · Python 하드코딩 폴백 부재.
+  ★**추출 guard의 needle을 *수리가 도입한* 구조로 잡지 말 것.** 그러면 수리를 되돌렸을 때 축이 실행조차 안 되고 "needle 갱신 필요"라는 **정비 메시지**가 떠서, 다음 사람이 needle을 고치는 것으로 env-first를 조용히 재수용한다(`run_all_hooks` 앵커 수리 중 실제로 저지르고 정정한 실수). 범위 anchor는 수리 전후 모두 존재하는 줄로 잡는다 — 실증: HEAD 구판을 통째로 되돌려도 `*_prologue_extracted`는 PASS이고 결함은 **행동 축 9건**이 보고한다(15/0 → 6/9).
+
+>>>>>>> C:/Users/99922/AppData/Local/Temp/tmp.qegWmQqxYb/theirs
 ### ⑤ `system()` / `system2()` 명령 문자열에 쉘 리다이렉션·연쇄 연산자 금지
 Windows R의 `system()`/`system2()`는 **셸을 경유하지 않는다**. `2>/dev/null` · `&&` · `|` 는 해석되지 않고 대상 프로그램의 **리터럴 argv**가 된다. 2026-08-02 실측:
 
@@ -152,6 +178,18 @@ if (st != 0L) { ... }        # 결손을 값으로 내려앉히지 말 것
 - 셸이 정말 필요하면 `shell()`을 쓰되 `/dev/null`이 아니라 `NUL`.
 - **미측정은 `FALSE`/`0`이 아니라 `NA`(→ JSON `null`) + 명시 라벨**로 기록할 것. 정본 선례: `worktask/lineage_utils.R::capture_git_state()`(`git_commit="UNAVAILABLE"` · `git_dirty=NA` · `git_state_error=<사유+exit code>`).
 
+||||||| C:/Users/99922/AppData/Local/Temp/tmp.L8OTBAVArd/base
+=======
+#### 쉘 resolver 2벌의 계열 분기 (2026-08-01 도훈 결정 — 미수리 아님)
+
+`resolve_project.sh`는 `ops/`(28 소비자)와 `hooks/`(pipeline_trigger 등) 두 벌이고, **우선순위가 의도적으로 다르다.** 감사 시 ops 판을 금칙 ④ 미수리로 재적발하지 말 것.
+
+- **hooks 판 = CPD-first (표준)**. `settings.json`의 훅 command 30곳이 전부 `DIR=${CLAUDE_PROJECT_DIR:-${QM_ROOT:-$PWD}}`로 worktree를 고르는데, 그 훅이 sourcing하는 resolver가 QM_ROOT(=main)를 답하면 **코드는 worktree·데이터 루트는 main**으로 갈린다. 실측 경로 `settings.json:105 → pipeline_trigger.sh:18 → stage_dispatch.py`: 미병합 worktree 사본이 main의 정본 WT mailbox에 `mkdir`·이동·`Popen`을 건다.
+- **ops 판 = QM_ROOT-first 유지**. 스케줄러 10종·`daily_refresh.sh`·PG2 러너 등 28 소비자의 루트 해석 의미를 바꾸지 않기 위함. 실측상 그쪽은 CPD가 `QM_ROOT`로 핀되거나(`.bat` 10종 전부, `run_pg2_rebalance_full.sh:25` 등) 아예 미설정(Bash 툴·`bootstrap.sh:14` 시점)이라 **flip해도 no-op**이지만, 프로덕션 데몬의 root 해석 의미를 무변경으로 두는 쪽을 택했다.
+- ★ 참고: 금칙 ④의 원 근거("`~/.Renviron`이 QM_ROOT를 고정해 export로 못 덮는다")는 **R 한정**이다. 쉘에서는 `export QM_ROOT`가 정상 동작하므로 그 논거는 쉘 resolver에 그대로 전이되지 않는다.
+- 강제: `08_Tests/hooks/test_resolve_project_marker.sh`가 이 분기를 **양방향으로** 검사한다(hooks=CPD 우선 ∧ ops=QM_ROOT 우선). 한쪽만 검사하면 "둘을 통합" 리팩터가 조용히 통과한다.
+
+>>>>>>> C:/Users/99922/AppData/Local/Temp/tmp.L8OTBAVArd/theirs
 ### (동반) bare `python3` 금지
 별도 규칙으로 이미 확립 — `python3`는 Windows Store 스텁("Python" 출력 후 rc 49). `QVEST_PY` → venv 순 해석.
 메모리 `reference-python3-windows-stub-use-qvest-py` · 훅은 `_shared_parse.sh` `QVEST_PY_BIN` 체인.
@@ -203,14 +241,24 @@ if (st != 0L) { ... }        # 결손을 값으로 내려앉히지 말 것
 
 - **신규 위반 → FAIL** (baseline 밖 항목)
 - **baseline 역행 방지**: 수리돼 사라진 항목이 baseline에 남아 있으면 FAIL(`--write-baseline`으로 갱신 요구). 원장은 **줄어드는 방향으로만** 움직인다.
+<<<<<<< C:/Users/99922/AppData/Local/Temp/tmp.L8OTBAVArd/ours
 - `run_all_hooks.sh` 배터리 편입 — 매 실행 검사. **이 suite 자체 = 7/7**(래칫 2축 + 위반 주입 4종 + 오검출 통제 1 — 축 구성이 바뀔 때만 움직이는 안정 수치).
   ★**배터리 전체 통과 수는 여기 적지 않는다.** 구 표기 "34/34"(발효 2026-07-25)가 스테일이 된 이유가 이것이다 — 다른 세션이 suite를 계속 붙여 2026-08-02 하루에도 34→459→495→501로 움직였다(30분 만에 495→501 실측). 문서에 박은 순간 썩는 수치이고, 어긋남을 계약 위반으로 오독하게 만든다. **판정 기준은 "배터리 전체 PASS 여부"이지 통과 *건수*가 아니다.** 건수 정본은 `.cache/test_results/hook_dryrun_results.json`.
   ★아래 자매 검사기 줄의 `11/11`은 *suite* 수치인데 구 문구가 이 줄과 똑같아 서로 다른 것을 가리키고 있었다 — 이제 둘 다 라벨을 붙인다.
 
 `08_Tests/hooks/test_resolve_project_marker.sh` — 쉘 resolver 2벌의 **루트 marker 게이트**(금칙 ③)와
+<<<<<<< C:/Users/99922/AppData/Local/Temp/tmp.UQ7r3vkC72/ours
 **계열 분기**(금칙 ④ 위 절), 그리고 **`run_all_hooks.sh` 자신의 앵커 우선순위**(금칙 ④-b)를 검사한다.
 `test_r_portability.R`은 `.R`만 스캔하므로 `.sh` resolver를 구조적으로 못 본다 — 그 공백을 메우는 자매 검사기다.
 `run_all_hooks.sh` 배터리 편입(**이 suite 자체 = 17/17**, 2026-08-02 실측 — 러너 앵커 6축 추가로 11→17).
+||||||| C:/Users/99922/AppData/Local/Temp/tmp.UQ7r3vkC72/base
+**계열 분기**(금칙 ④ 위 절)를 검사한다. `test_r_portability.R`은 `.R`만 스캔하므로 `.sh` resolver를
+구조적으로 못 본다 — 그 공백을 메우는 자매 검사기다. `run_all_hooks.sh` 배터리 편입(**이 suite 자체 = 11/11**, 2026-08-02 실측).
+=======
+**계열 분기**(금칙 ④ 위 절), 그리고 **테스트 러너 자신의 앵커 우선순위**를 검사한다. `test_r_portability.R`은
+`.R`만 스캔하므로 `.sh` resolver를 구조적으로 못 본다 — 그 공백을 메우는 자매 검사기다.
+`run_all_hooks.sh` 배터리 편입(**이 suite 자체 = 17/17**, 2026-08-02 실측 — 러너 앵커 6축 추가로 11→17).
+>>>>>>> C:/Users/99922/AppData/Local/Temp/tmp.UQ7r3vkC72/theirs
 
 - 축: 위반 주입(marker 없는 후보 수락 여부) × 2벌 · 기각 WARN 발화 · 양성 통제 · 역슬래시 정규화 ·
   self-inference 기각→glob 낙하 · **우선순위 양방향**(hooks=CPD ∧ ops=QM_ROOT) · CPD도 marker 게이트 통과 요구
@@ -224,12 +272,42 @@ if (st != 0L) { ... }        # 결손을 값으로 내려앉히지 말 것
 - 위반 주입 fixture는 `02_Infrastructure/`를 갖췄으나 marker는 없는 임시 디렉토리를 쓴다.
   구 branch 2가 `-d "$_cand/02_Infrastructure"`만 봤으므로, 이게 없으면 헐거운 검사도 통과한다.
 
+<<<<<<< C:/Users/99922/AppData/Local/Temp/tmp.UQ7r3vkC72/ours
 `08_Tests/hooks/test_runner_anchor_selffirst.sh` — 위 검사기의 **표면 짝**(2026-08-02 신설, 배터리 편입 **15/15**).
 같은 계약(④-b)을 `.R` 러너(`08_Tests/regime/run_all.R`)와 `.py` 배터리(`02_Infrastructure/tests/test_continuity_gate.py`)에
 대해 건다 — `test_resolve_project_marker.sh`는 `.sh` 프롤로그를 bash로 source해 판정하므로 그 두 표면을
 구조적으로 못 본다. 축 구성은 ④-b 표 아래 목록과 동일(추출 · 위반 주입 · 무경보 · 돌연변이 · 낙하+경보 ·
 Python 하드코딩 폴백 부재). **두 검사기를 합쳐야 계약 전체가 덮인다** — 한쪽만 두면 나머지 표면이 무검사다.
 
+||||||| C:/Users/99922/AppData/Local/Temp/tmp.UQ7r3vkC72/base
+=======
+**러너 앵커 축(I/J/K, 2026-08-02 추가)** — `run_all_hooks.sh`의 `_pick_proj_dir` 후보 순서 계약:
+
+- 결함: 후보가 `CLAUDE_PROJECT_DIR → QM_ROOT → self` 순이었다. Bash 툴 환경엔 CPD가 없고
+  ([[reference-cpd-set-in-hooks-unset-in-bash-tool]]) QM_ROOT는 **main**을 가리키므로, worktree에서
+  배터리를 돌리면 SUITES는 worktree 사본에서 오는데 PROJ_DIR은 main — **전 suite가 main 코드에
+  대해 실행**됐다(실측 헤더 `Project: /c/.../Quant_Module_Moltbot`, cwd는 worktree).
+  파급 ① worktree 초록이 worktree를 검증하지 않는다 ② worktree 신설 suite는 main에 파일이 없어
+  UNREPORTED=1 fail → **앵커 오설정이 "테스트 실패"로 오독**된다(실측 `569 pass / 1 fail`).
+- 수리: `$_SELF_DIR/../..`를 **1순위**로. 테스트 러너는 *자기가 실린 트리*를 재야 한다.
+  이 규율은 이 파일 자신(`:40-45`)이 이미 선례로 쓰고 있었고 러너만 누락돼 있었다.
+  ★**공유 resolver 2벌은 무변경** — 소비자 계층이 다르다(훅·스케줄러의 데이터 루트 해석,
+  순서는 2026-08-01 도훈 결정이며 축 G가 양방향 고정). 러너만 self-first다.
+- ★**marker 검증은 이 갈림을 판별하지 못한다** — main도 worktree도 표지를 갖는다. A~H가 전부
+  통과해도 결함은 그대로였다. 판별하는 것은 오직 후보 **순서**뿐이라, 순서 자체가 계약이다.
+- 앵커가 자기 트리와 갈리면 러너가 `⚠ ANCHOR OVERRIDE`를 stderr로 발행한다(K축). 낙하 자체는
+  정당할 수 있으나 **침묵 낙하는 이 계통의 재발 기전**이다.
+- 검사 대상은 사본이 아니라 원본 `.sh`에서 awk로 떼어낸 **해석 프롤로그**(러너 전체 실행은 모든
+  suite를 2회 돌려 수 분). 추출 실패는 FAIL로 계상 — 빈 조각을 source하면 축들이 "기대와 다름"이
+  아니라 **무엇도 재지 않은 채** 통과한다.
+- ★가드 needle은 **순서에 무관한 구조**(`for c in` 존재)만 본다. 초판은 needle을 *수리된* 순서
+  줄로 잡았는데, 그러면 순서를 되돌렸을 때 I/J/K가 실행되지 않고 "추출 실패 — needle 갱신 필요"가
+  떠서 **결함을 정비 과제로 오진**시킨다(실측). 다음 사람이 needle을 갱신하는 것으로 "고치고"
+  env-first를 조용히 재수용하게 된다. 순서 판정은 행동 축(I)이 direct로 한다.
+- 검출력 실증(2026-08-02): 수리를 되돌리자 `17/17 → 14/3 fail`, 실패 메시지가
+  "러너가 자기가 실린 트리를 안 잼"으로 원인을 지목.
+
+>>>>>>> C:/Users/99922/AppData/Local/Temp/tmp.UQ7r3vkC72/theirs
 `08_Tests/hooks/test_lineage_git_state.R` — 금칙 ⑤의 **행동 수준** 자매 검사기(2026-08-02 신설, 배터리 편입 **11/11**).
 정적 스캔은 "쉘 문법이 argv에 있다"까지만 본다. 결손이 **JSON까지 명시 라벨로 도달하는지**는 못 본다 —
 그리고 구 구현의 실제 실패가 정확히 거기였다(`capture_git_state()`가 `git_state_error`를 **계산해 놓고
@@ -243,6 +321,26 @@ Python 하드코딩 폴백 부재). **두 검사기를 합쳐야 계약 전체�
   안 뒤집혔다면 그 11/11은 계측 사망이다.
 
 **위반 주입 8종 내장**(위반 주입 테스트): 금칙 5종 각각의 합성 위반 fixture(⑤는 redirect·chain·pipe 3형태)를 실제로 잡는지 + 정본 패턴을 오검출하지 않는지 자체 검증. 실효 실증 — 최초 구현의 검출기 ①은 `system2\([^)]*env=`였는데 인자 안의 `)`(예: `args = c("-c", code)`)에서 멈춰 **다중행 호출을 놓쳤고, 위반 주입 테스트가 이를 적발**했다(괄호 균형 파서로 교체 후 `data/build_cache.R` 등 추가 검출). 래칫 검출력도 실증 — 합성 위반 주입 시 `exit 1`, 제거 시 `exit 0`.
+||||||| C:/Users/99922/AppData/Local/Temp/tmp.L8OTBAVArd/base
+- `run_all_hooks.sh` 배터리 편입 — 매 실행 검사(현행 **34/34**, 소요 ~10s).
+
+**위반 주입 5종 내장**(위반 주입 테스트): 금칙 4종 각각의 합성 위반 fixture를 실제로 잡는지 + 정본 패턴을 오검출하지 않는지 자체 검증. 실효 실증 — 최초 구현의 검출기 ①은 `system2\([^)]*env=`였는데 인자 안의 `)`(예: `args = c("-c", code)`)에서 멈춰 **다중행 호출을 놓쳤고, 위반 주입 테스트가 이를 적발**했다(괄호 균형 파서로 교체 후 `data/build_cache.R` 등 추가 검출). 래칫 검출력도 실증 — 합성 위반 주입 시 `exit 1`, 제거 시 `exit 0`.
+=======
+- `run_all_hooks.sh` 배터리 편입 — 매 실행 검사(현행 **34/34**, 소요 ~10s).
+
+`08_Tests/hooks/test_resolve_project_marker.sh` — 쉘 resolver 2벌의 **루트 marker 게이트**(금칙 ③)와
+**계열 분기**(금칙 ④ 위 절)를 검사한다. `test_r_portability.R`은 `.R`만 스캔하므로 `.sh` resolver를
+구조적으로 못 본다 — 그 공백을 메우는 자매 검사기다. `run_all_hooks.sh` 배터리 편입(현행 **11/11**).
+
+- 축: 위반 주입(marker 없는 후보 수락 여부) × 2벌 · 기각 WARN 발화 · 양성 통제 · 역슬래시 정규화 ·
+  self-inference 기각→glob 낙하 · **우선순위 양방향**(hooks=CPD ∧ ops=QM_ROOT) · CPD도 marker 게이트 통과 요구
+- **돌연변이 축 내장**: 게이트를 구판 `[ -d "$c" ]`로 되돌린 사본을 만들어 위반 주입 축이 실제로
+  뒤집히는지 확인한다. 안 뒤집히면 그 "통과"는 계측 사망이다 — 오탐 제거와 검사 사망은 겉보기가 같다.
+- 위반 주입 fixture는 `02_Infrastructure/`를 갖췄으나 marker는 없는 임시 디렉토리를 쓴다.
+  구 branch 2가 `-d "$_cand/02_Infrastructure"`만 봤으므로, 이게 없으면 헐거운 검사도 통과한다.
+
+**위반 주입 5종 내장**(위반 주입 테스트): 금칙 4종 각각의 합성 위반 fixture를 실제로 잡는지 + 정본 패턴을 오검출하지 않는지 자체 검증. 실효 실증 — 최초 구현의 검출기 ①은 `system2\([^)]*env=`였는데 인자 안의 `)`(예: `args = c("-c", code)`)에서 멈춰 **다중행 호출을 놓쳤고, 위반 주입 테스트가 이를 적발**했다(괄호 균형 파서로 교체 후 `data/build_cache.R` 등 추가 검출). 래칫 검출력도 실증 — 합성 위반 주입 시 `exit 1`, 제거 시 `exit 0`.
+>>>>>>> C:/Users/99922/AppData/Local/Temp/tmp.L8OTBAVArd/theirs
 
 > 검사기 자체가 "잘못된 것을 재는" 실패가 이 리포지토리의 반복 부류다(존재→유효성, substring→ID, mtime→최신성). 그래서 위반 주입 테스트 없는 검사기는 이 계약에서 인정하지 않는다. 위 ① 사례가 그 규정의 첫 회수다.
 

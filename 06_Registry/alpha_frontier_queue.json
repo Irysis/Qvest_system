@@ -1,7 +1,7 @@
 {
  "schema_version": "1.0",
  "sot": "02_Infrastructure/docs/qvest_v8_3_alpha_discovery_sot.md §4",
- "updated": "2026-08-03 (WT-023 FQ-125 확정 라운드 — 부호 강건·문턱 미통과, 단계 지불 도훈 결정 상정. FQ-126 unblock + parity 라벨 의무 부기. 총 128건)",
+ "updated": "2026-08-03 (FQ-123/108 착수 전 사전 확인: 단기 vol 팩터 DB 기실재·소비자 0 실측. 라운드 질문이 '신규 생성'에서 '소비 배선'으로 전환. 총 128건)",
  "consume_rule": "새 발굴 리서치 착수 전: hypothesis_index lookup → 본 큐 확인 → owner/status 갱신. 완료 시 result_ref(L-code/보고서) 기입. dohoon_decision 항목은 세션 임의 착수 금지.",
  "entries": [
   {
@@ -2094,7 +2094,8 @@
    "data_gate": "없음 (rawdata 일간 현행분)",
    "owner": "미배정",
    "status": "frontier_open",
-   "registered": "2026-08-02 Q-Lead (WT-D20260802_009 NP-2 파생)"
+   "registered": "2026-08-02 Q-Lead (WT-D20260802_009 NP-2 파생)",
+   "precheck_measured": "★착수 전 사전 확인 실측 (2026-08-03 Q-Lead, read-only 10분): **전제가 뒤집혔다**. factor_registry.json(373팩터)에 D34_RealVol_21d · **D35_RealVol_63d**(WT-020이 자체 계산한 vol63과 동일 창) · D36_RealVol_126d · D42_EWMA_Vol(252d λ0.94) · D41_Vol_of_Vol · D45_Downside_Dev 전부 **이미 등재**. ⇒ '신규 팩터를 만들까'는 질문이 아니다. ★더 중요한 발견: D35 참조가 factor_db 내부 4곳(compute_defense.R · phase6.R · registry · bak)뿐 = **소비자 0**. 위험모델·랭킹 어디서도 쓰지 않는다 — '없어서 못 쓴 게 아니라 있는데 안 쓴 것'. 이 저장소의 반복 계통(screen_route 소비자 0 · lifecycle.status reader 0)과 동형. ⇒ 라운드 재설계: ① D35를 load_month_factors() 경유로 소비 배선 ② 배선 시 MAX5 증분이 실제로 흡수되는가(WT-020 상관 0.939 재현) ③ 흡수되면 신규 팩터 불요 확정."
   },
   {
    "id": "FQ-109",
@@ -2307,7 +2308,7 @@
    "owner": "미배정",
    "status": "frontier_open",
    "registered": "2026-08-02 Q-Lead (WT-D20260802_020 NP-1 파생)",
-   "precheck_measured": "★착수 전 사전 확인 (2026-08-02 Q-Lead, factor DB 정의 직접 판독 — factor_db_daily_phase6.R:189~196 / compute_defense.R:681). **WT-020 권고 목록을 정정해야 한다**: ① **D42_EWMA_Vol = `roll_ewma_vol_cpp(ret, 252L, 0.94)` = 252일 창** — 단기 축이 아니라 WT-020이 소멸을 확인한 바로 그 장기 계열이다. D42로 통제하면 '흡수 안 됨'이 당연히 나오고 잘못된 결론(63d 특이성 실증)으로 간다. ② **D35_RealVol_63d = `roll_sd(ret, 63L)`** — MAX5와 **정확히 같은 63일 창**이고 WT-020이 통제에 쓴 vol63의 DB-native 대응물. **1순위 후보인데 권고 목록에 없었다**. ③ D34_RealVol_21d = `roll_sd(ret, 21L)` 21일 — 단기 맞으나 창이 더 짧아 부분 흡수 예상. ④ D41_Vol_of_Vol = `roll_sd(D34, 63L)` = 단기 변동성의 변동성 — 꼬리 성격 축이라 보조 후보. ⇒ 라운드 통제 순서: **D35(동일 창) → D34(21d) → D41(vol-of-vol) → D42(장기, 음성 대조군)**. D42는 흡수 실패가 예상되는 **음성 대조**로 써야 검사에 변별력이 생긴다."
+   "precheck_measured": "★착수 전 사전 확인 실측 (2026-08-03 Q-Lead, read-only 10분): **전제가 뒤집혔다**. factor_registry.json(373팩터)에 D34_RealVol_21d · **D35_RealVol_63d**(WT-020이 자체 계산한 vol63과 동일 창) · D36_RealVol_126d · D42_EWMA_Vol(252d λ0.94) · D41_Vol_of_Vol · D45_Downside_Dev 전부 **이미 등재**. ⇒ '신규 팩터를 만들까'는 질문이 아니다. ★더 중요한 발견: D35 참조가 factor_db 내부 4곳(compute_defense.R · phase6.R · registry · bak)뿐 = **소비자 0**. 위험모델·랭킹 어디서도 쓰지 않는다 — '없어서 못 쓴 게 아니라 있는데 안 쓴 것'. 이 저장소의 반복 계통(screen_route 소비자 0 · lifecycle.status reader 0)과 동형. ⇒ 라운드 재설계: ① D35를 load_month_factors() 경유로 소비 배선 ② 배선 시 MAX5 증분이 실제로 흡수되는가(WT-020 상관 0.939 재현) ③ 흡수되면 신규 팩터 불요 확정."
   },
   {
    "id": "FQ-124",

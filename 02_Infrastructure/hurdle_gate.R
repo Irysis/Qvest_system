@@ -287,6 +287,8 @@ run_hurdle_gate <- function(sim_result,
                              strategy_file = NULL,
                              output_dir = NULL,
                              ff5_result = NULL,
+                             role_label = NULL,
+                             hypothesis_signature = NULL,
                              strict_mode = as.logical(Sys.getenv("QVEST_STRICT_MODE", "TRUE"))) {
 
   turnover_hard_fail_pct <- 1100
@@ -945,6 +947,17 @@ run_hurdle_gate <- function(sim_result,
   family_ga_count <- 0L
   detected_family <- "unknown"
 
+  # AX-001 방어 계열 어휘. SOT = qepm/memory/axioms/active/AX-001.json (scope=defense_factor).
+  # 이 목록을 넓힐 때는 08_Tests/hooks/test_ax001_defense_scope.R 의 위반 주입 케이스도 함께 넓힌다.
+  .AX001_DEFENSE_VOCAB <- paste0(
+    "defense|defence|defensive|",
+    "lowvol|low_vol|low-vol|minvol|min_vol|min-vol|",
+    # bab 는 \\b 로 못 잡는다 — "BAB_top25" 처럼 밑줄이 붙으면 _ 가 단어문자라
+    #   경계가 서지 않는다. 영문자만 경계로 본다.
+    "low_?beta|downside_?beta|(^|[^a-z])bab([^a-z]|$)|betting_?against|",
+    "crash_protection|brk0|dd[0-9]+pct|noshortdd"
+  )
+
   .classify_alpha_family <- function(strategy_dir, strategy_name) {
     fe_path <- file.path(strategy_dir, "factor_engine.R")
     ra_path <- file.path(strategy_dir, "run_all.R")
@@ -954,7 +967,8 @@ run_hurdle_gate <- function(sim_result,
     sn <- tolower(strategy_name)
 
     if (grepl("d01_idiovol|d02_beta|idio.*vol|beta.*persist|ivol.*beta", fe) ||
-        grepl("defense|brk0|dd[0-9]pct|noshortdd", sn)) return("defense")
+        grepl(.AX001_DEFENSE_VOCAB, fe, perl = TRUE) ||
+        grepl(.AX001_DEFENSE_VOCAB, sn, perl = TRUE)) return("defense")
     if (grepl("sleeve|regime.*alloc|ensemble|gerber|nco|bayesian.*bl|oas_minvar|hrp|daily.*regime", fe) ||
         grepl("sleeve|ensemble|gerber|nco|bl_hybrid|regime|oas|hrp", sn)) return("defense_ensemble")
     if (grepl("m07_indmom|industry.*mom", fe) || grepl("indmom", sn)) return("indmom")
@@ -1004,6 +1018,20 @@ run_hurdle_gate <- function(sim_result,
 
   novelty_detail$family_grade_a <- family_ga_count
   novelty_detail$detected_family <- detected_family
+
+  # ── AX-001 scope 판정 (선언적) ──────────────────────────────────────────────
+  # 방어 계열 여부는 hypothesis_signature / 전략명 / factor_engine 어휘로 판정한다.
+  # ★점수(axis)에서 파생하지 않는 것이 핵심: axis 파생 판정은 "전기간 채점 결과가
+  #   AX-001 적용 여부를 결정"하는 순환이라, 전기간 MDD로 탈락한 방어팩터일수록
+  #   조건부 평가에서 제외되는 역설이 생긴다(AX-001이 막으려던 바로 그 상황).
+  .ax001_sig <- tolower(as.character(hypothesis_signature %||% ""))
+  .ax001_name_hit <- grepl(.AX001_DEFENSE_VOCAB, tolower(strategy_name), perl = TRUE)
+  .ax001_sig_hit  <- nzchar(.ax001_sig) && grepl(.AX001_DEFENSE_VOCAB, .ax001_sig, perl = TRUE)
+  .ax001_in_scope <- identical(detected_family, "defense") || .ax001_name_hit || .ax001_sig_hit
+  .ax001_basis <- if (.ax001_sig_hit) "hypothesis_signature"
+                  else if (identical(detected_family, "defense")) "detected_family"
+                  else if (.ax001_name_hit) "strategy_name"
+                  else "none"
 
   eff_corr <- novelty_detail$max_corr
   if (!is.na(eff_corr)) {
@@ -1388,9 +1416,13 @@ run_hurdle_gate <- function(sim_result,
     if (nrow(.m) >= 60) coef(lm(as.numeric(.m[, 1]) ~ as.numeric(.m[, 2])))[2] else NA_real_
   }, error = function(e) NA_real_)
 
-  # role_label: 외부에서 주입 가능 (sg_determine_role 결과). 없으면 내부 role로 추론
-  .effective_role <- if (exists("role_label") && !is.null(role_label) && nchar(role_label) > 0) {
-    role_label
+  # role_label: 외부에서 주입 가능 (sg_determine_role 결과). 정식 인자로 승격 —
+  #   구판은 exists("role_label")로 렉시컬 스코프를 뒤졌는데 alpha-search 레인엔
+  #   전역 role_label이 없어 주입 경로가 사실상 배선되지 않았다.
+  .effective_role <- if (!is.null(role_label) && nzchar(as.character(role_label))) {
+    as.character(role_label)
+  } else if (isTRUE(.ax001_in_scope)) {
+    "defense"   # AX-001: 선언적 방어 계열은 조건부 평가 경로로 강제 (axis 파생 순환 차단)
   } else {
     # 내부 axis 기반 추론 (defense 판단: axis_risk 우위)
     if (axis_risk >= axis_return && axis_risk >= axis_divers) "defense" else "other"
@@ -1551,17 +1583,51 @@ run_hurdle_gate <- function(sim_result,
     "core"
   }
 
-  # Defense metrics (항상 기록, defense 아닌 전략은 빈 리스트)
-  defense_metrics <- if (.effective_role == "defense" || grade %in% c("A_DEF", "B_DEF")) {
-    list(
-      stress_8_outperf_rate = round(.def_outperf_rate, 3),
-      stress_8_n_outperf    = .def_n_outperf,
-      stress_8_n_total      = .def_n_stress,
-      stress_8_detail       = .def_stress_alpha_rows,
-      capm_beta             = if (!is.na(.def_beta)) round(.def_beta, 4) else NA
-    )
+  # Defense metrics — 조건부 축(.def_*)은 role과 무관하게 이미 위에서 전량 계산되므로
+  #   항상 기록한다. 구판은 role=="defense" 일 때만 기록해, 조건부 증거를 계산해 놓고
+  #   버렸다 → 방어 계열이 role 오판정으로 새면 "조건부 평가 부재"가 파일에 남지도 않았다.
+  defense_metrics <- list(
+    stress_8_outperf_rate = round(.def_outperf_rate, 3),
+    stress_8_n_outperf    = .def_n_outperf,
+    stress_8_n_total      = .def_n_stress,
+    stress_8_detail       = .def_stress_alpha_rows,
+    capm_beta             = if (!is.na(.def_beta)) round(.def_beta, 4) else NA
+  )
+
+  # ── AX-001 준수 상태 (기계 판정 — 훅·judge·governor가 소비) ─────────────────
+  # 위반 정의: 방어 계열인데 조건부 축 없이 전기간 지표만으로 기각.
+  #   조건부 축이 유효하면(유효 스트레스 구간 3개+) 기각 자체는 허용된다 —
+  #   AX-001은 문턱 완화가 아니라 "무엇으로 평가했는가"를 규율하기 때문.
+  .ax001_axes_n  <- .def_n_stress
+  .ax001_axes_ok <- .ax001_axes_n >= 3L
+  .ax001_rejected <- isTRUE(hard_fail) || grade %in% c("C", "D", "F")
+  .ax001_status <- if (!isTRUE(.ax001_in_scope)) {
+    "NOT_IN_SCOPE"
+  } else if (.ax001_axes_ok) {
+    "CONDITIONAL_EVALUATED"
+  } else if (.ax001_rejected) {
+    "UNCONDITIONAL_REJECTION"
   } else {
-    list()
+    "CONDITIONAL_AXES_DEGENERATE"
+  }
+  ax001 <- list(
+    in_scope           = isTRUE(.ax001_in_scope),
+    basis              = .ax001_basis,
+    role_used          = .effective_role,
+    conditional_axes_n = .ax001_axes_n,
+    ax001_status       = .ax001_status
+  )
+  if (identical(.ax001_status, "UNCONDITIONAL_REJECTION")) {
+    diagnostics <- c(diagnostics, list(list(
+      code = "D076",
+      msg  = sprintf(paste0("[AX-001 위반] 방어 계열(basis=%s)인데 유효 스트레스 구간 %d개(<3)로 ",
+                            "조건부 평가 불가 상태에서 기각(grade=%s, hard_fail=%s). ",
+                            "전기간 SR/CAGR/MDD 단독 판정 금지 — 위기구간 alpha + Core 대비 MDD + ",
+                            "bad/normal IC ratio 확보 후 재판정할 것."),
+                     .ax001_basis, .ax001_axes_n, grade, hard_fail)
+    )))
+    warning(sprintf("[AX-001] %s: 방어 계열 무조건부 기각 — 조건부 축 %d개(<3). D076 기록됨.",
+                    strategy_name, .ax001_axes_n), call. = FALSE)
   }
 
   # ==========================================================================
@@ -1618,6 +1684,10 @@ run_hurdle_gate <- function(sim_result,
       drawdown_tail_review = isTRUE(dd_profile$tail_review),
       note = "탐색 게이트 — 자본/졸업 게이트 아님 (graduation HARD 불변). PIT만 절대."
     ),
+    # ax001 은 의도적으로 앞쪽에 둔다 — 훅의 content preview(1500자) 안에 들어와야
+    #   "조건부 평가를 마쳤다"는 면제 근거가 판정에 도달한다. 뒤로 밀면 preview 밖으로
+    #   나가 정상 산출물이 과차단된다.
+    ax001       = ax001,
     strategy    = strategy_name,
     timestamp   = format(Sys.time(), "%Y-%m-%d %H:%M:%S"),
     pass        = pass,

@@ -36,6 +36,7 @@ fi
 # PROJ_DIR 해석 (2026-07-25 수리): 구 폴백은 WSL 전용 glob 이라 이 머신에선 빈 문자열이
 # 되고 TEST_DIR="/08_Tests/hooks" 로 전 suite 가 죽었다. 후보를 **표지 검증**으로 확인한다
 # ("있다"가 "그것이다"를 뜻하지 않는다 — dir.exists 신뢰 사고와 같은 기전).
+<<<<<<< C:/Users/99922/AppData/Local/Temp/tmp.UQ7r3vkC72/ours
 #
 # ★후보 순서 = self 최우선 (2026-08-02 수리). 위 헤더가 "앵커는 PROJ_DIR 이 아니라
 #   BASH_SOURCE" 라고 선언해 놓고 정작 이 함수는 env 를 먼저 봤다(선언↔구현 불일치).
@@ -62,9 +63,38 @@ fi
 #     계약 본문: 02_Infrastructure/docs/rules/r-portability.md ④-b.
 #   ★정규화(역슬래시→슬래시)는 검사 **전에** 한다 — QM_ROOT(User scope)가 `C:\...`
 #     형식이라, 검사 뒤로 미루면 형식 오류가 존재 검사를 그냥 통과한다(2026-08-01 실사고).
+||||||| C:/Users/99922/AppData/Local/Temp/tmp.UQ7r3vkC72/base
+=======
+#
+# ★후보 순서 = self 최우선 (2026-08-02 수리). 위 헤더가 "앵커는 PROJ_DIR 이 아니라
+#   BASH_SOURCE" 라고 선언해 놓고 정작 이 함수는 env 를 먼저 봤다(선언↔구현 불일치).
+#   실측 결함: Bash 툴 환경엔 CLAUDE_PROJECT_DIR 이 없고(훅 안에서만 설정됨 —
+#   reference-cpd-set-in-hooks-unset-in-bash-tool) QM_ROOT 는 **main** 을 가리킨다.
+#   그래서 worktree 에서 `bash 08_Tests/hooks/run_all_hooks.sh` 를 돌리면
+#     SUITES 목록은 worktree 사본에서 오는데 PROJ_DIR 은 main 으로 해석돼
+#     **전 suite 가 main 의 코드에 대해 실행**됐다.
+#   실측(2026-08-02, worktree distracted-greider-f54a99):
+#     `Project: /c/Users/99922/OneDrive/Quant_Module_Moltbot` (cwd 는 worktree)
+#   결과 두 가지가 전부 오독을 낳는다:
+#     (1) worktree 에서 난 초록이 worktree 의 변경을 하나도 검증하지 않는다(main 을 잼).
+#     (2) worktree 에서 **신설**한 suite 는 main 에 파일이 없어 UNREPORTED=1 fail 로
+#         계상된다 → "테스트 실패" 로 읽히지만 실제로는 앵커 오설정이다
+#         (실측: test_sample_alignment_empty.R, FINAL 569 pass / 1 fail).
+#   ★표지 검증은 이 갈림을 **판별하지 못한다** — main 도 worktree 도 표지를 갖고 있다.
+#     오직 후보 *순서* 만이 결정한다. 그래서 순서가 계약이고, 검사기가 못박는다
+#     (08_Tests/hooks/test_resolve_project_marker.sh 축 I/J — 위반 주입 + 돌연변이).
+#   ★테스트 러너는 **자기가 실린 트리**를 검사해야 한다. 이 규율은 이미 같은 저장소의
+#     test_resolve_project_marker.sh:40-45 가 선례로 쓰고 있었다(그 파일만 고쳐지고
+#     러너는 누락). 공유 resolver 2벌(hooks=CPD-first / ops=QM_ROOT-first)은 **소비자
+#     계층이 다르므로 무변경** — 그쪽은 훅·스케줄러의 데이터 루트 해석이고, 순서는
+#     2026-08-01 도훈 결정이며 같은 검사기 축 G 가 양방향으로 고정한다.
+#   ★정규화(역슬래시→슬래시)는 검사 **전에** 한다 — QM_ROOT(User scope)가 `C:\...`
+#     형식이라, 검사 뒤로 미루면 형식 오류가 존재 검사를 그냥 통과한다(2026-08-01 실사고).
+>>>>>>> C:/Users/99922/AppData/Local/Temp/tmp.UQ7r3vkC72/theirs
 _MARKER="08_Tests/hooks/run_all_hooks.sh"
 _SELF_ROOT="$(cd "$_SELF_DIR/../.." 2>/dev/null && pwd)"
 _pick_proj_dir() {
+<<<<<<< C:/Users/99922/AppData/Local/Temp/tmp.UQ7r3vkC72/ours
   local c n
   # ★앵커 순서 정본 = 이 줄. 위반 주입 테스트가 이 줄을 갈아끼워 검출력을 실증한다
   #   (test_resolve_project_marker.sh 축 J). 순서를 바꾸려면 그 검사기부터 통과시킬 것.
@@ -72,6 +102,17 @@ _pick_proj_dir() {
     [[ -n "$c" ]] || continue
     n="${c//\\//}"
     if [[ -f "$n/$_MARKER" ]]; then (cd "$n" && pwd); return 0; fi
+||||||| C:/Users/99922/AppData/Local/Temp/tmp.UQ7r3vkC72/base
+  local c
+  for c in "${CLAUDE_PROJECT_DIR:-}" "${QM_ROOT:-}" "$_SELF_DIR/../.." "$PWD"; do
+    if [[ -n "$c" && -f "$c/$_MARKER" ]]; then (cd "$c" && pwd); return 0; fi
+=======
+  local c n
+  for c in "$_SELF_DIR/../.." "${CLAUDE_PROJECT_DIR:-}" "${QM_ROOT:-}" "$PWD"; do
+    [[ -n "$c" ]] || continue
+    n="${c//\\//}"
+    if [[ -f "$n/$_MARKER" ]]; then (cd "$n" && pwd); return 0; fi
+>>>>>>> C:/Users/99922/AppData/Local/Temp/tmp.UQ7r3vkC72/theirs
   done
   return 1
 }
@@ -169,6 +210,12 @@ SUITES=(
   #   "ALL CLEAN: 0 files scanned"·"INFRA_PIT_SCAN PASS: 0 files" 를 냈다 —
   #   스캔 0회가 PIT 통과 판정이 되는 자리(AX-002 동급). 돌연변이로 검출력 실증(3축 반전).
   "08_Tests/hooks/test_lookahead_unscanned.R"
+  # 2026-08-02 추가: AX-001(방어 조건부 평가) 차단 실효.
+  #   구 규칙은 defense 를 **상시 필드명**(statistical_defense/defense_metrics)이,
+  #   면제어 stress 를 **상시 채점항목명**(score_breakdown.stress)이 각각 100% 충족시켜
+  #   실제 산출물 559/559 에서 발화 불능이었다 — 규칙은 살아 있는데 입력이 조건을
+  #   만족시킬 수 없는 형태의 검사 사망. 위반 주입 + 과차단 + 동적/legacy 2경로 분리 검증.
+  "08_Tests/hooks/test_ax001_defense_scope.R"
   # 2026-08-02 추가: FQ-002 계약 패널 빌더 로직(합성 픽스처, API 무호출).
   #   크롤 1시간 태우기 전에 정정 제외·parse실패 제외·trailing 창·빈입력 거부를 확정한다.
   "08_Tests/data/test_contract_panel.R"
@@ -225,6 +272,7 @@ SUITES=(
   #   관측창 가드(2분 된 원장으로 "7일 발화 0" WARN 하던 오탐)·미측정≠0·회전·미커버 게이트
   #   이름 노출. 이 감시기가 침묵하면 "발화 0" 지문 자체를 놓친다.
   "08_Tests/ops/test_hook_fire_coverage.sh"
+<<<<<<< C:/Users/99922/AppData/Local/Temp/tmp.L8OTBAVArd/ours
   # 2026-08-01 추가: resolve_project.sh 루트 marker 게이트 위반 주입 (r-portability 금칙 ③).
   #   원 결함 = QM_ROOT 분기가 `[ -d ]` 만 봐서 역슬래시 루트(`C:\Users\...`)를 수락 →
   #   daily_refresh 의 setwd("$BASE") 6지점이 R 소스문자열 `\U` 파싱으로 halt,
@@ -313,6 +361,7 @@ SUITES=(
   #   D축(미해석 키 경고)이 "0편"과 "못 읽음"을 가르는 유일 지문이고,
   #   E축이 생산자 프롬프트 계약까지 걸어 소비자만 고치고 끝나는 것을 막는다.
   "08_Tests/ops/test_mode_queue_dispatch_schema.R"
+<<<<<<< C:/Users/99922/AppData/Local/Temp/tmp.qegWmQqxYb/ours
   # 2026-08-02 추가: 부팅 리더(research_pool_status.py) 3축 위반 주입 + 술어 공용화 배선.
   #   ★위 세 suite 가 지키는 술어를 **리더는 자기 안에 얕게 재구현**하고 있었다 — 그래서
   #     소비자 3종은 수리됐는데 리더만 틀린 채로 매일 부팅 라인에 광고했다:
@@ -367,6 +416,31 @@ SUITES=(
   #     `set -u` unbound 로 죽고 나머지 주입 축이 **공허하게 초록**이 된다(실제로 그
   #     상태였고 2026-08-03 정정). 기본 바인딩은 블록 밖에 있어야 한다.
   "08_Tests/hooks/test_auto_commit_worktree_target.sh"
+||||||| C:/Users/99922/AppData/Local/Temp/tmp.qegWmQqxYb/base
+=======
+  # 2026-08-02 추가: 테스트 러너 앵커 순서(self-first) 위반 주입 — 이 러너가 고친 것과
+  #   **같은 결함이 남아 있던 러너 2종**(08_Tests/regime/run_all.R · 02_Infrastructure/
+  #   tests/test_continuity_gate.py)의 회귀 가드다.
+  #   실측(수리 전): regime 러너는 worktree 6파일 / main 5파일 상태에서 worktree 실행 시
+  #   "Test files found: 5" (main 것을 발견) · continuity 배터리는 cwd=worktree 인데
+  #   ROOT=main 으로 **main 의 continuity_gate.py 를 검사**했다.
+  #   ★표지 검증으로는 못 가른다(두 트리 다 표지 보유) — 가르는 것은 후보 **순서**뿐이라,
+  #     순서를 계약으로 못박고 돌연변이(env-first 복원)로 검출력을 매 실행 실증한다.
+  #   ★가드 needle 을 *수리된 순서 줄* 로 잡지 않는다 — 그러면 결함 상태가 "needle 갱신
+  #     필요" 라는 정비 메시지로 나타나 다음 사람이 needle 을 고치는 것으로 env-first 를
+  #     조용히 재수용한다(run_all_hooks 앵커 수리 중 실제로 저지르고 정정한 실수).
+  "08_Tests/hooks/test_runner_anchor_selffirst.sh"
+>>>>>>> C:/Users/99922/AppData/Local/Temp/tmp.qegWmQqxYb/theirs
+||||||| C:/Users/99922/AppData/Local/Temp/tmp.L8OTBAVArd/base
+=======
+  # 2026-08-01 추가: resolve_project.sh 루트 marker 게이트 위반 주입 (r-portability 금칙 ③).
+  #   원 결함 = QM_ROOT 분기가 `[ -d ]` 만 봐서 역슬래시 루트(`C:\Users\...`)를 수락 →
+  #   daily_refresh 의 setwd("$BASE") 6지점이 R 소스문자열 `\U` 파싱으로 halt,
+  #   5개 스텝(KTRI v3·MSM·regime_daily_v2·SJM·cache_freshness_audit)이 **침묵 실패**.
+  #   ★ ops/ 판과 hooks/ 판 **두 벌 모두**에 게이트를 요구한다 — 동명 2벌은 주석이 아니라
+  #     이 검사기가 동기화를 강제한다. 돌연변이(게이트를 -d 로 되돌린 사본) 축 포함.
+  "08_Tests/hooks/test_resolve_project_marker.sh"
+>>>>>>> C:/Users/99922/AppData/Local/Temp/tmp.L8OTBAVArd/theirs
 )
 
 # (2026-08-02) .py 분기 추가 — 종전엔 확장자 무관 `bash` 로 던져 파이썬 suite 가
