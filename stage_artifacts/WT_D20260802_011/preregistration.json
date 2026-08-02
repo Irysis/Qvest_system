@@ -1,0 +1,86 @@
+{
+  "task_id": "WT-D20260802_011",
+  "registered_at": "2026-08-02T13:20:00+0900",
+  "registered_before_any_performance_measurement": true,
+  "title": "시그니처 3M 평활판 — 회전 제약(연 11.0) 충족 후 신호 보존 사전등록 (WT-006 NP-2 승계)",
+
+  "inheritance": {
+    "parent": "WT-D20260802_006",
+    "reused_assets": [
+      "stage_artifacts/WT_D20260802_006/signature_panel.parquet (시그니처 패널 — 재계산 금지)",
+      "stage_artifacts/WT_D20260802_006/alpha_scores.parquet (base primary 월별 CS z — 그대로 소비)",
+      "stage_artifacts/WT_D20260802_006/size_panel.parquet (cap-tier 분해용)",
+      "stage_artifacts/WT_D20260802_006/signature_lib.R (참조용 — 본 라운드 신규 시그니처 계산 없음)"
+    ],
+    "base_verdict_quoted": {
+      "cap_w_port_t": 1.225,
+      "ew_universe_port_t": 1.926,
+      "ew_universe_post2017_t": -0.066,
+      "turnover_annual": 15.78,
+      "lag1_port_t": 0.237,
+      "flow_link_t": 4.076
+    }
+  },
+
+  "primary": {
+    "factor_id": "SIG_LEVY_PV_63_SM3",
+    "definition": "WT-006 base 스코어(월별 CS winsorize 3sd → CS z, score=-A_pv)의 3M 롤링 평균. 각 신호월 t에서 smoothed(t) = mean(z_t, z_{t-1}, z_{t-2}) — 신호월 인덱스 기준 직전 3개(당월 포함), 각 월 스코어는 그 시점 가용분만(패널이 이미 월별 독립 산출 — PIT by construction). 유효 최소 2개월(신규 진입 종목 커버리지 유지 + 평활 최소 성립). 평균 후 월별 CS z 재정규화(랭킹 불변 — 표기 일관성용).",
+    "score_orientation": "base와 동일 score=-A_pv 방향 유지. no-flip (사후 부호 반전 금지 — 실측 반대여도 기전 반증으로 기록만).",
+    "smoothing_window_months": 3,
+    "window_rationale": "회전 제약 충족 경로 = 평활, 창은 큐 스펙(3M) 고정 — sweep 아님 (변경사유 1줄: WT-006 CF-03 turnover 1578% > 1100% 해소가 본 라운드의 존재 이유).",
+    "combination_rule": "single_factor"
+  },
+
+  "selection_protocol": {
+    "selection_type": "preregistered_single_primary",
+    "n_primary_trials": 1,
+    "chain_note": "WT-006 → WT-011 = 가설주도 chain (1가설 1변경: 평활 연산자 추가). iteration 변경사유 = 회전 제약 미충족(CF-03)의 기전적 해소. IS-only 선택 비해당(선택 자체가 없음 — 단일 primary). DSR 게이트 비발동(chain), 수치는 진단 기록.",
+    "diagnostics_not_selection": [
+      {"id": "SIG_LEVY_PV_63 (1M base)", "role": "이미 측정(WT-006) — 인용만, 재측정 없음. 보존율 분모."},
+      {"id": "SIG_LEVY_PV_63_SM6", "def": "동일 정의 6M 평활(유효 최소 4개월)", "role": "진단 병기 — 회전 3M 미달 시 참고. 선택에 사용 금지(잘 나와도 본 라운드 주장에 편입 안 함, next_probe로만 승계)."}
+    ],
+    "no_flip_clause": "primary 실측이 사전등록 방향과 반대여도 부호 반전 재제출 금지."
+  },
+
+  "honest_posterior": {
+    "against": "WT-006 lag1 붕괴(+1.225→+0.237) = 단반감기 실측. 평활 = 의도적 지연이므로 오래된 신호월(t-1, t-2)의 기여는 lag1·lag2 감쇠 신호를 섞는 것 — 신호 희석으로 PORT_t 하락이 예상되는 방향.",
+    "for": "FQ-073 R2 전례: 6M 평활이 음수 제거(고빈도 노이즈 성분 제거로 신호 순화). base의 고회전(1578%)은 스코어의 월간 재순위 노이즈가 크다는 뜻 — 평활이 노이즈를 죽이고 저빈도 성분만 남기면 net 기준 개선 여지.",
+    "prior_statement": "두 증거 상충 — 본 라운드는 어느 쪽이 실측되는지의 판별 실험. 승격 기대가 아니라 판정 수집이 목적(후속 관문 라운드)."
+  },
+
+  "measurement": {
+    "authority": "canonical_screen_bt() top-25 EW long-only, 15bps, liq 2e8, dual-basis(cap-w HARD + EW-uni + cap-tier) — proxy 손계산 금지. metric_type=canonical_screen.",
+    "first_gate": "회전 실측이 1차 관문 — 3M 평활 후 turnover_annual ≤ 11.0 여부 먼저 판정. 초과 시 그 자체가 판정(평활 창 부족)이고 6M 진단이 참고.",
+    "universe": "K200∪KQ150 월말 멤버십 (WT-006 하네스 동일)",
+    "sig_months": "패널 신호월 전체 (3M 평활 성립분)",
+    "benchmark": "유니버스 시총가중 forward (build_monthly_forward_returns 표준 하네스)",
+    "subperiods": ["~2014", "2015-2019", "2020~", "post-2017"],
+    "adversarial": [
+      "lag1 스트레스: 평활 스코어 1개월 지연 — 평활판의 반감기 실측",
+      "placebo: base 스코어를 표준정규 난수로 치환(5시드) 후 동일 3M 평활 파이프라인 통과 — 파이프라인 자체의 거짓 신호력 상한 실측 (WT-006는 경로셔플 placebo로 원천 검증 완료 — 본 라운드는 평활 파이프라인 검증이 목적이므로 Gaussian 치환이 정확한 대조)",
+      "라벨 방향 감사: M01 rank-IC 부호 (WT-006 프레임 재사용)"
+    ]
+  },
+
+  "falsification_side_observation": {
+    "field": "A6_investor_flow_stock_daily (investor_wide: Foreign/Institutional)",
+    "observation": "평활판 score Q5 종목의 후속 홀딩월 (외인+기관) 순매수/ADV·일이 Q1 대비 유의(t>=2) 높지 않으면 평활판에서 축적-기전 링크 소멸로 판정. base t=+4.08 대비 보존율 병기.",
+    "note": "성과 동어반복 아님 — 수익과 독립 판정."
+  },
+
+  "signal_retention_metrics": {
+    "definition": "보존율 = 평활판/base 비율을 (i) cap-w PORT_t (ii) rank-IC (iii) flow 링크 t 3축으로 보고. 단반감기 가설의 정량 판정: lag1 붕괴율(0.237/1.225=0.19)이 예측하는 희석 하한과 대조.",
+    "base_values": {"port_t": 1.225, "rank_ic": -0.00974, "flow_t": 4.076}
+  },
+
+  "ax001_conditional": {
+    "plan": "bad/normal 국면(unified_regime_signal: bad=CRISIS∪CAUTION) IC 비율 + crisis active t 병기 — AX-001 v2 조건부 평가 (사후 slicing, C5 비발동)"
+  },
+
+  "ast_declaration": {
+    "escape": "SPECIAL_OP (truncated path signature — WT-006 승계) + TS_MEAN(·, 3) 평활 연산자(𝒪 내)",
+    "op_code_path": "stage_artifacts/WT_D20260802_006/signature_lib.R",
+    "walk_forward": true,
+    "note": "평활은 월별 스코어 시계열의 trailing 평균 — 적합 파라미터 0, full-sample 통계 미사용 (C1 clean by construction)"
+  }
+}

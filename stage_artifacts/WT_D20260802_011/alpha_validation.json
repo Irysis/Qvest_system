@@ -1,0 +1,189 @@
+{
+  "task_id": "WT-D20260802_011",
+  "generated_at": "2026-08-02 13:27:56",
+  "metric_type": "canonical_screen",
+  "gate_eligible": false,
+  "selection_type": "chain",
+  "n_trials": 1,
+  "preregistration": "stage_artifacts/WT_D20260802_011/preregistration.json (측정 전 고정)",
+  "inheritance": {
+    "parent": "WT-D20260802_006",
+    "reused": ["signature_panel.parquet", "alpha_scores.parquet(base z)", "size_panel.parquet", "평가 프레임"],
+    "recomputation": "없음 — 시그니처 재계산 금지 준수"
+  },
+  "turnover_gate": {
+    "limit_annual": 11,
+    "observed_sm3": 10.531984,
+    "observed_sm6_diag": 6.967559,
+    "base_quoted": 15.78,
+    "verdict": "PASS — 1차 관문 충족 (base 대비 33% 감축)"
+  },
+  "primary": {
+    "factor_id": "SIG_LEVY_PV_63_SM3",
+    "canonical": {
+      "port_t_nw_lag3": -0.267921,
+      "pvalue": 0.78876,
+      "n_months": 257,
+      "net_sr": -0.066204,
+      "information_ratio": -0.066204,
+      "turnover_annual": 10.531984
+    },
+    "subperiod_port_t": {
+      "pre2015": 1.255727,
+      "y2015_19": -1.063434,
+      "y2020p": -0.840943,
+      "post2017": -1.131823
+    },
+    "advisory": {
+      "rank_ic": -0.012541,
+      "icir": -0.136972,
+      "ic_t": -2.195826,
+      "monotonicity": 0.733333
+    }
+  },
+  "dual_basis": {
+    "cap_w_port_t": -0.267921,
+    "ew_universe_port_t": -0.454397,
+    "ew_universe_post2017_t": -0.080746,
+    "ew_universe_oos_retention_approx": "NA",
+    "cap_tier_weight_share": {
+      "MEGA": 0.018366,
+      "MID": 0.040623,
+      "OTHER": 0.941012,
+      "UNRANKED": 0
+    },
+    "cap_tier_contrib_annualized": null,
+    "verdict": "양 basis 공멸(cap-w -0.27 / EW-uni -0.45) — 벤치 아티팩트 구제 불가. v8.3 기각-전 확인 의무 이행"
+  },
+  "smoothing_6m_diagnostic": {
+    "port_t": 0.368536,
+    "ew_uni_t": 0.524521,
+    "turnover_annual": 6.967559,
+    "note": "진단 병기 — 선택 비사용"
+  },
+  "lag1": {
+    "sm3_port_t": -0.267921,
+    "lag1_port_t": 0.171323,
+    "verdict": "신호가 이미 노이즈 대역 — lag 판정 무의미"
+  },
+  "placebo": [
+    {
+      "port_t": -0.965959,
+      "rank_ic": 0.001281,
+      "turnover": 14.043268
+    },
+    {
+      "port_t": -0.242139,
+      "rank_ic": 0.002064,
+      "turnover": 14.088093
+    },
+    {
+      "port_t": -1.222402,
+      "rank_ic": -0.005329,
+      "turnover": 14.256187
+    },
+    {
+      "port_t": -0.789335,
+      "rank_ic": 0.006011,
+      "turnover": 14.301012
+    },
+    {
+      "port_t": -0.24565,
+      "rank_ic": 0.001404,
+      "turnover": 14.073152
+    }
+  ],
+  "placebo_note": "Gaussian 치환 5시드 + 동일 3M 평활 파이프라인. SM3는 placebo 분포 안 = 신호 소멸(부호 반전 아님)",
+  "falsification": {
+    "mean_spread": 0.012434,
+    "t_nw": 4.09445,
+    "n_months": 257
+  },
+  "regime_conditional": [
+    {
+      "Category": "RISK_ON",
+      "n": 198,
+      "mean_active": 0.001927,
+      "t_nw": 0.561636
+    },
+    {
+      "Category": "NEUTRAL",
+      "n": 30,
+      "mean_active": -0.011544,
+      "t_nw": -1.339307
+    },
+    {
+      "Category": "CAUTION",
+      "n": 13,
+      "mean_active": 0.021565,
+      "t_nw": 1.680966
+    },
+    {
+      "Category": "CRISIS",
+      "n": 16,
+      "mean_active": -0.035025,
+      "t_nw": -1.382168
+    }
+  ],
+  "ax001_conditional": {
+    "ic_bad": -0.010861,
+    "ic_normal": -0.012755,
+    "ratio": 0.851504,
+    "crisis_t": -1.382168
+  },
+  "signal_retention": {
+    "port_t_ratio": -0.218711,
+    "rank_ic_ratio": 1.28757,
+    "flow_t_ratio": 1.004526,
+    "turnover_ratio": 0.667426,
+    "sm3_vs_base_rank_cor": 0.72,
+    "verdict": "수익축 소멸(보존율 -0.22) vs flow축 무손실(1.00) — 스펙트럼 분해 실측"
+  },
+  "base_quoted": {
+    "port_t": 1.225,
+    "rank_ic": -0.00974,
+    "flow_t": 4.076,
+    "turnover": 15.78,
+    "lag1_port_t": 0.237
+  },
+  "label_direction_ic": 0.010749,
+  "min_valid_boundary": {
+    "nv2_share": 0.019,
+    "nv3_share": 0.981
+  },
+  "sidecar_live_with_ast": {
+    "before": {
+      "live": 355,
+      "live_with_ast": 36
+    },
+    "after": {
+      "live": 378,
+      "live_with_ast": 47
+    }
+  },
+  "graduation_hard_gates": {
+    "portfolio_alpha_t_nw": {
+      "required": 2.95,
+      "observed_canonical": -0.267921,
+      "status": "FAIL",
+      "note": "canonical screening 실측 — forge 승격 미제출(자본 판정 아님)"
+    },
+    "oos_retention": {
+      "required": 0.7,
+      "observed_approx_ew": "NA",
+      "status": "FAIL_APPROX",
+      "note": "진단 근사(권위는 essence_score)"
+    },
+    "calmar": {
+      "required": 0.64,
+      "observed": null,
+      "status": "NOT_COMPUTED",
+      "note": "PORT_t 미달로 forge 미제출"
+    }
+  },
+  "production_constraints": {
+    "turnover_annual_limit": 11,
+    "observed": 10.531984,
+    "verdict": "PASS — 본 라운드의 1차 관문 달성"
+  }
+}

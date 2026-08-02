@@ -75,12 +75,41 @@ nw_t <- function(x, lag = 3L) {
 
 # ── 2. 10 arm canonical 실측 ─────────────────────────────────────────────────
 ARMS <- c(PAIRS$base, PAIRS$tuned)
+# ast_features (사이드카 기록 전용 — 판정 비관여. base=registry FIELD 리프,
+#   tuned P1/P4/P5=𝒪 내 표현, P2/P3=SPECIAL_OP escape — preregistration 선언 정합)
+feats_field <- list(node_count = 1, max_depth = 1, free_param_count = 0,
+  distinct_field_count = 1, conditional_op_count = 0, window_variety = 0,
+  restatement_exposure = 1, escape_leaf_count = 0, escape_leaf_types = list(),
+  note = "registry FIELD 리프 (factor_db_monthly Z_Score_Aligned 그대로)")
+FEATS <- list(
+  V01_BM = feats_field, M01_Mom_12_1 = feats_field, D03_RealVol = feats_field,
+  Q01_GPA = feats_field, V06_fDY = feats_field,
+  V01_SECREL = list(node_count = 3, max_depth = 3, free_param_count = 1,
+    distinct_field_count = 2, conditional_op_count = 0, window_variety = 0,
+    restatement_exposure = 1, escape_leaf_count = 0, escape_leaf_types = list(),
+    note = "CS_ZSCORE(CS_NEUTRALIZE(FIELD:V01_BM, group=Sector, min8)) — 𝒪 내"),
+  M01_PATHQ = list(node_count = 4, max_depth = 3, free_param_count = 3,
+    distinct_field_count = 1, conditional_op_count = 0, window_variety = 1,
+    restatement_exposure = 0, escape_leaf_count = 1, escape_leaf_types = list("SPECIAL_OP"),
+    note = "CS_ZSCORE(CS_WINSORIZE(SPECIAL_OP:path_efficiency_252_21)) — run_wt009_tuned.R"),
+  D03_EWMA = list(node_count = 4, max_depth = 3, free_param_count = 2,
+    distinct_field_count = 1, conditional_op_count = 0, window_variety = 1,
+    restatement_exposure = 0, escape_leaf_count = 1, escape_leaf_types = list("SPECIAL_OP"),
+    note = "CS_ZSCORE(CS_WINSORIZE(SPECIAL_OP:ewma_vol_hl63_w252)) — run_wt009_tuned.R"),
+  Q01_EB = list(node_count = 6, max_depth = 4, free_param_count = 2,
+    distinct_field_count = 1, conditional_op_count = 0, window_variety = 1,
+    restatement_exposure = 1, escape_leaf_count = 0, escape_leaf_types = list(),
+    note = "MUL(z, DIV_GUARD(1, ADD(1, MUL(TS_STD(z,36),TS_STD(z,36))))) — 𝒪 내"),
+  V06_EB = list(node_count = 6, max_depth = 4, free_param_count = 2,
+    distinct_field_count = 1, conditional_op_count = 0, window_variety = 1,
+    restatement_exposure = 0, escape_leaf_count = 0, escape_leaf_types = list(),
+    note = "MUL(z, DIV_GUARD(1, ADD(1, MUL(TS_STD(z,36),TS_STD(z,36))))) — 𝒪 내"))
 bt <- list()
 for (a in ARMS) {
   r <- canonical_screen_bt(score_of(a), returns_dt, bench_dt, top_n = 25L,
         cost_bps_oneway = 15, liq_dt = liq_dt, liq_min = 2e8,
         run_id = "WT-D20260802_009", strategy_id = paste0("WT_D20260802_009_", a),
-        diag_dual_basis = TRUE, size_dt = size_dt)
+        diag_dual_basis = TRUE, size_dt = size_dt, ast_features = FEATS[[a]])
   bt[[a]] <- r
   ew <- r$diag_ew_universe
   say("%-12s PORT_t=%+.2f netSR=%+.3f IR=%+.3f TO=%.0f%% n=%d | EWuni t=%+.2f post17=%+.2f",

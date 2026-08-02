@@ -1,7 +1,7 @@
 {
  "schema_version": "1.0",
  "sot": "02_Infrastructure/docs/qvest_v8_3_alpha_discovery_sot.md §4",
- "updated": "2026-08-02 (FQ-097 settled_negative — WT-010 W1 횡단면 dual-basis 양 기각+기전 반증. 파생 FQ-103 제외-필터 소비면 / FQ-104 점프x수급-흡수 등재. 총 104건)",
+ "updated": "2026-08-02 (WT-009 스마트베타 5종 튜닝 수집 — M01_PATHQ 조건부 교체 후보(도훈 confirm 대기, FQ-107 선행). 파생 FQ-107 순수판 / FQ-108 EWMA 위험-축 이식 등재. 총 108건)",
  "consume_rule": "새 발굴 리서치 착수 전: hypothesis_index lookup → 본 큐 확인 → owner/status 갱신. 완료 시 result_ref(L-code/보고서) 기입. dohoon_decision 항목은 세션 임의 착수 금지.",
  "entries": [
   {
@@ -2032,6 +2032,54 @@
    "owner": "미배정",
    "status": "frontier_open",
    "registered": "2026-08-02 Q-Lead (WT-D20260802_010 NP-2 파생)"
+  },
+  {
+   "id": "FQ-105",
+   "lane": "consume_surface",
+   "title": "시그니처 flow-예측 monitoring tripwire — 경로-순서 신호의 저빈도 성분 소비면",
+   "hypothesis": "WT-006/WT-011 2라운드 연속: 시그니처 상위 종목에 후속 홀딩월 기관+외인 순매수 유의 유입(NW t +4.08/+4.09, 3M 평활에도 무손실 보존 = 저빈도 성분). 수익축은 고빈도 소멸이므로 자본이 아니라 monitoring tripwire(수급 유입 예측 경보)로 소비하면 유효한가 — insider SAFE tripwire(R34~R42) 프레임 재사용.",
+   "ev_rationale": "WT-011 NP-1(P1). 스펙트럼 분해 실측(수익축 보존율 -0.22 vs flow축 1.00)이 소비면을 지정함 — 신호가 죽은 게 아니라 소비 경로가 틀렸다는 각도. monitoring-면은 cap-tier 벽이 안 걸리는 면(R33 선례).",
+   "wall_check": "비적용 — monitoring 소비면은 top-25 전이층을 경유하지 않음. 자본 주장 없음.",
+   "data_gate": "없음 (flow 패널·시그니처 패널 현행분 재사용)",
+   "owner": "미배정",
+   "status": "frontier_open",
+   "registered": "2026-08-02 Q-Lead (WT-D20260802_011 NP-1 파생)"
+  },
+  {
+   "id": "FQ-106",
+   "lane": "mechanism_probe",
+   "title": "시그니처 신호 age별 반감기 곡선 — 당월 성분 단독 게이트 근접 여부 (저비용)",
+   "hypothesis": "WT-011 확정: 시그니처 수익 성분 반감기 <1개월(3M 평활 시 소멸·lag1 0.19). 신호 age(0/1/2/3개월)별 PORT_t 곡선을 그리면 당월(age-0) 성분 단독이 게이트에 근접하는가 — base 패널 재사용 bt 2회의 저비용 프로브. 근접 시 회전 구조가 다른 소비 경로(주간 리밸 overlay-tier 등) 설계 재료.",
+   "ev_rationale": "WT-011 NP-2(P2). 반감기 곡선은 평활 실패의 역명제 검증 — '평활이 죽였다'면 '무평활 당월'이 최강이어야 한다. 불일치 시 단반감기 해석 자체를 재검.",
+   "wall_check": "당월 성분이 강해도 월간 top-25 배포 회전 상한(11.0)과 정면 충돌 — 성립 시 소비 경로 신설이 선행 조건(자본 게이트 직행 불가).",
+   "data_gate": "없음 (WT-006 signature_panel.parquet 재사용)",
+   "owner": "미배정",
+   "status": "frontier_open",
+   "registered": "2026-08-02 Q-Lead (WT-D20260802_011 NP-2 파생)"
+  },
+  {
+   "id": "FQ-107",
+   "lane": "mechanism_probe",
+   "title": "M01_PATHQ vol-잔차 순수판 — 경로효율 튜닝의 교체 판정 유일 경로 (WT-009 NP-1)",
+   "hypothesis": "WT-009: 경로효율(frog-in-the-pan) 튜닝이 paired t +2.03으로 사전등록 문턱 충족. 단 기전 반증 F2(jump-기여) 미지지 + 개선 pre-2015 편중 → vol-tilt 아티팩트 혐의. 경로효율 스코어의 vol-성분을 D03z에 월별 CS 잔차화한 순수판을 재사전등록해 paired 재측정 — 죽으면 vol-tilt 아티팩트 확정, 살면 registry 교체 근거 완성(교체 자체는 도훈 confirm).",
+   "ev_rationale": "WT-009 NP-1(P1). CF-01 해소의 유일 경로 — 교체 후보 1건이 이 판정에 걸려 있어 EV 최고. base 패널 재사용으로 저비용.",
+   "wall_check": "전이-벽 비적용(기존 admitted 축의 정제 — 신규 표현력 주장 아님). 회전 증분 +67%p(722→789%)는 교체 시 명기 의무.",
+   "data_gate": "없음 (WT-009 base_panel/tuned_panel.parquet 재사용)",
+   "owner": "미배정",
+   "status": "frontier_open",
+   "registered": "2026-08-02 Q-Lead (WT-D20260802_009 NP-1 파생)"
+  },
+  {
+   "id": "FQ-108",
+   "lane": "consume_surface",
+   "title": "EWMA-63d vol을 risk-research Σ/vol-targeting 입력으로 이식 — 예측 능력·소비면 불일치 해소",
+   "hypothesis": "WT-009 F3: EWMA half-life 63d vol 예측이 등가중 252d 대비 MSE -26%·승률 92%로 예측 능력은 확립됐는데 랭킹(D03_EWMA) 소비면에서는 paired -1.74 열화. 능력이 실재하는 소비면은 위험모델 축 — risk_package Σ 추정·vol-targeting 입력으로 이식하면 유효한가. lw_nls ADOPT(FQ-057 P1) 프레임에 EWMA-63d 분산 항 결합 A/B.",
+   "ev_rationale": "WT-009 NP-2(P1). '확립 능력과 소비면의 불일치'는 WT-011 스펙트럼 분해와 같은 각도 — 신호가 죽은 게 아니라 소비 경로가 틀렸다. 위험-축은 QLIKE/DM 진단이라 저비용.",
+   "wall_check": "비적용 — 위험모델 위생 계층(성과 병목 아님, ⑧행). 자본 주장 없음.",
+   "data_gate": "없음 (rawdata 일간 현행분)",
+   "owner": "미배정",
+   "status": "frontier_open",
+   "registered": "2026-08-02 Q-Lead (WT-D20260802_009 NP-2 파생)"
   }
  ]
 }
