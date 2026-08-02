@@ -34,17 +34,52 @@ set -u
 export PYTHONUTF8=1
 
 INPUT=$(cat 2>/dev/null || echo '{}')
-LOG="/tmp/milestone_commit.log"
+LOG="${QVEST_MC_LOG:-/tmp/milestone_commit.log}"
 TS="$(date '+%Y-%m-%d %H:%M:%S')"
 
 if [ "${QVEST_SKIP_MILESTONE_COMMIT:-0}" = "1" ]; then
   echo '{}'; exit 0
 fi
 
-PROJECT=$(ls -d /c/Users/99922/OneDrive/Quant_Module_Moltbot /mnt/c/Users/99922/OneDrive/Quant_Module_Moltbot /g/Quant_Module_Moltbot /mnt/g/Quant_Module_Moltbot /mnt/c/Users/*/OneDrive/바탕\ 화면/Quant_Module_Moltbot 2>/dev/null | head -1)
+# ★MC_ROOT_SRC 기본 바인딩은 sentinel 블록 **밖**에 (auto_commit_on_stop.sh 와 동일 이유):
+#   이 파일도 `set -u` + ERR 트랩 아래라, 위반 주입이 블록을 들어냈을 때 유일한 정의가
+#   블록 안에 있으면 변종이 구 결함을 재현하기 전에 unbound 로 죽는다(주입 교락).
+MC_ROOT_SRC="legacy_glob"
+# >>> QVEST_ROOT_RESOLUTION >>> ──────────────────────────────────────────────
+# ★2026-08-03 수리: 구 코드는 `ls -d <하드코딩 후보> | head -1` 로 첫 *존재* 후보를 집고
+#   CLAUDE_PROJECT_DIR 을 읽지 않았다 — auto_commit_on_stop.sh 와 **같은 결함**이다.
+#   이 훅은 PostToolUse[Write] 라 worktree 세션에서 L-code/axiom 산출물을 쓸 때마다
+#   main 을 커밋한다(작업은 worktree 에 남고 보고만 성공). 08-02 유실 사고의 형제 경로.
+#   형제 파일 미전파 계통 — 원본만 고치고 같은 코드를 복사해 간 훅을 두면 결함이 살아남는다.
+#   가드: 08_Tests/hooks/test_auto_commit_worktree_target.sh F/G축.
+PROJECT="${QVEST_MC_PROJECT:-}"
+MC_ROOT_SRC="QVEST_MC_PROJECT"
+if [ -z "$PROJECT" ]; then
+  _rp="$(dirname "${BASH_SOURCE[0]:-$0}")/resolve_project.sh"
+  if [ -f "$_rp" ]; then
+    trap - ERR                       # resolver 의 tier 미스는 정상 흐름
+    # shellcheck source=/dev/null
+    . "$_rp" || PROJECT=""
+    trap 'echo "{}"; exit 0' ERR
+    MC_ROOT_SRC="${QVEST_ROOT_SOURCE:-unknown}"
+  else
+    MC_ROOT_SRC="resolver_missing"
+  fi
+fi
+# <<< QVEST_ROOT_RESOLUTION <<< ──────────────────────────────────────────────
 [ -z "$PROJECT" ] && { echo '{}'; exit 0; }
 cd "$PROJECT" || { echo '{}'; exit 0; }
 git rev-parse --git-dir >/dev/null 2>&1 || { echo '{}'; exit 0; }
+
+# 대상 트리/브랜치 라벨 — "무엇을" 옆에 "어디에"가 없으면 유실이 성공으로 읽힌다.
+MC_BRANCH="$(git branch --show-current 2>/dev/null)"
+[ -n "$MC_BRANCH" ] || MC_BRANCH="(detached)"
+_mc_gd="$(git rev-parse --absolute-git-dir 2>/dev/null || echo '')"
+case "$_mc_gd" in
+  */worktrees/*) MC_TREE="worktree:$(basename "$_mc_gd")" ;;
+  *)             MC_TREE="primary:$(basename "$PROJECT")" ;;
+esac
+MC_TARGET="branch=$MC_BRANCH tree=$MC_TREE src=$MC_ROOT_SRC"
 
 # 파일 경로 추출 (v8.1.2: bytes 경유 UTF-8 명시)
 FILE=$(printf '%s' "$INPUT" | "$QVEST_PY_BIN" -c "
@@ -172,7 +207,7 @@ if [ $? -eq 0 ]; then
     disown 2>/dev/null || true
   fi
 
-  MSG="[OK] [milestone] $MILESTONE $HASH - $STAGED files"
+  MSG="[OK] [milestone] $MILESTONE $HASH - $STAGED files → $MC_TARGET"
   [ "$PUSH_IMMEDIATE" -eq 1 ] && MSG+=" (push 진행 중)"
   MSG_ESC=$(printf '%s' "$MSG" | "$QVEST_PY_BIN" -c "import sys,json; s=sys.stdin.buffer.read().decode('utf-8','replace'); print(json.dumps(''.join(ch if not(0xD800<=ord(ch)<=0xDFFF) else '?' for ch in s)))")
   echo "{\"hookSpecificOutput\":{\"hookEventName\":\"PostToolUse\",\"additionalContext\":$MSG_ESC}}"

@@ -353,6 +353,20 @@ SUITES=(
   #   C축(구판 라벨 재현 → 검사가 실제 FAIL 하나)이 검출력 실증, B축이 fail-closed
   #   (as-of 미보고 시 요청일 라벨로 되돌리지 않음 — 되돌림이 곧 원 결함).
   "08_Tests/contract_regression/test_ast_monthly_asof_label.R"
+  # 2026-08-03 추가: 커밋/푸시 훅 3종의 **트리 표적 계약**. 08-02 작업 유실의 근본 자리다 —
+  #   auto_commit_on_stop.sh 는 하드코딩 glob 으로 첫 존재 후보(항상 main)를 집고
+  #   CLAUDE_PROJECT_DIR 을 아예 읽지 않았다. worktree 세션의 Stop 훅이 main 을 커밋하고
+  #   worktree 는 정지시킨 뒤 "[OK] N files committed" 를 보고 → **하지 않은 일에 대한
+  #   성공 보고**(유실 + 유실의 은폐). 실측 4회, 수리본이 어느 트리에도 없어 수동 회수했다.
+  #   ★형제 파일 미전파: 같은 glob 이 milestone_commit.sh(PostToolUse[Write]) ·
+  #     auto_push_on_stop.sh 에 복사돼 있었고, 후자는 origin 으로 **밀어낸다**(외부 공개).
+  #   ★F축(구조)이 A/B/C/D·G·H(행동)의 실행 가드다 — 구 glob 이 남아 있으면 행동 축은
+  #     실 저장소를 집으므로 아예 돌리지 않는다(검사가 main 을 커밋하는 사고 방지).
+  #   ★E축(위반 주입)이 검출력 본체. 주입은 해석 블록만 sentinel 로 들어내므로,
+  #     `AC_ROOT_SRC` 류 기본 바인딩을 블록 **안**에 두면 변종이 구 결함을 재현하기 전에
+  #     `set -u` unbound 로 죽고 나머지 주입 축이 **공허하게 초록**이 된다(실제로 그
+  #     상태였고 2026-08-03 정정). 기본 바인딩은 블록 밖에 있어야 한다.
+  "08_Tests/hooks/test_auto_commit_worktree_target.sh"
 )
 
 # (2026-08-02) .py 분기 추가 — 종전엔 확장자 무관 `bash` 로 던져 파이썬 suite 가

@@ -32,7 +32,7 @@ set -u
 export PYTHONUTF8=1
 
 INPUT=$(cat 2>/dev/null || echo '{}')
-LOG="/tmp/auto_push.log"
+LOG="${QVEST_AP_LOG:-/tmp/auto_push.log}"
 TS="$(date '+%Y-%m-%d %H:%M:%S')"
 
 # 우회 env
@@ -41,7 +41,29 @@ if [ "${QVEST_SKIP_AUTO_PUSH:-0}" = "1" ]; then
   echo '{}'; exit 0
 fi
 
-PROJECT=$(ls -d /c/Users/99922/OneDrive/Quant_Module_Moltbot /mnt/c/Users/99922/OneDrive/Quant_Module_Moltbot /g/Quant_Module_Moltbot /mnt/g/Quant_Module_Moltbot /mnt/c/Users/*/OneDrive/바탕\ 화면/Quant_Module_Moltbot 2>/dev/null | head -1)
+# ★AP_ROOT_SRC 기본 바인딩은 sentinel 블록 **밖**에 (형제 훅 2종과 동일 이유 — `set -u`
+#   + ERR 트랩 아래에서 주입이 블록을 들어내면 변종이 구 결함 재현 전에 unbound 로 죽는다).
+AP_ROOT_SRC="legacy_glob"
+# >>> QVEST_ROOT_RESOLUTION >>> ──────────────────────────────────────────────
+# ★2026-08-03 수리: auto_commit_on_stop.sh / milestone_commit.sh 와 **같은 하드코딩 glob**.
+#   push 훅에서 이 결함은 더 무겁다 — worktree 세션인데 primary(main)를 집으면 세션이
+#   만들지도 않은 main 의 커밋을 origin 으로 밀어낸다(외부 공개 + 되돌리기 어려움).
+#   가드: 08_Tests/hooks/test_auto_commit_worktree_target.sh F/H축.
+PROJECT="${QVEST_AP_PROJECT:-}"
+AP_ROOT_SRC="QVEST_AP_PROJECT"
+if [ -z "$PROJECT" ]; then
+  _rp="$(dirname "${BASH_SOURCE[0]:-$0}")/resolve_project.sh"
+  if [ -f "$_rp" ]; then
+    trap - ERR                       # resolver 의 tier 미스는 정상 흐름
+    # shellcheck source=/dev/null
+    . "$_rp" || PROJECT=""
+    trap 'echo "{}"; exit 0' ERR
+    AP_ROOT_SRC="${QVEST_ROOT_SOURCE:-unknown}"
+  else
+    AP_ROOT_SRC="resolver_missing"
+  fi
+fi
+# <<< QVEST_ROOT_RESOLUTION <<< ──────────────────────────────────────────────
 if [ -z "$PROJECT" ] || [ ! -e "$PROJECT/.git" ]; then
   echo '{}'; exit 0
 fi
@@ -64,6 +86,22 @@ fi
 HAS_UPSTREAM=0
 if git rev-parse --verify "origin/$BRANCH" >/dev/null 2>&1; then
   HAS_UPSTREAM=1
+fi
+
+# ─── worktree ephemeral 브랜치 무단 publish 금지 (2026-08-03) ────────────────
+# 루트 해석을 고쳐 worktree 를 올바로 집게 되자 **새 노출면**이 생긴다: `claude/<이름>`
+# 류 임시 작업 브랜치는 upstream 이 없으므로 아래 신규-branch 분기가 `push -u` 로
+# origin 에 **자동 등록·공개**한다. 세션당 수십 개가 생기는 브랜치를 말없이 원격에
+# 올리는 것은 되돌리기 어려운 외부 공개다(로컬 커밋과 성격이 다르다).
+# → 기본은 skip + **사유를 로그에 남긴다**. 조용한 no-op 이면 "왜 안 올라갔지"가
+#   다시 미스터리가 되고, 그건 이 계통이 반복해 온 '결손을 정상값으로 내려앉힘'이다.
+# opt-in: QVEST_AC_PUSH_WORKTREE=1 (기능 자체는 살아 있음 — 침묵 무력화 아님).
+_ap_gd="$(git rev-parse --absolute-git-dir 2>/dev/null || echo '')"
+case "$_ap_gd" in */worktrees/*) IN_WORKTREE=1 ;; *) IN_WORKTREE=0 ;; esac
+if [ "$IN_WORKTREE" = "1" ] && [ "$HAS_UPSTREAM" = "0" ] \
+   && [ "${QVEST_AC_PUSH_WORKTREE:-0}" != "1" ]; then
+  echo "$TS WORKTREE_NEW_BRANCH_SKIP branch=$BRANCH tree=$(basename "$_ap_gd") src=$AP_ROOT_SRC — upstream 없음. 공개하려면 QVEST_AC_PUSH_WORKTREE=1" >> "$LOG"
+  echo '{}'; exit 0
 fi
 
 # Fetch (해당 branch만 — 가벼움)
