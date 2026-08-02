@@ -1,0 +1,141 @@
+{
+  "task_id": "WT-D20260802_023",
+  "as_of_date": "2026-08-02",
+  "forecast_horizon": "1M",
+  "spec_version": "ast_v1.1",
+  "pit": { "sig_date": "2026-07-31" },
+  "hypothesis": {
+    "statement": "12M 누적 계약금액/시가총액(CTR_MAG_12M_MCAP)이 covered-universe 내 long-side directional 알파다 — WT-018 격자에서 생존한 시총-분모 셀을 신규 사전등록 primary로 승격, 섭동 분포 q05로 확정 시도 (FQ-125).",
+    "mechanism": {
+      "agent": "공급계약 공시에 과소반응하는 기관·개인 투자자 — 계약금액의 이익 전망 반영(실적 추정 개정)이 애널리스트 커버리지가 얇은 KR 중형주에서 지연된다. 시총-분모는 '기업 가치 대비 계약의 중요도'를 재는 스케일로, 매출-분모(업종별 마진 이질성에 오염)보다 가격 반영 지연분을 직접 포착",
+      "friction": "KR 공매도 제약 + 수주-매출 인식 시차(조선·방산·플랜트는 수년 분할 인식)로 즉시 차익거래가 어렵고, 계약의 이익 기여도 추정에 정보 비용이 든다",
+      "path": "공시(rcept) 후 1~12개월에 걸쳐 실적 발표·수주잔고 공개로 가격에 순차 반영 — 시총 대비 대형 계약일수록 반영 지연분이 크다는 예측. lag1에서도 t 1.94로 보존 = 공시 당일 반응이 아닌 지연 반영 경로와 정합"
+    },
+    "falsification": [
+      {
+        "group_id": "A6_investor_flow_stock_daily",
+        "expectation": "메커니즘(지연 반영)이 참이면 magnitude 상위 종목의 공시 후속 1~3개월 기관 순매수가 하위 종목 대비 증가해야 한다 — 증가하지 않으면 기전 기각"
+      },
+      {
+        "group_id": "C-DART-QUARTERLY",
+        "expectation": "시총 대비 대형 계약 종목의 후속 2~4분기 매출 실현(분기 재무)이 magnitude에 비례해 상향돼야 한다 — 비례 관계 부재면 '계약금액=미래 매출 정보' 전제 기각"
+      }
+    ],
+    "regime_scope": {
+      "holds_in": ["neutral", "recovery"],
+      "weakens_or_reverses_in": ["crisis", "megacap_concentration_rally"],
+      "boundary_rationale": "위기 국면은 유동성 청산이 개별 계약 정보를 압도. 추가 실측 경계: 후반 12개월(2025H2~2026H1 초대형주 반도체 랠리 + 2026-07 폭락) mean IC +0.040 vs 전반 +0.122 — mega-cap 집중 국면에서 중형주 계약 신호 약화 방향과 정합 (n=12씩이라 판별은 전구간 확장 후)"
+    }
+  },
+  "factors": [
+    {
+      "factor_id": "F1_contract_magnitude_12m_mcap",
+      "ast": {
+        "op": "DIV",
+        "args": [
+          {
+            "leaf": "STORED_SCORE",
+            "escape_contract": {
+              "escape_type": "STORED_SCORE",
+              "provenance": {
+                "store_build_hash": "sha256:2f3266a7c5526a7a (panel_A.parquet 선두 16hex — WT-018 산출 재사용, 재크롤 없음)",
+                "generator_code_path": "02_Infrastructure/alpha_search/build_contract_panel.R (+ 02_Infrastructure/data/dart_contract_backfill.R, dart_contract_doc_parser.R v2)",
+                "generated_at": "2026-08-02T21:27:20+0900"
+              },
+              "production_parity_verified": false
+            }
+          },
+          { "leaf": "B2_RAWDATA:Size" }
+        ]
+      },
+      "role": "core_signal",
+      "restatement_exposure": 0,
+      "note": "STORED_SCORE = w_amt(12M trailing sum of 계약금액, 최초 체결값·rcept_dt 월말 컷오프). 분모 = 월말 Size(시총, t-1 close 기반 RAWDATA). 기재정정 제외 — 정정 A/B(size 셀) paired t=-0.83으로 누출 부재 재실증. production_parity_verified=false: 신규 리서치 패널, incumbent base 소비 용도 아님."
+    }
+  ],
+  "combination_rule": "single_factor",
+  "verdict": "designed",
+  "self_pit_check": {
+    "performed": true,
+    "leaves_checked": [
+      {
+        "leaf": "STORED_SCORE:contract_panel.w_amt",
+        "availability_rule": "regulatory: rcept_dt T+0 — 신호월 M 값은 rcept_dt가 M 말일 이전인 공시만 누적(C5), 계약 체결일 아닌 공시 접수일 기준. 기재정정(사후 수정본)은 신호에서 제외",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "B2_RAWDATA:Size",
+        "availability_rule": "fixed: t-1 close 기반 월말 시가총액 — 가격 데이터 T+0 가용",
+        "restatement_prone": false
+      }
+    ],
+    "verdict": "clean",
+    "note": "상류 보증 = 08_Tests/data/test_contract_panel.R 9/9 재실행(위반 주입 포함: 정정 혼입·미래 누출·parse실패 유입·중복 주입 전부 차단 발화 확인) + lag1 스트레스(t 1.94 보존 — 12M 누적 신호의 자기상관 때문에 동월 누출 검정력은 제한적임을 병기, 구조적 방어는 빌더-계층 rcept_dt 월말 컷오프)."
+  },
+  "alpha_vector": {"A000210":0.0082,"A375500":0.008,"A036460":0.0078,"A003380":0.0077,"A047040":0.0075,"A000720":0.0073,"A010140":0.0071,"A009540":0.0069,"A112610":0.0067,"A028670":0.0065,"A010950":0.0063,"A009520":0.0061,"A083650":0.0059,"A033500":0.0057,"A064350":0.0055,"A267250":0.0054,"A042660":0.0052,"A082740":0.005,"A178320":0.0048,"A066970":0.0046,"A071970":0.0044,"A052690":0.0042,"A103140":0.004,"A329180":0.0038,"A017960":0.0036,"A232140":0.0034,"A051600":0.0033,"A189300":0.0031,"A003550":0.0029,"A047810":0.0027,"A064400":0.0025,"A003030":0.0023,"A012450":0.0021,"A051910":0.0019,"A253590":0.0017,"A079550":0.0015,"A034020":0.0013,"A180640":0.0011,"A272210":0.001,"A003670":0.0008,"A006260":0.0006,"A001440":0.0004,"A028260":0.0002,"A399720":0,"A003490":-0.0002,"A028050":-0.0004,"A171090":-0.0006,"A012750":-0.0008,"A298040":-0.001,"A047050":-0.0011,"A218410":-0.0013,"A003090":-0.0015,"A237690":-0.0017,"A022100":-0.0019,"A095610":-0.0021,"A307950":-0.0023,"A326030":-0.0025,"A000100":-0.0027,"A069620":-0.0029,"A033100":-0.0031,"A018260":-0.0033,"A348210":-0.0034,"A207940":-0.0036,"A008930":-0.0038,"A005420":-0.004,"A062040":-0.0042,"A010120":-0.0044,"A011200":-0.0046,"A089030":-0.0048,"A050890":-0.005,"A267260":-0.0052,"A214430":-0.0054,"A323280":-0.0055,"A128940":-0.0057,"A009150":-0.0059,"A373220":-0.0061,"A060280":-0.0063,"A000150":-0.0065,"A388720":-0.0067,"A302440":-0.0069,"A056080":-0.0071,"A032820":-0.0073,"A068270":-0.0075,"A466100":-0.0077,"A042700":-0.0078,"A086520":-0.008,"A347850":-0.0082},
+  "confidence_vector": {"A000210":0.7,"A375500":0.7,"A036460":0.6,"A003380":0.5,"A047040":0.7,"A000720":0.7,"A010140":0.7,"A009540":0.7,"A112610":0.7,"A028670":0.55,"A010950":0.65,"A009520":0.5,"A083650":0.7,"A033500":0.6,"A064350":0.7,"A267250":0.7,"A042660":0.7,"A082740":0.7,"A178320":0.7,"A066970":0.45,"A071970":0.7,"A052690":0.65,"A103140":0.45,"A329180":0.7,"A017960":0.6,"A232140":0.6,"A051600":0.5,"A189300":0.55,"A003550":0.45,"A047810":0.7,"A064400":0.7,"A003030":0.45,"A012450":0.7,"A051910":0.45,"A253590":0.7,"A079550":0.7,"A034020":0.7,"A180640":0.5,"A272210":0.7,"A003670":0.65,"A006260":0.7,"A001440":0.65,"A028260":0.65,"A399720":0.6,"A003490":0.5,"A028050":0.6,"A171090":0.55,"A012750":0.5,"A298040":0.7,"A047050":0.45,"A218410":0.65,"A003090":0.45,"A237690":0.5,"A022100":0.5,"A095610":0.7,"A307950":0.6,"A326030":0.7,"A000100":0.6,"A069620":0.45,"A033100":0.45,"A018260":0.5,"A348210":0.5,"A207940":0.7,"A008930":0.5,"A005420":0.45,"A062040":0.65,"A010120":0.7,"A011200":0.5,"A089030":0.6,"A050890":0.45,"A267260":0.6,"A214430":0.45,"A323280":0.65,"A128940":0.5,"A009150":0.55,"A373220":0.45,"A060280":0.45,"A000150":0.45,"A388720":0.5,"A302440":0.45,"A056080":0.45,"A032820":0.5,"A068270":0.45,"A466100":0.45,"A042700":0.55,"A086520":0.45,"A347850":0.45},
+  "signal_matrix_ref": "stage_artifacts/WT_D20260802_023/alpha_scores.parquet",
+  "factor_specs": [
+    {
+      "factor_family": "NonReturn_Event",
+      "proxy": "CTR_MAG_12M_MCAP (계약금액 12M 누적 / 시가총액)",
+      "formula": "sum_{d in 12M, rcept_dt <= month_end} contract_amount(d) / Size(month_end)",
+      "lag_rule": "rcept_dt T+0 (공시 접수일), 신호월 말일 컷오프 — 홀딩월 시작 전 정보만 (C5). Size = t-1 close 기반",
+      "winsorization": "none (rank 기반 진단이 primary)",
+      "neutralization": "none (WT-018 size-잔차화 진단으로 소형주 교란 3축 기각 완료: 1/Size 역풍 t -1.96 · 단면상관 -0.025 · 잔차화 후 t +1.91 생존)",
+      "economic_rationale": "underreaction_to_material_contracts — 기업 가치 대비 대형 수주의 이익 반영 지연 (Jegadeesh-Livnat 2006 revenue surprise drift 계보)",
+      "redundancy_cluster_id": "non_return_dart_events (insider/buyback/pledge와 동일 원천군, return-파생 팩터와 저상관 전제 — 상관 실측은 전구간 확장 후)",
+      "weight_theta": 1.0,
+      "references": ["Jegadeesh & Livnat 2006 (Revenue surprises and stock returns)", "WT-D20260802_018 파일럿 실측", "WT-D20260802_013 섭동 취약성 실측 (FQ-109 규약)"]
+    }
+  ],
+  "diagnostics": {
+    "canonical_port_t_nw_lag3": -0.37,
+    "canonical_port_t_pvalue": 0.71,
+    "canonical_n_months": 24,
+    "rank_ic": 0.0806,
+    "rank_ic_t": 1.97,
+    "rank_ic_t_nw_lag3": 1.7,
+    "icir": 0.403,
+    "monotonicity": null,
+    "subperiod_stability": null,
+    "turnover_proxy": 2.6,
+    "harvey_t_stat": 1.97,
+    "post_neutralization_ic": 0.0774,
+    "dsr": null,
+    "n_trials": 1,
+    "selection_type": "chain",
+    "perturbation_q05": {
+      "q05_t_nw_pooled": 1.4405,
+      "q05_t_nw_family_membership": 1.4223,
+      "q05_t_nw_family_score_noise": 1.6204,
+      "q05_mean_ic_pooled": 0.0708,
+      "n_draws": 120,
+      "draw_t_min": 1.365, "draw_t_max": 2.007, "draw_t_sd": 0.13,
+      "verdict": "확정 (q05 > 0, 전 120 draws 양수) — 사전등록 preregistration.json 기준"
+    },
+    "parity_wt018": { "mean_ic": 0.080559, "t_plain": 1.972226, "pass": true },
+    "correction_ab_size": { "mean_diff_B_minus_A": -0.0042, "paired_t": -0.83, "n": 24 },
+    "lag1_stress": { "rank_ic": 0.0779, "t_plain": 1.94, "t_nw": 1.63 },
+    "subperiod_halves": { "first12_mean_ic": 0.1216, "first12_t": 1.99, "last12_mean_ic": 0.0395, "last12_t": 0.73 },
+    "dual_basis": { "cap_w_port_t": -0.371, "ew_universe_t": 1.488, "note": "전이 벽 미통과 불변 — WT-018과 정확 동일(재실측 parity). cap-tier: MEGA 0%/MID 10.6%/OTHER 89.4% — mega-cap 벤치 구성 미스매치 방향" },
+    "coverage": { "mean_names_per_month": 77, "min_names": 67, "months_ge20_share": 1.0 },
+    "metric_type_labels": { "rank_ic": "diagnostic_statistic", "perturbation_q05": "diagnostic_statistic", "canonical_port_t_nw_lag3": "canonical_screen", "dual_basis": "canonical_screen_diag" }
+  },
+  "selection_objective": "rank_ic",
+  "method_shopping_log": {
+    "alpha_agent": {
+      "candidates_tried": 1,
+      "method_log": [
+        { "name": "CTR_MAG_12M_MCAP (사전등록 primary, 단일)", "rank_ic": 0.0806, "selected": true, "note": "섭동 파라미터(drop 0.10/noise 0.10/60시드×2)는 측정 전 preregistration.json 고정 — 파라미터 선택·argmax 없음. 보조 진단(B_size/lag1/부기간/canonical)은 사전등록 병기 항목" }
+      ]
+    }
+  },
+  "challenge_flags": [
+    "SAME_PANEL_REUSE: WT-018 패널 재사용 라운드 — 섭동 q05 확정은 '관측 t 1.97이 문턱-근방 단일 draw 아티팩트가 아니라 단면에서 안정된 신호'라는 것까지이며 독립 표본 확인이 아님. n=24 표본 한계는 전구간 크롤(22,533 호출)만 해소",
+    "PERTURBATION_SD_NARROW: draw sd 0.130 ≪ WT-013 실측 0.378 — IC(77종 단면 통계)는 top-25 포트 통계보다 섭동 민감도가 구조적으로 낮음. q05>0은 부호 강건성 확인이지 t>2.5 부활 조건의 동등 대체가 아님을 지불 권고에 병기",
+    "SUBPERIOD_DECAY_DIRECTION: 후반 12개월 mean IC +0.040 (전반 +0.122) — 2025H2~2026H1 mega-cap 랠리 국면과 겹침, n=12라 decay/국면 판별 불가. 전구간에서 t_NW < 1이면 pilot 창 국면 아티팩트로 재분류(기각 조건 사전 명시)",
+    "IC_PORT_TRANSITION_WALL: cap-w PORT_t -0.37 / EW-uni +1.49 불변 — IC 확정에도 랭킹 소비면 전이 벽 미통과. 소비는 필터/오버레이 면(FQ-126) 우선",
+    "RET_SANITY_QUARANTINE: canonical 실측서 물리불가 월수익 66행 격리 경고(grid vintage에 rawdata_sanitize 방화벽 미적용 의심) — WT-018과 동일 grid라 parity 무영향이나, 전구간 확장 시 sanitize 적용 vintage로 grid 재빌드 의무"
+  ]
+}
