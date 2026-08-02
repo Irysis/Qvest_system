@@ -302,4 +302,8 @@ cat(sprintf("\n=== %d pass / %d fail / %d skipped ===\n", PASS, FAIL, SKIP))
 if (FAIL) cat("실패 축:", paste(FAILED, collapse = ", "), "\n")
 esc <- function(s) gsub('"', '\\\\"', s)
 skj <- if (length(SKIPS)) paste0(',"skips":[', paste(vapply(SKIPS, function(s)
-  sprintf('{"axis":"%s","reason":"%s","missing":"%s"}', esc(s$ax
+  sprintf('{"axis":"%s","reason":"%s","missing":"%s"}', esc(s$axis), esc(s$reason), esc(s$missing)),
+  character(1)), collapse = ","), "]") else ""
+cat(sprintf('{"test":"contract_parser_v3","pass":%d,"fail":%d,"total":%d,"skipped":%d%s}\n',
+            PASS, FAIL, PASS + FAIL, SKIP, skj))
+quit(status = if (FAIL) 1L else 0L)

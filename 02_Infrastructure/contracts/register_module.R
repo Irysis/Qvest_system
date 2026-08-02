@@ -7,6 +7,28 @@
 ##   ③ 계약 충족 → 04_Research/strategies/{id}/sim_result.rds + module_catalog
 ## 등급은 정보용이다. FR 사용여부는 먼저 본 input floor를 통과한 뒤 RCMA가 판단한다.
 ## 발효: 2026-06-05 (도훈 mandate: 두 모드 산출물 표준화).
+##
+## ── 원장 상호배타 계약 (2026-08-02 신설) ────────────────────────────────────
+## ★불변식: 하나의 strategy_id 는 module_catalog.modules 와 module_quarantine.modules
+##   중 **최대 한 곳**에만 존재한다.
+##
+## 왜: 구판은 승격 시 기존 quarantine 행을 회수하지 않았다. run_alpha_search 는 같은
+##   전략을 두 번 등록한다 — 6c(재측정 전 proxy → quarantine) → 6e(권위 재측정 후
+##   backtested → catalog). 두 행이 공존하면 **quarantine 만 읽는 소비자가 최종상태를
+##   정반대로 읽는다**(fr_eligible=FALSE = 기각처럼 보이는데 실제 최종은 FR_ELIGIBLE).
+##   실사고: 2026-08-02 STANDALONE_TRACK 배관 수리의 "quarantine 에 유실" 오진단.
+##   실측 피해 5건 (Chen-Welch STR_AS_20260709_074129_30048 등).
+##
+## 두 방향 모두 닫는다 (한 방향만 고치면 거울상 결함이 남는다):
+##   ㆍ승격(→catalog): quarantine.modules 행을 quarantine.superseded 로 이동
+##     (mode="promoted"). **삭제가 아니라 tombstone** — 격리소의 존재이유가 "연구·진단용
+##     보존"이므로 proxy 단계 기록(grade/f_grade_reasons/fmt_codes)을 버리지 않는다.
+##     동시에 modules 밖으로 빼므로 기존 소비자(modules 순회)는 코드 변경 없이 교정된다.
+##   ㆍ강등(catalog 행이 이미 있는데 floor 미달 등록): catalog 행을 지우지 **않고**
+##     quarantine.superseded 에 mode="shadowed" 로 기록 + WARN. 근거 = measurement-graduation
+##     §1 — proxy 는 backtested 보다 하위 증거 tier 이므로 권위 측정을 뒤집을 수 없다.
+##     (6c 는 매 실행 proxy 로 먼저 등록한다. 대칭 삭제로 만들면 재실행 때마다 catalog 행이
+##      일시 소멸하고, 6c~6e 사이에 죽으면 영구 소실된다.) 의도적 강등은 거버넌스 수동 작업.
 ## ============================================================================
 suppressMessages({ library(data.table); library(jsonlite) })
 
@@ -126,10 +148,81 @@ MODULE_QUARANTINE_PATH <- file.path(.RM_ROOT(), "06_Registry", "module_quarantin
   obj$schema_version <- obj$schema_version %||% default$schema_version
   obj$note <- default$note
   obj$modules[[key]] <- entry
+  # modules ↔ superseded 도 서로소로 유지한다. 같은 id 가 live 격리로 되돌아오면
+  # (catalog 행이 수동 회수된 뒤 등) 낡은 tombstone 은 남겨두면 안 된다.
+  if (identical(kind, "quarantine") && !is.null(obj$superseded) &&
+      !is.null(obj$superseded[[key]])) obj$superseded[[key]] <- NULL
   obj$last_updated <- entry$registered_at
   obj$n_modules <- length(obj$modules)
+  if (!is.null(obj$superseded)) obj$n_superseded <- length(obj$superseded)
   .write_json_obj(obj, path)
   obj$n_modules
+}
+
+.now_stamp <- function() format(Sys.time(), "%Y-%m-%dT%H:%M:%S+09:00")
+
+#' catalog 원장에 해당 strategy_id 의 live 행이 있으면 그 entry 를, 없으면 NULL.
+#' 파일 부재/파손은 NULL — 단 "읽기 실패"와 "행 없음"을 호출부가 구분할 필요가 없는
+#' 자리에서만 쓴다(양쪽 다 "회수/차폐할 대상 없음"으로 같게 처리해도 안전).
+.catalog_entry <- function(catalog_path, strategy_id) {
+  if (!file.exists(catalog_path)) return(NULL)
+  obj <- .read_json_obj(catalog_path, NULL)
+  if (is.null(obj) || is.null(obj$modules)) return(NULL)
+  obj$modules[[strategy_id]]
+}
+
+#' quarantine.superseded 에 tombstone 기록. mode = "promoted" | "shadowed".
+#'   promoted: 기존 quarantine.modules 행을 회수(이동)한다.
+#'   shadowed: 신규 floor-미달 entry 를 modules 에 넣지 않고 여기에만 남긴다.
+#' 반환: list(moved=<logical>, n_modules=<int>, n_superseded=<int>).
+#'   moved=FALSE 는 "회수할 행이 없었다"(정상)이고, 실패는 stop() 으로 올린다 —
+#'   결손을 FALSE 로 내려앉히면 호출부에서 "중복 없음"과 구분되지 않는다.
+.supersede_quarantine <- function(quarantine_path, strategy_id, catalog_entry,
+                                  mode = c("promoted", "shadowed"),
+                                  shadow_entry = NULL) {
+  mode <- match.arg(mode)
+  obj <- .read_json_obj(quarantine_path, NULL)
+  if (is.null(obj)) {
+    if (identical(mode, "promoted")) return(list(moved = FALSE, n_modules = 0L, n_superseded = 0L))
+    obj <- list(schema_version = "v1.0", modules = list())
+  }
+  if (is.null(obj$modules)) obj$modules <- list()
+  if (is.null(obj$superseded)) obj$superseded <- list()
+
+  row <- if (identical(mode, "promoted")) obj$modules[[strategy_id]] else shadow_entry
+  moved <- FALSE
+  if (identical(mode, "promoted")) {
+    if (is.null(row)) return(list(moved = FALSE,
+                                  n_modules = length(obj$modules),
+                                  n_superseded = length(obj$superseded)))
+    obj$modules[[strategy_id]] <- NULL
+    moved <- TRUE
+  }
+  if (is.null(row)) stop("[register_module] .supersede_quarantine: shadow_entry 없음")
+
+  row$superseded_by <- list(
+    registry              = "module_catalog",
+    strategy_id           = strategy_id,
+    mode                  = mode,
+    catalog_registered_at = as.character(catalog_entry$registered_at %||% NA_character_),
+    catalog_metric_type   = as.character(catalog_entry$metric_type %||% NA_character_),
+    catalog_grade         = as.character(catalog_entry$grade %||% NA_character_),
+    catalog_fr_eligible   = isTRUE(catalog_entry$fr_eligible),
+    at                    = .now_stamp(),
+    reason                = if (identical(mode, "promoted"))
+      "catalog 승격으로 격리행 회수 — 최종상태는 module_catalog 를 볼 것"
+    else
+      "이미 module_catalog 에 등재된 id 에 floor 미달(하위 tier) 등록이 들어옴 — catalog 행이 권위"
+  )
+  obj$superseded[[strategy_id]] <- row
+  obj$last_updated  <- row$superseded_by$at
+  obj$n_modules     <- length(obj$modules)
+  obj$n_superseded  <- length(obj$superseded)
+  obj$superseded_note <- paste(
+    "modules 밖으로 뺀 격리 tombstone. 이 id 의 권위 상태는 module_catalog 에 있다.",
+    "mode=promoted(승격 회수) / shadowed(catalog 존재 상태의 하위-tier 등록).")
+  .write_json_obj(obj, quarantine_path)
+  list(moved = moved, n_modules = obj$n_modules, n_superseded = obj$n_superseded)
 }
 
 #' Register a strategy output. FR-consumable only when the v8.1 input floor passes.
@@ -197,19 +290,53 @@ register_module <- function(sim_result, strategy_id, grade = NA_character_,
     if (!isTRUE(allow_quarantine)) {
       stop(sprintf("[register_module] FR input floor failed for %s: %s", strategy_id, reason))
     }
+    # 강등 방향: 이미 catalog 에 권위 등재된 id 면 modules 에 넣지 않는다(상호배타 계약).
+    cat_row <- .catalog_entry(catalog_path, strategy_id)
+    if (!is.null(cat_row)) {
+      sh <- .supersede_quarantine(quarantine_path, strategy_id, cat_row,
+                                  mode = "shadowed", shadow_entry = entry)
+      cat(sprintf(paste0("[register_module] WARN SHADOWED %s — module_catalog 에 이미 권위 등재",
+                         "(grade=%s metric=%s reg=%s). floor 미달 등록은 하위 tier 이므로 catalog 를 뒤집지 않는다.\n",
+                         "                 → %s + module_quarantine.superseded(mode=shadowed, n=%d) | %s\n"),
+                  strategy_id, as.character(cat_row$grade), as.character(cat_row$metric_type),
+                  as.character(cat_row$registered_at), sim_result_path, sh$n_superseded, reason))
+      return(invisible(list(strategy_id = strategy_id, sim_result_path = sim_result_path,
+                            entry = entry, fr_eligible = FALSE, quarantined = TRUE,
+                            reason = reason, shadowed = TRUE,
+                            quarantine_reclaimed = FALSE)))
+    }
     n <- .upsert_registry(quarantine_path, strategy_id, entry, kind = "quarantine")
     cat(sprintf("[register_module] QUARANTINE %s (grade=%s · origin=%s) → %s + module_quarantine(n=%d) | %s\n",
                 strategy_id, entry$grade, origin_mode, sim_result_path, n, reason))
     return(invisible(list(strategy_id = strategy_id, sim_result_path = sim_result_path,
                           entry = entry, fr_eligible = FALSE, quarantined = TRUE,
-                          reason = reason)))
+                          reason = reason, shadowed = FALSE,
+                          quarantine_reclaimed = FALSE)))
   }
 
+  # 승격 방향: catalog 를 **먼저** 쓰고 그 다음 격리행을 회수한다.
+  #   역순이면 회수 성공 후 catalog 쓰기 실패 시 두 modules 어디에도 없는 유령이 된다.
+  #   이 순서에선 최악이 "구판과 동일한 중복 잔존"이라 되돌림이 안전하다.
   n <- .upsert_registry(catalog_path, strategy_id, entry, kind = "catalog")
+  reclaimed <- tryCatch(
+    .supersede_quarantine(quarantine_path, strategy_id, entry, mode = "promoted"),
+    error = function(e) { attr(e, "qvest_failed") <- TRUE; e })
+  if (inherits(reclaimed, "error")) {
+    # 실패를 FALSE(=회수할 것 없음)로 내려앉히지 않는다 — NA 로 구분해 올린다.
+    cat(sprintf(paste0("[register_module] WARN %s: catalog 승격은 됐으나 quarantine 회수 실패 — ",
+                       "중복 행이 남아 있을 수 있다: %s\n"), strategy_id, conditionMessage(reclaimed)))
+    reclaimed_flag <- NA
+  } else {
+    reclaimed_flag <- isTRUE(reclaimed$moved)
+    if (reclaimed_flag)
+      cat(sprintf("[register_module] RECLAIM %s: module_quarantine.modules → superseded(mode=promoted) (modules n=%d)\n",
+                  strategy_id, reclaimed$n_modules))
+  }
   cat(sprintf("[register_module] FR-ELIGIBLE %s (grade=%s · origin=%s) → %s + module_catalog(n=%d)\n",
               strategy_id, entry$grade, origin_mode, sim_result_path, n))
   invisible(list(strategy_id = strategy_id, sim_result_path = sim_result_path,
-                 entry = entry, fr_eligible = TRUE, quarantined = FALSE))
+                 entry = entry, fr_eligible = TRUE, quarantined = FALSE,
+                 shadowed = FALSE, quarantine_reclaimed = reclaimed_flag))
 }
 
 #' (선택) QEPM grade_a_catalog 전략들을 module_catalog로 일원화 등재.
