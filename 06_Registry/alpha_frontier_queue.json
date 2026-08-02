@@ -1,7 +1,7 @@
 {
  "schema_version": "1.0",
  "sot": "02_Infrastructure/docs/qvest_v8_3_alpha_discovery_sot.md §4",
- "updated": "2026-08-02 (FQ-096 설계 전제 재검토 — WT-007 insider 실측 + WT-003 breadth 기전 반영: 착수 전 풀 원소별 t 분포 확인 의무)",
+ "updated": "2026-08-02 (FQ-099 원인·설계 실측 정정 — 결손이 아니라 소스 혼합, '연속 4분기 강제' 폐기)",
  "consume_rule": "새 발굴 리서치 착수 전: hypothesis_index lookup → 본 큐 확인 → owner/status 갱신. 완료 시 result_ref(L-code/보고서) 기입. dohoon_decision 항목은 세션 임의 착수 금지.",
  "entries": [
   {
@@ -1710,9 +1710,9 @@
    "ev_rationale": "논문은 KOSPI/KOSDAQ 실증으로 **차익거래자가 활동하는 종목에서 anomaly 수익이 유의하게 크다**고 보고. 즉 flow 를 알파 원천이 아니라 '어디서 anomaly 가 작동하는가'의 조건부 게이트로 쓴다.",
    "wall_check": "비-return. ★★prior 2건 필수 대조: (a) 개인 순매수 contrarian 단일팩터 = DIST-QPM-005 알파 부재 (b) 기관/외국인 과매수 회피 Anti-Herding = FAIL. 두 선례는 **flow 를 스코어로 쓴 것**이고 본 건은 flow 를 **게이트/조건부**로 쓴다 — 이 구분이 유일한 delta 이며, 실패 시 flow 축은 게이트 면까지 config-scoped negative 로 확정된다(정보 가치 있음).",
    "data_gate": "외국인 순매수 = KRX 투자주체별 매매(보유). 공매도 잔고 = FQ-003 lane 과 데이터 공유 — FQ-003 진행상태 확인 후 착수.",
-   "owner": "WT-D20260802_002 (alpha-research, 정식 QEPM alpha 단계 완주 — dossier 미진행 판단)",
-   "status": "config_scoped_negative_20260802",
-   "next_action": "① NP-2: 조건화 축 교체 — 애널리스트 커버리지 수(C-CONSENSUS-QW) 로 조건화. base 신호가 컨센서스 파생이므로 '커버리지가 있어야 수정이 존재'가 더 직접적 마찰. 하네스 재사용 (run_03_arms.R 의 arm 리스트만 교체). ② NP-1: 역-게이트는 별도 사전등록 WT 에서만 — 본 라운드 B_gate_low 3.869 는 placebo q50~q95 안이라 개선 아님(사후선택 금지).",
+   "owner": "WT-D20260802_002 (외국인 축) + WT-D20260802_008 (NP-2 커버리지 축, alpha-research 2026-08-02)",
+   "status": "config_scoped_negative_20260802_two_axes",
+   "next_action": "★NP-2 소비 완료 (WT-D20260802_008): 커버리지 축도 config-scoped negative — paired -0.66 불활성(placebo 분포 안), 기전 방향 반증(고커버 IC 최약 0.0324 + cov==0 부분집합 IC +0.0329 t3.47 유의, cov~Size +0.736 = size 대리). WT-002(외국인 해악 -1.945)와 합산: '정보전달 인프라 존재' 계열 조건화 축은 독립 2회 무효 확정 — 이 계열 레벨-조건화 재제안 금지(부활조건 = WT-008 alpha_package revival_conditions 3종). 잔여 프론티어: ① NP-A 컨센서스 분산(disagreement) 조건화 — 기전이 다른 축(존재 아닌 의견 불일치 진폭, Diether-Malloy-Scherbina 2002), 하네스 3회차 재사용 ② NP-B 커버리지 개시(0→1+) 이벤트 — 레벨 아닌 변화, hypothesis_index dedup 선행 의무 ③ NP-1(WT-002): 역-게이트 별도 사전등록 WT 에서만.",
    "source_refs": [
     "paper: J. Jeong; J. Eo; J. Kang, 'Net arbitrage trading by foreign investors and short sellers and stock returns: Evidence from the Korean stock market', Pacific-Basin Finance Journal (ScienceDirect S0927538X26000855) — ⚠ 정확 월 미해결",
     "prior: DIST-QPM-005 (개인 contrarian 알파 부재) / STR_AS_20260613_073448 Anti-Herding FAIL / STR_AS_20260613_061838 외국인 국면 MARGINAL",
@@ -1951,14 +1951,14 @@
   {
    "id": "FQ-099",
    "lane": "data_repair",
-   "title": "gap-aware TTM 재구성 (fundamental_merged 분기 누적 결함 수리)",
-   "hypothesis": "분기 원천 TTM 을 '직전 4개 관측' 이 아니라 '연속 4분기' 로 재구성하면, 연 1회 보고 종목의 4년-합(ATO 최대 4배 과대) 오염이 제거되어 재무 delta 팩터의 횡단면 신호가 달라진다.",
-   "ev_rationale": "FQ-081 실측에서 6.46%(6,260/96,975) 관측이 비연속. 최다 케이스 간격 12분기 = 연 1회 보고 종목. PM 은 비율 보존이나 ATO 는 직접 오염. 이 결함은 FQ-081 뿐 아니라 fundamental delta 를 쓰는 모든 후속 라운드의 공통 입력.",
+   "title": "소스-인지 TTM 재구성 (fundamental_merged 의 DART 연간 행을 분기로 오인해 4년치 합산)",
+   "hypothesis": "★2026-08-02 실측으로 원인이 정정됨 — '연속 4분기 결손'이 아니라 **소스 혼합**이다. Source==\"DART\" 행은 q=12 만 존재(7,048행·1,338 종목) = 연간 재무제표이고 그 값이 곧 TTM 인데, 빌더가 '직전 4개 관측 합'을 쓰므로 연간값 4개 = 4년치가 된다. 근거: 연1보고 값/인접연도 4분기합 = 중앙값 0.940(n=740 종목, ~1.0=12개월치 확정, 0.25=분기치 아님). 대조군 4분기 보고 종목의 연간합/분기중앙값 = 4.02(정상). 비연속 비율 18.74%(NI+RV 동시보유 75,576행 기준).",
+   "ev_rationale": "영향 크기 실측: PM 값 자체는 비율이라 대체로 강건(편차 중앙값 정상 0.0262/오염 0.0438)이나, 오염 종목이 유니버스에 남아 상위 구성을 밀어낸다 — **top-25 자카드 중앙값 0.786·최소 0.613·<0.8 인 횡단면 52.6%**. 배포 유니버스가 정확히 top-25 라 선별 결과가 달라진다. 값의 강건성 ≠ 선별의 강건성.",
    "wall_check": "고정 축 준수(재료 추가 없음 — 기보유 재무 패널의 구성 수리). 제약 완화 아님.",
-   "data_gate": "기보유 .cache/fundamental_merged.parquet. Factor_Date 기준 C4 lag 는 이미 정합(분기 +45d / 연간 +90d = 익년 3/31, 실측 확인 2026-08-02).",
+   "data_gate": "없음(로컬 .cache/fundamental_merged.parquet)",
    "owner": "미배정 (FQ-081 라운드 파생 2026-08-02)",
    "status": "frontier_open",
-   "next_action": "Period 분기 인덱스 연속성 검사 후 TTM 재구성 → FQ-081 3-arm 재측정(paired 증분 재검정) → 차이 실측",
+   "next_action": "★설계 정정 — 당초 등재안 '연속 4분기 강제'는 **DART 1,338 종목을 통째로 버린다**(커버리지 손실 중앙값 13.5%·최대 100% 실측). 정답 = **소스-인지 TTM**: DART(연간)는 그 값이 곧 TTM / XLSX(분기)는 연속 4분기 합(비연속이면 결측). 손실 ~0. ① 소스-인지 빌더 + 위반 주입 검사(연간 4개 합산 재발 시 검거되는지) ② 재구성 패널로 FQ-081 3-arm 재측정 ③ 부수: 2016+ 구간이 DART 연간만이라 vintage 신선도 180일 — 분기 DART 수집 미반영 확인.",
    "source_refs": [
     "FQ-081 challenge_note.md C5",
     "stage_artifacts/alpha_search/20260802_115851_45708/challenge_note.md"

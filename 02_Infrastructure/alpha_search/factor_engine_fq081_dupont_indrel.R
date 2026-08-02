@@ -26,7 +26,10 @@ suppressPackageStartupMessages({ library(arrow); library(dplyr) })
   if (exists("CACHE_DIR", inherits = TRUE) &&
       file.exists(file.path(get("CACHE_DIR", inherits = TRUE), "fundamental_merged.parquet")))
     return(get("CACHE_DIR", inherits = TRUE))
-  for (p in c(Sys.getenv("QM_ROOT", ""), Sys.getenv("CLAUDE_PROJECT_DIR", ""), getwd())) {
+  # [2026-08-02] 금칙 ④ — resolver 우선순위는 CLAUDE_PROJECT_DIR 먼저.
+  #  ~/.Renviron 이 QM_ROOT 를 고정하므로 QM_ROOT-first 면 worktree 실행에서 코드는 worktree,
+  #  데이터 루트는 main 으로 갈린다(r-portability.md 금칙 ④). main 단독 실행에선 두 값이 같아 잠복한다.
+  for (p in c(Sys.getenv("CLAUDE_PROJECT_DIR", ""), Sys.getenv("QM_ROOT", ""), getwd())) {
     if (nzchar(p) && file.exists(file.path(p, ".cache", "fundamental_merged.parquet")))
       return(file.path(gsub("\\\\", "/", p), ".cache"))
   }
