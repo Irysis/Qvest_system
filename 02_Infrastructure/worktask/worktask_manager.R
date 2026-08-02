@@ -75,6 +75,15 @@ wt_create <- function(hypothesis_title = NULL,
   wt_dir <- file.path(WT_ROOT, task_id)
   dir.create(wt_dir, recursive = TRUE, showWarnings = FALSE)
 
+  # [2026-08-02] stage_artifacts 정본 디렉토리를 생성 시점에 미리 만든다.
+  #  실사고: 같은 날 에이전트들이 WT-D...(하이픈) / WT_D...(언더스코어) 표기를 제각각 써서
+  #  ① Q-Lead 가 실존 산출물(13파일)을 "산출 0"으로 오판 ② state_machine 아티팩트 검사와
+  #  경로가 갈릴 뻔했다. 규약 문서는 갈림을 못 막는다 — **디렉토리가 이미 존재하면 에이전트는
+  #  고를 필요가 없다**(정본 = artifact_contract.json "stage_artifacts/WT_{ID}/" 의 언더스코어형).
+  # (WT_ROOT 와 동일하게 프로젝트 루트 기준 상대경로 — 이 파일은 루트 wd 실행이 전제)
+  sa_dir <- file.path("stage_artifacts", gsub("^WT[-_]", "WT_", task_id))
+  dir.create(sa_dir, recursive = TRUE, showWarnings = FALSE)
+
   # 기본 제약 로드 (v6.1 3-tier)
   defaults <- fromJSON(WT_CONSTRAINT_DEFAULTS, simplifyVector = FALSE)
 

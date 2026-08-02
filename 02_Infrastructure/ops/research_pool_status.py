@@ -296,10 +296,26 @@ def collect(root):
         for k in ("optimizer", "risk", "regime"):
             v = mj.get(k)
             out["mode_queue"][k] = len(v) if isinstance(v, list) else 0
-        # dispatch 소비 여부 — route_date 기준 research_status 존재
+        # dispatch 소비 여부 — route_date 기준 research_status
+        # (2026-08-02 RPS-08 수리) 구판은 `os.path.isfile()` 만 봤다 = **존재 검사로 소비 검사를
+        #   대체**. 실사고 07-27: mode_queue 가 3키를 queue{} 안에 넣어 dispatch 가 0/0/0 으로
+        #   읽고 `research_status_20260727.json::actions = []` 를 썼는데(14편 전량 드롭),
+        #   파일은 존재하므로 부팅 라인이 **dispatch=DONE** 을 찍었다 — 유실이 정상 종료로 위장.
+        #   ([[project-completion-check-pattern-scan-20260726]] "시간 경과=완결" 대리판정과 동형:
+        #    여기선 "파일 존재=소비 완료".) 내용을 열어 액션이 실재하는지로 판정한다.
         if route_d:
             rs = os.path.join(stage, "research_status_%s.json" % route_d)
-            out["dispatch_done"] = os.path.isfile(rs)
+            if not os.path.isfile(rs):
+                out["dispatch_done"] = False
+            else:
+                rj = _load(rs)
+                acts = rj.get("actions") if isinstance(rj, dict) else None
+                # actions 는 07-27 이전엔 dict{route: {...}}, 이후 산출엔 list — 둘 다 관용.
+                n_act = len(acts) if isinstance(acts, (dict, list)) else 0
+                out["dispatch_done"] = n_act > 0
+                if n_act == 0:
+                    # 빈 소비를 조용히 넘기지 않는다 — 이것이 드롭의 유일한 지문이다.
+                    out["dispatch_empty"] = "research_status_%s.json actions 비어 있음 (소비 0 — 스키마 드리프트/드롭 의심)" % route_d
 
     # 5. factor recheck(tier-2) 잔여 = 큐 - done
     fq_path, _ = _latest(stage, "factor_recheck_queue_*.json")
@@ -410,7 +426,12 @@ def render(o):
 
     # mode 큐 + dispatch
     mq = o["mode_queue"]
-    disp = "DONE" if o["dispatch_done"] else "PENDING"
+    # (2026-08-02 RPS-08) 빈 소비를 PENDING 으로 뭉개지 않는다 — "아직 안 돌았다"와
+    #   "돌았는데 0편 소비했다"는 다른 사건이고, 후자가 07-27 14편 드롭의 실제 모습이었다.
+    if o.get("dispatch_empty"):
+        disp = "★EMPTY(소비 0 — 드롭 의심)"
+    else:
+        disp = "DONE" if o["dispatch_done"] else "PENDING"
     mq_stale = ""
     if o.get("mode_queue_date") and o["route_date"] and o["mode_queue_date"] != o["route_date"]:
         # (RPS-04) 큐 stamp 가 route 보다 과거 = 현재 연료가 아니다(구판은 무표기)

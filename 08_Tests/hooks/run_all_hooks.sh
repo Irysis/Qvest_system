@@ -232,6 +232,14 @@ SUITES=(
   #   `claude -p` 심층 재검을 돌리므로 끝난 논문에 매일 토큰을 태우고 있었다.
   #   W축(산출 큐에 적히는 id 가 정규화형인가)이 하류 재오염 차단 지문이다.
   "08_Tests/ops/test_factor_recheck_pending.py"
+  # 2026-08-02 추가: mode_queue 라우트 해석기 위반 주입 — 위 두 건과 같은 스캔에서 나온
+  #   **확정 유실 사고**다(잠복 아님). mode_queue_20260727.json 이 3키를 queue{} 안에 넣었고
+  #   paper_research_dispatch.R 은 최상위만 봐서 0/0/0 → research_status_20260727.json
+  #   actions=[] = **14편(opt 7·risk 4·regime 3) 전량 드롭**, optimizer 7편의 Σ-가중 A/B 미실행.
+  #   ★schema_version 으로 분기 불가(07-27="mode_queue_v1" / 08-02="paper_router_v2"=생산자 이름).
+  #   D축(미해석 키 경고)이 "0편"과 "못 읽음"을 가르는 유일 지문이고,
+  #   E축이 생산자 프롬프트 계약까지 걸어 소비자만 고치고 끝나는 것을 막는다.
+  "08_Tests/ops/test_mode_queue_dispatch_schema.R"
 )
 
 # (2026-08-02) .py 분기 추가 — 종전엔 확장자 무관 `bash` 로 던져 파이썬 suite 가

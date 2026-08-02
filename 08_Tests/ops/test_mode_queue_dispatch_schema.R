@@ -93,8 +93,13 @@ if (identical(unname(a), c(3L, 2L, 1L))) ok("A1 정본 평면 판 3/2/1 정확 �
 b <- route_counts(RES, NESTED)
 lb <- route_counts(LEGACY, NESTED)
 if (identical(unname(b), c(3L, 2L, 1L))) ok("B1 ★원결함 queue{} 중첩 판 구제 3/2/1")  else bad("B1 중첩 구제", paste(b, collapse = "/"))
-if (identical(unname(lb), c(0L, 0L, 0L))) ok("B2 음성 기준: legacy 는 중첩을 0/0/0 으로 읽는다 (검사에 이빨 있음)")
-else bad("B2 ★검사 무력", sprintf("legacy 가 %s — 이 검사가 결함을 구별하지 못한다", paste(lb, collapse = "/")))
+# ★최상위 if/else 를 두 줄로 쪼개면 R 이 "unexpected 'else'" 로 죽는다
+#   (daily_refresh r18 실사고와 동형) — 반드시 중괄호로 묶을 것.
+if (identical(unname(lb), c(0L, 0L, 0L))) {
+  ok("B2 음성 기준: legacy 는 중첩을 0/0/0 으로 읽는다 (검사에 이빨 있음)")
+} else {
+  bad("B2 ★검사 무력", sprintf("legacy 가 %s — 이 검사가 결함을 구별하지 못한다", paste(lb, collapse = "/")))
+}
 
 # ── C. 진짜 빈 큐는 0 (관용이 아무거나 주워오지 않는가) ──
 cc <- route_counts(RES, EMPTY)
