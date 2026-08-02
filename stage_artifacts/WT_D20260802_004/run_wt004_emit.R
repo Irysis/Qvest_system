@@ -29,14 +29,31 @@ conf_vec <- setNames(as.list(rep(conf_base, nrow(latest))), latest$Ticker)
 
 crisis_tbl <- lapply(names(cond), function(tg) {
   cc <- cond[[tg]]
+  ep <- cc$crisis_episodes
+  ep_list <- if (!is.null(ep)) lapply(seq_len(nrow(ep)), function(i) list(
+    first = ep$first[i], last = ep$last[i], months = ep$months[i],
+    cum_active = round(ep$cum_active[i], 4), cum_net = round(ep$cum_net[i], 4),
+    cum_bm = round(ep$cum_bm[i], 4))) else NULL
+  # 하락형 위기만 (에피소드 누적 BM < 0 — 2026-02~07 멜트업-라벨 에피소드 배제) 별도 축
+  down_ep <- if (!is.null(ep)) ep[cum_bm < 0] else NULL
   list(strategy = tg,
        crisis_alpha_mean_monthly = num(cc$crisis_alpha_mean_monthly),
        crisis_alpha_t_nw = num(cc$crisis_alpha_t_nw),
        crisis_n_months = cc$crisis_n_months,
        crisis_event_positive = cc$crisis_alpha_event_count, n_episodes = cc$n_episodes,
+       down_episode_positive = if (!is.null(down_ep)) sum(down_ep$cum_active > 0) else NA,
+       down_episode_n = if (!is.null(down_ep)) nrow(down_ep) else NA,
+       down_episode_cum_active = if (!is.null(down_ep)) round(sum(down_ep$cum_active), 4) else NA,
+       episodes = ep_list,
        mdd_full = num(cc$mdd_full),
        mdd_complement_vs_core_pp = num(100*(R$core_mdd - cc$mdd_full)))
 })
+
+# alpha_inheritance_cor: C_ORTH_def vs Core(M01 canonical) 월별 횡단면 Spearman 평균
+core_pan <- as.data.table(read_parquet(file.path(OUT, "panel_M01_Mom_12_1_canonical.parquet")))
+sc_all <- as.data.table(read_parquet(file.path(OUT, "alpha_scores.parquet")))
+mm <- merge(sc_all, core_pan[, .(Date, Ticker, core = value)], by = c("Date","Ticker"))
+inh <- mm[, .(rho = suppressWarnings(cor(score, core, method = "spearman"))), by = Date][, mean(rho, na.rm = TRUE)]
 
 fullperiod_tbl <- lapply(names(bt), function(tg) {
   r <- bt[[tg]]

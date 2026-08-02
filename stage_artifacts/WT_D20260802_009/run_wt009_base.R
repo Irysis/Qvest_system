@@ -10,6 +10,7 @@ setwd(ROOT)
 OUT <- file.path(ROOT, "stage_artifacts/WT_D20260802_009")
 say <- function(fmt, ...) cat(sprintf(paste0("[wt009b] ", fmt, "\n"), ...))
 
+source("02_Infrastructure/config.R")   # CACHE_DIR 선점 — 중첩 source ofile 함정 회피
 source("02_Infrastructure/factor_db/factor_db_connector.R")
 
 F5 <- c("V01_BM", "M01_Mom_12_1", "D03_RealVol", "Q01_GPA", "V06_fDY")
