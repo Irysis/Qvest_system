@@ -13,7 +13,7 @@ record_package_lineage(
   package_type = "alpha_package",
   method_selected = "CTR_MAG_12M single_factor (사전등록 primary=revenue 분모, 4셀 전량보고)",
   input_file_paths = c(
-    ".cache/dart/contract_backfill",
+    ".cache/dart/contract_backfill/202607.csv",
     "04_Research/method_frontier/fq002_contract_magnitude/panel_A.parquet",
     "04_Research/method_frontier/fq002_contract_magnitude/panel_B_corrected.parquet",
     "04_Research/method_frontier/fq002_contract_magnitude/grid_returns.parquet",
