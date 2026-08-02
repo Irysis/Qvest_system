@@ -1,7 +1,7 @@
 {
  "schema_version": "1.0",
  "sot": "02_Infrastructure/docs/qvest_v8_3_alpha_discovery_sot.md §4",
- "updated": "2026-08-02 (FQ-097/098 추가 — 수학 심화 2호 Wasserstein + WT-003 risk NP1 de-cor 선별 셀 등재)",
+ "updated": "2026-08-02 (census 실측으로 FQ-082/085/088 데이터게이트 닫힘 확정 + FQ-081 착수)",
  "consume_rule": "새 발굴 리서치 착수 전: hypothesis_index lookup → 본 큐 확인 → owner/status 갱신. 완료 시 result_ref(L-code/보고서) 기입. dohoon_decision 항목은 세션 임의 착수 금지.",
  "entries": [
   {
@@ -1645,9 +1645,9 @@
    "ev_rationale": "논문(99,938 firm-years, 1981-2020)은 ΔPM 이 ΔATO 보다 훨씬 빠르게 평균회귀하기 때문에 **무조건부로 보면 약해 보이고**, 업종상대 경쟁위치로 조건화하면 둘 다 정보성을 회복한다고 보고. 이는 Qvest 의 'standalone fundamental 16/16 FAIL' posterior 에 대한 직접적 기전 설명 후보.",
    "wall_check": "고정 축 준수(재료 추가 없음 — 기보유 재무제표). ★prior: AX-004/DIST-QPM-003 = quality single-signal long-only 실패. 본 건 delta = **단일신호 재시도가 아니라 조건화 축 도입**. 실패 시 DIST-QPM-003 supporting 으로 회수.",
    "data_gate": "기보유 KR 재무제표 DB 로 즉시 가능. C4 lag(annual = 익년 3/31) 준수 의무.",
-   "owner": "paper-intake-audit 2026-08-02",
-   "status": "frontier_open",
-   "next_action": "업종내 demean + 수준 교호 2 arm 구성 → canonical_screen_bt → cap-w PORT_t / dual-basis EW 대비 동시 산출",
+   "owner": "Q-Lead session 2026-08-02 (도훈 승인 — ①재료 census 후 zero-gate 유일 clean-prior 후보로 선정)",
+   "status": "in_flight_20260802",
+   "next_action": "착수(2026-08-02). hypothesis_index lookup 완료 — ★DuPont 분해 명시 선례 0건(virgin), 업종/산업-상대 조건화 축 선례 3건뿐이며 그중 2건이 INFLIGHT_STALE(WT-D20260513_002 Sector-Neutral FF-Residual · WT-D20260529_005 Cycle6 sector construction — 착수 후 판정 미도달, 재사용/좌초사유 확인 의무), 나머지 1건은 DIST-QPM-006(single-signal 축, 본 건과 다름). 설계: ΔPM·ΔATO 를 KRX 업종내 demean + '업종상대 PM/ATO 수준' 교호항. C4 lag(annual=익년 3/31) 준수. canonical dual-basis(cap-w 1급 + EW-유니버스·cap-tier 분해) 의무.",
    "source_refs": [
     "paper: Shanhong Wu; Jing Jiang, 'Earnings Predictability of DuPont Factors: Impact of Mean Reversion and Competitiveness', J. Risk and Financial Management 19(6):408, 2026-06-04, DOI 10.3390/jrfm19060408",
     "dedup: hypothesis_index 'dupont' 0 hit"
@@ -1662,8 +1662,8 @@
    "wall_check": "비-return(컨센서스). 기존 크롤 질의 'earnings revision momentum analyst consensus' 는 **숫자 리비전**만 겨냥해 이 구조를 못 잡았다. ★벽 대조: 재료 동일(컨센서스), delta 는 직교화 — 07-13 '벽=재료 아닌 전이' 진단상 통과 보장 없음(미측정).",
    "data_gate": "애널리스트-기업 커버리지 매핑 필요. QuantiWise 컨센서스에 애널리스트/증권사 식별자 존재 여부 확인 선행(불확실 — 미확인).",
    "owner": "paper-intake-audit 2026-08-02",
-   "status": "frontier_open",
-   "next_action": "① 커버리지 매핑 가용성 확인 → ② 가용 시 피어-리비전 회귀 잔차 구성 → ③ 원 리비전 baseline 대비 paired",
+   "status": "data_gate_closed_measured_20260802",
+   "next_action": "★게이트 닫힘 확정(2026-08-02 census 실측): .cache/consensus/ 13개 패널 전부 스키마 = {Date, Ticker, value} — 애널리스트/증권사 식별자 부재(coverage.parquet 도 커버리지 '수'만). 피어 리비전 회귀의 회귀변수 자체를 구성할 수 없음. 부활 조건 = QuantiWise 애널리스트-레벨 export 확보(도훈 작업, FQ-003/005 와 동일 블로커). 재정찰 불필요.",
    "source_refs": [
     "paper: R.W. Renjie; P. Verwijmeren, 'Cross-extrapolative beliefs: Evidence from equity analysts', Management Science, DOI 10.1287/mnsc.2024.04903 — ⚠ 정확 월 미해결",
     "dedup: hypothesis_index 'cross-extrapolat' 0 hit"
@@ -1727,8 +1727,8 @@
    "wall_check": "★고정 축 주의: 개별주식 옵션 상장 종목이 K200 일부에 그쳐 **유니버스 커버리지가 구조적으로 부분집합** — 25종 배포 유니버스에서 유효 신호가 되려면 커버리지 census 가 선결. 커버리지 미달 시 screen-tier/monitoring 으로만 회수.",
    "data_gate": "KR 개별주식옵션 데이터 보유 여부 미확인. 데이터 게이트 = census 결과에 종속.",
    "owner": "paper-intake-audit 2026-08-02",
-   "status": "frontier_open",
-   "next_action": "① 개별주식옵션 데이터 보유·커버리지 census → ② 커버리지 충분 시에만 신호 구성",
+   "status": "data_gate_closed_measured_20260802",
+   "next_action": "★게이트 닫힘 확정(2026-08-02 census 실측): .cache/krx_derivatives/ 디렉터리가 비어 있음(파일 0). 선행 시도 ALPHA_02_option_implied(2026-03-21, qepm/mailbox/forge/inbox_hold/)도 'step1 데이터 가용성 확인'에서 멈춘 채 미해소 — 즉 개별주식옵션 데이터는 시스템에 한 번도 들어온 적 없음. 부활 조건 = KRX 개별주식옵션 IV/행사가 데이터 확보. 재정찰 불필요.",
    "source_refs": [
     "paper: A. Neuhierl; X. Tang; R.T. Varneskov, 'Do option characteristics predict the underlying stock returns in the cross-section?', Management Science, DOI 10.1287/mnsc.2024.04720 — ⚠ 정확 월 미해결",
     "dedup: hypothesis_index 'option-implied'/'옵션 내재' 0 hit"
@@ -1775,8 +1775,8 @@
    "wall_check": "★고정 축 안(Lane3 factor-rotation 입력). ★prior: DIST-RAMP-006(regime-조건부 팩터배분 천장 ~2.85) 및 HMM 2-state 오버레이 FAIL(STR_AS_20260613_062356) — 본 건 delta 는 잠재 국면변수를 두지 않고 **vintage 아날로그 검색**으로 대체한다는 점. 평균 IC 부트스트랩 CI 가 0 을 포함한다는 논문 자체 한계 명시.",
    "data_gate": "FRED/ECOS **아카이브 vintage** 확보 여부가 결정적(현재값이 아니라 당시 발표값). vintage 미보유 시 본 건은 PIT 상 성립 불가 — census 선행 의무.",
    "owner": "paper-intake-audit 2026-08-02",
-   "status": "frontier_open",
-   "next_action": "① FRED ALFRED/ECOS vintage 가용성 census → ② 가용 시 kNN 아날로그 랭커 구성 → ③ 기존 국면엔진 대비 비교",
+   "status": "data_gate_closed_measured_20260802",
+   "next_action": "★게이트 닫힘 확정(2026-08-02 census 실측): 02_Infrastructure/data/data_collector_fred.R 에 realtime/vintage/alfred 참조 0건 = 현재값만 저장하고 발표 시점 vintage 를 보존하지 않음(.cache/fred_macro.parquet 단일 스냅샷). 본 항목 자체 wall_check 가 'vintage 미보유 시 PIT 상 성립 불가'를 선언하므로 측정 자체가 불가. 부활 조건 = ALFRED(realtime_start/end) 수집 배선 또는 ECOS vintage 아카이브 확보. 재정찰 불필요.",
    "source_refs": [
     "paper: Mao Guan; Qian Chen, 'Leakage-Aware Benchmarking of LLM Forecasting: Real-Time Nowcasts as the Decision-Time Input for Macro Factor Ranking', arXiv:2606.22719, 2026-06-21 (q-fin.ST — 카테고리는 크롤됐으나 PIT/vintage 어휘가 9질의에 없어 도달 불가)",
     "prior: DIST-RAMP-006 / STR_AS_20260613_062356 HMM FAIL"
