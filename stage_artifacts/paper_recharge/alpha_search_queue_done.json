@@ -7,7 +7,8 @@
     "2606.08141",
     "2607.19497",
     "2607.19005",
-    "2607.27461"
+    "2607.27461",
+    "2607.01705"
   ],
   "records": [
     {
@@ -143,6 +144,24 @@
       "quarantine_reason": "OOS retention=0.24 < 0.5. Calmar=0.15 < 0.64 HARD. MDD 61.2% 구조적 낙폭. post-2017 급감(SR ratio 0.52). 동 논문 spec_mass_lowfreq_60d QUARANTINE에 이어 2번째 신호도 같은 패턴. FMB t=2.74* 크로스섹션 유의하나 standalone 배포 불가.",
       "notable": true,
       "l_code": "l_code_STR_AS_20260802_074951_39404"
+    },
+    {
+      "paper_id": "2607.01705",
+      "paper_title": "Portfolio Optimization under Fast and Slow Latent Mean-Reverting and Momentum Drift",
+      "factor_id": "MACD_CS",
+      "factor_name": "MACD_cross_section",
+      "gate_decision": "EV_D1_GATED",
+      "gate_failed_layers": "ev_intake_gate",
+      "port_t": null,
+      "grade": null,
+      "processed_date": "20260803",
+      "verify_path": null,
+      "ev_gate_reason": "D1 dead class — 횡단 return-파생 single_long_only momentum family (64+ 소진, cap-w 최고 PORT_t 2.58). 표준 (EMA12-EMA26)/EMA26 크로스섹션 랭킹은 M19_MACD(DB 등재, lifecycle.last_validated={})와 동일 신호 공간. 착착 금지 — dohoon novelty triage confirm 없이 실행 불가.",
+      "next_probe": [
+        "dohoon_triage: 논문 최적 (λ_fast, λ_slow) 파라미터가 표준 (12,26)과 실질 다른지 실증 — 2-timescale 모델 피팅으로 종목별 최적λ 추정 → 신호가 M19_MACD와 cross-cor<0.9면 D1 EV 탈출 triage 가능",
+        "risk_optimizer_소비: 2-timescale 잠재 drift 모델 자체는 optimizer/risk agent의 포트폴리오 가중치 최적화 input으로 소비 가능(알파 사용 아닌 비중 결정 프레임)"
+      ],
+      "session_note": "AS-20260803 런 — arXiv 주말 공백(최신 2026-07-31) + 기존 testable 후보 전소진. EV 3단 게이트에서 D1 판정으로 착착 기록."
     }
   ],
   "schema_note": "processed = list of paper_id strings (set-like, paper 단위 dedup). records = 전체 시도 감사 로그(동일 paper에서 여러 factor 추출 시 factor_id로 구분). last_updated 갱신 의무.",
