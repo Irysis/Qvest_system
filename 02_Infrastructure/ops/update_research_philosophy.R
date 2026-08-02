@@ -94,17 +94,56 @@ AXIS_FILES$axis5_memory <- .detect_memory_path()
 }
 
 # ─── Safety 3: Git baseline ──────────────────────────────────────────────────
+#  [2026-08-02 수리 — r-portability 금칙 ⑤] 종전 auto-baseline 은
+#    system("git add -A && git commit -m '...' --no-verify", intern = FALSE)
+#  였다. Windows R 의 system() 은 **셸을 경유하지 않으므로** `&&` 이하가 해석되지 않고
+#  `git add` 의 리터럴 pathspec 으로 전달된다(실측: git status 128). 즉 **baseline 커밋이
+#  한 번도 생성되지 않았다.** intern=FALSE 라 exit status 마저 버려져 완전 침묵이었다.
+#  ★결과가 나쁜 쪽으로 조용하다: 커밋이 없는데 있다고 믿은 채 .git_rollback() 이
+#  `git reset --hard <이전 SHA>` 를 돌리면 미커밋 작업이 그대로 소실된다.
+#  정본: 호출 분리 + system2 인자 벡터 + exit status 명시 검사.
+.git_run <- function(args, what) {
+  out <- suppressWarnings(system2("git", args, stdout = TRUE, stderr = TRUE))
+  st  <- attr(out, "status")
+  st  <- if (is.null(st)) 0L else as.integer(st)
+  list(ok = st == 0L, status = st, out = out, what = what)
+}
+
 .git_baseline <- function(dry_run = FALSE) {
   setwd(PROJECT_ROOT)
-  status <- system("git status --porcelain", intern = TRUE)
+  st_res <- .git_run(c("status", "--porcelain"), "git status")
+  if (!st_res$ok) {
+    # 미측정을 "clean" 으로 읽지 않는다 — 이 함수의 반환값에 rollback 안전성이 걸려 있다.
+    .log(sprintf("git status 실패 (exit=%d) — baseline 확보 불가: %s",
+                 st_res$status, paste(utils::head(st_res$out, 2), collapse = " | ")), "ERROR")
+    stop("git baseline 확보 실패 — rollback 보장이 없어 진행 중단")
+  }
+  status <- st_res$out
   if (length(status) > 0 && !dry_run) {
     .log("git working tree not clean — uncommitted changes exist:", "WARN")
     for (s in head(status, 5)) cat("    ", s, "\n")
     .log("Auto-commit baseline before changes? (proceeding with [auto-baseline] commit)", "WARN")
-    system("git add -A && git commit -m '[update_research_philosophy] auto-baseline pre-amendment' --no-verify",
-           intern = FALSE)
+    add_res <- .git_run(c("add", "-A"), "git add")
+    if (!add_res$ok) {
+      .log(sprintf("git add 실패 (exit=%d): %s", add_res$status,
+                   paste(utils::head(add_res$out, 2), collapse = " | ")), "ERROR")
+      stop("auto-baseline 커밋 실패 — rollback 보장이 없어 진행 중단")
+    }
+    cm_res <- .git_run(c("commit", "-m",
+                         "[update_research_philosophy] auto-baseline pre-amendment",
+                         "--no-verify"), "git commit")
+    if (!cm_res$ok) {
+      .log(sprintf("git commit 실패 (exit=%d): %s", cm_res$status,
+                   paste(utils::head(cm_res$out, 2), collapse = " | ")), "ERROR")
+      stop("auto-baseline 커밋 실패 — rollback 보장이 없어 진행 중단")
+    }
   }
-  baseline_sha <- system("git rev-parse HEAD", intern = TRUE)[1]
+  sha_res <- .git_run(c("rev-parse", "HEAD"), "git rev-parse")
+  if (!sha_res$ok || !length(sha_res$out) || !nzchar(trimws(sha_res$out[1]))) {
+    .log(sprintf("git rev-parse HEAD 실패 (exit=%d)", sha_res$status), "ERROR")
+    stop("baseline SHA 확보 실패 — rollback 보장이 없어 진행 중단")
+  }
+  baseline_sha <- trimws(sha_res$out[1])
   writeLines(baseline_sha, BASELINE_FILE)
   .log(sprintf("Baseline SHA: %s", substr(baseline_sha, 1, 7)))
   baseline_sha
@@ -118,7 +157,13 @@ AXIS_FILES$axis5_memory <- .detect_memory_path()
   baseline <- readLines(BASELINE_FILE, n = 1)
   setwd(PROJECT_ROOT)
   .log(sprintf("Rolling back to baseline %s", substr(baseline, 1, 7)))
-  system(sprintf("git reset --hard %s", baseline))
+  # 실패한 rollback 을 성공으로 보고하지 않는다 — 구 구현은 exit status 를 버렸다.
+  rb <- .git_run(c("reset", "--hard", baseline), "git reset --hard")
+  if (!rb$ok) {
+    .log(sprintf("git reset --hard 실패 (exit=%d): %s", rb$status,
+                 paste(utils::head(rb$out, 2), collapse = " | ")), "ERROR")
+    return(FALSE)
+  }
   return(TRUE)
 }
 

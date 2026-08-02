@@ -15,7 +15,7 @@
 
 ---
 
-## 금칙 4종 (위반 시 수리 의무)
+## 금칙 5종 (위반 시 수리 의무)
 
 ### ① `system2(..., env = ...)` 금지
 Windows에서 `env=` 문자열은 환경변수로 설정되지 않고 **명령줄 첫 인자로 앞에 붙는다**. 실측:
@@ -65,6 +65,9 @@ Windows R은 `/mnt/c/...`를 **현재 드라이브 기준** `C:/mnt/c/...`로 �
 - 절대경로 판정에 `startsWith(p, "/")` 쓰지 말 것 → drive-letter·UNC·`~`를 인식할 것:
   `grepl("^([A-Za-z]:)?[/\\\\]", p) || grepl("^~", p)`
 - 임시 디렉토리는 `"/tmp/..."`(→`C:/tmp/...`) 대신 `tempfile()`.
+- ★**bash 와 R 이 같은 경로 문자열을 공유하면 그 자리가 급소다.** `/tmp` 는 두 런타임에서 **다른 디렉토리로 해석된다** — bash(MSYS)는 `AppData\Local\Temp`, Windows R 은 `C:/tmp`. 한쪽이 쓰고 다른 쪽이 읽으면 읽는 쪽은 **영원히 빈 손**이고, 그 공허함이 "위반 없음"으로 읽히면 감사가 죽는다(실측: `v61_compliance_audit.R` P2 — 원장 표 참조).
+  판별법: 리터럴을 R 과 `.sh`/`.py` 양쪽에서 `grep -rl` 해 **둘 다 나오면 분기 위험**. 2026-08-02 전수 결과 `/tmp` 리터럴 6계열 중 공유 2건, 그중 실제 분기 **1건**(`qvest_lockbox_access`) — 나머지 1건(`…update.lock`)은 `.sh` 쪽이 주석뿐이라 오탐이었다.
+  정본: 공유가 필요한 경로는 `/tmp` 대신 **프로젝트-상대 경로**(`.cache/` 등)를 쓰거나, 양쪽이 같은 환경변수(`TEMP`)를 경유할 것.
 
 ### ④ 루트 resolver 우선순위 = `CLAUDE_PROJECT_DIR` 먼저
 `~/.Renviron`이 `QM_ROOT`를 고정하므로 **쉘 `export`로 덮이지 않는다**(실측). 실행 루트를 바꾸려면 `CLAUDE_PROJECT_DIR`를 쓴다.
@@ -87,6 +90,35 @@ Windows R은 `/mnt/c/...`를 **현재 드라이브 기준** `C:/mnt/c/...`로 �
 - ★ 참고: 금칙 ④의 원 근거("`~/.Renviron`이 QM_ROOT를 고정해 export로 못 덮는다")는 **R 한정**이다. 쉘에서는 `export QM_ROOT`가 정상 동작하므로 그 논거는 쉘 resolver에 그대로 전이되지 않는다.
 - 강제: `08_Tests/hooks/test_resolve_project_marker.sh`가 이 분기를 **양방향으로** 검사한다(hooks=CPD 우선 ∧ ops=QM_ROOT 우선). 한쪽만 검사하면 "둘을 통합" 리팩터가 조용히 통과한다.
 
+### ⑤ `system()` / `system2()` 명령 문자열에 쉘 리다이렉션·연쇄 연산자 금지
+Windows R의 `system()`/`system2()`는 **셸을 경유하지 않는다**. `2>/dev/null` · `&&` · `|` 는 해석되지 않고 대상 프로그램의 **리터럴 argv**가 된다. 2026-08-02 실측:
+
+```
+system("git rev-parse HEAD 2>/dev/null", intern=TRUE)
+→ c("f8da73e4…", "2>/dev/null"), status 128
+   (git이 HEAD를 먼저 출력하고 두 번째 '리비전'에서 죽는다)
+system("git status --porcelain 2>/dev/null", intern=TRUE)
+→ character(0), status 128
+```
+
+★위험한 건 실패가 아니라 **위장의 비대칭**이다. 같은 결함이 두 필드에 정반대로 작용했다 — `rev-parse`는 SHA를 먼저 뱉어 `sha[1]`이 **우연히 정답**이었고, `status`는 통째로 죽어 0행을 반환해 호출자의 `length(out) > 0`이 **항상 `FALSE`** = "clean tree"라는 그럴듯한 정상값이 됐다. **빈 출력이 '변경 없음'으로 읽히는 지점이 이 금칙의 급소다**(메모리 `project-benchmark-two-source-divergence-20260802`의 "값 `0`이 안 움직였다로 읽힌다"와 같은 기전).
+
+실측 피해: `qepm/mailbox/worktask/*/artifact_lineage.json` 388 entry 중 **2026-06(Windows 이관)~08 기록 79건이 `git_dirty=false` 전량**, 그 이전 309건은 전량 `true`. 월 경계에서 100% 갈린다 — 분산 0이 곧 미측정의 지문이다.
+
+**대체 (정본)**:
+
+```r
+out <- suppressWarnings(system2("git", c("rev-parse", "HEAD"),
+                                stdout = TRUE, stderr = FALSE))
+st  <- attr(out, "status"); st <- if (is.null(st)) 0L else as.integer(st)
+if (st != 0L) { ... }        # 결손을 값으로 내려앉히지 말 것
+```
+
+- 리다이렉션 → `stdout=` / `stderr=` 인자. 필터링·집계는 R에서(`grep(pattern, out, value=TRUE)`).
+- 연쇄(`&&`) → **호출 분리** + 각 단계 exit status 검사.
+- 셸이 정말 필요하면 `shell()`을 쓰되 `/dev/null`이 아니라 `NUL`.
+- **미측정은 `FALSE`/`0`이 아니라 `NA`(→ JSON `null`) + 명시 라벨**로 기록할 것. 정본 선례: `worktask/lineage_utils.R::capture_git_state()`(`git_commit="UNAVAILABLE"` · `git_dirty=NA` · `git_state_error=<사유+exit code>`).
+
 ### (동반) bare `python3` 금지
 별도 규칙으로 이미 확립 — `python3`는 Windows Store 스텁("Python" 출력 후 rc 49). `QVEST_PY` → venv 순 해석.
 메모리 `reference-python3-windows-stub-use-qvest-py` · 훅은 `_shared_parse.sh` `QVEST_PY_BIN` 체인.
@@ -108,6 +140,11 @@ Windows R은 `/mnt/c/...`를 **현재 드라이브 기준** `C:/mnt/c/...`로 �
 
 | 상태 | 위치 | 금칙 | 비고 |
 |---|---|---|---|
+| ⚠ **미수리(감사 사망)** | `worktask/v61_compliance_audit.R:24` | ③ | 2026-08-02 실측. `LOCKBOX_LOG_PATTERN <- "/tmp/qvest_lockbox_access_%s.log"` → Windows R 은 `C:/tmp/…`, bash 훅(`lockbox_audit_trail.sh`)은 MSYS `/tmp`(=`AppData\Local\Temp`)에 쓴다. **실제 접근기록 4건이 감사자가 안 보는 디렉토리에 있다** → `audit_p2_data_separation()` 이 항상 `pass=TRUE, reason="no_lockbox_access (clean)"`. **P2 Data Separation 은 구조적으로 실패할 수 없다.** ★이 항목은 baseline 에 "수용된 기존 위반"으로 이미 있었다 — 린트로는 수용됐지만 **행동 결과(감사 사망)는 아무도 보지 않았다**. 원장 등재 ≠ 무해. 수리는 bash·R 양쪽 경로 규약을 함께 바꿔야 하는 교차언어 계약 변경 |
+| ○ 잠복 | `worktask/v61_compliance_audit.R:25` | — | `BOOK_STATE <- "qepm/mailbox/governor/book_state.json"` 상대경로. cwd 가 다르면 136KB 실파일이 있는데도 P8 이 `"no_book_state_yet"`(아직 없음)으로 통과 |
+| ✅ 수리 | `worktask/lineage_utils.R` | ⑤ | 2026-08-02. `git_dirty`가 2026-06~08 **79건 전량 `false`로 위장**(미측정). 수리 후 미측정 = `UNAVAILABLE`/`null` + `git_state_error`. 소급 수정 없음(역사 보존) |
+| ✅ 수리 | `ops/update_research_philosophy.R:104` | ⑤ | 2026-08-02. `system("git add -A && git commit …", intern=FALSE)` → `&&` 이하가 `git add`의 pathspec이 되어 **auto-baseline 커밋이 한 번도 생성되지 않았고** exit status마저 버려졌다. ★그 상태에서 `.git_rollback()`의 `git reset --hard <이전 SHA>`는 미커밋 작업을 파괴한다 — 안전장치가 정반대로 작동 |
+| ✅ 수리 | `ops/cert_backfill_audit.R:697` | ⑤ | 2026-07-26 CBA-06(선행 수리). `"2>&1 \| grep -E …"`가 내부 Rscript의 리터럴 argv로 전달 |
 | ✅ 수리 | `worktask/cert_rules.R:444,430` | ①③ | `d384c016` |
 | ✅ 수리 | `08_Tests/integration/*.R` 3종 | ②③④ | `f18f6c90`·`d384c016` |
 | ⚠ **미수리(실동작 영향)** | `tools/paper_recharge_daily.R:60` | ② | 최상위 `on.exit(unlink(lock_dir))` → **lock 영구 미해제**. 이후 실행이 stale lock(<3600s)을 보고 `quit(status=0)`로 **조용히 skip** |
@@ -125,7 +162,7 @@ Windows R은 `/mnt/c/...`를 **현재 드라이브 기준** `C:/mnt/c/...`로 �
 
 ## 강제 (teeth)
 
-`08_Tests/hooks/test_r_portability.R` — 라이브 존을 스캔해 금칙 4종을 검출하고 **baseline 래칫**으로 판정한다:
+`08_Tests/hooks/test_r_portability.R` — 라이브 존을 스캔해 금칙 5종을 검출하고 **baseline 래칫**으로 판정한다:
 
 - **신규 위반 → FAIL** (baseline 밖 항목)
 - **baseline 역행 방지**: 수리돼 사라진 항목이 baseline에 남아 있으면 FAIL(`--write-baseline`으로 갱신 요구). 원장은 **줄어드는 방향으로만** 움직인다.
@@ -142,7 +179,19 @@ Windows R은 `/mnt/c/...`를 **현재 드라이브 기준** `C:/mnt/c/...`로 �
 - 위반 주입 fixture는 `02_Infrastructure/`를 갖췄으나 marker는 없는 임시 디렉토리를 쓴다.
   구 branch 2가 `-d "$_cand/02_Infrastructure"`만 봤으므로, 이게 없으면 헐거운 검사도 통과한다.
 
-**위반 주입 5종 내장**(위반 주입 테스트): 금칙 4종 각각의 합성 위반 fixture를 실제로 잡는지 + 정본 패턴을 오검출하지 않는지 자체 검증. 실효 실증 — 최초 구현의 검출기 ①은 `system2\([^)]*env=`였는데 인자 안의 `)`(예: `args = c("-c", code)`)에서 멈춰 **다중행 호출을 놓쳤고, 위반 주입 테스트가 이를 적발**했다(괄호 균형 파서로 교체 후 `data/build_cache.R` 등 추가 검출). 래칫 검출력도 실증 — 합성 위반 주입 시 `exit 1`, 제거 시 `exit 0`.
+`08_Tests/hooks/test_lineage_git_state.R` — 금칙 ⑤의 **행동 수준** 자매 검사기(2026-08-02 신설, 배터리 편입 **11/11**).
+정적 스캔은 "쉘 문법이 argv에 있다"까지만 본다. 결손이 **JSON까지 명시 라벨로 도달하는지**는 못 본다 —
+그리고 구 구현의 실제 실패가 정확히 거기였다(`capture_git_state()`가 `git_state_error`를 **계산해 놓고
+`build_lineage_entry()`가 entry에 안 실었다**). 그래서 이 검사기는 함수 반환값이 아니라 **직렬화된 파일**을 읽어 판정한다.
+
+- 축: 정상경로 실측(40-hex SHA · dirty 측정됨 · 오류라벨 없음) × **위반 주입**(비-리포 디렉토리 +
+  `GIT_CEILING_DIRECTORIES`로 상위 리포 탐색 차단 → git exit 128 강제) × 직렬화 관통 × seed 결정성
+- **핵심 회귀 가드**: 주입 상태에서 `git_dirty == FALSE`면 FAIL. 미측정이 `FALSE`로 내려앉는 것이 구 결함의 형태다.
+- **돌연변이로 검출력 실증**(2026-08-02): 수리를 구판으로 되돌린 사본에서 4축이 실제로 뒤집힘
+  (`injected_dirty_not_false` · `json_dirty_null` · `json_error_label_present` · `seed_task_deterministic`).
+  안 뒤집혔다면 그 11/11은 계측 사망이다.
+
+**위반 주입 8종 내장**(위반 주입 테스트): 금칙 5종 각각의 합성 위반 fixture(⑤는 redirect·chain·pipe 3형태)를 실제로 잡는지 + 정본 패턴을 오검출하지 않는지 자체 검증. 실효 실증 — 최초 구현의 검출기 ①은 `system2\([^)]*env=`였는데 인자 안의 `)`(예: `args = c("-c", code)`)에서 멈춰 **다중행 호출을 놓쳤고, 위반 주입 테스트가 이를 적발**했다(괄호 균형 파서로 교체 후 `data/build_cache.R` 등 추가 검출). 래칫 검출력도 실증 — 합성 위반 주입 시 `exit 1`, 제거 시 `exit 0`.
 
 > 검사기 자체가 "잘못된 것을 재는" 실패가 이 리포지토리의 반복 부류다(존재→유효성, substring→ID, mtime→최신성). 그래서 위반 주입 테스트 없는 검사기는 이 계약에서 인정하지 않는다. 위 ① 사례가 그 규정의 첫 회수다.
 
