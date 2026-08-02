@@ -187,6 +187,38 @@ ok(is.data.table(out3) && uniqueN(out3$Date) == 1L && all(out3$Date == fixed_aso
 ok(any(grepl("결손", warns)), "B3b 결손이 침묵하지 않고 경고로 발화",
    sprintf("(warnings=%d)", length(warns)))
 
+# B4: 로드 예외 = 조용한 스킵 금지 (스킵 월은 LOCF 가 메워 stale 과 증상이 같다)
+load_month_factors <- function(sig_date, ...) {
+  if (format(as.Date(sig_date), "%Y%m") == format(min(EVAL), "%Y%m"))
+    stop("주입된 로드 실패 (테스트)")
+  memo_lmf(sig_date, ...)
+}
+w4 <- character(0)
+out4 <- withCallingHandlers(prov(leaf, ctx),
+  warning = function(w) { w4 <<- c(w4, conditionMessage(w)); invokeRestart("muffleWarning") })
+ok(any(grepl("로드 예외", w4)), "B4 로드 예외 월이 경고로 발화 (조용한 스킵 아님)",
+   sprintf("(warnings=%d)", length(w4)))
+ok(is.data.table(out4) && uniqueN(out4$Date) == length(EVAL) - 1L,
+   "B4b 실패 월만 빠지고 나머지는 정상 산출",
+   sprintf("(dates=%d, 기대=%d)", if (is.data.table(out4)) uniqueN(out4$Date) else -1L, length(EVAL)-1L))
+
+# B5: 첫 달 결손 폴백 — 중복이 안 생겨도 '월 불일치'로 잡히나 (초판 술어의 사각)
+fake_prev <- as.Date(format(min(EVAL), "%Y-%m-01")) - 1L   # 전월 캘린더 말일 = 다른 월
+load_month_factors <- function(sig_date, ...) {
+  r <- memo_lmf(sig_date, ...)
+  if (format(as.Date(sig_date), "%Y%m") == format(min(EVAL), "%Y%m")) {
+    r <- copy(r); attr(r, "factor_db_asof_date") <- fake_prev
+  }
+  r
+}
+w5 <- character(0)
+out5 <- withCallingHandlers(prov(leaf, ctx),
+  warning = function(w) { w5 <<- c(w5, conditionMessage(w)); invokeRestart("muffleWarning") })
+ok(any(grepl("결손", w5)), "B5 첫 달 결손 폴백이 중복 없이도 경고로 발화",
+   sprintf("(warnings=%d)", length(w5)))
+ok(is.data.table(out5) && fake_prev %in% out5$Date,
+   "B5b 대체 패널은 보고된 as-of 로 라벨됨(요청일로 되돌리지 않음)")
+
 load_month_factors <- memo_lmf   # 실 커넥터 복귀
 
 # ── C. 돌연변이: 구판(캘린더 월말 라벨)을 되돌리면 A3 가 FAIL 하나 ──────────────

@@ -830,12 +830,18 @@ ast_leaf_provider_canonical <- function() {
       #   lag 방향이라 look-ahead 는 아니나 신호가 한 달 낡아 측정이 감쇠한다.
       out <- vector("list", length(req_dates))
       asof_v <- rep(as.Date(NA), length(req_dates))
-      dup_months <- character(0)
+      dup_months <- character(0); err_months <- character(0)
+      empty_months <- character(0); gap_months <- character(0)
       for (i in seq_along(req_dates)) {
+        # ★ 로드 실패를 조용히 건너뛰지 않는다 — 스킵된 달은 AS_OF LOCF 가 전월로 메우므로
+        #   증상이 본 결함(1개월 stale)과 동일해진다. 사유를 월 단위로 모아 말미에 경고.
         lm <- tryCatch(
           load_month_factors(req_dates[i], factor_names = leaf$field),
-          error = function(e) NULL)
-        if (is.null(lm) || !nrow(lm)) next
+          error = function(e) { err_months <<- c(err_months,
+            sprintf("%s(%s)", format(req_dates[i], "%Y-%m"),
+                    substr(conditionMessage(e), 1, 60))); NULL })
+        if (is.null(lm)) next
+        if (!nrow(lm)) { empty_months <- c(empty_months, format(req_dates[i], "%Y-%m")); next }
         asof <- attr(lm, "factor_db_asof_date")
         # fail-closed: as-of 미보고 시 요청일로 되돌리지 않는다 (그 되돌림이 본 결함)
         if (is.null(asof) || length(asof) != 1L || is.na(asof)) {
@@ -850,8 +856,15 @@ ast_leaf_provider_canonical <- function() {
                               "sig_date %s 보다 미래 — 미래 vintage 로드(look-ahead) 거부"),
                       leaf$field, format(asof), format(req_dates[i])))
         }
-        # 월 파일 결손 시 커넥터가 closest-earlier 파일로 대체 → 같은 as-of 중복.
-        # 중복 라벨은 (Date,Ticker) 불변식 위반이므로 최초 1건만 쓰고 결손을 알린다
+        # 월 파일 결손 시 커넥터가 closest-earlier 파일로 대체(load_month_factors 의
+        # max(ym_avail <= ym_tag) 폴백) → 반환 as-of 의 월이 요청 월과 달라진다.
+        # ★판정 술어는 '중복'이 아니라 '월 불일치' — 요청 범위의 첫 달이 결손이면
+        #  중복이 안 생겨 조용히 통과한다(중복만 보던 초판의 사각).
+        if (!identical(format(asof, "%Y%m"), format(req_dates[i], "%Y%m"))) {
+          gap_months <- c(gap_months, sprintf("%s→%s", format(req_dates[i], "%Y-%m"),
+                                              format(asof, "%Y-%m")))
+        }
+        # 중복 라벨은 (Date,Ticker) 불변식 위반이므로 최초 1건만 쓴다
         # (LOCF 는 AS_OF 조인이 담당 — 여기서 값을 복제해 신선한 척 하지 않는다).
         if (any(!is.na(asof_v) & asof_v == asof)) {
           dup_months <- c(dup_months, format(req_dates[i], "%Y-%m"))
@@ -861,13 +874,25 @@ ast_leaf_provider_canonical <- function() {
         out[[i]] <- data.table(Date = asof, Ticker = lm$Ticker,
                                value = lm$Z_Score_Aligned)
       }
-      if (length(dup_months)) {
-        warning(sprintf(paste0("[ast_compile] factor_db_monthly '%s': 월 DB 결손으로 ",
-                               "이전 월 패널이 대체 반환된 월 %d건 (%s%s) — 해당 월은 AS_OF ",
-                               "LOCF 로 이월됨. final_max_staleness_days 설정 권장."),
-                        leaf$field, length(dup_months),
-                        paste(head(dup_months, 6), collapse = ", "),
-                        if (length(dup_months) > 6) " ..." else ""))
+      .brief <- function(v, k = 6L) paste0(paste(head(v, k), collapse = ", "),
+                                           if (length(v) > k) sprintf(" ... (+%d)", length(v) - k) else "")
+      if (length(gap_months)) {
+        warning(sprintf(paste0("[ast_compile] factor_db_monthly '%s': 월 DB 결손으로 이전 월 ",
+                               "패널이 대체 반환된 월 %d건 (%s) — 해당 월은 AS_OF LOCF 로 이월됨. ",
+                               "final_max_staleness_days 설정 권장."),
+                        leaf$field, length(gap_months), .brief(gap_months)))
+      }
+      if (length(err_months)) {
+        warning(sprintf(paste0("[ast_compile] factor_db_monthly '%s': 로드 예외로 누락된 월 %d건 ",
+                               "(%s) — 누락 월은 AS_OF LOCF 가 전월로 메우므로 증상이 stale 과 ",
+                               "동일하다. 조용한 스킵 금지 원칙에 따라 보고."),
+                        leaf$field, length(err_months), .brief(err_months, 3L)))
+      }
+      if (length(empty_months)) {
+        warning(sprintf(paste0("[ast_compile] factor_db_monthly '%s': 0행 반환 월 %d건 (%s) — ",
+                               "해당 월 팩터 미산출(초기 vintage 등)이면 정상, 아니면 커버리지 ",
+                               "필터 확인."),
+                        leaf$field, length(empty_months), .brief(empty_months)))
       }
       if (!is.null(ctx$.rec)) {
         ok <- !is.na(asof_v)
@@ -877,7 +902,10 @@ ast_leaf_provider_canonical <- function() {
           asof_first = if (any(ok)) format(min(asof_v[ok])) else NA_character_,
           asof_last  = if (any(ok)) format(max(asof_v[ok])) else NA_character_,
           n_asof_before_request = sum(ok & asof_v < req_dates),
-          n_month_gap_fallback = length(dup_months)
+          n_month_gap_fallback = length(gap_months),
+          n_load_error_months = length(err_months),
+          n_empty_months = length(empty_months),
+          n_dropped_duplicate_asof = length(dup_months)
         )
       }
       return(rbindlist(out[!vapply(out, is.null, logical(1))]))
