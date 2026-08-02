@@ -1,0 +1,146 @@
+{
+  "task_id": "WT-D20260802_019",
+  "as_of_date": "2026-08-02",
+  "forecast_horizon": "1M",
+  "spec_version": "ast_v1.1",
+  "pit": {
+    "sig_date": "2026-04-30",
+    "decision_ts": "2026-05-04",
+    "note": "라벨 컷오프 = 홀딩월 시작(decision_date) 직전 거래일 — 전 269개월 cutoff < holding_start assert_overlay_pit HARD PASS (간격 median 1일 [1,4]) + 위반 주입(홀딩월말 cutoff) 시 stop 발화 실증. 트레일링 252거래일 창 종점 = cutoff (홀딩월 데이터 배제 직접 확인)"
+  },
+  "hypothesis": {
+    "statement": "예측이 아니라 nowcast — '지금(홀딩월 시작 직전) 벤치가 하락 상태에 있나'(트레일링 12M 고점 대비 −10% 상태)를 라벨로 쓰면, 하락월 군집성에 의해 실현 BM<0 월을 base rate 이상으로 포착하여 오라클 상금(+2.14%/yr, MDD 14.1pp)의 일부를 회수한다 (FQ-118, WT-017 NP-2).",
+    "mechanism": {
+      "agent": "시장 전체의 하락 에피소드 지속성 — 낙폭 상태(고점 −10% 이하)에 진입한 시장은 디레버리징·손절 연쇄로 하락월이 군집",
+      "friction": "KR long-only 제약으로 공매도 불가 — β 축소가 유일한 하락 방어 레버, 시장-타이밍 정보는 차익거래로 즉시 소거되지 않음",
+      "path": "컷오프 시점 낙폭 상태 → 익월 노출 g=0.40 곱셈 → 군집된 하락월 손실 축소로 active 반영"
+    },
+    "falsification": [
+      {
+        "group_id": "A4_benchmark_kospi200",
+        "observation": "DD_STATE ON월이 실현 하락월(벤치 월수익<0)을 무작위 이상으로 포착하지 못하면(recall ≤ base rate 또는 fisher 비유의) 하락월 군집성 기전 기각 — 사전등록 fail_line이자 성과 측정 전 판정"
+      },
+      {
+        "group_id": "A4_benchmark_kospi200",
+        "observation": "DD_STATE ON월의 실현 벤치 평균이 양(+)이면 라벨이 '하락 진행 중'이 아니라 '바닥 반등 중'을 표상 — MSM 지연-지표 병리와 동형으로 기전 기각"
+      }
+    ],
+    "regime_scope": {
+      "holds_in": ["crisis_onset"],
+      "weakens_or_reverses_in": ["recovery", "risk_on"],
+      "boundary_rationale": "기전 가치는 하락 에피소드 '중반'에만 발생. nowcast는 정의상 초입(고점→−10% 도달 전)을 놓치고, 반등 후에도 지수가 고점 −10% 안쪽으로 복귀할 때까지 꺼지지 않아 회복 국면에서 역효과 — 사전등록 honest posterior"
+    }
+  },
+  "factors": [
+    {
+      "factor_id": "F1_ddstate_exposure_scalar",
+      "ast": {
+        "op": "MUL",
+        "args": [
+          {"leaf": "SPECIAL_OP", "escape_contract": {"code_path": "05_Production/2.Factor_Model/2-1.STR_1715_AR_on_M4_R05_overlay_PG2/04_backtest_results/period_returns_layer5.csv :: m4_weight_lag × beta_R05_V5 (현행 2-3 noLayer4 공식, read-only)", "walk_forward": "production 기록 lag 컬럼 — 각 월 시작 전 확정값"}},
+          {"op": "ADD", "args": [
+            0.70,
+            {"op": "MUL", "args": [
+              0.30,
+              {"op": "SIGN", "args": [
+                {"op": "SUB", "args": [
+                  {"op": "DIV", "args": [
+                    {"leaf": "A4_benchmark_kospi200:cum_tr_index@cutoff"},
+                    {"op": "TS_MAX", "args": [{"leaf": "A4_benchmark_kospi200:cum_tr_index"}, 252]}
+                  ]},
+                  0.90
+                ]}
+              ]}
+            ]}
+          ]}
+        ]
+      },
+      "ast_note": "g = 0.70 + 0.30·SIGN(지수비 − 0.90) — 비교 연산자 𝒪 미등재로 SIGN 산술 등가 표현 (낙폭 상태 → 0.40, 정상 → 1.00; 경계 동률은 측도 0)",
+      "role": "overlay_exposure",
+      "restatement_exposure": 0
+    }
+  ],
+  "combination_rule": "single_factor",
+  "verdict": "designed",
+  "verdict_empirical": "NEGATIVE — 라벨 품질 사전 검정에서 결론 (recall 0.351 ≤ base 0.413, fisher p=0.795 — 사전등록 fail_line 발동, 성과는 참고 병기). 참고 성과도 유해: paired t −3.77 / ΔIR −0.439 / 회수율 return축 −343%",
+  "self_pit_check": {
+    "performed": true,
+    "leaves_checked": [
+      {"leaf": "benchmark:BM_Ret(일간)", "availability_rule": "t-1 close — cutoff = 홀딩 시작 직전 거래일, 창 종점 = cutoff 직접 확인 (max gap 4일)", "restatement_prone": false},
+      {"leaf": "layer5:m4_weight_lag×beta_R05_V5", "availability_rule": "production 기록 lag 값 — 월 시작 전 확정 (WT-017 동일)", "restatement_prone": false}
+    ],
+    "verdict": "clean"
+  },
+  "alpha_vector": null,
+  "confidence_vector": null,
+  "signal_matrix_ref": "stage_artifacts/WT_D20260802_019/alpha_scores.parquet (오버레이 노출 스케줄 Date/cutoff/dd/dd_state/g/e_book/e_cand — 횡단면 알파 아님)",
+  "factor_specs": [
+    {
+      "factor_family": "regime_overlay",
+      "proxy": "트레일링 낙폭 상태(DD_STATE) → 이진 노출 g (사전 고정 단일 규칙)",
+      "formula": "DD_STATE(t) = [벤치 TR지수(cutoff_t) ≤ 0.90 × max(지수, 트레일링 252거래일)]; e_cand = e_book × (DD_STATE ? 0.40 : 1.00)",
+      "lag_rule": "cutoff = 홀딩월 시작 직전 거래일 (assert_overlay_pit HARD + 위반 주입 발화 실증 + lag 스트레스 + strict A/B 인플레 0)",
+      "winsorization": "n/a",
+      "neutralization": "n/a",
+      "economic_rationale": "하락 에피소드 군집성 조건부 β 축소 — long-only 유일 방어 레버(overlay). 파라미터는 KR 비튜닝 외생 상수(−10% correction 문턱, 12M 창)",
+      "weight_theta": 1.0,
+      "references": ["WT-D20260802_017 오라클 진단 (상금 정량화)", "FQ-118 등재 근거"]
+    }
+  ],
+  "diagnostics": {
+    "canonical_port_t_nw_lag3": null,
+    "canonical_port_t_note": "overlay 라운드 — 측정 경로는 weighted_screen_bt(동일 contract build_benchmark_compare, NW lag-3, metric_type=weighted_screen). 알파 객체 = 노출 스칼라 (홀딩·가중은 book carrier 고정)",
+    "label_pretest_primary": {"label": "DD10_252d", "n_on": 92, "recall": 0.351, "precision": 0.424, "base_rate": 0.413, "fisher_p": 0.795, "verdict": "FAIL — recall ≤ base"},
+    "label_pretest_diagnostics_no_selection": [
+      {"label": "diag_DD5", "n_on": 155, "recall": 0.532, "precision": 0.381, "fisher_p": 0.259},
+      {"label": "diag_DD15", "n_on": 52, "recall": 0.180, "precision": 0.385, "fisher_p": 0.754},
+      {"label": "diag_VOL80_expanding", "n_on": 18, "recall": 0.081, "precision": 0.500, "fisher_p": 0.465},
+      {"label": "diag_M1NEG", "n_on": 113, "recall": 0.441, "precision": 0.434, "fisher_p": 0.616}
+    ],
+    "weighted_screen_book_port_t": 6.18,
+    "weighted_screen_cand_port_t": 4.18,
+    "paired_marginal_t_nw_lag3": -3.77,
+    "paired_marginal_mean_ann_pct": -7.35,
+    "delta_ir_cand_minus_book": -0.439,
+    "paired_marginal_t_ew_basis": -4.17,
+    "paired_marginal_t_lag_stress": -3.92,
+    "paired_marginal_t_cost_stress": -3.80,
+    "nowcast_only_paired_t": -3.53,
+    "oracle_diag_port_t": 7.87,
+    "oracle_paired_t_vs_book": 1.18,
+    "recovery_rate_return_axis": -3.43,
+    "recovery_rate_mdd_axis": 0.073,
+    "abs_mdd_book": -0.233,
+    "abs_mdd_cand": -0.222,
+    "abs_mdd_oracle": -0.092,
+    "n_months": 269,
+    "turnover_equity_annual": 10.3,
+    "overlay_exposure_churn_annual_book": 1.01,
+    "overlay_exposure_churn_annual_cand": 1.43,
+    "rank_ic": null, "icir": null, "monotonicity": null,
+    "subperiod_stability": null, "harvey_t_stat": null, "post_neutralization_ic": null,
+    "dsr_note": "selection_type=chain, n_trials=1 — DSR 게이트 비발동"
+  },
+  "selection_objective": "canonical_port_t",
+  "selection_objective_note": "사전등록 판별 = 라벨 품질 사전 검정 선행 + paired NW lag-3 t — 단일 규칙, 후보 간 선택 없음(n_trials=1). 진단 변형(DD5/DD15/VOL80/M1NEG)은 라벨 품질 지표만 병기, 성과 arm 미실행·선택 미사용",
+  "method_shopping_log": {
+    "alpha_agent": {
+      "candidates_tried": 1,
+      "method_log": [
+        {"name": "ddstate_10pct_252d_g40", "paired_marginal_t": -3.77, "selected": true, "note": "사전등록 단일 규칙 — 판정 대상이지 채택 아님(부정 판정, 사전 검정 단계 결론)"}
+      ]
+    }
+  },
+  "challenge_flags": [
+    "PRETEST_FAIL_PRIMARY_CONCLUSION: 사전등록 순서대로 라벨 품질 검정에서 결론 — DD_STATE recall 0.351 ≤ base 0.413 (fisher p=0.795). 성과 수치는 참고 병기로 강등 (사전등록 fail_line 발동)",
+    "ALL_VARIANTS_FAIL: 진단 변형 전부 비유의 — DD5 recall 0.532(방향은 양이나 p=0.259), DD15 0.180, VOL80 0.081, 단월음수 0.441(p=0.616). ★트레일링 가격-상태 라벨은 KR 월간 실현-하락을 유의하게 판별하지 못한다 — 오라클 상금은 nowcast로 접근 불가, 진짜 예측이 필요",
+    "REFERENCE_PERF_HARMFUL: 참고 성과도 유해 문턱 초과 — paired t −3.77 (−7.35%/yr), EW기저 −4.17, ΔIR −0.439. 기전: ON 92개월의 실현 벤치 연율 +10.4%·frac_bm_neg 0.424 ≈ base — 낙폭 상태는 반등월에도 켜져 있다(2009 반등·2020-04~06·2025 회복·2026-05 멜트업 +29.0%에 ON). 사전등록 honest posterior(MSM 병리와 부분 동형) 그대로 실현",
+    "MECHANICAL_DECOMPOSITION: BM<0월 한계 +1.81(기계적 이득) vs BM>0월 −4.87(지배) — WT-017과 동일 구조. 라벨 무판별 시 감β는 상승월 비용이 항상 지배",
+    "RECOVERY_RATE: return축 −343% (상금 +2.14%/yr 대비 −7.35%/yr — 상금의 3.4배를 파괴), MDD축 +7.3% (−23.3%→−22.2%, 오라클 14.1pp 대비 1.1pp). 0% 아래로 내려간 정직 보고",
+    "LEAK_FINGERPRINT_CLEAN: lag 스트레스 −3.92 < base −3.77 (leak 방향이 더 나쁨 — 누출 지문 없음), strict A/B 인플레 0%, 위반 주입 차단 발화",
+    "FRAME_PARITY: BARE/BOOK/ORACLE/BOOK_EW 수치가 WT-017과 자리수까지 일치 (6.40/6.18/7.87/5.33) — 승계 프레임 정확 재현 검증"
+  ],
+  "metric_type": "weighted_screen",
+  "n_trials": 1,
+  "selection_type": "chain"
+}
