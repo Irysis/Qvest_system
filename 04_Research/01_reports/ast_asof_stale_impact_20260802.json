@@ -1,205 +1,200 @@
 {
-  "schema": "ast_asof_stale_impact/v1",
-  "ran_at": "2026-08-02 20:13:37",
+  "schema": "ast_asof_stale_impact/v2",
+  "ran_at": "2026-08-02 20:25:20",
+  "note": "v1 정정: 두 레인을 동일 (Date,Ticker) 셀로 맞춤. v1 의 직교성 0.965->0.990 은 스테일 효과가 아니라 유니버스 차이(전 DB vs K200∪KQ150).",
   "sig": {
     "n": 259,
     "first": "2004-12-30",
     "last": "2026-06-30",
-    "n_stale_month": 94
+    "n_stale_month": 94,
+    "months_missing_in_stale_panel": "2004-12-30"
   },
-  "asof_verified_months": 259,
-  "cell_diff": [
-    {
-      "Factor_Name": "D01_IdioVol",
-      "months": 258,
-      "months_diff": 93,
-      "cells": 80246,
-      "cells_diff": 29136,
-      "pct_cells": 36.308352
-    },
-    {
-      "Factor_Name": "D03_RealVol",
-      "months": 258,
-      "months_diff": 93,
-      "cells": 80246,
-      "cells_diff": 29136,
-      "pct_cells": 36.308352
-    },
-    {
-      "Factor_Name": "D41_Vol_of_Vol",
-      "months": 258,
-      "months_diff": 93,
-      "cells": 80368,
-      "cells_diff": 29189,
-      "pct_cells": 36.319182
-    },
-    {
-      "Factor_Name": "D45_Downside_Dev",
-      "months": 258,
-      "months_diff": 93,
-      "cells": 80246,
-      "cells_diff": 29136,
-      "pct_cells": 36.308352
-    },
-    {
-      "Factor_Name": "D55_Vol_Trend",
-      "months": 258,
-      "months_diff": 93,
-      "cells": 80246,
-      "cells_diff": 29136,
-      "pct_cells": 36.308352
-    },
-    {
-      "Factor_Name": "M01_Mom_12_1",
-      "months": 258,
-      "months_diff": 93,
-      "cells": 79602,
-      "cells_diff": 28908,
-      "pct_cells": 36.31567
-    }
-  ],
   "ic": [
     {
       "Factor_Name": "D01_IdioVol",
-      "ic_mean": 0.051819,
-      "ic_sd": 0.185655,
-      "n_m": 259,
-      "ic_t": 4.491925,
-      "bad_ic": 0.117082,
-      "normal_ic": 0.004395,
-      "lane": "fixed"
+      "n_m": 258,
+      "ic_stale": 0.053183,
+      "ic_fixed": 0.052475,
+      "t_stale": 4.613601,
+      "t_fixed": 4.542741,
+      "bad_ic_stale": 0.118227,
+      "bad_ic_fixed": 0.11696,
+      "normal_ic_stale": 0.0056,
+      "normal_ic_fixed": 0.005302,
+      "d_ic": -0.000708,
+      "d_t": -0.07086
     },
+    {
+      "Factor_Name": "D03_RealVol",
+      "n_m": 258,
+      "ic_stale": 0.0497,
+      "ic_fixed": 0.048837,
+      "t_stale": 4.04703,
+      "t_fixed": 3.968151,
+      "bad_ic_stale": 0.136949,
+      "bad_ic_fixed": 0.135784,
+      "normal_ic_stale": -0.014126,
+      "normal_ic_fixed": -0.014769,
+      "d_ic": -0.000864,
+      "d_t": -0.078879
+    },
+    {
+      "Factor_Name": "D41_Vol_of_Vol",
+      "n_m": 258,
+      "ic_stale": 0.046714,
+      "ic_fixed": 0.046028,
+      "t_stale": 4.598985,
+      "t_fixed": 4.536604,
+      "bad_ic_stale": 0.108091,
+      "bad_ic_fixed": 0.106853,
+      "normal_ic_stale": 0.001815,
+      "normal_ic_fixed": 0.001531,
+      "d_ic": -0.000687,
+      "d_t": -0.062381
+    },
+    {
+      "Factor_Name": "D45_Downside_Dev",
+      "n_m": 258,
+      "ic_stale": 0.047702,
+      "ic_fixed": 0.047176,
+      "t_stale": 3.942321,
+      "t_fixed": 3.893246,
+      "bad_ic_stale": 0.13906,
+      "bad_ic_fixed": 0.138202,
+      "normal_ic_stale": -0.019131,
+      "normal_ic_fixed": -0.019413,
+      "d_ic": -0.000525,
+      "d_t": -0.049075
+    },
+    {
+      "Factor_Name": "D55_Vol_Trend",
+      "n_m": 258,
+      "ic_stale": 0.006214,
+      "ic_fixed": 0.005934,
+      "t_stale": 1.014066,
+      "t_fixed": 0.983891,
+      "bad_ic_stale": 0.016814,
+      "bad_ic_fixed": 0.013025,
+      "normal_ic_stale": -0.001541,
+      "normal_ic_fixed": 0.000747,
+      "d_ic": -0.00028,
+      "d_t": -0.030174
+    },
+    {
+      "Factor_Name": "M01_Mom_12_1",
+      "n_m": 258,
+      "ic_stale": 0.010751,
+      "ic_fixed": 0.011212,
+      "t_stale": 0.993283,
+      "t_fixed": 1.014682,
+      "bad_ic_stale": 0.016632,
+      "bad_ic_fixed": 0.016753,
+      "normal_ic_stale": 0.00645,
+      "normal_ic_fixed": 0.007158,
+      "d_ic": 0.00046,
+      "d_t": 0.021399
+    }
+  ],
+  "ic_stale_months_only": [
     {
       "Factor_Name": "D01_IdioVol",
-      "ic_mean": 0.053183,
-      "ic_sd": 0.185158,
-      "n_m": 258,
-      "ic_t": 4.613601,
-      "bad_ic": 0.118227,
-      "normal_ic": 0.0056,
-      "lane": "stale"
+      "n_m": 93,
+      "ic_stale": 0.052803,
+      "ic_fixed": 0.05084
     },
     {
       "Factor_Name": "D03_RealVol",
-      "ic_mean": 0.04814,
-      "ic_sd": 0.197741,
-      "n_m": 259,
-      "ic_t": 3.917951,
-      "bad_ic": 0.135899,
-      "normal_ic": -0.015632,
-      "lane": "fixed"
+      "n_m": 93,
+      "ic_stale": 0.045124,
+      "ic_fixed": 0.042728
+    },
+    {
+      "Factor_Name": "D41_Vol_of_Vol",
+      "n_m": 93,
+      "ic_stale": 0.043527,
+      "ic_fixed": 0.041622
+    },
+    {
+      "Factor_Name": "D45_Downside_Dev",
+      "n_m": 93,
+      "ic_stale": 0.044605,
+      "ic_fixed": 0.043147
+    },
+    {
+      "Factor_Name": "D55_Vol_Trend",
+      "n_m": 93,
+      "ic_stale": -0.005093,
+      "ic_fixed": -0.00587
+    },
+    {
+      "Factor_Name": "M01_Mom_12_1",
+      "n_m": 93,
+      "ic_stale": 0.001452,
+      "ic_fixed": 0.002728
+    }
+  ],
+  "top25_jaccard": [
+    {
+      "Factor_Name": "D01_IdioVol",
+      "jac_all": 0.93498,
+      "jac_stale_months": 0.819622,
+      "jac_clean_months": 1
     },
     {
       "Factor_Name": "D03_RealVol",
-      "ic_mean": 0.0497,
-      "ic_sd": 0.197257,
-      "n_m": 258,
-      "ic_t": 4.04703,
-      "bad_ic": 0.136949,
-      "normal_ic": -0.014126,
-      "lane": "stale"
+      "jac_all": 0.940609,
+      "jac_stale_months": 0.835237,
+      "jac_clean_months": 1
     },
     {
       "Factor_Name": "D41_Vol_of_Vol",
-      "ic_mean": 0.045435,
-      "ic_sd": 0.163006,
-      "n_m": 259,
-      "ic_t": 4.485747,
-      "bad_ic": 0.10688,
-      "normal_ic": 0.000785,
-      "lane": "fixed"
-    },
-    {
-      "Factor_Name": "D41_Vol_of_Vol",
-      "ic_mean": 0.046714,
-      "ic_sd": 0.163154,
-      "n_m": 258,
-      "ic_t": 4.598985,
-      "bad_ic": 0.108091,
-      "normal_ic": 0.001815,
-      "lane": "stale"
+      "jac_all": 0.887823,
+      "jac_stale_months": 0.688799,
+      "jac_clean_months": 1
     },
     {
       "Factor_Name": "D45_Downside_Dev",
-      "ic_mean": 0.046441,
-      "ic_sd": 0.194661,
-      "n_m": 259,
-      "ic_t": 3.839525,
-      "bad_ic": 0.138319,
-      "normal_ic": -0.020323,
-      "lane": "fixed"
-    },
-    {
-      "Factor_Name": "D45_Downside_Dev",
-      "ic_mean": 0.047702,
-      "ic_sd": 0.194353,
-      "n_m": 258,
-      "ic_t": 3.942321,
-      "bad_ic": 0.13906,
-      "normal_ic": -0.019131,
-      "lane": "stale"
+      "jac_all": 0.934076,
+      "jac_stale_months": 0.817114,
+      "jac_clean_months": 1
     },
     {
       "Factor_Name": "D55_Vol_Trend",
-      "ic_mean": 0.006066,
-      "ic_sd": 0.096685,
-      "n_m": 259,
-      "ic_t": 1.0097,
-      "bad_ic": 0.013001,
-      "normal_ic": 0.001027,
-      "lane": "fixed"
-    },
-    {
-      "Factor_Name": "D55_Vol_Trend",
-      "ic_mean": 0.006214,
-      "ic_sd": 0.098425,
-      "n_m": 258,
-      "ic_t": 1.014066,
-      "bad_ic": 0.016814,
-      "normal_ic": -0.001541,
-      "lane": "stale"
+      "jac_all": 0.790476,
+      "jac_stale_months": 0.418741,
+      "jac_clean_months": 1
     },
     {
       "Factor_Name": "M01_Mom_12_1",
-      "ic_mean": 0.01089,
-      "ic_sd": 0.177237,
-      "n_m": 259,
-      "ic_t": 0.988808,
-      "bad_ic": 0.01683,
-      "normal_ic": 0.006573,
-      "lane": "fixed"
-    },
-    {
-      "Factor_Name": "M01_Mom_12_1",
-      "ic_mean": 0.010749,
-      "ic_sd": 0.173804,
-      "n_m": 258,
-      "ic_t": 0.993415,
-      "bad_ic": 0.016598,
-      "normal_ic": 0.00647,
-      "lane": "stale"
+      "jac_all": 0.848329,
+      "jac_stale_months": 0.579235,
+      "jac_clean_months": 1
     }
   ],
   "orthogonality": [
     {
       "pair": "D03_RealVol ~ D01_IdioVol",
       "rho_stale": 0.964573,
-      "rho_fixed": 0.990414
+      "rho_fixed": 0.964658,
+      "d": 0.000085
     },
     {
       "pair": "D03_RealVol ~ D45_Downside_Dev",
       "rho_stale": 0.955251,
-      "rho_fixed": 0.961549
+      "rho_fixed": 0.955415,
+      "d": 0.000164
     },
     {
       "pair": "D03_RealVol ~ D41_Vol_of_Vol",
       "rho_stale": 0.796325,
-      "rho_fixed": 0.844557
+      "rho_fixed": 0.796296,
+      "d": -0.000029
     },
     {
       "pair": "D03_RealVol ~ D55_Vol_Trend",
       "rho_stale": -0.072062,
-      "rho_fixed": -0.034967
+      "rho_fixed": -0.074445,
+      "d": -0.002382
     }
   ]
 }
