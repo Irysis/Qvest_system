@@ -87,13 +87,14 @@ panelA <- as.data.table(read_parquet(PA))
 panelB <- as.data.table(read_parquet(PB))
 cat(sprintf("[fq002] Panel A %d행 / Panel B %d행\n", nrow(panelA), nrow(panelB)))
 
-# ── 측정 그리드 (canonical 하네스와 동일 소스) ───────────────────────────────
-W5 <- "04_Research/method_frontier/wt005_factor_timing"
-Rg <- as.data.table(read_parquet(file.path(W5, "grid_returns.parquet"))); Rg[, Date := as.Date(Date)]
-Bg <- as.data.table(read_parquet(file.path(W5, "grid_bench.parquet")));  Bg[, Date := as.Date(Date)]
-Lg <- as.data.table(read_parquet(file.path(W5, "grid_liq.parquet")));    Lg[, Date := as.Date(Date)]
-Fz <- as.data.table(read_parquet(file.path(W5, "family_z_panel.parquet"))); Fz[, Date := as.Date(Date)]
-SZ <- Fz[, .(Date, Ticker, Size)]
+# ── 측정 그리드 (신선 빈티지 — build_fq002_grid.R 산출. wt005 grid 는 07-03 pin 이라
+#    2026-07 폭락월 미편입 → 소비 금지. grid_vintage.txt 에 빈티지 기록) ─────────
+Rg <- as.data.table(read_parquet(file.path(OUTD, "grid_returns.parquet"))); Rg[, Date := as.Date(Date)]
+Bg <- as.data.table(read_parquet(file.path(OUTD, "grid_bench.parquet")));  Bg[, Date := as.Date(Date)]
+Lg <- as.data.table(read_parquet(file.path(OUTD, "grid_liq.parquet")));    Lg[, Date := as.Date(Date)]
+MEM <- as.data.table(read_parquet(file.path(OUTD, "grid_universe_size.parquet"))); MEM[, Date := as.Date(Date)]
+SZ <- MEM[, .(Date, Ticker, Size)]
+GRID_VINTAGE <- readLines(file.path(OUTD, "grid_vintage.txt"))[1]
 ym_of <- function(d) format(d, "%Y%m")
 me_dates <- Rg[, .(Date = max(Date)), by = .(ym = ym_of(Date))]
 
@@ -105,9 +106,11 @@ mk_scores <- function(panel, denom = c("revenue", "size")) {
     S <- merge(S, SZ, by = c("Date", "Ticker"), all.x = TRUE)
     S[, score := ifelse(is.finite(Size) & Size > 0, w_amt / Size, NA_real_)]
   }
-  # 유동성 필터 (t 시점 20d ADV — canonical 하네스 표준과 동일 소스)
+  # 멤버십 필터 (K200∪KQ150 at sig date — PIT 시변) + 유동성 필터 (t-1 30d ADV)
+  S <- merge(S, MEM[, .(Date, Ticker, member = TRUE)], by = c("Date", "Ticker"), all.x = TRUE)
   S <- merge(S, Lg, by = c("Date", "Ticker"), all.x = TRUE)
-  S <- S[!is.na(adv) & adv >= 2e8 & is.finite(score) & score > 0, .(Date, Ticker, score)]
+  S <- S[member %in% TRUE & !is.na(adv) & adv >= 2e8 & is.finite(score) & score > 0,
+         .(Date, Ticker, score)]
   S
 }
 
@@ -190,6 +193,7 @@ out <- list(
   task_id = "WT-D20260802_018", measured_at = format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z"),
   prereg = "04_Research/method_frontier/fq002_contract_magnitude_prereg.md",
   window_m = 12L, scope = "all", n_holdings = 20L, pilot_scope = "2023-08..2026-07 crawl",
+  grid_vintage = GRID_VINTAGE,
   ic = lapply(IC, function(z) z[setdiff(names(z), "ic_series")]),
   ic_series = lapply(IC, `[[`, "ic_series"),
   correction_ab = correction_ab,
