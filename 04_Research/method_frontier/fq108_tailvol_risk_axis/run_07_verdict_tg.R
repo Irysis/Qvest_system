@@ -330,6 +330,12 @@ sections <- list(
   list(type = "table", heading = "arm별 예측손실 (실 북 x 총분산)", emoji = "🔬",
        df = qlike_tbl,
        notes = c("QLIKE 는 분산 예측 오차 — 낮을수록 정확", "n=173개월 (2013-01~2026-06)")),
+  list(type = "bullet", heading = "쉬운 설명", emoji = "📖",
+       items = c(
+         "시도: 급등락을 잘 맞히는 지표를 위험 예측에 쓸 수 있는지 처음 확인",
+         "방법: 현행 위험모델에 그 항을 넣고 다음 달 실제 변동폭과 대조",
+         "결과: 예측이 나아지지 않음 — 모델이 이미 알던 정보였음",
+         "의미: 지표는 유효하나 위험모델의 그 자리는 소비처가 아니다")),
   list(type = "bullet", heading = "측정 무결성", emoji = "🛡",
        items = c(
          "양성 대조 통과 — 기존 추정기 개선을 하네스가 검출 (t -3.748)",

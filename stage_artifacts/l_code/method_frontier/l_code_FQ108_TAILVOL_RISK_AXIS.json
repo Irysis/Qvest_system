@@ -1,0 +1,23 @@
+{
+  "l_code": "L-MF-20260803_FQ108",
+  "strategy_id": "FQ108_TAILVOL_RISK_AXIS",
+  "grade": "N/A_method_frontier_diagnostic",
+  "core_reference": "stage_artifacts/method_frontier/fq108_verdict.json + 04_Research/method_frontier/fq108_tailvol_risk_axis/{preregistration.json,challenge_note.md}",
+  "lesson_text": "단기 꼬리-변동성(MAX5 계열 재료 = D35_RealVol_63d)의 위험-축 소비 판정. 사전등록 PRIMARY(실 book total-분산 x lw_nls, n=173) = 증분 없음: 현행 Σ 대각에 D35 항을 넣어도 QLIKE 개선 DM t = +0.724. 사전에 기록한 정직 posterior가 맞았다 — lw_nls 가 이미 흡수: 같은 D35 항이 linear LW(p>n 에서 Σ≈μI 퇴화, 대각 소멸) 위에서는 DM t -6.166(ΔQLIKE -1.951)인데 lw_nls 위에서는 -2.235(-0.049) = 97.5% 흡수. 더 나아가 D35 의 factor-DB 횡단면 z 는 같은 63일 창 실현분산 레벨(rv63) 위에 정보가 0(G_full 내 g35 계수 0.0045, FM-NW t 1.49; 두 재료 횡단면 spearman 0.9967). 전이(H3)는 실재하나 신규성 없음: 종목-레벨에서 g35 는 현행 Σ 대각 위에 log-분산 설명력을 +17.2%p 올리고(FM-NW t 48.67) crash 발생률 lift +4.22pp(기저 3.34%, NW t 12.10) 이지만, rv63 통제 시 증분 R² 는 +0.0099 로 붕괴하고 계수 부호가 뒤집힌다(t -8.66). ★구조적 발견 2건: (1) 종목-레벨 +17%p 개선이 포트 총분산 예측 개선으로 전이되지 않는다 — 집중 20종 북(HHI 0.115)의 총분산은 상관·시장 성분이 지배하므로 대각은 병목이 아니다. (2) load_month_factors 는 Z_Score_Aligned(횡단면 z)만 반환해 변동성의 레벨을 소거한다 — 변동성/꼬리 계열 factor_db 8종(D34/D35/D36/D41/D42/D45/D47/D50)을 위험모델 입력으로 쓰기에 형태가 부적합할 수 있고, 'D35 소비자 0'의 일부는 무관심이 아니라 형태 불일치일 수 있다. 파라미터 없는 하이브리드(상관=60m 불변, 분산=60m·63일 기하평균)는 4셀 중 3셀 유의 개선(-3.588/-2.756/-2.374)이나 PRIMARY 셀은 미달(-1.658) 이며 사후 추가 arm 이라 배선 근거 아님.",
+  "tags": "METHOD_FRONTIER;RISK_FORECAST_ACCURACY;TAIL_VOL;ABSORPTION;NO_INCREMENT;FACTOR_DB_LEVEL_LOSS;CONSUMPTION_FACE",
+  "created_at": "2026-08-03",
+  "research_mode": "method_frontier",
+  "created_by": "emit:risk-research",
+  "metric_type": "risk_forecast_accuracy_diagnostic",
+  "construction_type": "covariance_diagonal_treatment",
+  "mechanism_hypothesis": "D35_RealVol_63d 는 63일 실현변동성의 횡단면 순위 변환이다. lw_nls 의 비선형 고유값 수축은 개별 분산(대각)을 보존하므로(logsd 횡단면 분산 0.165 vs linear LW 0.000) 같은 정보를 이미 담고 있고, 남는 것은 z 변환으로 레벨이 소거된 잔여뿐이다. 사건 발생률 예측력과 2차 모멘트 예측력은 같은 잠재변수(단기 변동성)에서 나오므로 전이는 자동이지만, 그 잠재변수를 이미 쓰고 있는 추정기 위에서는 증분이 아니다.",
+  "family": "defense",
+  "family_source": "factor_registry category=defense (D35/D45/D05 전부)",
+  "measurement_integrity": "양성 대조 PASS (lw_nls vs linear LW DM t -3.748 = FQ-057 P1c 기지결과 -4.0 재현) + 위반 주입 발화 (미래 실현분산 주입 X_perfect DM t -3.420) + PIT 가드 198/198(팩터 as-of, fail-closed) 및 394/394(훈련창 <= 결정월). '검사 사망을 무증분으로 오독'하는 계통 결함 방어 완료.",
+  "next_probe": "FQ-108a 하이브리드 혼합비x창길이 사전등록 확인 라운드(PRIMARY=실 book TE, DSR 적용) / FQ-108b 대각 아닌 상관 채널(공통 꼬리의존 TDC 를 단기 vol 로 조건화) / FQ-108c 발생률 예측력을 CVaR·ES·tripwire 소비면으로 / FQ-108d vol-tail 계열 8종의 z-형태 정보손실 일괄 진단",
+  "revival_conditions": "상관-채널 라운드 유의(DM t <= -2.0) / 실 book 이 집중형에서 EW·분산형으로 전환(EW 셀 하이브리드 t -3.588) / 21d·126d horizon 에서 실 book total 채널 t <= -2.0 / factor_db 가 vol 계열을 레벨 형태로 노출",
+  "pin_tag": "fq057_20260718_171024",
+  "capital_claim": false,
+  "graduation_claim": false,
+  "weight_proposal": false
+}
