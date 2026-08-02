@@ -67,6 +67,9 @@
 
 1. **canonical 리프 강제**: AST 리프는 ast_field_map 등재 + registry 승격 스키마 통과분만. **저장 파생 패널의 FIELD 위장 금지** (사고2 유형 — §7b 기계화).
 2. **컴파일러-소유 AS_OF 조인**: forge 컴파일러가 리프 로드·조인·정렬을 AS_OF 규율로 **생성**한다 — 수기 merge 금지. 백테와 배포가 동일 컴파일 경로 (사고1·3 유형 — 사고3의 배포 코드 `Date<AS_OF`가 clean했던 반사실이 근거).
+   - **2-a 리프 행 라벨 = 소스가 보고한 as-of (합성 금지)** — 2026-08-02 신설, 실사고 회수. provider 는 리프 행의 `Date`(=avail_ts 기준)를 **요청한 sig_date 나 캘린더 규칙으로 만들어내지 않고**, 접근자가 보고한 실제 vintage 를 쓴다. `factor_db_monthly` 정본 = `load_month_factors()` 의 `attr(, "factor_db_asof_date")`(월 파일 Date 컬럼 = 거래일 월말). 미보고 시 **하드 중단**(요청일로 되돌리는 폴백 금지 — 그 폴백이 곧 결함이었다).
+     - 원 결함: provider 가 캘린더 월말(각 월 1일−1)로 라벨했는데 eval 그리드는 거래일 월말이라, 거래말<캘린더말 인 **94/259 월(36.3%, 2004-12~2026-06)** 에서 AS_OF 조인이 전월 값을 당겼다 — 1개월 stale(lag 방향이라 look-ahead 아님, **측정 감쇠**). 소비자: WT_D20260802_004(6리프 전량)·006(WT-004 패널 재사용 진단).
+     - **은폐 기전 = 검사가 결함과 같은 좌표계**: `tests/parity_factor_db.R` 의 EVAL_DATES 가 캘린더 월말 하드코딩이라 결함이 상쇄돼 rho=1.0 이 나왔다. 상설 검사(`08_Tests/contract_regression/test_ast_monthly_asof_label.R`)는 eval 그리드를 factor DB 와 **무관한** RAWDATA 거래일에서 만들고, 구판 라벨을 되돌리는 돌연변이 축으로 검출력을 매 실행 실증한다.
 3. **𝒪 표현공간 한정**: LEAD 부재 + 부호 없는 명시적 lag (사고4 유형 문법 제거).
 
 **verify() 알고리즘 = 원안 v1.0 §4 그대로 채택** (리프 avail_ts 상향 전파, TS_LAG 완화·롤링 최신관측 구속·AS_OF resolve). 판정 3종: `PASS` / `FAIL_LOOKAHEAD`(alpha 반려, forge 사이클 0 소비) / `WARN_RESTATEMENT`(통과 + 스펙 플래그 → judge·governor 입력).

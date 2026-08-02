@@ -92,11 +92,20 @@ frontier_coherence_scan <- function(root = .fc_root()) {
   if (length(STOPW) > length(unique(.tk_all)) * 0.3)
     stop("[coherence] 불용어가 토큰의 30% 초과 — 카드 축 무력화 위험. 임계 재검토 필요.")
 
-  OPEN <- c("frontier_open", "parser_gated", "data_gate_measured", "signal_round_negative_frontier_open")
+  OPEN <- c("frontier_open", "parser_gated", "data_gate_measured")
+  ## ★2026-08-02 수리 — 대상 선정이 open 후보의 19% 를 조용히 빼놓던 결함:
+  ##   status 는 자유서술이라 'frontier_open' 이 **접미**로 오는 판이 흔하다
+  ##   (config_scoped_negative_frontier_open 7건 · precheck_negative_frontier_open 1건 = 8건).
+  ##   구판은 startsWith 만 봐서 이 8건을 스캔조차 안 했다. 구판이 변형 하나
+  ##   (signal_round_negative_frontier_open)를 **손으로** OPEN 에 넣어둔 것이 "이 부류는 대상"
+  ##   이라는 의도의 증거 — 변형이 늘 때마다 손으로 따라가는 구조라 누락이 기본값이었다.
+  ##   포함-기반으로 교체(설정-scoped negative 라도 frontier 가 열려 있으면 착수 전 대상).
+  ##   settled/done/closed 계열은 이 토큰을 갖지 않아 오편입 없음(실측 122 entries).
+  is_open_status <- function(s) any(startsWith(s, OPEN)) || grepl("frontier_open", s, fixed = TRUE)
   rows <- list()
   for (e in Q$entries) {
     st <- g(e, "status")
-    if (!any(startsWith(st, OPEN))) next          # 이미 확정/차단된 항목은 대상 아님
+    if (!is_open_status(st)) next                 # 이미 확정/차단된 항목은 대상 아님
     ## ★2026-08-02 수리 — 부정 선언이 긍정 매칭으로 뒤집히던 결함:
     ##   구판은 hay 에 lane 을 넣었다. norm() 이 "_" 를 공백으로 바꾸므로
     ##   lane="non_return" → 토큰 {non, return} 이 되고, 그 "return" 이 D1(횡단 return-파생)

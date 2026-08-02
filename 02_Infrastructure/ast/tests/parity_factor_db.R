@@ -3,7 +3,8 @@
 #
 # 임무 S2d-1: 기존 팩터를 AST로 표현·컴파일해 factor DB 값과 대조.
 #   - bit-parity 불요 — 정의 차이 문서화 + 횡단면 rank corr(Spearman) 실측 보고.
-#   - 대상 월: 202605 · 202606 (sig_date = 2026-05-31 / 2026-06-30).
+#   - 대상 월: 202605 · 202606 (sig_date = 해당 월의 **거래일 월말** — RAWDATA 파생.
+#     2026-08-02 이전 판은 캘린더 월말 하드코딩이었고, 그것이 결함 은폐 원인이었다).
 #
 # 대상 3종 + 정의 차이 (사전 문서화):
 #  [P1] M01_Mom_12_1 (rawdata 리프 합성):
@@ -43,7 +44,21 @@ if (!exists("load_month_factors", mode = "function")) {
   source(file.path(ROOT, "02_Infrastructure/factor_db/factor_db_connector.R"))
 }
 
-EVAL_DATES <- as.Date(c("2026-05-31", "2026-06-30"))
+# ⚠ 2026-08-02 수정 — eval 그리드는 **거래일 월말**이어야 한다.
+#   구판은 캘린더 월말("2026-05-31" 등)을 하드코딩했는데, 그건 당시 provider 가
+#   행을 라벨하던 좌표계와 **같았다** — 결함(캘린더 월말 합성 라벨)과 검사가 같은
+#   좌표계에 서 있어 1개월 stale 이 상쇄되고 rho=1.0 이 나왔다. 실제 소비자(WT 드라이버·
+#   canonical_screen_bt)는 RAWDATA 거래일 월말을 sig_date 로 쓴다. 그 그리드로 검사한다.
+#   (거래말<캘린더말 = 실측 94/259 월. 상세: 08_Tests/contract_regression/test_ast_monthly_asof_label.R)
+EVAL_DATES <- local({
+  rp <- file.path(ROOT, ".cache/RAWDATA.parquet")
+  if (!file.exists(rp)) stop("[parity] RAWDATA.parquet 부재 — 거래일 월말 그리드 해석 불가")
+  rd <- data.table::as.data.table(arrow::read_parquet(rp, col_select = "Date"))
+  rd[, Date := as.Date(Date)]
+  me <- sort(rd[, .(d = max(Date)), by = .(ym = format(Date, "%Y%m"))]$d)
+  me[format(me, "%Y%m") %in% c("202605", "202606")]
+})
+stopifnot(length(EVAL_DATES) == 2L)
 
 leaf_ret <- list(type = "leaf", class = "FIELD", source = "rawdata", field = "Ret")
 log1p_ret <- list(type = "op", op = "LOG", args = list(

@@ -177,7 +177,35 @@ if (length(c9) && nzchar(c9)) {
   bad("card_axis_still_alive", "카드 축이 통째로 죽음 — 불용어가 과도하다")
 }
 
-unlink(c(r1, r2, r3, r4, r5, r6, r7, r8, r9), recursive = TRUE)
+# ── ⑩ 대상 선정 범위: status 의 frontier_open 이 **접미**여도 스캔 대상인가 ──────
+#   실사고(2026-08-02): OPEN 예측자가 startsWith 라 config_scoped_negative_frontier_open(7건)·
+#   precheck_negative_frontier_open(1건) = open 후보의 19% 가 **스캔조차 안 됐다**.
+#   구판이 signal_round_negative_frontier_open 하나를 손으로 넣어둔 것이 포함 의도의 증거였고,
+#   변형이 늘 때마다 손으로 따라가는 구조라 누락이 기본값이었다.
+#   실측(같은 코드베이스 like-for-like): 실원장 후보 12 → 19건(신규 7건, FQ-024/026/035/036/
+#   037/039/120). ★신규분에 DIST-AR-018 과 주제어 7개가 겹치는 FQ-037 이 포함된다.
+#   ★음성 통제 동반 — settled/done 계열까지 빨아들이면 이번엔 반대로 스크린이 노이즈로 죽는다.
+r10 <- mk_root(list(qe("FQ-T10a", "오버레이 국면 결합 재시도", status = "config_scoped_negative_frontier_open"),
+                    qe("FQ-T10b", "오버레이 국면 결합 재시도", status = "precheck_negative_frontier_open"),
+                    qe("FQ-T10c", "오버레이 국면 결합 재시도", status = "settled_negative"),
+                    qe("FQ-T10d", "오버레이 국면 결합 재시도", status = "done_consumed")),
+               list(dc("D2 시장타이밍 오버레이 초월 국면")), list(LIVE_CARD))
+s10 <- frontier_coherence_scan(r10)
+got10 <- if (is.null(s10$rows) || !nrow(s10$rows)) character(0) else s10$rows$id
+if (all(c("FQ-T10a", "FQ-T10b") %in% got10)) {
+  ok("open_status_suffix_in_scope", "frontier_open 이 접미인 status 도 스캔 대상")
+} else {
+  bad("open_status_suffix_in_scope",
+      sprintf("접미형 누락 — 대상 선정이 19%%를 조용히 버린다 (검출=%s)", paste(got10, collapse = ",")))
+}
+if (!any(c("FQ-T10c", "FQ-T10d") %in% got10)) {
+  ok("settled_status_excluded", "settled/done 계열은 여전히 제외 (범위 과확장 아님)")
+} else {
+  bad("settled_status_excluded",
+      sprintf("확정 항목이 대상에 편입됨 — 스크린이 노이즈로 무력화 (검출=%s)", paste(got10, collapse = ",")))
+}
+
+unlink(c(r1, r2, r3, r4, r5, r6, r7, r8, r9, r10), recursive = TRUE)
 cat(sprintf("TOTAL: %d pass / %d fail\n", PASS, FAIL))
 cat(toJSON(list(test = "frontier_coherence", pass = PASS, fail = FAIL,
                 total = PASS + FAIL), auto_unbox = TRUE), "\n", sep = "")

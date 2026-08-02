@@ -185,7 +185,15 @@ FACTOR_REG_PATH <- file.path(FACTOR_DB_DIR, "factor_registry.json")
 #'   names are direction-aligned and returned. This preserves C15 because the
 #'   caller still uses the PIT-safe connector rather than reading parquet
 #'   directly.
-#' @return data.table: Ticker, Factor_Name, Z_Score_Aligned (higher=better)
+#' @return data.table: Ticker, Factor_Name, Z_Score_Aligned (higher=better).
+#'   attr "factor_db_asof_date" = 반환 패널의 실제 계산 기준일(월 파일 Date 컬럼 =
+#'   해당 월 **거래일** 말일). 요청 sig_date 와 다를 수 있다 —
+#'     (a) 캘린더 월말로 요청했는데 거래말이 더 이르다 (실측 36% 월),
+#'     (b) 해당 월 파일 부재로 closest-earlier 파일이 대체 로드됐다.
+#'   행 라벨(Date)이 필요한 소비자는 이 attribute 를 쓰고 요청일로 **합성하지 말 것**
+#'   (합성 시 거래일 월말 그리드와 어긋나 AS_OF 조인이 전월값을 당김 — 2026-08-02
+#'   ast_compile factor_db_monthly provider 1개월 stale 사건).
+#'   attr "factor_db_asof_date" 는 로드 실패/0행 시 NA — 소비자는 fail-closed 처리.
 load_month_factors <- function(sig_date, coverage_min = 0.05, factor_names = NULL) {
   sig_d <- as.Date(sig_date)
   ym_tag <- format(sig_d, "%Y%m")
@@ -209,20 +217,36 @@ load_month_factors <- function(sig_date, coverage_min = 0.05, factor_names = NUL
   # v2.2: when caller requests specific factors, push the Factor_Name filter
   # through Arrow before collect(). This keeps the PIT-safe connector boundary
   # while avoiding full monthly factor DB materialization for combo runners.
+  # v2.4: Date 는 **선택(any_of)**, 나머지는 필수(all_of). 구 vintage 파케이가 Date 를
+  # 안 담고 있어도 로드는 살고, as-of 만 NA 로 정직하게 결손 보고된다(소비자 fail-closed).
+  # 필수 컬럼에 any_of 를 쓰면 결손이 조용히 통과하므로 섞지 않는다.
+  .req_cols <- c("Ticker", "Factor_Name", "Z_Score", "Coverage")
   dt <- if (!is.null(factor_names) && length(factor_names)) {
     as.data.table(
       open_dataset(fpath, format = "parquet") %>%
-        select(Ticker, Factor_Name, Z_Score, Coverage) %>%
+        select(all_of(.req_cols), any_of("Date")) %>%
         filter(Factor_Name %in% factor_names) %>%
         collect()
     )
   } else {
     # v2.1: col_select — only columns needed downstream (Coverage filter + direction
-    # alignment). Date/Raw_Value/Z_Sector/Rank_Pct unused here → IO/메모리 절감.
+    # alignment). Raw_Value/Z_Sector/Rank_Pct unused here → IO/메모리 절감.
+    # v2.4: Date 재포함 — 패널 as-of(실제 vintage) 보고용. 월당 단일값 date32 라
+    # IO 비용 실측 무의미(콜드 139→150ms/file, 웜 역전 — 측정 오차 내), 대신
+    # 소비자의 라벨 합성을 없앤다.
     as.data.table(read_parquet(
       fpath,
-      col_select = c("Ticker", "Factor_Name", "Z_Score", "Coverage")
+      col_select = c(all_of(.req_cols), any_of("Date"))
     ))
+  }
+
+  # v2.4 (2026-08-02): 패널 as-of = 월 파일의 Date 컬럼(빌더가 기록한 계산 기준일 =
+  # 거래일 월말). 필터 이전 값으로 확정한다 — coverage/factor 필터로 0행이 돼도
+  # "요청일로 되돌아가는" 침묵 대체가 생기지 않도록.
+  asof_date <- if ("Date" %in% names(dt) && nrow(dt) > 0L) {
+    max(as.Date(dt$Date), na.rm = TRUE)
+  } else {
+    as.Date(NA)
   }
 
   # Coverage filter: exclude factors with too few stocks.
@@ -250,6 +274,8 @@ load_month_factors <- function(sig_date, coverage_min = 0.05, factor_names = NUL
     "unknown"
   }
   attr(result, "factor_db_build_hash") <- build_hash
+  attr(result, "factor_db_asof_date") <- asof_date
+  attr(result, "factor_db_file") <- basename(fpath)
 
   result
 }
