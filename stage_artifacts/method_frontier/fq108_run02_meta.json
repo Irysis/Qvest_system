@@ -1,0 +1,14 @@
+{
+  "pin_tag": "fq057_20260718_171024",
+  "built_at": "2026-08-03 08:01:38",
+  "factors": ["D35_RealVol_63d", "D45_Downside_Dev", "D05_MaxRet"],
+  "c15_route": "load_month_factors(reb_date, factor_names=...) — parquet 직접 load 없음",
+  "pit_guard": "월별 assert: asof 비NA ∧ asof <= 월말 트레이딩일 ∧ asof 월 == 리밸 월 (fail-closed stop)",
+  "n_factor_rows": 1219090,
+  "n_months_ok": 198,
+  "n_months_total": 198,
+  "rv63_rule": "trailing 63 거래일 Σr² × 21/63 (월간분산 스케일), 월말 t 기준 (rawdata 파생, C15 무관)",
+  "stock_rv_rule": "홀딩월 일간 Σr² (n_days>=10)",
+  "material_check_spearman_g_d35_vs_logrv63_median": 0.9967,
+  "monster_capped_daily": 41
+}

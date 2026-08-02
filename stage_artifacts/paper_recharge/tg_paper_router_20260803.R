@@ -10,54 +10,38 @@ source(file.path(root, "02_Infrastructure/telegram/telegram_notify.R"))
 
 tg_agent_brief(
   agent      = "AlphaSearch",
-  title      = "논문 라우터 v2 — 리서치 소스 배분 + 팩터 마이닝 (20260803)",
+  title      = "논문 라우터 v2 — 20260803 배분 결과",
   relaxed    = TRUE,
   force      = TRUE,
   lock_scope = "paper_router_20260803",
   sections   = list(
     list(
-      header = "리서치 소스 배분 결과",
-      body   = paste0(
-        "오늘 분석 논문: 38편 (arXiv) + curated 0편 신규\n",
-        "• alpha: 1편\n",
-        "• optimizer: 1편\n",
-        "• risk: 3편\n",
-        "• regime: 2편\n",
-        "• skip: 31편\n\n",
-        "팩터후보 testable: 1건 | uncertain: 1건\n",
-        "AUTORUN 대상: 1편 (VoltRank_MC)"
-      )
+      header = "소스 배분 (38편)",
+      body   = "alpha:1 / optimizer:1 / risk:3 / regime:2 / skip:31\ncurated 신규:0 (15편 기처리)"
     ),
     list(
-      header = "AUTORUN — alpha-search 에이전트 스폰",
-      body   = paste0(
-        "[1/1] VoltRank_MC (arxiv:2607.27461)\n",
-        "논문: \"Are Three Matrices All You Need To Beat the Market?\"\n",
-        "신호: 변동성 순위 Markov 전이 → 저변동성 예측 종목 long\n",
-        "근거: S&P500에서 vol-rank 1기간 예측 가능, Sharpe 1.08~1.44 실증\n",
-        "alpha-search 에이전트 실행 중..."
-      )
+      header = "AUTORUN 결과",
+      body   = "VoltRank_MC (2607.27461) — Grade C FAIL\nPORT_t -1.88 / OOS 0.435 / MDD -58.4%\n기전: KR 저변동 예측 = 상승기 beta 압축"
     ),
     list(
-      header = "팩터후보 testable",
-      body   = paste0(
-        "VoltRank_MC (arxiv:2607.27461 · route=alpha)\n",
-        "정의: 월별 20일 RV 순위 → 12M rolling Markov 전이행렬 → 예측순위 낮은 종목 long\n",
-        "신규성: D01/R12 단순 저변동성과 달리 전이 예측 프레임\n",
-        "KR 구현: RAWDATA 가격만 사용, PIT 클린"
-      )
+      header = "testable 팩터후보",
+      body   = "VoltRank_MC: vol-rank Markov 전이 → 저변동 예측 long\nDB 신규: D01/R12와 다른 전이 예측 프레임"
     ),
     list(
-      header = "optimizer/risk/regime 큐",
-      body   = paste0(
-        "[optimizer] 2607.01705 \"Portfolio Optimization under Fast and Slow Latent Drift\"\n",
-        "  → MACD = Kalman 필터 잠재 drift 추정치 도출. α̂ 고정 A/B 대상\n\n",
-        "[risk] 2607.24410 \"The Fundamental Structure of Risk\" (CD-DFM 특성→공분산)\n",
-        "[risk] 2607.25459 \"Emergent Latent-State Computation under SV\"\n",
-        "[risk] 2607.25189 \"Long-memory GARCH via 2D Markov chain\"\n\n",
-        "[regime] 2607.27063 China A주 군집지표 CSAD → KR 오버레이 가능\n",
-        "[regime] 2607.19497 \"Science and Practice of Trend-Following\" → 저주파 스펙트럼 질량"
-      )
+      header = "optimizer 큐",
+      body   = "2607.01705 MACD=Kalman latent drift 추정치\nalpha 고정 A/B 대상 (paper_research_dispatch.R)"
+    ),
+    list(
+      header = "risk 큐 (3편)",
+      body   = "CD-DFM(2607.24410) 특성→공분산\nLatent-SV(2607.25459) Transformer 표현\nLong-mem GARCH(2607.25189) 2D Markov"
+    ),
+    list(
+      header = "regime 큐 (2편)",
+      body   = "CSAD 군집지표(2607.27063) KR 오버레이 소재\n추세추종 스펙트럼(2607.19497) 저주파 질량"
+    ),
+    list(
+      header = "next_probe",
+      body   = "NP1: low-vol + 모멘텀/퀄리티 복합신호\nNP2: vol_bin 전이 엔트로피 → 국면 보조지표"
     )
   )
 )
