@@ -33,12 +33,28 @@
       "factor_id": "F1_max5_exclusion",
       "ast": {
         "op": "WHERE",
+        "ast_note": "WHERE(x=score_eff, cond=0.90-CS_RANK(max5)) — cond>0 ⟺ 횡단면 백분위 < 0.90 = 상위 10% 배제. 𝒪 최소집합 내 표현 (LT/CS_RANK_PCT 불요)",
         "args": [
           {
-            "op": "LT",
+            "leaf": "STORED_SCORE",
+            "field": "score_eff (STR_1715 cleanT1 — incumbent 선별 점수, 필터의 소비 기질)",
+            "escape_contract": {
+              "escape_type": "STORED_SCORE",
+              "panel_path": "05_Production/2.Factor_Model/2-1.STR_1715_AR_on_M4_R05_overlay_PG2/02_holdings_universe/alpha_scores_str1715_268m_cleanT1.parquet",
+              "built_at": "2026-07-14",
+              "vintage": "factor_db_T-1_off0_clean",
+              "production_parity_verified": true
+            }
+          },
+          {
+            "op": "SUB",
             "args": [
               {
-                "op": "CS_RANK_PCT",
+                "type": "const",
+                "value": 0.9
+              },
+              {
+                "op": "CS_RANK",
                 "args": [
                   {
                     "leaf": "SPECIAL_OP",
@@ -52,20 +68,8 @@
                     }
                   }
                 ]
-              },
-              0.9
+              }
             ]
-          },
-          {
-            "leaf": "STORED_SCORE",
-            "field": "score_eff (STR_1715 cleanT1 — incumbent 선별 점수, 필터의 소비 기질)",
-            "escape_contract": {
-              "escape_type": "STORED_SCORE",
-              "panel_path": "05_Production/2.Factor_Model/2-1.STR_1715_AR_on_M4_R05_overlay_PG2/02_holdings_universe/alpha_scores_str1715_268m_cleanT1.parquet",
-              "built_at": "2026-07-14",
-              "vintage": "factor_db_T-1_off0_clean",
-              "production_parity_verified": true
-            }
           }
         ]
       },
