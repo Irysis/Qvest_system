@@ -278,11 +278,33 @@ if command -v git >/dev/null 2>&1 && git -C "$PROJECT" rev-parse --git-dir >/dev
     age=$(( ct > 0 ? ($(date +%s) - ct) / 86400 : -1 ))
     [ "${ahead:-0}" -gt 0 ] 2>/dev/null && WTV_AHEAD=$((WTV_AHEAD + 1))
     [ "${dirty:-0}" -gt 0 ] 2>/dev/null && WTV_DIRTY=$((WTV_DIRTY + 1))
-    if [ "${dirty:-0}" -gt 0 ] 2>/dev/null && [ "${age:-0}" -ge "$WT_STALE_DAYS" ] 2>/dev/null; then
+
+    # ── [2026-08-02 판정축 교체] 방치 '연차' → 미반영 '내용' ─────────────────
+    #  실측 근거(08-02): 강조된 3건(angry-bhabha·great-burnell·suspicious-diffie)은 전부
+    #  merged_upstream = **무해**였고, 정작 이틀간 main 에 없던 유일한 좌초
+    #  (serene-liskov: resolve_project marker 게이트 6파일)는 **방치 0d 라 강조되지 않았다**.
+    #  기전: age 는 *브랜치 마지막 커밋* 시각이라, 커밋 없이 미커밋 변경만 쌓인 worktree 는
+    #  항상 '활동 중'으로 보인다 — 바로 그게 가장 위험한 형태인데.
+    #  ∴ 연차가 아니라 **main 에 아예 없는 파일 수**가 지문이다(강한 미반영 신호).
+    #  내용이 다른 경우는 main 이 앞설 수도 있어(08-02 run_all_hooks.sh 가 그 사례) 약한 신호로 분리.
+    wt_missing=0; wt_differs=0
+    while read -r _st _f; do
+      [ -z "$_f" ] && continue
+      case "$_f" in
+        qepm/observability/*|*.log|.cache/*) continue ;;   # 관측 원장·로그·캐시는 병합 대상 아님
+      esac
+      if [ ! -e "$PROJECT/$_f" ]; then
+        wt_missing=$((wt_missing + 1))
+      elif ! cmp -s "$wt/$_f" "$PROJECT/$_f" 2>/dev/null; then
+        wt_differs=$((wt_differs + 1))
+      fi
+    done <<< "$(git -C "$wt" --no-optional-locks status --porcelain 2>/dev/null | sed 's/^...//;s/^/X /')"
+
+    if [ "${wt_missing:-0}" -gt 0 ] 2>/dev/null; then
       WTV_STALE=$((WTV_STALE + 1))
-      WTV_LINES="${WTV_LINES}    [방치 ${age}d] $(basename "$sb"): 미커밋 ${dirty}파일$([ "${ahead:-0}" -gt 0 ] && echo " + 미병합 ${ahead}커밋")\n"
+      WTV_LINES="${WTV_LINES}    [★미반영 ${wt_missing}파일] $(basename "$sb"): main 에 없는 파일 존재 (age ${age}d, 미커밋 ${dirty})$([ "${ahead:-0}" -gt 0 ] && echo " + 미병합 ${ahead}커밋")\n"
     elif [ "${ahead:-0}" -gt 0 ] 2>/dev/null || [ "${dirty:-0}" -gt 0 ] 2>/dev/null; then
-      WTV_LINES="${WTV_LINES}    [활동 ${age}d] $(basename "$sb"): $([ "${dirty:-0}" -gt 0 ] && echo "미커밋 ${dirty}파일 ")$([ "${ahead:-0}" -gt 0 ] && echo "미병합 ${ahead}커밋")\n"
+      WTV_LINES="${WTV_LINES}    [내용반영됨 ${age}d] $(basename "$sb"): 미커밋 ${dirty}파일 · main 부재 0 · 상이 ${wt_differs}(main 이 앞설 수 있음)$([ "${ahead:-0}" -gt 0 ] && echo " + 미병합 ${ahead}커밋")\n"
     fi
   done <<< "$(git -C "$PROJECT" worktree list --porcelain 2>/dev/null | awk '/^worktree /{w=$2} /^branch /{print w"|"$2}')"
 
@@ -291,9 +313,9 @@ if command -v git >/dev/null 2>&1 && git -C "$PROJECT" rev-parse --git-dir >/dev
   elif [ "$WTV_AHEAD" -eq 0 ] && [ "$WTV_DIRTY" -eq 0 ]; then
     echo "[boot] Worktree: OK — ${WTV_N}개 전부 병합·클린"
   else
-    echo "[boot] WARN: Worktree ${WTV_N}개 중 미커밋 ${WTV_DIRTY} / 미병합 ${WTV_AHEAD}$([ "$WTV_STALE" -gt 0 ] && echo " · ★${WTV_STALE}건 ${WT_STALE_DAYS}일+ 방치")"
+    echo "[boot] WARN: Worktree ${WTV_N}개 중 미커밋 ${WTV_DIRTY} / 미병합 ${WTV_AHEAD}$([ "$WTV_STALE" -gt 0 ] && echo " · ★${WTV_STALE}건 main 미반영 파일 보유")"
     printf "%b" "$WTV_LINES"
-    [ "$WTV_STALE" -gt 0 ] && echo "    → 방치분은 '수리했는데 main에 없음' 실사고 패턴(date32 writer·lcode harvester). 병합 여부 확인 필요"
+    [ "$WTV_STALE" -gt 0 ] && echo "    → ★미반영 = main 에 그 파일이 아예 없다 = '수리했는데 main에 없음' 실사고 패턴(date32 writer·lcode harvester·08-02 resolve_project marker). 병합 판단 필요"
     [ "$WTV_DIRTY" -gt 0 ] && echo "    → 확인: git -C <worktree경로> status  ·  목록: git worktree list"
   fi
 
