@@ -217,6 +217,29 @@ QEPM Codex Critic Round(외부 codex auto-spawn)는 **2026-06-30 v8.2에서 폐�
 - **현행 기준선 실측 (2026-07-26 21:05)**: `hooks 266`(suite 14) · `regime 5` · `contract_regression 54` · `continuity 31`, fail 축 전부 0. 이력 27 → 34 → 57 → 157 → 182 → 225 → **266** (4트랙 SUITES 편입마다 재승격).
 - **차단 실효 실측**: SUITES에서 임의 1 suite 제거 후 재수집 → `hooks 266 → 225 (-41)` 경보 + exit 1 발화 확인, 원복(diff 0). ★기준선이 실측보다 낮으면 래칫은 조용히 무력하므로, **SUITES 편입 후 재승격은 의무**.
 
+## 종료코드 판정 테스트의 사전 점검 의무 (2026-08-02 신설 — 실사고)
+
+총계 래칫이 **못 잡는** 계측 사망이 있다: 총계는 그대로고 pass/fail 만 이동하는 형태다.
+`test_deployed_holdings_check.sh` 가 14/14 FAIL(전 케이스 uniform `exit 49`)이었는데, 원인은 검거 실패가
+아니라 **검사기 미실행**이었다(worktree 에 venv junction 부재 → bare `python3` = Windows Store 스텁).
+
+★핵심은 다음 변종이다: `-x` 만 보고 인터프리터를 채택하면 **pandas 없는 인터프리터**가 뽑혀
+`ModuleNotFoundError` → **rc=1** 이 나오는데, rc=1 은 "위반을 검거했다"의 기대값이다.
+돌연변이 실측 = 완전히 죽은 검사기가 **10 pass / 4 fail**. uniform 49 는 이상해 보이지만
+10/14 는 "대체로 동작"으로 읽힌다 — 은폐도가 더 높다.
+
+- **종료코드로 판정하는 테스트는, 죽은 프로세스의 rc 가 성공 기대값과 겹치는지를 먼저 물을 것.**
+- 인터프리터는 실행 가능(`-x`)이 아니라 **기능 프로브**(필요 모듈 import)로 채택한다.
+  bare `python3`/`python` 은 후보에서 제외한다(Store 스텁, rc 49). cf. [[reference-python3-windows-stub-use-qvest-py]]
+- 케이스 실행 *전에* **카나리아**(검사 대상 `--help` → rc 0 + 기대 문자열)로 계측 생존을 확정하고,
+  실패 시 케이스 결과를 **발행하지 않고** `{"pass":0,"fail":1,"preflight":"<사유>"}` 로 끊는다.
+  0/N 은 반드시 "검거 실패"로 오독되기 때문이다.
+- 사전 점검 자체도 **위반 주입**으로 고정한다(죽은 인터프리터·죽은 검사기 주입 → 발화 확인).
+  주입 대상은 실물이 없으면 **합성**할 것 — "주입 대상 부재 → 자동 통과"는 같은 계통의 새 구멍이다.
+
+정본 구현 = `08_Tests/portfolio/test_deployed_holdings_check.sh`(T14~T16 축). 상세: 메모리
+[[project-dead-checker-exitcode-collision-20260802]].
+
 ## v8.1.1 정합 (2026-06-10)
 
 - settings.json 46개 hook DIR = `${CLAUDE_PROJECT_DIR:-${QM_ROOT:-$PWD}}` 3중 fallback (구 경로 glob 폐기 — 46-hook 전수 침묵사망 사건 수리)
