@@ -1,0 +1,60 @@
+{
+  "task_id": "WT-D20260802_002",
+  "fq_id": "FQ-084",
+  "registered_at": "2026-08-02",
+  "registered_before_any_measurement": true,
+  "selection_type": "chain",
+  "selection_type_rationale": "가설주도 단일 설계 — 게이트 정의 1건을 메커니즘에서 사전 도출해 고정한다. 임계값 q=0.5(중앙값)는 튜닝 산물이 아니라 '절반'이라는 비-임의 분할이며, q=0.3/0.7 은 argmax 후보가 아니라 민감도 보고 전용(선택 금지). 대조군 4종은 경쟁 후보가 아니라 동일 가설의 반증 장치다. n_trials(선택 대상 후보 집합) = 1.",
+  "base_signal": {
+    "panel": "05_Production/2.Factor_Model/2-1.STR_1715_AR_on_M4_R05_overlay_PG2/02_holdings_universe/alpha_scores_str1715_268m_cleanT1.parquet",
+    "column": "score_eff",
+    "label": "production_parity_verified",
+    "vintage": "factor_db_T-1_off0_clean",
+    "immutable": true,
+    "note": "신호는 일절 가공하지 않는다. 게이트는 스코어가 아니라 적용 유니버스만 조건화한다."
+  },
+  "gate_primary": {
+    "name": "FA_share_3m",
+    "formula": "sum(|Foreign_netbuy_KRW|, trailing 3 complete months ending at month(d0)) / sum(Close*Vol, same window)",
+    "interpretation": "해당 종목 거래대금 중 외국인 순매수 불균형이 차지하는 몫 = 외국인 marginal trader 존재 강도",
+    "threshold": "월별 횡단 상위 50% (중앙값 분할)",
+    "why_ratio_not_level": "분모가 그 종목 자신의 거래대금이므로 규모·유동성으로 기계적으로 커지지 않는다 — 대조군 2종(유동성/사이즈)과의 구분을 설계 단계에서 확보",
+    "direction_free": "절대값 사용 — 순매수 '방향'은 쓰지 않는다. 선례 4건(Foreign NetBuy / Anti-Herding / DIST-QPM-005 / 외국인 국면)은 전부 방향을 신호로 썼다. 본 게이트는 방향-불변 활동량만 쓴다."
+  },
+  "pit": {
+    "sig_date": "d0 = 홀딩월 직전 월말 거래일 (canonical screen 키)",
+    "gate_window": "month(d0) 를 포함한 직전 3개 완결 캘린더월. 홀딩월 데이터 0 사용.",
+    "t_minus_1": "게이트 관측 최종일 = d0 (홀딩월 시작 이전) → 홀딩월 수익에 대해 t-1",
+    "lag_stress": "게이트 창을 1개월 추가 지연(month(d0)-1 종료)한 판 병행 측정 — 붕괴 시 동월 누출 의심",
+    "vintage_check": "investor_wide / investor_all / investor_foreign 3파일 내용기준 max(Date) 일치 확인 (2026-07-17 실사고 재발 검사)"
+  },
+  "arms": [
+    {"id": "A_base",        "desc": "게이트 없음 — 유니버스 = 패널 ∩ 유동성 2e8"},
+    {"id": "B_gate",        "desc": "FA_share_3m 상위 50% 만 인정"},
+    {"id": "B_gate_low",    "desc": "★방향 반증: FA_share_3m 하위 50% — 메커니즘이 참이면 base 보다 나빠야 함"},
+    {"id": "C_liq_matched", "desc": "★대조군1: adv(20d) 상위 50% — 게이트와 동일 카디널리티. B≈C 면 유동성필터 재명명"},
+    {"id": "D_size_matched","desc": "★대조군2a: Size 상위 50% — 동일 카디널리티. B≈D 면 size 주입"},
+    {"id": "E_gate_sizeneutral","desc": "★대조군2b: size 5분위 내에서 FA_share 상위 50% — size 분포 보존. B의 효과가 여기서 소멸하면 size 아티팩트"},
+    {"id": "P_random",      "desc": "★placebo: 무작위 50% × 20 seed — '유니버스를 절반으로 줄이면 무엇이든 변한다'의 귀무분포"}
+  ],
+  "measurement": {
+    "instrument": "02_Infrastructure/contracts/canonical_screen_bt.R::canonical_screen_bt()",
+    "metric_type": "canonical_screen",
+    "primary": "portfolio_alpha_t_nw_lag3 (cap-w 벤치 = KOSPI200_total_return)",
+    "dual_basis": "diag_ew_universe (EW-유니버스 벤치) 병기 — 기각 전 확인 의무",
+    "cap_tier": "diag_cap_tier (MEGA 1-10 / MID 11-30 / OTHER 31+) 분해 병기",
+    "top_n": 25,
+    "cost_bps_oneway": 15,
+    "liq_min": 200000000,
+    "proxy_prohibited": "손계산 금지 (measurement-graduation §1)"
+  },
+  "success_criterion_prereg": {
+    "necessary": "B_gate PORT_t > A_base PORT_t",
+    "differentiating_1": "B_gate PORT_t 가 C_liq_matched 와 D_size_matched 를 모두 상회 (같으면 재탕 판정)",
+    "differentiating_2": "E_gate_sizeneutral 이 A_base 를 상회 (소멸하면 size 아티팩트)",
+    "differentiating_3": "B_gate 가 P_random 분포의 상위 꼬리 밖 (95th pct 초과) — 단순 축소 효과가 아님",
+    "directional": "B_gate_low < A_base",
+    "verdict_rule": "necessary 미충족 → config-scoped negative. necessary 충족이나 differentiating 미충족 → '재탕(유동성/사이즈 재명명)' 정직 보고."
+  },
+  "graduation_note": "본 산출은 alpha-stage canonical screening 실측이다. HARD 3종(PORT_t 2.95 / oos_retention 0.7 / calmar 0.64) 판정은 forge-authoritative 값에만 적용 — 여기서 graduation PASS 선언 금지."
+}
