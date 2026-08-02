@@ -1,7 +1,7 @@
 {
  "schema_version": "1.0",
  "sot": "02_Infrastructure/docs/qvest_v8_3_alpha_discovery_sot.md §4",
- "updated": "2026-08-02 (WT-020 MAX5 crash 예측력 capability_established — 증분 실재하나 정체는 단기창 변동성(63d 통제 시 소멸), 위기 역효과 원인=양측 꼬리. 파생 FQ-123 단기 vol 흡수 / FQ-124 문턱형 tripwire 등재. 총 124건)",
+ "updated": "2026-08-02 (WT-018 계약수주 파일럿 — primary 미달·전구간 미지불, 시총-분모 lead 생존. 파생 FQ-125 lead 확정 시도 / FQ-126 소비면(FQ-125 선행) 등재. 총 126건)",
  "consume_rule": "새 발굴 리서치 착수 전: hypothesis_index lookup → 본 큐 확인 → owner/status 갱신. 완료 시 result_ref(L-code/보고서) 기입. dohoon_decision 항목은 세션 임의 착수 금지.",
  "entries": [
   {
@@ -30,8 +30,8 @@
    "ev_rationale": "07-06 4-프로브에서 2번째 deferred lead로 지정. long-side·directional — short-side-견인 벽(no-short 미하베스트) 회피 가능성",
    "wall_check": "long-side 신호라 'short-side-견인 × no-short' 벽 회피 시도. IC→PORT_t 전이는 미검증",
    "data_gate": "OPEN (2026-08-02 실측). pblntf_ty='I'(거래소공시) 확정 — A/B/C/D/E/F/J 7종 전부 0건(insider 가 'E'로 0건 받은 실사고 사전 차단). 발생률: 유니버스 348사 교집합 87건/월, 체결·정정제외 40건/월. 전구간 2005-01~2026-07 259개월 → document.xml 22,533 호출(3.2일) / 체결만 10,360(1.5일) @ 일 7,000 예산. 파서 3/3 클린 추출(rcept 20260731800547·800210·800216). 단위: 계약금액·최근매출액 모두 '(원)' 동일(분모 변환 불요). 공시가 최근매출액을 동봉 → 시총 조인 없이 네이티브 분모 사용 가능. 주의: 한화오션 주석 '억원 미만 반올림'(대형계약 정밀도 손실) / HD현대마린엔진 '계약일 최초고시환율 적용'(외화계약 PIT 정상) / 신규-변경계약 구조화 구분자 부재 — 자유텍스트 비고 파싱만 가능, 표본 3건 중 1건이 변경계약.",
-   "owner": "alpha-research WT-D20260802_018 (2026-08-02 파일럿 완료)",
-   "status": "pilot_measured_negative_primary",
+   "owner": "Q-Lead (WT-D20260802_018 판정 수집 2026-08-02)",
+   "status": "pilot_measured_lead_open",
    "next_action": "next_probe: ① 분모 시총(계약금액/시총) primary 신규 사전등록 라운드 — 파일럿 진단 IC t=+1.97, size-잔차화 +1.91 생존(1/Size 역풍 -1.96 하), 문턱 근방이라 멤버십 섭동 확인 포함. 데이터 이미 지불됨(재크롤 불요). ② 랭킹 아닌 필터/오버레이 소비면 측정(WT-014/016 프레임: MAX5 랭킹 -1.616 → 필터 ΔIR +0.169 선례). 부활 조건: ①이 t>2.5 재현 시 전구간 크롤 지불 검토 / 2005~2016 조선·플랜트 수주 사이클 구간은 미검(공시 규정 상이).",
    "source_refs": [
     "memory: next_session_task 07-06 ★2번째 deferred lead",
@@ -40,7 +40,11 @@
     "WT-D20260802_018 alpha_package.json (2026-08-02)",
     "04_Research/method_frontier/fq002_contract_magnitude/pilot_results.json"
    ],
-   "verdict": "파일럿(36개월, n=24 IC월) primary 계약금액/최근매출액: rank-IC +0.016 t=+0.52 — config-scoped 미달, 전구간(22,533호출) 확장 지불 안 함. 정정 A/B 누출 지문 없음. 4셀 포트 PORT_t 전량 음수(전이 벽 재현)."
+   "verdict": "파일럿 실측 (2026-08-02, WT-D20260802_018, 36개월·5,169 호출). 사전등록 primary(계약금액/최근매출액 12M): rank-IC +0.0164, t_NW 0.570, ICIR 0.107, n=24 — 부호는 가설 방향이나 크기 미달 → **전구간(22,533 호출) 확장 미지불**. ★시총-분모 셀 lead 생존: IC +0.0806, t_plain 1.972/t_NW 1.702, ICIR 0.403 + 소형주 교란 3축 기각(pure 1/Size IC -0.066 역풍 · 상관 -0.025 직교 · 잔차화 후 +0.0774 t 1.906 생존). 문턱 근방이라 WT-013 섭동 취약성(sd 0.378) 명시 — 'lead'이지 '확립' 아님. 커버리지 77종/월(12M 창이 희소성 완화). 정정 누출 없음(paired -0.74). dual-basis 4셀 전량 PORT_t 음수 = 전이 벽 재현.",
+   "revival_conditions": [
+    "FQ-125(시총-분모 신규 사전등록)에서 t>2.5 재현 시 전구간 크롤 지불",
+    "2005~2016 조선·플랜트 수주 사이클 구간 미검 — 그 구간 커버리지 확보 시 재개"
+   ]
   },
   {
    "id": "FQ-003",
@@ -2314,6 +2318,31 @@
    "owner": "미배정",
    "status": "frontier_open",
    "registered": "2026-08-02 Q-Lead (WT-D20260802_020 NP-2 파생)"
+  },
+  {
+   "id": "FQ-125",
+   "lane": "non_return",
+   "title": "★계약수주 magnitude 시총-분모 primary 신규 사전등록 — lead 확정 시도",
+   "hypothesis": "WT-018 파일럿: 사전등록 primary(매출 분모)는 미달(t 0.57)이나 **시총 분모 셀이 IC +0.0806, t_plain 1.972**로 생존했고 소형주 교란이 3축으로 기각됐다(1/Size 역풍 -0.066 · 직교 -0.025 · 잔차화 후 +0.0774 t 1.906). 이를 primary 로 신규 사전등록해 재측정하면 확립되는가. **데이터 기지불(재크롤 불요)**.",
+   "ev_rationale": "WT-018 NP-1(P1). ①재료 lane 에서 오늘 유일하게 살아남은 lead 이고 크롤 비용이 이미 지불됐다. 단 문턱 근방이라 WT-013 섭동 검사 필수.",
+   "wall_check": "dual-basis 실측에서 size 셀 cap-w PORT_t -0.37 vs EW-uni +1.49 = 전이 벽 미통과. IC 확립돼도 PORT_t 전이는 별도 관문 — 사전 명시.",
+   "data_gate": "없음 (04_Research/method_frontier/fq002_contract_magnitude/ panel_A/B.parquet 재사용)",
+   "owner": "미배정",
+   "status": "frontier_open",
+   "registered": "2026-08-02 Q-Lead (WT-D20260802_018 NP-1 파생)",
+   "precheck_measured": "섭동 취약성 사전 경고: t_plain 1.972 는 WT-013 실측 sd 0.378 기준으로 문턱 2.0 근방 단일 draw 위험 구간. 라운드는 멤버십-섭동 분포 q05 를 사전등록 기준으로 쓸 것(FQ-109 규약)."
+  },
+  {
+   "id": "FQ-126",
+   "lane": "consume_surface",
+   "title": "계약수주 magnitude 필터/오버레이 소비면 — ★랭킹 재현 확인 후에만",
+   "hypothesis": "WT-018 소비면 순회에서 ②유니버스 필터·③오버레이가 미측정으로 남았다. MAX5 선례(랭킹 死·필터 生, ΔIR +0.169)를 보면 측정 가치가 있으나, WT-019 교훈(무판별 신호를 소비면에 강행하면 발화 월수에 비례해 유해)이 정면으로 걸린다 — **FQ-125 에서 신호가 재현된 뒤에만 착수**.",
+   "ev_rationale": "WT-018 NP-2(P2, 조건부). 선행 조건이 명확해 순서를 지키면 저비용, 어기면 WT-019 형 손실.",
+   "wall_check": "필터는 후보집합 축소라 전이 벽 우회 가능(WT-014 선례). 단 신호 부재면 무의미.",
+   "data_gate": "없음 (동일 패널)",
+   "owner": "미배정",
+   "status": "blocked_until_fq125",
+   "registered": "2026-08-02 Q-Lead (WT-D20260802_018 NP-2 파생)"
   }
  ]
 }

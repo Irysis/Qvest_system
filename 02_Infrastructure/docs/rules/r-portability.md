@@ -90,6 +90,39 @@ Windows R은 `/mnt/c/...`를 **현재 드라이브 기준** `C:/mnt/c/...`로 �
 - ★ 참고: 금칙 ④의 원 근거("`~/.Renviron`이 QM_ROOT를 고정해 export로 못 덮는다")는 **R 한정**이다. 쉘에서는 `export QM_ROOT`가 정상 동작하므로 그 논거는 쉘 resolver에 그대로 전이되지 않는다.
 - 강제: `08_Tests/hooks/test_resolve_project_marker.sh`가 이 분기를 **양방향으로** 검사한다(hooks=CPD 우선 ∧ ops=QM_ROOT 우선). 한쪽만 검사하면 "둘을 통합" 리팩터가 조용히 통과한다.
 
+#### ④-b 예외: **테스트 러너는 self-first** (2026-08-02) — 이 계약의 단일 정본
+
+위 ④는 *공유 resolver*(프로덕션 소비자)의 규칙이다. **테스트 러너·검사 배터리에는 정반대 규칙이 적용된다: 후보 1순위 = 스크립트 자신의 위치**(R `--file=` dirname / Python `__file__` / bash `BASH_SOURCE`), env는 그 뒤. 표지 검증은 tier마다 그대로 건다(self도 예외 아님 — 표지 없는 위치의 사본은 기각).
+
+사유 — Bash 툴 환경에서 `CLAUDE_PROJECT_DIR`은 **미설정**(훅 안에서만 세워진다, [[reference-cpd-set-in-hooks-unset-in-bash-tool]])이고 `QM_ROOT`는 `~/.Renviron`이 **main 트리**로 고정한다. 그래서 env-first 러너를 worktree에서 돌리면 **worktree의 수리본이 아니라 main의 구판을 검사**한다. 파급이 둘인데 **둘 다 오독**이다:
+
+1. worktree에서 난 초록이 worktree의 변경을 하나도 검증하지 않는다 — "고쳤는데 main엔 없다"의 정반대 짝: **안 고친 것을 고쳤다고 읽게 만든다.**
+2. worktree에서 **신설**한 suite는 main에 파일이 없어 `UNREPORTED=1 fail`로 계상된다 → "테스트 실패"로 읽히지만 실제로는 앵커 오설정이다(실측 `FINAL 569 pass / 1 fail`, 원인은 `test_sample_alignment_empty.R` 부재).
+
+★**표지 검증은 이 갈림을 판별하지 못한다** — main도 worktree도 표지를 갖는다. `test_resolve_project_marker.sh` 축 A~H가 전부 통과해도 이 결함은 그대로였다. 가르는 것은 오직 후보 **순서**뿐이라, 순서 자체가 계약이다.
+★자기 트리와 갈리면 stderr로 `⚠ ANCHOR OVERRIDE`를 발화한다(낙하 자체는 정당할 수 있으나 침묵하면 "어느 트리를 쟀나"가 로그에 안 남는다 — **침묵 낙하가 이 계통의 재발 기전**).
+★`QM_ROOT`는 R에서 **쉘로 덮이지 않으므로**(④ 본문) 이 결함은 env 덮어쓰기로 재현도 회피도 불가하다 — 검증은 `R_ENVIRON_USER` 교체나 표지를 갖춘 합성 트리로 한다.
+★**공유 resolver 2벌은 무변경** — 소비자 계층이 다르다(훅·스케줄러의 데이터 루트 해석, 순서는 2026-08-01 도훈 결정이며 축 G가 양방향 고정). 러너만 self-first다.
+
+| 러너 | 상태 | 실측 (수리 전) |
+|---|---|---|
+| `08_Tests/hooks/run_all_hooks.sh` | 수리(2026-08-02) | worktree 실행이 **전 suite를 main 코드에 대해** 실행 (헤더 `Project: /c/…/Quant_Module_Moltbot`인데 cwd는 worktree) |
+| `08_Tests/regime/run_all.R` | 수리(2026-08-02) | worktree 6파일 / main 5파일인데 worktree 실행 → `Test files found: 5` (main 것). 신설 테스트는 실행조차 안 됨 |
+| `02_Infrastructure/tests/test_continuity_gate.py` | 수리(2026-08-02) | cwd=worktree인데 `ROOT`=main → `G.__file__`·`load_cases()` 전부 main. 게다가 표지 검증 없이 **하드코딩 main 경로**가 최종 폴백이었다 |
+
+- 소비자 무영향: `02_Infrastructure/ops/suite_totals_watch.sh:45-55`는 `CLAUDE_PROJECT_DIR="$DIR"`를 명시 설정하고 `$DIR`로 cd해 **그 트리의 사본**을 부르므로 self-first로 바뀌어도 같은 답이 나온다.
+- **앵커 순서는 단일 감사 가능한 줄로 노출할 것** — R `.qv_order` / Python `_ANCHOR_ORDER` / bash는 `_pick_proj_dir`의 `for c in …` 줄. 기계가 읽고 갈아끼울 수 없으면 검출력을 실증할 수 없다.
+- ★**추출 guard의 needle을 *수리가 도입한* 구조로 잡지 말 것.** 그러면 수리를 되돌렸을 때 축이 실행조차 안 되고 "needle 갱신 필요"라는 **정비 메시지**가 떠서, 다음 사람이 needle을 고치는 것으로 env-first를 조용히 재수용한다(앵커 수리 중 실제로 저지르고 정정한 실수). 범위 anchor는 수리 전후 모두 존재하는 줄로 잡는다 — 실증: 구판을 통째로 되돌려도 `*_prologue_extracted`는 PASS이고 결함은 **행동 축**이 보고한다.
+
+**강제 (표면별 2벌 — 합쳐서 이 계약 전체를 덮는다)**:
+
+| 검사기 | 덮는 표면 | 실측 |
+|---|---|---|
+| `08_Tests/hooks/test_resolve_project_marker.sh` 축 I/J/K | `.sh` — `run_all_hooks.sh` 자신의 앵커 (+축 A~H = 공유 resolver 2벌) | **17/17** (앵커 6축 추가로 11→17). 되돌리면 `14/3` |
+| `08_Tests/hooks/test_runner_anchor_selffirst.sh` | `.R` 러너 · `.py` 배터리 (위 검사기가 구조적으로 못 보는 표면) | **15/15**. 구판 복원 시 `6/9` |
+
+두 검사기 다 배터리 편입. 축 = 프롤로그 추출 · 위반 주입(QM_ROOT ∧ CPD가 표지 보유 타 트리) · 자기 트리 시 무경보 · **돌연변이**(순서를 env-first로 되돌려 축이 뒤집히는지) · 표지 없는 self 기각→낙하+경보 · Python 하드코딩 폴백 부재(정적).
+
 ### ⑤ `system()` / `system2()` 명령 문자열에 쉘 리다이렉션·연쇄 연산자 금지
 Windows R의 `system()`/`system2()`는 **셸을 경유하지 않는다**. `2>/dev/null` · `&&` · `|` 는 해석되지 않고 대상 프로그램의 **리터럴 argv**가 된다. 2026-08-02 실측:
 
