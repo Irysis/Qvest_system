@@ -102,21 +102,58 @@ _wait_running; WAIT_RC=$?
 #   ★CRLF 제거 필수 — Windows R stdout 은 CRLF 라 CR 이 값에 남으면 "0" != "0\r" 로
 #     비교가 조용히 어긋난다([[reference-rscript-stdout-crlf-bash-compare]]).
 #   ★출력 없음(감사기 사망)은 "stale 0" 으로 내려앉히지 않는다 — NA 로 올려 보낸다.
-_audit() { # $1=quiet(1/0)  → stdout: "<stale>|<as_of>"
+_audit() { # $1=quiet(1/0)  → stdout: "<stale>|<as_of>|<items>"
   local out line
   out="$(QVEST_FRESHNESS_QUIET="$1" "$RSCRIPT" --no-save "$AUDIT_R" 2>&1 | tr -d '\r')"
   line="$(printf '%s\n' "$out" | grep -E '^EDC_RESULT ' | tail -1)"
   if [ -z "$line" ]; then
     printf '%s\n' "$out" | tail -5 >&2
-    echo "NA|NA"; return 0
+    echo "NA|NA|-"; return 0
   fi
-  printf '%s|%s\n' \
+  printf '%s|%s|%s\n' \
     "$(printf '%s' "$line" | sed -n 's/.*stale=\([0-9]\+\).*/\1/p')" \
-    "$(printf '%s' "$line" | sed -n 's/.*as_of=\([0-9-]\+\).*/\1/p')"
+    "$(printf '%s' "$line" | sed -n 's/.*as_of=\([0-9-]\+\).*/\1/p')" \
+    "$(printf '%s' "$line" | sed -n 's/.*items=\([^ ]*\).*/\1/p')"
 }
 
-PRE="$(_audit 1)"; PRE_STALE="${PRE%%|*}"; AS_OF="${PRE##*|}"
-_log "사전 감사: as_of=$AS_OF stale=$PRE_STALE"
+# ── 리프레시가 **고칠 수 있는** 항목만 판단에 쓴다 ───────────────────────────
+# ★모든 stale 을 한 덩어리로 세면 안 된다. p3_forecast 는 daily_refresh 의 산출물이
+#   아니라 **morning_briefing 자신의 산출물**이다(step 6a 가 601_daily_inference.py
+#   --model P3 로 만든다). 이걸 "리프레시가 필요하다"의 근거로 세면, 리프레시를
+#   아무리 돌려도 값이 안 변하므로 **부팅할 때마다 47분짜리 전체 리프레시가 돈다**.
+#   실측 근거(2026-08-03 브리핑 로그 901·906행): 07:10 브리핑이 benchmark.parquet
+#   부재로 601 추론에 실패 → p3_forecast 가 07-27 에 멈춘 것. 즉 p3 는 *결과*이지
+#   *원인*이 아니다. 원인(benchmark 등 입력)이 제때 있으면 브리핑이 스스로 만든다.
+# 여기 목록은 "브리핑 하류 산출물" — 판단에서 제외하되 **보고에는 남긴다**.
+DOWNSTREAM_OUTPUTS="p3_forecast"
+_actionable() { # $1=items(csv) → stdout: "<n>|<actionable csv>|<excluded csv>"
+  local items="$1" a="" x="" it
+  [ "$items" = "-" ] && { echo "0||"; return 0; }
+  IFS=',' read -r -a _arr <<< "$items"
+  for it in ${_arr[@]+"${_arr[@]}"}; do
+    [ -n "$it" ] || continue
+    case " $DOWNSTREAM_OUTPUTS " in
+      *" $it "*) x="$x${x:+,}$it" ;;
+      *)         a="$a${a:+,}$it" ;;
+    esac
+  done
+  local n=0
+  [ -n "$a" ] && n=$(printf '%s' "$a" | tr ',' '\n' | grep -c .)
+  printf '%s|%s|%s\n' "$n" "$a" "$x"
+}
+
+PRE="$(_audit 1)"
+PRE_STALE="$(printf '%s' "$PRE" | cut -d'|' -f1)"
+AS_OF="$(printf '%s' "$PRE" | cut -d'|' -f2)"
+PRE_ITEMS="$(printf '%s' "$PRE" | cut -d'|' -f3)"
+_ACT="$(_actionable "$PRE_ITEMS")"
+PRE_ACT_N="$(printf '%s' "$_ACT" | cut -d'|' -f1)"
+PRE_ACT="$(printf '%s' "$_ACT" | cut -d'|' -f2)"
+PRE_EXCL="$(printf '%s' "$_ACT" | cut -d'|' -f3)"
+_log "사전 감사: as_of=$AS_OF stale=$PRE_STALE (리프레시 대상 ${PRE_ACT_N}건${PRE_ACT:+: $PRE_ACT})"
+[ -n "$PRE_EXCL" ] && _log "   ※ 하류 산출물이라 리프레시 대상 아님: $PRE_EXCL (브리핑 step 6a 가 생산 — 입력이 제때 있으면 스스로 갱신)"
+# 판단은 '리프레시가 고칠 수 있는' 항목으로만 한다. 단 PRE_STALE 은 보고에 계속 쓴다.
+[ "$PRE_STALE" = "NA" ] || PRE_STALE="$PRE_ACT_N"
 
 _stamp() { # $1=verdict $2=stale $3=note
   printf '{"ran_at":"%s","as_of":"%s","verdict":"%s","stale_count":%s,"note":"%s"}\n' \
@@ -168,7 +205,14 @@ _log "daily_refresh 종료코드=$RRC"
 # 오늘 실측이 이 단계의 존재 이유다: 리프레시가 "실패 0" 으로 완주했는데도
 # benchmark MISSING · p3_forecast STALE 이 남아 있었다. 실행을 성공으로 세면
 # 그 2건은 영원히 안 보인다.
-POST="$(_audit 0)"; POST_STALE="${POST%%|*}"; AS_OF="${POST##*|}"
+POST="$(_audit 0)"
+POST_STALE="$(printf '%s' "$POST" | cut -d'|' -f1)"
+AS_OF="$(printf '%s' "$POST" | cut -d'|' -f2)"
+_PACT="$(_actionable "$(printf '%s' "$POST" | cut -d'|' -f3)")"
+POST_ACT_N="$(printf '%s' "$_PACT" | cut -d'|' -f1)"
+POST_ACT="$(printf '%s' "$_PACT" | cut -d'|' -f2)"
+_log "사후 감사: stale=$POST_STALE (리프레시 대상 잔여 ${POST_ACT_N}건${POST_ACT:+: $POST_ACT})"
+[ "$POST_STALE" = "NA" ] || POST_STALE="$POST_ACT_N"
 if [ "$POST_STALE" = "0" ]; then
   _log "✅ 리프레시 후 최신 확보 (as_of=$AS_OF)"
   _stamp "refreshed_current" 0 "refresh rc=$RRC"

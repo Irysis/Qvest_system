@@ -1,0 +1,121 @@
+{
+  "id": "FQ-108",
+  "stage": "run_06_crowding_addendum",
+  "built_at": "2026-08-03 08:20:34",
+  "high_vol_end": [
+    {
+      "sig_date": "2016-05-31",
+      "end": "high_vol",
+      "factor_name": "D05_MaxRet",
+      "crowding_score": 0.05003273,
+      "hhi_top": 0.11950819,
+      "vol_concentration": 0.00672108,
+      "passive_overlap_proxy": 0.05,
+      "demand_elasticity_proxy": 0,
+      "n_universe": 2804,
+      "n_top": 20
+    },
+    {
+      "sig_date": "2016-05-31",
+      "end": "high_vol",
+      "factor_name": "D35_RealVol_63d",
+      "crowding_score": 0.06434379,
+      "hhi_top": 0.13007935,
+      "vol_concentration": 0.00127993,
+      "passive_overlap_proxy": 0.1,
+      "demand_elasticity_proxy": 0,
+      "n_universe": 2804,
+      "n_top": 20
+    },
+    {
+      "sig_date": "2016-05-31",
+      "end": "high_vol",
+      "factor_name": "D45_Downside_Dev",
+      "crowding_score": 0.18787052,
+      "hhi_top": 0.33909049,
+      "vol_concentration": 0.00953351,
+      "passive_overlap_proxy": 0.05,
+      "demand_elasticity_proxy": 0.3563,
+      "n_universe": 2804,
+      "n_top": 20
+    },
+    {
+      "sig_date": "2021-05-31",
+      "end": "high_vol",
+      "factor_name": "D05_MaxRet",
+      "crowding_score": 0.01238217,
+      "hhi_top": 0.03829145,
+      "vol_concentration": 0.00357893,
+      "passive_overlap_proxy": 0,
+      "demand_elasticity_proxy": 0,
+      "n_universe": 3256,
+      "n_top": 20
+    },
+    {
+      "sig_date": "2021-05-31",
+      "end": "high_vol",
+      "factor_name": "D35_RealVol_63d",
+      "crowding_score": 0.00936148,
+      "hhi_top": 0.02514751,
+      "vol_concentration": 0.00726893,
+      "passive_overlap_proxy": 0,
+      "demand_elasticity_proxy": 0,
+      "n_universe": 3256,
+      "n_top": 20
+    },
+    {
+      "sig_date": "2021-05-31",
+      "end": "high_vol",
+      "factor_name": "D45_Downside_Dev",
+      "crowding_score": 0.22441158,
+      "hhi_top": 0.37426215,
+      "vol_concentration": 0.02166752,
+      "passive_overlap_proxy": 0.05,
+      "demand_elasticity_proxy": 0.47108028,
+      "n_universe": 3256,
+      "n_top": 20
+    },
+    {
+      "sig_date": "2026-05-29",
+      "end": "high_vol",
+      "factor_name": "D05_MaxRet",
+      "crowding_score": 0.10189603,
+      "hhi_top": 0.10803514,
+      "vol_concentration": 0,
+      "passive_overlap_proxy": 0,
+      "demand_elasticity_proxy": 0.34742744,
+      "n_universe": 3900,
+      "n_top": 20
+    },
+    {
+      "sig_date": "2026-05-29",
+      "end": "high_vol",
+      "factor_name": "D35_RealVol_63d",
+      "crowding_score": 0.10189603,
+      "hhi_top": 0.10803514,
+      "vol_concentration": 0,
+      "passive_overlap_proxy": 0,
+      "demand_elasticity_proxy": 0.34742744,
+      "n_universe": 3900,
+      "n_top": 20
+    },
+    {
+      "sig_date": "2026-05-29",
+      "end": "high_vol",
+      "factor_name": "D45_Downside_Dev",
+      "crowding_score": 0.44811806,
+      "hhi_top": 0.89015293,
+      "vol_concentration": 0.00995963,
+      "passive_overlap_proxy": 0.05,
+      "demand_elasticity_proxy": 0.83041138,
+      "n_universe": 3900,
+      "n_top": 20
+    }
+  ],
+  "floor_reachability": {
+    "n_universe": 3900,
+    "neutral_share": 0.00512821,
+    "note": "vol_concentration 은 top-20 거래량 점유가 중립비(0.00513)를 넘어야 0 초과. 관측 9/9 셀이 정확히 0 = '중립비 이하' 라는 뜻이지 '군집 없음'의 측정값이 아니다(한쪽 바닥 clamp). passive_overlap_proxy 도 benchmark_tickers=NULL 폴백(size 상위 200 겹침)이라 소형 편향 팩터에선 구조적 0.",
+    "interpretation": "crowding_score 는 하위 4성분 중 2성분이 바닥에 붙은 상태의 가중평균 = 하향 편향(floor-biased). 절대수준으로 'not crowded' 단정 금지, 시점 간 상대 변화만 유효."
+  }
+}
