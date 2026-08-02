@@ -203,6 +203,125 @@ else
   bad "cpd_marker_gated" "CPD 기각 후 낙하 이상 — got '$OUT', want '$PROJ_DIR|QM_ROOT'"
 fi
 
+# ─── I/J/K: 테스트 러너 앵커 우선순위 (2026-08-02) ───────────────────────────
+# 위 A~H 는 **공유 resolver 2벌**(훅·스케줄러의 데이터 루트)을 다룬다. 러너 자신의 앵커는
+# 별개 계약이고, 그게 비어 있어서 다음 결함이 8개월 살아 있었다:
+#
+#   run_all_hooks.sh 의 _pick_proj_dir 가 CLAUDE_PROJECT_DIR → QM_ROOT → self 순이었다.
+#   Bash 툴 환경엔 CPD 가 없고(훅 안에서만 설정) QM_ROOT 는 **main** 을 가리키므로,
+#   worktree 에서 배터리를 돌리면 SUITES 는 worktree 사본에서 오는데 PROJ_DIR 은 main —
+#   **전 suite 가 main 코드에 대해 실행**됐다. 실측 헤더:
+#     `Project: /c/Users/99922/OneDrive/Quant_Module_Moltbot` (cwd 는 worktree)
+#   파급 (둘 다 오독을 낳는다):
+#     ① worktree 초록이 worktree 를 검증하지 않는다 — "고쳤는데 main 엔 없다" 계통의
+#        정반대 짝: **안 고친 것을 고쳤다고 읽게 만든다**.
+#     ② worktree 신설 suite 는 main 에 파일이 없어 UNREPORTED=1 fail → "테스트 실패"로
+#        보이지만 실제로는 앵커 오설정 (실측 FINAL 569 pass / 1 fail).
+#
+# ★표지(marker) 검증은 이 갈림을 **판별하지 못한다** — main 도 worktree 도 표지를 갖는다.
+#   A~H 가 전부 통과해도 이 결함은 그대로다. 판별하는 것은 오직 후보 **순서**뿐이라,
+#   순서 자체를 계약으로 못박는다.
+# ★공유 resolver 2벌은 무변경 — 소비자 계층이 다르다(축 G 가 그 순서를 양방향 고정).
+#   러너만 self-first 인 이유: 테스트는 *자기가 실린 트리*를 재야 한다.
+#
+# 검사 대상은 사본이 아니라 **원본 .sh 에서 추출한 해석 프롤로그**다. 러너 전체를 돌리면
+# 모든 suite 를 2회 실행하므로(운영상 수 분), 프롤로그(_MARKER= ~ TEST_DIR= 직전)만
+# 떼어 자식 셸에서 평가한다 — 실행되는 바이트 그대로이되 비용 0.
+RUNNER="$PROJ_DIR/08_Tests/hooks/run_all_hooks.sh"
+RUNNER_FRAG="$TMP/runner_anchor_frag.sh"
+
+# 표지만 갖춘 **두 번째 러너 트리** = main 의 대역. QM_ROOT 가 여기를 가리키는 상황이
+# 실사고 배치 그대로다(worktree 에서 실행 + QM_ROOT=main).
+ALT_RUNNER="$TMP/alt_runner_tree"
+mkdir -p "$ALT_RUNNER/08_Tests/hooks"
+: > "$ALT_RUNNER/08_Tests/hooks/run_all_hooks.sh"
+
+# 프롤로그를 자식 셸에서 평가하고 PROJ_DIR 을 회수. stderr 는 따로 잡는다(경보가 검사 대상).
+run_runner_anchor() {  # $1=fragment  $2=_SELF_DIR  $3=QM_ROOT(""→unset)  $4=CPD(""→unset)
+  local frag="$1" self="$2" qm="${3:-}" cpd="${4:-}"
+  local -a pre=(env -u QM_ROOT -u CLAUDE_PROJECT_DIR)
+  [ -n "$qm" ]  && pre+=("QM_ROOT=$qm")
+  [ -n "$cpd" ] && pre+=("CLAUDE_PROJECT_DIR=$cpd")
+  "${pre[@]}" bash -c '_SELF_DIR="$2"; source "$1"; printf "%s" "${PROJ_DIR:-}"' \
+      _ "$frag" "$self" 2>"$TMP/runner_stderr.txt"
+}
+
+# ★추출 가드는 **순서에 무관한 구조**만 본다 (2026-08-02 자기수정).
+#   초판은 가드의 needle 을 *수리된* 후보 순서 줄로 잡았다. 그 결과 순서를 구판으로
+#   되돌리면 I/J/K 가 아예 실행되지 않고 "프롤로그 추출 실패 — 리팩터 시 needle 갱신 필요"
+#   가 떴다(실측). 결함 상태를 **정비 과제로 오진**시키는 메시지라, 그대로 두면 다음 사람이
+#   needle 을 갱신하는 것으로 "고치고" env-first 를 조용히 재수용한다.
+#   → 가드는 `for c in` 존재만 확인하고, 순서 판정은 **행동 축(I)** 이 direct 로 한다.
+_ANCHOR_ENVFIRST='  for c in "${CLAUDE_PROJECT_DIR:-}" "${QM_ROOT:-}" "$_SELF_DIR/../.." "$PWD"; do'
+
+if [ ! -f "$RUNNER" ]; then
+  bad "runner_anchor_extracted" "러너 부재: $RUNNER"
+else
+  awk '/^_MARKER=/{f=1} /^TEST_DIR=/{f=0} f{print}' "$RUNNER" > "$RUNNER_FRAG"
+  # 추출 실패를 조용한 통과로 만들지 않는다 — 빈 조각을 source 하면 PROJ_DIR 이 빈 값이
+  # 되고, 아래 축들이 전부 "기대와 다름"이 아니라 **무엇도 재지 않은 채** 굴러간다.
+  _FRAG_SRC="$(cat "$RUNNER_FRAG")"
+  _ANCHOR_LINE="$(printf '%s\n' "$_FRAG_SRC" | grep -m1 'for c in ')"
+  if [ ! -s "$RUNNER_FRAG" ] || [[ "$_FRAG_SRC" != *"_pick_proj_dir"* ]] || [ -z "$_ANCHOR_LINE" ]; then
+    bad "runner_anchor_extracted" "프롤로그 추출 실패 — _pick_proj_dir/후보 루프 부재(러너 구조 변경 시 awk 범위 갱신 필요)"
+  else
+    ok "runner_anchor_extracted" "러너 해석 프롤로그 추출 ($(wc -l < "$RUNNER_FRAG" | tr -d ' ') 줄)"
+
+    # ── I: 위반 주입 — QM_ROOT 가 **표지를 가진 다른 트리**를 가리켜도 자기 트리를 골라야 ──
+    #    (CPD 는 미설정 = Bash 툴 실환경 그대로. 실사고 배치의 정확한 재현.)
+    GOT="$(run_runner_anchor "$RUNNER_FRAG" "$PROJ_DIR/08_Tests/hooks" "$ALT_RUNNER")"
+    if [ "$GOT" = "$PROJ_DIR" ]; then
+      ok "runner_anchor_self_first" "QM_ROOT=별개 트리여도 자기 트리 선택 ($GOT)"
+    elif [ "$GOT" = "$ALT_RUNNER" ]; then
+      bad "runner_anchor_self_first" "QM_ROOT 트리를 검사 대상으로 선택함 — 러너가 자기가 실린 트리를 안 잼(worktree 초록이 main 을 재는 원 결함)"
+    else
+      bad "runner_anchor_self_first" "예상 밖 해석 — got '$GOT', want '$PROJ_DIR'"
+    fi
+
+    # 자기 트리를 골랐으면 override 경보는 **없어야** 한다(정상 실행에 잡음 금지).
+    if grep -q "ANCHOR OVERRIDE" "$TMP/runner_stderr.txt" 2>/dev/null; then
+      bad "runner_anchor_quiet_when_self" "자기 트리 해석인데 override 경보 발화 — 상시 경보는 곧 무시된다"
+    else
+      ok "runner_anchor_quiet_when_self" "자기 트리 해석 시 무경보"
+    fi
+
+    # ── J: 검사기 사망 통제 (돌연변이) ────────────────────────────────────────
+    # 후보 순서를 **구판(env-first)** 으로 되돌린 사본에서 I 가 실제로 뒤집히는지 본다.
+    # 안 뒤집히면 I 는 순서를 재고 있지 않다("오탐 제거"와 "검사 사망"은 겉보기가 같다).
+    #   ★돌연변이는 **현재 후보 줄이 무엇이든** 그것을 env-first 로 갈아끼워 만든다
+    #     (수리본 문자열에 의존하지 않음 — 위 가드 주석의 오진 기전과 같은 함정).
+    if [ "$_ANCHOR_LINE" = "$_ANCHOR_ENVFIRST" ]; then
+      bad "runner_anchor_mutant_detected" "원본이 이미 env-first — 돌연변이가 원본과 동일해 J 축이 공허(결함 자체는 I 축이 보고)"
+    else
+      MUT_RUNNER="$TMP/mutant_runner_frag.sh"
+      printf '%s\n' "${_FRAG_SRC//"$_ANCHOR_LINE"/$_ANCHOR_ENVFIRST}" > "$MUT_RUNNER"
+      GOT="$(run_runner_anchor "$MUT_RUNNER" "$PROJ_DIR/08_Tests/hooks" "$ALT_RUNNER")"
+      if [ "$GOT" = "$ALT_RUNNER" ]; then
+        ok "runner_anchor_mutant_detected" "순서를 env-first 로 되돌리면 별개 트리가 선택됨 — I 축이 실제로 이 차이를 잼"
+      else
+        bad "runner_anchor_mutant_detected" "env-first 로 되돌려도 자기 트리 선택 (got '$GOT') — I 축이 무력(계측 사망)"
+      fi
+    fi
+
+    # ── K: 의도적 override 는 **보이게** ───────────────────────────────────────
+    # 표지 없는 위치의 러너 사본 → self 기각 → env 로 낙하. 낙하 자체는 정당하지만
+    # 침묵하면 안 된다(침묵 낙하 = 이 계통의 재발 기전).
+    BARE_SELF="$TMP/bare_self/bin"
+    mkdir -p "$BARE_SELF"
+    GOT="$(run_runner_anchor "$RUNNER_FRAG" "$BARE_SELF" "$ALT_RUNNER")"
+    if [ "$GOT" = "$ALT_RUNNER" ]; then
+      ok "runner_anchor_override_value" "표지 없는 self 기각 → QM_ROOT 로 낙하 ($GOT)"
+    else
+      bad "runner_anchor_override_value" "self 기각 후 낙하 실패 — got '$GOT', want '$ALT_RUNNER'"
+    fi
+    if grep -q "ANCHOR OVERRIDE" "$TMP/runner_stderr.txt" 2>/dev/null; then
+      ok "runner_anchor_override_warns" "앵커 갈림을 stderr 로 보고 (조용한 override 아님)"
+    else
+      bad "runner_anchor_override_warns" "앵커가 자기 트리와 갈렸는데 무경보 — '어느 트리를 쟀나'가 로그에 안 남는다"
+    fi
+  fi
+fi
+
 # ─── 요약 ────────────────────────────────────────────────────────────────────
 echo ""
 echo "TOTAL: $PASS pass / $FAIL fail"
