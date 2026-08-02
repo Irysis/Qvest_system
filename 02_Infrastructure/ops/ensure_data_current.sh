@@ -129,6 +129,25 @@ if [ "$PRE_STALE" = "0" ]; then
   _stamp "already_current" 0 "no-op"
   exit 0
 fi
+
+# ── 3b) 같은 영업일에 **이미 시도했고 안 고쳐진** 경우 재시도하지 않는다 ─────
+# ★이 가드가 없으면 위 stale 조건이 영구 참이 되는 항목 하나 때문에 부팅할 때마다
+#   47분짜리 전체 리프레시가 돈다. 실례: p3_forecast 는 저장소 안에 **생산자가 없다**
+#   (P3_daily.parquet / P3_latest.json 둘 다 2026-07-27 21:39 임시 실행 산물, 이후
+#   daily_refresh 어느 스텝도 이 파일을 쓰지 않는다). 리프레시로 고쳐질 수 없는 항목에
+#   리프레시를 반복하는 것은 비용만 태우고 "고쳤다"는 착시만 만든다.
+# ★단 **조용히 넘어가지 않는다** — 고쳐지지 않은 항목을 매번 로그에 남기고 rc=3 을 준다.
+#   "재시도 안 함"이 "문제 없음"으로 읽히면 이 저장소가 반복해 데인 그 계통이다.
+if [ -f "$STAMP" ]; then
+  _prev_as_of="$(sed -n 's/.*"as_of":"\([^"]*\)".*/\1/p' "$STAMP" 2>/dev/null)"
+  _prev_verdict="$(sed -n 's/.*"verdict":"\([^"]*\)".*/\1/p' "$STAMP" 2>/dev/null)"
+  if [ "$_prev_as_of" = "$AS_OF" ] && [ "$_prev_verdict" = "stale_after_refresh" ]; then
+    _log "⚠ as_of=$AS_OF 는 이미 리프레시했으나 stale=$PRE_STALE 잔존 — **재시도하지 않음**"
+    _log "   (리프레시로 고쳐지지 않는 항목이다. 생산자 배선을 봐야 한다: qepm/observability/morning_freshness_latest.json 의 stale_items)"
+    _stamp "stale_unfixable_by_refresh" "$PRE_STALE" "재시도 생략(같은 영업일 재발)"
+    exit 3
+  fi
+fi
 if [ "$PRE_STALE" = "NA" ]; then
   _log "⚠ 감사 결과를 읽지 못함 — 미상은 '최신'이 아니다. 리프레시로 진행"
 fi
