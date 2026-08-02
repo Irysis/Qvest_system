@@ -45,9 +45,9 @@ IN_FILES <- c(
   pr_23  = "05_Production/2.Factor_Model/2-3.STR_1715_on_M4_R05_noLayer4_PG2/04_backtest_results/03_period_returns.csv",
   regime = ".cache/unified_regime_signal.parquet"
 )
-vintage <- data.table(key = names(IN_FILES), path = IN_FILES,
+vintage <- data.table(input = names(IN_FILES), path = IN_FILES,
                       mtime = sapply(IN_FILES, function(p) as.character(file.mtime(p))))
-say("입력 vintage:"); print(vintage[, .(key, mtime)])
+say("입력 vintage:"); print(vintage[, .(input, mtime)])
 
 alpha_scores <- as.data.table(read_parquet(IN_FILES["alpha"]))
 alpha_scores[, Date := as.Date(Date)]
