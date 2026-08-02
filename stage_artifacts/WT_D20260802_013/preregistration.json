@@ -1,0 +1,61 @@
+{
+  "task_id": "WT-D20260802_013",
+  "registered_at": "2026-08-02T14:05:00+0900",
+  "registered_before_any_performance_measurement": true,
+  "title": "M01_PATHQ vol-잔차 순수판 (M01_PATHQ_RESID) — vol-tilt 아티팩트 판별 (WT-009 NP-1 / FQ-107)",
+
+  "single_discriminating_question": "WT-009의 교체 후보 M01_PATHQ(paired t +2.03)가 vol-tilt 아티팩트인가 진짜 경로-질 신호인가. 경로효율 스코어의 vol-성분을 D03z에 잔차화한 순수판이 base 대비 paired t를 유지하는가.",
+
+  "change_reason_one_line": "WT-009 F2 미지지 + pre-2015 편중 = vol-tilt 혐의, 잔차화가 유일 판별",
+
+  "primary_definition": {
+    "factor_id": "M01_PATHQ_RESID",
+    "formula": "월별 횡단면 OLS 잔차: resid_{i,t} = PATHQ_z_{i,t} - (a_t + b_t * D03z_{i,t}). score = raw residual (월내 순서만 소비 — 재표준화 불요, 단조 불변).",
+    "inputs": {
+      "pathq_z": "stage_artifacts/WT_D20260802_009/tuned_panel.parquet Factor_Name=M01_PATHQ (orientation 상속 후 최종 스코어 — +2.03을 얻은 바로 그 계열. 재계산 금지)",
+      "d03_z": "stage_artifacts/WT_D20260802_009/base_panel.parquet Factor_Name=D03_RealVol z (registry Z_Score_Aligned, load_month_factors 경유 C15 — WT-009 base 빌드 승계, 재계산 금지)"
+    },
+    "residualization_scope": "D03z 단 하나에만 잔차화 — 다변량(size/beta 추가) 금지 (스펙 부풀리기 방지). 교집합 (Date,Ticker)만 사용, 월 유효쌍 <50이면 해당 월 제외.",
+    "no_flip": true,
+    "no_reorientation": "잔차의 방향은 PATHQ 방향을 그대로 상속 (b_t 부호는 자유 추정) — 수익 참조 재정렬 없음",
+    "no_retuning": "경로효율 창(252/21)·winsorize·orientation 규칙 일절 재조정 없음 — 잔차화 연산 1개만 추가"
+  },
+
+  "judgment_protocol_fixed": {
+    "primary": "d_t = active_net(M01_PATHQ_RESID)_t - active_net(M01_Mom_12_1 base)_t (동일 월 교집합, canonical top-25 EW cap-w bench, 15bps, liq 2e8). paired t = NW lag-3.",
+    "thresholds": "paired t >= 2.0 → 교체 근거 완성 (교체 자체는 도훈 confirm) / < 2.0 → vol-tilt 아티팩트 확정 (WT-009 +2.03의 개선분이 vol-성분에 실려 있었다는 판정)",
+    "secondary_i": "부기간 분해 pre-2015 / 2015-2019 / post-2020 (+post-2017 병기) — pre-2015 편중이 잔차화 후에도 잔존하는지",
+    "secondary_ii": "F2 재검: WT-009와 동일 규격의 jump-기여 반증(top-25 보유종목 12-1 창 상위5 |lr|일 순수익 기여, base vs RESID)이 잔차판에서 SUPPORTED로 돌아서는지 — 성과 무참조 가격 리프 판정",
+    "attenuation_ratio_informational": "paired_t(RESID)/2.028 감쇠율은 해석 보조로만 기록 — 판정 변경 불가",
+    "selection_type": "chain (단일 사전등록 가설, 1-shot, argmax 없음). n_trials=1. placebo 시드 5개는 통제군이지 후보가 아님 — DSR 게이트 비발동, 수치는 진단 기록",
+    "no_holdout_consumption": "iteration 없음 — IS/OOS 반복조회 발생 구조 아님"
+  },
+
+  "controls_fixed": {
+    "placebo_gaussian": "PATHQ를 D03z 대신 N(0,1) iid 노이즈(시드 1..5, RESID와 동일 교집합 행에서 D03z 값만 노이즈로 치환)에 잔차화 → 동일 paired 측정. 기대: placebo paired t ≈ 원판 +2.03 근방 (노이즈는 아무 성분도 못 제거). placebo도 함께 죽으면 잔차화 연산·교집합 자체가 파괴적(측정 아티팩트)이라는 반증 — vol-성분 판정 무효화.",
+    "lag1_stress": "RESID 신호 1개월 shift 적용판 canonical 재측정 — 동월 누출 자가검증 (WT-009 프레임 재사용)",
+    "vol_loading_quantification": "월별 CS Spearman cor(PATHQ_z, D03z) 시계열 + OLS b_t 시계열 — PATHQ의 vol-적재가 실재했는지 정량화 (기전 정보, 성과 무참조)",
+    "orthogonality_check": "월별 CS Spearman cor(RESID, D03z) ≈ 0 확인 (잔차화 실효 검증)",
+    "self_cor": "월별 CS Spearman cor(RESID, PATHQ) — 잔차화가 얼마나 바꿨는지"
+  },
+
+  "secondary_mandatory": [
+    "dual-basis: RESID arm cap-w PORT_t + EW-universe diag + cap-tier(MEGA/MID/OTHER) 분해 + post-2017 병기 (v8.3 M2)",
+    "회전율 실측: PATHQ 계열은 상한(11.0/yr) 근접(7.89) — RESID 회전이 상한 초과하면 그 자체가 판정 요소로 명기",
+    "AX-001 조건부 병기: RESID 국면 slicing(unified_regime_signal 사후) + MDD + base M01 대비",
+    "advisory: rank IC / ICIR / monotonicity / subperiod IC (게이트 아님)"
+  ],
+
+  "honest_posterior_negative_evidence": {
+    "f2_not_supported": "WT-009 F2(jump-기여 차별화) t +1.05 미지지 = 기전 반대 증거 — 본 라운드의 사전 posterior는 '아티팩트 쪽으로 기울어 있음'을 정직 기록",
+    "pre2015_concentration": "개선 +2.84(pre-2015) / -0.85(2015-19) / +0.96(2020+) 편중 — 감쇠 벽 패턴과 정합",
+    "correlation_gains_may_vanish": "P2 self-cor 0.977·5x5 개선분이 잔차화로 사라질 수 있음 — breadth 논거도 재검 대상",
+    "prior_statement": "본 라운드는 확증 편향 반대 방향으로 설계 — 살아남으면 그만큼 강한 증거"
+  },
+
+  "measurement_authority": "canonical_screen_bt() top-25 EW long-only, 15bps one-way, liq 2e8 (t-1 adv), K200∪KQ150 월말 멤버십 선-제한(WT-009 사고 재발 방지 — 호출자 책임), benchmark = build_monthly_forward_returns 표준. metric_type=canonical_screen. proxy 손계산 금지.",
+
+  "ast_declaration_plan": "M01_PATHQ_RESID = CS_RESIDUALIZE(SPECIAL_OP:path_efficiency, FIELD:D03_RealVol) — 잔차화는 𝒪 내(CS_NEUTRALIZE 계열), 경로효율 리프는 WT-009 SPECIAL_OP escape 승계 (op_code_path = stage_artifacts/WT_D20260802_009/run_wt009_tuned.R)",
+
+  "boundary": "Σ/weight 금지 · 05_Production/·01_Literature/ 수정 금지 · 교체 판정은 도훈 confirm 사안 — 본 라운드는 판별만"
+}
