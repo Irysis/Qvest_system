@@ -5,7 +5,7 @@
   "metric_type": "proxy",
   "type": "methodological",
   "polarity": "mixed",
-  "statement_draft": "[방법론 혼재(방향불명) 규칙 초안] family=overlay_regime, tags=E,,,R, supporting=9건 L-code. (promote.R 5축 검증에서 범위·메커니즘·OOS 확정 필요)",
+  "statement_draft": "[방법론 혼재(방향불명) 규칙 초안] family=overlay_regime, tags=E,,,R, supporting=12건 L-code. (promote.R 5축 검증에서 범위·메커니즘·OOS 확정 필요)",
   "supporting_l_codes": [
     "L-AR-20260706_083725",
     "L-AR-20260710_135913",
@@ -15,7 +15,10 @@
     "L-AR-20260718_232144",
     "L-AR-20260719_003748",
     "L-AR-20260719_005642",
-    "L-AR-20260719_020140"
+    "L-AR-20260719_020140",
+    "L-AR-20260802_203709",
+    "L-AR-20260802_204801",
+    "L-AR-20260802_210201"
   ],
   "scope_draft": {
     "market": "KR",
@@ -24,30 +27,36 @@
     "construction_types": null
   },
   "evidence_draft": {
-    "independent_l_codes": 9,
-    "independent_strategies": 9,
+    "independent_l_codes": 12,
+    "independent_strategies": 12,
     "strategies": [
-      "WT-D20260718_007_r2_anomaly_overlay_refinement",
-      "R40_insider_safe_exit_censoring_stress",
-      "R37_insider_megatier_TOP30_power_vs_death",
-      "WT-D20260718_007_unsupervised_anomaly_overlay",
-      "WT-D20260710_003",
-      "FQ-017_m1_overlay_drain",
       "WT-D20260718_004_transformer_regime_overlay",
+      "AR_corr_recovery_crashdyn_20260706",
+      "WT-D20260802_014_016_LOTTERY_EXCLUSION_FILTER",
+      "R40_insider_safe_exit_censoring_stress",
+      "WT_D20260802_017_FQ115_REGIME_OVERLAY_CONSUMPTION",
+      "WT-D20260718_007_unsupervised_anomaly_overlay",
       "WT-D20260718_007_D3_forge_calmar_graduation",
-      "AR_corr_recovery_crashdyn_20260706"
+      "R37_insider_megatier_TOP30_power_vs_death",
+      "FQ-017_m1_overlay_drain",
+      "WT-D20260710_003",
+      "WT_D20260802_019_FQ118_DDSTATE_NOWCAST_OVERLAY",
+      "WT-D20260718_007_r2_anomaly_overlay_refinement"
     ],
     "effect_direction_consistency": null,
     "note": "evidence_draft — promote.R 5축 검증에서 hurdle_result/grade_a_catalog 교차검증으로 확정",
-    "n_eff_signatures": 6,
-    "independent_constructions": 6,
+    "n_eff_signatures": 9,
+    "independent_constructions": 9,
     "constructions": [
       "cross_sectional_selection",
       "dynamic_timing_overlay",
       "insider_netbuy_safe_exit_censoring + ON_event_outcome_census(SUSTAIN/EXIT_obs/cov_lost/CENSORED) + differential_censoring(ON vs OFF) + worstcase_imputation(-20/-30/-50/-80/-100%) + multimonth_forward_trajectory(h=0..3 paired_NW) + terminal_truncation_guard",
       "insider_netbuy_safe_tripwire_megatier_diagnosis + power_analysis + heterogeneity_test + pooled_permutation",
       "joint_packaging_sweep",
-      "overlay_stock_exclusion_tilt"
+      "overlay_exposure_scalar_on_book_carrier (M4xR05 noLayer4 x DD_STATE 12M-10pct g40)",
+      "overlay_exposure_scalar_on_book_carrier (M4xR05 noLayer4 x unified Category g40_70)",
+      "overlay_stock_exclusion_tilt",
+      "universe_exclusion_filter_x_overlay"
     ],
     "metric_types": [
       "backtested",
@@ -168,21 +177,72 @@
         "test": "production parity(인컴번트 base)",
         "result": "survived",
         "effect_retained": "r1 EXACT SR 1.8088·동월 vintage 미사용"
+      },
+      {
+        "test": "라벨->실현하락(BM<0) 판별력 fisher 검정",
+        "result": "p=1.0 (recall 0.10 < base 0.41)",
+        "effect_retained": false
+      },
+      {
+        "test": "심도 완화 재채점 BM<-5%/-8%",
+        "result": "recall 0.17/0.20, p=0.161/0.196 — 어느 심도에서도 비유의",
+        "effect_retained": false
+      },
+      {
+        "test": "PIT 위반 주입(홀딩월 라벨)",
+        "result": "assert stop 발화 — 차단 실효 실증",
+        "effect_retained": null
+      },
+      {
+        "test": "lag 스트레스(m-2 라벨)",
+        "result": "paired t -1.85 -> -2.57 (look-ahead 인플레 부재)",
+        "effect_retained": false
+      },
+      {
+        "test": "가중 기저 교차(EW basis)",
+        "result": "paired t -2.04 — 기저 무관 부정 방향",
+        "effect_retained": false
+      },
+      "사전등록 X 단일 고정(no-sweep, n_trials=1); honest null(incumbent가 이미 회피) 발동률로 검정; 기전 falsification(배제군 개인 순매수 t +3.90); 2×2 전 셀 병행 + 상호작용 검정; assert_overlay_pit 256/256 + 위반 주입 FIRED; strict-PIT A/B(leak 변형 열세로 look-ahead 이득 부재 실증); lag1 스트레스; dual-basis EW 동방향; 사전등록 parity STOP 발동 후 진단 2축",
+      {
+        "test": "라벨 품질 사전 검정(성과 전 fail_line)",
+        "result": "recall 0.351 <= base 0.413, fisher p=0.795 — FAIL",
+        "effect_retained": false
+      },
+      {
+        "test": "진단 변형 4종(DD5/DD15/VOL80/단월음수) 라벨 품질",
+        "result": "전부 fisher p>0.25 비유의 — 축 전체 기각",
+        "effect_retained": false
+      },
+      {
+        "test": "PIT 위반 주입(홀딩월말 cutoff)",
+        "result": "assert stop 발화 — 차단 실효 실증",
+        "effect_retained": null
+      },
+      {
+        "test": "lag 스트레스(cutoff 1개월 추가 지연)",
+        "result": "paired t -3.77 -> -3.92 (leak 방향이 더 나쁨 — 누출 지문 없음)",
+        "effect_retained": false
+      },
+      {
+        "test": "가중 기저 교차(EW basis) + 비용 스트레스",
+        "result": "paired t -4.17 / -3.80 — 기저·비용 무관 유해 방향",
+        "effect_retained": false
       }
     ],
     "note": "L-code 기록 반증 시도 실값 집계"
   },
   "mechanism_draft": {
-    "economic_explanation": "insider net-buy SAFE 신호의 대형주(TOP30) 약함이 표본부족(power)인가 진짜 mega signal-death(cap-tier localization)인가. 결과: attenuation(death) 우세 — TOP30 표본이 mid-효과 검출 검정력 100%인데도 t=1.30(power 가설 falsified)·이질성 NW-t 2.50~3.70 유의·CI가 mid 배제. 잔여 소효과(3.8%/yr)는 검출 문턱 이하+최근레짐 국한. 복합(INS01+INS02)은 corr 0.80~0.85 중복으로 무이득. cap-tier localization의 monitoring-면 발현. (멤버 가설 9건 — promote.R에서 일치성 재검증)",
-    "mechanism_type": "information",
+    "economic_explanation": "insider net-buy SAFE 신호의 대형주(TOP30) 약함이 표본부족(power)인가 진짜 mega signal-death(cap-tier localization)인가. 결과: attenuation(death) 우세 — TOP30 표본이 mid-효과 검출 검정력 100%인데도 t=1.30(power 가설 falsified)·이질성 NW-t 2.50~3.70 유의·CI가 mid 배제. 잔여 소효과(3.8%/yr)는 검출 문턱 이하+최근레짐 국한. 복합(INS01+INS02)은 corr 0.80~0.85 중복으로 무이득. cap-tier localization의 monitoring-면 발현. (멤버 가설 12건 — promote.R에서 일치성 재검증)",
+    "mechanism_type": "behavioral",
     "causal_plausibility": null
   },
   "oos_validation_draft": {
     "oos_months": 221.0,
-    "oos_effect_vs_is": 0.141,
-    "note": "L-code oos_retention 실값 2건 median (IS65/OOS35 활성SR retention) + oos_months 실값 8건 median — promote.R essence_score 경유 재확정"
+    "oos_effect_vs_is": 0.346,
+    "note": "L-code oos_retention 실값 4건 median (IS65/OOS35 활성SR retention) + oos_months 실값 10건 median — promote.R essence_score 경유 재확정"
   },
-  "cluster_members_count": 9,
+  "cluster_members_count": 12,
   "status": "pending_5axis",
-  "created_at": "2026-08-02T04:56:13+00:00"
+  "created_at": "2026-08-02T12:31:49+00:00"
 }
