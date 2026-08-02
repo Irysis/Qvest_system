@@ -1,7 +1,7 @@
 {
  "schema_version": "1.0",
  "sot": "02_Infrastructure/docs/qvest_v8_3_alpha_discovery_sot.md §4",
- "updated": "2026-08-02 (WT-018 계약수주 파일럿 — primary 미달·전구간 미지불, 시총-분모 lead 생존. 파생 FQ-125 lead 확정 시도 / FQ-126 소비면(FQ-125 선행) 등재. 총 126건)",
+ "updated": "2026-08-02 (FQ-123 사전 확인 — WT-020 권고 정정: D42는 252일 장기축이라 부적합, D35_RealVol_63d가 MAX5와 동일 창 1순위. 총 126건)",
  "consume_rule": "새 발굴 리서치 착수 전: hypothesis_index lookup → 본 큐 확인 → owner/status 갱신. 완료 시 result_ref(L-code/보고서) 기입. dohoon_decision 항목은 세션 임의 착수 금지.",
  "entries": [
   {
@@ -2298,14 +2298,15 @@
   {
    "id": "FQ-123",
    "lane": "risk_axis",
-   "title": "단기창 변동성 축(D34_RealVol_21d / D42_EWMA_Vol)이 MAX5 증분을 흡수하는가",
+   "title": "DB-native 단기 vol 축이 MAX5 증분을 흡수하는가 — ★D35_RealVol_63d(동일 창) 1순위, D42는 252일이라 음성 대조군",
    "hypothesis": "WT-020: MAX5 의 crash 증분(FM t +13.15)은 동일 63d 창 vol63+dsd63 통제 시 소멸(t +0.95, cor 0.939) — 정체는 현행 위험 축(전부 252d)에 부재한 **단기창 꼬리-변동성**이다. DB-native 단기 vol 팩터(D34_RealVol_21d·D42_EWMA_Vol)로 통제하면 증분이 흡수되는가. 흡수되면 **신규 팩터 불요·배선만**으로 같은 효과.",
    "ev_rationale": "WT-020 NP-1(P1). 흡수 여부가 '신규 팩터 도입'과 '기존 축 배선'을 가른다 — 저비용.",
    "wall_check": "비적용 — 위험모델 위생 계층. 자본 주장 없음.",
    "data_gate": "없음 (factor DB D34/D42 + WT-020 controls_panel.parquet)",
    "owner": "미배정",
    "status": "frontier_open",
-   "registered": "2026-08-02 Q-Lead (WT-D20260802_020 NP-1 파생)"
+   "registered": "2026-08-02 Q-Lead (WT-D20260802_020 NP-1 파생)",
+   "precheck_measured": "★착수 전 사전 확인 (2026-08-02 Q-Lead, factor DB 정의 직접 판독 — factor_db_daily_phase6.R:189~196 / compute_defense.R:681). **WT-020 권고 목록을 정정해야 한다**: ① **D42_EWMA_Vol = `roll_ewma_vol_cpp(ret, 252L, 0.94)` = 252일 창** — 단기 축이 아니라 WT-020이 소멸을 확인한 바로 그 장기 계열이다. D42로 통제하면 '흡수 안 됨'이 당연히 나오고 잘못된 결론(63d 특이성 실증)으로 간다. ② **D35_RealVol_63d = `roll_sd(ret, 63L)`** — MAX5와 **정확히 같은 63일 창**이고 WT-020이 통제에 쓴 vol63의 DB-native 대응물. **1순위 후보인데 권고 목록에 없었다**. ③ D34_RealVol_21d = `roll_sd(ret, 21L)` 21일 — 단기 맞으나 창이 더 짧아 부분 흡수 예상. ④ D41_Vol_of_Vol = `roll_sd(D34, 63L)` = 단기 변동성의 변동성 — 꼬리 성격 축이라 보조 후보. ⇒ 라운드 통제 순서: **D35(동일 창) → D34(21d) → D41(vol-of-vol) → D42(장기, 음성 대조군)**. D42는 흡수 실패가 예상되는 **음성 대조**로 써야 검사에 변별력이 생긴다."
   },
   {
    "id": "FQ-124",
