@@ -39,3 +39,41 @@
 
 ## AX-008 Triangulation 지위
 - 본 self-adversarial = 3-source 중 1. Forge(재측정)·Architect는 후속 단계 소관 — 본 패키지는 screening 실측 단계로 2/3 요건은 graduation 시점 적용.
+
+---
+
+# Risk Research — Self-Adversarial Challenge (v8.2, 2026-08-02)
+
+**대상**: risk_package.json (기전 진단 라운드 — Q-Lead 재정의: dossier 아닌 위험구조 설명). 산출 전 자기 적대검증 6건.
+
+### R-C1. Σ conditioning — cond 645 > 500 failure rule 위반 — **ACCEPT (spec 수정 완료)**
+- **제기**: Σ=BΩB'+D 초기 산출 cond 645.1 > 500 (Ω LW cond 1202 — MKT 분산 지배의 스케일 이질성 기전).
+- **수정**: eigen-floor(target cond≤500) 적용 → cond **500.0**, PSD 유지, floored 6/348 고유값, 상대 Frobenius 변형 **0.00069**(구조 왜곡 정량 문서화). diagnostics 에 before/after 병기.
+
+### R-C2. "가중 정렬 = 사실상 단일팩터 선택" 서술 강도 — **PARTIAL (서술 한정)**
+- **제기**: cor(W_portt arm, C04 standalone)=0.66 은 완전 등가가 아니다(theta 시변 — 과거 앵커에선 타 팩터 지배 가능).
+- **보완**: 등가성 주장을 **as_of 스냅샷 구조**(theta 89.1% / 분산점유 93.3% / n_eff 1.25)와 breadth 논리에 한정. 시계열 전체는 "수렴" 서술. 오히려 추가 실측이 논지를 강화: arm NW-t 1.338 < C04 단독 1.643 — 시변 theta 추적이 최강 단일팩터만도 못함(추적 지연 비용) = 가중 slot 의 breadth 이득이 0 임을 재확인.
+
+### R-C3. Ppure 풀 상관(0.35) < ICIR 풀(0.625)이 window/선택-조건화 아티팩트 아닌가 — **REBUTTAL (3축)**
+- (학술) 선택통계 tt=mean/sd 는 pairwise cor 를 목적함수로 갖지 않음 — 선택-조건화가 상관을 하향 편향시킬 기전 부재 (Grinold-Kahn FLOA: breadth 는 선택의 부산물).
+- (정량) full-sample 에서도 0.474 vs 0.576 방향 유지, trailing-36 에서 0.351 vs 0.625 로 확대 — 두 윈도우 일관.
+- (L-code) 선별 아크 R6 실측(paired +3.01, PORT_t-선별만 양성)과 정합 — 전이-생존 팩터가 실제로 이질적임을 독립 확인.
+
+### R-C4. D fallback + missing z→0 중립 처리 — **PARTIAL (정량 문서화)**
+- 42/348 종목 specific risk = universe median(0.0104/m) 대입(중앙값 = 무편향 중심 대입), missing z cells 279/6,264(4.5%)→0. package 에 카운트 기록. top-25 RC 재검은 next_probe 로 이관.
+
+### R-C5. cap-w 벤치 = K200 Size-비례 근사 — **PARTIAL (proxy 라벨)**
+- float 미조정·지수규칙 미복제 → `portfolio_basis` 에 proxy 성격 명시. 방향성(MEGA 가 cap-w active risk 지배)은 07-18 실 book 실측(0.969 괴리)과 동형 — 결론 강건.
+
+### R-C6. crisis 에서 팩터 active 상관 하락(0.528 vs 0.590) — 통념 역방향 정직 보고
+- 자산수익 상관은 위기 시 상승이 통설이나, 본 측정은 **active(벤치 대비) 시계열** — 위기 국면 팩터 분화(방어/공격 갈림)로 해석 가능. n_crisis=23 소표본 명시. 판정에 미사용(참고 진단).
+
+## 합리화 자기검증
+- 금지 패턴("미미/관행적/보수적이면 OK") 사용 없음 — R-C4 는 정량(42/348, 279/6264)으로 대체.
+- Σ PD violation 없음(PSD TRUE, min eig > 0). 모든 수치 metric_type 라벨(canonical_screen 파생 / estimated / proxy / unavailable-EVT).
+
+## Escalation 판정
+- risk 자체 HIGH = 1건(RF-WT003-MECH — 기전 발견이지 결함 아님) < 5 / Σ PD violation 0 / PIT hard 위반 0 → **자동 escalate 불요**.
+
+## AX-008 지위
+- 본 self-adversarial = 3-source 중 1 (risk 절). Forge·Architect 는 후속 소관.
