@@ -18,8 +18,65 @@ import shutil
 import sys
 import tempfile
 
-ROOT = os.environ.get("CLAUDE_PROJECT_DIR") or os.environ.get("QM_ROOT") \
-    or "C:/Users/99922/OneDrive/Quant_Module_Moltbot"
+# ─────────────────────────────────────────────────────────────────────────────
+# [fix 2026-08-02] 루트 해석 — **자기 위치(`__file__`) 가 1순위**, 모든 tier 에 표지 검증.
+#
+# 구판: `os.environ.get("CLAUDE_PROJECT_DIR") or os.environ.get("QM_ROOT") or "<main 하드코딩>"`.
+#   ① 표지 검증이 아예 없었고 ② 최종 폴백이 main 경로 리터럴이었다.
+#   Bash 툴 환경에서 CLAUDE_PROJECT_DIR 은 미설정(훅 안에서만 세워진다)이고 QM_ROOT 는
+#   **main 트리**를 가리키므로, worktree 에서 이 배터리를 돌리면 아래 sys.path 와
+#   G.load_cases(ROOT) 가 전부 main 을 향한다 — 즉 **worktree 의 continuity_gate.py 와
+#   케이스 사전은 한 번도 검사되지 않는다**.
+#   실측(2026-08-02): cwd=worktree → ROOT=main, `G.__file__` = main 의 파일.
+#
+# ★표지 검증만으로는 이 갈림을 못 가른다 — main 도 worktree 도 표지를 갖는다.
+#   가르는 것은 오직 후보 **순서**뿐이다. 테스트는 *자기가 실린 트리*를 검사해야 한다.
+# ★표지 = 이 배터리가 실제로 import 하는 파일 그 자체로 잡는다(존재검사로 정체성검사를
+#   대체하지 않는다 — 루트처럼 생긴 디렉토리가 아니라 *쓸 수 있는* 루트인지를 묻는다).
+# ★같은 계통 수리: 08_Tests/regime/run_all.R · 08_Tests/hooks/run_all_hooks.sh.
+#   공유 resolver(02_Infrastructure/{hooks,ops}/resolve_project.sh)는 무변경 —
+#   소비자 계층이 다르다(2026-08-01 도훈 결정).
+# ─────────────────────────────────────────────────────────────────────────────
+_ANCHOR_MARKER = os.path.join("02_Infrastructure", "axiom", "continuity_gate.py")
+# ★앵커 순서 정본 = 이 한 줄. 위반 주입 테스트가 이 줄을 갈아끼워 검출력을 실증한다
+#   (08_Tests/hooks/test_runner_anchor_selffirst.sh).
+_ANCHOR_ORDER = ("self", "CLAUDE_PROJECT_DIR", "QM_ROOT", "cwd")
+
+
+def _anchor_norm(p):
+    return os.path.abspath(p).replace("\\", "/") if p else ""
+
+
+_SELF_ROOT = _anchor_norm(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", ".."))
+
+
+def _resolve_root():
+    cands = {
+        "self": _SELF_ROOT,
+        "CLAUDE_PROJECT_DIR": _anchor_norm(os.environ.get("CLAUDE_PROJECT_DIR", "")),
+        "QM_ROOT": _anchor_norm(os.environ.get("QM_ROOT", "")),
+        "cwd": _anchor_norm(os.getcwd()),
+    }
+    for src in _ANCHOR_ORDER:
+        cand = cands.get(src, "")
+        # 표지 검증은 **모든 tier** 에 건다 — self 도 예외 아님.
+        if cand and os.path.isfile(os.path.join(cand, _ANCHOR_MARKER)):
+            # 앵커가 자기 트리와 갈리면 보이게 한다. 낙하가 정당할 수는 있어도
+            # 침묵하면 "어느 트리를 쟀는지"가 로그에 안 남는다(침묵 낙하 = 재발 기전).
+            if _SELF_ROOT and cand != _SELF_ROOT:
+                sys.stderr.write(
+                    "⚠ ANCHOR OVERRIDE: 배터리 자신의 트리 '%s' 가 아니라 %s='%s' 를 검사합니다.\n"
+                    % (_SELF_ROOT, src, cand))
+            return src, cand
+    sys.stderr.write(
+        "❌ ROOT 해석 실패 — 표지 '%s' 를 가진 후보 없음.\n   self='%s' cwd='%s' "
+        "CLAUDE_PROJECT_DIR='%s' QM_ROOT='%s'\n"
+        % (_ANCHOR_MARKER, _SELF_ROOT, _anchor_norm(os.getcwd()),
+           os.environ.get("CLAUDE_PROJECT_DIR", ""), os.environ.get("QM_ROOT", "")))
+    sys.exit(2)
+
+
+_ROOT_SRC, ROOT = _resolve_root()
 sys.path.insert(0, os.path.join(ROOT, "02_Infrastructure", "axiom"))
 import continuity_gate as G  # noqa: E402
 
