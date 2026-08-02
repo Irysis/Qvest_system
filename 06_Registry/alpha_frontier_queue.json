@@ -1,7 +1,7 @@
 {
  "schema_version": "1.0",
  "sot": "02_Infrastructure/docs/qvest_v8_3_alpha_discovery_sot.md §4",
- "updated": "2026-08-03 (WT-001 승자 표지 미성립 t+0.234 — 수익 축 닫힘. FQ-104 전제 반증 종결, 파생 FQ-129 CAUTION 조건부 / FQ-130 MEGA full-spec 등재. 총 130건)",
+ "updated": "2026-08-03 (FQ-125 데이터 게이트 실측: DART 원문 경계 2019-01·정정공시 원문 부재·파서 v2 2019 서식 미대응 → 파서 확장 선행. 총 130건)",
  "consume_rule": "새 발굴 리서치 착수 전: hypothesis_index lookup → 본 큐 확인 → owner/status 갱신. 완료 시 result_ref(L-code/보고서) 기입. dohoon_decision 항목은 세션 임의 착수 금지.",
  "entries": [
   {
@@ -2341,7 +2341,7 @@
    "hypothesis": "WT-018 파일럿: 사전등록 primary(매출 분모)는 미달(t 0.57)이나 **시총 분모 셀이 IC +0.0806, t_plain 1.972**로 생존했고 소형주 교란이 3축으로 기각됐다(1/Size 역풍 -0.066 · 직교 -0.025 · 잔차화 후 +0.0774 t 1.906). 이를 primary 로 신규 사전등록해 재측정하면 확립되는가. **데이터 기지불(재크롤 불요)**.",
    "ev_rationale": "WT-018 NP-1(P1). ①재료 lane 에서 오늘 유일하게 살아남은 lead 이고 크롤 비용이 이미 지불됐다. 단 문턱 근방이라 WT-013 섭동 검사 필수.",
    "wall_check": "dual-basis 실측에서 size 셀 cap-w PORT_t -0.37 vs EW-uni +1.49 = 전이 벽 미통과. IC 확립돼도 PORT_t 전이는 별도 관문 — 사전 명시.",
-   "data_gate": "없음 (04_Research/method_frontier/fq002_contract_magnitude/ panel_A/B.parquet 재사용)",
+   "data_gate": "★실측 확정 (2026-08-03): ① **DART 원문 제공 경계 = 2019-01** — 2018-12 이전은 document.xml 이 `014 파일이 존재하지 않습니다` 반환(이분 탐색 실측: 201812 실패 / 201901 3건 전부 성공 / 201703·201709·201806 전부 014). ⇒ **2005~2016 조선·플랜트 수주 사이클 구간은 구조적으로 측정 불가**(데이터 부재). 전구간 259개월 계획은 무효이고 실제 상한은 2019-01~2026-07 약 91개월. ② **정정공시(is_correction=TRUE)는 원문 부재** — 201901/201902 실측 35건 전량 UNZIP_FAIL(147B=014). ③ **현 파서 v2 는 2019 서식 미대응** — 비정정 48건 전량 PARSER_ERROR. ⇒ 크롤 재개 전 **파서 확장(v3) 이 선행 조건**. 소모 호출 170회(승인 예산 8,000 의 2%)에서 2회 즉시 중단.",
    "owner": "Q-Lead (WT-D20260802_023 판정 수집 2026-08-03)",
    "status": "dohoon_decision",
    "in_flight_since": "2026-08-02 (WT-D20260802_023 착수 — 섭동 q05 사전등록 라운드, preregistration.json 고정 완료)",
@@ -2361,7 +2361,8 @@
    "revival_conditions": [
     "abort 재분류 시에도 MEGA-tier 시총 집중도가 2024 이전 수준으로 정상화된 국면 6개월 지속 → trailing 24개월 재측정",
     "1단계 interim 게이트 충족 시 잔여 구간 지불로 진행"
-   ]
+   ],
+   "stage1_revised_scope": "2019-01~2023-07 (55개월) — 파서 v3 통과 후 재개"
   },
   {
    "id": "FQ-126",
