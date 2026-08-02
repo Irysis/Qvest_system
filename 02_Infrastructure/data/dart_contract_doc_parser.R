@@ -77,8 +77,19 @@ parse_contract_doc <- function(rcept_no, api_key) {
                   error = function(e) "")
   txt <- .ctr_plain(raw)
 
-  amt <- .ctr_num(.ctr_after(txt, "계약금액\\(원\\)"))
-  rev <- .ctr_num(.ctr_after(txt, "최근매출액\\(원\\)"))
+  # ── v2 (2026-08-02, WT-D20260802_018 실측 진단): 자율공시 서식 커버 ──────────
+  #  · 거래소공시 표준형: "계약금액(원) N ... 최근매출액(원) N"
+  #  · 자율공시형(원본 실패 22.9%의 기전, rcept 20230830900288 실측):
+  #      "확정 계약금액 N ... 계약금액 총액(원) N ... 최근 매출액(원) N"
+  #      → 라벨 "계약금액 총액(원)" 우선, "최근 ?매출액(원)" 공백 허용.
+  #  · 함정: "3. 계약상대방" 절에 상대방의 "-최근 매출액(원)"이 실린다 (동일 실측 문서
+  #      에서 상대방 매출 40.68조가 발행사 매출 2,675억 뒤에 등장). 발행사 필드가 결측일
+  #      때 lenient 매칭이 상대방 매출을 집으면 분모 오염 → 매출 추출은 계약상대방 절
+  #      이전 텍스트로 한정한다.
+  txt_pre_cp <- { cp <- regexpr("계약상대방", txt); if (cp > 0) substr(txt, 1, cp - 1) else txt }
+  amt <- .ctr_num(.ctr_after(txt, "계약금액 ?총액 ?\\(원\\)"))
+  if (is.na(amt)) amt <- .ctr_num(.ctr_after(txt, "계약금액 ?\\(원\\)"))
+  rev <- .ctr_num(.ctr_after(txt_pre_cp, "최근 ?매출액 ?\\(원\\)"))
   out$contract_amount <- amt
   out$recent_revenue  <- rev
   if (!is.na(amt) && !is.na(rev) && rev > 0) out$ratio_to_revenue <- amt / rev
