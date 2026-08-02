@@ -1,14 +1,14 @@
 # 02_Infrastructure INDEX
 
-> 자동 생성 2026-08-02 02:26 — 큐레이션 원본: `06_Registry/index_descriptions.json` (role/status/category 수동 보완처) · 재생성: `Rscript 02_Infrastructure/tools/build_artifact_index.R` (daily_refresh 말미 자동). 본 파일 직접 수정 금지 — 재생성 시 덮어씀.
+> 자동 생성 2026-08-03 07:38 — 큐레이션 원본: `06_Registry/index_descriptions.json` (role/status/category 수동 보완처) · 재생성: `Rscript 02_Infrastructure/tools/build_artifact_index.R` (daily_refresh 말미 자동). 본 파일 직접 수정 금지 — 재생성 시 덮어씀.
 
 ## 데이터 (3)
 
 | 항목 | 정체 | status | 최근 | 크기 |
 |---|---|---|---|---|
 | `F1. QT_to_xts.r` | 퀀티와이즈 엑셀 시계열을 xts로 변환하는 헬퍼 함수 2종(QT_to_xts / QT_to_xts_macro) — 데이터 인제스트 빌더들의 공용 유틸 | active | 2026-06-07 | 643B |
-| `data/` | 데이터 인제스트/캐시 계층 42건 — build_cache.R·build_index_cache.py·daily_refresh.sh·퀀티와이즈 파서(RAWDATA/benchmark parquet 생산) | active | 2026-08-01 | 10.3MB |
-| `factor_db/` | Factor DB 계층 43건 — 월간 373팩터 + 일간 팩터 빌더·load_month_factors(C15 유일 진입점)·registry | active | 2026-07-26 | 1.5MB |
+| `data/` | 데이터 인제스트/캐시 계층 42건 — build_cache.R·build_index_cache.py·daily_refresh.sh·퀀티와이즈 파서(RAWDATA/benchmark parquet 생산) | active | 2026-08-02 | 10.3MB |
+| `factor_db/` | Factor DB 계층 43건 — 월간 373팩터 + 일간 팩터 빌더·load_month_factors(C15 유일 진입점)·registry | active | 2026-08-02 | 1.5MB |
 
 ## 백테스트 (3)
 
@@ -37,7 +37,7 @@
 
 | 항목 | 정체 | status | 최근 | 크기 |
 |---|---|---|---|---|
-| `hurdle_gate.R` | Screening tier 게이트 권위 구현(83KB — D002 turnover 1100%·D004 structural drawdown·verdict$screening·screen_route 라우팅) | active | 2026-07-09 | 83KB |
+| `hurdle_gate.R` | Screening tier 게이트 권위 구현(83KB — D002 turnover 1100%·D004 structural drawdown·verdict$screening·screen_route 라우팅) | active | 2026-08-02 | 88KB |
 
 ## 성능 (2)
 
@@ -56,14 +56,14 @@
 
 | 항목 | 정체 | status | 최근 | 크기 |
 |---|---|---|---|---|
-| `R/` | hook_batch_runner.R 단일 파일 — 훅 R 로직을 세션 1회 source로 통합하는 배치 래퍼(Block C 토큰/spawn 최적화) | active | 2026-07-03 | 13KB |
-| `hooks/` | 하네스 강제 계층 64건 — qvest_hook_router.py + 47 훅(axiom_enforcement·graduation gate·backtest audit) + _archive_v55/_archive_4_6 격리분 | active | 2026-07-26 | 475KB |
+| `R/` | hook_batch_runner.R 단일 파일 — 훅 R 로직을 세션 1회 source로 통합하는 배치 래퍼(Block C 토큰/spawn 최적화) | active | 2026-08-02 | 14KB |
+| `hooks/` | 하네스 강제 계층 64건 — qvest_hook_router.py + 47 훅(axiom_enforcement·graduation gate·backtest audit) + _archive_v55/_archive_4_6 격리분 | active | 2026-08-02 | 498KB |
 
 ## 모드-alpha-search (1)
 
 | 항목 | 정체 | status | 최근 | 크기 |
 |---|---|---|---|---|
-| `alpha_search/` | ② alpha-search 모드 실행 계층(91건) — run_alpha_search.R + 논문 복제 드라이버(run_qmj_paper·run_residmom_paper 등)·캐시 빌더·검증 스크립트 | active | 2026-08-01 | 688KB |
+| `alpha_search/` | ② alpha-search 모드 실행 계층(91건) — run_alpha_search.R + 논문 복제 드라이버(run_qmj_paper·run_residmom_paper 등)·캐시 빌더·검증 스크립트 | active | 2026-08-02 | 733KB |
 
 ## 보고 (3)
 
@@ -71,7 +71,7 @@
 |---|---|---|---|---|
 | `attribution/` | research_philosophy ⑦ Attribution 모듈 — Brinson 분해 + Carhart 4팩터 귀속(분기 트리거) | active | 2026-06-07 | 16KB |
 | `report_templates/` | report_base.Rmd + report_style.css — LLM 보고 생성기 렌더링 소재 (구 KR/EN 템플릿 2건 2026-07-04 스윕 삭제) | active | 2026-06-07 | 29KB |
-| `reports/` | 보고 생성기 4건 — mrs_dashboard.R(모니터링 대시보드)·report_agent_llm.R·report_charts·report_narrative | active | 2026-08-01 | 238KB |
+| `reports/` | 보고 생성기 4건 — mrs_dashboard.R(모니터링 대시보드)·report_agent_llm.R·report_charts·report_narrative | active | 2026-08-02 | 241KB |
 
 ## 공리엔진 (1)
 
@@ -83,7 +83,7 @@
 
 | 항목 | 정체 | status | 최근 | 크기 |
 |---|---|---|---|---|
-| `contracts/` | 측정·계약 코어 16건 — build_bt_result/canonical_screen_bt/essence_score(Grade 권위)/register_module/holdout_falsification 등 실측-only 거버넌스의 구현체 | active | 2026-08-01 | 199KB |
+| `contracts/` | 측정·계약 코어 16건 — build_bt_result/canonical_screen_bt/essence_score(Grade 권위)/register_module/holdout_falsification 등 실측-only 거버넌스의 구현체 | active | 2026-08-02 | 201KB |
 | `schemas/` | JSON 스키마 계층 — certs/(5 certificate)·packages/(6 agent package)·state/(book_state·axiom 등) 스키마 정의 | active | 2026-06-07 | 20KB |
 
 ## 발굴 (1)
@@ -96,7 +96,7 @@
 
 | 항목 | 정체 | status | 최근 | 크기 |
 |---|---|---|---|---|
-| `docs/` | 설계 SOT·확장 룰·CHANGELOG 계층 — qvest_v8_1_sot.md(Active SOT)·rules/ 확장 9·legacy_boundary·reference_textbooks | active | 2026-08-01 | 405KB |
+| `docs/` | 설계 SOT·확장 룰·CHANGELOG 계층 — qvest_v8_1_sot.md(Active SOT)·rules/ 확장 9·legacy_boundary·reference_textbooks | active | 2026-08-02 | 428KB |
 | `README.md` | 인프라 존 진입 설명 (상세 목록은 INDEX.md) | active | 2026-07-03 | 1KB |
 
 ## 측정 (1)
@@ -110,8 +110,8 @@
 | 항목 | 정체 | status | 최근 | 크기 |
 |---|---|---|---|---|
 | `judge/` | judge_lockbox_harness.R 단일 — judge의 lockbox 격리 검증 하네스(Gate 심사 시 forge 산출 재검) | active | 2026-06-07 | 12KB |
-| `prompts/` | agent spawn init 프롬프트 14건 — _shared_prefix.md(axiom derived cache) + alpha/risk/optimizer/forge/judge/qlead_init.md | active | 2026-07-25 | 220KB |
-| `worktask/` | WT 계약 계층 — common_charter.md·cert_rules.R·constraint_defaults.json(graduation severity)·run_all_template.R(현행 forge 템플릿)·lineage_utils | active | 2026-07-25 | 240KB |
+| `prompts/` | agent spawn init 프롬프트 14건 — _shared_prefix.md(axiom derived cache) + alpha/risk/optimizer/forge/judge/qlead_init.md | active | 2026-08-02 | 220KB |
+| `worktask/` | WT 계약 계층 — common_charter.md·cert_rules.R·constraint_defaults.json(graduation severity)·run_all_template.R(현행 forge 템플릿)·lineage_utils | active | 2026-08-02 | 262KB |
 
 ## 메모리 (1)
 
@@ -129,10 +129,10 @@
 
 | 항목 | 정체 | status | 최근 | 크기 |
 |---|---|---|---|---|
-| `monitoring/` | 라이브 페이퍼트래킹 — noLayer4 일별 마킹(mark_nolayer4_daily.R)·월간(run_nolayer4_monthly.sh)·holdout 대조(monitor_nolayer4_paper.R). 구 faithtrend 스크립트+.bak = deprecated rollback 보존 | active | 2026-08-01 | 36KB |
-| `ops/` | 운영 계층 54건 — bootstrap.sh(/qvest 진입)·cleanup.sh·scheduler/(.bat 태스크)·헬스체크·paper router | active | 2026-08-01 | 715KB |
+| `monitoring/` | 라이브 페이퍼트래킹 — noLayer4 일별 마킹(mark_nolayer4_daily.R)·월간(run_nolayer4_monthly.sh)·holdout 대조(monitor_nolayer4_paper.R). 구 faithtrend 스크립트+.bak = deprecated rollback 보존 | active | 2026-08-02 | 37KB |
+| `ops/` | 운영 계층 54건 — bootstrap.sh(/qvest 진입)·cleanup.sh·scheduler/(.bat 태스크)·헬스체크·paper router | active | 2026-08-02 | 789KB |
 | `telegram/` | 텔레그램 계층 4건 — telegram_notify.R(발송)·telegram_listener.py·telegram_commands.R·start_listener.sh (qvest-telegram SOT의 구현체) | active | 2026-07-25 | 218KB |
-| `tools/` | 운영 도구 16건 — build_artifact_index.R·paper_recharge_daily.R(논문 수집)·debate_helpers 등 | active | 2026-08-01 | 287KB |
+| `tools/` | 운영 도구 16건 — build_artifact_index.R·paper_recharge_daily.R(논문 수집)·debate_helpers 등 | active | 2026-08-01 | 288KB |
 
 ## 관측 (2)
 
@@ -145,7 +145,7 @@
 
 | 항목 | 정체 | status | 최근 | 크기 |
 |---|---|---|---|---|
-| `portfolio/` | 포트폴리오·거버넌스 계층 31건 — portfolio_governor.R(PG1 book-marginal admission)·book_optimizer·s5_mutation_runner·measurement_basis_audit | active | 2026-08-01 | 804KB |
+| `portfolio/` | 포트폴리오·거버넌스 계층 31건 — portfolio_governor.R(PG1 book-marginal admission)·book_optimizer·s5_mutation_runner·measurement_basis_audit | active | 2026-08-02 | 824KB |
 
 ## 모드-RAMP (1)
 
@@ -170,7 +170,7 @@
 | 항목 | 정체 | status | 최근 | 크기 |
 |---|---|---|---|---|
 | `sanity_checks/` | bear_date_audit.R 단일 — forward label 방향 PIT 의무 감사(Cycle 50 lookahead 재발 방지 게이트) | active | 2026-06-07 | 12KB |
-| `validation/` | 검증 계층 26건 — pit_enforcement.R·lookahead_detector.R(PIT Level 0 구현)·v8_readiness_gate.R·preflight_check·stage_artifact_schemas | active | 2026-08-01 | 334KB |
+| `validation/` | 검증 계층 26건 — pit_enforcement.R·lookahead_detector.R(PIT Level 0 구현)·v8_readiness_gate.R·preflight_check·stage_artifact_schemas | active | 2026-08-02 | 349KB |
 
 ## 설계 SOT (1)
 
@@ -182,13 +182,13 @@
 
 | 항목 | 정체 | status | 최근 | 크기 |
 |---|---|---|---|---|
-| `tests` | 인프라 단위 테스트 — test_continuity_gate.py(Continuity Firewall L2 판정기 회귀) | active | 2026-07-25 | 28KB |
+| `tests` | 인프라 단위 테스트 — test_continuity_gate.py(Continuity Firewall L2 판정기 회귀) | active | 2026-08-02 | 32KB |
 
 ## 미분류 (1) — index_descriptions.json에 추가하세요
 
 | 항목 | 정체 | status | 최근 | 크기 |
 |---|---|---|---|---|
-| `ast` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-07-25 | 166KB |
+| `ast` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-08-02 | 187KB |
 
 ## stale 큐레이션 키 (4) — 디스크 부재, index_descriptions.json에서 제거 권장
 

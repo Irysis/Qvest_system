@@ -267,7 +267,7 @@ for (tn in names(tests)) {
 
 # turnover 진단
 TO <- rbindlist(lapply(names(runs), function(k)
-  data.table(key = k, to_annual = round(sum(runs[[k]]$to) / (nrow(runs[[k]]) / 12), 3))))
+  data.table(run_key = k, to_annual = round(sum(runs[[k]]$to) / (nrow(runs[[k]]) / 12), 3))))
 
 saveRDS(list(RES = RES, TO = TO, runs_meta = lapply(runs, nrow),
              sig_range = range(sig_dates)),

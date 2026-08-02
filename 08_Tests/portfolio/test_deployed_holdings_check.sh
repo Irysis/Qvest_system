@@ -71,9 +71,33 @@ preflight_fail() {
   echo "{\"test\":\"deployed_holdings_check\",\"pass\":0,\"fail\":1,\"total\":1,\"preflight\":\"$2\"}"
   exit 1
 }
-[ -n "$PY" ] || preflight_fail \
-  "pandas/pyarrow 를 갖춘 python 부재 (후보: ${_PY_CANDS[*]}) — bare python3=Store 스텁(rc49)은 후보 제외" "no_python"
-[ -f "$CHK" ] || preflight_fail "검사기 파일 부재: $CHK" "no_checker"
+# ★ N_AXES = 이 파일이 전제 충족 시 실제로 판정하는 축 수 (2026-08-03).
+#   skip 을 낼 때 "몇 건을 판정하지 않았나"를 주장하려면 그 수가 참이어야 한다.
+#   정적 grep(`^chk "T`)으로 세지 않는다 — 들여쓴 호출·루프 안 호출을 놓쳐 거짓 수를 낸다
+#   (실측: grep 은 10, 실제 판정은 21). 대신 이 상수를 선언하고,
+#   test_prereq_skip_contract.sh 가 **전제 충족 실행의 pass 수와 대조**해 참임을 실증한다
+#   (정적 대조가 아니라 측정 대조 — 축이 늘거나 줄면 그 검사가 즉시 빨개진다).
+N_AXES=21
+
+# ── 전제 부재 = 판정 없음(제3상태) vs 실제 결함(fail) 의 분기 ──────────────────
+# 해석기(venv)는 **gitignore 산출물**이다 — 이 트리에 없는 것이 회귀는 아니다.
+#   구현은 이걸 preflight_fail 로 처리했는데, 그러면 worktree 배터리가 환경 사유로
+#   영구 빨강이 되고 "계약 위반"과 "전제 부재"가 같은 색이 된다(오진단).
+#   반대로 조용히 통과시키면 이 저장소가 12회 수리한 "빈 결과 = 합격" 계통이다.
+#   → 제3상태로 낸다: pass 0 · fail 0 · skipped N_AXES · rc 0 · **없는 경로를 명시**.
+# ★검사기 본체($CHK)는 **추적 파일**이라 부재가 곧 결함 — 그건 계속 fail 이다.
+#   카나리아 실패(설치는 됐는데 실행 단계에서 죽음)도 fail — 전제는 있는데 깨진 것이다.
+preflight_skip() { # $1=사유 $2=없는 경로
+  echo "⊘ SKIP: $1" >&2
+  echo "   전제 부재는 통과도 실패도 아니다 — $N_AXES개 축을 판정하지 않았음을 그대로 보고한다." >&2
+  printf '{"test":"deployed_holdings_check","pass":0,"fail":0,"skipped":%s,"total":0,' "$N_AXES"
+  printf '"skips":[{"axis":"ALL(%s축)","reason":"%s","missing":"%s"}]}\n' "$N_AXES" "$1" "$2"
+  exit 0
+}
+[ -n "$PY" ] || preflight_skip \
+  "pandas/pyarrow 를 갖춘 python 해석기 부재 (후보: ${_PY_CANDS[*]}) — bare python3=Store 스텁(rc49)은 후보 제외" \
+  "$PROJ/.venv_qvest_ml/Scripts/python.exe"
+[ -f "$CHK" ] || preflight_fail "검사기 파일 부재: $CHK (추적 파일 — 전제 부재 아님)" "no_checker"
 # 카나리아 — `--help` 는 모듈 최상단 import(pandas) 를 지나 argparse 까지 도달해야 rc=0.
 #   Store 스텁 rc=49 / import 실패 rc=1 / 스크립트 부재 rc=2 와 전부 구분된다.
 _cout="$("$PY" "$CHK" --help 2>&1)"; _crc=$?
@@ -317,6 +341,6 @@ PYEOF
 fi
 
 echo ""
-echo "PASS=$PASS FAIL=$FAIL"
-echo "{\"test\":\"deployed_holdings_check\",\"pass\":$PASS,\"fail\":$FAIL,\"total\":$((PASS+FAIL))}"
+echo "PASS=$PASS FAIL=$FAIL SKIPPED=0"
+echo "{\"test\":\"deployed_holdings_check\",\"pass\":$PASS,\"fail\":$FAIL,\"skipped\":0,\"total\":$((PASS+FAIL))}"
 [ "$FAIL" -eq 0 ] || exit 1
