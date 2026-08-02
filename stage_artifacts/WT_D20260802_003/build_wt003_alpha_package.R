@@ -50,11 +50,12 @@ A[is.na(n_cov), n_cov := 0L]
 A[, confidence := round(0.30 + 0.65 * n_cov/length(POOL), 3)]
 
 ## ── inheritance/redundancy cor (active 시계열 기준, basis 라벨) ──
-cor_series <- function(a, b){ m <- merge(PR[[a]][,.(date,x=act_bm)], PR[[b]][,.(date,y=act_bm)], by="date")
+cor_series <- function(a, b){ if(is.null(PR[[a]])||is.null(PR[[b]])) return(NA_real_)
+  m <- merge(PR[[a]][,.(date,x=act_bm)], PR[[b]][,.(date,y=act_bm)], by="date")
   round(cor(m$x, m$y, use="complete.obs"), 4) }
-cor_vs_ppure <- cor_series("W_portt", "Ppure_rebuild")
+cor_vs_ppure <- NA_real_   # Ppure_rebuild pr 시계열 미보존(러너 RES만 저장) — 정직 미측정 라벨. membership 수준 증거 = Jaccard 0.32
 cor_vs_base  <- cor_series("W_portt", "base")
-cat(sprintf("active-cor: W_portt vs Ppure=%.3f | vs base=%.3f\n", cor_vs_ppure, cor_vs_base))
+cat(sprintf("active-cor: W_portt vs base=%.3f | vs Ppure=미측정(pr 미보존)\n", cor_vs_base))
 
 pval <- round(2*pt(-abs(res$w_portt_capwt), df=220), 4)
 fam_of <- function(fid){ p<-toupper(substr(fid,1,2)); p1<-substr(p,1,1)
@@ -177,7 +178,7 @@ alpha_package <- list(
     dsr_diag = list(raw = TAB[model=="W_portt", dsr_raw], penalized_ntrials4 = TAB[model=="W_portt", dsr_pen],
                     note = "chain — DSR 게이트 부적용(진단 산출). n_trials_wt=4, substrate 계보 별도 표기"),
     alpha_inheritance_cor = NULL,
-    alpha_inheritance_note = "parent 없음(discovery). redundancy: active-corr(월간 net active, cap-w basis) vs Ppure(최근접 계보)=아래",
+    alpha_inheritance_note = "parent 없음(discovery). redundancy: vs Ppure(최근접 계보) active-cor는 pr 시계열 미보존으로 미측정 (검증 안 됨 — risk 단계 재측정 TBD). membership 수준 증거 = Jaccard(양-theta, Ppure풀) 0.34 / 풀 자체 0.32. incumbent book(STR_1715 계보) 대비 cor은 production-parity 요건(§7b)상 risk/judge 단계 소관",
     redundancy_active_cor_vs_ppure = cor_vs_ppure,
     redundancy_active_cor_vs_base_icir = cor_vs_base,
     redundancy_cluster_id = "multifactor_composite_KR102 (P-pure 계보 인접 — active-cor 기준 구분 실측)"),

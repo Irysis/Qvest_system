@@ -212,12 +212,31 @@ SUITES=(
   #   → main부재 AND 무활동(정본). 검사 없이 두면 또 뒤집힌다.
   #   E5 는 성능 회귀 가드(전트리 find = 부팅 5분+ 지연, 변경파일 mtime 만 봐야 함).
   "08_Tests/ops/test_worktree_stranded_axis.sh"
+  # 2026-08-02 추가: alpha_search_queue pending 산정 위반 주입 (키 불일치 2건 수리 고정).
+  #   원 결함 = 양방향 오계수인데 **둘 다 오류 없이 조용히**, 그리고 **서로를 상쇄**했다 —
+  #     ① route_20260727 의 id 는 "arxiv:2607.19497", done 원장은 bare → 접두 붙은 건이
+  #        `pid not in done` 항상 참 → 이미 소비·QUARANTINE 판정난 2건이 영구 pending(부풀림).
+  #     ② queue_20260726/27 의 candidates 키는 `paper_id` 인데 카운터는 id/arxiv_id 만
+  #        읽음 → pid='' → 전건 침묵 미계수(①과 반대 방향).
+  #   ★상쇄형이라 총계가 "그럴듯한 숫자"로 착지한다 — 총계 감시(0=계측 사망 가드)로는 못 잡는다.
+  #   ★"N 이 줄었다"도 증거가 아니다(검사기를 죽여도 N 은 준다). 그래서 done-hit 제외(A축)와
+  #     신규 testable 검거(B축)를 **양방향**으로 걸고, 수리 전 블록을 음성 기준으로 함께
+  #     돌려 이 검사가 결함을 실제로 구별하는지 매 실행 확인한다(구별 8건).
+  #   검사 대상은 사본이 아니라 원본 .sh 의 heredoc 추출 — 마커가 깨지면 FATAL(exit 2)로
+  #     중단한다("조용히 0건 검사"가 초록으로 보이는 것을 막는다).
+  "08_Tests/ops/test_alpha_queue_pending.py"
 )
 
+# (2026-08-02) .py 분기 추가 — 종전엔 확장자 무관 `bash` 로 던져 파이썬 suite 가
+#   구문오류로 죽고 UNREPORTED(=1 fail)로만 나타났다(무엇이 잘못됐는지는 안 보임).
+#   해석기는 bare python3 금지 — Windows Store 스텁이라 스크립트를 실행하지 않는다
+#   ([[reference-python3-windows-stub-use-qvest-py]]). 위 헤더가 세운 QVEST_PY_BIN 경유.
 _suite_cmd() {
   local rel="$1"
   if [[ "$rel" == *.R ]]; then
     printf 'Rscript "%s/%s"' "$PROJ_DIR" "$rel"
+  elif [[ "$rel" == *.py ]]; then
+    printf '"%s" "%s/%s"' "$QVEST_PY_BIN" "$PROJ_DIR" "$rel"
   else
     printf 'bash "%s/%s"' "$PROJ_DIR" "$rel"
   fi
@@ -256,6 +275,8 @@ print(pick)
 for test_script in "${SUITES[@]}"; do
   if [[ "$test_script" == *.R ]]; then
     OUT=$(Rscript "$PROJ_DIR/$test_script" 2>&1 | _last_summary_json)
+  elif [[ "$test_script" == *.py ]]; then
+    OUT=$("$QVEST_PY_BIN" "$PROJ_DIR/$test_script" 2>&1 | _last_summary_json)
   else
     OUT=$(bash "$PROJ_DIR/$test_script" 2>&1 | _last_summary_json)
   fi

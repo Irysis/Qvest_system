@@ -23,7 +23,11 @@
    - 부가: paper_id, impl_spec, engine_path, port_t, oos_retention.
 4. **L4 독립 충실성**(별도 프로세스): `claude -p "$(cat 02_Infrastructure/ops/paper_fidelity_verifier_prompt.md)\n\nPAPER=<id> IMPL_SPEC=<spec> ENGINE=<engine.R> VERIF_JSON=<auto_verify_<id>.json>" --dangerously-skip-permissions` → fidelity_pass 기록.
 5. **L5 결정게이트(결정적)**: `Rscript 02_Infrastructure/ops/auto_alpha_gate.R <auto_verify_<id>.json>` — exit0/ADOPT → **alpha-search 기존 규칙대로 L-code 적립** + 텔레그램 "✅verified" / exit1/QUARANTINE → **L-code 적립 금지** + `auto_quarantine_${TODAY}.json` append + "⚠️ 검증FAIL". **게이트는 auto_alpha_gate.R가 결정(fail-closed). 너가 임의 ADOPT 금지.** verdict 누락/불명확 → quarantine.
-6. **소비 기록**: 처리한 id 전부 `alpha_search_queue_done.json`(processed) append(재실행 방지). Grade A는 PG 편입 *권고만*(book_state 수동).
+6. **소비 기록** (★2026-08-02 계약 명문화 — 아래 3항은 권고가 아니라 의무):
+   - **id 정규화**: `processed` 에는 **bare arXiv id**(`2607.19497`)만 적는다. 라우터 산출은 `arxiv:` 접두를 붙이는 판이 섞여 있다(실측 `alpha_search_route_20260727.json`) — 접두를 그대로 적으면 소비자 카운터가 done 을 못 알아보고 **영구 pending** 이 된다. 접두(`arxiv:` / `arXiv:` / `arxiv.org/abs/`)·버전 접미(`v2`)는 벗기고 적을 것. curated PDF id 는 파일명 그대로.
+   - **건별 즉시 append**: 논문 1건의 L5 판정 직후 바로 append 한다(런 끝에 몰아 쓰지 말 것). 런이 timeout/한도로 중도 사망하면 몰아쓰기 분은 통째로 유실되고, 그 논문은 **실행됐는데 pending 으로 남는다**.
+   - **route 경유·수동 실행분 포함**: 큐에 없이 `alpha_search_route_*.json` 에서 직접 집어 돌린 건, 이 래퍼 밖(수동 `/alpha-search`·병렬 세션)에서 돌린 건도 **전부** `processed` + `records[]`(paper_id / gate_decision / strategy_id / processed_date) 에 기록한다. ★실사고: 2607.19005(07-26)·2607.27461(08-02)이 실행됐는데 원장 미기입 → 소급 백필로 수습.
+   - Grade A는 PG 편입 *권고만*(book_state 수동).
 
 ## 텔레그램
 `tg_agent_brief(agent="AlphaSearch", title="alpha-search 큐 가동 (팩터→모드)", relaxed=TRUE, force=TRUE, sections=...)`: 실행 N편 + 각 전략명/grade/score + 검증 verdict(✅verified/⚠️quarantine: failed layers) + skip(batch_434) 사유.
