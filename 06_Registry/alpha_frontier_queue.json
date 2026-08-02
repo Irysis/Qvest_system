@@ -1,7 +1,7 @@
 {
  "schema_version": "1.0",
  "sot": "02_Infrastructure/docs/qvest_v8_3_alpha_discovery_sot.md §4",
- "updated": "2026-08-02 (FQ-113/114 착수 전 사전 확인 기록 — INS02 원값 41.8%가 상한 +1.0 포화 = R43-F1 침묵 기전의 직접 증거. 총 118건)",
+ "updated": "2026-08-02 (WT-019 nowcast 라벨 — 라벨 품질 사전 검정 단계 기각(recall 0.351<base 0.413). 트레일링 가격-상태 라벨은 KR 월간 하락 판별 불가 구조 판정. 파생 FQ-119 라벨 자격 관문 / FQ-120 시간 스케일 진단 등재. 총 120건)",
  "consume_rule": "새 발굴 리서치 착수 전: hypothesis_index lookup → 본 큐 확인 → owner/status 갱신. 완료 시 result_ref(L-code/보고서) 기입. dohoon_decision 항목은 세션 임의 착수 금지.",
  "entries": [
   {
@@ -2208,7 +2208,8 @@
    "data_gate": "없음 (regime 캐시 + 벤치 시계열 현행분)",
    "owner": "미배정",
    "status": "frontier_open",
-   "registered": "2026-08-02 Q-Lead (WT-D20260802_017 NP-1 파생)"
+   "registered": "2026-08-02 Q-Lead (WT-D20260802_017 NP-1 파생)",
+   "precheck_measured": "★착수 전 사전 확인 실측 (2026-08-02 Q-Lead, unified_regime_signal.parquet 431개월 1990-09~2026-07, metric_type=diagnostic·성과 주장 아님): **연속값 MSM_Crisis_Prob 도 익월 선행력은 사실상 없다**. ① 익월 하락 판별: 확률 상위 quintile 의 bm_next<0 비율 0.488 vs base 0.470 = **lift +0.019(≈0)**. ② 반면 **동월 판별은 실재**: 상위 quintile 의 당월 BM<0 0.563 vs base 0.469 = **lift +0.094**. ③ lead/lag 상관: cor(p[t-k], bm[t]) 가 k=0 +0.037 → k=1 +0.112 → **k=2 +0.129**(최대) → k=3 +0.088 = 확률이 높았던 달의 2개월 후 수익이 오히려 **좋다**(지연 발화 + 반등 선행 조합). ④ 대조 — CRISIS 이산 라벨의 익월 lift 는 **-0.022(음수)**, WT-017 의 '반등월 발화' 실측과 정합. ⇒ **FQ-117 의 사전 답**: 지연의 원인은 이산화(임계화)가 아니다 — 연속값 자체가 nowcast 형이고 예측형이 아니다. 라운드는 '이산화 vs 모델' 대신 '왜 동시성만 있고 선행이 없나'로 질문을 옮길 것. ⇒ **FQ-118 에 대한 함의**: nowcast 축에 정보가 실재한다는 방향 지지(동월 lift +0.094). 단 MSM 확률 자체가 이미 약한 nowcast 이므로 대체 라벨은 **이 +0.094 를 넘어야** 의미가 있다 — 대조군 기준선으로 사용할 것."
   },
   {
    "id": "FQ-118",
@@ -2221,7 +2222,32 @@
    "owner": "WT-D20260802_019 alpha-research (2026-08-02 완료)",
    "status": "settled_negative_20260802 — 라벨 품질 사전 검정 FAIL(DD10 recall 0.351<=base 0.413, fisher p=0.795; 진단 변형 DD5/DD15/VOL80/단월음수 전부 비유의). ★트레일링 가격-상태 라벨은 KR 월간 실현-하락 판별 불가 — 오라클 상금은 nowcast 축으로 접근 불가, 진짜 예측 필요. 참고 성과 유해(paired -3.77, -7.35%/yr, 회수율 -343%). 부활 = 어떤 라벨이든 recall>base AND fisher p<0.05 달성 시 동일 스케줄 재측정 / NP-2 일간 농축 유의 시 월내 cadence lane(도훈 결정)",
    "result_ref": "stage_artifacts/l_code/alpha_research/l_code_WT_D20260802_019_FQ118_DDSTATE_NOWCAST_OVERLAY.json + stage_artifacts/WT_D20260802_019/alpha_validation.json",
-   "registered": "2026-08-02 Q-Lead (WT-D20260802_017 NP-2 파생 — 오라클 상금 실측 근거)"
+   "registered": "2026-08-02 Q-Lead (WT-D20260802_017 NP-2 파생 — 오라클 상금 실측 근거)",
+   "precheck_measured": "★착수 전 사전 확인 실측 (2026-08-02 Q-Lead, unified_regime_signal.parquet 431개월 1990-09~2026-07, metric_type=diagnostic·성과 주장 아님): **연속값 MSM_Crisis_Prob 도 익월 선행력은 사실상 없다**. ① 익월 하락 판별: 확률 상위 quintile 의 bm_next<0 비율 0.488 vs base 0.470 = **lift +0.019(≈0)**. ② 반면 **동월 판별은 실재**: 상위 quintile 의 당월 BM<0 0.563 vs base 0.469 = **lift +0.094**. ③ lead/lag 상관: cor(p[t-k], bm[t]) 가 k=0 +0.037 → k=1 +0.112 → **k=2 +0.129**(최대) → k=3 +0.088 = 확률이 높았던 달의 2개월 후 수익이 오히려 **좋다**(지연 발화 + 반등 선행 조합). ④ 대조 — CRISIS 이산 라벨의 익월 lift 는 **-0.022(음수)**, WT-017 의 '반등월 발화' 실측과 정합. ⇒ **FQ-117 의 사전 답**: 지연의 원인은 이산화(임계화)가 아니다 — 연속값 자체가 nowcast 형이고 예측형이 아니다. 라운드는 '이산화 vs 모델' 대신 '왜 동시성만 있고 선행이 없나'로 질문을 옮길 것. ⇒ **FQ-118 에 대한 함의**: nowcast 축에 정보가 실재한다는 방향 지지(동월 lift +0.094). 단 MSM 확률 자체가 이미 약한 nowcast 이므로 대체 라벨은 **이 +0.094 를 넘어야** 의미가 있다 — 대조군 기준선으로 사용할 것."
+  },
+  {
+   "id": "FQ-119",
+   "lane": "methodology_repair",
+   "title": "★라벨 자격 관문 제도화 — recall>base ∧ fisher p<0.05 선통과 없이는 소비 측정 금지",
+   "hypothesis": "WT-017/019 2라운드 실측: 판별력 없는 라벨을 감β overlay 에 소비하면 **발화 월수에 비례해 유해**하다(MSM 28개월 → paired -1.85 / DD_STATE 92개월 → -3.77, 손실 ~3배). 지금까지는 라벨을 만들고 성과를 재는 순서였는데, 그 순서면 무판별 라벨이 계속 소비된다. **라벨 품질 사전 검정(recall>base rate ∧ fisher p<0.05)을 소비 측정의 자격 요건으로 제도화**하면 유해 소비를 원천 차단하는가 — 기존 소비 지점(overlay·monitoring·FR/RAMP)에 관문을 배선하고 위반 주입으로 실효 확인.",
+   "ev_rationale": "WT-019 NP-1(P1). 5-라벨 실측 기준선 확보(DD10 0.351/DD5 0.532/DD15 0.180/vol 0.081/단월음수 0.441, base 0.413) — 관문의 문턱이 이미 정량화돼 있다. 방법론 수리라 앞으로의 모든 국면·라벨 라운드에 복리로 작용.",
+   "wall_check": "비적용 — 판정 프레임 위생. 자본 주장 없음.",
+   "data_gate": "없음 (WT-017/019 산출물 + 기존 소비 지점 코드)",
+   "owner": "미배정",
+   "status": "frontier_open",
+   "registered": "2026-08-02 Q-Lead (WT-D20260802_019 NP-1 파생)"
+  },
+  {
+   "id": "FQ-120",
+   "lane": "mechanism_probe",
+   "title": "하락 지속성의 시간 스케일 — 월간 리밸이 방어 가능 구간을 소거하는가 (저비용 사전진단)",
+   "hypothesis": "WT-019: 트레일링 가격-상태 라벨 5종이 **월간** 실현-하락을 판별하지 못했다(전수 비유의). 가설: 하락 지속성이 일간/주간 스케일에 있고 월간 관측·리밸이 그 구간을 소거하는가. 벤치 일간 시계열로 저비용 사전진단(하락 에피소드 길이 분포·월간 집계 시 소실 비율)을 먼저 재고, 유의하면 월내 cadence lane 을 제안.",
+   "ev_rationale": "WT-019 NP-2(P2). 저비용(일간 벤치만)이고, 결과가 '가격 축은 스케일 문제'인지 '가격 축 자체가 무정보'인지를 가른다 — 후자면 비-return 방어 데이터원의 상대 EV 가 확정적으로 오른다.",
+   "wall_check": "월내 cadence 는 회전·비용 구조를 바꾸므로 **고정 축 변경 제안이 아니라** 별도 운용 결정(도훈) 사안. 본 프로브는 진단까지만.",
+   "data_gate": "없음 (benchmark.parquet 일간)",
+   "owner": "미배정",
+   "status": "frontier_open",
+   "registered": "2026-08-02 Q-Lead (WT-D20260802_019 NP-2 파생)"
   }
  ]
 }
