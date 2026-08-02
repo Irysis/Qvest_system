@@ -13,10 +13,10 @@
 | FQ-035 (R22 포렌식 이벤트 재과녁) | DIST-AR-018 | **정탐 — 소비됨** |
 | FQ-036 (R23 제출지연×심각사건) | DIST-AR-018 | **정탐 — 소비됨** |
 | FQ-037 (R24 전체-필러 유니버스) | DIST-AR-018 (주제어 7겹), DIST-AR-007 | **정탐 — 조건부** |
-| FQ-024 (R11 P-pure 발전 chain) | DIST-AR-007 | 미판정 |
-| FQ-026 (R13 P-pure 감쇠속도 축) | DIST-AR-007, DIST-QPM-003 | 미판정 |
+| FQ-024 (R11 P-pure 발전 chain) | DIST-AR-007 | **위양성** |
+| FQ-026 (R13 P-pure 감쇠속도 축) | DIST-AR-007, DIST-QPM-003 | **위양성** |
 | FQ-039 (R26 PG2 8번째 팩터+교체) | D6 dead(composite/packaging), DIST-AR-003/007 | **정탐 — 이관·해소됨** |
-| FQ-120 (하락 지속성 시간스케일) | DIST-AR-008 | 미판정 |
+| FQ-120 (하락 지속성 시간스케일) | DIST-AR-008 | **위양성** |
 
 ## 판정 상세 — FQ-035/036/037 클러스터
 
@@ -75,8 +75,33 @@ INV-7 경로-scoped 논리를 제대로 밟았다 — 그 자체로는 재도전
 제안 4번째 축: *"자식이 전부 종결(settled/negative/reversed)인데 부모가 open"* 을 탐지.
 FQ-039 는 그 축의 실사례 픽스처가 된다.
 
-## 남은 3건에 대한 지침
+## 판정 상세 — FQ-024 / FQ-026 / FQ-120 = 위양성 3건 (공통 지문)
 
-미판정 3건(FQ-024/026/120)은 착수 전 3단 게이트로 사람이 판정해야 한다.
+| FQ | 성격 | 저촉 카드의 성격 | 겹친 토큰 |
+|---|---|---|---|
+| FQ-024 (선별 갱신주기·보유밴드·vintage 앙상블) | **방법론/construction** | AR-007 = momentum **팩터-family** 판정 | post, 감쇠, top |
+| FQ-026 (선별 기준을 '수준'→'감쇠속도'로 전환) | **방법론/construction** | AR-007 · QPM-003 = 팩터-family 판정 | oos, retention, recent |
+| FQ-120 (하락 에피소드 길이 분포 사전진단) | **진단/측정 프레임** | AR-008 = dual-basis 팩터 재진단 | 실현, 비유의, 벤치 |
+
+**공통 지문**: FQ 는 *방법론·측정 프레임* 프론티어인데 카드는 *팩터-family* 판정이고, 겹친 것은
+**측정 어휘**(post/감쇠/top/oos/retention/실현/비유의/벤치)이지 주제어가 아니다. 반면 정탐 4건은
+주제어가 겹쳤다(FQ-037↔AR-018 = [r24,지각제출,심각사건,...], FQ-039↔D6 = composite/packaging 그 자체).
+
+STOPW(카드 절반 이상 등장) 필터를 통과한 토큰들이라 빈도만으로는 안 걸린다 — 이 어휘들은
+*일부* 카드에만 나오지만 **모든 방법론 FQ 에 나온다**(비대칭).
+
+### 개선 제안 2 (기존 lane-aware 억제와 같은 계통)
+
+현 `declares_non_return` 억제의 일반화: **FQ 의 lane 이 방법론 계열**
+(`methodology_*` / `selection_discipline` / `mechanism_probe` / `infra_integrity`)이고 카드가
+**팩터-family 판정**이면, 측정 어휘만 겹친 매칭은 억제한다. 위 3건이 그 축의 실사례 픽스처다.
+⚠ 음성 통제 필수 — 방법론 lane 이라도 카드가 *그 방법론 자체*를 닫은 경우는 여전히 잡혀야 한다
+(예: DSR/sweep 회계 관련 카드 ↔ sweep 설계 FQ).
+
+## 결과 요약
+
+새로 드러난 7건 = **정탐 4** (FQ-035/036/037 이관·소비 · FQ-039 자식 종결) + **위양성 3**
+(FQ-024/026/120 측정 어휘 겹침). 미판정 0건.
+스크린 재실행: `Rscript 02_Infrastructure/ops/frontier_registry_coherence.R --json`
 스크린 재실행: `Rscript 02_Infrastructure/ops/frontier_registry_coherence.R --json`
 (수리는 브랜치 `claude/confident-pasteur-53fafb` 7f9e4ff1 — main 미반영 시 접미형 7건이 다시 안 보인다).

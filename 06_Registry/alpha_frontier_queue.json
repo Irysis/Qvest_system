@@ -1,7 +1,7 @@
 {
  "schema_version": "1.0",
  "sot": "02_Infrastructure/docs/qvest_v8_3_alpha_discovery_sot.md §4",
- "updated": "2026-08-02",
+ "updated": "2026-08-02 (WT-020 MAX5 crash 예측력 capability_established — 증분 실재하나 정체는 단기창 변동성(63d 통제 시 소멸), 위기 역효과 원인=양측 꼬리. 파생 FQ-123 단기 vol 흡수 / FQ-124 문턱형 tripwire 등재. 총 124건)",
  "consume_rule": "새 발굴 리서치 착수 전: hypothesis_index lookup → 본 큐 확인 → owner/status 갱신. 완료 시 result_ref(L-code/보고서) 기입. dohoon_decision 항목은 세션 임의 착수 금지.",
  "entries": [
   {
@@ -2290,6 +2290,30 @@
    "owner": "미배정",
    "status": "frontier_open",
    "registered": "2026-08-02 alpha-research WT-D20260802_021 (FQ-116 NP-2 파생)"
+  },
+  {
+   "id": "FQ-123",
+   "lane": "risk_axis",
+   "title": "단기창 변동성 축(D34_RealVol_21d / D42_EWMA_Vol)이 MAX5 증분을 흡수하는가",
+   "hypothesis": "WT-020: MAX5 의 crash 증분(FM t +13.15)은 동일 63d 창 vol63+dsd63 통제 시 소멸(t +0.95, cor 0.939) — 정체는 현행 위험 축(전부 252d)에 부재한 **단기창 꼬리-변동성**이다. DB-native 단기 vol 팩터(D34_RealVol_21d·D42_EWMA_Vol)로 통제하면 증분이 흡수되는가. 흡수되면 **신규 팩터 불요·배선만**으로 같은 효과.",
+   "ev_rationale": "WT-020 NP-1(P1). 흡수 여부가 '신규 팩터 도입'과 '기존 축 배선'을 가른다 — 저비용.",
+   "wall_check": "비적용 — 위험모델 위생 계층. 자본 주장 없음.",
+   "data_gate": "없음 (factor DB D34/D42 + WT-020 controls_panel.parquet)",
+   "owner": "미배정",
+   "status": "frontier_open",
+   "registered": "2026-08-02 Q-Lead (WT-D20260802_020 NP-1 파생)"
+  },
+  {
+   "id": "FQ-124",
+   "lane": "consume_surface",
+   "title": "MAX5 문턱형 monitoring tripwire 사전등록 — hit/false-alarm 실측",
+   "hypothesis": "WT-020 부수: 포트 tail 예측은 선형으로는 무유의(t -0.75)이나 하위 5% active 월 직전 포트 max5-z 노출 +0.273 vs 비tail -0.077(Wilcoxon p=0.001) = **문턱형 소비만 적합**. 문턱 후보 +0.25 로 사전등록해 hit rate/false-alarm 을 실측하면 monitoring 경보로 쓸 수 있는가.",
+   "ev_rationale": "WT-020 NP-2(P2). monitoring 면은 cap-tier 벽 비경유이고 배관이 이미 실재.",
+   "wall_check": "비적용 — monitoring 소비면. 자본/sizing 아님.",
+   "data_gate": "없음 (WT-020 alpha_scores.parquet + book 보유 이력)",
+   "owner": "미배정",
+   "status": "frontier_open",
+   "registered": "2026-08-02 Q-Lead (WT-D20260802_020 NP-2 파생)"
   }
  ]
 }
