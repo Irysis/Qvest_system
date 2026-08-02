@@ -308,8 +308,17 @@ if command -v git >/dev/null 2>&1 && git -C "$PROJECT" rev-parse --git-dir >/dev
     #  ∴ 활동성 축이 여전히 필요하되, 기준은 **브랜치 커밋 시각이 아니라 작업 파일 mtime**
     #  이어야 한다(커밋 없이 미커밋만 쌓이는 형태가 정확히 문제였으므로).
     #  판정 = main부재 > 0  AND  최근 작업 흔적 없음(WT_IDLE_HOURS 초과).
+    #  ★성능: worktree 전트리 find 는 부팅을 분 단위로 지연시킨다(각 worktree 가 저장소 사본).
+    #  이미 status 로 확보한 **변경 파일 목록의 mtime** 만 본다 — 빠르고 의미도 더 정확하다
+    #  (작업 흔적 = 그 세션이 건드린 파일의 최신 수정시각).
     WT_IDLE_HOURS="${WT_IDLE_HOURS:-12}"
-    wt_last=$(find "$wt" -type f -not -path '*/.git/*' -not -name '*.log' -printf '%T@\n' 2>/dev/null | sort -rn | head -1 | cut -d. -f1)
+    wt_last=0
+    while read -r _f2; do
+      [ -z "$_f2" ] && continue
+      case "$_f2" in *.log) continue ;; esac
+      _m=$(stat -c %Y "$wt/$_f2" 2>/dev/null || echo 0)
+      [ "${_m:-0}" -gt "${wt_last:-0}" ] 2>/dev/null && wt_last="$_m"
+    done <<< "$(git -C "$wt" --no-optional-locks status --porcelain 2>/dev/null | sed 's/^...//' | head -40)"
     wt_idle_h=$(( ${wt_last:-0} > 0 ? ($(date +%s) - ${wt_last:-0}) / 3600 : 9999 ))
 
     if [ "${wt_missing:-0}" -gt 0 ] 2>/dev/null && [ "${wt_idle_h:-9999}" -ge "$WT_IDLE_HOURS" ] 2>/dev/null; then

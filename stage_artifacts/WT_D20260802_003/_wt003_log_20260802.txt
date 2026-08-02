@@ -1,0 +1,43 @@
+=== WT-D20260802_003: 조합 가중 PORT_t-정렬 A/B (config_hash=fdc9d20beea412de) ===
+substrate: 102 factors | 258 sig months 2005-01-31 ~ 2026-06-30
+deployzone PANEL: 102 factors x 257 months (~2026-05-31)
+
+=== IC 패널 계산 (257 months x 102 factors, Spearman) ===
+IC 패널 완료 (3s)
+anchors: 37개 (37..253)
+
+=== 측정 (cap-w authoritative, canonical_screen_bt 계약) ===
+  [base     ] pt_capwt=+0.593 pt_EWuni=+1.814 oos=-0.655 calmar=+0.306 DSRraw=+0.65 post17t=-1.44 TO=10.54 n=221
+  [W_famfix ] pt_capwt=+0.212 pt_EWuni=+1.141 oos=-0.802 calmar=+0.253 DSRraw=+0.24 post17t=-1.37 TO=11.20 n=221
+  [W_icir   ] pt_capwt=+0.846 pt_EWuni=+2.245 oos=-0.587 calmar=+0.307 DSRraw=+0.88 post17t=-1.49 TO=10.77 n=221
+  [W_portt  ] pt_capwt=+1.338 pt_EWuni=+3.416 oos=-0.407 calmar=+0.396 DSRraw=+1.33 post17t=-1.05 TO=10.85 n=221
+  [W_ivar   ] pt_capwt=+0.789 pt_EWuni=+1.564 oos=-0.534 calmar=+0.294 DSRraw=+0.82 post17t=-1.38 TO=8.73 n=221
+
+=== parity: Ppure_W36_K20 재구성 (R10 저장 2.6124, 동일기간 절단) ===
+  Ppure 재구성: full(n=221)=2.6686 | 기간절단(<=2026-04)=2.6124 vs R10 저장 2.6124 (|d|=0.0000)
+
+=== paired NW-t (사전등록 primary = W_portt vs base cap-w >= 2.0) ===
+  [W_portt   vs base     | cap-w ] d(ann)=+0.0363 paired_t=+2.569 (n=221)
+  [W_portt   vs base     | EW-uni] d(ann)=+0.0363 paired_t=+2.569 (n=221)
+  [W_icir    vs base     | cap-w ] d(ann)=+0.0081 paired_t=+0.894 (n=221)
+  [W_icir    vs base     | EW-uni] d(ann)=+0.0081 paired_t=+0.894 (n=221)
+  [W_famfix  vs base     | cap-w ] d(ann)=-0.0163 paired_t=-0.970 (n=221)
+  [W_famfix  vs base     | EW-uni] d(ann)=-0.0163 paired_t=-0.970 (n=221)
+  [W_ivar    vs base     | cap-w ] d(ann)=-0.0002 paired_t=-0.009 (n=221)
+  [W_ivar    vs base     | EW-uni] d(ann)=-0.0002 paired_t=-0.009 (n=221)
+  [W_portt   vs W_icir   | cap-w ] d(ann)=+0.0282 paired_t=+1.881 (n=221)
+  [W_portt   vs W_icir   | EW-uni] d(ann)=+0.0282 paired_t=+1.881 (n=221)
+
+=== 판정 ===
+  primary paired(W_portt vs base, cap-w) = +2.569 -> KILL(config-scoped negative)=FALSE
+  W_portt cap-w PORT_t=1.338 vs 천장 2.937 (d=-1.599) | HARD 2.95 = FALSE
+
+=== cap-tier 보유 분해 (top-25 EW) ===
+  base      MEGA=0.097 MID=0.141 OTHER=0.830 UNRK=0.000
+  W_famfix  MEGA=0.103 MID=0.129 OTHER=0.826 UNRK=0.000
+  W_icir    MEGA=0.096 MID=0.128 OTHER=0.841 UNRK=0.000
+  W_portt   MEGA=0.093 MID=0.105 OTHER=0.877 UNRK=0.000
+  W_ivar    MEGA=0.160 MID=0.216 OTHER=0.696 UNRK=0.000
+
+=== advisory 진단 (W_portt): rank_ic=0.0601 icir=0.474 harvey_t=7.05 mono=0.90 substab=0.22 (subICs: 0.0806/0.0175/0.0710) ===
+dual-basis(W_portt): EW-uni PORT_t=3.415 post17_t=0.712 oos_approx=0.256

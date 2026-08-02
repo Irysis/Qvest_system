@@ -1,0 +1,290 @@
+{
+  "prereg": {
+    "mode": "QEPM_alpha",
+    "task_id": "WT-D20260802_003",
+    "round": "WT003",
+    "question": "기존규율(trailing ICIR top-K) 선별 풀에서 조합 가중을 realized-PORT_t 정렬로 결정하면 EW/고정(가족균등)/relevance(ICIR)-가중 대비 유의 개선?",
+    "matrix_2x2": "기측정: [기존선별xEW]=7F_EW SCREEN_TIER / [PORTt선별xEW]=R6 2.6124 / [PORTt선별xPORTt가중]=R10 W_factor paired -0.16 null. 본 WT = 미검 셀 [기존선별xPORTt가중]",
+    "selection_fixed": "trailing 36m rank-IC ICIR top-20 (relevance 기존규율, cadence 6m, anchor에서 창 [a-36,a-1] PIT) — 전 arm 공유(가중만 A/B)",
+    "base": "base_icir_EW (ICIR top-20 풀, 팩터 EW x 종목 top-25 EW)",
+    "configs": {
+      "W_famfix": "고정가중(이론/구조): 가족 균등 x 가족내 EW (데이터 무반응 사전고정)",
+      "W_icir": "relevance-정렬 가중: theta ∝ max(trailing ICIR, 0) (Grinold theta∝IC)",
+      "W_portt": "★가설 arm: theta ∝ max(trailing 배포권 active NW-t, 0) (clip-at-zero, all<=0 → EW fallback)",
+      "W_ivar": "위험기반 대조: theta ∝ 1/var(trailing 배포권 active) (inverse-variance — NCO 단순형 대리, full NCO 아님 정직 라벨)"
+    },
+    "primary_criterion": "paired NW-t(cap-w active) W_portt vs base >= 2.0",
+    "adoption_candidate": "W_portt 단독 사전지정 — famfix/icir/ivar는 대조군(채택 불가). selection_type=chain 근거",
+    "kill_rule": "primary < 2.0 → config-scoped negative (membership-경유 기전 (ii) 지지)",
+    "ceiling_ref": [2.937, 0.12],
+    "gate_hard": [2.95, 0.7, 0.64],
+    "top_n": 25,
+    "cost_bps_oneway": 15,
+    "liq_min": 200000000,
+    "window": 36,
+    "kpool": 20,
+    "cadence": 6,
+    "n_trials_wt": 4,
+    "n_trials_substrate_lineage": "P-pure 계보 33 (R6~R15) + 본 WT 4 — substrate 공유하나 선별규율 상이(ICIR 신규)",
+    "selection_type": "chain",
+    "dsr_note": "DSR은 진단 산출(chain — 게이트 아님). 보수적으로 n_trials=4 패널티 병기",
+    "cost_model": "delta-based |dw| x 15bps one-way (canonical_screen_bt 내장)",
+    "substrate": "102 approved factors pure_factor_scores.z (=Z_Score_Aligned parity) + r6_factor_deployzone_active.parquet (top-25 EW net active, 07-14 재빌드 byte-parity)",
+    "pit": "선별 ICIR/가중 tt/var 전부 anchor a 기준 창 [a-36,a-1] — 창 말단 월의 forward return은 anchor 시점 실현완료. IC(s)=Spearman(z_j(s), Ret_1m(s))는 s+1 실현 후에만 소비",
+    "parity_anchor": "R6 Ppure_W36_K20 재구성 → R10 저장 2.6124 (동일기간 절단 대조)",
+    "as_of_date": "2026-08-02",
+    "source_version": "WT003_v1",
+    "security_id": "Ticker (rawdata) -> factor_id z (pure_factor_scores.z=Z_Score_Aligned)",
+    "config_hash": "fdc9d20beea412de",
+    "generated_at": "2026-08-02T10:08:03+0900"
+  },
+  "config_hash": "fdc9d20beea412de",
+  "meta": {
+    "as_of_date": "2026-08-02",
+    "generated_at": "2026-08-02T10:08:39+0900",
+    "source_version": "WT003_v1",
+    "n_sig": 258,
+    "date_range": ["2005-01-31", "2026-06-30"]
+  },
+  "results": [
+    {
+      "model": "base",
+      "port_t_capwt": 0.5928,
+      "port_t_EWuni": 1.8136,
+      "oos_retention": -0.6554,
+      "calmar": 0.3062,
+      "dsr_raw": 0.6457,
+      "dsr_pen": 0.4457,
+      "post2017_t_capw": -1.4356,
+      "post2017_t_EWuni": 0.03,
+      "post2017_bm_sr": -0.5068,
+      "turnover": 10.5405,
+      "net_sr": 0.1584,
+      "information_ratio": 0.1584,
+      "n_months": 221
+    },
+    {
+      "model": "W_famfix",
+      "port_t_capwt": 0.2122,
+      "port_t_EWuni": 1.141,
+      "oos_retention": -0.8017,
+      "calmar": 0.253,
+      "dsr_raw": 0.2378,
+      "dsr_pen": 0.0378,
+      "post2017_t_capw": -1.3714,
+      "post2017_t_EWuni": -0.0085,
+      "post2017_bm_sr": -0.4927,
+      "turnover": 11.2022,
+      "net_sr": 0.0566,
+      "information_ratio": 0.0566,
+      "n_months": 221
+    },
+    {
+      "model": "W_icir",
+      "port_t_capwt": 0.8462,
+      "port_t_EWuni": 2.2447,
+      "oos_retention": -0.5871,
+      "calmar": 0.3074,
+      "dsr_raw": 0.8783,
+      "dsr_pen": 0.6783,
+      "post2017_t_capw": -1.4868,
+      "post2017_t_EWuni": 0.3085,
+      "post2017_bm_sr": -0.496,
+      "turnover": 10.7654,
+      "net_sr": 0.217,
+      "information_ratio": 0.217,
+      "n_months": 221
+    },
+    {
+      "model": "W_portt",
+      "port_t_capwt": 1.3381,
+      "port_t_EWuni": 3.4159,
+      "oos_retention": -0.4072,
+      "calmar": 0.3956,
+      "dsr_raw": 1.3276,
+      "dsr_pen": 1.1276,
+      "post2017_t_capw": -1.0484,
+      "post2017_t_EWuni": 0.7137,
+      "post2017_bm_sr": -0.3762,
+      "turnover": 10.8476,
+      "net_sr": 0.3584,
+      "information_ratio": 0.3584,
+      "n_months": 221
+    },
+    {
+      "model": "W_ivar",
+      "port_t_capwt": 0.7888,
+      "port_t_EWuni": 1.5636,
+      "oos_retention": -0.5337,
+      "calmar": 0.2936,
+      "dsr_raw": 0.8214,
+      "dsr_pen": 0.6214,
+      "post2017_t_capw": -1.3848,
+      "post2017_t_EWuni": 0.7753,
+      "post2017_bm_sr": -0.4365,
+      "turnover": 8.733,
+      "net_sr": 0.1998,
+      "information_ratio": 0.1998,
+      "n_months": 221
+    },
+    {
+      "model": "Ppure_rebuild",
+      "port_t_capwt": 2.6686,
+      "port_t_EWuni": 3.8763,
+      "oos_retention": -0.0557,
+      "calmar": 0.4518,
+      "dsr_raw": 2.7866,
+      "dsr_pen": 2.5866,
+      "post2017_t_capw": -0.2492,
+      "post2017_t_EWuni": 1.5983,
+      "post2017_bm_sr": -0.0853,
+      "turnover": 9.2633,
+      "net_sr": 0.6843,
+      "information_ratio": 0.6843,
+      "n_months": 221
+    }
+  ],
+  "paired": [
+    {
+      "model": "W_portt",
+      "base": "base",
+      "basis": "act_bm",
+      "mean_diff_ann": 0.0363,
+      "paired_t": 2.5692,
+      "n": 221
+    },
+    {
+      "model": "W_portt",
+      "base": "base",
+      "basis": "act",
+      "mean_diff_ann": 0.0363,
+      "paired_t": 2.5692,
+      "n": 221
+    },
+    {
+      "model": "W_icir",
+      "base": "base",
+      "basis": "act_bm",
+      "mean_diff_ann": 0.0081,
+      "paired_t": 0.8942,
+      "n": 221
+    },
+    {
+      "model": "W_icir",
+      "base": "base",
+      "basis": "act",
+      "mean_diff_ann": 0.0081,
+      "paired_t": 0.8942,
+      "n": 221
+    },
+    {
+      "model": "W_famfix",
+      "base": "base",
+      "basis": "act_bm",
+      "mean_diff_ann": -0.0163,
+      "paired_t": -0.97,
+      "n": 221
+    },
+    {
+      "model": "W_famfix",
+      "base": "base",
+      "basis": "act",
+      "mean_diff_ann": -0.0163,
+      "paired_t": -0.97,
+      "n": 221
+    },
+    {
+      "model": "W_ivar",
+      "base": "base",
+      "basis": "act_bm",
+      "mean_diff_ann": -0.0002,
+      "paired_t": -0.0087,
+      "n": 221
+    },
+    {
+      "model": "W_ivar",
+      "base": "base",
+      "basis": "act",
+      "mean_diff_ann": -0.0002,
+      "paired_t": -0.0087,
+      "n": 221
+    },
+    {
+      "model": "W_portt",
+      "base": "W_icir",
+      "basis": "act_bm",
+      "mean_diff_ann": 0.0282,
+      "paired_t": 1.8809,
+      "n": 221
+    },
+    {
+      "model": "W_portt",
+      "base": "W_icir",
+      "basis": "act",
+      "mean_diff_ann": 0.0282,
+      "paired_t": 1.8809,
+      "n": 221
+    }
+  ],
+  "concentration": [
+    {
+      "model": "base",
+      "w_MEGA": 0.0968,
+      "w_MID": 0.1406,
+      "w_OTHER": 0.8297,
+      "w_UNRANKED": 0
+    },
+    {
+      "model": "W_famfix",
+      "w_MEGA": 0.1026,
+      "w_MID": 0.1293,
+      "w_OTHER": 0.8263,
+      "w_UNRANKED": 0
+    },
+    {
+      "model": "W_icir",
+      "w_MEGA": 0.096,
+      "w_MID": 0.1277,
+      "w_OTHER": 0.8413,
+      "w_UNRANKED": 0
+    },
+    {
+      "model": "W_portt",
+      "w_MEGA": 0.0932,
+      "w_MID": 0.1045,
+      "w_OTHER": 0.8775,
+      "w_UNRANKED": 0
+    },
+    {
+      "model": "W_ivar",
+      "w_MEGA": 0.16,
+      "w_MID": 0.2156,
+      "w_OTHER": 0.6959,
+      "w_UNRANKED": 0
+    }
+  ],
+  "parity": {
+    "ppure_rebuild_full": 2.6686,
+    "ppure_rebuild_trunc_2026_04": 2.6124,
+    "r10_stored": 2.6124,
+    "delta": 0
+  },
+  "primary_paired": 2.5692,
+  "kill": false,
+  "w_portt_capwt": 1.3381,
+  "vs_ceiling": -1.5989,
+  "advisory_w_portt": {
+    "rank_ic": 0.0601,
+    "icir": 0.4743,
+    "harvey_t": 7.0515,
+    "monotonicity": 0.903,
+    "subperiod_stability": 0.2176,
+    "n_ic_months": 221
+  },
+  "subperiod_ics": [0.0806, 0.0175, 0.071],
+  "dual_basis_w_portt": {
+    "ew_uni_port_t": 3.4148,
+    "ew_uni_post2017_t": 0.7122,
+    "ew_uni_oos_approx": 0.2558
+  }
+}
