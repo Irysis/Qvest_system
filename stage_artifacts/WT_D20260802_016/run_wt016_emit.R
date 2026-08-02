@@ -32,21 +32,30 @@ pkg14 <- fromJSON(file.path(ROOT, "qepm/mailbox/worktask/WT-D20260802_014/alpha_
 esc_max5 <- list(escape_type = "SPECIAL_OP",
   op_code_path = "stage_artifacts/WT_D20260802_010/ot_w1_lib.R::ot_stock_quantiles (max5 성분)",
   walk_forward = TRUE)
+prov_base <- list(store_build_hash = "sha256:56914c56b2b3b879",
+  generator_code_path = "05_Production/2.Factor_Model/2-1.STR_1715_AR_on_M4_R05_overlay_PG2/01_reproducible_code (cleanT1 재빌드, production_code_direct parity spearman 0.975~0.997)",
+  generated_at = "2026-07-14", production_parity_verified = TRUE)
 esc_base <- list(escape_type = "STORED_SCORE",
   panel_path = "05_Production/2.Factor_Model/2-1.STR_1715_AR_on_M4_R05_overlay_PG2/02_holdings_universe/alpha_scores_str1715_268m_cleanT1.parquet",
   built_at = "2026-07-14", vintage = "factor_db_T-1_off0_clean",
-  production_parity_verified = TRUE)
+  production_parity_verified = TRUE, provenance = prov_base[1:3])
+prov_expo <- list(store_build_hash = "sha256:98fa32778613ffe6",
+  generator_code_path = "05_Production/2.Factor_Model/2-1.STR_1715_AR_on_M4_R05_overlay_PG2/01_reproducible_code/run_layer5_R05_overlay.R",
+  generated_at = "production PG2 admit 산출 (read-only 소비)", production_parity_verified = TRUE)
 esc_expo <- list(escape_type = "STORED_SCORE",
   panel_path = "05_Production/2.Factor_Model/2-1.STR_1715_AR_on_M4_R05_overlay_PG2/04_backtest_results/period_returns_layer5.csv",
   built_at = "production PG2 산출물 (read-only)", vintage = "book 실현 β_combined = m4_weight_lag x beta_threshold_lag x beta_R05_V5",
   production_parity_verified = TRUE,
-  parity_evidence = "행-수준 cor(e, ret_L5_V5/ret_orig)=0.9996, max|diff|=0.035(스위칭 비용 항, resid-db cor -0.81) + β-스캔 k=0 정렬 확정")
+  parity_evidence = "행-수준 cor(e, ret_L5_V5/ret_orig)=0.9996, max|diff|=0.035(스위칭 비용 항, resid-db cor -0.81) + β-스캔 k=0 정렬 확정",
+  provenance = prov_expo[1:3])
 
 pkg <- list(
   task_id = "WT-D20260802_016",
   as_of_date = "2026-08-02",
   forecast_horizon = "1M",
   spec_version = "ast_v1.1",
+  pit = list(sig_date = "2026-06-30", decision_ts = "2026-08-02",
+    note = "sig_date = alpha_vector 기준 d0 (ot_panel 최신월말). 측정 패널은 2004-12~2026-04 전기간 저장분 소비"),
   hypothesis = list(
     statement = "WT-014 확립 MAX5_63 상위 10% 제외-필터의 한계기여가 현 book overlay(M4xR05_V5 β_combined)를 얹은 상태에서도 유지된다 — 실배치 판정 관문 (FQ-111).",
     mechanism = list(
