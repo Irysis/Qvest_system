@@ -34,10 +34,24 @@ suppressMessages({
 })
 
 # contract 재사용 (build_benchmark_compare + .nw_t_mean)
-.CANON_DIR <- tryCatch(dirname(sys.frame(1)$ofile), error = function(e) "02_Infrastructure/contracts")
+# [수리 2026-08-02, WT-D20260802_015] 중첩 source 시 sys.frame(1)$ofile = 최상위 스크립트
+#   (r-portability 실측 함정) → .CANON_DIR가 엉뚱한 dir로 해석되고 구 fallback은 tryCatch
+#   미발화로 dead — 계약 미로드 침묵(호출 시점 could not find build_benchmark_compare).
+#   marker 검증(존재 검사 아닌 정체성 검사: 대상 파일 실재 확인) + QM_ROOT resolver로 교체.
+.CANON_DIR <- local({
+  ok <- function(d) is.character(d) && length(d) == 1L && !is.na(d) && nzchar(d) &&
+    file.exists(file.path(d, "backtest_result_contract.R"))
+  cand <- tryCatch(dirname(sys.frame(1)$ofile), error = function(e) NA_character_)
+  if (ok(cand)) cand else {
+    root <- Sys.getenv("CLAUDE_PROJECT_DIR", Sys.getenv("QM_ROOT", "."))
+    d2 <- file.path(root, "02_Infrastructure/contracts")
+    if (ok(d2)) d2 else "02_Infrastructure/contracts"
+  }
+})
 local({
   f <- file.path(.CANON_DIR, "backtest_result_contract.R")
   if (file.exists(f)) suppressMessages(source(f))
+  else warning(sprintf("[canonical_screen_bt] backtest_result_contract.R 미발견 (.CANON_DIR=%s) — build_benchmark_compare 미로드, 호출 시 실패함", .CANON_DIR))
 })
 
 # ── [additive 2026-07-10] 진단 헬퍼 (비바인딩 — 상단 경계 주석 참조) ─────────────
@@ -231,6 +245,17 @@ canonical_screen_bt <- function(scores_dt, returns_dt, bench_dt,
 
   # gross monthly port return = sum(w_t * Ret_1m_t)
   WR <- merge(W, R[, .(Date, Ticker, Ret_1m)], by = c("Date","Ticker"), all.x = TRUE)
+  # ── [additive 2026-08-02, WT-D20260802_015 / WT-009 CF-03 재발방지] 선택분 커버리지 가드 ──
+  #   top-N 선택 종목의 Ret_1m 결측률이 높으면 = scores 패널이 유니버스 밖 종목으로 채워졌을
+  #   개연(비유니버스 오염 → 아래 NA→0 강제로 수익이 0으로 위장·포트 vol 물리불가 붕괴).
+  #   실사고: WT-009 1차 측정 무효(DB 전체 1800종목 패널 직접 투입 → top-25 비유니버스 충전).
+  #   warn-only + selected_ret_coverage 필드 노출 — 기존 판정·값 불변.
+  sel_cov <- WR[, mean(!is.na(Ret_1m))]
+  if (is.finite(sel_cov) && sel_cov < 0.95) {
+    warning(sprintf(paste0("[canonical_screen_bt] top-N 선택분 Ret_1m 커버리지 %.1f%% < 95%% — ",
+      "scores 패널 비유니버스 오염 의심(유니버스 선-제한은 호출자 책임, WT-009 CF-03). ",
+      "NA→0 강제로 수익이 0으로 위장될 수 있음."), 100 * sel_cov))
+  }
   WR[is.na(Ret_1m), Ret_1m := 0]
   port <- WR[, .(port_gross = sum(w * Ret_1m)), by = Date]
 
@@ -284,6 +309,7 @@ canonical_screen_bt <- function(scores_dt, returns_dt, bench_dt,
     net_sr = net_sr,
     mean_active_net = mean(active),
     turnover_annual = turnover_annual,
+    selected_ret_coverage = sel_cov,
     benchmark_compare = bc,
     period_returns = pr   # [2026-06-18 additive] 월별 시계열(date·ret_net·benchmark_ret) — 오버레이 등 후처리용
   )

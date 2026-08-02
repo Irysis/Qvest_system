@@ -1,0 +1,45 @@
+{
+  "task_id": "WT-D20260802_014",
+  "registered_at": "2026-08-02 (측정 전 고정 — 이 파일 작성 후 어떤 성과수치도 산출하지 않은 상태)",
+  "selection_type": "preregistered_single_primary",
+  "n_trials": 1,
+  "lineage": "WT-D20260802_010 NP-1 = FQ-103 (복권형 제외-필터 소비면). WT-010 실측 승계: MAX5_63 rank-IC +0.0474(t 4.41), IC 발원 = 하위(복권형) 배제 쪽, 랭킹 소비는 canonical PORT_t -1.616로 전이 실패.",
+  "primary": {
+    "name": "MAX5_63 상위 10% 제외-필터 (X=10% 단일 고정)",
+    "signal_definition": "max5 = 63거래일 창(신호월말 d0 종료, min_days 40) 내 저장 Ret 상위 5일 평균 — WT-010 동결 아티팩트 stage_artifacts/WT_D20260802_010/ot_panel.parquet의 max5 컬럼 그대로 소비(재계산 없음, ot_w1_lib.R::ot_stock_quantiles 산출).",
+    "filter_rule": "각 월 d0: liq 필터(adv>=2e8, t-1) 통과 후보 집합에서 max5가 유한한 종목의 횡단면 90% 분위 이상(= 상위 10%)인 종목을 top-25 선별 전에 배제. max5 결측 종목은 배제 불가(유지) — 커버리지 기록.",
+    "X_fixed": 0.10,
+    "X_rationale": "WT-014 request 권고(WT-010 하위 quintile 발원 실측 기반). X ∈ {5%, 20%}는 진단 병기만 — 판정/선택 사용 절대 금지."
+  },
+  "base_definition": {
+    "panel": "05_Production/.../alpha_scores_str1715_268m_cleanT1.parquet (production_parity_verified, meta parity PORT_t 3.0583)",
+    "harness": "plumbing_fq044 p1_build_clean_panel.R parity2 경로 verbatim: CLEAN Date(홀딩월 1일 라벨) → d0 = 전월말 매핑, score_eff, SIZE merge, liq adv>=2e8, top-25 by score_eff, cap_norm(Size) 가중(0.20 cap), weighted_screen_bt 15bps one-way",
+    "base_anchor": "무필터판 PORT_t가 meta 기록 3.0583 ± 0.01 재현되어야 측정 유효 (재현 실패 시 즉시 STOP — 하네스 오염)",
+    "authority": "§7b: production 코드 파생 신호만 base 자격 — cleanT1은 production_parity_verified 라벨 확인 완료 (meta: production_code_direct spearman 0.975~0.997, icRecon max_absdiff 0)"
+  },
+  "decision_criteria": {
+    "i_delta_ir": "ΔIR = IR_filtered − IR_base ≥ +0.05 (weighted_screen basis, net 15bps). paired NW lag-3 t on 월별 (active_f − active_b) 병기. basis 라벨: screen-IR — book recon NAV IR(net_active_recon_v1) 아님. 본 라운드 = 특성화, admission 아님(§4 준용이지 적용 아님).",
+    "ii_effectiveness": "발동률 = 필터가 top-25 구성을 실제로 바꾼 월 비율 + would-be top-25에서 배제된 종목 수 분포. 발동 0 = 무의미 판정(가설 기각 아닌 비적용 판정).",
+    "iii_liq_tension": "배제 후 후보 집합 < 25종인 월 존재 여부 (존재 시 월 목록 기록)."
+  },
+  "honest_null": "incumbent 선별(score_eff = 실적 모멘텀 4축 + 방어 3축)이 이미 복권형을 안 뽑고 있다면 증분 0이 자연 결과 — 이 경우 '필터 무발동/무효'로 정직 보고하고 소비면 ②는 이 base에 대해 닫힘 처리(다른 base/모드에의 이식은 next_probe).",
+  "preregistered_robustness_non_selective": {
+    "lag1_stress": "max5 신호를 1개월 지연(d0-1월말 값)한 필터판 — base 대비 붕괴 여부(동월 누출 판별)",
+    "ax001_crisis_decomposition": "unified_regime_signal 홀딩월 매핑(hold_ym = d0월+1) CRISIS vs 비CRISIS ΔactiveΔ 분해 — '복권형 배제는 위기월에 더 유효' 가설 병기 실측",
+    "dual_basis_ew": "canonical_screen_bt top-25 EW 판(무필터 vs 필터) 병기 — diag_ew_universe 포함 (metric_type=canonical_screen, 판정은 cap-w primary)",
+    "x_sensitivity_diagnostic_only": [0.05, 0.20]
+  },
+  "falsification_side_observation": "복권수요 기전이 참이면 배제 대상(MAX5 상위 10%) 종목의 신호창 직후 홀딩월 개인 순매수(/ADV·일)가 잔여 후보 대비 높아야 한다(개인 복권수요 지속). NW t < 1이면 기전 서사 기각(필터 유효성 판정과는 독립 — 판정은 criteria i~iii).",
+  "pit_declaration": {
+    "C5": "max5 창 = d0(전월말) 이하 63거래일 — 홀딩월 시작 전 데이터만. anchor 아닌 first-day-of-holding-month 기준 컷오프 충족(간격 = 1거래일).",
+    "C10": "liq = screen_inputs.rds liqf (t-1 20d ADV) — parity 하네스와 동일.",
+    "C1": "필터 분위 문턱은 당월 횡단면만 사용(시계열 전체 통계 미사용).",
+    "ret_firewall": "저장 Ret만 사용(재계산 금지) — ot_panel 동결분 소비."
+  },
+  "chain_qualification": {
+    "iteration_policy": "본 라운드 iteration 없음(단일 primary 1회 측정). X sweep 아님 — X는 사전 단일 고정, 타 X는 진단 병기.",
+    "oos_policy": "holdout 미조회. canonical/weighted screen 전기간 실측 + 사전등록 부기간 분해만.",
+    "dsr": "sweep 아님(n_trials=1) — DSR 게이트 부적용, 진단 산출 생략 사유 = 단일 시험"
+  },
+  "capital_claim": "없음 — admission은 governor + 도훈 수동 영역. 본 라운드 산출물은 소비면 특성화 실측."
+}

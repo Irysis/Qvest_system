@@ -1,0 +1,171 @@
+{
+  "wt": "WT-D20260802_012",
+  "round": "R43",
+  "mode": "monitoring 진단 (insider SAFE 보조 tripwire 증분)",
+  "parent": "WT-D20260802_007 NP-1 (P1)",
+  "prereg_config_hash": "65021a0ee557df78",
+  "prereg_file_sha256": "0d49e7cf56b56f4c47c7b6c24fb16e1b5c000361d2a320ec8bced7603ff375ac",
+  "selection_type": "chain",
+  "n_trials": 1,
+  "claim_scope": "자본 아님 — per-holding 안전 특성화(monitoring). alpha/Σ/weight 미산출. book_state 무변경. 05_Production·filing_delay_watch.R·insider_safe_live_track.R 무수정.",
+
+  "verdict": "increment_underpowered__coverage_expands_but_safety_separation_does_not",
+  "statement": "INS_MAGQ3 z>=+1 을 SAFE tripwire 에 합집합으로 더하면 감시 가능월이 126→253/255 로 거의 두 배가 되고 SAFE 종목-월이 +24.0% 늘지만, 그렇게 새로 얻은 SAFE 집합(MAG_ONLY)의 실현 안전 특성은 무신호(OFF) 대비 유의하게 구별되지 않는다(MID t_inc=+0.82, 월평균 1.63종목 < 사전등록 검정력 하한 3). 새로 열린 월에서의 SAFE 분리력은 사실상 0(t≈+0.3)이고, 확장분의 41.8%가 R37 이 저신뢰로 판정한 MEGA_TOP30 에 몰리며, R37 강건 tier(REST)에서 증분은 평평하다(t=-0.21). ⇒ 사전등록 게이트상 배선 변경(합집합 병합) 자격 미충족.",
+
+  "primary_result": {
+    "increment_verdict": "UNDERPOWERED",
+    "t_inc_mid_ret": 0.821,
+    "power_floor": {"n_months_required": 60, "n_months_actual": 97, "avg_names_required": 3, "avg_names_actual": 1.63, "blocked_by": "avg_names"},
+    "homogeneity_verdict_mechanical": "HOMOGENEOUS_WITH_A_SAFE",
+    "homogeneity_t": -0.31,
+    "homogeneity_caveat": "MID 에서 A_SAFE 와 MAG_ONLY 가 같은 달에 공존하는 월이 97개월 중 21개월(21.6%)뿐 — 구조적 저전력. '동등의 증거' 아님(challenge_note C3).",
+    "risk_axis_note": "MAG_ONLY 의 하방(-7.30% vs 무신호 -8.62%)·급락빈도(6.33% vs 7.97%)는 방향상 더 안전해 사전등록 risk_only 조건 자체는 충족하나, 검정력 하한이 선행 차단(규칙 순서 사전 고정).",
+    "wiring_recommended": false
+  },
+
+  "a_coverage_change": {
+    "months_tripwire_can_speak": {"A": 126, "Aprime": 253, "total": 255},
+    "safe_name_months": {"ALL": {"A": 3553, "Aprime": 4407, "delta_pct": 24.04},
+                          "MID_habitat": {"A": 984, "Aprime": 1142, "delta_pct": 16.06},
+                          "MEGA_TOP30": {"A": 744, "Aprime": 1055, "delta_pct": 41.80},
+                          "REST": {"A": 2809, "Aprime": 3352, "delta_pct": 19.33}},
+    "covered_name_months": {"A": 22510, "Aprime": 22577, "delta_pct": 0.30},
+    "avg_safe_names_per_month": {"A": 13.9, "Aprime": 17.3, "MAG_ONLY_new": 3.3},
+    "note": "커버리지(관측 가능 행) 자체는 +0.3% 로 거의 안 늘고, 늘어난 것은 '문턱을 넘는 행'이다 — 확장의 정체는 새 데이터가 아니라 더 관대한 선별."
+  },
+
+  "b_increment_paired": {
+    "groups_mid_habitat": {
+      "NEITHER":  {"n": 5054, "months": 255, "fwd": 0.0159, "downside": -0.0862, "tail": 0.0797, "vol": 0.1431},
+      "A_ONLY":   {"n": 897,  "months": 126, "fwd": 0.0292, "downside": -0.0795, "tail": 0.0613, "vol": 0.1405, "paired_t_vs_NEITHER": 4.24},
+      "BOTH":     {"n": 87,   "months": 58,  "fwd": 0.0411, "downside": -0.0703, "tail": 0.0575, "vol": 0.1333, "paired_t_vs_NEITHER": 1.66},
+      "MAG_ONLY": {"n": 158,  "months": 97,  "fwd": 0.0224, "downside": -0.0730, "tail": 0.0633, "vol": 0.1257, "paired_t_vs_NEITHER": 0.82}
+    },
+    "month_split_mag_only": {
+      "A_active_months":  {"MID": {"t": 0.00, "n_months": 21}, "REST": {"t": -0.75, "n_months": 54}, "ALL": {"t": -0.48, "n_months": 73}},
+      "A_silent_months":  {"MID": {"t": 1.19, "n_months": 76}, "REST": {"t": 0.49, "n_months": 116}, "ALL": {"t": 0.35, "n_months": 127}}
+    },
+    "state_machine_sustain_vs_off": {
+      "MID": {"A": 3.90, "Aprime": 3.67}, "REST": {"A": 3.52, "Aprime": 2.07}, "ALL": {"A": 3.29, "Aprime": 1.86}
+    },
+    "window_matched_control": {
+      "purpose": "전체월 희석(REST 3.52→2.07)이 기존 월 오염인지 새 월의 약함인지 분리",
+      "matched_to_A_active_months": {"MID": {"A": 3.90, "Aprime": 4.14}, "REST": {"A": 3.52, "Aprime": 4.11}, "ALL": {"A": 3.29, "Aprime": 3.71}},
+      "new_months_only": {"MID": 0.36, "REST": 0.29, "ALL": 0.34},
+      "channel_decomposition_delta_t": {"coverage_only": {"MID": 0.00, "REST": 0.00, "ALL": 0.00},
+                                         "aux_flag_only": {"MID": 0.24, "REST": 0.59, "ALL": 0.34}},
+      "conclusion": "희석은 오염이 아니라 새로 열린 월의 고유 약함이다. 단 창-정합의 겉보기 개선은 증분 증거가 아니다 — 이행 name-month 137개(MID 20)가 만든 값이고 이행 셀 paired-t 전부 <2 (최선 ENTRY→SUSTAIN n=49 t=+1.56), 신규편입 SUSTAIN 의 하방/급락은 기존 SUSTAIN 보다 나쁘다(challenge_note C1)."
+    }
+  },
+
+  "c_tier_decomposition": {
+    "MEGA_TOP30": {"safe_expansion_pct": 41.80, "MAG_ONLY_vs_NEITHER_t": 0.31, "A_SAFE_vs_NEITHER_t": 0.75, "r37_label": "저신뢰(mega attenuation)"},
+    "REST_MID_OTHER": {"safe_expansion_pct": 19.33, "MAG_ONLY_vs_NEITHER_t": -0.21, "A_SAFE_vs_NEITHER_t": 4.10, "r37_label": "강건"},
+    "reading": "확장은 저신뢰 tier 에 편중되고, 강건 tier 에서 증분은 평평하다 — 배선 자격 게이트(REST t>=2.0) 미충족."
+  },
+
+  "d_current_book_readjudication": {
+    "holdings_file": "20260801_M4gAE_weights_cap_0p20.csv",
+    "current_hold_ym": 202607,
+    "n_rows": 15,
+    "A_live": {"NET_BUY_SAFE": 0, "NEUTRAL": 12, "NO_DATA": 3},
+    "Aprime": {"NET_BUY_SAFE": 1, "NEUTRAL": 11, "NO_DATA": 3},
+    "substantive_changes": 1,
+    "substantive_change_detail": [{"Ticker": "A005930", "Weight": 0.0364, "ins02_z": 0.555, "magq3_z": 2.714, "from": "NEUTRAL", "to": "NET_BUY_SAFE", "tier": "MEGA_TOP30", "tier_confidence": "low_mega_attenuation"}],
+    "cosmetic_changes_excluded": 3,
+    "cosmetic_note": "CASH / A420770 / A082920 는 두 축 모두 무데이터 — 라벨명만 다름(NO_INS02 vs NO_INS_DATA). 실질 발화 변화 아님(challenge_note C2).",
+    "live_silence_instance": "현 홀딩월 시장 전체 INS02 최대 z = 0.912 < 문턱 1.0 — 현행 tripwire 가 구조적 침묵 상태. 즉 오늘의 'NET_BUY_SAFE 0' 은 '자격자 없음'이 아니라 '문턱 도달 불가'다.",
+    "safe_fading_change": "현 홀딩월 A 발화 0 · 직전월 발화도 0 → SAFE_FADING 발화 변화 없음(A/A′ 동일)."
+  },
+
+  "structural_finding_new": {
+    "id": "R43-F1",
+    "title": "현행 SAFE tripwire 는 253개월 중 126개월(49.8%) 구조적으로 침묵한다",
+    "evidence": "live ramp INS02 패널 월별 최대 z: 침묵월 max z 중앙값 0.862, p90 0.961, 최대 0.99968 — 문턱 1.0 에 도달 자체가 불가. 커버리지는 정상(월 이름수 중앙값 125).",
+    "mechanism": "INS02 = (매수건-매도건)/(매수건+매도건) 은 [-1,1] 유계이고 상한 +1 에 질량이 몰린다. 월 횡단 분포가 압축되면 최대 z 가 1.0 미만이 되어 아무도 문턱을 넘지 못한다.",
+    "clustering": "침묵이 무작위가 아니라 2016–17, 2022–2026 구간에 군집(chart_A) — 특정 국면 무감시 가능성(미판정, NP-2).",
+    "impact": "현행 monitoring 리포트는 '자격자 없음'과 '문턱 도달 불가'를 구별하지 못한다. 이는 보조축 논의와 독립된 관측가능성 결함이며 본 라운드에서 처음 실측됨.",
+    "not_a_threshold_change": "문턱(INS_NB_THR=1.0)은 R33 frozen — 변경 제안 아님. 라벨 추가 제안만(f 참조)."
+  },
+
+  "e_next_probe": [
+    {"id": "NP-1", "priority": "P1",
+     "probe": "선택률-정합(selectivity-matched) 문턱으로 재측정. 사전등록: A 의 장기 발화율(covered 대비 3553/22510 = 15.8%)에 MAGQ3 문턱을 맞춘 단일 고정 규칙(월별 상위 15.8% 분위) — sweep 아님(규칙 1개, 측정 전 고정).",
+     "rationale": "본 라운드는 z=1.0 동일 문턱으로 비교했으나 INS02(유계 비율, 49.8% 월 도달불가)와 MAGQ3(무계 signed-cr 합, max z 4.42)는 같은 z 에서 선별강도가 전혀 다르다 — 비교가 정합되지 않았다(challenge_note C5). 정합 후에도 MAG_ONLY 월평균 이름수 3 미달이면 그때 config-scoped 수렴."},
+    {"id": "NP-2", "priority": "P1",
+     "probe": "침묵월의 국면 귀속: 침묵 126개월을 regime_current 국면 라벨과 교차 + raw breadth 분포(상한 +1 질량비)와 대조해 '활동 소멸'인지 '분포 압축'인지 분해.",
+     "rationale": "침묵이 2016–17·2022–26 에 군집 — 무작위가 아니면 tripwire 가 특정 국면에서 구조적으로 무감시라는 뜻이고, 이는 보조축 증분보다 상위의 monitoring 신뢰 결함이다."},
+    {"id": "NP-3", "priority": "P2",
+     "probe": "gap-bridge 제한형 사전등록: 보조축을 '신규 SAFE 추가'가 아니라 'INS02 on-run 의 구멍 메우기'로만 사용(ENTRY→SUSTAIN 재분류에만 관여, OFF→SAFE 승격 금지). 표본 확보 위해 REST 전체 + 침묵월 포함 재정의.",
+     "rationale": "본 라운드 이행 셀 중 유일하게 양(+)인 곳이 ENTRY→SUSTAIN(n=49, t=+1.56, 하방 -6.04%·급락 4.08% 로 A-OFF 보다 양호). R38 이 ENTRY(단발, t+0.05)를 저신뢰로 판정한 것과 정합하는 기전이나 표본 미달."},
+    {"id": "NP-4", "priority": "P2",
+     "probe": "MEGA_TOP30 편중 기전: cr(=|변동주식수|/max(전,후 보유주식수)) 분모가 보유지분이라 대주주 지분구조가 큰 대형주에서 cr 이 체계적으로 왜곡되는지 tier 별 cr 분포 대조.",
+     "rationale": "보조축 확장의 41.8%가 R37 저신뢰 tier 에 몰린 이유가 미규명. 구조적 tier 편향이면 어떤 문턱에서도 같은 문제가 재발한다."}
+  ],
+
+  "consumption_scan_7": {
+    "factor_ranking": "무변경 — WT-007 이 이미 cap-w PORT_t 1.371 로 자본 미달 판정. 본 라운드는 자본면 미접촉.",
+    "universe_filter": "약한 후보 — MAG_ONLY 의 하방/급락은 무신호보다 양호하나(−7.30% vs −8.62%, 6.33% vs 7.97%) 검정력 미달로 필터 자격 미확립.",
+    "overlay_regime_input": "★신규 후보 — R43-F1 이 침묵의 국면 군집을 드러냄. '주축 침묵' 자체가 국면 상태변수일 가능성 → NP-2 로 등재(즉시 착수 대상).",
+    "risk_model_beta_budget": "비적합 (자본/Σ 미산출, 역할경계).",
+    "monitoring_signal": "본 라운드 대상. 합집합 SAFE 확장 = 기각. 관측가능성(reachability) 라벨 = 제안 채택 권고(f-제안1).",
+    "screening_label": "WT-007 권고(insider 스코어링 표준을 notional 집계→cr 정규화)는 본 라운드와 독립 — 유효 유지, 본 라운드가 반증하지 않음.",
+    "cross_mode_transfer": "RAMP Insider family 패널에 MAGQ3 z 추가는 가능하나 ramp 빌더가 MAGQ3 를 산출하지 않는다 — 배관 선행 필요(f-제안3의 전제와 동일)."
+  },
+
+  "revival_conditions_inv7": [
+    "NP-1 선택률-정합 문턱에서 MAG_ONLY MID 월평균 이름수 ≥ 3 확보 시 본 증분 판정 재개봉(현재 1.63 으로 차단).",
+    "ENTRY→SUSTAIN 가교 셀 n ≥ 150 확보(표본 확장 또는 침묵월 포함 재정의) 시 NP-3 재측정.",
+    "ramp 빌더(build_insider_factor_panel.R)가 MAGQ3 z 를 정식 산출하고 live parity(Spearman/flag 일치율) 검증 통과 시 실배선 재판정 — 현재는 live 대조군 부재가 배선의 독립 차단 사유."
+  ],
+
+  "f_wiring_proposal_design_only": {
+    "note": "본 라운드는 제안서만 — filing_delay_watch.R 무수정. 실배선은 Q-Lead 수집 후 별도 태스크.",
+    "proposal_1_recommended": {
+      "id": "WIRE-1", "status": "채택 권고",
+      "what": "filing_delay_watch.R Part C 에 `tripwire_reachability` 진단 추가 — 현 홀딩월 INS02 z 분포의 최대값을 함께 산출해 `max_z < INS_NB_THR` 이면 `A_UNREACHABLE_MONTH=TRUE` 를 리포트/JSON 에 명시.",
+      "why": "현행은 'NET_BUY_SAFE 0' 이 '자격자 없음'인지 '문턱 도달 불가'인지 구별 불가. 실측 49.8% 가 후자이며 오늘 현 북이 정확히 그 케이스(시장 max z 0.912).",
+      "not_changing": "문턱(INS_NB_THR=1.0) 변경 아님 — R33 frozen 유지. 라벨/진단 필드 추가만.",
+      "cost": "추가 read 0 (이미 로드한 INSIDER_PARQUET 의 현월 z 벡터에서 max 만 계산)."
+    },
+    "proposal_2_rejected": {
+      "id": "WIRE-2", "status": "기각",
+      "what": "INS_MAGQ3 z>=+1 을 NET_BUY_SAFE 에 합집합 병합",
+      "why": "증분 검정력 미달(t_inc +0.82, 1.63종목/월) + 확장의 41.8%가 저신뢰 tier + 강건 tier 증분 평평(t=-0.21) + live parity 대조군 부재."
+    },
+    "proposal_3_conditional": {
+      "id": "WIRE-3", "status": "조건부 보류",
+      "what": "MAGQ3 를 NET_BUY_SAFE 에 병합하지 않고 별도 advisory 채널(`INS_MAGQ3_ADVISORY`)로만 표기",
+      "condition": "NP-1(선택률-정합) 결과 확보 + ramp 빌더 MAGQ3 정식 산출·parity 검증 완료 전까지 배선 보류. 그 전에 배선하면 저신뢰 tier 발화를 SAFE 계열로 오독할 위험."
+    }
+  },
+
+  "measurement_discipline": {
+    "pit": "두 축 공히 신호월 m(rcept) → 홀딩월 m+1 (C5). truncation-invariance 는 각 빌더 기검증 승계.",
+    "lag1_stress": {"MAG_ONLY_mid": 1.69, "base": 0.82, "A_SAFE_mid": 4.46, "reading": "붕괴 없음 — 동월누출 지문 아님"},
+    "source_parity": {"spearman_mean": 1.0, "spearman_min": 1.0, "n_months": 250, "flag_agreement": 1.0, "n_rows": 22510,
+                      "meaning": "live ramp INS02 z 와 WT-007 패널 INS02 z 가 동일 원천 — A/A′ 는 같은 substrate 위 비교"},
+    "censoring_survivorship": {"frame": "R40", "right_truncation_excluded_ym": 202604,
+      "mid_left_uni_rate": {"MAG_ONLY": 0.0, "NEITHER": 0.00139}, "delisted_all_groups": 0,
+      "differential_p": {"left_uni": 1.0, "catastrophic": 1.0},
+      "worst_case_wipeout": "진성폐지 0건이라 -100% 대입이 no-op — IT-4 양성 대조로 대입 경로 실효 확인(합성 3건 주입 시 급락 0.0633→0.0807 반응). 검사 사망 아님.",
+      "caveat": "MAG_ONLY 852행에서 uni 이탈 0건은 기저율 대비 기대 ~2.5건 — 차등검열 '부재'를 입증하진 못함(표본 얇음)."},
+    "injection_tests": {"IT-1_threshold_boundary": "PASS", "IT-2_threshold_mutation": "PASS (1263→2887→0)",
+                        "IT-3_state_machine_synthetic_plus_2_guard_mutations": "PASS (consec·both_cov 둘 다 결과 변경)",
+                        "IT-4_worstcase_positive_control": "PASS"},
+    "self_synthesis": "없음 — 실현 지표는 base uni 의 Ret_1m/exc 를 R38/R40-identical 정의로 요약만. 수익 합성 없음.",
+    "vintage": {"base": "R36 uni 2026-07-15 build, hold_ym 200502~202604, production_parity_verified PORT_t 3.058",
+                "pin": ".cache/pin/rawdata_r9_pin_20260715.parquet (mtime 2026-07-15 00:21:02)",
+                "current_book_window": 202607,
+                "caveat": "증분 판정 창(~202604)과 현 북 판정 창(202607)이 3개월 어긋남 — 최근 3개월 증분 주장 없음"}
+  },
+
+  "boundaries_respected": {
+    "production_untouched": true, "literature_untouched": true,
+    "filing_delay_watch_R_untouched": true, "insider_safe_live_track_R_untouched": true,
+    "book_state_untouched": true, "outputs_ramp_untouched": true,
+    "role": "monitoring — 전략수정/weight/Σ/Judge 재판정/포지션조정 없음"
+  },
+
+  "generated_at": "2026-08-02"
+}

@@ -1,6 +1,6 @@
 # Knowledge Index — 순차 뷰 (안정 ID 불변 · 활성 집합 1..N 자동)
 
-생성: 2026-08-02T13:45:50+0900 · `build_knowledge_index.R` · **안정 ID(AX-003/L-132/DIST-*)는 provenance 앵커 = 영구 불변**. 순번(#)은 현재 활성 집합의 위치일 뿐 — 증류/강등되면 뷰에서 자동 제외되어 항상 1..N 연속(구멍 없음). 빠진 것도 아카이브+검색+부활로 보존.
+생성: 2026-08-02T13:56:53+0900 · `build_knowledge_index.R` · **안정 ID(AX-003/L-132/DIST-*)는 provenance 앵커 = 영구 불변**. 순번(#)은 현재 활성 집합의 위치일 뿐 — 증류/강등되면 뷰에서 자동 제외되어 항상 1..N 연속(구멍 없음). 빠진 것도 아카이브+검색+부활로 보존.
 
 ## Active Law (4)
 
@@ -15,7 +15,7 @@
 
 | # | ID | polarity | 요지 | L수 |
 |---|----|----------|------|-----|
-| 1 | DIST-AR-001 | negative | KR defense-family Q07+Accounting-Beta(D29) composite 30종목 long-only standalone은 자본 sleeve로 부적합 — 낙폭방… | 3 |
+| 1 | DIST-AR-001 | negative | KR defense-family Q07+Accounting-Beta(D29) composite 30종목 long-only standalone은 자본 sleeve로 부적합 — 낙폭방… | 4 |
 | 2 | DIST-AR-003 | negative | KR long-only top-N(D10 박스): momentum family 12건(return-derived + flow/event catalyst) 모두 PORT_t<2.95… | 12 |
 | 3 | DIST-AR-007 | negative | KR K200∪KQ150 top-25 long-only에서 momentum-계열 return-파생 구성(단일 M-팩터·잔차모멘텀·다축 composite 내 모멘텀 성분·tier-집… | 13 |
 | 4 | DIST-AR-008 | negative | cap-w 기각 표준팩터의 dual-basis 재진단에서 EW-유니버스 생존은 factor-specific이다 — 8종 중 V02_EP 1종만 생존(cap-w 2.52 기각 유지 … | 1 |

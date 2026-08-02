@@ -1,7 +1,7 @@
 {
  "schema_version": "1.0",
  "sot": "02_Infrastructure/docs/qvest_v8_3_alpha_discovery_sot.md §4",
- "updated": "2026-08-02 (WT-009 스마트베타 5종 튜닝 수집 — M01_PATHQ 조건부 교체 후보(도훈 confirm 대기, FQ-107 선행). 파생 FQ-107 순수판 / FQ-108 EWMA 위험-축 이식 등재. 총 108건)",
+ "updated": "2026-08-02 (WT-014 복권형 제외-필터 capability_established — 오늘 첫 양성 소비면(ΔIR +0.169·MDD 11.4pp). 파생 FQ-111 overlay 포함판 / FQ-112 위험-축 소비 등재. 총 112건)",
  "consume_rule": "새 발굴 리서치 착수 전: hypothesis_index lookup → 본 큐 확인 → owner/status 갱신. 완료 시 result_ref(L-code/보고서) 기입. dohoon_decision 항목은 세션 임의 착수 금지.",
  "entries": [
   {
@@ -2017,10 +2017,15 @@
    "ev_rationale": "WT-010 NP-1(P1). 스칼라 대조군이 primary를 이긴 실측을 그대로 소비 — 신규 팩터 사냥이 아니라 확립 신호의 소비면 이식이라 비용이 싸다. 판별은 book-marginal ΔIR 사전등록(§4)이 유일 기준.",
    "wall_check": "전이-벽 계열: 랭킹으로는 벽 불통과 실증(WT-010). 필터는 slot 점유가 아니라 후보 집합 축소라 벽 기전이 다름 — 단 배제가 유니버스를 과도 축소하면 liq 제약과 긴장.",
    "data_gate": "없음 (rawdata 63일 창 롤링으로 즉시 계산 가능)",
-   "owner": "WT-D20260802_014 (alpha-research agent)",
-   "status": "in_flight",
+   "owner": "Q-Lead (WT-D20260802_014 판정 수집 2026-08-02)",
+   "status": "capability_established",
    "registered": "2026-08-02 Q-Lead (WT-D20260802_010 NP-1 파생)",
-   "in_flight_since": "2026-08-02 (WT-D20260802_014 착수 — MAX5_63 상위 10% 제외-필터 x production parity base paired ΔIR 사전등록 라운드)"
+   "in_flight_since": "2026-08-02 (WT-D20260802_014 착수 — MAX5_63 상위 10% 제외-필터 x production parity base paired ΔIR 사전등록 라운드)",
+   "verdict": "소비면 ② 유니버스-필터 유효 실측 (2026-08-02, WT-D20260802_014). MAX5 상위 10% 배제: ΔIR +0.1692(기준 0.05의 3.4배)·PORT_t 2.879→3.620·abs MDD -55.9%→-44.4%(11.4pp)·회전 증가 없음. dual-basis 동방향(EW ΔIR +0.0931). 발동률 95.7%로 honest null 기각(base top-25에 월평균 3.34종 복권형 실재). 기전 지지: 배제군 개인 순매수 t +3.90. ★caveat: paired t +1.565(p≈0.12 보통)·lag1 편익 소멸(fast-decay, 리밸 지연 불허)·CRISIS Δ 음수(t -1.78, 병기 가설 반증)·X 민감(X20에서 +0.007)·2015-19 부기간 음수. 자본 주장 없음 — 특성화 실측이며 admission은 governor+도훈 수동.",
+   "revival_conditions": [
+    "FQ-111 overlay 포함판에서도 paired t < 1이면 이 base에 대한 소비면 ② 닫힘(타 base 이식만 잔존)",
+    "리밸 지연이 불가피한 운용 조건이 생기면 fast-decay로 편익 소멸 — 재판정 필요"
+   ]
   },
   {
    "id": "FQ-104",
@@ -2066,8 +2071,10 @@
    "ev_rationale": "WT-009 NP-1(P1). CF-01 해소의 유일 경로 — 교체 후보 1건이 이 판정에 걸려 있어 EV 최고. base 패널 재사용으로 저비용.",
    "wall_check": "전이-벽 비적용(기존 admitted 축의 정제 — 신규 표현력 주장 아님). 회전 증분 +67%p(722→789%)는 교체 시 명기 의무.",
    "data_gate": "없음 (WT-009 base_panel/tuned_panel.parquet 재사용)",
-   "owner": "WT-D20260802_013 (alpha-research, 2026-08-02 착수)",
-   "status": "in_flight",
+   "owner": "WT-D20260802_013 (alpha-research, 2026-08-02 완료)",
+   "status": "measured_threshold_fail_20260802",
+   "result_ref": "stage_artifacts/WT_D20260802_013/alpha_validation.json + qepm/mailbox/worktask/WT-D20260802_013/{alpha_package.json,challenge_note.md}",
+   "result_summary": "primary paired t +1.717 < 2.0 → 교체 근거 미완성 확정. 단 vol-tilt 기전은 반증(적재 -0.060·잔차화 후 팩터 동일 self-cor 0.974·RESID standalone PORT_t +2.14) — 실사유 = ①원판 +2.03의 spec-jitter 취약성(placebo 5시드 t 1.87~2.80, sd 0.378) ②pre-2015 편중 잔존(+3.20/-0.33/+0.27). F2 재검 +1.92 borderline. 부활 조건: soft-membership paired 분포 q05>0 또는 post-2015 paired t>1.5",
    "registered": "2026-08-02 Q-Lead (WT-D20260802_009 NP-1 파생)"
   },
   {
@@ -2081,6 +2088,54 @@
    "owner": "미배정",
    "status": "frontier_open",
    "registered": "2026-08-02 Q-Lead (WT-D20260802_009 NP-2 파생)"
+  },
+  {
+   "id": "FQ-109",
+   "lane": "methodology_repair",
+   "title": "교체류 판정 규약 강화 — 멤버십-섭동 paired 분포의 q05 기준 (WT-013 NP-1)",
+   "hypothesis": "WT-013 실증: 노이즈 잔차화(미소 섭동) 5시드의 paired t가 sd 0.378로 흩어져 {1.866~2.796} — 원판 +2.028은 문턱 근방의 단일 draw였다. 즉 top-25 멤버십 jitter만으로 문턱을 넘나드는 판정 프레임은 취약. registry 교체·채택류 판정은 단일 paired t가 아니라 **섭동 분포의 하한(q05)**으로 사전등록하는 규약이 옳은가 — 과거 교체/채택 판정 재검으로 프레임 전환의 실효를 실측.",
+   "ev_rationale": "WT-013 NP-1(P1). 방법론 결함 수리 = 앞으로의 모든 교체 판정에 복리로 작용. 과거 문턱-근방 통과 사례(있다면)의 재판정 재료.",
+   "wall_check": "비적용 — 판정 프레임 위생. 자본 주장 없음.",
+   "data_gate": "없음 (기존 패널·섭동 시드 재사용)",
+   "owner": "미배정",
+   "status": "frontier_open",
+   "registered": "2026-08-02 Q-Lead (WT-D20260802_013 NP-1 파생)"
+  },
+  {
+   "id": "FQ-110",
+   "lane": "mechanism_probe",
+   "title": "jump-share 직접 팩터화 — 경로효율 F2 borderline(t +1.92)의 표적 검증",
+   "hypothesis": "WT-013 F2 재검: jump-기여 차별화 t(diff) +1.92(원판 +1.05에서 개선)로 borderline. 경로효율을 우회 지표로 쓰지 말고 **12-1 창 상위-5 |일간| 수익 기여 비중 자체를 신호로** 직접 팩터화하면 frog-in-the-pan 기전이 확증되는가.",
+   "ev_rationale": "WT-013 NP-2(P2). 기전 확증이 되면 경로효율 계열의 이론 근거가 서고, 안 되면 '경로효율 개선분은 기전 무관 잔여'로 계열이 정리된다 — 양방향 정보.",
+   "wall_check": "PATHQ 계열 회전이 이미 상한 근접(793%/yr 환산 7.93x) — jump-share 직접판은 더 빠를 수 있어 회전이 1차 관문.",
+   "data_gate": "없음 (rawdata 일간 현행분)",
+   "owner": "미배정",
+   "status": "frontier_open",
+   "registered": "2026-08-02 Q-Lead (WT-D20260802_013 NP-2 파생)"
+  },
+  {
+   "id": "FQ-111",
+   "lane": "consume_surface",
+   "title": "복권형 제외-필터 x overlay(R05) 포함판 paired — CRISIS 역효과 상쇄 여부",
+   "hypothesis": "WT-014: 필터 편익이 NEUTRAL 국면 집중이고 CRISIS에서는 음수(Δ -0.33%/월, t -1.78). 현 book은 M4xR05 overlay가 위기에 노출을 줄이므로, overlay 포함판에서 필터의 CRISIS 역효과가 β 축소와 상쇄되는지 — weighted_screen_bt exposure_dt 인자로 즉시 측정 가능.",
+   "ev_rationale": "WT-014 NP-1(P1). 필터의 실배치 가능성을 결정하는 관문 — 현 book 구성과 함께 재는 것이 정직한 평가.",
+   "wall_check": "비적용 — 기존 book 구성 위 필터 한계기여 측정. 자본 결정은 도훈 수동.",
+   "data_gate": "없음 (WT-014 패널 + R05 exposure_dt 현행분)",
+   "owner": "미배정",
+   "status": "frontier_open",
+   "registered": "2026-08-02 Q-Lead (WT-D20260802_014 NP-1 파생)"
+  },
+  {
+   "id": "FQ-112",
+   "lane": "consume_surface",
+   "title": "MAX5를 위험모델 crash-name 사전지표로 — MDD 11.4pp 레버의 위험-축 소비",
+   "hypothesis": "WT-014에서 MAX5 배제가 MDD를 11.4pp 개선했다면 MAX5는 crash-name 사전지표로 위험-축(risk_package tail/stress, monitoring tripwire)에서도 유효한가 — 소비면 7종 중 ④위험모델 면 미측정분. 필터가 아니라 위험 예측 지표로서의 평가.",
+   "ev_rationale": "WT-014 소비면 순회에서 남은 면. MDD 레버는 시스템 목표(MDD<25%)에 직결이고, 위험-축은 cap-tier 벽 비경유.",
+   "wall_check": "비적용 — 위험모델 위생 계층(⑧행). 성과 병목 아님.",
+   "data_gate": "없음 (rawdata 일간 + WT-014 신호 패널)",
+   "owner": "미배정",
+   "status": "frontier_open",
+   "registered": "2026-08-02 Q-Lead (WT-D20260802_014 소비면 순회 잔여면)"
   }
  ]
 }

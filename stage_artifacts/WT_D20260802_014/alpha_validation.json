@@ -1,0 +1,142 @@
+{
+  "task_id": "WT-D20260802_014",
+  "generated_at": "2026-08-02 13:56:33",
+  "metric_type": "weighted_screen + canonical_screen (라벨 병기)",
+  "gate_eligible": false,
+  "selection_type": "preregistered_single_primary",
+  "n_trials": 1,
+  "preregistration": "stage_artifacts/WT_D20260802_014/preregistration.json (측정 전 고정)",
+  "base_anchor": {
+    "target": 3.0583,
+    "observed": 3.0583,
+    "status": "PASS — parity 하네스 재현 정확 (268m)"
+  },
+  "primary": {
+    "name": "MAX5_63_top10pct_exclusion",
+    "delta_ir": 0.1692,
+    "delta_ir_threshold": 0.05,
+    "delta_ir_basis": "weighted_screen cap_norm(Size) top-25 net 15bps — net_active_recon_v1(book recon NAV) 아님",
+    "paired_t_nw_lag3": 1.565,
+    "mean_delta_active_monthly": 0.00166,
+    "n_months": 256,
+    "base": {
+      "port_t": 2.879,
+      "ir": 0.6428,
+      "abs_mdd": -0.5587,
+      "turnover_annual": 13.81
+    },
+    "filtered": {
+      "port_t": 3.62,
+      "ir": 0.812,
+      "abs_mdd": -0.4443,
+      "turnover_annual": 13.54
+    }
+  },
+  "effectiveness": {
+    "fire_share": 0.957,
+    "mean_swap_names": 3.34,
+    "mean_cut_in_base_top25": 3.34,
+    "max_cut": 9,
+    "coverage_max5": "후보 집합 내 99.9%",
+    "verdict": "발동 실효 — honest null(incumbent가 이미 복권형 회피) 기각: base top-25에 월평균 3.34종 복권형 실재"
+  },
+  "liq_tension": {
+    "months_under_25": 0,
+    "verdict": "긴장 없음 — 배제 후 전월 후보 ≥25종"
+  },
+  "regime_conditional": [
+    {
+      "Category": "RISK_ON",
+      "n": 200,
+      "mean_d": 0.00136641,
+      "t_nw": 1.05207119
+    },
+    {
+      "Category": "NEUTRAL",
+      "n": 30,
+      "mean_d": 0.0055388,
+      "t_nw": 2.28040114
+    },
+    {
+      "Category": "CAUTION",
+      "n": 13,
+      "mean_d": 0.00216463,
+      "t_nw": 0.95901875
+    },
+    {
+      "Category": "CRISIS",
+      "n": 13,
+      "mean_d": -0.00328391,
+      "t_nw": -1.78363666
+    }
+  ],
+  "ax001_conditional": {
+    "crisis_delta_monthly": -0.00328391,
+    "crisis_t": -1.78363666,
+    "verdict": "사전등록 병기 가설(위기월 더 유효) 반증 — CRISIS Δ 음수(t −1.78), 편익 NEUTRAL 집중(t +2.28). AX-001 조건부 병기 의무 이행."
+  },
+  "lag1_stress": {
+    "delta_ir": -0.0356,
+    "paired_t": -0.541,
+    "verdict": "1개월 지연 시 편익 소멸 — fast-decay 신호(문헌 정합). 동월 누출은 창 하드슬라이스로 구조 부재(challenge_note C2 REBUTTAL). 운용 함의: 리밸 지연 불허."
+  },
+  "x_sensitivity_diagnostic_only": {
+    "X05": {
+      "delta_ir": 0.08621886,
+      "paired_t": 1.46967267,
+      "port_t": 3.22562038,
+      "turnover_annual": 13.58848021
+    },
+    "X20": {
+      "delta_ir": 0.00696709,
+      "paired_t": -0.70044195,
+      "port_t": 2.95897575,
+      "turnover_annual": 13.34899114
+    }
+  },
+  "dual_basis": {
+    "ew_top25": {
+      "base_port_t": 3.396,
+      "filtered_port_t": 3.866,
+      "delta_ir": 0.0931
+    },
+    "ew_universe_diag": {
+      "base_t": 4.01,
+      "filtered_t": 4.44
+    },
+    "verdict": "cap-w·EW 양 basis 동방향(+0.169 / +0.093) — basis 아티팩트 아님"
+  },
+  "falsification": {
+    "field": "A6_investor_flow (Individual, 홀딩월)",
+    "excluded_minus_rest_spread": 0.007722,
+    "t_nw": 3.9,
+    "n_months": 256,
+    "verdict": "MECHANISM_SUPPORTED — 배제군을 개인이 홀딩월에 유의하게 더 순매수(t +3.90): 복권수요 실재"
+  },
+  "subperiod_paired": {
+    "pre2015": {
+      "n": 121,
+      "mean_d": 0.00162736,
+      "t": 1.58534696
+    },
+    "y2015_19": {
+      "n": 60,
+      "mean_d": -0.00193715,
+      "t": -1.12646815
+    },
+    "y2020p": {
+      "n": 75,
+      "mean_d": 0.00458952,
+      "t": 1.70009768
+    },
+    "post2017": {
+      "n": 111,
+      "mean_d": 0.00213048,
+      "t": 1.05706718
+    }
+  },
+  "graduation_hard_gates": {
+    "note": "본 라운드 = 소비면 특성화 — forge 미제출, graduation 판정 비대상. 필터 적용판의 canonical PORT_t 3.866/weighted 3.620은 base 알파(incumbent 소유) 포함 수준값 — 필터 자체의 기여는 Δ로만 평가",
+    "capital_claim": "없음 (admission = governor + 도훈 수동)"
+  }
+}

@@ -1,0 +1,63 @@
+{
+  "task_id": "WT-D20260802_015",
+  "registered_at": "2026-08-02T14:05:00+09:00",
+  "registered_before_measurement": true,
+  "title": "튜닝 5팩터 국면-조건부 로테이션 — regime별 조건부 IC 비례 비중 합성 (도훈 지시 2026-08-02)",
+  "prior_contrast_inv7": {
+    "old_configs_identified": [
+      {
+        "id": "DIST-RAMP-006",
+        "config": "KR value/국면-조건부 팩터배분(RAMP sleeve·AR+MSM 등 regime 변형 전량) — 25종 long-only 배포 조건에서 실현 PORT_t 천장 ~2.85 (n_sup=9)",
+        "polarity": "conditional"
+      },
+      {
+        "id": "L-AR-20260718_232148 (WT-005)",
+        "config": "factor timing: oracle headroom 실재(port_t 12.9)이나 valuation timing FAIL·transformer=factor-momentum tilt 지배·factor-momentum timing만 screen-tier(cap-w<2.95, post-2020 감쇠 oos -0.145). 벽 = OOS realizability",
+        "polarity": "negative(config-scoped) + screen-tier 부수발견"
+      },
+      {
+        "id": "L-AR-20260718_235244 (WT-006)",
+        "config": "외생변수(신용/분산/상관/macro-conditioning) ML 조합 factor-return forecasting 6/6 — 전부 factor-momentum baseline 미돌파·oos<0. return/valuation/credit 파생 predictor class 소진 판정",
+        "polarity": "negative(config-scoped)"
+      },
+      {
+        "id": "regime-conditional 교차결합 (2026-07-05 settled-negative, CLAUDE.md INV-7 목록)",
+        "config": "cross-family regime-conditional composite (value/multi-axis-quality/residual-momentum/tail) — settled-negative",
+        "polarity": "negative"
+      }
+    ],
+    "differentiation_claims_to_be_tested": [
+      "D1: 입력이 base 5팩터가 아니라 WT-D20260802_009에서 오늘 실측된 튜닝판 5팩터(V01_SECREL/M01_PATHQ/D03_EWMA/Q01_EB/V06_EB) — 팩터 간 CS 상관 0.209→0.145로 축 분리가 개선된 상태에서의 국면-조건부 배분은 구 config와 전제가 다르다",
+    "D2: 비중 규칙이 예측기(valuation/transformer/ML)가 아니라 expanding 조건부 IC 부호·크기 비례의 무모수 규칙 — WT-005/006이 소진한 predictor class 밖",
+      "주의: D1/D2가 실질인지 자체가 판정 대상. 튜닝판 로테이션 ≈ base판 로테이션이면 재탕(차별 없음)이 정직한 결론."
+    ],
+    "primary_novelty_test": "paired t (tuned-rotation active − base-rotation active, NW lag-3, 공통월). |t| < 유의 && 두 로테이션의 PORT_t 격차 미미하면 '재탕' 판정"
+  },
+  "primary_spec_frozen": {
+    "regime_label_source": ".cache/unified_regime_signal.parquet :: Category (CRISIS/CAUTION/NEUTRAL/RISK_ON) — 시스템 정본 국면 엔진(3-Layer Cascade, MSM=expanding refit). 단일 소스, 변경 금지",
+    "label_timing_pit": "홀딩월 m+1의 비중은 월말 m의 Category(r_t)로 결정 — 신호월 t 데이터만. assert_overlay_pit HARD + lag1 스트레스 + 오염 주입 probe(r_{t+1} 사용 시 assert가 stop해야 함)",
+    "weight_rule": "w_k(t) ∝ max(0, IC_hat_{k, r_t}); IC_hat = expanding mean of monthly Spearman IC (m ≤ t-1만, IC_m = cor(score_k@m, Ret_1m@m)); 조건부 표본 n_{k,r_t} ≥ 12이면 regime-조건부 평균, 미만이면 무조건부 expanding 평균 fallback; 총 IC 이력 < 24개월이면 EW; 전 팩터 clip-0이면 EW. 파라미터(24/12/clip0) 측정 전 고정 — sweep 없음",
+    "composite": "월별 유니버스(K200∪KQ150) 내 재-z화 후 w_k 가중평균. 종목별 비결측 팩터 ≥ 3 요구(비결측 팩터로 비중 재정규화). 월 커버리지 < 100종목인 팩터는 그 달 제외",
+    "portfolio": "canonical_screen_bt top-25 EW, 15bps, liq 2e8 — 고정 (팩터 배합 비중은 알파 합성, 최종 포트 규격은 canonical 고정)",
+    "n_trials": 1,
+    "selection_type": "chain (단일 사전등록 규칙, argmax/threshold-pick 없음 → DSR 게이트 비발동, 수치는 진단 기록)"
+  },
+  "controls_interpretation_only": [
+    {"id": "C1_EW_STATIC", "spec": "튜닝 5팩터 EW 정적 합성 (동일 composite 절차, w_k = 1/K 고정)"},
+    {"id": "C2_BASE_ROTATION", "spec": "base 5팩터(V01_BM/M01_Mom_12_1/D03_RealVol/Q01_GPA/V06_fDY)에 동일 로테이션 규칙 — 재탕 판별 대조군 (의무)"},
+    {"id": "C3_BEST_SINGLE", "spec": "최강 단일 팩터 M01_PATHQ (WT-009 canonical 2.05) 동일 스팬 재측정"}
+  ],
+  "judgment_frame": {
+    "a_rerun_verdict": "tuned-rotation vs base-rotation paired t + PORT_t 격차",
+    "b_primary_metrics": "canonical PORT_t (cap-w 권위) + dual-basis(EW-uni, cap-tier) + post-2017 + 회전(상한 11.0/yr)",
+    "c_pit": "assert_overlay_pit 통과 + regime lag1 스트레스 + strict-PIT A/B(현 타이밍=strict 동일함을 명시) + 오염 주입 probe",
+    "d_rotation_value": "tuned-rotation vs EW-static paired t (로테이션 규칙 자체의 부가가치)",
+    "regime_label_caveat": "2026-02~07 CRISIS 라벨 vs 벤치 실현 +33.7% (WT-004 실측) — 라벨 축과 실현-하락 축 병기 판정"
+  },
+  "known_risks_preregistered": [
+    "국면 지속성으로 조건부 IC 추정이 사실상 무조건부 평균에 수렴(RISK_ON 212/295개월 지배) → 로테이션이 EW-static과 미분화될 가능성",
+    "CRISIS/CAUTION 표본 희소(25/22개월) → n<12 fallback 빈발 → 조건부성이 발화하는 달이 소수일 가능성",
+    "로테이션 = 비중 변동 = 회전 증가 구조 → 11.0/yr 관문이 실질 게이트일 수 있음",
+    "WT-009 실측상 tuned 개별 PORT_t: V01_SECREL 1.42 / M01_PATHQ 2.05 / D03_EWMA -1.73 / Q01_EB -0.21 / V06_EB 0.32 — 음수 팩터에 IC-비례 clip0이 어떻게 작용하는지가 관전점"
+  ]
+}
