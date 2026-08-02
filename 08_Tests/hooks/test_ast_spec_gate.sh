@@ -18,6 +18,13 @@ ROOT="${CLAUDE_PROJECT_DIR:-${QM_ROOT:-$(cd "$(dirname "${BASH_SOURCE[0]:-$0}")/
 ROOT="${ROOT//\\//}"
 HOOK="$ROOT/02_Infrastructure/hooks/ast_spec_gate.sh"
 
+# D4/D5 는 이 경로를 *Windows* python 에 넘긴다 — MSYS 형(`/c/...`)은 python open() 이 못 연다
+# (r-portability 금칙 ③ 계열: 선행 '/' 경로형을 Windows 가 다르게 해석한다).
+# 정본 idiom = mixed 형 `C:/...` (bootstrap.sh:20-22 — R file.exists · python open 둘 다 OK).
+# 이게 없으면 문서화된 재현 명령 `CLAUDE_PROJECT_DIR="$PWD"`(Git Bash → MSYS 형)에서
+# schema 를 못 열어 빈 값이 되고, schema 는 멀쩡한데 '게이트-schema 동기 실패'로 오보된다.
+PY_ROOT="$(cygpath -m "$ROOT" 2>/dev/null || printf '%s' "$ROOT")"
+
 PASS=0; FAIL=0
 ok()   { PASS=$((PASS+1)); printf '  PASS  %s\n' "$1"; }
 bad()  { FAIL=$((FAIL+1)); printf '  FAIL  %s — %s\n' "$1" "${2:-}"; }
@@ -170,16 +177,16 @@ if is_block "$out"; then ok "D3 자유 서술 문자열 falsification → block 
 # D4: schema 파일 자체가 정본 타입으로 개정됐는지 (문서-구현 동기)
 SCHEMA_T=$("${QVEST_PY:-python}" -c "
 import json,io,sys
-d=json.load(io.open(r'$ROOT/02_Infrastructure/worktask/schema.json',encoding='utf-8'))
+d=json.load(io.open(r'$PY_ROOT/02_Infrastructure/worktask/schema.json',encoding='utf-8'))
 print(d['definitions']['ast_hypothesis']['properties']['falsification']['type'])
-" 2>/dev/null)
+" 2>&1 | tail -1)
 if [ "$SCHEMA_T" = "array" ]; then ok "D4 schema.json falsification = array (게이트와 동일 정본)"; else bad "D4 schema-게이트 타입 동기" "schema=$SCHEMA_T"; fi
 SCHEMA_PIT=$("${QVEST_PY:-python}" -c "
 import json,io
-d=json.load(io.open(r'$ROOT/02_Infrastructure/worktask/schema.json',encoding='utf-8'))
+d=json.load(io.open(r'$PY_ROOT/02_Infrastructure/worktask/schema.json',encoding='utf-8'))
 s=json.dumps(d,ensure_ascii=False)
 print('yes' if '\"pit\"' in s and 'sig_date' in s else 'no')
-" 2>/dev/null)
+" 2>&1 | tail -1)
 if [ "$SCHEMA_PIT" = "yes" ]; then ok "D5 schema.json 에 pit.sig_date 정의 존재 (게이트 요구와 일치)"; else bad "D5 schema pit 정의" "got $SCHEMA_PIT"; fi
 
 echo
