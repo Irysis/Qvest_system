@@ -707,8 +707,22 @@ def main(argv=None):
         return 1
 
     sig_d, td = extract_pit_dates(pkg, args.sig_date, args.decision_ts)
+    # [CF-10 수리] 다중 팩터 = 각각 검증. 훅(ast_spec_gate.sh)과 동일 의미론:
+    #  FAIL_LOOKAHEAD > FAIL_CONTRACT > WARN_RESTATEMENT > PASS 우선순위로 최악 팩터를 보고.
+    verdict, max_avail = "PASS", None
     v = AstVerifier(registry, field_map, td)
-    verdict, max_avail = v.run(ast_root, sig_d)
+    _rank = {"PASS": 0, "WARN_RESTATEMENT": 1, "FAIL_CONTRACT": 2, "FAIL_LOOKAHEAD": 3}
+    for _a in ast_roots:
+        _vf = AstVerifier(registry, field_map, td)
+        _vd, _ma = _vf.run(_a, sig_d)
+        if max_avail is None or (_ma is not None and _ma > max_avail):
+            max_avail = _ma
+        if _rank.get(_vd, 0) > _rank.get(verdict, 0):
+            verdict, v = _vd, _vf
+        elif _rank.get(_vd, 0) == _rank.get(verdict, 0) and v.leaf_count == 0:
+            v = _vf   # 동순위면 실제로 리프를 본 쪽을 보고
+        if verdict == "FAIL_LOOKAHEAD":
+            break
 
     result.update({
         "verdict": verdict,
