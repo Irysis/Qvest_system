@@ -225,6 +225,13 @@ SUITES=(
   #   검사 대상은 사본이 아니라 원본 .sh 의 heredoc 추출 — 마커가 깨지면 FATAL(exit 2)로
   #     중단한다("조용히 0건 검사"가 초록으로 보이는 것을 막는다).
   "08_Tests/ops/test_alpha_queue_pending.py"
+  # 2026-08-02 추가: factor_deep_recheck 큐 산정 위반 주입 — 위 alpha_queue 수리 직후
+  #   **동형 스캔이 같은 결함을 실행 트리거에서** 찾아낸 자리다(형제 파일 미전파 계통).
+  #   실측: route 는 "arxiv:2607.16450", done 원장은 bare → 08-02 큐가 **3/3 전량
+  #   이미 처리분**(참값 0). 표시 버그가 아니라 morning_run [0.55/3] 이 이 큐로
+  #   `claude -p` 심층 재검을 돌리므로 끝난 논문에 매일 토큰을 태우고 있었다.
+  #   W축(산출 큐에 적히는 id 가 정규화형인가)이 하류 재오염 차단 지문이다.
+  "08_Tests/ops/test_factor_recheck_pending.py"
 )
 
 # (2026-08-02) .py 분기 추가 — 종전엔 확장자 무관 `bash` 로 던져 파이썬 suite 가

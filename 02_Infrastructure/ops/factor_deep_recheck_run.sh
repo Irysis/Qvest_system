@@ -24,10 +24,30 @@ source "$(dirname "${BASH_SOURCE[0]:-$0}")/_sched_failure_classify.sh" 2>/dev/nu
 PYBIN=""
 command -v sched_resolve_python >/dev/null 2>&1 && PYBIN=$(sched_resolve_python || true)
 [ -n "$PYBIN" ] || PYBIN="python3"
+# (2026-08-02 수리) 아래 블록은 `08_Tests/ops/test_factor_recheck_pending.py` 가 **이 파일에서
+#   heredoc 을 그대로 추출**해 픽스처로 돌린다(복사본 검사 금지 — 사본은 드리프트한다).
+#   시작/끝 마커를 바꾸면 검사기부터 고칠 것.
 N=$("$PYBIN" - "$SD" "$QUEUE" "$TODAY" <<'PY'
-import json, sys, glob, os
+import json, sys, glob, os, re
 sd, out = sys.argv[1], sys.argv[2]
 today = sys.argv[3] if len(sys.argv) > 3 else None
+
+# ── (2026-08-02 수리) id 표기 정규화. alpha_search_queue_run.sh 와 **같은 결함·같은 기전**이며
+#   이쪽이 더 나빴다 — 실측 08-02 큐가 3/3 전량 이미 처리분이었다:
+#     route papers[].id                       = "arxiv:2607.16450"  (0727 판)
+#     factor_recheck_done.json processed[].paper_id = bare "2607.16450"
+#   → `pid not in done` 항상 참 → 심층 재검(claude -p)이 **끝난 논문을 매일 다시 돌린다**.
+#     표시 버그가 아니라 실행 트리거다(morning_run [0.55/3] → 이 스크립트가 QUEUE 를 직접 쓴다).
+#   ★curated 논문 id 는 arXiv 형태가 아닌 파일명이므로 arXiv 꼴일 때만 접두/버전을 벗긴다.
+_AXPFX = re.compile(r"^(?:https?://)?(?:www\.)?(?:arxiv\.org/(?:abs|pdf)/|arxiv[:/])", re.I)
+_AXID  = re.compile(r"^(\d{4}\.\d{4,5})(?:v\d+)?$")
+def nid(v):
+    s = str(v if v is not None else "").strip()
+    if not s: return ""
+    s = _AXPFX.sub("", s).strip()
+    m = _AXID.match(s)
+    return m.group(1) if m else s
+
 done=set()
 dp=os.path.join(sd,"factor_recheck_done.json")
 if os.path.exists(dp):
@@ -35,16 +55,19 @@ if os.path.exists(dp):
         for x in json.load(open(dp,encoding="utf-8")).get("processed",[]):
             # processed[] = list of dicts {paper_id,date,verdict}; bare-string-tolerant
             pid = x.get("paper_id") if isinstance(x, dict) else x
-            if pid: done.add(str(pid))
-    except: done=set()
+            pid = nid(pid)
+            if pid: done.add(pid)
+    except Exception: done=set()
 seen={}
 for f in sorted(glob.glob(os.path.join(sd,"alpha_search_route_*.json"))):
     try: r=json.load(open(f,encoding="utf-8"))
-    except: continue
+    except Exception: continue
     for p in r.get("papers",[]):
         fc=p.get("factor_candidate") or {}
         if fc.get("verdict")=="uncertain":
-            pid=str(p.get("id") or p.get("arxiv_id") or p.get("paper_id") or "")
+            # ★큐에 적재하는 id 도 정규화형으로 쓴다 — 하류(프롬프트·done writer)가 접두를
+            #   그대로 물려받아 원장과 또 어긋나는 것을 원천에서 끊는다.
+            pid=nid(p.get("id") or p.get("arxiv_id") or p.get("paper_id"))
             if pid and pid not in done and pid not in seen:
                 seen[pid]={"paper_id":pid,"title":p.get("title",""),"source":p.get("source",""),
                            "factor_hint":fc.get("name") or fc.get("factor_hint",""),
