@@ -1,0 +1,103 @@
+{
+  "task_id": "WT-D20260802_019",
+  "generated_at": "2026-08-02T23:10:00+0900",
+  "metric_type": "weighted_screen",
+  "preregistration": "stage_artifacts/WT_D20260802_019/preregistration.json",
+  "inherited_frame": "WT-D20260802_017 (동일 carrier 269m + 동일 e_book + 동일 paired 판별 + 동일 오라클 arm). parity 검증: BARE 6.40/1.536/−40.7 · BOOK 6.18/1.711/−23.3 · ORACLE 7.87/2.162/−9.2 · BOOK_EW 5.33 — WT-017과 자리수까지 일치",
+  "primary_rule_frozen": "DD_STATE = [벤치 TR지수(cutoff) ≤ 0.90 × max(지수, 트레일링 252거래일)], cutoff = 홀딩월 시작 직전 거래일. 발화 시 g=0.40 (오라클 동일 스케줄). 파라미터 사전고정(문헌 correction 문턱 −10%, 12M 창) — n_trials=1, chain, no-sweep",
+  "label_quality_pretest": {
+    "order_note": "사전등록대로 성과 측정 전 판정 — 여기서 결론",
+    "primary_DD10_252d": {"n_on": 92, "recall": 0.351, "precision": 0.424, "base_rate": 0.413, "fisher_p": 0.795, "verdict": "FAIL (recall ≤ base — 현 MSM 라벨 실패 기준선 0.10 vs 0.41보다는 높으나 base 미달)"},
+    "diagnostics_no_selection": [
+      {"label": "diag_DD5",  "n_on": 155, "recall": 0.532, "precision": 0.381, "fisher_p": 0.259, "note": "유일하게 recall > base — 단 비유의, precision은 base 이하(농축 없음)"},
+      {"label": "diag_DD15", "n_on": 52,  "recall": 0.180, "precision": 0.385, "fisher_p": 0.754},
+      {"label": "diag_VOL80_expanding", "n_on": 18, "recall": 0.081, "precision": 0.500, "fisher_p": 0.465},
+      {"label": "diag_M1NEG", "n_on": 113, "recall": 0.441, "precision": 0.434, "fisher_p": 0.616}
+    ],
+    "structural_finding": "트레일링 가격-상태 라벨(낙폭 3문턱·실현변동성 분위·단월 부호) 전부 KR 월간 실현-하락 판별 비유의 — 월간 granularity에서 BM<0은 트레일링 가격 상태와 사실상 독립. 오라클 상금은 nowcast 축으로 접근 불가"
+  },
+  "arm_stats": {
+    "BARE":         {"port_t": 6.40, "ir": 1.478, "abs_sr": 1.536, "abs_mdd": -0.407, "turnover_annual": 10.3, "n_months": 269},
+    "BOOK_M4xR05":  {"port_t": 6.18, "ir": 1.410, "abs_sr": 1.711, "abs_mdd": -0.233, "turnover_annual": 10.3, "n_months": 269},
+    "CAND_dd10_x_book": {"port_t": 4.18, "ir": 0.971, "abs_sr": 1.605, "abs_mdd": -0.222, "turnover_annual": 10.3, "n_months": 269},
+    "NOWCAST_ONLY": {"port_t": 4.57, "ir": 1.066, "abs_sr": 1.539, "abs_mdd": -0.281},
+    "STRESS_LAG":   {"port_t": 4.01, "ir": 0.930, "abs_sr": 1.551, "abs_mdd": -0.233},
+    "DIAG_ORACLE_LOOKAHEAD": {"port_t": 7.87, "ir": 1.736, "abs_sr": 2.162, "abs_mdd": -0.092, "note": "look-ahead 상한 진단 전용 — 본판정 비사용"},
+    "BOOK_EWbasis": {"port_t": 5.33, "ir": 1.273, "abs_sr": 1.724, "abs_mdd": -0.275},
+    "CAND_EWbasis": {"port_t": 3.32, "ir": 0.799, "abs_sr": 1.581, "abs_mdd": -0.286}
+  },
+  "paired_tests": {
+    "marginal_cand_vs_book":  {"paired_t_nw": -3.77, "n_months": 269, "mean_d_annualized_pct": -7.35, "t_post2017": -2.54},
+    "nowcastonly_vs_book":    {"paired_t_nw": -3.53, "mean_d_annualized_pct": -6.40, "t_post2017": -2.14},
+    "marginal_lag_vs_book":   {"paired_t_nw": -3.92, "mean_d_annualized_pct": -8.25, "t_post2017": -2.52, "note": "leak 방향(-1개월 더 늦춤)이 더 나쁨 — 누출 지문 없음"},
+    "oracle_vs_book_DIAG":    {"paired_t_nw": 1.18, "mean_d_annualized_pct": 2.14, "t_post2017": 0.61},
+    "marginal_cand_vs_book_EWbasis": {"paired_t_nw": -4.17, "mean_d_annualized_pct": -7.36, "t_post2017": -2.86},
+    "cost_stress_marginal":   {"paired_t_nw": -3.80, "mean_d_annualized_pct": -7.42, "note": "overlay 노출 회전 증분(0.42/yr) 15bps delta-cost 반영"}
+  },
+  "delta_ir_cand_minus_book": -0.439,
+  "preregistered_verdict_rule": "사전 검정 fail_line 선행 (recall ≤ base → 성과는 참고) + 독립 = t ≥ +2.0 ∧ ΔIR ≥ +0.05 / 유해 = t ≤ −2.0",
+  "verdict": "NEGATIVE — (1차) 라벨 품질 사전 검정 FAIL (recall 0.351 ≤ base 0.413, fisher p=0.795): 성과 측정 전 결론. (참고) 성과도 유해 문턱 초과 — paired t −3.77 (−7.35%/yr), EW기저 −4.17, 비용반영 −3.80, ΔIR −0.439",
+  "recovery_vs_oracle": {
+    "return_axis": -3.43,
+    "return_axis_note": "−343% — 상금 +2.14%/yr 대비 −7.35%/yr, 상금의 3.4배 파괴",
+    "mdd_axis": 0.073,
+    "mdd_axis_note": "+7.3% — MDD −23.3%→−22.2% (1.1pp), 오라클 14.1pp 대비. return 비용과 교환 불가"
+  },
+  "label_vs_realized": [
+    {"dd_state": false, "n": 177, "bench_ann": 0.158, "frac_bm_neg": 0.407, "active_book_ann": 0.275, "active_cand_ann": 0.275},
+    {"dd_state": true,  "n": 92,  "bench_ann": 0.104, "frac_bm_neg": 0.424, "active_book_ann": 0.254, "active_cand_ann": 0.039, "t_marginal": -4.22}
+  ],
+  "realized_down_axis": {
+    "bm_neg_months": {"n": 111, "mean_bm": -0.0422, "active_book_m": 0.0350, "active_cand_m": 0.0380, "t_marginal": 1.81},
+    "bm_pos_months": {"n": 158, "mean_bm": 0.0495, "active_book_m": 0.0135, "active_cand_m": 0.0009, "t_marginal": -4.87},
+    "interpretation": "WT-017과 동일 구조 — 노출 축소는 실현 하락월에서 기계적으로 active를 올리나(+1.81) 라벨이 base 이상 판별을 못 해 상승월 비용(−4.87)이 지배. ON 92개월(MSM 28개월의 3.3배)이라 순손실 규모도 3배(−7.35 vs −2.38%/yr) — 무판별 라벨의 유해는 발화 월수에 비례"
+  },
+  "on_month_chronology_note": "ON 92개월 = 2008-06~2009-07(위기+반등), 2011-09~2012-08, 2015~2016 박스, 2018-07~2019-09, 2020-03~06(폭락+반등), 2021-11~2023-04, 2023-11, 2024-10~2025-05(회복), 2026-04(멜트업 직전) — 하락 '중' 뿐 아니라 반등·회복 구간을 대량 포함. ON월 실현 벤치 연율 +10.4% = nowcast의 구조 병리(반등 후에도 고점 −10% 복귀까지 미해제)",
+  "pit_verification": {
+    "assert_overlay_pit": "PASS (269개월, cutoff = 홀딩 시작 직전 거래일, 간격 median 1일 [1,4])",
+    "window_endpoint": "트레일링 252d 창 종점 = cutoff < decision_date 전 월 직접 확인 (stopifnot). expanding 대체 월 0건 (벤치 이력 충분)",
+    "violation_injection": "cutoff를 홀딩월말로 오염 주입 → assert stop 발화 확인 (차단 실효)",
+    "lag_stress": "cutoff 1개월 추가 지연 시 paired t −3.92 (base −3.77보다 악화 — look-ahead 인플레 부재)",
+    "strict_ab_note": "현 cutoff(< 홀딩 시작) = strict 정의 동일 — 인플레 0%"
+  },
+  "ax001_conditional": {
+    "crisis_alpha_book_ann": 0.254, "crisis_alpha_cand_ann": 0.039,
+    "crisis_note": "ON월(라벨 위기) active 연율 book +25.4% → cand +3.9% — ON월이 실제로는 반등월 다수라 노출 축소가 참여를 차단",
+    "mdd_bare": -0.407, "mdd_book": -0.233, "mdd_cand": -0.222, "mdd_oracle": -0.092,
+    "bad_normal": "BM<0월 active: book +3.50%/m vs cand +3.80%/m (+) / BM>0월: book +1.35%/m vs cand +0.09%/m (−)"
+  },
+  "production_constraints": {
+    "turnover_annual_limit": 11.0,
+    "observed_equity": 10.3,
+    "overlay_churn_book": 1.01,
+    "overlay_churn_cand": 1.43,
+    "verdict": "상한 이내 — 회전은 관문 아님 (비용반영 arm −3.80 병기)"
+  },
+  "oos_rough_diag": {"BOOK": 0.55, "CAND": 0.41, "NOWCAST_ONLY": 0.48},
+  "seg_2026_localization": "2026-05 홀딩월 ON(dd −0.211, 2026-04 폭락 직후) → 벤치 +29.0% 멜트업에서 cand active −20.7% vs book −8.3% — 단일월이 연간 손실의 대형 기여. 2026-04 폭락월 자체는 OFF(dd −0.011)로 미방어 = nowcast 초입 실기와 반등 오발화가 한 쌍",
+  "next_probe": [
+    "NP-1 (FQ-117 승계·강화): 라벨 엔진 개보수는 '트레일링 가격-상태로는 불가' 기준선을 넘어야 함 — MSM_Crisis_Prob 연속값의 선행/지연 분해 + 비가격 원천(FRED 크레딧 스프레드·환율 스트레스, KTRI)이 월간 BM<0 recall > base ∧ fisher p<0.05를 내는지가 관문. 본 라운드의 5-라벨 비유의 실측이 비교 기준선",
+    "NP-2 (granularity 축): 월간 소비가 병목일 가설 — 하락 지속성이 일간/주간 스케일에 있고 월간 리밸이 소거하는지, 벤치 일간 시계열만으로 저비용 사전진단 가능(DD_STATE → 익일/익주 BM<0 농축 검정). 유의하면 월내 노출 조정 lane이 열림 (구현 cadence 변경 = 도훈 결정 필요 사항으로 명시)",
+    "NP-3 (심도-조건부 완화): 오라클 상금의 태반이 심도월(BM<−8%)에 집중 — 심도 전용 라벨(예: DD15 ∧ vol 동시) + 온건 g(0.70)로 상승월 비용을 줄이는 조합은 미검. 단 본 라운드 DD15 recall 0.180으로 사전 posterior 부정적 — FQ 등재만, 착수 우선순위 낮음"
+  ],
+  "consumption_surfaces": {
+    "established_capability": "부정 지식 — '트레일링 가격-상태 라벨은 KR 월간 실현-하락 판별력이 없다(5변형 전부 fisher p>0.25)'",
+    "surfaces": [
+      "① 팩터 랭킹: 비적용 (시장 스칼라)",
+      "② 유니버스 필터: 비적용",
+      "③ 오버레이/국면 입력: ★본 판정 — DD/vol/단월부호 기반 월간 노출 조절 금지 (유해 실측). FR Track1 레짐엔진에도 동일 경고 이식",
+      "④ 위험모델·β예산: risk-research에 참고 — 트레일링 DD 상태를 월간 위험 스케일러로 쓰는 설계는 같은 병리 예상",
+      "⑤ monitoring 신호: DD_STATE를 월간 경보 트리거로 쓰지 말 것 (반등월 오경보율 실측)",
+      "⑥ 선별 라벨: 비적용",
+      "⑦ 타 모드 이식: RAMP 리스크매니저·factor-rotation 국면 라벨 설계 시 본 기준선(recall vs base + fisher) 사전 검정을 관문으로"
+    ]
+  },
+  "revival_conditions": [
+    "라벨 엔진(가격 외 원천 포함)이 실현 BM<0에 recall > base ∧ fisher p<0.05를 달성하면 동일 사전등록 스케줄·carrier로 재측정 (WT-017 부활 조건과 동일 관문)",
+    "NP-2 일간 진단에서 DD_STATE → 익일/익주 하락 농축이 유의하면 월내 cadence lane 개설 (도훈 결정)",
+    "carrier 2026-07+ 재생성 시 7월 폭락(-23.6%) 포함 재판정 — 단 2026-05 ON 오발화(-20.7% 손실) 선행 실측이 반대 증거"
+  ],
+  "graduation_hard_gates": {"note": "부정 판정 — graduation 비해당. 자본 주장 없음 (overlay 변경은 도훈 수동 영역)"},
+  "challenge_note": "qepm/mailbox/worktask/WT-D20260802_019/challenge_note.md",
+  "sidecar_live_with_ast": {"before": {"live": 407, "live_with_ast": 53}, "after": {"live": 408, "live_with_ast": 54}}
+}
