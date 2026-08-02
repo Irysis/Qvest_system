@@ -1,0 +1,127 @@
+{
+  "task_id": "WT-D20260802_018",
+  "as_of_date": "2026-08-02",
+  "forecast_horizon": "1M",
+  "spec_version": "ast_v1.1",
+  "pit": { "sig_date": "2026-07-31" },
+  "hypothesis": {
+    "statement": "공시 계약금액의 상대 규모(계약금액/최근매출액, 12M 누적)가 long-side directional 알파다 — occurrence(발생 여부)는 null(t=0.59, settled)이나 magnitude는 규모가 정보량이라는 가설로 미검이었다.",
+    "mechanism": {
+      "agent": "공급계약 공시에 과소반응하는 기관·개인 투자자 — 계약금액의 이익 전망 반영(실적 추정 개정)이 애널리스트 커버리지가 얇은 KR 중형주에서 지연된다",
+      "friction": "KR 공매도 제약 + 수주-매출 인식 시차(조선·방산·플랜트는 수년 분할 인식)로 즉시 차익거래가 어렵고, 계약의 이익 기여도 추정에 정보 비용이 든다",
+      "path": "공시(rcept) 후 1~12개월에 걸쳐 실적 발표·수주잔고 공개로 가격에 순차 반영 — 매출 대비 대형 계약일수록 반영 지연분이 크다는 예측"
+    },
+    "falsification": [
+      {
+        "group_id": "A6_investor_flow_stock_daily",
+        "expectation": "메커니즘(지연 반영)이 참이면 magnitude 상위 종목의 공시 후속 1~3개월 기관 순매수가 하위 종목 대비 증가해야 한다 — 증가하지 않으면 기전 기각"
+      },
+      {
+        "group_id": "C-DART-QUARTERLY",
+        "expectation": "매출 대비 대형 계약 종목의 후속 2~4분기 매출 실현(분기 재무)이 magnitude에 비례해 상향돼야 한다 — 비례 관계 부재면 '계약금액=미래 매출 정보' 전제 기각"
+      }
+    ],
+    "regime_scope": {
+      "holds_in": ["neutral", "recovery"],
+      "weakens_or_reverses_in": ["crisis"],
+      "boundary_rationale": "위기 국면은 유동성 청산이 개별 계약 정보를 압도 — 실측 정합: 2026-07 폭락월(벤치 -23.63%) IC가 음수(-0.15)로 약화 (AX-001 조건부 병기)"
+    }
+  },
+  "factors": [
+    {
+      "factor_id": "F1_contract_magnitude_12m",
+      "ast": {
+        "op": "CS_ZSCORE",
+        "args": [
+          {
+            "leaf": "STORED_SCORE",
+            "escape_contract": {
+              "escape_type": "STORED_SCORE",
+              "provenance": {
+                "store_build_hash": "sha256:2f3266a7c5526a7a (panel_A.parquet 선두 16hex)",
+                "generator_code_path": "02_Infrastructure/alpha_search/build_contract_panel.R (+ 02_Infrastructure/data/dart_contract_backfill.R, dart_contract_doc_parser.R v2)",
+                "generated_at": "2026-08-02T21:27:20+0900"
+              },
+              "production_parity_verified": false
+            }
+          }
+        ]
+      },
+      "role": "core_signal",
+      "restatement_exposure": 0,
+      "note": "STORED_SCORE = w_ratio(12M trailing sum of 계약금액/최근매출액). 기재정정 제외(최초 체결값만) — 정정 A/B로 누출 부재 실증(paired t=-0.74). production_parity_verified=false: 신규 리서치 패널이며 incumbent base 소비 용도 아님."
+    }
+  ],
+  "combination_rule": "single_factor",
+  "verdict": "designed",
+  "self_pit_check": {
+    "performed": true,
+    "leaves_checked": [
+      {
+        "leaf": "STORED_SCORE:contract_panel.w_ratio",
+        "availability_rule": "regulatory: rcept_dt T+0 — 신호월 M 값은 rcept_dt가 M 말일 이전인 공시만 누적(C5), 계약 체결일 아닌 공시 접수일 기준(look-ahead 차단). 기재정정(사후 수정본)은 신호에서 제외",
+        "restatement_prone": true
+      }
+    ],
+    "verdict": "clean",
+    "note": "restatement_prone=true(공급계약류 48%가 기재정정)이나 최초 체결값만 소비 + 정정소급 패널 A/B 대조(B-A=-0.008, t=-0.74)로 정정 누출 부재를 실측. 상류 보증 = 08_Tests/data/test_contract_panel.R 9/9 (위반 주입 포함) + lag1 스트레스."
+  },
+  "alpha_vector": {"A052690":0.0039,"A064350":0.003,"A071970":0.0029,"A009540":0.0028,"A083650":0.0023,"A010140":0.0022,"A082740":0.0014,"A042660":0.0014,"A267250":0.0012,"A329180":0.0009,"A047040":0.0008,"A000210":0.0007,"A375500":0.0007,"A399720":0.0007,"A012450":0.0007,"A009520":0.0007,"A178320":0.0007,"A253590":0.0006,"A218410":0.0006,"A079550":0.0005,"A232140":0.0004,"A066970":0.0004,"A095610":0.0003,"A047810":0.0003,"A272210":0.0003,"A326030":0.0003,"A207940":0.0002,"A003670":0.0002,"A323280":0.0001,"A171090":0.0001,"A237690":0.0001,"A189300":0,"A000720":-0.0001,"A034020":-0.0001,"A033500":-0.0001,"A028670":-0.0001,"A112610":-0.0001,"A298040":-0.0001,"A062040":-0.0001,"A003380":-0.0002,"A017960":-0.0002,"A347850":-0.0002,"A051600":-0.0003,"A010950":-0.0004,"A089030":-0.0004,"A388720":-0.0004,"A006260":-0.0004,"A036460":-0.0005,"A010120":-0.0005,"A064400":-0.0005,"A001440":-0.0006,"A028260":-0.0006,"A267260":-0.0006,"A009150":-0.0006,"A000100":-0.0006,"A307950":-0.0006,"A103140":-0.0006,"A022100":-0.0006,"A033100":-0.0006,"A032820":-0.0006,"A348210":-0.0007,"A056080":-0.0007,"A028050":-0.0007,"A012750":-0.0007,"A060280":-0.0007,"A086520":-0.0007,"A214430":-0.0007,"A042700":-0.0007,"A068270":-0.0008,"A003490":-0.0008,"A180640":-0.0008,"A373220":-0.0008,"A008930":-0.0008,"A128940":-0.0008,"A003550":-0.0008,"A051910":-0.0008,"A018260":-0.0008,"A011200":-0.0008,"A003090":-0.0008,"A069620":-0.0008,"A003030":-0.0008,"A050890":-0.0008,"A466100":-0.0008,"A302440":-0.0008,"A047050":-0.0008,"A000150":-0.0008,"A005420":-0.0009},
+  "confidence_vector": {"A052690":0.65,"A064350":0.7,"A071970":0.7,"A009540":0.7,"A083650":0.7,"A010140":0.7,"A082740":0.7,"A042660":0.7,"A267250":0.7,"A329180":0.7,"A047040":0.7,"A000210":0.7,"A375500":0.7,"A399720":0.6,"A012450":0.7,"A009520":0.5,"A178320":0.7,"A253590":0.7,"A218410":0.65,"A079550":0.7,"A232140":0.6,"A066970":0.45,"A095610":0.7,"A047810":0.7,"A272210":0.7,"A326030":0.7,"A207940":0.7,"A003670":0.65,"A323280":0.65,"A171090":0.55,"A237690":0.5,"A189300":0.55,"A000720":0.7,"A034020":0.7,"A033500":0.6,"A028670":0.55,"A112610":0.7,"A298040":0.7,"A062040":0.65,"A003380":0.5,"A017960":0.6,"A347850":0.45,"A051600":0.5,"A010950":0.65,"A089030":0.6,"A388720":0.5,"A006260":0.7,"A036460":0.6,"A010120":0.7,"A064400":0.7,"A001440":0.65,"A028260":0.65,"A267260":0.6,"A009150":0.55,"A000100":0.6,"A307950":0.6,"A103140":0.45,"A022100":0.5,"A033100":0.45,"A032820":0.5,"A348210":0.5,"A056080":0.45,"A028050":0.6,"A012750":0.5,"A060280":0.45,"A086520":0.45,"A214430":0.45,"A042700":0.55,"A068270":0.45,"A003490":0.5,"A180640":0.5,"A373220":0.45,"A008930":0.5,"A128940":0.5,"A003550":0.45,"A051910":0.45,"A018260":0.5,"A011200":0.5,"A003090":0.45,"A069620":0.45,"A003030":0.45,"A050890":0.45,"A466100":0.45,"A302440":0.45,"A047050":0.45,"A000150":0.45,"A005420":0.45},
+  "signal_matrix_ref": "stage_artifacts/WT_D20260802_018/alpha_scores.parquet",
+  "factor_specs": [
+    {
+      "factor_family": "NonReturn_Event",
+      "proxy": "CTR_MAG_12M (계약금액/최근매출액, 12M trailing sum)",
+      "formula": "sum_{d in 12M, rcept_dt <= month_end} contract_amount(d) / recent_revenue(d)",
+      "lag_rule": "rcept_dt T+0 (공시 접수일), 신호월 말일 컷오프 — 홀딩월 시작 전 정보만 (C5)",
+      "winsorization": "none (rank 기반 진단이 primary — 선형 FMB는 sanity 격리 [-1,5] 적용)",
+      "neutralization": "none (진단으로 size-잔차화 병기)",
+      "economic_rationale": "underreaction_to_material_contracts — 매출 대비 대형 수주의 이익 반영 지연 (Jegadeesh-Livnat 2006 revenue surprise drift 계보)",
+      "redundancy_cluster_id": "non_return_dart_events (insider/buyback/pledge와 동일 원천군, return-파생 팩터와 저상관 전제 — 상관 실측은 후속)",
+      "weight_theta": 1.0,
+      "references": ["Jegadeesh & Livnat 2006 (Revenue surprises and stock returns)", "FQ-002 data_gate 실측 2026-08-02"]
+    }
+  ],
+  "diagnostics": {
+    "canonical_port_t_nw_lag3": -0.73,
+    "canonical_port_t_pvalue": null,
+    "canonical_n_months": 24,
+    "rank_ic": 0.0164,
+    "rank_ic_t": 0.52,
+    "rank_ic_t_nw_lag3": 0.57,
+    "icir": 0.106,
+    "fmb_t": 0.46,
+    "monotonicity": null,
+    "subperiod_stability": null,
+    "turnover_proxy": 2.4,
+    "harvey_t_stat": 0.52,
+    "post_neutralization_ic": 0.0774,
+    "dsr": null,
+    "n_trials": 1,
+    "selection_type": "chain",
+    "diag_denominator_size": { "rank_ic": 0.0806, "t": 1.97, "t_nw": 1.7, "size_residualized_ic": 0.0774, "size_residualized_t": 1.91, "pure_inv_size_ic": -0.0661, "pure_inv_size_t": -1.96, "score_invsize_rank_cor": -0.025 },
+    "correction_ab": { "mean_diff_B_minus_A": -0.008, "paired_t": -0.74, "n": 24 },
+    "lag1_stress": { "rank_ic": 0.0089, "t": 0.31, "canonical_port_t": -0.8 },
+    "dual_basis": { "cap_w_port_t": -0.73, "ew_universe_t": 0.36, "note": "size-분모 셀은 cap-w -0.37 vs EW-uni +1.49 — mega-cap 벤치 구성 미스매치 방향" },
+    "coverage": { "mean_names_per_month": 77, "months_ge20_share": 1.0, "months_ge10_share": 1.0 },
+    "cells_portfolio": { "revenue_equal_port_t": -0.783, "revenue_ivol_port_t": -0.813, "size_equal_port_t": -0.567, "size_ivol_port_t": -0.674 },
+    "metric_type_labels": { "rank_ic": "diagnostic_statistic", "canonical_port_t_nw_lag3": "canonical_screen", "cells_portfolio": "backtested (run_alpha_search essence)" }
+  },
+  "selection_objective": "rank_ic",
+  "method_shopping_log": {
+    "alpha_agent": {
+      "candidates_tried": 1,
+      "method_log": [
+        { "name": "CTR_MAG_12M_revenue (사전등록 primary)", "rank_ic": 0.0164, "selected": true, "note": "4셀 격자는 사전등록 전량보고 — argmax 선택 없음(sweep 아님). 분모 size/정정 B 셀은 진단 병기" }
+      ]
+    }
+  },
+  "challenge_flags": [
+    "PILOT_SCOPE: 2023-08~2026-07 크롤(36개월), IC 표본 n=24 — 자본 판정 아님, graduation HARD 미적용 (사전등록 §5)",
+    "PRIMARY_NULL: 사전등록 primary(계약금액/최근매출액) rank-IC t=+0.52 — 전구간 확장 문턱에 못 미침 → 확장 지불 안 함",
+    "LIVE_LEAD_DIAG: 분모 size 셀 IC t=+1.97 (size-잔차화 +1.91 생존, 1/Size 역풍 -1.96 하에서) — 문턱 근방(멤버십 섭동 취약, WT-013 sd 0.378 선례). 후속 라운드 신규 사전등록 대상이지 본 라운드 판정 변경 아님",
+    "IC_PORT_TRANSITION_WALL: IC 양수여도 4셀 포트 전량 PORT_t 음수 — v8.3 전이 벽 재현. 랭킹 소비면보다 필터/오버레이 소비면 우선 검토 대상",
+    "PARSER_RESIDUAL: v2 재파싱 후에도 148건(5.4%) 추출 불가 — 보수적 제외, 조성 편향 잔존 가능성"
+  ]
+}
