@@ -186,6 +186,43 @@ CASES = [
          {"id": "2699.00006", "route": "alpha", "kr_feasible": True}),
       "alpha_search_queue_done.json": done([])}, "1", False),
 
+    ("B6b factor_candidate 는 있으나 verdict 키 없음 + alpha∧feasible → 계수",
+     {"alpha_search_route_x.json": route(
+         {"id": "2699.00016", "route": "alpha", "kr_feasible": True,
+          "factor_candidate": {"name": "n"}}),
+      "alpha_search_queue_done.json": done([])}, "1", False),
+
+    # ── 결함3: 명시 부정 verdict 를 OR 뒷분기가 되살리지 않는가 ─────────────────
+    ("D1 ★결함3 verdict=redundant + alpha∧feasible → 미계수(라우터 기각 존중)",
+     {"alpha_search_route_x.json": route(
+         {"id": "2699.00013", "route": "alpha", "kr_feasible": True,
+          "factor_candidate": {"verdict": "redundant"}}),
+      "alpha_search_queue_done.json": done([])}, "0", True),
+
+    ("D2 ★결함3 verdict=infeasible + alpha∧feasible → 미계수",
+     {"alpha_search_route_x.json": route(
+         {"id": "2699.00014", "route": "alpha", "kr_feasible": True,
+          "factor_candidate": {"verdict": "infeasible"}}),
+      "alpha_search_queue_done.json": done([])}, "0", True),
+
+    ("D3 ★결함3 verdict=uncertain + alpha∧feasible → 미계수(사람 분류 대상)",
+     {"alpha_search_route_x.json": route(
+         {"id": "2699.00015", "route": "alpha", "kr_feasible": True,
+          "factor_candidate": {"verdict": "uncertain"}}),
+      "alpha_search_queue_done.json": done([])}, "0", True),
+
+    ("D4 verdict=testable 이면 route 가 alpha 가 아니어도 계수(거부권이 다 삼키지 않는다)",
+     {"alpha_search_route_x.json": route(
+         {"id": "2699.00017", "route": "risk", "kr_feasible": False,
+          "factor_candidate": {"verdict": "testable"}}),
+      "alpha_search_queue_done.json": done([])}, "1", False),
+
+    ("D5 candidate 최상위 verdict=redundant 도 거부권(위치 무관)",
+     {"alpha_search_queue_20260726.json": queue(
+         {"paper_id": "2699.00018", "verdict": "redundant",
+          "route": "alpha", "kr_feasible": True}),
+      "alpha_search_queue_done.json": done([])}, "0", False),
+
     ("B7 curated 파일명 id(arXiv 형 아님) ∉ done → 원형 보존·계수",
      {"alpha_search_route_x.json": route(paper("id", "MAN_AHL_trend.pdf")),
       "alpha_search_queue_done.json": done([])}, "1", False),

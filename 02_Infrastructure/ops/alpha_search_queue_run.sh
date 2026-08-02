@@ -132,6 +132,16 @@ def testable(o):
     fc = o.get("factor_candidate") or {}
     v = str(fc.get("verdict") or o.get("verdict") or "").strip().lower()
     if v == "testable": return True
+    # ── (2026-08-02 결함3 수리) 명시 부정 verdict 에 거부권.
+    #   구판은 `verdict=="testable" or (route=="alpha" and kr_feasible)` 였는데, OR 이라
+    #   라우터가 **redundant / infeasible / uncertain 으로 명시 기각한 건**을 뒷 분기가
+    #   되살렸다 — 실측 4건(infeasible 2 · redundant 1 · uncertain 1)이 그 자리였고,
+    #   그중 3건이 08-02 잔여 pending 4건에 그대로 올라 있었다(N 4 → 1).
+    #   스크립트 헤더("pending(큐 testable − done)")도 프롬프트 계약
+    #   (`factor_candidate.verdict=="testable"`)도 testable-only 를 선언한다 —
+    #   즉 설계 확장이 아니라 술어가 계약에서 이탈해 있던 것.
+    #   ★뒷 분기는 판정이 **아직 없을 때**의 폴백이지, 판정을 뒤집는 우회로가 아니다.
+    if v: return False
     return o.get("route") == "alpha" and bool(o.get("kr_feasible"))
 
 # ── (2026-08-02) 위 두 수리로 **새 후보를 읽게 되므로** 이미 종결된 레코드를 되살리지 않도록
