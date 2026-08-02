@@ -1,7 +1,7 @@
 {
  "schema_version": "1.0",
  "sot": "02_Infrastructure/docs/qvest_v8_3_alpha_discovery_sot.md §4",
- "updated": "2026-08-02 (WT-014 복권형 제외-필터 capability_established — 오늘 첫 양성 소비면(ΔIR +0.169·MDD 11.4pp). 파생 FQ-111 overlay 포함판 / FQ-112 위험-축 소비 등재. 총 112건)",
+ "updated": "2026-08-02 (WT-012 insider MAGQ3 tripwire 증분 기각 + R43-F1 침묵 49.8% 적발. 파생 FQ-113 선택률-정합 문턱 / FQ-114 침묵 국면 귀속 등재. 총 114건)",
  "consume_rule": "새 발굴 리서치 착수 전: hypothesis_index lookup → 본 큐 확인 → owner/status 갱신. 완료 시 result_ref(L-code/보고서) 기입. dohoon_decision 항목은 세션 임의 착수 금지.",
  "entries": [
   {
@@ -2136,6 +2136,30 @@
    "owner": "미배정",
    "status": "frontier_open",
    "registered": "2026-08-02 Q-Lead (WT-D20260802_014 소비면 순회 잔여면)"
+  },
+  {
+   "id": "FQ-113",
+   "lane": "methodology_repair",
+   "title": "insider tripwire 선택률-정합 문턱 — 유계 지표와 무계 지표를 같은 z로 비교한 비정합 수리",
+   "hypothesis": "WT-012 자가 지적: INS02는 (매수건-매도건)/총건으로 [-1,1] 유계이고 MAGQ3는 무계 signed-cr 합이라 **같은 z 문턱에서 선별강도가 다르다** — 본 라운드의 A vs A' 비교는 애초 정합되지 않았다. A의 장기 발화율 15.8%에 맞춘 선택률-정합 문턱(단일 고정 규칙, sweep 아님)으로 재비교하면 증분 판정이 바뀌는가.",
+   "ev_rationale": "WT-012 NP-1(P1). 기각 판정 자체의 타당성을 좌우 — 비정합 비교로 내린 기각은 재검 대상. 저비용(문턱 재계산 + 기존 패널 재사용).",
+   "wall_check": "비적용 — monitoring 소비면(자본 무관). cap-tier 벽 비경유.",
+   "data_gate": "없음 (WT-012 r43_coverage.parquet 등 재사용)",
+   "owner": "미배정",
+   "status": "frontier_open",
+   "registered": "2026-08-02 Q-Lead (WT-D20260802_012 NP-1 파생)"
+  },
+  {
+   "id": "FQ-114",
+   "lane": "observability_repair",
+   "title": "★insider tripwire 침묵 126개월(49.8%)의 국면 귀속 — '특정 국면 무감시' 여부",
+   "hypothesis": "WT-012 R43-F1: 현행 SAFE tripwire가 253개월 중 126개월 문턱 도달 불가로 침묵하고, 그 침묵이 2016-17·2022-26에 **군집**한다. 침묵이 국면과 결합돼 있다면 '특정 국면에서 감시가 아예 없다' = 증분 논의보다 상위 결함. 침묵월의 국면 라벨 분포 · 시장 변동성/방향과의 결합을 실측해 무작위 대비 유의성 판정.",
+   "ev_rationale": "WT-012 NP-2(P1). 침묵 실패 계열 — '발화 0'이 '안전'으로 오독되는 구조. WIRE-1 라벨 배선은 증상 표기이고, 이 프로브가 원인 규명.",
+   "wall_check": "비적용 — 관측가능성 계층. 자본 주장 없음.",
+   "data_gate": "없음 (r43_live_monthly_maxz.parquet + 국면 라벨 현행분)",
+   "owner": "미배정",
+   "status": "frontier_open",
+   "registered": "2026-08-02 Q-Lead (WT-D20260802_012 R43-F1 파생)"
   }
  ]
 }
