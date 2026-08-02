@@ -1,7 +1,7 @@
 {
  "schema_version": "1.0",
  "sot": "02_Infrastructure/docs/qvest_v8_3_alpha_discovery_sot.md §4",
- "updated": "2026-08-02 (FQ-121 사전 확인 — 양-전이 성분 3개 확인(POS2 는 2개만 사용), POS3 병행 필요 + V06_EB 는 0 근방이라 자격 판정도 섭동 분포로. 총 126건)",
+ "updated": "2026-08-02 (FQ-124 사전 확인 — 문턱 +0.25 는 종목-레벨에서 32% 발화, 포트 평균 노출 축과 종목 문턱 축 분리 필요. 총 126건)",
  "consume_rule": "새 발굴 리서치 착수 전: hypothesis_index lookup → 본 큐 확인 → owner/status 갱신. 완료 시 result_ref(L-code/보고서) 기입. dohoon_decision 항목은 세션 임의 착수 금지.",
  "entries": [
   {
@@ -2319,7 +2319,8 @@
    "data_gate": "없음 (WT-020 alpha_scores.parquet + book 보유 이력)",
    "owner": "미배정",
    "status": "frontier_open",
-   "registered": "2026-08-02 Q-Lead (WT-D20260802_020 NP-2 파생)"
+   "registered": "2026-08-02 Q-Lead (WT-D20260802_020 NP-2 파생)",
+   "precheck_measured": "★착수 전 사전 확인 (2026-08-02 Q-Lead, WT-020 alpha_scores.parquet 76,080행 실측). **WT-020 제안 문턱 +0.25 는 종목-레벨 tripwire 로 쓰면 32.0% 가 발화한다** — 3분의 1이 상시 걸리면 경보로 무의미. 발화율 실측: zmax5 >=0.25 **0.3199** / >=0.5 0.2434 / >=1.0 0.1408, resid_zmax5 >=0.25 0.2892 / >=0.5 0.1754 / >=1.0 **0.0632**. ★원인: +0.25 는 WT-020 이 잰 **포트폴리오 평균 노출**(tail 월 직전 +0.273 vs 비tail -0.077)의 값이지 **종목별 문턱**이 아니다 — 두 축이 혼동됐다. ⇒ 라운드는 **두 축을 분리 사전등록**할 것: ① 포트 레벨 평균 노출 문턱(+0.25 계열, WT-020 Wilcoxon p=0.001 근거) ② 종목 레벨 편입 경고 문턱(별도 산출 — resid_zmax5 >=1.0 이 6.3% 로 가장 현실적). 이 구분 없이 착수하면 '문턱 +0.25 로 재봤더니 상시 발화'라는 자리로 간다."
   },
   {
    "id": "FQ-125",
