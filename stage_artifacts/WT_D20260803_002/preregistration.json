@@ -1,0 +1,73 @@
+{
+  "task_id": "WT-D20260803_002",
+  "fq_id": "FQ-127",
+  "registered_at": "2026-08-03T00:00:00+0900 (측정 전 고정 — 인벤토리 read-only 완료 시점, 재판정 실측 0건 상태)",
+  "round_type": "base-dependency generalization screen — 08-02 개선 주장 전수 재판정. 신규 알파 사냥 아님. 자본 주장 금지.",
+  "trigger": "WT-D20260802_022 실측: 동일 MAX5 X10 필터가 cap_norm base ΔIR +0.1579 / rank-tilt(production 실코드) base −0.1131 — 가중 규칙만이 부호를 갈랐다. ΔIR은 base 가중 규칙에 조건부인 국소량.",
+
+  "inventory_frozen": {
+    "population": "stage_artifacts/WT_D20260802_001..023 alpha_validation.json 전량(22건 + WT-012 verdict.json = 23 라운드) + 06_Registry/alpha_frontier_queue.json 08-02 연동 항목",
+    "claim_definition": "양(+)의 ΔIR / paired 한계기여 / 교체·회수 개선 주장. 음성(negative/유해/불활성) 판정은 '개선 주장'이 아니므로 재판정 모집단에서 제외(단 base 계층은 기록).",
+    "claims": [
+      {"claim_id": "CL-1", "wt": "WT-D20260802_003", "claim": "가중 slot PORT_t-정렬 paired 개선 (W_portt vs base +2.569, +3.63%/yr)", "base_weighting": "canonical EW-25 (act_bm)", "base_port_t_capw": 0.593, "production_parity": false},
+      {"claim_id": "CL-2", "wt": "WT-D20260802_005", "claim": "Chen-Welch RD-to-Market 회수 (standalone cap-w 2.537 / EW-uni 3.610)", "base_weighting": "canonical EW-25 — 단 vs benchmark 수준 주장(ΔIR-vs-base 아님)", "production_parity": false},
+      {"claim_id": "CL-3", "wt": "WT-D20260802_009", "claim": "P2_MOMENTUM 교체 후보 (M01_PATHQ vs M01_Mom_12_1 paired +2.028, +2.93%/yr)", "base_weighting": "canonical EW-25", "base_port_t_capw": 1.299, "production_parity": false, "note": "교체 자체는 FQ-109(멤버십 jitter q05)로 기철회 — 본 라운드는 base-축 독립 증거 추가"},
+      {"claim_id": "CL-4", "wt": "WT-D20260802_014", "claim": "MAX5 X10 배제 ΔIR +0.1692 (t +1.565)", "base_weighting": "weighted_screen cap_norm(Size) top-25", "base_port_t_capw": 2.879, "production_parity": false},
+      {"claim_id": "CL-5", "wt": "WT-D20260802_016", "claim": "MAX5 X10 배제 overlay-ON ΔIR +0.1284 (t +1.551)", "base_weighting": "weighted_screen cap_norm top-25 x book overlay", "production_parity": false},
+      {"claim_id": "CL-6", "wt": "WT-D20260802_018+023", "claim": "계약금액/DART magnitude IC lead (t_nw ~1.70) + 단계 지불 권고", "base_weighting": "IC 횡단면 (포트 가중 base 부재) + canonical 24m 음수", "production_parity": null},
+      {"claim_id": "CL-7", "wt": "WT-D20260802_020", "claim": "MAX5 63d 꼬리-변동성 위험지표 (FM crash-lift, 전 국면)", "base_weighting": "FM 횡단면 회귀 (포트 가중 base 부재)", "production_parity": null},
+      {"claim_id": "CL-8", "wt": "WT-D20260802_021", "claim": "양-전이 성분 조합 가산성 (POS2 vs single +1.06%/yr, t +0.37 비유의) + gap 회복 126% (in-sample)", "base_weighting": "canonical EW-25", "production_parity": false}
+    ],
+    "negative_rounds_base_note": "WT-017/019/022 = production carrier/recon base(production_parity_verified) 위 음성 판정 — 분류 A(유효). WT-001/002/004/006/007/008/010/011/012/013/015 = canonical/FM 프레임 음성 — 개선 주장 아님(재판정 비대상)."
+  },
+
+  "classification_rules_frozen": {
+    "A": "production-parity base(carrier parity/recon GATE 검증)에서 측정 → 유효. 해당: WT-017, WT-019, WT-022 (전부 음성 판정이므로 재판정 무의미하나 분류 기록).",
+    "B": "비-parity base ∧ 가중 규칙이 rank-tilt와 다름 → 재판정 대상.",
+    "C": "재측정 불가(점수 패널/프레임 부재) 또는 프레임에 포트 가중 base 개념 부재 → 라벨만.",
+    "assignments": {
+      "CL-1": "C — base arm(base_icir_EW) 월별 점수 패널 미저장 실측 확인(wt003_full rds = period returns만, alpha_scores.parquet = W_portt 단독). 재구축 = ICIR 선별 cadence 기계 재구현 = 신규 프레임 발명 금지 조항 저촉. 라벨 + FQ-096 base-의존성 경고 부기.",
+      "CL-2": "C — ΔIR-vs-base 주장이 아니라 vs-benchmark 수준 주장. dual-basis(cap-w/EW-uni) 기병기. 라벨: 'canonical 스크린 계층 수치 — book 편입 판정은 forge/rank-tilt 별도' (원문서 기명시). 재판정 비대상.",
+      "CL-3": "B — 재판정 1순위. 패널 실존: WT_D20260802_009/{base,tuned}_panel.parquet (295개월).",
+      "CL-4": "B — WT-022가 이미 rank-tilt 재판정 완료(bare −0.1131, full-path −0.1489, 부호 반전 → 철회). 본 라운드는 승계 기록(재실행 없음).",
+      "CL-5": "B — WT-022 full-path가 재판정 완료(−0.1489 → 철회). 승계 기록.",
+      "CL-6": "C — IC 프레임에 포트 가중 base 부재. WT-023이 base_dependence 라벨('소비면 편익은 production 실코드 base 한정') 기부착 — 라벨 완비 확인만.",
+      "CL-7": "C — FM 횡단면(포트 구성 없음). 소비면이 위험지표(발생률)라 ΔIR base-의존성 축 비적용. 라벨: '필터(평균) 소비 시 base-의존 재검 필요' 부기(원문서가 이미 필터 소비를 NEUTRAL 국한으로 제한).",
+      "CL-8": "B — 재판정 2순위(주장 자체가 비유의·honest 라벨이나 P2 원칙 일반화가 base-의존인지 확인 가치). 패널 = WT-009 tuned_panel 재사용."
+    }
+  },
+
+  "readjudication_targets_frozen": [
+    {"target": "T1", "claim_id": "CL-3", "pair": {"base_arm": "M01_Mom_12_1 (base_panel z)", "cand_arm": "M01_PATHQ (tuned_panel score)"}},
+    {"target": "T2", "claim_id": "CL-8", "pair": {"base_arm": "M01_PATHQ (tuned_panel)", "cand_arm": "POS2 = 월별 횡단면 z(M01_PATHQ)와 z(V01_SECREL)의 등가중 평균 (WT-021 정의 재현)"}}
+  ],
+
+  "harness_frozen": {
+    "source": "run_wt022_decomp.R 가중·정규화 함수 verbatim 재사용 (linear_tilt_qd / linear_tilt_to_penalty_qd / cap_norm_size / normalize_long_only). 새 프레임 발명 없음.",
+    "returns": ".cache/rawdata.parquet — 신호월말 sig_d → 차기 신호월말 (start_d, end_d] 복리 종목수익 (WT-022 캐시 로직 동일)",
+    "benchmark": ".cache/benchmark.parquet BM_Ret 동일 윈도우 복리",
+    "liquidity": "start_d 이전 30d 평균 거래대금 >= 2e8",
+    "cost": "15bps one-way x turnover(delta L1/2) x 2 (two-leg, WT-022 동일)",
+    "configs": {
+      "ew25": "top-25 EW — parity arm (원 canonical 주장 재현 확인용)",
+      "tilt20_tophi": "★판정 축 — production rank-tilt: 점수 내림차순 top-20 → linear tilt lambda 1.5 → TOphi phi 3.0 관성 블렌드, ub 0.20 고정 (원 실코드의 CRISIS ub 0.10 국면 조건은 WT-009 패널에 regime_state 부재로 미적용 — 라벨 병기)",
+      "tilt25_tophi": "진단 — N 축 분리",
+      "capnorm25": "진단 — WT-014 스타일 Size 가중 (size_panel.parquet 소비)"
+    },
+    "stat": "paired NW t (lag-3) + Delta IR = IR(cand active) - IR(base active), active = net ret - bench, 전 가용 월",
+    "metric_type": "realcode_recon_diag (rank-tilt arm) / weighted_screen (capnorm arm) / canonical 근사 (ew25 arm) — 전부 라벨 병기, graduation 비대상"
+  },
+
+  "decision_rules_frozen": {
+    "parity_gate": "ew25 arm paired NW t가 원 주장과 동부호 ∧ |t 차이| <= 0.7 (canonical_screen_bt 관습 차이 허용) — 미충족 시 해당 재판정 무효 보고(재해석 금지)",
+    "flip": "tilt20_tophi ΔIR < 0 (원 주장 +) → 부호 반전 = 원 주장에 'production-외 base 한정' 라벨 + 철회 권고",
+    "shrink": "tilt20_tophi ΔIR > 0 ∧ ΔIR < 원 주장의 50% → 조건부 유효 (base 라벨 부기)",
+    "hold": "tilt20_tophi ΔIR > 0 ∧ >= 원 주장의 50% → 유효 확인",
+    "systemic_test": "재판정+승계 대상(B 4건: CL-3/4/5/8) 중 부호 반전 >= 3건 = '계통' / 1~2건 = '부분 계통(cap_norm 프레임 국소 + 개별)' / 0건(신규 재판정 한정) = 'cap_norm 프레임 고유 현상으로 국소화'. 뒤집힘 0건도 정당한 결과."
+  },
+
+  "honest_posterior": "WT-022 1건만으로 계통 단정 불가. CL-3은 EW base(cap_norm 아님)라 WT-022 기전(size-가중 무게 0 배제)이 그대로 적용되지 않음 — EW→rank-tilt 전이는 별도 실측 질문이다. 뒤집힘 0이면 '가중 규칙 민감성은 cap_norm 계열에 국소'로 좁혀진다.",
+  "boundaries": "기존 산출물 수정 금지 / 자본 주장·상신 금지 / 05_Production·01_Literature read-only / 결과는 본 라운드 산출물에만 기록",
+  "n_trials": 1,
+  "selection_type": "preregistered_audit_no_selection — 어느 arm도 채택 후보 아님(감사 라운드)"
+}

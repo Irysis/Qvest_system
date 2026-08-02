@@ -677,7 +677,9 @@ judge_generate_oos_charts <- function(wt_id, out_dir = NULL) {
       equity_curve_full = full_chart_path,
       equity_curve_oos  = oos_chart_path
     ),
-    lockbox_access_log = sprintf("/tmp/qvest_lockbox_access_%s.log", wt_id)
+    # 경로 계약 단일 정의 = worktask/lockbox_paths.R (windowing.R 가 source 함).
+    # 구 선행슬래시 tmp 리터럴은 bash 훅과 다른 디렉토리를 가리켜 감사가 죽었다 (2026-08-02 수리)
+    lockbox_access_log = qvest_lockbox_log(wt_id, root = .JOH_ROOT)
   )
 
   write_json(summary_json, oos_summary,

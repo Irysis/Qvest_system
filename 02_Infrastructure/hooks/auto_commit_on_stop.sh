@@ -220,9 +220,33 @@ else
   rm -f "$QUAR_LEDGER" 2>/dev/null || true
 fi
 
+# ─── 병합 충돌 마커 가드 (2026-08-03) ────────────────────────────────────────
+# 실사고: 통합 작업 중 미해소 충돌이 남은 채 턴이 끝나자 이 훅이 **마커째로 커밋**했고,
+#   08_Tests/hooks/run_all_hooks.sh 가 `syntax error near unexpected token '<<<'` 로
+#   죽어 **배터리 전체가 실행 불가**인 상태가 그대로 얼었다. 커밋은 "[OK] 11 files"
+#   로 보고됐다 — 또 하나의 '하지 않은 일에 대한 성공 보고'이자, 검사 수단 자체를
+#   침묵시키는 형태(빨강이 아니라 **실행 불가**라서 초록/빨강 어느 쪽으로도 안 보인다).
+# → 마커가 든 파일은 unstage 하고 사유를 남긴다. 나머지는 정상 커밋(전량 중단은
+#   과잉 — 무관한 작업까지 유실시킨다). 텍스트 파일만 검사(바이너리 오탐 방지).
+CONFLICTED=""
+while IFS= read -r _cf; do
+  [ -n "$_cf" ] || continue
+  [ -f "$_cf" ] || continue
+  if grep -qE '^(<<<<<<< |\|\|\|\|\|\|\| |>>>>>>> )' "$_cf" 2>/dev/null; then
+    CONFLICTED="$CONFLICTED $_cf"
+  fi
+done <<< "$(git diff --cached --name-only --diff-filter=ACM 2>/dev/null)"
+if [ -n "$CONFLICTED" ]; then
+  # shellcheck disable=SC2086
+  git restore --staged $CONFLICTED 2>/dev/null || git reset -q HEAD -- $CONFLICTED 2>/dev/null || true
+  _n=$(echo $CONFLICTED | wc -w)
+  echo "$TS CONFLICT_MARKER_SKIP n=$_n files=$(echo $CONFLICTED | tr '\n' ' ')" >> "$LOG"
+  PARTIAL_NOTE="${PARTIAL_NOTE:-} [CONFLICT_MARKER: ${_n}건 미해소 충돌로 제외 — 해소 후 수동 커밋]"
+fi
+
 STAGED=$(git diff --cached --name-only 2>/dev/null | wc -l)
 if [ "$STAGED" -eq 0 ]; then
-  echo "$TS NO_STAGED" >> "$LOG"
+  echo "$TS NO_STAGED${PARTIAL_NOTE:-}" >> "$LOG"
   echo '{}'; exit 0
 fi
 

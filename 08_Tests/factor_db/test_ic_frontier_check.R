@@ -54,9 +54,29 @@ SRC_MD5_BEFORE <- unname(tools::md5sum(SRC))
 
 source(SRC)
 
-PASS <- 0L; FAIL <- 0L
+PASS <- 0L; FAIL <- 0L; SKIPS <- list()
 ok  <- function(n, m = "") { PASS <<- PASS + 1L; cat(sprintf("  PASS: %s%s\n", n, if (nzchar(m)) paste0(" — ", m) else "")) }
 bad <- function(n, m = "") { FAIL <<- FAIL + 1L; cat(sprintf("  FAIL: %s — %s\n", n, m)) }
+# 제3상태 (2026-08-02) — 전제 부재는 통과도 실패도 아니다. §B6/B7 주석 참조.
+skip <- function(n, reason, missing) {
+  SKIPS[[length(SKIPS) + 1L]] <<- list(axis = n, reason = reason, missing = missing)
+  cat(sprintf("  SKIP: %s — %s [missing: %s]\n", n, reason, missing))
+}
+# 라이브 축(B6/B7)이 보는 현물 IC 파일. 기본값은 ic_frontier_check 의 내부 기본과 동일 —
+# 명시 전달로 바꾼 이유는 **전제 부재를 주입으로 재현**할 수 있어야 하기 때문이다
+# (env 는 경로 치환일 뿐이라, 파일이 실재하면 이 변수로 skip 을 만들 수 없다).
+CACHE_ROOT <- Sys.getenv("QVEST_TEST_CACHE_ROOT", unset = PROJECT_ROOT)
+LIVE_IC    <- file.path(CACHE_ROOT, ".cache/factor_db/factor_ic_monthly.parquet")
+# ★라이브 판정의 전제는 **둘**이다 — IC 만 보고 게이트를 세우면, IC 는 있고 RAWDATA 는
+#  없는 트리에서 다시 "월 필드를 못 채움" 오진단이 난다(이 검사기 작성 중 실제로 밟았다:
+#  IC 만 합성해 놓고 present-arm 을 돌렸더니 B7 이 붉었다 — 기대 프론티어는 RAWDATA 산).
+LIVE_RAW   <- file.path(CACHE_ROOT, ".cache/RAWDATA.parquet")
+# raw_dates 는 NULL 로 넘기면 함수가 **내부 기본 경로**로 되돌아가 override 가 새어나간다
+# → NULL 대신 빈 Date 벡터를 넘겨 "로드 실패"를 그대로 전달한다.
+LIVE_RAW_DATES <- local({
+  rd <- ic_load_raw_month_ends(LIVE_RAW)
+  if (is.null(rd)) as.Date(character(0)) else rd
+})
 
 D <- function(s) as.Date(s)
 
@@ -142,7 +162,8 @@ if (isTRUE(r$guard_agrees)) ok("B5_guard_agrees", "forward pair 가 guard 통과
 # ⑥ 실파일 라이브 — 크래시 없이 well-formed. ★severity 값은 주장하지 않는다
 #    (그건 데이터 상태이고, 보고 주체는 cache_freshness_audit 다. 여기서 주장하면
 #     체인이 실제로 지연될 때 배터리가 데이터 사유로 붉어진다 = 검사 대상 혼동)
-live <- tryCatch(ic_frontier_check(today = Sys.Date()),
+live <- tryCatch(ic_frontier_check(ic_path = LIVE_IC, raw_dates = LIVE_RAW_DATES,
+                                   today = Sys.Date()),
                  error = function(e) list(status = paste0("ERROR:", conditionMessage(e))))
 need <- c("path", "check", "status", "severity")
 if (all(need %in% names(live)) && identical(live$check, "ic_month_frontier") &&
@@ -162,8 +183,18 @@ if (!is.null(live$ic_month) && !is.null(live$expected_month)) {
   } else {
     bad("B7_live_lag_recompute", "lag_months 가 독립 재계산과 불일치")
   }
+} else if (!all(file.exists(c(LIVE_IC, LIVE_RAW)))) {
+  # ★"비어 있으니 건너뛴다"가 아니라 **부재를 증명해서** 건너뛴다 — 이 구분이 핵심이다.
+  #  파일이 실재하는데 월 필드가 빈 것은 상류 고장(진짜 실패)이고, 파일 자체가 없는 것은
+  #  이 트리에서 IC/RAWDATA 를 만든 적이 없다는 뜻이다. 전자를 skip 으로 삼키면 "빈 결과 = 합격".
+  .absent <- c(LIVE_IC, LIVE_RAW)[!file.exists(c(LIVE_IC, LIVE_RAW))]
+  skip("B7_live_lag_recompute",
+       "라이브 전제 파일 부재 — 재계산 대조할 월 필드가 애초에 없음(감시 계약 위반 아님)",
+       paste(.absent, collapse = " + "))
 } else {
-  bad("B7_live_lag_recompute", "라이브 판정이 월 필드를 못 채움 — 상류(IC/RAWDATA) 점검")
+  bad("B7_live_lag_recompute",
+      sprintf("전제 파일은 둘 다 실재(%s, %s)하는데 라이브 판정이 월 필드를 못 채움 — 상류 점검",
+              LIVE_IC, LIVE_RAW))
 }
 
 #──────────────────────────────────────────────────────────────────────────────
@@ -447,7 +478,8 @@ if (!file.exists(RUNNER)) {
 }
 
 #──────────────────────────────────────────────────────────────────────────────
-cat(sprintf("\nTOTAL: %d pass / %d fail\n", PASS, FAIL))
+cat(sprintf("\nTOTAL: %d pass / %d fail / %d skipped\n", PASS, FAIL, length(SKIPS)))
 cat(toJSON(list(test = "ic_frontier_check", pass = PASS, fail = FAIL,
+                skipped = length(SKIPS), skips = SKIPS,
                 total = PASS + FAIL), auto_unbox = TRUE), "\n", sep = "")
 if (FAIL > 0) quit(status = 1)

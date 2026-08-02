@@ -49,7 +49,17 @@ case "$FP_LOWER" in
         # 도훈 mandate 2026-05-09: 전기간 백테 / 성과 트래킹 = lockbox 폐기
         # (v8.2.1 HOOK-P1-2) WT-[DP] → WT-[DPSH]: 실제 mailbox 분포 D/S/P/H 반영 (audit log 파일명용)
         WT_ID=$(echo "$FILE_PATH" | grep -oE 'WT-[DPSH][0-9]{8}_[0-9]{3}|WT[0-9]{8}_[0-9]{3}' | head -1 || echo "unknown")
-        echo "$(date -Iseconds) | $AGENT_NAME | $FILE_PATH" >> "/tmp/qvest_lockbox_access_${WT_ID}.log"
+        # (2026-08-02 r-portability 금칙 ③) 경로 계약 단일화 — lockbox_paths.sh 참조.
+        # ⚠ 이 훅은 2026-07-24 도훈 승인으로 settings.json 등록 해제 상태(marker writer 부재로
+        #    구조적 상시 allow). 파일은 retain 이므로 재등록 시 경로가 갈리지 않도록 함께 수리한다.
+        source "$(dirname "${BASH_SOURCE[0]:-$0}")/lockbox_paths.sh"
+        if _LB_LOG=$(qvest_lockbox_log_file "$WT_ID"); then
+          mkdir -p "$(dirname "$_LB_LOG")" 2>/dev/null || true
+          echo "$(date -Iseconds) | $AGENT_NAME | $FILE_PATH" >> "$_LB_LOG"
+          qvest_lockbox_touch_heartbeat || true
+        else
+          echo "[selection_contamination_detector] project root 미해석 — 접근기록 유실: $FILE_PATH" >&2
+        fi
         echo "{}"
         ;;
       alpha*|risk*|optimizer*|opt_*)

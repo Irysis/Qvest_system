@@ -146,7 +146,9 @@ Pass/Fail 판정: 8지표 중 2개+ FAIL OR Pareto-dominated.
 
 ### Lockbox Access (R2-B)
 Judge는 lockbox 데이터 접근 허용 (유일). `selection_contamination_detector.sh`가 다른 agent 차단.
-접근 기록 `/tmp/qvest_lockbox_access_{wt_id}.log` 전수 검토.
+접근 기록 `<project_root>/.cache/lockbox/qvest_lockbox_access_{wt_id}.log` 전수 검토.
+(2026-08-02 이전 표기 `/tmp/...` 는 폐기 — bash 와 Windows R 이 서로 다른 디렉토리로 해석해
+감사가 영구히 빈 손이었다. 경로 정본 = `02_Infrastructure/worktask/lockbox_paths.R` / `hooks/lockbox_paths.sh`.)
 
 ### OOS Chart 생성 (Gate F 판정 전 필수)
 Gate A~E 실행 완료 후, **Gate F (Drift tolerance) 판정 전에 반드시 다음을 수행**:

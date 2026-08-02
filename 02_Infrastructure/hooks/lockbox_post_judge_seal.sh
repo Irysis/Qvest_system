@@ -32,6 +32,10 @@ case "$FP_LOWER" in
 
     SEAL_FILE="$WT_DIR/lockbox_sealed.json"
     TS=$(date -Iseconds)
+    # (2026-08-02) 접근기록 경로 계약 단일화 — 구 "/tmp/..." 는 bash 와 R 이 다른 디렉토리로
+    # 해석해 감사가 죽었다. 안내문도 실제 기록 위치를 가리키게 한다(문서가 거짓말하면 사람이 헛본다).
+    source "$(dirname "${BASH_SOURCE[0]:-$0}")/lockbox_paths.sh"
+    SEAL_TRAIL_HINT=$(qvest_lockbox_log_file "$WT_ID" || echo "${QVEST_LOCKBOX_SUBDIR}/qvest_lockbox_access_${WT_ID}.log")
     cat > "$SEAL_FILE" <<EOF
 {
   "task_id": "$WT_ID",
@@ -39,7 +43,7 @@ case "$FP_LOWER" in
   "sealed_at": "$TS",
   "sealed_by": "judge",
   "reason": "judge_verdict_published",
-  "post_seal_access_warning": "lockbox re-access after seal requires explicit rationale in /tmp/qvest_lockbox_access_${WT_ID}.log"
+  "post_seal_access_warning": "lockbox re-access after seal requires explicit rationale in ${SEAL_TRAIL_HINT}"
 }
 EOF
     echo "[lockbox_seal] $WT_ID sealed at $TS" >> "/tmp/qvest_lockbox_seal.log"

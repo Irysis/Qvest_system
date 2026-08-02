@@ -1,7 +1,7 @@
 {
  "schema_version": "1.0",
  "sot": "02_Infrastructure/docs/qvest_v8_3_alpha_discovery_sot.md §4",
- "updated": "2026-08-03 (FQ-115 착수 전 사전 확인: WT-017 CAND_regime_x_book 이 이미 현행 미달로 측정 — 라운드 취소, FQ-119 선행으로 재분류. 총 128건)",
+ "updated": "2026-08-03 (FQ-104 착수 전 사전 확인: 역방향 재료 기소비·15건 기실측·교집합은 WT-001 측정 중 → 대기로 재분류. 사전 확인 3건 누적. 총 128건)",
  "consume_rule": "새 발굴 리서치 착수 전: hypothesis_index lookup → 본 큐 확인 → owner/status 갱신. 완료 시 result_ref(L-code/보고서) 기입. dohoon_decision 항목은 세션 임의 착수 금지.",
  "entries": [
   {
@@ -2043,8 +2043,10 @@
    "wall_check": "전이-벽 미검: 신호 성립해도 top-25 cap-w 전이는 별도 관문. 착수 시 dual-basis 선확인 의무.",
    "data_gate": "수급(개인/기관/외국인) 일별 패널 현행분으로 가능",
    "owner": "미배정",
-   "status": "frontier_open",
-   "registered": "2026-08-02 Q-Lead (WT-D20260802_010 NP-2 파생)"
+   "status": "blocked_until_wt20260803_001",
+   "registered": "2026-08-02 Q-Lead (WT-D20260802_010 NP-2 파생)",
+   "precheck_measured": "★착수 전 사전 확인 (2026-08-03 Q-Lead, read-only): **중복 위험 — WT-D20260803_001 대기 필요**. ① 개인 역방향 재료는 이미 풀에 있다: `INV07_Retail_Contrarian` 소비자 19파일 · `M22_Max_Return` 17 · `D05_MaxRet` 26 (전부 registry 등재·소비 중). 순수 개인-역방향은 이미 반영된 상태라 '신규 재료' 주장 불가. ② hypothesis_index 1,119건 중 역방향/점프 계열 15건 기실측 — Contrarian Composite=SCREEN_TIER · DART 내부자 Contrarian=FAIL · Contrarian Factor Timing=PASS · Anti-Crowding=PASS · L-620 contrarian_replacement=FAIL (혼재, 종목-레벨 개인 순매도 x 점프형 **교집합**만 미탐). ③ ★그런데 그 교집합을 **WT-D20260803_001(MAX5 x alpha-rank 상호작용)이 지금 측정 중**이다 — 상호작용이 D35 통제 후 생존하면 FQ-104 는 그 위의 수급 조건부로 설계하고, 소멸하면 FQ-104 의 전제(점프형이 승자)가 함께 무너진다. ⇒ **WT-001 판정 전 착수 금지**(중복 실행 + 전제 미확정).",
+   "blocking_dependency": "WT-D20260803_001 (MAX5 x alpha-rank 상호작용 — D35 통제 후 생존 여부)"
   },
   {
    "id": "FQ-105",

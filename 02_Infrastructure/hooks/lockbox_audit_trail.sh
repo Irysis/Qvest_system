@@ -27,8 +27,20 @@ case "$FP_LOWER" in
     # (v8.2.1 HOOK-P1-2) WT-[DP] → WT-[DPSH]: 실제 mailbox 분포 D/S/P/H 반영
     WT_ID=$(echo "$FILE_PATH" | grep -oE 'WT-[DPSH][0-9]{8}_[0-9]{3}|WT[0-9]{8}_[0-9]{3}' | head -1 || echo "unknown")
 
-    LOG_FILE="/tmp/qvest_lockbox_access_${WT_ID}.log"
-    echo "$(date -Iseconds) | $AGENT | read | $FILE_PATH" >> "$LOG_FILE"
+    # (2026-08-02 r-portability 금칙 ③) 구 `/tmp/qvest_lockbox_access_*.log` 는 bash(MSYS)=
+    # AppData\Local\Temp 인 반면 읽는 쪽(Windows R, v61_compliance_audit.R)은 C:/tmp 를 봤다.
+    # → 기록이 감사자가 안 보는 디렉토리에 쌓여 P2 가 구조적으로 실패 불가였다(실측 237/237 PASS).
+    # 경로 계약을 프로젝트-상대로 단일화: 02_Infrastructure/hooks/lockbox_paths.sh (짝 = worktask/lockbox_paths.R)
+    source "$(dirname "${BASH_SOURCE[0]:-$0}")/lockbox_paths.sh"
+    if LOG_FILE=$(qvest_lockbox_log_file "$WT_ID"); then
+      mkdir -p "$(dirname "$LOG_FILE")" 2>/dev/null || true
+      echo "$(date -Iseconds) | $AGENT | read | $FILE_PATH" >> "$LOG_FILE"
+      # 발화 사실 기록 — 감사가 "기록 0건"과 "검출기 사망"을 구별하는 유일한 근거
+      qvest_lockbox_touch_heartbeat || true
+    else
+      # 루트 미해석 = 기록 유실. 조용히 삼키면 구 결함(빈 손 = 무위반)이 그대로 재발한다.
+      echo "[lockbox_audit_trail] project root 미해석 — 접근기록 유실: $FILE_PATH" >&2
+    fi
     ;;
 esac
 

@@ -46,9 +46,20 @@ BUILDER_SRC   <- "02_Infrastructure/factor_db/factor_db_builder.R"
 CONNECTOR_SRC <- "02_Infrastructure/factor_db/factor_db_connector.R"
 DISCOVERY_SRC <- "02_Infrastructure/discovery/discovery_loader.R"
 
-PASS <- 0L; FAIL <- 0L
+PASS <- 0L; FAIL <- 0L; SKIPS <- list()
 ok  <- function(n, m = "") { PASS <<- PASS + 1L; cat(sprintf("  PASS: %s%s\n", n, if (nzchar(m)) paste0(" — ", m) else "")) }
 bad <- function(n, m = "") { FAIL <<- FAIL + 1L; cat(sprintf("  FAIL: %s — %s\n", n, m)) }
+# 제3상태 (2026-08-02): 전제 산출물이 이 트리에 없으면 **판정하지 않는다**.
+#   실패로 계상하면 "계약 위반"과 "전제 부재"가 같은 빨강이 되고(worktree 오진단),
+#   통과로 계상하면 "빈 결과 = 합격" 계통 재발이다. 사유와 없는 경로를 함께 남긴다.
+skip <- function(n, reason, missing) {
+  SKIPS[[length(SKIPS) + 1L]] <<- list(axis = n, reason = reason, missing = missing)
+  cat(sprintf("  SKIP: %s — %s [missing: %s]\n", n, reason, missing))
+}
+# 전제 경로의 뿌리. 기본 = PROJ. 환경변수는 **주입 테스트 전용** —
+# 빈 디렉터리를 가리켜 "전제 부재" 상태를 실제로 재현한다(가짜 skip 플래그가 아니라
+# 경로 치환이므로, 전제가 실재하면 이 변수로도 skip 을 만들어낼 수 없다).
+CACHE_ROOT <- Sys.getenv("QVEST_TEST_CACHE_ROOT", unset = PROJ)
 
 # ── 해시 헬퍼 블록만 격리 평가 (빌더 전체 source = arrow/config 부작용 회피) ──
 SRC <- readLines(BUILDER_SRC, warn = FALSE)
@@ -221,16 +232,22 @@ for (f in c(CONNECTOR_SRC, DISCOVERY_SRC)) {
   else
     bad(paste0("E1_n1_contract_", basename(f)), "build_hash 를 n=1 로 읽지 않음 — 2행 추가가 소비를 깨뜨림")
 }
-HP <- file.path(PROJ, ".cache", "factor_db", "build_hash.txt")
+HP <- file.path(CACHE_ROOT, ".cache", "factor_db", "build_hash.txt")
 if (!file.exists(HP)) {
-  bad("E2_canonical_state", "canonical build_hash.txt 부재")
+  # ★이 축만 **현물**(빌드 산출물)을 본다 — A~E1 은 전부 코드/합성 픽스처라 트리 무관.
+  #  build_hash.txt 는 gitignore 대상이라 worktree/새 체크아웃엔 없다. 그 부재는
+  #  provenance 계약 위반이 아니라 "이 트리에서 팩터 DB 를 빌드한 적 없음"이다.
+  skip("E2_canonical_state",
+       "canonical build_hash.txt 부재 — 이 트리에서 팩터 DB 빌드 이력 없음(계약 위반 아님)",
+       HP)
 } else {
   h1 <- readLines(HP, n = 1L)
   if (grepl("_unknown$", h1)) bad("E2_canonical_state", sprintf("현행 build_hash 가 unknown: '%s'", h1))
   else ok("E2_canonical_state", sprintf("현행 build_hash='%s'", h1))
 }
 
-cat(sprintf("\nTOTAL: %d pass / %d fail\n", PASS, FAIL))
+cat(sprintf("\nTOTAL: %d pass / %d fail / %d skipped\n", PASS, FAIL, length(SKIPS)))
 cat(toJSON(list(test = "build_hash_provenance", pass = PASS, fail = FAIL,
-                total = PASS + FAIL), auto_unbox = TRUE), "\n", sep = "")
+                skipped = length(SKIPS), total = PASS + FAIL,
+                skips = SKIPS), auto_unbox = TRUE), "\n", sep = "")
 if (FAIL > 0) quit(status = 1)

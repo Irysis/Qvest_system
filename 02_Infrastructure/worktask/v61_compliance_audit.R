@@ -20,10 +20,52 @@ suppressPackageStartupMessages({
 
 `%||%` <- function(a, b) if (!is.null(a)) a else b
 
-WT_ROOT <- "qepm/mailbox/worktask"
-LOCKBOX_LOG_PATTERN <- "/tmp/qvest_lockbox_access_%s.log"
-BOOK_STATE <- "qepm/mailbox/governor/book_state.json"
-MONITORING_DIR <- "qepm/mailbox/monitoring/reports"
+#─── 경로 해석 (r-portability.md 금칙 ③) ──────────────────────────────────────
+# 2026-08-02 수리. 구 구현의 두 결함:
+#   (1) LOCKBOX_LOG_PATTERN 이 선행 슬래시 tmp 경로 리터럴이었다
+#       → Windows R 은 선행 `/` 를 현재 드라이브 기준으로 해석해 C:/tmp 를 읽는데,
+#         실제 기록자인 bash 훅은 MSYS `/tmp`(=AppData\Local\Temp)에 쓴다.
+#         실측: bash 쪽 4건 / C:/tmp 0건 → `!file.exists()` 가 항상 참 →
+#         **P2 는 237/237 WT 에서 구조적으로 pass=TRUE**. 실패 자체가 불가능했다.
+#   (2) WT_ROOT / BOOK_STATE / MONITORING_DIR 이 **상대경로**
+#       → cwd 가 루트가 아니면 136KB 실파일이 있는데도 P8 이 "no_book_state_yet" 으로 통과.
+#         실측: cwd 를 한 단계 위로 옮기면 그대로 재현.
+# 공통 기전은 같다 — **결손을 정상값으로 내려앉히는 것**. 아래는 경로를 절대화하고,
+# 나아가 "못 쟀다"를 PASS 가 아니라 NA(SKIP)로 보고하도록 판정 의미까지 바꾼다.
+.v61_find_root <- function() {
+  marker <- "02_Infrastructure/hooks/qvest_hook_router.py"   # 존재검사 아닌 정체성 검사
+  cands <- c(Sys.getenv("CLAUDE_PROJECT_DIR", unset = ""),
+             Sys.getenv("QM_ROOT", unset = ""))
+  for (cand in cands[nzchar(cands)]) {
+    p <- normalizePath(gsub("\\\\", "/", cand), winslash = "/", mustWork = FALSE)
+    if (file.exists(file.path(p, marker))) return(p)
+  }
+  here <- normalizePath(getwd(), winslash = "/", mustWork = FALSE)
+  repeat {
+    if (file.exists(file.path(here, marker))) return(here)
+    parent <- dirname(here)
+    if (identical(parent, here)) break
+    here <- parent
+  }
+  stop("[v61_compliance_audit] project root 미발견 — CLAUDE_PROJECT_DIR 또는 QM_ROOT 설정 필요")
+}
+V61_ROOT <- .v61_find_root()
+
+# lockbox 접근기록 경로는 bash 훅과 공유 → 리터럴을 여기 두지 않는다(단일 정의 경유).
+source(file.path(V61_ROOT, "02_Infrastructure/worktask/lockbox_paths.R"))
+
+WT_ROOT        <- file.path(V61_ROOT, "qepm/mailbox/worktask")
+BOOK_STATE     <- file.path(V61_ROOT, "qepm/mailbox/governor/book_state.json")
+MONITORING_DIR <- file.path(V61_ROOT, "qepm/mailbox/monitoring/reports")
+
+# P2 위반 판정 대상 역할. **lockbox-scope mandate(도훈 2026-05-09)와 정합**:
+#   적용  = alpha / risk / optimizer (정규 리서치)
+#   폐기  = judge(접근권) / forge / monitoring / execution / Q-Lead (운용·트래킹)
+# ⚠ 구 패턴은 `forge` 를 위반으로 셌다 — 이 파일이 2026-04-24 작성분이라 05-09 mandate
+#   이전 판정이 남아 있던 것이다. `selection_contamination_detector.sh` 는 이미 forge 를
+#   allow 하고 있어 훅과 감사가 서로 다른 규칙을 쓰고 있었다. mandate 쪽으로 통일한다.
+#   (되돌리려면 이 상수에 |forge 를 다시 넣으면 된다 — 판정 의미가 한 곳에만 있다.)
+P2_VIOLATION_PATTERN <- "\\| *(alpha|risk|optimizer|opt_)"
 
 # ─── P1 Selection Freedom ───────────────────────────────
 audit_p1_selection_freedom <- function(wt_id) {
@@ -56,20 +98,46 @@ audit_p1_selection_freedom <- function(wt_id) {
 }
 
 # ─── P2 Data Separation ─────────────────────────────────
+# 판정 3분기 (구 구현은 앞 두 개를 하나로 뭉개 "파일 없음 = clean" 으로 내려앉혔다):
+#   ① trail 미가동  → pass = NA  (SKIP, "못 쟀다")   ← 구 결함이 여기를 PASS 로 위장
+#   ② trail 가동 + 해당 WT 기록 없음 → pass = TRUE   ("실제로 접근 없음")
+#   ③ 기록 있음 → 위반 role 유무로 TRUE/FALSE
+# trail 가동 여부의 근거 = 훅/R writer 가 매 발화마다 갱신하는 heartbeat 파일.
+# 이게 없으면 "접근 0건"과 "검출기 사망"은 원리적으로 구별 불가다.
 audit_p2_data_separation <- function(wt_id) {
-  log_path <- sprintf(LOCKBOX_LOG_PATTERN, wt_id)
+  trail <- qvest_lockbox_trail_state(root = V61_ROOT)
+  log_path <- qvest_lockbox_log(wt_id, root = V61_ROOT)
+
+  # 아직 수리 안 된 writer 탐지 — 레거시 위치에 새 파일이 생기면 표면화(판정 evidence 아님)
+  legacy <- qvest_lockbox_legacy_logs()
+  legacy_warn <- if (length(legacy) > 0)
+    sprintf(" [WARN legacy_trail=%d: %s]", length(legacy),
+            paste(basename(legacy), collapse = ",")) else ""
+
   if (!file.exists(log_path)) {
+    if (!isTRUE(trail$live)) {
+      return(list(principle = "P2", pass = NA,
+                  reason = sprintf("unmeasured: audit-trail 발화 기록 없음 (heartbeat 부재, dir=%s)%s",
+                                   trail$dir, legacy_warn),
+                  trail_dir = trail$dir))
+    }
     return(list(principle = "P2", pass = TRUE,
-                reason = "no_lockbox_access (clean)"))
+                reason = sprintf("no_lockbox_access (trail live, last_fire=%s)%s",
+                                 trail$last %||% "NA", legacy_warn),
+                trail_dir = trail$dir))
   }
-  lines <- readLines(log_path)
-  non_judge <- grep("\\| (alpha|risk|optimizer|opt_|forge)", lines, value = TRUE)
+
+  lines <- readLines(log_path, warn = FALSE)
+  violations <- grep(P2_VIOLATION_PATTERN, lines, value = TRUE)
   list(
     principle = "P2",
-    pass = length(non_judge) == 0,
-    reason = if (length(non_judge) == 0) "judge_only_access"
-             else sprintf("CONTAMINATION: %d non-judge accesses", length(non_judge)),
-    violations = non_judge
+    pass = length(violations) == 0,
+    reason = if (length(violations) == 0)
+               sprintf("no_research_stage_access (entries=%d)%s", length(lines), legacy_warn)
+             else sprintf("CONTAMINATION: %d research-stage accesses (of %d entries)%s",
+                          length(violations), length(lines), legacy_warn),
+    violations = violations,
+    log_path = log_path
   )
 }
 
@@ -220,8 +288,16 @@ audit_p7_lineage <- function(wt_id) {
 
 # ─── P8 Monitoring Coverage ─────────────────────────────
 audit_p8_monitoring <- function() {
+  # 구 구현은 BOOK_STATE 가 **상대경로**라 cwd 가 루트가 아니면 실파일(135,968 B)이 있는데도
+  # "no_book_state_yet" 으로 PASS 했다. 절대경로화 + "못 쟀다"의 분리(NA)로 수리.
   if (!file.exists(BOOK_STATE)) {
-    return(list(principle = "P8", pass = TRUE, reason = "no_book_state_yet"))
+    gov_dir <- dirname(BOOK_STATE)
+    if (!dir.exists(gov_dir)) {
+      return(list(principle = "P8", pass = NA,
+                  reason = sprintf("unmeasured: governor mailbox 부재 (%s)", gov_dir)))
+    }
+    return(list(principle = "P8", pass = TRUE,
+                reason = sprintf("no_book_state_yet (%s)", BOOK_STATE)))
   }
   bs <- fromJSON(BOOK_STATE, simplifyVector = FALSE)
   admitted <- bs$admitted_ids %||% list()
@@ -236,7 +312,8 @@ audit_p8_monitoring <- function() {
   reports <- list.files(MONITORING_DIR, pattern = "monitoring_report_", full.names = TRUE)
   if (length(reports) == 0 && length(admitted) > 0) {
     return(list(principle = "P8", pass = FALSE,
-                reason = sprintf("%d admitted WTs with no monitoring reports", length(admitted))))
+                reason = sprintf("%d admitted WTs with no monitoring reports (dir=%s, exists=%s)",
+                                 length(admitted), MONITORING_DIR, dir.exists(MONITORING_DIR))))
   }
 
   recent <- reports[sapply(reports, function(p) {
@@ -305,10 +382,10 @@ audit_all <- function() {
   names(per_wt) <- wts
 
   p8 <- audit_p8_monitoring()
+  .mark <- function(x) if (isTRUE(x)) "✓" else if (is.na(x)) "—" else "✗"
+  .word <- function(x) if (isTRUE(x)) "PASS" else if (is.na(x)) "SKIP" else "FAIL"
   cat(sprintf("\n=== Global P8 Monitoring ===\n"))
-  cat(sprintf("  %s P8: %s — %s\n",
-              if (isTRUE(p8$pass)) "✓" else "✗",
-              if (isTRUE(p8$pass)) "PASS" else "FAIL", p8$reason))
+  cat(sprintf("  %s P8: %s — %s\n", .mark(p8$pass), .word(p8$pass), p8$reason))
 
   # Aggregate
   pass_counts <- sapply(per_wt, function(x) x$pass_count)
@@ -317,7 +394,7 @@ audit_all <- function() {
   cat(sprintf("\n=== Aggregate ===\n"))
   cat(sprintf("  Per-WT passes: %d / %d total checks\n",
               sum(pass_counts), sum(total_counts)))
-  cat(sprintf("  P8 global: %s\n", if (isTRUE(p8$pass)) "PASS" else "FAIL"))
+  cat(sprintf("  P8 global: %s\n", .word(p8$pass)))
 
   invisible(list(per_wt = per_wt, p8 = p8))
 }

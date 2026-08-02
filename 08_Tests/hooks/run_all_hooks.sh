@@ -367,6 +367,18 @@ SUITES=(
   #     `set -u` unbound 로 죽고 나머지 주입 축이 **공허하게 초록**이 된다(실제로 그
   #     상태였고 2026-08-03 정정). 기본 바인딩은 블록 밖에 있어야 한다.
   "08_Tests/hooks/test_auto_commit_worktree_target.sh"
+  # 2026-08-02 추가: AX-001(방어 조건부 평가) 차단 실효.
+  #   구 규칙은 defense 를 **상시 필드명**(statistical_defense/defense_metrics)이,
+  #   면제어 stress 를 **상시 채점항목명**(score_breakdown.stress)이 각각 100% 충족시켜
+  #   실제 산출물 559/559 에서 발화 불능이었다 — 규칙은 살아 있는데 입력이 조건을
+  #   만족시킬 수 없는 형태의 검사 사망. 위반 주입 + 과차단 + 동적/legacy 2경로 분리 검증.
+  "08_Tests/hooks/test_ax001_defense_scope.R"
+  # 2026-08-02 추가: P2 Data Separation 감사의 **차단 실효**.
+  #   v61_compliance_audit.R 이 lockbox 접근기록을 C:/tmp 에서 찾는데 훅은 MSYS /tmp 에 썼다
+  #   → 237/237 WT 가 "no_lockbox_access (clean)" 로 구조적 PASS. **P2 는 실패할 수 없었다.**
+  #   경로 리터럴 동기화만 보는 정적 검사로는 부족하다 — 실제로 훅을 돌려 위반을 주입하고
+  #   FAIL 이 나오는지, 그리고 구판 로직 재현본이 같은 주입에서 PASS 로 뒤집히는지까지 본다.
+  "08_Tests/hooks/test_lockbox_audit_path.R"
 )
 
 # (2026-08-02) .py 분기 추가 — 종전엔 확장자 무관 `bash` 로 던져 파이썬 suite 가

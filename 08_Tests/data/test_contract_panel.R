@@ -26,8 +26,43 @@ cat("=== contract panel builder (합성 픽스처) ===\n")
 
 BUILDER <- file.path(PROJ, "02_Infrastructure/alpha_search/build_contract_panel.R")
 
+#──────────────────────────────────────────────────────────────────────────────
+# 전제 게이트 (2026-08-02 신설)
+#
+# 이 검사는 합성 픽스처를 쓰지만 **유니버스 매핑만은 현물**이다 —
+# build_contract_panel.R:72 이 .cache/dart/universe_corpcodes.csv 로 corp_code→Ticker
+# 를 붙이므로, 매핑에 없는 corp_code 로 픽스처를 만들면 빌더가 전 행을 떨궈 9축 전부가
+# 위양성 실패가 된다(그래서 실재 corp_code 2개를 뽑아 쓴다).
+#
+# .cache 는 gitignore 대상이라 worktree/새 체크아웃엔 없다. 종전엔 여기서 fread 가
+# 그대로 죽어 **요약 JSON 자체가 안 나왔고**, 러너는 그걸 UNREPORTED(=1 fail)로 셌다 —
+# "빌더 로직이 깨졌다"와 구분되지 않는 보고다. 전제 부재는 판정 없음으로 낸다.
+#
+# ★대안이었던 "main 체크아웃의 .cache 로 폴백"은 채택하지 않는다. 그건 worktree 가
+#  조용히 main 을 검사하던 원 결함과 같은 기전이다(전제를 빌려오면 무엇을 쟀는지 흐려진다).
+#──────────────────────────────────────────────────────────────────────────────
+# ★게이트와 소비자는 **같은 경로**를 봐야 한다. 빌더(별도 프로세스)는 자기 ROOT 기준으로
+#  매핑을 읽으므로, 이 검사도 PROJ 기준 실경로만 본다 — 환경변수로 뿌리를 바꿀 수 있게
+#  두면 "게이트는 임시 디렉터리를 보고 빌더는 실경로를 보는" 어긋남이 생기고, 그러면
+#  skip 이 거짓말을 할 수 있다(부재라고 건너뛰었는데 빌더는 잘 돌던 상태 / 그 반대).
+#  전제 유무 양쪽 검증은 test_prereq_skip_contract.sh 가 **실파일을 만들고 지워서** 한다.
+N_AXES <- 9L   # ★ ok()/bad() 축 수와 일치해야 함 — test_prereq_skip_contract.sh 가 대조
+MAP_PATH <- file.path(PROJ, ".cache/dart/universe_corpcodes.csv")
+if (!file.exists(MAP_PATH)) {
+  cat(sprintf("  SKIP: ALL(%d축) — 유니버스 corp_code 매핑 부재 [missing: %s]\n", N_AXES, MAP_PATH))
+  cat(sprintf("TOTAL: 0 pass / 0 fail / %d skipped\n", N_AXES))
+  cat(jsonlite::toJSON(list(
+    test = "contract_panel", pass = 0L, fail = 0L, skipped = N_AXES, total = 0L,
+    skips = list(list(
+      axis = sprintf("ALL(%d축)", N_AXES),
+      reason = paste("유니버스 corp_code→Ticker 매핑 부재 — 픽스처를 빌더가 인식할 수 없어",
+                     "전 축이 위양성이 된다(빌더 로직 결함 아님)"),
+      missing = MAP_PATH))), auto_unbox = TRUE), "\n", sep = "")
+  quit(status = 0)
+}
+
 # 유니버스 매핑에 실재하는 corp_code 2개를 골라 픽스처를 만든다(매핑 실패로 인한 위양성 방지)
-map <- unique(fread(".cache/dart/universe_corpcodes.csv", colClasses = "character"))
+map <- unique(fread(MAP_PATH, colClasses = "character"))
 cc <- map$corp_code[1:2]; tk <- map$ticker[1:2]
 
 mk_fixture <- function(dir) {
@@ -170,7 +205,8 @@ if (grepl("중복", eng_test)) {
 }
 
 unlink(c(d, d_empty), recursive = TRUE); unlink(c(o, o1, o2, o3), force = TRUE)
-cat(sprintf("TOTAL: %d pass / %d fail\n", PASS, FAIL))
+cat(sprintf("TOTAL: %d pass / %d fail / 0 skipped\n", PASS, FAIL))
 cat(jsonlite::toJSON(list(test = "contract_panel", pass = PASS, fail = FAIL,
-                          total = PASS + FAIL), auto_unbox = TRUE), "\n", sep = "")
+                          skipped = 0L, total = PASS + FAIL,
+                          skips = list()), auto_unbox = TRUE), "\n", sep = "")
 if (FAIL > 0) quit(status = 1)

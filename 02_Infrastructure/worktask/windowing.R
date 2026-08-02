@@ -15,6 +15,30 @@ suppressPackageStartupMessages({
   library(jsonlite)
 })
 
+# ─── 경로 계약 (r-portability.md 금칙 ③) ────────────────────────────────────
+# lockbox 접근기록 경로는 bash 훅과 **공유**되므로 리터럴을 여기 두지 않는다.
+# 단일 정의 = worktask/lockbox_paths.R (bash 짝 = hooks/lockbox_paths.sh).
+.wnd_find_root <- function() {
+  marker <- "02_Infrastructure/hooks/qvest_hook_router.py"
+  cands <- c(Sys.getenv("CLAUDE_PROJECT_DIR", unset = ""),
+             Sys.getenv("QM_ROOT", unset = ""))
+  for (cand in cands[nzchar(cands)]) {
+    p <- normalizePath(gsub("\\\\", "/", cand), winslash = "/", mustWork = FALSE)
+    if (file.exists(file.path(p, marker))) return(p)
+  }
+  here <- normalizePath(getwd(), winslash = "/", mustWork = FALSE)
+  repeat {
+    if (file.exists(file.path(here, marker))) return(here)
+    parent <- dirname(here)
+    if (identical(parent, here)) break
+    here <- parent
+  }
+  stop("[windowing] project root 미발견 — CLAUDE_PROJECT_DIR 또는 QM_ROOT 설정 필요")
+}
+if (!exists("qvest_lockbox_log", mode = "function")) {
+  source(file.path(.wnd_find_root(), "02_Infrastructure/worktask/lockbox_paths.R"))
+}
+
 # ─── Split windows 자동 계산 ─────────────────────────────
 # as_of_date 기준 과거로 거슬러 split.
 # train_start가 주어지면 train을 그 날짜부터 시작 (train_years 무시). 기본: 1990-01-04 (benchmark 시작).
@@ -83,12 +107,17 @@ filter_by_window <- function(data, date_col, window) {
 
 # ─── Lockbox access 로그 ─────────────────────────────────
 log_lockbox_access <- function(task_id, agent_name, file_path) {
-  log_file <- sprintf("/tmp/qvest_lockbox_access_%s.log", task_id)
+  # 경로는 lockbox_paths.R 단일 정의 경유 (구 선행슬래시 tmp 리터럴 → Windows R 은 C:/tmp,
+  # bash 훅은 AppData\Local\Temp 로 갈렸다. 2026-08-02 수리)
+  log_file <- qvest_lockbox_log(task_id, create_dir = TRUE)
   entry <- sprintf("%s | %s | %s\n",
                    format(Sys.time(), "%Y-%m-%dT%H:%M:%S"),
                    agent_name,
                    file_path)
   cat(entry, file = log_file, append = TRUE)
+  # 발화 사실 기록 — 감사가 "기록 0건"과 "검출기 사망"을 구별하는 근거 (bash 훅과 동일 계약)
+  cat(format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z"), "\n",
+      file = qvest_lockbox_heartbeat_path(), sep = "")
   invisible(log_file)
 }
 
