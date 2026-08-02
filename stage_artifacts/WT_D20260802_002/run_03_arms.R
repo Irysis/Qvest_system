@@ -121,7 +121,7 @@ cat("\n[cap-tier 분해 — 평균 보유비중 / 연율 gross 기여]\n"); prin
 summ <- rbindlist(lapply(names(RES), function(k) {
   r <- RES[[k]]
   ew <- r$diag_ew_universe
-  data.table(key = k, arm = r$arm, basis = r$bench_basis, n_months = r$n_months,
+  data.table(arm_key = k, arm = r$arm, basis = r$bench_basis, n_months = r$n_months,
              avg_names = r$avg_names,
              port_t = r$portfolio_alpha_t_nw_lag3, p = r$portfolio_alpha_t_pvalue,
              ir = r$information_ratio, alpha_ann = r$alpha_annualized,

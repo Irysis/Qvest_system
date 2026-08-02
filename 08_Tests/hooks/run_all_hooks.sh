@@ -207,6 +207,11 @@ SUITES=(
   #   만 봐서 38편이 좌초했다. downloaded 는 "PDF 를 새로 받았나"이지 "라우팅할 재료가
   #   있나"가 아니다. 무인 스케줄러 경로라 검사가 없으면 조용히 되돌아간다.
   "08_Tests/ops/test_paper_router_trigger.sh"
+  # 2026-08-02 추가: worktree 좌초 판정축. ★이 축이 **하루에 세 번 뒤집혔다** —
+  #   연차 단독(무해 3건 오강조 + 진짜 좌초 미검출) → main부재 단독(진행 중 작업 오인)
+  #   → main부재 AND 무활동(정본). 검사 없이 두면 또 뒤집힌다.
+  #   E5 는 성능 회귀 가드(전트리 find = 부팅 5분+ 지연, 변경파일 mtime 만 봐야 함).
+  "08_Tests/ops/test_worktree_stranded_axis.sh"
 )
 
 _suite_cmd() {
