@@ -80,22 +80,16 @@
     {
       "factor_id": "F2_book_overlay_exposure_context",
       "ast": {
-        "op": "MUL",
-        "args": [
-          {
-            "leaf": "STORED_SCORE",
-            "field": "exposure = m4_weight_lag x beta_threshold_lag x beta_R05_V5 (return_ym 조인)",
-            "escape_contract": {
-              "escape_type": "STORED_SCORE",
-              "panel_path": "05_Production/2.Factor_Model/2-1.STR_1715_AR_on_M4_R05_overlay_PG2/04_backtest_results/period_returns_layer5.csv",
-              "built_at": "production PG2 산출물 (read-only)",
-              "vintage": "book 실현 β_combined = m4_weight_lag x beta_threshold_lag x beta_R05_V5",
-              "production_parity_verified": true,
-              "parity_evidence": "행-수준 cor(e, ret_L5_V5/ret_orig)=0.9996, max|diff|=0.035(스위칭 비용 항, resid-db cor -0.81) + β-스캔 k=0 정렬 확정"
-            }
-          },
-          "port_ret_net"
-        ]
+        "leaf": "STORED_SCORE",
+        "field": "exposure = m4_weight_lag x beta_threshold_lag x beta_R05_V5 (return_ym 조인) — 포트 순수익에 곱셈 적용은 weighted_screen_bt exposure_dt 계약 (AST 신호 아님)",
+        "escape_contract": {
+          "escape_type": "STORED_SCORE",
+          "panel_path": "05_Production/2.Factor_Model/2-1.STR_1715_AR_on_M4_R05_overlay_PG2/04_backtest_results/period_returns_layer5.csv",
+          "built_at": "production PG2 산출물 (read-only)",
+          "vintage": "book 실현 β_combined = m4_weight_lag x beta_threshold_lag x beta_R05_V5",
+          "production_parity_verified": true,
+          "parity_evidence": "행-수준 cor(e, ret_L5_V5/ret_orig)=0.9996, max|diff|=0.035(스위칭 비용 항, resid-db cor -0.81) + β-스캔 k=0 정렬 확정"
+        }
       },
       "role": "evaluation_context",
       "restatement_exposure": 0,
