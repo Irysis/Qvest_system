@@ -1,0 +1,60 @@
+{
+  "task_id": "WT-D20260802_017",
+  "registered_at": "2026-08-02T20:35:00+09:00",
+  "registered_before_measurement": true,
+  "title": "국면 정보의 overlay 소비면 — unified Category를 현행 M4×R05 위 곱셈 노출 스케줄로 (FQ-115)",
+  "prior_contrast_inv7": {
+    "old_configs_identified": [
+      {
+        "id": "H2 regime overlay A/B (2026-06-18, 06_Registry/book_carrier/h2_regime_overlay_ab.csv)",
+        "config": "동일 unified Category 스케줄(CRISIS 0.40/CAUTION 0.70)을 당시 book(2-1: M4×AR×R05_V5)에 stacked — uni_cat_x_book SR 1.670 < book_L5 1.685, crisis-라벨월(n=24) bare 월평균 +4.06%(라벨이 위기를 못 잡음). paired t/ΔIR 미산출·정식 판별 아님",
+        "polarity": "negative(informal — SR 후퇴 관찰만)"
+      },
+      {
+        "id": "WT-D20260802_015 (오늘)",
+        "config": "같은 라벨을 팩터 배분 비중으로 소비 — 손실(튜닝 로테이션 0.904 < base 1.403 < 단일 2.050). CRISIS 라벨 25개월 active 연율 +4.98%가 유일한 양(+) 신호(단 그 구간 벤치 +0.21% = 라벨이 실현 위기와 불일치 시사)",
+        "polarity": "negative(배분 소비면) + 양(+) 신호 단서"
+      },
+      {
+        "id": "리스크 오버레이 BearProb (2026-07-05/06)",
+        "config": "동월 look-ahead 실사고 — 정정 시 개선 전량 소멸. placebo/OOS/DSR/subperiod 전부 통과했고 lag1+strict A/B만 판별",
+        "polarity": "measurement-hazard(본 라운드 PIT 규율의 직접 근거)"
+      }
+    ],
+    "differentiation_claims_to_be_tested": [
+      "D1: 6-18 H2는 당시 2-1 book(M4×AR×R05) 기준·SR 눈대중 비교였고, 본 라운드는 현행 2-3 noLayer4 book(M4×R05)의 실현 β 기준 + paired NW lag-3 t / ΔIR 정식 판별 + 라벨-실현 이원 판정 — '중복 vs 독립 vs 유해'를 통계로 확정",
+      "D2: WT-015 CRISIS +4.98%가 '방어 성공'인지 '라벨 우연'인지 실현-하락 축(BM<0)으로 판별하는 것이 본 라운드 고유 산출",
+      "주의: 현행 book의 β_R05_V5가 이미 자체 국면(alpha_scores regime_state)을 소비 중 — unified Category는 다른 엔진이지만 정보 중복이 사전 posterior. 중복/유해면 그것이 정직한 판정"
+    ]
+  },
+  "primary_spec_frozen": {
+    "carrier": "06_Registry/book_carrier/carrier_STR_1715_AR_on_M4_R05_overlay_PG2.parquet (269m, 2004-02~2026-06 eval; carrier_meta.json — production run_all.R 285-405 verbatim, validated_against STR_1715 production output = §7b parity 선례). 커버리지 한계: 2026-06/07 홀딩월 미포함(carrier vintage 2026-06-18) — 정직 병기",
+    "book_exposure": "e_book(t) = m4_weight_lag(t) × beta_R05_V5(t), 05_Production/.../2-1.../period_returns_layer5.csv anchor_date=carrier eval_date 매칭. beta_threshold_lag(AR층)·β_faith(Layer4) 제외 = 현행 2-3 noLayer4 공식(w × m4 × β_R05_V5) 정합. 05_Production은 read-only",
+    "candidate_rule_single_fixed": "e_cand(t) = e_book(t) × g(Category_{m-1}); g(CRISIS)=0.40, g(CAUTION)=0.70, g(NEUTRAL)=g(RISK_ON)=1.00. 스케줄 전거 = 6-18 H2 CAT_EXPOSURE(폐기된 book cash 스케줄 정합) 그대로 승계 — 신규 자유도 0, 폭 열거/argmax 없음(no-sweep)",
+    "label_source": ".cache/unified_regime_signal.parquet :: Category — 홀딩월 시작(=carrier decision_date) 직전 월말 라벨(prev_month_ym(decision_date)). 단일 소스, 변경 금지",
+    "label_timing_pit": "used_cutoff = 라벨월 월말 RegDate < holding_start = decision_date. assert_overlay_pit HARD + 위반 주입(홀딩월 자체 라벨 사용 시 stop 발화 실증) + lag1 스트레스(m-2 라벨) + strict-PIT A/B(현 타이밍=strict 동일함을 명시)",
+    "n_trials": 1,
+    "selection_type": "chain (단일 사전등록 규칙 — DSR 게이트 비발동, 수치는 진단 기록)"
+  },
+  "judgment_frame_frozen": {
+    "primary_discriminant": "paired NW lag-3 t of d_t = active_cand − active_book (active = ret_net − BM_Ret, 공통월) + ΔIR = IR_cand − IR_book",
+    "verdict_rule": "독립 한계기여 인정 = paired t ≥ +2.0 ∧ ΔIR ≥ +0.05 / 유해 = paired t ≤ −2.0 / 그 외 = 중복·노이즈(사전 posterior). 판정은 이 규칙만 — 사후 이동 금지",
+    "crisis_4_98_discrimination": "(c) 판별 사전 규칙: CRISIS 라벨월의 (i) 실현 BM<0 비율 (ii) 벤치 평균이 0 근처(연율 |bench_ann| < 5%)이며 hit rate P(라벨∈{CRISIS,CAUTION} | BM<0) 가 무작위 대비 유의 개선 없음 → '라벨 우연' 판정. 반대로 라벨이 BM<0 에피소드를 유의 포착(정밀도·재현율 양쪽) ∧ 라벨월 노출 축소가 active를 개선 → '방어 성공' 판정",
+    "cost_axis": "overlay 노출 변경 회전 증분 = |Δe| 기준 15bps delta-cost 스트레스를 paired 시리즈에 반영한 재판정 병기 (weighted_screen_bt 기본은 오버레이 리밸 비용 생략 라벨)",
+    "ax001_conditional": "crisis_alpha(CRISIS 라벨월 active) + bare/book/cand 절대 MDD 대비 + bad(BM<0)/normal 월 active 비교 — 방어형 조건부 평가 전항"
+  },
+  "controls_interpretation_only": [
+    {"id": "BARE", "spec": "overlay 없음 (e=1)"},
+    {"id": "BOOK", "spec": "현행 M4×R05 단독 (e_book) — 한계기여의 기준선"},
+    {"id": "REGIME_ONLY", "spec": "g(Category_{m-1}) 단독 (M4×R05 대체) — 대체 소비 경로"},
+    {"id": "EW_BASIS", "spec": "동일 홀딩 EW 가중에서 BOOK vs CAND 재측정 — 가중 기저 의존성 확인(dual-basis 정신: overlay는 포트 스칼라라 cap-tier 분해 비자연, 가중-기저 축으로 대체하고 사유 명기)"},
+    {"id": "STRESS_LAG2", "spec": "라벨을 m-2로 한 달 더 늦춘 스트레스 — 신호 지속성/우연 판별"},
+    {"id": "DIAG_ORACLE_LOOKAHEAD", "spec": "홀딩월 BM<0 오라클에 g=0.40 적용 — look-ahead 상한 진단 전용, 본판정·선택 절대 비사용"}
+  ],
+  "known_risks_preregistered": [
+    "β_R05_V5가 이미 book 자체 국면으로 CRISIS/CAUTION에서 0.30~0.70 축소 중 — unified 라벨 곱셈은 이중 축소가 되어 유해 방향 가능성이 사전 posterior",
+    "2026-02~05 CRISIS 라벨 구간이 실현 멜트업(예: 2026-04 캐리어 +26.6%)과 겹침(WT-004 라벨 오염 실측) — 곱셈 축소가 이 구간에서 대량 손실 예상",
+    "carrier가 2026-06/07(7월 폭락월) 미포함 — 라벨이 7월 폭락을 잡았는지는 본 표본 밖(부활 조건 후보로 기록)",
+    "CRISIS/CAUTION 라벨월 표본 희소 — paired t의 검정력 낮음(차이가 라벨월에서만 발생)"
+  ]
+}

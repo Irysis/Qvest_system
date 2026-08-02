@@ -145,7 +145,11 @@ rf  <- run1(Wf, "filt_bare")
 rbo <- run1(Wb, "base_ov", exposure_dt)
 rfo <- run1(Wf, "filt_ov", exposure_dt)
 
-pr_act <- function(r, nm) as.data.table(r$period_returns)[, .(date, ret = ret_net, act = ret_net - benchmark_ret)][, setnames(.SD, c("ret","act"), paste0(c("ret_","act_"), nm))]
+pr_act <- function(r, nm) {
+  d <- as.data.table(r$period_returns)[, .(date, ret_net, act = ret_net - benchmark_ret)]
+  setnames(d, c("ret_net", "act"), paste0(c("ret_", "act_"), nm))
+  d
+}
 PD <- Reduce(function(a, b) merge(a, b, by = "date"),
              list(pr_act(rb, "b"), pr_act(rf, "f"), pr_act(rbo, "bo"), pr_act(rfo, "fo")))
 PD[, d_bare := act_f - act_b]
