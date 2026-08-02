@@ -302,6 +302,13 @@ say("포트 tail(부수): expo→active OLS b=%+.5f NW t=%+.2f | tail월(n=%d) �
 say("  (라벨: ab는 SI bench 경유 — bench 2소스 정합 worst월 %s의 tail 분류 여부 = %s)",
     as.character(bcmp$Date[1]), as.character(PT[Date == bcmp$Date[1], tail5]))
 
+# ── 8b. max5 십분위별 crash/boom 발생률 (차트·보고용) ────────────────────────
+REG[, dec := pmin(10L, 1L + as.integer(10 * (frank(zmax5, ties.method = "first") - 1) / .N)), by = Date]
+DEC <- REG[, .(p_crash = mean(crash), p_boom = mean(boom), mret = mean(Ret_1m)), by = .(Date, dec)]
+dec_tab <- DEC[, .(p_crash = mean(p_crash), p_boom = mean(p_boom), mret = mean(mret)), by = dec][order(dec)]
+say("십분위 crash 발생률(1=저MAX5, 10=고MAX5): %s",
+    paste(sprintf("%.1f%%", 100 * dec_tab$p_crash), collapse = " "))
+
 # ── 9. 저장 ──────────────────────────────────────────────────────────────────
 saveRDS(list(
   validator = v_pass, injection = inj, na_label_share = na_lab,
@@ -318,7 +325,7 @@ saveRDS(list(
                    boom_lift = INC[, mean(b_top - b_base)],
                    t_boom = nw_t(INC[, b_top - b_base]),
                    ret_spread = INC[, mean(ret_spread)], t_spread = nw_t(INC$ret_spread)),
-  regime = list(fm = reg_fm, inc = reg_inc),
+  regime = list(fm = reg_fm, inc = reg_inc), decile = dec_tab,
   tier = list(inc = tier_tab, fm_other = list(mean_b = FM_oth[, mean(b)], t = t_oth, n = nrow(FM_oth))),
   portfolio = list(b_expo = coef(fit_p)["expo"], t_expo = t_expo,
                    tail_expo = PT[tail5 == TRUE, mean(expo)],
