@@ -54,7 +54,10 @@ pkg <- list(
       friction = "KR 공매도 제약 — 복권형 overpricing 즉시 차익거래 불가. overlay는 종목축이 아닌 월별 노출 스칼라(e_t)라 필터의 종목 선택 기여를 지우지 못하고 e_t 재가중만 가함 (d_ov,t = e_t x d_bare,t 항등)",
       path = "고-MAX5 배제 → 홀딩월 저수익 편입 회피(월평균 3.3종 실교체). overlay-ON에서는 CRISIS 저노출(e̅ 0.38)이 필터의 위기월 역효과 크기를 축소하는 경로가 추가"
     ),
-    falsification = "배제군의 홀딩월 개인 순매수(A6_investor_flow 리프)가 잔여 후보 대비 높지 않으면(NW t<1) 기전 기각 — WT-014 실측 t=+3.90 승계(기전 지지). 본 라운드 고유 반증: overlay가 필터 기여를 지운다면 상호작용(d_ov−d_bare)이 유의 음수여야 — 실측 t=-1.14 (미유의, 기각 안 됨)",
+    falsification = list(list(
+      field = "A6_investor_flow_stock_daily",
+      observation = "배제군의 홀딩월 개인 순매수(/ADV·일)가 잔여 후보 대비 높지 않으면(NW t<1) 복권수요 기전 기각 — WT-014 실측 t=+3.90 승계(기전 지지)")),
+    falsification_note_round_specific = "overlay가 필터 기여를 지운다면 상호작용(d_ov−d_bare)이 유의 음수여야 — 실측 t=-1.14 (미유의, 기각 안 됨). 성과-부수 관측이라 falsification 사전이 아닌 진단 병기로 분류",
     regime_scope = list(
       holds_in = list("NEUTRAL", "RISK_ON"),
       weakens_or_reverses_in = list("CRISIS"),
