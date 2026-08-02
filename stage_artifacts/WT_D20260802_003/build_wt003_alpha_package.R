@@ -1,6 +1,6 @@
 ## build_wt003_alpha_package.R — WT-D20260802_003 alpha_package (AST v1.1) + validation + lineage + telegram
 suppressPackageStartupMessages({
-  library(data.table); library(arrow); library(jsonlite); library(digest)
+  library(data.table); library(arrow); library(jsonlite); library(digest); library(dplyr)
 })
 setDTthreads(1); try(arrow::set_cpu_count(1), silent=TRUE); try(arrow::set_io_thread_count(2), silent=TRUE)
 QM <- "C:/Users/99922/OneDrive/Quant_Module_Moltbot"; setwd(QM)
@@ -226,7 +226,7 @@ validation <- list(
                           n_eff_mean = mean(adv$n_eff)),
     jaccard_postheta_vs_ppure = mean(adv$jaccard_postheta_ppure, na.rm=TRUE),
     jaccard_pools = mean(adv$jaccard_pools, na.rm=TRUE)),
-  cap_tier = res$results <- NULL,
+  cap_tier = res$concentration,
   dual_basis_w_portt = res$dual_basis_w_portt,
   universe_comparison = list(
     performed = FALSE,
