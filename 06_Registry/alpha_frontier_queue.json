@@ -1,7 +1,7 @@
 {
  "schema_version": "1.0",
  "sot": "02_Infrastructure/docs/qvest_v8_3_alpha_discovery_sot.md §4",
- "updated": "2026-08-03 (FQ-125 데이터 게이트 실측: DART 원문 경계 2019-01·정정공시 원문 부재·파서 v2 2019 서식 미대응 → 파서 확장 선행. 총 130건)",
+ "updated": "2026-08-03 (FQ-129 자격 검정 FAIL: CAUTION recall 0.096 < base 0.457 · p 0.388 → FQ-115 와 동일 처분. 국면 lane 은 라벨 자격 확보 전까지 닫힘. 총 130건)",
  "consume_rule": "새 발굴 리서치 착수 전: hypothesis_index lookup → 본 큐 확인 → owner/status 갱신. 완료 시 result_ref(L-code/보고서) 기입. dohoon_decision 항목은 세션 임의 착수 금지.",
  "entries": [
   {
@@ -2410,9 +2410,11 @@
    "wall_check": "국면-조건부 배분은 07-05 settled-negative 계열이고 WT-015 도 재탕-이하였다. 단 그것들은 **배분 비중** 라운드였고 본 건은 **선별 신호의 국면 조건화**라 층이 다르다. 그럼에도 라벨 품질 문제(FQ-119)는 그대로 걸리므로, CAUTION 라벨의 판별력을 먼저 확인할 것.",
    "data_gate": "없음 (WT-001 controls_panel_d35.parquet + WT-020 패널 재사용)",
    "owner": "미배정",
-   "status": "frontier_open",
+   "status": "blocked_until_label_qualifies",
    "registered": "2026-08-03 Q-Lead (WT-D20260803_001 NP-1 파생)",
-   "precheck_required": "착수 전 CAUTION 라벨 자격 확인(FQ-119 규약: recall > base_rate ∧ fisher p<0.05). 무판별 라벨이면 WT-019 형 손실."
+   "precheck_required": "착수 전 CAUTION 라벨 자격 확인(FQ-119 규약: recall > base_rate ∧ fisher p<0.05). 무판별 라벨이면 WT-019 형 손실.",
+   "precheck_measured": "★착수 전 자격 검정 실측 (2026-08-03 Q-Lead, read-only) — **FAIL, 착수 무의미**. FQ-119 규약(recall > base_rate ∧ fisher p<0.05)을 CAUTION 라벨에 적용: `.cache/unified_regime_signal.parquet::Category` 431개월 × 벤치 월수익 결합 실측 — 하락월 base rate **0.457**, CAUTION recall **0.096**(하락월 197 중 19), precision 0.528, **fisher p = 0.3878**. recall 이 base 의 1/5 로 **양 조건 모두 미달**. ⇒ WT-001(t +2.05)·WT-020(t +2.08)의 CAUTION 정합 2회는 흥미롭지만, 라벨 자체가 위기를 집지 못하므로 **소비 경로가 없다**. WT-019 실측(무판별 라벨은 발화 월수에 비례해 유해 — ON 28개월 -1.85 → 92개월 -3.77)에 CAUTION 36개월 발화를 대입하면 조건화는 손실이다. 다중검정 경고(진단 셀 20+ 중 2개)와 합치면 착수 근거 소멸. (부수: 최초 조회 시 `Regime_Score` 연속 점수를 라벨로 오지정 — 정본은 `Category`)",
+   "blocking_dependency": "FQ-119 (라벨 자격 관문) — CAUTION 라벨 recall 0.096 < base 0.457, p 0.388"
   },
   {
    "id": "FQ-130",
