@@ -92,4 +92,9 @@ ck("★돌연변이(>= → >) 를 경계 케이스가 검출",
    !identical(mutant(c(0.5, 1.0), THR)$status, r_edge$status))
 
 cat(sprintf("\n[test_tripwire_reachability] PASS=%d FAIL=%d\n", pass, fail))
+## 배터리 집계 규약 — 마지막 줄에 요약 JSON 발행 (run_all_hooks.sh 가 파싱).
+##   ★없으면 "UNREPORTED: 요약 JSON 파싱 실패"로 잡힌다 = 등재됐는데 집계 안 되는 상태.
+##   (실사고: 본 검사기 최초 등재 시 이 줄이 없어 570 중 1건 FAIL 로 표시됐다.)
+cat(sprintf('{"test":"tripwire_reachability","pass":%d,"fail":%d,"total":%d}\n',
+            pass, fail, pass + fail))
 if (fail > 0L) quit(status = 1L)
