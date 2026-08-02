@@ -30,11 +30,16 @@ risk_metrics <- function(r) { r <- r[is.finite(r)]
 w("=== R43 INS_MAGQ3 보조 tripwire 증분 실측 — WT-D20260802_012 (monitoring 진단, 자본 아님) ===")
 
 ## ── 0. 사전등록 로드 + 해시 검증 (측정 전 고정 확인) ─────────────────────────────
-PP <- file.path(OUT, "preregistration.json"); stopifnot(file.exists(PP))
+PP <- file.path(OUT, "preregistration.json"); SP <- file.path(OUT, "preregistration.seal.json")
+stopifnot(file.exists(PP), file.exists(SP))
 PRE <- fromJSON(PP, simplifyVector = FALSE)
 PRE_HASH <- PRE$config_hash
-.chk <- PRE; .chk$config_hash <- NULL
-stopifnot(identical(substr(digest::digest(.chk, algo = "sha256"), 1, 16), PRE_HASH))
+SEAL <- fromJSON(SP)
+## 측정 개시 전 봉인된 파일 바이트와 대조 — 사전등록이 측정 후 손대지지 않았음의 증거
+PRE_FILE_SHA <- digest::digest(file = PP, algo = "sha256")
+if (!identical(PRE_FILE_SHA, SEAL$file_sha256))
+  stop(sprintf("[prereg] 봉인 불일치 — 사전등록 변조 의심 (now=%s sealed=%s)", PRE_FILE_SHA, SEAL$file_sha256))
+stopifnot(identical(PRE_HASH, SEAL$config_hash))
 A_THR   <- as.numeric(PRE$signals$A_live$threshold)      # 1.0 (INS_NB_THR frozen)
 AUX_THR <- as.numeric(PRE$signals$AUX_new$threshold)     # 1.0 (사전 고정)
 wf("[prereg] hash=%s 검증 PASS | A_THR=%.2f AUX_THR=%.2f | selection=%s n_trials=%d",

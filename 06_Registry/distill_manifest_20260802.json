@@ -1,0 +1,50 @@
+{
+  "schema": "distill_manifest_v1",
+  "week_of": "2026-W31",
+  "distilled_at": "2026-08-02T14:05:00+09:00",
+  "owner": "session_main",
+  "digest_path": "04_Research/01_reports/weekly/weekly_digest_20260802.md",
+  "also_distilled_this_session": {
+    "week_of": "2026-W30",
+    "digest_path": "04_Research/01_reports/weekly/weekly_digest_20260726.md",
+    "note": "7일 지연 이월분 — 같은 세션에서 선행 완결 후 W31 sweep 실행(pending 단일본 구조상 순서 강제)"
+  },
+  "deleted": [
+    {
+      "path": "/tmp/qvest_tg_brief.log",
+      "reason": "weekly_temp_logs_30d — 30일 초과 임시 로그. 기계 스윕(dry_run=FALSE) 자동 삭제분",
+      "ref_check": "재생성 경로(telegram_notify.R:1432 하드코딩) — 삭제 후 재생성되며 지식 기록 아님",
+      "actor": "weekly_cleaner_sweep.R"
+    }
+  ],
+  "preserved_deferred": [
+    {
+      "path": "root_unauthorized 17건 (hygiene_audit)",
+      "reason": "다수가 08-02 신설 테스트·수리 산출물로 참조 활성 가능성 높음. 루트 13항목 규칙 위반 여부는 파일별 판정 필요 — 일괄 삭제 금지",
+      "next_action": "파일별 참조 0 검증 사이클(별도 태스크)"
+    },
+    {
+      "path": "02_Infrastructure/ops/_sched_failure_classify.sh",
+      "reason": "infra_underscore 경고. '_' 접두 판별은 git grep 확인이 정본(메모리 project-hygiene-warnings-cleared-tg-lock-guard-20260725). 스케줄러 실패 분류는 07-26 수리 대상 = 활성 코드 가능성 큼",
+      "next_action": "git grep 참조 확인 후 판정"
+    },
+    {
+      "path": "02_Infrastructure/ast/tests/parity_factor_db_result.json",
+      "reason": "misplaced_outputs 경고이나 AST parity 증거물 = 판정 근거 파일(불변 런 기록에 준함)",
+      "next_action": "위치 이동 여부만 검토, 삭제 대상 아님"
+    }
+  ],
+  "hygiene_summary": {
+    "hygiene_audit_deleted_n": 0,
+    "hygiene_n_warnings": 18,
+    "hygiene_audit_status": "measured",
+    "llm_verdict": "이번 사이클 전량 보존 — 참조 0 검증 미완. 판단이 갈리면 보존(스킬 §1 ④)"
+  },
+  "carry_forward": [
+    "axiom pending_5axis 89건(최고령 25일) 드레인 — 접근법 전환: 개별 정제가 아니라 emit 스키마 보강(external/independence 축 자동 충전)",
+    "near_miss 3건 statement 정제 — 최신 스냅샷 기준",
+    "quarantined_evidence 6건 정체(07-04 이후) — 관측 유지",
+    "/tmp/qvest_tg_brief.log 경로를 프로젝트 .cache로 이관(telegram_notify.R:1432)",
+    "hygiene 경고 18건 파일별 참조 검증 사이클"
+  ]
+}

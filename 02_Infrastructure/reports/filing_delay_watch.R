@@ -370,6 +370,29 @@ tryCatch({
 ## PIT (C5): signal_date(월말 m)→홀딩월(m+1). 현 홀딩월 flag=직전 월말 signal(홀딩월 시작 전). 전이=현+직전 홀딩월.
 ##   insider 패널=로컬 재사용(재빌드/DART API 없음). 패널 stale(현 보유월 signal 부재) 시 warn-loud.
 ## ============================================================================
+## ---- WIRE-1 (R43, WT-D20260802_012 소비면): tripwire 도달가능성(reachability) 진단 -------
+## R43-F1 실측: 현행 tripwire 는 253개월 중 126개월(49.8%) **구조적으로 침묵**한다 — 커버리지는
+##   정상(월 이름수 중앙값 125)인데 그 달 횡단면 최대 z 가 문턱 1.0 에 도달조차 못 한다
+##   (침묵월 max z 중앙값 0.862 · 최대 0.99968). 기전: INS02=(매수건-매도건)/(매수건+매도건) 은
+##   [-1,1] 유계이고 상한 +1 에 질량이 몰려, 월 분포가 눌리면 최대 z 가 1.0 미만이 된다.
+## ⇒ 현행 리포트는 'NET_BUY_SAFE 0' 이 **자격자 부재**인지 **문턱 도달 불가**인지 구별하지 못했다.
+##   본 진단은 그 둘을 가르는 라벨만 추가한다. ★문턱 INS_NB_THR=1.0 은 R33 frozen 불변이며
+##   SAFE/SAFE_FADING **판정 로직에 일절 관여하지 않는다**(라벨 추가 = 판정 무변경).
+## 순수 함수 — 08_Tests/hooks/test_tripwire_reachability.R 가 본 파일에서 이 정의를 직접
+##   파싱·평가해 위반 주입 테스트를 수행한다(사본 검사 금지 — 사본은 원본 사망을 못 잡는다).
+tripwire_reachability <- function(z_vec, thr) {
+  z <- z_vec[is.finite(z_vec)]
+  n <- length(z)
+  if (n == 0L)
+    return(list(n_covered = 0L, max_z = NA_real_, n_at_or_above = 0L,
+                unreachable = NA, status = "NO_COVERAGE"))
+  mx  <- max(z)
+  nge <- sum(z >= thr)                      # tripwire 와 **동일한 비교**를 쓴다(별도 산식 금지)
+  list(n_covered = n, max_z = mx, n_at_or_above = nge,
+       unreachable = (nge == 0L),
+       status = if (nge == 0L) "A_UNREACHABLE_MONTH" else "REACHABLE")
+}
+
 r34 <- tryCatch(fromJSON(R34_VERDICT), error = function(e) NULL)
 r38 <- tryCatch(fromJSON(R38_VERDICT), error = function(e) NULL)
 r40 <- tryCatch(fromJSON(R40_VERDICT), error = function(e) NULL)
@@ -380,6 +403,7 @@ insider_tone <- paste0(
   "SAFE_FADING = horizon-bounded(months_since_off<=1 fading·>=2 auto-clear, R40 protection ~1개월 transient). ",
   "tier: mid-cap 강건 / 대형 TOP30 저신뢰, R37). net-sell(INS01)=advisory·R33 무정보.")
 ins_ok <- TRUE; ins_err <- NA_character_
+ins_reach <- NULL   # WIRE-1(R43): tripwire 도달가능성 진단 — 패널 로드 블록에서 채워짐
 ins_latest_signal <- as.Date(NA); ins_cur_hy <- NA_integer_; ins_prev_hy <- NA_integer_; ins_stale <- NA
 ij <- NULL
 tryCatch({
@@ -404,6 +428,9 @@ tryCatch({
   ## 직전 홀딩월들 INS02 (상태전이 + SAFE_FADING horizon 판정) — 패널 재사용, 추가 read 없음
   ##  R41(R40 소비): 무기한 SOFT-LAG → horizon-bounded. window {m-1,m-2,m-3}까지 확장해 months_since_off 산출.
   mon_ins02 <- function(hyv) IN[hy == hyv & factor_id == "INS02_OffBuyBreadth6m", .(Ticker = security_id, z)]
+  ## WIRE-1 소비: 현 홀딩월 **시장 전체** 횡단면 z로 도달가능성 산출 (보유종목 부분집합 아님 —
+  ##   R43-F1 은 '그 달 아무도 문턱을 못 넘는가'를 묻는다). ij 조인 전이라 보유 필터 영향 없음.
+  ins_reach <<- tripwire_reachability(mon_ins02(ins_cur_hy)$z, INS_NB_THR)
   INP  <- mon_ins02(ins_prev_hy);              setnames(INP,  "z", "ins02_prev")
   INP2 <- mon_ins02(ymshift(ins_cur_hy, -2L)); setnames(INP2, "z", "ins02_prev2")
   INP3 <- mon_ins02(ymshift(ins_cur_hy, -3L)); setnames(INP3, "z", "ins02_prev3")
@@ -628,6 +655,21 @@ fdw_result <- list(
       panel_stale = if (ins_ok) ins_stale else NA,
       panel_stale_note = "현 보유월 signal 부재 = insider 패널 갱신 필요(DART 크롤 — 본 watch는 refresh 경로 없음, 로컬 재사용). stale=TRUE면 flag는 과거 홀딩월 기준(경보 침묵을 신선도로 해석 금지)",
       n_holdings_with_insider = if (ins_ok) ij[!(insider_flag == "NO_INSIDER_DATA"), .N] else NA,
+      ## ---- WIRE-1 (R43-F1 소비면): 도달가능성 진단 — '자격자 부재' vs '문턱 도달 불가' 구별 ----
+      ## ★판정 무관 라벨. n_net_buy_safe==0 을 읽을 때 반드시 함께 볼 것:
+      ##   status="A_UNREACHABLE_MONTH" 이면 그 0 은 '안전 신호 없음'이 아니라 '측정이 침묵'이다.
+      tripwire_reachability = if (ins_ok && !is.null(ins_reach)) list(
+        status        = ins_reach$status,
+        unreachable   = ins_reach$unreachable,
+        max_z         = if (is.na(ins_reach$max_z)) NA else round(ins_reach$max_z, 4),
+        threshold     = INS_NB_THR,
+        n_covered     = ins_reach$n_covered,
+        n_at_or_above = ins_reach$n_at_or_above,
+        basis         = "현 홀딩월 시장 전체 INS02_OffBuyBreadth6m 횡단면 z (보유 부분집합 아님)",
+        interpretation = "A_UNREACHABLE_MONTH = 그 달 최대 z 가 문턱 미만 → 발화 0 은 자격자 부재가 아니라 문턱 도달 불가(측정 침묵). REACHABLE = 발화 0 이면 실제 자격자 부재.",
+        evidence = "R43-F1(WT-D20260802_012): 253개월 중 126개월(49.8%) 침묵 — 침묵월 max z 중앙값 0.862·최대 0.99968. 기전 = INS02 가 [-1,1] 유계이고 상한에 질량 집중.",
+        threshold_unchanged = "INS_NB_THR=1.0 R33 frozen — 본 진단은 라벨만 추가하며 SAFE/SAFE_FADING 판정에 관여하지 않음"
+      ) else list(status = "NO_COVERAGE", unreachable = NA, threshold = INS_NB_THR),
       n_net_buy_safe = n_ins_safe,
       n_safe_fading = n_ins_fading,
       n_no_insider_data = n_ins_nodata,
