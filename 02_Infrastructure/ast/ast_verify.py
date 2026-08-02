@@ -497,6 +497,18 @@ class AstVerifier:
         if not isinstance(node, dict):
             self._fail_contract(path, "?", [], "노드 형상 오류(비 dict): %r" % (node,))
             return t
+        # ── [CF-10 수리 2026-08-02] const 노드 핸들러 ──────────────────────────
+        #  ast_compile.R 은 const 를 정식 지원(:416/:518 — 단일 유한 수치)하는데 본 검증기엔
+        #  핸들러가 없어, {"const": 3} 또는 {"type":"const","value":3} 이 리프도 연산자도
+        #  아닌 형상으로 떨어져 "𝒪 밖 연산자 None" 류 거짓 위반을 냈다(WT-002 는 이를 피하려
+        #  const-free 등가 트리로 우회해야 했다 — 우회가 필요했다는 것 자체가 결함).
+        #  상수는 시점 정보가 없으므로 avail_ts 에 기여하지 않는다(t 그대로 반환, 리프 미계상).
+        if ("const" in node and len(node) <= 2) or node.get("type") == "const":
+            val = node.get("const", node.get("value"))
+            if not isinstance(val, (int, float)) or isinstance(val, bool):
+                self._fail_contract(path, "CONST", [],
+                                    "const value 는 단일 유한 수치여야 함(ast_compile 계약): %r" % (val,))
+            return t
         # ── ALB-001/007 수리 (2026-08-02): 리프 방언 이중 수용 ──────────────────
         #  문서형 방언 : {"leaf": "FIELD", ...}
         #  컴파일러 방언: {"type": "leaf", "class": "STORED_SCORE", ...}  (ast_compile.R)
