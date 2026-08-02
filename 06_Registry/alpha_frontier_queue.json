@@ -1,7 +1,7 @@
 {
  "schema_version": "1.0",
  "sot": "02_Infrastructure/docs/qvest_v8_3_alpha_discovery_sot.md §4",
- "updated": "2026-08-02 (FQ-102 추가 — WT-005 재고 회수 1호 IN03 overlay A/B 등재. 4분류 완주: merit 19/structural 4/capability 5/miscored 0, 회수 1/25)",
+ "updated": "2026-08-02 (FQ-097 settled_negative — WT-010 W1 횡단면 dual-basis 양 기각+기전 반증. 파생 FQ-103 제외-필터 소비면 / FQ-104 점프x수급-흡수 등재. 총 104건)",
  "consume_rule": "새 발굴 리서치 착수 전: hypothesis_index lookup → 본 큐 확인 → owner/status 갱신. 완료 시 result_ref(L-code/보고서) 기입. dohoon_decision 항목은 세션 임의 착수 금지.",
  "entries": [
   {
@@ -1935,14 +1935,16 @@
   {
    "id": "FQ-097",
    "title": "최적수송(Wasserstein) 횡단면 팩터 — 종목 수익분포의 barycenter 편차 / 분포이동 조기감지 (수학 심화 2호)",
-   "status": "in_flight",
-   "owner": {
-    "wt_id": "WT-D20260802_010",
-    "agent": "alpha-research",
-    "claimed_at": "2026-08-02"
-   },
+   "status": "settled_negative",
+   "owner": "Q-Lead (WT-D20260802_010 판정 수집 2026-08-02)",
    "ev_rationale": "hypothesis_index 정밀 조회 0건 = 완전 미탐(08-02, WT-006 시그니처 라운드 조회 시 확인). 인접 실패 계열(Hurst/TE/hill_tail/Coskew)과의 차별 = 단일 스칼라가 아니라 분포 전체의 기하. 착수 조건: WT-006(시그니처) 판정 후 — 같은 '수학 심화' 계열이라 동시 착수 시 계열 상관 판단이 흐려진다. WT-006 이 config-scoped negative 면 그 기전 진단(직교성 실측)이 본 건의 사전 지식이 된다. [08-02 갱신] WT-006 판정 도착: config-scoped negative + mechanism-confirmed(flow 링크 t+4.08). 직교성 실측 성립 — Wasserstein 착수 시 그 직교성 프레임 재사용 가능. 착수 가능 상태로 전환.",
-   "registered": "2026-08-02 Q-Lead"
+   "registered": "2026-08-02 Q-Lead",
+   "verdict": "config-scoped negative + MECHANISM_REFUTED (2026-08-02, WT-D20260802_010). 구현은 정리-수준 검증 9/9 PASS(위반 주입 2종 검출 실효 포함). primary OT_W1_RTAIL_63: cap-w PORT_t -1.236 / EW-uni -2.053(EW가 더 나쁨 — 벤치 아티팩트 구제 불가, dual-basis 양 기각) / netSR -0.27 / 회전 1557%(제약 11.0 초과). Gaussian 치환 placebo 대역 [-1.52,-0.25] 내부 = 형상 정보량 0. 직교성: admitted 축과 rho<=0.17(재탕 아님)이나 동일창 스칼라 대조군 IC가 더 강함(MAX5 t 4.41 > primary 3.57) — '분포-거리 > 스칼라' 차별 미성립. 기전 반증: 개인은 점프형 종목을 신호창에 순매도(t=-7.27, 사전등록 복권수요-추격 가설의 부호 역전). n=63 창의 W1 노이즈 바닥(0.167)이 실측 형상 편차(0.156)와 동급 = 단기 창에서 '형상'은 대부분 표본 잡음.",
+   "revival_conditions": [
+    "제외-필터 소비면(FQ-103)이 book-marginal 유효로 실측되면 W1 계열 재평가",
+    "수급-흡수 조건부 재설계(FQ-104)가 성립하면 기전 재정의로 재개",
+    "n>=126 장기 창에서 W1 노이즈 바닥 << 실측 편차가 되는 구성 발견 시"
+   ]
   },
   {
    "id": "FQ-098",
@@ -2006,6 +2008,30 @@
    "owner": {},
    "ev_rationale": "WT-005 재고 회수 확정 1건: cap-w 2.537(p .011)/EW-uni 3.610(p .0003)·oos~0.563·post2017 +1.615. 유실 기전 = STANDALONE_TRACK 소비자 배관 0건. MDD 55.7%가 구조 사유이므로 overlay(시스템 입증 MDD 레버) A/B 가 정확한 소비 경로. 선행 = sector-neutral + inheritance cor 실측(WT-005 NP-1, 섹터 베팅 혼입 배제). cap-w 2.95 HARD 는 여전히 관문.",
    "registered": "2026-08-02 Q-Lead (WT-005 close)"
+  },
+  {
+   "id": "FQ-103",
+   "lane": "consume_surface",
+   "title": "복권형 제외-필터 소비면 — MAX5/우미부 하위 배제(랭킹 아닌 필터)로 book-marginal 실측",
+   "hypothesis": "WT-010 실측: IC 발원이 하위(복권형) 배제 쪽이고 W1보다 스칼라 MAX5가 강함(IC +0.0474, t 4.41). 랭킹 재료로는 전이 실패했으나 유니버스 제외-필터(소비면 체크리스트 ②)로는 book-marginal ΔIR 기여 가능한가 — 사전등록 후 incumbent book(production parity) 대비 paired 실측.",
+   "ev_rationale": "WT-010 NP-1(P1). 스칼라 대조군이 primary를 이긴 실측을 그대로 소비 — 신규 팩터 사냥이 아니라 확립 신호의 소비면 이식이라 비용이 싸다. 판별은 book-marginal ΔIR 사전등록(§4)이 유일 기준.",
+   "wall_check": "전이-벽 계열: 랭킹으로는 벽 불통과 실증(WT-010). 필터는 slot 점유가 아니라 후보 집합 축소라 벽 기전이 다름 — 단 배제가 유니버스를 과도 축소하면 liq 제약과 긴장.",
+   "data_gate": "없음 (rawdata 63일 창 롤링으로 즉시 계산 가능)",
+   "owner": "미배정",
+   "status": "frontier_open",
+   "registered": "2026-08-02 Q-Lead (WT-D20260802_010 NP-1 파생)"
+  },
+  {
+   "id": "FQ-104",
+   "lane": "mechanism_redesign",
+   "title": "점프형 종목 x 개인 순매도 흡수 조건부 — WT-010 최강 실측(t=-7.27)의 기전 재설계",
+   "hypothesis": "WT-010 기전 반증의 부산물이 본 라운드 최강 실측: 개인은 우미부-비대(점프형) 종목을 신호창에 강하게 순매도(차익실현). 이 flow-형상 결합 신호를 수급-흡수(기관/외국인 수취 여부) 조건부로 재설계하면 예측력이 성립하는가 — WT-006 flow 링크 프레임(t+4.08) 접합.",
+   "ev_rationale": "WT-010 NP-2(P2). |t|=7.27은 오늘 전 라운드 통틀어 최강 횡단면 실측 — 다만 이것은 동시점 행동 기술이지 예측 신호가 아직 아님. 비-return 원천(수급)과의 결합이라 v8.3 주력 lane 정합.",
+   "wall_check": "전이-벽 미검: 신호 성립해도 top-25 cap-w 전이는 별도 관문. 착수 시 dual-basis 선확인 의무.",
+   "data_gate": "수급(개인/기관/외국인) 일별 패널 현행분으로 가능",
+   "owner": "미배정",
+   "status": "frontier_open",
+   "registered": "2026-08-02 Q-Lead (WT-D20260802_010 NP-2 파생)"
   }
  ]
 }

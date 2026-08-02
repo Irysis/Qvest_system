@@ -1,0 +1,352 @@
+{
+  "task_id": "WT-D20260802_010",
+  "generated_at": "2026-08-02 13:01:01",
+  "metric_type": "canonical_screen",
+  "gate_eligible": false,
+  "selection_type": "preregistered_single_primary",
+  "n_trials": 1,
+  "preregistration": "stage_artifacts/WT_D20260802_010/preregistration.json (측정 전 고정)",
+  "implementation_verification": {
+    "task_id": "WT-D20260802_010",
+    "generated_at": "2026-08-02 12:47:08",
+    "n_pass": 9,
+    "n_total": 9,
+    "results": [
+      {
+        "test": "T1 Gaussian location W1=|dmu|",
+        "pass": true,
+        "detail": "W1=0.500000 (이론 0.5)"
+      },
+      {
+        "test": "T2 Gaussian scale W1=|ds|*sqrt(2/pi)",
+        "pass": true,
+        "detail": "W1=0.797884 (이론 0.797885)"
+      },
+      {
+        "test": "T3 Uniform pair + translation",
+        "pass": true,
+        "detail": "W1=0.50000 (0.5) / 0.70000 (0.7)"
+      },
+      {
+        "test": "T4 1D barycenter = quantile mean (exact)",
+        "pass": true,
+        "detail": "max|diff|=4.44e-16"
+      },
+      {
+        "test": "T5 affine invariance (norm quantiles exact)",
+        "pass": true,
+        "detail": "max|diff|=6.66e-16"
+      },
+      {
+        "test": "T6 decomposition identity (loc-scale)",
+        "pass": true,
+        "detail": "max|diff|=0.00e+00 (rtail=dmu+ds*zbar_R 재현)"
+      },
+      {
+        "test": "T7 grid bias + sampling noise floor (문서화)",
+        "pass": true,
+        "detail": "K31 vs K2001 bias=-0.750% | n=63 동일분포 W1 노이즈 med=0.167 p90=0.269"
+      },
+      {
+        "test": "T8a injection: L2-instead-of-L1 caught",
+        "pass": true,
+        "detail": "BROKEN=1.0000 vs 이론 0.7979 (불일치 검출=TRUE)"
+      },
+      {
+        "test": "T8b injection: unsorted-quantile caught",
+        "pass": true,
+        "detail": "분위 단조성 위반 검출=TRUE"
+      }
+    ]
+  },
+  "primary": {
+    "factor_id": "OT_W1_RTAIL_63",
+    "canonical": {
+      "port_t_nw_lag3": -1.236,
+      "pvalue": 0.2165,
+      "n_months": 259,
+      "net_sr": -0.2662,
+      "information_ratio": -0.2662,
+      "alpha_annualized": -0.0163,
+      "turnover_annual": 15.57
+    },
+    "subperiod_port_t": {
+      "pre2015": 0.71,
+      "y2015_19": -1.522,
+      "y2020p": -1.633,
+      "post2017": -1.865
+    },
+    "advisory": {
+      "rank_ic": 0.01871,
+      "icir": 0.2217,
+      "ic_t": 3.568,
+      "monotonicity": -0.164
+    }
+  },
+  "universe_comparison": {
+    "note": "본 라운드는 배포 유니버스(K200∪KQ150)에서 직접 설계 — v2 확장 비교 비해당(신호가 canonical 수준 placebo-급이라 유니버스 한계 가설 자체가 성립 안 함)",
+    "cap_w": -1.236,
+    "ew_universe": -2.053,
+    "ew_post2017": -0.672
+  },
+  "dual_basis": {
+    "cap_w_port_t": -1.236,
+    "ew_universe_port_t": -2.053,
+    "ew_universe_post2017_t": -0.672,
+    "cap_tier_weight_share": {
+      "MEGA": 0.05065637,
+      "MID": 0.09235521,
+      "OTHER": 0.85698842,
+      "UNRANKED": 0
+    },
+    "cap_tier_contrib_annualized": {
+      "MEGA": 0.00825861,
+      "MID": 0.00472923,
+      "OTHER": 0.09139614,
+      "UNRANKED": 0
+    },
+    "verdict": "v8.3 기각-전 확인 의무 이행: EW-uni t=-2.05가 cap-w(-1.24)보다 더 나쁨 — 벤치 아티팩트로 구제되지 않음(양 basis 기각, EW가 더 부정적). cap-tier: OTHER 85.7% / MID 9.2% / MEGA 5.1% — 국소화 특이 없음. cap-w 트랩 비해당."
+  },
+  "decomposition": {
+    "OT_W1_LTAIL_63": {
+      "port_t": -1.471,
+      "ew_uni_t": -2.875,
+      "net_sr": -0.343,
+      "turnover_annual": 15.93
+    },
+    "OT_W1_SHAPE_63": {
+      "port_t": -0.968,
+      "ew_uni_t": -2.203,
+      "net_sr": -0.217,
+      "turnover_annual": 19.41
+    },
+    "OT_W1_RAW_63": {
+      "port_t": -0.399,
+      "ew_uni_t": -0.864,
+      "net_sr": -0.09,
+      "turnover_annual": 16.18
+    },
+    "OT_MEANC_63": {
+      "port_t": 0.489,
+      "ew_uni_t": 0.615,
+      "net_sr": 0.126,
+      "turnover_annual": 13.49
+    },
+    "OT_SCALEC_63": {
+      "port_t": -1.283,
+      "ew_uni_t": -1.918,
+      "net_sr": -0.288,
+      "turnover_annual": 9.29
+    },
+    "SKEW63": {
+      "port_t": -0.431,
+      "ew_uni_t": -1.006,
+      "net_sr": -0.103,
+      "turnover_annual": 12.76
+    },
+    "KURT63": {
+      "port_t": -1.16,
+      "ew_uni_t": -1.391,
+      "net_sr": -0.266,
+      "turnover_annual": 14.34
+    },
+    "MAX5_63": {
+      "port_t": -1.616,
+      "ew_uni_t": -2.274,
+      "net_sr": -0.36,
+      "turnover_annual": 8.97
+    }
+  },
+  "scalar_moment_controls": {
+    "canonical": {
+      "SKEW63": {
+        "port_t": -0.431,
+        "ew_uni_t": -1.006,
+        "net_sr": -0.103,
+        "turnover_annual": 12.76
+      },
+      "KURT63": {
+        "port_t": -1.16,
+        "ew_uni_t": -1.391,
+        "net_sr": -0.266,
+        "turnover_annual": 14.34
+      },
+      "MAX5_63": {
+        "port_t": -1.616,
+        "ew_uni_t": -2.274,
+        "net_sr": -0.36,
+        "turnover_annual": 8.97
+      }
+    },
+    "rank_ic": {
+      "SKEW63": {
+        "rank_ic": 0.02222,
+        "ic_t": 4.151
+      },
+      "KURT63": {
+        "rank_ic": 0.0203,
+        "ic_t": 3.938
+      },
+      "MAX5_63": {
+        "rank_ic": 0.04736,
+        "ic_t": 4.41
+      }
+    },
+    "verdict": "재탕 판별 본체 실측: 동일창 스칼라 대조군 IC가 primary보다 강함 — MAX5 +0.0474(t 4.41) / SKEW +0.0222(t 4.15) / KURT +0.0203(t 3.94) vs primary +0.0187(t 3.57). W1 형상 성분은 스칼라 모멘트와 부분중복(rho 0.34~0.44, 자기기각 문턱 0.5 미만)이나 독립 성분이 예측력을 추가하지 않음 — '분포-거리 > 스칼라 모멘트' 차별 주장 실측 미성립."
+  },
+  "orthogonality": {
+    "M01_Mom_12_1": {
+      "rho_mean": -0.014,
+      "rho_sd": 0.095
+    },
+    "D03_RealVol": {
+      "rho_mean": 0.13,
+      "rho_sd": 0.094
+    },
+    "D41_Vol_of_Vol": {
+      "rho_mean": 0.168,
+      "rho_sd": 0.096
+    },
+    "D45_Downside_Dev": {
+      "rho_mean": 0.078,
+      "rho_sd": 0.09
+    },
+    "D55_Vol_Trend": {
+      "rho_mean": 0.169,
+      "rho_sd": 0.116
+    },
+    "D01_IdioVol": {
+      "rho_mean": 0.154,
+      "rho_sd": 0.087
+    },
+    "OT_W1_LTAIL_63": {
+      "rho_mean": 0.185,
+      "rho_sd": 0.095
+    },
+    "OT_W1_SHAPE_63": {
+      "rho_mean": 0.091,
+      "rho_sd": 0.075
+    },
+    "OT_W1_RAW_63": {
+      "rho_mean": 0.101,
+      "rho_sd": 0.066
+    },
+    "OT_MEANC_63": {
+      "rho_mean": 0.255,
+      "rho_sd": 0.086
+    },
+    "OT_SCALEC_63": {
+      "rho_mean": -0.161,
+      "rho_sd": 0.118
+    },
+    "SKEW63": {
+      "rho_mean": 0.435,
+      "rho_sd": 0.072
+    },
+    "KURT63": {
+      "rho_mean": 0.343,
+      "rho_sd": 0.085
+    },
+    "MAX5_63": {
+      "rho_mean": 0.396,
+      "rho_sd": 0.086
+    }
+  },
+  "self_rejection_rule_outcome": "사전등록 자기기각 규칙 판정: SKEW63 +0.435 / KURT63 +0.343 / MAX5 +0.396 / D03 +0.130 / D45 +0.078 / M01 -0.014 — 자동기각 문턱(|rho|>0.5) 비발동, 0.3~0.5 부분중복 밴드 발동 = 차별 주장 약화 라벨. 성과축 판별(IC 비교)에서 차별 미성립 — 최종: 재탕은 아니나 우월도 아님.",
+  "placebo": [
+    {
+      "port_t": -1.019,
+      "rank_ic": -0.00341
+    },
+    {
+      "port_t": -0.407,
+      "rank_ic": -0.00189
+    },
+    {
+      "port_t": -0.641,
+      "rank_ic": 0.00011
+    },
+    {
+      "port_t": -0.248,
+      "rank_ic": 0.00629
+    },
+    {
+      "port_t": -1.52,
+      "rank_ic": 0.00096
+    }
+  ],
+  "lag1": {
+    "base_port_t": -1.236,
+    "lag1_port_t": -0.698,
+    "verdict": "base 자체가 placebo 대역 내 — 누출 판별 비적용(창 하드 슬라이스로 누출 기전 구조 부재)"
+  },
+  "falsification": {
+    "field": "A6_investor_flow_stock_daily (Individual)",
+    "q1_q5_spread_mean": -0.02569,
+    "t_nw": -7.272,
+    "n_months": 259,
+    "verdict": "MECHANISM_REFUTED — 부호 역전(t=-7.27): 개인은 우미부-비대(점프형) 종목을 신호창에 강하게 순매도(추격이 아니라 차익실현). 사전등록 기각 기준(t<1) 초과 달성."
+  },
+  "regime_conditional": [
+    {
+      "regime": "RISK_ON",
+      "n": 200,
+      "mean_active": -0.00044,
+      "t_nw": -0.21
+    },
+    {
+      "regime": "NEUTRAL",
+      "n": 30,
+      "mean_active": -0.01237,
+      "t_nw": -1.53
+    },
+    {
+      "regime": "CAUTION",
+      "n": 13,
+      "mean_active": -0.00212,
+      "t_nw": -0.19
+    },
+    {
+      "regime": "CRISIS",
+      "n": 16,
+      "mean_active": -0.01967,
+      "t_nw": -0.85
+    }
+  ],
+  "ax001_conditional": {
+    "crisis_alpha_monthly": -0.01967,
+    "ic_bad": 0.0487,
+    "ic_normal": 0.0167,
+    "ic_ratio_bad_normal": 2.912,
+    "verdict": "IC는 위기 강화(ratio 2.91 — 방어형 IC 프로파일)이나 crisis active -0.0197/월 음수 — 조건부 평가로도 전이 부재. AX-001 조건부 병기 의무 이행."
+  },
+  "sidecar_live_with_ast": {
+    "before": 35,
+    "after": 36
+  },
+  "graduation_hard_gates": {
+    "portfolio_alpha_t_nw": {
+      "required": 2.95,
+      "observed_canonical": -1.236,
+      "status": "FAIL",
+      "note": "canonical screening 실측 — forge 승격 미제출(자본 판정 아님)"
+    },
+    "oos_retention": {
+      "required": 0.7,
+      "observed": null,
+      "status": "NOT_COMPUTED",
+      "note": "PORT_t 음수 + placebo-급으로 forge 미제출 — 산출 무의미"
+    },
+    "calmar": {
+      "required": 0.64,
+      "observed": null,
+      "status": "NOT_COMPUTED",
+      "note": "PORT_t 미달로 forge 미제출"
+    }
+  },
+  "production_constraints": {
+    "turnover_annual_limit": 11,
+    "observed": 15.57,
+    "verdict": "FAIL — 성립했어도 구현 규율 미달"
+  }
+}
