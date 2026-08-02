@@ -109,7 +109,15 @@ frontier_coherence_scan <- function(root = .fc_root()) {
        inputs = list(entries = length(Q$entries), dead = length(dead), neg_cards = length(dcards)))
 }
 
-if (sys.nframe() == 0L || identical(environment(), globalenv())) {
+# main-guard: Rscript 로 이 파일을 직접 실행한 경우에만 CLI 를 돈다.
+#  `identical(environment(), globalenv())` 는 source() 에서도 참이라 모듈 로드 시 스캔이
+#  덩달아 실행됐다(검사기에서 실측). --file 인자로 자기 자신을 확인한다.
+.fc_invoked_directly <- function() {
+  a <- commandArgs(trailingOnly = FALSE)
+  f <- sub("^--file=", "", a[grepl("^--file=", a)])
+  length(f) > 0L && grepl("frontier_registry_coherence\\.R$", f[1])
+}
+if (.fc_invoked_directly()) {
   args <- commandArgs(trailingOnly = TRUE)
   res <- frontier_coherence_scan()
   if ("--json" %in% args) {

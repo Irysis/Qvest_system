@@ -68,7 +68,7 @@ cat(sprintf("[advisory] rank_ic=%.4f icir=%.3f ic_t_nw=%.2f mono=%.2f sub_ic=[%.
 FACTORS[, z := (Score - mean(Score)) / sd(Score), by = Date]
 FACTORS[, z := pmin(pmax(z, -3), 3)]  # winsor 3sd
 last_dt <- max(FACTORS$Date)
-sigma_cs <- IC_dt[Date >= last_dt %m-% months(36) | Date >= as.Date("2023-07-01"),
+sigma_cs <- IC_dt[Date >= (last_dt - 1095L),
                   .(s = sd(Ret_1m, na.rm = TRUE)), by = Date][, mean(s, na.rm = TRUE)]
 if (!is.finite(sigma_cs)) sigma_cs <- IC_dt[, .(s = sd(Ret_1m, na.rm=TRUE)), by=Date][, mean(s, na.rm=TRUE)]
 AV <- FACTORS[Date == last_dt, .(Ticker, z, alpha_hat = rank_ic * sigma_cs * z)]
