@@ -125,6 +125,10 @@ nw_t <- function(x, lag = 3L) {
 ic_stats <- function(S, min_n = 8L) {
   M <- merge(S, Rg, by = c("Date", "Ticker"))
   M <- M[is.finite(Ret_1m)]
+  # canonical_screen_bt 와 동일한 Ret_1m sanity 격리 (물리불가 월수익 — FMB 선형회귀 왜곡 방지)
+  n_q <- nrow(M[Ret_1m > 5 | Ret_1m < -1])
+  if (n_q > 0) cat(sprintf("  [ic] Ret_1m sanity 격리 %d행\n", n_q))
+  M <- M[Ret_1m <= 5 & Ret_1m >= -1]
   ics <- M[, .(n = .N, ic = if (.N >= min_n) suppressWarnings(cor(score, Ret_1m, method = "spearman")) else NA_real_,
                lam = if (.N >= min_n) {
                  z <- (rank(score) - mean(rank(score))) / sd(rank(score))
