@@ -1,0 +1,65 @@
+{
+  "task_id": "WT-D20260802_008",
+  "fq_id": "FQ-084-NP2",
+  "parent_wt": "WT-D20260802_002",
+  "registered_at": "2026-08-02",
+  "registered_before_any_measurement": true,
+  "selection_type": "chain",
+  "selection_type_rationale": "가설주도 단일 설계 — WT-002(FQ-084) next_probe NP-2 를 그대로 소비한다. 게이트 정의 1건(애널리스트 커버리지 수, 월별 횡단 상위 50%)을 사전 고정. 임계값 q=0.5 는 튜닝 산물이 아니라 WT-002 하네스(카디널리티-매칭 대조군·placebo 전부 50% 분할)와의 비교 가능성을 위한 비-임의 분할. k명 존재형 게이트(cov>=k)는 argmax 후보가 아니라 민감도 보고 전용(선택 금지). n_trials(선택 대상 후보 집합) = 1.",
+  "base_signal": {
+    "panel": "05_Production/2.Factor_Model/2-1.STR_1715_AR_on_M4_R05_overlay_PG2/02_holdings_universe/alpha_scores_str1715_268m_cleanT1.parquet",
+    "column": "score_eff",
+    "label": "production_parity_verified",
+    "immutable": true,
+    "harness_anchor": "A_base 는 WT-002 의 BASE(gate_panel ∩ liq 2e8 ∩ finite(score, fa_share_l0))를 그대로 재사용 — A_base cap-w PORT_t 가 WT-002 실측 3.478 과 일치해야 하네스 정합(불일치 시 측정 중단·원인 규명)."
+  },
+  "gate_primary": {
+    "name": "COV_asof",
+    "formula": "coverage(i, d0) = .cache/consensus/coverage.parquet 의 마지막 관측치 (Date <= d0, Date > d0 - 30일). 관측 부재 = 0 (파일에 0 값이 없음 = 행 부재가 곧 미커버, 실측).",
+    "interpretation": "애널리스트 커버리지 수 = 컨센서스-파생 base 신호(score_eff)가 정의될 수 있는 정보 생산 인프라의 존재/강도",
+    "threshold": "월별 횡단 상위 50% (중앙값 분할, ties.method=first after setorder(Date,Ticker) — 정수 동률은 티커 사전순으로 결정적 분할)",
+    "why_this_axis": "WT-002 가 반증한 외국인-존재 축과 달리, base 신호 자체가 컨센서스에서 파생되므로 커버리지는 신호 '정의 가능성'에 대한 직접 마찰이다. 방향(리비전 부호)은 쓰지 않는다 — 커버리지 존재/강도만.",
+    "tie_note": "coverage 는 정수(1~33)라 중앙값 경계 동률이 존재 — 동률 처리는 결정적(티커 순)이며 메커니즘-맹목적."
+  },
+  "premise_check_mandatory": {
+    "description": "WT-002 CF-08 형 전제 검증을 arms 측정 전에 수행 — 배포 유니버스(BASE)에서 커버리지 0 종목-월의 실제 비율.",
+    "stop_rule": "share(cov_asof == 0) < 0.05 이면 '존재 마찰' 전제는 이 유니버스에서 공허(WT-002 fa_breadth 94.3%=1.000 과 동형) — 이 경우 존재-프레임은 기각하되, 강도-프레임(상위 50%)은 정의 가능하므로 진행 여부를 premise 실측과 함께 명시 보고. share >= 0.05 이면 전제 성립으로 arms 진행.",
+    "additional": "share(cov_asof <= 1), 연도별 추이, cov~adv/cov~Size 월별 Spearman, A_base top-25 내 cov0 비중"
+  },
+  "pit": {
+    "sig_date": "d0 = 홀딩월 직전 월말 거래일 (canonical screen 키)",
+    "gate_observation": "coverage as-of d0 (Date <= d0, 30일 스테일 한도) — 홀딩월 데이터 0 사용. C-CONSENSUS-QW 는 as-of daily 시계열이며 제공 시각 미상(C10 유사 경계)이나 d0 관측→홀딩월 수익은 t-1 구조.",
+    "lag_stress": "게이트 관측을 1개월 추가 지연(as-of d0 - 1개월)한 판 병행 측정 — 붕괴 시 동월 누출 의심",
+    "staleness": "coverage.parquet max(Date)=2026-07-24 (QuantiWise 수동 export) — 측정창 최종 d0(2026-04월말) 대비 충분. incremental 은 Date > max append-only(과거행 불변) = 소급수정 위험 낮음(consensus_parser.R:249)."
+  },
+  "arms": [
+    {"id": "A_base",         "desc": "게이트 없음 — WT-002 BASE 동일 (하네스 정합 앵커)"},
+    {"id": "B_cov",          "desc": "COV_asof 월별 상위 50% 만 인정 (primary)"},
+    {"id": "B_cov_low",      "desc": "★방향 반증: 하위 50% — 메커니즘 참이면 base 보다 나빠야"},
+    {"id": "B_cov_lag1",     "desc": "★lag1 스트레스: as-of d0-1개월"},
+    {"id": "C_liq_matched",  "desc": "★대조군1: adv 상위 50% (WT-002 동일) — B≈C 면 유동성필터 재명명"},
+    {"id": "D_size_matched", "desc": "★대조군2a: Size 상위 50% (WT-002 동일) — B≈D 면 size 주입"},
+    {"id": "E_cov_sizeneut", "desc": "★대조군2b: size 5분위 내 COV 상위 50% — 소멸 시 size 아티팩트"},
+    {"id": "P_random",       "desc": "★placebo: 무작위 50% x 20 seed (WT-002 동일 시드 1001~1020 — 분포 직접 비교 가능)"}
+  ],
+  "measurement": {
+    "instrument": "02_Infrastructure/contracts/canonical_screen_bt.R::canonical_screen_bt()",
+    "metric_type": "canonical_screen",
+    "primary": "portfolio_alpha_t_nw_lag3 (cap-w 벤치 = KOSPI200_total_return)",
+    "dual_basis": "diag_ew_universe + 공통 EW-유니버스 벤치 병기 — 기각 전 확인 의무",
+    "cap_tier": "diag_cap_tier (MEGA/MID/OTHER) 분해 병기",
+    "top_n": 25,
+    "cost_bps_oneway": 15,
+    "liq_min": 200000000,
+    "proxy_prohibited": "손계산 금지 (measurement-graduation §1)"
+  },
+  "success_criterion_prereg": {
+    "necessary": "B_cov PORT_t > A_base PORT_t 이고 paired(월간 net 차분) NW-t >= 2.0",
+    "differentiating_1": "B_cov 가 C_liq_matched 와 D_size_matched 를 모두 상회 (같으면 재탕 판정)",
+    "differentiating_2": "E_cov_sizeneut 이 A_base 를 상회 (소멸하면 size 아티팩트)",
+    "differentiating_3": "B_cov 가 P_random 분포 95th pct 초과 (단순 축소 효과 아님)",
+    "directional": "B_cov_low < A_base",
+    "verdict_rule": "necessary 미충족 → config-scoped negative. 충족이나 differentiating 미충족 → 재탕(유동성/사이즈 재명명) 정직 보고. placebo 분포 안 = 무의미 / 아래 = 해악 / 위 = 개선 (WT-002 판정 프레임 그대로)."
+  },
+  "graduation_note": "본 산출은 alpha-stage canonical screening 실측. HARD 3종(PORT_t 2.95 / oos_retention 0.7 / calmar 0.64) 판정은 forge-authoritative 값에만 적용 — 여기서 graduation PASS 선언 금지."
+}
