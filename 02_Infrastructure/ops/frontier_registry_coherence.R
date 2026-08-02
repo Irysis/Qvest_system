@@ -78,6 +78,20 @@ frontier_coherence_scan <- function(root = .fc_root()) {
     stop("[coherence] DISTILLED_NEG 카드 0건 — 스키마 불일치로 카드 축이 죽었을 가능성. ",
          "0 을 '충돌 없음'으로 보고하지 않는다. distilled_knowledge.json 필드명 확인 필요.")
 
+  ## ★2026-08-02 수리 — 도메인 공통어가 매칭을 만들던 결함(dead 축 lane 오염과 같은 계통):
+  ##   card 매칭 표본에서 FQ-090↔DIST-AR-003 이 [신호, ic, port] 로, FQ-043↔DIST-AR-009 가
+  ##   [value, 월말, 동일] 로 걸렸다 — 전부 이 저장소 문서 어디에나 나오는 말이다. 반면
+  ##   FQ-004↔DIST-AR-018 은 [감사의견, going, concern] 로 **주제어가 겹친 정탐**이다.
+  ##   공통어를 세지 않아야 정탐만 남는다.
+  ## 하드코딩 목록 대신 **빈도로 판정**한다(IDF 발상): 카드 절반 이상에 등장하는 토큰은
+  ##   변별력이 없다. 목록을 손으로 관리하면 새 공통어가 생길 때마다 오탐이 돌아온다.
+  .tk_all <- unlist(lapply(dcards, `[[`, "tk"))
+  .df <- table(.tk_all)
+  STOPW <- names(.df)[.df >= max(2L, ceiling(length(dcards) * 0.5))]
+  ## 안전판: 불용어가 전체 토큰의 다수를 먹으면 카드 축이 사실상 죽는다(오탐 제거 ≠ 검사 사망).
+  if (length(STOPW) > length(unique(.tk_all)) * 0.3)
+    stop("[coherence] 불용어가 토큰의 30% 초과 — 카드 축 무력화 위험. 임계 재검토 필요.")
+
   OPEN <- c("frontier_open", "parser_gated", "data_gate_measured", "signal_round_negative_frontier_open")
   rows <- list()
   for (e in Q$entries) {
@@ -108,7 +122,7 @@ frontier_coherence_scan <- function(root = .fc_root()) {
     }
     hit_card <- character(0)
     for (dc in dcards) {
-      ov <- intersect(hay, dc$tk)
+      ov <- setdiff(intersect(hay, dc$tk), STOPW)   # 도메인 공통어 제외 (아래 STOPW 주석)
       if (length(ov) >= 3L) hit_card <- c(hit_card, sprintf("%s [%s]", dc$id, paste(ov, collapse = ",")))
     }
     ## lane 은 판정에서 뺐지만 보고에는 남긴다 — 사람이 오탐을 눈으로 거를 축이 필요하다.

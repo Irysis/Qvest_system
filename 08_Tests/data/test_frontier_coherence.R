@@ -141,7 +141,43 @@ if (length(d7) && nzchar(d7)) {
   bad("dead_axis_still_alive", "return-파생 dead 축이 통째로 죽음 — 수리가 검사를 껐다")
 }
 
-unlink(c(r1, r2, r3, r4, r5, r6, r7), recursive = TRUE)
+# ── ⑧ 도메인 공통어만 겹치는 카드 매칭은 flag 되지 않는다 (2026-08-02 오탐 수리 고정) ──
+#   원결함: card 축이 [신호, ic, port] · [value, 월말, 동일] 같은 **저장소 어디에나 나오는 말**로
+#   매칭됐다. 반면 FQ-004↔DIST-AR-018 은 [감사의견, going, concern] 로 주제어가 겹친 정탐이다.
+#   수리 = 카드 절반 이상에 등장하는 토큰을 빈도로 걸러낸다(하드코딩 목록은 새 공통어에 무력).
+#   ★픽스처 설계 주의: 카드 매칭 문턱이 **3토큰**이므로, 검사 사망 통제(b)의 주제어는
+#   불용어를 뺀 뒤에도 3개 이상 남아야 한다. 초판이 2개만 줘서 (b)가 실패했는데
+#   그건 수리 결함이 아니라 검사 결함이었다 — 통제를 짤 때 자기 문턱을 볼 것.
+COMMON <- c("신호", "port", "ic")   # 픽스처에서 모든 카드가 공유할 공통어
+mk_card_n <- function(n, extra) {   # 공통어 + 카드별 고유 주제어 3개
+  lapply(seq_len(n), function(i)
+    card(sprintf("DIST-C%02d", i), paste(c(COMMON, extra[[i]]), collapse = " ")))
+}
+TOPICS <- list(c("고유가", "고유나", "고유다"), c("베타가", "베타나", "베타다"),
+               c("감마가", "감마나", "감마다"), c("델타가", "델타나", "델타다"))
+#   (a) 공통어만 겹치는 FQ → flag 되면 안 된다
+cards8 <- mk_card_n(4, TOPICS)
+r8 <- mk_root(list(qe("FQ-T08", "신호 port ic 를 쓰는 무관한 항목")), list(dc("D9 무관")), cards8)
+s8 <- frontier_coherence_scan(r8)
+c8 <- if (nrow(s8$rows)) s8$rows[id == "FQ-T08", card_hit] else character(0)
+if (!length(c8) || !nzchar(c8)) {
+  ok("common_words_not_flagged", "공통어(신호/port/ic)만 겹치면 미검출")
+} else {
+  bad("common_words_not_flagged", sprintf("공통어로 오검출: %s", substr(c8, 1, 60)))
+}
+#   (b) ★검사 사망 통제 — 주제어가 겹치면 여전히 잡아야 한다.
+#       (a) 만 있으면 "카드 축을 통째로 꺼버린" 수리와 구별되지 않는다.
+r9 <- mk_root(list(qe("FQ-T09", "고유가 고유나 재도전", hyp = "고유다 축 재측정")),
+              list(dc("D9 무관")), cards8)
+s9 <- frontier_coherence_scan(r9)
+c9 <- if (nrow(s9$rows)) s9$rows[id == "FQ-T09", card_hit] else character(0)
+if (length(c9) && nzchar(c9)) {
+  ok("card_axis_still_alive", "주제어 겹침은 여전히 검출 (오탐 제거 ≠ 검사 사망)")
+} else {
+  bad("card_axis_still_alive", "카드 축이 통째로 죽음 — 불용어가 과도하다")
+}
+
+unlink(c(r1, r2, r3, r4, r5, r6, r7, r8, r9), recursive = TRUE)
 cat(sprintf("TOTAL: %d pass / %d fail\n", PASS, FAIL))
 cat(toJSON(list(test = "frontier_coherence", pass = PASS, fail = FAIL,
                 total = PASS + FAIL), auto_unbox = TRUE), "\n", sep = "")

@@ -60,31 +60,58 @@ RD <- RD[iv >= 1L & iv <= length(grid)]
 RECON <- RD[, .(recon = prod(1 + Ret) - 1, nd = .N), by = .(Date = grid[iv], Ticker)]
 say("recon: %d 종목-월 (일간 저장 Ret 복리 — 검증 전용, ret_firewall 준수)", nrow(RECON))
 
-validate_forward_label <- function(lab_dt, recon_dt, bench_dt,
-                                   event_d0 = as.Date("2026-06-30"),
-                                   event_val = -0.2363, tol = 0.02, min_cor = 0.99,
-                                   label_name = "Ret_1m") {
+# 벤치 parity (in-sample 전월): 일간 BM_Ret 복리 재구성 vs screen_inputs bench
+ex_dates <- sort(unique(EX$Date))
+BMD <- as.data.table(
+  open_dataset(".cache/RAWDATA.parquet") %>%
+    select(Date, BM_Ret) %>%
+    filter(Date > as.Date("2004-12-01")) %>%
+    collect())
+BMD <- unique(BMD[is.finite(BM_Ret), .(Date = as.Date(Date), BM_Ret)])
+BMD[, iv := findInterval(as.numeric(Date) - 0.5, as.numeric(grid))]
+BMD <- BMD[iv >= 1L & iv <= length(grid)]
+BREC <- BMD[, .(brecon = prod(1 + BM_Ret) - 1), by = .(Date = grid[iv])]
+bcmp <- merge(bench[Date %in% ex_dates], BREC, by = "Date")
+bcmp[, adiff := abs(BM_Ret - brecon)]
+say("벤치 parity(in-sample %d월): median|diff| %.6f / max|diff| %.6f (worst %s)",
+    nrow(bcmp), median(bcmp$adiff), max(bcmp$adiff), as.character(bcmp[which.max(adiff), Date]))
+
+validate_forward_label <- function(lab_dt, recon_dt, bench_cmp, min_cor = 0.99,
+                                   bench_tol = 0.005, label_name = "Ret_1m") {
   m <- merge(lab_dt[, .(Date, Ticker, lab = get(label_name))],
              recon_dt[, .(Date, Ticker, recon)], by = c("Date", "Ticker"))
   m <- m[is.finite(lab) & is.finite(recon)]
   cc_all <- m[, cor(lab, recon)]
   cc_m <- m[, .(cc = if (.N >= 30) cor(lab, recon) else NA_real_), by = Date]
   med_cc <- median(cc_m$cc, na.rm = TRUE)
-  ev <- bench_dt[Date == event_d0, BM_Ret]
-  ev_ok <- length(ev) == 1 && is.finite(ev) && abs(ev - event_val) < tol
-  say("  [validator %s] cor 전체 %.4f / 월중앙 %.4f / 사건검사(2026-06-30 d0 → 2026-07 벤치 %.4f vs %.4f) %s",
-      label_name, cc_all, med_cc, ifelse(length(ev) == 1, ev, NA), event_val,
-      ifelse(ev_ok, "PASS", "FAIL"))
-  if (!ev_ok) stop("LABEL DIRECTION FAIL — 벤치 사건검사 불일치 (grid 컨벤션이 forward가 아님)")
+  b_ok <- is.finite(max(bench_cmp$adiff)) && max(bench_cmp$adiff) < bench_tol
+  say("  [validator %s] cor 전체 %.4f / 월중앙 %.4f / 벤치 parity max|diff| %.6f %s",
+      label_name, cc_all, med_cc, max(bench_cmp$adiff), ifelse(b_ok, "PASS", "FAIL"))
+  if (!b_ok) stop("LABEL DIRECTION FAIL — 벤치 in-sample parity 불일치 (grid/원천 컨벤션 결함)")
   if (!is.finite(cc_all) || cc_all < min_cor || !is.finite(med_cc) || med_cc < min_cor)
     stop(sprintf("LABEL DIRECTION FAIL — 독립 재계산과 cor %.4f/%.4f < %.2f (라벨이 익월 수익이 아님)",
                  cc_all, med_cc, min_cor))
-  list(cor_all = cc_all, cor_monthly_median = med_cc, event_check = ev_ok, n_pairs = nrow(m))
+  list(cor_all = cc_all, cor_monthly_median = med_cc, bench_parity_max = max(bench_cmp$adiff),
+       n_pairs = nrow(m))
 }
 
-lab_true <- fwd[Date %in% unique(EX$Date), .(Date, Ticker, Ret_1m)]
-v_pass <- validate_forward_label(lab_true, RECON, bench)
+lab_true <- fwd[Date %in% ex_dates, .(Date, Ticker, Ret_1m)]
+v_pass <- validate_forward_label(lab_true, RECON, bcmp)
 say("방향 검증 PASS — fwd Ret_1m = 익월 수익 실증 (n_pairs=%d)", v_pass$n_pairs)
+
+# ★배관 결함 발견 기록 (사양 밖 — 본 표본 비오염): screen_inputs bench의 마지막 라벨월
+# (d0=2026-06-30)은 패널 빌드일(07-14)까지의 부분월 복리(-0.2001 ≈ through 7/14 -0.2032)
+# — 정본 7월 전월 -0.2363 아님. 본 표본은 d0<=2026-03-31이라 미소비. 소비 금지 플래그만 기록.
+last_lab <- bench[Date == as.Date("2026-06-30"), BM_Ret]
+full_july <- BREC[Date == as.Date("2026-06-30"), brecon]
+data_currency_flag <- list(
+  artifact = "stage_artifacts/WT_D20260714_004/screen_inputs.rds",
+  defect = sprintf("d0=2026-06-30 라벨월 = 부분월(빌드일 07-14 절단): bench %.4f vs 전월 정본 %.4f",
+                   ifelse(length(last_lab), last_lab, NA), ifelse(length(full_july), full_july, NA)),
+  contaminates_this_round = FALSE,
+  rule = "이 패널의 d0 >= 2026-04-30 라벨(익월수익) 소비 금지 — 재빌드 후 소비"
+)
+say("★data_currency_flag: %s", data_currency_flag$defect)
 
 # 위반 주입: 동월(t) 수익을 라벨로 위장 — 검증기가 FAIL을 발화해야 검사 실효 입증
 g_prev <- setNames(c(NA, head(as.character(grid), -1)), as.character(grid))
@@ -93,7 +120,7 @@ BAD <- copy(RECON)[, Date_next := {
   as.Date(ifelse(idx <= length(grid), as.character(grid[idx]), NA))
 }]
 BAD <- BAD[!is.na(Date_next), .(Date = Date_next, Ticker, Ret_1m = recon)]  # d0에 동월(직전구간) 수익 부착
-inj <- tryCatch({ validate_forward_label(BAD[Date %in% unique(EX$Date)], RECON, bench); list(fired = FALSE) },
+inj <- tryCatch({ validate_forward_label(BAD[Date %in% ex_dates], RECON, bcmp); list(fired = FALSE) },
                 error = function(e) list(fired = TRUE, msg = conditionMessage(e)))
 if (!inj$fired) stop("위반 주입 테스트 실패 — 검증기가 동월 라벨을 통과시킴 (검사 사망)")
 say("위반 주입 FIRED — 동월 라벨 주입 시 검증기 stop() 발화 확인: %s", substr(inj$msg, 1, 80))
@@ -271,6 +298,7 @@ say("포트 tail(부수): expo→active OLS b=%+.5f NW t=%+.2f | tail월(n=%d) �
 # ── 9. 저장 ──────────────────────────────────────────────────────────────────
 saveRDS(list(
   validator = v_pass, injection = inj, na_label_share = na_lab,
+  data_currency_flag = data_currency_flag,
   collinearity = ctab, r2 = list(ctrl_only = r2_inc[, mean(r2c)], full = r2_inc[, mean(r2f)]),
   fm = list(full = list(mean_b = FM_full[, mean(b)], t = t_full, n = nrow(FM_full), series = FM_full),
             uni = list(mean_b = FM_uni[, mean(b)], t = t_uni),
