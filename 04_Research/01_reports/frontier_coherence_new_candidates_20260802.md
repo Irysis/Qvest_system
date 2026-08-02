@@ -15,7 +15,7 @@
 | FQ-037 (R24 전체-필러 유니버스) | DIST-AR-018 (주제어 7겹), DIST-AR-007 | **정탐 — 조건부** |
 | FQ-024 (R11 P-pure 발전 chain) | DIST-AR-007 | 미판정 |
 | FQ-026 (R13 P-pure 감쇠속도 축) | DIST-AR-007, DIST-QPM-003 | 미판정 |
-| FQ-039 (R26 PG2 8번째 팩터+교체) | D6 dead(composite/packaging), DIST-AR-003/007 | 미판정 |
+| FQ-039 (R26 PG2 8번째 팩터+교체) | D6 dead(composite/packaging), DIST-AR-003/007 | **정탐 — 이관·해소됨** |
 | FQ-120 (하락 지속성 시간스케일) | DIST-AR-008 | 미판정 |
 
 ## 판정 상세 — FQ-035/036/037 클러스터
