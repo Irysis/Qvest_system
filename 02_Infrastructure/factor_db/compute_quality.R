@@ -367,7 +367,9 @@ compute_quality <- function(RAWDATA, sig_date, FUND = NULL, CONSENSUS = NULL) {
       avail_dates_q24 <- sort(unique(rd_snap[Date <= sig_d & !is.na(Close) & Close > 0]$Date), decreasing = TRUE)
       snap_date_q24 <- if (length(avail_dates_q24) > 0L) avail_dates_q24[1L] else sig_d
       snap <- rd_snap[Date == snap_date_q24 & !is.na(Close) & Close > 0]
-      if ("Size" %in% names(snap)) snap[, MktCap := Close * Size]
+      # Size IS market cap (compute_size.R:38); `Close * Size` was Close × MarketCap,
+      # which made Altman-Z's 0.6*MktCap/TL term dominate the other four terms by ~5e3×.
+      if ("Size" %in% names(snap)) snap[, MktCap := Size]
 
       q24 <- copy(fund_wide)
       if (nrow(snap) > 0 && "MktCap" %in% names(snap)) {

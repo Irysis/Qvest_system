@@ -167,7 +167,9 @@ ok("A7_counterparty_revenue_not_used",
 cat("\n[B] 돌연변이(검출력 실증)\n")
 mut_decode_utf8_only <- function(rawb) {           # 구판과 동형: 인코딩 하드코딩
   s <- rawToChar(rawb[rawb != as.raw(0L)]); Encoding(s) <- "UTF-8"
-  tryCatch({ t <- .ctr_plain(s); parse_contract_text(t) }, error = function(e) list(parse_status = "THROW"))
+  # 오태깅 경고는 이 축이 **재현하려는 현상 자체**다 — 출력만 억제하고 결과는 그대로 판정.
+  suppressWarnings(tryCatch({ t <- .ctr_plain(s); parse_contract_text(t) },
+                            error = function(e) list(parse_status = "THROW")))
 }
 mb <- mut_decode_utf8_only(as_cp949(fx_standard()))
 ok("B1_mutation_utf8_hardcode_breaks_cp949",

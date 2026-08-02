@@ -105,7 +105,8 @@ compute_accrual <- function(RAWDATA, sig_date, FUND = NULL, CONSENSUS = NULL) {
   # ---- Price snapshot for AC25 (size interaction) ----
   snap <- NULL
   if ("Size" %in% names(RAWDATA)) {
-    snap <- RAWDATA[Date == sig_d & !is.na(Close) & Close > 0, .(Ticker, MarketCap = Close * Size)]
+    # Size IS market cap (compute_size.R:38); `Close * Size` was Close × MarketCap.
+    snap <- RAWDATA[Date == sig_d & !is.na(Close) & Close > 0, .(Ticker, MarketCap = Size)]
     snap <- snap[MarketCap > 0]
   }
 

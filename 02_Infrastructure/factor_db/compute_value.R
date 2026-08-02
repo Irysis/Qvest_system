@@ -30,7 +30,17 @@ compute_value <- function(RAWDATA, sig_date, FUND = NULL, CONSENSUS = NULL) {
   snap <- RAWDATA[Date == snap_date & !is.na(Close) & Close > 0,
                   .(Ticker, Close, Size)]
   if (nrow(snap) == 0L) return(data.table(Ticker = character(), Factor_Name = character(), Raw_Value = numeric()))
-  snap[, MarketCap := Close * Size]
+  # RAWDATA$Size IS market cap, not share count (compute_size.R:38 documents this:
+  # "Size = Market Cap (RAWDATA의 Size 컬럼은 시가총액)"; factor_db_builder.R:350
+  # derives SharesOutstanding as Size/Close).  The former `Close * Size` here
+  # yielded Close × MarketCap — inflated ~5e3× per name — which swamped every
+  # additive fundamental term (EV's TotalDebt/Cash, Tobin's Q's TotalLiab) into
+  # numerical irrelevance and injected price level into every /MarketCap ratio.
+  # Verified 2026-08-02: back-solving MarketCap out of the stored V18_AM/V08_PSR
+  # matched Close*Size at 100%/99.78%; A005930 Size = 1952.7e12 KRW = its actual
+  # market cap, Size/Close = 5.85e9 = its actual share count.
+  snap[, MarketCap := Size]
+  snap[, SharesOut := fifelse(Close > 0, Size / Close, NA_real_)]
   snap <- snap[MarketCap > 0]
 
   # ---- Helper: get latest PIT fundamental (wide) ----
@@ -106,9 +116,17 @@ compute_value <- function(RAWDATA, sig_date, FUND = NULL, CONSENSUS = NULL) {
                             PretaxIncome - TaxExpense, NA_real_)]
   dt[, EBITDA := fifelse(!is.na(OperatingProfit) & !is.na(DepAmort),
                          OperatingProfit + DepAmort, NA_real_)]
-  dt[, TotalDebt := fifelse(!is.na(ShortTermBorr), ShortTermBorr, 0) +
-                    fifelse(!is.na(LongTermBorr), LongTermBorr, 0)]
-  dt[, Cash := fifelse(!is.na(CashAndEquiv), CashAndEquiv, 0)]
+  # TotalDebt / Cash: absent input => NA (uncovered), never a silently zeroed term.
+  # A firm that reported neither borrowing line has UNKNOWN debt, not zero debt;
+  # zeroing it made EV collapse onto MarketCap and manufactured false coverage.
+  # A firm that reported at least one line is treated as having zero on the other
+  # (KR filings omit nil balances), but the all-absent case propagates NA.
+  dt[, debt_reported := (!is.na(ShortTermBorr)) + (!is.na(LongTermBorr))]
+  dt[, TotalDebt := fifelse(debt_reported > 0L,
+                            fifelse(!is.na(ShortTermBorr), ShortTermBorr, 0) +
+                              fifelse(!is.na(LongTermBorr), LongTermBorr, 0),
+                            NA_real_)]
+  dt[, Cash := CashAndEquiv]   # no substitution: unreported cash stays NA
   # CapEx approximation: -InvestCF (investment CF is typically negative)
   dt[, CapEx := fifelse(!is.na(InvestCF), -InvestCF, NA_real_)]
 
@@ -124,7 +142,7 @@ compute_value <- function(RAWDATA, sig_date, FUND = NULL, CONSENSUS = NULL) {
   }
 
   # ==== V01: BM (Book-to-Market) ====
-  # TotalEquity / MarketCap.  shares_est = Size (RAWDATA). MarketCap = Close * Size.
+  # TotalEquity / MarketCap.  MarketCap = Size (RAWDATA); SharesOut = Size / Close.
   dt[, V01 := fifelse(!is.na(TotalEquity) & TotalEquity > 0,
                       TotalEquity / MarketCap, NA_real_)]
   results[["V01_BM"]] <- dt[!is.na(V01), .(Ticker, Factor_Name = "V01_BM", Raw_Value = V01)]
@@ -152,6 +170,9 @@ compute_value <- function(RAWDATA, sig_date, FUND = NULL, CONSENSUS = NULL) {
 
   # ==== V07: EV/EBITDA ====
   # EV = MarketCap + TotalDebt - Cash.  Only when EBITDA > 0.
+  # NA in TotalDebt or Cash propagates to EV by design: an EV factor whose debt or
+  # cash input is absent is UNCOVERED, not "EV == MarketCap".  Collapsing it to
+  # MarketCap is what made V13_EV_Sales rank-identical to V08_PSR.
   dt[, EV := MarketCap + TotalDebt - Cash]
   dt[, V07 := fifelse(!is.na(EBITDA) & EBITDA > 0, EV / EBITDA, NA_real_)]
   results[["V07_EV_EBITDA"]] <- dt[!is.na(V07), .(Ticker, Factor_Name = "V07_EV_EBITDA", Raw_Value = V07)]
@@ -162,8 +183,11 @@ compute_value <- function(RAWDATA, sig_date, FUND = NULL, CONSENSUS = NULL) {
 
   # ==== V09: PEG ====
   # fPER / EPS growth rate.  EPS growth = (eps_1y - trailing EPS) / |trailing EPS|.
-  # Trailing EPS approximated from NetIncome / Size (shares).
-  dt[, trailing_eps := fifelse(!is.na(NetIncome) & Size > 0, NetIncome / Size, NA_real_)]
+  # Trailing EPS = NetIncome / SharesOut.  (Size is market cap, NOT share count —
+  # dividing by Size yielded an earnings *yield* that was then differenced against
+  # a per-share consensus EPS, inflating eps_growth by ~1e5.)
+  dt[, trailing_eps := fifelse(!is.na(NetIncome) & !is.na(SharesOut) & SharesOut > 0,
+                               NetIncome / SharesOut, NA_real_)]
   dt[, eps_growth := fifelse(!is.na(eps_1y) & !is.na(trailing_eps) & abs(trailing_eps) > 1e-6,
                              (eps_1y - trailing_eps) / abs(trailing_eps), NA_real_)]
   dt[, V09 := fifelse(!is.na(V04) & !is.na(eps_growth) & eps_growth > 0.01,
@@ -292,8 +316,11 @@ compute_value <- function(RAWDATA, sig_date, FUND = NULL, CONSENSUS = NULL) {
     cei_val <- NA_real_
     if (n >= 252L) {  # at least 1 year
       lookback <- min(n, 1260L)
-      me_now  <- Close[n] * Size[n]
-      me_past <- Close[n - lookback + 1L] * Size[n - lookback + 1L]
+      # ME = market cap = Size directly.  The former `Close * Size` made the Close
+      # ratio cancel against log(1 + cum_ret) below, silently reducing CEI to plain
+      # market-cap growth and deleting the issuance signal the factor exists for.
+      me_now  <- Size[n]
+      me_past <- Size[n - lookback + 1L]
       if (me_now > 0 && me_past > 0) {
         cum_ret <- Close[n] / Close[n - lookback + 1L] - 1
         cei_val <- log(me_now / me_past) - log(1 + cum_ret)

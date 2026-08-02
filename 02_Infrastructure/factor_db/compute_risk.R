@@ -177,7 +177,8 @@ compute_risk <- function(RAWDATA, sig_date, FUND = NULL, CONSENSUS = NULL) {
 
     snap <- RAWDATA[Date == sig_d & !is.na(Close) & Close > 0,
                     .(Ticker, Close, Size)]
-    snap[, MarketCap := Close * Size]
+    # Size IS market cap (compute_size.R:38); `Close * Size` was Close × MarketCap.
+    snap[, MarketCap := Size]
     snap <- snap[MarketCap > 0]
 
     if (is_long) {

@@ -427,6 +427,50 @@ SUITES=(
   #     B축(양성 통제)이 과잉교정("항상 NA")을 잡는다 — 판정 사망과 위반 부재는 겉보기가 같다.
   #   돌연변이 3종으로 검출력 실증(구판복원 1fail / 항상NA 3fail / 함수개명 FATAL).
   "08_Tests/contract_regression/test_sample_alignment_empty.R"
+  # 2026-08-03 추가: DART 계약공시 파서 v3 (FQ-125 크롤 선행조건).
+  #   ★등재 사유 = 실사고: 구판이 `readLines(encoding="UTF-8")` 로 인코딩을 **하드코딩**했다.
+  #   2023-08+ 문서가 우연히 UTF-8 이라 동작했을 뿐, 2019-05 이전은 본문 바이트가 EUC-KR 이라
+  #   regex 가 throw → 드라이버 tryCatch 가 삼켜 `PARSER_ERROR`(parse_note **공란**)로 기록됐다.
+  #   실측 634건 전량. 즉 **"성공"이 우연이었고, 실패는 사유 없이 기록됐다.**
+  #   ★B축(돌연변이)이 핵심: CP949 분기를 죽였을 때 실제로 빨개지는지를 매 실행 확인한다.
+  #     안 하면 UTF-8 분기 하나로 구서식 축까지 초록이 되어 축이 공허해진다.
+  #   ★E축 = 상태 라벨 분리. 구판은 정정공시 원문부재(DART 014)·**일한도 소진(020)**·진짜 zip
+  #     손상을 전부 `UNZIP_FAIL` 로 뭉갰다 — 한도 소진이 '원문 없음'으로 체크포인트에
+  #     영구 동결되는 자리(이 저장소 "빈 결과 = 합격" 계통과 동형).
+  #   ★C축 = 금액 훼손 검거(공시 동봉 `매출액대비(%)` 대조). 구판엔 대조가 없어 오값이
+  #     조용히 OK 로 기록됐다(실측 20230809800003: 라벨 뒤 첫 숫자가 "2. 계약내역"의 2 → amt=2).
+  #   G축은 .cache 실문서 전제라 부재 시 **skipped**(전제 부재를 fail 로 세면 오진단).
+  "08_Tests/data/test_contract_parser_v3.R"
+  # 2026-08-02 추가: 모듈 원장 상호배타(catalog ↔ quarantine) 위반 주입.
+  #   원 결함 = register_module 의 .upsert_registry() 가 catalog 승격 시 기존 quarantine
+  #   행을 회수하지 않았다. run_alpha_search 는 같은 전략을 **두 번** 등록한다 —
+  #   6c(재측정 전 proxy → quarantine) → 6e(권위 재측정 후 backtested → catalog).
+  #   ★두 행이 공존하면 quarantine 만 읽는 소비자가 최종상태를 **정반대로** 읽는다:
+  #   Chen-Welch(STR_AS_20260709_074129_30048)는 quarantine 상 fr_eligible=FALSE 라
+  #   기각처럼 보이지만 실제 최종은 catalog 의 FR_ELIGIBLE 이다. 2026-08-02
+  #   STANDALONE_TRACK 배관 수리의 "quarantine 에 유실" 오진단이 정확히 이것이었다.
+  #   ★거울상까지 닫는다 — 한 방향(승격)만 고치면 강등 방향에 같은 모호성이 남는다.
+  #   B축이 수리를 **되돌린 돌연변이**를 주입해 중복 재현 + 상시 스크린(reconcile) 발화를
+  #   실증하므로 케이스가 공허하지 않다(needle 매치 건수도 실측 단언 — 안 잡히면 거짓 초록).
+  #   ※ 2026-08-03 통합 시 실원장 소급분 9건을 reconcile --apply 로 정리
+  #     (quarantine.modules 32→23 · superseded 9). 이후 dry-run 잔존 0건.
+  "08_Tests/contract_regression/test_module_registry_exclusivity.R"
+  # 2026-08-02 추가: EV 항이 살아 있는지. 저장 DB 에서 V13_EV_Sales 가 V08_PSR 과
+  #   258/258 개월 cor=1.000000 이었다 — `MarketCap := Close * Size` 로 시총이 종목별
+  #   ~5e3 배 부풀어 더해지는 재무 항이 수치적으로 소멸했다. ★결함이 **중복으로 위장**해
+  #   dedup 라벨로 접히면 라벨 뒤로 사라진다. 순위-동일 자체를 지문으로 상설 감시한다.
+  "08_Tests/factor_db/test_ev_term_not_inert.R"
+  # 2026-08-02 추가: factor DB 중복 팩터 스캐너 + registry de-dup 계약.
+  #   ★등재 사유 = 실사고: WT-D20260802_003 risk 라운드에서 Ω(팩터 공분산) 추정이
+  #   전소했는데 원인이 추정기가 아니라 **입력 중복**이었다 —
+  #   D01_IdioVol 과 R12_Idiosyncratic_Risk 가 258/258 개월 bit-identical
+  #   (factor_db_daily_phase6.R:286 `R12 <- D01_IdioVol` 리터럴 복사).
+  #   전수 스캔 결과 approved 102 에 EXACT 10쌍 / registry 373 에 59쌍 = 계통.
+  #   중복은 ICIR 선별에서 이중 투표한다(top-20 중 3슬롯 여분, 변동성 신호 하나가
+  #   EW 합성의 20%). ★"중복 0건"이 스캐너 사망 때문인지 청결 때문인지는
+  #   주입 없이 구별 불가 — 그래서 완전/근사/부호반전 3종 주입 + rho~0.80 판별
+  #   대조 + 대조쌍 생존 확인까지 검사한다.
+  "08_Tests/hooks/test_factor_dup_scan.R"
 )
 
 # (2026-08-02) .py 분기 추가 — 종전엔 확장자 무관 `bash` 로 던져 파이썬 suite 가

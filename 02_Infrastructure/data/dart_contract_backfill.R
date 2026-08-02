@@ -40,6 +40,10 @@ if (!nzchar(KEY)) stop("DART_API_KEY 미발견 (.env)")
 
 CKDIR <- file.path(ROOT, ".cache/dart/contract_backfill")
 dir.create(CKDIR, recursive = TRUE, showWarnings = FALSE)
+# v3(2026-08-03): 원문 응답 캐시. 파서를 다시 고쳐야 할 때 재크롤이 아니라 재파싱으로
+#   끝난다 — 08-02 에 구서식 실패 1,139건을 재fetch 해야 했던 비용의 재발 방지.
+DOCDIR <- file.path(ROOT, ".cache/dart/contract_docs")
+dir.create(DOCDIR, recursive = TRUE, showWarnings = FALSE)
 UNI_CC <- unique(fread(file.path(ROOT, ".cache/dart/universe_corpcodes.csv"),
                        colClasses = "character")$corp_code)
 source(file.path(ROOT, "02_Infrastructure/data/dart_contract_doc_parser.R"), encoding = "UTF-8")
@@ -119,42 +123,64 @@ for (ym in months) {
   }
 
   .is_rate  <- function(pr) !is.null(pr) && grepl("http_fail_(429|503)", pr$parse_note %||% "")
-  rows <- list(); partial <- FALSE; fail_n <- 0L
+  rows <- list(); partial <- FALSE; fail_n <- 0L; nosrc_n <- 0L
   for (i in seq_len(nrow(sel))) {
     if (calls >= DAILY_BUDGET) { partial <- TRUE; break }
     calls <- calls + 1L
-    pr <- tryCatch(parse_contract_doc(sel$rcept_no[i], KEY), error = function(e) NULL)
+    # v3: is_correction 을 넘겨야 014 를 NO_SOURCE_CORRECTION 으로 라벨할 수 있고,
+    #     cache_dir 로 원문을 보존해 재파싱이 API 호출 0 이 된다.
+    pr <- tryCatch(parse_contract_doc(sel$rcept_no[i], KEY,
+                                      is_correction = sel$is_correction[i], cache_dir = DOCDIR),
+                   error = function(e) NULL)
     retry <- 0L
     while (.is_rate(pr) && retry < 2L && calls < DAILY_BUDGET) {
       retry <- retry + 1L; Sys.sleep(5 * retry); calls <- calls + 1L
-      pr <- tryCatch(parse_contract_doc(sel$rcept_no[i], KEY), error = function(e) NULL)
+      pr <- tryCatch(parse_contract_doc(sel$rcept_no[i], KEY,
+                                        is_correction = sel$is_correction[i], cache_dir = DOCDIR),
+                     error = function(e) NULL)
+    }
+    # ★일한도 소진을 데이터로 기록하지 않는다. 구판은 020 응답이 unzip 실패로 떨어져
+    #   UNZIP_FAIL 행이 되고 그 달이 **정상 체크포인트**로 굳었다 — 한도가 '원문 없음'으로
+    #   영구 동결되는 자리(이 저장소 "빈 결과 = 합격" 계통). 즉시 halt 하고 미기록.
+    if (!is.null(pr) && identical(pr$parse_status, "RATE_LIMIT_020")) {
+      cat(sprintf("[ctr] DART status 020 (일한도) at %s — halt, %s 미기록\n", sel$rcept_no[i], ym))
+      halted <- TRUE; partial <- TRUE; break
     }
     if (is.null(pr)) { fail_n <- fail_n + 1L
       rows[[length(rows) + 1L]] <- data.table(ym = ym, rcept_no = sel$rcept_no[i],
         corp_code = sel$corp_code[i], corp_name = sel$corp_name[i], rcept_dt = sel$rcept_dt[i],
         report_nm = sel$report_nm[i], is_correction = sel$is_correction[i],
         contract_amount = NA_real_, recent_revenue = NA_real_, ratio_to_revenue = NA_real_,
-        is_amendment = NA, rounding_flag = NA, fx_flag = NA,
-        parse_status = "PARSER_ERROR", parse_note = "")
+        disclosed_ratio_pct = NA_real_, ratio_check = "UNAVAILABLE",
+        is_amendment = NA, rounding_flag = NA, fx_flag = NA, doc_encoding = NA_character_,
+        parser_version = CTR_PARSER_VERSION, parse_status = "PARSER_ERROR",
+        parse_note = "parse_contract_doc threw (사유 미상 — 조사 대상)")
       next
     }
-    if (!identical(pr$parse_status, "OK")) fail_n <- fail_n + 1L
+    # 원문 부재(정정공시)는 파싱 실패가 아니다 — 성공률 계산에서 분리한다.
+    if (identical(pr$parse_status, "NO_SOURCE_CORRECTION")) nosrc_n <- nosrc_n + 1L
+    else if (!identical(pr$parse_status, "OK")) fail_n <- fail_n + 1L
     rows[[length(rows) + 1L]] <- data.table(ym = ym, rcept_no = sel$rcept_no[i],
       corp_code = sel$corp_code[i], corp_name = sel$corp_name[i], rcept_dt = sel$rcept_dt[i],
       report_nm = sel$report_nm[i], is_correction = sel$is_correction[i],
       contract_amount = pr$contract_amount, recent_revenue = pr$recent_revenue,
-      ratio_to_revenue = pr$ratio_to_revenue, is_amendment = pr$is_amendment,
+      ratio_to_revenue = pr$ratio_to_revenue, disclosed_ratio_pct = pr$disclosed_ratio_pct,
+      ratio_check = pr$ratio_check, is_amendment = pr$is_amendment,
       rounding_flag = pr$rounding_flag, fx_flag = pr$fx_flag,
+      doc_encoding = pr$doc_encoding, parser_version = pr$parser_version,
       parse_status = pr$parse_status, parse_note = pr$parse_note)
   }
-  R <- rbindlist(rows, fill = TRUE)
+  R <- if (length(rows)) rbindlist(rows, fill = TRUE) else data.table()
   if (partial) {
     cat(sprintf("[ctr] %s partial (%d/%d, calls=%d) — 체크포인트 미기록\n",
                 ym, nrow(R), nrow(sel), calls)); break
   }
   .ck_write(R)
-  cat(sprintf("[ctr] %s: %d건 기록 (OK %d / 실패 %d, 정정 %d) calls=%d\n",
-              ym, nrow(R), sum(R$parse_status == "OK", na.rm = TRUE), fail_n,
-              sum(R$is_correction, na.rm = TRUE), calls))
+  # 분모 = 원문이 실제로 제공된 건. 정정 원문부재를 실패로 세면 성공률이 왜곡된다.
+  n_src <- nrow(R) - nosrc_n
+  cat(sprintf("[ctr] %s: %d건 기록 (원문제공 %d 중 OK %d = %.1f%% / 실패 %d / 원문부재(정정) %d) calls=%d\n",
+              ym, nrow(R), n_src, sum(R$parse_status == "OK", na.rm = TRUE),
+              if (n_src > 0) 100 * sum(R$parse_status == "OK", na.rm = TRUE) / n_src else NA_real_,
+              fail_n, nosrc_n, calls))
 }
 cat(sprintf("[ctr] done. calls=%d halted=%s\n", calls, halted))

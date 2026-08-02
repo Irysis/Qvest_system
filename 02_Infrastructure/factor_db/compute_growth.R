@@ -299,7 +299,8 @@ compute_growth <- function(RAWDATA, sig_date, FUND = NULL, CONSENSUS = NULL) {
     items_rd <- c("RnDExpense")
     fw_rd <- .get_latest_wide(FUND, items_rd)
     if (!is.null(fw_rd) && "RnDExpense" %in% names(fw_rd)) {
-      snap <- RAWDATA[Date == sig_d & !is.na(Close) & Close > 0, .(Ticker, MarketCap = Close * Size)]
+      # Size IS market cap (compute_size.R:38); `Close * Size` was Close × MarketCap.
+      snap <- RAWDATA[Date == sig_d & !is.na(Close) & Close > 0, .(Ticker, MarketCap = Size)]
       snap <- snap[MarketCap > 0]
       rd_m <- merge(fw_rd, snap, by = "Ticker", all = FALSE)
       if (nrow(rd_m) > 0L) {

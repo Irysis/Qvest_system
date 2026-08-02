@@ -1,0 +1,54 @@
+{
+  "task_id": "WT-D20260803_004",
+  "registered_at": "2026-08-03T09:05:00+0900",
+  "frozen_before_measurement": true,
+  "fq_ref": "FQ-121",
+  "selection_type": "chain",
+  "n_trials": 1,
+  "primary_objective": "조합 자격 게이트('성분별 canonical PORT_t > 0')가 IS/OOS 분리 하에서 성립하는가 — WT-021 POS2 회복 126%의 in-sample 편향 제거. 성과 개선 라운드 아님, 설계 원칙 검증 라운드.",
+  "split": {
+    "basis": "WT-009 base_panel 신호월 축 295개월(2001-12-28~2026-06-30)의 절반 절단 — floor(295/2)=147",
+    "is_range": "2001-12-28 ~ 2014-02-28 (147개월)",
+    "oos_start": "2014-03-31",
+    "oos_range": "2014-03-31 ~ 2026-06-30 (148개월)",
+    "fixed_note": "경계는 날짜 축만 읽어 결정(수익률 미접촉, peek_dates.R). 단일 분할 고정 — 복수 분할 시도 후 선택 금지(sweep 방지). 후반 OOS는 post-2017 감쇠기를 포함하는 어려운 구간이나 그것이 정직한 OOS다.",
+    "honesty_note": "IS/OOS 경계(2014-02)는 WT-009/015/021의 full-sample 실측이 이미 열람된 표본 위에 놓인다 — 진정한 봉인 lockbox가 아니라 '성분 선별 절차의 IS-only 재현'이다. 성분 자격 판정에 OOS 구간 수치를 일절 재조회하지 않는 것이 본 라운드가 제거하는 편향의 전부이며, 그 이상(미열람 데이터 주장)을 주장하지 않는다."
+  },
+  "component_gate": {
+    "rule": "성분 자격 = IS 구간(147개월) 표준 canonical_screen_bt(top-25 EW, 15bps, liq 2e8) portfolio_alpha_t_nw_lag3 > 0",
+    "candidates": ["V01_SECREL", "M01_PATHQ", "D03_EWMA", "Q01_EB", "V06_EB"],
+    "oos_isolation": "성분 자격 판정에 OOS 구간 데이터 일절 미사용 (measurement-graduation §3 chain 자격요건 ②)",
+    "borderline_handling": "FQ-121 precheck 경고(V06_EB full-sample +0.32 문턱 근방) 대응 = 섭동 기계 대신 사전등록 arm 쌍으로 처리: GATE_IS(게이트 통과 전량) vs POS2(borderline 제외 2성분)를 둘 다 측정 — with/without borderline이 구조적으로 분리됨. IS PORT_t가 |t|<0.5인 성분은 'borderline' 라벨 부기.",
+    "prediction": "full-sample 부호 승계 시 IS 통과 = {V01_SECREL, M01_PATHQ, V06_EB} 3개 예상 — 단 IS는 전반부라 다를 수 있음. 통과 집합이 3개가 아니어도 GATE_IS arm 정의는 '통과 전량'으로 불변(사후 재정의 금지)."
+  },
+  "arms_oos": {
+    "A1_GATE_IS": "IS 게이트 통과 성분 전량의 재-z EW 합성 (WT-021 build_zl 동일 규칙: 월 재-z, 월 커버리지>=100, 성분수>=min(2,통과수)) — 본 라운드의 피검체",
+    "A2_POS2": "M01_PATHQ + V01_SECREL 고정 EW (WT-021 probe 재현 — borderline 제외판)",
+    "A3_ALL5": "5성분 전량 EW (무게이트 대조 = WT-015 C1_EW_STATIC_TUNED 동일 구성. WT 지시문의 arm ③ ALL5와 ⑤ EW 정적은 동일 구성이므로 단일 arm으로 측정)",
+    "A4_SINGLE_IS": "IS PORT_t argmax 단일 성분 (IS-only 선택 — WT-015가 확립한 진짜 대조군의 OOS 정직판)",
+    "measurement": "각 arm을 OOS 148개월 한정 canonical_screen_bt 실측 (metric_type=canonical_screen). paired 대조는 net active(ret_net − BM_Ret) 차의 NW lag-3 t."
+  },
+  "decision_criteria": {
+    "a_gate_validity": "OOS paired NW t(A1_GATE_IS − A3_ALL5) >= +2.0 → 게이트 유효 PASS. t in (0,2) = 방향 일치·증거 부족. t <= 0 = 게이트 무효.",
+    "b_combination_worth": "OOS paired NW t(A1_GATE_IS − A4_SINGLE_IS): >= +2.0 = PASS(조합 존재 이유 성립) / (0, +2.0) = INSUFFICIENT(조합 열위 아님·가산 증거 부족) / <= 0 = FAIL(단일 지배 재확인 — '다팩터 조합 lane 현 config 닫힘'이 정직 결론).",
+    "pos3_vs_pos2": "OOS paired NW t(A1 − A2) 보고 — borderline 성분(V06류)의 한계기여 판별. 판정 기준 아닌 진단.",
+    "primary_is_b": "(b)가 진짜 관문. (a)만 통과·(b) 실패 = '게이트는 유효하나 조합 자체가 무의미' — WT 지시문 명문 그대로 채택."
+  },
+  "honest_posterior": "WT-021 in-sample에서조차 POS2 vs single paired t = +0.37(비유의)이었다. (b) FAIL 확률이 실질적이며 그것도 유효한 산출이다. (a)는 WT-021 gap(-7.87%/yr, t -1.91)의 OOS 재현 여부에 달렸다.",
+  "violation_injection": {
+    "design": "성분 게이트를 OOS PORT_t > 0으로 대체한 누출판(LEAK_GATE)과 OOS argmax 단일(LEAK_SINGLE)을 같은 OOS에서 측정 — 누출판이 정직판(A1/A4)보다 체계적으로 좋아지는지 확인. 누출 이득이 관측되면 IS/OOS 분리가 실질 구속임이 실증되고, 통과 집합이 동일해 이득 0이면 '전이 부호의 시계열 안정'이라는 부수 정보로 기록.",
+    "no_capital_claim": "누출판 수치는 게이트 실효 검증 전용 — 어떤 채택 근거로도 사용 금지."
+  },
+  "robustness": {
+    "lag1_stress": "A1 신호 1개월 지연판 OOS 측정 — base 대비 붕괴 시 동월 누출 의심 (pit.md C5 규약)",
+    "placebo": "A1 합성 score의 월내 ticker 순열 20 draw — PORT_t 분포가 0 근방인지 (fast path: WT-021 parity 검증된 port_from_w 재구성, 본 세션에서 canonical과 parity 재확인 후 사용)",
+    "dual_basis": "A1/A4 OOS에 diag_ew_universe + cap_tier 병기 (cap-w 판정 권위 불변)",
+    "turnover": "전 arm 연 회전 실측 — 상한 11.0/yr 대조",
+    "ax001_conditional": "bad month(BM_Ret<0) vs normal 조건부 active 병기 (advisory)"
+  },
+  "parity_gate": "재구성 fast path vs canonical_screen_bt ret_net — OOS A3 arm에서 max|diff| < 1e-8 필수(WT-021 동일 규약). 불일치 시 fast path 산출 전부 무효.",
+  "inherited_assets": "WT-009 {base,tuned}_panel.parquet (PIT 검증 승계, 재계산 금지) + WT-021 하네스 코드 승계. WT-015 full-sample 수치(0.338/2.050)는 참조만 — 본 라운드 판정은 전부 OOS 신규 실측.",
+  "production_parity_note": "본 라운드는 내부 arm 대조(rerank형) — book-marginal ΔIR 주장 없음, production base 미소비. 따라서 production_parity_verified 라벨은 '해당 없음(주장 부재)'으로 기록하며, 여하한 ΔIR-vs-book 수치도 산출하지 않는다.",
+  "inv7_wall": "top-25·long-only·15bps는 고정 축. 게이트는 '25 slot을 채울 자격'의 판별이지 제약 변경 아님.",
+  "no_capital_claim": true
+}
