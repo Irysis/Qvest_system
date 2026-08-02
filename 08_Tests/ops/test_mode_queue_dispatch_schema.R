@@ -21,8 +21,23 @@
 suppressWarnings(suppressMessages(library(jsonlite)))
 
 .root <- local({
+  # ★앵커 1순위 = 이 스크립트 자신의 위치 (2026-08-02 수리).
+  #   구판은 env(CLAUDE_PROJECT_DIR/QM_ROOT)를 먼저 믿었다 — worktree 에서 돌리면 조용히
+  #   **main 트리**를 검사한다. 실측: 이 세션의 수리가 worktree 에 있는데 검사기가 main 을
+  #   보고 "술어 정본 부재" FAIL 을 냈다(반대 방향이면 낡은 파일을 초록으로 통과시킨다).
+  #   [[reference-cpd-set-in-hooks-unset-in-bash-tool]] · [[project-resolve-project-marker-gate-20260801]]
+  #   ★존재 검사가 아니라 **정체 검사** — 표지 파일로 확인하고서야 채택한다.
+  .marker <- file.path("02_Infrastructure", "ops", "paper_research_dispatch.R")
+  a <- commandArgs(trailingOnly = FALSE)
+  f <- sub("^--file=", "", a[grep("^--file=", a)])
+  if (length(f)) {
+    d <- dirname(normalizePath(f[1], winslash = "/", mustWork = FALSE))
+    r <- normalizePath(file.path(d, "..", ".."), winslash = "/", mustWork = FALSE)
+    if (file.exists(file.path(r, .marker))) return(r)
+  }
   for (k in c("CLAUDE_PROJECT_DIR", "QM_ROOT")) {
-    v <- Sys.getenv(k, ""); if (nzchar(v) && dir.exists(v)) return(v)
+    v <- Sys.getenv(k, "")
+    if (nzchar(v) && file.exists(file.path(v, .marker))) return(v)
   }
   cand <- "C:/Users/99922/OneDrive/Quant_Module_Moltbot"
   if (dir.exists(cand)) cand else getwd()
@@ -117,6 +132,66 @@ pp <- file.path(.root, "02_Infrastructure", "ops", "paper_router_prompt.md")
 ptxt <- if (file.exists(pp)) paste(readLines(pp, warn = FALSE), collapse = "\n") else ""
 if (grepl("정본 형태 = 평면", ptxt, fixed = TRUE)) ok("E1 생산자 프롬프트에 정본 형태(평면) 선언 존재") else bad("E1 생산자 계약 부재", "소비자만 고치면 생산자는 계속 흔들린다")
 if (grepl("schema_version", ptxt, fixed = TRUE) && grepl("형태 식별자", ptxt, fixed = TRUE)) ok("E2 schema_version = 형태 식별자 규약 선언 존재") else bad("E2 schema_version 규약 부재", "생산자 이름이 다시 들어가면 분기 불가")
+
+# ── F. R↔Python 쌍둥이 동치 (2026-08-02 공용 모듈 승격 동반축) ────────────────
+#   dispatch 는 R 이라 술어 정본(research_pool_predicates.py)을 import 할 수 없어 getrt 를
+#   유지한다. 그러면 정의가 2벌이 되고, **그 2벌이 갈리는 것이 바로 이번 결함들의 기전**이다.
+#   → 무검사 포크로 두지 않고 매 실행 동치를 대조한다. 어느 한쪽만 고치면 여기서 깨진다.
+#   ★같은 JSON 바이트를 양쪽에 먹인다(각자 만든 픽스처를 비교하면 비교 자체가 거짓말이 된다).
+PRED <- file.path(.root, "02_Infrastructure", "ops", "research_pool_predicates.py")
+PY <- Sys.getenv("QVEST_PY", "")
+if (!nzchar(PY) || !file.exists(PY)) {
+  for (cand in c(Sys.which("python"), Sys.which("python3"))) {
+    if (nzchar(cand)) { PY <- cand; break }
+  }
+}
+if (!file.exists(PRED)) {
+  bad("F0 술어 정본 부재", PRED)
+} else if (!nzchar(PY)) {
+  # ★계측 사망을 SKIP(=합격)으로 내려앉히지 않는다 — 이 저장소의 반복 결함 부류다.
+  bad("F0 python 해석 실패", "QVEST_PY 미설정 + python/python3 부재 — 동치 대조 불가(미측정)")
+} else {
+  py_routes <- function(txt) {
+    tf <- tempfile(fileext = ".json")
+    on.exit(unlink(tf), add = TRUE)
+    writeLines(txt, tf, useBytes = TRUE)
+    out <- suppressWarnings(system2(PY, c(PRED, "mode-routes", tf), stdout = TRUE))
+    if (length(out) == 0L) return(NULL)
+    j <- tryCatch(fromJSON(paste(out, collapse = "")), error = function(e) NULL)
+    if (is.null(j)) return(NULL)
+    c(optimizer = as.integer(j$optimizer), risk = as.integer(j$risk),
+      regime = as.integer(j$regime))
+  }
+  FIX <- list(
+    "평면(정본)"     = '{"date":"20260802","schema_version":"paper_router_v2","optimizer":[{"id":"a"},{"id":"b"},{"id":"c"}],"risk":[{"id":"d"},{"id":"e"}],"regime":[{"id":"f"}]}',
+    "queue{} 중첩"   = '{"schema_version":"mode_queue_v1","date":"20260727","generated_by":"paper_router_v2","queue":{"optimizer":[{"id":"a"},{"id":"b"},{"id":"c"}],"risk":[{"id":"d"},{"id":"e"}],"regime":[{"id":"f"}]}}',
+    "진짜 빈 큐"     = '{"date":"20260803","optimizer":[],"risk":[],"regime":[]}',
+    "메타 키만"      = '{"date":"20260804","note":"n"}',
+    "부분 중첩(혼합)" = '{"date":"20260805","optimizer":[{"id":"a"}],"queue":{"risk":[{"id":"d"},{"id":"e"}],"regime":[]}}'
+  )
+  for (nm in names(FIX)) {
+    txt <- FIX[[nm]]
+    rq <- route_counts(RES, fromJSON(txt, simplifyVector = FALSE))
+    pq <- py_routes(txt)
+    if (is.null(pq)) {
+      bad(sprintf("F %s", nm), "python 쪽 산출 없음 — 동치 미측정(계측 사망)")
+    } else if (identical(unname(rq), unname(pq))) {
+      ok(sprintf("F %s: R↔Python 동치 %s", nm, paste(unname(rq), collapse = "/")))
+    } else {
+      bad(sprintf("F %s ★쌍둥이 발산", nm),
+          sprintf("R=%s Python=%s — 한쪽만 수리된 상태",
+                  paste(unname(rq), collapse = "/"), paste(unname(pq), collapse = "/")))
+    }
+  }
+  # 음성 기준: legacy R 은 중첩 판에서 Python 과 **어긋나야** 한다(이 대조에 이빨이 있는가).
+  lq <- route_counts(LEGACY, fromJSON(FIX[["queue{} 중첩"]], simplifyVector = FALSE))
+  pq <- py_routes(FIX[["queue{} 중첩"]])
+  if (!is.null(pq) && !identical(unname(lq), unname(pq))) {
+    ok("F 음성기준: legacy R 은 Python 과 발산한다 (동치 대조에 이빨 있음)")
+  } else {
+    bad("F ★동치 대조 무력", "legacy R 조차 Python 과 일치 — 이 축이 발산을 못 잡는다")
+  }
+}
 
 cat(strrep("=", 74), "\n")
 cat(sprintf("PASS=%d FAIL=%d\n", PASS, FAIL))

@@ -32,6 +32,22 @@ import glob
 import datetime
 import collections   # (2026-07-26 RPS-06) papers[].source 분해 파생용
 
+#──────────────────────────────────────────────────────────────────────────────
+# (2026-08-02 RPS-09/10/11) 술어 정본 import — 재구현 금지.
+#   이 리더의 세 축(AlphaQueue testable · recheck잔여 · mode_queue)이 전부, 소비자 측에서
+#   이미 수리된 술어를 **여기서 다시 얕게 구현**하고 있었다. 그래서 소비자는 맞고 리더만
+#   틀린 상태가 됐다(08-02 실측: 리더 route 2 / 참값 1, 리더 recheck 3 / 참값 0).
+#   → 정의를 research_pool_predicates.py 한 곳으로 모으고 여기선 호출만 한다.
+#   sibling import — 이 파일과 같은 디렉터리(02_Infrastructure/ops/)에 있다.
+_OPS_DIR = os.path.dirname(os.path.abspath(__file__))
+if _OPS_DIR not in sys.path:
+    sys.path.insert(0, _OPS_DIR)
+try:
+    import research_pool_predicates as RPP
+except Exception:          # fail-soft: 부팅 중단 금지. render 가 사유를 세운다.
+    RPP = None
+#──────────────────────────────────────────────────────────────────────────────
+
 STAGE_REL = os.path.join("stage_artifacts", "paper_recharge")
 MARKER_REL = os.path.join(".cache", "research_pool_last_seen.json")
 _DATE_RE = re.compile(r"(\d{8})")
@@ -128,9 +144,15 @@ def collect(root):
         "alpha_queue_date": None,
         "alpha_queue_autorun": None,
         "alpha_queue_names": [],
+        # (RPS-09) 전 파일 − done 미소비분 = 실제 착수 가능분. route-최신 testable 과 별개 축.
+        "alpha_pending_n": None,
+        "alpha_pending_names": [],
         "mode_queue": {"optimizer": 0, "risk": 0, "regime": 0},
+        "mode_queue_unresolved": [],     # (RPS-11) 3라우트 0 + 미해석 키 = 드롭 지문
         "dispatch_done": False,
         "recheck_pending": 0,
+        "recheck_drift": None,           # (RPS-10) 큐파일 잔여 vs route 재파생 불일치
+        "predicates_missing": (RPP is None),
         "queue_done_n": 0,
         "gate_adopt": 0,
         "gate_quarantine": 0,
@@ -244,6 +266,23 @@ def collect(root):
             names.append(nm if nm else "(무명 후보 — 생산자 스키마 확인 필요)")
         out["alpha_queue_names"] = names
 
+    # 3a. (2026-08-02 RPS-09 수리) ★미소비 pending — 이 리더의 헤드라인 결함.
+    #   구판 `n_factor_testable` 은 ① done 을 **차감하지 않고** ② `_latest` 로 최신 route
+    #   파일 **하나만** 봤다. 두 결함이 반대 방향으로 작용해 숫자가 그럴듯했다:
+    #     실측 08-02 — 라인은 "testable route 2 — VolRankStability, T_RetAutoCorr_12M" 를
+    #     찍었는데 두 건 다 그날 실행·QUARANTINE 완료(done 차감 시 0)이고, 진짜 미소비분은
+    #     **과거 파일**에 있어 이 라인엔 아예 안 잡혔다(정본 술어 기준 참값 1).
+    #   → 소비자(alpha_search_queue_run.sh)가 실제로 착수하는 집합과 같은 술어를 쓴다.
+    #     route-최신 testable 은 "오늘 라우터가 뭘 봤나"의 진단축으로 남긴다(다른 질문).
+    if RPP is not None:
+        try:
+            _pend = RPP.alpha_pending(stage)
+            out["alpha_pending_n"] = len(_pend)
+            out["alpha_pending_names"] = [
+                (RPP.display_name(o) or pid) for pid, o in _pend.items()]
+        except Exception as e:
+            out["alpha_pending_error"] = type(e).__name__
+
     # 3b. (gap④) alpha 큐 자동백테 처리 결과 — alpha_search_queue_done + auto_verify gate
     dq = _load(os.path.join(stage, "alpha_search_queue_done.json"))
     out["queue_done_n"] = len(_processed_list(dq))
@@ -293,9 +332,21 @@ def collect(root):
     out["mode_queue_date"] = mq_d
     if mq_path:
         mj = _load(mq_path) or {}
-        for k in ("optimizer", "risk", "regime"):
-            v = mj.get(k)
-            out["mode_queue"][k] = len(v) if isinstance(v, list) else 0
+        # (2026-08-02 RPS-11 수리) 구판은 3키를 **최상위에서만** 읽었다. mode_queue_20260727.json
+        #   은 3키를 `queue`{} 안에 넣었으므로 그 판을 재생하면 opt0/risk0/regime0 으로 표시된다
+        #   — 소비자(paper_research_dispatch.R)가 정확히 이 미해석으로 14편을 전량 드롭했고,
+        #   그쪽은 이미 두 형태 관용으로 수리됐다. 리더만 구판에 남아 있었다.
+        #   ★schema_version 으로 분기 불가(생산자 이름이 들어가 있다) → 형태를 직접 본다.
+        if RPP is not None:
+            _routes = RPP.mode_queue_routes(mj)
+            for k in ("optimizer", "risk", "regime"):
+                out["mode_queue"][k] = len(_routes[k])
+            # "0편"과 "못 읽음"은 겉보기가 같다 — 미해석 키가 드롭의 유일한 지문이다.
+            out["mode_queue_unresolved"] = RPP.mode_queue_unresolved(mj)
+        else:
+            for k in ("optimizer", "risk", "regime"):
+                v = mj.get(k)
+                out["mode_queue"][k] = len(v) if isinstance(v, list) else 0
         # dispatch 소비 여부 — route_date 기준 research_status
         # (2026-08-02 RPS-08 수리) 구판은 `os.path.isfile()` 만 봤다 = **존재 검사로 소비 검사를
         #   대체**. 실사고 07-27: mode_queue 가 3키를 queue{} 안에 넣어 dispatch 가 0/0/0 으로
@@ -318,21 +369,37 @@ def collect(root):
                     out["dispatch_empty"] = "research_status_%s.json actions 비어 있음 (소비 0 — 스키마 드리프트/드롭 의심)" % route_d
 
     # 5. factor recheck(tier-2) 잔여 = 큐 - done
+    # (2026-08-02 RPS-10 수리) 구판은 큐의 `paper_id` 를 done 과 **raw 문자열 비교**했다.
+    #   큐 0802 의 id 는 'arxiv:' 접두(route 0727 판에서 물려받음)이고 done 은 bare 라
+    #   `pid not in done` 이 항상 참 → 실측 "recheck잔여 3" 인데 참값 0(3/3 전량 처리분).
+    #   소비자(factor_deep_recheck_run.sh)는 이미 정규화로 수리돼 N=0 을 내고 있었다 —
+    #   즉 **리더만 어긋나** 있었고, 부팅 라인이 매일 없는 잔여를 광고했다.
     fq_path, _ = _latest(stage, "factor_recheck_queue_*.json")
-    queued_ids = set()
-    if fq_path:
-        fj = _load(fq_path) or {}
+    fj = (_load(fq_path) or {}) if fq_path else {}
+    if RPP is not None:
+        out["recheck_pending"] = len(RPP.recheck_residual(stage, fj))
+        # 교차검증축: 물질화된 큐파일 잔여 ↔ route 재파생(소비자가 다음 런에 만들 집합).
+        #   어긋나면 큐파일이 stale 이라는 뜻 — 숨기지 말고 드러낸다(RPS-07 원장↔파생 선례).
+        try:
+            _canon = len(RPP.recheck_uncertain(stage))
+            if _canon != out["recheck_pending"]:
+                out["recheck_drift"] = "큐파일 %d vs route 재파생 %d" % (
+                    out["recheck_pending"], _canon)
+        except Exception:
+            pass
+    else:
+        queued_ids = set()
         for it in (fj.get("items", []) or []):
             pid = it.get("paper_id")
             if pid:
                 queued_ids.add(pid)
-    done_ids = set()
-    dj = _load(os.path.join(stage, "factor_recheck_done.json"))
-    for it in _processed_list(dj):
-        pid = it.get("paper_id") if isinstance(it, dict) else it
-        if pid:
-            done_ids.add(pid)
-    out["recheck_pending"] = len(queued_ids - done_ids)
+        done_ids = set()
+        dj = _load(os.path.join(stage, "factor_recheck_done.json"))
+        for it in _processed_list(dj):
+            pid = it.get("paper_id") if isinstance(it, dict) else it
+            if pid:
+                done_ids.add(pid)
+        out["recheck_pending"] = len(queued_ids - done_ids)
 
     # 6. NEW 판정 — 직전 부팅 인지 마커와 비교
     marker = _load(os.path.join(root, MARKER_REL)) or {}
@@ -394,7 +461,10 @@ def render(o):
     if o["alpha_queue_n"] > 3:
         aq_names += ", ..."
     autorun = o["alpha_queue_autorun"]
-    ar_str = ("autorun=%s" % autorun) if autorun is not None else "autorun=?"
+    # (2026-08-02) 구판 폴백은 리터럴 '?' 였다 — boot_status_smoke 의 placeholder 단언이
+    #   정확히 이걸 잡는다(그 단언은 "약속만 있고 구현이 없던" 결손을 07-26에 실장한 것).
+    #   '?' 는 아무것도 말하지 않는다. 미상이면 미상이라고, 사유가 짐작되면 사유를 쓴다.
+    ar_str = ("autorun=%s" % autorun) if autorun is not None else "autorun=미상(생산자 키 부재)"
     stale = ""
     if o["alpha_queue_date"] and o["route_date"] and o["alpha_queue_date"] != o["route_date"]:
         stale = " [큐 stamp %s — route보다 과거, 재생성 대기]" % _fmt_date(o["alpha_queue_date"])
@@ -409,10 +479,27 @@ def render(o):
         #   드리프트로 판정이 누락 집계되던 자리이므로 한 줄로 드러낸다.
         if o.get("gate_drift"):
             gate += " ⚠드리프트(%s)" % o["gate_drift"]
-    if o["n_factor_testable"] > 0 or o["alpha_queue_n"] > 0:
-        names = ", ".join(o["factor_testable_names"][:3]) or aq_names or "?"
-        lines.append("  AlphaQueue:  testable route %d / 소비큐 %d (%s) — %s%s%s" % (
-            o["n_factor_testable"], o["alpha_queue_n"], ar_str, names, gate, stale))
+    # (2026-08-02 RPS-09) 헤드라인 = **미소비 pending**(소비자가 실제 착수하는 집합).
+    #   route-최신 testable 은 "오늘 라우터가 뭘 봤나"라는 다른 질문이므로 진단축으로 병기한다.
+    #   구판은 후자만 찍으면서 전자인 척했다 — 그래서 그날 이미 QUARANTINE 된 2건이
+    #   "대기 중"으로 광고되고, 과거 파일의 진짜 미소비분은 보이지 않았다.
+    pend_n = o.get("alpha_pending_n")
+    pend_names = o.get("alpha_pending_names") or []
+    if o.get("alpha_pending_error"):
+        pend_str = "미소비 산정실패(%s)" % o["alpha_pending_error"]
+    elif pend_n is None:
+        pend_str = "미소비 미측정(술어 모듈 부재)"
+    else:
+        pend_str = "미소비 %d" % pend_n
+    if pend_names:
+        names = ", ".join(pend_names[:3]) + (", ..." if len(pend_names) > 3 else "")
+    else:
+        # pending 0 이면 최신 route testable 을 맥락으로 보인다(무엇이 처리됐는지).
+        names = (", ".join(o["factor_testable_names"][:3]) or aq_names
+                 or "(표시할 후보명 없음)")
+    if pend_n or o["n_factor_testable"] > 0 or o["alpha_queue_n"] > 0:
+        lines.append("  AlphaQueue:  %s (전파일−done) · route최신 testable %d · 소비큐 %d (%s) — %s%s%s" % (
+            pend_str, o["n_factor_testable"], o["alpha_queue_n"], ar_str, names, gate, stale))
     else:
         # (2026-07-26 RPS-03 수리) 구현은 0 에 **연구 결론**("신선 KR 횡단면 알파 희귀")을
         #   하드코딩했다 — 필드명 불일치로 파생이 0 이 됐던 실제 상황(testable 4건 존재)에서
@@ -436,8 +523,16 @@ def render(o):
     if o.get("mode_queue_date") and o["route_date"] and o["mode_queue_date"] != o["route_date"]:
         # (RPS-04) 큐 stamp 가 route 보다 과거 = 현재 연료가 아니다(구판은 무표기)
         mq_stale = " [큐 stamp %s — route보다 과거]" % _fmt_date(o["mode_queue_date"])
-    lines.append("  ModeQueue:   opt%s/risk%s/regime%s (QEPM 연료) · dispatch=%s · recheck잔여 %d%s" % (
-        mq["optimizer"], mq["risk"], mq["regime"], disp, o["recheck_pending"], mq_stale))
+    # (2026-08-02 RPS-11) 3라우트 0 + 미해석 키 = 스키마 드리프트 지문. 0 으로 뭉개지 않는다.
+    mq_unres = ""
+    if o.get("mode_queue_unresolved"):
+        mq_unres = " ★미해석 키(%s) — 스키마 드리프트 의심" % ", ".join(
+            o["mode_queue_unresolved"][:4])
+    # (2026-08-02 RPS-10) 큐파일 잔여 ↔ route 재파생 불일치 = 큐파일 stale 지문.
+    rc_drift = " ⚠드리프트(%s)" % o["recheck_drift"] if o.get("recheck_drift") else ""
+    lines.append("  ModeQueue:   opt%s/risk%s/regime%s (QEPM 연료) · dispatch=%s · recheck잔여 %d%s%s%s" % (
+        mq["optimizer"], mq["risk"], mq["regime"], disp, o["recheck_pending"],
+        rc_drift, mq_unres, mq_stale))
 
     # 라우팅 대기(수집 > 라우팅)
     if o["routing_pending"]:

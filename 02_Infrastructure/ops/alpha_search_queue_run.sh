@@ -85,106 +85,15 @@ source "$(dirname "${BASH_SOURCE[0]:-$0}")/_sched_failure_classify.sh" 2>/dev/nu
 PYBIN=""
 command -v sched_resolve_python >/dev/null 2>&1 && PYBIN=$(sched_resolve_python || true)
 [ -n "$PYBIN" ] || PYBIN="python3"
-# (2026-08-02 수리) 아래 블록은 `08_Tests/ops/test_alpha_queue_pending.py` 가 **이 파일에서
-#   heredoc 을 그대로 추출**해 픽스처로 돌린다(복사본 검사 금지 — 사본은 드리프트한다).
-#   시작/끝 마커(`<<'PY'` … 단독 `PY`)를 바꾸면 검사기부터 고칠 것.
-N=$("$PYBIN" - "$SD" <<'PY'
-import json, sys, glob, os, re
-sd=sys.argv[1]
-
-# ── (2026-08-02 결함1 수리) id 표기 정규화.
-#   생산자 3계열이 서로 다른 표기를 낸다 — 실측:
-#     alpha_search_route_20260727.json  papers[].id      = "arxiv:2607.19497"
-#     그 외 route(0619~0726) / 구 queue  .id/.arxiv_id    = bare "2607.19497"
-#     alpha_search_queue_done.json      processed[]      = bare
-#   → 정규화 없이 문자열 비교하면 `pid not in done` 이 **항상 참** → 이미 소비·QUARANTINE
-#     판정난 건이 영구 pending 으로 남는다(07-27 소비분 2건이 그 자리였다).
-#   ★curated 논문 id 는 arXiv 형태가 아닌 파일명(MAN_AHL_*.pdf 등, 실측 15건)이므로
-#     arXiv 꼴일 때만 접두/버전을 벗기고 그 외는 원형 보존한다.
-_AXPFX = re.compile(r"^(?:https?://)?(?:www\.)?(?:arxiv\.org/(?:abs|pdf)/|arxiv[:/])", re.I)
-_AXID  = re.compile(r"^(\d{4}\.\d{4,5})(?:v\d+)?$")
-def nid(v):
-    s = str(v if v is not None else "").strip()
-    if not s: return ""
-    s = _AXPFX.sub("", s).strip()
-    m = _AXID.match(s)
-    return m.group(1) if m else s
-
-# ── (2026-08-02 결함2 수리) id 키 이름 드리프트.
-#   구판은 `id` → `arxiv_id` 만 봤는데 queue_20260726/20260727 의 candidates 는 키가
-#   `paper_id` 다 → pid='' → 해당 후보 **전부 침묵 미계수**(결함1과 반대 방향의 오계수).
-#   구 파일(0619/0621)만 `id` 라 우연히 계수되고 있었다.
-_IDKEYS = ("paper_id", "id", "arxiv_id")
-def pid_of(o, src):
-    vals = {nid(o.get(k)) for k in _IDKEYS if o.get(k)}
-    vals.discard("")
-    if len(vals) > 1:
-        # 같은 레코드가 서로 다른 id 를 이고 있으면 어느 쪽을 골라도 오계수다. 숨기지 않는다.
-        sys.stderr.write("[alpha_queue] id 키 충돌 %s: %s\n" % (src, sorted(vals)))
-    for k in _IDKEYS:
-        v = nid(o.get(k))
-        if v: return v
-    return ""
-
-# ── (2026-08-02) verdict 위치 드리프트 — queue_20260726 은 candidate **최상위** verdict 이고
-#   route/구 queue 는 factor_candidate.verdict 다. 한쪽만 보면 역시 침묵 미계수.
-def testable(o):
-    fc = o.get("factor_candidate") or {}
-    v = str(fc.get("verdict") or o.get("verdict") or "").strip().lower()
-    if v == "testable": return True
-    # ── (2026-08-02 결함3 수리) 명시 부정 verdict 에 거부권.
-    #   구판은 `verdict=="testable" or (route=="alpha" and kr_feasible)` 였는데, OR 이라
-    #   라우터가 **redundant / infeasible / uncertain 으로 명시 기각한 건**을 뒷 분기가
-    #   되살렸다 — 실측 4건(infeasible 2 · redundant 1 · uncertain 1)이 그 자리였고,
-    #   그중 3건이 08-02 잔여 pending 4건에 그대로 올라 있었다(N 4 → 1).
-    #   스크립트 헤더("pending(큐 testable − done)")도 프롬프트 계약
-    #   (`factor_candidate.verdict=="testable"`)도 testable-only 를 선언한다 —
-    #   즉 설계 확장이 아니라 술어가 계약에서 이탈해 있던 것.
-    #   ★뒷 분기는 판정이 **아직 없을 때**의 폴백이지, 판정을 뒤집는 우회로가 아니다.
-    if v: return False
-    return o.get("route") == "alpha" and bool(o.get("kr_feasible"))
-
-# ── (2026-08-02) 위 두 수리로 **새 후보를 읽게 되므로** 이미 종결된 레코드를 되살리지 않도록
-#   레코드 자신의 종결 표식을 존중한다(done 원장 누락분 — 결함3 — 에 대한 2차 방어이기도 하다).
-_TERMINAL = {"quarantine","quarantined","adopt","adopted","done","processed","skip","skipped"}
-def resolved(o):
-    for k in ("status","gate_decision"):
-        if str(o.get(k) or "").strip().lower() in _TERMINAL: return True
-    return False
-
-done=set()
-dp=os.path.join(sd,"alpha_search_queue_done.json")
-if os.path.exists(dp):
-    try:
-        _d=json.load(open(dp,encoding="utf-8"))
-        done={nid(x) for x in (_d.get("processed") or []) if nid(x)}
-        # records[] 도 소비 사실이다 — processed append 를 빠뜨린 런이 실재한다(결함3).
-        for r in (_d.get("records") or []):
-            if isinstance(r,dict):
-                v=pid_of(r,"done.records")
-                if v: done.add(v)
-    except Exception: done=set()
-
-pend=set()
-def scan(objs, src):
-    for o in objs:
-        if not isinstance(o, dict): continue
-        p = pid_of(o, src)
-        if p and p not in done and testable(o) and not resolved(o):
-            pend.add(p)
-
-for f in glob.glob(os.path.join(sd,"alpha_search_queue_*.json")):
-    if f.endswith("_done.json"): continue
-    try: d=json.load(open(f,encoding="utf-8"))
-    except Exception: continue
-    scan(d.get("candidates") or [], os.path.basename(f))
-for f in glob.glob(os.path.join(sd,"alpha_search_route_*.json")):
-    try: r=json.load(open(f,encoding="utf-8"))
-    except Exception: continue
-    scan(r.get("papers") or [], os.path.basename(f))
-print(len(pend))
-PY
-)
+# (2026-08-02 공용 모듈 승격) 술어 정본 = 02_Infrastructure/ops/research_pool_predicates.py.
+#   구판은 이 자리에 heredoc 으로 술어를 **직접 적었다**. 같은 술어를 factor_deep_recheck_run.sh ·
+#   paper_research_dispatch.R · research_pool_status.py 가 각자 다시 적었고, 그래서 같은 결함이
+#   소비자 수만큼 독립 재발했다(08-02 하루 3건). 도훈 사전등록 조건("세 번째 소비자가 나타나면
+#   공용 모듈 승격 재판정")이 부팅 리더 등장으로 발효 → 정의를 한 곳으로 모았다.
+#   ★여기에 술어를 다시 적지 말 것 — 재분기가 이번 결함들의 원인이다.
+#     배선 단언: 08_Tests/ops/test_alpha_queue_pending.py 가 이 호출의 존재를 매 실행 확인한다.
+PRED="$BASE/02_Infrastructure/ops/research_pool_predicates.py"
+N=$("$PYBIN" "$PRED" alpha-pending "$SD")
 # ★계측 사망을 0 으로 삼키지 않는다 — 숫자가 아니면 skip 이 아니라 경보 후 중단.
 if command -v sched_assert_count >/dev/null 2>&1 && ! sched_assert_count "$N"; then
   log "★pending 산정 실패 (N='$N', PYBIN=$PYBIN) — 계측 사망. 0 으로 간주하지 않고 중단."
