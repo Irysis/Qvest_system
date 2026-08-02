@@ -76,6 +76,7 @@ lgl_eq <- function(a, b) (is.na(a) && is.na(b)) || (!is.na(a) && !is.na(b) && a 
 calls <- 0L; halted <- FALSE
 n_done <- 0L; n_uncached <- 0L
 diffs <- list(); encs <- character(0); chks <- character(0); news <- character(0)
+audit <- list()   # ratio_check × is_correction 교차표 + 의심 행 원장
 
 for (i in seq_len(nrow(D))) {
   rc <- as.character(D$rcept_no[i])
@@ -102,6 +103,11 @@ for (i in seq_len(nrow(D))) {
   e1 <- pr$doc_encoding; encs <- c(encs, if (is.null(e1) || is.na(e1)) "NA" else e1)
   chks <- c(chks, pr$ratio_check)
   news <- c(news, pr$parse_status)
+  audit[[length(audit) + 1L]] <- data.table(
+    rcept_no = rc, ym = D$ym[i], corp_name = D$corp_name[i],
+    is_correction = isTRUE(D$is_correction[i]), parse_status = pr$parse_status,
+    ratio_check = pr$ratio_check, contract_amount = pr$contract_amount,
+    recent_revenue = pr$recent_revenue, disclosed_ratio_pct = pr$disclosed_ratio_pct)
 
   cmp <- list(
     contract_amount  = num_eq(D$contract_amount[i],  pr$contract_amount),
