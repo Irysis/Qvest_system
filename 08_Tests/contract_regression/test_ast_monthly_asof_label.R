@@ -243,6 +243,22 @@ if (is.null(ic) || !"Usable_Date" %in% names(ic)) {
      sprintf("(rows=%d)", n_in))
 }
 
+# ── F. 히스토리 있는 리프: TS 창이 월 라벨에 올라타는지 ───────────────────────
+# 라벨이 틀리면 TS_DELTA(k=1) 는 "이번달-전달"이 아니라 "전달-전전달"이 된다.
+# 히스토리 월(eval 그리드 밖)도 같은 as-of 규율로 라벨돼야 성립한다.
+cat("--- F. 히스토리 리프(TS_DELTA k=1): 월 정렬이 맞나 ---\n")
+ast_d1 <- list(type = "op", op = "TS_DELTA", params = list(k = 1L), args = list(leaf))
+cmp_d <- ast_compile(ast_d1, eval_dates = EVAL)
+d_last <- max(EVAL)
+a <- as.data.table(cmp_d$panel)[Date == d_last & !is.na(value), .(Ticker, av = value)]
+cur <- as.data.table(load_month_factors(d_last, factor_names = FAC))[, .(Ticker, cur = Z_Score_Aligned)]
+prv <- as.data.table(load_month_factors(min(EVAL), factor_names = FAC))[, .(Ticker, prv = Z_Score_Aligned)]
+m <- merge(merge(a, cur, by = "Ticker"), prv, by = "Ticker")
+ok(nrow(m) > 100L && max(abs(m$av - (m$cur - m$prv))) < 1e-12,
+   "F1 TS_DELTA == 당월 − 전월 (히스토리 월 라벨도 as-of)",
+   sprintf("(n=%d max|diff|=%s)", nrow(m),
+           format(if (nrow(m)) max(abs(m$av - (m$cur - m$prv))) else NA_real_)))
+
 cat(sprintf("\nPASS=%d FAIL=%d\n", PASS, FAIL))
 cat(sprintf('{"test":"ast_monthly_asof_label","pass":%d,"fail":%d,"total":%d}\n',
             PASS, FAIL, PASS + FAIL))
