@@ -1,0 +1,109 @@
+{
+  "schema_version": "alpha_search_strategy_manifest_v1",
+  "created_at": "2026-08-02T21:39:30+0900",
+  "mode": "alpha_search",
+  "strategy_id": "STR_AS_20260802_213711_53060",
+  "strategy_name": "CTR_MAG12_SIZE_ivol",
+  "strategy_idea": "FQ-002 계약수주 magnitude 파일럿(WT-D20260802_018): 공시 계약금액 12M 누적 상대규모(size 분모) long-side directional. 사전등록 4셀 중 size_ivol. pilot_scope=2023-08..2026-07 크롤(전구간 아님).",
+  "factor_engine_path": "02_Infrastructure/alpha_search/factor_engine_contract.R",
+  "execution": {
+    "universe": "K200_KQ150",
+    "universe_n": 349,
+    "n_holdings": 20,
+    "weight_method": "ivol",
+    "commission": 0.0015,
+    "risk_controls": {
+      "vol_target": null,
+      "vol_lookback": 60,
+      "dd_brake": null,
+      "buffer_zone": {
+        "keep_n": 40,
+        "entry_n": 20
+      },
+      "use_default_buffer": true,
+      "cov_method": "sample"
+    },
+    "bt_result_path": "stage_artifacts/alpha_search/20260802_213711_53060/bt_result.rds"
+  },
+  "pit": {
+    "code_scan": "detect_lookahead",
+    "status": "CLEAN",
+    "factor_engine_path": "02_Infrastructure/alpha_search/factor_engine_contract.R",
+    "note": "AlphaSearch stops before backtest when detect_lookahead reports violations."
+  },
+  "backtest_contract": {
+    "status": "OK",
+    "run_id": "ASBT_20260802_213711_53060",
+    "metric_type": "backtested",
+    "bt_result_path": "stage_artifacts/alpha_search/20260802_213711_53060/bt_result.rds",
+    "output_dir": "stage_artifacts/alpha_search/20260802_213711_53060",
+    "integrity_status": "WARNING",
+    "audit_pass": 15,
+    "audit_fail": 0,
+    "audit_warn": 1,
+    "validation_errors": [],
+    "return_series": {
+      "status": "OK",
+      "source": "bt_result.period_returns",
+      "csv_path": "stage_artifacts/alpha_search/20260802_213711_53060/03_period_returns.csv",
+      "date_col": "date",
+      "ret_col": "ret_net",
+      "n_obs": 481,
+      "start_date": "2024-08-05",
+      "end_date": "2026-07-31",
+      "post2008_obs": 481,
+      "frequency": "daily"
+    },
+    "note": "standard Backtest Result Contract saved for every AlphaSearch run; grade/admission remains separate"
+  },
+  "verdict": {
+    "grade": "B_DEF",
+    "score": 47.6,
+    "hurdle_pass": true,
+    "hard_fail": false,
+    "fail_reasons": [],
+    "f_grade_reasons": [],
+    "screening": {
+      "screen_pass": true,
+      "screen_route": "STANDALONE_TRACK",
+      "drawdown_tail_review": false,
+      "note": "탐색 게이트 — 자본/졸업 게이트 아님 (graduation HARD 불변). PIT만 절대."
+    }
+  },
+  "metrics": {
+    "CAGR": 50.71,
+    "AnnVol": 37.41,
+    "Sharpe": 1.356,
+    "Sharpe_m": 1.159,
+    "IR": -0.661,
+    "MDD": 40.6,
+    "Calmar": 1.249,
+    "Turnover_Ann": 78.1,
+    "Top10_Conc": 50,
+    "Rolling3Y_Pos": null,
+    "BM_Corr": 0.632,
+    "ES99_d": 9.13,
+    "ES99_m": 17.2,
+    "GradeA_Corr": null,
+    "Rolling6M_Hit": 100,
+    "Worst6M_Ret": 6.97,
+    "MaxConsecNegAlpha": 3,
+    "Rolling12M_Hit": 100
+  },
+  "excess_cagr_pct": -23.26,
+  "fmt": [
+    {
+      "code": "FMT-02",
+      "label": "Factor Degeneration",
+      "reason": "IR -0.66 < -0.1 & 초과CAGR -23.3%p < 0 — KR에서 팩터 방향 역작동 의심"
+    }
+  ],
+  "authoritative": {
+    "status": "OK",
+    "essence_grade": "F",
+    "reasons": "non-positive alpha (PORT_t<=0 또는 net_IR<=0)",
+    "metric_type": "backtested",
+    "run_id": "ASBT_20260802_213711_53060",
+    "bt_result_path": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/alpha_search/20260802_213711_53060/bt_result.rds"
+  }
+}
