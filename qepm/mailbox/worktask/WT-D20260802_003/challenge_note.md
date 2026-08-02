@@ -30,7 +30,7 @@
 - **부분 인정**: post-2017 실측 약화(post17 cap-w t −1.05, subperiod IC 중기 침하 0.018)는 이 우려와 정합 — `regime_scope.weakens_or_reverses_in`에 리더십 반전 국면을 명시 반영. 단 전기간 paired +2.57은 R10의 W_factor null과 달리 유의 — "FM이라 무조건 null"은 기각(선별 slot과 가중 slot의 비대칭이 본 라운드의 발견). INV-7: FM-계열 한계는 config-scoped로만 소비.
 
 ## 합리화 자기검증
-- 금지 표현("영향 미미/관행적/보수적이면 OK/대부분 결과 동일") 사용 없음 확인.
+- answer-principles 회피표현 조항의 금지 목록 전수 대조 — 본문·패키지에 해당 표현 사용 없음 확인 (목록 리터럴 인용은 grep 검출기 오탐을 유발해 생략 — 정본 목록은 `.claude/rules/answer-principles.md` 참조).
 - 미측정 항목 정직 라벨 2건: ① redundancy active-cor vs Ppure — 러너가 Ppure pr 시계열을 RES에만 저장(결함 인지, 빌더에서 NA + "검증 안 됨" 라벨, risk 단계 재측정 TBD) ② post_neutralization_ic 미수행(사유 기재).
 - 2026-06 신호월(7월 폭락 수익)은 신호달력 말단 제약으로 측정 미포함 — 명시 기록(validation.measurement).
 
