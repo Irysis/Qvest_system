@@ -35,8 +35,7 @@ ic_batt <- function(dt, lab) {
   sps <- sp[, .(mean_ic = mean(ic), t = nwt(ic), n = .N), by = per][order(per)]
   stab <- min(sps$mean_ic) / max(sps$mean_ic)
   ## size-중립화 후 IC
-  dz <- copy(d); dz <- merge(dz, SIZE[, .(Date, Ticker, Size)], by = c("Date", "Ticker"), all.x = TRUE)
-  dz <- dz[is.finite(Size) & Size > 0]
+  dz <- copy(d)[is.finite(Size) & Size > 0]
   dz[, sc_neut := as.numeric(residuals(lm(score ~ log(Size)))), by = Date]
   icn <- dz[, .(ic = if (.N >= 20) cor(frank(sc_neut), frank(Ret_1m)) else NA_real_), by = Date][is.finite(ic)]
   list(label = lab, n_months = nrow(ics), rank_ic = mean(ics$ic), ic_sd = sd(ics$ic),
