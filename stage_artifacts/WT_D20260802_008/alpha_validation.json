@@ -1,0 +1,503 @@
+{
+  "task_id": "WT-D20260802_008",
+  "fq_id": "FQ-084-NP2",
+  "parent_wt": "WT-D20260802_002",
+  "generated_at": "2026-08-02T12:31:30+0900",
+  "metric_type": "canonical_screen",
+  "instrument": "02_Infrastructure/contracts/canonical_screen_bt.R::canonical_screen_bt (top_n=25, 15bps, liq 2e8)",
+  "window": {
+    "n_months": 268,
+    "from": "2004-01",
+    "to": "2026-04",
+    "selection_type": "chain",
+    "n_trials": 1,
+    "is_only_selection": true,
+    "holdout_consumed": false
+  },
+  "preregistration": "stage_artifacts/WT_D20260802_008/preregistration.json",
+  "harness_anchor": {
+    "a_base_capw": 3.478107,
+    "wt002_reference": 3.478107,
+    "exact_match": true,
+    "note": "WT-002 BASE(gate_panel ∩ liq 2e8) verbatim 재사용 — A_base 268개월 cap-w PORT_t 소수점 일치"
+  },
+  "premise_check": {
+    "premise": "배포 유니버스에 애널리스트 커버리지 0 종목이 존재한다 (WT-002 CF-08 형 선검증)",
+    "share_cov0": 0.201277,
+    "share_cov_le1": 0.301046,
+    "top25_share_cov0": 0.114328,
+    "top25_share_le1": 0.216866,
+    "cor_cov_adv": 0.612771,
+    "cor_cov_size": 0.736179,
+    "verdict": "PREMISE_HOLDS — cov0 = 20.1% 종목-월 (top-25 내 11.4%). WT-002 외국인 축(94.3% 포화 공허)과 달리 전제가 실재 → 측정 진행."
+  },
+  "primary_result": {
+    "A_base_capw": 3.478107,
+    "B_cov_capw": 3.921785,
+    "A_base_ewuni": 4.218472,
+    "B_cov_ewuni": 3.310106,
+    "paired_B_minus_A": {
+      "mean_diff_ann": -0.013366,
+      "nw_t_diff": -0.659989
+    },
+    "prereg_necessary_criterion": "B_cov > A_base AND paired NW-t >= 2.0",
+    "prereg_outcome": "FAILED — cap-w 점수치는 상회(3.922>3.478)하나 paired NW-t = -0.66 (알파 연 -1.3%p 감소, t 상승은 변동성 축소 산물). EW-uni basis 역전(3.310<4.218). placebo 분포 안.",
+    "dual_basis_agreement": false,
+    "dual_basis_note": "cap-w 점수치 상승 vs EW-uni 하락 — basis 불일치 자체가 '개선 없음'의 증거(사전등록 paired 기준이 판정 권위)"
+  },
+  "full_arms": [
+    {
+      "arm_key": "A_base|capw",
+      "arm": "A_base",
+      "basis": "capw",
+      "n_months": 268,
+      "avg_names": 291.533582,
+      "port_t": 3.478107,
+      "p": 0.000505,
+      "ir": 0.778566,
+      "alpha_ann": 0.114054,
+      "net_sr": 0.778566,
+      "turnover_ann": 12.449552,
+      "own_ew_port_t": 4.218472,
+      "own_ew_post2017_t": 1.943469,
+      "own_ew_oos_approx": 0.509909
+    },
+    {
+      "arm_key": "A_base|ewuni",
+      "arm": "A_base",
+      "basis": "ewuni",
+      "n_months": 268,
+      "avg_names": 291.533582,
+      "port_t": 4.218472,
+      "p": 0.000025,
+      "ir": 0.886376,
+      "alpha_ann": 0.090876,
+      "net_sr": 0.886376,
+      "turnover_ann": 12.449552,
+      "own_ew_port_t": 4.218472,
+      "own_ew_post2017_t": 1.943469,
+      "own_ew_oos_approx": 0.509909
+    },
+    {
+      "arm_key": "B_cov|capw",
+      "arm": "B_cov",
+      "basis": "capw",
+      "n_months": 268,
+      "avg_names": 146.007463,
+      "port_t": 3.921785,
+      "p": 0.000088,
+      "ir": 0.802137,
+      "alpha_ann": 0.098075,
+      "net_sr": 0.802137,
+      "turnover_ann": 10.787463,
+      "own_ew_port_t": 4.528146,
+      "own_ew_post2017_t": 2.342591,
+      "own_ew_oos_approx": 0.695283
+    },
+    {
+      "arm_key": "B_cov|ewuni",
+      "arm": "B_cov",
+      "basis": "ewuni",
+      "n_months": 268,
+      "avg_names": 146.007463,
+      "port_t": 3.310106,
+      "p": 0.000933,
+      "ir": 0.714083,
+      "alpha_ann": 0.083317,
+      "net_sr": 0.714083,
+      "turnover_ann": 10.787463,
+      "own_ew_port_t": 4.528146,
+      "own_ew_post2017_t": 2.342591,
+      "own_ew_oos_approx": 0.695283
+    },
+    {
+      "arm_key": "B_cov_low|capw",
+      "arm": "B_cov_low",
+      "basis": "capw",
+      "n_months": 268,
+      "avg_names": 146.007463,
+      "port_t": 2.682905,
+      "p": 0.007299,
+      "ir": 0.625844,
+      "alpha_ann": 0.116299,
+      "net_sr": 0.625844,
+      "turnover_ann": 10.235821,
+      "own_ew_port_t": 3.335179,
+      "own_ew_post2017_t": 0.968593,
+      "own_ew_oos_approx": 0.289521
+    },
+    {
+      "arm_key": "B_cov_low|ewuni",
+      "arm": "B_cov_low",
+      "basis": "ewuni",
+      "n_months": 268,
+      "avg_names": 146.007463,
+      "port_t": 3.319838,
+      "p": 0.000901,
+      "ir": 0.766095,
+      "alpha_ann": 0.084724,
+      "net_sr": 0.766095,
+      "turnover_ann": 10.235821,
+      "own_ew_port_t": 3.335179,
+      "own_ew_post2017_t": 0.968593,
+      "own_ew_oos_approx": 0.289521
+    },
+    {
+      "arm_key": "B_cov_lag1|capw",
+      "arm": "B_cov_lag1",
+      "basis": "capw",
+      "n_months": 268,
+      "avg_names": 146.007463,
+      "port_t": 3.76691,
+      "p": 0.000165,
+      "ir": 0.748964,
+      "alpha_ann": 0.093029,
+      "net_sr": 0.748964,
+      "turnover_ann": 10.819701,
+      "own_ew_port_t": 4.519742,
+      "own_ew_post2017_t": 2.175331,
+      "own_ew_oos_approx": 0.610521
+    },
+    {
+      "arm_key": "B_cov_lag1|ewuni",
+      "arm": "B_cov_lag1",
+      "basis": "ewuni",
+      "n_months": 268,
+      "avg_names": 146.007463,
+      "port_t": 3.153563,
+      "p": 0.001613,
+      "ir": 0.655344,
+      "alpha_ann": 0.078356,
+      "net_sr": 0.655344,
+      "turnover_ann": 10.819701,
+      "own_ew_port_t": 4.519742,
+      "own_ew_post2017_t": 2.175331,
+      "own_ew_oos_approx": 0.610521
+    },
+    {
+      "arm_key": "C_liq_matched|capw",
+      "arm": "C_liq_matched",
+      "basis": "capw",
+      "n_months": 268,
+      "avg_names": 145.955224,
+      "port_t": 3.680665,
+      "p": 0.000233,
+      "ir": 0.81418,
+      "alpha_ann": 0.099853,
+      "net_sr": 0.81418,
+      "turnover_ann": 11.593433,
+      "own_ew_port_t": 4.435234,
+      "own_ew_post2017_t": 2.487495,
+      "own_ew_oos_approx": 0.780631
+    },
+    {
+      "arm_key": "C_liq_matched|ewuni",
+      "arm": "C_liq_matched",
+      "basis": "ewuni",
+      "n_months": 268,
+      "avg_names": 145.955224,
+      "port_t": 3.31044,
+      "p": 0.000931,
+      "ir": 0.697314,
+      "alpha_ann": 0.086344,
+      "net_sr": 0.697314,
+      "turnover_ann": 11.593433,
+      "own_ew_port_t": 4.435234,
+      "own_ew_post2017_t": 2.487495,
+      "own_ew_oos_approx": 0.780631
+    },
+    {
+      "arm_key": "D_size_matched|capw",
+      "arm": "D_size_matched",
+      "basis": "capw",
+      "n_months": 268,
+      "avg_names": 145.985075,
+      "port_t": 3.415727,
+      "p": 0.000636,
+      "ir": 0.741551,
+      "alpha_ann": 0.091429,
+      "net_sr": 0.741551,
+      "turnover_ann": 10.576119,
+      "own_ew_port_t": 3.852479,
+      "own_ew_post2017_t": 2.149935,
+      "own_ew_oos_approx": 0.800787
+    },
+    {
+      "arm_key": "D_size_matched|ewuni",
+      "arm": "D_size_matched",
+      "basis": "ewuni",
+      "n_months": 268,
+      "avg_names": 145.985075,
+      "port_t": 2.732585,
+      "p": 0.006284,
+      "ir": 0.614876,
+      "alpha_ann": 0.078389,
+      "net_sr": 0.614876,
+      "turnover_ann": 10.576119,
+      "own_ew_port_t": 3.852479,
+      "own_ew_post2017_t": 2.149935,
+      "own_ew_oos_approx": 0.800787
+    },
+    {
+      "arm_key": "E_cov_sizeneut|capw",
+      "arm": "E_cov_sizeneut",
+      "basis": "capw",
+      "n_months": 268,
+      "avg_names": 146.906716,
+      "port_t": 4.102074,
+      "p": 0.000041,
+      "ir": 0.933206,
+      "alpha_ann": 0.132112,
+      "net_sr": 0.933206,
+      "turnover_ann": 11.786866,
+      "own_ew_port_t": 5.312696,
+      "own_ew_post2017_t": 2.72292,
+      "own_ew_oos_approx": 0.561114
+    },
+    {
+      "arm_key": "E_cov_sizeneut|ewuni",
+      "arm": "E_cov_sizeneut",
+      "basis": "ewuni",
+      "n_months": 268,
+      "avg_names": 146.906716,
+      "port_t": 4.928588,
+      "p": 8.28259e-07,
+      "ir": 1.069167,
+      "alpha_ann": 0.111395,
+      "net_sr": 1.069167,
+      "turnover_ann": 11.786866,
+      "own_ew_port_t": 5.312696,
+      "own_ew_post2017_t": 2.72292,
+      "own_ew_oos_approx": 0.561114
+    }
+  ],
+  "paired_vs_base": [
+    {
+      "arm": "B_cov",
+      "n": 268,
+      "mean_diff_ann": -0.013366,
+      "nw_t_diff": -0.659989
+    },
+    {
+      "arm": "B_cov_low",
+      "n": 268,
+      "mean_diff_ann": -0.001709,
+      "nw_t_diff": -0.076895
+    },
+    {
+      "arm": "B_cov_lag1",
+      "n": 268,
+      "mean_diff_ann": -0.019515,
+      "nw_t_diff": -0.97432
+    },
+    {
+      "arm": "C_liq_matched",
+      "n": 268,
+      "mean_diff_ann": -0.003813,
+      "nw_t_diff": -0.202737
+    },
+    {
+      "arm": "D_size_matched",
+      "n": 268,
+      "mean_diff_ann": -0.015636,
+      "nw_t_diff": -0.731489
+    },
+    {
+      "arm": "E_cov_sizeneut",
+      "n": 268,
+      "mean_diff_ann": 0.010975,
+      "nw_t_diff": 0.624113
+    }
+  ],
+  "placebo": {
+    "n_draws": 20,
+    "mean": 3.481174,
+    "sd": 0.546031,
+    "q05": 2.496583,
+    "q50": 3.576249,
+    "q95": 4.314944,
+    "max": 4.444208,
+    "b_cov_position": "q50(3.576)~q95(4.315) 사이 = 무작위 절반 축소와 구분 불가(무의미)",
+    "b_cov_low_position": "2.683 — q05(2.497) 위 하위꼬리 = 해악 판정도 불성립"
+  },
+  "cap_tier": [
+    {
+      "arm": "A_base",
+      "w_MEGA": 0.060149,
+      "w_MID": 0.087015,
+      "w_OTHER": 0.852836,
+      "w_UNRANKED": 0,
+      "c_MEGA": 0.017906,
+      "c_MID": 0.024317,
+      "c_OTHER": 0.1978
+    },
+    {
+      "arm": "B_cov",
+      "w_MEGA": 0.112836,
+      "w_MID": 0.147313,
+      "w_OTHER": 0.739552,
+      "w_UNRANKED": 0.000299,
+      "c_MEGA": 0.025378,
+      "c_MID": 0.034516,
+      "c_OTHER": 0.16427
+    },
+    {
+      "arm": "D_size_matched",
+      "w_MEGA": 0.107612,
+      "w_MID": 0.152687,
+      "w_OTHER": 0.739701,
+      "w_UNRANKED": 0,
+      "c_MEGA": 0.024877,
+      "c_MID": 0.036568,
+      "c_OTHER": 0.160132
+    }
+  ],
+  "advisory_battery": {
+    "A_base": {
+      "rank_ic": 0.048517,
+      "icir": 0.451198,
+      "ic_nw_t": 7.699326,
+      "monotonicity": 0.666667,
+      "subperiod_stability": 0.394619,
+      "post_neutralization_ic": 0.043311,
+      "post_neut_retention": 0.892701,
+      "n_months": 268
+    },
+    "B_cov": {
+      "rank_ic": 0.037085,
+      "icir": 0.273857,
+      "ic_nw_t": 4.624943,
+      "monotonicity": 0.777778,
+      "subperiod_stability": 0.452215,
+      "post_neutralization_ic": 0.036725,
+      "post_neut_retention": 0.990303,
+      "n_months": 268
+    },
+    "B_cov_low": {
+      "rank_ic": 0.051757,
+      "icir": 0.437012,
+      "ic_nw_t": 7.034574,
+      "monotonicity": 0.666667,
+      "subperiod_stability": 0.364968,
+      "post_neutralization_ic": 0.050579,
+      "post_neut_retention": 0.977248,
+      "n_months": 268
+    }
+  },
+  "mechanism_diagnostics": {
+    "ic_by_cov_quartile": [
+      {
+        "cov_q": 1,
+        "mean_ic": 0.04228,
+        "nw_t": 4.744312,
+        "months": 268
+      },
+      {
+        "cov_q": 2,
+        "mean_ic": 0.059325,
+        "nw_t": 6.514111,
+        "months": 268
+      },
+      {
+        "cov_q": 3,
+        "mean_ic": 0.041209,
+        "nw_t": 4.441892,
+        "months": 268
+      },
+      {
+        "cov_q": 4,
+        "mean_ic": 0.032425,
+        "nw_t": 3.114137,
+        "months": 268
+      }
+    ],
+    "ic_existence_boundary": {
+      "cov0": {
+        "ic": 0.032852,
+        "t": 3.465224,
+        "m": 266
+      },
+      "cov1plus": {
+        "ic": 0.047522,
+        "t": 6.833194,
+        "m": 268
+      }
+    },
+    "top25_gate_pass_rate": 0.537015,
+    "top25_pass_minus_drop_monthly": 0.001844,
+    "top25_pass_minus_drop_nw_t": 0.547771,
+    "cov_standalone_rank_ic": 0.03503,
+    "cov_standalone_ic_nw_t": 3.717424,
+    "reading": "기전 반증 3중: ① 사분위 IC 역방향(Q4 고커버 최약 0.0324) ② cov==0 부분집합에서도 IC +0.0329 (t 3.47) 유의 — '커버리지 없으면 신호 미정의' 전제 기각 ③ top-25 통과-탈락 수익차 t +0.55 무의미"
+  },
+  "adversarial": {
+    "C1_join_scramble": {
+      "concern": "as-of 조인 정렬 스크램블 (구축 중 자기적발)",
+      "detection": "cov~Size +0.016 비정상 + 연도별 중앙값 요동 → 원천 진단(삼성전자 연속 20명대)으로 조인 결함 귀속",
+      "resolution": "unkeyed on= 조인 + identical() 정렬 가드. 수리 후 cov~Size +0.736. arm 측정 전 적발 — 오염 산출물 0",
+      "verdict": "ACCEPTED_FIXED"
+    },
+    "C2_integer_ties": {
+      "concern": "정수 동률 분할 임의성",
+      "tie_at_cut_mean": 12.69403,
+      "port_t_ticker_reversed": 3.717897,
+      "port_t_ast_path": 3.802896,
+      "jaccard_ast_vs_handbuilt": 0.978739,
+      "verdict": "ACCEPTED_QUANTIFIED — B_cov 에 ±0.2 동률노이즈 내재, 세 변형 전부 placebo 안 = 판정 불변"
+    },
+    "C3_export_gap_artifact": {
+      "concern": "cov==0 이 export 갭 아티팩트일 가능성",
+      "d0_obs30_min": 16,
+      "cov0_agree_30_60": 0.990311,
+      "port_t_60d": 3.914286,
+      "verdict": "REBUTTED — 3축(밀도 min 16일 / 60d 일치율 99.03% / 60d 판 3.914 결과 불변)"
+    },
+    "C5_metric_shopping": {
+      "concern": "cap-w 점수치 상승(3.92>3.48)을 개선으로 오독",
+      "verdict": "REBUTTED_BY_PREREG — paired -0.66 + placebo 안 + EW-uni 역전. 사전등록 프레임이 사후 basis 선택 봉쇄"
+    }
+  },
+  "pit_checks": {
+    "coverage_file_max_date": "2026-07-24",
+    "staleness_note": "QuantiWise 수동 export — max(Date) 2026-07-24, 측정창 최종 d0(2026-03-31) 대비 충분. 라이브 소비 시 스테일 재확인 의무(원천 케이던스 구조 잔존).",
+    "lag1_stress_port_t": 3.76691,
+    "lag1_note": "1개월 추가 지연판 3.767 vs 원판 3.922 — 안정적. 동월 누출 부풀림 징후 없음(애초 개선 자체가 없어 부풀림 대상 부재)."
+  },
+  "ast": {
+    "features": {
+      "node_count": 6,
+      "max_depth": 5,
+      "free_param_count": 0,
+      "distinct_field_count": 0,
+      "conditional_op_count": 1,
+      "window_variety": 0,
+      "restatement_exposure": 1,
+      "escape_leaf_count": 2,
+      "escape_leaf_types": [
+        "STORED_SCORE"
+      ]
+    },
+    "op_counts": {
+      "WHERE": 1,
+      "SIGN": 1,
+      "CS_DEMEAN": 1,
+      "CS_RANK": 1
+    },
+    "ast_path_port_t": 3.802896,
+    "jaccard_vs_handbuilt": 0.978739,
+    "sidecar_live_with_ast": {
+      "before": {
+        "live": 291,
+        "live_with_ast": 19
+      },
+      "after": {
+        "live": 292,
+        "live_with_ast": 20
+      }
+    },
+    "note": "WT-002 const-free 형과 동일 구조(WHERE/SIGN/CS_DEMEAN/CS_RANK) — 게이트 리프만 교체. 컴파일 경로 3.803 vs 손빌드 3.922 차이는 정수 동률 경계(Jaccard 0.9787) — C2 로 정량."
+  },
+  "verdict": "CONFIG_SCOPED_NEGATIVE",
+  "verdict_detail": "사전등록 필요조건 미충족 — 커버리지 게이트는 개선도 해악도 아닌 불활성(paired -0.66, placebo 분포 안). 기전은 방향 반증: base 신호의 IC 는 고커버 구간이 아니라 저커버 구간에서 (약하게) 더 높고, cov==0 부분집합에서도 유의(+0.0329, t 3.47). WT-002(외국인 축, 유의 해악 -1.945)와 합산 판정: '정보전달 인프라 존재' 계열 조건화 축은 독립 2회 실측으로 무효 확정(1해악+1불활성). 조건화 프레임 자체의 사망이 아니라 축 계열의 사망 — 알파가 인프라-존재 상위 구간에 살지 않는다는 것이 두 라운드의 공통 실측이며, 이 축 계열로 유니버스를 좁히는 시도는 재제안 금지(부활조건 명시).",
+  "graduation_claim": "NONE — canonical screening 실측이며 forge-authoritative 값이 아니다. HARD 3종 판정 대상 아님."
+}

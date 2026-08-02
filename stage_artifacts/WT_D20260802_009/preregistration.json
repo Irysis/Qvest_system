@@ -1,0 +1,123 @@
+{
+  "task_id": "WT-D20260802_009",
+  "registered_at": "2026-08-02T02:10:00+0900",
+  "registered_before_any_performance_measurement": true,
+  "title": "대표 스마트베타 5종 수리 튜닝 — 표준(registry) vs 정제판 paired A/B 사전등록",
+
+  "design_principle": "발굴도 조합도 아님 — 각 팩터가 재는 대상(피측정 경제량)은 불변, 그것을 재는 수학(추정·정규화·가중)만 고도화. base = factor DB registry 정본(load_month_factors Z_Score_Aligned, C13/C15) — base 재정의 금지. 팩터당 튜닝 정확히 1개 사전 고정(argmax 스윕 없음, selection_type=preregistered_paired_ab).",
+
+  "honest_deviation_from_tasking_hint": {
+    "hint": "과제문은 분포 정규화(rank-Gaussianize)를 Value·Dividend 적합 기법으로 예시",
+    "deviation": "채택하지 않음. 근거(측정 전 수리 판단): canonical_screen_bt top-25 선별은 순서통계량 — 횡단면 단조변환(rank-Gaussianize, 왜도보정 등 monotone CS 재분포)은 top-N 멤버십·EW 비중을 전혀 바꾸지 못해 paired A/B가 항등적으로 0. 또한 base 표준(builder: CS 1/99 winsorize→z→±3 clip→재표준화)이 tail 내 순서를 이미 동률화했으므로 저장 Z에서 복원할 추가 순서정보도 없음. 따라서 Value·Dividend에는 순서를 실제로 바꾸는 수리 정제(섹터-상대화 / Empirical Bayes 시계열-노이즈 shrinkage)를 기전 근거로 선택. 이 판단은 성과 무참조 — 순수 수리(단조변환의 순서 불변성)에서 도출.",
+    "consequence": "분포 정규화 계열은 본 측정 프레임(단일팩터 top-N)에서 검정 불능이며, 다팩터 합성 가중 단계에서만 유효할 수 있음 — next_probe로 승계"
+  },
+
+  "base_definition_common": {
+    "source": "load_month_factors(sig_date, factor_names=f) — C15 유일 관문, Z_Score_Aligned(C13 expanding-IC 방향정렬, 36m burn-in) 그대로",
+    "parity_check": "WT_D20260802_004 ast_compile 패널(M01/D03)과 값 일치 확인 의무 — 불일치 시 중단",
+    "no_redefinition": "base의 winsorize/clip/정렬 일절 재가공 없음 — paired 대조군이 registry 정본이어야 교체 판정이 의미"
+  },
+
+  "orientation_inheritance_rule": {
+    "rule": "tuned 점수의 부호 방향은 base의 C13 정렬 관례를 그대로 상속: 월별 s_t = sign(Spearman(base_z_t, tuned_raw_t)). |rho|<0.10인 월은 직전월 부호 승계(부호 노이즈 플립 방지, 사용 월수 기록). 수익률 무참조(양 arm 모두 신호끼리의 결정론적 관계) — 방향 재학습이 아니라 관례 이식.",
+    "rationale": "A/B가 추정수학만 격리하려면 방향 관례가 동일해야 함. tuned에 독자적 IC-정렬을 달면 방향 차이가 추정 차이와 교락"
+  },
+
+  "pairs": [
+    {
+      "pair_id": "P1_VALUE",
+      "base": "V01_BM (Book-to-Market = TotalEquity/MarketCap, registry Z_Score_Aligned)",
+      "tuned_id": "V01_SECREL",
+      "tuned_definition": "base aligned z를 월별 섹터 내 재표준화: z_sec = (z - mean_sector)/sd_sector. 섹터 = RAWDATA Sector(월말 스냅샷, PIT). 섹터 내 유효종목 <8 → 해당 월 'OTHER' 풀에 합산 후 재표준화. sd_sector<1e-8 → z_sec=0.",
+      "technique_family": "정규화 순서·범위 정교화 (universe-z → sector-relative z)",
+      "mechanism": {
+        "agent": "B/M 수준의 산업 구조 이질성(금융·중후장대 = 회계장부 집약, 항상 고B/M) — universe-z 랭킹 상위는 '싼 종목'이 아니라 '장부집약 섹터' 정적 베팅",
+        "friction": "섹터 구조 프리미엄은 차익거래로 안 지워짐(산업 간 회계 관행 차이는 mispricing이 아님) — 신호가 재려는 것은 산업 내 상대 저평가",
+        "path": "섹터-상대 저평가 종목이 산업 내 재평가로 초과수익 (Asness-Porter-Stevens 2000, industry-relative value)"
+      },
+      "falsification_non_performance": "base top-25의 섹터 HHI가 tuned top-25 HHI를 유의하게 상회하지 않으면(=base가 애초 섹터 집중이 아니면) 정제 전제 기각. RAWDATA Sector 리프로 판정 — 성과 무참조."
+    },
+    {
+      "pair_id": "P2_MOMENTUM",
+      "base": "M01_Mom_12_1 (252d 누적수익 skip 21d, 저장 Ret 복리, registry Z_Score_Aligned)",
+      "tuned_id": "M01_PATHQ",
+      "tuned_definition": "동일 창([n-251, n-21] 거래일, n>252 요건 base 미러) 부호있는 경로효율 E = Σ log(1+Ret) / Σ |log(1+Ret)| (분모<1e-8 → NA). 유효일 >=150. CS winsorize 3sd → z → orientation 상속 규칙 적용.",
+      "technique_family": "경로-질 가중 (같은 12-1 순변화라도 직선 경로 vs 왕복 경로 구분 — '경로 분산 대비 순변화 비율' 옵션)",
+      "signature_lib_note": "WT_006 signature_lib 레벨-1 성분(순변화)과 동일 재료의 비율화 — 시그니처 텐서 연산 불요(레벨-3 성분 옵션 대신 비율 옵션 채택: 자유 파라미터 0, 해석 직접적). 총변동 Σ|dlogP|는 경로의 1-변동(total variation) — 시그니처 프레임의 경로-질 개념과 동일 대상",
+      "mechanism": {
+        "agent": "이산 점프(테마성 개인 급등 추격·상한가 계열)로 만들어진 12-1 수익 vs 연속 드리프트로 만들어진 동일 크기 수익 — 후자가 정보의 점진 반영(frog-in-the-pan, Da-Gurun-Warachka 2014)",
+        "friction": "저빈도 스크리너는 순변화만 소비 — 경로 조성(연속 vs 점프)은 표준 모멘텀에 부재. KR 공매도 제약이 점프-과열 종목의 즉시 조정을 차단",
+        "path": "매끄러운-경로 고모멘텀은 익월 지속, 점프-주도 고모멘텀은 주목 소멸과 반전 — 월말 신호 → 익월 실현"
+      },
+      "falsification_non_performance": "base top-25 보유종목의 12-1 순수익 중 상위-5 |일간| 날 기여 비중이 tuned top-25 대비 유의하게 높지 않으면(=튜닝이 경로 조성을 실제로 못 바꾸면) 전제 기각. 가격 리프만으로 판정 — 성과 무참조."
+    },
+    {
+      "pair_id": "P3_LOWVOL",
+      "base": "D03_RealVol (Raw = -sd(Ret, 252d trailing, min 120obs), registry Z_Score_Aligned)",
+      "tuned_id": "D03_EWMA",
+      "tuned_definition": "동일 창(최근 252 거래행, n>=120 base MIN_OBS_SD 미러) EWMA 변동성: sigma^2 = Σ w_k r_k^2 / Σ w_k, w_k = 0.5^(age_k/63) (half-life 63 거래일, zero-mean RiskMetrics 관례). tuned_raw = -sigma (base Raw 부호 관례 미러). CS winsorize 3sd → z → orientation 상속.",
+      "technique_family": "강건 변동성 추정 (등가중 sd → 최근성 가중 EWMA). half-life 63d 단일 사전 고정 — sweep 아님. ★경계: WT-004(변동성 조합)와 분리 — 본 pair는 D03 단일 팩터의 추정기만 교체, 타 vol 팩터와의 조합 일절 없음",
+      "mechanism": {
+        "agent": "저변동 이상현상의 피측정량은 '보유월의 변동성' — 랭킹 소비자(월간 리밸런서)가 실제로 노출되는 것은 미래 1개월 vol",
+        "friction": "vol clustering(Engle 1982) — 변동성은 지속·군집하므로 1년 전 에피소드와 최근 3개월은 예측력이 다른데, 등가중 252d sd는 이를 무시(1년 전 급락이 1년간 랭킹을 오염). 스크리너 관행이 등가중 sd에 고착",
+        "path": "더 정확한 미래-vol 랭킹 → 저변동 프리미엄/방어 특성의 순도 상승 — 월말 신호 → 익월 실현"
+      },
+      "falsification_non_performance": "종목-월 패널에서 '다음 21거래일 실현 vol' 예측 MSE: EWMA가 252d sd 대비 낮지 않으면(vol clustering 전제 기각) 정제 무효. 가격 리프만으로 판정 — 포트 성과 무참조.",
+      "ax001_conditional": true
+    },
+    {
+      "pair_id": "P4_QUALITY",
+      "base": "Q01_GPA (GrossProfit/TotalAssets, registry Z_Score_Aligned)",
+      "tuned_id": "Q01_EB",
+      "tuned_definition": "Empirical Bayes 횡단 shrinkage: tuned_z = w_i * z_i, w_i = 1/(1 + sigma2_i), sigma2_i = Var(해당 종목 base aligned z, 직전 36개월 trailing, 최소 12obs — 당월 미포함 t-1..t-36, PIT). 이력 <12obs 종목은 w = 당월 유효 w의 CS 중앙값(커버리지 보존 — 신생 종목 제외로 인한 coverage 교락 방지). CS 스케일 prior N(0,1) → tau^2=1 고정(z 표준화 스케일에서 자연 단위).",
+      "technique_family": "횡단 shrinkage (James-Stein/EB — 노이즈 분산 큰 회계 추정치에 적합)",
+      "mechanism": {
+        "agent": "분기 GPA는 참 수익성의 노이즈 추정치(일회성 항목·계절성·재작성) — 상대 수익성 랭킹이 분기마다 튀는 종목은 신호 대 잡음이 낮음",
+        "friction": "스크리너는 최신 관측 1개를 액면 소비 — 종목별 신뢰도 가중은 계산 비용으로 관행에서 생략(Stein 1956: 개별 최우수 추정치의 합이 CS 최우수가 아님)",
+        "path": "불안정 추정치를 CS 평균으로 수축 → 랭킹 상위의 '진짜 고수익성' 순도 상승 — 월말 신호 → 익월 실현"
+      },
+      "falsification_non_performance": "sigma2_i가 진짜 노이즈 분산이라면 |z_{t+1} - z_t| (익월 추정치 이동)를 예측해야 함: 월별 CS Spearman cor(sigma2_i, |z_{t+1}-z_t|) 평균 t<2면 EB 가중치가 노이즈 → 전제 기각. DB 리프만으로 판정 — 성과 무참조."
+    },
+    {
+      "pair_id": "P5_DIVIDEND",
+      "base": "V06_fDY (consensus dps_1y / Close, registry Z_Score_Aligned)",
+      "tuned_id": "V06_EB",
+      "tuned_definition": "P4와 동일 EB 수식(w_i = 1/(1+sigma2_i), 36m trailing 당월 미포함, min 12obs, 이력부족 → CS 중앙값 w). 튜닝 대상 노이즈가 다름 — P4는 회계 노이즈, P5는 컨센서스 실효성 노이즈.",
+      "technique_family": "횡단 shrinkage (EB) — P4와 기법 공유, 노이즈 기전 상이(기법 다양성보다 기전 적합 우선, 과제문 '기전으로 정당화' 조항)",
+      "mechanism": {
+        "agent": "극단 고fDY의 다수는 '주가 급락 + 미갱신 컨센서스 DPS'의 산물(배당컷 임박 value trap) — 관측 yield가 지불될 yield의 편향 추정치. registry known_discrepancy(컨센서스 제공시각 메타 부재)도 이 노이즈 채널",
+        "friction": "컨센서스 갱신 지연은 데이터 공급 구조(월간 취합·애널리스트 커버리지 소멸) — 스크리너가 실시간 정정 불가",
+        "path": "yield 랭킹이 불안정한 종목(급락·전망 요동)을 수축 → 상위권이 '지속가능 고배당'으로 정화 — 월말 신호 → 익월 실현"
+      },
+      "falsification_non_performance": "P4와 동일 구조: cor(sigma2_i, |z_{t+1}-z_t|) t<2면 기각.",
+      "ax001_conditional": true
+    }
+  ],
+
+  "judgment_protocol": {
+    "primary_metric": "팩터별 paired: d_t = active_net(tuned)_t - active_net(base)_t (동일 월 교집합, canonical top-25 EW cap-w bench). paired t = NW lag-3 t of mean(d_t). metric_type=canonical_screen.",
+    "success_thresholds_fixed": "paired t >= 2.0 → registry 표준 교체 후보 보고(교체 자체는 도훈 confirm) / 1.0~2.0 → 방향 양성(교체 근거 부족) / < 1.0 → 튜닝 무효",
+    "selection_type": "preregistered_paired_ab — 5개 독립 가설, 팩터별 1튜닝, 튜닝판 간 조합·argmax 없음. DSR 게이트 비발동(chain), 수치는 진단 기록",
+    "no_flip_clause": "paired t 부호가 음수여도 튜닝 방향을 뒤집어 재제출하지 않음 — 기전 반증으로 기록",
+    "no_holdout_consumption": "iteration 없음(1-shot 측정) — IS/OOS 반복조회 자체가 발생하지 않는 구조",
+    "secondary_mandatory": [
+      "dual-basis: 각 arm cap-w PORT_t + EW-universe diag + cap-tier(MEGA/MID/OTHER) 분해",
+      "튜닝 전후 5x5 CS Spearman 상관 행렬(공통 월) — 튜닝이 팩터 간 상관을 올리면(breadth 훼손) 개별 개선이 있어도 풀 수준 損 명기",
+      "회전율 per arm (production 11.0/yr 대비)",
+      "AX-001 (P3/P5): 국면조건부 active(unified_regime_signal 사후 slicing) + MDD + Core(M01 base) 대비 병기 — 전기간 SR 단독 채점 금지",
+      "lag1 스트레스 (tuned 5 arm — 자체 재계산 패널의 동월 누출 자가검증)",
+      "advisory: rank IC / ICIR / monotonicity / subperiod"
+    ]
+  },
+
+  "measurement": {
+    "authority": "canonical_screen_bt() top-25 EW long-only, 15bps one-way, liq 2e8 (t-1 adv), K200∪KQ150 월말 멤버십, benchmark = 유니버스 시총가중 forward (build_monthly_forward_returns 표준 하네스). proxy 손계산 금지.",
+    "sig_months": "2001-12 ~ 최신-1 월말 (base 패널 적재 기점 — EB 36m 이력·M01 252d 창 확보용. pair별 판정 월 = 양 arm 공통 월)",
+    "note_universe_definition": "request.json universe_definition.label 'KOSPI200_KOSDAQ150_intersection'은 표기 관례상 union(K200∪KQ150) — 시스템 전 WT 동일 하네스. liquidity_min 5e7 표기와 무관하게 canonical 표준 2e8 적용(Production Constraints 우선)"
+  },
+
+  "ast_declaration_plan": {
+    "P1_P4_P5": "𝒪 내 표현 가능 (CS_NEUTRALIZE/CS_ZSCORE + TS_STD + 산술) — FIELD(factor_db_monthly) 리프",
+    "P2_P3": "SPECIAL_OP escape (경로효율 skip-창 합성·EWMA 지수가중은 𝒪 최소집합 밖) — op_code_path = stage_artifacts/WT_D20260802_009/run_wt009_tuned.R, walk_forward=true (trailing 결정론, 적합 파라미터 0)"
+  }
+}

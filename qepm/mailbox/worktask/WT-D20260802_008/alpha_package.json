@@ -1,0 +1,478 @@
+{
+  "task_id": "WT-D20260802_008",
+  "as_of_date": "2026-08-02",
+  "forecast_horizon": "1M",
+  "spec_version": "ast_v1.1",
+  "pit": {
+    "sig_date": "2026-03-31",
+    "decision_ts": "2026-03-31",
+    "note": "패널 최종 sig_date(d0) = 2026-03-31. 게이트 관측 = coverage as-of d0 (30일 창) — 홀딩월(2026-04) 데이터 0 사용."
+  },
+  "hypothesis": {
+    "statement": "base 신호(score_eff)는 컨센서스-파생이므로, 애널리스트 커버리지가 존재/충분한 종목으로 적용 유니버스를 조건화하면 동일 신호의 IC→PORT_t 전이가 개선된다. (실측 결과 기전이 방향 반증됨 — verdict_empirical 참조)",
+    "mechanism": {
+      "agent": "셀사이드 애널리스트 — 리비전·목표가·추정치를 생산하는 정보 생산 주체. 커버리지가 없으면 base 신호의 컨센서스 성분(SUE/EPS수정/ESBR/TP갭)이 정의되지 않거나 스테일하다.",
+      "friction": "KR 소형·저관심 종목의 커버리지 공백(배포 유니버스 종목-월의 20.1% 가 커버리지 0 실측) — 신규 커버리지 개시는 느리고 리서치 비용 구조상 차익거래가 즉시 메꾸지 못한다.",
+      "path": "sig_date 시점 커버리지 존재 종목에서는 리비전 정보가 홀딩월 내 기관·외국인 매매로 가격 반영 → 실현 초과수익. 커버리지 부재 종목의 스코어는 스테일/노이즈로 top-25 슬롯만 소모."
+    },
+    "falsification": [
+      {
+        "field": "C-CONSENSUS-QW",
+        "expectation": "커버리지 상위 구간의 base-score rank-IC 가 하위 구간보다 높아야 한다.",
+        "measured": "Q1(저커버) 0.0423 / Q2 0.0593 / Q3 0.0412 / Q4(고커버) 0.0324 — 고커버 최약. 기전 REJECTED.",
+        "verdict": "FALSIFIED"
+      },
+      {
+        "field": "C-CONSENSUS-QW",
+        "expectation": "커버리지 0 종목에서는 base 신호의 횡단 예측력이 소멸(IC ≈ 0)해야 한다.",
+        "measured": "cov==0 부분집합 rank-IC = +0.0329, NW t = +3.47 (266개월) — 유의하게 작동. '커버리지 없으면 신호 미정의' 전제 기각 (score_eff 의 defense 3팩터는 비컨센서스 원천).",
+        "verdict": "FALSIFIED"
+      },
+      {
+        "field": "A9_liquidity_avgtv20_convention",
+        "expectation": "게이트가 유동성 필터 재명명이라면 동일 카디널리티 C_liq_matched 와 근사해야 한다.",
+        "measured": "B_cov 3.922 vs C_liq 3.681 (cap-w). cov~adv Spearman +0.613 (강상관 — WT-002 게이트의 +0.009 와 달리 유동성과 얽힘). paired 기준 양쪽 다 base 대비 무의미(-0.66 / -0.20).",
+        "verdict": "ENTANGLED_BOTH_INERT"
+      },
+      {
+        "field": "A1_RAWDATA_OHLCVS_daily",
+        "expectation": "size 주입이라면 size 5분위 내 게이트(E_cov_sizeneut)에서 효과가 소멸해야 한다.",
+        "measured": "E_cov_sizeneut 4.102 (cap-w) — B_cov 3.922 보다 오히려 높으나 placebo q95(4.315) 안 + paired t +0.62 무의미. size 아티팩트 여부 판정 불요(개선 자체가 불성립).",
+        "verdict": "NO_EFFECT_TO_ATTRIBUTE"
+      }
+    ],
+    "regime_scope": {
+      "holds_in": [
+        "neutral",
+        "expansion"
+      ],
+      "weakens_or_reverses_in": [
+        "crisis",
+        "post_2017_megacap_regime"
+      ],
+      "boundary_rationale": "메커니즘 도출 경계: 위기 국면은 커버리지 유무와 무관한 유동성 청산이 지배해 정보 생산의 가격 반영이 지연/압도된다. post-2017 은 커버리지가 초대형 반도체 축에 편중되어 커버리지 강도가 인덱스 편입/패시브 흐름의 대리변수로 변질된다. 실측 정합: B_cov 유니버스의 EW-대비 post2017 t = 2.343 vs base 1.943 — 경계 예측과 달리 게이트 유니버스가 소폭 낫지만 유의 차 아님."
+    }
+  },
+  "factors": [
+    {
+      "factor_id": "F1_cov_gated_base_score",
+      "ast_file": "stage_artifacts/WT_D20260802_008/ast_F1_cov_gated_score.json",
+      "ast": {
+        "type": "op",
+        "op": "WHERE",
+        "args": [
+          {
+            "type": "leaf",
+            "class": "STORED_SCORE",
+            "source": "stored_panel",
+            "field": "alpha_score_base",
+            "avail_offset_days": 0,
+            "restatement_prone": true,
+            "contract": {
+              "path": "stage_artifacts/WT_D20260802_008/ast_input_panel.parquet",
+              "value_col": "alpha_score_base",
+              "avail_offset_days": 0,
+              "store_build_hash": "3ae57cdd3df52a18654e366114cf218f4d9f6f55",
+              "generator_code_path": "stage_artifacts/WT_D20260802_008/run_01_premise.R",
+              "generated_at": "2026-08-02",
+              "production_parity_verified": true,
+              "parity_note": "cleanT1 verbatim 상속 (WT-002 동일 base — parity 근거 cleanT1_meta.json spearman=1.0)"
+            }
+          },
+          {
+            "type": "op",
+            "op": "SIGN",
+            "args": [
+              {
+                "type": "op",
+                "op": "CS_DEMEAN",
+                "args": [
+                  {
+                    "type": "op",
+                    "op": "CS_RANK",
+                    "args": [
+                      {
+                        "type": "leaf",
+                        "class": "STORED_SCORE",
+                        "source": "stored_panel",
+                        "field": "cov_l0",
+                        "avail_offset_days": 0,
+                        "restatement_prone": false,
+                        "contract": {
+                          "path": "stage_artifacts/WT_D20260802_008/ast_input_panel.parquet",
+                          "value_col": "cov_l0",
+                          "avail_offset_days": 0,
+                          "store_build_hash": "3ae57cdd3df52a18654e366114cf218f4d9f6f55",
+                          "generator_code_path": "stage_artifacts/WT_D20260802_008/run_01_premise.R",
+                          "generated_at": "2026-08-02",
+                          "production_parity_verified": false,
+                          "parity_note": "본 라운드 신규 파생(coverage as-of) — production 경로 파생 아님. 정직 선언(false)."
+                        }
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "role": "universe_conditioner",
+      "restatement_exposure": 1,
+      "note": "base 스코어 리프 verbatim 상속(신호 가공 0) — WHERE 조건부(커버리지 상위 50%)만 신규. WT-002 const-free 정본과 동일 연산 구조."
+    }
+  ],
+  "combination_rule": "single_factor",
+  "verdict": "designed",
+  "verdict_empirical": "config_scoped_negative_mechanism_directionally_falsified",
+  "self_pit_check": {
+    "performed": true,
+    "leaves_checked": [
+      {
+        "leaf": "STORED_SCORE|stored_panel|alpha_score_base",
+        "availability_rule": "manual_export 파생 — 패널 Date = d0(월말 sig_date), factor_db T-1(off=0) 산출로 d0 가용",
+        "restatement_prone": true,
+        "restatement_note": "수정주가·재무 restatement 노출. vintage pin 미적용 — 다중라운드 재판정 시 pin_cache 의무(§7)"
+      },
+      {
+        "leaf": "STORED_SCORE|stored_panel|cov_l0",
+        "availability_rule": "manual_export(C-CONSENSUS-QW 일별 as-of) — 관측 = 마지막 Date <= d0 (30일 스테일 한도). 홀딩월 시작 전 관측 종료 → t-1 성립. 제공 시각 미상(C10 유사 경계)은 일 단위 as-of 로 흡수",
+        "restatement_prone": false,
+        "restatement_note": "consensus incremental 은 Date > max append-only (과거행 불변, consensus_parser.R:249) — 소급수정 위험 낮음"
+      }
+    ],
+    "verdict": "warn_restatement",
+    "verdict_rationale": "base 스코어 리프 restatement_prone + vintage pin 미적용. look-ahead 징후 없음 — as-of 창이 홀딩월 이전 종료(코드 강제 + 정렬 가드) + lag1 판(3.767) 안정 + 60d 창 민감도(3.914) 통과.",
+    "field_map_note": "게이트 원천 리프 = C-CONSENSUS-QW coverage (field_map 등재 그룹). STORED_SCORE 패널 2종은 파생 — base 리프만 production_parity_verified."
+  },
+  "alpha_vector": {
+    "_note": "본 라운드는 신규 α̂ 를 생성하지 않는다 — base 스코어(production_parity_verified) verbatim 상속 + 적용 유니버스 조건화 검정. alpha_vector = 최종 d0(2026-03-31) 단면.",
+    "_gate_applied": false,
+    "_ref": "stage_artifacts/WT_D20260802_008/alpha_vector_2026_03_31.json",
+    "_inheritance": "alpha_inheritance_cor = 1.0 vs incumbent (설계상 의도 — NP-2 가 base 신호 신규 생성을 금지)"
+  },
+  "confidence_vector": {
+    "_note": "종목별 confidence 는 alpha_scores.parquet 의 conf 컬럼 동봉. verdict negative 라 downstream 소비 전제 아님.",
+    "_ref": "stage_artifacts/WT_D20260802_008/alpha_scores.parquet"
+  },
+  "signal_matrix_ref": "file://stage_artifacts/WT_D20260802_008/alpha_scores.parquet",
+  "factor_specs": [
+    {
+      "factor_family": "Composite_EarningsRevision_Defense",
+      "proxy": "score_eff (STR_1715 core 4팩터 EW + defense 3팩터, regime-blended)",
+      "formula": "Z_Score_Aligned 합성 — core{C01_SUE, C02_EPS_Chg_1m, C04_ESBR, C06_TP_Gap} + defense{Q07, M08_ResidMom, Q25_Ohlson_O} 국면 블렌드",
+      "lag_rule": "factor_db T-1 (off=0). 연간 재무 = 익년 3/31, 분기 45d (C4)",
+      "winsorization": "factor_db 빌더 내부 (3std)",
+      "neutralization": "none (base 상속)",
+      "economic_rationale": "PEAD 계열 점진 반영 + 수익성 안정성 방어축 — 현직 book 검증 신호의 base 상속",
+      "weight_theta": 1,
+      "references": [
+        "Bernard-Thomas 1989 (PEAD)",
+        "Novy-Marx 2013 (profitability)"
+      ],
+      "source": "db_existing_production_inherited",
+      "redundancy_cluster_id": "CLUSTER_STR1715_CORE_INCUMBENT",
+      "redundancy_note": "incumbent 동일 클러스터 — 발굴 아닌 적용면 검증 (Factor Zoo 축소 정합)"
+    },
+    {
+      "factor_family": "InformationInfra_AnalystCoverage",
+      "proxy": "COV_asof = coverage.parquet 마지막 관측(<= d0, 30일 창), 부재=0",
+      "formula": "CS_RANK(cov_l0) 상위 50% 게이트 (WHERE cond)",
+      "lag_rule": "as-of daily, Date <= d0 (t-1 대비 홀딩월)",
+      "winsorization": "none (순위 기반)",
+      "neutralization": "대조군 3종(C_liq/D_size/E_sizeneut) 병행",
+      "economic_rationale": "정보 생산 인프라의 존재/강도 — 컨센서스-파생 신호의 정의 가능성 마찰 (실측 반증됨)",
+      "weight_theta": 0,
+      "weight_theta_note": "α̂ 성분 아님 — 유니버스 조건(WHERE cond) 전용",
+      "references": [
+        "Hong-Lim-Stein 2000 (analyst coverage and momentum)",
+        "J. Jeong et al. PBFJ (parent WT-002 계보)"
+      ],
+      "source": "new_designed",
+      "redundancy_cluster_id": "CLUSTER_KR_CONSENSUS_META",
+      "redundancy_note": "컨센서스 메타데이터(커버리지 수) — 리비전 값 자체(C01/C02 등 base 성분)와 구분되는 메타 축"
+    }
+  ],
+  "diagnostics": {
+    "canonical_port_t_nw_lag3": 3.921785,
+    "canonical_port_t_pvalue": 0.000088,
+    "canonical_n_months": 268,
+    "canonical_port_t_base_no_gate": 3.478107,
+    "canonical_port_t_delta": 0.444,
+    "canonical_delta_note": "★점수치 delta +0.44 는 개선 아님 — paired NW-t -0.66 (알파 연 -1.3%p 감소, t 상승 = 변동성 축소 산물) + placebo 분포 안 + EW-uni 역전. 사전등록 판정 = FAILED.",
+    "metric_type": "canonical_screen",
+    "rank_ic": 0.037085,
+    "rank_ic_base_no_gate": 0.048517,
+    "icir": 0.273857,
+    "icir_base_no_gate": 0.451198,
+    "harvey_t_stat": 4.624943,
+    "harvey_t_stat_note": "rank-IC NW lag-3 t (ADVISORY). base 7.70 → 게이트 4.62 — 게이트가 IC 계층에서도 신호를 깎는다(고커버 구간 IC 최약이므로).",
+    "monotonicity": 0.777778,
+    "subperiod_stability": 0.452215,
+    "turnover_proxy": 10.787463,
+    "turnover_proxy_unit": "annual (Σ|Δw|×12) — 10.79 < 제약 11.0/yr (base 12.45 는 초과 — canonical 규격 성질)",
+    "post_neutralization_ic": 0.036725,
+    "post_neutralization_retention": 0.990303,
+    "net_sr": 0.802137,
+    "net_sr_base_no_gate": 0.778566,
+    "information_ratio": 0.802137,
+    "alpha_annualized": 0.098075,
+    "deflated_sharpe_ratio": 1,
+    "deflated_sharpe_ratio_note": "n_trials=1 (chain, 사전등록 단일 설계) → DSR 축퇴(정보량 없음). 게이트 부적용 — 과적합 방어 = 사전등록 + 대조군 + placebo 20-draw.",
+    "n_trials": 1,
+    "n_iterations": 1,
+    "ax001_v2_bad_normal_ic_ratio": 1.701813,
+    "alpha_inheritance_cor": 1,
+    "alpha_inheritance_cor_note": "base verbatim 상속 (NP-2 설계 요구) — discovery certificate 요건(<0.95) 미충족, reclassify_proposal 을 governance_log 에 기록.",
+    "cor_vs_admitted_book": 1
+  },
+  "ab_test_results": {
+    "instrument": "canonical_screen_bt (top_n=25, 15bps, liq 2e8, 268m 2004-01~2026-04)",
+    "capw_basis": {
+      "A_base": 3.478,
+      "B_cov": 3.922,
+      "B_cov_low": 2.683,
+      "B_cov_lag1": 3.767,
+      "C_liq_matched": 3.681,
+      "D_size_matched": 3.416,
+      "E_cov_sizeneut": 4.102
+    },
+    "ew_universe_basis": {
+      "A_base": 4.218,
+      "B_cov": 3.31,
+      "B_cov_low": 3.32,
+      "B_cov_lag1": 3.154,
+      "C_liq_matched": 3.31,
+      "D_size_matched": 2.733,
+      "E_cov_sizeneut": 4.929
+    },
+    "placebo_random_50pct": {
+      "n_draws": 20,
+      "mean": 3.481,
+      "sd": 0.546,
+      "q05": 2.497,
+      "q50": 3.576,
+      "q95": 4.315,
+      "max": 4.444,
+      "interpretation": "B_cov 3.922 는 q50~q95 사이 = 무작위 절반 축소와 구분 불가. B_cov_low 2.683 은 q05 위 하위꼬리 — 해악 판정도 불성립. WT-002 와 대조: 외국인 게이트는 20/20 draw 아래(능동 해악), 커버리지 게이트는 분포 안(불활성)."
+    },
+    "paired_nw_lag3_vs_base": {
+      "B_cov": {
+        "mean_diff_ann": -0.0134,
+        "nw_t": -0.66
+      },
+      "B_cov_low": {
+        "mean_diff_ann": -0.0017,
+        "nw_t": -0.077
+      },
+      "B_cov_lag1": {
+        "mean_diff_ann": -0.0195,
+        "nw_t": -0.974
+      },
+      "C_liq_matched": {
+        "mean_diff_ann": -0.0038,
+        "nw_t": -0.203
+      },
+      "D_size_matched": {
+        "mean_diff_ann": -0.0156,
+        "nw_t": -0.731
+      },
+      "E_cov_sizeneut": {
+        "mean_diff_ann": 0.011,
+        "nw_t": 0.624
+      }
+    },
+    "cap_tier_decomposition": {
+      "tier_def": "MEGA = cap rank 1-10 / MID = 11-30 / OTHER = 31+",
+      "table": [
+        {
+          "arm": "A_base",
+          "w_MEGA": 0.060149,
+          "w_MID": 0.087015,
+          "w_OTHER": 0.852836,
+          "w_UNRANKED": 0,
+          "c_MEGA": 0.017906,
+          "c_MID": 0.024317,
+          "c_OTHER": 0.1978
+        },
+        {
+          "arm": "B_cov",
+          "w_MEGA": 0.112836,
+          "w_MID": 0.147313,
+          "w_OTHER": 0.739552,
+          "w_UNRANKED": 0.000299,
+          "c_MEGA": 0.025378,
+          "c_MID": 0.034516,
+          "c_OTHER": 0.16427
+        },
+        {
+          "arm": "D_size_matched",
+          "w_MEGA": 0.107612,
+          "w_MID": 0.152687,
+          "w_OTHER": 0.739701,
+          "w_UNRANKED": 0,
+          "c_MEGA": 0.024877,
+          "c_MID": 0.036568,
+          "c_OTHER": 0.160132
+        }
+      ],
+      "interpretation": "게이트는 포트를 대형 tier 로 이동(MEGA 6.0%→11.3%, MID 8.7%→14.7%) — cov~Size +0.736 강상관의 기계적 귀결. OTHER tier 연율 gross 기여 19.8%→16.4% 감소. D_size_matched 와 tier 프로필 근사(MEGA 10.8%/MID 15.3%) = 게이트의 tier 이동은 사실상 size 이동."
+    },
+    "ic_by_coverage_quartile": {
+      "Q1_low": {
+        "mean_ic": 0.04228,
+        "nw_t": 4.744312
+      },
+      "Q2": {
+        "mean_ic": 0.059325,
+        "nw_t": 6.514111
+      },
+      "Q3": {
+        "mean_ic": 0.041209,
+        "nw_t": 4.441892
+      },
+      "Q4_high": {
+        "mean_ic": 0.032425,
+        "nw_t": 3.114137
+      },
+      "interpretation": "고커버 최약(Q4 0.0324) — WT-002 외국인 사분위와 동형의 역방향. 알파는 정보인프라 상위 구간에 살지 않는다(2축 재현)."
+    },
+    "existence_boundary": {
+      "cov0_ic": {
+        "ic": 0.032852,
+        "t": 3.465224,
+        "m": 266
+      },
+      "cov1plus_ic": {
+        "ic": 0.047522,
+        "t": 6.833194,
+        "m": 268
+      },
+      "interpretation": "커버리지 0 부분집합에서도 IC +0.0329 (t 3.47) — score_eff 의 defense 축(비컨센서스)이 무커버 종목에서 판별력 유지. 가설의 friction 전제가 과대 서술이었음(challenge_note C4)."
+    },
+    "mechanism_damage_path": {
+      "top25_gate_pass_rate": 0.537,
+      "top25_pass_minus_drop_monthly": 0.0018,
+      "top25_pass_minus_drop_nw_t": 0.55,
+      "interpretation": "게이트는 base top-25 픽의 46.3% 를 제거하나 제거분과 잔존분의 실현수익 차 t = +0.55 무의미 — 정보 없는 슬롯 교체(불활성)."
+    },
+    "tie_robustness": {
+      "port_t_ticker_reversed": 3.717897,
+      "port_t_60d_window": 3.914286,
+      "port_t_ast_path": 3.802896
+    }
+  },
+  "controls_verdict": {
+    "vs_liquidity_filter": "ENTANGLED — cov~adv Spearman +0.613 (WT-002 게이트의 +0.009 와 달리 유동성과 강하게 얽힘). C_liq 3.681 과 paired 기준 양쪽 다 무의미 — '커버리지 조건화'의 상당분은 유동성/size 필터의 재표현이며 독립 정보가 없다.",
+    "vs_size_injection": "SIZE_DOMINANT — cov~Size +0.736. cap-tier 이동 프로필이 D_size_matched 와 근사. E_cov_sizeneut(4.102)이 B_cov 보다 높지만 placebo 안 — size 제거 후 잔여 커버리지 정보도 무의미.",
+    "vs_random_subsetting": "INDISTINGUISHABLE — placebo 20-draw 분포(mean 3.481, sd 0.546) 안. 능동 해악(WT-002)도 개선도 아닌 불활성."
+  },
+  "pit_triple_check": {
+    "t_minus_1_lag": "PASS — coverage as-of 관측이 d0 에서 종료, 홀딩월 d0+1 시작. lag1 판 3.767 안정(부풀림 대상 자체 부재).",
+    "quantiwise_export_lag": "ACKNOWLEDGED — coverage.parquet max(Date)=2026-07-24 (as_of 2026-08-02, 9일 지연). 백테 clean / 라이브 스테일 구조 잔존. verdict negative 라 배포 경로 진입 없음.",
+    "join_alignment": "PASS(수리 후) — 초판 rolling join 정렬 스크램블을 arm 측정 전 자기적발·수리 (challenge_note C1). identical() 정렬 가드 상설."
+  },
+  "scope_limitation": {
+    "threshold_scope": "게이트 = 월별 중앙값 분할(사전 고정). k명 존재형(cov>=k)·상위 30%/70% 등 다른 임계의 판결 아님 — 단 기전 반증(사분위 역방향 + cov0 IC 유의)은 임계 무관하게 '커버리지 상위 조건화' 방향 전체를 기각.",
+    "config_scope": "top-25 EW long-only / liq 2e8 / K200∪KQ150 / 15bps / 268m / base = STR_1715 core. 다른 base 신호·다른 종목수의 판결 아님."
+  },
+  "selection_objective": "canonical_port_t",
+  "selection_type": "chain",
+  "alpha_discovery_count": 0,
+  "challenge_flags": [
+    {
+      "id": "CF-01",
+      "severity": "HIGH",
+      "flag": "PREREGISTERED_HYPOTHESIS_FALSIFIED",
+      "detail": "necessary(paired NW-t >= 2.0) 미충족 — 실측 -0.66. 기전은 방향 반증(사분위 IC 역방향 + cov0 부분집합 IC 유의)."
+    },
+    {
+      "id": "CF-02",
+      "severity": "HIGH",
+      "flag": "ROLE_CARD_MISMATCH_RECLASSIFY",
+      "detail": "wt_type=discovery 인데 alpha_inheritance_cor = 1.0 (설계 요구). certificate 자격 없음 — reclassify_proposal 기록 (WT-002 CF-02 동형)."
+    },
+    {
+      "id": "CF-03",
+      "severity": "MEDIUM",
+      "flag": "GATE_VARIABLE_CONFOUNDED",
+      "detail": "cov~adv +0.613 / cov~Size +0.736 — WT-002 게이트(직교)와 달리 커버리지는 유동성·size 와 강하게 얽힘. '커버리지 조건화'는 상당분 size/유동성 필터의 재표현."
+    },
+    {
+      "id": "CF-04",
+      "severity": "MEDIUM",
+      "flag": "INTEGER_TIE_NOISE",
+      "detail": "중앙값 경계 동률(평균 12.7종목)로 B_cov 값에 ±0.2 노이즈 — 티커역순 3.718 / AST 경로 3.803 / 원판 3.922. 전부 placebo 안 = 판정 불변."
+    },
+    {
+      "id": "CF-05",
+      "severity": "LOW",
+      "flag": "JOIN_SCRAMBLE_CAUGHT_PREFLIGHT",
+      "detail": "as-of 조인 정렬 결함을 arm 측정 전 자기적발·수리 (음성 대조 상관 진단이 적발). 오염 산출물 0 — challenge_note C1."
+    },
+    {
+      "id": "CF-06",
+      "severity": "INFO",
+      "flag": "PREMISE_HOLDS_UNLIKE_WT002",
+      "detail": "WT-002 CF-08(전제 공허)와 달리 커버리지 0 종목은 실재(20.1% 종목-월, top-25 내 11.4%) — 전제는 성립했으나 기전이 반증됨. ast_sidecar live_with_ast 19->20."
+    }
+  ],
+  "next_probe": [
+    {
+      "id": "NP-A",
+      "title": "컨센서스 분산(disagreement) 조건화 — 정보 불확실성 축 (WT-002 NP-2(b) 잔여 미검 절반)",
+      "rationale": "인프라-존재 축 2건(외국인·커버리지)은 무효 확정이나, 분산 축은 기전이 다르다 — 존재가 아니라 '의견 불일치의 크기'가 mispricing 진폭을 규정한다는 가설(Diether-Malloy-Scherbina 2002). esbr/escr·target_price 갭 분산 리프(C-CONSENSUS-QW 등재) 재사용, 동일 하네스. 사전 확률 갱신: 인프라-존재 2연속 무효 posterior 를 반영해 '개선' 아닌 '역방향(고분산 회피)' 도 사전등록 대칭 검정.",
+      "reusable_asset": "stage_artifacts/WT_D20260802_008/run_03_arms.R — arm 목록만 교체"
+    },
+    {
+      "id": "NP-B",
+      "title": "커버리지 개시/증가 이벤트 신호 — 레벨 조건화가 아닌 변화 이벤트",
+      "rationale": "레벨 조건화는 size 와 +0.736 얽혀 불활성. 커버리지 *개시*(0→1+)는 이산 이벤트라 size 직교 여지 + 문헌 선례(coverage initiation drift). ★착수 전 hypothesis_index dedup 확인 의무 + FQ 등재 후 사전등록.",
+      "risk": "이벤트 희소성 — WT-007 CF-06 동형(월 커버리지 미달 시 portfolio-tier 측정 불성립)의 재현 위험을 census 로 선확인"
+    },
+    {
+      "id": "NP-C",
+      "title": "cov 자체 standalone rank-IC +0.0350 (t 3.72) — screen-tier 등재만",
+      "rationale": "커버리지 수준 자체가 약한 순-예측 (attention premium 계열). rank-IC 는 ADVISORY 이고 IC→PORT_t 전이 벽 posterior 상 자본 경로 사전 확률 낮음 — screen-tier 후보 등재만, 자본 경로 진입 금지.",
+      "priority": "low"
+    }
+  ],
+  "consumption_surfaces": {
+    "factor_ranking": "NO — 게이트는 랭킹을 개선하지 않음(IC 계층에서도 base 7.70 → 게이트 4.62 로 하락)",
+    "universe_filter": "NEGATIVE_KNOWLEDGE — '커버리지 상위 조건화'는 유니버스 필터 후보에서 제외 확정. 인프라-존재 계열 2축 연속 무효로 계열 자체를 큐에서 강등",
+    "overlay_regime_input": "NO — 커버리지는 시계열-국면 변수로서의 검정 미수행(미검 축이나 레벨이 size 대리라 사전 확률 낮음)",
+    "risk_model_beta_budget": "INPUT_AVAILABLE — cov~Size +0.736 실측과 cap-tier 이동 프로필은 risk agent concentration 진단의 '커버리지=size 대리' 근거로 전달 가치",
+    "monitoring_signal": "CANDIDATE — 보유 종목의 커버리지 급감(개시의 역) 은 monitoring tripwire 후보 (자본 판정 아님)",
+    "screening_label": "적용 — screen-tier 판정. graduation 경로 진입 없음",
+    "cross_mode_transfer": "조건화-검정 하네스(사전등록+카디널리티 매칭+placebo)는 WT-002 에서 재사용 실증 완료 — NP-A 에 3회차 재사용 예정"
+  },
+  "revival_conditions": {
+    "condition_1": "base 신호가 순수 컨센서스-파생(예: 리비전 단일팩터)으로 교체될 때 — 본 반증의 핵심(기전5: defense 축이 무커버에서 판별력 유지)은 base 가 합성 신호라는 사실에 의존한다.",
+    "condition_2": "커버리지 데이터가 추정기관 실명 단위(개시/철수 이벤트 식별 가능)로 확보될 때 — NP-B 의 이벤트 축이 레벨 축과 다른 판정을 받을 수 있다.",
+    "condition_3": "배포 유니버스가 커버리지 공백이 지배적인 영역(예: KQ150 밖 소형)으로 확장될 때 — 단 이는 Production Constraints(고정 축) 밖이므로 mandate 변경 시에만."
+  },
+  "lineage": {
+    "base_panel": "05_Production/2.Factor_Model/2-1.STR_1715_AR_on_M4_R05_overlay_PG2/02_holdings_universe/alpha_scores_str1715_268m_cleanT1.parquet",
+    "screen_inputs": "stage_artifacts/WT_D20260714_004/screen_inputs.rds",
+    "gate_source": ".cache/consensus/coverage.parquet (max Date 2026-07-24, 2,762,182 rows, 1,949 tickers)",
+    "parent_harness": "stage_artifacts/WT_D20260802_002/ (gate_panel.parquet BASE 재사용 + run_03_arms.R 하네스)",
+    "scripts": [
+      "stage_artifacts/WT_D20260802_008/run_01_premise.R",
+      "stage_artifacts/WT_D20260802_008/run_02_source_diag.R",
+      "stage_artifacts/WT_D20260802_008/run_03_arms.R",
+      "stage_artifacts/WT_D20260802_008/run_04_diagnostics.R",
+      "stage_artifacts/WT_D20260802_008/run_05_adversarial.R",
+      "stage_artifacts/WT_D20260802_008/run_06_ast.R"
+    ],
+    "preregistration": "stage_artifacts/WT_D20260802_008/preregistration.json",
+    "challenge_note": "stage_artifacts/WT_D20260802_008/challenge_note.md"
+  },
+  "premise_check": {
+    "premise": "애널리스트 커버리지 0 종목이 배포 유니버스에 존재한다 (WT-002 CF-08 형 선검증 의무)",
+    "test": "coverage as-of d0 (30일 창, 행 부재=0) — BASE 78,131 종목-월 전수",
+    "measured": "cov==0 = 20.13% / cov<=1 = 30.10% (연도별 11.6%~26.2% 안정). A_base top-25 내 cov==0 = 11.4%",
+    "verdict": "PREMISE_HOLDS",
+    "implication": "WT-002 외국인 축(94.3% 포화 = 전제 공허)과 달리 커버리지 공백은 실재하고 top-25 선택도 실제로 바꾼다(월평균 게이트 통과율 53.7%). 따라서 본 negative 는 '축의 판별력 부재'가 아니라 '기전 자체의 방향 반증'이다 — 더 강한 부정."
+  },
+  "challenge_note_ref": "stage_artifacts/WT_D20260802_008/challenge_note.md"
+}
