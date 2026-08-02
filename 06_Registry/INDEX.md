@@ -23,7 +23,7 @@
 | `factor_rotation_registry.json` | factor-rotation 모드 FR_XXXX 등록 레지스트리(현행 v6146B, 06-13 갱신) | active | 2026-06-13 | 6KB |
 | `live_track/STR_1715_AR_on_M4_R05_overlay_PG2/` | holdout falsification 1호 등록(구간 [0.39,3.16]) 라이브트랙 — measurement-graduation §3 규약상 불변 봉인 | active | 2026-07-13 | 2KB |
 | `module_catalog.json` | register_module 공용계약의 모듈 카탈로그(SOT) — 계약 floor 통과 모듈 표준 등록부, 07-03 갱신 | active | 2026-08-02 | 523KB |
-| `module_quarantine.json` | register_module 계약 미충족 산출물 격리 보존소(v8.1 헌법이 보존 명시) | active | 2026-08-02 | 55KB |
+| `module_quarantine.json` | register_module 계약 미충족 산출물 격리 보존소(v8.1 헌법이 보존 명시). `.modules`=현재 격리 / `.superseded`=catalog 가 권위인 tombstone(승격 회수 promoted · 하위-tier 차폐 shadowed). catalog 와 `modules` 상호배타 — 08-02 신설, 스크린 `tools/reconcile_module_registries.R` | active | 2026-08-02 | 55KB |
 | `overlay_candidate_queue.json` | screen_route=OVERLAY_CANDIDATE 라우팅 큐(게이트 2계층 소비 경로) — 07-03 갱신 | active | 2026-07-10 | 23KB |
 
 ## 훅 (1)
