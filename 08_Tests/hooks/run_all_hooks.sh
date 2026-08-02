@@ -128,6 +128,11 @@ SUITES=(
   # 2026-08-02 추가: FQ-002 계약 패널 빌더 로직(합성 픽스처, API 무호출).
   #   크롤 1시간 태우기 전에 정정 제외·parse실패 제외·trailing 창·빈입력 거부를 확정한다.
   "08_Tests/data/test_contract_panel.R"
+  # 2026-08-02 추가: 원장 3종(큐·EV지도·Distilled) 정합 스크린.
+  #   같은 날 3회 근접 사고(FQ-095 D2 / FQ-004 카드 추월 / R4 임의착수금지)를 기계화.
+  #   ★스크린 초판이 카드 축에서 0건을 반환하고 그 0 이 '충돌 없음'으로 읽혔다 —
+  #    도구 자신이 "빈 결과 = 합격"을 재현. 그 차단 실효를 이 검사기가 실측한다.
+  "08_Tests/data/test_frontier_coherence.R"
   # 2026-07-26 추가: 부팅 자기-정합 검사(boot_currency_check) 위반 주입 — 부팅 최신화 자동 배선의 가드
   "08_Tests/hooks/test_boot_currency.sh"
   # 2026-07-26 추가: cache_freshness worse-of lag 위반 주입 (CFA-02 수리 가드).
