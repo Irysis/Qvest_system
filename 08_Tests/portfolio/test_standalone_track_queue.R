@@ -310,7 +310,11 @@ if (file.exists(hg)) {
   blk <- blk[!grepl("grade\\s*%in%", blk)]
   blk <- sub("#.*$", "", blk)   # 주석 안의 예시 라벨도 발급이 아니다
   blk_routes <- gsub('"', "", unique(unlist(
-    regmatches(blk, gregexpr('"[A-Z][A-Z_]{3,}"', blk)))))
+    # perl=TRUE 필수 (r-portability 금칙 ⑥) — 소스 줄에 이모지·한자 등 non-BMP 가
+    #   섞이면 TRE 색인이 UTF-16 기준이라 추출 창이 밀려 **그럴듯한 쓰레기**가 나온다.
+    #   여기선 route 라벨을 뽑아 소비자 등록 여부를 판정하므로, 밀린 문자열은
+    #   "미등록 route" 오검출 또는 진짜 누락의 은폐로 곧장 이어진다.
+    regmatches(blk, gregexpr('"[A-Z][A-Z_]{3,}"', blk, perl = TRUE)))))
   unknown <- setdiff(blk_routes, names(ST_ROUTE_CONSUMERS))
   if (length(blk_routes) >= 3L && !length(unknown)) {
     ok("route_map_covers_producer",

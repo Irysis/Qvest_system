@@ -498,15 +498,52 @@ tg_send_rich <- function(msg, silent = FALSE,
     msg <- gsub("(?<=[0-9])>(?=[0-9])", "&gt;", msg, perl = TRUE)
 
     # 3) 기타 위험한 entity 경고 (예: &nbsp; &copy; 등)
-    risky <- regmatches(msg, gregexpr("&[a-zA-Z]+;", msg))[[1]]
+    #
+    # 2026-08-02 수리 — 오프셋 계통 결함. 위반 주입 테스트:
+    #   08_Tests/hooks/test_telegram_entity_scan.R (배터리 등재).
+    #
+    #   구판은 TRE(기본 엔진)로 gregexpr 했다. Windows R 의 TRE 는 위치를 wchar_t =
+    #   **UTF-16 코드유닛**으로 세는데, regmatches/substr 은 **코드포인트**로 자른다.
+    #   → 매치 앞에 non-BMP 문자(이모지 U+1F4CC 등)가 N개 있으면 추출 창이 정확히
+    #     N칸 오른쪽으로 밀린다. tg_agent_brief 는 머리말·섹션마다 이모지를 넣으므로
+    #     이 경로로 나가는 사실상 모든 메시지가 해당된다.
+    #   실측(WT-D20260802_012 R43, 4658 bytes): '&lt;' 실제 char 위치 1664 · TRE 보고
+    #     1670 (앞선 non-BMP 6개 = 📡📅📌📖📊🚩) → 추출 '턱 1.' → 정상 escape 된 &lt; 가
+    #     "미지원 entity"로 오경보. /tmp/qvest_tg_entity_warn.log 의 07-26~08-02 경보
+    #     20건은 전부 이 유령이다('t;1/', 'lt;2', '5% —' 등 = 밀린 창의 내용).
+    #   ★ 반대 방향이 더 위험하다: 창이 밀리면 **진짜** 미지원 entity(&le; 등)는 결코
+    #     이름이 불리지 않고, 밀린 창이 우연히 &lt;/&gt;/&amp; 위에 떨어지면 아래 setdiff
+    #     가 그것을 걸러낸다 — 발화해야 할 때 조용해진다("빈/틀린 결과가 합격으로 읽힘").
+    #
+    #   수리 3중:
+    #     ① perl=TRUE — PCRE2 는 코드포인트로 색인하므로 substr 과 정합 (실측 1664 일치).
+    #     ② 길이 상한 {0,9} — 병리적 장거리 스팬 차단.
+    #     ③ 추출-후 자기검증 — 뽑힌 토큰이 entity 모양이 아니면 그것은 "위반 없음"이
+    #        아니라 **색인기 고장**이다. 침묵 대신 별도 ERROR 로 드러낸다.
+    # 로그 경로는 env 로 우회 가능 — 검사기가 운영 원장에 픽스처를 섞으면 나중에
+    # 이 원장을 forensic 으로 읽을 때(이번 수리가 그렇게 진단됐다) 오독을 부른다.
+    .warn_entity <- function(txt) {
+      message(txt)
+      log_f <- Sys.getenv("QVEST_TG_ENTITY_LOG", unset = "/tmp/qvest_tg_entity_warn.log")
+      tryCatch(cat(sprintf("%s %s\n", format(Sys.time()), txt), file = log_f, append = TRUE),
+               error = function(e) NULL)
+    }
+    ent_re <- "&[A-Za-z][A-Za-z0-9]{0,9};"
+    risky  <- regmatches(msg, gregexpr(ent_re, msg, perl = TRUE))[[1]]
+
+    # ③ 자기검증: 추출물은 자신이 매치됐다는 바로 그 패턴을 다시 만족해야 한다.
+    corrupt <- risky[!grepl(sprintf("^%s$", ent_re), risky, perl = TRUE)]
+    if (length(corrupt) > 0) {
+      .warn_entity(sprintf(
+        paste0("[tg_send_rich] ERROR entity-scan 색인 붕괴 — 추출물이 entity 모양이 ",
+               "아님: %s (스캔 결과 신뢰 불가)"),
+        paste(encodeString(corrupt), collapse = ", ")))
+    }
+
     risky <- setdiff(unique(risky), c("&lt;", "&gt;", "&amp;"))
     if (length(risky) > 0) {
-      warn_msg <- sprintf("[tg_send_rich] WARN unsupported HTML entity: %s.",
-                          paste(risky, collapse = ", "))
-      message(warn_msg)
-      log_f <- "/tmp/qvest_tg_entity_warn.log"
-      tryCatch(cat(sprintf("%s %s\n", format(Sys.time()), warn_msg), file = log_f, append = TRUE),
-               error = function(e) NULL)
+      .warn_entity(sprintf("[tg_send_rich] WARN unsupported HTML entity: %s.",
+                           paste(risky, collapse = ", ")))
     }
     if (!identical(original, msg)) {
       message("[tg_send_rich] INFO auto-sanitize applied. See /tmp/qvest_tg_entity_warn.log")

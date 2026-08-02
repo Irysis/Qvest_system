@@ -126,7 +126,11 @@ qvest_lockbox_trail_state <- function(root = NULL) {
 #  자본 판정에 섞으면 안 된다. 격리 사본: .cache/lockbox/_legacy_quarantine_20260802/)
 qvest_lockbox_legacy_dirs <- function() {
   wd <- .qvest_lb_norm(getwd())
-  drv <- regmatches(wd, regexpr("^[A-Za-z]:", wd))
+  # perl=TRUE 필수 (r-portability 금칙 ⑥): Windows R 기본 엔진(TRE)은 매치 위치를
+  #   UTF-16 코드유닛으로 보고하는데 regmatches 는 코드포인트로 자른다 → 앞에 non-BMP
+  #   문자가 있으면 추출 창이 밀린다. 경로에 이모지가 흔하진 않지만, 규칙은 "이 자리에
+  #   그런 문자가 올 수 있나"를 따지지 않는다(그 판단이 틀리는 게 이 함정의 본체다).
+  drv <- regmatches(wd, regexpr("^[A-Za-z]:", wd, perl = TRUE))
   out <- character(0)
   # ① Windows R 이 선행 `/` 를 해석하던 곳 (<drive>:/tmp)
   if (length(drv) == 1L) out <- c(out, file.path(drv, "tmp"))

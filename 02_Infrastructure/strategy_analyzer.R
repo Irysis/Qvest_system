@@ -45,6 +45,63 @@ if (!exists("rolling_sharpe_cpp")) {
   })
 }
 
+#==============================================================================
+# sample_alignment_check() — 전략/벤치 날짜축 정합 판정 (run_analysis §7-G 본체)
+#
+# [2026-08-02 수리] "빈 결과 = 합격" 계통.
+#   구판: Sample_Aligned <- length(strat_only) == 0 && length(bm_only) == 0
+#   두 시계열이 **둘 다 비면** 양쪽 setdiff 가 비어 TRUE("완벽 정렬")가 됐다.
+#   같은 리포트의 Sample_Overlap 은 0 으로 찍히지만 하류가 읽는 것은 불리언이다.
+#   감싸는 tryCatch 도 못 잡는다 — 빈 xts 는 오류가 아니라 warning 만 낸다
+#   (min() → "no non-missing arguments to min; returning Inf", 실측 재현).
+#
+#   판별 기준(정본 대조군 = 02_Infrastructure/worktask/state_machine.R:96-107):
+#   빈 값이 *권위 있는 출처가 "없다"고 말해준 것*(required_artifacts 0건 → PASS)인가,
+#   *아무도 묻지 않은 것*(unknown phase → FAIL)인가. 빈 시계열은 후자다 —
+#   비교를 수행한 적이 없으므로 정렬 판정을 발행할 자격이 없다.
+#
+#   따라서 비교 불가 시 aligned = NA (TRUE 도 FALSE 도 아닌 제3상태) +
+#   status = "NOT_COMPARABLE". 소비부는 isTRUE() 로 받는다(analysis_report.md).
+#
+# 반환: list(overlap, strat_only, bm_only, aligned, status,
+#            strat_start, strat_end, bm_start, bm_end)
+#==============================================================================
+sample_alignment_check <- function(strat_xts, bm_xts) {
+  strat_dates <- if (is.null(strat_xts)) as.Date(character(0)) else index(strat_xts)
+  bm_dates    <- if (is.null(bm_xts))    as.Date(character(0)) else index(bm_xts)
+
+  overlap    <- intersect(as.character(strat_dates), as.character(bm_dates))
+  strat_only <- setdiff(as.character(strat_dates), as.character(bm_dates))
+  bm_only    <- setdiff(as.character(bm_dates), as.character(strat_dates))
+
+  # 비교가 성립하려면 **양쪽에 관측이 있어야** 한다. 비어 있는 쪽은 "안 맞는 것"이
+  # 아니라 "없는 것"이므로 정렬 판정 대상이 아니다.
+  # ★ overlap 0 을 여기 넣지 않는 이유: 둘 다 비지 않았는데 겹침이 0 이면 그것은
+  #   비교 불가가 아니라 **가장 심한 불일치**다. NA 로 내리면 확정 FAIL 이
+  #   "미상"으로 격하돼 하류가 건너뛴다 — 고치려던 결함의 거울상이 된다.
+  comparable <- length(strat_dates) > 0L && length(bm_dates) > 0L
+
+  # overlap > 0 은 정렬 조건에 명시로 남긴다(양쪽 setdiff 가 0 이면서 겹침이 0 인
+  # 경우 = 양쪽 공집합뿐이고, 그건 이미 comparable 에서 걸린다).
+  aligned <- if (!comparable) NA else
+    (length(strat_only) == 0L && length(bm_only) == 0L && length(overlap) > 0L)
+  status  <- if (!comparable) "NOT_COMPARABLE" else if (isTRUE(aligned)) "ALIGNED" else "MISALIGNED"
+
+  # min()/max() 는 빈 벡터에서 오류가 아니라 Inf/-Inf 를 낸다 → 리포트에 "Inf" 가
+  # 날짜인 척 실린다. 결손은 결손으로 적는다.
+  .edge <- function(d, f) if (length(d) == 0L) NA_character_ else as.character(f(d))
+
+  list(
+    overlap     = length(overlap),
+    strat_only  = length(strat_only),
+    bm_only     = length(bm_only),
+    aligned     = aligned,
+    status      = status,
+    strat_start = .edge(strat_dates, min), strat_end = .edge(strat_dates, max),
+    bm_start    = .edge(bm_dates, min),    bm_end    = .edge(bm_dates, max)
+  )
+}
+
 run_analysis <- function(sim, FACTORS, RAWDATA, BM_DT,
                          output_dir, strategy_name = "Strategy") {
 
@@ -460,33 +517,39 @@ run_analysis <- function(sim, FACTORS, RAWDATA, BM_DT,
   }
 
   # (G) Sample Alignment Check: verify strategy and benchmark date ranges match
+  #     판정 본체 = sample_alignment_check() (파일 상단). 빈 시계열 → NA/NOT_COMPARABLE.
   tryCatch({
-    strat_dates <- index(strat_xts)
-    bm_dates    <- index(bm_xts)
-    overlap     <- intersect(as.character(strat_dates), as.character(bm_dates))
-    strat_only  <- setdiff(as.character(strat_dates), as.character(bm_dates))
-    bm_only     <- setdiff(as.character(bm_dates), as.character(strat_dates))
+    sa <- sample_alignment_check(strat_xts, bm_xts)
 
-    report$Sample_Overlap   <- length(overlap)
-    report$Sample_StratOnly <- length(strat_only)
-    report$Sample_BMOnly    <- length(bm_only)
-    report$Sample_Aligned   <- length(strat_only) == 0 && length(bm_only) == 0
+    report$Sample_Overlap      <- sa$overlap
+    report$Sample_StratOnly    <- sa$strat_only
+    report$Sample_BMOnly       <- sa$bm_only
+    report$Sample_Aligned      <- sa$aligned
+    report$Sample_Align_Status <- sa$status
 
+    # 미판정을 빈 셀로 내보내면 CSV 에서 다시 "없음 = 정상"으로 읽힌다 —
+    # 고치려는 결함이 매체만 바꿔 재현되는 자리다. 토큰을 값으로 박아 명시한다
+    # (fwrite 의 na= 인자 대신: na= 는 전 문자열 필드를 인용부호로 감싸 기존
+    #  CSV 형식을 통째로 바꾼다).
+    .cell <- function(x) if (length(x) == 0L || is.na(x)) "NOT_MEASURED" else as.character(x)
     sample_dt <- data.table(
       Metric = c("Strat_Start", "Strat_End", "BM_Start", "BM_End",
-                  "Overlap_Days", "Strat_Only", "BM_Only", "Aligned"),
-      Value = c(as.character(min(strat_dates)), as.character(max(strat_dates)),
-                as.character(min(bm_dates)), as.character(max(bm_dates)),
-                length(overlap), length(strat_only), length(bm_only),
-                length(strat_only) == 0 && length(bm_only) == 0)
+                  "Overlap_Days", "Strat_Only", "BM_Only", "Aligned", "Status"),
+      Value = c(.cell(sa$strat_start), .cell(sa$strat_end),
+                .cell(sa$bm_start), .cell(sa$bm_end),
+                .cell(sa$overlap), .cell(sa$strat_only), .cell(sa$bm_only),
+                .cell(sa$aligned), sa$status)
     )
     fwrite(sample_dt, file.path(output_dir, "analysis_sample_alignment.csv"))
 
-    if (length(strat_only) > 0 || length(bm_only) > 0) {
+    if (identical(sa$status, "NOT_COMPARABLE")) {
+      cat(sprintf("  Sample: %d overlap (strat %d obs, bm %d obs) → NOT_COMPARABLE (정렬 미판정)\n",
+                  sa$overlap, length(index(strat_xts)), length(index(bm_xts))))
+    } else if (identical(sa$status, "MISALIGNED")) {
       cat(sprintf("  Sample: %d overlap, %d strat-only, %d bm-only → MISALIGNED\n",
-                  length(overlap), length(strat_only), length(bm_only)))
+                  sa$overlap, sa$strat_only, sa$bm_only))
     } else {
-      cat(sprintf("  Sample: %d days fully aligned\n", length(overlap)))
+      cat(sprintf("  Sample: %d days fully aligned\n", sa$overlap))
     }
   }, error = function(e) cat(sprintf("  [sample] Skipped: %s\n", e$message)))
 
@@ -687,8 +750,12 @@ run_analysis <- function(sim, FACTORS, RAWDATA, BM_DT,
             report$Crowding_Risk %||% "N/A",
             report$N_Persistent_75 %||% 0,
             report$N_Common_50 %||% 0),
-    sprintf("- **Sample Aligned:** %s (overlap: %d, strat-only: %d, bm-only: %d)",
+    # Sample_Aligned 는 3상태다 (TRUE / FALSE / NA=비교 불가). isTRUE() 만 쓰면
+    # "정렬 안 됨"과 "잰 적 없음"이 똑같이 NO 로 찍히므로 status 를 함께 싣는다.
+    # 블록 자체가 error 로 건너뛰면 두 필드 다 NULL → NOT_RUN.
+    sprintf("- **Sample Aligned:** %s [%s] (overlap: %d, strat-only: %d, bm-only: %d)",
             if (isTRUE(report$Sample_Aligned)) "YES" else "NO",
+            report$Sample_Align_Status %||% "NOT_RUN",
             report$Sample_Overlap %||% 0,
             report$Sample_StratOnly %||% 0,
             report$Sample_BMOnly %||% 0),
