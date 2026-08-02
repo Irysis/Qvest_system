@@ -1,0 +1,48 @@
+{
+  "task_id": "WT-D20260802_021",
+  "registered_at": "2026-08-02T21:05:00+0900",
+  "frozen_before_measurement": true,
+  "fq_ref": "FQ-116",
+  "selection_type": "chain",
+  "n_trials": 1,
+  "primary_objective": "기전 판별 (성과 개선 아님) — 다팩터 합성이 단일 최강 팩터에 지는 이유를 3후보 분해로 판별",
+  "primary_contrast": {
+    "composite_arm": "C1_EW_STATIC_TUNED (WT-015 실측 PORT_t 0.338, 튜닝 5팩터 EW 정적)",
+    "single_arm": "C3_SINGLE_M01_PATHQ (WT-015 실측 PORT_t 2.050)",
+    "rationale": "EW 정적이 Grinold naive 조합의 가장 깨끗한 구현 — 로테이션 arm은 부차 대조. 두 arm 모두 WT-015 canonical_screen_bt 실측(승계, 재계산 금지) + 본 라운드는 holdings 재구성으로 분해",
+    "parity_gate": "재구성 포트 gross 수익 vs WT-015 저장 period_returns gross — max|diff| < 1e-8 필수. 불일치 시 분해 무효(STOP)"
+  },
+  "identity_check": "d_t = active(C)-active(S) = (1/25)[Σ_IN ret − Σ_OUT ret] 기계 항등 수치 검증 (동일 EW·동일 벤치)",
+  "mechanisms": {
+    "M1_slot_cannibalization": {
+      "statement": "약한(음의 전이) 팩터가 강한 팩터의 top-25 slot을 잠식한다",
+      "measure": "월별 C_t=합성 top-25 vs S_t=단일 top-25 overlap. IN=C\\S 종목을 advocate 팩터(그 달 z 최대 기여 팩터)로 귀속, advocate별 실현 active 기여 분해",
+      "support_if": "(a) 평균 overlap < 15/25 AND (b) 음-전이 팩터(WT-009 standalone canonical PORT_t < 0.5: D03_EWMA, Q01_EB, V06_EB) advocate IN-종목의 실현 기여 합이 음수이며 총 gap(Σd_t<0)의 ≥50%를 설명",
+      "reject_if": "평균 overlap ≥ 20/25 (잠식 자체가 소량) 또는 IN-vs-OUT 격차 NW |t| < 1"
+    },
+    "M2_averaging_flattening": {
+      "statement": "합성 z가 극단 신호를 평균으로 눌러 최강 팩터의 꼬리 선별을 소실시킨다",
+      "measure": "합성 top-25 종목의 그 달 M01_PATHQ 백분위 분포 + M01 단독 rank-bucket별 실현 active (1-25 vs 26-50 vs 51-100) 기울기",
+      "support_if": "(a) 합성 top-25의 M01 백분위 중앙값 < 0.80 AND (b) M01 꼬리 집중: bucket(1-25) − bucket(26-50) 월평균 active 차 > 0, NW t ≥ 1.5",
+      "reject_if": "합성 픽이 꼬리를 유지(중앙값 ≥ 0.90) 또는 가치 기울기 평탄(NW t < 1)"
+    },
+    "M3_coverage_heterogeneity": {
+      "statement": "팩터별 커버리지·유효 분산 이질로 EW 합성이 실질 기울거나 희석된다",
+      "measure": "팩터별 월 커버리지(유니버스 내 비결측 수) + 월 단위 팩터 전체 결측(예: V06 263/295) + 합성 선택분 내 |z| 기여 share",
+      "support_if": "(a) 커버리지 이질(최대 대비 >20% 격차가 월의 ≥30% 또는 팩터 통째 결측월 >10%) AND (b) 커버리지 분산 상위 1/3 월의 d_t가 하위 1/3 월보다 유의하게 나쁨 (차이 NW |t| ≥ 2)",
+      "reject_if": "커버리지 실질 동질(격차 <10%가 월의 ≥90%) 또는 이질월-d_t 무관 (|t| < 1)"
+    }
+  },
+  "mechanism_probe_arm": {
+    "name": "POS2_EW (M01_PATHQ + V01_SECREL, 양-전이 팩터만 EW 합성)",
+    "type": "진단 전용 canonical 1회 실측 — 승자 선택 아님, 사전 예측 고정",
+    "prediction_if_M1_dominant": "음-전이 팩터 제거로 gap의 ≥60% 회복: PORT_t(POS2) ≥ 0.338 + 0.6×(2.050−0.338) = 1.365",
+    "prediction_if_M2_independent": "양-전이만 섞어도 단일 대비 유의 열위 지속: paired NW t(POS2−single) ≤ −1.0이면 평균화 뭉갬이 독립 기여",
+    "note": "이 arm은 새 조합 후보 제안이 아니라 통제 실험 — 자본 주장 없음, 채택 대상 아님"
+  },
+  "grinold_frame": "IR = IC × √BR × TC 3항 대조 — 팩터별 rank-IC(부호)와 canonical PORT_t(부호)의 불일치 표를 만들어 어느 항(IC / breadth / TC=전이)이 실측과 어긋나는지 특정. 사전 예상 없이 실측 보고",
+  "honesty_posterior": "세 기전은 배타 아님(동시 성립 가능). 지배 기전 판별 불가도 정직한 결과 — 그 경우 추가 필요 측정을 명시",
+  "inv7_wall": "top-25는 고정 축. '25 slot이라 손실'은 설명 아님 — '주어진 25 slot을 어떻게 채우나'로 서술",
+  "pit_note": "신규 신호 구축 없음. WT-009 패널(PIT 검증 승계) + WT-015 하네스 동일 vintage 재사용. 선택 재구성은 신호월 t → 홀딩월 t+1 forward return 동일 컨벤션",
+  "no_capital_claim": true
+}

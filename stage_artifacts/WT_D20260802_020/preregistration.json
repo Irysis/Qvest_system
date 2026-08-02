@@ -1,0 +1,45 @@
+{
+  "task_id": "WT-D20260802_020",
+  "registered_at": "2026-08-02 (측정 전 고정 — 이 파일 작성 후 어떤 성과수치도 산출하지 않은 상태)",
+  "selection_type": "preregistered_single_primary",
+  "n_trials": 1,
+  "lineage": "FQ-112 (WT-014/016 소비면 ④ 위험모델 미측정분). 승계 실측(재측정 불요): MAX5 상위 10% 배제 = MDD bare 11.4pp / overlay 추가 7.3pp 개선, 발동률 0.957, 배제군 개인 홀딩월 순매수 NW t +3.90, CRISIS 필터 편익 음수(bare t -1.78 / overlay -1.59), lag1 편익 소멸.",
+  "single_question": "MAX5는 개별 종목 crash를 기존 위험 축(변동성/하방편차/베타) 통제 후에도 예측하는가 — 아니면 변동성의 재포장인가.",
+  "primary": {
+    "name": "MAX5_crash_prediction_FM_incremental",
+    "crash_definition_fixed": "crash_{i,t+1} = 1 iff 종목 i의 홀딩월(t+1) 수익률(fwd Ret_1m at d0)이 그 월 후보 횡단면의 하위 10% 이하 (당월 횡단면 10% 분위, type 7). 단일 정의 사전 고정 — 절대수익 문턱(-20% 등) 등 다른 정의는 라벨 명기 진단 병기만, 판정 사용 절대 금지.",
+    "crash_definition_rationale": "횡단면 상대 정의 = base rate가 매월 10%로 고정되어 국면 혼입 없이 '종목 선별력'만 잰다. 시장-레벨 하락 타이밍은 본 라운드 질문(종목-레벨 crash-name 지목)이 아님 — 국면 성분은 regime 분해에서 별도 관측.",
+    "signal": "max5 = WT-010 동결 ot_panel.parquet max5 (63거래일 창, 종점 d0=전월말, 상위 5일 Ret 평균) — WT-014 alpha_scores.parquet(후보 집합 병합판) 그대로 소비, 재계산 없음.",
+    "model": "월별 횡단면 선형확률모형 (Fama-MacBeth): crash_{i,t+1} ~ z(max5) + z(D03_RealVol) + z(D01_IdioVol) + z(D45_Downside_Dev) + z(D02_Beta). z = 당월 횡단면 표준화(max5는 3sd winsor 후). 통제 4축 = load_month_factors(d0) 경유(C15) Z_Score_Aligned. 월별 계수 b_max5의 시계열 평균에 NW lag-3 t.",
+    "decision_rule": "mean(b_max5) > 0 AND NW lag-3 t >= 2.0 → '통제 후 증분 예측력 실재'. t < 2.0 → 'MAX5는 기존 위험 축의 재포장' — 그것이 정직 판정이며 실패 아님(FQ-112 닫힘 근거).",
+    "min_month_n": "월별 회귀는 유효 관측 n >= 100인 월만 포함 (미달월 목록 기록). 통제 결측 종목은 그 월 회귀에서 제외 — 커버리지 기록."
+  },
+  "honest_posterior_prereg": {
+    "p1_collinearity": "MAX5는 고변동 종목과 강상관이 자연스럽다(급등 이력 = 변동성) → '통제 후 증분 없음'이 사전 우세 prior.",
+    "p2_crisis_tension": "WT-014 배제 편익이 CRISIS에서 음수(bare t -1.78)인 것은 crash 예측 서사와 상충 — crash를 예측한다면 위기에 더 유효해야 한다. 이 긴장을 사전 기록하고 실측이 어느 쪽을 지지하는지 보고하는 것이 본 라운드의 실질 산출.",
+    "p2_candidate_resolution": "사전 가설(판정 아닌 해소 후보): MAX5는 양측 꼬리를 모두 예측(fat-tailed lottery). 평시엔 하방 꼬리(개별 crash)가 지배해 배제 편익 양수, CRISIS 표본(하락+초기반등 혼재)에선 상방 꼬리(고베타/lottery 반등)가 지배해 배제가 역효과. 검증 = 국면별 양측 꼬리 발생률(crash rate + boom rate) + 국면별 max5-top 익월 평균수익 스프레드."
+  },
+  "preregistered_diagnostics_non_selective": {
+    "univariate_fm": "통제 없는 crash ~ z(max5) 단변량 FM — '상위군 crash 발생률 vs base rate' 프레임 병기 (top-decile max5군의 crash 발생률 lift 포함)",
+    "same_window_controls": "통제를 동일 63d 창 vol63/dsd63(ot_panel)로 치환한 FM — 창 정합이 더 엄격한 대조. 판정은 factor DB 통제판(primary)만.",
+    "two_sided_tail": "boom_{i,t+1} = 상위 10% 정의 대칭 라벨 — max5의 상방 꼬리 예측 병기 (p2 긴장 해소용)",
+    "regime_conditional": "unified_regime_signal hold_ym(d0월+1) 매핑 — 국면별(RISK_ON/NEUTRAL/CAUTION/CRISIS) b_max5 평균 + 양측 꼬리 발생률 + max5-top 익월 수익 스프레드",
+    "cap_tier": "월별 Size 순위 MEGA(1-10)/MID(11-30)/OTHER(31+) — tier별 max5-top-decile(tier 내 상대)의 crash 발생률 lift + OTHER 내 FM (MEGA/MID는 월 n 소수 — 발생률만, 셀 크기 정직 보고)",
+    "abs_threshold_label_diag": "crash_abs = (Ret_1m <= -20%) 절대 문턱판 FM — 라벨 정의 강건성 진단 병기 (판정 불사용)",
+    "portfolio_tail_secondary": "WT-014 base top-25 cap_norm 보유의 월별 가중평균 max5-z(노출) → 익월 포트 active 수익 회귀 + 하위 5% active 월 사전 노출 비교 — n=256/꼬리 13으로 저검정력, 진단 라벨"
+  },
+  "pit_declaration": {
+    "C5_signal": "max5 창 종점 d0(전월말) — 홀딩월 시작 전. WT-014 판정 승계 (간격 1거래일).",
+    "C15_controls": "통제 4축은 load_month_factors(d0) 경유만 — parquet 직접 read 금지 준수.",
+    "forward_label_direction": "fwd Ret_1m(d0 키)이 '익월' 수익임을 독립 재계산으로 검증: .cache/rawdata.rds 일간 저장 Ret로 d0 이후 익월 구간 복리 수익을 재구성해 cor >= 0.99 + 알려진 사건(2026-06-30 d0 → 2026-07 벤치 -23.63% 폭락월) 부호 확인. ★ret_firewall: 저장 Ret 사용, recompute 아티팩트 금지 — 재구성은 검증 전용이며 라벨 자체는 fwd_ret 소비.",
+    "violation_injection": "동월(t) 수익을 라벨로 주입한 오염판을 만들어 방향 검증기가 FAIL을 발화하는지 실증 — 검사 실효 입증 의무. 검증기 PASS(정상판) + FAIL(주입판) 둘 다 기록.",
+    "C1": "z/분위/문턱 전부 당월 횡단면만 — 시계열 전체 통계 미사용."
+  },
+  "chain_qualification": {
+    "iteration_policy": "iteration 없음 — 단일 primary 1회 측정. 통제 스펙/라벨 정의 변경 재시행 금지.",
+    "oos_policy": "holdout 미조회. 전기간 FM + 사전등록 국면/tier 분해만.",
+    "dsr": "sweep 아님(n_trials=1) — DSR 게이트 부적용."
+  },
+  "role_boundary": "Σ/공분산/weights 계산·수정 없음. risk_package 이식은 설계 제안 문서(risk_integration_proposal.md)까지만 — 실배선 금지.",
+  "capital_claim": "없음 — 위험모델 소비면 특성화. admission/실배선 = governor + 도훈 수동."
+}
