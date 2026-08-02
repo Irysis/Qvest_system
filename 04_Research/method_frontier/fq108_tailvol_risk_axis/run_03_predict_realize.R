@@ -152,7 +152,13 @@ for (t_ym in reb_months) {
   a_over <- if (book_ok) mk_active(w_over) else NULL
 
   # ===== 회귀 재료 (elig 순서) =====
-  fp <- FPAN[.(t_ym, elig), .(Ticker, g_d35, g_d45, g_d05, rv63_m)]
+  # ★ data.table 함정: i 의 .() 는 DT 자기 컬럼을 먼저 본다. FPAN 에 t_ym 컬럼이
+  #   있으므로 .(t_ym, elig) 는 스칼라가 아니라 439k 컬럼으로 해석돼 elig 가
+  #   recycle 된다(무경고 아님 — warning 만 나고 조용히 439k행 반환).
+  #   → 컬럼명과 겹치지 않는 지역변수로 키를 넘기고, 행수를 hard assert.
+  tkey <- t_ym; hkey <- h_ym
+  fp <- FPAN[.(tkey, elig), .(Ticker, g_d35, g_d45, g_d05, rv63_m)]
+  stopifnot(nrow(fp) == length(elig), identical(fp$Ticker, elig))
   cov_g35 <- mean(is.finite(fp$g_d35)); cov_s63 <- mean(is.finite(fp$rv63_m) & fp$rv63_m > 0)
   s63raw <- log(pmax(fp$rv63_m, .Machine$double.eps))
   s63raw[!is.finite(s63raw)] <- NA_real_
@@ -161,8 +167,8 @@ for (t_ym in reb_months) {
   g35 <- cs_z(fp$g_d35); g45 <- cs_z(fp$g_d45); g05 <- cs_z(fp$g_d05)
 
   # target y = log RV_{i, h_ym}
-  yv <- SRV[.(h_ym, elig), logrv]
-  mlev_fut <- MLEV[.(h_ym), mlev]
+  yv <- SRV[.(hkey, elig), logrv]
+  mlev_fut <- MLEV[.(hkey), mlev]
   if (length(mlev_fut) != 1L || !is.finite(mlev_fut)) mlev_fut <- NA_real_
   mlev_cur_for_train <- mlev_fut          # 훈련행에 붙는 '그 행의 홀딩월 평균'(과거엔 기지)
 
@@ -235,8 +241,8 @@ for (t_ym in reb_months) {
       if (est == "lw_nls" && arm %in% c("A_base", "A2_recal", "B_d35")) {
         stock_pred_rows[[length(stock_pred_rows) + 1L]] <- data.table(
           t_ym = t_ym, holding_ym = h_ym, arm = arm, Ticker = elig,
-          pred_var = vnew, realized_var = SRV[.(h_ym, elig), rv],
-          ret_m = SRV[.(h_ym, elig), ret_m], g35 = g35, xv = xv, s63 = s63)
+          pred_var = vnew, realized_var = SRV[.(hkey, elig), rv],
+          ret_m = SRV[.(hkey, elig), ret_m], g35 = g35, xv = xv, s63 = s63)
       }
     }
 

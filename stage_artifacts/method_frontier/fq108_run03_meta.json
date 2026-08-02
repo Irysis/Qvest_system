@@ -1,0 +1,20 @@
+{
+  "pin_tag": "fq057_20260718_171024",
+  "built_at": "2026-08-03 08:09:14",
+  "n_pairs": 11296,
+  "n_holding_months": 198,
+  "holding_range": [201001, 202606],
+  "lw_degenerate_months": 198,
+  "estimators": ["lw_nls", "lw_linear"],
+  "treatments": ["A_base", "A2_recal", "B_d35", "C_d45", "D_max", "F_sv63", "G_full", "X_oracle"],
+  "min_train_months": 24,
+  "pit_guards": ["factor asof (run_02, 198/198 PASS)", "train max holding_ym <= decision ym (394 checks)"],
+  "coverage_median": {
+    "g35": 1,
+    "s63": 1,
+    "y": 1
+  },
+  "realized_rule": "Return.portfolio daily -> RV=sum(r_d^2); active=port-bench; overlaid=CASH col r=0",
+  "bench": "cap-w over elig (risk universe)",
+  "sigma_treatment_scope": "대각(개별분산)만. 상관행렬 C 는 전 arm 동일 — 처치 효과가 상관구조 변화로 오염되지 않음."
+}

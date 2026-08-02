@@ -51,30 +51,29 @@ wins <- function(v, p = 0.005) {
 #   train: data.table with y + 회귀변수 컬럼들. newd: 예측용 (동일 컬럼).
 #   반환: 예측 분산 v̂ = exp(ŷ + s²/2)  (로그정규 Jensen 보정)
 fit_predict_logvar <- function(train, newd, vars) {
+  cn <- c("(int)", vars)
   y <- wins(train$y)
-  Xtr <- cbind(1, as.matrix(train[, ..vars]))
+  Xtr <- cbind(1, as.matrix(train[, ..vars])); colnames(Xtr) <- cn
   ok <- is.finite(y) & rowSums(!is.finite(Xtr)) == 0
   y <- y[ok]; Xtr <- Xtr[ok, , drop = FALSE]
   if (length(y) < 200L) return(NULL)
-  # rank-deficient 방어 (예: lw_linear 퇴화로 x 가 상수)
+  # rank-deficient 방어 (예: lw_linear p>n 퇴화로 x 가 사실상 상수)
   qrf <- qr(Xtr)
-  if (qrf$rank < ncol(Xtr)) {
-    keep <- qrf$pivot[seq_len(qrf$rank)]
+  full_rank <- (qrf$rank == ncol(Xtr))
+  if (!full_rank) {
+    keep <- sort(qrf$pivot[seq_len(qrf$rank)])
     Xtr <- Xtr[, keep, drop = FALSE]
-    vars_used <- colnames(Xtr)
-  } else {
-    vars_used <- colnames(Xtr)
   }
+  vars_used <- colnames(Xtr)
   fit <- .lm.fit(Xtr, y)
   b <- fit$coefficients
   s2 <- sum(fit$residuals^2) / max(1L, (length(y) - length(b)))
-  Xne <- cbind(1, as.matrix(newd[, ..vars]))
-  colnames(Xne) <- c("", vars)
+  Xne <- cbind(1, as.matrix(newd[, ..vars])); colnames(Xne) <- cn
   Xne <- Xne[, vars_used, drop = FALSE]
   Xne[!is.finite(Xne)] <- 0
   yhat <- as.numeric(Xne %*% b)
   list(v = exp(yhat + s2 / 2), coef = setNames(as.numeric(b), vars_used),
-       s2 = s2, n_train = length(y), rank_ok = (qrf$rank == (length(vars) + 1L)))
+       s2 = s2, n_train = length(y), rank_ok = full_rank)
 }
 
 # ---- Fama-MacBeth NW t (월별 계수 시계열) -----------------------------------
