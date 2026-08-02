@@ -1,5 +1,5 @@
 {
-  "l_code": "L-AR-20260802_203630",
+  "l_code": "L-AR-20260802_203709",
   "strategy_id": "WT_D20260802_017_FQ115_REGIME_OVERLAY_CONSUMPTION",
   "grade": "F",
   "core_reference": "FQ-115 (WT-015 NP-1 파생); prior h2_regime_overlay_ab 2026-06-18(uni_cat_x_book SR 1.670<1.685); WT-D20260802_015 CRISIS +4.98% 단서; carrier_STR_1715_AR_on_M4_R05_overlay_PG2 (production parity); preregistration stage_artifacts/WT_D20260802_017/preregistration.json",
@@ -39,6 +39,34 @@
   "turnover_equity": 10.3,
   "overlay_churn_increment": 0.22,
   "n_label_fire_months": 28,
+  "falsification_attempts": [
+    {
+      "test": "라벨->실현하락(BM<0) 판별력 fisher 검정",
+      "result": "p=1.0 (recall 0.10 < base 0.41)",
+      "effect_retained": false
+    },
+    {
+      "test": "심도 완화 재채점 BM<-5%/-8%",
+      "result": "recall 0.17/0.20, p=0.161/0.196 — 어느 심도에서도 비유의",
+      "effect_retained": false
+    },
+    {
+      "test": "PIT 위반 주입(홀딩월 라벨)",
+      "result": "assert stop 발화 — 차단 실효 실증",
+      "effect_retained": null
+    },
+    {
+      "test": "lag 스트레스(m-2 라벨)",
+      "result": "paired t -1.85 -> -2.57 (look-ahead 인플레 부재)",
+      "effect_retained": false
+    },
+    {
+      "test": "가중 기저 교차(EW basis)",
+      "result": "paired t -2.04 — 기저 무관 부정 방향",
+      "effect_retained": false
+    }
+  ],
+  "oos_retention": 0.41,
   "oos_months": 269,
   "portfolio_alpha_t": 5.08,
   "selection_type": "chain",
