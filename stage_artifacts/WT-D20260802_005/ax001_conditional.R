@@ -49,7 +49,8 @@ score_one <- function(label) {
   )
 }
 
-labels <- c("vol_rank_stability_v1", "C_VolRankStability_3M", "hill_tail_index")
+labels <- c("vol_rank_stability_v1", "C_VolRankStability_3M", "hill_tail_index",
+            "T_RetAutoCorr_12M", "vol_adj_volume_surprise", "chen_welch_rd_to_market")
 res <- Filter(Negate(is.null), lapply(labels, score_one))
 for (r in res) {
   # 방어형 자격: 위기월 active > 0 AND Core 대비 MDD 완화 > 0 AND bad월 active > normal월 active
