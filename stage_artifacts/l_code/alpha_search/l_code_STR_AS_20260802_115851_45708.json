@@ -3,7 +3,7 @@
   "strategy_id": "STR_AS_20260802_115851_45708",
   "grade": "C",
   "core_reference": "DuPont 분해(ΔPM·ΔATO)를 절대값이 아니라 KRX 업종내 상대 위치로 조건화 — 업종내 demean + '업종상대 수준 × 변화' 교호항을 확장창 Fama-MacBeth로 결합",
-  "lesson_text": "FQ081_DuPont_IndRel_Cond: 등급 C, 연복리 10.8% (벤치마크 대비 -0.2%p), 샤프 0.45. 근접 탈락 — 보강 후 재검증 후보.",
+  "lesson_text": "FQ081_DuPont_IndRel_Cond: 등급 C, 연복리 10.8% (벤치마크 대비 -0.2%p), 샤프 0.45. ★권위측정(canonical_screen_bt) cap-w PORT_t = -0.413 (HARD 2.95 미달) — 자본 자격 없음. '근접 탈락' 아님(자동 생성 문구는 proxy 등급 heuristic).",
   "tags": ["ALPHA_SEARCH", "FAST_VALIDATION", "VALIDATED_HARD_FAIL"],
   "created_at": "2026-08-02",
   "research_mode": "alpha_search",
@@ -17,7 +17,38 @@
   "excess_cagr": -0.25,
   "mechanism_hypothesis": "가설 'DuPont 분해(ΔPM·ΔATO)를 절대값이 아니라 KRX 업종내 상대 위치로 조건화 — 업종내 demean + '업종상대 수준 × 변화' 교호항을 확장창 Fama-MacB' — 검증 결과 지배 요인: FMT-01(MDD 59.0% > 45% — 선택 종목군의 위기 동반급락(구조적 꼬리위험)); FMT-03(앙상블/블렌드 구성 + grade C — 결합 시 강점 희석 의심 (키워드 기반 heuristic)); FMT-04(MDD 59.0% > 35% & BM상관 0.76 >= 0.7 — 위기국면 동조 낙폭(국면필터 부재))",
   "data_supported_conclusion": "측정치(proxy — run_hurdle_gate): CAGR 10.8% (BM 대비 -0.2%p), 샤프 0.45, MDD -59.0%, IR -0.01, 회전율 연 123%, OOS retention 0.55.",
-  "next_probe": "MDD 축 탈락(59.0%) — 신호력 보존 시 OVERLAY_CANDIDATE 라우트(국면/DD overlay는 S5/QEPM 단계) 또는 저변동 결합 재검증.",
+  "next_probe": "① FQ-099 gap-aware TTM 재구성(분기 6.46% 비연속 오염 제거) 후 3-arm 재측정 ② FQ-100 업종-중립 순이익률 *수준*(i_PM, rank-IC +0.0143 / ICIR 0.52, 2016+ 감쇠 없음) 단독 PORT_t 전이 시험 ③ DART 분기 백필로 2016+ vintage 신선도 180일→60일 회복 후 재측정 ④ FQ-101 미래 Factor_Date 라벨 점검. (구 자동문구 'OVERLAY_CANDIDATE 라우트'는 screen_pass=FALSE·screen_route=NONE 이라 부적용)",
+  "canonical_measurement": {
+    "metric_type": "canonical_screen",
+    "note": "canonical_screen_bt(top-25 EW long-only, 15bps, K200∪KQ150, 2005-01~2026-07). 판정 권위는 이 블록 — 상단 proxy 지표(run_hurdle_gate)와 구분.",
+    "arms": {
+      "A_unconditional": { "port_t_capw_nw3": -0.798, "port_t_ew_universe": -1.564, "ir": -0.142, "turnover_annual": 3.60, "n_months": 223 },
+      "B_industry_demean": { "port_t_capw_nw3": -0.579, "port_t_ew_universe": -1.041, "ir": -0.106, "turnover_annual": 4.14, "n_months": 223 },
+      "C_demean_plus_interaction": { "port_t_capw_nw3": -0.413, "port_t_ew_universe": -0.497, "ir": -0.079, "turnover_annual": 4.01, "n_months": 223 },
+      "A0_equalweight_z_sanity": { "port_t_capw_nw3": -0.615, "port_t_ew_universe": -1.002, "n_months": 259 },
+      "B0_equalweight_z_sanity": { "port_t_capw_nw3": -0.570, "port_t_ew_universe": -1.139, "n_months": 259 }
+    },
+    "paired_increments_nw3": {
+      "A_to_B": { "delta_active_annual_pct": 1.29, "t": 0.630, "n": 223 },
+      "B_to_C": { "delta_active_annual_pct": 0.95, "t": 0.351, "n": 223 },
+      "A_to_C": { "delta_active_annual_pct": 2.24, "t": 0.731, "n": 223 },
+      "interpretation": "방향 3/3 일관, 크기 0과 구별 불가. 두 실패 arm 사이의 차이 — 비율/배수 해석 금지."
+    },
+    "dual_basis_verdict": "EW-유니버스 기준 PORT_t 가 cap-w 보다 더 음수 → mega-cap 벤치 아티팩트 설명 배제. cap-tier 보유비중 MEGA 0.02~0.03 / MID 0.05~0.06 / OTHER 0.92. 2005-2015 arm C cap-w +1.414 가 EW기준 -0.041 로 소멸.",
+    "sign_reversal_control": { "A": -0.249, "B": -0.469, "C": -0.448, "note": "방향 오설정으로 구제되지 않음" },
+    "rank_ic_advisory": {
+      "i_PM_level": { "ic": 0.0143, "icir": 0.52, "ic_2005_2015": 0.0141, "ic_2016plus": 0.0145 },
+      "i_dPM_change": { "ic": 0.0012, "ic_2005_2015": 0.0110, "ic_2016plus": -0.0091 },
+      "i_dATO_change": { "ic": 0.0056, "icir": 0.30 },
+      "x_PM_interaction": { "ic": -0.0132, "icir": -0.55 },
+      "note": "가설이 지목한 축은 '변화'인데 시대-안정 순위력을 보이는 것은 '업종내 수준'. 축 재귀속 필요 → FQ-100."
+    },
+    "factor_model_alpha": { "FF3_t": 1.335, "Carhart4_t": 1.098, "FF5_t": 1.127, "note": "전부 비유의" },
+    "hard_gates": { "port_t_required": 2.95, "port_t_actual": -0.413, "calmar_required": 0.64, "calmar_actual": 0.184, "oos_retention_required": 0.7, "oos_retention_actual": 0.554, "dsr": "미산출 (hurdle_gate: DSR module not available) — 산출한 척 금지" }
+  },
+  "known_construction_defect": "분기(XLSX) TTM 을 '직전 4개 관측' 합으로 구성 — 실측 6.46%(6,260/96,975)가 연속 4분기 아님. 최다 케이스는 연 1회 보고 종목의 4년 합(ATO 최대 4배 과대). 본 config 는 clean 아님 → 구조 판결이 아니라 config-scoped 미달(INV-7 재도전 대상).",
+  "pit_provenance": "재무 원천 .cache/fundamental_merged.parquet 의 Factor_Date 는 공시지연 반영 완료(분기 Period_Date+45d = 5/15·8/14·11/14, 연간 Period_Date+90d = 익년 3/31) — C4 정합 실측 확인 2026-08-02. 월수익은 stored Ret 복리(Close/shift 재계산 금지). FM 계수는 실현 완료 월(m<=t-1) 확장창만.",
+  "self_adversarial_challenge": "stage_artifacts/alpha_search/20260802_115851_45708/challenge_note.md (C1~C9)",
   "fmt_codes": [
     "FMT-01",
     "FMT-03",
