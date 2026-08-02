@@ -138,7 +138,9 @@ mk_combo_ast <- function(members, sign_) {
   for (i in seq_along(nodes)[-1]) acc <- list(type = "op", op = "ADD", args = list(acc, nodes[[i]]))
   acc
 }
-probe_dates <- SIG[format(SIG, "%Y-%m") %in% c("2008-11","2015-06","2020-03","2024-12")]
+# probe: 연속 4개월 협창 (컴파일러가 eval_dates min~max 스팬 전체 월그리드를 순회하는
+#   실측 거동 때문 — 분산 날짜는 준-전체 컴파일 유발. parity는 대수 검증이라 협창 충분)
+probe_dates <- SIG[format(SIG, "%Y-%m") %in% c("2020-01","2020-02","2020-03","2020-04")]
 UNIV_probe <- unique(rbindlist(lapply(pan[F5], function(d) d[Date %in% probe_dates, .(Date, Ticker)])))
 for (cn in c("C_ALL5", "C_ORTH")) {
   members <- if (cn == "C_ALL5") F5 else ORTH
