@@ -1,7 +1,7 @@
 {
  "schema_version": "1.0",
  "sot": "02_Infrastructure/docs/qvest_v8_3_alpha_discovery_sot.md §4",
- "updated": "2026-08-02 (FQ-124 사전 확인 — 문턱 +0.25 는 종목-레벨에서 32% 발화, 포트 평균 노출 축과 종목 문턱 축 분리 필요. 총 126건)",
+ "updated": "2026-08-03 (WT-022 production 실코드 반증 — 복권형 필터 상신 철회. 파생 FQ-127 base-의존성 스크린 / FQ-128 parity 라벨 강제 등재. 총 128건)",
  "consume_rule": "새 발굴 리서치 착수 전: hypothesis_index lookup → 본 큐 확인 → owner/status 갱신. 완료 시 result_ref(L-code/보고서) 기입. dohoon_decision 항목은 세션 임의 착수 금지.",
  "entries": [
   {
@@ -2347,6 +2347,30 @@
    "owner": "미배정",
    "status": "blocked_until_fq125",
    "registered": "2026-08-02 Q-Lead (WT-D20260802_018 NP-2 파생)"
+  },
+  {
+   "id": "FQ-127",
+   "lane": "measurement_integrity",
+   "title": "★base-의존성 일반화 스크린 — 지금까지의 '개선' 중 몇 건이 약한 base 아티팩트인가",
+   "hypothesis": "WT-022 실측: 같은 필터가 재구성 base(PORT_t 2.879/1.886)에서 ΔIR +0.169/+0.128, production 실코드 base(6.830)에서 −0.149 로 **부호 반전**. bare arm 도 음수라 overlay 무관 — base 강도 자체가 판정을 뒤집는다. ⇒ 08-02 라운드들이 보고한 개선/한계기여 주장 전수를 base 출처별로 분류하고, production-parity base 로 재측정 가능한 건을 재판정한다. 몇 건이 같은 방식으로 뒤집히는가.",
+   "ev_rationale": "측정 신뢰 계층 — 알파 라운드를 막는 결함이 아니라 **과거 판정의 유효성**을 좌우한다. WT-022 가 1건을 실증했으므로 계통 여부 확인이 다음 단계. 재측정 비용은 패널 재사용이라 낮다.",
+   "wall_check": "해당 없음(측정 무결성 라운드). 단 재판정 결과가 기존 FQ 상태를 바꿀 수 있음.",
+   "data_gate": "없음 (기존 stage_artifacts 재사용 + production 코드 read-only)",
+   "owner": "미배정",
+   "status": "frontier_open",
+   "registered": "2026-08-03 Q-Lead (WT-D20260802_022 파생, P1)"
+  },
+  {
+   "id": "FQ-128",
+   "lane": "infra_guard",
+   "title": "production-parity 라벨 강제 배관 — base 출처 미표기 ΔIR 의 상신 차단",
+   "hypothesis": "§7b 규약(production 코드 = incumbent base 권위)이 문서로만 있고 **기계 강제가 없다** — 08-02 상신이 재구성 base ΔIR 로 실배치 자격을 논했는데 어떤 게이트도 발화하지 않았다. book-marginal 계열 수치에 `base_source` + `production_parity_verified` 라벨을 의무화하고, 미표기·미검증 값이 dossier/graduation 경로에 도달하면 차단한다. 위반 주입으로 차단 실효 실증.",
+   "ev_rationale": "WT-022 는 '규약이 있어도 안 지켜진다'를 실증했다. 라벨 부재가 침묵으로 통과하는 구조는 '빈 결과=합격' 계통과 동형.",
+   "wall_check": "해당 없음(하네스). 기존 라운드 산출물 호환성 확인 필요(soft→hard 단계 도입).",
+   "data_gate": "없음",
+   "owner": "미배정",
+   "status": "frontier_open",
+   "registered": "2026-08-03 Q-Lead (WT-D20260802_022 파생, P1 — 측정 신뢰)"
   }
  ]
 }
