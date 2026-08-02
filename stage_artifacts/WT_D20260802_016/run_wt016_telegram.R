@@ -48,7 +48,7 @@ tg_agent_brief(
   title = "WT-D20260802_016 ALPHA_DONE — 복권형 제외-필터, overlay 포함판에서도 관문 통과",
   sections = list(
     list(type = "summary", emoji = "\U0001F4CC",
-         body = "실배치 관문 통과: 현 운용 overlay를 얹은 상태에서도 필터 기여 유지 — 짝비교 t +1.55 (닫힘 기준 t<1 비발동), ΔIR +0.128 (기준 +0.05 충족, 무overlay 대비 76% 보존). 자본 주장 없음"),
+         body = "실배치 관문 통과: overlay 포함 상태에서도 필터 기여 유지 — 짝비교 t +1.55, ΔIR +0.128 (자본 주장 없음)"),
     list(type = "kv", emoji = "\U0001F4CA", heading = "핵심 실측 (256개월, 사전등록 단일시험)",
          kv = list(
            "기준선 재현" = "무필터 알파 t값 3.0583 — 검증 기록 정확 일치 (하네스 무결)",
