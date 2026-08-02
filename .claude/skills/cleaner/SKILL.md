@@ -93,6 +93,11 @@ pending_5axis → [자동초안 에이전트 + 적대검증] → proposed(주입
 - **② quarantined_evidence 잔량 확인**: `status="quarantined_evidence"` 잔량·정체일 1줄 보고(실측 2026-07-17: 6건, 07-04 TAINTED 이후 13일 정체) — 초안 대상 제외는 불변, 잔량 방치는 관측 대상.
 - **③ distilled ↔ settled-negative 주기 대조 (§0.1 원리5 — 메커니즘·카드도 Cleaner 리뷰 대상)**: 승인된 `status="distilled"` 카드의 `frontier`/`statement_refined`를 최신 settled-negative 목록(measurement-graduation §5·§6 + 메모리 settled 항목)과 대조 — settled-negative를 '미검증 레버'로 광고 중인 stale 카드는 **재정제 대상 등재**(`refine_distilled`). 실사례: **DIST-RAMP-006**이 frontier에 DPL(2026-06-26 settled-negative — 재제안 금지)을 미검증 레버로 광고 중이며 잔차 sleeve 스태킹 항목도 07-05 RAMP R1 config-scoped 미달 실측 미반영 — **07-18 재정제 대상**.
 
+- **④ 재등재 supersede = 기계 상시 (2026-08-02 배선 — 수동 회수 반복 종료)**: 부분집합 구 카드 회수는 이제 **엔진이 매 harvest/cluster 사이클마다 자동 집행**한다 (`cluster_extractor.py::supersede_subsumed`, `build_distilled` 후-패스). 판정 = 08-02 수동 회수 9건과 **동일 엄격 기준**(진부분집합 ∧ family/polarity/type/research_mode 전부 동일 ∧ 지식 손실 0 ∧ 구 카드가 저술 지식 미보유). 사유 형식도 동일(`superseded_by=<id> — 같은 클러스터…`)이라 이력 검색이 일관되며 꼬리 문구로 엔진/수동 출처가 갈린다. `status=distilled|promoted|quarantined_evidence`는 대상 제외.
+  - **/cleaner 세션의 일 = 기계가 회수하지 **않은** 것**: 실행 로그의 `[warn:lossy]`(부분겹침 — 구 카드 전용 L-code 보유), `[warn:authored]`(정제 초안 보유), `protected-skip`(활성 카드 부분집합) 3종이 수동 판단 큐다. 08-02 실측: lossy 3쌍(QPM-003⊄007 / QPM-014⊄035 / RAMP-013⊄003), protected-skip 6쌍.
+  - 수동 단발 실행: `Rscript 02_Infrastructure/axiom/distilled.R supersede [--dry-run]` (또는 `cluster_extractor.py --supersede-only`). 카드 파일은 삭제하지 않고 status만 전환(이력 보존).
+  - 가드: `08_Tests/axiom/test_distilled_supersede.py` (배터리 등재). **돌연변이 축 M1~M5가 본체** — 08-02 드레인 이후 저장소 추가 회수 대상이 0건이라 정상 경로만으로는 로직 사망과 정상이 겉보기 같다.
+
 ### ③ 엑기스 적립 (L-code + 메모리)
 
 - digest 작성 중 발견한 **미적립 학습**(L-code 없는 유의미한 교훈)은 `02_Infrastructure/axiom/lcode_emit.R::emit_lcode()`로 발행 (모드별 prefix 자동, `metric_type` 정직 라벨 — proxy 결과에 backtested 금지).

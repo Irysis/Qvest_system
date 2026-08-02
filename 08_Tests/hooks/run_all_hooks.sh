@@ -471,6 +471,15 @@ SUITES=(
   #   주입 없이 구별 불가 — 그래서 완전/근사/부호반전 3종 주입 + rho~0.80 판별
   #   대조 + 대조쌍 생존 확인까지 검사한다.
   "08_Tests/hooks/test_factor_dup_scan.R"
+  # 2026-08-02 추가: distilled 재등재 supersede(부분집합 구 카드 자동 회수) 위반 주입.
+  #   원 갭 = 같은 클러스터가 supporting L-code 성장 시 새 dist_id 로 재등재되는데 구 카드가
+  #   회수되지 않아 pending_5axis 가 07-17 49 → 08-02 89건(완전 중복 0, **부분집합 쌍 30**).
+  #   07-18 forward-migration 은 조상이 refined(status=distilled)인 경우만 다뤄 pending
+  #   조상은 CAND superset dedup 으로 고아가 된 뒤 main loop 가 영영 지나가지 않는다.
+  #   ★이 검사는 **돌연변이 축(M1~M5)이 본체**다: 08-02 수동 드레인 이후 저장소의 추가 회수
+  #   대상이 0건이라, 정상 경로만 돌리면 로직이 죽어 있어도 초록으로 보인다. 각 게이트
+  #   (정체성·지식손실·status·저술지식)를 하나씩 끄고 판정이 실제로 뒤집히는지 매 실행 실측.
+  "08_Tests/axiom/test_distilled_supersede.py"
 )
 
 # (2026-08-02) .py 분기 추가 — 종전엔 확장자 무관 `bash` 로 던져 파이썬 suite 가

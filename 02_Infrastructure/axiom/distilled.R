@@ -31,6 +31,9 @@
 #   refine_distilled(dist_id, statement_refined, retry_condition=, refined_by=)
 #                                                   — /cleaner 수동 정제 → status=distilled (retain)
 #   expire_distilled(dist_id, reason)               — status=expired
+#   supersede_subsumed_distilled(dry_run=)          — 부분집합 구 카드 자동 supersede
+#     (판정 본체 = cluster_extractor.py::supersede_subsumed. 재등재 시 자동 실행되며
+#      이 함수는 수동/감사 진입점 — 술어 재구현 아님)
 #   mark_promoted_distilled(dist_id, axiom_id)      — status=promoted (promote 후)
 #   rebuild_distilled_index()                       — DIST 파일 → 인덱스 재작성
 #   update_strategic_truths_distilled_block()       — strategic_truths.md generated 블록 갱신
@@ -405,6 +408,47 @@ expire_distilled <- function(dist_id, reason = "", root = .dist_root()) {
   invisible(d)
 }
 
+# ── 재등재 supersede (2026-08-02) — 부분집합 구 카드 자동 회수 ──
+# ★구현은 여기 있지 않다. 판정 본체 = cluster_extractor.py::supersede_subsumed —
+#   카드 **생성/재등재 지점**(build_distilled)에서 매 harvest/cluster 사이클마다 자동 실행된다.
+#   여기 R 함수는 같은 술어를 R로 재구현하지 않고 그 구현을 호출한다: 술어를 두 벌로 두면
+#   한쪽만 고쳐졌을 때 어느 검사에도 안 보인다(리더 재구현 계통 사고).
+#   수동 회수는 종전대로 expire_distilled(reason="superseded_by=...")도 가능하다 —
+#   엔진 자동분과 수동분은 사유 문자열 접두(`superseded_by=<id> — 같은 클러스터...`)가 같아
+#   이력 검색이 일관되고, 꼬리 문구로 출처(엔진/cleaner)가 구분된다.
+#
+# 판정 기준(08-02 수동 회수와 동일 엄격): 진부분집합 ∧ family/polarity/type/research_mode
+#   전부 동일 ∧ 지식 손실 0(구 카드 L-code 전량이 신 카드에 포함) ∧ 구 카드가 저술 지식
+#   (statement_refined/retry_condition/frontier/live_trigger/…)을 들고 있지 않을 것.
+#   status=distilled/promoted/quarantined_evidence는 대상 제외(활성 카드 자동 회수 금지).
+.dist_py <- function() {
+  cands <- c(Sys.getenv("QVEST_PY", ""),
+             file.path(.dist_root(), ".venv_qvest_ml", "Scripts", "python.exe"),
+             "C:/Users/99922/AppData/Local/Programs/Python/Python312/python.exe")
+  for (p in cands) if (nzchar(p) && file.exists(p)) return(p)
+  stop("python interpreter not found (bare python 금지 — QVEST_PY 또는 venv)")
+}
+
+supersede_subsumed_distilled <- function(root = .dist_root(), dry_run = FALSE, verbose = TRUE) {
+  py <- .dist_py()
+  script <- file.path(root, "02_Infrastructure", "axiom", "cluster_extractor.py")
+  if (!file.exists(script)) stop("cluster_extractor.py 없음: ", script)
+  # r-portability 금칙 ⑤: 인자는 벡터로 — 문자열에 쉘 리다이렉션/&& 주입 금지(셸 미경유).
+  a <- c(script, "--project-dir", root, "--supersede-only")
+  if (isTRUE(dry_run)) a <- c(a, "--dry-run")
+  out <- system2(py, a, stdout = TRUE, stderr = TRUE)
+  st <- attr(out, "status")
+  if (!is.null(st) && st != 0)
+    stop("supersede 실패(exit ", st, "): ", paste(tail(out, 3), collapse = " | "))
+  if (verbose) cat(paste(out, collapse = "\n"), "\n", sep = "")
+  # 카드 파일이 바뀌었으므로 R 소비면(인덱스·truths)도 현행화 — dry-run은 무변경.
+  if (!isTRUE(dry_run) && any(grepl("[supersede]", out, fixed = TRUE))) {
+    rebuild_distilled_index(root, verbose = FALSE)
+    update_strategic_truths_distilled_block(root)
+  }
+  invisible(out)
+}
+
 mark_promoted_distilled <- function(dist_id, axiom_id, root = .dist_root()) {
   x <- .dist_load_one(dist_id, root)
   d <- x$dist
@@ -477,9 +521,12 @@ if (sys.nframe() == 0 && !interactive()) {
     res <- list_proposed(); if (nrow(res)) print(res, right = FALSE)
   } else if (length(args) >= 2 && args[1] == "approve") {
     print(approve_proposed(args[-1]))
+  } else if (length(args) >= 1 && args[1] == "supersede") {
+    supersede_subsumed_distilled(dry_run = length(args) >= 2 && args[2] == "--dry-run")
   } else {
     cat("usage:\n  Rscript distilled.R rebuild\n  Rscript distilled.R lookup <keyword...>\n",
         "  Rscript distilled.R truths\n  Rscript distilled.R list_proposed\n",
-        "  Rscript distilled.R approve <dist_id...>\n", sep = "")
+        "  Rscript distilled.R approve <dist_id...>\n",
+        "  Rscript distilled.R supersede [--dry-run]\n", sep = "")
   }
 }

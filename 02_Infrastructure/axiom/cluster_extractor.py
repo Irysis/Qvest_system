@@ -34,7 +34,7 @@ import re
 import sys
 from collections import Counter
 from datetime import datetime, timedelta, timezone
-from itertools import combinations
+from itertools import combinations, permutations
 
 METHODOLOGY_TAG_KEYWORDS = {
     "OVERLAY", "RISK_MGMT", "TIMING", "DFA", "REBAL", "BLEND", "SYNTHESIS",
@@ -617,12 +617,212 @@ def _plan_forward_migrations(existing: dict, cand_list: list) -> tuple[dict, dic
     return accepted, flagged
 
 
+# ══════════════════════════════════════════════════════════════════════
+# 재등재 supersede (2026-08-02) — 부분집합 백로그 자동 회수
+#
+# 문제(실측): status=pending_5axis 카드가 07-17 49건 → 08-02 89건. 완전 중복은 0건이나
+#   **부분집합 쌍 30건** — 같은 클러스터가 supporting L-code 성장 시 cluster_key(=sha1(멤버셋))
+#   drift로 **새 dist_id로 재등재**되는데 구 카드는 회수되지 않아 백로그가 부푼다.
+#   _plan_forward_migrations(07-18)는 조상이 **refined(status=distilled)** 인 경우만 다룬다 —
+#   pending 조상은 CAND 단계 superset dedup으로 candidate가 사라지면서 고아로 남아
+#   main loop가 영영 지나가지 않는다. 그 갭이 여기서 닫힌다.
+#
+# 판정은 08-02 수동 회수(9건, 89→80)와 동일하게 **엄격**:
+#   진부분집합 ∧ family/polarity/type/research_mode 전부 동일 ∧ 지식 손실 0.
+#
+# ★짝 발굴은 "진부분집합"이 아니라 **멤버 교집합**으로 한다. 진부분집합만으로 짝을 찾으면
+#   "지식 손실 0" 검증이 논리적으로 발생 불가능해져 **검사가 공허**해진다(통과가 보장된 검사 =
+#   검사 아님). 교집합으로 후보를 모은 뒤 ①정체성 ②포함 ③status ④authored 를 각각 게이트로
+#   걸어야, 구 카드에만 있는 L-code가 실제로 warn 경로를 타고 나온다.
+# ══════════════════════════════════════════════════════════════════════
+
+# 자동 회수 가능한 구 카드 status. distilled/promoted(활성 — 주입·Law 소비)와
+# quarantined_evidence(증거 오염 격리)는 자동 회수 금지 — 아래 PROTECTED 참조.
+_SUPERSEDE_AUTO_STATUSES = ("pending_5axis", "proposed")
+# 구 카드로도 신 카드로도 쓰지 않는 status. quarantined는 증거가 오염(TAINTED)이라
+# **다른 카드를 회수시키는 근거로도 못 쓴다**(오염 전파 차단).
+_SUPERSEDE_INERT_STATUSES = ("expired", "quarantined_evidence")
+# 활성 카드 — 부분집합이어도 자동 회수 금지(사람 승인 정제/Law 소비 중).
+_SUPERSEDE_PROTECTED = ("distilled", "promoted", "quarantined_evidence")
+# 구 카드가 신 카드에 없는 **저술 지식**을 들고 있으면 supersede 금지(경고만).
+# L-code 포함관계만 보는 것으로는 "정제문·재도전 조건·frontier"의 소실을 못 막는다 —
+# 그 승계는 forward-migration의 일이지 supersede의 일이 아니다.
+_SUPERSEDE_AUTHORED_FIELDS = (
+    "statement_refined", "retry_condition", "frontier", "live_trigger",
+    "revival_spec", "adversarial_verdict", "promoted_to_axiom",
+)
+
+# 08-02 수동 회수분과 **동일 형식** — 이력 검색(`superseded_by=`) 일관성 유지.
+_SUPERSEDE_REASON = (
+    "superseded_by={new} — 같은 클러스터(family/polarity/type/mode 동일)의 supporting "
+    "L-code 진부분집합. 지식 손실 0 검증 통과(구 카드 L-code 전량이 {new}에 포함). "
+    "엔진 자동 회수 {today} (cluster_extractor.supersede_subsumed — 재등재 시 자동 supersede)."
+)
+
+
+def _dist_identity(d: dict) -> tuple:
+    """클러스터 정체성 4축 — 전부 동일할 때만 supersede 후보."""
+    return ((d.get("scope_draft") or {}).get("factor_family"),
+            d.get("polarity"), d.get("type"), d.get("research_mode"))
+
+
+def _dist_members(d: dict) -> frozenset:
+    """supporting L-code 정규화 집합(빈 문자열·비문자열 제외)."""
+    return frozenset(x.strip() for x in (d.get("supporting_l_codes") or [])
+                     if isinstance(x, str) and x.strip())
+
+
+def _authored_knowledge(d: dict) -> list:
+    """구 카드가 들고 있는 저술 지식 필드명 목록(비어 있지 않은 것만)."""
+    out = []
+    for k in _SUPERSEDE_AUTHORED_FIELDS:
+        v = d.get(k)
+        if v is None:
+            continue
+        if isinstance(v, str) and not v.strip():
+            continue
+        if isinstance(v, (list, dict, tuple)) and len(v) == 0:
+            continue
+        out.append(k)
+    return out
+
+
+def supersede_subsumed(dist_dir: str, today: str | None = None,
+                       apply: bool = True, verbose: bool = True) -> dict:
+    """부분집합 구 카드를 신 카드로 supersede(status=expired) — 엄격 판정 + 지식 손실 0 검증.
+
+    반환 dict:
+      superseded        [(old_id, new_id, n_old, n_new), ...]  실제(또는 dry-run 예정) 회수분
+      warn_lossy        [(old_id, new_id, [old-only L-code, ...]), ...]  부분겹침 — 회수 안 함
+      warn_authored     [(old_id, new_id, [field, ...]), ...]  저술 지식 보유 — 회수 안 함
+      skipped_protected [(old_id, new_id, status), ...]        활성/격리 카드 — 회수 안 함
+      warn_recheck      [(old_id, new_id, 사유), ...]          집행 직전 재검증 탈락
+    """
+    today = today or datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    live = []
+    for f in sorted(glob.glob(os.path.join(dist_dir, "DIST-*.json"))):
+        d = _load(f)
+        if not isinstance(d, dict) or not d.get("dist_id"):
+            continue
+        if d.get("status") in _SUPERSEDE_INERT_STATUSES:
+            continue
+        live.append((f, d))
+    by_id = {d["dist_id"]: (f, d) for f, d in live}
+
+    victims: dict = {}          # old_id -> [(len(new_members), new_id), ...]
+    warn_lossy, warn_authored, skipped_protected, warn_recheck = [], [], [], []
+    seen_lossy = set()
+
+    for (_fo, o), (_fn, n) in permutations(live, 2):
+        O, N = _dist_members(o), _dist_members(n)
+        # ★빈 멤버 카드 차단: ∅ ⊂ anything 이라 게이트를 무조건 통과한다(공허 회수).
+        if not O or not N:
+            continue
+        if len(O) >= len(N):
+            continue            # 거울상 방향은 한 번만 — 구 카드는 항상 더 작은 쪽
+        if not (O & N):
+            continue            # 무관 클러스터 — 판정 대상 아님
+        if _dist_identity(o) != _dist_identity(n):
+            continue            # 오탐 통제: family/polarity/type/mode 중 하나라도 다르면 제외
+        lost = O - N
+        if lost:
+            # 지식 손실 — 구 카드에만 있는 L-code. 회수하지 않고 경고(수동 /cleaner 판단).
+            key = tuple(sorted((o["dist_id"], n["dist_id"])))
+            if key not in seen_lossy:
+                seen_lossy.add(key)
+                warn_lossy.append((o["dist_id"], n["dist_id"], sorted(lost)))
+            continue
+        if o.get("status") in _SUPERSEDE_PROTECTED:
+            skipped_protected.append((o["dist_id"], n["dist_id"], o.get("status")))
+            continue
+        if o.get("status") not in _SUPERSEDE_AUTO_STATUSES:
+            continue
+        auth = _authored_knowledge(o)
+        if auth:
+            warn_authored.append((o["dist_id"], n["dist_id"], auth))
+            continue
+        victims.setdefault(o["dist_id"], []).append((len(N), n["dist_id"]))
+
+    # 체인 안전(A ⊂ B ⊂ C): 승계자는 **이번 패스에서 회수되지 않는 카드**만 —
+    # 회수 대상을 가리키는 superseded_by 가 남으면 지식 경로가 끊긴 곳을 가리킨다.
+    victim_ids = set(victims)
+    plan = []
+    for oid in sorted(victims):
+        opts = [(ln, nid) for ln, nid in victims[oid] if nid not in victim_ids]
+        if not opts:
+            warn_recheck.append((oid, None, "모든 상위 카드가 이번 패스 회수 대상 — skip"))
+            continue
+        opts.sort(key=lambda t: (-t[0], t[1]))      # 최대 superset 우선, 동률은 id 사전순
+        plan.append((oid, opts[0][1], opts[0][0]))
+
+    superseded = []
+    for oid, nid, _ln in plan:
+        fo = by_id[oid][0]
+        fn = by_id[nid][0]
+        # ★집행 직전 디스크 재검증 — 계획은 스냅샷, 집행은 파일이 권위.
+        #   (같은 좌표계에서 두 번 재면 검사가 아니다 — 파일에서 다시 읽어 다시 판정한다.)
+        o2, n2 = _load(fo), _load(fn)
+        if not isinstance(o2, dict) or not isinstance(n2, dict):
+            warn_recheck.append((oid, nid, "재읽기 실패"))
+            continue
+        O2, N2 = _dist_members(o2), _dist_members(n2)
+        why = None
+        if not O2:
+            why = "구 카드 멤버 0건"
+        elif O2 - N2:
+            why = "지식 손실 재검출: %s" % ",".join(sorted(O2 - N2))
+        elif not (O2 < N2):
+            why = "진부분집합 아님(재검)"
+        elif _dist_identity(o2) != _dist_identity(n2):
+            why = "정체성 불일치(재검)"
+        elif o2.get("status") not in _SUPERSEDE_AUTO_STATUSES:
+            why = "status=%s (자동 회수 대상 아님)" % o2.get("status")
+        elif n2.get("status") in _SUPERSEDE_INERT_STATUSES:
+            why = "승계 카드 status=%s" % n2.get("status")
+        elif _authored_knowledge(o2):
+            why = "저술 지식 보유: %s" % ",".join(_authored_knowledge(o2))
+        if why:
+            warn_recheck.append((oid, nid, why))
+            continue
+        superseded.append((oid, nid, len(O2), len(N2)))
+        if not apply:
+            continue
+        o2["status"] = "expired"
+        o2["expired_at"] = today
+        o2["superseded_by"] = nid                  # 기계 소비용(사유 문자열 파싱 불필요)
+        o2["expire_reason"] = _SUPERSEDE_REASON.format(new=nid, today=today)
+        with open(fo, "w", encoding="utf-8") as fh:
+            json.dump(o2, fh, indent=2, ensure_ascii=False)
+
+    if verbose:
+        tag = "" if apply else " [dry-run]"
+        print(f"[distilled] supersede{tag}: {len(superseded)} superseded / "
+              f"{len(warn_lossy)} lossy-warn / {len(warn_authored)} authored-warn / "
+              f"{len(skipped_protected)} protected-skip / {len(warn_recheck)} recheck-drop")
+        for oid, nid, no, nn in superseded:
+            print(f"  [supersede] {oid}({no}) -> {nid}({nn})")
+        for oid, nid, lost in warn_lossy:
+            print(f"  [warn:lossy] {oid} ⊄ {nid} — 구 카드 전용 L-code {len(lost)}건 "
+                  f"({', '.join(lost[:3])}{'...' if len(lost) > 3 else ''}) → 회수 안 함(수동 판단)")
+        for oid, nid, auth in warn_authored:
+            print(f"  [warn:authored] {oid} -> {nid} — 저술 지식 보유({', '.join(auth)}) → 회수 안 함")
+        for oid, nid, why in warn_recheck:
+            print(f"  [warn:recheck] {oid} -> {nid}: {why}")
+    return {"superseded": superseded, "warn_lossy": warn_lossy,
+            "warn_authored": warn_authored, "skipped_protected": skipped_protected,
+            "warn_recheck": warn_recheck}
+
+
 def build_distilled(cand_dir: str, dist_dir: str, index_path: str) -> tuple[int, int]:
     """pending CAND 전건 → DIST 초안 생성/갱신 + 통합 인덱스 재작성. 반환 (n_new, n_updated).
 
     2026-07-18 엔진-갭 수리: main loop 앞에 forward-migration 선-패스를 둔다 —
     정제 후 성장한 클러스터의 승인 정제를 live-key 카드로 옮겨(consolidate) 또는 rekey해
     orphan-refined + pending-중복 누적을 원천 차단(idempotent). 상세: _plan_forward_migrations.
+
+    2026-08-02 백로그 갭 수리: main loop **뒤에** supersede 후-패스를 둔다 — 조상이 refined가
+    아닌(pending/proposed) 경우 forward-migration이 못 다루는 부분집합 구 카드를 엄격 판정으로
+    회수(expired)한다. 08-02 수동 회수 9건과 동일 기준·동일 사유 형식. 상세: supersede_subsumed.
     """
     os.makedirs(dist_dir, exist_ok=True)
     now = datetime.now(timezone.utc).isoformat(timespec="seconds")
@@ -738,6 +938,12 @@ def build_distilled(cand_dir: str, dist_dir: str, index_path: str) -> tuple[int,
         _fill_default_expiry(dist)  # negative 공백만 +90d (신규/기존 공통 — 기존 값 보존)
         with open(path, "w", encoding="utf-8") as fh:
             json.dump(dist, fh, indent=2, ensure_ascii=False)
+
+    # ── 재등재 supersede 후-패스 (2026-08-02) ──
+    # main loop가 신 카드를 디스크에 기록한 **뒤에** 돈다 — 이번 사이클에 성장한 클러스터의
+    # 구 카드를 같은 사이클에서 회수한다(다음 주까지 백로그로 남지 않게). 디스크에서 다시
+    # 읽어 판정하므로 위 in-memory `existing` 상태에 의존하지 않는다.
+    supersede_subsumed(dist_dir, today=today)   # 요약·경고는 함수가 직접 출력
 
     # candidate 소멸 고아 카드 포함 전수 expiry 바닥 — CAND 매칭 순회가 못 미치는
     # negative 공백 카드에도 INV-7 시간부활 바닥을 깐다 (기존 값 보존·멱등).
@@ -878,10 +1084,28 @@ def main() -> int:
     )
     ap.add_argument("--corpus", default=None)
     ap.add_argument("--out-dir", default=None)
+    # 2026-08-02: 재등재 supersede만 단독 실행(harvest/cluster 미수행) — /cleaner 백로그
+    #   드레인·감사·distilled.R 래퍼 진입점. --dry-run 은 판정만 출력하고 카드 미수정.
+    ap.add_argument("--supersede-only", action="store_true",
+                    help="DIST 카드 부분집합 supersede 패스만 실행 (클러스터링 생략)")
+    ap.add_argument("--dry-run", action="store_true",
+                    help="--supersede-only와 함께: 판정만 출력하고 카드 파일 미수정")
     args = ap.parse_args()
 
     corpus_path = args.corpus or os.path.join(args.project_dir, ".cache", "lcode_corpus.json")
     out_dir = args.out_dir or os.path.join(args.project_dir, "qepm", "memory", "axioms", "candidates")
+    dist_dir0 = os.path.join(args.project_dir, "qepm", "memory", "axioms", "distilled")
+    index_path0 = os.path.join(args.project_dir, "06_Registry", "distilled_knowledge.json")
+
+    if args.supersede_only:
+        if not os.path.isdir(dist_dir0):
+            print(f"[cluster_extractor] distilled dir not found: {dist_dir0}", file=sys.stderr)
+            return 2
+        res = supersede_subsumed(dist_dir0, apply=not args.dry_run)
+        if res["superseded"] and not args.dry_run:
+            _write_distilled_index(dist_dir0, index_path0)
+            print(f"[cluster_extractor] index rebuilt → {index_path0}")
+        return 0
 
     corpus = _load(corpus_path)
     if not corpus:
@@ -894,10 +1118,8 @@ def main() -> int:
         print(f"  - {os.path.basename(p)}")
 
     # ②Distilled 계층 (2026-07-04): CAND 전건 → DIST 초안 생성/갱신 + 통합 인덱스
-    dist_dir = os.path.join(args.project_dir, "qepm", "memory", "axioms", "distilled")
-    index_path = os.path.join(args.project_dir, "06_Registry", "distilled_knowledge.json")
-    n_new, n_upd = build_distilled(out_dir, dist_dir, index_path)
-    print(f"[cluster_extractor] distilled: {n_new} new / {n_upd} updated → {index_path}")
+    n_new, n_upd = build_distilled(out_dir, dist_dir0, index_path0)
+    print(f"[cluster_extractor] distilled: {n_new} new / {n_upd} updated → {index_path0}")
     return 0
 
 

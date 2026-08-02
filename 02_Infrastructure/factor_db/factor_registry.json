@@ -336,6 +336,19 @@
       "last_validated": {},
       "deprecation_reason": {},
       "mutation_parent": {}
+    },
+    "dedup": {
+      "role": "canonical",
+      "cluster": "DUPC-041",
+      "aliases": [
+        "V20_SP"
+      ],
+      "adjudicated": true,
+      "evidence": {
+        "measured_at": "2026-08-02",
+        "report": "04_Research/01_reports/factor_db_dedup_20260802.md",
+        "window": "2005-01..2026-06 (258 months)"
+      }
     }
   },
   "V09_PEG": {
@@ -421,6 +434,22 @@
       "last_validated": {},
       "deprecation_reason": {},
       "mutation_parent": {}
+    },
+    "dedup": {
+      "role": "redundant",
+      "cluster": "DUPC-042",
+      "partners": [
+        "V22_FCFF_EV"
+      ],
+      "adjudicated": false,
+      "needs_review": true,
+      "evidence": {
+        "max_pair_abs_cor": 1,
+        "measured_at": "2026-08-02",
+        "report": "04_Research/01_reports/factor_db_dedup_20260802.md",
+        "window": "2005-01..2026-06 (258 months)"
+      },
+      "consumption_rule": "자동 병합 금지. 같은 cluster 의 둘 이상을 한 선별 풀에 넣으면 report_redundant_clusters() 가 보고한다 — 선언하거나 하나로 접을 것."
     }
   },
   "V11_Shareholder_Yield": {
@@ -547,6 +576,25 @@
       "last_validated": {},
       "deprecation_reason": {},
       "mutation_parent": {}
+    },
+    "dedup": {
+      "role": "redundant",
+      "cluster": "DUPC-041",
+      "partners": [
+        "V08_PSR",
+        "V20_SP"
+      ],
+      "adjudicated": true,
+      "needs_review": false,
+      "evidence": {
+        "max_pair_abs_cor": 0.999999,
+        "measured_at": "2026-08-02",
+        "report": "04_Research/01_reports/factor_db_dedup_20260802.md",
+        "window": "2005-01..2026-06 (258 months)"
+      },
+      "consumption_rule": "자동 병합 금지. 같은 cluster 의 둘 이상을 한 선별 풀에 넣으면 report_redundant_clusters() 가 보고한다 — 선언하거나 하나로 접을 것.",
+      "cluster_label": "sales_to_price",
+      "note": "V13_EV_Sales = EV/Revenue (EV = MarketCap + TotalDebt - Cash) 인데 저장값이 V08_PSR(MarketCap/Revenue)과 258/258 개월 cor = 1.000000 이다. 원천 재구성 실측(2026-06-30, 2582종목): NetDebt==0 인 종목 0.0%, |NetDebt|/MarketCap 중앙값 0.266, cor(MC/Rev, EV/Rev) = 0.900 (Spearman 0.753). 즉 EV 를 제대로 넣으면 0.90 이어야 하는데 1.000000 이 나온다 -> 저장된 V13 에서 **EV 항이 무력**하다. ★결함 유도 동일성 — 합(sum) 항이 값에 영향을 주지 못한다. 자동 병합 금지: 접으면 팩터가 아니라 **결함이 라벨 뒤로 사라진다**. 수리 후 재측정할 것. 영향 의심 범위(미확정): V07_EV_EBITDA / V14_EBIT_EV / V22_FCFF_EV."
     }
   },
   "V14_EBIT_EV": {
@@ -673,6 +721,24 @@
       "last_validated": {},
       "deprecation_reason": {},
       "mutation_parent": {}
+    },
+    "dedup": {
+      "role": "redundant",
+      "cluster": "DUPC-043",
+      "partners": [
+        "V18_AM"
+      ],
+      "adjudicated": true,
+      "needs_review": false,
+      "evidence": {
+        "max_pair_abs_cor": 0.999985,
+        "measured_at": "2026-08-02",
+        "report": "04_Research/01_reports/factor_db_dedup_20260802.md",
+        "window": "2005-01..2026-06 (258 months)"
+      },
+      "consumption_rule": "자동 병합 금지. 같은 cluster 의 둘 이상을 한 선별 풀에 넣으면 report_redundant_clusters() 가 보고한다 — 선언하거나 하나로 접을 것.",
+      "cluster_label": "assets_to_market",
+      "note": "V16_Tobins_Q = (MarketCap + TotalLiab)/TotalAssets, V18_AM = TotalAssets/MarketCap. 이 둘이 rank basis 258/258 개월 |cor| = 1.0000 이려면 V16 이 사실상 MarketCap/TotalAssets (= 1/V18) 여야 한다 — 즉 **+TotalLiab 항이 무력**. sales_to_price 의 EV 항 무력화와 같은 계통의 독립 2번째 사례. ★결함 유도 동일성 — 합(sum) 항이 값에 영향을 주지 못한다. 자동 병합 금지: 접으면 팩터가 아니라 **결함이 라벨 뒤로 사라진다**. 수리 후 재측정할 것."
     }
   },
   "V17_Payout_Ratio": {
@@ -757,6 +823,24 @@
       "last_validated": {},
       "deprecation_reason": {},
       "mutation_parent": {}
+    },
+    "dedup": {
+      "role": "redundant",
+      "cluster": "DUPC-043",
+      "partners": [
+        "V16_Tobins_Q"
+      ],
+      "adjudicated": true,
+      "needs_review": false,
+      "evidence": {
+        "max_pair_abs_cor": 0.999985,
+        "measured_at": "2026-08-02",
+        "report": "04_Research/01_reports/factor_db_dedup_20260802.md",
+        "window": "2005-01..2026-06 (258 months)"
+      },
+      "consumption_rule": "자동 병합 금지. 같은 cluster 의 둘 이상을 한 선별 풀에 넣으면 report_redundant_clusters() 가 보고한다 — 선언하거나 하나로 접을 것.",
+      "cluster_label": "assets_to_market",
+      "note": "V16_Tobins_Q = (MarketCap + TotalLiab)/TotalAssets, V18_AM = TotalAssets/MarketCap. 이 둘이 rank basis 258/258 개월 |cor| = 1.0000 이려면 V16 이 사실상 MarketCap/TotalAssets (= 1/V18) 여야 한다 — 즉 **+TotalLiab 항이 무력**. sales_to_price 의 EV 항 무력화와 같은 계통의 독립 2번째 사례. ★결함 유도 동일성 — 합(sum) 항이 값에 영향을 주지 못한다. 자동 병합 금지: 접으면 팩터가 아니라 **결함이 라벨 뒤로 사라진다**. 수리 후 재측정할 것."
     }
   },
   "V19_Debt_to_Market": {
@@ -799,6 +883,26 @@
       "last_validated": {},
       "deprecation_reason": {},
       "mutation_parent": {}
+    },
+    "dedup": {
+      "role": "alias",
+      "canonical": "R17_Market_Leverage",
+      "cluster": "DUPC-040",
+      "deprecated_for_selection": true,
+      "adjudicated": true,
+      "mechanism": "동일 수식 TotalDebt/MarketCap — compute_risk.R:207 (부호 반전) vs compute_value.R:272. 일간 경로에서는 문자 그대로 같은 식이 두 phase 에 존재 (phase6:492 R17, phase8:194 V19). 실측 median |cor| = 0.9989 (258개월).",
+      "reason": "R17 = 커버리지 넓음(2026-06 실측 2130 vs 1900 — V19 는 TotalDebt>0 게이트로 축소) + 승인 게이트 통계 우위(port_t +0.194 vs -0.106). 주의: R17 저장부호는 Bhandari(1988) 방향과 반대이나 C13 정렬이 해소한다.",
+      "evidence": {
+        "median_abs_cor": 0.999996,
+        "median_cor": 0.999996,
+        "n_months": 258,
+        "basis": "signal_rank",
+        "verdict": "EXACT_DUP",
+        "measured_at": "2026-08-02",
+        "report": "04_Research/01_reports/factor_db_dedup_20260802.md",
+        "window": "2005-01..2026-06 (258 months)"
+      },
+      "consumption_rule": "선별/Ω 추정에서는 canonical 만 사용(drop_alias_factors()). 코드 조회·과거 산출물 참조는 계속 유효 — 삭제·리넘버 없음."
     }
   },
   "V20_SP": {
@@ -841,6 +945,26 @@
       "last_validated": {},
       "deprecation_reason": {},
       "mutation_parent": {}
+    },
+    "dedup": {
+      "role": "alias",
+      "canonical": "V08_PSR",
+      "cluster": "DUPC-041",
+      "deprecated_for_selection": true,
+      "adjudicated": true,
+      "mechanism": "구성상 역수 — compute_value.R:160 V08 = MarketCap/Revenue, :279 V20 = Revenue/MarketCap. Pearson-on-Z 로는 |cor|<0.95 라 안 잡히지만 **순위가 동일**해 top-N 선별에서 같은 포트를 만든다: rank basis median |cor| = 1.0000 (258/258 개월), deploy basis +0.9945. C13 방향정렬이 부호를 맞춘 뒤에는 같은 신호.",
+      "reason": "역수 쌍은 정보량이 동일하다. V08 = registry 기본 명명(Price-to-Sales). ★이 쌍은 Pearson 스캔만 돌렸으면 놓쳤다 — rank basis 추가의 직접 근거.",
+      "evidence": {
+        "median_abs_cor": 0.999985,
+        "median_cor": 0.999985,
+        "n_months": 258,
+        "basis": "signal_rank",
+        "verdict": "EXACT_DUP",
+        "measured_at": "2026-08-02",
+        "report": "04_Research/01_reports/factor_db_dedup_20260802.md",
+        "window": "2005-01..2026-06 (258 months)"
+      },
+      "consumption_rule": "선별/Ω 추정에서는 canonical 만 사용(drop_alias_factors()). 코드 조회·과거 산출물 참조는 계속 유효 — 삭제·리넘버 없음."
     }
   },
   "V21_Composite_Equity_Issuance": {
@@ -925,6 +1049,22 @@
       "last_validated": {},
       "deprecation_reason": {},
       "mutation_parent": {}
+    },
+    "dedup": {
+      "role": "redundant",
+      "cluster": "DUPC-042",
+      "partners": [
+        "V10_FCF_Yield"
+      ],
+      "adjudicated": false,
+      "needs_review": true,
+      "evidence": {
+        "max_pair_abs_cor": 1,
+        "measured_at": "2026-08-02",
+        "report": "04_Research/01_reports/factor_db_dedup_20260802.md",
+        "window": "2005-01..2026-06 (258 months)"
+      },
+      "consumption_rule": "자동 병합 금지. 같은 cluster 의 둘 이상을 한 선별 풀에 넣으면 report_redundant_clusters() 가 보고한다 — 선언하거나 하나로 접을 것."
     }
   },
   "V23_RAFI_Weight": {
@@ -1051,6 +1191,22 @@
       "last_validated": {},
       "deprecation_reason": {},
       "mutation_parent": {}
+    },
+    "dedup": {
+      "role": "redundant",
+      "cluster": "DUPC-032",
+      "partners": [
+        "M13_VolAdj_Mom"
+      ],
+      "adjudicated": false,
+      "needs_review": true,
+      "evidence": {
+        "max_pair_abs_cor": 0.967266,
+        "measured_at": "2026-08-02",
+        "report": "04_Research/01_reports/factor_db_dedup_20260802.md",
+        "window": "2005-01..2026-06 (258 months)"
+      },
+      "consumption_rule": "자동 병합 금지. 같은 cluster 의 둘 이상을 한 선별 풀에 넣으면 report_redundant_clusters() 가 보고한다 — 선언하거나 하나로 접을 것."
     }
   },
   "M02_Mom_6_1": {
@@ -1471,6 +1627,19 @@
       "last_validated": {},
       "deprecation_reason": {},
       "mutation_parent": {}
+    },
+    "dedup": {
+      "role": "canonical",
+      "cluster": "DUPC-033",
+      "aliases": [
+        "M29_Mom_5d"
+      ],
+      "adjudicated": true,
+      "evidence": {
+        "measured_at": "2026-08-02",
+        "report": "04_Research/01_reports/factor_db_dedup_20260802.md",
+        "window": "2005-01..2026-06 (258 months)"
+      }
     }
   },
   "M12_LR_Reversal": {
@@ -1555,6 +1724,22 @@
       "last_validated": {},
       "deprecation_reason": {},
       "mutation_parent": {}
+    },
+    "dedup": {
+      "role": "redundant",
+      "cluster": "DUPC-032",
+      "partners": [
+        "M01_Mom_12_1"
+      ],
+      "adjudicated": false,
+      "needs_review": true,
+      "evidence": {
+        "max_pair_abs_cor": 0.967266,
+        "measured_at": "2026-08-02",
+        "report": "04_Research/01_reports/factor_db_dedup_20260802.md",
+        "window": "2005-01..2026-06 (258 months)"
+      },
+      "consumption_rule": "자동 병합 금지. 같은 cluster 의 둘 이상을 한 선별 풀에 넣으면 report_redundant_clusters() 가 보고한다 — 선언하거나 하나로 접을 것."
     }
   },
   "M14_RiskAdj_Mom": {
@@ -1597,6 +1782,25 @@
       "last_validated": {},
       "deprecation_reason": {},
       "mutation_parent": {}
+    },
+    "dedup": {
+      "role": "redundant",
+      "cluster": "DUPC-014",
+      "partners": [
+        "D23_Info_Ratio",
+        "D46_Sortino",
+        "R15_Sortino",
+        "R16_Calmar"
+      ],
+      "adjudicated": false,
+      "needs_review": true,
+      "evidence": {
+        "max_pair_abs_cor": 0.979774,
+        "measured_at": "2026-08-02",
+        "report": "04_Research/01_reports/factor_db_dedup_20260802.md",
+        "window": "2005-01..2026-06 (258 months)"
+      },
+      "consumption_rule": "자동 병합 금지. 같은 cluster 의 둘 이상을 한 선별 풀에 넣으면 report_redundant_clusters() 가 보고한다 — 선언하거나 하나로 접을 것."
     }
   },
   "M15_Mom_3": {
@@ -2146,6 +2350,26 @@
       "last_validated": {},
       "deprecation_reason": {},
       "mutation_parent": {}
+    },
+    "dedup": {
+      "role": "alias",
+      "canonical": "C02_EPS_Chg_1m",
+      "cluster": "DUPC-006",
+      "deprecated_for_selection": true,
+      "adjudicated": true,
+      "mechanism": "M27 registry 정의문이 그대로 'eps_chg_1m. 1-month EPS revision (latest).' — C02_EPS_Chg_1m 과 같은 필드. 실측 median |cor| = 0.9992 (258개월).",
+      "reason": "C02 = consensus 네이티브 코드. M27 은 momentum 카테고리로의 재등록.",
+      "evidence": {
+        "median_abs_cor": 0.999981,
+        "median_cor": 0.999981,
+        "n_months": 258,
+        "basis": "signal_rank",
+        "verdict": "EXACT_DUP",
+        "measured_at": "2026-08-02",
+        "report": "04_Research/01_reports/factor_db_dedup_20260802.md",
+        "window": "2005-01..2026-06 (258 months)"
+      },
+      "consumption_rule": "선별/Ω 추정에서는 canonical 만 사용(drop_alias_factors()). 코드 조회·과거 산출물 참조는 계속 유효 — 삭제·리넘버 없음."
     }
   },
   "M28_OP_Rev_Mom": {
@@ -2231,6 +2455,26 @@
       "last_validated": {},
       "deprecation_reason": {},
       "mutation_parent": {}
+    },
+    "dedup": {
+      "role": "alias",
+      "canonical": "M11_ST_Reversal",
+      "cluster": "DUPC-033",
+      "deprecated_for_selection": true,
+      "adjudicated": true,
+      "mechanism": "동일 수식이 compute_momentum.R 안에 두 번 — :186 m11 = prod(1+rets[(n-4):n])-1, :430 M29 = prod(1+Ret[(n-4):n])-1. 일간 경로는 더 노골적: factor_db_daily_phase6.R:144 M11 <- cr5, :168 M29 <- cr5 (같은 변수). 실측: 258/258 개월 bit-identical.",
+      "reason": "M11 = 문헌 명명(단기 반전). M29 는 같은 값에 반대 방향 사전(higher_better)을 붙인 중복 등록.",
+      "evidence": {
+        "median_abs_cor": 1,
+        "median_cor": 1,
+        "n_months": 258,
+        "basis": "signal_zscore_pearson",
+        "verdict": "EXACT_DUP",
+        "measured_at": "2026-08-02",
+        "report": "04_Research/01_reports/factor_db_dedup_20260802.md",
+        "window": "2005-01..2026-06 (258 months)"
+      },
+      "consumption_rule": "선별/Ω 추정에서는 canonical 만 사용(drop_alias_factors()). 코드 조회·과거 산출물 참조는 계속 유효 — 삭제·리넘버 없음."
     }
   },
   "M30_Mom_10d": {
@@ -2441,6 +2685,22 @@
       "last_validated": {},
       "deprecation_reason": {},
       "mutation_parent": {}
+    },
+    "dedup": {
+      "role": "redundant",
+      "cluster": "DUPC-034",
+      "partners": [
+        "Q23_Sustainable_Growth"
+      ],
+      "adjudicated": false,
+      "needs_review": true,
+      "evidence": {
+        "max_pair_abs_cor": 0.991172,
+        "measured_at": "2026-08-02",
+        "report": "04_Research/01_reports/factor_db_dedup_20260802.md",
+        "window": "2005-01..2026-06 (258 months)"
+      },
+      "consumption_rule": "자동 병합 금지. 같은 cluster 의 둘 이상을 한 선별 풀에 넣으면 report_redundant_clusters() 가 보고한다 — 선언하거나 하나로 접을 것."
     }
   },
   "Q03_ROA": {
@@ -2567,6 +2827,24 @@
       "last_validated": {},
       "deprecation_reason": {},
       "mutation_parent": {}
+    },
+    "dedup": {
+      "role": "redundant",
+      "cluster": "DUPC-001",
+      "partners": [
+        "AC01_Total_Accruals_CF",
+        "AC11_Accruals_to_Assets",
+        "AC18_Accrual_Quality"
+      ],
+      "adjudicated": false,
+      "needs_review": true,
+      "evidence": {
+        "max_pair_abs_cor": 1,
+        "measured_at": "2026-08-02",
+        "report": "04_Research/01_reports/factor_db_dedup_20260802.md",
+        "window": "2005-01..2026-06 (258 months)"
+      },
+      "consumption_rule": "자동 병합 금지. 같은 cluster 의 둘 이상을 한 선별 풀에 넣으면 report_redundant_clusters() 가 보고한다 — 선언하거나 하나로 접을 것."
     }
   },
   "Q06_Asset_Growth": {
@@ -2609,6 +2887,22 @@
       "last_validated": {},
       "deprecation_reason": {},
       "mutation_parent": {}
+    },
+    "dedup": {
+      "role": "redundant",
+      "cluster": "DUPC-023",
+      "partners": [
+        "GR03_Asset_Growth"
+      ],
+      "adjudicated": false,
+      "needs_review": true,
+      "evidence": {
+        "max_pair_abs_cor": 1,
+        "measured_at": "2026-08-02",
+        "report": "04_Research/01_reports/factor_db_dedup_20260802.md",
+        "window": "2005-01..2026-06 (258 months)"
+      },
+      "consumption_rule": "자동 병합 금지. 같은 cluster 의 둘 이상을 한 선별 풀에 넣으면 report_redundant_clusters() 가 보고한다 — 선언하거나 하나로 접을 것."
     }
   },
   "Q07_Earnings_Stability": {
@@ -2861,6 +3155,22 @@
       "last_validated": {},
       "deprecation_reason": {},
       "mutation_parent": {}
+    },
+    "dedup": {
+      "role": "redundant",
+      "cluster": "DUPC-035",
+      "partners": [
+        "XF_DU02_AssetTurnover"
+      ],
+      "adjudicated": false,
+      "needs_review": true,
+      "evidence": {
+        "max_pair_abs_cor": 1,
+        "measured_at": "2026-08-02",
+        "report": "04_Research/01_reports/factor_db_dedup_20260802.md",
+        "window": "2005-01..2026-06 (258 months)"
+      },
+      "consumption_rule": "자동 병합 금지. 같은 cluster 의 둘 이상을 한 선별 풀에 넣으면 report_redundant_clusters() 가 보고한다 — 선언하거나 하나로 접을 것."
     }
   },
   "Q13_Fin_Leverage": {
@@ -2903,6 +3213,22 @@
       "last_validated": {},
       "deprecation_reason": {},
       "mutation_parent": {}
+    },
+    "dedup": {
+      "role": "redundant",
+      "cluster": "DUPC-036",
+      "partners": [
+        "XF_DU03_EquityMultiplier"
+      ],
+      "adjudicated": false,
+      "needs_review": true,
+      "evidence": {
+        "max_pair_abs_cor": 0.999306,
+        "measured_at": "2026-08-02",
+        "report": "04_Research/01_reports/factor_db_dedup_20260802.md",
+        "window": "2005-01..2026-06 (258 months)"
+      },
+      "consumption_rule": "자동 병합 금지. 같은 cluster 의 둘 이상을 한 선별 풀에 넣으면 report_redundant_clusters() 가 보고한다 — 선언하거나 하나로 접을 것."
     }
   },
   "Q14_Current_Ratio": {
@@ -2945,6 +3271,26 @@
       "last_validated": {},
       "deprecation_reason": {},
       "mutation_parent": {}
+    },
+    "dedup": {
+      "role": "redundant",
+      "cluster": "DUPC-037",
+      "partners": [
+        "Q31_WC_to_Assets",
+        "XF_LL04_QuickRatio",
+        "XF_LL05_WorkingCapital"
+      ],
+      "adjudicated": true,
+      "needs_review": false,
+      "evidence": {
+        "max_pair_abs_cor": 0.974887,
+        "measured_at": "2026-08-02",
+        "report": "04_Research/01_reports/factor_db_dedup_20260802.md",
+        "window": "2005-01..2026-06 (258 months)"
+      },
+      "consumption_rule": "자동 병합 금지. 같은 cluster 의 둘 이상을 한 선별 풀에 넣으면 report_redundant_clusters() 가 보고한다 — 선언하거나 하나로 접을 것.",
+      "cluster_label": "liquidity_ratio",
+      "note": "Current Ratio 와 Quick Ratio 는 정의가 실제로 다르다(재고 포함/제외). median |cor| 0.975 로 겹치나 병합은 리서치 판단. ★부수 적발: 258개월 중 10개월에서 정렬 후 부호가 뒤집힌다(min=-0.975) — C13 IC-기반 방향추론이 이 쌍에서 불안정하다는 별도 신호."
     }
   },
   "Q15_Debt_to_Equity": {
@@ -2987,6 +3333,23 @@
       "last_validated": {},
       "deprecation_reason": {},
       "mutation_parent": {}
+    },
+    "dedup": {
+      "role": "redundant",
+      "cluster": "DUPC-020",
+      "partners": [
+        "D60_Leverage",
+        "XF_LL01_DebtToCapital"
+      ],
+      "adjudicated": false,
+      "needs_review": true,
+      "evidence": {
+        "max_pair_abs_cor": 0.972447,
+        "measured_at": "2026-08-02",
+        "report": "04_Research/01_reports/factor_db_dedup_20260802.md",
+        "window": "2005-01..2026-06 (258 months)"
+      },
+      "consumption_rule": "자동 병합 금지. 같은 cluster 의 둘 이상을 한 선별 풀에 넣으면 report_redundant_clusters() 가 보고한다 — 선언하거나 하나로 접을 것."
     }
   },
   "Q16_Debt_to_Assets": {
@@ -3197,6 +3560,22 @@
       "last_validated": {},
       "deprecation_reason": {},
       "mutation_parent": {}
+    },
+    "dedup": {
+      "role": "redundant",
+      "cluster": "DUPC-025",
+      "partners": [
+        "IN04_Net_Equity_Issuance"
+      ],
+      "adjudicated": false,
+      "needs_review": true,
+      "evidence": {
+        "max_pair_abs_cor": 1,
+        "measured_at": "2026-08-02",
+        "report": "04_Research/01_reports/factor_db_dedup_20260802.md",
+        "window": "2005-01..2026-06 (258 months)"
+      },
+      "consumption_rule": "자동 병합 금지. 같은 cluster 의 둘 이상을 한 선별 풀에 넣으면 report_redundant_clusters() 가 보고한다 — 선언하거나 하나로 접을 것."
     }
   },
   "Q23_Sustainable_Growth": {
@@ -3239,6 +3618,22 @@
       "last_validated": {},
       "deprecation_reason": {},
       "mutation_parent": {}
+    },
+    "dedup": {
+      "role": "redundant",
+      "cluster": "DUPC-034",
+      "partners": [
+        "Q02_ROE"
+      ],
+      "adjudicated": false,
+      "needs_review": true,
+      "evidence": {
+        "max_pair_abs_cor": 0.991172,
+        "measured_at": "2026-08-02",
+        "report": "04_Research/01_reports/factor_db_dedup_20260802.md",
+        "window": "2005-01..2026-06 (258 months)"
+      },
+      "consumption_rule": "자동 병합 금지. 같은 cluster 의 둘 이상을 한 선별 풀에 넣으면 report_redundant_clusters() 가 보고한다 — 선언하거나 하나로 접을 것."
     }
   },
   "Q24_Altman_Z": {
@@ -3365,6 +3760,22 @@
       "last_validated": {},
       "deprecation_reason": {},
       "mutation_parent": {}
+    },
+    "dedup": {
+      "role": "redundant",
+      "cluster": "DUPC-038",
+      "partners": [
+        "XF_RI01_RnD_to_Revenue"
+      ],
+      "adjudicated": false,
+      "needs_review": true,
+      "evidence": {
+        "max_pair_abs_cor": 0.989644,
+        "measured_at": "2026-08-02",
+        "report": "04_Research/01_reports/factor_db_dedup_20260802.md",
+        "window": "2005-01..2026-06 (258 months)"
+      },
+      "consumption_rule": "자동 병합 금지. 같은 cluster 의 둘 이상을 한 선별 풀에 넣으면 report_redundant_clusters() 가 보고한다 — 선언하거나 하나로 접을 것."
     }
   },
   "Q27_CapEx_to_Rev": {
@@ -3575,6 +3986,19 @@
       "last_validated": {},
       "deprecation_reason": {},
       "mutation_parent": {}
+    },
+    "dedup": {
+      "role": "canonical",
+      "cluster": "DUPC-037",
+      "aliases": [
+        "XF_LL05_WorkingCapital"
+      ],
+      "adjudicated": true,
+      "evidence": {
+        "measured_at": "2026-08-02",
+        "report": "04_Research/01_reports/factor_db_dedup_20260802.md",
+        "window": "2005-01..2026-06 (258 months)"
+      }
     }
   },
   "Q32_Interest_Coverage": {
@@ -3743,6 +4167,19 @@
       "last_validated": {},
       "deprecation_reason": {},
       "mutation_parent": {}
+    },
+    "dedup": {
+      "role": "canonical",
+      "cluster": "DUPC-010",
+      "aliases": [
+        "R12_Idiosyncratic_Risk"
+      ],
+      "adjudicated": true,
+      "evidence": {
+        "measured_at": "2026-08-02",
+        "report": "04_Research/01_reports/factor_db_dedup_20260802.md",
+        "window": "2005-01..2026-06 (258 months)"
+      }
     }
   },
   "D02_Beta": {
@@ -3785,6 +4222,29 @@
       "last_validated": {},
       "deprecation_reason": {},
       "mutation_parent": {}
+    },
+    "dedup": {
+      "role": "redundant",
+      "cluster": "DUPC-011",
+      "partners": [
+        "D10_Blume_Adj_Beta",
+        "D11_FP_Beta",
+        "D18_BAB_Rank",
+        "D19_EW_Beta_63",
+        "D20_EW_Beta_126",
+        "D28_Unlevered_Beta",
+        "D31_Relative_Beta",
+        "MK01_CAPM_Beta"
+      ],
+      "adjudicated": false,
+      "needs_review": true,
+      "evidence": {
+        "max_pair_abs_cor": 1,
+        "measured_at": "2026-08-02",
+        "report": "04_Research/01_reports/factor_db_dedup_20260802.md",
+        "window": "2005-01..2026-06 (258 months)"
+      },
+      "consumption_rule": "자동 병합 금지. 같은 cluster 의 둘 이상을 한 선별 풀에 넣으면 report_redundant_clusters() 가 보고한다 — 선언하거나 하나로 접을 것."
     }
   },
   "D03_RealVol": {
@@ -3827,6 +4287,35 @@
       "last_validated": {},
       "deprecation_reason": {},
       "mutation_parent": {}
+    },
+    "dedup": {
+      "role": "redundant",
+      "cluster": "DUPC-010",
+      "partners": [
+        "D01_IdioVol",
+        "D22_Tracking_Error",
+        "D45_Downside_Dev",
+        "D47_CVaR_5pct",
+        "D49_VaR_1pct",
+        "D56_Up_Vol",
+        "D57_Down_Vol",
+        "R02_VaR_99",
+        "R03_CVaR_95",
+        "R04_CVaR_99",
+        "R07_Downside_Dev",
+        "R08_Semi_Variance",
+        "R12_Idiosyncratic_Risk"
+      ],
+      "adjudicated": true,
+      "needs_review": false,
+      "evidence": {
+        "max_pair_abs_cor": 0.996787,
+        "measured_at": "2026-08-02",
+        "report": "04_Research/01_reports/factor_db_dedup_20260802.md",
+        "window": "2005-01..2026-06 (258 months)"
+      },
+      "consumption_rule": "자동 병합 금지. 같은 cluster 의 둘 이상을 한 선별 풀에 넣으면 report_redundant_clusters() 가 보고한다 — 선언하거나 하나로 접을 것.",
+      "cluster_label": "volatility_residual"
     }
   },
   "D04_Downside_Beta": {
@@ -3869,6 +4358,22 @@
       "last_validated": {},
       "deprecation_reason": {},
       "mutation_parent": {}
+    },
+    "dedup": {
+      "role": "redundant",
+      "cluster": "DUPC-012",
+      "partners": [
+        "D15_Cond_Bear_Beta"
+      ],
+      "adjudicated": false,
+      "needs_review": true,
+      "evidence": {
+        "max_pair_abs_cor": 0.997548,
+        "measured_at": "2026-08-02",
+        "report": "04_Research/01_reports/factor_db_dedup_20260802.md",
+        "window": "2005-01..2026-06 (258 months)"
+      },
+      "consumption_rule": "자동 병합 금지. 같은 cluster 의 둘 이상을 한 선별 풀에 넣으면 report_redundant_clusters() 가 보고한다 — 선언하거나 하나로 접을 것."
     }
   },
   "D05_MaxRet": {
@@ -4121,6 +4626,29 @@
       "last_validated": {},
       "deprecation_reason": {},
       "mutation_parent": {}
+    },
+    "dedup": {
+      "role": "redundant",
+      "cluster": "DUPC-011",
+      "partners": [
+        "D02_Beta",
+        "D10_Blume_Adj_Beta",
+        "D18_BAB_Rank",
+        "D19_EW_Beta_63",
+        "D20_EW_Beta_126",
+        "D28_Unlevered_Beta",
+        "D31_Relative_Beta",
+        "MK01_CAPM_Beta"
+      ],
+      "adjudicated": false,
+      "needs_review": true,
+      "evidence": {
+        "max_pair_abs_cor": 1,
+        "measured_at": "2026-08-02",
+        "report": "04_Research/01_reports/factor_db_dedup_20260802.md",
+        "window": "2005-01..2026-06 (258 months)"
+      },
+      "consumption_rule": "자동 병합 금지. 같은 cluster 의 둘 이상을 한 선별 풀에 넣으면 report_redundant_clusters() 가 보고한다 — 선언하거나 하나로 접을 것."
     }
   },
   "D12_Beta_126d": {
@@ -4289,6 +4817,22 @@
       "last_validated": {},
       "deprecation_reason": {},
       "mutation_parent": {}
+    },
+    "dedup": {
+      "role": "redundant",
+      "cluster": "DUPC-012",
+      "partners": [
+        "D04_Downside_Beta"
+      ],
+      "adjudicated": false,
+      "needs_review": true,
+      "evidence": {
+        "max_pair_abs_cor": 0.997548,
+        "measured_at": "2026-08-02",
+        "report": "04_Research/01_reports/factor_db_dedup_20260802.md",
+        "window": "2005-01..2026-06 (258 months)"
+      },
+      "consumption_rule": "자동 병합 금지. 같은 cluster 의 둘 이상을 한 선별 풀에 넣으면 report_redundant_clusters() 가 보고한다 — 선언하거나 하나로 접을 것."
     }
   },
   "D16_Coskewness": {
@@ -4331,6 +4875,23 @@
       "last_validated": {},
       "deprecation_reason": {},
       "mutation_parent": {}
+    },
+    "dedup": {
+      "role": "redundant",
+      "cluster": "DUPC-013",
+      "partners": [
+        "R09_Coskewness"
+      ],
+      "adjudicated": true,
+      "needs_review": false,
+      "evidence": {
+        "max_pair_abs_cor": 0.95683,
+        "measured_at": "2026-08-02",
+        "report": "04_Research/01_reports/factor_db_dedup_20260802.md",
+        "window": "2005-01..2026-06 (258 months)"
+      },
+      "consumption_rule": "자동 병합 금지. 같은 cluster 의 둘 이상을 한 선별 풀에 넣으면 report_redundant_clusters() 가 보고한다 — 선언하거나 하나로 접을 것.",
+      "cluster_label": "coskewness"
     }
   },
   "D17_Cokurtosis": {
@@ -4415,6 +4976,29 @@
       "last_validated": {},
       "deprecation_reason": {},
       "mutation_parent": {}
+    },
+    "dedup": {
+      "role": "redundant",
+      "cluster": "DUPC-011",
+      "partners": [
+        "D02_Beta",
+        "D10_Blume_Adj_Beta",
+        "D11_FP_Beta",
+        "D18_BAB_Rank",
+        "D20_EW_Beta_126",
+        "D28_Unlevered_Beta",
+        "D31_Relative_Beta",
+        "MK01_CAPM_Beta"
+      ],
+      "adjudicated": false,
+      "needs_review": true,
+      "evidence": {
+        "max_pair_abs_cor": 0.979997,
+        "measured_at": "2026-08-02",
+        "report": "04_Research/01_reports/factor_db_dedup_20260802.md",
+        "window": "2005-01..2026-06 (258 months)"
+      },
+      "consumption_rule": "자동 병합 금지. 같은 cluster 의 둘 이상을 한 선별 풀에 넣으면 report_redundant_clusters() 가 보고한다 — 선언하거나 하나로 접을 것."
     }
   },
   "D20_EW_Beta_126": {
@@ -4457,6 +5041,29 @@
       "last_validated": {},
       "deprecation_reason": {},
       "mutation_parent": {}
+    },
+    "dedup": {
+      "role": "redundant",
+      "cluster": "DUPC-011",
+      "partners": [
+        "D02_Beta",
+        "D10_Blume_Adj_Beta",
+        "D11_FP_Beta",
+        "D18_BAB_Rank",
+        "D19_EW_Beta_63",
+        "D28_Unlevered_Beta",
+        "D31_Relative_Beta",
+        "MK01_CAPM_Beta"
+      ],
+      "adjudicated": false,
+      "needs_review": true,
+      "evidence": {
+        "max_pair_abs_cor": 0.979997,
+        "measured_at": "2026-08-02",
+        "report": "04_Research/01_reports/factor_db_dedup_20260802.md",
+        "window": "2005-01..2026-06 (258 months)"
+      },
+      "consumption_rule": "자동 병합 금지. 같은 cluster 의 둘 이상을 한 선별 풀에 넣으면 report_redundant_clusters() 가 보고한다 — 선언하거나 하나로 접을 것."
     }
   },
   "D21_CAPM_Alpha": {
@@ -4541,6 +5148,35 @@
       "last_validated": {},
       "deprecation_reason": {},
       "mutation_parent": {}
+    },
+    "dedup": {
+      "role": "redundant",
+      "cluster": "DUPC-010",
+      "partners": [
+        "D01_IdioVol",
+        "D03_RealVol",
+        "D45_Downside_Dev",
+        "D47_CVaR_5pct",
+        "D49_VaR_1pct",
+        "D56_Up_Vol",
+        "D57_Down_Vol",
+        "R02_VaR_99",
+        "R03_CVaR_95",
+        "R04_CVaR_99",
+        "R07_Downside_Dev",
+        "R08_Semi_Variance",
+        "R12_Idiosyncratic_Risk"
+      ],
+      "adjudicated": true,
+      "needs_review": false,
+      "evidence": {
+        "max_pair_abs_cor": 0.998624,
+        "measured_at": "2026-08-02",
+        "report": "04_Research/01_reports/factor_db_dedup_20260802.md",
+        "window": "2005-01..2026-06 (258 months)"
+      },
+      "consumption_rule": "자동 병합 금지. 같은 cluster 의 둘 이상을 한 선별 풀에 넣으면 report_redundant_clusters() 가 보고한다 — 선언하거나 하나로 접을 것.",
+      "cluster_label": "volatility_residual"
     }
   },
   "D23_Info_Ratio": {
@@ -4583,6 +5219,25 @@
       "last_validated": {},
       "deprecation_reason": {},
       "mutation_parent": {}
+    },
+    "dedup": {
+      "role": "redundant",
+      "cluster": "DUPC-014",
+      "partners": [
+        "D46_Sortino",
+        "M14_RiskAdj_Mom",
+        "R15_Sortino",
+        "R16_Calmar"
+      ],
+      "adjudicated": false,
+      "needs_review": true,
+      "evidence": {
+        "max_pair_abs_cor": 0.978333,
+        "measured_at": "2026-08-02",
+        "report": "04_Research/01_reports/factor_db_dedup_20260802.md",
+        "window": "2005-01..2026-06 (258 months)"
+      },
+      "consumption_rule": "자동 병합 금지. 같은 cluster 의 둘 이상을 한 선별 풀에 넣으면 report_redundant_clusters() 가 보고한다 — 선언하거나 하나로 접을 것."
     }
   },
   "D24_Systematic_Risk_Prop": {
@@ -4625,6 +5280,23 @@
       "last_validated": {},
       "deprecation_reason": {},
       "mutation_parent": {}
+    },
+    "dedup": {
+      "role": "redundant",
+      "cluster": "DUPC-009",
+      "partners": [
+        "CR11_Idiosyncratic_Return",
+        "R11_Systematic_Risk"
+      ],
+      "adjudicated": false,
+      "needs_review": true,
+      "evidence": {
+        "max_pair_abs_cor": 1,
+        "measured_at": "2026-08-02",
+        "report": "04_Research/01_reports/factor_db_dedup_20260802.md",
+        "window": "2005-01..2026-06 (258 months)"
+      },
+      "consumption_rule": "자동 병합 금지. 같은 cluster 의 둘 이상을 한 선별 풀에 넣으면 report_redundant_clusters() 가 보고한다 — 선언하거나 하나로 접을 것."
     }
   },
   "D25_Left_Tail_Beta": {
@@ -4793,6 +5465,29 @@
       "last_validated": {},
       "deprecation_reason": {},
       "mutation_parent": {}
+    },
+    "dedup": {
+      "role": "redundant",
+      "cluster": "DUPC-011",
+      "partners": [
+        "D02_Beta",
+        "D10_Blume_Adj_Beta",
+        "D11_FP_Beta",
+        "D18_BAB_Rank",
+        "D19_EW_Beta_63",
+        "D20_EW_Beta_126",
+        "D31_Relative_Beta",
+        "MK01_CAPM_Beta"
+      ],
+      "adjudicated": false,
+      "needs_review": true,
+      "evidence": {
+        "max_pair_abs_cor": 0.966556,
+        "measured_at": "2026-08-02",
+        "report": "04_Research/01_reports/factor_db_dedup_20260802.md",
+        "window": "2005-01..2026-06 (258 months)"
+      },
+      "consumption_rule": "자동 병합 금지. 같은 cluster 의 둘 이상을 한 선별 풀에 넣으면 report_redundant_clusters() 가 보고한다 — 선언하거나 하나로 접을 것."
     }
   },
   "D29_Accounting_Beta": {
@@ -5004,6 +5699,23 @@
       "last_validated": {},
       "deprecation_reason": {},
       "mutation_parent": {}
+    },
+    "dedup": {
+      "role": "redundant",
+      "cluster": "DUPC-015",
+      "partners": [
+        "D42_EWMA_Vol",
+        "SE01_Volatility_Uncertainty"
+      ],
+      "adjudicated": false,
+      "needs_review": true,
+      "evidence": {
+        "max_pair_abs_cor": 0.971698,
+        "measured_at": "2026-08-02",
+        "report": "04_Research/01_reports/factor_db_dedup_20260802.md",
+        "window": "2005-01..2026-06 (258 months)"
+      },
+      "consumption_rule": "자동 병합 금지. 같은 cluster 의 둘 이상을 한 선별 풀에 넣으면 report_redundant_clusters() 가 보고한다 — 선언하거나 하나로 접을 것."
     }
   },
   "D35_RealVol_63d": {
@@ -5130,6 +5842,28 @@
       "last_validated": {},
       "deprecation_reason": {},
       "mutation_parent": {}
+    },
+    "dedup": {
+      "role": "redundant",
+      "cluster": "DUPC-016",
+      "partners": [
+        "D38_GarmanKlass_Vol",
+        "D39_RogersSatchell_Vol",
+        "D40_YangZhang_Vol",
+        "D53_Range_Vol",
+        "L18_Eff_Spread_Proxy",
+        "L41_Intraday_Vol_Proxy"
+      ],
+      "adjudicated": true,
+      "needs_review": false,
+      "evidence": {
+        "max_pair_abs_cor": 0.99563,
+        "measured_at": "2026-08-02",
+        "report": "04_Research/01_reports/factor_db_dedup_20260802.md",
+        "window": "2005-01..2026-06 (258 months)"
+      },
+      "consumption_rule": "자동 병합 금지. 같은 cluster 의 둘 이상을 한 선별 풀에 넣으면 report_redundant_clusters() 가 보고한다 — 선언하거나 하나로 접을 것.",
+      "cluster_label": "range_volatility"
     }
   },
   "D38_GarmanKlass_Vol": {
@@ -5172,6 +5906,28 @@
       "last_validated": {},
       "deprecation_reason": {},
       "mutation_parent": {}
+    },
+    "dedup": {
+      "role": "redundant",
+      "cluster": "DUPC-016",
+      "partners": [
+        "D37_Parkinson_Vol",
+        "D39_RogersSatchell_Vol",
+        "D40_YangZhang_Vol",
+        "D53_Range_Vol",
+        "L18_Eff_Spread_Proxy",
+        "L41_Intraday_Vol_Proxy"
+      ],
+      "adjudicated": true,
+      "needs_review": false,
+      "evidence": {
+        "max_pair_abs_cor": 0.995817,
+        "measured_at": "2026-08-02",
+        "report": "04_Research/01_reports/factor_db_dedup_20260802.md",
+        "window": "2005-01..2026-06 (258 months)"
+      },
+      "consumption_rule": "자동 병합 금지. 같은 cluster 의 둘 이상을 한 선별 풀에 넣으면 report_redundant_clusters() 가 보고한다 — 선언하거나 하나로 접을 것.",
+      "cluster_label": "range_volatility"
     }
   },
   "D39_RogersSatchell_Vol": {
@@ -5214,6 +5970,28 @@
       "last_validated": {},
       "deprecation_reason": {},
       "mutation_parent": {}
+    },
+    "dedup": {
+      "role": "redundant",
+      "cluster": "DUPC-016",
+      "partners": [
+        "D37_Parkinson_Vol",
+        "D38_GarmanKlass_Vol",
+        "D40_YangZhang_Vol",
+        "D53_Range_Vol",
+        "L18_Eff_Spread_Proxy",
+        "L41_Intraday_Vol_Proxy"
+      ],
+      "adjudicated": true,
+      "needs_review": false,
+      "evidence": {
+        "max_pair_abs_cor": 0.995817,
+        "measured_at": "2026-08-02",
+        "report": "04_Research/01_reports/factor_db_dedup_20260802.md",
+        "window": "2005-01..2026-06 (258 months)"
+      },
+      "consumption_rule": "자동 병합 금지. 같은 cluster 의 둘 이상을 한 선별 풀에 넣으면 report_redundant_clusters() 가 보고한다 — 선언하거나 하나로 접을 것.",
+      "cluster_label": "range_volatility"
     }
   },
   "D40_YangZhang_Vol": {
@@ -5256,6 +6034,28 @@
       "last_validated": {},
       "deprecation_reason": {},
       "mutation_parent": {}
+    },
+    "dedup": {
+      "role": "redundant",
+      "cluster": "DUPC-016",
+      "partners": [
+        "D37_Parkinson_Vol",
+        "D38_GarmanKlass_Vol",
+        "D39_RogersSatchell_Vol",
+        "D53_Range_Vol",
+        "L18_Eff_Spread_Proxy",
+        "L41_Intraday_Vol_Proxy"
+      ],
+      "adjudicated": true,
+      "needs_review": false,
+      "evidence": {
+        "max_pair_abs_cor": 0.968805,
+        "measured_at": "2026-08-02",
+        "report": "04_Research/01_reports/factor_db_dedup_20260802.md",
+        "window": "2005-01..2026-06 (258 months)"
+      },
+      "consumption_rule": "자동 병합 금지. 같은 cluster 의 둘 이상을 한 선별 풀에 넣으면 report_redundant_clusters() 가 보고한다 — 선언하거나 하나로 접을 것.",
+      "cluster_label": "range_volatility"
     }
   },
   "D41_Vol_of_Vol": {
@@ -5340,6 +6140,23 @@
       "last_validated": {},
       "deprecation_reason": {},
       "mutation_parent": {}
+    },
+    "dedup": {
+      "role": "redundant",
+      "cluster": "DUPC-015",
+      "partners": [
+        "D34_RealVol_21d",
+        "SE01_Volatility_Uncertainty"
+      ],
+      "adjudicated": false,
+      "needs_review": true,
+      "evidence": {
+        "max_pair_abs_cor": 0.960683,
+        "measured_at": "2026-08-02",
+        "report": "04_Research/01_reports/factor_db_dedup_20260802.md",
+        "window": "2005-01..2026-06 (258 months)"
+      },
+      "consumption_rule": "자동 병합 금지. 같은 cluster 의 둘 이상을 한 선별 풀에 넣으면 report_redundant_clusters() 가 보고한다 — 선언하거나 하나로 접을 것."
     }
   },
   "D43_Skewness": {
@@ -5382,6 +6199,22 @@
       "last_validated": {},
       "deprecation_reason": {},
       "mutation_parent": {}
+    },
+    "dedup": {
+      "role": "redundant",
+      "cluster": "DUPC-017",
+      "partners": [
+        "R13_NCSKEW"
+      ],
+      "adjudicated": false,
+      "needs_review": true,
+      "evidence": {
+        "max_pair_abs_cor": 0.978407,
+        "measured_at": "2026-08-02",
+        "report": "04_Research/01_reports/factor_db_dedup_20260802.md",
+        "window": "2005-01..2026-06 (258 months)"
+      },
+      "consumption_rule": "자동 병합 금지. 같은 cluster 의 둘 이상을 한 선별 풀에 넣으면 report_redundant_clusters() 가 보고한다 — 선언하거나 하나로 접을 것."
     }
   },
   "D44_Kurtosis": {
@@ -5466,6 +6299,35 @@
       "last_validated": {},
       "deprecation_reason": {},
       "mutation_parent": {}
+    },
+    "dedup": {
+      "role": "redundant",
+      "cluster": "DUPC-010",
+      "partners": [
+        "D01_IdioVol",
+        "D03_RealVol",
+        "D22_Tracking_Error",
+        "D47_CVaR_5pct",
+        "D49_VaR_1pct",
+        "D56_Up_Vol",
+        "D57_Down_Vol",
+        "R02_VaR_99",
+        "R03_CVaR_95",
+        "R04_CVaR_99",
+        "R07_Downside_Dev",
+        "R08_Semi_Variance",
+        "R12_Idiosyncratic_Risk"
+      ],
+      "adjudicated": true,
+      "needs_review": false,
+      "evidence": {
+        "max_pair_abs_cor": 0.978557,
+        "measured_at": "2026-08-02",
+        "report": "04_Research/01_reports/factor_db_dedup_20260802.md",
+        "window": "2005-01..2026-06 (258 months)"
+      },
+      "consumption_rule": "자동 병합 금지. 같은 cluster 의 둘 이상을 한 선별 풀에 넣으면 report_redundant_clusters() 가 보고한다 — 선언하거나 하나로 접을 것.",
+      "cluster_label": "volatility_residual"
     }
   },
   "D46_Sortino": {
@@ -5508,6 +6370,25 @@
       "last_validated": {},
       "deprecation_reason": {},
       "mutation_parent": {}
+    },
+    "dedup": {
+      "role": "redundant",
+      "cluster": "DUPC-014",
+      "partners": [
+        "D23_Info_Ratio",
+        "M14_RiskAdj_Mom",
+        "R15_Sortino",
+        "R16_Calmar"
+      ],
+      "adjudicated": false,
+      "needs_review": true,
+      "evidence": {
+        "max_pair_abs_cor": 0.997471,
+        "measured_at": "2026-08-02",
+        "report": "04_Research/01_reports/factor_db_dedup_20260802.md",
+        "window": "2005-01..2026-06 (258 months)"
+      },
+      "consumption_rule": "자동 병합 금지. 같은 cluster 의 둘 이상을 한 선별 풀에 넣으면 report_redundant_clusters() 가 보고한다 — 선언하거나 하나로 접을 것."
     }
   },
   "D47_CVaR_5pct": {
@@ -5550,6 +6431,35 @@
       "last_validated": {},
       "deprecation_reason": {},
       "mutation_parent": {}
+    },
+    "dedup": {
+      "role": "redundant",
+      "cluster": "DUPC-010",
+      "partners": [
+        "D01_IdioVol",
+        "D03_RealVol",
+        "D22_Tracking_Error",
+        "D45_Downside_Dev",
+        "D49_VaR_1pct",
+        "D56_Up_Vol",
+        "D57_Down_Vol",
+        "R02_VaR_99",
+        "R03_CVaR_95",
+        "R04_CVaR_99",
+        "R07_Downside_Dev",
+        "R08_Semi_Variance",
+        "R12_Idiosyncratic_Risk"
+      ],
+      "adjudicated": true,
+      "needs_review": false,
+      "evidence": {
+        "max_pair_abs_cor": 0.999962,
+        "measured_at": "2026-08-02",
+        "report": "04_Research/01_reports/factor_db_dedup_20260802.md",
+        "window": "2005-01..2026-06 (258 months)"
+      },
+      "consumption_rule": "자동 병합 금지. 같은 cluster 의 둘 이상을 한 선별 풀에 넣으면 report_redundant_clusters() 가 보고한다 — 선언하거나 하나로 접을 것.",
+      "cluster_label": "volatility_residual"
     }
   },
   "D48_VaR_5pct": {
@@ -5592,6 +6502,22 @@
       "last_validated": {},
       "deprecation_reason": {},
       "mutation_parent": {}
+    },
+    "dedup": {
+      "role": "redundant",
+      "cluster": "DUPC-018",
+      "partners": [
+        "R01_VaR_95"
+      ],
+      "adjudicated": false,
+      "needs_review": true,
+      "evidence": {
+        "max_pair_abs_cor": 0.999903,
+        "measured_at": "2026-08-02",
+        "report": "04_Research/01_reports/factor_db_dedup_20260802.md",
+        "window": "2005-01..2026-06 (258 months)"
+      },
+      "consumption_rule": "자동 병합 금지. 같은 cluster 의 둘 이상을 한 선별 풀에 넣으면 report_redundant_clusters() 가 보고한다 — 선언하거나 하나로 접을 것."
     }
   },
   "D49_VaR_1pct": {
@@ -5634,6 +6560,35 @@
       "last_validated": {},
       "deprecation_reason": {},
       "mutation_parent": {}
+    },
+    "dedup": {
+      "role": "redundant",
+      "cluster": "DUPC-010",
+      "partners": [
+        "D01_IdioVol",
+        "D03_RealVol",
+        "D22_Tracking_Error",
+        "D45_Downside_Dev",
+        "D47_CVaR_5pct",
+        "D56_Up_Vol",
+        "D57_Down_Vol",
+        "R02_VaR_99",
+        "R03_CVaR_95",
+        "R04_CVaR_99",
+        "R07_Downside_Dev",
+        "R08_Semi_Variance",
+        "R12_Idiosyncratic_Risk"
+      ],
+      "adjudicated": true,
+      "needs_review": false,
+      "evidence": {
+        "max_pair_abs_cor": 0.999943,
+        "measured_at": "2026-08-02",
+        "report": "04_Research/01_reports/factor_db_dedup_20260802.md",
+        "window": "2005-01..2026-06 (258 months)"
+      },
+      "consumption_rule": "자동 병합 금지. 같은 cluster 의 둘 이상을 한 선별 풀에 넣으면 report_redundant_clusters() 가 보고한다 — 선언하거나 하나로 접을 것.",
+      "cluster_label": "volatility_residual"
     }
   },
   "D50_MaxDrawdown": {
@@ -5676,6 +6631,22 @@
       "last_validated": {},
       "deprecation_reason": {},
       "mutation_parent": {}
+    },
+    "dedup": {
+      "role": "redundant",
+      "cluster": "DUPC-019",
+      "partners": [
+        "R06_MDD"
+      ],
+      "adjudicated": false,
+      "needs_review": true,
+      "evidence": {
+        "max_pair_abs_cor": 1,
+        "measured_at": "2026-08-02",
+        "report": "04_Research/01_reports/factor_db_dedup_20260802.md",
+        "window": "2005-01..2026-06 (258 months)"
+      },
+      "consumption_rule": "자동 병합 금지. 같은 cluster 의 둘 이상을 한 선별 풀에 넣으면 report_redundant_clusters() 가 보고한다 — 선언하거나 하나로 접을 것."
     }
   },
   "D51_Ulcer_Index": {
@@ -5802,6 +6773,28 @@
       "last_validated": {},
       "deprecation_reason": {},
       "mutation_parent": {}
+    },
+    "dedup": {
+      "role": "redundant",
+      "cluster": "DUPC-016",
+      "partners": [
+        "D37_Parkinson_Vol",
+        "D38_GarmanKlass_Vol",
+        "D39_RogersSatchell_Vol",
+        "D40_YangZhang_Vol",
+        "L18_Eff_Spread_Proxy",
+        "L41_Intraday_Vol_Proxy"
+      ],
+      "adjudicated": true,
+      "needs_review": false,
+      "evidence": {
+        "max_pair_abs_cor": 0.999583,
+        "measured_at": "2026-08-02",
+        "report": "04_Research/01_reports/factor_db_dedup_20260802.md",
+        "window": "2005-01..2026-06 (258 months)"
+      },
+      "consumption_rule": "자동 병합 금지. 같은 cluster 의 둘 이상을 한 선별 풀에 넣으면 report_redundant_clusters() 가 보고한다 — 선언하거나 하나로 접을 것.",
+      "cluster_label": "range_volatility"
     }
   },
   "D54_Neg_Ret_Prop": {
@@ -5928,6 +6921,35 @@
       "last_validated": {},
       "deprecation_reason": {},
       "mutation_parent": {}
+    },
+    "dedup": {
+      "role": "redundant",
+      "cluster": "DUPC-010",
+      "partners": [
+        "D01_IdioVol",
+        "D03_RealVol",
+        "D22_Tracking_Error",
+        "D45_Downside_Dev",
+        "D47_CVaR_5pct",
+        "D49_VaR_1pct",
+        "D57_Down_Vol",
+        "R02_VaR_99",
+        "R03_CVaR_95",
+        "R04_CVaR_99",
+        "R07_Downside_Dev",
+        "R08_Semi_Variance",
+        "R12_Idiosyncratic_Risk"
+      ],
+      "adjudicated": true,
+      "needs_review": false,
+      "evidence": {
+        "max_pair_abs_cor": 0.962117,
+        "measured_at": "2026-08-02",
+        "report": "04_Research/01_reports/factor_db_dedup_20260802.md",
+        "window": "2005-01..2026-06 (258 months)"
+      },
+      "consumption_rule": "자동 병합 금지. 같은 cluster 의 둘 이상을 한 선별 풀에 넣으면 report_redundant_clusters() 가 보고한다 — 선언하거나 하나로 접을 것.",
+      "cluster_label": "volatility_residual"
     }
   },
   "D57_Down_Vol": {
@@ -5970,6 +6992,35 @@
       "last_validated": {},
       "deprecation_reason": {},
       "mutation_parent": {}
+    },
+    "dedup": {
+      "role": "redundant",
+      "cluster": "DUPC-010",
+      "partners": [
+        "D01_IdioVol",
+        "D03_RealVol",
+        "D22_Tracking_Error",
+        "D45_Downside_Dev",
+        "D47_CVaR_5pct",
+        "D49_VaR_1pct",
+        "D56_Up_Vol",
+        "R02_VaR_99",
+        "R03_CVaR_95",
+        "R04_CVaR_99",
+        "R07_Downside_Dev",
+        "R08_Semi_Variance",
+        "R12_Idiosyncratic_Risk"
+      ],
+      "adjudicated": true,
+      "needs_review": false,
+      "evidence": {
+        "max_pair_abs_cor": 0.979629,
+        "measured_at": "2026-08-02",
+        "report": "04_Research/01_reports/factor_db_dedup_20260802.md",
+        "window": "2005-01..2026-06 (258 months)"
+      },
+      "consumption_rule": "자동 병합 금지. 같은 cluster 의 둘 이상을 한 선별 풀에 넣으면 report_redundant_clusters() 가 보고한다 — 선언하거나 하나로 접을 것.",
+      "cluster_label": "volatility_residual"
     }
   },
   "D58_Vol_Asymmetry": {
@@ -6054,6 +7105,23 @@
       "last_validated": {},
       "deprecation_reason": {},
       "mutation_parent": {}
+    },
+    "dedup": {
+      "role": "redundant",
+      "cluster": "DUPC-020",
+      "partners": [
+        "Q15_Debt_to_Equity",
+        "XF_LL01_DebtToCapital"
+      ],
+      "adjudicated": false,
+      "needs_review": true,
+      "evidence": {
+        "max_pair_abs_cor": 0.980912,
+        "measured_at": "2026-08-02",
+        "report": "04_Research/01_reports/factor_db_dedup_20260802.md",
+        "window": "2005-01..2026-06 (258 months)"
+      },
+      "consumption_rule": "자동 병합 금지. 같은 cluster 의 둘 이상을 한 선별 풀에 넣으면 report_redundant_clusters() 가 보고한다 — 선언하거나 하나로 접을 것."
     }
   },
   "S01_Size": {
@@ -6096,6 +7164,23 @@
       "last_validated": {},
       "deprecation_reason": {},
       "mutation_parent": {}
+    },
+    "dedup": {
+      "role": "redundant",
+      "cluster": "DUPC-030",
+      "partners": [
+        "L26_Log_MktCap",
+        "S02_Float_Size"
+      ],
+      "adjudicated": false,
+      "needs_review": true,
+      "evidence": {
+        "max_pair_abs_cor": 1,
+        "measured_at": "2026-08-02",
+        "report": "04_Research/01_reports/factor_db_dedup_20260802.md",
+        "window": "2005-01..2026-06 (258 months)"
+      },
+      "consumption_rule": "자동 병합 금지. 같은 cluster 의 둘 이상을 한 선별 풀에 넣으면 report_redundant_clusters() 가 보고한다 — 선언하거나 하나로 접을 것."
     }
   },
   "S02_Float_Size": {
@@ -6138,6 +7223,23 @@
       "last_validated": {},
       "deprecation_reason": {},
       "mutation_parent": {}
+    },
+    "dedup": {
+      "role": "redundant",
+      "cluster": "DUPC-030",
+      "partners": [
+        "L26_Log_MktCap",
+        "S01_Size"
+      ],
+      "adjudicated": false,
+      "needs_review": true,
+      "evidence": {
+        "max_pair_abs_cor": 0.998574,
+        "measured_at": "2026-08-02",
+        "report": "04_Research/01_reports/factor_db_dedup_20260802.md",
+        "window": "2005-01..2026-06 (258 months)"
+      },
+      "consumption_rule": "자동 병합 금지. 같은 cluster 의 둘 이상을 한 선별 풀에 넣으면 report_redundant_clusters() 가 보고한다 — 선언하거나 하나로 접을 것."
     }
   },
   "C01_SUE": {
@@ -6181,6 +7283,23 @@
       "last_validated": {},
       "deprecation_reason": {},
       "mutation_parent": {}
+    },
+    "dedup": {
+      "role": "redundant",
+      "cluster": "DUPC-005",
+      "partners": [
+        "C05_ESCR"
+      ],
+      "adjudicated": true,
+      "needs_review": false,
+      "evidence": {
+        "max_pair_abs_cor": 0.990436,
+        "measured_at": "2026-08-02",
+        "report": "04_Research/01_reports/factor_db_dedup_20260802.md",
+        "window": "2005-01..2026-06 (258 months)"
+      },
+      "consumption_rule": "자동 병합 금지. 같은 cluster 의 둘 이상을 한 선별 풀에 넣으면 report_redundant_clusters() 가 보고한다 — 선언하거나 하나로 접을 것.",
+      "cluster_label": "earnings_surprise"
     }
   },
   "C02_EPS_Chg_1m": {
@@ -6224,6 +7343,19 @@
       "last_validated": {},
       "deprecation_reason": {},
       "mutation_parent": {}
+    },
+    "dedup": {
+      "role": "canonical",
+      "cluster": "DUPC-006",
+      "aliases": [
+        "M27_Analyst_Rev_Mom"
+      ],
+      "adjudicated": true,
+      "evidence": {
+        "measured_at": "2026-08-02",
+        "report": "04_Research/01_reports/factor_db_dedup_20260802.md",
+        "window": "2005-01..2026-06 (258 months)"
+      }
     }
   },
   "C03_EPS_Chg_3m": {
@@ -6353,6 +7485,23 @@
       "last_validated": {},
       "deprecation_reason": {},
       "mutation_parent": {}
+    },
+    "dedup": {
+      "role": "redundant",
+      "cluster": "DUPC-005",
+      "partners": [
+        "C01_SUE"
+      ],
+      "adjudicated": true,
+      "needs_review": false,
+      "evidence": {
+        "max_pair_abs_cor": 0.990436,
+        "measured_at": "2026-08-02",
+        "report": "04_Research/01_reports/factor_db_dedup_20260802.md",
+        "window": "2005-01..2026-06 (258 months)"
+      },
+      "consumption_rule": "자동 병합 금지. 같은 cluster 의 둘 이상을 한 선별 풀에 넣으면 report_redundant_clusters() 가 보고한다 — 선언하거나 하나로 접을 것.",
+      "cluster_label": "earnings_surprise"
     }
   },
   "C06_TP_Gap": {
@@ -6997,6 +8146,24 @@
       "last_validated": {},
       "deprecation_reason": {},
       "mutation_parent": {}
+    },
+    "dedup": {
+      "role": "redundant",
+      "cluster": "DUPC-026",
+      "partners": [
+        "L11_Kyle_Lambda",
+        "L25_Amihud_Vol"
+      ],
+      "adjudicated": true,
+      "needs_review": false,
+      "evidence": {
+        "max_pair_abs_cor": 0.984688,
+        "measured_at": "2026-08-02",
+        "report": "04_Research/01_reports/factor_db_dedup_20260802.md",
+        "window": "2005-01..2026-06 (258 months)"
+      },
+      "consumption_rule": "자동 병합 금지. 같은 cluster 의 둘 이상을 한 선별 풀에 넣으면 report_redundant_clusters() 가 보고한다 — 선언하거나 하나로 접을 것.",
+      "cluster_label": "amihud_illiquidity"
     }
   },
   "L02_Turnover": {
@@ -7039,6 +8206,19 @@
       "last_validated": {},
       "deprecation_reason": {},
       "mutation_parent": {}
+    },
+    "dedup": {
+      "role": "canonical",
+      "cluster": "DUPC-008",
+      "aliases": [
+        "CR04_Ownership_Concentration"
+      ],
+      "adjudicated": true,
+      "evidence": {
+        "measured_at": "2026-08-02",
+        "report": "04_Research/01_reports/factor_db_dedup_20260802.md",
+        "window": "2005-01..2026-06 (258 months)"
+      }
     }
   },
   "L03_Volume_Mom": {
@@ -7081,6 +8261,23 @@
       "last_validated": {},
       "deprecation_reason": {},
       "mutation_parent": {}
+    },
+    "dedup": {
+      "role": "redundant",
+      "cluster": "DUPC-007",
+      "partners": [
+        "CR02_Volume_Concentration",
+        "L38_DolVol_Mom"
+      ],
+      "adjudicated": false,
+      "needs_review": true,
+      "evidence": {
+        "max_pair_abs_cor": 1,
+        "measured_at": "2026-08-02",
+        "report": "04_Research/01_reports/factor_db_dedup_20260802.md",
+        "window": "2005-01..2026-06 (258 months)"
+      },
+      "consumption_rule": "자동 병합 금지. 같은 cluster 의 둘 이상을 한 선별 풀에 넣으면 report_redundant_clusters() 가 보고한다 — 선언하거나 하나로 접을 것."
     }
   },
   "L04_Bid_Ask_Proxy": {
@@ -7207,6 +8404,22 @@
       "last_validated": {},
       "deprecation_reason": {},
       "mutation_parent": {}
+    },
+    "dedup": {
+      "role": "redundant",
+      "cluster": "DUPC-027",
+      "partners": [
+        "L20_Trade_Frequency"
+      ],
+      "adjudicated": false,
+      "needs_review": true,
+      "evidence": {
+        "max_pair_abs_cor": 1,
+        "measured_at": "2026-08-02",
+        "report": "04_Research/01_reports/factor_db_dedup_20260802.md",
+        "window": "2005-01..2026-06 (258 months)"
+      },
+      "consumption_rule": "자동 병합 금지. 같은 cluster 의 둘 이상을 한 선별 풀에 넣으면 report_redundant_clusters() 가 보고한다 — 선언하거나 하나로 접을 것."
     }
   },
   "L07_Zero_Return_Days": {
@@ -7249,6 +8462,22 @@
       "last_validated": {},
       "deprecation_reason": {},
       "mutation_parent": {}
+    },
+    "dedup": {
+      "role": "redundant",
+      "cluster": "DUPC-028",
+      "partners": [
+        "L17_LOT_Measure"
+      ],
+      "adjudicated": false,
+      "needs_review": true,
+      "evidence": {
+        "max_pair_abs_cor": 0.997015,
+        "measured_at": "2026-08-02",
+        "report": "04_Research/01_reports/factor_db_dedup_20260802.md",
+        "window": "2005-01..2026-06 (258 months)"
+      },
+      "consumption_rule": "자동 병합 금지. 같은 cluster 의 둘 이상을 한 선별 풀에 넣으면 report_redundant_clusters() 가 보고한다 — 선언하거나 하나로 접을 것."
     }
   },
   "L08_Roll_Spread": {
@@ -7417,6 +8646,24 @@
       "last_validated": {},
       "deprecation_reason": {},
       "mutation_parent": {}
+    },
+    "dedup": {
+      "role": "redundant",
+      "cluster": "DUPC-026",
+      "partners": [
+        "L01_Amihud",
+        "L25_Amihud_Vol"
+      ],
+      "adjudicated": true,
+      "needs_review": false,
+      "evidence": {
+        "max_pair_abs_cor": 0.966598,
+        "measured_at": "2026-08-02",
+        "report": "04_Research/01_reports/factor_db_dedup_20260802.md",
+        "window": "2005-01..2026-06 (258 months)"
+      },
+      "consumption_rule": "자동 병합 금지. 같은 cluster 의 둘 이상을 한 선별 풀에 넣으면 report_redundant_clusters() 가 보고한다 — 선언하거나 하나로 접을 것.",
+      "cluster_label": "amihud_illiquidity"
     }
   },
   "L12_PS_Gamma": {
@@ -7501,6 +8748,23 @@
       "last_validated": {},
       "deprecation_reason": {},
       "mutation_parent": {}
+    },
+    "dedup": {
+      "role": "redundant",
+      "cluster": "DUPC-029",
+      "partners": [
+        "L31_Vol_Concentration"
+      ],
+      "adjudicated": true,
+      "needs_review": false,
+      "evidence": {
+        "max_pair_abs_cor": 0.976724,
+        "measured_at": "2026-08-02",
+        "report": "04_Research/01_reports/factor_db_dedup_20260802.md",
+        "window": "2005-01..2026-06 (258 months)"
+      },
+      "consumption_rule": "자동 병합 금지. 같은 cluster 의 둘 이상을 한 선별 풀에 넣으면 report_redundant_clusters() 가 보고한다 — 선언하거나 하나로 접을 것.",
+      "cluster_label": "volume_concentration"
     }
   },
   "L14_Price_Impact": {
@@ -7669,6 +8933,22 @@
       "last_validated": {},
       "deprecation_reason": {},
       "mutation_parent": {}
+    },
+    "dedup": {
+      "role": "redundant",
+      "cluster": "DUPC-028",
+      "partners": [
+        "L07_Zero_Return_Days"
+      ],
+      "adjudicated": false,
+      "needs_review": true,
+      "evidence": {
+        "max_pair_abs_cor": 0.997015,
+        "measured_at": "2026-08-02",
+        "report": "04_Research/01_reports/factor_db_dedup_20260802.md",
+        "window": "2005-01..2026-06 (258 months)"
+      },
+      "consumption_rule": "자동 병합 금지. 같은 cluster 의 둘 이상을 한 선별 풀에 넣으면 report_redundant_clusters() 가 보고한다 — 선언하거나 하나로 접을 것."
     }
   },
   "L18_Eff_Spread_Proxy": {
@@ -7711,6 +8991,28 @@
       "last_validated": {},
       "deprecation_reason": {},
       "mutation_parent": {}
+    },
+    "dedup": {
+      "role": "redundant",
+      "cluster": "DUPC-016",
+      "partners": [
+        "D37_Parkinson_Vol",
+        "D38_GarmanKlass_Vol",
+        "D39_RogersSatchell_Vol",
+        "D40_YangZhang_Vol",
+        "D53_Range_Vol",
+        "L41_Intraday_Vol_Proxy"
+      ],
+      "adjudicated": true,
+      "needs_review": false,
+      "evidence": {
+        "max_pair_abs_cor": 0.97125,
+        "measured_at": "2026-08-02",
+        "report": "04_Research/01_reports/factor_db_dedup_20260802.md",
+        "window": "2005-01..2026-06 (258 months)"
+      },
+      "consumption_rule": "자동 병합 금지. 같은 cluster 의 둘 이상을 한 선별 풀에 넣으면 report_redundant_clusters() 가 보고한다 — 선언하거나 하나로 접을 것.",
+      "cluster_label": "range_volatility"
     }
   },
   "L19_Price_Delay": {
@@ -7795,6 +9097,22 @@
       "last_validated": {},
       "deprecation_reason": {},
       "mutation_parent": {}
+    },
+    "dedup": {
+      "role": "redundant",
+      "cluster": "DUPC-027",
+      "partners": [
+        "L06_Zero_Trade_Days"
+      ],
+      "adjudicated": false,
+      "needs_review": true,
+      "evidence": {
+        "max_pair_abs_cor": 1,
+        "measured_at": "2026-08-02",
+        "report": "04_Research/01_reports/factor_db_dedup_20260802.md",
+        "window": "2005-01..2026-06 (258 months)"
+      },
+      "consumption_rule": "자동 병합 금지. 같은 cluster 의 둘 이상을 한 선별 풀에 넣으면 report_redundant_clusters() 가 보고한다 — 선언하거나 하나로 접을 것."
     }
   },
   "L21_Market_Depth": {
@@ -8005,6 +9323,24 @@
       "last_validated": {},
       "deprecation_reason": {},
       "mutation_parent": {}
+    },
+    "dedup": {
+      "role": "redundant",
+      "cluster": "DUPC-026",
+      "partners": [
+        "L01_Amihud",
+        "L11_Kyle_Lambda"
+      ],
+      "adjudicated": true,
+      "needs_review": false,
+      "evidence": {
+        "max_pair_abs_cor": 0.984688,
+        "measured_at": "2026-08-02",
+        "report": "04_Research/01_reports/factor_db_dedup_20260802.md",
+        "window": "2005-01..2026-06 (258 months)"
+      },
+      "consumption_rule": "자동 병합 금지. 같은 cluster 의 둘 이상을 한 선별 풀에 넣으면 report_redundant_clusters() 가 보고한다 — 선언하거나 하나로 접을 것.",
+      "cluster_label": "amihud_illiquidity"
     }
   },
   "L26_Log_MktCap": {
@@ -8047,6 +9383,23 @@
       "last_validated": {},
       "deprecation_reason": {},
       "mutation_parent": {}
+    },
+    "dedup": {
+      "role": "redundant",
+      "cluster": "DUPC-030",
+      "partners": [
+        "S01_Size",
+        "S02_Float_Size"
+      ],
+      "adjudicated": false,
+      "needs_review": true,
+      "evidence": {
+        "max_pair_abs_cor": 1,
+        "measured_at": "2026-08-02",
+        "report": "04_Research/01_reports/factor_db_dedup_20260802.md",
+        "window": "2005-01..2026-06 (258 months)"
+      },
+      "consumption_rule": "자동 병합 금지. 같은 cluster 의 둘 이상을 한 선별 풀에 넣으면 report_redundant_clusters() 가 보고한다 — 선언하거나 하나로 접을 것."
     }
   },
   "L27_Price_Level": {
@@ -8131,6 +9484,22 @@
       "last_validated": {},
       "deprecation_reason": {},
       "mutation_parent": {}
+    },
+    "dedup": {
+      "role": "redundant",
+      "cluster": "DUPC-031",
+      "partners": [
+        "L43_Turnover_Change"
+      ],
+      "adjudicated": false,
+      "needs_review": true,
+      "evidence": {
+        "max_pair_abs_cor": 0.966656,
+        "measured_at": "2026-08-02",
+        "report": "04_Research/01_reports/factor_db_dedup_20260802.md",
+        "window": "2005-01..2026-06 (258 months)"
+      },
+      "consumption_rule": "자동 병합 금지. 같은 cluster 의 둘 이상을 한 선별 풀에 넣으면 report_redundant_clusters() 가 보고한다 — 선언하거나 하나로 접을 것."
     }
   },
   "L29_Illiq_Change": {
@@ -8215,6 +9584,23 @@
       "last_validated": {},
       "deprecation_reason": {},
       "mutation_parent": {}
+    },
+    "dedup": {
+      "role": "redundant",
+      "cluster": "DUPC-029",
+      "partners": [
+        "L13_Vol_Variance_Ratio"
+      ],
+      "adjudicated": true,
+      "needs_review": false,
+      "evidence": {
+        "max_pair_abs_cor": 0.976724,
+        "measured_at": "2026-08-02",
+        "report": "04_Research/01_reports/factor_db_dedup_20260802.md",
+        "window": "2005-01..2026-06 (258 months)"
+      },
+      "consumption_rule": "자동 병합 금지. 같은 cluster 의 둘 이상을 한 선별 풀에 넣으면 report_redundant_clusters() 가 보고한다 — 선언하거나 하나로 접을 것.",
+      "cluster_label": "volume_concentration"
     }
   },
   "L32_Ret_Vol_Corr": {
@@ -8509,6 +9895,23 @@
       "last_validated": {},
       "deprecation_reason": {},
       "mutation_parent": {}
+    },
+    "dedup": {
+      "role": "redundant",
+      "cluster": "DUPC-007",
+      "partners": [
+        "CR02_Volume_Concentration",
+        "L03_Volume_Mom"
+      ],
+      "adjudicated": false,
+      "needs_review": true,
+      "evidence": {
+        "max_pair_abs_cor": 0.960204,
+        "measured_at": "2026-08-02",
+        "report": "04_Research/01_reports/factor_db_dedup_20260802.md",
+        "window": "2005-01..2026-06 (258 months)"
+      },
+      "consumption_rule": "자동 병합 금지. 같은 cluster 의 둘 이상을 한 선별 풀에 넣으면 report_redundant_clusters() 가 보고한다 — 선언하거나 하나로 접을 것."
     }
   },
   "L39_Overnight_Spread": {
@@ -8635,6 +10038,28 @@
       "last_validated": {},
       "deprecation_reason": {},
       "mutation_parent": {}
+    },
+    "dedup": {
+      "role": "redundant",
+      "cluster": "DUPC-016",
+      "partners": [
+        "D37_Parkinson_Vol",
+        "D38_GarmanKlass_Vol",
+        "D39_RogersSatchell_Vol",
+        "D40_YangZhang_Vol",
+        "D53_Range_Vol",
+        "L18_Eff_Spread_Proxy"
+      ],
+      "adjudicated": true,
+      "needs_review": false,
+      "evidence": {
+        "max_pair_abs_cor": 0.999583,
+        "measured_at": "2026-08-02",
+        "report": "04_Research/01_reports/factor_db_dedup_20260802.md",
+        "window": "2005-01..2026-06 (258 months)"
+      },
+      "consumption_rule": "자동 병합 금지. 같은 cluster 의 둘 이상을 한 선별 풀에 넣으면 report_redundant_clusters() 가 보고한다 — 선언하거나 하나로 접을 것.",
+      "cluster_label": "range_volatility"
     }
   },
   "L42_Vol_Skewness": {
@@ -8719,6 +10144,22 @@
       "last_validated": {},
       "deprecation_reason": {},
       "mutation_parent": {}
+    },
+    "dedup": {
+      "role": "redundant",
+      "cluster": "DUPC-031",
+      "partners": [
+        "L28_Vol_Mom_63d"
+      ],
+      "adjudicated": false,
+      "needs_review": true,
+      "evidence": {
+        "max_pair_abs_cor": 0.966656,
+        "measured_at": "2026-08-02",
+        "report": "04_Research/01_reports/factor_db_dedup_20260802.md",
+        "window": "2005-01..2026-06 (258 months)"
+      },
+      "consumption_rule": "자동 병합 금지. 같은 cluster 의 둘 이상을 한 선별 풀에 넣으면 report_redundant_clusters() 가 보고한다 — 선언하거나 하나로 접을 것."
     }
   },
   "L44_Vol_Ret_Asymmetry": {
@@ -8845,6 +10286,24 @@
       "last_validated": {},
       "deprecation_reason": {},
       "mutation_parent": {}
+    },
+    "dedup": {
+      "role": "redundant",
+      "cluster": "DUPC-001",
+      "partners": [
+        "AC11_Accruals_to_Assets",
+        "AC18_Accrual_Quality",
+        "Q05_Accrual"
+      ],
+      "adjudicated": false,
+      "needs_review": true,
+      "evidence": {
+        "max_pair_abs_cor": 1,
+        "measured_at": "2026-08-02",
+        "report": "04_Research/01_reports/factor_db_dedup_20260802.md",
+        "window": "2005-01..2026-06 (258 months)"
+      },
+      "consumption_rule": "자동 병합 금지. 같은 cluster 의 둘 이상을 한 선별 풀에 넣으면 report_redundant_clusters() 가 보고한다 — 선언하거나 하나로 접을 것."
     }
   },
   "AC02_Total_Accruals_BS": {
@@ -8887,6 +10346,22 @@
       "last_validated": {},
       "deprecation_reason": {},
       "mutation_parent": {}
+    },
+    "dedup": {
+      "role": "redundant",
+      "cluster": "DUPC-002",
+      "partners": [
+        "AC03_WC_Accruals"
+      ],
+      "adjudicated": false,
+      "needs_review": true,
+      "evidence": {
+        "max_pair_abs_cor": 0.997541,
+        "measured_at": "2026-08-02",
+        "report": "04_Research/01_reports/factor_db_dedup_20260802.md",
+        "window": "2005-01..2026-06 (258 months)"
+      },
+      "consumption_rule": "자동 병합 금지. 같은 cluster 의 둘 이상을 한 선별 풀에 넣으면 report_redundant_clusters() 가 보고한다 — 선언하거나 하나로 접을 것."
     }
   },
   "AC03_WC_Accruals": {
@@ -8929,6 +10404,22 @@
       "last_validated": {},
       "deprecation_reason": {},
       "mutation_parent": {}
+    },
+    "dedup": {
+      "role": "redundant",
+      "cluster": "DUPC-002",
+      "partners": [
+        "AC02_Total_Accruals_BS"
+      ],
+      "adjudicated": false,
+      "needs_review": true,
+      "evidence": {
+        "max_pair_abs_cor": 0.997541,
+        "measured_at": "2026-08-02",
+        "report": "04_Research/01_reports/factor_db_dedup_20260802.md",
+        "window": "2005-01..2026-06 (258 months)"
+      },
+      "consumption_rule": "자동 병합 금지. 같은 cluster 의 둘 이상을 한 선별 풀에 넣으면 report_redundant_clusters() 가 보고한다 — 선언하거나 하나로 접을 것."
     }
   },
   "AC04_NCO_Accruals": {
@@ -9097,6 +10588,23 @@
       "last_validated": {},
       "deprecation_reason": {},
       "mutation_parent": {}
+    },
+    "dedup": {
+      "role": "redundant",
+      "cluster": "DUPC-003",
+      "partners": [
+        "AC09_NNI",
+        "AC24_NOA_Growth"
+      ],
+      "adjudicated": false,
+      "needs_review": true,
+      "evidence": {
+        "max_pair_abs_cor": 1,
+        "measured_at": "2026-08-02",
+        "report": "04_Research/01_reports/factor_db_dedup_20260802.md",
+        "window": "2005-01..2026-06 (258 months)"
+      },
+      "consumption_rule": "자동 병합 금지. 같은 cluster 의 둘 이상을 한 선별 풀에 넣으면 report_redundant_clusters() 가 보고한다 — 선언하거나 하나로 접을 것."
     }
   },
   "AC08_Financial_Accruals": {
@@ -9139,6 +10647,22 @@
       "last_validated": {},
       "deprecation_reason": {},
       "mutation_parent": {}
+    },
+    "dedup": {
+      "role": "redundant",
+      "cluster": "DUPC-004",
+      "partners": [
+        "IN05_Net_Debt_Issuance"
+      ],
+      "adjudicated": false,
+      "needs_review": true,
+      "evidence": {
+        "max_pair_abs_cor": 0.985431,
+        "measured_at": "2026-08-02",
+        "report": "04_Research/01_reports/factor_db_dedup_20260802.md",
+        "window": "2005-01..2026-06 (258 months)"
+      },
+      "consumption_rule": "자동 병합 금지. 같은 cluster 의 둘 이상을 한 선별 풀에 넣으면 report_redundant_clusters() 가 보고한다 — 선언하거나 하나로 접을 것."
     }
   },
   "AC09_NNI": {
@@ -9181,6 +10705,23 @@
       "last_validated": {},
       "deprecation_reason": {},
       "mutation_parent": {}
+    },
+    "dedup": {
+      "role": "redundant",
+      "cluster": "DUPC-003",
+      "partners": [
+        "AC07_Operating_Accruals",
+        "AC24_NOA_Growth"
+      ],
+      "adjudicated": false,
+      "needs_review": true,
+      "evidence": {
+        "max_pair_abs_cor": 1,
+        "measured_at": "2026-08-02",
+        "report": "04_Research/01_reports/factor_db_dedup_20260802.md",
+        "window": "2005-01..2026-06 (258 months)"
+      },
+      "consumption_rule": "자동 병합 금지. 같은 cluster 의 둘 이상을 한 선별 풀에 넣으면 report_redundant_clusters() 가 보고한다 — 선언하거나 하나로 접을 것."
     }
   },
   "AC10_Pct_Accruals": {
@@ -9685,6 +11226,23 @@
       "last_validated": {},
       "deprecation_reason": {},
       "mutation_parent": {}
+    },
+    "dedup": {
+      "role": "redundant",
+      "cluster": "DUPC-003",
+      "partners": [
+        "AC07_Operating_Accruals",
+        "AC09_NNI"
+      ],
+      "adjudicated": false,
+      "needs_review": true,
+      "evidence": {
+        "max_pair_abs_cor": 0.980975,
+        "measured_at": "2026-08-02",
+        "report": "04_Research/01_reports/factor_db_dedup_20260802.md",
+        "window": "2005-01..2026-06 (258 months)"
+      },
+      "consumption_rule": "자동 병합 금지. 같은 cluster 의 둘 이상을 한 선별 풀에 넣으면 report_redundant_clusters() 가 보고한다 — 선언하거나 하나로 접을 것."
     }
   },
   "AC25_Accrual_Size_Interaction": {
@@ -9769,6 +11327,22 @@
       "last_validated": {},
       "deprecation_reason": {},
       "mutation_parent": {}
+    },
+    "dedup": {
+      "role": "redundant",
+      "cluster": "DUPC-018",
+      "partners": [
+        "D48_VaR_5pct"
+      ],
+      "adjudicated": false,
+      "needs_review": true,
+      "evidence": {
+        "max_pair_abs_cor": 0.999903,
+        "measured_at": "2026-08-02",
+        "report": "04_Research/01_reports/factor_db_dedup_20260802.md",
+        "window": "2005-01..2026-06 (258 months)"
+      },
+      "consumption_rule": "자동 병합 금지. 같은 cluster 의 둘 이상을 한 선별 풀에 넣으면 report_redundant_clusters() 가 보고한다 — 선언하거나 하나로 접을 것."
     }
   },
   "R02_VaR_99": {
@@ -9811,6 +11385,35 @@
       "last_validated": {},
       "deprecation_reason": {},
       "mutation_parent": {}
+    },
+    "dedup": {
+      "role": "redundant",
+      "cluster": "DUPC-010",
+      "partners": [
+        "D01_IdioVol",
+        "D03_RealVol",
+        "D22_Tracking_Error",
+        "D45_Downside_Dev",
+        "D47_CVaR_5pct",
+        "D49_VaR_1pct",
+        "D56_Up_Vol",
+        "D57_Down_Vol",
+        "R03_CVaR_95",
+        "R04_CVaR_99",
+        "R07_Downside_Dev",
+        "R08_Semi_Variance",
+        "R12_Idiosyncratic_Risk"
+      ],
+      "adjudicated": true,
+      "needs_review": false,
+      "evidence": {
+        "max_pair_abs_cor": 0.999943,
+        "measured_at": "2026-08-02",
+        "report": "04_Research/01_reports/factor_db_dedup_20260802.md",
+        "window": "2005-01..2026-06 (258 months)"
+      },
+      "consumption_rule": "자동 병합 금지. 같은 cluster 의 둘 이상을 한 선별 풀에 넣으면 report_redundant_clusters() 가 보고한다 — 선언하거나 하나로 접을 것.",
+      "cluster_label": "volatility_residual"
     }
   },
   "R03_CVaR_95": {
@@ -9853,6 +11456,35 @@
       "last_validated": {},
       "deprecation_reason": {},
       "mutation_parent": {}
+    },
+    "dedup": {
+      "role": "redundant",
+      "cluster": "DUPC-010",
+      "partners": [
+        "D01_IdioVol",
+        "D03_RealVol",
+        "D22_Tracking_Error",
+        "D45_Downside_Dev",
+        "D47_CVaR_5pct",
+        "D49_VaR_1pct",
+        "D56_Up_Vol",
+        "D57_Down_Vol",
+        "R02_VaR_99",
+        "R04_CVaR_99",
+        "R07_Downside_Dev",
+        "R08_Semi_Variance",
+        "R12_Idiosyncratic_Risk"
+      ],
+      "adjudicated": true,
+      "needs_review": false,
+      "evidence": {
+        "max_pair_abs_cor": 0.999962,
+        "measured_at": "2026-08-02",
+        "report": "04_Research/01_reports/factor_db_dedup_20260802.md",
+        "window": "2005-01..2026-06 (258 months)"
+      },
+      "consumption_rule": "자동 병합 금지. 같은 cluster 의 둘 이상을 한 선별 풀에 넣으면 report_redundant_clusters() 가 보고한다 — 선언하거나 하나로 접을 것.",
+      "cluster_label": "volatility_residual"
     }
   },
   "R04_CVaR_99": {
@@ -9895,6 +11527,35 @@
       "last_validated": {},
       "deprecation_reason": {},
       "mutation_parent": {}
+    },
+    "dedup": {
+      "role": "redundant",
+      "cluster": "DUPC-010",
+      "partners": [
+        "D01_IdioVol",
+        "D03_RealVol",
+        "D22_Tracking_Error",
+        "D45_Downside_Dev",
+        "D47_CVaR_5pct",
+        "D49_VaR_1pct",
+        "D56_Up_Vol",
+        "D57_Down_Vol",
+        "R02_VaR_99",
+        "R03_CVaR_95",
+        "R07_Downside_Dev",
+        "R08_Semi_Variance",
+        "R12_Idiosyncratic_Risk"
+      ],
+      "adjudicated": true,
+      "needs_review": false,
+      "evidence": {
+        "max_pair_abs_cor": 0.96435,
+        "measured_at": "2026-08-02",
+        "report": "04_Research/01_reports/factor_db_dedup_20260802.md",
+        "window": "2005-01..2026-06 (258 months)"
+      },
+      "consumption_rule": "자동 병합 금지. 같은 cluster 의 둘 이상을 한 선별 풀에 넣으면 report_redundant_clusters() 가 보고한다 — 선언하거나 하나로 접을 것.",
+      "cluster_label": "volatility_residual"
     }
   },
   "R05_Tail_Risk": {
@@ -9979,6 +11640,22 @@
       "last_validated": {},
       "deprecation_reason": {},
       "mutation_parent": {}
+    },
+    "dedup": {
+      "role": "redundant",
+      "cluster": "DUPC-019",
+      "partners": [
+        "D50_MaxDrawdown"
+      ],
+      "adjudicated": false,
+      "needs_review": true,
+      "evidence": {
+        "max_pair_abs_cor": 1,
+        "measured_at": "2026-08-02",
+        "report": "04_Research/01_reports/factor_db_dedup_20260802.md",
+        "window": "2005-01..2026-06 (258 months)"
+      },
+      "consumption_rule": "자동 병합 금지. 같은 cluster 의 둘 이상을 한 선별 풀에 넣으면 report_redundant_clusters() 가 보고한다 — 선언하거나 하나로 접을 것."
     }
   },
   "R07_Downside_Dev": {
@@ -10021,6 +11698,35 @@
       "last_validated": {},
       "deprecation_reason": {},
       "mutation_parent": {}
+    },
+    "dedup": {
+      "role": "redundant",
+      "cluster": "DUPC-010",
+      "partners": [
+        "D01_IdioVol",
+        "D03_RealVol",
+        "D22_Tracking_Error",
+        "D45_Downside_Dev",
+        "D47_CVaR_5pct",
+        "D49_VaR_1pct",
+        "D56_Up_Vol",
+        "D57_Down_Vol",
+        "R02_VaR_99",
+        "R03_CVaR_95",
+        "R04_CVaR_99",
+        "R08_Semi_Variance",
+        "R12_Idiosyncratic_Risk"
+      ],
+      "adjudicated": true,
+      "needs_review": false,
+      "evidence": {
+        "max_pair_abs_cor": 0.978557,
+        "measured_at": "2026-08-02",
+        "report": "04_Research/01_reports/factor_db_dedup_20260802.md",
+        "window": "2005-01..2026-06 (258 months)"
+      },
+      "consumption_rule": "자동 병합 금지. 같은 cluster 의 둘 이상을 한 선별 풀에 넣으면 report_redundant_clusters() 가 보고한다 — 선언하거나 하나로 접을 것.",
+      "cluster_label": "volatility_residual"
     }
   },
   "R08_Semi_Variance": {
@@ -10063,6 +11769,35 @@
       "last_validated": {},
       "deprecation_reason": {},
       "mutation_parent": {}
+    },
+    "dedup": {
+      "role": "redundant",
+      "cluster": "DUPC-010",
+      "partners": [
+        "D01_IdioVol",
+        "D03_RealVol",
+        "D22_Tracking_Error",
+        "D45_Downside_Dev",
+        "D47_CVaR_5pct",
+        "D49_VaR_1pct",
+        "D56_Up_Vol",
+        "D57_Down_Vol",
+        "R02_VaR_99",
+        "R03_CVaR_95",
+        "R04_CVaR_99",
+        "R07_Downside_Dev",
+        "R12_Idiosyncratic_Risk"
+      ],
+      "adjudicated": true,
+      "needs_review": false,
+      "evidence": {
+        "max_pair_abs_cor": 0.979629,
+        "measured_at": "2026-08-02",
+        "report": "04_Research/01_reports/factor_db_dedup_20260802.md",
+        "window": "2005-01..2026-06 (258 months)"
+      },
+      "consumption_rule": "자동 병합 금지. 같은 cluster 의 둘 이상을 한 선별 풀에 넣으면 report_redundant_clusters() 가 보고한다 — 선언하거나 하나로 접을 것.",
+      "cluster_label": "volatility_residual"
     }
   },
   "R09_Coskewness": {
@@ -10105,6 +11840,23 @@
       "last_validated": {},
       "deprecation_reason": {},
       "mutation_parent": {}
+    },
+    "dedup": {
+      "role": "redundant",
+      "cluster": "DUPC-013",
+      "partners": [
+        "D16_Coskewness"
+      ],
+      "adjudicated": true,
+      "needs_review": false,
+      "evidence": {
+        "max_pair_abs_cor": 0.95683,
+        "measured_at": "2026-08-02",
+        "report": "04_Research/01_reports/factor_db_dedup_20260802.md",
+        "window": "2005-01..2026-06 (258 months)"
+      },
+      "consumption_rule": "자동 병합 금지. 같은 cluster 의 둘 이상을 한 선별 풀에 넣으면 report_redundant_clusters() 가 보고한다 — 선언하거나 하나로 접을 것.",
+      "cluster_label": "coskewness"
     }
   },
   "R10_Cokurtosis": {
@@ -10189,6 +11941,23 @@
       "last_validated": {},
       "deprecation_reason": {},
       "mutation_parent": {}
+    },
+    "dedup": {
+      "role": "redundant",
+      "cluster": "DUPC-009",
+      "partners": [
+        "CR11_Idiosyncratic_Return",
+        "D24_Systematic_Risk_Prop"
+      ],
+      "adjudicated": false,
+      "needs_review": true,
+      "evidence": {
+        "max_pair_abs_cor": 1,
+        "measured_at": "2026-08-02",
+        "report": "04_Research/01_reports/factor_db_dedup_20260802.md",
+        "window": "2005-01..2026-06 (258 months)"
+      },
+      "consumption_rule": "자동 병합 금지. 같은 cluster 의 둘 이상을 한 선별 풀에 넣으면 report_redundant_clusters() 가 보고한다 — 선언하거나 하나로 접을 것."
     }
   },
   "R12_Idiosyncratic_Risk": {
@@ -10231,6 +12000,26 @@
       "last_validated": {},
       "deprecation_reason": {},
       "mutation_parent": {}
+    },
+    "dedup": {
+      "role": "alias",
+      "canonical": "D01_IdioVol",
+      "cluster": "DUPC-010",
+      "deprecated_for_selection": true,
+      "adjudicated": true,
+      "mechanism": "factor_db_daily_phase6.R:286 `R12_Idiosyncratic_Risk <- D01_IdioVol` (리터럴 복사). 월간 경로도 동일 양 — compute_risk.R:126 r12 = -sd(CAPM residuals), compute_defense.R:69 D01 = 동일 잔차 표준편차(252d). 실측: Z_Score_Aligned 가 258/258 개월 bit-identical (maxdiff 0).",
+      "reason": "D01 = evidence_tier A + 원본. R12 는 부호만 뒤집은 파생 등록.",
+      "evidence": {
+        "median_abs_cor": 1,
+        "median_cor": 1,
+        "n_months": 258,
+        "basis": "signal_zscore_pearson",
+        "verdict": "EXACT_DUP",
+        "measured_at": "2026-08-02",
+        "report": "04_Research/01_reports/factor_db_dedup_20260802.md",
+        "window": "2005-01..2026-06 (258 months)"
+      },
+      "consumption_rule": "선별/Ω 추정에서는 canonical 만 사용(drop_alias_factors()). 코드 조회·과거 산출물 참조는 계속 유효 — 삭제·리넘버 없음."
     }
   },
   "R13_NCSKEW": {
@@ -10273,6 +12062,22 @@
       "last_validated": {},
       "deprecation_reason": {},
       "mutation_parent": {}
+    },
+    "dedup": {
+      "role": "redundant",
+      "cluster": "DUPC-017",
+      "partners": [
+        "D43_Skewness"
+      ],
+      "adjudicated": false,
+      "needs_review": true,
+      "evidence": {
+        "max_pair_abs_cor": 0.978407,
+        "measured_at": "2026-08-02",
+        "report": "04_Research/01_reports/factor_db_dedup_20260802.md",
+        "window": "2005-01..2026-06 (258 months)"
+      },
+      "consumption_rule": "자동 병합 금지. 같은 cluster 의 둘 이상을 한 선별 풀에 넣으면 report_redundant_clusters() 가 보고한다 — 선언하거나 하나로 접을 것."
     }
   },
   "R14_DUVOL": {
@@ -10357,6 +12162,25 @@
       "last_validated": {},
       "deprecation_reason": {},
       "mutation_parent": {}
+    },
+    "dedup": {
+      "role": "redundant",
+      "cluster": "DUPC-014",
+      "partners": [
+        "D23_Info_Ratio",
+        "D46_Sortino",
+        "M14_RiskAdj_Mom",
+        "R16_Calmar"
+      ],
+      "adjudicated": false,
+      "needs_review": true,
+      "evidence": {
+        "max_pair_abs_cor": 0.997471,
+        "measured_at": "2026-08-02",
+        "report": "04_Research/01_reports/factor_db_dedup_20260802.md",
+        "window": "2005-01..2026-06 (258 months)"
+      },
+      "consumption_rule": "자동 병합 금지. 같은 cluster 의 둘 이상을 한 선별 풀에 넣으면 report_redundant_clusters() 가 보고한다 — 선언하거나 하나로 접을 것."
     }
   },
   "R16_Calmar": {
@@ -10399,6 +12223,25 @@
       "last_validated": {},
       "deprecation_reason": {},
       "mutation_parent": {}
+    },
+    "dedup": {
+      "role": "redundant",
+      "cluster": "DUPC-014",
+      "partners": [
+        "D23_Info_Ratio",
+        "D46_Sortino",
+        "M14_RiskAdj_Mom",
+        "R15_Sortino"
+      ],
+      "adjudicated": false,
+      "needs_review": true,
+      "evidence": {
+        "max_pair_abs_cor": 0.966447,
+        "measured_at": "2026-08-02",
+        "report": "04_Research/01_reports/factor_db_dedup_20260802.md",
+        "window": "2005-01..2026-06 (258 months)"
+      },
+      "consumption_rule": "자동 병합 금지. 같은 cluster 의 둘 이상을 한 선별 풀에 넣으면 report_redundant_clusters() 가 보고한다 — 선언하거나 하나로 접을 것."
     }
   },
   "R17_Market_Leverage": {
@@ -10441,6 +12284,19 @@
       "last_validated": {},
       "deprecation_reason": {},
       "mutation_parent": {}
+    },
+    "dedup": {
+      "role": "canonical",
+      "cluster": "DUPC-040",
+      "aliases": [
+        "V19_Debt_to_Market"
+      ],
+      "adjudicated": true,
+      "evidence": {
+        "measured_at": "2026-08-02",
+        "report": "04_Research/01_reports/factor_db_dedup_20260802.md",
+        "window": "2005-01..2026-06 (258 months)"
+      }
     }
   },
   "R18_Book_Leverage": {
@@ -11600,6 +13456,23 @@
       "last_validated": {},
       "deprecation_reason": {},
       "mutation_parent": {}
+    },
+    "dedup": {
+      "role": "redundant",
+      "cluster": "DUPC-007",
+      "partners": [
+        "L03_Volume_Mom",
+        "L38_DolVol_Mom"
+      ],
+      "adjudicated": false,
+      "needs_review": true,
+      "evidence": {
+        "max_pair_abs_cor": 1,
+        "measured_at": "2026-08-02",
+        "report": "04_Research/01_reports/factor_db_dedup_20260802.md",
+        "window": "2005-01..2026-06 (258 months)"
+      },
+      "consumption_rule": "자동 병합 금지. 같은 cluster 의 둘 이상을 한 선별 풀에 넣으면 report_redundant_clusters() 가 보고한다 — 선언하거나 하나로 접을 것."
     }
   },
   "CR03_Herding_Dispersion": {
@@ -11684,6 +13557,26 @@
       "last_validated": {},
       "deprecation_reason": {},
       "mutation_parent": {}
+    },
+    "dedup": {
+      "role": "alias",
+      "canonical": "L02_Turnover",
+      "cluster": "DUPC-008",
+      "deprecated_for_selection": true,
+      "adjudicated": true,
+      "mechanism": "compute_crowding.R:155-172 CR04 = mean(Vol/est_shares, 20d) — compute_liquidity.R:57-74 L02 와 같은 양(20일 평균 회전율). 실측 median |cor| = 1.0000 (258개월).",
+      "reason": "L02 = 값과 이름이 일치. CR04 는 정의문('Turnover Ratio inverse', 'low turnover = crowded')이 실제 저장값(회전율 그 자체)과 반대 — 명명 결함 동반.",
+      "evidence": {
+        "median_abs_cor": 0.999999,
+        "median_cor": 0.999999,
+        "n_months": 258,
+        "basis": "signal_rank",
+        "verdict": "EXACT_DUP",
+        "measured_at": "2026-08-02",
+        "report": "04_Research/01_reports/factor_db_dedup_20260802.md",
+        "window": "2005-01..2026-06 (258 months)"
+      },
+      "consumption_rule": "선별/Ω 추정에서는 canonical 만 사용(drop_alias_factors()). 코드 조회·과거 산출물 참조는 계속 유효 — 삭제·리넘버 없음."
     }
   },
   "CR05_Short_Pressure_Proxy": {
@@ -11982,6 +13875,23 @@
       "last_validated": {},
       "deprecation_reason": {},
       "mutation_parent": {}
+    },
+    "dedup": {
+      "role": "redundant",
+      "cluster": "DUPC-009",
+      "partners": [
+        "D24_Systematic_Risk_Prop",
+        "R11_Systematic_Risk"
+      ],
+      "adjudicated": false,
+      "needs_review": true,
+      "evidence": {
+        "max_pair_abs_cor": 0.999999,
+        "measured_at": "2026-08-02",
+        "report": "04_Research/01_reports/factor_db_dedup_20260802.md",
+        "window": "2005-01..2026-06 (258 months)"
+      },
+      "consumption_rule": "자동 병합 금지. 같은 cluster 의 둘 이상을 한 선별 풀에 넣으면 report_redundant_clusters() 가 보고한다 — 선언하거나 하나로 접을 것."
     }
   },
   "SE01_Consensus_Dispersion": {
@@ -12071,6 +13981,23 @@
       "deprecation_reason": {},
       "mutation_parent": {},
       "coverage_note": "Backfill 2026-05-29: build-gap fixed. Fallback now also fires when consensus exists but lacks dispersion column (eps_std/etc never present in KR consensus). Full-history vol-uncertainty proxy. NOTE: by-design fallback for SE01_Consensus_Dispersion which is permanently unavailable (no dispersion data in source)."
+    },
+    "dedup": {
+      "role": "redundant",
+      "cluster": "DUPC-015",
+      "partners": [
+        "D34_RealVol_21d",
+        "D42_EWMA_Vol"
+      ],
+      "adjudicated": false,
+      "needs_review": true,
+      "evidence": {
+        "max_pair_abs_cor": 0.971698,
+        "measured_at": "2026-08-02",
+        "report": "04_Research/01_reports/factor_db_dedup_20260802.md",
+        "window": "2005-01..2026-06 (258 months)"
+      },
+      "consumption_rule": "자동 병합 금지. 같은 cluster 의 둘 이상을 한 선별 풀에 넣으면 report_redundant_clusters() 가 보고한다 — 선언하거나 하나로 접을 것."
     }
   },
   "SE02_Consensus_Revision": {
@@ -12240,6 +14167,22 @@
       "last_validated": {},
       "deprecation_reason": {},
       "mutation_parent": {}
+    },
+    "dedup": {
+      "role": "redundant",
+      "cluster": "DUPC-021",
+      "partners": [
+        "Q21_Revenue_Growth"
+      ],
+      "adjudicated": false,
+      "needs_review": true,
+      "evidence": {
+        "max_pair_abs_cor": 1,
+        "measured_at": "2026-08-02",
+        "report": "04_Research/01_reports/factor_db_dedup_20260802.md",
+        "window": "2005-01..2026-06 (258 months)"
+      },
+      "consumption_rule": "자동 병합 금지. 같은 cluster 의 둘 이상을 한 선별 풀에 넣으면 report_redundant_clusters() 가 보고한다 — 선언하거나 하나로 접을 것."
     }
   },
   "GR02_Earnings_Growth": {
@@ -12282,6 +14225,22 @@
       "last_validated": {},
       "deprecation_reason": {},
       "mutation_parent": {}
+    },
+    "dedup": {
+      "role": "redundant",
+      "cluster": "DUPC-022",
+      "partners": [
+        "Q22_Earnings_Growth"
+      ],
+      "adjudicated": false,
+      "needs_review": true,
+      "evidence": {
+        "max_pair_abs_cor": 1,
+        "measured_at": "2026-08-02",
+        "report": "04_Research/01_reports/factor_db_dedup_20260802.md",
+        "window": "2005-01..2026-06 (258 months)"
+      },
+      "consumption_rule": "자동 병합 금지. 같은 cluster 의 둘 이상을 한 선별 풀에 넣으면 report_redundant_clusters() 가 보고한다 — 선언하거나 하나로 접을 것."
     }
   },
   "GR03_Asset_Growth": {
@@ -12324,6 +14283,22 @@
       "last_validated": {},
       "deprecation_reason": {},
       "mutation_parent": {}
+    },
+    "dedup": {
+      "role": "redundant",
+      "cluster": "DUPC-023",
+      "partners": [
+        "Q06_Asset_Growth"
+      ],
+      "adjudicated": false,
+      "needs_review": true,
+      "evidence": {
+        "max_pair_abs_cor": 1,
+        "measured_at": "2026-08-02",
+        "report": "04_Research/01_reports/factor_db_dedup_20260802.md",
+        "window": "2005-01..2026-06 (258 months)"
+      },
+      "consumption_rule": "자동 병합 금지. 같은 cluster 의 둘 이상을 한 선별 풀에 넣으면 report_redundant_clusters() 가 보고한다 — 선언하거나 하나로 접을 것."
     }
   },
   "GR04_GPA_Growth": {
@@ -12450,6 +14425,22 @@
       "last_validated": {},
       "deprecation_reason": {},
       "mutation_parent": {}
+    },
+    "dedup": {
+      "role": "redundant",
+      "cluster": "DUPC-024",
+      "partners": [
+        "XF_GD03_OCF_Growth"
+      ],
+      "adjudicated": false,
+      "needs_review": true,
+      "evidence": {
+        "max_pair_abs_cor": 1,
+        "measured_at": "2026-08-02",
+        "report": "04_Research/01_reports/factor_db_dedup_20260802.md",
+        "window": "2005-01..2026-06 (258 months)"
+      },
+      "consumption_rule": "자동 병합 금지. 같은 cluster 의 둘 이상을 한 선별 풀에 넣으면 report_redundant_clusters() 가 보고한다 — 선언하거나 하나로 접을 것."
     }
   },
   "GR07_Composite_Growth": {
@@ -12660,6 +14651,22 @@
       "last_validated": {},
       "deprecation_reason": {},
       "mutation_parent": {}
+    },
+    "dedup": {
+      "role": "redundant",
+      "cluster": "DUPC-025",
+      "partners": [
+        "Q20_Net_Equity_Issuance"
+      ],
+      "adjudicated": false,
+      "needs_review": true,
+      "evidence": {
+        "max_pair_abs_cor": 1,
+        "measured_at": "2026-08-02",
+        "report": "04_Research/01_reports/factor_db_dedup_20260802.md",
+        "window": "2005-01..2026-06 (258 months)"
+      },
+      "consumption_rule": "자동 병합 금지. 같은 cluster 의 둘 이상을 한 선별 풀에 넣으면 report_redundant_clusters() 가 보고한다 — 선언하거나 하나로 접을 것."
     }
   },
   "IN05_Net_Debt_Issuance": {
@@ -12702,6 +14709,22 @@
       "last_validated": {},
       "deprecation_reason": {},
       "mutation_parent": {}
+    },
+    "dedup": {
+      "role": "redundant",
+      "cluster": "DUPC-004",
+      "partners": [
+        "AC08_Financial_Accruals"
+      ],
+      "adjudicated": false,
+      "needs_review": true,
+      "evidence": {
+        "max_pair_abs_cor": 0.985431,
+        "measured_at": "2026-08-02",
+        "report": "04_Research/01_reports/factor_db_dedup_20260802.md",
+        "window": "2005-01..2026-06 (258 months)"
+      },
+      "consumption_rule": "자동 병합 금지. 같은 cluster 의 둘 이상을 한 선별 풀에 넣으면 report_redundant_clusters() 가 보고한다 — 선언하거나 하나로 접을 것."
     }
   },
   "IN06_Investment_to_Assets": {
@@ -12786,6 +14809,29 @@
       "last_validated": {},
       "deprecation_reason": {},
       "mutation_parent": {}
+    },
+    "dedup": {
+      "role": "redundant",
+      "cluster": "DUPC-011",
+      "partners": [
+        "D02_Beta",
+        "D10_Blume_Adj_Beta",
+        "D11_FP_Beta",
+        "D18_BAB_Rank",
+        "D19_EW_Beta_63",
+        "D20_EW_Beta_126",
+        "D28_Unlevered_Beta",
+        "D31_Relative_Beta"
+      ],
+      "adjudicated": false,
+      "needs_review": true,
+      "evidence": {
+        "max_pair_abs_cor": 1,
+        "measured_at": "2026-08-02",
+        "report": "04_Research/01_reports/factor_db_dedup_20260802.md",
+        "window": "2005-01..2026-06 (258 months)"
+      },
+      "consumption_rule": "자동 병합 금지. 같은 cluster 의 둘 이상을 한 선별 풀에 넣으면 report_redundant_clusters() 가 보고한다 — 선언하거나 하나로 접을 것."
     }
   },
   "XF_DU01_NetMargin": {
@@ -12870,6 +14916,22 @@
       "last_validated": {},
       "deprecation_reason": {},
       "mutation_parent": {}
+    },
+    "dedup": {
+      "role": "redundant",
+      "cluster": "DUPC-035",
+      "partners": [
+        "Q12_Asset_Turnover"
+      ],
+      "adjudicated": false,
+      "needs_review": true,
+      "evidence": {
+        "max_pair_abs_cor": 1,
+        "measured_at": "2026-08-02",
+        "report": "04_Research/01_reports/factor_db_dedup_20260802.md",
+        "window": "2005-01..2026-06 (258 months)"
+      },
+      "consumption_rule": "자동 병합 금지. 같은 cluster 의 둘 이상을 한 선별 풀에 넣으면 report_redundant_clusters() 가 보고한다 — 선언하거나 하나로 접을 것."
     }
   },
   "XF_DU03_EquityMultiplier": {
@@ -12912,6 +14974,22 @@
       "last_validated": {},
       "deprecation_reason": {},
       "mutation_parent": {}
+    },
+    "dedup": {
+      "role": "redundant",
+      "cluster": "DUPC-036",
+      "partners": [
+        "Q13_Fin_Leverage"
+      ],
+      "adjudicated": false,
+      "needs_review": true,
+      "evidence": {
+        "max_pair_abs_cor": 0.999306,
+        "measured_at": "2026-08-02",
+        "report": "04_Research/01_reports/factor_db_dedup_20260802.md",
+        "window": "2005-01..2026-06 (258 months)"
+      },
+      "consumption_rule": "자동 병합 금지. 같은 cluster 의 둘 이상을 한 선별 풀에 넣으면 report_redundant_clusters() 가 보고한다 — 선언하거나 하나로 접을 것."
     }
   },
   "XF_LL01_DebtToCapital": {
@@ -12954,6 +15032,23 @@
       "last_validated": {},
       "deprecation_reason": {},
       "mutation_parent": {}
+    },
+    "dedup": {
+      "role": "redundant",
+      "cluster": "DUPC-020",
+      "partners": [
+        "D60_Leverage",
+        "Q15_Debt_to_Equity"
+      ],
+      "adjudicated": false,
+      "needs_review": true,
+      "evidence": {
+        "max_pair_abs_cor": 0.980912,
+        "measured_at": "2026-08-02",
+        "report": "04_Research/01_reports/factor_db_dedup_20260802.md",
+        "window": "2005-01..2026-06 (258 months)"
+      },
+      "consumption_rule": "자동 병합 금지. 같은 cluster 의 둘 이상을 한 선별 풀에 넣으면 report_redundant_clusters() 가 보고한다 — 선언하거나 하나로 접을 것."
     }
   },
   "XF_LL02_NetDebt": {
@@ -13080,6 +15175,26 @@
       "last_validated": {},
       "deprecation_reason": {},
       "mutation_parent": {}
+    },
+    "dedup": {
+      "role": "redundant",
+      "cluster": "DUPC-037",
+      "partners": [
+        "Q14_Current_Ratio",
+        "Q31_WC_to_Assets",
+        "XF_LL05_WorkingCapital"
+      ],
+      "adjudicated": true,
+      "needs_review": false,
+      "evidence": {
+        "max_pair_abs_cor": 0.974887,
+        "measured_at": "2026-08-02",
+        "report": "04_Research/01_reports/factor_db_dedup_20260802.md",
+        "window": "2005-01..2026-06 (258 months)"
+      },
+      "consumption_rule": "자동 병합 금지. 같은 cluster 의 둘 이상을 한 선별 풀에 넣으면 report_redundant_clusters() 가 보고한다 — 선언하거나 하나로 접을 것.",
+      "cluster_label": "liquidity_ratio",
+      "note": "Current Ratio 와 Quick Ratio 는 정의가 실제로 다르다(재고 포함/제외). median |cor| 0.975 로 겹치나 병합은 리서치 판단. ★부수 적발: 258개월 중 10개월에서 정렬 후 부호가 뒤집힌다(min=-0.975) — C13 IC-기반 방향추론이 이 쌍에서 불안정하다는 별도 신호."
     }
   },
   "XF_LL05_WorkingCapital": {
@@ -13122,6 +15237,26 @@
       "last_validated": {},
       "deprecation_reason": {},
       "mutation_parent": {}
+    },
+    "dedup": {
+      "role": "alias",
+      "canonical": "Q31_WC_to_Assets",
+      "cluster": "DUPC-037",
+      "deprecated_for_selection": true,
+      "adjudicated": true,
+      "mechanism": "정의문 동일 — 양쪽 다 (CurrentAssets - CurrentLiab)/TotalAssets. data_source 만 다름 (Q31=fundamental/DART, XF_LL05=fundamental_xlsx). 실측 median |cor| = 1.0000 (258개월). 단 12개월에서 부호 역전(min=-0.184)",
+      "reason": "Q31 = DART 네이티브. xlsx 트윈은 소스 혼합 위험(월별 발산 12건 실측).",
+      "evidence": {
+        "median_abs_cor": 1,
+        "median_cor": 1,
+        "n_months": 258,
+        "basis": "signal_zscore_pearson",
+        "verdict": "EXACT_DUP",
+        "measured_at": "2026-08-02",
+        "report": "04_Research/01_reports/factor_db_dedup_20260802.md",
+        "window": "2005-01..2026-06 (258 months)"
+      },
+      "consumption_rule": "선별/Ω 추정에서는 canonical 만 사용(drop_alias_factors()). 코드 조회·과거 산출물 참조는 계속 유효 — 삭제·리넘버 없음."
     }
   },
   "XF_PR01_EBITDA_Margin": {
@@ -13164,6 +15299,22 @@
       "last_validated": {},
       "deprecation_reason": {},
       "mutation_parent": {}
+    },
+    "dedup": {
+      "role": "redundant",
+      "cluster": "DUPC-044",
+      "partners": [
+        "XF_Q06_Op_Margin"
+      ],
+      "adjudicated": false,
+      "needs_review": true,
+      "evidence": {
+        "max_pair_abs_cor": 0.984654,
+        "measured_at": "2026-08-02",
+        "report": "04_Research/01_reports/factor_db_dedup_20260802.md",
+        "window": "2005-01..2026-06 (258 months)"
+      },
+      "consumption_rule": "자동 병합 금지. 같은 cluster 의 둘 이상을 한 선별 풀에 넣으면 report_redundant_clusters() 가 보고한다 — 선언하거나 하나로 접을 것."
     }
   },
   "XF_PR02_RetainedEarnings_Ratio": {
@@ -13542,6 +15693,22 @@
       "last_validated": {},
       "deprecation_reason": {},
       "mutation_parent": {}
+    },
+    "dedup": {
+      "role": "redundant",
+      "cluster": "DUPC-039",
+      "partners": [
+        "Q34_GP_Growth"
+      ],
+      "adjudicated": false,
+      "needs_review": true,
+      "evidence": {
+        "max_pair_abs_cor": 1,
+        "measured_at": "2026-08-02",
+        "report": "04_Research/01_reports/factor_db_dedup_20260802.md",
+        "window": "2005-01..2026-06 (258 months)"
+      },
+      "consumption_rule": "자동 병합 금지. 같은 cluster 의 둘 이상을 한 선별 풀에 넣으면 report_redundant_clusters() 가 보고한다 — 선언하거나 하나로 접을 것."
     }
   },
   "XF_GD02_OpProfit_Growth": {
@@ -13626,6 +15793,22 @@
       "last_validated": {},
       "deprecation_reason": {},
       "mutation_parent": {}
+    },
+    "dedup": {
+      "role": "redundant",
+      "cluster": "DUPC-024",
+      "partners": [
+        "GR06_OCF_Growth"
+      ],
+      "adjudicated": false,
+      "needs_review": true,
+      "evidence": {
+        "max_pair_abs_cor": 1,
+        "measured_at": "2026-08-02",
+        "report": "04_Research/01_reports/factor_db_dedup_20260802.md",
+        "window": "2005-01..2026-06 (258 months)"
+      },
+      "consumption_rule": "자동 병합 금지. 같은 cluster 의 둘 이상을 한 선별 풀에 넣으면 report_redundant_clusters() 가 보고한다 — 선언하거나 하나로 접을 것."
     }
   },
   "XF_GD04_Dividend_Growth": {
@@ -13710,6 +15893,22 @@
       "last_validated": {},
       "deprecation_reason": {},
       "mutation_parent": {}
+    },
+    "dedup": {
+      "role": "redundant",
+      "cluster": "DUPC-038",
+      "partners": [
+        "Q26_RnD_Intensity"
+      ],
+      "adjudicated": false,
+      "needs_review": true,
+      "evidence": {
+        "max_pair_abs_cor": 0.989644,
+        "measured_at": "2026-08-02",
+        "report": "04_Research/01_reports/factor_db_dedup_20260802.md",
+        "window": "2005-01..2026-06 (258 months)"
+      },
+      "consumption_rule": "자동 병합 금지. 같은 cluster 의 둘 이상을 한 선별 풀에 넣으면 report_redundant_clusters() 가 보고한다 — 선언하거나 하나로 접을 것."
     }
   },
   "XF_RI02_CapEx_proxy": {
@@ -14487,6 +16686,24 @@
       "last_validated": {},
       "deprecation_reason": {},
       "mutation_parent": {}
+    },
+    "dedup": {
+      "role": "redundant",
+      "cluster": "DUPC-001",
+      "partners": [
+        "AC01_Total_Accruals_CF",
+        "AC18_Accrual_Quality",
+        "Q05_Accrual"
+      ],
+      "adjudicated": false,
+      "needs_review": true,
+      "evidence": {
+        "max_pair_abs_cor": 1,
+        "measured_at": "2026-08-02",
+        "report": "04_Research/01_reports/factor_db_dedup_20260802.md",
+        "window": "2005-01..2026-06 (258 months)"
+      },
+      "consumption_rule": "자동 병합 금지. 같은 cluster 의 둘 이상을 한 선별 풀에 넣으면 report_redundant_clusters() 가 보고한다 — 선언하거나 하나로 접을 것."
     }
   },
   "AC18_Accrual_Quality": {
@@ -14529,6 +16746,24 @@
       "last_validated": {},
       "deprecation_reason": {},
       "mutation_parent": {}
+    },
+    "dedup": {
+      "role": "redundant",
+      "cluster": "DUPC-001",
+      "partners": [
+        "AC01_Total_Accruals_CF",
+        "AC11_Accruals_to_Assets",
+        "Q05_Accrual"
+      ],
+      "adjudicated": false,
+      "needs_review": true,
+      "evidence": {
+        "max_pair_abs_cor": 1,
+        "measured_at": "2026-08-02",
+        "report": "04_Research/01_reports/factor_db_dedup_20260802.md",
+        "window": "2005-01..2026-06 (258 months)"
+      },
+      "consumption_rule": "자동 병합 금지. 같은 cluster 의 둘 이상을 한 선별 풀에 넣으면 report_redundant_clusters() 가 보고한다 — 선언하거나 하나로 접을 것."
     }
   },
   "D10_Blume_Adj_Beta": {
@@ -14571,6 +16806,29 @@
       "last_validated": {},
       "deprecation_reason": {},
       "mutation_parent": {}
+    },
+    "dedup": {
+      "role": "redundant",
+      "cluster": "DUPC-011",
+      "partners": [
+        "D02_Beta",
+        "D11_FP_Beta",
+        "D18_BAB_Rank",
+        "D19_EW_Beta_63",
+        "D20_EW_Beta_126",
+        "D28_Unlevered_Beta",
+        "D31_Relative_Beta",
+        "MK01_CAPM_Beta"
+      ],
+      "adjudicated": false,
+      "needs_review": true,
+      "evidence": {
+        "max_pair_abs_cor": 1,
+        "measured_at": "2026-08-02",
+        "report": "04_Research/01_reports/factor_db_dedup_20260802.md",
+        "window": "2005-01..2026-06 (258 months)"
+      },
+      "consumption_rule": "자동 병합 금지. 같은 cluster 의 둘 이상을 한 선별 풀에 넣으면 report_redundant_clusters() 가 보고한다 — 선언하거나 하나로 접을 것."
     }
   },
   "D18_BAB_Rank": {
@@ -14613,6 +16871,29 @@
       "last_validated": {},
       "deprecation_reason": {},
       "mutation_parent": {}
+    },
+    "dedup": {
+      "role": "redundant",
+      "cluster": "DUPC-011",
+      "partners": [
+        "D02_Beta",
+        "D10_Blume_Adj_Beta",
+        "D11_FP_Beta",
+        "D19_EW_Beta_63",
+        "D20_EW_Beta_126",
+        "D28_Unlevered_Beta",
+        "D31_Relative_Beta",
+        "MK01_CAPM_Beta"
+      ],
+      "adjudicated": false,
+      "needs_review": true,
+      "evidence": {
+        "max_pair_abs_cor": 0.976884,
+        "measured_at": "2026-08-02",
+        "report": "04_Research/01_reports/factor_db_dedup_20260802.md",
+        "window": "2005-01..2026-06 (258 months)"
+      },
+      "consumption_rule": "자동 병합 금지. 같은 cluster 의 둘 이상을 한 선별 풀에 넣으면 report_redundant_clusters() 가 보고한다 — 선언하거나 하나로 접을 것."
     }
   },
   "D31_Relative_Beta": {
@@ -14655,6 +16936,29 @@
       "last_validated": {},
       "deprecation_reason": {},
       "mutation_parent": {}
+    },
+    "dedup": {
+      "role": "redundant",
+      "cluster": "DUPC-011",
+      "partners": [
+        "D02_Beta",
+        "D10_Blume_Adj_Beta",
+        "D11_FP_Beta",
+        "D18_BAB_Rank",
+        "D19_EW_Beta_63",
+        "D20_EW_Beta_126",
+        "D28_Unlevered_Beta",
+        "MK01_CAPM_Beta"
+      ],
+      "adjudicated": false,
+      "needs_review": true,
+      "evidence": {
+        "max_pair_abs_cor": 1,
+        "measured_at": "2026-08-02",
+        "report": "04_Research/01_reports/factor_db_dedup_20260802.md",
+        "window": "2005-01..2026-06 (258 months)"
+      },
+      "consumption_rule": "자동 병합 금지. 같은 cluster 의 둘 이상을 한 선별 풀에 넣으면 report_redundant_clusters() 가 보고한다 — 선언하거나 하나로 접을 것."
     }
   },
   "Q21_Revenue_Growth": {
@@ -14697,6 +17001,22 @@
       "last_validated": {},
       "deprecation_reason": {},
       "mutation_parent": {}
+    },
+    "dedup": {
+      "role": "redundant",
+      "cluster": "DUPC-021",
+      "partners": [
+        "GR01_Revenue_Growth"
+      ],
+      "adjudicated": false,
+      "needs_review": true,
+      "evidence": {
+        "max_pair_abs_cor": 1,
+        "measured_at": "2026-08-02",
+        "report": "04_Research/01_reports/factor_db_dedup_20260802.md",
+        "window": "2005-01..2026-06 (258 months)"
+      },
+      "consumption_rule": "자동 병합 금지. 같은 cluster 의 둘 이상을 한 선별 풀에 넣으면 report_redundant_clusters() 가 보고한다 — 선언하거나 하나로 접을 것."
     }
   },
   "Q22_Earnings_Growth": {
@@ -14739,6 +17059,22 @@
       "last_validated": {},
       "deprecation_reason": {},
       "mutation_parent": {}
+    },
+    "dedup": {
+      "role": "redundant",
+      "cluster": "DUPC-022",
+      "partners": [
+        "GR02_Earnings_Growth"
+      ],
+      "adjudicated": false,
+      "needs_review": true,
+      "evidence": {
+        "max_pair_abs_cor": 1,
+        "measured_at": "2026-08-02",
+        "report": "04_Research/01_reports/factor_db_dedup_20260802.md",
+        "window": "2005-01..2026-06 (258 months)"
+      },
+      "consumption_rule": "자동 병합 금지. 같은 cluster 의 둘 이상을 한 선별 풀에 넣으면 report_redundant_clusters() 가 보고한다 — 선언하거나 하나로 접을 것."
     }
   },
   "Q34_GP_Growth": {
@@ -14781,6 +17117,22 @@
       "last_validated": {},
       "deprecation_reason": {},
       "mutation_parent": {}
+    },
+    "dedup": {
+      "role": "redundant",
+      "cluster": "DUPC-039",
+      "partners": [
+        "XF_GD01_GrossProfit_Growth"
+      ],
+      "adjudicated": false,
+      "needs_review": true,
+      "evidence": {
+        "max_pair_abs_cor": 1,
+        "measured_at": "2026-08-02",
+        "report": "04_Research/01_reports/factor_db_dedup_20260802.md",
+        "window": "2005-01..2026-06 (258 months)"
+      },
+      "consumption_rule": "자동 병합 금지. 같은 cluster 의 둘 이상을 한 선별 풀에 넣으면 report_redundant_clusters() 가 보고한다 — 선언하거나 하나로 접을 것."
     }
   },
   "T01_RSI14": {
@@ -15753,6 +18105,22 @@
       "last_validated": {},
       "deprecation_reason": {},
       "mutation_parent": {}
+    },
+    "dedup": {
+      "role": "redundant",
+      "cluster": "DUPC-044",
+      "partners": [
+        "XF_PR01_EBITDA_Margin"
+      ],
+      "adjudicated": false,
+      "needs_review": true,
+      "evidence": {
+        "max_pair_abs_cor": 0.984654,
+        "measured_at": "2026-08-02",
+        "report": "04_Research/01_reports/factor_db_dedup_20260802.md",
+        "window": "2005-01..2026-06 (258 months)"
+      },
+      "consumption_rule": "자동 병합 금지. 같은 cluster 의 둘 이상을 한 선별 풀에 넣으면 report_redundant_clusters() 가 보고한다 — 선언하거나 하나로 접을 것."
     }
   }
 }

@@ -67,9 +67,18 @@ Windows R은 `/mnt/c/...`를 **현재 드라이브 기준** `C:/mnt/c/...`로 �
 - 절대경로 판정에 `startsWith(p, "/")` 쓰지 말 것 → drive-letter·UNC·`~`를 인식할 것:
   `grepl("^([A-Za-z]:)?[/\\\\]", p) || grepl("^~", p)`
 - 임시 디렉토리는 `"/tmp/..."`(→`C:/tmp/...`) 대신 `tempfile()`.
-- ★**bash 와 R 이 같은 경로 문자열을 공유하면 그 자리가 급소다.** `/tmp` 는 두 런타임에서 **다른 디렉토리로 해석된다** — bash(MSYS)는 `AppData\Local\Temp`, Windows R 은 `C:/tmp`. 한쪽이 쓰고 다른 쪽이 읽으면 읽는 쪽은 **영원히 빈 손**이고, 그 공허함이 "위반 없음"으로 읽히면 감사가 죽는다(실측: `v61_compliance_audit.R` P2 — 원장 표 참조).
+- ★**bash 와 R 이 같은 경로 문자열을 공유하면 그 자리가 급소다.** `/tmp` 는 런타임마다 **다른 디렉토리로 해석된다**. 한쪽이 쓰고 다른 쪽이 읽으면 읽는 쪽은 **영원히 빈 손**이고, 그 공허함이 "위반 없음"으로 읽히면 감사가 죽는다(실측: `v61_compliance_audit.R` P2 — 원장 표 참조).
+  ★**2갈래가 아니라 3갈래다** (2026-08-02 실측, 수리 중 발견):
+
+  | 런타임 | `/tmp` 실제 위치 |
+  |---|---|
+  | Git Bash (`settings.json` 이 훅을 띄우는 셸) | `C:/Users/<u>/AppData/Local/Temp` |
+  | **Rtools bash** (R 이 `system2("bash", …)` 로 띄우는 셸) | **`C:/rtools45/tmp`** |
+  | Windows R | `C:/tmp` |
+
+  즉 "양쪽이 `TEMP` 를 경유" 라는 우회책도 **불충분**하다 — R 의 `TEMP` 는 Git Bash 의 `/tmp` 와는 같지만 R 이 띄운 bash 의 `/tmp` 와는 다르다. 이 세 번째 갈래는 P2 수리의 위반 주입 테스트를 짜다가 드러났다(marker 를 R 의 `TEMP` 에 심었더니 훅이 못 찾아 `agent="unknown"` 으로 기록 → **주입이 무해해져 검사가 거짓 빨강**). 검사기 안에서 임시 디렉토리를 bash 쪽에 넘겨야 한다면 값을 넘기지 말고 그 런타임이 스스로 알아내게 할 것: `M=$(dirname "$(mktemp -u)")`.
   판별법: 리터럴을 R 과 `.sh`/`.py` 양쪽에서 `grep -rl` 해 **둘 다 나오면 분기 위험**. 2026-08-02 전수 결과 `/tmp` 리터럴 6계열 중 공유 2건, 그중 실제 분기 **1건**(`qvest_lockbox_access`) — 나머지 1건(`…update.lock`)은 `.sh` 쪽이 주석뿐이라 오탐이었다.
-  정본: 공유가 필요한 경로는 `/tmp` 대신 **프로젝트-상대 경로**(`.cache/` 등)를 쓰거나, 양쪽이 같은 환경변수(`TEMP`)를 경유할 것.
+  정본: 공유가 필요한 경로는 `/tmp` 를 쓰지 말고 **프로젝트-상대 경로**(`.cache/` 등)로 옮길 것. 양쪽이 각자 marker 로 루트를 검증해 해석하면 같은 디렉토리에 도달한다. 정본 구현 = `02_Infrastructure/worktask/lockbox_paths.R` ↔ `02_Infrastructure/hooks/lockbox_paths.sh` (언어별 1정의 + 검사기가 리터럴 동기화를 강제).
 
 ### ④ 루트 resolver 우선순위 = `CLAUDE_PROJECT_DIR` 먼저
 `~/.Renviron`이 `QM_ROOT`를 고정하므로 **쉘 `export`로 덮이지 않는다**(실측). 실행 루트를 바꾸려면 `CLAUDE_PROJECT_DIR`를 쓴다.
@@ -199,6 +208,8 @@ lengths(regmatches(src, gregexpr("{", src, fixed = TRUE)))                 # fix
 
 **발효 시점 원장 = 54건**(main 기준, `73a8e95b` 병합 직후 재생성).
 
+> ⚠ **운영 특성 — `test_r_portability.R` 은 worktree 에서 돌려도 main 을 스캔한다.** 이 검사기의 루트 해석은 `CLAUDE_PROJECT_DIR → QM_ROOT → …`(`:25-26`)인데, **Bash 툴 실행에는 CPD 가 없고 `QM_ROOT` 는 main 에 핀돼 있다**. 그래서 worktree 에서 그냥 `Rscript 08_Tests/hooks/test_r_portability.R` 하면 **main 의 소스를 검사한 초록**이 나오고, 그 초록은 내 변경분에 대해 아무 말도 하지 않는다(2026-08-02 실측: 같은 명령이 CPD 유무에 따라 `12/12 PASS` ↔ `11/12 FAIL(baseline_not_shrunk 3건)` 로 갈림). **worktree 검증 시 `CLAUDE_PROJECT_DIR="$PWD"` 를 반드시 지정할 것.** 같은 함정 선례: `run_all_hooks.sh` 가 worktree 에서 main 의 suite 를 검사(메모리 `reference-cpd-set-in-hooks-unset-in-bash-tool`). ★"초록 ≠ 도달" 의 이 계통은 **어느 트리에서 참인지**를 같이 적지 않으면 반복된다.
+>
 > ⚠ **운영 특성 — baseline은 트리에 종속이다.** worktree에서 생성한 원장을 그대로 main에 병합하면 그새 움직인 main과 어긋나 즉시 FAIL한다(실증: worktree 60건 → main 재생성 54건. 다른 세션이 `/tmp` writer 7건을 수리해 축소 + `essence_score.R` 1건 추가). **병합 후 대상 브랜치에서 `--write-baseline`을 한 번 돌려 커밋할 것.** 이 어긋남 자체는 버그가 아니라 래칫이 의도대로 작동한 신호다 — 원장이 조용히 늘거나 수리분이 남는 것을 막는다.
 
 **발효 시점 원장 = 60건(worktree 생성분, 위 사유로 폐기).** 금칙별 분포는 baseline 파일 참조. ★수치가 초기 육안 grep(≈12건)보다 5배 큰 이유: 육안 스캔은 `/mnt/c/Users/User|바탕 화면`만 봤고, 계약 검출기는 `"/tmp/` 리터럴과 resolver 우선순위 역전까지 본다. **검사기를 만들고 나서야 표면의 실제 크기를 알았다** — 이것이 문서-only 규칙을 인정하지 않는 이유다.
@@ -219,8 +230,8 @@ regmatches site 69개 = safe(perl/fixed/useBytes) 23
 
 | 상태 | 위치 | 금칙 | 비고 |
 |---|---|---|---|
-| ⚠ **미수리(감사 사망)** | `worktask/v61_compliance_audit.R:24` | ③ | 2026-08-02 실측. `LOCKBOX_LOG_PATTERN <- "/tmp/qvest_lockbox_access_%s.log"` → Windows R 은 `C:/tmp/…`, bash 훅(`lockbox_audit_trail.sh`)은 MSYS `/tmp`(=`AppData\Local\Temp`)에 쓴다. **실제 접근기록 4건이 감사자가 안 보는 디렉토리에 있다** → `audit_p2_data_separation()` 이 항상 `pass=TRUE, reason="no_lockbox_access (clean)"`. **P2 Data Separation 은 구조적으로 실패할 수 없다.** ★이 항목은 baseline 에 "수용된 기존 위반"으로 이미 있었다 — 린트로는 수용됐지만 **행동 결과(감사 사망)는 아무도 보지 않았다**. 원장 등재 ≠ 무해. 수리는 bash·R 양쪽 경로 규약을 함께 바꿔야 하는 교차언어 계약 변경 |
-| ○ 잠복 | `worktask/v61_compliance_audit.R:25` | — | `BOOK_STATE <- "qepm/mailbox/governor/book_state.json"` 상대경로. cwd 가 다르면 136KB 실파일이 있는데도 P8 이 `"no_book_state_yet"`(아직 없음)으로 통과 |
+| ✅ **수리(감사 부활)** | `worktask/v61_compliance_audit.R:24` | ③ | 2026-08-02 적발·수리. 구 `LOCKBOX_LOG_PATTERN` 이 선행슬래시 tmp 리터럴 → Windows R 은 `C:/tmp/…`, bash 훅(`lockbox_audit_trail.sh`)은 MSYS `/tmp`(=`AppData\Local\Temp`)에 썼다. **접근기록 4건이 감사자가 안 보는 디렉토리에 있었고** `audit_p2_data_separation()` 은 항상 `pass=TRUE, "no_lockbox_access (clean)"` — 실측 **237/237 WT 구조적 PASS**, P2 는 실패할 수 없었다. ★이 항목은 baseline 에 "수용된 기존 위반"으로 이미 있었다 — 린트로는 수용됐지만 **행동 결과(감사 사망)는 아무도 보지 않았다**. 원장 등재 ≠ 무해. 수리 = 경로를 프로젝트-상대(`.cache/lockbox`)로 이전 + 언어별 1정의(`lockbox_paths.R`/`.sh`) + **판정 의미 수정**(기록 부재를 PASS 아닌 `NA`=unmeasured 로; trail 가동 여부는 heartbeat 로 판정). 강제 = `test_lockbox_audit_path.R`(위반 주입 + 돌연변이 2축) |
+| ✅ 수리 | `worktask/v61_compliance_audit.R:25` | ③ | 2026-08-02. `BOOK_STATE` 등 3상수(`WT_ROOT`/`BOOK_STATE`/`MONITORING_DIR`)가 상대경로라 cwd 가 다르면 136KB 실파일이 있는데도 P8 이 `"no_book_state_yet"` 으로 통과했다(실측 재현). marker 게이트 루트 해석으로 절대화. ★**3상수를 함께 고쳐야 한다** — `BOOK_STATE` 만 절대화하면 book 은 찾고 monitoring 디렉토리는 못 찾아 **거짓 FAIL** 이 된다 |
 | ✅ 수리 | `worktask/lineage_utils.R` | ⑤ | 2026-08-02. `git_dirty`가 2026-06~08 **79건 전량 `false`로 위장**(미측정). 수리 후 미측정 = `UNAVAILABLE`/`null` + `git_state_error`. 소급 수정 없음(역사 보존) |
 | ✅ 수리 | `ops/update_research_philosophy.R:104` | ⑤ | 2026-08-02. `system("git add -A && git commit …", intern=FALSE)` → `&&` 이하가 `git add`의 pathspec이 되어 **auto-baseline 커밋이 한 번도 생성되지 않았고** exit status마저 버려졌다. ★그 상태에서 `.git_rollback()`의 `git reset --hard <이전 SHA>`는 미커밋 작업을 파괴한다 — 안전장치가 정반대로 작동 |
 | ✅ 수리 | `ops/cert_backfill_audit.R:697` | ⑤ | 2026-07-26 CBA-06(선행 수리). `"2>&1 \| grep -E …"`가 내부 Rscript의 리터럴 argv로 전달 |
@@ -297,6 +308,21 @@ Python 하드코딩 폴백 부재). **두 검사기를 합쳐야 계약 전체�
 - **함정 전제 실측 1축**: 계약이 근거로 삼는 현상("Windows TRE = UTF-16 오프셋")을 규칙이 아니라 **런타임에서 직접 잰다**. non-BMP 6개 선행 → TRE 추출 `.95` ≠ PCRE `&lt;`. 전제가 이 기계에서 거짓이면 금칙 ⑥은 근거 없는 규칙이므로, 전제를 상수로 박지 않고 매 실행 재확인한다.
 
 ★**검사기 자신이 금칙 ⑥을 앓지 않게** 내부 `gregexpr`은 전부 `perl=TRUE`다. 기본 TRE로 오프셋을 받으면 호출 본문을 자르는 파서가 UTF-16 오프셋을 코드포인트로 해석해, **자기가 잡는 결함을 자기가 앓는다**. 실효 실증 — 최초 구현의 검출기 ①은 `system2\([^)]*env=`였는데 인자 안의 `)`(예: `args = c("-c", code)`)에서 멈춰 **다중행 호출을 놓쳤고, 위반 주입 테스트가 이를 적발**했다(괄호 균형 파서로 교체 후 `data/build_cache.R` 등 추가 검출). 래칫 검출력도 실증 — 합성 위반 주입 시 `exit 1`, 제거 시 `exit 0`.
+`08_Tests/hooks/test_lockbox_audit_path.R` — 금칙 ③ **교차언어 급소**의 행동 수준 검사기
+(2026-08-02 신설, 배터리 편입 **13/13**). 정적 스캔은 "R 안에 선행슬래시 tmp 리터럴이 있다"까지만 본다.
+**bash 가 쓴 것을 R 이 실제로 읽는가**는 못 보고, 그게 P2 가 죽은 방식이었다.
+
+- 축: 리터럴 동기화(R ↔ `.sh`) · 구 리터럴 회귀 0 · **실제 훅 실행 → 감사자 경로 도달** ·
+  R writer(`log_lockbox_access`) 도달 · **위반 주입 → `CONTAMINATION` FAIL 발행** ·
+  오검출 통제(judge/forge 는 mandate 상 면제) · 미측정(NA) ≠ 통과 · trail 가동 시 진짜 PASS ·
+  P8 cwd 독립 · P8 도 FAIL 가능
+- **돌연변이 2축**: 구판 로직 재현본(① 기록자가 안 쓰는 디렉토리를 읽고 부재를 clean 으로 봄
+  ② BOOK_STATE 상대경로)이 **같은 주입 상태에서 PASS 로 뒤집히는지** 확인한다.
+  안 뒤집히면 주입이 애초에 무해했다는 뜻이고, 그 초록은 계측 사망이다.
+- ★검사기의 앵커 1순위는 **자기 파일 위치**(`commandArgs --file=`)다. env-우선으로 해석하면
+  worktree 에서 돌린 검사기가 조용히 **main 의 소스**를 검사한다(실측 — 아래 운영 주의 참조).
+
+**위반 주입 8종 내장**(위반 주입 테스트): 금칙 5종 각각의 합성 위반 fixture(⑤는 redirect·chain·pipe 3형태)를 실제로 잡는지 + 정본 패턴을 오검출하지 않는지 자체 검증. 실효 실증 — 최초 구현의 검출기 ①은 `system2\([^)]*env=`였는데 인자 안의 `)`(예: `args = c("-c", code)`)에서 멈춰 **다중행 호출을 놓쳤고, 위반 주입 테스트가 이를 적발**했다(괄호 균형 파서로 교체 후 `data/build_cache.R` 등 추가 검출). 래칫 검출력도 실증 — 합성 위반 주입 시 `exit 1`, 제거 시 `exit 0`.
 
 > 검사기 자체가 "잘못된 것을 재는" 실패가 이 리포지토리의 반복 부류다(존재→유효성, substring→ID, mtime→최신성). 그래서 위반 주입 테스트 없는 검사기는 이 계약에서 인정하지 않는다. 위 ① 사례가 그 규정의 첫 회수다.
 
