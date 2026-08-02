@@ -17,7 +17,9 @@ P <- as.data.table(read_parquet(file.path(OUT_DIR, "fq108_pairs.parquet")))
 DG <- as.data.table(read_parquet(file.path(OUT_DIR, "fq108_sigma_diag.parquet")))
 CF <- as.data.table(read_parquet(file.path(OUT_DIR, "fq108_coef_panel.parquet")))
 
-ARMS <- c("A_base", "A2_recal", "B_d35", "C_d45", "D_max", "F_sv63", "G_full", "X_oracle")
+ARMS <- c("A_base", "A2_recal", "B_d35", "C_d45", "D_max", "F_sv63", "G_full",
+          "H_hybrid",                     # 사후 추가 탐색 arm (파라미터 없음)
+          "X_oracle", "X_perfect")        # 위반 주입 canary 2종 (판정 대상 아님)
 P <- P[arm %in% ARMS]
 P[, qlike := qlike_loss(realized_var, pred_var)]
 P[, verr  := volsq_err(realized_var, pred_var)]
@@ -55,9 +57,13 @@ PAIRSPEC <- list(
   c("F_sv63",   "A2_recal"),
   c("G_full",   "F_sv63"),      # rv63 위에 D35 가 더 있나
   c("B_d35",    "F_sv63"),      # 팩터DB 횡단면 z vs rawdata 레벨
-  c("X_oracle", "A_base"),      # ★위반 주입 canary
+  c("H_hybrid", "A_base"),      # 사후 탐색: 파라미터 없는 운영형 하이브리드
+  c("H_hybrid", "F_sv63"),
+  c("X_oracle", "A_base"),      # ★위반 주입 canary 1 (미래 시장 vol 레벨)
   c("X_oracle", "A2_recal"),
-  c("X_oracle", "F_sv63")
+  c("X_oracle", "F_sv63"),
+  c("X_perfect", "A_base"),     # ★위반 주입 canary 2 (완전 미래참조) — 결정적
+  c("X_perfect", "H_hybrid")
 )
 
 dm_rows <- list()
@@ -78,12 +84,27 @@ for (pf in unique(PC$portfolio)) for (tg in unique(PC$target)) for (es in unique
 DM <- rbindlist(dm_rows)
 setorder(DM, portfolio, target, est, treatment)
 
+# ---- 양성 대조 (positive control): lw_nls A_base vs lw_linear A_base ---------
+#   FQ-057 P1c 기지 결과(실 book total 채널 DM-t ≈ -4.0) 재현 여부 =
+#   본 하네스가 '진짜 있는 개선'을 검출할 능력이 있는지의 독립 증거.
+pc_rows <- list()
+for (pf in unique(PC$portfolio)) for (tg in unique(PC$target)) {
+  a <- PC[portfolio == pf & target == tg & est == "lw_nls" & arm == "A_base"][order(holding_ym)]
+  b <- PC[portfolio == pf & target == tg & est == "lw_linear" & arm == "A_base"][order(holding_ym)]
+  m <- merge(a[, .(holding_ym, q_nls = qlike)], b[, .(holding_ym, q_lin = qlike)], by = "holding_ym")
+  d <- dm_nw(m$q_nls, m$q_lin, lag = 3L)
+  pc_rows[[length(pc_rows) + 1L]] <- data.table(
+    portfolio = pf, target = tg, comparison = "lw_nls_minus_lw_linear (A_base)",
+    mean_qlike_diff = d$mean_d, dm_t = d$t, n = d$n)
+}
+POSCTRL <- rbindlist(pc_rows)
+
 # ---- 흡수(absorption) 분리 ---------------------------------------------------
 abs_rows <- list()
 for (pf in unique(PC$portfolio)) for (tg in unique(PC$target)) {
   g <- function(es, tr, bl) DM[portfolio == pf & target == tg & est == es &
                                treatment == tr & baseline == bl]
-  for (tr in c("B_d35", "F_sv63", "G_full", "C_d45", "D_max")) {
+  for (tr in c("B_d35", "F_sv63", "G_full", "C_d45", "D_max", "H_hybrid")) {
     a <- g("lw_nls", tr, "A_base"); b <- g("lw_linear", tr, "A_base")
     if (!nrow(a) || !nrow(b)) next
     abs_rows[[length(abs_rows) + 1L]] <- data.table(
@@ -129,6 +150,10 @@ primary <- list(
   F_sv63_vs_A_base   = as.list(prim[treatment == "F_sv63" & baseline == "A_base",
                                     .(mean_qlike_diff, dm_t, n, verdict)]),
   X_oracle_vs_A_base = as.list(prim[treatment == "X_oracle" & baseline == "A_base",
+                                    .(mean_qlike_diff, dm_t, n, verdict)]),
+  X_perfect_vs_A_base = as.list(prim[treatment == "X_perfect" & baseline == "A_base",
+                                    .(mean_qlike_diff, dm_t, n, verdict)]),
+  H_hybrid_vs_A_base = as.list(prim[treatment == "H_hybrid" & baseline == "A_base",
                                     .(mean_qlike_diff, dm_t, n, verdict)])
 )
 
@@ -138,7 +163,7 @@ out <- list(
   selection_objective = "estimation_quality (QLIKE)",
   built_at = format(Sys.time(), "%Y-%m-%d %H:%M:%S"),
   n_common_months = as.list(PC[, .(n = uniqueN(holding_ym)), by = .(portfolio, target, est)]),
-  summary_by_cell = SUMM, dm_tests = DM, absorption = ABS,
+  summary_by_cell = SUMM, dm_tests = DM, absorption = ABS, positive_control = POSCTRL,
   sigma_diagnostics = SD, coef_fm_nw = CFS, primary = primary)
 write_json(out, file.path(OUT_DIR, "fq108_metrics.json"), auto_unbox = TRUE, pretty = TRUE,
            digits = 8, na = "null")
