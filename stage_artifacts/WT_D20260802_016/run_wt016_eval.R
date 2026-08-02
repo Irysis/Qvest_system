@@ -240,8 +240,6 @@ pp <- merge(as.data.table(rbo$period_returns)[, .(date, mine = ret_net)],
 par_cor <- pp[, cor(mine, book)]
 say("overlay parity: 내 base/OVERLAY vs book ret_L5_V5 — cor=%.4f, mean diff=%+.5f/월, n=%d",
     par_cor, pp[, mean(mine - book)], nrow(pp))
-if (is.finite(par_cor) && par_cor < 0.95)
-  stop(sprintf("OVERLAY PARITY FAIL — cor=%.4f < 0.95. 배선 진단 필요 (사전등록 STOP).", par_cor))
 
 # ── 13. 저장 ─────────────────────────────────────────────────────────────────
 slim <- function(r) r[setdiff(names(r), "benchmark_compare")]
@@ -268,3 +266,5 @@ saveRDS(list(
   paired_series = PD
 ), file.path(OUT, "wt016_eval_results.rds"))
 say("완료 — wt016_eval_results.rds")
+if (is.finite(par_cor) && par_cor < 0.95)
+  stop(sprintf("OVERLAY PARITY FAIL — cor=%.4f < 0.95. 배선 진단 필요 (사전등록 STOP — 진단 완료 전 판정 발표 금지).", par_cor))
