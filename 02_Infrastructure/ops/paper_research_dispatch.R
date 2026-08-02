@@ -18,9 +18,34 @@ qpath <- file.path(stage, sprintf("mode_queue_%s.json", today))
 if (Sys.getenv("QVEST_PAPER_DISPATCH_ENABLE", "0") != "1") { cat("[dispatch] disabled (QVEST_PAPER_DISPATCH_ENABLE!=1)\n"); quit(status = 0) }
 if (!file.exists(qpath)) { cat(sprintf("[dispatch] no queue: %s\n", qpath)); quit(status = 0) }
 Q <- fromJSON(qpath, simplifyVector = FALSE)
-getrt <- function(rt) { x <- Q[[rt]]; if (is.null(x)) list() else x }
+# >>> MODE_QUEUE_ROUTE_RESOLVER  (08_Tests/ops/test_mode_queue_dispatch_schema.R 가 이 블록을
+#     원본에서 추출해 검사한다 — 사본 검사 금지. 마커를 바꾸면 검사기부터 고칠 것.)
+# (2026-08-02 수리) 생산자 스키마 2형태 관용.
+#   실사고: mode_queue_20260727.json 은 3키를 최상위가 아니라 `queue`{} 안에 넣었는데
+#   구 resolver 는 최상위만 봐서 optimizer=0 risk=0 regime=0 으로 읽었다 →
+#   research_status_20260727.json::actions = [] 로 **14편(opt 7·risk 4·regime 3) 전량 드롭**.
+#   optimizer 7편은 Σ-가중 A/B 배터리를 타야 했는데 한 편도 돌지 않았다.
+#   ★schema_version 으로 분기할 수 없다 — 07-27 은 "mode_queue_v1", 08-02 는 "paper_router_v2"
+#     (생산자 이름)라 그 필드가 형태를 구별하지 못한다. 그래서 모양으로 해석한다.
+#   생산자 정본 = 평면(paper_router_prompt.md §STEP3). queue{} 는 관용 수용일 뿐이다.
+getrt <- function(rt) {
+  x <- Q[[rt]]
+  if (is.null(x) && is.list(Q[["queue"]])) x <- Q[["queue"]][[rt]]
+  if (is.null(x)) list() else x
+}
+# <<< MODE_QUEUE_ROUTE_RESOLVER
 n_opt <- length(getrt("optimizer")); n_risk <- length(getrt("risk")); n_reg <- length(getrt("regime"))
 cat(sprintf("[dispatch] queue %s: optimizer=%d risk=%d regime=%d\n", today, n_opt, n_risk, n_reg))
+# ★미해석 경고 — 큐 파일에 내용이 있는데 3라우트가 전부 비면 스키마 드리프트다.
+#   "0편"과 "못 읽음"은 겉보기가 같으므로 숨기지 않고 이름을 부른다(차단은 아님).
+if (n_opt + n_risk + n_reg == 0) {
+  .known <- c("date", "schema", "schema_version", "note", "dispatch_note",
+              "generated_by", "generated_at", "source", "router_version")
+  .other <- setdiff(names(Q), c(.known, "optimizer", "risk", "regime"))
+  if (length(.other) > 0)
+    cat(sprintf("[dispatch] ★경고: 3라우트가 전부 비었는데 미해석 키가 있다 — 스키마 드리프트 의심: %s (%s)\n",
+                paste(.other, collapse = ", "), basename(qpath)))
+}
 
 DELTA_IR_GATE <- 0.05   # book-marginal admission 문턱(§4) — 측정 기준만(자본 admit 아님)
 actions <- list()
