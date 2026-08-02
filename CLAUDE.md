@@ -102,7 +102,7 @@ Qvest 시스템 전체 구동. bootstrap.sh 실행 → 플러그인 리로드 �
 - **Harness Engineering (Hooks Tier 1~6)**: `02_Infrastructure/docs/rules/harness.md`
 - **Factor DB + Forge 자원**: `02_Infrastructure/docs/rules/factor-db.md` (C13~C15 + load_month_factors 경유)
 - **Axioms (AX-000~008)**: `.claude/rules/axioms.md`
-- **R 측 Windows 이식성 계약**: `02_Infrastructure/docs/rules/r-portability.md` ⭐ (2026-07-25 도훈 "승격해". 금칙 4종 — ①`system2(env=)`(환경변수 아닌 **인자 주입**) ②스크립트 최상위 `on.exit()`(**미발화** → cleanup dead code) ③선행 `/` 경로 하드코딩·`startsWith(p,"/")` 절대경로 판정·루트를 `dir.exists()`로 신뢰 ④resolver 우선순위는 `CLAUDE_PROJECT_DIR` 먼저. 공통 기전 = **존재 검사로 정체성 검사 대체**. 강제 = `08_Tests/hooks/test_r_portability.R`(baseline 래칫 60건 + 음성 통제 5종, 배터리 편입). 위반 = AX-002 동급)
+- **R 측 Windows 이식성 계약**: `02_Infrastructure/docs/rules/r-portability.md` ⭐ (2026-07-25 도훈 "승격해". 금칙 5종 — ①`system2(env=)`(환경변수 아닌 **인자 주입**) ②스크립트 최상위 `on.exit()`(**미발화** → cleanup dead code) ③선행 `/` 경로 하드코딩·`startsWith(p,"/")` 절대경로 판정·루트를 `dir.exists()`로 신뢰 ④resolver 우선순위는 `CLAUDE_PROJECT_DIR` 먼저 ⑤`system()/system2()` 문자열에 쉘 리다이렉션·`&&` 주입(**셸 미경유 → 리터럴 argv**. 2026-08-02 추가 — 빈 출력이 '변경 없음'으로 읽혀 `git_dirty` 79건 위장). 공통 기전 = **존재 검사로 정체성 검사 대체 / 결손을 정상값으로 내려앉힘**. 강제 = `08_Tests/hooks/test_r_portability.R`(baseline 래칫 50건 + 위반 주입 8종) + `08_Tests/hooks/test_lineage_git_state.R`(행동 수준 11/11, 돌연변이로 검출력 실증), 둘 다 배터리 편입. 위반 = AX-002 동급)
 - **Research Philosophy (7 QEPM Modern Trends)**: `02_Infrastructure/docs/rules/research_philosophy.md` ⭐ (Charter-level SOT `02_Infrastructure/docs/qvest_research_philosophy.md` v1.0 2026-05-14. Factor Zoo 축소 / Cost-aware / Uncertainty-aware / Direct Portfolio / Crowding / Implementation / Attribution. 분기별 review + trigger-based 보강. 위반 = AX-002 동급)
 
 ---

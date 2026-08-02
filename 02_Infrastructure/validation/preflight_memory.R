@@ -90,7 +90,14 @@ preflight_check <- function(strategy_name, family = NULL) {
       run_all_found <- Filter(file.exists, run_all_candidates)
       if (length(run_all_found) > 0) {
         la_result <- detect_lookahead(run_all_found[1], verbose = FALSE)
-        if (!la_result$clean) {
+        # [2026-08-02] clean 은 3값(TRUE/FALSE/NA=미스캔). `!x$clean` 은 NA 에서 오류가 나고,
+        #  미스캔을 CLEAN 으로 읽으면 PIT 게이트가 스캔 0회로 통과한다.
+        if (!isTRUE(la_result$scanned)) {
+          warnings <- warnings + 1L
+          cat(sprintf("  [CRITICAL] lookahead 미스캔 — PIT 미검증 (사유: %s)\n",
+                      la_result$error %||% "unknown"))
+          cat("  DO NOT TREAT AS CLEAN.\n")
+        } else if (!isTRUE(la_result$clean)) {
           warnings <- warnings + length(la_result$violations)
           cat(sprintf("  [CRITICAL] %d lookahead violation(s) detected!\n",
                       length(la_result$violations)))

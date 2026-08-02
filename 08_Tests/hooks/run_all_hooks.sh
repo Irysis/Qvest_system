@@ -115,6 +115,16 @@ SUITES=(
   "08_Tests/portfolio/test_lineage_resolver.R"
   # 2026-08-01 추가: 운용 슬롯/보유파일 해석기 위반 주입 (라이브 추적이 배포된 북을 보는지의 가드)
   "08_Tests/portfolio/test_resolve_admitted_slot.R"
+  # 2026-08-02 추가: artifact lineage 의 git 상태 기록 계약.
+  #   구 capture_git_state() 가 셸 리다이렉션을 argv 로 주입해 git status 가 통째로 실패했고,
+  #   `length(out) > 0` 이 **항상 FALSE** → "clean tree" 로 위장했다(2026-06~08 79건 전량 FALSE).
+  #   금칙 ⑤ 의 정적 검출(test_r_portability.R)만으로는 "라벨이 JSON 까지 도달하는가"를 못 본다.
+  "08_Tests/hooks/test_lineage_git_state.R"
+  # 2026-08-02 추가: PIT lookahead 검출기의 "미스캔 ≠ 통과" 계약.
+  #   detect_lookahead 가 파일 부재 시 clean=TRUE 를, dir/gate15 가 대상 0개일 때
+  #   "ALL CLEAN: 0 files scanned"·"INFRA_PIT_SCAN PASS: 0 files" 를 냈다 —
+  #   스캔 0회가 PIT 통과 판정이 되는 자리(AX-002 동급). 돌연변이로 검출력 실증(3축 반전).
+  "08_Tests/hooks/test_lookahead_unscanned.R"
   # 2026-07-26 추가: 부팅 자기-정합 검사(boot_currency_check) 위반 주입 — 부팅 최신화 자동 배선의 가드
   "08_Tests/hooks/test_boot_currency.sh"
   # 2026-07-26 추가: cache_freshness worse-of lag 위반 주입 (CFA-02 수리 가드).

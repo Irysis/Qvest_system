@@ -150,8 +150,15 @@ hook_pit_gate <- function(strat_dir) {
     cat(sprintf("PIT_RESULT|%s|%s|%d\n",
                 if (isTRUE(r$clean)) "CLEAN" else "FAIL",
                 r$severity, length(r$violations)))
-    if (!isTRUE(r$clean)) {
-      for (v in r$violations[1:min(5, length(r$violations))]) {
+    # [2026-08-02] clean 은 3값이다: TRUE / FALSE(위반) / NA(미스캔 — pit_engine_v3 수리).
+    #  NA 경로에서는 violations 가 비어 있는데, 구 `1:min(5, length(v))` 는 length 0 일 때
+    #  1:0 = c(1,0) 이 되어 **NULL 원소 1개를 순회하며 가짜 위반 "- PIT (line ?): ?" 를 출력**한다.
+    #  미측정을 위반처럼 보이게 만드는 건 이 수리가 없애려던 바로 그 오도다.
+    if (is.na(r$clean)) {
+      cat(sprintf("  (미측정 — 스캔 미수행: %s)\n",
+                  paste(r$unscanned %||% "unknown", collapse = ",")))
+    } else if (!isTRUE(r$clean) && length(r$violations) > 0) {
+      for (v in r$violations[seq_len(min(5, length(r$violations)))]) {
         cat(sprintf("  - %s (line %s): %s\n",
                     v$code %||% "PIT",
                     v$line %||% "?",

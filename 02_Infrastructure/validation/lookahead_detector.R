@@ -9,13 +9,26 @@
 # Usage:
 #   source("02_Infrastructure/validation/lookahead_detector.R")
 #   result <- detect_lookahead("path/to/run_all.R")   # .R 또는 .py
-#   if (!result$clean) stop("Lookahead detected!")
+#   if (!isTRUE(result$clean)) stop("Lookahead detected or NOT SCANNED!")
+#   ★clean 은 3값이다: TRUE(스캔했고 위반 0) / FALSE(위반 있음) / NA(미스캔 — PASS 아님).
+#    `!result$clean` 은 NA 에서 오류가 나므로 반드시 isTRUE() 로 받을 것.
 #==============================================================================
 
 detect_lookahead <- function(run_all_path, verbose = TRUE) {
+  # [2026-08-02 수리 — "미스캔을 PASS 로 내려앉히지 말 것"]
+  #  종전: 파일이 없으면 clean = TRUE 를 반환했다. 즉 **스캔을 0회 수행한 사실이
+  #  '위반 없음(PIT 통과)'이라는 판정**이 됐다. 경로 오타·산출 지연·리네임만으로
+  #  PIT lookahead 게이트가 무증상 통과한다 — AX-002 동급 노출.
+  #  ★같은 기전의 다른 얼굴: lineage_utils 의 git_dirty(호출 실패 → 0행 → "clean tree").
+  #  정본: 미측정은 NA(+scanned=FALSE+error). 소비부는 전부 isTRUE(pit$clean) 를 쓰므로
+  #  (10개 alpha_search 러너 · hook_batch_runner · backfill) NA 는 자동으로 not-clean 이 된다.
+  #  backfill_alpha_search_contracts.R:151 이 이미 "파일 없음 → clean = NA" 규약을 쓰고 있었고,
+  #  검출기 본체만 어긋나 있었다.
   if (!file.exists(run_all_path)) {
-    if (verbose) cat("[lookahead] File not found:", run_all_path, "\n")
-    return(list(clean = TRUE, violations = list(), file = run_all_path))
+    if (verbose) cat("[lookahead] File not found (미스캔 — PASS 아님):", run_all_path, "\n")
+    return(list(clean = NA, scanned = FALSE, violations = list(),
+                file = run_all_path, n_violations = 0L,
+                error = sprintf("scan not performed — file not found: %s", run_all_path)))
   }
 
   lines <- readLines(run_all_path, warn = FALSE)
@@ -462,7 +475,7 @@ detect_lookahead <- function(run_all_path, verbose = TRUE) {
     }
   }
 
-  list(clean = clean, violations = violations, file = run_all_path,
+  list(clean = clean, scanned = TRUE, violations = violations, file = run_all_path,
        n_lines = n_lines, n_violations = length(violations))
 }
 
@@ -472,10 +485,17 @@ detect_lookahead_dir <- function(strategy_dir, verbose = TRUE) {
                         recursive = FALSE)
   all_violations <- list()
   total <- 0L
+  n_unscanned <- 0L
 
   for (f in r_files) {
     result <- detect_lookahead(f, verbose = FALSE)
-    if (!result$clean) {
+    # ★!result$clean 은 NA 에서 `if (NA)` 오류가 난다 — isTRUE 로 3값(TRUE/FALSE/NA) 처리.
+    if (!isTRUE(result$scanned)) {
+      n_unscanned <- n_unscanned + 1L
+      if (verbose) cat(sprintf("[LOOKAHEAD] 미스캔: %s\n", basename(f)))
+      next
+    }
+    if (!isTRUE(result$clean)) {
       total <- total + result$n_violations
       all_violations <- c(all_violations, result$violations)
       if (verbose) {
@@ -488,11 +508,18 @@ detect_lookahead_dir <- function(strategy_dir, verbose = TRUE) {
     }
   }
 
-  clean <- total == 0L
+  # [2026-08-02 수리] 종전 `clean <- total == 0L` 은 **스캔 대상이 0개일 때도 TRUE** 였다.
+  #  경로 오타·빈 디렉토리가 "ALL CLEAN: 0 files scanned" 라는 합격 판정으로 출력됐다 —
+  #  0 이 '위반 없음'으로 읽히는 자리(= git_dirty 계통). 미스캔 파일이 섞여도 마찬가지.
+  n_scanned <- length(r_files) - n_unscanned
+  clean <- if (n_scanned == 0L || n_unscanned > 0L) NA else (total == 0L)
   if (verbose) {
-    if (clean) {
+    if (is.na(clean)) {
+      cat(sprintf("[LOOKAHEAD] 판정 불가(미측정): %d/%d 파일 미스캔 in %s — PASS 아님\n",
+                  n_unscanned, length(r_files), basename(strategy_dir)))
+    } else if (clean) {
       cat(sprintf("[LOOKAHEAD] ALL CLEAN: %d files scanned in %s\n",
-                  length(r_files), basename(strategy_dir)))
+                  n_scanned, basename(strategy_dir)))
     } else {
       cat(sprintf("[LOOKAHEAD] TOTAL: %d violations across %s\n",
                   total, basename(strategy_dir)))
@@ -500,7 +527,7 @@ detect_lookahead_dir <- function(strategy_dir, verbose = TRUE) {
   }
 
   list(clean = clean, violations = all_violations, n_violations = total,
-       n_files = length(r_files))
+       n_files = length(r_files), n_scanned = n_scanned, n_unscanned = n_unscanned)
 }
 
 # =============================================================================
@@ -516,9 +543,15 @@ detect_gate15_infra_pit <- function(strategy_dir, verbose = TRUE) {
 
   gate15_violations <- list()
   total <- 0L
+  n_unscanned <- 0L
 
   for (f in r_files) {
     result <- detect_lookahead(f, verbose = FALSE)
+    if (!isTRUE(result$scanned)) {
+      n_unscanned <- n_unscanned + 1L
+      if (verbose) cat(sprintf("[Gate15] 미스캔: %s\n", basename(f)))
+      next
+    }
     infra_v <- Filter(function(v) grepl("^C17|^C18", v$check), result$violations)
     if (length(infra_v) > 0) {
       total <- total + length(infra_v)
@@ -534,20 +567,28 @@ detect_gate15_infra_pit <- function(strategy_dir, verbose = TRUE) {
     }
   }
 
-  clean <- total == 0L
+  # [2026-08-02 수리] 종전 `total == 0L` 은 스캔 대상 0개(경로 오타·빈 디렉토리)에서도
+  #  "INFRA_PIT_SCAN PASS: 0 files" 를 냈다. 0 을 합격으로 읽는 자리 — admission 게이트에서
+  #  가장 위험한 형태다. 미측정은 NA 로 분리하고 소비부의 isTRUE() 가 not-pass 로 받게 한다.
+  n_scanned <- length(r_files) - n_unscanned
+  clean <- if (n_scanned == 0L || n_unscanned > 0L) NA else (total == 0L)
   if (verbose) {
-    if (clean) {
+    if (is.na(clean)) {
+      cat(sprintf("[Gate15] INFRA_PIT_SCAN 판정 불가(미측정): %d/%d 파일 미스캔 — PASS 아님\n",
+                  n_unscanned, length(r_files)))
+    } else if (clean) {
       cat(sprintf("[Gate15] INFRA_PIT_SCAN PASS: %d files, 0 C17/C18 violations.\n",
-                  length(r_files)))
+                  n_scanned))
     } else {
       cat(sprintf("[Gate15] INFRA_PIT_SCAN FAIL: %d C17/C18 violation(s) in %d files.\n",
-                  total, length(r_files)))
+                  total, n_scanned))
       cat("[Gate15] REJECT — Fix align_factor_direction sig_date / load_month_factors usage.\n")
     }
   }
 
   list(clean = clean, gate15_violations = gate15_violations,
-       n_violations = total, files_scanned = length(r_files))
+       n_violations = total, files_scanned = n_scanned,
+       n_unscanned = n_unscanned, n_files = length(r_files))
 }
 
 cat("[lookahead_detector] Loaded. Functions: detect_lookahead(), detect_lookahead_dir(), detect_gate15_infra_pit()\n")

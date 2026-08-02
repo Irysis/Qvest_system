@@ -24,29 +24,52 @@ suppressPackageStartupMessages({
 #  tryCatch 가 그걸 삼켜 **git_commit 이 조용히 "unknown" 으로 결손**됐다 — 계보 추적이
 #  무증상으로 죽어 있었다(WT-D20260802_001 R2 라운드 적발).
 #  정본: system2() 로 인자를 분리하고 stderr 는 R 레벨에서 버린다(쉘 리다이렉션 의존 제거).
-#  실패는 "unknown" 으로 두되 **호출자가 구분할 수 있게** git_state_error 를 함께 싣는다 —
-#  결손을 정상값처럼 반환하면 그게 이 결함의 재발 형태다.
+#
+#  [2026-08-02 2차 — 결손 라벨링] 무엇이 실제로 썩었는지 실측으로 확정했다:
+#    · git_commit 은 **우연히 살아남았다** — git rev-parse 가 HEAD 를 먼저 출력한 뒤
+#      '2>/dev/null' 에서 죽어, 구 코드의 sha[1] 이 진짜 SHA 를 집었다(exit 128 은 warning).
+#    · git_dirty 는 **거짓이었다** — git status 는 통째로 실패해 0행을 반환하고
+#      `length(out) > 0` 이 **항상 FALSE** → "clean tree" 라는 그럴듯한 정상값으로 위장.
+#      실측 대조: 같은 트리에서 구 경로 FALSE vs system2 정본 TRUE(1행 변경).
+#      전수 집계상 2026-06(Windows 이관) ~ 08 기록 79건이 전량 FALSE, 그 이전 309건은 전량 TRUE.
+#  ★그래서 미측정은 FALSE 가 아니라 NA(→ JSON null) 로, SHA 미확보는 명시 라벨
+#  "UNAVAILABLE" 로 남긴다. 결손을 정상값처럼 반환하는 것이 이 결함의 재발 형태다.
+GIT_STATE_UNAVAILABLE <- "UNAVAILABLE"
+
 .git_try <- function(args) {
   tryCatch({
     out <- suppressWarnings(system2("git", args, stdout = TRUE, stderr = FALSE))
     st  <- attr(out, "status")
-    if (!is.null(st) && st != 0L) NULL else out
-  }, error = function(e) NULL)
+    st  <- if (is.null(st)) 0L else as.integer(st)
+    list(ok = st == 0L, status = st, out = out)
+  }, error = function(e) list(ok = FALSE, status = NA_integer_, out = character(0)))
 }
 
 capture_git_state <- function() {
-  sha_raw <- .git_try(c("rev-parse", "HEAD"))
-  sha <- if (is.null(sha_raw) || !length(sha_raw)) "unknown" else trimws(sha_raw)
+  errs <- character(0)
 
-  status_raw <- .git_try(c("status", "--porcelain"))
-  dirty <- if (is.null(status_raw)) NA else (length(status_raw) > 0)
+  sha_res <- .git_try(c("rev-parse", "HEAD"))
+  sha <- if (!sha_res$ok || !length(sha_res$out) || !nzchar(trimws(sha_res$out[1]))) {
+    errs <- c(errs, sprintf("git rev-parse HEAD exit=%s", sha_res$status))
+    GIT_STATE_UNAVAILABLE
+  } else trimws(sha_res$out[1])
+
+  st_res <- .git_try(c("status", "--porcelain"))
+  dirty <- if (!st_res$ok) {
+    errs <- c(errs, sprintf("git status --porcelain exit=%s", st_res$status))
+    NA   # ★FALSE 아님 — 미측정과 clean tree 는 다른 사실이다
+  } else length(st_res$out) > 0
+
+  # warning 이 아니라 라벨로 남긴다(warning 은 로그에서 밀려 사라진다). 운영자 가시성용 message 만 병행.
+  if (length(errs)) {
+    message(sprintf("[lineage] git 상태 미측정 — %s", paste(errs, collapse = "; ")))
+  }
 
   list(
-    git_commit = sha[1] %||% "unknown",
+    git_commit = sha,
     git_dirty = dirty,
-    # 결손을 정상값처럼 반환하지 않는다 — 소비자가 "미측정"과 "깨끗한 트리"를 구분할 수 있어야 한다.
-    git_state_error = if (identical(sha[1], "unknown") || is.na(dirty))
-      "git 조회 실패 — 계보 미측정(정상 상태 아님)" else NULL
+    git_state_error = if (length(errs))
+      paste0("git 상태 미측정(정상 상태 아님): ", paste(errs, collapse = "; ")) else NULL
   )
 }
 
@@ -91,10 +114,17 @@ build_lineage_entry <- function(task_id,
 
   if (is.null(random_seed)) {
     # Deterministic seed from task_id if not provided
-    random_seed <- as.integer(
-      paste0(gsub("[^0-9]", "", task_id), "001")
-    )
-    if (is.na(random_seed)) random_seed <- 20260424L
+    #  [2026-08-02 수리] 구 구현 `as.integer(paste0(digits, "001"))` 은
+    #  task_id 의 숫자열이 11자리(WT-D20260802_001 → "20260802001")여서 "001" 을 덧붙이면
+    #  14자리가 되고 .Machine$integer.max(2147483647) 를 넘겨 **항상 NA** 였다.
+    #  → 경고("NAs introduced by coercion to integer range")만 남기고 전 task 가
+    #  fallback 상수 20260424 로 붕괴 = **task-결정성이 죽어 있었다**(실측: 기존 388건 중 329건이 20260424).
+    #  정본: 자릿수를 버리지 않고 modulo 로 접어 task_id 별 결정성을 되살린다.
+    digits <- gsub("[^0-9]", "", task_id)
+    random_seed <- if (nzchar(digits)) {
+      as.integer(as.numeric(digits) %% 2147483647)
+    } else NA_integer_
+    if (is.na(random_seed) || random_seed <= 0L) random_seed <- 20260424L
   }
 
   entry <- list(
@@ -103,6 +133,9 @@ build_lineage_entry <- function(task_id,
     created_at = format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z"),
     git_commit = git$git_commit,
     git_dirty = git$git_dirty,
+    # ★결손 라벨을 여기서 떨어뜨리면 capture_git_state 의 구분이 무의미해진다 —
+    #  구 구현이 정확히 그랬다(계산해 놓고 entry 에 안 실었다). 성공 시 null.
+    git_state_error = git$git_state_error,
     r_version = renv$r_version,
     r_packages = renv$r_packages,
     random_seed = random_seed,

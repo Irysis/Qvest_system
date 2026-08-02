@@ -3,11 +3,13 @@
 #
 # 계약: 02_Infrastructure/docs/rules/r-portability.md (2026-07-25 승격)
 #
-# 라이브 존의 .R 을 스캔해 금칙 4종을 검출한다.
+# 라이브 존의 .R 을 스캔해 금칙 5종을 검출한다.
 #   ① system2(..., env=)        — Windows에서 환경변수 아닌 인자 주입
 #   ② 스크립트 최상위 on.exit() — 발화하지 않음(cleanup dead code)
 #   ③ 선행 "/" 경로 하드코딩 / startsWith(p,"/") 절대경로 판정
 #   ④ resolver 우선순위 QM_ROOT-before-CLAUDE_PROJECT_DIR
+#   ⑤ system()/system2() 명령 문자열에 쉘 리다이렉션·연산자 주입 — Windows R 은 셸을
+#      경유하지 않아 "2>/dev/null" · "&&" 가 프로그램의 리터럴 argv 로 전달된다
 #
 # 기수록 위반은 ALLOWLIST로 수용(원장 = rule 문서). 신규 위반만 FAIL —
 # 원장을 줄이는 방향으로만 움직이게 한다.
@@ -64,12 +66,13 @@ rel_of <- function(p) sub(paste0("^", gsub("([.|()\\^{}+$*?\\[\\]])", "\\\\\\1",
 # 주석 줄은 제외 — 수리 노트가 자기 자신을 위반으로 잡는 것을 막는다.
 strip_comments <- function(lines) lines[!grepl("^\\s*#", lines)]
 
-# system2( ... ) 호출 본문을 괄호 균형으로 추출.
+# system2( ... ) / system( ... ) 호출 본문을 괄호 균형으로 추출.
 # ★구 구현은 grepl("system2\\([^)]*env\\s*=") 였는데 [^)]* 가 인자 안의 첫 ')'
 #   (예: args = c("-c", code))에서 멈춰 다중행 호출을 놓쳤다 — 위반 주입 테스트가 적발.
-.system2_calls <- function(txt) {
+.calls_of <- function(txt, fname) {
   out <- character(0)
-  starts <- gregexpr("system2\\s*\\(", txt, perl = TRUE)[[1]]
+  # \\b 로 경계를 잡아 "system" 패턴이 "system2(" 를 삼키지 않게 한다.
+  starts <- gregexpr(sprintf("\\b%s\\s*\\(", fname), txt, perl = TRUE)[[1]]
   if (starts[1] == -1) return(out)
   chars <- strsplit(txt, "", fixed = TRUE)[[1]]
   for (s in starts) {
@@ -81,6 +84,22 @@ strip_comments <- function(lines) lines[!grepl("^\\s*#", lines)]
       i <- i + 1L
     }
     if (!is.na(endp)) out <- c(out, paste(chars[open_at:endp], collapse = ""))
+  }
+  out
+}
+.system2_calls <- function(txt) .calls_of(txt, "system2")
+
+# 호출 본문에서 **문자열 리터럴만** 떼어낸다.
+# 리터럴로 좁히는 이유: R 코드 자체의 `||`(예: args = if (a || b) x else y)나
+# `stderr = FALSE` 같은 정본 인자를 쉘 문법으로 오검출하지 않기 위함.
+.string_literals <- function(bodies) {
+  if (!length(bodies)) return(character(0))
+  out <- character(0)
+  for (b in bodies) {
+    for (pat in c('"(\\\\.|[^"\\\\])*"', "'(\\\\.|[^'\\\\])*'")) {
+      m <- gregexpr(pat, b, perl = TRUE)[[1]]
+      if (m[1] != -1) out <- c(out, regmatches(b, gregexpr(pat, b, perl = TRUE))[[1]])
+    }
   }
   out
 }
@@ -105,11 +124,26 @@ detect <- function(lines) {
   cpd <- regexpr('Sys\\.getenv\\("CLAUDE_PROJECT_DIR"', txt)
   if (qm > 0 && cpd > 0 && qm < cpd) hits <- c(hits, 4L)
 
+  # ⑤ system()/system2() 문자열에 쉘 리다이렉션·연쇄 연산자 주입.
+  #   Windows R 의 system()/system2() 는 셸을 경유하지 않으므로 이 토큰들은 해석되지 않고
+  #   대상 프로그램의 **리터럴 argv** 가 된다. 2026-08-02 실측:
+  #     system("git rev-parse HEAD 2>/dev/null", intern=TRUE)
+  #       → git 이 '2>/dev/null' 을 revision 으로 받아 status 128
+  #     system("git status --porcelain 2>/dev/null", intern=TRUE)
+  #       → 출력 0행 → 호출자의 length(out) > 0 이 **항상 FALSE** → "clean tree" 로 위장
+  #   ★위험한 건 실패가 아니라 위장이다 — 빈 출력이 '변경 없음'이라는 정상값으로 읽힌다.
+  #   대체: 리다이렉션은 stdout=/stderr= 인자로, 연쇄는 호출 분리로.
+  #         셸이 정말 필요하면 shell() 을 쓰되 /dev/null 이 아니라 NUL 을 쓸 것.
+  shell_meta <- "2>|1>|>>|>&|&&|\\|\\||/dev/null|\\s\\|\\s"
+  bodies <- c(.calls_of(txt, "system2"), .calls_of(txt, "system"))
+  if (any(grepl(shell_meta, .string_literals(bodies), perl = TRUE))) hits <- c(hits, 5L)
+
   unique(hits)
 }
 
 CODE_NAME <- c("1" = "system2(env=)", "2" = "top-level on.exit",
-               "3" = "leading-slash path", "4" = "resolver precedence")
+               "3" = "leading-slash path", "4" = "resolver precedence",
+               "5" = "shell syntax in system() argv")
 
 # ─── 본 스캔 ─────────────────────────────────────────────────────────────────
 cat("=== R portability contract scan ===\n")
@@ -174,14 +208,24 @@ fixtures <- list(
        src = c('PROJ <- "/mnt/c/Users/User/OneDrive/Quant_Module_Moltbot"')),
   list(code = 4L, name = "resolver_precedence",
        src = c('cands <- c(Sys.getenv("QM_ROOT", ""),',
-               '           Sys.getenv("CLAUDE_PROJECT_DIR", ""))'))
+               '           Sys.getenv("CLAUDE_PROJECT_DIR", ""))')),
+  # ⑤ 3형태: 실제로 발생했던 세 가지 shape 를 전부 주입한다.
+  #   a) lineage_utils.R 구 구현 (2026-08-02 적발)  b) update_research_philosophy.R:104
+  #   c) cert_backfill_audit.R 구 구현 (2026-07-26 CBA-06)
+  list(code = 5L, name = "shell_redirect_in_system",
+       src = c('sha <- system("git rev-parse HEAD 2>/dev/null", intern = TRUE)')),
+  list(code = 5L, name = "shell_chain_in_system",
+       src = c('system("git add -A && git commit --no-verify", intern = FALSE)')),
+  list(code = 5L, name = "shell_pipe_in_system2",
+       src = c('out <- system2("Rscript", args = c(f, "2>&1 | grep -E Tier"),',
+               '               stdout = TRUE)'))
 )
 for (fx in fixtures) {
   got <- detect(fx$src)
   if (fx$code %in% got) {
-    ok(sprintf("negative_control_%s", fx$name), sprintf("합성 위반 금칙 %d 검출됨", fx$code))
+    ok(sprintf("violation_injection_%s", fx$name), sprintf("합성 위반 금칙 %d 검출됨", fx$code))
   } else {
-    bad(sprintf("negative_control_%s", fx$name),
+    bad(sprintf("violation_injection_%s", fx$name),
         sprintf("합성 위반 금칙 %d를 검출하지 못함 — 검사기 무력(계측 사망)", fx$code))
   }
 }
@@ -193,7 +237,12 @@ clean_src <- c(
   'invisible(reg.finalizer(globalenv(), function(e) cleanup(), onexit = TRUE))',
   'cands <- c(Sys.getenv("CLAUDE_PROJECT_DIR", ""), Sys.getenv("QM_ROOT", ""))',
   'p <- tempfile("fx_")',
-  'system2(cmd, args = a, stdout = TRUE, stderr = TRUE)'
+  'system2(cmd, args = a, stdout = TRUE, stderr = TRUE)',
+  # 금칙 ⑤ 위양성 통제 — 정본 호출과 "> 를 품었지만 쉘 문법이 아닌" 리터럴
+  'sha <- system2("git", c("rev-parse", "HEAD"), stdout = TRUE, stderr = FALSE)',
+  'lg <- system2("git", c("log", "-1", "--pretty=format:%an <%ae>"), stdout = TRUE)',
+  'r <- system2(cmd, args = if (a || b) x else y, stdout = TRUE)',
+  'shell("dir 2>NUL")'
 )
 if (length(detect(clean_src)) == 0L) {
   ok("false_positive_control", "정본 패턴 오검출 0")
