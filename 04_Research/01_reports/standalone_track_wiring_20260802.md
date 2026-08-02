@@ -181,9 +181,26 @@ proxy grade 분포 A 5 / B 45, essence grade 분포 B 3 / C 39 / F 7 / 미측정
 
 ## 7. 남은 것
 
+라운드 종료 계약은 `close_round()` 로 발행했다(`.cache/last_round_closure.json`, verdict_type=`config_scoped_negative`, next_probe 4건, 부활 조건 4항). 판정은 **저장 cap-w essence basis 에만 scoped** 되며 신호 부재 판결이 아니다.
+
+### next_probe (기전 진단에서 도출)
+
+| # | 프로브 | 데이터 게이트 |
+|---|---|---|
+| **P1** | 상위 3건 dual-basis 재실측 — EW-유니버스 대비 + cap-tier(MEGA/MID) 분해. Chen-Welch 의 cap-w 2.537 → EW-uni 3.610 격차가 나머지 2건에도 있는지 | **열림 (실측 확인)** — 3건 전부 `sim_result.rds` + `bt_result.rds` + 10-component 계약 산출물(`04_holdings.csv` 포함) 보유. `canonical_screen_bt.R` 실존. ※`factor_engine.R` 은 부재라 엔진 재실행이 아니라 저장 holdings 기반 basis 재분석 경로 |
+| **P2** | `oos_retention` v2(anchored 3분할 {55/65/75} 중앙값) 로 49건 재산출 — 저장 v1 단일절단 의심 | 열림 (essence_score `oos_stat_version="v2"`) |
+| **P3** | 06-12~06-13 라벨분 45건 벤치 재베이스(07-02 IKS001→IKS200 수리 이전 vintage) — 현 dossier 우선순위 자체가 오정렬일 가능성 | 열림 |
+| **P4** | FR_RCMA 20건 overlay A/B 결과 ↔ standalone backlog 상위 교차 — 겹치면 MDD 구조 사유 확증(overlay 라우팅), 안 겹치면 독립 알파원 | 열림 (overlay 큐 기존 배선) |
+
+### 부활 조건 (INV-7, 경로-scoped)
+
+(1) P1 에서 EW-uni PORT_t ≥ 2.95 ∧ cap-tier 분해가 MEGA 벤치 아티팩트를 시사 → dossier 착수 · (2) P2 에서 retention ≥ 0.50 밴드 진입 → 보강증거 2/3 심사 · (3) P3 재베이스 후 PORT_t ≥ 2.80 → 재순위 후 상위 재심 · (4) 비-return 신규 원천과의 결합에서 PORT_t 개선 관측.
+
+### 배관/위생 잔여
+
 | 항목 | 상태 |
 |---|---|
-| **main 병합** | **미이행 — 이것이 되기 전까지 main 부팅에 상태라인이 뜨지 않는다.** 브랜치는 main 을 병합해 뒀으므로 `--ff-only` 로 충돌 없이 들어간다 |
+| **main 병합** | **미이행 — 이것이 되기 전까지 main 부팅에 상태라인이 뜨지 않는다.** 브랜치는 main 을 병합해 뒀으므로 충돌 없이 들어간다 |
 | worktree stash 1건 | `qepm/observability/events.jsonl` — main 판과 내용이 갈려 폐기하지 않고 보존. 본 작업 산출물 아님 |
 | 50건 dual-basis 재실측 후 처분 확정 | 미착수 — `standalone_track_dispositions.json` 비어 있음 |
 | `register_module()` catalog 승격 시 quarantine 행 회수 | 미수리 (본 과제 범위 밖, 별도 태스크) |
