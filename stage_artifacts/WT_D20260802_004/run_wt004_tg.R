@@ -30,9 +30,10 @@ tg_agent_brief(
                    "방향정렬 실측: 시스템 정본 배향은 고변동 롱(정보계수 +0.11~0.14 전 구간) — 어느 배향도 top-25 실현 alpha 없음",
                    "LowVol 선례가 family 오분류로 AX-001 강제 hook을 우회했던 정황 — 거버넌스 수리 등재")),
     list(type = "bullet", emoji = "➡️", heading = "다음",
-         items = c("Risk 단계 진행 비권고 (기대 alpha 음수) — 상태 ABORTED 기록, Q-Lead 판단 대기",
-                   "next_probe: AX-001 hook family 수리 / 위기 정의 이원화 표준 / 개인 순매수 기전 검증 / 오버레이-입력화(FQ 후보)",
-                   "산출물: alpha_package + alpha_validation + challenge_note (mailbox WT-D20260802_004)"))
+         items = c("Risk 단계 진행 비권고(기대 alpha 음수) — ABORTED 기록, Q-Lead 판단 대기",
+                   "next_probe: hook family 수리 / 위기 정의 이원화 / 개인 수급 기전 검증",
+                   "next_probe(조건부): 저변동 tilt의 오버레이-입력화 — FQ 등재 후보",
+                   "산출물: alpha_package·validation·challenge_note (mailbox 004)"))
   )
 )
 cat("[wt004tg] sent\n")
