@@ -1,0 +1,49 @@
+{
+  "task_id": "WT-D20260802_023",
+  "registered_at": "2026-08-02T22:20:00+0900",
+  "registered_before_measurement": true,
+  "selection_type": "chain",
+  "n_trials": 1,
+  "parent": "WT-D20260802_018 (FQ-002 파일럿) — 본 라운드는 FQ-125",
+  "provenance_honesty": "★같은 패널 재사용 라운드다 — WT-018 격자에서 관측된 셀(A_size)을 primary로 승격하는 것이므로, 본 라운드의 어떤 결과도 '독립 표본 확인'이 아니다. WT-018이 이 셀을 primary로 승격하지 않은 것(사후 선택 = sweep)이 옳았고, 본 라운드가 하는 일은 ① 승격을 사전등록으로 정식화 ② 문턱-근방 단일 draw 취약성(WT-013 sd 0.378)을 섭동 분포로 판정 ③ 전구간 크롤 지불 권고 산출. 진짜 독립 확인 = 전구간(2005~2023) 크롤 후 재측정.",
+  "hypothesis": "12M 누적 계약금액/시가총액(CTR_MAG_12M_MCAP)이 covered-universe 내 long-side directional 알파다. 소형주 틸트 교란은 WT-018에서 3축 기각 완료(pure 1/Size IC -0.0661 t -1.955 역풍 · score~1/Size 단면상관 -0.025 직교 · size-잔차화 후 +0.0774 t 1.906 생존).",
+  "primary_signal": {
+    "name": "CTR_MAG_12M_MCAP",
+    "formula": "w_amt / Size = [sum over disclosures d in trailing 12M, rcept_dt <= signal month end] contract_amount(d) / market_cap(t-1, 월말)",
+    "panel": "04_Research/method_frontier/fq002_contract_magnitude/panel_A.parquet (최초 체결값만 — is_correction 제외, parse_status==OK, SCOPE=all). 재크롤·재파싱 없음.",
+    "size_source": "grid_universe_size.parquet (RAWDATA@20260802_0304 빈티지 고정 — pin 유지)",
+    "event_set": "WT-018 사전등록과 동일 (변경 없음)",
+    "signal_date_basis": "rcept_dt (공시 접수일). 체결일 사용 금지.",
+    "filters": "K200∪KQ150 시변 멤버십 + t-1 30d ADV >= 2e8 + score > 0 (WT-018 mk_scores 동일)",
+    "direction_hypothesis": "positive"
+  },
+  "verdict_criteria": {
+    "primary": "★섭동 분포 q05 (FQ-109 규약, WT-013 실측 근거). 단일 t가 아니라: 멤버십/스코어 미소 섭동 draw별 월별 rank-IC 시계열의 t_NW(lag3)를 산출, pooled 분포의 5% 분위수(q05)가 0을 초과하면 '확정(lead 확립)', 아니면 '미확정'.",
+    "perturbation_protocol": {
+      "family_M_membership": "각 월 covered names를 독립 p=0.10로 제외 (IC 월 유효 최소 8종 기준은 base와 동일)",
+      "family_S_score": "각 월 스코어를 rank-z 변환 후 N(0, 0.10^2) 노이즈 가산 → Spearman IC 재계산",
+      "n_seeds": "가족당 60 시드 (총 120 draws — '최소 5시드' 요건 초과 충족, q05가 의미 있으려면 draw 수 필요)",
+      "statistic_per_draw": "t_NW(lag3) of 24-month IC series (mean_ic도 병기 기록)",
+      "q05_estimator": "quantile type 7 (R 기본)",
+      "no_sweep_declaration": "drop_frac=0.10 / noise_sd=0.10 / seeds=60은 측정 전 고정 — 어떤 섭동 파라미터도 결과 보고 후 변경하지 않는다"
+    },
+    "secondary_recorded_not_binding": [
+      "unperturbed rank-IC, t_plain, t_NW, ICIR (WT-018 parity 검증: A_size mean_ic 0.080559 / t_plain 1.972226 정확 재현 의무 — 불일치 시 STOP)",
+      "per-family q05 (M/S 각각)",
+      "q05 of mean_ic (pooled)",
+      "부기간 안정성: 전반 12개월 vs 후반 12개월 t·mean IC",
+      "A_size vs B_size paired (정정 반영판 대조 — 누출 지문 재확인)",
+      "lag1 스트레스 (A_size 신호 1개월 shift — C5 의무)",
+      "canonical_screen_bt dual-basis (cap-w + EW-uni + cap-tier) — 전이 벽 위치 재확인"
+    ],
+    "no_primary_change_rule": "보조 지표(IC t_NW, ICIR, 부기간)로 primary 판정을 바꾸지 않는다. q05 > 0 단일 기준."
+  },
+  "full_crawl_payment_rule": {
+    "recommend_pay_if": "pooled q05(t_NW) > 0 AND 양 가족 각각의 q05(t_NW) > 0",
+    "recommend_no_pay_if": "위 미충족",
+    "honesty": "WT-018 부활 조건 원문은 't>2.5 재현 시 지불'이나, 같은 패널의 unperturbed t는 결정론적으로 1.97 재현 — 2.5는 같은 표본에서 도달 불가. 본 라운드의 사전등록 대체 기준 = 섭동 q05(부호 강건성). 최종 지불 결정은 Q-Lead/도훈 (본 라운드는 권고만 산출).",
+    "full_crawl_cost": "22,533 호출 (2005~2023 확장)"
+  },
+  "scope_limit": "본 라운드 범위 = IC lead 확정까지. WT-018 dual-basis 실측(cap-w PORT_t -0.37 / EW-uni +1.49)이 보여준 전이 벽 미통과는 별개 관문 — IC 확정이 PORT_t 전이를 함의하지 않음을 사전 명시. graduation HARD 미적용(파일럿 표본 n=24).",
+  "pit_plan": "빌더-계층 위반 주입 검사기(08_Tests/data/test_contract_panel.R, WT-018 9/9) 재실행 + lag1 스트레스 + 신호월 말일 컷오프(C5) 구조 유지. WT_D20260714_004 screen_inputs.rds는 본 라운드에서 소비하지 않음(WT-020 플래그 자산 미사용 — grid_* 신선 빈티지 사용)."
+}
