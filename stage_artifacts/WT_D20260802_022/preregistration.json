@@ -1,0 +1,64 @@
+{
+  "task_id": "WT-D20260802_022",
+  "registered_at": "2026-08-02 (측정 전 고정 — 이 파일 작성 시점에 필터판 성과수치 일절 미산출. WT-014/016/020 승계 수치만 인용)",
+  "selection_type": "preregistered_single_primary_chain",
+  "n_trials": 1,
+  "mandate": "도훈 직접 지시 2026-08-02: '복권 종목 제외를 현 PG2에 적용해보면 어때'. WT-016은 weighted_screen 근사 프레임(book L5 대비 cor 0.668, 계층 상이로 parity STOP)이었고, 현 PG2 실코드 경로 측정이 미완 — 본 라운드가 실배치 판단의 마지막 관문(§7b).",
+  "lineage": "WT-D20260802_014(ΔIR +0.1692 bare 근사) → WT-D20260802_016(overlay-ON 근사 ΔIR +0.1284, paired t 1.551) → WT-D20260802_020(MAX5=63d 꼬리변동성 재포장 절반 확정: cor(zmax5,vol63)=0.939, 양측 꼬리 — CAUTION ret_spread +1.76%/월 t+2.08, 전기간 수익 스프레드 t −0.12) → 본 라운드(실코드).",
+  "production_path_definition": {
+    "book": "STR_1715_on_M4_R05_noLayer4_PG2 (현 PG2 book)",
+    "stock_layer": "04_Research/strategies/STR_1715_WT016_Iter31_GridBestProd/run_all.R §5 walk-forward VERBATIM 재현: alpha_scores(WT_D20260425_010) score_eff top-20, liq PIT t-30..t-1 ≥2e8, linear_tilt λ=1.5 + TOphi=3 (w_prev 체인), CRISIS ub 0.10, 15bps×turnover×2. 산출 대조 = 동일 코드의 오늘(2026-08-02) 실행분 output/03_period_returns.csv (run_id STR_1715_WT016_Iter31_20260802_LIVE, 271m).",
+    "overlay_layer": "noLayer4 공식 (05_Production/2-3 recompute_bt_noLayer4_clean.R VERBATIM): ret_noL4 = beta_R05_V5 × m4_weight_lag × ret_orig − |Δβ_R05|×0.0015. β_R05_V5 = run_layer5_rerun_extended.R §3~5 VERBATIM (plain top-20 R05_z_avg + expanding past-only q20, regime interaction, realized_ym=sig+1m 조인, NA→1.0). m4 = stage_artifacts/WT-D20260430_001_m4_extended.csv shift(1). β_faith/β_AR 없음(noLayer4).",
+    "benchmark": "정본 .cache/benchmark.parquet 일간 BM_Ret을 anchor 윈도우 (anchor[i-1], anchor[i]] Return.cumulative 복리 (recompute 스크립트 VERBATIM). WT-020 플래그 자산(WT_D20260714_004/screen_inputs.rds bench) 미사용 — 사유: 빌드일 절단 부분월 + 35개월 >1%p 괴리 플래그. 검증 anchor: 2026-07 월 = −0.2363 (정본 실측 일치 확인 후 등록)."
+  },
+  "primary": {
+    "name": "PG2_realcode_MAX5_X10_exclusion_full_path",
+    "definition": "실코드 경로 전체(선별→tilt→β_R05 재산출→m4→비용)에 MAX5_63 상위 10% 배제를 선별 유니버스 단계(top-20 선정 전)에 주입한 판 vs 무필터 현행판. 필터판의 β_R05_V5는 필터판 자신의 top-20 R05_z_avg + 자기 이력 expanding q20으로 재산출(실배치 counterfactual — 필터가 픽을 바꾸면 β 입력도 바뀌는 것이 production 코드의 실제 동작).",
+    "filter_rule": "MAX5_63 = stage_artifacts/WT_D20260802_014/alpha_scores.parquet (WT-010 ot_panel.max5 동결분, 재계산 없음). 배제 문턱 = Iter31 후보 프레임(sig_label에서 score_eff finite 전 종목) 내 횡단면 quantile(finite max5, 0.90, type=7), finite ≥30 아니면 미발동. max5 NA 종목은 배제 안 함. X=0.10 단일 고정, sweep 없음.",
+    "signal_timing": "max5 d0(전월말 거래일, 63거래일 창 종점) → 홀딩월 = month(d0)+1 = sig_label 월. d0 < start_d(첫 매수일) 구조적 보장 + assert_overlay_pit(used_cutoff=d0, holding_start=start_d) 전월 HARD 통과 의무.",
+    "metric": "paired NW lag-3 t on 월별 (active_f − active_b), active = ret_noL4_arm − bench_month. ΔIR = IR_f − IR_b, IR = mean(active)/sd(active)×√12 — net_active_recon_v1 (book recon net-active 컨벤션). WT-016 수치는 weighted_screen basis였음 — basis 라벨 구분 기재 의무.",
+    "paired_window": "max5 가용 홀딩월(2005-01 ~ 2026-04 예상 ~256m) ∩ 양팔 유효월. base 절대수치는 전 271m 병기."
+  },
+  "decision_criteria": {
+    "uphold": "ΔIR ≥ +0.05 ∧ paired t 부호 양수 → 실배치 상신 유지",
+    "withdraw": "ΔIR < 0 → 상신 철회",
+    "gray_zone": "0 ≤ ΔIR < +0.05 → 상신 보류 + 부활 조건 명시 (사전 고정)",
+    "no_capital_claim": "자본/book_state 변경 없음 — governor + 도훈 수동 경로만. 본 라운드 = 실배치 관문 특성화.",
+    "primary_immutability": "진단 arm(국면조건부 해제 포함)이 어떤 결과여도 primary 교체 금지 — 교체 = sweep 재분류."
+  },
+  "parity_gates_stop_conditions": {
+    "gate_A_stock_layer": "본 하네스의 무필터 재현 ret_net (271m) vs production 03_period_returns.csv (20260802_LIVE) — n_periods 일치 ∧ max|diff| ≤ 1e-8. 실패 시 즉시 STOP + 배선 진단(§7b, WT-016 선례). 통과 시 production_parity_verified 라벨.",
+    "gate_B_overlay_recon": "recon β_R05_V5·m4_weight_lag vs 2-1 stored period_returns_layer5.csv (269m, 07-02 vintage) — 불일치 월 > 2% 시 STOP-진단 (분류: 입력 패널 vintage 갱신 귀속 = 측정 유효 지속 / 배선 오류 = 측정 무효). recon ret_noL4 vs 2-3 stored 03_period_returns.csv ret_net — cor ≥ 0.999 기대, 미달 시 STOP-진단.",
+    "gate_C_pit_guard_alive": "위반 주입(컷오프를 홀딩월 말로 주입) 시 assert_overlay_pit stop() 미발화 → 가드 사망 판정 STOP.",
+    "gate_D_bench_anchor": "2026-07 벤치월 −0.2363 ± 0.001 재현 실패 시 STOP (WT-020 벤치 결함 플래그 방어)."
+  },
+  "preregistered_diagnostics_non_selective": {
+    "d1_regime_conditional_off": "production regime_state ∈ {CRISIS, CAUTION}인 sig 월에 필터 미발동 판 — WT-020 양측 꼬리(스트레스 국면 상방 지배) 설명과의 정합 검증. 참고용 unified_regime Category 분해 병기(WT-016 비교 가능성). 선택 사용 금지.",
+    "d2_x_sensitivity": "X=5% / 20% 판 — 문턱 민감도 진단.",
+    "d3_same_beta": "필터판 종목계층 ret_orig_f × base β·m4 스케줄 (β 재산출 없이) — 종목선택 순수 기여 vs β 경로 변화 기여 분리.",
+    "d4_ew_dual_basis": "동일 픽 EW(1/N) 가중판 양팔 — tilt 가중 아티팩트 여부 (v8.3 dual-basis).",
+    "d5_cap_tier": "Δactive의 size-tier(MEGA top10/MID 11-30/OTHER, 후보 프레임 Size 순위) 귀속 분해 — 종목계층 gross 기여 기준.",
+    "d6_stock_layer_bare": "overlay 없는 종목계층 bare paired (ret_orig_f vs ret_orig_b, 벤치 대비) — WT-014 bare 근사와의 계층 대응.",
+    "d7_lag1_stress": "max5 1개월 지연판 — WT-014/016 공통 편익 소멸 재확인 (동월 누출 판별검정).",
+    "d8_wt016_approx_bias": "primary ΔIR vs WT-016 기록 +0.1284 — 축소폭 = 근사 프레임 낙관 편의 정량 (WT-016 재실행 없음, 기록 인용).",
+    "d9_turnover": "양팔 연환산 회전 실측 (상한 11.0/yr 대비) + β-turnover 병기.",
+    "d10_ax001_conditional": "CRISIS 월(production regime) paired Δ 평균·t — AX-001 조건부 병기."
+  },
+  "pit_declaration": {
+    "C5_C10": "max5 창 종점 d0 = 홀딩월 시작 전 전월말 거래일 (간격 ≥1거래일). 필터 발동 전월 assert_overlay_pit HARD.",
+    "C1": "β_R05 q20 = expanding past-only (production 코드 그대로). 필터판도 자기 이력 expanding — full-sample 분위 사용 금지 (production forward 코드의 full-sample q20은 forward 단일시점용이며 본 backtest 재현은 expanding 경로 사용).",
+    "ret_firewall": "저장 Ret(rawdata)·동결 max5·저장 R05_Z 패널만 소비 — 재계산 금지.",
+    "vintage": "입력 파일 mtime·경로를 산출물에 기록 (§7 pinning)."
+  },
+  "chain_qualification": {
+    "iteration_policy": "iteration 없음 — 단일 primary 1회 측정. 변형 전부 사전등록 진단.",
+    "oos_policy": "holdout 미조회. 전기간 실측 + 사전등록 분해만.",
+    "dsr": "sweep 아님(n_trials=1) — DSR 게이트 부적용, 산출 생략 사유 = 단일 시험"
+  },
+  "honest_priors_both_sides": {
+    "shrink": "WT-016 ΔIR +0.1284는 근사 프레임(top-25 cap_norm, 25종)이었다. 실코드는 top-20 tilt + TOphi 0.75 관성 — 관성 블렌딩이 필터로 인한 구성 변화를 3/4 흡수해 Δ가 크게 축소되거나 소멸할 수 있다. 축소 자체가 정보(근사 낙관 편의의 크기).",
+    "amplify": "top-20은 top-25보다 집중돼 복권형 1종 배제의 한계 효과가 클 수 있고, tilt는 상위 랭크에 과중 — 배제가 상위 진입 종목을 바꾸면 EW보다 민감.",
+    "beta_path": "필터가 픽의 R05_z_avg를 바꿔 β_R05가 달라지는 2차 경로 — 방향 사전 예단 없음. d3(same-β)가 분리 측정."
+  },
+  "capital_claim": "없음 — book_state 무변경, governor 미접촉, 실주문 판단 없음."
+}
