@@ -1,7 +1,7 @@
 {
  "schema_version": "1.0",
  "sot": "02_Infrastructure/docs/qvest_v8_3_alpha_discovery_sot.md §4",
- "updated": "2026-08-03 (FQ-096 사전 확인: insider 풀 최강 원소 PORT_t +1.594 << 2.95 → 자본 도달 측정 전 불가·기전 가설 선행 조건으로 P3 하향. 사전 확인 4건 누적. 총 128건)",
+ "updated": "2026-08-03 (WT-001 승자 표지 미성립 t+0.234 — 수익 축 닫힘. FQ-104 전제 반증 종결, 파생 FQ-129 CAUTION 조건부 / FQ-130 MEGA full-spec 등재. 총 130건)",
  "consume_rule": "새 발굴 리서치 착수 전: hypothesis_index lookup → 본 큐 확인 → owner/status 갱신. 완료 시 result_ref(L-code/보고서) 기입. dohoon_decision 항목은 세션 임의 착수 금지.",
  "entries": [
   {
@@ -2045,10 +2045,15 @@
    "wall_check": "전이-벽 미검: 신호 성립해도 top-25 cap-w 전이는 별도 관문. 착수 시 dual-basis 선확인 의무.",
    "data_gate": "수급(개인/기관/외국인) 일별 패널 현행분으로 가능",
    "owner": "미배정",
-   "status": "blocked_until_wt20260803_001",
+   "status": "settled_negative_premise_refuted",
    "registered": "2026-08-02 Q-Lead (WT-D20260802_010 NP-2 파생)",
    "precheck_measured": "★착수 전 사전 확인 (2026-08-03 Q-Lead, read-only): **중복 위험 — WT-D20260803_001 대기 필요**. ① 개인 역방향 재료는 이미 풀에 있다: `INV07_Retail_Contrarian` 소비자 19파일 · `M22_Max_Return` 17 · `D05_MaxRet` 26 (전부 registry 등재·소비 중). 순수 개인-역방향은 이미 반영된 상태라 '신규 재료' 주장 불가. ② hypothesis_index 1,119건 중 역방향/점프 계열 15건 기실측 — Contrarian Composite=SCREEN_TIER · DART 내부자 Contrarian=FAIL · Contrarian Factor Timing=PASS · Anti-Crowding=PASS · L-620 contrarian_replacement=FAIL (혼재, 종목-레벨 개인 순매도 x 점프형 **교집합**만 미탐). ③ ★그런데 그 교집합을 **WT-D20260803_001(MAX5 x alpha-rank 상호작용)이 지금 측정 중**이다 — 상호작용이 D35 통제 후 생존하면 FQ-104 는 그 위의 수급 조건부로 설계하고, 소멸하면 FQ-104 의 전제(점프형이 승자)가 함께 무너진다. ⇒ **WT-001 판정 전 착수 금지**(중복 실행 + 전제 미확정).",
-   "blocking_dependency": "WT-D20260803_001 (MAX5 x alpha-rank 상호작용 — D35 통제 후 생존 여부)"
+   "blocking_dependency": "WT-D20260803_001 (MAX5 x alpha-rank 상호작용 — D35 통제 후 생존 여부)",
+   "verdict": "전제 반증으로 종결 (2026-08-03, WT-D20260803_001). 본 FQ 의 전제는 '점프형 종목이 승자'(WT-022 배제분 +1.16%/월)였는데, FM 상호작용 확정 시도에서 **t=+0.234 로 우연 범위 확정**(전 스펙 미달: 통제 전 -0.083 / D35 통제 후 +0.234 / 병렬 +1.281 / lag1 +1.188). 따라서 '개인이 파는 점프형을 사면 된다'는 수급-흡수 재설계의 출발점 자체가 성립하지 않는다. 추가로 zmax5 와 D35_RealVol_63d 의 월평균 상관이 **-0.918** — MAX5 는 사실상 단기 변동성의 역표현이라 '점프'라는 별도 현상으로 다룰 근거도 약하다.",
+   "revival_conditions": [
+    "FQ-129(CAUTION 국면-조건부)가 유의하면 국면 한정으로 재설계 가능",
+    "비선형·문턱형 상호작용 증거가 나오면 재도전(본 판정은 선형 z-상호작용·1M horizon config-scoped)"
+   ]
   },
   {
    "id": "FQ-105",
@@ -2394,6 +2399,31 @@
    "owner": "미배정",
    "status": "frontier_open",
    "registered": "2026-08-03 Q-Lead (WT-D20260802_022 파생, P1 — 측정 신뢰)"
+  },
+  {
+   "id": "FQ-129",
+   "lane": "regime_conditional",
+   "title": "★CAUTION 국면-조건부 MAX5 — 독립 2회 정합(t +2.05 / +2.08) 검정력 보강 재검",
+   "hypothesis": "MAX5 의 수익 축은 전체 표본에서 닫혔으나(WT-D20260803_001 상호작용 t +0.234), **CAUTION 국면에서만 두 라운드가 독립으로 문턱을 넘었다**: WT-D20260803_001 국면 분해 t **+2.05**(n=13) · WT-D20260802_020 CAUTION 수익 스프레드 t **+2.08**. 표본이 얇아 단독 승격은 불가하나 **서로 다른 설계에서 같은 국면이 나온 것**은 우연으로 접기 어렵다. pooled 패널 + 국면 더미로 검정력을 보강해 재검한다.",
+   "ev_rationale": "WT-D20260803_001 NP-1(P1). 다중검정 경고를 명시적으로 지고 가는 라운드 — 진단 셀 20+ 중 2개였다는 사실을 사전등록에 적고, 그럼에도 독립 2회 정합이라는 점이 재검 근거. 데이터·패널 전량 기지불.",
+   "wall_check": "국면-조건부 배분은 07-05 settled-negative 계열이고 WT-015 도 재탕-이하였다. 단 그것들은 **배분 비중** 라운드였고 본 건은 **선별 신호의 국면 조건화**라 층이 다르다. 그럼에도 라벨 품질 문제(FQ-119)는 그대로 걸리므로, CAUTION 라벨의 판별력을 먼저 확인할 것.",
+   "data_gate": "없음 (WT-001 controls_panel_d35.parquet + WT-020 패널 재사용)",
+   "owner": "미배정",
+   "status": "frontier_open",
+   "registered": "2026-08-03 Q-Lead (WT-D20260803_001 NP-1 파생)",
+   "precheck_required": "착수 전 CAUTION 라벨 자격 확인(FQ-119 규약: recall > base_rate ∧ fisher p<0.05). 무판별 라벨이면 WT-019 형 손실."
+  },
+  {
+   "id": "FQ-130",
+   "lane": "cap_tier",
+   "title": "MEGA tier MAX5 상호작용 full-spec 재검 — 축약 스펙 t +2.76 의 진위",
+   "hypothesis": "WT-D20260803_001 cap-tier 분해에서 **MEGA t +2.76** 이 나왔으나 축약 스펙(n=10/월, vol 통제 불가)이라 저검정력 라벨로 처리됐다. pooled panel + 월 고정효과 + vol 통제 full-spec 으로 재검하면 살아남는가. 살아남으면 **cap-tier 벽의 예외** 1건이라 값이 크다(지금까지 mega 는 신호-dead 가 반복 실측).",
+   "ev_rationale": "WT-D20260803_001 NP-2(P2). mega 에서 살아있는 신호는 이 저장소에서 드물어 확인 가치가 있으나, n=10/월 표본이라 사전 확률은 낮다.",
+   "wall_check": "cap-tier 국소화는 반복 실측된 벽 — MEGA 예외는 강한 주장이므로 검정력 요건을 엄격히.",
+   "data_gate": "없음 (동일 패널)",
+   "owner": "미배정",
+   "status": "frontier_open",
+   "registered": "2026-08-03 Q-Lead (WT-D20260803_001 NP-2 파생)"
   }
  ]
 }

@@ -1,0 +1,102 @@
+{
+  "task_id": "WT-D20260803_002",
+  "fq_id": "FQ-127",
+  "generated_at": "2026-08-03T07:55:00+0900",
+  "round_type": "base-dependency generalization audit — 08-02 개선 주장 전수 재판정. 자본 주장 없음, 기존 산출물 무수정.",
+  "metric_type": "realcode_recon_diag (tilt arm) / weighted_screen (capnorm arm) / canonical 근사 (ew25 arm) — 전 수치 라벨 병기, graduation 비대상",
+  "gate_eligible": false,
+  "selection_type": "preregistered_audit_no_selection",
+  "n_trials": 1,
+  "preregistration": "stage_artifacts/WT_D20260803_002/preregistration.json (측정 전 고정 — 분류·대상·판별 기준·parity 허용치 전부 사전 고정, 사후 재분류 0건)",
+
+  "a_inventory": {
+    "population": "08-02 라운드 23건 (alpha_validation.json 22 + WT-012 verdict.json) + frontier 큐 08-02 연동 항목 전수 read",
+    "improvement_claims_found": 8,
+    "claims": ["CL-1 WT-003 가중slot paired +2.569 (EW-25 base)", "CL-2 WT-005 RD-to-Market 회수 (canonical 수준 주장)", "CL-3 WT-009 PATHQ 교체 paired +2.028 (EW-25)", "CL-4 WT-014 MAX5 배제 ΔIR +0.1692 (cap_norm)", "CL-5 WT-016 MAX5 배제 overlay-ON ΔIR +0.1284 (cap_norm×overlay)", "CL-6 WT-018/023 계약금액 IC lead (IC 프레임)", "CL-7 WT-020 MAX5 위험지표 (FM 횡단면)", "CL-8 WT-021 POS2 조합 가산성 (EW-25, 비유의)"],
+    "classification_distribution": {
+      "A_production_parity_valid": ["WT-017", "WT-019", "WT-022 (음성 판정 3건 — carrier/recon parity 검증 base)"],
+      "B_readjudication": ["CL-3 (신규 재실측)", "CL-4 (WT-022 승계)", "CL-5 (WT-022 승계)", "CL-8 (신규 재실측)"],
+      "C_label_only": ["CL-1 (base arm 점수 패널 미저장 — wt003_full rds = period returns만 실측 확인)", "CL-2 (vs-benchmark 수준 주장 — ΔIR-vs-base 아님)", "CL-6 (IC 프레임, 포트 base 부재 — WT-023이 base_dependence 라벨 기부착 확인)", "CL-7 (FM 횡단면, 포트 base 부재)"]
+    },
+    "negative_rounds_not_in_scope": "WT-001/002/004/006/007/008/010/011/012/013/015 — 음성/불활성 판정은 '개선 주장'이 아니므로 재판정 모집단 제외 (사전등록 §inventory_frozen)"
+  },
+
+  "b_readjudication_table": {
+    "harness": "run_wt022_decomp.R 가중 함수 verbatim + WT-009 저장 패널 재소비 + K200∪KQ150 월말 멤버십(run_wt009_eval.R:52 방식) + liq 2e8 사전필터 + 15bps two-leg. n=295 (2001-12~2026-06 신호)",
+    "parity_gate": {
+      "T1_ew25_reproduced_paired_t": 1.516,
+      "T1_original_paired_t": 2.028,
+      "rule": "동부호 ∧ |Δt| ≤ 0.7 (사전등록)",
+      "observed_abs_diff": 0.512,
+      "verdict": "PASS — 근사 하네스 관습차(수익 윈도우 sig→sig vs canonical ME-grid, liq 결측 처리, 비용 적용 시점) 병기. 판정 도구는 하네스-내 가중 config 대조(내적 일관)이며 수준 재현이 아님"
+    },
+    "rows": [
+      {"claim": "CL-4 MAX5 X10 배제 (WT-014)", "orig_frame": "cap_norm top-25", "orig_delta_ir": 0.1692, "readj_frame": "rank-tilt tilt20+TOphi bare (WT-022 실측 승계)", "readj_delta_ir": -0.1131, "readj_paired_t": -1.794, "sign": "FLIP", "disposition": "원 주장 철회 확정(WT-022 기판정 승계) — size-weighted screen 계층 한정 라벨"},
+      {"claim": "CL-5 MAX5 X10 배제 overlay-ON (WT-016)", "orig_frame": "cap_norm×overlay", "orig_delta_ir": 0.1284, "readj_frame": "rank-tilt full-path (WT-022 승계)", "readj_delta_ir": -0.1489, "readj_paired_t": -1.976, "sign": "FLIP", "disposition": "동일 — 철회 확정 승계"},
+      {"claim": "CL-3 PATHQ vs M01 교체 (WT-009)", "orig_frame": "canonical EW-25 (재현 ew25: ΔIR +0.1261, t +1.516)", "orig_paired_t": 2.028, "readj_frame": "tilt20+TOphi (본 라운드 실측)", "readj_delta_ir": 0.1496, "readj_paired_t": 1.556, "readj_mean_d_ann_pct": 3.58, "sign": "HOLD", "disposition": "base-축 강건 — 단 교체 자체는 FQ-109(멤버십 jitter) 철회 존치. tilt에서도 t<2.0"},
+      {"claim": "CL-8 POS2 vs single (WT-021)", "orig_frame": "canonical EW-25 (재현 ew25: ΔIR +0.1400, t +1.395)", "orig_paired_t": 0.37, "readj_frame": "tilt20+TOphi (본 라운드 실측)", "readj_delta_ir": 0.1824, "readj_paired_t": 0.96, "sign": "HOLD", "disposition": "base-축 강건, 여전히 비유의 — WT-021 honest 라벨 유지 (P2 원칙의 base-이식성 확인)"}
+    ],
+    "full_config_grid": {
+      "T1_PATHQ_vs_M01": {"ew25": {"delta_ir": 0.1261, "paired_t": 1.516}, "tilt20_tophi": {"delta_ir": 0.1496, "paired_t": 1.556}, "tilt25_tophi": {"delta_ir": 0.1191, "paired_t": 1.378}, "capnorm25": {"delta_ir": 0.0916, "paired_t": 0.696}, "tilt20_CRISISub010": {"delta_ir": 0.1436, "paired_t": 1.487}},
+      "T2_POS2_vs_PATHQ": {"ew25": {"delta_ir": 0.14, "paired_t": 1.395}, "tilt20_tophi": {"delta_ir": 0.1824, "paired_t": 0.96}, "tilt25_tophi": {"delta_ir": 0.2032, "paired_t": 1.289}, "capnorm25": {"delta_ir": 0.2344, "paired_t": 2.528}, "tilt20_CRISISub010": {"delta_ir": 0.173, "paired_t": 0.872}},
+      "note": "T2 capnorm25 t +2.528은 진단 관측 — 사전등록상 어느 arm도 채택 후보 아님(감사 라운드). in-sample 성분 선별(WT-021 honest 라벨) 승계"
+    }
+  },
+
+  "c_flipped_claims": {
+    "count_flipped": 2,
+    "count_hold": 2,
+    "flipped": ["CL-4", "CL-5 (모두 배제-필터 × cap_norm base — WT-022 실측 승계, 본 라운드 신규 반전 0건)"],
+    "mechanism_per_flip": "배제-필터의 개입 대상(고 MAX5 종목)이 base 가중 규칙마다 무게가 다름: cap_norm에서 무게≈0(분모 축소 = 낙관 편의) / rank-tilt에서 최상위 비중(승자 컷 = 손실). WT-022 dropped-vs-added +1.16%/월 실측",
+    "mechanism_hold": "점수-교체(CL-3)·조합(CL-8)은 양 arm이 전역 재순위 — 개입 효과가 특정 무게-비대칭 꼬리에 집중되지 않아 가중 규칙을 가로질러 보존 (5 config 전부 부호 유지, CRISIS ub 감응도 포함)"
+  },
+
+  "d_systemic_verdict": {
+    "preregistered_rule": "B 4건 중 반전 ≥3 = 계통 / 1~2 = 부분 계통 / 0(신규) = cap_norm 국소",
+    "observed": "반전 2/4 (전부 승계분·필터 계열) + 신규 재판정 2건 부호 유지",
+    "verdict": "부분 계통 — base-의존 부호 반전은 '개입 대상의 무게 비대칭'이 존재하는 배제-필터 × size-가중 base 계열에 국소. 점수-교체·조합 주장은 가중 규칙에 강건 (본 라운드 실측). WT-022의 교훈은 '모든 ΔIR이 base에 깨진다'가 아니라 '필터형 개입의 ΔIR은 base 라벨 없이 소비 불가'로 정밀화",
+    "boundary_honesty": "CL-1(paired +2.569, base cap-w PORT_t 0.59의 약한 base)은 미검 — 부분 계통 판정은 검증 가능 4건에 한정. C-라벨 3건(CL-1/2/6·7)은 본 축 미판정이며 '유효 확인'이 아님"
+  },
+
+  "e_next_probe": [
+    "NP-1 (P1): FQ-128 production-parity 라벨 강제 배관과 접속 — 본 라운드 실측 분류기(개입 유형: filter형=base-라벨 의무 / rerank형=면제 후보)를 라벨 스키마에 반영. 필터형 ΔIR 주장은 delta_ir_basis에 base 가중 규칙 명기 없으면 상신 차단",
+    "NP-2 (P2): CL-1 재판정 잔여 경로 — WT-003 substrate(pure_factor_scores + ICIR 선별 cadence)를 재구동해 base arm 점수 패널을 재생성 후 동일 T1 프레임 적용. FQ-096(가중 slot × 비-return 재료) 착수 시 선행 단계로 병합 권고 (별도 라운드 아닌 그 라운드의 사전 gate)",
+    "NP-3 (P2): 'rerank형 강건' 명제의 반례 탐색 — 개입이 전역 재순위라도 점수 상관이 극단(>0.95)인 쌍에서는 차이가 꼬리 소수 종목에 집중되어 필터형과 같은 병리 가능. WT-013 RESID(상관 0.974) 쌍으로 1회 실측하면 경계 확정"
+  ],
+
+  "revival_conditions": [
+    "book stock layer가 size-weighted로 교체되면 CL-4/5 재이식 재검 (WT-022 revival 승계)",
+    "CL-3: FQ-109 멤버십-섭동 q05 규약이 tilt 프레임에서 q05>0을 내면 교체 재개봉 (base-축은 본 라운드가 이미 청산)",
+    "NP-3 반례 실측 시 '부분 계통' 판정을 '필터형+고상관 rerank형'으로 확장 개정"
+  ],
+
+  "consumption_face_7": {
+    "factor_ranking": "비적용 (감사 라운드)",
+    "universe_filter": "★필터형 개선 주장 소비 규약 확립 — base 가중 라벨 없는 필터 ΔIR은 어떤 소비면에도 이식 금지",
+    "overlay_regime_input": "비적용",
+    "risk_model_beta_budget": "비적용",
+    "monitoring_signal": "비적용",
+    "screening_label": "hurdle_gate screen_route에 개입유형(filter/rerank) 축 추가 근거 제공 (NP-1)",
+    "other_mode_transplant": "FR/RAMP 모듈 배합 paired 판정에도 동일 분류 적용 — rerank형은 가중 이식성 추정 가능, 필터형은 반드시 대상 가중 규칙에서 재실측"
+  },
+
+  "adversarial_checks": {
+    "C1_parity_gap": "PARTIAL — ew25 재현 t +1.516 vs 원 +2.028. 사전등록 허용(동부호·|Δ|0.512≤0.7) 내. 기전 후보 3종 명기(수익 윈도우 관습·liq 결측 처리·비용 시점). 판정은 하네스-내 config 대조라 수준 재현 불요",
+    "C2_revival_misread": "ACCEPT — CL-3 부호 유지를 '교체 부활'로 오독 금지 문구를 판정문·package challenge_flags에 이중 기재 (FQ-109 철회 독립 존치)",
+    "C3_regime_ub_omission": "REBUTTAL(정량) — CRISIS ub 0.10 적용판(25/295개월) T1 ΔIR +0.1436/t+1.487, T2 +0.1730/t+0.872 — 판정축 대비 부호·크기 안정 (fq127_adversarial_regime_ub.rds)",
+    "C4_pos2_insample": "ACCEPT — T2는 in-sample 성분 선별 편향을 양 config에 대칭 승계 — base-축 질문에는 유효하나 POS2 유효성 증거 아님 (원 라벨 유지)",
+    "C5_overreach_risk": "ACCEPT — '부분 계통'은 검증 가능 4건에 한정. CL-1 미검을 판정문에 명시(boundary_honesty)"
+  },
+
+  "artifacts": {
+    "eval": "run_fq127_eval.R / fq127_eval_results.rds / fq127_readjudication_table.csv",
+    "adversarial": "run_fq127_adversarial.R / fq127_adversarial_regime_ub.rds",
+    "charts": ["chart_fq127_before_after.png", "chart_fq127_config_grid.png"],
+    "package": "qepm/mailbox/worktask/WT-D20260803_002/alpha_package.json (+lineage)"
+  },
+
+  "graduation_hard_gates": {
+    "note": "감사 라운드 — forge 미제출, graduation 판정 비대상. 어느 arm도 채택 후보 아님",
+    "capital_claim": "없음 — book_state 무변경, governor 미접촉, 기존 산출물 무수정 (원 라운드 문서 갱신은 Q-Lead 소관)"
+  }
+}
