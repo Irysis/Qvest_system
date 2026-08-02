@@ -1,7 +1,11 @@
 # screen_route 소비 배관 수리 — STANDALONE_TRACK 소비자 0 결함
 
 **일자** 2026-08-02 · **발단** WT-D20260802_005 실측 적발 · **대상** `02_Infrastructure/hurdle_gate.R:1581-1599` screening tier 라벨
-**작업 트리** `claude/nice-bose-ef7044` (worktree `.claude/worktrees/nice-bose-ef7044`) — **main 미병합. 병합 전까지 main 에서는 이 배관이 없다.**
+**작업 트리** `claude/nice-bose-ef7044` (worktree `.claude/worktrees/nice-bose-ef7044`), 커밋 `44b1defa` + main 병합 `f5a651d9`.
+**병합 상태** 브랜치가 main(20:06 시점)을 전부 포함하므로 **fast-forward 병합 가능**. 병합 전까지 main 부팅에는 상태라인이 뜨지 않는다.
+```bash
+git -C C:/Users/99922/OneDrive/Quant_Module_Moltbot merge --ff-only claude/nice-bose-ef7044
+```
 **측정 기준** 스캔은 main 저장소 실데이터(`stage_artifacts/alpha_search` 715 run-dir) 기준. 워크트리 자체 데이터로 재실행해도 동일 수치(50/50/20/5)임을 대조 확인.
 
 ---
@@ -171,13 +175,16 @@ proxy grade 분포 A 5 / B 45, essence grade 분포 B 3 / C 39 / F 7 / 미측정
 
 5번은 이 과제의 결함과 **같은 계통의 자기 재현**이다: 등재(존재)를 소비(집계)로 착각했다. 배관을 놓는 작업을 하면서 그 배관의 하류 연결을 확인하지 않을 뻔했다 — 등재 목록에 이름이 오른 것과 그 결과가 실제로 읽히는 것은 다르다.
 
+**1번 결함의 부작용 — main 에 의도치 않은 쓰기 1건 (정직 고지)**: main-guard suffix 충돌 때문에 검사기를 처음 돌렸을 때 CLI 가 인자 없이 실행됐고(`write=TRUE`), 루트가 `QM_ROOT`=main 으로 해석돼 `06_Registry/standalone_track_queue.json` 이 **main 작업트리에 생성**됐다(14:10). main 의 auto-commit 이 이를 `9aa1b7df` 로 커밋했다. 내용은 현재 판과 counts 동일(492/70/50/50/20/5/0)이라 오염은 아니고, main 병합 시 재생성본으로 해소된다(add/add 충돌을 코드 재실행으로 정본화 완료). 다만 **워크트리 세션이 main 을 건드릴 수 있는 경로가 실재한다**는 사례로 기록해 둔다 — 루트 해석기가 `CLAUDE_PROJECT_DIR` 미설정 시 `QM_ROOT`(=main)로 떨어지는 구조 때문이다.
+
 ---
 
 ## 7. 남은 것
 
 | 항목 | 상태 |
 |---|---|
-| **main 병합** | **미이행 — 이것이 되기 전까지 main 부팅에 상태라인이 뜨지 않는다.** 브랜치 `claude/nice-bose-ef7044` |
+| **main 병합** | **미이행 — 이것이 되기 전까지 main 부팅에 상태라인이 뜨지 않는다.** 브랜치는 main 을 병합해 뒀으므로 `--ff-only` 로 충돌 없이 들어간다 |
+| worktree stash 1건 | `qepm/observability/events.jsonl` — main 판과 내용이 갈려 폐기하지 않고 보존. 본 작업 산출물 아님 |
 | 50건 dual-basis 재실측 후 처분 확정 | 미착수 — `standalone_track_dispositions.json` 비어 있음 |
 | `register_module()` catalog 승격 시 quarantine 행 회수 | 미수리 (본 과제 범위 밖, 별도 태스크) |
 | `FR_RCMA` / `TURNOVER_REVIEW` 소비자 | 여전히 0. 큐가 `routes_without_consumer` 로 20건 상시 계상 중 |
