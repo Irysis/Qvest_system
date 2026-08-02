@@ -1,0 +1,99 @@
+{
+  "task_id": "WT-D20260802_010",
+  "registered_at": "2026-08-02T21:35:00+0900",
+  "registered_before_any_performance_measurement": true,
+  "title": "최적수송(Wasserstein) 횡단면 팩터 — barycenter 분위편차의 우미부 성분 사전등록 (수학 심화 2호, FQ-097)",
+
+  "design_principle": "재탕 방지 = 구성적(constructive) + 실측 이중 방어. ① 구성적: 종목별 일간수익 분포를 robust location-scale(중앙값/MAD) 정규화 후 분위함수를 비교 — location(≈3M 모멘텀)·scale(≈실현변동성) 채널은 정리 수준에서 정확히 소거(중앙값·MAD의 affine 동변성, 구현검증 T5 정확 확인 의무). ② 실측: 잔여 형상 성분이 왜도·첨도 스칼라의 재조합이면 자기기각(아래 self_rejection_rule). 자유 파라미터 최소화: 창 63일 1개 + 분위 grid K=31 1개 + 꼬리 대역 [0.8,1] 사전 고정.",
+
+  "primary": {
+    "factor_id": "OT_W1_RTAIL_63",
+    "definition": "각 종목-월: sig_date까지 최근 63 거래일 저장 Ret(재계산 금지 — rawdata Ret 방화벽)의 경험분포를 robust 정규화 z=(r−median)/MAD(1.4826 스케일, MAD=0이면 IQR/1.349 폴백, 그것도 0이면 NA). 분위 grid u_j=(j−0.5)/31, j=1..31 (type-7 경험분위). 횡단면 barycenter q̄(u_j) = 당월 유니버스 전 종목 분위함수의 단순평균 (1D W2 barycenter 닫힌형 — Agueh-Carlier 2011: 1차원에서 barycenter의 분위함수 = 분위함수들의 가중평균, 정확). 편차 δ_i(u_j)=q_i(u_j)−q̄(u_j). RTAIL_i = mean over u_j>0.8 (j=26..31) of δ_i(u_j) — 부호 있는 우미부 질량 이동(barycenter 대비 우꼬리 초과 신장).",
+    "score_orientation": "score = −CS_z(RTAIL) (사전 고정, 사후 flip 금지). RTAIL 큰 종목(자기 일상 변동 대비 우꼬리가 횡단면 전형 형상보다 두꺼운 = 복권형/점프형)을 언더웨이트, 형상-온건 종목을 롱 셀렉션 상위로.",
+    "orientation_derivation": "복권수요 문헌에서 사전 도출: Bali-Cakici-Whitlock 2011 (MAX effect — 극단 양의 일간수익 종목의 익월 언더퍼폼), Kumar 2009 (개인의 복권형 주식 선호), Barberis-Huang 2008 (prospect theory의 왜도 과대가중). KR = 개인 거래비중 최상위 + 공매도 제약 → 과대가격이 차익거래로 즉시 소거되지 않음. 따라서 우미부-비대(정규화 후) ⇒ 익월 저성과 ⇒ score=−RTAIL. 주의: 본 정의는 MAX(원시 스케일 극단값)와 달리 스케일-프리(자기 MAD 대비) + 횡단면 전형 형상 대비 — 이 구분이 실측 직교로 성립하는지가 본 라운드의 판별 질문.",
+    "window_days": 63,
+    "min_valid_days": 40,
+    "quantile_grid": "K=31 midpoint, u_j=(j-0.5)/31. 꼬리 대역: right j=26..31 (u≥0.823), left j=1..6 (u≤0.177). grid 이산화 편향은 전 종목 동일 적용 — 횡단면 랭킹에서 소거(검증 T7에서 K=31 vs K=2001 편향 문서화).",
+    "zero_return_days": "저장 Ret 결측/비유한 일은 표본에서 제외 (분포는 순서 무관이므로 결측일 스킵이 창 길이 이질성만 남김 — min_valid_days 40로 방어)",
+    "cross_section": "월별 CS winsorize 3sd → CS z-score",
+    "combination_rule": "single_factor"
+  },
+
+  "selection_protocol": {
+    "selection_type": "preregistered_single_primary",
+    "n_primary_trials": 1,
+    "statement": "판정 대상은 OT_W1_RTAIL_63 하나. 아래 diagnostics는 분해·강건성·직교성 보고용 — 어떤 것도 primary를 대체하거나 argmax 선택되지 않는다. diagnostics 중 무엇이 잘 나와도 본 라운드 주장에 편입하지 않음(next_probe로만 승계). DSR sweep 게이트 비발동 구조이나 DSR 수치는 진단 기록.",
+    "no_flip_clause": "실측 부호가 사전등록 방향과 반대여도 본 라운드에서 부호를 뒤집어 재제출하지 않는다 — mechanism 반증으로 기록하고 flipped 버전은 next_probe."
+  },
+
+  "self_rejection_rule": {
+    "statement": "재탕 자기기각 사전 규칙: primary의 월별 CS Spearman |rho| 평균이 {D03_RealVol, D45_Downside_Dev, SKEW63(동일창 자체계산 왜도 — L42 등가), KURT63(동일창 첨도), M01_Mom_12_1} 중 어느 하나와 0.5 초과면 '스칼라 모멘트 재조합' 판정 — 차별 주장 철회 + verdict에 명기. 0.3~0.5 구간은 부분 중복 라벨(차별 주장 약화 명기).",
+    "note": "MAX5(동일창 상위5 일간수익 평균)와의 상관도 보고 의무 — MAX5는 admitted 팩터가 아니므로 자기기각 트리거는 아니나, |rho|>0.7이면 'MAX 효과의 재포장' 라벨을 verdict에 병기."
+  },
+
+  "declared_diagnostics_not_selection": [
+    {"id": "OT_W1_LTAIL_63", "def": "좌미부 대역(j=1..6) 부호 있는 편차 평균, orientation +LTAIL(좌꼬리 얕은=하방충격 적은 종목 롱) 라벨만", "purpose": "방향 분해 나머지 성분 — 기여 분해"},
+    {"id": "OT_W1_SHAPE_63", "def": "전 대역 |δ| 평균 (정규화 후 무부호 총 형상 거리)", "purpose": "형상 이탈 총량 — 부호 정보의 기여 판별"},
+    {"id": "OT_W1_RAW_63", "def": "정규화 없이 원시 수익 분위로 계산한 총 W1 거리", "purpose": "정규화 생략 시 vol 지배 입증(예상 |rho vs D03| 높음) — 구성적 방어의 필요성 실증"},
+    {"id": "OT_MEANC_63", "def": "위치 성분: 창 내 median − 횡단면 평균 median", "purpose": "정규화가 소거한 위치 채널(≈3M 모멘텀) 크기 확인"},
+    {"id": "OT_SCALEC_63", "def": "스케일 성분: log(MAD) − 횡단면 평균 log(MAD)", "purpose": "정규화가 소거한 스케일 채널(≈실현변동성) 확인"},
+    {"id": "SKEW63 / KURT63 / MAX5_63", "def": "동일 63일 창 자체계산 왜도/초과첨도/상위5 일간수익 평균 (orientation −, 복권 문헌 방향)", "purpose": "스칼라 모멘트 대조군 — 직교성 판별의 본체 + canonical 성과 비교(스칼라가 같은 성과면 재탕)"}
+  ],
+
+  "orthogonality_plan": {
+    "targets_admitted_axes": ["M01_Mom_12_1", "D03_RealVol", "D41_Vol_of_Vol", "D45_Downside_Dev", "D55_Vol_Trend", "D01_IdioVol"],
+    "targets_same_window": ["SKEW63", "KURT63", "MAX5_63", "OT_MEANC_63", "OT_SCALEC_63", "OT_W1_RAW_63"],
+    "source": "stage_artifacts/WT_D20260802_004 컴파일 패널(실측) + 동일창 자체계산(같은 데이터·같은 창 = 가장 날카로운 판별)",
+    "metric": "월별 횡단면 Spearman rank-cor 평균±sd",
+    "claim_to_test": "정규화가 location/scale을 구성적으로 소거했으므로 M01·D03 계열과는 낮아야 하고(구성 실패 검출), 왜도·첨도와의 상관이 self_rejection_rule 문턱 이하일 때만 '분포-형상' 차별 주장이 성립"
+  },
+
+  "measurement": {
+    "authority": "canonical_screen_bt() top-25 EW long-only, 15bps, liq 2e8, dual-basis(cap-w HARD + EW-uni + cap-tier) — proxy 손계산 금지",
+    "universe": "K200∪KQ150 월말 멤버십 (처음부터 배포 유니버스)",
+    "sig_months": "2004-12 ~ 최신-1 월말",
+    "benchmark": "유니버스 시총가중 forward (build_monthly_forward_returns 표준 하네스)",
+    "subperiods_advisory": ["~2014", "2015-2019", "2020~", "post-2017"],
+    "adversarial": [
+      "lag1 스트레스 (신호 1개월 지연 — 동월 누출 판별)",
+      "validate: M01 rank-IC 부호로 forward 라벨 방향 감사",
+      "placebo: 종목별 창을 (median, MAD) 일치 Gaussian 표본으로 치환(위치·스케일 보존, 형상 정보만 파괴) 5시드 전패널 재계산 — 신호 소멸 확인 = '형상' 채널이 원천임을 입증. 형상은 순서-무관이므로 순서 셔플은 부적합(분포 불변) — 채널-특정 placebo 설계"
+    ]
+  },
+
+  "falsification_side_observation": {
+    "field": "A6_investor_flow_stock_daily (investor_wide: Individual)",
+    "observation": "mechanism이 참이면(복권형 종목의 개인 추격이 과대가격을 형성) score 최하위 quintile(우미부-비대 = 복권형) 종목의 **신호 창 내** 개인 순매수/ADV·일이 최상위 quintile 대비 유의(NW t≥2)하게 높아야 한다. t<1이면 '개인 복권수요' 서사 기각 — 성과와 독립 판정.",
+    "note": "성과 동어반복 아님 — 수익이 나도 개인-flow 링크가 없으면 mechanism 기각, 통계 패턴만 남음(정직 라벨)."
+  },
+
+  "mechanism": {
+    "agent": "복권성 수익을 추구하는 개인투자자 (KR 개인 거래비중 최상위) — 최근 자기 일상 변동 대비 두드러진 양의 점프(우미부 신장)를 보인 종목을 주목·추격 매수. 반대편: 그런 점프가 없는 형상-온건 종목은 주목에서 소외되어 상대 저평가",
+    "friction": "KR 공매도 제약 — 복권형 과대가격의 즉시 하향 차익거래 불가. 월간 스크리너·리밸런서는 분포를 스칼라 모멘트(변동성·왜도·MAX)로만 요약 소비 — 분위함수 전체의 횡단면-상대 형상은 표준 팩터 셋에 없어 랭킹 비용이 차익을 지연",
+    "path": "주목·추격 수요가 소멸하는 익월에 과대가격 되돌림 — 우미부-비대 종목 언더퍼폼, 형상-온건 종목이 상대 초과수익. 월말 신호 → 익월 실현"
+  },
+
+  "regime_scope": {
+    "holds_in": ["NEUTRAL", "CRISIS"],
+    "weakens_or_reverses_in": ["RISK_ON"],
+    "boundary_rationale": "mechanism 도출: 복권 과대가격의 되돌림은 투기 수요가 물러날 때 실현 — 강세 투기 국면(RISK_ON)에서는 복권 종목의 주가 모멘텀이 지속되어 회피 비용 발생(약화/역전). 위기·중립에서는 주목 소멸+청산이 되돌림을 가속 — anti-lottery 틸트는 방어적 성격 예상. AX-001 조건부 평가(crisis_alpha·Core 대비 MDD·bad/normal IC ratio) 병기 의무."
+  },
+
+  "implementation_verification_mandatory": [
+    "T1 Gaussian 위치: W1(N(μ1,σ),N(μ2,σ)) = |Δμ| (분위 L1 닫힌형) — 고밀도 grid <0.1%",
+    "T2 Gaussian 스케일: W1(N(0,σ1),N(0,σ2)) = |σ1−σ2|·√(2/π)",
+    "T3 Uniform 쌍: W1(U[0,1],U[0,2]) = 1/2 (해석적분), 평행이동 W1 = |c|",
+    "T4 barycenter 닫힌형: bary{N(μ1,σ1),N(μ2,σ2)} 분위함수 = N(μ̄,σ̄) 분위함수 (1D 분위평균 정리 — 정확)",
+    "T5 affine 불변: r→a+b·r (b>0) 에서 정규화 파이프라인 RTAIL/LTAIL/SHAPE 정확 불변 (중앙값·MAD 동변성 — location/scale 소거의 구성적 증명)",
+    "T6 분해 항등식: location-scale family에서 비정규화 δ(u)=Δμ+Δσ·z(u) — RTAIL/LTAIL 수치가 닫힌형 재현 (비정규화 버전이 모멘텀+vol 재조합임을 정리 수준으로 입증)",
+    "T7 grid 수렴: K=31 vs K=2001 편향 문서화 + 동일분포 표본 n=63의 W1 노이즈 바닥 문서화",
+    "T8 위반 주입: (a) L1을 L2(Cramér)로 바꾼 오구현이 T2 이론값 검증에서 잡히는지 (b) 분위 정렬 누락 오구현이 잡히는지 — 검사기 실효 확인"
+  ],
+
+  "ast_declaration": {
+    "escape": "SPECIAL_OP (quantile-grid Wasserstein barycenter deviation — 𝒪 28 밖)",
+    "op_code_path": "stage_artifacts/WT_D20260802_010/ot_w1_lib.R",
+    "walk_forward": true,
+    "walk_forward_note": "trailing 63일 창 + 당월 횡단면의 결정론적 함수 — 학습/적합 일절 없음(파라미터 0 적합), full-sample 통계 미사용(C1 clean by construction). barycenter는 당월 횡단면만 사용(시계열 정보 없음 — C2/C3 비해당)"
+  }
+}

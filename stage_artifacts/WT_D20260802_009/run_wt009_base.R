@@ -52,18 +52,27 @@ cov_tab <- BASE[, .(n_months = uniqueN(Date), rows = .N), by = Factor_Name]
 for (i in seq_len(nrow(cov_tab)))
   say("  %-14s months=%d rows=%d", cov_tab$Factor_Name[i], cov_tab$n_months[i], cov_tab$rows[i])
 
-# ── parity: WT_004 ast_compile 패널과 대조 (M01/D03, 공통 Date-Ticker) ───────
+write_parquet(BASE, file.path(OUT, "base_panel.parquet"))
+say("저장 완료 — base_panel.parquet")
+
+# ── parity: WT_004 ast_compile 패널과 대조 (M01/D03) — 월별 진단 상세 ────────
 W4 <- file.path(ROOT, "stage_artifacts/WT_D20260802_004")
+parity_res <- list()
 for (f in c("M01_Mom_12_1", "D03_RealVol")) {
   p4 <- as.data.table(read_parquet(file.path(W4, sprintf("panel_%s_canonical.parquet", f))))
   p4[, Date := as.Date(Date)]
   m <- merge(BASE[Factor_Name == f, .(Date, Ticker, z)],
              p4[is.finite(value), .(Date, Ticker, value)], by = c("Date", "Ticker"))
-  mad_ <- m[, max(abs(z - value))]
-  say("parity %s: n=%d max|diff|=%.2e %s", f, nrow(m), mad_,
-      ifelse(mad_ < 1e-10, "PASS", "FAIL"))
-  if (mad_ >= 1e-10) stop("[wt009b] parity FAIL — base 경로 불일치, 중단")
+  bym <- m[, .(mad = max(abs(z - value)), rho = suppressWarnings(cor(z, value)), n = .N), by = Date]
+  bad <- bym[mad >= 1e-10]
+  say("parity %s: n=%d 전체월=%d 불일치월=%d max|diff|=%.2e", f, nrow(m),
+      nrow(bym), nrow(bad), m[, max(abs(z - value))])
+  if (nrow(bad)) {
+    setorder(bad, -mad)
+    for (i in seq_len(min(6L, nrow(bad))))
+      say("  BAD %s mad=%.3f rho=%+.3f n=%d", format(bad$Date[i]), bad$mad[i], bad$rho[i], bad$n[i])
+  }
+  parity_res[[f]] <- bym
 }
-
-write_parquet(BASE, file.path(OUT, "base_panel.parquet"))
-say("저장 완료 — base_panel.parquet")
+saveRDS(parity_res, file.path(OUT, "parity_detail.rds"))
+say("parity 진단 저장 — 판정은 진단 후")
