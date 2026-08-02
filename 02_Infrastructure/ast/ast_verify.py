@@ -623,11 +623,34 @@ class AstVerifier:
 
 
 # ----------------------------------------------------------------------------- 패키지 로딩
-def extract_ast(pkg):
+def extract_asts(pkg):
+    """[CF-10/ALB-006 CLI측 수리 2026-08-02] schema 정본 위치 factors[].ast 포함 전량 수집.
+    ALB-006 수리(08-02)가 ast_spec_gate.sh 훅에는 들어갔으나 이 CLI 는 구판 그대로였다 —
+    같은 결함이 두 소비자에 있는데 한쪽만 고치면 '수리됨'과 '안 됨'이 공존한다
+    (WT-D20260802_002 CF-10 적발). 다중 팩터는 전 팩터를 각각 검증해야 한다."""
+    out = []
     for holder in (pkg, pkg.get("factor_definition") or {}, pkg.get("spec") or {}):
         if isinstance(holder, dict) and isinstance(holder.get("ast"), dict):
-            return holder["ast"]
-    return None
+            out.append(holder["ast"])
+    for f in (pkg.get("factors") or []):
+        if isinstance(f, dict) and isinstance(f.get("ast"), dict):
+            out.append(f["ast"])
+    uniq, seen = [], set()
+    for a in out:
+        try:
+            k = json.dumps(a, sort_keys=True, ensure_ascii=False)
+        except Exception:
+            k = id(a)
+        if k in seen:
+            continue
+        seen.add(k)
+        uniq.append(a)
+    return uniq
+
+
+def extract_ast(pkg):
+    a = extract_asts(pkg)
+    return a[0] if a else None
 
 
 def extract_pit_dates(pkg, cli_sig, cli_td):

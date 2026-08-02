@@ -4,7 +4,10 @@ suppressPackageStartupMessages({library(data.table); library(arrow); library(jso
 QM <- "C:/Users/99922/OneDrive/Quant_Module_Moltbot"; setwd(QM)
 OUT <- "stage_artifacts/WT_D20260802_003"; MBX <- "qepm/mailbox/worktask/WT-D20260802_003"
 
-cov_dt <- as.data.table(read_parquet(file.path(OUT, "covariance.parquet")))
+## arrow mmap 잠금 회피(Windows 1224): ReadableFile 명시 open/close
+rf <- arrow::ReadableFile$create(file.path(OUT, "covariance.parquet"))
+cov_dt <- as.data.table(read_parquet(rf))
+rf$close(); invisible(gc())
 ids <- cov_dt$security_id
 S <- as.matrix(cov_dt[, -1]); rownames(S) <- ids
 eg <- eigen(S, symmetric=TRUE)
