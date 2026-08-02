@@ -110,7 +110,15 @@ sm_check_artifacts <- function(wt_id, phase) {
   for (art in required) {
     # Strip parenthetical comments e.g. "(or alpha-specific)"
     art_clean <- trimws(gsub("\\s*\\([^)]+\\)\\s*", "", art))
-    art_clean <- gsub("\\{ID\\}", gsub("WT-", "WT_", wt_id), art_clean)
+    # [2026-08-02 수리] {ID} 치환 이중 접두 버그 — 정책 템플릿은 "WT_{ID}" 인데
+    # 구판은 {ID} 에 "WT_D..."(wt_id 전체의 하이픈 변환)를 넣어 경로가
+    # "stage_artifacts/WT_WT_D.../" 가 됐다 → 실존 아티팩트(covariance.parquet 1.2MB)를
+    # 부재로 판정, RISK_DONE 전이가 항상 차단(WT-D20260802_003 실측 적발).
+    # 검사는 옳은데 경로 조립이 틀려 "있는 것을 없다"고 하는 형태 — 08-02 반복 계통.
+    # 정본: "WT_{ID}" 통짜는 정규화된 디렉토리명으로, 단독 "{ID}" 는 접두 뗀 몸통으로.
+    art_clean <- gsub("WT_\\{ID\\}", gsub("^WT[-_]", "WT_", wt_id), art_clean)
+    art_clean <- gsub("\\{ID\\}", sub("^WT[-_]", "", wt_id), art_clean)
+    art_clean <- gsub("\\{WT_ID\\}", wt_id, art_clean)   # mailbox 계열 템플릿({WT_ID}=원형)
 
     # Check absolute path or wt_dir relative
     if (startsWith(art_clean, "stage_artifacts/")) {
@@ -338,6 +346,19 @@ qvest_state_machine_selftest <- function() {
   waiver_test <- sm_check_waiver("WT-NONEXIST_001")
   if (!waiver_test$waiver) {
     cat("[PASS] waiver absence detection working\n")
+  }
+
+  # Test 5 (2026-08-02): {ID} 치환 이중 접두 회귀 — 정책 템플릿 "stage_artifacts/WT_{ID}/x"
+  #   가 "WT_WT_D..." 로 조립되던 버그(WT-D20260802_003 실측: covariance.parquet 1.2MB
+  #   실존인데 부재 판정 → RISK_DONE 상시 차단). 치환 규칙만 격리 검증한다.
+  .t5_tpl <- "stage_artifacts/WT_{ID}/covariance.parquet"
+  .t5_id  <- "WT-D20260802_003"
+  .t5 <- gsub("WT_\\{ID\\}", gsub("^WT[-_]", "WT_", .t5_id), .t5_tpl)
+  .t5 <- gsub("\\{ID\\}", sub("^WT[-_]", "", .t5_id), .t5)
+  if (identical(.t5, "stage_artifacts/WT_D20260802_003/covariance.parquet")) {
+    cat("[PASS] {ID} substitution: no double WT_ prefix\n")
+  } else {
+    cat(sprintf("[FAIL] {ID} substitution produced: %s\n", .t5))
   }
 
   cat(sprintf("\n=== Selftest %s ===\n",
