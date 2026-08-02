@@ -14,6 +14,28 @@ echo "=== Morning Briefing @ $(date) ==="
 source "$(dirname "${BASH_SOURCE[0]:-$0}")/resolve_project.sh"
 INFRA="$BASE/02_Infrastructure"
 
+# ── [0/5] 데이터 최신성 확보 — 브리핑보다 **먼저**, 그리고 필요하면 기다린다 ───
+# 도훈 지시 2026-08-03. 실측 경합(같은 날 로그):
+#   07:03 DailyRefresh 보충 실행 시작 → 07:10 이 브리핑 발화 → 07:50 리프레시 완료.
+#   PC 가 00:03 에 꺼져 있던 날이면 브리핑이 **갱신 중 디스크**를 읽고 렌더한다.
+#   아래 4.5 의 self-heal 층은 "리프레시가 이미 끝났다"는 전제로 설계돼 이 경우를 못 막는다.
+# ensure_data_current.sh 는 (1) 진행 중 리프레시가 있으면 완료까지 대기하고
+#   (2) 신선도를 실제로 **재고**, 이미 최신이면 아무것도 하지 않으며(중복 실행 방지)
+#   (3) stale 일 때만 daily_refresh 를 돌린 뒤 **재감사**한다.
+# ★rc=3(리프레시 후에도 stale)이어도 브리핑은 계속한다 — 침묵하는 것보다 "무엇이
+#   오래됐는지 표기된 브리핑"이 낫다. 대신 그 사실을 로그와 스탬프에 남긴다.
+echo "[0/5] 데이터 최신성 확보 (ensure_data_current)..."
+if [ -f "$INFRA/ops/ensure_data_current.sh" ]; then
+  bash "$INFRA/ops/ensure_data_current.sh"; EDC_RC=$?
+  case "$EDC_RC" in
+    0) echo "[0/5] 최신 확보됨" ;;
+    3) echo "[0/5] ⚠ stale 잔존 — 브리핑은 계속하되 신선도 경보가 함께 나감" ;;
+    *) echo "[0/5] ⚠ ensure_data_current 실행 실패(rc=$EDC_RC) — 브리핑 계속" ;;
+  esac
+else
+  echo "[0/5] ⚠ ensure_data_current.sh 부재 — 최신성 미보장 상태로 진행"
+fi
+
 # 1. KRX 데이터 최신화
 echo "[1/5] KRX Data Update..."
 cd "$BASE"

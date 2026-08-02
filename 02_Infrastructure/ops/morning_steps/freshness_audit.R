@@ -69,15 +69,31 @@ write_json(list(ran_at = format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z"),
            audit_path, pretty = TRUE, auto_unbox = TRUE, null = "null")
 cat(sprintf("Audit saved: %s\n", audit_path))
 
+# 기계 판독용 단일 라인 (2026-08-03) — ensure_data_current.sh 가 이 줄만 grep 한다.
+#   ★JSON 을 다시 읽는 별도 Rscript 를 띄우지 않는다: R 세션 기동 비용도 있지만
+#     더 중요한 건 그 하위 프로세스가 조용히 죽으면 호출자가 **빈 문자열**을 받고
+#     그걸 "stale 없음"으로 읽을 수 있다는 점이다(실측으로 그 상태를 봤다).
+#     판정을 만든 바로 그 프로세스가 판정을 직접 뱉는 게 가장 짧은 신뢰 경로다.
+cat(sprintf("EDC_RESULT stale=%d as_of=%s\n", length(stale_items), as.character(as_of)))
+
 # Stale 시 Telegram alert (mrs_daily 의 07:30 brief 전에)
 if (length(stale_items) > 0) {
   cat(sprintf("\n⚠️ STALE detected (%d items): %s\n", length(stale_items),
               paste(stale_items, collapse = ", ")))
-  source("02_Infrastructure/telegram/telegram_notify.R")
-  msg <- sprintf("\U0001F6A8 Morning Freshness Audit — %d stale\n\n%s\n\nbrief 07:30 송신 전 점검 필요",
-                 length(stale_items),
-                 paste(sprintf("- %s", stale_items), collapse = "\n"))
-  tryCatch(tg_send(msg), error = function(e) cat(sprintf("Telegram alert failed: %s\n", e$message)))
+  # QVEST_FRESHNESS_QUIET=1 → 판정·JSON 은 그대로 내되 Telegram 발송만 억제 (2026-08-03).
+  #   ensure_data_current.sh 가 "고칠지 말지" 정하려고 **사전** 감사를 한 번 돌린다.
+  #   그 단계의 stale 은 곧 고쳐질 수 있으므로 알릴 이유가 없고, 알리면 같은 아침에
+  #   경보가 두 번 간다(사후 감사에서 한 번 더). ★억제되는 것은 발송뿐 — 판정과
+  #   morning_freshness_latest.json 기록은 항상 남는다(조용한 통과가 아니다).
+  if (identical(Sys.getenv("QVEST_FRESHNESS_QUIET"), "1")) {
+    cat("[freshness] QVEST_FRESHNESS_QUIET=1 — Telegram 발송 억제 (판정/JSON 은 기록됨)\n")
+  } else {
+    source("02_Infrastructure/telegram/telegram_notify.R")
+    msg <- sprintf("\U0001F6A8 Morning Freshness Audit — %d stale\n\n%s\n\nbrief 07:30 송신 전 점검 필요",
+                   length(stale_items),
+                   paste(sprintf("- %s", stale_items), collapse = "\n"))
+    tryCatch(tg_send(msg), error = function(e) cat(sprintf("Telegram alert failed: %s\n", e$message)))
+  }
 } else {
   cat("\n✅ All sources FRESH — brief 07:30 발송 OK\n")
 }
