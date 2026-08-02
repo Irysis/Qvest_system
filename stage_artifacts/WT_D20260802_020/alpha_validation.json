@@ -1,0 +1,107 @@
+{
+  "task_id": "WT-D20260802_020",
+  "generated_at": "2026-08-02 21:40:00",
+  "metric_type": "fm_cross_sectional (월별 횡단면 LPM + NW lag-3 — 포트 구성 없음, proxy 손계산 없음)",
+  "gate_eligible": false,
+  "selection_type": "preregistered_single_primary",
+  "n_trials": 1,
+  "preregistration": "stage_artifacts/WT_D20260802_020/preregistration.json (측정 전 고정)",
+  "single_question_answer": {
+    "question": "MAX5는 기존 위험 축 통제 후에도 종목-레벨 crash를 예측하는가 — 아니면 변동성의 재포장인가",
+    "answer": "둘 다 참 — 축이 다르다. 252d 표준 위험 축(D01/D02/D03/D45, 전부 252d lookback 실측 확인) 통제 후 증분 실재(사전등록 판별 t>=2.0 충족: FM NW t +13.15). 그러나 동일 63d 창 vol63+dsd63 통제 시 소멸(t +0.95) — 증분의 정체는 'MAX5 고유 lottery 정보'가 아니라 '현행 위험 축에 부재한 단기창(63d) 꼬리-변동성 정보'."
+  },
+  "primary": {
+    "name": "MAX5_crash_prediction_FM_incremental",
+    "decision_rule": "mean(b_max5)>0 AND NW lag-3 t >= 2.0",
+    "fm_full_mean_b": 0.03177,
+    "fm_full_t_nw_lag3": 13.148,
+    "n_months": 256,
+    "n_rows": 76080,
+    "crash_base_rate_in_sample": 0.1011,
+    "verdict": "PASS — 252d 위험 축 대비 증분 실재 (해석 제약: 동일창 진단 병기)"
+  },
+  "preregistered_diagnostics": {
+    "fm_univariate": { "mean_b": 0.05088, "t": 22.357 },
+    "fm_same_window_vol63_dsd63": {
+      "mean_b": 0.00863, "t": 0.954,
+      "verdict": "★소멸 — 증분의 정체 = 63d 단기창 변동성 정보. MAX5 고유 서사 기각 (challenge C1 ACCEPT)"
+    },
+    "fm_abs_threshold_minus20pct": { "mean_b": 0.01193, "t": 8.428, "verdict": "라벨 정의 강건" },
+    "fm_boom_upside": { "mean_b": 0.01227, "t": 5.042, "verdict": "양측 꼬리 동시 예측 — fat-tail 구조" },
+    "r2_increment": { "ctrl_only": 0.0696, "full": 0.0804, "delta": 0.0107 },
+    "collinearity_monthly_mean_cor": {
+      "vs_D01_IdioVol": -0.715, "vs_D02_Beta": -0.235, "vs_D03_RealVol": -0.721,
+      "vs_D45_Downside_Dev": -0.633, "vs_vol63_same_window": 0.939, "vs_dsd63_same_window": 0.707,
+      "note": "부호 음수 = Z_Score_Aligned(IC 정렬) 방향 — 판정 비관여. 동일창 vol63과 +0.939 — 사전 posterior p1(강상관) 실측 확인"
+    }
+  },
+  "incidence": {
+    "crash_p_top_decile": 0.2135, "crash_p_base": 0.1012,
+    "crash_lift": 0.1123, "crash_lift_t_nw": 17.66, "crash_relative_risk": 2.11,
+    "boom_p_top_decile": 0.1556, "boom_p_base": 0.1013,
+    "boom_lift": 0.0543, "boom_lift_t_nw": 9.44,
+    "ret_spread_top_minus_rest_monthly": -0.00046, "ret_spread_t_nw": -0.12,
+    "decile_crash_rates_pct": [3.9, 5.3, 6.9, 7.4, 8.8, 9.4, 10.5, 13.0, 14.8, 21.6],
+    "note": "십분위 단조 — 발생률은 강하게 예측되나 평균수익 스프레드는 0과 구분 불가 (발생률 vs 평균의 분리 = 본 라운드 핵심 구조)"
+  },
+  "crisis_tension_resolution": {
+    "prereg_tension": "WT-014 배제 편익 CRISIS 음수(t -1.78)는 crash 예측 서사와 상충 — crash를 예측한다면 위기에 더 유효해야",
+    "regime_fm_b_max5": [
+      { "Category": "RISK_ON", "n": 200, "mean_b": 0.03351, "t_nw": 13.44 },
+      { "Category": "NEUTRAL", "n": 30, "mean_b": 0.02049, "t_nw": 2.51 },
+      { "Category": "CAUTION", "n": 13, "mean_b": 0.03258, "t_nw": 3.45 },
+      { "Category": "CRISIS", "n": 13, "mean_b": 0.03020, "t_nw": 2.33 }
+    ],
+    "regime_two_sided_tails_top_decile": [
+      { "Category": "RISK_ON", "n": 200, "crash_lift": 0.1187, "t_crash": 16.79, "boom_lift": 0.0601, "t_boom": 9.51, "ret_spread": -0.00097, "t_spread": -0.23 },
+      { "Category": "NEUTRAL", "n": 30, "crash_lift": 0.0965, "t_crash": 9.92, "boom_lift": 0.0174, "t_boom": 1.64, "ret_spread": -0.00655, "t_spread": -0.76 },
+      { "Category": "CAUTION", "n": 13, "crash_lift": 0.0619, "t_crash": 2.61, "boom_lift": 0.0740, "t_boom": 4.17, "ret_spread": 0.01755, "t_spread": 2.08 },
+      { "Category": "CRISIS", "n": 13, "crash_lift": 0.1010, "t_crash": 3.89, "boom_lift": 0.0314, "t_boom": 1.19, "ret_spread": 0.00330, "t_spread": 0.16 }
+    ],
+    "resolution": "긴장 해소 — crash '발생률' 예측은 전 국면 성립(CRISIS 포함: b_max5 t +2.33, crash_lift +10.1pp t +3.89). 그러나 배제 필터가 소비하는 것은 '평균수익'이고, 스트레스 국면(CAUTION/CRISIS)에서는 상방 꼬리(고베타/lottery 반등: CAUTION boom_lift +7.4pp t 4.17)가 crash를 상쇄해 평균 스프레드가 양수(CAUTION +1.76%/월 t +2.08). 즉 'crash 지표라면 위기에 더 유효해야'는 평균-기반 소비(필터)에 대한 기대였고, 발생률-기반 소비(위험모델 crash-name 지표·tail 예산)는 위기에도 유효. 소비 형태가 갈린다: 필터(평균)=NEUTRAL 국한 / 위험지표(발생률)=전 국면.",
+    "ax001_conditional": "AX-001 v2 병기 — 위험지표로서의 조건부 성과: CRISIS crash_lift +10.1pp(t +3.89) 유지. 셀 크기 13월 병기(challenge C3 PARTIAL — 4국면 방향 일관으로 보강)."
+  },
+  "cap_tier": {
+    "tiers": [
+      { "tier": "MEGA(size 1-10)", "crash_lift": 0.0465, "t_nw": 2.51, "tier_base_rate": 0.0590, "n_top_per_month": 1.0 },
+      { "tier": "MID(11-30)", "crash_lift": 0.0531, "t_nw": 3.35, "tier_base_rate": 0.0699, "n_top_per_month": 2.0 },
+      { "tier": "OTHER(31+)", "crash_lift": 0.1104, "t_nw": 16.99, "tier_base_rate": 0.1054, "n_top_per_month": 27.1 }
+    ],
+    "fm_within_other": { "mean_b": 0.03296, "t": 13.264, "n_months": 256 },
+    "verdict": "소형 국소 아님 — 전 tier 유의(강도 소형 우세). MEGA/MID 셀은 월 1~2종으로 발생률만 평가(정직 셀 크기 병기). 배포 유니버스(대형 편중 top-25)에서도 위험지표 유효"
+  },
+  "portfolio_tail_secondary": {
+    "label": "부수 진단 — 저검정력(tail 13월). ab 시계열은 SI bench 경유(bench 정합 플래그 병기)",
+    "ols_expo_to_active_b": -0.00453, "ols_t_nw": -0.75,
+    "pre_tail_expo": 0.2728, "non_tail_expo": -0.0768, "wilcoxon_p": 0.001,
+    "expo_coverage_weighted": 0.95,
+    "verdict": "선형 예측 무유의 — 그러나 하위 5% active 월 이전 포트 max5-z 노출이 유의하게 높음(p 0.001): 문턱형 tripwire 소비가 적합, 연속형 스케일링 소비는 근거 없음"
+  },
+  "pit_verification": {
+    "label_direction": "PASS — fwd Ret_1m을 독립 일간 저장 Ret 복리 재계산과 대조: cor 전체 1.0000 / 월중앙 1.0000 / 월최악 1.0000 (n_pairs 79,719). ret_firewall 준수(재계산은 검증 전용)",
+    "violation_injection": "FIRED — 동월(t) 수익 라벨 주입 시 검증기 cor 0.0052로 stop() 발화 (검사 실효 실증, Cycle 50 재발 방지 계열)",
+    "c15_controls": "통제 4축 전부 load_month_factors(d0) 경유 — 256개월 (parquet 직접 read 없음)",
+    "c5_signal": "max5 창 종점 d0(전월말) — WT-014 판정 승계",
+    "c1": "z/분위/문턱 전부 당월 횡단면만"
+  },
+  "plumbing_flags": {
+    "data_currency": {
+      "artifact": "stage_artifacts/WT_D20260714_004/screen_inputs.rds",
+      "defect": "d0=2026-06-30 라벨월 = 패널 빌드일(07-14) 절단 부분월: bench -0.2001 (through ~7/14 누적 -0.2032와 정합) vs 7월 전월 정본 -0.2363",
+      "contaminates_this_round": false,
+      "rule": "이 패널의 d0 >= 2026-04-30 라벨 소비 금지 — 재빌드 후 소비 (본 표본 d0 <= 2026-03-31)"
+    },
+    "bench_two_source": {
+      "known_family": "benchmark two-source divergence (08-02 사건 계보)",
+      "median_abs_diff": 0.003574, "max_abs_diff": 0.044903, "months_over_1pct": 35,
+      "worst_months": ["2026-03-31", "2026-01-30", "2025-11-28", "2025-08-29", "2023-06-30"],
+      "load_bearing_here": false,
+      "note": "primary 라벨 = 종목 횡단면(벤치 무관여). WT-014/016 paired Δ는 bench 완전 상쇄. 포트 진단만 간접 노출 — worst월 tail 미분류 확인. 동결 승계 자산 재빌드는 anchor parity 계약 충돌로 소유 라운드/인프라 큐 소관 (침묵 수리 없음)"
+    }
+  },
+  "survivorship_note": "라벨 결측(익월 수익 없음) 0.02% — 방향은 crash 탐지 하향(결론에 불리한 쪽)",
+  "graduation_hard_gates": {
+    "note": "본 라운드 = 위험-축 소비면 특성화 — forge 미제출, graduation 판정 비대상. 포트 구성·Σ·weights 산출 없음 (역할 경계 준수)",
+    "capital_claim": "없음 (admission/실배선 = governor + 도훈 수동)"
+  }
+}
