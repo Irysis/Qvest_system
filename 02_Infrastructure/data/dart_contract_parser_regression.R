@@ -117,6 +117,27 @@ if (is.null(V2)) {
   cat(sprintf("[reg] ⚠ v2 핀(%s) 로드 실패 — 정본 회귀축 미측정\n", V2_PIN))
 } else {
   cat(sprintf("[reg] v2 핀 로드 OK (%s) — 정본 회귀축 = v2 vs v3 (동일 바이트)\n", V2_PIN))
+  # ★기능 프로브: 참조가 **살아서 파싱하는지** 확인한다. 스텁이 죽어 값을 전부 NA 로
+  #   내면 v3 도 NA 인 행에서 '일치'가 나서 축 전체가 공허해진다("빈 결과 = 합격" 계통).
+  #   두 방향 다 건다 — 정상 문서에서 값을 뽑아야 하고, 오류 바디는 UNZIP_FAIL 이어야 한다.
+  probe_f <- head(list.files(file.path(ROOT, ".cache/dart/contract_docs"),
+                             pattern = "[.]bin$", full.names = TRUE), 1)
+  live <- FALSE
+  if (length(probe_f)) {
+    pp <- tryCatch(v2_parse(readBin(probe_f, "raw", n = file.info(probe_f)$size)),
+                   error = function(e) NULL)
+    live <- !is.null(pp) && identical(pp$parse_status, "OK") &&
+            isTRUE(!is.na(pp$contract_amount) && pp$contract_amount > 0)
+  }
+  errb <- charToRaw('<result><status>014</status><message>x</message></result>')
+  pe <- tryCatch(v2_parse(errb), error = function(e) NULL)
+  live_err <- !is.null(pe) && identical(pe$parse_status, "UNZIP_FAIL")
+  if (!live || !live_err) {
+    cat(sprintf("[reg] ❌ v2 참조 기능 프로브 실패 (parse_live=%s err_live=%s) — 축이 공허하다\n",
+                live, live_err))
+    quit(status = 4)
+  }
+  cat("[reg] v2 참조 기능 프로브 PASS (정상문서 파싱 ∧ 오류바디 UNZIP_FAIL)\n")
 }
 
 for (i in seq_len(nrow(D))) {
