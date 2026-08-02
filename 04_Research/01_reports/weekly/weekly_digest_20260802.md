@@ -49,11 +49,34 @@ sweep step [3.5] 실행 결과(promote 실행됨, dry-run 아님):
 - **near_miss 3건** · **confirm_flags 18** · **pending_5axis 89건(최고령 25일)** · quarantined_evidence **6건**(07-04 이후 정체 지속)
 - **failing axis 히스토그램**: external **72** · independence **71** · falsification **61** · mechanism **37** · rigor 2
 
-**진단 (정직)**: pending_5axis가 07-17 실측 49건 → 오늘 **89건**으로 늘었다. 백로그 드레인 의무(스킬 §2 ①, 세션당 5건+)가 3주 연속 미이행돼 적체가 배로 커진 상태다. 실패 축 분포가 external/independence/falsification에 몰려 있다는 것은 **개별 후보의 질 문제가 아니라 emit 지점에서 그 3축 입력이 구조적으로 안 채워진다**는 뜻 — 후보를 하나씩 정제하는 것보다 emit 스키마 보강이 상위 수리다.
+**진단 — ★1차 서술 정정 (같은 세션 실측으로 자가 반증)**
 
-**이번 세션 처리**: 오늘 라운드 3건의 L-code를 직접 emit하면서 `falsification_attempts`·`mechanism_hypothesis`·`next_probe`를 전부 채웠다(L-AR-20260802_134401/134402/134403). 이는 실패 축 3종 중 2종(falsification·mechanism)을 emit 시점에 채우는 표본이며, **emit 템플릿 보강의 실물 근거**로 남긴다.
+초판에 "실패 축이 external/independence/falsification에 몰려 있으니 emit 스키마 보강이 상위 수리"라고 썼는데, **카드 89건을 직접 열어보니 틀렸다**. 두 개의 다른 층을 혼동한 오진이었다:
 
-**이월 사유 명기**: near-miss 3건 statement 정제 + pending_5axis 89건 드레인은 이번 세션에서 미이행. 사유 = 이 주 세션 자원이 알파 라운드 9건 + 판정 수집에 배분됐고(존재의의 = 알파시킹, CLAUDE.md Project Goals), axiom 드레인은 알파 라운드를 막는 결함이 아니다. **다음 세션 최우선 인프라 항목으로 등재**하되, 드레인 방식은 개별 정제가 아니라 **emit 스키마 보강(external/independence 축 자동 충전)** 으로 접근할 것 — 개별 정제는 89건 앞에서 산술적으로 따라잡지 못한다.
+- `failing_axis_histogram`(external 72·independence 71·falsification 61…)은 **CAND(candidate) 레벨의 promote 판정** 결과다.
+- `pending_5axis` 89건은 **DIST 카드 레벨**이고, 실측하니 **89건 전부** `statement_refined=None` · `adversarial_verdict=None` · `frontier=[]` · `live_trigger=[]` · `constraint_firewall=None`이다. 즉 5축 검증에서 막힌 게 아니라 **자동초안(`draft_proposed`) 단계가 한 번도 실행된 적이 없다**. 스킬 §0.2 주석대로 스윕은 `draft_proposed`를 호출하지 않고, 그 호출은 /cleaner 세션 몫인데 그 세션이 3주 연속 초안을 안 돌렸다.
+
+같은 계통의 반복이다 — **"검사가 옳은 것을 재지만 잘못된 지점에 서 있다"**(메모리 [[project-ast-sidecar-survivorship-wiring-20260802]]). 이번엔 검사가 아니라 내 진단이 잘못된 지점을 봤다. 히스토그램이라는 *있는 숫자*로 설명을 만들고 카드 실물을 안 열어본 것이 원인이다.
+
+**팽창 기전 실측 (2차 진단)**: 완전 중복은 0건(cluster_key 89 distinct, supporting-집합 동일 0)이나 **부분집합 쌍 30건**이 있었다. 같은 클러스터가 L-code가 늘 때마다 새 `dist_id`로 재등재되는데 **구 카드가 회수되지 않아** 백로그가 부푼다.
+
+**이번 세션 실처리**: 엄격 기준(진부분집합 ∧ family/polarity/type/research_mode 전부 동일)으로 **superseded 9건 확정** → 지식 손실 0 검증(구 카드 supporting L-code가 신 카드에 전량 포함, 미포함 0건) 통과 후 `expire_distilled(reason=superseded_by=...)` 집행. **pending_5axis 89 → 80**, expired 10 → 19.
+
+| 회수(구) | 흡수(신) | family | n_L |
+|---|---|---|---|
+| DIST-RAMP-008 | DIST-RAMP-014 | value | 12 ⊂ 31 |
+| DIST-AR-014 | DIST-AR-040 | momentum | 14 ⊂ 15 |
+| DIST-GEN-001 | DIST-GEN-004 | overlay_regime | 9 ⊂ 10 |
+| DIST-AR-030 | DIST-AR-037 | overlay_regime | 5 ⊂ 9 |
+| DIST-AR-029 | DIST-AR-039 | infra_process | 6 ⊂ 7 |
+| DIST-AR-006 | DIST-AR-017 | value | 3 ⊂ 5 |
+| DIST-AR-015 | DIST-AR-031 | quality_earnings | 1 ⊂ 4 |
+| DIST-AR-004 | DIST-AR-027 | consensus | 1 ⊂ 3 |
+| DIST-AR-013 | DIST-AR-028 | flow_supply | 1 ⊂ 2 |
+
+**남은 80건의 정본 처리**: 초안 미실행이 원인이므로 수리는 두 갈래다 — ① **재등재 시 구 카드 자동 supersede**(파이프라인 결함, 이번 9건은 수동 회수했으나 재발한다) ② `draft_proposed` 실행 자체를 세션 규약이 아니라 **기계 스텝으로 승격**(현행은 "세션이 해야 한다"는 문서 규약뿐이고 강제가 없어 3주 연속 미이행이 가능했다). 개별 정제는 80건 앞에서 산술적으로 따라잡지 못하며, 실제로 이번 회수 9건이 개별 정제 9건보다 싸고 확실했다.
+
+**이월 사유**: 초안 작성(supporting L-code 실측을 읽어 statement 정제 + 적대검증 5체크)은 카드당 다수 L-code 정독이 필요해 이번 세션 잔여 자원으로는 상위 몇 건에 그친다. 알파 라운드 판정 수집이 병행 중이고(존재의의 = 알파시킹), 위 ①② 구조 수리가 개별 초안보다 EV가 높다고 판단해 **다음 사이클 최우선 인프라 항목**으로 등재한다. 잔량 80건·최고령 2026-07-08 명기.
 
 ---
 
