@@ -1,0 +1,99 @@
+{
+  "task_id": "WT-D20260802_017",
+  "generated_at": "2026-08-02T21:20:00+0900",
+  "metric_type": "weighted_screen",
+  "preregistration": "stage_artifacts/WT_D20260802_017/preregistration.json",
+  "carrier": {
+    "path": "06_Registry/book_carrier/carrier_STR_1715_AR_on_M4_R05_overlay_PG2.parquet",
+    "n_months": 269,
+    "span": "2004-02 ~ 2026-06 eval (홀딩월 2004-01~2026-05)",
+    "parity": "carrier_meta.json — production run_all.R 285-405 verbatim + validated_against STR_1715 production output (§7b 선례). 검증앵커: BARE absSR 1.536/MDD −40.7% = 2026-06-18 H2 bare 정확 일치",
+    "coverage_limit": "2026-06/07 홀딩월 미포함 (carrier vintage 2026-06-18) — 7월 폭락월 표본 밖"
+  },
+  "prior_contrast_inv7": {
+    "old_configs": [
+      "h2_regime_overlay_ab 2026-06-18: 동일 스케줄 stacked SR 1.670 < book 1.685 (비공식 관찰)",
+      "WT-D20260802_015: 같은 라벨 배분 소비 손실 (로테이션 0.904 < 단일 2.050)",
+      "BearProb 2026-07-05/06: overlay lane 동월 look-ahead 실사고 (본 라운드 PIT 규율 근거)"
+    ],
+    "rerun_verdict": "선행 H2 관찰을 정식 판별(paired t/ΔIR)로 확정 — 결론 동일 방향(negative), 신규 기여 = 라벨-실현 판별력 0의 통계 확정 + WT-015 CRISIS +4.98% 기전 규명"
+  },
+  "arm_stats": {
+    "BARE":        {"port_t": 6.40, "ir": 1.478, "abs_sr": 1.536, "abs_mdd": -0.407, "turnover_annual": 10.3, "n_months": 269},
+    "BOOK_M4xR05": {"port_t": 6.18, "ir": 1.410, "abs_sr": 1.711, "abs_mdd": -0.233, "turnover_annual": 10.3, "n_months": 269},
+    "CAND_regime_x_book": {"port_t": 5.08, "ir": 1.190, "abs_sr": 1.686, "abs_mdd": -0.233, "turnover_annual": 10.3, "n_months": 269},
+    "REGIME_ONLY": {"port_t": 5.21, "ir": 1.230, "abs_sr": 1.557, "abs_mdd": -0.290, "turnover_annual": 10.3, "n_months": 269},
+    "STRESS_LAG2": {"port_t": 4.81, "ir": 1.131, "abs_sr": 1.654, "abs_mdd": -0.233, "turnover_annual": 10.3, "n_months": 269},
+    "DIAG_ORACLE_LOOKAHEAD": {"port_t": 7.87, "ir": 1.736, "abs_sr": 2.162, "abs_mdd": -0.092, "note": "실현 BM<0 완전예지 g=0.40 — look-ahead 상한 진단 전용, 본판정 비사용"},
+    "BOOK_EWbasis": {"port_t": 5.33, "ir": 1.273, "abs_sr": 1.724, "abs_mdd": -0.275},
+    "CAND_EWbasis": {"port_t": 4.41, "ir": 1.071, "abs_sr": 1.689, "abs_mdd": -0.255}
+  },
+  "paired_tests": {
+    "marginal_cand_vs_book":     {"paired_t_nw": -1.85, "n_months": 269, "mean_d_annualized_pct": -2.38, "t_post2017": -1.80},
+    "regimeonly_vs_book":        {"paired_t_nw": -1.68, "n_months": 269, "mean_d_annualized_pct": -2.11, "t_post2017": -1.92},
+    "marginal_lag2_vs_book":     {"paired_t_nw": -2.57, "n_months": 269, "mean_d_annualized_pct": -3.65, "t_post2017": -1.78},
+    "oracle_vs_book_DIAG":       {"paired_t_nw": 1.18, "n_months": 269, "mean_d_annualized_pct": 2.14, "t_post2017": 0.61},
+    "marginal_cand_vs_book_EWbasis": {"paired_t_nw": -2.04, "n_months": 269, "mean_d_annualized_pct": -2.35, "t_post2017": -1.72},
+    "cost_stress_marginal": {"paired_t_nw": -1.87, "mean_d_annualized_pct": -2.41, "note": "overlay 노출 회전 증분(0.22/yr) 15bps delta-cost 반영"}
+  },
+  "delta_ir_cand_minus_book": -0.22,
+  "preregistered_verdict_rule": "독립 = t ≥ +2.0 ∧ ΔIR ≥ +0.05 / 유해 = t ≤ −2.0 / 그 외 = 중복·노이즈",
+  "verdict": "NEGATIVE (중복·노이즈 — 문자 그대로는 유해 문턱 −2.0 미도달이나 방향 일관 부정: EW기저 −2.04, lag2 −2.57. 독립 한계기여 없음, 점추정 유해 −2.38%/yr)",
+  "label_vs_realized": [
+    {"Category": "RISK_ON", "n": 209, "bench_ann": 0.0816, "frac_bm_neg": 0.426, "active_book_ann": 0.3024, "active_cand_ann": 0.3024},
+    {"Category": "CRISIS",  "n": 15,  "bench_ann": 0.9013, "frac_bm_neg": 0.400, "active_book_ann": -0.2502, "active_cand_ann": -0.6408, "t_marginal": -1.90},
+    {"Category": "NEUTRAL", "n": 32,  "bench_ann": 0.2610, "frac_bm_neg": 0.344, "active_book_ann": 0.2988, "active_cand_ann": 0.2988},
+    {"Category": "CAUTION", "n": 13,  "bench_ann": -0.1023, "frac_bm_neg": 0.385, "active_book_ann": 0.2407, "active_cand_ann": 0.1992, "t_marginal": -1.20}
+  ],
+  "label_predictive_power": {
+    "bm_neg_recall": 0.10, "bm_neg_precision": 0.39, "bm_neg_base_rate": 0.41, "fisher_p": 1.0,
+    "deepdown": [
+      {"threshold": "BM<0",   "n": 111, "recall": 0.10, "fisher_p": 1.0},
+      {"threshold": "BM<-5%", "n": 41,  "recall": 0.17, "fisher_p": 0.161},
+      {"threshold": "BM<-8%", "n": 15,  "recall": 0.20, "fisher_p": 0.196}
+    ],
+    "crisis_month_chronology_note": "CRISIS 라벨월(m-1) 15건 = 2004-07/08, 2008-12~2009-05(반등월 +9.3/+21.1/+12.0% 포함), 2011-11(+12.6%), 2020-05/06(코로나 반등 +10.7/+9.0%), 2026-01/04/05/06(멜트업 +12.7/+29.0/+33.4%) — 라벨은 위기 '후' 반등월에 발화하는 지연 지표"
+  },
+  "realized_down_axis": {
+    "bm_neg_months": {"n": 111, "mean_bm": -0.0422, "active_book_m": 0.0350, "active_cand_m": 0.0366, "t_marginal": 2.28},
+    "bm_pos_months": {"n": 158, "mean_bm": 0.0495, "active_book_m": 0.0135, "active_cand_m": 0.0089, "t_marginal": -2.43},
+    "interpretation": "노출 축소는 실현 하락월에서는 기계적으로 active를 올리나(+2.28) 라벨이 하락월을 못 잡아(recall 0.10) 상승월 비용(−2.43)이 지배 → 순효과 −1.85"
+  },
+  "crisis_4_98_discrimination": {
+    "question": "WT-015 CRISIS 라벨 25개월 active +4.98%/yr가 방어 성공인가 라벨 우연인가",
+    "answer": "라벨 우연 — 사전등록 규칙 (i) CRISIS 라벨월 실현 BM<0 비율 0.40 ≈ base 0.41 (ii) CRISIS 라벨월 벤치 연율 +90.1% (위기 아님, |bench|<5% 조건도 위기 방향으로 기각) (iii) hit rate 무작위 동등(fisher p=1.0). CRISIS 라벨월은 반등/멜트업 월 — 그 달의 +active는 보유 종목의 반등 참여이지 방어가 아니며, 노출 축소는 오히려 active를 −25.0%→−64.1%로 악화"
+  },
+  "pit_verification": {
+    "assert_overlay_pit": "PASS (269개월, 라벨월말 RegDate < 홀딩월 시작 decision_date, 간격 median 1일 [1,1])",
+    "violation_injection": "홀딩월 자체 라벨(RegDate > 홀딩 시작) 주입 시 assert stop 발화 확인 (차단 실효)",
+    "lag_stress": "m-2 라벨 시 paired t −2.57 (m-1 −1.85보다 더 악화 — look-ahead 인플레 부재, 유해 방향의 진성 신호 결여와 정합)",
+    "strict_ab_note": "현 타이밍(m-1 월말) = strict(홀딩월 시작 전) 동일 — 인플레 0"
+  },
+  "ax001_conditional": {
+    "crisis_alpha_book_ann": -0.2502, "crisis_alpha_cand_ann": -0.6408,
+    "mdd_bare": -0.407, "mdd_book": -0.233, "mdd_cand": -0.233,
+    "mdd_note": "후보는 노출을 깎고도 MDD 개선 0 (−23.3% 동일) — 라벨이 실제 폭락월을 놓치는 직접 증거. 오라클은 −9.2%",
+    "bad_normal": "BM<0월 active: book +3.50%/m vs cand +3.66%/m (+) / BM>0월: book +1.35%/m vs cand +0.89%/m (−)"
+  },
+  "production_constraints": {
+    "turnover_annual_limit": 11.0,
+    "observed_equity": 10.3,
+    "overlay_churn_increment": 0.22,
+    "verdict": "상한 이내 — 회전은 관문 아님"
+  },
+  "oos_rough_diag": {"BOOK": 0.55, "CAND": 0.41, "REGIME_ONLY": 0.40},
+  "seg_2026_localization": "2026 CRISIS 라벨 구간(1·4·5월 홀딩, g=0.40): 벤치 +12.7/+29.0/+33.4% 멜트업에서 후보 active −9.5/−20.7/−30.4% vs book −4.8/−8.3/−26.1% — WT-004 라벨 오염 실측과 정합",
+  "revival_conditions": [
+    "unified 라벨 엔진이 실현-하락 포착력을 회복(BM<0 recall > base rate, fisher p<0.05)하도록 개보수되면 동일 사전등록 스케줄로 재측정",
+    "carrier 2026-07+ 재생성 시: 2026-06월말 라벨=CRISIS로 7월 폭락(-23.6%)은 방어됐을 것 — 단 2~6월 연속 CRISIS 오발화 누적 비용과의 순액 재판정 필요 (stopped-clock 여부 확정)"
+  ],
+  "graduation_hard_gates": {
+    "note": "부정 판정 — graduation 비해당. 자본 주장 없음 (overlay 변경은 도훈 수동 영역)"
+  },
+  "repairs": {
+    "r1_weight_grouping": "W_strat 정규화 그룹에 Ticker 오포함 → 전 arm EW 붕괴 (1차 실행). 지문 = BOOK==BOOK_EW 동치. 수리 + 재발 가드(strategy tilt > EW×1.05 월 비중 90% assert) 배선. 위반 주입 등가 = 1차 실행 자체가 결함 발화 증거(BOOK_EW와 정확 동치), 수리 후 분리 확인(BOOK 6.18 vs BOOK_EW 5.33)",
+    "r2_sprintf_passthrough": "say(ab$message)가 %를 format으로 해석해 저장 전 크래시 — say(\"%s\", ...) 수리"
+  },
+  "challenge_note": "qepm/mailbox/worktask/WT-D20260802_017/challenge_note.md",
+  "sidecar_live_with_ast": {"before": {"live": 398, "live_with_ast": 52}, "after": {"live": 399, "live_with_ast": 53}}
+}
