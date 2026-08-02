@@ -131,7 +131,19 @@
       ]
     }
   },
+  "payment_recommendation_final": {
+    "prereg_rule_output": "TRUE (pooled q05>0 AND 양 가족 q05>0 — 사전등록 규칙 발화 사실 불변)",
+    "final_stance": "단계 지불 권고 (전액 일괄 22,533호출 비권고)",
+    "stage1": "2017-01~2023-07 크롤 (~79개월, ~8,000호출·~1.2일 — 223개월 비례 추정 라벨)",
+    "interim_gate": "합산(n≈103 IC월) t_NW >= 1.5 AND 신규 구간(2017~2023)만의 mean IC > 0 AND bench-조건부 IC 국면 분해 수행 → 충족 시에만 잔여 2005~2016(~14,500호출) 지불",
+    "abort_rule": "1단계 합산 t_NW < 1.0 → pilot-창 국면 아티팩트로 config-scoped 재분류 (잔여 지불 중단)",
+    "revival_condition": "재분류 후에도 MEGA-tier 시총 집중도가 2024 이전 수준으로 정상화된 국면 6개월 지속 시 trailing 24개월 재측정",
+    "rationale": "q05 1.44는 부호 강건이지 문턱(2.0) 통과가 아니고(Concern 6 ACCEPT), last12 감쇠는 커버리지 아티팩트 기각 후 미해명 잔존(fq125_decay_diag: corr(IC,n_cov)+0.050 기각 / corr(IC,BM_Ret)-0.255·산포-12%는 방향만) — 비가역 지출을 게이트 분할로 보수화. 최종 결정 = 도훈(governor 판단 아님)"
+  },
   "challenge_flags": [
+    "PAYMENT_STAGED: 사전등록 지불 규칙은 발화(TRUE)했으나 최종 권고는 단계 지불 — q05 1.44 < 문턱 2.0 + last12 감쇠 미해명 + 전이 벽. payment_recommendation_final 참조",
+    "DECAY_UNEXPLAINED: 후속 진단(fq125_decay_diag.json)에서 커버리지 아티팩트 기각(corr +0.050) — 국면 연동(-0.255)·산포 축소(-12%)는 방향 신호만, n=24 판별 불가. 1단계 크롤의 판별 목적",
+    "BASE_DEPENDENCE_WT022: 소비면 편익은 production 실코드 base 위에서만 유효 판정(WT-022 실측: ΔIR +0.169가 실코드 base서 -0.149 반전) — FQ-126 착수 시 production_parity_verified 라벨 의무",
     "SAME_PANEL_REUSE: WT-018 패널 재사용 라운드 — 섭동 q05 확정은 '관측 t 1.97이 문턱-근방 단일 draw 아티팩트가 아니라 단면에서 안정된 신호'라는 것까지이며 독립 표본 확인이 아님. n=24 표본 한계는 전구간 크롤(22,533 호출)만 해소",
     "PERTURBATION_SD_NARROW: draw sd 0.130 ≪ WT-013 실측 0.378 — IC(77종 단면 통계)는 top-25 포트 통계보다 섭동 민감도가 구조적으로 낮음. q05>0은 부호 강건성 확인이지 t>2.5 부활 조건의 동등 대체가 아님을 지불 권고에 병기",
     "SUBPERIOD_DECAY_DIRECTION: 후반 12개월 mean IC +0.040 (전반 +0.122) — 2025H2~2026H1 mega-cap 랠리 국면과 겹침, n=12라 decay/국면 판별 불가. 전구간에서 t_NW < 1이면 pilot 창 국면 아티팩트로 재분류(기각 조건 사전 명시)",

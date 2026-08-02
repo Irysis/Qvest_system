@@ -1,0 +1,71 @@
+{
+  "date": "20260803",
+  "schema_version": "mode_queue_v1",
+  "generated_at": "2026-08-03T07:30:00",
+  "optimizer": [
+    {
+      "id": "arxiv:2607.01705",
+      "title": "Portfolio Optimization under Fast and Slow Latent Mean-Reverting and Momentum Drift",
+      "authors": ["Dannin J. Eccles", "Roger Lee"],
+      "published": "2026-07-02",
+      "summary": "단일자산 잠재 drift를 두 시간스케일(빠른 평균회귀 + 느린 모멘텀)로 모델링하고, Kalman 필터 추정치가 MACD 형태(EMA_fast - EMA_slow)임을 수학적으로 도출. log/power/exponential utility 하 최적 전략의 closed-form 유도.",
+      "optimizer_note": "α̂ 고정 A/B: (1) MACD 기반 단일종목 동적 배분 vs 모멘텀 신호 고정 포트. (2) MACD as alpha 입력 시 optimizer 민감도 분석. 기존 α̂(M04/M08)와 MACD 결합 테스트 대상.",
+      "kr_feasible": true,
+      "action": "paper_research_dispatch.R 소비 — optimizer 에이전트가 α̂ 고정 A/B 실행"
+    }
+  ],
+  "risk": [
+    {
+      "id": "arxiv:2607.25459",
+      "title": "Emergent Latent-State Computation under Stochastic Volatility",
+      "authors": ["Xiaoyu Huang", "Lulu Wang"],
+      "published": "2026-07-28",
+      "summary": "SV 모델에서 Transformer가 잠재변동성 상태를 어떻게 내부적으로 표현하는지 규명. 2단계 계산(hidden → next vol state → output) 발견. 장주기 레짐에서 latent-state filter = 선형 투영 + L2 정규화.",
+      "risk_note": "변동성 모델(DCC-GARCH/Transformer) 해석 가능성 개선 소재. 잠재변동성 상태 추적의 아키텍처 선택 가이드.",
+      "kr_feasible": true,
+      "action": "risk 에이전트 참고 — 공분산 추정기 Transformer 적용 시 내부 표현 설계"
+    },
+    {
+      "id": "arxiv:2607.25189",
+      "title": "Long-memory GARCH via a two-dimensional Markov chain",
+      "authors": ["Kyungsub Lee", "Kennedy Titus Kayaki"],
+      "published": "2026-07-28",
+      "summary": "power-law 커널의 level-and-slope 업데이트로 2차원 Markov 상태를 구성 → 장기기억 GARCH. 양의 Harris 재귀성 + 불변 분포 유일성 증명. 실증에서 변동성 지속성 포착 + OOS 예측 경쟁력.",
+      "risk_note": "현 DCC-GARCH/Ledoit-Wolf 대비 장기기억 GARCH 변형 도입 가능성. 공분산 추정 보조 모델 후보.",
+      "kr_feasible": true,
+      "action": "risk 에이전트 참고 — Σ 추정 장기기억 변형 실험"
+    },
+    {
+      "id": "arxiv:2607.24410",
+      "title": "The Fundamental Structure of Risk: From Characteristics to Covariance",
+      "authors": ["Alexandre Alouadi", "Charles-Albert Lehalle"],
+      "published": "2026-07-27",
+      "summary": "CD-DFM: 기업 특성(재무 기초지표)으로 비선형 잠재 팩터 노출도 + forward 공분산 추정. Stein covariance loss + 팩터 재구성 통합 end-to-end 학습. 미관측 신규 자산도 zero-shot 임베딩 가능.",
+      "risk_note": "특성 기반 공분산 추정 — KR 재무특성(DART/QuantiWise) 적용 시 sample 공분산 대비 OOS 개선 가능성. 신규 종목 공분산 zero-shot 확장이 유동성 입퇴장 많은 KR market에 특히 유용.",
+      "kr_feasible": true,
+      "action": "risk 에이전트 참고 — 특성-driven 공분산 추정 실험 시 이 아키텍처 우선 검토"
+    }
+  ],
+  "regime": [
+    {
+      "id": "arxiv:2607.27063",
+      "title": "Herding, Momentum, and Reversal in China's A-Share Market: An Agent-Based Network Model with Information Diffusion",
+      "authors": ["Jiahao Weng"],
+      "published": "2026-07-29",
+      "summary": "정보확산 지연 + 국지적 군집행동 에이전트 기반 모델 → A주 모멘텀·반전 설명. CSAD(횡단면 절대편차) + LSV 군집지표를 Johnson SU 변환으로 정규화한 rolling tail-based herding indicator 제안. 주요 시장 교란 시 급등.",
+      "regime_note": "KR 시장 군집 지표 구축 가능: CSAD_t = 1/N * Σ|r_i - r_m| → 시장 수준 타이밍. 고군집 국면에서 반전 포지셔닝 오버레이. China-KR 공통 개인투자자 비중 높아 이식 적합성 상당.",
+      "kr_feasible": true,
+      "action": "regime 에이전트 참고 — CSAD 기반 KR 군집지표 구현, BearProb 오버레이 보완"
+    },
+    {
+      "id": "arxiv:2607.19497",
+      "title": "The Science and Practice of Trend-Following Systems",
+      "authors": ["Artur Sepp", "Vladimir Lucic"],
+      "published": "2026-07-21",
+      "summary": "TF 시스템 통합 이론: PnL = f(자기상관, drift, 변동성 정규화 수익률). 장기 자기상관 양수 시 단기 평균회귀에도 TF 수익성. 주파수 도메인: 저주파 스펙트럼 질량 > 1 → TF alpha. TF 수익률 왜도 양수의 구조적 이유 도출. 비용 최적 span 공식.",
+      "regime_note": "KR 시장 저주파 스펙트럼 질량 → 추세 강도 국면 측정. 비용-최적 span(현행 KR 15bps) 계산 가능. BenchmarkAR overlay 설계 과학적 근거.",
+      "kr_feasible": true,
+      "action": "regime 에이전트 참고 — 추세추종 오버레이 최적 span 재계산, 저주파 스펙트럼 질량 = 국면 강도 지표"
+    }
+  ]
+}

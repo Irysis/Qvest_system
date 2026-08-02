@@ -1,0 +1,347 @@
+{
+  "task_id": "WT-D20260802_022",
+  "generated_at": "2026-08-03 07:10:31",
+  "metric_type": "realcode_recon (production_parity_verified 재현 경로 — GATE A max|Δ| 5.13e-16) — 라벨 병기",
+  "gate_eligible": false,
+  "selection_type": "preregistered_single_primary_chain",
+  "n_trials": 1,
+  "preregistration": "stage_artifacts/WT_D20260802_022/preregistration.json (측정 전 고정)",
+  "input_vintage": [
+    {
+      "input": "alpha",
+      "path": "stage_artifacts/WT_D20260425_010/alpha_scores.parquet",
+      "mtime": "2026-08-02 01:01:39.428236"
+    },
+    {
+      "input": "raw",
+      "path": ".cache/rawdata.parquet",
+      "mtime": "2026-08-02 03:04:41.211172"
+    },
+    {
+      "input": "bench",
+      "path": ".cache/benchmark.parquet",
+      "mtime": "2026-08-02 01:51:27.932188"
+    },
+    {
+      "input": "m4",
+      "path": "stage_artifacts/WT-D20260430_001_m4_extended.csv",
+      "mtime": "2026-08-02 00:21:31.187826"
+    },
+    {
+      "input": "r05",
+      "path": "stage_artifacts/WT_D20260512_003/alpha_scores_new.parquet",
+      "mtime": "2026-06-17 16:26:42.899427"
+    },
+    {
+      "input": "max5",
+      "path": "stage_artifacts/WT_D20260802_014/alpha_scores.parquet",
+      "mtime": "2026-08-02 13:50:45.626123"
+    },
+    {
+      "input": "prod_pr",
+      "path": "04_Research/strategies/STR_1715_WT016_Iter31_GridBestProd/output/03_period_returns.csv",
+      "mtime": "2026-08-02 00:11:58.876612"
+    },
+    {
+      "input": "l5_21",
+      "path": "05_Production/2.Factor_Model/2-1.STR_1715_AR_on_M4_R05_overlay_PG2/04_backtest_results/period_returns_layer5.csv",
+      "mtime": "2026-07-02 13:47:42.326418"
+    },
+    {
+      "input": "pr_23",
+      "path": "05_Production/2.Factor_Model/2-3.STR_1715_on_M4_R05_noLayer4_PG2/04_backtest_results/03_period_returns.csv",
+      "mtime": "2026-07-02 21:17:39.50041"
+    },
+    {
+      "input": "regime",
+      "path": ".cache/unified_regime_signal.parquet",
+      "mtime": "2026-08-02 01:53:46.631104"
+    }
+  ],
+  "parity_gates": {
+    "A_stock_layer": {
+      "pass": true,
+      "n": 271,
+      "max_abs_dret": 5.1348e-16,
+      "note": "재현 루프 vs production 03_period_returns.csv (run_id 20260802_LIVE) — production_parity_verified"
+    },
+    "B_overlay_recon": {
+      "pass": true,
+      "beta_mismatch": 0,
+      "n": 269,
+      "m4_mismatch_months": 6,
+      "cor_vs_stored_23": 1,
+      "diagnosis": "m4 6개월(2008-01/03/04·2009-06·2012-01/02) + ret |Δ|>1e-4 6개월 전수 = m4_extended.csv 08-02 재생성 + rawdata 07월 수리 이후 갱신 귀속 — 입력 vintage 차이, 배선 무결. 사전등록 분류: 측정 유효 지속"
+    },
+    "C_pit_guard": {
+      "pass": true,
+      "note": "assert_overlay_pit 256/256 PASS + 위반 주입 시 stop() 발화 확인 (가드 생존)"
+    },
+    "D_bench_anchor": {
+      "pass": true,
+      "jul_2026": -0.2363,
+      "note": "정본 .cache/benchmark.parquet — WT-020 플래그 자산(screen_inputs.rds bench) 미사용"
+    }
+  },
+  "primary": {
+    "name": "PG2_realcode_MAX5_X10_exclusion_full_path",
+    "n_months": 256,
+    "delta_ir": -0.1489,
+    "ir_base": 1.5592,
+    "ir_filt": 1.4103,
+    "paired_t_nw_lag3": -1.9763,
+    "mean_delta_active_monthly": -0.0033,
+    "port_t_base": 6.8304,
+    "port_t_filt": 6.3321,
+    "abs_base": [
+      {
+        "label": "base_recon",
+        "SR": 1.9353,
+        "CAGR": 0.4584,
+        "MDD": -0.2329
+      }
+    ],
+    "abs_filt": [
+      {
+        "label": "filt_recon",
+        "SR": 1.7964,
+        "CAGR": 0.4064,
+        "MDD": -0.262
+      }
+    ],
+    "delta_ir_basis": "net_active_recon_v1 (recon net − 정본 KOSPI200 월복리) — WT-016은 weighted_screen basis (비교 시 라벨 필수)",
+    "decision_rule": "ΔIR ≥ +0.05 ∧ t > 0 유지 / ΔIR < 0 철회 (사전 고정)",
+    "verdict": "WITHDRAW (상신 철회) — ΔIR -0.1489 < 0"
+  },
+  "approx_frame_bias": {
+    "wt016_overlay_on_delta_ir": 0.1284,
+    "wt014_bare_delta_ir": 0.1692,
+    "realcode_full_path_delta_ir": -0.1489,
+    "realcode_bare_delta_ir": -0.1131,
+    "optimism_bias_ir": 0.2773,
+    "verdict": "근사 프레임 낙관 편의 = +0.277 IR (부호 반전). overlay 유무는 원인 아님(bare arm도 -0.113)"
+  },
+  "mechanism_decomposition": {
+    "question": "무엇이 base를 다르게 만들어 필터 부호를 뒤집었나 (Q-Lead 지시 #3)",
+    "method": "동일 하네스(production alpha panel·raw 윈도우·liq·15bps·벤치) 안에서 config 축만 교체 — 사후 진단, 선택 비사용",
+    "table": [
+      {
+        "config": "realcode_tilt20_tophi",
+        "n": 256,
+        "base_port_t": 6.739,
+        "base_ir": 1.5851,
+        "delta_ir": -0.1131,
+        "paired_t": -1.794,
+        "mean_d_monthly": -0.0031
+      },
+      {
+        "config": "tilt25_tophi",
+        "n": 256,
+        "base_port_t": 6.292,
+        "base_ir": 1.4998,
+        "delta_ir": -0.0712,
+        "paired_t": -1.597,
+        "mean_d_monthly": -0.0024
+      },
+      {
+        "config": "tilt20_no_tophi",
+        "n": 256,
+        "base_port_t": 7.328,
+        "base_ir": 1.7756,
+        "delta_ir": -0.143,
+        "paired_t": -2.14,
+        "mean_d_monthly": -0.0036
+      },
+      {
+        "config": "capnorm25_wt014_style",
+        "n": 256,
+        "base_port_t": 4.883,
+        "base_ir": 1.1403,
+        "delta_ir": 0.1579,
+        "paired_t": -0.253,
+        "mean_d_monthly": -0.0003
+      },
+      {
+        "config": "ew25",
+        "n": 256,
+        "base_port_t": 5.839,
+        "base_ir": 1.4191,
+        "delta_ir": -0.054,
+        "paired_t": -1.57,
+        "mean_d_monthly": -0.0017
+      }
+    ],
+    "attribution": "★부호 반전 축 = 가중 규칙. cap_norm(Size) top-25(WT-014 스타일)만 ΔIR +0.1579(WT-014 +0.1692 재현 — 점수 소스·수익 윈도우가 달라도 재현)이고, score-rank tilt(20/25종·TOphi 유무 불문)·EW 전부 음수. N(20↔25)·TOphi·overlay·점수 소스는 부호를 바꾸지 못함",
+    "mechanism_detail": {
+      "dropped_vs_added_spread_monthly": 0.0116,
+      "dropped_vs_added_nw_t": 1.54,
+      "n": 248,
+      "dropped_mean": 0.0328,
+      "added_mean": 0.0212,
+      "note": "배제된 base top-20 종목이 대체 종목(차순위)보다 +1.16%/월 우위 — 실코드 프레임에서 필터는 '승자 컷'. cap_norm 프레임에서는 배제 대상이 소형주(OTHER tier)라 Size 가중상 거의 무게 0 → 평균 손실 없이 변동성만 제거되어 IR 상승(ΔIR +0.158인데 paired t −0.25 = 분모 효과). tier Δ기여: OTHER -4.46%/yr vs MEGA/MID 합 +1.0%/yr",
+      "systemic_lesson": "ΔIR은 base의 가중 규칙에 조건부인 국소량 — size-weighted 스크린에서 검증된 필터를 rank-weighted book에 이식할 수 없다 ('어느 base 위에서 잰 개선인가'). WT-016 parity STOP(cor 0.668)이 이 계층 차이의 조기 경보였음"
+    }
+  },
+  "diagnostics_preregistered": {
+    "d1_regime_off": {
+      "label": "d1_regime_off_CRISIS_CAUTION",
+      "n": 256,
+      "delta_ir": -0.1552,
+      "paired_t": -2.147,
+      "mean_d": -0.0035
+    },
+    "d2_x05": {
+      "label": "d2_X5",
+      "n": 256,
+      "delta_ir": -0.1077,
+      "paired_t": -1.395,
+      "mean_d": -0.0018
+    },
+    "d2_x20": {
+      "label": "d2_X20",
+      "n": 256,
+      "delta_ir": -0.1043,
+      "paired_t": -2.189,
+      "mean_d": -0.0046
+    },
+    "d3_same_beta": {
+      "label": "d3_same_beta",
+      "n": 256,
+      "delta_ir": -0.1519,
+      "paired_t": -1.932,
+      "mean_d": -0.0032
+    },
+    "d4_ew_dual_basis": {
+      "label": "d4_ew_dual_basis",
+      "n": 256,
+      "delta_ir": -0.0666,
+      "paired_t": -1.671
+    },
+    "d6_stock_layer_bare": {
+      "label": "d6_stock_layer_bare",
+      "n": 256,
+      "delta_ir": -0.1131,
+      "paired_t": -1.794,
+      "port_t_base": 6.739,
+      "port_t_filt": 6.288
+    },
+    "d7_lag1_stress": {
+      "label": "d7_lag1_stress",
+      "n": 256,
+      "delta_ir": -0.2101,
+      "paired_t": -2.32,
+      "mean_d": -0.004
+    },
+    "all_negative": true,
+    "regime_decomposition_production": [
+      {
+        "regime": "BULL",
+        "n": 87,
+        "mean_d": -0.0018,
+        "t": -0.72
+      },
+      {
+        "regime": "NORMAL",
+        "n": 151,
+        "mean_d": -0.0053,
+        "t": -2.28
+      },
+      {
+        "regime": "CRISIS",
+        "n": 3,
+        "mean_d": 0.0039
+      },
+      {
+        "regime": "CAUTION",
+        "n": 15,
+        "mean_d": 0.0063,
+        "t": 1.13
+      }
+    ],
+    "regime_decomposition_unified": [
+      {
+        "Category": "RISK_ON",
+        "n": 200,
+        "mean_d": -0.0033,
+        "t": -1.74
+      },
+      {
+        "Category": "NEUTRAL",
+        "n": 30,
+        "mean_d": 0.0005,
+        "t": 0.13
+      },
+      {
+        "Category": "CAUTION",
+        "n": 13,
+        "mean_d": -0.0199,
+        "t": -1.9
+      },
+      {
+        "Category": "CRISIS",
+        "n": 13,
+        "mean_d": 0.004,
+        "t": 1.14
+      }
+    ],
+    "d1_verdict": "국면조건부 해제(CRISIS/CAUTION off)도 더 나쁨(-0.155 vs -0.149) — WT-020 양측 꼬리와 정합: 실코드 손실원은 NORMAL(t -2.28) 승자 컷이라 위기 해제로 못 구함",
+    "cap_tier": [
+      {
+        "tier": "OTHER",
+        "contrib_ann": -0.0446
+      },
+      {
+        "tier": "MID",
+        "contrib_ann": 0.003
+      },
+      {
+        "tier": "MEGA",
+        "contrib_ann": 0.0073
+      }
+    ],
+    "turnover": [
+      {
+        "arm": "base",
+        "to_annual": 5.191,
+        "beta_to_annual": 0.9562
+      },
+      {
+        "arm": "filt_X10",
+        "to_annual": 5.5604,
+        "beta_to_annual": 1.0172
+      }
+    ],
+    "firing": {
+      "fired": 256,
+      "n": 256,
+      "pct_changed": 96.875,
+      "mean_swap": 3.7773
+    },
+    "beta_path_diff_months": 25,
+    "ax001_conditional": {
+      "crisis_n": 3,
+      "crisis_mean_d": 0.0039,
+      "note": "production regime CRISIS n=3 — 판정 불가. unified CRISIS n=13 mean_d +0.0040 t 1.14 (위기월 소폭 양) — AX-001 조건부 병기: 필터는 위기에 살짝 돕고 평시에 크게 해침(발화월 비례 유해 구조와 상동)"
+    }
+  },
+  "next_probe": {
+    "np1": "FQ 등재: alpha-rank 조건부 MAX5 상호작용 — 실코드 top-랭크 후보 내 max5 상위 = 승자 표지(+1.16%/월, t 1.54, 유의 미달)를 FM(max5 × score_eff rank interaction)으로 확정. 유의 시 배제가 아니라 조건부 보정 신호(방향 반전 소비)",
+    "np2": "WT-014/016 결과의 소비처 한정 재라우팅: size-weighted screen 계층(cap_norm 계열 모듈 — FR/RAMP size-weighted 소비면)에서만 유효. screen_route 라벨을 'size-weighted screen 전용'으로 부기",
+    "np3": "63d 꼬리-변동성의 위험모델 소비(WT-020 NP 합류): capnorm IR 개선의 실체가 분모(변동성) 효과 → 배제가 아니라 Σ/β예산 입력이 정공 — risk-research 소비면 (frontier 살아있음)"
+  },
+  "revival_conditions": [
+    "book stock layer가 size-weighted(cap_norm 계열)로 교체되면 WT-014/016 결과 직접 이식 재검",
+    "np1 상호작용 FM 유의(|t|≥2) 시 조건부 신호로 방향 반전 재도전",
+    "score_eff와 max5의 상관 구조 변화(현재: top-랭크 조건부 승자 표지) 모니터링 신호 발화 시"
+  ],
+  "consumption_face_7": {
+    "factor_ranking": "배제 신호 부정(본 라운드). 조건부 상호작용 미측정 → np1",
+    "universe_filter": "실코드 top-20 부정 (본 판정). size-weighted screen 한정 유효",
+    "overlay_regime_input": "국면조건부 해제도 열세(-0.155) — config-scoped 닫힘",
+    "risk_model_beta_budget": "63d tail-vol Σ 반영 — WT-020 NP 합류, 살아있음 (np3)",
+    "monitoring_signal": "MAX5 상위 편입 경보 무근거(승자 컷) — 닫힘",
+    "screening_label": "WT-014/016 screen_route를 size-weighted 전용으로 부기 (np2)",
+    "other_mode_transplant": "FR/RAMP size-weighted 모듈에는 WT-014 결과 이식 가능 (계층 일치 조건)"
+  },
+  "capital_claim": "없음 — book_state 무변경, governor 미접촉. 실배치 상신 철회는 '필터 미적용 현행 유지' 권고 (도훈 수동)"
+}

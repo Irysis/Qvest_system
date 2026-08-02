@@ -61,20 +61,70 @@ if [ "${QVEST_SKIP_AUTO_COMMIT:-0}" = "1" ]; then
   echo '{}'; exit 0
 fi
 
-# QVEST_AC_PROJECT = 테스트 sandbox 오버라이드 (미설정 시 기존 후보 탐색 그대로)
+# ★AC_ROOT_SRC 의 기본 바인딩은 반드시 sentinel 블록 **밖**에 둔다 (2026-08-03).
+#   이 파일은 `set -u` + ERR 트랩(즉시 `echo {}; exit 0`) 아래에서 돈다. 검사기의 위반
+#   주입은 sentinel 블록을 통째로 들어내는데, 유일한 정의가 블록 안에 있으면 변종은
+#   112행 AC_TARGET 조립에서 unbound 로 죽는다 — **커밋에 도달하기도 전에**. 그러면
+#   "primary 가 대신 커밋됨"은 빨강이 되고 나머지 주입 축 2건("worktree 정지",
+#   "wt_new 아무 데도 없음")은 **공허하게 초록**이 된다. 즉 주입이 구 결함이 아니라
+#   자기가 만든 문법 사고를 재는 상태(교락). 실측으로 이 상태를 확인하고 정정했다
+#   ([[project-injection-fixture-confounding-20260802]] 와 동형 계통).
+AC_ROOT_SRC="legacy_glob"
+# >>> QVEST_ROOT_RESOLUTION >>> ──────────────────────────────────────────────
+# QVEST_AC_PROJECT = 테스트 sandbox 오버라이드. 그 외에는 hooks/resolve_project.sh 규약
+# (CLAUDE_PROJECT_DIR tier0 + marker 검증 · r-portability.md 금칙 ④)을 따른다.
+#
+# ★2026-08-02 수리 (도훈 보고): 구 코드는 `ls -d <하드코딩 후보> | head -1` 로 첫 *존재*
+#   후보를 집었고 CLAUDE_PROJECT_DIR 을 **전혀 읽지 않았다**. 첫 후보는 항상 main →
+#   worktree 세션의 Stop 훅이 main 의 작업트리를 커밋하고 worktree 는 건드리지 않는다.
+#   그런데 훅은 "[OK] N files committed" 를 보고했다 — 무해한 no-op 이 아니라
+#   **하지 않은 일에 대한 성공 보고**(작업 유실 + 유실의 은폐).
+#   실측(worktree strange-leakey-dedfca): 보고 4회가 전부 main 커밋(3eeafa3d 등),
+#   worktree 브랜치 HEAD 는 정지, 수리본은 어느 트리에도 없이 작업트리에만 존재 → 수동 회수.
+#   ★값이 없던 게 아니라 **안 본** 것이다: 훅 안에서 CLAUDE_PROJECT_DIR 은 실제로 worktree 를
+#     가리킨다(.cache/hook_integrity_log.tsv 의 DIR= 필드로 실측).
+#   가드: 08_Tests/hooks/test_auto_commit_worktree_target.sh (A/B/C/D + 위반 주입 E).
+#   ★sentinel 주석 2줄은 그 검사기가 **해석 블록만** 구 형태로 되돌려 검출력을 실증하는 데
+#     쓴다. 지우면 위반 주입이 공허해진다(검사기가 loud FAIL 로 알린다).
 PROJECT="${QVEST_AC_PROJECT:-}"
-[ -n "$PROJECT" ] || PROJECT=$(ls -d /c/Users/99922/OneDrive/Quant_Module_Moltbot /mnt/c/Users/99922/OneDrive/Quant_Module_Moltbot /g/Quant_Module_Moltbot /mnt/g/Quant_Module_Moltbot /mnt/c/Users/*/OneDrive/바탕\ 화면/Quant_Module_Moltbot 2>/dev/null | head -1)
+AC_ROOT_SRC="QVEST_AC_PROJECT"
+if [ -z "$PROJECT" ]; then
+  _rp="$(dirname "${BASH_SOURCE[0]:-$0}")/resolve_project.sh"
+  if [ -f "$_rp" ]; then
+    trap - ERR                       # resolver 의 tier 미스는 정상 흐름 — ERR 트랩 조기종료 방지
+    # shellcheck source=/dev/null
+    . "$_rp" || PROJECT=""
+    trap 'echo "{}"; exit 0' ERR
+    AC_ROOT_SRC="${QVEST_ROOT_SOURCE:-unknown}"
+  else
+    AC_ROOT_SRC="resolver_missing"
+  fi
+fi
+# <<< QVEST_ROOT_RESOLUTION <<< ──────────────────────────────────────────────
 if [ -z "$PROJECT" ] || [ ! -e "$PROJECT/.git" ]; then
   echo '{}'; exit 0
 fi
 cd "$PROJECT" || { echo '{}'; exit 0; }
-# git 작동 확인 (.git이 파일인 경우 — WSL 한글경로 gitlink)
+# git 작동 확인 (.git이 파일인 경우 — worktree gitlink / WSL 한글경로 gitlink)
 git rev-parse --git-dir >/dev/null 2>&1 || { echo '{}'; exit 0; }
 
-# 변경 없으면 skip
+# ─── 대상 트리/브랜치 라벨 ───────────────────────────────────────────
+# 보고에 "무엇을 커밋했나"만 있고 "어디에 커밋했나"가 없어서, worktree 세션에서 main 을
+# 커밋한 4회가 전부 "내 작업이 저장됐다"로 읽혔다(2026-08-02). 대상이 보이게 한다.
+AC_BRANCH="$(git branch --show-current 2>/dev/null)"
+[ -n "$AC_BRANCH" ] || AC_BRANCH="(detached)"
+_gd="$(git rev-parse --absolute-git-dir 2>/dev/null || echo '')"
+case "$_gd" in
+  */worktrees/*) AC_TREE="worktree:$(basename "$_gd")" ;;
+  *)             AC_TREE="primary:$(basename "$PROJECT")" ;;
+esac
+AC_TARGET="branch=$AC_BRANCH tree=$AC_TREE src=$AC_ROOT_SRC"
+
+# 변경 없으면 skip (★어느 트리를 봤는지 함께 남긴다 — "변경 없음"이 '틀린 트리를 봤음'의
+# 위장이 되지 않도록. 오늘 계통의 공통 기전 = 결손을 정상값으로 내려앉힘)
 CHANGES=$(git status --porcelain 2>/dev/null | wc -l)
 if [ "$CHANGES" -eq 0 ]; then
-  echo "$TS NO_CHANGES" >> "$LOG"
+  echo "$TS NO_CHANGES $AC_TARGET" >> "$LOG"
   echo '{}'; exit 0
 fi
 
@@ -209,8 +259,13 @@ COMMIT_EOF
 
 if [ $? -eq 0 ]; then
   HASH=$(git rev-parse --short HEAD)
-  echo "$TS AUTO_COMMIT $HASH staged=$STAGED${PARTIAL_NOTE}" >> "$LOG"
-  MSG="[OK] [auto-commit] $HASH - $STAGED files committed. Push는 milestone/cron으로 자동.${PARTIAL_NOTE}"
+  echo "$TS AUTO_COMMIT $HASH staged=$STAGED $AC_TARGET${PARTIAL_NOTE}" >> "$LOG"
+  # ★대상($AC_TARGET)을 성공 보고 본문에 싣는다 (2026-08-03). 08-02 사고의 본체는
+  #   커밋 실패가 아니라 **틀린 트리에 커밋하고 성공을 보고한 것**이었다 — 세션은
+  #   "[OK] N files committed" 를 4회 받고 내 작업이 저장됐다고 읽었으나 수리본은
+  #   어느 트리에도 없었다. "무엇을" 옆에 "어디에"가 없으면 유실이 성공으로 읽힌다.
+  #   가드 = test_auto_commit_worktree_target.sh D축(보고에 브랜치명 + tree= 라벨).
+  MSG="[OK] [auto-commit] $HASH - $STAGED files committed → $AC_TARGET. Push는 milestone/cron으로 자동.${PARTIAL_NOTE}"
   MSG_ESC=$(_json_msg "$MSG")
   echo "{\"hookSpecificOutput\":{\"hookEventName\":\"Stop\",\"additionalContext\":$MSG_ESC}}"
 else

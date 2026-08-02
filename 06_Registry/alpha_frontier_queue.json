@@ -1,7 +1,7 @@
 {
  "schema_version": "1.0",
  "sot": "02_Infrastructure/docs/qvest_v8_3_alpha_discovery_sot.md §4",
- "updated": "2026-08-03 (WT-022 production 실코드 반증 — 복권형 필터 상신 철회. 파생 FQ-127 base-의존성 스크린 / FQ-128 parity 라벨 강제 등재. 총 128건)",
+ "updated": "2026-08-03 (WT-023 FQ-125 확정 라운드 — 부호 강건·문턱 미통과, 단계 지불 도훈 결정 상정. FQ-126 unblock + parity 라벨 의무 부기. 총 128건)",
  "consume_rule": "새 발굴 리서치 착수 전: hypothesis_index lookup → 본 큐 확인 → owner/status 갱신. 완료 시 result_ref(L-code/보고서) 기입. dohoon_decision 항목은 세션 임의 착수 금지.",
  "entries": [
   {
@@ -2330,11 +2330,26 @@
    "ev_rationale": "WT-018 NP-1(P1). ①재료 lane 에서 오늘 유일하게 살아남은 lead 이고 크롤 비용이 이미 지불됐다. 단 문턱 근방이라 WT-013 섭동 검사 필수.",
    "wall_check": "dual-basis 실측에서 size 셀 cap-w PORT_t -0.37 vs EW-uni +1.49 = 전이 벽 미통과. IC 확립돼도 PORT_t 전이는 별도 관문 — 사전 명시.",
    "data_gate": "없음 (04_Research/method_frontier/fq002_contract_magnitude/ panel_A/B.parquet 재사용)",
-   "owner": "WT-D20260802_023 (alpha-research agent)",
-   "status": "in_flight",
+   "owner": "Q-Lead (WT-D20260802_023 판정 수집 2026-08-03)",
+   "status": "dohoon_decision",
    "in_flight_since": "2026-08-02 (WT-D20260802_023 착수 — 섭동 q05 사전등록 라운드, preregistration.json 고정 완료)",
+   "alpha_round_result": "ALPHA_DONE 2026-08-03 — 섭동 q05 pooled t_NW +1.4405 > 0 (전 120 draws 양수, min +1.365) = 확정. 단 q05 1.44 < 문턱 2.0 + last12 감쇠 미해명(커버리지 아티팩트 기각 corr +0.050, 국면 -0.255·산포 -12% 방향만, fq125_decay_diag.json) + cap-w PORT_t -0.371 전이 벽 불변. 지불 권고 = 전액 일괄 비권고 → 단계 지불(1단계 2017~2023 ~8,000호출 + interim 게이트 합산 t_NW>=1.5 AND 신규구간 mean IC>0 / abort t_NW<1.0). Q-Lead 판정 수집·도훈 지불 결정 대기",
    "registered": "2026-08-02 Q-Lead (WT-D20260802_018 NP-1 파생)",
-   "precheck_measured": "섭동 취약성 사전 경고: t_plain 1.972 는 WT-013 실측 sd 0.378 기준으로 문턱 2.0 근방 단일 draw 위험 구간. 라운드는 멤버십-섭동 분포 q05 를 사전등록 기준으로 쓸 것(FQ-109 규약)."
+   "precheck_measured": "섭동 취약성 사전 경고: t_plain 1.972 는 WT-013 실측 sd 0.378 기준으로 문턱 2.0 근방 단일 draw 위험 구간. 라운드는 멤버십-섭동 분포 q05 를 사전등록 기준으로 쓸 것(FQ-109 규약).",
+   "verdict": "부호 강건 확인 · 문턱 미통과 → 단계 지불 권고 (2026-08-03, WT-D20260802_023). parity 정확 재현(mean_IC 0.080559 / t_plain 1.972226) + 멤버십 섭동 120/120 draws 전량 양수(min +1.365) → q05 t_NW 1.4405. ★'섭동해도 부호가 산다'와 '문턱 2.0을 넘는다'는 다른 주장 — 단일 draw 아티팩트는 기각됐으나 문턱 통과 아님. 부기간 감쇠: 커버리지 아티팩트 기각(corr(IC,n_cov) +0.0499) = 미해명 잔존. 방향 신호 corr(IC,BM_Ret) -0.2545(mega-cap 랠리 연동)는 n=24로 유의 불가. canonical PORT_t -0.371 = 랭킹 소비 불가(전이 벽).",
+   "dohoon_decision_pending": {
+    "question": "계약수주 전구간 크롤 1단계 지불 여부",
+    "stage1_scope": "2017-01~2023-07 (~79개월)",
+    "stage1_cost": "~8,000 호출 · ~1.2일 (전액 22,533호출·3.2일의 약 1/3)",
+    "interim_gate": "합산 n≈103 IC월에서 t_NW>=1.5 AND 신규 구간 mean IC>0 AND 국면 분해 수행 → 충족 시에만 잔여 2005~2016(~14,500호출) 지불",
+    "abort_rule": "합산 t_NW<1.0 → pilot-창 국면 아티팩트로 config-scoped 재분류, 잔여 지불 중단",
+    "q_lead_view": "1단계는 지불 정당 — 감쇠 미해명이 바로 판별 대상이고 n≈103이면 국면 연동 검정력이 생긴다. 전액 일괄은 비권고(q05 1.44 < 2.0, PORT_t 음수).",
+    "registered": "2026-08-03"
+   },
+   "revival_conditions": [
+    "abort 재분류 시에도 MEGA-tier 시총 집중도가 2024 이전 수준으로 정상화된 국면 6개월 지속 → trailing 24개월 재측정",
+    "1단계 interim 게이트 충족 시 잔여 구간 지불로 진행"
+   ]
   },
   {
    "id": "FQ-126",
@@ -2345,8 +2360,9 @@
    "wall_check": "필터는 후보집합 축소라 전이 벽 우회 가능(WT-014 선례). 단 신호 부재면 무의미.",
    "data_gate": "없음 (동일 패널)",
    "owner": "미배정",
-   "status": "blocked_until_fq125",
-   "registered": "2026-08-02 Q-Lead (WT-D20260802_018 NP-2 파생)"
+   "status": "frontier_open",
+   "registered": "2026-08-02 Q-Lead (WT-D20260802_018 NP-2 파생)",
+   "unblocked_note": "2026-08-03 unblock: FQ-125 에서 섭동 강건(120/120 양수) 확인으로 '신호 재현' 선행조건 충족. ★단 WT-022 교훈 승계 의무 — base = production 실코드(PG2) + production_parity_verified 라벨 필수. 재구성 base ΔIR 은 상신 근거로 쓰지 않는다(+0.169→-0.149 반전 실측)."
   },
   {
    "id": "FQ-127",

@@ -37,6 +37,14 @@
     "full_crawl_payment_recommended": true,
     "rule": "사전등록: pooled q05(t_NW)>0 = 확정 / 지불 권고는 양 가족 q05>0 추가"
   },
+  "verdict_refinement_20260803": {
+    "note": "★사전등록 규칙 출력(TRUE)은 불변 — 아래는 Q-Lead 수집 반론 3점 + 후속 감쇠 진단(fq125_decay_diag.json) 반영한 최종 권고 정밀화 (challenge_note.md Concern 6~8)",
+    "final_stance": "단계 지불 권고 — 전액 일괄(22,533호출) 비권고",
+    "stage1": "2017-01~2023-07 (~8,000호출 추정) → interim 게이트: 합산 t_NW >= 1.5 AND 신규 구간 mean IC > 0",
+    "abort": "합산 t_NW < 1.0 → pilot-창 국면 아티팩트 재분류",
+    "decay_diag": "커버리지 아티팩트 기각(corr(IC,n_cov)=+0.050) / 국면 연동 -0.255·산포 -12%는 방향만 — 미해명 잔존",
+    "base_dependence": "소비면 편익은 production 실코드 base 한정(WT-022 반전 실측 승계)"
+  },
   "ic": {
     "A_size": {
       "n_months": 24,
