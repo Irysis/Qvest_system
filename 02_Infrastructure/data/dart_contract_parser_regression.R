@@ -64,6 +64,39 @@ cat(sprintf("[reg] 대상 %s..%s | %d개월 | %d행 | cache_only=%s\n",
             START, END, length(fs), nrow(D), CACHE_ONLY))
 cat("[reg] 저장(v2) parse_status 분포:\n"); print(D[, .N, by = parse_status][order(-N)])
 
+# ── 정본 회귀 기준 = **핀된 v2 를 같은 바이트에 돌린 결과** ────────────────────
+# 체크포인트 저장값은 단일 파서의 산출이 아니다(실측): OK 행은 크롤 시점 파서,
+# 실패 행은 이후 dart_contract_reparse_failures.R 이 v2 로 덮어썼다. 그래서 저장값
+# 대조만으로는 "내 변경이 바꿨나"와 "세대가 달라 원래 다르다"를 가를 수 없다.
+# → v2(핀 SHA)를 **같은 캐시 바이트**에 돌려 v3 와 1:1 비교한다. 이게 회귀 판정이고,
+#   저장값 대조는 진단(세대 차이 노출)으로 병기한다.
+V2_PIN <- Sys.getenv("REG_V2_PIN", "6a51d413")   # v3 직전 판
+.load_v2 <- function() {
+  # 금칙 ⑤: 셸 리다이렉션·연쇄 금지 — system2 인자 + stdout= 로만.
+  out <- suppressWarnings(system2("git", c("-C", ROOT, "show",
+           paste0(V2_PIN, ":02_Infrastructure/data/dart_contract_doc_parser.R")),
+           stdout = TRUE, stderr = FALSE))
+  st <- attr(out, "status"); st <- if (is.null(st)) 0L else as.integer(st)
+  if (st != 0L || !length(out)) return(NULL)     # 결손을 값으로 내려앉히지 않는다
+  f <- tempfile(fileext = ".R"); writeLines(out, f, useBytes = TRUE)
+  e <- new.env()
+  okl <- tryCatch({ sys.source(f, envir = e); TRUE }, error = function(x) FALSE)
+  unlink(f, force = TRUE)
+  if (!okl || !is.function(e$parse_contract_doc)) return(NULL)
+  # v2 는 fetch 를 내장한다. httr 함수를 이 환경에서 가려 **캐시 바이트를 먹인다**
+  # (재구현이 아니라 v2 자신의 코드를 그대로 관통시켜야 전사 오류가 안 낀다).
+  e$.FEED <- NULL; e$.SINK <- NULL
+  e$write_disk  <- function(path, overwrite = TRUE) { e$.SINK <- path; NULL }
+  e$timeout     <- function(x) NULL
+  e$status_code <- function(r) 200L
+  e$GET <- function(url, query, ...) {           # force(...) 없으면 write_disk 가 지연평가로 미발화
+    invisible(list(...)); writeBin(e$.FEED, e$.SINK); structure(list(), class = "stubresp")
+  }
+  e
+}
+V2 <- .load_v2()
+v2_parse <- function(rawb) { V2$.FEED <- rawb; V2$parse_contract_doc("STUB", "NOKEY") }
+
 num_eq <- function(a, b, tol = 1e-9) {
   if (is.na(a) && is.na(b)) return(TRUE)
   if (is.na(a) || is.na(b)) return(FALSE)
@@ -75,8 +108,16 @@ lgl_eq <- function(a, b) (is.na(a) && is.na(b)) || (!is.na(a) && !is.na(b) && a 
 
 calls <- 0L; halted <- FALSE
 n_done <- 0L; n_uncached <- 0L
-diffs <- list(); encs <- character(0); chks <- character(0); news <- character(0)
+diffs <- list(); v2diffs <- list()
+encs <- character(0); chks <- character(0); news <- character(0)
 audit <- list()   # ratio_check × is_correction 교차표 + 의심 행 원장
+# ★최상위 if/else 는 한 줄로 붙이거나 { } 로 감쌀 것 — 쪼개면 "unexpected 'else'" 로
+#   스크립트가 죽는다(daily_refresh r18 블록 실사고와 동형). 여기서 실제로 한 번 밟았다.
+if (is.null(V2)) {
+  cat(sprintf("[reg] ⚠ v2 핀(%s) 로드 실패 — 정본 회귀축 미측정\n", V2_PIN))
+} else {
+  cat(sprintf("[reg] v2 핀 로드 OK (%s) — 정본 회귀축 = v2 vs v3 (동일 바이트)\n", V2_PIN))
+}
 
 for (i in seq_len(nrow(D))) {
   rc <- as.character(D$rcept_no[i])
@@ -108,6 +149,32 @@ for (i in seq_len(nrow(D))) {
     is_correction = isTRUE(D$is_correction[i]), parse_status = pr$parse_status,
     ratio_check = pr$ratio_check, contract_amount = pr$contract_amount,
     recent_revenue = pr$recent_revenue, disclosed_ratio_pct = pr$disclosed_ratio_pct)
+
+  # ── 정본 축: v2(핀) vs v3, 같은 바이트 ──────────────────────────────────────
+  if (!is.null(V2)) {
+    rb2 <- readBin(cf, "raw", n = file.info(cf)$size)
+    p2 <- tryCatch(v2_parse(rb2), error = function(e) NULL)
+    if (is.null(p2)) {
+      v2diffs[[length(v2diffs) + 1L]] <- data.table(rcept_no = rc, ym = D$ym[i],
+        field = "V2_EXCEPTION", v2 = NA_character_, v3 = NA_character_)
+    } else {
+      # v2 는 원문부재/한도를 전부 UNZIP_FAIL 로 뭉갰다 — 그 재라벨은 **의도된 변경**이라
+      # 회귀가 아니다. 값 필드는 예외 없이 일치해야 한다.
+      RELABEL <- c("NO_SOURCE_CORRECTION", "NO_SOURCE_014", "RATE_LIMIT_020", "DECODE_FAIL")
+      c2 <- list(contract_amount  = num_eq(p2$contract_amount,  pr$contract_amount),
+                 recent_revenue   = num_eq(p2$recent_revenue,   pr$recent_revenue),
+                 ratio_to_revenue = num_eq(p2$ratio_to_revenue, pr$ratio_to_revenue),
+                 is_amendment     = lgl_eq(p2$is_amendment,     pr$is_amendment),
+                 rounding_flag    = lgl_eq(p2$rounding_flag,    pr$rounding_flag),
+                 fx_flag          = lgl_eq(p2$fx_flag,          pr$fx_flag),
+                 parse_status     = identical(p2$parse_status, pr$parse_status) ||
+                                    (identical(p2$parse_status, "UNZIP_FAIL") &&
+                                     pr$parse_status %in% RELABEL))
+      for (f in names(c2)) if (!isTRUE(c2[[f]]))
+        v2diffs[[length(v2diffs) + 1L]] <- data.table(rcept_no = rc, ym = D$ym[i], field = f,
+          v2 = as.character(p2[[f]]), v3 = as.character(pr[[f]]))
+    }
+  }
 
   cmp <- list(
     contract_amount  = num_eq(D$contract_amount[i],  pr$contract_amount),
@@ -146,16 +213,34 @@ if (length(audit)) {
 }
 
 OUTF <- file.path(ROOT, sprintf(".cache/dart/contract_regression_%s_%s.csv", START, END))
+
+# ── ① 정본 판정: v2(핀) vs v3 ────────────────────────────────────────────────
+cat("\n[reg] ── 정본 회귀축: v2(", V2_PIN, ") vs v3, 동일 바이트 ──\n", sep = "")
+regressed <- FALSE
+if (is.null(V2)) {
+  cat("[reg] ⚠ 미측정 — v2 핀 로드 실패. 이 실행은 회귀를 **판정하지 않았다**\n")
+  regressed <- NA
+} else if (length(v2diffs)) {
+  V2D <- rbindlist(v2diffs, fill = TRUE)
+  fwrite(V2D, sub("[.]csv$", "_v2diff.csv", OUTF))
+  cat(sprintf("[reg] ❌ v2↔v3 불일치 %d건 (행 %d)\n", nrow(V2D), uniqueN(V2D$rcept_no)))
+  print(V2D[, .N, by = field][order(-N)]); print(head(V2D, 20)); regressed <- TRUE
+} else {
+  cat(sprintf("[reg] ✅ v2↔v3 완전 일치 — %d행 × 7필드. v3 변경은 기존 경로에 무영향\n", n_done))
+}
+
+# ── ② 진단: 저장값 대조(세대 혼재를 노출한다 — 회귀 판정 아님) ─────────────────
+cat("\n[reg] ── 진단축: 체크포인트 저장값 vs v3 ──\n")
 if (length(diffs)) {
   DF <- rbindlist(diffs, fill = TRUE)
   fwrite(DF, OUTF)
-  cat(sprintf("\n[reg] ❌ 불일치 %d건 (행 %d) → %s\n", nrow(DF), uniqueN(DF$rcept_no), OUTF))
+  cat(sprintf("[reg] 저장값과 %d건 상이 (행 %d) → %s\n", nrow(DF), uniqueN(DF$rcept_no), OUTF))
+  cat("     ※ 저장값은 단일 파서 산출이 아니다 — OK 행=크롤 시점 파서 / 실패 행=이후 v2 재파싱.\n")
+  cat("       위 ①이 초록이면 이 차이는 **세대 차이**이지 이번 변경의 회귀가 아니다.\n")
   print(DF[, .N, by = field][order(-N)])
-  print(head(DF, 20))
-} else {
-  if (file.exists(OUTF)) unlink(OUTF)
-  cat("\n[reg] ✅ 회귀 없음 — 검증 전 행에서 7개 필드 전량 일치\n")
-}
+} else cat("[reg] 저장값과도 전량 일치\n")
+
 # ★검증 0행을 성공으로 읽지 않는다 ("빈 결과 = 합격" 계통).
 if (n_done == 0L) { cat("[reg] ⚠ 검증 0행 — 판정 불가(미측정)\n"); quit(status = 3) }
-quit(status = if (length(diffs)) 1L else 0L)
+if (is.na(regressed)) quit(status = 3)
+quit(status = if (isTRUE(regressed)) 1L else 0L)

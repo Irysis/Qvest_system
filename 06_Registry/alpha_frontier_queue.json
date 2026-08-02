@@ -1,7 +1,7 @@
 {
  "schema_version": "1.0",
  "sot": "02_Infrastructure/docs/qvest_v8_3_alpha_discovery_sot.md §4",
- "updated": "2026-08-03 (FQ-108 위험-축 대각 채널 NO_INCREMENT·흡수 97.5% — 축은 미소진. 파생 FQ-108b 상관채널 / 108c CVaR·tripwire / 108d z-형태 손실 등재. 총 133건)",
+ "updated": "2026-08-03 (FQ-108c 사전 확인: 꼬리 채널은 R05 로 이미 소비 중(41파일) → 질문이 '신규 소비'에서 'R05 통제 후 증분'으로 정밀화. 사전 확인 10건 누적. 총 133건)",
  "consume_rule": "새 발굴 리서치 착수 전: hypothesis_index lookup → 본 큐 확인 → owner/status 갱신. 완료 시 result_ref(L-code/보고서) 기입. dohoon_decision 항목은 세션 임의 착수 금지.",
  "entries": [
   {
@@ -2457,7 +2457,9 @@
    "data_gate": "없음",
    "owner": "미배정",
    "status": "frontier_open",
-   "registered": "2026-08-03 Q-Lead (FQ-108 NP-3 파생)"
+   "registered": "2026-08-03 Q-Lead (FQ-108 NP-3 파생)",
+   "precheck_measured": "★착수 전 사전 확인 (2026-08-03 Q-Lead, read-only) — **라운드 질문이 바뀐다**. 꼬리/CVaR 계열은 registry 에 8종 전부 등재돼 있고(D45/D47/D48/D49/D50/R03/R04/R05), 결정적으로 **`R05_Tail_Risk` 는 참조 41파일 = 현 book overlay 의 핵심으로 이미 활발히 소비 중**(D47_CVaR_5pct 12 · D50_MaxDrawdown 6). tripwire 배관도 실재(filing_delay_watch.R · insider_safe_live_track.R). ⇒ D35 때와 달리 이 채널은 **비어 있지 않다**. 따라서 질문은 '꼬리 채널을 쓰자'가 아니라 **'이미 쓰고 있는 꼬리 채널(R05) 위에서 MAX5 발생률 신호가 증분을 주는가'** 로 정밀화된다 — FQ-108 대각 채널과 **같은 구조의 질문**이고, 거기서 lw_nls 가 97.5% 흡수했듯 R05 가 이미 흡수했을 가능성이 실질적이다. ★설계 요건: primary 를 **R05_Tail_Risk 통제 후 증분**으로 사전등록할 것(무통제 비교는 FQ-108 이 이미 보여준 함정 — 기존 추정기가 흡수한 것을 신규 정보로 오독). 정직 posterior: 흡수 확인도 유효한 산출이다.",
+   "design_requirement": "primary = R05_Tail_Risk 통제 후 MAX5 발생률 증분 (무통제 비교 금지)"
   },
   {
    "id": "FQ-108d",

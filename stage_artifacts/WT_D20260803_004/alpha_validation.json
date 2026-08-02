@@ -1,0 +1,109 @@
+{
+  "task_id": "WT-D20260803_004",
+  "generated_at": "2026-08-03T10:20:00+0900",
+  "fq_ref": "FQ-121",
+  "metric_type": "canonical_screen",
+  "gate_eligible": false,
+  "selection_type": "chain",
+  "n_trials": 1,
+  "preregistration": "stage_artifacts/WT_D20260803_004/preregistration.json (측정 전 고정 — 단일 분할, arm 4종, 판별 기준 수치 고정)",
+  "round_type": "methodology_validation — 조합 자격 게이트('성분 canonical PORT_t>0')의 IS/OOS 분리 성립 검증. 자본 주장 없음",
+  "split": {
+    "is_range": "2001-12-28 ~ 2014-02-28 (147m)",
+    "oos_range": "2014-03-31 ~ 2026-06-30 (148m)",
+    "boundary_fixed_by": "날짜 축만 읽어 floor(295/2) 절단 (수익률 미접촉) — 복수 분할 미시도",
+    "honesty": "경계는 기열람 표본 위 — 제거한 편향은 '성분 선별의 IS-only 재현' 하나 (사전등록 honesty_note, challenge C1)"
+  },
+  "component_gate_table": [
+    {"factor": "V01_SECREL", "is_port_t": 2.634, "oos_port_t": -0.389, "is_pass": true,  "sign_stable": false},
+    {"factor": "M01_PATHQ",  "is_port_t": 2.316, "oos_port_t":  0.712, "is_pass": true,  "sign_stable": true},
+    {"factor": "D03_EWMA",   "is_port_t": -0.812, "oos_port_t": -1.547, "is_pass": false, "sign_stable": true},
+    {"factor": "Q01_EB",     "is_port_t": 1.758, "oos_port_t": -1.415, "is_pass": true,  "sign_stable": false},
+    {"factor": "V06_EB",     "is_port_t": 1.206, "oos_port_t": -0.219, "is_pass": true,  "sign_stable": false}
+  ],
+  "gate_outcome": {
+    "is_pass_set": ["V01_SECREL", "M01_PATHQ", "Q01_EB", "V06_EB"],
+    "is_pass_count": 4,
+    "note_vs_precheck": "FQ-121 precheck 예상(3개: V01/M01/V06)과 상이 — full-sample에서 음(−0.21)이던 Q01_EB가 IS(전반부)에서는 +1.76으로 통과. 게이트 통과 집합 자체가 표본 구간에 민감함의 1차 증거",
+    "single_is_argmax": "V01_SECREL (IS +2.63 — full-sample argmax M01과 다름)",
+    "transfer_sign_stability": "2/5 (M01_PATHQ, D03_EWMA만 부호 유지) — 12년 IS로도 OOS 전이 부호를 3/5 못 맞춤"
+  },
+  "arms_oos_canonical": {
+    "A1_GATE_IS":   {"port_t_nw_lag3": -0.029, "net_sr": -0.009, "turnover_annual": 5.39, "n_months": 148, "selected_ret_coverage": 1.0},
+    "A2_POS2":      {"port_t_nw_lag3":  0.439, "net_sr":  0.141, "turnover_annual": 6.09, "n_months": 148, "role": "진단 전용 — full-sample 지식으로 정의된 arm이라 판정 근거 배제 (challenge C1)"},
+    "A3_ALL5":      {"port_t_nw_lag3": -0.582, "net_sr": -0.168, "turnover_annual": 4.54, "n_months": 148},
+    "A4_SINGLE_IS": {"port_t_nw_lag3": -0.389, "net_sr": -0.122, "turnover_annual": 3.36, "n_months": 148}
+  },
+  "prereg_decisions": {
+    "a_gate_validity": {
+      "criterion": "OOS paired NW t(A1−A3) >= +2.0",
+      "observed_t": 1.26, "observed_ann_pct": 3.21,
+      "verdict": "NOT_ESTABLISHED — 방향 양성(게이트가 무게이트보다 +3.2%/yr)·증거 부족(t<2.0)"
+    },
+    "b_combination_worth": {
+      "criterion": "OOS paired NW t(A1−A4): >=+2.0 PASS / (0,2) INSUFFICIENT / <=0 FAIL",
+      "observed_t": 0.69, "observed_ann_pct": 2.29,
+      "verdict": "NOT_ESTABLISHED (INSUFFICIENT 구간) — 단 양 arm 모두 OOS 알파 0 근방(A1 −0.03 / A4 −0.39)이라 '조합 vs 단일' 비교가 0 vs 0. 조합의 존재 이유는 성립 실패로 보고 (challenge C2)"
+    },
+    "pos3_vs_pos2": {"observed_t": -0.73, "observed_ann_pct": -2.72, "note": "게이트 전량(4성분) vs POS2 — 진단. Q01_EB 편입(IS 통과)이 OOS에서 손해였음과 정합"}
+  },
+  "headline_verdict": "다팩터 조합 lane 재개 조건 미충족 — 현 config(WT-009 튜닝 5팩터·cap-w·top-25)에서 닫힘 (config-scoped negative). 지배 발견 = 성분 자격(tail-전이 부호)의 시계열 비정상성: IS 12년 t-stat 순서가 OOS 순서와 정합하지 않음(부호 안정 2/5, IS 최강 V01이 OOS 음전). '조합은 전이-양성끼리만' 원칙은 참이어도 정적 IS 게이트로 기계화 불가 — WT-021 P1 설계 원칙에 비정상성 단서 조항 필요",
+  "violation_injection": {
+    "design": "성분 게이트를 OOS PORT_t>0으로 대체(LEAK_GATE = {M01_PATHQ}) + OOS argmax 단일(LEAK_SINGLE = M01_PATHQ)",
+    "leak_gate_port_t": 0.712, "honest_a1_port_t": -0.029,
+    "leak_single_port_t": 0.712, "honest_a4_port_t": -0.389,
+    "verdict": "FIRED — 누출판이 정직판 대비 +0.74~+1.10 t 이득. IS/OOS 분리가 실질 구속임을 실증(통과 집합 4개→1개로 상이). 누출판 수치는 게이트 실효 검증 전용 — 채택 근거 사용 금지"
+  },
+  "robustness": {
+    "lag1": {"a1_lag_port_t": 0.048, "a1_base_port_t": -0.029, "verdict": "무붕괴 — 단 base≈0이라 검사력 낮음 (challenge C5). PIT 실질 방어 = WT-009 walk-forward 패널 승계 + parity gate"},
+    "parity_fastpath_vs_canonical": {"max_abs_diff": 0.0, "gate": "1e-8", "verdict": "PASS (A3 OOS)"},
+    "placebo_20draw": {"mean_t": -1.69, "sd_t": 0.545, "share_abs_ge2": 0.25,
+      "interpretation": "중심이 0이 아니라 음수 = 무작위 EW 25픽이 cap-w 벤치에 지는 post-2014 벤치-구성 아티팩트. A1의 placebo 대비 우위는 양성 증거로 승격하지 않음(challenge C4 PARTIAL) — cap-w 벽이 OOS 판정을 지배한다는 진단으로만 소비"},
+    "dual_basis": {
+      "A1_GATE_IS": {"capw_t": -0.029, "ew_uni_t": 1.670, "ew_uni_post2017_t": 0.569, "ew_uni_oos_retention_approx": -0.001},
+      "A4_SINGLE_IS": {"capw_t": -0.389, "ew_uni_t": 0.931, "ew_uni_post2017_t": -0.043},
+      "note": "metric_type=canonical_screen_diag 비바인딩 — cap-w HARD 판정 권위 불변. EW-uni에서도 t<2로 확립 실패이나 cap-w와의 격차(+1.7 t)는 벤치 미스매치 진단과 정합"
+    },
+    "subperiod_capw_t": {"A1": {"pre2017": 1.65, "post2017": -0.95}, "A2": {"pre2017": 1.50, "post2017": -0.31}, "A3": {"pre2017": 1.40, "post2017": -1.12}, "A4": {"pre2017": 1.52, "post2017": -1.12}},
+    "turnover_check": {"limit": 11.0, "observed_max": 6.09, "verdict": "전 arm 상한 이내"},
+    "ax001_conditional_advisory": {
+      "A1": {"bad_month_mean_active_pct": 1.531, "normal_month_mean_active_pct": -1.225, "n_bad": 65},
+      "A4": {"bad_month_mean_active_pct": 0.675, "normal_month_mean_active_pct": -0.894},
+      "note": "bad = BM_Ret<0 월. OOS에서 전 arm이 방어형 조건부 프로파일(하락월 초과·상승월 열위) — overlay/FR 소비면 단서"
+    }
+  },
+  "production_parity_verified": "N/A — 내부 arm 대조 라운드(book-marginal ΔIR 주장 없음, production base 미소비). 사전등록 production_parity_note 참조",
+  "graduation_hard_gates": {
+    "portfolio_alpha_t_nw": {"required": 2.95, "observed_best_honest_arm": -0.029, "status": "N/A — 방법론 라운드, 자본 후보 없음"},
+    "oos_retention": {"status": "본 라운드 자체가 IS/OOS 분리 측정 — subperiod_capw_t 참조 (전 arm pre2017 양 → post2017 음)"},
+    "calmar": {"status": "NOT_COMPUTED (forge 미제출)"}
+  },
+  "inv7_wall_compliance": "top-25·long-only·15bps 고정 축 준수 — 실패 귀속은 성분 자격의 비정상성(방법)이지 제약이 아님",
+  "next_probe": [
+    "NP-1: 자격 반감기 실측 — 성분 PORT_t의 trailing-60m 부호가 익후 12m 부호를 맞추는 hit-rate을 5팩터 × 시간축 전수로 측정(fast path, 사전등록 hit-rate 기준). 정적 게이트 실패가 'IS가 너무 긴 탓'인지 '본질 비정상'인지 판별 — 조합 lane 재개 조건의 재정의 재료",
+    "NP-2: EW-basis 게이트 재판정 — placebo 중심 −1.69와 A1 EW-uni +1.67이 가리키는 cap-w 벤치 지배를 분리: EW-유니버스 벤치 기준으로 동일 사전등록 프레임 재실행 + cap-tier(MEGA/MID) 분해. '원칙 실패 vs 벤치 벽' 판별 — 생존 시 FR/RAMP EW-계열 소비면 라우팅",
+    "NP-3 (조건부): 비-return 원천 성분(FQ-001~005)이 확보되면 동일 게이트 검증을 그 재료로 재실행 — return-파생 5팩터의 cohort 감쇠와 독립인 재료에서 원칙 자체를 재시험"
+  ],
+  "consumption_scan_7": {
+    "factor_ranking": "조합 설계 규칙 즉시 소비 — WT-021 P1(정적 IS 게이트)에 '비정상성 단서: 부호 안정 2/5 실측' 부기, 조합 lane 재개 조건을 '안정 양-전이 성분 ≥2 확보'로 재정의",
+    "universe_filter": "비적합 — 본 라운드는 배합 자격 검증",
+    "overlay_regime_input": "AX-001 조건부 프로파일(하락월 +1.5%/m) — overlay/FR 국면 소비면 단서로 기록 (라벨 자격 관문 규약 하 재측정 필요)",
+    "risk_model_beta_budget": "비적합",
+    "monitoring": "성분 전이 부호의 trailing 감시(반감기 NP-1 산출물)를 admitted 전략 모니터링 축으로 이식 후보",
+    "screening_label": "hurdle_gate/screen_route에 'transfer_nonstationary' 단서 제공 — IS 기준 통과 라벨의 유효기간 개념 필요",
+    "cross_mode": "FR/RAMP 조합 설계에 동일 경고 이식 — 정적 성분 게이트만으로 배합 자격 부여 금지"
+  },
+  "revival_conditions": [
+    "① NP-1에서 trailing 부호 지속성이 특정 창(예: 60m)에서 hit-rate>0.7로 실측되면 동적 게이트판으로 조합 lane 재시험",
+    "② NP-2 EW-basis 재판정에서 게이트 조합 t>=2 확립 시 cap-w 벽 우회 소비면(FR/RAMP EW-계열)으로 부활",
+    "③ OOS-안정 양-전이 성분(비-return 원천 포함) 2개 이상 확보 시 조합 lane 재개"
+  ],
+  "challenge_note": "qepm/mailbox/worktask/WT-D20260803_004/challenge_note.md (concern 5: ACCEPT 2 / ACCEPT부분 1 / PARTIAL 1 / REBUTTAL 1)",
+  "sidecar_live_with_ast": {"before": {"live": 471, "live_with_ast": 56}, "after": {"live": 488, "live_with_ast": 57}, "note": "실측(rds 기록) — 본 라운드 canonical 17회 중 ast_features 부착 1회(A1)"},
+  "artifacts": {
+    "results_rds": "stage_artifacts/WT_D20260803_004/wt004_results.rds",
+    "run_script": "stage_artifacts/WT_D20260803_004/run_wt004_gate_oos.R",
+    "alpha_scores": "stage_artifacts/WT_D20260803_004/alpha_scores.parquet (A1_GATE_IS 합성 score 전기간 — PIT 신호 자체는 전기간 유효)",
+    "charts": ["stage_artifacts/WT_D20260803_004/charts/wt004_oos_cum_active.png", "stage_artifacts/WT_D20260803_004/charts/wt004_paired_t.png"]
+  }
+}
