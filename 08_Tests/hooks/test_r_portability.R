@@ -134,9 +134,30 @@ detect <- function(lines) {
   #   ★위험한 건 실패가 아니라 위장이다 — 빈 출력이 '변경 없음'이라는 정상값으로 읽힌다.
   #   대체: 리다이렉션은 stdout=/stderr= 인자로, 연쇄는 호출 분리로.
   #         셸이 정말 필요하면 shell() 을 쓰되 /dev/null 이 아니라 NUL 을 쓸 것.
+  #   [2026-08-02 확장] 인라인 환경변수 접두 `VAR=값 cmd` 도 쉘 전용 문법이다.
+  #     셸이 없으면 "VAR=값" 이 통째로 **프로그램 이름**이 되어 'not found' 로 죽는다.
+  #     실측: test_contract_panel.R 작성 중 `system("CONTRACT_CKDIR=... Rscript ...")` 로 재현.
+  #     정본 = Sys.setenv() + 복원 후 system2(cmd, args) (금칙 ① 대체 패턴과 동일).
   shell_meta <- "2>|1>|>>|>&|&&|\\|\\||/dev/null|\\s\\|\\s"
   bodies <- c(.calls_of(txt, "system2"), .calls_of(txt, "system"))
-  if (any(grepl(shell_meta, .string_literals(bodies), perl = TRUE))) hits <- c(hits, 5L)
+  strip <- function(v) sub('["\']$', "", sub('^["\']', "", v))
+  if (any(grepl(shell_meta, strip(.string_literals(bodies)), perl = TRUE))) hits <- c(hits, 5L)
+
+  #   [2026-08-02 확장] 인라인 환경변수 접두 `VAR=값 cmd` 도 쉘 전용 문법이다.
+  #     셸이 없으면 "VAR=값" 이 통째로 **프로그램 이름**이 되어 'not found' 로 죽는다.
+  #     실측: test_contract_panel.R 작성 중 system("CONTRACT_CKDIR=... Rscript ...") 로 재현.
+  #     ★명령이 sprintf/paste 로 조립되면 리터럴이 system() **밖**에 있어 호출-본문 스캔으로는
+  #      원리상 못 본다. 그래서 이 축만은 파일 전역 리터럴을 본다 — 단 system/system2 를
+  #      실제로 쓰는 파일로 한정해 오검출을 묶는다.
+  #     정본 = Sys.setenv() + 복원 후 system2(cmd, args) (금칙 ① 대체 패턴과 동일).
+  #     ★1차 시도는 `^VAR=값\s+토큰` 이었는데 "vol_target=%.4f, lookback=%sd" 같은
+  #      **로그 포맷 문자열**을 9건 오검출했다(실측). key=value 로 시작하는 진단문은 흔하다.
+  #      → VAR= 대입 뒤에 **실행파일 호출**이 오는 형태만 남긴다.
+  if (length(bodies)) {
+    env_prefix <- paste0("^([A-Za-z_][A-Za-z0-9_]*=\\S*\\s+)+",
+                         "(Rscript|Rterm|python3?|bash|sh|git|node|npm|java)\\b")
+    if (any(grepl(env_prefix, strip(.string_literals(txt)), perl = TRUE))) hits <- c(hits, 5L)
+  }
 
   unique(hits)
 }
@@ -218,7 +239,13 @@ fixtures <- list(
        src = c('system("git add -A && git commit --no-verify", intern = FALSE)')),
   list(code = 5L, name = "shell_pipe_in_system2",
        src = c('out <- system2("Rscript", args = c(f, "2>&1 | grep -E Tier"),',
-               '               stdout = TRUE)'))
+               '               stdout = TRUE)')),
+  # d) 인라인 환경변수 접두 — 2026-08-02 자체 위반으로 발견한 사각
+  list(code = 5L, name = "shell_env_prefix",
+       src = c('cmd <- sprintf("CONTRACT_CKDIR=%s WINDOW_M=%d Rscript %s", d, w, f)',
+               'out <- system(cmd, intern = TRUE)')),
+  list(code = 5L, name = "shell_env_prefix_literal",
+       src = c('system("QM_ROOT=/x Rscript build.R", intern = TRUE)'))
 )
 for (fx in fixtures) {
   got <- detect(fx$src)
@@ -242,7 +269,11 @@ clean_src <- c(
   'sha <- system2("git", c("rev-parse", "HEAD"), stdout = TRUE, stderr = FALSE)',
   'lg <- system2("git", c("log", "-1", "--pretty=format:%an <%ae>"), stdout = TRUE)',
   'r <- system2(cmd, args = if (a || b) x else y, stdout = TRUE)',
-  'shell("dir 2>NUL")'
+  'shell("dir 2>NUL")',
+  # 금칙 ⑤ 확장(env-prefix) 위양성 통제 — 이들은 쉘 명령이 아니다
+  'KEY <- sub("^DART_API_KEY=", "", env[grepl("^DART_API_KEY=", env)][1])',
+  'writeLines(paste0("QM_ROOT=", root), ".env")',
+  'out <- system2("Rscript", args = script, stdout = TRUE)'
 )
 if (length(detect(clean_src)) == 0L) {
   ok("false_positive_control", "정본 패턴 오검출 0")

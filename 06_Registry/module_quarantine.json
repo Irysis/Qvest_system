@@ -991,19 +991,22 @@
     "STR_AS_20260802_074951_39404": {
       "strategy_id": "STR_AS_20260802_074951_39404",
       "grade": "F",
-      "role": null,
+      "role": {},
       "origin_mode": "alpha_search",
       "sim_result_path": "stage_artifacts/module_quarantine/STR_AS_20260802_074951_39404/sim_result.rds",
       "n_days": 5300,
-      "date_range": ["2005-02-03", "2026-07-31"],
+      "date_range": [
+        "2005-02-03",
+        "2026-07-31"
+      ],
       "registered_at": "2026-08-02T07:53:32+09:00",
       "metric_type": "proxy",
       "fr_eligible": false,
       "frozen": false,
-      "source_contract_id": null,
+      "source_contract_id": {},
       "module_hash": "653f46785462ef6e578084c7d8411e3e",
-      "build_version": null,
-      "cost_model_version": null,
+      "build_version": {},
+      "cost_model_version": {},
       "bt_result_path": "stage_artifacts/alpha_search/20260802_074951_39404/bt_result.rds",
       "contract": {
         "policy": "v8.1_fr_input_floor",
@@ -1013,13 +1016,52 @@
       "meta": {
         "strategy_idea": "월간 수익률 lag-1 자기상관(12m 롤링) 횡단면 신호 — 추세 지속 종목 매수. arxiv:2607.19497 Sepp&Lucic 2026, 저주파 스펙트럼 질량 = 양의 자기상관 우위를 KR long-only 종목 단면으로 이식.",
         "score": 7.3,
-        "f_grade_reasons": ["FMT-01 Structural MDD: MDD 61.2% > 45% — 선택 종목군의 위기 동반급락(구조적 꼬리위험)", "FMT-04 Regime Blindness: MDD 61.2% > 35% & BM상관 0.75 >= 0.7 — 위기국면 동조 낙폭(국면필터 부재)", "알파 부재: 정보비율 -0.10로 벤치 대비 기여가 음수/미약", "초과수익 부족: 벤치 대비 -1.7%p"],
-        "fmt_codes": ["FMT-01", "FMT-04"],
+        "f_grade_reasons": [
+          "FMT-01 Structural MDD: MDD 61.2% > 45% — 선택 종목군의 위기 동반급락(구조적 꼬리위험)",
+          "FMT-04 Regime Blindness: MDD 61.2% > 35% & BM상관 0.75 >= 0.7 — 위기국면 동조 낙폭(국면필터 부재)",
+          "알파 부재: 정보비율 -0.10로 벤치 대비 기여가 음수/미약",
+          "초과수익 부족: 벤치 대비 -1.7%p"
+        ],
+        "fmt_codes": [
+          "FMT-01",
+          "FMT-04"
+        ],
         "bt_result_path": "stage_artifacts/alpha_search/20260802_074951_39404/bt_result.rds",
+        "bt_contract_status": "OK"
+      }
+    },
+    "STR_AS_20260802_115851_45708": {
+      "strategy_id": "STR_AS_20260802_115851_45708",
+      "grade": "C",
+      "role": null,
+      "origin_mode": "alpha_search",
+      "sim_result_path": "stage_artifacts/module_quarantine/STR_AS_20260802_115851_45708/sim_result.rds",
+      "n_days": 5241,
+      "date_range": ["2005-05-04", "2026-07-31"],
+      "registered_at": "2026-08-02T12:03:30+09:00",
+      "metric_type": "proxy",
+      "fr_eligible": false,
+      "frozen": false,
+      "source_contract_id": null,
+      "module_hash": "230853040ec754b25fc6aa8fab021bb5",
+      "build_version": null,
+      "cost_model_version": null,
+      "bt_result_path": "stage_artifacts/alpha_search/20260802_115851_45708/bt_result.rds",
+      "contract": {
+        "policy": "v8.1_fr_input_floor",
+        "contract_pass": false,
+        "eligibility_reason": "metric_type != backtested; contract_pass != TRUE; frozen != TRUE; source_contract_id missing; build_version missing; cost_model_version missing"
+      },
+      "meta": {
+        "strategy_idea": "DuPont 분해(ΔPM·ΔATO)를 절대값이 아니라 KRX 업종내 상대 위치로 조건화 — 업종내 demean + '업종상대 수준 × 변화' 교호항을 확장창 Fama-MacBeth로 결합",
+        "score": 17.4,
+        "f_grade_reasons": [],
+        "fmt_codes": ["FMT-01", "FMT-03", "FMT-04"],
+        "bt_result_path": "stage_artifacts/alpha_search/20260802_115851_45708/bt_result.rds",
         "bt_contract_status": "OK"
       }
     }
   },
-  "last_updated": "2026-08-02T07:53:32+09:00",
-  "n_modules": 25
+  "last_updated": "2026-08-02T12:03:30+09:00",
+  "n_modules": 26
 }

@@ -125,6 +125,9 @@ SUITES=(
   #   "ALL CLEAN: 0 files scanned"·"INFRA_PIT_SCAN PASS: 0 files" 를 냈다 —
   #   스캔 0회가 PIT 통과 판정이 되는 자리(AX-002 동급). 돌연변이로 검출력 실증(3축 반전).
   "08_Tests/hooks/test_lookahead_unscanned.R"
+  # 2026-08-02 추가: FQ-002 계약 패널 빌더 로직(합성 픽스처, API 무호출).
+  #   크롤 1시간 태우기 전에 정정 제외·parse실패 제외·trailing 창·빈입력 거부를 확정한다.
+  "08_Tests/data/test_contract_panel.R"
   # 2026-07-26 추가: 부팅 자기-정합 검사(boot_currency_check) 위반 주입 — 부팅 최신화 자동 배선의 가드
   "08_Tests/hooks/test_boot_currency.sh"
   # 2026-07-26 추가: cache_freshness worse-of lag 위반 주입 (CFA-02 수리 가드).

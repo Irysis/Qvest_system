@@ -1,0 +1,181 @@
+{
+  "task_id": "WT-D20260802_007",
+  "validated_at": "2026-08-02T12:01:34+0900",
+  "preregistration": "stage_artifacts/WT_D20260802_007/preregistration.json (측정 전 고정)",
+  "metric_type": "canonical_screen",
+  "harness": "canonical_screen_bt top-25 EW long-only, 15bps one-way, liq 2e8, K200∪KQ150 월말 멤버십, build_monthly_forward_returns",
+  "primary": {
+    "factor_id": "INS_MAGQ3",
+    "canonical_port_t_nw_lag3": 1.371,
+    "pvalue": 0.1705,
+    "n_months": 258,
+    "net_sr": 0.3039,
+    "turnover_annual": 7.409,
+    "subperiod_port_t": {
+      "pre2015": 1.598,
+      "y2015_19": 1.419,
+      "y2020p": 0.222,
+      "post2017": 0.464
+    }
+  },
+  "dual_basis": {
+    "cap_w_port_t": 1.371,
+    "ew_universe_port_t": -0.788,
+    "ew_universe_post2017_t": 0.167,
+    "ew_universe_oos_retention_approx": null,
+    "cap_tier_weight_share": {
+      "MEGA": 0.0842,
+      "MID": 0.1357,
+      "OTHER": 0.5562,
+      "UNRANKED": 0.2239
+    },
+    "cap_tier_contrib_annualized": {
+      "MEGA": 0.0059,
+      "MID": 0.0233,
+      "OTHER": 0.1336,
+      "UNRANKED": 0
+    },
+    "verdict": "v8.3 기각-전 확인 의무 이행: cap-w +1.37 / EW-uni -0.79 — EW 기준으로 더 약함(벤치 아티팩트 구제 없음, insider 신호는 EW 유니버스 대비 초과 아님 = 소형주 광역 프리미엄에 흡수). cap-tier: OTHER 55.6% + UNRANKED 22.4%(초기 연도 Size 결측) + MID 13.6% > MEGA 8.4% — mid/small 국소(R33 tier 구조 재현), cap-w 트랩 아님(EW도 약함)."
+  },
+  "contrast_axes": {
+    "INS_MAG_NOFILT3": {
+      "port_t": 1.594,
+      "net_sr": 0.353,
+      "turnover_annual": 7.18,
+      "n_months": 258,
+      "ew_uni_t": -0.441,
+      "ew_uni_post2017_t": 0.635
+    },
+    "INS01_BASE3": {
+      "port_t": 0.554,
+      "net_sr": 0.12,
+      "turnover_annual": 7.15,
+      "n_months": 256,
+      "ew_uni_t": -1.484,
+      "ew_uni_post2017_t": -1.419
+    },
+    "INS_SEQ12": {
+      "port_t": 0.98,
+      "net_sr": 0.215,
+      "turnover_annual": 3.15,
+      "n_months": 258,
+      "ew_uni_t": -0.524,
+      "ew_uni_post2017_t": 1.118
+    },
+    "INS_EVT3": {
+      "port_t": 0.963,
+      "net_sr": 0.215,
+      "turnover_annual": 8.12,
+      "n_months": 189,
+      "ew_uni_t": 0.038,
+      "ew_uni_post2017_t": 0.401
+    },
+    "INS02_BREADTH6": {
+      "port_t": 0.632,
+      "net_sr": 0.132,
+      "turnover_annual": 4.3,
+      "n_months": 253,
+      "ew_uni_t": -1.185,
+      "ew_uni_post2017_t": -0.225
+    }
+  },
+  "paired_tests": {
+    "prim_vs_base": {
+      "n": 256,
+      "mean_diff_bps_m": 16.08,
+      "t_nw": 1.444
+    },
+    "prim_vs_nofilt": {
+      "n": 258,
+      "mean_diff_bps_m": -4.79,
+      "t_nw": -1.454
+    },
+    "nofilt_vs_base": {
+      "n": 256,
+      "mean_diff_bps_m": 21.14,
+      "t_nw": 1.835
+    }
+  },
+  "axis_identity": {
+    "fq079_vs_r33_rank_cor": {
+      "mean": 0.805,
+      "sd": 0.044,
+      "prereg_kill_line": 0.7,
+      "verdict": "DUPLICATE_AXIS — FQ-079 시퀀스는 R33 breadth와 동일 정보축(재탕). 사전등록 의무 조항에 따라 자체 기각"
+    },
+    "full_matrix": {
+      "seq_vs_breadth": {
+        "mean": 0.805,
+        "sd": 0.044
+      },
+      "seq_vs_base": {
+        "mean": 0.722,
+        "sd": 0.072
+      },
+      "prim_vs_base": {
+        "mean": 0.72,
+        "sd": 0.081
+      },
+      "prim_vs_nofilt": {
+        "mean": 0.998,
+        "sd": 0.002
+      },
+      "prim_vs_breadth": {
+        "mean": 0.71,
+        "sd": 0.1
+      },
+      "prim_vs_seq": {
+        "mean": 0.714,
+        "sd": 0.082
+      }
+    }
+  },
+  "adversarial": {
+    "lag1": {
+      "base": 1.371,
+      "lag1": 0.776
+    },
+    "placebo_cr_shuffle_5seed": [
+      {
+        "port_t": 0.998,
+        "rank_ic": 0.03201
+      },
+      {
+        "port_t": 0.72,
+        "rank_ic": 0.03389
+      },
+      {
+        "port_t": 0.905,
+        "rank_ic": 0.04663
+      },
+      {
+        "port_t": 1.328,
+        "rank_ic": 0.04385
+      },
+      {
+        "port_t": 0.453,
+        "rank_ic": 0.0347
+      }
+    ],
+    "pit_truncation_invariance": {
+      "201105": true,
+      "201710": true,
+      "202404": true
+    },
+    "label_direction_audit": 0.0107
+  },
+  "falsification_flow_link": {
+    "primary_t": 1.407,
+    "verdict": "MECHANISM_NOT_ESTABLISHED (t=+1.41: 기각선 1 초과, 지지선 2 미달)"
+  },
+  "universe_comparison": {
+    "note": "v2 universe 비교 비발동 — primary ICIR 0.29 > 0.15 (L-227 trigger 미충족). dual-basis EW-uni 진단이 유니버스 한계 축을 대체 커버"
+  },
+  "known_traps_audit": {
+    "corp_code_is_stock_code": "반영 (universe_corpcodes.csv stock_code 조인, 매칭 100%)",
+    "encoding_utf8": "반영 (전 스크립트 encoding='UTF-8' 소스)",
+    "stale_parquet_avoided": "insider_trades_clean.parquet 미사용 — D1 체크포인트 직접",
+    "d3_panel_7b": "outputs/ramp/insider_factor_scores.parquet 미소비 — INS01/INS02 재현도 D1 원천에서 자체 재계산"
+  },
+  "verdict": "config_scoped_negative_capital_tier__quality_axis_bends_not_breaks_r9_wall"
+}
