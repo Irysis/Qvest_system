@@ -1,0 +1,112 @@
+{
+  "task_id": "WT-D20260803_005",
+  "fq": "FQ-131",
+  "title": "성분 자격의 지속성 — PORT_t 부호 반감기와 조건부 안정성",
+  "registered_at": "2026-08-03",
+  "registered_before_measurement": true,
+  "selection_type": "chain",
+  "dsr_gate_applicability": "not_applicable (selection_type=chain; 본 라운드는 후보 선별이 아니라 판정의 성질 기술 — argmax/threshold-pick 없음)",
+  "n_iterations_planned": 1,
+  "gate_eligible": false,
+  "capital_claim": "none — 본 라운드는 전략을 만들지 않는다. 자격 판정의 시계열 성질만 측정한다.",
+
+  "question": {
+    "primary": "팩터의 canonical PORT_t 부호(=성분 자격 판정)가 시간에 따라 얼마나 오래 유지되는가",
+    "secondary_a": "부호 유지 기간의 중앙값·분포 (반감기 개념)",
+    "secondary_b": "현재 |t|가 다음(비중첩) 창의 부호를 예측하는가 — 게이트 설계의 실질 관문",
+    "secondary_c": "family / 회전율 / cap-tier 조건별 안정성 차이"
+  },
+
+  "harness": {
+    "measurement": "02_Infrastructure/contracts/canonical_screen_bt.R::canonical_screen_bt()",
+    "portfolio": "top-25 EW long-only",
+    "cost_bps_oneway": 15,
+    "liq_min_won": 200000000,
+    "universe": "KOSPI200 ∪ KOSDAQ150 (RAWDATA K200|KQ150 시변 멤버십)",
+    "benchmark_basis": "cap-w 유니버스 시총가중 forward return (build_monthly_forward_returns) — WT-009/015/021/004 동일 vintage",
+    "port_t_estimator": "backtest_result_contract.R::.nw_t_mean(active, lag=3) — 창 부분집합에 동일 추정량 적용",
+    "signal_path": "load_month_factors(sig_date) (C15) → Z_Score_Aligned 그대로 (C13 NEGATE/FLIP 없음)",
+    "metric_type": "canonical_screen"
+  },
+
+  "factor_pool_rule": {
+    "note": "성과 기준 선별 금지 — 가용성 규칙만으로 확정",
+    "inclusion": [
+      "load_month_factors()가 반환하는 factor (C15 경유)",
+      "factor_registry lifecycle.status == 'active'",
+      "eval 그리드 월 중 >= 216개월(18년)에서 유효 z >= 100 종목"
+    ],
+    "duplicate_removal": {
+      "basis": "canonical 전기간 net-active 수익 시계열 Pearson 상관",
+      "threshold": 0.99,
+      "keep_rule": "클러스터 내 알파벳 순 첫 factor (성과 무관 tie-break)",
+      "rationale": "registry 373 중 exact-duplicate 계통 존재 실측(2026-08-02 D01/R12 등) — 중복은 표본을 부풀리고 family 분해를 왜곡"
+    }
+  },
+
+  "window_grid": {
+    "primary": {"W_months": 60, "step_months": 60, "overlap": false},
+    "robustness": [
+      {"W_months": 36, "step_months": 36, "overlap": false},
+      {"W_months": 24, "step_months": 24, "overlap": false}
+    ],
+    "anchoring": "표본 마지막 eval 월에 마지막 창의 끝을 맞추고 앞쪽 잔여 월을 버린다 (최근 국면 온전 포함)",
+    "sweep_disclaimer": "3개 창 길이는 전부 사전 고정·전부 보고한다. 결과가 좋은 창을 고르는 행위 금지 — primary는 W=60로 측정 전 확정."
+  },
+
+  "definitions": {
+    "verdict_k": "v_k = sign(PORT_t_k), PORT_t_k = 창 k의 canonical net-active 시계열에 .nw_t_mean(lag=3) 적용",
+    "window_validity": "창 내 유효 월 >= 24 (W=24 격자에서는 >= 20) 이고 창 월 커버리지 >= 90%",
+    "sign_maintained": "v_{k+1} == v_k (인접 비중첩 창)",
+    "run_length": "동일 부호가 연속된 최대 창 수 (개월 = 창수 x W). 표본 양끝에서 절단된 run은 censored 라벨 — 전체/비절단 둘 다 보고"
+  },
+
+  "metrics": [
+    "P_persist = pooled P(v_{k+1}=v_k), 95% CI = factor-clustered bootstrap 2000",
+    "run length 분포 (median/quartile, censored 포함·제외)",
+    "P_persist | |t_k| bin ∈ {[0,0.5),[0.5,1),[1,2),[2,∞)}",
+    "level regression t_{k+1} = a + b*t_k, factor-clustered SE",
+    "logistic 1{v_{k+1}=+1} ~ t_k (AUC 병기)",
+    "era-demeaned(상대) 버전: t~_k = t_k - mean_f(t_k | 창 k) 로 위 3종 재계산",
+    "conditional 분해: family / 측정 회전율 tercile / 측정 cap-tier tercile"
+  ],
+
+  "noise_null": {
+    "name": "constant-alpha null",
+    "method": "각 factor의 canonical net-active 시계열을 stationary block bootstrap(block=12)로 시간순서 파괴 후 동일 창 격자로 t 재계산 → P_persist 귀무분포 500 draw",
+    "purpose": "관측된 부호 불안정이 (i) 진짜 시간 드리프트인지 (ii) 상수-알파 주위의 추정 잡음인지 분리. 관측 P_persist ≈ null → 잡음, 관측 < null → 드리프트/반전"
+  },
+
+  "discriminants": {
+    "a_persistence_operational": "PASS iff (primary 격자에서 median sign-run >= 2 창) AND (P_persist >= 0.65)",
+    "b_gate_feasibility": "PASS iff (level regression b > 0, clustered p < 0.05) AND (최상위 |t| bin P_persist >= 0.65). FAIL이면 '현 재료에서 정적 자격 게이트는 원리적으로 작동 불가'가 결론",
+    "honest_prior": "WT-D20260803_004에서 5팩터 중 부호 안정 2/5, IS 최강 V01_SECREL +2.634 → OOS -0.389 실측. (b) 약할 사전확률 높음. FAIL도 유효 산출(조합·교체·게이트 lane 설계 전제를 바꿈)."
+  },
+
+  "violation_injection": [
+    {
+      "id": "LEAK_OVERLAP",
+      "design": "예측자 t_k^leak를 창 k + 다음 창의 첫 12개월로 확장 계산 (의도적 미래 중첩)",
+      "expectation": "b 및 최상위 bin persistence가 실질 상승 → 비중첩 규율이 실구속임을 실증. 상승 없으면 측정 자체의 검사력 부족으로 정직 보고"
+    },
+    {
+      "id": "LEAK_FULL",
+      "design": "예측자를 전기간 PORT_t로 대체(고전적 look-ahead)",
+      "expectation": "persistence 대폭 상승"
+    }
+  ],
+
+  "robustness_required": [
+    "lag1 스트레스 (신호 1개월 지연) — 상위/하위 |t| 대표 factor 표본",
+    "dual-basis (EW-유니버스 대비) 병기 — cap-w 판정 권위 불변",
+    "회전율 실측 (canonical turnover_annual)",
+    "AX-001 조건부 병기 (BM<0 월 active)",
+    "fast-path vs canonical parity (< 1e-8)",
+    "top-K 저장 패널 vs 전체 패널 canonical parity (스코어 패널 절단이 선택을 바꾸지 않음 실증)"
+  ],
+
+  "boundaries": {
+    "forbidden": ["공분산 추정", "target weights 제안", "graduation PASS 선언", "book/자본 주장"],
+    "gate_eligible": false
+  }
+}
