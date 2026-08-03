@@ -42,8 +42,13 @@ collect() {
 
   # (2026-07-26 probe① 도훈 승인) fail 축 동시 수집 — 구판은 total만 봐서
   # total=pass+fail 구조상 FAIL이 나도 총계 불변 = 회귀가 감시를 그냥 통과했다.
+  # (2026-08-03) skipped 필드 선택 허용. 러너가 제3상태(skipped)를 도입하며 FINAL 줄이
+  #   `FINAL: N pass / N fail / N skipped / N total` 로 바뀌었는데 이 패턴은 구 형식만
+  #   매치해 **hooks=null** 이 됐다(실측 08-03 09:43 스냅샷). 러너 쪽 계약 변경이
+  #   하류 파서를 조용히 깨뜨린 자리 — 다만 이 도구의 "수치 없음은 정상이 아니다" 가드가
+  #   null 을 경보로 올려 침묵하지는 않았다. 양쪽 형식을 모두 받는다.
   hooks_out=$(cd "$DIR" && CLAUDE_PROJECT_DIR="$DIR" bash 08_Tests/hooks/run_all_hooks.sh 2>/dev/null \
-          | grep -oE 'FINAL: [0-9]+ pass / [0-9]+ fail / [0-9]+ total' | head -1)
+          | grep -oE 'FINAL: [0-9]+ pass / [0-9]+ fail /( [0-9]+ skipped /)? [0-9]+ total' | head -1)
   hooks=$(printf '%s' "$hooks_out" | grep -oE '[0-9]+ total' | grep -oE '[0-9]+')
   hooks_fail=$(printf '%s' "$hooks_out" | grep -oE '[0-9]+ fail' | grep -oE '[0-9]+')
   regime_out=$(cd "$DIR" && CLAUDE_PROJECT_DIR="$DIR" Rscript 08_Tests/regime/run_all.R 2>/dev/null)

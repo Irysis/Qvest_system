@@ -1,0 +1,126 @@
+[config.R] PROJECT_ROOT: C:/Users/99922/OneDrive/Quant_Module_Moltbot
+[backtest_result_contract.R] Loaded — Backtest Result Contract v1.0
+  Functions: build_bt_result() / validate_bt_result()
+  10 components: manifest, strategy_spec, nav, period_returns, holdings, benchmark_returns, metrics, benchmark_compare, rolling_metrics, drawdowns, audit
+[backtest_result_contract.R] Loaded — Backtest Result Contract v1.0
+  Functions: build_bt_result() / validate_bt_result()
+  10 components: manifest, strategy_spec, nav, period_returns, holdings, benchmark_returns, metrics, benchmark_compare, rolling_metrics, drawdowns, audit
+[canonical_screen_bt.R] Loaded — canonical_screen_bt() (v8.x WS1 real-computation helper)
+[ramp_io.R] Loaded — ramp_write_parquet/ramp_write_json (§2.4 meta enforced)
+[backtest_result_contract.R] Loaded — Backtest Result Contract v1.0
+  Functions: build_bt_result() / validate_bt_result()
+  10 components: manifest, strategy_spec, nav, period_returns, holdings, benchmark_returns, metrics, benchmark_compare, rolling_metrics, drawdowns, audit
+[canonical_screen_bt.R] Loaded — canonical_screen_bt() (v8.x WS1 real-computation helper)
+[factor_validation.R] Loaded — build_monthly_forward_returns / validate_factor / approve_factors
+[wt005D] 벤치 차이(cap-w − EW) 월평균 -0.031% | 연율 -0.37% | 2021-07~ 구간 월평균 +1.234%
+      grid     p_cap      p_ew share_pos_cap share_pos_ew
+    <char>     <num>     <num>         <num>        <num>
+1: primary 0.5776471 0.6070588     0.4748899    0.4422907
+2:   rob36 0.6078777 0.5967078     0.5369904    0.4297937
+3:   rob24 0.5604938 0.5714286     0.5366870    0.4434476
+[wt005D] --- era 공통성분: cap-w vs EW-유니버스 (primary) ---
+      grid     k       from         to mean_t_cap    pos_cap  mean_t_ew
+    <char> <int>     <Date>     <Date>      <num>      <num>      <num>
+1: primary     1 2006-07-31 2011-06-30  0.7301318 0.75352113 -0.4774283
+2: primary     2 2011-07-29 2016-06-30  1.6292510 0.90845070 -0.1370810
+3: primary     3 2016-07-29 2021-06-30 -0.7516958 0.21554770 -0.2282335
+4: primary     4 2021-07-30 2026-06-30 -1.3739027 0.02112676 -0.1500738
+      pos_ew
+       <num>
+1: 0.3661972
+2: 0.5035211
+3: 0.4204947
+4: 0.4788732
+[wt005D] --- 동 (rob36) ---
+     grid     k       from         to mean_t_cap    pos_cap    mean_t_ew
+   <char> <int>     <Date>     <Date>      <num>      <num>        <num>
+1:  rob36     1 2005-07-29 2008-06-30  0.6407322 0.76760563 -0.340158018
+2:  rob36     2 2008-07-31 2011-06-30  0.2164477 0.64436620 -0.394842554
+3:  rob36     3 2011-07-29 2014-06-30  1.3394737 0.89473684  0.024316047
+4:  rob36     4 2014-07-31 2017-06-30  0.1623175 0.64310954 -0.120685923
+5:  rob36     5 2017-07-31 2020-06-30 -0.2562203 0.45583039 -0.271704236
+6:  rob36     6 2020-07-31 2023-06-30 -0.4207901 0.33802817 -0.405918696
+7:  rob36     7 2023-07-31 2026-06-30 -1.3985766 0.01408451 -0.006724731
+      pos_ew
+       <num>
+1: 0.3591549
+2: 0.3485915
+3: 0.4947368
+4: 0.4664311
+5: 0.4310954
+6: 0.3767606
+7: 0.5316901
+      grid     k agree_cap  agree_ew
+    <char> <int>     <num>     <num>
+1: primary     1 0.7535211 0.6338028
+2: primary     2 0.9084507 0.4964789
+3: primary     3 0.7844523 0.5795053
+4: primary     4 0.9788732 0.5211268
+[wt005D] ★ 판정부호가 era 부호와 일치하는 비율: cap-w 평균 0.856 / EW 평균 0.558 — 1.0에 가까울수록 '판정 = era 라벨'
+        k     n         p    grid
+    <int> <int>     <num>  <char>
+ 1:     1   284 0.6971831 primary
+ 2:     2   283 0.2508834 primary
+ 3:     3   283 0.7844523 primary
+ 4:     1   284 0.7429577   rob36
+ 5:     2   284 0.6232394   rob36
+ 6:     3   283 0.6431095   rob36
+ 7:     4   283 0.5017668   rob36
+ 8:     5   283 0.4593640   rob36
+ 9:     6   284 0.6760563   rob36
+10:     1   280 0.7321429   rob24
+11:     2   284 0.4788732   rob24
+12:     3   284 0.4718310   rob24
+13:     4   285 0.6947368   rob24
+14:     5   284 0.8767606   rob24
+15:     6   283 0.1554770   rob24
+16:     7   283 0.5759717   rob24
+17:     8   284 0.3556338   rob24
+18:     9   284 0.5035211   rob24
+19:    10   284 0.7605634   rob24
+      grid         p        lo        hi n_transitions
+    <char>     <num>     <num>     <num>         <num>
+1: primary 0.5776471 0.2508834 0.7844523             3
+2:   rob36 0.6078777 0.5276424 0.6840869             6
+3:   rob24 0.5604938 0.4313883 0.6843811            10
+[wt005D] ★ time-clustered CI (전이 단위): primary [0.251, 0.784] — 0.5 포함
+[wt005D] 평균연결 k=39 클러스터: 크기 중앙값 2 / 최대 74 (단일연결 최대 246 대비)
+      grid         p        lo        hi n_clusters
+    <char>     <num>     <num>     <num>      <num>
+1: primary 0.5776471 0.5172869 0.6349206         38
+2:   rob36 0.6078777 0.5745732 0.6385499         38
+3:   rob24 0.5604938 0.5203960 0.5941200         39
+[wt005D] ★ primary 최상위 bin |t|>=2 (평균연결 클러스터 CI): p=0.500 [0.366, 0.655]
+                    Factor_Name  port_t_base  port_t_lag1        delta
+                         <char>        <num>        <num>        <num>
+ 1:                      V02_EP  2.774403606  2.509343517 -0.265060089
+ 2:           IN03_RD_to_Market  2.773066842  2.818709730  0.045642888
+ 3:          V15_NetDebt_Adj_EP  2.532587517  2.587397107  0.054809590
+ 4:                 V14_EBIT_EV  2.523146232  2.610664961  0.087518729
+ 5:               V07_EV_EBITDA  2.494031823  2.374734379 -0.119297444
+ 6:              C02_EPS_Chg_1m  2.487110803  0.627730582 -1.859380221
+ 7:                Q25_Ohlson_O  0.032259919  0.446536335  0.414276416
+ 8: AC14_Discretionary_Accruals -0.020074411 -0.071755765 -0.051681353
+ 9:      Q07_Earnings_Stability  0.013999334  0.002314769 -0.011684566
+10:      AC02_Total_Accruals_BS -0.010423048 -0.181081261 -0.170658212
+11:    AC21_CF_to_Accrual_Ratio  0.001128286  0.468306822  0.467178537
+12:        D33_Beta_Persistence -0.001050337  0.004523853  0.005574191
+    ax001_bad_act_pct_m ax001_norm_act_pct_m n_bad
+                  <num>                <num> <int>
+ 1:           1.3290137           0.61640366   120
+ 2:           0.6603444           1.07617402   120
+ 3:           0.9614931           0.73201731   120
+ 4:           1.0007956           0.66339093   120
+ 5:           1.0267773           0.59831265   120
+ 6:           0.6143654           0.58273795   117
+ 7:           1.3546818          -0.95984998   120
+ 8:           0.9070867          -0.64915647   115
+ 9:           1.6700493          -1.19388348   120
+10:           0.0438936          -0.03732461   120
+11:           0.7782476          -0.54862648   115
+12:           0.7144219          -0.51380350   120
+[wt005D] lag1 스트레스: |Δt| 중앙값 0.103 / 최대 1.859 | 부호 유지 11/12 — 붕괴 시 동월 누출 의심
+[wt005D] AX-001 조건부(advisory): 대표 12 factor 중 bad월 active > normal월 active = 11건
+[wt005D] 저장 — dualbasis_results.rds + ew_basis_grids.rds
+Warning message:
+package 'arrow' was built under R version 4.5.3 

@@ -1,0 +1,7 @@
+suppressPackageStartupMessages(library(jsonlite))
+setwd(Sys.getenv("QM_ROOT","C:/Users/99922/OneDrive/Quant_Module_Moltbot"))
+L <- fromJSON("02_Infrastructure/ast/operator_library.json", simplifyVector=FALSE)
+cat("ops:", paste(names(L$operators), collapse=", "), "\n\n")
+FM <- fromJSON("06_Registry/ast_field_map_v0.json", simplifyVector=FALSE)
+gids <- unlist(lapply(FM$domains, function(d) sapply(d$leaf_groups, function(g) g$group_id)))
+cat("n groups:", length(gids), "\n"); cat(paste(gids, collapse=", "), "\n")

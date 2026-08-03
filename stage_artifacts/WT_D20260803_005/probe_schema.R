@@ -1,0 +1,13 @@
+suppressPackageStartupMessages(library(jsonlite))
+setwd(Sys.getenv("QM_ROOT","C:/Users/99922/OneDrive/Quant_Module_Moltbot"))
+S <- fromJSON("02_Infrastructure/worktask/schema.json", simplifyVector=FALSE)
+ap <- S$definitions$alpha_package
+cat("required:", paste(unlist(ap$required), collapse=", "), "\n\n")
+cat("props:", paste(names(ap$properties), collapse=", "), "\n\n")
+cat("verdict enum:", paste(unlist(ap$properties$verdict$enum), collapse=", "), "\n")
+cat("selection_objective enum:", paste(unlist(ap$properties$selection_objective$enum), collapse=", "), "\n")
+cat("combination_rule enum:", paste(unlist(ap$properties$combination_rule$enum), collapse=", "), "\n")
+cat("\n--- allOf/if-then ---\n")
+str(ap$allOf, max.level=4)
+cat("\n--- diagnostics required ---\n")
+str(ap$properties$diagnostics, max.level=2)
