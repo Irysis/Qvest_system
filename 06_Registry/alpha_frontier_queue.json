@@ -1,7 +1,7 @@
 {
  "schema_version": "1.0",
  "sot": "02_Infrastructure/docs/qvest_v8_3_alpha_discovery_sot.md §4",
- "updated": "2026-08-03 (FQ-108c 사전 확인: 꼬리 채널은 R05 로 이미 소비 중(41파일) → 질문이 '신규 소비'에서 'R05 통제 후 증분'으로 정밀화. 사전 확인 10건 누적. 총 133건)",
+ "updated": "2026-08-03 (FQ-121 조합 게이트 OOS 미충족 — 지배 기전 = 성분 자격의 시계열 비정상성. 파생 FQ-131 자격 지속성 / FQ-132 walk-forward gate 등재. 총 135건)",
  "consume_rule": "새 발굴 리서치 착수 전: hypothesis_index lookup → 본 큐 확인 → owner/status 갱신. 완료 시 result_ref(L-code/보고서) 기입. dohoon_decision 항목은 세션 임의 착수 금지.",
  "entries": [
   {
@@ -2297,11 +2297,17 @@
    "ev_rationale": "WT-021 NP-1(P1). 다팩터 조합 lane 전체의 재개 조건이 이 검증 하나에 걸려 있다. rank-IC가 자격 증거로 무효임이 실측됐으므로(D03_EWMA IC t +3.71·PORT_t −1.73) 게이트 지표 교체의 근거는 이미 확보 — 남은 것은 IS/OOS 분리 성립 여부.",
    "wall_check": "top-25는 고정 축 — 게이트는 '25 slot을 채울 자격'의 판별이지 제약 변경 아님 (INV-7).",
    "data_gate": "없음 (WT-009 패널 + 하네스 재사용)",
-   "owner": "WT-D20260803_004",
-   "status": "in_flight",
+   "owner": "Q-Lead (WT-D20260803_004 판정 수집 2026-08-03)",
+   "status": "config_scoped_negative_frontier_open",
    "in_flight_since": "2026-08-03 (WT-D20260803_004 착수 — IS=2001-12~2014-02 147m / OOS=2014-03~2026-06 148m 단일 분할 사전등록, arm 4종 GATE_IS/POS2/ALL5/SINGLE_IS + 누출 위반주입. preregistration.json 고정 완료)",
    "registered": "2026-08-02 alpha-research WT-D20260802_021 (FQ-116 NP-1 파생)",
-   "precheck_measured": "★착수 전 사전 확인 (2026-08-02 Q-Lead, WT-021 grinold_contrast 표 직접 판독). **양-전이 성분은 3개다**(WT-021 의 POS2 는 2개만 썼다): V01_SECREL(IC +0.0165/t 2.88 → PORT_t +1.42) · M01_PATHQ(IC +0.0129/t 1.29 → PORT_t +2.05) · D03_EWMA(IC +0.0414/t 3.71 → PORT_t -1.73, sign_break) · Q01_EB(IC +0.0157/t 2.21 → PORT_t -0.21, sign_break) · V06_EB(IC +0.0292/t 3.32 → PORT_t +0.32). ⇒ 성분 자격(PORT_t>0) 통과 = 3개(V01_SECREL, M01_PATHQ, V06_EB), 탈락 = 2개(D03_EWMA, Q01_EB, 둘 다 sign_break). ★라운드 설계 함의: POS2(2성분) 대신 **POS3(3성분) 도 함께 재야** '성분 수'와 '성분 자격'의 효과가 분리된다 — POS2 만 재면 breadth 증가 효과와 자격 게이트 효과가 섞인다. ★단 V06_EB 는 PORT_t +0.32 로 0 근방이라 WT-013 섭동 취약 구간 — 자격 판정 자체를 섭동 분포로 걸어야 한다(FQ-109 규약). D03_EWMA 는 IC t 3.71 로 5팩터 중 최강인데 PORT_t -1.73 꼴찌 = sign_break 의 대표 사례이고 FQ-122(비-slot 소비) 대상."
+   "precheck_measured": "★착수 전 사전 확인 (2026-08-02 Q-Lead, WT-021 grinold_contrast 표 직접 판독). **양-전이 성분은 3개다**(WT-021 의 POS2 는 2개만 썼다): V01_SECREL(IC +0.0165/t 2.88 → PORT_t +1.42) · M01_PATHQ(IC +0.0129/t 1.29 → PORT_t +2.05) · D03_EWMA(IC +0.0414/t 3.71 → PORT_t -1.73, sign_break) · Q01_EB(IC +0.0157/t 2.21 → PORT_t -0.21, sign_break) · V06_EB(IC +0.0292/t 3.32 → PORT_t +0.32). ⇒ 성분 자격(PORT_t>0) 통과 = 3개(V01_SECREL, M01_PATHQ, V06_EB), 탈락 = 2개(D03_EWMA, Q01_EB, 둘 다 sign_break). ★라운드 설계 함의: POS2(2성분) 대신 **POS3(3성분) 도 함께 재야** '성분 수'와 '성분 자격'의 효과가 분리된다 — POS2 만 재면 breadth 증가 효과와 자격 게이트 효과가 섞인다. ★단 V06_EB 는 PORT_t +0.32 로 0 근방이라 WT-013 섭동 취약 구간 — 자격 판정 자체를 섭동 분포로 걸어야 한다(FQ-109 규약). D03_EWMA 는 IC t 3.71 로 5팩터 중 최강인데 PORT_t -1.73 꼴찌 = sign_break 의 대표 사례이고 FQ-122(비-slot 소비) 대상.",
+   "verdict": "다팩터 조합 lane 재개 조건 미충족 (2026-08-03, OOS 148개월). A1_GATE_IS -0.029 / A2_POS2 +0.439 / A3_ALL5 -0.582 / A4_SINGLE_IS -0.389. (a) 게이트 유효성 NOT_ESTABLISHED(방향 +3.2%/yr 이나 t<2.0) (b) 조합의 존재 이유 성립 실패 — 양 arm OOS 알파 0 근방이라 0 vs 0 비교. ★지배 기전 = 성분 자격의 시계열 비정상성: IS 12년 t 순서가 OOS 와 정합 안 함, 부호 안정 2/5, IS 최강 V01_SECREL +2.634 → OOS -0.389 반전. WT-021 의 'POS2 회복 126%'는 in-sample 선별 산물로 확정. 위반 주입 FIRED(누출판 +0.74~+1.10 t 이득, 통과 집합 4→1) = IS/OOS 분리가 실질 구속.",
+   "revival_conditions": [
+    "FQ-131(자격 지속성)에서 자격 부호의 반감기가 운용 주기보다 길다고 실측되면 재개",
+    "FQ-132(walk-forward gate)가 고정 IS 대비 유의 개선을 보이면 운용판으로 재설계",
+    "성분 풀이 교체되어(비-return 재료 등) 자격 안정성이 다른 집합에서 재측정될 때"
+   ]
   },
   {
    "id": "FQ-122",
@@ -2438,14 +2444,16 @@
   {
    "id": "FQ-108b",
    "lane": "risk_axis",
-   "title": "★위험모델 상관(C) 채널 — 대각이 아닌 곳. FQ-108 PRIMARY tie 의 기전이 직접 지목",
+   "title": "★위험모델 상관(C) 채널 = FQ-057 NP1 승계 — Hadamard tier-damping(PSD 보존)",
    "hypothesis": "FQ-108 은 상관행렬 C 를 전 arm 고정하고 대각만 교체했고, PRIMARY tie 의 기전 진단이 '집중 20종 북(HHI 0.115)의 총분산은 상관·시장 성분이 지배 — 대각은 병목이 아니다'로 귀결됐다. ⇒ 같은 재료를 **상관 채널**(tier/섹터 damping·factor-구조 C·regime-조건부 C)로 소비하면 개선이 나오는가. 대각에서 이미 소진된 정보와 겹치지 않는다는 점이 사전 근거.",
    "ev_rationale": "FQ-108 NP-2(P1). 본 라운드가 명시적으로 남긴 유일한 미측정 축이고, 기전 진단이 직접 지목했다.",
    "wall_check": "FQ-057 은 상관 추정기(lw_nls) 자체는 ADOPT 확정 — 본 건은 추정기 교체가 아니라 구조 부여. 중복 아님.",
    "data_gate": "없음 (FQ-108 패널·하네스 재사용)",
    "owner": "미배정",
    "status": "frontier_open",
-   "registered": "2026-08-03 Q-Lead (FQ-108 NP-2 파생)"
+   "registered": "2026-08-03 Q-Lead (FQ-108 NP-2 파생)",
+   "precheck_measured": "★착수 전 사전 확인 (2026-08-03 Q-Lead) — **신규 라운드가 아니라 FQ-057 NP1 승계다**. FQ-057(07-18)이 상관 채널을 이미 시도했고 config-scoped negative 로 끝났다: 블록 하드-조립이 **PSD 비보존 연산**이라 위반 198/198·min_ev -0.196, eigen-clip 수리 후에도 조건수 ~1e10 붕괴·MVP 폭주(leverage 5.9/9.9). ★단 **tier 개념 자체는 미기각**(block_nls 가 상관 RMSE 1위 0.3377). 부활 조건이 그때 이미 명시됨: **PSD-보존 연산자로 재구현 — NP1 Hadamard tier-damping(Schur product 정리로 PSD 수학적 보장) · NP2 tier-factor Σ=BΩB′+D**. ⇒ FQ-108 이 '상관 채널 미측정'이라 한 것은 절반만 맞다(시도됐고 실패했으며 원인·다음 수단까지 특정돼 있다). ★오늘 FQ-108 이 더한 새 근거: 집중 20종 북(HHI 0.115)의 총분산은 상관·시장 성분이 지배하므로 **대각이 아니라 상관이 병목** — 07-18 엔 없던 실측이다. 두 라운드의 next_probe 가 독립적으로 같은 지점을 지목했다. ⇒ 라운드 정의: **FQ-057 NP1(Hadamard tier-damping) 착수**, PSD 보장이 구조적이므로 07-18 실패 원인은 제거된 상태에서 시작한다.",
+   "inherits_from": "FQ-057 NP1 (07-18 부활 조건 명시분) + FQ-108 기전 진단(상관이 병목)"
   },
   {
    "id": "FQ-108c",
@@ -2472,6 +2480,30 @@
    "owner": "미배정",
    "status": "frontier_open",
    "registered": "2026-08-03 Q-Lead (FQ-108 NP-4 파생)"
+  },
+  {
+   "id": "FQ-131",
+   "lane": "mechanism_probe",
+   "title": "★성분 자격의 지속성 자체를 재는 라운드 — 자격 부호 반감기·조건부 안정성",
+   "hypothesis": "WT-D20260803_004 지배 발견: 조합이 안 되는 이유는 '섞는 방법'이 아니라 **성분 자격(tail-전이 부호)이 시간에 따라 유지되지 않는 것**이다(부호 안정 2/5, IS 최강이 OOS 반전). 그렇다면 자격 자체를 대상으로 재야 한다: 성분별 PORT_t 부호의 **반감기**는 얼마인가, 어떤 조건(팩터 family·회전율·cap-tier)에서 더 안정한가. 이건 조합뿐 아니라 **단일 팩터 채택 판정 전반**의 유효기간을 정하는 문제다.",
+   "ev_rationale": "WT-D20260803_004 NP-1(P1). 오늘 3연속 정합(WT-015 단일 지배 → WT-021 slot 잠식 → 본 라운드 자격 비정상)이 같은 지점을 가리켰다. 자격 지속성을 모르면 어떤 채택 판정도 유효기간을 말할 수 없다 — registry 교체·조합·게이트 전부의 공통 전제.",
+   "wall_check": "측정 대상이 성과가 아니라 '판정의 안정성'이라 전이 벽과 직교. 자본 주장 없음.",
+   "data_gate": "없음 (WT-009/021/004 패널 재사용)",
+   "owner": "미배정",
+   "status": "frontier_open",
+   "registered": "2026-08-03 Q-Lead (WT-D20260803_004 NP-1 파생)"
+  },
+  {
+   "id": "FQ-132",
+   "lane": "construction",
+   "title": "walk-forward 자격 게이트 운용판 — 고정 IS 대신 rolling 재추정",
+   "hypothesis": "본 라운드는 자격을 **IS 12년 고정**으로 판정하고 OOS 148개월 전체에 적용했다. 자격이 비정상이라면 고정 판정이 애초에 부적합하고, **rolling 재추정(walk-forward gate)**이 정합한 운용 형태일 수 있다. 재추정 주기(12/24/36개월)를 사전등록해 고정 IS 대비 paired 비교 — 개선이 없으면 '자격은 어떤 형태로도 못 쓴다'가 확정된다.",
+   "ev_rationale": "WT-D20260803_004 NP-2(P2). 고정 IS 실패가 곧 자격 개념의 실패는 아니다 — 형태를 바꿔 한 번은 물어야 INV-7 정합. 단 주기 sweep 이므로 DSR 적용 대상.",
+   "wall_check": "top-25 고정 축 불변. 게이트는 slot 자격 판별이지 제약 변경 아님.",
+   "data_gate": "없음",
+   "owner": "미배정",
+   "status": "frontier_open",
+   "registered": "2026-08-03 Q-Lead (WT-D20260803_004 NP-2 파생)"
   }
  ]
 }
