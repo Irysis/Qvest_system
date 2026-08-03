@@ -107,7 +107,7 @@ A_REL_TOP 실측 turnover **12.42/yr > 상한 11.0** (SINGLE_BEST 12.42, LEVEL_T
 
 ## 자기합리화 자동탐지 (v8.2 규약 3)
 
-금칙어 기계 스캔 — `영향 미미 / 관행적 / 실무적 / 보수적이면 OK / 대부분 결과 동일 / 이미 반영` 및 회피표현 grep 목록에 대해 `alpha_package.json` · `alpha_validation.json` · L-code 아티팩트 전수 검사.
+금칙어 기계 스캔 — 정본 목록은 `.claude/rules/pit.md` §금지 표현 + `.claude/rules/answer-principles.md` §회피 표현 grep (본 문서는 목록을 재기재하지 않는다 — 재기재 자체가 탐지기를 발화시켜 신호를 오염시킴). 대상: `alpha_package.json` · `alpha_validation.json` · L-code 아티팩트 전수.
 
 - 적발 2건 모두 **오탐**: "점**추정**"(point estimate, AP4 문맥) / "사전 **추정** 불가"(WT-006 인용). 통계 용어이며 회피 표현 아님. RE-VIEW 불요.
 - **문턱 미달을 '사실상 통과'로 서술한 문장 없음** 자가 확인 — (a)/(b) 는 전 산출물에서 FAIL 로만 표기.
