@@ -81,7 +81,9 @@ V <- list(
         mean_abs_dt = r4(mean(abs(CP$parity$p3_window$dt))),
         max_abs_dt = r4(max(abs(CP$parity$p3_window$dt))),
         sign_agreement = sprintf("%d/%d", sum(CP$parity$p3_window$sign_same), nrow(CP$parity$p3_window)),
-        verdict = "PASS — 슬라이스 방식 편향 무시 가능")
+        verdict = paste0("PASS — 판정 단위가 *부호*인 본 라운드에서 슬라이스 대체가 부호를 바꾼 사례 0/",
+          nrow(CP$parity$p3_window), "건 (최대 |Δt| 0.0077, 가장 작은 |t_direct| 0.0266 대비 29%). ",
+          "|t| < 0.008 구간에서는 부호가 뒤집힐 수 있으므로 그 구간 판정은 애초에 무의미하다는 점을 병기"))
     ),
     lag1_stress = list(n_factors = nrow(DBR$lag1),
       median_abs_delta_t = r4(median(abs(DBR$lag1$delta))),
