@@ -1,0 +1,113 @@
+{
+  "task_id": "WT-D20260803_007",
+  "fq": "FQ-135",
+  "title": "era-robust 성분 선별 — 예측 불가를 전제로 하는 구성",
+  "registered_at": "2026-08-03",
+  "registered_before_measurement": true,
+  "selection_type": "chain",
+  "dsr_gate_applicability": "not_applicable (selection_type=chain — 본 라운드는 사전등록된 단일 선택규칙 1개(primary)를 판정하며 열거된 trial 집합에서 argmax/threshold-pick 하지 않는다. arm A_abs / A_perp / K∈{10,40} 는 측정 전 고정·결과 무관 전량 보고하는 사전등록 감도축이며 primary 교체 후보가 아니다.)",
+  "n_iterations_planned": 1,
+  "gate_eligible": false,
+  "capital_claim": "none — 본 라운드는 자본 자격을 주장하지 않는다. 선택규칙의 OOS 판별력만 측정한다.",
+
+  "premise": {
+    "from_wt005": {
+      "era_common_dominance": "era 유지 전이 지속 0.959 vs 전환 0.304; era-demean 후 P_persist 0.548/0.568/0.563 = 귀무 근방",
+      "family_persistence": {"growth": 0.667, "investor_flow": 0.667, "quality": 0.659, "momentum": 0.655, "defense": 0.465, "liquidity": 0.487},
+      "cap_tier": {"CAP_small": 0.614, "CAP_large": 0.514},
+      "relative_rank_alive": "era-demean 상대순위 Spearman 0.19~0.20 (3격자 공통)"
+    },
+    "from_wt006": "era 사전 추정 불가 — 전환 달 적중 0.2593, clean 최대 우위 +0.049 < 최소 누출 우위 +0.148",
+    "reuse": ["stage_artifacts/WT_D20260803_005/canonical_pool.rds", "pool_meta.rds", "registry_labels.rds"],
+    "recompute_forbidden": "위 실측치는 재도출하지 않는다 (WT 지시)."
+  },
+
+  "precheck_measured": {
+    "note": "착수 전 read-only 확인 — 결과(OOS 성과)가 아니라 설계 *전제*를 잰다. precheck.R 로그 보존.",
+    "P_a": "canonical_pool.rds 재사용 가능 — A 행렬 287월 x 285 factor (2002-08-30 ~ 2026-06-30), NA 셀 0.56%",
+    "P_b": "walk-forward IS0=120 / OOS블록=24 → step 7개, OOS 167월 (2012-08-31 ~ 2026-06-30), step별 era 3→7개",
+    "P_c_design_changing": "worst-era(era-demean) 지표와 IS-level PORT_t 의 factor 간 상관 = 0.785(step1) / 0.560(step7). ⇒ ★선택자가 상당부분 'IS 강함'을 재선택한다. 이 사실을 측정 전에 확인했으므로 level-직교 arm(A_perp)을 사전등록 arm 에 추가한다(결과 무관 보고). 선택 회전: step1 ∩ step7 top20 = 7/20 (자카드 0.212)",
+    "P_d": "canonical_screen_bt 1회(167월) 0.63s → 210 arm ≈ 2.2분 (예산 가능)",
+    "P_e": "load_month_factors 0.80s/월 → 287월 3.8분. 전체 z = 285 x 3475 x 287 ≈ 284M행 → 저장 불가 ⇒ ★composite 은 월 루프 내에서 전체 z 로 계산하고 composite 상위 80만 저장 (단일 factor top-80 절단 parity 는 WT-005 P1 이 실증했고, 본 라운드는 composite 에 대해 P1' 로 재실증한다)"
+  },
+
+  "question": {
+    "primary": "era-robust 기준으로 고른 성분 집합이, 그렇지 않은 집합보다 OOS 에서 실제로 낫는가",
+    "real_gate": "era-robust 집합이 '단일 최강 성분'을 이기는가 (이기지 못하면 '지표는 판별하나 구성은 무의미')"
+  },
+
+  "robustness_metric": {
+    "primary": {
+      "id": "WORST_ERA_REL",
+      "definition": "R_f = min over IS eras e of ( t_{f,e} - mean_g t_{g,e} ), t = .nw_t_mean(canonical net-active, lag=3) on era e",
+      "rationale": "① minimax 는 '어느 era 에서도 덜 죽는다'의 직접적 조작화 ② era 공통성분은 WT-005/006 이 지배적·예측불가로 확정했으므로 era-demean 으로 제거 ③ 남는 상대순위(Spearman 0.19~0.20)가 유일하게 살아있는 신호",
+      "fixed_before_measurement": true
+    },
+    "prespecified_secondary_arms_reported_regardless": [
+      {"id": "WORST_ERA_ABS", "definition": "R_f = min_e t_{f,e} (era-demean 없음)", "purpose": "절대 생존 기준 — 원 framing"},
+      {"id": "WORST_ERA_PERP", "definition": "WORST_ERA_REL 을 IS 전기간 level PORT_t 에 대해 factor-간 OLS 회귀한 잔차", "purpose": "P_c 가 드러낸 level 교락 제거 — '수준을 넘어선 robustness' 분리"}
+    ],
+    "diagnostics_not_selection": ["era 간 부호 유지율", "era-demean 상대순위 Spearman 자기상관", "era 간 t 표준편차", "IS level PORT_t", "cor(지표, level)"]
+  },
+
+  "design": {
+    "walk_forward": {"IS_start_months": 120, "OOS_block_months": 24, "n_steps": 7, "oos_total_months": 167, "expanding_IS": true},
+    "era_window_months": 36,
+    "era_anchoring": "IS 끝에 맞추고 앞쪽 잔여 월을 버린다",
+    "era_min_valid_months": 30,
+    "K_primary": 20,
+    "K_sensitivity_reported": [10, 40],
+    "composite_rule": "z_score_aligned_equal_weight — 월별 멤버 factor 의 Z_Score_Aligned 산술평균 (na.rm), 멤버 커버리지 >= 60% 인 ticker 만 유효",
+    "IS_only_selection": "step b 의 멤버십은 IS_b (1..is_end) 정보만 사용. OOS 블록 수익은 선택에 절대 미투입.",
+    "secondary_single_split": {"IS_months": "1..191", "OOS_months": "192..287 (2018-07 ~ 2026-06, 96월)", "purpose": "단일 draw 취약성 대조 — 멤버십 jitter 하 문턱 판정 취약(2026-08-02 실측) 때문에 primary 는 walk-forward"}
+  },
+
+  "arms": [
+    {"id": "A_REL_TOP", "desc": "primary 지표 상위 K", "role": "treatment"},
+    {"id": "A_REL_BOT", "desc": "primary 지표 하위 K", "role": "reverse control — 지표가 실제로 판별하는지"},
+    {"id": "A_ABS_TOP", "desc": "WORST_ERA_ABS 상위 K", "role": "prespecified secondary"},
+    {"id": "A_PERP_TOP", "desc": "WORST_ERA_PERP 상위 K", "role": "prespecified secondary (level-직교)"},
+    {"id": "RANDOM", "desc": "무작위 K, 200 draw (step 마다 재추첨)", "role": "귀무분포"},
+    {"id": "SINGLE_BEST", "desc": "IS level PORT_t argmax 단일 factor", "role": "★진짜 대조군 (WT-015 확립)"},
+    {"id": "POOL_EW", "desc": "풀 전체 EW composite", "role": "무선별 base"}
+  ],
+
+  "discriminants": {
+    "a_selector_discriminates": "PASS iff OOS paired NW(lag=3) t( active[A_REL_TOP] - active[A_REL_BOT] ) >= +2.0",
+    "b_construction_beats_single": "PASS iff OOS paired NW(lag=3) t( active[A_REL_TOP] - active[SINGLE_BEST] ) >= +2.0",
+    "interpretation": {
+      "a_only": "지표는 판별하나 구성은 무의미",
+      "both": "era-robust 구성 lane 실재",
+      "neither": "예측도 안 되고 robust 선별도 안 된다 — 현 재료에서 구성 lane 전체가 닫힘 (정직 산출)"
+    },
+    "honest_prior": "era-demean 상대순위 Spearman 0.19~0.20 은 약하다. (b) 실패 확률이 실질적이며 그 경우의 결론도 유효 산출이다. 추가로 P_c 가 cor(지표, level)=0.56~0.79 를 드러냈으므로 A_REL_TOP 은 상당부분 IS-강함 재선택 — WT-004 가 실증한 IS→OOS 반전(V01_SECREL +2.634 → -0.389)의 사정권이다."
+  },
+
+  "violation_injection": [
+    {"id": "LEAK_FULLSAMPLE", "design": "robustness 지표를 전기간(OOS 포함) era 로 계산해 멤버십 선정 → 동일 OOS 구간 측정", "expectation": "A_REL_TOP OOS PORT_t 및 vs-BOT paired t 가 실질 상승. 상승 없으면 측정 검사력 부족으로 정직 보고"},
+    {"id": "LEAK_ORACLE_OOS", "design": "OOS 블록 자체의 PORT_t argmax 로 멤버십 선정(고전적 look-ahead)", "expectation": "대폭 상승 — 가드 발화의 상한 실증"}
+  ],
+
+  "robustness_required": [
+    "P1' composite top-80 저장 절단 parity (전체 z composite vs 저장 composite → top-25 선택 동일)",
+    "P2' fast-path vs canonical period_returns parity (< 1e-8)",
+    "lag1 스트레스 (composite score 1개월 지연)",
+    "placebo (월내 ticker 셔플 — PORT_t ~ 0 기대)",
+    "dual-basis (EW-유니버스 대비 + cap-tier MEGA/MID/OTHER) 병기 — cap-w 판정 권위 불변",
+    "회전율 실측 (turnover_annual, 상한 11.0 인지)",
+    "AX-001 v2 조건부 병기 (BM<0 월 active) + 방어 family 는 위기 캘린더 종속 명시",
+    "family / cap-tier 분해가 WT-005 와 정합하는지 대조"
+  ],
+
+  "base_and_parity": {
+    "incumbent_base_consumed": false,
+    "production_parity_verified": "not_applicable",
+    "rationale": "본 라운드의 모든 arm 은 factor DB z 로부터 자기완결적으로 구성되며 05_Production 파생 패널이나 book incumbent 시계열을 base 로 소비하지 않는다(비교는 arm 간 paired). 따라서 '저장 파생 패널 vintage 오염'(2026-07-14 실사고) 노출면이 없다. 만약 후속 라운드가 어떤 arm 을 production rank-tilt 위 개입으로 소비한다면 그 시점에 production 실코드 base + parity 라벨이 의무."
+  },
+
+  "boundaries": {
+    "forbidden": ["공분산 추정", "target weights 제안", "graduation PASS 선언", "book/자본 주장"],
+    "note": "composite = alpha score 합성(z_score_aligned_equal_weight)이며 포트폴리오 비중 결정이 아니다. top-25 EW 는 canonical_screen_bt 고정 규격.",
+    "gate_eligible": false
+  }
+}

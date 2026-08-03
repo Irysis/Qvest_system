@@ -1,0 +1,220 @@
+{
+  "measured_at": "2026-08-03T12:08:05+0900",
+  "purpose": "해석 검증 통제 배터리 — 확정 수치 불변",
+  "C0_canary": {
+    "lookahead": {
+      "label": "CANARY: score = 당월 실현수익",
+      "n": 79,
+      "mean_ic": 1,
+      "t_plain": 1.3129603716881445e+17,
+      "t_nw": 1.0013160383240997e+17,
+      "pos_share": 1
+    },
+    "random": {
+      "label": "CANARY: score = 난수",
+      "n": 79,
+      "mean_ic": 0.01546742,
+      "t_plain": 0.97128784,
+      "t_nw": 1.09547306,
+      "pos_share": 0.59493671
+    },
+    "pass": true
+  },
+  "C1_size_alternative": {
+    "base": {
+      "label": "contract",
+      "n": 79,
+      "mean_ic": 0.05651604,
+      "t_plain": 2.07598088,
+      "t_nw": 1.9942342,
+      "pos_share": 0.59493671
+    },
+    "pure_size": {
+      "label": "inv_size",
+      "n": 79,
+      "mean_ic": 0.01509583,
+      "t_plain": 0.70200522,
+      "t_nw": 0.62945498,
+      "pos_share": 0.53164557
+    },
+    "split_contract": {
+      "mega": {
+        "label": "계약 score | mega_spread>0 (mega led)",
+        "n": 51,
+        "mean_ic": -0.02048763,
+        "t_plain": -0.63170858,
+        "t_nw": -0.54636218,
+        "pos_share": 0.45098039
+      },
+      "broad": {
+        "label": "계약 score | mega_spread<=0 (broad led)",
+        "n": 28,
+        "mean_ic": 0.19677272,
+        "t_plain": 5.32722453,
+        "t_nw": 5.45204754,
+        "pos_share": 0.85714286
+      },
+      "gap": 0.21726035
+    },
+    "split_size": {
+      "mega": {
+        "label": "순수 1/Size | mega_spread>0 (mega led)",
+        "n": 51,
+        "mean_ic": -0.01234126,
+        "t_plain": -0.42344196,
+        "t_nw": -0.39677224,
+        "pos_share": 0.41176471
+      },
+      "broad": {
+        "label": "순수 1/Size | mega_spread<=0 (broad led)",
+        "n": 28,
+        "mean_ic": 0.06507052,
+        "t_plain": 2.35940238,
+        "t_nw": 2.46119703,
+        "pos_share": 0.75
+      },
+      "gap": 0.07741178
+    },
+    "size_explained_share": 0.35630881
+  },
+  "C2_size_residualized": {
+    "summary": {
+      "label": "resid",
+      "n": 79,
+      "mean_ic": 0.05584923,
+      "t_plain": 2.06723077,
+      "t_nw": 2.00528444,
+      "pos_share": 0.58227848
+    },
+    "split": {
+      "mega": {
+        "label": "size-resid | mega_spread>0 (mega led)",
+        "n": 51,
+        "mean_ic": -0.02000873,
+        "t_plain": -0.62167194,
+        "t_nw": -0.53803917,
+        "pos_share": 0.45098039
+      },
+      "broad": {
+        "label": "size-resid | mega_spread<=0 (broad led)",
+        "n": 28,
+        "mean_ic": 0.19401908,
+        "t_plain": 5.26145148,
+        "t_nw": 5.4699233,
+        "pos_share": 0.82142857
+      },
+      "gap": 0.21402781
+    },
+    "gap_retention": 0.98512135,
+    "cross_sec_rho_mean": -0.01230429
+  },
+  "C3_exante_regime": {
+    "contemporaneous_gap": 0.21726035,
+    "lag1": {
+      "mega": {
+        "label": "계약 score | mega_spread_lag1>0 (mega led)",
+        "n": 52,
+        "mean_ic": 0.01081048,
+        "t_plain": 0.29364736,
+        "t_nw": 0.31482895,
+        "pos_share": 0.46153846
+      },
+      "broad": {
+        "label": "계약 score | mega_spread_lag1<=0 (broad led)",
+        "n": 27,
+        "mean_ic": 0.14454156,
+        "t_plain": 4.7328454,
+        "t_nw": 5.16617331,
+        "pos_share": 0.85185185
+      },
+      "gap": 0.13373107
+    },
+    "trailing3": {
+      "mega": {
+        "label": "계약 score | mega_spread_tr3>0 (mega led)",
+        "n": 62,
+        "mean_ic": 0.04984983,
+        "t_plain": 1.6019816,
+        "t_nw": 1.87814051,
+        "pos_share": 0.58064516
+      },
+      "broad": {
+        "label": "계약 score | mega_spread_tr3<=0 (broad led)",
+        "n": 15,
+        "mean_ic": 0.13746179,
+        "t_plain": 2.86634054,
+        "t_nw": 2.88457649,
+        "pos_share": 0.73333333
+      },
+      "gap": 0.08761196
+    }
+  },
+  "C4_composition": {
+    "by_era": [
+      {
+        "era": "new",
+        "n": 55,
+        "share_mega_led": 0.63636364,
+        "mean_ic": 0.04602455,
+        "mean_megaspread": 0.01933316
+      },
+      {
+        "era": "pilot",
+        "n": 24,
+        "share_mega_led": 0.66666667,
+        "mean_ic": 0.08055903,
+        "mean_megaspread": 0.04721819
+      }
+    ],
+    "by_year": [
+      {
+        "yr": "2019",
+        "n": 1,
+        "share_mega_led": 1,
+        "mean_ic": -0.34109312
+      },
+      {
+        "yr": "2020",
+        "n": 12,
+        "share_mega_led": 0.83333333,
+        "mean_ic": -0.07291264
+      },
+      {
+        "yr": "2021",
+        "n": 12,
+        "share_mega_led": 0.41666667,
+        "mean_ic": 0.15624624
+      },
+      {
+        "yr": "2022",
+        "n": 12,
+        "share_mega_led": 0.58333333,
+        "mean_ic": 0.04399892
+      },
+      {
+        "yr": "2023",
+        "n": 12,
+        "share_mega_led": 0.66666667,
+        "mean_ic": 0.03190677
+      },
+      {
+        "yr": "2024",
+        "n": 12,
+        "share_mega_led": 0.66666667,
+        "mean_ic": 0.07332176
+      },
+      {
+        "yr": "2025",
+        "n": 12,
+        "share_mega_led": 0.66666667,
+        "mean_ic": 0.09161626
+      },
+      {
+        "yr": "2026",
+        "n": 6,
+        "share_mega_led": 0.66666667,
+        "mean_ic": 0.15262209
+      }
+    ]
+  }
+}

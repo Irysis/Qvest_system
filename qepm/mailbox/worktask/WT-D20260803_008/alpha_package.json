@@ -1,0 +1,217 @@
+{
+  "task_id": "WT-D20260803_008",
+  "strategy_id": "FQ125_CTR_MAG_12M_MCAP_stage1",
+  "as_of_date": "2026-08-03",
+  "forecast_horizon": "1M",
+  "wt_type": "discovery",
+  "spec_version": "ast_v1.1",
+  "pit": {
+    "sig_date": "2026-06-30",
+    "decision_ts": "2026-07-01",
+    "convention_note": "신호는 홀딩월 직전 거래일 종가(sig_date)로 산출되고, 매매·판정 시점은 홀딩월 첫 영업일(decision_ts)이다. 최초 제출에서 decision_ts 를 sig_date 와 같게 적어 ast_spec_gate 가 FAIL_LOOKAHEAD 로 정확히 반려했다(A1 Size 는 t+1 가용). 게이트 판정이 옳았고 여기서 컨벤션을 정정한다 — 06_Registry/ast_gate_alerts.jsonl 의 해당 경보는 본 오기입 건이다."
+  },
+  "hypothesis": {
+    "statement": "직전 12개월 누적 계약수주 금액을 시가총액으로 나눈 값(CTR_MAG_12M_MCAP)은 KR 커버드 유니버스 내 익월 초과수익을 예측한다. 79개 IC월 실측 평균 rank-IC +0.0565 (t_NW lag3 +1.994).",
+    "mechanism": {
+      "agent": "중·소형 상장사의 단일판매·공급계약 공시를 즉시 재평가하지 않는 국내 매도측 리서치 커버리지 공백 — 계약 공시는 DART 로 전량 공개되나, 커버 애널리스트가 없는 종목(본 신호 보유 종목의 시총 tier 실측: MEGA 0.25% / MID 5.5% / OTHER 94.2%)은 추정치 갱신 주체가 부재하다.",
+      "friction": "① KR 공매도 제약(개별종목 차입공매도 사실상 불가)으로 반대 방향 차익거래가 막혀 가격발견이 롱 방향으로만 일어난다 ② 20일 평균 거래대금 하한 근처 유동성 계층에 신호 보유 종목이 집중돼(94% 가 시총 30위 밖) 기관 자금이 즉시 진입하지 못한다 ③ 계약금액은 공시 본문 XML 안에만 있고 정형 필드가 없어 기계 수집 자체가 마찰이다(본 라운드가 직접 크롤·파싱해 확보).",
+      "path": "공시 접수(rcept_dt) 시점에 수주 규모가 공개되나 실적 인식은 수개월~수분기 뒤다. 그 사이 기관 순매수와 추정치 상향이 순차 유입되며 가격이 1~3개월에 걸쳐 재평가된다. 신호는 12개월 누적이라 단발 이벤트가 아니라 수주 모멘텀 상태를 표현한다."
+    },
+    "falsification": [
+      {
+        "claim": "계약 클러스터 상위 종목의 후속 기관 순매수가 증가하지 않으면 '기관 후속 유입' 경로가 기각된다.",
+        "fields": ["A6_investor_flow_stock_daily"],
+        "test": "score 상위 분위 종목의 t+1~t+3 기관 순매수 누적이 하위 분위 대비 유의하게 크지 않으면 path 기각 (본 라운드 미측정 — next_probe NP-2)"
+      },
+      {
+        "claim": "메커니즘이 '커버리지 공백 + 소형 유동성 계층'이라면 신호는 대형주 주도 국면에서 약화되어야 한다. 국면 무관하게 균일하면 마찰 서술이 틀린 것이다.",
+        "fields": ["A1_RAWDATA_OHLCVS_daily"],
+        "test": "시총 상위 10종목 평균수익 − 유니버스 중앙수익(mega_spread, A1 Size×Ret 파생)의 t-1 값으로 월을 분할했을 때 IC 격차가 0이면 국면 경계 서술 기각. 실측: 격차 +0.1337, 라벨 순열 p=0.0082 → 기각되지 않음"
+      },
+      {
+        "claim": "유동성 계층 마찰이 실재하면 신호 보유 종목은 저유동 tier 에 편중되어야 한다.",
+        "fields": ["A9_liquidity_avgtv20_convention"],
+        "test": "20일 평균 거래대금 필터 통과 종목 중 신호 보유분이 유니버스 중앙값 이상 유동성에 균등 분포하면 마찰 서술 기각"
+      }
+    ],
+    "regime_scope": {
+      "holds_in": ["broad_led (시총 상위 10종목이 유니버스 중앙을 앞서지 못하는 저변 확산 국면)", "neutral"],
+      "weakens_or_reverses_in": ["mega_cap_led (직전월 mega_spread > 0)", "crisis (벤치 월수익 < -5%)"],
+      "boundary_rationale": "메커니즘의 마찰이 '커버리지 공백 + 소형 유동성 계층'이므로, 자금이 초대형주로 쏠리는 국면에서는 해당 계층 전체가 가격발견에서 배제되어 신호가 작동할 매개(기관 후속 유입)가 끊긴다. 실측(사전관측 t-1 상태): 저변주도 27개월 평균 IC +0.1445 (t_NW +5.166) vs 대형주주도 52개월 +0.0108 (t_NW +0.315). 위기 국면은 유동성 청산이 종목 고유정보를 압도 — 벤치<-5% 10개월 평균 IC +0.0352 (t +0.325) 로 약화 확인."
+    }
+  },
+  "factors": [
+    {
+      "factor_id": "CTR_MAG_12M_MCAP",
+      "ast": {
+        "op": "DIV",
+        "args": [
+          {
+            "op": "TS_SUM",
+            "args": [
+              {"leaf": "FIELD", "group_id": "D11_dart_contract_magnitude", "field": "contract_amount"},
+              12
+            ]
+          },
+          {"leaf": "FIELD", "group_id": "A1_RAWDATA_OHLCVS_daily", "field": "Size"}
+        ]
+      },
+      "role": "core_signal",
+      "restatement_exposure": 1,
+      "leaf_registry_note": "D11_dart_contract_magnitude 는 ast_field_map_v0 미등재 신규 스트림이다. 그 map 은 도메인 D 노트 3항에서 '계약수주(단일판매·공급계약) = 미수집 스트림, 리프 없음'을 명시한다. 본 라운드가 2019-01~2026-07 원문을 직접 크롤·파싱해 확보했으므로 ast_verify 는 FAIL_CONTRACT(미등재 리프)를 반환하며 이는 정직한 상태 표시다 — 저장 파생 패널을 등재 FIELD 로 위장하지 않았다(SOT §4-1). 리프 승격은 후속 registry 작업."
+    }
+  ],
+  "combination_rule": "single_factor",
+  "verdict": "designed",
+  "self_pit_check": {
+    "performed": true,
+    "leaves_checked": [
+      {
+        "leaf": "D11_dart_contract_magnitude:contract_amount",
+        "availability_rule": "regulatory: DART 접수일(rcept_dt) T+0 — 공시 접수 시점 공개. 신호월 M 값은 rcept_dt <= M 말일 인 공시만 누적(C5 정합).",
+        "restatement_prone": true,
+        "restatement_handling": "[기재정정] 공시는 사후 수정본이므로 신호에서 전량 제외(is_correction==FALSE 만 사용). 정정본은 위반 주입 대조군(Panel B)으로만 보존."
+      },
+      {
+        "leaf": "A1_RAWDATA_OHLCVS_daily:Size",
+        "availability_rule": "fixed t1: 신호일(월말 거래일) 종가 기준 시총 → 익영업일 가용. decision_ts = 홀딩월 첫 영업일이므로 충족.",
+        "restatement_prone": false
+      }
+    ],
+    "verdict": "clean",
+    "evidence": [
+      "lag1 스트레스: 신호 1개월 shift 시 평균 IC +0.0626 / t_NW +2.362 — base(+0.0565 / +1.994) 대비 붕괴 없음(오히려 상승). 동월 look-ahead 가 있으면 lag1 에서 붕괴해야 하므로 누출 징후 없음.",
+      "위반 주입(정정값 소급): 정정 반영 금액을 최초 공시일로 소급 주입한 Panel B 는 평균 IC +0.0520 으로 Panel A(+0.0565) 보다 낮다. paired diff -0.00447 (t -1.381). 사후 정보 주입이 IC 를 올리지 않음 = 누출 지문 부재.",
+      "하네스 카나리아: 스코어를 당월 실현수익으로 바꾸면 IC = +1.0000, 난수로 바꾸면 +0.0155 — IC 측정기가 look-ahead 를 검출할 능력이 살아있음을 실증(빈 검사 아님).",
+      "ast_spec_gate 실증: 최초 제출에서 decision_ts 를 sig_date 와 동일하게 적었더니 게이트가 A1 Size t+1 가용 위반으로 FAIL_LOOKAHEAD 반려 — 정적검증 계층이 실제로 발화함을 확인."
+    ]
+  },
+  "alpha_vector_ref": "stage_artifacts/WT_D20260803_008/alpha_scores.parquet",
+  "confidence_vector_ref": "stage_artifacts/WT_D20260803_008/alpha_scores.parquet",
+  "signal_matrix_ref": "04_Research/method_frontier/fq002_contract_magnitude/panelx_A.parquet",
+  "factor_specs": [
+    {
+      "factor_family": "Event/Non-return (DART disclosure magnitude)",
+      "proxy": "CTR_MAG_12M_MCAP",
+      "formula": "sum(contract_amount over disclosures with rcept_dt <= month-end M, trailing 12M) / market_cap(month-end M)",
+      "lag_rule": "regulatory rcept_dt T+0, 신호월 말일 컷오프 (C5)",
+      "winsorization": "none (Spearman rank-IC · canonical top-N EW 는 순위 기반이라 수준 이상치 비민감)",
+      "neutralization": "none (기본형). size-잔차화 진단 병기: 평균 IC +0.0558 / t_NW +2.005 = 원형 대비 98.8% 보존",
+      "economic_rationale": "커버리지 공백 + 공매도 제약 + 유동성 하한이 만든 가격발견 지연. 계약 규모/시총 = 미반영 수주 모멘텀의 규모 표준화.",
+      "weight_theta": 1.0,
+      "source": "new_designed",
+      "references": [
+        "본 라운드 실측 (WT-D20260802_018 파일럿 → WT-D20260802_023 섭동 확정 → 본 WT 확장)",
+        "논문 인용은 채택 근거로 사용하지 않음 (Common Charter 원칙 4)"
+      ]
+    }
+  ],
+  "redundancy_cluster_id": "non_return_dart_event_magnitude",
+  "alpha_inheritance_cor": null,
+  "alpha_inheritance_note": "parent 없음 — 신규 스트림. 기존 admitted 팩터와의 상관은 패널 커버리지가 유니버스의 17.8%(월평균 60.8/342)로 희소해 전 종목 단면 상관 산출이 부적절. 대신 size 축 직교성을 실측: score~1/Size 월별 단면 Spearman 평균 -0.0123 (min -0.173 / max +0.250).",
+  "diagnostics": {
+    "canonical_port_t_nw_lag3": 0.5108,
+    "canonical_port_t_pvalue": 0.6095,
+    "canonical_n_months": 79,
+    "canonical_metric_type": "canonical_screen",
+    "canonical_net_sr": 0.1863,
+    "canonical_information_ratio": 0.1863,
+    "canonical_alpha_annualized": 0.1476,
+    "canonical_turnover_annual": 1.8228,
+    "diag_ew_universe_port_t": 1.6039,
+    "diag_cap_tier_weight_share": {"MEGA": 0.00253, "MID": 0.05506, "OTHER": 0.94241, "UNRANKED": 0.0},
+    "rank_ic": 0.05652,
+    "icir": 0.23364,
+    "rank_ic_t_plain": 2.076,
+    "rank_ic_t_nw_lag3": 1.9942,
+    "harvey_t_stat": 1.9942,
+    "monotonicity": null,
+    "subperiod_stability": 0.5714,
+    "turnover_proxy": 1.8228,
+    "post_neutralization_ic": 0.05585,
+    "deflated_sharpe_ratio": null,
+    "n_trials": 1,
+    "n_iterations": 1,
+    "selection_type": "chain",
+    "pos_share": 0.5949,
+    "mean_covered_names": 60.8
+  },
+  "selection_objective": "canonical_port_t",
+  "gate_eligible": false,
+  "gate_eligible_reason": "본 라운드는 IC lead 확정용 interim 게이트다. graduation HARD 3종(PORT_t 2.95 / oos_retention 0.7 / calmar 0.64)은 forge-authoritative 값에만 적용되며 본 산출은 canonical_screen(스크리닝 실측)이다. canonical PORT_t +0.511 = 전이 벽 미통과 — 랭킹 소비 자격 없음. 자본 주장 금지.",
+  "interim_gate": {
+    "rule_fixed_by": "WT-D20260802_023 preregistration (측정 전 고정, 사후 변경 없음)",
+    "rule": "PASS: 합산 t_NW >= 1.5 AND 신규 구간 mean IC > 0 AND 국면 분해 수행 / ABORT: 합산 t_NW < 1.0 / 사이 = 미확정",
+    "combined_t_nw_lag3": 1.9942,
+    "combined_n_months": 79,
+    "combined_mean_ic": 0.05652,
+    "new_segment_n_months": 55,
+    "new_segment_mean_ic": 0.04602,
+    "new_segment_t_nw_lag3": 1.2942,
+    "regime_decomposition_performed": true,
+    "verdict": "PASS"
+  },
+  "challenge_flags": [
+    {
+      "id": "CF-1",
+      "severity": "HIGH",
+      "flag": "전이 벽 미통과 — IC 확립이 PORT_t 를 함의하지 않는다",
+      "detail": "합산 canonical cap-w PORT_t = +0.511 (p 0.61, n=79), EW-uni +1.604. 파일럿의 -0.371 대비 개선했으나 graduation HARD 2.95 와는 여전히 큰 거리. 본 라운드 판정은 'IC lead 확정'까지이며 랭킹 소비 자격은 별개 관문이다."
+    },
+    {
+      "id": "CF-2",
+      "severity": "HIGH",
+      "flag": "국면 분리(C3)는 사전등록되지 않은 사후 선택",
+      "detail": "동월/t-1/trailing3 세 국면 라벨을 모두 본 뒤 t-1 을 지목했다(3-way look). 라벨 순열 p=0.0082, 문턱 스윕 q0.2~0.5 에서 격차 0.101~0.144 안정, era 분할 재현(신규 55M 격차 +0.103 t_NW 5.836)으로 단일 draw 아티팩트는 아니나, 사전등록 검정이 아니므로 확정 주장 불가. 다음 라운드의 사전등록 가설로 이월."
+    },
+    {
+      "id": "CF-3",
+      "severity": "MEDIUM",
+      "flag": "파일럿의 corr(IC, BM_Ret) -0.2545 가 n=79 에서 소멸",
+      "detail": "합산 corr(IC, BM_Ret) = -0.0297. 파일럿 24개월에서 관측된 '벤치 방향 연동' 해석은 표본 확장 후 지지되지 않는다. 실제 국면 축은 벤치 방향이 아니라 횡단면 저변(mega_spread, corr -0.3459)이다. 파일럿 해석을 정정한다."
+    },
+    {
+      "id": "CF-4",
+      "severity": "MEDIUM",
+      "flag": "pre-2019 구간 파싱 불가 — 크롤 경계 재정정",
+      "detail": "2017-03~2018-12 체크포인트 1,199행 중 OK 29행(2.4%). PARSER_ERROR 620 + UNZIP_FAIL 527. FQ-125 큐의 '원문은 2008-01까지 존재'는 문서 존재 여부로는 맞으나, 현행 파서로 신호를 만들 수 있는 경계는 2019-01 이다. 잔여 구간 지불 권고는 이 사실을 반영해야 한다."
+    },
+    {
+      "id": "CF-5",
+      "severity": "MEDIUM",
+      "flag": "벤치마크 소스 결함 — 2026-07-27 스케일 절단",
+      "detail": ".cache/benchmark.parquet(08-03 08:36 재생성)에서 BM_Close 가 9325 → 1069 로 절단되어 2026-07 홀딩월이 -91.36% 로 계산된다(정본 -23.63%). 본 라운드는 pinned 정본으로 라벨된 오버라이드를 적용했고(gridx_vintage_compare.json 기록), 별도 수리 태스크로 분리했다. 오버라이드 없이 측정한 08-03 산출물은 재검토 대상."
+    },
+    {
+      "id": "CF-6",
+      "severity": "LOW",
+      "flag": "초기 3개월 커버리지 최저 + COVID 충격 겹침",
+      "detail": "2019-12~2020-02 IC = -0.341 / -0.347 / -0.686 (n=39/38/41, 전체 최저 커버리지). 12M trailing 누적이 아직 채워지는 구간과 COVID 폭락이 겹친다. 이 3개월 제외 시 수치 변화는 사후 절단이 되므로 본 라운드에서 산출하지 않았다 — 다음 라운드에서 사전등록으로 다뤄야 한다."
+    },
+    {
+      "id": "CF-7",
+      "severity": "LOW",
+      "flag": "diag_ew_universe.oos_retention_approx = 12.81 은 해석 불가",
+      "detail": "IS Sharpe 가 0 근방이라 비율이 발산했다. 비바인딩 진단값이며 oos_retention 판정 근거로 사용 금지."
+    }
+  ],
+  "method_shopping_log": {
+    "alpha_agent": {
+      "candidates_tried": 1,
+      "method_log": [
+        {"name": "CTR_MAG_12M_MCAP (시총 분모, WINDOW_M=12, SCOPE=all)", "canonical_port_t": 0.5108, "rank_ic": 0.05652, "selected": true}
+      ],
+      "note": "후보 스윕 없음. 신호 정의·윈도우·필터는 WT-D20260802_018/023 에서 고정된 것을 그대로 승계했고 본 라운드는 창 확장 재측정 1건이다. selection_type=chain, n_trials=1 → DSR 게이트 부적용(measurement-graduation §3). 통제 배터리(C0~C4, R1~R4)는 해석 검증이며 신호 선택에 사용되지 않았다.",
+      "parallel_exec": false
+    }
+  },
+  "measurement_provenance": {
+    "grid_vintage": "RAWDATA@20260803_0705+benchmark@20260803_0836",
+    "pinned_pilot_vintage": "RAWDATA@20260802_0304+benchmark@20260802_0151",
+    "overlap_check": "2023-01 이후 겹침 구간 대조: Ret_1m 105,487행 max|Δ|=0 / Size 15,037행 max|Δ|=0 / adv 107,838행 max|Δ|=0 / BM_Ret 42행 중 1행(2024-12-27) Δ=+0.00398. 04_Research/method_frontier/fq002_contract_magnitude/gridx_vintage_compare.json",
+    "bench_override": "2026-06-30 행 BM_Ret 을 소스값 -0.9136 → pinned 정본 -0.2363 으로 라벨 오버라이드(소스 스케일 절단 결함)",
+    "parity_pilot": "파일럿 24개월 구간 재현: mean_ic 0.080559 (기대 0.080559) / t_plain 1.972226 (기대 1.972226) / n=24 → 정확 일치",
+    "corpus": "2019-01~2026-07 91개월 체크포인트, 6,298행, 원문제공 6,032 중 OK 5,793 (96.0%). 월 결측 0.",
+    "measured_by": "04_Research/method_frontier/fq002_contract_magnitude/run_fq125_stage1.R"
+  }
+}

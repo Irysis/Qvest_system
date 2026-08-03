@@ -1,0 +1,653 @@
+{
+  "task_id": "WT-D20260803_008",
+  "agent": "alpha-research",
+  "emitted_at": "2026-08-03T12:22:38+0900",
+  "hypothesis_id": "FQ-125",
+  "strategy_id": "FQ125_CTR_MAG_12M_MCAP_stage1",
+  "metric_type_map": {
+    "ic_family": "diagnostic_statistic (Spearman cor — 백테스트 합성 아님)",
+    "portfolio_family": "canonical_screen (canonical_screen_bt 실측)",
+    "graduation_authority": "forge build_bt_result — 본 라운드 미실행. HARD 3종 판정 불가/미주장"
+  },
+  "gate_eligible": false,
+  "interim_gate": {
+    "rule_fixed_by": "WT-D20260802_023/preregistration.json (측정 전 고정, 사후 변경 없음)",
+    "rule": "PASS: combined t_NW>=1.5 AND new-segment mean IC>0 AND regime decomposition / ABORT: combined t_NW<1.0 / else INDETERMINATE",
+    "combined": {
+      "n_months": 79,
+      "mean_ic": 0.05651604,
+      "sd_ic": 0.24197022,
+      "t_plain": 2.07598088,
+      "t_nw": 1.9942342,
+      "icir": 0.2335661,
+      "pos_share": 0.59493671,
+      "mean_names": 60.79746835
+    },
+    "new_segment": {
+      "n_months": 55,
+      "mean_ic": 0.04602455,
+      "sd_ic": 0.25912788,
+      "t_plain": 1.31721533,
+      "t_nw": 1.29421896,
+      "icir": 0.17761328,
+      "pos_share": 0.6,
+      "mean_names": 53.70909091
+    },
+    "pilot_segment": {
+      "n_months": 24,
+      "mean_ic": 0.08055903,
+      "sd_ic": 0.20010742,
+      "t_plain": 1.97222601,
+      "t_nw": 1.70185958,
+      "icir": 0.40257895,
+      "pos_share": 0.58333333,
+      "mean_names": 77.04166667
+    },
+    "regime_decomposition_performed": true,
+    "verdict": "PASS"
+  },
+  "parity": {
+    "pass": true,
+    "mean_ic": 0.08055903,
+    "t_plain": 1.97222601,
+    "n_months": 24,
+    "expected_mean_ic": 0.080559,
+    "expected_t_plain": 1.972226
+  },
+  "corpus": {
+    "checkpoint_months": 113,
+    "used_from_ym": 201901,
+    "pre2019_excluded": {
+      "era": "pre2019",
+      "rows": 1199,
+      "ok": 29,
+      "no_source": 23,
+      "parse_fail": 1147
+    },
+    "usable": {
+      "era": "usable_2019plus",
+      "rows": 6298,
+      "ok": 5793,
+      "no_source": 266,
+      "parse_fail": 239
+    }
+  },
+  "measurement_provenance": {
+    "grid_vintage": "RAWDATA@20260803_0705+benchmark@20260803_0836",
+    "pinned_pilot_vintage": "RAWDATA@20260802_0304+benchmark@20260802_0151",
+    "identical_vintage": false,
+    "overlap_compare": {
+      "returns": {
+        "n_common": 105487,
+        "n_pin": 105487,
+        "n_new": 105487,
+        "max_abs_diff": 0,
+        "n_diff_gt_1e9": 0
+      },
+      "bench": {
+        "n_common": 42,
+        "n_pin": 42,
+        "n_new": 42,
+        "max_abs_diff": 0.0039782,
+        "n_diff_gt_1e9": 1
+      },
+      "size": {
+        "n_common": 15037,
+        "n_pin": 15037,
+        "n_new": 15037,
+        "max_abs_diff": 0,
+        "n_diff_gt_1e9": 0
+      },
+      "adv": {
+        "n_common": 107838,
+        "n_pin": 107838,
+        "n_new": 107838,
+        "max_abs_diff": 0,
+        "n_diff_gt_1e9": 0
+      }
+    },
+    "bench_source_defect": {
+      "n_abnormal_days": 1,
+      "dates": "2026-07-27",
+      "override": {
+        "applied": true,
+        "date": "2026-06-30",
+        "source_value": -0.91355567,
+        "pinned_value": -0.23631204,
+        "reason": "source benchmark scale break at 2026-07-27",
+        "metric_type": "pinned_override"
+      }
+    },
+    "panel": {
+      "A_rows": 6464,
+      "B_rows": 6464,
+      "ym_min": "201912",
+      "ym_max": "202607",
+      "n_tickers": 140,
+      "correction_matched": 2002,
+      "correction_total": 2283
+    },
+    "coverage": {
+      "mean_names": 60.79746835,
+      "min_names": 38,
+      "max_names": 92,
+      "n_months": 79,
+      "by_year": [
+        {
+          "yr": "2019",
+          "mean_cov": 39
+        },
+        {
+          "yr": "2020",
+          "mean_cov": 41.91666667
+        },
+        {
+          "yr": "2021",
+          "mean_cov": 54.08333333
+        },
+        {
+          "yr": "2022",
+          "mean_cov": 56.25
+        },
+        {
+          "yr": "2023",
+          "mean_cov": 61
+        },
+        {
+          "yr": "2024",
+          "mean_cov": 63.91666667
+        },
+        {
+          "yr": "2025",
+          "mean_cov": 75.08333333
+        },
+        {
+          "yr": "2026",
+          "mean_cov": 89.5
+        }
+      ]
+    }
+  },
+  "regime": {
+    "corr_ic_bench": -0.02968532,
+    "corr_ic_megaspread": -0.34593294,
+    "corr_ic_sizerho": 0.0380271,
+    "corr_ic_ncov": 0.18215778,
+    "by_bench": [
+      {
+        "bucket": "bench_up",
+        "n": 44,
+        "mean_ic": 0.05831857,
+        "t_plain": 1.62754398,
+        "pos_share": 0.56818182
+      },
+      {
+        "bucket": "bench_down",
+        "n": 35,
+        "mean_ic": 0.05425,
+        "t_plain": 1.28008672,
+        "pos_share": 0.62857143
+      },
+      {
+        "bucket": "bench_up5",
+        "n": 24,
+        "mean_ic": 0.06073727,
+        "t_plain": 1.20321901,
+        "pos_share": 0.625
+      },
+      {
+        "bucket": "bench_down5",
+        "n": 10,
+        "mean_ic": 0.03517336,
+        "t_plain": 0.32543225,
+        "pos_share": 0.7
+      }
+    ],
+    "by_mega": [
+      {
+        "bucket": "mega_led",
+        "n": 51,
+        "mean_ic": -0.02048763,
+        "t_plain": -0.63170858,
+        "pos_share": 0.45098039
+      },
+      {
+        "bucket": "broad_led",
+        "n": 28,
+        "mean_ic": 0.19677272,
+        "t_plain": 5.32722453,
+        "pos_share": 0.85714286
+      },
+      {
+        "bucket": "mega_top_quartile",
+        "n": 20,
+        "mean_ic": -0.04556313,
+        "t_plain": -0.76346336,
+        "pos_share": 0.45
+      }
+    ],
+    "by_era": [
+      {
+        "bucket": "new_2019_12_2024_06",
+        "n": 55,
+        "mean_ic": 0.04602455,
+        "t_plain": 1.31721533,
+        "pos_share": 0.6
+      },
+      {
+        "bucket": "pilot_2024_07plus",
+        "n": 24,
+        "mean_ic": 0.08055903,
+        "t_plain": 1.97222601,
+        "pos_share": 0.58333333
+      }
+    ],
+    "by_year": [
+      {
+        "yr": "2019",
+        "n": 1,
+        "mean_ic": -0.34109312,
+        "pos": 0,
+        "mean_bm": -0.03145318,
+        "mean_mega": 0.08232727
+      },
+      {
+        "yr": "2020",
+        "n": 12,
+        "mean_ic": -0.07291264,
+        "pos": 0.33333333,
+        "mean_bm": 0.03228238,
+        "mean_mega": 0.04462533
+      },
+      {
+        "yr": "2021",
+        "n": 12,
+        "mean_ic": 0.15624624,
+        "pos": 0.83333333,
+        "mean_bm": -0.00938604,
+        "mean_mega": 0.00359169
+      },
+      {
+        "yr": "2022",
+        "n": 12,
+        "mean_ic": 0.04399892,
+        "pos": 0.66666667,
+        "mean_bm": -0.00725984,
+        "mean_mega": 0.0098621
+      },
+      {
+        "yr": "2023",
+        "n": 12,
+        "mean_ic": 0.03190677,
+        "pos": 0.5,
+        "mean_bm": 0.00595026,
+        "mean_mega": 0.01094435
+      },
+      {
+        "yr": "2024",
+        "n": 12,
+        "mean_ic": 0.07332176,
+        "pos": 0.58333333,
+        "mean_bm": 0.000495,
+        "mean_mega": 0.0199827
+      },
+      {
+        "yr": "2025",
+        "n": 12,
+        "mean_ic": 0.09161626,
+        "pos": 0.66666667,
+        "mean_bm": 0.07597665,
+        "mean_mega": 0.03552098
+      },
+      {
+        "yr": "2026",
+        "n": 6,
+        "mean_ic": 0.15262209,
+        "pos": 0.66666667,
+        "mean_bm": 0.08046951,
+        "mean_mega": 0.10331789
+      }
+    ]
+  },
+  "regime_exante": {
+    "honesty": "사전등록되지 않은 사후 선택(동월/lag1/trailing3 3-way look). 확정 주장 아님 — 다음 라운드 사전등록 대상.",
+    "observed": {
+      "n": 79,
+      "n_broad": 27,
+      "gap": 0.13373107
+    },
+    "permutation": {
+      "n_perm": 5000,
+      "p_one_sided": 0.0082,
+      "p_two_sided": 0.0164,
+      "perm_sd": 0.05665233,
+      "perm_q95": 0.09299585
+    },
+    "threshold_sweep": {
+      "zero_cut_quantile": 0.34177215,
+      "table": [
+        {
+          "q": 0.2,
+          "cut": -0.01473146,
+          "n_broad": 16,
+          "mean_ic_broad": 0.1582385,
+          "t_nw_broad": 6.27051349,
+          "mean_ic_mega": 0.03068177,
+          "gap": 0.12755673
+        },
+        {
+          "q": 0.3,
+          "cut": -0.00509899,
+          "n_broad": 24,
+          "mean_ic_broad": 0.15697746,
+          "t_nw_broad": 5.61622111,
+          "mean_ic_mega": 0.01267833,
+          "gap": 0.14429914
+        },
+        {
+          "q": 0.4,
+          "cut": 0.0080007,
+          "n_broad": 32,
+          "mean_ic_broad": 0.13643423,
+          "t_nw_broad": 4.54729512,
+          "mean_ic_mega": 0.00210365,
+          "gap": 0.13433058
+        },
+        {
+          "q": 0.5,
+          "cut": 0.02116608,
+          "n_broad": 40,
+          "mean_ic_broad": 0.10636286,
+          "t_nw_broad": 3.25620148,
+          "mean_ic_mega": 0.0053911,
+          "gap": 0.10097176
+        },
+        {
+          "q": 0.6,
+          "cut": 0.03647067,
+          "n_broad": 47,
+          "mean_ic_broad": 0.06124616,
+          "t_nw_broad": 1.61147578,
+          "mean_ic_mega": 0.04956868,
+          "gap": 0.01167749
+        },
+        {
+          "q": 0.7,
+          "cut": 0.04365059,
+          "n_broad": 55,
+          "mean_ic_broad": 0.06957732,
+          "t_nw_broad": 2.1590029,
+          "mean_ic_mega": 0.02658395,
+          "gap": 0.04299337
+        }
+      ]
+    },
+    "era_replication": [
+      {
+        "era": "new",
+        "n": 55,
+        "n_broad": 20,
+        "ic_broad": 0.11169513,
+        "ic_mega": 0.00849851,
+        "gap": 0.10319662,
+        "t_nw_broad": 5.8357981
+      },
+      {
+        "era": "pilot",
+        "n": 24,
+        "n_broad": 7,
+        "ic_broad": 0.23838851,
+        "ic_mega": 0.01557043,
+        "gap": 0.22281808
+      }
+    ],
+    "consumption_conditional": {
+      "unconditional_port_t": 0.51079139,
+      "unconditional_n": 79,
+      "broad_led_port_t": 2.19769834,
+      "broad_led_n": 27,
+      "broad_led_net_sr": 1.31814963,
+      "caveat": "월 비연속 → turnover 해석 불가. 월 선택은 사후. PORT_t 만 소비."
+    }
+  },
+  "controls": {
+    "canary": {
+      "lookahead": {
+        "label": "CANARY: score = 당월 실현수익",
+        "n": 79,
+        "mean_ic": 1,
+        "t_plain": 1.3129603716881445e+17,
+        "t_nw": 1.0013160383240997e+17,
+        "pos_share": 1
+      },
+      "random": {
+        "label": "CANARY: score = 난수",
+        "n": 79,
+        "mean_ic": 0.01546742,
+        "t_plain": 0.97128784,
+        "t_nw": 1.09547306,
+        "pos_share": 0.59493671
+      },
+      "pass": true
+    },
+    "size_alternative": {
+      "base": {
+        "label": "contract",
+        "n": 79,
+        "mean_ic": 0.05651604,
+        "t_plain": 2.07598088,
+        "t_nw": 1.9942342,
+        "pos_share": 0.59493671
+      },
+      "pure_size": {
+        "label": "inv_size",
+        "n": 79,
+        "mean_ic": 0.01509583,
+        "t_plain": 0.70200522,
+        "t_nw": 0.62945498,
+        "pos_share": 0.53164557
+      },
+      "size_explained_share": 0.35630881
+    },
+    "size_residualized": {
+      "summary": {
+        "label": "resid",
+        "n": 79,
+        "mean_ic": 0.05584923,
+        "t_plain": 2.06723077,
+        "t_nw": 2.00528444,
+        "pos_share": 0.58227848
+      },
+      "gap_retention": 0.98512135,
+      "cross_sec_rho_mean": -0.01230429
+    },
+    "exante_regime": {
+      "contemporaneous_gap": 0.21726035,
+      "lag1": {
+        "mega": {
+          "label": "계약 score | mega_spread_lag1>0 (mega led)",
+          "n": 52,
+          "mean_ic": 0.01081048,
+          "t_plain": 0.29364736,
+          "t_nw": 0.31482895,
+          "pos_share": 0.46153846
+        },
+        "broad": {
+          "label": "계약 score | mega_spread_lag1<=0 (broad led)",
+          "n": 27,
+          "mean_ic": 0.14454156,
+          "t_plain": 4.7328454,
+          "t_nw": 5.16617331,
+          "pos_share": 0.85185185
+        },
+        "gap": 0.13373107
+      },
+      "trailing3": {
+        "mega": {
+          "label": "계약 score | mega_spread_tr3>0 (mega led)",
+          "n": 62,
+          "mean_ic": 0.04984983,
+          "t_plain": 1.6019816,
+          "t_nw": 1.87814051,
+          "pos_share": 0.58064516
+        },
+        "broad": {
+          "label": "계약 score | mega_spread_tr3<=0 (broad led)",
+          "n": 15,
+          "mean_ic": 0.13746179,
+          "t_plain": 2.86634054,
+          "t_nw": 2.88457649,
+          "pos_share": 0.73333333
+        },
+        "gap": 0.08761196
+      }
+    },
+    "composition": {
+      "by_era": [
+        {
+          "era": "new",
+          "n": 55,
+          "share_mega_led": 0.63636364,
+          "mean_ic": 0.04602455,
+          "mean_megaspread": 0.01933316
+        },
+        {
+          "era": "pilot",
+          "n": 24,
+          "share_mega_led": 0.66666667,
+          "mean_ic": 0.08055903,
+          "mean_megaspread": 0.04721819
+        }
+      ],
+      "by_year": [
+        {
+          "yr": "2019",
+          "n": 1,
+          "share_mega_led": 1,
+          "mean_ic": -0.34109312
+        },
+        {
+          "yr": "2020",
+          "n": 12,
+          "share_mega_led": 0.83333333,
+          "mean_ic": -0.07291264
+        },
+        {
+          "yr": "2021",
+          "n": 12,
+          "share_mega_led": 0.41666667,
+          "mean_ic": 0.15624624
+        },
+        {
+          "yr": "2022",
+          "n": 12,
+          "share_mega_led": 0.58333333,
+          "mean_ic": 0.04399892
+        },
+        {
+          "yr": "2023",
+          "n": 12,
+          "share_mega_led": 0.66666667,
+          "mean_ic": 0.03190677
+        },
+        {
+          "yr": "2024",
+          "n": 12,
+          "share_mega_led": 0.66666667,
+          "mean_ic": 0.07332176
+        },
+        {
+          "yr": "2025",
+          "n": 12,
+          "share_mega_led": 0.66666667,
+          "mean_ic": 0.09161626
+        },
+        {
+          "yr": "2026",
+          "n": 6,
+          "share_mega_led": 0.66666667,
+          "mean_ic": 0.15262209
+        }
+      ]
+    }
+  },
+  "pit": {
+    "c5_cutoff": "신호월 말일 컷오프 — rcept_dt <= 신호월 말일 공시만 누적",
+    "lag1_stress": {
+      "n_months": 78,
+      "mean_ic": 0.0626308,
+      "sd_ic": 0.22870592,
+      "t_plain": 2.41856543,
+      "t_nw": 2.3615479,
+      "icir": 0.27384861,
+      "pos_share": 0.62820513,
+      "mean_names": 60.41025641
+    },
+    "violation_injection": {
+      "n": 79,
+      "mean_ic_A": 0.05651604,
+      "mean_ic_B": 0.05204297,
+      "mean_diff_B_minus_A": -0.00447307,
+      "t_paired": -1.38115132,
+      "t_nw_B": 1.83609797,
+      "t_nw_A": 1.9942342,
+      "interpretation": "B(정정 소급)가 A 대비 유의하게 높으면 사후정보 누출 지문. 검사기가 살아있는지의 대조군."
+    },
+    "ast_gate": "ast_spec_gate FAIL_LOOKAHEAD 1회 발화 후 decision_ts 컨벤션 정정 → 통과"
+  },
+  "transition_wall": {
+    "canonical_cap_w_port_t": 0.51079139,
+    "canonical_pvalue": 0.60949714,
+    "canonical_n_months": 79,
+    "ew_universe_port_t": 1.60393281,
+    "net_sr": 0.18625299,
+    "information_ratio": 0.18625299,
+    "alpha_annualized": 0.14760267,
+    "turnover_annual": 1.82278481,
+    "cap_tier_weight_share": {
+      "MEGA": 0.00253165,
+      "MID": 0.05506329,
+      "OTHER": 0.94240506,
+      "UNRANKED": 0
+    },
+    "cap_tier_contrib_annualized": {
+      "MEGA": -0.00350377,
+      "MID": 0.01703468,
+      "OTHER": 0.29062569,
+      "UNRANKED": 0
+    },
+    "note": "graduation HARD PORT_t 2.95 미달. IC 확립과 별개 관문 — 랭킹 소비 자격 없음."
+  },
+  "perturbation": {
+    "protocol": {
+      "n_seeds_per_family": 60,
+      "drop_p": 0.1,
+      "noise_sd": 0.1,
+      "statistic": "t_NW(lag3) of monthly IC series",
+      "q05_type": 7
+    },
+    "q05_t_nw_pooled": 1.75526478,
+    "q05_t_nw_family_M": 1.71951052,
+    "q05_t_nw_family_S": 1.91400453,
+    "pilot_q05_reference": 1.4405,
+    "summary": {
+      "min": 1.67375256,
+      "q25": 1.90674721,
+      "median": 1.97912006,
+      "q75": 2.04290777,
+      "max": 2.33366604,
+      "sd": 0.12371119
+    }
+  },
+  "payment_recommendation": {
+    "stage1_verdict": "PASS",
+    "remaining_scope_reassessed": "2008~2018 확장은 **현행 파서로 불가**. 2017-03~2018-12 실측 OK 2.4%(29/1199) — PARSER_ERROR 620 + UNZIP_FAIL 527. 큐의 '2008-01까지 원문 존재'는 문서 존재 여부이지 파싱 가능성이 아니다.",
+    "recommendation": "잔여 구간 크롤 지불 **보류** — 지불 전 파서 조건부 게이트 선행",
+    "numeric_conditions": {
+      "precondition": "2017/2016/2014/2012/2010 각 연도 무작위 30건 샘플 파싱 성공률 >= 90% (비용 150 호출, 캐시 존재분 우선)",
+      "then_stage2_scope": "2015-01~2018-12 (48개월, ~4,000 호출) 우선 — 연속성 확보가 2008 점프보다 통계 가치 높음",
+      "stage2_gate": "합산 n>=127 에서 t_NW >= 2.0 AND 신규 48개월 mean IC > 0",
+      "abort": "샘플 성공률 < 90% 이면 파서 수리가 선행 과제 — 크롤 지불 없음"
+    }
+  }
+}
