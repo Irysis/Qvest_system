@@ -1,0 +1,1191 @@
+{
+  "task_id": "WT-D20260803_007",
+  "fq": "FQ-135",
+  "generated_at": "2026-08-03T12:41:33+0900",
+  "metric_type": "canonical_screen",
+  "gate_eligible": false,
+  "capital_claim": "none",
+  "selection_type": "chain",
+  "dsr_gate_applicability": "not_applicable (chain — 사전등록 단일 선택규칙, argmax/threshold-pick 없음)",
+  "preregistration_ref": "stage_artifacts/WT_D20260803_007/preregistration.json",
+  "build_hash": "20260801204055_707d464b",
+  "harness": {
+    "measurement": "02_Infrastructure/contracts/canonical_screen_bt.R::canonical_screen_bt()",
+    "portfolio": "top-25 EW long-only",
+    "cost_bps_oneway": 15,
+    "liq_min_won": 200000000,
+    "universe": "KOSPI200 ∪ KOSDAQ150 (RAWDATA 시변 멤버십)",
+    "benchmark_basis": "cap-w 유니버스 시총가중 forward return (build_monthly_forward_returns) — WT-004/005 동일 vintage",
+    "signal_path": "load_month_factors(sig_date) (C15) → Z_Score_Aligned (C13 NEGATE/FLIP 없음)",
+    "pool": "285 factor (WT-005 가용성 규칙 + active 상관 0.99 중복제거 후)",
+    "walk_forward": "IS0=120월 확장 IS / OOS 블록 24월 / step 7 / OOS 167월 (2012-08-31 ~ 2026-06-30)",
+    "era_definition": "IS 끝 정렬 비중첩 36개월 창, 유효 >= 30월",
+    "composite": "z_score_aligned_equal_weight, 멤버 커버리지 >= 60%"
+  },
+  "discriminants": {
+    "a_selector_discriminates": {
+      "definition": "OOS paired NW(lag3) t( active[A_REL_TOP] - active[A_REL_BOT] ) >= +2.0",
+      "t": 1.21191227,
+      "mean_diff_annual": 0.06754153,
+      "win_rate": 0.5508982,
+      "verdict": "FAIL"
+    },
+    "b_construction_beats_single": {
+      "definition": "OOS paired NW(lag3) t( active[A_REL_TOP] - active[SINGLE_BEST] ) >= +2.0  ★진짜 관문",
+      "t": 1.3038965,
+      "mean_diff_annual": 0.04446621,
+      "win_rate": 0.56287425,
+      "verdict": "FAIL"
+    },
+    "combined_reading": "neither — 사전등록 해석: '예측도 안 되고 robust 선별도 안 된다. 현 재료에서 이 구성 lane 은 닫힌다.' 단 아래 power_limit 및 dual_basis 유보를 함께 읽을 것."
+  },
+  "arms": [
+    {
+      "arm": "LEAK_ORACLE_OOS",
+      "kind": "violation_injection",
+      "n_months": 167,
+      "port_t": 5.26224314,
+      "p_val": 1.423084e-07,
+      "ir": 1.7273914,
+      "net_sr": 1.7273914,
+      "alpha_ann": 0.24668236,
+      "mean_active": 0.02018739,
+      "turnover_annual": 8.44742515,
+      "ew_port_t": 4.81435516,
+      "cap_mega": 0.08646707,
+      "cap_mid": 0.12167665,
+      "cap_other": 0.79185629
+    },
+    {
+      "arm": "LEAK_FULLSAMPLE",
+      "kind": "violation_injection",
+      "n_months": 167,
+      "port_t": 2.13485531,
+      "p_val": 0.03277283,
+      "ir": 0.64658135,
+      "net_sr": 0.64658135,
+      "alpha_ann": 0.11970007,
+      "mean_active": 0.00968505,
+      "turnover_annual": 9.86155689,
+      "ew_port_t": 3.14079657,
+      "cap_mega": 0.04934132,
+      "cap_mid": 0.05988024,
+      "cap_other": 0.89077844
+    },
+    {
+      "arm": "A_REL_TOP",
+      "kind": "treatment",
+      "n_months": 167,
+      "port_t": 0.89690516,
+      "p_val": 0.36976952,
+      "ir": 0.27377391,
+      "net_sr": 0.27377391,
+      "alpha_ann": 0.06209232,
+      "mean_active": 0.00374975,
+      "turnover_annual": 12.41964072,
+      "ew_port_t": 2.19260667,
+      "cap_mega": 0.02155689,
+      "cap_mid": 0.04047904,
+      "cap_other": 0.93796407
+    },
+    {
+      "arm": "A_REL_TOP_K40",
+      "kind": "sensitivity",
+      "n_months": 167,
+      "port_t": 0.72790662,
+      "p_val": 0.46667075,
+      "ir": 0.23228559,
+      "net_sr": 0.23228559,
+      "alpha_ann": 0.06464234,
+      "mean_active": 0.00337036,
+      "turnover_annual": 11.49988024,
+      "ew_port_t": 1.99944495,
+      "cap_mega": 0.01652695,
+      "cap_mid": 0.03832335,
+      "cap_other": 0.9451497
+    },
+    {
+      "arm": "A_REL_TOP_K10",
+      "kind": "sensitivity",
+      "n_months": 167,
+      "port_t": 0.06946835,
+      "p_val": 0.94461683,
+      "ir": 0.0210755,
+      "net_sr": 0.0210755,
+      "alpha_ann": 0.03541262,
+      "mean_active": 0.00028008,
+      "turnover_annual": 13.28191617,
+      "ew_port_t": 1.25497219,
+      "cap_mega": 0.01964072,
+      "cap_mid": 0.04167665,
+      "cap_other": 0.93868263
+    },
+    {
+      "arm": "SINGLE_BEST",
+      "kind": "control_single",
+      "n_months": 167,
+      "port_t": 0.01253216,
+      "p_val": 0.99000105,
+      "ir": 0.00336727,
+      "net_sr": 0.00336727,
+      "alpha_ann": 0.03485226,
+      "mean_active": 0.00004423,
+      "turnover_annual": 12.41964072,
+      "ew_port_t": 1.41113139,
+      "cap_mega": 0.02467066,
+      "cap_mid": 0.05580838,
+      "cap_other": 0.91952096
+    },
+    {
+      "arm": "A_REL_BOT_K40",
+      "kind": "sensitivity",
+      "n_months": 167,
+      "port_t": -0.4406292,
+      "p_val": 0.65948146,
+      "ir": -0.11282092,
+      "net_sr": -0.11282092,
+      "alpha_ann": 0.03209754,
+      "mean_active": -0.0015637,
+      "turnover_annual": 8.63712575,
+      "ew_port_t": 0.46327423,
+      "cap_mega": 0.08982036,
+      "cap_mid": 0.17269461,
+      "cap_other": 0.73748503
+    },
+    {
+      "arm": "A_ABS_TOP",
+      "kind": "secondary",
+      "n_months": 167,
+      "port_t": -0.53473878,
+      "p_val": 0.5928305,
+      "ir": -0.16184403,
+      "net_sr": -0.16184403,
+      "alpha_ann": 0.01525314,
+      "mean_active": -0.0025388,
+      "turnover_annual": 12.59784431,
+      "ew_port_t": 0.0716011,
+      "cap_mega": 0.01796407,
+      "cap_mid": 0.05053892,
+      "cap_other": 0.93149701
+    },
+    {
+      "arm": "A_REL_BOT_K10",
+      "kind": "sensitivity",
+      "n_months": 167,
+      "port_t": -0.55978657,
+      "p_val": 0.57562503,
+      "ir": -0.12545006,
+      "net_sr": -0.12545006,
+      "alpha_ann": -0.00273031,
+      "mean_active": -0.00114237,
+      "turnover_annual": 8.70610778,
+      "ew_port_t": 0.43402481,
+      "cap_mega": 0.11688623,
+      "cap_mid": 0.17724551,
+      "cap_other": 0.70586826
+    },
+    {
+      "arm": "SS_A_REL_TOP",
+      "kind": "single_split",
+      "n_months": 96,
+      "port_t": -0.66293983,
+      "p_val": 0.50736909,
+      "ir": -0.27006038,
+      "net_sr": -0.27006038,
+      "alpha_ann": -0.00341008,
+      "mean_active": -0.00368241,
+      "turnover_annual": 14.525,
+      "ew_port_t": 1.60420818,
+      "cap_mega": 0.02291667,
+      "cap_mid": 0.02458333,
+      "cap_other": 0.9525
+    },
+    {
+      "arm": "A_REL_BOT",
+      "kind": "reverse_control",
+      "n_months": 167,
+      "port_t": -0.75085691,
+      "p_val": 0.45273878,
+      "ir": -0.17052696,
+      "net_sr": -0.17052696,
+      "alpha_ann": 0.00172813,
+      "mean_active": -0.00187871,
+      "turnover_annual": 9.21197605,
+      "ew_port_t": 0.26939875,
+      "cap_mega": 0.11808383,
+      "cap_mid": 0.19185629,
+      "cap_other": 0.69005988
+    },
+    {
+      "arm": "SS_A_REL_BOT",
+      "kind": "single_split",
+      "n_months": 96,
+      "port_t": -0.75564774,
+      "p_val": 0.44986042,
+      "ir": -0.25065825,
+      "net_sr": -0.25065825,
+      "alpha_ann": 0.01959196,
+      "mean_active": -0.00401952,
+      "turnover_annual": 8.325,
+      "ew_port_t": 1.1897179,
+      "cap_mega": 0.06541667,
+      "cap_mid": 0.14791667,
+      "cap_other": 0.78666667
+    },
+    {
+      "arm": "POOL_EW",
+      "kind": "base_unselected",
+      "n_months": 167,
+      "port_t": -0.78876767,
+      "p_val": 0.43024781,
+      "ir": -0.21737758,
+      "net_sr": -0.21737758,
+      "alpha_ann": 0.03512864,
+      "mean_active": -0.00370061,
+      "turnover_annual": 8.62562874,
+      "ew_port_t": -0.34233812,
+      "cap_mega": 0.04287425,
+      "cap_mid": 0.09988024,
+      "cap_other": 0.85724551
+    },
+    {
+      "arm": "SS_SINGLE_BEST",
+      "kind": "single_split",
+      "n_months": 96,
+      "port_t": -0.88670306,
+      "p_val": 0.37523879,
+      "ir": -0.29407587,
+      "net_sr": -0.29407587,
+      "alpha_ann": -0.01043213,
+      "mean_active": -0.00387859,
+      "turnover_annual": 16.085,
+      "ew_port_t": 1.30362286,
+      "cap_mega": 0.03625,
+      "cap_mid": 0.05875,
+      "cap_other": 0.905
+    },
+    {
+      "arm": "A_PERP_TOP",
+      "kind": "secondary",
+      "n_months": 167,
+      "port_t": -1.06803263,
+      "p_val": 0.28550579,
+      "ir": -0.28968684,
+      "net_sr": -0.28968684,
+      "alpha_ann": 0.01721507,
+      "mean_active": -0.00486771,
+      "turnover_annual": 8.62562874,
+      "ew_port_t": -0.80670942,
+      "cap_mega": 0.03736527,
+      "cap_mid": 0.10467066,
+      "cap_other": 0.85796407
+    }
+  ],
+  "paired_tests": [
+    {
+      "pair": "A_REL_TOP - A_REL_BOT",
+      "n": 167,
+      "mean_diff_ann": 0.06754153,
+      "t_nw_lag3": 1.21191227,
+      "win_rate": 0.5508982
+    },
+    {
+      "pair": "A_REL_TOP - SINGLE_BEST",
+      "n": 167,
+      "mean_diff_ann": 0.04446621,
+      "t_nw_lag3": 1.3038965,
+      "win_rate": 0.56287425
+    },
+    {
+      "pair": "A_REL_TOP - POOL_EW",
+      "n": 167,
+      "mean_diff_ann": 0.08940432,
+      "t_nw_lag3": 1.79460138,
+      "win_rate": 0.56287425
+    },
+    {
+      "pair": "A_ABS_TOP - SINGLE_BEST",
+      "n": 167,
+      "mean_diff_ann": -0.03099638,
+      "t_nw_lag3": -0.91130849,
+      "win_rate": 0.46107784
+    },
+    {
+      "pair": "A_PERP_TOP - SINGLE_BEST",
+      "n": 167,
+      "mean_diff_ann": -0.0589433,
+      "t_nw_lag3": -1.46823168,
+      "win_rate": 0.47305389
+    },
+    {
+      "pair": "A_PERP_TOP - A_REL_BOT",
+      "n": 167,
+      "mean_diff_ann": -0.03586798,
+      "t_nw_lag3": -0.77669912,
+      "win_rate": 0.53892216
+    },
+    {
+      "pair": "A_ABS_TOP - A_REL_BOT",
+      "n": 167,
+      "mean_diff_ann": -0.00792106,
+      "t_nw_lag3": -0.14071156,
+      "win_rate": 0.47305389
+    },
+    {
+      "pair": "A_REL_TOP_K10 - A_REL_BOT_K10",
+      "n": 167,
+      "mean_diff_ann": 0.01706938,
+      "t_nw_lag3": 0.32222867,
+      "win_rate": 0.50898204
+    },
+    {
+      "pair": "A_REL_TOP_K40 - A_REL_BOT_K40",
+      "n": 167,
+      "mean_diff_ann": 0.05920877,
+      "t_nw_lag3": 1.16334314,
+      "win_rate": 0.50299401
+    },
+    {
+      "pair": "A_REL_TOP_K10 - SINGLE_BEST",
+      "n": 167,
+      "mean_diff_ann": 0.00283022,
+      "t_nw_lag3": 0.09762495,
+      "win_rate": 0.50898204
+    },
+    {
+      "pair": "A_REL_TOP_K40 - SINGLE_BEST",
+      "n": 167,
+      "mean_diff_ann": 0.03991359,
+      "t_nw_lag3": 1.14976706,
+      "win_rate": 0.50898204
+    },
+    {
+      "pair": "SS_A_REL_TOP - SS_A_REL_BOT",
+      "n": 96,
+      "mean_diff_ann": 0.00404532,
+      "t_nw_lag3": 0.0776317,
+      "win_rate": 0.51041667
+    },
+    {
+      "pair": "SS_A_REL_TOP - SS_SINGLE_BEST",
+      "n": 96,
+      "mean_diff_ann": 0.00235418,
+      "t_nw_lag3": 0.06199965,
+      "win_rate": 0.52083333
+    },
+    {
+      "pair": "LEAK_FULLSAMPLE - A_REL_BOT",
+      "n": 167,
+      "mean_diff_ann": 0.13876516,
+      "t_nw_lag3": 2.09190936,
+      "win_rate": 0.56886228
+    },
+    {
+      "pair": "LEAK_FULLSAMPLE - SINGLE_BEST",
+      "n": 167,
+      "mean_diff_ann": 0.11568984,
+      "t_nw_lag3": 2.43303116,
+      "win_rate": 0.56287425
+    },
+    {
+      "pair": "LEAK_ORACLE_OOS - A_REL_BOT",
+      "n": 167,
+      "mean_diff_ann": 0.26479326,
+      "t_nw_lag3": 4.36652287,
+      "win_rate": 0.67065868
+    },
+    {
+      "pair": "LEAK_ORACLE_OOS - SINGLE_BEST",
+      "n": 167,
+      "mean_diff_ann": 0.24171794,
+      "t_nw_lag3": 4.41093865,
+      "win_rate": 0.7005988
+    }
+  ],
+  "posthoc_attribution": {
+    "note": "★사전등록 아님 — 판별 (a)/(b) 산출·기록 후 기전 귀속 목적으로 arm 1개만 추가. 판별 문턱에 재적용하지 않았다.",
+    "arm": "LEVEL_TOP_K20 = IS 전기간 level PORT_t 상위 20 (walk-forward, IS-only) = SINGLE_BEST(K=1)의 K=20 확장",
+    "port_t": 1.02779832,
+    "ew_basis_port_t": 2.85956006,
+    "ir": 0.3406473,
+    "turnover": 12.41389222,
+    "random_null_percentile": 100,
+    "pairs": [
+      {
+        "pair": "A_REL_TOP - LEVEL_TOP_K20",
+        "n": 167,
+        "mean_diff_ann": -0.01738775,
+        "t_nw_lag3": -0.57075393,
+        "win_rate": 0.47305389
+      },
+      {
+        "pair": "LEVEL_TOP_K20 - A_REL_BOT",
+        "n": 167,
+        "mean_diff_ann": 0.08492928,
+        "t_nw_lag3": 1.41051099,
+        "win_rate": 0.56287425
+      },
+      {
+        "pair": "LEVEL_TOP_K20 - SINGLE_BEST",
+        "n": 167,
+        "mean_diff_ann": 0.06185396,
+        "t_nw_lag3": 1.85977914,
+        "win_rate": 0.54491018
+      },
+      {
+        "pair": "LEVEL_TOP_K20 - POOL_EW",
+        "n": 167,
+        "mean_diff_ann": 0.10679207,
+        "t_nw_lag3": 2.30222645,
+        "win_rate": 0.58083832
+      }
+    ],
+    "conclusion": "A_REL_TOP − LEVEL_TOP_K20 paired t = -0.571 (음수). era-robustness 는 IS level 대비 순증분이 없다. 독립 2경로 확증: (i) level-직교 arm A_PERP_TOP standalone PORT_t -1.068 (ii) 사후 귀속 음수."
+  },
+  "random_null": {
+    "n_draw": 200,
+    "mean_port_t": -0.9405909,
+    "q025": -2.07926098,
+    "q975": 0.25733932,
+    "a_rel_top_percentile": 99,
+    "a_rel_bot_percentile": 68,
+    "paired_vs_random_median_t": 2.11683282,
+    "paired_vs_random_share_ge2": 0.58,
+    "interpretation": "★본 하네스의 귀무는 0 이 아니다 — cap-w 벤치 하 무작위 K=20 composite 평균 PORT_t 가 음수. A_REL_TOP 은 귀무 99.0 백분위(A_REL_BOT 68.0)로 선택자가 무작위와는 분리되나, 그 분리의 원천은 사후 귀속상 level 이다."
+  },
+  "violation_injection": {
+    "fired": true,
+    "clean_a_t": 1.21191227,
+    "leak_fullsample_vs_bot_t": 2.09190936,
+    "leak_oracle_vs_bot_t": 4.36652287,
+    "leak_fullsample_port_t": 2.13485531,
+    "leak_oracle_port_t": 5.26224314,
+    "reading": "OOS 정보를 robustness 판정에 섞으면 결과가 실제로 좋아진다(1.212 → 2.092 → 4.367). IS-only 규율이 실구속임이 실증됐고, clean 판정이 '검사력 부족으로 아무것도 안 잡힌 것'이 아님을 보장."
+  },
+  "robustness": {
+    "parity": {
+      "p1_composite_top80_truncation": [
+        {
+          "arm": "A_REL_TOP",
+          "n": 167,
+          "max_abs_diff": 0,
+          "t_full": 0.89690516,
+          "t_top80": 0.89690516
+        },
+        {
+          "arm": "A_REL_BOT",
+          "n": 167,
+          "max_abs_diff": 0,
+          "t_full": -0.75085691,
+          "t_top80": -0.75085691
+        },
+        {
+          "arm": "POOL_EW",
+          "n": 167,
+          "max_abs_diff": 0,
+          "t_full": -0.78876767,
+          "t_top80": -0.78876767
+        }
+      ],
+      "p2_fastpath": [
+        {
+          "arm": "A_REL_TOP",
+          "n": 167,
+          "max_abs_diff": 0
+        },
+        {
+          "arm": "SINGLE_BEST",
+          "n": 167,
+          "max_abs_diff": 0
+        }
+      ],
+      "note": "둘 다 max_abs_diff = 0 — composite 저장 절단과 선택 재현이 canonical 과 완전 일치"
+    },
+    "lag1_stress": [
+      {
+        "arm": "A_REL_TOP",
+        "port_t_base": 0.89690516,
+        "port_t_lag1": 0.13412449,
+        "ia_base": 0.00374975,
+        "ia_lag1": 0.00052604
+      },
+      {
+        "arm": "A_REL_BOT",
+        "port_t_base": -0.75085691,
+        "port_t_lag1": -0.31945729,
+        "ia_base": -0.00187871,
+        "ia_lag1": -0.00085688
+      },
+      {
+        "arm": "SINGLE_BEST",
+        "port_t_base": 0.01253216,
+        "port_t_lag1": -0.70532179,
+        "ia_base": 0.00004423,
+        "ia_lag1": -0.00265066
+      },
+      {
+        "arm": "POOL_EW",
+        "port_t_base": -0.78876767,
+        "port_t_lag1": -0.79755479,
+        "ia_base": -0.00370061,
+        "ia_lag1": -0.00406742
+      }
+    ],
+    "placebo_shuffle": {
+      "port_t": -1.58531391,
+      "mean_active": -0.0069616,
+      "note": "월내 ticker 셔플. 기대 0 이 아니라 무작위 귀무([-2.079, 0.257]) 내부여야 정상 — 실측 -1.585 는 구간 내부 = 하네스 정상."
+    },
+    "era_window_sensitivity": [
+      {
+        "pair": "[기준] A_REL_TOP - A_REL_BOT (W=36)",
+        "n": 167,
+        "t_nw_lag3": 1.21191227,
+        "mean_diff_ann": 0.06754153,
+        "standalone_port_t": 0.89690516
+      },
+      {
+        "pair": "[기준] A_REL_TOP - SINGLE_BEST (W=36)",
+        "n": 167,
+        "t_nw_lag3": 1.3038965,
+        "mean_diff_ann": 0.04446621,
+        "standalone_port_t": 0.89690516
+      },
+      {
+        "pair": "W24_TOP - W24_BOT  [(a) 재측정]",
+        "n": 167,
+        "t_nw_lag3": 1.33797673,
+        "mean_diff_ann": 0.06423135,
+        "standalone_port_t": 0.52733703
+      },
+      {
+        "pair": "W24_TOP - SINGLE_BEST  [(b) 재측정]",
+        "n": 167,
+        "t_nw_lag3": 0.97103279,
+        "mean_diff_ann": 0.0282221,
+        "standalone_port_t": 0.52733703
+      },
+      {
+        "pair": "W48_TOP - W48_BOT  [(a) 재측정]",
+        "n": 167,
+        "t_nw_lag3": 1.65819098,
+        "mean_diff_ann": 0.08354033,
+        "standalone_port_t": 0.6277242
+      },
+      {
+        "pair": "W48_TOP - SINGLE_BEST  [(b) 재측정]",
+        "n": 167,
+        "t_nw_lag3": 1.1781198,
+        "mean_diff_ann": 0.03262526,
+        "standalone_port_t": 0.6277242
+      },
+      {
+        "pair": "W24_TOP - LEVEL_TOP_K20 [robustness 순증분]",
+        "n": 167,
+        "t_nw_lag3": -1.53700395,
+        "mean_diff_ann": -0.03363186,
+        "standalone_port_t": 0.52733703
+      },
+      {
+        "pair": "W48_TOP - LEVEL_TOP_K20 [robustness 순증분]",
+        "n": 167,
+        "t_nw_lag3": -1.28365186,
+        "mean_diff_ann": -0.02922871,
+        "standalone_port_t": 0.6277242
+      }
+    ],
+    "threshold_fragility_block_bootstrap": [
+      {
+        "discriminant": "(a) TOP-BOT",
+        "t_point": 1.21191227,
+        "boot_median": 1.22883053,
+        "boot_q05": -0.43870947,
+        "boot_q95": 2.82940438,
+        "p_reach_2": 0.2085
+      },
+      {
+        "discriminant": "(b) TOP-SINGLE_BEST",
+        "t_point": 1.3038965,
+        "boot_median": 1.23957614,
+        "boot_q05": -0.19990063,
+        "boot_q95": 2.74714891,
+        "p_reach_2": 0.213
+      },
+      {
+        "discriminant": "[사후] TOP-LEVEL_TOP_K20",
+        "t_point": -0.57075393,
+        "boot_median": -0.57652724,
+        "boot_q05": -3.00439696,
+        "boot_q95": 1.21687109,
+        "p_reach_2": 0.0085
+      }
+    ],
+    "basis_invariance": [
+      {
+        "check": "두 arm 의 벤치 시계열 동일",
+        "value": 0
+      },
+      {
+        "check": "active 차 == net 수익 차 (벤치 상쇄)",
+        "value": 2.77555756e-17
+      }
+    ],
+    "ic_lag_attribution": [
+      {
+        "arm": "A_REL_TOP",
+        "ic_lag0": 0.02732312,
+        "t_ic_lag0": 3.00892446,
+        "ic_lag1": 0.02033389,
+        "t_ic_lag1": 2.29269885,
+        "ic_retention": 0.74420079
+      },
+      {
+        "arm": "POOL_EW",
+        "ic_lag0": 0.06260315,
+        "t_ic_lag0": 4.57881185,
+        "ic_lag1": 0.0563047,
+        "t_ic_lag1": 4.16733472,
+        "ic_retention": 0.89939081
+      },
+      {
+        "arm": "A_REL_BOT",
+        "ic_lag0": 0.04211253,
+        "t_ic_lag0": 3.15760421,
+        "ic_lag1": 0.03561428,
+        "t_ic_lag1": 2.85697343,
+        "ic_retention": 0.84569312
+      },
+      {
+        "arm": "A_PERP_TOP",
+        "ic_lag0": 0.05193639,
+        "t_ic_lag0": 4.09210017,
+        "ic_lag1": 0.05068127,
+        "t_ic_lag1": 4.17638688,
+        "ic_retention": 0.97583358
+      }
+    ],
+    "metric_degeneracy": {
+      "per_step": [
+        {
+          "step": 1,
+          "cor_perp_erasd": -0.85619451,
+          "cor_perp_meanabst": -0.44549761,
+          "cor_rel_erasd": -0.62163814,
+          "cor_rel_meanabst": 0.25921883
+        },
+        {
+          "step": 2,
+          "cor_perp_erasd": -0.55651999,
+          "cor_perp_meanabst": -0.32350995,
+          "cor_rel_erasd": -0.46951942,
+          "cor_rel_meanabst": 0.37656606
+        },
+        {
+          "step": 3,
+          "cor_perp_erasd": -0.59793278,
+          "cor_perp_meanabst": -0.23796147,
+          "cor_rel_erasd": -0.30184625,
+          "cor_rel_meanabst": 0.40398133
+        },
+        {
+          "step": 4,
+          "cor_perp_erasd": -0.28469808,
+          "cor_perp_meanabst": -0.26638416,
+          "cor_rel_erasd": -0.06362985,
+          "cor_rel_meanabst": 0.19734958
+        },
+        {
+          "step": 5,
+          "cor_perp_erasd": -0.53030687,
+          "cor_perp_meanabst": -0.36364637,
+          "cor_rel_erasd": -0.44530569,
+          "cor_rel_meanabst": 0.10078259
+        },
+        {
+          "step": 6,
+          "cor_perp_erasd": -0.44244551,
+          "cor_perp_meanabst": -0.25790723,
+          "cor_rel_erasd": -0.10771119,
+          "cor_rel_meanabst": 0.22746204
+        },
+        {
+          "step": 7,
+          "cor_perp_erasd": -0.26485764,
+          "cor_perp_meanabst": -0.24125733,
+          "cor_rel_erasd": -0.10547118,
+          "cor_rel_meanabst": 0.01200046
+        }
+      ],
+      "mean_abs_era_t": {
+        "perp": 0.84311229,
+        "rel": 1.56798154,
+        "pool": 1.08987135
+      }
+    },
+    "turnover_annual": {
+      "A_REL_TOP": 12.41964072,
+      "SINGLE_BEST": 12.41964072,
+      "LEVEL_TOP_K20": 12.41389222,
+      "ceiling": 11,
+      "breach": true
+    }
+  },
+  "dual_basis": {
+    "note": "v8.3 M2 — cap-w HARD 판정 권위 불변. EW-유니버스 대비는 비바인딩 진단(metric_type=canonical_screen_diag).",
+    "cap_w_vs_ew": [
+      {
+        "arm": "LEAK_ORACLE_OOS",
+        "port_t_capw": 5.26224314,
+        "port_t_ew_universe": 4.81435516,
+        "cap_share_mega": 0.08646707,
+        "cap_share_mid": 0.12167665
+      },
+      {
+        "arm": "LEAK_FULLSAMPLE",
+        "port_t_capw": 2.13485531,
+        "port_t_ew_universe": 3.14079657,
+        "cap_share_mega": 0.04934132,
+        "cap_share_mid": 0.05988024
+      },
+      {
+        "arm": "A_REL_TOP",
+        "port_t_capw": 0.89690516,
+        "port_t_ew_universe": 2.19260667,
+        "cap_share_mega": 0.02155689,
+        "cap_share_mid": 0.04047904
+      },
+      {
+        "arm": "A_REL_TOP_K40",
+        "port_t_capw": 0.72790662,
+        "port_t_ew_universe": 1.99944495,
+        "cap_share_mega": 0.01652695,
+        "cap_share_mid": 0.03832335
+      },
+      {
+        "arm": "A_REL_TOP_K10",
+        "port_t_capw": 0.06946835,
+        "port_t_ew_universe": 1.25497219,
+        "cap_share_mega": 0.01964072,
+        "cap_share_mid": 0.04167665
+      },
+      {
+        "arm": "SINGLE_BEST",
+        "port_t_capw": 0.01253216,
+        "port_t_ew_universe": 1.41113139,
+        "cap_share_mega": 0.02467066,
+        "cap_share_mid": 0.05580838
+      },
+      {
+        "arm": "A_REL_BOT_K40",
+        "port_t_capw": -0.4406292,
+        "port_t_ew_universe": 0.46327423,
+        "cap_share_mega": 0.08982036,
+        "cap_share_mid": 0.17269461
+      },
+      {
+        "arm": "A_ABS_TOP",
+        "port_t_capw": -0.53473878,
+        "port_t_ew_universe": 0.0716011,
+        "cap_share_mega": 0.01796407,
+        "cap_share_mid": 0.05053892
+      },
+      {
+        "arm": "A_REL_BOT_K10",
+        "port_t_capw": -0.55978657,
+        "port_t_ew_universe": 0.43402481,
+        "cap_share_mega": 0.11688623,
+        "cap_share_mid": 0.17724551
+      },
+      {
+        "arm": "SS_A_REL_TOP",
+        "port_t_capw": -0.66293983,
+        "port_t_ew_universe": 1.60420818,
+        "cap_share_mega": 0.02291667,
+        "cap_share_mid": 0.02458333
+      },
+      {
+        "arm": "A_REL_BOT",
+        "port_t_capw": -0.75085691,
+        "port_t_ew_universe": 0.26939875,
+        "cap_share_mega": 0.11808383,
+        "cap_share_mid": 0.19185629
+      },
+      {
+        "arm": "SS_A_REL_BOT",
+        "port_t_capw": -0.75564774,
+        "port_t_ew_universe": 1.1897179,
+        "cap_share_mega": 0.06541667,
+        "cap_share_mid": 0.14791667
+      },
+      {
+        "arm": "POOL_EW",
+        "port_t_capw": -0.78876767,
+        "port_t_ew_universe": -0.34233812,
+        "cap_share_mega": 0.04287425,
+        "cap_share_mid": 0.09988024
+      },
+      {
+        "arm": "SS_SINGLE_BEST",
+        "port_t_capw": -0.88670306,
+        "port_t_ew_universe": 1.30362286,
+        "cap_share_mega": 0.03625,
+        "cap_share_mid": 0.05875
+      },
+      {
+        "arm": "A_PERP_TOP",
+        "port_t_capw": -1.06803263,
+        "port_t_ew_universe": -0.80670942,
+        "cap_share_mega": 0.03736527,
+        "cap_share_mid": 0.10467066
+      }
+    ],
+    "level_top_k20_ew": 2.85956006,
+    "label": "cap-w FAIL ∧ EW-대비 생존 — A_REL_TOP 0.897→2.193, LEVEL_TOP_K20 1.028→2.860. '벤치 구성 미스매치 가능' 라벨 부여, screen_route 재분류 검토 대상. 단 ★paired 판별식 (a)/(b) 는 basis 불변(AP5)이므로 이 유보가 판정을 뒤집지 않는다 — 유보의 대상은 standalone PORT_t 해석뿐."
+  },
+  "conditional_decomposition": {
+    "ax001_v2_and_subperiod": [
+      {
+        "arm": "A_REL_TOP",
+        "n_bad": 72,
+        "active_bad_ann": 0.16551761,
+        "active_good_ann": -0.04634497,
+        "t_bad": 3.14899793,
+        "post2017_t": -0.52232846,
+        "pre2017_t": 2.29800727
+      },
+      {
+        "arm": "A_REL_BOT",
+        "n_bad": 72,
+        "active_bad_ann": 0.00548153,
+        "active_good_ann": -0.04378537,
+        "t_bad": 0.1088008,
+        "post2017_t": -0.7738385,
+        "pre2017_t": -0.15483743
+      },
+      {
+        "arm": "A_ABS_TOP",
+        "n_bad": 72,
+        "active_bad_ann": 0.15061041,
+        "active_good_ann": -0.16770217,
+        "t_bad": 2.01168024,
+        "post2017_t": -1.78198969,
+        "pre2017_t": 1.86801888
+      },
+      {
+        "arm": "A_PERP_TOP",
+        "n_bad": 72,
+        "active_bad_ann": 0.26117707,
+        "active_good_ann": -0.30062782,
+        "t_bad": 4.3955363,
+        "post2017_t": -1.3478314,
+        "pre2017_t": 0.76424489
+      },
+      {
+        "arm": "A_REL_TOP_K10",
+        "n_bad": 72,
+        "active_bad_ann": 0.14196444,
+        "active_good_ann": -0.10168584,
+        "t_bad": 2.76095329,
+        "post2017_t": -1.22063258,
+        "pre2017_t": 2.55004141
+      },
+      {
+        "arm": "A_REL_BOT_K10",
+        "n_bad": 72,
+        "active_bad_ann": -0.00798827,
+        "active_good_ann": -0.01804364,
+        "t_bad": -0.18250328,
+        "post2017_t": -0.75621269,
+        "pre2017_t": 0.04011579
+      },
+      {
+        "arm": "A_REL_TOP_K40",
+        "n_bad": 72,
+        "active_bad_ann": 0.15964211,
+        "active_good_ann": -0.04989499,
+        "t_bad": 2.20355183,
+        "post2017_t": -0.67204023,
+        "pre2017_t": 1.98857962
+      },
+      {
+        "arm": "A_REL_BOT_K40",
+        "n_bad": 72,
+        "active_bad_ann": 0.13020164,
+        "active_good_ann": -0.131665,
+        "t_bad": 2.08339461,
+        "post2017_t": -0.82055436,
+        "pre2017_t": 1.33701153
+      },
+      {
+        "arm": "SINGLE_BEST",
+        "n_bad": 72,
+        "active_bad_ann": 0.105174,
+        "active_good_ann": -0.07877779,
+        "t_bad": 2.28541231,
+        "post2017_t": -0.92091848,
+        "pre2017_t": 1.74547443
+      },
+      {
+        "arm": "POOL_EW",
+        "n_bad": 72,
+        "active_bad_ann": 0.2834673,
+        "active_good_ann": -0.2929018,
+        "t_bad": 3.97982115,
+        "post2017_t": -1.53553084,
+        "pre2017_t": 1.95494001
+      },
+      {
+        "arm": "LEAK_FULLSAMPLE",
+        "n_bad": 72,
+        "active_bad_ann": 0.14572311,
+        "active_good_ann": 0.09386082,
+        "t_bad": 1.63609666,
+        "post2017_t": 0.71370271,
+        "pre2017_t": 2.64610086
+      },
+      {
+        "arm": "LEAK_ORACLE_OOS",
+        "n_bad": 72,
+        "active_bad_ann": 0.30103737,
+        "active_good_ann": 0.19769309,
+        "t_bad": 4.52075999,
+        "post2017_t": 3.22142792,
+        "pre2017_t": 5.30922727
+      },
+      {
+        "arm": "SS_A_REL_TOP",
+        "n_bad": 42,
+        "active_bad_ann": 0.07724993,
+        "active_good_ann": -0.13864131,
+        "t_bad": 2.52620538,
+        "post2017_t": -0.66293983,
+        "pre2017_t": null
+      },
+      {
+        "arm": "SS_A_REL_BOT",
+        "n_bad": 42,
+        "active_bad_ann": 0.12585048,
+        "active_good_ann": -0.18363343,
+        "t_bad": 1.49727916,
+        "post2017_t": -0.75564774,
+        "pre2017_t": null
+      },
+      {
+        "arm": "SS_SINGLE_BEST",
+        "n_bad": 42,
+        "active_bad_ann": 0.06088509,
+        "active_good_ann": -0.1300983,
+        "t_bad": 1.23906164,
+        "post2017_t": -0.88670306,
+        "pre2017_t": null
+      }
+    ],
+    "ax001_note": "AX-001 v2 — 방어 family 는 WT-005 지속률 최저(0.465)이나 그 저지속은 위기 캘린더 종속(cor +0.842). 본 라운드는 방어형을 전기간 SR/PORT_t 로 채점하지 않고 BM<0 월 조건부로 병기했다.",
+    "family_share_vs_wt005": [
+      {
+        "family": "growth",
+        "A_ABS_TOP": 0.12142857,
+        "A_PERP_TOP": 0.02142857,
+        "A_REL_BOT": 0,
+        "A_REL_TOP": 0.12857143,
+        "wt005_persist": 0.6667
+      },
+      {
+        "family": "investor_flow",
+        "A_ABS_TOP": 0.00714286,
+        "A_PERP_TOP": 0.02142857,
+        "A_REL_BOT": 0.09285714,
+        "A_REL_TOP": 0.00714286,
+        "wt005_persist": 0.6667
+      },
+      {
+        "family": "quality",
+        "A_ABS_TOP": 0.11428571,
+        "A_PERP_TOP": 0.2,
+        "A_REL_BOT": 0.06428571,
+        "A_REL_TOP": 0.06428571,
+        "wt005_persist": 0.6587
+      },
+      {
+        "family": "momentum",
+        "A_ABS_TOP": 0.14285714,
+        "A_PERP_TOP": 0.1,
+        "A_REL_BOT": 0.12857143,
+        "A_REL_TOP": 0.17142857,
+        "wt005_persist": 0.6548
+      },
+      {
+        "family": "accrual",
+        "A_ABS_TOP": 0.01428571,
+        "A_PERP_TOP": 0.1,
+        "A_REL_BOT": 0.04285714,
+        "A_REL_TOP": 0.04285714,
+        "wt005_persist": 0.6212
+      },
+      {
+        "family": "leverage",
+        "A_ABS_TOP": 0.01428571,
+        "A_PERP_TOP": 0.01428571,
+        "A_REL_BOT": 0.03571429,
+        "A_REL_TOP": 0.02142857,
+        "wt005_persist": 0.6111
+      },
+      {
+        "family": "regime",
+        "A_ABS_TOP": 0.00714286,
+        "A_PERP_TOP": 0.01428571,
+        "A_REL_BOT": 0,
+        "A_REL_TOP": 0,
+        "wt005_persist": 0.6071
+      },
+      {
+        "family": "consensus",
+        "A_ABS_TOP": 0.2,
+        "A_PERP_TOP": 0.00714286,
+        "A_REL_BOT": 0.04285714,
+        "A_REL_TOP": 0.19285714,
+        "wt005_persist": 0.6061
+      },
+      {
+        "family": "value",
+        "A_ABS_TOP": 0.23571429,
+        "A_PERP_TOP": 0.02142857,
+        "A_REL_BOT": 0.02142857,
+        "A_REL_TOP": 0.24285714,
+        "wt005_persist": 0.5882
+      },
+      {
+        "family": "crowding",
+        "A_ABS_TOP": 0.05714286,
+        "A_PERP_TOP": 0.01428571,
+        "A_REL_BOT": 0.11428571,
+        "A_REL_TOP": 0.06428571,
+        "wt005_persist": 0.5556
+      },
+      {
+        "family": "risk",
+        "A_ABS_TOP": 0.02142857,
+        "A_PERP_TOP": 0.00714286,
+        "A_REL_BOT": 0.12142857,
+        "A_REL_TOP": 0.02142857,
+        "wt005_persist": 0.5385
+      },
+      {
+        "family": "liquidity",
+        "A_ABS_TOP": 0.02857143,
+        "A_PERP_TOP": 0.13571429,
+        "A_REL_BOT": 0.14285714,
+        "A_REL_TOP": 0.02857143,
+        "wt005_persist": 0.4872
+      },
+      {
+        "family": "defense",
+        "A_ABS_TOP": 0.03571429,
+        "A_PERP_TOP": 0.34285714,
+        "A_REL_BOT": 0.19285714,
+        "A_REL_TOP": 0.01428571,
+        "wt005_persist": 0.4654
+      }
+    ],
+    "family_spearman": {
+      "top": 0.12137943,
+      "bot": -0.48689701
+    },
+    "membership_jaccard": [
+      {
+        "arm": "A_REL_TOP",
+        "jaccard_mean": 0.2997368,
+        "jaccard_min": 0.21212121
+      },
+      {
+        "arm": "A_ABS_TOP",
+        "jaccard_mean": 0.22952431,
+        "jaccard_min": 0.14285714
+      },
+      {
+        "arm": "A_PERP_TOP",
+        "jaccard_mean": 0.13881414,
+        "jaccard_min": 0.08108108
+      }
+    ],
+    "wt005_consistency": "A_REL_BOT 의 family 구성은 WT-005 지속률과 Spearman -0.487 (역방향 = 정합: 저지속 family 인 defense 0.193 / liquidity 0.143 / risk 0.121 를 하위가 흡수). A_REL_TOP 은 +0.121 로 약함 — 상위 tail 은 value 0.243 / consensus 0.193 편중이며 WT-005 지속률 순위와 정렬되지 않는다. cap-tier 는 WT-005(소형 0.614 > 대형 0.514)와 정합적으로 A_REL_TOP 의 MEGA 비중이 낮다."
+  },
+  "power_limit": {
+    "n_oos_months": 167,
+    "a_p_reach_2": 0.2085,
+    "b_p_reach_2": 0.213,
+    "posthoc_p_reach_2": 0.0085,
+    "honest_statement": "★'효과 없음'을 증명한 것이 아니다. 167개월 블록 부트스트랩에서 (a)/(b) 가 문턱 +2.0 에 도달할 확률이 각각 20.9% / 21.3% 남아 있다. 판정은 '사전등록 문턱 미달'이며 '부재 증명'이 아니다. 반면 사후 귀속(era-robustness 순증분 <= 0)은 P(t>=2)=0.85% 로 훨씬 조밀 — 이 라운드가 실제로 확정한 것은 (a)/(b) 실패보다 '순증분 없음' 쪽이다."
+  },
+  "base_and_parity": {
+    "incumbent_base_consumed": false,
+    "production_parity_verified": "not_applicable",
+    "rationale": "모든 arm 이 factor DB z 로부터 자기완결 구성 — 05_Production 파생 저장 패널이나 book incumbent 시계열을 base 로 소비하지 않음(2026-07-14 동월 look-ahead 실사고 노출면 없음). 후속 라운드가 arm 을 production rank-tilt 위 개입으로 소비할 때 parity 라벨 의무 발생."
+  },
+  "verdict": {
+    "headline": "era-robust 성분 선별은 현 재료에서 순증분이 없다 — 우위의 원천은 era-robustness 가 아니라 IS level 이었다",
+    "a": "FAIL",
+    "b": "FAIL",
+    "metric_discriminates": "부분 — 무작위 대비는 분리(99.0 백분위)하나 상위-하위 대비는 문턱 미달(t +1.212). 하위 tail 은 무작위보다 오히려 나음(백분위 68.0) = 지표의 음의 정보가 없다.",
+    "construction_lane": "config-scoped 미달 — 구조 판결 아님. era-robust 축(minimax, 절대/상대/level-직교 3변형 x K∈{10,20,40} x W∈{24,36,48})에서 survivors 0.",
+    "what_was_established": [
+      "era-robustness(level 순증분)는 <= 0 — 독립 2경로(A_PERP_TOP -1.068, 사후 귀속 -0.571) 확증",
+      "level 제거 시 지표는 inert factor 선택기로 퇴화 (선택 멤버 평균 |era t| 0.843 < 풀 0.890 이하 수준, defense/quality/liquidity 편중)",
+      "본 하네스의 cap-w 귀무는 0 이 아니라 약 -0.94 — EW top-25 의 구조적 음수 드리프트 (16/16 admission FAIL 을 읽는 새 좌표)",
+      "IS level 상위 20 EW composite = 시험한 선택자 중 최선(cap-w 1.028 / EW-basis 2.860 / 무작위 100 백분위)이나 여전히 2.95 벽 미달·post2017 음수",
+      "IC→PORT_t 전이 벽 독립 재현 — POOL_EW rank IC(0.063, t 4.58) > A_REL_TOP(0.027, t 3.01) 인데 PORT_t 는 역전"
+    ]
+  },
+  "next_probe": [
+    {
+      "id": "NP-1",
+      "title": "cap-w 귀무의 정체 분해 — 사이즈 중립 composite 이 EW-basis 2.86 을 cap-w 로 옮길 수 있는가",
+      "rationale": "본 라운드가 처음 정량화한 사실: 무작위 K=20 composite 의 cap-w PORT_t 평균이 -0.941, EW-유니버스 basis 로는 LEVEL_TOP_K20 이 2.860. 즉 벽의 상당분이 신호가 아니라 사이즈 노출이다. 미측정: 사이즈-중립화(또는 cap-tier 별 정원 배분)한 composite 의 cap-w PORT_t.",
+      "measurable_now": true,
+      "consumption_surface": "①팩터 랭킹 + ⑥선별 라벨"
+    },
+    {
+      "id": "NP-2",
+      "title": "MID-tier 국소화 — level 선별의 post-2017 음수(-0.490)가 MEGA 벤치 아티팩트인가",
+      "rationale": "v8.3 실측(MID tier LS t=3.02 vs MEGA 0.59)과 본 라운드 cap_share 분해를 결합. 미측정: LEVEL_TOP_K20 을 MID(11-30위) 유니버스로 제한했을 때 post2017 PORT_t.",
+      "measurable_now": true,
+      "consumption_surface": "②유니버스 필터"
+    },
+    {
+      "id": "NP-3",
+      "title": "지표를 선택기 아닌 '배제기'로 — inert factor 제거가 풀 품질을 올리는가",
+      "rationale": "본 라운드는 top-tail 만 시험했다. A_PERP 상위 = inert(평균 |era t| 0.843 ≪ 풀) 임이 실측됐으므로, 그 집합을 풀에서 *빼고* level 선별을 재구성하는 방향은 미측정. 2026-08-02 실측 선례: 랭킹으로 죽은 MAX5 가 필터로는 ΔIR +0.169.",
+      "measurable_now": true,
+      "consumption_surface": "②유니버스 필터 + ⑥선별 라벨"
+    },
+    {
+      "id": "NP-4",
+      "title": "era_sd 를 risk 레인의 factor 불안정성 입력으로 이식",
+      "rationale": "era 간 t 표준편차는 본 라운드에서 선택에는 무용했으나 factor-수준 불안정성 지표로는 미소비. risk-research 의 crowding/style 진단 입력 후보 — alpha 경계 밖이므로 이관.",
+      "measurable_now": true,
+      "consumption_surface": "④위험모델·β예산 (risk lane 이관)"
+    }
+  ],
+  "consumption_surface_sweep": {
+    "note": "answer-principles §4 소비면 7종 명시 순회",
+    "p1_factor_ranking": "측정 — 본 라운드 주제. era-robust 랭킹 cap-w 미달, level 랭킹이 최선이나 2.95 미달. NP-1 로 계속.",
+    "p2_universe_filter": "미측정 → NP-2 / NP-3 등재",
+    "p3_overlay_regime_input": "해당 없음 — era 는 WT-006 이 사전 관측 불가로 확정. 본 라운드는 era 예측을 시도하지 않았다.",
+    "p4_risk_beta_budget": "미측정 → NP-4 (risk lane 이관, alpha 경계 밖)",
+    "p5_monitoring_signal": "미측정 — worst-era 를 라이브 decay tripwire 로 쓰는 안은 유계지표+고정 z 문턱의 구조적 침묵(2026-08-02 실측) 위험이 있어 '도달가능성 라벨' 선설계 없이는 등재하지 않음",
+    "p6_screen_label": "적용 — dual-basis 라벨(cap-w FAIL ∧ EW 생존) 부여. screen_route 재분류은 judge/governor 권한이므로 권고만.",
+    "p7_cross_mode": "RAMP Gate4 순수팩터 sleeve 진단에 worst-era 지표 이식 가능 — 단 본 라운드가 선택기로는 무용을 실측했으므로 진단축으로만 권고"
+  },
+  "revival_conditions_inv7": [
+    "관측 가능한 era 라벨이 확보되는 경우 (자격 관문: 전이-조건부 적중 > base ∧ 순열 p<0.05) — 그때는 era-robust(수동적)가 아니라 era-conditional(능동적) 선별이 되살아난다",
+    "비-return 리프(FQ-136 대차/공매도 잔고 등)가 풀에 들어와 era 민감도의 구조가 달라지는 경우 — 현 풀은 전량 return/재무 파생이라 era 공통성분을 공유한다",
+    "cap-w 벤치 아티팩트가 NP-1/NP-2 로 분해되어 EW-basis 2.86 이 cap-w 로 옮겨지는 경우 — 그때 선택자 비교를 재실행(현재는 모든 arm 이 구조적 음수 드리프트 아래 눌려 판별력 자체가 낮다)"
+  ],
+  "boundaries": {
+    "covariance_estimated": false,
+    "weights_proposed": false,
+    "graduation_declared": false,
+    "book_claim": false,
+    "note": "composite = alpha score 합성(z_score_aligned_equal_weight). top-25 EW 는 canonical_screen_bt 고정 규격이며 weight 결정 행위 아님."
+  }
+}

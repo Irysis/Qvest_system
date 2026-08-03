@@ -1,0 +1,71 @@
+{
+  "l_code": "L-WT20260803_007",
+  "strategy_id": "WT-D20260803_007",
+  "research_mode": "alpha_research",
+  "fq": "FQ-135",
+  "title": "era-robust 성분 선별은 순증분 0 — '어느 era 에서도 덜 죽는' 기준은 level 을 재선택하거나 죽은 factor 를 고른다",
+  "type": "ANTI-PATTERN",
+  "grade": "F",
+  "metric_type": "canonical_screen",
+  "record_type": "measurement_round",
+  "gate_eligible": false,
+  "capital_claim": "none",
+  "issued_at": "2026-08-03T12:41:34+0900",
+  "issued_by": "alpha-research (WT-D20260803_007)",
+  "core_reference": "WT-D20260803_005 (FQ-131 자격 지속성 — era 유지 0.959 vs 전환 0.304) + WT-D20260803_006 (FQ-133 era 사전 추정 불가 0.2593) + WT-D20260803_004 (조합 자격 IS/OOS 반전, V01_SECREL +2.634→-0.389) + Harvey-Liu-Zhu (2016) + McLean-Pontiff (2016) + Bai-Perron (1998)",
+  "lesson_text": "WT-005/006 이 'era 공통성분이 자격을 지배하고 era 는 사전 관측 불가'를 확정한 뒤, 질문을 '언제 통하나'에서 '어느 era 에서도 덜 죽나'로 바꿔 실측했다. 사전등록 primary 지표 = era-demean 후 각 era PORT_t 의 최소값(minimax). 285-factor 풀, walk-forward 7 step(IS 확장 / OOS 24월 블록, 총 167월 2012-08~2026-06), K=20 EW composite, canonical top-25 EW 15bps. 결과: (a) 상위-하위 paired NW(lag3) t = +1.212, (b) 상위-단일최강 = +1.304 — 사전등록 문턱 +2.0 양쪽 미달. ★핵심은 사후 기전 귀속이다: A_REL_TOP - LEVEL_TOP_K20(IS level 상위20) paired t = -0.571 (음수)이고 level-직교 arm A_PERP_TOP standalone PORT_t = -1.068. 독립 2경로가 같은 결론 — 무작위 200 draw 대비 99.0 백분위라는 A_REL_TOP(PORT_t +0.897)의 우위는 era-robustness 가 아니라 IS level 의 재선택이었다. 더 나아가 level 을 제거하면 지표는 '조용한(inert) factor 선택기'로 퇴화한다 — 선택 멤버 평균 |era t| 0.843 vs 풀 1.090, cor(perp, era_sd) -0.86~-0.26, family 는 defense 0.34/quality 0.20/liquidity 0.14 로 WT-005 최저 지속률 family(방어 0.465·유동성 0.487)에 정확히 겹친다. 사전에 metric ④(era 간 분산 단독)의 실패모드로 예고했던 '죽은 factor 선택'이 metric ③ 의 level-잔차화에서 실현된 것이다. 창 길이 W∈{24,36,48}, K∈{10,20,40}, 단일분할(IS191/OOS96) 대조 전부에서 (a)/(b) 최대 t = 1.658 / 1.304 로 미달 — 결론은 격자에 강건. 위반 주입 2종은 발화했다(전기간 지표 사용 시 paired t 1.212→2.092, OOS oracle 4.367) — IS-only 규율이 실구속이고 clean 판정이 검사력 부족의 산물이 아님을 보장. ★부수 확립(다음 라운드 좌표): 본 하네스의 cap-w 귀무는 0 이 아니라 -0.941 다(무작위 K=20 composite 200 draw 평균 PORT_t; POOL_EW -0.789, placebo -1.585). EW-유니버스 basis 로 옮기면 LEVEL_TOP_K20 2.860 / A_REL_TOP 2.193 로 부호가 뒤집힌다 — top-25 EW 의 구조적 사이즈 노출이 전이 벽의 상당분을 차지한다는 정량 근거다. 단 판별식은 paired 차라 벤치가 정확히 상쇄되므로(AP5 잔차 2.8e-17) 이 유보는 (a)/(b) 판정을 바꾸지 않고 standalone PORT_t 해석에만 걸린다. 정직 한계: 167개월 블록 부트스트랩(block=12, B=2000)에서 (a)/(b) 가 +2.0 에 도달할 확률이 각각 20.8% / 21.3% 남아 있어 '효과 부재'를 증명한 것이 아니다 — 이 라운드가 확정한 것은 순증분 <= 0 쪽이다(P(t>=2)=0.85%). 추가 재현: IC→PORT_t 전이 벽 — POOL_EW rank IC 0.0626(t 4.58) > A_REL_TOP 0.0273(t 3.01) 인데 PORT_t 는 -0.789 vs 0.897 로 역전. rank-IC advisory 강등의 독립 근거 1건 추가. 구현 규율: A_REL_TOP 회전율 12.42/yr > 상한 11.0 — 구성 lane 이 살아났더라도 별도 관문에 걸린다.",
+  "key_metrics": {
+    "discriminant_a_t": 1.21191227,
+    "discriminant_b_t": 1.3038965,
+    "posthoc_robustness_increment_t": -0.57075393,
+    "a_rel_top_port_t": 0.89690516,
+    "a_perp_top_port_t": -1.06803263,
+    "level_top_k20_port_t": 1.02779832,
+    "single_best_port_t": 0.01253216,
+    "pool_ew_port_t": -0.78876767,
+    "random_null_mean_port_t": -0.9405909,
+    "a_rel_top_ew_basis": 2.19260667,
+    "level_top_k20_ew_basis": 2.85956006,
+    "n_oos_months": 167,
+    "n_pool_factors": 285,
+    "turnover_annual": 12.41964072
+  },
+  "next_probe": [
+    {
+      "id": "NP-1",
+      "title": "cap-w 귀무의 정체 분해 — 사이즈 중립 composite 이 EW-basis 2.86 을 cap-w 로 옮길 수 있는가",
+      "measurable_now": true
+    },
+    {
+      "id": "NP-2",
+      "title": "MID-tier 국소화 — level 선별의 post-2017 음수(-0.490)가 MEGA 벤치 아티팩트인가",
+      "measurable_now": true
+    },
+    {
+      "id": "NP-3",
+      "title": "지표를 선택기 아닌 '배제기'로 — inert factor 제거가 풀 품질을 올리는가",
+      "measurable_now": true
+    },
+    {
+      "id": "NP-4",
+      "title": "era_sd 를 risk 레인의 factor 불안정성 입력으로 이식",
+      "measurable_now": true
+    }
+  ],
+  "consumption_surface": {
+    "note": "answer-principles §4 소비면 7종 명시 순회",
+    "p1_factor_ranking": "측정 — 본 라운드 주제. era-robust 랭킹 cap-w 미달, level 랭킹이 최선이나 2.95 미달. NP-1 로 계속.",
+    "p2_universe_filter": "미측정 → NP-2 / NP-3 등재",
+    "p3_overlay_regime_input": "해당 없음 — era 는 WT-006 이 사전 관측 불가로 확정. 본 라운드는 era 예측을 시도하지 않았다.",
+    "p4_risk_beta_budget": "미측정 → NP-4 (risk lane 이관, alpha 경계 밖)",
+    "p5_monitoring_signal": "미측정 — worst-era 를 라이브 decay tripwire 로 쓰는 안은 유계지표+고정 z 문턱의 구조적 침묵(2026-08-02 실측) 위험이 있어 '도달가능성 라벨' 선설계 없이는 등재하지 않음",
+    "p6_screen_label": "적용 — dual-basis 라벨(cap-w FAIL ∧ EW 생존) 부여. screen_route 재분류은 judge/governor 권한이므로 권고만.",
+    "p7_cross_mode": "RAMP Gate4 순수팩터 sleeve 진단에 worst-era 지표 이식 가능 — 단 본 라운드가 선택기로는 무용을 실측했으므로 진단축으로만 권고"
+  },
+  "revival_conditions": [
+    "관측 가능한 era 라벨이 확보되는 경우 (자격 관문: 전이-조건부 적중 > base ∧ 순열 p<0.05) — 그때는 era-robust(수동적)가 아니라 era-conditional(능동적) 선별이 되살아난다",
+    "비-return 리프(FQ-136 대차/공매도 잔고 등)가 풀에 들어와 era 민감도의 구조가 달라지는 경우 — 현 풀은 전량 return/재무 파생이라 era 공통성분을 공유한다",
+    "cap-w 벤치 아티팩트가 NP-1/NP-2 로 분해되어 EW-basis 2.86 이 cap-w 로 옮겨지는 경우 — 그때 선택자 비교를 재실행(현재는 모든 arm 이 구조적 음수 드리프트 아래 눌려 판별력 자체가 낮다)"
+  ],
+  "source_paths": "stage_artifacts/WT_D20260803_007/alpha_validation.json"
+}
