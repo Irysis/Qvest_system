@@ -6,6 +6,42 @@
       "agent": "q-lead",
       "action": "WT_CREATED",
       "summary": "Work Task 생성: FQ-125 1단계 확정 — 계약수주 시총-분모 IC 확장 구간 판정 (interim 게이트) | source=user_defined"
+    },
+    {
+      "timestamp": "2026-08-03T12:05:00+0900",
+      "agent": "alpha-research",
+      "action": "CORPUS_CENSUS",
+      "summary": "체크포인트 코퍼스 실측: 2019-01~2026-07 91개월 결측 0, 6,298행, 원문제공 6,032 중 OK 5,793(96.0%). ★pre-2019(2017-03~2018-12) 1,199행 중 OK 29(2.4%) — PARSER_ERROR 620 + UNZIP_FAIL 527 로 사용 불가 → 패널에서 제외하고 CF-4 로 등재. 큐의 '원문 2008-01까지 존재'는 문서 존재이지 파싱 가능성이 아님을 정정."
+    },
+    {
+      "timestamp": "2026-08-03T12:08:00+0900",
+      "agent": "alpha-research",
+      "action": "INFRA_DEFECT_FOUND",
+      "summary": ".cache/benchmark.parquet(08-03 08:36 재생성) BM_Close 가 2026-07-27 에 9325 → 1069 로 스케일 절단 → 2026-07 홀딩월 -91.36%(정본 -23.63%). 측정 진행을 막는 결함이므로 pinned 정본 1행 라벨 오버라이드로 우회(gridx_vintage_compare.json 기록), 근본 수리는 별도 태스크로 분리. CF-5 등재."
+    },
+    {
+      "timestamp": "2026-08-03T12:10:00+0900",
+      "agent": "alpha-research",
+      "action": "PARITY_VERIFIED",
+      "summary": "승계 자산 정합 확인 — 겹침 구간(2023-01~) 전수 대조 Ret_1m 105,487행/Size 15,037행/adv 107,838행 max|Δ|=0, BM_Ret 42행 중 1행 Δ=+0.00398. 파일럿 24개월 재현 mean_ic 0.080559 / t_plain 1.972226 정확 일치."
+    },
+    {
+      "timestamp": "2026-08-03T12:20:00+0900",
+      "agent": "alpha-research",
+      "action": "ALPHA_DONE",
+      "summary": "★interim 게이트 PASS (규칙은 WT-D20260802_023 이 측정 전 고정, 사후 변경 0): 합산 79 IC월 t_NW(lag3) +1.9942 >= 1.5 / 신규 55개월 mean IC +0.04602 > 0 / 국면 분해 수행. 섭동 120 draws q05 t_NW +1.7553(파일럿 1.4405 대비 개선). ★감쇠의 정체 = 벤치 방향(파일럿 corr -0.2545 → n=79 에서 -0.0297 소멸)이 아니라 횡단면 저변(corr(IC, mega_spread) -0.3459). 사전관측 t-1 분할: 저변주도 27M +0.1445(t_NW 5.17) vs 대형주주도 52M +0.0108(t_NW 0.32), 격차 +0.1337 순열 p=0.0082. 사이즈 틸트 대안 기각(잔차화 후 98.8% 보존, 단면상관 -0.012). 전이 벽 불변: cap-w PORT_t +0.511 / EW-uni +1.604 — gate_eligible=false."
+    },
+    {
+      "timestamp": "2026-08-03T12:26:00+0900",
+      "agent": "alpha-research",
+      "action": "SELF_ADVERSARIAL_CHALLENGE",
+      "summary": "자기 적대검증 11건(HIGH 5 / MEDIUM 5 / LOW 1) — ACCEPT 2(C-2 국면 사후선택 → 주장 등급 강등·NP-1 이월, C-10 위반주입 공허성 → 하네스 카나리아 추가 실행 IC 1.0000 / 0.0155), PARTIAL 4, REBUTTAL 5. ★Q-Lead escalate 발화(HIGH >= 5) — 판단 필요 지점 = 잔여 구간 지불 전 NP-3(파서 샘플 150 호출) 선행 여부. AX-008 3-source 중 1(self)만 PASS → graduation 주장 불가(설계상 정상, interim 라운드)."
+    },
+    {
+      "timestamp": "2026-08-03T12:28:00+0900",
+      "agent": "alpha-research",
+      "action": "FRONTIER_QUEUE_UPDATED",
+      "summary": "registry staleness 방지 — FQ-125 에 stage1_result + boundary_correction_stage2 + 갱신된 dohoon_decision_pending(잔여 지불은 파서 조건부 게이트 선행 권고) 기록. next_probe 3건 신규 등재: FQ-138(국면 조건부 사전등록 재판정) / FQ-139(기전 직접 반증 — 기관 순매수 경로) / FQ-140(파서 era 경계 census 150 호출). 무결성 확인: 기존 139항목 무변경, FQ-125 1건만 변경, 3건 추가."
     }
   ]
 }

@@ -69,8 +69,9 @@ row_of <- function(a, r) {
     ir = r$information_ratio, net_sr = r$net_sr, alpha_ann = r$alpha_annualized,
     mean_active = r$mean_active_net, turnover_annual = r$turnover_annual,
     ew_port_t = if (!is.null(ew$portfolio_alpha_t_nw_lag3)) ew$portfolio_alpha_t_nw_lag3 else NA_real_,
-    cap_mega = if (isTRUE(ct$available)) ct$share_mega else NA_real_,
-    cap_mid  = if (isTRUE(ct$available)) ct$share_mid  else NA_real_)
+    cap_mega = if (isTRUE(ct$available)) as.numeric(ct$weight_share_avg$MEGA) else NA_real_,
+    cap_mid  = if (isTRUE(ct$available)) as.numeric(ct$weight_share_avg$MID)  else NA_real_,
+    cap_other = if (isTRUE(ct$available)) as.numeric(ct$weight_share_avg$OTHER) else NA_real_)
 }
 SUM <- rbindlist(lapply(names(RES), function(a) tryCatch(row_of(a, RES[[a]]),
         error = function(e) data.table(arm = a, kind = NA_character_))), fill = TRUE)
