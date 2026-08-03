@@ -1,0 +1,65 @@
+[config.R] PROJECT_ROOT: C:/Users/99922/OneDrive/Quant_Module_Moltbot
+[backtest_result_contract.R] Loaded — Backtest Result Contract v1.0
+  Functions: build_bt_result() / validate_bt_result()
+  10 components: manifest, strategy_spec, nav, period_returns, holdings, benchmark_returns, metrics, benchmark_compare, rolling_metrics, drawdowns, audit
+[canonical_screen_bt.R] Loaded — canonical_screen_bt() (v8.x WS1 real-computation helper)
+[ramp_io.R] Loaded — ramp_write_parquet/ramp_write_json (§2.4 meta enforced)
+[backtest_result_contract.R] Loaded — Backtest Result Contract v1.0
+  Functions: build_bt_result() / validate_bt_result()
+  10 components: manifest, strategy_spec, nav, period_returns, holdings, benchmark_returns, metrics, benchmark_compare, rolling_metrics, drawdowns, audit
+[canonical_screen_bt.R] Loaded — canonical_screen_bt() (v8.x WS1 real-computation helper)
+[factor_validation.R] Loaded — build_monthly_forward_returns / validate_factor / approve_factors
+[factor_db_connector] Loaded. Functions: load_month_factors(), load_daily_factors(),
+  compute_rolling_ic_all(), group_factors_by_family(), align_factor_direction()
+[wt005AP] AP-1 rob36 최상위 bin: n=132, 전체 지속 0.788
+[wt005AP]   전이별 분포:
+Key: <k>
+       k     n         p era_k era_next
+   <int> <int>     <num> <num>    <num>
+1:     1    14 0.7857143     1        1
+2:     2     6 0.5000000     1        1
+3:     3    77 0.8051948     1        1
+4:     4     2 0.5000000     1       -1
+5:     5    20 0.7500000    -1       -1
+6:     6    13 0.9230769    -1       -1
+[wt005AP]   era 부호가 창 k→k+1 로 유지된 전이의 쌍: 130 / era 전환 전이의 쌍: 2
+   era_persists     n         p
+         <lgcl> <int>     <num>
+1:         TRUE   130 0.7923077
+2:        FALSE     2 0.5000000
+[wt005AP] ★ AP-1 판정: 최상위 bin 쌍의 98% 가 'era 부호가 유지된 전이'에서 나왔다. era 전환 전이에서의 지속 = 0.500 (n=2)
+   era_persists     n         p
+         <lgcl> <int>     <num>
+1:         TRUE    49 0.9591837
+2:        FALSE   115 0.3043478
+[wt005AP] AP-2 절단 census: factor-월 92229개 | 유동성 통과 <25 인 factor-월 16 (0.017%) | 25번째 통과분의 저장랭크 최대 80
+                  Factor_Name min_pass max_rank25 n_short
+                       <char>    <int>      <int>   <int>
+ 1:            L38_DolVol_Mom       25         80       0
+ 2:         L05_Dollar_Volume       10         80       3
+ 3:    L13_Vol_Variance_Ratio       25         80       0
+ 4: CR02_Volume_Concentration       26         79       0
+ 5:            L03_Volume_Mom       26         79       0
+ 6:          L37_Relative_Vol       20         78       2
+ 7:           D20_EW_Beta_126       27         76       0
+ 8:   L45_Composite_Liquidity       11         76       4
+ 9:          L10_Amihud_Ratio       28         75       0
+10:            D19_EW_Beta_63       28         75       0
+[wt005AP] ★ AP-2: 저장 top-80 안에서 25번째 유동종목이 항상 잡혔는가 = YES (최대 필요 랭크 80 <= 80)
+[wt005AP] AP-2b 유동성/사이즈 틸트 factor parity 대상: L01_Amihud, L06_Zero_Trade_Days, L26_Log_MktCap
+                Factor     n max_abs_diff    t_full    t_topk
+                <char> <int>        <num>     <num>     <num>
+1:          L01_Amihud   287   0.00000000 0.5440554 0.5440554
+2: L06_Zero_Trade_Days   287   0.00000000 0.4515285 0.4515285
+3:      L26_Log_MktCap   287   0.02085044 0.7617619 0.7437880
+[wt005AP] ★ AP-2b: 유동성/사이즈 틸트 factor에서도 절단 무해 = NO (max diff 2.1e-02)
+       k bad_share mean_t_def mean_t_all def_minus_all
+   <int>     <num>      <num>      <num>         <num>
+1:     1 0.3666667 -0.1321438  0.7301318    -0.8622756
+2:     2 0.4833333  1.4673238  1.6292510    -0.1619272
+3:     3 0.3666667 -1.1861507 -0.7516958    -0.4344549
+4:     4 0.4666667 -1.3456973 -1.3739027     0.0282054
+[wt005AP] ★ AP-3: 창별 (defense 평균 t − 전체 평균 t) vs 그 창의 BM<0 월 비중 상관 = 0.842 (n=4 창)
+[wt005AP] 저장 — adversarial_probes.rds
+Warning message:
+package 'arrow' was built under R version 4.5.3 

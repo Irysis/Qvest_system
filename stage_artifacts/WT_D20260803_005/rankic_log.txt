@@ -13,3 +13,21 @@
 [backtest_result_contract.R] Loaded — Backtest Result Contract v1.0
   Functions: build_bt_result() / validate_bt_result()
   10 components: manifest, strategy_spec, nav, period_returns, holdings, benchmark_returns, metrics, benchmark_compare, rolling_metrics, drawdowns, audit
+[wt005F] rank IC 패널: 81160행 / 285 factor / 287월 (468s)
+[wt005F] pool rank IC: 중앙값 0.0113 (평균 0.0144) | ICIR 중앙값 0.104 | |mean_ic|>=0.02 factor 91/285
+      grid   basis n_pairs p_persist share_pos
+    <char>  <char>   <int>     <num>     <num>
+1: primary  PORT_t     850 0.5776471 0.4748899
+2: primary rank_IC     846 0.5803783 0.7020336
+3:   rob24  PORT_t    2835 0.5604938 0.5366870
+4:   rob24 rank_IC    2825 0.6669027 0.6666667
+5:   rob36  PORT_t    1701 0.6078777 0.5369904
+6:   rob36 rank_IC    1694 0.6251476 0.6772727
+[wt005F] 전이 벽 지속성[primary]: rank-IC 부호 0.580 vs PORT_t 부호 0.578 (Δ +0.003)
+[wt005F] 전이 벽 지속성[rob36]: rank-IC 부호 0.625 vs PORT_t 부호 0.608 (Δ +0.017)
+[wt005F] 전이 벽 지속성[rob24]: rank-IC 부호 0.667 vs PORT_t 부호 0.560 (Δ +0.106)
+[wt005F] 동시 상관: cor(ic_t_k, port_t_k) = 0.313 | 교차 예측 cor(ic_t_k, port_t_next) = 0.058
+[wt005F] ic_t_k 부호가 port_t_next 부호를 맞히는 비율 = 0.472 (PORT_t 자기 예측 0.578)
+[wt005F] 저장 — rank_ic_panel.parquet + rankic_results.rds
+Warning message:
+package 'arrow' was built under R version 4.5.3 

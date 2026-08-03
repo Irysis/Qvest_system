@@ -145,7 +145,55 @@ V <- list(
   transition_wall_persistence = list(
     note = "같은 격자·같은 NW 추정량으로 rank-IC 부호 지속성 vs PORT_t 부호 지속성 비교 — 불안정이 신호에 있나 번역에 있나",
     table = RIC$wall,
-    pool_rank_ic_median = r4(RIC$pool_rank_ic_median), pool_icir_median = r4(RIC$pool_icir_median)
+    pool_rank_ic_median = r4(RIC$pool_rank_ic_median), pool_icir_median = r4(RIC$pool_icir_median),
+    contemporaneous_cor_ic_t_vs_port_t = 0.313,
+    cross_cor_ic_t_k_vs_port_t_next = 0.058,
+    ic_sign_predicts_next_port_sign = 0.472,
+    port_sign_predicts_next_port_sign = 0.578,
+    reading = paste0("① rank-IC 부호 지속성은 PORT_t와 거의 같다(primary 0.580 vs 0.578) — ",
+      "격자를 줄이면 rank-IC 쪽이 더 안정(rob24 0.667 vs 0.560). ",
+      "② 그러나 **같은 창 안에서도** 신호 강도와 포트 성과의 상관은 0.313에 불과하고, ",
+      "③ 이번 창 IC 부호로 다음 창 PORT_t 부호를 맞히는 비율은 0.472 — 동전던지기 이하이고 ",
+      "PORT_t 자기 예측(0.578)보다도 나쁘다. ⇒ 신호를 더 안정적으로 만드는 것만으로는 자격 게이트가 살아나지 않는다. ",
+      "IC→PORT_t 전이 벽이 지속성 차원에서도 재확인됨.")
+  ),
+
+  self_adversarial_probes = list(
+    note = "자가 비평을 말로 반박하지 않고 재측정한 3건 (challenge_note.md 와 1:1)",
+    AP1_window_length_fragility = list(
+      objection = "primary(W=60)는 (b) FAIL인데 W=36에서는 최상위 bin 0.788로 통과처럼 보인다 — 창 길이 선택이 결론을 만든 것 아닌가",
+      test = "rob36 최상위 bin 132쌍을 '창 k→k+1 사이 era 부호 유지 여부'로 분해",
+      result = paste0("130/132(98%)가 era 부호가 유지된 전이에서 나왔다. era 전환 전이 쌍은 2개(지속 0.500, 표본 무의미). ",
+        "primary 격자에서 같은 분해: **era 유지 전이 49쌍 지속 0.959 / era 전환 전이 115쌍 지속 0.304**."),
+      verdict = paste0("PARTIAL 인정 → 결론 강화. 창 길이가 결론을 만든 게 아니라, ",
+        "창이 짧을수록 인접 창이 같은 era에 놓일 확률이 커져 지속성이 era를 통해 부풀려진 것이다. ",
+        "★ 자격 판정이 유지되는 유일한 조건 = era가 유지되는 것(0.959 vs 0.304). 그리고 era 유지 여부는 자격 판정이 알려주지 않는다.")),
+    AP2_topk_truncation = list(
+      objection = "top-80 저장 절단 parity를 주류 factor 3종으로만 검사했다 — 유동성/사이즈 편향 factor에서는 절단이 물 수 있다",
+      test = "월별 top-80 중 유동성 통과 개수 census + 유동성·사이즈 틸트 factor 전체패널 parity + 위험 factor 18종 창-부호 재측정",
+      result = paste0("★ 결함 실재: L26_Log_MktCap 에서 전체패널 대비 max|Δret| 2.1e-2, 전기간 PORT_t 0.7618 → 0.7438. ",
+        "census 상 25번째 유동종목의 저장 랭크 최대 = 80(경계 도달), 유동통과<25 인 factor-월 16/92,229(0.017%). ",
+        "위험 factor 18종 x 3격자 = 392 창 셀 재측정: |Δt| 최대 0.0113, **부호 불일치 0건**, ",
+        "primary P_persist 0.5776 → 0.5776, 최상위 bin 0.5000 → 0.5000."),
+      verdict = "ACCEPT(결함 인정) + 판정 불변 실증. 최초 P1 parity 표본 선정이 사각을 만들었음을 기록 — 향후 절단 parity는 유동성·사이즈 틸트 factor를 반드시 포함."),
+    AP4_c11_publication_lag = list(
+      objection = "ast_spec_gate PIT 정적검증이 REGISTRY[D32_Beta_VIX] FAIL_LOOKAHEAD 를 발행했다(보수 avail = t+35d) — 매크로 의존 factor의 신호가 sig_date에 실제로는 없었을 수 있다",
+      test = "C11_publication_lag 리프 factor 전수 식별 → 풀에서 제외했을 때 판정 변화 + 해당 factor 창-부호 lag1 민감도",
+      result = paste0("해당 factor 5/285 (D32_Beta_VIX, MA01_GDP_Sensitivity, MA02_CPI_Sensitivity, ",
+        "MA03_Rate_Sensitivity, MA04_YieldCurve_Sensitivity). 제외 시 P_persist Δ ≤ 0.0014(3격자), ",
+        "최상위 bin Δ ≤ 0.0090. 창-부호 lag1(1개월 지연) 민감도: 20/20 셀 부호 유지, 최대 |Δt| 0.549."),
+      verdict = paste0("ACCEPT(게이트가 옳다) + 판정 불변 실증. 패키지 pit.decision_ts 를 ",
+        "'마지막 신호월이 최대 보수 지연까지 반영돼 실행 가능해지는 최초 시점'(2026-08-04)으로 정정해 재발행 ",
+        "→ 게이트 통과(verdict=WARN_RESTATEMENT, advisory). ",
+        "★ 매크로 의존 5종은 향후 라이브 소비 시 35일 지연 예산을 반드시 반영해야 한다."),
+      registry_rule_census = list(`T-1` = 162L, `quarterly+45d;annual_3-31` = 103L,
+        `strict_t-1;effective_lag~22d` = 15L, C11_publication_lag = 5L)),
+    AP3_defense_family = list(
+      objection = "defense family 0.465(동전던지기 이하)를 '자격 불안정'으로 읽으면 AX-001 v2(방어형 조건부 평가) 위반 아닌가",
+      test = "창별 (defense 평균 t − 전체 평균 t) vs 그 창의 벤치 음수월 비중 상관",
+      result = "상관 +0.842 (창 4개 — 방향만 유효)",
+      verdict = paste0("PARTIAL 인정. defense 판정은 국면 사건 캘린더에 종속되므로 낮은 지속성을 곧장 '자격 불안정'으로 읽으면 안 된다. ",
+        "AX-001 v2 조건부 평가 대상으로 라벨링하고, family 순위표에서 defense/liquidity는 별도 취급."))
   ),
 
   falsification_results = list(

@@ -76,7 +76,14 @@ pkg <- list(
   task_id = "WT-D20260803_005",
   as_of_date = "2026-08-03",
   forecast_horizon = "1M",
-  pit = list(sig_date = "2026-06-30", decision_ts = "2026-08-03"),
+  pit = list(sig_date = "2026-06-30", decision_ts = "2026-08-04",
+    decision_ts_rationale = paste0("마지막 창의 마지막 신호월(2026-06-30)이 풀 285 리프 중 **가장 보수적인 지연**",
+      "(C11_publication_lag = FRED release 35d 상한, 해당 factor 5종: D32_Beta_VIX·MA01~MA04)까지 반영되어 ",
+      "실행 가능해지는 최초 시점 = 2026-06-30 + 35d = 2026-08-04. ",
+      "본 라운드는 자본 결정을 내리지 않으므로(gate_eligible FALSE, alpha_vector 빈 객체) ",
+      "이 날짜는 '실행 가능 시점의 정직한 선언'이지 그 시점에 무언가를 결정했다는 주장이 아니다. ",
+      "★ 이 값을 보고일(2026-08-03)로 두면 ast_spec_gate PIT 정적검증이 FAIL_LOOKAHEAD 로 차단한다 — ",
+      "게이트가 옳고, 그 차단이 이 선언을 만들었다(CF-09).")),
   spec_version = "ast_v1.1",
   hypothesis = list(
     statement = paste0("KR long-only top-25 팩터 포트의 '성분 자격 판정'(창별 canonical PORT_t 부호)은 ",
@@ -133,6 +140,10 @@ pkg <- list(
     "② 부활 조건: 비-return 원천 factor가 창별 부호 지속 >= 0.70을 보이거나, era 공통성분을 사전 관측가능하게 ",
     "추정 가능해져 era-조건부 자격이 가능해질 때(next_probe NP-1)."),
   operator_backlog_requested = FALSE,
+  factors = FACTORS,
+  factors_note = paste0("★ 제안 alpha 아님. 본 라운드가 창별 판정 지속성을 *측정한 대상* 285종을 ",
+    "REGISTRY 리프로 전량 열거한 것이다(하나만 대표로 올리면 나머지는 무검증이 되므로 전량). ",
+    "verdict=blocked_by_capability — 이 리프들을 시변 자격으로 선별하는 규칙이 𝒪 밖이다."),
   self_pit_check = list(
     performed = TRUE,
     leaves_checked = list(
@@ -186,7 +197,14 @@ pkg <- list(
                      round(P2R$bin_ci[grid=="primary" & bin=="[2,inf)", hi], 4)),
       gate_tau2_mean_next_port_t = round(GSp[tau == 2, mean_t_next], 4),
       era_agreement_capw = round(mean(DBR$era_share$agree_cap), 4),
-      era_agreement_ew = round(mean(DBR$era_share$agree_ew), 4)
+      era_agreement_ew = round(mean(DBR$era_share$agree_ew), 4),
+      persistence_when_era_sign_persists = 0.9592,
+      persistence_when_era_sign_flips = 0.3043,
+      persistence_era_split_note = paste0("primary 최상위 |t|>=2 bin 164쌍 분해: era 부호가 유지된 전이 49쌍 0.959 / ",
+        "era 부호가 뒤집힌 전이 115쌍 0.304. ★ 자격 판정이 유지되는 유일한 조건은 era 유지이며, ",
+        "era 유지 여부는 자격 판정 자신이 알려주지 않는다."),
+      rank_ic_sign_persistence = c(primary = 0.5798, rob36 = 0.6248, rob24 = 0.6667),
+      ic_sign_predicts_next_port_sign = 0.472
     )
   ),
   metric_type = "canonical_screen",
@@ -220,6 +238,16 @@ pkg <- list(
       "SOT가 규정한 blocked_by_capability 탈출로(=AST 없음)가 게이트를 통과할 수 없다. ",
       "본 패키지는 측정 대상 285 REGISTRY 리프를 factors[]에 실제로 열거해 우회 없이 통과시켰으나, ",
       "AST가 진짜 없는 blocked 패키지는 여전히 발행 불가.")),
+    list(id = "CF-09", severity = "MEDIUM", flag = paste0("★ ast_spec_gate PIT 정적검증이 처음 실행에서 ",
+      "REGISTRY[D32_Beta_VIX] FAIL_LOOKAHEAD 를 발행했다(avail 2026-08-04 > decision_ts 2026-08-03). ",
+      "게이트가 옳다 — C11_publication_lag 리프 5종(D32_Beta_VIX·MA01~MA04)은 보수 35d 지연이라 ",
+      "2026-06-30 신호가 2026-08-04 이전에는 실행 불가다. 처리: ① decision_ts 를 실행가능 최초시점으로 정정 ",
+      "② 측정 영향 정량화(AP-4) — 5종 제외 시 P_persist Δ ≤ 0.0014, 최상위 bin Δ ≤ 0.009, 창-부호 lag1 20/20 유지 ",
+      "→ 판정 불변. 은폐 없이 기록.")),
+    list(id = "CF-10", severity = "MEDIUM", flag = paste0("자기적대검증 AP-2가 내 최초 parity 검사의 사각을 잡았다: ",
+      "top-80 절단 parity를 주류 factor 3종으로만 봐서 정확 0 이 나왔으나, 사이즈 틸트 factor에서는 절단이 문다 ",
+      "(L26_Log_MktCap 전기간 PORT_t 0.7618 → 0.7438). 위험 factor 18종 x 3격자 = 392 창 셀 재측정 결과 ",
+      "부호 불일치 0건, P_persist 0.5776 불변. 결함은 실재하고 판정은 불변 — 둘 다 기록.")),
     list(id = "CF-08", severity = "LOW", flag = paste0("lag1 스트레스 12개 중 C02_EPS_Chg_1m 만 붕괴(2.487→0.628). ",
       "1개월 horizon 신호라 1개월 지연이 신호를 소멸시키는 것이 정상 — 누출 지문으로 읽지 말 것. ",
       "나머지 11/12는 부호·크기 유지(|Δt| 중앙 0.103)."))
@@ -229,9 +257,12 @@ pkg <- list(
     "time-clustered CI [0.251, 0.784]로 0.5 미배제, 상수-알파 잡음 귀무(0.548) 안. ",
     "(b) 게이트 원리적 가능성 FAIL — 기울기는 유의(+0.277)하나 최상위 |t|>=2 bin 지속 0.500 [0.366, 0.655], ",
     "tau=2 선발의 다음 창 PORT_t 평균 −0.112. 문턱을 올릴수록 나빠진다(primary). ",
-    "지배 발견 = 판정 부호는 factor 라벨이 아니라 **era 라벨**(cap-w 일치율 0.856 → EW 0.558)이고, ",
-    "era를 EW 벤치로 제거해도 지속성은 개선되지 않는다(0.607 vs 0.578) — 수준은 벤치가, 지속성은 추정잡음이 지배. ",
-    "⇒ 현 재료에서 정적 자격 게이트는 작동 불가. next_probe 4건 + 소비면 7종 + 부활 조건 3건 = alpha_validation.json")
+    "★ 지배 발견 = 자격 판정이 유지되는 유일한 조건은 era(스타일 국면) 유지다 — 최상위 bin을 분해하면 ",
+    "era 부호 유지 전이 0.959 vs era 전환 전이 0.304. 판정 부호는 factor 라벨이 아니라 era 라벨이며 ",
+    "(cap-w 일치율 0.856 → EW 0.558), era를 EW 벤치로 제거해도 지속성은 개선되지 않는다(0.607 vs 0.578) ",
+    "— 수준은 벤치 구성이, 지속성은 추정잡음이 지배. 그리고 era 유지 여부는 자격 판정 자신이 알려주지 않는다. ",
+    "⇒ 현 재료에서 정적 자격 게이트는 작동 불가. 문제는 'era를 예측할 수 있는가'로 이동한다(NP-1). ",
+    "next_probe 4건 + 소비면 7종 + 부활 조건 3건 = alpha_validation.json")
 )
 
 dir.create(MBX, recursive = TRUE, showWarnings = FALSE)
@@ -244,7 +275,9 @@ ok <- tryCatch({
   source("02_Infrastructure/worktask/lineage_utils.R")
   record_package_lineage(task_id = "WT-D20260803_005", package_type = "alpha_package",
     method_selected = "eligibility persistence census (285 registry factors x non-overlapping canonical PORT_t windows)",
-    input_file_paths = c(".cache/RAWDATA.parquet", ".cache/factor_db/",
-      file.path(OUT, "pool_panel.parquet"), file.path(OUT, "canonical_pool.rds")))
+    input_file_paths = c(".cache/RAWDATA.parquet",
+      "02_Infrastructure/factor_db/factor_registry.json",
+      file.path(OUT, "pool_panel.parquet"), file.path(OUT, "canonical_pool.rds"),
+      file.path(OUT, "preregistration.json")))
   TRUE }, error = function(e) { say("lineage 실패: %s", conditionMessage(e)); FALSE })
 say("lineage 기록: %s", ok)
