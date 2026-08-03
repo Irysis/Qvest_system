@@ -1,0 +1,35 @@
+[backtest_result_contract.R] Loaded — Backtest Result Contract v1.0
+  Functions: build_bt_result() / validate_bt_result()
+  10 components: manifest, strategy_spec, nav, period_returns, holdings, benchmark_returns, metrics, benchmark_compare, rolling_metrics, drawdowns, audit
+[wt005C] 입력: 322 factor canonical 시계열
+[wt005C] active 행렬: 287월 x 322 factor | 완전관측 factor 278
+[wt005C] 중복 제거: 322 → 285 factor (|cor(active)| >= 0.99 제거 37건)
+              dropped_factor                     kept_rep   cor
+                      <char>                       <char> <num>
+ 1:                 AC09_NNI      AC07_Operating_Accruals     1
+ 2:  AC11_Accruals_to_Assets       AC01_Total_Accruals_CF     1
+ 3:     AC18_Accrual_Quality       AC01_Total_Accruals_CF     1
+ 4: C09_Earnings_Surprise_Sq                      C01_SUE     1
+ 5:       D10_Blume_Adj_Beta                     D02_Beta     1
+ 6:             D18_BAB_Rank                     D02_Beta     1
+ 7:        D31_Relative_Beta                     D02_Beta     1
+ 8:             L02_Turnover CR04_Ownership_Concentration     1
+ 9:           L03_Volume_Mom    CR02_Volume_Concentration     1
+10:      L20_Trade_Frequency          L06_Zero_Trade_Days     1
+11:               M29_Mom_5d              M11_ST_Reversal     1
+12:           MK01_CAPM_Beta                  D11_FP_Beta     1
+13:              Q05_Accrual       AC01_Total_Accruals_CF     1
+14:         Q06_Asset_Growth            GR03_Asset_Growth     1
+15:  Q20_Net_Equity_Issuance     IN04_Net_Equity_Issuance     1
+[wt005C] 격자 primary: 창 4개 (2006-07-31 ~ 2026-06-30) | 유효 셀 1135/1140
+[wt005C] 격자 rob36: 창 7개 (2005-07-29 ~ 2026-06-30) | 유효 셀 1987/1995
+[wt005C] 격자 rob24: 창 11개 (2004-07-30 ~ 2026-06-30) | 유효 셀 3121/3135
+[wt005C] P_persist[primary] 절대 0.578 [0.557, 0.597] (n=850) | 상대(era-demean) 0.548 [0.511, 0.584]
+[wt005C] P_persist[rob36] 절대 0.608 [0.584, 0.630] (n=1701) | 상대(era-demean) 0.568 [0.545, 0.592]
+[wt005C] P_persist[rob24] 절대 0.560 [0.543, 0.578] (n=2835) | 상대(era-demean) 0.563 [0.542, 0.584]
+[wt005C] run[primary] W=60m: 전체 644 run (비절단 80) | 비절단 중앙값 1.0창(60개월) | KM 중앙 NA(도달못함)창 | 평균 1.76창
+[wt005C] run[rob36] W=36m: 전체 953 run (비절단 387) | 비절단 중앙값 1.0창(36개월) | KM 중앙 NA(도달못함)창 | 평균 2.08창
+[wt005C] run[rob24] W=24m: 전체 1532 run (비절단 968) | 비절단 중앙값 1.0창(24개월) | KM 중앙 2창 | 평균 2.04창
+[wt005C] 기하 반감기[primary]: p=0.578 → 135.8 개월 (창 60개월 단위)
+[wt005C] 기하 반감기[rob36]: p=0.608 → 86.1 개월 (창 36개월 단위)
+[wt005C] 기하 반감기[rob24]: p=0.560 → 52.7 개월 (창 24개월 단위)
