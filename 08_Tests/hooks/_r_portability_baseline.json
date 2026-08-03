@@ -1,6 +1,6 @@
 {
   "contract": "02_Infrastructure/docs/rules/r-portability.md",
-  "generated_at": "2026-08-03T09:00:00+0900",
+  "generated_at": "2026-08-03T09:40:00+0900",
   "note": "기존 위반 원장. 신규 위반만 FAIL. 항목은 수리 시 제거만 — 추가는 계약 위반.",
   "codes": {
     "1": "system2(env=)",
@@ -25,12 +25,13 @@
     "02_Infrastructure/portfolio/resolve_admitted_slot.R": 1,
     "02_Infrastructure/reports/report_narrative.R": 6,
     "02_Infrastructure/search/build_index.R": 1,
-    "02_Infrastructure/telegram/telegram_notify.R": 4,
+    "02_Infrastructure/telegram/telegram_notify.R": 3,
     "02_Infrastructure/tools/hypothesis_index.R": 1,
     "02_Infrastructure/tools/replay_alpha_search_briefs.R": 1,
     "02_Infrastructure/validation/lcode_revalidator_v2.R": 5,
     "02_Infrastructure/validation/role_honesty_runner.R": 1,
-    "02_Infrastructure/validation/v8_readiness_gate.R": 1
+    "02_Infrastructure/validation/v8_readiness_gate.R": 1,
+    "08_Tests/hooks/test_telegram_entity_scan.R": 1
   },
   "entries": [
     "02_Infrastructure/axiom/distilled.R:6",
@@ -94,11 +95,12 @@
     "02_Infrastructure/validation/v8_readiness_gate.R:1",
     "02_Infrastructure/validation/v8_readiness_gate.R:6",
     "08_Tests/hooks/test_cert_rules.R:2",
+    "08_Tests/hooks/test_telegram_entity_scan.R:6",
     "08_Tests/integration/test_execution_path_unified.R:3",
     "08_Tests/integration/test_v8_readiness_gate.R:3",
     "08_Tests/integration/test_wt_lifecycle_e2e.R:3",
     "08_Tests/regime/test_briefing_partial.R:3",
     "qepm/scripts/hybrid_mode.R:3"
   ],
-  "merge_note_20260803": "금칙 ⑥(TRE/UTF-16) 등재 + code6_sites 를 sad-benz 판에서 취하되, 그 사이 main 에서 **실제로 수리된** lockbox 경로 3건(judge_oos_helper/v61_compliance_audit/windowing)은 등재에서 제외했다. 수리된 위반을 허용 목록에 되돌리면 래칫이 조용히 느슨해진다."
+  "merge_note_20260803": "금칙 ⑥(TRE/UTF-16) 등재 + code6_sites 를 sad-benz 판에서 취하되, 그 사이 main 에서 **실제로 수리된** lockbox 경로 3건(judge_oos_helper/v61_compliance_audit/windowing)은 등재에서 제외했다. 수리된 위반을 허용 목록에 되돌리면 래칫이 조용히 느슨해진다. | 08-03 2차: telegram_notify.R 4→3(수리로 site 감소 — 래칫을 느슨한 쪽이 아니라 **조이는 쪽**으로 갱신). test_telegram_entity_scan.R:6 신규 등재 = scan_legacy() 안의 **의도적** TRE 재현(C축 음성 기준). 그 파일의 존재 이유가 '구판이 어떻게 틀렸는지'를 같은 픽스처로 보이는 것이라 이 site 는 제거 대상이 아니다 — 제거하면 검사가 무엇과 대조하는지 사라진다. 단 count 를 1 로 고정해 **다른 TRE 가 몰래 늘어나는 것**은 계속 막는다."
 }

@@ -285,18 +285,37 @@ if (!length(real)) {
   skip("G1_real_docs_parse", "실크롤 원문 캐시 부재(gitignore 산출물)", DOCDIR)
   skip("G2_real_docs_encoding_split", "실크롤 원문 캐시 부재", DOCDIR)
 } else {
-  set.seed(20260803); sel <- real[sort(sample(seq_along(real), min(40L, length(real))))]
-  st <- character(0); en <- character(0)
-  for (f in sel) {
-    rb <- readBin(f, "raw", n = file.info(f)$size)
-    rr <- parse_contract_bytes(rb)
-    st <- c(st, rr$parse_status); en <- c(en, if (is.na(rr$doc_encoding)) "NA" else rr$doc_encoding)
-  }
-  ok("G1_real_docs_parse", mean(st == "OK") >= 0.85,
-     sprintf("(OK 비율 %.3f / %d건 — 분포: %s)", mean(st == "OK"), length(st),
+  # ★무작위 표본은 시대 편향된다 — 캐시 대부분이 2023+ 라 구서식이 한 건도 안 뽑히면
+  #   "구서식이 실제 문서에서 파싱된다"를 **재지 않은 채** 초록이 난다. 시대별로 층화한다.
+  yr  <- suppressWarnings(as.integer(substr(basename(real), 1, 4)))
+  old <- real[!is.na(yr) & yr < 2020]; new <- real[!is.na(yr) & yr >= 2020]
+  set.seed(20260803)
+  pick <- function(v, n) if (length(v) <= n) v else v[sort(sample(seq_along(v), n))]
+  sel <- c(pick(old, 20L), pick(new, 20L))
+  R <- lapply(sel, function(f) parse_contract_bytes(readBin(f, "raw", n = file.info(f)$size)))
+  st <- vapply(R, function(x) x$parse_status, character(1))
+  en <- vapply(R, function(x) if (is.na(x$doc_encoding)) "NA" else x$doc_encoding, character(1))
+  # 디코딩까지 도달한 행만 인코딩을 논한다. 원문부재(014)는 doc_encoding 이 NA 인 게 정상 —
+  # 이 구분을 안 하면 "정상 라벨"이 축 실패로 보고된다(축 자신이 결손을 오독).
+  dec <- !st %in% c("NO_SOURCE_CORRECTION", "NO_SOURCE_014", "RATE_LIMIT_020",
+                    "UNZIP_FAIL", "FETCH_FAIL")
+  okr <- if (sum(dec)) mean(st[dec] == "OK") else NA_real_
+  ok("G1_real_docs_parse", isTRUE(okr >= 0.85),
+     sprintf("(디코딩 도달 %d건 중 OK 비율 %.3f — 분포: %s)", sum(dec), okr,
              paste(names(table(st)), table(st), sep = "=", collapse = " ")))
-  ok("G2_real_docs_encoding_split", all(en %in% c("UTF-8", "CP949", "CP949_LOSSY")),
+  ok("G2_real_docs_encoding_valid", all(en[dec] %in% c("UTF-8", "CP949", "CP949_LOSSY")),
      sprintf("(인코딩 분포: %s)", paste(names(table(en)), table(en), sep = "=", collapse = " ")))
+  # ★핵심: 구서식 실문서가 캐시에 있는데도 CP949 로 안 읽혔다면 v3 수리가 실문서에
+  #   도달하지 못한 것이다(합성 픽스처만 통과하는 상태 = 이 저장소 사이드카 실사고 형태).
+  if (!length(old)) {
+    skip("G3_pre2020_real_docs_decode_cp949", "구서식(2020 이전) 실문서 캐시 부재", DOCDIR)
+  } else {
+    oi <- which(sel %in% old & dec)          # 원문부재 건은 인코딩을 논할 대상이 아니다
+    ok("G3_pre2020_real_docs_decode_cp949",
+       length(oi) > 0 && all(en[oi] %in% c("CP949", "CP949_LOSSY")) && all(st[oi] != "DECODE_FAIL"),
+       sprintf("(구서식 디코딩도달 %d건 인코딩=%s / status=%s)", length(oi),
+               paste(unique(en[oi]), collapse = ","), paste(unique(st[oi]), collapse = ",")))
+  }
 }
 
 #──────────────────────────────────────────────────────────────────────────────
