@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "sot": "02_Infrastructure/docs/qvest_v8_3_alpha_discovery_sot.md §4",
-  "updated": "2026-08-04 (FQ-143/144 EV_D1_GATED 판정 + precheck_result 기록)",
+  "updated": "2026-08-04 (FQ-145 Spectral 횡단면 config_scoped_negative + FQ-146 지수 TF 오버레이 신규 등재)",
   "consume_rule": "새 발굴 리서치 착수 전: hypothesis_index lookup → 본 큐 확인 → owner/status 갱신. 완료 시 result_ref(L-code/보고서) 기입. dohoon_decision 항목은 세션 임의 착수 금지.",
   "entries": [
     {
@@ -2687,6 +2687,38 @@
       "wall_check": "회전율 계열 DB 기등재 여부 확인 필수. 기등재면 EV_D1_GATED. 미등재 시 alpha_search 경량 백테로 직행.",
       "precheck_result": "EV_D1_GATED (2026-08-04): L02_Turnover·L15_Turnover_252d·L43_Turnover_Change 기등재. 분위 구조는 팩터 DB 재활용 — 신규 신호 아님.",
       "next_action": "소비면: 회전율 분위(L02 Z-score) x 국면 교차 측면을 FR 소비 시 고려 가능. 신규 FQ 불필요."
+    },
+    {
+      "id": "FQ-145",
+      "lane": "alpha_search",
+      "title": "Spectral_LowFreq_Momentum KR 개별 종목 횡단면 — config-scoped negative",
+      "hypothesis": "월간 수익률 저주파 스펙트럼 파워 비율(FFT)을 개별 종목 횡단면 팩터로 사용 → 추세 강도 높은 종목 long",
+      "status": "config_scoped_negative_20260804",
+      "result": "Grade F. STR_AS_20260804_073543_45444. IC=-0.0016(랜덤 이하), FMB NW-t=0.43(비유의), FF3 알파 -2.33%/yr, MDD 66.5%(세 창 252일/60일/36M 모두 재현). 기전: arXiv:2607.19497은 선물/CTA TF 시스템 논문이지 개별 주식 횡단면 팩터 논문 아님 — 자산클래스 레벨 이론을 종목 횡단면에 적용 시 IC 소멸.",
+      "mechanism": "저주파 스펙트럼 이론은 자산 클래스(선물) 레벨 TF에서만 성립. KR 월간 수익률 자기상관 구조가 CTA 레벨 분석과 다름. long-only 횡단면 선택→cap-w PORT_t 전이 벽과 무관하게 IC 자체가 0.",
+      "next_probe": [
+        "FQ-146: KOSPI200 지수 레벨 TF 타이밍 오버레이 (논문 원래 맥락 부합)"
+      ],
+      "registered": "2026-08-04 (AS 에이전트 결과 수집)",
+      "source_paper": "2607.19497",
+      "revival_conditions": [
+        "KR 선물/ETF TF 시스템 레벨에서 저주파 스펙트럼 파워 오버레이 시 re-test"
+      ]
+    },
+    {
+      "id": "FQ-146",
+      "lane": "overlay",
+      "title": "KOSPI200 지수 레벨 TF 스펙트럼 타이밍 오버레이 (2607.19497 이론 적용)",
+      "hypothesis": "저주파 스펙트럼 초과 질량(KOSPI200 월간 수익률 FFT) = 시장 추세 강도 → 강한 추세 구간 시장 노출 확대. 논문 원래 의도(선물 TF 시스템)에 부합하는 지수 레벨 적용.",
+      "ev_rationale": "Spectral 논문이 개별 종목 횡단면이 아닌 자산 레벨 TF 모멘텀에 관한 이론임이 확인됨(FQ-145 횡단면 실패 기전 진단). 지수 레벨로 이식 시 이론 가정 충족.",
+      "wall_check": "KR 시장타이밍 4중 부정 기존 벽 존재. 단 overlay가 유일 실증 레버이므로 측정 전 단정 금지. C5 PIT 가드 의무.",
+      "data_gate": "KOSPI200 지수 수익률 기보유(BM_Ret). 추가 데이터 불요.",
+      "status": "frontier_open",
+      "owner": "Q-Lead",
+      "registered": "2026-08-04 (FQ-145 next_probe 파생)",
+      "next_action": "KOSPI200 저주파 스펙트럼 파워 시계열 구성(rolling FFT) → C5 PIT 체크 → 현행 book 오버레이 A/B. overlay_pit_guard HARD 통과 필수.",
+      "source_paper": "2607.19497",
+      "consumption_path": "overlay — 국면 입력 / 시장 타이밍 lane"
     }
   ]
 }
