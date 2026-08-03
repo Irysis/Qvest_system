@@ -1,0 +1,107 @@
+{
+  "task_id": "WT-D20260803_006",
+  "fq": "FQ-133",
+  "title": "era 공통성분의 사전 추정 가능성 — 자격 게이트의 구속 관문",
+  "registered_at": "2026-08-03",
+  "registered_before_measurement": true,
+  "selection_type": "chain",
+  "dsr_gate_applicability": "not_applicable (selection_type=chain — 후보 선별/argmax 없음. primary 추정자 1개를 측정 전 고정하고 나머지는 진단으로만 보고)",
+  "n_iterations_planned": 1,
+  "gate_eligible": false,
+  "capital_claim": "none — 본 라운드는 전략을 만들지 않는다. era 의 사전 관측가능성만 측정한다.",
+
+  "question": {
+    "primary": "t 시점까지의 정보만으로 다음 창의 era(팩터 집단 부호 방향)를 base rate 보다 잘 맞힐 수 있는가",
+    "why_binding": "WT-D20260803_005: 자격 부호의 시간구조는 거의 전부 era 공통성분(유지 전이 지속 0.959 vs 전환 0.304, era-demean 후 0.548~0.568 = 귀무 근방). era 가 사전 추정 가능하면 조합 게이트·registry 교체·자격 게이트 3 lane 이 동시에 열리고, 불가능하면 셋 다 닫힌 채 확정된다."
+  },
+
+  "design_constraints_from_qlead": {
+    "existing_regime_label_forbidden_as_estimator": "기존 국면 라벨(.cache/unified_regime_signal.parquet::Category) 을 era 추정자로 재사용 금지. Q-Lead 사전 확인 실측(창2 양수비율 0.908 / 창3 0.216 인데 RISK_ON 90% vs 87%)이 라벨의 era 판별력 부재를 이미 보였다. 단 **음성 대조(negative control) 진단으로는 측정**한다 — '못 맞힌다'를 실측으로 확인하는 것은 추정자 재사용이 아니다.",
+    "fq055_reuse": "FQ-055 break-dating 프레임(run_break_dating_verify.R V2: cs<-cumsum(u-mean(u)); tau<-which.max(abs(cs))) 을 primary 추정자의 실시간 확장판으로 재사용."
+  },
+
+  "era_definition": {
+    "monthly_index": "B_t = 그 달 net-active 수익이 양수인 pool factor 비율 (breadth). WT-005 의 '창별 팩터 양수비율' 의 월간 해상도 대응물. 표준화·스케일링 없음 → 전기간 통계 미사용(C1 clean).",
+    "monthly_index_alt": "g_t = pool factor net-active 수익의 횡단면 평균 (robustness)",
+    "forward_target": "E_{t,h} = (t, t+h] 구간 평균 net-active 수익이 양수인 factor 비율. y_t = 1{E_{t,h} > 0.5} = '다음 h개월은 팩터가 통하는 era 인가'",
+    "primary_h_months": 24,
+    "primary_h_rationale": "의사결정 관련 지평(자격 인증의 유효기간 2년) + 287개월 표본에서 독립 블록 ~11개 확보. WT-005 창 60m 은 독립 관측 4개뿐이라 primary 부적합.",
+    "robustness_h_months": [12, 36, 60]
+  },
+
+  "factor_pool": {
+    "source": "WT-D20260803_005 stage_artifacts canonical_pool.rds (322 factor canonical net-active 시계열, 287월 2002-08~2026-06)",
+    "dedup": "WT-005 사전등록 규칙 그대로 재적용 — |cor(active)| >= 0.99 클러스터 제거, 알파벳 tie-break (성과 무관)",
+    "monthly_availability": "각 월 B_t 는 그 달 유효(finite) factor 만으로 계산. pool 자체는 오늘 registry 기준이므로 **잔여 PIT 주의(pool composition survivorship)** — 아래 sensitivity 로 검사"
+  },
+
+  "estimators": {
+    "primary_prespecified": {
+      "id": "RT_CUSUM",
+      "description": "실시간(확장창) CUSUM 계단-단절 탐지. 각 t 에서 u_s = B_s - 0.5 (s=1..t) 에 대해 cs_s = cumsum(u - mean(u_{1..t})), tau_hat = argmax|cs|. 현 국면 추정 r_hat = mean(u_s : s in (tau_hat, t]). 단절 후 구간 < 12개월이면 직전 12개월 평균으로 대체. 예측 e_hat_t = sign(r_hat).",
+      "information_set": "s <= t 만. 미래 창 정보 일절 미사용.",
+      "burn_in_months": 60
+    },
+    "diagnostic_only": [
+      {"id": "TRAIL_L", "desc": "트레일링 breadth 평균 부호, L in {12,24,36,60}"},
+      {"id": "XSEC_STRUCT", "desc": "횡단면 분산(factor active 의 sd) + 평균 쌍상관 의 트레일링 변화 → 확장창 로지스틱"},
+      {"id": "SPREAD_COMPRESS", "desc": "factor active 상위-하위 decile 스프레드의 트레일링 압축 + 벤치 자체 트레일링 수익/변동성"},
+      {"id": "REGIME_LABEL_NC", "desc": "★음성 대조 — 기존 국면 라벨 기반 예측. 추정자 후보 아님(설계 제약). '못 맞힌다' 실증용."}
+    ],
+    "baselines": {
+      "BR_rt": "실시간 확장 다수결 규칙 — e_hat_t = sign(mean(u_{1..t})). 무정보 실시간 기준선(정직 base rate).",
+      "BR_maj": "평가표본 사후 최빈 클래스 상수 규칙 max(mean(y), 1-mean(y)). 실시간 도달 불가한 낙관적 상한 기준선."
+    }
+  },
+
+  "discriminant": {
+    "PASS_iff": "적중률(RT_CUSUM) > BR_rt AND 적중률 > BR_maj AND (block bootstrap 단측 p < 0.05, 귀무 = RT_CUSUM 이 BR_rt 를 못 이긴다)",
+    "test": "stationary block bootstrap 2000 draw, block = h + 12 개월 (중첩 유도 종속 포괄), 페어 차분 d_t = 1{e_hat=y} - 1{BR_rt=y} 에 적용. p = mean(draw mean(d) <= 0)",
+    "secondary_required": "전이-조건부 적중률 — y_t != y_{t-h} 인 월(era 가 지평을 가로질러 바뀌는 월) 로 제한한 적중률 > 0.5. '지배 era 를 항상 예측해서 얻은 높은 적중률'은 게이트를 열지 못하므로 이 축이 실질 판별.",
+    "detection_lag_required": "실제 era 전환 시점 대비 primary 추정자가 부호를 뒤집는 지연(개월). 지연이 h 를 넘으면 실무상 사전 추정 불가와 동치.",
+    "FAIL_meaning": "'era 는 사전 추정 불가 — 자격 게이트 lane 전체 닫힘 확정'. 유효한 산출.",
+    "UNDERPOWERED_meaning": "표본 부족으로 판정 불가도 가능한 결론. 아래 power 절 참조."
+  },
+
+  "power_and_sample_honesty": {
+    "tension": "창을 잘게 쪼개면 표본은 늘지만 era 정의가 흐려진다. h=24 에서 월간 평가 관측 ~203 이나 중첩으로 유효 독립 블록 ~8.5. 실제 정보량은 '독립 era 에피소드 수'(2002~2026 에 대략 2~3개) 로 상한된다.",
+    "must_report": [
+      "비중첩 평가(h 간격) 적중 카운트 — 원시 성공/시행 (~8회)",
+      "독립 era 에피소드 수 + 에피소드별 성패 (판정의 실제 하중을 지는 증거)",
+      "block bootstrap 유효 표본 (block=36 기준)",
+      "detect 가능한 최소 우위 (MDE): 관측 표본에서 p<0.05 를 얻으려면 필요한 적중률 초과폭"
+    ],
+    "underpowered_rule": "적중률 > base rate 이지만 p >= 0.05 이고 독립 에피소드 <= 3 이면 'UNDERPOWERED — 방향 시사, 판정 불가' 로 라벨하고 필요 표본을 정량화한다(현재 대비 몇 년/몇 에피소드)."
+  },
+
+  "violation_injection": [
+    {
+      "id": "INJ_ORACLE",
+      "design": "e_hat_t := y_t (완전 예지)",
+      "expectation": "적중률 = 1.000. 아니면 측정 배관 파손 → 전 결과 무효. **양성 대조**"
+    },
+    {
+      "id": "INJ_PEEK6",
+      "design": "RT_CUSUM 의 정보집합을 s <= t+6 으로 확장 (부분 누출)",
+      "expectation": "전이-조건부 적중률이 실질 상승. 상승 없으면 검사력 부족을 정직 보고"
+    },
+    {
+      "id": "INJ_FULLSAMPLE_CUSUM",
+      "design": "확장창 대신 **전기간** CUSUM(FQ-055 V2 회고적 형태)으로 tau 추정 후 같은 규칙 적용 = 고전적 look-ahead",
+      "expectation": "적중률 대폭 상승. 이 라운드의 핵심 논지('사후에 era 를 나누는 것은 쉽다 — 전부는 관측가능성')의 직접 실증"
+    }
+  ],
+
+  "sensitivity_required": [
+    "pool composition survivorship: (a) 완전관측 278 factor 한정 (b) pool 무작위 반분 2개의 era 지수 일치도(상관) — era 가 pool 선택 아티팩트가 아님 실증",
+    "registry 등재 시점 편향: 초기 등재 factor vs 후기 등재 factor 의 era 지수 비교(가능한 범위에서)",
+    "era 지수 대체 정의 g_t(횡단면 평균) 로 전 판정 재계산",
+    "h in {12,36,60} 전부 보고 — 결과 좋은 h 선택 금지(primary h=24 는 측정 전 확정)"
+  ],
+
+  "boundaries": {
+    "forbidden": ["공분산 추정", "target weights 제안", "graduation PASS 선언", "book/자본 주장", "기존 국면 라벨의 추정자 재사용"],
+    "gate_eligible": false,
+    "metric_type": "canonical_screen (원천 시계열) / diagnostic (본 라운드 산출 통계)"
+  }
+}

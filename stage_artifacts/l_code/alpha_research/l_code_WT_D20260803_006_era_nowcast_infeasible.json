@@ -1,0 +1,93 @@
+{
+  "l_code": "L-WT20260803_006",
+  "strategy_id": "WT-D20260803_006",
+  "research_mode": "alpha_research",
+  "fq": "FQ-133",
+  "title": "era 공통성분은 실재하나 사전 관측 불가 — 트레일링 정보는 '끝나가는 era'를 보고한다 (자격 게이트 lane 구속 관문)",
+  "type": "ANTI-PATTERN",
+  "grade": "F",
+  "metric_type": "canonical_screen",
+  "record_type": "measurement_round",
+  "gate_eligible": false,
+  "capital_claim": "none",
+  "issued_at": "2026-08-03T11:30:00+09:00",
+  "issued_by": "alpha-research (WT-D20260803_006)",
+  "core_reference": "WT-D20260803_005 (FQ-131 자격 부호 지속성 — era 유지 전이 0.959 vs 전환 0.304, era-demean 후 귀무 근방) + FQ-055 팩터 감쇠 break-dating 2015-16 + Bai-Perron (1998) 구조 단절 추정 + Harvey-Liu-Zhu (2016) + McLean-Pontiff (2016)",
+  "lesson_text": "WT-D20260803_005 가 '팩터 자격(창별 canonical PORT_t 부호)의 시간구조는 거의 전부 era 공통성분'임을 확정한 뒤, 그 era 를 t 시점 정보만으로 사전 추정할 수 있는지 실측했다. 결과: **era 는 실재하지만 사전 관측 불가**. (1) era 실재 확증 — pool 285 factor 를 무작위 반분하면 월간 breadth 상관 0.9858 / forward era 지수 상관 0.9882 / 부호 일치 0.9430, family 12종 각각의 era 지수는 풀 전체와 상관 0.75~0.96. WT-005 창별 양수비율 0.754/0.908/0.216/0.021 을 독립 재현했고 PORT_t 부호 vs mean-active 부호 일치율은 창 4개 전부 1.000 (교차 라운드 parity PASS). (2) 사전 추정 실패 — primary RT_CUSUM(확장창 CUSUM argmax 로 단절 위치 추정 후 단절 이후 구간 era 통계 부호, FQ-055 break-dating 프레임의 실시간판) 적중률 0.5517 vs 실시간 확장 다수결 base 0.5025, Δ +0.0493, 정상 블록 부트스트랩(block=36) p=0.3620 로 미유의. h 격자 12/24/36/60 전부 p 0.26 근방. (3) ★결정적 — era 가 실제로 바뀌는 달(y_t != y_{t-h})에서 적중률 0.2593 (21/81) 로 동전보다 낮다. 지속 era 전환 8회 중 주요 2회(2009-06 회복 / 2014-12 붕괴)의 탐지 지연이 24개월·22개월로 예측 지평 h=24 이상이고, 2회는 끝내 미탐지. 즉 트레일링 추정량은 구조상 '이미 끝나가는 era'를 보고한다 — 맞는 때(지속 구간)와 예측이 필요한 때(전환 구간)가 정확히 어긋난다. (4) 정보집합 대비 — 동일 정보집합 위 실시간 arm 10종(RT_CUSUM / 확장 다수결 / 트레일링 12·24·36·60 / 횡단면 sd+쌍상관 / 스프레드+벤치 / 유니버스 top-10 시총 집중도 / 13피처 다변량) 중 자기 평가 부분집합 base 대비 우위를 **유의하게 확립한 것 0건**(명목 초과 5건, 전부 트레일링 계열, 최대 +0.0493 = rt_cusum, block bootstrap p=0.362; 로지스틱 3종·다변량은 자기 base 대비 -0.157~-0.200 미달). 반면 정보집합만 미래로 연 누출 arm 은 즉시 발화 — 오라클 1.000000(양성대조), 전기간 CUSUM 0.7635(전이 0.5926), t+6 엿보기 0.6502. 대상은 예측 가능하되 과거로부터는 아니다. (5) 기존 국면 라벨은 era 를 구별하지 못한다(음성대조 확장창 매핑 적중률 0.3669; Category 별 era 양수비율 RISK_ON 0.472 / NEUTRAL 0.682 / CAUTION 0.615 / CRISIS 0.444) — Q-Lead 사전 확인의 독립 재확인. ⇒ 정적 자격 게이트 lane 은 현 정보집합에서 닫힘. 단 **구조 판결이 아니라 정보집합-scoped negative** 다 (유효 독립 블록 5.6, 관측 Δ 를 p<0.05 로 확정하려면 ~820년 필요 — 이 축은 표본으로 해결되지 않음). (6) ★정량 대비 — PIT-clean arm 의 최대 자기-base 초과폭 +0.0493 vs 누출 arm 초과폭 +0.148(peek6) / +0.261(전기간 CUSUM) / +0.497(오라클). 즉 **가장 큰 clean 우위가 가장 작은 누출 우위의 1/3**. 연산자를 그대로 두고 정보집합만 미래로 열었을 때 발화하므로 병목은 연산자가 아니라 리프다.",
+  "self_adversarial_findings": "★본 라운드는 자체 적대검증으로 **거짓 우위 2건을 스스로 걷어냈다**. (A) '트레일링 13피처를 전기간 적합하면 0.857(전이 0.852)' 을 '피처 공간에 정보 존재'로 읽을 뻔했으나, 블록 순환이동 순열 귀무가 0.8502 [0.788, 0.901] (관측 52.3 백분위, p=0.4767) — 203개 자기상관 관측 위 13피처 로지스틱은 **어떤 target 이든 보간**한다. 상한은 공허, 증거 제외. (B) '13피처 확장창 실시간 arm 0.650(전이 0.691)이 유일하게 base 초과' 를 3중 통제로 기각: (i) 학습 최소표본 조건 때문에 평가가 2014-07~2024-06 뒤쪽 59% 구간으로 밀렸고 그 구간 상수규칙('항상 -1')이 0.7333 으로 F(0.6500)를 **이긴다** — 전역 base 0.5025 와 비교한 것이 오류였다 (ii) 동일 파이프라인 순열 귀무 p=0.3417(전이 p=0.2167) (iii) 전이월 0.691 은 그 부분집합 클래스 불균형 0.6324 재현 수준. ★일반 교훈 2건: **부분집합이 이동하면 base rate 도 함께 이동한다 — 전역 base 와 비교하면 거짓 우위가 만들어진다** / **검증이 항상 통과하도록 설계되면 그 검증은 없는 것과 같다(순열 대조 필수)**. (C) ★초안 서술 '실시간 arm 10종 중 자기 상수규칙을 넘은 것 0건' 은 **과대주장**이었다 — 전체표본 arm(rt_cusum 0.5517 / trail36·60 0.5468 / trail24 0.5271 / trail12 0.5123)은 BR_maj 0.5025 를 명목상 넘는다. (B)에서 한 arm 을 기각한 사유를 전 arm 으로 부주의하게 일반화한 것. arm 14종을 자기 평가 부분집합 base 와 1:1 재대조해 정정했다. ★교훈: **한 arm 에서 참인 기각 사유를 전 arm 으로 확장할 때는 arm 마다 다시 재야 한다**.",
+  "process_rule": "era·국면류 시계열 상태 추정 라운드의 필수 통제 4종: ① 양성 대조(오라클 = 1.000 아니면 배관 파손, 전 결과 무효) ② 순열 귀무(블록 순환이동 target — 특히 다피처 모델의 in-sample/실시간 값 해석 전) ③ **평가 부분집합의 자체 base rate**(전역 base 아님 — 학습 최소표본·결측으로 평가창이 밀리면 base 도 밀린다) ④ 전이-조건부 분해(전체 적중률은 지속성이 지배하므로 lane 판정 근거가 못 된다). 추가: 트레일링 예측자를 '전이 부분집합'에서 채점할 때 예측이 정확히 y_{t-h} 인 arm(예: trail-h)은 **정의상 항등 0.000** 이므로 증거에서 제외할 것. ⑤ arm 비교표는 반드시 **arm 별 자기 평가 부분집합 base** 를 열로 포함할 것 — '전부 base 미달' 류 집합 진술은 arm 마다 base 가 다르면 성립하지 않는다.",
+  "next_probe": [
+    "NP-1 대차/공매도 잔고(F1_short_interest_lending) 의 집단 포지셔닝 변화가 era 전환을 선행하는가 — 수익률 파생이 아닌 최초 후보. 데이터 존재·기간 커버리지 census 가 착수 전 필수(등재 ≠ 측정 가능).",
+    "NP-2 투자자 주체별 순매수(A6/A8) 의 **구조 변화**(주체 간 상대 비중·집중도 전환)가 era 전환을 선행하는가 — 수준이 아니라 구조 전환을 지목하는 통계로.",
+    "NP-3 era 를 '맞히는' 대신 '전환 위험을 낮추는' 설계로 전환 — 예측 불가를 전제한 era-robust 성분 선별(전 era 에서 부호가 안 바뀌는 factor 부분집합이 존재하는가). WT-005 era-demean 잔차 지속성 0.548~0.568 이 이 축의 사전확률을 낮추나, '전 era 부호 불변' 부분집합의 존재 여부는 별개 질문으로 미측정.",
+    "NP-4 매크로 vintage lane — FRED 과거 시점 원본이 저장돼 있지 않아 현재는 PIT-clean 실시간 재현 불가. vintage 저장 배관이 선행 요건이며 그 전에는 이 lane 측정 자체 금지(더러운 측정 금지)."
+  ],
+  "consumption_surfaces_checked": {
+    "factor_ranking": "해당 없음 — era 는 횡단면 스코어가 아님",
+    "universe_filter": "해당 없음",
+    "overlay_regime_input": "★음성 — era 는 기존 국면 라벨과 다른 대상이고(음성대조 0.3669), 사전 추정 불가이므로 오버레이 입력으로 쓸 수 없다",
+    "risk_model_beta_budget": "미측정 — era 를 '위험 예산 조절 입력'으로 쓰려면 여전히 사전 추정이 필요하므로 동일 벽",
+    "monitoring_signal": "★양성 후보 — 사후 탐지는 가능하다(전기간 CUSUM 0.764). 즉 era 전환을 **예측**은 못 해도 **사후 확인**은 가능하므로, 자격 인증의 사후 무효화(재심사 트리거)로는 쓸 수 있다. 미측정 축 — FQ 등재 권고",
+    "screening_label": "★양성 후보 — 자격 판정에 'era 라벨'을 붙여 두면 후속 라운드가 '이 판정은 어느 era 산물인가'를 알 수 있다. 예측 아닌 기록 용도",
+    "cross_mode_transfer": "RAMP/factor-rotation 의 국면 조건부 배분은 era 와 다른 대상(시장 위험 국면)이므로 직접 이식 불가 — 단 '라벨 자격 관문(recall > base ∧ p<0.05 선통과)' 규약은 동일하게 적용됨"
+  },
+  "revival_condition": "INV-7 — (a) era 전환을 선행하는 비-return 리프가 확보되고 그 자체로 라벨 자격 관문(전이-조건부 적중률 > 자기 구간 base, 순열 p<0.05)을 통과할 때 (b) 또는 era 에피소드가 최소 5개 더 축적돼(≈10년) 유효 독립 블록이 검정 가능 수준에 도달할 때. 현 판정은 정보집합-scoped 이며 구조 판결이 아님.",
+  "tags": [
+    "era",
+    "regime_estimation",
+    "nowcast",
+    "eligibility_gate",
+    "structural_break",
+    "cusum",
+    "observability",
+    "information_set_scoped_negative",
+    "permutation_control",
+    "subsample_base_rate_artifact",
+    "self_adversarial",
+    "qepm",
+    "FQ-133"
+  ],
+  "measured": {
+    "pool_n": 285,
+    "months": 287,
+    "period": "2002-08-30 ~ 2026-06-30",
+    "eval_n": 203,
+    "h_primary_months": 24,
+    "rt_cusum_accuracy": 0.5517,
+    "base_rate_realtime": 0.5025,
+    "delta": 0.0493,
+    "block_bootstrap_p": 0.362,
+    "transition_accuracy": 0.2593,
+    "transition_n": 81,
+    "transition_hits": 21,
+    "transition_block_bootstrap_P_ge_half": 0.0165,
+    "oracle_accuracy": 1.0,
+    "fullsample_cusum_accuracy": 0.7635,
+    "peek6_accuracy": 0.6502,
+    "regime_label_negative_control": 0.3669,
+    "pool_halfsplit_era_correlation": 0.9882,
+    "detection_lag_major_transitions_months": [
+      24,
+      22
+    ],
+    "effective_independent_blocks": 5.6,
+    "sustained_era_episodes": 9,
+    "max_clean_arm_edge_vs_own_base": 0.0493,
+    "leak_arm_edges_vs_own_base": [
+      0.1478,
+      0.2611,
+      0.4975
+    ],
+    "clean_arms_nominally_exceeding_own_base": 5,
+    "clean_arms_significantly_exceeding": 0
+  },
+  "source_paths": [
+    "qepm/mailbox/worktask/WT-D20260803_006/alpha_package.json",
+    "qepm/mailbox/worktask/WT-D20260803_006/challenge_note.md",
+    "stage_artifacts/WT_D20260803_006/alpha_validation.json",
+    "stage_artifacts/WT_D20260803_006/alpha_scores.parquet",
+    "stage_artifacts/WT_D20260803_006/preregistration.json",
+    "stage_artifacts/WT_D20260803_006/era_log.txt",
+    "stage_artifacts/WT_D20260803_006/arm_vs_own_baserate.csv"
+  ]
+}

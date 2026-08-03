@@ -1,0 +1,622 @@
+{
+  "task_id": "WT-D20260803_006",
+  "fq": "FQ-133",
+  "generated_at": "2026-08-03T11:39:50",
+  "gate_eligible": false,
+  "gate_eligible_reason": "가능성 판정 라운드 — 전략 없음, 자본 주장 없음. graduation HARD 3종 미적용 대상.",
+  "selection_type": "chain",
+  "metric_type": "canonical_screen (원천 net-active 시계열) / diagnostic (본 라운드 통계)",
+  "preregistration_ref": "stage_artifacts/WT_D20260803_006/preregistration.json (측정 전 고정)",
+  "question": "t 시점까지의 정보만으로 다음 h개월 era(팩터 집단 자격 방향)를 base rate 보다 잘 맞힐 수 있는가",
+  "harness": {
+    "source_panel": "stage_artifacts/WT_D20260803_005/canonical_pool.rds (canonical_screen_bt top-25 EW long-only, 15bps, LIQ 2e8, cap-w KOSPI200 벤치)",
+    "pool_n_raw": 322,
+    "pool_n_dedup": 285,
+    "dedup_rule": "|cor(net-active)| >= 0.99 클러스터 제거, 알파벳 tie-break (WT-005 사전등록 규칙 동일)",
+    "months": 287,
+    "period": "2002-08-30 ~ 2026-06-30",
+    "era_index": "B_t = 그 달 net-active > 0 인 factor 비율 (월간 breadth, 스케일링·전기간 통계 미사용)",
+    "era_target": "y_t = 1{E_{t,h} > 0.5}, E = (t, t+h] 평균 net-active > 0 인 factor 비율",
+    "h_primary": 24,
+    "burn_in_months": 60,
+    "eval_n": 203,
+    "primary_estimator": "RT_CUSUM — 확장창 CUSUM argmax 로 단절 위치 추정 후, 단절 이후 구간(최소 12m)의 era 통계 부호. FQ-055 break-dating 프레임(run_break_dating_verify.R V2)의 실시간판."
+  },
+  "cross_round_parity": {
+    "check": "WT-005 primary 격자(W=60 비중첩) 창별 양수비율 재현",
+    "wt005_reported": [0.754, 0.908, 0.216, 0.021],
+    "wt006_measured_port_t": [0.7535, 0.9085, 0.2155, 0.0211],
+    "wt006_measured_mean_active": [0.7535, 0.9085, 0.2155, 0.0211],
+    "sign_agreement_port_t_vs_mean_active": [1, 1, 1, 1],
+    "verdict": "PASS",
+    "interpretation": "본 라운드의 era 정의(mean-active 부호)가 WT-005 정의(PORT_t 부호)와 창 4개 전부에서 1.000 일치 — 같은 대상을 재고 있음이 실증됨. 라운드 간 정합 확보."
+  },
+  "primary_result": {
+    "h_months": 24,
+    "n_eval": 203,
+    "n_nonoverlap": 9,
+    "base_rate_rt_expanding": 0.5025,
+    "base_rate_majority_expost": 0.5025,
+    "rt_cusum_accuracy": 0.5517,
+    "delta_vs_base_rt": 0.0493,
+    "block_bootstrap_p": 0.362,
+    "block_bootstrap_ci95": [-0.2562, 0.3448],
+    "block_months": 36,
+    "effective_independent_blocks": 5.6389,
+    "transition_conditional_accuracy": 0.2593,
+    "transition_n": 81,
+    "transition_hits": 21,
+    "transition_binomial_p_optimistic": 0,
+    "transition_block_bootstrap_P_acc_ge_0.5": 0.0165,
+    "transition_effective_blocks": 2.25,
+    "verdict": "FAIL"
+  },
+  "estimator_arms": [
+    {
+      "estimator": "rt_cusum",
+      "accuracy_all": 0.5517,
+      "accuracy_transition_months": 0.2593,
+      "accuracy_nonoverlap": 0.5556,
+      "information_set": "s <= t (PIT clean)"
+    },
+    {
+      "estimator": "br_rt",
+      "accuracy_all": 0.5025,
+      "accuracy_transition_months": 0.4691,
+      "accuracy_nonoverlap": 0.4444,
+      "information_set": "s <= t (PIT clean)"
+    },
+    {
+      "estimator": "trail12",
+      "accuracy_all": 0.5123,
+      "accuracy_transition_months": 0.1852,
+      "accuracy_nonoverlap": 0.6667,
+      "information_set": "s <= t (PIT clean)"
+    },
+    {
+      "estimator": "trail24",
+      "accuracy_all": 0.5271,
+      "accuracy_transition_months": 0,
+      "accuracy_nonoverlap": 0.4444,
+      "information_set": "s <= t (PIT clean)"
+    },
+    {
+      "estimator": "trail36",
+      "accuracy_all": 0.5468,
+      "accuracy_transition_months": 0.2963,
+      "accuracy_nonoverlap": 0.6667,
+      "information_set": "s <= t (PIT clean)"
+    },
+    {
+      "estimator": "trail60",
+      "accuracy_all": 0.5468,
+      "accuracy_transition_months": 0.3951,
+      "accuracy_nonoverlap": 0.5556,
+      "information_set": "s <= t (PIT clean)"
+    },
+    {
+      "estimator": "peek6",
+      "accuracy_all": 0.6502,
+      "accuracy_transition_months": 0.4074,
+      "accuracy_nonoverlap": 0.5556,
+      "information_set": "LEAKED (위반 주입)"
+    },
+    {
+      "estimator": "fullcusum",
+      "accuracy_all": 0.7635,
+      "accuracy_transition_months": 0.5926,
+      "accuracy_nonoverlap": 0.7778,
+      "information_set": "LEAKED (위반 주입)"
+    },
+    {
+      "estimator": "oracle",
+      "accuracy_all": 1,
+      "accuracy_transition_months": 1,
+      "accuracy_nonoverlap": 1,
+      "information_set": "LEAKED (위반 주입)"
+    }
+  ],
+  "h_robustness": [
+    {
+      "h_months": 12,
+      "n_eval": 215,
+      "n_episodes": 29,
+      "base_rate_rt": 0.5256,
+      "base_rate_majority": 0.5256,
+      "rt_cusum_acc": 0.5907,
+      "rt_cusum_acc_transition": 0.35,
+      "delta_vs_base": 0.0651,
+      "bootstrap_p": 0.2565,
+      "oracle_acc": 1
+    },
+    {
+      "h_months": 36,
+      "n_eval": 191,
+      "n_episodes": 15,
+      "base_rate_rt": 0.5026,
+      "base_rate_majority": 0.5026,
+      "rt_cusum_acc": 0.6073,
+      "rt_cusum_acc_transition": 0.3077,
+      "delta_vs_base": 0.1047,
+      "bootstrap_p": 0.2575,
+      "oracle_acc": 1
+    },
+    {
+      "h_months": 60,
+      "n_eval": 167,
+      "n_episodes": 8,
+      "base_rate_rt": 0.5329,
+      "base_rate_majority": 0.5329,
+      "rt_cusum_acc": 0.6287,
+      "rt_cusum_acc_transition": 0.5,
+      "delta_vs_base": 0.0958,
+      "bootstrap_p": 0.261,
+      "oracle_acc": 1
+    }
+  ],
+  "diagnostic_estimators": [
+    {
+      "id": "XSEC_STRUCT",
+      "spec": "확장창 로지스틱 (횡단면 sd(12m 평균 active) + 평균 쌍상관 24m)",
+      "accuracy": 0.4357,
+      "n": 140,
+      "verdict": "chance 미만"
+    },
+    {
+      "id": "SPREAD_COMPRESS",
+      "spec": "확장창 로지스틱 (factor active q90-q10 스프레드 + 벤치 12m 수익 + 벤치 12m 변동성)",
+      "accuracy": 0.4714,
+      "n": 140,
+      "verdict": "chance 미만"
+    },
+    {
+      "id": "CONCENTRATION",
+      "spec": "확장창 로지스틱 (유니버스 top-10 시총 비중 + 12m 변화) — 메가캡 레짐 가설",
+      "accuracy": 0.4286,
+      "n": 140,
+      "contemporaneous_cor_with_forward_era": 0.1,
+      "verdict": "chance 미만 — 동시대 상관 0.34 가 선행 정보로 전이되지 않음"
+    },
+    {
+      "id": "REGIME_LABEL_NC",
+      "spec": "★음성 대조 (설계 제약상 추정자 아님) — 기존 국면 라벨 Category 의 확장창 era 매핑",
+      "accuracy": 0.3669,
+      "era_pos_ratio_by_category": {
+        "RISK_ON": 0.4717,
+        "NEUTRAL": 0.6818,
+        "CAUTION": 0.6154,
+        "CRISIS": 0.4444
+      },
+      "verdict": "0.3669 — chance 크게 미만. Q-Lead 사전 확인(창2/창3 국면 분포 동일) 을 독립 재확인"
+    }
+  ],
+  "violation_injection": [
+    {
+      "id": "INJ_ORACLE",
+      "role": "양성 대조 (배관 검증)",
+      "accuracy": 1,
+      "expected": 1,
+      "fired": true,
+      "note": "1.000 정확 달성 — 측정 배관 정상. 이 값이 1 이 아니면 전 결과 무효였다."
+    },
+    {
+      "id": "INJ_PEEK6",
+      "role": "부분 누출 (t+6까지)",
+      "accuracy": 0.6502,
+      "delta_vs_base": 0.0985,
+      "accuracy_transition": 0.4074,
+      "fired": true
+    },
+    {
+      "id": "INJ_FULLSAMPLE_CUSUM",
+      "role": "고전적 look-ahead (전기간 CUSUM = 사후 era 분할)",
+      "accuracy": 0.7635,
+      "delta_vs_base": 0.2118,
+      "accuracy_transition": 0.5926,
+      "fired": true,
+      "note": "Δ +0.212 (전이월 Δ +0.333) — '사후에 era 를 나누는 것은 쉽다'의 직접 실증. 이 라운드 논지의 핵심 대조."
+    }
+  ],
+  "detection_lag": {
+    "sustained_episodes": [
+      {
+        "from": "2008-11-28",
+        "to": "2009-05-29",
+        "sign": -1,
+        "length_months": 7
+      },
+      {
+        "from": "2009-06-30",
+        "to": "2014-11-28",
+        "sign": 1,
+        "length_months": 66
+      },
+      {
+        "from": "2014-12-30",
+        "to": "2017-01-31",
+        "sign": -1,
+        "length_months": 26
+      },
+      {
+        "from": "2017-03-31",
+        "to": "2017-08-31",
+        "sign": -1,
+        "length_months": 6
+      },
+      {
+        "from": "2017-10-31",
+        "to": "2019-07-31",
+        "sign": -1,
+        "length_months": 22
+      },
+      {
+        "from": "2019-08-30",
+        "to": "2020-08-31",
+        "sign": 1,
+        "length_months": 13
+      },
+      {
+        "from": "2020-10-30",
+        "to": "2021-03-31",
+        "sign": 1,
+        "length_months": 6
+      },
+      {
+        "from": "2021-04-30",
+        "to": "2022-08-31",
+        "sign": -1,
+        "length_months": 17
+      },
+      {
+        "from": "2023-08-31",
+        "to": "2024-06-28",
+        "sign": -1,
+        "length_months": 11
+      }
+    ],
+    "transitions": [
+      {
+        "change_date": "2009-06-30",
+        "to_sign": 1,
+        "lag_rt_cusum_months": 24,
+        "detected": true
+      },
+      {
+        "change_date": "2014-12-30",
+        "to_sign": -1,
+        "lag_rt_cusum_months": 22,
+        "detected": true
+      },
+      {
+        "change_date": "2017-03-31",
+        "to_sign": -1,
+        "lag_rt_cusum_months": 0,
+        "detected": true
+      },
+      {
+        "change_date": "2017-10-31",
+        "to_sign": -1,
+        "lag_rt_cusum_months": 0,
+        "detected": true
+      },
+      {
+        "change_date": "2019-08-30",
+        "to_sign": 1,
+        "lag_rt_cusum_months": {},
+        "detected": false
+      },
+      {
+        "change_date": "2020-10-30",
+        "to_sign": 1,
+        "lag_rt_cusum_months": {},
+        "detected": false
+      },
+      {
+        "change_date": "2021-04-30",
+        "to_sign": -1,
+        "lag_rt_cusum_months": 0,
+        "detected": true
+      },
+      {
+        "change_date": "2023-08-31",
+        "to_sign": -1,
+        "lag_rt_cusum_months": 0,
+        "detected": true
+      }
+    ],
+    "key_finding": "주요 era 전환 2회(2009-06 회복 / 2014-12 붕괴)의 탐지 지연 24개월·22개월 = 예측 지평 h=24 이상. 8회 중 2회는 끝내 미탐지. 실무상 사전 추정 불가."
+  },
+  "sensitivity": {
+    "S1_fully_observed_only": {
+      "n_factor": 246,
+      "rt_cusum": 0.5567,
+      "base_rt": 0.4483,
+      "transition": 0.2105,
+      "bootstrap_p": 0.271,
+      "verdict": "결론 불변"
+    },
+    "S2_pool_halfsplit": {
+      "cor_monthly_breadth": 0.9858,
+      "cor_forward_era_index": 0.9882,
+      "sign_agreement": 0.943,
+      "verdict": "era 는 pool 선택 아티팩트가 아닌 실재 공통성분 (상관 0.986/0.988)"
+    },
+    "S3_alt_era_index_g": {
+      "rt_cusum": 0.6207,
+      "transition": 0.284,
+      "bootstrap_p": 0.1845,
+      "verdict": "결론 불변 (전이 0.284)"
+    },
+    "S4_family_decomposition": [
+      {
+        "family": "value",
+        "n_factor": 17,
+        "cor_with_pool_era": 0.7711,
+        "sign_agreement": 0.8327
+      },
+      {
+        "family": "momentum",
+        "n_factor": 28,
+        "cor_with_pool_era": 0.8333,
+        "sign_agreement": 0.7833
+      },
+      {
+        "family": "quality",
+        "n_factor": 42,
+        "cor_with_pool_era": 0.9553,
+        "sign_agreement": 0.8935
+      },
+      {
+        "family": "defense",
+        "n_factor": 53,
+        "cor_with_pool_era": 0.9012,
+        "sign_agreement": 0.8175
+      },
+      {
+        "family": "consensus",
+        "n_factor": 11,
+        "cor_with_pool_era": 0.7924,
+        "sign_agreement": 0.8175
+      },
+      {
+        "family": "liquidity",
+        "n_factor": 39,
+        "cor_with_pool_era": 0.9317,
+        "sign_agreement": 0.8517
+      },
+      {
+        "family": "accrual",
+        "n_factor": 22,
+        "cor_with_pool_era": 0.9222,
+        "sign_agreement": 0.8403
+      },
+      {
+        "family": "risk",
+        "n_factor": 13,
+        "cor_with_pool_era": 0.7526,
+        "sign_agreement": 0.8213
+      },
+      {
+        "family": "regime",
+        "n_factor": 10,
+        "cor_with_pool_era": 0.8447,
+        "sign_agreement": 0.7833
+      },
+      {
+        "family": "crowding",
+        "n_factor": 13,
+        "cor_with_pool_era": 0.919,
+        "sign_agreement": 0.8555
+      },
+      {
+        "family": "growth",
+        "n_factor": 16,
+        "cor_with_pool_era": 0.8981,
+        "sign_agreement": 0.8479
+      },
+      {
+        "family": "investor_flow",
+        "n_factor": 15,
+        "cor_with_pool_era": 0.8402,
+        "sign_agreement": 0.8327
+      }
+    ],
+    "S5_clear_era_subset": {
+      "criterion": "|E - 0.5| > 0.1",
+      "n": 136,
+      "rt_cusum": 0.625,
+      "transition_within": 0.2778,
+      "verdict": "명확 era 만 봐도 전이월 적중률 0.278 — knife-edge 아티팩트 아님"
+    }
+  },
+  "arm_vs_own_base_rate": {
+    "note": "★각 arm 을 **자기 평가 부분집합의 상수규칙**과 비교한다. 전역 base 와 비교하면 평가창이 밀린 arm 에서 거짓 우위가 생긴다(CF-08 실사고). 초안의 '자기 base 를 넘은 것 0건' 은 **과대주장이었고 이 표가 그것을 정정한다**(CF-09).",
+    "rows": [
+      {
+        "arm": "rt_cusum",
+        "n": 203,
+        "accuracy": 0.5517,
+        "own_subset_base_rate": 0.5025,
+        "delta": 0.0493,
+        "information_set": "s <= t (PIT clean)"
+      },
+      {
+        "arm": "br_rt",
+        "n": 203,
+        "accuracy": 0.5025,
+        "own_subset_base_rate": 0.5025,
+        "delta": 0,
+        "information_set": "s <= t (PIT clean)"
+      },
+      {
+        "arm": "trail12",
+        "n": 203,
+        "accuracy": 0.5123,
+        "own_subset_base_rate": 0.5025,
+        "delta": 0.0099,
+        "information_set": "s <= t (PIT clean)"
+      },
+      {
+        "arm": "trail24",
+        "n": 203,
+        "accuracy": 0.5271,
+        "own_subset_base_rate": 0.5025,
+        "delta": 0.0246,
+        "information_set": "s <= t (PIT clean)"
+      },
+      {
+        "arm": "trail36",
+        "n": 203,
+        "accuracy": 0.5468,
+        "own_subset_base_rate": 0.5025,
+        "delta": 0.0443,
+        "information_set": "s <= t (PIT clean)"
+      },
+      {
+        "arm": "trail60",
+        "n": 203,
+        "accuracy": 0.5468,
+        "own_subset_base_rate": 0.5025,
+        "delta": 0.0443,
+        "information_set": "s <= t (PIT clean)"
+      },
+      {
+        "arm": "XSEC_STRUCT",
+        "n": 140,
+        "accuracy": 0.4357,
+        "own_subset_base_rate": 0.6286,
+        "delta": -0.1929,
+        "information_set": "s <= t (PIT clean)"
+      },
+      {
+        "arm": "SPREAD_COMPRESS",
+        "n": 140,
+        "accuracy": 0.4714,
+        "own_subset_base_rate": 0.6286,
+        "delta": -0.1571,
+        "information_set": "s <= t (PIT clean)"
+      },
+      {
+        "arm": "CONCENTRATION",
+        "n": 140,
+        "accuracy": 0.4286,
+        "own_subset_base_rate": 0.6286,
+        "delta": -0.2,
+        "information_set": "s <= t (PIT clean)"
+      },
+      {
+        "arm": "MULTIVAR_13F",
+        "n": 120,
+        "accuracy": 0.65,
+        "own_subset_base_rate": 0.7333,
+        "delta": -0.0833,
+        "information_set": "s <= t (PIT clean)"
+      },
+      {
+        "arm": "REGIME_LABEL_NC(음성대조)",
+        "n": 139,
+        "accuracy": 0.3669,
+        "own_subset_base_rate": 0.5025,
+        "delta": -0.1356,
+        "information_set": "s <= t (PIT clean)"
+      },
+      {
+        "arm": "INJ_PEEK6",
+        "n": 203,
+        "accuracy": 0.6502,
+        "own_subset_base_rate": 0.5025,
+        "delta": 0.1478,
+        "information_set": "LEAKED (위반 주입)"
+      },
+      {
+        "arm": "INJ_FULLCUSUM",
+        "n": 203,
+        "accuracy": 0.7635,
+        "own_subset_base_rate": 0.5025,
+        "delta": 0.2611,
+        "information_set": "LEAKED (위반 주입)"
+      },
+      {
+        "arm": "INJ_ORACLE",
+        "n": 203,
+        "accuracy": 1,
+        "own_subset_base_rate": 0.5025,
+        "delta": 0.4975,
+        "information_set": "LEAKED (위반 주입)"
+      }
+    ],
+    "summary": "PIT-clean arm 11종 중 자기 base 를 **명목상** 넘은 것 5건 — 전부 트레일링 계열이고 초과폭 최대 +0.0493(rt_cusum), 그마저 block bootstrap p=0.362 로 미유의. 로지스틱 3종과 다변량은 자기 base 대비 -0.157 ~ -0.200 으로 **미달**. 반면 누출 arm 초과폭은 +0.148 / +0.261 / +0.497 — ★가장 큰 clean 우위(+0.049)가 가장 작은 누출 우위(+0.148)의 1/3 이다. 이 대비가 판정의 하중.",
+    "correct_statement": "어느 PIT-clean arm 도 자기 base 대비 우위를 유의하게 확립하지 못했다 (명목 초과 최대 +0.049, p=0.362)"
+  },
+  "self_adversarial_probes": {
+    "note": "★finalize 직전 자체 적대검증. 아래 2건은 '우위처럼 보였다가 통제로 무너진' 실측이며, 증거에서 제외했다 — 제외 사유까지 공개하는 것이 산출의 일부다.",
+    "A_lag1_stress": {
+      "base_all": 0.5693,
+      "base_transition": 0.2469,
+      "delta_all": 0.0176,
+      "verdict": "1개월 지연으로 붕괴하지 않음 (Δ +0.018) — BASE arm 에 동월 누출 없음"
+    },
+    "B_placebo_target": {
+      "null_mean": 0.497,
+      "null_ci95": [0.2904, 0.7488],
+      "observed": 0.5517,
+      "percentile": 65.4,
+      "verdict": "관측 0.552 는 순환이동 귀무분포의 65 백분위 — 우위 미확립 재확인"
+    },
+    "C_insample_ceiling_VACUOUS": {
+      "claim_tested": "트레일링 13피처를 전기간 적합하면 0.857 (전이 0.852) — '피처 공간에 정보가 있다'로 읽힐 뻔했다",
+      "permutation_null_mean": 0.8502,
+      "permutation_p": 0.4767,
+      "permutation_null_mean_transition": 0.8567,
+      "permutation_p_transition": 0.6067,
+      "verdict": "★VACUOUS — 무작위(블록 순환이동) target 도 0.850 으로 적합됨(p=0.477). 203개 자기상관 관측에 13피처는 어떤 target 이든 보간한다. 증거에서 제외.",
+      "lesson": "검증이 항상 통과하도록 설계되면 그 검증은 없는 것과 같다 — 순열 대조가 없었다면 이 0.857 을 '정보 존재'로 보고했을 것이다"
+    },
+    "F_multivariate_realtime_ARTIFACT": {
+      "claim_tested": "13피처 확장창 실시간 로지스틱 0.650 (전이 0.691) — 유일하게 base 를 넘는 것처럼 보였다",
+      "why_rejected_1_subsample_shift": {
+        "eval_window": "2014-07-31 ~ 2024-06-28",
+        "n": 120,
+        "note": "학습 최소표본 60 조건 때문에 평가가 뒤쪽 59% 구간으로 밀림",
+        "subset_base_rate_constant_rule": 0.7333,
+        "constant_rule_accuracy": 0.7333,
+        "multivariate_accuracy": 0.65,
+        "delta_vs_constant": -0.0833,
+        "verdict": "★같은 구간에서 '항상 -1' 상수규칙이 0.7333 으로 F(0.6500)를 이긴다 — F 는 base 를 못 넘었다"
+      },
+      "why_rejected_2_permutation": {
+        "null_mean": 0.5569,
+        "null_ci95": [0.2579, 0.7669],
+        "p_value": 0.3417,
+        "p_value_transition": 0.2167,
+        "verdict": "동일 파이프라인 순열 귀무 p=0.342 (전이 p=0.217) — 유의 미달"
+      },
+      "why_rejected_3_class_imbalance": {
+        "transition_subset_base_rate": 0.6324,
+        "multivariate_transition": 0.6912,
+        "pred_positive_ratio": 0.5,
+        "true_positive_ratio": 0.2667,
+        "verdict": "전이월 0.691 은 그 부분집합 클래스 불균형(0.632) 재현 수준"
+      },
+      "verdict": "ARTIFACT — 증거에서 제외. 부분집합 이동 + 순열 미유의 + 클래스 불균형 3중 통제 전부 실패"
+    },
+    "D_effective_sample_recheck": {
+      "transition_raw": "21/81 = 0.2593",
+      "binomial_p_naive_overlap_ignored": 0,
+      "block_bootstrap_P_acc_ge_half": 0.0165,
+      "binomial_p_effective_n_conservative": 0.75,
+      "effective_trials": 2.25,
+      "verdict": "★세 값이 다르다: naive 0.00001 (중첩 무시, 과신) / block bootstrap 0.0165 (종속 직접 처리, 선호 통계) / 유효-n 환산 0.75 (과보수). 정직 라벨 = '방향은 10개 arm·4개 h 격자에서 일관되나 형식 유의는 통계 선택에 좌우된다'. 판정을 이 한 숫자에 걸지 않는다 — 판정 하중은 (i) 어떤 arm 도 자기 평가구간의 상수규칙을 못 이김 (ii) 누출 arm 은 즉시 발화 이 두 정성 사실에 있다."
+    }
+  },
+  "power": {
+    "effective_independent_blocks": 5.6389,
+    "block_months": 36,
+    "mde_effective": 0.3464,
+    "mde_nonoverlap": 0.2742,
+    "blocks_needed_for_p05_on_observed_delta": 279,
+    "years_needed": 820.0833,
+    "sustained_episodes": 9,
+    "honest_statement": "★두 축의 검정력은 다르다. (i) 전체 적중률 축: 관측 Δ +0.049 를 p<0.05 로 확정하려면 유효 독립 블록 279개(≈820년)가 필요 — 이 축은 표본을 더 모아도 해결되지 않는 구조적 미검정력이다. 따라서 '전체 적중률이 base rate 를 못 이긴다'는 증거의 부재이지 부재의 증거가 아니다. (ii) 전이-조건부 축: 21/81 = 0.259 로 동전(0.5)보다 **유의하게 낮다**(block bootstrap P(acc>=0.5)=0.0165). 이건 증거의 부재가 아니라 방향이 있는 결과 — 트레일링 정보는 '끝나가는 era'를 보고한다. 단 이 축의 유효 독립 블록도 2.2 로 형식적 검정력은 낮다(정직 라벨)."
+  }
+}
