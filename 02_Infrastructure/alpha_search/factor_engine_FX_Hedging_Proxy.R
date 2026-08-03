@@ -90,33 +90,30 @@ if (is.null(.dart_raw)) {
       min(.proxy_raw$bsns_year), "-", max(.proxy_raw$bsns_year), "\n")
 
   # ---- PIT 날짜: bsns_year+1의 3월 31일 (C4 준수) ----------------------------
+  # bsns_year=t 재무제표는 t+1년 3/31 이후 사용 가능
   .proxy_raw[, pit_date := as.Date(paste0(bsns_year + 1L, "-03-31"))]
 
   # ---- 월말 시그널 날짜 추출 ---------------------------------------------------
   RAWDATA[, .ym := format(Date, "%Y-%m")]
   .month_ends <- RAWDATA[, .(Date = max(Date)), by = .ym][, Date]
 
-  # ---- 각 (Ticker, 월말) 에서 PIT-safe 최신 연도값 조인 ----------------------
-  # 방법: proxy 테이블에서 pit_date <= 해당 월말인 행만 유지 → 최신 연도 선택
-  # data.table rolling join: 월말 Date >= pit_date 방향으로 최신값
+  # ---- PIT-safe rolling join: 각 (Ticker, month_end)에서 pit_date<=month_end 최신값 --
+  # 접근: proxy를 연도 순 정렬 후 data.table rolling join
+  # key 이름을 동일하게 맞춤: proxy에서 pit_date를 month_end에 대응
+  .proxy_for_join <- .proxy_raw[, .(Ticker, Date = pit_date, hedging_ratio)]
+  setkey(.proxy_for_join, Ticker, Date)
 
-  # Signal universe: 월말 × LiqPass 통과 종목
+  # 유동성 통과 월말 종목 (run_alpha_search가 LiqPass를 RAWDATA에 추가함)
   .signals <- RAWDATA[
     Date %in% .month_ends & LiqPass == TRUE,
     .(Date, Ticker)
   ]
-
-  # proxy를 Ticker, pit_date 기준으로 정렬
-  .proxy_sorted <- .proxy_raw[order(Ticker, pit_date), .(Ticker, pit_date, hedging_ratio)]
-  setkey(.proxy_sorted, Ticker, pit_date)
   setkey(.signals, Ticker, Date)
 
-  # Rolling join: .signals$Date >= .proxy_sorted$pit_date → 가장 최근 pit_date 값
-  .joined <- .proxy_sorted[.signals,
-    roll = TRUE,          # last observation carried forward (Date >= pit_date)
-    on = .(Ticker = Ticker, pit_date = Date)
-  ]
-  # 결과: Date가 .signals의 Date, hedging_ratio가 그 시점에 PIT-safe한 최신값
+  # rolling join: .signals의 (Ticker, Date)에서 .proxy의 Date<=signal Date 최신값
+  # x[i, roll=TRUE] → i는 signals, x는 proxy
+  .joined <- .proxy_for_join[.signals, roll = TRUE, on = .(Ticker, Date)]
+  # 결과 Date = signal date (i의 Date), hedging_ratio = PIT-safe proxy
 
   FACTORS <- .joined[
     !is.na(hedging_ratio) & is.finite(hedging_ratio),
@@ -126,23 +123,22 @@ if (is.null(.dart_raw)) {
   cat("[FX_Hedging_Proxy] FACTORS rows:", nrow(FACTORS),
       "| signal dates:", uniqueN(FACTORS$Date),
       "| tickers:", uniqueN(FACTORS$Ticker), "\n")
-  cat("[FX_Hedging_Proxy] Date range:",
-      as.character(min(FACTORS$Date, na.rm = TRUE)), "to",
-      as.character(max(FACTORS$Date, na.rm = TRUE)), "\n")
-
-  # Coverage 통계
-  .cov <- FACTORS[, .(n = .N), by = Date]
-  cat("[FX_Hedging_Proxy] Avg tickers/month:", round(mean(.cov$n), 1),
-      "| Min:", min(.cov$n), "| Max:", max(.cov$n), "\n")
-
-  if (mean(.cov$n) < 20) {
-    cat("[FX_Hedging_Proxy][WARN] Coverage thin (<20 tickers/month average) — proxy 한계\n")
+  if (nrow(FACTORS) > 0) {
+    cat("[FX_Hedging_Proxy] Date range:",
+        as.character(min(FACTORS$Date)), "to",
+        as.character(max(FACTORS$Date)), "\n")
+    .cov <- FACTORS[, .(n = .N), by = Date]
+    cat("[FX_Hedging_Proxy] Avg tickers/month:", round(mean(.cov$n), 1),
+        "| Min:", min(.cov$n), "| Max:", max(.cov$n), "\n")
+    if (mean(.cov$n) < 10) {
+      cat("[FX_Hedging_Proxy][WARN] Coverage thin (<10 tickers/month avg) — proxy 한계\n")
+    }
   }
 
   # 정리
   RAWDATA[, .ym := NULL]
   rm(.dart_raw, .deriv_bs, .total_assets, .deriv_sum, .assets_sum,
-     .proxy_raw, .proxy_sorted, .signals, .joined, .cov, .month_ends,
+     .proxy_raw, .proxy_for_join, .signals, .joined, .month_ends,
      .deriv_pattern, QM_ROOT_PATH, .dart_path)
 }
 
