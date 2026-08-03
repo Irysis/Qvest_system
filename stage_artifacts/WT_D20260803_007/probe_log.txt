@@ -1,0 +1,65 @@
+Warning message:
+package 'arrow' was built under R version 4.5.3 
+          used (Mb) gc trigger   (Mb)  max used   (Mb)
+Ncells  905992 48.4    1574014   84.1   1399216   74.8
+Vcells 7661658 58.5  286880825 2188.8 357974138 2731.2
+[wt007X] === AP1 era 창 길이 임의성 ===
+                                          pair     n  t_nw_lag3 mean_diff_ann
+                                        <char> <int>      <num>         <num>
+1:         [기준] A_REL_TOP - A_REL_BOT (W=36)   167  1.2119123    0.06754153
+2:       [기준] A_REL_TOP - SINGLE_BEST (W=36)   167  1.3038965    0.04446621
+3:             W24_TOP - W24_BOT  [(a) 재측정]   167  1.3379767    0.06423135
+4:         W24_TOP - SINGLE_BEST  [(b) 재측정]   167  0.9710328    0.02822210
+5:             W48_TOP - W48_BOT  [(a) 재측정]   167  1.6581910    0.08354033
+6:         W48_TOP - SINGLE_BEST  [(b) 재측정]   167  1.1781198    0.03262526
+7: W24_TOP - LEVEL_TOP_K20 [robustness 순증분]   167 -1.5370039   -0.03363186
+8: W48_TOP - LEVEL_TOP_K20 [robustness 순증분]   167 -1.2836519   -0.02922871
+   standalone_port_t
+               <num>
+1:         0.8969052
+2:         0.8969052
+3:         0.5273370
+4:         0.5273370
+5:         0.6277242
+6:         0.6277242
+7:         0.5273370
+8:         0.6277242
+[wt007X] AP1 판정: W∈{24,36,48} 전부에서 (a) max 1.658 / (b) max 1.304 — 문턱 2.0 미달 (결론 강건)
+[wt007X] === AP2 지표 퇴화 진단 (level 제거가 '죽은 factor 선택기'를 만드는가) ===
+    step cor_perp_erasd cor_perp_meanabst cor_rel_erasd cor_rel_meanabst
+   <int>          <num>             <num>         <num>            <num>
+1:     1     -0.8561945        -0.4454976   -0.62163814       0.25921883
+2:     2     -0.5565200        -0.3235099   -0.46951942       0.37656606
+3:     3     -0.5979328        -0.2379615   -0.30184625       0.40398133
+4:     4     -0.2846981        -0.2663842   -0.06362985       0.19734958
+5:     5     -0.5303069        -0.3636464   -0.44530569       0.10078259
+6:     6     -0.4424455        -0.2579072   -0.10771119       0.22746204
+7:     7     -0.2648576        -0.2412573   -0.10547118       0.01200046
+[wt007X] 선택 멤버의 평균 |era t|: A_PERP_TOP 0.843 / A_REL_TOP 1.568 / 풀 전체 1.090
+[wt007X] A_PERP_TOP family 상위: defense 0.34 / quality 0.20 / liquidity 0.14 / accrual 0.10
+[wt007X] === AP3 lag1 귀속: rank IC lag0 vs lag1 (하네스 미래참조면 POOL_EW 도 붕괴해야) ===
+          arm    ic_lag0 t_ic_lag0    ic_lag1 t_ic_lag1 ic_retention
+       <char>      <num>     <num>      <num>     <num>        <num>
+1:  A_REL_TOP 0.02732312  3.008924 0.02033389  2.292699    0.7442008
+2:    POOL_EW 0.06260315  4.578812 0.05630470  4.167335    0.8993908
+3:  A_REL_BOT 0.04211253  3.157604 0.03561428  2.856973    0.8456931
+4: A_PERP_TOP 0.05193639  4.092100 0.05068127  4.176387    0.9758336
+[wt007X] AP3 판정: POOL_EW IC 보존율 0.899 (하네스 수준 누출이면 ~0 이어야) | A_REL_TOP 0.744
+[wt007X] === AP4 판별 문턱 취약성 (stationary block bootstrap, block=12, B=2000) ===
+               discriminant    t_point boot_median   boot_q05 boot_q95
+                     <char>      <num>       <num>      <num>    <num>
+1:              (a) TOP-BOT  1.2119123   1.2288305 -0.4387095 2.829404
+2:      (b) TOP-SINGLE_BEST  1.3038965   1.2395761 -0.1999006 2.747149
+3: [사후] TOP-LEVEL_TOP_K20 -0.5707539  -0.5765272 -3.0043970 1.216871
+   p_reach_2
+       <num>
+1:    0.2085
+2:    0.2130
+3:    0.0085
+[wt007X] === AP5 basis 교락: paired 판별식은 벤치 선택에 불변인가 ===
+                                  check        value
+                                 <char>        <num>
+1:           두 arm 의 벤치 시계열 동일 0.000000e+00
+2: active 차 == net 수익 차 (벤치 상쇄) 2.775558e-17
+[wt007X] AP5 판정: 불변 확인 — cap-w 아티팩트(무작위 귀무 평균 -0.941)는 paired 차에서 정확히 상쇄. 단 standalone PORT_t 해석에는 여전히 구속.
+[wt007X] 저장 — adversarial_probes.rds
