@@ -56,9 +56,26 @@ cat(sprintf("[panel] 원시 %d행 / parse_status 분포:\n", nrow(D)))
 print(D[, .N, by = parse_status][order(-N)])
 
 # ★결손을 조용히 버리지 않는다 — 제외 건수를 명시 보고
-n_bad <- nrow(D[parse_status != "OK"])
-n_cor <- nrow(D[is_correction == TRUE])
-cat(sprintf("[panel] 제외: parse 실패 %d건 / 기재정정 %d건(신호 제외·누출검증용 보존)\n", n_bad, n_cor))
+# ★2026-08-03: **원문 부재를 파싱 실패와 분리**한다. DART 는 2019 이전 기재정정에
+#   원문(document.xml)을 아예 주지 않는다(status 014) — 파서가 못 읽은 게 아니라
+#   읽을 것이 없다. 둘을 한 숫자에 담으면 성공률이 왜곡되고("파싱이 나쁘다"로 오독),
+#   반대로 파서 회귀가 원문부재 증가에 묻힌다.
+NO_SOURCE <- c("NO_SOURCE_CORRECTION", "NO_SOURCE_014")
+n_nosrc <- nrow(D[parse_status %in% NO_SOURCE])
+n_bad   <- nrow(D[!parse_status %in% c("OK", NO_SOURCE)])
+n_avail <- nrow(D) - n_nosrc
+n_cor   <- nrow(D[is_correction == TRUE])
+cat(sprintf("[panel] 원문제공 %d건 중 OK %d (%.1f%%) / 파싱실패 %d | 원문부재(DART 014) %d건\n",
+            n_avail, nrow(D[parse_status == "OK"]),
+            if (n_avail > 0) 100 * nrow(D[parse_status == "OK"]) / n_avail else NA_real_,
+            n_bad, n_nosrc))
+cat(sprintf("[panel] 제외: 기재정정 %d건(신호 제외·누출검증용 보존)\n", n_cor))
+# 무결성 교차검사(파서 v3 이후 열): 금액/매출 추출이 공시 동봉 `매출액대비(%)` 와 어긋난 행.
+if ("ratio_check" %in% names(D)) {
+  mm <- D[parse_status == "OK" & ratio_check == "MISMATCH"]
+  cat(sprintf("[panel] ratio_check MISMATCH %d건 (비정정 %d건) — 추출 신뢰 저하 표시\n",
+              nrow(mm), nrow(mm[is_correction == FALSE])))
+}
 
 S <- D[parse_status == "OK" & is_correction == FALSE]
 if (identical(SCOPE, "new_only")) {
