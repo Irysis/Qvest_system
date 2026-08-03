@@ -1,0 +1,435 @@
+{
+  "date": "20260804",
+  "schema_version": "route_v2",
+  "generated_at": "2026-08-04",
+  "backlog_dates": "none",
+  "sources": {
+    "arxiv_candidates": 40,
+    "curated_new": 0,
+    "curated_total_processed": 15
+  },
+  "counts_by_route": {
+    "alpha": 2,
+    "optimizer": 2,
+    "risk": 1,
+    "regime": 2,
+    "skip": 33
+  },
+  "n_factor_candidates": 4,
+  "n_factor_testable": 2,
+  "autorun_papers": [
+    "2607.19497",
+    "2607.27611"
+  ],
+  "papers": [
+    {
+      "title": "Fund Competition under Conflicting ESG Rating Methodologies",
+      "id": "2607.29583",
+      "source": "arxiv",
+      "route": "skip",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "이론 게임모델(ESG 펀드 경쟁). 종목 횡단면 신호 없음."
+    },
+    {
+      "title": "A Policy Iteration Scheme for Semilinear Stochastic Hamilton-Jacobi-Bellman Equations with Exponential Convergence",
+      "id": "2607.29024",
+      "source": "arxiv",
+      "route": "skip",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "순수 수학(HJB 방정식 알고리즘). 금융 응용 없음."
+    },
+    {
+      "title": "Effort-Centric Fairness in Lending Decisions",
+      "id": "2607.28847",
+      "source": "arxiv",
+      "route": "skip",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "신용 대출 결정 공정성. 주식 횡단면 아님."
+    },
+    {
+      "title": "Train Often, Deploy Selectively: Forward-Gated Model Replacement in Crypto Markets",
+      "id": "2607.28577",
+      "source": "arxiv",
+      "route": "skip",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "크립토 선물 배포 정책. 크로스마켓."
+    },
+    {
+      "title": "Can Large Language Models Execute Parent Orders?",
+      "id": "2607.28410",
+      "source": "arxiv",
+      "route": "skip",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "LLM 주문집행(Shenzhen 데이터). 알파 신호 아님, 크로스마켓."
+    },
+    {
+      "title": "Boundary-Induced Apparent Risk Aversion in Nonergodic Multiplicative Growth",
+      "id": "2607.28230",
+      "source": "arxiv",
+      "route": "skip",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "Kelly criterion 이론 모델. 종목 신호 없음."
+    },
+    {
+      "title": "Almost stochastic dominance via optimal transport",
+      "id": "2607.28215",
+      "source": "arxiv",
+      "route": "skip",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "수학적 확률론(OT/stochastic dominance). 순수 이론."
+    },
+    {
+      "title": "FinSMART: Financial Sentiment Analysis for Algorithmic Trading through Market-Aligned Reinforcement Learning",
+      "id": "2607.28127",
+      "source": "arxiv",
+      "route": "alpha",
+      "kr_feasible": true,
+      "factor_candidate": {
+        "name": "Market_Aligned_Sentiment_RL",
+        "def": "RL로 훈련된 감성분석 모델이 산출하는 기업 텍스트 감성 점수. 시장 수익률을 reward로 사용해 LLM 감성 모델을 파인튜닝. KR 적용 시 DART 공시/뉴스 텍스트 → FinBERT 기반 감성 점수 → long-only 랭킹.",
+        "novel": true,
+        "kr_feasible": true,
+        "verdict": "uncertain",
+        "confidence": 0.45
+      },
+      "reason": "alpha route. 감성 신호→종목 랭킹 구조 명확. 단 RL 파이프라인 재구현 복잡성 + KR DART 텍스트 품질 불명으로 uncertain. DART 뉴스 단순화 버전은 고려 가능."
+    },
+    {
+      "title": "ZAPs: A Reward Attribution Framework for DeFi Ecosystems with Adversarial-Robust Scoring",
+      "id": "2607.27859",
+      "source": "arxiv",
+      "route": "skip",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "DeFi/크립토 프로토콜 인센티브 설계. 크로스마켓."
+    },
+    {
+      "title": "FinanceHarness: Autonomous Financial Deep Research Framework",
+      "id": "2607.27853",
+      "source": "arxiv",
+      "route": "skip",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "LLM 에이전트 리서치 벤치마크. 알파 신호 없음."
+    },
+    {
+      "title": "Pricing and Semi-static Hedging of Green Pay-as-produced Power Purchase Agreements",
+      "id": "2607.27814",
+      "source": "arxiv",
+      "route": "skip",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "에너지 PPA 헤징(독일 전력/재생에너지). 크로스마켓."
+    },
+    {
+      "title": "Multi-maturity consistency of option prices under bounded bid-ask spreads",
+      "id": "2607.27649",
+      "source": "arxiv",
+      "route": "skip",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "옵션 가격결정 이론(수학). 옵션 데이터 필요."
+    },
+    {
+      "title": "AWARE-FX: An Auditable Knowledge-Guided AI System for Measuring Corporate Foreign-Exchange Hedging Disclosure",
+      "id": "2607.27611",
+      "source": "arxiv",
+      "route": "alpha",
+      "kr_feasible": true,
+      "factor_candidate": {
+        "name": "FX_Hedging_Disclosure_Score",
+        "def": "기업 연간보고서(10-K/사업보고서)에서 외환위험 관리(파생상품 사용·자연헤지·비사용 명시) 관련 문구를 NLP로 추출·점수화. 높은 FX 헤징 공시 강도 = 환율 노출 관리 기업 = 향후 FX 변동 시 수익 안정성 프리미엄. KR: DART 사업보고서 연간 lag 3/31. FinBERT 또는 keyword count로 구현. 정확도 63~87% (논문 HK 검증). long-only 랭킹: 헤징 공시 높은 종목 선택.",
+        "novel": true,
+        "kr_feasible": true,
+        "verdict": "testable",
+        "confidence": 0.6
+      },
+      "reason": "alpha route. 논문이 기업-연도 수준 스코어 생성 파이프라인 제시(HK 24,909 firm-year). KR DART 사업보고서(연간 3/31 lag) 적용 가능. FX 관련 텍스트 팩터는 DB 미보유(T 코드=기술지표). 신규. KR에서 환율 민감도 종목의 헤징 질 프리미엄 가설 실증 가능. AUTORUN 대상 2편 중 하나."
+    },
+    {
+      "title": "Local Stochastic Rough Volatility: Pathwise Filtering and the Conditional Density Equation",
+      "id": "2607.27588",
+      "source": "arxiv",
+      "route": "skip",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "rough volatility 수학 이론. 파생 가격결정, 종목 신호 없음."
+    },
+    {
+      "title": "Consuming Values",
+      "id": "2607.27569",
+      "source": "arxiv",
+      "route": "skip",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "카드 소비 데이터로 기업 사회적 입장 반응 측정. 대체 데이터(카드 거래) 필요."
+    },
+    {
+      "title": "Lucky or Good? Outcome Noise, Effective Sample Size, and the Attribution of Skill",
+      "id": "2607.27544",
+      "source": "arxiv",
+      "route": "skip",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "통계 방법론 메타논문(스킬 귀속). 팩터 신호 없음."
+    },
+    {
+      "title": "Are Three Matrices All You Need To Beat the Market? Observable Matrix Dynamics for Portfolio Optimization",
+      "id": "2607.27461",
+      "source": "arxiv",
+      "route": "optimizer",
+      "kr_feasible": true,
+      "factor_candidate": {
+        "name": "Vol_Rank_Markov_Persistence",
+        "def": "월간 변동성 랭크(Markov chain)의 1-step 전이 예측. 전월 vol rank → 다음 달 vol rank 전이행렬로 저변동성 지속 종목 선별. 가격/시가총액 데이터로 구현. (참고: D01_IdioVol 있어 redundant 가능성. 구별점=랭크 Markov 프레임, 전이확률 기반 선별)",
+        "novel": false,
+        "kr_feasible": true,
+        "verdict": "uncertain",
+        "confidence": 0.4
+      },
+      "reason": "optimizer route (primary). Markov chain 기반 변동성 랭크 예측 + residual distance 분산화. 논문 S&P500 OOS SR 1.06~1.32. KR 적용 가능. factor_candidate는 D01_IdioVol과 중복 가능성으로 uncertain."
+    },
+    {
+      "title": "Inverse Learning of Latent Risk-Neutral Densities from Irregular Option Quotes",
+      "id": "2607.27188",
+      "source": "arxiv",
+      "route": "skip",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "옵션 RND 추정(ML). 옵션 데이터 필요, 종목 신호 아님."
+    },
+    {
+      "title": "Where does the criticality live? Early-warning signals are event-heterogeneous across seven crypto-perpetual liquidation cascades",
+      "id": "2607.27070",
+      "source": "arxiv",
+      "route": "skip",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "크립토 선물 유동성 위기 분석. 크로스마켓."
+    },
+    {
+      "title": "Herding, Momentum, and Reversal in China's A-Share Market: An Agent-Based Network Model with Information Diffusion",
+      "id": "2607.27063",
+      "source": "arxiv",
+      "route": "regime",
+      "kr_feasible": true,
+      "factor_candidate": {
+        "name": "Herding_Indicator_Regime",
+        "def": "CSAD/LSV 기반 rolling tail herding indicator(Johnson SU transformation). 시장 수준 군집행동 국면 입력. 종목별 랭킹 팩터 아닌 국면 입력 신호.",
+        "novel": true,
+        "kr_feasible": true,
+        "verdict": "infeasible",
+        "confidence": 0.3
+      },
+      "reason": "regime route. 군집행동 + 정보확산 지연 → 모멘텀/반전 메커니즘 분석. 시장 레벨 herding indicator는 국면 입력 가능. 종목별 alpha 신호 부재로 factor infeasible."
+    },
+    {
+      "title": "Forcing and duality-corrected contracts for volatility control",
+      "id": "2607.27039",
+      "source": "arxiv",
+      "route": "skip",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "수학 금융 principal-agent 이론. 종목 신호 없음."
+    },
+    {
+      "title": "Multi-Asset Liquidation in Dark Pools with Adverse Selection",
+      "id": "2607.27019",
+      "source": "arxiv",
+      "route": "skip",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "다크풀 청산 이론(BSDE 수학). 실행 이론, 알파 신호 없음."
+    },
+    {
+      "title": "No Data Is Not No Risk: Visibility Aware Graph-Based Inference of Business Conduct Risk",
+      "id": "2607.26859",
+      "source": "arxiv",
+      "route": "skip",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "기업 행동위험 incident 데이터 필요. KR에서 conduct risk incidents 데이터 없음."
+    },
+    {
+      "title": "Crossing-Free Probabilistic K-Line Forecasts Without Retraining",
+      "id": "2607.26792",
+      "source": "arxiv",
+      "route": "skip",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "OHLC 예측 quantile crossing 해소 방법론. 알파 신호 아님."
+    },
+    {
+      "title": "Multi-Currency AMMs for Decentralized FOREX Markets: Feasibility & Optimal Design",
+      "id": "2607.26405",
+      "source": "arxiv",
+      "route": "skip",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "FX AMM(DeFi/크로스마켓). KR 범위 밖."
+    },
+    {
+      "title": "OpenMarket: A Synchronized Polymarket-Binance Dataset for High-Frequency Prediction-Market Research",
+      "id": "2607.26245",
+      "source": "arxiv",
+      "route": "skip",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "크립토 예측시장 + HFT. 크로스마켓."
+    },
+    {
+      "title": "Emergent Latent-State Computation under Stochastic Volatility",
+      "id": "2607.25459",
+      "source": "arxiv",
+      "route": "skip",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "변동성 모델 해석가능성 연구(Transformer 내부). 종목 신호 없음."
+    },
+    {
+      "title": "Quantum Transformer BSDE Solver via Multi-Layer Fully-Connected Variational Quantum Circuits",
+      "id": "2607.25162",
+      "source": "arxiv",
+      "route": "skip",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "양자컴퓨팅 + BSDE. 순수 이론."
+    },
+    {
+      "title": "Discrete dividends after maturity adjust the stock and strike prices",
+      "id": "2607.24973",
+      "source": "arxiv",
+      "route": "skip",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "옵션 가격결정 이론(Black-Scholes 배당 조정). 옵션 데이터 필요."
+    },
+    {
+      "title": "The Fundamental Structure of Risk: From Characteristics to Covariance",
+      "id": "2607.24410",
+      "source": "arxiv",
+      "route": "risk",
+      "kr_feasible": true,
+      "factor_candidate": {
+        "name": "CD_DFM_Latent_Factor_Exposures",
+        "def": "기업 특성(재무 비율)에서 비선형 인코더로 추출한 잠재 팩터 노출도. 공분산 행렬 추정이 주목적이나 latent factor exposures 자체를 횡단면 신호로 활용 가능. 재무 데이터 기반이므로 KR feasible. 하지만 논문이 alpha prediction을 보이지 않아 종목 신호로서의 예측력 불명.",
+        "novel": true,
+        "kr_feasible": true,
+        "verdict": "uncertain",
+        "confidence": 0.35
+      },
+      "reason": "risk route (primary). CD-DFM: 기업 특성→비선형 잠재팩터→공분산 추정. Stein covariance loss로 학습. zero-shot onboarding. S&P500 OOS 검증. QEPM risk agent의 Σ 추정기 방법론 후보."
+    },
+    {
+      "title": "Optimal Surplus Management for Insurers under Stochastic Interest Rates and Jump-Driven Liabilities",
+      "id": "2607.21687",
+      "source": "arxiv",
+      "route": "skip",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "보험계리(HJB 최적 보험 잉여관리). 보험 영역."
+    },
+    {
+      "title": "Quantum Kernels and the Cross-Section of Stock Returns: Anatomy of a Vanishing Advantage",
+      "id": "2607.20168",
+      "source": "arxiv",
+      "route": "skip",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "양자 커널 vs classical ML 대조(중국 A주). 양자컴퓨팅 불가. 메타 인사이트(penalized linear wins)는 참고용."
+    },
+    {
+      "title": "Retail Trader's Ruin: An Anatomy of Popular Signal Failure",
+      "id": "2607.20093",
+      "source": "arxiv",
+      "route": "skip",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "소매 신호 실패 메타 분석. trend/momentum INCONCLUSIVE. 새로운 팩터 없음."
+    },
+    {
+      "title": "The Science and Practice of Trend-Following Systems",
+      "id": "2607.19497",
+      "source": "arxiv",
+      "route": "regime",
+      "kr_feasible": true,
+      "factor_candidate": {
+        "name": "Spectral_LowFreq_Momentum",
+        "def": "개별 종목 월간 수익률 시계열에 FFT를 적용해 저주파(장기 추세) 스펙트럼 파워 비중 산출. 논문 이론: 추세추종 수익 = Poisson-kernel 가중 스펙트럼 파워 적분. excess spectral mass at low frequencies = 추세 강도. 구현: rolling 24~36개월 수익률 → FFT → 저주파(0~1/12 Hz) 파워 비중 → 종목별 랭킹. KR 가격 데이터만으로 구현 가능. T15_AutoCorr(21d AR1)과 다른 개념(주파수 도메인 파워). DB 미보유.",
+        "novel": true,
+        "kr_feasible": true,
+        "verdict": "testable",
+        "confidence": 0.65
+      },
+      "reason": "regime route (primary: 추세추종 시스템 설계). ARFIMA 이론, closed-form SR 도출. 하지만 팩터 추출: 저주파 스펙트럼 파워 모멘텀은 KR 주식에 적용 가능한 신규 팩터. DB에 스펙트럼/FFT 기반 팩터 없음(T15=단순 AR1). AUTORUN 대상 1번."
+    },
+    {
+      "title": "Dead Reckoning: Counting Your Customers Who Never Say Goodbye",
+      "id": "2607.18623",
+      "source": "arxiv",
+      "route": "skip",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "고객 이탈률 모델링(Buy-Till-You-Die). B2C, 주식 신호 없음."
+    },
+    {
+      "title": "(Early) AI Compute Asset Pricing",
+      "id": "2607.12156",
+      "source": "arxiv",
+      "route": "skip",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "AI 컴퓨트 선물 자산 가격결정. 신규 자산군, KR 무관."
+    },
+    {
+      "title": "A Novel Hybrid Quantum Reservoir Computing (nHQRC) for Phase Transition Detection in Non-Equilibrium Dynamical Systems",
+      "id": "2607.16281",
+      "source": "arxiv",
+      "route": "skip",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "양자 저장소 컴퓨팅. KR 구현 불가."
+    },
+    {
+      "title": "Optimal Prediction of Resistance and Support Levels under Constant Elasticity of Variance Processes",
+      "id": "2607.08531",
+      "source": "arxiv",
+      "route": "skip",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "CEV 모델 기반 저항/지지선 이론. 단일 자산 이론, 횡단면 신호 없음."
+    },
+    {
+      "title": "From Gravity to Confinement: Wealth Redistribution as Optimal Drift Design in the Fokker-Planck Framework",
+      "id": "2607.06153",
+      "source": "arxiv",
+      "route": "skip",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "경제 정책/소득분배 이론(Fokker-Planck). 주식 신호 없음."
+    },
+    {
+      "title": "Portfolio Optimization under Fast and Slow Latent Mean-Reverting and Momentum Drift",
+      "id": "2607.01705",
+      "source": "arxiv",
+      "route": "optimizer",
+      "kr_feasible": true,
+      "factor_candidate": {
+        "name": "MACD_Dual_EMA_Drift_Estimator",
+        "def": "두 EMA(빠른/느린 시간척도) 차이 + Volterra 보정으로 잠재 드리프트 추정. 논문: optimal filter for latent drift = EMA(fast)-EMA(slow)+correction. 구현: EMA12-EMA26+Volterra term으로 drfit 추정 → 종목 랭킹. 단 MACD 자체(M 코드 있을 가능성)와 중복 가능성.",
+        "novel": false,
+        "kr_feasible": true,
+        "verdict": "uncertain",
+        "confidence": 0.35
+      },
+      "reason": "optimizer route (primary). 잠재 mean-reversion + momentum drift를 두 시간척도로 모델링. optimal strategy = MACD-type signal이 수학적으로 최적 필터임을 증명. QEPM optimizer agent 방법론 참고. factor는 MACD와 중복 가능성으로 uncertain."
+    }
+  ]
+}

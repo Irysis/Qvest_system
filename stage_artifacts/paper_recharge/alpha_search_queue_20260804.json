@@ -1,0 +1,62 @@
+{
+  "date": "20260804",
+  "generated_at": "20260804_120000",
+  "n": 0,
+  "testable": [],
+  "non_testable": [
+    {
+      "id": "2607.29583",
+      "title": "Fund Competition under Conflicting ESG Rating Methodologies",
+      "decision": "skip",
+      "reason": "Pure theory (fund fee/portfolio choice under heterogeneous ESG preferences). 종목선택 신호 없음.",
+      "date": "2026-07-31"
+    },
+    {
+      "id": "2607.01377",
+      "title": "Liquidity Premium and Investment Horizons",
+      "decision": "batch_434_quarantine",
+      "reason": "Core novel signal = Kyle's λ from signed order flow (requires TAQ tick-by-tick order flow data). RAWDATA has Vol(daily volume level) but NOT signed order flow directionality. Amihud-style ratio (secondary finding) is already in Factor DB. batch_434: 논문이 기술한 primary signal 충실 구현 불가.",
+      "date": "2026-07-01"
+    },
+    {
+      "id": "2607.24410",
+      "title": "The Fundamental Structure of Risk: From Characteristics to Covariance",
+      "decision": "route_risk",
+      "reason": "CD-DFM: characteristic-driven covariance estimator. Alpha signal 아님 — risk-research agent용 공분산 추정 모델.",
+      "date": "2026-07-27"
+    },
+    {
+      "id": "2607.18001",
+      "title": "AlphaZeroBeta: Deep Reinforcement Learning for Market-Neutral Portfolios",
+      "decision": "route_optimizer",
+      "reason": "CNN-GRU+PPO 인덱스 수준 market-neutral 포트폴리오 optimizer. 횡단면 종목선택 팩터 신호 없음 — optimizer-research용.",
+      "date": "2026-07-20"
+    }
+  ],
+  "items": [],
+  "reason": "no_testable_candidates",
+  "reason_detail": {
+    "arxiv_aug2026_papers": 0,
+    "arxiv_newest_paper": "2026-07-31 (2607.29583)",
+    "arxiv_queries_run_today": 8,
+    "arxiv_weekend_gap": true,
+    "arxiv_note": "2026-08-01~04 논문 아직 arXiv 미등재. 월요일 저녁~화요일 아침 등재 예상.",
+    "unprocessed_july_papers_evaluated": 4,
+    "batch_434_quarantine_count": 1,
+    "skip_theory_count": 1,
+    "route_other_mode_count": 2,
+    "factor_recheck_n": 0,
+    "factor_recheck_file": "factor_recheck_queue_20260804.json",
+    "fq_open_checked": [
+      "FQ-002: pilot_measured_lead_open — SIZE분모 IC t=1.97 리드, WT-013 신규 사전등록 라운드 대기 (QEPM mode)",
+      "FQ-004: signal_round_negative_frontier_open — T1 감사의견 12,844행 수집 완료, 재료별 개별 필터 미측정 (QEPM mode)",
+      "FQ-010: open — pg2 백로그 라우팅 배선(파이프라인 ops, alpha 아님)"
+    ]
+  },
+  "next_queue_expected": "20260805",
+  "next_actions": [
+    "arXiv 2026-08-01~04 논문 내일(20260805) 재탐색 — 월요일 제출분 Tuesday 등재 관례",
+    "FQ-002 WT-013 착수: SIZE분모(계약금액/시총) 사전등록 신호 전구간 크롤 지불 여부 판단 필요 (lead IC t=1.97, 섭동 확인 포함)",
+    "FQ-004 재료별 개별 필터: T1 감사의견 비적정 종목 직접 exclusion delta 측정 (추가 데이터 불요, 즉시 착수 가능)"
+  ]
+}

@@ -1,0 +1,21 @@
+{
+  "quarantine_date": "20260804",
+  "session_id": "AS-20260804",
+  "items": [
+    {
+      "paper_id": "2607.01377",
+      "paper_title": "Liquidity Premium and Investment Horizons",
+      "quarantine_type": "batch_434",
+      "gate_layer": "data_availability_check",
+      "primary_signal": "Kyle's Lambda from signed order flow",
+      "signal_requirement": "Tick-by-tick order flow direction (buyer/seller initiated) — TAQ-level data",
+      "rawdata_available": "Daily Vol (absolute volume), Close, Ret, Size — NO signed order direction",
+      "secondary_signal_db_status": "Amihud|Ret|/Vol type already in Factor DB (Amihud류)",
+      "decision": "QUARANTINE — batch_434 guard activated. 논문이 기술한 primary signal 충실 구현 불가. 신호 날조 금지.",
+      "next_probe_fq": [
+        "CV_Vol (coefficient of variation of daily volume) — 논문 부산물: CV_Vol↑ → 낮은 수익률. RAWDATA 계산 가능, FQ 신규 등재 대상",
+        "회전율×보유기간 프록시 조합 — 호라이즌별 유동성 프리미엄 횡단면 대용변수. Vol/Size 분위. FQ 신규 등재 대상"
+      ]
+    }
+  ]
+}

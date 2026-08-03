@@ -8,7 +8,8 @@
     "2607.19497",
     "2607.19005",
     "2607.27461",
-    "2607.01705"
+    "2607.01705",
+    "2607.01377"
   ],
   "records": [
     {
@@ -162,8 +163,27 @@
         "risk_optimizer_소비: 2-timescale 잠재 drift 모델 자체는 optimizer/risk agent의 포트폴리오 가중치 최적화 input으로 소비 가능(알파 사용 아닌 비중 결정 프레임)"
       ],
       "session_note": "AS-20260803 런 — arXiv 주말 공백(최신 2026-07-31) + 기존 testable 후보 전소진. EV 3단 게이트에서 D1 판정으로 착착 기록."
+    },
+    {
+      "paper_id": "2607.01377",
+      "paper_title": "Liquidity Premium and Investment Horizons",
+      "factor_id": "kyle_lambda_signed_orderflow",
+      "factor_name": "Kyle's Lambda from signed order flow",
+      "gate_decision": "QUARANTINE",
+      "gate_failed_layers": "batch_434_data_unavailable",
+      "port_t": null,
+      "grade": null,
+      "processed_date": "20260804",
+      "verify_path": null,
+      "quarantine_reason": "batch_434: 논문 핵심 신호 = 체결 부호 signed order flow (Kyle λ = Cov(ΔP, 순매수)/Var(순매수)). RAWDATA에는 일별 거래량(Vol, 절대값)만 있고 매수/매도 방향성 없음 — TAQ tick-by-tick 데이터 미보유. Amihud|Ret|/Vol는 DB 기등재(Amihud류 Factor). batch_434 가드: 논문이 기술한 primary signal 충실 구현 불가 → quarantine, 신호 날조 금지.",
+      "notable": true,
+      "next_probe": [
+        "FQ 등재: vol 변동성(CV of daily vol) 신호 — 논문 부산물 '일별 거래량의 변동계수(CV_Vol)가 낮을수록 수익률 높음' 가설. RAWDATA daily Vol로 직접 계산 가능. FQ에 신규 등재 후 alpha-search testable 경로로 우회",
+        "FQ 등재: 호라이즌별 유동성 프리미엄 횡단면 — 단기보유 투자자 비중 높은 종목이 유동성 프리미엄 더 높음. 대용변수: 회전율(Vol/Size) 분위 × 보유기간 프록시 조합. RAWDATA 계산 가능"
+      ],
+      "session_note": "AS-20260804 런 — arXiv 8월 공백(주말 제출분 미등재), 평가된 7월 미처리 논문 4편 중 1편 batch_434 quarantine. 실행 0건."
     }
   ],
   "schema_note": "processed = list of paper_id strings (set-like, paper 단위 dedup). records = 전체 시도 감사 로그(동일 paper에서 여러 factor 추출 시 factor_id로 구분). last_updated 갱신 의무.",
-  "last_updated": "20260803"
+  "last_updated": "20260804"
 }
