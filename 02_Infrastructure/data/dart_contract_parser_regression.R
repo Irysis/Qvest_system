@@ -120,11 +120,18 @@ if (is.null(V2)) {
   # ★기능 프로브: 참조가 **살아서 파싱하는지** 확인한다. 스텁이 죽어 값을 전부 NA 로
   #   내면 v3 도 NA 인 행에서 '일치'가 나서 축 전체가 공허해진다("빈 결과 = 합격" 계통).
   #   두 방향 다 건다 — 정상 문서에서 값을 뽑아야 하고, 오류 바디는 UNZIP_FAIL 이어야 한다.
-  probe_f <- head(list.files(file.path(ROOT, ".cache/dart/contract_docs"),
-                             pattern = "[.]bin$", full.names = TRUE), 1)
+  # ★프로브 문서는 **시대를 골라야 한다**. 캐시엔 2010~2019 구서식(CP949)도 섞여 있고
+  #   v2 는 그걸 못 읽는 게 정상이다 — 아무 파일이나 집으면 "참조가 죽었다"와
+  #   "참조가 구서식을 못 읽는다"(=정확히 v3 가 고친 것)를 구별하지 못한다.
+  #   실제로 한 번 오판했다(2010 문서를 집어 프로브 실패).
+  allf <- list.files(file.path(ROOT, ".cache/dart/contract_docs"),
+                     pattern = "[.]bin$", full.names = TRUE)
+  fyr  <- suppressWarnings(as.integer(substr(basename(allf), 1, 4)))
+  newf <- head(allf[!is.na(fyr) & fyr >= 2023], 1)   # v2 가 읽을 수 있어야 하는 시대
+  oldf <- head(allf[!is.na(fyr) & fyr <  2020], 1)   # v2 가 못 읽는 게 정상인 시대
   live <- FALSE
-  if (length(probe_f)) {
-    pp <- tryCatch(v2_parse(readBin(probe_f, "raw", n = file.info(probe_f)$size)),
+  if (length(newf)) {
+    pp <- tryCatch(v2_parse(readBin(newf, "raw", n = file.info(newf)$size)),
                    error = function(e) NULL)
     live <- !is.null(pp) && identical(pp$parse_status, "OK") &&
             isTRUE(!is.na(pp$contract_amount) && pp$contract_amount > 0)
@@ -137,7 +144,17 @@ if (is.null(V2)) {
                 live, live_err))
     quit(status = 4)
   }
-  cat("[reg] v2 참조 기능 프로브 PASS (정상문서 파싱 ∧ 오류바디 UNZIP_FAIL)\n")
+  cat("[reg] v2 참조 기능 프로브 PASS (신형문서 파싱 ∧ 오류바디 UNZIP_FAIL)\n")
+  # 양성 대조: 구서식에서 v2 는 **실패해야** 한다. 여기서 v2 가 OK 를 내면 참조가
+  # v2 가 아니거나(핀 오지정) v3 가 새어들어온 것 — 회귀축 전체가 무의미해진다.
+  if (length(oldf)) {
+    po <- tryCatch(v2_parse(readBin(oldf, "raw", n = file.info(oldf)$size)), error = function(e) NULL)
+    v2_fails_old <- is.null(po) || !identical(po$parse_status, "OK")
+    cat(sprintf("[reg] v2 구서식 양성대조: %s (%s → %s)\n",
+                if (v2_fails_old) "PASS(v2 못 읽음 = 기대)" else "❌ FAIL(v2 가 구서식을 읽었다)",
+                basename(oldf), if (is.null(po)) "throw" else po$parse_status))
+    if (!v2_fails_old) quit(status = 4)
+  }
 }
 
 for (i in seq_len(nrow(D))) {

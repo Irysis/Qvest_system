@@ -258,4 +258,11 @@ if (!is.null(W) && !is.null(W_inj)) {
 } else skip("E", "대조 불가 (현행 또는 주입판 결과 없음)")
 
 cat(sprintf("\n[test_ev_term_not_inert] PASS=%d FAIL=%d SKIP=%d\n", PASS, FAIL, SKIP))
+# run_all_hooks.sh 배터리 규약 — **마지막 줄이 요약 JSON** 이어야 한다 (2026-08-03 추가).
+#   이게 없으면 러너가 파싱에 실패해 이 suite 전체가 UNREPORTED(=1 fail)로 계상되고,
+#   실제 통과 8건은 총계에서 **통째로 사라진다**. 즉 "검사가 돌았는데 안 센" 상태 —
+#   이 저장소가 반복해 데인 계측 사망 계통 그대로다(실측: 배터리 946/1 의 그 1건).
+#   ★skipped 는 total 에 넣지 않는다(total = 실제로 판정한 수).
+cat(sprintf('{"test":"ev_term_not_inert","pass":%d,"fail":%d,"skipped":%d,"total":%d}\n',
+            PASS, FAIL, SKIP, PASS + FAIL))
 quit(status = if (FAIL > 0L) 1L else 0L)
