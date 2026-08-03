@@ -123,6 +123,24 @@
       "date": "20260803",
       "verdict": "redundant",
       "note": "tier-2 전문 정독(80,157자). redundant(M19_MACD): (EMA12-EMA26)/EMA26 이미 레지스트리 등재. 논문=순수 수학 이론(q-fin.MF), 실증 0건. 단일자산 Kalman-Bucy 필터 → MACD-type 신호 수학적 도출(Theorem 3.1). 횡단면 개념 전무. Kalman 가중치=시변(≠표준 MACD 고정). next_probe: 종목별 κ_f/κ_s 추정 후 최적 스팬 선택 vs. M08_ResidMom 직교화."
+    },
+    {
+      "paper_id": "2607.28127",
+      "date": "20260804",
+      "verdict": "infeasible",
+      "note": "tier-2 전문 정독. design_mismatch: FinSMART = Llama-3-8B GRPO fine-tuning on English financial news(TMF/MarketWatch). KR 재무 뉴스 코퍼스 RAWDATA/factor_db 미보유. 보상함수 = idiosyncratic return vs S&P500 SPY. NER + sentiment gating + A6000 GPU GRPO 파이프라인 전 과정 KR 인프라 구현 불가. long leg도 일별 LLM scoring 전제(batch inference 부재). next_probe: ①DART 텍스트 zero-shot 감성 FQ ②DART 위험섹션 텍스트량 proxy FQ."
+    },
+    {
+      "paper_id": "2607.27461",
+      "date": "20260804",
+      "verdict": "testable",
+      "note": "tier-2 전문 정독(164,219자). Vol_Rank_Markov_Persistence: 변동성 순위 10분위 전이행렬 P^V에서 하위 2분위 도달확률 π^V_i를 선별 신호로 사용. 논문 핵심 발견: 변동성 순위 OOS 예측 가능(+0.116 nats log-likelihood gain) vs 수익률 순위 불가(+0.007 nats). registry 21d/63d vol 수준값과 구별 — 전이확률 표현 미등재. RAWDATA(일별 Ret)만으로 구현 가능. PIT 준수. 장벽: 5bps 기준 L-only in-sample 열세, 15bps에서 마진 추가 축소. alpha_search_queue_20260804 PENDING 등재."
+    },
+    {
+      "paper_id": "2607.24410",
+      "date": "20260804",
+      "verdict": "infeasible",
+      "note": "tier-2 재확인. design_mismatch_risk_model: CD-DFM 목적함수=Stein covariance loss(미래 공분산 KL divergence). IC/t-stat/alpha 수치 0건. β_t를 알파 신호로 사용은 batch_434 날조 규정 해당. RavenPack 뉴스 3종 KR 미보유. alpha_search_queue_20260804 route_risk(non_testable) 기등재 정합. next_probe: ①risk-research Σ 추정기 대안 WT ②β_t IC 독립 가설 FQ."
     }
   ]
 }

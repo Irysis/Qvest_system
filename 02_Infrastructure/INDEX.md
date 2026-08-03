@@ -1,14 +1,14 @@
 # 02_Infrastructure INDEX
 
-> 자동 생성 2026-08-03 07:38 — 큐레이션 원본: `06_Registry/index_descriptions.json` (role/status/category 수동 보완처) · 재생성: `Rscript 02_Infrastructure/tools/build_artifact_index.R` (daily_refresh 말미 자동). 본 파일 직접 수정 금지 — 재생성 시 덮어씀.
+> 자동 생성 2026-08-04 07:56 — 큐레이션 원본: `06_Registry/index_descriptions.json` (role/status/category 수동 보완처) · 재생성: `Rscript 02_Infrastructure/tools/build_artifact_index.R` (daily_refresh 말미 자동). 본 파일 직접 수정 금지 — 재생성 시 덮어씀.
 
 ## 데이터 (3)
 
 | 항목 | 정체 | status | 최근 | 크기 |
 |---|---|---|---|---|
 | `F1. QT_to_xts.r` | 퀀티와이즈 엑셀 시계열을 xts로 변환하는 헬퍼 함수 2종(QT_to_xts / QT_to_xts_macro) — 데이터 인제스트 빌더들의 공용 유틸 | active | 2026-06-07 | 643B |
-| `data/` | 데이터 인제스트/캐시 계층 42건 — build_cache.R·build_index_cache.py·daily_refresh.sh·퀀티와이즈 파서(RAWDATA/benchmark parquet 생산) | active | 2026-08-02 | 10.3MB |
-| `factor_db/` | Factor DB 계층 43건 — 월간 373팩터 + 일간 팩터 빌더·load_month_factors(C15 유일 진입점)·registry | active | 2026-08-02 | 1.5MB |
+| `data/` | 데이터 인제스트/캐시 계층 42건 — build_cache.R·build_index_cache.py·daily_refresh.sh·퀀티와이즈 파서(RAWDATA/benchmark parquet 생산) | active | 2026-08-03 | 10.3MB |
+| `factor_db/` | Factor DB 계층 43건 — 월간 373팩터 + 일간 팩터 빌더·load_month_factors(C15 유일 진입점)·registry | active | 2026-08-02 | 1.7MB |
 
 ## 백테스트 (3)
 
@@ -16,7 +16,7 @@
 |---|---|---|---|---|
 | `backtest_harness.R` | 공용 백테스트 하네스(시뮬레이션 엔진 62KB) — alpha_search 드라이버·contracts·data 빌더가 공통 source하는 실행 코어 | active | 2026-07-18 | 64KB |
 | `factor_portfolios.R` | KR FF3/FF5/Carhart-4F 팩터 회귀(NW HAC alpha t) — strategy_analyzer의 Multi-Factor Regression 공급자(2026-06-04 재작성) | active | 2026-06-07 | 6KB |
-| `strategy_analyzer.R` | 전략 진단 분석기 — 백테 후 IC/rolling/stress/sector/holdings CSV + analysis_report.md 생성(FF 회귀 포함) | active | 2026-06-12 | 34KB |
+| `strategy_analyzer.R` | 전략 진단 분석기 — 백테 후 IC/rolling/stress/sector/holdings CSV + analysis_report.md 생성(FF 회귀 포함) | active | 2026-08-02 | 38KB |
 
 ## 설정 (2)
 
@@ -63,7 +63,7 @@
 
 | 항목 | 정체 | status | 최근 | 크기 |
 |---|---|---|---|---|
-| `alpha_search/` | ② alpha-search 모드 실행 계층(91건) — run_alpha_search.R + 논문 복제 드라이버(run_qmj_paper·run_residmom_paper 등)·캐시 빌더·검증 스크립트 | active | 2026-08-02 | 733KB |
+| `alpha_search/` | ② alpha-search 모드 실행 계층(91건) — run_alpha_search.R + 논문 복제 드라이버(run_qmj_paper·run_residmom_paper 등)·캐시 빌더·검증 스크립트 | active | 2026-08-03 | 749KB |
 
 ## 보고 (3)
 
@@ -77,13 +77,13 @@
 
 | 항목 | 정체 | status | 최근 | 크기 |
 |---|---|---|---|---|
-| `axiom/` | Axiom 자가발전 엔진 구현 — L-code emit/schema/harvester·promote(mode-local→global)·rollback·weekly report·inject | active | 2026-07-25 | 457KB |
+| `axiom/` | Axiom 자가발전 엔진 구현 — L-code emit/schema/harvester·promote(mode-local→global)·rollback·weekly report·inject | active | 2026-08-02 | 482KB |
 
 ## 계약 (2)
 
 | 항목 | 정체 | status | 최근 | 크기 |
 |---|---|---|---|---|
-| `contracts/` | 측정·계약 코어 16건 — build_bt_result/canonical_screen_bt/essence_score(Grade 권위)/register_module/holdout_falsification 등 실측-only 거버넌스의 구현체 | active | 2026-08-02 | 201KB |
+| `contracts/` | 측정·계약 코어 16건 — build_bt_result/canonical_screen_bt/essence_score(Grade 권위)/register_module/holdout_falsification 등 실측-only 거버넌스의 구현체 | active | 2026-08-02 | 209KB |
 | `schemas/` | JSON 스키마 계층 — certs/(5 certificate)·packages/(6 agent package)·state/(book_state·axiom 등) 스키마 정의 | active | 2026-06-07 | 20KB |
 
 ## 발굴 (1)
@@ -96,7 +96,7 @@
 
 | 항목 | 정체 | status | 최근 | 크기 |
 |---|---|---|---|---|
-| `docs/` | 설계 SOT·확장 룰·CHANGELOG 계층 — qvest_v8_1_sot.md(Active SOT)·rules/ 확장 9·legacy_boundary·reference_textbooks | active | 2026-08-02 | 428KB |
+| `docs/` | 설계 SOT·확장 룰·CHANGELOG 계층 — qvest_v8_1_sot.md(Active SOT)·rules/ 확장 9·legacy_boundary·reference_textbooks | active | 2026-08-02 | 444KB |
 | `README.md` | 인프라 존 진입 설명 (상세 목록은 INDEX.md) | active | 2026-07-03 | 1KB |
 
 ## 측정 (1)
@@ -130,9 +130,9 @@
 | 항목 | 정체 | status | 최근 | 크기 |
 |---|---|---|---|---|
 | `monitoring/` | 라이브 페이퍼트래킹 — noLayer4 일별 마킹(mark_nolayer4_daily.R)·월간(run_nolayer4_monthly.sh)·holdout 대조(monitor_nolayer4_paper.R). 구 faithtrend 스크립트+.bak = deprecated rollback 보존 | active | 2026-08-02 | 37KB |
-| `ops/` | 운영 계층 54건 — bootstrap.sh(/qvest 진입)·cleanup.sh·scheduler/(.bat 태스크)·헬스체크·paper router | active | 2026-08-02 | 789KB |
-| `telegram/` | 텔레그램 계층 4건 — telegram_notify.R(발송)·telegram_listener.py·telegram_commands.R·start_listener.sh (qvest-telegram SOT의 구현체) | active | 2026-07-25 | 218KB |
-| `tools/` | 운영 도구 16건 — build_artifact_index.R·paper_recharge_daily.R(논문 수집)·debate_helpers 등 | active | 2026-08-01 | 288KB |
+| `ops/` | 운영 계층 54건 — bootstrap.sh(/qvest 진입)·cleanup.sh·scheduler/(.bat 태스크)·헬스체크·paper router | active | 2026-08-03 | 807KB |
+| `telegram/` | 텔레그램 계층 4건 — telegram_notify.R(발송)·telegram_listener.py·telegram_commands.R·start_listener.sh (qvest-telegram SOT의 구현체) | active | 2026-08-02 | 222KB |
+| `tools/` | 운영 도구 16건 — build_artifact_index.R·paper_recharge_daily.R(논문 수집)·debate_helpers 등 | active | 2026-08-02 | 296KB |
 
 ## 관측 (2)
 

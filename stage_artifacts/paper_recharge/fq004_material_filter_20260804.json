@@ -1,0 +1,134 @@
+{
+  "fq_id": "FQ-004",
+  "probe": "P1_material_filter",
+  "date": "20260804",
+  "analyst": "alpha-search agent",
+  "universe": "K200_KQ150",
+  "period": "2005-01 ~ 2025-12",
+  "pit_lag": "lag1 (t월 신호 → t+1월 적용)",
+  "dual_basis": "EW universe (cap-w PORT_t 산출 불가: 배제 종목 <25 고정없음)",
+  "design_note": "재료별 개별 배제 필터 측정. 측정 방식: (1) 이벤트 종목 t+1 forward return vs 비이벤트 t-통계 (2) 포트폴리오 수준 EW base vs exclusion delta",
+  "materials": {
+    "UnfaithfulDisc": {
+      "in_universe_events": 841,
+      "in_universe_tickers": 35,
+      "monthly_avg_excl": 1.3,
+      "monthly_median_excl": 1.0,
+      "sparse_months_pct": 90.3,
+      "sparse": true,
+      "sparsity_note": "2005~2025 62개월 중 56개월이 ≤2종목 (월평균 1.3종목). K200∪KQ150 top-25 풀 대비 배제 효과 측정 불가",
+      "event_ret_fwd1": -0.0047,
+      "control_ret_fwd1": 0.0005,
+      "delta_fwd1": -0.0053,
+      "t_stat_event_vs_control": -1.439,
+      "p_val": 0.1544,
+      "size_adjusted_delta": -0.0059,
+      "size_adjusted_t": -1.610,
+      "cap_tier_mega_mid": {"n_event": 9, "delta": -0.0130},
+      "cap_tier_small": {"n_event": 64, "delta": -0.0044},
+      "port_level_delta_ann_pct": 0.01,
+      "port_level_t": 1.885,
+      "verdict": "SPARSITY_WALL",
+      "verdict_note": "월 이벤트 수 절대적으로 부족(중앙값 1종목). 방향(-5.3bp/월)은 있으나 통계적 유의성 부재(t=-1.44). 포트폴리오 수준 delta 0.01%/yr는 측정 오차 범위"
+    },
+    "AdminStock": {
+      "in_universe_events": 1712,
+      "in_universe_tickers": 19,
+      "monthly_avg_excl": 1.4,
+      "monthly_median_excl": 1.0,
+      "sparse_months_pct": 100.0,
+      "sparse": true,
+      "sparsity_note": "2005~2025 52개월 전체가 ≤2종목 (월평균 1.4종목, 2005+ 단 52개월에서만 관측). 개별 신호 측정 불가",
+      "event_ret_fwd1": 0.0110,
+      "control_ret_fwd1": 0.0015,
+      "delta_fwd1": 0.0095,
+      "t_stat_event_vs_control": 1.024,
+      "p_val": 0.3113,
+      "n_event_fwd1": 47,
+      "port_level_delta_ann_pct": -0.00,
+      "port_level_t": -0.532,
+      "verdict": "SPARSITY_WALL",
+      "verdict_note": "52개월 전체가 ≤2종목. 이벤트 N=47로 forward return 방향이 양(+0.95%/월)이지만 t=1.02로 유의성 없음. 포트폴리오 수준에서 delta≈0 (배제 대상이 너무 적어 EW 풀 평균과 동일)"
+    },
+    "TradingHalt": {
+      "in_universe_events": 6730,
+      "in_universe_tickers": 216,
+      "monthly_avg_excl": 2.3,
+      "monthly_median_excl": 2.0,
+      "sparse_months_pct": 62.2,
+      "sparse": true,
+      "sparsity_note": "196개월 중 122개월이 ≤2종목. lag1 적용 후 155개월 중 130개월이 ≤2종목(84%). 배제 효과가 전달되기 어려운 수준",
+      "event_ret_fwd1": -0.0013,
+      "control_ret_fwd1": 0.0015,
+      "delta_fwd1": -0.0028,
+      "t_stat_event_vs_control": -1.297,
+      "p_val": 0.1954,
+      "n_event_fwd1": 386,
+      "size_adjusted_delta": -0.0032,
+      "size_adjusted_t": -1.476,
+      "cap_tier_mega_mid": {"n_event": 76, "delta": -0.0060, "note": "대형주에서 더 뚜렷(-6bp/월)"},
+      "cap_tier_small": {"n_event": 310, "delta": -0.0022},
+      "port_level_delta_ann_pct": 0.02,
+      "port_level_t": 1.299,
+      "halt_months_with_events_pct": 67.1,
+      "verdict": "SPARSITY_WALL_WEAK_SIGNAL",
+      "verdict_note": "3재료 중 가장 표본 많음(N_event=386). 방향(-0.28%/월)은 일관되나 t=-1.30으로 유의 미달. 포트폴리오 수준 delta는 0.02%/yr (경제적 무의미). 대형주 tier에서 신호(-6bp)가 더 강하나 N=76으로 여전히 부족"
+    },
+    "AuditNonclean": {
+      "in_universe_events": 10,
+      "fy_range": "2015-2025 (FY+1 3/31 적용)",
+      "sparse": true,
+      "sparsity_note": "K200∪KQ150 내 한정/의견거절: FY2015-2025 합계 10건(7종목). 스탠드얼론 측정 불가",
+      "verdict": "SAMPLE_TOO_SMALL",
+      "verdict_note": "전기간 표본이 10건에 불과. 통계적 측정 불가"
+    },
+    "GoingConcern": {
+      "in_universe_events": 16,
+      "fy_range": "2015-2025",
+      "sparse": true,
+      "event_ret_fwd1": -0.0032,
+      "control_ret_fwd1": 0.0015,
+      "delta_fwd1": -0.0046,
+      "t_stat_event_vs_control": -0.890,
+      "p_val": 0.3877,
+      "verdict": "SAMPLE_TOO_SMALL_WEAK",
+      "verdict_note": "N=16. 방향(-4.6bp/월)은 있으나 표본 부족으로 판정 불가"
+    }
+  },
+  "composite_exclusion_recheck": {
+    "note": "R25 composite (halt|unf) 재확인",
+    "n_event": 457,
+    "delta_fwd1": -0.0021,
+    "t_stat": -1.101,
+    "p_val": 0.2713,
+    "conclusion": "R25 결과(ΔIR +0.024)와 일관 - composite도 유의성 없음"
+  },
+  "verdict": "P1_COMPLETE_NULL",
+  "verdict_summary": "3재료 모두 K200∪KQ150 유니버스 내 sparsity 벽 확인. 재료별 개별 배제 필터는 포트폴리오 수준 delta가 경제적으로 무의미(최대 0.02%/yr, t<1.9). composite R25와 방향 일관. EW-basis에서도 t값이 전부 2.0 미만으로 EW PORT_t > 0 기준도 미충족(통계적 유의성 부재).",
+  "sparsity_diagnosis": {
+    "root_cause": "K200∪KQ150은 우량 대형주 중심 유니버스로, 행정처분/거래정지/불성실공시 자체 발생률이 전체 상장사 대비 현저히 낮음. 전체 RAWDATA 기준 AdminStock 582,973건/1,208종목이지만 이 유니버스에서는 1,712건/19종목에 불과",
+    "structural_implication": "exclusion 재료로서의 정보 밀도 자체가 이 유니버스에서는 존재하지 않음. 소형주 포함 확장 유니버스에서만 효과 관측 가능(FQ-038 경로)"
+  },
+  "pit_compliance": {
+    "status": "PASS",
+    "note": "모든 신호는 당월 발생 → lag1 적용 후 t+1월 수익에 연결. 감사의견은 C4 규약(익년 3/31) 적용"
+  },
+  "next_probe": [
+    "FQ-038: 소형주 포함 확장 유니버스(전체 상장사)에서 중대형 tier 사건 실재 관측 확인 — K200∪KQ150 바깥에서 exclusion 효과 재측정 (데이터 이미 보유: RAWDATA 전체 AdminStock 582,973건). 단 production constraint(K200∪KQ150 고정) 때문에 overlay/monitoring 소비면에 국한",
+    "FQ-003 교차: 대차잔고/공매도 데이터와 이 재료들의 교차 신호 — 공매도가 켜진 상태에서 TradingHalt가 추가되는 종목 패턴(도훈 export 게이트 대기)",
+    "monitoring_tripwire: 현 book 종목 중 TradingHalt/AdminStock/UnfaithfulDisc 발생 시 alert 배선(standalone alpha 아니더라도 monitoring 소비는 정당화됨)"
+  ],
+  "revival_conditions": [
+    "FQ-038에서 중대형 tier 표본이 충분히 확인될 경우 — K200∪KQ150 내 사건 재판단",
+    "TradingHalt 대형주 tier(MEGA_MID) N=76 → 추가 연도 확보로 N>=150 도달 시 재측정",
+    "FQ-003 교차에서 공매도+halt 복합 패턴이 단독 halt보다 유의한 경우"
+  ],
+  "consumption_paths": {
+    "standalone_alpha": "REJECT - PORT_t 전체 미달",
+    "overlay": "CONDITIONAL - TradingHalt 대형주 tier 방향(-6bp) 참고 가능하나 N부족으로 미측정",
+    "monitoring_signal": "YES - book 종목 중 이 재료 발생 시 alert tripwire 배선 가능",
+    "risk_model": "CONSIDER - 이 재료 발생 종목을 위험모델 내 tail risk score에 반영",
+    "universe_filter_other_modes": "YES - FR/RAMP 모드에서 소형주 포함 시 유효성 재검토",
+    "composite_with_other_signals": "CONDITIONAL - TradingHalt + 다른 재무건전성 신호 복합 시 추가 검토"
+  }
+}

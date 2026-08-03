@@ -1,0 +1,102 @@
+{
+  "schema_version": "alpha_search_strategy_manifest_v1",
+  "created_at": "2026-08-04T08:13:18+0900",
+  "mode": "alpha_search",
+  "strategy_id": "STR_AS_20260804_081020_30248",
+  "strategy_name": "STR_AS_FX_INTENSITY",
+  "strategy_idea": "AWARE-FX 논문 FX exposure baseline 직접 대응: (|외화환산이익|+|외화환산손실|)/TotalAssets FX 노출 강도 지수 — 높은 FX 노출 기업의 헤징 프리미엄 long",
+  "factor_engine_path": "02_Infrastructure/alpha_search/factor_engine_FX_Intensity.R",
+  "execution": {
+    "universe": "K200_KQ150",
+    "universe_n": 350,
+    "n_holdings": 25,
+    "weight_method": "equal",
+    "commission": 0.0015,
+    "risk_controls": {
+      "vol_target": null,
+      "vol_lookback": 60,
+      "dd_brake": null,
+      "buffer_zone": {
+        "keep_n": 50,
+        "entry_n": 25
+      },
+      "use_default_buffer": true,
+      "cov_method": "sample"
+    },
+    "bt_result_path": "stage_artifacts/alpha_search/20260804_081020_30248/bt_result.rds"
+  },
+  "pit": {
+    "code_scan": "detect_lookahead",
+    "status": "CLEAN",
+    "factor_engine_path": "02_Infrastructure/alpha_search/factor_engine_FX_Intensity.R",
+    "note": "AlphaSearch stops before backtest when detect_lookahead reports violations."
+  },
+  "backtest_contract": {
+    "status": "OK",
+    "run_id": "ASBT_20260804_081020_30248",
+    "metric_type": "backtested",
+    "bt_result_path": "stage_artifacts/alpha_search/20260804_081020_30248/bt_result.rds",
+    "output_dir": "stage_artifacts/alpha_search/20260804_081020_30248",
+    "integrity_status": "WARNING",
+    "audit_pass": 15,
+    "audit_fail": 0,
+    "audit_warn": 1,
+    "validation_errors": [],
+    "return_series": {
+      "status": "OK",
+      "source": "bt_result.period_returns",
+      "csv_path": "stage_artifacts/alpha_search/20260804_081020_30248/03_period_returns.csv",
+      "date_col": "date",
+      "ret_col": "ret_net",
+      "n_obs": 2512,
+      "start_date": "2016-05-04",
+      "end_date": "2026-08-03",
+      "post2008_obs": 2512,
+      "frequency": "daily"
+    },
+    "note": "standard Backtest Result Contract saved for every AlphaSearch run; grade/admission remains separate"
+  },
+  "verdict": {
+    "grade": "C",
+    "score": 18,
+    "hurdle_pass": false,
+    "hard_fail": false,
+    "fail_reasons": [],
+    "f_grade_reasons": [],
+    "screening": {
+      "screen_pass": false,
+      "screen_route": "NONE",
+      "drawdown_tail_review": true,
+      "note": "탐색 게이트 — 자본/졸업 게이트 아님 (graduation HARD 불변). PIT만 절대."
+    }
+  },
+  "metrics": {
+    "CAGR": 4.49,
+    "AnnVol": 25.29,
+    "Sharpe": 0.178,
+    "Sharpe_m": 0.296,
+    "IR": 0.363,
+    "MDD": 60.48,
+    "Calmar": 0.074,
+    "Turnover_Ann": 28.1,
+    "Top10_Conc": 50,
+    "Rolling3Y_Pos": 60.7,
+    "BM_Corr": 0.502,
+    "ES99_d": 6.32,
+    "ES99_m": 17.96,
+    "GradeA_Corr": null,
+    "Rolling6M_Hit": 55.3,
+    "Worst6M_Ret": -25.67,
+    "MaxConsecNegAlpha": 7,
+    "Rolling12M_Hit": 53.7
+  },
+  "excess_cagr_pct": 12.01,
+  "fmt": [
+    {
+      "code": "FMT-01",
+      "label": "Structural MDD",
+      "reason": "MDD 60.5% > 45% — 선택 종목군의 위기 동반급락(구조적 꼬리위험)"
+    }
+  ],
+  "authoritative": null
+}

@@ -1,0 +1,61 @@
+{
+  "date": "20260804",
+  "n_input": 3,
+  "promoted": [
+    {
+      "paper_id": "2607.27461",
+      "factor_name": "Vol_Rank_Markov_Persistence",
+      "title": "Are Three Matrices All You Need To Beat the Market? Observable Matrix Dynamics for Portfolio Optimization",
+      "verdict": "testable",
+      "in_our_inventory": false,
+      "closest_existing": ["21-Day Volatility", "63-Day Volatility", "Beta Persistence", "Flow Persistence"],
+      "mechanism": "변동성 순위(Vol_Rank)의 마르코프 전이행렬(P^V) 기반 하위분위 도달확률(π^V_i)을 종목별 선별 신호로 사용. 논문 핵심 발견: 수익률 순위는 예측 불가(월간 log-likelihood gain +0.007 nats)이나 변동성 순위는 예측 가능(+0.116 nats, MAE 2.05→1.78 deciles). 정보이론적 근거: σ_cond/σ ≈ 50배 엔트로피 생성 감소(볼록 부등식). 선별 공식: S_i(t) = π^V_i = P^V[current_decile_i, {1,2}].",
+      "impl_sketch": "①월말 trailing 21일 실현변동성 계산: rv_i = sd(Ret[t-20:t]) ②횡단면 10분위 순위: decile_i = ntile(rv_i, 10) ③rolling 36개월 창에서 10×10 전이행렬 P^V 추정: P^V[j,k] = P(decile_{t+1}=k | decile_t=j) ④선별 신호: score_i = P^V[decile_i, 1] + P^V[decile_i, 2] (하위 2분위 도달확률) ⑤상위 25종 EW, 월간 리밸, 15bps one-way. 부호: 높은 score = 저변동성 유지 확률 높음(양방향 검증 필수, 부호 empirical). PIT: conditioning data = 홀딩월 시작 전 data only(C1~C15 준수).",
+      "kr_feasible": true,
+      "data_requirements": ["일별 Ret (RAWDATA 표준)"],
+      "novelty_vs_registry": "registry에는 21d/63d/126d Volatility 수준값, Beta Persistence(종목내 시계열), Flow Persistence(EPS 지속성)가 있으나 변동성 순위의 횡단면 마르코프 전이확률은 등재 없음. 핵심 차이: 수준이 아닌 전이확률 — 현재 분위에서 다음달 저변동성 분위로 이동할 확률.",
+      "cautions": [
+        "논문 long-only sleeve 성과: 5bps 기준 in-sample(2018-2021) Sharpe 0.03 vs 시장 0.70(대폭 열세), OOS(2022-2024) Sharpe ~0.92 vs 시장 0.78(소폭 상회). 15bps에서 마진 추가 축소 — KR 실측 전 성과 기대 과대 금지.",
+        "논문 핵심 성과원 = market-neutral L/S sleeve(QEPM long-only 불가). long-only sleeve 단독 성과는 보조적.",
+        "KR low-vol 팩터 AX-001/DIST-AR-001 인접 영역 — cap-tier(특히 mega-cap) 분해 병행 필수.",
+        "dual-basis 확인 의무: cap-w PORT_t HARD 판정 불변 + EW-유니버스 대비 cap-tier 분해 확인."
+      ]
+    }
+  ],
+  "confirmed_infeasible": [
+    {
+      "paper_id": "2607.28127",
+      "factor_name": "Market_Aligned_Sentiment_RL",
+      "title": "FinSMART: Financial Sentiment Analysis for Algorithmic Trading through Market-Aligned Reinforcement Learning",
+      "verdict": "infeasible",
+      "reason_code": "KR_news_corpus_absent__LLM_GRPO_training_infra_absent",
+      "reason_detail": "신호 생성 파이프라인 전 과정이 영어 재무 뉴스(Motley Fool/MarketWatch 1,672거래일) + Llama-3-8B GRPO fine-tuning(A6000 48GB GPU, 13.6M LoRA params) + NER 파이프라인(98% confidence threshold) 의존. KR 재무 뉴스 코퍼스 RAWDATA/factor_db 미보유 — DART 공시는 구조화 재무 텍스트로 감성 뉴스 기사 대체 불가. 보상함수가 idiosyncratic return vs S&P500 SPY 기준 — KR KOSPI200 기준 재설계 시 별도 전체 파이프라인 재구축 필요. 프로덕션 LLM 추론 파이프라인 qvest_ml venv 미지원. 장기 포트폴리오: L/S 35% 전략 — long leg도 일별 LLM 스코어링 전제(batch inference 부재).",
+      "next_probe": [
+        "①DART 공시 텍스트 키워드 기반 단순 감성 팩터 신규 FQ 등재: multilingual sentence-BERT로 위험/기회 섹션 임베딩 후 횡단면 IC 실측 — 본 논문과 완전 독립 가설",
+        "②DART 사업보고서 위험요인 섹션 텍스트량·복잡도(단어수/문장수) proxy → FQ 연계(2607.14174 DART-FinBERT 맥락, 이미 QUARANTINE — 방법론 참조만)"
+      ]
+    },
+    {
+      "paper_id": "2607.24410",
+      "factor_name": "CD_DFM_Latent_Factor_Exposures",
+      "title": "The Fundamental Structure of Risk: From Characteristics to Covariance",
+      "verdict": "infeasible",
+      "reason_code": "design_mismatch_risk_model_not_alpha__RavenPack_KR_absent__alpha_claim_zero",
+      "reason_detail": "CD-DFM는 공분산 추정기(위험모델) — 목적함수가 Stein covariance loss(미래 공분산 KL divergence 최소화). IC/t-stat/alpha 수치 논문 전체에 0건. 보고 지표 전량: Stein loss, Bures distance, calibration ratio ρ, Reconstruction R². 잠재 팩터 노출도 β_t를 알파 신호로 사용하는 것은 논문 미기술 — batch_434 날조 규정 해당(논문이 기술하지 않은 신호 폴백 금지). 입력 22종 중 RavenPack 뉴스 3종(news_flow/sentiment/buzz) KR 미보유. alpha_search_queue_20260804에 route_risk(non_testable)로 기등재 — 본 판정 정합.",
+      "routing_note": "risk-research agent 공분산 추정기 대안으로 별도 평가 경로 존재(WT 착수 시 risk-research 스코프)",
+      "next_probe": [
+        "①characteristic-driven covariance(CD-DFM 변형, RavenPack 뉴스 제외 재무 7종+sector만) KR 적용 → risk-research Σ 추정기 대안 WT 가설 신규 등재",
+        "②latent embedding β_t의 횡단면 수익률 IC 실측을 독립 가설로 사전등록 — 재무 7종 encoder train 후 β_t cross-IC alpha_search 신규 FQ"
+      ]
+    }
+  ],
+  "redundant": [],
+  "still_uncertain": [],
+  "summary": {
+    "n_promoted": 1,
+    "n_infeasible": 2,
+    "n_redundant": 0,
+    "n_still_uncertain": 0,
+    "promoted_factors": ["Vol_Rank_Markov_Persistence (2607.27461)"]
+  }
+}

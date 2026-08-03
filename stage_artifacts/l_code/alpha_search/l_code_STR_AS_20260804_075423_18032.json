@@ -1,0 +1,39 @@
+{
+  "l_code": "L-AS-20260804_075423_18032",
+  "strategy_id": "STR_AS_20260804_075423_18032",
+  "grade": "F",
+  "core_reference": "일별 거래량 변동계수(CV=std/mean) 낮은 종목 선택 — 유동성 불안정성 프리미엄 (2607.01377 파생). EV check NOVEL (cor L13=0.41, L16=0.23). FQ-143.",
+  "lesson_text": "CV_Vol_liquidity_uncertainty: 등급 F, 연복리 4.2% (벤치마크 대비 +4.5%p), 샤프 0.20. 명확한 실패 패턴 — 역방향 가설 탐색 후보.",
+  "tags": ["ALPHA_SEARCH", "FAST_VALIDATION", "VALIDATED_HARD_FAIL"],
+  "created_at": "2026-08-04",
+  "research_mode": "alpha_search",
+  "created_by": "AlphaSearch",
+  "metric_type": "proxy",
+  "construction_type": "single_factor_long_only",
+  "lcode_schema_version": 2,
+  "cagr_pct": 4.16,
+  "sharpe": 0.195,
+  "mdd_pct": 64.41,
+  "excess_cagr": 4.47,
+  "mechanism_hypothesis": "가설 '일별 거래량 변동계수(CV=std/mean) 낮은 종목 선택 — 유동성 불안정성 프리미엄 (2607.01377 파생). EV check NOVEL (cor L13=0.41, L16=0.23). FQ-1' — 검증 결과 지배 요인: FMT-01(MDD 64.4% > 45% — 선택 종목군의 위기 동반급락(구조적 꼬리위험))",
+  "data_supported_conclusion": "측정치(proxy — run_hurdle_gate): CAGR 4.2% (BM 대비 +4.5%p), 샤프 0.20, MDD -64.4%, IR 0.19, 회전율 연 838%, OOS retention 1.09.",
+  "next_probe": "MDD 축 탈락(64.4%) — 신호력 보존 시 OVERLAY_CANDIDATE 라우트(국면/DD overlay는 S5/QEPM 단계) 또는 저변동 결합 재검증.",
+  "fmt_codes": [
+    "FMT-01"
+  ],
+  "oos_retention": 1.087,
+  "falsification_attempts": [
+    {
+      "test": "PIT 정적스캔(detect_lookahead)",
+      "result": "survived",
+      "effect_retained": 1,
+      "detail": "CLEAN — 위반 시 백테 중단 정책으로 emit 시점 통과 보장"
+    },
+    {
+      "test": "IS65/OOS35 활성SR retention (hurdle D062, proxy) — 과적합 반증 시도",
+      "result": "survived",
+      "effect_retained": 1.087,
+      "detail": "retention 1.09 (measurement-graduation §3 하한 0.5 기준)"
+    }
+  ]
+}

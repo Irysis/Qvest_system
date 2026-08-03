@@ -1,28 +1,28 @@
 {
   "schema_version": "hypothesis_index_v1",
-  "generated_at": "2026-08-04T07:42:27+0900",
+  "generated_at": "2026-08-04T08:03:51+0900",
   "note": "AS-03 duplicate-hypothesis prevention index. signature = family|signal_group|universe|structure. Rebuild: Rscript 02_Infrastructure/tools/hypothesis_index.R build",
   "coverage": {
-    "alpha_search_manifest": 452,
-    "alpha_search_hurdle_fallback": 114,
-    "alpha_search_skipped_empty": 34,
+    "alpha_search_manifest": 455,
+    "alpha_search_hurdle_fallback": 113,
+    "alpha_search_skipped_empty": 35,
     "alpha_search_parse_fail": 0,
-    "lcode_indexed": 448,
+    "lcode_indexed": 452,
     "lcode_skipped": 0,
     "lcode_supplement_indexed": 0,
     "lcode_supplement_skipped_dup": 0,
     "lcode_supplement_parse_fail": 0,
     "module_indexed": 270,
     "module_skipped": 0,
-    "distilled_indexed": 106,
-    "distilled_skipped": 19,
+    "distilled_indexed": 107,
+    "distilled_skipped": 24,
     "wt_inflight_indexed": 136,
     "wt_inflight_skipped_terminal": 86,
     "wt_inflight_skipped_empty": 15,
     "wt_inflight_parse_fail": 0,
     "wt_inflight_merged_completed": 16
   },
-  "n_entries": 1130,
+  "n_entries": 1134,
   "entries": [
     {
       "strategy_id": "STR_AS_20260602_164125",
@@ -10341,7 +10341,7 @@
     },
     {
       "strategy_id": "STR_AS_20260804_073543_45444",
-      "hypothesis_signature": "momentum|momentum|unknown|unknown",
+      "hypothesis_signature": "momentum|momentum+volatility|k200_kq150|equal25",
       "title": "Spectral_LowFreq_Momentum_Monthly",
       "verdict": "FAIL",
       "grade": "F",
@@ -10351,10 +10351,49 @@
         "mdd": 66.55,
         "ir": 0.261,
         "calmar": 0.096,
-        "score": 28
+        "score": 28,
+        "oos_retention": 0.478
       },
-      "source_paths": "stage_artifacts/alpha_search/20260804_073543_45444/hurdle_result.json",
-      "source_types": "alpha_search_hurdle",
+      "source_paths": ["stage_artifacts/alpha_search/20260804_073543_45444/strategy_manifest.json", "stage_artifacts\\l_code\\alpha_search\\l_code_STR_AS_20260804_073543_45444.json"],
+      "source_types": ["alpha_search_manifest", "lcode_corpus"],
+      "date": "2026-08-04"
+    },
+    {
+      "strategy_id": "STR_AS_20260804_074545_39272",
+      "hypothesis_signature": "other|str_as_fx_hedging_proxy|k200_kq150|equal20",
+      "title": "STR_AS_FX_HEDGING_PROXY",
+      "verdict": "FAIL",
+      "grade": "F",
+      "key_metrics": {
+        "sharpe": 0.032,
+        "cagr": 0.92,
+        "mdd": 59.01,
+        "ir": 0.23,
+        "calmar": 0.016,
+        "score": 7.6,
+        "oos_retention": -2.526
+      },
+      "source_paths": ["stage_artifacts/alpha_search/20260804_074545_39272/strategy_manifest.json", "stage_artifacts\\l_code\\alpha_search\\l_code_STR_AS_20260804_074545_39272.json"],
+      "source_types": ["alpha_search_manifest", "lcode_corpus"],
+      "date": "2026-08-04"
+    },
+    {
+      "strategy_id": "STR_AS_20260804_075423_18032",
+      "hypothesis_signature": "liquidity|liquidity|k200_kq150|ivol25",
+      "title": "CV_Vol_liquidity_uncertainty",
+      "verdict": "FAIL",
+      "grade": "F",
+      "key_metrics": {
+        "sharpe": 0.195,
+        "cagr": 4.16,
+        "mdd": 64.41,
+        "ir": 0.19,
+        "calmar": 0.065,
+        "score": 31.5,
+        "oos_retention": 1.087
+      },
+      "source_paths": ["stage_artifacts/alpha_search/20260804_075423_18032/strategy_manifest.json", "stage_artifacts\\l_code\\alpha_search\\l_code_STR_AS_20260804_075423_18032.json"],
+      "source_types": ["alpha_search_manifest", "lcode_corpus"],
       "date": "2026-08-04"
     },
     {
@@ -12520,6 +12559,17 @@
       "date": "2026-08-02"
     },
     {
+      "strategy_id": "",
+      "hypothesis_signature": "other|unknown|unknown|single_factor_long_only",
+      "title": "L-AR-20260804_FQ004_P1: ",
+      "verdict": "NULL",
+      "grade": "NULL",
+      "key_metrics": [],
+      "source_paths": "stage_artifacts\\l_code\\alpha_search\\l_code_FQ004_material_filter_20260804.json",
+      "source_types": "lcode_corpus",
+      "date": "2026-08-03"
+    },
+    {
       "strategy_id": "STR_AS_PG2W2_earnings3m_refine",
       "hypothesis_signature": "earnings_event|consensus|unknown|value",
       "title": "L-AS-20260702_PG2W2: STR_AS_PG2W2_earnings3m_refine",
@@ -14626,48 +14676,9 @@
       "date": "2026-07-25"
     },
     {
-      "strategy_id": "DIST-AR-037",
-      "hypothesis_signature": "overlay_regime|regime_overlay|unknown|distilled",
-      "title": "DIST-AR-037: [초안] [방법론 혼재(방향불명) 규칙 초안] family=overlay_regime, tags=E,,,R, supporting=9건 L-code. (promote.R 5축 검증에서 범위·메커니즘·OOS 확정 필요)",
-      "verdict": "DISTILLED",
-      "grade": null,
-      "key_metrics": [],
-      "retry_policy": null,
-      "distilled_status": "pending_5axis",
-      "source_paths": "06_Registry/distilled_knowledge.json",
-      "source_types": "distilled_knowledge",
-      "date": "2026-07-25"
-    },
-    {
       "strategy_id": "DIST-AR-038",
       "hypothesis_signature": "behavioral|실증_실패_규칙_초안_family_behavioral_tags_signa|unknown|distilled",
       "title": "DIST-AR-038: [초안] [실증 실패 규칙 초안] family=behavioral, tags=signature_smoothing_refuted,spectrum_decomposition_return_vs_flow,short_halflife_quantified, supporting=1건 L-code. (promote.R 5축 검증에서 범위·메커니즘·OOS 확정 필요)",
-      "verdict": "DISTILLED_NEG",
-      "grade": null,
-      "key_metrics": [],
-      "retry_policy": "탐색됨(경로 F 기록). 부활 트리거: 2026-10-31 봉투 안 차별점 명시 시 진행 가능(INV-7 provisional — 불변 기각 아님).",
-      "distilled_status": "pending_5axis",
-      "source_paths": "06_Registry/distilled_knowledge.json",
-      "source_types": "distilled_knowledge",
-      "date": "2026-08-02"
-    },
-    {
-      "strategy_id": "DIST-AR-039",
-      "hypothesis_signature": "infra_process|실증_혼재_방향불명_규칙_초안_family_infra_process_ta|unknown|distilled",
-      "title": "DIST-AR-039: [초안] [실증 혼재(방향불명) 규칙 초안] family=infra_process, tags=book_enhancement,book_marginal,screen_tier, supporting=7건 L-code. (promote.R 5축 검증에서 범위·메커니즘·OOS 확정 필요)",
-      "verdict": "DISTILLED",
-      "grade": null,
-      "key_metrics": [],
-      "retry_policy": null,
-      "distilled_status": "pending_5axis",
-      "source_paths": "06_Registry/distilled_knowledge.json",
-      "source_types": "distilled_knowledge",
-      "date": "2026-08-02"
-    },
-    {
-      "strategy_id": "DIST-AR-040",
-      "hypothesis_signature": "momentum|momentum|unknown|distilled",
-      "title": "DIST-AR-040: [초안] [실증 실패 규칙 초안] family=momentum, tags=MOMENTUM,KR_LONGONLY,NON_RETURN, supporting=15건 L-code. (promote.R 5축 검증에서 범위·메커니즘·OOS 확정 필요)",
       "verdict": "DISTILLED_NEG",
       "grade": null,
       "key_metrics": [],
@@ -14685,19 +14696,6 @@
       "grade": null,
       "key_metrics": [],
       "retry_policy": "탐색됨(경로 F 기록). 부활 트리거: 2026-10-31 봉투 안 차별점 명시 시 진행 가능(INV-7 provisional — 불변 기각 아님).",
-      "distilled_status": "pending_5axis",
-      "source_paths": "06_Registry/distilled_knowledge.json",
-      "source_types": "distilled_knowledge",
-      "date": "2026-08-02"
-    },
-    {
-      "strategy_id": "DIST-AR-042",
-      "hypothesis_signature": "overlay_regime|regime_overlay|unknown|distilled",
-      "title": "DIST-AR-042: [초안] [방법론 혼재(방향불명) 규칙 초안] family=overlay_regime, tags=E,,,R, supporting=12건 L-code. (promote.R 5축 검증에서 범위·메커니즘·OOS 확정 필요)",
-      "verdict": "DISTILLED",
-      "grade": null,
-      "key_metrics": [],
-      "retry_policy": null,
       "distilled_status": "pending_5axis",
       "source_paths": "06_Registry/distilled_knowledge.json",
       "source_types": "distilled_knowledge",
@@ -14728,6 +14726,58 @@
       "source_paths": "06_Registry/distilled_knowledge.json",
       "source_types": "distilled_knowledge",
       "date": "2026-08-02"
+    },
+    {
+      "strategy_id": "DIST-AR-045",
+      "hypothesis_signature": "infra_process|실증_혼재_방향불명_규칙_초안_family_infra_process_ta|unknown|distilled",
+      "title": "DIST-AR-045: [초안] [실증 혼재(방향불명) 규칙 초안] family=infra_process, tags=book_enhancement,book_marginal,screen_tier, supporting=8건 L-code. (promote.R 5축 검증에서 범위·메커니즘·OOS 확정 필요)",
+      "verdict": "DISTILLED",
+      "grade": null,
+      "key_metrics": [],
+      "retry_policy": null,
+      "distilled_status": "pending_5axis",
+      "source_paths": "06_Registry/distilled_knowledge.json",
+      "source_types": "distilled_knowledge",
+      "date": "2026-08-03"
+    },
+    {
+      "strategy_id": "DIST-AR-046",
+      "hypothesis_signature": "overlay_regime|regime_overlay|unknown|distilled",
+      "title": "DIST-AR-046: [초안] [방법론 혼재(방향불명) 규칙 초안] family=overlay_regime, tags=E,,,R, supporting=13건 L-code. (promote.R 5축 검증에서 범위·메커니즘·OOS 확정 필요)",
+      "verdict": "DISTILLED",
+      "grade": null,
+      "key_metrics": [],
+      "retry_policy": null,
+      "distilled_status": "pending_5axis",
+      "source_paths": "06_Registry/distilled_knowledge.json",
+      "source_types": "distilled_knowledge",
+      "date": "2026-08-03"
+    },
+    {
+      "strategy_id": "DIST-AR-047",
+      "hypothesis_signature": "other|실증_규칙_성과증거_미분류_초안_family_unknown_tags_su|unknown|distilled",
+      "title": "DIST-AR-047: [초안] [실증 규칙(성과증거 미분류) 초안] family=unknown, tags=, supporting=1건 L-code. (promote.R 5축 검증에서 범위·메커니즘·OOS 확정 필요)",
+      "verdict": "DISTILLED",
+      "grade": null,
+      "key_metrics": [],
+      "retry_policy": null,
+      "distilled_status": "pending_5axis",
+      "source_paths": "06_Registry/distilled_knowledge.json",
+      "source_types": "distilled_knowledge",
+      "date": "2026-08-03"
+    },
+    {
+      "strategy_id": "DIST-AR-048",
+      "hypothesis_signature": "overlay|regime_overlay|unknown|distilled",
+      "title": "DIST-AR-048: [초안] [실증 규칙(성과증거 미분류) 초안] family=unknown, tags=, supporting=1건 L-code. (promote.R 5축 검증에서 범위·메커니즘·OOS 확정 필요)",
+      "verdict": "DISTILLED",
+      "grade": null,
+      "key_metrics": [],
+      "retry_policy": null,
+      "distilled_status": "pending_5axis",
+      "source_paths": "06_Registry/distilled_knowledge.json",
+      "source_types": "distilled_knowledge",
+      "date": "2026-08-03"
     },
     {
       "strategy_id": "DIST-AS-001",
@@ -14782,6 +14832,19 @@
       "date": "2026-08-01"
     },
     {
+      "strategy_id": "DIST-AS-010",
+      "hypothesis_signature": "other|실증_규칙_성과증거_미분류_초안_family_unknown_tags_su|unknown|distilled",
+      "title": "DIST-AS-010: [초안] [실증 규칙(성과증거 미분류) 초안] family=unknown, tags=, supporting=1건 L-code. (promote.R 5축 검증에서 범위·메커니즘·OOS 확정 필요)",
+      "verdict": "DISTILLED",
+      "grade": null,
+      "key_metrics": [],
+      "retry_policy": null,
+      "distilled_status": "pending_5axis",
+      "source_paths": "06_Registry/distilled_knowledge.json",
+      "source_types": "distilled_knowledge",
+      "date": "2026-08-03"
+    },
+    {
       "strategy_id": "DIST-GEN-002",
       "hypothesis_signature": "infra_process|regime_overlay|unknown|distilled",
       "title": "DIST-GEN-002: [초안] [실증 실패 규칙 초안] family=infra_process, tags=overlay_drain,fq006_closed,market_timing_generalized, supporting=1건 L-code. (promote.R 5축 검증에서 범위·메커니즘·OOS 확정 필요)",
@@ -14819,6 +14882,19 @@
       "source_paths": "06_Registry/distilled_knowledge.json",
       "source_types": "distilled_knowledge",
       "date": "2026-07-18"
+    },
+    {
+      "strategy_id": "DIST-GEN-005",
+      "hypothesis_signature": "defense|실증_규칙_성과증거_미분류_초안_family_defense_tags_o_|unknown|distilled",
+      "title": "DIST-GEN-005: [초안] [실증 규칙(성과증거 미분류) 초안] family=defense, tags=O,_,E, supporting=1건 L-code. (promote.R 5축 검증에서 범위·메커니즘·OOS 확정 필요)",
+      "verdict": "DISTILLED",
+      "grade": null,
+      "key_metrics": [],
+      "retry_policy": null,
+      "distilled_status": "pending_5axis",
+      "source_paths": "06_Registry/distilled_knowledge.json",
+      "source_types": "distilled_knowledge",
+      "date": "2026-08-03"
     },
     {
       "strategy_id": "DIST-JG-002",
@@ -15605,19 +15681,6 @@
       "hypothesis_signature": "low_vol|실증_혼재_방향불명_규칙_초안_family_low_vol_tags_r_a|unknown|distilled",
       "title": "DIST-RAMP-015: [초안] [실증 혼재(방향불명) 규칙 초안] family=low_vol, tags=R,A,M, supporting=2건 L-code. (promote.R 5축 검증에서 범위·메커니즘·OOS 확정 필요)",
       "verdict": "DISTILLED",
-      "grade": null,
-      "key_metrics": [],
-      "retry_policy": null,
-      "distilled_status": "pending_5axis",
-      "source_paths": "06_Registry/distilled_knowledge.json",
-      "source_types": "distilled_knowledge",
-      "date": "2026-07-18"
-    },
-    {
-      "strategy_id": "DIST-RAMP-016",
-      "hypothesis_signature": "mixed|regime_overlay|unknown|distilled",
-      "title": "DIST-RAMP-016: [초안] [방법론 조건부 규칙 초안] family=overlay_regime, tags=R,A,M, supporting=45건 L-code. (promote.R 5축 검증에서 범위·메커니즘·OOS 확정 필요)",
-      "verdict": "DISTILLED_COND",
       "grade": null,
       "key_metrics": [],
       "retry_policy": null,

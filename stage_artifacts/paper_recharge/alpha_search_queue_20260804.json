@@ -1,8 +1,20 @@
 {
   "date": "20260804",
   "generated_at": "20260804_120000",
-  "n": 0,
-  "testable": [],
+  "n": 1,
+  "testable": [
+    {
+      "id": "2607.27461",
+      "title": "Are Three Matrices All You Need To Beat the Market? Observable Matrix Dynamics for Portfolio Optimization",
+      "factor_name": "Vol_Rank_Markov_Persistence",
+      "source": "tier2_recheck",
+      "decision": "PENDING",
+      "impl_sketch": "월말 trailing 21d rv → 횡단면 10분위 → rolling 36M P^V 추정 → π^V_i = P^V[decile_i, {1,2}] (하위 2분위 도달확률) → 상위 25종 EW 월간 리밸 15bps",
+      "data_requirements": ["일별 Ret (RAWDATA 표준)"],
+      "cautions": ["5bps 기준 L-only in-sample 열세 → 15bps 마진 thin. KR cap-tier 분해 병행.", "부호 empirical — 양방향 확인 필수."],
+      "date_added": "20260804"
+    }
+  ],
   "non_testable": [
     {
       "id": "2607.29583",
@@ -22,7 +34,7 @@
       "id": "2607.24410",
       "title": "The Fundamental Structure of Risk: From Characteristics to Covariance",
       "decision": "route_risk",
-      "reason": "CD-DFM: characteristic-driven covariance estimator. Alpha signal 아님 — risk-research agent용 공분산 추정 모델.",
+      "reason": "CD-DFM: characteristic-driven covariance estimator. Alpha signal 아님 — risk-research agent용 공분산 추정 모델. tier-2 재확인: 알파 claim 0건, Stein loss 최적화, RavenPack 뉴스 KR 불가. 판정 불변.",
       "date": "2026-07-27"
     },
     {
@@ -31,10 +43,23 @@
       "decision": "route_optimizer",
       "reason": "CNN-GRU+PPO 인덱스 수준 market-neutral 포트폴리오 optimizer. 횡단면 종목선택 팩터 신호 없음 — optimizer-research용.",
       "date": "2026-07-20"
+    },
+    {
+      "id": "2607.28127",
+      "title": "FinSMART: Financial Sentiment Analysis for Algorithmic Trading through Market-Aligned Reinforcement Learning",
+      "decision": "infeasible",
+      "reason": "KR 재무 뉴스 코퍼스 미보유 + Llama-3-8B GRPO training 인프라(A6000 GPU) 부재. tier-2 재검 확정.",
+      "date": "20260804"
     }
   ],
-  "items": [],
-  "reason": "no_testable_candidates",
+  "items": [
+    {
+      "id": "2607.27461",
+      "factor_name": "Vol_Rank_Markov_Persistence",
+      "status": "PENDING"
+    }
+  ],
+  "reason": "factor_recheck_tier2_promoted_1",
   "reason_detail": {
     "arxiv_aug2026_papers": 0,
     "arxiv_newest_paper": "2026-07-31 (2607.29583)",
@@ -45,8 +70,10 @@
     "batch_434_quarantine_count": 1,
     "skip_theory_count": 1,
     "route_other_mode_count": 2,
-    "factor_recheck_n": 0,
-    "factor_recheck_file": "factor_recheck_queue_20260804.json",
+    "factor_recheck_n": 3,
+    "factor_recheck_promoted": 1,
+    "factor_recheck_infeasible": 2,
+    "factor_recheck_file": "factor_recheck_result_20260804.json",
     "fq_open_checked": [
       "FQ-002: pilot_measured_lead_open — SIZE분모 IC t=1.97 리드, WT-013 신규 사전등록 라운드 대기 (QEPM mode)",
       "FQ-004: signal_round_negative_frontier_open — T1 감사의견 12,844행 수집 완료, 재료별 개별 필터 미측정 (QEPM mode)",
@@ -55,6 +82,7 @@
   },
   "next_queue_expected": "20260805",
   "next_actions": [
+    "Vol_Rank_Markov_Persistence (2607.27461) alpha-search 백테스트 착수 — KR K200∪KQ150 rolling 36M P^V 추정 후 cap-w PORT_t 실측",
     "arXiv 2026-08-01~04 논문 내일(20260805) 재탐색 — 월요일 제출분 Tuesday 등재 관례",
     "FQ-002 WT-013 착수: SIZE분모(계약금액/시총) 사전등록 신호 전구간 크롤 지불 여부 판단 필요 (lead IC t=1.97, 섭동 확인 포함)",
     "FQ-004 재료별 개별 필터: T1 감사의견 비적정 종목 직접 exclusion delta 측정 (추가 데이터 불요, 즉시 착수 가능)"

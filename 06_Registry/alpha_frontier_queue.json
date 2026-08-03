@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "sot": "02_Infrastructure/docs/qvest_v8_3_alpha_discovery_sot.md §4",
-  "updated": "2026-08-04 (FQ-145 Spectral 횡단면 config_scoped_negative + FQ-146 지수 TF 오버레이 신규 등재)",
+  "updated": "2026-08-04 (FQ-143 CV_Vol Grade F 판정 + FQ-150/151 등재)",
   "consume_rule": "새 발굴 리서치 착수 전: hypothesis_index lookup → 본 큐 확인 → owner/status 갱신. 완료 시 result_ref(L-code/보고서) 기입. dohoon_decision 항목은 세션 임의 착수 금지.",
   "entries": [
     {
@@ -72,7 +72,7 @@
       "data_gate": "2단: [1단 무파서] T1 감사의견 구조화 API(3,828콜·0.5일) + T3 정정지도(~400콜) + T2a 담보 최근2년 majorstock(348콜) — insider 백필 완결 후 즉시 가능. [2단 파서] T2b 담보 역사 document.xml ~29k건(~4.5일) — 1단 예비 신호 양성일 때만 지불(도훈 결정). census: 04_Research/dart_census/census_pledge_audit_20260713.md",
       "owner": "Q-Lead (R25 alpha-research, 도훈 재개 지시 2026-07-14)",
       "status": "signal_round_negative_frontier_open",
-      "next_action": "R25 완료 = CONFIG_SCOPED_NEGATIVE (L-AR-20260714_R25). cap-w authoritative 全 무의미(|t|<1), EW 양효과=SMALL size 아티팩트(부호반전), 비적정=sparsity 벽(top-25 0회), 계약등급 exclusion delta +0.024/0.000. next_probe: P1 소형주-포함 유니버스 distress 재측정(monitoring/risk 소비면) / P2 confound-controlled hard-distress composite(going-concern x AdminStock/TradingHalt/UnfaithfulDisc, Size-residualized) / P3 정정 진짜 magnitude=파서 gate(precursor 약함, 미정당화). 소비 배선: going-concern/비적정 monitoring tripwire. ★2026-08-02 정합 정정 — 위 P1/P2/P3 는 R25(07-14) 시점 목록이고 **4일 뒤 DIST-AR-018(07-18, DISTILLED_NEG)이 이 계열을 정리하면서 프론티어를 다시 그렸다**. DIST-AR-018 retry_policy 의 실제 미탐색 축 = ①**재료별 개별 배제 필터**('R25는 composite exclusion 1종만 null(delta +0.024), 재료별 개별 필터는 미검') ②FQ-038 소형 filer coverage 확장(중대형 사고 표본 실재 검증, 쿼터 대기) ③FQ-003 공매도/대차 교차(도훈 export 게이트). 즉 **P2(composite) 방향은 카드가 닫은 쪽** — 착수하려면 차별점(Size-residualize 로 R25 의 SMALL-size 아티팩트 제거) 명시 필요. 권장 순서 = ① 재료별 개별 측정 먼저(예산 0, 재료 전부 수집 완료: T1 감사의견 12,844행 + RAWDATA 의 AdminStock/TradingHalt/UnfaithfulDisc), 신호 갖는 재료가 나오면 그 재료로 composite 재구성. 부활 트리거(INV-7 provisional, 불변 기각 아님): FQ-038 coverage 에서 중대형 표본 실재 관측 또는 FQ-003 교차에서 대형 tier 전이 관측.",
+      "next_action": "P1 재료별 개별 배제 필터 측정 완료 (2026-08-04). 결과: 3재료 모두 SPARSITY_WALL 확인. K200∪KQ150 내 AdminStock/UnfaithfulDisc 월평균 1.3-1.4종목, TradingHalt 월평균 1.7종목(lag1 후) → 포트폴리오 수준 exclusion delta 전부 <0.02%/yr, t<1.9로 경제적·통계적 무의미. R25 composite null과 일관. 부활 트리거: ①FQ-038 중대형 표본 실재 확인 ②TradingHalt 대형주 tier N>=150 ③FQ-003 공매도 교차. 즉시 가능 소비면: monitoring_tripwire(book 종목 내 alert 배선). 결과물: stage_artifacts/paper_recharge/fq004_material_filter_20260804.json",
       "source_refs": [
         "memory: next_session_task 07-05 미탐색 프론티어 맵",
         "census: FQ-022 / 04_Research/dart_census/census_pledge_audit_20260713.{md,json}",
@@ -2668,11 +2668,38 @@
       "lane": "alpha_search",
       "owner": "Q-Lead",
       "registered": "2026-08-04 Q-Lead (AS-20260804 batch_434 부산물 FQ 이관)",
-      "status": "done_diagnostic",
+      "status": "config_scoped_negative_20260804",
+      "strategy_id": "STR_AS_20260804_075423_18032",
+      "result": "Grade F (score 31.5). MDD 64.4%(structural hard fail: 17/15 45%+ episodes). Calmar 0.065 << 0.64 HARD. Sharpe 0.195, CAGR 4.16%, IR 0.190. IC=0.020(pos_rate 61%), FMB NW-t=0.58(미유의). PIT CLEAN. 주목: AlphaTrend ratio 2.97↑(최근3Y SR 0.579), OOS retention 1.087 robust. L-code 자동 적립.",
+      "mechanism_diagnosis": "β=0.44 저베타 선별. 안정적 거래량 ≠ 방어적 펀더멘털. GFC alpha -8.1%, COVID alpha -9.7%. 최근 금리 상승기(Rate_Hike: +2.85%)에만 outperform. FMB t=0.58: 크로스섹션 프리미엄 미유의.",
+      "consumer_surfaces_checked": [
+        "1팩터랭킹: WEAK (FMB t=0.58 비유의)",
+        "2유니버스 필터: CV_Vol ≤ threshold 제거 미측정 → FQ-150",
+        "3오버레이: 시장 레벨 CV_Vol 오버레이 미측정 → FQ-151",
+        "4위험모델: β=0.44 저베타 구조 참고",
+        "5monitoring: 포트폴리오 CV_Vol 스파이크 감시 후보",
+        "6선별라벨: 현 book 저 CV_Vol 종목 비중 사후 확인 권장"
+      ],
+      "next_probe": [
+        "FQ-150: CV_Vol 유니버스 exclusion filter (고 CV_Vol 제거 → base IR 개선 여부)",
+        "FQ-151: 시장 레벨 CV_Vol 오버레이 (지수 유동성 불안정 → 노출 축소)"
+      ],
+      "revival_conditions": [
+        "위기 구간 제외 regime 조건부 SR > 0.5 실증 시 → FQ-151 경유 소비",
+        "cap-tier 분해: EW-유니버스 대비 mid-cap 집중 여부 확인"
+      ],
       "ev_rationale": "D3 dead class(microstructure/flow)와 일부 중복 우려 있으나 CV_Vol은 방향성 없는 거래량 산포 지표로 구분. precheck: Amihud와 cross-cor 확인 선행 권장.",
       "wall_check": "Amihud|Ret|/Vol 기등재분과 신호 공간 중복 여부 사전 cor 체크 필요. 중복>0.9이면 EV_D1_GATED 재검토.",
-      "precheck_result": "EV_D1_GATED (2026-08-04): L16_Turnover_Vol(std of daily turnover)+L02_Turnover(mean) 조합이 CV=std/mean을 실질 커버. 별도 alpha-search 착수 불필요.",
-      "next_action": "소비면: L13_Vol_Variance_Ratio 실제 성과 확인 후 monitoring 신호(포트 CV 급등 시 경보) 배선 가능."
+      "precheck_result": "EV check NOVEL: cor(CV_Vol, L13)=0.41, cor(CV_Vol, L16)=0.225 (threshold 0.9). 하지만 FMB t=0.58로 크로스섹션 가격 프리미엄 미유의.",
+      "ev_check_result": {
+        "checked": "2026-08-04",
+        "cor_L13_Vol_Variance_Ratio": 0.41,
+        "cor_L16_Turnover_Vol": 0.225,
+        "threshold": 0.9,
+        "verdict": "NOVEL",
+        "months_measured": 66
+      },
+      "updated": "2026-08-04"
     },
     {
       "id": "FQ-144",
@@ -2719,6 +2746,100 @@
       "next_action": "KOSPI200 저주파 스펙트럼 파워 시계열 구성(rolling FFT) → C5 PIT 체크 → 현행 book 오버레이 A/B. overlay_pit_guard HARD 통과 필수.",
       "source_paper": "2607.19497",
       "consumption_path": "overlay — 국면 입력 / 시장 타이밍 lane"
+    },
+    {
+      "id": "FQ-147",
+      "lane": "alpha_search",
+      "title": "FX_Hedging_Proxy (파생상품/총자산) — proxy 한계로 config_scoped_negative",
+      "hypothesis": "DART 파생상품 보유액/총자산을 FX 헤징 공시 대용으로 사용. 논문 원형(AWARE-FX 2607.27611) proxy 구현.",
+      "status": "config_scoped_negative_20260804",
+      "result": "Grade F. STR_AS_20260804_074545_39272. IC=-0.0078(음수), PORT_t=-0.258(p=0.797 비유의), MDD 59.01%, CAGR 0.92%, Calmar 0.016. metric_type=backtested. 파생상품 보유액은 FX 헤징 목적이 아닌 규모 측정 — 금리/원자재 헤징 합산으로 FX 노출 감소와 연계 약화. IC 음수 = 방향 역전 가능성.",
+      "mechanism": "DART 사업보고서 전문 텍스트 파이프라인 미구축으로 논문 원형(NLP strict FX score) 재현 불가. 재무 proxy IC=-0.0078로 신호 품질 현저히 낮음. OOS 역전(IS SR -0.089 → OOS SR +0.224) = 일관 신호 아님.",
+      "next_probe": [
+        "FQ-148: DART 전문 텍스트 FX 헤징 공시 NLP (논문 원형, 데이터 구축 필요)",
+        "FQ-149: FX 노출 순수 proxy (외화자산/총자산) — 논문 exposure baseline 직접 대응"
+      ],
+      "consumer_surfaces": [
+        "2유니버스 필터: 파생상품 급증 종목 제거 필터 미검",
+        "4위험모델: 저베타(0.332) 구조 — 베타 조정 참고"
+      ],
+      "registered": "2026-08-04 (AS 에이전트 결과 수집)",
+      "source_paper": "2607.27611",
+      "revival_conditions": [
+        "DART 전문 텍스트 파이프라인 구축 시 FQ-148로 재도전",
+        "IC 음수(-0.0078) 역방향 검증 후 유의 시 FQ-149 방향"
+      ]
+    },
+    {
+      "id": "FQ-148",
+      "lane": "non_return",
+      "title": "DART 사업보고서 전문 텍스트 FX 헤징 공시 NLP — 논문 원형 재현",
+      "hypothesis": "AWARE-FX(2607.27611) 핵심 신호: 사업보고서 FX 헤지 파생상품 사용 여부 NLP 점수화 → FX 위험 관리 강도 이진/연속 점수. KR DART 전문 텍스트 접근 필요.",
+      "ev_rationale": "FQ-074(DART 전문 감성)와 동일 데이터 경로. FQ-074 착수 후 텍스트 파이프라인 구축 시 파생 착수 가능. 현재 data_gate=미구축.",
+      "wall_check": "비-return 원천. PIT C4 의무(사업보고서 lag = 익년 3/31). 텍스트 파이프라인 구축 선행 필수.",
+      "data_gate": "DART 사업보고서 전문 텍스트 파이프라인 미구축 — FQ-074 완료 후 착수 가능.",
+      "status": "blocked_by_FQ-074",
+      "owner": "Q-Lead",
+      "registered": "2026-08-04 (FQ-147 next_probe 파생)",
+      "source_paper": "2607.27611"
+    },
+    {
+      "id": "FQ-149",
+      "lane": "alpha_search",
+      "title": "FX 노출 순수 proxy — 외화자산/총자산 (논문 exposure baseline)",
+      "hypothesis": "AWARE-FX 논문의 FX exposure baseline에 직접 대응: dart_raw_financials 외화표시현금 계정 비중(외화자산/총자산). 헤징 활동이 아닌 노출 수준 측정.",
+      "ev_rationale": "FQ-147의 IC 음수(-0.0078) = 파생상품 보유가 역방향. 논문은 FX 노출 기업이 헤징으로 안정화 → 프리미엄이라는 구조 — 노출 측면을 별도 측정.",
+      "wall_check": "RAWDATA/dart_raw_financials에 외화 계정 존재 여부 사전 확인 필수. 기존 DB에 외화-관련 팩터 없음 확인됨.",
+      "data_gate": "PASS. dart_raw_financials.parquet에 외화환산이익/손실 계정 실재 확인. K200∪KQ150 연 142~211 tickers 커버(2015~2025). 직접 외화자산 계정은 없지만 P&L 경유 FX 노출 크기 측정 가능 — (|외화환산이익|+|외화환산손실|)/TotalAssets 또는 |FX순손익|/매출로 구현.",
+      "status": "precheck_done_data_available",
+      "owner": "Q-Lead",
+      "registered": "2026-08-04 (FQ-147 next_probe 파생)",
+      "source_paper": "2607.27611",
+      "next_action": "alpha-search agent 착수 — FX 노출 강도 지수 경량 백테 (2015~2025, 11년)",
+      "revised_hypothesis": "AWARE-FX 논문 FX exposure baseline: 외화환산이익/손실 절대값 합계를 TotalAssets로 나눈 FX 노출 강도 지수. 높은 FX 노출 기업이 적극 헤징 시 불확실성 감소 → 리스크 프리미엄 감소 → 초과수익. annual lag(익년 3/31) 적용, PIT C4 준수.",
+      "precheck_result": {
+        "date": "2026-08-04",
+        "dart_accounts": [
+          "외화환산이익",
+          "외화환산손실",
+          "해외사업장환산외환차이"
+        ],
+        "ku_kq_coverage_tickers_per_year": "142~211 (2015~2025)",
+        "total_unique_tickers_in_universe": 293,
+        "verdict": "PASS — data available, sufficient coverage for top-25 ranking",
+        "pit_lag": "익년 3/31 (C4 annual rule)",
+        "proxy_formula": "(abs(외화환산이익) + abs(외화환산손실)) / TotalAssets"
+      },
+      "updated": "2026-08-04"
+    },
+    {
+      "id": "FQ-150",
+      "lane": "overlay",
+      "title": "CV_Vol 유니버스 exclusion filter — 고 CV_Vol 종목 제거 시 base book IR 개선",
+      "hypothesis": "CV_Vol 높은 종목(유동성 불안정) 상위 20% 제거 후 기존 전략 성과 개선 여부 측정. FMB t=0.58(미유의)이지만 극단 유동성 불안정 종목은 실현 슬리피지 과대 → universe exclusion으로 소비.",
+      "data_gate": "RAWDATA daily Vol 기보유. production book 현 구성 필요 — 현행 보유 종목의 CV_Vol 측정 후 overlap 확인.",
+      "wall_check": "C10 PIT: 유니버스 필터에 t-1 거래량 사용 의무. 필터 적용 후 n_holdable ≥ 25 보장 확인 필요.",
+      "lane_detail": "소비면 ②유니버스 필터 — book-marginal ΔIR 측정 필요 (alpha signal 아님)",
+      "owner": "Q-Lead",
+      "registered": "2026-08-04 (FQ-143 CV_Vol config_scoped_negative 소비면 ② 파생)",
+      "status": "frontier_open",
+      "source_fq": "FQ-143",
+      "next_action": "현행 PG2 book에서 보유 25종 CV_Vol 레벨 측정 → 상위 10%/20% 제거 시 backtest 개선 delta 추정. ΔIR 방향 확인 후 판단."
+    },
+    {
+      "id": "FQ-151",
+      "lane": "overlay",
+      "title": "시장 레벨 CV_Vol 오버레이 — KOSPI200 지수 거래량 불안정 급등 시 노출 축소",
+      "hypothesis": "개별 종목 횡단면 신호로는 FMB t=0.58 미유의. 단 시장 전체 CV_Vol(KOSPI200 일별 거래량 21일 CV) 급등 = 유동성 스트레스 신호 → 해당 구간 포트폴리오 노출 축소 타이밍 오버레이로 소비. FQ-143 최근 3Y 개선(SR 0.579)이 안정적 시장 구간에 집중하는지 검증.",
+      "data_gate": "RAWDATA 지수 레벨 거래량 또는 BM_Ret 대용. KOSPI200 일별 Vol 집계 필요 (개별 종목 Vol sum/avg).",
+      "wall_check": "C5 PIT: 신호 컷오프 = 홀딩월 시작일 이전. overlay_pit_guard HARD 통과 필수. KR 시장타이밍 기존 4중 부정 구간 존재 — strict A/B 의무.",
+      "lane_detail": "소비면 ③오버레이/국면 입력 — 기존 book에 오버레이, 자본 수동 confirm",
+      "owner": "Q-Lead",
+      "registered": "2026-08-04 (FQ-143 CV_Vol config_scoped_negative 소비면 ③ 파생)",
+      "status": "frontier_open",
+      "source_fq": "FQ-143",
+      "next_action": "KOSPI200 시장 레벨 CV_Vol 시계열 구성(RAWDATA Vol 집계 21d rolling CV) → C5 lag 검증 → 안정/불안정 구간 분류 → 현행 book 수익률 대비 구간별 성과 확인.",
+      "priority_note": "FQ-149(data_gate PASS, 즉시 착수 가능)보다 후순위. FQ-149 결과 수집 후 착수."
     }
   ]
 }

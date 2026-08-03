@@ -1,0 +1,41 @@
+{
+  "l_code_id": "L-AR-20260804_FQ004_P1",
+  "research_mode": "alpha_search",
+  "date": "20260804",
+  "fq_id": "FQ-004",
+  "probe": "P1_material_filter",
+  "tag": "VALIDATED_STRUCTURAL_NULL",
+  "title": "우량주 유니버스(K200∪KQ150) 내 DART 불성실공시·행정처분·거래정지의 재료별 배제 신호는 sparsity 벽으로 측정 불가",
+  "hypothesis": "DART 포렌식 재료(UnfaithfulDisc/AdminStock/TradingHalt)를 개별 배제 필터로 적용하면 R25 composite 결과(ΔIR +0.024)와 달리 재료별로 차별적 신호가 존재한다",
+  "verdict": "NULL",
+  "findings": {
+    "structural_cause": "K200∪KQ150 유니버스는 우량 대형주 집합이라 불성실공시·행정처분·거래정지 자체 발생률이 전체 상장사 대비 현저히 낮음. 재료별 월평균 발생 종목수: AdminStock 1.4종목, UnfaithfulDisc 1.3종목, TradingHalt 1.7종목(lag1 후)",
+    "portfolio_delta": {
+      "TradingHalt_ann": "0.02%/yr (t=1.30)",
+      "UnfaithfulDisc_ann": "0.01%/yr (t=1.89)",
+      "AdminStock_ann": "0.00%/yr (t=-0.53)"
+    },
+    "event_level_signal": {
+      "TradingHalt": "t=-1.30 (N=386), Size-adjusted t=-1.48",
+      "UnfaithfulDisc": "t=-1.44 (N=73), Size-adjusted t=-1.61",
+      "AdminStock": "t=1.02 (N=47)"
+    },
+    "direction_note": "TradingHalt와 UnfaithfulDisc는 방향(배제 시 약간 유리, 이벤트 종목 약세)은 일관되나 t<2.0으로 통계적 유의성 부재",
+    "composite_recheck": "R25 composite(halt|unf) t=-1.10으로 재확인 - 개별화해도 composite보다 나아지지 않음"
+  },
+  "mechanism": "우량주 유니버스에서는 이 재료들이 '이미 걸러진 이후' 상태 — 발생 자체가 워낙 드물어 포트폴리오 수준 신호로 작동할 정보 밀도가 없음. exclusion 논리(Miller 1977)가 작동하려면 모집단 내 사건 발생률이 충분해야 하는데 K200∪KQ150에서는 이 전제가 성립하지 않음",
+  "consumption_map": {
+    "standalone_alpha": "REJECT",
+    "monitoring_tripwire": "YES - book 편입 종목 중 TradingHalt/AdminStock 발생 alert",
+    "risk_model_flag": "CONSIDER - tail risk indicator로 반영 가능",
+    "expanded_universe": "OPEN - FQ-038 소형주 포함 시 재측정 가능"
+  },
+  "next_probe": [
+    "FQ-038: 소형주 포함 확장 유니버스에서 재측정 (RAWDATA 전체 AdminStock 582,973건/1,208종목 보유)",
+    "monitoring_tripwire 배선: 이번 측정과 무관하게 실전 운용 보호를 위한 alert 설치",
+    "TradingHalt 대형주 tier(N=76) 향후 누적 시 재측정 (현재 방향 -6bp/월로 가장 유망)"
+  ],
+  "revival_conditions": "FQ-038 중대형 tier 표본 확인 또는 TradingHalt MEGA_MID N>=150 도달",
+  "pit_status": "PASS - lag1 적용, C4(익년 3/31) 준수",
+  "source_ref": "stage_artifacts/paper_recharge/fq004_material_filter_20260804.json"
+}

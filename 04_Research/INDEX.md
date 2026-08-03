@@ -1,6 +1,6 @@
 # 04_Research INDEX
 
-> 자동 생성 2026-08-03 07:38 — 큐레이션 원본: `06_Registry/index_descriptions.json` (role/status/category 수동 보완처) · 재생성: `Rscript 02_Infrastructure/tools/build_artifact_index.R` (daily_refresh 말미 자동). 본 파일 직접 수정 금지 — 재생성 시 덮어씀.
+> 자동 생성 2026-08-04 07:56 — 큐레이션 원본: `06_Registry/index_descriptions.json` (role/status/category 수동 보완처) · 재생성: `Rscript 02_Infrastructure/tools/build_artifact_index.R` (daily_refresh 말미 자동). 본 파일 직접 수정 금지 — 재생성 시 덮어씀.
 
 <details><summary><b>strategy-legacy</b> (3)</summary>
 
@@ -16,8 +16,8 @@
 
 | 항목 | 정체 | status | 최근 | 크기 |
 |---|---|---|---|---|
-| `decision_framework/` | bearish forecast v1~v3(예측 국면) + cross_section_distribution(DPL 피처 parquet) + smart_beta_regime·factor_untapped — 부팅·모닝브리핑·DPL 감사가 소비하는 활성 존 (409MB, 대부분 cross_section outputs 382MB) | active | 2026-08-02 | 410.3MB |
-| `regime_comparison/` | KTRI/MSM 국면엔진 비교·검증·브리핑 발송 스크립트 — 일일 스케줄러(daily_refresh·모닝브리핑 ktri_rebuild)가 소비 중 | active | 2026-08-02 | 1.3MB |
+| `decision_framework/` | bearish forecast v1~v3(예측 국면) + cross_section_distribution(DPL 피처 parquet) + smart_beta_regime·factor_untapped — 부팅·모닝브리핑·DPL 감사가 소비하는 활성 존 (409MB, 대부분 cross_section outputs 382MB) | active | 2026-08-02 | 410.7MB |
+| `regime_comparison/` | KTRI/MSM 국면엔진 비교·검증·브리핑 발송 스크립트 — 일일 스케줄러(daily_refresh·모닝브리핑 ktri_rebuild)가 소비 중 | active | 2026-08-03 | 1.3MB |
 
 </details>
 
@@ -158,7 +158,7 @@
 
 | 항목 | 정체 | status | 최근 | 크기 |
 |---|---|---|---|---|
-| `01_reports/` | [재편 2026-07-04] 감사·검토·제안·로드맵 보고서와 그 증거 데이터 카테고리 (실행코드 참조 0 확인분 수용) | active | 2026-08-02 | 1.7MB |
+| `01_reports/` | [재편 2026-07-04] 감사·검토·제안·로드맵 보고서와 그 증거 데이터 카테고리 (실행코드 참조 0 확인분 수용) | active | 2026-08-02 | 1.8MB |
 
 </details>
 
@@ -174,7 +174,7 @@
 
 | 항목 | 정체 | status | 최근 | 크기 |
 |---|---|---|---|---|
-| `method_frontier` | method_frontier lane 작업존(FQ-057~059 등, 228파일 17MB) — 07-18 QEPM 이원화의 발굴 레인 산출 | active | 2026-08-02 | 18.6MB |
+| `method_frontier` | method_frontier lane 작업존(FQ-057~059 등, 228파일 17MB) — 07-18 QEPM 이원화의 발굴 레인 산출 | active | 2026-08-03 | 23.0MB |
 | `decay_fit` | FQ-055 감쇠 함수형 진단 스크립트·산출(decay_fit_engine.R, break dating/cause probe) | active | 2026-07-18 | 56KB |
 | `{insider, dart_census}` | DART insider 비-return 원천 라인 — exec netbuy 신호 빌드/비교, pledge·census 감사(07-13~15) | active | 2026-07-12 | 255KB |
 | `factor_selection_program` | 선별-규율 아크 스펙(r5 selection comparison, r9 insider selection armed) | active | 2026-07-13 | 13KB |
@@ -195,7 +195,7 @@
 
 | 항목 | 정체 | 카테고리 | 최근 | 크기 |
 |---|---|---|---|---|
-| `regime_analysis/` | 구 국면 시각화 png(KTRI 9quad·3layer·MRS daily) + threshold 튜닝 스크립트(v5x 시대) | dead | 2026-08-02 | 649KB |
+| `regime_analysis/` | 구 국면 시각화 png(KTRI 9quad·3layer·MRS daily) + threshold 튜닝 스크립트(v5x 시대) | dead | 2026-08-02 | 647KB |
 
 ## stale 큐레이션 키 (13) — 디스크 부재, index_descriptions.json에서 제거 권장
 
