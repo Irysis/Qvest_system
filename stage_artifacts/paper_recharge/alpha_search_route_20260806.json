@@ -1,0 +1,323 @@
+{
+  "date": "20260806",
+  "schema_version": "route_v2",
+  "generated_at": "2026-08-06",
+  "backlog_dates": "none",
+  "sources": {
+    "arxiv_candidates": 30,
+    "curated_new": 0,
+    "curated_total_processed": 15
+  },
+  "counts_by_route": {
+    "alpha": 2,
+    "optimizer": 3,
+    "risk": 2,
+    "regime": 1,
+    "skip": 22
+  },
+  "n_factor_candidates": 2,
+  "n_factor_testable": 1,
+  "autorun_papers": ["2607.27461"],
+  "autorun_note": "MAX_ALPHA=2이나 testable 후보 1건(Markov_PredVolRank). 2번째 슬롯 미사용. 2608.04200(QLoRA sentiment)은 alpha route이나 논문 자체가 null result 실증 → 미오토런.",
+  "papers": [
+    {
+      "title": "Portfolio Allocation under Heterogeneous Scales and Multifractality",
+      "id": "2608.04987",
+      "source": "arxiv",
+      "route": "optimizer",
+      "kr_feasible": false,
+      "factor_candidate": {
+        "name": "Hurst_CrossSection",
+        "def": "개별 종목 rolling 252일 일별 수익률의 Hurst 지수(DFA or R/S) → 높은 Hurst=추세 지속 → long. 논문은 MFCCA 포트폴리오 리스크 대체에 집중하나 Hurst 지수는 종목 횡단면 신호로도 사용 가능.",
+        "novel": true,
+        "kr_feasible": true,
+        "verdict": "uncertain",
+        "confidence": 0.35
+      },
+      "reason": "optimizer route. 논문 핵심 기여=MFCCA 리스크 함수(Σ 대체). Hurst 지수 횡단면 alpha는 논문이 직접 검증하지 않음 — uncertain. α̂ 고정 A/B 대상."
+    },
+    {
+      "title": "Open Information: A Defining Perspective on Web Datasets for Carbon Pricing",
+      "id": "2608.04929",
+      "source": "arxiv",
+      "route": "skip",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "탄소 시장(EU Allowance) 가격 예측. KR 주식 횡단면 아님. 대체데이터 웹 접근 필요."
+    },
+    {
+      "title": "Robust Control under Stationary Ambiguity",
+      "id": "2608.04832",
+      "source": "arxiv",
+      "route": "skip",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "옵션 헤징 RL 제어 이론. 파생상품 가격·헤징 문제. 주식 횡단면 아님."
+    },
+    {
+      "title": "Attributing Differences Between Forecast Runs to Input Changes, With Applications to CCAR and CECL Exercises",
+      "id": "2608.04547",
+      "source": "arxiv",
+      "route": "skip",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "CCAR/CECL 신용손실 예측 귀속 분석(Shapley). 은행 자본 규제. 주식 팩터 아님."
+    },
+    {
+      "title": "Low-rank and graphon limits for dynamic threshold distress contagion in heterogeneous financial networks",
+      "id": "2608.04529",
+      "source": "arxiv",
+      "route": "skip",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "금융기관 네트워크 시스템 리스크(도산 전이). 은행간 익스포저. 주식 팩터 아님."
+    },
+    {
+      "title": "From Financial Sentiment Classification to Return Predictability: A QLoRA Benchmark of Large Language Models",
+      "id": "2608.04200",
+      "source": "arxiv",
+      "route": "alpha",
+      "kr_feasible": false,
+      "factor_candidate": {
+        "name": "LLM_Sentiment_CrossSection",
+        "def": "LLM(QLoRA Mistral/Qwen/LLaMA) 금융 텍스트 감성 점수 → 종목 수익률 예측. 논문이 1일 호라이즌 IC=0.0143(FinBERT) 확인하나 FDR 보정 후 전 모델 비유의.",
+        "novel": true,
+        "kr_feasible": false,
+        "verdict": "infeasible",
+        "confidence": 0.0
+      },
+      "reason": "alpha route(횡단면 감성 신호 검증 논문). 단 ① KR DART 금융 뉴스 텍스트 데이터 미보유 ② 논문 자체가 28개 model-horizon 중 FDR 보정 후 전부 비유의 판정(null result) → 미오토런. 정보성 negative: LLM headline sentiment 단독으로는 S&P100에서도 cross-section alpha 비유의."
+    },
+    {
+      "title": "Measuring the engine of a liquidation cascade: subcritical branching inside a first-order transition",
+      "id": "2608.03616",
+      "source": "arxiv",
+      "route": "skip",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "크립토(BTC) 청산 캐스케이드 분석. 크로스마켓. 주식 신호 없음."
+    },
+    {
+      "title": "Mandate without Managers: Automated Market Makers as Verifiable Portfolio Products",
+      "id": "2608.02917",
+      "source": "arxiv",
+      "route": "skip",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "DeFi AMM(Balancer G3M) 포트폴리오 추적 분석. 크립토/블록체인. 주식 팩터 아님."
+    },
+    {
+      "title": "Preference robust distortion risk measures",
+      "id": "2608.02854",
+      "source": "arxiv",
+      "route": "risk",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "risk route. Wasserstein/Bregman 기반 preference-robust distortion 리스크 측도 이론. rank-dependent utility robustification. Σ 고도화 후보."
+    },
+    {
+      "title": "Proper-score observation-driven filters: local geometry, estimation, and continuous-time limits",
+      "id": "2608.02828",
+      "source": "arxiv",
+      "route": "risk",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "risk route. proper scoring rule 기반 관측주도 변동성 필터(GAS 일반화). 극단값 전파 제한 기제. 변동성 모델링 개선 후보. 국제 주식 수익률에 실증."
+    },
+    {
+      "title": "Neural Networks with Local Converging Inputs for Efficient Options Pricing Models",
+      "id": "2608.02778",
+      "source": "arxiv",
+      "route": "skip",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "옵션 가격산정(Black-Scholes/Heston) NN 효율화. 파생상품 pricing. 주식 팩터 아님."
+    },
+    {
+      "title": "Path Portfolio Optimization: Defect, Lift, and the Price of Path Complexity",
+      "id": "2608.02355",
+      "source": "arxiv",
+      "route": "optimizer",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "optimizer route. Signature(경로 텐서대수) 기반 포트폴리오 최적화. 비가역 정보(경로 의존성)를 포트 수익률 극대화에 활용. 대칭 블록(convexity in terminal increment)이 알파 소스라는 empirical finding. α̂ 고정 A/B 대상."
+    },
+    {
+      "title": "AI Governance for Institutional Readiness in Finance",
+      "id": "2608.02311",
+      "source": "arxiv",
+      "route": "skip",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "AI 거버넌스 프레임워크(4계층). crowding 모델·regret-covariance 통계는 감시 도구지 alpha 신호 아님. 운용 정책 논문."
+    },
+    {
+      "title": "AI Financial Advice: Supply, Demand, and Life Cycle Implications",
+      "id": "2608.01607",
+      "source": "arxiv",
+      "route": "skip",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "소비자 금융 어드바이스(GPT-5.2 lifecycle). 주식 횡단면 신호 없음."
+    },
+    {
+      "title": "P-Bubbles, Q-Bubbles, and Risk Premia",
+      "id": "2608.01554",
+      "source": "arxiv",
+      "route": "skip",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "버블 이론(유리버블/로컬마팅게일). 순수 이론 모델. 구현 가능한 횡단면 신호 없음."
+    },
+    {
+      "title": "Conformal Kelly: Conformal Prediction Intervals as the Scale in Fractional Kelly Position Sizing",
+      "id": "2608.01494",
+      "source": "arxiv",
+      "route": "optimizer",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "optimizer route. Conformal prediction 구간 → Kelly 분수 포지션 사이징. 불확실성 기반 포지션 축소 규칙. IS 검증 후 OOS(2022~)에서 패시브 미달 — 방법론 참고 목적. α̂ 고정 사이징 A/B 대상."
+    },
+    {
+      "title": "Optimal Trading of Microstructure Mean Reversion",
+      "id": "2608.00885",
+      "source": "arxiv",
+      "route": "skip",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "초단기(초) 마이크로스트럭처 mean-reversion HFT. intraday tick 데이터 필요. KR 조건 부적합."
+    },
+    {
+      "title": "AI and Exchange Rate Predictability",
+      "id": "2608.00761",
+      "source": "arxiv",
+      "route": "skip",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "FX(환율) 예측. 크로스마켓. 주식 팩터 아님."
+    },
+    {
+      "title": "Axient: On-Chain Credit and Loss Allocation for Leveraged Event Markets",
+      "id": "2608.00647",
+      "source": "arxiv",
+      "route": "skip",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "크립토 온체인 신용 프로토콜. DeFi/블록체인. 주식 팩터 아님."
+    },
+    {
+      "title": "Delegated Monitoring in Public-Private Sector Credit Programs",
+      "id": "2608.02651",
+      "source": "arxiv",
+      "route": "skip",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "공공-민간 파트너십 신용 프로그램(SBA). 신용시장 이론. 주식 횡단면 아님."
+    },
+    {
+      "title": "Can Large Language Models Execute Parent Orders?",
+      "id": "2607.28410",
+      "source": "arxiv",
+      "route": "skip",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "LLM 주문 집행(선전거래소 데이터). 크로스마켓. alpha 신호 아님."
+    },
+    {
+      "title": "Multi-maturity consistency of option prices under bounded bid-ask spreads",
+      "id": "2607.27649",
+      "source": "arxiv",
+      "route": "skip",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "옵션 가격 일관성 이론(bid-ask, calendar arbitrage). 순수 파생상품 이론."
+    },
+    {
+      "title": "Are Three Matrices All You Need To Beat the Market? Observable Matrix Dynamics for Portfolio Optimization",
+      "id": "2607.27461",
+      "source": "arxiv",
+      "route": "alpha",
+      "kr_feasible": true,
+      "factor_candidate": {
+        "name": "Markov_PredVolRank",
+        "def": "월말 시점에 각 종목의 trailing 21일 실현 변동성(RMS)을 전체 유니버스에서 분위(decile 1~10) 산출. 직전 36개월 역사를 이용해 10×10 Markov 전이행렬 P 추정. 각 종목의 예측 다음기간 vol rank = current_decile_vector @ P의 기대값. Score = -E[next_vol_rank](낮을수록 매수). long leg = 예측 vol rank 하위 분위. vs D01_IdioVol: D01는 현재 vol 수준, Markov_PredVolRank는 전이 패턴 포함 → vol 회귀·지속성 국면 구분 가능.",
+        "novel": true,
+        "kr_feasible": true,
+        "verdict": "testable",
+        "confidence": 0.62,
+        "novelty_note": "D01_IdioVol(raw trailing vol)·R12(D01 동일 통계 확인)과 관련. Markov 전이 레이어가 vol rank 변화 방향 정보 추가 → 신규성 있음. 단 D01과 높은 상관 예상(vol 지속성). 실측 IC 비교 필요."
+      },
+      "reason": "alpha route. 논문 핵심 실증: vol rank는 1-step 예측 가능(Markov), return rank는 불가. long-only sleeve가 vol rank 예측 기반으로 설계됨. 2021-07-2026 OOS Sharpe 1.32 달성. KR 적용 시 D01/R12 대비 incremental alpha 여부 검증 필요. 08-04에서 optimizer 경로(ΔIR -0.103) 실패했으나 alpha 신호 경로는 미측정 → 오토런 #1."
+    },
+    {
+      "title": "Forcing and duality-corrected contracts for volatility control",
+      "id": "2607.27039",
+      "source": "arxiv",
+      "route": "skip",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "연속시간 principal-agent 문제(volatility control 계약 이론). 순수 수리 이론."
+    },
+    {
+      "title": "OpenMarket: A Synchronized Polymarket-Binance Dataset for High-Frequency Prediction-Market Research",
+      "id": "2607.26245",
+      "source": "arxiv",
+      "route": "skip",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "크립토 예측시장(Polymarket-Binance) 데이터셋. 크로스마켓/HFT."
+    },
+    {
+      "title": "Quantum Transformer BSDE Solver via Multi-Layer Fully-Connected Variational Quantum Circuits",
+      "id": "2607.25162",
+      "source": "arxiv",
+      "route": "skip",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "양자컴퓨팅 BSDE 솔버. 주식 팩터 아님."
+    },
+    {
+      "title": "The Science and Practice of Trend-Following Systems",
+      "id": "2607.19497",
+      "source": "arxiv",
+      "route": "regime",
+      "kr_feasible": false,
+      "factor_candidate": {
+        "name": "Spectral_LowFreq_CrossSection",
+        "def": "개별 종목 trailing 60일 수익률 periodogram에서 저주파(f<1/30) 구간 PSD 합/전체 PSD — 높을수록 추세 지속 종목",
+        "novel": true,
+        "kr_feasible": true,
+        "verdict": "infeasible",
+        "confidence": 0.0
+      },
+      "reason": "regime route. 08-04 FQ-145에서 이미 alpha-search 완료 → Grade F(IC=-0.0016, PORT_t=0.43 비유의, MDD 66.5%). 횡단면 신호 infeasible로 재분류. FQ-146(KOSPI200 지수 레벨 TF 오버레이) 미측정 상태 유지. 재디스패치 불요."
+    },
+    {
+      "title": "Dead Reckoning: Counting Your Customers Who Never Say Goodbye",
+      "id": "2607.18623",
+      "source": "arxiv",
+      "route": "skip",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "고객 이탈 확률(P(alive) BG/NBD 모델). 마케팅/소비자 분석. 주식 팩터 아님."
+    },
+    {
+      "title": "(Early) AI Compute Asset Pricing",
+      "id": "2607.12156",
+      "source": "arxiv",
+      "route": "skip",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "GPU 컴퓨팅 자원 선물 가격산정. 신규 자산 클래스. KR 주식 팩터 아님."
+    },
+    {
+      "title": "A Novel Hybrid Quantum Reservoir Computing (nHQRC) for Phase Transition Detection in Non-Equilibrium Dynamical Systems",
+      "id": "2607.16281",
+      "source": "arxiv",
+      "route": "skip",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "양자 저장소 컴퓨팅(TFIM). 양자물리 응용. 금융 팩터 아님."
+    }
+  ]
+}

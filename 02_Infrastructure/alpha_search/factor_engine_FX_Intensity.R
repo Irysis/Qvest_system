@@ -157,5 +157,5 @@ cat(sprintf("[FX_Intensity] 커버리지 범위: 최소 %d ~ 최대 %d 종목/�
 
 # 임시 객체 정리
 rm(.dart_raw, .fx_rows, .fx_wide, .fx_fund, .fund, .fund_ta,
-   .fx_signal, .grid, .signal_panel, .cov_summary, .me_dt, .tickers_univ)
+   .fx_signal, .fx_signal_univ, .me_grid, .signal_panel, .cov_summary, .me_dt, .tickers_univ)
 RAWDATA[, .ym := NULL]
