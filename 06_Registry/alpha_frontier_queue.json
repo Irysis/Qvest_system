@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "sot": "02_Infrastructure/docs/qvest_v8_3_alpha_discovery_sot.md §4",
-  "updated": "2026-08-04 (FQ-143 CV_Vol Grade F 판정 + FQ-150/151 등재)",
+  "updated": "2026-08-06 (FQ-092 settled_negative_bidirectional + FQ-149 measured_quarantine)",
   "consume_rule": "새 발굴 리서치 착수 전: hypothesis_index lookup → 본 큐 확인 → owner/status 갱신. 완료 시 result_ref(L-code/보고서) 기입. dohoon_decision 항목은 세션 임의 착수 금지.",
   "entries": [
     {
@@ -1869,14 +1869,51 @@
       "ev_rationale": "20260802 C_VolRankStability 정방향 QUARANTINE(SR 0.275, IR -0.234) — KR에서 신호가 역작동한다면 역방향이 양성. 단 고변동성 모멘텀 자체는 KR에서 실증 미검증. prior: 낮은 사전확률(역 신호는 경험적).",
       "wall_check": "cap-tier 국소화 벽 동일 적용. vol rank 변화 자체가 시장 β와 높은 상관(C_Vol MDD 62.1% GFC 동조)이라면 역방향도 대칭 낙폭 위험.",
       "data_gate": "없음 — 가격 데이터만",
-      "owner": "Q-Lead (AUTORUN 20260802 next_probe)",
-      "status": "frontier_open",
-      "next_action": "alpha-search: factor_engine.R 신호 부호 flip → canonical_screen_bt → 5-layer gate",
+      "owner": "Q-Lead (20260806 autorun FQ-092 완료)",
+      "status": "settled_negative_bidirectional",
+      "next_action": "DIST 카드 등재(DIST-AR-vol-rank-family): vol rank 정방향+역방향 4-hits negative. 소비면 잔여: ①AX-001 조건부평가(crisis alpha 실재 — COVID+16.9%/GFC+3.7% — defense 팩터 자격 검토) ②위험모델 입력(vol cluster 식별, 분류 변수로 소비) ③국면-조건부 배분 필터",
       "source_refs": [
         "parent: C_VolRankStability_3M QUARANTINE 20260802 (stage_artifacts/paper_recharge/auto_quarantine_20260802.json)",
         "arxiv: 2607.27461 (Three Matrices)",
         "prior_failure: STR_AS_20260802_072242_49024 (C_VolRankStability_3M, grade F, SR 0.275)"
-      ]
+      ],
+      "verdict": {
+        "date": "20260806",
+        "factor_id": "VolRankReverse_FQ092",
+        "gate_decision": "QUARANTINE",
+        "gate_failed_layers": "robustness",
+        "grade": "F",
+        "score": 6.3,
+        "cagr": 0.091,
+        "sharpe": 0.349,
+        "mdd": 0.608,
+        "calmar": 0.149,
+        "ic": -0.0159,
+        "pos_rate": 0.426,
+        "oos_retention": -0.017,
+        "crisis_alpha": {
+          "COVID_2020": "+16.9%",
+          "GFC_2008": "+3.7%",
+          "EuDebt_2011": "+13.4%",
+          "Rate_2022": "-4.4%"
+        },
+        "strategy_id": "STR_AS_20260806_203507_48376"
+      },
+      "vol_rank_series_summary": {
+        "hits_negative": 4,
+        "runs": [
+          "2607.19005 vol_rank_stability QUARANTINE",
+          "2607.27461 C_VolRankStability_3M QUARANTINE",
+          "2607.27461 Vol_Rank_Markov_Persistence QUARANTINE",
+          "2607.27461 VolRankReverse_FQ092 QUARANTINE IC=-0.0159"
+        ],
+        "conclusion": "vol rank 계열 standalone long-only 전방향(정방향·역방향) 소진. crisis alpha 구조는 존재하나 overall IC 음수·OOS 붕괴"
+      },
+      "revival_conditions": [
+        "cap-tier 분해에서 MEGA vs MID 방향 분리 시(하나가 정방향·다른 하나 역방향)",
+        "AX-001 검증에서 defense 팩터 자격 충족 시(crisis_alpha + MDD 완화 + bad/normal IC ratio)"
+      ],
+      "updated": "2026-08-06"
     },
     {
       "id": "FQ-093",
@@ -2791,11 +2828,11 @@
       "ev_rationale": "FQ-147의 IC 음수(-0.0078) = 파생상품 보유가 역방향. 논문은 FX 노출 기업이 헤징으로 안정화 → 프리미엄이라는 구조 — 노출 측면을 별도 측정.",
       "wall_check": "RAWDATA/dart_raw_financials에 외화 계정 존재 여부 사전 확인 필수. 기존 DB에 외화-관련 팩터 없음 확인됨.",
       "data_gate": "PASS. dart_raw_financials.parquet에 외화환산이익/손실 계정 실재 확인. K200∪KQ150 연 142~211 tickers 커버(2015~2025). 직접 외화자산 계정은 없지만 P&L 경유 FX 노출 크기 측정 가능 — (|외화환산이익|+|외화환산손실|)/TotalAssets 또는 |FX순손익|/매출로 구현.",
-      "status": "precheck_done_data_available",
-      "owner": "Q-Lead",
+      "status": "measured_quarantine",
+      "owner": "Q-Lead (20260806 autorun FQ-149 완료)",
       "registered": "2026-08-04 (FQ-147 next_probe 파생)",
       "source_paper": "2607.27611",
-      "next_action": "alpha-search agent 착수 — FX 노출 강도 지수 경량 백테 (2015~2025, 11년)",
+      "next_action": "소비면 7종 순회 결과: ①overlay소비 — FX_Intensity를 국면 스케일러로(고FX노출 월 축소, 미측정 FQ-150 등재) ②cap-tier 분해 — MEGA(반도체/자동차 FX노출 高) vs MID IC 방향 비교(착수 가능, FQ-151 등재됨) ③post-2020 서브샘플 — AlphaTrend ratio 2.16이 최근 개선 암시(선착수 후보). 부활 조건: post-2020 서브샘플에서 PORT_t≥2.5 실측 시 전구간 재검",
       "revised_hypothesis": "AWARE-FX 논문 FX exposure baseline: 외화환산이익/손실 절대값 합계를 TotalAssets로 나눈 FX 노출 강도 지수. 높은 FX 노출 기업이 적극 헤징 시 불확실성 감소 → 리스크 프리미엄 감소 → 초과수익. annual lag(익년 3/31) 적용, PIT C4 준수.",
       "precheck_result": {
         "date": "2026-08-04",
@@ -2810,7 +2847,41 @@
         "pit_lag": "익년 3/31 (C4 annual rule)",
         "proxy_formula": "(abs(외화환산이익) + abs(외화환산손실)) / TotalAssets"
       },
-      "updated": "2026-08-04"
+      "updated": "2026-08-06",
+      "verdict": {
+        "date": "20260806",
+        "factor_id": "FX_Intensity_FQ149",
+        "gate_decision": "QUARANTINE",
+        "gate_failed_layers": "robustness",
+        "grade": "C",
+        "score": 33,
+        "cagr": 0.072,
+        "sharpe": 0.295,
+        "mdd": 0.612,
+        "calmar": 0.118,
+        "excess_cagr_vs_bm_pp": 14.13,
+        "ic": 0.0234,
+        "pos_rate": 0.565,
+        "oos_retention": null,
+        "is_sr": -0.015,
+        "oos_note": "IS SR -0.015 → OOS 분할 불가. 신호 전반적 약세 but 최근 3Y AlphaTrend 개선 중(ratio 2.16)",
+        "coverage_start": "2015 (DART 데이터 한계, 11년)",
+        "strategy_id": "STR_AS_20260806_203146_48376"
+      },
+      "revival_conditions": [
+        "post-2020 서브샘플(2020-01~2026-07) 단독 PORT_t≥2.5 — FX 변동성 레짐 전환 증거",
+        "분모 변경(FX_raw/매출액)에서 IC 개선 → 자산 규모 효과 배제",
+        "FQ-151 cap-tier 분해에서 MEGA 단독 양성"
+      ],
+      "consumption_surfaces_checked": {
+        "overlay": "FQ-150 등재(FX노출 오버레이 국면 스케일러) — 미측정",
+        "cap_tier_decomp": "FQ-151 등재(MEGA/MID 분해) — 미측정",
+        "universe_filter": "FX_Intensity 극단값(>p90) 선별 필터 — 미측정",
+        "risk_model": "FX 부채 클러스터 식별(risk 입력) — 미측정",
+        "post2020_subsample": "미측정 — AlphaTrend ratio 2.16 징후",
+        "revenue_denominator": "FX_raw/매출액 — 미측정",
+        "reverse_direction": "FX 노출 낮은 기업 long(무노출 안정성) — 미측정"
+      }
     },
     {
       "id": "FQ-150",
@@ -2840,6 +2911,39 @@
       "source_fq": "FQ-143",
       "next_action": "KOSPI200 시장 레벨 CV_Vol 시계열 구성(RAWDATA Vol 집계 21d rolling CV) → C5 lag 검증 → 안정/불안정 구간 분류 → 현행 book 수익률 대비 구간별 성과 확인.",
       "priority_note": "FQ-149(data_gate PASS, 즉시 착수 가능)보다 후순위. FQ-149 결과 수집 후 착수."
+    },
+    {
+      "id": "FQ-152",
+      "lane": "alpha_search",
+      "title": "Markov_PredVolRank (-E[next decile]) — vol rank 계열 4-hits config-scoped negative",
+      "hypothesis": "월간 변동성 decile 순위의 36개월 Markov 전이행렬로 다음 기간 기대 decile 예측 (Signal = -E[next_decile] = -Σ_j j*P[i,j]). vol rank 지속성(era P^V[i,i]=0.959)을 전이분포 가중평균으로 개선. 기존 도달확률(P[i,1]+P[i,2]) 변형 대비 기대값 함수로 차별화.",
+      "status": "config_scoped_negative_20260806",
+      "result": "Grade C, score 22.5/100. QUARANTINE. STR_AS_20260806_203146_53272. HARD 3종 전량 미달: OOS retention 0.089<0.70 / Calmar 0.049<0.64 / MDD 59.6%>>25%. FMB NW-t=-0.21(크로스섹션 프리미엄 미검출). FF3 alpha -3.74%/yr(t=-1.49). D01_IdioVol 대비 incremental alpha 없음. CAGR 3.0% / SR 0.180 / IC 0.0244(ICIR 0.142).",
+      "mechanism": "vol rank 계열 era-내 분위 지속성(0.959)으로 두 신호 변형(도달확률, 기대분위) 모두 현재 저변동 종목 선택과 실질 동일 → 저변동 포트 복제 구조 내재. 기대값 신호(-E)는 08-04 도달확률(P[i,1]+P[i,2]) 대비 OOS retention 0.020→0.089 / FMB t -0.70→-0.21 미미 개선이나 구조적 MDD ~59% 불변.",
+      "vs_prior": "vs STR_AS_20260804_084258_53496(Vol_Rank_Markov_Persistence, grade C, 08-04): OOS +0.069 / FMB t +0.49 / SR -0.029 / MDD +1.9pp. vol rank 계열 4-hits negative 확정.",
+      "next_probe": [
+        "FQ-092: vol rank REVERSE direction(고변동 top-25, momentum/crisis alpha 가설)",
+        "FQ-150: 고변동 exclusion filter(유니버스 필터 소비면 — standalone 알파 아닌 필터 재료로)",
+        "오버레이 소비면: E_next 극단값 달 리스크 신호(미측정 — overlay 소비는 QEPM 단계)"
+      ],
+      "consumer_surfaces_untested": [
+        "②유니버스 필터: FQ-150 고변동 exclusion(미측정)",
+        "③오버레이: E_next 극단값 달 리스크 신호(미측정)",
+        "⑤monitoring: vol rank 분포 급변 → 체제 변화 신호(미측정)"
+      ],
+      "registered": "2026-08-06",
+      "source_paper": "2607.27461",
+      "revival_conditions": [
+        "era-demean 후 전이 패턴이 vol cluster 경계 구간에서 유의한 예측력 보이는 경우",
+        "long-short 허용 환경에서 재도전(현행 long-only 제약 해소 시)"
+      ],
+      "result_artifacts": [
+        "stage_artifacts/alpha_search/20260806_203146_53272/bt_result.rds",
+        "stage_artifacts/alpha_search/20260806_203146_53272/hurdle_result.json",
+        "stage_artifacts/l_code/alpha_search/l_code_STR_AS_20260806_203146_53272.json",
+        "02_Infrastructure/alpha_search/factor_engine_markov_pred_vol_rank.R"
+      ],
+      "result_lcode": "STR_AS_20260806_203146_53272"
     }
   ]
 }

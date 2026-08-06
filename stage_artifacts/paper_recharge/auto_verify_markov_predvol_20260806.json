@@ -1,0 +1,130 @@
+{
+  "auto_verify_id": "AV_20260806_Markov_PredVolRank",
+  "generated_at": "20260806",
+  "paper_id": "2607.27461",
+  "paper_title": "Are Three Matrices All You Need To Beat the Market?",
+  "factor_id": "Markov_PredVolRank",
+  "strategy_id": "STR_AS_20260806_203146_53272",
+  "hypothesis_index_lookup": {
+    "keywords": ["markov", "volatility", "vol_rank"],
+    "result": "HIT — STR_AS_20260804_084258_53496 (Vol_Rank_Markov_Persistence, grade C, 2026-08-04)",
+    "differentiation": "기존: Score=P^V[i,1]+P^V[i,2] (저분위 2칸 도달 확률합). 본 신호: Score=-E[next decile]=-sum_j(j*P[i,j]) (전이분포 전체 가중평균 기대값). 함수가 다름 — 진행 정당"
+  },
+  "impl_sketch_used": "월말 trailing 21d RMS vol → 횡단면 10분위 → rolling 36M P^V(10x10, Laplace pseudocount=1) → E_next_i=sum_j(j*P[i,j]) → Score=-E_next_i → 상위 25종 EW 월간 리밸 15bps",
+  "factor_engine_path": "02_Infrastructure/alpha_search/factor_engine_markov_pred_vol_rank.R",
+  "verification_layers": {
+    "L1_pit": {
+      "result": "PASS",
+      "detail": "detect_lookahead() CLEAN (136 lines). frollmean(lag_Ret^2, 21) — rolling, no full-sample stats. Transition filter: Date < tgt_date (C2). LiqPass==TRUE (C10). [PIT-WARN] 발생: 팩터엔진이 외부 parquet 의존 — 그러나 RAWDATA 자체 계산(RMS vol)이라 forward-label 외부 파이프라인 없음. 실질 위험 없음."
+    },
+    "L2_contract": {
+      "result": "WARNING",
+      "detail": "audit_bt_result 16 checks — PASS=15 FAIL=0 WARN=1. integrity=WARNING(minor). bt_result saved: stage_artifacts/alpha_search/20260806_203146_53272/"
+    },
+    "L3_robustness": {
+      "result": "FAIL",
+      "detail": "OOS retention=0.089 << 0.50 threshold (IS SR 0.275 / OOS SR 0.024). Calmar=0.049 << 0.64 HARD. MDD=59.6% structural. Grade C score 22.5/100.",
+      "oos_retention": 0.089,
+      "calmar": 0.049,
+      "mdd_pct": 59.6,
+      "is_sr": 0.275,
+      "oos_sr": 0.024
+    },
+    "L4_fidelity": {
+      "result": "PASS",
+      "detail": "도훈 지시 step 4-5 수식 충실 구현: E_next_i=sum_j(j*P_V[i,j]), Score=-E_next_i. Long-only top-25 EW (KR production constraint; 논문 L/S는 KR 금지 규칙으로 long-only 사상). Laplace smoothing pseudocount=1 (지시서 명시). 차별점 명시 보고."
+    },
+    "L5_auto_gate": {
+      "result": "QUARANTINE",
+      "hard_gate_failures": [
+        "OOS_retention=0.089 < 0.70 HARD",
+        "Calmar=0.049 < 0.64 HARD",
+        "MDD=59.6% >> 25% production constraint"
+      ],
+      "port_t_status": "not_measured (grade C, screen_pass=FALSE)",
+      "final_verdict": "QUARANTINE"
+    }
+  },
+  "metrics": {
+    "grade": "C",
+    "score": 22.5,
+    "cagr_pct": 3.0,
+    "excess_cagr_pp": 3.02,
+    "sharpe": 0.180,
+    "sharpe_monthly": 0.250,
+    "mdd_pct": 59.6,
+    "ir": 0.117,
+    "calmar": 0.049,
+    "oos_retention": 0.089,
+    "ic": 0.0244,
+    "icir": 0.142,
+    "ic_pos_rate_pct": 56.2,
+    "fmb_nw_t": -0.21,
+    "fmb_lambda": -0.00026,
+    "ff3_alpha_ann_pct": -3.74,
+    "ff3_alpha_t": -1.489,
+    "carhart4_alpha_ann_pct": -3.38,
+    "ff5_alpha_ann_pct": -4.19,
+    "turnover_pct_ann_approx": 500,
+    "hit_6m_pct": 51.0,
+    "worst_6m_pct": -39.24,
+    "max_consec_neg_months": 13,
+    "hit_12m_pct": 57.3,
+    "recent_3y_sr": 0.498,
+    "alpha_trend_ratio": 2.76,
+    "illiquid_holdings_pct": 12.0
+  },
+  "stress_periods": {
+    "GFC_2008": {"strat_pct": -29.7, "bm_pct": -36.5, "alpha_pct": 6.8, "outperform": true},
+    "COVID_2020": {"strat_pct": -13.7, "bm_pct": -4.7, "alpha_pct": -9.0, "outperform": false},
+    "Rate_2022": {"strat_pct": -17.9, "bm_pct": -26.1, "alpha_pct": 8.3, "outperform": true},
+    "EuDebt_2011": {"strat_pct": -10.3, "bm_pct": 6.8, "alpha_pct": -17.1, "outperform": false}
+  },
+  "vs_prior_experiment": {
+    "prior_id": "STR_AS_20260804_084258_53496",
+    "prior_signal": "P^V[i,1]+P^V[i,2] (저분위 도달 확률)",
+    "curr_signal": "-E[next decile] = -sum_j(j*P[i,j])",
+    "oos_retention_delta": 0.069,
+    "fmb_t_delta": 0.49,
+    "sharpe_delta": -0.029,
+    "mdd_delta_pp": 1.9,
+    "conclusion": "기대값 신호가 FMB t(-0.21 vs -0.70)와 OOS retention(0.089 vs 0.020) 소폭 개선. 그러나 구조적 MDD 문제(~59%) 미해결 — vol rank 계열 공통 실패 기전 확인."
+  },
+  "mechanism_diagnosis": {
+    "primary": "기대 분위 E_next 신호도 era-내 분위 지속성(0.959)에 의해 현재 저변동 종목과 높은 overlap — 저변동 포트 실질 복제. 전이행렬 가중평균이 도달확률합보다 미묘하게 다른 신호이나 구조적으로 동일 레짐 노출",
+    "oos_collapse": "IS SR 0.275 → OOS SR 0.024 (retention 0.089) — 결과가 시간에 걸쳐 붕괴. KR 저변동 팩터 OOS 붕괴 패턴 재확인",
+    "factor_model": "FF3 알파 -3.74%/yr (t=-1.49) — 팩터모델 대비 음의 알파. 시장/사이즈/밸류 이미 설명하고도 남은 성과 없음",
+    "stress_pattern": "GFC(+6.8%)/Rate_2022(+8.3%) 방어 OK이나 COVID(-9.0%)/EuDebt(-15.1%) 실패 — 방어성 불안정 (AX-001 scope 해당 안 됨)"
+  },
+  "vol_rank_family_summary": {
+    "hits_negative": 4,
+    "variants_tested": [
+      "2607.19005: vol_rank_stability (12M rolling std rank_pct) → Grade F, SR 0.167, MDD 55.4%",
+      "2607.27461 C_VolRankStability_3M: 3M rank change → Grade F, OOS 0.045, MDD 62.1%",
+      "2607.27461 Vol_Rank_Markov_Persistence: P^V[i,1]+P^V[i,2] → Grade C, OOS 0.02, MDD 57.7%",
+      "2607.27461 Markov_PredVolRank: -E[next decile] → Grade C, OOS 0.089, MDD 59.6% (본 실행)"
+    ],
+    "consolidated_verdict": "vol rank 계열 4-hits negative. 기대값 신호가 도달확률합보다 FMB t 소폭 개선(signal: -0.21 vs -0.70)이나 구조적 MDD(~59%) + OOS 붕괴 패턴 미해결. Markov 전이행렬 파생 신호 두 변형 모두 Grade C 수렴.",
+    "revival_conditions": [
+      "cap-tier 재분류 후 MDD mega-cap 아티팩트 기여분 분리(FQ-150)",
+      "vol rank REVERSE direction 실측(FQ-092) — 고변동 top-25 momentum 가설",
+      "오버레이 소비면 — 전이확률 extreme 달 risk overlay 신호로 활용(미측정)"
+    ]
+  },
+  "fmt_codes": ["FMT-01"],
+  "consumer_surfaces": {
+    "1_factor_ranking": "QUARANTINE — FMB t=-0.21, 크로스섹션 프리미엄 미검출",
+    "2_universe_filter": "미측정 — 고변동 exclusion filter → FQ-150",
+    "3_overlay": "미측정 — E_next 극단값 달 리스크 신호 → FQ-092 방향",
+    "4_risk_model": "참고: β≈0.92 저변동 exposure 재확인",
+    "5_monitoring": "참고: vol regime shift 조기경보 지표",
+    "6_selection_label": "참고: 현 book 내 저변동 분위 모니터링",
+    "7_cross_mode": "FR/RAMP: 저변동 레짐 라벨 후보 (수익 예측 아닌 리스크 라벨로만)"
+  },
+  "l_code_path": "stage_artifacts/l_code/alpha_search/l_code_STR_AS_20260806_203146_53272.json",
+  "hurdle_result_path": "stage_artifacts/alpha_search/20260806_203146_53272/hurdle_result.json",
+  "charts": {
+    "equity_curve": "stage_artifacts/alpha_search/20260806_203146_53272/equity_curve.png",
+    "annual_returns": "stage_artifacts/alpha_search/20260806_203146_53272/annual_returns.png"
+  }
+}
