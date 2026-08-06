@@ -1,123 +1,39 @@
 {
   "date": "20260806",
   "schema": "paper_research_dispatch_v1",
-  "note": "논문 라우터 v2 배분 + alpha-search autorun 3건 판정 수집. 에이전트가 Markov/FQ-149/FQ-092 자율 실행.",
-  "router_dispatch": {
-    "n_papers_arxiv": 30,
-    "n_curated_new": 0,
-    "routes": {
-      "alpha": 2,
-      "optimizer": 3,
-      "risk": 2,
-      "regime": 1,
-      "skip": 22
-    }
-  },
-  "alpha_search_runs": [
-    {
-      "factor": "Markov_PredVolRank",
-      "fq": "FQ-152",
-      "source_paper": "2607.27461",
-      "strategy_id": "STR_AS_20260806_203146_53272",
-      "grade": "C",
-      "score": 22.5,
-      "port_t_nw3": -0.21,
-      "sr": 0.180,
-      "cagr_pct": 3.0,
-      "mdd_pct": -59.6,
-      "calmar": 0.049,
-      "oos_retention": 0.089,
-      "ic": 0.0244,
-      "verdict": "QUARANTINE",
-      "hard_fail": ["OOS retention 0.089<0.70", "Calmar 0.049<0.64", "MDD 59.6%>>25%"],
-      "mechanism": "vol rank 계열 era-내 분위 지속성(0.959) — 기대분위 변형도 저변동 포트 복제 구조 내재",
-      "metric_type": "backtested",
-      "lcode": "l_code_STR_AS_20260806_203146_53272.json"
-    },
-    {
-      "factor": "FX_Intensity",
-      "fq": "FQ-149",
-      "source_paper": "2607.27611",
-      "strategy_id": "STR_AS_20260806_203146_48376",
-      "grade": "C",
-      "score": 33,
-      "port_t_nw3": null,
-      "sr": 0.295,
-      "cagr_pct": 7.2,
-      "excess_cagr_vs_bm_pp": 14.13,
-      "mdd_pct": -61.17,
-      "calmar": 0.118,
-      "oos_retention": null,
-      "ic": 0.0234,
-      "pos_rate": 0.565,
-      "is_sr": -0.015,
-      "coverage_start": "2015",
-      "verdict": "QUARANTINE",
-      "hard_fail": ["PORT_t NA(IS SR -0.015 → OOS split 불가)", "OOS_retention NA", "Calmar 0.118<0.64"],
-      "mechanism": "11년 커버리지(2015~) 한계 + IS SR 음수. 최근 3Y AlphaTrend 비율 2.16 개선 추세이나 전기간 미달",
-      "notable": "excess CAGR +14.13%p / IC 0.0234 양수 — 방향 실재하나 표본 불충분",
-      "next_probe": "post-2020 서브샘플 PORT_t 재측정 (부활 조건)",
-      "metric_type": "backtested",
-      "lcode": "l_code_STR_AS_20260806_203146_48376.json"
-    },
-    {
-      "factor": "VolRankReverse",
-      "fq": "FQ-092",
-      "source_paper": "2607.27461",
-      "strategy_id": "STR_AS_20260806_203507_48376",
-      "grade": "F",
-      "score": 6.3,
-      "port_t_nw3": null,
-      "sr": 0.349,
-      "cagr_pct": 9.07,
-      "mdd_pct": -60.81,
-      "calmar": 0.149,
-      "oos_retention": -0.017,
-      "ic": -0.0159,
-      "pos_rate": 0.426,
-      "verdict": "QUARANTINE",
-      "hard_fail": ["OOS retention -0.017<0.70", "PORT_t NA", "Calmar 0.149<0.64"],
-      "crisis_alpha": {
-        "COVID_2020": "+16.9%",
-        "GFC_2008": "+3.7%",
-        "EuDebt_2011": "+13.4%",
-        "Rate_2022": "-4.4%"
-      },
-      "mechanism": "vol rank 계열 전방향(정방향+역방향) 소진. IC=-0.0159(음수). OOS 붕괴.",
-      "fq_outcome": "settled_negative_bidirectional — vol rank 계열 standalone 전방향 소진",
-      "metric_type": "backtested",
-      "lcode": "l_code_STR_AS_20260806_203507_48376.json"
-    }
-  ],
-  "mode_queue": {
+  "note": "k\u001d<l\u001a0m\u00040 m\u0001\u0010 b\u0006\u0012 k&,l\u0004\u001cl9\u0018 l\u0015!l\u0005\u0018 k00l\u0004 . optimizer=N#k00m\u00040k&, N\u0014IRj2\fl\u001d4m\n8 l\u001e\u0010k\u000f\u0019, risk/regime=l\b\u0018k\u000f\u0019 flag. l\u001e\u0010k38 admit l\u0017\u0006l\u001d\f(governor l \u0015l'",
+  "actions": {
     "optimizer": {
       "n": 3,
-      "papers": ["2608.04987", "2608.02355", "2608.01494"],
-      "action": "mode_queue_20260806.json 등재 완료"
+      "papers": [
+        "Portfolio Allocation under Heterogeneous Scales and Multifractality",
+        "Path Portfolio Optimization: Defect, Lift, and the Price of Path Complexity",
+        "Conformal Kelly: Conformal Prediction Intervals as the Scale in Fractional Kelly Position Sizing"
+      ],
+      "verdict": {
+        "book_ir": 1.209,
+        "best_method": "EW",
+        "best_ir": 1.106,
+        "delta_ir": -0.103,
+        "gate": 0.05,
+        "beats_book": false,
+        "verdict": "j0"
+      }
     },
     "risk": {
       "n": 2,
-      "papers": ["2608.02854", "2608.02828"],
-      "action": "mode_queue_20260806.json 등재 완료"
+      "papers": [
+        "Preference robust distortion risk measures",
+        "Proper-score observation-driven filters: local geometry, estimation, and continuous-time limits"
+      ],
+      "action": "risk-research stress/N# k*(k\u0013\b m\u001b\u0004k34 b"
     },
     "regime": {
       "n": 1,
-      "papers": ["2607.19497"],
-      "action": "FQ-145 Grade F 기확인. FQ-146 미측정."
+      "papers": [
+        "The Science and Practice of Trend-Following Systems"
+      ],
+      "action": "H2 l\u0018$k2\u0004k \bl\u001d4 m\u001b\u0004k34 b"
     }
-  },
-  "vol_rank_series_summary": {
-    "hits_negative": 4,
-    "conclusion": "standalone long-only 전방향(정방향·역방향·전이확률·기대분위) 소진",
-    "open_consumption_faces": [
-      "FQ-150: 고변동 exclusion filter (유니버스 필터 소비면, 미측정)",
-      "AX-001 defense 자격 검토 (crisis alpha 구조 존재 — COVID+16.9%/GFC+3.7%)",
-      "위험모델 입력 (vol cluster 식별 변수로 소비, 미측정)"
-    ]
-  },
-  "next_frontier_priority": [
-    "FQ-146: KOSPI200 지수 레벨 TF 스펙트럼 오버레이 (data gate 없음, 도훈 확인 후)",
-    "FQ-150: CV_Vol 고변동 exclusion filter",
-    "FQ-149 부활 조건: post-2020 서브샘플 FX_Intensity PORT_t 재측정"
-  ]
+  }
 }
