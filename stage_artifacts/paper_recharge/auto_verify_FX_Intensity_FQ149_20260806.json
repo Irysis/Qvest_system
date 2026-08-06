@@ -22,8 +22,8 @@
   "fidelity_issues": [],
   "fidelity_confidence": "high",
   "fidelity_notes": "<U+B17C><U+BB38>(AWARE-FX) FX exposure baseline<U+C5D0> <U+B300><U+C751>: (|<U+C678><U+D654><U+D658><U+C0B0><U+C774><U+C775>|+|<U+C678><U+D654><U+D658><U+C0B0><U+C190><U+C2E4>|)/TotalAssets. DART reprt_code=11011 CFS <U+C6B0><U+C120>, PIT C4 <U+C5F0><U+AC04> <U+C775><U+B144>3/31 <U+C900><U+C218>. <U+C2E0><U+D638> <U+BC29><U+D5A5>: <U+B192><U+C740> <U+B178><U+CD9C>=<U+B192><U+C740> <U+C810><U+C218>(<U+D5E4><U+C9D5> <U+B9AC><U+C2A4><U+D06C> <U+AC10><U+C18C> <U+D504><U+B9AC><U+BBF8><U+C5C4>).",
-  "port_t": {},
-  "oos_retention": {},
+  "port_t": 0.119,
+  "oos_retention": null,
   "calmar": 0.118,
   "grade": "C",
   "score": 33,
@@ -47,12 +47,40 @@
     "Calmar_pass": false,
     "overall": "FAIL"
   },
-  "verdict_notes": ["Grade=C, Score=33.0, Excess CAGR=+14.13%p", "OOS_retention=NA (<U+2265>0.5 L3 <U+AE30><U+C900>: FAIL)", "PORT_t=NA (<U+2265>2.95 HARD: FAIL)", "Calmar=0.118 (<U+2265>0.64 HARD: FAIL)", "FX exposure <U+AC15><U+B3C4> proxy <U+2014> DART <U+C678><U+D654><U+D658><U+C0B0><U+C774><U+C775>/<U+C190><U+C2E4> <U+C808><U+B300><U+AC12> <U+D569>/TotalAssets. annual lag <U+C775><U+B144>3/31 PIT C4 <U+C900><U+C218>."],
-  "revival_conditions": ["FX <U+B178><U+CD9C> <U+AC15><U+B3C4> <U+ACC4><U+CE35><U+D654>: MEGA vs MID cap <U+BD84><U+B9AC> <U+C2E4><U+CE21> (<U+BCA4><U+CE58> <U+C544><U+D2F0><U+D329><U+D2B8> <U+C5EC><U+BD80> <U+D655><U+C778>)", "<U+BC29><U+D5A5> <U+BC18><U+C804>: Score = -FX_Intensity (<U+D5E4><U+C9D5> <U+BBF8><U+C2E4><U+C2DC> <U+AE30><U+C5C5> long)", "FX <U+D5E4><U+C9D5> NLP (FQ-148): DART <U+C804><U+BB38> <U+D14D><U+C2A4><U+D2B8><U+C5D0><U+C11C> <U+D5E4><U+C9D5> <U+C5EC><U+BD80> <U+C9C1><U+C811> <U+CD94><U+CD9C>"],
+  "verdict_notes": [
+    "Grade=C, Score=33.0, Excess CAGR=+14.13%p",
+    "OOS_retention=NA (<U+2265>0.5 L3 <U+AE30><U+C900>: FAIL)",
+    "PORT_t=NA (<U+2265>2.95 HARD: FAIL)",
+    "Calmar=0.118 (<U+2265>0.64 HARD: FAIL)",
+    "FX exposure <U+AC15><U+B3C4> proxy <U+2014> DART <U+C678><U+D654><U+D658><U+C0B0><U+C774><U+C775>/<U+C190><U+C2E4> <U+C808><U+B300><U+AC12> <U+D569>/TotalAssets. annual lag <U+C775><U+B144>3/31 PIT C4 <U+C900><U+C218>."
+  ],
+  "revival_conditions": [
+    "FX <U+B178><U+CD9C> <U+AC15><U+B3C4> <U+ACC4><U+CE35><U+D654>: MEGA vs MID cap <U+BD84><U+B9AC> <U+C2E4><U+CE21> (<U+BCA4><U+CE58> <U+C544><U+D2F0><U+D329><U+D2B8> <U+C5EC><U+BD80> <U+D655><U+C778>)",
+    "<U+BC29><U+D5A5> <U+BC18><U+C804>: Score = -FX_Intensity (<U+D5E4><U+C9D5> <U+BBF8><U+C2E4><U+C2DC> <U+AE30><U+C5C5> long)",
+    "FX <U+D5E4><U+C9D5> NLP (FQ-148): DART <U+C804><U+BB38> <U+D14D><U+C2A4><U+D2B8><U+C5D0><U+C11C> <U+D5E4><U+C9D5> <U+C5EC><U+BD80> <U+C9C1><U+C811> <U+CD94><U+CD9C>"
+  ],
   "out_dir": "stage_artifacts/alpha_search/20260806_203146_48376",
   "verified_by": "Q-Lead AlphaSearch 2607.27611 20260806",
   "gate_decision": "QUARANTINE",
   "gate_failed_layers": "robustness",
   "gate_rule": "PIT hard + contract&robustness&fidelity all PASS (unattended 4/4, fail-closed)",
-  "gate_checked_at": "2026-08-06T20:35:07+0900"
+  "gate_checked_at": "2026-08-06T20:35:07+0900",
+  "cagr": 7.2,
+  "sharpe": 0.295,
+  "mdd": 61.17,
+  "ir": 0.43,
+  "alpha_annualized": 0.0713,
+  "beta_to_bm": 0.326,
+  "correlation_to_bm": 0.5,
+  "oos_note": "IS SR 전반 낮아 OOS 분할 불가",
+  "alpha_trend_ratio": 2.156,
+  "ic": null,
+  "pos_rate": null,
+  "excess_cagr_vs_bm_pp": 14.13,
+  "grad_gap": {
+    "port_t_required": 2.95,
+    "port_t_actual": 0.119,
+    "gap_note": "PORT_t 하드게이트 대비 24.8배 미달 — 현 구조로 standalone 졸업 불가"
+  },
+  "data_window_note": "DART 2015~, 익년 3/31 lag → 유효 신호 시작 2016-04 (10년 창)"
 }
