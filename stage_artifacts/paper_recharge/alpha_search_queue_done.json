@@ -11,7 +11,8 @@
     "2607.01705",
     "2607.01377",
     "2607.27611",
-    "FQ-110"
+    "FQ-110",
+    "2608.05755"
   ],
   "records": [
     {
@@ -382,6 +383,23 @@
       "notable": true,
       "session_note": "AS-20260808 공식 처리. 원 실행은 AS-20260807(unauthorized), 오늘 formal verification 적용. 동 논문 2607.19497 fully processed(3 factor attempts).",
       "paper_exhausted": true
+    },
+    {
+      "paper_id": "2608.05755",
+      "paper_title": "Cross-Sectional Heterogeneity in LSTM-Based Return Prediction",
+      "factor_id": "IndustrySectorMomentum_LSTM_partial",
+      "factor_name": "업종 섹터 레벨 수익률 평균 (M18_IndustrMom 동치)",
+      "gate_decision": "EV_D1_GATED",
+      "gate_failed_layers": "ev_intake_gate",
+      "port_t": null,
+      "grade": null,
+      "processed_date": "20260808",
+      "verify_path": null,
+      "ev_gate_reason": "D1 dead class — M18_IndustrMom(industry momentum residualized, DIST-QPM-027) 이미 DB 등재·FAIL 확정. 2608.05755의 핵심 신호(업종 섹터 평균 수익률 LSTM 가중)는 KR Factor DB M18_IndustrMom과 신호 공간 동치. 추가로 논문 구현 목표인 LSTM 아키텍처·섹터 임베딩은 S&P500 long-short 전용 구조 — KR K200∪KQ150 long-only 이식 불가(batch_434 가드 해당). 착착 금지.",
+      "next_probe": [
+        "dohoon_triage: KR 종목별 LSTM 수익 예측이 M18_IndustrMom과 실질 다른 잔차 신호(cor < 0.8)를 산출하면 D1 EV 탈출 가능 — sector embedding 대신 KR 가용 특성(재무/시장) 기반 LSTM 시도"
+      ],
+      "session_note": "AS-20260808 큐소비자 런 2/2 — M18_IndustrMom DB 거주 확인(DIST-QPM-027 + STR_1692 FAIL). IndustrySectorMomentum_LSTM_partial = M18 동치 신호 공간. S&P500 long-short 구조·섹터임베딩 = batch_434(KR long-only 이식 불가). EV_D1_GATED, 백테 실행 없음."
     }
   ],
   "schema_note": "processed = list of paper_id strings (set-like, paper 단위 dedup). records = 전체 시도 감사 로그(동일 paper에서 여러 factor 추출 시 factor_id로 구분). last_updated 갱신 의무.",
