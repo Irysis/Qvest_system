@@ -2170,8 +2170,18 @@
       "wall_check": "PATHQ 계열 회전이 이미 상한 근접(793%/yr 환산 7.93x) — jump-share 직접판은 더 빠를 수 있어 회전이 1차 관문.",
       "data_gate": "없음 (rawdata 일간 현행분)",
       "owner": "미배정",
-      "status": "frontier_open",
-      "registered": "2026-08-02 Q-Lead (WT-D20260802_013 NP-2 파생)"
+      "status": "direction_a_quarantine_20260808",
+      "registered": "2026-08-02 Q-Lead (WT-D20260802_013 NP-2 파생)",
+      "direction_a_result": {
+        "strategy_id": "STR_AS_20260808_004643_8680",
+        "grade": "F",
+        "port_t": 0.618,
+        "calmar": 0.172,
+        "ic_mean": -0.028,
+        "verdict": "QUARANTINE",
+        "key_finding": "IC 음수(방향 A 역효과) — frog-in-the-pan REVERSE 기전 시사"
+      },
+      "next_step": "FQ-110B: Direction B (low jump-share long)"
     },
     {
       "id": "FQ-111",
@@ -2944,6 +2954,35 @@
         "02_Infrastructure/alpha_search/factor_engine_markov_pred_vol_rank.R"
       ],
       "result_lcode": "STR_AS_20260806_203146_53272"
+    },
+    {
+      "id": "FQ-110B",
+      "lane": "mechanism_probe",
+      "title": "jump-share 역방향 팩터 — low jump-share long (Direction B)",
+      "hypothesis": "FQ-110 방향 A(고 jump-share = long)에서 IC=-0.028 역방향 확인. frog-in-the-pan 기전은 REVERSE: 소폭 분산 누적(저 jump-share)이 지속 모멘텀. Score = -JumpShare_12M (낮은 jump-share를 high로 랭킹).",
+      "ev_rationale": "FQ-110 방향 A IC=-0.028 실증: 역방향이 실질 신호. frog-in-the-pan 원 이론(Han/Hu/Hwang 2016)도 smooth-return-accumulation이 강한 모멘텀 예측자임을 주장. Direction B = 직접 이론 정합.",
+      "wall_check": "회전율: JumpShare 월간 변화는 크지 않아 방향 A와 동일(~156%/yr). 주관문: PORT_t >= 2.95.",
+      "data_gate": "없음 (방향 A 동일 factor_engine, 부호 반전만)",
+      "owner": "미배정",
+      "status": "frontier_open",
+      "registered": "2026-08-08 Q-Lead (FQ-110 방향 A QUARANTINE 파생, IC 역부호 실증)",
+      "parent_fq": "FQ-110",
+      "impl_note": "factor_engine_JumpShare.R에서 Score = -JumpShare (or Score = 1 - JumpShare) 부호 반전만 필요"
+    },
+    {
+      "id": "FQ-153",
+      "lane": "overlay_probe",
+      "title": "Hurst 오버레이 — 시장 레벨 H>0.5 달 momentum overlay 활성",
+      "hypothesis": "SpectralPersistence_Hurst(08-08 QUARANTINE)에서 stress 5/7 outperform 발견. 시장 전체 KOSPI200 평균 Hurst 지수가 H>0.5(추세 국면)일 때 momentum 오버레이 활성화. 신호력은 횡단면 팩터가 아닌 시장 레짐 지표로 소비.",
+      "ev_rationale": "SpectralPersistence 방어성(stress 5/7 outperform, COVID+3.9%, Rate_Hike+17.4%) = AX-001 방어형 소비 자격 후보. 횡단면 선종목 실패 ≠ 시장레짐 타이밍 실패.",
+      "wall_check": "QEPM 오버레이 파이프라인 진입 필요. alpha-search로 먼저 타이밍 효과 검증 가능(시장 Hurst로 benchmark timing).",
+      "data_gate": "RAWDATA 일간 현행분 (KOSPI200 수익률에 R/S 적용)",
+      "owner": "미배정",
+      "status": "frontier_open",
+      "registered": "2026-08-08 Q-Lead (SpectralPersistence_Hurst QUARANTINE 소비면 파생)",
+      "parent_fq": "SpectralPersistence_Hurst/FQ-2607.19497",
+      "ax001_candidate": true,
+      "note": "논문 2607.19497 자체는 closed(3 factor attempts). 오버레이 소비면만 open."
     }
   ]
 }

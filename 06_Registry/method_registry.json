@@ -59,7 +59,17 @@
           "conformal α(현 0.20) 감도 미측정 — 단 band 자체가 음 기여로 실측됐으므로 α 조정으로 부호가 바뀔 가능성은 낮음",
           "일별 리밸 등 구간폭이 실제로 갱신될 시간축, 또는 alpha 부재 상황(mu 없는 유니버스)에서 재검토"
         ],
-        "not_tested": ["α 감도", "tail/VaR coverage 등 IR 외 지표", "band 를 변동성 역가중과 직접 대조(중복 여부)"]
+        "redundancy_check": {
+          "question": "conformal 구간폭(band)이 단순 변동성 역가중(1/sd)과 같은 것인가 → 같으면 registry `redundant` 재분류",
+          "preregistered_threshold": "횡단면 Spearman 중앙값 ≳0.95 이고 mu/band≈mu/sd, 1/band≈1/sd 면 중복",
+          "structure": {"spearman_band_sd_median": 0.856, "q05": 0.657, "min": 0.474, "n_months": 269,
+                         "band_over_sd_ratio_cv_median": 0.132},
+          "performance": {"mu_over_sd": 1.032, "mu_over_band": 1.011, "inv_sd": 0.906, "inv_band": 0.882},
+          "verdict": "중복 아님 — 사전 등록 문턱 미달(0.856 < 0.95), 5%분위 0.657 로 하위 국면에서 크게 갈림. `redundant` 재분류하지 않는다.",
+          "sharper_reading": "band 는 sd 와 다른 부분을 갖는데 **그 다른 부분이 해롭다**. 단순 중복이면 성과가 같아야 하는데 두 쌍 모두 band 쪽이 낮다(-0.021, -0.024).",
+          "caveat": "두 비교는 같은 월·같은 알파를 공유해 독립이 아니다. 0.02 차이 자체에 유의성을 주장하지 않는다 — 부호 일관성은 약한 증거."
+        },
+        "not_tested": ["α 감도", "tail/VaR coverage 등 IR 외 지표", "band 고유 변동이 무엇인지(잔차 분위수 vs sd 의 차이 원천) 분해"]
       }
     },
     {
