@@ -156,7 +156,32 @@
       "dsr_applicable": false,
       "dsr_note": "α 집합은 사전 고정 3점(실무 표준). 격자에서 argmax 를 고르지 않으므로 sweep-selection 아님",
       "novelty_note": "minvar 와 같은 층(알파 미사용 risk-side 목적함수)이나 목적이 분산이 아니라 worst-case CVaR. 중복 아님",
-      "positive_control": "저변동 종목 주입 시 그 종목 비중이 상한 0.20 까지 이동(0.069→0.200) — LP 가 실제로 최적화함을 확인"
+      "positive_control": "저변동 종목 주입 시 그 종목 비중이 상한 0.20 까지 이동(0.069→0.200) — LP 가 실제로 최적화함을 확인",
+      "measured": {
+        "date": "2026-08-08",
+        "basis": "carrier 06-18 (n_months=269, 현 북 271 대비 2개월 짧음) · overlay ON · cap-w",
+        "battery_ir": 0.51,
+        "book_ir": 1.077,
+        "delta_ir": -0.567,
+        "gate": 0.05,
+        "port_t": 2.14,
+        "mdd": -0.216,
+        "turnover": 16.5,
+        "verdict_measured": "게이트 미달 (config-scoped). 배터리 10종 중 최하 — minvar_lw(0.846)·GAS(0.650)보다도 낮음",
+        "mechanism": "알파 미사용 risk-side 목적함수라 minvar 와 같은 층인데, **축소가 전혀 없다** — 경험분포에서 직접 CVaR 를 최소화하므로 추정잡음을 그대로 받는다. 이번 세션의 주 발견(0.647→0.846 을 가르는 것은 축소)과 정합: 축소 없는 risk-side 목적함수는 minvar_lw 에 못 미친다.",
+        "tail_axis_not_tested": "★PRD 는 꼬리 목적함수인데 IR 로만 판정했다 — GAS 에 적용한 것과 같은 비판이 여기도 적용된다. 다만 MDD -0.216 이 minvar_lw -0.205 보다 **나쁘므로** 꼬리 축이 자동 구제하지는 않는다. 조건부(꼬리월/직후) 대응표본 검정은 미실시.",
+        "not_tested": [
+          "꼬리·조건부 축 대응표본 검정",
+          "α 집합 감도",
+          "축소를 넣은 변형(경험분포 대신 축소 시나리오)",
+          "VaR/ES coverage"
+        ],
+        "revival_conditions": [
+          "캐리어 271개월 재생성 시 재측정",
+          "축소를 결합한 변형에서 재검토 — 현 판정은 무축소 경험분포 한 점",
+          "일별 리밸 등 꼬리 표본이 늘어나는 시간축"
+        ]
+      }
     },
     {
       "method_id": "ProperScoreGASFilter",
