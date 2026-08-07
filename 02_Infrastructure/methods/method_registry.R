@@ -70,6 +70,12 @@ wrap_adapter <- function(fn, method_id, ub = 0.20) {
       return(setNames(rep(1 / length(a), length(a)), a))
     }
     names(w) <- a
+    # ★스케일 정규화를 **먼저** 한다 (2026-08-08 실측 결함).
+    #   normalize_long_only 은 `w[w > ub] <- ub` 를 **정규화 전에** 적용한다(production verbatim).
+    #   임의 스케일 선호 벡터(예: 3.8~38.2)를 그대로 넣으면 전 원소가 ub 로 잘려 **동일해지고**,
+    #   그 뒤 합-정규화되어 **정확히 EW** 가 된다 — 어댑터는 "돌았는데 아무것도 안 한" 상태가 된다.
+    #   실측: minvar 빌트인이 정확히 1/25(0.040000~0.040000)였다. 검사 [3] 의 EW-구별 축이 검거.
+    w <- w / sum(w)
     out <- normalize_long_only(w, lb = 0, ub = ub, target_sum = 1)
     # 사후 단언 — 여기서 깨지면 어댑터가 아니라 **하네스 결함**이다(조용히 넘기지 않는다).
     stopifnot(all(is.finite(out)), all(out >= -1e-9), all(out <= ub + 1e-9),
