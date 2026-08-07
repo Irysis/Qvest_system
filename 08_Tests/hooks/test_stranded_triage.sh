@@ -57,6 +57,9 @@ build_fixture() {
   printf 'base\nOLD_DRAFT_LINE\n'            > "$W/src/superseded.txt"
   printf '{"e":0}\n{"e":"wt-session"}\n'     > "$W/qepm/observability/events.jsonl"
   printf 'brand new file\n'                  > "$W/src/newfile.txt"    # main 에 아예 없음
+  printf 'raw run log\n'                     > "$W/src/_runlog.txt"    # 파생 스크래치
+  printf 'x <- 1\n'                          > "$W/src/_helper.R"      # ★_ 접두이나 **소스**
+  printf 'old registry\n'                    > "$W/src/reg.json.bak_20260802"
   sleep 1
 
   # main 이 그 파일에서 **앞서 나간다** (구판 줄을 더 나은 줄로 교체 후 커밋)

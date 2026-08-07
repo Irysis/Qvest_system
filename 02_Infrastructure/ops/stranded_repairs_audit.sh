@@ -95,6 +95,17 @@ verdict_of() {   # $1=tot $2=missing
 LEDGER_RE="${STRANDED_LEDGER_RE:-(^|/)(events|ast_structure_log)\.jsonl$}"
 is_ledger() { printf '%s' "$1" | grep -qE "$LEDGER_RE"; }
 
+# (i-b) 파생 스크래치 — 실행 원 로그(`_*.txt|.log|.out`)와 백업(`*.bak*`)은 *수리*가 아니다.
+#     artifact-storage.md §55 는 이들을 애초에 `01_reports/`·인프라 디렉터리에 두지 못하게
+#     하고(§61 리텐션 30일 자동삭제), 그 증류본(보고서 .md·결과 .json)이 canonical 이다.
+#     ★판별은 **파일명 모양이 아니라 부류**다 — §56 이 명시하듯 `_` 접두 자체는 private
+#     *모듈*(실소비자 있는 `_root.R`·`_query.py` 등)에도 쓰인다. 그래서 소스 확장자
+#     (`.R`/`.py`/`.sh`)는 제외 대상에서 **뺀다**: 스크래치로 접히는 건 파생 산출물뿐이다.
+#     실증 2026-08-08: nostalgic-borg 의 `.bak`(477,388 B)은 git c5138e33 과 **바이트 동일**이고,
+#     `_*.txt` 3건은 main 의 `factor_db_dedup_20260802.md`(30 KB)로 이미 증류돼 있었다.
+SCRATCH_RE="${STRANDED_SCRATCH_RE:-((^|/)_[^/]*\.(txt|log|out)$|\.bak([^/]*)?$)}"
+is_scratch() { printf '%s' "$1" | grep -qE "$SCRATCH_RE"; }
+
 # (ii) superseded — main 이 그 경로에서 worktree 보다 **앞서 나간** 경우.
 #     triage 는 "이 줄들이 main 에 있나"만 묻는다. **방향 개념이 없다.** 그래서 통합이
 #     성공해 main 이 개선될수록(구판 줄이 더 나은 줄로 교체됨) 경보가 **커진다** — 신호가 뒤집힌다.
@@ -118,7 +129,7 @@ main_recency() {   # $1=path → main 이 그 경로를 마지막으로 갱신�
 
 NOW_S=$(date +%s)
 N_WT=0; N_DIRTY=0; N_AHEAD=0; N_STALE=0; N_LOST=0; N_PARTIAL=0; N_PRUNE=0
-N_LEDGER=0; N_SUPER=0
+N_LEDGER=0; N_SUPER=0; N_SCRATCH=0
 WT_JSON=""; PRUNE_JSON=""; LOST_SUMMARY=""
 : > "$TMP/touched.txt"   # "<path>\t<branch>" — 동시 수정 충돌 탐지용
 
@@ -178,6 +189,8 @@ while IFS='|' read -r wt br; do
     # ── 재분류: 원장 분기 / 상위판 교체는 '좌초 수리'가 아니다 (2026-08-08)
     if is_ledger "$path"; then
       v="ledger_divergence"
+    elif is_scratch "$path"; then
+      v="scratch_artifact"
     elif [ "$v" = "lost" ] || [ "$v" = "mostly_lost" ] || [ "$v" = "partial" ]; then
       if [ -e "$PROJECT/$path" ]; then
         _mr="$(main_recency "$path")"; _wm="$(stat -c %Y "$wt/$path" 2>/dev/null || echo 0)"
@@ -191,6 +204,7 @@ while IFS='|' read -r wt br; do
       partial)             wt_partial=$((wt_partial + 1)); N_PARTIAL=$((N_PARTIAL + 1)) ;;
       ledger_divergence)   N_LEDGER=$((N_LEDGER + 1)) ;;
       superseded_upstream) N_SUPER=$((N_SUPER + 1)) ;;
+      scratch_artifact)    N_SCRATCH=$((N_SCRATCH + 1)) ;;
     esac
     printf '%s\t%s\n' "$path" "$short" >> "$TMP/touched.txt"
     [ -n "$FILES_JSON" ] && FILES_JSON="$FILES_JSON,"
@@ -267,6 +281,7 @@ cat > "$OUT" <<JSON
     "files_partial": $N_PARTIAL,
     "files_ledger_divergence": $N_LEDGER,
     "files_superseded_upstream": $N_SUPER,
+    "files_scratch_artifact": $N_SCRATCH,
     "collisions": $N_COLL,
     "prune_candidates": $N_PRUNE
   },
@@ -282,7 +297,7 @@ JSON
 say ""
 hb "worktree ${N_WT} · 미커밋 ${N_DIRTY} · 미병합 ${N_AHEAD} · ${STALE_DAYS}일+ 방치 ${N_STALE} | 유실 ${N_LOST} · 부분 ${N_PARTIAL} · 충돌 ${N_COLL} · prune후보 ${N_PRUNE}"
 # 접힌 2종도 수를 남긴다 — 경보에서 뺐다고 기록에서 지우면 '조용해진 것'과 '고쳐진 것'이 구분 안 된다
-hb "  (경보 제외) 원장 분기 ${N_LEDGER} · 상위판 교체 ${N_SUPER}"
+hb "  (경보 제외) 원장 분기 ${N_LEDGER} · 상위판 교체 ${N_SUPER} · 파생 스크래치 ${N_SCRATCH}"
 [ "$N_LOST" -gt 0 ] && hb "★ 유실 대상: ${LOST_SUMMARY}"
 [ "$N_COLL" -gt 0 ] && hb "★ 동시수정 충돌: ${COLL_SUMMARY}"
 say "[stranded] → $OUT"
