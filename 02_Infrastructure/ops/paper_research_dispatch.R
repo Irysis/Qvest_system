@@ -101,7 +101,12 @@ check_screen_axes <- function(items, route) {
 opt_verdict <- NULL
 if (n_opt > 0) {
   ov_csv <- file.path("06_Registry/book_carrier", "h1b_sigma_ab_overlay.csv")
-  carrier <- "06_Registry/book_carrier/carrier_STR_1715_AR_on_M4_R05_overlay_PG2.parquet"
+  # (2026-08-08 1안 ④) 캐리어 = carrier_meta 경유 (하드코딩이 구 PG2 7주 사용의 원인 — 도훈 적발)
+  carrier <- tryCatch({
+    mt <- fromJSON("06_Registry/book_carrier/carrier_meta.json", simplifyVector = FALSE)
+    p <- as.character(mt$parquet %||% NA)
+    if (!is.na(p) && file.exists(p)) p else "06_Registry/book_carrier/carrier_STR_1715_AR_on_M4_R05_overlay_PG2.parquet"
+  }, error = function(e) "06_Registry/book_carrier/carrier_STR_1715_AR_on_M4_R05_overlay_PG2.parquet")
   # >>> CARRIER_IDENTITY_GATE
   # (2026-08-08 도훈 적발) ★mtime 신선도로는 **"이 입력이 아직 옳은 입력인가"**를 못 묻는다.
   #   실사고: 배터리가 캐리어 `STR_1715_AR_on_M4_R05_overlay_PG2`(2026-06-18 빌드, book_state

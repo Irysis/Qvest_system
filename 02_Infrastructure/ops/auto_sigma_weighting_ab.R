@@ -132,8 +132,20 @@ sigma_weights_month <- function(tk, ret_sub, method, mu = NULL,
   .fill_dropped(w_surv, tk)
 }
 
-run_sigma_ab <- function(carrier_path =
-        "06_Registry/book_carrier/carrier_STR_1715_AR_on_M4_R05_overlay_PG2.parquet",
+# (2026-08-08 1안 ④) 캐리어 경로는 carrier_meta.json 에서 파생한다 — 하드코딩이 구 PG2 를
+#   7주간 기준선으로 쓰게 만든 원인(도훈 적발). meta.strategy 는 pg2_coherence_check C2 가
+#   admitted_ids 와 대조하므로, 이 경유가 곧 "현 PG2 자동 추종"이다.
+.carrier_from_meta <- function() {
+  mp <- "06_Registry/book_carrier/carrier_meta.json"
+  if (!file.exists(mp)) stop("[sigma_ab] carrier_meta.json 부재 — 캐리어 미빌드. extract_book_carrier_d3.R 선행.")
+  mt <- jsonlite::fromJSON(mp, simplifyVector = FALSE)
+  p <- as.character(mt$parquet %||% NA)
+  if (is.na(p) || !file.exists(p)) stop("[sigma_ab] carrier_meta$parquet 무효: ", p)
+  cat(sprintf("[sigma_ab] 캐리어(meta 경유) = %s [strategy=%s]\n", basename(p), mt$strategy %||% "?"))
+  p
+}
+
+run_sigma_ab <- function(carrier_path = .carrier_from_meta(),
         rawdata = ".cache/rawdata.parquet",
         sigma_methods = c("IV", "HRP_lw", "minvar_lw", "MVO_sample", "MVO_lw"),
         cost_bps = 15, with_overlay = FALSE,
@@ -166,7 +178,11 @@ run_sigma_ab <- function(carrier_path =
   returns_dt <- car[, .(Date = eval_date, Ticker, Ret_1m = ret_fwd)]
   periods <- unique(car[, .(decision_date, eval_date)])
   bench_dt <- build_period_bench(periods)[!is.na(BM_Ret)]
-  exp_dt <- if (isTRUE(with_overlay)) build_overlay_exposure() else NULL
+  # (2026-08-08 1안 ④) 오버레이 노출: 캐리어에 invested 컬럼이 있으면 **그것이 정본**
+  #   (D3 캐리어 = 북 실측 노출, net 재현 cor 0.999916 검증). 없으면 구 방식(2-1 layer5) 낙하.
+  exp_dt <- if (!isTRUE(with_overlay)) NULL
+            else if ("invested" %in% names(car)) unique(car[, .(Date = eval_date, exposure = invested)])
+            else build_overlay_exposure()
   held_tk <- unique(car$Ticker)
   raw <- as.data.table(read_parquet(rawdata, col_select = c("Date","Ticker","Ret")))[Ticker %in% held_tk]
   setkey(raw, Date)
