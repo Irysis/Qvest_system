@@ -73,6 +73,7 @@ build_overlay_exposure <- function(layer5_csv =
   w_raw <- tryCatch(solve(Sigma, mu), error = function(e) mu)   # Σ⁻¹ μ̂
   w <- pmax(w_raw, 0); if (sum(w) <= 0) w <- rep(1 / p, p)      # 전부 음알파면 EW 폴백
   names(w) <- colnames(Sigma)
+  w <- w / sum(w)   # ★(2026-08-08 수리) .minvar_w 와 동일 사유 — 캡 적용 전 합-정규화 필수
   normalize_long_only(w, lb = 0, ub = UB, target_sum = 1)
 }
 
