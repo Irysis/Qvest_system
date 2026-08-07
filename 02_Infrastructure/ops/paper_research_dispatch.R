@@ -55,8 +55,48 @@ opt_verdict <- NULL
 if (n_opt > 0) {
   ov_csv <- file.path("06_Registry/book_carrier", "h1b_sigma_ab_overlay.csv")
   carrier <- "06_Registry/book_carrier/carrier_STR_1715_AR_on_M4_R05_overlay_PG2.parquet"
-  # 배터리는 book(캐리어) 의존 — 캐리어보다 새로우면 재사용(매일 재실행 방지, PG2 변경 시만 재계산)
-  fresh <- file.exists(ov_csv) && file.exists(carrier) && file.info(ov_csv)$mtime >= file.info(carrier)$mtime
+  # >>> SIGMA_AB_FRESHNESS_GATE
+  # (2026-08-08 수리) 구 게이트 = `ov_csv$mtime >= carrier$mtime` 단독.
+  #   ★캐리어는 PG2 재구성 때만 갱신되므로 한 번 배터리를 돌린 뒤엔 **영구 참**이 된다.
+  #   실사고: carrier 06-18 14:15 / ov_csv 06-18 16:46 → 07-01·07-26·08-02·08-04·08-06
+  #   research_status 가 전부 동일값(book_ir 1.209 / EW 1.106 / ΔIR −0.103, n_months 269).
+  #   **7주간 캐시 1벌을 "오늘의 optimizer 판정"으로 텔레그램까지 재발송**했다.
+  #   "재계산 회피"로 쓴 게이트가 실제로는 **재계산 영구 정지**였다.
+  # 수리 2축: ① 캐리어가 아니라 배터리가 *실제로 읽는 입력 전부* 와 비교(auto_sigma_weighting_ab.R
+  #   run_sigma_ab/build_period_bench/build_overlay_exposure 인자 = 아래 4종)
+  #   ② 입력 mtime 이 우연히 안 움직여도 새 실현월은 반영되도록 max-age 백스톱(35일).
+  #   현 상태에서 ①만으로도 stale 판정된다(rawdata 08-08 00:09 ≫ ov_csv 06-18) — 실측 확인.
+  SIGMA_AB_MAX_AGE_DAYS <- 35
+  sigma_ab_inputs <- c(
+    carrier,
+    ".cache/rawdata.parquet",
+    ".cache/benchmark.parquet",
+    "05_Production/2.Factor_Model/2-1.STR_1715_AR_on_M4_R05_overlay_PG2/04_backtest_results/period_returns_layer5.csv"
+  )
+  .in_present <- sigma_ab_inputs[file.exists(sigma_ab_inputs)]
+  fresh <- FALSE; .stale_why <- "결과 파일 없음"
+  if (file.exists(ov_csv)) {
+    .out_m <- file.info(ov_csv)$mtime
+    .age_d <- as.numeric(difftime(Sys.time(), .out_m, units = "days"))
+    if (length(.in_present) == 0L) {
+      # ★입력이 하나도 없으면 "최신"이 아니라 **판정 불가**다 — 부재를 fresh 로 내려앉히지 않는다.
+      .stale_why <- "입력 4종 전부 부재 — 신선도 판정 불가"
+    } else {
+      .newest_in <- max(file.info(.in_present)$mtime)
+      if (.age_d > SIGMA_AB_MAX_AGE_DAYS) {
+        .stale_why <- sprintf("결과 나이 %.0f일 > 백스톱 %d일", .age_d, SIGMA_AB_MAX_AGE_DAYS)
+      } else if (.out_m < .newest_in) {
+        .stale_why <- sprintf("입력이 더 새로움 (최신 입력 %s > 결과 %s)",
+                              format(.newest_in, "%Y-%m-%d %H:%M"), format(.out_m, "%Y-%m-%d %H:%M"))
+      } else { fresh <- TRUE }
+    }
+    if (length(.in_present) < length(sigma_ab_inputs))
+      cat(sprintf("[dispatch] ★입력 %d/%d 부재 — 신선도 판정 근거 축소: %s\n",
+                  length(sigma_ab_inputs) - length(.in_present), length(sigma_ab_inputs),
+                  paste(basename(setdiff(sigma_ab_inputs, .in_present)), collapse = ", ")))
+  }
+  if (!fresh) cat(sprintf("[dispatch] Σ-배터리 stale 판정: %s\n", .stale_why))
+  # <<< SIGMA_AB_FRESHNESS_GATE
   if (!fresh) {
     cat("[dispatch] Σ-배터리 재실행(stale 또는 부재)...\n")
     Sys.setenv(QVEST_SIGMA_AB_NORUN = "1")

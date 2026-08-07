@@ -206,7 +206,13 @@ while IFS='|' read -r wt br; do
       superseded_upstream) N_SUPER=$((N_SUPER + 1)) ;;
       scratch_artifact)    N_SCRATCH=$((N_SCRATCH + 1)) ;;
     esac
-    printf '%s\t%s\n' "$path" "$short" >> "$TMP/touched.txt"
+    # ★충돌 후보는 **조치 대상 접점만** 센다. 충돌의 의미는 "병합 순서를 정해야 한다"인데,
+    #   접점이 전부 원장 분기·상위판 교체·파생 스크래치면 병합할 것이 없어 정할 순서도 없다.
+    #   (2026-08-08: 유실 0인데 충돌 8로 경보가 계속 떠서 "유실 0건 감지" 라는 자기모순 문구가 나갔다.
+    #    events.jsonl 25 · run_all_hooks.sh 12 등 전부 stale 사본 접점이었다.)
+    case "$v" in
+      lost|mostly_lost|partial) printf '%s\t%s\n' "$path" "$short" >> "$TMP/touched.txt" ;;
+    esac
     [ -n "$FILES_JSON" ] && FILES_JSON="$FILES_JSON,"
     FILES_JSON="$FILES_JSON
         {\"path\":\"$(jesc "$path")\",\"state\":\"$(jesc "$code")\",\"added_lines\":${tot:-0},\"missing_in_main\":${miss:-0},\"verdict\":\"$v\"}"
@@ -328,7 +334,7 @@ else
 fi
 
 # ── 텔레그램 경보: 유실 또는 충돌 후보가 있을 때. 같은 날 1회 스로틀.
-if [ "$DO_TG" -eq 1 ] && { [ "$N_LOST" -gt 0 ] || [ "$N_COLL" -gt 0 ]; }; then
+if [ "$DO_TG" -eq 1 ] && { [ "$N_LOST" -gt 0 ] || [ "$N_PARTIAL" -gt 0 ] || [ "$N_COLL" -gt 0 ]; }; then
   TODAY=$(date +%Y%m%d)
   MARK="$PROJECT/.cache/stranded_alert_${TODAY}.marker"
   if [ -f "$MARK" ]; then

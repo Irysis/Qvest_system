@@ -141,7 +141,14 @@ stage_result() {   # $1=표시명 $2=exit코드 $3=경보 컴포넌트명
 
   echo "[0.6/3] paper_research_dispatch.R (라우터 큐 → 리서치 액션: optimizer Σ-A/B 자동 + risk/regime flag, 도훈 mandate 2026-06-18)"
   if [ "${QVEST_PAPER_DISPATCH_ENABLE:-0}" = "1" ] && [ -f "$BASE/02_Infrastructure/ops/paper_research_dispatch.R" ]; then
+    # (2026-08-08) LC_ALL 고정 — cron 은 C 로케일로 들어와 R 이 스크립트의 UTF-8 한글 리터럴을
+    #   **파싱 시점에** 망가뜨린다(실측: LC_ALL=C 에서 "가중 레버 아님" → "j0", 저장된
+    #   research_status_*.json 의 verdict 와 정확히 일치). ★출력단 UTF-8 쓰기로는 못 고친다 —
+    #   손상이 parse 에서 끝나 enc2utf8 이 복구할 게 없다(양쪽 arm 실측 확인). 1252 로케일은
+    #   반대로 바이너리 UTF-8 쓰기를 깨므로 로케일 고정이 유일 정답.
+    #   문자열은 paper_router_run.sh:85 선례와 동일( 'C.UTF-8' 은 이 Windows R 에서 C 로 폴백 — 사용 금지).
     OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 ARROW_NUM_THREADS=1 R_DATATABLE_NUM_THREADS=1 \
+      LC_ALL='English_United States.utf8' \
       Rscript "$BASE/02_Infrastructure/ops/paper_research_dispatch.R" >> /tmp/qm_paper_dispatch.log 2>&1
     stage_result "paper_dispatch" "$?" "paper_dispatch"
   else

@@ -62,6 +62,16 @@ build_fixture() {
   printf 'old registry\n'                    > "$W/src/reg.json.bak_20260802"
   sleep 1
 
+  # ★두 번째 worktree — 충돌 판정을 **공허하지 않게** 만든다.
+  #   worktree 1개짜리 픽스처에서는 어떤 경로도 충돌일 수 없어 "충돌 0" 이 항상 참이 된다
+  #   (발굴 조건이 통과를 보장하면 그 검증은 없는 것과 같다 — 공허한 게이트 함정).
+  #   같은 두 경로를 건드리게 해서 lost 접점만 충돌로 세는지 본다.
+  W2="$TMP/worktrees/wt2"
+  git -C "$R" worktree add -q -b feat2 "$W2" >/dev/null 2>&1
+  printf 'base\nGENUINE_REPAIR_LINE_B\n'     > "$W2/src/genuine.txt"     # lost 접점 ×2 → 충돌
+  printf 'base\nOLD_DRAFT_LINE_B\n'          > "$W2/src/superseded.txt"  # 상위판 접점 ×2 → 충돌 아님
+  sleep 1
+
   # main 이 그 파일에서 **앞서 나간다** (구판 줄을 더 나은 줄로 교체 후 커밋)
   printf 'base\nBETTER_CONSOLIDATED_LINE\n'  > "$R/src/superseded.txt"
   git -C "$R" add -A >/dev/null 2>&1; git -C "$R" commit -qm advance >/dev/null 2>&1
@@ -105,6 +115,22 @@ chk "T2 main 에 부재한 신규 파일 → lost 유지"          "lost" "$(ver
 chk "T3 append-only 원장 → ledger_divergence"          "ledger_divergence" "$(verdict_of_path "$R" qepm/observability/events.jsonl)"
 # ── T4 main 이 앞서 나간 경로는 교체이지 유실이 아니다
 chk "T4 main 이 이후 커밋으로 앞서감 → superseded_upstream" "superseded_upstream" "$(verdict_of_path "$R" src/superseded.txt)"
+
+# ── T4b/T4c 파생 스크래치는 수리가 아니다 — 단, 제외는 **부류**로 좁게 건다
+chk "T4b _접두 원로그(.txt) → scratch_artifact"        "scratch_artifact" "$(verdict_of_path "$R" src/_runlog.txt)"
+chk "T4c .bak 백업 → scratch_artifact"                 "scratch_artifact" "$(verdict_of_path "$R" src/reg.json.bak_20260802)"
+# ★경계 대조: `_` 접두라도 **소스**(.R/.py/.sh)는 private 모듈일 수 있다(storage §56) → 제외 금지
+chk "T4d _접두여도 .R 소스는 lost 유지(제외 경계)"      "lost" "$(verdict_of_path "$R" src/_helper.R)"
+
+# ── T4e 충돌은 **조치 대상 접점만** — 상위판/원장 접점은 병합할 것이 없으므로 충돌이 아니다
+#    2 worktree 가 genuine.txt(lost)와 superseded.txt(상위판) 둘 다 건드린다 →
+#    충돌은 **정확히 genuine.txt 1건**이어야 한다(공허 통과 방지: 0 도 2 도 오답).
+COLLS=$("$PYX" -c "
+import json,io,sys
+d=json.load(io.open(sys.argv[1],encoding='utf-8'))
+print('%d:%s'%(d['summary']['collisions'], ','.join(sorted(c['path'] for c in d.get('collisions',[])))))" \
+  "$R/06_Registry/stranded_repairs.json" 2>/dev/null)
+chk "T4e 충돌 = 조치 대상 접점만(상위판 접점 제외)" "1:src/genuine.txt" "${COLLS:-X}"
 
 # ── T5/T6 돌연변이 ★면제 규칙이 실제로 일을 하는지: 무력화하면 T3/T4 가 유실로 뒤집혀야 한다.
 sed 's|^LEDGER_RE=.*|LEDGER_RE="^__never_matches__$"|' "$AUDIT" > "$TMP/mut_ledger.sh"

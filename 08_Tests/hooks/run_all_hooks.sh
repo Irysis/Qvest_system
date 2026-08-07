@@ -277,6 +277,15 @@ SUITES=(
   #   두 검사 다 양성 대조 + 위반 주입 양방향이라, 죽으면 총계가 떨어져 드러난다.
   "08_Tests/hooks/test_ast_spec_gate.sh"
   "08_Tests/contract_regression/test_ast_sidecar.R"
+  # 2026-08-08 추가: 관측 경보 2종의 **판정 계약**. 둘 다 경보를 *줄이는* 수리를 담고 있어
+  #   "조용해진 것"과 "판정이 죽은 것"이 겉보기에 같다 — 그 구분이 이 검사기들의 존재 이유다.
+  #   · task_health: 08-08 00:03 보고 "실패 4"가 4건 전부 허위였다(실행 중 rc 를 완료 판정으로
+  #     읽음 2건 + 같은 실패 1건을 7일간 매 폴링 재보고 2건). state 권위·(작업,실행시각) dedup 도입.
+  #   · stranded: 유실 36건 중 진짜 미도달 7건, 나머지는 append-only 원장 분기(26)와
+  #     main 이 이미 앞서 나간 구판(19). 방향 개념이 없어 **통합이 성공할수록 경보가 커졌다**.
+  #   양쪽 다 양성 대조 + 돌연변이(면제 규칙 무력화 시 뒤집힘)를 포함 — 죽으면 총계가 떨어진다.
+  "08_Tests/hooks/test_scheduler_task_health_verdict.sh"
+  "08_Tests/hooks/test_stranded_triage.sh"
   # 2026-08-02 추가: 벤치마크 2소스 정합 감시 위반 주입.
   #   ★등재 사유 = 실사고: RAWDATA.parquet::BM_Ret 과 benchmark.parquet::BM_Ret 은
   #   독립 생성 경로(krx_build_rawdata.R:223 자체계산 vs incremental_update_file.R:181 조인)인데
