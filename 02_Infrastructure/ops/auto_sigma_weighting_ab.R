@@ -83,6 +83,10 @@ build_overlay_exposure <- function(layer5_csv =
 #   (b)안 = 그 집합을 **인자**로 바꾼다. 등록 어댑터는 `SIGMA_EXTRA_ADAPTERS` 에 실려 들어온다.
 #   ★제약(long-only/Σw=1/w≤UB)은 어댑터가 아니라 wrap_adapter 가 강제한다.
 SIGMA_EXTRA_ADAPTERS <- list()   # method_id -> wrapped adapter fn. run_sigma_ab() 인자로 주입.
+# risk 레인: Σ **추정기** 교체. method_id 규약 `minvar@<est_id>` — 비중 규칙(minvar)은 고정하고
+#   Σ 만 갈아끼워, 차이가 오직 추정기 때문이라고 말할 수 있게 한다.
+#   minvar 를 고른 이유: Σ 만으로 비중이 결정돼 추정기 차이가 그대로 드러난다(EW/알파 혼입 없음).
+SIGMA_ESTIMATORS <- list()       # est_id -> wrapped estimator fn
 
 #' Σ-가중 per-month: 보유종목 tk + PIT ret_sub(start_d 이전) [+ mu(MVO용 score)] → method weights(named, 합1, cap UB).
 sigma_weights_month <- function(tk, ret_sub, method, mu = NULL,
