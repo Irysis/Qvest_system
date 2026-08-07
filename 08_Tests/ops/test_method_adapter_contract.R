@@ -161,6 +161,59 @@ local({
   }
 })
 
+cat("\n[3c] risk 레인 — Σ 추정기 계약 위반 주입\n")
+# ★Σ 추정기의 실패 모드는 비중과 다르다: 비정방/비대칭/NaN/비-PD/차원불일치.
+#   그리고 **조용한 폴백**이 가장 위험하다 — 추정기가 죽었는데 표본공분산이 대신 돌면
+#   "논문 추정기를 쟀다"가 거짓이 된다(EW 붕괴와 같은 부류). 그래서 폴백 시 호명을 확인한다.
+local({
+  if (!exists("wrap_sigma_estimator") || !exists("load_sigma_estimators")) {
+    bad("risk 레인", "wrap_sigma_estimator/load_sigma_estimators 부재"); return(invisible(NULL))
+  }
+  set.seed(3)
+  sctx <- list(assets = A, lookback_days = 250,
+               R = matrix(rnorm(250 * 25, 0, 0.02), 250, 25, dimnames = list(NULL, A)))
+  valid <- function(S) is.matrix(S) && all(dim(S) == 25) && all(is.finite(S)) &&
+                       isTRUE(all.equal(S, t(S), check.attributes = FALSE)) &&
+                       identical(dimnames(S), list(A, A)) && all(diag(S) > 0) &&
+                       min(eigen(S, symmetric = TRUE, only.values = TRUE)$values) > -1e-10
+  SINJ <- list(
+    list(n = "S1 비정방(10×25)",  f = function(ctx) matrix(1, 10, 25)),
+    list(n = "S2 NaN 포함",        f = function(ctx) { S <- stats::cov(ctx$R); S[1,2] <- NaN; S }),
+    list(n = "S3 비대칭",          f = function(ctx) { S <- stats::cov(ctx$R); S[1,2] <- S[1,2] * 3; dimnames(S) <- list(ctx$assets, ctx$assets); S }),
+    list(n = "S4 비-PD(음 고유값)", f = function(ctx) { S <- matrix(-0.5, 25, 25); diag(S) <- 1e-4; dimnames(S) <- list(ctx$assets, ctx$assets); S }),
+    list(n = "S5 분산 0",          f = function(ctx) { S <- stats::cov(ctx$R); diag(S) <- 0; dimnames(S) <- list(ctx$assets, ctx$assets); S }),
+    list(n = "S6 예외",            f = function(ctx) stop("의도적 실패")),
+    list(n = "S7 NULL",            f = function(ctx) NULL)
+  )
+  for (t in SINJ) {
+    g <- wrap_sigma_estimator(t$f, "inj")
+    lg <- utils::capture.output(S <- tryCatch(g(sctx), error = function(e) e))
+    if (inherits(S, "error")) { bad(t$n, sprintf("래퍼가 예외를 흘림: %s", conditionMessage(S))); next }
+    if (!valid(S)) { bad(t$n, "유효하지 않은 Σ 반환"); next }
+    # 폴백을 탔다면 반드시 이름이 불려야 한다(침묵 폴백 금지)
+    if (t$n %in% c("S1 비정방(10×25)", "S2 NaN 포함", "S5 분산 0", "S6 예외", "S7 NULL") &&
+        !any(grepl("폴백|예외", lg))) bad(t$n, "폴백했는데 로그에 호명 없음 = 침묵 폴백")
+    else ok(sprintf("%s → 유효 Σ + 호명", t$n))
+  }
+  # clean 선확인 + 실물
+  gc0 <- wrap_sigma_estimator(function(ctx) { S <- stats::cov(ctx$R); dimnames(S) <- list(ctx$assets, ctx$assets); S }, "clean")
+  utils::capture.output(S0 <- gc0(sctx))
+  if (valid(S0)) ok("clean Σ 추정기 통과") else bad("clean Σ", "정상 추정기가 실패 = 래퍼 결함")
+
+  utils::capture.output(ests <- load_sigma_estimators())
+  if (!length(ests)) bad("risk 레지스트리", "implemented 추정기 0건")
+  else for (id in names(ests)) {
+    lg <- utils::capture.output(S <- ests[[id]](sctx))
+    if (!valid(S)) { bad(sprintf("실물 Σ %s", id), "유효성 실패"); next }
+    ok(sprintf("실물 Σ %s → 유효", id))
+    if (any(grepl("폴백", lg))) bad(sprintf("실물 Σ %s", id), "표본공분산 폴백을 탐 — 추정기가 실제로 안 돎")
+    else ok(sprintf("실물 Σ %s → 폴백 없이 자체 산출", id))
+    Ssamp <- stats::cov(sctx$R)
+    if (max(abs(S - Ssamp)) < 1e-12) bad(sprintf("실물 Σ %s 판별", id), "표본공분산과 동일 — 교체가 무의미")
+    else ok(sprintf("실물 Σ %s → 표본공분산과 구별됨 (maxdiff %.2e)", id, max(abs(S - Ssamp))))
+  }
+})
+
 cat("\n[4] triage 보고 — 등재가 아니라 처분이 실리는가\n")
 tri <- method_triage("optimizer")
 if (!length(tri)) bad("triage", "optimizer route 0건")  else {

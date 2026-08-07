@@ -292,6 +292,12 @@ if command -v git >/dev/null 2>&1 && git -C "$PROJECT" rev-parse --git-dir >/dev
       [ -z "$_f" ] && continue
       case "$_f" in
         qepm/observability/*|*.log|.cache/*) continue ;;   # 관측 원장·로그·캐시는 병합 대상 아님
+        # (2026-08-08) 파생 스크래치·백업도 '수리'가 아니다 — stranded_repairs_audit.sh 의
+        #   SCRATCH_RE 와 같은 규칙. 두 렌더러가 같은 사실에 다른 답을 내지 않게 맞춘다.
+        #   실측: nostalgic-borg 의 `_*.txt` 3건 + `.bak` 1건이 여기서만 '좌초 4파일'로 떴는데,
+        #   `.bak` 은 git c5138e33 과 바이트 동일이고 `_*.txt` 는 main 의 보고서 .md 로 이미 증류돼 있었다.
+        #   ★소스 확장자(.R/.py/.sh)는 제외하지 않는다 — `_` 접두는 private 모듈에도 쓰인다(storage §56).
+        _*.txt|*/_*.txt|_*.out|*/_*.out|*.bak|*.bak[-_.]*) continue ;;
       esac
       if [ ! -e "$PROJECT/$_f" ]; then
         wt_missing=$((wt_missing + 1))

@@ -150,10 +150,16 @@ wrap_sigma_estimator <- function(fn, est_id) {
     if (!all(is.finite(S))) return(fallback("비유한 원소"))
     S <- (S + t(S)) / 2                                     # 대칭화(수치오차 흡수)
     dimnames(S) <- list(a, a)
+    # ★분산 검사를 PD jitter **앞에** 둔다 (2026-08-08 검사기 검거).
+    #   구 순서(jitter 먼저)에서는 대각이 0 인 퇴화 Σ 가 jitter 로 덧칠돼 대각>0 이 되어
+    #   폴백도 호명도 없이 통과했다 — **망가진 추정기가 쓸만해 보이는 Σ 를 내는** 상태.
+    #   jitter 는 미세 수치 비-PD 를 흡수하는 장치이지 퇴화 추정치를 되살리는 장치가 아니다.
+    if (any(!is.finite(diag(S))) || any(diag(S) <= 0)) return(fallback("비양수 분산(퇴화 추정)"))
     ev <- tryCatch(min(eigen(S, symmetric = TRUE, only.values = TRUE)$values), error = function(e) NA_real_)
     if (is.na(ev)) return(fallback("고유값 계산 실패"))
-    if (ev <= 0) S <- S + diag(abs(ev) + 1e-10, length(a))  # PD 보정(폴백 아님 — 미세 jitter)
-    if (any(diag(S) <= 0)) return(fallback("비양수 분산"))
+    # 음 고유값이 대각 규모에 비해 크면 jitter 로 덮을 문제가 아니다 → 폴백.
+    if (ev <= 0 && abs(ev) > 0.10 * mean(diag(S))) return(fallback(sprintf("심한 비-PD (min eig %.3g)", ev)))
+    if (ev <= 0) S <- S + diag(abs(ev) + 1e-10, length(a))  # 미세 비-PD 만 보정(폴백 아님)
     S
   }
 }
