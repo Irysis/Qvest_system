@@ -134,6 +134,33 @@ if (!length(ads)) {
   }
 }
 
+cat("\n[3b] 빌트인 method — EW 붕괴 회귀 (2026-08-08 실측 결함)\n")
+# ★원 결함: normalize_long_only 은 `w[w>ub] <- ub` 를 **정규화 전에** 한다(production verbatim).
+#   solve(Σ,1) 의 원 스케일(실측 1147~3439)을 그대로 넣으면 전 원소가 ub 로 잘려 정확히 EW.
+#   06-18 이래 minvar_lw/MVO_sample/MVO_lw 3종이 EW 를 이름만 바꿔 재고 있었다.
+#   ★"돌았다"와 "아무것도 안 했다"의 겉보기가 같아서 7주간 안 보였다.
+local({
+  benv <- new.env(parent = globalenv())
+  Sys.setenv(QVEST_SIGMA_AB_NORUN = "1")
+  okS <- tryCatch({ utils::capture.output(suppressWarnings(suppressMessages(
+    sys.source("02_Infrastructure/ops/auto_sigma_weighting_ab.R", envir = benv)))); TRUE },
+    error = function(e) { cat(sprintf("   (source 실패: %s)\n", conditionMessage(e))); FALSE })
+  if (!okS) { bad("빌트인 로드", "auto_sigma_weighting_ab.R source 실패"); return(invisible(NULL)) }
+  set.seed(2)
+  X <- matrix(rnorm(250 * 25, 0, 0.02), 250, 25, dimnames = list(NULL, A))
+  S <- stats::cov(X)
+  for (fn in c(".minvar_w", ".mvo_w")) {
+    if (!exists(fn, envir = benv, inherits = FALSE)) { bad(sprintf("빌트인 %s", fn), "부재"); next }
+    g <- get(fn, envir = benv)
+    w <- if (fn == ".mvo_w") g(S, setNames(seq(1, 0.1, length.out = 25), A)) else g(S)
+    if (max(abs(as.numeric(w) - 1/25)) < 1e-9)
+      bad(sprintf("빌트인 %s", fn), "정확히 EW — 캡이 정규화보다 먼저 걸려 method 가 무력화됨")
+    else ok(sprintf("빌트인 %s → EW 와 구별됨 (range %.4f~%.4f)", fn, min(w), max(w)))
+    if (all(w <= UB + 1e-9) && abs(sum(w) - 1) < 1e-6) ok(sprintf("빌트인 %s → 제약 준수", fn))
+    else bad(sprintf("빌트인 %s 제약", fn), sprintf("max=%.4f sum=%.6f", max(w), sum(w)))
+  }
+})
+
 cat("\n[4] triage 보고 — 등재가 아니라 처분이 실리는가\n")
 tri <- method_triage("optimizer")
 if (!length(tri)) bad("triage", "optimizer route 0건")  else {
