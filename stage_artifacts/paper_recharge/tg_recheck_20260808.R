@@ -9,7 +9,7 @@ tg_agent_brief(
   force   = TRUE,
   sections = list(
     list(type = "summary",
-         body = "tier-2 재검 1건 처리. 논문이 포착한 산업 모멘텀 + 단기 역전 신호가 우리 팩터 DB(M07/M11/M24)에 이미 완전히 등재돼 있어 중복(redundant) 판정. 실제 자본 배정으로 이어지는 신호는 없고, 두 개의 미측정 소비면을 다음 탐색 큐에 등재했습니다."),
+         body = "tier-2 재검 1건: 중복 판정. DB 기등재 신호(M07/M11). 미측정 소비면 2건 큐 등재."),
 
     list(type = "bullet", emoji = "📖", heading = "쉬운 설명",
          items = c(
