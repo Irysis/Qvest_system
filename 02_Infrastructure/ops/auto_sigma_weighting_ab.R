@@ -71,8 +71,17 @@ build_overlay_exposure <- function(layer5_csv =
   normalize_long_only(w, lb = 0, ub = UB, target_sum = 1)
 }
 
+# ── (2026-08-08 (b)안) 논문 유래 method 어댑터 레지스트리 ───────────────────────
+#   구 상태: method 집합이 이 파일에 하드코딩된 상수(2026-06-18 논문 2편 기준)라, 이후 라우팅된
+#   optimizer 논문은 **낄 자리가 없어** mode_queue 에 제목만 남고 소비되지 않았다.
+#   (b)안 = 그 집합을 **인자**로 바꾼다. 등록 어댑터는 `SIGMA_EXTRA_ADAPTERS` 에 실려 들어온다.
+#   ★제약(long-only/Σw=1/w≤UB)은 어댑터가 아니라 wrap_adapter 가 강제한다.
+SIGMA_EXTRA_ADAPTERS <- list()   # method_id -> wrapped adapter fn. run_sigma_ab() 인자로 주입.
+
 #' Σ-가중 per-month: 보유종목 tk + PIT ret_sub(start_d 이전) [+ mu(MVO용 score)] → method weights(named, 합1, cap UB).
-sigma_weights_month <- function(tk, ret_sub, method, mu = NULL) {
+sigma_weights_month <- function(tk, ret_sub, method, mu = NULL,
+                                extra = SIGMA_EXTRA_ADAPTERS,
+                                decision_date = NA, eval_date = NA) {
   rm <- .build_ret_matrix(tk, ret_sub, LOOKBACK_DAYS)   # survived only (>=30 obs), NA→0
   if (is.null(rm) || ncol(rm) < 3) return(setNames(rep(1 / length(tk), length(tk)), tk))  # fallback EW
   if (method %in% c("HRP_sample", "HRP_lw")) {
@@ -83,11 +92,18 @@ sigma_weights_month <- function(tk, ret_sub, method, mu = NULL) {
   cm <- if (grepl("_lw$", method)) "ledoit_wolf" else "sample"
   cc <- tryCatch(.get_cor_cov(rm, cm), error = function(e) .get_cor_cov(rm, "sample"))
   Sigma <- cc$cov
+  # ★등록 어댑터 우선 조회 — 빌트인 이름과 충돌하지 않도록 정확 일치만.
+  if (!is.null(extra[[method]])) {
+    ctx <- list(Sigma = Sigma, R = rm, mu = mu, assets = colnames(Sigma), ub = UB,
+                lookback_days = LOOKBACK_DAYS,
+                decision_date = decision_date, eval_date = eval_date)
+    return(.fill_dropped(extra[[method]](ctx), tk))
+  }
   w_surv <- switch(sub("_.*$", "", method),
                    IV     = { w <- .iv_w(Sigma); names(w) <- colnames(Sigma); w },
                    minvar = .minvar_w(Sigma),
                    MVO    = .mvo_w(Sigma, mu),   # 알파+Σ 하이브리드
-                   stop("unknown sigma method"))
+                   stop(sprintf("unknown sigma method: %s (빌트인도 등록 어댑터도 아님)", method)))
   .fill_dropped(w_surv, tk)
 }
 
@@ -95,7 +111,18 @@ run_sigma_ab <- function(carrier_path =
         "06_Registry/book_carrier/carrier_STR_1715_AR_on_M4_R05_overlay_PG2.parquet",
         rawdata = ".cache/rawdata.parquet",
         sigma_methods = c("IV", "HRP_lw", "minvar_lw", "MVO_sample", "MVO_lw"),
-        cost_bps = 15, with_overlay = FALSE) {
+        cost_bps = 15, with_overlay = FALSE,
+        extra_adapters = SIGMA_EXTRA_ADAPTERS) {
+  # (2026-08-08 (b)안) 등록 어댑터를 method 목록에 합류. 빌트인과 이름 충돌 시 빌트인 우선(경고).
+  if (length(extra_adapters)) {
+    .dup <- intersect(names(extra_adapters), sigma_methods)
+    if (length(.dup)) {
+      cat(sprintf("[sigma_ab] ★method_id 충돌 — 빌트인 우선, 등록분 제외: %s\n", paste(.dup, collapse=", ")))
+      extra_adapters <- extra_adapters[setdiff(names(extra_adapters), .dup)]
+    }
+    sigma_methods <- c(sigma_methods, names(extra_adapters))
+    cat(sprintf("[sigma_ab] 논문 유래 method 합류: %s\n", paste(names(extra_adapters), collapse=", ")))
+  }
   car <- as.data.table(read_parquet(carrier_path))
   car <- car[selected == TRUE & !is.na(ret_fwd)]
   car[, `:=`(decision_date = as.Date(decision_date), eval_date = as.Date(eval_date))]
@@ -126,7 +153,8 @@ run_sigma_ab <- function(carrier_path =
     if (is.infinite(start_d) || is.na(start_d)) next
     ret_sub <- raw[Date < start_d, .(Date, Ticker, Ret)]   # PIT: 매수 이전
     for (m in sigma_methods) {
-      w <- tryCatch(sigma_weights_month(tk, ret_sub, m, mu = mu),
+      w <- tryCatch(sigma_weights_month(tk, ret_sub, m, mu = mu, extra = extra_adapters,
+                                        decision_date = dd, eval_date = ed),
                     error = function(e) setNames(rep(1/length(tk), length(tk)), tk))
       sigma_W[[m]][[i]] <- data.table(Date = ed, Ticker = names(w), w = as.numeric(w))
     }

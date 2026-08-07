@@ -1,6 +1,6 @@
 # 02_Infrastructure INDEX
 
-> 자동 생성 2026-08-06 20:51 — 큐레이션 원본: `06_Registry/index_descriptions.json` (role/status/category 수동 보완처) · 재생성: `Rscript 02_Infrastructure/tools/build_artifact_index.R` (daily_refresh 말미 자동). 본 파일 직접 수정 금지 — 재생성 시 덮어씀.
+> 자동 생성 2026-08-08 00:45 — 큐레이션 원본: `06_Registry/index_descriptions.json` (role/status/category 수동 보완처) · 재생성: `Rscript 02_Infrastructure/tools/build_artifact_index.R` (daily_refresh 말미 자동). 본 파일 직접 수정 금지 — 재생성 시 덮어씀.
 
 ## 데이터 (3)
 
@@ -63,7 +63,7 @@
 
 | 항목 | 정체 | status | 최근 | 크기 |
 |---|---|---|---|---|
-| `alpha_search/` | ② alpha-search 모드 실행 계층(91건) — run_alpha_search.R + 논문 복제 드라이버(run_qmj_paper·run_residmom_paper 등)·캐시 빌더·검증 스크립트 | active | 2026-08-06 | 770KB |
+| `alpha_search/` | ② alpha-search 모드 실행 계층(91건) — run_alpha_search.R + 논문 복제 드라이버(run_qmj_paper·run_residmom_paper 등)·캐시 빌더·검증 스크립트 | active | 2026-08-07 | 785KB |
 
 ## 보고 (3)
 
@@ -96,7 +96,7 @@
 
 | 항목 | 정체 | status | 최근 | 크기 |
 |---|---|---|---|---|
-| `docs/` | 설계 SOT·확장 룰·CHANGELOG 계층 — qvest_v8_1_sot.md(Active SOT)·rules/ 확장 9·legacy_boundary·reference_textbooks | active | 2026-08-02 | 444KB |
+| `docs/` | 설계 SOT·확장 룰·CHANGELOG 계층 — qvest_v8_1_sot.md(Active SOT)·rules/ 확장 9·legacy_boundary·reference_textbooks | active | 2026-08-07 | 446KB |
 | `README.md` | 인프라 존 진입 설명 (상세 목록은 INDEX.md) | active | 2026-07-03 | 1KB |
 
 ## 측정 (1)
@@ -110,7 +110,7 @@
 | 항목 | 정체 | status | 최근 | 크기 |
 |---|---|---|---|---|
 | `judge/` | judge_lockbox_harness.R 단일 — judge의 lockbox 격리 검증 하네스(Gate 심사 시 forge 산출 재검) | active | 2026-06-07 | 12KB |
-| `prompts/` | agent spawn init 프롬프트 14건 — _shared_prefix.md(axiom derived cache) + alpha/risk/optimizer/forge/judge/qlead_init.md | active | 2026-08-02 | 220KB |
+| `prompts/` | agent spawn init 프롬프트 14건 — _shared_prefix.md(axiom derived cache) + alpha/risk/optimizer/forge/judge/qlead_init.md | active | 2026-08-07 | 222KB |
 | `worktask/` | WT 계약 계층 — common_charter.md·cert_rules.R·constraint_defaults.json(graduation severity)·run_all_template.R(현행 forge 템플릿)·lineage_utils | active | 2026-08-02 | 262KB |
 
 ## 메모리 (1)
@@ -130,7 +130,7 @@
 | 항목 | 정체 | status | 최근 | 크기 |
 |---|---|---|---|---|
 | `monitoring/` | 라이브 페이퍼트래킹 — noLayer4 일별 마킹(mark_nolayer4_daily.R)·월간(run_nolayer4_monthly.sh)·holdout 대조(monitor_nolayer4_paper.R). 구 faithtrend 스크립트+.bak = deprecated rollback 보존 | active | 2026-08-02 | 37KB |
-| `ops/` | 운영 계층 54건 — bootstrap.sh(/qvest 진입)·cleanup.sh·scheduler/(.bat 태스크)·헬스체크·paper router | active | 2026-08-03 | 807KB |
+| `ops/` | 운영 계층 54건 — bootstrap.sh(/qvest 진입)·cleanup.sh·scheduler/(.bat 태스크)·헬스체크·paper router | active | 2026-08-07 | 824KB |
 | `telegram/` | 텔레그램 계층 4건 — telegram_notify.R(발송)·telegram_listener.py·telegram_commands.R·start_listener.sh (qvest-telegram SOT의 구현체) | active | 2026-08-02 | 222KB |
 | `tools/` | 운영 도구 16건 — build_artifact_index.R·paper_recharge_daily.R(논문 수집)·debate_helpers 등 | active | 2026-08-02 | 296KB |
 
@@ -184,11 +184,12 @@
 |---|---|---|---|---|
 | `tests` | 인프라 단위 테스트 — test_continuity_gate.py(Continuity Firewall L2 판정기 회귀) | active | 2026-08-02 | 32KB |
 
-## 미분류 (1) — index_descriptions.json에 추가하세요
+## 미분류 (2) — index_descriptions.json에 추가하세요
 
 | 항목 | 정체 | status | 최근 | 크기 |
 |---|---|---|---|---|
 | `ast` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-08-02 | 187KB |
+| `methods` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-08-07 | 12KB |
 
 ## stale 큐레이션 키 (4) — 디스크 부재, index_descriptions.json에서 제거 권장
 

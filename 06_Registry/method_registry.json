@@ -1,0 +1,90 @@
+{
+  "schema_version": "method_registry_v1",
+  "created": "2026-08-08",
+  "purpose": "논문 유래 가중/위험 method 원장. paper_router 가 optimizer/risk 로 분류한 논문을 Σ-A/B 배터리에 실제로 태우기 위한 어댑터 등재부 ((b)안, 도훈 지시 2026-08-08).",
+  "contract": {
+    "adapter_signature": "method_weights(ctx) -> named numeric over ctx$assets (선호 벡터. 스케일·부호 자유)",
+    "ctx_fields": ["Sigma", "R", "mu", "assets", "ub", "lookback_days", "decision_date", "eval_date"],
+    "constraints_enforced_by": "02_Infrastructure/methods/method_registry.R::wrap_adapter (pmax(0) + normalize_long_only(lb=0, ub, sum=1)) — 어댑터는 제약을 지킬 의무가 없고, 깰 수도 없다",
+    "selection": "캐리어(현 PG2)가 종목을 고정. method 는 비중만 정한다 — A/B 통제",
+    "capital": "자본 admit 없음. 채택은 도훈 수동 (governor 정지)"
+  },
+  "verdict_enum": {
+    "implemented": "어댑터 존재 · 배터리에 편입됨",
+    "blocked_by_capability": "구현은 가능하나 현 측정틀(월간·25종·250일창)에서 식별 불가",
+    "blocked_by_data": "KR 보유 데이터로 산출 불가",
+    "redundant": "기존 method 와 사실상 동일",
+    "queued": "triage 미완"
+  },
+  "methods": [
+    {
+      "method_id": "ConformalKelly",
+      "route": "optimizer",
+      "paper_id": "arxiv:2608.01494",
+      "paper_title": "Conformal Kelly: Conformal Prediction Intervals as the Scale in Fractional Kelly Position Sizing",
+      "routed_on": "2026-08-06",
+      "mechanism": "수익률 예측구간의 폭을 Kelly 사이징 스케일로 사용 — 넓은 구간(불확실) 종목의 비중을 축소",
+      "kr_mapping": "w ∝ max(mu,0) / conformal_band. L/S → long leg 사상(paper_router_prompt §STEP2 허용)",
+      "band_source": "ctx$R 에서 split-conformal 잔차 분위수 직접 산출. ★predictions_with_ci.parquet 미사용 — 현존분은 2026-05 WT 실험 산출물뿐이라 캐리어 유니버스·기간 미커버 + 저장 파생 패널 동월 look-ahead 이력",
+      "adapter": "02_Infrastructure/methods/adapters/conformal_kelly.R",
+      "entrypoint": "method_weights",
+      "verdict": "implemented",
+      "similar_to": [],
+      "free_params": {"CONFORMAL_ALPHA": 0.20},
+      "selection_type": "chain",
+      "dsr_applicable": false,
+      "dsr_note": "단일 사전 고정값 1개(α=0.20 표준 선택), sweep 아님 — measurement-graduation §3 selection operator 경계상 DSR 부적용",
+      "added": "2026-08-08"
+    },
+    {
+      "method_id": "PathSignature",
+      "route": "optimizer",
+      "paper_id": "arxiv:2608.02355",
+      "paper_title": "Path Portfolio Optimization: Defect, Lift, and the Price of Path Complexity",
+      "routed_on": "2026-08-06",
+      "mechanism": "path signature(경로 텐서대수) 대칭 블록(terminal increment 의 convexity)이 알파. antisymmetric 블록은 expected area 없을 때 무이익",
+      "verdict": "blocked_by_capability",
+      "blocker": "signature depth=2 도 25종목 × 월간 리밸에서 관측당 파라미터 비율이 과대 — 논문 자체가 추정 불안정을 경고. 현 측정틀(250일 창)에서 식별 불가",
+      "unblock_requirement": "일별 리밸 또는 유니버스 확대(v2 KR_TOP500)에서 재검토. 또는 depth=1 축약형으로 선행 실측",
+      "similar_to": [],
+      "added": "2026-08-08"
+    },
+    {
+      "method_id": "MFCCA",
+      "route": "optimizer",
+      "paper_id": "arxiv:2608.04987",
+      "paper_title": "Portfolio Allocation under Heterogeneous Scales and Multifractality",
+      "routed_on": "2026-08-06",
+      "mechanism": "Multifractal Cross-Correlation Analysis 리스크 함수. scale s × fluctuation order q 2D 파라미터, co-moving/counter-moving 부호 보존",
+      "verdict": "blocked_by_capability",
+      "blocker": "scale × order 2D 스펙트럼 추정에 필요한 관측수가 250일 창 × 25종목을 크게 초과. 논문 실증은 ARFIMA+MSM 합성 과정 기반",
+      "unblock_requirement": "일별 창 확대(≥1250일) 또는 held_tickers 전체(442종) 풀에서 Σ 대체로 선행 실측",
+      "similar_to": [],
+      "added": "2026-08-08"
+    },
+    {
+      "method_id": "PreferenceRobustDistortion",
+      "route": "risk",
+      "paper_id": "arxiv:2608.02854",
+      "paper_title": "Preference robust distortion risk measures",
+      "routed_on": "2026-08-06",
+      "mechanism": "Wasserstein/Bregman divergence 기반 preference-robust distortion 리스크 측도. worst-case closed-form",
+      "verdict": "queued",
+      "note": "risk 레인 하네스(Σ-교체 A/B) 미배선 — optimizer 레인 검증 후 착수. 어댑터 계약은 동일 형태(Σ 산출 교체)",
+      "similar_to": [],
+      "added": "2026-08-08"
+    },
+    {
+      "method_id": "ProperScoreGASFilter",
+      "route": "risk",
+      "paper_id": "arxiv:2608.02828",
+      "paper_title": "Proper-score observation-driven filters: local geometry, estimation, and continuous-time limits",
+      "routed_on": "2026-08-06",
+      "mechanism": "proper scoring rule 기반 GAS 일반화. 극단값 전파 제한 기제. 현행 DCC-Copula Σ 추정기 보완 후보",
+      "verdict": "queued",
+      "note": "risk 레인 하네스 미배선. 이 건은 Σ 추정기 직접 교체라 배선 시 1순위",
+      "similar_to": ["DCC-Copula (현행 risk-research 추정기)"],
+      "added": "2026-08-08"
+    }
+  ]
+}

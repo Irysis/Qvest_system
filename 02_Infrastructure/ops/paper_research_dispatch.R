@@ -103,9 +103,16 @@ if (n_opt > 0) {
     src_ok <- tryCatch({
       suppressWarnings(source("02_Infrastructure/contracts/weighted_screen_bt.R"))
       suppressWarnings(source("02_Infrastructure/ops/auto_sigma_weighting_ab.R"))
+      suppressWarnings(source("02_Infrastructure/methods/method_registry.R"))
       TRUE }, error = function(e) { cat(sprintf("[dispatch] source fail: %s\n", conditionMessage(e))); FALSE })
     if (src_ok && exists("run_sigma_ab")) {
-      tb <- tryCatch(run_sigma_ab(with_overlay = TRUE), error = function(e) { cat(sprintf("[dispatch] battery fail: %s\n", conditionMessage(e))); NULL })
+      # ((b)안 2026-08-08) 논문 유래 method 어댑터 합류 — 이게 "논문이 실제로 소비되는" 지점이다.
+      #   구판은 여기서 배터리를 **고정 6종**으로만 돌려, 그날 라우팅된 논문은 제목만 기록됐다.
+      .extra <- tryCatch(load_method_adapters(route = "optimizer"),
+                         error = function(e) { cat(sprintf("[dispatch] method registry fail: %s\n",
+                                                           conditionMessage(e))); list() })
+      tb <- tryCatch(run_sigma_ab(with_overlay = TRUE, extra_adapters = .extra),
+                     error = function(e) { cat(sprintf("[dispatch] battery fail: %s\n", conditionMessage(e))); NULL })
       if (!is.null(tb)) { fwrite(tb, ov_csv); fresh <- TRUE }
     }
   } else cat("[dispatch] Σ-배터리 오늘자 결과 재사용\n")
@@ -123,14 +130,24 @@ if (n_opt > 0) {
     cat(sprintf("[dispatch:optimizer] %s\n", opt_verdict$verdict))
   }
   actions$optimizer <- list(n = n_opt, papers = lapply(getrt("optimizer"), function(p) p$title %||% p$arxiv_id),
-                            verdict = opt_verdict)
+                            verdict = opt_verdict,
+                            method_triage = if (exists("method_triage")) method_triage("optimizer") else NULL)
 }
 
-# ── risk: 수동 분석 flag (Σ/tail/stress 보강 후보) ──
+# ── risk: method 레지스트리 triage ((b)안 2026-08-08) ──
+#   구판은 문자열 flag 한 줄("수동 분석")만 남겼다 — 등재와 처분이 구별되지 않아, 큐가 쌓여도
+#   무엇이 왜 안 돌았는지 기록에 없었다. 이제 레지스트리 verdict/blocker 를 그대로 싣는다.
+#   ★risk 레인 하네스(Σ-교체 A/B)는 아직 미배선이다. 그 사실을 **숨기지 않고 이름을 부른다** —
+#     "수동 분석"은 처분처럼 보이지만 실제로는 아무도 안 본다는 뜻이었다.
 if (n_risk > 0) {
+  .rt <- if (exists("method_triage")) method_triage("risk") else list()
   actions$risk <- list(n = n_risk, papers = lapply(getrt("risk"), function(p) p$title %||% p$arxiv_id),
-                       action = "risk-research stress/Σ 모듈 후보 — 수동 분석(자동 method 추출 불가)")
-  cat(sprintf("[dispatch:risk] %d편 flag(수동)\n", n_risk))
+                       method_triage = .rt,
+                       harness_status = "risk 레인 Σ-교체 A/B 하네스 미배선 — optimizer 레인 검증 후 착수 예정",
+                       action = if (length(.rt)) sprintf("레지스트리 등재 %d건 (verdict 별도) — 자동 측정 아직 없음", length(.rt))
+                                else "레지스트리 미등재 — triage 필요")
+  cat(sprintf("[dispatch:risk] %d편 · %s\n", n_risk,
+              if (exists("method_triage_line")) method_triage_line("risk") else "triage 불가"))
 }
 # ── regime: H2 오버레이 후보 flag (candidate signal 추출 필요) ──
 if (n_reg > 0) {

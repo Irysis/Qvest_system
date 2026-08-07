@@ -1,12 +1,12 @@
 # 04_Research INDEX
 
-> 자동 생성 2026-08-06 20:51 — 큐레이션 원본: `06_Registry/index_descriptions.json` (role/status/category 수동 보완처) · 재생성: `Rscript 02_Infrastructure/tools/build_artifact_index.R` (daily_refresh 말미 자동). 본 파일 직접 수정 금지 — 재생성 시 덮어씀.
+> 자동 생성 2026-08-08 00:45 — 큐레이션 원본: `06_Registry/index_descriptions.json` (role/status/category 수동 보완처) · 재생성: `Rscript 02_Infrastructure/tools/build_artifact_index.R` (daily_refresh 말미 자동). 본 파일 직접 수정 금지 — 재생성 시 덮어씀.
 
 <details><summary><b>strategy-legacy</b> (3)</summary>
 
 | 항목 | 정체 | status | 최근 | 크기 |
 |---|---|---|---|---|
-| `strategies/ (STR_* 178+개 패턴 전체)` | QEPM 전 세대 전략 백테스트 결과 저장소(STR_XXX_name 178+) — 헌법·legacy boundary가 명시 보존하는 결과 아카이브 | legacy | 2026-08-02 | 396.7MB |
+| `strategies/ (STR_* 178+개 패턴 전체)` | QEPM 전 세대 전략 백테스트 결과 저장소(STR_XXX_name 178+) — 헌법·legacy boundary가 명시 보존하는 결과 아카이브 | legacy | 2026-08-07 | 396.9MB |
 | `90_legacy/run_dart_strategies.sh` | DART 전략 일괄 실행 셸(v5x 시대) — DART insider 백필은 02_Infrastructure/data로 이관 | legacy | 2026-06-07 | 2KB |
 | `90_legacy/` | [재편 2026-07-04] v55/S0-S7 등 legacy 러너·산출 격리 보존 카테고리 (삭제 아님·신규 사용 금지) | legacy | 2026-07-03 | 391KB |
 
@@ -16,8 +16,8 @@
 
 | 항목 | 정체 | status | 최근 | 크기 |
 |---|---|---|---|---|
-| `decision_framework/` | bearish forecast v1~v3(예측 국면) + cross_section_distribution(DPL 피처 parquet) + smart_beta_regime·factor_untapped — 부팅·모닝브리핑·DPL 감사가 소비하는 활성 존 (409MB, 대부분 cross_section outputs 382MB) | active | 2026-08-04 | 411.5MB |
-| `regime_comparison/` | KTRI/MSM 국면엔진 비교·검증·브리핑 발송 스크립트 — 일일 스케줄러(daily_refresh·모닝브리핑 ktri_rebuild)가 소비 중 | active | 2026-08-06 | 1.3MB |
+| `decision_framework/` | bearish forecast v1~v3(예측 국면) + cross_section_distribution(DPL 피처 parquet) + smart_beta_regime·factor_untapped — 부팅·모닝브리핑·DPL 감사가 소비하는 활성 존 (409MB, 대부분 cross_section outputs 382MB) | active | 2026-08-06 | 411.8MB |
+| `regime_comparison/` | KTRI/MSM 국면엔진 비교·검증·브리핑 발송 스크립트 — 일일 스케줄러(daily_refresh·모닝브리핑 ktri_rebuild)가 소비 중 | active | 2026-08-07 | 1.3MB |
 
 </details>
 
@@ -158,7 +158,7 @@
 
 | 항목 | 정체 | status | 최근 | 크기 |
 |---|---|---|---|---|
-| `01_reports/` | [재편 2026-07-04] 감사·검토·제안·로드맵 보고서와 그 증거 데이터 카테고리 (실행코드 참조 0 확인분 수용) | active | 2026-08-02 | 1.8MB |
+| `01_reports/` | [재편 2026-07-04] 감사·검토·제안·로드맵 보고서와 그 증거 데이터 카테고리 (실행코드 참조 0 확인분 수용) | active | 2026-08-07 | 1.8MB |
 
 </details>
 
@@ -195,7 +195,7 @@
 
 | 항목 | 정체 | 카테고리 | 최근 | 크기 |
 |---|---|---|---|---|
-| `regime_analysis/` | 구 국면 시각화 png(KTRI 9quad·3layer·MRS daily) + threshold 튜닝 스크립트(v5x 시대) | dead | 2026-08-04 | 660KB |
+| `regime_analysis/` | 구 국면 시각화 png(KTRI 9quad·3layer·MRS daily) + threshold 튜닝 스크립트(v5x 시대) | dead | 2026-08-06 | 665KB |
 
 ## stale 큐레이션 키 (13) — 디스크 부재, index_descriptions.json에서 제거 권장
 
