@@ -12,14 +12,36 @@
       ],
       "verdict": {
         "book_ir": 1.077,
-        "best_method": "EW",
-        "best_ir": 0.96,
-        "delta_ir": -0.117,
+        "best_method": "MVO_lw",
+        "best_ir": 1.057,
+        "delta_ir": -0.02,
         "gate": 0.05,
         "beats_book": false,
-        "verdict": "가중 레버 아님: book IR 1.077 최고(최선 타방법 EW 0.960, ΔIR=-0.117, 게이트 0.05 미달) → 채택 0"
+        "verdict": "가중 레버 아님: book IR 1.077 최고(최선 타방법 MVO_lw 1.057, ΔIR=-0.020, 게이트 0.05 미달) → 채택 0"
       },
-      "method_triage": {}
+      "method_triage": [
+        {
+          "method_id": "ConformalKelly",
+          "paper_id": "arxiv:2608.01494",
+          "verdict": "implemented",
+          "blocker": null,
+          "unblock_requirement": null
+        },
+        {
+          "method_id": "PathSignature",
+          "paper_id": "arxiv:2608.02355",
+          "verdict": "blocked_by_capability",
+          "blocker": "signature depth=2 도 25종목 × 월간 리밸에서 관측당 파라미터 비율이 과대 — 논문 자체가 추정 불안정을 경고. 현 측정틀(250일 창)에서 식별 불가",
+          "unblock_requirement": "일별 리밸 또는 유니버스 확대(v2 KR_TOP500)에서 재검토. 또는 depth=1 축약형으로 선행 실측"
+        },
+        {
+          "method_id": "MFCCA",
+          "paper_id": "arxiv:2608.04987",
+          "verdict": "blocked_by_capability",
+          "blocker": "scale × order 2D 스펙트럼 추정에 필요한 관측수가 250일 창 × 25종목을 크게 초과. 논문 실증은 ARFIMA+MSM 합성 과정 기반",
+          "unblock_requirement": "일별 창 확대(≥1250일) 또는 held_tickers 전체(442종) 풀에서 Σ 대체로 선행 실측"
+        }
+      ]
     },
     "risk": {
       "n": 2,
@@ -27,9 +49,24 @@
         "Preference robust distortion risk measures",
         "Proper-score observation-driven filters: local geometry, estimation, and continuous-time limits"
       ],
-      "method_triage": [],
+      "method_triage": [
+        {
+          "method_id": "PreferenceRobustDistortion",
+          "paper_id": "arxiv:2608.02854",
+          "verdict": "queued",
+          "blocker": "risk 레인 하네스(Σ-교체 A/B) 미배선 — optimizer 레인 검증 후 착수. 어댑터 계약은 동일 형태(Σ 산출 교체)",
+          "unblock_requirement": null
+        },
+        {
+          "method_id": "ProperScoreGASFilter",
+          "paper_id": "arxiv:2608.02828",
+          "verdict": "queued",
+          "blocker": "risk 레인 하네스 미배선. 이 건은 Σ 추정기 직접 교체라 배선 시 1순위",
+          "unblock_requirement": null
+        }
+      ],
       "harness_status": "risk 레인 Σ-교체 A/B 하네스 미배선 — optimizer 레인 검증 후 착수 예정",
-      "action": "레지스트리 미등재 — triage 필요"
+      "action": "레지스트리 등재 2건 (verdict 별도) — 자동 측정 아직 없음"
     },
     "regime": {
       "n": 1,

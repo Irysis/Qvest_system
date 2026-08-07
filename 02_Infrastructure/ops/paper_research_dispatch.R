@@ -50,6 +50,13 @@ if (n_opt + n_risk + n_reg == 0) {
 DELTA_IR_GATE <- 0.05   # book-marginal admission 문턱(§4) — 측정 기준만(자본 admit 아님)
 actions <- list()
 
+# ((b)안 2026-08-08) method 레지스트리는 **무조건** 로드한다.
+#   구판 배선은 이걸 재계산 분기 *안*에 뒀다 → 캐시 재사용 날엔 triage 함수가 없어
+#   risk 보고가 "triage 불가"로 퇴화했다(실측). 보고 경로는 계산 경로와 독립이어야 한다.
+.reg_ok <- tryCatch({ suppressWarnings(source("02_Infrastructure/methods/method_registry.R")); TRUE },
+                    error = function(e) { cat(sprintf("[dispatch] method_registry source 실패: %s\n",
+                                                      conditionMessage(e))); FALSE })
+
 # ── optimizer: Σ-가중 A/B 배터리 자동 실행 + ΔIR 게이트 판정 ──
 opt_verdict <- NULL
 if (n_opt > 0) {
@@ -71,7 +78,15 @@ if (n_opt > 0) {
     carrier,
     ".cache/rawdata.parquet",
     ".cache/benchmark.parquet",
-    "05_Production/2.Factor_Model/2-1.STR_1715_AR_on_M4_R05_overlay_PG2/04_backtest_results/period_returns_layer5.csv"
+    "05_Production/2.Factor_Model/2-1.STR_1715_AR_on_M4_R05_overlay_PG2/04_backtest_results/period_returns_layer5.csv",
+    # ★(2026-08-08 (b)안) **method 집합도 입력이다.**
+    #   데이터가 그대로여도 새 논문 method 를 등록하면 캐시는 낡은 것이다. 구판 게이트는
+    #   데이터 staleness 만 봐서, ConformalKelly 를 등재한 직후 실행이 "오늘자 결과 재사용"으로
+    #   **새 method 를 한 번도 안 돌리고** 종료했다(실측). 배터리 코드 자체도 같은 이유로 포함.
+    "06_Registry/method_registry.json",
+    "02_Infrastructure/ops/auto_sigma_weighting_ab.R",
+    "02_Infrastructure/methods/method_registry.R",
+    list.files("02_Infrastructure/methods/adapters", pattern = "\\.R$", full.names = TRUE)
   )
   .in_present <- sigma_ab_inputs[file.exists(sigma_ab_inputs)]
   fresh <- FALSE; .stale_why <- "결과 파일 없음"
@@ -103,7 +118,6 @@ if (n_opt > 0) {
     src_ok <- tryCatch({
       suppressWarnings(source("02_Infrastructure/contracts/weighted_screen_bt.R"))
       suppressWarnings(source("02_Infrastructure/ops/auto_sigma_weighting_ab.R"))
-      suppressWarnings(source("02_Infrastructure/methods/method_registry.R"))
       TRUE }, error = function(e) { cat(sprintf("[dispatch] source fail: %s\n", conditionMessage(e))); FALSE })
     if (src_ok && exists("run_sigma_ab")) {
       # ((b)안 2026-08-08) 논문 유래 method 어댑터 합류 — 이게 "논문이 실제로 소비되는" 지점이다.
