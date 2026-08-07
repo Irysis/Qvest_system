@@ -123,6 +123,36 @@ benchmark_source_parity <- function(rawdata_path = NULL, bench_path = NULL,
   max_date <- suppressWarnings(max(m$Date, na.rm = TRUE))
   recent_mism <- if (nrow(mism)) mism[Date >= (max_date - as.integer(recent_window))] else mism
 
+  # ── 정본 판정 (2026-08-08 신설) — 상수 금지 ─────────────────────────────────
+  #  08-02 사건: benchmark.parquet 가 정본, RAWDATA 가 오염(0-위장).
+  #  08-08 사건: **정확히 반대**. benchmark 의 2026-07-27 = -0.885344(-88.5%) 로
+  #    KOSPI200 에서 물리적으로 불가, RAWDATA 는 같은 날 +0.012922 로 정상이었다.
+  #  그런데 이 함수는 canonical_source 를 **상수로 반환**했고 부팅이 그대로
+  #  "정본=benchmark.parquet" 라고 안내했다. 그 안내를 따라 bench→RAWDATA 방향
+  #  수리기(repair_rawdata_bmret_from_benchmark.R)를 돌리면 **정상 소스를 오염값으로
+  #  덮어쓴다** — 경보는 맞는데 처방이 거꾸로인 상태.
+  #  ∴ 어느 쪽이 정본인지는 사건마다 다르므로 **판정되어야 할 값**이다.
+  #  판정축 = 값 타당성. 지수 일간수익이 물리적 한계를 넘는 쪽이 오염이다.
+  #  (KOSPI 역대 최대 일간 변동 ≈ ±12%. 문턱 0.30 은 그보다 한참 위라 오탐 여지가 없다 —
+  #   실제 폭락일을 오염으로 몰지 않기 위해 일부러 느슨하게 잡는다.)
+  impl_bound <- as.numeric(getOption("qvest.bm_implausible_bound", 0.30))
+  impl_b <- if (nrow(mism)) mism[abs(bm_bench) > impl_bound] else mism
+  impl_r <- if (nrow(mism)) mism[abs(bm_raw)   > impl_bound] else mism
+  canon <- if (nrow(mism) == 0L) {
+    list(src = "benchmark.parquet", basis = "no_mismatch — 판정 불요")
+  } else if (nrow(impl_b) > 0L && nrow(impl_r) == 0L) {
+    list(src = "RAWDATA::BM_Ret",
+         basis = sprintf("value_plausibility — benchmark 측 물리적 불가값 %d일(|ret|>%.2f)",
+                         nrow(impl_b), impl_bound))
+  } else if (nrow(impl_r) > 0L && nrow(impl_b) == 0L) {
+    list(src = "benchmark.parquet",
+         basis = sprintf("value_plausibility — RAWDATA 측 물리적 불가값 %d일(|ret|>%.2f)",
+                         nrow(impl_r), impl_bound))
+  } else {
+    list(src = "undetermined",
+         basis = "양측 모두 타당하거나 양측 모두 불가 — 외부 소스 대조 필요. ★자동 수리 금지")
+  }
+
   severity <- if (nrow(dup_dates) > 0L || nrow(recent_mism) > 0L || nrow(bad_months) > 0L) {
     "CRITICAL"
   } else if (nrow(mism) > 0L) "WARN" else "OK"
@@ -132,9 +162,9 @@ benchmark_source_parity <- function(rawdata_path = NULL, bench_path = NULL,
   } else if (nrow(dup_dates) > 0L) {
     sprintf("RAWDATA 한 Date 에 서로 다른 BM_Ret %d일 — 소스 자체 불일치", nrow(dup_dates))
   } else {
-    sprintf("불일치 %d일 (최근 %d일 내 %d) · 월괴리>%.1f%%p %d개월 · 최대|diff|=%.6f · RAWDATA 0-위장 %d일",
+    sprintf("불일치 %d일 (최근 %d일 내 %d) · 월괴리>%.1f%%p %d개월 · 최대|diff|=%.6f · RAWDATA 0-위장 %d일 — 정본=%s (%s)",
             nrow(mism), recent_window, nrow(recent_mism), month_gap_pp,
-            nrow(bad_months), max(abs(mism$diff)), nrow(zero_raw))
+            nrow(bad_months), max(abs(mism$diff)), nrow(zero_raw), canon$src, canon$basis)
   }
 
   list(
@@ -146,7 +176,10 @@ benchmark_source_parity <- function(rawdata_path = NULL, bench_path = NULL,
     zero_masked = zero_raw,              # RAWDATA=0 인데 benchmark 는 non-zero → 소실 지문
     carry_forward_dates = carry,
     dup_dates = dup_dates,
-    canonical_source = "benchmark.parquet",
+    canonical_source = canon$src,          # ★상수 아님 — 사건마다 판정된다(위 주석)
+    canonical_basis  = canon$basis,
+    implausible_bench = impl_b,            # 수리 방향 결정 근거 — 이 쪽이 덮어써져야 할 값
+    implausible_raw   = impl_r,
     checked_at = format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z"),
     paths = c(rawdata = rawdata_path, benchmark = bench_path)
   )
