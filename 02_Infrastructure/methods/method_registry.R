@@ -127,6 +127,64 @@ load_method_adapters <- function(route = "optimizer", only = NULL, ub = 0.20, ro
 
 `%||%` <- function(a, b) if (!is.null(a) && length(a) > 0 && !all(is.na(a))) a else b
 
+# ══ risk 레인: Σ 추정기 교체 A/B ══════════════════════════════════════════════
+# optimizer 레인이 "비중 규칙"을 바꿔 끼운다면, risk 레인은 **위험을 재는 자(Σ)** 를 바꿔 낀다.
+# 선별도 비중 규칙도 고정하고 Σ 만 교체 → 차이가 오직 추정기 때문이라고 말할 수 있다.
+#
+# 계약: sigma_estimate(ctx) -> matrix (assets × assets)
+#   ctx = list(R, assets, lookback_days, decision_date, eval_date)   # Sigma 는 주지 않는다(그걸 만드는 게 일)
+# ★유효성은 하네스가 강제한다 — 정방/대칭/유한/PD 를 검사하고, 실패하면 **표본공분산 폴백 + 이름 호명**.
+#   조용히 폴백하면 "추정기를 갈아끼웠다"가 거짓이 된다(EW 붕괴와 같은 부류).
+
+wrap_sigma_estimator <- function(fn, est_id) {
+  force(fn); force(est_id)
+  function(ctx) {
+    a <- ctx$assets
+    fallback <- function(why) {
+      cat(sprintf("[sigma_est:%s] %s → 표본공분산 폴백\n", est_id, why))
+      S <- stats::cov(ctx$R); dimnames(S) <- list(a, a); S
+    }
+    S <- tryCatch(fn(ctx), error = function(e) { cat(sprintf("[sigma_est:%s] 예외: %s\n", est_id, conditionMessage(e))); NULL })
+    if (is.null(S)) return(fallback("NULL/예외"))
+    if (!is.matrix(S) || nrow(S) != length(a) || ncol(S) != length(a)) return(fallback("차원 불일치"))
+    if (!all(is.finite(S))) return(fallback("비유한 원소"))
+    S <- (S + t(S)) / 2                                     # 대칭화(수치오차 흡수)
+    dimnames(S) <- list(a, a)
+    ev <- tryCatch(min(eigen(S, symmetric = TRUE, only.values = TRUE)$values), error = function(e) NA_real_)
+    if (is.na(ev)) return(fallback("고유값 계산 실패"))
+    if (ev <= 0) S <- S + diag(abs(ev) + 1e-10, length(a))  # PD 보정(폴백 아님 — 미세 jitter)
+    if (any(diag(S) <= 0)) return(fallback("비양수 분산"))
+    S
+  }
+}
+
+#' risk 레지스트리 로드 → est_id -> wrapped estimator.
+load_sigma_estimators <- function(only = NULL, root = .mr_root()) {
+  rp <- file.path(root, METHOD_REGISTRY_PATH)
+  if (!file.exists(rp)) return(list())
+  reg <- fromJSON(rp, simplifyVector = FALSE)
+  out <- list()
+  for (m in Filter(function(x) identical(x$route, "risk"), reg$methods %||% list())) {
+    if (!is.null(only) && !(m$method_id %in% only)) next
+    if (!identical(m$verdict, "implemented")) next
+    ap <- file.path(root, m$adapter %||% "")
+    if (!nzchar(m$adapter %||% "") || !file.exists(ap)) {
+      cat(sprintf("[method_registry] ★%s: verdict=implemented 인데 어댑터 부재 — 건너뜀\n", m$method_id)); next
+    }
+    env <- new.env(parent = globalenv())
+    ok <- tryCatch({ sys.source(ap, envir = env); TRUE },
+                   error = function(e) { cat(sprintf("[method_registry] %s source 실패: %s\n", m$method_id, conditionMessage(e))); FALSE })
+    if (!ok) next
+    fname <- m$entrypoint %||% "sigma_estimate"
+    if (!exists(fname, envir = env, inherits = FALSE)) {
+      cat(sprintf("[method_registry] ★%s: 진입점 `%s` 부재 — 건너뜀\n", m$method_id, fname)); next
+    }
+    out[[m$method_id]] <- wrap_sigma_estimator(get(fname, envir = env), m$method_id)
+  }
+  cat(sprintf("[method_registry] route=risk 추정기 %d건 로드\n", length(out)))
+  out
+}
+
 #' 라우트별 triage 요약 — "등재됐다"가 아니라 "무슨 처분을 받았나"를 낸다.
 #' ★원장 등재(존재)를 판정(처분)으로 읽는 사고가 반복돼 왔다([[project-screen-route-consumer-zero-20260802]]).
 #'   그래서 보고에는 항상 verdict 와 blocker 를 함께 싣는다.
