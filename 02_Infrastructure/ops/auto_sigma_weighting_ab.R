@@ -138,7 +138,12 @@ run_sigma_ab <- function(carrier_path =
         sigma_methods = c("IV", "HRP_lw", "minvar_lw", "MVO_sample", "MVO_lw"),
         cost_bps = 15, with_overlay = FALSE,
         extra_adapters = SIGMA_EXTRA_ADAPTERS,
-        sigma_estimators = SIGMA_ESTIMATORS) {
+        sigma_estimators = SIGMA_ESTIMATORS,
+        return_series = FALSE) {
+  # return_series=TRUE 면 method 별 월간 수익 시계열을 attr 로 붙인다.
+  #   (2026-08-08) IR/SR 요약만으로는 **꼬리 주장을 가진 논문을 그 주장의 축에서 못 잰다**.
+  #   GAS 필터의 기여는 '극단값 전파 제한'인데 IR 로만 기각하면 판정 축이 논문 주장과 어긋난다.
+  #   AX-001(방어형은 조건부 성과로 평가)의 정합 요구이기도 하다.
   # risk 레인 합류: `minvar@<est_id>` 형태로 method 목록에 추가.
   if (length(sigma_estimators)) {
     .rm <- paste0("minvar@", names(sigma_estimators))
@@ -194,18 +199,22 @@ run_sigma_ab <- function(carrier_path =
   }
   W_all <- c(base_W, lapply(sigma_W, function(x) rbindlist(x)))
 
-  res <- list()
+  res <- list(); ser <- list()
   for (mth in names(W_all)) {
     W <- W_all[[mth]]
     r <- weighted_screen_bt(W, returns_dt, bench_dt, cost_bps_oneway = cost_bps,
                             run_id = paste0("sig_", mth), strategy_id = paste0("sig_", mth),
                             exposure_dt = exp_dt)
+    if (isTRUE(return_series) && !is.null(r$period_returns))
+      ser[[mth]] <- data.table::copy(as.data.table(r$period_returns))[, method := mth]
     res[[mth]] <- data.table(method = mth, n_months = r$n_months,
                              abs_SR = r$abs_net_sr, abs_CAGR = r$abs_cagr, abs_MDD = r$abs_mdd,
                              IR = r$information_ratio, PORT_t = r$portfolio_alpha_t_nw_lag3,
                              active_SR = r$net_sr, turnover = r$turnover_annual)
   }
-  rbindlist(res, fill = TRUE)
+  out <- rbindlist(res, fill = TRUE)
+  if (isTRUE(return_series) && length(ser)) attr(out, "series") <- rbindlist(ser, fill = TRUE)
+  out
 }
 
 if ((sys.nframe() == 0L || identical(environment(), globalenv())) && Sys.getenv("QVEST_SIGMA_AB_NORUN") != "1") {

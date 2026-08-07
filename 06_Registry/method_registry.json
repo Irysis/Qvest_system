@@ -142,7 +142,23 @@
           "비중 규칙이 minvar 가 아닐 때 — 분산/상관 민감도가 달라 순위 변동 가능 (예: risk-parity, CVaR)",
           "일별 리밸 등 조건부 동학이 실제로 갱신될 시간축에서 재검토"
         ],
-        "not_tested": ["파라미터 (alpha, beta) 결합 감도 — beta 단독 축만 봄", "tail/VaR coverage 등 IR 외 위험 지표"]
+        "tail_axis_reevaluation": {
+          "why": "IR 로만 기각하면 판정 축이 논문 주장(극단값 전파 제한)과 어긋난다. AX-001(방어형은 조건부 성과로 평가) 정합 요구이기도 하다. 그래서 논문 주장의 축에서 다시 쟀다.",
+          "design": "minvar 고정·Σ 만 교체(LW vs GAS). 같은 월을 공유하므로 대응표본 (GAS − LW) active. 벤치 하위 10% 월(n=27, 문턱 -6.04%)과 그 직후 1~2개월(n=52) 분리.",
+          "preregistered_prediction": "전파 제한이 실재하면 (a) 꼬리월 직후 active 가 LW 보다 낫고 (b) 하방편차·CVaR 가 작다",
+          "result": {
+            "full_period": {"n": 269, "diff_pp": -0.264, "t": -2.22, "p": 0.027},
+            "tail_month": {"n": 27, "diff_pp": 0.815, "t": 2.71, "p": 0.012},
+            "post_tail_1_2m": {"n": 52, "diff_pp": -0.587, "t": -2.11, "p": 0.040},
+            "other_months": {"n": 197, "diff_pp": -0.284, "t": -2.05, "p": 0.042},
+            "downside_dev_pct": {"lw": 3.463, "gas": 3.800},
+            "cvar05_active_pct": {"lw": -12.214, "gas": -13.135}
+          },
+          "verdict": "사전 등록 예측 (a)(b) 둘 다 반증. 꼬리 축에서도 기여 없음 — 오히려 논문 주장의 결정적 지점(직후)에서 유의하게 나쁨.",
+          "mechanism": "조건부 변동성이 극단월에 반응해 그 달은 방어(+0.815pp)되지만, beta=0.94 지속성 때문에 높아진 변동성 추정이 다음 달로 끌려가 반등장에 방어 포지션으로 남는다(-0.587pp). 08-02 국면 라벨 실측(위기 후 반등월에 켜지는 지연 지표)과 같은 모양.",
+          "caveat": "4구간 검정, 다중비교 미보정. Bonferroni 0.0125 로는 tail_month 만 생존. 단 post_tail 은 사전 등록 방향의 **반대**로 나온 것이라 낚시 유의 아님. other_months 도 음수라 결손이 직후 구간에만 몰린 것도 아님."
+        },
+        "not_tested": ["파라미터 (alpha, beta) 결합 감도 — beta 단독 축만 봄", "VaR/ES coverage(분포 적합도) 축", "일별 리밸 시간축"]
       }
     }
   ]

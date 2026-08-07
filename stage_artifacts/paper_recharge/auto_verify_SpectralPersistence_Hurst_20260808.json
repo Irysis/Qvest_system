@@ -1,0 +1,96 @@
+{
+  "paper_id": "2607.19497",
+  "factor_id": "SpectralPersistence_Hurst",
+  "factor_name": "Rolling R/S Hurst 지수 기반 스펙트럼 지속성",
+  "strategy_id": "STR_AS_20260808_001913_13752",
+  "strategy_name": "SpectralPersistence_Hurst",
+  "engine_path": "02_Infrastructure/alpha_search/fe_spectral_persistence_hurst.R",
+  "verified_at": "20260808",
+  "impl_spec": {
+    "paper": "The Science and Practice of Trend-Following Systems, Sepp & Lucic (2026) arXiv:2607.19497",
+    "signal": "H = log(R/S)/log(N/2) rolling 252-day Hurst exponent per stock; H top-quintile = long",
+    "universe": "K200_KQ150",
+    "rebal": "monthly EW top-25",
+    "pit_lag": "month-end signal, T+1 execution",
+    "direction": "H>0.5 = trend-persistent = long"
+  },
+  "L1_pit_pass": true,
+  "pit_pass": true,
+  "pit_details": "audit: 15 PASS, 0 FAIL, 1 WARN(lookahead_detector_self_scan medium). detect_lookahead CLEAN. fe_spectral_persistence_hurst.R: rolling 252-day window only, no full-sample stats, month-end snapshot. PIT C1-C15 PASS.",
+  "L2_contract_pass": true,
+  "contract_pass": true,
+  "contract_details": "authoritative_remeasure: integrity=WARNING (15 pass / 0 fail / 1 warn). bt_result 10-component 완비. audit_bt_result PASS. metric_type=backtested.",
+  "L3_robustness_pass": false,
+  "robustness_pass": false,
+  "port_t": 0.978,
+  "oos_retention": 0.369,
+  "calmar": 0.178,
+  "mdd": 63.79,
+  "sharpe": 0.531,
+  "cagr": 11.35,
+  "ir": 0.224,
+  "grade_hurdle": "B",
+  "grade_essence": "C",
+  "score": 42,
+  "ic_mean": -0.0012,
+  "fmb_nw_t": 1.756,
+  "robustness_details": "PORT_t=0.978 << 2.95 HARD. OOS_retention=0.369 < 0.5 FAIL. Calmar=0.178 << 0.64 HARD. MDD 63.79% (심각: 5/7 severe45 episodes). IC≈0(±0.001), FMB t=1.756(p≈0.08, 유의 미달). stress 5/7 outperform(COVID+17.4%, Rate_Hike+17.4% 주목)이나 standalone 배포 불가.",
+  "L4_fidelity_pass": false,
+  "fidelity_pass": false,
+  "fidelity_issues": ["논문(arXiv:2607.19497) 핵심 신호: 저주파 스펙트럼 질량(Fourier DFT 기반 S_LF/S_total). R/S Hurst 지수는 관련 있으나 수학적으로 다른 측정값 — 논문이 제안한 spectral mass 직접 계산이 아님", "구현의 H=log(R/S)/log(N/2)는 Mandelbrot R/S 통계량 기반(시간 도메인). 논문은 주파수 도메인 DFT 스펙트럼 분석을 제안. fail-closed: 불일치/불확실 → fidelity_pass=false", "동 논문의 spec_mass_lowfreq_60d(20260727 QUARANTINE)가 더 충실한 구현이었으나 이미 QUARANTINE. 본 구현은 proxy 근사"],
+  "fidelity_confidence": "med",
+  "fidelity_details": "R/S Hurst는 스펙트럼 지속성의 간접 지표. 이론적 연관성(H↔1/f spectral exponent)은 있으나 논문 제안 신호(spectral mass ratio DFT)와 동일하지 않음. fail-closed 원칙 적용: 불확실 → false.",
+  "fidelity_checked_by": "Q-Lead independent verification (paper: arXiv:2607.19497 cross-check vs implementation)",
+  "stress_outperform_details": {
+    "GFC": {
+      "alpha": 0.46,
+      "outperform": true
+    },
+    "Euro_Debt": {
+      "alpha": 42.51,
+      "outperform": true
+    },
+    "China_Shock": {
+      "alpha": 12.27,
+      "outperform": true
+    },
+    "US_China_Trade": {
+      "alpha": -5.02,
+      "outperform": false
+    },
+    "COVID": {
+      "alpha": 3.86,
+      "outperform": true
+    },
+    "Rate_Hike": {
+      "alpha": 17.44,
+      "outperform": true
+    },
+    "Iran_War": {
+      "alpha": -8.33,
+      "outperform": false
+    }
+  },
+  "mechanism_diagnosis": "R/S Hurst 상위 종목(H top-quintile) = 추세 지속 종목 선별. KR에서 크로스섹션 신호력 미미(IC≈0). 구조적 낙폭: β≈0.50 저베타에도 MDD 63.79%(위기 동반 낙폭). stress 5/7 outperform 고무적이나 PORT_t=0.978 통계적으로 무력. post-2017 악화 패턴 유사. 동 논문 3번째 팩터 시도(spec_mass_lowfreq + T_RetAutoCorr에 이어) 모두 standalone QUARANTINE.",
+  "consumer_surfaces_checked": ["1팩터랭킹: QUARANTINE (PORT_t=0.978 << 2.95)", "2유니버스필터: Hurst H<0.5 종목(평균회귀) 제거 필터 미측정", "3오버레이: 시장 레벨 Hurst 분포 → regime signal 미측정", "4위험모델: β=0.50 저베타 구조 참고값", "5monitoring: Hurst 분포 shift 감시 후보", "6선별라벨: 현 book 내 Hurst-high 비중 사후 확인 권장"],
+  "next_probe": ["FQ-152: 단기(60일) Hurst 지수 — 논문 Sepp-Lucic 모델의 fast-timescale 추세 포착 여부", "FQ-153: Hurst 오버레이 — 시장 레벨 H>0.5 달만 momentum overlay 활성화(standalone 아닌 위험 오버레이)"],
+  "prior_runs_same_paper": [
+    {
+      "factor_id": "spec_mass_lowfreq_60d",
+      "date": "20260727",
+      "grade": "C",
+      "gate": "QUARANTINE"
+    },
+    {
+      "factor_id": "T_RetAutoCorr_12M",
+      "date": "20260802",
+      "grade": "F",
+      "gate": "QUARANTINE"
+    }
+  ],
+  "notes": "2607.19497 3번째 팩터 시도. 동 논문 paper_id 기준 fully processed. 부활조건: 논문 spec_mass 직접 구현(FFT 기반) OR Hurst 오버레이(FQ-153). 오늘 unauthorized run(00:19, AS-20260807 컨텍스트)을 formal run으로 처리.",
+  "gate_decision": "QUARANTINE",
+  "gate_failed_layers": "robustness,fidelity",
+  "gate_rule": "PIT hard + contract&robustness&fidelity all PASS (unattended 4/4, fail-closed)",
+  "gate_checked_at": "2026-08-08T01:17:55+0900"
+}
