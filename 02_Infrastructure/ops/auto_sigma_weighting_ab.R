@@ -186,6 +186,7 @@ run_sigma_ab <- function(carrier_path =
     ret_sub <- raw[Date < start_d, .(Date, Ticker, Ret)]   # PIT: 매수 이전
     for (m in sigma_methods) {
       w <- tryCatch(sigma_weights_month(tk, ret_sub, m, mu = mu, extra = extra_adapters,
+                                        estimators = sigma_estimators,
                                         decision_date = dd, eval_date = ed),
                     error = function(e) setNames(rep(1/length(tk), length(tk)), tk))
       sigma_W[[m]][[i]] <- data.table(Date = ed, Ticker = names(w), w = as.numeric(w))
