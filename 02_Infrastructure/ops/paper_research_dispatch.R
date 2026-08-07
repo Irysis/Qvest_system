@@ -125,7 +125,11 @@ if (n_opt > 0) {
       .extra <- tryCatch(load_method_adapters(route = "optimizer"),
                          error = function(e) { cat(sprintf("[dispatch] method registry fail: %s\n",
                                                            conditionMessage(e))); list() })
-      tb <- tryCatch(run_sigma_ab(with_overlay = TRUE, extra_adapters = .extra),
+      # risk 레인: Σ 추정기 교체 A/B (`minvar@<est_id>`). 비중 규칙 고정 → 차이 = 추정기.
+      .ests <- tryCatch(load_sigma_estimators(),
+                        error = function(e) { cat(sprintf("[dispatch] sigma estimator load fail: %s\n",
+                                                          conditionMessage(e))); list() })
+      tb <- tryCatch(run_sigma_ab(with_overlay = TRUE, extra_adapters = .extra, sigma_estimators = .ests),
                      error = function(e) { cat(sprintf("[dispatch] battery fail: %s\n", conditionMessage(e))); NULL })
       if (!is.null(tb)) { fwrite(tb, ov_csv); fresh <- TRUE }
     }
