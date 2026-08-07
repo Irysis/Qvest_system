@@ -1,0 +1,64 @@
+{
+  "quarantine_date": "20260808",
+  "session_id": "AS-20260808",
+  "items": [
+    {
+      "paper_id": "FQ-110",
+      "factor_id": "JumpShare_12M",
+      "strategy_id": "STR_AS_20260808_004643_8680",
+      "strategy_name": "FQ110_JumpShare_A",
+      "gate_decision": "QUARANTINE",
+      "gate_failed_layers": "robustness",
+      "gate_checked_at": "2026-08-08T01:17:33+0900",
+      "port_t": 0.618,
+      "oos_retention": null,
+      "calmar": 0.172,
+      "mdd": 55.47,
+      "grade": "F",
+      "score": 8.1,
+      "sharpe": 0.373,
+      "cagr": 9.51,
+      "ic_mean": -0.028,
+      "fmb_nw_t": -0.972,
+      "quarantine_reason": "PORT_t=0.618 << 2.95 HARD. Calmar=0.172 << 0.64 HARD. IC=-0.028(음수: 방향 A 역효과). MDD 55.47% 구조적 낙폭. FMB t=-0.972 유의 미달. ★★주목: 음수 IC = frog-in-the-pan REVERSE 기전 시사 — 분산된 소폭 누적(low jump-share) long 방향 B가 next_probe.",
+      "mechanism_diagnosis": "고 jump-share(수익 집중) 종목이 저성과 — frog-in-the-pan 기전이 역방향으로 성립할 수 있음. 방향 B: 저 jump-share(smooth gains) = 지속 모멘텀 후보. PORT_t 무력하므로 방향 A 단독 standalone 불가.",
+      "next_probe": [
+        "FQ-110B: low jump-share long(Direction B) — IC 역방향 확증",
+        "FQ-110C: mega vs mid cap-tier jump-share 신호 방향 분리"
+      ],
+      "verify_path": "stage_artifacts/paper_recharge/auto_verify_FQ110_JumpShare_20260808.json",
+      "notable": true
+    },
+    {
+      "paper_id": "2607.19497",
+      "factor_id": "SpectralPersistence_Hurst",
+      "strategy_id": "STR_AS_20260808_001913_13752",
+      "strategy_name": "SpectralPersistence_Hurst",
+      "gate_decision": "QUARANTINE",
+      "gate_failed_layers": "robustness,fidelity",
+      "gate_checked_at": "2026-08-08T01:17:55+0900",
+      "port_t": 0.978,
+      "oos_retention": 0.369,
+      "calmar": 0.178,
+      "mdd": 63.79,
+      "grade_hurdle": "B",
+      "grade_essence": "C",
+      "score": 42,
+      "sharpe": 0.531,
+      "cagr": 11.35,
+      "ir": 0.224,
+      "ic_mean": -0.001,
+      "fmb_nw_t": 1.756,
+      "quarantine_reason": "PORT_t=0.978 << 2.95 HARD. OOS_retention=0.369 < 0.5 FAIL. Calmar=0.178 << 0.64 HARD. R/S Hurst ≠ 논문 DFT spectral mass(fidelity FAIL). MDD 63.79% 구조적 낙폭. 동 논문 3번째 standalone QUARANTINE(spec_mass/T_RetAutoCorr/Hurst). ★stress 5/7 outperform(방어성 부분 존재)이나 PORT_t 무력.",
+      "mechanism_diagnosis": "R/S Hurst 상위 종목 = 추세 지속성 선별 → KR 크로스섹션 프리미엄 미성립(IC≈0, PORT_t=0.978). 논문 제안 신호(DFT spectral mass)와 proxy 근사 불일치. stress 5/7 outperform은 방어성 잠재력 시사이나 standalone 배포 불가.",
+      "next_probe": [
+        "FQ-152: 단기(60일) Hurst — fast-timescale 추세 포착 여부",
+        "FQ-153: 시장 레벨 Hurst 오버레이(H>0.5 달만 momentum 활성)"
+      ],
+      "verify_path": "stage_artifacts/paper_recharge/auto_verify_SpectralPersistence_Hurst_20260808.json",
+      "notable": true,
+      "paper_exhausted": true,
+      "paper_exhausted_note": "2607.19497: spec_mass_lowfreq(20260727 C) + T_RetAutoCorr(20260802 F) + SpectralPersistence_Hurst(20260808 C) — 3 factor attempts, all QUARANTINE. 동 논문 closed."
+    }
+  ]
+}

@@ -158,7 +158,21 @@
           "mechanism": "조건부 변동성이 극단월에 반응해 그 달은 방어(+0.815pp)되지만, beta=0.94 지속성 때문에 높아진 변동성 추정이 다음 달로 끌려가 반등장에 방어 포지션으로 남는다(-0.587pp). 08-02 국면 라벨 실측(위기 후 반등월에 켜지는 지연 지표)과 같은 모양.",
           "caveat": "4구간 검정, 다중비교 미보정. Bonferroni 0.0125 로는 tail_month 만 생존. 단 post_tail 은 사전 등록 방향의 **반대**로 나온 것이라 낚시 유의 아님. other_months 도 음수라 결손이 직후 구간에만 몰린 것도 아님."
         },
-        "not_tested": ["파라미터 (alpha, beta) 결합 감도 — beta 단독 축만 봄", "VaR/ES coverage(분포 적합도) 축", "일별 리밸 시간축"]
+        "param_joint_sensitivity": {
+          "design": "총 기억 alpha+beta=0.95 고정, 분배만 변경(반응성 vs 지속성 분리). 진단 프로브 — 최선 팔 선택/제안 없음(sweep-selection 회피)",
+          "preregistered_prediction": "alpha↑ → 꼬리월 이득↑ 그리고 직후 손실↑ (트레이드오프 실재)",
+          "grid": [
+            {"alpha": 0.02, "beta": 0.93, "IR": 0.643, "tail_pp": 0.952, "post_tail_pp": -0.335, "full_pp": -0.286},
+            {"alpha": 0.05, "beta": 0.90, "IR": 0.633, "tail_pp": 0.877, "post_tail_pp": -0.465, "full_pp": -0.302},
+            {"alpha": 0.15, "beta": 0.80, "IR": 0.630, "tail_pp": 0.505, "post_tail_pp": -0.585, "full_pp": -0.307},
+            {"alpha": 0.30, "beta": 0.65, "IR": 0.634, "tail_pp": 0.008, "post_tail_pp": -0.594, "full_pp": -0.284}
+          ],
+          "result": "예측 반증. alpha↑ 이면 꼬리월 이득이 **사라진다**(+0.952→+0.008). 꼬리월 방어는 반응성이 아니라 낮은 alpha·높은 beta(= 부드러운 장기분산 근사)에서 나온다.",
+          "internal_consistency": "alpha→0 극한은 상수 분산 = 장기 분산이므로 표본분산 팔에 수렴해야 한다. 실측 0.643 ≈ 0.647(표본 분산 팔) — 정합.",
+          "verdict": "이 축에 되살릴 경로 없음. IR 네 점 전부 0.630~0.643 으로 평평하고 LW 0.846 에서 멀다. 직후 손실도 어느 점에서도 소멸하지 않음(최선 -0.335).",
+          "no_selection": "최선 팔(a0.02_b0.93)을 config 로 제안하지 않는다 — 열거 격자에서 argmax 를 고르면 sweep-selection 이고 DSR 대상이다. 통과 팔도 없다."
+        },
+        "not_tested": ["VaR/ES coverage(분포 적합도) 축 — 논문의 원 평가축", "일별 리밸 등 조건부 동학이 실제 갱신되는 시간축", "minvar 외 비중 규칙(risk-parity·CVaR)에서의 순위"]
       }
     }
   ]

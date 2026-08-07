@@ -1,0 +1,31 @@
+{
+  "l_code_id": "L-AS-20260808-FQ110",
+  "research_mode": "alpha_search",
+  "strategy_id": "STR_AS_20260808_004643_8680",
+  "fq_id": "FQ-110",
+  "factor_id": "JumpShare_12M",
+  "created_at": "2026-08-08",
+  "gate_verdict": "QUARANTINE",
+  "grade": "F",
+  "polarity": "negative_informative",
+  "tags": ["VALIDATED_HARD_FAIL", "direction_reversal", "frog_in_pan", "jump_share"],
+  "title": "FQ-110 jump-share 방향 A 역효과 — IC 음수, 역방향 frog-in-the-pan 기전 시사",
+  "finding": "12M 창 상위-5 일간수익 기여 비중(JumpShare_12M) direction A(고 jump-share = long)가 역효과(IC=-0.028). frog-in-the-pan 기전은 존재하나 방향이 반대: 분산된 소폭 누적(저 jump-share)이 지속 모멘텀 신호 후보.",
+  "mechanism": "수익이 소수 날짜에 집중(high jump-share)된 종목은 단기 탄력이지 지속 추세 아님. frog-in-the-pan은 '서서히 익는(알아차리지 못하는) 추세'를 포착하는데, low jump-share가 이 패턴에 부합. 방향 A는 opposite.",
+  "key_metrics": {
+    "port_t": 0.618,
+    "ic_mean": -0.028,
+    "fmb_nw_t": -0.972,
+    "mdd": 55.47,
+    "calmar": 0.172,
+    "grade": "F"
+  },
+  "failure_mode": "FMT-01 Structural MDD + IC direction reversal",
+  "next_probe": [
+    "FQ-110B: Score = -JumpShare (저 jump-share long, Direction B). 동일 factor_engine, 부호 반전만",
+    "FQ-110C: cap-tier 분해 — mega vs mid에서 jump-share 신호 방향 분리"
+  ],
+  "revival_condition": "FQ-110B(역방향) PORT_t >= 2.95 실증 시 L-code로 upgraded",
+  "axiom_candidate": false,
+  "note": "WT-013 NP-2 경로효율 F2 borderline(t+1.92) 파생. 기전 확증 실패(방향 A)지만 역방향 가설 생성에 기여 — 양방향 정보."
+}
