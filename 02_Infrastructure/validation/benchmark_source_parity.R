@@ -101,10 +101,20 @@ benchmark_source_parity <- function(rawdata_path = NULL, bench_path = NULL,
 
   m <- merge(r, b, by = "Date", all = FALSE)      # 공통 날짜만 대조
   m[, diff := bm_raw - bm_bench]
-  mism <- m[!is.na(diff) & abs(diff) > tol][order(-abs(diff))]
+
+  # ★비교 불가 경계 제외 (2026-08-08) — 시리즈 **첫 공통일**의 수익률은 직전일이 없어
+  #   정의되지 않는다. 두 소스가 그 날을 각각 0 / 직전 파일의 잔값으로 채우면 영구히 갈리고,
+  #   그 1일이 severity 를 **영구 CRITICAL** 로 고정한다(상시 발화 = 죽은 경보).
+  #   실측 2026-08-08: 1990-01-05(benchmark 첫 행, ret_from_close=NA) 하나가 07-27·08-05 를
+  #   전부 수리한 뒤에도 CRITICAL 을 유지시켰다. 비교 자체가 성립하지 않는 점이므로
+  #   **판정 기반에서 뺀다**(보고용 n_common 은 그대로 — 무엇을 뺐는지 감출 이유가 없다).
+  first_common <- suppressWarnings(min(m$Date, na.rm = TRUE))
+  cmpbase <- m[Date > first_common]
+
+  mism <- cmpbase[!is.na(diff) & abs(diff) > tol][order(-abs(diff))]
 
   # 월 누적 괴리
-  mm <- m[!is.na(bm_raw) & !is.na(bm_bench)]
+  mm <- cmpbase[!is.na(bm_raw) & !is.na(bm_bench)]
   mm[, ym := format(Date, "%Y-%m")]
   agg <- mm[, .(raw = prod(1 + bm_raw) - 1, bench = prod(1 + bm_bench) - 1, n = .N), by = ym]
   agg[, gap_pp := (raw - bench) * 100]
@@ -147,9 +157,8 @@ benchmark_source_parity <- function(rawdata_path = NULL, bench_path = NULL,
   #  ★경계 제외: 시리즈 **첫 관측일**의 수익률은 직전일이 없어 정의되지 않는다.
   #   그 날의 0 은 결손이 아니라 경계값이므로 0-위장으로 몰면 영구 오탐이 된다
   #   (08-08 실측: 1990-01-05 = benchmark.parquet 첫 행, ret_from_close=NA → 0 이 정상).
-  first_common <- suppressWarnings(min(m$Date, na.rm = TRUE))
   dirs <- if (nrow(mism) == 0L) data.table() else {
-    d <- copy(mism)[Date > first_common]
+    d <- copy(mism)   # mism 은 이미 경계 제외분(cmpbase) 위에서 계산됨
     d[, contaminated := fifelse(abs(bm_bench) > impl_bound, "benchmark.parquet",
                         fifelse(abs(bm_raw)   > impl_bound, "RAWDATA::BM_Ret",
                          fifelse(bm_raw == 0 & bm_bench != 0, "RAWDATA::BM_Ret",
