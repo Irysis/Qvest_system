@@ -104,6 +104,59 @@ ok(identical(r$severity, "UNMEASURED"), "G1 파일 부재 → UNMEASURED",
    sprintf("(got %s)", r$severity))
 ok(!identical(r$severity, "OK"), "G2 ★측정 불가를 '정상'으로 위장하지 않음")
 
+cat("--- I. 정본 판정 = 상수가 아니라 판정 (2026-08-08 신설) ---\n")
+# ★왜: canonical_source 가 "benchmark.parquet" 상수였다. 08-02 사건에선 맞았지만
+#   08-08 사건은 정반대였고(benchmark 2026-07-27 = -88.5% 스케일 단절), 부팅이 그 상수를
+#   그대로 안내해 **정상 소스를 오염값으로 덮어쓰는 방향**을 지시할 뻔했다.
+#   수리 방향을 결정하는 값이므로 양방향 + 경계 + 혼재를 전부 시험한다.
+inj <- function(v, i, val) { v[i] <- val; v }
+mid <- 150L; recent <- n - 3L
+
+# I1/I2 값 타당성 — 오염 측이 바뀌면 정본도 바뀌어야 한다(양방향)
+p <- mk(base_ret, inj(base_ret, recent, -0.885), dates)      # benchmark 측 물리적 불가
+r <- benchmark_source_parity(p$raw, p$bench)
+ok(identical(r$canonical_source, "RAWDATA::BM_Ret"),
+   "I1 benchmark 측 불가값 → 정본=RAWDATA", sprintf("(got %s)", r$canonical_source))
+p <- mk(inj(base_ret, recent, -0.885), base_ret, dates)      # RAWDATA 측 물리적 불가
+r <- benchmark_source_parity(p$raw, p$bench)
+ok(identical(r$canonical_source, "benchmark.parquet"),
+   "I2 RAWDATA 측 불가값 → 정본=benchmark (방향 반전)", sprintf("(got %s)", r$canonical_source))
+
+# I3 0-위장 축도 방향을 준다
+p <- mk(inj(base_ret, recent, 0), base_ret, dates)
+r <- benchmark_source_parity(p$raw, p$bench)
+ok(identical(r$canonical_source, "benchmark.parquet") &&
+     any(r$repair_directions$evidence == "zero_masked"),
+   "I3 RAWDATA 0-위장 → 정본=benchmark · 증거축 zero_masked",
+   sprintf("(got %s)", r$canonical_source))
+
+# I4 오염이 양쪽에 갈리면 단일 방향을 말하지 않는다 (★단일 방향 수리 사고 차단)
+p <- mk(inj(base_ret, recent, 0), inj(base_ret, mid, -0.885), dates)
+r <- benchmark_source_parity(p$raw, p$bench)
+ok(identical(r$canonical_source, "per_date"),
+   "I4 오염 측 혼재 → per_date (단일 방향 금지)", sprintf("(got %s)", r$canonical_source))
+ok(nrow(r$repair_directions) == 2L &&
+     length(unique(r$repair_directions$contaminated)) == 2L,
+   "I5 날짜별 오염 측을 각각 특정")
+
+# I6 경계: 시리즈 첫 날의 0 은 결함이 아니다 (직전일 없음 → 수익률 미정의)
+bb <- base_ret; bb[1] <- 0                       # benchmark 첫 행만 0
+rr <- base_ret; rr[1] <- -0.0159                 # RAWDATA 는 값 보유
+p <- mk(rr, bb, dates)
+r <- benchmark_source_parity(p$raw, p$bench)
+ok(nrow(r$repair_directions) == 0L,
+   "I6 첫 관측일 0 은 오염으로 판정하지 않음(영구 오탐 차단)",
+   sprintf("(got %d rows)", nrow(r$repair_directions)))
+
+# I7 돌연변이: 타당성 축을 무력화하면 I1 이 뒤집혀야 한다 = 그 축이 일한다는 증거
+old_opt <- getOption("qvest.bm_implausible_bound")
+options(qvest.bm_implausible_bound = 99)         # 어떤 값도 '불가'가 아니게 만듦
+p <- mk(base_ret, inj(base_ret, recent, -0.885), dates)
+r <- benchmark_source_parity(p$raw, p$bench)
+ok(!identical(r$canonical_source, "RAWDATA::BM_Ret"),
+   "I7 돌연변이(타당성 문턱 무력화) → I1 판정이 뒤집힘", sprintf("(got %s)", r$canonical_source))
+options(qvest.bm_implausible_bound = old_opt)
+
 cat("--- H. 음성 통제: 검사기가 무조건 CRITICAL 을 뱉는 게 아님 ---\n")
 p <- mk(base_ret, base_ret, dates)
 r <- benchmark_source_parity(p$raw, p$bench)

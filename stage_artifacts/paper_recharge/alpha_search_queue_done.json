@@ -12,6 +12,7 @@
     "2607.01377",
     "2607.27611",
     "FQ-110",
+    "FQ-110B",
     "2608.05755"
   ],
   "records": [
@@ -383,6 +384,51 @@
       "notable": true,
       "session_note": "AS-20260808 공식 처리. 원 실행은 AS-20260807(unauthorized), 오늘 formal verification 적용. 동 논문 2607.19497 fully processed(3 factor attempts).",
       "paper_exhausted": true
+    },
+    {
+      "paper_id": "FQ-110B",
+      "paper_title": "FQ-110B: 저 jump-share long (Direction B — frog-in-the-pan REVERSE 확증)",
+      "factor_id": "JumpShare_12M_DirectionB",
+      "factor_name": "12M 창 저 jump-share long (Score = -JumpShare)",
+      "fq_id": "FQ-110B",
+      "strategy_id": "STR_AS_20260808_075822_21700",
+      "gate_decision": "ADOPT",
+      "gate_failed_layers": "",
+      "port_t": null,
+      "oos_retention": 1.267,
+      "calmar": 0.131,
+      "mdd": 62.7,
+      "sharpe": 0.352,
+      "cagr": 8.23,
+      "ic_mean": 0.0278,
+      "ic_icir": 0.248,
+      "ic_pos_rate": 0.624,
+      "alpha_trend_ratio": 2.60,
+      "hard_fail": true,
+      "hard_fail_reason": "Structural drawdown (45%+ episodes>=15): MDD 62.7%, 45%+ episodes=16/15",
+      "grade": "F",
+      "score": 41.5,
+      "processed_date": "20260808",
+      "verify_path": "stage_artifacts/paper_recharge/auto_verify_FQ110B_20260808.json",
+      "bt_result_dir": "stage_artifacts/alpha_search/20260808_075822_21700",
+      "quarantine_reason": null,
+      "mechanism_diagnosis": "frog-in-the-pan REVERSE 확증: 저 jump-share(분산 소폭 누적) 종목 long → IC=+0.0278(pos_rate 62.4%). Direction A의 IC=-0.028 역효과에서 시사된 기전 성립. OOS retention=1.27(>IS SR), AlphaTrend ratio=2.60(최근 개선). 단, MDD 62.7%(구조적 낙폭)·Calmar 0.131로 standalone 배포 불가 — 신호 품질 vs 포트구성 위험 분리 소비 필요.",
+      "consumer_surfaces_checked": [
+        "1팩터랭킹: WEAK-standalone (Calmar 0.131, MDD 62.7%) — 크로스섹션 IC +0.028 존재",
+        "2유니버스필터: 저 jump-share 필터 소비면 미측정 → FQ-110C",
+        "3오버레이: 시장 레벨 jump-share 타이밍 오버레이 미측정 → FQ-153",
+        "4위험모델: jump 집중도 분산도를 꼬리위험 예측 인자로 참고",
+        "5monitoring: 포트 jump-share 분산도 감시 후보",
+        "6선별라벨: 저 jump-share = 지속 모멘텀 후보 라벨 확인",
+        "7타모드이식: RAMP 팩터군 후보(방향 B, cap-tier 조건부)"
+      ],
+      "next_probe": [
+        "FQ-110C: cap-tier 분해 — mega vs mid-cap에서 방향 B 효과 차이 실측(MDD 구조적 낙폭 중 mega-cap 벤치 아티팩트 기여분 분리)",
+        "FQ-153: 시장 레벨 jump-share 오버레이 — 시장 jump-share 낮은 월(분산) 조건부 B방향 신호 강도 실측"
+      ],
+      "notable": true,
+      "l_code": "L-AS-20260808-FQ110B",
+      "session_note": "AS-20260808 큐소비자 런 1/2 — FQ-110B Direction B 실행. ADOPT = 신호 진성 확인(L1-L4 전층 PASS). 자본 배포 아님(hard_fail=TRUE, Grade F). IC 대칭성 실증(A: -0.028 ↔ B: +0.0278)이 frog-in-the-pan REVERSE 기전 확증."
     },
     {
       "paper_id": "2608.05755",
