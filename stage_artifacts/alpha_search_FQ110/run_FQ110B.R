@@ -6,8 +6,7 @@ source("02_Infrastructure/alpha_search/run_alpha_search.R")
 run_alpha_search(
   strategy_name      = "FQ110_JumpShare_B",
   strategy_idea      = "12개월 창 저 jump-share long — 분산된 소폭 수익 누적 종목 지속 상승 가설(frog-in-the-pan 역방향, Direction A IC=-0.028 역효과 실측)",
-  factor_engine_path = file.path(Sys.getenv("CLAUDE_PROJECT_DIR"),
-                                 "stage_artifacts/alpha_search_FQ110/factor_engine_JumpShare_B.R"),
+  factor_engine_path = "C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/alpha_search_FQ110/factor_engine_JumpShare_B.R",
   n_holdings         = 25,
   weight_method      = "equal",
   commission         = 0.0015,

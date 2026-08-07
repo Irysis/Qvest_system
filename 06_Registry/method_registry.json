@@ -97,6 +97,13 @@
           "tail/VaR coverage 등 IR 외 지표",
           "band 고유 변동이 무엇인지(잔차 분위수 vs sd 의 차이 원천) 분해"
         ]
+      },
+      "screen_axes": {
+        "shrinkage_builtin": "no",
+        "statistic_order": "higher",
+        "screen_priority": "후순위",
+        "rationale": "band = |잔차| 80분위 — 2차 모멘트보다 잡음 크나 극단 꼬리는 아님. 축소 없음",
+        "assigned": "2026-08-08 (소급)"
       }
     },
     {
@@ -111,7 +118,14 @@
       "blocker": "signature depth=2 도 25종목 × 월간 리밸에서 관측당 파라미터 비율이 과대 — 논문 자체가 추정 불안정을 경고. 현 측정틀(250일 창)에서 식별 불가",
       "unblock_requirement": "일별 리밸 또는 유니버스 확대(v2 KR_TOP500)에서 재검토. 또는 depth=1 축약형으로 선행 실측",
       "similar_to": [],
-      "added": "2026-08-08"
+      "added": "2026-08-08",
+      "screen_axes": {
+        "shrinkage_builtin": "no",
+        "statistic_order": "higher",
+        "screen_priority": "후순위",
+        "rationale": "signature = 반복적분(고차 경로통계). 축소 없음",
+        "assigned": "2026-08-08 (소급)"
+      }
     },
     {
       "method_id": "MFCCA",
@@ -125,7 +139,14 @@
       "blocker": "scale × order 2D 스펙트럼 추정에 필요한 관측수가 250일 창 × 25종목을 크게 초과. 논문 실증은 ARFIMA+MSM 합성 과정 기반",
       "unblock_requirement": "일별 창 확대(≥1250일) 또는 held_tickers 전체(442종) 풀에서 Σ 대체로 선행 실측",
       "similar_to": [],
-      "added": "2026-08-08"
+      "added": "2026-08-08",
+      "screen_axes": {
+        "shrinkage_builtin": "no",
+        "statistic_order": "higher",
+        "screen_priority": "후순위",
+        "rationale": "multifractal 스펙트럼 = 차수 q 고차 모멘트. 축소 없음",
+        "assigned": "2026-08-08 (소급)"
+      }
     },
     {
       "method_id": "PreferenceRobustDistortion",
@@ -245,6 +266,13 @@
           "supporting": "회전율이 δ 와 무관하게 16.5~16.8 로 minvar_lw 13.3 보다 높게 유지 — 공분산을 축소해도 꼬리 분위수는 경험적 고차 모멘트에 의존해 잡음이 남는다는 지문.",
           "correction": "2026-08-08 초기 기록 'PRD 최하위 = 축소 부재'는 단일 원인 귀속. 실제로는 두 원인이 거의 반반. 분해로 정정."
         }
+      },
+      "screen_axes": {
+        "shrinkage_builtin": "no",
+        "statistic_order": "tail_quantile",
+        "screen_priority": "후순위",
+        "rationale": "경험 CVaR = 꼬리 분위수. α=0.99·T=250 이면 관측 2~3개 의존. 축소 없음",
+        "assigned": "2026-08-08 (소급)"
       }
     },
     {
@@ -387,6 +415,13 @@
           "일별 리밸 등 조건부 동학이 실제 갱신되는 시간축",
           "minvar 외 비중 규칙(risk-parity·CVaR)에서의 순위"
         ]
+      },
+      "screen_axes": {
+        "shrinkage_builtin": "weak",
+        "statistic_order": "<=2nd",
+        "screen_priority": "⭐",
+        "rationale": "조건부 분산(2차) + 항등축소 δ=p/(p+T)≈0.09",
+        "assigned": "2026-08-08 (소급)"
       }
     }
   ],
@@ -398,5 +433,33 @@
     "frontier_implication": "이 조건에서 값을 할 optimizer/risk 논문은 ①축소를 내장하고 ②추정오차가 작은 통계량 (2차 모멘트 이하)에 의존하는 쪽이다. 고차/꼬리 통계를 목적함수로 삼는 계열은 축소를 얹어도 회수가 절반에 그친다.",
     "scope": "config-scoped — 일별 리밸·유니버스 확대·다른 비중 규칙에서는 재검토 대상. 구조 판결 아님(INV-7).",
     "refinement_20260808": "PRD 축소 프로브로 정교화: '축소만 넣으면 구조가 살아난다'는 아니다. PRD 는 공분산을 완전 축소(δ=1)해도 minvar_lw 에 0.181 못 미친다 — 꼬리 분위수 목적함수 자체가 고차 모멘트의 추정오차를 계속 받는다. 즉 실패 통로는 둘: ①축소 부재 ②추정오차가 큰 **통계량**을 목적/입력으로 삼는 것. 후자는 공분산 축소로 고쳐지지 않는다."
+  },
+  "screen_axes_calibration": {
+    "date": "2026-08-08",
+    "rule": "shrinkage_builtin=yes ∧ statistic_order<=2nd → ⭐⭐ / weak 또는 higher → ⭐ / no ∧ tail_quantile → 후순위",
+    "predicts": "★총 IR 이 아니라 **method 고유 기여**를 예측한다. CK 는 총 IR 이 3편 중 최고(-0.066)지만 그건 알파 보존 덕이고 band 성분 자체는 -0.077 로 음수다 — 축은 후자를 맞힌다.",
+    "check": [
+      {
+        "method": "PreferenceRobustDistortion",
+        "predicted": "후순위",
+        "measured_contribution": "최하위(-0.567), 꼬리 3지표도 악화",
+        "match": "O"
+      },
+      {
+        "method": "ConformalKelly",
+        "predicted": "후순위",
+        "measured_contribution": "band 성분 -0.077 (음)",
+        "match": "O"
+      },
+      {
+        "method": "ProperScoreGASFilter",
+        "predicted": "⭐",
+        "measured_contribution": "조건부 변동성 기여 ≈0 (-0.006~+0.003)",
+        "match": "△ — 규칙이 다소 관대. 2차 모멘트인데도 기여 0"
+      }
+    ],
+    "weakness": "⭐(weak/higher) 구간의 판별력이 약하다. GAS 는 statistic_order=<=2nd 인데도 기여가 0 이었다 — 차수가 낮아도 **축소가 weak 이면** 표본공분산 수준에 머문다. 즉 두 축은 독립이 아니라 shrinkage 가 더 상위 판별자다.",
+    "next_calibration": "다음 optimizer/risk 논문 3편이 쌓이면 ⭐ 구간을 shrinkage 기준으로 재분할할지 판정. 현 표본 n=3 은 규칙 확정 근거로 부족 — 우선순위 힌트로만 사용하고 기각 사유로 쓰지 않는다.",
+    "scope": "config-scoped(25종·250일·월간·long-only). INV-7 — 방향 판결 아님"
   }
 }

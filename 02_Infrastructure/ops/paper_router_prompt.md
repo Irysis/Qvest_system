@@ -25,6 +25,19 @@
 - **regime** → regime/overlay(H2). 국면탐지/타이밍/오버레이/변동성관리.
 - **skip** → KR 범위밖(crypto·옵션/파생가격·HFT/마이크로구조·채권/FX/원자재·보험계리·intraday tick·순수 벤치/데이터셋/이론·LLM에이전트/벤치마크).
 
+### ★STEP 1-b — optimizer/risk 전용 사전 스크린 2축 (2026-08-08 실측 기반 신설)
+
+optimizer·risk 로 분류된 논문에는 아래 2축을 **반드시 함께 판정**해 `mode_queue` 항목에 기록한다. 사후 실측 3편(ConformalKelly·ProperScoreGAS·PreferenceRobustDistortion)이 **전부 게이트 미달**이었고, 셋의 실패가 이 2축으로 설명됐다 (원장 `06_Registry/method_registry.json::cross_method_synthesis`).
+
+| 축 | 값 | 판정 근거 |
+|---|---|---|
+| `shrinkage_builtin` | `yes` / `weak` / `no` | 방법 자체가 축소·정규화·사전분포를 내장하는가. 측정틀(25종·250일 창)에서 추정오차가 지배하므로 이게 1급 판별자다 — Σ 성분 분해에서 **0.647→0.846 을 가른 것은 축소**(분산 +0.076 · 상관 +0.071 · 상호작용 +0.052)였지 어떤 구조도 아니었다 |
+| `statistic_order` | `<=2nd` / `higher` / `tail_quantile` | 방법이 의존하는 통계량의 차수. **고차·꼬리 통계는 축소를 얹어도 회수가 절반에 그친다** — PRD 는 공분산을 완전 축소(δ=1)해도 minvar_lw 에 0.181 못 미쳤고, 그 잔여가 목적함수 자체의 추정오차다. α=0.99·T=250 이면 관측 2~3개에 의존하는 통계를 최적화하는 셈 |
+
+**우선순위 규칙**: `shrinkage_builtin=yes ∧ statistic_order<=2nd` = ⭐⭐ 우선 구현 / `weak` 또는 `higher` = ⭐ 조건부 / `no ∧ tail_quantile` = 후순위(사후 posterior 낮음 — 실측 3/3 미달).
+
+⚠ **이 2축은 기각 사유가 아니라 우선순위다.** 후순위여도 등재는 하고 `verdict`·`blocker` 를 명시한다 (INV-7 — 경로-scoped 실패이지 방향 판결이 아니며, 일별 리밸·유니버스 확대·다른 비중 규칙에서는 재검토 대상). 실측 없이 이 축만으로 `infeasible` 판정 금지.
+
 ## STEP 2 — ★팩터 추출 오버레이 (route 무관, v2 신규 — 도훈 "전문에 우리 인프라에 없는 팩터면 테스트 가능")
 **모든 소스**(optimizer/risk/regime/skip로 분류됐어도)에 대해: 본문에 **우리 팩터DB에 없으면서 KR 구현가능한 횡단면 팩터**가 있나? 라우터의 스타일분류가 헤드라인만 보면 숨은 팩터를 매일 놓친다 — 이 오버레이가 그걸 막는다.
 1. **1차(abstract/summary)**: 횡단면 종목 특성(per-stock 랭킹 가능한 신호)을 *품고 있는지* flag. 네트워크 중심성·통계적 잠재팩터·신규 회계비율·가격/거래량 파생신호·텍스트프록시 등 — 종목 단면 랭킹에 쓸 수 있으면 후보.
@@ -43,6 +56,7 @@
 - **alpha-search 후보** = (route=alpha ∧ kr_feasible) OR (factor_candidate.verdict=testable). AUTORUN=1이면 우선순위 상위 **최대 MAX_ALPHA편** 자동 alpha-search + **5층 자동 검증게이트**(아래). AUTORUN=0이면 큐만.
   - 각 후보: **구현** factor_engine.R(impl_spec 수식·유니버스·리밸·PIT lag·long-only; 부적합/선택신호부재면 코드생성 금지·quarantine·skip = batch_434 가드) → **실행** `run_alpha_search()` → bt_result+grade+PIT → **verdict 수집**(`auto_verify_<id>.json`: L1 pit_pass=lookahead+C1~15 / L2 contract_pass=audit_bt_result≠FAIL / L3 robustness_pass=essence_score oos_retention≥0.5∧placebo non-FAIL) → **L4** 독립 충실성(`claude -p` + `paper_fidelity_verifier_prompt.md` → fidelity_pass) → **L5** 결정게이트 `Rscript 02_Infrastructure/ops/auto_alpha_gate.R <verify.json>`: ADOPT→L-code 적립+텔레그램 "✅verified" / QUARANTINE→적립금지+`auto_quarantine_${TODAY}.json` append+"⚠️검증FAIL". **게이트는 auto_alpha_gate.R가 결정(fail-closed), 너가 임의 ADOPT 금지.**
 - **optimizer/risk/regime route** → `stage_artifacts/paper_recharge/mode_queue_${TODAY}.json`(모드별). **후속 `paper_research_dispatch.R`(morning_run [0.6])가 소비**: optimizer=Σ-가중 A/B 자동+ΔIR게이트, risk/regime=분석 flag. optimizer는 "α̂ 고정 A/B" 메모 포함.
+  - ★**optimizer/risk 항목에는 STEP 1-b 2축을 실어라**: `"shrinkage_builtin": "yes|weak|no"`, `"statistic_order": "<=2nd|higher|tail_quantile"`, `"screen_priority": "⭐⭐|⭐|후순위"` + 한 줄 근거. 이게 없으면 소비단이 우선순위를 못 매기고 큐가 선입선출로 소비된다(실측 3편 전부 미달인 계열을 먼저 태우게 됨).
   - ★**정본 형태 = 평면**(2026-08-02 명문화): `{date, schema_version, generated_at, optimizer:[…], risk:[…], regime:[…]}`. **3키를 `queue`{} 등 컨테이너 안에 넣지 말 것.** 실사고 `mode_queue_20260727.json` 이 `queue{optimizer,risk,regime}` 로 내는 바람에 소비자가 0/0/0 으로 읽어 **14편(opt 7·risk 4·regime 3)이 조용히 드롭**됐다(`research_status_20260727.json::actions=[]`). 소비자는 현재 `queue{}` 도 관용 수용하지만 그건 과거 산출 구제용이지 계약이 아니다.
   - ★`schema_version` 은 **형태 식별자**다 — 생산자 이름(`paper_router_v2`)을 넣지 말 것. 07-27=`mode_queue_v1` / 08-02=`paper_router_v2` 로 어긋나 있어 이 필드로는 형태를 구별할 수 없었다(그래서 소비자가 모양으로 해석한다).
 - **skip** → 로그만.
