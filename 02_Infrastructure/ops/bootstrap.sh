@@ -395,15 +395,32 @@ ts = d.get("measured_at", "")
 #   같은 사실에 렌더러가 둘이면 판정도 둘이 된다 — 부팅은 더 놀라운 쪽을 보여줬다.
 co = d.get("cotermination") or {}
 co_names = set(co.get("tasks") or [])
-bad, stale = [], []
-for t in d.get("tasks") or []:
-    if not t.get("enabled", True): continue
-    if t.get("task") in co_names: continue      # 하나의 사건으로 접힌 항목 — 개별 계수 금지
-    if int(t.get("rc") or 0) and t.get("rc_label") not in ("still_running", "never_run"):
-        bad.append("%s=%s" % (t.get("task", "?").replace("Qvest_", ""), t.get("rc_label")))
-    ms, ag = t.get("max_stale_days"), t.get("age_days")
-    if ms and ag is not None and ag > ms:
-        stale.append("%s(%.0f일)" % (t.get("task", "?").replace("Qvest_", ""), ag))
+bad, stale, extra = [], [], []
+#   ★(2026-08-08) 위 선언은 08-02에 **의도만 기록되고 cotermination 접기까지만 구현**돼 있었다.
+#   나머지 경로는 여전히 원시 rc 로 재판정했고, 그 탓에 부팅이 "★실패 4"를 보고하는 동안
+#   권위 스크립트는 같은 파일로 "신규실패 0 · 진행중 3 · 기지실패 2"로 판정했다(08-08 실측).
+#   원시 rc 로는 판별 불가한 두 가지가 있기 때문이다:
+#     · state==Running 인 작업의 rc 는 **완료된 실행의 판정이 아니다**(비행 중 과도값)
+#     · rc 는 다음 실행 전까지 고정 → 같은 실패 1건이 폴링마다 재보고된다
+#   둘 다 원장의 verdict 절이 이미 분류해 둔 것이다. 여기서는 **소비만** 한다.
+v = d.get("verdict") or {}
+if isinstance(v.get("failed_new"), list):
+    short = lambda s: s.replace("Qvest_", "")
+    bad   = [short(x) for x in v.get("failed_new") or [] if x.split("(")[0] not in co_names]
+    stale = [short(x) for x in v.get("stale") or []]
+    if v.get("in_flight"):    extra.append("진행중 %d" % len(v["in_flight"]))
+    if v.get("failed_known"): extra.append("기지실패 %d" % len(v["failed_known"]))
+else:
+    # 구판 원장(verdict 절 없음) 하위호환 — 재판정하되 state 는 존중한다
+    for t in d.get("tasks") or []:
+        if not t.get("enabled", True): continue
+        if t.get("task") in co_names: continue   # 하나의 사건으로 접힌 항목 — 개별 계수 금지
+        if (t.get("state") or "").strip() == "Running": continue
+        if int(t.get("rc") or 0) and t.get("rc_label") not in ("still_running", "never_run"):
+            bad.append("%s=%s" % (t.get("task", "?").replace("Qvest_", ""), t.get("rc_label")))
+        ms, ag = t.get("max_stale_days"), t.get("age_days")
+        if ms and ag is not None and ag > ms:
+            stale.append("%s(%.0f일)" % (t.get("task", "?").replace("Qvest_", ""), ag))
 co_txt = ""
 if co_names:
     co_txt = "동시종료 %d건 %s [%s]" % (co.get("n") or len(co_names),
