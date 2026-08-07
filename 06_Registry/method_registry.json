@@ -4,10 +4,20 @@
   "purpose": "논문 유래 가중/위험 method 원장. paper_router 가 optimizer/risk 로 분류한 논문을 Σ-A/B 배터리에 실제로 태우기 위한 어댑터 등재부 ((b)안, 도훈 지시 2026-08-08).",
   "contract": {
     "adapter_signature": "method_weights(ctx) -> named numeric over ctx$assets (선호 벡터. 스케일·부호 자유)",
-    "ctx_fields": ["Sigma", "R", "mu", "assets", "ub", "lookback_days", "decision_date", "eval_date"],
+    "ctx_fields": [
+      "Sigma",
+      "R",
+      "mu",
+      "assets",
+      "ub",
+      "lookback_days",
+      "decision_date",
+      "eval_date"
+    ],
     "constraints_enforced_by": "02_Infrastructure/methods/method_registry.R::wrap_adapter (pmax(0) + normalize_long_only(lb=0, ub, sum=1)) — 어댑터는 제약을 지킬 의무가 없고, 깰 수도 없다",
     "selection": "캐리어(현 PG2)가 종목을 고정. method 는 비중만 정한다 — A/B 통제",
-    "capital": "자본 admit 없음. 채택은 도훈 수동 (governor 정지)"
+    "capital": "자본 admit 없음. 채택은 도훈 수동 (governor 정지)",
+    "adapter_kind": "weight = 비중 규칙 교체(method_weights(ctx)->선호벡터) / sigma = Σ 추정기 교체(sigma_estimate(ctx)->공분산). ★paper route 와 다른 축이다 — route=risk 인데 목적함수를 바꾸는 논문은 adapter_kind=weight 다. 로더는 kind 로 고른다."
   },
   "verdict_enum": {
     "implemented": "어댑터 존재 · 배터리에 편입됨",
@@ -20,6 +30,7 @@
     {
       "method_id": "ConformalKelly",
       "route": "optimizer",
+      "adapter_kind": "weight",
       "paper_id": "arxiv:2608.01494",
       "paper_title": "Conformal Kelly: Conformal Prediction Intervals as the Scale in Fractional Kelly Position Sizing",
       "routed_on": "2026-08-06",
@@ -30,7 +41,9 @@
       "entrypoint": "method_weights",
       "verdict": "implemented",
       "similar_to": [],
-      "free_params": {"CONFORMAL_ALPHA": 0.20},
+      "free_params": {
+        "CONFORMAL_ALPHA": 0.2
+      },
       "selection_type": "chain",
       "dsr_applicable": false,
       "dsr_note": "단일 사전 고정값 1개(α=0.20 표준 선택), sweep 아님 — measurement-graduation §3 selection operator 경계상 DSR 부적용",
@@ -48,7 +61,7 @@
           "full__mu_over_band": 1.011,
           "noband__pure_alpha_tilt": 1.088,
           "nomu__pure_inverse_uncertainty": 0.882,
-          "ew_baseline": 0.960,
+          "ew_baseline": 0.96,
           "attribution": "알파 틸트 +0.128 (EW 0.960 → 1.088) · conformal band 가중 -0.077 (1.088 → 1.011). 단독 역-불확실성(0.882)은 EW 미달 → 논문 기전은 이 측정틀에서 유해",
           "correction": "2026-08-08 초기 기록 '역-불확실성 가중이 EW 대비 +0.051'은 성분 오귀속. 분해로 정정."
         },
@@ -62,19 +75,34 @@
         "redundancy_check": {
           "question": "conformal 구간폭(band)이 단순 변동성 역가중(1/sd)과 같은 것인가 → 같으면 registry `redundant` 재분류",
           "preregistered_threshold": "횡단면 Spearman 중앙값 ≳0.95 이고 mu/band≈mu/sd, 1/band≈1/sd 면 중복",
-          "structure": {"spearman_band_sd_median": 0.856, "q05": 0.657, "min": 0.474, "n_months": 269,
-                         "band_over_sd_ratio_cv_median": 0.132},
-          "performance": {"mu_over_sd": 1.032, "mu_over_band": 1.011, "inv_sd": 0.906, "inv_band": 0.882},
+          "structure": {
+            "spearman_band_sd_median": 0.856,
+            "q05": 0.657,
+            "min": 0.474,
+            "n_months": 269,
+            "band_over_sd_ratio_cv_median": 0.132
+          },
+          "performance": {
+            "mu_over_sd": 1.032,
+            "mu_over_band": 1.011,
+            "inv_sd": 0.906,
+            "inv_band": 0.882
+          },
           "verdict": "중복 아님 — 사전 등록 문턱 미달(0.856 < 0.95), 5%분위 0.657 로 하위 국면에서 크게 갈림. `redundant` 재분류하지 않는다.",
           "sharper_reading": "band 는 sd 와 다른 부분을 갖는데 **그 다른 부분이 해롭다**. 단순 중복이면 성과가 같아야 하는데 두 쌍 모두 band 쪽이 낮다(-0.021, -0.024).",
           "caveat": "두 비교는 같은 월·같은 알파를 공유해 독립이 아니다. 0.02 차이 자체에 유의성을 주장하지 않는다 — 부호 일관성은 약한 증거."
         },
-        "not_tested": ["α 감도", "tail/VaR coverage 등 IR 외 지표", "band 고유 변동이 무엇인지(잔차 분위수 vs sd 의 차이 원천) 분해"]
+        "not_tested": [
+          "α 감도",
+          "tail/VaR coverage 등 IR 외 지표",
+          "band 고유 변동이 무엇인지(잔차 분위수 vs sd 의 차이 원천) 분해"
+        ]
       }
     },
     {
       "method_id": "PathSignature",
       "route": "optimizer",
+      "adapter_kind": "weight",
       "paper_id": "arxiv:2608.02355",
       "paper_title": "Path Portfolio Optimization: Defect, Lift, and the Price of Path Complexity",
       "routed_on": "2026-08-06",
@@ -88,6 +116,7 @@
     {
       "method_id": "MFCCA",
       "route": "optimizer",
+      "adapter_kind": "weight",
       "paper_id": "arxiv:2608.04987",
       "paper_title": "Portfolio Allocation under Heterogeneous Scales and Multifractality",
       "routed_on": "2026-08-06",
@@ -101,18 +130,38 @@
     {
       "method_id": "PreferenceRobustDistortion",
       "route": "risk",
+      "adapter_kind": "weight",
       "paper_id": "arxiv:2608.02854",
       "paper_title": "Preference robust distortion risk measures",
       "routed_on": "2026-08-06",
-      "mechanism": "Wasserstein/Bregman divergence 기반 preference-robust distortion 리스크 측도. worst-case closed-form",
-      "verdict": "queued",
-      "note": "risk 레인 하네스(Σ-교체 A/B) 미배선 — optimizer 레인 검증 후 착수. 어댑터 계약은 동일 형태(Σ 산출 교체)",
-      "similar_to": [],
-      "added": "2026-08-08"
+      "mechanism": "Wasserstein/Bregman 기반 preference-robust distortion 리스크 측도. 선호를 하나로 특정할 수 없을 때 후보 집합에 대한 worst-case 로 평가(rank-dependent utility / Allais paradox 맥락)",
+      "verdict": "implemented",
+      "similar_to": [
+        "minvar (분산 최소화 — 같은 층의 risk-side 목적함수)"
+      ],
+      "added": "2026-08-08",
+      "kr_mapping": "유한지지 distortion = 분위수 가중합 = spectral risk measure, 실무 표준형이 CVaR. 선호 집합에 대한 worst-case = 여러 CVaR 수준의 max → min_w max_k CVaR_{α_k}(-Rw). 각 CVaR 가 w 에 볼록이라 전체가 단일 LP(Rockafellar-Uryasev). α={0.90,0.95,0.99} 사전 고정.",
+      "adapter": "02_Infrastructure/methods/adapters/preference_robust_distortion.R",
+      "entrypoint": "method_weights",
+      "battery_method_id": "PreferenceRobustDistortion",
+      "free_params": {
+        "PRD_ALPHAS": [
+          0.9,
+          0.95,
+          0.99
+        ],
+        "PRD_MAX_T": 250
+      },
+      "selection_type": "chain",
+      "dsr_applicable": false,
+      "dsr_note": "α 집합은 사전 고정 3점(실무 표준). 격자에서 argmax 를 고르지 않으므로 sweep-selection 아님",
+      "novelty_note": "minvar 와 같은 층(알파 미사용 risk-side 목적함수)이나 목적이 분산이 아니라 worst-case CVaR. 중복 아님",
+      "positive_control": "저변동 종목 주입 시 그 종목 비중이 상한 0.20 까지 이동(0.069→0.200) — LP 가 실제로 최적화함을 확인"
     },
     {
       "method_id": "ProperScoreGASFilter",
       "route": "risk",
+      "adapter_kind": "sigma",
       "paper_id": "arxiv:2608.02828",
       "paper_title": "Proper-score observation-driven filters: local geometry, estimation, and continuous-time limits",
       "routed_on": "2026-08-06",
@@ -122,17 +171,25 @@
       "entrypoint": "sigma_estimate",
       "battery_method_id": "minvar@ProperScoreGASFilter",
       "verdict": "implemented",
-      "free_params": {"GAS_NU": 5, "GAS_ALPHA": 0.05, "GAS_BETA": 0.94, "shrink_delta": "p/(p+T) — 데이터 형상 파생, 자유 파라미터 아님"},
+      "free_params": {
+        "GAS_NU": 5,
+        "GAS_ALPHA": 0.05,
+        "GAS_BETA": 0.94,
+        "shrink_delta": "p/(p+T) — 데이터 형상 파생, 자유 파라미터 아님"
+      },
       "selection_type": "chain",
       "dsr_applicable": false,
       "dsr_note": "사전 고정값(RiskMetrics 관례 지속성 + t 자유도 5). 종목별 MLE 재추정 없음 — sweep 아님",
-      "similar_to": ["sample cov (배터리 빌트인)", "Ledoit-Wolf (배터리 빌트인 _lw)"],
+      "similar_to": [
+        "sample cov (배터리 빌트인)",
+        "Ledoit-Wolf (배터리 빌트인 _lw)"
+      ],
       "novelty_note": "축소 구조는 LW 와 유사하나 변동성 경로가 다르다(정적 표본 sd → score-driven 조건부 sd). 중복 아님",
       "added": "2026-08-08",
       "measured": {
         "date": "2026-08-08",
         "basis": "carrier 06-18 (n_months=269, 현 북 271 대비 2개월 짧음) · overlay ON · minvar 고정 · cap-w",
-        "battery_ir": 0.650,
+        "battery_ir": 0.65,
         "book_ir": 1.077,
         "delta_ir": -0.427,
         "gate": 0.05,
@@ -143,7 +200,7 @@
           "sample_var_x_lw_corr": 0.718,
           "lw_var_x_sample_corr": 0.723,
           "lw_var_x_lw_corr__control": 0.846,
-          "gasvar_shrunk_x_lw_corr": 0.840,
+          "gasvar_shrunk_x_lw_corr": 0.84,
           "attribution": "분산 축소 단독 +0.076 · 상관 축소 단독 +0.071 · 동시 +0.199 → 상호작용 +0.052. 조건부 변동성(GAS) 경로 = 중립(축소 없이 +0.003, 축소 위에서 -0.006)"
         },
         "mechanism": "minvar 비중은 분산의 상대 크기에 민감한데, 그 상대 크기를 개선하는 것은 조건부 동학이 아니라 축소다. 한 축만 축소하면 나머지 축의 추정오차에 그대로 노출된다(상호작용).",
@@ -157,12 +214,38 @@
           "design": "minvar 고정·Σ 만 교체(LW vs GAS). 같은 월을 공유하므로 대응표본 (GAS − LW) active. 벤치 하위 10% 월(n=27, 문턱 -6.04%)과 그 직후 1~2개월(n=52) 분리.",
           "preregistered_prediction": "전파 제한이 실재하면 (a) 꼬리월 직후 active 가 LW 보다 낫고 (b) 하방편차·CVaR 가 작다",
           "result": {
-            "full_period": {"n": 269, "diff_pp": -0.264, "t": -2.22, "p": 0.027},
-            "tail_month": {"n": 27, "diff_pp": 0.815, "t": 2.71, "p": 0.012},
-            "post_tail_1_2m": {"n": 52, "diff_pp": -0.587, "t": -2.11, "p": 0.040},
-            "other_months": {"n": 197, "diff_pp": -0.284, "t": -2.05, "p": 0.042},
-            "downside_dev_pct": {"lw": 3.463, "gas": 3.800},
-            "cvar05_active_pct": {"lw": -12.214, "gas": -13.135}
+            "full_period": {
+              "n": 269,
+              "diff_pp": -0.264,
+              "t": -2.22,
+              "p": 0.027
+            },
+            "tail_month": {
+              "n": 27,
+              "diff_pp": 0.815,
+              "t": 2.71,
+              "p": 0.012
+            },
+            "post_tail_1_2m": {
+              "n": 52,
+              "diff_pp": -0.587,
+              "t": -2.11,
+              "p": 0.04
+            },
+            "other_months": {
+              "n": 197,
+              "diff_pp": -0.284,
+              "t": -2.05,
+              "p": 0.042
+            },
+            "downside_dev_pct": {
+              "lw": 3.463,
+              "gas": 3.8
+            },
+            "cvar05_active_pct": {
+              "lw": -12.214,
+              "gas": -13.135
+            }
           },
           "verdict": "사전 등록 예측 (a)(b) 둘 다 반증. 꼬리 축에서도 기여 없음 — 오히려 논문 주장의 결정적 지점(직후)에서 유의하게 나쁨.",
           "mechanism": "조건부 변동성이 극단월에 반응해 그 달은 방어(+0.815pp)되지만, beta=0.94 지속성 때문에 높아진 변동성 추정이 다음 달로 끌려가 반등장에 방어 포지션으로 남는다(-0.587pp). 08-02 국면 라벨 실측(위기 후 반등월에 켜지는 지연 지표)과 같은 모양.",
@@ -172,17 +255,49 @@
           "design": "총 기억 alpha+beta=0.95 고정, 분배만 변경(반응성 vs 지속성 분리). 진단 프로브 — 최선 팔 선택/제안 없음(sweep-selection 회피)",
           "preregistered_prediction": "alpha↑ → 꼬리월 이득↑ 그리고 직후 손실↑ (트레이드오프 실재)",
           "grid": [
-            {"alpha": 0.02, "beta": 0.93, "IR": 0.643, "tail_pp": 0.952, "post_tail_pp": -0.335, "full_pp": -0.286},
-            {"alpha": 0.05, "beta": 0.90, "IR": 0.633, "tail_pp": 0.877, "post_tail_pp": -0.465, "full_pp": -0.302},
-            {"alpha": 0.15, "beta": 0.80, "IR": 0.630, "tail_pp": 0.505, "post_tail_pp": -0.585, "full_pp": -0.307},
-            {"alpha": 0.30, "beta": 0.65, "IR": 0.634, "tail_pp": 0.008, "post_tail_pp": -0.594, "full_pp": -0.284}
+            {
+              "alpha": 0.02,
+              "beta": 0.93,
+              "IR": 0.643,
+              "tail_pp": 0.952,
+              "post_tail_pp": -0.335,
+              "full_pp": -0.286
+            },
+            {
+              "alpha": 0.05,
+              "beta": 0.9,
+              "IR": 0.633,
+              "tail_pp": 0.877,
+              "post_tail_pp": -0.465,
+              "full_pp": -0.302
+            },
+            {
+              "alpha": 0.15,
+              "beta": 0.8,
+              "IR": 0.63,
+              "tail_pp": 0.505,
+              "post_tail_pp": -0.585,
+              "full_pp": -0.307
+            },
+            {
+              "alpha": 0.3,
+              "beta": 0.65,
+              "IR": 0.634,
+              "tail_pp": 0.008,
+              "post_tail_pp": -0.594,
+              "full_pp": -0.284
+            }
           ],
           "result": "예측 반증. alpha↑ 이면 꼬리월 이득이 **사라진다**(+0.952→+0.008). 꼬리월 방어는 반응성이 아니라 낮은 alpha·높은 beta(= 부드러운 장기분산 근사)에서 나온다.",
           "internal_consistency": "alpha→0 극한은 상수 분산 = 장기 분산이므로 표본분산 팔에 수렴해야 한다. 실측 0.643 ≈ 0.647(표본 분산 팔) — 정합.",
           "verdict": "이 축에 되살릴 경로 없음. IR 네 점 전부 0.630~0.643 으로 평평하고 LW 0.846 에서 멀다. 직후 손실도 어느 점에서도 소멸하지 않음(최선 -0.335).",
           "no_selection": "최선 팔(a0.02_b0.93)을 config 로 제안하지 않는다 — 열거 격자에서 argmax 를 고르면 sweep-selection 이고 DSR 대상이다. 통과 팔도 없다."
         },
-        "not_tested": ["VaR/ES coverage(분포 적합도) 축 — 논문의 원 평가축", "일별 리밸 등 조건부 동학이 실제 갱신되는 시간축", "minvar 외 비중 규칙(risk-parity·CVaR)에서의 순위"]
+        "not_tested": [
+          "VaR/ES coverage(분포 적합도) 축 — 논문의 원 평가축",
+          "일별 리밸 등 조건부 동학이 실제 갱신되는 시간축",
+          "minvar 외 비중 규칙(risk-parity·CVaR)에서의 순위"
+        ]
       }
     }
   ]

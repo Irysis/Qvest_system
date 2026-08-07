@@ -87,7 +87,15 @@ wrap_adapter <- function(fn, method_id, ub = 0.20) {
 #' 레지스트리 로드 → verdict=="implemented" 인 어댑터만 sourcing 해 named list 반환.
 #' @param route "optimizer" | "risk" — 해당 라우트 method 만.
 #' @param only  선택적 method_id 벡터(그날 큐에 든 논문만 돌릴 때).
-load_method_adapters <- function(route = "optimizer", only = NULL, ub = 0.20, root = .mr_root()) {
+#' ★route(논문이 어느 모드 연료인가) 와 adapter_kind(무엇을 교체하는가)는 **다른 축**이다.
+#'   2026-08-08 실측: `PreferenceRobustDistortion` 은 paper route=risk 인데 구현은 **비중 어댑터**다
+#'   (Σ 를 교체하는 게 아니라 목적함수 자체를 CVaR 로 바꾼다). route 로 로드하면 이 논문은
+#'   영원히 안 실린다 — 라우팅 축 혼동이 조용한 드롭을 만드는 전형이다.
+#'   그래서 로더는 **kind 로 고른다**. route 는 보고·추적용으로만 남는다.
+#'   구 시그니처(route=)는 하위호환으로 받되 kind 로 해석한다.
+load_method_adapters <- function(kind = "weight", only = NULL, ub = 0.20, root = .mr_root(),
+                                 route = NULL) {
+  if (!is.null(route)) kind <- if (identical(route, "risk")) "sigma" else "weight"
   rp <- file.path(root, METHOD_REGISTRY_PATH)
   if (!file.exists(rp)) {
     cat(sprintf("[method_registry] 레지스트리 부재: %s — 등록 method 0건\n", rp))
@@ -99,7 +107,14 @@ load_method_adapters <- function(route = "optimizer", only = NULL, ub = 0.20, ro
   out <- list()
   n_skip <- list(verdict = 0L, route = 0L, missing = 0L)
   for (m in ms) {
-    if (!identical(m$route, route)) { n_skip$route <- n_skip$route + 1L; next }
+    # adapter_kind 미선언분은 **기본을 가정하지 않고** 건너뛴다 — 조용한 오분류 방지.
+    mk <- m$adapter_kind
+    if (is.null(mk)) {
+      if (identical(m$verdict, "implemented"))
+        cat(sprintf("[method_registry] ★%s: adapter_kind 미선언(implemented) — 로드 생략. 원장에 명시할 것\n", m$method_id))
+      n_skip$route <- n_skip$route + 1L; next
+    }
+    if (!identical(mk, kind)) { n_skip$route <- n_skip$route + 1L; next }
     if (!is.null(only) && !(m$method_id %in% only)) next
     if (!identical(m$verdict, "implemented")) { n_skip$verdict <- n_skip$verdict + 1L; next }
     ap <- file.path(root, m$adapter)
@@ -170,7 +185,8 @@ load_sigma_estimators <- function(only = NULL, root = .mr_root()) {
   if (!file.exists(rp)) return(list())
   reg <- fromJSON(rp, simplifyVector = FALSE)
   out <- list()
-  for (m in Filter(function(x) identical(x$route, "risk"), reg$methods %||% list())) {
+  # ★route 가 아니라 adapter_kind 로 고른다 (위 load_method_adapters 주석 참조).
+  for (m in Filter(function(x) identical(x$adapter_kind, "sigma"), reg$methods %||% list())) {
     if (!is.null(only) && !(m$method_id %in% only)) next
     if (!identical(m$verdict, "implemented")) next
     ap <- file.path(root, m$adapter %||% "")
