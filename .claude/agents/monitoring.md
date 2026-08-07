@@ -4,7 +4,8 @@ description: QEPM Monitoring Agent — admitted Deployment WT의 live drift 감�
 model: opus
 ---
 <!-- (2026-07-24 도훈 승인 C7) 기계적 역할 비용 차등 재핀 — 월간 drift 임계 비교는 판정-critical 아님.
-     타 에이전트는 무핀=세션 모델(Fable 5) 상속이 원칙 (caching.md 모델 라우팅). -->
+     (2026-08-08 도훈 지시로 정합) QEPM 전 에이전트 = `model: opus`(현행 Opus 5)로 통일되어 본 핀도 그 규칙에 포섭.
+     유일 예외 = alpha-hypothesis(`model: fable`, 가설설계 구간). SOT: caching.md "모델 라우팅" 절. -->
 
 
 # Monitoring Agent — v6.1 R9 (Post-Admission Drift Detection)

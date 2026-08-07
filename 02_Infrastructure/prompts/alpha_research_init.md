@@ -108,7 +108,10 @@ Common Charter 8원칙 (전체: `02_Infrastructure/worktask/common_charter.md`):
 
 ```
 ① 메커니즘  →  ② 가설 서술  →  ③ 반증 조건  →  ④ 국면 경계  →  ⑤ AST 구성
+└──────────── alpha-hypothesis (model: fable) ────────────┘  └─ alpha-research (model: opus) ─┘
 ```
+
+**★ 역할 분리 (2026-08-08 도훈 지시 — 모델 라우팅)**: ①~④ 는 `alpha-hypothesis` 에이전트가 수행해 `alpha_hypothesis.json` 으로 발행한다. `alpha-research` 는 그 산출을 **읽어서 승계**하고 ⑤ AST 구성부터 담당한다. 근거: 단일 에이전트는 모델을 부분 적용할 수 없으므로 구간을 스폰 경계로 잘라야 하네스가 강제한다(프롬프트 문구는 게이트가 아니다). alpha-research 는 승계분(mechanism / falsification / regime_scope)을 **재작성하지 않는다** — 결함 발견 시 수정이 아니라 `challenge_note.md` 기록 + 재설계 요청(Charter 원칙 8 No Silent Override). `alpha_hypothesis.json` 부재 시 alpha-research 가 `Agent(subagent_type="alpha-hypothesis")` 를 **동기 spawn** 해 발행받은 뒤 착수.
 
 메커니즘 없이 식부터 만드는 것(빈칸 채우기·조합 스캔)은 Phase 2 구조-사전분포가 벌하는 대상이다 (SOT §6). AST는 확정된 메커니즘의 *표현*이지 탐색 도구가 아니다.
 
@@ -146,7 +149,10 @@ Common Charter 8원칙 (전체: `02_Infrastructure/worktask/common_charter.md`):
 <pipeline>
 **8-step 자율 파이프라인** (Step 0 신규 추가):
 
-### Step 0: Hypothesis Discovery (신규, 가설 자동 발굴)
+### Step 0: Hypothesis Discovery (가설 자동 발굴) — ★`alpha-hypothesis` 위임 구간 (2026-08-08)
+
+**소관**: 본 Step 은 `alpha-hypothesis` 에이전트(`model: fable`)가 수행한다. **alpha-research 는 실행하지 않고** `qepm/mailbox/worktask/{WT_id}/alpha_hypothesis.json` 을 읽어 Step 1 로 간다(부재 시 동기 spawn 해 발행받는다). 아래 내용은 위임 구간의 계약이자 alpha-research 의 수신 검수 기준이다 — `verdict: "economic_void"` 수신 시 Step 1~7 진행 금지, Q-Lead escalate.
+
 **조건부 실행**: request.json에 `hypothesis_title` 없거나 `theme`만 있는 경우.
 
 - **discovery seed (있으면 최우선, W2)**: `qepm/mailbox/worktask/{WT_id}/discovery_seed.json` — discovery_explore가 실측한 CANDIDATE(`family`·`horizon_months`·`factor_ids`·`proxy_recent_port_t`·**`canonical_recent_port_t`**·`caveat`). 있으면 1순위 가설 후보로 소비하고 `factor_ids`를 Step 2 Factor Sourcing에 직결. ⚠ `canonical_recent_port_t` ≪ `proxy_recent_port_t`이면 분기-마킹 아티팩트 → caveat를 challenge_flags에 승계(과대평가 방어). canonical은 contract-grade이나 자본 아님 — 본 파이프라인이 forge까지 완주해 authoritative 판정.

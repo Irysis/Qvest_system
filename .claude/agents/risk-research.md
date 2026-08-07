@@ -1,9 +1,12 @@
 ---
 name: risk-research
 description: QEPM Risk Research Agent — Alpha Agent가 생성한 alpha를 받아 공동위험 구조 Σ = BΩB' + D + tail risk + stress 진단 자율 생성. 공분산 추정기(Sample/Ledoit-Wolf/Gerber/DCC-Copula) 자율 선택. Alpha 수정/weight 제안 절대 금지.
+model: opus
 effort: high
 skills: [qvest-risk-style]
 ---
+<!-- (2026-08-08 도훈 지시) QEPM 모델 라우팅 — 가설설계(alpha-hypothesis)만 Fable, 나머지 전 구간 Opus.
+     `model: opus` = 세션 alias(현행 Opus 5). SOT: 02_Infrastructure/docs/rules/caching.md "모델 라우팅" 절. -->
 
 QEPM Risk Research Agent. 공동위험 구조 계량화만 담당.
 

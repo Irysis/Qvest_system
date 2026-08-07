@@ -1202,19 +1202,22 @@
     "STR_AS_20260806_203507_48376": {
       "strategy_id": "STR_AS_20260806_203507_48376",
       "grade": "F",
-      "role": null,
+      "role": {},
       "origin_mode": "alpha_search",
       "sim_result_path": "stage_artifacts/module_quarantine/STR_AS_20260806_203507_48376/sim_result.rds",
       "n_days": 5303,
-      "date_range": ["2005-02-03", "2026-08-05"],
+      "date_range": [
+        "2005-02-03",
+        "2026-08-05"
+      ],
       "registered_at": "2026-08-06T20:41:25+09:00",
       "metric_type": "proxy",
       "fr_eligible": false,
       "frozen": false,
-      "source_contract_id": null,
+      "source_contract_id": {},
       "module_hash": "739dea473ad8fe283fbc255a9f5b4a41",
-      "build_version": null,
-      "cost_model_version": null,
+      "build_version": {},
+      "cost_model_version": {},
       "bt_result_path": "stage_artifacts/alpha_search/20260806_203507_48376/bt_result.rds",
       "contract": {
         "policy": "v8.1_fr_input_floor",
@@ -1224,14 +1227,21 @@
       "meta": {
         "strategy_idea": "vol rank 역방향 가설(FQ-092): C_VolRankStability_3M 정방향이 KR에서 역작동(SR 0.275, IR -0.234) → 신호 부호 flip. Score=+rank_std_12m(변동성 순위 불안정·상승 종목 선택). 고변동성 모멘텀 가설 — 순위 상승 종목이 KR에서 수익률 프리미엄 보유 여부 검증. K200∪KQ150, 월간 리밸 15bps, ivol 가중.",
         "score": 6.3,
-        "f_grade_reasons": ["게이트 사유: Structural drawdown (45%+ episodes>=15): MDD 60.8%, 45%+ episodes=16/15, max_underwater=24/252", "FMT-01 Structural MDD: MDD 60.8% > 45% — 선택 종목군의 위기 동반급락(구조적 꼬리위험)", "FMT-07 Publication Decay: alpha_trend ratio(최근3Y/전체 SR) -0.06 <= 0.3 — 후반부 알파 붕괴"],
-        "fmt_codes": ["FMT-01", "FMT-07"],
+        "f_grade_reasons": [
+          "게이트 사유: Structural drawdown (45%+ episodes>=15): MDD 60.8%, 45%+ episodes=16/15, max_underwater=24/252",
+          "FMT-01 Structural MDD: MDD 60.8% > 45% — 선택 종목군의 위기 동반급락(구조적 꼬리위험)",
+          "FMT-07 Publication Decay: alpha_trend ratio(최근3Y/전체 SR) -0.06 <= 0.3 — 후반부 알파 붕괴"
+        ],
+        "fmt_codes": [
+          "FMT-01",
+          "FMT-07"
+        ],
         "bt_result_path": "stage_artifacts/alpha_search/20260806_203507_48376/bt_result.rds",
         "bt_contract_status": "OK"
       }
     }
   },
-  "last_updated": "2026-08-06T20:41:25+09:00",
+  "last_updated": "2026-08-08T00:25:44+09:00",
   "n_modules": 31,
   "superseded": {
     "STR_AS_20260613_094148_265194": {
@@ -1659,8 +1669,53 @@
         "at": "2026-08-03T08:43:47+09:00",
         "reason": "catalog 승격으로 격리행 회수 — 최종상태는 module_catalog 를 볼 것"
       }
+    },
+    "STR_AS_20260808_001913_13752": {
+      "strategy_id": "STR_AS_20260808_001913_13752",
+      "grade": "B",
+      "role": {},
+      "origin_mode": "alpha_search",
+      "sim_result_path": "stage_artifacts/module_quarantine/STR_AS_20260808_001913_13752/sim_result.rds",
+      "n_days": 5305,
+      "date_range": [
+        "2005-02-03",
+        "2026-08-07"
+      ],
+      "registered_at": "2026-08-08T00:24:25+09:00",
+      "metric_type": "proxy",
+      "fr_eligible": false,
+      "frozen": false,
+      "source_contract_id": {},
+      "module_hash": "395391af7b1fe0789b19892fbcc0ac7d",
+      "build_version": {},
+      "cost_model_version": {},
+      "bt_result_path": "stage_artifacts/alpha_search/20260808_001913_13752/bt_result.rds",
+      "contract": {
+        "policy": "v8.1_fr_input_floor",
+        "contract_pass": false,
+        "eligibility_reason": "metric_type != backtested; contract_pass != TRUE; frozen != TRUE; source_contract_id missing; build_version missing; cost_model_version missing"
+      },
+      "meta": {
+        "strategy_idea": "Hurst R/S 지수(rolling 252일) 기반 스펙트럼 지속성: H>0.5 종목(추세 지속)을 long — 수익률 저주파 스펙트럼 질량 초과가 추세추종 알파의 이론적 근거 (Sepp & Lucic arXiv:2607.19497)",
+        "score": 42,
+        "f_grade_reasons": [],
+        "fmt_codes": "FMT-01",
+        "bt_result_path": "stage_artifacts/alpha_search/20260808_001913_13752/bt_result.rds",
+        "bt_contract_status": "OK"
+      },
+      "superseded_by": {
+        "registry": "module_catalog",
+        "strategy_id": "STR_AS_20260808_001913_13752",
+        "mode": "promoted",
+        "catalog_registered_at": "2026-08-08T00:25:44+09:00",
+        "catalog_metric_type": "backtested",
+        "catalog_grade": "C",
+        "catalog_fr_eligible": true,
+        "at": "2026-08-08T00:25:44+09:00",
+        "reason": "catalog 승격으로 격리행 회수 — 최종상태는 module_catalog 를 볼 것"
+      }
     }
   },
-  "n_superseded": 9,
+  "n_superseded": 10,
   "superseded_note": "modules 밖으로 뺀 격리 tombstone. 이 id 의 권위 상태는 module_catalog 에 있다. mode=promoted(승격 회수) / shadowed(catalog 존재 상태의 하위-tier 등록)."
 }

@@ -2,14 +2,25 @@
 
 **발효**: Session 68 Day 2 도입 / Session 75 v6.4 rule 분리 / **2026-07-24 Fable 5 전면 개정** (구 5분 TTL·Opus 통일·TeamCreate·Codex 절 폐기 — 구판 역사는 git)
 
-## 모델 라우팅 (2026-07-24 Fable 5 정합 개정)
+## 모델 라우팅 (**2026-08-08 도훈 지시 개정** — QEPM 역할별 재핀. 2026-07-24 "핀 제거·상속" 정책 대체)
 
-- **세션 모델 = Claude Fable 5** (`claude-fable-5`, Mythos-class — Opus 4.8 상위 tier).
-- **에이전트 frontmatter `model` 핀 = 원칙 제거** (2026-07-24 실측 11종 제거): 핀 부재 = 세션 모델 상속(공식 스펙 기본값 inherit). 구 `model: opus`는 "자동 최신"이 아니라 **Opus 4.8 고정**이라, Fable 5 세션에서 spawn 에이전트가 메인보다 하위 모델로 강등되던 결함.
-- **예외 2종 (2026-07-24 도훈 승인 C7 — 비용 차등 재핀)**: `execution`·`monitoring`은 `model: opus` 유지 — 기계적 역할(주문 schedule 분해·월간 drift 임계 비교)로 판정-critical 아님. 이 2종 외 신규 핀 추가 금지.
-- **폴백 정책 (도훈 2026-07-14, memory: feedback-model-fallback-fable-opus)**: Fable 5 한도/스폰 실패 시 Agent tool 호출에 `model: "opus"` 명시 재시도. 상태가 FS(mailbox/stage_artifacts) 외부화라 모델 전환 무손실.
-- 구 "전 모델 통일 최신 Opus" 정책(2026-04-30 Block A — Forge Sonnet fabrication L-249 재발방지)의 취지는 **"세션 모델 미만 강등 핀 금지"** 원칙으로 계승.
-- **effort 배치 (유효값 low/medium/high/xhigh/max)**: judge/governor/dispatch-orchestrator/ramp-orchestrator = `xhigh`(판정-critical), alpha-research/alpha-search/forge/risk-research/optimizer-research = `high`(Fable 5 기본 권고 정합). 미지정 = 세션 상속.
+### 현행 규칙 (QEPM 모드)
+
+| 구간 | 에이전트 | 핀 | 근거 |
+|---|---|---|---|
+| **가설설계** | `alpha-hypothesis` | **`model: fable`** | Step 0 발굴 + ①메커니즘 →②가설 서술 →③반증 조건 →④국면 경계. 발산적 설계 구간 |
+| 그 외 **전 구간** | `alpha-research` · `risk-research` · `optimizer-research` · `forge` · `judge` · `governor` (+ ondemand `architect` · `blender` · `execution` · `monitoring`) | **`model: opus`** (현행 Opus 5) | 구현·측정·판정 구간 |
+
+- **★구간 분리는 스폰 경계로만 강제된다**: 단일 에이전트는 모델을 부분 적용할 수 없다. "가설설계만 Fable"을 프롬프트 문구로 쓰면 **아무것도 강제되지 않는다** — 그래서 alpha-research 의 Step 0 + ①~④ 를 `alpha-hypothesis` 에이전트로 잘라내 frontmatter 핀이 게이트가 되게 했다. 6-agent 파이프라인 *구조*는 불변(alpha-hypothesis 는 alpha 내부 구간 분리이지 추가 심사 단계가 아님).
+- **핸드오프 계약**: `alpha-hypothesis` → `qepm/mailbox/worktask/{WT_id}/alpha_hypothesis.json` → `alpha-research` 가 **승계(재작성 금지)** 후 ⑤ AST 구성부터. `verdict: "economic_void"` 면 하류 진행 금지·Q-Lead escalate. 부재 시 alpha-research 가 **동기** spawn(배경 실행 후 "대기 중" 종료 = 체인 절단).
+- **alias 의미**: `opus`/`fable` 은 tier alias로 **현행 최신 tier로 해석**된다(2026-08-08 기준 Opus 5 / Fable 5). 구판(2026-07-24)이 `model: opus`를 "Opus 4.8 고정"으로 기록한 것은 *그 시점 최신 Opus tier가 4.8이었기 때문*이지 alias가 버전을 얼리기 때문이 아니다 — 다만 **tier 드리프트는 실사고 이력이 있으므로**, 세션 모델보다 낮은 tier로 해석될 소지가 보이면 재확인할 것.
+- **다른 모드는 무핀 유지**: `alpha-search`(②) · `dispatch-orchestrator`(③) · `ramp-orchestrator`(④) · `strategy-implementer` 는 핀 없음 = 세션 모델 상속. 본 규칙은 **QEPM 모드 한정**.
+- **폴백 정책 (도훈 2026-07-14, memory: feedback-model-fallback-fable-opus)**: Fable 한도/스폰 실패 시 Agent tool 호출에 `model: "opus"` 명시 재시도. 상태가 FS(mailbox/stage_artifacts) 외부화라 모델 전환 무손실 — 가설설계 구간도 한도 시 opus 로 완주시키고 `alpha_hypothesis.json::model_tier` 에 실제 tier 를 기록한다.
+- 구 "전 모델 통일 최신 Opus" 정책(2026-04-30 Block A — Forge Sonnet fabrication L-249 재발방지)의 취지 **"세션 모델 미만 강등 핀 금지"** 는 계승 — 현행 핀 2종(opus/fable) 모두 최상위 tier라 강등 없음.
+
+### 대체된 구판 (2026-07-24, 역사)
+- 세션 모델 = Fable 5 단일 상속 / 에이전트 `model` 핀 원칙 제거(11종) / 예외 2종(`execution`·`monitoring` opus) / "이 2종 외 신규 핀 추가 금지". → **2026-08-08 도훈 지시로 폐기**. 그 예외 2종은 이제 "QEPM 전체 opus" 규칙에 포섭돼 별도 예외가 아니다.
+- **effort 배치 (유효값 low/medium/high/xhigh/max)**: judge/governor/dispatch-orchestrator/ramp-orchestrator = `xhigh`(판정-critical), alpha-hypothesis/alpha-research/alpha-search/forge/risk-research/optimizer-research = `high`. 미지정 = 세션 상속. (effort 는 model 핀과 독립 — 2026-08-08 재핀에서 불변)
 
 ## 캐시 히트 최대화 (Fable 5 세션 실측 기준)
 

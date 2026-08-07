@@ -93,10 +93,24 @@ wt_id <- wt_create(
 
 ## 3. 6-Agent Pipeline (v8.1 active path)
 
+### Step 0: alpha-hypothesis  ★2026-08-08 신설 (모델 라우팅 — 유일한 Fable 구간)
+
+```
+Agent(subagent_type="alpha-hypothesis", prompt="WT{id} 가설설계 (Step 0 + ①~④)")
+  → hypothesis_index lookup + alpha_frontier_queue 확인·owner 표기 (v8.3 착수 전 의무)
+  → 가설 후보 3~5건 → 1건 선택(대안은 challenge_flags)
+  → ①메커니즘(주체·마찰·경로) →②가설 서술 →③반증 조건(field_dictionary 내 부수 관측) →④국면 경계
+  → alpha_hypothesis.json (verdict: designed | economic_void)
+```
+- **model 핀 = `fable`** — QEPM 전 구간 중 **여기만** Fable. 나머지 6-agent 전부 `model: opus`(현행 Opus 5). 근거·SOT: `02_Infrastructure/docs/rules/caching.md` "모델 라우팅" 절.
+- **⑤ AST 구성·팩터 소싱·실측은 금지** (alpha-research 소관, 설계자≠측정자 firewall).
+- `economic_void` 면 Step 1 진행 금지 → Q-Lead escalate (억지 설계 금지).
+
 ### Step 1: alpha-research
 
 ```
 Agent(subagent_type="alpha-research", prompt="WT{id} Alpha Research...")
+  → alpha_hypothesis.json 승계(재작성 금지) 후 ⑤ AST 구성 + Step 1~7
   → 자율 hypothesis discovery + factor specs
   → AST v1.1 산출 계약 (2026-07-25): alpha_package에 spec_version="ast_v1.1" + 3층(hypothesis{mechanism 주체·마찰·경로 + falsification + regime_scope} / factors[] AST(𝒪+escape 리프 4종) / combination_rule enum) + verdict(designed|economic_void|blocked_by_capability) + self_pit_check 의무 — schema.json conditional + 프롬프트 <ast_spec_v1_1> 절, SOT qvest_ast_v1_1_sot.md §1
   → alpha_package_draft.json (Write tool, _draft suffix)
@@ -192,7 +206,9 @@ Agent(subagent_type="governor", prompt="WT{id} PG0~PG3 admission")
 
 ## 7. Multi-Agent 실행 (v8.1+ — Agent tool spawn 단일 패턴)
 
-v53 TeamCreate/teammate 패턴은 **폐지됨** (v8.1 Agent tool spawn 대체 — TeammateIdle/TaskCompleted hook 등록 해제 2026-06-10, 스크립트 FS retain). 6-agent(alpha/risk/optimizer/forge/judge/governor)는 Agent tool로 개별 spawn, 추가 역할(Architect / Blender / Execution / Monitoring)은 ondemand spawn. (v8.2 — Codex Critic 역할 제거, 각 agent가 세션 모델(현행 Fable 5) self-adversarial challenge 내장. 2026-07-24 모델 핀 제거 — 전 에이전트 세션 모델 상속.)
+v53 TeamCreate/teammate 패턴은 **폐지됨** (v8.1 Agent tool spawn 대체 — TeammateIdle/TaskCompleted hook 등록 해제 2026-06-10, 스크립트 FS retain). 6-agent(alpha/risk/optimizer/forge/judge/governor)는 Agent tool로 개별 spawn, 추가 역할(Architect / Blender / Execution / Monitoring)은 ondemand spawn. (v8.2 — Codex Critic 역할 제거, 각 agent가 self-adversarial challenge 내장.)
+
+**모델 라우팅 (2026-08-08 도훈 지시 — 2026-07-24 "핀 제거·상속" 정책 대체)**: QEPM 에이전트는 **전부 `model: opus`(현행 Opus 5) 명시 핀**. **유일 예외 = `alpha-hypothesis`(`model: fable`)** — 가설설계 구간(Step 0 + ①~④)만 Fable. 6-agent 파이프라인 구조는 불변(alpha-hypothesis 는 alpha-research 의 *내부 구간 분리*이지 7번째 심사 단계가 아니다 — 슬림화/확장 재제안 아님). SOT: `02_Infrastructure/docs/rules/caching.md`.
 
 ## 8. WT 진행 상태 확인
 

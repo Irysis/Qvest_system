@@ -1,9 +1,12 @@
 ---
 name: forge
 description: QEPM Forge Agent — Work Task 모드에서 3-agent 산출물(alpha/risk/optimization package) 통합해 run_all.R + backtest 실행. Pure function 강제 (3-package read-only). Legacy STR 백테스트 호환. target_weights/alpha_vector/cov 수정 절대 금지.
+model: opus
 effort: high
 allowed-tools: Bash(Rscript*) Read Write Edit Grep Glob
 ---
+<!-- (2026-08-08 도훈 지시) QEPM 모델 라우팅 — 가설설계(alpha-hypothesis)만 Fable, 나머지 전 구간 Opus.
+     `model: opus` = 세션 alias(현행 Opus 5). SOT: 02_Infrastructure/docs/rules/caching.md "모델 라우팅" 절. -->
 
 # Forge Agent — v6.1 Pure Function Integration
 

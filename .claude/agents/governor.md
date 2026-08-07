@@ -1,10 +1,13 @@
 ---
 name: governor
 description: QEPM Governor Agent — PG0 gap 진단 + PG1 individual admission + PG2 book-level rebalance (v6.1 R5 book_optimizer) + PG3 live drift. Work Task 판정 (ADMIT/DEFER/REJECT) + book_state.json 갱신. multi-objective 8지표 + Sequential Admission (TDC<0.30). 전략 설계/검증 금지.
+model: opus
 effort: xhigh
 skills: [qvest-attribution-style]
 allowed-tools: Bash(Rscript*) Read Write Grep Glob
 ---
+<!-- (2026-08-08 도훈 지시) QEPM 모델 라우팅 — 가설설계(alpha-hypothesis)만 Fable, 나머지 전 구간 Opus.
+     `model: opus` = 세션 alias(현행 Opus 5). SOT: 02_Infrastructure/docs/rules/caching.md "모델 라우팅" 절. -->
 
 # Governor Agent — v6.1 Book-Level Admission
 

@@ -2,7 +2,7 @@
 
 ## Active Version
 
-**Qvest v8.3 — Fable 5-Native · 4-Mode 헌법 · 실측 거버넌스 · 알파 발굴 중심 재편** (2026-07-10 / 2026-07-24 Fable 5 정합 패치 — 세션 모델 `claude-fable-5`, 에이전트 model 핀 제거·상속 전환, 폴백 = 한도 시 opus 재시도)
+**Qvest v8.3 — 4-Mode 헌법 · 실측 거버넌스 · 알파 발굴 중심 재편** (2026-07-10 / **2026-08-08 QEPM 모델 라우팅 재핀 — 가설설계(`alpha-hypothesis`)만 `model: fable`, QEPM 나머지 전 구간 `model: opus`(현행 Opus 5)**. 구 2026-07-24 "핀 제거·세션 상속" 정책 대체. 폴백 = 한도 시 opus 재시도. SOT `02_Infrastructure/docs/rules/caching.md` 모델 라우팅 절)
 
 **계보**: **v8.3** (현재 active) — 전체 계보(v6.4.0~)·릴리스 상세·검증 이력 = `02_Infrastructure/docs/CHANGELOG_constitution.md` (2026-07-24 C5 이관)
 **Branch**: `main` (Qvest active — GitHub default)
@@ -32,8 +32,10 @@ Qvest = 독립 리서치 모드 4개 (lifecycle ①②생산 → ③④소비; �
 
 **① QEPM 모드 경로** (신호-only 알파 정밀 검증·편입):
 ```
-WorkTask → alpha-research → risk-research → optimizer-research → forge → judge → governor
+WorkTask → [alpha-hypothesis] → alpha-research → risk-research → optimizer-research → forge → judge → governor
+             └ 가설설계 구간(fable)  └────────────── 이하 전부 opus (Opus 5) ──────────────┘
 ```
+**모델 라우팅 (2026-08-08 도훈 지시)**: `alpha-hypothesis`(Step 0 발굴 + ①메커니즘→②가설→③반증→④국면 경계) **만 `model: fable`**, QEPM 나머지 전 에이전트 `model: opus`. alpha-hypothesis 는 alpha-research의 *내부 구간 분리*이지 7번째 심사 단계가 아니다(6-agent 구조 불변 — 슬림화/확장 재제안 아님). 핸드오프 = `alpha_hypothesis.json`(alpha-research 가 승계, 재작성 금지). 상세 SOT: `02_Infrastructure/docs/rules/caching.md` 모델 라우팅 절.
 각 agent spawn 시 **Self-Adversarial Challenge 의무** (v8.2 — Codex Round 제거, 메인 세션 모델(현행 Fable 5) 자체 적대검증: finalize 직전 약점 자가제기 → `challenge_note.md` 기록 → final. AX-008 3-source 중 1개).
 **② alpha-search · ③ factor-rotation**: 각자 경량 경로 (각 skill + `## Active Entrypoints`).
 **④ RAMP** (K-RAMP, 2026-06-17): 기존 전략풀 *소비* → 순수팩터 추출(통계 잠재팩터+FWL) → 팩터군 → M-code(역할 분업) → 리스크매니저 → 인베스터 에이전트 팩터배분. 거버넌스-우선 Gate 0~11 + CCS 13-score. 재귀 자가발전=Axiom 엔진 4번째 모드(modecode RAMP, backtested). 룰 `02_Infrastructure/docs/rules/ramp.md`, SOT `00_Lawbook/K_RAMP/`. governor 정지(자본 수동).
@@ -169,7 +171,8 @@ Qvest 시스템 전체 구동. bootstrap.sh 실행 → 플러그인 리로드 �
 | Agent | 위치 | 역할 |
 |---|---|---|
 | **Q-Lead** | 메인 Claude 세션 (유일) | 오케스트레이션, agent spawn, memory commit, telegram 보고 |
-| **alpha-research** | Agent tool | α̂ 생성 (factor specs + ICIR + Harvey-t). Σ/weight 절대 금지 |
+| **alpha-hypothesis** ⭐fable | Agent tool | **가설설계 전담** (Step 0 발굴 + ①메커니즘 →②가설 →③반증 →④국면 경계) → `alpha_hypothesis.json`. ⑤AST·팩터 소싱·실측 금지 |
+| **alpha-research** | Agent tool | α̂ 생성 (⑤AST 구성 + factor specs + ICIR + Harvey-t). 가설 승계(재작성 금지). Σ/weight 절대 금지 |
 | **risk-research** | Agent tool | Σ + tail + stress + crowding + style. alpha 수정 금지 |
 | **optimizer-research** | Agent tool | weights 결정 (MVO/HRP/CVaR/etc 자율). alpha/risk 재해석 금지 |
 | **forge** | Agent tool | run_all.R + backtest 통합 (Pure function). target_weights/cov 수정 금지 |

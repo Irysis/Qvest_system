@@ -42,20 +42,75 @@ fi
 # 2) 판정
 PYBIN=""; command -v sched_resolve_python >/dev/null 2>&1 && PYBIN=$(sched_resolve_python || true)
 [ -n "$PYBIN" ] || PYBIN="python3"
-VERDICT=$("$PYBIN" - "$OUT" <<'PY'
-import json, sys, io, datetime
+SEEN_LEDGER="$BASE/.cache/scheduler_alerts/reported_failures.json"
+mkdir -p "$(dirname "$SEEN_LEDGER")" 2>/dev/null
+VERDICT=$("$PYBIN" - "$OUT" "$SEEN_LEDGER" <<'PY'
+import json, sys, io, datetime, os
 d = json.load(io.open(sys.argv[1], encoding="utf-8-sig"))
+SEEN_PATH = sys.argv[2] if len(sys.argv) > 2 else ""
 tasks = d.get("tasks") or []
 if isinstance(tasks, dict): tasks = [tasks]        # ConvertTo-Json 은 1건이면 객체로 낸다
-bad, stale = [], []
+
+# ── 실패 판정 2종 수리 (2026-08-08) ──────────────────────────────────────────
+# 구판은 rc≠0 이면 곧장 "실패"로 셌다. 그 결과 08-08 00:03 보고 "실패 4"가 **4건 모두
+# 허위**였다. 두 개의 서로 다른 기전:
+#
+# (A) 실행 중인 작업의 rc 를 판정으로 읽음.
+#     `state` 는 수집기가 이미 기록하는데(scheduler_task_health.ps1:65) 판정은 rc 만 봤다.
+#     구판의 면제는 `rc_label == "still_running"`(rc 267009) 하나뿐인데, 실행 중 작업이
+#     **직전 실행의 rc 를 그대로 들고 있는** 경우가 있어 그 면제를 빗나간다.
+#     ★실측 증명(같은 실행, 84초 간격, last_run 불변 2026-08-08T00:00:43):
+#         00:03:30  Qvest_StrandedRepairs  state=Running  rc=0x800710E0  → "실패"로 계상
+#         00:04:54  Qvest_StrandedRepairs  state=Ready    rc=0           → 그 실행의 진짜 결과
+#     즉 0x800710E0 은 **비행 중 과도값**이었고 해당 실행은 성공했다. 08-06 20:12 에도
+#     같은 작업이 같은 rc 로 떴다가 20:58 에 사라졌다(동일 서명 2회).
+#     → 권위 필드는 `state`. 실행 중이면 "완료된 실행의 판정"이 존재하지 않으므로
+#       ok 도 fail 도 아닌 **제3상태 in_flight** 로 둔다(전제-부재 skip 규약과 동형).
+#
+# (B) 같은 실패 1건을 폴링 때마다 재보고.
+#     rc 는 다음 실행 전까지 고정이다. MonthlyDistill·WeeklyCleaner 는 2026-08-01T15:49:19
+#     1회 실패 이후 재실행 기회가 없었는데, 그 1건이 **7일간 매 health 실행마다** "실패 2"로
+#     찍혔다(task_health.log 08-03~08-08 전 행). 상시 발화는 읽는 사람을 훈련시켜
+#     채널을 죽인다 — 실제로 08-08 의 신규 2건이 그 상시 2건 옆에 묻혔다.
+#     → 실패의 정체성은 **(작업, 그 실행 시각)**. 이미 보고한 (task, last_run) 은
+#       기지(known)로 접고 신규만 경보한다. 매일 실패하는 작업은 매일 last_run 이 바뀌므로
+#       매일 새 경보가 난다 — 검출력 손실 없음. 되돌아오지 않는 경우는 staleness 축이 별도로 잡는다.
+seen = {}
+if SEEN_PATH and os.path.exists(SEEN_PATH):
+    try: seen = json.load(io.open(SEEN_PATH, encoding="utf-8")) or {}
+    except Exception: seen = {}
+if not isinstance(seen, dict): seen = {}
+
+def _ts(s):
+    try: return datetime.datetime.strptime(s, "%Y-%m-%dT%H:%M:%S")
+    except Exception: return None
+
+now = datetime.datetime.now()
+bad, stale, inflight, known = [], [], [], []
+seen_next = dict(seen)
 for t in tasks:
     if not t.get("enabled", True):
         continue
-    if int(t.get("rc") or 0) != 0 and t.get("rc_label") not in ("still_running", "never_run"):
-        bad.append("%s(%s)" % (t.get("task"), t.get("rc_label")))
+    name  = t.get("task")
+    state = (t.get("state") or "").strip()
+    lbl   = t.get("rc_label")
+    rc    = int(t.get("rc") or 0)
+
+    if state == "Running" or lbl == "still_running":
+        inflight.append("%s(%s)" % (name, lbl))          # (A) 판정 보류 — 실패 아님
+    elif rc != 0 and lbl != "never_run":
+        run_id = t.get("last_run") or ""
+        if seen.get(name) == run_id and run_id:
+            known.append("%s(%s·%s)" % (name, lbl, run_id[5:16]))   # (B) 기보고
+        else:
+            bad.append("%s(%s)" % (name, lbl))
+            seen_next[name] = run_id
+    elif rc == 0 and name in seen_next:
+        seen_next.pop(name, None)                        # 성공하면 기억을 비운다(다음 실패는 신규)
+
     ms, ag = t.get("max_stale_days"), t.get("age_days")
     if ms and ag is not None and ag > ms:
-        stale.append("%s(%.0f일>%s)" % (t.get("task"), ag, ms))
+        stale.append("%s(%.0f일>%s)" % (name, ag, ms))
 
 # (2026-08-01) 동시 다발 종료를 N건의 개별 실패로 세지 않는다 — **원인은 단정하지 않는다**.
 #   실측 2회, 둘 다 "동일 rc·좁은 시간창" 서명이지만 의미가 정반대였다:
@@ -64,16 +119,13 @@ for t in tasks:
 #   서명이 같으므로 코드가 원인을 고를 수 없다. 따라서 하나의 *사건*으로 접기만 하고
 #   (경보 6개 → 1개, 개별 실패가 소음에 묻히지 않게) 해석은 사람에게 넘긴다.
 #   ★"정지" 로 단정했다가 부팅-몰살을 양성으로 오독할 뻔했다 — 라벨이 사실보다 앞서면 안 된다.
-def _ts(s):
-    try: return datetime.datetime.strptime(s, "%Y-%m-%dT%H:%M:%S")
-    except Exception: return None
 groups = {}
 for t in tasks:
     if not t.get("enabled", True) or not int(t.get("rc") or 0):
         continue
     lbl = t.get("rc_label")
-    if lbl in ("still_running", "never_run"):
-        continue
+    if lbl in ("still_running", "never_run") or (t.get("state") or "").strip() == "Running":
+        continue   # 비행 중 rc 는 완료 판정이 아니다 — 동시종료 클러스터의 재료가 될 수 없다
     ts = _ts(t.get("last_run") or "")
     if ts: groups.setdefault(lbl, []).append((ts, t.get("task")))
 shutdown = ""
@@ -134,12 +186,26 @@ for lbl, items in groups.items():
 #   08-02 실측: 부팅 4i 가 이 클러스터링을 모른 채 원시 rc 만 보고 5건을 개별 "★실패"로
 #   보고했다(권위 스크립트는 같은 데이터로 "실패 1 · 정지 1"). 렌더러가 둘이면 판정도 둘이다.
 d["cotermination"] = cotermination
+# 제3상태와 기보고 실패를 **원장에 남긴다** — 경보에서 접었다고 기록에서까지 지우면
+# "조용해진 것"과 "고쳐진 것"을 구분할 수 없다(침묵 실패 계통 그 자체).
+d["verdict"] = {
+    "failed_new": bad, "failed_known": known, "in_flight": inflight, "stale": stale,
+    "note": "in_flight=state==Running(완료 판정 부재, 실패 아님) / failed_known=이미 보고한 (task,last_run) 재출현",
+}
 try:
     io.open(sys.argv[1], "w", encoding="utf-8").write(json.dumps(d, ensure_ascii=False, indent=2))
 except Exception:
     pass   # 되쓰기 실패가 판정 자체를 막지는 않는다(원장은 보조 표면)
 
-print(json.dumps({"n": len(tasks), "bad": bad, "stale": stale, "shutdown": shutdown}, ensure_ascii=False))
+# 기보고 원장 갱신 — 실패를 **경보한 뒤에만** 기록한다(경보 없이 기록하면 그 실패는 영영 안 보인다)
+if SEEN_PATH:
+    try:
+        io.open(SEEN_PATH, "w", encoding="utf-8").write(json.dumps(seen_next, ensure_ascii=False, indent=2))
+    except Exception:
+        pass
+
+print(json.dumps({"n": len(tasks), "bad": bad, "stale": stale, "shutdown": shutdown,
+                  "inflight": inflight, "known": known}, ensure_ascii=False))
 PY
 )
 if [ -z "${VERDICT:-}" ]; then
@@ -153,17 +219,24 @@ N=$(printf '%s' "$VERDICT"     | "$PYBIN" -c 'import json,sys;print(json.load(sy
 BAD=$(printf '%s' "$VERDICT"   | "$PYBIN" -c 'import json,sys;print(" ".join(json.load(sys.stdin)["bad"]))')
 STALE=$(printf '%s' "$VERDICT" | "$PYBIN" -c 'import json,sys;print(" ".join(json.load(sys.stdin)["stale"]))')
 SHUTDOWN=$(printf '%s' "$VERDICT" | "$PYBIN" -c 'import json,sys;print(json.load(sys.stdin).get("shutdown",""))')
+INFLT=$(printf '%s' "$VERDICT"  | "$PYBIN" -c 'import json,sys;print(" ".join(json.load(sys.stdin).get("inflight",[])))')
+KNOWN=$(printf '%s' "$VERDICT"  | "$PYBIN" -c 'import json,sys;print(" ".join(json.load(sys.stdin).get("known",[])))')
 if command -v sched_assert_count >/dev/null 2>&1 && ! sched_assert_count "$N"; then
   log "★ 작업 수가 비숫자('$N') — 계측 사망."; exit 1
 fi
 [ "$N" -eq 0 ] && { log "★ Qvest_* 작업 0건 — 등록이 사라졌는지 확인 필요."; }
 
-nbad=$( [ -n "$BAD" ]   && echo "$BAD"   | wc -w || echo 0 )
-nst=$(  [ -n "$STALE" ] && echo "$STALE" | wc -w || echo 0 )
-log "예약작업 $N개 · 실패 ${nbad} · 정체 ${nst}${SHUTDOWN:+ · 정지 1}"
+nbad=$( [ -n "$BAD" ]    && echo "$BAD"    | wc -w || echo 0 )
+nst=$(  [ -n "$STALE" ]  && echo "$STALE"  | wc -w || echo 0 )
+nif=$(  [ -n "$INFLT" ]  && echo "$INFLT"  | wc -w || echo 0 )
+nkn=$(  [ -n "$KNOWN" ]  && echo "$KNOWN"  | wc -w || echo 0 )
+log "예약작업 $N개 · 신규실패 ${nbad} · 정체 ${nst} · 진행중 ${nif} · 기지실패 ${nkn}${SHUTDOWN:+ · 정지 1}"
 [ -n "$SHUTDOWN" ] && log "  ※$SHUTDOWN — 개별 작업 실패가 아니라 하나의 사건으로 계수"
-[ -n "$BAD" ]   && log "  ★실패: $BAD"
+[ -n "$BAD" ]   && log "  ★신규실패: $BAD"
 [ -n "$STALE" ] && log "  ★정체: $STALE"
+# 아래 2종은 경보 대상이 아니지만 **로그에는 남긴다** — 조용해진 것과 고쳐진 것을 구분하기 위함
+[ -n "$INFLT" ] && log "  · 진행중(판정 보류): $INFLT"
+[ -n "$KNOWN" ] && log "  · 기보고 실패(재시도 대기): $KNOWN"
 
 # 3) 경보 — 무인 선언 시에만 (TTY 추론 아님. 내 시험 실행이 도훈 텔레그램으로 새는 사고 재발방지)
 #    시스템 정지는 그 자체로 경보 대상 — 4일간 무인 실행이 0 이었다는 뜻이기 때문(08-01 실측).

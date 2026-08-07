@@ -1,0 +1,113 @@
+{
+  "schema_version": "v54_ax_p0_mode",
+  "candidate_id": "CAND_20260807_qepm_legacy_defense_conditional_L-136_L-1551_L-1555-c",
+  "research_mode": "qepm_legacy",
+  "metric_type": "estimated",
+  "type": "methodological",
+  "polarity": "conditional",
+  "statement_draft": "[방법론 조건부 규칙 초안] family=defense, tags=mdd_hard_fail,crowding,dd_brake, supporting=19건 L-code. (promote.R 5축 검증에서 범위·메커니즘·OOS 확정 필요)",
+  "supporting_l_codes": [
+    "L-136",
+    "L-1551",
+    "L-1555-c",
+    "L-1578",
+    "L-1623",
+    "L-1624",
+    "L-1682",
+    "L-590",
+    "L-622",
+    "L-631",
+    "L-632",
+    "L-633",
+    "L-643",
+    "L-646",
+    "L-795",
+    "L-802",
+    "L-812",
+    "L-813",
+    "L-QPM-20260705_105130"
+  ],
+  "scope_draft": {
+    "market": "KR",
+    "factor_family": "defense",
+    "regime": null,
+    "construction_types": null
+  },
+  "evidence_draft": {
+    "independent_l_codes": 19,
+    "independent_strategies": 17,
+    "strategies": [
+      "STR_1422_crowding_defense_s5_m3",
+      "STR_1578",
+      "STR_1422_crowding_defense_s5_m2",
+      "STR_1555_dd_6_20",
+      "STR_1567_c19_l22_dd_regime",
+      "STR_1422_crowding_defense_s5",
+      "STR_798_adaptive_vt",
+      "STR_1422_crowding_defense_s5_m1",
+      "STR_1571",
+      "STR_1551",
+      "STR_791_orthogonal",
+      "STR_1566",
+      "axeng_crossfamily_regimecond_composite",
+      "STR_1682",
+      "STR_1562",
+      "STR_1614",
+      "STR_1662_defense_D25_Q07"
+    ],
+    "effect_direction_consistency": null,
+    "note": "evidence_draft — promote.R 5축 검증에서 hurdle_result/grade_a_catalog 교차검증으로 확정",
+    "n_eff_signatures": 6,
+    "independent_constructions": 6,
+    "constructions": [
+      "cross_family_regime_conditional_composite",
+      "ml_sizing",
+      "momentum",
+      "single_factor_long_only",
+      "size",
+      "value"
+    ],
+    "metric_types": [
+      "canonical_screen",
+      "estimated"
+    ]
+  },
+  "falsification_draft": {
+    "attempts": [
+      {
+        "test": "static regime-unconditional ICW baseline (paired NW-t)",
+        "result": "weakened",
+        "effect_retained": "raw PORT_t level +1.41 but paired NW-t=1.77 (<2.0) INSIGNIFICANT"
+      },
+      {
+        "test": "static equal-weight baseline (paired NW-t)",
+        "result": "weakened",
+        "effect_retained": "raw PORT_t level +0.87 but paired NW-t=0.97 (<2.0) INSIGNIFICANT"
+      },
+      {
+        "test": "lag1 concurrent-leak stress",
+        "result": "survived",
+        "effect_retained": "lag1 PORT_t 1.02 ~ base 0.84, no leak"
+      },
+      {
+        "test": "post-2017 subperiod decay wall",
+        "result": "falsified",
+        "effect_retained": "post2017 PORT_t -0.54, oos_ret -0.55 -> capital-grade blocked"
+      }
+    ],
+    "note": "L-code 기록 반증 시도 실값 집계"
+  },
+  "mechanism_draft": {
+    "economic_explanation": "t-1 regime expanding-window conditional-IC family weighting attempts to bypass post-2017 decay regimes",
+    "mechanism_type": "unknown",
+    "causal_plausibility": null
+  },
+  "oos_validation_draft": {
+    "oos_months": 159.0,
+    "oos_effect_vs_is": -0.553,
+    "note": "L-code oos_retention 실값 1건 median (IS65/OOS35 활성SR retention) + oos_months 실값 1건 median — promote.R essence_score 경유 재확정"
+  },
+  "cluster_members_count": 19,
+  "status": "pending_5axis",
+  "created_at": "2026-08-07T15:25:59+00:00"
+}

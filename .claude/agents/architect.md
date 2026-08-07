@@ -1,8 +1,12 @@
 ---
 name: architect
 description: "시스템 아키텍처 설계·진단·개선 — Hook/Pipeline/Layer/에이전트 통신 구조 설계. 온디맨드 스폰. Q-Lead와 토론하여 아키텍처 결정."
+model: opus
 allowed-tools: Read Grep Glob Bash(ls*) Bash(cat*) Bash(git*)
 ---
+<!-- (2026-08-08 도훈 지시) QEPM 모델 라우팅 — 가설설계(alpha-hypothesis)만 Fable, 나머지 전 구간 Opus.
+     architect 는 AX-008 Verification Triangulation 3-source 중 1개 = 판정-critical.
+     `model: opus` = 세션 alias(현행 Opus 5). SOT: 02_Infrastructure/docs/rules/caching.md "모델 라우팅" 절. -->
 
 # Architect v1.0 — Qvest 시스템 아키텍처 설계자
 

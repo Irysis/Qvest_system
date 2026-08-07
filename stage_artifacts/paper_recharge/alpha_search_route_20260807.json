@@ -1,0 +1,73 @@
+{
+  "date": "20260807",
+  "n_candidates_evaluated": 6,
+  "n_factor_testable": 0,
+  "fq_executions": ["FQ-110"],
+  "autorun_papers": [],
+  "routes": {
+    "alpha": 1,
+    "optimizer": 1,
+    "skip": 4
+  },
+  "papers": [
+    {
+      "arxiv_id": "2608.05373",
+      "title": "Market Manipulation Detection Using Hidden Markov Model in BANKNIFTY",
+      "route": "skip",
+      "reason": "인트라데이 옵션 조작 탐지 — Indian BANKNIFTY 전용 HMM. KR 주식 크로스섹션 팩터화 불가. 도메인 미일치.",
+      "confidence": 0.95
+    },
+    {
+      "arxiv_id": "2608.05623",
+      "title": "Non-concave Corporate Management with VaR Constraint",
+      "route": "skip",
+      "reason": "이론 논문 — 비오목 경영 목적함수와 VaR 제약 수리 분석. KR 팩터 신호 없음.",
+      "confidence": 0.95
+    },
+    {
+      "arxiv_id": "2608.05755",
+      "title": "Cross-Sectional Heterogeneity with LSTM",
+      "route": "alpha_infeasible",
+      "reason": "S&P500 long-short 구조 — KR long-only 적용 불가. 섹터 임베딩·tick 데이터 요구. 알파 신호는 존재하나 KR 제약 미충족.",
+      "confidence": 0.85,
+      "infeasible_reason": "long-short only, S&P500 구조, 크로스마켓 data 필요"
+    },
+    {
+      "arxiv_id": "2608.05901",
+      "title": "Policy-Distance Certificates for Robust Portfolio Optimization",
+      "route": "optimizer",
+      "reason": "분산 포트폴리오 최적화 인증서 수리 프레임워크 — 신호 없음. optimizer-research 에이전트 소비면(robust MVO 대안) 참고 후보.",
+      "confidence": 0.80
+    },
+    {
+      "arxiv_id": "2608.05991",
+      "title": "Knowledge-Optimising Investment Strategies for Financial Decision-Making",
+      "route": "skip",
+      "reason": "FinTech 프레임워크 개요 논문 — 구현 가능한 팩터 신호 없음. 방법론 taxonomy 리뷰 성격.",
+      "confidence": 0.90
+    },
+    {
+      "arxiv_id": "2608.06048",
+      "title": "Thermodynamic Law of Names: Power-Law Distributions of Given Names Across Different Cultures",
+      "route": "skip",
+      "reason": "물리학 이름 분포 — 주식 팩터와 무관.",
+      "confidence": 1.0
+    }
+  ],
+  "pending_ev_gate": [
+    {
+      "paper_id": "2607.27461",
+      "factor_id": "Markov_PredVolRank",
+      "gate": "EV_D2_GATED",
+      "note": "vol rank 계열 4-hits negative (08-02~08-06 완전소진). paper_id already processed. 추가 시도 중단 — 부활조건: AX-001 방어 자격 확보 또는 cap-tier 분해 후 MDD 개선 실증."
+    }
+  ],
+  "fq_next_probes": [
+    "FQ-110: JumpShare_12M — 이번 런 실행 (data_gate 없음, rawdata 일간 현행분)",
+    "FQ-093: vol rank 상승속도 오버레이 — standalone 아닌 overlay test, 별도 세션",
+    "FQ-002: 계약금액/시총 — pilot IC t=1.97 확인됨, pre-registration 라운드 필요 (dohoon confirm 대기)",
+    "FQ-146: KOSPI200 TF 지수 레벨 오버레이 — overlay 소비면, 별도 세션",
+    "FQ-150: CV_Vol exclusion filter — overlay 소비면, 별도 세션"
+  ],
+  "session_note": "20260807 페이퍼 리차지 — 신규 testable 후보 0건. 6 new papers 4 skip/1 optimizer/1 alpha-infeasible. Markov_PredVolRank (2607.27461) EV_D2_GATED 처리. FQ-110 JumpShare_12M 실행으로 MAX_ALPHA 1/2 소진."
+}

@@ -1,0 +1,83 @@
+{
+  "date": "20260808",
+  "schema_version": "mode_queue_v1",
+  "generated_at": "2026-08-08",
+  "optimizer": [
+    {
+      "arxiv_id": "2608.05991",
+      "title": "Knowledge-Optimising Investment Decisions with Informative Datasets",
+      "route": "optimizer",
+      "action": "alpha-fixed A/B",
+      "memo": "Knowledge-adjusted Sharpe ratio (knowledge unit term 통합) — α̂ 고정 후 weighting method 비교. 의사결정 구조 3단계(decision structure / portfolio selection / performance assessment) 참고",
+      "priority": 3
+    },
+    {
+      "arxiv_id": "2608.05901",
+      "title": "From Value Bounds to Policy-Distance and Active-Face Certificates: Same-Grid Duality for Constrained Dynamic Portfolios",
+      "route": "optimizer",
+      "action": "methodology review",
+      "memo": "Primal-dual bracket + active-face certification — neural/numerical policy solver 품질 검증 방법론. Long-only polyhedral constraint 환경에서 binding constraint 식별. HRP/CVaR 솔버 검증에 응용 검토",
+      "priority": 2
+    },
+    {
+      "arxiv_id": "2608.02355",
+      "title": "Path Portfolio Optimization: Defect, Lift, and the Price of Path Complexity",
+      "route": "optimizer",
+      "action": "alpha-fixed A/B",
+      "memo": "Path signature 기반 최적화 — 2자산 CE 11배, 20자산 60배 개선(IS). 수준2 대칭 블록(convexity in terminal increment)이 전체 이익. 비구조화 추정기는 표본수 부족 시 severe negative — shrinkage 필수. KR 25종목 long-only 적용 시 shrinkage 파라미터가 핵심",
+      "priority": 2
+    },
+    {
+      "arxiv_id": "2608.01494",
+      "title": "Conformal Kelly: Conformal Prediction Intervals as the Scale in Fractional Kelly Position Sizing",
+      "route": "optimizer",
+      "action": "alpha-fixed A/B — OOS FAIL 주의",
+      "memo": "⚠️ 2022+ holdout에서 passive 대비 미달(8.5%/7.0% vs passive). IS에서 conformal interval 폭 안정성이 핵심(빠른 적응보다 slow rolling quantile이 우월). KR 월간 리밸 환경에서 conformal interval 크기를 position weight scaler로 활용하는 것만 테스트 가치 있음",
+      "priority": 1
+    }
+  ],
+  "risk": [
+    {
+      "arxiv_id": "2608.04987",
+      "title": "Portfolio Allocation under Heterogeneous Scales and Multifractality",
+      "route": "risk",
+      "action": "covariance estimator research",
+      "memo": "MFCCA(다중프랙탈 교차상관) 기반 signed fluctuation function이 MV 대비 VaR/ES/drawdown 감소(IS+OOS). q=2 극한에서 MV criterion 복원. sign 보존이 꼬리 위험 감소의 핵심. KR 25종목 Σ 추정기로 DCC/Ledoit-Wolf 대안 후보",
+      "priority": 3
+    },
+    {
+      "arxiv_id": "2608.02828",
+      "title": "Proper-score observation-driven filters: local geometry, estimation, and continuous-time limits",
+      "route": "risk",
+      "action": "volatility model review",
+      "memo": "Proper scoring rule 기반 관측주도 필터 — 기존 log-score(GARCH)를 differentiable PS rule로 대체. risk curvature vs innovation variability 분리. 국제 주식 수익에 density 예측 다기준(point-variance loss / VaR coverage / PIT) 평가. Σ 추정 개선 방법론",
+      "priority": 2
+    },
+    {
+      "arxiv_id": "2608.02311",
+      "title": "AI Governance for Institutional Readiness in Finance",
+      "route": "risk",
+      "action": "crowding model research",
+      "memo": "regret-covariance 통계량 — 관측 데이터만으로 policy drift 탐지. calibrated crowding model: 기관 노출 수렴 시 joint drawdown 39.2%→79.3%. monitoring agent crowding 지표 강화 후보. 특히 KR 대형주 팩터 crowding 측정에 활용 검토",
+      "priority": 2
+    }
+  ],
+  "regime": [
+    {
+      "arxiv_id": "2608.04832",
+      "title": "Robust Control under Stationary Ambiguity",
+      "route": "regime",
+      "action": "overlay model research",
+      "memo": "Stationary ambiguity 프레임워크 — 잠재 팩터(레짐)가 drift 없이 유지되는 시뮬레이터 설계. 정상 필터 과정 유도. KR 국면 추정 오버레이가 시간이 지날수록 특화(=강건성 감소)하는 문제를 이 프레임으로 진단 가능. FR/RAMP 레짐 모델 설계 참고",
+      "priority": 2
+    },
+    {
+      "arxiv_id": "2607.19497",
+      "title": "The Science and Practice of Trend-Following Systems",
+      "route": "regime",
+      "action": "TF regime research + factor (SpectralPersistence AUTORUN #1)",
+      "memo": "TF alpha = 저주파 스펙트럼 질량 초과 (Hurst exponent 직접 추정). 분류: European/American/TSMOM. SR 공식: excess kurtosis가 single loading으로 진입. 비용-최적 필터 스팬 공식. KR 추세추종 모듈 설계에 직접 활용. ★팩터 오버레이: SpectralPersistence_Hurst testable → AUTORUN #1 스폰됨",
+      "priority": 3
+    }
+  ]
+}

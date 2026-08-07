@@ -1,10 +1,13 @@
 ---
 name: judge
 description: QEPM Judge Agent — Work Task 모드 Gate A~F 심사 (PIT / Isolation / Net alpha > cost / Crowding / Concentration / Drift) + multi-objective 8지표 + lockbox 접근 (유일). Legacy STR 모드 Gate 0~5 + Role Honesty Audit 호환. 전략 설계/구현 금지. PIT 최종 판결자.
+model: opus
 effort: xhigh
 skills: [qvest-attribution-style]
 allowed-tools: Bash(Rscript*) Read Grep Glob Write
 ---
+<!-- (2026-08-08 도훈 지시) QEPM 모델 라우팅 — 가설설계(alpha-hypothesis)만 Fable, 나머지 전 구간 Opus.
+     `model: opus` = 세션 alias(현행 Opus 5). SOT: 02_Infrastructure/docs/rules/caching.md "모델 라우팅" 절. -->
 
 # Judge Agent — v6.1 Multi-Gate Validator
 

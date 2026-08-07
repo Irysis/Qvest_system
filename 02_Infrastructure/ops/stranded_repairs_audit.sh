@@ -85,8 +85,40 @@ verdict_of() {   # $1=tot $2=missing
   if [ $(( $2 * 100 / $1 )) -ge 80 ]; then echo "mostly_lost"; else echo "partial"; fi
 }
 
+# ── 재분류 2종 (2026-08-08 수리) ─────────────────────────────────────────────
+# 실측: 유실 36건 중 **26건(72%)이 append-only 원장**, 나머지 19건이 **이미 상위판으로
+# 교체된 구판**, 진짜 미도달은 7건뿐이었다. 즉 경보의 80%가 허위였고 진짜 7건은 그 밑에 묻혀 있었다.
+#
+# (i) append-only 원장 — 각 worktree 세션이 자기 훅 이벤트를 덧붙이고 main 도 자기 것을
+#     덧붙인다. 두 계열은 설계상 영원히 합쳐지지 않는다. 수리가 아니라 로그 분기다.
+#     이걸 세는 한 경보는 **구조적으로 0 이 될 수 없다** — 상시 발화 = 죽은 경보.
+LEDGER_RE="${STRANDED_LEDGER_RE:-(^|/)(events|ast_structure_log)\.jsonl$}"
+is_ledger() { printf '%s' "$1" | grep -qE "$LEDGER_RE"; }
+
+# (ii) superseded — main 이 그 경로에서 worktree 보다 **앞서 나간** 경우.
+#     triage 는 "이 줄들이 main 에 있나"만 묻는다. **방향 개념이 없다.** 그래서 통합이
+#     성공해 main 이 개선될수록(구판 줄이 더 나은 줄로 교체됨) 경보가 **커진다** — 신호가 뒤집힌다.
+#     ★실증 2026-08-08 (내용 대조, mtime 추정 아님):
+#       · test_deployed_holdings_check.sh — main 371줄이 worktree 246줄의 상위판
+#         (_pick_proj BASH_SOURCE-우선 + _py_works 기능 프로브 보유)인데 '110줄 유실'로 계상
+#       · r-portability.md — main §④-b 가 자신을 "이 계약의 단일 정본"으로 선언한 확장판인데
+#         구판 초안의 26줄이 '유실'로 계상
+#     판정 근거는 **git 이력**(main 이 그 경로를 마지막으로 커밋한 시각) 우선. main 에 파일이
+#     아예 없으면 교체일 수 없으므로 재분류하지 않는다(진짜 유실은 그대로 유실로 남는다).
+main_recency() {   # $1=path → main 이 그 경로를 마지막으로 갱신한 epoch (0 = 근거 없음)
+  local p="$1" ct
+  ct=$(git -C "$PROJECT" log -1 --format=%ct "$MAIN_REF" -- "$p" 2>/dev/null || echo 0)
+  ct="${ct:-0}"
+  # 미추적(파이프라인 생성 산출물 등)이면 git 이력이 없다 — 그때만 파일 mtime 으로 낙하
+  if [ "$ct" -eq 0 ] && [ -e "$PROJECT/$p" ]; then
+    ct=$(stat -c %Y "$PROJECT/$p" 2>/dev/null || echo 0)
+  fi
+  echo "${ct:-0}"
+}
+
 NOW_S=$(date +%s)
 N_WT=0; N_DIRTY=0; N_AHEAD=0; N_STALE=0; N_LOST=0; N_PARTIAL=0; N_PRUNE=0
+N_LEDGER=0; N_SUPER=0
 WT_JSON=""; PRUNE_JSON=""; LOST_SUMMARY=""
 : > "$TMP/touched.txt"   # "<path>\t<branch>" — 동시 수정 충돌 탐지용
 
@@ -143,9 +175,22 @@ while IFS='|' read -r wt br; do
         v="$(verdict_of "${tot:-0}" "${miss:-0}")"
         ;;
     esac
+    # ── 재분류: 원장 분기 / 상위판 교체는 '좌초 수리'가 아니다 (2026-08-08)
+    if is_ledger "$path"; then
+      v="ledger_divergence"
+    elif [ "$v" = "lost" ] || [ "$v" = "mostly_lost" ] || [ "$v" = "partial" ]; then
+      if [ -e "$PROJECT/$path" ]; then
+        _mr="$(main_recency "$path")"; _wm="$(stat -c %Y "$wt/$path" 2>/dev/null || echo 0)"
+        if [ "${_mr:-0}" -gt 0 ] && [ "${_wm:-0}" -gt 0 ] && [ "${_mr}" -gt "${_wm}" ]; then
+          v="superseded_upstream"
+        fi
+      fi
+    fi
     case "$v" in
-      lost|mostly_lost) wt_lost=$((wt_lost + 1)); N_LOST=$((N_LOST + 1)) ;;
-      partial)          wt_partial=$((wt_partial + 1)); N_PARTIAL=$((N_PARTIAL + 1)) ;;
+      lost|mostly_lost)    wt_lost=$((wt_lost + 1)); N_LOST=$((N_LOST + 1)) ;;
+      partial)             wt_partial=$((wt_partial + 1)); N_PARTIAL=$((N_PARTIAL + 1)) ;;
+      ledger_divergence)   N_LEDGER=$((N_LEDGER + 1)) ;;
+      superseded_upstream) N_SUPER=$((N_SUPER + 1)) ;;
     esac
     printf '%s\t%s\n' "$path" "$short" >> "$TMP/touched.txt"
     [ -n "$FILES_JSON" ] && FILES_JSON="$FILES_JSON,"
@@ -209,7 +254,7 @@ fi
 mkdir -p "$(dirname "$OUT")"
 cat > "$OUT" <<JSON
 {
-  "_doc": "좌초 수리 감사 — worktree에 갇혀 main에 도달하지 못한 수리 탐지. 생성기 02_Infrastructure/ops/stranded_repairs_audit.sh. verdict: merged_upstream=worktree가 stale 사본(정리 가능) / lost=main에 전무(조치 필요) / mostly_lost=80%+ 미존재(사실상 유실) / partial=일부만 반영(수동 확인) / deletion_only=삭제만. collisions=2개 이상 worktree가 같은 파일을 main 밖에서 수정 중(병합 순서 결정 필요).",
+  "_doc": "좌초 수리 감사 — worktree에 갇혀 main에 도달하지 못한 수리 탐지. 생성기 02_Infrastructure/ops/stranded_repairs_audit.sh. verdict: merged_upstream=worktree가 stale 사본(정리 가능) / lost=main에 전무(조치 필요) / mostly_lost=80%+ 미존재(사실상 유실) / partial=일부만 반영(수동 확인) / deletion_only=삭제만 / ledger_divergence=append-only 원장의 세션별 분기(수리 아님·경보 제외) / superseded_upstream=main이 그 경로에서 더 앞서 나감(구판 교체·조치 불요·경보 제외). ★lost/partial만 조치 대상이다 — 2026-08-08 이전 판은 뒤 2종을 유실로 계상해 경보의 80%가 허위였다(36건 중 진짜 7건). collisions=2개 이상 worktree가 같은 파일을 main 밖에서 수정 중(병합 순서 결정 필요).",
   "generated_at": "$(date '+%Y-%m-%d %H:%M:%S')",
   "main_ref": "$(jesc "$MAIN_REF")",
   "stale_threshold_days": $STALE_DAYS,
@@ -220,6 +265,8 @@ cat > "$OUT" <<JSON
     "stale_over_threshold": $N_STALE,
     "files_lost": $N_LOST,
     "files_partial": $N_PARTIAL,
+    "files_ledger_divergence": $N_LEDGER,
+    "files_superseded_upstream": $N_SUPER,
     "collisions": $N_COLL,
     "prune_candidates": $N_PRUNE
   },
@@ -234,6 +281,8 @@ JSON
 
 say ""
 hb "worktree ${N_WT} · 미커밋 ${N_DIRTY} · 미병합 ${N_AHEAD} · ${STALE_DAYS}일+ 방치 ${N_STALE} | 유실 ${N_LOST} · 부분 ${N_PARTIAL} · 충돌 ${N_COLL} · prune후보 ${N_PRUNE}"
+# 접힌 2종도 수를 남긴다 — 경보에서 뺐다고 기록에서 지우면 '조용해진 것'과 '고쳐진 것'이 구분 안 된다
+hb "  (경보 제외) 원장 분기 ${N_LEDGER} · 상위판 교체 ${N_SUPER}"
 [ "$N_LOST" -gt 0 ] && hb "★ 유실 대상: ${LOST_SUMMARY}"
 [ "$N_COLL" -gt 0 ] && hb "★ 동시수정 충돌: ${COLL_SUMMARY}"
 say "[stranded] → $OUT"

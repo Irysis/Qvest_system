@@ -13536,11 +13536,14 @@
     "STR_AS_20260802_213711_53060": {
       "strategy_id": "STR_AS_20260802_213711_53060",
       "grade": "F",
-      "role": null,
+      "role": {},
       "origin_mode": "alpha_search",
       "sim_result_path": "04_Research/strategies/STR_AS_20260802_213711_53060/sim_result.rds",
       "n_days": 481,
-      "date_range": ["2024-08-05", "2026-07-31"],
+      "date_range": [
+        "2024-08-05",
+        "2026-07-31"
+      ],
       "registered_at": "2026-08-02T21:39:30+09:00",
       "metric_type": "backtested",
       "fr_eligible": true,
@@ -13575,7 +13578,7 @@
           "net_ir": -0.478,
           "portfolio_alpha_t_nw_lag3": -0.674,
           "oos_retention": -1.459,
-          "dsr": null,
+          "dsr": {},
           "mdd": 0.406,
           "calmar": 1.457,
           "cagr": 0.592,
@@ -13595,8 +13598,71 @@
           }
         }
       }
+    },
+    "STR_AS_20260808_001913_13752": {
+      "strategy_id": "STR_AS_20260808_001913_13752",
+      "grade": "C",
+      "role": null,
+      "origin_mode": "alpha_search",
+      "sim_result_path": "04_Research/strategies/STR_AS_20260808_001913_13752/sim_result.rds",
+      "n_days": 5305,
+      "date_range": ["2005-02-03", "2026-08-07"],
+      "registered_at": "2026-08-08T00:25:44+09:00",
+      "metric_type": "backtested",
+      "fr_eligible": true,
+      "frozen": true,
+      "source_contract_id": "ASBT_20260808_001913_13752",
+      "module_hash": "46409494b1de68573597396aa80832cf",
+      "build_version": "run_alpha_search_v8.1_ladder",
+      "cost_model_version": "v2.4_delta_15bps",
+      "bt_result_path": "stage_artifacts/alpha_search/20260808_001913_13752/bt_result.rds",
+      "contract": {
+        "policy": "v8.1_fr_input_floor",
+        "contract_pass": true,
+        "eligibility_reason": "FR_ELIGIBLE"
+      },
+      "meta": {
+        "strategy_idea": "Hurst R/S 지수(rolling 252일) 기반 스펙트럼 지속성: H>0.5 종목(추세 지속)을 long — 수익률 저주파 스펙트럼 질량 초과가 추세추종 알파의 이론적 근거 (Sepp & Lucic arXiv:2607.19497)",
+        "score": 42,
+        "selection_type": "chain",
+        "chain_qualification": {
+          "selection_operator": "none_single_run",
+          "iteration_reason_logged": true,
+          "is_only_selection": "not_applicable_single_run",
+          "holdout_single_view": "not_queried_by_this_script",
+          "note": "run_alpha_search 1회=1가설 1전략 단일 실행(sweep 아님). 반복 개선 체인의 IS-only 변형선택·holdout 1회 규약 준수는 호출자 책임 (measurement-graduation §3 chain 자격요건 — 미충족 시 sweep 재분류 대상)."
+        },
+        "proxy_grade": "B",
+        "f_grade_reasons": [],
+        "fmt_codes": "FMT-01",
+        "strategy_manifest_path": "stage_artifacts/alpha_search/20260808_001913_13752/strategy_manifest.json",
+        "authoritative_essence": {
+          "net_sharpe": 0.531,
+          "net_ir": 0.224,
+          "portfolio_alpha_t_nw_lag3": 0.978,
+          "oos_retention": 0.369,
+          "dsr": null,
+          "mdd": 0.638,
+          "calmar": 0.178,
+          "cagr": 0.114,
+          "drawdown_profile": {
+            "severe45_count": 5,
+            "severe55_count": 5,
+            "severe45_total_periods": 120,
+            "severe45_max_periods": 79,
+            "severe45_period_frac": 0.0226,
+            "catastrophic_mdd_threshold": 0.7,
+            "severe45_hard_count": 15,
+            "severe55_hard_count": 6,
+            "severe45_period_hard_frac": 0.25,
+            "severe45_max_hard_periods": 252,
+            "tail_review": true,
+            "structural_hard_fail": false
+          }
+        }
+      }
     }
   },
-  "last_updated": "2026-08-02T21:39:30+09:00",
-  "n_modules": 270
+  "last_updated": "2026-08-08T00:25:44+09:00",
+  "n_modules": 271
 }
