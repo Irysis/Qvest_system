@@ -43,7 +43,9 @@ M4_FIRE_RATE = 0.12
 FRED_FEATS = ["VIX", "Term_Spread", "KRW_USD", "US_10Y_Yield", "US_2Y_Yield",
               "StL_Fin_Stress", "Chi_Fin_Cond"]
 
-PROBE_YEARS = [2008, 2015, 2020, 2025]     # fire 다발 2 + 무발화 대조 1 + 현국면 1
+# 연도는 argv 로 재지정 가능: `... probe.py 2026` — 기본은 최초 프로브 집합.
+#   (2026 추가 사유: gate=0.70 발화월 3개(01·04·05)가 최초 프로브 밖 = 현재 진행형 자본 결정 미검사)
+PROBE_YEARS = [int(a) for a in sys.argv[1:]] or [2008, 2015, 2020, 2025]
 SEEDS = [11, 22, 33, 44, 55]               # 원본 SEED(20260718)와 독립 — "다른 draw" 5개
 
 
@@ -177,7 +179,8 @@ def main():
                note="관측 전용 — production 신호 파일 무변경. unstable = 5-seed 판정 불일치 존재",
                rows=results)
     os.makedirs("qepm/observability", exist_ok=True)
-    with open("qepm/observability/ae_seed_sensitivity_20260808.json", "w", encoding="utf-8") as f:
+    out_path = "qepm/observability/ae_seed_sensitivity_20260808.json" if len(sys.argv) <= 1 else         f"qepm/observability/ae_seed_sensitivity_20260808_y{'_'.join(sys.argv[1:])}.json"
+    with open(out_path, "w", encoding="utf-8") as f:
         json.dump(out, f, ensure_ascii=False, indent=2)
     print("\n저장: qepm/observability/ae_seed_sensitivity_20260808.json")
 
