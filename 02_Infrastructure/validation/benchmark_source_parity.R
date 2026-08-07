@@ -135,22 +135,49 @@ benchmark_source_parity <- function(rawdata_path = NULL, bench_path = NULL,
   #  판정축 = 값 타당성. 지수 일간수익이 물리적 한계를 넘는 쪽이 오염이다.
   #  (KOSPI 역대 최대 일간 변동 ≈ ±12%. 문턱 0.30 은 그보다 한참 위라 오탐 여지가 없다 —
   #   실제 폭락일을 오염으로 몰지 않기 위해 일부러 느슨하게 잡는다.)
+  #  ★판정은 **날짜별**이다. 한 사건 안에서도 오염 측이 갈릴 수 있다
+  #  (08-08 실측: 2026-07-27 은 benchmark 오염, 2026-08-05 는 RAWDATA 0-위장 — 정반대).
+  #  스칼라 하나로 "정본"을 말하면 그 중 한쪽은 반드시 틀린 안내가 된다.
+  #  증거축 2종 — 둘 다 "그 값이 데이터로서 불가능한가"를 묻지, 어느 파일인지를 묻지 않는다:
+  #   (a) value_plausibility : 지수 일간수익이 물리적 한계 초과 (KOSPI 역대 최대 ≈ ±12%,
+  #       문턱 0.30 은 한참 위 — 실제 폭락일을 오염으로 몰지 않기 위해 일부러 느슨)
+  #   (b) zero_masked        : 한쪽만 정확히 0 — 결손이 "그날 안 움직였다"로 위장된 지문
+  #       (08-02 실사고 기전. NA 였다면 즉시 드러났을 값)
   impl_bound <- as.numeric(getOption("qvest.bm_implausible_bound", 0.30))
+  #  ★경계 제외: 시리즈 **첫 관측일**의 수익률은 직전일이 없어 정의되지 않는다.
+  #   그 날의 0 은 결손이 아니라 경계값이므로 0-위장으로 몰면 영구 오탐이 된다
+  #   (08-08 실측: 1990-01-05 = benchmark.parquet 첫 행, ret_from_close=NA → 0 이 정상).
+  first_common <- suppressWarnings(min(m$Date, na.rm = TRUE))
+  dirs <- if (nrow(mism) == 0L) data.table() else {
+    d <- copy(mism)[Date > first_common]
+    d[, contaminated := fifelse(abs(bm_bench) > impl_bound, "benchmark.parquet",
+                        fifelse(abs(bm_raw)   > impl_bound, "RAWDATA::BM_Ret",
+                         fifelse(bm_raw == 0 & bm_bench != 0, "RAWDATA::BM_Ret",
+                          fifelse(bm_bench == 0 & bm_raw != 0, "benchmark.parquet",
+                                  NA_character_))))]
+    d[, evidence := fifelse(abs(bm_bench) > impl_bound | abs(bm_raw) > impl_bound,
+                            "value_plausibility",
+                     fifelse(is.na(contaminated), "undetermined", "zero_masked"))]
+    d[, .(Date, bm_raw, bm_bench, diff, contaminated, evidence)]
+  }
   impl_b <- if (nrow(mism)) mism[abs(bm_bench) > impl_bound] else mism
   impl_r <- if (nrow(mism)) mism[abs(bm_raw)   > impl_bound] else mism
+  sides  <- if (nrow(dirs)) unique(dirs[!is.na(contaminated)]$contaminated) else character(0)
+  n_und  <- if (nrow(dirs)) sum(is.na(dirs$contaminated)) else 0L
   canon <- if (nrow(mism) == 0L) {
     list(src = "benchmark.parquet", basis = "no_mismatch — 판정 불요")
-  } else if (nrow(impl_b) > 0L && nrow(impl_r) == 0L) {
-    list(src = "RAWDATA::BM_Ret",
-         basis = sprintf("value_plausibility — benchmark 측 물리적 불가값 %d일(|ret|>%.2f)",
-                         nrow(impl_b), impl_bound))
-  } else if (nrow(impl_r) > 0L && nrow(impl_b) == 0L) {
-    list(src = "benchmark.parquet",
-         basis = sprintf("value_plausibility — RAWDATA 측 물리적 불가값 %d일(|ret|>%.2f)",
-                         nrow(impl_r), impl_bound))
+  } else if (length(sides) == 1L && n_und == 0L) {
+    # 오염이 한쪽에만 → 반대쪽이 그 사건의 정본
+    list(src = setdiff(c("benchmark.parquet", "RAWDATA::BM_Ret"), sides),
+         basis = sprintf("%s — 오염 %d일 전부 %s 측",
+                         paste(unique(dirs$evidence), collapse = "+"), nrow(dirs), sides))
+  } else if (length(sides) >= 1L) {
+    list(src = "per_date",
+         basis = sprintf("오염 측이 날짜별로 갈림(%s) 또는 미판정 %d일 — repair_directions 참조. ★단일 방향 수리 금지",
+                         paste(sides, collapse = "/"), n_und))
   } else {
     list(src = "undetermined",
-         basis = "양측 모두 타당하거나 양측 모두 불가 — 외부 소스 대조 필요. ★자동 수리 금지")
+         basis = "증거축 2종 모두 무판정 — 외부 소스 대조 필요. ★자동 수리 금지")
   }
 
   severity <- if (nrow(dup_dates) > 0L || nrow(recent_mism) > 0L || nrow(bad_months) > 0L) {
@@ -180,6 +207,7 @@ benchmark_source_parity <- function(rawdata_path = NULL, bench_path = NULL,
     canonical_basis  = canon$basis,
     implausible_bench = impl_b,            # 수리 방향 결정 근거 — 이 쪽이 덮어써져야 할 값
     implausible_raw   = impl_r,
+    repair_directions = dirs,              # ★날짜별 오염 측 + 증거축 (단일 방향 수리 금지의 근거)
     checked_at = format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z"),
     paths = c(rawdata = rawdata_path, benchmark = bench_path)
   )

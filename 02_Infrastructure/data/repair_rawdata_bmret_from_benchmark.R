@@ -48,6 +48,37 @@ cmp[, diff := BM_Ret - bm_true]
 target <- cmp[!is.na(diff) & abs(diff) > 1e-9]
 setorder(target, Date)
 
+# ── 방향 게이트 (2026-08-08 신설) ─────────────────────────────────────────────
+#  이 스크립트는 이름부터 방향이 박혀 있다(rawdata ← benchmark). 그런데 **오염 측은
+#  사건마다, 심지어 같은 사건 안에서도 날짜마다 다르다**:
+#    · 2026-07-27 = benchmark 오염(스케일 단절 -88.5%)  ← 이 방향으로 고치면 정상값이 파괴됨
+#    · 2026-08-05 = RAWDATA 0-위장                      ← 이 방향이 맞음
+#    · 1990-01-05 = benchmark 첫 행(직전일 없음) 경계값  ← 결함 아님. 덮어쓰면 RAWDATA 에
+#      **0-위장을 주입**하게 된다(고치려던 그 결함을 스스로 만듦)
+#  ∴ 정합 감시기의 **날짜별 판정**(repair_directions)에서 RAWDATA 가 오염 측인 날짜만 남긴다.
+#  판정 불가/반대 방향은 여기서 손대지 않는다 — 그건 다른 수리의 소관이다.
+PAR_R <- "02_Infrastructure/validation/benchmark_source_parity.R"   # 이 스크립트는 프로젝트 루트에서 실행된다(상대경로 규약, RAW_P/BENCH_P 와 동일)
+if (nrow(target) > 0L && file.exists(PAR_R)) {
+  suppressWarnings(suppressMessages(source(PAR_R)))
+  par <- try(benchmark_source_parity(), silent = TRUE)
+  if (!inherits(par, "try-error") && is.data.frame(par$repair_directions)) {
+    rd <- as.data.table(par$repair_directions)
+    allow <- rd[contaminated == "RAWDATA::BM_Ret"]$Date
+    dropped <- target[!(Date %in% allow)]
+    if (nrow(dropped)) {
+      cat(sprintf("[repair] ★방향 게이트: %d일 제외 (RAWDATA 가 오염 측이 아님)\n", nrow(dropped)))
+      print(merge(dropped[, .(Date)], rd[, .(Date, contaminated, evidence)],
+                  by = "Date", all.x = TRUE))
+    }
+    target <- target[Date %in% allow]
+  } else {
+    cat("[repair] ★정합 감시기 판정 실패 — 방향 미확인 상태에서 쓰지 않는다. 중단.\n")
+    quit(status = 1L)
+  }
+} else if (nrow(target) > 0L) {
+  cat("[repair] ★정합 감시기 부재 — 방향 판정 불가. 중단.\n"); quit(status = 1L)
+}
+
 cat(sprintf("[repair] 정정 대상 날짜 = %d일\n", nrow(target)))
 if (nrow(target) == 0L) { cat("[repair] 정정할 것이 없습니다 — 종료.\n"); quit(status = 0L) }
 print(target[, .(Date, rawdata = BM_Ret, benchmark = bm_true, diff)])

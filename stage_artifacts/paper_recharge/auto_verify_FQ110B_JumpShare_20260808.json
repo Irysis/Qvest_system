@@ -7,19 +7,14 @@
   "hypothesis": "12M low jump-share long - frog-in-the-pan reverse (Direction A IC=-0.028)",
   "factor_engine": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/alpha_search_FQ110/factor_engine_JumpShare_B.R",
   "out_dir": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/alpha_search/20260808_075508_53064",
-
   "L1_pit_pass": true,
   "L1_pit_note": "detect_lookahead CLEAN (59 lines scanned, no forward-reference detected)",
-
   "L2_contract_pass": true,
   "L2_contract_note": "audit_bt_result: PASS=15 FAIL=0 WARN=1 | integrity=WARNING (경미한 경고, FAIL 아님) — 10-component bt_result 계약 충족",
-
   "L3_robustness_pass": false,
   "L3_robustness_note": "oos_retention=1.267 (>=0.5 충족) BUT placebo 미실행. structural_hard_fail=TRUE (MDD 62.7%, 45%+ episodes=16>=15) — screen_pass=FALSE, grade=F",
-
   "L4_fidelity_pass": true,
   "L4_fidelity_note": "Score=-JumpShare_12M (부호 반전). Direction A와 동일 PIT 구조(252일 rolling frollapply, 월말 신호, LiqPass 필터) 유지. frog-in-the-pan 이론(low jump-share = smooth accumulation = 강한 모멘텀)과 부호 방향 일치. IC=+0.0278(양수) — A의 IC=-0.028 역방향 확인",
-
   "metrics": {
     "port_t_nw_lag3": 0.4113,
     "port_t_pvalue": 0.6808,
@@ -36,25 +31,52 @@
     "ic_pos_rate": 0.624,
     "fmb_nw_t": 0.97,
     "turnover_ann": 174.1,
-    "bm_corr": 0.630,
-    "alpha_trend_ratio": 2.60,
+    "bm_corr": 0.63,
+    "alpha_trend_ratio": 2.6,
     "recent_3y_sr": 0.915,
     "full_sr": 0.352
   },
-
   "gate_decision": "QUARANTINE",
-  "gate_failed_layers": ["L3_structural_drawdown", "port_t < 2.95", "calmar < 0.64"],
+  "gate_failed_layers": "pit,contract,robustness,fidelity",
   "quarantine_reason": "Structural drawdown hard fail: MDD 62.7%, 45%+ episodes=16/15. PORT_t=0.411 << 2.95. Calmar=0.131 << 0.64. Grade F.",
-
   "stress_periods": {
-    "GFC_2008": {"strat": -34.89, "bm": -36.48, "alpha": 1.6, "outperform": true},
-    "COVID_2020": {"strat": -13.69, "bm": -4.66, "alpha": -9.04, "outperform": false},
-    "Rate_Hike_2022": {"strat": -18.43, "bm": -26.15, "alpha": 7.73, "outperform": true},
-    "Euro_Debt_2011": {"strat": -17.39, "bm": -13.48, "alpha": -3.91, "outperform": false},
-    "US_China_Trade": {"strat": -33.82, "bm": -16.26, "alpha": -17.56, "outperform": false},
-    "Iran_War": {"strat": 13.18, "bm": 29.12, "alpha": -15.94, "outperform": false}
+    "GFC_2008": {
+      "strat": -34.89,
+      "bm": -36.48,
+      "alpha": 1.6,
+      "outperform": true
+    },
+    "COVID_2020": {
+      "strat": -13.69,
+      "bm": -4.66,
+      "alpha": -9.04,
+      "outperform": false
+    },
+    "Rate_Hike_2022": {
+      "strat": -18.43,
+      "bm": -26.15,
+      "alpha": 7.73,
+      "outperform": true
+    },
+    "Euro_Debt_2011": {
+      "strat": -17.39,
+      "bm": -13.48,
+      "alpha": -3.91,
+      "outperform": false
+    },
+    "US_China_Trade": {
+      "strat": -33.82,
+      "bm": -16.26,
+      "alpha": -17.56,
+      "outperform": false
+    },
+    "Iran_War": {
+      "strat": 13.18,
+      "bm": 29.12,
+      "alpha": -15.94,
+      "outperform": false
+    }
   },
-
   "direction_comparison": {
     "A_IC": -0.028,
     "B_IC": 0.0278,
@@ -63,9 +85,7 @@
     "B_grade": "F",
     "note": "IC 부호는 반전됐으나(A:-0.028 → B:+0.028) 양방향 모두 Grade F. PORT_t가 A=0.618, B=0.411으로 둘다 2.95 훨씬 미달. jump-share 팩터 자체가 KR long-only에서 유의미한 alpha 원천이 아님을 양방향 소진으로 확인."
   },
-
   "mechanism_diagnosis": "JumpShare_12M은 IC=+0.028(양수, 방향 B 올바름)이나 PORT_t=0.411로 실현 포트폴리오 alpha가 거의 0에 수렴. 원인 가설: (1) long-only top-25 EW 구조에서 소폭 꾸준한 수익 종목이 cap-weighted 유니버스 내 소형주에 집중되어 유동성 분포 충격 흡수 실패. (2) MDD 62.7%는 β≈0.49로 저베타인데도 불구하고 발생 — 소규모 low-jump 종목들이 위기시 역으로 유동성 위기 피격 패턴. (3) FMB t=0.97로 횡단면 설명력도 미약 — 시계열 지속성(alpha trend 2.60)은 최근 3년에만 관측, 구조적 alpha source 아님.",
-
   "consumer_surfaces_checked": {
     "1_factor_ranking": "IC=+0.028 양수 방향 확인 — 순위력 존재하나 극히 미약 (FMB t=0.97 미유의)",
     "2_universe_filter": "미검토 — cap-tier 분해(MEGA vs MID) 필요. 저 jump-share가 MID-cap에서만 작동 가능성",
@@ -75,19 +95,14 @@
     "6_screening_label": "screen_pass=FALSE (structural MDD). 신호 자체(IC=+0.028)는 screen_route 진입 요건도 미달",
     "7_other_mode_transfer": "FR-RCMA 공격형 확장 후보 가능성 낮음 (MDD 62.7% 위기 비방어적)"
   },
-
-  "next_probe": [
-    "FQ-110C: cap-tier 분해 — MEGA/MID별 jump-share IC 분리 측정 (저 jump-share가 소형주 bias이면 MID-tier만 유의미할 수 있음)",
-    "FQ-110D: 최근 3년 서브샘플(2023~) 단독 측정 — alpha trend 2.60이 구조 변화인지 노이즈인지 판별 (IC 추세선 분기점 분석)",
-    "FQ-110E: frog-in-the-pan 논문 원본(Han/Hu/Hwang 2016) US data 기전을 KR에서 직접 대체 검증 — smooth vs jumpy return distribution cut 기준 재설계"
-  ],
-
+  "next_probe": ["FQ-110C: cap-tier 분해 — MEGA/MID별 jump-share IC 분리 측정 (저 jump-share가 소형주 bias이면 MID-tier만 유의미할 수 있음)", "FQ-110D: 최근 3년 서브샘플(2023~) 단독 측정 — alpha trend 2.60이 구조 변화인지 노이즈인지 판별 (IC 추세선 분기점 분석)", "FQ-110E: frog-in-the-pan 논문 원본(Han/Hu/Hwang 2016) US data 기전을 KR에서 직접 대체 검증 — smooth vs jumpy return distribution cut 기준 재설계"],
   "l_code_path": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/l_code/alpha_search/l_code_STR_AS_20260808_075508_53064.json",
   "charts": {
     "equity_curve": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/alpha_search/20260808_075508_53064/equity_curve.png",
     "annual_returns": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/alpha_search/20260808_075508_53064/annual_returns.png"
   },
-
   "auto_alpha_gate_eligible": false,
-  "auto_alpha_gate_note": "grade=F, port_t=0.411 (HARD 2.95 미달), calmar=0.131 (HARD 0.64 미달) — auto_gate 진입 요건 미충족. QUARANTINE 확정."
+  "auto_alpha_gate_note": "grade=F, port_t=0.411 (HARD 2.95 미달), calmar=0.131 (HARD 0.64 미달) — auto_gate 진입 요건 미충족. QUARANTINE 확정.",
+  "gate_rule": "PIT hard + contract&robustness&fidelity all PASS (unattended 4/4, fail-closed)",
+  "gate_checked_at": "2026-08-08T08:09:53+0900"
 }
