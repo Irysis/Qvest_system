@@ -91,9 +91,24 @@ SIGMA_ESTIMATORS <- list()       # est_id -> wrapped estimator fn
 #' Σ-가중 per-month: 보유종목 tk + PIT ret_sub(start_d 이전) [+ mu(MVO용 score)] → method weights(named, 합1, cap UB).
 sigma_weights_month <- function(tk, ret_sub, method, mu = NULL,
                                 extra = SIGMA_EXTRA_ADAPTERS,
+                                estimators = SIGMA_ESTIMATORS,
                                 decision_date = NA, eval_date = NA) {
   rm <- .build_ret_matrix(tk, ret_sub, LOOKBACK_DAYS)   # survived only (>=30 obs), NA→0
   if (is.null(rm) || ncol(rm) < 3) return(setNames(rep(1 / length(tk), length(tk)), tk))  # fallback EW
+  # ── risk 레인: `minvar@<est_id>` — 비중 규칙 고정, Σ 추정기만 교체 ──
+  if (grepl("@", method, fixed = TRUE)) {
+    rule <- sub("@.*$", "", method); est <- sub("^.*@", "", method)
+    if (is.null(estimators[[est]])) stop(sprintf("unknown sigma estimator: %s", est))
+    ctxS <- list(R = rm, assets = colnames(rm), lookback_days = LOOKBACK_DAYS,
+                 decision_date = decision_date, eval_date = eval_date)
+    Sig <- estimators[[est]](ctxS)
+    w_surv <- switch(rule,
+                     minvar = .minvar_w(Sig),
+                     IV     = { w <- .iv_w(Sig); names(w) <- colnames(Sig); w },
+                     MVO    = .mvo_w(Sig, mu),
+                     stop(sprintf("unknown weight rule in `%s`", method)))
+    return(.fill_dropped(w_surv, tk))
+  }
   if (method %in% c("HRP_sample", "HRP_lw")) {
     cm <- if (method == "HRP_lw") "ledoit_wolf" else "sample"
     w <- calc_hrp_weights(tk, ret_sub, n_days = LOOKBACK_DAYS, max_w = UB, cov_method = cm)  # 이미 full tk + cap
@@ -122,7 +137,14 @@ run_sigma_ab <- function(carrier_path =
         rawdata = ".cache/rawdata.parquet",
         sigma_methods = c("IV", "HRP_lw", "minvar_lw", "MVO_sample", "MVO_lw"),
         cost_bps = 15, with_overlay = FALSE,
-        extra_adapters = SIGMA_EXTRA_ADAPTERS) {
+        extra_adapters = SIGMA_EXTRA_ADAPTERS,
+        sigma_estimators = SIGMA_ESTIMATORS) {
+  # risk 레인 합류: `minvar@<est_id>` 형태로 method 목록에 추가.
+  if (length(sigma_estimators)) {
+    .rm <- paste0("minvar@", names(sigma_estimators))
+    sigma_methods <- c(sigma_methods, .rm)
+    cat(sprintf("[sigma_ab] 논문 유래 Σ-추정기 합류: %s\n", paste(.rm, collapse = ", ")))
+  }
   # (2026-08-08 (b)안) 등록 어댑터를 method 목록에 합류. 빌트인과 이름 충돌 시 빌트인 우선(경고).
   if (length(extra_adapters)) {
     .dup <- intersect(names(extra_adapters), sigma_methods)
