@@ -58,6 +58,11 @@ build_overlay_exposure <- function(layer5_csv =
   inv1 <- tryCatch(solve(Sigma, rep(1, p)), error = function(e) rep(1 / p, p))
   w <- pmax(inv1, 0); if (sum(w) <= 0) w <- rep(1 / p, p)
   names(w) <- colnames(Sigma)
+  # ★(2026-08-08 수리) 합-정규화를 캡 적용 **전에**. normalize_long_only 은 `w[w>ub] <- ub` 를
+  #   정규화 전에 수행하므로(production verbatim), solve(Σ,1) 의 원 스케일(실측 1147~3439)을
+  #   그대로 넣으면 전 원소가 ub 로 잘려 **정확히 EW** 가 됐다. 06-18 이래 minvar/MVO 3종이
+  #   EW 를 이름만 바꿔 재고 있었다(실측 range 0.040000~0.040000 = 1/25).
+  w <- w / sum(w)
   normalize_long_only(w, lb = 0, ub = UB, target_sum = 1)
 }
 # 알파+Σ 하이브리드 (Markowitz/HPO implied-return tangency 방향): w ∝ Σ⁻¹ μ̂, long-only cap.
