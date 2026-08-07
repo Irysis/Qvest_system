@@ -21,6 +21,18 @@ GAS_NU    <- 5      # Student-t 자유도
 GAS_ALPHA <- 0.05   # score 반응
 GAS_BETA  <- 0.94   # 지속성
 
+# ★모수 유효성 가드 (2026-08-08 β 감도 프로브에서 검거).
+#   ω = (1-α-β)·v 로 분산 타게팅하므로 **α+β < 1 이 아니면 ω ≤ 0** — 정상성/양수성 위반이고
+#   그 재귀는 GAS 필터가 아니다. 가드 없이 β=0.97 을 넣었더니 ω<0 인 채로 조용히 돌아
+#   **IR 0.720 이라는 그럴듯한 숫자**를 냈다. 망가진 모수화가 좋아 보이는 값을 내는 상태 —
+#   "돌았다 ≠ 그 모델을 쟀다". 진단 프로브가 이 값을 근거로 쓸 뻔했다.
+.gas_check_params <- function() {
+  if (!(GAS_ALPHA > 0 && GAS_BETA > 0 && GAS_ALPHA + GAS_BETA < 1))
+    stop(sprintf("GAS 모수 무효: alpha=%.3f beta=%.3f (alpha+beta=%.3f, <1 이어야 ω>0)",
+                 GAS_ALPHA, GAS_BETA, GAS_ALPHA + GAS_BETA))
+  invisible(TRUE)
+}
+
 #' 단일 계열 GAS-t(1,1) 변동성 필터 → 마지막 시점 조건부 표준편차
 .gas_t_sigma <- function(x) {
   x <- x[is.finite(x)]
@@ -40,6 +52,7 @@ GAS_BETA  <- 0.94   # 지속성
 }
 
 sigma_estimate <- function(ctx) {
+  .gas_check_params()          # 무효 모수는 여기서 stop → wrap_sigma_estimator 가 호명 + 폴백
   a <- ctx$assets
   R <- ctx$R
   p <- length(a)
