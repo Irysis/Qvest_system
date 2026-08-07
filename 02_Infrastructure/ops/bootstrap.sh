@@ -568,6 +568,33 @@ if [ -f "$BS_PATH" ] && [ -f "$MBA_R" ]; then
   fi
 fi
 
+# ── 7d. PG2 정체성 정합 (2026-08-08 도훈 지시 신설) ────────────────────────────
+#  지시: "새 PG2 가 등장할 때마다 Qvest 가 조회·참조하는 PG2 정보들도 한꺼번에 업데이트되게.
+#         과거 잔재들 때문에 시스템이 혼란스러워진다."
+#  ★실사고(08-08 도훈 적발): Σ-A/B 배터리가 캐리어 2-1(STR_1715_AR_on_M4_R05_overlay_PG2)을
+#    기준선으로 썼는데 admitted_ids 는 이미 2-4(M4gAE, noLayer4)였다. Layer4/overlay 는
+#    07-02 도훈 FINAL 로 제거된 구성 — **퇴역한 책을 incumbent 로 놓고 7주간 ΔIR 보고**.
+#    근원은 book_state 안에서 정체성이 두 필드로 갈라진 것(admitted_ids ↔ current_pg2_official_name).
+#  ★차단하지 않는다 — 진단이다. 다만 **매 부팅 노출**이 "함께 갱신"을 보장하는 유일한 장치다.
+PG2C_R="$PROJECT/02_Infrastructure/portfolio/pg2_coherence_check.R"
+if [ -f "$PG2C_R" ]; then
+  PG2C_RAW=$(cd "$PROJECT" && Rscript "$PG2C_R" 2>&1); PG2C_RC=$?
+  PG2C_MIS=$(printf '%s' "$PG2C_RAW" | grep -c "MISMATCH")
+  if [ "$PG2C_RC" = "0" ]; then
+    echo "[boot] PG2 coherence: OK (admitted_ids 와 전 참조 일치)"
+  elif [ "$PG2C_MIS" -gt 0 ]; then
+    echo "[boot] ★PG2 coherence: 불일치 ${PG2C_MIS}건 — 새 PG2 등재 후 함께 갱신 안 된 참조 존재"
+    printf '%s' "$PG2C_RAW" | grep -E "MISMATCH|WARN C5" | sed 's/^/[boot]    /'
+    echo "[boot]    재측정: Rscript 02_Infrastructure/portfolio/pg2_coherence_check.R"
+  else
+    # ★rc≠0 인데 MISMATCH 도 없다 = 검사기가 죽은 것이지 정상이 아니다. 구분해서 이름을 부른다.
+    echo "[boot] WARN: pg2_coherence 실행 실패 (exit $PG2C_RC) — 판정 없음이지 정상 아님"
+    echo "[boot]    출력 말미: $(printf '%s' "$PG2C_RAW" | tail -2 | tr '\n' ' ' | cut -c1-160)"
+  fi
+else
+  echo "[boot] PG2 coherence: SKIP (검사기 부재)"
+fi
+
 # ── AST v1.1 Step 4 사이드카 실전 캡처 노출 (2026-08-02 신설) ──────────────────
 #  ★신설 사유(실사고): Step 4 는 07-25 배선 후 8일간 아무 경고 없이 **실전 레코드 0건**
 #  이었다. 원장은 399행이라 겉보기엔 "쌓이고 있음"이었으나 전량 테스트 배터리 산물이었고,

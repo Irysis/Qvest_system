@@ -138,8 +138,11 @@ pg2_coherence_check <- function(root = .pg2_root(), quiet = FALSE) {
   pat_slot <- "05_Production/2[.]Factor_Model/[0-9]+-[0-9]+"
   bypass <- character(0)
   for (f in code) {
-    rel <- sub(paste0("^", gsub("([.\\\\^$|()\\[\\]{}*+?])", "\\\\\\1", root), "/?"), "",
-               normalizePath(f, winslash = "/", mustWork = FALSE))
+    ## ★경로 상대화는 정규식으로 하지 않는다 — 루트에 정규식 메타문자가 있으면 패턴이 깨진다
+    ##   (실측: Windows 경로 이스케이프가 TRE 에서 'Invalid contents of {}' 로 컴파일 실패).
+    ##   문자열 접두 제거로 충분하고 안전하다.
+    fp  <- normalizePath(f, winslash = "/", mustWork = FALSE)
+    rel <- if (startsWith(fp, paste0(root, "/"))) substring(fp, nchar(root) + 2L) else fp
     if (rel %in% names(PG2_BYPASS_ALLOW)) next
     txt <- tryCatch(readLines(f, warn = FALSE), error = function(e) character(0))
     if (!length(txt)) next
