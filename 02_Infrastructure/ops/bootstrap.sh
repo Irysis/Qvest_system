@@ -432,6 +432,7 @@ try:
     h = (datetime.datetime.now() - dt).total_seconds() / 3600.0
     if h > 26: age_h = " ★측정 %.0f시간 전(수집 담체도 멈춤 의심)" % h
 except Exception: pass
+if extra: co_txt = (co_txt + " · " if co_txt else "") + " · ".join(extra)
 print("%s|%s|%s|%s" % ("·".join(bad), "·".join(stale), age_h, co_txt))
 ' "$STH" 2>/dev/null)
   if [ "${STH_LINE:-}" = "PARSE_FAIL" ] || [ -z "${STH_LINE:-}" ]; then
