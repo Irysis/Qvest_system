@@ -131,6 +131,23 @@ qvest_emit_event() {
 }
 
 if [ "${QVEST_PARSE_RESOLVE_ONLY:-0}" = "1" ]; then
+  # ★(2026-08-08) resolve-only 여도 '이 훅이 돌았다'는 사실은 남긴다.
+  #   resolve-only 의 존재 이유는 **python 스폰 회피**인데 qvest_emit_event 는 순수 bash
+  #   (파라미터 확장만·서브셸 0·명시적 return 0)라 그 이유가 여기엔 적용되지 않는다.
+  #   기록을 건너뛰면 이 경로로 source 하는 훅은 원장에서 **영구히 보이지 않고**, 그 침묵이
+  #   부팅에서 "7일 내 발화 0회 = 계측 사망 또는 등록 해제"로 오독된다.
+  #   ★실측 2026-08-08: RESOLVE_ONLY 사용 훅 4/4 가 전부 원장 0건(상관 100%)이었고,
+  #     그중 artifact_placement_guard 는 위반 주입 시 advisory 를 정상 발행했다 —
+  #     즉 죽은 게 아니라 **관측되지 않았을 뿐**이고, "발화 0"이 반증 불가능한 상태였다.
+  #     양성 대조 = cache_registry_enforce(같은 조기-exit 구조·resolve-only 미사용) 221건 기록.
+  #   TOOL_NAME/FILE_PATH 는 아직 파싱 전이라 비운다(이 모드가 그 파싱을 건너뛰는 것이 목적).
+  #   `|| true` = 호출부 4종이 전부 ERR trap 을 걸고 있어(1종은 set -e 병용) 미래에 emit 이
+  #   비영 반환으로 바뀌면 훅이 통째로 조용히 무력화된다 — 그 결합을 여기서 끊어 둔다.
+  if [ "${QVEST_EVENT_LEDGER:-1}" != "0" ]; then
+    _qep_src="${BASH_SOURCE[1]:-unknown}"; _qep_hook="${_qep_src##*/}"
+    qvest_emit_event "hook_fired" "${_qep_hook:-unknown}" "resolve_only" "" "" "0" "" "" || true
+    unset _qep_src _qep_hook
+  fi
   return 0 2>/dev/null || exit 0
 fi
 

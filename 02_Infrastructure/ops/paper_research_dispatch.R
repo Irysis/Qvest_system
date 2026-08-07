@@ -50,6 +50,46 @@ if (n_opt + n_risk + n_reg == 0) {
 DELTA_IR_GATE <- 0.05   # book-marginal admission 문턱(§4) — 측정 기준만(자본 admit 아님)
 actions <- list()
 
+# >>> SCREEN_AXES_CHECK  (08_Tests/ops/test_screen_axes_check.R 가 이 블록을 원본에서 추출해 검사한다
+#     — 사본 검사 금지. 마커를 바꾸면 검사기부터 고칠 것.)
+# (2026-08-08 신설) STEP 1-b 2축 존재·유효성 검사.
+#   배경: 라우터 프롬프트에 "optimizer/risk 항목에 shrinkage_builtin·statistic_order·screen_priority 를
+#   실어라"고 적었지만, **지시만 있고 검사가 없으면 조용히 안 지켜진다**(이번 세션에서 반복 확인된 부류).
+#   ★존재 검사로 유효성 검사를 대체하지 않는다 — 필드가 있어도 enum 밖 값이면 소비단이 우선순위를
+#   못 매기므로 없는 것과 같다. 그래서 존재·enum 을 따로 센다.
+#   차단하지 않는다(라우터는 LLM 이고 파이프 정지는 과잉). **호명 + 커버리지 기록**이 방어선이다.
+SCREEN_AX_ENUM <- list(
+  shrinkage_builtin = c("yes", "weak", "no"),
+  statistic_order   = c("<=2nd", "higher", "tail_quantile")
+)
+check_screen_axes <- function(items, route) {
+  n <- length(items); if (n == 0L) return(NULL)
+  miss <- character(0); badv <- character(0)
+  for (i in seq_len(n)) {
+    p <- items[[i]]
+    lbl <- p$arxiv_id %||% (p$title %||% sprintf("#%d", i))
+    for (f in names(SCREEN_AX_ENUM)) {
+      v <- p[[f]]
+      if (is.null(v) || !nzchar(as.character(v)[1])) miss <- c(miss, sprintf("%s:%s", lbl, f))
+      else if (!(as.character(v)[1] %in% SCREEN_AX_ENUM[[f]]))
+        badv <- c(badv, sprintf("%s:%s=%s", lbl, f, as.character(v)[1]))
+    }
+    if (is.null(p$screen_priority) || !nzchar(as.character(p$screen_priority)[1]))
+      miss <- c(miss, sprintf("%s:screen_priority", lbl))
+  }
+  n_fields <- n * (length(SCREEN_AX_ENUM) + 1L)
+  cov <- 1 - (length(miss) + length(badv)) / n_fields
+  if (length(miss) || length(badv)) {
+    cat(sprintf("[dispatch:%s] ★STEP 1-b 2축 결손 — 커버리지 %.0f%% (결측 %d · enum밖 %d)\n",
+                route, cov * 100, length(miss), length(badv)))
+    if (length(miss)) cat(sprintf("    결측: %s\n", paste(utils::head(miss, 8), collapse = ", ")))
+    if (length(badv)) cat(sprintf("    enum밖: %s\n", paste(utils::head(badv, 8), collapse = ", ")))
+    cat("    → 라우터가 STEP 1-b 를 안 실었다. 우선순위 없이 선입선출로 소비된다(실측 3/3 미달 계열을 먼저 태울 위험).\n")
+  } else cat(sprintf("[dispatch:%s] STEP 1-b 2축 커버리지 100%%\n", route))
+  list(n_items = n, coverage = round(cov, 3), missing = miss, invalid_enum = badv)
+}
+# <<< SCREEN_AXES_CHECK
+
 # ((b)안 2026-08-08) method 레지스트리는 **무조건** 로드한다.
 #   구판 배선은 이걸 재계산 분기 *안*에 뒀다 → 캐시 재사용 날엔 triage 함수가 없어
 #   risk 보고가 "triage 불가"로 퇴화했다(실측). 보고 경로는 계산 경로와 독립이어야 한다.
@@ -62,6 +102,51 @@ opt_verdict <- NULL
 if (n_opt > 0) {
   ov_csv <- file.path("06_Registry/book_carrier", "h1b_sigma_ab_overlay.csv")
   carrier <- "06_Registry/book_carrier/carrier_STR_1715_AR_on_M4_R05_overlay_PG2.parquet"
+  # >>> CARRIER_IDENTITY_GATE
+  # (2026-08-08 도훈 적발) ★mtime 신선도로는 **"이 입력이 아직 옳은 입력인가"**를 못 묻는다.
+  #   실사고: 배터리가 캐리어 `STR_1715_AR_on_M4_R05_overlay_PG2`(2026-06-18 빌드, book_state
+  #   2026-06-02 기준)를 계속 썼는데, 그 사이 book_state 는 07-19 로 갱신되고 admitted_ids 는
+  #   `STR_1715_on_M4gAE_R05_noLayer4_PG2`(오토인코더 + Layer4 제거)로 바뀌어 있었다.
+  #   즉 배터리는 **07-02 에 도훈이 FINAL 로 제거 지시한 Layer4/overlay 구성**을 기준선으로 재고 있었다.
+  #   incumbent_book_ir 1.416 vs 배터리 strategy 팔 1.077 — 기준선이 다른 책이다.
+  #   ★근본: PG2 정체성이 book_state 안에서 두 필드로 갈라져 있다.
+  #     admitted_ids(권위) ≠ current_pg2_official_name(stale) → 캐리어가 stale 한 쪽을 따라갔다.
+  #   ★carrier_meta.json 에 "PG2 변경 시 재실행"이 **주석으로만** 있었다. 지시는 검사가 아니다.
+  #   차단하지 않는다(측정·보고 스크립트라 정지는 과잉) — 호명 + 산출물에 basis_mismatch 기록.
+  carrier_identity_check <- function(carrier_path) {
+    meta_p <- file.path(dirname(carrier_path), "carrier_meta.json")
+    bs_p   <- "qepm/mailbox/governor/book_state.json"
+    if (!file.exists(meta_p) || !file.exists(bs_p)) {
+      cat("[dispatch] ★캐리어 정체성 검사 불가 — carrier_meta.json 또는 book_state.json 부재\n")
+      return(list(status = "unverifiable"))
+    }
+    mt <- tryCatch(fromJSON(meta_p, simplifyVector = FALSE), error = function(e) NULL)
+    bs <- tryCatch(fromJSON(bs_p,   simplifyVector = FALSE), error = function(e) NULL)
+    if (is.null(mt) || is.null(bs)) return(list(status = "unverifiable"))
+    cstrat <- as.character(mt$strategy %||% NA)
+    admit  <- unlist(bs$admitted_ids %||% list())
+    c_bs_at <- as.character(mt$book_state_updated_at %||% NA)
+    b_at    <- as.character(bs$updated_at %||% NA)
+    id_ok   <- length(admit) > 0 && cstrat %in% admit
+    # 시각 비교는 날짜까지만(타임존 표기 혼재) — 문자열 앞 10자리
+    stale   <- !is.na(c_bs_at) && !is.na(b_at) && substr(c_bs_at, 1, 10) < substr(b_at, 1, 10)
+    out <- list(status = if (id_ok && !stale) "ok" else "MISMATCH",
+                carrier_strategy = cstrat, admitted_ids = admit,
+                carrier_book_state_at = c_bs_at, book_state_updated_at = b_at,
+                identity_match = id_ok, carrier_older_than_book_state = stale)
+    if (!id_ok) {
+      cat(sprintf("[dispatch] ★★캐리어 정체성 불일치 — 캐리어=%s 이나 현 admitted_ids=%s\n",
+                  cstrat, paste(admit, collapse = ", ")))
+      cat("    → 배터리 기준선이 **현 incumbent 가 아니다**. ΔIR 수치를 채택 근거로 쓰지 말 것 (§7b).\n")
+    }
+    if (stale) cat(sprintf("[dispatch] ★캐리어가 book_state 보다 오래됨 — 캐리어 기준 %s < book_state %s\n",
+                           substr(c_bs_at, 1, 10), substr(b_at, 1, 10)))
+    if (id_ok && !stale) cat("[dispatch] 캐리어 정체성 OK (현 admitted_ids 와 일치)\n")
+    out
+  }
+  carrier_id <- carrier_identity_check(carrier)
+  # <<< CARRIER_IDENTITY_GATE
+
   # >>> SIGMA_AB_FRESHNESS_GATE
   # (2026-08-08 수리) 구 게이트 = `ov_csv$mtime >= carrier$mtime` 단독.
   #   ★캐리어는 PG2 재구성 때만 갱신되므로 한 번 배터리를 돌린 뒤엔 **영구 참**이 된다.
@@ -149,7 +234,11 @@ if (n_opt > 0) {
   }
   actions$optimizer <- list(n = n_opt, papers = lapply(getrt("optimizer"), function(p) p$title %||% p$arxiv_id),
                             verdict = opt_verdict,
-                            method_triage = if (exists("method_triage")) method_triage("optimizer") else NULL)
+                            method_triage = if (exists("method_triage")) method_triage("optimizer") else NULL,
+                            screen_axes = check_screen_axes(getrt("optimizer"), "optimizer"),
+                            # ★기준선 정체성을 산출물에 박는다 — 나중에 이 수치를 인용할 때
+                            #   어느 책 위에서 잰 것인지 파일만 보고 알 수 있어야 한다(§7b).
+                            baseline_identity = if (exists("carrier_id")) carrier_id else NULL)
 }
 
 # ── risk: method 레지스트리 triage ((b)안 2026-08-08) ──
@@ -161,6 +250,7 @@ if (n_risk > 0) {
   .rt <- if (exists("method_triage")) method_triage("risk") else list()
   actions$risk <- list(n = n_risk, papers = lapply(getrt("risk"), function(p) p$title %||% p$arxiv_id),
                        method_triage = .rt,
+                       screen_axes = check_screen_axes(getrt("risk"), "risk"),
                        harness_status = "risk 레인 Σ-교체 A/B 하네스 미배선 — optimizer 레인 검증 후 착수 예정",
                        action = if (length(.rt)) sprintf("레지스트리 등재 %d건 (verdict 별도) — 자동 측정 아직 없음", length(.rt))
                                 else "레지스트리 미등재 — triage 필요")
