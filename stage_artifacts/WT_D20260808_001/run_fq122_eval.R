@@ -146,10 +146,11 @@ for (nm in names(w1)) {
 }
 
 paired_from_canon <- function(rb, rf) {
+  # canonical_screen_bt$period_returns = data.table(date, ret_net, benchmark_ret)
   pb <- as.data.table(rb$period_returns); pf <- as.data.table(rf$period_returns)
-  bn <- as.data.table(rb$benchmark_returns)
-  m <- merge(merge(pb[, .(date, rb = ret_net)], pf[, .(date, rf = ret_net)], by = "date"),
-             bn[, .(date, bm = benchmark_ret)], by = "date")
+  stopifnot(all(c("date","ret_net","benchmark_ret") %in% names(pb)))
+  m <- merge(pb[, .(date, rb = ret_net, bm = benchmark_ret)],
+             pf[, .(date, rf = ret_net)], by = "date")
   m[, `:=`(ab = rb - bm, af = rf - bm)]
   d <- m$af - m$ab; ci <- nw_ci(d)
   data.table(n = nrow(m), base_ir = ir_v(m$ab), filt_ir = ir_v(m$af),
