@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "sot": "02_Infrastructure/docs/qvest_v8_3_alpha_discovery_sot.md §4",
-  "updated": "2026-08-08 (FQ-159 기각 — 섹터 전수 스캔에서 금융 전환폭 6/24위, growth→value 로테이션의 일부)",
+  "updated": "2026-08-08 (FQ-101 측정 종결 — 미래 Factor_Date 는 PIT 안전, 근인은 12월 결산 가정)",
   "consume_rule": "새 발굴 리서치 착수 전: hypothesis_index lookup → 본 큐 확인 → owner/status 갱신. 완료 시 result_ref(L-code/보고서) 기입. dohoon_decision 항목은 세션 임의 착수 금지.",
   "entries": [
     {
@@ -2071,11 +2071,11 @@
       "title": "fundamental_merged 미래 Factor_Date 행 (Period 202612 / Factor_Date 2027-03-31) 라벨 점검",
       "hypothesis": "FY2026 미종료 시점(2026-08)에 Period 202612 · Factor_Date 2027-03-31 행이 존재한다. 비-12월 결산 법인의 라벨링인지, REPRT_MAP 매핑 오류인지 판별이 필요하다.",
       "ev_rationale": "본 라운드 오염은 0(Factor_Date 가 미래라 어떤 sig_date 에도 유입 불가). 다만 memory project-p2-realized-defects-repaired-20260726 의 'REPRT_MAP 뒤집힘 look-ahead 혐의' 와 같은 계통일 수 있어 별건 확인 대상.",
-      "wall_check": "데이터 위생 — 알파 가설 아님. 예산 소액.",
+      "wall_check": "데이터 위생 — 알파 가설 아님. 예산 소액. ★2026-08-08 실측 종결: 미래 Factor_Date 행 = 2,240행(0.04%) · 26기업 · 165항목 · 전부 Period 202612/DART/2027-03-31. **PIT 안전 확정** — (a)`.pit_fund()` 가 `Factor_Date <= sig_date` 로 배제 (b)직접 소비자 2종도 필터 적용 확인 (`fq081_dupont_panel.R` L16 · `ff5_kr_tracker.R` L83) → 누출 경로 없음. ★근인 = **12월 결산 가정**: 해당 26기업은 비-12월 결산으로 FY2026 보고서를 2026-04~06 에 이미 제출했는데 (접수일 202604 2건·202605 6건·202606 18건) 빌더가 Period=202612 로 찍고 +90d 해 2027-03-31 을 부여했다. 즉 오차 방향이 **보수적**(실제 가용 시점보다 ~9개월 늦게 노출)이라 미래참조가 아니라 **커버리지 손실**이다.",
       "data_gate": "기보유.",
       "owner": "미배정 (FQ-081 라운드 파생 2026-08-02)",
-      "status": "frontier_open",
-      "next_action": "해당 24~26 종목의 결산월 확인 → 정상(비12월 결산)이면 문서화, 오류면 파서 수리",
+      "status": "measured_benign_pit_safe_20260808",
+      "next_action": "① 즉시 수리 불요 — PIT 안전(보수 방향)이고 규모 26/1,433 기업(1.8%). 알파 라운드를 막지도 측정 신뢰를 훼손하지도 않음. ② 수리하려면 보고서의 실제 결산월(thstrm_nm/Period_Date 원천)에서 fiscal year end 를 읽어 Period·Factor_Date 를 산출해야 함 — 12월 결산 하드가정 제거가 본체. 비-12월 결산 기업의 분기 라벨도 같은 가정을 쓰는지 동반 점검 필요. ③ 착수 시 위반 주입 테스트 필수(비-12월 결산 픽스처로 Factor_Date 가 실제 제출일 기반으로 나오는지).",
       "source_refs": [
         "FQ-081 challenge_note.md C9"
       ]
