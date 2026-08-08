@@ -1783,8 +1783,8 @@
       "wall_check": "★고정 축 안. return-derived 재료이나 **예측 대상 자체를 바꾸는** 축이라 07-13 'construction 미세조정 소진' 지대와 구분. ★prior: MDD 무료레버 3라운드 결론 = overlay/timing 유일(weighting·selection 아님) — 본 건은 selection 재시도이므로 그 prior 에 정면으로 걸린다. 반증되면 해당 결론이 4라운드째 강화됨(정보 가치).",
       "data_gate": "기보유 RAWDATA 로 즉시 가능(일간 수익만 필요).",
       "owner": "Q-Lead(session 20260808)",
-      "status": "precheck_positive_frontier_open",
-      "next_action": "본 라운드: ① 겹침 보정 지속성(비겹침 21d 창·h=2,3) ② 소비면 = (b)안 어댑터 레인 재사용 — 예측 vol-rank 기반 역변동성 가중 arm 을 method_registry 에 등록, 기존 IV(realized) 와 배터리 paired 대조 (Calmar·MDD 축, EW baseline). ③ 선별 신호로는 쓰지 않음(08-06 QUARANTINE 준수)",
+      "status": "capability_established__sizing_face_negative_20260808",
+      "next_action": "소비면 잔여 4종 중 monitoring 신호가 최선 posterior(지속성 0.59 시계열의 랭크 점프는 희귀 사건). 착수 전 hypothesis_index 재확인",
       "source_refs": [
         "paper: Igor Halperin, 'Are Three Matrices All You Need To Beat the Market? Observable Matrix Dynamics for Portfolio Optimization', arXiv:2607.27461, 2026-07-29 (q-fin.PM — 카테고리는 크롤됐으나 9질의 어휘로 도달 불가였음)",
         "prior: memory project-mdd-lever-overlay-only-3rounds-20260718"
@@ -1798,7 +1798,19 @@
           "caveat": "60일 창 월간 겹침(~2/3)이 절대 수준을 기계적으로 부풀림 — 비교 차이는 공정(동일 창 구조). 본 라운드에서 겹침 보정 필수",
           "probe_bug_note": "1차 실측이 rho 전원 1.000 — 조인 양쪽을 ym_next 로 리라벨해 자기 조인. '완벽 지속성'은 자기 조인 지문"
         }
-      ]
+      ],
+      "round_measured": {
+        "date": "2026-08-08",
+        "r1_overlap_corrected": "비겹침 21d 창: vol-랭크 지속성 h=1 0.587(음수월 0/438)·h=2 0.492·h=3 0.462 vs ret-랭크 +0.018/-0.015/-0.001 ≈ 0. ★precheck의 ret 0.613은 전부 창 겹침 아티팩트 — 명제('vol-랭크는 예측 가능, ret-랭크는 불가')의 깨끗한 재현",
+        "r2_sizing_face": "3-arm 배터리(현 PG2 캐리어·overlay ON·269m): IV(250d) 1.220 / IV_21 1.216 / IV_21rank 1.209 — 전부 EW 1.269 아래, Calmar·MDD 축도 동일. 최신성·랭크 강건화 이득 0, 회전율만 증가(12.9→15.2)",
+        "verdict": "능력 확립(vol-랭크 예측성 실재) + 사이징 소비면 config-scoped negative. 기전: top-20 기선별 유니버스에서 값은 추정오차 축소에서 나오지 정보 최신성이 아님(cross_method_synthesis 정합)",
+        "consumption_faces_open": [
+          "Σ 분산항 교체(minvar@vol21) — 단 minvar 계열 전멸 실측으로 posterior 낮음",
+          "monitoring: vol-rank 급변 감지(지속성 높은 시계열의 이탈=정보)",
+          "선별-후 vol 횡단면 압축률 측정(사이징 여지 자체가 작은지 기전 확인)",
+          "FR/RAMP 이식"
+        ]
+      }
     },
     {
       "id": "FQ-088",

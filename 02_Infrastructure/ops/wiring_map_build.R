@@ -172,11 +172,17 @@ for (i in seq_len(nrow(STD))) {
     standard = STD$standard[i], kind = STD$kind[i], dir = STD$dir[i],
     n_symbols = STD$n_symbols[i],
     n_consumers = length(cons), n_consumers_nontest = n_nontest,
-    n_reimpl = length(cc$reimpl),                # ★표준을 안 부르고 같은 심볼을 직접 정의 = 재구현
+    ## ★재구현 축은 **미검증 상태로 발행 보류**(2026-08-08).
+    ##   직접 대조에서 재현되지 않았다 — weighted_screen_bt.R 을 canonical_screen_bt 의
+    ##   재구현자로 실었으나, 같은 술어를 그 파일에 직접 적용하면 called=FALSE·defined=FALSE 다
+    ##   (그 파일은 주석에서 이름만 언급한다). 즉 이 축은 계산 경로 어딘가가 어긋나 있다.
+    ##   검증 안 된 수치를 발행하면 이 감사가 잡으려는 병(잘못된 것을 재고 초록으로 보이기)을
+    ##   그대로 재현하므로, 원인 규명 전까지 `_unverified` 접두로만 남기고 판정에 쓰지 않는다.
+    `_unverified_n_reimpl` = length(cc$reimpl),
     n_transitive = length(cc$transitive), n_mentions = length(cc$mentions),
     zones = paste(sprintf("%s:%d", names(nz), as.integer(nz)), collapse = " "),
     consumers = paste(head(cons, 40), collapse = ";"),
-    reimplementers = paste(head(cc$reimpl, 20), collapse = ";")
+    `_unverified_reimplementers` = paste(head(cc$reimpl, 20), collapse = ";")
   )
 }
 W <- rbindlist(res, fill = TRUE)
@@ -207,7 +213,7 @@ out <- list(
     thin = sum(W$status == "thin"),
     wired = sum(W$status == "wired"),
     single_zone_nonorphan = sum(W$single_zone & W$status != "orphan"),
-    with_reimplementers = sum(W$n_reimpl > 0L)
+    `_unverified_with_reimplementers` = sum(W[["_unverified_n_reimpl"]] > 0L)
   ),
   standards = lapply(seq_len(nrow(W)), function(i) as.list(W[i]))
 )
