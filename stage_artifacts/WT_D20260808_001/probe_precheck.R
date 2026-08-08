@@ -22,6 +22,7 @@ say <- function(fmt, ...) cat(sprintf(paste0("[pc] ", fmt, "\n"), ...))
 
 source("02_Infrastructure/config.R")
 source("02_Infrastructure/contracts/canonical_screen_bt.R")
+source("02_Infrastructure/ramp/factor_validation.R")   # build_monthly_forward_returns (계약 파생수익)
 source("02_Infrastructure/contracts/required_effect_size.R")
 
 nw_t <- function(x, lag = 3L) {
