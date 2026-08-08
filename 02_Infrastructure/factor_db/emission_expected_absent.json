@@ -1,0 +1,64 @@
+{
+  "schema": "factor_db_emission_expected_absent/v1",
+  "declared_ym": "202608",
+  "declared_by": "FQ-163 (architect)",
+  "purpose": "emission_guard.R Class S(구조적 침묵) 경보에서 '결측이 정상인' 팩터를 선언한다. 여기 없는 채 원장 전 구간 0행이면 경고가 난다.",
+  "ratchet": "제거는 자유(결측이 해소된 것). 추가는 사유+근거 없이 금지 — 이 파일이 커지면 원래 사고(등재됐는데 아무도 모르게 안 나옴)가 그대로 재현된다.",
+  "deliberately_not_listed": {
+    "note": "★아래 3종은 '한 번도 배출된 적 없음'이지만 **일부러 기준선에 넣지 않았다**. compute_*.R 에 생산자 코드가 실재하는데 440개월 전 구간 0행이므로, FQ-163 과 같은 계통(생산자는 있는데 도달 불가)일 개연이 있다. 기준선에 넣으면 그대로 묻힌다 — 경고를 계속 받는 것이 옳다.",
+    "factors": [
+      {"factor": "M12_LR_Reversal", "producer": "02_Infrastructure/factor_db/compute_momentum.R:189,324,478", "status": "미진단"},
+      {"factor": "D08_Tail_Beta", "producer": "02_Infrastructure/factor_db/compute_defense.R", "status": "미진단"},
+      {"factor": "SE01_Consensus_Dispersion", "producer": "02_Infrastructure/factor_db/compute_crowding.R", "status": "미진단"}
+    ]
+  },
+  "expected_absent": [
+    {
+      "factor": "bps_1y", "reason": "CONSENSUS 원천 컬럼이 registry 에 팩터로 등재된 항목 — 월 빌더의 산출 대상이 아니라 입력이다.",
+      "evidence": ".cache/consensus/bps_1y.parquet 는 입력 테이블. 원장 440개월 전 구간 Factor_Name 으로 등장 0회.",
+      "diagnosed": true, "declared_ym": "202608", "followup": "registry 위생 — 입력 컬럼의 팩터 등재 해제 검토(별도 판단)"
+    },
+    {
+      "factor": "dps_1y", "reason": "CONSENSUS 원천 컬럼이 registry 에 팩터로 등재된 항목 — 입력이지 산출이 아니다.",
+      "evidence": ".cache/consensus/dps_1y.parquet. 원장 440개월 0회.",
+      "diagnosed": true, "declared_ym": "202608", "followup": "registry 위생"
+    },
+    {
+      "factor": "eps_1y", "reason": "CONSENSUS 원천 컬럼이 registry 에 팩터로 등재된 항목 — 입력이지 산출이 아니다.",
+      "evidence": ".cache/consensus/eps_1y.parquet. compute_consensus 는 C12 계산의 입력으로만 쓴다. 원장 440개월 0회.",
+      "diagnosed": true, "declared_ym": "202608", "followup": "registry 위생"
+    },
+    {
+      "factor": "target_price", "reason": "CONSENSUS 원천 컬럼이 registry 에 팩터로 등재된 항목 — C06/C07 의 입력이다.",
+      "evidence": ".cache/consensus/target_price.parquet. 파생 팩터 C06_TP_Gap·C07_TP_Mom 은 정상 산출. 원장 440개월 0회.",
+      "diagnosed": true, "declared_ym": "202608", "followup": "registry 위생"
+    },
+
+    {
+      "factor": "T01_RSI14", "reason": "월 빌더 compute_*.R 에 생산자 코드 없음 (technical 계열 12종 전체가 동일).",
+      "evidence": "02_Infrastructure/factor_db/compute_*.R 전수 grep 0건. 원장 440개월 0회. 계열 전체 결측(부분 결측 아님).",
+      "diagnosed": true, "declared_ym": "202608", "followup": "technical 12종의 소속 파이프라인 확인 — 월 빌더 대상이 아니면 registry category/status 정정"
+    },
+    {"factor": "T03_BB20",     "reason": "월 빌더에 생산자 코드 없음 (technical 계열).", "evidence": "compute_*.R grep 0건 · 원장 440개월 0회.", "diagnosed": true, "declared_ym": "202608"},
+    {"factor": "T04_OBV21",    "reason": "월 빌더에 생산자 코드 없음 (technical 계열).", "evidence": "compute_*.R grep 0건 · 원장 440개월 0회.", "diagnosed": true, "declared_ym": "202608"},
+    {"factor": "T05_MFI14",    "reason": "월 빌더에 생산자 코드 없음 (technical 계열).", "evidence": "compute_*.R grep 0건 · 원장 440개월 0회.", "diagnosed": true, "declared_ym": "202608"},
+    {"factor": "T06_PMA5",     "reason": "월 빌더에 생산자 코드 없음 (technical 계열).", "evidence": "compute_*.R grep 0건 · 원장 440개월 0회.", "diagnosed": true, "declared_ym": "202608"},
+    {"factor": "T07_PMA20",    "reason": "월 빌더에 생산자 코드 없음 (technical 계열).", "evidence": "compute_*.R grep 0건 · 원장 440개월 0회.", "diagnosed": true, "declared_ym": "202608"},
+    {"factor": "T08_PMA60",    "reason": "월 빌더에 생산자 코드 없음 (technical 계열).", "evidence": "compute_*.R grep 0건 · 원장 440개월 0회.", "diagnosed": true, "declared_ym": "202608"},
+    {"factor": "T09_PMA120",   "reason": "월 빌더에 생산자 코드 없음 (technical 계열).", "evidence": "compute_*.R grep 0건 · 원장 440개월 0회.", "diagnosed": true, "declared_ym": "202608"},
+    {"factor": "T10_RSI28",    "reason": "월 빌더에 생산자 코드 없음 (technical 계열).", "evidence": "compute_*.R grep 0건 · 원장 440개월 0회.", "diagnosed": true, "declared_ym": "202608"},
+    {"factor": "T13_Gap",      "reason": "월 빌더에 생산자 코드 없음 (technical 계열).", "evidence": "compute_*.R grep 0건 · 원장 440개월 0회.", "diagnosed": true, "declared_ym": "202608"},
+    {"factor": "T14_HLRange",  "reason": "월 빌더에 생산자 코드 없음 (technical 계열).", "evidence": "compute_*.R grep 0건 · 원장 440개월 0회.", "diagnosed": true, "declared_ym": "202608"},
+    {"factor": "T15_AutoCorr", "reason": "월 빌더에 생산자 코드 없음 (technical 계열).", "evidence": "compute_*.R grep 0건 · 원장 440개월 0회.", "diagnosed": true, "declared_ym": "202608"},
+
+    {
+      "factor": "RE_exposure", "reason": "월 빌더 compute_*.R 에 생산자 코드 없음 (RE_ 소문자 z 계열 5종 동일). RE01~RE16 (대문자 번호 계열)과 다른 항목임에 주의 — 그쪽은 생산자가 있고 실제로 산출된다.",
+      "evidence": "compute_*.R grep 0건 · 원장 440개월 0회. 반면 RE01_Mkt_EWMA_21d 등은 원장에 202607 까지 존재.",
+      "diagnosed": true, "declared_ym": "202608", "followup": "regime overlay 쪽 산출물과의 관계 확인"
+    },
+    {"factor": "RE_HY_z",  "reason": "월 빌더에 생산자 코드 없음 (RE_ z 계열).", "evidence": "compute_*.R grep 0건 · 원장 440개월 0회.", "diagnosed": true, "declared_ym": "202608"},
+    {"factor": "RE_MRS",   "reason": "월 빌더에 생산자 코드 없음 (RE_ z 계열).", "evidence": "compute_*.R grep 0건 · 원장 440개월 0회.", "diagnosed": true, "declared_ym": "202608"},
+    {"factor": "RE_TS_z",  "reason": "월 빌더에 생산자 코드 없음 (RE_ z 계열).", "evidence": "compute_*.R grep 0건 · 원장 440개월 0회.", "diagnosed": true, "declared_ym": "202608"},
+    {"factor": "RE_VIX_z", "reason": "월 빌더에 생산자 코드 없음 (RE_ z 계열).", "evidence": "compute_*.R grep 0건 · 원장 440개월 0회.", "diagnosed": true, "declared_ym": "202608"}
+  ]
+}
