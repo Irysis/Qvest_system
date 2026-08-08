@@ -94,6 +94,9 @@ emission_load_baseline <- function(path) {
 #------------------------------------------------------------------------------
 factor_emission_check <- function(produced, reg_meta, ledger, ym, baseline = NULL) {
   stopifnot(is.data.table(reg_meta), nzchar(ym))
+  # ★`ym` 은 원장의 컬럼명이기도 하다. data.table i-표현식에서 인자와 컬럼이
+  #   같은 이름이면 컬럼이 이긴다 — 다른 이름의 지역변수로 못박는다.
+  ym_cur <- as.character(ym)[1]
   if (is.null(baseline)) {
     baseline <- data.table(Factor_Name = character(), reason = character(),
                            diagnosed = logical(), declared_ym = character())
@@ -115,7 +118,7 @@ factor_emission_check <- function(produced, reg_meta, ledger, ym, baseline = NUL
   regression <- character(0)
   ledger_ok  <- !is.null(ledger) && is.data.table(ledger) && nrow(ledger) > 0L
   if (ledger_ok) {
-    prior <- ledger[ym < ..ym & !is.na(n_rows) & n_rows > 0L]
+    prior <- ledger[ym < ym_cur & !is.na(n_rows) & n_rows > 0L]
     if (nrow(prior) > 0L) {
       prev_ym <- max(prior$ym)
       prev_set <- prior[ym == prev_ym, unique(Factor_Name)]
@@ -166,10 +169,10 @@ factor_emission_check <- function(produced, reg_meta, ledger, ym, baseline = NUL
   streak <- data.table(Factor_Name = character(), consecutive_absent = integer(),
                        last_seen_ym = character())
   if (ledger_ok && length(absent) > 0L) {
-    yms <- sort(unique(ledger[ym < ..ym, ym]))
+    yms <- sort(unique(ledger[ym < ym_cur, ym]))
     streak <- rbindlist(lapply(absent, function(f) {
       seen <- ledger[Factor_Name == f & !is.na(n_rows) & n_rows > 0L, ym]
-      seen <- seen[seen < ym]
+      seen <- seen[seen < ym_cur]
       last_seen <- if (length(seen) > 0L) max(seen) else NA_character_
       n_after <- if (is.na(last_seen)) length(yms) else sum(yms > last_seen)
       data.table(Factor_Name = f,
@@ -243,7 +246,7 @@ factor_emission_guard <- function(result, ym, fdb_dir, registry_path,
       setcolorder(new_rows, c("ym", "Factor_Name", "n_rows", "n_tickers", "built_at"))
       if (file.exists(ledger_path)) {
         old <- fread(ledger_path, colClasses = list(character = "ym"))
-        old <- old[ym != ..ym]                       # 같은 달 재빌드는 교체
+        old <- old[ym != ym]                       # 같은 달 재빌드는 교체
         fwrite(rbindlist(list(old, new_rows), use.names = TRUE, fill = TRUE), ledger_path)
       } else {
         fwrite(new_rows, ledger_path)
