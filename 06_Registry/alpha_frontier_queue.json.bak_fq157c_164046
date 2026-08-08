@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "sot": "02_Infrastructure/docs/qvest_v8_3_alpha_discovery_sot.md §4",
-  "updated": "2026-08-08T16:40:46+09:00",
+  "updated": "2026-08-08 (FQ-159 금융 섹터 국면 조건부 축 신규 — FQ-155 P3a 시장조정 분해 t 2.39)",
   "consume_rule": "새 발굴 리서치 착수 전: hypothesis_index lookup → 본 큐 확인 → owner/status 갱신. 완료 시 result_ref(L-code/보고서) 기입. dohoon_decision 항목은 세션 임의 착수 금지.",
   "entries": [
     {
@@ -3177,25 +3177,6 @@
         "implication": "cap-w PORT_t 기각 판정 중 최근 창 비중 큰 것은 시대 성분 포함. 벽 높이가 시변이며 현재 극단값 — 알파 존재 주장 아님.",
         "limits": "국면별 분해 미실행(regime_daily_v2 에 이산 라벨 컬럼 부재) · d 수준 자체는 전기간 NW t~0.78 비유의",
         "artifact": "stage_artifacts/fq141_precheck_20260808/fq157_findings.md"
-      },
-      "np_157c": {
-        "verdict": "핸디캡은 최근 18개월(2025+)이 단독 생성 — 149개월(2012-08~2024-12) d_ann = -0.0223 로 부호 반전",
-        "window_table": {
-          "12m": 0.6953,
-          "24m": 0.3487,
-          "36m": 0.2371,
-          "48m": 0.1967,
-          "60m": 0.1477,
-          "84m": 0.1045,
-          "120m": 0.0897,
-          "167m": 0.0329
-        },
-        "excl_2025plus_d_ann": -0.0223,
-        "only_2025plus_d_ann": 0.4898,
-        "contribution_pct": 149.6,
-        "significance": "단순 t 0.87~1.82 · p 전부 >0.07 — 어떤 창에서도 유의하지 않음. 점추정 구성/측정 오염에 대한 진술이지 확립된 효과 아님",
-        "not_claimed": "기각 알파가 실은 통과했을 것(포트는 자기 알파 필요) · 핸디캡 실재 · 벤치 변경(INV-7 금지, 재측정 창 선택 문제)",
-        "artifact": "stage_artifacts/fq141_precheck_20260808/fq157c_findings.md"
       }
     },
     {
@@ -3233,21 +3214,6 @@
       ],
       "registered": "2026-08-08 Q-Lead (FQ-155 P3a 분해 산물 — CFA census 아크에서 파생)",
       "parent_fq": "FQ-155"
-    },
-    {
-      "id": "FQ-160",
-      "lane": "measurement_integrity",
-      "title": "★wall_check 에 측정 창 메타 요구 — 창 없이는 시대 오염 보정 불가",
-      "hypothesis": "NP-157c 가 창 길이별 핸디캡 지도를 만들었으나(12m +0.6953 ~ 167m +0.0329) 큐의 wall_check 는 PORT_t 는 적고 측정 창(window_months/window_end)은 일관되게 적지 않아 기각 건에 결합할 수 없다. 스키마 요구가 선행 과제.",
-      "ev_rationale": "창 메타가 붙으면 기존 기각 전체에 시대 성분 노출도를 계량해 재측정 우선순위를 기계적으로 세울 수 있다.",
-      "wall_check": "해당 없음(원장 스키마 위생). 단 이 결손이 NP-157c 산출물의 소비를 막고 있음 — 알파 라운드 차단 요인.",
-      "data_gate": "없음",
-      "owner": "미배정",
-      "status": "frontier_open",
-      "next_action": "wall_check 에 window_months/window_end 필드 추가 + 기존 항목 소급 채움 가능분 식별. 미기재분은 UNKNOWN 명시(빈칸=합격 금지).",
-      "source_refs": [
-        "stage_artifacts/fq141_precheck_20260808/fq157c_findings.md"
-      ]
     }
   ]
 }
