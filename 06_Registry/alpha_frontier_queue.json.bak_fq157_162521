@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "sot": "02_Infrastructure/docs/qvest_v8_3_alpha_discovery_sot.md §4",
-  "updated": "2026-08-08T16:25:21+09:00",
+  "updated": "2026-08-08T16:20:01+09:00",
   "consume_rule": "새 발굴 리서치 착수 전: hypothesis_index lookup → 본 큐 확인 → owner/status 갱신. 완료 시 result_ref(L-code/보고서) 기입. dohoon_decision 항목은 세션 임의 착수 금지.",
   "entries": [
     {
@@ -3155,29 +3155,11 @@
       "wall_check": "벽의 크기 자체를 시대 함수로 재규정하는 진단. 벤치(고정 축) 변경 아님 — INV-7 준수.",
       "data_gate": "없음 — np_a_results.rds + bench_dt 재사용",
       "owner": "미배정",
-      "status": "measured_era_dependent_sign_flip_20260808",
-      "next_action": "NP-157a 국면 라벨 분해(FQ-119 자격 관문 통과 라벨만) · NP-157b FQ-156 통합 대조(현 시점 반증 우세) · NP-157c 최근 창 노출 지도",
+      "status": "frontier_open",
+      "next_action": "d_t 를 연도별·regime 라벨별 분해. 2017+ mega 레짐 가설 대조.",
       "source_refs": [
         "stage_artifacts/fq141_precheck_20260808/np_a_findings.md"
-      ],
-      "result": {
-        "verdict": "d 는 시대 의존이며 pre-2017 에는 부호가 반대(EW 벤치가 우세)",
-        "pre2017": {
-          "n": 53,
-          "d_ann": -0.0689,
-          "d_pos_share": 0.377
-        },
-        "post2017": {
-          "n": 114,
-          "d_ann": 0.0802,
-          "d_pos_share": 0.509
-        },
-        "test": "월 d 차 0.01243 · t 2.253 · p 0.0256",
-        "concentration": "2025 +0.2449 · 2026 상반기 +0.9795(연율, n=6 노이지)",
-        "implication": "cap-w PORT_t 기각 판정 중 최근 창 비중 큰 것은 시대 성분 포함. 벽 높이가 시변이며 현재 극단값 — 알파 존재 주장 아님.",
-        "limits": "국면별 분해 미실행(regime_daily_v2 에 이산 라벨 컬럼 부재) · d 수준 자체는 전기간 NW t~0.78 비유의",
-        "artifact": "stage_artifacts/fq141_precheck_20260808/fq157_findings.md"
-      }
+      ]
     },
     {
       "id": "FQ-158",
