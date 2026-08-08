@@ -1,0 +1,75 @@
+{
+  "task_id": "FQ138_PREREG_20260808",
+  "fq": "FQ-138",
+  "title": "계약수주 국면 조건부 알파 — 순풍 통제 사전등록 재판정",
+  "registered_at": "2026-08-08",
+  "registered_before_measurement": true,
+  "registered_by": "Q-Lead (자율 라운드 설계 — 자본 게이트 아님. governor admit 은 별도 수동)",
+  "selection_type": "chain",
+  "dsr_gate_applicability": "not_applicable (selection_type=chain — 사전등록된 단일 판별식 1개를 판정하며 열거 trial 집합에서 argmax/threshold-pick 하지 않는다. 감도축은 결과 무관 전량 보고)",
+  "n_iterations_planned": 1,
+  "gate_eligible": false,
+  "capital_claim": "none — 본 라운드는 자본 자격을 주장하지 않는다. 계약 신호의 국면-조건부 초과분이 국면 순풍과 구별되는지만 판정한다.",
+
+  "premise": {
+    "prior_finding_WT-D20260803_008": {
+      "regime_on_IC": "t-1 mega_spread<=0 국면에서 계약 신호 IC +0.1445 (t_NW 5.17)",
+      "regime_off_IC": "대형주주도 국면 +0.0108 (t_NW 0.32)",
+      "gap": "+0.1337 (라벨 순열 p=0.0082, 문턱 q0.2~0.5 안정, era 분할 재현)",
+      "conditional_canonical_port_t": 2.198,
+      "n_conditional_months": 27,
+      "unconditional_port_t": 0.511,
+      "why_reregistration": "동월/t-1/trailing3 3-way look 후 선택이라 사후(post-hoc)다"
+    },
+    "precheck_20260808_new": {
+      "regime_variable_identity": "mega_spread = mean(Ret_1m[rk<=10]) - median(Ret_1m). 439개월 실측에서 d(=cap-w 유니버스 벤치 - EW 유니버스 벤치)와 cor +0.896 (t-1 형태 +0.897) · 부호일치 82.7% ⇒ 같은 축",
+      "confound_identified": "★t-1 mega_spread<=0 은 메가캡이 지는 달 = 소형 편향 top-25 EW 포트의 순풍 국면이다. 계약 신호 포트폴리오도 OTHER tier 위주일 것이므로 조건부 PORT_t 2.198 의 상당분이 신호가 아니라 국면 순풍일 수 있다",
+      "regime_base_rate": "전 구간 42.9% (188/438개월). 시대별 1990s 55.9 / 1995s 36.7 / 2000s 45.0 / 2005s 48.3 / 2010s 48.3 / 2015s 33.3 / 2020s 36.7 / 2025s 31.6",
+      "window_hazard": "조건부 n=27 · base rate 42.9% ⇒ 원 패널 ~63개월. 짧고 최근인 창이며 36m ending 2026 의 d_ann +0.2027 = 고-핸디캡 구역",
+      "current_regime": "ON (2026-07 기준, 직전월 mega_spread -0.1248)",
+      "source": "stage_artifacts/fq141_precheck_20260808/np_fq138_regime_link.R"
+    }
+  },
+
+  "question": "계약 신호의 국면-조건부 초과분은 국면 순풍(소형 우위)과 구별되는가?",
+
+  "design": {
+    "regime_definition_FROZEN": "t-1 mega_spread <= 0 (동월·trailing3 변형은 본 라운드에서 사용 금지 — 3-way look 이 원 사후성의 원인이었다)",
+    "measurement": "02_Infrastructure/contracts/canonical_screen_bt.R::canonical_screen_bt(), top-25 EW long-only, cap-w 벤치, 15bps, liq>=2e8",
+    "metric_type": "canonical_screen",
+    "control_requirement_MANDATORY": "조건부 판정은 반드시 중립 대조군과의 **차이**로 한다. 계약 신호 단독의 조건부 PORT_t 를 판정 근거로 삼는 것을 금지한다 — 그것이 순풍을 신호로 승격시키는 경로다."
+  },
+
+  "arms": [
+    { "id": "SIG_ON",  "desc": "계약 신호 top-25, 국면 ON 월만" },
+    { "id": "SIG_OFF", "desc": "계약 신호 top-25, 국면 OFF 월만" },
+    { "id": "NEU_ON",  "desc": "★중립 대조 — 신호 없는 top-25(POOL_EW 또는 무작위 25종, 동일 유니버스·동일 제약), 국면 ON 월만" },
+    { "id": "NEU_OFF", "desc": "중립 대조, 국면 OFF 월만" }
+  ],
+
+  "discriminants": {
+    "primary": {
+      "definition": "DiD = (SIG_ON - NEU_ON) - (SIG_OFF - NEU_OFF), 월별 net active 계열의 paired NW(lag3) t",
+      "threshold": ">= 2.0",
+      "rationale": "국면 순풍은 SIG 와 NEU 에 공통으로 실리므로 차분에서 소거된다. 남는 것이 신호의 국면-조건부 초과분이다."
+    },
+    "secondary_reported_regardless": [
+      "SIG_ON 단독 conditional PORT_t (원 보고 2.198 의 재현 여부 — 판정 근거 아님, 재현 확인용)",
+      "NEU_ON 단독 conditional PORT_t (순풍 크기의 직접 계량 — 이것이 2.198 에 근접하면 원 결과는 순풍)",
+      "조건부 표본의 창 d_ann 및 역사 백분위(고-핸디캡 라벨)"
+    ]
+  },
+
+  "violation_injection": "계약 score 를 월내 무작위 셔플한 위약 신호로 동일 파이프라인 실행 → DiD 가 문턱 미달이어야 한다(발화하면 파이프라인 결함)",
+
+  "boundaries": {
+    "not_claimed": [
+      "자본 자격 — HARD 3종(PORT_t 2.95 / oos_retention 0.7 / calmar 0.64)은 별도이며 본 라운드는 미주장",
+      "벤치 변경 또는 제약 완화 — 고정 축(INV-7)",
+      "국면 라벨의 예측력 — 본 라운드는 사전관측 가능한 t-1 상태를 조건으로 쓸 뿐 라벨 품질을 주장하지 않는다"
+    ],
+    "oos_opportunity": "현재 국면 ON 이므로 본 사전등록 이후 관측되는 달은 자동으로 clean OOS 가 된다. 사전등록 시점(2026-08-08) 이후 데이터로 별도 재판정할 것."
+  },
+
+  "revival_conditions_inv7": "DiD 미달이어도 계약 재료 전체의 기각이 아니다 — 국면-조건부 소비면 한정 negative 이며, 재료의 다른 소비면(필터·오버레이·monitoring)은 미측정으로 남는다(FQ-126 등)."
+}

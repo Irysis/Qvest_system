@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "sot": "02_Infrastructure/docs/qvest_v8_3_alpha_discovery_sot.md §4",
-  "updated": "2026-08-08T18:26:36+09:00",
+  "updated": "2026-08-08T18:19:30+09:00",
   "consume_rule": "새 발굴 리서치 착수 전: hypothesis_index lookup → 본 큐 확인 → owner/status 갱신. 완료 시 result_ref(L-code/보고서) 기입. dohoon_decision 항목은 세션 임의 착수 금지.",
   "entries": [
     {
@@ -2689,24 +2689,11 @@
       "wall_check": "조건부 canonical PORT_t +2.198(n=27) 은 무조건 +0.511 의 4.3배이나 HARD 2.95 미달. 사전등록 라운드는 개선폭 자체를 판정 대상으로.",
       "data_gate": "없음 — panelx_A.parquet + gridx_* 재사용",
       "owner": "미배정",
-      "status": "preregistered_20260808_awaiting_measurement",
+      "status": "frontier_open",
       "registered": "2026-08-03 alpha-research (WT-D20260803_008 NP-1)",
       "precheck_measured": "문턱을 단일값(0)으로 쓰지 말 것 — 이미 스윕 실측이 있다: q0.2 격차 +0.128 / q0.3 +0.144 / q0.4 +0.134 / q0.5 +0.101 / q0.6 +0.012 / q0.7 +0.043. 제로컷은 분포의 34분위. q0.6 붕괴가 실재하므로 사전등록은 **분위 구간(q0.2~0.5)** 을 명시하고 판정은 분포 q05 로(FQ-109 규약).",
       "mechanism_update_20260808": "★기전 갱신(FQ-139 아크 실측): mechanism.path 의 '기관 후속 매수로 가격 반영'은 **기각**. 계약 신호 상위에서 기관 순매수는 11/11 분할·신호 조합에서 증가하지 않았고(유의 1/11), 대신 **외국인 순매수가 유의 증가**(확장표본 n=7,069, t=3.84, p=0.0001; 10/11 조합). 또한 그 외국인 경로는 **국면 의존을 설명하지 못한다** — 상호작용 −0.00613(p=0.338), 표본 2.1배 확대에도 부호·유의성 불변이며 수급 우위는 오히려 알파가 **약한** mega주도 국면에서 더 크다. 대안으로 검토한 소형주 유동성 사이클은 **전제부터 기각**(소형/대형 유동성비 broad 0.2044 vs mega 0.2026, p=0.880). 잔여 후보: 상대적 소형주 **비유동성**이 알파 강도와 동행(Spearman −0.3449, p=0.0021, 방향은 직관과 반대) — 사전등록 재판정 대상. ∴ 사전등록 라운드는 mechanism 서술을 '외국인 매수(국면 무관) + 국면 의존 기전 미해결'로 갱신한 뒤 착수할 것.",
-      "blocking_precondition": "mechanism 서술 갱신 선행 — 구 서술('기관 후속매수')로 착수 시 기각된 경로를 전제로 심사하게 됨",
-      "preregistration": {
-        "file": "stage_artifacts/fq141_precheck_20260808/fq138_preregistration.json",
-        "registered_at": "2026-08-08",
-        "registered_before_measurement": true,
-        "primary_discriminant": "DiD = (SIG_ON − NEU_ON) − (SIG_OFF − NEU_OFF), paired NW(lag3) t >= 2.0",
-        "why_DiD": "precheck 실측: 국면 변수 mega_spread 가 d 축과 cor 0.896 — 즉 t-1 mega_spread<=0 은 소형 편향 포트의 순풍 국면이다. 신호 단독 조건부 PORT_t(원 2.198)를 판정 근거로 쓰면 순풍을 신호로 승격시킨다. 순풍은 SIG·NEU 에 공통 실리므로 차분에서 소거된다.",
-        "regime_frozen": "t-1 mega_spread<=0 단일 (동월·trailing3 변형 사용 금지 — 3-way look 이 원 사후성의 원인)",
-        "base_rate": "42.9% (188/438개월)",
-        "window_hazard": "조건부 n=27 · base rate 42.9% ⇒ 원 패널 ~63개월 = 고-핸디캡 구역(36m ending 2026 d_ann +0.2027)",
-        "oos_opportunity": "현재 국면 ON — 사전등록 이후 관측월은 자동 clean OOS",
-        "capital_claim": "none — HARD 3종 별도, 본 라운드 미주장"
-      },
-      "next_action": "사전등록 완료. 측정은 4 arm(SIG_ON/SIG_OFF/NEU_ON/NEU_OFF) canonical_screen_bt + DiD paired NW t + 위약 셔플 주입. 신호 단독 조건부 PORT_t 는 재현 확인용이지 판정 근거 아님."
+      "blocking_precondition": "mechanism 서술 갱신 선행 — 구 서술('기관 후속매수')로 착수 시 기각된 경로를 전제로 심사하게 됨"
     },
     {
       "id": "FQ-139",
