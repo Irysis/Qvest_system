@@ -1,0 +1,77 @@
+{
+  "task_id": "WT-D20260808_003",
+  "fq_ref": "FQ-122 NP-1",
+  "locked_at": "2026-08-08T23:43:16",
+  "inherits": "alpha_hypothesis.json (재작성 금지 — mechanism/falsification/regime_scope 승계)",
+  "p0_outcome": {
+    "paired_forms_abandoned": true,
+    "reason": "필요 효과 >> drag 함의: 바스켓형 필요 연 4.00% vs 함의 0.69% (비 0.17) · 필터형 필요 2.81% vs 함의 0.12% (비 0.04). 부모 라운드 INCONCLUSIVE_UNDERPOWERED 재발을 착수 전 회피(handoff 제1 조건 이행)",
+    "bench_drift_measured_ann_pct": 11.6689885546484,
+    "F1_precheck": {
+      "raw_quintile_gap": -0.244730383733931,
+      "raw_t": -20.7622479872285,
+      "neutral_quintile_gap": -0.153351837343591,
+      "neutral_t": -13.2047271526893,
+      "neutral_top25_gap": -0.209246374452166,
+      "verdict": "B3_FIRED — 사전등록 조건 '중립화 후 β 갭 < −0.15 잔존' 충족(분위 −0.153 · top-25 −0.209, 둘 다 NW t 유의). 섹터+사이즈는 β 채널을 span 하지 못한다",
+      "consequence": "전이 결과의 채널 귀속 주장 금지(사전등록 B3 처분). C3(β-직접 잔차화)는 본 라운드 arm 으로 추가하지 않는다(사전등록 밖 arm 금지) — 재설계 후보로만 승격 기록"
+    }
+  },
+  "design_switch": {
+    "from": "paired 포트폴리오 arm (top-25 바스켓 / 제외필터)",
+    "to": "월-횡단면 회귀 + 분위 조건부 평균 (전표본, FQ-068 R2 검정력 선례)",
+    "judgment_quantity": "FMB 월별 횡단면 기울기 (act ~ z_std) 의 시계열 평균 + NW lag-3 t · 및 중립−raw paired 기울기 차",
+    "canonical_role": "canonical_screen_bt 는 schema 필수 필드(canonical_port_t_nw_lag3) 기록 + Δmean/ΔSE 분해용으로 1회 실행하되, 본 라운드 판정 권위 아님(P0 에서 저검정력 확정). CI·검정력 라벨 병기 의무"
+  },
+  "power": {
+    "n_months": 295,
+    "null_sd_monthly": {
+      "slope": 0.00789611579980753,
+      "q5q1": 0.0251305048044357,
+      "topq": 0.0407842970602411,
+      "top25": 0.044876951821818
+    },
+    "required_annual_pct": {
+      "slope": 1.37918890744749,
+      "q5q1": 4.38946367347835,
+      "topq": 7.12366073771346,
+      "top25": 7.83851145574836
+    },
+    "paired_null_sd_monthly": {
+      "slope": 0.0111529713032593,
+      "q5q1": 0.0347552421177776,
+      "topq": 0.0220078172296617
+    },
+    "paired_required_annual_pct": {
+      "slope": 1.94805328297116,
+      "q5q1": 6.07058528772578,
+      "topq": 3.8440339744031
+    },
+    "rule": "판정 후 verdict_with_power() 로 INCONCLUSIVE_UNDERPOWERED vs NEGATIVE_POWERED 구별. 두 라벨을 같은 문장에 병기 금지"
+  },
+  "arms": {
+    "A1": "raw Q01 — FMB 기울기 / 분위 조건부 act / rank-IC / monotonicity",
+    "A2": "중립 Q01(섹터+log시총 잔차) — 동일 배터리",
+    "A3": "A2 + F2 통제(MAX5 원변수 + vol63=D03_EWMA) 를 회귀에 추가 — 증분 잔존",
+    "A4": "A2 + trailing β 통제 — β 채널 잔여분 진단(B3 격리 하 advisory)"
+  },
+  "falsification_tests": {
+    "F1": "완료(P0) — 부분 소거. 판정: 사전등록 조건 미달 = B3",
+    "F2": "MAX5 원변수 + vol63 통제 후 중립 Q01 증분 잔존. 사전 문턱: 통제 전 대비 기울기 잔존율 >= 0.30 (RF-A4 준용, 자의성 인정 — challenge_note_hypothesis §2 ACCEPT 반영해 여기서 고정)",
+    "F3": "개인 순매수(시총 정규화) ~ 중립 z + log(Size) 월별 FMB. raw z 대비 부착 강도 비교. 동시기 관측 라벨 유지",
+    "F4": "중립 z 5분위 평균 act + rank-IC + Harvey-t 병기. 'Harvey-t>=3 ∧ monotonicity<0.5' 지속 여부(B2 예고 관측)"
+  },
+  "discrimination_3": {
+    "d1": "수익-단위 분위 스프레드(Q5−Q1) raw vs 중립 — 평균·중앙값 병기(왜도 방어). 정보 증가 ⇒ 스프레드 확대 / 노이즈 축소 ⇒ 스프레드 불변·t 만 상승",
+    "d2": "ΔPORT_t 의 Δmean vs ΔSE 분해 (canonical arm 2종)",
+    "d3": "F3 주체 시그니처 부착"
+  },
+  "branch_map": {
+    "B1": "전이 성립 — 단 B3 발화로 채널 귀속 주장 불가. 성립 시에도 '중립화가 수익-단위 정보를 늘렸다' 까지만",
+    "B2": "IC-only — 기울기·스프레드 무변인데 rank-IC 만 상승 ⇒ 노이즈 축소 재분류 + 재료-불변 벽의 채널-축 확장(1급 정보, 실패 아님)",
+    "B3": "★발화(P0) — 설계 전제 실패 격리",
+    "B4": "시기 편중 — 연속 시간추세 상호작용(분할 금지). post-2015 회복 없으면 FQ-122 부활 조건 미충족",
+    "B5": "필터면 — P0 에서 paired 폐기. 기술 기록만(CI), 판정 아님"
+  },
+  "prohibitions": ["국면 분할 금지 — 연속 상호작용만, advisory·CI 보고", "사전등록 밖 arm 추가 금지(C3 포함)", "proxy 손계산·자체합성 금지 — canonical_screen_bt / build_monthly_forward_returns 계약 경유", "자본 자격 주장 금지 · 제약 완화 제안 금지(INV-7)"]
+}
