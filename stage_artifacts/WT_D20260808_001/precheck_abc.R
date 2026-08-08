@@ -86,8 +86,8 @@ EF[, q_rank := frank(fz) / .N, by = .(Date, F_)]
 cov_tab <- EF[, .(n_f = .N), by = .(Date, F_)]
 cov_tab <- merge(cov_tab, E[, .(n_e = .N), by = Date], by = "Date")
 say("필터팩터 커버리지(eligible 대비): %s",
-    paste(sprintf("%s=%.3f", FILT,
-      sapply(FILT, function(f) cov_tab[EF[F_ == f, unique(Date)], on = "Date"][, mean(n_f / n_e)])),
+    paste(sapply(FILT, function(f)
+      sprintf("%s=%.3f (n_month %d)", f, cov_tab[F_ == f, mean(n_f / n_e)], cov_tab[F_ == f, .N])),
       collapse = " / "))
 
 # ── A) p_hit ─────────────────────────────────────────────────────────────────
