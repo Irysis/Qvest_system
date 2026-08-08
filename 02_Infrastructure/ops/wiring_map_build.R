@@ -26,13 +26,22 @@
 ## ============================================================================
 suppressWarnings(suppressMessages({ library(data.table); library(jsonlite) }))
 
-ROOT <- Sys.getenv("QM_ROOT", "")
+args <- commandArgs(trailingOnly = TRUE)
+SET_BASELINE <- any(args %in% c("--set-baseline", "--baseline"))
+
+## ★루트 해석 우선순위: --root= > QM_ROOT > getwd()
+##   `--root=` 가 필요한 이유 — 자식 Rscript 는 시작 시 `~/.Renviron` 을 읽어 **상속받은
+##   QM_ROOT 를 덮어쓴다**(.Renviron 이 main 트리로 핀). 그래서 부모가 Sys.setenv 로
+##   다른 루트를 지정해도 자식은 main 을 스캔한다(실측 2026-08-08: 픽스처 대신 실저장소
+##   10,012 파일을 스캔). 같은 함정 선례 = test_r_portability.R 이 worktree 에서 main 을 검사.
+##   ∴ 테스트·worktree 실행처럼 루트를 **명시**해야 하는 경우는 인자로 받는다.
+ROOT <- ""
+.arg_root <- sub("^--root=", "", args[grepl("^--root=", args)])
+if (length(.arg_root) && nzchar(.arg_root[1])) ROOT <- .arg_root[1]
+if (!nzchar(ROOT)) ROOT <- Sys.getenv("QM_ROOT", "")
 if (!nzchar(ROOT) || !dir.exists(file.path(ROOT, "02_Infrastructure")))
   ROOT <- tryCatch(normalizePath(getwd(), winslash = "/"), error = function(e) getwd())
 setwd(ROOT)
-
-args <- commandArgs(trailingOnly = TRUE)
-SET_BASELINE <- any(args %in% c("--set-baseline", "--baseline"))
 
 OUT_MAP  <- "06_Registry/wiring_map.json"
 OUT_BASE <- "06_Registry/wiring_map_baseline.json"

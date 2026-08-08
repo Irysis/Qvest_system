@@ -73,7 +73,7 @@ run_gen <- function(extra = character(0)) {
   old <- Sys.getenv("QM_ROOT", unset = NA_character_)
   Sys.setenv(QM_ROOT = SBX)
   on.exit({ if (is.na(old)) Sys.unsetenv("QM_ROOT") else Sys.setenv(QM_ROOT = old) }, add = TRUE)
-  out <- suppressWarnings(system2("Rscript", shQuote(c(GEN, extra)), stdout = TRUE, stderr = TRUE))
+  out <- suppressWarnings(system2("Rscript", shQuote(c(GEN, paste0("--root=", SBX), extra)), stdout = TRUE, stderr = TRUE))
   rc <- attr(out, "status"); if (is.null(rc)) rc <- 0L
   list(rc = rc, out = paste(out, collapse = "\n"))
 }

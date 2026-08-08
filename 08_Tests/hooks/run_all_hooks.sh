@@ -286,6 +286,12 @@ SUITES=(
   #   양쪽 다 양성 대조 + 돌연변이(면제 규칙 무력화 시 뒤집힘)를 포함 — 죽으면 총계가 떨어진다.
   "08_Tests/hooks/test_scheduler_task_health_verdict.sh"
   "08_Tests/hooks/test_stranded_triage.sh"
+  # 2026-08-08 추가: 배선 지도 생성기(wiring_map_build.R) 계수 규칙 고정.
+  #   ★등재 사유 = 생성기가 개발 중 **네 번 틀렸고 네 번 다 양성 대조가 잡았다**
+  #   (일반명 심볼 과대계상 16 / 자기참조로 orphan 3→0 / 문서 언급을 배선으로 계상 /
+  #    재구현 축 미재현→발행 보류). 지도가 틀리면 "배선 완료"라는 **거짓 초록**이 되므로
+  #   계수 규칙을 픽스처로 못박고, 드리프트 감지는 양방향(끊으면 exit 2 · 그대로면 exit 0)으로 실증한다.
+  "08_Tests/hooks/test_wiring_map.R"
   # 2026-08-02 추가: 벤치마크 2소스 정합 감시 위반 주입.
   #   ★등재 사유 = 실사고: RAWDATA.parquet::BM_Ret 과 benchmark.parquet::BM_Ret 은
   #   독립 생성 경로(krx_build_rawdata.R:223 자체계산 vs incremental_update_file.R:181 조인)인데

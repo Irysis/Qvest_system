@@ -592,6 +592,19 @@ if (!is.null(r)) cat(sprintf("[distill] 최근 1일 판정 %d건 [%s]\n", r$n, q
 # [8] Artifact index 재생성 (fail-soft — 실패해도 refresh 전체는 계속. 2026-07-04 저장규칙 재편)
 "$RSCRIPT" --no-save "$INFRA/tools/build_artifact_index.R" || echo "[warn] artifact index rebuild failed (fail-soft)"
 
+# [8.1] 배선 지도 재생성 (2026-08-08 신설, 도훈 지시) — 표준↔소비자 지도 + 드리프트 감지.
+#   왜 매일 돌리나: 정적 지도는 만든 순간부터 낡고 **낡은 지도는 "배선 완료"로 위장한다**.
+#   exit 2 = 소비자 수가 기준선보다 감소(= 누군가 표준을 우회하기 시작) — 경고만, refresh 는 계속.
+#   기준선 갱신(--set-baseline)은 자동으로 하지 않는다: 자동 갱신하면 악화가 매일 새 기준선으로
+#   흡수돼 **드리프트가 영원히 안 잡힌다**(래칫이 래칫이 아니게 됨). 개선 반영은 수동 판단.
+_wm_rc=0
+"$RSCRIPT" --no-save "$INFRA/ops/wiring_map_build.R" || _wm_rc=$?
+if [ "${_wm_rc:-0}" -eq 2 ]; then
+  echo "[warn] ★배선 드리프트 — 표준 소비자 수 감소 (06_Registry/wiring_map.json drift 절 확인)"
+elif [ "${_wm_rc:-0}" -ne 0 ]; then
+  echo "[warn] wiring map rebuild failed rc=$_wm_rc (fail-soft)"
+fi
+
 # [9] 스위트 총계 수집 (2026-07-25) — 계측 사망은 '실패'가 아니라 '총계 감소'로 온다.
 #     여기서 매일 수집해야 bootstrap 의 --check 가 최신값을 비교한다(수동 수집 의존 제거).
 #     fail-soft: 러너가 죽어도 refresh 전체는 계속 — 다만 그 경우 null 로 기록되어
