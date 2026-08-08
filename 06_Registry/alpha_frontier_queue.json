@@ -1,7 +1,7 @@
 {
  "schema_version": "1.0",
  "sot": "02_Infrastructure/docs/qvest_v8_3_alpha_discovery_sot.md §4",
- "updated": "2026-08-08 (FQ-114 사전 확인 — 국면 라벨 무자격 + 라벨 정본 위치 불명으로 설계 교정 필요. 주판정을 실현 시장 상태 귀속으로 전환 권고. 총 164건)",
+ "updated": "2026-08-08 (★라벨 자격은 **사건 정의에 조건부** 실증 — 큰 하락(<-5%/-10%)에서 lift 1.97~3.19x 자격 통과. FQ-114 착수 가능 전환 + FQ-143 국면 오버레이 재개 검토 등재. 총 164건)",
  "consume_rule": "새 발굴 리서치 착수 전: hypothesis_index lookup → 본 큐 확인 → owner/status 갱신. 완료 시 result_ref(L-code/보고서) 기입. dohoon_decision 항목은 세션 임의 착수 금지.",
  "entries": [
   {
@@ -2299,9 +2299,9 @@
    "wall_check": "비적용 — 관측가능성 계층. 자본 주장 없음.",
    "data_gate": "없음 (r43_live_monthly_maxz.parquet + 국면 라벨 현행분)",
    "owner": "미배정",
-   "status": "design_correction_required",
+   "status": "frontier_open",
    "registered": "2026-08-02 Q-Lead (WT-D20260802_012 R43-F1 파생)",
-   "precheck_measured": "★착수 전 사전 확인 (2026-08-08, Q-Lead read-only) — **설계 교정 필요, 착수 보류**. (1) 가설이 '침묵월의 **국면 라벨** 분포'를 주판정으로 두는데, 08-03 실측이 그 라벨의 판별력 부재를 확정했다(CRISIS recall 0.096 < base 0.457 fisher p 0.388 · 독립 음성대조 0.3669). **무자격 라벨로 귀속 측정을 하면 결과가 양수든 음수든 해석 불가**이고, 신설 관문(`label_eligibility_gate.R`)의 차단 대상이다. (2) data_gate 가 지목한 '국면 라벨 현행분'의 정본 위치가 불명 — `.cache/regime_daily_v2.parquet` 실측 결과 **라벨 컬럼이 없다**(8,239행 · 컬럼 = Date/MRS/exposure/n_axes_firing/VIX_z_smooth 등 **연속값**). CRISIS/CAUTION 4분류의 산출 지점을 먼저 특정해야 한다. ⇒ **교정안**: 주판정을 라벨 귀속이 아니라 **실현 시장 상태**(월 변동성·수익률·낙폭 연속값) 귀속으로 전환하고, 라벨 축은 관문 통과 시에만 보조로 병기. 가설 서술에 이미 '시장 변동성/방향과의 결합'이 있어 범위 확대가 아니라 **축 우선순위 교체**다."
+   "precheck_measured": "★착수 전 사전 확인 (2026-08-08, Q-Lead read-only) — **설계 교정 필요, 착수 보류**. (1) 가설이 '침묵월의 **국면 라벨** 분포'를 주판정으로 두는데, 08-03 실측이 그 라벨의 판별력 부재를 확정했다(CRISIS recall 0.096 < base 0.457 fisher p 0.388 · 독립 음성대조 0.3669). **무자격 라벨로 귀속 측정을 하면 결과가 양수든 음수든 해석 불가**이고, 신설 관문(`label_eligibility_gate.R`)의 차단 대상이다. (2) data_gate 가 지목한 '국면 라벨 현행분'의 정본 위치가 불명 — `.cache/regime_daily_v2.parquet` 실측 결과 **라벨 컬럼이 없다**(8,239행 · 컬럼 = Date/MRS/exposure/n_axes_firing/VIX_z_smooth 등 **연속값**). CRISIS/CAUTION 4분류의 산출 지점을 먼저 특정해야 한다. ⇒ **교정안**: 주판정을 라벨 귀속이 아니라 **실현 시장 상태**(월 변동성·수익률·낙폭 연속값) 귀속으로 전환하고, 라벨 축은 관문 통과 시에만 보조로 병기. 가설 서술에 이미 '시장 변동성/방향과의 결합'이 있어 범위 확대가 아니라 **축 우선순위 교체**다. ★★사전확인 2차 (2026-08-08, 관문 현장 실증) — **1차 판단 정정**. 라벨 정본은 `.cache/unified_regime_signal.parquet`(Category, 431개월 1990-10~2026-08, CRISIS 66/CAUTION 39/NEUTRAL 47/RISK_ON 279). 신설 관문으로 재보니 **자격이 사건 정의에 조건부**다: 월수익<0% → recall 0.533 vs base 0.459(lift 1.16x, p 0.0511) **INELIGIBLE** / 월수익<-5% → 0.333 vs 0.169(**lift 1.97x**, p<1e-4) **ELIGIBLE** / 월수익<-10% → 0.200 vs 0.063(**lift 3.19x**, p<1e-4) **ELIGIBLE**. 즉 **라벨은 작은 하락은 못 잡지만 큰 하락은 잡고, 심할수록 판별력이 커진다**. ⇒ 내 1차 서술('라벨 무자격이라 착수 불가')은 과잉 일반화였다 — 08-03 실측(recall 0.096)은 CRISIS 단독·다른 사건 정의의 결과이고 본 실측(CRISIS∪CAUTION·전구간·벤치 월수익)과 **동일 비교가 아니다**. ⇒ FQ-114 는 **착수 가능**하되 사건 정의를 사전등록에 명시할 것(권고: <-5% 와 <-10% 병기)."
   },
   {
    "id": "FQ-115",
