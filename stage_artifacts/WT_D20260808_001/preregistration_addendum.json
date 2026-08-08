@@ -1,0 +1,81 @@
+{
+  "addendum_to": "stage_artifacts/WT_D20260808_001/preregistration.json",
+  "task_id": "WT-D20260808_001",
+  "written_at": "2026-08-08",
+  "written_before_any_performance_arm": true,
+  "why": "본 부록은 원 사전등록을 대체하지 않는다. Q-Lead 지시가 강제한 4항(§7b production base · 가중 규칙 ≥2 · ΔIR↔paired t 부호 일치 관문 · 회전 상한)이 원 사전등록 P2 에 명시되지 않아, **성과 arm 을 1회도 계산하지 않은 시점에** 추가 고정한다.",
+
+  "P2_extension_bases_and_weighting": {
+    "mandate_source": "measurement-graduation §7b + 실사고 WT-D20260802_022 (동일 형태 제외필터가 재구성 base ΔIR +0.169 → production 실코드 −0.149 부호 반전, paired t −1.976)",
+    "arms": {
+      "W1_recon_ew25": {
+        "panel": "WT-009 tuned M01_PATHQ (eligible set)",
+        "n": 25, "weighting": "EW",
+        "engine": "canonical_screen_bt()",
+        "metric_type": "canonical_screen",
+        "authority": "재료 자격 판정 전용 — 상신 근거 불가",
+        "status": "원 사전등록 P2 의 base/treatment 그대로"
+      },
+      "W2_recon_tilt25": {
+        "panel": "동일",
+        "n": 25, "weighting": "linear_tilt λ=1.5 + TOphi φ=3, lb 0, ub 0.20",
+        "metric_type": "recon_diag",
+        "authority": "가중 규칙 #2 — 상신 근거 불가",
+        "why": "실사고 기전이 가중 규칙이었다: rank-tilt 는 최상위 비중 종목을 자르지만 EW/cap_norm 에서는 그 종목 무게가 다르다. ΔIR 은 가중 규칙에 조건부인 국소량"
+      },
+      "W3_prod_realcode_tilt20": {
+        "panel": "stage_artifacts/WT_D20260425_010/alpha_scores.parquet (score_eff — production 종목선별 계층)",
+        "n": 20, "MIN_NAMES": 15,
+        "weighting": "linear_tilt λ=1.5 + TOphi φ=3, ub = 0.10 if regime_state==CRISIS else 0.20",
+        "engine": "Iter31 run_all.R §5 VERBATIM 재현 (WT-022 검증 코드 재사용)",
+        "parity_gate_A": "04_Research/strategies/STR_1715_WT016_Iter31_GridBestProd/output/03_period_returns.csv 와 max|Δret_net| <= 1e-8. 불일치 시 STOP (사전등록)",
+        "metric_type": "realcode_recon (production_parity_verified)",
+        "authority": "★§7b 권위 arm — 상신 가능성 판정은 이 arm 으로만"
+      },
+      "W4_prod_ew20": {
+        "panel": "동일 production score_eff", "n": 20, "weighting": "EW",
+        "metric_type": "realcode_recon",
+        "authority": "가중 규칙 #2 (production base)"
+      }
+    },
+    "production_slot_resolution": {
+      "measured": "resolve_admitted_slot() → admitted = STR_1715_on_M4gAE_R05_noLayer4_PG2, 슬롯 2-4, IR 1.416, conv net_active_recon_v1",
+      "anchor_choice": "슬롯 2-4 디렉토리에는 보유파일만 있고 백테스트 period_returns 가 없다(Glob 실측 2건 모두 02_holdings_universe). 본 개입 계층은 **종목 선별**이므로 앵커 = Iter31 GridBestProd 종목계층 03_period_returns.csv (WT-022 에서 parity PASS 확인된 동일 앵커).",
+      "scope_boundary_declared": "오버레이(M4gAE 가중 × β_R05) 계층은 base·treatment 공통이며 본 개입 범위 밖이다. 따라서 본 라운드는 **종목계층 bare 판정**이고, 오버레이 결합 후 부호가 달라질 수 있음을 판정문에 명시한다(2026-08-08 실측: bare 우세가 overlay 결합에서 역전한 선례 존재)."
+    },
+    "signal_date_mapping": {
+      "rule": "tuned 패널 Date d0(월말 거래일) → production sig_label 월 = month(d0)+1",
+      "pit_basis": "신호가 홀딩월 시작 전(d0) 데이터로만 계산됨 = C5 준수. anchor_date/realized_ym 라벨로 컷오프 잡지 않는다",
+      "verification": "매핑 후 월수·중복 0 확인 인쇄 의무"
+    },
+    "quantile_basis_for_production_arms": "production 후보 프레임(panel_t 중 해당 팩터 가용분) 내 월별 분위 — WT-022 build_excl_map 과 동일 규약",
+    "q_for_production_arms": 0.20,
+    "q_sensitivity_scope": "민감도 q(0.10/0.30)는 canonical base(W1)에만 적용. production arm 에서 q 를 스윕하면 selection_type 이 sweep 으로 재분류되므로 하지 않는다"
+  },
+
+  "sign_agreement_gate": {
+    "rule": "★ΔIR 부호와 paired NW t 부호가 불일치하는 셀은 '유의 아님'으로 처분하고, 불일치 사실 자체를 판정문에 명시한다.",
+    "evidence": "실사고 capnorm 셀: ΔIR +0.1579 인데 paired t −0.253 — 전체기간 집계는 양수인데 월별로는 음수 경향(소수 월이 끌어올림)",
+    "reporting": "arm × 가중 규칙 표에 ΔIR / paired t / 부호일치 여부 3열을 반드시 병기"
+  },
+
+  "positive_claim_requires_all": [
+    "부호 일치 (ΔIR ∧ paired t)",
+    "paired NW lag-3 t >= 2.0",
+    "가중 규칙 >=2 개에서 부호 일치",
+    "W3(production 실코드 base) arm 이 반대 부호가 아닐 것",
+    "canonical base 에서 q ∈ {0.10, 0.20, 0.30} 부호 일치",
+    "플라시보(무작위 제외, 동월 동개수) 분포 밖"
+  ],
+  "harm_claim_requires": "paired t <= −2.0 ∧ 부호 일치 ∧ W3 동일 방향",
+  "otherwise": "verdict_with_power 라벨(INCONCLUSIVE_UNDERPOWERED / NEGATIVE_POWERED) + 95% CI 보고. '효과 없음' 단정 금지",
+
+  "implementation_discipline_checks": {
+    "turnover_cap": "연 회전 11.0/yr(=1100%) 상한 확인 — base·treatment 양쪽 인쇄. 필터가 회전을 올려 비용이 효과를 삼키는지 gross/net 분해로 명시",
+    "dual_basis": "canonical arm 은 cap-w 판정 + diag_ew_universe(EW-유니버스 벤치) + diag_cap_tier(MEGA/MID/OTHER) 병기 — cap-w 기각 전 EW-대비 생존 확인 의무(v8.3 M2)",
+    "hard_axes": "top-25(canonical)/top-20(production) · long-only · Σw=1 · ub 0.20 · K200∪KQ150 · 15bps · adv>=2e8 — 고정 축, 완화 제안 금지(INV-7)",
+    "cost_convention": "canonical_screen_bt: cost = Σ|Δw| × 15bps. production 재현: cost = turnover(Σ|Δw|/2) × 15bps × 2 = 동일식 — 두 경로 일치 확인 인쇄"
+  },
+
+  "capital_claim": "없음 — 재료 자격(회수 가능성) 판정. graduation HARD 3종은 forge/judge 소관"
+}
