@@ -1,6 +1,6 @@
 # 02_Infrastructure INDEX
 
-> 자동 생성 2026-08-08 15:33 — 큐레이션 원본: `06_Registry/index_descriptions.json` (role/status/category 수동 보완처) · 재생성: `Rscript 02_Infrastructure/tools/build_artifact_index.R` (daily_refresh 말미 자동). 본 파일 직접 수정 금지 — 재생성 시 덮어씀.
+> 자동 생성 2026-08-08 22:26 — 큐레이션 원본: `06_Registry/index_descriptions.json` (role/status/category 수동 보완처) · 재생성: `Rscript 02_Infrastructure/tools/build_artifact_index.R` (daily_refresh 말미 자동). 본 파일 직접 수정 금지 — 재생성 시 덮어씀.
 
 ## 데이터 (3)
 
@@ -83,7 +83,7 @@
 
 | 항목 | 정체 | status | 최근 | 크기 |
 |---|---|---|---|---|
-| `contracts/` | 측정·계약 코어 16건 — build_bt_result/canonical_screen_bt/essence_score(Grade 권위)/register_module/holdout_falsification 등 실측-only 거버넌스의 구현체 | active | 2026-08-02 | 209KB |
+| `contracts/` | 측정·계약 코어 16건 — build_bt_result/canonical_screen_bt/essence_score(Grade 권위)/register_module/holdout_falsification 등 실측-only 거버넌스의 구현체 | active | 2026-08-08 | 222KB |
 | `schemas/` | JSON 스키마 계층 — certs/(5 certificate)·packages/(6 agent package)·state/(book_state·axiom 등) 스키마 정의 | active | 2026-06-07 | 20KB |
 
 ## 발굴 (1)
@@ -111,7 +111,7 @@
 |---|---|---|---|---|
 | `judge/` | judge_lockbox_harness.R 단일 — judge의 lockbox 격리 검증 하네스(Gate 심사 시 forge 산출 재검) | active | 2026-06-07 | 12KB |
 | `prompts/` | agent spawn init 프롬프트 14건 — _shared_prefix.md(axiom derived cache) + alpha/risk/optimizer/forge/judge/qlead_init.md | active | 2026-08-07 | 222KB |
-| `worktask/` | WT 계약 계층 — common_charter.md·cert_rules.R·constraint_defaults.json(graduation severity)·run_all_template.R(현행 forge 템플릿)·lineage_utils | active | 2026-08-02 | 262KB |
+| `worktask/` | WT 계약 계층 — common_charter.md·cert_rules.R·constraint_defaults.json(graduation severity)·run_all_template.R(현행 forge 템플릿)·lineage_utils | active | 2026-08-08 | 263KB |
 
 ## 메모리 (1)
 
@@ -170,7 +170,7 @@
 | 항목 | 정체 | status | 최근 | 크기 |
 |---|---|---|---|---|
 | `sanity_checks/` | bear_date_audit.R 단일 — forward label 방향 PIT 의무 감사(Cycle 50 lookahead 재발 방지 게이트) | active | 2026-06-07 | 12KB |
-| `validation/` | 검증 계층 26건 — pit_enforcement.R·lookahead_detector.R(PIT Level 0 구현)·v8_readiness_gate.R·preflight_check·stage_artifact_schemas | active | 2026-08-08 | 359KB |
+| `validation/` | 검증 계층 26건 — pit_enforcement.R·lookahead_detector.R(PIT Level 0 구현)·v8_readiness_gate.R·preflight_check·stage_artifact_schemas | active | 2026-08-08 | 361KB |
 
 ## 설계 SOT (1)
 
