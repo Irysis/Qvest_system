@@ -167,6 +167,14 @@ SUITES=(
   #   "경보 0건"으로만 보인다.
   "08_Tests/factor_db/test_ic_frontier_check.R"
   "08_Tests/factor_db/test_build_hash_provenance.R"
+  # 2026-08-08 추가(FQ-163): factor DB 배출 감시 + compute_consensus 도달성.
+  #   compute_consensus 의 7개 블록이 `%in% names(cons)` 게이트가 영구 거짓이 되면서
+  #   440개월 전 구간 0행이었는데 **아무 경보도 없었다** — 빌더가 "등재된 팩터가
+  #   실제로 나왔는가"를 묻지 않았기 때문. 수리만 하면 같은 계통이 다시 생기므로
+  #   감시(emission_guard)를 놓았고, 이 검사가 그 감시의 차단 실효를 지킨다.
+  #   ★핵심 축은 Class S(구조적 침묵) — 전 구간 0행은 **델타 감시로는 원리적으로
+  #    못 잡는다**(사라진 적이 없으니 델타가 없다). B4 가 돌연변이로 검출력을 실증.
+  "08_Tests/factor_db/test_emission_guard.R"
   # 2026-07-26 추가: auto-commit 밸브 v2(디렉터리-단위 A-only 격리 — v1 영구개방 사고 재발 방지)
   "08_Tests/hooks/test_auto_commit_valve.sh"
   # 2026-07-26 추가: measurement_basis_audit v1.12 계보 resolver (worktree 좌초 회수분의 정본 회귀 가드)

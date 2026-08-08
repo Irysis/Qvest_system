@@ -182,7 +182,7 @@ factor_emission_check <- function(produced, reg_meta, ledger, ym, baseline = NUL
     setorder(streak, -consecutive_absent, Factor_Name)
   }
 
-  bl_undiag <- baseline[!diagnosed, Factor_Name]
+  bl_undiag <- baseline[diagnosed == FALSE, Factor_Name]
 
   report <- list(
     guard          = "factor_emission_check",
@@ -242,11 +242,12 @@ factor_emission_guard <- function(result, ym, fdb_dir, registry_path,
     if (isTRUE(write_artifacts)) {
       sc <- file.path(fdb_dir, sprintf("emission_report_%s.json", ym))
       write_json(rep, sc, auto_unbox = TRUE, pretty = TRUE, digits = NA, na = "null")
-      new_rows <- copy(produced)[, `:=`(ym = ym, built_at = format(Sys.time(), "%Y-%m-%dT%H:%M:%S"))]
+      ym_cur <- as.character(ym)[1]   # ★컬럼명 'ym' 과 충돌 방지 (i-표현식에선 컬럼이 이긴다)
+      new_rows <- copy(produced)[, `:=`(ym = ym_cur, built_at = format(Sys.time(), "%Y-%m-%dT%H:%M:%S"))]
       setcolorder(new_rows, c("ym", "Factor_Name", "n_rows", "n_tickers", "built_at"))
       if (file.exists(ledger_path)) {
         old <- fread(ledger_path, colClasses = list(character = "ym"))
-        old <- old[ym != ym]                       # 같은 달 재빌드는 교체
+        old <- old[ym != ym_cur]                   # 같은 달 재빌드는 교체
         fwrite(rbindlist(list(old, new_rows), use.names = TRUE, fill = TRUE), ledger_path)
       } else {
         fwrite(new_rows, ledger_path)
