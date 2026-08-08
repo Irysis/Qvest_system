@@ -106,6 +106,7 @@ for (d in STD_DIRS) {
 
 ## ── (b) 권위 판정 원장 추출 ────────────────────────────────────────────────
 for (p in list.files("06_Registry", pattern = "\\.json$", full.names = TRUE)) {
+  if (grepl("^wiring_map", basename(p))) next   # 자기 산출물은 표준 목록에도 넣지 않는다(자기참조)
   j <- tryCatch(fromJSON(p, simplifyVector = FALSE), error = function(e) NULL)
   if (is.null(j) || !is.list(j)) next
   keys <- intersect(VERDICT_KEYS, names(j))
@@ -163,12 +164,54 @@ count_consumers <- function(std_file, symbols) {
   list(strong = strong, reimpl = reimpl, transitive = transitive, mentions = mentions)
 }
 
+## ── 산출물 신선도 (2026-08-08 신설) ─────────────────────────────────────────
+## ★소비자 **수**만으로는 못 잡는 변종이 있다: **배선은 됐는데 호출 계기가 없다**.
+##   실측(FQ-056): build_module_performance.R 은 run_factor_rotation.R:32 가 실제 source 하므로
+##   이 지도가 `wired` 로 센다. 그런데 그 러너는 사람이 `/factor-rotation` 을 띄울 때만 돌아서
+##   산출물이 generated=2026-06-13 로 **56일 정지**해 있었다(재실행 시 192→209 모듈).
+##   죽은 코드도 실행 실패도 아닌 **호출 계기 부재** — 소비자 수는 정상이므로 영원히 안 잡힌다.
+## ∴ 표준이 *산출물을 쓰는* 경우 그 산출물의 신선도를 함께 본다.
+STALE_DAYS <- as.numeric(getOption("qvest.wiring_stale_days", 30))
+producer_freshness <- function(std_file) {
+  ## ★안전 조회 — 스캔에서 제외된 표준(자기 산출물 등)은 BODY 에 없다.
+  ##   `[[` 는 그때 "subscript out of bounds" 로 즉사한다(실측 2026-08-08).
+  txt <- if (std_file %in% names(BODY)) BODY[[std_file]] else
+           tryCatch(paste(readLines(std_file, warn = FALSE, encoding = "UTF-8"), collapse = "\n"),
+                    error = function(e) "")
+  if (is.null(txt) || !nzchar(txt)) return(list(out = NA_character_, age = NA_real_))
+  ## 표준 본문에 인용된 산출 경로 후보 (레지스트리/outputs 만 — 입력 캐시는 제외)
+  m <- regmatches(txt, gregexpr('"(06_Registry|outputs)/[A-Za-z0-9_./-]+\\.(json|parquet|csv)"',
+                                txt, perl = TRUE))[[1]]
+  m <- unique(gsub('"', "", m))
+  m <- m[file.exists(m)]
+  if (!length(m)) return(list(out = NA_character_, age = NA_real_))
+  ## 가장 오래된 산출물이 그 표준의 정체 지문
+  ages <- vapply(m, function(p) {
+    a <- as.numeric(difftime(Sys.time(), file.info(p)$mtime, units = "days"))
+    ## generated 필드가 있으면 그쪽이 더 정직하다(파일 mtime 은 무관한 touch 로도 갱신됨 —
+    ## 실측: module_performance.json mtime=07-03 인데 generated=06-13 이었다)
+    if (grepl("\\.json$", p)) {
+      j <- tryCatch(fromJSON(p, simplifyVector = TRUE), error = function(e) NULL)
+      g <- if (is.list(j)) (j$generated %||% j$generated_at %||% j$last_updated) else NULL
+      if (!is.null(g) && nzchar(as.character(g)[1])) {
+        d <- suppressWarnings(as.Date(substr(as.character(g)[1], 1, 10)))
+        if (!is.na(d)) a <- as.numeric(difftime(Sys.Date(), d, units = "days"))
+      }
+    }
+    a
+  }, numeric(1))
+  i <- which.max(ages)
+  list(out = m[i], age = unname(ages[i]))
+}
+`%||%` <- function(a, b) if (is.null(a) || length(a) == 0) b else a
+
 cat("[wiring] 소비자 계수 중...\n")
 res <- vector("list", nrow(STD))
 for (i in seq_len(nrow(STD))) {
   sp <- file.path(STD$dir[i], STD$standard[i])
   cc <- count_consumers(sp, STD$symbols[i])
   cons <- cc$strong                              # ★배선 판정은 strong 만으로 한다
+  pf <- producer_freshness(sp)
   zone_of <- function(v) ifelse(grepl("^08_Tests/", v), "tests",
              ifelse(grepl("^02_Infrastructure/ramp/", v), "ramp",
              ifelse(grepl("^02_Infrastructure/", v), "infra",
@@ -189,6 +232,7 @@ for (i in seq_len(nrow(STD))) {
     ##   그대로 재현하므로, 원인 규명 전까지 `_unverified` 접두로만 남기고 판정에 쓰지 않는다.
     `_unverified_n_reimpl` = length(cc$reimpl),
     n_transitive = length(cc$transitive), n_mentions = length(cc$mentions),
+    producer_output = pf$out, producer_age_days = round(pf$age, 1),
     zones = paste(sprintf("%s:%d", names(nz), as.integer(nz)), collapse = " "),
     consumers = paste(head(cons, 40), collapse = ";"),
     `_unverified_reimplementers` = paste(head(cc$reimpl, 20), collapse = ";")
@@ -201,6 +245,9 @@ W <- rbindlist(res, fill = TRUE)
 W[, status := fifelse(n_consumers_nontest == 0L, "orphan",
               fifelse(n_consumers_nontest <= 2L, "thin", "wired"))]
 ## 단일 lane 국소 배선 — align_signal_return_ym 이 정확히 이 형태였다(소비자 2개 전부 ramp)
+## ★독립 축 — 배선(status)과 별개로 "산출물이 정체됐나"를 따로 표시한다.
+##   wired 인데 stale_producer=TRUE 가 정확히 FQ-056 형태(호출 계기 부재)다.
+W[, stale_producer := !is.na(producer_age_days) & producer_age_days > STALE_DAYS]
 W[, single_zone := {
   z <- gsub(":[0-9]+", "", zones)
   zs <- lapply(strsplit(z, " "), function(v) setdiff(v, c("tests", "")))
@@ -222,6 +269,8 @@ out <- list(
     thin = sum(W$status == "thin"),
     wired = sum(W$status == "wired"),
     single_zone_nonorphan = sum(W$single_zone & W$status != "orphan"),
+    stale_producer = sum(W$stale_producer),
+    wired_but_stale = sum(W$stale_producer & W$status == "wired"),
     `_unverified_with_reimplementers` = sum(W[["_unverified_n_reimpl"]] > 0L)
   ),
   standards = lapply(seq_len(nrow(W)), function(i) as.list(W[i]))
