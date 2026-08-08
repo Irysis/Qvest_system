@@ -12,9 +12,69 @@ suppressPackageStartupMessages({
   library(data.table)
 })
 
+#------------------------------------------------------------------------------
+# .cons_history() — CONSENSUS 원천에서 지표 1종의 PIT 이력을 직접 꺼낸다
+#
+# ★2026-08-08 수리(FQ-163)의 핵심. 구 코드는 병합 산출물 `cons` 를 `%in% names(cons)`
+#   로 훑어 지표를 찾았는데, 성능 리팩터가 `cons` 를 (Ticker, Date) 2열로 줄이면서
+#   그 조건이 **영구 거짓**이 됐고 7개 블록이 442개월 전 구간 0행이 됐다.
+#   병합 산출물을 다시 뚱뚱하게 만드는 대신(리팩터 의도 보존), 이력이 필요한 블록은
+#   원천 CONSENSUS[[metric]] 를 직접 본다 — compute_momentum.R 의 M25/M26/M28 이
+#   쓰는 형태가 정본이고 그 패턴을 따른다.
+#
+# 반환: data.table(Date, Ticker, <metric>) — Ticker 내 **최신이 먼저**(Date 내림차순).
+#       하류 블록의 `.SD[1L]` / `x[1:n]` 규약이 이 정렬에 의존한다.
+#       사용 불가 시 NULL (호출부가 사유를 구분해 보고한다).
+#
+# 주의: 원천 테이블을 참조 수정하지 않는다(컬럼 부분집합 = 새 data.table).
+#------------------------------------------------------------------------------
+.cons_history <- function(CONSENSUS, metric, sig_d) {
+  if (!is.list(CONSENSUS) || length(CONSENSUS) == 0L) return(NULL)
+  src <- CONSENSUS[[metric]]
+  if (is.null(src) || !is.data.table(src) || nrow(src) == 0L) return(NULL)
+  if (!all(c("Date", "Ticker", metric) %in% names(src))) return(NULL)
+  h <- src[, c("Date", "Ticker", metric), with = FALSE]
+  if (!inherits(h$Date, "Date")) h[, Date := as.Date(Date)]
+  h <- h[Date <= sig_d & !is.na(get(metric))]
+  if (nrow(h) == 0L) return(NULL)
+  setorderv(h, c("Ticker", "Date"), c(1L, -1L))
+  h[]
+}
+
+#------------------------------------------------------------------------------
+# 정본 위임 — 계산은 하되 배출하지 않는 팩터
+#
+# registry(factor_registry.json) 의 lifecycle.status="deprecated" 와 **짝을 이룬다**.
+# 한쪽만 바꾸면 배출 감시(emission_guard.R)가 곧바로 불일치를 경고한다.
+# ★블록 자체는 계속 실행한다 — 코드가 죽은 채 방치되는 것이 이번 사고의 기전이었다.
+#   실행돼야 깨질 때 깨진다. 배출만 선언적으로 막는다.
+#------------------------------------------------------------------------------
+.CONSENSUS_DEPRECATED <- c(
+  "C14_Revenue_Surprise" = "M26_Revenue_Mom",
+  "C17_OP_Revision"      = "M28_OP_Rev_Mom"
+)
+
 compute_consensus <- function(RAWDATA, sig_date, FUND = NULL, CONSENSUS = NULL) {
   sig_d <- as.Date(sig_date)
   results <- list()
+
+  # ── 스킵 사유 수집 ─────────────────────────────────────────────────────────
+  # ★조용한 스킵이 이번 사고의 기전이므로, 스킵은 반드시 흔적을 남긴다.
+  #   단 1990~2000년대처럼 CONSENSUS 자체가 비는 vintage 에서 블록마다 warning()
+  #   을 때리면 440개월 빌드가 경고로 뒤덮여 오히려 안 보이게 된다. 그래서
+  #   **정체를 구분**한다: 원천 전체 부재(정상 vintage) = 조용한 1줄 요약,
+  #   원천은 있는데 특정 지표만 부재 = warning() (이상 신호).
+  .skips <- character(0)
+  .note_skip <- function(factor_name, metric, have_source) {
+    .skips <<- c(.skips, sprintf("%s(%s)", factor_name, metric))
+    if (isTRUE(have_source)) {
+      warning(sprintf(
+        "[compute_consensus] %s 스킵 — CONSENSUS 는 로드됐으나 '%s' 테이블 부재/무효 (sig_date=%s)",
+        factor_name, metric, as.character(sig_d)), call. = FALSE)
+    }
+    invisible(NULL)
+  }
+  .have_cons <- is.list(CONSENSUS) && length(CONSENSUS) > 0L
 
   # --- CONSENSUS is a named list of data.tables (e.g. CONSENSUS$sue, CONSENSUS$eps_1y, ...) ---
   # Merge all sub-tables into one wide data.table keyed by (Date, Ticker)
@@ -56,11 +116,16 @@ compute_consensus <- function(RAWDATA, sig_date, FUND = NULL, CONSENSUS = NULL) 
       latest <- merge(latest, part_sub, by = "Ticker", all = TRUE)
     }
   }
-  # cons variable is no longer used below but some C07 code references it — rebuild slim version
-  cons <- rbindlist(lapply(latest_parts, function(p) p[, .(Ticker, Date)]), use.names = TRUE)[
-    , .(Date = max(Date)), by = Ticker]
-  # Attach metric data back from latest for lag computations
-  # (C07 needs historical cons, so rebuild from original for lag lookups)
+  # ★2026-08-08 FQ-163: 구 `cons` 슬림 재구성 블록을 **삭제**했다.
+  #   구 주석("some C07 code references it")은 사실이 아니었다 — C07 은 아래
+  #   cons_for_lag 를 쓴다. `cons` 를 남겨두는 한 하류가 `%in% names(cons)` 로
+  #   지표를 찾다 조용히 거짓이 되는 길이 열려 있으므로 변수를 없앤다.
+  #   ★이제 누가 `names(cons)` 를 다시 쓰면 "object 'cons' not found" 로 **즉시**
+  #     실패한다. 결손이 정상 분기(스킵)로 내려앉지 않는 것이 요점이다.
+  #   이력이 필요한 블록(C10/C11/C13/C14/C15/C17/C18)은 .cons_history() 로
+  #   원천 CONSENSUS[[metric]] 를 직접 본다.
+
+  # C07 의 lag 조회용 target_price 이력 (원천 직참조)
   cons_for_lag <- NULL
   if ("target_price" %in% names(latest)) {
     tp_src <- CONSENSUS[["target_price"]]
@@ -174,35 +239,37 @@ compute_consensus <- function(RAWDATA, sig_date, FUND = NULL, CONSENSUS = NULL) 
     if (nrow(c09) > 0) results[["C09"]] <- c09
   }
 
+  # ── SUE / ESBR 이력 (원천 직참조 — .cons_history 규약: 최신이 먼저) ────────
+  sue_hist  <- .cons_history(CONSENSUS, "sue",  sig_d)
+  esbr_hist <- .cons_history(CONSENSUS, "esbr", sig_d)
+
   # --- C10: Earnings Surprise Persistence (PEAD proxy) ---
   # Average of last 4 SUE values — captures persistent drift.
-  if ("sue" %in% names(cons)) {
-    setorder(cons, Ticker, -Date)
-    sue_avg <- cons[!is.na(sue), {
-      n <- min(.N, 4L)
-      list(sue_avg4 = mean(sue[1:n]))
-    }, by = Ticker]
-    if (nrow(sue_avg) > 0) {
-      c10 <- sue_avg[!is.na(sue_avg4),
-                      .(Ticker, Factor_Name = "C10_SUE_Persistence", Raw_Value = sue_avg4)]
-      if (nrow(c10) > 0) results[["C10"]] <- c10
-    }
+  if (!is.null(sue_hist)) {
+    sue_avg <- sue_hist[, .(sue_avg4 = mean(sue[seq_len(min(.N, 4L))])), by = Ticker]
+    c10 <- sue_avg[!is.na(sue_avg4) & is.finite(sue_avg4),
+                    .(Ticker, Factor_Name = "C10_SUE_Persistence", Raw_Value = sue_avg4)]
+    if (nrow(c10) > 0) results[["C10"]] <- c10
+  } else {
+    .note_skip("C10_SUE_Persistence", "sue", .have_cons)
   }
 
   # --- C11: Earnings Streak (consecutive positive SUE count) ---
-  if ("sue" %in% names(cons)) {
-    setorder(cons, Ticker, -Date)
-    sue_streak <- cons[!is.na(sue), {
+  # ⚠ M25_Earnings_Mom_Streak(compute_momentum.R:339-360)과 식·원천·정렬이 동일하다
+  #   (2026-08-08 코드 대조). 정본 일원화는 registry 처분 사안이라 여기서 단독
+  #   결정하지 않는다 — 배출은 유지하고 중복 판정을 별도 제안으로 올린다.
+  if (!is.null(sue_hist)) {
+    sue_streak <- sue_hist[, {
       streak <- 0L
       for (i in seq_len(.N)) {
         if (!is.na(sue[i]) && sue[i] > 0) streak <- streak + 1L else break
       }
       list(streak = as.numeric(streak))
     }, by = Ticker]
-    if (nrow(sue_streak) > 0) {
-      c11 <- sue_streak[, .(Ticker, Factor_Name = "C11_Earnings_Streak", Raw_Value = streak)]
-      if (nrow(c11) > 0) results[["C11"]] <- c11
-    }
+    c11 <- sue_streak[, .(Ticker, Factor_Name = "C11_Earnings_Streak", Raw_Value = streak)]
+    if (nrow(c11) > 0) results[["C11"]] <- c11
+  } else {
+    .note_skip("C11_Earnings_Streak", "sue", .have_cons)
   }
 
   # --- C12: Estimate Dispersion (forecast std / |mean forecast|) ---
@@ -374,17 +441,4 @@ compute_consensus <- function(RAWDATA, sig_date, FUND = NULL, CONSENSUS = NULL) 
     z_cols <- paste0("z_", comp_names)
     comp_dt[, n_c := rowSums(!is.na(.SD)), .SDcols = z_cols]
     comp_dt[n_c >= 2L, C19_val := rowMeans(.SD, na.rm = TRUE), .SDcols = z_cols]
-    c19 <- comp_dt[!is.na(C19_val) & is.finite(C19_val),
-                    .(Ticker, Factor_Name = "C19_Composite_Earnings", Raw_Value = C19_val)]
-    if (nrow(c19) > 0) results[["C19"]] <- c19
-  }
-
-  # 결합
-  if (length(results) == 0) {
-    return(data.table(Ticker = character(), Factor_Name = character(), Raw_Value = numeric()))
-  }
-  out <- rbindlist(results, use.names = TRUE, fill = TRUE)
-  out[, .(Ticker, Factor_Name, Raw_Value)]
-}
-
-cat("[factor_db] compute_consensus.R loaded (C01~C19)\n")
+    c19 <- c
