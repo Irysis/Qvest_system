@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "sot": "02_Infrastructure/docs/qvest_v8_3_alpha_discovery_sot.md §4",
-  "updated": "2026-08-08T18:19:30+09:00",
+  "updated": "2026-08-08 (FQ-101 측정 종결 — 미래 Factor_Date 는 PIT 안전, 근인은 12월 결산 가정)",
   "consume_rule": "새 발굴 리서치 착수 전: hypothesis_index lookup → 본 큐 확인 → owner/status 갱신. 완료 시 result_ref(L-code/보고서) 기입. dohoon_decision 항목은 세션 임의 착수 금지.",
   "entries": [
     {
@@ -3117,8 +3117,8 @@
       "wall_check": "R4 자체가 HARD 2.95 미달(2.100)·oos_ret 0.374<0.7·calmar 0.576<0.64. 자본 자격 아닌 벽-높이 측정 라운드.",
       "data_gate": "없음 — WT-007 composite_main.parquet + RAWDATA Size 재사용",
       "owner": "미배정",
-      "status": "config_scoped_negative_lane_disposed_20260808",
-      "next_action": "레인 처분 완료. 사이즈 축의 남은 자유도는 선별뿐이고 그쪽도 R4 7변형 + NP-b2b/b2b3 로 좁혀졌다 ⇒ 다음 사이클은 사이즈 축을 떠나 재료(비-return) 또는 소비면으로 이동 권장(NP-156b1b2).",
+      "status": "precheck_reframed_paired_increment_not_significant_20260808",
+      "next_action": "원안 재현 금지(비유의 증분 재현은 무정보). 재정의된 축 2개로 착수: ①paired_vs_mom_t 가 2.0 에 닿는 composite 이 있는가(WT-007 arm 이식 시 standalone 아닌 paired 로 채점) ②cap-tilt 우위 ↔ d 의 국면 동조 검정(FQ-157 과 통합 측정 — 같은 현상 가설의 직접 반증 기회).",
       "source_refs": [
         "04_Research/method_frontier/wt006_exog_forecast/R4_synthesis.json",
         "stage_artifacts/fq141_precheck_20260808/np_a_findings.md"
@@ -3144,22 +3144,6 @@
         "reframe": "원안(다른 composite 에서 standalone 1.3->2.1 재현)은 EV 낮음 — standalone 은 분산 공유로 증분을 과대표시하고 R4 의 paired 1.224 가 이미 그 증분의 정직한 크기다. 재정의: ①paired 증분이 문턱에 닿는 composite 이 존재하는가 ②cap-tilt 우위와 d 가 같은 국면 축에서 함께 움직이는가(같은 현상이면 예측이 성립해야).",
         "hard_gate_note": "2.100 이어도 oos_ret 0.374·calmar 0.576 으로 HARD 3종 중 2종 독립 FAIL — PORT_t 와 무관하게 자본 자격 아님.",
         "artifact": "04_Research/method_frontier/wt006_exog_forecast/R4_synthesis.json"
-      },
-      "lane_disposition": {
-        "verdict": "비중-측 사이즈 레버(cap-tilt) config-scoped negative — 신호 강도로 증분 2.0 도달 불가",
-        "evidence": {
-          "cor_port_t_vs_increment": -0.251,
-          "cor_ew_port_t_vs_increment": -0.01,
-          "r2": 0.063,
-          "strongest_signal_arm": "LEAK_ORACLE_OOS port_t 5.262 → 증분 -0.944",
-          "max_increment_arms": "SS_SINGLE_BEST(port_t -0.887 → 1.315) · SS_A_REL_TOP(-0.663 → 1.302)",
-          "extrapolated_port_t_for_2.0": -13.21,
-          "null_percentile_of_1.307": "96.7% (균등·tier보존 두 귀무 동일) — 단 재현 기전 없음"
-        },
-        "corrections": "NP-156b 의 \"저EV\" 및 NP-156b1 의 \"신호 의존적 내용\" 표현을 정정. 정확히는 tier 구성으로도 신호 강도로도 설명되지 않는 선택-고유 특이값.",
-        "caveat": "증분 수준은 비용·유동성 필터 없이 재구성한 값이라 R4 1.307 과 수준 직접 비교 불가. 근거는 관계이지 수준이 아님.",
-        "revival": "바스켓 속성(사이즈 집중도 등)으로 증분을 사전 판별할 수 있으면 조건부 부활 — NP-156b1b1",
-        "artifact": "stage_artifacts/fq141_precheck_20260808/np_156b1b_signal_vs_increment.R"
       }
     },
     {
