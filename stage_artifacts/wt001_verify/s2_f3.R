@@ -1,0 +1,8 @@
+setwd("C:/Users/99922/OneDrive/Quant_Module_Moltbot")
+R <- readRDS("stage_artifacts/WT_D20260808_001/wt122_results.rds")
+cat("--- F3 ---\n"); print(R$F3)
+cat("--- F2 ---\n"); print(R$F2)
+cat("--- P1 names ---\n"); print(names(R$P1$D03_EWMA_top25))
+cat("--- P2 D03_q20 names ---\n"); print(names(R$P2$D03_EWMA_q20))
+C <- readRDS("stage_artifacts/WT_D20260808_001/wt122_control.rds")
+cat("--- advisory ---\n"); print(C$advisory)

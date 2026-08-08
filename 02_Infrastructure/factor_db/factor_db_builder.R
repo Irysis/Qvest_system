@@ -68,6 +68,23 @@ if (is.null(.ic_guard_src)) {
 source(.ic_guard_src)
 rm(.c, .ic_guard_src)
 
+# ─── 배출 감시 (등재 대비 실산출 대조, 2026-08-08 FQ-163) ────────────────────
+# compute_consensus 의 7개 블록이 440개월 전 구간 0행이었는데 아무 경보도 없었다 —
+# 빌더가 "등재된 팩터가 실제로 나왔는가" 를 묻는 코드를 갖고 있지 않았기 때문이다.
+# ic_pair_completeness 와 같은 이유로 별도 파일: 단독 실행이 가능해야 위반 주입
+# 테스트를 걸 수 있다. 상설 검사: 08_Tests/factor_db/test_emission_guard.R
+.emit_guard_src <- NULL
+for (.c in c(file.path(COMPUTE_MOD_DIR, "emission_guard.R"),
+             file.path(.self_dir, "emission_guard.R"))) {
+  if (file.exists(.c)) { .emit_guard_src <- .c; break }
+}
+if (is.null(.emit_guard_src)) {
+  stop("[factor_db_builder] emission_guard.R 부재 — 배출 감시 없이 진행 불가")
+}
+source(.emit_guard_src)
+rm(.c, .emit_guard_src)
+FACTOR_EMISSION_BASELINE <- file.path(FUNC_PATH, "factor_db", "emission_expected_absent.json")
+
 # Ensure output directory exists
 if (!dir.exists(FACTOR_DB_DIR)) {
   dir.create(FACTOR_DB_DIR, recursive = TRUE, showWarnings = FALSE)
@@ -911,6 +928,19 @@ if (!force && file.exists(out_path)) {
   ), by = Factor_Name][order(Factor_Name)]
   cat("  Coverage by factor:\n")
   print(cov_summary, topn = 5)
+
+  # ─── 배출 감시 (write 직전, 2026-08-08 FQ-163) ────────────────────────────
+  # ★stop 하지 않는다 — 정당한 vintage 결측까지 죽이면 가드가 꺼진다.
+  #   경고 + 사이드카 기록이 정본. save=FALSE(시범 산출)면 판정만 하고 원장은
+  #   건드리지 않는다(드라이런이 역사를 오염시키면 회귀 판정이 무너진다).
+  .emission_report <- factor_emission_guard(
+    result        = result,
+    ym            = ym_tag,
+    fdb_dir       = FACTOR_DB_DIR,
+    registry_path = file.path(FUNC_PATH, "factor_db", "factor_registry.json"),
+    baseline_path = FACTOR_EMISSION_BASELINE,
+    write_artifacts = isTRUE(save)
+  )
 
   # ─── Save ─────────────────────────────────────────────────────────────────
   if (save) {

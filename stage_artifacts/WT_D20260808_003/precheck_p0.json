@@ -1,0 +1,161 @@
+{
+  "generated_at": "2026-08-08T23:38:27",
+  "input_shapes": {
+    "base_panel": {
+      "nrow": 2537961,
+      "unit": "MONTHLY",
+      "gap_median_days": 30,
+      "n_date": 295,
+      "from": "2001-12-28",
+      "to": "2026-06-30"
+    },
+    "tuned_panel": {
+      "nrow": 2514408,
+      "unit": "MONTHLY",
+      "gap_median_days": 30,
+      "n_date": 295,
+      "from": "2001-12-28",
+      "to": "2026-06-30"
+    },
+    "sector_panel": {
+      "nrow": 191261,
+      "unit": "MONTHLY",
+      "gap_median_days": 30,
+      "n_date": 295,
+      "from": "2001-12-28",
+      "to": "2026-06-30"
+    },
+    "size_panel": {
+      "nrow": 192165,
+      "unit": "MONTHLY",
+      "gap_median_days": 30,
+      "n_date": 295,
+      "from": "2001-12-28",
+      "to": "2026-06-30"
+    },
+    "RAWDATA": {
+      "nrow": 14059013,
+      "unit": "DAILY",
+      "gap_median_days": 1,
+      "n_date": 9003,
+      "from": "1990-01-05",
+      "to": "2026-08-07"
+    },
+    "fwd_returns": {
+      "nrow": 88273,
+      "unit": "MONTHLY",
+      "gap_median_days": 30,
+      "n_date": 296,
+      "from": "2001-12-28",
+      "to": "2026-07-31"
+    },
+    "fwd_bench": {
+      "nrow": 296,
+      "unit": "MONTHLY",
+      "gap_median_days": 30,
+      "n_date": 296,
+      "from": "2001-12-28",
+      "to": "2026-07-31"
+    }
+  },
+  "bench_drift": {
+    "full": {
+      "n": 296,
+      "mean_monthly": 0.00972415712887366,
+      "ann_pct": 11.6689885546484,
+      "sd_monthly": 0.0654249559902821,
+      "t_nw": 2.50579542399859
+    },
+    "post2015": {
+      "n": 139,
+      "mean_monthly": 0.0108097901562635,
+      "ann_pct": 12.9717481875162,
+      "sd_monthly": 0.0718285149749529,
+      "t_nw": 1.79571369161039
+    }
+  },
+  "neutralization": {
+    "rows_raw": 81349,
+    "rows_neutral": 81349,
+    "n_month": 295,
+    "sector_unknown_pct": 0.00368781423250439,
+    "logsize_na_pct": 0,
+    "spearman_raw_vs_neutral_median": 0.663497383570324
+  },
+  "F1_precheck": {
+    "raw": {
+      "beta_top_quintile": 0.735900950572939,
+      "beta_universe_median": 0.980631334306871,
+      "diff_quintile": -0.244730383733931,
+      "t_quintile": -20.7622479872285,
+      "ci_quintile": [-0.267941907418595, -0.221518860049268],
+      "beta_top25": 0.712119569241534,
+      "diff_top25": -0.268511765065337,
+      "t_top25": -15.3252509638212,
+      "ci_top25": [-0.303013891081741, -0.234009639048933],
+      "n_month": 259
+    },
+    "neutral": {
+      "beta_top_quintile": 0.82727949696328,
+      "beta_universe_median": 0.980631334306871,
+      "diff_quintile": -0.153351837343591,
+      "t_quintile": -13.2047271526893,
+      "ci_quintile": [-0.176220969525319, -0.130482705161862],
+      "beta_top25": 0.771384959854705,
+      "diff_top25": -0.209246374452166,
+      "t_top25": -12.9066941500953,
+      "ci_top25": [-0.241171532501454, -0.177321216402877],
+      "n_month": 259
+    },
+    "paired_dbeta_quintile": 0.0913785463903409,
+    "paired_dbeta_quintile_t": 12.183786674717,
+    "paired_dbeta_top25": 0.0592653906131713,
+    "paired_dbeta_top25_t": 4.84479586211738,
+    "n_month": 259
+  },
+  "drag_implication": {
+    "inherited_gap_0249": {
+      "dbeta": 0.249,
+      "ann_pct": 2.90557815010745
+    },
+    "measured_top25": {
+      "dbeta": 0.0592653906131713,
+      "ann_pct": 0.691567164751863
+    },
+    "measured_quintile": {
+      "dbeta": 0.0913785463903409,
+      "ann_pct": 1.0662952119693
+    }
+  },
+  "power_precheck": {
+    "k_swap_basket_mean": 7.92203389830508,
+    "k_filter_raw_mean": 3.88813559322034,
+    "k_filter_neutral_mean": 4.36949152542373,
+    "placebo_basket": {
+      "k": 8,
+      "sd_monthly": 0.0228911235276038,
+      "sd_range": [0.0217708094296276, 0.0247649680099967],
+      "n_seed": 20
+    },
+    "placebo_filter": {
+      "k": 4,
+      "sd_monthly": 0.0161015163525696,
+      "sd_range": [0.0135940446995004, 0.0173986982077621],
+      "n_seed": 20
+    },
+    "n_months": 295,
+    "required_annual_pct": {
+      "basket_paired": 3.99831821730008,
+      "filter_paired": 2.8123995784218,
+      "generic_25ew": 6.88187006512186
+    }
+  },
+  "decision_table": {
+    "form": ["B1 바스켓 paired (중립 top-25 vs raw top-25)", "B5 필터 paired (중립 q20 제외 vs base)"],
+    "required_ann_pct": [3.99831821730008, 2.8123995784218],
+    "implied_ann_pct": [0.691567164751863, 0.120871874625783],
+    "ratio": [0.172964513369537, 0.0429782010896231],
+    "verdict": ["UNDERPOWERED — paired 착수 전 폐기", "UNDERPOWERED — paired 착수 전 폐기"]
+  },
+  "decision": "ABANDON_PAIRED_SWITCH_TO_CROSS_SECTIONAL"
+}

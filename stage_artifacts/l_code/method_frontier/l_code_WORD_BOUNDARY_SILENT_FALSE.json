@@ -2,19 +2,20 @@
  "l_code": "L-MF-20260808_WORD_BOUNDARY_SILENT_FALSE",
  "strategy_id": "FQ099_SCANNER_FALSE_ZERO",
  "grade": "N/A_portability_defect",
- "core_reference": "stage_artifacts/fq099/{probe14,probe15,dbg,probe16}.R · 02_Infrastructure/docs/rules/r-portability.md 금칙⑥ 이웃",
- "lesson_text": "R 정규식 **단어경계 `\\b` 가 한글 섞인 문자열에서 오류 없이 FALSE 를 반환한다** — TRE 와 PCRE(`perl=TRUE`) **둘 다**. 실증: `b <- paste(unlist(reg[['V08_PSR']]), collapse=' | ')` (정의문 'MarketCap / Revenue' + 한글 mechanism 주석) 에서 `grepl('Revenue', b, fixed=TRUE)` = **TRUE** 인데 `grepl('\\\\bRevenue\\\\b', b)` = **FALSE**, `grepl('\\\\bRevenue\\\\b', b, perl=TRUE)` = **FALSE**. 같은 blob 벡터에서 fixed 히트 25건 vs 경계 히트 0건. ★피해: 팩터 레지스터리 스캐너가 '유량 항목 의존 팩터 **0건**'을 **두 번** 반환했고, 그대로 믿었다면 FQ-099 를 '소비자 없음 → 무해'로 닫았을 것이다. 실제는 **51/373(13.7%)**. ★계통 귀속: `r-portability.md` 금칙⑥(Windows TRE 가 매치 위치를 UTF-16 코드유닛으로 보고 → `regmatches` 추출 창이 밀림)의 **이웃이지 같은 축이 아니다**. ⑥은 '정상값 모양의 오답'(길이가 맞아 오류로 안 보임), 본 건은 **'결손을 정상값(0건)으로 내려앉힘'** = 저장소 공통 기전의 원형. 금칙⑥ 노트의 '★count-only 는 위반 아님'이 본 건에는 **적용되지 않는다** — 여기서 틀리는 것이 바로 개수다. ★규약: ①한글이 섞일 수 있는 텍스트를 스캔할 때 `\\b`·`\\w`·`\\s` 등 클래스/경계 메타를 쓰지 말고 `fixed=TRUE` 또는 명시 문자셋으로 대체한다 ②검사기가 **0을 반환하면 그것은 결론이 아니라 정지 신호**다 — 같은 대상에 대해 독립 수단(원문 grep) 1회로 대조한 뒤에만 0을 채택한다(오늘 'frontier_registry_coherence 0건'·'git_dirty 빈 출력'과 동일 처방).",
+ "core_reference": "stage_artifacts/fq099/{probe14,probe15,dbg,probe16}.R · stage_artifacts/wb_repro/{repro.R,repro2.R} (재현 시험 — repro.R 은 오염판, repro2.R 은 Write 도구 작성 정상판)",
+ "lesson_text": "★★★본 L-code 는 2026-08-08 당일 전면 정정됐다. **원래 주장('R 정규식 \\b 가 한글 섞인 문자열에서 오류 없이 FALSE 를 반환한다, TRE·PCRE 둘 다')은 거짓이다.** 독립 재현에서 \\b 는 정상 작동했다: 패턴 charToRaw = `5c 62 52 65 76 65 6e 75 65 5c 62`(5c = 백슬래시, 정상), 순수 ASCII·한글 앞/뒤/사이·기호 포함 전 케이스 fixed/TRE/perl 모두 TRUE, 음성 대조도 정확(경계 없는 'XRevenueY' 는 TRE/perl FALSE, 부재는 셋 다 FALSE). ★**진짜 원인 = 도구 호출로 `cat > x.R <<'RS' ... RS` 를 쓸 때 명령 문자열이 JSON 인코딩을 거치며 백슬래시 한 겹이 소비되는 것**이다. `\\\\b` 가 `\\b` 로 축약돼 R 이 정규식 워드경계가 아니라 **백스페이스 문자(0x08)** 를 받는다 ⇒ `grepl(\"\\bRevenue\\b\", x)` 는 '백스페이스+Revenue+백스페이스' 를 찾으므로 **항상 FALSE**. 파일을 열면 즉시 보인다(`paste0(\"\\b\", p, \"\\b\")` — 백슬래시 1개). **Write 도구로 작성한 파일에는 이 오염이 없다**(동일 내용을 Write 로 쓰니 `5c 62` 정상). ★증상은 실재했다 — 팩터 레지스터리 스캐너가 '유량 의존 팩터 0건' 을 **두 번** 반환했고(실제 51/373) 그대로 믿었으면 FQ-099 를 '소비자 없음 → 무해' 로 닫았을 것이다. **원인만 오진했고, 그 오진을 메모리·L-code·칩 2건·에이전트 프롬프트 5곳 이상에 전파했다.** ★살아남는 규약: ①**이스케이프·정규식이 들어가는 스크립트는 Bash heredoc 금지, Write 도구로 작성** — heredoc 은 `\\n`·`\\t`·`\\\\` 전부 한 겹을 먹는다 ②패턴을 쓰기 전에 **`charToRaw(pat)` 첫 바이트가 `5c` 인지 실측**(`08` 이면 오염) — 이 한 줄이 오늘 오진을 잡았다 ③**검사기가 0 을 반환하면 결론이 아니라 정지 신호** — 원인을 두 번 오진하는 동안에도 나를 두 번 다 세운 것이 이 규약이며 유일하게 무손상으로 살아남았다 ④`fixed=TRUE` 는 의도가 리터럴일 때 여전히 합리적 기본값이나 **이유가 '한글' 이 아니다** — 불필요한 회피 규칙으로 남기지 말 것. ★★메타 교훈(제일 크다): 나는 원인을 오진한 채 **규약을 신설해 영구 기록에 전파했다**. 증상이 진짜였기 때문에 오진이 더 그럴듯했다. **규약 신설 전 재현 시험 + 음성 대조 통과를 의무화**해야 하며, 오늘 잡힌 것은 next_probe 에 '1건 실측이므로 등재 전 재현 확인 필요' 를 적어둔 덕분이다. r-portability 금칙⑦ 등재 후보였으나 **등재 부적격으로 확정**한다 — 금칙 대상은 R 이 아니라 **스크립트 작성 경로**다.",
  "tags": [
-  "r_portability",
-  "regex_word_boundary",
-  "silent_false",
+  "self_correction",
+  "heredoc_escape_loss",
+  "false_root_cause",
   "empty_means_pass",
   "scanner_verification",
-  "korean_encoding"
+  "regulation_before_reproduction"
  ],
  "created_at": "2026-08-08",
+ "corrected_at": "2026-08-08",
  "session": "qvest_20260808_transition_wall_arc",
- "source": "Q-Lead main session (실행 실측 dbg.R)",
+ "source": "Q-Lead main session (재현 시험 stage_artifacts/wb_repro/repro2.R)",
  "record_type": "method_frontier_lesson",
  "metric_type": "canonical_screen_diag",
  "metric_type_note": "코드 동작 실측이며 성과 지표 아님. harvester enum 부재로 'unavailable' 정규화가 의도된 결과."
