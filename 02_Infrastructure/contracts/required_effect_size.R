@@ -71,3 +71,46 @@ if (sys.nframe() == 0L) {
 # FF3 잔차 등 다른 비교축은 변동성이 다르므로 1차 스크린으로만 쓰고, 확정하려면 해당 계열의 실제 sd 를 쓸 것.
 # 실사용 결과(4건): 진짜 무검정력 주장 1(FQ-064 하위 주장) · 이미 옳게 표기 1(FQ-121) ·
 #                   독립 HARD 로 유지 1(FQ-152) · 도구 오적용 1(FQ-118).
+
+# =============================================================================
+# audit_input — 원장 감사 입력을 **구조로** 강제한다 (2026-08-08 오발 재발 방지)
+#
+# 왜 주석이 아니라 함수인가: 같은 날 필자가 두 번 틀렸다.
+#   (1) 'n=20' 을 표본크기로 읽었으나 실제로는 random25_null_n_seeds(시드 개수)였다.
+#       진짜 표본은 n_months=118. → n 의 **정체**를 확인하지 않고 값만 썼다.
+#   (2) 요약 필드(next_action)의 센 표현을 근거로 원장을 비판했으나, 판정 필드
+#       (attribution_verdict)는 신중했고 판정을 지탱하는 증거는 독립적으로 유의했다.
+#   ⇒ 값과 출처를 함께 요구하면 둘 다 막힌다.
+# =============================================================================
+
+#' audit_input — 감사 입력 생성. n 의 정체와 출처 필드를 **필수 인자**로 받는다.
+#' @param n_value        표본 크기 값
+#' @param n_kind         "months" | "obs" | "names" | "seeds" | "trials" — months/obs 만 검정력에 유효
+#' @param n_source_field 그 값을 읽은 원장 필드명 (예 "measure_result_20260726.n_months")
+#' @param verdict_field  판정 정본 필드명 (요약 필드 금지: next_action / title / hypothesis)
+#' @param effect_annual  보고된 연효과
+audit_input <- function(n_value, n_kind, n_source_field, verdict_field, effect_annual) {
+  if (missing(n_kind) || !n_kind %in% c("months","obs","names","seeds","trials"))
+    stop("audit_input: n_kind 필수 — months/obs/names/seeds/trials 중 하나")
+  if (!n_kind %in% c("months","obs"))
+    stop(sprintf("audit_input: n_kind='%s' 는 검정력 계산의 표본이 아니다(시드/종목/시행 수). 진짜 관측수를 찾을 것.", n_kind))
+  if (missing(n_source_field) || !nzchar(n_source_field))
+    stop("audit_input: n 을 읽은 원장 필드명을 명시할 것 — 값만으로는 정체를 확인할 수 없다")
+  if (missing(verdict_field) || !nzchar(verdict_field))
+    stop("audit_input: 판정 정본 필드명을 명시할 것")
+  if (grepl("next_action|title|hypothesis|summary", verdict_field, ignore.case = TRUE))
+    stop(sprintf("audit_input: '%s' 는 요약 필드다. 판정 정본(verdict/attribution_verdict/measure_result)을 쓸 것 — 요약문만 보고 비판하면 없는 결함을 만든다.", verdict_field))
+  list(n = n_value, n_kind = n_kind, n_source_field = n_source_field,
+       verdict_field = verdict_field, effect_annual = effect_annual)
+}
+
+#' audit_verdict — audit_input 을 받아 검정력 판정. 원시 값 직접 투입 경로를 막는다.
+audit_verdict <- function(ai, observed_t = NA_real_, t_threshold = 2.0, ...) {
+  stopifnot(is.list(ai), !is.null(ai$n_kind))
+  v <- verdict_with_power(observed_t = if (is.na(observed_t)) 0 else observed_t,
+                          observed_monthly = ai$effect_annual/12, n = ai$n,
+                          t_threshold = t_threshold, ...)
+  v$read_from <- sprintf("n:%s(%s) · 판정:%s", ai$n_source_field, ai$n_kind, ai$verdict_field)
+  v$caveat <- "1차 스크린. 독립 HARD 실패·다른 종류의 검정·상한값은 구별하지 못한다(위 적용 한계 참조)."
+  v
+}
