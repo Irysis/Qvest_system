@@ -1,0 +1,35 @@
+{
+  "watch_id": "bench_handicap_d",
+  "generated_at": "2026-07-31",
+  "metric_type": "canonical_screen_diag",
+  "wired": false,
+  "wiring_note": "월간 자동 실행 미배선 — 이 파일의 존재는 감시가 돌고 있음을 뜻하지 않는다(칩 분리). 재산출은 stage_artifacts/fq141_precheck_20260808/emit_bench_handicap_watch.R",
+  "definition": "d = cap-w 유니버스 벤치 − EW 유니버스 벤치(월). 6개월 롤링 연율.",
+  "series_months": 439,
+  "series_range": ["1990-01-31", "2026-07-31"],
+  "current": {
+    "as_of": "2026-07-31",
+    "rolling6m_d_ann": 0.4847,
+    "historical_percentile": 97
+  },
+  "prereg_threshold": {
+    "value": 0.0314,
+    "basis": "역사 18m-롤링 d_ann 75 백분위 (NP-157c2a1, 422창)",
+    "rule": "6m 롤링 d_ann 이 문턱 아래로 3개월 연속 유지되면 '핸디캡 정상화' 판정. 단일 월 반등으로 번복 금지.",
+    "months_below_now": 0,
+    "months_required": 3,
+    "verdict": "ELEVATED"
+  },
+  "gates_this_watch_controls": ["MID/OTHER 구성 라운드 착수 타이밍 (NP-c2c3)", "최근 창 수집분의 고-핸디캡 라벨 부착 여부 (NP-c5)", "111-145 밴드 재활성 관찰 (NP-b2b3a)", "사이즈 효과 부호 복귀 관찰 (NP-b2b)"],
+  "recent_6m_rolling": [
+    0.4136,
+    0.6209,
+    0.4184,
+    0.3891,
+    1.1478,
+    1.2358,
+    0.9797,
+    0.4847
+  ],
+  "source_round": "NPC5_20260808_ENDPOINT_ARITHMETIC_AND_REVERSAL_WATCH"
+}
