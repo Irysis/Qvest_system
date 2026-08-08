@@ -1,0 +1,150 @@
+{
+  "task_id": "WT-D20260808_001",
+  "fq_ref": "FQ-122",
+  "record_type": "independent_replication_and_additional_measurement",
+  "generated_at": "2026-08-08",
+  "generated_by": "alpha-research (2차 병행 실행)",
+  "relation_to_canonical": "본 파일은 `alpha_validation.json`(1차 실행 발행분, 정본)을 **대체하지 않는다**. 병행 실행이 서로의 산출을 덮어쓰는 과정에서 2차 실행의 측정 기록이 소실되어 별도 파일로 보존한다. 정본과 충돌하는 판정은 없다 — 핵심 수치는 독립 재현되었고, 여기 담긴 것은 정본에 없는 축이다.",
+  "metric_type": "canonical_screen (성과 arm) / diag (배터리·placebo·구조 관측)",
+  "capital_claim": "없음",
+
+  "input_shapes_measured": {
+    "note": "2026-08-08 규약 — 측정 첫 출력에 행수·관측단위·범위 실측 인쇄. 가정 없음.",
+    "base_panel": "2,537,961행 · MONTHLY · 295개월 · 2001-12-28~2026-06-30",
+    "tuned_panel": "2,514,408행 · MONTHLY · 295개월 · 동일",
+    "RAWDATA": "14,059,013행 · DAILY · 9,003일 · 1990-01-05~2026-08-07 (월간 아님)",
+    "forward_returns": "88,273행 · MONTHLY · 296개월 · build_monthly_forward_returns 계약 경유",
+    "investor_individual": "10,432,058행 · DAILY · 6,546일 · 2000-01-04~2026-07-24",
+    "eligible_set": "82,566행 · 295개월 · 월평균 279.9종목"
+  },
+
+  "replication_concordance": {
+    "note": "서로 다른 코드로 동일 수치 재현 — AX-008 triangulation 입력",
+    "pairs": [
+      {"item": "P1 D03 top-25 slope", "run1": "-3.443%/yr t -1.093", "run2": "-3.44%/yr t -1.09", "match": true},
+      {"item": "P1 Q01 top-25 slope", "run1": "+3.771%/yr t +1.606", "run2": "+3.77%/yr t +1.61", "match": true},
+      {"item": "P1 D03 top-50 slope", "run1": "-2.276%/yr t -0.945", "run2": "-2.28%/yr t -0.95", "match": true},
+      {"item": "P1 Q01 top-50 slope", "run1": "+0.835%/yr t +0.488", "run2": "+0.84%/yr t +0.49", "match": true},
+      {"item": "F4 band slope D03 / Q01", "run1": "-3.283 / -3.257", "run2": "-3.28 / -3.26", "match": true},
+      {"item": "base canonical PORT_t", "run1": 2.050, "run2": 2.050, "match": true},
+      {"item": "p_hit D03 q20", "run1": 0.3862, "run2": 0.3822, "match": "approx — eligible set 구성 미세차"},
+      {"item": "Q01_q20 canonical PORT_t", "run1": 2.381, "run2": 2.357, "match": "approx"},
+      {"item": "harness parity", "run1": "production 03_period_returns.csv 5.13e-16", "run2": "WT-015 C3_SINGLE 0.000e+00", "match": "서로 다른 앵커, 둘 다 PASS"}
+    ]
+  },
+
+  "additional_axes_not_in_canonical": {
+    "A1_F2_size_confound_control": {
+      "question": "개인 순매수 집중이 사이즈 대용에 불과한가 (1차 challenge_note C-7 이 남긴 자리)",
+      "spec": "월별 횡단면 FMB — 표준화 개인순매수(시총 정규화) ~ 필터z + log(Size), NW lag-3, 295개월",
+      "D03_EWMA": {"raw_slope": -0.0454, "raw_t": -5.15, "size_ctl_slope": -0.0378, "size_ctl_t": -4.29, "ci": [-0.0551, -0.0204], "retention": 0.83},
+      "Q01_EB": {"raw_slope": -0.0202, "raw_t": -3.75, "size_ctl_slope": -0.0228, "size_ctl_t": -4.33, "ci": [-0.0331, -0.0124], "retention": 1.13},
+      "size_own_slope": {"in_D03_regression": -0.0321, "t": -5.62, "in_Q01_regression": -0.0478, "t2": -8.74},
+      "verdict": "사이즈 대용 가설 배제 — 두 팩터 모두 log(Size) 통제 후 잔존(D03 0.83배 / Q01 1.13배). 단 동시기 연관이며 예측 주장 아님(1차 C-7 한계 유지)."
+    },
+    "A2_subperiod_rank_ic": {
+      "spec": "3분기 rank IC + NW lag-3 t",
+      "M01_PATHQ": {"P1_2001_2014": {"ic": 0.0292, "t": 1.91, "n": 157}, "P2_2015_2019": {"ic": -0.0097, "t": -0.49, "n": 60}, "P3_2020_2026": {"ic": 0.0083, "t": 0.45, "n": 78}},
+      "D03_EWMA": {"P1_2001_2014": {"ic": 0.0159, "t": 1.05, "n": 157}, "P2_2015_2019": {"ic": 0.0408, "t": 2.21, "n": 60}, "P3_2020_2026": {"ic": 0.0878, "t": 3.77, "n": 78}},
+      "Q01_EB": {"P1_2001_2014": {"ic": 0.0327, "t": 2.78, "n": 157}, "P2_2015_2019": {"ic": -0.0010, "t": -0.07, "n": 60}, "P3_2020_2026": {"ic": -0.0037, "t": -0.41, "n": 78}},
+      "emitted_masked_score": {"P1": {"ic": 0.0215, "t": 1.55, "n": 157}, "P2": {"ic": -0.0087, "t": -0.44, "n": 60}, "P3": {"ic": -0.0027, "t": -0.15, "n": 78}},
+      "verdict": "★ Q01_EB rank-IC 는 2015 이후 사실상 사멸 — 전표본 F1·P1 결과는 pre-2015 가중이다. 1차가 잡은 post-2017 EW-유니버스 개선 소멸(1.507→1.505)과 같은 방향의 독립 증거이며 더 이르다(2015). 분할 판정 아님, advisory 진단의 정직 라벨.",
+      "no_split_verdict": "하위기간 분할 판정은 하지 않는다 (2026-08-08 검정력 파괴 mandate)."
+    },
+    "A3_rank_vs_mean_inversion": {
+      "headline": "D03_EWMA 에서 IC→PORT 전이 벽의 산술적 정체 관측 — 순위 공간과 평균-수익 공간의 부호 역전",
+      "D03_EWMA": {"rank_ic": 0.0400, "icir": 0.196, "harvey_t_nw": 3.50, "monotonicity": 0.25, "quintile_mean_ann_pct": [13.1, 15.3, 14.6, 11.1, 8.0]},
+      "Q01_EB": {"rank_ic": 0.0162, "icir": 0.126, "harvey_t_nw": 2.16, "monotonicity": 0.75, "quintile_mean_ann_pct": [9.1, 11.6, 14.0, 14.1, 13.7]},
+      "M01_PATHQ": {"rank_ic": 0.0157, "icir": 0.090, "harvey_t_nw": 1.51, "monotonicity": 1.00, "quintile_mean_ann_pct": [9.0, 9.8, 10.6, 14.3, 18.5]},
+      "harvey_t_specs_pass_count_ge3": 1,
+      "interpretation": "D03 는 3팩터 중 유일하게 rank-IC Harvey-t 3.0 을 통과하는데(3.50), 같은 패널의 5분위 평균 연수익은 Q1 +13.1% → Q5 +8.0% 로 단조 감소한다. 고변동 꼬리의 양의 왜도가 평균을 끌어올리기 때문이며, rank-IC 는 이를 보지 못하고 top-N EW 는 평균으로 채점된다. WT-021 이 기록한 D03 standalone PORT_t −1.73 의 정체가 이것이다.",
+      "relation_to_run1": "1차의 '손해의 정체는 D03 정보가 아니라 9.65종 제거의 희석(24-seed placebo 우측 p 0.833)' 과 상보적 — 희석이 왜 손해인지를 설명한다(빼는 대상이 평균 기여가 높은 종목이다).",
+      "proposed_screening_rule": "'rank-IC Harvey-t >= 3.0 ∧ quintile monotonicity < 0.5' → hurdle_gate/screen_route 의 transfer_negative_component 자동 라벨 (소비면 ⑥)"
+    },
+    "A4_vol_axis_orthogonalization_control": {
+      "question": "Q01 제외필터의 (미확립) 양의 기울기가 MAX5/vol63 축 재발견인가 — spawn 프롬프트 지정 질문",
+      "cross_sectional_cor_D03_Q01": {"pearson_median": 0.0775, "spearman_median": 0.0377},
+      "exclusion_overlap_q20": {"jaccard_Q01_D03": 0.120, "jaccard_Q01_vs_Q01orth": 0.783, "mean_excluded_per_month_eligible": {"Q01": 54.8, "D03": 55.6, "Q01_orth": 54.8}},
+      "arms": {
+        "EXCL_Q01_q20": {"delta_ann_pct": 1.25, "t_nw": 0.84, "ci": [-1.69, 4.19], "required_ann_pct": 3.30, "port_t": 2.357, "turnover": 7.68},
+        "EXCL_Q01orthD03_q20": {"delta_ann_pct": -0.03, "t_nw": -0.03, "ci": [-2.37, 2.30], "required_ann_pct": 2.79, "port_t": 2.043, "turnover": 7.74},
+        "EXCL_D03_q20": {"delta_ann_pct": -3.30, "t_nw": -1.50, "ci": [-7.64, 1.04], "required_ann_pct": 5.70, "port_t": 1.545, "turnover": 8.16}
+      },
+      "arm_gap_test": {"definition": "(Q01 arm) − (Q01⊥D03 arm) 월별 paired", "diff_ann_pct": 1.28, "t_nw": 1.62, "ci": [-0.27, 2.84], "n": 295},
+      "verdict": "배제 실패 — 어느 쪽으로도 확립 불가. 직교화 후 Δ 가 소멸하지만 두 arm 의 차이 자체가 비유의(t 1.62)이므로 'vol 축 재발견이다'도 '아니다'도 말할 수 없다. 확립된 것은 'Q01 필터의 양의 기울기가 vol-축 성분 제거에 강건하지 않다' 뿐이며, 회수 주장을 약화시키는 방향이다.",
+      "residual_gap": "MAX5 원변수 통제 미실시 — D03_EWMA(vol63)가 WT-020 상 MAX5 를 흡수하는 축이라 같은 방향의 더 강한 통제이나, MAX5 자체 통제 부재는 결손으로 명시."
+    },
+    "A5_power_precomputation": {
+      "method": "무작위-교체 placebo 20시드(본 판정 arm 수익 미열람 시점) — base top-25 에서 해당 월 실측 k 종목을 무작위 제거 후 M01 차순위 충원",
+      "D03_EWMA": {"k_mean_of_25": 9.56, "placebo_diff_sd_monthly": 0.02560, "seed_range": [0.02358, 0.02765], "required_ann_pct_at_t2": 4.47},
+      "Q01_EB": {"k_mean_of_25": 3.89, "placebo_diff_sd_monthly": 0.01727, "seed_range": [0.01582, 0.01927], "required_ann_pct_at_t2": 3.02},
+      "prior_effect_from_F1_ann_pct": {"D03_EWMA": 0.79, "Q01_EB": 0.81},
+      "ratio_prior_to_required": {"D03_EWMA": 0.18, "Q01_EB": 0.27},
+      "verdict": "포트폴리오-수준 paired arm 은 **사전적으로** 저검정력. 측정 전에 pass/fail 문턱 판정을 폐기하고 구간추정으로 전환한 근거.",
+      "design_shift_outcome": "주판정을 전표본 횡단면(P1)으로 이동했으나 P1 도 |t|<2 였다 — observed/required 비가 0.38 → 0.80 으로 개선됐을 뿐 충분하지 않았다. 사전 예측 미달을 정직 기록."
+    },
+    "A6_post_neutralization": {
+      "Q01_EB_raw_rank_ic": 0.0161,
+      "Q01_EB_sector_size_neutralized_rank_ic": 0.0206,
+      "retention": 1.28,
+      "neutralized_harvey_t": 5.34,
+      "note": "섹터+사이즈 중립화 후 Q01 신호가 오히려 강해진다(RF-A4 역방향). NP-1 의 근거."
+    },
+    "A7_beta_drag_detail": {
+      "spec": "trailing 60m 월간 β, 최소 24관측, 당월 미포함 (PIT), 259개월",
+      "D03_EWMA": {"top_quintile_beta": 0.765, "universe_median": 0.979, "diff": -0.215, "t_nw": -12.71, "bottom_quintile_diff": 0.164, "bottom_t": 7.03},
+      "Q01_EB": {"top_quintile_beta": 0.732, "universe_median": 0.981, "diff": -0.249, "t_nw": -19.88, "bottom_quintile_diff": 0.146, "bottom_t": 8.63},
+      "note": "1차 실행은 다른 β 창으로 0.709 vs 0.889 를 보고했다 — 정의 차이이며 방향·크기 정합. C4(위험축 재배치)의 정량 근거로 risk-research 에 전달."
+    },
+    "A8_regime_interaction_advisory": {
+      "design": "국면 분할 금지 — 연속 조건화 상호작용만",
+      "D03_x_bm_trail12": {"slope_ann_pct_per_1sd": 5.31, "t_nw": 2.59, "ci": [0.72, 9.89], "n": 283},
+      "D03_x_ind_intensity": {"slope_ann_pct_per_1sd": 2.23, "t_nw": 1.17, "ci": [-2.24, 6.70], "n": 294},
+      "Q01_x_bm_trail12": {"slope_ann_pct_per_1sd": -0.17, "t_nw": -0.16, "ci": [-2.53, 2.19], "n": 283},
+      "Q01_x_ind_intensity": {"slope_ann_pct_per_1sd": 0.05, "t_nw": 0.02, "ci": [-2.56, 2.65], "n": 294},
+      "verdict": "ADVISORY — 승격하지 않는다. 4개 중 1개가 t 2.59(4배 보정 시 p≈0.04 경계)이고, `bm_trail12` 는 trailing 이라 승계 가설의 forward '상승 드리프트 국면' 과 직접 대응하지 않는다.",
+      "no_absence_claim": "나머지 3건에 '국면에서 효과 없음' 을 주장하지 않는다 — 저검정력 사전등록."
+    }
+  },
+
+  "harness_integrity_this_run": {
+    "parity_gate": "base arm 재구성 ret_net vs WT-015 저장 C3_SINGLE period_returns max|diff| = 0.000e+00 (n=295) — PASS",
+    "identity_check": "Δ_gross = (1/25)(Σ_added − Σ_dropped) max|err|: D03 6.939e-17 / Q01 3.296e-17 — PASS",
+    "selected_ret_coverage_base": 0.9999,
+    "production_parity": "미실시 — 본 실행의 base 는 WT-009/015 연구 arm 이다(§7b). production 경로 parity 는 1차 실행이 5.13e-16 으로 확인."
+  },
+
+  "production_constraints_check": {
+    "max_names": 25, "long_only": true, "liquidity_min": 2e8,
+    "universe": "KOSPI200 ∪ KOSDAQ150",
+    "cost_model_version": "v2.4_kr_retail_15bps",
+    "turnover_annual": {"base": 7.89, "Q01_q20": 7.68, "Q01_q30": 7.47, "Q01_orth": 7.74, "D03_q20": 8.16, "limit": 11.0, "verdict": "전 arm 상한 이내"},
+    "inv7_note": "고정 축에 실패를 귀속하지 않으며 완화를 레버로 제시하지 않는다."
+  },
+
+  "next_probe": [
+    "NP-1: 섹터+사이즈 중립화 Q01 을 제외필터 축으로 재측정 — 중립화 후 rank-IC 1.28배·Harvey-t 5.34 로 강해진다(A6). 같은 소비면·더 강한 신호 버전. 착수 전 required_effect 재계산 의무.",
+    "NP-2: D03 을 vol 이 아니라 왜도/복권성 축으로 재표현 — 순위↔평균 역전(A3)이 왜도에서 오는지 직접 시험. 본 라운드 결손인 MAX5 원변수 통제도 동시 해소.",
+    "NP-3: 검정력 구조를 레버로 — 제외(0/1) 대신 연속 감쇠로 같은 정보를 소비하면 paired diff sd(0.017~0.026)가 낮아져 같은 효과에서 더 높은 t 가 나오는지 사전 계산. ★alpha 단계는 검정력 계산까지만(비중 결정은 optimizer 소관).",
+    "NP-4: Q01 의 pre-2015 편중(A2)을 분할 없이 다루기 — 연도 연속 조건화(시간 추세 상호작용) 회귀로 감쇠 기울기와 CI 추정."
+  ],
+  "revival_conditions": "① Q01 라인은 NP-1 이 required_effect 를 넘거나 post-2015 rank-IC 가 양전하는 실측 신호가 나올 때 재개 ② D03 라인은 NP-2 에서 왜도 축 재표현이 quintile monotonicity 를 회복시킬 때만 alpha 소비면 재개 — 그 전까지는 risk 축(A7) 소비만 ③ (a) 타이브레이커는 밴드-내 기울기가 양전하는 실측 신호 발화 시에만 재개(F4 사전등록 조건)",
+
+  "consumption_scan_7": {
+    "factor_ranking": "측정(P1) — 미확립",
+    "universe_filter": "본 라운드 소비면(P2) — 미확립. Q01 은 회전율 개선(7.89→7.47~7.68) 부수 이점이 있으나 수익 근거 없이 채택 불가",
+    "overlay_regime_input": "ADVISORY(A8) — 미확립, next_probe 이월",
+    "risk_model_beta_budget": "★ 확립 — D03/Q01 최상위 분위 β 0.765 / 0.732 vs 유니버스 0.979 / 0.981 (t −12.71 / −19.88, 259개월). risk-research 전달(C4 승계). 본 라운드에서 가장 확립된 정량 산출",
+    "monitoring": "★ 신규 후보 — '순위↔평균 괴리 지수'(rank-IC Harvey-t vs quintile monotonicity). D03 이 P3 에서 IC t 3.77 로 강화되는 동안 평균 분위는 역전 유지 — 괴리 추이 상설 관측 시 전이 벽 조기 경보",
+    "screening_label": "★ hurdle_gate 진단 규칙 제안 — 'rank-IC Harvey-t >= 3.0 ∧ monotonicity < 0.5' = transfer_negative_component 자동 라벨",
+    "cross_mode": "RAMP/FR 성분 게이트에 monotonicity 진단 이식 (WT-021 P1 조합 자격 게이트 보완 축)"
+  },
+
+  "artifacts": {
+    "preregistration": "stage_artifacts/WT_D20260808_001/preregistration.json (2차 실행분 — 성과 arm 미열람 시점 고정)",
+    "scripts": ["precheck_shapes.R", "precheck_abc.R", "run_wt122_measure.R", "run_wt122_control.R", "run_wt122_addendum.R", "emit_vectors.R", "repair_package_contract.R"],
+    "results_rds": ["precheck_results.rds", "wt122_results.rds", "wt122_control.rds", "wt122_addendum.rds", "repair_battery.rds"],
+    "contract_repair_note": "qepm/mailbox/worktask/WT-D20260808_001/challenge_note_contract_repair.md",
+    "canonical_validation": "stage_artifacts/WT_D20260808_001/alpha_validation.json (1차 실행 발행분 — 정본)"
+  }
+}

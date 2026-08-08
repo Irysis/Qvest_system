@@ -158,5 +158,40 @@
   "selection_type": "chain_not_applicable_single_test",
   "n_trials": 1,
   "dsr_gate_applicable": false,
-  "dsr_note": "sweep형 selection 아님 — 사전등록이 factor_db 산출 형태 1벌만 쓰도록 고정(no_sweep). DSR 게이트 부적용(measurement-graduation §3)."
+  "dsr_note": "sweep형 selection 아님 — 사전등록이 factor_db 산출 형태 1벌만 쓰도록 고정(no_sweep). DSR 게이트 부적용(measurement-graduation §3).",
+  "pit_robustness": {
+    "static_verifier": "02_Infrastructure/ast/ast_verify.py (ast_spec_gate.sh ③)",
+    "initial_verdict": "FAIL_LOOKAHEAD — REGISTRY[M26_Revenue_Mom] avail 2026-08-01 > t_d 2026-07-31",
+    "cause": "컨센서스 계열 33종이 registry availability.known_discrepancy 를 보유(선언 T-1 vs 코드 Date <= sig_d same-day 허용, 제공시각 메타 부재) → 검증기가 보수 가용시점을 sig_date + 1d 로 잡는다 (CONSENSUS_DISC_LAG_DAYS=1). ★후보 고유 결함이 아니라 하네스-전역: 동일 33종에 북 incumbent C01_SUE·C02_EPS_Chg_1m·C04_ESBR 이 전부 포함된다.",
+    "response": "AST 에 TS_LAG 를 '선언만' 하는 것은 거짓 선언이므로 실제로 늦춰서 재측정. T+1 실행앵커 = 체결이 익월 첫 거래일 종가 → 그 다음달 첫 거래일 종가. 병합 align_signal_return_ym(off=+1, realized_month) — 헬퍼의 look-ahead 가드가 off<=0 를 거부한다.",
+    "t1exec": {
+      "n_months": 282,
+      "period": "2003-01 ~ 2026-06 (신호월 기준)",
+      "fmb_nw3_t": 2.30516696533374,
+      "retention_vs_baseline": 0.902128806968089,
+      "control_t": {
+        "C01_SUE": 0.249277383453046,
+        "C02_EPS_Chg_1m": 2.23300591419872,
+        "C04_ESBR": 0.495068461180338,
+        "M26_Revenue_Mom": 2.30516696533374
+      },
+      "rank_ic_mean": 0.0152958932752663,
+      "verdict": "문턱 위 생존 — 재료 자격 판정 PIT-강건"
+    },
+    "final_gate": "ast_spec_gate.sh 통과 ({}). decision_ts=2026-08-03 선언은 측정한 실행 컨벤션과 일치.",
+    "gate_block_efficacy_check": "위반 주입(mechanism.friction 공백) 시 게이트가 block 발행 확인 — 통과가 침묵이 아님",
+    "residual": "원천 컨센서스 T-1 strict 재빌드(Date <= sig_d - 1) A/B 는 미실시 — FQ 등재"
+  },
+  "subperiod_power": {
+    "era": ["2003-2009", "2010-2016", "2017-2026"],
+    "n": [84, 84, 115],
+    "mean": [0.00298543479985428, 0.00151637190424016, 0.000821761162320019],
+    "sd": [0.0138300756544258, 0.00755300736308589, 0.00940329107553536],
+    "t_nw3": [1.9687378371116, 1.67202021996842, 0.883750017034633],
+    "required_monthly": [0.0037724624138912, 0.0020602516646369, 0.00219215353530499],
+    "required_annual_pct": [4.52695489666944, 2.47230199756428, 2.63058424236599],
+    "verdict": ["INCONCLUSIVE_UNDERPOWERED", "INCONCLUSIVE_UNDERPOWERED", "INCONCLUSIVE_UNDERPOWERED"]
+  },
+  "subperiod_power_note": "★3구간 전부 INCONCLUSIVE_UNDERPOWERED (각 구간 자체 sd 기준). 점추정은 단조 하락(연 3.58%→1.82%→0.99%)하나 '감쇠 확정'으로 쓰지 않는다 — 분할 설계는 검정력을 파괴한다(2026-08-08 3/3 실증).",
+  "self_adversarial": "stage_artifacts/WT_D20260808_002/challenge_note.md"
 }

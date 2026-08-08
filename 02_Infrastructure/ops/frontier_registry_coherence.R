@@ -36,6 +36,20 @@
 #     `08_Tests/data/test_frontier_coherence.R` ⑩ `open_status_suffix_in_scope` 가 그 포함을
 #     단언한다. 따라서 "negative 문자열이 있으니 제외" 필터를 넣으면 **그 수리를 되돌린다**.
 #     ⇒ 이 파일에 status 기반 제외 필터를 추가하지 말 것(테스트 ⑩⑫가 즉시 막는다).
+#   ★★근본 원인 실측 (2026-08-08, 같은 날 후속 계통 점검): **status 는 enum 이 아니라 자유 문자열**이다
+#     — 164 항목에 **고유 status 89종**. 그래서 이 필드 위의 모든 부분 일치 술어는
+#     "어휘가 이럴 것"이라는 추측이며, 세 방향으로 동시에 틀린다:
+#       ⓐ 과다 제외: negative 어휘 ∧ `open` 접미 = **14항목 = open 56 의 25%**
+#          (08-02 사고 시점 19% → 증가). 예: `data_gate_closed_camels__wiring_axis_open_20260808`
+#          — `closed` 는 *데이터 게이트*를, `open` 은 *배선 축*을 가리킨다. 한 문자열에 둘 다 있다.
+#       ⓑ 과소 포함: `open` 도 negative 어휘도 없어 **어느 술어로도 판별 불가 = 48항목(29%)**.
+#          `capability_established` `blocked_by_FQ-074` `blocked_until_label_qualifies`
+#          `data_gate_needs_collector` 등 — 종료가 아니라 **대기**인데 기본값으로 스캔에서 빠진다.
+#       ⓒ 위 두 오류가 **서로를 가린다**(총 건수는 그럴듯하게 유지된다).
+#     ⇒ 현 스캔은 덮는 범위에선 과대보고(표본 5/5 위양성), 범위 자체는 29% 과소.
+#        **양방향으로 틀리므로 게이트에 배선하지 말 것** — COH-1(scope 기반 매칭) 선행이 조건.
+#        근본 수리는 status 의 enum 화이며, 그전까지 부분 일치로 상태를 판정하지 말 것
+#        (접미가 상태를 결정한다).
 #   ★그 21건 중 5건을 카드 원문(statement_refined·scope_draft)과 직접 대조한 결과 **5/5 위양성**:
 #     · FQ-122(vol·quality 를 타이브레이커/제외필터로) ↔ DIST-AR-003/007(scope=KR momentum)
 #       → 재료도 소비면(비-slot)도 다름

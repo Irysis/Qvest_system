@@ -1,0 +1,5 @@
+setwd(Sys.getenv("QM_ROOT","C:/Users/99922/OneDrive/Quant_Module_Moltbot"))
+source("02_Infrastructure/worktask/worktask_manager.R")
+cat("[wt] 전이 전 상태:\n"); print(wt_status("WT-D20260808_002"))
+r <- wt_advance("WT-D20260808_002", "ALPHA_DONE")
+cat("[wt] 전이 결과:\n"); print(r)

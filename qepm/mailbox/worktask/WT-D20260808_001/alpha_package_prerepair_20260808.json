@@ -1,0 +1,240 @@
+{
+  "task_id": "WT-D20260808_001",
+  "as_of_date": "2026-08-08",
+  "forecast_horizon": "1M",
+  "spec_version": "ast_v1.1",
+  "hypothesis": {
+    "statement": "WT-021 확정 전제: D03_EWMA(IC NW t +3.71)·Q01_EB(IC t +2.21)는 전분포 순위 정보가 실재하나 top-25 slot 소비는 수익화에 실패하고(standalone PORT_t −1.73 / −0.21, 통상 유의 미달 — '유해 확정' 아님) 합성 안에서는 유의하게 유해하다(advocate 귀속 Q01 −4.02%/yr·D03 −1.2%/yr, in-out NW t −2.01). 기전 가설: 두 신호는 '무엇을 살까'가 아니라 '무엇을 피할까'에 정보가 국소화된 손실-회피 신호다 — IC는 전분포 통계라 좌측 꼬리(나쁜 종목 판별)의 정보를 집계하지만, top-25 slot은 신호의 극단 우측 꼬리(초저변동·초안정 종목 = 정보 밀도 낮고 저β 채권성)만 사게 해 정보가 없는 구간을 소비한다. 따라서 slot을 주지 않고 정보가 있는 구간을 소비하는 두 경로 — (b) 하위 분위 제외필터(좌측 꼬리 직접 소비), (a) 선별 경계(rank 20~40) 동순위 타이브레이커(중앙부 서열 주입) — 는 단일 최강(M01_PATHQ) 대비 paired 한계기여가 양(+)이다. 팩터별 분리 측정 의무: D03↔Q01 cor 0.036(직교)이라 기전·주체가 다르고, D03 하위분위 필터는 MAX5/단기 vol 축과 중복 가능성(WT-020: MAX5 증분이 vol63 통제로 소멸)이 있어 Q01 필터가 신규성 축이다.",
+    "mechanism": {
+      "agent": "팩터별 분리 — [D03_EWMA] 복권형 고변동 종목을 과매수하는 개인투자자(lottery demand): 고변동 꼬리를 과대가격화해 그 구간의 forward 열위를 만든다. [Q01_EB] 이익 불안정(고분산 z) 종목의 성장 서사를 과대평가하는 투자자 수요: 불안정 꼬리의 forward 열위를 만든다. 두 경우 모두 신호의 예측 정보는 과대가격화된 '하위 꼬리의 열위'에서 나온다",
+      "friction": "KR 공매도 제약(no_short_legal_kr, 고정 축): 과대가격화된 하위 꼬리를 short으로 지울 수 없어 mispricing과 IC가 잔존한다. 동시에 같은 제약 하의 long-only top-25 slot 소비는 신호의 극단 우측 꼬리만 살 수 있는데, 그 구간은 (i) 정보 밀도가 낮고(과대가격화의 여집합일 뿐 자체 저평가 근거 없음) (ii) 초저변동 = 저β 특성이 벤치 β≈0.92 경쟁에서 구조적 drag — 즉 마찰이 '정보 보존'과 'slot 수확 차단'을 동시에 만든다. 이것이 IC 양성·전이 음성의 공존 기전",
+      "path": "(b) 제외필터: 월간 선별 시점에 M01 top-25 후보군에서 D03/Q01 하위 분위(t−1 값, 사전등록 분위점) 종목을 제거 → 과대가격화 종목이 slot을 점유하던 월에 대체 종목의 forward active 우위로 실현. (a) 타이브레이커: M01 선별 경계(rank 20~40) 밴드 내 근접-동순위 종목 간 서열을 D03/Q01로 재정렬 → 밴드 내 M01-동질 종목 간 잔여 정보로 실현. 수익화 시점 = 익월 보유 수익, 형태 = 선별 구성 변화분의 paired forward active"
+    },
+    "falsification": "기전이 참이면 성과 밖에서 관측되어야 할 것 4건 — (F1) 신호 구조: D03/Q01 자기-분위 조건부 forward-active 곡선이 좌측-국소화 형태(하위 분위 유의 열위 + 최상위 분위 평탄/음). (F2) 주체: D03 하위(고변동) 분위 종목에 개인 순매수 강도가 연속 조건화 회귀에서 유의하게 집중(Q01은 동일 회귀를 별도 실행 — 주체가 다를 수 있음을 사전 인정). (F3) 구조: D03 최상위(초저변동) 분위의 시장 β가 유니버스 중앙값 대비 유의하게 낮음(β-drag 경로). (F4, (a) 전용 사전 킬스위치: 경계 밴드(rank 20~40) 내 D03/Q01 조건부 forward-active 기울기 ≤ 0이면 (a)는 측정 전 기각",
+    "regime_scope": {
+      "holds_in": [
+        "상승 드리프트 국면 (벤치 trailing 수익 양) — 초저변동 꼬리의 β-drag가 최대라 slot-음성이 극대화되고 비-slot 소비의 상대 우위도 최대",
+        "개인 투기활동 高 국면 (개인 거래비중·회전율 高) — lottery 과대가격화가 강해 하위 꼬리 열위(제외필터의 소재)가 짙어짐"
+      ],
+      "weakens_or_reverses_in": [
+        "위기/급락 국면 — 초저변동 꼬리의 저β가 방어로 부호 역전되어 D03의 slot-전이 자체가 양전 가능(WT-021 부활신호 '저변동 프리미엄 국면 전환'과 정합). 이때 제외필터의 상대 우위는 축소되고, 고변동 하위 꼬리 회피 편익은 오히려 강할 수 있어 순효과 부호 불확실 — 상호작용 항 부호만 관측 대상"
+      ],
+      "boundary_rationale": "경계는 기전의 두 구성요소에서 연역된다: β-drag 성분은 시장 방향에 종속(저β × 상승장 = 열위, 하락장 = 방어)이고 lottery mispricing 성분은 개인 투기활동 강도에 종속이다. 각각 연속 관측 변수(벤치 trailing 수익률, 개인 거래비중)를 가지므로 검증은 국면 더미 분할이 아니라 paired 월별 Δ를 이 연속변수에 회귀하는 상호작용 항으로만 수행한다. ★분할 설계 금지(mandate): 2026-08-08 하루 3회 검정력 파괴 실증 — 상호작용 검정도 필요 연효과 ~27.71%/yr 수준으로 저검정력이므로 상호작용 결과는 advisory(CI 보고, '효과 없음' 단정 금지)이며 주판정은 전표본 paired 한계기여다"
+    }
+  },
+  "factors": [
+    {
+      "factor_id": "F1_M01PATHQ_x_Q01EB_exclusion",
+      "ast": {
+        "op": "WHERE",
+        "args": [
+          {
+            "leaf": "STORED_SCORE",
+            "escape_contract": {
+              "escape_type": "STORED_SCORE",
+              "provenance_path": "stage_artifacts/WT_D20260802_009/tuned_panel.parquet",
+              "provenance_builder": "run_wt009_tuned.R — M01_PATHQ = CS_ZSCORE(CS_WINSORIZE(path_efficiency_252_21))",
+              "provenance_vintage": "2026-08-02T12:57",
+              "production_parity_verified": false,
+              "note": "연구 파생 패널 — production 대체 아님"
+            }
+          },
+          {
+            "op": "CS_RANK",
+            "args": [
+              {
+                "leaf": "STORED_SCORE",
+                "escape_contract": {
+                  "escape_type": "STORED_SCORE",
+                  "provenance_path": "stage_artifacts/WT_D20260802_009/tuned_panel.parquet",
+                  "provenance_builder": "run_wt009_tuned.R — Q01_EB = MUL(z, DIV_GUARD(1, ADD(1, MUL(TS_STD(z,36), TS_STD(z,36)))))",
+                  "provenance_vintage": "2026-08-02T12:57",
+                  "production_parity_verified": false
+                }
+              }
+            ]
+          },
+          0.2
+        ]
+      },
+      "role": "selection_filter",
+      "restatement_exposure": 1,
+      "note": "WHERE(선별점수, CS_RANK(필터), 0.20) = 필터 백분위 <= 0.20 종목 제거 후 선별. O 에 비교연산자가 없어 임계 술어를 WHERE 3-arg 위치로 인코딩 — 표현 가능하므로 blocked_by_capability 아님이나 operator 갭으로 기록"
+    },
+    {
+      "factor_id": "F2_PROD_scoreeff_x_Q01EB_exclusion",
+      "ast": {
+        "op": "WHERE",
+        "args": [
+          {
+            "leaf": "STORED_SCORE",
+            "escape_contract": {
+              "escape_type": "STORED_SCORE",
+              "provenance_path": "stage_artifacts/WT_D20260425_010/alpha_scores.parquet#score_eff",
+              "provenance_builder": "Iter31 run_all.R §5 walk-forward (production 종목선별 계층)",
+              "provenance_vintage": "2026-04-25",
+              "production_parity_verified": true,
+              "note": "PARITY GATE A: 03_period_returns.csv 재현 max|dret_net| 5.13e-16 <= 1e-8"
+            }
+          },
+          {
+            "op": "CS_RANK",
+            "args": [
+              {
+                "leaf": "STORED_SCORE",
+                "escape_contract": {
+                  "escape_type": "STORED_SCORE",
+                  "provenance_path": "stage_artifacts/WT_D20260802_009/tuned_panel.parquet",
+                  "provenance_builder": "run_wt009_tuned.R — Q01_EB = MUL(z, DIV_GUARD(1, ADD(1, MUL(TS_STD(z,36), TS_STD(z,36)))))",
+                  "provenance_vintage": "2026-08-02T12:57",
+                  "production_parity_verified": false
+                }
+              }
+            ]
+          },
+          0.2
+        ]
+      },
+      "role": "selection_filter",
+      "restatement_exposure": 1,
+      "note": "§7b 권위 arm. 신호일 매핑 = tuned 월말 d0 → sig_label 월 month(d0)+1"
+    }
+  ],
+  "combination_rule": "single_factor",
+  "verdict": "designed",
+  "self_pit_check": {
+    "performed": true,
+    "leaves_checked": [
+      {
+        "leaf": "STORED_SCORE:M01_PATHQ",
+        "availability_rule": "fixed: 월말 거래일 trailing-only (252행 창, skip 21)",
+        "restatement_prone": false
+      },
+      {
+        "leaf": "STORED_SCORE:Q01_EB",
+        "availability_rule": "fixed: 월말 z + trailing 36m 분산 (당월 미포함)",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "STORED_SCORE:score_eff",
+        "availability_rule": "fixed: production sig_label 월초 라벨 = 전월말 정보",
+        "restatement_prone": false
+      }
+    ],
+    "verdict": "clean",
+    "note": "C5 확인: 필터 신호는 홀딩월 시작 전 월말(d0)에서만 취득. lag1 스트레스에서 부호·크기 유지 = 동월 누출 징후 없음"
+  },
+  "alpha_vector": {
+    "A009150": 3.297264,
+    "A011070": 3.005937,
+    "A000660": 2.661629,
+    "A005930": 2.590214,
+    "A402340": 2.209762,
+    "A036930": 2.146761,
+    "A080220": 2.120403,
+    "A066570": 2.098368,
+    "A131290": 2.049127,
+    "A319400": 2.045482,
+    "A298040": 2.005642,
+    "A307950": 1.962,
+    "A420770": 1.941032,
+    "A005380": 1.910857,
+    "A131970": 1.887444,
+    "A000990": 1.79864,
+    "A004170": 1.787608,
+    "A034730": 1.782558,
+    "A095610": 1.749976,
+    "A319660": 1.746348,
+    "A178320": 1.744999,
+    "A089970": 1.742229,
+    "A082920": 1.649337,
+    "A222800": 1.632398,
+    "A038500": 1.588786
+  },
+  "confidence_vector": {
+    "A009150": 0.6,
+    "A011070": 0.6,
+    "A000660": 0.6,
+    "A005930": 0.6,
+    "A402340": 0.45,
+    "A036930": 0.6,
+    "A080220": 0.6,
+    "A066570": 0.6,
+    "A131290": 0.6,
+    "A319400": 0.45,
+    "A298040": 0.6,
+    "A307950": 0.5,
+    "A420770": 0.5,
+    "A005380": 0.5,
+    "A131970": 0.5,
+    "A000990": 0.5,
+    "A004170": 0.5,
+    "A034730": 0.5,
+    "A095610": 0.5,
+    "A319660": 0.5,
+    "A178320": 0.5,
+    "A089970": 0.35,
+    "A082920": 0.5,
+    "A222800": 0.5,
+    "A038500": 0.5
+  },
+  "signal_matrix_ref": "stage_artifacts/WT_D20260808_001/alpha_scores.parquet",
+  "factor_specs": [
+    {
+      "factor_family": "Momentum/PathQuality",
+      "proxy": "M01_PATHQ (signed path efficiency)",
+      "formula": "Sum(log ret)/Sum(|log ret|), window [n-251, n-21]",
+      "lag_rule": "daily t-1, 월말 산출",
+      "winsorization": "3std",
+      "neutralization": "none",
+      "economic_rationale": "추세의 경로 효율 — 잡음 대비 방향성이 높은 상승이 지속",
+      "weight_theta": 1,
+      "references": [
+        "WT-D20260802_009 사전등록"
+      ]
+    },
+    {
+      "factor_family": "Quality/EarningsStability",
+      "proxy": "Q01_EB (EB-shrunk GPA)",
+      "formula": "z * 1/(1+Var_36m(z))",
+      "lag_rule": "quarterly 45d 상속 + trailing 36m",
+      "winsorization": "3std",
+      "neutralization": "none",
+      "economic_rationale": "이익 불안정 종목의 성장 서사 과대평가 — 하위 꼬리 forward 열위(F1 t -2.25) + 주체 개인 순매수 집중(F2 t -10.2)",
+      "weight_theta": 0,
+      "references": [
+        "WT-D20260802_009",
+        "WT-D20260802_021"
+      ]
+    }
+  ],
+  "diagnostics": {
+    "canonical_port_t_nw_lag3": 2.381,
+    "canonical_port_t_base": 2.05,
+    "canonical_port_t_pvalue": 0.018,
+    "canonical_n_months": 295,
+    "rank_ic": null,
+    "icir": null,
+    "monotonicity": null,
+    "subperiod_stability": null,
+    "turnover_proxy": 7.68,
+    "harvey_t_stat": null,
+    "post_neutralization_ic": null,
+    "paired_marginal_contribution_ann_pct": 1.35588484638794,
+    "paired_marginal_t_nw_lag3": 0.915039853098516,
+    "production_arm_ann_pct": 2.1024032104893,
+    "production_arm_t_nw_lag3": 1.31465503285463,
+    "note": "canonical_port_t_nw_lag3 = Q01_q20 필터 arm(재구성 base) 실측. rank-IC 계열은 본 라운드 판정 대상이 아니라 미산출(NA) — 판정량은 paired 한계기여"
+  },
+  "selection_objective": "canonical_port_t",
+  "challenge_flags": [
+    "(a) 타이브레이커 = F4 사전 킬스위치로 측정 전 기각 — 승계 설계 규정 이행",
+    "D03_EWMA 좌측-국소화 기전 REJECTED (F1 t -0.63 > -1) → C2 beta-drag 단독설 방향 (F3 지지: Q5 beta 0.709 vs 0.889)",
+    "Q01_EB 는 production EW20 에서 부호 반전(-1.54) — 사전등록 '가중규칙 >=2 부호일치' 미충족으로 양성 주장 불가",
+    "전 셀 |t| < 2 이고 효과 < 필요치 → INCONCLUSIVE_UNDERPOWERED. '효과 없음' 단정 금지",
+    "post-2017 EW-유니버스 대비에서 Q01 개선 소멸(1.507→1.505) — 개선의 시기 편중 미해결",
+    "F2 개인 순매수는 동시기 연관 — 예측 주장 아니며 고변동 월 거래증가 기계 성분 미배제",
+    "C4 (D03 계열 위험축 재배치)는 risk-research 소비면 — 본 WT 범위 밖 전달",
+    "O 에 비교연산자 부재 — 임계 술어를 WHERE 3-arg 위치로 인코딩(표현 가능, 갭 기록)"
+  ]
+}

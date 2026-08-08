@@ -1,0 +1,357 @@
+{
+  "task_id": "WT-D20260808_001",
+  "fq_ref": "FQ-122",
+  "as_of_date": "2026-08-08",
+  "metric_type_map": {
+    "canonical_arms": "canonical_screen",
+    "production_arms": "realcode_recon (production_parity_verified)",
+    "precheck": "precheck_diag",
+    "placebo": "diag"
+  },
+  "input_assert": {
+    "tuned_panel": "2,514,408행 · MONTHLY(월말) · 295월 · 2001-12-28~2026-06-30",
+    "prod_alpha_panel": "81,226행 · MONTHLY(월초) · 272월 · score_eff non-NA 62,830",
+    "eligible_set": "82,566행 · 295월 · 월평균 279.9 / 중앙 329종목",
+    "date_anchor_mapping": "tuned 월말 d0 → production sig_label 월 = month(d0)+1 (C5 준수)",
+    "forward_returns": "build_monthly_forward_returns() 계약함수 경유 (손계산 없음)"
+  },
+  "parity": {
+    "gate_A": "production 03_period_returns.csv 정확 재현",
+    "max_abs_dev": 5.13478148889135e-16,
+    "threshold": 1e-08,
+    "result": "PASS",
+    "anchor": "04_Research/strategies/STR_1715_WT016_Iter31_GridBestProd/output/03_period_returns.csv",
+    "admitted_slot": "STR_1715_on_M4gAE_R05_noLayer4_PG2 (슬롯 2-4, IR 1.416) — 종목계층 앵커는 Iter31 동일 엔진"
+  },
+  "consumption_face_a_tiebreaker": {
+    "status": "REJECTED_PRE_MEASUREMENT",
+    "rule": "alpha_hypothesis falsification F4 사전 킬스위치",
+    "band": "M01 rank 20~40 · 6,195행 · 295월",
+    "D03_slope_ann_pct": -3.283,
+    "D03_t": -1.276,
+    "Q01_slope_ann_pct": -3.257,
+    "Q01_t": -1.518,
+    "M01_self_slope_ann_pct": 0.05,
+    "M01_self_t": 0.025,
+    "note": "두 팩터 모두 기울기 <= 0 → 측정하지 않음. 부호 반전 재설계 금지(C13 + 사후선택)"
+  },
+  "consumption_face_b_exclusion": {
+    "p_hit": {
+      "D03_q20": 0.3862,
+      "Q01_q20": 0.16,
+      "D03_hits_per_month": 9.65,
+      "Q01_hits_per_month": 3.95
+    },
+    "cells": [
+      {
+        "cell": "W1_recon_ew25",
+        "factor": "D03_EWMA",
+        "d_ann_pct": -3.138,
+        "paired_t": -1.417,
+        "delta_ir": -0.0901,
+        "ci_lo": -7.48,
+        "ci_hi": 1.2,
+        "sign_agree": true,
+        "power_verdict": "INCONCLUSIVE_UNDERPOWERED"
+      },
+      {
+        "cell": "W1_recon_ew25",
+        "factor": "Q01_EB",
+        "d_ann_pct": 1.356,
+        "paired_t": 0.915,
+        "delta_ir": 0.0797,
+        "ci_lo": -1.55,
+        "ci_hi": 4.26,
+        "sign_agree": true,
+        "power_verdict": "INCONCLUSIVE_UNDERPOWERED"
+      },
+      {
+        "cell": "W2_recon_tilt25",
+        "factor": "D03_EWMA",
+        "d_ann_pct": -3.046,
+        "paired_t": -1.164,
+        "delta_ir": -0.079,
+        "ci_lo": -8.17,
+        "ci_hi": 2.08,
+        "sign_agree": true,
+        "power_verdict": "INCONCLUSIVE_UNDERPOWERED"
+      },
+      {
+        "cell": "W2_recon_tilt25",
+        "factor": "Q01_EB",
+        "d_ann_pct": 1.369,
+        "paired_t": 0.972,
+        "delta_ir": 0.0787,
+        "ci_lo": -1.39,
+        "ci_hi": 4.13,
+        "sign_agree": true,
+        "power_verdict": "INCONCLUSIVE_UNDERPOWERED"
+      },
+      {
+        "cell": "W3_prod_tilt20",
+        "factor": "D03_EWMA",
+        "d_ann_pct": -3.698,
+        "paired_t": -1.512,
+        "delta_ir": -0.1582,
+        "ci_lo": -8.49,
+        "ci_hi": 1.1,
+        "sign_agree": true,
+        "power_verdict": "INCONCLUSIVE_UNDERPOWERED"
+      },
+      {
+        "cell": "W3_prod_tilt20",
+        "factor": "Q01_EB",
+        "d_ann_pct": 2.102,
+        "paired_t": 1.315,
+        "delta_ir": 0.0303,
+        "ci_lo": -1.03,
+        "ci_hi": 5.24,
+        "sign_agree": true,
+        "power_verdict": "INCONCLUSIVE_UNDERPOWERED"
+      },
+      {
+        "cell": "W4_prod_ew20",
+        "factor": "D03_EWMA",
+        "d_ann_pct": -3.288,
+        "paired_t": -1.434,
+        "delta_ir": -0.1289,
+        "ci_lo": -7.78,
+        "ci_hi": 1.2,
+        "sign_agree": true,
+        "power_verdict": "INCONCLUSIVE_UNDERPOWERED"
+      },
+      {
+        "cell": "W4_prod_ew20",
+        "factor": "Q01_EB",
+        "d_ann_pct": -1.536,
+        "paired_t": -1.107,
+        "delta_ir": -0.0843,
+        "ci_lo": -4.26,
+        "ci_hi": 1.18,
+        "sign_agree": true,
+        "power_verdict": "INCONCLUSIVE_UNDERPOWERED"
+      }
+    ],
+    "sensitivity_q": [
+      {
+        "factor": "D03_EWMA",
+        "q": 0.1,
+        "d_ann_pct": -2.872,
+        "paired_t": -1.674
+      },
+      {
+        "factor": "D03_EWMA",
+        "q": 0.2,
+        "d_ann_pct": -3.138,
+        "paired_t": -1.417
+      },
+      {
+        "factor": "D03_EWMA",
+        "q": 0.3,
+        "d_ann_pct": -4.719,
+        "paired_t": -1.89
+      },
+      {
+        "factor": "Q01_EB",
+        "q": 0.1,
+        "d_ann_pct": 0.55,
+        "paired_t": 0.65
+      },
+      {
+        "factor": "Q01_EB",
+        "q": 0.2,
+        "d_ann_pct": 1.356,
+        "paired_t": 0.915
+      },
+      {
+        "factor": "Q01_EB",
+        "q": 0.3,
+        "d_ann_pct": 1.338,
+        "paired_t": 0.921
+      }
+    ],
+    "canonical_port_t": {
+      "base": 2.05,
+      "D03_q10": 1.582,
+      "D03_q20": 1.589,
+      "D03_q30": 1.292,
+      "Q01_q10": 2.175,
+      "Q01_q20": 2.381,
+      "Q01_q30": 2.481
+    },
+    "dual_basis": {
+      "ew_universe_t": {
+        "base": 2.415,
+        "D03_q20": 1.944,
+        "Q01_q20": 2.728,
+        "Q01_q30": 2.885
+      },
+      "ew_universe_post2017_t": {
+        "base": 1.507,
+        "D03_q20": 1.229,
+        "Q01_q20": 1.505,
+        "Q01_q30": 1.466
+      },
+      "note": "EW-유니버스 대비에서도 방향 동일. 단 post-2017 구간에서는 Q01 개선이 사라짐(1.507→1.505) — 개선이 초기 구간 편중일 개연"
+    },
+    "turnover_annual_pct": {
+      "canonical_base": 789,
+      "canonical_Q01_q20": 768,
+      "canonical_Q01_q30": 745,
+      "canonical_D03_q20": 819,
+      "prod_tilt_base": 514,
+      "prod_tilt_Q01": 475,
+      "prod_tilt_D03": 516,
+      "cap": "11.0/yr(1100%) 상한 — 전 arm 준수. Q01 필터는 회전을 낮춘다"
+    },
+    "lag1_stress": {
+      "Q01_W3": {
+        "d_ann_pct": 1.476,
+        "t": 0.848
+      },
+      "D03_W3": {
+        "d_ann_pct": -4.215,
+        "t": -1.724
+      },
+      "note": "부호·크기 유지 = 동월 누출 징후 없음"
+    },
+    "placebo": {
+      "seeds_8": [
+        {
+          "factor": "D03_EWMA",
+          "real_d_ann_pct": -3.698,
+          "placebo_mean": -2.593,
+          "outside_range": false
+        },
+        {
+          "factor": "Q01_EB",
+          "real_d_ann_pct": 2.102,
+          "placebo_mean": -1.203,
+          "outside_range": true
+        }
+      ],
+      "seeds_24_W3": {
+        "Q01": {
+          "real": 2.1,
+          "placebo_mean": -2.21,
+          "placebo_sd": 1.93,
+          "placebo_min": -6.87,
+          "placebo_max": 1.77,
+          "right_tail_p": 0
+        },
+        "D03": {
+          "real": -3.7,
+          "placebo_mean": -2.05,
+          "placebo_sd": 1.3,
+          "placebo_min": -4.06,
+          "placebo_max": 0.46,
+          "right_tail_p": 0.833
+        }
+      },
+      "interpretation": "플라시보는 '같은 개수를 무작위로 빼는 것' 대비 선택 정보를 시험한다(조건부). 모집단 효과의 시계열 불확실성(t 1.31 · CI[-1.03,+5.24])을 대체하지 않는다"
+    }
+  },
+  "primary_P1_conditional_information": [
+    {
+      "region": "M01_rank1_25",
+      "factor": "D03_EWMA",
+      "slope_ann_pct": -3.443,
+      "t_nw": -1.093,
+      "ci_lo_ann_pct": -9.62,
+      "ci_hi_ann_pct": 2.73,
+      "power_verdict": "INCONCLUSIVE_UNDERPOWERED"
+    },
+    {
+      "region": "M01_rank1_25",
+      "factor": "Q01_EB",
+      "slope_ann_pct": 3.771,
+      "t_nw": 1.606,
+      "ci_lo_ann_pct": -0.83,
+      "ci_hi_ann_pct": 8.37,
+      "power_verdict": "INCONCLUSIVE_UNDERPOWERED"
+    },
+    {
+      "region": "M01_rank1_50",
+      "factor": "D03_EWMA",
+      "slope_ann_pct": -2.276,
+      "t_nw": -0.945,
+      "ci_lo_ann_pct": -6.99,
+      "ci_hi_ann_pct": 2.44,
+      "power_verdict": "INCONCLUSIVE_UNDERPOWERED"
+    },
+    {
+      "region": "M01_rank1_50",
+      "factor": "Q01_EB",
+      "slope_ann_pct": 0.835,
+      "t_nw": 0.488,
+      "ci_lo_ann_pct": -2.52,
+      "ci_hi_ann_pct": 4.19,
+      "power_verdict": "INCONCLUSIVE_UNDERPOWERED"
+    }
+  ],
+  "falsification_observables": {
+    "F1_left_localization": {
+      "D03": {
+        "Q1_minus_Q3_ann_pct": -2.07,
+        "t": -0.63,
+        "Q5_minus_Q3_ann_pct": -6.9,
+        "t_Q5": -2.3,
+        "verdict": "REJECTED — 승계 reject_if (1) (t > -1) 충족. 정보는 좌측이 아니라 우측(초저변동)에 있고 방향은 손실"
+      },
+      "Q01": {
+        "Q1_minus_Q3_ann_pct": -5.21,
+        "t": -2.25,
+        "Q5_minus_Q3_ann_pct": -0.58,
+        "t_Q5": -0.21,
+        "verdict": "SUPPORTED — 좌측 열위 유의 + 최상위 평탄 = 예측된 손실회피 형태"
+      }
+    },
+    "F2_agent_individual_flow": {
+      "D03_slope": -0.1109,
+      "D03_t": -11.87,
+      "Q01_slope": -0.0267,
+      "Q01_t": -10.17,
+      "verdict": "SUPPORTED — 필터 z 가 낮은(고변동·불안정) 종목에 개인 순매수가 집중",
+      "caveat": "동시기(contemporaneous) 특성 연관이지 예측 주장 아님. 고변동 월에 개인 거래가 느는 기계적 성분을 배제하지 못했다"
+    },
+    "F3_beta_drag": {
+      "D03": {
+        "Q5_beta_med": 0.709,
+        "univ_med": 0.889,
+        "verdict": "SUPPORTED — 초저변동 꼬리 beta 유의 저하 = beta-drag 경로"
+      },
+      "Q01": {
+        "Q5_beta_med": 0.817,
+        "univ_med": 0.888,
+        "verdict": "WEAK"
+      }
+    }
+  },
+  "regime_interaction_advisory": [
+    {
+      "factor": "D03_EWMA",
+      "interact_coef": 0.0089,
+      "interact_t": 1.633
+    },
+    {
+      "factor": "Q01_EB",
+      "interact_coef": -0.00031,
+      "interact_t": -0.122
+    }
+  ],
+  "power": {
+    "required_annual_pct_at_t2": {
+      "D03": 4.47,
+      "Q01": 3.02
+    },
+    "n_months": 295,
+    "prod_n_months": 270,
+    "stance": "전 셀 INCONCLUSIVE_UNDERPOWERED — pass/fail 선언 금지, 구간추정 보고"
+  },
+  "verdict": {
+    "a_tiebreaker": "REJECTED_PRE_MEASUREMENT (F4 킬스위치)",
+    "b_D03": "NOT_CONSUMABLE — 4/4 가중규칙에서 음(-) 방향이나 24-seed 플라시보와 구별 불가(우측 p=0.833). 손해의 정체는 D03 정보가 아니라 9.65종 제거의 희석. 기전도 F1 기각·F3 지지 = beta-drag",
+    "b_Q01": "NOT_ESTABLISHED_BUT_LIVE — 신호 구조(F1/F2) 확인 · canonical PORT_t 2.050→2.381 단조 개선 · 회전 감소 · 24-seed 플라시보 밖(p<0.05). 그러나 (i) production EW20 에서 부호 반전(-1.54) → 사전등록 '가중규칙 >=2 부호일치' 미충족 (ii) 전 셀 |t|<2 검정력 부족 (iii) post-2017 EW-유니버스 개선 소멸",
+    "capital_claim": "없음 — graduation HARD 3종 판정 아님"
+  }
+}
