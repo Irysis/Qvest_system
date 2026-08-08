@@ -2,7 +2,9 @@
 
 ## Active Version
 
-**Qvest v8.3 — 4-Mode 헌법 · 실측 거버넌스 · 알파 발굴 중심 재편** (2026-07-10 / **2026-08-08 QEPM 모델 라우팅 재핀 — 가설설계(`alpha-hypothesis`)만 `model: fable`, QEPM 나머지 전 구간 `model: opus`(현행 Opus 5)**. 구 2026-07-24 "핀 제거·세션 상속" 정책 대체. 폴백 = 한도 시 opus 재시도. SOT `02_Infrastructure/docs/rules/caching.md` 모델 라우팅 절)
+**Qvest v8.3 — Opus 5-Native · 4-Mode 헌법 · 실측 거버넌스 · 알파 발굴 중심 재편** (세션 모델 정본 `claude-opus-5`. 2026-07-10 / **2026-08-08 QEPM 모델 라우팅 재핀 — 가설설계(`alpha-hypothesis`)만 `model: fable`, QEPM 나머지 전 구간 `model: opus`(현행 Opus 5)**. 구 2026-07-24 "핀 제거·세션 상속" 정책 대체. 폴백 = 한도 시 opus 재시도. SOT `02_Infrastructure/docs/rules/caching.md` 모델 라우팅 절)
+
+> **★모델 표기 단일 출처**: 위 줄이 세션 모델의 **유일한 정본**이다(`boot_currency_check.sh` C0가 여기서 파생해 배너·상태라인 C1~C3를 대조). 다른 문서·룰은 모델명을 재기입하지 말고 "메인 세션 모델(정본 = 본 절)"로 위임할 것 — 재기입 지점이 2026-07-24 Fable 5 패치 후 3곳에서 동시 낙후된 전례.
 
 **계보**: **v8.3** (현재 active) — 전체 계보(v6.4.0~)·릴리스 상세·검증 이력 = `02_Infrastructure/docs/CHANGELOG_constitution.md` (2026-07-24 C5 이관)
 **Branch**: `main` (Qvest active — GitHub default)
@@ -36,7 +38,7 @@ WorkTask → [alpha-hypothesis] → alpha-research → risk-research → optimiz
              └ 가설설계 구간(fable)  └────────────── 이하 전부 opus (Opus 5) ──────────────┘
 ```
 **모델 라우팅 (2026-08-08 도훈 지시)**: `alpha-hypothesis`(Step 0 발굴 + ①메커니즘→②가설→③반증→④국면 경계) **만 `model: fable`**, QEPM 나머지 전 에이전트 `model: opus`. alpha-hypothesis 는 alpha-research의 *내부 구간 분리*이지 7번째 심사 단계가 아니다(6-agent 구조 불변 — 슬림화/확장 재제안 아님). 핸드오프 = `alpha_hypothesis.json`(alpha-research 가 승계, 재작성 금지). 상세 SOT: `02_Infrastructure/docs/rules/caching.md` 모델 라우팅 절.
-각 agent spawn 시 **Self-Adversarial Challenge 의무** (v8.2 — Codex Round 제거, 메인 세션 모델(현행 Fable 5) 자체 적대검증: finalize 직전 약점 자가제기 → `challenge_note.md` 기록 → final. AX-008 3-source 중 1개).
+각 agent spawn 시 **Self-Adversarial Challenge 의무** (v8.2 — Codex Round 제거, 메인 세션 모델(정본 = Active Version 절) 자체 적대검증: finalize 직전 약점 자가제기 → `challenge_note.md` 기록 → final. AX-008 3-source 중 1개).
 **② alpha-search · ③ factor-rotation**: 각자 경량 경로 (각 skill + `## Active Entrypoints`).
 **④ RAMP** (K-RAMP, 2026-06-17): 기존 전략풀 *소비* → 순수팩터 추출(통계 잠재팩터+FWL) → 팩터군 → M-code(역할 분업) → 리스크매니저 → 인베스터 에이전트 팩터배분. 거버넌스-우선 Gate 0~11 + CCS 13-score. 재귀 자가발전=Axiom 엔진 4번째 모드(modecode RAMP, backtested). 룰 `02_Infrastructure/docs/rules/ramp.md`, SOT `00_Lawbook/K_RAMP/`. governor 정지(자본 수동).
 
@@ -93,7 +95,7 @@ Qvest 시스템 전체 구동. bootstrap.sh 실행 → 플러그인 리로드 �
 
 - **PIT C1~C15**: `.claude/rules/pit.md`
 - **Lockbox / Frozen Alpha Scope**: `02_Infrastructure/docs/rules/lockbox-scope.md` (정규 리서치 alpha/risk/optimizer만 적용. forge/monitoring/Q-Lead/execution = 폐기. 도훈 mandate 2026-05-09)
-- **Self-Adversarial Challenge (Codex Round 대체)**: `02_Infrastructure/docs/rules/codex-round.md` (v8.2 — 외부 Codex Round 제거, 메인 세션 모델(현행 Fable 5) 자체 적대검증으로 finalize 직전 약점 자가제기 + `challenge_note.md` 기록. AX-008 3-source 중 1개)
+- **Self-Adversarial Challenge (Codex Round 대체)**: `02_Infrastructure/docs/rules/codex-round.md` (v8.2 — 외부 Codex Round 제거, 메인 세션 모델(정본 = Active Version 절) 자체 적대검증으로 finalize 직전 약점 자가제기 + `challenge_note.md` 기록. AX-008 3-source 중 1개)
 - **Backtest Result Contract v1.0**: `.claude/rules/backtest-contract.md` (PerformanceAnalytics 표준 함수만)
 - **Measurement Integrity + Graduation 허들 (v8.x)**: `.claude/rules/measurement-graduation.md` ⭐ (위반 = AX-002 동급. 실측 처리(canonical_screen_bt/build_bt_result + metric_type 라벨, proxy 손계산 금지) / portfolio-alpha t = forge-authoritative(NW lag-3) / graduation severity: PORT_t 2.95·DSR hard, rank-IC계열 advisory / admission = book-marginal ΔIR≥0.05 / DPL 구성레이어. E2E: FLOW proxy 3.55→forge 2.35)
 - **Axiom Engine 2-Tier (v8.0)**: `02_Infrastructure/docs/rules/axiom-engine.md` ⭐ (원전 r7 복원 + 3-mode 2-tier(AS proxy→mode-local / QPM·FR backtested→global) + INV-1~7. mode-local AX-&lt;MODE&gt;-NNN / global AX-NNN. negative=provisional failure-ledger. 자동승격=documented·hook block은 주간 confirm. E2E 10/10. 위반=AX-002 동급)

@@ -1,6 +1,6 @@
 ---
 name: qvest
-description: "Qvest 시스템 구동 (v8.3 · Fable 5-Native · 4-Mode +RAMP) — Work Task 기반 리서치 엔진 부트스트랩"
+description: "Qvest 시스템 구동 (v8.3 · Opus 5-Native · 4-Mode +RAMP) — Work Task 기반 리서치 엔진 부트스트랩"
 disable-model-invocation: true
 user-invocable: true
 ---
@@ -38,7 +38,7 @@ bash 02_Infrastructure/ops/bootstrap.sh
 `ls .claude/agents/ .claude/skills/` + 부팅 `Skills:`/`[hook-integrity]` 라인으로 한다
 (구판이 9종 열거로 2주 낙후됐던 재발 방지 — 열거 갱신보다 위임이 강하다).
 
-**Agent Registry** (2026-07-26 실측 14종): 6-agent 코어(`alpha-research`/`risk-research`/`optimizer-research`/`forge`/`judge`/`governor`) + 모드 진입(`alpha-search` ②·`ramp-orchestrator` ④·`dispatch-orchestrator` ③) + 온디맨드(`architect`/`blender`/`execution`/`monitoring`/`strategy-implementer`). scout는 파일 자체가 없음(alpha-research 흡수 완료).
+**Agent Registry** (2026-08-08 실측 15종): 6-agent 코어(`alpha-research`/`risk-research`/`optimizer-research`/`forge`/`judge`/`governor`) + 가설설계 분리(`alpha-hypothesis` ⭐fable — alpha-research 내부 구간이지 7번째 심사단계 아님, 2026-08-08 추가) + 모드 진입(`alpha-search` ②·`ramp-orchestrator` ④·`dispatch-orchestrator` ③) + 온디맨드(`architect`/`blender`/`execution`/`monitoring`/`strategy-implementer`). scout는 파일 자체가 없음(alpha-research 흡수 완료).
 
 **Skills** (2026-07-26 실측 — 디렉토리형 + 단일 .md 혼재): 6-agent별 리서치 skill + `qvest-worktask`(구 `worktask` 개명) / `qvest-telegram` **v7** SOT / `cleaner` / `factor-db-discovery` / `factor-rotation` / `ramp` / `kr-inverse-pattern-miner` / `simplify` / qvest-*-style 4종 / `qvest-cert-paths` / `qvest-hook-debug` 등. `commit-commands`·`codex`·`telegram-protocol`은 **부재**(폐지 — 본 문서 하단 Legacy 절 참조). 삭제 이력(2026-07-05): s0~s7 stage skill 8종.
 
@@ -230,7 +230,7 @@ PG2 active book = **`book_state.json` admitted_ids가 유일 정본** (부팅 `P
 23. ✅ **UTF-8 출력 가드** 부트 메시지 — `[boot] utf8_output_guard: ACTIVE`. INACTIVE WARN 시 python3 PATH 점검. 부트 외 이모지 출력 가능 커맨드는 `bash 02_Infrastructure/ops/safe_run.sh <cmd>` 경유 (API 400 invalid high surrogate 방지 — anthropics/claude-code#44230)
 
 ### v8.1 신규 확인 (4건, 2026-06-05)
-19. ✅ 완료 배너·상태 라인이 **CLAUDE.md Active Version과 일치** (현행 v8.3 · Fable 5-Native · 4-Mode +RAMP — 항목 27과 동일 기준. 하드코딩 금지: 배너 버전이 헌법과 다르면 그쪽이 낡은 것)
+19. ✅ 완료 배너·상태 라인이 **CLAUDE.md Active Version과 일치** (현행 v8.3 · Opus 5-Native · 4-Mode +RAMP — 항목 27과 동일 기준. 하드코딩 금지: 배너 버전이 헌법과 다르면 그쪽이 낡은 것)
 20. ✅ **데이터 캐시 검증(Step 4e)** 부트 메시지 — `[boot] 데이터 캐시: rawdata.parquet OK + K200/KQ150 멤버십 OK` (없으면 WARN: alpha-search `universe=K200_KQ150` stop 위험) + `kr_factor_returns_v2: OK`
 21. ✅ alpha-search 제1원칙 (`.claude/skills/alpha-search/SKILL.md` `## ★ 제1원칙`): 논문 완전 복제 + 유니버스 K200∪KQ150 고정(`run_alpha_search` universe 기본값) + 기간 2005~ 고정(start_date 기본값)
 22. ✅ 모듈 자동흐름: `register_module` 계약 floor(`contract_pass + backtested + frozen + hash/build/cost`) + `register_research_outputs`(ML/DPL 다리, 계약 없으면 quarantine) + `run_factor_rotation` allowlist / Axiom r7 복원(`02_Infrastructure/docs/rules/axiom-engine.md` 5축 boolean-AND + INV-1~7)

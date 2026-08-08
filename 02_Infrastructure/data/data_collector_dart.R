@@ -533,7 +533,12 @@ dart_parse_financials <- function(raw_dt = NULL) {
                           "dart_InterestExpenseFinanceExpense"),
     InterestIncome   = c("ifrs-full_FinanceIncome", "ifrs-full_RevenueFromInterest",
                           "dart_InterestIncomeFinanceIncome"),
-    RandD            = c("ifrs-full_ResearchAndDevelopmentExpense"),
+    # 경상개발비(dart_OrdinaryDevelopmentExpense)는 이름 목록에 없어 통째로 유실되던 축이다.
+    # 이름 목록에 추가하지 않고 **태그 폴백에만** 두는 이유: 이름 목록에 넣으면 이미
+    # "연구개발비"로 잡히던 기업에서 어느 행이 먼저 오느냐에 따라 값이 바뀔 수 있다(추가 전용 위반).
+    RandD            = c("ifrs-full_ResearchAndDevelopmentExpense",
+                          "dart_OrdinaryDevelopmentExpense",
+                          "dart_ExperimentalResearchExpenses"),
     TotalAssets      = c("ifrs-full_Assets"),
     CurrentAssets    = c("ifrs-full_CurrentAssets"),
     NonCurrentAssets = c("ifrs-full_NoncurrentAssets"),
@@ -563,10 +568,19 @@ dart_parse_financials <- function(raw_dt = NULL) {
   # 감가상각비 특례: 기능별 분류 손익계산서 기업은 손익계산서에 감가상각비 줄이 없고
   # 현금흐름표의 조정항목으로만 나온다. 결합 태그가 있으면 그것을, 없으면 감가상각비와
   # 무형자산상각비를 **합산**한다(둘은 D&A 의 구성요소이므로 first-wins 로 뽑으면 과소계상).
+  # dart_ 접두 변형 포함 (2026-08-08 P2 census): 같은 개념을 `ifrs-full_` 로 쓰는 기업과
+  # `dart_` 로 쓰는 기업이 갈린다. 전체 캐시 실측상 두 태그는 **서로 배타적**이므로
+  # (ifrs-full 전용 600 · dart_ 전용 1,365 · 공존 0) 합산해도 이중계상이 없다.
+  # ※ 순증은 +1.1%p 에 그친다 — dart_ 태그 보유 기업 상당수가 이미 이름("감가상각비")으로
+  #   잡히기 때문. 감가상각비의 이 API 천장은 ~0.30 이며, 나머지 70% 기업-연도는
+  #   4대 재무제표에 D&A 를 아예 적지 않는다(주석 경로 필요 — FQ-154 관문).
   DEPAMORT_ID_COMBINED <- c("ifrs-full_AdjustmentsForDepreciationAndAmortisationExpense",
+                             "dart_AdjustmentsForDepreciationAndAmortisationExpense",
                              "ifrs-full_DepreciationAndAmortisationExpense")
   DEPAMORT_ID_PARTS    <- c("ifrs-full_AdjustmentsForDepreciationExpense",
-                             "ifrs-full_AdjustmentsForAmortisationExpense")
+                             "dart_AdjustmentsForDepreciationExpense",
+                             "ifrs-full_AdjustmentsForAmortisationExpense",
+                             "dart_AdjustmentsForAmortisationExpense")
 
   # 계정명을 표준 변수명으로 변환
   raw_dt[, amount_clean := .parse_amount(thstrm_amount)]
