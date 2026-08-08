@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "sot": "02_Infrastructure/docs/qvest_v8_3_alpha_discovery_sot.md §4",
-  "updated": "2026-08-08T16:25:21+09:00",
+  "updated": "2026-08-08 (FQ-159 금융 섹터 국면 조건부 축 신규 — FQ-155 P3a 시장조정 분해 t 2.39)",
   "consume_rule": "새 발굴 리서치 착수 전: hypothesis_index lookup → 본 큐 확인 → owner/status 갱신. 완료 시 result_ref(L-code/보고서) 기입. dohoon_decision 항목은 세션 임의 착수 금지.",
   "entries": [
     {
@@ -3129,7 +3129,7 @@
           "standalone_port_t": 2.1,
           "baseline_port_t": 1.277,
           "paired_vs_mom_t": 1.224,
-          "threshold_used_in_repo": 2.0,
+          "threshold_used_in_repo": 2,
           "ir": 0.635,
           "calmar": 0.576,
           "oos_ret": 0.374,
@@ -3194,6 +3194,26 @@
         "02_Infrastructure/contracts/canonical_screen_bt.R:117",
         "stage_artifacts/fq141_precheck_20260808/np_a_findings.md"
       ]
+    },
+    {
+      "id": "FQ-159",
+      "lane": "regime_sector",
+      "title": "금융 섹터(은행/보험/증권) 국면 조건부 축 — 2021-25 시장조정 알파 t 2.39",
+      "hypothesis": "금융 섹터의 상대 성과가 국면 의존적으로 반전한다. 2010-15 시장조정 alpha -1.46%/월(t -3.05, 유의 열위) → 2016-20 -0.17%(t -0.34) → 2021-25 **+1.26%/월(t +2.39)**, beta 0.717 로 시장 상승분으로 설명되지 않음. 동시에 섹터 내 팩터 판별력도 같은 구간에 유의(금융 내부 rank-IC 0.1157, t 3.06 · NW3 3.58). 밸류업 프로그램 국면과 정합.",
+      "ev_rationale": "2026-08-08 세션의 **유일한 양성 신호**. 시장조정 알파와 섹터 내 판별력이 같은 구간에서 동시에 유의 → 섹터 타이밍과 종목 선택 두 축 모두 소비 가능성. 현행 book 은 금융 0/21 보유로 이 축을 전혀 안 씀.",
+      "wall_check": "★사후적 구간 선택 — 사전등록 없이 하위기간을 잘라 t 를 잰 것이므로 다중검정 미보정. 채택 전 사전등록 OOS 필수. 또한 breadth 소형(월 ~20종목)이라 standalone 25종목 포트 불가 — 소비형태는 ①섹터 틸트 ②국면 specialist(RCMA) ③제외-필터 해제 중 택일. 전기간 기준으로는 금융 편입이 열위였음(alpha -0.12%/월)을 잊지 말 것.",
+      "data_gate": "열림 — 유니버스·섹터(us_sector_lv1)·팩터·수익 전부 현행 데이터로 측정 완료. CAMELS 등 금융 특화 데이터는 불필요(일반 팩터로 측정됨).",
+      "owner": "미배정",
+      "status": "frontier_open_regime_conditional",
+      "next_action": "① 사전등록 OOS: 2021-2025 를 IS 로 고정하고 2026+ 실현분으로 검증(현재 8개월 가용) ② 소비형태 결정 — factor-rotation RCMA 후보 등재 vs 섹터 틸트 ③ 밸류업 국면 라벨과의 정합 검정(국면 라벨이 이 반전을 사전에 잡는가 — 못 잡으면 라벨 자격 관문 재적용)",
+      "source_refs": [
+        "R-FQ155-P3-FINANCIAL-ALPHA-20260808",
+        "R-FQ155-P1P2-FINANCIAL-SILENT-DROP-20260808",
+        "fq155_p3.rds / fq155_p3a.R 실측",
+        "project-cfa-l2-knowledge-mapping-20260808"
+      ],
+      "registered": "2026-08-08 Q-Lead (FQ-155 P3a 분해 산물 — CFA census 아크에서 파생)",
+      "parent_fq": "FQ-155"
     }
   ]
 }
