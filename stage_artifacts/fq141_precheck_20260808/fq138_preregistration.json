@@ -26,7 +26,14 @@
       "regime_base_rate": "전 구간 42.9% (188/438개월). 시대별 1990s 55.9 / 1995s 36.7 / 2000s 45.0 / 2005s 48.3 / 2010s 48.3 / 2015s 33.3 / 2020s 36.7 / 2025s 31.6",
       "window_hazard": "조건부 n=27 · base rate 42.9% ⇒ 원 패널 ~63개월. 짧고 최근인 창이며 36m ending 2026 의 d_ann +0.2027 = 고-핸디캡 구역",
       "current_regime": "ON (2026-07 기준, 직전월 mega_spread -0.1248)",
-      "source": "stage_artifacts/fq141_precheck_20260808/np_fq138_regime_link.R"
+      "source": "stage_artifacts/fq141_precheck_20260808/np_fq138_regime_link.R",
+      "window_hazard_CORRECTED_20260808": {
+        "retracted": "이전 기재 '조건부 n=27 · base rate 42.9% ⇒ 원 패널 ~63개월' 은 **틀렸다**. 전 구간 base rate 를 최근 창에 적용한 오류.",
+        "measured": "원 패널(panelx_A) = 80개월(201912~202607, 월 중앙 81종목)이고 gridx_* 와 일치. 그 창의 실제 base rate = **35.0% (28/80개월)** 이므로 n=27 은 정확히 설명된다(1개월 차는 말단 forward return 부재 수준). 전 구간 42.9% 대비 낮은 것은 최근 시대의 국면 희소성(2020s 36.7% · 2025s 31.6%) 때문이다.",
+        "revised_implication": "따라서 위험은 '짧은 패널'이 아니라 **최근 국면의 희소성**이다. 조건부 표본은 80개월 패널에서도 ~28개월에 그치며, 그 28개월이 전부 2019-12 이후 = 고-핸디캡 구역에 속한다는 점은 유효하다(36m ending 2026 d_ann +0.2027).",
+        "source": "stage_artifacts/fq141_precheck_20260808/{probe_panelx,probe_baserate_window}.R"
+      },
+      "original_panel_confirmed": "WT-D20260803_008 artifact_lineage.json 이 gridx_bench/liq/returns/universe_size + panelx_A 를 참조하고, mega_spread 정의 스크립트 diag_fq125_stage1_controls.R 및 run_fq125_stage1.R·emit_wt008.R 이 모두 gridx_ 전용(grid_ 0회) ⇒ 원 측정은 확장본 사용 확인. FQ-138d 해소 — 기준선 재산출 불요."
     }
   },
   "question": "계약 신호의 국면-조건부 초과분은 국면 순풍(소형 우위)과 구별되는가?",
@@ -94,7 +101,7 @@
       "grid": "2023-01-31 ~ 2026-06-30 · 42개월 · returns 105,487행 · bench 42행",
       "ratio": "확장본이 1.9배 — 파일럿 사용 시 표본 절반 손실"
     },
-    "expected_conditional_n": "base rate 42.9% 적용 시 gridx 80개월 -> 조건부 ~34개월 / grid 42개월 -> ~18개월. 원 보고 n=27 은 그 사이 값이므로 원 측정이 어느 패널을 썼는지 **측정 전 확인 필요**(가정 금지).",
+    "expected_conditional_n": "★정정: 원 측정은 gridx(80개월) 사용 확인됨. 그 창 base rate 35.0% ⇒ 조건부 28개월이고 보고 n=27 과 정합. 확장본을 쓰면 동일 표본이 재현되며, grid_ 파일럿(42개월)을 쓰면 표본이 절반으로 줄어 재현 불가.",
     "vintage_pin": {
       "note": "§7 Vintage Pinning — 판정 산출은 핀 기록 의무",
       "gridx_vintage_txt": "RAWDATA@20260803_0705+benchmark@20260803_0836",
