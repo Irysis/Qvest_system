@@ -1,0 +1,686 @@
+[config.R] PROJECT_ROOT: C:/Users/99922/OneDrive/Quant_Module_Moltbot
+[factor_db_connector] Loaded. Functions: load_month_factors(), load_daily_factors(),
+  compute_rolling_ic_all(), group_factors_by_family(), align_factor_direction()
+[ramp_io.R] Loaded — ramp_write_parquet/ramp_write_json (§2.4 meta enforced)
+[backtest_result_contract.R] Loaded — Backtest Result Contract v1.0
+  Functions: build_bt_result() / validate_bt_result()
+  10 components: manifest, strategy_spec, nav, period_returns, holdings, benchmark_returns, metrics, benchmark_compare, rolling_metrics, drawdowns, audit
+[backtest_result_contract.R] Loaded — Backtest Result Contract v1.0
+  Functions: build_bt_result() / validate_bt_result()
+  10 components: manifest, strategy_spec, nav, period_returns, holdings, benchmark_returns, metrics, benchmark_compare, rolling_metrics, drawdowns, audit
+[canonical_screen_bt.R] Loaded — canonical_screen_bt() (v8.x WS1 real-computation helper)
+[factor_validation.R] Loaded — build_monthly_forward_returns / validate_factor / approve_factors
+[align_signal_return_ym.R] loaded — ym_of / ym_shift / align_signal_return_ym (FQ-043)
+[m26] ================ [0] 입력 실측 ================
+[m26] factor_db: 월 파일 442개 · 8.68 GB · factor_db_199001.parquet ~ factor_db_202608.parquet
+[m26] RAWDATA: 14059013행 · 고유 Date 9003 · 고유 년월 440 ⇒ ★관측단위 = 일간(daily) · 범위 1990-01-05 ~ 2026-08-07
+[m26] ⇒ 일간이므로 forward 수익은 계약함수 build_monthly_forward_returns() 로만 파생한다
+[m26] forward 수익 패널: 116092행 · 439개월 · 관측단위 = (월말 anchor Date × Ticker) · 1990-01-31 ~ 2026-07-31
+[m26]   ★dating = signal_anchor (Date=신호월말, Ret_1m=익월 실현) ⇒ 병합 off=0
+[m26]   Ret_1m 요약: 중앙 -0.0044 · sd 0.1503 · 방화벽 격리 0
+[m26] ================ [1] 팩터 패널 (load_month_factors 경유) ================
+[align_factor_direction] loaded-factor direction: IC-inferred=0 / registry-fallback=0 / default-fallback=0 (n_factors=0)
+[align_factor_direction] PIT-safe: sig_date=1990-02-28 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=0 / registry-fallback=0 / default-fallback=0 (n_factors=0)
+[align_factor_direction] PIT-safe: sig_date=1990-03-30 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=0 / registry-fallback=0 / default-fallback=0 (n_factors=0)
+[align_factor_direction] PIT-safe: sig_date=1990-04-30 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=0 / registry-fallback=0 / default-fallback=0 (n_factors=0)
+[align_factor_direction] PIT-safe: sig_date=1990-05-31 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=0 / registry-fallback=0 / default-fallback=0 (n_factors=0)
+[align_factor_direction] PIT-safe: sig_date=1990-06-29 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=0 / registry-fallback=0 / default-fallback=0 (n_factors=0)
+[align_factor_direction] PIT-safe: sig_date=1990-07-31 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=0 / registry-fallback=0 / default-fallback=0 (n_factors=0)
+[align_factor_direction] PIT-safe: sig_date=1990-08-31 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=0 / registry-fallback=0 / default-fallback=0 (n_factors=0)
+[align_factor_direction] PIT-safe: sig_date=1990-09-28 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=0 / registry-fallback=0 / default-fallback=0 (n_factors=0)
+[align_factor_direction] PIT-safe: sig_date=1990-10-31 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=0 / registry-fallback=0 / default-fallback=0 (n_factors=0)
+[align_factor_direction] PIT-safe: sig_date=1990-11-30 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=0 / registry-fallback=0 / default-fallback=0 (n_factors=0)
+[align_factor_direction] PIT-safe: sig_date=1990-12-26 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=0 / registry-fallback=0 / default-fallback=0 (n_factors=0)
+[align_factor_direction] PIT-safe: sig_date=1991-01-31 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=0 / registry-fallback=0 / default-fallback=0 (n_factors=0)
+[align_factor_direction] PIT-safe: sig_date=1991-02-28 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=0 / registry-fallback=0 / default-fallback=0 (n_factors=0)
+[align_factor_direction] PIT-safe: sig_date=1991-03-29 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=0 / registry-fallback=0 / default-fallback=0 (n_factors=0)
+[align_factor_direction] PIT-safe: sig_date=1991-04-30 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=0 / registry-fallback=0 / default-fallback=0 (n_factors=0)
+[align_factor_direction] PIT-safe: sig_date=1991-05-31 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=0 / registry-fallback=0 / default-fallback=0 (n_factors=0)
+[align_factor_direction] PIT-safe: sig_date=1991-06-28 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=0 / registry-fallback=0 / default-fallback=0 (n_factors=0)
+[align_factor_direction] PIT-safe: sig_date=1991-07-31 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=0 / registry-fallback=0 / default-fallback=0 (n_factors=0)
+[align_factor_direction] PIT-safe: sig_date=1991-08-30 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=0 / registry-fallback=0 / default-fallback=0 (n_factors=0)
+[align_factor_direction] PIT-safe: sig_date=1991-09-30 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=0 / registry-fallback=0 / default-fallback=0 (n_factors=0)
+[align_factor_direction] PIT-safe: sig_date=1991-10-31 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=0 / registry-fallback=0 / default-fallback=0 (n_factors=0)
+[align_factor_direction] PIT-safe: sig_date=1991-11-29 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=0 / registry-fallback=0 / default-fallback=0 (n_factors=0)
+[align_factor_direction] PIT-safe: sig_date=1991-12-26 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=0 / registry-fallback=0 / default-fallback=0 (n_factors=0)
+[align_factor_direction] PIT-safe: sig_date=1992-01-31 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=0 / registry-fallback=0 / default-fallback=0 (n_factors=0)
+[align_factor_direction] PIT-safe: sig_date=1992-02-28 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=0 / registry-fallback=0 / default-fallback=0 (n_factors=0)
+[align_factor_direction] PIT-safe: sig_date=1992-03-31 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=0 / registry-fallback=0 / default-fallback=0 (n_factors=0)
+[align_factor_direction] PIT-safe: sig_date=1992-04-30 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=0 / registry-fallback=0 / default-fallback=0 (n_factors=0)
+[align_factor_direction] PIT-safe: sig_date=1992-05-29 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=0 / registry-fallback=0 / default-fallback=0 (n_factors=0)
+[align_factor_direction] PIT-safe: sig_date=1992-06-30 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=0 / registry-fallback=0 / default-fallback=0 (n_factors=0)
+[align_factor_direction] PIT-safe: sig_date=1992-07-31 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=0 / registry-fallback=0 / default-fallback=0 (n_factors=0)
+[align_factor_direction] PIT-safe: sig_date=1992-08-31 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=0 / registry-fallback=0 / default-fallback=0 (n_factors=0)
+[align_factor_direction] PIT-safe: sig_date=1992-09-30 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=0 / registry-fallback=0 / default-fallback=0 (n_factors=0)
+[align_factor_direction] PIT-safe: sig_date=1992-10-30 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=0 / registry-fallback=0 / default-fallback=0 (n_factors=0)
+[align_factor_direction] PIT-safe: sig_date=1992-11-30 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=0 / registry-fallback=0 / default-fallback=0 (n_factors=0)
+[align_factor_direction] PIT-safe: sig_date=1992-12-28 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=0 / registry-fallback=0 / default-fallback=0 (n_factors=0)
+[align_factor_direction] PIT-safe: sig_date=1993-01-29 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=0 / registry-fallback=0 / default-fallback=0 (n_factors=0)
+[align_factor_direction] PIT-safe: sig_date=1993-02-26 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=0 / registry-fallback=0 / default-fallback=0 (n_factors=0)
+[align_factor_direction] PIT-safe: sig_date=1993-03-31 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=0 / registry-fallback=0 / default-fallback=0 (n_factors=0)
+[align_factor_direction] PIT-safe: sig_date=1993-04-30 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=0 / registry-fallback=0 / default-fallback=0 (n_factors=0)
+[align_factor_direction] PIT-safe: sig_date=1993-05-31 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=0 / registry-fallback=0 / default-fallback=0 (n_factors=0)
+[align_factor_direction] PIT-safe: sig_date=1993-06-30 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=0 / registry-fallback=0 / default-fallback=0 (n_factors=0)
+[align_factor_direction] PIT-safe: sig_date=1993-07-30 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=0 / registry-fallback=0 / default-fallback=0 (n_factors=0)
+[align_factor_direction] PIT-safe: sig_date=1993-08-31 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=0 / registry-fallback=0 / default-fallback=0 (n_factors=0)
+[align_factor_direction] PIT-safe: sig_date=1993-09-28 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=0 / registry-fallback=0 / default-fallback=0 (n_factors=0)
+[align_factor_direction] PIT-safe: sig_date=1993-10-29 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=0 / registry-fallback=0 / default-fallback=0 (n_factors=0)
+[align_factor_direction] PIT-safe: sig_date=1993-11-30 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=0 / registry-fallback=0 / default-fallback=0 (n_factors=0)
+[align_factor_direction] PIT-safe: sig_date=1993-12-28 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=0 / registry-fallback=0 / default-fallback=0 (n_factors=0)
+[align_factor_direction] PIT-safe: sig_date=1994-01-31 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=0 / registry-fallback=0 / default-fallback=0 (n_factors=0)
+[align_factor_direction] PIT-safe: sig_date=1994-02-28 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=0 / registry-fallback=0 / default-fallback=0 (n_factors=0)
+[align_factor_direction] PIT-safe: sig_date=1994-03-31 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=0 / registry-fallback=0 / default-fallback=0 (n_factors=0)
+[align_factor_direction] PIT-safe: sig_date=1994-04-29 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=0 / registry-fallback=0 / default-fallback=0 (n_factors=0)
+[align_factor_direction] PIT-safe: sig_date=1994-05-31 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=0 / registry-fallback=0 / default-fallback=0 (n_factors=0)
+[align_factor_direction] PIT-safe: sig_date=1994-06-30 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=0 / registry-fallback=0 / default-fallback=0 (n_factors=0)
+[align_factor_direction] PIT-safe: sig_date=1994-07-29 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=0 / registry-fallback=0 / default-fallback=0 (n_factors=0)
+[align_factor_direction] PIT-safe: sig_date=1994-08-31 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=0 / registry-fallback=0 / default-fallback=0 (n_factors=0)
+[align_factor_direction] PIT-safe: sig_date=1994-09-30 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=0 / registry-fallback=0 / default-fallback=0 (n_factors=0)
+[align_factor_direction] PIT-safe: sig_date=1994-10-31 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=0 / registry-fallback=0 / default-fallback=0 (n_factors=0)
+[align_factor_direction] PIT-safe: sig_date=1994-11-30 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=0 / registry-fallback=0 / default-fallback=0 (n_factors=0)
+[align_factor_direction] PIT-safe: sig_date=1994-12-28 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=0 / registry-fallback=0 / default-fallback=0 (n_factors=0)
+[align_factor_direction] PIT-safe: sig_date=1995-01-27 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=0 / registry-fallback=0 / default-fallback=0 (n_factors=0)
+[align_factor_direction] PIT-safe: sig_date=1995-02-28 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=0 / registry-fallback=0 / default-fallback=0 (n_factors=0)
+[align_factor_direction] PIT-safe: sig_date=1995-03-31 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=0 / registry-fallback=0 / default-fallback=0 (n_factors=0)
+[align_factor_direction] PIT-safe: sig_date=1995-04-28 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=0 / registry-fallback=0 / default-fallback=0 (n_factors=0)
+[align_factor_direction] PIT-safe: sig_date=1995-05-31 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=0 / registry-fallback=0 / default-fallback=0 (n_factors=0)
+[align_factor_direction] PIT-safe: sig_date=1995-06-30 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=0 / registry-fallback=0 / default-fallback=0 (n_factors=0)
+[align_factor_direction] PIT-safe: sig_date=1995-07-31 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=0 / registry-fallback=0 / default-fallback=0 (n_factors=0)
+[align_factor_direction] PIT-safe: sig_date=1995-08-31 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=0 / registry-fallback=0 / default-fallback=0 (n_factors=0)
+[align_factor_direction] PIT-safe: sig_date=1995-09-29 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=0 / registry-fallback=0 / default-fallback=0 (n_factors=0)
+[align_factor_direction] PIT-safe: sig_date=1995-10-31 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=0 / registry-fallback=0 / default-fallback=0 (n_factors=0)
+[align_factor_direction] PIT-safe: sig_date=1995-11-30 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=0 / registry-fallback=0 / default-fallback=0 (n_factors=0)
+[align_factor_direction] PIT-safe: sig_date=1995-12-27 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=0 / registry-fallback=0 / default-fallback=0 (n_factors=0)
+[align_factor_direction] PIT-safe: sig_date=1996-01-31 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=0 / registry-fallback=0 / default-fallback=0 (n_factors=0)
+[align_factor_direction] PIT-safe: sig_date=1996-02-29 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=0 / registry-fallback=0 / default-fallback=0 (n_factors=0)
+[align_factor_direction] PIT-safe: sig_date=1996-03-29 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=0 / registry-fallback=0 / default-fallback=0 (n_factors=0)
+[align_factor_direction] PIT-safe: sig_date=1996-04-30 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=0 / registry-fallback=0 / default-fallback=0 (n_factors=0)
+[align_factor_direction] PIT-safe: sig_date=1996-05-31 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=0 / registry-fallback=0 / default-fallback=0 (n_factors=0)
+[align_factor_direction] PIT-safe: sig_date=1996-06-28 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=0 / registry-fallback=0 / default-fallback=0 (n_factors=0)
+[align_factor_direction] PIT-safe: sig_date=1996-07-31 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=0 / registry-fallback=0 / default-fallback=0 (n_factors=0)
+[align_factor_direction] PIT-safe: sig_date=1996-08-30 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=0 / registry-fallback=0 / default-fallback=0 (n_factors=0)
+[align_factor_direction] PIT-safe: sig_date=1996-09-30 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=0 / registry-fallback=0 / default-fallback=0 (n_factors=0)
+[align_factor_direction] PIT-safe: sig_date=1996-10-31 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=0 / registry-fallback=0 / default-fallback=0 (n_factors=0)
+[align_factor_direction] PIT-safe: sig_date=1996-11-29 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=0 / registry-fallback=0 / default-fallback=0 (n_factors=0)
+[align_factor_direction] PIT-safe: sig_date=1996-12-27 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=0 / registry-fallback=0 / default-fallback=0 (n_factors=0)
+[align_factor_direction] PIT-safe: sig_date=1997-01-31 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=0 / registry-fallback=0 / default-fallback=0 (n_factors=0)
+[align_factor_direction] PIT-safe: sig_date=1997-02-28 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=0 / registry-fallback=0 / default-fallback=0 (n_factors=0)
+[align_factor_direction] PIT-safe: sig_date=1997-03-31 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=0 / registry-fallback=0 / default-fallback=0 (n_factors=0)
+[align_factor_direction] PIT-safe: sig_date=1997-04-30 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=0 / registry-fallback=0 / default-fallback=0 (n_factors=0)
+[align_factor_direction] PIT-safe: sig_date=1997-05-30 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=0 / registry-fallback=0 / default-fallback=0 (n_factors=0)
+[align_factor_direction] PIT-safe: sig_date=1997-06-30 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=0 / registry-fallback=0 / default-fallback=0 (n_factors=0)
+[align_factor_direction] PIT-safe: sig_date=1997-07-31 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=0 / registry-fallback=0 / default-fallback=0 (n_factors=0)
+[align_factor_direction] PIT-safe: sig_date=1997-08-29 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=0 / registry-fallback=0 / default-fallback=0 (n_factors=0)
+[align_factor_direction] PIT-safe: sig_date=1997-09-30 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=0 / registry-fallback=0 / default-fallback=0 (n_factors=0)
+[align_factor_direction] PIT-safe: sig_date=1997-10-31 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=0 / registry-fallback=0 / default-fallback=0 (n_factors=0)
+[align_factor_direction] PIT-safe: sig_date=1997-11-28 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=0 / registry-fallback=0 / default-fallback=0 (n_factors=0)
+[align_factor_direction] PIT-safe: sig_date=1997-12-26 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=0 / registry-fallback=0 / default-fallback=0 (n_factors=0)
+[align_factor_direction] PIT-safe: sig_date=1998-01-30 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=0 / registry-fallback=0 / default-fallback=0 (n_factors=0)
+[align_factor_direction] PIT-safe: sig_date=1998-02-27 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=0 / registry-fallback=0 / default-fallback=0 (n_factors=0)
+[align_factor_direction] PIT-safe: sig_date=1998-03-31 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=0 / registry-fallback=0 / default-fallback=0 (n_factors=0)
+[align_factor_direction] PIT-safe: sig_date=1998-04-30 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=0 / registry-fallback=0 / default-fallback=0 (n_factors=0)
+[align_factor_direction] PIT-safe: sig_date=1998-05-29 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=0 / registry-fallback=0 / default-fallback=0 (n_factors=0)
+[align_factor_direction] PIT-safe: sig_date=1998-06-30 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=0 / registry-fallback=0 / default-fallback=0 (n_factors=0)
+[align_factor_direction] PIT-safe: sig_date=1998-07-31 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=0 / registry-fallback=0 / default-fallback=0 (n_factors=0)
+[align_factor_direction] PIT-safe: sig_date=1998-08-31 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=0 / registry-fallback=0 / default-fallback=0 (n_factors=0)
+[align_factor_direction] PIT-safe: sig_date=1998-09-30 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=0 / registry-fallback=0 / default-fallback=0 (n_factors=0)
+[align_factor_direction] PIT-safe: sig_date=1998-10-30 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=0 / registry-fallback=0 / default-fallback=0 (n_factors=0)
+[align_factor_direction] PIT-safe: sig_date=1998-11-30 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=0 / registry-fallback=0 / default-fallback=0 (n_factors=0)
+[align_factor_direction] PIT-safe: sig_date=1998-12-28 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=0 / registry-fallback=0 / default-fallback=0 (n_factors=0)
+[align_factor_direction] PIT-safe: sig_date=1999-01-29 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=0 / registry-fallback=0 / default-fallback=0 (n_factors=0)
+[align_factor_direction] PIT-safe: sig_date=1999-02-26 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=0 / registry-fallback=0 / default-fallback=0 (n_factors=0)
+[align_factor_direction] PIT-safe: sig_date=1999-03-31 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=0 / registry-fallback=0 / default-fallback=0 (n_factors=0)
+[align_factor_direction] PIT-safe: sig_date=1999-04-30 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=0 / registry-fallback=0 / default-fallback=0 (n_factors=0)
+[align_factor_direction] PIT-safe: sig_date=1999-05-31 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=0 / registry-fallback=0 / default-fallback=0 (n_factors=0)
+[align_factor_direction] PIT-safe: sig_date=1999-06-30 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=0 / registry-fallback=0 / default-fallback=0 (n_factors=0)
+[align_factor_direction] PIT-safe: sig_date=1999-07-30 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=0 / registry-fallback=0 / default-fallback=0 (n_factors=0)
+[align_factor_direction] PIT-safe: sig_date=1999-08-31 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=0 / registry-fallback=0 / default-fallback=0 (n_factors=0)
+[align_factor_direction] PIT-safe: sig_date=1999-09-30 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=0 / registry-fallback=0 / default-fallback=0 (n_factors=0)
+[align_factor_direction] PIT-safe: sig_date=1999-10-29 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=0 / registry-fallback=0 / default-fallback=0 (n_factors=0)
+[align_factor_direction] PIT-safe: sig_date=1999-11-30 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=0 / registry-fallback=0 / default-fallback=0 (n_factors=0)
+[align_factor_direction] PIT-safe: sig_date=1999-12-28 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=0 / registry-fallback=0 / default-fallback=0 (n_factors=0)
+[align_factor_direction] PIT-safe: sig_date=2000-01-31 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=0 / registry-fallback=0 / default-fallback=0 (n_factors=0)
+[align_factor_direction] PIT-safe: sig_date=2000-02-29 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=0 / registry-fallback=0 / default-fallback=0 (n_factors=0)
+[align_factor_direction] PIT-safe: sig_date=2000-03-31 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=0 / registry-fallback=0 / default-fallback=0 (n_factors=0)
+[align_factor_direction] PIT-safe: sig_date=2000-04-28 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=0 / registry-fallback=0 / default-fallback=0 (n_factors=0)
+[align_factor_direction] PIT-safe: sig_date=2000-05-31 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=0 / registry-fallback=0 / default-fallback=0 (n_factors=0)
+[align_factor_direction] PIT-safe: sig_date=2000-06-30 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=0 / registry-fallback=0 / default-fallback=0 (n_factors=0)
+[align_factor_direction] PIT-safe: sig_date=2000-07-31 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=0 / registry-fallback=1 / default-fallback=0 (n_factors=1)
+[align_factor_direction] PIT-safe: sig_date=2000-08-31 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=0 / registry-fallback=1 / default-fallback=0 (n_factors=1)
+[align_factor_direction] PIT-safe: sig_date=2000-09-29 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=0 / registry-fallback=1 / default-fallback=0 (n_factors=1)
+[align_factor_direction] PIT-safe: sig_date=2000-10-31 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=0 / registry-fallback=1 / default-fallback=0 (n_factors=1)
+[align_factor_direction] PIT-safe: sig_date=2000-11-30 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=0 / registry-fallback=1 / default-fallback=0 (n_factors=1)
+[align_factor_direction] PIT-safe: sig_date=2000-12-26 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=0 / registry-fallback=1 / default-fallback=0 (n_factors=1)
+[align_factor_direction] PIT-safe: sig_date=2001-01-31 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=0 / registry-fallback=1 / default-fallback=0 (n_factors=1)
+[align_factor_direction] PIT-safe: sig_date=2001-02-28 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=0 / registry-fallback=1 / default-fallback=0 (n_factors=1)
+[align_factor_direction] PIT-safe: sig_date=2001-03-30 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=0 / registry-fallback=1 / default-fallback=0 (n_factors=1)
+[align_factor_direction] PIT-safe: sig_date=2001-04-30 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=0 / registry-fallback=1 / default-fallback=0 (n_factors=1)
+[align_factor_direction] PIT-safe: sig_date=2001-05-31 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=0 / registry-fallback=1 / default-fallback=0 (n_factors=1)
+[align_factor_direction] PIT-safe: sig_date=2001-06-29 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=0 / registry-fallback=2 / default-fallback=0 (n_factors=2)
+[align_factor_direction] PIT-safe: sig_date=2001-07-31 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=0 / registry-fallback=2 / default-fallback=0 (n_factors=2)
+[align_factor_direction] PIT-safe: sig_date=2001-08-31 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=0 / registry-fallback=2 / default-fallback=0 (n_factors=2)
+[align_factor_direction] PIT-safe: sig_date=2001-09-28 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=0 / registry-fallback=3 / default-fallback=0 (n_factors=3)
+[align_factor_direction] PIT-safe: sig_date=2001-10-31 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=0 / registry-fallback=3 / default-fallback=0 (n_factors=3)
+[align_factor_direction] PIT-safe: sig_date=2001-11-30 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=0 / registry-fallback=3 / default-fallback=0 (n_factors=3)
+[align_factor_direction] PIT-safe: sig_date=2001-12-28 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=0 / registry-fallback=3 / default-fallback=0 (n_factors=3)
+[align_factor_direction] PIT-safe: sig_date=2002-01-31 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=0 / registry-fallback=3 / default-fallback=0 (n_factors=3)
+[align_factor_direction] PIT-safe: sig_date=2002-02-28 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=0 / registry-fallback=3 / default-fallback=0 (n_factors=3)
+[align_factor_direction] PIT-safe: sig_date=2002-03-29 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=0 / registry-fallback=3 / default-fallback=0 (n_factors=3)
+[align_factor_direction] PIT-safe: sig_date=2002-04-30 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=0 / registry-fallback=3 / default-fallback=0 (n_factors=3)
+[align_factor_direction] PIT-safe: sig_date=2002-05-31 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=0 / registry-fallback=3 / default-fallback=0 (n_factors=3)
+[align_factor_direction] PIT-safe: sig_date=2002-06-28 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=0 / registry-fallback=3 / default-fallback=0 (n_factors=3)
+[align_factor_direction] PIT-safe: sig_date=2002-07-31 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=0 / registry-fallback=3 / default-fallback=0 (n_factors=3)
+[align_factor_direction] PIT-safe: sig_date=2002-08-30 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=0 / registry-fallback=3 / default-fallback=0 (n_factors=3)
+[align_factor_direction] PIT-safe: sig_date=2002-09-30 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=0 / registry-fallback=3 / default-fallback=0 (n_factors=3)
+[align_factor_direction] PIT-safe: sig_date=2002-10-31 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=0 / registry-fallback=3 / default-fallback=0 (n_factors=3)
+[align_factor_direction] PIT-safe: sig_date=2002-11-29 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=0 / registry-fallback=3 / default-fallback=0 (n_factors=3)
+[align_factor_direction] PIT-safe: sig_date=2002-12-30 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=0 / registry-fallback=3 / default-fallback=0 (n_factors=3)
+[align_factor_direction] PIT-safe: sig_date=2003-01-30 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=0 / registry-fallback=4 / default-fallback=0 (n_factors=4)
+[align_factor_direction] PIT-safe: sig_date=2003-02-28 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=0 / registry-fallback=4 / default-fallback=0 (n_factors=4)
+[align_factor_direction] PIT-safe: sig_date=2003-03-31 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=0 / registry-fallback=4 / default-fallback=0 (n_factors=4)
+[align_factor_direction] PIT-safe: sig_date=2003-04-30 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=0 / registry-fallback=4 / default-fallback=0 (n_factors=4)
+[align_factor_direction] PIT-safe: sig_date=2003-05-30 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=0 / registry-fallback=4 / default-fallback=0 (n_factors=4)
+[align_factor_direction] PIT-safe: sig_date=2003-06-30 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=0 / registry-fallback=4 / default-fallback=0 (n_factors=4)
+[align_factor_direction] PIT-safe: sig_date=2003-07-31 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=1 / registry-fallback=3 / default-fallback=0 (n_factors=4)
+[align_factor_direction] PIT-safe: sig_date=2003-08-29 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=1 / registry-fallback=3 / default-fallback=0 (n_factors=4)
+[align_factor_direction] PIT-safe: sig_date=2003-09-30 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=1 / registry-fallback=3 / default-fallback=0 (n_factors=4)
+[align_factor_direction] PIT-safe: sig_date=2003-10-31 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=1 / registry-fallback=3 / default-fallback=0 (n_factors=4)
+[align_factor_direction] PIT-safe: sig_date=2003-11-28 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=1 / registry-fallback=3 / default-fallback=0 (n_factors=4)
+[align_factor_direction] PIT-safe: sig_date=2003-12-30 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=1 / registry-fallback=3 / default-fallback=0 (n_factors=4)
+[align_factor_direction] PIT-safe: sig_date=2004-01-30 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=1 / registry-fallback=3 / default-fallback=0 (n_factors=4)
+[align_factor_direction] PIT-safe: sig_date=2004-02-27 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=1 / registry-fallback=3 / default-fallback=0 (n_factors=4)
+[align_factor_direction] PIT-safe: sig_date=2004-03-31 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=1 / registry-fallback=3 / default-fallback=0 (n_factors=4)
+[align_factor_direction] PIT-safe: sig_date=2004-04-30 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=1 / registry-fallback=3 / default-fallback=0 (n_factors=4)
+[align_factor_direction] PIT-safe: sig_date=2004-05-31 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=1 / registry-fallback=3 / default-fallback=0 (n_factors=4)
+[align_factor_direction] PIT-safe: sig_date=2004-06-30 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=2 / registry-fallback=2 / default-fallback=0 (n_factors=4)
+[align_factor_direction] PIT-safe: sig_date=2004-07-30 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=2 / registry-fallback=2 / default-fallback=0 (n_factors=4)
+[align_factor_direction] PIT-safe: sig_date=2004-08-31 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=2 / registry-fallback=2 / default-fallback=0 (n_factors=4)
+[align_factor_direction] PIT-safe: sig_date=2004-09-30 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=3 / registry-fallback=1 / default-fallback=0 (n_factors=4)
+[align_factor_direction] PIT-safe: sig_date=2004-10-29 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=3 / registry-fallback=1 / default-fallback=0 (n_factors=4)
+[align_factor_direction] PIT-safe: sig_date=2004-11-30 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=3 / registry-fallback=1 / default-fallback=0 (n_factors=4)
+[align_factor_direction] PIT-safe: sig_date=2004-12-30 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=3 / registry-fallback=1 / default-fallback=0 (n_factors=4)
+[m26]   ... 180/439 (90s)
+[align_factor_direction] PIT-safe: sig_date=2005-01-31 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=3 / registry-fallback=1 / default-fallback=0 (n_factors=4)
+[align_factor_direction] PIT-safe: sig_date=2005-02-28 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=3 / registry-fallback=1 / default-fallback=0 (n_factors=4)
+[align_factor_direction] PIT-safe: sig_date=2005-03-31 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=3 / registry-fallback=1 / default-fallback=0 (n_factors=4)
+[align_factor_direction] PIT-safe: sig_date=2005-04-29 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=3 / registry-fallback=1 / default-fallback=0 (n_factors=4)
+[align_factor_direction] PIT-safe: sig_date=2005-05-31 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=3 / registry-fallback=1 / default-fallback=0 (n_factors=4)
+[align_factor_direction] PIT-safe: sig_date=2005-06-30 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=3 / registry-fallback=1 / default-fallback=0 (n_factors=4)
+[align_factor_direction] PIT-safe: sig_date=2005-07-29 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=3 / registry-fallback=1 / default-fallback=0 (n_factors=4)
+[align_factor_direction] PIT-safe: sig_date=2005-08-31 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=3 / registry-fallback=1 / default-fallback=0 (n_factors=4)
+[align_factor_direction] PIT-safe: sig_date=2005-09-30 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=3 / registry-fallback=1 / default-fallback=0 (n_factors=4)
+[align_factor_direction] PIT-safe: sig_date=2005-10-31 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=3 / registry-fallback=1 / default-fallback=0 (n_factors=4)
+[align_factor_direction] PIT-safe: sig_date=2005-11-30 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=3 / registry-fallback=1 / default-fallback=0 (n_factors=4)
+[align_factor_direction] PIT-safe: sig_date=2005-12-29 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=3 / registry-fallback=1 / default-fallback=0 (n_factors=4)
+[align_factor_direction] PIT-safe: sig_date=2006-01-31 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=4 / registry-fallback=0 / default-fallback=0 (n_factors=4)
+[align_factor_direction] PIT-safe: sig_date=2006-02-28 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=4 / registry-fallback=0 / default-fallback=0 (n_factors=4)
+[align_factor_direction] PIT-safe: sig_date=2006-03-31 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=4 / registry-fallback=0 / default-fallback=0 (n_factors=4)
+[align_factor_direction] PIT-safe: sig_date=2006-04-28 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=4 / registry-fallback=0 / default-fallback=0 (n_factors=4)
+[align_factor_direction] PIT-safe: sig_date=2006-05-30 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=4 / registry-fallback=0 / default-fallback=0 (n_factors=4)
+[align_factor_direction] PIT-safe: sig_date=2006-06-30 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=4 / registry-fallback=0 / default-fallback=0 (n_factors=4)
+[align_factor_direction] PIT-safe: sig_date=2006-07-31 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=4 / registry-fallback=0 / default-fallback=0 (n_factors=4)
+[align_factor_direction] PIT-safe: sig_date=2006-08-31 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=4 / registry-fallback=0 / default-fallback=0 (n_factors=4)
+[align_factor_direction] PIT-safe: sig_date=2006-09-29 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=4 / registry-fallback=0 / default-fallback=0 (n_factors=4)
+[align_factor_direction] PIT-safe: sig_date=2006-10-31 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=4 / registry-fallback=0 / default-fallback=0 (n_factors=4)
+[align_factor_direction] PIT-safe: sig_date=2006-11-30 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=4 / registry-fallback=0 / default-fallback=0 (n_factors=4)
+[align_factor_direction] PIT-safe: sig_date=2006-12-28 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=4 / registry-fallback=0 / default-fallback=0 (n_factors=4)
+[align_factor_direction] PIT-safe: sig_date=2007-01-31 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=4 / registry-fallback=0 / default-fallback=0 (n_factors=4)
+[align_factor_direction] PIT-safe: sig_date=2007-02-28 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=4 / registry-fallback=0 / default-fallback=0 (n_factors=4)
+[align_factor_direction] PIT-safe: sig_date=2007-03-30 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=4 / registry-fallback=0 / default-fallback=0 (n_factors=4)
+[align_factor_direction] PIT-safe: sig_date=2007-04-30 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=4 / registry-fallback=0 / default-fallback=0 (n_factors=4)
+[align_factor_direction] PIT-safe: sig_date=2007-05-31 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=4 / registry-fallback=0 / default-fallback=0 (n_factors=4)
+[align_factor_direction] PIT-safe: sig_date=2007-06-29 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=4 / registry-fallback=0 / default-fallback=0 (n_factors=4)
+[align_factor_direction] PIT-safe: sig_date=2007-07-31 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=4 / registry-fallback=0 / default-fallback=0 (n_factors=4)
+[align_factor_direction] PIT-safe: sig_date=2007-08-31 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=4 / registry-fallback=0 / default-fallback=0 (n_factors=4)
+[align_factor_direction] PIT-safe: sig_date=2007-09-28 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=4 / registry-fallback=0 / default-fallback=0 (n_factors=4)
+[align_factor_direction] PIT-safe: sig_date=2007-10-31 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=4 / registry-fallback=0 / default-fallback=0 (n_factors=4)
+[align_factor_direction] PIT-safe: sig_date=2007-11-30 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=4 / registry-fallback=0 / default-fallback=0 (n_factors=4)
+[align_factor_direction] PIT-safe: sig_date=2007-12-28 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=4 / registry-fallback=0 / default-fallback=0 (n_factors=4)
+[align_factor_direction] PIT-safe: sig_date=2008-01-31 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=4 / registry-fallback=0 / default-fallback=0 (n_factors=4)
+[align_factor_direction] PIT-safe: sig_date=2008-02-29 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=4 / registry-fallback=0 / default-fallback=0 (n_factors=4)
+[align_factor_direction] PIT-safe: sig_date=2008-03-31 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=4 / registry-fallback=0 / default-fallback=0 (n_factors=4)
+[align_factor_direction] PIT-safe: sig_date=2008-04-30 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=4 / registry-fallback=0 / default-fallback=0 (n_factors=4)
+[align_factor_direction] PIT-safe: sig_date=2008-05-30 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=4 / registry-fallback=0 / default-fallback=0 (n_factors=4)
+[align_factor_direction] PIT-safe: sig_date=2008-06-30 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=4 / registry-fallback=0 / default-fallback=0 (n_factors=4)
+[align_factor_direction] PIT-safe: sig_date=2008-07-31 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=4 / registry-fallback=0 / default-fallback=0 (n_factors=4)
+[align_factor_direction] PIT-safe: sig_date=2008-08-29 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=4 / registry-fallback=0 / default-fallback=0 (n_factors=4)
+[align_factor_direction] PIT-safe: sig_date=2008-09-30 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=4 / registry-fallback=0 / default-fallback=0 (n_factors=4)
+[align_factor_direction] PIT-safe: sig_date=2008-10-31 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=4 / registry-fallback=0 / default-fallback=0 (n_factors=4)
+[align_factor_direction] PIT-safe: sig_date=2008-11-28 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=4 / registry-fallback=0 / default-fallback=0 (n_factors=4)
+[align_factor_direction] PIT-safe: sig_date=2008-12-30 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=4 / registry-fallback=0 / default-fallback=0 (n_factors=4)
+[align_factor_direction] PIT-safe: sig_date=2009-01-30 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=4 / registry-fallback=0 / default-fallback=0 (n_factors=4)
+[align_factor_direction] PIT-safe: sig_date=2009-02-27 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=4 / registry-fallback=0 / default-fallback=0 (n_factors=4)
+[align_factor_direction] PIT-safe: sig_date=2009-03-31 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=4 / registry-fallback=0 / default-fallback=0 (n_factors=4)
+[align_factor_direction] PIT-safe: sig_date=2009-04-30 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=4 / registry-fallback=0 / default-fallback=0 (n_factors=4)
+[align_factor_direction] PIT-safe: sig_date=2009-05-29 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=4 / registry-fallback=0 / default-fallback=0 (n_factors=4)
+[align_factor_direction] PIT-safe: sig_date=2009-06-30 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=4 / registry-fallback=0 / default-fallback=0 (n_factors=4)
+[align_factor_direction] PIT-safe: sig_date=2009-07-31 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=4 / registry-fallback=0 / default-fallback=0 (n_factors=4)
+[align_factor_direction] PIT-safe: sig_date=2009-08-31 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=4 / registry-fallback=0 / default-fallback=0 (n_factors=4)
+[align_factor_direction] PIT-safe: sig_date=2009-09-30 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=4 / registry-fallback=0 / default-fallback=0 (n_factors=4)
+[align_factor_direction] PIT-safe: sig_date=2009-10-30 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=4 / registry-fallback=0 / default-fallback=0 (n_factors=4)
+[align_factor_direction] PIT-safe: sig_date=2009-11-30 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=4 / registry-fallback=0 / default-fallback=0 (n_factors=4)
+[align_factor_direction] PIT-safe: sig_date=2009-12-30 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=4 / registry-fallback=0 / default-fallback=0 (n_factors=4)
+[m26]   ... 240/439 (177s)
+[align_factor_direction] PIT-safe: sig_date=2010-01-29 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=4 / registry-fallback=0 / default-fallback=0 (n_factors=4)
+[align_factor_direction] PIT-safe: sig_date=2010-02-26 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=4 / registry-fallback=0 / default-fallback=0 (n_factors=4)
+[align_factor_direction] PIT-safe: sig_date=2010-03-31 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=4 / registry-fallback=0 / default-fallback=0 (n_factors=4)
+[align_factor_direction] PIT-safe: sig_date=2010-04-30 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=4 / registry-fallback=0 / default-fallback=0 (n_factors=4)
+[align_factor_direction] PIT-safe: sig_date=2010-05-31 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=4 / registry-fallback=0 / default-fallback=0 (n_factors=4)
+[align_factor_direction] PIT-safe: sig_date=2010-06-30 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=4 / registry-fallback=0 / default-fallback=0 (n_factors=4)
+[align_factor_direction] PIT-safe: sig_date=2010-07-30 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=4 / registry-fallback=0 / default-fallback=0 (n_factors=4)
+[align_factor_direction] PIT-safe: sig_date=2010-08-31 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=4 / registry-fallback=0 / default-fallback=0 (n_factors=4)
+[align_factor_direction] PIT-safe: sig_date=2010-09-30 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=4 / registry-fallback=0 / default-fallback=0 (n_factors=4)
+[align_factor_direction] PIT-safe: sig_date=2010-10-29 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=4 / registry-fallback=0 / default-fallback=0 (n_factors=4)
+[align_factor_direction] PIT-safe: sig_date=2010-11-30 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=4 / registry-fallback=0 / default-fallback=0 (n_factors=4)
+[align_factor_direction] PIT-safe: sig_date=2010-12-30 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=4 / registry-fallback=0 / default-fallback=0 (n_factors=4)
+[align_factor_direction] PIT-safe: sig_date=2011-01-31 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=4 / registry-fallback=0 / default-fallback=0 (n_factors=4)
+[align_factor_direction] PIT-safe: sig_date=2011-02-28 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=4 / registry-fallback=0 / default-fallback=0 (n_factors=4)
+[align_factor_direction] PIT-safe: sig_date=2011-03-31 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=4 / registry-fallback=0 / default-fallback=0 (n_factors=4)
+[align_factor_direction] PIT-safe: sig_date=2011-04-29 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=4 / registry-fallback=0 / default-fallback=0 (n_factors=4)
+[align_factor_direction] PIT-safe: sig_date=2011-05-31 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=4 / registry-fallback=0 / default-fallback=0 (n_factors=4)
+[align_factor_direction] PIT-safe: sig_date=2011-06-30 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=4 / registry-fallback=0 / default-fallback=0 (n_factors=4)
+[align_factor_direction] PIT-safe: sig_date=2011-07-29 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=4 / registry-fallback=0 / default-fallback=0 (n_factors=4)
+[align_factor_direction] PIT-safe: sig_date=2011-08-31 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=4 / registry-fallback=0 / default-fallback=0 (n_factors=4)
+[align_factor_direction] PIT-safe: sig_date=2011-09-30 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=4 / registry-fallback=0 / default-fallback=0 (n_factors=4)
+[align_factor_direction] PIT-safe: sig_date=2011-10-31 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=4 / registry-fallback=0 / default-fallback=0 (n_factors=4)
+[align_factor_direction] PIT-safe: sig_date=2011-11-30 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=4 / registry-fallback=0 / default-fallback=0 (n_factors=4)
+[align_factor_direction] PIT-safe: sig_date=2011-12-29 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=4 / registry-fallback=0 / default-fallback=0 (n_factors=4)
+[align_factor_direction] PIT-safe: sig_date=2012-01-31 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=4 / registry-fallback=0 / default-fallback=0 (n_factors=4)
+[align_factor_direction] PIT-safe: sig_date=2012-02-29 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=4 / registry-fallback=0 / default-fallback=0 (n_factors=4)
+[align_factor_direction] PIT-safe: sig_date=2012-03-30 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=4 / registry-fallback=0 / default-fallback=0 (n_factors=4)
+[align_factor_direction] PIT-safe: sig_date=2012-04-30 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=4 / registry-fallback=0 / default-fallback=0 (n_factors=4)
+[align_factor_direction] PIT-safe: sig_date=2012-05-31 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=4 / registry-fallback=0 / default-fallback=0 (n_factors=4)
+[align_factor_direction] PIT-safe: sig_date=2012-06-29 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=4 / registry-fallback=0 / default-fallback=0 (n_factors=4)
+[align_factor_direction] PIT-safe: sig_date=2012-07-31 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=4 / registry-fallback=0 / default-fallback=0 (n_factors=4)
+[align_factor_direction] PIT-safe: sig_date=2012-08-31 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=4 / registry-fallback=0 / default-fallback=0 (n_factors=4)
+[align_factor_direction] PIT-safe: sig_date=2012-09-28 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=4 / registry-fallback=0 / default-fallback=0 (n_factors=4)
+[align_factor_direction] PIT-safe: sig_date=2012-10-31 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=4 / registry-fallback=0 / default-fallback=0 (n_factors=4)
+[align_factor_direction] PIT-safe: sig_date=2012-11-30 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=4 / registry-fallback=0 / default-fallback=0 (n_factors=4)
+[align_factor_direction] PIT-safe: sig_date=2012-12-28 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=4 / registry-fallback=0 / default-fallback=0 (n_factors=4)
+[align_factor_direction] PIT-safe: sig_date=2013-01-31 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=4 / registry-fallback=0 / default-fallback=0 (n_factors=4)
+[align_factor_direction] PIT-safe: sig_date=2013-02-28 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=4 / registry-fallback=0 / default-fallback=0 (n_factors=4)
+[align_factor_direction] PIT-safe: sig_date=2013-03-29 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=4 / registry-fallback=0 / default-fallback=0 (n_factors=4)
+[align_factor_direction] PIT-safe: sig_date=2013-04-30 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=4 / registry-fallback=0 / default-fallback=0 (n_factors=4)
+[align_factor_direction] PIT-safe: sig_date=2013-05-31 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=4 / registry-fallback=0 / default-fallback=0 (n_factors=4)
+[align_factor_direction] PIT-safe: sig_date=2013-06-28 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=4 / registry-fallback=0 / default-fallback=0 (n_factors=4)
+[align_factor_direction] PIT-safe: sig_date=2013-07-31 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=4 / registry-fallback=0 / default-fallback=0 (n_factors=4)
+[align_factor_direction] PIT-safe: sig_date=2013-08-30 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=4 / registry-fallback=0 / default-fallback=0 (n_factors=4)
+[align_factor_direction] PIT-safe: sig_date=2013-09-30 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=4 / registry-fallback=0 / default-fallback=0 (n_factors=4)
+[align_factor_direction] PIT-safe: sig_date=2013-10-31 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=4 / registry-fallback=0 / default-fallback=0 (n_factors=4)
+[align_factor_direction] PIT-safe: sig_date=2013-11-29 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=4 / registry-fallback=0 / default-fallback=0 (n_factors=4)
+[align_factor_direction] PIT-safe: sig_date=2013-12-30 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=4 / registry-fallback=0 / default-fallback=0 (n_factors=4)
+[align_factor_direction] PIT-safe: sig_date=2014-01-29 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=4 / registry-fallback=0 / default-fallback=0 (n_factors=4)
+[align_factor_direction] PIT-safe: sig_date=2014-02-28 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=4 / registry-fallback=0 / default-fallback=0 (n_factors=4)
+[align_factor_direction] PIT-safe: sig_date=2014-03-31 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=4 / registry-fallback=0 / default-fallback=0 (n_factors=4)
+[align_factor_direction] PIT-safe: sig_date=2014-04-30 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=4 / registry-fallback=0 / default-fallback=0 (n_factors=4)
+[align_factor_direction] PIT-safe: sig_date=2014-05-30 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=4 / registry-fallback=0 / default-fallback=0 (n_factors=4)
+[align_factor_direction] PIT-safe: sig_date=2014-06-30 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=4 / registry-fallback=0 / default-fallback=0 (n_factors=4)
+[align_factor_direction] PIT-safe: sig_date=2014-07-31 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=4 / registry-fallback=0 / default-fallback=0 (n_factors=4)
+[align_factor_direction] PIT-safe: sig_date=2014-08-29 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=4 / registry-fallback=0 / default-fallback=0 (n_factors=4)
+[align_factor_direction] PIT-safe: sig_date=2014-09-30 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=4 / registry-fallback=0 / default-fallback=0 (n_factors=4)
+[align_factor_direction] PIT-safe: sig_date=2014-10-31 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=4 / registry-fallback=0 / default-fallback=0 (n_factors=4)
+[align_factor_direction] PIT-safe: sig_date=2014-11-28 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=4 / registry-fallback=0 / default-fallback=0 (n_factors=4)
+[align_factor_direction] PIT-safe: sig_date=2014-12-30 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=4 / registry-fallback=0 / default-fallback=0 (n_factors=4)
+[m26]   ... 300/439 (270s)
+[align_factor_direction] PIT-safe: sig_date=2015-01-30 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=4 / registry-fallback=0 / default-fallback=0 (n_factors=4)
+[align_factor_direction] PIT-safe: sig_date=2015-02-27 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=4 / registry-fallback=0 / default-fallback=0 (n_factors=4)
+[align_factor_direction] PIT-safe: sig_date=2015-03-31 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=4 / registry-fallback=0 / default-fallback=0 (n_factors=4)
+[align_factor_direction] PIT-safe: sig_date=2015-04-30 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=4 / registry-fallback=0 / default-fallback=0 (n_factors=4)
+[align_factor_direction] PIT-safe: sig_date=2015-05-29 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=4 / registry-fallback=0 / default-fallback=0 (n_factors=4)
+[align_factor_direction] PIT-safe: sig_date=2015-06-30 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=4 / registry-fallback=0 / default-fallback=0 (n_factors=4)
+[align_factor_direction] PIT-safe: sig_date=2015-07-31 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=4 / registry-fallback=0 / default-fallback=0 (n_factors=4)
+[align_factor_direction] PIT-safe: sig_date=2015-08-31 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=4 / registry-fallback=0 / default-fallback=0 (n_factors=4)
+[align_factor_direction] PIT-safe: sig_date=2015-09-30 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=4 / registry-fallback=0 / default-fallback=0 (n_factors=4)
+[align_factor_direction] PIT-safe: sig_date=2015-10-30 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=4 / registry-fallback=0 / default-fallback=0 (n_factors=4)
+[align_factor_direction] PIT-safe: sig_date=2015-11-30 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=4 / registry-fallback=0 / default-fallback=0 (n_factors=4)
+[align_factor_direction] PIT-safe: sig_date=2015-12-30 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=4 / registry-fallback=0 / default-fallback=0 (n_factors=4)
+[align_factor_direction] PIT-safe: sig_date=2016-01-29 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=4 / registry-fallback=0 / default-fallback=0 (n_factors=4)
+[align_factor_direction] PIT-safe: sig_date=2016-02-29 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=4 / registry-fallback=0 / default-fallback=0 (n_factors=4)
+[align_factor_direction] PIT-safe: sig_date=2016-03-31 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=4 / registry-fallback=0 / default-fallback=0 (n_factors=4)
+[align_factor_direction] PIT-safe: sig_date=2016-04-29 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=4 / registry-fallback=0 / default-fallback=0 (n_factors=4)
+[align_factor_direction] PIT-safe: sig_date=2016-05-31 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=4 / registry-fallback=0 / default-fallback=0 (n_factors=4)
+[align_factor_direction] PIT-safe: sig_date=2016-06-30 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=4 / registry-fallback=0 / default-fallback=0 (n_factors=4)
+[align_factor_direction] PIT-safe: sig_date=2016-07-29 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=4 / registry-fallback=0 / default-fallback=0 (n_factors=4)
+[align_factor_direction] PIT-safe: sig_date=2016-08-31 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=4 / registry-fallback=0 / default-fallback=0 (n_factors=4)
+[align_factor_direction] PIT-safe: sig_date=2016-09-30 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=4 / registry-fallback=0 / default-fallback=0 (n_factors=4)
+[align_factor_direction] PIT-safe: sig_date=2016-10-31 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=4 / registry-fallback=0 / default-fallback=0 (n_factors=4)
+[align_factor_direction] PIT-safe: sig_date=2016-11-30 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=4 / registry-fallback=0 / default-fallback=0 (n_factors=4)
+[align_factor_direction] PIT-safe: sig_date=2016-12-29 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=4 / registry-fallback=0 / default-fallback=0 (n_factors=4)
+[align_factor_direction] PIT-safe: sig_date=2017-01-31 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=4 / registry-fallback=0 / default-fallback=0 (n_factors=4)
+[align_factor_direction] PIT-safe: sig_date=2017-02-28 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=4 / registry-fallback=0 / default-fallback=0 (n_factors=4)
+[align_factor_direction] PIT-safe: sig_date=2017-03-31 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=4 / registry-fallback=0 / default-fallback=0 (n_factors=4)
+[align_factor_direction] PIT-safe: sig_date=2017-04-28 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=4 / registry-fallback=0 / default-fallback=0 (n_factors=4)
+[align_factor_direction] PIT-safe: sig_date=2017-05-31 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=4 / registry-fallback=0 / default-fallback=0 (n_factors=4)
+[align_factor_direction] PIT-safe: sig_date=2017-06-30 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=4 / registry-fallback=0 / default-fallback=0 (n_factors=4)
+[align_factor_direction] PIT-safe: sig_date=2017-07-31 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=4 / registry-fallback=0 / default-fallback=0 (n_factors=4)
+[align_factor_direction] PIT-safe: sig

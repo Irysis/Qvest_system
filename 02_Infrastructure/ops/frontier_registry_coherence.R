@@ -147,6 +147,72 @@ frontier_coherence_scan <- function(root = .fc_root()) {
        inputs = list(entries = length(Q$entries), dead = length(dead), neg_cards = length(dcards)))
 }
 
+#==============================================================================
+# frontier_citation_scan — 큐 인용이 원장에서 조회 가능한가 (CIT-1, 2026-08-08 신설)
+#
+# 왜 있나: 착수 전 사전확인은 큐에 적힌 수치를 원장에서 재확인하는 절차인데,
+#   인용 키로 원장을 조회할 수 없으면 **사전확인이 큐 서술을 반복하는 것**이 된다.
+#   2026-08-08 FQ-096 이 정확히 그 상태였다("풀 천장 2.937"을 큐 본문에서만 읽음).
+#
+# ★기전 = 네임스페이스 불일치(인덱싱 누락 아님). 실측:
+#   · 큐 인용 고유 44건 중 **짧은 별칭 20건(45%)** 이 `WT-002`·`WT-014` 형태인데
+#     원장 strategy_id 에 `WT-[0-9]{3}` 형식은 **0건** — 세션-로컬 번호다.
+#   · 원장 ID 체계는 셋이 섞여 있다: `WT-D2026NNNN_NNN`(168) · `WT-P2026*`(5) ·
+#     **라운드명**(`R32_FQ048_VALUE_OVERLAY_BOOK_RISKAXIS` — L-code 경로 등재분).
+#   · ★별칭은 **전역적으로 모호**하다: 같은 `WT-002` 가 `WT-D20260718_002` 로도
+#     `WT-D20260802_002` 로도 대응한다(세션마다 번호 재사용). 전역 사전을 만들면
+#     다른 라운드를 가리키게 되므로, 해소는 **같은 FQ 항목 안의 문맥**으로만 안전하다.
+#
+# ★★위 coherence_scan 과 같이 **스크린이지 판정이 아니다**. 별칭 인용이 곧 결함은 아니며
+#   (문맥으로 해소되면 무해), 출력은 "사전확인이 자립하지 못하는 항목" 후보다.
+#   차단(게이트)은 행동 변경이라 도훈 승인 사항 — 이 함수는 보고만 한다.
+#
+# @return list(rows=data.table, n_flag=int, inputs=list)
+frontier_citation_scan <- function(root = .fc_root()) {
+  qf <- file.path(root, "06_Registry/alpha_frontier_queue.json")
+  hf <- file.path(root, "06_Registry/hypothesis_index.json")
+  if (!file.exists(qf) || !file.exists(hf))
+    return(list(rows = data.table(), n_flag = 0L,
+                inputs = list(entries = 0L, ledger = 0L, note = "input missing")))
+  Q <- fromJSON(qf, simplifyVector = FALSE)
+  H <- fromJSON(hf, simplifyVector = FALSE)
+  gg <- function(x, k) { v <- x[[k]]; if (is.null(v)) "" else as.character(v)[1] }
+  ids <- vapply(H$entries, function(e) gg(e, "strategy_id"), character(1))
+  ids <- ids[nzchar(ids)]
+
+  rows <- list()
+  for (e in Q$entries) {
+    blob <- paste(unlist(e[c("ev_rationale", "wall_check", "next_action",
+                             "hypothesis", "source_refs")]), collapse = " ")
+    if (!nzchar(blob)) next
+    # 세션-로컬 별칭 vs 원장형 전체 ID
+    short <- unique(regmatches(blob, gregexpr("WT-[0-9]{3}\\b", blob, perl = TRUE))[[1]])
+    full  <- unique(regmatches(blob,
+               gregexpr("WT[-_][DPH]2026[0-9]{4}_[0-9]{3}", blob, perl = TRUE))[[1]])
+    if (!length(short) && !length(full)) next
+    # 전체형이 원장에 실재하는가
+    full_ok <- if (length(full)) vapply(full, function(w) any(grepl(w, ids, fixed = TRUE)),
+                                        logical(1)) else logical(0)
+    # 별칭이 같은 항목 문맥에서 해소되는가 (끝번호 대응)
+    unresolved <- character(0)
+    for (s in short) {
+      num <- sub("^WT-", "", s)
+      if (!any(grepl(paste0("_", num, "$"), full))) unresolved <- c(unresolved, s)
+    }
+    n_bad <- length(unresolved) + sum(!full_ok)
+    if (!n_bad) next
+    rows[[length(rows) + 1L]] <- data.table(
+      id = gg(e, "id"), status = substr(gg(e, "status"), 1, 30),
+      title = substr(gg(e, "title"), 1, 42),
+      alias_unresolved = paste(utils::head(unresolved, 3), collapse = " ; "),
+      full_missing = paste(utils::head(full[!full_ok], 2), collapse = " ; "),
+      n_bad = n_bad)
+  }
+  R <- if (length(rows)) rbindlist(rows) else data.table()
+  list(rows = R, n_flag = nrow(R),
+       inputs = list(entries = length(Q$entries), ledger = length(ids)))
+}
+
 # main-guard: Rscript 로 이 파일을 직접 실행한 경우에만 CLI 를 돈다.
 #  `identical(environment(), globalenv())` 는 source() 에서도 참이라 모듈 로드 시 스캔이
 #  덩달아 실행됐다(검사기에서 실측). --file 인자로 자기 자신을 확인한다.
@@ -167,5 +233,16 @@ if (.fc_invoked_directly()) {
                 res$inputs$entries, res$inputs$dead, res$inputs$neg_cards))
     cat(sprintf("  ★게이트 재검토 후보: %d건 (판정 아님 — 3단 게이트로 사람이 확정)\n", res$n_flag))
     if (res$n_flag) print(res$rows, row.names = FALSE)
+  }
+  # CIT-1 인용 검증 스캔 (보고만 — 차단 아님)
+  cres <- frontier_citation_scan()
+  if (!("--json" %in% args)) {
+    cat(sprintf("\n=== 인용 검증 스캔 (CIT-1, 스크린) ===\n"))
+    cat(sprintf("  큐 %d항목 / 원장 strategy_id %d\n", cres$inputs$entries, cres$inputs$ledger))
+    cat(sprintf("  ★사전확인이 자립 못 하는 후보: %d건 (별칭 미해소 또는 전체형 원장 부재)\n",
+                cres$n_flag))
+    if (cres$n_flag) print(utils::head(cres$rows[order(-n_bad)], 15), row.names = FALSE)
+    cat("  ※ 별칭 인용 자체는 결함 아님 — 같은 항목 문맥에서 해소되면 무해.\n")
+    cat("     별칭은 세션마다 재사용되어 **전역적으로 모호**하므로 전역 사전 금지.\n")
   }
 }
