@@ -1,0 +1,65 @@
+{
+  "round_id": "C14_20260808_REVENUE_SURPRISE_INCREMENTAL",
+  "registered_at": "2026-08-08",
+  "registered_before_seeing_result": true,
+  "note": "사전 확인(precheck.R)이 백그라운드 실행 중이며 본 파일은 그 출력 도달 전에 작성됐다. 커버리지를 본 뒤 설계를 맞추면 사후 선택이 된다.",
+
+  "why_this_material": [
+    "게이트 없음 — data_source=consensus, update_freq=daily, lag_rule='Date <= sig_d'",
+    "★FQ-099 결함에 막히지 않음 — 재무 패널(fundamental_merged) 미경유. 내 51건 목록에 걸린 것은 정의문에 'Revenue' 라는 문자열이 있었기 때문이며 데이터 의존이 아니다",
+    "문헌 근거 — Jegadeesh-Livnat (2006): 매출 서프라이즈가 이익 서프라이즈 너머의 정보를 담는다",
+    "기록된 판정 0회 (4개 원장 census, FQ-099d)",
+    "★설계가 book-marginal 을 내장한다 — 생산 북이 이미 C01_SUE(이익 서프라이즈)·C04_ESBR(개정 폭)·C02_EPS_Chg_1m 을 쓴다. 따라서 질문이 '좋은 팩터인가'가 아니라 '이미 쓰는 것 위에 증분이 있는가'로 자연히 좁혀진다"
+  ],
+
+  "question": "북이 이미 소비하는 이익-기반 컨센서스 신호(C01_SUE·C02_EPS_Chg_1m·C04_ESBR) 위에, 매출 서프라이즈(C14)가 횡단면 증분 정보를 주는가",
+
+  "design_PRE_DECLARED": {
+    "expected_input_unit": "★월간(월말 sig_date). factor_db 는 월 파일이고 forward return 은 계약 함수 build_monthly_forward_returns() 산출을 쓴다. 측정 스크립트 첫 출력에 입력 행수·관측단위·범위를 실측 인쇄하고, 월간이 아니면 착수 전 중단한다 (2026-08-08 일간/월간 혼동으로 55분 폐기한 재발방지 규약)",
+    "form": "★전표본 횡단면 (분할 금지 — 2026-08-08 3회 실증)",
+    "population": "K200 ∪ KQ150 (계약 함수가 필터)",
+    "primary_test": "월별 횡단면 증분 회귀 — fwd_ret ~ z(C01_SUE) + z(C02_EPS_Chg_1m) + z(C04_ESBR) + z(C14). ★주판정량 = z(C14) 계수 시계열의 Fama-MacBeth NW(lag3) t. pooled OLS 금지(2026-08-08 FQ-068a1a 에서 pooled −2.35 가 FMB −1.90 으로 소멸한 실측)",
+    "secondary_reported_regardless": [
+      "C14 단독 월별 rank IC 와 그 NW t (증분이 아닌 절대 신호력)",
+      "C14 와 기존 3종 각각의 횡단면 spearman 상관 (신규성 진단 — 0.9 이상이면 증분이 나와도 재탕 의심)",
+      "이익 서프라이즈와 매출 서프라이즈의 부호 일치율 (Jegadeesh-Livnat 의 기전은 둘이 갈릴 때 정보가 있다는 것)"
+    ],
+    "threshold": "|FMB NW t| >= 2.0 (재료 자격 판정. ★자본 게이트 아님 — HARD 3종 별도)",
+    "no_sweep": "신호 변형(창 길이·정규화 방식·업종중립 여부)을 열거해 argmax 를 고르지 않는다. factor_db 가 산출하는 형태 그대로 1벌만 쓴다. selection_type=chain 아님 — 단일 시험이다"
+  },
+
+  "power_precommit": {
+    "rule": "사전 확인이 유효월 n 을 반환하면 착수 전 required_effect(n, design='full') 로 필요 효과크기를 계산해 기록한다. 필요치가 컨센서스 팩터의 현실적 IC(0.02~0.05)보다 크면 그 설계는 착수 전 폐기한다",
+    "verdict_labels": "관측 효과 < 필요치 → INCONCLUSIVE_UNDERPOWERED. 효과 >= 필요치인데 t 미달 → NEGATIVE_POWERED. 두 판정을 같은 문장에 쓰지 않는다",
+    "coverage_risk": "★KR 컨센서스는 커버리지가 짧고 대형주 편중일 수 있다. 유효월과 월별 종목수를 함께 기록하고, 종목수가 크게 작으면 breadth 손실을 Grinold(IR ∝ IC×√N) 함의와 함께 보고한다"
+  },
+
+  "decision_rule_PRE_DECLARED": {
+    "MATERIAL_QUALIFIED": {
+      "condition": "FMB NW t >= 2.0 이고 기존 3종과의 최대 spearman < 0.9",
+      "action": "재료 자격 인정. 다음 단계는 canonical_screen_bt 경유 PORT_t 측정이며 자본 자격은 HARD 3종 별도 판정"
+    },
+    "REDUNDANT": {
+      "condition": "FMB NW t >= 2.0 이나 기존 3종 중 어느 하나와 spearman >= 0.9",
+      "action": "증분이 아니라 재탕. 신규 재료 아님으로 처분하고 큐에 상관 수치와 함께 기록"
+    },
+    "NEGATIVE_POWERED": {
+      "condition": "|t| < 2.0 이고 관측 효과가 필요 효과크기 이상",
+      "action": "★Jegadeesh-Livnat 기전이 KR 에서 성립하지 않는다는 정보. 미국 문헌의 매출-서프라이즈 우위가 KR 컨센서스 환경(커버리지·개정 빈도 차이)에서 재현되지 않음을 기록하고, 컨센서스 계열 신규 재료의 사전 확률을 함께 낮춘다"
+    },
+    "INCONCLUSIVE_UNDERPOWERED": {
+      "condition": "관측 효과 < 필요 효과크기",
+      "action": "설계 재검토. 전표본 횡단면이 이미 최대 검정력 형태이므로, 미달이면 표본 자체의 한계이며 '효과 없음'으로 쓰지 않는다"
+    }
+  },
+
+  "boundaries": {
+    "not_claimed": [
+      "자본 자격 — HARD 3종(PORT_t 2.95 · oos_retention 0.7 · calmar 0.64) 별도, 본 라운드 미주장",
+      "북 편입 — governor 수동이며 본 라운드는 재료 자격까지만",
+      "제약 완화·벤치 변경 없음 (INV-7)"
+    ],
+    "metric_type": "canonical_screen_diag — 계약 백테 미경유 횡단면 진단. 성과 주장 아님",
+    "known_prior": "생산 북이 이미 컨센서스 4종을 쓰므로 이 계열의 신호력 자체는 확립돼 있다. 본 라운드가 묻는 것은 오직 C14 의 증분이다"
+  }
+}
