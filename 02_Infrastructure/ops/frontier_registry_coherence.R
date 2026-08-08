@@ -28,6 +28,16 @@
 #     ③ 카드 retry_condition 과 어휘 겹침 → 중앙값 0.043 으로 변별 실패
 #   ⇒ **자동 분류는 수렴하지 않는다**. 31건 중 10건은 자기 status 가 이미 negative 를 표시해
 #     중복 경고이고, 나머지 21건은 항목별 사람 판단이 필요하다.
+#   ★그 21건 중 5건을 카드 원문(statement_refined·scope_draft)과 직접 대조한 결과 **5/5 위양성**:
+#     · FQ-122(vol·quality 를 타이브레이커/제외필터로) ↔ DIST-AR-003/007(scope=KR momentum)
+#       → 재료도 소비면(비-slot)도 다름
+#     · FQ-123(단기 vol 축 배선 진단) ↔ DIST-AR-009(scope=KR value, packaging 재조합 자본게이트)
+#     · FQ-146(지수 FFT 스펙트럼 타이밍) · FQ-151(거래량 CV_Vol 오버레이) ↔ DIST-AR-018
+#       (scope=distress_fingerprint_nonreturn) → 재료 무관
+#     · FQ-108d(z vs 레벨 표현형태 진단) ↔ DIST-AR-001(defense composite 자본 sleeve)
+#     기전 = 매칭 토큰이 **도메인 일반어**(신호·팩터·오버레이·tier·ic)라 범위가 달라도 걸린다.
+#     ⇒ 이 스캔의 실효 정밀도는 낮다. **건수를 위험 신호로 읽지 말 것**; 개선하려면 매칭을
+#       카드 `scope_draft` 와 큐 lane/재료의 **범위 일치**로 좁혀야 한다(토큰 빈도가 아니라).
 #   ※ 부수: DIST 카드 필드명은 `statement_refined`·`retry_condition`·`scope_draft` 등이다
 #     (`statement`/`summary`/`scope` 아님 — 이름을 가정하면 본문이 빈 채로 비교된다).
 #

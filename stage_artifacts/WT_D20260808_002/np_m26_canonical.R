@@ -52,18 +52,20 @@ runone <- function(S, tag) {
     v <- r[[k]]; if (!is.null(v) && is.finite(suppressWarnings(as.numeric(v[1]))))
       say("  %-18s %s", k, format(round(as.numeric(v[1]), 4)))
   }
-  d1 <- r$diag_ew_universe
-  if (!is.null(d1)) {
-    say("  [diag EW-유니버스 벤치] %s", paste(sprintf("%s=%s", names(d1),
-        vapply(d1, function(x) format(round(suppressWarnings(as.numeric(x[1])),3)), character(1))), collapse=" · "))
+  flat <- function(x, lab) {
+    if (is.null(x)) { say("  [%s] 부재", lab); return(invisible()) }
+    say("  [%s]", lab)
+    if (is.data.frame(x)) { print(as.data.table(x)); return(invisible()) }
+    for (nm in names(x)) {
+      v <- x[[nm]]
+      if (is.null(v)) next
+      if (length(v) == 1L && (is.numeric(v) || is.character(v) || is.logical(v)))
+        say("    %-28s %s", nm, if (is.numeric(v)) format(round(v,4)) else as.character(v))
+      else say("    %-28s <%s len %d>", nm, class(v)[1], length(v))
+    }
   }
-  d2 <- r$diag_cap_tier
-  if (!is.null(d2)) {
-    dd <- as.data.table(d2)
-    say("  [diag cap-tier] 컬럼 %s", paste(names(dd), collapse=","))
-    for (i in seq_len(min(nrow(dd), 8L))) say("    %s", paste(unlist(lapply(dd[i], function(x)
-      if (is.numeric(x)) format(round(x,3)) else as.character(x))), collapse=" | "))
-  }
+  flat(r$diag_ew_universe, "diag EW-유니버스 벤치")
+  flat(r$diag_cap_tier,   "diag cap-tier")
   r
 }
 `%||%` <- function(a,b) if (is.null(a)||length(a)==0L) b else a
