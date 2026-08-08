@@ -1,0 +1,17 @@
+suppressPackageStartupMessages({library(data.table); library(arrow)})
+ROOT <- Sys.getenv("QM_ROOT", "C:/Users/99922/OneDrive/Quant_Module_Moltbot")
+setwd(ROOT)
+OUT <- file.path(ROOT, "stage_artifacts/WT_D20260808_001")
+fwd <- readRDS(file.path(OUT, "fwd_cache.rds"))
+cat("fwd names:", paste(names(fwd), collapse=", "), "\n")
+for (n in names(fwd)) {
+  x <- as.data.table(fwd[[n]])
+  cat(sprintf("  %s: nrow=%d cols=%s\n", n, nrow(x), paste(names(x), collapse="/")))
+  if ("Date" %in% names(x)) cat(sprintf("     n_date=%d range %s ~ %s\n", uniqueN(x$Date), min(x$Date), max(x$Date)))
+}
+sp <- read_parquet("stage_artifacts/WT_D20260802_009/size_panel.parquet")
+cat("size_panel cols:", paste(names(sp), collapse="/"), " nrow=", nrow(sp), "\n")
+tp <- open_dataset("stage_artifacts/WT_D20260802_009/tuned_panel.parquet")
+cat("tuned cols:", paste(names(tp), collapse="/"), "\n")
+bp <- open_dataset("stage_artifacts/WT_D20260802_009/base_panel.parquet")
+cat("base cols:", paste(names(bp), collapse="/"), "\n")

@@ -288,50 +288,52 @@ compute_consensus <- function(RAWDATA, sig_date, FUND = NULL, CONSENSUS = NULL) 
 
   # --- C13: Revision Breadth (ESBR - already C04, but 3m rolling version) ---
   # Use time-series of ESBR: average ESBR over last 3 observations.
-  if ("esbr" %in% names(cons)) {
-    setorder(cons, Ticker, -Date)
-    esbr_avg <- cons[!is.na(esbr), {
-      n <- min(.N, 3L)
-      list(esbr_avg3 = mean(esbr[1:n]))
-    }, by = Ticker]
-    if (nrow(esbr_avg) > 0) {
-      c13 <- esbr_avg[!is.na(esbr_avg3),
-                       .(Ticker, Factor_Name = "C13_Revision_Breadth_3m", Raw_Value = esbr_avg3)]
-      if (nrow(c13) > 0) results[["C13"]] <- c13
-    }
+  if (!is.null(esbr_hist)) {
+    esbr_avg <- esbr_hist[, .(esbr_avg3 = mean(esbr[seq_len(min(.N, 3L))])), by = Ticker]
+    c13 <- esbr_avg[!is.na(esbr_avg3) & is.finite(esbr_avg3),
+                     .(Ticker, Factor_Name = "C13_Revision_Breadth_3m", Raw_Value = esbr_avg3)]
+    if (nrow(c13) > 0) results[["C13"]] <- c13
+  } else {
+    .note_skip("C13_Revision_Breadth_3m", "esbr", .have_cons)
   }
 
   # --- C14: Revenue Surprise (consensus revenue_fy1 change) ---
   # Jegadeesh-Livnat (2006): revenue surprises add incremental predictive power.
-  if ("revenue_fy1" %in% names(cons)) {
-    setorder(cons, Ticker, -Date)
+  # 63일 컨센서스 개정률 — C14(revenue) / C17(op_profit) 공통 계산
+  # compute_momentum.R M26/M28 과 동일 식·동일 lag·동일 가드.
+  .revision_63d <- function(hist, metric, factor_name) {
+    if (is.null(hist)) return(NULL)
     lag_d <- sig_d - 63L
-    rev_now <- cons[!is.na(revenue_fy1), .SD[1L], by = Ticker][, .(Ticker, rev_now = revenue_fy1)]
-    rev_lag <- cons[Date <= lag_d & !is.na(revenue_fy1), .SD[1L], by = Ticker]
-    if (nrow(rev_lag) > 0) {
-      rev_lag <- rev_lag[, .(Ticker, rev_lag = revenue_fy1)]
-      rev_both <- merge(rev_now, rev_lag, by = "Ticker")
-      c14 <- rev_both[abs(rev_lag) > 1e-6,
-                       .(Ticker, Factor_Name = "C14_Revenue_Surprise",
-                         Raw_Value = (rev_now - rev_lag) / abs(rev_lag))]
-      c14 <- c14[is.finite(Raw_Value)]
-      if (nrow(c14) > 0) results[["C14"]] <- c14
-    }
+    now <- hist[, .SD[1L], by = Ticker][, .(Ticker, v_now = get(metric))]
+    lagt <- hist[Date <= lag_d]
+    if (nrow(lagt) == 0L) return(NULL)
+    lagt <- lagt[, .SD[1L], by = Ticker][, .(Ticker, v_lag = get(metric))]
+    both <- merge(now, lagt, by = "Ticker")
+    out <- both[abs(v_lag) > 1e-6,
+                .(Ticker, Factor_Name = factor_name,
+                  Raw_Value = (v_now - v_lag) / abs(v_lag))]
+    out <- out[is.finite(Raw_Value)]
+    if (nrow(out) == 0L) return(NULL)
+    out
+  }
+
+  rev_hist <- .cons_history(CONSENSUS, "revenue_fy1", sig_d)
+  if (!is.null(rev_hist)) {
+    c14 <- .revision_63d(rev_hist, "revenue_fy1", "C14_Revenue_Surprise")
+    if (!is.null(c14)) results[["C14"]] <- c14
+  } else {
+    .note_skip("C14_Revenue_Surprise", "revenue_fy1", .have_cons)
   }
 
   # --- C15: Forecast Error Trend ---
   # Direction of change in SUE over time: latest SUE - 2nd latest SUE.
-  if ("sue" %in% names(cons)) {
-    setorder(cons, Ticker, -Date)
-    sue_delta <- cons[!is.na(sue), {
-      if (.N >= 2L) list(sue_d = sue[1L] - sue[2L])
-      else list(sue_d = NA_real_)
-    }, by = Ticker]
-    if (nrow(sue_delta) > 0) {
-      c15 <- sue_delta[!is.na(sue_d),
-                        .(Ticker, Factor_Name = "C15_Forecast_Error_Trend", Raw_Value = sue_d)]
-      if (nrow(c15) > 0) results[["C15"]] <- c15
-    }
+  if (!is.null(sue_hist)) {
+    sue_delta <- sue_hist[, .(sue_d = if (.N >= 2L) sue[1L] - sue[2L] else NA_real_), by = Ticker]
+    c15 <- sue_delta[!is.na(sue_d) & is.finite(sue_d),
+                      .(Ticker, Factor_Name = "C15_Forecast_Error_Trend", Raw_Value = sue_d)]
+    if (nrow(c15) > 0) results[["C15"]] <- c15
+  } else {
+    .note_skip("C15_Forecast_Error_Trend", "sue", .have_cons)
   }
 
   # --- C16: EPS Acceleration (eps_chg_1m - eps_chg_3m / 3) ---
@@ -345,59 +347,62 @@ compute_consensus <- function(RAWDATA, sig_date, FUND = NULL, CONSENSUS = NULL) 
   }
 
   # --- C17: OP Profit Revision (consensus operating profit change) ---
-  if ("op_profit_fy1" %in% names(cons)) {
-    setorder(cons, Ticker, -Date)
-    lag_d <- sig_d - 63L
-    op_now <- cons[!is.na(op_profit_fy1), .SD[1L], by = Ticker][, .(Ticker, op_now = op_profit_fy1)]
-    op_lag <- cons[Date <= lag_d & !is.na(op_profit_fy1), .SD[1L], by = Ticker]
-    if (nrow(op_lag) > 0) {
-      op_lag <- op_lag[, .(Ticker, op_lag = op_profit_fy1)]
-      op_both <- merge(op_now, op_lag, by = "Ticker")
-      c17 <- op_both[abs(op_lag) > 1e-6,
-                      .(Ticker, Factor_Name = "C17_OP_Revision",
-                        Raw_Value = (op_now - op_lag) / abs(op_lag))]
-      c17 <- c17[is.finite(Raw_Value)]
-      if (nrow(c17) > 0) results[["C17"]] <- c17
-    }
+  op_hist <- .cons_history(CONSENSUS, "op_profit_fy1", sig_d)
+  if (!is.null(op_hist)) {
+    c17 <- .revision_63d(op_hist, "op_profit_fy1", "C17_OP_Revision")
+    if (!is.null(c17)) results[["C17"]] <- c17
+  } else {
+    .note_skip("C17_OP_Revision", "op_profit_fy1", .have_cons)
   }
 
   # --- C18: Abnormal Returns around Earnings Announcements (3-day CAR proxy) ---
   # DATA_NEEDED: earnings_announcement_dates for true CAR
   # Proxy: for each ticker, find dates near SUE observations with large |SUE|
   # and compute 3-day cumulative abnormal return around those dates.
-  if ("sue" %in% names(cons) && nrow(RAWDATA) > 0) {
-    # Get latest SUE date per ticker as proxy for announcement date
-    setorder(cons, Ticker, -Date)
-    ann_dates <- cons[!is.na(sue), .SD[1L], by = Ticker][, .(Ticker, ann_date = Date)]
-    if (nrow(ann_dates) > 0) {
-      rd <- copy(RAWDATA)
-      rd[, Date := as.Date(Date)]
+  # ★2026-08-08 FQ-163 수리 시 두 결함을 함께 고쳤다. 블록이 한 번도 실행된 적이
+  #   없어(전 구간 0행) 드러난 적 없던 결함들이고, 그대로 되살리면 **미래참조를
+  #   새로 주입**하는 셈이었다:
+  #   (1) PIT 위반: 발표일 프록시 ad 를 sig_d 까지 허용한 뒤 [ad-3, ad+3] 창을
+  #       썼다 → ad 가 sig_d 근방이면 sig_d **이후** 수익을 읽는다(C1/C2 위반).
+  #       수리: 발표일 프록시를 Date <= sig_d - 3L 로 제한해 창 전체가 PIT 안에
+  #       들어오게 한다. 부분 창으로 잘라 쓰면 종목마다 창 길이가 달라져
+  #       횡단면 비교가 깨지므로, 창을 자르지 않고 **완전 관측 가능한 발표만** 쓴다.
+  #   (2) 종목당 RAWDATA 전수 스캔(lapply + Ticker == tk) → 2,500회 비색인 스캔.
+  #       수리: 1:다 조인 후 벡터 집계.
+  #   (3) 신규 결정 — 발표일 프록시에 trailing 400일 상한을 둔다. SUE 가 수년째
+  #       갱신 안 된 종목의 "직전 발표 CAR" 는 의미가 없고, 상한이 없으면
+  #       RAWDATA 슬라이스가 전 역사로 벌어진다. 이 규칙은 신규 정의이며
+  #       registry definition 과 함께 읽혀야 한다.
+  .rd_ok <- is.data.table(RAWDATA) && nrow(RAWDATA) > 0 &&
+            all(c("Ticker", "Date", "Ret", "BM_Ret") %in% names(RAWDATA))
+  if (!is.null(sue_hist) && .rd_ok) {
+    ann_cut <- sig_d - 3L          # 창 [ad-3, ad+3] 이 전부 sig_d 이하가 되도록
+    ann_min <- sig_d - 400L        # trailing 상한 (3)
+    ann_src <- sue_hist[Date <= ann_cut & Date >= ann_min]
+    ann_dates <- if (nrow(ann_src) > 0L) {
+      ann_src[, .(ann_date = Date[1L]), by = Ticker]   # .cons_history 정렬: 최신이 먼저
+    } else {
+      ann_src[0L][, .(Ticker = character(), ann_date = as.Date(character()))]
+    }
 
-      # BM daily returns for abnormal return calculation
-      bm_daily <- unique(rd[, .(Date, BM_Ret)])
-      setorder(bm_daily, Date)
-
-      car_list <- lapply(seq_len(nrow(ann_dates)), function(i) {
-        tk <- ann_dates$Ticker[i]
-        ad <- ann_dates$ann_date[i]
-        # 3-day window: ann_date -1 to ann_date +1
-        sub <- rd[Ticker == tk & Date >= (ad - 3L) & Date <= (ad + 3L) & !is.na(Ret)]
-        bm_sub <- bm_daily[Date >= (ad - 3L) & Date <= (ad + 3L) & !is.na(BM_Ret)]
-        sub <- merge(sub, bm_sub[, .(Date, BM_Ret)], by = "Date")
-        if (nrow(sub) >= 2L) {
-          car <- sum(sub$Ret - sub$BM_Ret, na.rm = TRUE)
-          data.table(Ticker = tk, car3d = car)
-        } else {
-          NULL
-        }
-      })
-      car_dt <- rbindlist(car_list[!vapply(car_list, is.null, logical(1))])
-      if (nrow(car_dt) > 0) {
+    if (nrow(ann_dates) > 0L) {
+      d_lo <- min(ann_dates$ann_date) - 3L
+      rd <- RAWDATA[Date >= d_lo & Date <= sig_d, .(Ticker, Date, Ret, BM_Ret)]
+      if (!inherits(rd$Date, "Date")) rd[, Date := as.Date(Date)]
+      rd <- merge(rd, ann_dates, by = "Ticker")        # ann_dates 는 Ticker 당 1행
+      rd <- rd[Date >= (ann_date - 3L) & Date <= (ann_date + 3L) &
+                 !is.na(Ret) & !is.na(BM_Ret)]
+      if (nrow(rd) > 0L) {
+        car_dt <- rd[, .(n_obs = .N, car3d = sum(Ret - BM_Ret)), by = Ticker][n_obs >= 2L]
         c18 <- car_dt[is.finite(car3d),
                        .(Ticker, Factor_Name = "C18_Earnings_CAR_3d", Raw_Value = car3d)]
         if (nrow(c18) > 0) results[["C18"]] <- c18
       }
     }
+  } else if (is.null(sue_hist)) {
+    .note_skip("C18_Earnings_CAR_3d", "sue", .have_cons)
+  } else {
+    .note_skip("C18_Earnings_CAR_3d", "RAWDATA(Ret/BM_Ret)", TRUE)
   }
 
   # --- C19: Composite Earnings Factor ---
@@ -441,4 +446,40 @@ compute_consensus <- function(RAWDATA, sig_date, FUND = NULL, CONSENSUS = NULL) 
     z_cols <- paste0("z_", comp_names)
     comp_dt[, n_c := rowSums(!is.na(.SD)), .SDcols = z_cols]
     comp_dt[n_c >= 2L, C19_val := rowMeans(.SD, na.rm = TRUE), .SDcols = z_cols]
-    c19 <- c
+    c19 <- comp_dt[!is.na(C19_val) & is.finite(C19_val),
+                    .(Ticker, Factor_Name = "C19_Composite_Earnings", Raw_Value = C19_val)]
+    if (nrow(c19) > 0) results[["C19"]] <- c19
+  }
+
+  # ── 스킵 흔적 (조용한 스킵 금지) ──────────────────────────────────────────
+  if (length(.skips) > 0L) {
+    cat(sprintf("  [compute_consensus] %s 스킵 %d종: %s (원천 로드=%s)\n",
+                as.character(sig_d), length(.skips),
+                paste(.skips, collapse = ", "), .have_cons))
+  }
+
+  # 결합
+  if (length(results) == 0) {
+    return(data.table(Ticker = character(), Factor_Name = character(), Raw_Value = numeric()))
+  }
+  out <- rbindlist(results, use.names = TRUE, fill = TRUE)
+
+  # ── 정본 위임분 배출 보류 (계산은 이미 수행됨 — 죽은 코드로 두지 않는다) ──
+  dep_names <- names(.CONSENSUS_DEPRECATED)
+  if (any(out$Factor_Name %in% dep_names)) {
+    hit <- out[Factor_Name %in% dep_names, .(n = .N), by = Factor_Name]
+    for (i in seq_len(nrow(hit))) {
+      fn <- hit$Factor_Name[i]
+      cat(sprintf("  [compute_consensus] %s 배출 보류(deprecated, %d행 계산됨) — 정본 %s\n",
+                  fn, hit$n[i], .CONSENSUS_DEPRECATED[[fn]]))
+    }
+    out <- out[!Factor_Name %in% dep_names]
+  }
+  if (nrow(out) == 0L) {
+    return(data.table(Ticker = character(), Factor_Name = character(), Raw_Value = numeric()))
+  }
+
+  out[, .(Ticker, Factor_Name, Raw_Value)]
+}
+
+cat("[factor_db] compute_consensus.R loaded (C01~C19)\n")

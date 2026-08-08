@@ -31,8 +31,12 @@ D[sec_n[N < 5], on = .(Date, sec), sec := "OTHER"]
 sec_lv <- sort(unique(D$sec))
 say("섹터 수준 %d (축약 후) | OTHER 비중 %.3f", length(sec_lv), mean(D$sec == "OTHER"))
 base_sec <- names(sort(table(D$sec), decreasing = TRUE))[1]
-say("기준(omitted) 섹터 = %s", base_sec)
+say("기준 섹터(합-0 제약의 종속 열) = %s", base_sec)
 sec_use <- setdiff(sec_lv, base_sec)
+# ★섹터는 sum-to-zero 제약(Barra 표준)으로 코딩한다. 단순 omitted-dummy 로 두면
+#   MKT 절편이 '기준섹터 수익'이 되어 MKT↔SEC 공분산이 -var(기준섹터) 로 크게 음이 되고
+#   Ω 조건수가 악화된다(1차 실행: cond 3358, 개별 예측 연변동 중앙 0.649 = 실현 대비 과대).
+#   제약 코딩: col_s = 1{sec=s} - (n_s/n_base)*1{sec=base}  ⇒ Σ_s n_s f_s = 0, MKT = 시장수익.
 
 fac_names <- c("MKT", paste0("SEC_", sec_use), STY)
 K <- length(fac_names); say("팩터 수 K=%d", K)
@@ -48,7 +52,12 @@ for (i in seq_along(dts)) {
   if (nrow(sub) < K + 20L) next
   Xd <- matrix(0, nrow(sub), K, dimnames = list(NULL, fac_names))
   Xd[, "MKT"] <- 1
-  for (s in sec_use) Xd[, paste0("SEC_", s)] <- as.numeric(sub$sec == s)
+  is_base <- as.numeric(sub$sec == base_sec); n_base <- sum(is_base)
+  for (s in sec_use) {
+    ns <- sum(sub$sec == s)
+    Xd[, paste0("SEC_", s)] <- as.numeric(sub$sec == s) -
+      (if (n_base > 0) (ns / n_base) * is_base else 0)
+  }
   for (s in STY) Xd[, s] <- sub[[s]]
   keep <- which(apply(Xd, 2, function(z) stats::sd(z) > 0 | all(z == 1)))
   Xu <- Xd[, keep, drop = FALSE]
@@ -83,7 +92,9 @@ print(.tb[order(-abs(ann_mean))][1:12])
 
 write_parquet(F_dt, file.path(OUT, "factor_returns.parquet"))
 write_parquet(RES,  file.path(OUT, "residuals_panel.parquet"))
-saveRDS(list(fac_names = fac_names, sty = STY, base_sec = base_sec,
-             r2 = r2_vec[ok], dates = dts[ok], nobs = nobs[ok]),
+sec_counts <- D[, .N, by = .(Date, sec)]
+saveRDS(list(fac_names = fac_names, sty = STY, base_sec = base_sec, sec_use = sec_use,
+             r2 = r2_vec[ok], dates = dts[ok], nobs = nobs[ok], sec_counts = sec_counts),
         file.path(OUT, "r2_meta.rds"))
+write_parquet(D[, .(Date, Ticker, sec)], file.path(OUT, "sector_map.parquet"))
 say("저장 완료")
