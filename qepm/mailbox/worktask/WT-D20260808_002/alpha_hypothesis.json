@@ -1,0 +1,96 @@
+{
+  "wt_id": "WT-D20260808_002",
+  "designed_by": "alpha-hypothesis",
+  "model_tier": "fable",
+  "designed_at": "2026-08-08",
+  "round_character": "기 확정된 증분 판정의 가설 구조화 — 대상(M26_Revenue_Mom)·주판정량(FMB NW lag3 t of z(M26))·문턱(|t|>=2.0)·분기(MATERIAL_QUALIFIED/REDUNDANT/NEGATIVE_POWERED/INCONCLUSIVE_UNDERPOWERED)는 원 사전등록(stage_artifacts/c14_revsurprise/prereg.json, 대상만 C14→M26 정정) 승계로 불변. 본 문서는 메커니즘·반증조건·국면경계만 설계한다.",
+
+  "prechecks": {
+    "hypothesis_index_hits": [
+      "M26 / Revenue_Mom / revenue_surprise / C14 직접 판정 기록 0건 (grep 실측 — settled-negative 재포장 아님)",
+      "인접 계열 참고: SUE/EPS-revision 기반 전략 다수 기록(PEAD/SUE Bernard-Thomas, SUE Pure + BRK Overlay 등) — 전부 이익-컨센서스 계열이며 생산 북이 C01_SUE·C02_EPS_Chg_1m·C04_ESBR 로 이미 소비 중. 매출 계열의 증분 질문은 미판정"
+    ],
+    "frontier_queue_refs": [
+      "본 라운드 전용 큐 항목 없음 — hypothesis_source=user_defined (Q-Lead 사전 확인으로 확정된 WT, dohoon_decision 항목 아님)",
+      "FQ-099(소스-인지 TTM 미배선)는 fundamental_merged 패널 계열 결함 — 본 재료는 .cache/consensus/revenue_fy1.parquet 경유로 미경유(prereg why_this_material 명시, 승계 확인)"
+    ],
+    "owner": "WT-D20260808_002 (Q-Lead orchestration, alpha-hypothesis 설계 구간)",
+    "discovery_seed": "부재 (Glob 실측 — request/status/governance_log 만 존재)",
+    "hypothesis_title_injection": "불요 — request.json 에 hypothesis_title 기존재",
+    "factor_definition_verified": "compute_momentum.R:362-384 실측 — M26 = revenue_fy1(FY1 매출 컨센서스)의 최신값 vs 63일 전 값 개정률 (rev_now - rev_lag)/|rev_lag|, PIT 강제 Date <= sig_date (:368). ★실체는 '발표 실적 서프라이즈'가 아니라 매출 전망치 개정 모멘텀 — 메커니즘은 이 실체에 맞춰 서술"
+  },
+
+  "candidates": [
+    {
+      "title": "M26_Revenue_Mom 의 이익-컨센서스 3종 대비 횡단면 증분 (선택)",
+      "family": "consensus_revenue_revision",
+      "mechanism_sketch": "매출 전망 개정 정보가 EPS 헤드라인 정박·애널리스트 개정 관성으로 지연 반영",
+      "why_selected": "Q-Lead 확정 대상. 설계가 book-marginal 을 내장(북이 이미 이익 3종 소비 → 질문이 자연히 '증분'으로 좁혀짐) + 문헌 기전 실재 + 판정 기록 0회 + 데이터 게이트 없음"
+    },
+    {
+      "title": "대안 A — op_profit_fy1(영업이익 전망) 개정 모멘텀의 증분",
+      "family": "consensus_profit_revision",
+      "mechanism_sketch": "영업이익 전망 개정이 EPS 전망(순이익 기반) 대비 일회성 손익 잡음이 적음",
+      "why_not_selected": "이익 계열이라 기존 3종(특히 C02_EPS_Chg_1m)과 정보 중복 개연이 높아 증분 질문의 판별력이 약함. 매출은 손익계산서 최상단으로 발생액·일회성 재량에서 가장 멀어 Jegadeesh-Livnat 기전의 판별이 가장 선명. 리프(C-CONSENSUS-QW:op_profit_fy1, 2000-03-16~) 실재 — 후속 라운드 재료로 보관"
+    },
+    {
+      "title": "대안 B — 이익·매출 개정 부호 불일치 조건화 신호 (SUE 부진 ∧ M26 개선)",
+      "family": "consensus_divergence_conditional",
+      "mechanism_sketch": "Jegadeesh-Livnat 기전의 직접 표현 — 둘이 갈릴 때 매출 쪽이 미래를 맞힌다",
+      "why_not_selected": "조건화·하위군 설계는 유효표본 붕괴 실측 3/3([[project-conditional-splits-destroy-power-20260808]])으로 본 라운드 설계 제약 위반 + 사전등록 밖 신호공학(사후선택). 부호 불일치는 판정 신호가 아니라 기전 시험용 부수 관측(falsification 축)으로만 소비. 증분 t 유의 확정 후의 후속 라운드 재료로 보관"
+    },
+    {
+      "title": "대안 C — C14_Revenue_Surprise 침묵 스킵(compute_consensus.R:238) 수리 후 C14 자체 검증",
+      "family": "infra_repair",
+      "mechanism_sketch": "동일",
+      "why_not_selected": "같은 재료·같은 공식의 팩터가 M26 으로 이미 산출 중(request.json 확인 실측) — C14 는 신규 재료가 아니라 중복 등재이며 수리는 인프라 위생 사안(칩 분리 대상)이지 알파 라운드가 아님"
+    }
+  ],
+
+  "selected": {
+    "hypothesis_title": "매출 모멘텀(M26_Revenue_Mom)의 이익-컨센서스 3종 대비 횡단면 증분",
+    "hypothesis_statement": "생산 북이 이미 소비하는 이익-기반 컨센서스 3종(C01_SUE 이익 서프라이즈 · C02_EPS_Chg_1m EPS 전망 1개월 변화 · C04_ESBR 이익전망 개정폭)을 통제한 위에서, FY1 매출 컨센서스의 63일 개정 모멘텀(M26)이 1개월 forward 수익률에 대해 횡단면 증분 정보를 갖는다. 「좋은 팩터인가」가 아니라 「이미 쓰는 이익 신호가 담지 못한 매출 라인 고유 정보가 있는가」를 묻는다.",
+    "hypothesis_description": "이익 전망은 발생액 재량·이익 가이던스에 정박해 관리되는 반면 매출 전망은 손익계산서 최상단으로 조작 여지가 상대적으로 작고 성장 지속성 정보가 더 견고하다(Jegadeesh-Livnat 2006 — 출발점이지 승인서 아님). KR 컨센서스 소비 환경에서 매출 개정은 EPS·목표주가 헤드라인 뒤에 위치해 주목·전파가 지연되므로, 매출 개정에 담긴 정보 중 이익 전망에 아직 전파되지 않은 부분이 횡단면 증분으로 남아 있어야 한다. 주판정량 = fwd_ret ~ z(C01_SUE)+z(C02_EPS_Chg_1m)+z(C04_ESBR)+z(M26) 의 z(M26) Fama-MacBeth NW(lag3) t, 전표본 횡단면(4종 동시 가용 284개월, 2003-01~2026-08), |t|>=2.0 = 재료 자격(자본 게이트 아님).",
+    "mechanism": {
+      "agent": "① 국내 셀사이드 애널리스트 — EPS 전망을 기업 이익 가이던스·직전 컨센서스에 정박해 단계적으로만 수정(개정 관성)하므로 매출 전망에 먼저 나타난 정보가 EPS 전망으로 전파되는 데 시차가 생긴다. ② EPS·목표주가 헤드라인 중심의 컨센서스 소비자 — HTS/스크리너 기반 개인 순매수층과 EPS-스크린 운용 기관은 리포트 헤드라인(EPS 개정·목표주가)에 반응하고 본문 항목인 매출 전망 개정에는 반응이 늦다. 벤더 파생 지표 자체가 이익 중심(sue·esbr·escr 전부 이익 계열, 매출 서프라이즈 파생 부재 — C-CONSENSUS-QW 12 metric 실측)이라 소비 채널이 구조적으로 이익에 편향돼 있다.",
+      "friction": "① KR 공매도 제약 — 매출 전망이 하향 개정된 종목을 숏으로 지울 수 없어 음(−) 신호 쪽 가격 조정이 지연되고, 횡단면 오정렬이 차익거래로 즉시 청산되지 않는다. ② 컨센서스 커버리지 편중 — 매출 전망(revenue_fy1)은 커버가 EPS 대비 얇고 대형주 편중이라 이를 체계적으로 소비하는 전문 수요층이 작다. ③ 전파 채널 부재 — 위 agent ②의 벤더 파생 편향으로 매출 개정을 표준화해 스크리닝하는 기성 상품·지표가 없어, 정보가 있어도 이를 거래로 옮기는 인프라 마찰이 존재한다.",
+      "path": "매출 전망 개정(63일 창) → 후속 1~3개월에 걸쳐 (a) 애널리스트의 EPS 컨센서스 후속 개정, (b) 다음 분기 실적 확인 공시가 이어지며 헤드라인 소비자에게 정보가 도달 → 가격 반영. 월간 리밸런싱의 1M forward 창은 이 전파 경로의 첫 구간(가장 급한 기울기)을 포착한다 — 63일 개정 모멘텀이 신호이고 반영은 익월부터 진행되므로 forecast_horizon 1M 과 정합."
+    },
+    "falsification": {
+      "observable": "메커니즘이 참이면 성과와 무관하게 「매출 개정 → 이익 개정 전파」가 관측되어야 한다: 월말 M26(=revenue_fy1 63일 개정, C-CONSENSUS-QW:revenue_fy1 파생)이 동일 종목의 후속 1~3개월 EPS 전망 개정(C-CONSENSUS-QW:eps_chg_1m)을 횡단면 예측해야 한다(월별 rank 상관의 전표본 시계열 평균, NW t). 보조 관측: 이익 서프라이즈(C-CONSENSUS-QW:sue)와 M26 의 부호 일치율 — Jegadeesh-Livnat 기전은 둘이 갈릴 때 정보가 있다는 것이므로, 부호 불일치 종목-월이 실질 비중(참고선 15% 내외)으로 존재해야 기전이 시험된다. 두 관측 모두 전표본 단일 통계 — 국면·하위군 분할 불요.",
+      "field_dictionary_refs": [
+        "C-CONSENSUS-QW:revenue_fy1 (3,449,702행, 2000-03-16~, vintage_available=true)",
+        "C-CONSENSUS-QW:eps_chg_1m (3,080,598행, 2001-04-30~)",
+        "C-CONSENSUS-QW:sue (1,430,753행, 2001-09-03~)",
+        "C-REGISTRY-PTR-CONS: C01_SUE·C02_EPS_Chg_1m·C04_ESBR (registry 포인터, 시계열 커버리지 C-CONSENSUS-QW 승계)"
+      ],
+      "reject_if": "① 전표본에서 M26 이 후속 1~3개월 eps_chg_1m 을 예측하지 못하면(월별 rank 상관 시계열의 NW t 가 0 과 구별 불가) 「매출 개정이 이익 개정을 선행한다」는 전파 기전 기각 — 이 경우 설령 z(M26) 수익 계수가 유의해도 그 원천은 본 가설의 메커니즘이 아니므로 재설계 대상. ② sue 와 M26 의 부호 일치율이 극단적으로 높으면(불일치 비중이 무시 가능 수준) 매출 신호는 이익 신호의 재탕이라 기전이 시험되지 않은 것 — 기각이 아니라 「기전 미시험」 라벨로 처분하고 증분 주장을 철회한다(prereg REDUNDANT 분기의 spearman>=0.9 와 상보적 관측). ★두 조건 모두 성과(수익·t) 동어반복이 아닌 개정-전파 경로의 부수 관측이며 전표본에서 확인 가능."
+    },
+    "regime_scope": {
+      "holds_in": [
+        "실적-주도 국면 (neutral/recovery — 애널리스트 개정 활동이 활발하고 종목 간 펀더멘털 차별화가 가격을 이끄는 국면: 개정의 횡단면 분산이 크고 전파 시차 정보가 살아 있음)"
+      ],
+      "weakens_or_reverses_in": [
+        "crisis (유동성 청산 국면 — 매크로 충격으로 매출 전망이 일괄 상관 하향돼 M26 의 횡단면 분산이 수준 이동으로 붕괴하고, 유동성 청산 물량이 종목선별 정보를 압도. 공매도 제약 마찰의 수익화 여지도 long-only 에서 소실)"
+      ],
+      "boundary_rationale": "경계는 메커니즘에서 도출된다: 본 기전의 정보원은 「종목 간 매출 개정의 차별성」인데, 위기 국면에서는 개정이 매크로 공통요인으로 상관화되어 횡단면 신호 자체가 소거되고, 가격은 펀더멘털 전파가 아니라 유동성 수급으로 결정된다. 반대로 실적-주도 국면에서는 개정 관성·헤드라인 정박이라는 지연 기전이 온전히 작동한다. ★서술적 경계 — 본 라운드 미검정: 설계 제약(전표본 횡단면, 분할 금지 — 유효표본 붕괴 실측 3/3)에 따라 국면분할 측정을 요구하지 않으며, 반증조건도 전표본 관측으로만 설계했다. 이 경계는 후속 소비(오버레이/국면 입력면) 판단의 사전 서술일 뿐이다."
+    }
+  },
+
+  "challenge_flags": [
+    "[설계-축 적대검증 상세 = challenge_note_hypothesis.md] ① 문헌-실체 불일치(PARTIAL): Jegadeesh-Livnat 는 발표 실적 서프라이즈, M26 은 전망치 개정 — 기전을 '개정 전파 지연'으로 재정식화해 해소, 문헌은 출발점 인용만. ② 반증조건 한계(PARTIAL): 개정-전파가 관측돼도 가격이 이미 선반영했으면 수익 증분은 0 일 수 있음 — 반증조건은 기전 기각용이지 자격 판정 대체가 아님. ③ regime 경계(ACCEPT with fix): 초안의 '메가캡 협소장세' 경계는 2025 실측 관찰에서 온 사후 서술이라 제거 — crisis 경계만 기전 도출로 유지. ④ 재포장 검사(ACCEPT): hypothesis_index M26/C14/revenue 판정 0건 실측.",
+    "[alpha-research 전달] C02_EPS_Chg_1m(1개월 EPS 개정)과 M26(63일 매출 개정)은 개정 창이 겹쳐 횡단면 상관이 높을 수 있음 — FMB 계수 불안정(다중공선성) 진단을 prereg 의 spearman 병기와 함께 기록할 것. spearman>=0.9 시 REDUNDANT 분기(사전등록 승계).",
+    "[alpha-research 전달] M26 유효월 316 vs 4종 동시 가용 284개월 — 동시 가용 표본으로 회귀하되 월별 종목수(중앙 1,579 → 4종 교집합에서 축소 예상)를 함께 인쇄하고 breadth 손실을 Grinold(IR ∝ IC×√N) 함의와 함께 보고(prereg power_precommit 승계). 측정 첫 출력 = 입력 실측(행수·관측단위·범위) — 월간 아니면 착수 전 중단.",
+    "[대안 보관] op_profit_fy1 개정 증분(대안 A) · 부호 불일치 조건화(대안 B — 본 라운드 t 유의 확정 후 후속 재료) — Step 0 candidates 참조.",
+    "[확정 사항 준수] 대상·주판정량·문턱·분기 변경 없음 — 본 설계는 사전등록 승계 위에 메커니즘·반증·경계만 부가."
+  ],
+
+  "verdict": "designed",
+
+  "handoff": {
+    "to": "alpha-research",
+    "next_steps": "Step 1~7 + ⑤ AST 구성. 승계분(mechanism/falsification/regime_scope) 재작성 금지 — 결함 발견 시 challenge_note.md 기록 + 재설계 요청(Charter 원칙 8). 주판정량은 prereg 승계 그대로: FMB NW(lag3) t of z(M26), 전표본, pooled OLS 금지, no_sweep(factor_db 산출 형태 1벌). 반증 관측 2종(M26→후속 eps_chg_1m 예측력, sue↔M26 부호 일치율)을 secondary 로 함께 산출할 것 — prereg secondary_reported_regardless 와 정합.",
+    "prereg_ref": "stage_artifacts/c14_revsurprise/prereg.json (대상 C14→M26 정정 외 불변 승계)",
+    "measurement_boundary": "본 문서는 설계만 — 성과 수치 추정·proxy 손계산 없음 (measurement-graduation §1). |t|>=2.0 은 재료 자격이며 자본 게이트(HARD 3종)는 forge-authoritative 별도."
+  }
+}
