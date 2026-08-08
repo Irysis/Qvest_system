@@ -54,6 +54,20 @@
     },
     "cor_d_band_monthly": 0.069,
     "cor_size_eff_band_rolling6m": -0.345,
-    "merge_rule_prestated": "|cor|>=0.7 통합 · <0.4 별도"
+    "merge_rule_prestated": "|cor|>=0.7 통합 · <0.4 별도",
+    "full_range_verification": {
+      "round": "NPB3A1B_20260808_FULLRANGE",
+      "window": "1990-01~2026-07 (439개월, 상대분위 정의로 전 구간 산출)",
+      "cor_d_size_rel_full": -0.747,
+      "by_era": {
+        "1990-1999": -0.812,
+        "2000-2009": -0.725,
+        "2010-2016": -0.764,
+        "2017-2026": -0.711
+      },
+      "definition_parity": "cor(size_rel, size_abs) = +0.909 (겹침 199개월) — 두 정의가 같은 것을 잰다",
+      "note": "상대분위 정의가 일관되게 약간 낮음(-0.747 vs 절대순위 -0.847). 절대순위가 극단 꼬리를 잡아 d 와 더 붙는다. 감시 민감도는 절대순위 쪽이 높음.",
+      "verdict": "4시대 전부 |cor|>=0.7 사전규칙 통과 — 통합은 시대-국소가 아님"
+    }
   }
 }
