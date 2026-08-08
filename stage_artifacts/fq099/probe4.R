@@ -1,0 +1,7 @@
+suppressPackageStartupMessages({ library(data.table); library(arrow) })
+ROOT <- Sys.getenv("QM_ROOT","C:/Users/99922/OneDrive/Quant_Module_Moltbot"); setwd(ROOT)
+say <- function(fmt,...) cat(sprintf(paste0("[099] ",fmt,"\n"),...))
+D <- as.data.table(read_parquet(".cache/fundamental_merged.parquet"))
+say("--- DART 가 기여하는 Item 전수 (%d종) ---", uniqueN(D[Source=="DART"]$Item))
+print(D[Source=="DART", .N, by=Item][order(-N)])
+say("--- PL_CF_ITEMS / BS_ITEMS 선언 확인 ---")

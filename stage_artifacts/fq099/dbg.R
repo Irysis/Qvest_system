@@ -1,0 +1,13 @@
+suppressPackageStartupMessages({ library(jsonlite) })
+setwd(Sys.getenv("QM_ROOT","C:/Users/99922/OneDrive/Quant_Module_Moltbot"))
+reg <- fromJSON("02_Infrastructure/factor_db/factor_registry.json", simplifyVector=FALSE)
+f <- reg[["V08_PSR"]]
+cat("V08 정의:", f$definition, "\n")
+b <- paste(unlist(f), collapse=" | ")
+cat("blob 길이:", nchar(b), "\n")
+cat("fixed  :", grepl("Revenue", b, fixed=TRUE), "\n")
+cat("TRE \b :", grepl("\bRevenue\b", b), "\n")
+cat("perl \b:", grepl("\bRevenue\b", b, perl=TRUE), "\n")
+blob <- sapply(reg, function(g) paste(unlist(g), collapse=" | "))
+cat("blob class:", class(blob), " len:", length(blob), "\n")
+cat("fixed 히트 수:", sum(sapply(blob, function(x) grepl("Revenue", x, fixed=TRUE))), "\n")

@@ -2042,24 +2042,12 @@
       "wall_check": "고정 축 준수(재료 추가 없음 — 기보유 재무 패널의 구성 수리). 제약 완화 아님.",
       "data_gate": "없음(로컬 .cache/fundamental_merged.parquet)",
       "owner": "미배정 (FQ-081 라운드 파생 2026-08-02)",
-      "status": "measured_repair_pending",
+      "status": "frontier_open",
       "next_action": "★설계 정정 — 당초 등재안 '연속 4분기 강제'는 **DART 1,338 종목을 통째로 버린다**(커버리지 손실 중앙값 13.5%·최대 100% 실측). 정답 = **소스-인지 TTM**: DART(연간)는 그 값이 곧 TTM / XLSX(분기)는 연속 4분기 합(비연속이면 결측). 손실 ~0. ① 소스-인지 빌더 + 위반 주입 검사(연간 4개 합산 재발 시 검거되는지) ② 재구성 패널로 FQ-081 3-arm 재측정 ③ 부수: 2016+ 구간이 DART 연간만이라 vintage 신선도 180일 — 분기 DART 수집 미반영 확인.",
       "source_refs": [
         "FQ-081 challenge_note.md C5",
         "stage_artifacts/alpha_search/20260802_115851_45708/challenge_note.md"
-      ],
-      "measured_20260808": {
-        "wiring": "TTM 은 parse_fundamental_xlsx.R:274 가 .cache/fundamental_xlsx_ttm.parquet 에 정확히 계산(non-NA 96.6%). 그러나 factor_db_builder.R:276 은 fundamental_merged.parquet 를 읽고 그 파일엔 TTM_Value 컬럼이 없어 compute_value.R:61 조건이 항상 거짓 -> use_val := Value(원시값). 표준 존재, 소비자 0.",
-        "seam": "XLSX 2000~2014(분기월 비중 0.739) -> DART 2015~2026(분기월 비중 0.000 = 연간 단독). 같은 종목 2014 분기평균 대비 2016 DART 연간 = Revenue 4.42 / OperatingProfit 4.72 / COGS 4.34.",
-        "cross_section": "생산 유니버스(K200 U KQ150) DART 비중 중앙 0.67~0.71 -> 잔여 약 31% 가 2014 분기 스케일로 동결된 채 연간 스케일과 같은 서열표에서 경쟁. 유량비율 평균 백분위 서열 격차 DART-XLSX = +0.207~+0.274 (5시점 전건).",
-        "selection_impact_CORRECTED": "★공통 지지집합 통제 후 top-25 자카드 중앙 0.429(OperatingProfit, Revenue) / 0.471(OperatingCF), 최소 0.316, 10시점 전건 <0.8. 기존 큐 서술 '자카드 중앙 0.786'은 본 측정으로 대체(더 큰 영향).",
-        "scope": "레지스터리 51/373 팩터(13.7%)가 유량 항목 의존 — quality 26 / value 12 / growth 10.",
-        "caveat_distortion_is_in_the_body": "극단 상위 25 는 0/25 DART(마이크로캡이 꼬리 점유). 왜곡은 분포의 몸통이며 '상위가 멀쩡하니 무해'로 읽으면 오독.",
-        "NOT_MEASURED": "PG2 북 합성 알파가 51개 중 무엇을 실제 소비하는지 미측정. forward_weights*.R 텍스트 검색 0건은 잘못된 계측(생산은 사전계산 합성 패널 사용). 교정 후 성과 개선 여부도 미측정.",
-        "repair_cost": "신규 산출 불요 — XLSX 계는 기존 TTM 파일의 TTM_Value, DART 는 연간값이 곧 TTM.",
-        "evidence": "stage_artifacts/fq099/findings.md · probe6/8/9/13/16.R · L-MF-20260808_SOURCE_AWARE_TTM_UNWIRED"
-      },
-      "next_probe": ["FQ-099a 북 소비 경로 확정 — PG2 합성 알파가 유량의존 51 팩터 중 무엇을 쓰는지 사전계산 패널의 팩터 구성에서 직접 확인. 이것이 확정돼야 '북 영향' 을 말할 수 있다(현재 미측정).", "FQ-099b 교정 후 재측정 — 소스-인지 TTM 패널로 유량의존 팩터를 재산출하고 canonical_screen_bt 로 IC/PORT_t 를 현행 대비 A/B. 자카드 0.43 이 성과 개선인지 단순 재배열인지 갈린다.", "FQ-099c 합성 단계 상쇄 여부 — 단항 비율에서의 자카드 0.43 이 다항 합성 점수에서 상쇄되는지 증폭되는지 측정."]
+      ]
     },
     {
       "id": "FQ-100",
@@ -2788,17 +2776,17 @@
         "verdict": "H0 채택 — capw−EW 격차는 벤치-측 상수, arm 무관",
         "window": "2012-08-31~2026-06-30 (n=167)",
         "d_alpha_ann_mean": 0.0382,
-        "d_alpha_ann_sd": 0.0011,
+        "d_alpha_ann_sd": 0.001059,
         "d_alpha_ann_range": [
-          0.0356,
-          0.0392
+          0.03559,
+          0.03917
         ],
-        "d_monthly": 0.0027,
-        "capw_bench_mean_monthly": 0.0095,
+        "d_monthly": 0.002691,
+        "capw_bench_mean_monthly": 0.009541984,
         "capw_unique_values_across_arms": 1,
         "ew_bench_mean_monthly_range": [
-          0.0068,
-          0.007
+          0.006775,
+          0.00703
         ],
         "consistency_check": "다른 창(SS_ n=96)에서 d 2.46배일 때 |gap| 2.36배 — 벤치-측 가설 예측과 정합",
         "honesty": "d 자체는 d_t_nw3~0.75~0.80 p~0.43 로 0 과 유의 구분 안 됨. 확정한 것은 \"격차가 arm 무관\" 이라는 판별축.",

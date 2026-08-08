@@ -1,0 +1,11 @@
+suppressPackageStartupMessages({ library(data.table); library(arrow) })
+ROOT <- Sys.getenv("QM_ROOT","C:/Users/99922/OneDrive/Quant_Module_Moltbot"); setwd(ROOT)
+say <- function(fmt,...) cat(sprintf(paste0("[099] ",fmt,"\n"),...))
+K <- as.data.table(read_parquet(".cache/universe_support/us_k200.parquet"))
+Q <- as.data.table(read_parquet(".cache/universe_support/us_kq150.parquet"))
+say("k200 cols: %s | kq150 cols: %s", paste(names(K),collapse=","), paste(names(Q),collapse=","))
+print(head(K,2)); print(head(Q,2))
+
+D <- as.data.table(read_parquet(".cache/fundamental_merged.parquet"))
+R <- as.data.table(read_parquet(".cache/rawdata.parquet"))
+say("rawdata cols: %s", paste(names(R), collapse=", "))

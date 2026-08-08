@@ -1,0 +1,8 @@
+suppressPackageStartupMessages({ library(data.table); library(arrow) })
+ROOT <- Sys.getenv("QM_ROOT","C:/Users/99922/OneDrive/Quant_Module_Moltbot"); setwd(ROOT)
+say <- function(fmt,...) cat(sprintf(paste0("[099] ",fmt,"\n"),...))
+D <- as.data.table(read_parquet(".cache/fundamental_merged.parquet"))
+di <- sort(unique(D[Source=="DART"]$Item)); xi <- sort(unique(D[Source!="DART"]$Item))
+say("DART %d종 · XLSX계 %d종 · 교집합 %d종", length(di), length(xi), length(intersect(di,xi)))
+say("--- DART 전수 (교집합 표시 *) ---")
+cat(paste0(ifelse(di %in% xi, "*", " "), di, collapse="\n"), "\n")

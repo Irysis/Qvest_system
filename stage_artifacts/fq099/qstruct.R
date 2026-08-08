@@ -1,0 +1,5 @@
+suppressPackageStartupMessages({ library(jsonlite) })
+setwd(Sys.getenv("QM_ROOT","C:/Users/99922/OneDrive/Quant_Module_Moltbot"))
+q <- fromJSON("06_Registry/alpha_frontier_queue.json", simplifyVector=FALSE)
+cat("top-level:", paste(names(q), collapse=", "), "\n")
+for (k in names(q)) cat(sprintf("  %-24s class=%-10s len=%d\n", k, class(q[[k]])[1], length(q[[k]])))
