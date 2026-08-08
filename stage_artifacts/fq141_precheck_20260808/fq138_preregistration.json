@@ -71,7 +71,7 @@
   "discriminants": {
     "primary": {
       "definition": "delta in s_t = a + delta*1{t-1 mega_spread<=0}, s_t = SIG_t − NEU_t (net active), NW(lag3) t",
-      "threshold": ">= 2.0",
+      "threshold": "해당 없음 — 구간추정 라운드로 재정의(round_purpose_REDEFINED_20260808)",
       "rationale": "국면 순풍은 SIG 와 NEU 에 공통으로 실리므로 차분에서 소거된다. 남는 것이 신호의 국면-조건부 초과분이다."
     },
     "secondary_reported_regardless": [
@@ -127,6 +127,18 @@
       "n80_full_sample": "월 +0.0156 = 연 +18.70%"
     },
     "verdict": "★원 설계(28/52 부분표본 분할)는 연 +31.6% 를 요구하므로 현실적 효과크기를 검출할 수 없다. 설계대로 측정하면 거의 확실히 미달이 나오고 그것은 무정보다.",
-    "source": "stage_artifacts/fq141_precheck_20260808/np_fq138f_power.R"
+    "source": "stage_artifacts/fq141_precheck_20260808/np_fq138f_power.R",
+    "correction_2": {
+      "retracted": "직전 개정에서 '전표본 회귀로 검정력 개선' 을 인용하며 n=80 full 공식(연 18.70%)을 근거로 들었으나, 국면 더미 계수의 유효표본은 n*p*(1-p) 이므로 **interaction 공식**이 맞다.",
+      "corrected": "interaction n=80 · regime_frac 0.35 → 유효 n 18.2 → 필요 효과 **연 27.71%**. 원 설계 split n=28 은 31.59% 이므로 개선폭은 12% 에 불과하다 — '더 높은 검정력' 은 사실이나 개선폭을 과장했다.",
+      "consequence": "★개정본도 여전히 심각한 저검정력이다. 연 27.71% 는 현실적 알파보다 한참 위이므로 이 라운드는 t>=2.0 문턱으로 답할 수 없다."
+    }
+  },
+  "round_purpose_REDEFINED_20260808": {
+    "was": "pass/fail 게이트 (delta 의 NW t >= 2.0)",
+    "now": "★**구간추정 라운드**로 재정의한다. delta 의 점추정 + NW 신뢰구간을 보고하고 pass/fail 을 선언하지 않는다. 문턱 2.0 은 이 표본에서 연 27.71% 를 요구하므로 통과 여부가 정보를 담지 않는다.",
+    "reporting_rule": "보고는 delta 연환산 점추정과 95% CI 로 한다. CI 가 0 을 포함하면 '구간이 0을 포함' 이라 쓰고 '효과 없음' 이라 쓰지 않는다. CI 상한이 현실적 알파 범위(예: 연 10%)보다 낮으면 그때 비로소 '실질적 효과 배제' 를 주장할 수 있다.",
+    "gate_status": "gate_eligible=false 유지. 본 라운드는 어떤 자본 판정에도 입력되지 않는다.",
+    "when_pass_fail_becomes_possible": "국면 ON 표본이 누적돼 유효 n 이 커지거나, 스프레드 변동성이 더 낮은 구성(예: 섹터중립·짝짓기)으로 sd 를 낮추면 문턱 판정이 의미를 갖는다. 필요 유효 n = (2.0*1.25*0.0394/(목표월효과))^2."
   }
 }
