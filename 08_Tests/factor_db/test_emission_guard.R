@@ -140,8 +140,11 @@ for (f in REPAIRED) {
 }
 # 양성 대조(원래 살아 있던 블록)가 같은 실행에 있어야 0 의 의미를 읽을 수 있다
 n_c01 <- out_ok[Factor_Name == "C01_SUE", .N]
-if (n_c01 > 0L) ok("A_control_C01_SUE", sprintf("%d행 (살아있던 블록 정상)", n_c01))
-else bad("A_control_C01_SUE", "★양성 대조 사망 — 픽스처/계측 자체를 의심할 것")
+if (n_c01 > 0L) {
+  ok("A_control_C01_SUE", sprintf("%d행 (살아있던 블록 정상)", n_c01))
+} else {
+  bad("A_control_C01_SUE", "★양성 대조 사망 — 픽스처/계측 자체를 의심할 것")
+}
 
 # 정본 위임분은 계산되지만 배출되지 않는다
 for (f in DEPRECATED) {
@@ -287,8 +290,11 @@ if (length(rep_v2$class_R_regression) == 1L && rep_v2$class_R_regression == "LAT
 crashed <- tryCatch({
   factor_emission_check(NULL, reg_v, NULL, "200506"); FALSE
 }, error = function(e) TRUE)
-if (!crashed) ok("D3_never_stops_build", "빈 산출/빈 원장에서도 stop 하지 않음")
-else          bad("D3_never_stops_build", "가드가 예외로 빌드를 죽임 — 설계 원칙 ① 위반")
+if (!crashed) {
+  ok("D3_never_stops_build", "빈 산출/빈 원장에서도 stop 하지 않음")
+} else {
+  bad("D3_never_stops_build", "가드가 예외로 빌드를 죽임 — 설계 원칙 ① 위반")
+}
 
 #==============================================================================
 cat("\n=== F. 짝 계약 — 코드 deprecated ↔ registry lifecycle ↔ 기준선 ===\n")
@@ -313,9 +319,12 @@ if (length(buried) == 0L) {
       sprintf("★수리한 팩터가 기준선에 묻힘: %s", paste(buried, collapse = ",")))
 }
 unknown_bl <- setdiff(bl_real$Factor_Name, reg_meta_real$Factor_Name)
-if (length(unknown_bl) == 0L) ok("F3_baseline_names_exist", "기준선 항목 전부 registry 에 실재")
-else bad("F3_baseline_names_exist", sprintf("registry 에 없는 기준선 항목: %s",
-                                            paste(unknown_bl, collapse = ",")))
+if (length(unknown_bl) == 0L) {
+  ok("F3_baseline_names_exist", "기준선 항목 전부 registry 에 실재")
+} else {
+  bad("F3_baseline_names_exist",
+      sprintf("registry 에 없는 기준선 항목: %s", paste(unknown_bl, collapse = ",")))
+}
 
 # 죽은 변수 `cons` 가 되살아나 같은 계통을 다시 만들지 않는지
 cc_code <- readLines(CONS_SRC, warn = FALSE)
@@ -333,16 +342,22 @@ b <- readLines(BUILDER_SRC, warn = FALSE)
 call_i  <- grep("factor_emission_guard(", b, fixed = TRUE)
 call_i  <- call_i[!grepl("^\\s*#", b[call_i])]
 write_i <- grep("write_parquet(result, out_path)", b, fixed = TRUE)
-if (length(call_i) >= 1L) ok("G1_guard_called", sprintf("빌더 %d행에서 호출", call_i[1]))
-else bad("G1_guard_called", "★빌더가 감시를 호출하지 않음 — 파일만 있고 배선 없음")
+if (length(call_i) >= 1L) {
+  ok("G1_guard_called", sprintf("빌더 %d행에서 호출", call_i[1]))
+} else {
+  bad("G1_guard_called", "★빌더가 감시를 호출하지 않음 — 파일만 있고 배선 없음")
+}
 
 if (length(call_i) >= 1L && length(write_i) >= 1L && min(call_i) < min(write_i)) {
   ok("G2_called_before_write", sprintf("호출 %d행 < write %d행", min(call_i), min(write_i)))
 } else {
   bad("G2_called_before_write", "write 이후에 호출되거나 write 지점 미발견")
 }
-if (any(grepl("emission_guard.R", b, fixed = TRUE))) ok("G3_guard_sourced", "emission_guard.R source 배선 존재")
-else bad("G3_guard_sourced", "source 누락")
+if (any(grepl("emission_guard.R", b, fixed = TRUE))) {
+  ok("G3_guard_sourced", "emission_guard.R source 배선 존재")
+} else {
+  bad("G3_guard_sourced", "source 누락")
+}
 
 cat(sprintf("\nTOTAL: %d pass / %d fail\n", PASS, FAIL))
 cat(toJSON(list(test = "emission_guard", pass = PASS, fail = FAIL,
