@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "sot": "02_Infrastructure/docs/qvest_v8_3_alpha_discovery_sot.md §4",
-  "updated": "2026-08-08T18:26:36+09:00",
+  "updated": "2026-08-08 (FQ-102 순서 역전 — R&D 신선도가 IC 를 좌우(짝지은 t 6.25), 수집 수리 선행)",
   "consume_rule": "새 발굴 리서치 착수 전: hypothesis_index lookup → 본 큐 확인 → owner/status 갱신. 완료 시 result_ref(L-code/보고서) 기입. dohoon_decision 항목은 세션 임의 착수 금지.",
   "entries": [
     {
@@ -2083,10 +2083,12 @@
     {
       "id": "FQ-102",
       "title": "IN03_RD_to_Market x overlay(MDD 레버) A/B — 재고 회수 1호의 소비 라운드 (WT-005 NP-2)",
-      "status": "frontier_open",
+      "status": "blocked_by_rd_staleness__order_reversed_20260808",
       "owner": {},
       "ev_rationale": "WT-005 재고 회수 확정 1건: cap-w 2.537(p .011)/EW-uni 3.610(p .0003)·oos~0.563·post2017 +1.615. 유실 기전 = STANDALONE_TRACK 소비자 배관 0건. MDD 55.7%가 구조 사유이므로 overlay(시스템 입증 MDD 레버) A/B 가 정확한 소비 경로. 선행 = sector-neutral + inheritance cor 실측(WT-005 NP-1, 섹터 베팅 혼입 배제). cap-w 2.95 HARD 는 여전히 관문.",
-      "registered": "2026-08-02 Q-Lead (WT-005 close)"
+      "registered": "2026-08-02 Q-Lead (WT-005 close)",
+      "wall_check": " ★★2026-08-08 착수 전 사전확인이 순서를 역전시킴: IN03 의 원천 RandD 가 시대별로 늙는다 (중앙 나이 2010-15 0.13년/fresh 83.7% -> 2016-20 3.21년/23.1% -> 2021-25 **8.25년/2.9%**)이고 IC 가 정확히 그 순서로 붕괴한다(+0.0221 t3.54 -> +0.0367 t4.82 -> **−0.0029 t−0.37**). ★같은 달 짝지은 통제에서 **fresh−stale +0.0618 · t 6.25 · NW3 6.30**(n=89, 양수 74.2%)로 신선도 귀속이 확정되며, 2010-15 에는 fresh +0.0335(t 4.67) vs stale −0.0326(t −3.63) 로 **부호가 반대**다. 사이즈 대용은 아님(size 상관 0.349, 직교 후 잔여 IC +0.0176 t 5.33). → WT-005 의 cap-w 2.537·post2017 +1.615 는 R&D 가 이미 늙기 시작한 구간을 포함하며 2021-25 에는 fresh 종목이 월 40개뿐이라 팩터가 사실상 죽어 있다. 지금 overlay A/B 를 하면 **죽은 신호에 오버레이를 씌우는 라운드**가 된다.",
+      "next_action": "★순서 역전: ① **R&D 수집 수리 선행**(FQ-102a) — D&A 와 달리 수리 EV 가 실재한다(D&A 는 t 0.24 무효였으나 R&D 는 t 6.25). 경로: (a)이름 목록에 '경상개발비' 추가 가부 검토 — 현재 태그 폴백에만 있음(추가전용 유지 때문) (b)주석/손익계산서 경로 census — R&D 는 D&A 와 달리 기능별 분류에서도 판관비 주석에 나올 수 있음 (c)QuantiWise 보완 ② 수리 후 fresh 커버리지가 회복되면 그때 overlay A/B 착수 ③ 수리 불가로 판명되면 IN03 은 2016 이전 구간 한정 신호로 라벨링하고 STANDALONE_TRACK 에서 하향."
     },
     {
       "id": "FQ-103",

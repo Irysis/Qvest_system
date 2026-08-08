@@ -1,0 +1,5 @@
+suppressPackageStartupMessages({ library(data.table); library(arrow) })
+ROOT <- Sys.getenv("QM_ROOT","C:/Users/99922/OneDrive/Quant_Module_Moltbot"); setwd(ROOT)
+say <- function(fmt,...) cat(sprintf(paste0("[fq068] ",fmt,"\n"),...))
+r <- read_parquet(".cache/RAWDATA.parquet", as_data_frame=FALSE)
+say("RAWDATA 컬럼: %s", paste(names(r), collapse=", "))
