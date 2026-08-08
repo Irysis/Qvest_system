@@ -1,17 +1,17 @@
 {
   "_doc": "표준↔소비자 배선 지도. 생성기 02_Infrastructure/ops/wiring_map_build.R. status: orphan=비검사 소비자 0(표준이 아무도 안 씀) / thin=1~2(국소) / wired=3+. single_zone=TRUE 면 소비자가 한 lane 에만 있음(범용 표준인데 국소 배선 = 미배선 후보). ★판정은 이 원장이 권위다 — 소비자는 n_consumers 로 재판정하지 말 것.",
-  "generated_at": "2026-08-08 09:55:30",
-  "scan_files": 10012,
+  "generated_at": "2026-08-08 15:37:26",
+  "scan_files": 10021,
   "scan_dirs": ["02_Infrastructure", "04_Research", "08_Tests", "qepm", "06_Registry", ".claude/skills", ".claude/agents", ".claude/rules", ".claude/commands"],
   "summary": {
-    "n_standards": 48,
-    "orphan": 10,
+    "n_standards": 49,
+    "orphan": 11,
     "thin": 21,
     "wired": 17,
     "single_zone_nonorphan": 25,
     "_unverified_stale_producer": 1,
     "producer_identified": 2,
-    "producer_coverage_note": "산출물 식별 2/48 — 이 비율이 낮으면 정체 0 은 '건강'이 아니라 '미측정'",
+    "producer_coverage_note": "산출물 식별 2/49 — 이 비율이 낮으면 정체 0 은 '건강'이 아니라 '미측정'",
     "_unverified_with_reimplementers": 15
   },
   "standards": [
@@ -67,6 +67,25 @@
       "producer_age_days": "NA",
       "zones": "",
       "consumers": "",
+      "_unverified_reimplementers": "",
+      "status": "orphan",
+      "_unverified_stale_producer": false,
+      "single_zone": false
+    },
+    {
+      "standard": "c15_load_path_scan.R",
+      "kind": "helper",
+      "dir": "02_Infrastructure/validation",
+      "n_symbols": 2,
+      "n_consumers": 1,
+      "n_consumers_nontest": 0,
+      "_unverified_n_reimpl": 0,
+      "n_transitive": 0,
+      "n_mentions": 0,
+      "producer_output": null,
+      "producer_age_days": "NA",
+      "zones": "tests:1",
+      "consumers": "08_Tests/hooks/test_c15_load_path_scan.R",
       "_unverified_reimplementers": "",
       "status": "orphan",
       "_unverified_stale_producer": false,
@@ -402,14 +421,14 @@
       "n_symbols": 24,
       "n_consumers": 3,
       "n_consumers_nontest": 1,
-      "_unverified_n_reimpl": 26,
+      "_unverified_n_reimpl": 27,
       "n_transitive": 16,
       "n_mentions": 0,
       "producer_output": "06_Registry/strategy_grades.json",
-      "producer_age_days": 61.4,
+      "producer_age_days": 61.6,
       "zones": "infra:1 tests:2",
       "consumers": "02_Infrastructure/tools/paper_recharge_daily.R;08_Tests/integration/test_v8_readiness_gate.R;08_Tests/validation/test_v8_readiness_hook_dryrun.R",
-      "_unverified_reimplementers": "08_Tests/contract_regression/test_sample_alignment_empty.R;08_Tests/data/test_cache_content_reach.R;08_Tests/data/test_cache_freshness_worse_of.R;08_Tests/data/test_contract_panel.R;08_Tests/data/test_daily_refresh_r_blocks.R;08_Tests/data/test_dart_candidate_years.R;08_Tests/data/test_dart_reprt_quarter_map.R;08_Tests/data/test_frontier_coherence.R;08_Tests/factor_db/test_build_hash_provenance.R;08_Tests/factor_db/test_ev_term_not_inert.R;08_Tests/factor_db/test_ic_completion_guard.R;08_Tests/factor_db/test_ic_frontier_check.R;08_Tests/hooks/test_ax001_defense_scope.R;08_Tests/hooks/test_factor_dup_scan.R;08_Tests/hooks/test_lineage_git_state.R;08_Tests/hooks/test_lockbox_audit_path.R;08_Tests/hooks/test_lookahead_unscanned.R;08_Tests/hooks/test_r_portability.R;08_Tests/hooks/test_telegram_entity_scan.R;08_Tests/ops/test_method_adapter_contract.R",
+      "_unverified_reimplementers": "08_Tests/contract_regression/test_sample_alignment_empty.R;08_Tests/data/test_cache_content_reach.R;08_Tests/data/test_cache_freshness_worse_of.R;08_Tests/data/test_contract_panel.R;08_Tests/data/test_daily_refresh_r_blocks.R;08_Tests/data/test_dart_account_id_fallback.R;08_Tests/data/test_dart_candidate_years.R;08_Tests/data/test_dart_reprt_quarter_map.R;08_Tests/data/test_frontier_coherence.R;08_Tests/factor_db/test_build_hash_provenance.R;08_Tests/factor_db/test_ev_term_not_inert.R;08_Tests/factor_db/test_ic_completion_guard.R;08_Tests/factor_db/test_ic_frontier_check.R;08_Tests/hooks/test_ax001_defense_scope.R;08_Tests/hooks/test_factor_dup_scan.R;08_Tests/hooks/test_lineage_git_state.R;08_Tests/hooks/test_lockbox_audit_path.R;08_Tests/hooks/test_lookahead_unscanned.R;08_Tests/hooks/test_r_portability.R;08_Tests/hooks/test_telegram_entity_scan.R",
       "status": "thin",
       "_unverified_stale_producer": true,
       "single_zone": true
@@ -596,7 +615,7 @@
       "n_transitive": 121,
       "n_mentions": 0,
       "producer_output": "06_Registry/index_descriptions.json",
-      "producer_age_days": 0,
+      "producer_age_days": 0.3,
       "zones": "infra:2 tests:1",
       "consumers": "02_Infrastructure/ops/handbook_facts_audit.sh;02_Infrastructure/ops/stranded_repairs_audit.sh;08_Tests/hooks/test_stranded_triage.sh",
       "_unverified_reimplementers": "",
@@ -837,15 +856,15 @@
       "kind": "helper",
       "dir": "02_Infrastructure/contracts",
       "n_symbols": 2,
-      "n_consumers": 36,
-      "n_consumers_nontest": 36,
+      "n_consumers": 37,
+      "n_consumers_nontest": 37,
       "_unverified_n_reimpl": 1,
       "n_transitive": 1,
       "n_mentions": 0,
       "producer_output": null,
       "producer_age_days": "NA",
-      "zones": "infra:3 qepm:20 research:13",
-      "consumers": "02_Infrastructure/alpha_search/run_alpha_search.R;02_Infrastructure/contracts/backtest_result_contract.R;02_Infrastructure/tools/backfill_alpha_search_contracts.R;04_Research/composition_search/cycle1_trackO_promotion/run_o3_promotion_forge.R;04_Research/composition_search/cycle2_trackB/stageb_measure.R;04_Research/composition_search/cycle2_trackF/run_trackF_forge.R;04_Research/factor_rotation/run_tsmom_timing.R;04_Research/factor_rotation/run_valearn_overlay.R;04_Research/factor_rotation/run_wf_ensemble.R;04_Research/factor_rotation/run_wf_ensemble_fr002.R;04_Research/pg2_carry_convention/run_all.R;04_Research/strategies/STR_1715_WT016_Iter31_GridBestProd/run_all.R;04_Research/strategies/STR_1716_QFM/run_all.R;04_Research/strategies/STR_1719_WT001_DCA_v7/run_all.R;04_Research/strategies/WT_D20260511_001_5sleeve_high20pct/run_all.R;04_Research/strategies/WT_D20260511_001_5sleeve_med10pct/run_all.R;qepm/mailbox/worktask/WT-D20260429_001/run_all.R;qepm/mailbox/worktask/WT-D20260430_001/run_all.R;qepm/mailbox/worktask/WT-D20260508_009/run_all.R;qepm/mailbox/worktask/WT-D20260515_002/run_forge_backtest.R;qepm/mailbox/worktask/WT-D20260515_002/run_forge_revision_v2.R;qepm/mailbox/worktask/WT-D20260528_003/run_all.R;qepm/mailbox/worktask/WT-D20260529_001/run_all.R;qepm/mailbox/worktask/WT-D20260701_002/run_forge_dossier.R;qepm/mailbox/worktask/WT-D20260705_001/run_all.R;qepm/mailbox/worktask/WT-D20260705_004/run_forge_authoritative.R;qepm/mailbox/worktask/WT-D20260706_MIDCAP/run_forge_midcap.R;qepm/mailbox/worktask/WT-D20260714_006/run_all.R;qepm/mailbox/worktask/WT-P20260505_001/run_all.R;qepm/mailbox/worktask/WT-P20260706_002/forge_authoritative.R;qepm/mailbox/worktask/WT-S20260504_001/run_all.R;qepm/mailbox/worktask/WT-S20260504_002/run_all.R;qepm/mailbox/worktask/WT-S20260504_003/forge_output/run_all.R;qepm/mailbox/worktask/WT-S20260504_004/run_all.R;qepm/mailbox/worktask/WT-S20260504_006/run_all.R;qepm/mailbox/worktask/WT-S20260504_007/run_all.R",
+      "zones": "infra:4 qepm:20 research:13",
+      "consumers": "02_Infrastructure/alpha_search/run_alpha_search.R;02_Infrastructure/contracts/backtest_result_contract.R;02_Infrastructure/tools/backfill_alpha_search_contracts.R;02_Infrastructure/validation/c15_load_path_scan.R;04_Research/composition_search/cycle1_trackO_promotion/run_o3_promotion_forge.R;04_Research/composition_search/cycle2_trackB/stageb_measure.R;04_Research/composition_search/cycle2_trackF/run_trackF_forge.R;04_Research/factor_rotation/run_tsmom_timing.R;04_Research/factor_rotation/run_valearn_overlay.R;04_Research/factor_rotation/run_wf_ensemble.R;04_Research/factor_rotation/run_wf_ensemble_fr002.R;04_Research/pg2_carry_convention/run_all.R;04_Research/strategies/STR_1715_WT016_Iter31_GridBestProd/run_all.R;04_Research/strategies/STR_1716_QFM/run_all.R;04_Research/strategies/STR_1719_WT001_DCA_v7/run_all.R;04_Research/strategies/WT_D20260511_001_5sleeve_high20pct/run_all.R;04_Research/strategies/WT_D20260511_001_5sleeve_med10pct/run_all.R;qepm/mailbox/worktask/WT-D20260429_001/run_all.R;qepm/mailbox/worktask/WT-D20260430_001/run_all.R;qepm/mailbox/worktask/WT-D20260508_009/run_all.R;qepm/mailbox/worktask/WT-D20260515_002/run_forge_backtest.R;qepm/mailbox/worktask/WT-D20260515_002/run_forge_revision_v2.R;qepm/mailbox/worktask/WT-D20260528_003/run_all.R;qepm/mailbox/worktask/WT-D20260529_001/run_all.R;qepm/mailbox/worktask/WT-D20260701_002/run_forge_dossier.R;qepm/mailbox/worktask/WT-D20260705_001/run_all.R;qepm/mailbox/worktask/WT-D20260705_004/run_forge_authoritative.R;qepm/mailbox/worktask/WT-D20260706_MIDCAP/run_forge_midcap.R;qepm/mailbox/worktask/WT-D20260714_006/run_all.R;qepm/mailbox/worktask/WT-P20260505_001/run_all.R;qepm/mailbox/worktask/WT-P20260706_002/forge_authoritative.R;qepm/mailbox/worktask/WT-S20260504_001/run_all.R;qepm/mailbox/worktask/WT-S20260504_002/run_all.R;qepm/mailbox/worktask/WT-S20260504_003/forge_output/run_all.R;qepm/mailbox/worktask/WT-S20260504_004/run_all.R;qepm/mailbox/worktask/WT-S20260504_006/run_all.R;qepm/mailbox/worktask/WT-S20260504_007/run_all.R",
       "_unverified_reimplementers": "02_Infrastructure/factor_db/merge_xlsx_into_dart.R",
       "status": "wired",
       "_unverified_stale_producer": false,
@@ -877,7 +896,7 @@
       "n_symbols": 5,
       "n_consumers": 95,
       "n_consumers_nontest": 92,
-      "_unverified_n_reimpl": 51,
+      "_unverified_n_reimpl": 52,
       "n_transitive": 31,
       "n_mentions": 0,
       "producer_output": null,
@@ -928,5 +947,15 @@
       "single_zone": true
     }
   ],
-  "drift": []
+  "drift": {
+    "new_standards": [
+      {
+        "standard": "c15_load_path_scan.R",
+        "n_consumers_nontest": 0,
+        "status": "orphan",
+        "base_n": "NA",
+        "base_status": null
+      }
+    ]
+  }
 }

@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "sot": "02_Infrastructure/docs/qvest_v8_3_alpha_discovery_sot.md §4",
-  "updated": "2026-08-08T15:42:16+09:00",
+  "updated": "2026-08-08T15:27:36+09:00",
   "consume_rule": "새 발굴 리서치 착수 전: hypothesis_index lookup → 본 큐 확인 → owner/status 갱신. 완료 시 result_ref(L-code/보고서) 기입. dohoon_decision 항목은 세션 임의 착수 금지.",
   "entries": [
     {
@@ -2735,9 +2735,9 @@
       "wall_check": "top-25·cap-w 는 고정 축이므로 basis 를 바꾸는 것이 아니라 **구성에서 사이즈 노출을 중립화**하는 것이 과제. 제약 완화 아님(INV-7).",
       "data_gate": "없음 (WT-007 패널·하네스 재사용)",
       "owner": "Q-Lead (사전확인 완료, 라운드 미착수)",
-      "status": "np_a_measured_bench_side_constant_20260808",
+      "status": "precheck_premise_refuted_redesign_open_20260808",
       "registered": "2026-08-03 Q-Lead (WT-D20260803_007 NP-1 파생)",
-      "next_action": "원안(선별-측 사이즈 중립)은 EV 최하위 재배치 — WT-006 R4 가 유니버스 재구성 7변형 전부 cap-w<1.277 로 이미 측정. 살아있는 축은 비중-측 cap-tilt(R4 1.277->2.100, HARD 2.95 미달) 재현 = FQ-156.",
+      "next_action": "NP-A 선행 필수 — capw−EW 격차의 벤치-측 분해(동일 167개월 cap-w 유니버스 벤치 vs EW 유니버스 벤치 실현수익차). 격차가 arm 무관 상수면 포트폴리오-측 개입으로 회수 불가 확정. 그 뒤에만 NP-B(재설계본: \"사이즈 중립\" 대신 \"cap-w 벤치를 실제로 이긴 이름의 선별기 적중률\") 착수.",
       "precheck_20260808": {
         "verdict": "동기 기각 — 개입 자체는 여전히 미측정",
         "finding": "dual-basis 는 포트폴리오가 아니라 **벤치마크만** 바꾼다 (canonical_screen_bt.R:97 ret_net 동일 객체 / L103-104 benchmark_id=EW_universe_prefilter / L117 \"HARD 비바인딩\"). ∴ EW-basis 2.860 은 \"사이즈 노출 제거 시 옮겨올 알파\"가 아니라 같은 포트폴리오를 동일가중 벤치로 채점한 값. NP-1 의 \"⇒ 벽의 상당분이 사이즈 노출\" 은 범주 오류.",
@@ -2756,27 +2756,6 @@
         "ss_arms_are_not_size_neutral": "SS_* kind=single_split (n_months=96) = 시간 분할. 사이즈 층화 arm 부재 — 개입은 진짜 미측정.",
         "inv7_guard": "벤치(cap-w KOSPI200 TR)는 고정 축. EW basis 승격·판정 basis 이전 = 제약 완화이므로 금지(AX-000 따름정리·INV-7).",
         "artifact": "stage_artifacts/fq141_precheck_20260808/precheck_findings.md"
-      },
-      "np_a_result": {
-        "verdict": "H0 채택 — capw−EW 격차는 벤치-측 상수, arm 무관",
-        "window": "2012-08-31~2026-06-30 (n=167)",
-        "d_alpha_ann_mean": 0.0382,
-        "d_alpha_ann_sd": 0.001059,
-        "d_alpha_ann_range": [
-          0.03559,
-          0.03917
-        ],
-        "d_monthly": 0.002691,
-        "capw_bench_mean_monthly": 0.009541984,
-        "capw_unique_values_across_arms": 1,
-        "ew_bench_mean_monthly_range": [
-          0.006775,
-          0.00703
-        ],
-        "consistency_check": "다른 창(SS_ n=96)에서 d 2.46배일 때 |gap| 2.36배 — 벤치-측 가설 예측과 정합",
-        "honesty": "d 자체는 d_t_nw3~0.75~0.80 p~0.43 로 0 과 유의 구분 안 됨. 확정한 것은 \"격차가 arm 무관\" 이라는 판별축.",
-        "metric_type": "canonical_screen_diag",
-        "artifact": "stage_artifacts/fq141_precheck_20260808/np_a_findings.md"
       }
     },
     {
@@ -3107,53 +3086,6 @@
         "project-cfa-l2-knowledge-mapping-20260808"
       ],
       "registered": "2026-08-08 Q-Lead (CFA Lv2 census 3)"
-    },
-    {
-      "id": "FQ-156",
-      "lane": "construction",
-      "title": "★비중-측 cap-tilt 의 composite 이식 재현 — 전이 벽의 실제 높이",
-      "hypothesis": "WT-006 R4 는 동일 momentum 25종목을 제약준수([0,0.20]) cap-tilt 재가중만으로 cap-w PORT_t 1.277->2.100 을 얻었다(단일 사례). FQ-141 NP-A 가 확정한 대로 선별-측으로는 격차를 못 줄이므로, 살아있는 사이즈 레버는 비중 측뿐이다. WT-007 composite arm(A_REL_TOP 0.897 / LEVEL_TOP_K20 1.028)에 같은 cap-tilt 를 이식해 lift 가 재현되는가.",
-      "ev_rationale": "재현되면 비중-측이 유일한 사이즈 레버로 확정되고 그 천장(~2.1)이 전이 벽의 실제 높이가 된다. 재현 안 되면 R4 는 단일 사례 일화.",
-      "wall_check": "R4 자체가 HARD 2.95 미달(2.100)·oos_ret 0.374<0.7·calmar 0.576<0.64. 자본 자격 아닌 벽-높이 측정 라운드.",
-      "data_gate": "없음 — WT-007 composite_main.parquet + RAWDATA Size 재사용",
-      "owner": "미배정",
-      "status": "frontier_open",
-      "next_action": "A_REL_TOP·LEVEL_TOP_K20 에 size_prop_cap 가중 이식 후 canonical 재측정. R4 의 regime front-loading(pre-2020 t=1.95 vs 2020+ t=0.99)도 동반 확인.",
-      "source_refs": [
-        "04_Research/method_frontier/wt006_exog_forecast/R4_synthesis.json",
-        "stage_artifacts/fq141_precheck_20260808/np_a_findings.md"
-      ]
-    },
-    {
-      "id": "FQ-157",
-      "lane": "measurement_integrity",
-      "title": "★전이 벽 핸디캡 d 의 시대·국면 구조 — 벽 높이가 시대 조건부인가",
-      "hypothesis": "NP-A 실측: cap-w 유니버스 벤치가 EW 유니버스 벤치보다 연 3.82% 더 벌었고(2012-08~2026-06) 이 핸디캡은 arm 무관 상수다. 그런데 다른 창(n=96)에서는 2.46배였다 — 즉 d 는 시대 의존. d 를 연도별/국면별 분해해 축소되는 국면이 실재하는지 본다.",
-      "ev_rationale": "d 가 축소되는 국면이 있다면 같은 알파가 그 국면에서 cap-w 를 통과할 수 있다 = 국면-조건부 자본 자격이라는 미측정 면.",
-      "wall_check": "벽의 크기 자체를 시대 함수로 재규정하는 진단. 벤치(고정 축) 변경 아님 — INV-7 준수.",
-      "data_gate": "없음 — np_a_results.rds + bench_dt 재사용",
-      "owner": "미배정",
-      "status": "frontier_open",
-      "next_action": "d_t 를 연도별·regime 라벨별 분해. 2017+ mega 레짐 가설 대조.",
-      "source_refs": [
-        "stage_artifacts/fq141_precheck_20260808/np_a_findings.md"
-      ]
-    },
-    {
-      "id": "FQ-158",
-      "lane": "infra_guard",
-      "title": "dual_basis 산출부 기계 라벨 — \"격차는 벤치 수익차이지 구성에 대한 진술이 아님\"",
-      "hypothesis": "이번 conflation 은 challenge_note -> alpha_validation NP-1 -> layer_bottleneck_map v48 -> FQ-141 로 4단 전파했다. canonical_screen_bt 의 diag_ew_universe 반환부에 해석 라벨을 기계로 부착하면 같은 오독의 재유입을 막는다.",
-      "ev_rationale": "주입면(strategic_truths DIST-AR-008)은 이미 올바른 서술을 담고 있었는데도 라운드 산출물 쪽에서 오독이 발생 — 산출 지점 라벨이 결손.",
-      "wall_check": "해당 없음(하네스 위생).",
-      "data_gate": "없음",
-      "owner": "미배정",
-      "status": "frontier_open",
-      "next_action": "metric_type_note 에 해석 경계 1줄 추가 + 위반 주입 테스트(오독 문구 검출).",
-      "source_refs": [
-        "02_Infrastructure/contracts/canonical_screen_bt.R:117",
-        "stage_artifacts/fq141_precheck_20260808/np_a_findings.md"
-      ]
     }
   ]
 }
