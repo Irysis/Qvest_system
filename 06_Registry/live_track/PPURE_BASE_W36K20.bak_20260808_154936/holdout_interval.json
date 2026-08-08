@@ -1,0 +1,79 @@
+{
+  "schema_version": "c3_v1.0",
+  "strategy_id": "PPURE_BASE_W36K20",
+  "generated": "2026-07-13",
+  "n_input_months": 220,
+  "sr_input": 0.853,
+  "holdout_months": 21,
+  "block": 12,
+  "B": 4000,
+  "seed": 7,
+  "q05": -0.3433,
+  "q95": 2.3312,
+  "boot_median": 0.8811,
+  "consumed": false,
+  "consumed_reason": null,
+  "note": "사전등록 예측구간. 판정은 judge_holdout(). 열람 후 수정 시 mark_consumed() 의무 (C3 소모 규칙).",
+  "track_id": "PPURE_BASE_W36K20",
+  "track_desc": "R6 P-pure Ppure_W36_K20 (base) — D3 벤치-상대 페이퍼 트래킹 (dossier §7 병행안 대조군)",
+  "paper_only": "페이퍼 전용 — book_state 무변경·자본 게이트(HARD 3종/book-marginal ΔIR) 무관·실주문 없음·05_Production 무접촉 (도훈 승인 2026-07-13 태스크 #62 병행안)",
+  "candidate_selected_at": "2026-07-13",
+  "selection_bias_label": "base = R6(2026-07-11) 원 산출·R8 band escalation 2/3로 D3 자격 회복(FQ-016) — 병행안의 사전지정 대조군. D-2 대비 선택편향 낮음(단 R8 escalation 자체가 측정 후 자격 부여임을 정직 병기).",
+  "live_start_signal_month": "2026-05-31",
+  "basis_labels": {
+    "primary_interval_basis": "absolute_net_monthly ret_net (STR_1715 c3 컨벤션 — sr_input/구간은 절대 net 월수익 기준)",
+    "ew_uni": "EW-유니버스 active(진단·페이퍼 채점 프레임 — dossier §0 B안: 월간 EW-active 채점) -> supplementary_intervals$ew_active",
+    "capw": "cap-w active(계약 권위 basis — 자본 게이트용. 본 트랙은 자본 게이트 무관, 병기만) -> supplementary_intervals$capw_active"
+  },
+  "supplementary_intervals": {
+    "ew_active": {
+      "q05": -0.3631,
+      "q95": 2.5453,
+      "sr_input": 0.9732,
+      "boot_median": 0.9051,
+      "holdout_months": 21,
+      "block": 12,
+      "B": 4000,
+      "seed": 7,
+      "n_input_months": 220
+    },
+    "capw_active": {
+      "q05": -0.5021,
+      "q95": 2.4538,
+      "sr_input": 0.676,
+      "boot_median": 0.776,
+      "holdout_months": 21,
+      "block": 12,
+      "B": 4000,
+      "seed": 7,
+      "n_input_months": 220
+    }
+  },
+  "reference_stats_r13": {
+    "model": "base",
+    "port_t_capwt": 2.6124,
+    "port_t_EWuni": 3.9191,
+    "oos_retention": -0.0759,
+    "oos_ew": 0.5064,
+    "calmar": 0.45,
+    "dsr": 1.5504,
+    "post2017_bm_sr": -0.1052,
+    "full_bm_sr": 0.676,
+    "turnover": 9.2705,
+    "n_months": 220
+  },
+  "source_series": {
+    "path": ".cache/_ramp_r13_20260713.rds $PR[['base']] (220m 2008-01-31~2026-04-30, weighted_screen_bt 계약 산출)",
+    "sealed_copy_series": "06_Registry/live_track/PPURE_BASE_W36K20/sealed_source_series.csv",
+    "sealed_copy_holdings": "06_Registry/live_track/PPURE_BASE_W36K20/sealed_holdings_ref.csv",
+    "parity_base_vs_r6_stored": 0
+  },
+  "config": {
+    "r13_config_hash": "d997ab856f3c4884",
+    "r13_summary": "outputs/ramp/r13_decay_summary_20260713.json",
+    "r6_summary": "outputs/ramp/r6_portt_boruta_summary_20260711.json",
+    "d3_dossier": "04_Research/01_reports/d3_deployability_dossier_20260713.md (승인안 = §7 병행안)",
+    "frozen_rule": "W36 trailing realized active NW-t top-K20 pool (cadence6) -> 팩터 EW composite -> liq>=2e8 top-25 EW, 15bps delta-based"
+  },
+  "dossier_prereg_proposal": "dossier §0(정보성, 비바인딩·도훈 결정 사항): 페이퍼 12m EW-active IR<0 또는 trailing 12m PORT_t<0 -> 종결 재평가"
+}

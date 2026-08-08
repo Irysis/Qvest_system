@@ -1,0 +1,79 @@
+{
+  "schema_version": "c3_v1.0",
+  "strategy_id": "PPURE_D2_DECAYEXIT",
+  "generated": "2026-07-13",
+  "n_input_months": 220,
+  "sr_input": 0.8279,
+  "holdout_months": 21,
+  "block": 12,
+  "B": 4000,
+  "seed": 7,
+  "q05": -0.3478,
+  "q95": 2.2195,
+  "boot_median": 0.8941,
+  "consumed": false,
+  "consumed_reason": null,
+  "note": "사전등록 예측구간. 판정은 judge_holdout(). 열람 후 수정 시 mark_consumed() 의무 (C3 소모 규칙).",
+  "track_id": "PPURE_D2_DECAYEXIT",
+  "track_desc": "R13 armD2_decay_exit — P-pure 감쇠-트리거 퇴출 변형 (진입 cadence6·퇴출 cadence3, recent18_t<0 OR decay<-1.0 배출)",
+  "paper_only": "페이퍼 전용 — book_state 무변경·자본 게이트(HARD 3종/book-marginal ΔIR) 무관·실주문 없음·05_Production 무접촉 (도훈 승인 2026-07-13 태스크 #62 병행안)",
+  "candidate_selected_at": "2026-07-13",
+  "selection_bias_label": "★선택편향 있음: 이 변형은 R13 게이트 산출(측정된 과거 — EW-oos 0.745)을 보고 2026-07-13에 사후 지목. 페이퍼 트래킹(미접촉 미래 실측)이 편향을 심판(dossier §7 정직 라벨).",
+  "live_start_signal_month": "2026-05-31",
+  "basis_labels": {
+    "primary_interval_basis": "absolute_net_monthly ret_net (STR_1715 c3 컨벤션 — sr_input/구간은 절대 net 월수익 기준)",
+    "ew_uni": "EW-유니버스 active(진단·페이퍼 채점 프레임 — dossier §0 B안: 월간 EW-active 채점) -> supplementary_intervals$ew_active",
+    "capw": "cap-w active(계약 권위 basis — 자본 게이트용. 본 트랙은 자본 게이트 무관, 병기만) -> supplementary_intervals$capw_active"
+  },
+  "supplementary_intervals": {
+    "ew_active": {
+      "q05": -0.3075,
+      "q95": 2.3763,
+      "sr_input": 0.9009,
+      "boot_median": 0.8434,
+      "holdout_months": 21,
+      "block": 12,
+      "B": 4000,
+      "seed": 7,
+      "n_input_months": 220
+    },
+    "capw_active": {
+      "q05": -0.3768,
+      "q95": 2.3241,
+      "sr_input": 0.6454,
+      "boot_median": 0.7327,
+      "holdout_months": 21,
+      "block": 12,
+      "B": 4000,
+      "seed": 7,
+      "n_input_months": 220
+    }
+  },
+  "reference_stats_r13": {
+    "model": "armD2_decay_exit",
+    "port_t_capwt": 2.503,
+    "port_t_EWuni": 3.5996,
+    "oos_retention": 0.0448,
+    "oos_ew": 0.7453,
+    "calmar": 0.4251,
+    "dsr": 1.4501,
+    "post2017_bm_sr": 0.0484,
+    "full_bm_sr": 0.6454,
+    "turnover": 9.4495,
+    "n_months": 220
+  },
+  "source_series": {
+    "path": ".cache/_ramp_r13_20260713.rds $PR[['armD2_decay_exit']] (220m 2008-01-31~2026-04-30, weighted_screen_bt 계약 산출)",
+    "sealed_copy_series": "06_Registry/live_track/PPURE_D2_DECAYEXIT/sealed_source_series.csv",
+    "sealed_copy_holdings": "06_Registry/live_track/PPURE_D2_DECAYEXIT/sealed_holdings_ref.csv",
+    "parity_base_vs_r6_stored": {}
+  },
+  "config": {
+    "r13_config_hash": "d997ab856f3c4884",
+    "r13_summary": "outputs/ramp/r13_decay_summary_20260713.json",
+    "r6_summary": "outputs/ramp/r6_portt_boruta_summary_20260711.json",
+    "d3_dossier": "04_Research/01_reports/d3_deployability_dossier_20260713.md (승인안 = §7 병행안)",
+    "frozen_rule": "진입 cadence6 full top-K20(level36) / 퇴출 cadence3 감쇠트리거(recent18_t<0 OR recent18_t-older18_t<-1.0 배출, 비-감쇠 차순위 충원) -> 팩터 EW composite -> liq>=2e8 top-25 EW, 15bps delta-based"
+  },
+  "dossier_prereg_proposal": "dossier §0(정보성, 비바인딩·도훈 결정 사항): 페이퍼 12m EW-active IR<0 또는 trailing 12m PORT_t<0 -> 종결 재평가"
+}
