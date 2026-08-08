@@ -182,6 +182,11 @@ res <- list(schema_version="v3.0", generated=as.character(Sys.Date()),
             n_modules=kept, modules=out)
 dir.create(file.path(PROJ,"06_Registry"), showWarnings=FALSE)
 write_json(res, file.path(PROJ,"06_Registry/module_performance.json"), auto_unbox=TRUE, pretty=TRUE, na="null", digits=4)
-cat(sprintf("module_performance.json written: %d modules (광역, 등급 게이트 없음)\n", kept))
+## ★로그가 모드를 정직하게 말하게 한다 (2026-08-08 수정) — 구판은 실제 모드와 무관하게
+##   항상 "광역"이라고 찍었다. allowlist 로 정상 실행해도 로그만 보면 **진단모드 산출물을
+##   정본에 덮어쓴 것처럼 읽힌다**(실측: 08-08 FQ-056 재실행 때 그렇게 오독할 뻔했고,
+##   generated_by 필드를 따로 확인하고서야 allowlist 경로였음이 밝혀졌다).
+cat(sprintf("module_performance.json written: %d modules (%s · 등급 게이트 없음)\n", kept,
+            if (identical(Sys.getenv("QVEST_FR_ALLOW_BROAD_SCAN", "0"), "1")) "광역 진단모드" else "FR allowlist"))
 gtab <- sort(table(vapply(out, function(x) as.character(x$grade %||% "ungraded"), character(1))), decreasing=TRUE)
 cat("grade 분포:", paste(names(gtab), gtab, sep="=", collapse=" "), "\n")

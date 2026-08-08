@@ -605,6 +605,18 @@ elif [ "${_wm_rc:-0}" -ne 0 ]; then
   echo "[warn] wiring map rebuild failed rc=$_wm_rc (fail-soft)"
 fi
 
+# [8.2] FR 모듈 성능 레지스트리 재생성 (2026-08-08, FQ-056) — screen-tier 재고를
+#   factor-rotation 소비면에 도달시키는 배관. fail-soft.
+#   ★왜 정기 실행이 필요한가: 이 스크립트는 배선돼 있었지만 **on-demand 진입점
+#   (run_factor_rotation.R:32)에만** 매달려 있었다. 그 모드를 사람이 안 띄우면 갱신이 멈춘다 —
+#   실측 2026-08-08: generated=2026-06-13 로 **56일 정지**, 재실행 시 모듈 192→209(+17).
+#   "죽은 코드"도 "실행 실패"도 아닌 **호출 계기 부재**였다.
+#   ★신선도 게이트를 일부러 두지 않는다: 이 저장소는 게이트가 영구-참이 되어 7주간
+#   같은 캐시를 재보고한 실사고가 있다(project-paper-dispatch-risk-optimizer-never-research).
+#   이 빌드는 멱등(재실행 209 동일)이고 수 분이므로 무조건 실행이 더 안전하다.
+"$RSCRIPT" --no-save "$INFRA/regime/build_module_performance.R" >/dev/null 2>&1 \
+  || echo "[warn] module_performance rebuild failed (fail-soft)"
+
 # [9] 스위트 총계 수집 (2026-07-25) — 계측 사망은 '실패'가 아니라 '총계 감소'로 온다.
 #     여기서 매일 수집해야 bootstrap 의 --check 가 최신값을 비교한다(수동 수집 의존 제거).
 #     fail-soft: 러너가 죽어도 refresh 전체는 계속 — 다만 그 경우 null 로 기록되어

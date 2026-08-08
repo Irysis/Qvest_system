@@ -882,12 +882,13 @@
       "wall_check": "ym-정렬은 PIT-safe(lag1-robust 실증) + R26 Ext-B recon ymL 확립규약. 정정은 배관이지 게이트 완화 아님(INV-7 무관).",
       "data_gate": "없음(로컬)",
       "owner": "Q-Lead(architect 협의 가능)",
-      "status": "frontier_open",
+      "status": "superseded_remeasure_by_R29_wiring_open",
       "next_action": "canonical_screen_bt/weighted_screen_bt 호출부 value/factor z 병합을 ym-key 표준화(또는 helper) + R26 ADD 14arm·replace 5arm ym-정렬 재측정 → 결론 delta 확인",
       "source_refs": [
         "parent: FQ-040 R27",
         "memory: project-cache-vintage-pinning(측정 배관 트랩 계열)"
-      ]
+      ],
+      "resolution": "2026-08-08 사전 확인. 재측정 축은 R28~R32 가 이미 소비 — 특히 R29(FQ-044)가 clean base 로 Z6 재측정해 paired 1.243 → CONFIG_SCOPED_NEGATIVE(Grade F). R27 의 3.807 은 look-ahead base 아티팩트였고, value 성분 vintage 는 cor 1.0000 으로 clean이었다 (look-ahead 는 전적으로 base 패널). R26 의 옛 base 로 재측정하면 그 아티팩트를 재생산하므로 의미 있는 재측정은 R29-P2(저장 268m clean 재빌드) 선행 필요 — 별도 라운드 규모. 비-value arm 은 paired 0.579~-2.025 로 게이트에서 멂. ★잔여 = 배선 축: align_signal_return_ym.R 실소비자 2개(전부 RAMP lane). wiring_map.json 에 thin 으로 등재됨."
     },
     {
       "id": "FQ-044",
@@ -1159,14 +1160,15 @@
       "ev_rationale": "v8.3 M10 'FR 회수 재개' staged 항목의 미이행 잔여 + 진단 P4 회수-우선 원칙('이미 실측 완료 재고 = 가장 싼 발굴 소스', FR 회수 4주 정지 실측). 신규 측정이 아니라 기존 배관 재가동 — 한계비용 낮음",
       "wall_check": "게이트 무관(인프라 배관) — build_module_performance는 FR input-floor allowlist만 소비(등급 무관), 계약 floor·graduation HARD 불변. book_state/자본 무변경",
       "data_gate": "없음 (build_module_performance.R 재실행 + module_catalog 현행 대조)",
-      "owner": {},
-      "status": "queued",
+      "owner": "Q-Lead",
+      "status": "done_wired_20260808",
       "next_action": "build_module_performance 재실행 → module_performance.json 현행화 → run_factor_rotation 신선도 자동인식 경로 정상화 확인. 정지 원인(호출 스케줄 부재 vs 실행 실패) 진단 병행",
       "source_refs": [
         "sot: 02_Infrastructure/docs/qvest_v8_3_alpha_discovery_sot.md M10 + P4 (FR 회수 4주 정지)",
         "registry: 06_Registry/module_performance.json (generated 2026-06-13) + 06_Registry/module_catalog.json",
         "audit: 2026-07-17 아키텍처 2주 운영 감사 (수리 패키지 E8)"
-      ]
+      ],
+      "resolution": "2026-08-08 실행. 진단 결론 = 호출 계기 부재(죽은 코드/실행 실패 아님) — build_module_performance.R 은 run_factor_rotation.R:32 에 정상 배선돼 있으나 on-demand 모드 진입점에만 매달려 있어, 그 모드 미실행 기간만큼 정지. 실측: generated 2026-06-13(56일 정지) → 재실행 후 2026-08-08, 모듈 192→209(+17). daily_refresh.sh §8.2 에 무조건-실행으로 배선(신선도 게이트 미사용 — 게이트 영구-참 실사고 선례). 동반 수리: 완료 로그가 모드와 무관하게 항상 \"광역\"으로 찍어 진단모드 산출물로 오독될 수 있던 문구 정정."
     },
     {
       "id": "FQ-057",
