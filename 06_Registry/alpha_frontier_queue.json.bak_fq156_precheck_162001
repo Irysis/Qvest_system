@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "sot": "02_Infrastructure/docs/qvest_v8_3_alpha_discovery_sot.md §4",
-  "updated": "2026-08-08T16:20:01+09:00",
+  "updated": "2026-08-08T15:42:16+09:00",
   "consume_rule": "새 발굴 리서치 착수 전: hypothesis_index lookup → 본 큐 확인 → owner/status 갱신. 완료 시 result_ref(L-code/보고서) 기입. dohoon_decision 항목은 세션 임의 착수 금지.",
   "entries": [
     {
@@ -3117,34 +3117,12 @@
       "wall_check": "R4 자체가 HARD 2.95 미달(2.100)·oos_ret 0.374<0.7·calmar 0.576<0.64. 자본 자격 아닌 벽-높이 측정 라운드.",
       "data_gate": "없음 — WT-007 composite_main.parquet + RAWDATA Size 재사용",
       "owner": "미배정",
-      "status": "precheck_reframed_paired_increment_not_significant_20260808",
-      "next_action": "원안 재현 금지(비유의 증분 재현은 무정보). 재정의된 축 2개로 착수: ①paired_vs_mom_t 가 2.0 에 닿는 composite 이 있는가(WT-007 arm 이식 시 standalone 아닌 paired 로 채점) ②cap-tilt 우위 ↔ d 의 국면 동조 검정(FQ-157 과 통합 측정 — 같은 현상 가설의 직접 반증 기회).",
+      "status": "frontier_open",
+      "next_action": "A_REL_TOP·LEVEL_TOP_K20 에 size_prop_cap 가중 이식 후 canonical 재측정. R4 의 regime front-loading(pre-2020 t=1.95 vs 2020+ t=0.99)도 동반 확인.",
       "source_refs": [
         "04_Research/method_frontier/wt006_exog_forecast/R4_synthesis.json",
         "stage_artifacts/fq141_precheck_20260808/np_a_findings.md"
-      ],
-      "precheck_20260808": {
-        "verdict": "재현 대상이 이미 비유의 — 라운드를 \"재현\"이 아니라 \"paired 증분이 어디서든 문턱에 닿는가\"로 재정의",
-        "r4_measured": {
-          "standalone_port_t": 2.1,
-          "baseline_port_t": 1.277,
-          "paired_vs_mom_t": 1.224,
-          "threshold_used_in_repo": 2.0,
-          "ir": 0.635,
-          "calmar": 0.576,
-          "oos_ret": 0.374,
-          "max_w": 0.2,
-          "turnover": 8.92,
-          "lag1": 2.048,
-          "regime": "pre-2020 active t=1.95 vs 2020+ t=0.99 (front-loaded, 감쇠)",
-          "r4_own_label": "regime-conditional mega-beta 베팅 성격, 신규 알파 생성 아님",
-          "verified": "독립 재측정 bit-exact — 수치 자체는 신뢰"
-        },
-        "key_insight": "cap-tilt 가 작동하는 기전 = cap-w 벤치를 끌어올린 mega 이름을 담아 NP-A 가 측정한 벤치 핸디캡 d(+3.82%/yr)를 부분 상쇄하는 것 = 벤치 허깅. ∴ FQ-156(비중-측 레버)과 FQ-157(d 의 시대 구조)은 같은 질문의 두 관점이며, d 가 축소되는 국면에서는 cap-tilt 우위도 함께 축소된다는 예측이 선다(검정 가능).",
-        "reframe": "원안(다른 composite 에서 standalone 1.3->2.1 재현)은 EV 낮음 — standalone 은 분산 공유로 증분을 과대표시하고 R4 의 paired 1.224 가 이미 그 증분의 정직한 크기다. 재정의: ①paired 증분이 문턱에 닿는 composite 이 존재하는가 ②cap-tilt 우위와 d 가 같은 국면 축에서 함께 움직이는가(같은 현상이면 예측이 성립해야).",
-        "hard_gate_note": "2.100 이어도 oos_ret 0.374·calmar 0.576 으로 HARD 3종 중 2종 독립 FAIL — PORT_t 와 무관하게 자본 자격 아님.",
-        "artifact": "04_Research/method_frontier/wt006_exog_forecast/R4_synthesis.json"
-      }
+      ]
     },
     {
       "id": "FQ-157",
