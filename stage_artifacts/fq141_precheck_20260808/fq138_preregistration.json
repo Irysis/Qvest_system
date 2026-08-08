@@ -41,7 +41,14 @@
     "regime_definition_FROZEN": "t-1 mega_spread <= 0 (동월·trailing3 변형은 본 라운드에서 사용 금지 — 3-way look 이 원 사후성의 원인이었다)",
     "measurement": "02_Infrastructure/contracts/canonical_screen_bt.R::canonical_screen_bt(), top-25 EW long-only, cap-w 벤치, 15bps, liq>=2e8",
     "metric_type": "canonical_screen",
-    "control_requirement_MANDATORY": "조건부 판정은 반드시 중립 대조군과의 **차이**로 한다. 계약 신호 단독의 조건부 PORT_t 를 판정 근거로 삼는 것을 금지한다 — 그것이 순풍을 신호로 승격시키는 경로다."
+    "control_requirement_MANDATORY": "조건부 판정은 반드시 중립 대조군과의 **차이**로 한다. 계약 신호 단독의 조건부 PORT_t 를 판정 근거로 삼는 것을 금지한다 — 그것이 순풍을 신호로 승격시키는 경로다.",
+    "estimation_REVISED_20260808": {
+      "was": "부분표본 분할: (SIG_ON−NEU_ON) − (SIG_OFF−NEU_OFF), 각 군 평균의 차",
+      "now": "★전체 80개월 스프레드 계열 s_t = SIG_t − NEU_t 를 만들고 국면 더미에 회귀: s_t = a + delta * 1{t-1 mega_spread<=0} + e_t. **delta 가 DiD** 이며 전 표본으로 추정된다.",
+      "why": "같은 추정량을 부분표본 분할보다 높은 검정력으로 얻는다. 표본을 28 로 줄이지 않는다.",
+      "se": "NW(lag3) HAC 표준오차. 국면 비율 35% 이므로 유효 표본은 80*0.35*0.65 로 축소되나 분할보다는 유리하다.",
+      "threshold": "delta 의 NW t >= 2.0 (문턱 불변 — 검정력 개선으로 대응하지 문턱을 낮추지 않는다)"
+    }
   },
   "arms": [
     {
@@ -63,7 +70,7 @@
   ],
   "discriminants": {
     "primary": {
-      "definition": "DiD = (SIG_ON - NEU_ON) - (SIG_OFF - NEU_OFF), 월별 net active 계열의 paired NW(lag3) t",
+      "definition": "delta in s_t = a + delta*1{t-1 mega_spread<=0}, s_t = SIG_t − NEU_t (net active), NW(lag3) t",
       "threshold": ">= 2.0",
       "rationale": "국면 순풍은 SIG 와 NEU 에 공통으로 실리므로 차분에서 소거된다. 남는 것이 신호의 국면-조건부 초과분이다."
     },
@@ -71,7 +78,8 @@
       "SIG_ON 단독 conditional PORT_t (원 보고 2.198 의 재현 여부 — 판정 근거 아님, 재현 확인용)",
       "NEU_ON 단독 conditional PORT_t (순풍 크기의 직접 계량 — 이것이 2.198 에 근접하면 원 결과는 순풍)",
       "조건부 표본의 창 d_ann 및 역사 백분위(고-핸디캡 라벨)"
-    ]
+    ],
+    "inconclusive_band_PRESET": "★사전 고정: delta 의 t 가 문턱 미달이고 |delta| 의 연환산이 위 required_effect 미만이면 '효과 부재'가 아니라 **'검정력 부족(inconclusive)'** 으로 보고한다. 두 결과를 같은 문장으로 쓰지 않는다."
   },
   "violation_injection": "계약 score 를 월내 무작위 셔플한 위약 신호로 동일 파이프라인 실행 → DiD 가 문턱 미달이어야 한다(발화하면 파이프라인 결함)",
   "boundaries": {
@@ -109,5 +117,16 @@
       "discrepancy": "gridx_vintage_compare.json: bench max_abs_diff 0.0039781953972 · n_diff_gt_1e9 = 1 (size/adv 는 diff 0)",
       "requirement": "측정 산출물에 사용 vintage 태그를 기록하고, bench 차이가 판정에 미치는 영향을 감도로 병기할 것"
     }
+  },
+  "power_analysis_20260808": {
+    "why": "측정 후 미달 시 '검정력 부족'과 '효과 부재'를 구별하기 위해 측정 전 고정.",
+    "measured_null_vol": "(SIG−NEU) 스프레드 월 변동성 = 0.0394 (무작위 25종 바스켓 쌍 120 draw 중앙값, 5~95% 0.0330~0.0448), 창 2019-12~2026-07",
+    "required_effect_for_t2": {
+      "n28_subsample_split_DiD": "월 +0.0263 = 연 +31.60%",
+      "n28_single_spread": "월 +0.0186 = 연 +22.35%",
+      "n80_full_sample": "월 +0.0156 = 연 +18.70%"
+    },
+    "verdict": "★원 설계(28/52 부분표본 분할)는 연 +31.6% 를 요구하므로 현실적 효과크기를 검출할 수 없다. 설계대로 측정하면 거의 확실히 미달이 나오고 그것은 무정보다.",
+    "source": "stage_artifacts/fq141_precheck_20260808/np_fq138f_power.R"
   }
 }
