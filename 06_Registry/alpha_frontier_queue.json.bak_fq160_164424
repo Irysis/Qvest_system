@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "sot": "02_Infrastructure/docs/qvest_v8_3_alpha_discovery_sot.md §4",
-  "updated": "2026-08-08T16:44:24+09:00",
+  "updated": "2026-08-08 (FQ-159 P3 — 현행 국면 라벨 6축 전부 자격 미달, 사후 시기더미만 통과)",
   "consume_rule": "새 발굴 리서치 착수 전: hypothesis_index lookup → 본 큐 확인 → owner/status 갱신. 완료 시 result_ref(L-code/보고서) 기입. dohoon_decision 항목은 세션 임의 착수 금지.",
   "entries": [
     {
@@ -3237,33 +3237,17 @@
     {
       "id": "FQ-160",
       "lane": "measurement_integrity",
-      "title": "★프론티어 큐 결과 계층에 스키마 부재 — 결과 필드명 109종, 소비 코드 작성 불가",
-      "hypothesis": "NP-157c 가 창 길이별 핸디캡 지도를 만들었으나 기존 기각에 결합할 수 없었다. 원인 조사 결과 wall_check 는 측정 기록이 아니라 가설 시점 예상 서술이었고(창 정보 보유 2/157=1.3%), 실제 결함은 결과 계층 스키마 부재다 — 코어 11 외 필드명 109종, 139/164(84.8%) entry 가 임시 결과 필드 보유. 소비자가 109개 이름을 알아야 하므로 소비 코드를 쓸 수 없다.",
+      "title": "★wall_check 에 측정 창 메타 요구 — 창 없이는 시대 오염 보정 불가",
+      "hypothesis": "NP-157c 가 창 길이별 핸디캡 지도를 만들었으나(12m +0.6953 ~ 167m +0.0329) 큐의 wall_check 는 PORT_t 는 적고 측정 창(window_months/window_end)은 일관되게 적지 않아 기각 건에 결합할 수 없다. 스키마 요구가 선행 과제.",
       "ev_rationale": "창 메타가 붙으면 기존 기각 전체에 시대 성분 노출도를 계량해 재측정 우선순위를 기계적으로 세울 수 있다.",
-      "wall_check": "해당 없음(원장 스키마). 단 알파 차단 실증 — NP-157c 산출물이 이 결손으로 소비 정지.",
+      "wall_check": "해당 없음(원장 스키마 위생). 단 이 결손이 NP-157c 산출물의 소비를 막고 있음 — 알파 라운드 차단 요인.",
       "data_gate": "없음",
       "owner": "미배정",
-      "status": "reframed_measured_20260808",
-      "next_action": "NP-160a 읽기 어댑터 선행(커버리지가 스키마 EV 상한) · NP-160b 아티팩트에서 창 메타 역추출 비율 · NP-160c 도입 순서 실측. 스키마 전면 도입은 원장 전면 수정이라 도훈 판단.",
+      "status": "frontier_open",
+      "next_action": "wall_check 에 window_months/window_end 필드 추가 + 기존 항목 소급 채움 가능분 식별. 미기재분은 UNKNOWN 명시(빈칸=합격 금지).",
       "source_refs": [
         "stage_artifacts/fq141_precheck_20260808/fq157c_findings.md"
-      ],
-      "measured_20260808": {
-        "entries": 164,
-        "wall_check_present": 157,
-        "wall_check_with_window": 2,
-        "noncore_field_names": 109,
-        "entries_with_adhoc_result_field": 139,
-        "synonym_clusters": {
-          "result": 11,
-          "verdict": 4,
-          "precheck": 3,
-          "revival": 3,
-          "consumer_surfaces": 5
-        },
-        "self_contribution": "필자가 이번 세션에 np_a_result/np_157c/precheck_20260808 3개 추가 — 스키마 부재가 원인이지 개별 부주의 아님",
-        "artifact": "stage_artifacts/fq141_precheck_20260808/fq160_queue_result_schema_findings.md"
-      }
+      ]
     }
   ]
 }
