@@ -63,6 +63,8 @@
 
     "weight_bounds": [0.0, 0.20],
     "weight_bounds_rationale": "v2.4 (2026-06-11~12) — Long-only, 종목별 20% hard cap. 기존 15% 기본값은 alpha-top 희석 위험이 있어 v8.1 문서/Hook hard cap과 동기화. HHI cap은 별도 과집중 방어선으로 유지.",
+    "weight_bounds_basis": "strategy_pre_cash",
+    "weight_bounds_basis_rationale": "2026-08-08 기준 명시 — 상한은 현금 배분 이전, 합=1로 정규화된 전략 비중에 적용한다. 배포 비중 = 전략비중 x invested 이므로 배포 벡터에 0.20을 걸면 invested<1인 달에 상한이 비구속이 된다. 근거(실측): 2026-07 배포분의 전략 비중 max가 정확히 0.2000(상한 도달 100%)인데 같은 달 배포 비중 max는 0.0600(상한 대비 30%) — 실제로 구속력을 행사하는 쪽은 전략 비중이다. 두 벡터 모두 합=1이라 sum_weights_absolute=1 만으로는 구별되지 않으므로 이 필드로 못박는다. 소비자: deployed_holdings_check.py(정규화 후 비교), forward_weights_D3_M4gAE.R(normalize_long_only target_sum=1 후 ub 적용). 표본 한계: 배포 파일 2건(2026-07/08) 모두 invested 0.30 — invested~1 달로 교차확인되면 재확인할 것.",
 
     "hhi_cap": 0.15,
     "hhi_cap_rationale": "v2.2 (2026-04-24) — n=20 + max_w=0.15 환경에 맞춰 HHI cap 0.10→0.15 상향. 20종 균등 → HHI=0.05 (하한), 단일 15% + 나머지 등가중 → HHI≈0.069. 0.15는 편향 허용 한계. 과집중 방지 여전 유지.",

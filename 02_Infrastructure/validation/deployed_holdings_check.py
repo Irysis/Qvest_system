@@ -151,8 +151,26 @@ def main() -> int:
     if C["long_only"]:
         n_neg = int((df.Weight < C["w_lo"] - TOL_W).sum())
         chk(n_neg == 0, "OK   long-only (weights >= 0)", f"FAIL 음수 비중 {n_neg}건")
-    n_over = int((eq.Weight > C["w_hi"] + TOL_W).sum())
-    chk(n_over == 0, f"OK   개별 상한 <= {C['w_hi']}", f"FAIL 상한 초과 {n_over}건")
+    # ★2026-08-08 기준 정정: 상한은 **전략 비중(현금 이전, 합=1)** 에 걸린다.
+    #   생성기(forward_weights_D3_M4gAE.R)는 normalize_long_only(..., target_sum=1) 로 합=1 을 만든 뒤
+    #   ub=0.20 을 적용하고, 그 다음에 invested 를 곱해 배포 비중을 만든다.
+    #   구판은 **곱한 뒤** 값을 0.20 과 비교해, invested<1 인 달에는 상한이 사실상 비구속이었다
+    #   (2026-07 실측: 전략 비중 max 0.2000 = 상한 정확히 도달인데, 배포 비중 max 는 0.0600 → 상한 대비 30%.
+    #    검사기는 '실제로 작동 중인 제약'이 아니라 아무것도 자르지 않는 양을 재고 있었다).
+    #   ⇒ invested 로 정규화한 뒤 비교한다. invested≈1 인 달에는 구판과 동일 판정(회귀 없음).
+    invested = float(eq.Weight.sum())
+    if invested <= TOL_W:
+        chk(False, "", f"FAIL invested={invested:.6f} — 전량 현금? 상한 판정 불가(0 나눗셈 방지)")
+        strat_max = float("nan")
+    else:
+        strat_w = eq.Weight / invested
+        strat_max = float(strat_w.max())
+        n_over = int((strat_w > C["w_hi"] + TOL_W).sum())
+        print(f"  최대 전략비중 {strat_max:.6f} (= 배포 {eq.Weight.max():.6f} / invested {invested:.4f})"
+              f" · 상한 도달률 {100*strat_max/C['w_hi']:.0f}%")
+        chk(n_over == 0,
+            f"OK   개별 상한(전략기준) <= {C['w_hi']}",
+            f"FAIL 상한 초과(전략기준) {n_over}건 · max {strat_max:.6f} > {C['w_hi']}")
     chk(abs(df.Weight.sum() - C["sum_w"]) < TOL_SUM,
         f"OK   Sum(w) = {C['sum_w']}",
         f"FAIL Sum(w) = {df.Weight.sum():.10f} (기대 {C['sum_w']})")
