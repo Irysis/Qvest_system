@@ -1,0 +1,130 @@
+{
+  "wt_id": "WT-D20260808_001",
+  "designed_by": "alpha-hypothesis",
+  "model_tier": "fable",
+  "generated_at": "2026-08-08",
+  "fq_ref": "FQ-122",
+  "prechecks": {
+    "hypothesis_index_hits": [
+      "WT-D20260802_021_FQ116_COMPOSITE_MECHANISM (PASS/B — 부모 기전 라운드, 본 WT는 그 NP-2 승계. settled-negative 아님)",
+      "WT-D20260802_020_MAX5_CRASH_INCIDENCE (risk_axis_characterization — MAX5 crash 증분은 vol63+dsd63 통제로 소멸(cor 0.939). 본 설계의 D03 하위분위 필터 축 중복 경고의 근거)",
+      "vol rank 계열 4-hits negative (2026-08-06, FQ-092 계열): standalone slot 소비 양방향 QUARANTINE. 본 가설은 standalone slot 소비가 아니라 비-slot 소비면 — 그 negative 실측이 오히려 본 가설의 전제(slot 전이 실패). 재포장 아님. 단 이 posterior는 효과 크기 prior를 낮추는 방향으로 반영",
+      "동일 소비면(타이브레이커/제외필터 × D03/Q01) settled-negative: 검색 0건"
+    ],
+    "frontier_queue_refs": [
+      "FQ-122: frontier_open, owner 미배정 → 본 WT가 owner 표기 (targeted edit, 재직렬화 없음)",
+      "FQ-121: in-flight (WT-D20260803_004, IS-only 성분 게이트) — 소비면이 달라 중복 아님",
+      "FQ-090: 전이층 손잡이(보유밴드/리밸주기) — optimizer 단계 부수 질문, 본 설계 범위 밖",
+      "FQ-116: measured_20260802_mechanism_identified — 부모"
+    ],
+    "owner": "WT-D20260808_001 (alpha-hypothesis 설계 2026-08-08 → alpha-research 승계 예정)",
+    "in_flight_duplicate": "없음 확인",
+    "premise_provenance": "stage_artifacts/WT_D20260802_021/alpha_validation.json — D03_EWMA IC NW t +3.71 / standalone PORT_t −1.73, Q01_EB IC t +2.21 / PORT_t −0.21, advocate 귀속 Q01 −4.02%/yr · D03 −1.2%/yr, in-out NW t −2.01, D03↔Q01 횡단면 cor 0.036 (WT-009 alpha_validation.json:297-298)"
+  },
+  "candidates": [
+    {
+      "title": "C1 (선택) — 손실-회피 신호의 정보 좌측-국소화 기전 + (b) 하위분위 제외필터 주가설 / (a) 경계 타이브레이커 부가설",
+      "family": "consumption_path / low_vol + quality_stability",
+      "mechanism": {
+        "agent": "복권형 고변동·저품질 종목을 과매수하는 개인투자자 수요 (팩터별 분리: D03=lottery/고변동 수요, Q01=이익 불안정 종목의 성장 서사 과대평가)",
+        "friction": "KR 공매도 제약 — 나쁜 꼬리의 과대가격화를 지울 수 없어 신호(IC)는 잔존하나, 같은 제약이 long-only slot 수확도 차단",
+        "path": "정보가 있는 좌측 꼬리를 제외필터로 직접 소비 / 선별 경계의 동질 종목 서열에 타이브레이커로 주입"
+      },
+      "why_not_selected": null
+    },
+    {
+      "title": "C2 — β-특성 교락 단독설: slot-음성은 정보 국소화가 아니라 순수 β-drag(초저변동 꼬리의 저β × 상승 시장)",
+      "family": "mechanism_alternative",
+      "mechanism": {
+        "agent": "특정 오류 주체 없음 — 벤치 β≈0.92 경쟁에서 저β 종목의 산술적 열위",
+        "friction": "long-only 벤치 상대 채점 구조 자체",
+        "path": "이 설이 맞으면 제외필터도 무효(정보가 없으므로) — F1/F3이 판별"
+      },
+      "why_not_selected": "C1의 판별 대상 대안으로 보관 — 제외필터 한계기여가 0이고 하위 꼬리 열위도 없으면 이 설이 채택된다. 독립 라운드 불요(같은 측정이 판별)"
+    },
+    {
+      "title": "C3 — 통계 인공물설: IC(전분포 순위 상관)와 top-25 꼬리 전이는 애초 다른 통계량 — '반전'이 아니라 무관",
+      "family": "statistical_artifact",
+      "mechanism": {
+        "agent": "해당 없음 (인공물설)",
+        "friction": "해당 없음",
+        "path": "해당 없음 — D03 PORT_t −1.73은 통상 유의 미달, 유해의 실증거는 합성 내 advocate 귀속(in-out NW t −2.01)"
+      },
+      "why_not_selected": "부분 수용해 가설문을 '유해 확정'이 아니라 'slot 수확 실패 + 합성 내 유해'로 정정했다. 완전 배제는 못 하며 (b)의 측정 자체가 판별 실험: 인공물설이면 하위분위 열위·필터 한계기여 둘 다 0"
+    },
+    {
+      "title": "C4 — D03 계열을 위험모델 축으로 재배치 (alpha 소비 아닌 risk 소비)",
+      "family": "risk_axis_reroute",
+      "mechanism": {
+        "agent": "WT-021 consumption_scan_7 risk_model_beta_budget 항 승계",
+        "friction": "—",
+        "path": "Σ/위험예산 입력 — risk-research 소관"
+      },
+      "why_not_selected": "역할 경계 — 본 WT(alpha 소비면) 밖. challenge_flags로 risk-research에 전달"
+    },
+    {
+      "title": "C5 — 타이브레이커 (a)를 주가설로",
+      "family": "consumption_path",
+      "mechanism": {
+        "agent": "C1과 동일",
+        "friction": "C1과 동일",
+        "path": "경계 밴드 내 서열 주입만"
+      },
+      "why_not_selected": "WT-021 실측상 경계 밴드에도 M01 자기 기울기가 실재(rk1_25 월 0.86% vs rk26_50 0.52%) — 타이브레이커는 그 기울기를 덮어쓰는 대가를 치른다. 기전상 D03/Q01 정보는 좌측 꼬리에 있는데 (a)는 중앙부 정보만 소비 → (b)보다 열위 예상. 부가설로 강등"
+    }
+  ],
+  "selected": {
+    "hypothesis_title": "IC 양성·전이 음성 팩터의 슬롯 없는 소비 — 타이브레이커/제외필터 한계기여",
+    "hypothesis_description": "WT-021 확정 전제: D03_EWMA(IC NW t +3.71)·Q01_EB(IC t +2.21)는 전분포 순위 정보가 실재하나 top-25 slot 소비는 수익화에 실패하고(standalone PORT_t −1.73 / −0.21, 통상 유의 미달 — '유해 확정' 아님) 합성 안에서는 유의하게 유해하다(advocate 귀속 Q01 −4.02%/yr·D03 −1.2%/yr, in-out NW t −2.01). 기전 가설: 두 신호는 '무엇을 살까'가 아니라 '무엇을 피할까'에 정보가 국소화된 손실-회피 신호다 — IC는 전분포 통계라 좌측 꼬리(나쁜 종목 판별)의 정보를 집계하지만, top-25 slot은 신호의 극단 우측 꼬리(초저변동·초안정 종목 = 정보 밀도 낮고 저β 채권성)만 사게 해 정보가 없는 구간을 소비한다. 따라서 slot을 주지 않고 정보가 있는 구간을 소비하는 두 경로 — (b) 하위 분위 제외필터(좌측 꼬리 직접 소비), (a) 선별 경계(rank 20~40) 동순위 타이브레이커(중앙부 서열 주입) — 는 단일 최강(M01_PATHQ) 대비 paired 한계기여가 양(+)이다. 팩터별 분리 측정 의무: D03↔Q01 cor 0.036(직교)이라 기전·주체가 다르고, D03 하위분위 필터는 MAX5/단기 vol 축과 중복 가능성(WT-020: MAX5 증분이 vol63 통제로 소멸)이 있어 Q01 필터가 신규성 축이다.",
+    "mechanism": {
+      "agent": "팩터별 분리 — [D03_EWMA] 복권형 고변동 종목을 과매수하는 개인투자자(lottery demand): 고변동 꼬리를 과대가격화해 그 구간의 forward 열위를 만든다. [Q01_EB] 이익 불안정(고분산 z) 종목의 성장 서사를 과대평가하는 투자자 수요: 불안정 꼬리의 forward 열위를 만든다. 두 경우 모두 신호의 예측 정보는 과대가격화된 '하위 꼬리의 열위'에서 나온다",
+      "friction": "KR 공매도 제약(no_short_legal_kr, 고정 축): 과대가격화된 하위 꼬리를 short으로 지울 수 없어 mispricing과 IC가 잔존한다. 동시에 같은 제약 하의 long-only top-25 slot 소비는 신호의 극단 우측 꼬리만 살 수 있는데, 그 구간은 (i) 정보 밀도가 낮고(과대가격화의 여집합일 뿐 자체 저평가 근거 없음) (ii) 초저변동 = 저β 특성이 벤치 β≈0.92 경쟁에서 구조적 drag — 즉 마찰이 '정보 보존'과 'slot 수확 차단'을 동시에 만든다. 이것이 IC 양성·전이 음성의 공존 기전",
+      "path": "(b) 제외필터: 월간 선별 시점에 M01 top-25 후보군에서 D03/Q01 하위 분위(t−1 값, 사전등록 분위점) 종목을 제거 → 과대가격화 종목이 slot을 점유하던 월에 대체 종목의 forward active 우위로 실현. (a) 타이브레이커: M01 선별 경계(rank 20~40) 밴드 내 근접-동순위 종목 간 서열을 D03/Q01로 재정렬 → 밴드 내 M01-동질 종목 간 잔여 정보로 실현. 수익화 시점 = 익월 보유 수익, 형태 = 선별 구성 변화분의 paired forward active"
+    },
+    "pre_specified_predictions": {
+      "direction_b_exclusion": "+ (paired 한계기여 양). 근거: ① 기전 정합 — 정보가 좌측 꼬리에 있고 필터가 그 구간을 직접 소비 ② 동일 소비면 선례 MAX5(랭킹 사망 → 제외필터 ΔIR +0.169·MDD −11.4%pt, 2026-08-02 실측) ③ paired 필터 arm은 base와 겹침이 커 diff sd가 작아 검정력 유리",
+      "direction_a_tiebreaker": "약양(+)~귀무. (a)가 양이 되는 조건을 사전 명시: 밴드 내 D03/Q01 조건부 forward-active 기울기가 밴드 내 M01 잔여 기울기(실측 실재: rk1_25 0.86%/m vs rk26_50 0.52%/m)를 초과할 때만. 초과하지 못하면 타이브레이커는 더 강한 신호를 더 약한 신호로 덮어쓰는 순손실",
+      "ordering": "(b) > (a) — 사전등록 예측으로 고정. (a)/(b) 각각 D03판·Q01판 분리 측정(합산 금지, cor 0.036 직교·기전 상이)",
+      "novelty_ranking": "Q01 제외필터 > D03 제외필터 — D03(EWMA vol 63d) 하위분위 필터는 MAX5/단기 vol 축 재발견일 수 있음(WT-020 흡수 실측). D03판이 양성이면 MAX5 필터 통제 후 잔존 확인이 후속 의무",
+      "magnitude_prior": "검증 안 됨 (가정) — 상한: advocate 귀속 손실(D03 −1.2 / Q01 −4.02%/yr)은 5팩터 합성 맥락의 손실이라 단일-base 필터 회수 상한이 아님. 기계적 상한 공식만 사전 고정: Δ ≤ p_hit × (제외 종목 평균 forward active 열위 − 대체 종목 평균), p_hit = base M01 top-25 중 하위분위 해당 비율. p_hit와 열위는 착수 전 WT-009 패널에서 저비용 실측 가능(사전 확인 의무 — 아래 handoff) — p_hit ≈ 0이면 (b)는 무연산이므로 측정 전 폐기",
+      "no_synthetic_numbers": "본 설계는 성과 수치를 합성하지 않는다. 판정 문턱·paired NW t 기준은 alpha-research가 required_effect_size.R로 검정력 계산 후 사전등록에 고정"
+    },
+    "falsification": {
+      "observable": "기전이 참이면 성과 밖에서 관측되어야 할 것 4건 — (F1) 신호 구조: D03/Q01 자기-분위 조건부 forward-active 곡선이 좌측-국소화 형태(하위 분위 유의 열위 + 최상위 분위 평탄/음). (F2) 주체: D03 하위(고변동) 분위 종목에 개인 순매수 강도가 연속 조건화 회귀에서 유의하게 집중(Q01은 동일 회귀를 별도 실행 — 주체가 다를 수 있음을 사전 인정). (F3) 구조: D03 최상위(초저변동) 분위의 시장 β가 유니버스 중앙값 대비 유의하게 낮음(β-drag 경로). (F4, (a) 전용 사전 킬스위치: 경계 밴드(rank 20~40) 내 D03/Q01 조건부 forward-active 기울기 ≤ 0이면 (a)는 측정 전 기각",
+      "field_dictionary_refs": [
+        "FDB-B2 (rawdata 파생 월간 팩터 — 분위 곡선·β·vol 산출 원천, load_month_factors 경유 C15)",
+        "A6_investor_flow_stock_daily / F2_investor_flow_stock_level (investor_wide 개인 순매수 — F2 시험)",
+        "FDB-B4_registry_investor_flow_monthly (INV01~INV13 — 월간 소비 시 대체 경로)"
+      ],
+      "reject_if": "① F1에서 하위 20% vs 중앙 40~60% forward active 차이가 열위 방향으로 부재(NW t > −1)면 정보 좌측-국소화 기각 → (b)의 기전 전제 붕괴, C2(β-drag 단독설) 채택 방향. ② F2에서 개인 순매수 집중 부재면 주체 무명 — 기전을 '주체 미상 좌측 열위'로 강등 기록(가설 유지하되 economic story 약화를 정직 라벨). ③ F3에서 최상위 분위 β가 중앙값과 무차별이면 β-drag 경로 기각(slot-음성의 설명은 정보 부재 단독으로 좁혀짐). ④ (b) paired 한계기여가 D03판·Q01판 모두 비양성이고 F1도 기각이면 C3(인공물설) 채택 — 'IC 양성 자원의 소비 불가' 확정, risk-research 위험축 재배치 근거로 산출(FQ-122 ev_rationale 승계). ★유의: 좌측 열위 관측(F1)은 return-기반이나 전략 성과가 아닌 신호 구조 관측 — 성과 동어반복 아님. 검정력: 분할 아닌 전표본 횡단면/연속 회귀로만 시험(분할 설계 3/3 검정력 파괴 실측, 2026-08-08)"
+    },
+    "regime_scope": {
+      "holds_in": [
+        "상승 드리프트 국면 (벤치 trailing 수익 양) — 초저변동 꼬리의 β-drag가 최대라 slot-음성이 극대화되고 비-slot 소비의 상대 우위도 최대",
+        "개인 투기활동 高 국면 (개인 거래비중·회전율 高) — lottery 과대가격화가 강해 하위 꼬리 열위(제외필터의 소재)가 짙어짐"
+      ],
+      "weakens_or_reverses_in": [
+        "위기/급락 국면 — 초저변동 꼬리의 저β가 방어로 부호 역전되어 D03의 slot-전이 자체가 양전 가능(WT-021 부활신호 '저변동 프리미엄 국면 전환'과 정합). 이때 제외필터의 상대 우위는 축소되고, 고변동 하위 꼬리 회피 편익은 오히려 강할 수 있어 순효과 부호 불확실 — 상호작용 항 부호만 관측 대상"
+      ],
+      "boundary_rationale": "경계는 기전의 두 구성요소에서 연역된다: β-drag 성분은 시장 방향에 종속(저β × 상승장 = 열위, 하락장 = 방어)이고 lottery mispricing 성분은 개인 투기활동 강도에 종속이다. 각각 연속 관측 변수(벤치 trailing 수익률, 개인 거래비중)를 가지므로 검증은 국면 더미 분할이 아니라 paired 월별 Δ를 이 연속변수에 회귀하는 상호작용 항으로만 수행한다. ★분할 설계 금지(mandate): 2026-08-08 하루 3회 검정력 파괴 실증 — 상호작용 검정도 필요 연효과 ~27.71%/yr 수준으로 저검정력이므로 상호작용 결과는 advisory(CI 보고, '효과 없음' 단정 금지)이며 주판정은 전표본 paired 한계기여다"
+    }
+  },
+  "challenge_flags": [
+    "C3 인공물설 부분 수용 — 전제 표현을 'slot 소비 유해'에서 'slot 수확 실패(standalone 비양성, 유의 미달) + 합성 내 유해(advocate t −2.01)'로 정정. (b) 측정 자체가 기전설 vs 인공물설의 판별 실험",
+    "D03 하위분위 필터 = MAX5/단기 vol 축 중복 위험 (WT-020: MAX5 crash 증분 vol63 통제로 소멸, cor 0.939) — D03판 (b) 양성 시 MAX5 필터 대비 이중 통제 arm 없이는 '신규 재료' 주장 금지. Q01판이 신규성 축",
+    "vol rank 계열 standalone 양방향 QUARANTINE(08-06) posterior — 효과 크기 기대를 낮추는 방향으로 반영했음. 본 설계는 비-slot 소비면이라 재포장 아님(전제 자체가 그 negative 실측)",
+    "D03과 Q01을 한 기전으로 묶지 말 것 — cor 0.036 직교, 주체 상이 가능. 측정·falsification 전부 팩터별 분리",
+    "C4 (D03 계열 위험축 재배치)는 risk-research 소비면으로 전달 — WT-021 consumption_scan_7 승계",
+    "타이브레이커 (a)는 M01 밴드-내 자기 기울기를 덮어쓰는 대가가 있어 순손실 가능 — F4 사전 킬스위치 통과 후에만 측정"
+  ],
+  "verdict": "designed",
+  "handoff": {
+    "to": "alpha-research",
+    "next_steps": "Step 1~7 + ⑤ AST 구성. 승계 의무(재작성 금지): mechanism / falsification / regime_scope. 착수 전 사전 확인 3건(저비용, WT-009 패널 재사용): ① p_hit(base M01 top-25 중 D03/Q01 하위분위 점유율) — ≈0이면 (b) 측정 전 폐기 ② 경계 밴드 내 D03/Q01 조건부 기울기(F4) — ≤0이면 (a) 측정 전 기각 ③ required_effect_size.R로 paired diff sd 실측 후 검정력 확인해 사전등록 고정(INCONCLUSIVE_UNDERPOWERED 사전 차단). 측정은 canonical_screen_bt paired arm(팩터별 × 소비면별 분리), IS-only 선택, 국면은 상호작용 회귀만(분할 금지). D03판 양성 시 MAX5 필터 통제 arm 추가. 부수: FQ-090(보유밴드/리밸주기)은 optimizer 단계 소관으로 전달만",
+    "premise_files": [
+      "stage_artifacts/WT_D20260802_021/alpha_validation.json",
+      "stage_artifacts/WT_D20260802_009/{base,tuned}_panel.parquet (D03_EWMA·Q01_EB 정의: run_wt009_tuned.R)",
+      "qepm/mailbox/worktask/WT-D20260808_001/challenge_note_hypothesis.md"
+    ]
+  }
+}
