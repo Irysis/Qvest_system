@@ -27,6 +27,10 @@ agg <- rbindlist(lapply(seq_len(nrow(E)), function(i) {
   dd <- E$decision_date[i]
   f <- tryCatch(load_month_factors(dd, factor_names = FACTORS), error = function(e) NULL)
   if (is.null(f) || !nrow(f)) return(NULL)
+  f <- as.data.table(f)
+  # 커넥터/정렬기가 컬럼명을 바꿔 돌려주는 경우 방어 (Z_Score_Aligned 만 남는 vintage 존재)
+  if (!("Z_Score" %in% names(f)) && "Z_Score_Aligned" %in% names(f)) setnames(f, "Z_Score_Aligned", "Z_Score")
+  if (!("Z_Score" %in% names(f))) return(NULL)
   if ("Coverage" %in% names(f)) f <- f[Coverage == TRUE]
   f <- f[is.finite(Z_Score)]
   if (!nrow(f)) return(NULL)
