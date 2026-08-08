@@ -111,22 +111,40 @@ options(scipen = 999)
                     .(AvgTV_30d_won = mean(TradingAmt, na.rm = TRUE)),
                     by = Ticker]
   liquid <- liq_window[AvgTV_30d_won >= LIQ_THRESHOLD, Ticker]
-  panel_liq <- panel_t[Ticker %in% liquid]
-  cat(sprintf("[Layer A] after liquidity (>=2e8): %d tickers\n", nrow(panel_liq)))
 
-  # ─── Top N by score_eff ──
-  setorder(panel_liq, -score_eff)
-  picks <- panel_liq[seq_len(min(N_target, nrow(panel_liq)))]
+  # ─── Top N by score_eff → 유동성 교집합 (★2026-08-08 정본 순서로 교정) ──
+  # 구판은 유동성 필터를 먼저 걸고 top-N 을 뽑았다(run_all.R 정본과 역순).
+  setorder(panel_t, -score_eff)
+  .n_el <- nrow(panel_t); .n_tg <- min(N_target, .n_el)
+  if (.n_tg < 15L && .n_el >= 15L) .n_tg <- 15L
+  picks <- panel_t[seq_len(.n_tg)]
+  .tk <- intersect(picks$Ticker, liquid); if (length(.tk) < 5L) .tk <- picks$Ticker
+  picks <- picks[Ticker %in% .tk]
   alpha_t_liq <- setNames(picks$score_eff, picks$Ticker)
-  cat(sprintf("[Layer A] picks: %d (top by score_eff)\n", length(alpha_t_liq)))
+  cat(sprintf("[Layer A] picks: %d (top-N by score_eff → liq 교집합)\n", length(alpha_t_liq)))
 
-  # ─── Layer B: Iter31 weighting (cash overlay deprecated) ──
-  w_risk_base <- .linear_tilt_to_penalty_qd_v2(
-    alpha_t_liq, lambda = LAMBDA, w_prev = NULL,
-    phi = TOPHI, lb = 0, ub = UB)
+  # ─── Layer B: 가중 = admit 정본 (★2026-08-08 도훈 승인 '정본으로 정렬해', chip task_fea61227) ──
+  # 구판 `.linear_tilt_to_penalty_qd_v2` 는 z-선형 tilt + 탈락질량 재주입 없음 + w_prev=NULL 하드코딩
+  # (= φ 를 넘겨도 블렌드 미실행) + CRISIS ub 분기 없음 → 북 기록 체계와 갈렸다.
+  # ★정본 함수는 재구현하지 않고 계약 모듈을 source 한다.
+  source(file.path(PROJECT_ROOT, "02_Infrastructure/portfolio/strategy_tilt_weights.R"), local = TRUE)
+  .regime <- panel_t$regime_state[1]
+  .ub_use <- if (identical(.regime, "CRISIS")) min(UB, 0.10) else UB
+  # w_prev 체인: 정본 엔진 산출인 book_carrier 종점에서 이어받는다. 부재 시 fail-closed
+  # (w_prev=NULL 로 조용히 낙하하면 tophi 가 무효화돼 구판과 같은 결함이 된다).
+  .car <- file.path(PROJECT_ROOT, "06_Registry/book_carrier/carrier_STR_1715_on_M4gAE_R05_noLayer4_PG2.parquet")
+  if (!file.exists(.car)) stop("[Layer B] book_carrier 부재 — w_prev 체인 시작점 없음(extract_book_carrier.R 선행)")
+  .cd <- as.data.table(read_parquet(.car)); .cd[, decision_date := as.Date(decision_date)]
+  .cx <- .cd[decision_date == max(decision_date)]
+  .w_prev <- setNames(.cx$weight_strategy, .cx$Ticker)
+  w_risk_base <- normalize_long_only(
+    linear_tilt_to_penalty_qd(alpha_t_liq, lambda = LAMBDA, w_prev = .w_prev,
+                              phi = TOPHI, lb = 0, ub = .ub_use),
+    lb = 0, ub = .ub_use, target_sum = 1)
   names(w_risk_base) <- names(alpha_t_liq)
-  cat(sprintf("[Layer B] Iter31 linear_tilt: sum=%.6f max=%.4f n_active=%d\n",
-              sum(w_risk_base), max(w_risk_base), sum(w_risk_base > 1e-8)))
+  cat(sprintf("[Layer B] 정본 rank-tilt+tophi: regime=%s ub=%.2f sum=%.6f max=%.4f n_active=%d (w_prev=carrier %s)\n",
+              .regime, .ub_use, sum(w_risk_base), max(w_risk_base), sum(w_risk_base > 1e-8),
+              as.character(max(.cd$decision_date))))
 
   # ─── Layer C: M4 outer overlay ──
   m4_path <- file.path(
@@ -236,7 +254,7 @@ options(scipen = 999)
       iter = "Iter5_multi_sleeve_composite",
       lockbox = "released (PG2 live)",
       n_eligible = nrow(panel_t),
-      n_after_liquidity = nrow(panel_liq),
+      n_after_liquidity = length(alpha_t_liq),   ## 선별순서 정본화(2026-08-08)로 panel_liq 소멸 — top-N 후 교집합 결과 수
       n_picked = length(alpha_t_liq)
     ),
     layer_b = list(

@@ -10,8 +10,8 @@
   ],
   "STR_1715_on_M4gAE_R05_noLayer4_PG2": {
     "mirror": "02_Infrastructure/portfolio/forward_weights_D3_M4gAE.R",
-    "sha1": "8af4844b9681bac28c8bb8a91bb22d27b9779e60",
-    "pinned": "2026-08-02",
-    "note": "production 2-4 사본(1c432a77, 2026-07-19 admitted) 대비 변경 2건: ① AS_OF 기본값 2026-07-01 하드코딩 → 당월 1일 동적(도훈 mandate 08-01 하드코딩 제거; 실행기는 항상 PG2_AS_OF 명시라 결정 무영향) ② q20 소스 2-1 정적사본(2026-06 동결) → WT-H rerun 정본(실측 Δq20=-0.0005, 2026-08 zlt 판정 동일 TRUE — 판정 뒤집힘 없음 확인 후 교체, 2-1 슬롯 철거 준비)"
+    "sha1": "36c5eb22471af4c509c56223982b422a99fde228",
+    "pinned": "2026-08-08",
+    "note": "production 2-4 사본(1c432a77, 2026-07-19 admitted) 대비 변경 3건: ① AS_OF 기본값 2026-07-01 하드코딩 → 당월 1일 동적(도훈 mandate 08-01 하드코딩 제거; 실행기는 항상 PG2_AS_OF 명시라 결정 무영향) ② q20 소스 2-1 정적사본(2026-06 동결) → WT-H rerun 정본(실측 Δq20=-0.0005, 2026-08 zlt 판정 동일 TRUE — 판정 뒤집힘 없음 확인 후 교체) ③ ★2026-08-08 가중 규약 정본 정렬(도훈 승인 '정본으로 정렬해', chip task_fea61227): 인라인 z-선형 .tilt → strategy_tilt_weights.R::linear_tilt_to_penalty_qd(rank-tilt λ=1.5 + tophi φ=3 + CRISIS ub 0.10) source, w_prev 체인은 book_carrier 종점에서 이어받아 공백월 replay, 선별순서를 정본(top-N by score_eff → 유동성 교집합)으로 교정. 근거: 구판은 북 기록 체계와 월 24~42% 괴리이고 overlay 결합 MDD 29.02%(제약 위반) vs 정본 23.28%(충족). 수용 검증: 2026-08 산출이 canonical replay 와 max|dw| 1.8e-16 일치(PASS), 구 배포분은 동일 검사기가 24.5% 괴리로 여전히 FAIL(차단 실효 유지). 주의: production 2-4 사본은 미정렬 — promote_to_production() 경유 별도 반영 대기(핀 계약상 실행체는 미러이므로 배포 정합은 확보됨)"
   }
 }

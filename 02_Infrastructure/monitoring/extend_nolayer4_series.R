@@ -128,6 +128,22 @@ if (TRUE) {
     }
     NULL
   }
+  ## ★2026-08-08 β 열 정합 (도훈 승인 "1,2 고치자").
+  ##   결함: manifest 앵커가 ret_net 을 배포 실측으로 덮어써도 beta_R05 열은 패널값 그대로였다.
+  ##   실측 2026-08: ret_net −8.2757%(=invested 0.30 산물)인데 같은 행 beta_R05 열은 0.50 —
+  ##   원장에서 β 를 읽는 소비자는 배포되지 않은 값을 얻는다.
+  ##   ★2차 피해(더 중요): 아래 prev_inv 가 `beta_R05 × m4` 로 직전월 노출을 잡는다.
+  ##   열이 stale 이면 **다음 달 회전비용 |Δinvested| 가 틀린 기준으로 계산**된다.
+  ##   수리: 실제 적용 노출을 invested_eff 로 명시 보존하고, beta_R05 는 실효값으로 정정,
+  ##        패널 원값은 beta_R05_panel 로 남겨 감사 가능하게 한다(진단 손실 없음).
+  p[, beta_R05_panel := beta_R05]
+  p[, invested_eff := beta_R05 * m4]
+  ## z 결측으로 β 가 무뎌졌는지 — 상류(run_layer5)가 n_R05_valid 를 전달. 구 패널 폴백 = R05_z_avg NaN.
+  .blunted <- function(i) {
+    if ("n_R05_valid" %in% names(p) && is.finite(p$n_R05_valid[i])) return(p$n_R05_valid[i] == 0L)
+    if ("R05_z_avg" %in% names(p)) return(!is.finite(p$R05_z_avg[i]))
+    NA
+  }
   new_m <- which(p$ret_net_source == "panel_recompute")   # rds 앵커 밖 = 신규월 (2b 라벨)
   if (length(new_m)) {
     prev_inv <- NA_real_
@@ -136,27 +152,46 @@ if (TRUE) {
       dep_ym <- format(as.Date(p$anchor_date[i]) - 15L, "%Y-%m")
       mf <- .find_manifest(dep_ym)
       if (is.null(mf)) {
+        ## ★fail-closed (2026-08-08): 앵커가 없으면 재계산치가 그대로 기록된다.
+        ##   그 재계산치가 z 결측으로 무뎌진 β 산물이면 **틀린 값이 조용히 원장에 들어간다**.
+        ##   실측 규모: 2026-08 기준 재계산 −13.7429% vs 배포 실측 −8.2757% = 5.47%pt.
+        ##   무뎌지지 않은 달의 앵커 부재는 정상 진행(재계산이 유효) — 조건을 좁혀 오탐을 막는다.
+        bl <- .blunted(i)
+        if (isTRUE(bl) && !identical(Sys.getenv("QVEST_ALLOW_BLUNT_ANCHOR", "0"), "1")) {
+          stop(sprintf(paste0("[2c][fail-closed] 신규월 %s: 배포 manifest 부재(수익월 %s) ∧ β 가 z 결측으로 무뎌짐.\n",
+                              "  이 상태로 진행하면 재계산치 %.4f 가 배포 실측 대신 원장에 기록된다.\n",
+                              "  수리: ① 해당 월 배포 manifest 확보 또는 ② R05 z 소스 연장/live 통일.\n",
+                              "  의도적 진행: QVEST_ALLOW_BLUNT_ANCHOR=1 (그 경우 원장에 무뎌진 값이 남는다)."),
+                      p$realized_ym[i], dep_ym, p$ret_noLayer4[i]))
+        }
         cat(sprintf(paste0("[2c][WARN] ★신규월 %s: 수익월 %s 배포 manifest 부재 — 재계산치 유지 (%.4f).\n",
-                           "          재계산은 z 결손/산식 차이로 무뎌질 수 있음 — 배포 실측과 대조 필요.\n"),
-                    p$realized_ym[i], dep_ym, p$ret_noLayer4[i]))
-        prev_inv <- p$beta_R05[i] * p$m4[i]
+                           "          β 무뎌짐 판정 = %s. 배포 실측과 대조 필요.\n"),
+                    p$realized_ym[i], dep_ym, p$ret_noLayer4[i],
+                    if (is.na(bl)) "판정불가(신호 부재)" else if (bl) "무뎌짐(우회 승인됨)" else "정상"))
+        prev_inv <- p$invested_eff[i]
         next
       }
       mj  <- jsonlite::fromJSON(mf)
       inv <- as.numeric(mj[["invested"]])
       if (!is.finite(inv) || inv < 0 || inv > 1)
         stop(sprintf("[2c] manifest invested 값 이상(%s): %s", as.character(inv), mf))
-      ## 직전월 노출: 직전 신규월의 앵커 invested, 없으면(첫 신규월) 직전 행의 β×m4 근사
+      ## 직전월 노출: 직전 신규월의 앵커 invested, 없으면(첫 신규월) 직전 행의 실효 노출
+      ## ★invested_eff 사용 — 직전 행이 앵커월이면 그 행의 beta_R05 도 이미 실효값으로 정정돼 있다.
       if (!is.finite(prev_inv)) {
         j <- i - 1L
-        prev_inv <- if (j >= 1L) p$beta_R05[j] * p$m4[j] else inv
+        prev_inv <- if (j >= 1L) p$invested_eff[j] else inv
       }
       ret_a <- inv * p$ret_orig[i] - abs(inv - prev_inv) * COST
-      cat(sprintf("[2c] 신규월 %s ← manifest %s: invested=%.4f · ret %.4f→%.4f (재계산 대비 %+.2f%%p)\n",
+      ## β 열 정정: invested = β × m4 규약을 유지하도록 실효 β 를 역산(m4=0 이면 역산 불가 → 패널값 보존).
+      b_eff <- if (is.finite(p$m4[i]) && abs(p$m4[i]) > 1e-12) inv / p$m4[i] else NA_real_
+      cat(sprintf("[2c] 신규월 %s ← manifest %s: invested=%.4f · ret %.4f→%.4f (재계산 대비 %+.2f%%p) · β %.4f→%s\n",
                   p$realized_ym[i], basename(mf), inv, p$ret_noLayer4[i], ret_a,
-                  100 * (ret_a - p$ret_noLayer4[i])))
+                  100 * (ret_a - p$ret_noLayer4[i]), p$beta_R05[i],
+                  if (is.finite(b_eff)) sprintf("%.4f", b_eff) else "유지(m4=0)"))
       p[i, `:=`(ret_noLayer4 = ret_a,
-                ret_net_source = sprintf("manifest_anchor(%s)", basename(mf)))]
+                ret_net_source = sprintf("manifest_anchor(%s)", basename(mf)),
+                invested_eff = inv,
+                beta_R05 = if (is.finite(b_eff)) b_eff else beta_R05)]
       prev_inv <- inv
     }
   } else cat("[2c] 신규월 없음 — manifest 앵커 대상 없음\n")
@@ -184,7 +219,11 @@ out <- p[, .(
   return_ym,                           # 진짜 수익 달력월 (외부조인용)
   regime,
   ret_net     = ret_noLayer4,          # monitor가 'ret_net' 컬럼을 읽음 (slot 2-3 shape)
-  ret_orig, beta_R05, m4, dR05,
+  ret_orig,
+  beta_R05,                            # ★실효 β (앵커월은 배포 invested 기준으로 정정됨)
+  m4, dR05,
+  invested_eff,                        # ★실제 적용 노출 = 앵커월 manifest invested / 그 외 β×m4
+  beta_R05_panel,                      # ★패널 원값 (동결 z 기반) — 감사용, 실효값과 다를 수 있음
   ret_recompute_panel, ret_net_source  # 2b 앵커 진단 (rds_anchor vs panel_recompute)
 )]
 setorder(out, realized_ym)

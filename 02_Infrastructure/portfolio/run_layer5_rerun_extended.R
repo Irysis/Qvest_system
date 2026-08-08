@@ -174,8 +174,58 @@ cat("\n[3] Compute R05 portfolio-level signal (Top20 by score_eff)\n")
 
 asp <- as.data.table(read_parquet(
   file.path(BASE_DIR, "stage_artifacts/WT_D20260425_010/alpha_scores.parquet")))
-r05_dt <- as.data.table(read_parquet(
-  file.path(BASE_DIR, "stage_artifacts/WT_D20260512_003/alpha_scores_new.parquet")))
+## ★2026-08-08 z 원천 통일 = live (도훈 승인 "live 통일"). 구 동결 패널은 A/B 용으로만 남긴다.
+##   근거(run_10_live_z_series.R 실측):
+##     ① 동결 패널은 2026-06-01 종점 → 2026-07/08 신호일 z 전결측(β 가 무발화 0.50 으로 무뎌짐).
+##        live 는 272/272 전 신호일 커버(결측 0), 해당 2개월 β=0.30 으로 **배포 실측과 일치**.
+##     ② ★구조 결함 동시 해소: 배포 생성기(forward_weights_D3_M4gAE.R:115-116)는 z 를 live 로
+##        계산하면서 **문턱 q20 은 이 패널의 R05_z_avg 역사**에서 읽는다. 두 계열 분포가 달라
+##        (q20 동결 +0.18 vs live −0.35) 지금은 **어긋난 자로 재는 상태**다. 이 패널이 live 가 되면
+##        배포 문턱도 자동으로 같은 기준이 된다.
+##   산식은 배포 레인과 동일하게 맞춘다: factor_db_{sig_date-1일의 월} · Coverage==TRUE & !is.na(Z_Score)
+##     · align_factor_direction(sig_date=해당 신호일, min_ic_months=12L)  ← 배포와 동일 인자
+##   ★재정렬 금지: raw parquet 직접 읽기이므로 align 1회가 정본(load_month_factors 경유 아님).
+##   되돌리기: QVEST_R05_Z_SOURCE=frozen (A/B·감사용)
+.R05_Z_SOURCE <- Sys.getenv("QVEST_R05_Z_SOURCE", "live")
+if (identical(.R05_Z_SOURCE, "frozen")) {
+  cat("  [R05 z] source=frozen (동결 패널 WT_D20260512_003) — A/B 모드\n")
+  r05_dt <- as.data.table(read_parquet(
+    file.path(BASE_DIR, "stage_artifacts/WT_D20260512_003/alpha_scores_new.parquet")))
+} else {
+  cat("  [R05 z] source=live (factor_db, 배포 레인과 동일 산식)\n")
+  ## connector 는 이 스크립트가 종전에 쓰지 않던 의존이다 — 명시 로드(없으면 여기서 즉시 실패).
+  if (!exists("align_factor_direction") || !exists(".load_registry"))
+    source(file.path(BASE_DIR, "02_Infrastructure/factor_db/factor_db_connector.R"))
+  stopifnot(exists("align_factor_direction"), exists(".load_registry"))
+  .reg <- .load_registry()
+  .sigs <- sort(unique(asp$Date))
+  .lz <- rbindlist(lapply(.sigs, function(sig) {
+    ym <- format(as.Date(sig) - 1L, "%Y%m")
+    fp <- file.path(BASE_DIR, sprintf(".cache/factor_db/factor_db_%s.parquet", ym))
+    if (!file.exists(fp)) fp <- file.path(BASE_DIR,
+      sprintf(".cache/factor_db/factor_db_%s.parquet", format(as.Date(sig), "%Y%m")))
+    if (!file.exists(fp)) return(NULL)
+    f <- tryCatch(as.data.table(read_parquet(fp,
+           col_select = c("Ticker","Factor_Name","Z_Score","Coverage"))), error = function(e) NULL)
+    if (is.null(f)) return(NULL)
+    r <- f[Factor_Name == "R05_Tail_Risk" & Coverage == TRUE & !is.na(Z_Score), .(Ticker, Factor_Name, Z_Score)]
+    if (!nrow(r)) return(NULL)
+    r[, sig_date := as.Date(sig)]
+    ra <- tryCatch(align_factor_direction(r, .reg, sig_date = as.Date(sig), min_ic_months = 12L),
+                   error = function(e) NULL)
+    if (is.null(ra)) return(NULL)
+    if ("Z_Score_Aligned" %in% names(ra)) ra[, Z_Score := Z_Score_Aligned]
+    data.table(Date = as.Date(sig), Ticker = ra$Ticker, R05_Tail_Risk_Z = ra$Z_Score)
+  }), fill = TRUE)
+  ## fail-closed: live 통일인데 커버리지가 비면 조용히 무뎌진 β 로 진행하지 않는다
+  .cov <- if (nrow(.lz)) length(unique(.lz$Date)) else 0L
+  cat(sprintf("  [R05 z] live 커버 신호일 %d/%d\n", .cov, length(.sigs)))
+  if (.cov < length(.sigs))
+    stop(sprintf(paste0("[fail-closed] live z 커버리지 결손 %d/%d 신호일 — factor_db 확인 필요.\n",
+                        "  A/B 로 구판을 쓰려면 QVEST_R05_Z_SOURCE=frozen"),
+                 length(.sigs) - .cov, length(.sigs)))
+  r05_dt <- .lz
+}
 
 # Merge R05_Z onto admit lineage
 m <- merge(asp[, .(Date, Ticker, score_eff, regime_state)],
@@ -197,11 +247,24 @@ p_r05 <- top20[, .(R05_z_avg_top20 = mean(R05_Tail_Risk_Z, na.rm = TRUE),
                 by = Date]
 setorder(p_r05, Date)
 .na_z <- p_r05[n_R05_valid == 0L]
-if (nrow(.na_z))
-  cat(sprintf(paste0("  [WARN] ★R05 z 전결측 신호일 %d건: %s\n",
-                     "         → 해당 월 zlt 판정 불능 — β 가 무-발화 가지로 무뎌짐 (배포 manifest 와 대조 필요).\n",
-                     "         원인 후보: R05 z 소스(WT_D20260512_003, 동결) 미연장.\n"),
-              nrow(.na_z), paste(tail(as.character(.na_z$Date), 4), collapse = ", ")))
+if (nrow(.na_z)) {
+  cat(sprintf(paste0("  [ERR] ★R05 z 전결측 신호일 %d건: %s\n",
+                     "        → 해당 월 zlt 판정 불능 — β 가 무-발화 가지로 무뎌진다.\n",
+                     "        원인: R05 z 소스(WT_D20260512_003, 동결) 미연장.\n"),
+              nrow(.na_z), paste(tail(as.character(.na_z$Date), 6), collapse = ", ")))
+  ## ★2026-08-08 (2차 정정): 여기서 stop() 하지 않는다 — 차단 지점을 실제 위험 지점으로 옮겼다.
+  ##   경위: 같은 날 1차로 여기에 fail-closed 를 넣었으나, 원장 실측(run_08_manifest_anchor_verify.R)
+  ##   결과 **z 결측만으로는 기록이 오염되지 않음**이 확정됐다 —
+  ##   extend_nolayer4_series.R 2c 의 manifest 앵커가 신규월 ret_net 을 배포 실측(invested)으로
+  ##   덮어쓰기 때문. 2026-08 실측: 원장 ret_net 이 manifest 산식을 오차 1.4e-17 로 재현,
+  ##   동결 β=0.50 산식과는 5.47%pt 불일치 → 기록은 배포값(정상), 무뎌진 β 는 채택되지 않았다.
+  ##   ⇒ 여기서 멈추면 **정상 동작하는 기록 레인을 잠재 결함 때문에 세우는 것**이 된다.
+  ##   진짜 위험 = manifest 가 없어 panel_recompute 로 폴백하는데 그 값이 무뎌진 β 산물일 때.
+  ##   그 조건은 하류만 알 수 있으므로 차단은 extend_nolayer4_series.R 2c 에 둔다(n_R05_valid 전달).
+  cat(sprintf(paste0("  [WARN] 이 결측 자체는 차단하지 않는다(기록은 manifest 앵커가 보호).\n",
+                     "         차단은 하류 2c 에서 '앵커 부재 ∧ 무뎌진 β' 일 때만 발화한다.\n",
+                     "         근본 수리는 여전히 필요: z 소스 연장 또는 배포와 동일한 live 경로로 통일.\n")))
+}
 p_r05[, realized_ym := format(Date + months(1), "%Y-%m")]
 
 cat(sprintf("  R05_z_avg portfolio summary:\n"))
@@ -296,8 +359,12 @@ cat("\n[5] Merge β_R05 to panel with t-1 lag\n")
 
 # β_R05 decided at sig_date Date_t-1 → applied to month realized_ym = Date_t-1 + 1m
 # Our p_r05 already has realized_ym = sig_date + 1m, so it directly maps to panel.realized_ym
+## ★2026-08-08: n_R05_valid 를 패널로 전달한다. 하류(extend_nolayer4_series.R 2c)가
+##   "이 달 β 가 z 결측으로 무뎌진 값인가"를 판정해야 하는데, 종전엔 그 사실이 전달되지
+##   않아 R05_z_avg 의 NaN 여부로 *추론*할 수밖에 없었다(암묵 신호). 명시 전달로 바꾼다.
 beta_merge <- p_r05[, .(realized_ym, regime,
                           R05_z_avg = R05_z_avg_top20,
+                          n_R05_valid,
                           R05_q20_past, R05_q50_past,
                           beta_R05_V1, beta_R05_V2, beta_R05_V3,
                           beta_R05_V4, beta_R05_V5)]
@@ -573,7 +640,7 @@ ret_dt <- panel_267m_full[, .(anchor_date, realized_ym, regime,
                                 beta_R05_V4, beta_R05_V5,
                                 db_thr, db_R05_V1, db_R05_V2, db_R05_V3,
                                 db_R05_V4, db_R05_V5,
-                                R05_z_avg, R05_q20_past, R05_q50_past)]
+                                R05_z_avg, n_R05_valid, R05_q20_past, R05_q50_past)]
 # ── panel 월-라벨 정렬 결함 방지 (2026-07-02 도훈 mandate): return_ym=진짜 수익월 + β-가드 ──
 source(file.path(Sys.getenv("QM_ROOT", getwd()), "02_Infrastructure/contracts/panel_alignment_guard.R"))
 ret_dt <- add_return_ym(ret_dt)      # realized_ym / return_ym(=realized_ym-1) 동시 보유

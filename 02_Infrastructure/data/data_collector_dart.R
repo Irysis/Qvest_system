@@ -492,6 +492,82 @@ dart_parse_financials <- function(raw_dt = NULL) {
     Dividends     = c("배당금지급", "배당금 지급", "배당금")
   )
 
+  # 표준계정코드(account_id) 폴백 맵 — 2026-08-08 신설
+  #
+  # 왜 필요한가: 위 account_map 은 `account_nm %in% patterns` 즉 **한글 계정명 완전일치**로만
+  # 인식한다. 그런데 DART 응답의 account_nm 은 기업마다 표기가 다르다 —
+  # "법인세비용" vs "법인세비용(수익)", "배당금지급" vs "배당금의 지급",
+  # "이익잉여금" vs "이익잉여금(결손금)" vs "연결이익잉여금".
+  # 목록에 없는 표기는 조용히 탈락했고(FY2023 유니버스 실측: 법인세비용 25.7% ·
+  # 이익잉여금 35.6% · 투자/재무활동현금흐름 61.0%), 그 빈자리는 `.pit_fund()` 의
+  # 무제한 carry-forward 때문에 FY2014 QuantiWise 값으로 메워져 커버리지 지표엔 보이지 않았다.
+  #
+  # 응답에는 account_nm 과 함께 `account_id`(IFRS/DART 표준 태그)가 오며 이는 표기 변형에 불변이다.
+  # 아래 맵은 유니버스 층화표본 77개 기업 FY2023 원본 응답에서 **증거로 도출**했다(추정 아님).
+  #
+  # 적용 규칙 (중요): **이름 매칭 우선 → 미매칭 (Ticker, bsns_year) 에만 태그 폴백.**
+  # 기존에 잡히던 값은 절대 바뀌지 않는다 — 과거 측정·판정과의 비교 가능성을 보존하기 위함.
+  # 벡터 순서 = 우선순위(앞 태그가 값을 주면 뒤는 보지 않음).
+  #
+  # 검증 (77개 기업 표본): 이름-태그 동시 존재 셀 일치율 0.9924(1689/1702) ·
+  # 자산총계 = 부채총계 + 자본총계 77/77 · 매출총이익 = 매출액 − 매출원가 59/59 ·
+  # 위반 주입 5종 PASS. 평균 커버리지 0.715 → 0.868, 389 셀 회수.
+  #
+  # 의도적 제외 2건:
+  #  - LongTermBorr: 이름 매칭이 "사채"까지 포함해 태그(차입금)와 개념이 어긋난다
+  #    (동시존재 일치율 0.767). 개념 정리 전까지 태그 폴백 없음.
+  #  - Dividends 의 자본변동표(SCE) 태그: 현금흐름표는 유출을 음수로, SCE 는 양수로 쓴다.
+  #    부호가 섞이므로 CF 태그만 사용한다(기존 이름 매칭의 SCE 혼입은 별개 선결 과제).
+  account_id_map <- list(
+    Revenue          = c("ifrs-full_Revenue"),
+    COGS             = c("ifrs-full_CostOfSales"),
+    GrossProfit      = c("ifrs-full_GrossProfit"),
+    SGAExpense       = c("dart_TotalSellingGeneralAdministrativeExpenses",
+                          "ifrs-full_SellingGeneralAndAdministrativeExpense"),
+    OperatingProfit  = c("dart_OperatingIncomeLoss",
+                          "ifrs-full_ProfitLossFromOperatingActivities"),
+    PretaxIncome     = c("ifrs-full_ProfitLossBeforeTax"),
+    TaxExpense       = c("ifrs-full_IncomeTaxExpenseContinuingOperations"),
+    NetIncome        = c("ifrs-full_ProfitLoss"),
+    InterestExp      = c("ifrs-full_FinanceCosts", "ifrs-full_InterestExpense",
+                          "dart_InterestExpenseFinanceExpense"),
+    InterestIncome   = c("ifrs-full_FinanceIncome", "ifrs-full_RevenueFromInterest",
+                          "dart_InterestIncomeFinanceIncome"),
+    RandD            = c("ifrs-full_ResearchAndDevelopmentExpense"),
+    TotalAssets      = c("ifrs-full_Assets"),
+    CurrentAssets    = c("ifrs-full_CurrentAssets"),
+    NonCurrentAssets = c("ifrs-full_NoncurrentAssets"),
+    CashAndEquiv     = c("ifrs-full_CashAndCashEquivalents"),
+    Inventory        = c("ifrs-full_Inventories", "ifrs-full_InventoriesTotal"),
+    AccountsRecv     = c("ifrs-full_TradeAndOtherCurrentReceivables",
+                          "dart_ShortTermTradeReceivable",
+                          "ifrs-full_CurrentTradeReceivables"),
+    TangibleAssets   = c("ifrs-full_PropertyPlantAndEquipment"),
+    IntangibleAssets = c("ifrs-full_IntangibleAssetsOtherThanGoodwill"),
+    TotalLiab        = c("ifrs-full_Liabilities"),
+    CurrentLiab      = c("ifrs-full_CurrentLiabilities"),
+    NonCurrentLiab   = c("ifrs-full_NoncurrentLiabilities"),
+    ShortTermBorr    = c("ifrs-full_ShorttermBorrowings"),
+    AccountsPay      = c("ifrs-full_TradeAndOtherCurrentPayables",
+                          "dart_ShortTermTradePayables",
+                          "ifrs-full_TradeAndOtherCurrentPayablesToTradeSuppliers"),
+    TotalEquity      = c("ifrs-full_Equity"),
+    CapitalStock     = c("ifrs-full_IssuedCapital"),
+    RetainedEarnings = c("ifrs-full_RetainedEarnings"),
+    OperatingCF      = c("ifrs-full_CashFlowsFromUsedInOperatingActivities"),
+    InvestCF         = c("ifrs-full_CashFlowsFromUsedInInvestingActivities"),
+    FinanceCF        = c("ifrs-full_CashFlowsFromUsedInFinancingActivities"),
+    Dividends        = c("ifrs-full_DividendsPaidClassifiedAsFinancingActivities")
+  )
+
+  # 감가상각비 특례: 기능별 분류 손익계산서 기업은 손익계산서에 감가상각비 줄이 없고
+  # 현금흐름표의 조정항목으로만 나온다. 결합 태그가 있으면 그것을, 없으면 감가상각비와
+  # 무형자산상각비를 **합산**한다(둘은 D&A 의 구성요소이므로 first-wins 로 뽑으면 과소계상).
+  DEPAMORT_ID_COMBINED <- c("ifrs-full_AdjustmentsForDepreciationAndAmortisationExpense",
+                             "ifrs-full_DepreciationAndAmortisationExpense")
+  DEPAMORT_ID_PARTS    <- c("ifrs-full_AdjustmentsForDepreciationExpense",
+                             "ifrs-full_AdjustmentsForAmortisationExpense")
+
   # 계정명을 표준 변수명으로 변환
   raw_dt[, amount_clean := .parse_amount(thstrm_amount)]
 
@@ -521,6 +597,16 @@ dart_parse_financials <- function(raw_dt = NULL) {
   # Wide-format 변환: 각 계정을 컬럼으로
   parsed_list <- list()
 
+  # account_id 는 fnlttSinglAcntAll 응답의 표준 필드이나, 이 필드가 없던 시절의
+  # 캐시를 재파싱할 수 있으므로 존재를 확인하고 없으면 태그 폴백을 건너뛴다
+  # (부재를 정상값으로 내려앉히지 않도록, 건너뛴 사실을 명시적으로 알린다).
+  has_account_id <- "account_id" %in% names(raw_dt)
+  if (!has_account_id) {
+    warning("[dart] account_id column absent — standard-tag fallback SKIPPED. ",
+            "Coverage will be name-match only (pre-2026-08-08 behaviour).")
+  }
+  n_tag_filled <- 0L
+
   for (var_name in names(account_map)) {
     patterns <- account_map[[var_name]]
     valid_sj <- sj_filter[[var_name]]
@@ -529,13 +615,54 @@ dart_parse_financials <- function(raw_dt = NULL) {
       matched_rows <- matched_rows[sj_div %in% valid_sj]
     }
 
-    if (nrow(matched_rows) > 0) {
-      # 동일 기업-연도에 중복 계정 → 첫 번째 사용
-      deduped <- matched_rows[, .(value = amount_clean[1]),
-                                by = .(Ticker, bsns_year)]
+    # 1차: 계정명 매칭 (기존 동작 — 값이 바뀌지 않는다)
+    deduped <- if (nrow(matched_rows) > 0) {
+      matched_rows[, .(value = amount_clean[1]), by = .(Ticker, bsns_year)]
+    } else {
+      data.table(Ticker = character(), bsns_year = integer(), value = numeric())
+    }
+
+    # 2차: 표준계정코드 폴백 — 1차에서 못 잡은 (Ticker, bsns_year) 에만 적용
+    if (has_account_id) {
+      have_keys <- paste(deduped$Ticker, deduped$bsns_year)
+      pool <- raw_dt[!paste(Ticker, bsns_year) %in% have_keys]
+      if (!is.null(valid_sj)) pool <- pool[sj_div %in% valid_sj]
+
+      fills <- list()
+      if (identical(var_name, "DepAmort")) {
+        cb <- pool[account_id %in% DEPAMORT_ID_COMBINED,
+                   .(value = amount_clean[1]), by = .(Ticker, bsns_year)]
+        if (nrow(cb)) fills[[length(fills) + 1L]] <- cb
+        cb_keys <- paste(cb$Ticker, cb$bsns_year)
+        pt <- pool[account_id %in% DEPAMORT_ID_PARTS & sj_div == "CF" &
+                     !paste(Ticker, bsns_year) %in% cb_keys]
+        # 감가상각비 + 무형자산상각비 = D&A (구성요소이므로 합산)
+        if (nrow(pt)) fills[[length(fills) + 1L]] <-
+          pt[, .(value = sum(amount_clean, na.rm = TRUE)), by = .(Ticker, bsns_year)]
+      } else {
+        for (tg in account_id_map[[var_name]]) {
+          if (!nrow(pool)) break
+          hit <- pool[account_id == tg, .(value = amount_clean[1]), by = .(Ticker, bsns_year)]
+          if (nrow(hit)) {
+            fills[[length(fills) + 1L]] <- hit
+            pool <- pool[!paste(Ticker, bsns_year) %in% paste(hit$Ticker, hit$bsns_year)]
+          }
+        }
+      }
+      if (length(fills)) {
+        filled <- rbindlist(fills)
+        n_tag_filled <- n_tag_filled + nrow(filled)
+        deduped <- rbindlist(list(deduped, filled))
+      }
+    }
+
+    if (nrow(deduped) > 0) {
       setnames(deduped, "value", var_name)
       parsed_list[[var_name]] <- deduped
     }
+  }
+  if (has_account_id) {
+    cat(sprintf("[dart] standard-tag fallback filled %d item-company-year cells\n", n_tag_filled))
   }
 
   # Merge all accounts

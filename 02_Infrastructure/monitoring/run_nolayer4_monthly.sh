@@ -44,7 +44,15 @@ if resolve_admitted_slot; then
     PG2_OUT_DIR="$SLOT_DIR/02_holdings_universe" \
     R_DATATABLE_NUM_THREADS=1 OMP_NUM_THREADS=1 ARROW_IO_THREADS=1 \
       "$RSCRIPT" --no-save "$GEN_SCRIPT" >> "$LOG" 2>&1 \
-      || echo "[warn] deployed 생성기($( basename "$GEN_SCRIPT")) 비정상 — Gate C/D 가 최종 검증" | tee -a "$LOG"
+      || echo "[warn] deployed 생성기($( basename "$GEN_SCRIPT")) 비정상 — ★이 경로엔 후속 검증 없음(아래 주석)" | tee -a "$LOG"
+    # ★2026-08-08 주석 정정: 구 문구는 "Gate C/D 가 최종 검증"이라 주장했으나 **거짓**이다.
+    #   Gate C(홀딩 CSV 존재·5행) 와 Gate D(deployed_holdings_check.py — 하드제약·재계산 정합)는
+    #   `02_Infrastructure/ops/run_pg2_rebalance_full.sh` 안에만 있는데, 실제 예약 작업
+    #   `noLayer4_Monthly_PaperTracking` 은 run_nolayer4_monthly.bat → **이 스크립트를 직접** 호출한다
+    #   (Get-ScheduledTask 전수 확인: run_pg2_rebalance_full.sh 를 부르는 등록 없음).
+    #   ⇒ 예약 경로에서 Gate C/D 는 **한 번도 돌지 않는다**. 생성기가 실패하거나 전월 값을 그대로
+    #   재출력해도 아무도 안 잡는다. 배선 결정은 미실행(행동 변경) — 메모리 참조:
+    #   project-gate-cd-not-on-scheduled-path-20260808
   fi
 else
   # fail-closed: 해석 실패 시 구 슬롯으로 조용히 되돌아가지 않는다.
@@ -62,7 +70,12 @@ fi
 "$RSCRIPT" --no-save "$QM_ROOT/02_Infrastructure/portfolio/normalize_terminal_anchor.R" \
   "$QM_ROOT/04_Research/strategies/STR_1715_WT016_Iter31_GridBestProd/output/03_period_returns.csv" \
   >> "$LOG" 2>&1 || { echo "XX [2] 종점 앵커 정규화 실패 — 패널 빌드 중단(중복 라벨 방지)" | tee -a "$LOG"; exit 21; }
-kill_stray; "$RSCRIPT" --no-save "$QM_ROOT/02_Infrastructure/portfolio/run_layer5_rerun_extended.R" >> "$LOG" 2>&1 || echo "[warn] base 패널(run_layer5_rerun_extended) 비정상" | tee -a "$LOG"
+#    ★2026-08-08 fail-closed 전파 (칩 task_972fe292): 구판은 `|| echo "[warn]"` 로 실패를 삼켜
+#      [3](시리즈 확장)·[4](모니터/paper_nav append)가 **stale 패널 위에서 계속 진행**했다.
+#      R 쪽에 fail-closed 를 넣어도 러너가 삼키면 무력하다 — 바로 위 앵커 정규화(exit 21)와 동일하게 중단.
+#      ★[1b] 배포 비중은 이 지점 **이전**에 산출되므로 주문은 정상적으로 나간다(기록만 멈춘다).
+kill_stray; "$RSCRIPT" --no-save "$QM_ROOT/02_Infrastructure/portfolio/run_layer5_rerun_extended.R" >> "$LOG" 2>&1 \
+  || { echo "XX [2] base 패널(run_layer5_rerun_extended) 실패 — 시리즈/모니터 중단(stale 전파 방지). 배포 비중[1b]는 산출 완료." | tee -a "$LOG"; exit 22; }
 
 # 3) ★noLayer4 오버레이-시리즈 확장 (제거된 faith_overlay 자리 = Layer4 없이 β_R05×m4 재계산).
 #    단일 vintage 통째 재계산 → live_track/live_book_series.csv (05_Production 정적코드 미수정).

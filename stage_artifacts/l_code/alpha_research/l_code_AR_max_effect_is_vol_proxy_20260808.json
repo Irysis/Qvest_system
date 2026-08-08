@@ -1,0 +1,42 @@
+{
+  "l_code": "L-AR-20260808_120900",
+  "strategy_id": "AR_max_lottery_captier_fullspec_20260808",
+  "grade": "F",
+  "core_reference": "FQ-130 착수 전 사전 확인 부산물. input: stage_artifacts/tilt_realign_20260808/p25_fq130_precheck.R · p25_fq130_precheck.csv",
+  "lesson_text": "KR 복권형(MAX/lottery) 효과는 **전량 변동성 대리**다 — 독립 재료가 아니다. MAX5(과거 1개월 상위 5개 일간수익 평균) FMB 를 유동성 필터(20일 ADV>=2e8) 후 cap-tier 3분할로 438개월·472,754행 실측: 단순 스펙에서 MID t=-5.42 · SMALL t=-6.21 로 강한 음의 효과(고 MAX = 저수익, 문헌 정합)가 나오나, **월별 횡단면 회귀에 vol·size 통제를 넣으면 MID t=0.14 · SMALL t=0.34 로 완전 소멸**한다. MEGA 는 통제 전후 모두 무신호(0.22 → 1.27). 즉 이 저장소에서 MAX 계열을 '새 재료'로 다루는 것은 변동성 팩터를 이름만 바꿔 재는 것이며, 기존 vol 계열(D01_IdioVol 등)과 중복이다. 부수: FQ-130 이 주장한 'MEGA t +2.76'(축약 스펙 n=10/월)은 full-spec 에서 재현되지 않음 — cap-tier 벽의 예외 후보가 아니다. ★해석 한계 명시: 본 검증의 MEGA tier 는 유동성 유니버스 size 상위 10%(월평균 107종목)로 원 스펙의 '리터럴 상위 10종목'과 다른 집합이다. 좁은 정의라면 n=10/월로 애초에 측정 불가라는 큐 자신의 지적이 유효하므로, 어느 해석에서든 착수 EV 는 낮다. 재중복 방지: MAX/lottery 계열 = VALIDATED_NEGATIVE(vol-통제 후 무신호). 부활 조건 = ①vol 과 직교하도록 구성한 복권형 대리(왜도·IVOL 잔차 등)를 별도 사전등록 ②vol 통제 없는 스펙을 소비하려면 '중복 인지' 명시.",
+  "tags": ["VALIDATED_NEGATIVE", "CROSS_SECTIONAL", "MAX_LOTTERY", "VOL_PROXY", "CAP_TIER", "PRECHECK_NEGATIVE", "DUPLICATE_MATERIAL"],
+  "created_at": "2026-08-08",
+  "research_mode": "alpha_research",
+  "created_by": "emit:alpha_research",
+  "metric_type": "canonical_screen",
+  "construction_type": "cross_sectional_selection",
+  "mechanism_hypothesis": "복권형 수요(lottery demand)로 고 MAX 종목이 과대평가되어 익월 저수익 — 표준 factor-zoo 밖 독립 재료라는 가설. 실측 결과 변동성 통제 후 소멸하여 독립성 기각.",
+  "lcode_schema_version": 2,
+  "screen_verdict": "FAIL",
+  "fmb_mega_simple_t": 0.22,
+  "fmb_mega_controlled_t": 1.27,
+  "fmb_mid_simple_t": -5.42,
+  "fmb_mid_controlled_t": 0.14,
+  "fmb_small_simple_t": -6.21,
+  "fmb_small_controlled_t": 0.34,
+  "panel_rows": 472754,
+  "panel_months": 438,
+  "mega_n_per_month": 107,
+  "controls": ["z_vol", "z_size", "monthly cross-section"],
+  "liquidity_filter": "20d ADV >= 2e8 KRW",
+  "next_probe": "vol-직교 복권형 대리(왜도·IVOL 잔차) 별도 사전등록 시에만 재개. 현 형태 재시도는 저EV(변동성 중복).",
+  "falsification_attempts": [
+    {
+      "test": "vol 통제 투입 전후 계수 대조 (MID/SMALL)",
+      "result": "falsified",
+      "effect_retained": 0,
+      "note": "t -5.42 -> 0.14 / -6.21 -> 0.34 — 효과 전량이 vol 대리"
+    },
+    {
+      "test": "MEGA tier 검정력 확인 (큐의 n=10 우려)",
+      "result": "resolved_but_no_signal",
+      "effect_retained": 0,
+      "note": "월평균 107종목으로 검정력 충분하나 통제 t=1.27 유의 미달"
+    }
+  ]
+}

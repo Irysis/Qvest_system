@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "sot": "02_Infrastructure/docs/qvest_v8_3_alpha_discovery_sot.md §4",
-  "updated": "2026-08-08",
+  "updated": "2026-08-08T12:07:46+0900",
   "consume_rule": "새 발굴 리서치 착수 전: hypothesis_index lookup → 본 큐 확인 → owner/status 갱신. 완료 시 result_ref(L-code/보고서) 기입. dohoon_decision 항목은 세션 임의 착수 금지.",
   "entries": [
     {
@@ -1953,13 +1953,15 @@
       "wall_check": "PIT C5 오버레이 타이밍 엄수 (홀딩월 시작 전 데이터만). OVERLAY_CANDIDATE 라우팅 — standalone 자본 graduation 불가.",
       "data_gate": "없음 — 가격 데이터만",
       "owner": "Q-Lead (AUTORUN 20260802 next_probe)",
-      "status": "frontier_open",
+      "status": "precheck_negative",
       "next_action": "FQ-091 저주파 spectral mass overlay(유사 궤도) 측정 후 병행 검토. 단독 착수 전 FQ-091 결과 확인 권장.",
       "source_refs": [
         "parent: C_VolRankStability_3M QUARANTINE 20260802",
         "related: FQ-091 저주파 스펙트럼 × 국면 overlay",
         "arxiv: 2607.27461 (Three Matrices), 2607.27063 (CSAD herding indicator)"
-      ]
+      ],
+      "precheck_20260808": "★착수 전 사전 확인(269개월 실측, `p23_fq093_precheck.R`) — **전제 반증**. 제안 신호(vol rank 상승속도 = 단면평균 vr_t − vr_lag3)는 오늘 전수 측정한 횡단면 계열과 **겹치지 않는다**(disp_trend 와 Spearman −0.153 — 내 겹침 가설은 틀렸음). 그러나 착지점이 같다: 발화 28개월의 **평균 sleeve 수익 +4.98% vs 미발화 +3.44%**(t=0.99, p=0.327)로 **발화월이 오히려 좋다**. 즉 위기 조기경보가 아니라 **기회 신호**이며, 이걸로 de-risk 하면 손해다(β≤0.5 적용 시 **dSR −0.079**, dMDD 0.00). 동일 계열 대조: 분산속도 dSR −0.133 · disp_trend dSR −0.066. ∴ overlay 축소 트리거로서의 전제는 실측 반증 — 라운드 착수 EV 낮음. ★단 **기회 신호로서는 미검**(P9 의 횡단면 분산 +8.08% 와 같은 부류) — 소비면을 바꾸면 재시험 대상.",
+      "revival_trigger": "① 소비면을 '축소 트리거'에서 '기회/집중도 신호'로 바꾸면 재시험(방향이 반대이므로 별개 라운드) ② 비-return 원천과 결합해 위기 판별력이 생기면 재검 ③ 국면 라벨 자격 관문이 바뀌면 재계산"
     },
     {
       "id": "FQ-094",
@@ -1970,13 +1972,15 @@
       "wall_check": "cap-tier 국소화 벽. autocorr 신호의 low-autocorr = 고변동성 종목 과도표현 위험 → 유동성 필터 엄수.",
       "data_gate": "없음 — 가격 데이터만",
       "owner": "Q-Lead (AUTORUN 20260802 next_probe)",
-      "status": "frontier_open",
+      "status": "precheck_negative",
       "next_action": "alpha-search: T_RetAutoCorr_12M 부호 flip(AutoCorr 낮을수록 high rank) → canonical_screen_bt",
       "source_refs": [
         "parent: T_RetAutoCorr_12M QUARANTINE 20260802 (stage_artifacts/paper_recharge/auto_quarantine_20260802.json)",
         "arxiv: 2607.19497 (Science and Practice of Trend-Following)",
         "prior_failure: STR_AS_20260802_072220_10368 (T_RetAutoCorr_12M, grade F, PORT_t -0.295)"
-      ]
+      ],
+      "precheck_20260808": "★착수 전 사전 확인(426개월·445,720행, 유동성 2e8 필터, `p24_fq094_precheck.R`) — **전제 약함**. ①역방향 rank-IC **mean −0.0025 · t = −0.60 · IC>0 비율 49.1%**(동전) — '정방향 FMB t=2.50* 이므로 역방향도 유의 가능'이라는 전제가 지지되지 않는다(역방향은 단순 부호 반전이 아님). ②익월 수익: autocorr 최저20 +0.41% vs 최고20 +0.38%(t=0.33, p=0.742) — 차이 없음. ③cap-tier 분해: MEGA −0.0052(t −0.65) · MID −0.0052(t −0.97) · SMALL +0.0048(t 1.18) — 어느 tier 에도 유의 신호 없음. ★부수: `wall_check` 가 우려한 'low-autocorr = 고변동성 과다표현'은 **반대 방향으로 반증**(최저20 변동성 0.0341 < 최고20 0.0362, t=−21.87) — 우려 자체가 기각. ∴ 착수 EV 낮음. 정방향의 신호력(FMB t)이 역방향 신호력을 함의하지 않음이 실측 확인.",
+      "revival_trigger": "① autocorr 창(12M)을 바꾸거나 가중/비선형 형태로 재정의하면 재시험 ② 국면 조건부(특정 regime 안에서만)로 좁히면 별개 라운드 ③ 정방향의 FMB 신호력이 어디서 오는지 규명되면 역방향 설계가 달라질 수 있음"
     },
     {
       "id": "FQ-095",
@@ -2519,8 +2523,10 @@
       "wall_check": "cap-tier 국소화는 반복 실측된 벽 — MEGA 예외는 강한 주장이므로 검정력 요건을 엄격히.",
       "data_gate": "없음 (동일 패널)",
       "owner": "미배정",
-      "status": "frontier_open",
-      "registered": "2026-08-03 Q-Lead (WT-D20260803_001 NP-2 파생)"
+      "status": "precheck_negative",
+      "registered": "2026-08-03 Q-Lead (WT-D20260803_001 NP-2 파생)",
+      "precheck_20260808": "★착수 전 사전 확인(438개월·472,754행, 유동성 2e8, `p25_fq130_precheck.R`) — **전제 약함**. MAX5(과거 1개월 상위 5개 일간수익 평균) FMB 를 cap-tier 별로 full-spec(월별 횡단면 회귀 + vol·size 통제)로 재검: **MEGA 단순 t=0.22 → 통제 t=1.27**(유의 미달). MID 단순 t=−5.42 → 통제 t=0.14 · SMALL −6.21 → 0.34 — 즉 MID/SMALL 의 강한 음의 MAX 효과는 **전량 변동성 대리**이고 통제하면 사라진다. MEGA 는 통제 전후 모두 신호 없음. 축약 스펙의 t +2.76 은 재현되지 않음. ★검정력 우려는 **해소**: 내 MEGA tier(유동성 유니버스 size 상위 10%)는 월평균 **107종목**으로 n=10 이 아니다. ⚠단 이는 **tier 정의가 원 스펙과 다르다**는 뜻이기도 하다 — 원 스펙이 '상위 10종목' 리터럴이면 내가 잰 집합과 다르며, 그 경우 n=10/월로는 애초에 측정 불가라는 큐 자신의 지적이 유효하다. ∴ 어느 해석에서든 착수 EV 낮음(넓은 정의=신호 없음 / 좁은 정의=측정 불가).",
+      "revival_trigger": "① MEGA 를 리터럴 상위 10종목으로 정의하고 표본을 늘릴 방법(장기 패널·다국가)이 생기면 재시험 ② MAX5 외 복권형 대리변수(왜도·IVOL 잔차 등)로 바꾸면 별개 라운드 ③ vol 통제를 제거한 스펙을 '통제 없는 버전'으로 명시 소비하려면 그 자체를 사전등록"
     },
     {
       "id": "FQ-108b",
@@ -2685,7 +2691,9 @@
       "owner": "미배정",
       "status": "frontier_open",
       "registered": "2026-08-03 alpha-research (WT-D20260803_008 NP-1)",
-      "precheck_measured": "문턱을 단일값(0)으로 쓰지 말 것 — 이미 스윕 실측이 있다: q0.2 격차 +0.128 / q0.3 +0.144 / q0.4 +0.134 / q0.5 +0.101 / q0.6 +0.012 / q0.7 +0.043. 제로컷은 분포의 34분위. q0.6 붕괴가 실재하므로 사전등록은 **분위 구간(q0.2~0.5)** 을 명시하고 판정은 분포 q05 로(FQ-109 규약)."
+      "precheck_measured": "문턱을 단일값(0)으로 쓰지 말 것 — 이미 스윕 실측이 있다: q0.2 격차 +0.128 / q0.3 +0.144 / q0.4 +0.134 / q0.5 +0.101 / q0.6 +0.012 / q0.7 +0.043. 제로컷은 분포의 34분위. q0.6 붕괴가 실재하므로 사전등록은 **분위 구간(q0.2~0.5)** 을 명시하고 판정은 분포 q05 로(FQ-109 규약).",
+      "mechanism_update_20260808": "★기전 갱신(FQ-139 아크 실측): mechanism.path 의 '기관 후속 매수로 가격 반영'은 **기각**. 계약 신호 상위에서 기관 순매수는 11/11 분할·신호 조합에서 증가하지 않았고(유의 1/11), 대신 **외국인 순매수가 유의 증가**(확장표본 n=7,069, t=3.84, p=0.0001; 10/11 조합). 또한 그 외국인 경로는 **국면 의존을 설명하지 못한다** — 상호작용 −0.00613(p=0.338), 표본 2.1배 확대에도 부호·유의성 불변이며 수급 우위는 오히려 알파가 **약한** mega주도 국면에서 더 크다. 대안으로 검토한 소형주 유동성 사이클은 **전제부터 기각**(소형/대형 유동성비 broad 0.2044 vs mega 0.2026, p=0.880). 잔여 후보: 상대적 소형주 **비유동성**이 알파 강도와 동행(Spearman −0.3449, p=0.0021, 방향은 직관과 반대) — 사전등록 재판정 대상. ∴ 사전등록 라운드는 mechanism 서술을 '외국인 매수(국면 무관) + 국면 의존 기전 미해결'로 갱신한 뒤 착수할 것.",
+      "blocking_precondition": "mechanism 서술 갱신 선행 — 구 서술('기관 후속매수')로 착수 시 기각된 경로를 전제로 심사하게 됨"
     },
     {
       "id": "FQ-139",
@@ -2696,8 +2704,14 @@
       "wall_check": "해당 없음(기전 검증 라운드). 결과가 negative 면 가설 재서술로 환류.",
       "data_gate": "없음 — .cache/investor_stock/investor_wide.parquet + panelx_A.parquet",
       "owner": "미배정",
-      "status": "frontier_open",
-      "registered": "2026-08-03 alpha-research (WT-D20260803_008 NP-2)"
+      "status": "done",
+      "registered": "2026-08-03 alpha-research (WT-D20260803_008 NP-2)",
+      "verdict_20260808": "기전 검증 완료 — mechanism.path('기관 후속매수') **기각**, 경로는 **외국인 단독**으로 재서술. F1 강건성(3분할×4신호): 부호 11/11 일관, 외국인 p<0.05 10/11 vs 기관 1/11. F2/H2 국면 상호작용: −0.00613(p=0.338), 확장표본 7,069건에서도 불변 → 수급은 국면 의존 설명 못함. G2 유동성 사이클: 전제 기각(p=0.880). 부수 발견: 소형/대형 유동성비 ↔ 월별 IC Spearman −0.3449(p=0.0021).",
+      "next_probes_20260808": [
+        "Q1 상대적 비유동성 조건화 사전등록 재판정(문턱·창·유동성 정의 사전 명시, 분포 q05)",
+        "Q2 방향 기전 3후보(정보확산 지연/군집 회피/size 교락) — size 교락 배제 우선",
+        "F3 순매수 정규화 축 강건성(시총·유통주식 기준)"
+      ]
     },
     {
       "id": "FQ-140",

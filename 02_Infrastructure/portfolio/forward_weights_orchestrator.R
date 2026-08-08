@@ -22,8 +22,26 @@ orchestrate_forward_weights <- function(
   send_telegram      = FALSE,
   manifest_root      = NULL
 ) {
-  PROJECT_ROOT <- normalizePath(file.path(
-    dirname(sys.frame(1)$ofile %||% getwd()), "..", ".."))
+  ## ★2026-08-08 루트 해석 수리 (칩 task_29584825).
+  ##   구판: normalizePath(dirname(sys.frame(1)$ofile) + "../..") — daily_refresh.sh 가
+  ##   `cd $INFRA` 후 상대경로로 source 하므로 ofile 이 상대경로가 되고 `../..` 이 **프로젝트 밖**
+  ##   (사용자 홈)으로 나갔다. 결과: 5주 이상 3전략 전부 MISSING_WRAPPER + manifest 가 홈에 적재.
+  ##   실측: manifest_20260701/0715/0801/0808 전부 436바이트 동일(전건 MISSING_WRAPPER).
+  ##   정정: r-portability.md 금칙 ④ — resolver 는 CLAUDE_PROJECT_DIR → QM_ROOT 우선.
+  ##   ★marker 검증까지 한다(경로가 있다고 프로젝트 루트인 건 아니다).
+  PROJECT_ROOT <- local({
+    .marker <- "02_Infrastructure/hooks/qvest_hook_router.py"
+    cands <- c(Sys.getenv("CLAUDE_PROJECT_DIR", ""), Sys.getenv("QM_ROOT", ""),
+               normalizePath(file.path(dirname(sys.frame(1)$ofile %||% getwd()), "..", ".."),
+                             mustWork = FALSE))
+    cands <- cands[nzchar(cands)]
+    hit <- cands[file.exists(file.path(cands, .marker))]
+    if (!length(hit)) stop(sprintf(
+      "[orchestrator] 프로젝트 루트 해석 실패 — 후보 %s 중 marker(%s) 보유 없음. CLAUDE_PROJECT_DIR/QM_ROOT 설정 필요",
+      paste(cands, collapse=" | "), .marker))
+    normalizePath(hit[1])
+  })
+  cat(sprintf("[orchestrator] PROJECT_ROOT = %s\n", PROJECT_ROOT))
 
   results <- list()
 
@@ -96,6 +114,22 @@ orchestrate_forward_weights <- function(
   )
   write_json(combined, manifest_path, pretty = TRUE, auto_unbox = TRUE, null = "null")
   cat(sprintf("\n[orchestrator] manifest: %s\n", manifest_path))
+
+  ## ★2026-08-08 fail-closed 승격 (칩 task_29584825 ②).
+  ##   구판은 전 전략이 MISSING_WRAPPER 여도 **빈 manifest 를 정상 산출로 쓰고 종료**했다 —
+  ##   error 가 아니라 정상 종료라 daily_refresh.sh 의 tryCatch 조차 발화하지 않았고,
+  ##   그래서 5주 이상 아무도 몰랐다("빈 결과 = 합격" 계통).
+  ##   요청 전략이 하나도 산출되지 않으면 **비정상 종료**한다.
+  .st <- vapply(results, function(r) as.character(r$status %||% "OK")[1], character(1))
+  .bad <- .st %in% c("MISSING_WRAPPER", "MISSING_SCRIPT", "STUB")
+  if (length(.st) && all(.bad)) {
+    stop(sprintf(paste0("[fail-closed] 요청 전략 %d개가 전부 미산출(%s) — 빈 manifest 를 정상으로 쓰지 않는다.\n",
+                        "  PROJECT_ROOT=%s\n",
+                        "  확인: 전략 wrapper 경로 존재 여부, CLAUDE_PROJECT_DIR/QM_ROOT 설정."),
+                 length(.st), paste(unique(.st), collapse=","), PROJECT_ROOT))
+  }
+  if (any(.bad)) cat(sprintf("[orchestrator][WARN] 일부 전략 미산출: %s\n",
+                             paste(names(results)[.bad], collapse=", ")))
 
   # ─── Telegram brief (optional) ───────────────────────
   if (send_telegram) {

@@ -26,20 +26,59 @@ source(file.path(ROOT, "02_Infrastructure/factor_db/factor_db_connector.R"))
 AS_OF <- as.Date(Sys.getenv("PG2_AS_OF", format(Sys.Date(), "%Y-%m-01")))
 OUT <- Sys.getenv("PG2_OUT_DIR", file.path(ROOT, "qepm/mailbox/worktask/WT-D20260719_001/output"))   ## PG2_OUT_DIR로 production 배치 override
 dir.create(OUT, showWarnings=FALSE, recursive=TRUE)
-N_TARGET<-20; LAMBDA<-1.5; UB<-0.20; LIQ<-2e8
+N_TARGET<-20L; MIN_NAMES<-15L; LAMBDA<-1.5; TOPHI<-3.0; UB<-0.20; UB_CRISIS<-0.10; LIQ<-2e8
 cat(sprintf("=== D3 (M4∩AE 게이트) forward AS_OF=%s ===\n", AS_OF))
-.norm <- function(w,lb=0,ub=UB,ts=1,mi=50){w[is.na(w)]<-0;w[w<lb]<-lb;w[w>ub]<-ub;for(i in seq_len(mi)){s<-sum(w);if(abs(s-ts)<1e-8)break;if(s==0)break;w<-w*(ts/s);w[w>ub]<-ub;w[w<lb]<-lb};w}
-.tilt <- function(a,lam=LAMBDA,lb=0,ub=UB){if(!length(a))return(numeric(0));z<-(a-mean(a))/pmax(sd(a),1e-10);w<-pmax(0,1/length(a)+lam*z/length(a));if(sum(w)>0)w<-w/sum(w);.norm(w,lb,ub)}
+## ★가중 규약 = admit 정본 (2026-08-08 도훈 승인 "정본으로 정렬해").
+##   구판은 인라인 z-선형 `.tilt`(tophi 미적용 · CRISIS ub 분기 없음 · 선별순서 상이)를 써서
+##   북 기록 체계(linear_tilt_to_penalty_qd)와 갈려 있었다 — 실측 월 괴리 24~42%,
+##   overlay 결합 MDD 29.02%(제약 위반) vs 정본 23.28%(충족). 근거: chip task_fea61227.
+##   ★정본 함수는 **재구현하지 않고 계약 모듈을 source** 한다(재구현 표류가 이 결함의 기전이었다).
+source(file.path(ROOT, "02_Infrastructure/portfolio/strategy_tilt_weights.R"))
 
-## --- 1. base sleeve (noLayer4/FAITH/AR forward와 동일 — SELECTION 불변) ---
+## --- 1. base sleeve (정본 엔진: top-N by score_eff → 유동성 교집합 → rank-tilt + tophi + CRISIS cap) ---
 ap <- as.data.table(read_parquet(file.path(ROOT,"stage_artifacts/WT_D20260425_010/alpha_scores.parquet"))); ap[, Date:=as.Date(Date)]
-panel <- ap[Date==AS_OF & !is.na(score_eff)]; stopifnot(nrow(panel)>0); REGIME <- panel$regime_state[1]
 raw <- as.data.table(read_parquet(file.path(ROOT,".cache/rawdata.parquet"),col_select=c("Date","Ticker","Name","Sector","Close","Vol")))
 raw[, Date:=as.Date(Date)]; raw[, TV:=Close*Vol]
-liquid <- raw[Date>=AS_OF-30L & Date<AS_OF, .(ATV=mean(TV,na.rm=TRUE)), by=Ticker][ATV>=LIQ, Ticker]
-panel <- panel[Ticker %in% liquid]; setorder(panel,-score_eff); picks <- panel[seq_len(min(N_TARGET,nrow(panel)))]
-w_base <- .tilt(setNames(picks$score_eff, picks$Ticker)); names(w_base)<-picks$Ticker
-cat(sprintf("[base] regime=%s | top-%d liq | Sum=%.4f\n", REGIME, length(w_base), sum(w_base)))
+
+## 정본 선별·가중 1개월 (run_all.R 285-405 / extract_book_carrier.R 57-99 동일 로직)
+.canon_month <- function(sig, w_prev) {
+  p <- ap[Date==sig & !is.na(score_eff)]
+  if (!nrow(p)) stop(sprintf("[base] alpha_scores 에 sig_date %s 없음", sig))
+  rg <- p$regime_state[1]
+  setorder(p, -score_eff)
+  n_el <- nrow(p); n_tg <- min(N_TARGET, n_el)
+  if (n_tg < MIN_NAMES && n_el >= MIN_NAMES) n_tg <- MIN_NAMES
+  pk <- p[seq_len(n_tg)]                                  ## ★정본 순서: 먼저 top-N, 그 다음 유동성 교집합
+  sd_ <- min(raw[Date >= sig]$Date)
+  liq <- raw[Date >= sd_-30L & Date < sd_, .(ATV=mean(TV,na.rm=TRUE)), by=Ticker][ATV>=LIQ, Ticker]
+  tk <- intersect(pk$Ticker, liq); if (length(tk) < 5L) tk <- pk$Ticker
+  pk <- pk[Ticker %in% tk]
+  a <- setNames(pk$score_eff, pk$Ticker)
+  ub_use <- if (identical(rg, "CRISIS")) min(UB, UB_CRISIS) else UB
+  w <- linear_tilt_to_penalty_qd(a, lambda=LAMBDA, w_prev=w_prev, phi=TOPHI, lb=0, ub=ub_use)
+  names(w) <- names(a)
+  list(w = normalize_long_only(w, lb=0, ub=ub_use, target_sum=1), regime = rg, ub = ub_use, picks = pk)
+}
+
+## w_prev 체인 — tophi(φ=3)는 전월 비중과 블렌드하므로 시작점이 필요하다.
+## 정본 엔진 산출인 book_carrier 를 이어받고, 캐리어 종점~AS_OF 사이 공백월은 같은 엔진으로 replay 한다.
+## ★캐리어 부재/추월 시 fail-closed — w_prev=NULL 로 조용히 낙하하면 다른 비중이 나온다.
+car_path <- file.path(ROOT, "06_Registry/book_carrier/carrier_STR_1715_on_M4gAE_R05_noLayer4_PG2.parquet")
+if (!file.exists(car_path)) stop("[base] book_carrier 부재 — extract_book_carrier.R 선행 필요(w_prev 체인 시작점)")
+car <- as.data.table(read_parquet(car_path)); car[, decision_date := as.Date(decision_date)]
+last_dd <- max(car$decision_date)
+if (last_dd >= AS_OF) stop(sprintf("[base] 캐리어 종점(%s)이 AS_OF(%s) 이상 — 체인 방향 이상, 중단", last_dd, AS_OF))
+w_prev <- { x <- car[decision_date==last_dd]; setNames(x$weight_strategy, x$Ticker) }
+gap <- seq(seq(last_dd, by="month", length.out=2)[2], by="month",
+           length.out=max(0L, 12L*(as.integer(format(AS_OF,"%Y"))-as.integer(format(last_dd,"%Y"))) +
+                             (as.integer(format(AS_OF,"%m"))-as.integer(format(last_dd,"%m"))) - 1L))
+gap <- gap[gap < AS_OF]
+for (g in as.list(gap)) { w_prev <- .canon_month(as.Date(g), w_prev)$w
+  cat(sprintf("[chain] %s 경유 (n=%d)\n", as.Date(g), length(w_prev))) }
+.cm <- .canon_month(AS_OF, w_prev)
+w_base <- .cm$w; REGIME <- .cm$regime; picks <- .cm$picks
+cat(sprintf("[base] regime=%s ub=%.2f | n=%d | max_w=%.4f | Sum=%.4f | tophi 체인 %s→%s\n",
+            REGIME, .cm$ub, length(w_base), max(w_base), sum(w_base), last_dd, AS_OF))
 
 ## --- 2. m4_scalar (동일 로드) ---
 m4 <- as.data.table(read_parquet(file.path(ROOT,"qepm/mailbox/worktask/WT-D20260430_001/stage_artifacts/alpha_scores.parquet"))); m4[, Date:=as.Date(Date)]
@@ -88,8 +127,15 @@ print(out[, .(rank,Ticker,Name,Weight=round(Weight,4))])
 dt <- format(AS_OF,"%Y%m%d")
 fwrite(out[,.(rank,Ticker,Name,Sector,Weight)], file.path(OUT, sprintf("%s_M4gAE_weights_cap_0p20.csv",dt)))
 man <- list(strategy="STR_1715_on_M4gAE_R05_noLayer4_PG2", as_of=as.character(AS_OF),
-  formula="w_str1715 × [M4∩AE gate] × β_R05_V5(regime,R05_z)  [Layer4 없음, m4 대신 M4∩AE 게이트]",
+  formula="w_str1715(rank-tilt λ=1.5 + tophi φ=3 + CRISIS ub 0.10) × [M4∩AE gate] × β_R05_V5(regime,R05_z)  [Layer4 없음]",
   d3_swapin=TRUE, d3_decision="WT-D20260719_001 D3 swap-in (도훈 승인 2026-07-19)",
+  tilt_convention=list(
+    engine="02_Infrastructure/portfolio/strategy_tilt_weights.R::linear_tilt_to_penalty_qd (run_all.R:161-187 verbatim)",
+    lambda=LAMBDA, tophi=TOPHI, ub=UB, ub_crisis=UB_CRISIS,
+    selection_order="top-N by score_eff → liquidity intersect (run_all.R 정본 순서)",
+    w_prev_chain=sprintf("book_carrier(%s) + replay %d gap months", as.character(last_dd), length(gap)),
+    aligned_on="2026-08-08 (도훈 승인 '정본으로 정렬해', chip task_fea61227)",
+    supersedes="인라인 z-선형 .tilt — tophi 미적용·CRISIS ub 분기 없음·선별순서 상이(3세대 재구현 표류)"),
   overlays=list(m4_scalar=m4_scalar, ae_fire_seq=ae_fire, m4_ae_gate=gate,
     gate_rule="0.70 if (m4<0.999 AND ae_fire==1) else 1.00",
     beta_faith=list(value=1.0, status="REMOVED_Layer4"),
