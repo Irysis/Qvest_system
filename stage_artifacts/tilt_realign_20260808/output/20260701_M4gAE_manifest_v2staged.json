@@ -1,0 +1,38 @@
+{
+  "strategy": "STR_1715_on_M4gAE_R05_noLayer4_PG2",
+  "as_of": "2026-07-01",
+  "staged": true,
+  "formula": "w_str1715(rank+tophi, CRISIS ub0.10) × [M4∩AE gate] × β_R05_V5(regime,R05_z)",
+  "tilt_convention": {
+    "engine": "strategy_tilt_weights.R::linear_tilt_to_penalty_qd (run_all.R:161-187 verbatim)",
+    "lambda": 1.5,
+    "tophi": 3,
+    "ub": 0.2,
+    "ub_crisis": 0.1,
+    "w_prev_chain": "carrier(2026-05-01) + replay 1 gap months",
+    "selection_order": "top-N by score_eff → liquidity intersect (run_all.R 정본 순서)",
+    "supersedes": "인라인 z-선형 .tilt (Gen1~3 표류, 2026-08-08 실측 chip task_fea61227)"
+  },
+  "overlays": {
+    "m4_scalar": 1,
+    "ae_fire_seq": 1,
+    "m4_ae_gate": 1,
+    "beta_R05_V5": {
+      "value": 0.3,
+      "regime": "CRISIS",
+      "R05_z_avg": -0.4193
+    }
+  },
+  "invested": 0.3,
+  "cash_pct": 0.7,
+  "n_equity": 20,
+  "pit": {
+    "no_future_reference": true,
+    "ae_last_feat": "2026-06-30 09:00:00"
+  },
+  "governance": {
+    "staged_only": true,
+    "promote_gate": "도훈 confirm + promote_to_production() 경유",
+    "production_untouched": true
+  }
+}

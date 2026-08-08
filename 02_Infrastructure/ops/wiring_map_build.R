@@ -127,12 +127,20 @@ count_consumers <- function(std_file, symbols) {
   pat_file <- paste0("\\Q", base, "\\E")
   syms <- setdiff(strsplit(symbols, ",")[[1]], "")
   self <- normalizePath(std_file, winslash = "/", mustWork = FALSE)
-  strong <- character(0); reimpl <- character(0); transitive <- character(0)
+  strong <- character(0); reimpl <- character(0); transitive <- character(0); mentions <- character(0)
   for (p in names(BODY)) {
     if (identical(normalizePath(p, winslash = "/", mustWork = FALSE), self)) next
     txt <- BODY[[p]]
     if (!nzchar(txt)) next
-    if (grepl(pat_file, txt, perl = TRUE)) { strong <- c(strong, p); next }
+    ## ★배선 증거는 **실행 파일**에서만 — .json/.md 가 표준 이름을 언급하는 건 소비가 아니라
+    ##   기술(記述)이다. 실측: ast_field_map_v0.json 이 align_signal_return_ym.R 을 언급해
+    ##   strong 3 으로 계상됐으나 실코드 소비자는 2개였다(양성 대조로 검출).
+    is_code <- grepl("\\.(R|r|py|sh)$", p)
+    if (grepl(pat_file, txt, perl = TRUE)) {
+      if (is_code) strong <- c(strong, p) else mentions <<- c(mentions, p)
+      next
+    }
+    if (!is_code) next                       # 비실행 파일은 심볼 축도 보지 않는다
     if (!length(syms)) next
     called <- FALSE; defined <- FALSE
     for (s in syms) {
@@ -143,7 +151,7 @@ count_consumers <- function(std_file, symbols) {
     if (!called) next
     if (defined) reimpl <- c(reimpl, p) else transitive <- c(transitive, p)
   }
-  list(strong = strong, reimpl = reimpl, transitive = transitive)
+  list(strong = strong, reimpl = reimpl, transitive = transitive, mentions = mentions)
 }
 
 cat("[wiring] 소비자 계수 중...\n")
@@ -165,7 +173,7 @@ for (i in seq_len(nrow(STD))) {
     n_symbols = STD$n_symbols[i],
     n_consumers = length(cons), n_consumers_nontest = n_nontest,
     n_reimpl = length(cc$reimpl),                # ★표준을 안 부르고 같은 심볼을 직접 정의 = 재구현
-    n_transitive = length(cc$transitive),
+    n_transitive = length(cc$transitive), n_mentions = length(cc$mentions),
     zones = paste(sprintf("%s:%d", names(nz), as.integer(nz)), collapse = " "),
     consumers = paste(head(cons, 40), collapse = ";"),
     reimplementers = paste(head(cc$reimpl, 20), collapse = ";")

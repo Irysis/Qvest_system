@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "sot": "02_Infrastructure/docs/qvest_v8_3_alpha_discovery_sot.md §4",
-  "updated": "2026-08-08 (FQ-154 Beneish data_gate_partial + FQ-155 금융업 CAMELS closed/wiring open — CFA Lv2 census 1·3)",
+  "updated": "2026-08-08",
   "consume_rule": "새 발굴 리서치 착수 전: hypothesis_index lookup → 본 큐 확인 → owner/status 갱신. 완료 시 result_ref(L-code/보고서) 기입. dohoon_decision 항목은 세션 임의 착수 금지.",
   "entries": [
     {
@@ -1782,12 +1782,22 @@
       "ev_rationale": "논문은 수익 랭크가 거의 예측 불가인 반면 변동성 랭크는 한 스텝 앞 예측이 가능하다는 비대칭을 핵심 실증으로 제시하고, 잔차 거리 기반 분산화를 얹어 OOS Sharpe 1.06/1.32(시장 0.78/1.14, 5bps 순)를 보고.",
       "wall_check": "★고정 축 안. return-derived 재료이나 **예측 대상 자체를 바꾸는** 축이라 07-13 'construction 미세조정 소진' 지대와 구분. ★prior: MDD 무료레버 3라운드 결론 = overlay/timing 유일(weighting·selection 아님) — 본 건은 selection 재시도이므로 그 prior 에 정면으로 걸린다. 반증되면 해당 결론이 4라운드째 강화됨(정보 가치).",
       "data_gate": "기보유 RAWDATA 로 즉시 가능(일간 수익만 필요).",
-      "owner": "paper-intake-audit 2026-08-02",
-      "status": "frontier_open",
-      "next_action": "변동성 랭크 전이행렬 추정 → 선별/사이징 입력 교체 arm → EW baseline 대비 Calmar·MDD paired",
+      "owner": "Q-Lead(session 20260808)",
+      "status": "precheck_positive_frontier_open",
+      "next_action": "본 라운드: ① 겹침 보정 지속성(비겹침 21d 창·h=2,3) ② 소비면 = (b)안 어댑터 레인 재사용 — 예측 vol-rank 기반 역변동성 가중 arm 을 method_registry 에 등록, 기존 IV(realized) 와 배터리 paired 대조 (Calmar·MDD 축, EW baseline). ③ 선별 신호로는 쓰지 않음(08-06 QUARANTINE 준수)",
       "source_refs": [
         "paper: Igor Halperin, 'Are Three Matrices All You Need To Beat the Market? Observable Matrix Dynamics for Portfolio Optimization', arXiv:2607.27461, 2026-07-29 (q-fin.PM — 카테고리는 크롤됐으나 9질의 어휘로 도달 불가였음)",
         "prior: memory project-mdd-lever-overlay-only-3rounds-20260718"
+      ],
+      "precheck_measured": [
+        {
+          "date": "2026-08-08",
+          "design": "월말 trailing-60d vol/평균수익 횡단면 백분위 랭크의 익월 Spearman. 유동성 ADV20>=2e8. 436개월·월평균 1,113종목",
+          "result": "vol-랭크 지속성 중앙값 0.891 (음수월 0) vs ret-랭크 0.613. 대응차 +0.273, t=53.9. post-2021: 0.869 vs 0.593",
+          "verdict": "전제 성립 — 예측 대상 교체의 근거 실재. hypothesis_index MARGINAL 3건(Markov 계열)과 정합, FAIL 계열(선별 신호)과는 소비면 상이(08-06 QUARANTINE 비저촉)",
+          "caveat": "60일 창 월간 겹침(~2/3)이 절대 수준을 기계적으로 부풀림 — 비교 차이는 공정(동일 창 구조). 본 라운드에서 겹침 보정 필수",
+          "probe_bug_note": "1차 실측이 rho 전원 1.000 — 조인 양쪽을 ym_next 로 리라벨해 자기 조인. '완벽 지속성'은 자기 조인 지문"
+        }
       ]
     },
     {

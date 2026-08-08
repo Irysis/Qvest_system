@@ -19,6 +19,7 @@
 suppressPackageStartupMessages({library(data.table); library(arrow); library(jsonlite)})
 options(scipen=999)
 ROOT <- Sys.getenv("CLAUDE_PROJECT_DIR", Sys.getenv("QM_ROOT", "C:/Users/99922/OneDrive/Quant_Module_Moltbot"))
+source(file.path(ROOT, "02_Infrastructure/config.R"))   # CACHE_DIR 선정의 — connector의 self-dir 상대 resolve(호출 스크립트 위치 오해석) 우회
 source(file.path(ROOT, "02_Infrastructure/factor_db/factor_db_connector.R"))
 source(file.path(ROOT, "02_Infrastructure/portfolio/strategy_tilt_weights.R"))   # ★정본 가중 함수 (verbatim)
 AS_OF <- as.Date(Sys.getenv("PG2_AS_OF", "2026-08-01"))
