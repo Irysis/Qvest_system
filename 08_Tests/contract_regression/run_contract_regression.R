@@ -20,7 +20,8 @@
 tests <- c("test_essence_score.R",
            "test_canonical_screen_bt.R",
            "test_register_module.R",
-           "test_hurdle_gate.R")
+           "test_hurdle_gate.R",
+           "test_required_effect_size.R")
 
 .this_file <- sub("^--file=", "", grep("^--file=", commandArgs(FALSE), value = TRUE)[1])
 here <- dirname(normalizePath(.this_file, winslash = "/"))
