@@ -34,8 +34,25 @@ main <- function() {
   ##   초판은 `<<-` 로 프레임을 건너뛰어 전역에 쓰는 바람에 정상 정리를 FAIL 로 오판했다.
   st <- new.env(parent = emptyenv()); st$restored_ok <- NA
 
+  ## ★2026-08-08 2차 수리 — 초판은 `system2(..., env=)` 였다. r-portability.md 금칙 ①:
+  ##   Windows 에서 env= 는 환경변수가 아니라 **인자(argv)로 주입**된다. 즉 케이스 ③ 은
+  ##   플래그를 세운 적이 없고 **플래그 없는 상태를 재면서 "우회 통과"라고 이름 붙이고** 있었다.
+  ##   수리: Sys.setenv/Sys.unsetenv 로 실제 프로세스 환경에 세우고 원복까지 보장한다
+  ##   (자식 Rscript 는 부모 환경을 상속하므로 이 경로가 플랫폼 무관 정본).
   run_script <- function(env = character()) {
-    out <- suppressWarnings(system2(RS, c("--no-save", SCRIPT), stdout = TRUE, stderr = TRUE, env = env))
+    restore <- NULL
+    if (length(env)) {
+      nm  <- sub("=.*$", "", env); val <- sub("^[^=]*=", "", env)
+      old <- Sys.getenv(nm, unset = NA_character_, names = TRUE)
+      do.call(Sys.setenv, as.list(setNames(val, nm)))
+      restore <- function() {
+        for (k in nm) {
+          if (is.na(old[[k]])) Sys.unsetenv(k) else do.call(Sys.setenv, as.list(setNames(old[[k]], k)))
+        }
+      }
+      on.exit(restore(), add = TRUE)   # 함수 내부 on.exit = 정상 발화(금칙 ②는 최상위 한정)
+    }
+    out <- suppressWarnings(system2(RS, c("--no-save", SCRIPT), stdout = TRUE, stderr = TRUE))
     list(rc = attr(out, "status") %||% 0L, txt = paste(out, collapse = "\n"))
   }
   chk <- function(name, expect_block, r) {

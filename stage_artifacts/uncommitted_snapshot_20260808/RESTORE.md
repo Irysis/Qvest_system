@@ -1,6 +1,6 @@
 # 미커밋 운영 변경 스냅샷 — 2026-08-08
 
-base commit: `fbc495fc` (이 커밋 위에서 만든 패치)
+base commit: `9aef42d0` (이 커밋 위에서 만든 패치)
 patch 검증: **APPLICABLE**
 
 ## 복원 (작업 트리가 리셋된 경우)
@@ -11,7 +11,7 @@ cp -r stage_artifacts/uncommitted_snapshot_20260808/files/. .
 ```
 
 ## 담긴 것
-- 추적 파일 변경 13 건 (patch, 311974 bytes)
+- 추적 파일 변경 3 건 (patch, 5982 bytes)
 - 신규 파일 5 건 (files/ 원본 복사)
 
 ## ★짝 제약

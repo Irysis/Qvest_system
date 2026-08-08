@@ -213,6 +213,17 @@ if (nrow(mism)) {
 }
 p[, ry_from_anchor := NULL]
 
+## ★2026-08-08 beta_matches_ret_net — β 열이 ret_net 을 실제로 만든 값인지 **측정**해 표시한다.
+## 배경(실사고): 2026-08 행에서 beta_R05=0.5 를 보고 ret_net(−8.28%)이 그 β 산물이라 오독했다.
+##   실제로는 manifest 앵커(β 0.30)가 만든 값이었고, 답은 바로 옆 ret_net_source 에 있었다.
+##   rds 앵커월도 같은 구조다 — ret_net 은 계약 rds(과거 z 기준) 산물인데 β 열은 현 패널(live) 값이라
+##   z 원천을 바꾸면 둘의 기준이 갈린다(2026-08-08 live 통일 시 106행에서 실제 발생).
+## ⇒ "대응한다"를 주장하지 않고, 재계산치와 기록치가 실제로 같은지로 **판정**한다(사후 검증 가능).
+p[, beta_matches_ret_net := is.finite(ret_recompute_panel) & is.finite(ret_noLayer4) &
+      abs(ret_recompute_panel - ret_noLayer4) < 1e-12]
+cat(sprintf("[3b] β↔ret_net 대응: %d/%d행 일치 · 불일치 %d행(앵커가 다른 기준의 값을 기록 — ret_net_source 참조)\n",
+            sum(p$beta_matches_ret_net), nrow(p), sum(!p$beta_matches_ret_net)))
+
 out <- p[, .(
   date        = anchor_date,           # slot 2-3 'date' = anchor_date (리밸일)
   realized_ym,                         # = substr(date,1,7), 내부 join key (monitor가 읽음)
@@ -220,10 +231,11 @@ out <- p[, .(
   regime,
   ret_net     = ret_noLayer4,          # monitor가 'ret_net' 컬럼을 읽음 (slot 2-3 shape)
   ret_orig,
-  beta_R05,                            # ★실효 β (앵커월은 배포 invested 기준으로 정정됨)
+  beta_R05,                            # ★실효 β (manifest 앵커월은 배포 invested 기준으로 정정됨)
   m4, dR05,
   invested_eff,                        # ★실제 적용 노출 = 앵커월 manifest invested / 그 외 β×m4
-  beta_R05_panel,                      # ★패널 원값 (동결 z 기반) — 감사용, 실효값과 다를 수 있음
+  beta_R05_panel,                      # ★패널 원값 — 현 z 원천(live) 기준. 실효값과 다를 수 있음
+  beta_matches_ret_net,                # ★★이 행의 β 가 ret_net 을 실제로 만든 값인가 (측정값, 주장 아님)
   ret_recompute_panel, ret_net_source  # 2b 앵커 진단 (rds_anchor vs panel_recompute)
 )]
 setorder(out, realized_ym)

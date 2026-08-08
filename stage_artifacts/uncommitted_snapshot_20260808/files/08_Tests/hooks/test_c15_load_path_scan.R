@@ -12,9 +12,15 @@ R <- local({
   if (!length(h)) stop("root 해석 실패"); normalizePath(h[1])
 })
 setwd(R); source("02_Infrastructure/validation/c15_load_path_scan.R")
+
+## ★2026-08-08 수리 — 초판은 최상위에서 on.exit(unlink(TMP)) 를 썼다. r-portability.md 금칙 ②.
+##   초판 주석은 "스크립트 최상위 아님"이라고 **합리화**했으나 사실이 아니었고, 같은 금칙이
+##   test_blunt_anchor_failclosed.R 초판에서 **조기 발화로 백업을 선삭제**해 패널을 오염시킨
+##   전례가 이미 있다(재생성으로 복구). 수리 = 전체를 함수로 감싸 on.exit 를 함수 프레임에 등록.
+main <- function() {
 TMP <- file.path(tempdir(), paste0("c15test_", as.integer(runif(1, 1e6, 9e6))))
 dir.create(TMP, recursive = TRUE, showWarnings = FALSE)
-on.exit(unlink(TMP, recursive = TRUE), add = TRUE)   ## 스크립트 최상위 아님(함수 밖이나 exit 시 발화) — 명시 정리도 병행
+on.exit(unlink(TMP, recursive = TRUE), add = TRUE)   ## 함수 프레임 등록 = 예외 경로에서도 발화
 
 pass <- 0L; fail <- 0L
 chk <- function(nm, got, want) {
