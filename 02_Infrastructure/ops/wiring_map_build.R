@@ -247,7 +247,13 @@ W[, status := fifelse(n_consumers_nontest == 0L, "orphan",
 ## 단일 lane 국소 배선 — align_signal_return_ym 이 정확히 이 형태였다(소비자 2개 전부 ramp)
 ## ★독립 축 — 배선(status)과 별개로 "산출물이 정체됐나"를 따로 표시한다.
 ##   wired 인데 stale_producer=TRUE 가 정확히 FQ-056 형태(호출 계기 부재)다.
-W[, stale_producer := !is.na(producer_age_days) & producer_age_days > STALE_DAYS]
+## ★미검증 축 — 이름에 그렇게 적는다. 실측 2026-08-08: 산출물이 식별된 표준이 **48개 중 2개**뿐이라
+##   `wired_but_stale=0` 은 "건강하다"가 아니라 "**잴 대상이 목록에 없다**"는 뜻이다.
+##   두 공백: ① STD_DIRS 가 contracts/+validation/ 뿐이라 regime/·portfolio/ 의 생산자가 빠짐
+##   (이 축을 만들게 한 FQ-056 의 build_module_performance.R 이 정확히 그 경우 — 못 잡는다)
+##   ② 산출 경로를 인용부호 리터럴로만 추출해 file.path(ROOT, ...) 조립 경로를 놓침.
+##   ∴ 판정에 쓰지 않고, 커버리지(producer_identified)를 요약에 **함께 노출**해 오독을 막는다.
+W[, `_unverified_stale_producer` := !is.na(producer_age_days) & producer_age_days > STALE_DAYS]
 W[, single_zone := {
   z <- gsub(":[0-9]+", "", zones)
   zs <- lapply(strsplit(z, " "), function(v) setdiff(v, c("tests", "")))
@@ -269,8 +275,10 @@ out <- list(
     thin = sum(W$status == "thin"),
     wired = sum(W$status == "wired"),
     single_zone_nonorphan = sum(W$single_zone & W$status != "orphan"),
-    stale_producer = sum(W$stale_producer),
-    wired_but_stale = sum(W$stale_producer & W$status == "wired"),
+    `_unverified_stale_producer` = sum(W[["_unverified_stale_producer"]]),
+    producer_identified = sum(!is.na(W$producer_age_days)),
+    producer_coverage_note = sprintf("산출물 식별 %d/%d — 이 비율이 낮으면 정체 0 은 '건강'이 아니라 '미측정'",
+                                     sum(!is.na(W$producer_age_days)), nrow(W)),
     `_unverified_with_reimplementers` = sum(W[["_unverified_n_reimpl"]] > 0L)
   ),
   standards = lapply(seq_len(nrow(W)), function(i) as.list(W[i]))

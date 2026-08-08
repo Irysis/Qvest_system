@@ -1,6 +1,6 @@
 {
   "_doc": "표준↔소비자 배선 지도. 생성기 02_Infrastructure/ops/wiring_map_build.R. status: orphan=비검사 소비자 0(표준이 아무도 안 씀) / thin=1~2(국소) / wired=3+. single_zone=TRUE 면 소비자가 한 lane 에만 있음(범용 표준인데 국소 배선 = 미배선 후보). ★판정은 이 원장이 권위다 — 소비자는 n_consumers 로 재판정하지 말 것.",
-  "generated_at": "2026-08-08 09:50:05",
+  "generated_at": "2026-08-08 09:55:30",
   "scan_files": 10012,
   "scan_dirs": ["02_Infrastructure", "04_Research", "08_Tests", "qepm", "06_Registry", ".claude/skills", ".claude/agents", ".claude/rules", ".claude/commands"],
   "summary": {
@@ -9,8 +9,9 @@
     "thin": 21,
     "wired": 17,
     "single_zone_nonorphan": 25,
-    "stale_producer": 1,
-    "wired_but_stale": 0,
+    "_unverified_stale_producer": 1,
+    "producer_identified": 2,
+    "producer_coverage_note": "산출물 식별 2/48 — 이 비율이 낮으면 정체 0 은 '건강'이 아니라 '미측정'",
     "_unverified_with_reimplementers": 15
   },
   "standards": [
@@ -30,7 +31,7 @@
       "consumers": "",
       "_unverified_reimplementers": "",
       "status": "orphan",
-      "stale_producer": false,
+      "_unverified_stale_producer": false,
       "single_zone": false
     },
     {
@@ -49,7 +50,7 @@
       "consumers": "",
       "_unverified_reimplementers": "",
       "status": "orphan",
-      "stale_producer": false,
+      "_unverified_stale_producer": false,
       "single_zone": false
     },
     {
@@ -68,7 +69,7 @@
       "consumers": "",
       "_unverified_reimplementers": "",
       "status": "orphan",
-      "stale_producer": false,
+      "_unverified_stale_producer": false,
       "single_zone": false
     },
     {
@@ -87,7 +88,7 @@
       "consumers": "08_Tests/integration/test_execution_path_unified.R",
       "_unverified_reimplementers": "02_Infrastructure/alpha_search/driver_ls_generic.R;02_Infrastructure/alpha_search/fe_ml.R;02_Infrastructure/alpha_search/run_alpha_search.R;02_Infrastructure/alpha_search/run_hill_tail_wrapper.R;02_Infrastructure/alpha_search/run_qfactor_paper.R;02_Infrastructure/alpha_search/run_qmj_paper.R;02_Infrastructure/alpha_search/run_residmom_paper.R;02_Infrastructure/alpha_search/run_volmanaged.R;02_Infrastructure/contracts/factor_rotation_registry.R;02_Infrastructure/contracts/register_research_outputs.R;02_Infrastructure/contracts/registry_writer.R;02_Infrastructure/contracts/save_bt_result.R;02_Infrastructure/regime/fred_robust.R;02_Infrastructure/regime/ktri_v3_builder.R;02_Infrastructure/regime/msm_daily_refit.R;02_Infrastructure/regime/r4_regime_payoff.R;02_Infrastructure/regime/regime_cusum.R;02_Infrastructure/regime/regime_engine_daily.R;02_Infrastructure/regime/regime_engine_research.R;02_Infrastructure/regime/regime_ensemble.R",
       "status": "orphan",
-      "stale_producer": false,
+      "_unverified_stale_producer": false,
       "single_zone": false
     },
     {
@@ -106,7 +107,7 @@
       "consumers": "",
       "_unverified_reimplementers": "",
       "status": "orphan",
-      "stale_producer": false,
+      "_unverified_stale_producer": false,
       "single_zone": false
     },
     {
@@ -125,7 +126,7 @@
       "consumers": "",
       "_unverified_reimplementers": "",
       "status": "orphan",
-      "stale_producer": false,
+      "_unverified_stale_producer": false,
       "single_zone": false
     },
     {
@@ -144,7 +145,7 @@
       "consumers": "",
       "_unverified_reimplementers": "",
       "status": "orphan",
-      "stale_producer": false,
+      "_unverified_stale_producer": false,
       "single_zone": false
     },
     {
@@ -163,7 +164,7 @@
       "consumers": "",
       "_unverified_reimplementers": "",
       "status": "orphan",
-      "stale_producer": false,
+      "_unverified_stale_producer": false,
       "single_zone": false
     },
     {
@@ -182,7 +183,7 @@
       "consumers": "",
       "_unverified_reimplementers": "",
       "status": "orphan",
-      "stale_producer": false,
+      "_unverified_stale_producer": false,
       "single_zone": false
     },
     {
@@ -201,7 +202,7 @@
       "consumers": "",
       "_unverified_reimplementers": "",
       "status": "orphan",
-      "stale_producer": false,
+      "_unverified_stale_producer": false,
       "single_zone": false
     },
     {
@@ -220,7 +221,7 @@
       "consumers": "02_Infrastructure/portfolio/portfolio_governor.R",
       "_unverified_reimplementers": "",
       "status": "thin",
-      "stale_producer": false,
+      "_unverified_stale_producer": false,
       "single_zone": true
     },
     {
@@ -239,7 +240,7 @@
       "consumers": "qepm/mailbox/worktask/WT-D20260501_001/scripts/risk_research.R",
       "_unverified_reimplementers": "",
       "status": "thin",
-      "stale_producer": false,
+      "_unverified_stale_producer": false,
       "single_zone": true
     },
     {
@@ -258,7 +259,7 @@
       "consumers": "02_Infrastructure/portfolio/portfolio_governor.R",
       "_unverified_reimplementers": "",
       "status": "thin",
-      "stale_producer": false,
+      "_unverified_stale_producer": false,
       "single_zone": true
     },
     {
@@ -277,7 +278,7 @@
       "consumers": "02_Infrastructure/validation/pit_engine_v3.R",
       "_unverified_reimplementers": "",
       "status": "thin",
-      "stale_producer": false,
+      "_unverified_stale_producer": false,
       "single_zone": true
     },
     {
@@ -296,7 +297,7 @@
       "consumers": "02_Infrastructure/R/hook_batch_runner.R;08_Tests/contract_regression/test_sample_alignment_empty.R;08_Tests/hooks/test_lookahead_unscanned.R",
       "_unverified_reimplementers": "",
       "status": "thin",
-      "stale_producer": false,
+      "_unverified_stale_producer": false,
       "single_zone": true
     },
     {
@@ -315,7 +316,7 @@
       "consumers": "02_Infrastructure/validation/pit_engine_v3.R",
       "_unverified_reimplementers": "",
       "status": "thin",
-      "stale_producer": false,
+      "_unverified_stale_producer": false,
       "single_zone": true
     },
     {
@@ -334,7 +335,7 @@
       "consumers": "02_Infrastructure/contracts/register_research_outputs.R",
       "_unverified_reimplementers": "",
       "status": "thin",
-      "stale_producer": false,
+      "_unverified_stale_producer": false,
       "single_zone": true
     },
     {
@@ -353,7 +354,7 @@
       "consumers": "02_Infrastructure/ml_pipeline/run_ml_cycle.py",
       "_unverified_reimplementers": "02_Infrastructure/alpha_search/driver_ls_generic.R;02_Infrastructure/alpha_search/fe_ml.R;02_Infrastructure/alpha_search/run_alpha_search.R;02_Infrastructure/alpha_search/run_hill_tail_wrapper.R;02_Infrastructure/alpha_search/run_qfactor_paper.R;02_Infrastructure/alpha_search/run_qmj_paper.R;02_Infrastructure/alpha_search/run_residmom_paper.R;02_Infrastructure/alpha_search/run_volmanaged.R;02_Infrastructure/contracts/essence_backfill.R;02_Infrastructure/contracts/factor_rotation_registry.R;02_Infrastructure/contracts/registry_writer.R;02_Infrastructure/contracts/save_bt_result.R;02_Infrastructure/regime/fred_robust.R;02_Infrastructure/regime/ktri_v3_builder.R;02_Infrastructure/regime/msm_daily_refit.R;02_Infrastructure/regime/r4_regime_payoff.R;02_Infrastructure/regime/regime_cusum.R;02_Infrastructure/regime/regime_engine_daily.R;02_Infrastructure/regime/regime_engine_research.R;02_Infrastructure/regime/regime_ensemble.R",
       "status": "thin",
-      "stale_producer": false,
+      "_unverified_stale_producer": false,
       "single_zone": true
     },
     {
@@ -372,7 +373,7 @@
       "consumers": "02_Infrastructure/data/daily_refresh.sh",
       "_unverified_reimplementers": "",
       "status": "thin",
-      "stale_producer": false,
+      "_unverified_stale_producer": false,
       "single_zone": true
     },
     {
@@ -391,7 +392,7 @@
       "consumers": "02_Infrastructure/stage_gate_engine.R",
       "_unverified_reimplementers": "",
       "status": "thin",
-      "stale_producer": false,
+      "_unverified_stale_producer": false,
       "single_zone": true
     },
     {
@@ -410,7 +411,7 @@
       "consumers": "02_Infrastructure/tools/paper_recharge_daily.R;08_Tests/integration/test_v8_readiness_gate.R;08_Tests/validation/test_v8_readiness_hook_dryrun.R",
       "_unverified_reimplementers": "08_Tests/contract_regression/test_sample_alignment_empty.R;08_Tests/data/test_cache_content_reach.R;08_Tests/data/test_cache_freshness_worse_of.R;08_Tests/data/test_contract_panel.R;08_Tests/data/test_daily_refresh_r_blocks.R;08_Tests/data/test_dart_candidate_years.R;08_Tests/data/test_dart_reprt_quarter_map.R;08_Tests/data/test_frontier_coherence.R;08_Tests/factor_db/test_build_hash_provenance.R;08_Tests/factor_db/test_ev_term_not_inert.R;08_Tests/factor_db/test_ic_completion_guard.R;08_Tests/factor_db/test_ic_frontier_check.R;08_Tests/hooks/test_ax001_defense_scope.R;08_Tests/hooks/test_factor_dup_scan.R;08_Tests/hooks/test_lineage_git_state.R;08_Tests/hooks/test_lockbox_audit_path.R;08_Tests/hooks/test_lookahead_unscanned.R;08_Tests/hooks/test_r_portability.R;08_Tests/hooks/test_telegram_entity_scan.R;08_Tests/ops/test_method_adapter_contract.R",
       "status": "thin",
-      "stale_producer": true,
+      "_unverified_stale_producer": true,
       "single_zone": true
     },
     {
@@ -429,7 +430,7 @@
       "consumers": "02_Infrastructure/hurdle_gate.R",
       "_unverified_reimplementers": "",
       "status": "thin",
-      "stale_producer": false,
+      "_unverified_stale_producer": false,
       "single_zone": true
     },
     {
@@ -448,7 +449,7 @@
       "consumers": "02_Infrastructure/ramp/build_insider_factor_panel.R;02_Infrastructure/ramp/run_ramp_r6_portt_boruta.R",
       "_unverified_reimplementers": "04_Research/composition_search/cycle1c_trackD/prep_trackd_substrate.R;04_Research/method_frontier/fq002_contract_magnitude/diag_fq125_decay.R;04_Research/method_frontier/fq002_contract_magnitude/diag_fq125_stage1_controls.R;04_Research/method_frontier/fq002_contract_magnitude/diag_size_confound.R;04_Research/method_frontier/fq002_contract_magnitude/run_fq002_pilot.R;04_Research/method_frontier/fq002_contract_magnitude/run_fq125_confirm.R;04_Research/method_frontier/fq002_contract_magnitude/run_fq125_stage1.R;04_Research/method_frontier/fq057_captier_sigma/run_02b_debug.R;04_Research/method_frontier/fq057_captier_sigma/run_02c_debug2.R;04_Research/method_frontier/fq057_captier_sigma/run_03_ab.R;04_Research/method_frontier/fq057_captier_sigma/run_04_phasec.R;04_Research/method_frontier/wt012_hawkes/hawkes_own_crash_overlay.R",
       "status": "thin",
-      "stale_producer": false,
+      "_unverified_stale_producer": false,
       "single_zone": true
     },
     {
@@ -467,7 +468,7 @@
       "consumers": "02_Infrastructure/data/repair_rawdata_bmret_from_benchmark.R;02_Infrastructure/ops/bootstrap.sh;08_Tests/data/test_benchmark_source_parity.R;08_Tests/hooks/run_all_hooks.sh",
       "_unverified_reimplementers": "",
       "status": "thin",
-      "stale_producer": false,
+      "_unverified_stale_producer": false,
       "single_zone": true
     },
     {
@@ -486,7 +487,7 @@
       "consumers": "02_Infrastructure/axiom/continuity_gate.py;02_Infrastructure/ops/cleaner_claim.R",
       "_unverified_reimplementers": "",
       "status": "thin",
-      "stale_producer": false,
+      "_unverified_stale_producer": false,
       "single_zone": true
     },
     {
@@ -505,7 +506,7 @@
       "consumers": "02_Infrastructure/contracts/save_bt_result.R;04_Research/strategies/STR_1716_QFM/run_all.R",
       "_unverified_reimplementers": "",
       "status": "thin",
-      "stale_producer": false,
+      "_unverified_stale_producer": false,
       "single_zone": false
     },
     {
@@ -524,7 +525,7 @@
       "consumers": "02_Infrastructure/monitoring/extend_nolayer4_series.R;02_Infrastructure/portfolio/run_layer5_rerun_extended.R",
       "_unverified_reimplementers": "",
       "status": "thin",
-      "stale_producer": false,
+      "_unverified_stale_producer": false,
       "single_zone": true
     },
     {
@@ -543,7 +544,7 @@
       "consumers": "02_Infrastructure/portfolio/portfolio_governor.R;02_Infrastructure/validation/role_honesty_runner.R",
       "_unverified_reimplementers": "",
       "status": "thin",
-      "stale_producer": false,
+      "_unverified_stale_producer": false,
       "single_zone": true
     },
     {
@@ -562,7 +563,7 @@
       "consumers": "02_Infrastructure/ops/bootstrap.sh;02_Infrastructure/ops/scheduler_task_health.sh",
       "_unverified_reimplementers": "",
       "status": "thin",
-      "stale_producer": false,
+      "_unverified_stale_producer": false,
       "single_zone": true
     },
     {
@@ -581,7 +582,7 @@
       "consumers": "02_Infrastructure/hurdle_gate.R;02_Infrastructure/validation/verification_pipeline.R",
       "_unverified_reimplementers": "04_Research/strategies/STR_1697_WT009_MEGA05_FF5v2/run_all.R;04_Research/strategies/STR_1699_WT010_CrossFamilyBlender/run_all.R;04_Research/strategies/STR_1700_WT011_MEGA_06/run_all.R;04_Research/strategies/STR_1701_WT004_Iter11_LinearTilt/run_all.R;04_Research/strategies/STR_1701_WT011_Iter26_DDThreshold/run_all.R;04_Research/strategies/STR_1710_WT006_Iter22_DDCondDefBlend/run_all.R;04_Research/strategies/STR_1711_WT007_Iter22b_HedgeStrict_PG2Blend/run_all.R;04_Research/strategies/STR_1715_WT016_Iter31_GridBestProd/run_all.R;qepm/mailbox/worktask/WT-D20260424_004/run_alpha_pilot6.R;qepm/mailbox/worktask/WT-D20260508_002/run_alpha_v5_phase3_diagnostics.R;qepm/mailbox/worktask/WT-D20260511_001/judge_pd18_5_critical_paths.R;qepm/mailbox/worktask/WT-D20260512_001/alpha_research_overlay_integration.R;qepm/mailbox/worktask/WT-D20260519_002/run_all.R;qepm/mailbox/worktask/WT-H20260512_001/run_zsc_grid.R",
       "status": "thin",
-      "stale_producer": false,
+      "_unverified_stale_producer": false,
       "single_zone": true
     },
     {
@@ -600,7 +601,7 @@
       "consumers": "02_Infrastructure/ops/handbook_facts_audit.sh;02_Infrastructure/ops/stranded_repairs_audit.sh;08_Tests/hooks/test_stranded_triage.sh",
       "_unverified_reimplementers": "",
       "status": "thin",
-      "stale_producer": false,
+      "_unverified_stale_producer": false,
       "single_zone": true
     },
     {
@@ -619,7 +620,7 @@
       "consumers": "02_Infrastructure/ast/ast_verify.py;02_Infrastructure/factor_db/registry_migrate_ast_v11.py;02_Infrastructure/hooks/ast_spec_gate.sh",
       "_unverified_reimplementers": "",
       "status": "wired",
-      "stale_producer": false,
+      "_unverified_stale_producer": false,
       "single_zone": true
     },
     {
@@ -638,7 +639,7 @@
       "consumers": "02_Infrastructure/contracts/canonical_screen_bt.R;02_Infrastructure/contracts/essence_score.R;02_Infrastructure/ops/bootstrap.sh;08_Tests/contract_regression/test_ast_sidecar.R;08_Tests/hooks/run_all_hooks.sh",
       "_unverified_reimplementers": "",
       "status": "wired",
-      "stale_producer": false,
+      "_unverified_stale_producer": false,
       "single_zone": true
     },
     {
@@ -657,7 +658,7 @@
       "consumers": "02_Infrastructure/ramp/register_ramp_result.R;04_Research/factor_rotation/run_wf_ensemble.R;04_Research/factor_rotation/run_wf_ensemble_fr002.R",
       "_unverified_reimplementers": "02_Infrastructure/alpha_search/driver_ls_generic.R;02_Infrastructure/alpha_search/fe_ml.R;02_Infrastructure/alpha_search/run_alpha_search.R;02_Infrastructure/alpha_search/run_hill_tail_wrapper.R;02_Infrastructure/alpha_search/run_qfactor_paper.R;02_Infrastructure/alpha_search/run_qmj_paper.R;02_Infrastructure/alpha_search/run_residmom_paper.R;02_Infrastructure/alpha_search/run_volmanaged.R;02_Infrastructure/contracts/essence_backfill.R;02_Infrastructure/contracts/register_research_outputs.R;02_Infrastructure/contracts/registry_writer.R;02_Infrastructure/contracts/save_bt_result.R;02_Infrastructure/regime/fred_robust.R;02_Infrastructure/regime/ktri_v3_builder.R;02_Infrastructure/regime/msm_daily_refit.R;02_Infrastructure/regime/r4_regime_payoff.R;02_Infrastructure/regime/regime_cusum.R;02_Infrastructure/regime/regime_engine_daily.R;02_Infrastructure/regime/regime_engine_research.R;02_Infrastructure/regime/regime_ensemble.R",
       "status": "wired",
-      "stale_producer": false,
+      "_unverified_stale_producer": false,
       "single_zone": false
     },
     {
@@ -676,7 +677,7 @@
       "consumers": "02_Infrastructure/validation/pit_engine_v3.R;04_Research/decision_framework/bearish_forecast_v3/scripts/483_p4_features_horizon.py;qepm/mailbox/research/risk_cycle6_20260507/build_final.R",
       "_unverified_reimplementers": "02_Infrastructure/sanity_checks/bear_date_audit.R",
       "status": "wired",
-      "stale_producer": false,
+      "_unverified_stale_producer": false,
       "single_zone": false
     },
     {
@@ -695,7 +696,7 @@
       "consumers": "02_Infrastructure/monitoring/monitor_nolayer4_paper.R;02_Infrastructure/portfolio/ppure_paper_track.R;qepm/mailbox/worktask/WT-D20260701_002/scripts/verify_contract.R;qepm/mailbox/worktask/WT-D20260702_002/reregister_holdout_monitoring.R",
       "_unverified_reimplementers": "02_Infrastructure/alpha_search/run_coverage_delta.R;02_Infrastructure/alpha_search/run_disclosure_meta.R;02_Infrastructure/alpha_search/run_pead_paper.R;02_Infrastructure/alpha_search/run_te_sink.R;02_Infrastructure/regime/build_module_performance.R;04_Research/factor_rotation/ep_multisleeve.R;04_Research/factor_rotation/ep_oos_diag.R;04_Research/factor_rotation/ep_orthogonality.R;04_Research/factor_rotation/fof_first_slice/contract_main.R;04_Research/factor_rotation/fof_first_slice/run_contract_generic.R;04_Research/factor_rotation/fof_first_slice/run_fof_advance.R;04_Research/factor_rotation/fof_first_slice/run_fof_advance2.R;04_Research/factor_rotation/fof_first_slice/run_fof_ewbench.R;04_Research/factor_rotation/fof_first_slice/run_fof_improve.R;04_Research/factor_rotation/fof_first_slice/run_fof_improve2.R;04_Research/factor_rotation/fof_first_slice/run_fof_improve3.R;04_Research/factor_rotation/fof_first_slice/run_fof_optsweep.R;04_Research/factor_rotation/fof_first_slice/run_fof_optsweep2.R;04_Research/factor_rotation/fof_first_slice/run_fof_overlay.R;04_Research/factor_rotation/fof_first_slice/run_fof_qarp.R",
       "status": "wired",
-      "stale_producer": false,
+      "_unverified_stale_producer": false,
       "single_zone": false
     },
     {
@@ -714,7 +715,7 @@
       "consumers": "02_Infrastructure/axiom/run_overlay_selfdev.R;02_Infrastructure/axiom/run_overlay_selfdev_r2.R;02_Infrastructure/axiom/run_overlay_selfdev_r3.R;02_Infrastructure/hooks/overlay_pit_grep.sh;02_Infrastructure/regime/overlay_candidate_drain.R",
       "_unverified_reimplementers": "",
       "status": "wired",
-      "stale_producer": false,
+      "_unverified_stale_producer": false,
       "single_zone": true
     },
     {
@@ -733,7 +734,7 @@
       "consumers": "04_Research/pg2_forensics/_v24_judge_prepatch_baseline.R;04_Research/pg2_forensics/v24_adv_verify.R;04_Research/pg2_forensics/v24_fee_ab_test.R;04_Research/pg2_forensics/v24_flip_verify.R;08_Tests/hooks/test_lockbox_audit_path.R;qepm/mailbox/worktask/WT-D20260424_005/run_judge_pilot7.R;qepm/mailbox/worktask/WT-D20260424_006/run_judge_pilot8.R",
       "_unverified_reimplementers": "",
       "status": "wired",
-      "stale_producer": false,
+      "_unverified_stale_producer": false,
       "single_zone": false
     },
     {
@@ -752,7 +753,7 @@
       "consumers": "02_Infrastructure/contracts/factor_rotation_registry.R;04_Research/strategies/STR_1716_QFM/run_all.R;04_Research/strategies/STR_1719_WT001_DCA_v7/run_all.R;qepm/mailbox/worktask/WT-D20260429_001/run_all.R;qepm/mailbox/worktask/WT-D20260430_001/run_all.R;qepm/mailbox/worktask/WT-D20260528_003/run_all.R;qepm/mailbox/worktask/WT-D20260529_001/run_all.R;qepm/mailbox/worktask/WT-D20260701_002/run_forge_dossier.R",
       "_unverified_reimplementers": "02_Infrastructure/alpha_search/driver_ls_generic.R;02_Infrastructure/alpha_search/fe_ml.R;02_Infrastructure/alpha_search/run_alpha_search.R;02_Infrastructure/alpha_search/run_hill_tail_wrapper.R;02_Infrastructure/alpha_search/run_qfactor_paper.R;02_Infrastructure/alpha_search/run_qmj_paper.R;02_Infrastructure/alpha_search/run_residmom_paper.R;02_Infrastructure/alpha_search/run_volmanaged.R;02_Infrastructure/contracts/essence_backfill.R;02_Infrastructure/contracts/register_research_outputs.R;02_Infrastructure/contracts/save_bt_result.R;02_Infrastructure/regime/fred_robust.R;02_Infrastructure/regime/ktri_v3_builder.R;02_Infrastructure/regime/msm_daily_refit.R;02_Infrastructure/regime/r4_regime_payoff.R;02_Infrastructure/regime/regime_cusum.R;02_Infrastructure/regime/regime_engine_daily.R;02_Infrastructure/regime/regime_engine_research.R;02_Infrastructure/regime/regime_ensemble.R;02_Infrastructure/regime/regime_forecaster.R",
       "status": "wired",
-      "stale_producer": false,
+      "_unverified_stale_producer": false,
       "single_zone": false
     },
     {
@@ -771,7 +772,7 @@
       "consumers": "02_Infrastructure/alpha_search/run_alpha_search.R;02_Infrastructure/alpha_search/run_coverage_delta.R;02_Infrastructure/alpha_search/run_disclosure_meta.R;02_Infrastructure/alpha_search/run_hzz_inverse.R;02_Infrastructure/alpha_search/run_hzz_trend.R;02_Infrastructure/alpha_search/run_pead_paper.R;02_Infrastructure/alpha_search/run_qfactor_paper.R;02_Infrastructure/alpha_search/run_qmj_paper.R;02_Infrastructure/alpha_search/run_residmom_paper.R;02_Infrastructure/alpha_search/run_te_sink.R;02_Infrastructure/alpha_search/run_volmanaged.R;02_Infrastructure/contracts/register_research_module.R;02_Infrastructure/tools/reconcile_module_registries.R;08_Tests/contract_regression/run_contract_regression.R;08_Tests/contract_regression/test_module_registry_exclusivity.R;08_Tests/contract_regression/test_register_module.R",
       "_unverified_reimplementers": "",
       "status": "wired",
-      "stale_producer": false,
+      "_unverified_stale_producer": false,
       "single_zone": true
     },
     {
@@ -790,7 +791,7 @@
       "consumers": "02_Infrastructure/alpha_search/run_alpha_search.R;02_Infrastructure/contracts/ast_sidecar.R;02_Infrastructure/contracts/canonical_screen_bt.R;02_Infrastructure/contracts/essence_backfill.R;02_Infrastructure/hooks/discovery_graduation_gate.sh;02_Infrastructure/hurdle_gate.R;04_Research/composition_search/cycle1_trackO/run_combine_ab.R;04_Research/composition_search/cycle1_trackO_promotion/run_o3_promotion_forge.R;04_Research/composition_search/cycle1b_trackV/s3_aggregate.R;04_Research/composition_search/cycle1b_trackW/trackw_engine.R;04_Research/composition_search/cycle1c_trackD/run_trackd.R;04_Research/composition_search/cycle2_trackB/stageb_measure.R;04_Research/composition_search/cycle2_trackF/run_trackF_forge.R;04_Research/factor_rotation/run_tsmom_timing.R;04_Research/factor_rotation/run_valearn_overlay.R;04_Research/factor_rotation/run_wf_ensemble.R;04_Research/factor_rotation/run_wf_ensemble_fr002.R;08_Tests/contract_regression/run_contract_regression.R;08_Tests/contract_regression/test_ast_sidecar.R;08_Tests/contract_regression/test_essence_score.R",
       "_unverified_reimplementers": "02_Infrastructure/alpha_search/pg2_w2_measure.R;02_Infrastructure/contracts/weighted_screen_bt.R;02_Infrastructure/ml_pipeline/dpl_best_full_eval.R;02_Infrastructure/ml_pipeline/dpl_cbe_eval_contract.R;02_Infrastructure/ml_pipeline/dpl_ens_eval_contract.R;02_Infrastructure/ml_pipeline/dpl_ens2_eval_contract.R;02_Infrastructure/ml_pipeline/dpl_eval_contract.R;02_Infrastructure/ml_pipeline/dpl_lex_eval_contract.R;02_Infrastructure/ml_pipeline/dpl_ortho_eval_contract.R;02_Infrastructure/ml_pipeline/dpl_total_sharpe_contract.R;02_Infrastructure/ml_pipeline/measure_returns.R;02_Infrastructure/regime/overlay_candidate_ab_lh.R;02_Infrastructure/regime/overlay_candidate_drain.R;04_Research/composition_search/cycle1b_trackV/trackv_engine.R;qepm/mailbox/worktask/WT-D20260705_004/run_forge_authoritative.R;qepm/mailbox/worktask/WT-D20260706_MIDCAP/run_forge_midcap.R",
       "status": "wired",
-      "stale_producer": false,
+      "_unverified_stale_producer": false,
       "single_zone": false
     },
     {
@@ -809,7 +810,7 @@
       "consumers": "02_Infrastructure/alpha_search/run_alpha_search.R;02_Infrastructure/tools/backfill_alpha_search_contracts.R;04_Research/strategies/STR_1715_WT016_Iter31_GridBestProd/run_all.R;04_Research/strategies/STR_1716_QFM/run_all.R;04_Research/strategies/STR_1719_WT001_DCA_v7/run_all.R;04_Research/strategies/WT_D20260511_001_5sleeve_high20pct/run_all.R;04_Research/strategies/WT_D20260511_001_5sleeve_med10pct/run_all.R;qepm/mailbox/worktask/WT-D20260429_001/run_all.R;qepm/mailbox/worktask/WT-D20260430_001/run_all.R;qepm/mailbox/worktask/WT-D20260508_009/run_all.R;qepm/mailbox/worktask/WT-D20260528_003/run_all.R;qepm/mailbox/worktask/WT-D20260529_001/run_all.R;qepm/mailbox/worktask/WT-D20260701_002/run_forge_dossier.R;qepm/mailbox/worktask/WT-D20260705_001/run_all.R;qepm/mailbox/worktask/WT-P20260505_001/run_all.R;qepm/mailbox/worktask/WT-S20260504_001/run_all.R;qepm/mailbox/worktask/WT-S20260504_004/run_all.R;qepm/mailbox/worktask/WT-S20260504_006/run_all.R;qepm/mailbox/worktask/WT-S20260504_007/run_all.R",
       "_unverified_reimplementers": "02_Infrastructure/alpha_search/driver_ls_generic.R;02_Infrastructure/alpha_search/fe_ml.R;02_Infrastructure/alpha_search/run_hill_tail_wrapper.R;02_Infrastructure/alpha_search/run_qfactor_paper.R;02_Infrastructure/alpha_search/run_qmj_paper.R;02_Infrastructure/alpha_search/run_residmom_paper.R;02_Infrastructure/alpha_search/run_volmanaged.R;02_Infrastructure/contracts/essence_backfill.R;02_Infrastructure/contracts/factor_rotation_registry.R;02_Infrastructure/contracts/register_research_outputs.R;02_Infrastructure/contracts/registry_writer.R;02_Infrastructure/regime/fred_robust.R;02_Infrastructure/regime/ktri_v3_builder.R;02_Infrastructure/regime/msm_daily_refit.R;02_Infrastructure/regime/r4_regime_payoff.R;02_Infrastructure/regime/regime_cusum.R;02_Infrastructure/regime/regime_engine_daily.R;02_Infrastructure/regime/regime_engine_research.R;02_Infrastructure/regime/regime_ensemble.R;02_Infrastructure/regime/regime_forecaster.R",
       "status": "wired",
-      "stale_producer": false,
+      "_unverified_stale_producer": false,
       "single_zone": false
     },
     {
@@ -828,7 +829,7 @@
       "consumers": "02_Infrastructure/ops/auto_regime_overlay_ab.R;02_Infrastructure/ops/auto_sigma_weighting_ab.R;02_Infrastructure/ops/auto_weighting_ab.R;02_Infrastructure/ops/paper_research_dispatch.R;02_Infrastructure/portfolio/ppure_paper_track.R;02_Infrastructure/ramp/run_ramp_crisis_derisk.R;02_Infrastructure/ramp/run_ramp_r10_weighting.R;02_Infrastructure/ramp/run_ramp_r11_ppure_dev.R;02_Infrastructure/ramp/run_ramp_r12_asym.R;02_Infrastructure/ramp/run_ramp_r13_decay.R;02_Infrastructure/ramp/run_ramp_r14_exitcomb.R;02_Infrastructure/ramp/run_ramp_r15_fill.R;02_Infrastructure/ramp/run_ramp_shumulvey_stock25x.R;02_Infrastructure/ramp/run_ramp_timing_absolute.R;02_Infrastructure/ramp/run_ramp_weighting_methods.R;02_Infrastructure/ramp/search/run_construct.R;02_Infrastructure/ramp/search/weight_advanced.R;04_Research/method_frontier/wt006_exog_forecast/probe_info_theoretic.R;04_Research/method_frontier/wt006_exog_forecast/run_R4_bench_aware_weight.R;04_Research/method_frontier/wt006_exog_forecast/run_R4_decrowd_overlay.R;04_Research/method_frontier/wt006_exog_forecast/run_R5_regime_beta_attribution.R;04_Research/method_frontier/wt006_exog_forecast/run_R5_signal_agnostic_captilt.R;04_Research/method_frontier/wt006_exog_forecast/run_struct_sizing.R;04_Research/method_frontier/wt012_hawkes/hawkes_own_crash_overlay.R;qepm/mailbox/worktask/WT-D20260705_004/run_forge_authoritative.R;qepm/mailbox/worktask/WT-D20260706_MIDCAP/run_forge_midcap.R",
       "_unverified_reimplementers": "02_Infrastructure/alpha_search/pg2_w2_measure.R;02_Infrastructure/contracts/canonical_screen_bt.R;02_Infrastructure/contracts/essence_score.R;02_Infrastructure/ml_pipeline/dpl_best_full_eval.R;02_Infrastructure/ml_pipeline/dpl_cbe_eval_contract.R;02_Infrastructure/ml_pipeline/dpl_ens_eval_contract.R;02_Infrastructure/ml_pipeline/dpl_ens2_eval_contract.R;02_Infrastructure/ml_pipeline/dpl_eval_contract.R;02_Infrastructure/ml_pipeline/dpl_lex_eval_contract.R;02_Infrastructure/ml_pipeline/dpl_ortho_eval_contract.R;02_Infrastructure/ml_pipeline/dpl_total_sharpe_contract.R;02_Infrastructure/ml_pipeline/measure_returns.R;02_Infrastructure/regime/overlay_candidate_ab_lh.R;02_Infrastructure/regime/overlay_candidate_drain.R;04_Research/composition_search/cycle1_trackO_promotion/run_o3_promotion_forge.R;04_Research/composition_search/cycle1b_trackV/trackv_engine.R;04_Research/composition_search/cycle2_trackB/stageb_measure.R",
       "status": "wired",
-      "stale_producer": false,
+      "_unverified_stale_producer": false,
       "single_zone": false
     },
     {
@@ -847,7 +848,7 @@
       "consumers": "02_Infrastructure/alpha_search/run_alpha_search.R;02_Infrastructure/contracts/backtest_result_contract.R;02_Infrastructure/tools/backfill_alpha_search_contracts.R;04_Research/composition_search/cycle1_trackO_promotion/run_o3_promotion_forge.R;04_Research/composition_search/cycle2_trackB/stageb_measure.R;04_Research/composition_search/cycle2_trackF/run_trackF_forge.R;04_Research/factor_rotation/run_tsmom_timing.R;04_Research/factor_rotation/run_valearn_overlay.R;04_Research/factor_rotation/run_wf_ensemble.R;04_Research/factor_rotation/run_wf_ensemble_fr002.R;04_Research/pg2_carry_convention/run_all.R;04_Research/strategies/STR_1715_WT016_Iter31_GridBestProd/run_all.R;04_Research/strategies/STR_1716_QFM/run_all.R;04_Research/strategies/STR_1719_WT001_DCA_v7/run_all.R;04_Research/strategies/WT_D20260511_001_5sleeve_high20pct/run_all.R;04_Research/strategies/WT_D20260511_001_5sleeve_med10pct/run_all.R;qepm/mailbox/worktask/WT-D20260429_001/run_all.R;qepm/mailbox/worktask/WT-D20260430_001/run_all.R;qepm/mailbox/worktask/WT-D20260508_009/run_all.R;qepm/mailbox/worktask/WT-D20260515_002/run_forge_backtest.R;qepm/mailbox/worktask/WT-D20260515_002/run_forge_revision_v2.R;qepm/mailbox/worktask/WT-D20260528_003/run_all.R;qepm/mailbox/worktask/WT-D20260529_001/run_all.R;qepm/mailbox/worktask/WT-D20260701_002/run_forge_dossier.R;qepm/mailbox/worktask/WT-D20260705_001/run_all.R;qepm/mailbox/worktask/WT-D20260705_004/run_forge_authoritative.R;qepm/mailbox/worktask/WT-D20260706_MIDCAP/run_forge_midcap.R;qepm/mailbox/worktask/WT-D20260714_006/run_all.R;qepm/mailbox/worktask/WT-P20260505_001/run_all.R;qepm/mailbox/worktask/WT-P20260706_002/forge_authoritative.R;qepm/mailbox/worktask/WT-S20260504_001/run_all.R;qepm/mailbox/worktask/WT-S20260504_002/run_all.R;qepm/mailbox/worktask/WT-S20260504_003/forge_output/run_all.R;qepm/mailbox/worktask/WT-S20260504_004/run_all.R;qepm/mailbox/worktask/WT-S20260504_006/run_all.R;qepm/mailbox/worktask/WT-S20260504_007/run_all.R",
       "_unverified_reimplementers": "02_Infrastructure/factor_db/merge_xlsx_into_dart.R",
       "status": "wired",
-      "stale_producer": false,
+      "_unverified_stale_producer": false,
       "single_zone": false
     },
     {
@@ -866,7 +867,7 @@
       "consumers": "02_Infrastructure/alpha_search/run_alpha_search.R;02_Infrastructure/contracts/audit_bt_result.R;02_Infrastructure/tools/backfill_alpha_search_contracts.R;02_Infrastructure/validation/pit_ast_scanner.R;02_Infrastructure/validation/pit_engine_v3.R;02_Infrastructure/validation/preflight_memory.R;04_Research/strategies/STR_1047_4sleeve_regime/run_all.R;04_Research/strategies/STR_1332_bayesian_garp/run_all.R;04_Research/strategies/STR_1393_esbr_sue_adaptive/run_all.R;04_Research/strategies/STR_1422_crowding_defense/run_all.R;04_Research/strategies/STR_1422_flow_reversal/run_all.R;04_Research/strategies/STR_1423_volvol_quality/run_all.R;04_Research/strategies/STR_1424_tailrisk_flow/run_all.R;04_Research/strategies/STR_1425_adaptive_ic_rotation/run_all.R;04_Research/strategies/STR_1435_earnings_stability_gate/run_all.R;04_Research/strategies/STR_1456_defense_consensus_quality/run_all.R;04_Research/strategies/STR_1456_defense_consensus_quality/run_all_overlay_backup.R;04_Research/strategies/STR_1457_indmom_quality_gate/run_all.R;04_Research/strategies/STR_1465_vwap_spread_construction/run_all.R;04_Research/strategies/STR_1470_skew_stability_surprise/run_all.R;04_Research/strategies/STR_1470_skew_stability_surprise/run_all_overlay_backup.R;04_Research/strategies/STR_1471_cokurt_crowddiv/run_all.R;04_Research/strategies/STR_1471_cokurt_crowddiv/run_all_overlay_backup.R;04_Research/strategies/STR_1486_rogers_satchell_vol/run_all.R;04_Research/strategies/STR_1500_var95_tail_risk/run_all.R;04_Research/strategies/STR_1501_turnover_liquidity/run_all.R;04_Research/strategies/STR_1502_cvar95_expected_shortfall/run_all.R;04_Research/strategies/STR_1506_ownership_concentration/run_all.R;04_Research/strategies/STR_1509_safe_forward_value/run_all.R;04_Research/strategies/STR_1510_contrarian_replacement_value/run_all.R;04_Research/strategies/STR_1511_liquid_income/run_all.R;04_Research/strategies/STR_1519_earnings_streak_residual/run_all.R;04_Research/strategies/STR_1527_m25_streak_dd/run_all.R;04_Research/strategies/STR_1528_roic_sustainable_growth/run_all.R;04_Research/strategies/STR_1549_defense_core_alpha/run_all.R;04_Research/strategies/STR_1550_consensus_core_alpha/run_all.R;04_Research/strategies/STR_1551_defense_idiovol_sleeve/run_all.R;04_Research/strategies/STR_1555_score_blend_3factor/run_all.R;04_Research/strategies/STR_1558_ret_autocorr_diversifier/run_all.R;04_Research/strategies/STR_1560_gross_margin_quality/run_all.R",
       "_unverified_reimplementers": "",
       "status": "wired",
-      "stale_producer": false,
+      "_unverified_stale_producer": false,
       "single_zone": false
     },
     {
@@ -885,7 +886,7 @@
       "consumers": "02_Infrastructure/alpha_search/fq081_run_diag.R;02_Infrastructure/alpha_search/fq081_run_subdiag.R;02_Infrastructure/alpha_search/pg2_w2_measure.R;02_Infrastructure/alpha_search/run_buyback_drift.R;02_Infrastructure/data/dart_insider_milestone_test.R;02_Infrastructure/discovery/gate_phase0.R;02_Infrastructure/discovery/run_canonical_screen.R;02_Infrastructure/discovery/verify_phase0.R;02_Infrastructure/ml_pipeline/measure_scores.R;02_Infrastructure/portfolio/ppure_paper_track.R;02_Infrastructure/ramp/build_insider_factor_panel.R;02_Infrastructure/ramp/debug/debug_three_screen.R;02_Infrastructure/ramp/debug/r3_adversarial.R;02_Infrastructure/ramp/factor_validation.R;02_Infrastructure/ramp/ramp_wire_canonical.R;02_Infrastructure/ramp/run_ramp_alpha_oos_probe.R;02_Infrastructure/ramp/run_ramp_ar_regime.R;02_Infrastructure/ramp/run_ramp_autonomous.R;02_Infrastructure/ramp/run_ramp_gate6_8_investor.R;02_Infrastructure/ramp/run_ramp_graduation.R;02_Infrastructure/ramp/run_ramp_momentum_centric.R;02_Infrastructure/ramp/run_ramp_oos_probe_broad.R;02_Infrastructure/ramp/run_ramp_oos_probe_fwl.R;02_Infrastructure/ramp/run_ramp_pergroup_jump.R;02_Infrastructure/ramp/run_ramp_r1_sleeve_stack.R;02_Infrastructure/ramp/run_ramp_r2_ml_gate.R;02_Infrastructure/ramp/run_ramp_r2_topn.R;02_Infrastructure/ramp/run_ramp_r3_sleeve_addition.R;02_Infrastructure/ramp/run_ramp_r4_boruta.R;02_Infrastructure/ramp/run_ramp_r5_selection.R;02_Infrastructure/ramp/run_ramp_r6_portt_boruta.R;02_Infrastructure/ramp/run_ramp_r7_ewbasis.R;02_Infrastructure/ramp/run_ramp_r8_band_escalation.R;02_Infrastructure/ramp/run_ramp_r9_insider_ext.R;02_Infrastructure/ramp/run_ramp_r9_insider_f1.R;02_Infrastructure/ramp/run_ramp_recency.R;02_Infrastructure/ramp/run_ramp_regime_bakeoff.R;02_Infrastructure/ramp/run_ramp_regime_blend.R;02_Infrastructure/ramp/run_ramp_regime_blend_v2.R;02_Infrastructure/ramp/run_ramp_regime_multiaxis.R",
       "_unverified_reimplementers": "02_Infrastructure/contracts/essence_score.R;02_Infrastructure/contracts/weighted_screen_bt.R;02_Infrastructure/ml_pipeline/dpl_best_full_eval.R;02_Infrastructure/ml_pipeline/dpl_cbe_eval_contract.R;02_Infrastructure/ml_pipeline/dpl_ens_eval_contract.R;02_Infrastructure/ml_pipeline/dpl_ens2_eval_contract.R;02_Infrastructure/ml_pipeline/dpl_eval_contract.R;02_Infrastructure/ml_pipeline/dpl_lex_eval_contract.R;02_Infrastructure/ml_pipeline/dpl_ortho_eval_contract.R;02_Infrastructure/ml_pipeline/dpl_total_sharpe_contract.R;02_Infrastructure/ml_pipeline/measure_returns.R;02_Infrastructure/regime/overlay_candidate_ab_lh.R;02_Infrastructure/regime/overlay_candidate_drain.R;04_Research/composition_search/cycle1_trackO_promotion/run_o3_promotion_forge.R;04_Research/composition_search/cycle1b_trackV/trackv_engine.R;04_Research/composition_search/cycle2_trackB/stageb_measure.R;08_Tests/contract_regression/test_ast_monthly_asof_label.R;08_Tests/contract_regression/test_module_registry_exclusivity.R;08_Tests/contract_regression/test_sample_alignment_empty.R;08_Tests/data/test_benchmark_source_parity.R",
       "status": "wired",
-      "stale_producer": false,
+      "_unverified_stale_producer": false,
       "single_zone": false
     },
     {
@@ -904,7 +905,7 @@
       "consumers": "02_Infrastructure/alpha_search/fq081_run_diag.R;02_Infrastructure/alpha_search/fq081_run_subdiag.R;02_Infrastructure/alpha_search/pg2_w2_measure.R;02_Infrastructure/alpha_search/run_alpha_search.R;02_Infrastructure/alpha_search/run_buyback_drift.R;02_Infrastructure/contracts/canonical_screen_bt.R;02_Infrastructure/contracts/essence_backfill.R;02_Infrastructure/contracts/weighted_screen_bt.R;02_Infrastructure/discovery/round10_contract.R;02_Infrastructure/discovery/round9_contract.R;02_Infrastructure/discovery/run_canonical_screen.R;02_Infrastructure/ml_pipeline/dpl_best_full_eval.R;02_Infrastructure/ml_pipeline/dpl_c2_eval_total.R;02_Infrastructure/ml_pipeline/dpl_cbe_eval_contract.R;02_Infrastructure/ml_pipeline/dpl_compare_contract.R;02_Infrastructure/ml_pipeline/dpl_ens_eval_contract.R;02_Infrastructure/ml_pipeline/dpl_ens2_eval_contract.R;02_Infrastructure/ml_pipeline/dpl_eval_contract.R;02_Infrastructure/ml_pipeline/dpl_lex_eval_contract.R;02_Infrastructure/ml_pipeline/dpl_ortho_eval_contract.R;02_Infrastructure/ml_pipeline/dpl_total_sharpe_contract.R;02_Infrastructure/ml_pipeline/measure_returns.R;02_Infrastructure/ml_pipeline/measure_scores.R;02_Infrastructure/portfolio/portfolio_governor.R;02_Infrastructure/ramp/factor_validation.R;02_Infrastructure/ramp/run_ramp_crisis_derisk.R;02_Infrastructure/ramp/run_ramp_shumulvey_contract.R;02_Infrastructure/ramp/run_ramp_shumulvey_v2.R;02_Infrastructure/ramp/run_ramp_shumulvey_v2verify.R;02_Infrastructure/ramp/run_ramp_shumulvey_v3.R;02_Infrastructure/ramp/run_ramp_shumulvey_v3verify.R;02_Infrastructure/ramp/run_ramp_shumulvey_v4.R;02_Infrastructure/ramp/run_ramp_timing_absolute.R;02_Infrastructure/ramp/run_ramp_weighting_methods.R;02_Infrastructure/tools/backfill_alpha_search_contracts.R;04_Research/champions_revalidation/slot3_o3_midband/run_o3_transplant_is.R;04_Research/composition_search/cycle1_trackO_promotion/run_o3_promotion_forge.R;04_Research/composition_search/cycle1_trackS/adversarial_verify.R;04_Research/composition_search/cycle1_trackS/flow_stage_a_engine.R;04_Research/composition_search/cycle1b_trackV/probe_env.R",
       "_unverified_reimplementers": "qepm/mailbox/worktask/WT-D20260511_002/architect/architect_independent_reproduce.R;qepm/mailbox/worktask/WT-S20260504_005/run_all.R",
       "status": "wired",
-      "stale_producer": false,
+      "_unverified_stale_producer": false,
       "single_zone": false
     },
     {
@@ -923,7 +924,7 @@
       "consumers": "04_Research/strategies/BLEND_Scheme_A_20260423/run_all.R;04_Research/strategies/EVO_1340_direct_ic/run_all.R;04_Research/strategies/FIX_1341_weighted_sum/run_all.R;04_Research/strategies/STR_1028_gerber_dcc_hrp/run_all.R;04_Research/strategies/STR_1033_nco/run_all.R;04_Research/strategies/STR_1047_4sleeve_regime/run_all.R;04_Research/strategies/STR_1332_bayesian_garp/run_all.R;04_Research/strategies/STR_1332_foreign_flow_momentum/run_all.R;04_Research/strategies/STR_1333_ridge_multifactor/run_all.R;04_Research/strategies/STR_1333_value_earnings_synergy/run_all.R;04_Research/strategies/STR_1393_esbr_bm_simple/run_all.R;04_Research/strategies/STR_1393_esbr_sue_adaptive/run_all.R;04_Research/strategies/STR_1422_crowding_defense/run_all.R;04_Research/strategies/STR_1422_flow_reversal/run_all.R;04_Research/strategies/STR_1423_volvol_quality/run_all.R;04_Research/strategies/STR_1424_overnight_spread_liq/run_all.R;04_Research/strategies/STR_1424_tailrisk_flow/run_all.R;04_Research/strategies/STR_1425_adaptive_ic_rotation/run_all.R;04_Research/strategies/STR_1435_5sleeve_dd620_repair/run_all.R;04_Research/strategies/STR_1435_894_overlay_boost/run_all.R;04_Research/strategies/STR_1435_earnings_stability_gate/run_all.R;04_Research/strategies/STR_1439_1047_to_fix/run_all.R;04_Research/strategies/STR_1456_defense_consensus_quality/run_all.R;04_Research/strategies/STR_1456_defense_consensus_quality/run_all_overlay_backup.R;04_Research/strategies/STR_1457_indmom_quality_gate/run_all.R;04_Research/strategies/STR_1457_indmom_quality_gate/run_all_overlay_backup.R;04_Research/strategies/STR_1465_vwap_spread_construction/run_all.R;04_Research/strategies/STR_1465_vwap_spread_construction/run_all_overlay_backup.R;04_Research/strategies/STR_1469_cons4f_5sleeve/run_all.R;04_Research/strategies/STR_1470_skew_stability_surprise/run_all.R;04_Research/strategies/STR_1470_skew_stability_surprise/run_all_overlay_backup.R;04_Research/strategies/STR_1471_cokurt_crowddiv/run_all.R;04_Research/strategies/STR_1471_cokurt_crowddiv/run_all_overlay_backup.R;04_Research/strategies/STR_1486_rogers_satchell_vol/run_all.R;04_Research/strategies/STR_1500_var95_tail_risk/run_all.R;04_Research/strategies/STR_1501_turnover_liquidity/run_all.R;04_Research/strategies/STR_1502_cvar95_expected_shortfall/run_all.R;04_Research/strategies/STR_1506_ownership_concentration/run_all.R;04_Research/strategies/STR_1509_safe_forward_value/run_all.R;04_Research/strategies/STR_1510_contrarian_replacement_value/run_all.R",
       "_unverified_reimplementers": "",
       "status": "wired",
-      "stale_producer": false,
+      "_unverified_stale_producer": false,
       "single_zone": true
     }
   ],

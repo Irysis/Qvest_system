@@ -78,9 +78,19 @@ FQ-056 실측(2026-08-08)에서 드러났다. `build_module_performance.R` 은 �
 | 재구현 | 낮음 | `_unverified_` ⚠️ | 미검증 |
 | **호출 계기 부재** | **정상(3+)** | **wired ❌** | **못 잡음** |
 
-∴ 소비자 **수**만으로는 부족하고 **산출물의 신선도**를 함께 봐야 한다. 후속 축 후보:
-표준이 산출물을 쓰는 경우 그 산출물의 `generated`/mtime 이 정체돼 있으면 `stale_producer` 로 표시.
-(FQ-056 은 `daily_refresh.sh` §8.2 무조건-실행으로 개별 해소했으나, **일반 탐지 축은 미구현**.)
+∴ 소비자 **수**만으로는 부족하고 **산출물의 신선도**를 함께 봐야 한다.
+
+**시도했고, 실효 없음을 확인했다** (`_unverified_stale_producer`). 산출물이 식별된 표준이
+**48개 중 2개**뿐이라 "정체 0" 은 건강이 아니라 **미측정**이다. 요약에 `producer_coverage_note`
+로 그 비율을 함께 노출해 초록 오독을 막는다. 두 공백:
+1. `STD_DIRS` 가 `contracts/`+`validation/` 뿐 → `regime/`·`portfolio/`·`ops/` 의 생산자가 목록에서 빠진다.
+   **이 축을 만들게 한 FQ-056 의 `build_module_performance.R` 이 정확히 그 경우 — 못 잡는다.**
+2. 산출 경로를 인용부호 리터럴로만 추출 → `file.path(ROOT, ...)` 조립 경로를 놓친다.
+
+부수 소득 1건은 실재: **`strategy_grades.json` 61일 정체**(`v8_readiness_gate.R` 이 소비).
+부팅의 `v8_readiness FAIL` 과 관련 가능 — 미확인.
+
+FQ-056 자체는 `daily_refresh.sh` §8.2 무조건-실행으로 개별 해소(모듈 192→209).
 
 ## 생성기 자신에게서 발견한 결함 4건 (전부 양성 대조가 검출)
 
