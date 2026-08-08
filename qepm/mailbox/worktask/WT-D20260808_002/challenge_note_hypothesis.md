@@ -21,7 +21,7 @@
 - **처분**: `06_Registry/hypothesis_index.json` grep 실측 — M26/Revenue_Mom/revenue_surprise/C14 판정 기록 **0건**. 인접 기록은 전부 이익-컨센서스(SUE/EPS revision) 계열이며 그것들은 기각이 아니라 **생산 북이 소비 중**(C01/C02/C04). 본 가설은 그 위의 증분 질문이므로 재포장 아님. frontier queue 의 FQ-099 는 fundamental_merged TTM 결함으로 본 재료(consensus 캐시 경유)와 무관 — prereg 가 이미 명시, 승계 확인.
 
 ## 합리화 어휘 자가검사
-"미미 / 관행적 / 보수적이면 OK" 류 미사용 확인. 커버리지·다중공선성 우려는 축소하지 않고 challenge_flags 로 alpha-research 에 전달.
+answer-principles 회피표현 목록(영향 축소·관행 원용 계열) 본문 미사용 확인. 커버리지·다중공선성 우려는 축소하지 않고 challenge_flags 로 alpha-research 에 전달.
 
 ## 결론
 4건 처분 후 `verdict: "designed"` 유지. 대상·주판정량·문턱·분기 무변경(확정 사항 준수).

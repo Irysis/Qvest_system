@@ -1,7 +1,7 @@
 {
  "schema_version": "1.0",
  "sot": "02_Infrastructure/docs/qvest_v8_3_alpha_discovery_sot.md §4",
- "updated": "2026-08-08 (FQ-119 라벨 자격 관문 — 함수·검사 17/17 완성, **배선 미완**(호출부 0). 소비 지점이 배포 경로/스키마라 진행 라운드 emit 후 착수. 총 164건)",
+ "updated": "2026-08-08 (FQ-114 사전 확인 — 국면 라벨 무자격 + 라벨 정본 위치 불명으로 설계 교정 필요. 주판정을 실현 시장 상태 귀속으로 전환 권고. 총 164건)",
  "consume_rule": "새 발굴 리서치 착수 전: hypothesis_index lookup → 본 큐 확인 → owner/status 갱신. 완료 시 result_ref(L-code/보고서) 기입. dohoon_decision 항목은 세션 임의 착수 금지.",
  "entries": [
   {
@@ -2299,9 +2299,9 @@
    "wall_check": "비적용 — 관측가능성 계층. 자본 주장 없음.",
    "data_gate": "없음 (r43_live_monthly_maxz.parquet + 국면 라벨 현행분)",
    "owner": "미배정",
-   "status": "frontier_open",
+   "status": "design_correction_required",
    "registered": "2026-08-02 Q-Lead (WT-D20260802_012 R43-F1 파생)",
-   "precheck_measured": "★착수 전 사전 확인 실측 (2026-08-02 Q-Lead, insider_axes_panel.parquet 원값 87,978행): INS02_BREADTH6 는 [-1,1] 유계인데 **원값의 41.8%가 정확히 상한 +1.000**이고 p95=p99=max=+1.000 — 상한 포화형 분포. 반면 INS_MAGQ3 는 무계 롱테일(sd 4.046, p95 +2.670, p99 +8.641, max +69.1, 원값 >=1 비중 14.8%). ⇒ ① R43-F1(문턱 도달 불가 침묵 49.8%)의 **직접 기전 증거** — 상한에 41.8%가 몰린 지표는 월 분포가 압축되면 표준화 후 max z 가 1.0 을 못 넘는다. ② FQ-113 의 논점(같은 z 문턱 비정합)도 실물 확인 — 상한 포화형과 롱테일형에 동일 z 문턱을 걸면 선별률이 구조적으로 달라진다. 라운드는 이 분포 사실을 전제로 선택률-정합 문턱을 설계할 것."
+   "precheck_measured": "★착수 전 사전 확인 (2026-08-08, Q-Lead read-only) — **설계 교정 필요, 착수 보류**. (1) 가설이 '침묵월의 **국면 라벨** 분포'를 주판정으로 두는데, 08-03 실측이 그 라벨의 판별력 부재를 확정했다(CRISIS recall 0.096 < base 0.457 fisher p 0.388 · 독립 음성대조 0.3669). **무자격 라벨로 귀속 측정을 하면 결과가 양수든 음수든 해석 불가**이고, 신설 관문(`label_eligibility_gate.R`)의 차단 대상이다. (2) data_gate 가 지목한 '국면 라벨 현행분'의 정본 위치가 불명 — `.cache/regime_daily_v2.parquet` 실측 결과 **라벨 컬럼이 없다**(8,239행 · 컬럼 = Date/MRS/exposure/n_axes_firing/VIX_z_smooth 등 **연속값**). CRISIS/CAUTION 4분류의 산출 지점을 먼저 특정해야 한다. ⇒ **교정안**: 주판정을 라벨 귀속이 아니라 **실현 시장 상태**(월 변동성·수익률·낙폭 연속값) 귀속으로 전환하고, 라벨 축은 관문 통과 시에만 보조로 병기. 가설 서술에 이미 '시장 변동성/방향과의 결합'이 있어 범위 확대가 아니라 **축 우선순위 교체**다."
   },
   {
    "id": "FQ-115",
