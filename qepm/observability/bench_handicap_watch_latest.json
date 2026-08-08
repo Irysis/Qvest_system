@@ -6,7 +6,10 @@
   "wiring_note": "월간 자동 실행 미배선 — 이 파일의 존재는 감시가 돌고 있음을 뜻하지 않는다(칩 분리). 재산출은 stage_artifacts/fq141_precheck_20260808/emit_bench_handicap_watch.R",
   "definition": "d = cap-w 유니버스 벤치 − EW 유니버스 벤치(월). 6개월 롤링 연율.",
   "series_months": 439,
-  "series_range": ["1990-01-31", "2026-07-31"],
+  "series_range": [
+    "1990-01-31",
+    "2026-07-31"
+  ],
   "current": {
     "as_of": "2026-07-31",
     "rolling6m_d_ann": 0.4847,
@@ -20,7 +23,11 @@
     "months_required": 3,
     "verdict": "ELEVATED"
   },
-  "gates_this_watch_controls": ["MID/OTHER 구성 라운드 착수 타이밍 (NP-c2c3)", "최근 창 수집분의 고-핸디캡 라벨 부착 여부 (NP-c5)", "111-145 밴드 재활성 관찰 (NP-b2b3a)", "사이즈 효과 부호 복귀 관찰 (NP-b2b)"],
+  "gates_this_watch_controls": [
+    "MID/OTHER 구성 라운드 착수 타이밍 (NP-c2c3)",
+    "최근 창 수집분의 고-핸디캡 라벨 부착 여부 (NP-c5)",
+    "사이즈 효과 부호 복귀 (NP-b2b) — cor(d, size_eff) = -0.847 로 동일 축의 반대 부호"
+  ],
   "recent_6m_rolling": [
     0.4136,
     0.6209,
@@ -31,5 +38,22 @@
     0.9797,
     0.4847
   ],
-  "source_round": "NPC5_20260808_ENDPOINT_ARITHMETIC_AND_REVERSAL_WATCH"
+  "source_round": "NPC5_20260808_ENDPOINT_ARITHMETIC_AND_REVERSAL_WATCH",
+  "gates_NOT_controlled": {
+    "111-145 밴드 재활성 (NP-b2b3a)": "cor(d, band) = +0.069 (6m 롤링 +0.062) · cor(size_eff, band) = -0.201/-0.345 — 별개 축이므로 이 감시로 커버되지 않는다. 별도 관측 필요.",
+    "정정 이력": "2026-08-08 초판이 이 밴드를 통제 대상 4번째로 잘못 기재했다. NP-b3a1 실측으로 제거."
+  },
+  "axis_merge_evidence": {
+    "round": "NPB3A1_20260808_AXIS_MERGE",
+    "window": "2010-01~2026-07 (199개월 — rk>300 요건상 그 이전 산출 불가)",
+    "cor_d_size_eff_monthly": -0.847,
+    "cor_d_size_eff_rolling6m": -0.803,
+    "by_era": {
+      "2010-2016": -0.873,
+      "2017-2026": -0.834
+    },
+    "cor_d_band_monthly": 0.069,
+    "cor_size_eff_band_rolling6m": -0.345,
+    "merge_rule_prestated": "|cor|>=0.7 통합 · <0.4 별도"
+  }
 }
