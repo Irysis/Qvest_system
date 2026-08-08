@@ -1,0 +1,8 @@
+suppressPackageStartupMessages({ library(data.table); library(arrow) })
+ROOT <- Sys.getenv("QM_ROOT","C:/Users/99922/OneDrive/Quant_Module_Moltbot"); setwd(ROOT)
+E <- as.data.table(read_parquet("stage_artifacts/fq068_precheck/fq068b_ecos_semi.parquet"))
+cat("dim:", dim(E), "\n")
+for (n in names(E)) cat(sprintf("  %-10s %s\n", n, paste(class(E[[n]]), collapse="/")))
+cat("\nitem 값:", paste(unique(unlist(E$item)), collapse=" | "), "\n")
+cat("ccy 값:", paste(unique(unlist(E$ccy)), collapse=" | "), "\n")
+cat("\nhead:\n"); print(head(E, 3))
