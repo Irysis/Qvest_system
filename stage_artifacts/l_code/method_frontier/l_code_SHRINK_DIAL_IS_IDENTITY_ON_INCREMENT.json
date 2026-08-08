@@ -1,0 +1,18 @@
+{
+ "l_code": "L-MF-20260808_SHRINK_DIAL_IS_IDENTITY_ON_INCREMENT",
+ "strategy_id": "R4CAPTILT_PAIRED_CEILING",
+ "grade": "N/A_method_frontier_diagnostic",
+ "core_reference": "stage_artifacts/fq141_precheck_20260808/fq156_paired_ceiling_findings.md · run_R4_bench_aware_weight.R:52,105 · close_round FQ156_20260808_CAPTILT_PAIRED_CEILING",
+ "lesson_text": "baseline 을 끝점으로 하는 **혼합(shrink/blend) 계열**에서는 다이얼이 standalone 성과를 크게 움직이면서 **증분 t 는 원리적으로 못 바꾼다**. mk_shrink 가 같은 25종목 위 EW 와 cap-비례의 볼록결합이고 baseline(ew_parity)이 그 EW 이므로 a_λ − a_mom = (1−λ)(a_capprop − a_mom) = **양의 스칼라 배**이고 t 는 스칼라 불변 — 실측이 예측과 일치해 λ∈{0,.25,.50,.75} 에서 paired t 가 **소수 3자리까지 1.307 동일**(버그가 아니라 항등의 지문). 캡만 비선형이라 capped 변형이 갈리고(1.177~1.258) 전부 uncapped 천장 아래. ★그런데 run_R4_bench_aware_weight.R:105 가 `which.max(port_t)` 로 최선을 골랐다 — **다이얼에만 반응하는 양으로 선택**한 것이며, paired 기준 배포가능 최선은 size_prop_cap(1.224)이 아니라 tilt_k0p5_cap(1.258)이다. ★cap-tilt 레인 판정: 전 변형 paired 천장 **1.307**·배포가능 **1.258** 로 문턱 2.0 미달이고, standalone 2.100 이어도 oos_ret 0.374·calmar 0.576 으로 HARD 2종이 PORT_t 와 독립 FAIL ⇒ **자본 후보가 아니라 벽-높이 측정치**. ★일반 규약: 교체·증분 판정은 **standalone 이 아니라 paired 로 채점**한다(standalone 은 분산 공유로 증분을 과대표시). `which.max(port_t)` 자체는 20+ 지점에 흔하고 대개 정상이나, **스윕에 baseline-끝점 혼합 계열이 섞이면** 그 선택은 다이얼을 고른다.",
+ "tags": [
+  "paired_vs_standalone",
+  "selection_criterion",
+  "cap_tilt",
+  "identity",
+  "weight_lane"
+ ],
+ "created_at": "2026-08-08",
+ "session": "qvest_20260808_transition_wall_arc",
+ "source": "Q-Lead main session (read-only 측정, 계약 함수 경유)",
+ "record_type": "method_frontier_lesson"
+}
