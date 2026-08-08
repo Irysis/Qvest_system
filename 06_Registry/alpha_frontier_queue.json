@@ -473,9 +473,9 @@
    "wall_check": "factor-momentum 타이밍 null(06-30) prior — ①은 '타이밍'이 아니라 '갱신 주기'로 구분하되 수렴 여부 적대검증 의무. cap-tier 국소화 벽은 본 라운드가 못 풂(정직 명시)",
    "data_gate": "없음 (R6 하네스·패널 재사용)",
    "owner": "Q-Lead (R11 ramp-orchestrator)",
-   "status": "config_scoped_negative_frontier_open",
+   "status": "config_scoped_negative_prereg_KILL_frontier_open",
    "result": "config-scoped negative (2026-07-13, RAMP R11, selection_type=chain). 3-arm 측정(cap-w authoritative·weighted_screen_bt 계약·base parity Δ1.4e-5·IS-only 승자·config_hash 53403eaf16de7662): base cap-w 2.612·oos -0.076. armF(선별 cadence 6→3) cap-w 2.852·oos +0.121(P-pure 사상 최고)·post17SR 부호전환·paired full +0.42(IS -1.11 OOS +1.44)·factor-momentum 아님(churn 0.307→0.206·AC 0.86→0.92·TO flat). armB(대칭 보유밴드 [25,35]) cap-w 2.414 악화·oos -0.121·TO 9.27→6.81 절감에도 net 악화=경계 churn=신호(기전 falsified). armV(vintage 앙상블 3M offset) cap-w 2.895(최고·R10 W-stock 2.930 tie)·oos +0.087·코호트 Spearman 0.923(과-homogeneous·분산축소 modest). 2차 armV×sqrt IS 악화→폐기. max full paired +0.582<2.0·HARD 3종 0/5. 세 construction 축 동일 cap-w~2.9 천장=construction-invariant 진단(벽=cap-tier 국소화×cap-w). 대칭-construction config 한정 negative — 비대칭/이질 레버 미검증. L-RAMP-20260713_093129.",
-   "result_ref": "outputs/ramp/r11_ppure_dev_{prereg,gates,paired,conc,summary}_20260713.* + 02_Infrastructure/ramp/run_ramp_r11_ppure_dev.R + challenge: 04_Research/ramp/reports/challenge_note_r11_ppure_dev_20260713.md",
+   "result_ref": "outputs/ramp/r11_ppure_dev_summary_20260713.json · .cache/_ramp_r11_20260713.txt",
    "next_action": "미검증 construction 프론티어(도훈 판정프레임 교정 07-13 — dead-end 아님, next_probe): [F-1] 팩터 퇴출 비대칭(진입 느리게·퇴출 빠르게) [F-2] 감쇠-속도(Δt) 선별 [B-1] 비대칭 밴드=oos-안정 레버 [B-2] 기여-기반 이탈 [V-1] 창 이질 앙상블(36m+60m 혼합) [V-2] 목적함수 이질 앙상블(PORT_t+rank-IC 코호트). 병행: 재료축 R9 DART insider(FQ-001).",
    "source_refs": [
     "trigger: 도훈 2026-07-13 'P-pure 더 발전시켜봐' + 판정프레임 교정('소진/dead-end' 어휘 금지·실패기전→다음가설 번역·config-scoped+frontier)",
@@ -485,13 +485,8 @@
    ],
    "precheck_note": "2026-08-08 전제 복원 완료. `.cache/_ramp_r6_sel_20260711.rds` 재생성(8.3초) — 선별 궤적은 outputs/ramp/r6_factor_deployzone_active.parquet 의 결정적 함수라 Boruta·백테스트·소실된 R4/R5 vintage 캐시가 전혀 필요 없었다(원 스크립트 선별 블록 축자 재실행). ★vintage 동일성 확증: 패널이 07-11 기록과 n_sig=257·기간 2005-01-31~2026-05-31 일치, 재구성 궤적이 기록 통계와 소수 4자리까지 일치(W36 n_anchor 37·rank_ac 0.8590/0.0741 · W60 33·0.9181/0.0432) ⇒ 07-11 궤적과 동일. 영구 사본 outputs/ramp/r6_sel_traj_20260711.rds 병치(캐시 소거 재발 대비). ⚠검증 수준 = 파일 파리티 + 소비자 접근 패턴 구조 프로브까지. **소비자 end-to-end 실행은 미검증** — R10~R15 첫 실행 시 확인 필요.",
    "precheck_at": "2026-08-08",
-   "in_flight": {
-    "session": "f55cca4e",
-    "started_at": "2026-08-08T23:47+0900",
-    "runner": "02_Infrastructure/ramp/run_ramp_r11_ppure_dev.R (RUNTAG 20260713)",
-    "purpose": "전제 복원 직후 첫 실행 = end-to-end 확증 겸 라운드 본체. ★비용 측정이 1차 목적 — R11 은 한 번도 돈 적이 없어 소요 기록이 0이다(오늘 배운 대로 추정 금지). 로그 .cache/_ramp_r11_20260713.txt 로 진행 실측 중.",
-    "note": "★해석 주의: R6 사전등록상 열려 있는 것은 **선별 축**이지 Boruta 축이 아니다 (07-11 기록 kill_pure=FALSE · kill_boruta=TRUE · max_paired_trait=2.2534). R11 arms = armF_cadence3 · armB_band2535 · armV_vintage."
-   }
+   "measured_at": "2026-08-08",
+   "verdict_note": "R11 실행 완료(소요 분 단위 — 시간 아님). 3 arm + 결합 1 전부 HARD 3종 미달: PORT_t cap-w 2.374~2.802 (< 2.95) · oos_retention -0.131~+0.072 (<0.5 = 무조건 FAIL) · calmar 0.443~0.468 (< 0.64). 사전등록 KILL 발동: max full paired t (arm vs base) = +0.383 (문턱 2.0). 1차 IS-only 승자 armV_vintage 조차 IS paired_t = -0.106(음수) · 2차 결합 comb_armV_sqrt 은 IS 악화로 폐기. ★기전 진단(챌린지 절 실측): ①armF 선별 신선도 — cadence 6→3 이 풀 churn 0.307→0.206 로 오히려 **덜 바꾸고**(rank AC 0.86→0.92) 종목 회전은 9.26→9.28 로 불변 ⇒ '갱신 단축이 감쇠 추적을 개선'이라는 전제가 성립하지 않았다. ②armB 보유밴드 — paired IS -0.259 vs OOS -0.978 로 OOS 가 더 나쁨 (사전등록 판별식상 '경계잡음' 쪽) · 회전은 9.26→6.80 로 실제 감소했으나 oos_ret 은 -0.056→-0.131 로 악화 ⇒ 비용 절감이 신호 손실을 못 덮는다. ③armV 선별-vintage 앙상블 — trailing_t Spearman 0.922 · K20 풀 Jaccard 0.670 ⇒ vintage 간 선별이 너무 닮아 분산축소 실효 없음. ⚠base_parity=FALSE(R11 재계산 2.6686 vs 하드코딩 앵커 2.6124, Δ0.056). **앵커는 07-13 시점 하드코딩 상수**(R10 r10_ref 유래)이고, 오늘 복원한 선별 궤적은 R6 기록 통계와 소수 4자리까지 일치 검증됐다 ⇒ 선별은 동일하므로 차이는 **선별 하류**(백테/벤치 경로)에서 온다. 다만 이는 근거 있는 가설이지 확증이 아니다 — 검증 미실행(next_probe). 판정 자체는 앵커와 무관: paired t 0.383 은 문턱 2.0 과 멀어 Δ0.056 이 뒤집을 수 없다."
   },
   {
    "id": "FQ-025",
