@@ -60,6 +60,11 @@ collect_files <- function() {
   }
   fs <- fs[!grepl("(^|/)\\.claude/worktrees/", fs)]
   fs <- fs[!grepl("(^|/)\\.git/", fs)]
+  ## ★자기 자신과 자기 산출물 제외 — 안 빼면 **모든 표준이 소비자를 얻는다**.
+  ##   이 생성기는 헤더 주석에 표준 파일명을 나열하고, wiring_map.json 은 전 표준명을
+  ##   본문에 담는다. 실측: 제외 전 orphan 3 → 제외 안 한 채로 0 (전부 자기참조로 채워짐).
+  ##   "측정 도구가 자기 측정 대상에 포함되는" 형태 — 지도가 스스로를 초록으로 만든다.
+  fs <- fs[!grepl("(^|/)(wiring_map_build\\.R|wiring_map\\.json|wiring_map_baseline\\.json)$", fs)]
   unique(fs)
 }
 
@@ -107,47 +112,63 @@ cat(sprintf("[wiring] 표준 %d건 (helper %d · verdict_ledger %d)\n",
 ## ── 소비자 계수 ────────────────────────────────────────────────────────────
 ## 소비 = (1) 파일명 참조(source/경로) 또는 (2) 표준이 정의한 심볼 호출.
 ## ★자기 자신·검사기는 제외하지 않는다(검사기도 실소비자다). 단 자기 파일은 제외.
+## ★2026-08-08 정정 — 심볼 매치만으로 소비자를 세면 **과대계상**된다.
+##   실측(자기 검사기의 양성 대조 실패): align_signal_return_ym 은 실소비자 2개인데
+##   16개로 셌다. 원인 = 이 표준이 정의한 심볼이 `ym_of`/`ym_shift` 로 **너무 일반적**이라,
+##   자기 파일에 같은 이름 함수를 **직접 정의한** 무관한 코드가 전부 매치됐다.
+##   (이 생성기가 진단하려던 "잘못된 것을 잼"을 스스로 재현했다.)
+## ∴ 증거를 3분한다:
+##   strong      = 표준 **파일 자체를 참조**(source/경로 언급) — 배선의 직접 증거
+##   symbol_only = 심볼은 부르는데 파일 참조 없음 →
+##       · 그 파일이 심볼을 **직접 정의**하면 = ★재구현(표준 우회, 과제 3번의 표적)
+##       · 정의하지 않으면 = 전이 소비(다른 곳에서 source 된 상태) — 약한 증거
 count_consumers <- function(std_file, symbols) {
   base <- basename(std_file)
-  stem <- sub("\\.(R|json)$", "", base)
   pat_file <- paste0("\\Q", base, "\\E")
   syms <- setdiff(strsplit(symbols, ",")[[1]], "")
-  hits <- character(0)
+  self <- normalizePath(std_file, winslash = "/", mustWork = FALSE)
+  strong <- character(0); reimpl <- character(0); transitive <- character(0)
   for (p in names(BODY)) {
-    if (identical(normalizePath(p, winslash = "/", mustWork = FALSE),
-                  normalizePath(std_file, winslash = "/", mustWork = FALSE))) next
+    if (identical(normalizePath(p, winslash = "/", mustWork = FALSE), self)) next
     txt <- BODY[[p]]
     if (!nzchar(txt)) next
-    hit <- grepl(pat_file, txt, perl = TRUE)
-    if (!hit && length(syms)) {
-      for (s in syms) {
-        if (grepl(paste0("(?<![A-Za-z0-9_.])\\Q", s, "\\E[ \t]*\\("), txt, perl = TRUE)) { hit <- TRUE; break }
-      }
+    if (grepl(pat_file, txt, perl = TRUE)) { strong <- c(strong, p); next }
+    if (!length(syms)) next
+    called <- FALSE; defined <- FALSE
+    for (s in syms) {
+      if (!called && grepl(paste0("(?<![A-Za-z0-9_.])\\Q", s, "\\E[ \t]*\\("), txt, perl = TRUE)) called <- TRUE
+      if (!defined && grepl(paste0("(?m)^[ \t]*\\Q", s, "\\E[ \t]*(<-|=)[ \t]*function"), txt, perl = TRUE)) defined <- TRUE
+      if (called && defined) break
     }
-    if (hit) hits <- c(hits, p)
+    if (!called) next
+    if (defined) reimpl <- c(reimpl, p) else transitive <- c(transitive, p)
   }
-  hits
+  list(strong = strong, reimpl = reimpl, transitive = transitive)
 }
 
 cat("[wiring] 소비자 계수 중...\n")
 res <- vector("list", nrow(STD))
 for (i in seq_len(nrow(STD))) {
   sp <- file.path(STD$dir[i], STD$standard[i])
-  cons <- count_consumers(sp, STD$symbols[i])
-  ## 소비자를 존(zone)별로 나눠 본다 — 전부 한 lane 에만 있으면 '국소 배선'
-  zone <- ifelse(grepl("^08_Tests/", cons), "tests",
-          ifelse(grepl("^02_Infrastructure/ramp/", cons), "ramp",
-          ifelse(grepl("^02_Infrastructure/", cons), "infra",
-          ifelse(grepl("^04_Research/", cons), "research",
-          ifelse(grepl("^qepm/", cons), "qepm", "other")))))
+  cc <- count_consumers(sp, STD$symbols[i])
+  cons <- cc$strong                              # ★배선 판정은 strong 만으로 한다
+  zone_of <- function(v) ifelse(grepl("^08_Tests/", v), "tests",
+             ifelse(grepl("^02_Infrastructure/ramp/", v), "ramp",
+             ifelse(grepl("^02_Infrastructure/", v), "infra",
+             ifelse(grepl("^04_Research/", v), "research",
+             ifelse(grepl("^qepm/", v), "qepm", "other")))))
+  zone <- zone_of(cons)
   nz <- table(zone)
   n_nontest <- sum(zone != "tests")
   res[[i]] <- data.table(
     standard = STD$standard[i], kind = STD$kind[i], dir = STD$dir[i],
     n_symbols = STD$n_symbols[i],
     n_consumers = length(cons), n_consumers_nontest = n_nontest,
+    n_reimpl = length(cc$reimpl),                # ★표준을 안 부르고 같은 심볼을 직접 정의 = 재구현
+    n_transitive = length(cc$transitive),
     zones = paste(sprintf("%s:%d", names(nz), as.integer(nz)), collapse = " "),
-    consumers = paste(head(cons, 40), collapse = ";")
+    consumers = paste(head(cons, 40), collapse = ";"),
+    reimplementers = paste(head(cc$reimpl, 20), collapse = ";")
   )
 }
 W <- rbindlist(res, fill = TRUE)
@@ -177,7 +198,8 @@ out <- list(
     orphan = sum(W$status == "orphan"),
     thin = sum(W$status == "thin"),
     wired = sum(W$status == "wired"),
-    single_zone_nonorphan = sum(W$single_zone & W$status != "orphan")
+    single_zone_nonorphan = sum(W$single_zone & W$status != "orphan"),
+    with_reimplementers = sum(W$n_reimpl > 0L)
   ),
   standards = lapply(seq_len(nrow(W)), function(i) as.list(W[i]))
 )
