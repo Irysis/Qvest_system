@@ -1,0 +1,10 @@
+suppressPackageStartupMessages({ library(jsonlite) })
+setwd(Sys.getenv("QM_ROOT","C:/Users/99922/OneDrive/Quant_Module_Moltbot"))
+say <- function(fmt,...) cat(sprintf(paste0("[122] ",fmt,"\n"),...))
+q <- fromJSON("06_Registry/alpha_frontier_queue.json", simplifyVector=FALSE)
+e <- Filter(function(x) isTRUE(identical(x$id,"FQ-122")), q$entries)[[1]]
+for (k in names(e)) say("%-22s: %s", k, substr(paste(unlist(e[[k]]),collapse=" | "),1,600))
+say("=== in-flight 중복 확인 ===")
+hi <- paste(unlist(fromJSON("06_Registry/hypothesis_index.json", simplifyVector=FALSE)), collapse=" ")
+say("hypothesis_index 에 'FQ-122' 등장: %s", grepl("FQ-122", hi, fixed=TRUE))
+say("hypothesis_index 에 'WT-021' 등장: %s", grepl("WT-021", hi, fixed=TRUE))
