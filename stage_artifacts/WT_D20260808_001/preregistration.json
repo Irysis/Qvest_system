@@ -1,0 +1,117 @@
+{
+  "task_id": "WT-D20260808_001",
+  "fq_ref": "FQ-122",
+  "written_at": "2026-08-08",
+  "written_before": "성과 arm(제외필터 포트폴리오 수익) 1회도 계산하지 않은 시점. 사전 확인 A/B/C 는 (A) 점유율 census, (B) 밴드-내 신호구조, (C) 무작위-교체 placebo sd 만 산출 — 본 판정 arm 의 수익은 미열람.",
+  "selection_type": "chain",
+  "n_trials": 1,
+  "dsr_gate_applicable": false,
+  "dsr_gate_rationale": "가설주도 단일 체인 (measurement-graduation §3). DSR 수치는 진단으로만 산출.",
+  "inherited_from_hypothesis_agent": {
+    "file": "qepm/mailbox/worktask/WT-D20260808_001/alpha_hypothesis.json",
+    "inherited_verbatim": ["mechanism", "falsification", "regime_scope"],
+    "rewrite_forbidden": true
+  },
+
+  "precheck_results_fixed": {
+    "input_shapes_measured": {
+      "base_panel": "nrow 2,537,961 · 관측단위 MONTHLY · 295개월 · 2001-12-28~2026-06-30",
+      "tuned_panel": "nrow 2,514,408 · 관측단위 MONTHLY · 295개월 · 동일 범위",
+      "RAWDATA": "nrow 14,059,013 · 관측단위 DAILY · 9,003일 · 1990-01-05~2026-08-07 (월간 아님 — build_monthly_forward_returns 계약 경유)",
+      "forward_returns": "nrow 88,273 · MONTHLY · 296개월 · 2001-12-28~2026-07-31",
+      "eligible_set": "82,566행 / 295개월 / 월평균 279.9종목 (M01_PATHQ 가용 ∩ K200∪KQ150 ∩ adv>=2e8)"
+    },
+    "A_p_hit": {
+      "definition": "base = M01_PATHQ top-25 EW. p_hit = top-25 중 필터팩터 하위분위 점유 비율 (분위점 = eligible set 내 해당 팩터 가용분).",
+      "D03_EWMA": {"q0.10": {"k_mean": 5.64, "p_hit": 0.2255}, "q0.20": {"k_mean": 9.56, "k_median": 10, "p_hit": 0.3822, "month_share_k_ge2": 0.986}, "q0.30": {"k_mean": 12.59, "p_hit": 0.5035}},
+      "Q01_EB": {"q0.10": {"k_mean": 1.79, "p_hit": 0.0716}, "q0.20": {"k_mean": 3.89, "k_median": 3, "p_hit": 0.1555, "month_share_k_ge2": 0.810}, "q0.30": {"k_mean": 5.98, "p_hit": 0.2391}},
+      "verdict": "p_hit >> 0 양 팩터 — (b) 착수 전 폐기 조건(p_hit≈0) 미해당. 착수 자격 성립.",
+      "caveat_recorded": "D03 q=0.20 은 top-25 중 9.56종(38%)을 교체 — '필터'라기보다 재선별에 가깝다. 회전율·기전 귀속 해석 시 이 규모를 명시할 것."
+    },
+    "B_F4_killswitch": {
+      "definition": "M01 rank 20~40 밴드 내, 밴드-내 표준화 필터 z 에 대한 forward active 의 월별 횡단면 기울기 (Fama-MacBeth), NW lag-3.",
+      "band_observations": "6,195행 / 295개월 / 월평균 21.0종목",
+      "D03_EWMA": {"mean_slope_monthly": -0.0027, "annual_pct_per_1sd": -3.28, "nw_t": -1.28},
+      "Q01_EB": {"mean_slope_monthly": -0.0027, "annual_pct_per_1sd": -3.26, "nw_t": -1.52},
+      "M01_self_slope_in_band": {"annual_pct_per_1sd": 0.05, "nw_t": 0.03},
+      "verdict": "(a) 타이브레이커 — D03판·Q01판 모두 KILL. 사전등록 조건 '밴드-내 기울기 <= 0 이면 측정 전 기각' 충족. 사후 완화 금지 조항에 따라 (a) 는 본 WT 에서 측정하지 않는다.",
+      "note": "기울기가 음(−)이라는 것은 밴드 내에서 *높은* 필터 z(저변동/안정품질)가 오히려 열위임을 뜻한다 — 타이브레이커를 반대 방향으로 쓰자는 제안은 본 가설의 기전과 무관한 사후 탐색이므로 하지 않는다."
+    },
+    "C_power": {
+      "method": "무작위-교체 placebo — base top-25 에서 해당 월 실측 k 종목을 무작위로 빼고 M01 차순위로 충원(필터 arm 과 동일 충원 규칙), 20 시드. paired diff(net) 의 월 sd 중앙값을 사용.",
+      "n_months": 295,
+      "D03_EWMA": {"k_mean": 9.56, "placebo_diff_sd_monthly": 0.02560, "sd_seed_range": [0.02358, 0.02765], "required_monthly_at_t2": 0.00373, "required_annual_pct_at_t2": 4.47},
+      "Q01_EB": {"k_mean": 3.89, "placebo_diff_sd_monthly": 0.01727, "sd_seed_range": [0.01582, 0.01927], "required_monthly_at_t2": 0.00252, "required_annual_pct_at_t2": 3.02},
+      "reference_unpaired": "무관 top-25 EW 쌍 기본 sd 0.0394 기준 필요 연효과 +6.88% — paired 설계가 1.5~2.3배 유리하나 아래 사전 효과 대비로는 여전히 부족",
+      "prior_effect_from_F1": {
+        "formula": "Δ_ann ≈ (k̄/25) × (제외 대상 분위와 중앙 분위의 연 active 격차)",
+        "D03_EWMA": {"gap_ann_pct_Q1_minus_Q3": -2.07, "implied_delta_ann_pct": 0.79, "ratio_to_required": 0.18},
+        "Q01_EB": {"gap_ann_pct_Q1_minus_Q3": -5.21, "implied_delta_ann_pct": 0.81, "ratio_to_required": 0.27}
+      },
+      "PRE_DECLARED_POWER_VERDICT": "사전 효과크기(0.79~0.81%/yr)가 t=2.0 도달 필요치(3.02~4.47%/yr)의 18~27% 에 불과 — 포트폴리오-수준 paired arm 은 **사전적으로 저검정력**이다. 따라서 (b) 의 pass/fail 문턱 판정을 사전등록에서 폐기하고, 구간추정(95% CI) + 검정력 라벨만 보고한다.",
+      "design_shift_recorded": "handoff 지시 '필요치가 현실적 효과보다 크면 그 설계는 착수 전 폐기하고 전표본 형태로 바꾼다' 이행 — 주판정을 포트폴리오 arm 에서 **전표본 횡단면 조건부 구조**(아래 P1)로 이동. P1 은 월당 25~50 종목을 쓰므로 월당 4~10 종목만 쓰는 swap-contrast 대비 월별 잡음이 작다(분할이 아니라 같은 295개월 위에서 관측 밀도를 높이는 것)."
+    }
+  },
+
+  "primary_test_P1_powered": {
+    "name": "소비 구간 내 조건부 정보 — 전표본 횡단면",
+    "question": "필터가 실제로 작동하는 구간(M01 상위)에서 필터 팩터가 forward active 를 예측하는가",
+    "spec": "월별 횡단면: M01 rank 1~25 (및 1~50 병기) 부분집합 내에서 필터 z 를 구간-내 표준화 → forward active 회귀 → 월별 기울기 계열의 NW lag-3 t (Fama-MacBeth).",
+    "n_clusters": 295,
+    "prespecified_prediction": "Q01_EB 기울기 > 0 (하위 제외가 도움) / D03_EWMA 기울기 방향 무예측 (아래 F1 결과로 기전 전제 이미 기각)",
+    "verdict_rule": "|t| >= 2.0 이면 방향 확립. |t| < 2.0 이면 CI 보고 + verdict_with_power 로 INCONCLUSIVE_UNDERPOWERED / NEGATIVE_POWERED 구별."
+  },
+
+  "secondary_test_P2_consumption_arm": {
+    "name": "(b) 하위분위 제외필터 — paired 한계기여",
+    "base_arm": "M01_PATHQ 단일 top-25 EW (canonical_screen_bt, top_n=25, cost 15bps one-way, liq_dt adv>=2e8)",
+    "treatment_arm": "eligible set 에서 필터팩터 하위 q 분위 종목 제거 후 M01 top-25 EW. 나머지 규격 동일.",
+    "q_primary_fixed_a_priori": 0.20,
+    "q_choice_rationale": "측정 전 고정. 근거는 수익이 아니라 **점유율**(A): q=0.20 에서 양 팩터 모두 월 중앙 k>=3 이라 필터가 실제로 발화한다. q=0.10/0.30 은 민감도 보고 전용이며 **선택 대상 아님**(argmax 금지 — sweep 재분류 방지).",
+    "missing_filter_factor_rule": "해당 월 필터팩터 결측 종목은 제외하지 않는다(보수적, base 동작 유지). 실측 결측률: D03 0.00% · Q01 1.02% (top-25 기준).",
+    "quantile_basis": "eligible set (M01 가용 ∩ 유니버스 ∩ 유동성) 내 해당 팩터 가용분의 월별 frank/N",
+    "replacement_rule": "제거된 slot 은 M01 차순위(rank 26, 27, ...)로 자동 충원 — top-25 EW 규격이 그렇게 동작. 별도 규칙 없음.",
+    "statistic": "Δ_t = ret_net(treatment) − ret_net(base), 월별. 보고 = 연환산 Δ, NW lag-3 t, 95% CI, turnover 변화, canonical PORT_t(양 arm).",
+    "verdict_rule_no_threshold": "**pass/fail 선언 금지**(C 참조). |Δ_ann| 이 required(4.47 / 3.02 %/yr) 미만이고 t<2.0 이면 verdict = INCONCLUSIVE_UNDERPOWERED. 효과크기가 required 이상인데 t<2.0 이면 NEGATIVE_POWERED. t>=2.0 이면 방향 확립(단 자본 자격 주장 아님 — HARD 3종은 forge/judge 소관).",
+    "identity_check": "Δ_gross,t = (1/25)(Σ_added r − Σ_dropped r) 항등 max|err| < 1e-12 확인 의무",
+    "parity_gate": "base arm 재구성 ret_net vs WT-015 저장 C3_SINGLE period_returns max|diff| < 1e-8 (WT-021 이 통과시킨 동일 게이트 재실행)"
+  },
+
+  "mechanism_side_observations": {
+    "F1_signal_shape": {
+      "status": "MEASURED (사전 확인 B2)",
+      "spec": "eligible set 내 필터 z 5분위별 월평균 forward active. Q1=최저 z.",
+      "D03_EWMA": {"Q1_low_ann_pct": 0.82, "Q3_ann_pct": 2.89, "Q5_high_ann_pct": -4.01, "Q1_minus_Q3_ann_pct": -2.07, "Q1_minus_Q3_nw_t": -0.63, "Q5_minus_Q3_ann_pct": -6.90, "Q5_minus_Q3_nw_t": -2.30},
+      "Q01_EB": {"Q1_low_ann_pct": -2.83, "Q3_ann_pct": 2.39, "Q5_high_ann_pct": 1.81, "Q1_minus_Q3_ann_pct": -5.21, "Q1_minus_Q3_nw_t": -2.25, "Q5_minus_Q3_ann_pct": -0.58, "Q5_minus_Q3_nw_t": -0.21},
+      "prereg_reject_if_1_application": "승계 reject_if ① '하위 20% vs 중앙 40~60% 차이가 열위 방향으로 부재(NW t > −1)면 정보 좌측-국소화 기각'. **D03_EWMA: t=−0.63 > −1 → 좌측-국소화 기각** → 승계 설계가 지정한 대로 C2(β-drag 단독설) 방향으로 이동. **Q01_EB: t=−2.25 → 좌측-국소화 지지 + 최상위 평탄(t=−0.21)** = 예측된 형태 그대로.",
+      "additional_observation_D03": "D03 의 유의한 이탈은 **최상위**(저변동) 분위의 −6.90%/yr 열위다 — 정보가 좌측이 아니라 **우측**에 국소화되어 있고 방향은 손실이다. 이는 rank-IC(+0.0414, t 3.71)와 모순이 아니라 그 전이 실패의 정체다: 순위공간에서는 저변동이 이기지만 평균-수익 공간에서는 고변동 꼬리의 양의 왜도가 평균을 끌어올린다. 즉 D03 의 IC→PORT 전이 벽은 순위↔평균 괴리."
+    },
+    "F2_agent_individual_flow": {
+      "status": "TO_MEASURE",
+      "spec": "개인 순매수(.cache/investor_stock/investor_individual.parquet, 일간 2000-01~2026-07)의 종목별 월합을 시총 정규화 → 필터 z 에 대한 월별 횡단면 회귀(연속 조건화, 분할 금지) NW lag-3. D03·Q01 **별도 실행**(주체 상이 가능 — 승계 설계 명시).",
+      "reject_rule": "집중 부재 시 기전을 '주체 미상 좌측 열위'로 강등 기록(가설 유지, economic story 약화 정직 라벨)"
+    },
+    "F3_beta_drag": {
+      "status": "TO_MEASURE",
+      "spec": "D03 최상위 분위 종목의 시장 β(trailing 60m, 월간, PIT) 중앙값 vs eligible 유니버스 중앙값. 유의 저하 시 β-drag 경로 지지.",
+      "reject_rule": "무차별이면 β-drag 경로 기각 — slot-음성 설명이 정보 부재 단독으로 좁혀짐"
+    }
+  },
+
+  "regime_conditioning": {
+    "design": "국면 **분할 금지**(mandate). 연속 조건화 상호작용 회귀만.",
+    "conditioners": ["벤치 trailing 12개월 수익률(β-drag 성분)", "개인 거래비중/개인 순매수 총량 강도(lottery mispricing 성분)"],
+    "severity": "ADVISORY — 상호작용 검정 필요 연효과가 전표본의 ~3.6배(유효 n = n·p·(1−p))라 저검정력. CI 보고만, '국면에서 효과 없음' 단정 사전 금지."
+  },
+
+  "novelty_control_mandate": {
+    "trigger": "(b)-D03 판이 양(+)으로 나올 경우",
+    "requirement": "MAX5 / 단기 realized vol(base D03_RealVol) 필터 통제 arm 을 추가하고 잔존 확인 전까지 '신규 재료' 주장 금지 (challenge_note_hypothesis C-6 ACCEPT 승계).",
+    "note": "F1 실측이 D03 좌측-국소화를 이미 기각했으므로 이 분기는 사전적으로 낮은 확률 — 그럼에도 사전등록한다."
+  },
+
+  "hard_axes_fixed": {
+    "note": "top-25 · long-only · Σw=1 · [0,0.20] · K200∪KQ150 · 15bps · adv>=2e8 은 문제의 고정 축(INV-7). 본 라운드는 이 축 안에서만 설계하며 완화를 레버로 제시하지 않는다."
+  },
+  "capital_claim": "없음. canonical_screen 은 스크리닝 실측이며 graduation HARD 3종(PORT_t 2.95 / oos_retention 0.7 / calmar 0.64)은 forge·judge 소관."
+}
