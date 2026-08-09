@@ -4314,6 +4314,25 @@
     "revised_ev": "EV 하향. 원 가설('생존 카테고리 미탐색')은 기각에 가깝고, 남은 것은 **좁은 잔여**: '현금흐름 기반 profitability(cash-based OP)가 회계이익 기반(QMJ)과 다른 결과를 내는가'. 논문에서 cash-based OP 가 1위이고 R&D-adj OP 가 2위인 것은 **측정 방식 차이가 순위를 만든다**는 뜻이므로 이 잔여는 공허하지 않다. 단 롱 레그 기준으로는 논문도 0 이라 상방이 좁다.",
     "next_action_final": "①QMJ 의 KR 구현 정의를 확인해 논문 5종 중 어디에 대응하는지 판정 ②cash-based operating profitability(현금흐름 기반)가 미탐색이면 그것 단독으로 좁게 시도 ③판정은 PORT_t(raw net active) 단독. rank-IC 가 살아도 통과 아님 — 이 아크가 그 구분의 실증이다. ⚠상방이 좁다는 것을 사전 인지하고 착수(논문 롱 레그도 0). 착수 전 required_effect_size 확인."
    }
+  },
+  {
+   "id": "FQ-198",
+   "lane": "non_return",
+   "title": "해금된 컨센서스 4종(C10/C13/C15/C18) 재료 자격 — 북 incumbent 3종 위 증분",
+   "hypothesis": "FQ-163 빌더 수리 + 2026-08-09 factor_db 전면 재빌드(build_hash 20260809203741_8c9befe0)로 442개월 전 구간 0행이던 C10_SUE_Persistence·C13_Revision_Breadth_3m·C15_Forecast_Error_Trend·C18_Earnings_CAR_3d 가 실제로 실렸다. 이 4종은 M2x 에 등가물이 없어 저장소에서 한 번도 측정된 적이 없다. 북 incumbent 컨센서스 3종(C01_SUE·C02_EPS_Chg_1m·C04_ESBR) 을 통제한 뒤에도 각각 증분 설명력이 남는가.",
+   "ev_rationale": "선례 = M26_Revenue_Mom(WT-D20260808_002) 가 동일 프레임에서 FMB NW3 t +2.555 로 재료 자격 획득. 재료비용 0(재빌드 완료·팩터 DB 상주) · 하네스 100% 재사용(np_m26_increment.R). C18 은 이벤트-CAR 성격으로 비-return 인접 신규 재료 후보(v8.3 주력 lane).",
+   "wall_check": "★재료 자격까지만 주장 가능 — 자본 주장 금지. 선례 M26 이 재료 자격(t 2.555)은 얻고 전이는 미달(cap-w PORT_t 1.544 < 2.95 · oos_retention 0.123 · 회전율 11.74 > 11.0). IC→PORT_t 전이 벽은 본 라운드에서 해소되지 않는다. n_trials=4 · selection_type=preregistered_family_grid.",
+   "data_gate": "없음 — 재빌드 완료 확인(C10/C15/C18 각 300개월 · C13 303개월). 단 유효 관측(non-NA × 유니버스 교집합)은 P0 사전 확인에서 실측.",
+   "owner": "CLAIMED alpha-research WT-D20260809_005 (2026-08-09) — 프롬프트가 지시한 'FQ-174' 는 병렬 세션 선점(폐지풀 ML 앙상블)이라 FQ-198 로 재배정",
+   "status": "in_flight_20260809",
+   "next_action": "P0 사전 확인(유효월·커버리지·spearman·required_effect) → 통과 시 4종 각각 별도 primary 로 FMB 증분 회귀.",
+   "source_refs": [
+    "parent: FQ-163 (compute_consensus.R 침묵 스킵 7종 수리 + 전면 재빌드)",
+    "frame: stage_artifacts/WT_D20260808_002/np_m26_increment.R (M26 재료 자격 선례 t +2.555)",
+    "build_hash: 20260809203741_8c9befe0"
+   ],
+   "registered": "2026-08-09",
+   "registered_by": "alpha-research WT-D20260809_005"
   }
  ]
 }
