@@ -1,0 +1,43 @@
+{
+  "quarantine_date": "20260809",
+  "session_id": "AS-20260809",
+  "items": [
+    {
+      "paper_id": "2608.05755",
+      "factor_id": "within_sector_reversal",
+      "strategy_id": "STR_AS_20260809_123327_46908",
+      "strategy_name": "within_sector_reversal_20260809",
+      "gate_decision": "QUARANTINE",
+      "gate_failed_layers": "L3_robustness",
+      "gate_checked_at": "2026-08-09T12:40:47+0900",
+      "port_t": null,
+      "oos_retention": -0.49,
+      "calmar": 0.07,
+      "mdd": 60.43,
+      "grade": "F",
+      "score": 0,
+      "sharpe": 0.147,
+      "cagr": 4.23,
+      "ic_mean": 0.0271,
+      "fmb_nw_t": 1.01,
+      "ff3_alpha_annual_pct": -3.48,
+      "ff3_alpha_tstat": -1.21,
+      "quarantine_reason": "MDD 60.4%(구조적 낙폭 HARD FAIL). OOS retention -0.49 << 0.5(FAIL). Calmar 0.07 << 0.64(HARD FAIL). FMB NW_t=1.01 미유의. 알파 트렌드 ratio -1.10(감쇠). 섹터-중립 선형 처리가 고변동 구간 비선형 동조 제거 불가. IC 0.0271 방향성 있으나 long-only 실현 포트 MDD 구조 결함 해소 못함.",
+      "mechanism_diagnosis": "섹터 공통 드리프트 제거(선형 차감) 후 종목-specific 역전 신호는 IC=0.0271(포지티브 비율 57.4%)로 방향성 존재. 그러나 (1) 급락 구간 비선형 동조 미제거 — COVID alpha -3.5%/Rate_Hike alpha -0.4%. (2) FMB NW_t=1.01: 횡단면 long premia 미유의 — short-leg 신호 본질 시사. (3) 고회전(968%/yr)으로 15bps 비용 부담. (4) 최근 3Y 감쇠(ratio -1.10). 기전: 섹터-중립화는 섹터 모멘텀 제거에 유효하나 KR long-only에서 MDD 개선으로 이어지지 않음.",
+      "stress_periods": {
+        "GFC_2008": {"strat": -27.2, "bm": -36.5, "alpha": 9.3, "outperform": true},
+        "EuDebt_2011": {"strat": 28.8, "bm": 6.8, "alpha": 22.0, "outperform": true},
+        "COVID_2020": {"strat": -8.2, "bm": -4.7, "alpha": -3.5, "outperform": false},
+        "Rate_2022": {"strat": -26.5, "bm": -26.1, "alpha": -0.4, "outperform": false}
+      },
+      "next_probe": [
+        "FQ-167: 섹터-중립 역전 + 변동성 조건부 — 저변동 국면(3분위 하단) 한정 적용",
+        "FQ-168: 섹터 내 역전 → 오버레이 리스크 신호 소비(스코어 하위 25% long 축소 트리거)"
+      ],
+      "verify_path": "stage_artifacts/paper_recharge/auto_verify_within_sector_reversal_20260809.json",
+      "paper_exhausted": false,
+      "paper_exhausted_note": "2608.05755 factor attribution 1회 시도(within_sector_reversal). L3 fidelity FAIL 아님(팩터 추출 성공, 신호 방향 확인됨) — 동 논문 추가 팩터 발굴 가능(sector_industry_momentum 등 미시도).",
+      "notable": true
+    }
+  ]
+}
