@@ -1,7 +1,7 @@
 {
  "schema_version": "1.0",
  "sot": "02_Infrastructure/docs/qvest_v8_3_alpha_discovery_sot.md §4",
- "updated": "2026-08-09",
+ "updated": "2026-08-10",
  "consume_rule": "새 발굴 리서치 착수 전: hypothesis_index lookup → 본 큐 확인 → owner/status 갱신. 완료 시 result_ref(L-code/보고서) 기입. dohoon_decision 항목은 세션 임의 착수 금지. ★세션 간 배정 규약(도훈 지시 2026-08-09): ①착수 전 owner 필드 확인 — 'CLAIMED' 면 착수 금지, 'UNCLAIMED' 면 자기 세션으로 CLAIMED 갱신 후 시작 ②신규 ID 는 **하드코딩 금지** — 원장 최대 번호+1 을 계산해 배정하고, 기록 후 **재읽기로 존재 확인** (2026-08-09 실사고: FQ-167/168 등재가 병렬 세션 선점과 충돌해 조용히 생략됐고 close_round 서술이 거짓이 됨 → FQ-169/170 재배정) ③close_round 의 frontier_update 는 **실제 기록 결과에서 파생**시킬 것(선언에서 파생 금지).",
  "entries": [
   {
@@ -4874,13 +4874,17 @@
     "integration": "★FQ-218 의 303개월(200106..202608)의 **진부분집합**(B\\A = 0개월). 통합 재빌드 = 303개월 317분으로 FQ-218 단독과 **동일 비용**. 따로 하면 630분 ⇒ 통합 절감 314분.",
     "note": "저장 단위가 월별 parquet 1개라 팩터 선택 재빌드 경로는 없다 — 영향월은 전 모듈이 함께 재계산된다."
    },
-   "next_probe": ["재빌드 후 C11 의 rank-IC / PORT_t 재측정 — 단위 교정 + 커버리지 74% 축소가 신호력을 어떻게 바꾸는가 (구 값은 커버리지 밀도와 혼입돼 있었다: 잔차 rho 0.54~0.90)", "M25 배출 폐지 제안 — registry dedup DUPC-046 이 이미 C11 canonical / M25 alias(deprecated_for_selection) 로 판정. C14/C17 의 .CONSENSUS_DEPRECATED 선례와 대칭", "streak 계열 일반화 — 다른 '연속/누적 카운트' 팩터가 캐리포워드 원천 위에 있는지 (현 전수에서는 sue 계열 2종뿈)"],
+   "next_probe": [
+    "재빌드 후 C11 의 rank-IC / PORT_t 재측정 — 단위 교정 + 커버리지 74% 축소가 신호력을 어떻게 바꾸는가 (구 값은 커버리지 밀도와 혼입돼 있었다: 잔차 rho 0.54~0.90)",
+    "M25 배출 폐지 제안 — registry dedup DUPC-046 이 이미 C11 canonical / M25 alias(deprecated_for_selection) 로 판정. C14/C17 의 .CONSENSUS_DEPRECATED 선례와 대칭",
+    "streak 계열 일반화 — 다른 '연속/누적 카운트' 팩터가 캐리포워드 원천 위에 있는지 (현 전수에서는 sue 계열 2종뿈)"
+   ],
    "artifacts": "stage_artifacts/infra/streak_unit_probe_20260810/"
   },
   {
    "id": "FQ-222",
    "title": "SE02_Consensus_Revision — 인접 **행** 차분이 93~99% 정확히 0",
-   "status": "measured_awaiting_decision",
+   "status": "measured_awaiting_decision_rollover_blocked",
    "owner": "dohoon_decision",
    "opened": "2026-08-10",
    "category": "infra_measurement_integrity",
@@ -4891,10 +4895,59 @@
    "rebuild_scope": {
     "affected_months": 318,
     "span": "200003..202608",
-    "integration": "★FQ-218/219 통합(303개월)에 얹으면 합집합 318개월 = 332분. 한계비용 **+15개월 / +16분**. 따로 하면 별도 332분 재빌드가 한 번 더 필요하다. ⇒ 재빌드 착수 **전에** 수리 여부를 결정하는 것이 유리하다."
+    "integration": "SE02 배출 318개월(200003..202608) ⊇ 통합C 303개월. SE02 한계비용 +15개월/+15분. ★그러나 롤오버 계열(M26/M28, 316개월)이 SE02 월집합의 **부분집합**이라 같은 배치에 얹는 한계비용은 **0개월/0분**. 따라서 시나리오 E(FQ218+FQ219+SE02+롤오버) = 318개월/332분 으로 전부 처리 가능. 역으로, 롤오버를 고치기로 하면 318개월 배치가 **어차피 필요**하므로 SE02 를 그 배치로 미루는 한계 페널티는 0분이다(현 confirm 대기분을 303개월로 그냥 진행해도 됨)."
    },
-   "next_probe": ["lag 길이 bakeoff — 21/63/126일 중 무엇이 SE01/SE02 원 의도(센티먼트 개정 속도)에 맞는가", "SE01_Volatility_Uncertainty fallback 경로 점검 — 같은 블록의 dispersion 컬럼 부재 우회가 지금도 유효한가"],
-   "artifacts": "stage_artifacts/infra/streak_unit_probe_20260810/a6_se02_reproduce.csv"
+   "next_probe": [
+    "롤오버 처리 방식 결정이 lag 결정의 **선행 조건** — FQ-223 참조. 롤오버-인지 창 적용 시 최적 arm 이 L63 → L126 으로 이동(실측: L63_rollaware frac_zero 0.227·frac_rev_ge1 0.779 로 K1/K2 미달, L126_rollaware 0.135·0.869 로 통과)",
+    "SE02 정의 분기 해소 — FQ-224 (일간 경로 producer 가 다른 식을 쓴다)",
+    "수리 확정 시 08_Tests/factor_db/ 검사기 신설 + run_all_hooks.sh 등재 (위반 주입 축 = frac_zero + 4/5월 중앙값)"
+   ],
+   "artifacts": "stage_artifacts/infra/se02_window_bakeoff_20260810/b2_bakeoff_summary.csv · b3_agg_guarded.csv · b4_grid.csv · b7_rollover_aware_summary.csv · b8_rebuild_scenarios.csv",
+   "bakeoff_result": "창 길이 bakeoff 완주(318개월 전수, liveness guard stale<=31d). 선택기준은 측정 **전** 고정(K1 창내개정 median>=1 & frac>=0.80 / K2 frac_zero<=0.20 / K3 죽은달 0 / K4 앵커신선도<=10d / K5 |rho|<0.90 vs 벤더 eps_chg_1m·3m). 신호력 미사용. 결과: L21 frac_zero 0.438(K1/K2 fail) · L35 0.285(fail) · L63 0.144 · L91 0.063(K5 FAIL — 벤더 eps_chg_3m 과 rho_p95 0.958 = 91일이 곧 벤더 3개월창) · L126 0.013 · L252 0.003. ★그러나 고정 기준이 **롤오버 축을 빠뜨려** 엄격 판정상 유일 통과가 L252 였는데, L252 는 미측정 축에서 최악(12개월 중 8개월 오염)이다 — 기준집합 불완전이 확인된 사례.",
+   "second_defect": "★창과 **직교하는 두 번째 결함**: liveness guard 부재. 저장 SE02 는 월 ~1164행을 내보내는데 컨센서스 관측이 31일 이내인 종목은 ~608개뿐 — 배출의 약 48%가 커버리지가 끊긴 종목이고, 이들은 현재/lag 끝점이 **같은 행**이라 창 길이와 무관하게 구조적 0 이 된다(guard 없이는 L252 조차 frac_zero 0.59). guard 적용 시 L63 0.627→0.000. 즉 창만 고쳐도 결함의 절반만 사라진다.",
+   "dead_month_mechanism": "죽은 달 = sd 0 이 아니라 **winsorize 후 상수화**. factor_db_builder.R:672-687 이 Raw 를 1/99 로 clip 한 뒤 z 를 내는데, 값의 99%가 정확히 0 이면 q01==q99==0 → 전 종목 Raw_W 상수 → sd<1e-12 → Z 전건 NA → Coverage FALSE. 저장 실측 정합: 죽은 달 frac_zero>=0.988 / 산 달 <=0.959. 전수 결과 **죽은 달 49개월/318**(201403 은 그 중 하나일 뿐), modal_frac>=0.9 인 달 260/318, frac_zero 중앙 0.952.",
+   "pit_check": "PIT: (a) eps_1y 값 변경일은 주말 0건 · 월 분포가 전 12개월에 퍼짐(4/6/9/12월 35.5% ≈ 균등 33%) · dom<=5 는 18.9% ⇒ FQ-218 의 분기 일괄공표 구조가 **아니다**(런 길이 p50 5일 · 연 ~8런) ⇒ .cons_quarters() 재사용 부적합 확정(가설을 그대로 믿지 않고 직접 측정). (b) 벤더 자체 eps_chg_1m 과 우리 30일 개정률의 rho 가 최대(0.67~0.82)로 정합 ⇒ 레벨 패널의 Date 스탬프 = 벤더 관측일. (c) lag1 스트레스(sig_d vs sig_d-1, guard 모집단): rho_p50 L21 0.939 / L63 0.989 / L126 0.997, 동일값 비율 0.87~0.88 ⇒ same-day 노출의 값 영향 경미. (d) ★단일 vintage 패널이라 **restatement 는 이 자료로 검증 불가** — 필요 시 vintage-swap 통제."
+  },
+  {
+   "id": "FQ-223",
+   "title": "FY1 롤오버 — 고정창 레벨 차분 계열 전체 오염 (M26/M28 현행 배출 포함)",
+   "status": "measured_awaiting_decision",
+   "owner": "dohoon_decision",
+   "opened": "2026-08-10",
+   "category": "infra_measurement_integrity",
+   "parent": "FQ-222 (SE02 창 bakeoff 중 발견 — SE02 lag 결정의 선행 조건)",
+   "mechanism": "컨센서스 **FY1 레벨** 지표는 매년 4월 첫 영업일에 회계연도 기준이 롤오버한다. 실측: 그날 live 종목의 95~99.7%가 동시에 값이 바뀌고(평일 대비 lift 10~19배), 큰 점프(|rel|>0.20)의 78.6%가 상향, 중앙 +43%. 종목-연도의 73.9%가 '연 정확히 1회 대형 상향'. 지문 확인된 지표: eps_1y(lift 11.3) · revenue_fy1(10.8) · op_profit_fy1(10.3) · bps_1y(13.0) · dps_1y(18.8). target_price 는 lift 1.01 로 **비해당**(회계연도량이 아님). ⇒ 4/1 을 가로지르는 고정창의 차분은 개정이 아니라 **기준 회계연도 교체분**이다.",
+   "live_impact": "★현행 배출에 이미 들어가 있다: M26_Revenue_Mom · M28_OP_Rev_Mom (각 316개월, 중앙 ~1577행)이 revenue_fy1 / op_profit_fy1 을 `sig_date - 63L` 로 차분한다(compute_momentum.R:425,464 / factor_db_daily_phase8.R:250-258). 63일 창은 4월·5월 sig 에서 4/1 을 가로지른다 ⇒ 연 2개월 오염. 실측 오염 크기(SE02 동형 계산): 4월 중앙 +0.165 · 5월 +0.184 vs 평월 0.000. C14_Revenue_Surprise / C17_OP_Revision 은 같은 식이나 **배출 원장 0개월**(M26/M28 과 중복 등재로 조용히 스킵 — 기존 카드 project-c14-m26-duplicate-silent-skip 재확인).",
+   "discriminant": "★벤더는 보정한다: eps_chg_1m / eps_chg_3m 의 4월 분포가 평월과 다르지 않다(eps_chg_1m 4월 median 0 · p90 0.06 · frac_pos 0.248 — 5월 p90 0.09 보다 오히려 낮다). 즉 벤더 자체 개정률은 **동일 회계연도 기준 안에서** 계산된다. 우리가 레벨을 직접 차분할 때만 롤오버가 새어 들어온다.",
+   "proposed_repair": "롤오버-인지 창: basis_start = sig 이하에서 가장 최근 '동시 변경일'(live 종목의 >=50% 동시 변경). anchor = max(sig - L, basis_start) 위치 관측(뒤가 basis 이전이면 basis 이후 **첫** 관측). sig 이하만 보므로 PIT 안전. 실측 효과: 4/5월 중앙값 +0.165/+0.184 → **0.000/0.000**, 평월 불변. 비용 = 절단된 달의 영값 증가(L126: frac_zero 0.013→0.135). ★미해결: 동시변경일 탐지기가 초기 희소구간에서 4월 외 12건을 오검출(2000-12-07 등) — n_live 문턱/4월 제한 등 강건화 필요. 이 부분이 남은 설계 리스크다.",
+   "rebuild_scope": {
+    "affected_months": 316,
+    "span": "200005..202608",
+    "integration": "월집합이 SE02 의 318개월 **부분집합** ⇒ FQ-222 와 같은 배치에 얹는 한계비용 0개월/0분. 시나리오 E = 318개월/332분으로 FQ-218+FQ-219+SE02+롤오버 전부 처리. 따로 하면 롤오버 단독 330분."
+   },
+   "next_probe": [
+    "동시변경일 탐지기 강건화 — n_live 문턱·4월 제한·연 1회 제약 중 무엇이 오검출 12건을 없애는가",
+    "M26/M28 의 4·5월 값이 하류(M32 composite·PG2 book)에 실제로 얼마나 전파되는가 측정",
+    "bps_1y/dps_1y 를 차분하는 소비자가 있는지 전수 — 있으면 오염 범위가 더 넓다"
+   ],
+   "artifacts": "stage_artifacts/infra/se02_window_bakeoff_20260810/b5_r2_synchrony_by_month.csv · b5_r3_big_jumps.csv · b6_s1_rollover_fingerprint.csv · b6_s2_vendor_by_month.csv · b6_s3_contaminated_months.csv · b7_rollover_aware_summary.csv"
+  },
+  {
+   "id": "FQ-224",
+   "title": "SE02_Consensus_Revision — 살아있는 producer 2개가 서로 다른 식을 쓴다",
+   "status": "measured_awaiting_decision",
+   "owner": "dohoon_decision",
+   "opened": "2026-08-10",
+   "category": "infra_definition_split",
+   "parent": "FQ-222 (SE02 수리 범위 산정 중 발견)",
+   "mechanism": "같은 팩터명에 정의가 둘이다. (A) compute_crowding.R:422-428 — (eps_1y[rank1] - eps_1y[rank2]) / |eps_1y[rank2]| (인접 행 비율). (B) factor_db_daily_phase8.R:261 — `SE02_Consensus_Revision := eps_chg_1m` (벤더 컬럼 그대로). (B)는 같은 파일 260행의 `M27_Analyst_Rev_Mom := eps_chg_1m` 및 compute_consensus.R:316 의 `C02_EPS_Chg_1m` 과 **완전 동일** ⇒ 일간 경로에서 SE02 ≡ M27 ≡ C02 삼중 중복. (B)는 dead 코드가 아니다 — factor_db_daily_incremental.R:62 가 phase8 을 source 한다. 월간 저장 패널이 담고 있는 건 (A) 쪽이다(재현 검증: 기준선 vs 저장 frac_zero rho 0.993 · mean|diff| 0.0102, 318개월).",
+   "risk": "compute_crowding.R 만 고치면 phase8 은 계속 `eps_chg_1m` 을 SE02 이름으로 내보낸다 ⇒ 수리 후 두 경로가 **더 크게** 갈라진다(현재는 둘 다 쓸모없어 갈라짐이 안 보인다). registry 정의도 창을 못박지 않는다: '(EPS_now - EPS_prev)/|EPS_prev|. Recent estimate change.' — prev 가 무엇인지 미지정이라 두 구현 모두 문안상 합치한다.",
+   "proposed_repair": "① 두 경로가 같은 헬퍼를 쓰도록 통일하거나 phase8 의 SE02 라인을 제거(M27 이 이미 같은 값을 낸다). ② registry definition 에 창 단위·lag·liveness 문턱을 명시해 '문안상 둘 다 맞는' 상태를 없앤다.",
+   "next_probe": [
+    "phase8 산출물이 어느 소비면까지 도달하는지 — 일간 패널을 읽는 연구 경로가 실재하는가",
+    "같은 파일에서 이름만 다르고 식이 같은 쌍 전수(M27/SE02 외에 C14/M26·C17/M28 이미 확인) — 공식 중복 검색"
+   ],
+   "artifacts": "stage_artifacts/infra/se02_window_bakeoff_20260810/b1_d_stored_se02_all_months.csv · b2_reproduction_check.csv"
   }
  ]
 }
