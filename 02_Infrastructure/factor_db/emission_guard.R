@@ -383,13 +383,19 @@ factor_identity_check <- function(result, ym,
       axis_T$reason <- sprintf("min_obs=%d 이상인 팩터 없음", min_obs)
       warnings <- c(warnings, sprintf("[identity_guard] %s — 축 T %s. ★UNMEASURED", ym_cur, axis_T$reason))
     } else {
-      # ★통계 자신의 생존 확인 — 퇴화하면 '경보 0'이 아니라 UNMEASURED 를 낸다
+      # ★통계 자신의 생존 확인 — 퇴화하면 '경보 0'이 아니라 UNMEASURED 를 낸다.
+      #   단 "상수"만으로 판정하면 안 된다: 값이 전부 서로 다른 건강한 패널은
+      #   modal_frac 이 전 팩터에서 바닥값 1/n 으로 **정당하게** 같다. 죽은 통계
+      #   (sd(Z)=1 항등)는 상수이면서 그 값이 **바닥이 아니다**. 두 조건을 함께 본다.
       liveness <- if (nrow(tstat) >= 10L) stats::sd(tstat$modal_frac, na.rm = TRUE) else NA_real_
       axis_T$stat_liveness <- liveness
-      if (nrow(tstat) >= 10L && (is.na(liveness) || liveness < 1e-9)) {
+      floor_lvl <- 2 / stats::median(tstat$n_obs)
+      degenerate <- nrow(tstat) >= 10L && (is.na(liveness) || liveness < 1e-9) &&
+                    stats::median(tstat$modal_frac) > floor_lvl
+      if (degenerate) {
         axis_T$status <- "UNMEASURED"
-        axis_T$reason <- sprintf("modal_frac 이 %d종에서 전부 동일(sd=%.3e) — 계측 사망 (sd(Z)=1 항등과 같은 계통)",
-                                 nrow(tstat), liveness)
+        axis_T$reason <- sprintf("modal_frac 이 %d종에서 전부 동일(sd=%.3e)하고 그 값 %.4f 이 바닥 %.4f 을 넘음 — 계측 사망 (sd(Z)=1 항등과 같은 계통)",
+                                 nrow(tstat), liveness, stats::median(tstat$modal_frac), floor_lvl)
         warnings <- c(warnings, sprintf("[identity_guard] %s — ★축 T 계측 사망 의심: %s", ym_cur, axis_T$reason))
       } else {
         axis_T$status <- "OK"
