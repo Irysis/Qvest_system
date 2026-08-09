@@ -403,6 +403,21 @@ _LEGACY_FIELD_MAP = [
 ]
 
 
+def _coerce_text(v):
+    """alias 값이 str 이 아닐 때(dict/list) 읽을 수 있는 문자열로 평탄화.
+
+    실측 2026-08-09: `findings` 는 dict 로 쓰인 아티팩트가 있다(FQ-004). 종전엔 dict 를
+    그대로 lesson_text 에 넣거나(하류 str 가정 파손) 건너뛰어(지식 손실) 둘 다 나빴다.
+    """
+    if isinstance(v, str):
+        return v
+    if isinstance(v, dict):
+        return " / ".join("%s: %s" % (k, _coerce_text(x)) for k, x in v.items() if x)
+    if isinstance(v, (list, tuple)):
+        return " / ".join(_coerce_text(x) for x in v if x)
+    return str(v) if v is not None else ""
+
+
 def _adapt_legacy_schema(data: dict) -> dict:
     """구스키마 필드를 canonical 이름으로 투영 (비파괴 — 원 필드 보존)."""
     out = dict(data)
@@ -412,9 +427,41 @@ def _adapt_legacy_schema(data: dict) -> dict:
         for a in aliases:
             v = data.get(a)
             if v:
-                out[canon] = v
+                out[canon] = _coerce_text(v) if canon == "lesson_text" else v
                 break
     return out
+
+
+# 본문 후보로 인정하는 키 (공란 진단 메시지용 — alias 표와 별개, 진단 전용)
+_BODY_HINT_KEYS = ("finding", "findings", "lesson", "text", "description",
+                   "mechanism", "mechanism_diagnosis", "title", "hypothesis")
+
+
+def _warn_empty_lessons(lcodes: list[dict]) -> int:
+    """★근본 방어: lesson_text 공란을 **소리나게** 만든다.
+
+    고정 alias 목록은 emitter 스키마가 바뀔 때마다 같은 구멍을 다시 연다 —
+    실제로 2026-07-25(신 스키마)·2026-08-09(finding / findings) 두 번 재발했고,
+    증상이 오류가 아니라 **빈 문자열**이라 L-code 는 정상 계상되면서 지식만 사라졌다
+    (corpus → knowledge_index → 주입면까지 공란 전파 = 검색·회수 불가).
+    alias 를 늘리는 것으로는 다음 변형을 막지 못하므로, 공란이 나오면 **어느 파일의
+    어느 키에 본문이 있는지**까지 찍어 다음 수리가 즉시 가능하게 한다.
+    """
+    n = 0
+    for rec in lcodes:
+        if (rec.get("lesson_text") or "").strip():
+            continue
+        n += 1
+        raw = rec.get("_raw") if isinstance(rec.get("_raw"), dict) else {}
+        cands = [k for k in _BODY_HINT_KEYS if raw.get(k)]
+        print("[lcode_harvester][WARN] lesson_text 공란 — %s (%s). 본문 후보 키: %s. "
+              "_LEGACY_FIELD_MAP 의 lesson_text alias 에 추가할 것 (지식 손실 = 조용한 실패)"
+              % (rec.get("l_code"), rec.get("source_file"), ", ".join(cands) or "(없음 — emitter 측 결손)"),
+              file=sys.stderr)
+    if n:
+        print("[lcode_harvester][WARN] lesson_text 공란 총 %d건 — 이 건들은 knowledge_index·"
+              "주입면에서 검색되지 않는다." % n, file=sys.stderr)
+    return n
 
 
 def harvest(project_dir: str) -> dict:
