@@ -1,6 +1,6 @@
 {
   "schema_version": 2,
-  "measured_at": "2026-08-09T13:02:04",
+  "measured_at": "2026-08-09T13:44:34",
   "n_tasks": 8,
   "last_resume": "2026-08-09T12:04:14",
   "last_boot": "2026-07-17T19:15:48",
@@ -8,11 +8,11 @@
   "tasks": [
     {
       "task": "Qvest_DailyRefresh",
-      "state": "Running",
-      "rc": 267009,
-      "rc_label": "still_running",
+      "state": "Ready",
+      "rc": 0,
+      "rc_label": "ok",
       "last_run": "2026-08-09T12:10:10",
-      "age_days": 0.04,
+      "age_days": 0.07,
       "max_stale_days": 2,
       "next_run": "2026-08-10T00:03:00",
       "exec_time_limit": "PT72H",
@@ -28,7 +28,7 @@
       "rc": 0,
       "rc_label": "ok",
       "last_run": "2026-08-09T12:10:10",
-      "age_days": 0.04,
+      "age_days": 0.07,
       "max_stale_days": 2,
       "next_run": "2026-08-10T02:00:00",
       "exec_time_limit": "PT4H",
@@ -44,7 +44,7 @@
       "rc": 3221225786,
       "rc_label": "hard_terminated_ctrlc_or_exectimelimit",
       "last_run": "2026-08-01T15:49:19",
-      "age_days": 7.88,
+      "age_days": 7.91,
       "max_stale_days": null,
       "next_run": "2026-09-01T06:00:00",
       "exec_time_limit": "PT2H",
@@ -60,7 +60,7 @@
       "rc": 267009,
       "rc_label": "still_running",
       "last_run": "2026-08-09T12:10:10",
-      "age_days": 0.04,
+      "age_days": 0.07,
       "max_stale_days": 2,
       "next_run": "2026-08-10T07:10:00",
       "exec_time_limit": "PT3H",
@@ -72,11 +72,11 @@
     },
     {
       "task": "Qvest_MorningReboot",
-      "state": "Running",
-      "rc": 267009,
-      "rc_label": "still_running",
+      "state": "Ready",
+      "rc": 0,
+      "rc_label": "ok",
       "last_run": "2026-08-09T12:07:14",
-      "age_days": 0.04,
+      "age_days": 0.07,
       "max_stale_days": null,
       "next_run": null,
       "exec_time_limit": "PT3H",
@@ -92,7 +92,7 @@
       "rc": 3221225786,
       "rc_label": "hard_terminated_ctrlc_or_exectimelimit",
       "last_run": "2026-06-20T12:00:01",
-      "age_days": 50.04,
+      "age_days": 50.07,
       "max_stale_days": 2,
       "next_run": "2026-08-09T14:00:00",
       "exec_time_limit": "PT72H",
@@ -108,7 +108,7 @@
       "rc": 267014,
       "rc_label": "terminated_by_user_or_limit",
       "last_run": "2026-08-09T12:10:10",
-      "age_days": 0.04,
+      "age_days": 0.07,
       "max_stale_days": 2,
       "next_run": "2026-08-09T20:00:00",
       "exec_time_limit": "PT10M",
@@ -124,7 +124,7 @@
       "rc": 0,
       "rc_label": "ok",
       "last_run": "2026-08-08T09:00:00",
-      "age_days": 1.17,
+      "age_days": 1.2,
       "max_stale_days": 9,
       "next_run": "2026-08-15T09:00:00",
       "exec_time_limit": "PT2H",
@@ -137,16 +137,13 @@
   ],
   "cotermination": null,
   "verdict": {
-    "failed_new": [
-      "Qvest_StrandedRepairs(terminated_by_user_or_limit)"
-    ],
+    "failed_new": [],
     "failed_known": [
-      "Qvest_MonthlyDistill(hard_terminated_ctrlc_or_exectimelimit·08-01T15:49)"
+      "Qvest_MonthlyDistill(hard_terminated_ctrlc_or_exectimelimit·08-01T15:49)",
+      "Qvest_StrandedRepairs(terminated_by_user_or_limit·08-09T12:10)"
     ],
     "in_flight": [
-      "Qvest_DailyRefresh(still_running)",
-      "Qvest_MorningBrief(still_running)",
-      "Qvest_MorningReboot(still_running)"
+      "Qvest_MorningBrief(still_running)"
     ],
     "stale": [],
     "note": "in_flight=state==Running(완료 판정 부재, 실패 아님) / failed_known=이미 보고한 (task,last_run) 재출현"

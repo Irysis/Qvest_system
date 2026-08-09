@@ -207,6 +207,87 @@ load_sigma_estimators <- function(only = NULL, root = .mr_root()) {
   out
 }
 
+# ══ regime 레인: 오버레이 노출 스케줄 교체 A/B ═══════════════════════════════
+# optimizer 레인이 "비중 규칙", risk 레인이 "위험을 재는 자(Σ)"를 바꿔 낀다면,
+# regime 레인은 **얼마나 태울지(exposure 스칼라)** 를 바꿔 낀다. 선별·비중은 전부 고정.
+#
+# 계약: exposure_schedule(ctx) -> list(exposure = data.table(Date, exposure), used_cutoff = Date[])
+#   ctx = list(periods = data.table(decision_date, eval_date), bare_gross = data.table(Date, r))
+#   Date = eval_date 그리드. exposure ∈ [0, 1] (long-only · 무레버리지 — Production Constraints).
+#
+# ★★`used_cutoff` 는 **선택 항목이 아니다**. 2026-07-06 BearProb 실사고 = 오버레이가 홀딩월 *말*
+#   정보로 그 홀딩월을 스케일한 ~1개월 동월 look-ahead 였고, placebo/OOS/DSR/subperiod 를 전부
+#   통과했다(판별한 건 lag1 스트레스와 strict-PIT A/B 뿐). 그래서 어댑터가 자기 컷오프를
+#   **신고하지 않으면 로드를 거부한다** — 신고 없음을 "아마 괜찮음"으로 내려앉히지 않는다.
+#   (부재를 정상값으로 읽는 것이 이 저장소의 반복 결함이다.)
+wrap_exposure_adapter <- function(fn, method_id) {
+  force(fn); force(method_id)
+  function(ctx) {
+    hold_start <- as.Date(format(as.Date(ctx$periods$decision_date), "%Y-%m-01"))
+    out <- tryCatch(fn(ctx), error = function(e) {
+      cat(sprintf("[exposure_adapter:%s] 예외: %s → 제외\n", method_id, conditionMessage(e))); NULL })
+    if (is.null(out)) return(NULL)
+    if (!is.list(out) || is.null(out$exposure) || is.null(out$used_cutoff)) {
+      cat(sprintf("[exposure_adapter:%s] ★계약 위반 — exposure/used_cutoff 둘 다 필요. PIT 미신고는 로드 거부\n", method_id))
+      return(NULL)
+    }
+    e <- as.data.table(out$exposure)
+    if (!all(c("Date", "exposure") %in% names(e))) {
+      cat(sprintf("[exposure_adapter:%s] ★컬럼 결손(Date/exposure) — 제외\n", method_id)); return(NULL) }
+    e[, Date := as.Date(Date)]; e[, exposure := as.numeric(exposure)]
+    if (any(!is.finite(e$exposure))) {
+      cat(sprintf("[exposure_adapter:%s] ★비유한 노출 — 제외\n", method_id)); return(NULL) }
+    if (any(e$exposure < 0) || any(e$exposure > 1)) {
+      # ★clip 으로 조용히 살려내지 않는다 — 제약을 어긴 어댑터를 통과시키면 "무엇을 쟀나"가 흐려진다.
+      cat(sprintf("[exposure_adapter:%s] ★노출이 [0,1] 밖 (min %.3f max %.3f) — long-only 무레버리지 위반, 제외\n",
+                  method_id, min(e$exposure), max(e$exposure))); return(NULL) }
+    uc <- as.Date(out$used_cutoff)
+    if (length(uc) != length(hold_start)) {
+      # 스칼라 신고는 최댓값으로 해석(가장 늦은 컷오프 = 가장 보수적)
+      if (length(uc) == 1L) uc <- rep(uc, length(hold_start))
+      else { cat(sprintf("[exposure_adapter:%s] ★used_cutoff 길이 불일치(%d vs %d) — 제외\n",
+                         method_id, length(uc), length(hold_start))); return(NULL) }
+    }
+    viol <- sum(uc >= hold_start, na.rm = TRUE)
+    if (viol > 0) {
+      cat(sprintf("[exposure_adapter:%s] ★C5 위반 — 신호 컷오프가 홀딩월 시작 이후인 기간 %d개월. 제외(pit.md C5)\n",
+                  method_id, viol)); return(NULL) }
+    cat(sprintf("[exposure_adapter:%s] OK — %d개월 · 평균 노출 %.4f · 홀딩월까지 최소 간격 %.0f일\n",
+                method_id, nrow(e), mean(e$exposure), min(as.numeric(hold_start - uc))))
+    e[, .(Date, exposure)]
+  }
+}
+
+#' regime 레지스트리 로드 → method_id -> wrapped exposure schedule builder.
+#' ★현재 `06_Registry/method_registry.json` 의 regime route 항목은 0건이다. 그 사실은
+#'   소비단이 **이름 붙여 보고**한다("등재 0건") — 0 을 조용한 통과로 두지 않는다.
+load_exposure_adapters <- function(only = NULL, root = .mr_root()) {
+  rp <- file.path(root, METHOD_REGISTRY_PATH)
+  if (!file.exists(rp)) return(list())
+  reg <- fromJSON(rp, simplifyVector = FALSE)
+  out <- list()
+  for (m in Filter(function(x) identical(x$adapter_kind, "exposure"), reg$methods %||% list())) {
+    if (!is.null(only) && !(m$method_id %in% only)) next
+    if (!identical(m$verdict, "implemented")) next
+    ap <- file.path(root, m$adapter %||% "")
+    if (!nzchar(m$adapter %||% "") || !file.exists(ap)) {
+      cat(sprintf("[method_registry] ★%s: verdict=implemented 인데 어댑터 부재 — 건너뜀\n", m$method_id)); next
+    }
+    env <- new.env(parent = globalenv())
+    ok <- tryCatch({ sys.source(ap, envir = env); TRUE },
+                   error = function(e) { cat(sprintf("[method_registry] %s source 실패: %s\n",
+                                                     m$method_id, conditionMessage(e))); FALSE })
+    if (!ok) next
+    fname <- m$entrypoint %||% "exposure_schedule"
+    if (!exists(fname, envir = env, inherits = FALSE)) {
+      cat(sprintf("[method_registry] ★%s: 진입점 `%s` 부재 — 건너뜀\n", m$method_id, fname)); next
+    }
+    out[[m$method_id]] <- wrap_exposure_adapter(get(fname, envir = env), m$method_id)
+  }
+  cat(sprintf("[method_registry] route=regime 노출 어댑터 %d건 로드\n", length(out)))
+  out
+}
+
 #' risk 레인 arm ↔ 정합 대조군 지도 (2026-08-09 신설).
 #'
 #' 왜 있나: **측정됐다 ≠ 판정됐다.** 2026-08-09 실측 — `ProperScoreGASFilter`·

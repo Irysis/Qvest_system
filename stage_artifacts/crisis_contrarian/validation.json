@@ -1,0 +1,128 @@
+{
+  "round_id": "CRISIS_CONTRARIAN_20260809",
+  "origin": "도훈 지시 2026-08-09 — 위기신호 발현 시 비중 확대 (시장 선행 논리)",
+  "as_of": "2026-08-09",
+  "metric_type": "canonical_screen_diag",
+  "capital_claim": false,
+  "prereg_ref": "preregistration.json (측정 전 작성)",
+  "verdict": "K2_INCONCLUSIVE_DIRECTIONALLY_FAVORABLE",
+  "stage_1_label_engine": {
+    "finding": "라벨 엔진 산출물로는 가설을 시험할 수 없다",
+    "evidence": "msm Crisis(n=124) 주변 벤치 연율: 전전월 +16.37 · 전월 +18.19 · 당월 +21.29 · 익월 +31.65 vs 비-Crisis +9.57/+9.69/+6.82/+2.70. 네 구간 전부 높다 = 하락 국면이 아니라 고수익 국면 표시.",
+    "pit_status": "미해결 — vintage 저장 전무(regime_vintage/vintage/msm_vintage 부재), 단일 *_latest.parquet. 전표본 smoothing 지문과 정합하나 확정 못함.",
+    "production_check": "msm_hybrid Target_Weight=0 이 124개월(29%)에 걸려 있으나 소비자는 bootstrap.sh·daily_refresh.sh·telegram_notify.R 등 ops/보고 경로뿐 — 비중 산출 **미배선**. 라이브 결함 아님."
+  },
+  "stage_2_mechanical": {
+    "why": "기계적 정의는 월말 관측 가능·재적합 여지 0 이라 PIT 논쟁이 원천 소멸한다",
+    "grid": "S1 당월수익 {−5,−10,−15}% · S2 3개월누적 {−10,−15,−20}% · S3 12개월낙폭 {−10,−20,−30}% (사전등록, argmax 금지)",
+    "cells": 9,
+    "significant": 0,
+    "underpowered": 9,
+    "direction_all_positive": true,
+    "f1_diff_range_ann_pct": [4.65288646446463, 23.3538178741445],
+    "max_t": 1.06425197826828,
+    "required_range_ann_pct": [24.566934870963, 87.6820091998753],
+    "cells_table": [
+      {
+        "family": "S1_당월수익",
+        "threshold_pct": -5,
+        "n_on": 80,
+        "f1_diff_ann": 8.11436574742109,
+        "f1_t": 0.534049321297591,
+        "required_ann": 30.3880762462368,
+        "verdict": "INCONCLUSIVE_UNDERPOWERED"
+      },
+      {
+        "family": "S1_당월수익",
+        "threshold_pct": -10,
+        "n_on": 31,
+        "f1_diff_ann": 11.5091416122267,
+        "f1_t": 0.502760635776425,
+        "required_ann": 45.7837817571095,
+        "verdict": "INCONCLUSIVE_UNDERPOWERED"
+      },
+      {
+        "family": "S1_당월수익",
+        "threshold_pct": -15,
+        "n_on": 8,
+        "f1_diff_ann": 11.6177962623203,
+        "f1_t": 0.264998404309759,
+        "required_ann": 87.6820091998753,
+        "verdict": "INCONCLUSIVE_UNDERPOWERED"
+      },
+      {
+        "family": "S2_3개월누적",
+        "threshold_pct": -10,
+        "n_on": 61,
+        "f1_diff_ann": 7.57734130109148,
+        "f1_t": 0.446715984460824,
+        "required_ann": 33.9246481642566,
+        "verdict": "INCONCLUSIVE_UNDERPOWERED"
+      },
+      {
+        "family": "S2_3개월누적",
+        "threshold_pct": -15,
+        "n_on": 34,
+        "f1_diff_ann": 23.3538178741445,
+        "f1_t": 1.06425197826828,
+        "required_ann": 43.8877603256048,
+        "verdict": "INCONCLUSIVE_UNDERPOWERED"
+      },
+      {
+        "family": "S2_3개월누적",
+        "threshold_pct": -20,
+        "n_on": 18,
+        "f1_diff_ann": 6.55368130000434,
+        "f1_t": 0.221586758118109,
+        "required_ann": 59.1522828860662,
+        "verdict": "INCONCLUSIVE_UNDERPOWERED"
+      },
+      {
+        "family": "S3_12개월낙폭",
+        "threshold_pct": -10,
+        "n_on": 160,
+        "f1_diff_ann": 4.65288646446463,
+        "f1_t": 0.3787925916606,
+        "required_ann": 24.566934870963,
+        "verdict": "INCONCLUSIVE_UNDERPOWERED"
+      },
+      {
+        "family": "S3_12개월낙폭",
+        "threshold_pct": -20,
+        "n_on": 69,
+        "f1_diff_ann": 9.63944975234033,
+        "f1_t": 0.596735261943618,
+        "required_ann": 32.3072905762056,
+        "verdict": "INCONCLUSIVE_UNDERPOWERED"
+      },
+      {
+        "family": "S3_12개월낙폭",
+        "threshold_pct": -30,
+        "n_on": 32,
+        "f1_diff_ann": 16.5474284321209,
+        "f1_t": 0.732769606538389,
+        "required_ann": 45.1640687181094,
+        "verdict": "INCONCLUSIVE_UNDERPOWERED"
+      }
+    ]
+  },
+  "key_structural_finding": {
+    "title": "★효과가 있다면 그것은 **빈도가 아니라 크기**다 — 그래서 구조적으로 저검정력이다",
+    "evidence": "익월 양수 비율(적중률) ON vs OFF: 얕은 문턱은 동률(0.52 vs 0.52~0.53), **깊은 문턱은 오히려 ON 이 낮다**(S1−15% 0.38 · S2−20% 0.39 · S3−30% 0.47). 그런데 평균 차이는 전부 양(+).",
+    "reading": "하락 뒤 반등은 **더 자주** 오지 않고 **더 크게** 온다. 분산이 커지므로 같은 평균 효과라도 t 가 안 나온다. 이는 도훈 가설이 틀렸다는 뜻이 아니라, **이 판정량(월간 벤치 평균)으로는 원리적으로 확정 불가**하다는 뜻이다.",
+    "implication_for_portfolio": "평균은 오르되 분산도 커지므로 Sharpe 개선은 **별개 질문**이다. 비중 확대 규칙을 설계하려면 수익 평균이 아니라 위험조정 기준으로 재판정해야 한다."
+  },
+  "power_limit": {
+    "statement": "★439개월·월간 벤치(sd 8.18%)·사건 30~80개월 조합에서 필요 효과는 연 24.6~87.7% 다. 관측 4.7~23.4% 는 그 아래다.",
+    "conclusion": "이 가설은 **월간 시장-타이밍 프레임으로는 구조적으로 판정 불가**다. 검정력을 못 올리면 몇 번을 재도 같은 라벨이 나온다.",
+    "honest_note": "9/9 셀이 같은 방향인 것을 부호검정으로 읽지 말 것 — 셀들이 서로 포함관계·시간중첩이라 독립 9회가 아니다."
+  },
+  "productive_redirection": {
+    "title": "★프레임 전환 — 시장 타이밍(1계열)이 아니라 횡단면(300종목×월)으로",
+    "rationale": "이 시스템의 검정력은 횡단면에 있다. '언제 시장에 더 들어갈까' 는 표본이 439개인데, '위기 직후 어떤 종목이 더 반등하나' 는 표본이 수만이다.",
+    "concrete": "기계적 하락 신호 ON 인 달의 **다음달 횡단면**에서 어떤 팩터의 IC 가 커지는가(국면-조건부 팩터 자격). 이는 배분이 아니라 **선별** 축이라 제약 조건 안이고, 기존 하네스가 그대로 쓰인다.",
+    "caution": "국면-조건부 분할은 이 저장소에서 검정력 파괴가 반복 실증된 축이다 — 착수 전 required_effect 필수(n_ON×종목수로 유효표본이 회복되는지 먼저 확인)."
+  },
+  "self_correction_logged": "중간 보고에서 '도훈 직관이 forward 축에서 확인됐다' 고 말했으나, 그 라벨이 위기 라벨인지 확인 전이었다. P3 에서 아님이 드러나 즉시 정정했다. forward 수치 자체는 실측이나 가설 지지 근거가 아니다.",
+  "artifacts": ["preregistration.json", "findings_interim.json", "p0_dup_check.R", "p1_label_census_power.R", "p2_forward.R", "p2_forward_cells.csv", "p3_pit_gate.R", "p4_mechanical.R", "p4_mechanical_cells.csv"]
+}

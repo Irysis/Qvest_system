@@ -1,0 +1,152 @@
+{
+  "wt_id": "WT-D20260809_004",
+  "fq_id": "FQ-173",
+  "designed_by": "alpha-hypothesis",
+  "model_tier": "fable",
+  "designed_at": "2026-08-09",
+  "spec_version": "ast_v1.1",
+  "design_doc_inherited": "stage_artifacts/inflation_compass_precheck/design_v0.md",
+  "prechecks": {
+    "hypothesis_index_hits": [],
+    "hypothesis_index_note": "인플레/inflation/T5YIE/breakeven/기대인플 축 실질 0건 (p0_precheck.R 실측 + 2026-08-09 재확인). 유일 문자열 hit = DIST-AR-001 기회비용 서술('무위험2%+인플레3%') — 인플레 조건화 가설 아님, 무관 확정. 양성 대조: 'PORT_t' queue 다수 건 검출로 검색 자체는 생존 확인.",
+    "frontier_queue_refs": ["FQ-173 (본 건, in_flight)", "FQ-171 NP-A (층 3 형태 전제 실측 근거)", "FQ-069c2 (섹터 층 천장 실측)", "FQ-172 (사전 킬스위치 검정력 비대칭 — F4 설계에 반영)", "FQ-068 (CPI 계열 발표 lag M-2 규약 선례)"],
+    "owner": "Q-Lead session cee0bdd0 (2026-08-09) — dohoon_decision 항목 아님, 도훈 직접 아이디어 + 합성 지표 승인(2026-08-09) 명기",
+    "adjacent_negatives_checked": [
+      "regime-conditional 교차결합 settled-negative(2026-07-05) = 이산 국면 x 팩터 config — 본 건은 연속 틸트로 별개 config. 연속형도 무효면 '국면 축은 연속형으로도 무효'라는 더 강한 지식이 된다 (INV-7).",
+      "DIST-RAMP-006: 국면-조건부 배분 PORT_t 천장 ~2.85 — 사전 기대를 그 위로 잡지 않는다.",
+      "업종-레벨 신호 = 월수익 분산 12~22%만 겨냥 (FQ-069c2, BSI는 oracle 천장의 4.8%) — 섹터 층 기대치 하향 사전 서술."
+    ]
+  },
+  "candidates": [
+    {
+      "title": "연속 3층: 합성 인플레 지수 → rolling β_s 연속 틸트 → 섹터 내 이익성장 상위 선택",
+      "family": "macro_conditioned_selection",
+      "mechanism_sketch": "인플레 충격의 섹터별 원가 전가력 차이 + 할인율 듀레이션 차이가 컨센서스 개정 지연·공매도 제약으로 1~3개월에 걸쳐 가격 반영",
+      "why_not_selected": null,
+      "selected": true
+    },
+    {
+      "title": "논문 직역: 4국면(성장x인플레) 이산 분할 + 고정 섹터 매핑 + 단일 섹터 포지션",
+      "family": "regime_switch_sector",
+      "mechanism_sketch": "동일 채널이나 이산 국면 스위칭으로 표현",
+      "why_not_selected": "①검정력 산술 기각 — 국면 25% 시 필요 연효과 16.31%, 스태그플레이션 5% 시 32.41% (required_effect_size.R 실측, 2026-08-08 3회 재현 계통). 논문 자신도 스태그플레이션 표본 희소 자인. ②regime-conditional 이산 교차결합 settled-negative(07-05) 인접 config. ③고정 매핑(XLE/XLK/XLU/XLP)의 KR 이식 근거 부재. ④단일 섹터 포지션은 25종·[0,0.20] 제약 위반.",
+      "selected": false
+    },
+    {
+      "title": "종목-레벨 인플레 베타 직접 랭킹 (섹터 층 생략, β_i 를 개별 종목에서 추정)",
+      "family": "macro_beta_stock_ranking",
+      "mechanism_sketch": "동일 채널을 종목-레벨 민감도로 직접 포착 — 섹터 집계 손실 없음",
+      "why_not_selected": "개별 종목 60개월 rolling β_i 는 섹터 EW 대비 추정 SE 가 크고(개별 idiosyncratic vol ≫ 섹터 EW vol), 랭킹이 추정 노이즈에 지배될 위험. 단 섹터 β_s 가 F2 안정성을 통과하고 틸트가 유효하면 자연스러운 next_probe — challenge_flags 에 보관.",
+      "selected": false
+    },
+    {
+      "title": "인플레 신호를 오버레이/β 예산 입력으로 소비 (선택 알파가 아니라 리스크 층)",
+      "family": "overlay_signal",
+      "mechanism_sketch": "인플레 국면을 시장 β 스케일링 입력으로",
+      "why_not_selected": "FQ-173 정의(선택 알파) 밖 + 오버레이 신호 자격은 사건 정의에 조건부라는 실측 지식(2026-08-08: 월<0% lift 1.16x 미달, <-10% 는 3.19x) — 별도 lane 별도 사전등록 사안. 소비면 7종 순회 시 오버레이 면은 F3 층 분해 결과가 나온 뒤 FQ 등재로 처리.",
+      "selected": false
+    },
+    {
+      "title": "KR_CPI 단독 단순판 (글로벌 성분 T5YIE·Copper 제외)",
+      "family": "macro_conditioned_selection",
+      "mechanism_sketch": "국내 실현 인플레만으로 조건화 — 크로스마켓 해석 논점 원천 제거",
+      "why_not_selected": "기대 인플레 축 부재(KR 은 TIPS 없어 breakeven 산출 불가 — 기대를 담을 유일 경로가 T5YIE) + KR_CPI 는 발표 lag 로 M-2 참조라 타이밍 정보가 가장 늦은 성분. 단 성분별 기여 분해 진단에서 T5YIE 성분이 무기여로 나오면 이 판이 부활 후보 — challenge_flags 에 보관.",
+      "selected": false
+    }
+  ],
+  "selected": {
+    "hypothesis_title": "인플레이션 나침반 KR — 합성 인플레 지수 x 섹터 민감도 틸트 x 섹터 내 이익성장 선택 (도훈 아이디어)",
+    "hypothesis_description": "합성 인플레 지수 infl_t (4성분 동일가중, expanding z 최소 36개월: z(T5YIE−2.0) + z(T5YIE 60d 모멘텀) + z(KR_CPI YoY, M-2 참조) + z(Copper YoY))가 높거나 상승하는 시기에, 인플레 민감도 β_s,t (섹터 EW 초과수익의 Δinfl 회귀, trailing 60개월·expanding 최소 36개월)가 양(+)인 섹터의 대표성을 연속적으로 확대하고(w_s ∝ base_s x exp(λ·β_s,t·infl_t), λ ∈ {0, 0.5, 1.0} 소수 고정 전량 보고), 각 섹터 정원 n_s = round(25·w_s) 안에서 이익성장 스코어(C01_SUE·C02_EPS_Chg_1m·M26_Revenue_Mom 중 사전 고정 소수) 상위 종목을 선택해 최대 25종을 편입하면, cap-w canonical PORT_t 기준 유의한 net active 를 낸다. 알파의 몸통은 섹터 내 종목선택이고(월수익 분산의 78~88%가 업종 내 — FQ-069c2), 인플레 틸트는 '어느 섹터를 대표시킬 것인가'를 정하는 연속 조건화 보조층이다. ★논문(cssanalytics Inflation Compass) 대비 명시 이탈 3건: (1) 4국면 이산 분할 → 연속 틸트 (이산 국면은 구조적 저검정력 — 국면 25% 필요 연 16.31%, 5% 시 32.41%) (2) XLE/XLK/XLU/XLP 고정 섹터 매핑 → rolling β_s 데이터 추정 (KR 이식 근거 부재) (3) 단일 섹터 ETF 포지션 → ≤25종 분산 종목선택 (제약 준수 + 섹터 층 천장 실측). 기간 = 2003~ (T5YIE 시작 제약, ≈280개월 — alpha-search 헌법 고정창 2005~ 와 다름 명시). ★T5YIE 는 미국 자산을 거래하는 것이 아니라 조건화 변수이며 FRED 는 헌법 허용 인프라 — 크로스마켓 금지 저촉 없음(사전등록 명기).",
+    "mechanism": {
+      "agent": "① 애널리스트 컨센서스 (이익 추정 개정 주체) — 매크로 인플레 충격이 개별 기업 마진에 미치는 영향(전가력 차이)을 실적 발표·가이던스 주기(월~분기)에 묶여 지연 반영. ② 국내 개인·일반 기관 투자자 — 명목 착시(nominal illusion): 인플레 상승기의 명목 매출 성장을 실질 마진 훼손과 구별하지 못해 저전가력·장기듀레이션 종목을 상대적으로 과대평가.",
+      "friction": "① KR 공매도 제약(2020~2025 장기 금지, 재개 후에도 제한적) — 인플레-피해(저전가력·장기듀레이션) 섹터/종목의 숏 차익거래 불가 → 상대가격 조정이 롱-온리 자금 재배분 속도로 제한. ② 컨센서스 개정 주기 — 매크로 신호(월말 확정)와 종목-레벨 이익 추정 반영 사이 1~3개월 구조적 시차. ③ 유동성 하한(adv≥2e8) 경계 밖 종목은 기관 자금 진입이 막혀 정보 전파가 더 느림 — 본 전략은 하한 안쪽만 거래하므로 이 마찰은 신호 지속의 배경이지 수익 원천 경계 밖.",
+      "path": "인플레 신호(홀딩월 시작 전 확정: T5YIE·Copper 는 M-1 월말까지, KR_CPI 는 M-2 참조월까지) → (i) 섹터 채널 [층 2 귀속]: 원가 전가력이 높은 섹터(원자재-연동: 에너지·소재·일부 산업재)의 마진 방어가 후속 실적으로 확인되며 섹터 상대수익 실현 — trailing 60개월 rolling β_s 가 이 민감도를 포착하고 exp 틸트가 해당 섹터의 대표성을 확대 (ii) 종목 채널 [층 3 귀속]: 같은 섹터 안에서도 이익성장 모멘텀(SUE·EPS 개정·매출전망 개정) 상위 종목 = 전가력 실현을 이익 수치로 먼저 입증한 종목 — 컨센 개정 → 가격 반영이 1~3개월 리듬으로 진행 (iii) 신호 채널 [층 1 귀속]: Copper 등 실물가는 글로벌 실수요의 확인 신호로 T5YIE(기대)·KR_CPI(실현)의 노이즈를 필터. 월간 리밸런스가 (i)(ii)의 1~3개월 반영 리듬을 포착한다.",
+      "channel_to_layer_map": "채널 (i) = 섹터-레벨 발현 → 층 2 (rolling β_s 틸트)가 담당. 채널 (ii) = 종목-레벨 발현 (인플레 국면 x 이익성장의 상호작용) → 층 3 (섹터 내 상위 선택)이 담당. 채널 (iii) = 신호-레벨 → 층 1 (합성 지수)이 담당. 이 구별이 층 2/층 3 역할 분담의 근거이며, F3 층 분해가 이 귀속을 실측으로 검증한다. 사전 기대: 층 2 단독 기여는 작다(업종-레벨 신호는 월수익 분산 12~22%만 겨냥 — FQ-069c2 실측; BSI 는 oracle 천장의 4.8% 달성 선례). 알파 몸통 기대 = 층 3. ★층 3 형태 전제의 실측 근거: NP-A(FQ-171, 2026-08-09) — book 등급 신호의 상단은 중간분위를 유의하게 이긴다(pooled 갭 연 +2.61%, NW t +3.31; C02 +5.02%, t 2.18) ⇒ '섹터 내 상위 선택'은 혹(hump) 함정 형태가 아님. 단 이는 book 등급 재료 한정 실측이므로 층 3 후보 3종이 그 등급인지 사전등록에서 개별 확인 의무."
+    },
+    "falsification": {
+      "observable": "메커니즘(원가 전가력 + 할인율 듀레이션)이 참이면 성과와 무관하게 관측되어야 할 것: rolling β_s 부호 패턴이 채널 예측과 정합해야 한다 — 원자재-연동 섹터(에너지·소재)의 β_s > 0, 규제-가격 섹터(유틸리티·통신) 및 장기듀레이션 성장 섹터(IT·바이오 계열)의 β_s < 0 이 표본 대부분 기간에서 유지. β_s 부호가 채널 예측과 무관하게 무작위 분포하거나 창 이동에 불안정하면, 성과가 나오더라도 그것은 인플레 메커니즘이 아니라 다른 원천이다 — 틸트 층 기전 기각.",
+      "field_dictionary_refs": [
+        "A1_RAWDATA_OHLCVS_daily (Sector 27종 + 일간 수익 — β_s 추정·섹터 EW 초과수익)",
+        "E1_fred_macro_raw (T5YIE 레벨·60d 모멘텀 + Copper YoY — .cache/fred_macro.parquet)",
+        "E2_ecos_kr_rates (KR_CPI 901Y010 monthly — ECOS)",
+        "C-REGISTRY-PTR-CONS / FDB-B3_registry_consensus_daily (C02_EPS_Chg_1m·M26_Revenue_Mom)",
+        "C-REGISTRY-PTR-FUND / FDB-B1_registry_fundamental_quarterly (C01_SUE)"
+      ],
+      "reject_if": "primary: 유효 섹터(틸트가 실제 대표성을 부여한 5~10 섹터)의 β_s 부호가 채널 예측과 일치하는 비율이 표본 월의 50% 이하이면 틸트 층 기전 기각 (동전 던지기와 구별 불가). 세부 조건 F1~F4 는 conditions 참조.",
+      "conditions": [
+        {
+          "id": "F1_lag1_stress",
+          "rank": "1급",
+          "observable": "신호를 1개월 지연시킨 판(infl_{t-1}, β_s 동결) vs base 판의 층-증분 비교. 근거: 논문 자인 1일 집행 지연 = CAGR −480bp — 이 민감도가 크면 재료가 아니라 타이밍 아티팩트다. 선례: BearProb 오버레이 동월 look-ahead 실사고(2026-07-06)에서 placebo/OOS/DSR 전부 통과하고 lag1 스트레스 + strict-PIT A/B 만 판별.",
+          "reject_if": "base 판의 결합−(λ=0 종목선택 단독) 증분이 유효한데, lag1 판에서 그 증분이 base 대비 50% 미만으로 축소되면 인플레 층은 타이밍 아티팩트로 기각 (재료라면 1개월 지연에도 상당분 생존해야 — 채널의 반영 리듬이 1~3개월이므로).",
+          "note": "성과-계열 통제이지만 성과 수준이 아니라 타이밍 미분을 재는 differential 진단 — primary(비성과 β_s 부호 패턴)의 보조."
+        },
+        {
+          "id": "F2_beta_stability",
+          "rank": "기전",
+          "observable": "rolling 60개월 β_s 를 12개월 stride 로 이동하며 섹터별 부호 반전 빈도 산출. ★겹치는 창 함정: β_s 계열 위 검정의 NW lag ≥ 창 길이(60개월) + stride 부분표본 병기 — WT-001·WT-003 이 lag-3 로 t 2.5~3.0배 부풀린 실사고 계통.",
+          "reject_if": "유효 섹터의 연간 창 간 부호 반전율 > 30% 이면 민감도 매핑이 데이터 스누핑 — 틸트 층 기각 (부호가 안정적이지 않으면 exp(λ·β_s·infl_t) 는 노이즈 증폭기다)."
+        },
+        {
+          "id": "F3_layer_attribution",
+          "rank": "귀속",
+          "observable": "3-arm 분해: (a) 틸트 단독 (종목선택 = 섹터 내 EW) / (b) 종목선택 단독 (λ=0, base 섹터 비중) / (c) 결합. 전 arm canonical_screen_bt 실측, cap-w PORT_t + dual-basis(EW-유니버스·cap-tier) 병기.",
+          "reject_if": "(a) 무효 ∧ (c)−(b) 증분 무효 → 인플레 층 제외, '종목선택 알파'로 재라벨 (결합 유효를 인플레 층 증거로 귀속 금지). (b) 무효 ∧ (c) 유효 → 상호작용 실재 후보이나 검정력 확인 후에만 주장. 전 arm 무효 → 검정력 라벨 병기 후 config-scoped negative + next_probe ≥ 2."
+        },
+        {
+          "id": "F4_permutation_placebo",
+          "rank": "음성 대조",
+          "observable": "infl_t 를 시간축에서 블록 순열(블록 12개월 — infl_t 의 강한 자기상관을 보존해야 플라시보가 공정; 단순 순열은 지속성을 파괴해 플라시보를 인위적으로 약하게 만든다)한 200판 대비 실측 (c)−(b) 증분의 위치.",
+          "reject_if": "실측 증분이 플라시보 분포 95분위 이하 → 인플레 층 무효 후보. ★검정력 조건 내장 (FQ-172 비대칭 재발 방지): '기각' 라벨은 사전 산출 required_effect 대비 관측/필요 비 ≥ 1.0 인 검정에서만 발동한다. 그 조건 미충족이면 판정은 INCONCLUSIVE_UNDERPOWERED 이며 소비면 종료 근거로 쓸 수 없다 — |t| 1.28 로 소비면을 영구 종료한 WT-D20260808_001 F4 형 비대칭의 재발 방지."
+        }
+      ],
+      "power_preregistration": "착수 전 required_effect_size.R 로 전 판정축의 필요 효과 산출 + implied_t_threshold 확인 의무 (2026-08-09 확립 규약: 사전등록 전에 required_effect). 비현실적 필요치가 나오는 축은 측정 전 폐기. 전표본 n≈280 기준 필요 연 7.06% (p0_precheck 실측) — 전표본 설계는 검정 가능."
+    },
+    "regime_scope": {
+      "holds_in": [
+        "인플레 앵커 이탈 구간 (연속: |infl_t| 큰 시기) — 전가력 격차·할인율 채널이 활성이고 신호 자체가 크다. 틸트 강도가 신호 크기에 비례하므로 가설이 스스로 이 구간에 노출을 집중한다.",
+        "금리-주도 횡단면 국면 (T5YIE 변동이 큰 시기, 연속 조건화) — 할인율 변동이 섹터 상대구조를 지배할 때 듀레이션 채널이 가장 선명하다."
+      ],
+      "weakens_or_reverses_in": [
+        "인플레 앵커 안정 구간 (|infl_t| ≈ 0) — 기능형 자체가 자기-감쇠: w_s ∝ exp(λ·β_s·infl_t) → base_s 로 수렴, 틸트가 구조적으로 소멸. 이 구간의 성과는 층 3 단독분으로 수렴해야 하며 그 이상이 나오면 오히려 스누핑 의심.",
+        "위기/유동성 청산 국면 — 시장 β 공통성분이 섹터 상대구조를 압도 (KR long-only 슬리브 β≈0.92 실측, 교정벤치 IKS200). 인플레 정보 신호가 청산 흐름에 압도된다.",
+        "수요-주도 디스인플레 (공급충격 부재 구간) — Copper(실물 수요)와 T5YIE(기대인플레) 성분이 역행해 합성지수가 내부 상쇄, 신호 정보량 저하. [검증 안 됨 (가정) — 성분별 기여 분해 진단으로 실측 예정]"
+      ],
+      "boundary_rationale": "경계 3건 모두 메커니즘에서 도출: ①앵커 안정 = 전가력 격차가 발현할 충격 자체가 없음 + exp 틸트의 수학적 자기-감쇠 (사후 데이터 관찰 아님 — 함수형 성질) ②위기 약화 = KR long-only β≈0.92 사전 실측 지식에서 도출 ③성분 상쇄 = 합성 지수 구성의 논리적 귀결 (단 실측 미확인 라벨 명시). ★분할 금지 (도훈 mandate + 2026-08-08 3회 재현 저검정력 계통): 국면별 성과 서술이 필요하면 이산 분할 검정이 아니라 연속 상호작용 항 (예: 증분수익 ~ infl_t 상호작용 회귀) + advisory 라벨로만 수행한다. 경계 자체가 연속 신호 크기의 함수로 내생 — 이산 경계 불필요."
+    },
+    "preregistration_skeleton": {
+      "primary_metric": "canonical top-25 EW cap-w PORT_t (canonical_screen_bt, NW lag-3; 단 겹치는 창 계열 위 검정은 lag ≥ 창) — rank-IC 는 advisory",
+      "design": "전표본 2003~ (≈280개월). 국면 분할 금지 — 연속 틸트만",
+      "lambda_grid": "{0, 0.5, 1.0} 소수 고정 — argmax 선택 금지, 전량 보고 (0 = 층 3 단독 arm 겸용)",
+      "composite_weights": "4성분 동일가중 고정 — 가중 최적화 금지 (스윕 시 DSR 게이트 대상). 성분별 기여 분해는 진단으로만 병기",
+      "z_convention": "expanding window 최소 36개월 — full-sample z 는 C1 위반",
+      "growth_score": "C01_SUE / C02_EPS_Chg_1m / M26_Revenue_Mom 중 사전 고정 소수 (sweep 금지). ★확정 전 공식 중복 검색 의무 — C14 가 M26 과 중복 등재였던 실측 선례 (2026-08-08). ★M26 실측 재료: decile 단조 +0.879, D10 연초과 +6.550% (t 2.822)",
+      "timing": "홀딩월 M 의 신호는 Date < M 1일 데이터만 (C5). T5YIE·Copper = M-1 월말까지, KR_CPI = M-2 참조월까지 (FQ-068 PPI 규약 동일). overlay_pit_guard.R assert_overlay_pit HARD 통과 의무",
+      "measurement_order": "①검정력 바 산출 → ②사전등록 고정 → ③층 분해 F3 우선 측정 → ④결합"
+    },
+    "constraints_annotation": {
+      "fixed_axes": "long-only · ≤25종 · weight [0, 0.20] · Σw=1 · K200∪KQ150 · adv(20일 평균 거래대금) ≥ 2e8 KRW · 15bps one-way · PIT C1~C15 — 문제의 고정 축이지 변수 아님 (INV-7, 완화 제안 금지)",
+      "liquidity_explicit": "★유동성 축 adv≥2e8 을 가설 본문에 명시 포함 — 2026-08-08 발행 패널이 이 축을 어겨 결함 고지가 붙은 재발 방지. 층 3 종목 선택은 유동성 필터 통과 종목만을 모집단으로 하며, 필터는 t-1 PIT (C10).",
+      "sector_arithmetic": "25종 ÷ 섹터 27종 = 평균 0.93종목/섹터 — 부드러운 섹터 비중은 표현 불가. 틸트는 실제로 '어느 섹터를 대표시킬 것인가'의 선택으로 발현되며 유효 섹터 수는 5~10. 결함이 아니라 가설이 전제하는 구조적 사실."
+    },
+    "expectation_ceiling": "사전 기대 상한: DIST-RAMP-006 (국면-조건부 배분 PORT_t 천장 ~2.85) 인접 — 결합 PORT_t 기대를 그 위로 잡지 않는다. 논문 수치(CAGR 23.5%·SR 1.41)는 미국 ETF·단일 포지션·다른 제약의 산물로 재현 목표가 아니라 상한 참조."
+  },
+  "challenge_flags": [
+    "[정직 고지] 섹터 층(층 2)의 기대 기여가 작다 — 업종-레벨 신호는 월수익 분산 12~22%만 겨냥 (FQ-069c2), BSI 선례는 oracle 천장의 4.8% 달성. 틸트 무효로 나올 사전 확률이 상당하며, 그 경우 F3 분해가 종목선택 알파를 건진다.",
+    "[정직 고지] T5YIE 는 미국 기대인플레 — KR 섹터 수익과의 연결 강도 미실측. 성분별 기여 분해 진단 의무. T5YIE 성분 무기여 시 후보 5 (KR_CPI 단독판) 부활.",
+    "[정직 고지] 4성분 선택 자체가 설계 자유도 — 가중은 동일가중 고정으로 스윕을 막았으나 성분 구성(왜 이 4개인가)은 논문 구조 + KR 가용성(breakeven 부재)에서 온 선택. 성분 변경은 본 라운드에서 금지, 필요 시 별도 사전등록 라운드.",
+    "[정직 고지] exp 틸트 함수형도 자유도 — 본 라운드는 exp 1형태 고정 (논문 국면 스위치의 연속화로서 자연스러운 최소 변형). linear 등 대안 함수형 비교는 sweep 이 되므로 금지.",
+    "[창 명시] 기간 2003~ (T5YIE 시작 제약) ≠ alpha-search 헌법 고정창 2005~ — 서로 다른 창의 수치를 나란히 비교하지 말 것 (2026-08-08 창-교락 자가 정정 선례).",
+    "[대안 보관] 종목-레벨 인플레 β_i 직접 랭킹 (후보 3) — F2 통과 + 틸트 유효 시 자연스러운 next_probe.",
+    "[대안 보관] 인플레 신호의 오버레이 소비면 (후보 4) — F3 결과 후 소비면 7종 순회에서 FQ 등재 판단.",
+    "[대안 보관] KR_CPI 단독 단순판 (후보 5) — T5YIE 성분 무기여 실측 시 부활.",
+    "[alpha-research 전달] 층 3 후보 3종의 book 등급 여부 개별 확인 의무 (NP-A 형태 전제는 book 등급 재료 한정 실측). 팩터 확정 전 공식 중복 검색 (C14=M26 중복 선례).",
+    "[alpha-research 전달] β_s 추정 계열 위 검정은 NW lag ≥ 창(60개월) — lag-3 관성 사용 금지 (WT-001·WT-003 실사고 계통)."
+  ],
+  "verdict": "designed",
+  "handoff": {
+    "to": "alpha-research",
+    "next_steps": "Step 1~7 + ⑤ AST 구성. 승계분(mechanism/falsification/regime_scope) 재작성 금지 — 결함 발견 시 challenge_note.md 기록 + 재설계 요청 (Charter 원칙 8). 측정 순서 = preregistration_skeleton.measurement_order. AST 구성 시 escape 리프 판단: 합성 infl_t·β_s 는 E1/E2/A1 FIELD 리프 + TS/CS 연산으로 환원 가능 예상 (𝒪 표현 불가 시 blocked_by_capability 정직 산출).",
+    "consumption_note": "결과가 어느 방향이든 소비면 7종 체크리스트 순회 의무 (answer-principles 4호): 특히 F3 산출 β_s 패널은 ①팩터 랭킹 ②유니버스 필터 ③오버레이 입력 ④위험모델 β예산 면에서 재소비 가능."
+  }
+}

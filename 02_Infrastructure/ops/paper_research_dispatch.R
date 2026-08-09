@@ -50,6 +50,33 @@ if (n_opt + n_risk + n_reg == 0) {
 DELTA_IR_GATE <- 0.05   # book-marginal admission 문턱(§4) — 측정 기준만(자본 admit 아님)
 actions <- list()
 
+# ── 공용 신선도 판정 (2026-08-09) ─────────────────────────────────────────────
+#   Σ 배터리의 SIGMA_AB_FRESHNESS_GATE 와 **같은 규약**의 함수판. regime 배터리가 쓴다.
+#   ★Σ 쪽 마커 블록은 검사기가 원본에서 추출하므로 건드리지 않는다(추출 계약). 대신 새 소비자는
+#     이 함수를 쓰게 해서 규약이 세 번째로 복사되는 것을 막는다 — 술어 3중 재구현이 이 저장소의
+#     반복 결함이었다([[project-wiring-map-standards-unconsumed-20260808]]).
+#   규약 2축: ① 결과가 **실제로 읽는 입력 전부**보다 새로운가 ② max-age 백스톱
+#     (입력 mtime 이 우연히 안 움직여도 새 실현월이 반영되도록).
+#   ★입력이 하나도 없으면 "최신"이 아니라 **판정 불가** — 부재를 fresh 로 내려앉히지 않는다.
+stale_check <- function(out_path, inputs, max_age_days = 35, label = "battery") {
+  present <- inputs[file.exists(inputs)]
+  if (length(present) < length(inputs))
+    cat(sprintf("[dispatch:%s] ★입력 %d/%d 부재 — 신선도 판정 근거 축소: %s\n", label,
+                length(inputs) - length(present), length(inputs),
+                paste(basename(setdiff(inputs, present)), collapse = ", ")))
+  if (!file.exists(out_path)) return(list(fresh = FALSE, why = "결과 파일 없음"))
+  if (length(present) == 0L) return(list(fresh = FALSE, why = "입력 전부 부재 — 신선도 판정 불가"))
+  out_m <- file.info(out_path)$mtime
+  age_d <- as.numeric(difftime(Sys.time(), out_m, units = "days"))
+  newest <- max(file.info(present)$mtime)
+  if (age_d > max_age_days)
+    return(list(fresh = FALSE, why = sprintf("결과 나이 %.0f일 > 백스톱 %d일", age_d, max_age_days)))
+  if (out_m < newest)
+    return(list(fresh = FALSE, why = sprintf("입력이 더 새로움 (최신 입력 %s > 결과 %s)",
+                                             format(newest, "%Y-%m-%d %H:%M"), format(out_m, "%Y-%m-%d %H:%M"))))
+  list(fresh = TRUE, why = "")
+}
+
 # >>> SCREEN_AXES_CHECK  (08_Tests/ops/test_screen_axes_check.R 가 이 블록을 원본에서 추출해 검사한다
 #     — 사본 검사 금지. 마커를 바꾸면 검사기부터 고칠 것.)
 # (2026-08-08 신설) STEP 1-b 2축 존재·유효성 검사.
@@ -353,11 +380,124 @@ if (n_risk > 0) {
                 if (is.na(r$note)) "" else paste0("  ", r$note)))
   }
 }
-# ── regime: H2 오버레이 후보 flag (candidate signal 추출 필요) ──
+# ── regime: H2 오버레이 A/B 자동 실행 + 판정 (2026-08-09 배선, 도훈 "진행해") ──
+#   구판은 문자열 flag 한 줄("자동 불가, 수동")뿐이었다 — 누적 38편 라우팅 · 측정 0.
+#   ★하네스는 **이미 있었다**(auto_regime_overlay_ab.R, 2026-06-18). 없던 건 배선이다.
+#     단 그대로 부르면 퇴역 기준선 위에서 재게 되어 있었다(캐리어 하드코딩 + layer5 노출) —
+#     08-09 에 basis 2건을 수리한 뒤 배선한다. 수리 효과 실측(같은 269개월):
+#       book_L5 IR 1.077→1.410 · uni_cat_x_book 0.965→1.201 · voltgt_x_book 0.680→0.891
+#       (book 오버레이를 안 쓰는 bare/uni_cat/voltgt 는 **차이 0** = 양성 대조)
+#   ★후보 집합은 아직 **고정**이다(unified 앙상블 + vol-target). 라우팅된 regime 논문이
+#     자동으로 후보가 되지는 않는다 — 그러려면 method_registry 에 adapter_kind="exposure" 등재가
+#     필요하고 현재 0건이다. 그 사실을 숨기지 않고 산출물에 수로 싣는다.
 if (n_reg > 0) {
+  rg_csv <- file.path("06_Registry/book_carrier", "h2_regime_overlay_ab.csv")
+  # ★캐리어 경로는 optimizer 블록의 지역변수에 기대지 않는다 — regime 만 있는 날에도 돌아야 한다.
+  .rg_carrier <- tryCatch({
+    mt <- fromJSON("06_Registry/book_carrier/carrier_meta.json", simplifyVector = FALSE)
+    p <- as.character(mt$parquet %||% NA); if (!is.na(p)) p else character(0)
+  }, error = function(e) character(0))
+  .rg_inputs <- c(
+    .rg_carrier,
+    ".cache/rawdata.parquet", ".cache/benchmark.parquet", ".cache/unified_regime_signal.parquet",
+    "02_Infrastructure/ops/auto_regime_overlay_ab.R", "02_Infrastructure/ops/auto_weighting_ab.R",
+    "02_Infrastructure/contracts/weighted_screen_bt.R",
+    "02_Infrastructure/validation/overlay_pit_guard.R",
+    "06_Registry/method_registry.json",
+    list.files("02_Infrastructure/methods/adapters", pattern = "\\.R$", full.names = TRUE))
+  .rgf <- stale_check(rg_csv, .rg_inputs, label = "regime")
+  reg_fresh <- .rgf$fresh; reg_out <- NULL; n_reg_adapters <- 0L
+  if (!reg_fresh) {
+    cat(sprintf("[dispatch:regime] H2 배터리 stale 판정: %s → 재실행\n", .rgf$why))
+    Sys.setenv(QVEST_REGIME_AB_NORUN = "1")
+    .rok <- tryCatch({ suppressWarnings(source("02_Infrastructure/ops/auto_regime_overlay_ab.R")); TRUE },
+                     error = function(e) { cat(sprintf("[dispatch:regime] source fail: %s\n", conditionMessage(e))); FALSE })
+    if (.rok && exists("run_regime_overlay_ab")) {
+      .rex <- tryCatch(load_exposure_adapters(), error = function(e) {
+        cat(sprintf("[dispatch:regime] exposure adapter load fail: %s\n", conditionMessage(e))); list() })
+      n_reg_adapters <- length(.rex)
+      reg_out <- tryCatch(run_regime_overlay_ab(extra_exposures = .rex),
+                          error = function(e) { cat(sprintf("[dispatch:regime] battery fail: %s\n", conditionMessage(e))); NULL })
+      if (!is.null(reg_out)) {
+        fwrite(reg_out$tab, rg_csv)
+        fwrite(reg_out$crisis, "06_Registry/book_carrier/h2_regime_crisis_eval.csv")
+        reg_fresh <- TRUE
+      }
+    }
+  } else cat("[dispatch:regime] H2 배터리 결과 재사용\n")
+
+  reg_verdict <- NULL; reg_state <- sprintf("H2 배터리 미실행 — %s", .rgf$why)
+  if (reg_fresh && file.exists(rg_csv)) {
+    rt <- tryCatch(fread(rg_csv), error = function(e) NULL)
+    if (is.null(rt) || !all(c("scenario", "IR") %in% names(rt))) {
+      reg_state <- "H2 산출 판독 실패 또는 컬럼 결손"
+    } else {
+      .base <- rt[scenario == "book_L5"]
+      .bare <- rt[scenario == "bare"]
+      if (!nrow(.base)) reg_state <- "기준선 book_L5 팔 부재 — 판정 불가" else {
+        cand <- rt[!scenario %in% c("book_L5", "bare", "uni_cat_lag1")][order(-IR)]
+        cand[, `:=`(delta_ir = round(IR - .base$IR, 3), delta_mdd = round(abs_MDD - .base$abs_MDD, 4))]
+        .best <- cand[1]
+        .lag1 <- rt[scenario == "uni_cat_lag1"]; .uni <- rt[scenario == "uni_cat"]
+        # ★lag1 스트레스 = 오버레이 동월 누출의 **유일 판별검정**(2026-07-06 BearProb 실사고).
+        #   base 대비 붕괴하면 누출 의심. 비율로 기록해 다음 사람이 판단할 수 있게 한다.
+        .lag_ratio <- if (nrow(.lag1) && nrow(.uni) && .uni$IR != 0) round(.lag1$IR / .uni$IR, 3) else NA_real_
+        reg_verdict <- list(
+          metric_type = "canonical_screen",
+          basis = sprintf("H2 오버레이 A/B (가중 = 현 book strategy 고정 · 노출 스칼라만 교체 · %s · carrier=%s)",
+                          rt$book_basis[1] %||% "?", rt$carrier[1] %||% "?"),
+          baseline = "book_L5", baseline_ir = round(.base$IR, 3), baseline_mdd = round(.base$abs_MDD, 4),
+          bare_ir = if (nrow(.bare)) round(.bare$IR, 3) else NA_real_,
+          bare_mdd = if (nrow(.bare)) round(.bare$abs_MDD, 4) else NA_real_,
+          best_candidate = .best$scenario, best_ir = round(.best$IR, 3),
+          delta_ir = .best$delta_ir, delta_mdd = .best$delta_mdd,
+          gate = DELTA_IR_GATE, beats_book = isTRUE(.best$delta_ir >= DELTA_IR_GATE),
+          lag1_stress = list(uni_cat_ir = if (nrow(.uni)) round(.uni$IR, 3) else NA_real_,
+                             uni_cat_lag1_ir = if (nrow(.lag1)) round(.lag1$IR, 3) else NA_real_,
+                             retention = .lag_ratio,
+                             note = "lag1 보존율 — 붕괴 시 동월 누출 의심(오버레이 유일 판별검정, pit.md C5)"),
+          candidates = lapply(seq_len(nrow(cand)), function(i) as.list(cand[i, .(scenario, IR, abs_SR, abs_MDD, avg_exposure, delta_ir, delta_mdd)])),
+          paper_adapters_registered = n_reg_adapters,
+          scope_note = paste("후보 집합은 고정(unified 앙상블 · vol-target).",
+                             "라우팅된 regime 논문이 후보가 되려면 method_registry 에 adapter_kind=\"exposure\" 등재 필요 —",
+                             sprintf("현재 등재 %d건.", n_reg_adapters)),
+          gate_note = "ΔIR 은 book-marginal 대조 진단량 — 자본 admit 아님(governor 수동). ★오버레이의 실증된 레버는 IR 이 아니라 MDD 이므로 ΔMDD 를 함께 읽을 것.",
+          # ★부호 규약을 산출물에 박는다. abs_MDD 는 **음수 저장**이라 Δ 의 부호가 직관과 반대다 —
+          #   ΔMDD −0.057 을 "5.7%p 개선"으로 읽는 오독이 이 저장소가 반복해 온 형태다
+          #   ([[project-capw-ew-gap-is-bench-side-constant-20260808]] = 같은 부류의 부호/basis 오독).
+          delta_mdd_convention = "abs_MDD 음수 저장 — ΔMDD>0 이면 낙폭이 얕아진 것(개선), ΔMDD<0 이면 깊어진 것(악화)",
+          mdd_improved_candidates = cand[delta_mdd > 0, scenario])
+        .mdd_word <- function(d) if (is.na(d)) "" else if (d > 0) " (낙폭 완화)" else if (d < 0) " (낙폭 심화)" else " (낙폭 동일)"
+        reg_state <- if (reg_verdict$beats_book)
+          sprintf("후보 %s ΔIR=%+.3f (게이트 %.2f 이상) → 수동 검수", .best$scenario, .best$delta_ir, DELTA_IR_GATE)
+        else sprintf("오버레이 레버 아님: book_L5 IR %.3f 최고(최선 후보 %s %.3f, ΔIR=%+.3f, ΔMDD=%+.4f%s) → 채택 0",
+                     .base$IR, .best$scenario, .best$IR, .best$delta_ir, .best$delta_mdd, .mdd_word(.best$delta_mdd))
+      }
+    }
+  }
   actions$regime <- list(n = n_reg, papers = lapply(getrt("regime"), function(p) p$title %||% p$arxiv_id),
-                         action = "H2 오버레이 후보 — candidate timing signal 추출 필요(자동 불가, 수동)")
-  cat(sprintf("[dispatch:regime] %d편 flag(수동)\n", n_reg))
+                         harness_status = reg_state,
+                         verdict = reg_verdict,
+                         action = if (!is.null(reg_verdict))
+                                    sprintf("H2 오버레이 A/B 자동 측정 (후보 %d) — 채택은 도훈 수동", length(reg_verdict$candidates))
+                                  else sprintf("측정 없음 — %s", reg_state))
+  cat(sprintf("[dispatch:regime] %d편 · %s\n", n_reg, reg_state))
+  if (!is.null(reg_verdict)) {
+    cat(sprintf("    기준선 book_L5 IR %.3f (MDD %.4f) · bare IR %s (MDD %s)\n",
+                reg_verdict$baseline_ir, reg_verdict$baseline_mdd,
+                format(reg_verdict$bare_ir), format(reg_verdict$bare_mdd)))
+    cat("    (ΔMDD 부호: abs_MDD 는 음수 저장 — + 이면 낙폭 완화, − 이면 낙폭 심화)\n")
+    for (c1 in reg_verdict$candidates)
+      cat(sprintf("    %-18s IR %6.3f  ΔIR %+.3f  ΔMDD %+.4f%-10s 평균노출 %.4f\n",
+                  c1$scenario, c1$IR, c1$delta_ir, c1$delta_mdd,
+                  if (c1$delta_mdd > 0) " 완화" else if (c1$delta_mdd < 0) " 심화" else " 동일",
+                  c1$avg_exposure))
+    cat(sprintf("    lag1 보존율 %s (uni_cat %s → lag1 %s)\n",
+                format(reg_verdict$lag1_stress$retention),
+                format(reg_verdict$lag1_stress$uni_cat_ir), format(reg_verdict$lag1_stress$uni_cat_lag1_ir)))
+    cat(sprintf("    논문 유래 노출 어댑터 등재 %d건 — %s\n", n_reg_adapters,
+                if (n_reg_adapters == 0) "regime 논문은 아직 후보로 자동 합류하지 않는다(등재 필요)" else "합류함"))
+  }
 }
 
 # ── 저장 + 텔레그램 ──
@@ -387,7 +527,15 @@ if (Sys.getenv("QVEST_DISPATCH_NO_TG", "0") != "1") {
         sprintf("risk(%d편) Σ-교체 A/B: %d건 측정 · 개선 %d건%s", n_risk, .rv$n_measured, .rv$n_improved, .bl)
       } else sprintf("risk %d편 → %s", n_risk, actions$risk$harness_status %||% "측정 없음"))
     }
-    if (n_reg > 0) bullets <- c(bullets, sprintf("regime %d편 → H2 오버레이(candidate signal 추출 필요)", n_reg))
+    # ★(2026-08-09) regime 도 실측 파생. 구 문자열은 하네스가 배선된 뒤에도 "추출 필요"로 남았을 것.
+    if (n_reg > 0) {
+      .gv <- actions$regime$verdict
+      bullets <- c(bullets, if (!is.null(.gv)) {
+        sprintf("regime(%d편) H2 오버레이 A/B: %s (기준 book_L5 IR %.3f · 최선 %s ΔIR %+.3f ΔMDD %+.4f · 논문 어댑터 %d건)",
+                n_reg, if (.gv$beats_book) "후보 있음" else "레버 아님",
+                .gv$baseline_ir, .gv$best_candidate, .gv$delta_ir, .gv$delta_mdd, .gv$paper_adapters_registered)
+      } else sprintf("regime %d편 → %s", n_reg, actions$regime$harness_status %||% "측정 없음"))
+    }
     if (length(bullets) < 2) bullets <- c(bullets, "자본 admit 없음 — 측정·보고만(governor 정지)")
     headline <- sprintf("논문 라우트 디스패치: optimizer %d·risk %d·regime %d", n_opt, n_risk, n_reg)
     secs <- list(

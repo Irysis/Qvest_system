@@ -1,5 +1,5 @@
 ## ============================================================================
-## audit_bt_result.R — Backtest Result Contract v1.0 audit (11 checks)
+## audit_bt_result.R — Backtest Result Contract v1.0 audit (**18 checks**, 구 표기 11 정정)
 ## L3 hard block trigger: Critical FAIL 시 metrics is_official=FALSE 강제
 ## Lawbook §20
 ## L-249 enforcement (2026-04-29): Check 11 frequency-cadence mismatch detection
@@ -7,6 +7,11 @@
 ##   — Frequency mislabel inflates Sharpe by sqrt(N_declared/N_actual)
 ##   — Bi-monthly inner-join + 'daily' annotation = AX-002 fabrication
 ##   — Trigger: median(diff(date)) outside declared-frequency tolerance band
+## Check 17 신설 (2026-08-09): benchmark **값** 타당성 + 퇴화 계열 차단
+##   — Check 5(benchmark_aligned)는 날짜 겹침만 세므로 -89.38% 벤치가 "alignment PASS" 통과,
+##     alpha_search 16 run 이 그 벤치로 채점됨(연 초과 15/16 부호 반전). 존재↔정체 혼동 계통.
+##   — 검사기 08_Tests/hooks/test_benchmark_values_plausible.R
+##     실데이터 466 run 재생: 오염 16/16 발화 · 청정 450/450 무발화 · MUT-1 이 Check 5 구멍 실증.
 ## ============================================================================
 
 suppressMessages({library(data.table)})
@@ -435,6 +440,79 @@ audit_bt_result <- function(bt_result) {
     add_check("frequency", "nav_cadence_label_consistency", "WARN",
               "nav < 3 obs or missing date column — nav cadence check skipped",
               "Daily-derived metrics", "medium")
+  }
+
+  # ────────────────────────────────────────────────────────────────────────────
+  # Check 17 (2026-08-09 도훈 적발 "26년 수익률 이상"): 벤치 **값** 타당성
+  #   사건: benchmark.parquet 에 스케일 이음매가 생겨 2026-07-29 이 -89.38%(참값 -6.185%)로
+  #   기록됐고, alpha_search **16 run**이 그 벤치로 채점돼 Grade B 까지 받았다. 21.5년 벤치
+  #   총수익이 +717% → -7.5% 로 뒤집혀 전략이 시장을 이긴 것처럼 보였다(연 초과 15/16 부호 반전).
+  #   ★Check 5(benchmark_aligned)는 **날짜 겹침만** 세므로 전 건 "alignment 5305 dates" PASS —
+  #   존재 검사가 정체 검사를 대체한 전형. 값 축을 여기서 닫는다.
+  #
+  #   문턱 = 수리된 KOSPI200 1990~2026(9,003일) 실측 캘리브레이션:
+  #     일간 실제 최대 |ret| 0.1998(2026-07-31) · 주간 0.1966 · 월간 0.3534(2026-05)
+  #     반면 스케일 이음매는 1.5×만 돼도 -0.333/+0.500, 실제 사고(8.834×)는 -0.887/+7.834.
+  #     두 분포가 겹치지 않는다. th 에서 실측 오탐 0건(일간 th=0.30 / 월간 th=0.45).
+  #   ⚠벤치를 KOSPI200 이외로 바꾸면 이 문턱을 재캘리브레이션할 것.
+  # ────────────────────────────────────────────────────────────────────────────
+  bmv <- bt_result$benchmark_returns
+  if (!is.null(bmv) && nrow(bmv) > 0L && "benchmark_ret" %in% names(bmv)) {
+    br <- bmv$benchmark_ret
+    br_ok <- br[is.finite(br)]
+
+    # 17a: 퇴화 계열 (전부 NA / 무변동 / 전부 0) — "빈 결과 = 합격" 계통 차단
+    if (length(br_ok) < max(3L, 0.5 * nrow(bmv))) {
+      add_check("benchmark", "benchmark_series_non_degenerate", "FAIL",
+                sprintf("benchmark_ret 유효값 %d/%d — 벤치 계열 결손(조인 실패/all-NA 의심)",
+                        length(br_ok), nrow(bmv)),
+                "IR,Beta,Alpha,ActiveReturn", "critical")
+    } else if (sd(br_ok) < 1e-12) {
+      add_check("benchmark", "benchmark_series_non_degenerate", "FAIL",
+                sprintf("benchmark_ret 무변동 (sd=%.2e, %d obs) — beta 정의 불가, active=전략수익으로 위장",
+                        sd(br_ok), length(br_ok)),
+                "IR,Beta,Alpha,ActiveReturn", "critical")
+    } else {
+      add_check("benchmark", "benchmark_series_non_degenerate", "PASS",
+                sprintf("유효 %d/%d obs, sd=%.4f", length(br_ok), nrow(bmv), sd(br_ok)),
+                "", "low")
+    }
+
+    # 17b: 물리적으로 불가능한 단일 이동 = 스케일 이음매/단위 오류
+    if (length(br_ok) >= 3L && "date" %in% names(bmv)) {
+      bm_dates <- sort(as.Date(bmv$date))
+      bm_med   <- as.numeric(median(diff(bm_dates), na.rm = TRUE))
+      th <- if (bm_med <= 5) 0.30 else if (bm_med <= 10) 0.35 else
+            if (bm_med <= 31) 0.45 else 0.60
+      cad <- if (bm_med <= 5) "daily" else if (bm_med <= 10) "weekly" else
+             if (bm_med <= 31) "monthly" else "quarterly+"
+      bad_i <- which(abs(bmv$benchmark_ret) > th & is.finite(bmv$benchmark_ret))
+      if (length(bad_i) > 0L) {
+        wi <- bad_i[which.max(abs(bmv$benchmark_ret[bad_i]))]
+        worst <- bmv$benchmark_ret[wi]
+        implied_scale <- if (worst < 0) 1 / (1 + worst) else 1 + worst
+        add_check("benchmark", "benchmark_values_plausible", "FAIL",
+                  sprintf(paste0("벤치 %s 수익률 %d건이 |%.2f| 초과 — 최악 %s %+.4f ",
+                                 "(함의 스케일 오류 %.2f×). 지수에서 물리적으로 불가 = ",
+                                 "스케일 이음매/단위 오류 의심. 벤치-상대 지표 전부 무효. ",
+                                 "실측 상한: 일간 0.1998·월간 0.3534 (KOSPI200 1990-2026)."),
+                          cad, length(bad_i), th, format(bm_dates[wi]), worst, implied_scale),
+                  "IR,Beta,Alpha,ActiveReturn,PORT_t", "critical")
+      } else {
+        add_check("benchmark", "benchmark_values_plausible", "PASS",
+                  sprintf("%s 벤치 max|ret|=%.4f ≤ %.2f (%d obs)",
+                          cad, max(abs(br_ok)), th, length(br_ok)),
+                  "", "low")
+      }
+    } else {
+      add_check("benchmark", "benchmark_values_plausible", "WARN",
+                "benchmark_returns < 3 유효 obs 또는 date 컬럼 부재 — 값 타당성 검사 skip",
+                "IR,Beta,Alpha", "medium")
+    }
+  } else {
+    add_check("benchmark", "benchmark_values_plausible", "WARN",
+              "benchmark_returns 부재 또는 benchmark_ret 컬럼 없음 — 값 타당성 검사 skip",
+              "IR,Beta,Alpha", "medium")
   }
 
   audit_tbl <- rbindlist(audit_rows, use.names = TRUE, fill = TRUE)
