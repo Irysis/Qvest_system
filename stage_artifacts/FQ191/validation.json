@@ -74,8 +74,45 @@
   "disposition_applied": {
     "rule": "H3 (사전등록 고정): PORT_t 미달 ⇒ 자본이 아니라 **오버레이/선별 라벨** 소비면으로 확정 라우팅",
     "also_preassigned": "FQ-138 live_trigger ③ 이 같은 분기를 이미 지정 — 두 사전등록이 일치",
-    "routing": ["③오버레이/국면 — 국면 ON 에서만 계약 sleeve 활성화하는 구조(자본 sleeve 아님)", "⑥선별 라벨 — '계약 재료 = 국면 조건부 유효, 자본 미달' 라벨 등재", "⑤monitoring — mega_spread 는 t-1 관측이라 PIT 자명, 국면 tripwire 로 즉시 사용 가능"]
+    "routing": [
+      "③오버레이/국면 — 국면 ON 에서만 계약 sleeve 활성화하는 구조(자본 sleeve 아님)",
+      "⑥선별 라벨 — '계약 재료 = 국면 조건부 유효, 자본 미달' 라벨 등재",
+      "⑤monitoring — mega_spread 는 t-1 관측이라 PIT 자명, 국면 tripwire 로 즉시 사용 가능"
+    ]
   },
-  "honest_caveats": ["★자본 주장 없음 — governor 미호출. H3 는 '자본 아님' 확정이므로 admit 논의 자체가 없다", "oos_retention 은 canonical 근사(.canon_oos_rough)다. 권위는 essence_score.R — 다만 0.414 는 0.5 band 아래라 권위 측정으로도 뒤집힐 여지가 작다", "n 73개월 · 국면 ON 27개월 — HARD 3종 중 분할을 요구하는 게이트는 구조적으로 불리하다", "2026 오염 미수리 — 정본은 제외판. 포함판은 PORT_t 2.053 으로 더 낮다(오염이 개선을 만들지 않았다는 증거이기도)", "calmar 1.213 통과는 MDD −22.77% 가 낮아서다. 국면 OFF 에 벤치를 든 덕이 크며 **신호 자체의 방어력이 아니다**"],
-  "artifacts": ["preregistration.json", "p1_measure.R", "p1_rule.csv", "p1.rds"]
+  "honest_caveats": [
+    "★자본 주장 없음 — governor 미호출. H3 는 '자본 아님' 확정이므로 admit 논의 자체가 없다",
+    "oos_retention 은 canonical 근사(.canon_oos_rough)다. 권위는 essence_score.R — 다만 0.414 는 0.5 band 아래라 권위 측정으로도 뒤집힐 여지가 작다",
+    "n 73개월 · 국면 ON 27개월 — HARD 3종 중 분할을 요구하는 게이트는 구조적으로 불리하다",
+    "2026 오염 미수리 — 정본은 제외판. 포함판은 PORT_t 2.053 으로 더 낮다(오염이 개선을 만들지 않았다는 증거이기도)",
+    "calmar 1.213 통과는 MDD −22.77% 가 낮아서다. 국면 OFF 에 벤치를 든 덕이 크며 **신호 자체의 방어력이 아니다**"
+  ],
+  "artifacts": [
+    "preregistration.json",
+    "p1_measure.R",
+    "p1_rule.csv",
+    "p1.rds"
+  ],
+  "correction_20260809": {
+    "what_i_wrote": "close_round 및 validation.json 의 oos 진단: '원인은 신호 열화가 아니라 표본 구조다 — 국면 ON 이 27개월뿐이라 OOS 분할이 표본을 무너뜨린다'",
+    "why_it_was_wrong": "★실측 반증: anchored 분할의 IS/OOS 국면 ON 비율이 **거의 같다**(55%: 35.0/36.4 · 65%: 36.2/34.6 · 75%: 37.0/31.6). 사건 희소성 차이가 없으므로 '표본 구조' 설명은 성립하지 않는다.",
+    "what_i_almost_wrote_instead": "'신호 감쇠 확정' — 전반 연 +40.53% vs 후반 +12.78% 를 보고 정정하려 했다",
+    "why_that_was_also_wrong": "★차이 연 +27.74% 의 Welch **t +1.355 · p 0.1921** 로 유의하지 않다. 게다가 검정력: ON 26개월 split 설계는 연 **36.79%** 가 있어야 검출하는데 관측은 그 아래다. 연도별로도 −0.89%(2023) ~ +39.98%(2022) 로 흩어지고 추세 spearman −0.543(n=6).",
+    "correct_label": "★★**검정력 부족** — 감쇠인지 잡음인지 이 표본으로는 가릴 수 없다. 원 진단도 정정안도 둘 다 과장이었다.",
+    "consequence_for_revival": "부활 조건이 바뀐다. 원래 '국면 ON 월이 쌓이면 oos 회복' 이라 썼는데 그 근거(표본 구조 설명)가 사라졌다. 정확히는 **표본이 쌓여야 감쇠 여부 자체를 알 수 있다** — 회복을 예상하는 게 아니라 판별이 가능해진다.",
+    "process_note": "★정정문을 쓰기 전에 한 번 더 걸렀다. 틀린 진단을 다른 틀린 진단으로 바꿀 뻔했다."
+  },
+  "port_t_ladder_20260809": {
+    "method": "FQ-178 사다리(net → gross → EW-유니버스 basis)를 국면-조건부 규칙에 적용",
+    "net_capw": 2.204,
+    "gross_capw": 2.379,
+    "gross_ew": 2.966,
+    "delta_cost": 0.175,
+    "delta_bench": 0.587,
+    "gap_to_hard": 0.746,
+    "explained_by_nonsignal": 0.762,
+    "explained_pct": 102,
+    "reading": "★갭 0.746 중 0.762 를 **비용+벤치 두 비-신호 채널**이 설명한다(102%). 두 채널을 제거하면 **2.966 > 2.95** 로 문턱을 넘는다 — 이 아크에서 처음이다. M26 과 같은 구조이나 M26 은 제거해도 2.818 로 미달이었다(계약은 간발로 넘음).",
+    "why_this_is_not_a_capital_claim": "두 채널 모두 **고정 축**이다 — 15bps 는 Production Constraints 이고 cap-w 벤치는 판정 권위다. '제거하면 넘는다' 는 **왜 미달인지의 설명**이지 자격 주장이 아니다. H3 판정 불변."
+  }
 }
