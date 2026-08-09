@@ -1,0 +1,359 @@
+{
+  "date": "20260809",
+  "schema_version": "alpha_search_route_v2",
+  "generated_at": "2026-08-09",
+  "source_a_arxiv": "mcp_discovery_20260809.json",
+  "source_b_curated": "curated_routed.json (0 new this run — all 15 processed, last_run 20260806)",
+  "counts_by_route": {
+    "alpha": 2,
+    "optimizer": 4,
+    "risk": 3,
+    "regime": 2,
+    "skip": 22
+  },
+  "n_candidates_total": 33,
+  "n_factor_candidates": 2,
+  "n_factor_testable": 1,
+  "autorun_launched": 1,
+  "autorun_note": "MAX_ALPHA=2. 신규 testable 1건(within_sector_reversal). 어제 2607.19497은 paper_exhausted(SpectralPersistence QUARANTINE 3rd attempt). 두 번째 슬롯 미사용 — 오늘 discovery 신규 testable 없음.",
+  "papers": [
+    {
+      "id": "2608.06048",
+      "title": "Thermodynamic statistics of given names in USA and France",
+      "source": "arxiv",
+      "route": "skip",
+      "route_reason": "물리/사회학 — 이름 인기도 분포 열역학. 금융 무관",
+      "kr_feasible": false,
+      "factor_candidate": null
+    },
+    {
+      "id": "2608.05991",
+      "title": "Knowledge-Optimising Investment Decisions with Informative Datasets",
+      "source": "arxiv",
+      "route": "optimizer",
+      "route_reason": "Knowledge Optimization 프레임워크 — 지식 단위를 포트폴리오 의사결정에 통합, ex-ante SR 대안 지표 제안",
+      "kr_feasible": true,
+      "factor_candidate": null,
+      "optimizer_note": "α̂ 고정 A/B 대상. 지식조정 SR 지표를 weighting method 비교에서 활용 검토"
+    },
+    {
+      "id": "2608.05901",
+      "title": "From Value Bounds to Policy-Distance and Active-Face Certificates: Same-Grid Duality for Constrained Dynamic Portfolios",
+      "source": "arxiv",
+      "route": "optimizer",
+      "route_reason": "제약 동적 포트폴리오 최적화의 primal-dual 인증 방법론 — neural/numerical solver 품질 검증",
+      "kr_feasible": true,
+      "factor_candidate": null,
+      "optimizer_note": "polyhedral 제약 환경에서 active-face certification. HRP/MVO 솔버 검증 방법론 참고"
+    },
+    {
+      "id": "2608.05755",
+      "title": "Cross-Sectional Heterogeneity in LSTM Networks for Financial Time Series",
+      "source": "arxiv",
+      "route": "alpha",
+      "route_reason": "섹터 임베딩 LSTM으로 S&P500 횡단면 예측. 논문이 확인한 핵심 드라이버 = short-term reversal + industry momentum",
+      "kr_feasible": true,
+      "factor_candidate": {
+        "name": "within_sector_reversal",
+        "def": "각 종목 t-1월 수익률에서 해당 KRX 섹터 평균 수익률을 차감한 상대 수익률의 음수. signal = -(r_{i,t-1} - mean_sector_{r,t-1}). 섹터-중립 단기역전 — M02(집합 1m역전)과 달리 섹터내 상대 역전만 포착. Long: 섹터 내 상대 저성과 종목(다음달 회귀 기대).",
+        "novel": true,
+        "kr_feasible": true,
+        "verdict": "testable",
+        "verdict_reason": "논문이 핵심 신호로 명시(short-term reversal + industry momentum). 섹터-중립화는 M02와 구별. KRX 섹터 코드 = RAWDATA 내 기존 분류. PIT: t-1월말 신호 → t월 보유(C2/C3 클린). novel vs DB: R코드계열(M02/M06) 검색 필요하나 섹터-중립 버전은 미확인.",
+        "confidence": "medium",
+        "source_route": "alpha",
+        "autorun": true
+      },
+      "reason": "AUTORUN #1. LSTM 모델의 핵심 알파 드라이버가 단기역전+산업모멘텀임을 논문이 attribution 분석으로 확인. 섹터-중립 역전(within_sector_reversal)을 standalone 팩터로 KR 테스트. 산업모멘텀(sector_momentum)은 DB 중복 불확실 → 큐 이관."
+    },
+    {
+      "id": "2608.05623",
+      "title": "Non-concave Corporate Management with Option Incentives under Value-at-Risk Constraint",
+      "source": "arxiv",
+      "route": "skip",
+      "route_reason": "기업 VaR 제약하 임원 인센티브 이론 — 주식 횡단면 신호 없음",
+      "kr_feasible": false,
+      "factor_candidate": null
+    },
+    {
+      "id": "2608.05373",
+      "title": "Velocity- and Regime-Aware Detection of Intraday Options Market Manipulation, with Explainable Attribution",
+      "source": "arxiv",
+      "route": "skip",
+      "route_reason": "장중 옵션 시장 조작 탐지 — intraday/HFT/옵션데이터. KR 제약",
+      "kr_feasible": false,
+      "factor_candidate": null
+    },
+    {
+      "id": "2608.05367",
+      "title": "Counterfactual Analysis via Large Language Models",
+      "source": "arxiv",
+      "route": "skip",
+      "route_reason": "온라인 대출 ROI 반사실 분석 — 신용/대출 도메인, 주식 신호 없음",
+      "kr_feasible": false,
+      "factor_candidate": null
+    },
+    {
+      "id": "2608.04987",
+      "title": "Portfolio Allocation under Heterogeneous Scales and Multifractality",
+      "source": "arxiv",
+      "route": "risk",
+      "route_reason": "MFCCA(다중프랙탈 교차상관) 기반 포트폴리오 배분 — signed fluctuation function으로 VaR/ES/drawdown 감소. Σ 추정 방법론",
+      "kr_feasible": true,
+      "factor_candidate": null,
+      "risk_note": "shrinkage_builtin: no. statistic_order: higher(q차 변동함수, 꼬리). screen_priority: 후순위(고차통계+축소 없음). MFCCA Σ 대체 후보로 risk queue 적재"
+    },
+    {
+      "id": "2608.04929",
+      "title": "Open Information: A Defining Perspective on Web Datasets for Carbon Pricing",
+      "source": "arxiv",
+      "route": "skip",
+      "route_reason": "EU ETS 탄소 가격/GDELT — alt-data + FX/탄소 시장. KR 주식 무관",
+      "kr_feasible": false,
+      "factor_candidate": null
+    },
+    {
+      "id": "2608.04832",
+      "title": "Robust Control under Stationary Ambiguity",
+      "source": "arxiv",
+      "route": "regime",
+      "route_reason": "잠재 레짐 전환에서 정상성 유지 시뮬레이터 학습 — 레짐 전환 아래 강건한 오버레이 정책 설계",
+      "kr_feasible": true,
+      "factor_candidate": null,
+      "regime_note": "stationary ambiguity 원칙: 오버레이가 현재 레짐에 과적응하지 않도록 latent filter 정상성 유지. FR/RAMP 레짐 설계 참고"
+    },
+    {
+      "id": "2608.04547",
+      "title": "Attributing Differences Between Forecast Runs to Input Changes (CCAR/CECL)",
+      "source": "arxiv",
+      "route": "skip",
+      "route_reason": "CCAR/CECL 신용 리스크 예측 차이 귀속 — 은행 규제 도메인",
+      "kr_feasible": false,
+      "factor_candidate": null
+    },
+    {
+      "id": "2608.04529",
+      "title": "Low-rank and graphon limits for dynamic threshold distress contagion in heterogeneous financial networks",
+      "source": "arxiv",
+      "route": "skip",
+      "route_reason": "금융기관 간 전염 네트워크 이론 — 은행 시스템 리스크, KR 주식 포트폴리오 직접 적용 불가",
+      "kr_feasible": false,
+      "factor_candidate": null
+    },
+    {
+      "id": "2608.04200",
+      "title": "From Financial Sentiment Classification to Return Predictability: A QLoRA Benchmark of Large Language Models",
+      "source": "arxiv",
+      "route": "alpha",
+      "route_reason": "QLoRA LLM 감성 분류 → 횡단면 수익 예측력 검증. 결과: 28개 조합 전부 NW+FDR 보정 후 무의미(최대 IC=0.0143)",
+      "kr_feasible": false,
+      "factor_candidate": {
+        "name": "dart_llm_sentiment",
+        "def": "DART 공시 텍스트를 fine-tuned 한국어 LLM으로 감성 분류 → 종목별 감성 점수 → 횡단면 팩터",
+        "novel": true,
+        "kr_feasible": false,
+        "verdict": "infeasible",
+        "verdict_reason": "미국 S&P100 헤드라인에서 28/28 테스트 유의성 없음(NW+FDR). KR DART 텍스트 파이프라인 + 한국어 금융 LLM 미구축. 헤드라인 레벨 감성 신호의 강한 negative prior",
+        "confidence": "high",
+        "source_route": "alpha"
+      }
+    },
+    {
+      "id": "2608.03616",
+      "title": "Measuring the engine of a liquidation cascade: subcritical branching inside a first-order transition",
+      "source": "arxiv",
+      "route": "skip",
+      "route_reason": "암호화폐 선물 청산 캐스케이드 — 크립토 전용",
+      "kr_feasible": false,
+      "factor_candidate": null
+    },
+    {
+      "id": "2608.02917",
+      "title": "Mandate without Managers: Automated Market Makers as Verifiable Portfolio Products",
+      "source": "arxiv",
+      "route": "skip",
+      "route_reason": "DeFi AMM 포트폴리오 기술 — 블록체인/크립토",
+      "kr_feasible": false,
+      "factor_candidate": null
+    },
+    {
+      "id": "2608.02828",
+      "title": "Proper-score observation-driven filters: local geometry, estimation, and continuous-time limits",
+      "source": "arxiv",
+      "route": "risk",
+      "route_reason": "적절 스코어링 룰 기반 관측-주도 필터 — 조건부 분산/VaR/PIT 다기준 밀도 예측. 국제 주식 수익 적용",
+      "kr_feasible": true,
+      "factor_candidate": null,
+      "risk_note": "shrinkage_builtin: weak(scoring framework). statistic_order: <=2nd. screen_priority: ⭐. 기존 GARCH/DCC 대비 꼬리 커버리지 개선 — risk-research Σ 추정 후보"
+    },
+    {
+      "id": "2608.02355",
+      "title": "Path Portfolio Optimization: Defect, Lift, and the Price of Path Complexity",
+      "source": "arxiv",
+      "route": "optimizer",
+      "route_reason": "Path signature 기반 포트폴리오 최적화 — Fernholz 초과성장률 = 기하학적 결함(defect). 표본 크기 조건: obs/param≥6",
+      "kr_feasible": true,
+      "factor_candidate": null,
+      "optimizer_note": "shrinkage_builtin: no. statistic_order: higher(level-2 signature). screen_priority: 후순위. 수준-2 대칭 블록(convexity)이 alpha이나 추정오차 심각. 축소 없으면 OOS 붕괴 확인"
+    },
+    {
+      "id": "2608.02311",
+      "title": "AI Governance for Institutional Readiness in Finance",
+      "source": "arxiv",
+      "route": "risk",
+      "route_reason": "기관 AI 거버넌스 — regret-covariance 통계량(policy drift 탐지) + calibrated crowding 모델(기관 수렴→joint drawdown 39.2%→79.3%)",
+      "kr_feasible": true,
+      "factor_candidate": null,
+      "risk_note": "shrinkage_builtin: no. statistic_order: <=2nd. screen_priority: ⭐. crowding 모델 = monitoring agent 크라우딩 지표 강화 후보"
+    },
+    {
+      "id": "2608.01607",
+      "title": "AI Financial Advice: Supply, Demand, and Life Cycle Implications",
+      "source": "arxiv",
+      "route": "skip",
+      "route_reason": "LLM 개인 금융 조언 연구 — 라이프사이클 재무 계획, 주식 횡단면 무관",
+      "kr_feasible": false,
+      "factor_candidate": null
+    },
+    {
+      "id": "2608.01554",
+      "title": "P-Bubbles, Q-Bubbles, and Risk Premia",
+      "source": "arxiv",
+      "route": "skip",
+      "route_reason": "합리적 버블 vs 로컬 마팅게일 버블 통일 이론 — 순수 이론",
+      "kr_feasible": false,
+      "factor_candidate": null
+    },
+    {
+      "id": "2608.01494",
+      "title": "Conformal Kelly: Conformal Prediction Intervals as the Scale in Fractional Kelly Position Sizing",
+      "source": "arxiv",
+      "route": "optimizer",
+      "route_reason": "Conformal 예측 구간 너비 → fractional Kelly 포지션 사이징. IS(2016-21): 28.5% CAGR, SR=1.34. OOS(2022+): 8.5%/7.0%, passive 미달(pre-registered FAIL).",
+      "kr_feasible": true,
+      "factor_candidate": null,
+      "optimizer_note": "shrinkage_builtin: weak(slow rolling quantile). statistic_order: <=2nd. screen_priority: ⭐(⚠️ OOS FAIL 주의). IS 안정성 덕분이나 2022+ OOS 확인 필수. 월간 리밸 KR 적용 시 별도 검증 필요"
+    },
+    {
+      "id": "2608.00885",
+      "title": "Optimal Trading of Microstructure Mean Reversion",
+      "source": "arxiv",
+      "route": "skip",
+      "route_reason": "초단기(seconds) 마이크로구조 평균회귀 — HFT/intraday. KR 월간 전략 무관",
+      "kr_feasible": false,
+      "factor_candidate": null
+    },
+    {
+      "id": "2608.00761",
+      "title": "AI and Exchange Rate Predictability",
+      "source": "arxiv",
+      "route": "skip",
+      "route_reason": "LLM 기반 통화 수익 예측 — FX 시장, KR 주식 제약 위반",
+      "kr_feasible": false,
+      "factor_candidate": null
+    },
+    {
+      "id": "2608.02651",
+      "title": "Delegated Monitoring in Public-Private Sector Credit Programs",
+      "source": "arxiv",
+      "route": "skip",
+      "route_reason": "공공-민간 대출 프로그램 이론 — 신용/VC 도메인",
+      "kr_feasible": false,
+      "factor_candidate": null
+    },
+    {
+      "id": "2607.28410",
+      "title": "Can Large Language Models Execute Parent Orders?",
+      "source": "arxiv",
+      "route": "skip",
+      "route_reason": "LLM 주문 체결(PACE) — 실행/HFT 도메인, 알파 신호 없음",
+      "kr_feasible": false,
+      "factor_candidate": null
+    },
+    {
+      "id": "2607.27649",
+      "title": "Multi-maturity consistency of option prices under bounded bid-ask spreads",
+      "source": "arxiv",
+      "route": "skip",
+      "route_reason": "옵션 가격 일관성 이론 — 파생상품 프라이싱",
+      "kr_feasible": false,
+      "factor_candidate": null
+    },
+    {
+      "id": "2607.27039",
+      "title": "Forcing and duality-corrected contracts for volatility control",
+      "source": "arxiv",
+      "route": "skip",
+      "route_reason": "연속시간 주인-대리인 이론 — 확률제어 순수 이론",
+      "kr_feasible": false,
+      "factor_candidate": null
+    },
+    {
+      "id": "2607.26245",
+      "title": "OpenMarket: A Synchronized Polymarket-Binance Dataset",
+      "source": "arxiv",
+      "route": "skip",
+      "route_reason": "암호화폐 예측시장 데이터셋 — 크립토",
+      "kr_feasible": false,
+      "factor_candidate": null
+    },
+    {
+      "id": "2607.25162",
+      "title": "Quantum Transformer BSDE Solver via Multi-Layer Fully-Connected Variational Quantum Circuits",
+      "source": "arxiv",
+      "route": "skip",
+      "route_reason": "양자컴퓨팅 BSDE 솔버 — 양자컴퓨터 필요",
+      "kr_feasible": false,
+      "factor_candidate": null
+    },
+    {
+      "id": "2607.19497",
+      "title": "The Science and Practice of Trend-Following Systems",
+      "source": "arxiv",
+      "route": "regime",
+      "route_reason": "추세추종 통일 이론 — ARFIMA/주파수 도메인 분석. TF 알파 = 저주파 스펙트럼 질량 초과. 국면별 유효 트렌드 시스템 설계",
+      "kr_feasible": true,
+      "factor_candidate": {
+        "name": "SpectralPersistence_Hurst",
+        "def": "rolling 252일 R/S Hurst 지수. H>0.5 = 추세 지속. (논문 제안 DFT spectral mass의 proxy 구현)",
+        "novel": true,
+        "kr_feasible": true,
+        "verdict": "infeasible",
+        "verdict_reason": "20260808 QUARANTINE 확정(PORT_t=0.978, oos_retention=0.369, calmar=0.178). 동 논문 3번째 시도(spec_mass_lowfreq+T_RetAutoCorr+Hurst) 전부 QUARANTINE. paper_exhausted=true. 다음 시도: FQ-153(시장레벨 Hurst 오버레이, standalone 아닌 타이밍 신호)",
+        "confidence": "high",
+        "source_route": "regime",
+        "paper_exhausted": true,
+        "prior_quarantine_dates": ["20260727", "20260802", "20260808"]
+      }
+    },
+    {
+      "id": "2607.18623",
+      "title": "Dead Reckoning: Counting Your Customers Who Never Say Goodbye",
+      "source": "arxiv",
+      "route": "skip",
+      "route_reason": "비계약 거래 고객 이탈 모델 — 마케팅/CRM 도메인",
+      "kr_feasible": false,
+      "factor_candidate": null
+    },
+    {
+      "id": "2607.12156",
+      "title": "(Early) AI Compute Asset Pricing",
+      "source": "arxiv",
+      "route": "skip",
+      "route_reason": "AI 컴퓨팅 선물 가격 이론 — 신규 자산 클래스, KR 주식 무관",
+      "kr_feasible": false,
+      "factor_candidate": null
+    },
+    {
+      "id": "2607.16281",
+      "title": "A Novel Hybrid Quantum Reservoir Computing (nHQRC) for Phase Transition Detection",
+      "source": "arxiv",
+      "route": "skip",
+      "route_reason": "양자 저장소 컴퓨팅 국면 탐지 — 양자컴퓨터 필요, 현재 구현 불가",
+      "kr_feasible": false,
+      "factor_candidate": null
+    }
+  ],
+  "curated_new_this_run": 0,
+  "curated_note": "curated_routed.json 15건 전부 이전 런 처리 완료. 신규 없음."
+}
