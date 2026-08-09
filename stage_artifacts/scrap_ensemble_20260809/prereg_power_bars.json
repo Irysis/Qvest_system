@@ -1,200 +1,177 @@
 {
   "meta": {
     "round": "FQ-174 scrap ensemble",
-    "stage": "prereg_power_bars",
+    "stage": "prereg_power_bars_FINAL",
     "window": "200502..202603",
     "n_months": 254,
     "universe_dedup": 85,
-    "dedup_rule": "corr>=0.999 union-find (p0f 재현)",
-    "base": "EW(dedup 85), Return.portfolio rebalance_on=months",
+    "base": "EW(dedup 85) via Return.portfolio",
     "t_threshold": 2,
-    "nw_lag": 3,
-    "nw_inflation_measured": 0.997334574134652,
-    "n_draws": {
-      "K12": 300,
-      "K25": 200
-    },
-    "boot": {
-      "rep": 1000,
-      "block": 12
-    },
-    "contract": "02_Infrastructure/contracts/required_effect_size.R (공식 동등, sd 는 실측 대체)",
+    "K": 12,
+    "sd_basis": "선택된 arm 의 paired diff sd (무작위 arm 아님 — p2 L1 수정)",
+    "contract": "02_Infrastructure/contracts/required_effect_size.R 공식 동등, sd 실측 대체",
     "metric_type": "diagnostic_precheck"
   },
-  "base_anchor": {
-    "ew191": {
-      "cagr": 11.95,
-      "sr": 0.6218,
-      "mdd": 41.5848579348131
+  "reconciliation": {
+    "p0_sec5_rho_source": "p0e.log = 191 비-dedup 모듈",
+    "dedup85_rho": {
+      "DOWN": 0.7075,
+      "SURGE": 0.7446,
+      "FLAT": -0.0051
     },
-    "ew85": {
-      "cagr": 11.64,
-      "sr": 0.6486,
-      "mdd": 40.5209325713695
-    },
-    "elite": {}
+    "note": "브리프 규약(dedup 85)상 dedup 값이 정본. DOWN/SURGE 는 P0 인용보다 높고 FLAT 반지속성은 소멸."
   },
-  "sd_distribution": {
-    "K12": [
-      {
-        "stat": "sd_full",
-        "median": 0.00730922682995356,
-        "q05": 0.00520007925327262,
-        "q95": 0.0108385202876498
-      },
-      {
-        "stat": "sd_DOWN",
-        "median": 0.0066836612608192,
-        "q05": 0.00473731578551586,
-        "q95": 0.00991837560054276
-      },
-      {
-        "stat": "sd_SURGE",
-        "median": 0.00802214375408066,
-        "q05": 0.00519627614727165,
-        "q95": 0.011866154497729
-      },
-      {
-        "stat": "sd_FLAT",
-        "median": 0.00669266357020032,
-        "q05": 0.00483672205000641,
-        "q95": 0.0100410064631552
-      },
-      {
-        "stat": "nwfac",
-        "median": 0.997334574134652,
-        "q05": 0.88291189001026,
-        "q95": 1.10141482345038
-      }
-    ],
-    "K25": [
-      {
-        "stat": "sd_full",
-        "median": 0.00452470931106737,
-        "q05": 0.00351309791012932,
-        "q95": 0.00648704582252264
-      },
-      {
-        "stat": "sd_DOWN",
-        "median": 0.00420275817245145,
-        "q05": 0.00284612083736628,
-        "q95": 0.0061287924904995
-      },
-      {
-        "stat": "sd_SURGE",
-        "median": 0.00499000817968322,
-        "q05": 0.00382089958698125,
-        "q95": 0.00718944889517872
-      },
-      {
-        "stat": "sd_FLAT",
-        "median": 0.00404827235625234,
-        "q05": 0.0032155440530982,
-        "q95": 0.00606847178417247
-      },
-      {
-        "stat": "nwfac",
-        "median": 1.00011613649423,
-        "q05": 0.894414712083413,
-        "q95": 1.09835397145188
-      }
-    ]
+  "mechanism": {
+    "beta_rank_corr_DOWN": -0.9751,
+    "beta_rank_corr_SURGE": 0.9851,
+    "beta_residual_rho_DOWN": -0.4008,
+    "beta_residual_rho_SURGE": -0.7159,
+    "label_persistence": {
+      "DOWN": 0.133,
+      "SURGE": 0.245,
+      "FLAT": 0.718
+    },
+    "label_base_rate": {
+      "DOWN": 0.122047244094488,
+      "SURGE": 0.192913385826772,
+      "FLAT": 0.68503937007874
+    },
+    "verdict": "상태-조건부 순위 = beta (rank R^2 0.95~0.97). beta 잔차화 시 지속성 음수. 노출 스케일 축 = WT-D20260809_002 소관"
   },
   "bars": [
     {
-      "arm_or_bucket": "FULL_254m",
+      "arm_or_bucket": "FULL_254m_uncond",
       "n": 254,
-      "sd_monthly_pct": 0.730922682995356,
-      "required_effect_pct_per_month": 0.0914798516925679,
-      "required_pct_per_year": 1.09775822031081,
-      "book_annual_contrib_pct": 1.09775822031081,
-      "nw_inflation": 0.997334574134652,
+      "sd_monthly_pct": 2.19419580080332,
+      "required_effect_pct_per_month": 0.275352178564763,
+      "required_pct_per_year": 3.30422614277716,
+      "book_annual_contrib_pct": 3.30422614277716,
       "is_ceiling_pct_per_month": 0.497277717035624,
-      "persistence_rho": -0.13,
-      "expected_oos_pct_per_month": 0,
-      "required_over_ceiling": 0.183961292771971,
-      "required_over_expected_oos": "Inf",
+      "persistence_rho": 0.298671096345515,
+      "expected_oos_pct_per_month": 0.148522480935225,
+      "required_over_expected": 1.8539427622735,
       "plausible": false,
+      "note": "무조건부 trailing 선택 = P0 §4 음성대조 arm",
       "metric_type": "diagnostic_precheck"
     },
     {
-      "arm_or_bucket": "DOWN_n31",
+      "arm_or_bucket": "DOWN_n31_contemp",
       "n": 31,
-      "sd_monthly_pct": 0.66836612608192,
-      "required_effect_pct_per_month": 0.240084199878818,
-      "required_pct_per_year": 2.88101039854581,
-      "book_annual_contrib_pct": 0.351619379350079,
-      "nw_inflation": 1,
+      "sd_monthly_pct": 2.31040742814239,
+      "required_effect_pct_per_month": 0.829922847872835,
+      "required_pct_per_year": 9.95907417447402,
+      "book_annual_contrib_pct": 1.21547755672714,
       "is_ceiling_pct_per_month": 2.79147944451689,
-      "persistence_rho": 0.462,
-      "expected_oos_pct_per_month": 1.2896635033668,
-      "required_over_ceiling": 0.0860060783719539,
-      "required_over_expected_oos": 0.186160342796437,
+      "persistence_rho": 0.70750439710768,
+      "expected_oos_pct_per_month": 1.9749839814314,
+      "required_over_expected": 0.420217508433327,
       "plausible": true,
+      "note": "동월 상태라벨 = PIT 불가(참고용 상한)",
       "metric_type": "diagnostic_precheck"
     },
     {
-      "arm_or_bucket": "SURGE_n49",
+      "arm_or_bucket": "SURGE_n49_contemp",
       "n": 49,
-      "sd_monthly_pct": 0.802214375408066,
-      "required_effect_pct_per_month": 0.229204107259447,
-      "required_pct_per_year": 2.75044928711337,
-      "book_annual_contrib_pct": 0.530598484521871,
-      "nw_inflation": 1,
+      "sd_monthly_pct": 1.99802049894761,
+      "required_effect_pct_per_month": 0.570862999699318,
+      "required_pct_per_year": 6.85035599639182,
+      "book_annual_contrib_pct": 1.32152536938267,
       "is_ceiling_pct_per_month": 2.2447488823622,
-      "persistence_rho": 0.498,
-      "expected_oos_pct_per_month": 1.11788494341637,
-      "required_over_ceiling": 0.102106792015974,
-      "required_over_expected_oos": 0.205033718907579,
+      "persistence_rho": 0.744615985929255,
+      "expected_oos_pct_per_month": 1.67147590220372,
+      "required_over_expected": 0.341532294271593,
       "plausible": true,
+      "note": "동월 상태라벨 = PIT 불가(참고용 상한)",
       "metric_type": "diagnostic_precheck"
     },
     {
-      "arm_or_bucket": "FLAT_n174",
+      "arm_or_bucket": "FLAT_n174_contemp",
       "n": 174,
-      "sd_monthly_pct": 0.669266357020032,
-      "required_effect_pct_per_month": 0.101473903178013,
-      "required_pct_per_year": 1.21768683813616,
-      "book_annual_contrib_pct": 0.834163424549967,
-      "nw_inflation": 1,
+      "sd_monthly_pct": 2.58252258354751,
+      "required_effect_pct_per_month": 0.39156106361714,
+      "required_pct_per_year": 4.69873276340569,
+      "book_annual_contrib_pct": 3.21881693241177,
       "is_ceiling_pct_per_month": 0.582535586541299,
-      "persistence_rho": -0.436,
+      "persistence_rho": -0.00513973031072894,
       "expected_oos_pct_per_month": 0,
-      "required_over_ceiling": 0.174193483664228,
-      "required_over_expected_oos": "Inf",
+      "required_over_expected": "Inf",
       "plausible": false,
+      "note": "동월 상태라벨 = PIT 불가(참고용 상한)",
+      "metric_type": "diagnostic_precheck"
+    },
+    {
+      "arm_or_bucket": "lag1_DOWN_n30_PIT",
+      "n": 30,
+      "sd_monthly_pct": 1.88181574070508,
+      "required_effect_pct_per_month": 0.687141953501644,
+      "required_pct_per_year": 8.24570344201972,
+      "book_annual_contrib_pct": 0.973901981340912,
+      "is_ceiling_pct_per_month": 1.1938475315876,
+      "persistence_rho": 0.514950166112957,
+      "expected_oos_pct_per_month": 0.614771984704577,
+      "required_over_expected": 1.11771839087925,
+      "plausible": false,
+      "note": "PIT 적법 t-1 라벨",
+      "metric_type": "diagnostic_precheck"
+    },
+    {
+      "arm_or_bucket": "lag1_SURGE_n49_PIT",
+      "n": 49,
+      "sd_monthly_pct": 2.15378011885113,
+      "required_effect_pct_per_month": 0.61536574824318,
+      "required_pct_per_year": 7.38438897891816,
+      "book_annual_contrib_pct": 1.424547480185,
+      "is_ceiling_pct_per_month": 1.17168193646962,
+      "persistence_rho": 0.539026773500098,
+      "expected_oos_pct_per_month": 0.631567933783565,
+      "required_over_expected": 0.974346092203697,
+      "plausible": true,
+      "note": "PIT 적법 t-1 라벨",
+      "metric_type": "diagnostic_precheck"
+    },
+    {
+      "arm_or_bucket": "lag1_FLAT_n174_PIT",
+      "n": 174,
+      "sd_monthly_pct": 1.73089034106702,
+      "required_effect_pct_per_month": 0.262436916242506,
+      "required_pct_per_year": 3.14924299491007,
+      "book_annual_contrib_pct": 2.15735543745808,
+      "is_ceiling_pct_per_month": 0.359207573383179,
+      "persistence_rho": -0.278854797733047,
+      "expected_oos_pct_per_month": 0,
+      "required_over_expected": "Inf",
+      "plausible": false,
+      "note": "PIT 적법 t-1 라벨",
+      "metric_type": "diagnostic_precheck"
+    },
+    {
+      "arm_or_bucket": "RESID_ORTHO_254m",
+      "n": 254,
+      "sd_monthly_pct": 2.47996401364969,
+      "required_effect_pct_per_month": 0.311213563379646,
+      "required_pct_per_year": 3.73456276055575,
+      "book_annual_contrib_pct": 3.73456276055575,
+      "is_ceiling_pct_per_month": 0.44126532760183,
+      "persistence_rho": 0.281453976939613,
+      "expected_oos_pct_per_month": 0.124195881339096,
+      "required_over_expected": 2.50582837388889,
+      "plausible": false,
+      "note": "PC1 잔차-알파 선택 (P0 §6 축). 전표본 PC1 = 상한",
       "metric_type": "diagnostic_precheck"
     },
     {
       "arm_or_bucket": "MDD_axis_blockboot",
       "n": 254,
-      "sd_monthly_pct": 1.91194883853133,
-      "required_effect_pct_per_month": 3.82389767706266,
-      "required_pct_per_year": 3.82389767706266,
-      "unit_note": "단위는 %p(ΔMDD), 월수익률 아님",
+      "sd_monthly_pct": 2.05122422490749,
+      "required_effect_pct_per_month": 4.10244844981499,
+      "required_pct_per_year": 4.10244844981499,
+      "unit_note": "단위 %p (ΔMDD). 월수익률 아님",
       "base_mdd_pct": 40.5209325713695,
-      "achievable_best_mdd_pct": 35.5637304646604,
-      "achievable_delta_pp": 4.95720210670906,
-      "achievable_t": 2.5927483030963,
+      "achievable_delta_pp": 7.13684108170238,
+      "achievable_t": 3.47930811026973,
+      "noise_max_t_400trials": 3.02409689044856,
       "plausible": true,
-      "per_arm": [
-        {
-          "arm": "rand12_medianMDD",
-          "mdd_arm_pct": 41.7275381490504,
-          "delta_mdd_obs_pp": -1.20660557768095,
-          "se_delta_pp": 1.25793406187003,
-          "t_obs": -0.959196204519043,
-          "required_delta_pp": 2.51586812374005
-        },
-        {
-          "arm": "rand12_bestMDD",
-          "mdd_arm_pct": 35.5637304646604,
-          "delta_mdd_obs_pp": 4.95720210670906,
-          "se_delta_pp": 2.56596361519264,
-          "t_obs": 1.93190662461397,
-          "required_delta_pp": 5.13192723038527
-        }
-      ],
+      "note": "달성치는 400회 IS-argmax 산물 — 다중검정 보정 후 판단",
       "metric_type": "diagnostic_precheck"
     }
   ]
