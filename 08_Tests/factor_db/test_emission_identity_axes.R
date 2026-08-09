@@ -427,6 +427,74 @@ if (!is.null(wrapped) && !is.null(wrapped$identity)) {
 }
 
 #==============================================================================
+cat("\n=== C. 상류 계약 — 축 D 가 빌린 판별력이 실제로 거기 있는가 ===\n")
+#==============================================================================
+# ★축 D 는 sd 를 직접 재지 않는다. 빌더가 `sd(winsorized raw) < 1e-12 → Z 전건 NA`
+#   → `Coverage := !is.na(Raw_Value) & !is.na(Z_Score)` 로 **이미 번역해 둔 것**을 읽는다.
+#   즉 축 D 의 판별력은 **빌린 것**이고, 그 상류 계약이 조용히 바뀌면 축 D 는
+#   실데이터에서 침묵하는데 위반 주입(Coverage=FALSE 를 직접 심음)은 계속 통과한다
+#   — 검사가 살아 있는 채로 눈이 머는 이 저장소의 반복 계통.
+#   실제로 Coverage 는 2026-06-10 에 `!is.na(Raw_Value)` 단독에서 지금 정의로 바뀐 이력이 있고,
+#   되돌아가면 시장레벨/죽은 배출이 전부 Coverage=TRUE 가 되어 축 D 가 0종을 낸다.
+#   그래서 정적 형태가 아니라 **행동**으로 못박는다.
+b_txt <- readLines(BUILDER_SRC, warn = FALSE)
+cov_i <- grep("Coverage := ", b_txt, fixed = TRUE)
+cov_i <- cov_i[!grepl("^\\s*#", b_txt[cov_i])]
+if (length(cov_i) == 1L && grepl("!is.na(Z_Score)", b_txt[cov_i], fixed = TRUE)) {
+  ok("C1_coverage_contract_static", sprintf("빌더 %d행 Coverage 정의에 !is.na(Z_Score) 포함", cov_i[1]))
+} else {
+  bad("C1_coverage_contract_static",
+      sprintf("★Coverage 정의가 %d건이거나 Z_Score 조건 결여 — 축 D 가 상류에서 눈이 먼다", length(cov_i)))
+}
+# 행동 수준: 빌더의 표준화 함수만 격리 평가해 '횡단면 상수 → Coverage FALSE' 를 실측
+std_env <- new.env(parent = globalenv())
+got_fn <- tryCatch({
+  exprs <- parse(BUILDER_SRC, encoding = "UTF-8")
+  for (e in exprs) {
+    if (is.call(e) && length(e) >= 3L &&
+        as.character(e[[1]]) %in% c("<-", "=") &&
+        identical(as.character(e[[2]]), ".standardize_factors")) {
+      eval(e, envir = std_env); break
+    }
+  }
+  is.function(std_env$.standardize_factors)
+}, error = function(x) FALSE)
+
+if (!isTRUE(got_fn)) {
+  bad("C2_coverage_contract_behavior", "★.standardize_factors 격리 추출 실패 — 행동 수준 고정 불가")
+} else {
+  ct <- sprintf("A%05d", 1:120)
+  combined <- rbindlist(list(
+    data.table(Ticker = ct, Factor_Name = "VARY_OK", Raw_Value = as.numeric(seq_along(ct))),
+    data.table(Ticker = ct, Factor_Name = "CONST_DEAD", Raw_Value = 7.0)))
+  smap <- data.table(Ticker = ct, Sector = rep(c("IT", "FIN"), length.out = length(ct)))
+  outdt <- tryCatch(std_env$.standardize_factors(copy(combined), smap), error = function(e) NULL)
+  if (is.null(outdt) || !"Coverage" %in% names(outdt)) {
+    bad("C2_coverage_contract_behavior", "표준화 산출에 Coverage 없음")
+  } else {
+    dead_cov <- outdt[Factor_Name == "CONST_DEAD", sum(Coverage %in% TRUE)]
+    live_cov <- outdt[Factor_Name == "VARY_OK",   sum(Coverage %in% TRUE)]
+    if (dead_cov == 0L && live_cov == length(ct)) {
+      ok("C2_coverage_contract_behavior",
+         sprintf("횡단면 상수 → Coverage TRUE %d건 (죽음) · 정상 팩터 → %d건 (양성 대조 동반)",
+                 dead_cov, live_cov))
+      # 그 산출을 축 D 에 그대로 먹여 end-to-end 로 검거되는지
+      e2e <- factor_identity_check(outdt, "202608", dedup_pairs = DEDUP, identity_baseline = IDB)
+      if ("CONST_DEAD" %in% e2e$axis_D$dead && !"VARY_OK" %in% e2e$axis_D$dead) {
+        ok("C3_end_to_end_dead_detection", "빌더 표준화 산출 → 축 D 가 CONST_DEAD 만 검거 (경로 전체 연결)")
+      } else {
+        bad("C3_end_to_end_dead_detection",
+            sprintf("경로 단절 — dead=%s", paste(e2e$axis_D$dead, collapse = ",")))
+      }
+    } else {
+      bad("C2_coverage_contract_behavior",
+          sprintf("★상수 팩터가 Coverage TRUE %d건 — 축 D 가 실데이터에서 침묵한다(주입 테스트는 계속 통과)",
+                  dead_cov))
+    }
+  }
+}
+
+#==============================================================================
 cat("\n=== S. 사이드카 — 3축 판정이 기록까지 도달하는가 ===\n")
 #==============================================================================
 # ★래퍼의 tryCatch 는 정체 검사 실패를 삼킨다(빌드를 죽이지 않기 위해). 그래서

@@ -193,8 +193,15 @@ SUITES=(
   #   ★전면 stop 금지가 설계다 — 시장레벨 상수 15종(RE*/MA05~07/M31/CR03)은 정당한
   #    무분산 배출이라 차단하면 매 빌드가 죽는다. X 축이 그 면제를 **양방향**으로 잰다
   #    (선언 시 침묵 / 선언 제거 시 15종 전부 발화 = 침묵의 원인이 선언임을 실증).
-  #   돌연변이 7종 전부 검출 확인(kill_D 5건 · kill_T 2건 · kill_I_rank 2건 ·
-  #   kill_I_decl 2건 · kill_exempt 1건 · kill_unmeasured 1건 · kill_liveness 1건).
+  #   ★축 C 는 **빌린 판별력**을 못박는다: 축 D 는 sd 를 직접 재지 않고 빌더가
+  #    `sd<1e-12 → Z=NA → Coverage=FALSE` 로 번역해 둔 것을 읽는다. 그 상류 계약이
+  #    2026-06-10 이전 형태(`Coverage = !is.na(Raw_Value)` 단독)로 되돌아가면 축 D 는
+  #    실데이터에서 침묵하는데 **Coverage=FALSE 를 직접 심는 위반 주입은 계속 통과한다**
+  #    — 검사가 살아 있는 채로 눈이 머는 자리. 그래서 정적 형태 + .standardize_factors
+  #    격리 실행(횡단면 상수 → Coverage FALSE) + end-to-end 로 행동을 잰다.
+  #   돌연변이 8종 전부 검출 확인(kill_D 5건 · kill_T 2건 · kill_I_rank 2건 ·
+  #   kill_I_decl 2건 · kill_exempt 1건 · kill_unmeasured 1건 · kill_liveness 1건 ·
+  #   빌더 Coverage 구정의 복귀 2건[C1/C2] — 이때 주입 테스트는 전부 초록으로 남는다).
   "08_Tests/factor_db/test_emission_identity_axes.R"
   # 2026-07-26 추가: auto-commit 밸브 v2(디렉터리-단위 A-only 격리 — v1 영구개방 사고 재발 방지)
   "08_Tests/hooks/test_auto_commit_valve.sh"

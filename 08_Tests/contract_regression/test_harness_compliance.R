@@ -60,5 +60,42 @@ r6 <- harness_compliance(tempdir())
 ok(grepl("성과 측정", r6$note) && grepl("AX-002", r6$note),
    "6. note 가 순서 규약과 AX-002 를 명시")
 
-cat(sprintf("\n=== 결과: %d PASS / %d FAIL ===\n", P, F))
+
+cat("-- 7. ★대체 검증 기록 인식 (초판 결함 수리) --\n")
+## STR_1698: 10-component 0 이지만 performance_summary.json 에 walkforward_integrity·lockbox·subperiods 보유
+p7 <- "04_Research/strategies/STR_1698_WT008_M08_Swap"
+if (dir.exists(p7)) {
+  r7 <- harness_compliance(p7)
+  ok(isTRUE(r7$has_alt_validation),
+     sprintf("7a. ★대체 검증 인식: %s (파일 %s)",
+             paste(r7$alt_validation, collapse=","), paste(head(r7$alt_validation_files,2), collapse=",")))
+  ok(identical(r7$tier, "validated_needs_retrofit"),
+     sprintf("7b. ★tier = %s (C15 경유 + 검증기록 + 10-c 부재)", r7$tier))
+  ok(identical(r7$metric_type, "backtested_retrofit_candidate"),
+     sprintf("7c. metric_type = %s", r7$metric_type))
+  ok(!isTRUE(r7$compliant), "7d. 그래도 compliant=FALSE (retrofit 은 아직 안 됨)")
+} else cat("  SKIP  STR_1698 경로 부재\n")
+
+cat("-- 8. ★등급이 갈리는가 (STR_1675 = C15 우회 + 검증기록) --\n")
+p8 <- "04_Research/strategies/STR_1675_QRebal_Hybrid"
+if (dir.exists(p8)) {
+  r8 <- harness_compliance(p8)
+  ok(!identical(r8$tier, "validated_needs_retrofit"),
+     sprintf("8a. ★C15 우회는 다른 등급: %s", r8$tier))
+  ok(r8$tier %in% c("validated_c15_issue","unvalidated"),
+     sprintf("8b. tier=%s (C15 우회가 등급을 낮춘다)", r8$tier))
+}
+
+cat("-- 9. 계약 준수 재료의 등급 --\n")
+p9 <- "05_Production/2.Factor_Model/2-3.STR_1715_on_M4_R05_noLayer4_PG2/04_backtest_results"
+if (dir.exists(p9)) {
+  r9 <- harness_compliance(p9)
+  ok(r9$ten_component >= 8, sprintf("9a. 10-component %d/11", r9$ten_component))
+  ok(grepl("^contract", r9$tier),
+     sprintf("9b. ★tier=%s — 10-c 완비 재료는 contract_* 등급 (초판은 unvalidated 로 오분류했다)", r9$tier))
+  ok(!identical(r9$tier, "unvalidated"),
+     "9c. ★준수 재료를 미검증으로 찍지 않는다 (게이트가 게이트로서 실패하지 않는다)")
+}
+
+cat(sprintf("\n=== 최종: %d PASS / %d FAIL ===\n", P, F))
 if (F > 0) quit(status = 1L)
