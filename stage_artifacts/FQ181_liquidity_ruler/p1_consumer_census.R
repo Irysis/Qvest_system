@@ -68,8 +68,12 @@ SLIM_MARKS <- c("Date %in% .me", "Date %in% ME", "Date %in% .MEND", "Date %in% m
 classify_panel <- function(f, v) {
   ln <- readLines(file.path(QM, f), warn = FALSE, encoding = "UTF-8")
   code <- sub("#.*$", "", ln)
-  asg <- grep(paste0(v, " *<-"), code, fixed = FALSE, value = TRUE)
-  asg <- c(asg, grep(paste0(v, "[ ]*\\["), code, value = TRUE))
+  ## ★fixed=TRUE — panel_var 에 정규식 특수문자(`[`, `$` 등)가 섞여 있어
+  ##   정규식으로 짜면 "Invalid character range" 로 죽거나(운 좋은 경우)
+  ##   조용히 다른 걸 매치한다(운 나쁜 경우).
+  asg <- unique(c(grep(paste0(v, " <-"), code, fixed = TRUE, value = TRUE),
+                  grep(paste0(v, "<-"),  code, fixed = TRUE, value = TRUE),
+                  grep(paste0(v, "["),   code, fixed = TRUE, value = TRUE)))
   blob <- paste(asg, collapse = " || ")
   slim_hit <- any(vapply(SLIM_MARKS, function(m) grepl(m, blob, fixed = TRUE), logical(1)))
   # 파일 전역에서도 slim 관용구를 본다(변수 재대입이 다른 이름을 거칠 수 있음)
