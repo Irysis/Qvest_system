@@ -131,13 +131,38 @@ def display_name(o):
             or o.get("name") or o.get("title") or "")
 
 
+class LedgerUnreadable(Exception):
+    """소비 원장이 존재하는데 읽을 수 없다 = 계측 사망. 빈 값으로 내려앉히지 않는다."""
+
+
 def _load_json(path):
-    """부재/손상 모두 None. 손상 1건이 나머지 계수를 죽이지 않는다(fail-soft)."""
+    """부재/손상 모두 None. 손상 1건이 나머지 계수를 죽이지 않는다(fail-soft).
+
+    ★fail-soft 가 옳은 곳은 **원천 파일**(route/queue)뿐이다 — 결과가 pending 을
+      과소 계상하는 보수적 방향이기 때문이다. 감산항(done)에는 _load_ledger 를 쓸 것.
+    """
     try:
         with open(path, encoding="utf-8") as fh:
             return json.load(fh)
     except Exception:
         return None
+
+
+def _load_ledger(path):
+    """소비 원장 전용 로더 — 부재는 None(정상: 아직 아무것도 소비 안 함),
+    **존재하는데 파싱 실패면 예외**(계측 사망).
+
+    실사고 2026-08-09: 원장 구조 손상(배열 조기 닫힘)을 fail-soft 가 삼켜
+    done=∅ → pending 1→10 으로 부풀었다. 그대로면 차기 무인 런이 판정난 논문을 재처리한다.
+    ★"모른다"를 "없다"로 읽으면 감산항에서는 **부호가 뒤집힌다**.
+    """
+    if not os.path.exists(path):
+        return None
+    try:
+        with open(path, encoding="utf-8") as fh:
+            return json.load(fh)
+    except Exception as e:
+        raise LedgerUnreadable("%s: %s" % (os.path.basename(path), e))
 
 
 # ── alpha 큐 ──────────────────────────────────────────────────────────────────
@@ -148,7 +173,7 @@ def alpha_done_ids(stage):
     런이 실재한다(원장 6건 중 일부가 그 자리였다).
     """
     done = set()
-    d = _load_json(os.path.join(stage, "alpha_search_queue_done.json"))
+    d = _load_ledger(os.path.join(stage, "alpha_search_queue_done.json"))
     if isinstance(d, dict):
         done = {nid(x) for x in (d.get("processed") or []) if nid(x)}
         for r in (d.get("records") or []):
@@ -194,7 +219,7 @@ def alpha_pending(stage):
 def recheck_done_ids(stage):
     """재검 완료 원장의 정규화 id 집합. processed[] 는 dict/bare-string 양쪽 관용."""
     done = set()
-    d = _load_json(os.path.join(stage, "factor_recheck_done.json"))
+    d = _load_ledger(os.path.join(stage, "factor_recheck_done.json"))
     if isinstance(d, dict):
         for x in (d.get("processed") or []):
             pid = nid(x.get("paper_id") if isinstance(x, dict) else x)
@@ -313,7 +338,14 @@ def main(argv):
         if len(argv) < 2:
             sys.stderr.write(_USAGE)
             return 2
-        print(len(alpha_pending(argv[1])))
+        # ★원장 손상은 숫자를 내지 않는다 — 소비자(.sh)의 sched_assert_count 가
+        #   비숫자를 잡아 count_measurement_failed 경보 후 중단한다.
+        #   여기서 0 이나 과대값을 내면 그 방어선이 통째로 무력해진다.
+        try:
+            print(len(alpha_pending(argv[1])))
+        except LedgerUnreadable as e:
+            sys.stderr.write("LEDGER_UNREADABLE %s\n" % e)
+            return 3
         return 0
     if cmd == "recheck-build":
         if len(argv) < 3:
@@ -321,7 +353,11 @@ def main(argv):
             return 2
         stage, out = argv[1], argv[2]
         today = argv[3] if len(argv) > 3 else None
-        items = list(recheck_uncertain(stage).values())
+        try:
+            items = list(recheck_uncertain(stage).values())
+        except LedgerUnreadable as e:
+            sys.stderr.write("LEDGER_UNREADABLE %s\n" % e)
+            return 3
         with open(out, "w", encoding="utf-8") as fh:
             json.dump({"date": today, "n": len(items), "items": items},
                       fh, ensure_ascii=False, indent=2)

@@ -283,6 +283,20 @@ CASES = [
          {"id": "2699.00012", "paper_id": "2699.00099",
           "factor_candidate": {"verdict": "testable"}}),
       "alpha_search_queue_done.json": done([])}, "1", None),
+
+    # ── C8: 감산항(done)의 fail-soft 는 **부호가 뒤집힌다** ────────────────────
+    #   실사고 2026-08-09 13:41: 원장이 구조 손상(records 배열 조기 닫힘 + 밖에 append)
+    #   되자 fail-soft 가 삼켜 done=∅ → pending 1→10 으로 **부풀었다**. 그대로면 차기
+    #   무인 런이 판정난 논문을 재처리한다(50분 + 중복 측정, 서로 다른 프레임 위험).
+    #   ★C4(원천 파일 손상 → fail-soft 유지)와 **정반대 기대**인 것이 요점이다:
+    #     원천 손상은 pending 을 과소(보수적)로, 원장 손상은 과대(위험)로 민다.
+    #     같은 '손상'인데 방향이 다르므로 같은 정책을 쓰면 안 된다.
+    #   기대 = 숫자를 내지 않음(빈 문자열) → 소비자 .sh 의 sched_assert_count 가
+    #     비숫자를 잡아 count_measurement_failed 경보 후 중단한다.
+    ("C8 ★done 원장 손상 → 숫자 미발행(0/과대값으로 삼키지 않는다)",
+     {"alpha_search_route_x.json": route(paper("id", "2699.00013")),
+      "alpha_search_queue_done.json": "{ \"processed\": [\"2699.00013\"], }}bad"},
+     "ERR:LEDGER_UNREADABLE*", True),
 ]
 
 
@@ -297,17 +311,22 @@ def main():
         print("  [FAIL] W 배선 — %s" % w)
     if not check_wiring():
         print("  [PASS] W 배선: 소비자가 정본 술어를 경유 (heredoc 재분기 없음)")
+    # 기대값 말미의 '*' = 접두 일치. 오류 메시지에 줄/열 번호가 섞이는 케이스(C8)용 —
+    # 전문을 하드코딩하면 파서 메시지가 바뀔 때마다 검사가 깨진다(검사 취약 ≠ 검사 엄격).
+    def _match(got_v, exp_v):
+        return got_v.startswith(exp_v[:-1]) if exp_v.endswith("*") else got_v == exp_v
+
     for name, files, expect, legacy_differs in CASES:
         got, err = run(block, files)
-        ok = (got == expect)
+        ok = _match(got, expect)
         # 음성 기준: legacy 가 이 케이스를 틀리는지 확인 (= 검사에 이빨이 있는지)
         lgot, _ = run(LEGACY, files)
-        if legacy_differs is True and lgot == expect:
+        if legacy_differs is True and _match(lgot, expect):
             teeth_fail.append(name)
         mark = "PASS" if ok else "FAIL"
         tag = ""
         if legacy_differs is True:
-            tag = "   [legacy=%s %s]" % (lgot, "구별O" if lgot != expect else "★구별X")
+            tag = "   [legacy=%s %s]" % (lgot, "구별O" if not _match(lgot, expect) else "★구별X")
         print("  [%s] %-62s N=%s (기대 %s)%s" % (mark, name, got, expect, tag))
         if not ok:
             fails.append((name, expect, got, err.strip()[-300:]))
