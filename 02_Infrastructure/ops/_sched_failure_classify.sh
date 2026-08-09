@@ -43,6 +43,19 @@ sched_classify_failure() {
   if printf '%s' "$tail_txt" | grep -qiE "rate limit|429|too many requests"; then
     echo "rate_limit"; return 0
   fi
+  # ④ 시간초과 강제종료 (`timeout N claude -p` 가 벽시계로 SIGTERM) — 종료코드 124.
+  #   ★위 ①~③ 은 이 경우 **원리적으로 발화할 수 없다**: `claude -p` 는 기본 출력형식에서
+  #     최종 메시지를 런 끝에 1회만 flush 하는데, 그 전에 죽으므로 로그에 claude 출력이
+  #     한 줄도 남지 않는다(실측: 08-09 런 50분간 로그 증가분 0바이트).
+  #     그래서 구판은 전부 generic `exit_124` → 안내가 "원인 미분류 — 로그 확인 필요" 였고,
+  #     **가리키는 그 로그가 구조적으로 비어 있다**. 사람이 확인해도 얻을 게 없는 안내 =
+  #     침묵 실패 계통("존재하는 진단 경로가 사실은 죽어 있다").
+  #   ∴ 로그를 뒤지지 말고 종료코드로 판정한다. 원인은 코드 자체가 말하고 있다.
+  #   ⚠ 순서 주의: 한도/인증이 먼저 걸려 hang 한 뒤 timeout 난 경우는 ①~③ 이 이미 잡는다
+  #     (그 문구는 kill 이전에 이미 로그에 있다). 여기는 그 뒤의 폴백이다.
+  if [ "${rc:-0}" -eq 124 ]; then
+    echo "timeout_kill"; return 0
+  fi
   echo "exit_${rc}"
 }
 
@@ -51,6 +64,10 @@ sched_failure_autorecovers() {
   case "${1:-}" in
     spend_limit|rate_limit) echo "yes" ;;
     auth_expired)           echo "no"  ;;
+    # ★partial: 큐 pending 은 보존돼 차기 런이 재시도하지만, kill 시점에 **이미 끝난 항목의
+    #   원장 append·텔레그램은 유실**된다(실행됐는데 pending 으로 남는 상태). 완전 자동복구가
+    #   아니므로 yes 로 뭉개지 않는다 — yes 로 적으면 학습된 무시를 만든다.
+    timeout_kill)           echo "partial" ;;
     ok)                     echo "n/a" ;;
     *)                      echo "unknown" ;;
   esac
@@ -62,6 +79,7 @@ sched_failure_guidance() {
     auth_expired) echo "★사람 조치 필요 — 헤드리스 실행용 자격증명이 만료됐고 자동 갱신되지 않습니다. 터미널에서 claude 재로그인 후 차기 런부터 정상화됩니다. 방치하면 무기한 정지." ;;
     spend_limit)  echo "사용률 한도 소진으로 정지했습니다. 큐 pending 은 보존됩니다 — 재충전 후 도훈이 재개시키면 그대로 소비됩니다. (2026-07-26 도훈 지시: 한도 기반 자동 재시도·감축·보류는 두지 않음)" ;;
     rate_limit)   echo "레이트 리밋으로 정지했습니다. 큐는 보존되며, 재개는 수동입니다." ;;
+    timeout_kill) echo "벽시계 시간초과(timeout 3000s)로 강제 종료됐습니다 — 한도·인증 문제가 아닙니다. 런은 살아서 일하던 중이었고, 끝낸 항목이 있어도 **원장 append·텔레그램이 유실**됩니다. 확인 순서: ①stage_artifacts/paper_recharge/auto_verify_*_<TODAY>.json 중 done 원장에 없는 건(=실행됐는데 pending) ②그 건을 원장에 소급 기록 ③반복되면 MAX_ALPHA 하향 또는 timeout 상향(도훈 결정 — 리서치 처리량 정책)." ;;
     ok)           echo "정상." ;;
     *)            echo "원인 미분류 — 로그 확인 필요. 자동복구 여부 미상이므로 반복 시 수동 점검." ;;
   esac
@@ -107,6 +125,34 @@ sched_failure_streak() {
     elif [ "$i" -gt 0 ]; then
       break                            # 오늘 마커는 아직 없을 수 있으니 i=0 만 관대하게
     fi
+    i=$((i + 1))
+  done
+  echo "$n"
+}
+
+# ── 간헐 재발 횟수 (연속 streak 이 못 보는 축, 2026-08-09 신설)
+#   ★streak 은 **연속 일수**만 센다. 그런데 성공 1회가 sched_mark_resolved 로 과거 마커를
+#     _resolved/ 로 옮기므로, 하루걸러 재발하는 간헐 실패는 **영원히 연속=1** 로 보고되고
+#     SCHED_ESCALATE_AT 에 절대 도달하지 못한다.
+#     실측(2026-08-09): alpha_queue exit_124 가 07-27·08-04·08-06·08-07·08-08·08-09 로
+#     14일 중 6회인데 경보는 매번 "연속=1" — 재발이 통계적으로 보이지 않았다.
+#   ∴ 후행 N일 창에서 (comp, reason) 마커 **개수**를 센다. _resolved/ 아카이브도 포함해야
+#     "성공이 역사를 지우는" 위 기전을 피한다.
+#   ★별칭: 사유 이름이 바뀌어도 역사가 끊기지 않도록 구 이름을 함께 센다.
+SCHED_RECENT_WINDOW_DAYS="${SCHED_RECENT_WINDOW_DAYS:-14}"
+sched_failure_recent_count() {
+  local comp="${1:-}" reason="${2:-}" adir="${3:-}"
+  { [ -z "$adir" ] || [ ! -d "$adir" ]; } && { echo 0; return 0; }
+  local aliases="$reason"
+  [ "$reason" = "timeout_kill" ] && aliases="$reason exit_124"   # 2026-08-09 개명 전 마커
+  local n=0 i=0 d r
+  while [ "$i" -lt "$SCHED_RECENT_WINDOW_DAYS" ]; do
+    d=$(date -d "-${i} day" +%Y%m%d 2>/dev/null) || break
+    for r in $aliases; do
+      if [ -f "$adir/${comp}_${r}_${d}.alert" ] || [ -f "$adir/_resolved/${comp}_${r}_${d}.alert" ]; then
+        n=$((n + 1)); break
+      fi
+    done
     i=$((i + 1))
   done
   echo "$n"
@@ -249,13 +295,19 @@ SCHED_ESCALATE_AT="${SCHED_ESCALATE_AT:-3}"
 sched_failure_annotate() {
   local comp="${1:-}" reason="${2:-}" adir="${3:-}"
   local streak guide auto esc=""
+  local recent rec_txt=""
   streak=$(sched_failure_streak "$comp" "$reason" "$adir")
+  recent=$(sched_failure_recent_count "$comp" "$reason" "$adir")
   guide=$(sched_failure_guidance "$reason")
   auto=$(sched_failure_autorecovers "$reason")
   if [ "${streak:-0}" -ge "$SCHED_ESCALATE_AT" ] 2>/dev/null; then
     esc="★${streak}일째 동일 실패 — 자동 해소 기대를 중단하고 수동 개입하십시오. "
+  elif [ "${recent:-0}" -ge "$SCHED_ESCALATE_AT" ] 2>/dev/null; then
+    # 연속은 끊겼지만 간헐 재발 — 성공 1회가 마커를 아카이브해 streak 을 리셋한 경우.
+    esc="★최근 ${SCHED_RECENT_WINDOW_DAYS}일 ${recent}회 재발(간헐) — 연속이 아니어서 자동 격상에 안 걸립니다. 구조 원인을 보십시오. "
   fi
-  printf '자동복구=%s | 연속=%s | %s%s' "$auto" "${streak:-0}" "$esc" "$guide"
+  printf '자동복구=%s | 연속=%s | 최근%s일=%s회 | %s%s' \
+    "$auto" "${streak:-0}" "$SCHED_RECENT_WINDOW_DAYS" "${recent:-0}" "$esc" "$guide"
 }
 
 # ── 성공 시 해당 컴포넌트의 미해소 마커를 아카이브 (2026-07-26)
