@@ -1,0 +1,59 @@
+#!/usr/bin/env Rscript
+# fr002_lcode.R — FR_002 L-code 발행 (factor_rotation 모드 emit 1지점)
+suppressPackageStartupMessages(library(jsonlite))
+PROJ <- Sys.getenv("CLAUDE_PROJECT_DIR", Sys.getenv("QM_ROOT", ""))
+if (!nzchar(PROJ)) PROJ <- "C:/Users/99922/OneDrive/Quant_Module_Moltbot"
+setwd(PROJ)
+source(file.path(PROJ, "02_Infrastructure/axiom/lcode_emit.R"))
+fr <- fromJSON(file.path(PROJ, "04_Research/factor_rotation/output/FR_002_result.json"),
+               simplifyVector = FALSE)
+
+lesson <- paste0(
+"FR_002 (폐지 풀 배분정책, factor-rotation Track2) — 등급 미달 모듈 85개(grade C/F; 명목 195에서 corr>=0.999 dedup)를 ",
+"무조건부 trailing 평균 top-10 EW 로 워크포워드 배분. 계약 실측: net_sharpe 0.786 · PORT_t(NW3) 1.242 · calmar 0.398 · ",
+"dsr 0.034 · oos_retention 0.046 → HARD 4/4 FAIL, grade C. edge_vs_ew +0.073 (폐지 풀 EW SR 0.713 대비). ",
+"★교훈 1 (분모 혼동 — 이 라운드 최대 수확): 폐지 풀 EW 대비 paired t_NW3 2.598~2.856 은 벤치마크 대비 PORT_t 1.242 와 ",
+"전혀 다른 양이다. '풀 내부 기준선을 이겼다'가 '시장 대비 자격'으로 전이되지 않는다 — 상대 기준선 t 를 졸업 지표로 인용 금지. ",
+"★교훈 2 (중복이 측정을 바꾼다): 명목 195 중 유효 독립 85(축소 55.5%, 최대 중복그룹 49개). 중복 포함 EW 는 한 전략이 ",
+"비중 25.7% 를 차지해 총계 알파를 부풀렸고, dedup 후 풀 active 는 월 +0.021%(t 0.043)로 사실상 0. ",
+"★교훈 3 (국면조건부의 정체 = beta): 상태-조건부 모듈 순위와 모듈 beta 의 spearman = DOWN -0.9751 / SURGE +0.9851 ",
+"(rank R^2 0.951/0.970), beta 잔차화 시 split-half 지속성 -0.401/-0.716 로 음수 붕괴. 국면 라벨 자체도 무판별 ",
+"(P(DOWN|DOWN_t-1)=0.133 vs base rate 0.122; PIT 지연 라벨 스위칭의 전지식 상한조차 t=+1.76). ",
+"⇒ 이 축은 멤버십(FR Track2)이 아니라 노출 스케일 소관. ",
+"★교훈 4 (직교성 프레이밍 철회): PC1-잔차 직교 선택은 무조건부 선택에 열등 — 직접 대결 paired t 전 K 음수(-1.98~-3.14). ",
+"잔차 알파 자체는 실재(16/85, 블록 부트스트랩 귀무 max 15 < 실측 16)하나 선택 규칙으로서는 단순 성과 선택보다 못하다. ",
+"★교훈 5 (MDD 는 선택으로 안 잡힌다): 유의한 개선 필요 ΔMDD 4.49%p > 직접 측정 IS→OOS 전이 2.90%p. ",
+"달성가능 min MDD 가 독립 탐색 5회에서 range 5.1%p 로 흔들려 탐색 산포가 필요 효과를 초과 = 바가 진짜 개선과 탐색 운을 구별 못함. ",
+"저베타 선택은 MDD 37.0% 로 낮추나 CAGR 7.10% 로 붕괴해 calmar 0.192 (base 0.258 미만). ",
+"★교훈 6 (감쇠): IS active SR 0.864 → OOS 0.039 (oos_retention 0.046). 선별 우위가 최근 구간에서 소멸. ",
+"★교훈 7 (회수율): PIT 워크포워드가 ex-post 상한의 27~33% 만 회수. 손실 67~73% 는 선택 잡음이며 비용이 아니다 ",
+"(K=30 회전 33% x 15bps = 연 0.05%). ",
+"next_probe: (1) 축소추정(경험적 베이즈/James-Stein)으로 선택 잡음 축소 — 회수율이 병목이므로 예측기가 아니라 ",
+"추정 분산이 표적 (2) 국면 라벨을 사전 관측 가능 지표로 교체 시 판별력이 base rate 를 넘는지 — 상태-조건부 lane 재개의 단일 관문 ",
+"(3) beta 축이 노출 스케일 층에서 분리 처리되면 수익/낙폭 맞교환이 풀리는지.")
+
+r <- tryCatch(
+  emit_fr_lcode(
+    strategy_id = "FR_002", grade = fr$grade, lesson_text = lesson,
+    track = "factor_rotation", metric_type = fr$metric_type,
+    construction_type = "composite", selection_type = "sweep",
+    family = "module_allocation_scrap_pool",
+    oos_retention = fr$oos_retention, oos_months = fr$n_months,
+    portfolio_alpha_t = fr$port_t,
+    mechanism_hypothesis = paste0(
+      "등급 미달 모듈 풀에도 횡단면 성과 지속성이 남아 있어 무조건부 trailing 선별이 풀 EW 를 이긴다는 가설. ",
+      "풀 내부 기준선 대비로는 성립(paired t_NW3 2.598~2.856)하나 벤치마크 대비 PORT_t 1.242 로 전이되지 않는다."),
+    falsification_attempts = paste0(
+      "(1) 무작위 선별 대조 median t -0.05~+0.64 (2) 잔차-직교 선택 직접 대결 전 K 열세 ",
+      "(3) 블록 부트스트랩 귀무(b=12/24) (4) beta 잔차화 (5) t-1 지연 라벨 PIT 판본 ",
+      "(6) 중복 제거 전후 재측정 (7) 음성 대조 설계 오류 자가 검거 후 재검정"),
+    tags = c("factor_rotation", "allocation", "scrap_pool", "dedup",
+             "regime_label_null", "beta_axis", "denominator_confusion"),
+    metrics = list(net_sharpe = fr$net_sharpe, port_t = fr$port_t,
+                   calmar = fr$essence$calmar, dsr = fr$dsr,
+                   oos_retention = fr$oos_retention, n_modules = fr$n_modules,
+                   n_trials_cumulative = fr$n_trials_cumulative,
+                   edge_vs_ew = 0.073, hard_gates_passed = 0, hard_gates_total = 4)),
+  error = function(e) { cat("[err]", conditionMessage(e), "\n"); NULL })
+cat("[fr002 lcode]", if (is.null(r)) "FAIL" else "OK", "\n")
+if (!is.null(r)) print(utils::head(unlist(r), 10))

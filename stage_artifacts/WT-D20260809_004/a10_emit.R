@@ -72,14 +72,13 @@ pkg <- list(
 
   ## ── ⑤ AST 층 (alpha-research 소관) ──
   factors = list(
-    list(factor_id = "F1_growth_consensus_composite",
-         role = "core_signal",
-         ast = list(op = "DIV_GUARD", args = list(
-           list(op = "ADD", args = list(list(leaf = "C01_SUE"),
-                                        list(leaf = "C02_EPS_Chg_1m"),
-                                        list(leaf = "M26_Revenue_Mom"))), 3)),
-         note = "리프는 load_month_factors 의 Z_Score_Aligned (C13 방향정렬·C15 관문 경유). 동일가중 고정, 스윕 없음.",
+    list(factor_id = "C01_SUE", role = "core_signal", ast = list(leaf = "C01_SUE"),
+         note = "load_month_factors 의 Z_Score_Aligned (C13 방향정렬·C15 관문). 동일가중 결합, 스윕 없음.",
          restatement_exposure = 0),
+    list(factor_id = "C02_EPS_Chg_1m", role = "core_signal", ast = list(leaf = "C02_EPS_Chg_1m"),
+         note = "동일", restatement_exposure = 0),
+    list(factor_id = "M26_Revenue_Mom", role = "core_signal", ast = list(leaf = "M26_Revenue_Mom"),
+         note = "동일", restatement_exposure = 0),
     list(factor_id = "F2_inflation_compass_index",
          role = "conditioner_market_level",
          ast = list(leaf = "SPECIAL_OP",
@@ -101,12 +100,14 @@ pkg <- list(
            "★escape 사유: 𝒪 에 TS_BETA 는 있으나 **섹터 그룹 EW 집계**(횡단면 그룹 평균)가 없다."),
          restatement_exposure = 0)
   ),
-  combination_rule = "model_internal",
+  combination_rule = "z_score_aligned_equal_weight",
   combination_rule_detail = paste0(
-    "α̂(종목) = F1 (Z_Score_Aligned 3종 동일가중 평균). 조립층(포트폴리오 구성 규칙, alpha 산출 밖): ",
-    "w_s ∝ base_s·exp(λ·β̃_s,t·infl_t) → n_s = largest-remainder(25·w_s) → 섹터 내 F1 상위 n_s. ",
-    "enum 5종 중 어느 것도 '섹터 정원 + 섹터 내 상위'를 표현하지 못해 model_internal 로 선언한다 ",
-    "(z_score_aligned_* 는 종목-레벨 선형 결합 전제)."),
+    "α̂(종목) = mean(Z_Score_Aligned: C01_SUE, C02_EPS_Chg_1m, M26_Revenue_Mom) — 동일가중 고정, 스윕 없음. ",
+    "★조립층은 alpha 산출 밖이다: 본 라운드가 측정한 포트폴리오 구성 규칙 ",
+    "w_s ∝ base_s·exp(λ·β̃_s,t·infl_t) → n_s = largest-remainder(25·w_s) → 섹터 내 α̂ 상위 n_s 는 ",
+    "combination_rule enum 5종 어디에도 없다(전부 종목-레벨 결합 전제). 그 층은 F3 귀속 판정에서 ",
+    "**알파 기여 미확립**으로 나왔으므로 α̂ 정의에 포함하지 않고 factors[] 의 conditioner 역할과 ",
+    "alpha_validation.json arms 절에 실측으로만 남긴다."),
   verdict = "designed",
 
   self_pit_check = list(
@@ -203,7 +204,8 @@ pkg <- list(
     "[컨센서스 same-day] 3종 전부 lag_rule 'Date <= sig_d'. offset 스캔 t0/t1 = 2.62 (13.264 vs 5.054) — 동시성 상관이 실재하므로 이 계열을 쓰는 후속 라운드는 반드시 forward 정렬을 실증할 것.",
     "[C01_SUE 중복] registry dedup 상 C01_SUE = DUPC-005 redundant(canonical C05_ESCR, cor 0.990). 3종 pairwise Spearman 은 낮으나(C01~C02 0.074·C01~M26 0.058·C02~M26 0.178) 동일 클러스터 canonical 로의 교체가 next_probe 대상.",
     "[유동성 근사] 본 라운드는 20거래일 평균 mean(Close*Vol) 을 adv 로 썼다(repo 표준 canonical 경로의 단일일 Vol0*Close0 근사보다 엄격). 두 정의의 차이는 미측정 — 비교 인용 시 정의 라벨 확인 필요.",
-    "[대안 보관 — 승계] 종목-레벨 β_i 직접 랭킹 / 오버레이 소비면 / KR_CPI 단독 단순판 (alpha_hypothesis.json challenge_flags 승계)"
+    "[대안 보관 — 승계] 종목-레벨 β_i 직접 랭킹 / 오버레이 소비면 / KR_CPI 단독 단순판 (alpha_hypothesis.json challenge_flags 승계)",
+    "[★인프라 결함 발견 — 본 패키지 결함 아님] schema.json ast_node 와 02_Infrastructure/ast/ast_verify.py 의 리프·연산자 방언이 갈라져 있다. ①리프: schema 는 {\"leaf\":\"<factor_id>\"} 를 정본으로 두는데(system prompt 예시·기존 v1.1 패키지 전부 이 형태) ast_verify 는 leaf 값을 *종류*(FIELD/REGISTRY/...)로 읽어 '알 수 없는 리프 종류'로 반려한다. ②연산자: schema enum 의 DIV_GUARD/CS_ZSCORE/CS_WINSORIZE/CS_NEUTRALIZE/CS_DEMEAN/TS_DELTA 가 ast_verify 의 DIV/ZSCORE/WINSORIZE/NEUTRALIZE/DEMEAN/DELTA 와 이름이 다르다. 실증: 기존 WT-D20260802_003 도 동일하게 FAIL_CONTRACT(leaf_count 1 에서 순회 중단). ALB-005/006 과 같은 계약 표면 분열 계통이며 ast_spec_gate 가 FAIL_CONTRACT 를 non-block 으로 둔 덕에 드러나지 않고 있었다. 본 패키지는 저장소 정본 방언(기존 패키지와 동일)을 따랐다."
   )
 )
 
