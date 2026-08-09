@@ -1,0 +1,75 @@
+{
+  "schema": "distill_manifest_v1",
+  "week_of": "2026-W32",
+  "distilled_at": "2026-08-09",
+  "owner": "session_main",
+  "digest_path": "04_Research/01_reports/weekly/weekly_digest_20260809.md",
+  "scope_note": "artifact-storage.md §2 루트 고정(인가 14항목) 위반 잔재만 표적. §4 절대보존 존(05_Production·01_Literature·stage_artifacts·qepm/{memory,registry,mailbox}·06_Registry·outputs·04_Research/strategies 등)은 대상에서 제외했다.",
+  "root_items_before": 25,
+  "root_items_after": 20,
+  "deleted": [
+    {
+      "path": "=17",
+      "bytes": 0,
+      "reason": "쉘 리다이렉션 사고 산물(`>=17` 형태)로 생성된 0바이트 파일. 크기가 0이므로 지식 손실이 구조적으로 불가능.",
+      "ref_check": "0건 — 코드/설정에 파일명 참조 없음. 원장 JSON의 '=17' 문자열 매치는 본문 내 부분문자열(예: n=17)이지 경로 참조가 아님을 확인."
+    },
+    {
+      "path": "1+)",
+      "bytes": 2104,
+      "reason": "close_round() 콘솔 출력이 리다이렉션 사고로 파일화된 것(WT-D20260802_008_COVERAGE_CONDITIONING 라운드 종료문). 중복 사본이며 고유 지식 없음.",
+      "ref_check": "0건. ★지식 보존 확인: 동일 라운드가 .cache/round_closures.jsonl(2건) + 06_Registry/hypothesis_index.json + 06_Registry/alpha_frontier_queue.json + stage_artifacts/WT_D20260802_008/ 에 canonical 로 보존됨."
+    },
+    {
+      "path": "Rplots.pdf",
+      "bytes": 5793,
+      "reason": "R 기본 플롯 출력(디바이스 미지정 시 자동 생성). 재생성 가능한 부산물.",
+      "ref_check": "참조 1건이나 기능 참조 아님 — 02_Infrastructure/ops/cleanup.sh:48-50 이 프로젝트 전역 Rplots.pdf 를 find 후 삭제 대상으로 지정(01_Literature/05_Production 제외). 즉 저장소 자체가 삭제 대상으로 규정한 산출물."
+    },
+    {
+      "path": "tmp_check.R",
+      "bytes": 135,
+      "reason": "config.R 로드 후 PROJECT_ROOT/DATA_DIR 를 echo 하는 4줄 일회성 진단 스크립트. tmp_cfg_check.R 와 따옴표만 다른 동일 내용(중복).",
+      "ref_check": "0건 — 어떤 실행코드·스케줄러도 호출하지 않음. hygiene_report.json 등장은 '무허가 루트 항목' 위반 목록 그 자체이지 기능 참조 아님."
+    },
+    {
+      "path": "tmp_cfg_check.R",
+      "bytes": 135,
+      "reason": "위 tmp_check.R 와 동일 내용(작은따옴표판). 중복 스크래치.",
+      "ref_check": "0건 (동일 근거)."
+    }
+  ],
+  "preserved_deferred": [
+    {
+      "path": "run_as_queue_20260806.R",
+      "bytes": 21800,
+      "reason": "alpha-search 큐 소비자 실행기(2026-08-06, MAX_ALPHA=2). 루트 위치는 §2 위반이나 **실제 리서치 실행 코드**이며 삭제 시 해당 런 재현 능력이 사라진다. 판단이 갈리면 보존(SKILL §④). 조치 = 삭제가 아니라 이동(02_Infrastructure/ops/ 또는 04_Research/02_experiments/) — 이동은 참조 경로 영향이 있어 별도 판단 필요."
+    },
+    {
+      "path": "run_fx_intensity.R",
+      "bytes": 1113,
+      "reason": "FX_Intensity 리서치 실행기(FQ-149 계열, L-AS-20260804_081020/20260806_203146 과 연결). 위 동일 사유로 보존."
+    },
+    {
+      "path": "run_spec_lowfreq_mass.R",
+      "bytes": 649,
+      "reason": "spectral low-frequency mass 실행기(07-27 라운드 계열). 위 동일 사유로 보존."
+    },
+    {
+      "path": "run_within_sector_reversal.R",
+      "bytes": 686,
+      "reason": "섹터內 리버설 실행기(mtime 2026-08-09 = 당일 활성 가능성). 위 동일 사유로 보존."
+    },
+    {
+      "path": "downloads/",
+      "reason": "7개 항목 보유 디렉토리(mtime 2026-08-08). 내용 미감사 — 사용자 자료 가능성. 무아카이브 삭제 대상 아님."
+    },
+    {
+      "path": "printed/",
+      "reason": "1개 항목 보유 디렉토리(mtime 2026-08-02). 위 동일 사유로 보존."
+    }
+  ],
+  "not_deleted_note": "무허가 루트 11건 중 5건만 삭제. 나머지 6건은 §④ '판단이 갈리면 보존' 적용 — 이들은 삭제가 아니라 **재배치** 대상이며, 이동은 참조 경로·실행기 호출부에 영향을 주므로 도훈 confirm 후 별도 라운드에서 처리 권장.",
+  "sweep_deleted_n": 3,
+  "sweep_deleted_note": "기계 스윕(2026-08-08 09:00)이 별도로 3건 삭제 — .cache/_e2e_run.log, .cache/_e2e_snapshot.txt(7일+ 스크래치), OS temp qvest_hook_router_dispatch.stderr.log(30일+). 본 manifest 의 5건과 중복 없음."
+}

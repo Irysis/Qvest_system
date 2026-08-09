@@ -3741,10 +3741,10 @@
    "wall_check": "★P0 사전 실측(2026-08-09, stage_artifacts/scrap_ensemble_20260809/)이 이미 두 벽을 세웠다 — 라운드 설계는 이 위에서만 유효: (1) SCRAP active PC1 share 0.805 · eff-N 1.5 → 195 모듈이 사실상 1.5 개 베팅(교차 선택 헤드룸 희박). (2) 완전예지 월별 ELITE<->SCRAP 스위치 SR 0.721 / MDD 40.0% 가 **정적 ELITE(SR 1.126 / MDD 24.6%)보다 나쁘다** → 롱온리 모듈 로테이션은 원리적으로 MDD 를 못 잡는다(β 공유, Σw=1 로 현금 회피 불가). 따라서 'ML 로 타이밍하면 MDD 가 잡힌다'는 소박한 형태는 착수 전 기각. 남은 검증 축 = 등급 지속성 · PC1 잔차 직교. 다중 arm 비교는 sweep → DSR HARD 적용. 종목수 max 25 는 NAV 합성에서 자동 충족되지 않음(P1 확인 항목).",
    "data_gate": "없음 — module_performance.json 210 모듈 sim_result NAV 전량 로드 확인(실패 0건, 294개월 패널).",
    "owner": "CLAIMED Q-Lead session ba4a1c30 (2026-08-09) — 도훈 직접 지시 '폐지줍기 + ML 시점 선택 + MDD 제어'",
-   "status": "measured_uncond_axis_survives_frontier_open_20260809",
+   "status": "round_complete_fr002_registered_consumption_swept_20260809",
    "boundary_note_20260809": "★세션 간 소관 경계 (도훈 지시 '다른 세션 연구와 충돌 금지'): [vs WT-D20260809_002 tail_targeted_regime_overlay] 그쪽 = 현행 book 의 **노출 스케일 축소**(선별 불변, alpha_inheritance_cor 1.0). 본 라운드 = **모듈 멤버십/배합**(무엇을 켤지). 공유 축은 국면 라벨뿐 — 본 라운드는 라벨을 ML 피처 1종으로만 쓰고 '라벨 자격' 판정은 WT-002 소관으로 남긴다. 노출 스케일 축(exposure timing)은 본 라운드가 건드리지 않는다. [vs FQ-167 / FQ-168] 그쪽 = within_sector_reversal **단일 재료** 1건의 vol-국면 게이팅/오버레이 전용. 본 라운드 = **풀 레벨(195 모듈) 일반화**. 본 라운드 P0 결과(롱온리 모듈 로테이션의 MDD 한계)는 FQ-167 전제에 직접 정보를 주므로 그쪽 착수 세션은 본 라운드 산출을 먼저 읽을 것. 단 FQ-167/168 자체는 미배정으로 남긴다(본 세션 점유 안 함). [vs FQ-165 / FQ-171 / FQ-173, session cee0bdd0] 재료·층 모두 상이(M26 book-marginal / 분위 형태 census / 섹터 인플레 틸트) — 겹침 없음. [쓰기 격리] 산출물은 stage_artifacts/scrap_ensemble_20260809/ 전용. 공유 원장은 frontier_queue_io.R 경유만. module_performance.json / hypothesis_index.json 직접 쓰기 안 함.",
    "precheck_20260809": "P0 실측(metric_type=diagnostic_precheck, 253개월 200503..202603, 벤치 정합): SCRAP EW CAGR 11.46% SR 0.599 MDD 41.6% Calmar 0.276 active +0.140%/m t(plain) +0.620 / ELITE EW CAGR 17.47% SR 1.126 MDD 24.6% Calmar 0.709 active +0.527%/m t +2.349 / BM CAGR 9.36% SR 0.455 MDD 47.1%. 조건부 프로파일: ELITE 가 4개 시장상태 전부에서 SCRAP 지배 — TAIL(bm<=-10%, n=8) paired t +3.72 · DOWN(n=97) +4.17 · UP(n=100) +0.70(비유의) · SURGE(n=48) -1.37(비유의). corr(scrap,elite) active 0.766 = 상보재 아닌 열화 복제. ★단 등급이 전기간 성과로 부여됐다면 이 지배는 동어반복 — 지속성 검정(p0c)이 결정 관문. ⚠ p0b 의 'lossaverse' 오라클은 ifelse(v<0,3v,v) 순서보존 no-op 버그로 수익 오라클과 bit-동일 → 무효, p0c [B] 가 대체.",
-   "next_action": "[NP-1 최우선] 축소추정 라운드 — 무조건부 성과 추정치에 경험적 베이즈 축소 적용 후 t가 2.94를 넘는지. 사전등록: 축소 강도는 IS-only 결정, K 격자 고정, 전량 보고. [NP-2] 선택 잡음 67~73% 손실의 분해 — 추정 오차(창 길이/축소로 개선 가능) vs 알파 감쇠(개선 불가). PC1 추정 창 연장판과 축소판의 회수율 비교로 분리. [NP-3] 국면 라벨 교체 — 현 라벨은 bm 실현치 기반이라 무판별. **사전 관측 가능** 지표로 교체 시 P(DOWN|DOWN_t-1)이 base rate 0.122를 유의하게 넘는지가 상태-조건부 lane 재개의 단일 관문. [NP-4 이관] beta 실측 3건(beta-상태 spearman -0.975/+0.985 · beta 잔차 지속성 -0.401/-0.716 · 라벨 전이표)을 WT-D20260809_002 노출 스케일 축으로 전달 — 그쪽은 라벨 없이 정적 beta로 쓸 수 있어 본 라운드의 PIT 병목을 겪지 않는다.",
+   "next_action": "[NP-1] FR 풀 위생 규칙 승격 검토 — 지속-패자 배제(하위 10~20)를 run_wf_ensemble/RCMA 전처리로. 사전등록 후 FR_001 풀 확장판에서 A/B (basis = 앙상블 상대, 자본 주장 아님). [NP-2] beta 지속성(rho 0.564)의 β예산 소비 — 노출 스케일 층(WT-D20260809_002)에 이관된 beta 실측과 결합, 위험모델 Σ 추정 입력으로 모듈-레벨 beta prior 공급 검토. [NP-3] 재료 교체 — 비-수익 원천(DART insider 등) 모듈이 풀 유입 시 천장 재산정(v8.3 경로 ① 정합). [종전 NP 처분] 축소추정/ML 선별 정교화 = 천장 2.04 에 막혀 철회. 국면 라벨 교체 축은 유지(라벨이 유일 병목).",
    "source_refs": [
     "mandate: 도훈 2026-08-09 '폐지줍기 — F등급 전략 조합 앙상블' + '머신러닝으로 어느 시점에 어떤 전략' + 'MDD 컨트롤이 제일 문제'",
     "parent: FQ-058 next_probe P1 (selection-측 crash 통제) · FQ-059 (soft-membership ML 앙상블)",
@@ -3756,7 +3756,9 @@
    "ml_disposition_20260809": "ML(A4 arm)은 **실행되지 않았다** — 검정력 관문 ABORT로 arm 진입 전 중단. 피처 패널은 빌드 완료(ml_feature_panel.rds, dedup 85 x 254개월, 결측 0). ★안 돌린 것이 옳다: (a) 학습 대상 축의 정체가 beta(R^2 0.95~0.97)라 ML은 beta를 재학습할 뿐 (b) 입력 라벨이 무판별(P(DOWN|DOWN)=0.133 vs 0.122)이라 정보가 없는 입력에서 뽑을 모델이 없음 (c) ML은 trial을 늘려 DSR/Bonferroni 바를 **올린다** — 이미 2.94를 못 넘는데 HPO 스윕이면 3.5+. 재조준: 측정된 병목은 예측이 아니라 **추정 분산**(선택 잡음이 상한의 67~73%). 따라서 다음 라운드의 ML 역할 = 예측기가 아니라 **축소추정기** — ①경험적 베이즈/James-Stein 축소 ②선택 규칙 앙상블(창 12/24/36/60m x 통계 평균/IR/중앙값 합의 투표) ③소프트 멤버십(FQ-059 축). 셋 다 자유도를 거의 안 늘려 다중검정 바를 올리지 않으면서 병목을 직접 겨냥한다. 무조건부 축이 이미 t 2.60~2.86이므로 분산 20% 축소로 문턱 도달 가능.",
    "revival_signal": "① 노출 스케일 축(WT-D20260809_002)이 beta를 별도 층에서 처리하면, 지금 묶여 있는 수익/낙폭 맞교환이 풀려 멤버십 축의 Calmar 상한이 재산정된다 — 그때 무조건부 선택 위에 재도전. ② 사전 관측 가능한 국면 라벨이 base rate 대비 판별력을 확보하면 상태-조건부 lane 재개(NP-3). ③ 폐지 풀에 비-수익 원천 모듈이 유입돼 유효 독립 수(현 85, eff-N 2.33)가 늘면 선택 잡음 바닥이 내려간다.",
    "self_correction_20260809": "본 라운드에서 Q-Lead 자신이 만든 측정 결함 4건(전부 실측으로 검거·수리): ①음성 대조 설계 오류 — 시장조정 회귀 lm(y~bm)의 귀무로 y 행만 셔플해 beta가 0.701→-0.080으로 파괴되고 절편이 시장수익을 흡수, 귀무 t>2가 85개 중 80.9개(귀무>실측=검사기 사망). 올바른 귀무 y=beta*bm+shuffle(resid)로 교체. ②중심화 항등식 — 열-중심화한 뒤 절편을 '잔차 알파'라 부름. 중심화하면 절편이 **항상 정확히 0**(측정 아닌 산술). 실측 증거 = 195개 전부 alpha +0.000 t +0.00, 기대오탐 4.9인데 0. ③순서보존 no-op 오라클 — ifelse(v<0,3v,v)는 랭킹 불변이라 '손실회피 오라클'이 수익 오라클과 bit-동일. ④대조군 누락 — 워크포워드 잔차 선택을 base/무작위와만 비교하고 **무조건부 선택과 비교 안 함**. 그 대조가 결론을 뒤집음(잔차 열등 확정). 지적 출처 = power-bar 서브에이전트. 부수: p0/p0b의 'PC1 share 0.805 · eff-N 1.5'는 complete-case 20개월 산물로 무효 → 정정 0.643 / 2.33. base parity 불일치(CAGR 11.04 vs 11.64)는 방법론 차이 아님 — Return.portfolio에 가중을 xts로 주면 첫 기간을 떨어뜨려 2005-02(EW +13.21%)가 빠지는 한 달 정렬 문제(BASE_PARITY_RESOLVED.md).",
-   "result_ref": "stage_artifacts/scrap_ensemble_20260809/ : p0_inventory · p0d_fast · p0e_orthogonality · p0f_dupcheck · p0g_recompute · p0h_base_parity(+BASE_PARITY_RESOLVED.md) · p0i_pc1_beta · p0j_null_fixed · p0k_blocknull · p0l_wf_residual · p0m_uncond_control · prereg_power_bars · ml_feature_panel.rds · charts/"
+   "result_ref": "stage_artifacts/scrap_ensemble_20260809/ : p0_inventory · p0d_fast · p0e_orthogonality · p0f_dupcheck · p0g_recompute · p0h_base_parity(+BASE_PARITY_RESOLVED.md) · p0i_pc1_beta · p0j_null_fixed · p0k_blocknull · p0l_wf_residual · p0m_uncond_control · prereg_power_bars · ml_feature_panel.rds · charts/",
+   "ceiling_20260809": "★절대 PORT_t 천장 실측(p0n): 폐지 풀 완전예지 top-K 최대 +2.036(K=5) · 무작위탐색 1500회 +1.647 · 개별 최강 +2.226 — 85개 중 문턱 2.95 통과 0개. 대조 우량 풀은 동일 방법으로 완전예지 +3.545 · 개별 +3.923(13개 중 1개 통과) ⇒ 천장은 방법이 아니라 재료의 성질. FR_002 PIT 실측 1.242 = 천장의 61% (선별 규칙은 작동, 재료가 한계). 축소추정/ML 선별 정교화 방향은 천장에 막혀 철회 — 재료 교체(비-수익 원천 유입)만이 천장을 재산정한다.",
+   "consumption_sweep_20260809": "소비면 7종 순회 완료(p2_consumption_sweep + p2b_filter, 헌법 4호 의무): ①랭킹 NEGATIVE(천장 2.04<2.95) ②★유니버스 필터 양성 후보 — 워크포워드 하위 배제 vs EW85: 하위10 t_NW3 +3.206(+0.062%/m)·하위20 +3.049(+0.103%/m)·하위30 +2.682(+0.132%/m). MAX5 전례(랭킹 사망·필터 생존)의 모듈-레벨 재현. 기전 = 지속되는 것은 승자가 아니라 패자(IS 최악 4분위만 OOS 최악 유지 -0.79 vs -0.60~-0.67). ⚠basis 명시: 풀 EW 대비 상대 t 이지 자본 자격 아님 — 정당 소비처 = FR 풀 위생(RCMA admission 전 지속-패자 배제 전처리). ③오버레이 이관(WT-D20260809_002, beta 실측 3건) ④★위험모델 POSITIVE — trailing-36m→forward-12m beta spearman rho 0.564(t 15.4, frac>0 0.968) = β예산/위험모델 신뢰 입력 ⑤monitoring 무판별(풀 산포 lift 0.95x — 기저 이하) ⑥라벨 처분 완료(FR_002 screen-tier) ⑦타 모드 이식 없음(RAMP return-derived 천장 공유·QEPM 종목-레벨 전용)."
   },
   {
    "id": "FQ-175",
@@ -3849,29 +3851,18 @@
    "ev_rationale": "저검정력 패턴이 하루 3회 재현된 축([[project-underpowered-nulls-regime-conditional-20260808]] · [[project-conditional-splits-destroy-power-20260808]])의 **기계적 예방책**. 폐기 판정 자체가 의사결정 가치.",
    "wall_check": "메타-절차 라운드. 측정 없음 → 자본 주장 없음. ★결과가 '닫힘' 이어도 그것은 이 측정 프레임 한정이며 방향의 영구 판결이 아니다(INV-7).",
    "data_gate": "없음 (stage_artifacts/FQ176/panel_full.rds 재사용)",
-   "owner": "UNCLAIMED — FQ-176 이 발행. 착수 세션은 'CLAIMED <session> <ts>' 로 갱신 후 시작(배정 규약).",
-   "status": "frontier_open",
-   "next_action": "①문턱 그리드 × n_episodes × 필요효과 표 산출 ②RAMP·factor-rotation 사전등록 절차에 사전 게이트 편입 ③닫힘 판정 시 부활 조건 명시",
+   "owner": "COMPLETE — Q-Lead session 2026-08-09",
+   "status": "lane_config_closed_20260809",
+   "next_action": "★판정 LANE_CONFIG_CLOSED. 신호 7종 × (연속 + 이분 5문턱) = **42셀 전부 미달**, max ratio **0.833**(ddvol/연속), ratio>=1.0 셀 **0개**. ★착수 시 프레이밍 갱신: FQ-178 이 병목을 검정력→**효과 크기**로 바꿨으므로 질문을 '어느 구성에서도 효과가 자기 MDE 를 넘지 못하나' 로 재설정. ★트레이드오프 실측: 에피소드↔효과 상관 −0.147(희석 미미) · 에피소드↔ratio **+0.378(양수)** ⇒ 문턱을 낮추는 쪽이 순효과 유리 — 내 사전 우려는 부분 반증. 그래도 최대 0.833. ★연속화는 보편 우위 아님 — 7신호 중 3종(dd12·dd24·ddvol)만 우세. FQ-178 의 '연속화가 답' 은 dd12 한정 관측의 일반화였다. ⇒ **이 레인 반복 라운드 정지**. 단 ①방향이 틀렸다는 뜻 아님(대다수 셀이 사전등록 부호와 일치) ②도훈 원 가설(배분·총노출) 판정 아님(전부 선별 축) ③타 국면축·타 판정량 미측정. 부활 = 효과 20%↑ 또는 유효표본 44%↑ / 표본 확장 / 판정량을 PORT_t 로 교체 / ddvol-연속을 첫 사전등록(★sweep max 이므로 지금 승격은 사후선택).",
    "source_refs": [
     "stage_artifacts/FQ176/validation.json",
     "workflow wf_e36d0ab4-38a"
-   ]
+   ],
+   "result_ref": "stage_artifacts/FQ180/validation.json"
   },
   {
    "id": "FQ-181",
    "lane": "measurement_trust_infra",
    "title": "유동성 자 이원화 — 계약 함수가 헌법 정의(20일 평균)와 달리 월말 1일치 거래대금을 쓴다",
    "hypothesis": "★확정 결함(가설 아님). `02_Infrastructure/ramp/factor_validation.R:46-47` 의 build_monthly_forward_returns() 가 주석('20d ADV at t-1')과 달리 `adv = Vol0 * Close0`(월말 당일 1일치)로 계산한다 — 주석 자신이 '(사용은 단순 Vol0*Close0)' 라고 자백. 헌법(CLAUDE.md·pit.md) 정의 = **20일 평균 거래대금 >= 2e8 (LIQ_THRESHOLD)**. 두 자의 상관 0.929 · 판정 불일치 2.61%. 파급 실측(verification_followup): WT-001 판정 유니버스(eligible_set) 자체가 20일-자로 395행(0.478%) 미달이고, **실제 선별된 top-25 중 224~225 종-월(3.04%)이 2e8 미만** (92~96개월 분포, 미달 adv20 중앙 1.14e8, 최다 월 2003-03 16종 — 초기 표본 편중). 이 계약 함수는 canonical 측정 다수가 경유하므로 결함이 WT-001 에 국한되지 않는다.",
-   "ev_rationale": "측정 신뢰 범주(CLAUDE.md 즉시수리 기준 ②). 헌법이 자를 이미 정의하므로 '어느 자인가'는 결정 사항이 아니다 — 구현이 헌법을 따르면 된다. 과거 판정 재실행 여부만 도훈 판단 대상.",
-   "wall_check": "자본 주장 아님. ★최신월 alpha_vector 류 현행 선별은 두 검사 모두 청정(min 5.50e9) — 위반은 초기 표본(2003년대) 편중. 완화 제안 아님(자를 헌법 정의로 조이는 방향).",
-   "data_gate": "없음",
-   "status": "in_flight",
-   "owner": "Q-Lead session cee0bdd0 (2026-08-09) — 서브에이전트 배분",
-   "in_flight_since": "2026-08-09",
-   "next_action": "①factor_validation.R 의 adv 를 20일 평균(frollmean(Vol*Close, 20) t-1 기준)으로 교정 + 주석 정합 ②위반 주입 테스트(1일치 판본 주입 시 검사 발화) + 양성 대조(교정판 자기일치) — 배터리 등재 ③하류 소비자 census: build_monthly_forward_returns 호출부 전수에서 liq 판정 경유 여부 확인 ④과거 판정 영향 정량(판정 불일치 2.61% 가 게이트 판정을 뒤집은 사례가 있는지 — 있으면 목록만, 재판정은 도훈) ⑤production 현행 북 보유 스팟체크(20일-자 기준) — 청정 예상이나 실측으로 확정",
-   "parent": "FQ-122 verification_followup_20260809 상신 (2026-08-09)",
-   "registered": "2026-08-09",
-   "registered_by": "Q-Lead session cee0bdd0"
-  }
- ]
-}
+   "ev_rationale": "측정 신뢰 범주(CLAUDE.md 즉시수

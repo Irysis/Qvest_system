@@ -136,6 +136,37 @@
       }
     },
     {
+      "method_id": "VolRateMatched",
+      "route": "regime",
+      "adapter_kind": "exposure",
+      "paper_id": "internal:np2-derived",
+      "paper_title": "발화율 제약형 변동성 오버레이 (chain step 3 — np2 실측에서 도출)",
+      "routed_on": "2026-08-09",
+      "selection_type": "chain",
+      "chain_step": 3,
+      "chain_parent": "HurstRateMatched",
+      "mechanism_diagnosis": "step 2 는 발화율을 30%로 맞춰도 ΔMDD -0.1746(악화) — 두 Hurst 규칙 모두 MDD 를 만드는 구간에서 0회 발화(GFC 0/9 · 2006 구속구간 0/6). 문제는 빈도가 아니라 정렬. np2 가 정렬된 축을 특정: 현 북의 구속 낙폭 2006-01~06(-22.7%)에서 국면 라벨 계열 0/6 vs 변동성 축 6/6, 구간 내 누적 -0.2266→-0.1456(+0.0810).",
+      "mechanism": "voltarget 의 결함은 신호가 아니라 대가다(전체 71% 발화 → ΔIR -0.51). step 2 의 발화율 제약 프레임을 vol 에 적용해 켜는 빈도만 묶는다. 신호는 그대로.",
+      "kr_mapping": "벤치 일별 252일 연율 실현변동성. 확장창 **상위** q_M 분위 이상이면 노출 0.70(고변동=위험 — Hurst 는 하위 분위였다, 부호 반대). q_M = 확장창 unified 방어라벨 실현율.",
+      "pit": "vol 창 Date < first-day-of-holding-month(엄격) · 분위·목표율 직전 홀딩월까지만(확장창 C1). used_cutoff 월별 신고. ★np2 진단의 포트-vol 과 다른 양 — 교차 인용 금지.",
+      "prereg": "stage_artifacts/paper_recharge/prereg_vol_rate_matched_20260809.json",
+      "adapter": "02_Infrastructure/methods/adapters/vol_rate_matched_overlay.R",
+      "entrypoint": "exposure_schedule",
+      "verdict": "implemented",
+      "blocker": null,
+      "unblock_requirement": null,
+      "similar_to": ["HurstRateMatched"],
+      "similar_to_note": "프레임(발화율 제약)은 같고 **신호가 다르다**(vol vs Hurst). step 2 가 ΔMDD 악화였으므로 프레임이 무조건 개선을 만들지 않는다는 것은 이미 확인됨 — 개선이 나오면 프레임이 아니라 신호 덕이다(사전등록 양성대조).",
+      "added": "2026-08-09",
+      "screen_axes": {
+        "shrinkage_builtin": "yes",
+        "statistic_order": "<=2nd",
+        "screen_priority": "⭐",
+        "rationale": "확장창 분위가 축소 역할. 실현변동성은 2차 모멘트.",
+        "assigned": "2026-08-09"
+      }
+    },
+    {
       "method_id": "HurstRateMatched",
       "route": "regime",
       "adapter_kind": "exposure",
