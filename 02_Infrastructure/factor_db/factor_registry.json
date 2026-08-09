@@ -7811,7 +7811,44 @@
         "report": "04_Research/01_reports/factor_emission_identity_audit_20260809.md",
         "window": "표본 6월 (200506/201006/201406/201806/202206/202606)"
       },
-      "consumption_rule": "선별/Ω 추정에서는 canonical 만 사용(drop_alias_factors()). 코드 조회·과거 산출물 참조는 계속 유효 — 삭제·리넘버 없음."
+      "consumption_rule": "선별/Ω 추정에서는 canonical 만 사용(drop_alias_factors()). 코드 조회·과거 산출물 참조는 계속 유효 — 삭제·리넘버 없음.",
+      "release_pending": {
+        "status": "condition_met_awaiting_rebuild",
+        "condition_text": ".cons_history() 가 분기 관측으로 축약되도록 수리되면 이 alias 선언은 **무효**다 — 재측정 후 재선언할 것. 수리 전까지만 유효.",
+        "condition_met": true,
+        "code_repaired_at": "2026-08-10",
+        "repaired_by": "FQ-218 — compute_consensus.R .cons_quarters() (창 단위: 관측 행 -> 분기 릴리스)",
+        "remeasured_on_repaired_code": {
+          "rho_before": 1.0,
+          "rho_after_mean": 0.5405,
+          "max_abs_diff_before": 0.0,
+          "max_abs_diff_after": 37837.5481,
+          "frac_eq_latest_before": 1.0,
+          "frac_eq_latest_after": 0.0,
+          "window_distinct_before": 1,
+          "window_distinct_after": 4,
+          "n_rows_before": 806,
+          "n_rows_after": 295,
+          "n_months": 8,
+          "verdict_on_repaired_code": "NOT_DUPLICATE",
+          "coverage_note": "행수 감소는 결손이 아니라 정직화다 — 상한 안에 분기 릴리스가 2개 미만인 종목(커버리지가 끊겨 값이 캐리포워드되던 종목)은 값을 만들지 않는다. 구 코드는 그들에게 C01 복제값을 주고 있었다."
+        },
+        "blocked_by": "factor_db 재빌드 303개월 (200106..202608, 월당 62.7초 실측 단가로 약 317분). 저장 parquet 가 갱신되기 전까지 C10/C13 의 저장값은 여전히 결함값이다.",
+        "unblock_action": "재빌드 완료 후: (1) 저장 parquet 에서 비트동일 해소를 재확인 (2) role -> independent, deprecated_for_selection -> false (3) C01_SUE.aliases 에서 C10_SUE_Persistence 제거 (4) 사유·직전 선언 보존",
+        "why_not_released_now": "선별(drop_alias_factors)은 코드가 아니라 **저장 parquet** 를 소비한다. 저장값이 아직 비트동일인 상태에서 alias 를 풀면 C01/C10(및 C04/C13)이 같은 풀에서 이중 투표한다 — 이 선언이 막으려던 바로 그 피해다. 2026-08-10 즉시 해제를 시도했을 때 test_emission_identity_axes(N1/N2)와 test_factor_dedup_consumption(new_5pairs_collapsed)이 이를 검거했다.",
+        "evidence": {
+          "measured_at": "2026-08-10",
+          "fq": "FQ-218",
+          "method": "git HEAD(수리 전) 판본과 작업트리(수리 후) 판본을 별도 env 에 source 해 같은 입력·같은 sig_date 8개월(2006/2010/2011/2014/2018/2019/2022/2024)로 실행 대조",
+          "window_definition": "연속-런(run) 붕괴 후 최신 N 분기 릴리스. 런 경계 = 값이 패널에 처음 나타난 날 = 가용일(실측: 값 변경 100%가 4/6/9/12월 첫 영업일, 월말 0%, 주말 0건 — 한국 분기 법정기한 이후). stale 소급 차단 상한 = n_take*130일, 최소 2 릴리스.",
+          "artifacts": [
+            "stage_artifacts/infra/cons_window_repair_20260810/p3_design_agg.csv",
+            "stage_artifacts/infra/cons_window_repair_20260810/p6_bound_validate.csv",
+            "stage_artifacts/infra/cons_window_repair_20260810/v1_pair_identity.csv"
+          ],
+          "test": "08_Tests/factor_db/test_cons_window_quarterly.R (15 PASS / 0 FAIL / 0 SKIP)"
+        }
+      }
     }
   },
   "C11_Earnings_Streak": {
@@ -7991,7 +8028,44 @@
         "report": "04_Research/01_reports/factor_emission_identity_audit_20260809.md",
         "window": "표본 6월 (200506/201006/201406/201806/202206/202606)"
       },
-      "consumption_rule": "선별/Ω 추정에서는 canonical 만 사용(drop_alias_factors()). 코드 조회·과거 산출물 참조는 계속 유효 — 삭제·리넘버 없음."
+      "consumption_rule": "선별/Ω 추정에서는 canonical 만 사용(drop_alias_factors()). 코드 조회·과거 산출물 참조는 계속 유효 — 삭제·리넘버 없음.",
+      "release_pending": {
+        "status": "condition_met_awaiting_rebuild",
+        "condition_text": ".cons_history() 창 수리 후 이 선언은 무효 — 재측정 후 재선언.",
+        "condition_met": true,
+        "code_repaired_at": "2026-08-10",
+        "repaired_by": "FQ-218 — compute_consensus.R .cons_quarters() (창 단위: 관측 행 -> 분기 릴리스)",
+        "remeasured_on_repaired_code": {
+          "rho_before": 1.0,
+          "rho_after_mean": 0.5701,
+          "max_abs_diff_before": 0.0,
+          "max_abs_diff_after": 1.7363,
+          "frac_eq_latest_before": 1.0,
+          "frac_eq_latest_after": 0.0,
+          "window_distinct_before": 1,
+          "window_distinct_after": 3,
+          "n_rows_before": 1230,
+          "n_rows_after": 416,
+          "n_months": 8,
+          "verdict_on_repaired_code": "NOT_DUPLICATE",
+          "naming_note": "이름의 '3m' 은 원 구현이 관측을 월간이라 가정한 데서 왔다. 원천 esbr 은 분기 릴리스이므로 수리 후 실제 창은 3분기(약 9개월)다. 이름 재사용 금지 규약상 개명하지 않는다 — 재빌드 시 definition 으로 명시할 사안."
+        },
+        "blocked_by": "factor_db 재빌드 303개월 (200106..202608, 월당 62.7초 실측 단가로 약 317분). 저장 parquet 가 갱신되기 전까지 C10/C13 의 저장값은 여전히 결함값이다.",
+        "unblock_action": "재빌드 완료 후: (1) 저장 parquet 에서 비트동일 해소를 재확인 (2) role -> independent, deprecated_for_selection -> false (3) C04_ESBR.aliases 에서 C13_Revision_Breadth_3m 제거 (4) 사유·직전 선언 보존",
+        "why_not_released_now": "선별(drop_alias_factors)은 코드가 아니라 **저장 parquet** 를 소비한다. 저장값이 아직 비트동일인 상태에서 alias 를 풀면 C01/C10(및 C04/C13)이 같은 풀에서 이중 투표한다 — 이 선언이 막으려던 바로 그 피해다. 2026-08-10 즉시 해제를 시도했을 때 test_emission_identity_axes(N1/N2)와 test_factor_dedup_consumption(new_5pairs_collapsed)이 이를 검거했다.",
+        "evidence": {
+          "measured_at": "2026-08-10",
+          "fq": "FQ-218",
+          "method": "git HEAD(수리 전) 판본과 작업트리(수리 후) 판본을 별도 env 에 source 해 같은 입력·같은 sig_date 8개월(2006/2010/2011/2014/2018/2019/2022/2024)로 실행 대조",
+          "window_definition": "연속-런(run) 붕괴 후 최신 N 분기 릴리스. 런 경계 = 값이 패널에 처음 나타난 날 = 가용일(실측: 값 변경 100%가 4/6/9/12월 첫 영업일, 월말 0%, 주말 0건 — 한국 분기 법정기한 이후). stale 소급 차단 상한 = n_take*130일, 최소 2 릴리스.",
+          "artifacts": [
+            "stage_artifacts/infra/cons_window_repair_20260810/p3_design_agg.csv",
+            "stage_artifacts/infra/cons_window_repair_20260810/p6_bound_validate.csv",
+            "stage_artifacts/infra/cons_window_repair_20260810/v1_pair_identity.csv"
+          ],
+          "test": "08_Tests/factor_db/test_cons_window_quarterly.R (15 PASS / 0 FAIL / 0 SKIP)"
+        }
+      }
     }
   },
   "C14_Revenue_Surprise": {
@@ -8080,6 +8154,39 @@
       "last_validated": {},
       "deprecation_reason": {},
       "mutation_parent": {}
+    },
+    "dedup": {
+      "release_pending": {
+        "status": "dead_emission_repaired_awaiting_rebuild",
+        "code_repaired_at": "2026-08-10",
+        "repaired_by": "FQ-218 (.cons_quarters)",
+        "prior_defect": "구 구현은 sue[1]-sue[2] 를 **연속 행**(같은 분기값 2벌)에서 취해 전 종목 0. 횡단면 sd 0 -> Z 전건 NA -> 소비면 도달 0행 (FQ-210 축3a, 50/50월 죽은 배출).",
+        "remeasured_on_repaired_code": {
+          "sd_before": 0.0,
+          "sd_after_mean": 426.91,
+          "frac_zero_before": 1.0,
+          "frac_zero_after": 0.0,
+          "n_distinct_before": 1,
+          "n_distinct_after_mean": 239,
+          "n_rows_before": 806,
+          "n_rows_after": 239,
+          "n_months": 8
+        },
+        "blocked_by": "factor_db 재빌드 303개월 (200106..202608, 월당 62.7초 실측 단가로 약 317분). 저장 parquet 가 갱신되기 전까지 C10/C13 의 저장값은 여전히 결함값이다.",
+        "unblock_action": "재빌드 후 저장 parquet 에서 sd>0 재확인 + definition 을 분기 창으로 명시",
+        "evidence": {
+          "measured_at": "2026-08-10",
+          "fq": "FQ-218",
+          "method": "git HEAD(수리 전) 판본과 작업트리(수리 후) 판본을 별도 env 에 source 해 같은 입력·같은 sig_date 8개월(2006/2010/2011/2014/2018/2019/2022/2024)로 실행 대조",
+          "window_definition": "연속-런(run) 붕괴 후 최신 N 분기 릴리스. 런 경계 = 값이 패널에 처음 나타난 날 = 가용일(실측: 값 변경 100%가 4/6/9/12월 첫 영업일, 월말 0%, 주말 0건 — 한국 분기 법정기한 이후). stale 소급 차단 상한 = n_take*130일, 최소 2 릴리스.",
+          "artifacts": [
+            "stage_artifacts/infra/cons_window_repair_20260810/p3_design_agg.csv",
+            "stage_artifacts/infra/cons_window_repair_20260810/p6_bound_validate.csv",
+            "stage_artifacts/infra/cons_window_repair_20260810/v1_pair_identity.csv"
+          ],
+          "test": "08_Tests/factor_db/test_cons_window_quarterly.R (15 PASS / 0 FAIL / 0 SKIP)"
+        }
+      }
     }
   },
   "C16_EPS_Acceleration": {

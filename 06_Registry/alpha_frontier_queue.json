@@ -4768,16 +4768,48 @@
   },
   {
    "id": "FQ-218",
-   "lane": "infra_measurement_integrity",
-   "title": ".cons_history() 무력 롤링 창 수리 (C10/C13/C15 공통 뿌리)",
-   "hypothesis": "consensus 파생 팩터 중 '최근 n분기 롤링' 을 표방하는 블록이 실제로는 최근 n**영업일**을 본다. .cons_history() 는 원천 관측 행을 최신순으로 주는데 원천 sue/esbr 이 일간이기 때문(관측 간격 중앙 1일, 2026-08-09 실측). 결과: C10_SUE_Persistence = mean(sue[1:4]) 가 창 span 3~5일·고유값 1개로 latest 와 비트동일(mean==latest 비율 1.0000, 2010/2018/2024 전 티커), C13_Revision_Breadth_3m 도 동일(span 2일). C15_Forecast_Error_Trend 의 sue[1]-sue[2]==0 사망도 같은 뿌리. 창을 분기 관측으로 축약하면 세 팩터가 **의도한 신호를 처음으로** 배출한다 — 신규 팩터 3종에 준하는 회수.",
-   "ev_rationale": "회수 대상이 이미 배출 중인 코드 3종이라 등록·명명 비용이 0. C10 은 PEAD proxy 로 설계됐는데 PEAD 는 KR 에서 미검 축이다. 단 실측 전 기대는 미상 — 창 수리가 신호를 만든다는 보장은 없다(현재는 '중복'이 아니라 '아직 측정된 적 없음' 상태라는 것만 확실).",
-   "wall_check": "미측정. 수리 후 canonical_screen_bt 로 PORT_t 실측 필요. ★수리하면 2026-08-09 registry 갱신이 등재한 alias 선언(C10_SUE_Persistence -> C01_SUE, C13_Revision_Breadth_3m -> C04_ESBR)이 **무효**가 된다 — 그 선언은 '정보가 같다'가 아니라 '현 빌드에서 값이 같다'는 조건부 선언이며, factor_registry.json 의 해당 dedup.defect.revisit_on 필드가 조건을 명시한다. 창 수리 후 재측정하여 재선언할 것.",
-   "status": "frontier_open",
-   "owner": "UNCLAIMED",
-   "blocked_by": null,
-   "source_ref": "04_Research/01_reports/factor_emission_identity_audit_20260809.md §3 next_probe①; 실측 stage_artifacts/infra/factor_dedup_wiring_20260809/d3_cons_history_spacing.csv; 코드 02_Infrastructure/factor_db/compute_consensus.R:31-42(.cons_history), :249(C10), :292(C13), :331(C15)",
-   "created": "2026-08-09"
+   "title": ".cons_history() 무력 창 수리 — C10/C13/C15 를 분기 릴리스 창으로",
+   "status": "code_repaired_awaiting_rebuild",
+   "owner": "architect",
+   "opened": "2026-08-10",
+   "category": "infra_measurement_integrity",
+   "mechanism": ".cons_history() 는 관측 **행**을 최신순으로 주는데 원천 sue/esbr 이 **일간 캐리포워드**다(관측 간격 중앙 1일, 값 변경 간격 중앙 91일). 그래서 mean(sue[1:4]) 가 4분기가 아니라 3~5일을 평균했다 — 창 내 고유값 중앙 1.0, mean==latest 비율 1.0000 ⇒ 이동평균이 **항등변환**. 결과: C10 ≡ C01 · C13 ≡ C04 비트동일, C15 전 종목 0 ⇒ 횡단면 sd 0 ⇒ 소비면 도달 0행(50/50월 죽은 배출).",
+   "repair": {
+    "where": "02_Infrastructure/factor_db/compute_consensus.R :: .cons_quarters()",
+    "window_definition": "연속-런(run) 붕괴 후 최신 N 분기 릴리스 + stale 소급 상한(n_take*130일) + 최소 2 릴리스. .cons_history() 계약은 불변(C11/C14/C17/C18 보호).",
+    "design_bakeoff": "W0 최신N행(현행) frac_eq 1.0000·고유값1 / W1 런dedup(채택) 0.124~0.154·고유값=n_take / W2 달력lag3M 0.610~0.633·고유값1·span중앙0 / W3 달력lag4M 0.584~0.601·고유값1. 달력 lag 는 커버리지 끊긴 종목에서 앵커가 전부 같은 관측에 붙어 결함이 재발한다.",
+    "pit": "런 경계 = 값이 패널에 처음 나타난 날 = 가용일. 실측: 값 변경 100%가 4/6/9/12월 **첫 영업일**(월초 1~3일 100%, 월말 0%, 주말 0건) = 한국 분기 법정 제출기한 이후. 분기 종료일 스탬프가 아니므로 미래참조 아님. 런은 Date<=sig_d 조각 위에서만 계산.",
+    "bound_validation": "살아있는 정상격자 종목의 oldest-run age: sue p50=p95=p99=301.5일(최대 348) / esbr 210.5일(최대 302). 상한 520/390일에 대해 frac_within_bound=1.000 — 상한이 legit 창을 하나도 자르지 않고 stale 소급만 막는다."
+   },
+   "measured": {
+    "frac_eq_latest": "C10 1.0000 -> 0.0000 · C13 1.0000 -> 0.0000 (8개월 전건)",
+    "identity": "C10~C01 rho 1.000->0.541 maxdiff 0->37837.5 · C13~C04 rho 1.000->0.570 maxdiff 0->1.736",
+    "c15_variance": "sd 0.0000 -> 426.91 · 0값 비율 1.0000 -> 0.0000 · 고유값 1 -> 239",
+    "window_distinct": "창 내 고유값 중앙 1 -> 4(C10)/3(C13)/2(C15) · span 3일 -> 301.5/210.5/90일",
+    "coverage": "C10 806->295 · C13 1230->416 · C15 806->239 (월 평균). 감소는 결손이 아니라 정직화 — 상한 안에 분기 릴리스가 2개 미만인 종목은 값을 만들지 않는다. 구 코드는 그들에게 C01/C04 복제값(또는 0)을 주고 있었다.",
+    "positive_control": "C10/C13/C15 외 14종 컨센서스 팩터 112/112 조합 비트 불변(maxdiff 0.000e+00)"
+   },
+   "verification": {
+    "test": "08_Tests/factor_db/test_cons_window_quarterly.R (15 PASS / 0 FAIL / 0 SKIP)",
+    "suite_registered": "08_Tests/hooks/run_all_hooks.sh SUITES",
+    "violation_injection": "최신 N행 창으로 회귀하는 돌연변이 12/12 검거 (mut frac_eq 1.0000)",
+    "regression": "test_factor_dedup_consumption 16/16 · test_emission_identity_axes 43/43 · test_emission_guard 26/26"
+   },
+   "blocked_by": "factor_db 재빌드 303개월(200106..202608) — 저장 parquet 는 아직 결함값. 월당 62.7초 실측 단가 기준 약 317분. **도훈 confirm 대기**(이 라운드에서 실행 안 함).",
+   "next_probe": [
+    "① C11_Earnings_Streak 의 같은-뿌리 점검: streak 이 연속 **양수 분기**가 아니라 연속 양수 **영업일**을 세고 있을 가능성(원천이 일간이므로 구조적으로 동일 함정). 이번 라운드는 C11->M25 를 명시 제외했으므로 미측정 — 별도 라운드로 실측할 것. M25 도 같은 원천·같은 식이라 함께 움직인다.",
+    "② 재빌드 후 C10/C13/C15 의 **선별 자격 재판정**: 이제 C01/C04 와 다른 신호이므로 rank-IC·PORT_t 를 처음으로 의미 있게 잴 수 있다. 특히 C15 는 11년간 소비면 도달 0행이라 한 번도 평가된 적이 없다. 자격 판정 전까지 alias 해제도 보류 상태로 둔다.",
+    "③ 같은 계통 전수: 원천이 일간 캐리포워드인데 하류가 x[1:n] 으로 '롤링'을 만드는 다른 지점이 있는가. compute_crowding.R:450 이 consensus 테이블을 참조한다 — 행 기반 창을 쓰는지 확인. 판별 축은 'mean==latest 비율' 하나로 재사용 가능."
+   ],
+   "artifacts": [
+    "stage_artifacts/infra/cons_window_repair_20260810/p3_design_agg.csv",
+    "stage_artifacts/infra/cons_window_repair_20260810/p6_bound_validate.csv",
+    "stage_artifacts/infra/cons_window_repair_20260810/v1_pair_identity.csv",
+    "stage_artifacts/infra/cons_window_repair_20260810/v1_c15_variance.csv",
+    "stage_artifacts/infra/cons_window_repair_20260810/v1_positive_control.csv",
+    "stage_artifacts/infra/cons_window_repair_20260810/s1_affected_months.csv"
+   ],
+   "parent": "FQ-210 (배출 정체 감사 — 축3a 죽은 배출 C15 · 미선언 중복 C10/C13)"
   },
   {
    "id": "FQ-219",
@@ -4804,7 +4836,13 @@
    "ev_rationale": "m8 β 검정에서 무작위 라벨 파킹의 실현 β 0.636 이 OFF 비율 0.644 와 거의 같은 것을 보고 의심. 정렬돼 있으면 β ~ 0.95 여야 한다.",
    "wall_check": "★12전략 중 **10건이 +1 어긋남**(offset0 상관 -0.06~+0.12 = 사실상 0, +1 에서 0.42~0.75). 파킹 `ifelse(on, r, benchmark_ret)` 의 OFF 월에 **한 달 전 벤치**를 넣고 있었다. 기전 = `bm_delta_ir` 내부 정렬은 **평가 시점**인데 파킹 **구성**은 그 호출 이전 계약 밖이고, 슬리브 재고(`s1_inventory.rds`)가 **`date` 를 버리고 `m` 만 남겨** 월-라벨 규약이 소실. inc 는 월초 앵커(2004-02-02), 슬리브는 다른 규약. ★inc 자체는 무결(원천 두 CSV exact-date 조인, 오프셋 스캔 0 최대. cor 0.666/β 0.706 은 vol 오버레이 북의 실제 성질). ★피해: 라벨 부호 2건 반전 · bm_gap 예측력 소멸 · STR_1698 문턱초과 소멸 · β검정 무효. ★**집계는 견디고 개별 판정은 뒤집힌다** — 순위 Spearman 0.750 보존. 수리 = `bm_park()`(정렬 실측·선언 + AMBIGUOUS_LOWCOR + INSUFFICIENT_OVERLAP) + 검사 **24/24**. ★★필드명 `offset_measured` 가 부호 방향을 이름으로 못 말해 **위반주입 4/4 가 반대로 읽혔다** — `offset_inc_minus_sleeve` 개명이 수리의 절반.",
    "next_action": "★next_probe(3) = ①**같은 결함의 다른 지점** — `by=\"m\"` 조인으로 두 계열을 붙이는 코드가 저장소에 몇 군데인가. 계약 밖 전처리가 정렬을 가정하는 지점을 census. ②**슬리브 재고 재생성** — `s1_inventory` 가 `date` 를 보존하면 규약 소실이 원천 차단된다. ③**지문 일반화** — '무작위 대조의 β 가 OFF 비율에 수렴' 처럼, 정렬 결함을 드러내는 산술 지문을 다른 구성(오버레이·블렌드·스택)에 대해서도 도출해 검사로 승격.",
-   "consumer_surfaces": ["파킹 측정", "book-marginal 후보 평가", "오버레이 구성", "슬리브 재고 생성", "계약 밖 전처리 감사"],
+   "consumer_surfaces": [
+    "파킹 측정",
+    "book-marginal 후보 평가",
+    "오버레이 구성",
+    "슬리브 재고 생성",
+    "계약 밖 전처리 감사"
+   ],
    "revival_condition": "새 파킹/오버레이 구성 코드 작성 시 즉시 bm_park() 경유 · 무작위 대조 β 지문 확인",
    "created": "2026-08-09"
   }

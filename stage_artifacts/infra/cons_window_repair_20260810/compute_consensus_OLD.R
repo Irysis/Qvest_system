@@ -42,89 +42,6 @@ suppressPackageStartupMessages({
 }
 
 #------------------------------------------------------------------------------
-# .cons_quarters() — 창의 단위를 "관측 행"이 아니라 "분기 릴리스"로 바꾼다
-#
-# ★2026-08-10 수리(FQ-218). .cons_history() 는 **행**을 최신순으로 준다. 그런데
-#   원천 sue/esbr 은 **일간 캐리포워드**(관측 간격 중앙 1일)이고 값은 분기에 한 번만
-#   바뀐다(변경 간격 중앙 91일). 그래서 `mean(sue[1:4])` 는 4분기가 아니라 3~5일을
-#   평균했고, 창 안 고유값이 1개뿐이라 **이동평균이 항등변환**이 됐다:
-#     mean == latest 비율 1.0000 (2010/2018/2024 전 티커) ⇒ C10 ≡ C01, C13 ≡ C04,
-#     C15(= 최신 − 차상위)는 전 종목 0 ⇒ 횡단면 sd 0 ⇒ 소비면 도달 0행.
-#
-# 창 정의 = **연속-런(run) 붕괴 후 최신 n_take 런**. 실측 근거(3안 비교):
-#   W0 최신 N행(현행)  : mean==latest 1.0000 · 창 고유값 1 · span 2~4일
-#   W1 런 dedup(채택)  : 0.124~0.154   · 고유값 = n_take · span 중앙 273~362일
-#   W2 달력 lag 3M     : 0.610~0.633   · 고유값 1 · span 중앙 0  ← 앵커가 전부
-#   W3 달력 lag 4M     : 0.584~0.601   · 고유값 1 · span 중앙 0     같은 관측에 붙어
-#                                                                   결함이 재발
-#   (stage_artifacts/infra/cons_window_repair_20260810/p3_design_agg.csv)
-#
-# ★PIT: 런 경계 = 값이 패널에 **처음 나타난 날** = 가용일이다. 실측으로 확인했다 —
-#   값 변경은 100% 4/6/9/12월의 **첫 영업일**(월초 1~3일 100%, 월말 0%, 주말 0건)에
-#   일어나고, 이는 한국 분기 법정 제출기한 **이후**다. 즉 분기 종료일 스탬프가
-#   아니라 벤더의 분기 일괄 공표일이다(p2_pit_convention.csv). 게다가 런은 이미
-#   Date <= sig_d 로 자른 조각 위에서만 계산하므로 미래 관측이 런 경계를 못 바꾼다.
-#
-# ★stale 소급 차단: 런 기반은 그냥 두면 무한히 뒤로 간다(실측 max span 7,424일 =
-#   20년). 커버리지가 끊긴 종목의 "최근 4분기"는 2005년 평균일 수 있다. 그래서
-#   max_lookback_days 상한을 둔다. 상수 = n_take * 130 (정상 분기 간격 최대 121일
-#   + 여유). 검증: 패널에 살아있는 정상격자 종목의 oldest-run age 는
-#   p50=p95=p99=301.5일 · 최대 348일(sue) / 최대 302일(esbr) 이라
-#   frac_within_bound = 1.000 — 상한이 legit 창을 **하나도 자르지 않는다**
-#   (p6_bound_validate.csv). 상한은 오직 stale 소급만 막는다.
-#
-# ★min_runs: 상한 적용 후 런이 min_runs 미만이면 값을 만들지 않는다(NA).
-#   억지로 1런으로 평균을 내면 곧 avg == latest 로 결함이 되살아난다.
-#
-# ★동률 병합은 남는 한계다: 인접 런 시작일 간격이 2분기 이상인 비율이
-#   sue 12.7% / esbr 15.6% (커버리지 공백 또는 두 분기 값이 같아 런이 합쳐진 경우).
-#   즉 창은 "최근 n_take 분기"가 아니라 "최근 n_take **개의 서로 다른 릴리스 값**"
-#   이며, 상한이 그 소급 폭을 묶는다. 이 정의는 registry definition 과 함께 읽어야 한다.
-#
-# ★.cons_history() 의 계약은 바꾸지 않는다 — C11/C14/C17/C18 이 그 정렬 규약에
-#   의존하고 있고(C14/C17 은 연속 개정 계열이라 63일 달력 lag 가 이미 정합),
-#   계약을 바꾸면 이번 수리의 범위를 넘어 그 블록들까지 움직인다. 새 헬퍼를 더한다.
-#
-# 반환: data.table(Ticker, slot, value, run_start, run_end, n_used)
-#       slot 1 = 최신 릴리스. 사용 가능 종목 없으면 NULL.
-#------------------------------------------------------------------------------
-.CONS_TIE_TOL         <- 1e-12   # 부동소수 잡음을 새 분기로 오인하지 않게
-.CONS_QUARTER_GAP_MAX <- 130L    # 관측된 정상 분기 간격 최대 121일 + 여유
-
-.cons_quarters <- function(hist, metric, sig_d, n_take,
-                           max_lookback_days = n_take * .CONS_QUARTER_GAP_MAX,
-                           min_runs = 2L) {
-  if (is.null(hist) || !is.data.table(hist) || nrow(hist) == 0L) return(NULL)
-  if (!all(c("Date", "Ticker", metric) %in% names(hist))) return(NULL)
-  h <- hist[, c("Ticker", "Date", metric), with = FALSE]
-  setnames(h, metric, "value")
-  h <- h[!is.na(value)]
-  if (nrow(h) == 0L) return(NULL)
-  if (!inherits(h$Date, "Date")) h[, Date := as.Date(Date)]
-  h <- h[Date <= sig_d]                      # PIT — 호출부를 신뢰하지 않고 다시 자른다
-  if (nrow(h) == 0L) return(NULL)
-
-  # 오름차순에서 런 경계를 벡터 1패스로 잡는다(그룹 반복 없음 = 440개월 빌드 비용 억제).
-  setorderv(h, c("Ticker", "Date"), c(1L, 1L))
-  h[, newrun := is.na(shift(value)) | Ticker != shift(Ticker) |
-                abs(value - shift(value)) > .CONS_TIE_TOL]
-  h[, runid := cumsum(newrun)]
-  rt <- h[, .(Ticker = Ticker[1L], value = value[1L],
-              run_start = min(Date), run_end = max(Date)), by = runid]
-
-  setorderv(rt, c("Ticker", "run_start"), c(1L, -1L))   # slot 1 = 최신 릴리스
-  rt[, slot := seq_len(.N), by = Ticker]
-  rt <- rt[slot <= n_take]
-  # 상한은 항상 slot 접미를 자른다(run_start 는 slot 증가에 따라 단조 감소)
-  rt <- rt[as.integer(sig_d - run_start) <= max_lookback_days]
-  if (nrow(rt) == 0L) return(NULL)
-  rt[, n_used := .N, by = Ticker]
-  rt <- rt[n_used >= min_runs]
-  if (nrow(rt) == 0L) return(NULL)
-  rt[, .(Ticker, slot, value, run_start, run_end, n_used)]
-}
-
-#------------------------------------------------------------------------------
 # 정본 위임 — 계산은 하되 배출하지 않는 팩터
 #
 # registry(factor_registry.json) 의 lifecycle.status="deprecated" 와 **짝을 이룬다**.
@@ -327,18 +244,12 @@ compute_consensus <- function(RAWDATA, sig_date, FUND = NULL, CONSENSUS = NULL) 
   esbr_hist <- .cons_history(CONSENSUS, "esbr", sig_d)
 
   # --- C10: Earnings Surprise Persistence (PEAD proxy) ---
-  # 최근 4개 **분기 릴리스**의 SUE 평균 — persistent drift.
-  # 구현: 구 코드는 최근 4개 **행**(=3~5일)을 평균해 mean==latest 항등이 됐다(FQ-218).
+  # Average of last 4 SUE values — captures persistent drift.
   if (!is.null(sue_hist)) {
-    q10 <- .cons_quarters(sue_hist, "sue", sig_d, n_take = 4L)
-    if (!is.null(q10)) {
-      sue_avg <- q10[, .(sue_avg4 = mean(value)), by = Ticker]
-      c10 <- sue_avg[!is.na(sue_avg4) & is.finite(sue_avg4),
-                      .(Ticker, Factor_Name = "C10_SUE_Persistence", Raw_Value = sue_avg4)]
-      if (nrow(c10) > 0) results[["C10"]] <- c10
-    } else {
-      .note_skip("C10_SUE_Persistence", "sue(<2 quarterly releases in window)", .have_cons)
-    }
+    sue_avg <- sue_hist[, .(sue_avg4 = mean(sue[seq_len(min(.N, 4L))])), by = Ticker]
+    c10 <- sue_avg[!is.na(sue_avg4) & is.finite(sue_avg4),
+                    .(Ticker, Factor_Name = "C10_SUE_Persistence", Raw_Value = sue_avg4)]
+    if (nrow(c10) > 0) results[["C10"]] <- c10
   } else {
     .note_skip("C10_SUE_Persistence", "sue", .have_cons)
   }
@@ -375,21 +286,13 @@ compute_consensus <- function(RAWDATA, sig_date, FUND = NULL, CONSENSUS = NULL) 
     if (nrow(c12) > 0) results[["C12"]] <- c12
   }
 
-  # --- C13: Revision Breadth (smoothed ESBR — C04 는 최신 1개 릴리스) ---
-  # 최근 3개 **분기 릴리스**의 ESBR 평균.
-  # ⚠ 이름의 "3m" 은 원 코드가 관측을 월간이라 **가정**한 데서 왔다. 원천은 분기
-  #   릴리스이므로 3 관측 = 3분기(≈9개월)다. 이름 재사용 금지 규약상 여기서 개명하지
-  #   않는다 — registry definition 에 창 = (3 릴리스, 상한 390일)로 명시할 사안이다.
+  # --- C13: Revision Breadth (ESBR - already C04, but 3m rolling version) ---
+  # Use time-series of ESBR: average ESBR over last 3 observations.
   if (!is.null(esbr_hist)) {
-    q13 <- .cons_quarters(esbr_hist, "esbr", sig_d, n_take = 3L)
-    if (!is.null(q13)) {
-      esbr_avg <- q13[, .(esbr_avg3 = mean(value)), by = Ticker]
-      c13 <- esbr_avg[!is.na(esbr_avg3) & is.finite(esbr_avg3),
-                       .(Ticker, Factor_Name = "C13_Revision_Breadth_3m", Raw_Value = esbr_avg3)]
-      if (nrow(c13) > 0) results[["C13"]] <- c13
-    } else {
-      .note_skip("C13_Revision_Breadth_3m", "esbr(<2 quarterly releases in window)", .have_cons)
-    }
+    esbr_avg <- esbr_hist[, .(esbr_avg3 = mean(esbr[seq_len(min(.N, 3L))])), by = Ticker]
+    c13 <- esbr_avg[!is.na(esbr_avg3) & is.finite(esbr_avg3),
+                     .(Ticker, Factor_Name = "C13_Revision_Breadth_3m", Raw_Value = esbr_avg3)]
+    if (nrow(c13) > 0) results[["C13"]] <- c13
   } else {
     .note_skip("C13_Revision_Breadth_3m", "esbr", .have_cons)
   }
@@ -423,20 +326,12 @@ compute_consensus <- function(RAWDATA, sig_date, FUND = NULL, CONSENSUS = NULL) 
   }
 
   # --- C15: Forecast Error Trend ---
-  # SUE 의 분기간 변화: 최신 분기 릴리스 − 직전 분기 릴리스.
-  # 구 코드는 sue[1]-sue[2] 를 **연속 행**(같은 날짜대)에서 취해 전 종목 0이었고,
-  # 횡단면 sd 0 → Z 전건 NA → 소비면 도달 0행(50/50월 죽은 배출, FQ-210 축3a).
+  # Direction of change in SUE over time: latest SUE - 2nd latest SUE.
   if (!is.null(sue_hist)) {
-    q15 <- .cons_quarters(sue_hist, "sue", sig_d, n_take = 2L)
-    if (!is.null(q15)) {
-      sue_delta <- q15[, .(sue_d = if (.N >= 2L) value[slot == 1L][1L] - value[slot == 2L][1L]
-                                   else NA_real_), by = Ticker]
-      c15 <- sue_delta[!is.na(sue_d) & is.finite(sue_d),
-                        .(Ticker, Factor_Name = "C15_Forecast_Error_Trend", Raw_Value = sue_d)]
-      if (nrow(c15) > 0) results[["C15"]] <- c15
-    } else {
-      .note_skip("C15_Forecast_Error_Trend", "sue(<2 quarterly releases in window)", .have_cons)
-    }
+    sue_delta <- sue_hist[, .(sue_d = if (.N >= 2L) sue[1L] - sue[2L] else NA_real_), by = Ticker]
+    c15 <- sue_delta[!is.na(sue_d) & is.finite(sue_d),
+                      .(Ticker, Factor_Name = "C15_Forecast_Error_Trend", Raw_Value = sue_d)]
+    if (nrow(c15) > 0) results[["C15"]] <- c15
   } else {
     .note_skip("C15_Forecast_Error_Trend", "sue", .have_cons)
   }
