@@ -85,7 +85,16 @@ if (!dir.exists(NAVER_CACHE_DIR)) dir.create(NAVER_CACHE_DIR, recursive = TRUE)
     Name   = as.character(tbl[[2]]),
     Close  = .num(tbl[[3]]),
     Vol    = .num(tbl[[10]]),
-    Size   = .num(tbl[[7]]) * 1e6,  # 시가총액: 억원 → 원 (Naver는 백만원 단위)
+    # 시가총액: Naver 시세 페이지는 **억원** 단위 → 원 = x 1e8.
+    #   ★2026-08-09 수리: 구판이 `* 1e6` 이었고 주석이 "억원 → 원 (Naver는 백만원 단위)" 로
+    #     **두 단위를 한 줄에 적어 자기모순** 이었다(억원→원이면 1e8, 백만원이면 1e6). 1e6 을
+    #     적용해 **정확히 100배 축소**된 값이 2026-07~08 에 43,013 행 기록됐다(시장 전체 ~2,690 티커).
+    #   ★배율은 주석이 아니라 **실측으로 확정**: 판별축 shares = Size/Close (주식수는 writer 가
+    #     달라도 같아야 한다). krx_api 와 이 수집기가 **모두 존재하는 2,693 종목**의 주식수 비율
+    #     중앙값 100.0001 (p10 99.9705 / p90 100.0334 / 94.3% 가 99.9~100.1) ⇒ 1e6 x 100 = 1e8.
+    #   ⚠단위를 바꿀 일이 생기면 주석을 고치지 말고 위 실측을 다시 돌릴 것 —
+    #     이 버그는 주석의 모호함이 만들었다.
+    Size   = .num(tbl[[7]]) * 1e8,
     Market = fifelse(sosok == 0, "KOSPI", "KOSDAQ")
   )
 }
@@ -339,9 +348,17 @@ naver_merge_rawdata <- function(snapshot = NULL) {
     if (!col %in% names(new_rows)) new_rows[, (col) := NA]
   }
 
+  # ★2026-08-09 추가: `source` 스탬프. 구판은 이 목록에 source 가 없어 select 단계에서
+  #   탈락했고, rbind(fill=TRUE) 로 **NA** 가 되어 이 수집기의 산출이 추적 불가였다.
+  #   그 결과 100배 축소 결함(위 Size 주석)이 어느 writer 산물인지 몰라 오래 살아남았다.
+  #   ⇒ 역설적으로 그 NA 자체가 검거 지문이 됐다(source=NA ⇒ DEFLATED 42,342 vs
+  #     krx_api ⇒ NORMAL 28,132 로 완전 정렬). 이제는 지문이 아니라 **선언**으로 남긴다.
+  #   ★모든 RAWDATA writer 는 source 를 찍는다 — 안 찍는 writer 는 그 자체가 결함이다.
+  new_rows[, source := "naver"]
+
   # Match RAWDATA column order
   rawdata_cols <- c("Date", "BM_Ret", "Ticker", "Name", "Market", "Sector",
-                    "Open", "High", "Low", "Close", "Vol", "Size", "Ret")
+                    "Open", "High", "Low", "Close", "Vol", "Size", "Ret", "source")
   for (col in setdiff(rawdata_cols, names(new_rows))) new_rows[, (col) := NA]
   new_rows <- new_rows[, ..rawdata_cols]
 

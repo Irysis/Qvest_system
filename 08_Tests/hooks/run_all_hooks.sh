@@ -308,6 +308,18 @@ SUITES=(
   #   결손이 정상 데이터로 위장된다(월 누적 -17.70% vs 정본 -23.63%, 5.93%p).
   #   07-25 date32 writer 불일치(조인 silent all-NA·7일 방치·감지장치 0)와 같은 계통.
   "08_Tests/data/test_benchmark_source_parity.R"
+  # 2026-08-09 추가: RAWDATA `Size` 스케일 정합 + writer 추적성.
+  #   원 결함 = naver_data_collector.R:88 이 시가총액 단위를 억원 대신 백만원으로 오해해
+  #   `* 1e6` 적용 → **정확히 100배 축소**된 Size 를 2026-07~08 에 43,013행(시장 전체
+  #   ~2,690 티커) 기록. 삼성전자가 연속 거래일에 1534.65조 ↔ 14.00조 로 진동하는데
+  #   Close 는 3% 내 변동 = 물리적 불가. 시총 팩터·cap-weight·유니버스 필터가 전부 오염.
+  #   ★검거 축 = **스케일 불변 정체 검사**(shares = Size/Close). 크기 문턱(Size>1e15)은
+  #     종목마다 정상 범위가 달라 못 쓴다 — 이 검사가 그 구분을 픽스처로 못박는다
+  #     (주가 4배 급등 시 미발화 vs 100배 축소 시 발화).
+  #   ★둘째 축 = source 스탬프. 구판이 source 를 안 찍어 NA 였고 그 NA 가 역설적으로
+  #     검거 지문이 됐다 — 이제 지문이 아니라 선언으로 강제한다.
+  #   벤치 parity(위 줄)와 **같은 계통**(두 writer·다른 스케일·정합 없는 접합)이라 나란히 둔다.
+  "08_Tests/data/test_size_scale_integrity.R"
   # 2026-08-02 추가: ast_verify 방언 수용 + 빈 순회 차단 (ALB-007 CRITICAL 수리 고정).
   #   원 결함 = 정적검증기가 컴파일러 방언(args/type:leaf/params)을 순회 못 해
   #   **leaf_count=0 으로 PASS 를 발행** — 실행되는 트리의 PIT 검증이 사실상 사망.

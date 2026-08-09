@@ -29,11 +29,23 @@ bm_load_incumbent <- function(root = Sys.getenv("QM_ROOT",
   nm <- names(PR)
   dcol <- nm[which(tolower(nm) %in% c("date","period","ym"))[1]]
   rcol <- nm[which(tolower(nm) %in% c("ret_net","return","ret","portfolio_ret"))[1]]
-  bcol <- nm[which(tolower(nm) %in% c("benchmark_ret","bm_ret","bench_ret"))[1]]
   if (is.na(dcol) || is.na(rcol)) stop("bm_load_incumbent: 컬럼 식별 실패 — ", paste(nm, collapse=","))
   out <- data.table(date = as.Date(PR[[dcol]]), ret_net = as.numeric(PR[[rcol]]))
-  out[, benchmark_ret := if (!is.na(bcol)) as.numeric(PR[[bcol]]) else NA_real_]
+
+  ## 벤치는 계약 10-component 의 **별도 파일**에 있다(03_period_returns 에 없음).
+  ## ★여기서 NA 로 넘기면 active 전량 NA 가 되고 IR 이 조용히 NA 가 된다 — 실측으로 걸렀음.
+  bp <- file.path(root, .BM_PG2_DIR, "05_benchmark_returns.csv")
+  if (!file.exists(bp)) stop("bm_load_incumbent: PG2 benchmark_returns 부재 — ", bp)
+  BR <- fread(bp)
+  bd <- names(BR)[which(tolower(names(BR)) %in% c("date","period","ym"))[1]]
+  bc <- names(BR)[which(tolower(names(BR)) %in% c("benchmark_ret","bm_ret","bench_ret"))[1]]
+  if (is.na(bd) || is.na(bc)) stop("bm_load_incumbent: 벤치 컬럼 식별 실패 — ", paste(names(BR), collapse=","))
+  B <- data.table(date = as.Date(BR[[bd]]), benchmark_ret = as.numeric(BR[[bc]]),
+                  benchmark_id = if ("benchmark_id" %in% names(BR)) as.character(BR$benchmark_id) else NA_character_)
+  out <- merge(out, B, by = "date")
+  if (nrow(out) == 0L) stop("bm_load_incumbent: 수익-벤치 날짜 겹침 0 — 정합 확인 필요")
   out[, active := ret_net - benchmark_ret]
+  if (all(!is.finite(out$active))) stop("bm_load_incumbent: active 전량 비유한 — 조용한 NA 차단")
   setorder(out, date)
   out[]
 }
