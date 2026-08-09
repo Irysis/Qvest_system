@@ -90,8 +90,18 @@ eq "다른 컴포넌트는 0 (교차 오계수 없음)" "0" \
 
 ANN="$(sched_failure_annotate alpha_queue timeout_kill "$ADIR")"
 case "$ANN" in
-  *"간헐"*) ok "annotate 가 간헐 재발을 격상 문구로 노출" ;;
-  *)        ng "annotate 가 간헐 재발을 격상 문구로 노출" "…간헐…" "$ANN" ;;
+  *"최근 14일 3회"*) ok "annotate 가 빈도(3회)를 격상 문구에 실측으로 노출" ;;
+  *)                 ng "annotate 가 빈도를 격상 문구에 노출" "…최근 14일 3회…" "$ANN" ;;
+esac
+# ★문구가 streak 값과 어긋나면 안 된다 — 별칭 수리로 streak 이 0→2 가 되자
+#   구 문구 "연속이 아니어서" 가 실제(연속 2일)와 모순됐다. 단정 대신 두 수를 다 말한다.
+case "$ANN" in
+  *"연속이 아니어서"*) ng "격상 문구가 streak 을 단정하지 않는다" "단정 없음" "$ANN" ;;
+  *)                   ok "격상 문구가 streak 을 단정하지 않는다" ;;
+esac
+case "$ANN" in
+  *"연속은 1일"*) ok "격상 문구가 실제 streak(1) 을 그대로 말한다" ;;
+  *)              ng "격상 문구가 실제 streak 을 그대로 말한다" "…연속은 1일…" "$ANN" ;;
 esac
 case "$ANN" in
   *"자동복구=partial"*) ok "annotate 가 partial 을 그대로 전달" ;;

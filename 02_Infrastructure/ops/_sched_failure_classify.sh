@@ -325,7 +325,7 @@ sched_failure_annotate() {
     esc="★${streak}일째 동일 실패 — 자동 해소 기대를 중단하고 수동 개입하십시오. "
   elif [ "${recent:-0}" -ge "$SCHED_ESCALATE_AT" ] 2>/dev/null; then
     # 연속은 끊겼지만 간헐 재발 — 성공 1회가 마커를 아카이브해 streak 을 리셋한 경우.
-    esc="★최근 ${SCHED_RECENT_WINDOW_DAYS}일 ${recent}회 재발(간헐) — 연속이 아니어서 자동 격상에 안 걸립니다. 구조 원인을 보십시오. "
+    esc="★빈도 격상: 최근 ${SCHED_RECENT_WINDOW_DAYS}일 ${recent}회 — 연속은 ${streak}일로 문턱(${SCHED_ESCALATE_AT}) 미만이라 연속-격상엔 안 걸립니다. 구조 원인을 보십시오. "
   fi
   printf '자동복구=%s | 연속=%s | 최근%s일=%s회 | %s%s' \
     "$auto" "${streak:-0}" "$SCHED_RECENT_WINDOW_DAYS" "${recent:-0}" "$esc" "$guide"
