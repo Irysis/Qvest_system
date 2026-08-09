@@ -4558,7 +4558,12 @@
    "ev_rationale": "331 전수 통과 0 인 가운데 계약+mega_spread 만 ON월 rho +0.186(무작위 대비 백분위 0%)로 직교했다. 이것이 무엇 때문인지 규명하려 후보를 하나씩 실측 기각했다.",
    "wall_check": "★기각된 설명 7종(전부 실측): ①**순환** — mega_spread 는 `mean(ret_1m[top10]) − median(ret_1m)` = 시장 수익률(FQ138/p1_measure.R:53), 계약 데이터 아님. ②**교락(PG2 순풍)** — ON 더미 회귀 잔차 rho **+0.186** 로 소수3자리 불변. ③**표본 잡음** — 블록부트 CI **[−0.024, +0.210]** 가 무작위 중앙 0.399 미포함, leave-one-out 최대 이동 0.119. ④**유니버스 아티팩트** — 계약유니버스 무작위 rho 0.273 ≈ 전체유니버스 무작위 0.277. ⑤**발화율(희석)** — 71.7→50→35→20% 로 조여도 백분위 20→19→14→26%, 계약 0% 에 접근 안 함(spearman −0.200). ⑥**경제적 동조** — 계약 신호 총량 vs mega_spread spearman **−0.139~+0.103**(동시·lead1·lag1 전부 |0.3| 미만). ⑦**국면-적응성** — ON/OFF 보유 Jaccard **0.898**, 전환 시 인접 Jaccard 0.887 — 타 재료 중앙(0.897/0.886)과 소수3자리 동일. ★재구성 양성 대조 통과(계약 period_returns 대비 상관 **0.999998**)이므로 ⑦ 측정은 유효. ★이식도 실패(0/24) — 다른 (라벨,재료) 쌍이 이 현상을 재현하지 못한다. ⇒ **현상은 실재하고 설명은 없다.** 미해명으로 등재한다(억지 설명 금지).",
    "next_action": "★next_probe(3) = ①**미검 후보 열거 재개** — 남은 축: ⓒ계약 신호의 **결측 구조**(공시가 없는 달의 종목 구성 변화) ⓓ**타이밍 정렬**(공시→수익 시차가 국면별로 다른가) ⓔ**신호 분포 형태**(ON월에 score 분포가 달라 top-25 컷이 다른 성격의 종목을 뽑는가). ⓔ가 가장 싸다 — 월별 score 분위 프로파일 비교. ②**계약 창 확장** — 79개월뿐이라 어떤 설명도 검정력이 낮다. 2019-12 이전 공시 데이터 확보 가능성 확인. ③**현상 자체의 재현성** — 다른 incumbent(PG2 아닌 book)에 대해서도 ON월 직교가 나타나는가. PG2 고유면 '계약 vs PG2' 쌍의 성질이고, 아니면 계약 신호의 성질이다.",
-   "consumer_surfaces": ["계약 후보 평가", "국면 라벨 설계", "book-marginal 후보", "미해명 현상 추적"],
+   "consumer_surfaces": [
+    "계약 후보 평가",
+    "국면 라벨 설계",
+    "book-marginal 후보",
+    "미해명 현상 추적"
+   ],
    "revival_condition": "설명 후보 ⓒⓓⓔ 중 하나가 지지되거나, 계약 창이 확장돼 검정력이 붙으면 재개",
    "created": "2026-08-09"
   },
@@ -4575,8 +4580,43 @@
    "ev_rationale": "한 아크에서 같은 축으로 3번 틀렸다: ①한 이름만 조회하고 '수치 컬럼 부재' 결론(실제 7개) ②대리 축 방향 미확인(phi −0.394) ③`setorder(-phi)` 에서 NA 가 최대처럼 정렬돼 완벽한 축(phi 1.000)을 놓칠 뻔. 셋 다 정체 검사 생략이고, 잡아준 것은 규약이 아니라 **자기모순 관측**이었다.",
    "wall_check": "★핵심 오독: **발화율을 맞추는 것은 재현이 아니다** — 같은 비율로 다른 달을 고를 수 있다. 실측: 발화율 71.7% 를 정확히 맞췄는데 월 일치율 **43.5%**(무작위 기대 59.5% **보다 낮음**). ★계약 `02_Infrastructure/contracts/proxy_axis.R` 신설 — `proxy_numeric_axes()`(전수 열거) · `proxy_reproduction()`(일치율·phi·Jaccard + **무작위 기대 p²+(1−p)²** 병기) · `proxy_select_axis()`(축×방향 전수 + **NA 안전 정렬**) · `assert_proxy_reproduces()`(미달 시 stop). 검사 `08_Tests/contract_regression/test_proxy_axis.R` **21/21** — 위반 주입이 실사고를 **수치까지 재현**(방향 오류 시 일치 43.5% vs 기대 59.5%), 발화율만 맞춘 무관 축은 초과 +0.4%p 로 거부.",
    "next_action": "★next_probe(2) = ①**소비자 배선** — 대리 축을 쓰는 기존 지점을 찾아 `assert_proxy_reproduces()` 를 걸어라(오늘 확인한 '표준은 있는데 소비자 0' 계통 재발 방지). 후보 = 국면 라벨 소비처·overlay 신호·screen_route. ②**`canonical_screen_bt` holdings 공백** — 이 헬퍼는 holdings 를 산출하지 않아 필터·겹침 분석이 불가하다. 매번 선별을 재구성하고 양성 대조로 검증해야 한다(이번엔 상관 0.999998 통과). 소비면 7종 순회가 의무인데 그 배관이 없는 셈 — 진단용 holdings 필드 추가를 검토.",
-   "consumer_surfaces": ["대리 축 사용 전반", "국면 라벨 소비처", "overlay 신호 설계", "계약 검사 배터리"],
+   "consumer_surfaces": [
+    "대리 축 사용 전반",
+    "국면 라벨 소비처",
+    "overlay 신호 설계",
+    "계약 검사 배터리"
+   ],
    "revival_condition": "대리 축을 쓰는 새 라운드가 열리면 이 계약 통과 의무",
+   "created": "2026-08-09"
+  },
+  {
+   "id": "FQ-210",
+   "title": "★factor_db 배출 정체 검사 — 죽은 배출 3종(C15·D60·Q16) + 미선언 중복 5쌍, emission_guard 정체축 부재",
+   "status": "frontier_open",
+   "owner": "Q-Lead session (infra hygiene round 20260809)",
+   "lane": "infra_measurement_integrity",
+   "hypothesis": "FQ-198 이 적발한 '가짜 신규 해금'(C10≡C01·C13≡C04·C15 무산출)은 단발 사고가 아니라 emission_guard 의 축 결손이다 — 가드는 `n_rows>0` 만 보므로 (i) 다른 팩터와 값이 같은 배출과 (ii) 횡단면 상수라 소비면에 0으로 도달하는 배출을 원리적으로 못 본다. 같은 함정의 다른 사례가 더 있을 것.",
+   "ev_rationale": "실측 확인(재빌드 없음, build_hash 20260809203741_8c9befe0 재판독). 정체 축: 표본 6월(2005/2010/2014/2018/2022/2026-06) × 커넥터 가시 331팩터(쌍 54,615) 월별 횡단면 spearman. |rho|>=0.99 139쌍 = EXACT_BITWISE 16 / RANK_IDENTICAL 55 / NEAR 68. registry `dedup` 선언 대조 시 기선언 101 · 미선언 38. 미선언 EXACT/RANK 5쌍 = C01_SUE≡C10_SUE_Persistence(rho 1.000000·maxdiff 0.000e+00) · C04_ESBR≡C13_Revision_Breadth_3m(동일) · C11_Earnings_Streak≡M25_Earnings_Mom_Streak(rho 0.9999933~1.000000) · C01_SUE≡C09_Earnings_Surprise_Sq(rho 0.9999838~0.9999982) · C09≡C10(추이적). C09 = sign(sue)*sue^2 = 순증가 단조변환이라 순위가 구조적으로 동일 — 값 비교로는 다르고 랭크로만 잡힌다. 즉 consensus 계열에서 한 신호(SUE)가 C01/C09/C10 3중 등록, ESBR 이 C04/C13 2중, streak 이 C11/M25 2중.",
+   "wall_check": "살아있음 축: 반기 격자 61개월(199606~202606) 전수. 배출셀 19,090 중 소비면 도달 0 = 904셀. DEAD_ALWAYS 16종(797셀) 중 15종은 시장레벨 상수(RE01/02/03/10~16·MA05/06/07·CR03·M31)로 빌더가 설계로 인정(682·719~721행) = 정당. ★비-시장레벨 진짜 죽은 배출 = C15_Forecast_Error_Trend 50/50월(200112~202606, 월 ~854행). DEAD_PARTIAL 24종(107셀) 중 ★D60_Leverage · Q16_Debt_to_Assets 각 22/53월 = 2015-01~2025-12 연속 11년 전 구간 사망(월 2,753~2,968행). 기전 확정: 빌더 682행 `sd(winsorized raw) < 1e-12 → Z 전건 NA → Coverage FALSE`. Q16/D60 은 compute 단계에서 !is.na() 필터 통과분만 배출하므로 그 행들은 **유한하되 횡단면 상수**다. 내부 대조로 원인 축 국소화: 같은 부채 원천을 쓰는 Q15_Debt_to_Equity 는 modal_frac 중앙 pre2015 0.5283 → 2015_2025 0.9370 → 2026+ 0.7141, XF_LL01_DebtToCapital 0.5283 → 0.9361 → 0.7108 로 같은 창에서 준-사망까지 갔고, 시장가를 섞는 R17_Market_Leverage 는 0.1223 → 0.1054 → 0.1080 으로 무변 ⇒ 결손은 부채 원천 축에 국한(2015 경계).",
+   "data_gate": "없음 — 기존 월 parquet + emission_ledger.csv 재판독만. 재빌드/재계산 불요(전체 감사 실측 소요 ~150초).",
+   "next_action": "★next_probe(4) = ① C15/D60/Q16 의 상수값 정체 규명(Raw_Value 가 0 인지 다른 상수인지). C15 는 `.cons_history` 가 4분기 아닌 4영업일을 보는 기전이 이미 지목됨(sue[1]==sue[2] → delta 0). D60/Q16 의 2015-01 경계가 DART 계정명 매칭 수리(2026-08-08)와 정합하는지 vintage-swap 통제로 확인. ② 단조변환 재등록(C09 형)이 다른 계열에도 있는지 Raw_Value 기준으로 전수 — z/winsorize 에 가려진 쌍이 더 있을 수 있다. ③ emission_guard 축 D/T/I 부착 시 경보량 dry-run 후 문턱 확정(소음이면 무시된다). ④ SE02_Consensus_Revision — modal_frac 중앙 0.957(27/43월 >=0.95) + 사망 10/53월, 선별 풀 소비 여부 확인 후 screen 자격 재판정.",
+   "consumer_surfaces": [
+    "factor_db 월 빌드 감시(emission_guard 축 D/T/I)",
+    "팩터 선별 랭킹(중복 이중 투표 제거)",
+    "위험모델 Ω 추정(중복 팩터의 rank 결핍)",
+    "부채/레버리지 팩터를 쓰는 모든 라운드(2015~2025 구간 2종 빈손)",
+    "registry dedup 선언 → 소비 배선(현재 소비자 0)"
+   ],
+   "revival_condition": "emission_guard 에 정체/무분산 축이 배선되면 본 항목은 상시 감시로 전환. 그 전까지 신규 팩터 '해금' 보고는 값-동일성 검사를 통과한 것만 유효.",
+   "source_refs": [
+    "stage_artifacts/infra/factor_emission_identity_20260809/",
+    "04_Research/01_reports/factor_emission_identity_audit_20260809.md",
+    "02_Infrastructure/factor_db/emission_guard.R",
+    "02_Infrastructure/factor_db/factor_dup_scan.R",
+    "02_Infrastructure/factor_db/factor_db_builder.R:682,719-722,928,953",
+    "02_Infrastructure/factor_db/compute_consensus.R:229-337",
+    "FQ-198 / WT-D20260809_005"
+   ],
    "created": "2026-08-09"
   }
  ]
