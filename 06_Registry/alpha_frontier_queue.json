@@ -4269,6 +4269,33 @@
    ],
    "revival_condition": "판정 basis 를 EW 로 옮기자는 제안이 다시 나오면 이 카드의 배율 실측(0.729/x1.371)과 음수-재료 지문을 먼저 제시",
    "created": "2026-08-09"
+  },
+  {
+   "id": "FQ-197",
+   "lane": "return_derived_exception",
+   "title": "profitability 계열 KR 미탐색 — 외부 증거가 유일하게 살아남았다고 지목한 카테고리를 우리는 1회만 시도했다",
+   "hypothesis": "Chen&Welch(2607.06502) 본문 Table 3: post-2005 top-90% 에서 **profitability 만 healthy** (중앙 LS 0.24%/월 · %pos 78). momentum 0.05(53%) · value −0.04(47%) · intangibles 0.00(50%) 은 dead. ★우리 done 원장 24 시도를 이 표에 대조하니 **momentum/reversal ~8 · 변동성/유동성 ~8 · profitability 는 단 1건**(FQ100_ipm_sector_neutral, 업종내 TTM 순이익률 Z-score)이다. 즉 **죽은 카테고리를 집중 시도하고 유일한 생존 카테고리를 사실상 안 해봤다**. 게다가 그 1건은 2026-08-09 검거한 **벤치 오염 16런 목록에 포함**돼 PORT_t 0.688 이 오염값이다. 가설: KR profitability 계열(cash-based operating profitability · R&D 조정 영업이익률 · gross profitability · net external/equity financing)을 청정 벤치로 재시도하면 return-파생 최후순위의 **예외 lane** 이 성립하는가.",
+   "ev_rationale": "★논문의 '조정 후 롱 레그 0' 은 **횡단면 선택편의 논증**이다(Var(t)=0.98<1 이라 shrinkage 가 0 으로 truncate) — '170개 중 최고를 고르면 그 선택이 운' 이라는 뜻이지 'profitability 롱 레그가 개별적으로 0' 이 아니다. **우리는 170개에서 고르는 게 아니라 KR 에서 특정 기전을 검정**하므로 그 보정이 그대로 걸리지 않는다. 참고 raw 값: cash-based oper.profitability 의 **Long−Mkt raw 0.40%/월(≈4.8%/yr)** — 작지 않다. 재료 비용 낮음(Factor DB 재무 항목 기존 보유). ⚠단 US 결과의 KR 전이는 가정이며 그것이 이 라운드의 검정 대상.",
+   "wall_check": "전이 벽 자체가 아니라 **재료 선택의 사각**을 다룬다. 우리 16/16 FAIL 이 'return-파생이 죽었다' 의 근거로 쓰여 왔는데, 대조 결과 그 16/16 이 **외부 증거가 이미 dead 로 지목한 카테고리에 편중**돼 있었다면 근거의 힘이 약해진다. 판정은 헌법 권위 basis(raw net active / PORT_t)로만.",
+   "data_gate": "없음 — Factor DB 재무 항목(TTM 순이익·매출·총이익·현금흐름) 기존 보유. load_month_factors 경유.",
+   "owner": "UNCLAIMED — CHENWELCH-BODY-20260809 라운드가 발행.",
+   "status": "frontier_open",
+   "next_action": "①**분류 재확인 먼저** — 아래 category_audit 은 내 판단이지 논문 공식 매핑이 아니다. Chen-Zimmermann 분류 기준을 확인해 우리 24 시도를 재분류(오분류면 이 FQ 전제가 무너진다). ②profitability 계열 KR 구현 후보 열거(cash-based OP · OP/R&D adj · gross profitability · net external financing · net equity financing) 중 **KR 데이터로 충실 구현 가능한 것** 선별 ③청정 벤치로 실측(오염 16런 제외 확인) ④판정은 PORT_t(raw net active) ⑤사전등록: 무엇이 나오면 예외 lane 성립인지 착수 전 고정. ⚠금지: 논문 raw 0.40%/월 을 기대치로 사전 서술(US 값이고 롱숏 선택집합 산물).",
+   "category_audit": {
+    "caveat": "★분류는 2026-08-09 내 판단이며 Chen-Zimmermann 공식 매핑 아님. next_action ① 이 재확인.",
+    "momentum_reversal": "~8 (size_enhanced_left_side_momentum · spec_mass_lowfreq_60d · T_RetAutoCorr_12M · MACD_CS · JumpShare_12M · JumpShare_DirectionB · IndustrySectorMomentum_LSTM · within_sector_reversal)",
+    "trading_liquidity_vol": "~8 (vol_adj_volume_surprise · vol_rank_stability · C_VolRankStability_3M · kyle_lambda · CV_Vol · Vol_Rank_Markov_Persistence · VolRankReverse · Markov_PredVolRank)",
+    "profitability": "**1** (FQ100_ipm_sector_neutral) — 그마저 오염 벤치",
+    "other_tail_text": "~5 (p_index · hill_tail_index · dart_risk_section_sentiment · dart_fx_hedging_ratio · FX_Intensity)",
+    "paper_category_medians": "profitability 0.24(78%) · trading/liq 0.11(85%) · accruals 0.06(72%) · investment 0.06(69%) · momentum 0.05(53%) · intangibles 0.00(50%) · value −0.04(47%)"
+   },
+   "source_refs": [
+    "arXiv 2607.06502 Table 3 (카테고리별 post-2005 top-90% 통계)",
+    "arXiv 2607.06502 Table 2 (생존 상위10 · Long−Mkt raw/adjusted)",
+    "stage_artifacts/chen_welch_2607_06502_body_findings.json",
+    "stage_artifacts/paper_recharge/alpha_search_queue_done.json (우리 24 시도)",
+    "stage_artifacts/bench_seam_contaminated_runs_20260809.json (FQ100 포함 확인)"
+   ]
   }
  ]
 }
