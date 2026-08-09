@@ -79,8 +79,10 @@ fals <- list(
        "월별 음(-) 비율 94.2% / 95.4%, 겹치지 않는 stride-60 부분표본 평균 -0.152 / -0.216. ",
        "→ 사전등록 B3 조건(|갭| > 0.15 잔존) 충족 = F1 REJECTED, 채널 귀속 주장 금지. ",
        "★겹치는 60m 창 계열이므로 NW lag-3 |t| 는 인용하지 않는다(부풀림 — lag-60 t -5.01 / -4.61)]")),
-  list(field = "D03_EWMA", fields = list("A1_RAWDATA_OHLCVS_daily"),
+  list(field = "D03_RealVol", fields = list("A1_RAWDATA_OHLCVS_daily"),
        expectation = paste0("(F2 원문) MAX5 원변수 + vol63 을 횡단면 통제한 후 중립화 Q01 의 증분 순위정보 잔존. ",
+       "[통제 변수 실명: vol63 = WT-009 tuned 패널의 D03_EWMA(registry vol family D03_RealVol 의 EWMA 파생), ",
+       "MAX5 = A1_RAWDATA_OHLCVS_daily 일간 종가에서 산출한 신호월 내 상위 5일 평균 일수익] ",
        "[실측: 통제 후 기울기 연 +1.27% vs 통제 전 +1.22% → 잔존율 1.038 (사전 문턱 0.30 통과). ",
        "MAX5 단독 통제 +1.32%(t 2.06) · vol63 단독 +1.28%(t 2.21). ",
        "상위분위 Jaccard 중립Q01∩vol63 0.119 · ∩(-MAX5) 0.121, 월별 Spearman 중앙 +0.080 / +0.046 ",
@@ -125,7 +127,12 @@ PKG <- list(
   factors = list(
     list(factor_id = "F1_Q01EB_sector_size_neutral",
       ast = list(op = "CS_NEUTRALIZE", args = list(
-        list(leaf = "STORED_SCORE", escape_contract = Q01_ESC),
+        # ast_verify.py 는 escape 계약을 leaf 노드의 sibling 키로 읽는다(schema 는 escape_contract
+        # 중첩만 요구) — 두 계층 dialect 갭이라 양쪽을 모두 채운다. challenge_flags 에 갭 기록.
+        list(leaf = "STORED_SCORE", escape_contract = Q01_ESC,
+             provenance = Q01_ESC$provenance, production_parity_verified = FALSE,
+             vintage_available = TRUE,
+             vintage_note = "WT-009 저장 패널은 생성 후 불변(재생성 없음) — 개정 위험 없음"),
         "A2_universe_krx_monthly:Sector",
         list(op = "LOG", args = list(list(leaf = "A2_universe_krx_monthly:Size"))))),
       role = "core_signal", restatement_exposure = 1L),
@@ -230,6 +237,7 @@ PKG <- list(
     "STORED_SCORE Q01_EB 는 production_parity_verified=false (연구 파생 패널) — incumbent base 소비 불가. 본 라운드는 base 비교가 아니라 신호 자체의 프로파일 측정이라 §7b 저촉 없음",
     "국면 상호작용은 전부 ADVISORY·비유의 (중립 기울기 × 벤치 trailing12 +1.03%/1sd t 0.98 · × 개인 강도 +0.68% t 0.94). 승계 가설의 위기월 부호 반전 예측은 검정력 부족으로 확인도 반증도 못 함 — '효과 없음' 단정 금지",
     "동시기 관측 라벨 유지 — F3 개인 순매수는 인과 아님(부모 승계)",
+    "[계약 표면 분열 — 인프라 백로그, 본 라운드 판정과 무관] 발행 후 수동 검증 실측: JSON-Schema 위반 0건 · ast_spec_gate hard PASS · ast_verify FAIL_CONTRACT(non-block) 3건. 3건 전부 schema 와 ast_verify.py 의 dialect 불일치다 — (i) schema 는 ast_node.args 에 string 스칼라를 명시 허용하는데 ast_verify 는 '노드 형상 오류(비 dict)' 로 FAIL (부모 라운드가 number 스칼라에서 보고한 것과 동류, ALB-005 계열) (ii) schema 리프 설명은 'group_id 또는 group_id:field' 를 허용하는데 ast_verify 는 ':field' 접미를 '알 수 없는 리프 종류' 로 FAIL (iii) STORED_SCORE 계약을 schema 는 escape_contract 중첩으로, ast_verify 는 leaf sibling 키로 읽는다 — (iii)만 양쪽을 채워 해소했고 (i)(ii)는 정본(schema)을 따랐다. 우회가 아니라 분열 보고",
     "RF-A3 점검: recent 3Y ICIR 별도 산출 미실시(분할 금지 mandate 하에서 3Y 창은 유효표본 36으로 구조적 저검정력) — 시기 축은 연속 추세 + post-2015 서술로 대체"))
 
 write_json(PKG, file.path(MBX, "alpha_package.json"), pretty = TRUE, auto_unbox = TRUE, digits = NA, null = "null")

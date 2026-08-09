@@ -44,7 +44,12 @@
         "top_decile_excess_ann / bottom_decile_excess_ann",
         "long_side_share = |top excess| / (|top excess| + |bottom excess|)"
       ],
-      "label_mandatory": "decile 은 유동성필터·비용 미적용 gross 진단(canonical_screen_diag). PORT_t 와 수준 직접 비교 금지."
+      "label_mandatory": "decile 은 비용 미적용 gross 진단(canonical_screen_diag). PORT_t 와 수준 직접 비교 금지.",
+      "arms_declared_before_measurement": [
+        "primary: 유동성필터 적용(adv >= 2e8) — canonical 선별과 같은 투자가능 유니버스",
+        "robustness: 유동성필터 미적용 전체 패널 — 필터가 꼬리를 잘라내는지 확인"
+      ],
+      "arms_note": "두 arm 모두 측정 전에 선언. argmax 선택 금지 — 둘 다 보고하고 불일치 시 그 자체를 결과로 기록."
     },
     "CH_C_breadth": {
       "question": "신호가 확산형이라 25슬롯이 과집중인가",
