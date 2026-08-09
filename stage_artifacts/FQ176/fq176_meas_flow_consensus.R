@@ -150,6 +150,11 @@ for (i in seq_len(nrow(G))) {
     row[[paste0(h,"_required_meas")]] <- req
     row[[paste0(h,"_abs_delta_vs_required_stage")]] <- abs(d) / G$required[i]
     row[[paste0(h,"_t_welch")]]   <- t_w
+    row[[paste0(h,"_n_blocks_on")]]  <- length(bo)
+    row[[paste0(h,"_n_blocks_off")]] <- length(bf)
+    row[[paste0(h,"_se_cluster")]]   <- se_c
+    row[[paste0(h,"_t_cluster")]]    <- t_c
+    row[[paste0(h,"_required_cluster")]] <- T_CRIT * se_c
     row[[paste0(h,"_verdict")]]   <- lab
   }
   res[[length(res)+1L]] <- as.data.table(row)
@@ -177,6 +182,16 @@ say("  --- Welch 교차확인 (t_welch) ---")
 for (i in seq_len(nrow(R)))
   say("    %-30s H1 t %+.3f (welch %+.3f) · H2 t %+.3f (welch %+.3f)",
       R$factor[i], R$h1_t[i], R$h1_t_welch[i], R$h2_t[i], R$h2_t_welch[i])
+say("  --- ★군집-강건 진단 (연속 에피소드를 1관측으로 접음) ---")
+for (i in seq_len(nrow(R)))
+  say("    %-30s H1 블록 ON %d / OFF %d · t_cluster %+.3f · required_cluster %.5f (지시 required %.5f → %.2f배)",
+      R$factor[i], R$h1_n_blocks_on[i], R$h1_n_blocks_off[i], R$h1_t_cluster[i],
+      R$h1_required_cluster[i], R$required_stage[i], R$h1_required_cluster[i]/R$required_stage[i])
+say("  방향 안정성 확인 (H1 vs H2 부호 일치 여부):")
+for (i in seq_len(nrow(R)))
+  say("    %-30s H1 dIC %+.5f / H2 dIC %+.5f -> %s",
+      R$factor[i], R$h1_delta_ic[i], R$h2_delta_ic[i],
+      ifelse(sign(R$h1_delta_ic[i]) == sign(R$h2_delta_ic[i]), "부호 일치", "★부호 반전 (1개월 시프트에 불안정)"))
 
 say("  저장: %s (%d행 · %d열)", file.path(OUT,"measured_flow_consensus.csv"), nrow(R), ncol(R))
 say("=== 완료 ===")
