@@ -1,0 +1,33 @@
+{
+  "wt_id": "WT-D20260809_001",
+  "phase": "P2",
+  "written_before_measurement": true,
+  "title": "비용 채널이 제약 조건 안에서 작동 가능한가 — 점수 staleness(리밸 주기) A/B",
+
+  "why_now": [
+    "P1 이 비용 채널을 회계적으로 확정했다: turnover 11.74/yr x 15bps = 연 1.76%p, PORT_t 기여 +0.497 (cap-w 1.544 -> 2.041).",
+    "Production Constraints 안에서 비용을 줄이는 방법은 회전율 감소뿐이다(15bps 는 고정 축).",
+    "회전율을 줄이는 가장 단순한 조작 = 선별 점수를 K개월 유지(블록 첫 달 점수 재사용). 오래된 정보만 쓰므로 PIT 안전(look-ahead 아님).",
+    "FQ-090(전이 레버 격리)이 요구한 A/B 를 M26 위에서 실행하는 것 — 단 이번엔 맹목 sweep 이 아니라 정량화된 채널 위에서."
+  ],
+
+  "prediction_fixed_before_measurement": {
+    "claim": "K 확장은 비용 절감보다 알파 손실이 커서 net cap-w PORT_t 를 개선하지 못한다.",
+    "basis": "WT-D20260808_002 실측 lag1_retention = 0.233 (t-1 신호 사용 시 FMB t 2.555 -> 0.596). 신호수명 1개월 미만.",
+    "quantified": "K=3 이면 보유 3개월 중 2개월은 lag1~lag2 신호로 운용 = 기대 알파 유지율 ~0.23 이하. 비용 절감 상한은 연 1.76%p 의 약 2/3 = 1.17%p 인데, gross 알파 7.62%p 의 77% 손실(=5.9%p)이 이를 압도한다.",
+    "falsifier": "K=3 의 net cap-w PORT_t 가 K=1(1.544)보다 +0.30 이상 높으면 예측이 틀린 것이며, 그 경우 lag1 측정과 모순되므로 **두 측정 중 하나가 오류**로 간주하고 조사한다(결과를 그대로 채택하지 않는다).",
+    "note": "예측이 맞아도 그것은 '비용 레버 부재'의 확립이지 M26 기각이 아니다 — 재료 자격은 WT-002 에서 확정됐고 소비면은 다른 축이 남는다."
+  },
+
+  "design": {
+    "operator": "score staleness — 블록 b = floor((month_index-1)/K) 의 첫 달 점수를 블록 전체에 재사용",
+    "pit_safety": "블록 내 후행 월은 **더 오래된** 정보만 사용. look-ahead 방향 아님. K=1 은 기준선(현행)과 동일해야 함(항등 검증).",
+    "arms_K": [1, 2, 3, 6],
+    "fixed": "top_n=25 · cost 15bps · 유동성 2e8 · 동일 패널 283개월 · periods_per_year=12(월간 마킹 불변)",
+    "primary_stat": "net cap-w PORT_t(NW lag3) + turnover_annual + alpha_annualized",
+    "identity_check": "K=1 arm 의 PORT_t 가 P1 의 1.544 와 일치해야 한다. 불일치 시 연산자 구현 오류로 보고 중단."
+  },
+
+  "dsr_note": "K sweep 이나 argmax 선택 없음 — 예측 검정용. 어떤 K 도 본 라운드에서 챔피언으로 승격 금지.",
+  "metric_type": "canonical_screen (cap-w 권위) + canonical_screen_diag (EW 병기)"
+}

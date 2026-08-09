@@ -1,0 +1,101 @@
+{
+  "date": "20260809",
+  "schema_version": "mode_queue_v1",
+  "generated_at": "2026-08-09",
+  "optimizer": [
+    {
+      "id": "2608.05991",
+      "title": "Knowledge-Optimising Investment Decisions with Informative Datasets",
+      "source": "arxiv",
+      "alpha_fixed_ab": true,
+      "summary_ko": "Knowledge Optimization — 데이터셋별 지식 기여분(knowledge unit)을 포함한 대안 Sharpe 지표. α̂ 고정 A/B: 기존 SR vs KSR(지식조정 SR) 비교.",
+      "shrinkage_builtin": "no",
+      "statistic_order": "<=2nd",
+      "screen_priority": "후순위",
+      "screen_priority_reason": "shrinkage 없음. 개념 프레임워크 — 구체 수식은 본문 fetch 필요. 방법론 가치는 있으나 즉시 A/B 우선순위 낮음"
+    },
+    {
+      "id": "2608.05901",
+      "title": "From Value Bounds to Policy-Distance and Active-Face Certificates: Same-Grid Duality for Constrained Dynamic Portfolios",
+      "source": "arxiv",
+      "alpha_fixed_ab": true,
+      "summary_ko": "Polyhedral 제약 포트폴리오의 primal-dual 인증 — 같은 시뮬레이션 그리드에서 value loss 상한 + 활성 제약 동시 인증. HRP/MVO/CVaR 솔버 품질 검증 방법론.",
+      "shrinkage_builtin": "weak",
+      "statistic_order": "<=2nd",
+      "screen_priority": "⭐",
+      "screen_priority_reason": "weak shrinkage 내장(Bellman 곡률 조건이 정규화 효과). 2차 통계. 솔버 검증 도구로서 즉시 활용 가능 — 현재 optimizer-research 대안 솔버 A/B 품질 체크에 참고"
+    },
+    {
+      "id": "2608.02355",
+      "title": "Path Portfolio Optimization: Defect, Lift, and the Price of Path Complexity",
+      "source": "arxiv",
+      "alpha_fixed_ab": true,
+      "summary_ko": "Path signature MVO — 시그니처 좌표의 기댓값/공분산으로 MV 문제 해결. 수준-2 대칭 블록(convexity)이 alpha. 고차 path-dependence는 IID 드라이버에서 이득 없음. 표본 크기 최소 obs/param≥6.",
+      "shrinkage_builtin": "no",
+      "statistic_order": "higher",
+      "screen_priority": "후순위",
+      "screen_priority_reason": "shrinkage 없음 + 고차 통계. 축소 없이 OOS 붕괴(실증: unregularized = severely negative until N≥6×params). KR 25종목에서는 추정오차 지배 예상. 축소 추가 버전 후속 논문 대기 또는 generator-fit estimator 채용 조건부"
+    },
+    {
+      "id": "2608.01494",
+      "title": "Conformal Kelly: Conformal Prediction Intervals as the Scale in Fractional Kelly Position Sizing",
+      "source": "arxiv",
+      "alpha_fixed_ab": true,
+      "summary_ko": "Conformal 예측 구간 너비 → fractional Kelly 포지션 사이징. 느린 rolling quantile(빠른 적응보다 우세). IS(2016-21): 28.5% CAGR SR=1.34, MDD=27.7%. ⚠️ OOS(2022+) FAIL: 8.5%/7.0%, passive 미달(사전등록 결과).",
+      "shrinkage_builtin": "weak",
+      "statistic_order": "<=2nd",
+      "screen_priority": "⭐",
+      "screen_priority_reason": "weak shrinkage(느린 rolling quantile). 2차 통계. ⚠️ OOS FAIL 강한 negative prior. 단 방법론적 통찰(uncertainty-aware sizing)은 유효 — α̂ 고정 후 KR 환경에서 재검증 조건부 관심"
+    }
+  ],
+  "risk": [
+    {
+      "id": "2608.04987",
+      "title": "Portfolio Allocation under Heterogeneous Scales and Multifractality",
+      "source": "arxiv",
+      "summary_ko": "MFCCA(다중프랙탈 교차상관 분석) — signed fluctuation function, scale s × order q. q=2에서 MV 기준으로 수렴. VaR/ES/drawdown 전기간 IS·OOS 모두 MV 대비 개선. 꼬리 위험 감소.",
+      "shrinkage_builtin": "no",
+      "statistic_order": "higher",
+      "screen_priority": "후순위",
+      "screen_priority_reason": "shrinkage 없음 + q차 변동함수(고차 통계). 실증은 IS·OOS 개선이나 KR 25종목 + 250일 창에서 추정오차 지배 예상. 축소 결합 버전 검토 시 재검토"
+    },
+    {
+      "id": "2608.02828",
+      "title": "Proper-score observation-driven filters: local geometry, estimation, and continuous-time limits",
+      "source": "arxiv",
+      "summary_ko": "Proper scoring rule 기반 GAS 필터 — log 대신 differentiable PS rule로 조건부 분산 업데이트. 극단값 전달 억제(정규화 효과). 국제 주식 수익 VaR·PIT 다기준 실증.",
+      "shrinkage_builtin": "weak",
+      "statistic_order": "<=2nd",
+      "screen_priority": "⭐",
+      "screen_priority_reason": "weak shrinkage(bounded score rule이 극단 관측값 억제). 2차 통계. 기존 GARCH/DCC의 직접 대체 후보 — risk-research 분산 추정 개선 최우선 검토"
+    },
+    {
+      "id": "2608.02311",
+      "title": "AI Governance for Institutional Readiness in Finance",
+      "source": "arxiv",
+      "summary_ko": "기관 AI 거버넌스 — regret-covariance 통계량(모델 policy drift 실시간 탐지) + calibrated crowding 모델(기관 AI 수렴 시 joint drawdown 39.2%→79.3%). AI 거버넌스 공백 실태 조사.",
+      "shrinkage_builtin": "no",
+      "statistic_order": "<=2nd",
+      "screen_priority": "⭐",
+      "screen_priority_reason": "crowding 모델의 실증적 수치(기관 수렴→drawdown 2배). monitoring agent 크라우딩 지표 강화 직접 적용 후보. shrinkage 없으나 diagnostic 도구로서 활용"
+    }
+  ],
+  "regime": [
+    {
+      "id": "2608.04832",
+      "title": "Robust Control under Stationary Ambiguity",
+      "source": "arxiv",
+      "summary_ko": "잠재 레짐이 정상 분포를 유지하는 시뮬레이터 학습 원칙 — 빠른 적응(ambiguity decay) 대신 stationary ambiguity 유지. 헤징 실험: stationary 훈련이 real market에서 강건성 유지.",
+      "regime_application": "오버레이 정책 설계 원칙 — 현재 레짐에 과적응 시 레짐 전환 후 성과 급락. FR/RAMP 레짐 필터의 적응 속도 교정 참고"
+    },
+    {
+      "id": "2607.19497",
+      "title": "The Science and Practice of Trend-Following Systems",
+      "source": "arxiv",
+      "summary_ko": "추세추종 통일 이론 — TF alpha ∝ 저주파 스펙트럼 질량. 비용-최적 필터 스팬. 수익률 왜도 구조적 양수. ⚠️ 팩터 직접 추출: paper_exhausted(spec_mass+T_RetAutoCorr+Hurst 3회 QUARANTINE).",
+      "paper_exhausted": true,
+      "regime_application": "FQ-153 미실행: 시장 레벨 Hurst 지수 > 0.5 달 = momentum overlay 활성화 타이밍 신호. standalone 팩터 아닌 레짐 타이밍으로 재적용",
+      "next_probes": ["FQ-152: 60일 Hurst 크로스섹션(fast-timescale 신호 가능성)", "FQ-153: 시장 레벨 Hurst 오버레이 타이밍"]
+    }
+  ]
+}
