@@ -101,6 +101,9 @@ if (is.null(.emit_guard_src)) {
 source(.emit_guard_src)
 rm(.c, .emit_guard_src)
 FACTOR_EMISSION_BASELINE <- file.path(FUNC_PATH, "factor_db", "emission_expected_absent.json")
+# 정체 검사 3축(D/T/I)의 선언 래칫 — 시장레벨 상수처럼 **정당한** 무분산 배출을 선언한다.
+# (2026-08-09 FQ-210. 존재 축의 emission_expected_absent.json 과 같은 방식·다른 축)
+FACTOR_IDENTITY_BASELINE <- file.path(FUNC_PATH, "factor_db", "emission_declared_identity.json")
 
 # Ensure output directory exists
 if (!dir.exists(FACTOR_DB_DIR)) {
@@ -956,7 +959,10 @@ if (!force && file.exists(out_path)) {
     fdb_dir       = FACTOR_DB_DIR,
     registry_path = file.path(FUNC_PATH, "factor_db", "factor_registry.json"),
     baseline_path = FACTOR_EMISSION_BASELINE,
-    write_artifacts = isTRUE(save)
+    write_artifacts = isTRUE(save),
+    # 정체 3축 — `result` 가 이미 Raw_Value/Z_Score/Coverage 를 갖고 있으므로 추가 IO 0.
+    identity_baseline_path = FACTOR_IDENTITY_BASELINE,
+    run_identity = TRUE
   )
 
   # ─── Save ─────────────────────────────────────────────────────────────────
