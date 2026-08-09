@@ -1,0 +1,73 @@
+{
+  "task_id": "WT-D20260809_002",
+  "round_label": "FQ-143(브리핑 인용) 큰 하락 표적 오버레이 — tail-targeted regime overlay",
+  "registered_at": "2026-08-09",
+  "registered_by": "alpha-research",
+  "selection_type": "chain",
+  "dsr_gate_applicable": false,
+  "dsr_rationale": "가설주도 순차 라운드(1가설 1레버). 열거 trial 집합 argmax/threshold-pick 아님 — measurement-graduation §3 sweep 조건 미해당. DSR 수치는 진단 산출 대상이나 게이트 아님.",
+
+  "id_namespace_warning": "★브리핑의 'FQ-143'은 06_Registry/alpha_frontier_queue.json 에서 CV_Vol(일별 거래량 변동계수, config_scoped_negative_20260804, STR_AS_20260804_075423_18032)이며 본 라운드와 무관하다. 본 라운드의 실제 계보 앵커 = FQ-119(라벨 자격 관문) + 08-08 label_eligibility_gate 실측. alpha-hypothesis 에이전트가 독립적으로 같은 불일치를 적발(2/2 일치). Q-Lead 발번 정정 필요 — 메모리 카드 [project-queue-citation-namespace-mismatch-20260808] 재발.",
+
+  "primary": {
+    "statement": "현행 배포 오버레이(M4×R05) 대비, 국면 라벨(CRISIS∪CAUTION)을 심한-하락 조건부 노출 축소로 소비하는 변형의 book-marginal 기여.",
+    "judgment_quantities": ["paired NW lag-3 t (variant − incumbent 월수익차)", "ΔIR (net-active)"],
+    "decision_rule": "두 양의 부호가 일치해야만 양성 주장 가능. 불일치 시 양성 주장 금지(2026-08-08 규약).",
+    "base": "05_Production/2.Factor_Model/2-2.STR_1715_FaithTrend_on_M4_R05_overlay_PG2/04_backtest_results/period_returns_layer5_faith.csv (production 실코드 산출 패널, §7b). 재구성 base 아님.",
+    "weighting_rules_required": ">= 2 (rank-tilt + EW) 에서 부호 일치",
+    "launched": false,
+    "not_launched_reason": "P4 라벨 자격 관문이 배포창 전 사건정의에서 INELIGIBLE → 규율 4(자격 없는 정의로 소비면 측정 금지). 사후 진단은 metric_type=canonical_screen_diag 로만 기록하며 book-marginal 판정으로 승격하지 않는다. 가중 규칙 2종 축은 primary 미착수로 미충족 — 미충족 사실을 그대로 보고한다."
+  },
+
+  "gates_declared_before_measurement": [
+    {
+      "gate": "G1 라벨 자격 (label_eligibility_gate.R, fisher 단측 p<0.05 ∧ recall>base)",
+      "scope": "C5-clean 정렬(월말 라벨 → 다음달 홀딩) · 배포창(2004-01~2026-05) · 사건정의 3종",
+      "rule": "배포창에서 어느 사건정의도 ELIGIBLE 이 아니면 소비 측정 착수 금지"
+    },
+    {
+      "gate": "G2 검정력 (required_effect_size.R)",
+      "rule": "필요 효과크기가 이 레버가 만들 수 있는 효과의 상한을 넘으면 측정 전 폐기하고 그 사실을 산출로 남긴다"
+    },
+    {
+      "gate": "G3 PIT 3종",
+      "rule": "assert_overlay_pit HARD 통과 + lag1 스트레스 + strict-PIT A/B (인플레 >5% 시 strict 값으로 재판정)"
+    },
+    {
+      "gate": "G4 오라클 양성대조",
+      "rule": "실현 하락을 아는 라벨이 큰 양수 paired t 를 내야 계측 생존. 미달 시 모든 null 은 해석 불가."
+    }
+  ],
+
+  "power_precheck": {
+    "performed_before_primary": true,
+    "tool": "02_Infrastructure/contracts/required_effect_size.R",
+    "design": "국면 상호작용 — 단, 분할 설계 금지(규율 1). 연속 통제(로지스틱/OLS)로 다룸.",
+    "deploy_window_n_months": 269,
+    "deploy_window_n_label_on": 28,
+    "required_monthly_for_t2_depth50": 0.00295,
+    "required_annual_pct_for_t2_depth50": 3.54,
+    "achievable_effect_sign": "negative",
+    "achievable_note": "E[base ret_orig | 라벨ON]=+0.0401/월 > E[OFF]=+0.0341/월 이므로 노출 축소의 기대 효과는 음수. 깊이 무관(t 는 깊이에 불변, 실측 -1.42~-1.50).",
+    "eligibility_test_power_deploy_window": {
+      "event_lt_-10pct": {"base_rate": 0.0335, "n_on": 28, "power_at_lift_2.7": 0.32, "power_at_lift_3.5": 0.53},
+      "event_lt_-5pct": {"base_rate": 0.1152, "n_on": 28, "power_at_lift_2.0": 0.48, "power_at_lift_2.7": 0.84}
+    },
+    "verdict": "GO_DIAGNOSTIC_ONLY",
+    "verdict_rationale": "primary 는 폐기(G1 미통과 + 달성가능 효과 부호 반대). 단 오라클 천장·기전 분해·사전선언 반증 2축은 검정 가능하므로 진단 라운드로 전환해 완주한다 — '측정 불가'가 아니라 '이 레버로는 도달 불가'를 정량화하는 것이 이 라운드의 산출."
+  },
+
+  "falsification_axes_carried_from_hypothesis": [
+    {"axis": "(a) 좌꼬리 분리의 에피소드-군집 강건성", "testable": true, "tested": true},
+    {"axis": "(b) trailing 변동성 통제 후 라벨의 좌꼬리 증분", "testable": true, "tested": true},
+    {"axis": "(c) 심한 하락월 주체별 순매도 강도차 (A6 investor_flow)", "testable": true, "tested": false,
+     "not_tested_reason": "(a)(b) 가 기전을 지지한 반면 레버 자체가 P6-b 정량 천장으로 막혀, (c) 를 측정해도 라운드 판정이 바뀌지 않는다. next_probe 로 이월 — 라벨을 위험모델 입력으로 소비하는 경로에서는 (c) 가 여전히 판별 가치를 가진다."}
+  ],
+
+  "prohibitions_acknowledged": [
+    "governor / book_state 접촉 금지",
+    "05_Production 수정 금지 (read-only 소비만)",
+    "공분산 추정 / target weights 제안 금지 (alpha 역할 경계)",
+    "제약 완화를 레버로 제시 금지 (INV-7) — long-only·25종·15bps 는 문제의 고정 축"
+  ]
+}

@@ -1,0 +1,54 @@
+{
+  "wt_id": "WT-D20260809_003",
+  "phase": "P3",
+  "written_before_measurement": true,
+  "title": "rank-IC ↔ 평균-프로파일 불일치의 기전 검정 — '순위는 맞는데 평균이 뒤집힌다'",
+
+  "observation_that_triggered_this": {
+    "D03_EWMA": {
+      "rank_ic_mean": 0.03224, "rank_ic_t_nw3": 3.004,
+      "decile_mean_excess_profile": [-1.54, 1.99, 4.62, 3.85, 1.39, -0.92, 0.25, -2.84, -1.57, -5.12],
+      "decile_spearman_on_mean": -0.685,
+      "reported_port_t": -1.73
+    },
+    "why_this_is_not_a_sign_convention_artifact": "P2 에서 rank-IC 부호가 **양수**임을 직접 확인했고(5재료 전부 양수) W1 원 라운드도 저값 꼬리를 배제했다 — 즉 '높을수록 좋음' 정렬이 맞다. 그런데 평균 프로파일은 반대로 간다."
+  },
+
+  "mechanism_hypothesis": {
+    "statement": "rank-IC 는 수익의 **순위**를 쓰므로 이상치에 둔감하고, decile 평균 초과·PORT_t 는 **원수익**을 쓰므로 꼬리에 지배된다. 신호가 수익 **왜도**와 상관되면 두 통계가 구조적으로 갈린다.",
+    "why_D03_specifically": "D03_EWMA = 63일 EWMA 변동성. 고변동 종목은 전형적 순위는 나쁘지 않으나 좌측 꼬리(급락)가 두터워 **평균**이 무너진다 — 문자 그대로 '고변동 꼬리 왜도'.",
+    "provenance": "인계 큐(next_session_task 2026-08-08)가 '기전 후보(monotonicity 0.25 — rank-IC 가 고변동 꼬리 왜도를 못 봄)는 **검증 전**' 이라고 못박은 항목. WT-D20260809_001 은 이 후보를 **M26 에서** 검정해 기각했다(M26 단조 +0.879). 본 P3 은 같은 후보를 **D03 에서** 검정한다 — 재료를 잘못 붙였을 뿐 기전 자체는 살아 있을 수 있다."
+  },
+
+  "predictions_fixed_before_measurement": [
+    {
+      "id": "H1",
+      "claim": "D03_EWMA 의 decile **중앙값** 초과 프로파일은 **상향**(spearman >= +0.50) — 평균 프로파일(-0.685)과 부호가 반대여야 한다.",
+      "rationale": "중앙값은 순위 통계라 rank-IC(+3.00)와 같은 방향이어야 한다."
+    },
+    {
+      "id": "H2",
+      "claim": "(평균 − 중앙값) 격차가 decile 이 올라갈수록 **감소**한다(더 음수) — 상위 decile 이 더 좌편향.",
+      "rationale": "좌측 꼬리가 평균만 끌어내린다."
+    },
+    {
+      "id": "H3",
+      "claim": "M26_Revenue_Mom 에서는 이 패턴이 **없거나 약하다** — 평균 프로파일이 이미 단조(+0.879)이므로 중앙값도 같은 방향.",
+      "rationale": "음성 대조. H1/H2 가 모든 재료에서 나오면 그것은 기전이 아니라 유니버스 전반의 성질이다."
+    }
+  ],
+
+  "falsifiers": {
+    "F1": "D03 중앙값 프로파일도 하향(spearman < 0)이면 기전은 **틀렸다** — rank-IC/평균 불일치를 왜도로 설명할 수 없고 다른 설명이 필요하다.",
+    "F2": "M26 에서도 H1/H2 가 동일 강도로 나오면 왜도는 D03 고유가 아니라 **유니버스 성질**이며, 재료별 형태 분류의 근거가 약해진다.",
+    "handling": "F1 또는 F2 발화 시 기전 주장 철회하고 관측만 기록한다. 예측이 맞아도 이는 D03 에 대한 기전 설명이지 **자본 주장이 아니다**."
+  },
+
+  "design": {
+    "statistics_per_decile": ["mean_excess_ann", "median_excess_ann", "mean_minus_median", "skewness", "pct_below_-20pct_month"],
+    "frame": "유동성필터 adv>=2e8 · 전표본 282개월 · decile — P1 1급 프레임과 동일",
+    "label": "canonical_screen_diag · gross · 자본 주장 없음"
+  },
+
+  "consequence_if_confirmed": "rank-IC 를 재료 자격 1급 지표로 쓰는 것이 **왜도 상관 신호에서 구조적으로 위험**하다는 뜻이 된다. measurement-graduation §2 가 이미 rank-IC 를 ADVISORY 로, PORT_t 를 권위로 둔 이유에 **기전 설명**이 붙는다(현재는 실측 캘리브레이션 근거만 있음)."
+}
