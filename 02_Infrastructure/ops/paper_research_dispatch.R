@@ -183,6 +183,16 @@ if (n_opt > 0 || n_risk > 0) {
     "06_Registry/method_registry.json",
     "02_Infrastructure/ops/auto_sigma_weighting_ab.R",
     "02_Infrastructure/methods/method_registry.R",
+    # ★(2026-08-09) 배터리가 **source 하는 측정 코드**도 입력이다.
+    #   실사고: 08-08 08:40:57 에 auto_sigma_weighting_ab.R 의 오버레이 노출 산출을
+    #   구 2-1 layer5 CSV → 캐리어 `invested` 실측으로 고쳤는데, 결과 CSV 가 08:42(더 나중)라
+    #   게이트는 그 수리를 **낡은 것으로 보지 못했다**. 그날 rawdata 가 갱신된 덕에 우연히
+    #   재실행돼 반영됐을 뿐이고(book IR 1.077 → 1.410), 데이터가 안 움직였으면 수리는 잤다.
+    #   측정 primitive(weighted_screen_bt) · 가중 커널(hrp_core) · 제약 정규화(strategy_tilt_weights)
+    #   는 전부 결과를 바꾸는 코드이므로 신선도 판정 근거에 넣는다.
+    "02_Infrastructure/contracts/weighted_screen_bt.R",
+    "02_Infrastructure/portfolio/hrp_core.R",
+    "02_Infrastructure/portfolio/strategy_tilt_weights.R",
     list.files("02_Infrastructure/methods/adapters", pattern = "\\.R$", full.names = TRUE)
   )
   .in_present <- sigma_ab_inputs[file.exists(sigma_ab_inputs)]
