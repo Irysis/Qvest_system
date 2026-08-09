@@ -511,6 +511,28 @@ SUITES=(
   #   대상이 0건이라, 정상 경로만 돌리면 로직이 죽어 있어도 초록으로 보인다. 각 게이트
   #   (정체성·지식손실·status·저술지식)를 하나씩 끄고 판정이 실제로 뒤집히는지 매 실행 실측.
   "08_Tests/axiom/test_distilled_supersede.py"
+  # 2026-08-09 추가: 논문 라우트 디스패치 4종 일괄 편입.
+  #   ★등재 사유가 세 suite 는 "지연된 배선"이다 — freshness_gate·screen_axes·
+  #     method_adapter_contract 는 2026-08-08 에 만들어졌는데 **이 배열에 들어온 적이 없어**
+  #     누가 손으로 부를 때만 돌았다. 이 저장소가 반복해 온 "존재 = 배선 완료" 계통
+  #     ([[project-gate-cd-not-on-scheduled-path-20260808]])의 검사기 판본이다.
+  #   ① Σ-A/B 신선도 게이트 — 구판 `ov_csv>=carrier` 단독이 **영구 참**이라 7주간 캐시
+  #      1벌을 매일 "오늘의 optimizer 판정"으로 재발송했다(book_ir 1.209 고정).
+  "08_Tests/ops/test_sigma_ab_freshness_gate.R"
+  #   ② STEP 1-b 2축(shrinkage_builtin/statistic_order/screen_priority) 존재 **및 enum** 검사.
+  #      존재만 보면 enum 밖 값이 통과해 소비단이 우선순위를 못 매긴다(= 없는 것과 같다).
+  "08_Tests/ops/test_screen_axes_check.R"
+  #   ③ 논문 어댑터 계약 — 08-08 실사고: normalize_long_only 가 cap 을 정규화 **전**에 걸어
+  #      minvar/MVO 3종이 정확히 1/25 = EW 로 붕괴했는데 제약 검사 5종은 전부 통과했다
+  #      (EW 도 유효 비중이므로). 검거 축은 "EW 와 구별되는가" 하나뿐이다.
+  "08_Tests/ops/test_method_adapter_contract.R"
+  #   ④ 2026-08-09 신설: risk 레인 판정. 실사고 = 배터리가 risk method 2건을 **실제로 쟀는데**
+  #      (overlay CSV: minvar@ProperScoreGASFilter 0.920 · PreferenceRobustDistortion 0.658)
+  #      산출물·텔레그램이 하드코딩 문자열로 "하네스 미배선 · 자동 측정 아직 없음" 을 보고했다.
+  #      ★등재≠처분 계통의 **반대 방향**(과소보고) 판본 — 뿌리는 "상태를 선언으로 적음".
+  #      돌연변이 축(구 하드코딩 판)이 본체: 실측이 4가지로 갈리는 픽스처에서 구판은
+  #      상태 1종만 낸다 — 그게 원 결함의 정의이자 이 검사의 검출력 실증이다.
+  "08_Tests/ops/test_risk_lane_verdict.R"
 )
 
 # (2026-08-02) .py 분기 추가 — 종전엔 확장자 무관 `bash` 로 던져 파이썬 suite 가

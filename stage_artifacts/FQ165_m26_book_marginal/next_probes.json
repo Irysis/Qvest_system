@@ -1,0 +1,41 @@
+{
+  "fq_ref": "FQ-165",
+  "proposed_at": "2026-08-09",
+  "registration_owner": "Q-Lead — 병렬 세션(WT-D20260809_002 / _003)과 동시 기록 충돌 방지를 위해 본 에이전트는 06_Registry/alpha_frontier_queue.json 을 쓰지 않는다. 등재는 02_Infrastructure/ops/frontier_queue_io.R 경유로 Q-Lead 가 수행",
+  "next_probes": [
+    {
+      "id": "NP-1",
+      "title": "M26 을 슬롯 대체가 아닌 유니버스 축소 필터로 — 교체 비용 자체를 회피",
+      "basis": "본 라운드 확립: top-20 슬롯 대체 비용이 종목수준 연 -14%. F_B(D1 제외, 월 1.79종)는 3형태 중 유일하게 무해(델타IR -0.0079)이고 크기정합 placebo 12draw 중 11 보다 우수. 개입을 '누구를 넣나'가 아니라 '누구를 후보에서 빼나'로만 국한하면 대체 비용이 발생하지 않는다",
+      "design": "제외 강도 축(D1 / D1~D2 / 하위 20%)을 사전등록 고정 + 각각 크기정합 placebo. base = production rank-tilt 정본 라벨 의무(FQ-127 filter형)",
+      "power_warning": "개입이 작을수록 효과도 작아 검출 바닥 문제가 심화 — 착수 전 required_effect 재산출 필수. 비현실적이면 착수 전 폐기"
+    },
+    {
+      "id": "NP-2",
+      "title": "M26 증분 기울기(연 +1.5~4.0%/sd)를 대체 비용 없이 수확하는 소비면 탐색",
+      "basis": "FMB 통제 후 계수가 상위 점수 영역에서 사라지지 않음(연 +1.50 -> +3.99%, t 1.35~1.95). 죽은 것은 정보가 아니라 교환비다",
+      "faces": ["오버레이/국면 입력 — 종목 스코어가 아니라 횡단면 집계 신호로", "monitoring 신호 — 북 보유종목의 M26 악화 경보(보유 교체 없이 관측만)", "선별 라벨 — 신규 편입 후보들 사이의 tie-break 에만 적용, 기존 보유 대체 없음"],
+      "note": "소비면 7종 중 랭킹/필터는 본 라운드와 NP-1 이 덮는다"
+    },
+    {
+      "id": "NP-3",
+      "title": "base score_eff 자체가 offset+1 에서 IC 가 더 높다 — 배포 시점이 한 달 이른가",
+      "measured": "base score_eff rank-IC: offset0 0.04588 (t 4.513) / offset1 0.04171 (t 5.324) / offset2 0.03082 (t 4.267)",
+      "question": "현행 북은 offset0 규약으로 운용된다. offset1 의 t 가 더 높은 것이 (a) 진짜 타이밍 여유인지 (b) base 패널 Date 스탬프(월초)의 아티팩트인지",
+      "boundary": "확립 아님 — 패널 Date 규약과 교락돼 있다. 이 관찰만으로 배포 시점을 바꾸자는 주장 금지. 판별에는 vintage-swap 통제 필요",
+      "priority": "높음 — 사실이면 북 전체에 걸리는 레버이고, 아티팩트면 패널 규약 결함이다. 어느 쪽이든 정보"
+    },
+    {
+      "id": "NP-4",
+      "title": "M26 을 독립 sleeve 로 편입하는 경로 (슬롯 대체 아님)",
+      "basis": "본 라운드의 음수 델타IR 은 전부 슬롯-대체 편의를 포함한다. 독립 sleeve 는 대체가 아니라 book_weights 재배분이라 같은 편의가 없다",
+      "blocked_by": "M26 standalone cap-w PORT_t 1.544 < 2.95 · oos_retention_approx 0.123 < 0.5 로 graduation HARD 에서 별도로 막힌다(WT-D20260809_001). 이 경로는 현재 열려 있지 않다",
+      "owner": "optimizer / governor — alpha 소관 아님"
+    }
+  ],
+  "revival_conditions": [
+    "M26 standalone cap-w PORT_t 가 2.95 를 넘고 oos_retention 이 0.5 를 넘으면 NP-4(독립 sleeve) 재개",
+    "북의 선별 규칙이 슬롯 대체가 아닌 형태(다중 sleeve · 소프트 멤버십)로 바뀌면 본 라운드의 음수 판정은 그 config 밖 — 재측정 대상",
+    "M26 신호수명이 개선되는 변형(누적 · 평활)이 나오면 lag1 악화(연 -3.30%, t -2.57) 축이 완화되는지 재시험"
+  ]
+}

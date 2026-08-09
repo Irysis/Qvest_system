@@ -1,0 +1,436 @@
+{
+  "fq_ref": "FQ-165",
+  "parent": "WT-D20260809_001 (FQ-161) / WT-D20260808_002 (M26 MATERIAL_QUALIFIED)",
+  "as_of": "2026-08-09",
+  "question": "M26_Revenue_Mom 을 현행 PG2 북에 결합했을 때 book-marginal 델타IR 이 양인가",
+  "prereg_ref": "stage_artifacts/FQ165_m26_book_marginal/preregistration.json (arm 측정 전 작성)",
+  "metric_type": "carrier_recon_paired (forge 아님)",
+  "capital_claim": false,
+  "governor_invoked": false,
+  "capital_decision_owner": "도훈. 본 산출은 측정까지이며 admit / book_state 쓰기를 수행하지 않았다.",
+  "input_reality": {
+    "base_score_panel": "stage_artifacts/WT_D20260425_010/alpha_scores.parquet (rows 81226 · Date 272 · Ticker 859)",
+    "m26_panel": "stage_artifacts/WT_D20260808_002/alpha_scores.parquet (rows 69885 · Date 283 · Ticker 630) — 승계, 재구현 없음",
+    "carrier": "06_Registry/book_carrier/carrier_STR_1715_on_M4gAE_R05_noLayer4_PG2.parquet (rows 5376 · months 269)",
+    "rawdata": "rows 14059013 · unique Date 9003 · 관측단위 DAILY (월간 아님)",
+    "benchmark": "benchmark_pinned_20260702.parquet (IKS200, vintage pin)",
+    "measurement_window": "269개월 2004-02 ~ 2026-06",
+    "m26_coverage_median": 0.967
+  },
+  "pit_alignment": {
+    "resolved": "base decision ymi = M26 signal ymi + 1 (월말 M 신호 → M+1 보유)",
+    "evidence": "P0d IC 스캔 — M26 은 offset0 에서 t 8.758 로 뾰족하고 offset1 에서 2.620 (3.34배 급락) = offset0 은 동시성 상관이지 예측이 아니다. base 는 offset0 4.513 / offset1 5.324 로 완만(고빈도 누출 형태 아님)",
+    "parent_convention_inherited": "offset1 = WT-D20260808_002 가 rank_ic t_NW3 2.9714 를 잰 그 창. 부모 컨벤션을 승계했고 재해석하지 않았다 (Charter 8 No Silent Override)",
+    "trap_avoided": "두 패널의 Ret_1m 컬럼끼리 맞추는 naive join(k=0)은 exact 일치 98.8% 라 '정렬됨'처럼 보이나 결정시점 정렬이 아니다. 그 join 을 썼다면 IC t 가 2.62 → 8.76 (3.34배)으로 부풀었을 것"
+  },
+  "baseline_authority": {
+    "admitted_id": "STR_1715_on_M4gAE_R05_noLayer4_PG2 (book_state.json::admitted_ids 키 접근 — grep 금지)",
+    "carrier_identity_match": true,
+    "weighting": "strategy_tilt_weights.R::linear_tilt_qd(lambda=1.5) + tophi phi=3 + CRISIS ub 0.10 (admit 정본. z-선형 구 배포판 아님)",
+    "selection": "top-20 by score_eff -> 유동성 ADV>=2e8 교집합 (run_all.R 정본 순서)",
+    "overlay": "캐리어 실측 invested_t (M4 교집합 AE gate × beta_R05) — arm 불변(paired)",
+    "cost": "15bps × sum|delta(invested·w)| (v2.4 delta 사상)",
+    "ir_convention": "net_active_recon_v1",
+    "production_parity_verified": true,
+    "parity_table": [
+      {
+        "metric": "SR_geo",
+        "reproduced": 1.9053,
+        "authority": 1.898,
+        "source": "judge WT-D20260702_002",
+        "abs_diff": 0.00730000000000008,
+        "tol": 0.06,
+        "pass": true
+      },
+      {
+        "metric": "CAGR",
+        "reproduced": 0.4541,
+        "authority": 0.4526,
+        "source": "judge",
+        "abs_diff": 0.0015,
+        "tol": 0.02,
+        "pass": true
+      },
+      {
+        "metric": "MDD",
+        "reproduced": 0.232794812110147,
+        "authority": 0.2329,
+        "source": "judge",
+        "abs_diff": 0.000105187889852809,
+        "tol": 0.02,
+        "pass": true
+      },
+      {
+        "metric": "IR_net_active_recon_v1",
+        "reproduced": 1.40725863500651,
+        "authority": 1.416,
+        "source": "book_state.incumbent_book_ir",
+        "abs_diff": 0.0087413649934851,
+        "tol": 0.1,
+        "pass": true
+      }
+    ],
+    "reproduced_base": {
+      "IR": 1.4073,
+      "SR_geo": 1.905,
+      "CAGR": 0.4541,
+      "MDD": 0.2328,
+      "turnover_ann": 9.66
+    }
+  },
+  "power_declared_before_measurement": {
+    "n_months": 269,
+    "external_reference": "placebo(M26 월별 순열) paired 차이 sd — arm 자신의 sd 아님(바가 t 검정 재진술로 퇴화하지 않도록)",
+    "placebo_paired_sd_monthly": 0.01537,
+    "detection_floor_paired_t2_annual_pct": 2.811,
+    "delta_ir_equivalent_of_floor": 0.1477,
+    "delta_ir_gate": 0.05,
+    "delta_ir_gate_annual_pct": 0.951,
+    "reading": "게이트(연 +0.95%)는 검출 바닥(연 +2.81%)의 약 1/3 지점. 델타IR 통과와 통계적 확립은 같은 사건이 아니며 본 라운드는 두 축을 분리 보고한다. 이 사실은 결과를 본 뒤가 아니라 사전등록에 고정돼 있다"
+  },
+  "orthogonality": {
+    "cross_sectional_spearman_mean": 0.1917,
+    "threshold": 0.3,
+    "pass": true,
+    "top20_overlap_mean_names": 3.99,
+    "note": "재료 직교성은 통과. 단 결과 북의 active 상관은 0.94 대 — 4/20 종목만 바뀌는 개입의 구조적 성질이며 재탕(중복) 판정과 구별해 읽을 것"
+  },
+  "verdict": {
+    "code": "D4_NEGATIVE (사전등록 3형태 전건)",
+    "delta_IR_by_form": {
+      "F_A_blend030": -0.0975,
+      "F_B_filterD1": -0.0079,
+      "F_C_carve4": -0.1021
+    },
+    "paired_t_by_form": {
+      "F_A_blend030": -1.383,
+      "F_B_filterD1": -0.327,
+      "F_C_carve4": -1.939
+    },
+    "statement": "사전등록 3형태 전부 델타IR <= 0. 그러나 이것은 'M26 이 정보가 없다'가 아니다 — mechanism_separation 참조.",
+    "no_argmax": "어떤 형태도 챔피언으로 승격하지 않는다. selection_type = diagnostic_no_argmax."
+  },
+  "arms": [
+    {
+      "form": "F_A_blend030",
+      "intervention_type": "rerank",
+      "IR": 1.3098,
+      "delta_IR": -0.0975,
+      "paired_ann_pct": -1.983,
+      "paired_t_nw3": -1.383,
+      "paired_sd_monthly": 0.01922,
+      "SR_geo": 1.782,
+      "MDD": 0.2417,
+      "Calmar": 1.763,
+      "TE": 0.1892,
+      "turnover_ann": 9.39,
+      "cor_active_vs_base": 0.9384,
+      "n_names_mean": 20,
+      "size_matched_placebo": {
+        "delta_IR_median": -0.0757,
+        "delta_IR_90band": [-0.157, -0.0368],
+        "real_inside_band": true,
+        "empirical_rank_of_real": 0.333
+      },
+      "information_contrast_vs_placebo": {
+        "delta_IR": -0.0433,
+        "ann_pct": -0.835,
+        "t_nw3": -0.659
+      },
+      "power": {
+        "required_ann_pct": 2.811,
+        "implied_t_threshold": 1.96,
+        "label": "INCONCLUSIVE_UNDERPOWERED"
+      },
+      "verdict": "D4_NEGATIVE"
+    },
+    {
+      "form": "F_B_filterD1",
+      "intervention_type": "filter",
+      "IR": 1.3994,
+      "delta_IR": -0.0079,
+      "paired_ann_pct": -0.449,
+      "paired_t_nw3": -0.327,
+      "paired_sd_monthly": 0.01674,
+      "SR_geo": 1.876,
+      "MDD": 0.2333,
+      "Calmar": 1.92,
+      "TE": 0.1881,
+      "turnover_ann": 9.94,
+      "cor_active_vs_base": 0.9531,
+      "n_names_mean": 20,
+      "size_matched_placebo": {
+        "delta_IR_median": -0.0817,
+        "delta_IR_90band": [-0.1332, -0.019],
+        "real_inside_band": false,
+        "empirical_rank_of_real": 0.917
+      },
+      "information_contrast_vs_placebo": {
+        "delta_IR": 0.011,
+        "ann_pct": 0.411,
+        "t_nw3": 0.308
+      },
+      "power": {
+        "required_ann_pct": 2.811,
+        "implied_t_threshold": 2.045,
+        "label": "INCONCLUSIVE_BAR_RESTATES_T"
+      },
+      "verdict": "D4_NEGATIVE"
+    },
+    {
+      "form": "F_C_carve4",
+      "intervention_type": "slot_carve",
+      "IR": 1.3052,
+      "delta_IR": -0.1021,
+      "paired_ann_pct": -2.49,
+      "paired_t_nw3": -1.939,
+      "paired_sd_monthly": 0.01679,
+      "SR_geo": 1.734,
+      "MDD": 0.2388,
+      "Calmar": 1.753,
+      "TE": 0.186,
+      "turnover_ann": 10.53,
+      "cor_active_vs_base": 0.9525,
+      "n_names_mean": 20,
+      "size_matched_placebo": {
+        "delta_IR_median": -0.116,
+        "delta_IR_90band": [-0.143, -0.092],
+        "real_inside_band": true,
+        "empirical_rank_of_real": 0.833
+      },
+      "information_contrast_vs_placebo": {
+        "delta_IR": 0.0278,
+        "ann_pct": 1.113,
+        "t_nw3": 0.951
+      },
+      "power": {
+        "required_ann_pct": 2.811,
+        "implied_t_threshold": 2.188,
+        "label": "INCONCLUSIVE_BAR_RESTATES_T"
+      },
+      "verdict": "D4_NEGATIVE"
+    }
+  ],
+  "mechanism_separation_D4_mandatory": {
+    "conclusion": "(a) 개입 자체의 잡음 + 슬롯 대체 비용이 지배적. (b) 'M26 정보가 이 소비면에서 역방향'은 지지되지 않는다.",
+    "e1_size_matched_placebo": "3형태 모두 real 델타IR 이 순열 placebo 90% 밴드 안 또는 위. 경험적 순위 F_A 0.333 / F_B 0.917 / F_C 0.833 (1에 가까울수록 무작위 개입보다 나음)",
+    "e2_information_contrast": "real - placebo 중앙계열: F_A 델타IR -0.0433 (t -0.659) / F_B +0.0110 (t +0.308) / F_C +0.0278 (t +0.951) — 전건 |t| < 1",
+    "e3_noise_floor_curve_note": "정보 0(순열)인데도 개입 규모에 비례해 델타IR 이 음으로 간다. base 대비 델타IR 은 정보의 척도가 아니다",
+    "e3_noise_floor_curve": [
+      {
+        "w": 0.05,
+        "names_replaced": 0.739776951672863,
+        "placebo_dIR": -0.00664857505989613,
+        "placebo_ann_pct": -0.0797459795996464
+      },
+      {
+        "w": 0.1,
+        "names_replaced": 1.43866171003717,
+        "placebo_dIR": -0.000550049346104586,
+        "placebo_ann_pct": 0.031680035215111
+      },
+      {
+        "w": 0.2,
+        "names_replaced": 2.71003717472119,
+        "placebo_dIR": -0.0412552654721272,
+        "placebo_ann_pct": -0.134111855224482
+      },
+      {
+        "w": 0.3,
+        "names_replaced": 4.03345724907063,
+        "placebo_dIR": -0.0609359264481858,
+        "placebo_ann_pct": -1.15625908757316
+      },
+      {
+        "w": 0.5,
+        "names_replaced": 6.52044609665428,
+        "placebo_dIR": -0.21640930004549,
+        "placebo_ann_pct": -4.35354491555238
+      }
+    ],
+    "e4_fmb_by_region_note": "score_eff 통제 후 M26 계수는 상위 점수 영역에서 사라지지 않고 오히려 커진다(연 +1.50 -> +3.99%). 전이 실패의 원인은 '상위 영역에 정보가 없어서'가 아니다",
+    "e4_fmb_by_region": [
+      {
+        "sample": "(i) 유동성 적격 전체",
+        "n_months": 269,
+        "avg_n": 221.598513011152,
+        "m26_uni_ann_pct": 2.36509035525494,
+        "m26_uni_t": 2.84119526745266,
+        "m26_ctl_ann_pct": 1.50241891039657,
+        "m26_ctl_t": 1.83721558354586,
+        "score_ctl_ann_pct": 7.06747154597288,
+        "score_ctl_t": 5.45370362500864
+      },
+      {
+        "sample": "(ii) score_eff 상위 100",
+        "n_months": 269,
+        "avg_n": 96.1710037174721,
+        "m26_uni_ann_pct": 2.921039489689,
+        "m26_uni_t": 2.57889879485821,
+        "m26_ctl_ann_pct": 2.17653165478508,
+        "m26_ctl_t": 1.95268234495249,
+        "score_ctl_ann_pct": 10.496240211522,
+        "score_ctl_t": 7.42214425771193
+      },
+      {
+        "sample": "(iii) score_eff 상위 50",
+        "n_months": 269,
+        "avg_n": 47.8959107806691,
+        "m26_uni_ann_pct": 3.49090515075656,
+        "m26_uni_t": 2.21624873863212,
+        "m26_ctl_ann_pct": 3.03298723755562,
+        "m26_ctl_t": 1.910120938495,
+        "score_ctl_ann_pct": 14.8144824769164,
+        "score_ctl_t": 9.18622899388613
+      },
+      {
+        "sample": "(iv) score_eff 상위 20 (북이 실제 보유)",
+        "n_months": 269,
+        "avg_n": 19.1635687732342,
+        "m26_uni_ann_pct": 4.09880741812473,
+        "m26_uni_t": 1.38195087554172,
+        "m26_ctl_ann_pct": 3.98483866377028,
+        "m26_ctl_t": 1.35023208331964,
+        "score_ctl_ann_pct": 10.5849053332748,
+        "score_ctl_t": 4.07727988949414
+      }
+    ],
+    "e5_exchange_rate": {
+      "note": "FMB 기울기 비 M26/score_eff = 0.205~0.213 (top-20 에서 0.376). w=0.30 blend 는 score_eff 0.30sd(연 2.12%)를 팔아 M26 1.0sd(연 1.50%)를 사는 거래 = 사전적으로 -0.62%/yr. 실측 포트폴리오 -1.98%/yr 는 여기에 이산 대체와 회전 비용이 얹힌 값",
+      "score_slope_full_ann_pct": 7.067,
+      "m26_slope_full_ann_pct": 1.502,
+      "implied_w": 0.213
+    },
+    "e6_stock_level_swap": {
+      "dropped_ann_pct": 31.92,
+      "added_ann_pct": 18.2,
+      "edge_real_ann_pct": -13.721,
+      "edge_real_t_nw3": -1.789,
+      "edge_placebo_median_ann_pct": -15.527,
+      "reading": "북 top-20 에서 한 종목을 밀어내는 비용 자체가 연 -14% 대(무작위 교체 -15.5%). 실제 M26 교체는 그중 +1.8%p 만 회수한다 — 정보는 있으나 교환비가 압도적으로 불리"
+    },
+    "e7_size_match_validity": "real F_A 월평균 교체 3.96종 vs placebo(w=0.30) 4.03종 — 대조군 크기 정합 실측 확인",
+    "e8_book_holdings_m26_profile": "북 보유 20종의 M26 분위 평균 0.5895 (유니버스 0.5) · 그중 M26 하위1분위 해당 월평균 1.79종(8.9%) — 인컴번트는 이미 M26 상 약간 유리한 쪽에 서 있어 '고칠 것'이 적다"
+  },
+  "power_verdicts": [
+    {
+      "arm": "F_A_blend030",
+      "observed_ann_pct": -1.9828160973347,
+      "observed_t": -1.38273019193284,
+      "required_ann_pct": 2.81059179116866,
+      "implied_t_threshold": 1.95998516053579,
+      "verdict": "INCONCLUSIVE_UNDERPOWERED"
+    },
+    {
+      "arm": "F_B_filterD1",
+      "observed_ann_pct": -0.448923804628906,
+      "observed_t": -0.326579506570844,
+      "required_ann_pct": 2.81059179116866,
+      "implied_t_threshold": 2.04462688515855,
+      "verdict": "INCONCLUSIVE_BAR_RESTATES_T"
+    },
+    {
+      "arm": "F_C_carve4",
+      "observed_ann_pct": -2.4903908513119,
+      "observed_t": -1.9385615786152,
+      "required_ann_pct": 2.81059179116866,
+      "implied_t_threshold": 2.18781130546663,
+      "verdict": "INCONCLUSIVE_BAR_RESTATES_T"
+    },
+    {
+      "arm": "F_A_lag1",
+      "observed_ann_pct": -3.29855138790296,
+      "observed_t": -2.57239953463131,
+      "required_ann_pct": 2.81059179116866,
+      "implied_t_threshold": 2.19186065803185,
+      "verdict": "INCONCLUSIVE_BAR_RESTATES_T"
+    }
+  ],
+  "stress_and_controls": {
+    "lag1": {
+      "delta_IR": -0.2183,
+      "paired_ann_pct": -3.299,
+      "paired_t_nw3": -2.572,
+      "reading": "|t| 2.572 > 2.0 이고 |효과| 3.30% > 검출 바닥 2.81% — 검출 가능 범위의 악화. M26 을 한 달 더 묵히면 유해가 확정적으로 커진다 = 신호수명이 짧다는 승계 사실(lag1 IC 보존율 0.384)과 정합",
+      "function_label_caveat": "verdict_with_power 는 observed_t 를 양의 방향으로만 검사하므로 이 셀에 INCONCLUSIVE_BAR_RESTATES_T 를 붙인다. 함수 헤더가 명시한 적용 한계이며 여기서는 |t| 와 |효과| 를 직접 대조해 판정했다"
+    },
+    "placebo_median": {
+      "delta_IR": -0.083,
+      "paired_ann_pct": -1.752
+    },
+    "w_curve_diagnostic_no_argmax": [
+      {
+        "w": 0.1,
+        "IR": 1.4127,
+        "delta_IR": 0.0054,
+        "paired_ann_pct": 0.008,
+        "paired_t_nw3": 0.011,
+        "SR_geo": 1.891,
+        "MDD": 0.2324,
+        "turnover_ann": 9.42
+      },
+      {
+        "w": 0.2,
+        "IR": 1.3694,
+        "delta_IR": -0.0379,
+        "paired_ann_pct": -0.944,
+        "paired_t_nw3": -0.841,
+        "SR_geo": 1.834,
+        "MDD": 0.2384,
+        "turnover_ann": 9.32
+      },
+      {
+        "w": 0.3,
+        "IR": 1.3098,
+        "delta_IR": -0.0975,
+        "paired_ann_pct": -1.983,
+        "paired_t_nw3": -1.383,
+        "SR_geo": 1.782,
+        "MDD": 0.2417,
+        "turnover_ann": 9.39
+      },
+      {
+        "w": 0.5,
+        "IR": 1.1071,
+        "delta_IR": -0.3002,
+        "paired_ann_pct": -5.301,
+        "paired_t_nw3": -2.607,
+        "SR_geo": 1.591,
+        "MDD": 0.2554,
+        "turnover_ann": 9.72
+      },
+      {
+        "w": 1,
+        "IR": 0.7457,
+        "delta_IR": -0.6615,
+        "paired_ann_pct": -11.452,
+        "paired_t_nw3": -3.542,
+        "SR_geo": 1.19,
+        "MDD": 0.3128,
+        "turnover_ann": 10.25
+      }
+    ],
+    "w_curve_note": "단조 감소, 봉우리 없음. FMB 함의 w=0.21 부근(w=0.20)도 델타IR -0.038 로 음수 — 선형 최적 교환비조차 이산 top-20 대체에서는 회수되지 않는다. 어떤 w 도 챔피언 승격 금지",
+    "acf_paired_diff_r1_to_r4": [-0.009, 0.076, -0.038, -0.037],
+    "acf_note": "비중첩 월간 수익이라 r1 -0.009 — 겹치는 창 문제 없음. NW lag-3 적정",
+    "time_trend_advisory": "paired 차이의 시간 기울기 -0.00005/yr (t -0.264) — 시대 의존 없음. 분할 없이 연속 조건화(분할은 검정력 파괴)"
+  },
+  "measurement_observation_not_a_proposal": {
+    "title": "슬롯-대체형 편입에서 base 대비 델타IR 은 정보 0 에서도 음수다",
+    "measured": "순열 M26(정보 0)의 델타IR: w=0.05 -0.0066 / w=0.10 -0.0006 / w=0.20 -0.0413 / w=0.30 -0.0609 / w=0.50 -0.2164",
+    "implication": "델타IR>=0.05 게이트를 슬롯-대체형 arm 에 그대로 적용하면 후보는 명목 0.05 가 아니라 '0.05 + 그 개입 규모의 잡음 바닥'을 넘어야 한다. 게이트의 실효 문턱은 개입 형태에 의존한다",
+    "boundary": "이것은 게이트 완화 제안이 아니다(INV-7 — 제약은 고정 축). 측정 성질의 보고이며 처분은 governor 와 도훈 소관. 또한 본 관찰은 슬롯-대체형에 한정된다 — 독립 sleeve 로 편입해 book_weights 를 다시 푸는 경로는 대체가 아니므로 같은 편의가 발생하지 않는다(미측정)",
+    "fq127_intervention_type_label": "F_B 는 filter 형이므로 base 가중 라벨 의무 대상. 본 라운드 base = rank-tilt production 정본(2026-08-02 MAX5 필터가 부호 반전했던 바로 그 가중 규칙)이며 그 위에서 F_B 는 델타IR -0.0079 (t -0.327) = 무해에 가깝다"
+  },
+  "selection_type": "diagnostic_no_argmax",
+  "dsr_gate_applicable": false,
+  "dsr_note": "3형태 + 통제 arm 전량 보고, argmax 선택 연산자 부재(사전등록 고정). 사후에 하나를 고르면 선언 위반이며 그 결과는 무효",
+  "vintage_pin": {
+    "benchmark": "benchmark_pinned_20260702.parquet",
+    "carrier_built": "2026-08-08 08:39:33",
+    "base_panel": "WT_D20260425_010",
+    "m26_panel": "WT_D20260808_002"
+  },
+  "alpha_package_not_emitted": "본 라운드는 신규 알파 설계가 아니라 승계 알파의 북 한계기여 측정이다. 어떤 후보도 전진하지 않으므로 alpha_package.json 을 발행하지 않는다(발행하면 designed alpha 를 주장하는 셈). 가설층은 부모 WT 산출을 승계하며 재작성하지 않았다",
+  "self_adversarial": "stage_artifacts/FQ165_m26_book_marginal/challenge_note.md"
+}
