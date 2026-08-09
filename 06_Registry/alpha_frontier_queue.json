@@ -4032,20 +4032,23 @@
   {
    "id": "FQ-190",
    "lane": "prior_calibration",
-   "title": "long-leg share 정량화 — 롱숏 스프레드 중 long-only 가 실제로 취하는 비율",
-   "hypothesis": "Chen & Welch 수치는 **zero-investment 롱숏**이다. 우리는 long-only 라 short leg 를 하베스트할 수 없으므로 그 수치를 그대로 우리 천장으로 읽으면 과대평가다. 가설: 우리가 이미 측정한 KR 팩터들의 long_side_share 분포를 모으면 롱숏→long-only 전이율이 나온다. M26 실측 0.553 이 현재 **단일 관측**이다. 계통적으로 ~0.5 라면 우리 유효 천장은 7bp 의 절반 수준으로 **정량화된 구조 천장**이 되고, 이는 SR 2.5 경로에서 return-파생 lane 의 우선순위를 수치로 확정한다.",
-   "ev_rationale": "★이 값이 없으면 위 FQ 의 셀 비교가 **단위가 안 맞는다**(롱숏 bp vs long-only 실현). 즉 선행 프로브 성격이다. 기존 측정 재사용이라 신규 백테 비용 0 에 가깝다. 부수 효과: long_side_share 가 팩터별로 크게 갈리면 그 자체가 선별 축이 된다 (long-side 편중 팩터 우선) — 소비면 ①팩터랭킹으로 즉시 환류.",
-   "wall_check": "전이 벽의 **분해 성분** 중 하나(no-short 미하베스트분)를 분리 계량한다. 2026-08-09 M26 카드가 비용·벤치 성분을 가법 분해한 것과 같은 계열이며, 그 카드가 남긴 미분해 성분이 정확히 이것이다.",
-   "data_gate": "없음 — 기존 측정 산출물(period_returns/holdings) 재사용",
-   "owner": "UNCLAIMED — 2607.06502 batch_434 skip 이 발행(2026-08-09).",
+   "title": "롱 레그 실현 수익의 모집단 분포 — screen-tier 재고 전수 (구 'long-leg share' 재명세)",
+   "hypothesis": "★2026-08-09 착수 전 사전 확인으로 **원 명세가 폐기**됐다. 원 가설은 '롱숏 스프레드 중 long-only 가 취하는 비율(long_side_share)을 모아 Chen&Welch 의 7bp 에 곱해 천장을 정량화한다' 였다. 두 지점에서 무너진다. ①`long_side_share` 는 |D10|/(|D10|+|D1|) 즉 **부호 없는 크기 비율**이라 전이율이 아니다 — WT_D20260809_003 실측: Q01_EB 는 top_ann_pct **-3.413%** 인데 long_side_share 0.868 이다. 값이 높다는 건 '롱 쪽이 번다'가 아니라 '롱 쪽이 스프레드 크기를 지배한다'이고 그 지배가 음수일 수 있다. Q01_neutral 의 0.002 는 분모≈0 인 불안정 사례. ②애초에 곱할 필요가 없다 — **`top_ann_pct`(상위 분위 연 초과수익)가 롱 레그 실현값 그 자체**다. 전이 계수를 경유하는 설계가 불필요한 우회였다. ∴ 재명세: 모집단을 정의하고(screen-tier 재고 전수) 그 위에서 **롱 레그 실현 수익의 분포**를 직접 잰다. 가용 5건(M01 +10.47 · M26 +6.82 · Q01_neutral -0.01 · Q01_EB -3.41 · D03 -5.12)은 **형태를 걸치도록 고른 비확률 표본**이라 분포 추정에 쓸 수 없다 — 2/5 양수라는 사실은 방향 힌트일 뿐 모수가 아니다.",
+   "ev_rationale": "Chen&Welch 의 7bp 는 **롱숏 중앙값**이라 long-only 인 우리에겐 그대로 적용 불가다. 우리 쪽 등가물(롱 레그 실현 분포)이 있어야 FQ-189 의 셀 비교가 단위가 맞는다. ★사전 확인이 이미 한 번 값을 했다 — 원 명세대로 돌았으면 부호 없는 비율을 전이 계수로 써서 **음수 전이를 양수로 계상**했을 것이다. 재명세본은 기존 산출물 재사용이라 신규 백테 비용도 낮다.",
+   "wall_check": "전이 벽의 **롱-레그 성분을 모집단 수준에서** 계량한다. 개별 라운드는 이미 top_ann_pct 를 산출해 왔으나 모집단 분포로 모인 적이 없다 — '우리 재료의 롱 레그는 평균적으로 무엇을 버는가'에 답이 없는 상태다. PORT_t 실측 아님(사전 EV 교정)이므로 자본 게이트 무관.",
+   "data_gate": "없음 — 기존 라운드 산출물(top_ann_pct / decile 통계) 재사용. 미산출분만 소급 계산.",
+   "owner": "UNCLAIMED — 2026-08-09 사전 확인으로 재명세(원 명세 폐기). 실행 미착수.",
    "status": "frontier_open",
-   "next_action": "①long_side_share 를 이미 산출한 라운드 전수 수집(M26 0.553 기점) ②미산출 팩터는 holdings×forward-ret 로 소급 산출 ③분포·중앙값 ④위 셀 프로브의 단위 변환 계수로 제공 ⑤팩터별 편차가 크면 선별 축 후보로 FQ 발행",
+   "next_action": "①**모집단 정의 먼저**(비확률 표본 금지) — screen-tier 재고의 포함 기준을 명문화 ②각 재료의 top_ann_pct(및 t) 수집, 미산출분은 holdings×forward-ret 로 소급 ③분포 보고: 중앙값·양수 비율·t 분포. **평균 단일값으로 요약 금지**(오늘 실측 스프레드가 -5.12~+10.47 로 넓다) ④Chen&Welch 7bp/월(=0.84%/년, 롱숏)과 **단위·basis 명시해** 병치 ⑤FQ-189 의 셀 분해에 입력으로 전달. ⚠금지: `long_side_share` 를 전이 계수로 쓰는 것(부호 없음) · 5건 비확률 표본으로 모수 추정.",
    "source_refs": [
     "arXiv 2607.06502 (Chen & Welch, What Useful Alphas?, q-fin.GN 2026-07-07)",
     "stage_artifacts/paper_recharge/alpha_search_queue_done.json (2607.06502 record)",
     "CLAUDE.md 도달 경로 ③ (standalone return-파생 16/16 FAIL posterior)",
-    "memory: project-m26-transition-gap-additive-decomposition-20260809"
-   ]
+    "memory: project-m26-transition-gap-additive-decomposition-20260809",
+    "stage_artifacts/WT_D20260809_003/alpha_validation.json (primary_frame_shapes.arms — long_side_share 정의 및 5건 실측 출처)",
+    "stage_artifacts/WT_D20260809_001/alpha_validation.json (M26 D10 +6.55 / D1 -5.298 → 0.553 정의 확인)"
+   ],
+   "respec_note": "2026-08-09 19:1x — 발행 당일 재명세. 사전 확인 10분이 라운드 설계를 뒤집은 사례 (feedback-precheck-before-round-changes-design). 원 명세는 이력으로만 보존."
   },
   {
    "id": "FQ-191",
