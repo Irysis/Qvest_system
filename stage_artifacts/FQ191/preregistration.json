@@ -1,0 +1,64 @@
+{
+  "round_id": "FQ-191",
+  "parent": "FQ-138 (사전등록 재판정 4축 통과, DiD 연 +26.09% t +3.705)",
+  "written_at": "2026-08-09",
+  "written_before_measurement": true,
+  "title": "계약 국면-조건부 운용 규칙의 자본 자격 — HARD 3종",
+
+  "why": [
+    "FQ-138 이 국면-조건부 초과분이 순풍과 구별됨을 확립했으나 **자본 자격은 주장하지 않았다**(gate_eligible=false).",
+    "무조건부 SIG PORT_t = +0.581 로 HARD 2.95 크게 미달. 국면 조건부가 그것을 문턱까지 올리는가가 이 라운드의 질문.",
+    "★이 저장소에서 **비-return 재료가 자본 문턱에 도전하는 첫 사례**다."
+  ],
+
+  "★the_only_degree_of_freedom_fixed_now": {
+    "issue": "국면 OFF 월에 무엇을 하는가 — 이것이 이 라운드의 유일한 사후선택 여지다. 결과를 보고 고르면 그 결과는 무효.",
+    "options_considered": ["현금(수익 0)", "벤치마크 보유", "계약 sleeve 유지(무조건부와 동일)"],
+    "CHOSEN_BEFORE_MEASUREMENT": "벤치마크 보유",
+    "rationale": [
+      "①현금은 long-only 운용에서 비현실적 — 실제 북은 항상 주식에 있다. 현금 선택은 국면 타이밍 알파를 이 라운드에 섞는다(별개 질문).",
+      "②벤치 보유는 '계약 sleeve 를 켜고 끄는' 순수 선별 결정만 남긴다 — FQ-138 이 잰 것과 같은 축.",
+      "③계약 sleeve 유지는 무조건부와 동일해져 라운드가 무의미."
+    ],
+    "no_sweep": "세 옵션 중 argmax 선택 금지. 나머지 둘은 **감도로 병기 보고**하되 판정은 '벤치 보유' 단일 규칙으로만 한다.",
+    "switching_cost": "국면 전환 시 |Δ보유명목| × 15bps 실과금. 계약 sleeve ↔ 벤치 전환은 사실상 전량 교체이므로 회전율이 크다 — 그것을 그대로 문다."
+  },
+
+  "design": {
+    "rule": "국면 ON(t-1 mega_spread ≤ 0) 월: 계약 신호 top-25 EW · OFF 월: 벤치마크 보유",
+    "measurement": "canonical_screen_bt 계약 경로로 ON 월 포트 수익을 얻고, OFF 월은 BM_Ret 로 채워 단일 NAV 계열 구성 → build_benchmark_compare 로 PORT_t 산출",
+    "constraints": "top 25 · long-only · [0,0.20] · Σw=1 · 유동성 2e8 · 15bps one-way (전부 고정 축)",
+    "window": "★2026 제외판을 정본으로 한다 (계약 패널 종목수익 물리불가 68건 중 63건이 2026, 미수리). 포함판은 감도로 병기.",
+    "vintage_pin": "gridx_* + panelx_A (FQ-138 과 동일 핀). 산출물에 태그 기록."
+  },
+
+  "HARD_3_gates": {
+    "port_t_nw_lag3": {"threshold": 2.95, "note": "Harvey-Liu-Zhu 문헌-레벨 다중검정 반영"},
+    "oos_retention": {"threshold": 0.7, "band": "[0.5,0.7) 은 보강증거 2/3 시 조건부", "hard_fail": "<0.5", "authority": "essence_score.R (본 라운드는 canonical 근사도 병기하되 권위는 essence_score)"},
+    "calmar": {"threshold": 0.64, "note": "=16%/25%"}
+  },
+
+  "dsr_applicability": {
+    "selection_type": "chain_not_applicable_single_rule",
+    "n_trials": 1,
+    "rationale": "사전등록된 단일 운용 규칙 1개를 판정한다. OFF 월 처리 3안 중 argmax 선택을 하지 않으며(위 고정), 문턱·국면 정의는 FQ-138 에서 FROZEN 됐다. sweep 형 selection 아님 ⇒ DSR 게이트 부적용(measurement-graduation §3).",
+    "if_violated": "사후에 OFF 처리나 문턱을 바꾸면 그 결과는 무효이며 새 사전등록이 필요하다."
+  },
+
+  "disposition_rules_fixed_before_results": [
+    {"id": "H1", "condition": "HARD 3종 전부 통과", "verdict": "CAPITAL_ELIGIBLE_CANDIDATE", "action": "★governor admit 은 **자동화 금지** — Q-Lead + 도훈 수동 confirm. 본 라운드는 후보 자격까지만."},
+    {"id": "H2", "condition": "PORT_t 통과 ∧ oos_retention 또는 calmar 미달", "verdict": "PARTIAL", "action": "미달 게이트를 명시하고 screen-tier 라우팅(오버레이/선별 라벨). 자본 경로 아님."},
+    {"id": "H3", "condition": "PORT_t 미달", "verdict": "NOT_CAPITAL_ELIGIBLE", "action": "★국면-조건부는 자본이 아니라 **오버레이/선별 라벨** 소비면으로 확정 라우팅(FQ-138 live_trigger ③이 이미 지정)."},
+    {"id": "H4", "condition": "회전율이 Implementation Discipline 기준선 11.0/yr 를 크게 초과", "verdict": "실행가능성 경고 병기", "action": "판정과 별개로 기록. 회전율만으로 기각하지 않되 소비면 설계에 반영."}
+  ],
+
+  "known_risks_declared": [
+    "★국면 ON 27개월뿐 — HARD 3종 중 oos_retention 은 분할을 요구하므로 검정력이 특히 낮다. 미달 시 '효과 부재' 가 아니라 '검정력 부족' 으로 라벨할 것.",
+    "국면 스위칭은 사실상 전량 교체라 회전율이 매우 클 것 — 15bps 실과금이 PORT_t 를 크게 깎을 수 있다. 그것이 판정의 일부다.",
+    "★2026 오염 미수리 — 정본은 제외판. 수리 후 포함판이 정본이 되어야 한다.",
+    "무조건부 PORT_t +0.581 에서 출발하므로 2.95 도달은 큰 도약이다. 사전 기대는 낮다 — 그럼에도 측정하는 이유는 H3 라우팅을 확정하기 위함."
+  ],
+
+  "self_adversarial_required": true,
+  "close_round_required": true
+}
