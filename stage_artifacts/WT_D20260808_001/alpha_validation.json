@@ -573,8 +573,14 @@
         "hansen_hodrick_note": "비-PSD 분산 -8.311e-06 — 이 커널은 이 계열에서 유효 추정 불가",
         "t_mbb_L60_B2000": -10.83
       },
-      "retention_range_D03": [0.549, 0.639],
-      "retention_range_Q01": [0.334, 0.371],
+      "retention_range_D03": [
+        0.549,
+        0.639
+      ],
+      "retention_range_Q01": [
+        0.334,
+        0.371
+      ],
       "reproduction_verdict_D03": "불재현",
       "reproduction_verdict_Q01": "불재현",
       "verdict": "**크기 불재현 · 방향 재현.** 섹터 정의 3종(RAWDATA Sector · Sector_Lv2 · WT-009 sector_panel) x 통계 2종(중앙값·평균) 12셀 전수에서 잔존율은 D03 [0.549, 0.639] · Q01 [0.334, 0.371] 이며 렌즈4 의 0.46 / 0.24 는 두 구간 밖이다. ★단 방향 주장은 재현된다: Q01 gap 은 D03 보다 섹터 구성 귀속이 훨씬 크다. 실측 귀속률 = Q01 63~67%가 섹터 / D03 36~45%가 섹터. 따라서 '주장 A 는 크기가 줄되 존폐로는 살아남는다' — 섹터-중립 잔차 gap 은 교정 SE 에서도 여전히 유의하다(D03 t −5.89 · Q01 t −11.17, lag-60). Q01 의 β-drag 는 과반이 섹터 구성이지만 종목 수준 성분도 소멸하지 않는다.",
@@ -822,6 +828,53 @@
       "what": "같은 관측치에 두 값이 조정 없이 공존하던 결함을 해소했다. F3 β: alpha_package 0.765/0.979 vs alpha_validation 0.709/0.889. F2 t: wt122_results −5.15/−3.75 vs alpha_validation −11.87/−10.17.",
       "resolution": "본 라운드가 원 사양을 직접 재측정한 결과 F3 β는 0.7646/0.9791(D03) · 0.7317/0.9806(Q01) 로 **alpha_package 판본이 맞고 alpha_validation 판본이 틀렸다**. F2 raw t 도 −5.15/−3.75(wt122_results)가 재현된다. alpha_validation 의 −11.87/−10.17 · 0.709/0.889 는 병행 중복 실행분의 전사로 보이며 측정 객체가 보존돼 있지 않아 출처 검증이 불가능하다. 구 값은 superseded_ 로 보존.",
       "provenance_gap": "★별건: alpha_validation 의 placebo.seeds_24_W3 8값도 측정 객체 없이 probe_adversarial.R 콘솔 출력에서 전사된 손코딩 리터럴이다(RDS 미보존). 본 라운드는 이를 재산출하지 않았으므로 값을 그대로 두되 provenance_gap 라벨을 붙인다 — 재인용 시 재산출 필요."
+    },
+    "task5_false_statement_correction": {
+      "correction_id": "false_statement_correction_20260809",
+      "raised_by": "적대검증 종합 (행 번호 특정) → 본 라운드가 독립 재측정으로 확인",
+      "claim_A": {
+        "false_statement": "D03 5분위 평균수익이 Q1 +13.1% → Q5 +8.0% 로 **단조 감소**",
+        "measured": {
+          "repaired_panel_quintile_ann_pct": [12.961, 15.539, 14.936, 10.901, 7.927],
+          "superseded_panel_quintile_ann_pct": [12.912, 15.443, 14.297, 11.769, 8.189],
+          "argmax_quintile": 2,
+          "q1_to_q2_pp": 2.531,
+          "monotonicity": 0.25,
+          "spread_q5_minus_q1_ann_pct": {
+            "repaired": -5.035,
+            "superseded": -4.723
+          },
+          "spread_t_nw_lag3": {
+            "repaired": -1.054,
+            "superseded": -1.018
+          },
+          "spread_ci_ann_pct_superseded": [-13.854, 4.408],
+          "rank_ic_superseded": 0.041185,
+          "rank_ic_harvey_t_superseded": 3.703
+        },
+        "corrected_statement": "Q2 정점 역U + 상위 3분위 하락. Q1→Q2 는 +2.53%p **상승**하고 하락은 Q3→Q5 구간에 국한된다. Q5−Q1 평균 스프레드는 연 -4.72%(NW t -1.02, CI [-13.85, +4.41]) 로 **비유의**. 확립 사실은 '역전'이 아니라 **'순위/중앙값 양(+) ∧ 평균 스프레드 비유의'**.",
+        "self_contradiction": "같은 문장이 함께 보고한 monotonicity 0.25 가 이미 비단조를 뜻한다 — 수치와 서술이 자기모순이었고 아무도 검산하지 않았다.",
+        "downstream_impact": "이 서술은 '고변동 꼬리의 양의 왜도가 평균을 끌어올린다' → 'WT-021 D03 standalone PORT_t −1.73 의 산술적 정체' → '제거 대상이 평균 기여가 높은 종목이라 희석이 손해' 로 3단 연결됐다. 평균 스프레드가 비유의인 이상 이 연쇄는 **약한 후보**로만 남으며 '확립'으로 인용할 수 없다.",
+        "propagation_sites_corrected": ["qepm/mailbox/worktask/WT-D20260808_001/alpha_package.json (challenge_flags)", "qepm/mailbox/worktask/WT-D20260808_001/challenge_note.md:87", "qepm/mailbox/worktask/WT-D20260808_001/challenge_note_contract_repair.md:80", "stage_artifacts/WT_D20260808_001/alpha_validation_replication_20260808.json:56(headline),:60(interpretation)", "stage_artifacts/WT_D20260808_001/create_wt2.R:10", "stage_artifacts/WT_D20260808_001/repair_package_contract.R:176", "stage_artifacts/WT_D20260808_001/alpha_validation.json (본 블록)"],
+        "preservation": "전 지점에서 구 문구를 삭제하지 않고 superseded_/취소선/주석으로 보존."
+      },
+      "claim_B": {
+        "false_label": "'관측 0.79%/0.81%' (create_wt2.R:9 · send_brief.R:18)",
+        "actual_identity": "preregistration.json::power_prereg 의 prior_effect_from_F1.implied_delta_ann_pct — F1(분위 gap)에서 유도한 **사전 기대치**이며 관측이 아니다.",
+        "prereg_values": {
+          "D03_EWMA": 0.79,
+          "Q01_EB": 0.81
+        },
+        "actual_observation_ann_pct": {
+          "cell": "W1_recon_ew25 q20",
+          "D03_EWMA": -3.138,
+          "Q01_EB": 1.356
+        },
+        "corrected_statement": "사전 기대치(F1 기반 예측) +0.79%/+0.81% 대비 **실제 관측은 D03 -3.14%/yr(부호 반대) · Q01 +1.36%/yr** 이다. 사전 기대치를 관측으로 표기하면 '예측이 맞았다'는 인상을 주는데 D03 은 방향 자체가 반대였다.",
+        "propagation_sites_corrected": ["stage_artifacts/WT_D20260808_001/create_wt2.R:9", "stage_artifacts/WT_D20260808_001/send_brief.R:18"]
+      },
+      "lesson": "두 오류의 공통 기전 = **자기 결론을 지지하는 방향의 수치를 검산 없이 승격**. A 는 원 데이터 배열이 바로 옆에서 반증하고 있었고(quintile 배열 · monotonicity 0.25), B 는 원 필드명(prior_effect_from_F1)이 정체를 명시하고 있었다. 둘 다 '값을 옮길 때 출처 필드를 함께 읽었으면' 막혔다 — audit_input 이 강제하려는 그 습관이다.",
+      "provenance": "stage_artifacts/WT_D20260808_001/verification_followup/probe_d03_quintile.R + preregistration.json 원 필드 조회"
     }
   }
 }

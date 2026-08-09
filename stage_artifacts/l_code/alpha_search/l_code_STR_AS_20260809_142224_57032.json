@@ -1,0 +1,70 @@
+{
+  "l_code": "L-AS-20260809_142224_57032",
+  "strategy_id": "STR_AS_20260809_142224_57032",
+  "grade": "B",
+  "core_reference": "업종-중립 순이익률 수준 (i_PM = 업종내 Z-score of TTM NetIncome/Revenue) — FQ-100: rank-IC 0.0143 양 시대 안정, PORT_t 전이 검증",
+  "lesson_text": "FQ100_ipm_sector_neutral: 등급 B, 연복리 10.2% (벤치마크 대비 -0.3%p), 샤프 0.46. 근접 탈락 — 보강 후 재검증 후보. [실측재측정: essence F, PORT_t(NW) -0.13, metric_type=backtested]",
+  "tags": ["ALPHA_SEARCH", "FAST_VALIDATION", "VALIDATED_HARD_FAIL"],
+  "created_at": "2026-08-09",
+  "research_mode": "alpha_search",
+  "created_by": "AlphaSearch",
+  "metric_type": "backtested",
+  "construction_type": "single_factor_long_only",
+  "lcode_schema_version": 2,
+  "cagr_pct": 10.21,
+  "sharpe": 0.547,
+  "mdd_pct": 60.27,
+  "excess_cagr": -0.27,
+  "mechanism_hypothesis": "가설 '업종-중립 순이익률 수준 (i_PM = 업종내 Z-score of TTM NetIncome/Revenue) — FQ-100: rank-IC 0.0143 양 시대 안정, PORT_t 전이 검증' — 검증 결과 지배 요인: FMT-01(MDD 60.3% > 45% — 선택 종목군의 위기 동반급락(구조적 꼬리위험)); FMT-04(MDD 60.3% > 35% & BM상관 0.81 >= 0.7 — 위기국면 동조 낙폭(국면필터 부재))",
+  "data_supported_conclusion": "측정치(proxy hurdle + 계약 실측 병기): CAGR 10.2% (BM 대비 -0.3%p), 샤프 0.46, MDD -60.3%, IR -0.02, 회전율 연 62%, OOS retention 0.66 | 실측(backtested): essence F, PORT_t(NW lag-3) -0.13, OOS_ret -1.53.",
+  "next_probe": "MDD 축 탈락(60.3%) — 신호력 보존 시 OVERLAY_CANDIDATE 라우트(국면/DD overlay는 S5/QEPM 단계) 또는 저변동 결합 재검증.",
+  "fmt_codes": [
+    "FMT-01",
+    "FMT-04"
+  ],
+  "oos_retention": -1.533,
+  "falsification_attempts": [
+    {
+      "test": "PIT 정적스캔(detect_lookahead)",
+      "result": "survived",
+      "effect_retained": 1,
+      "detail": "CLEAN — 위반 시 백테 중단 정책으로 emit 시점 통과 보장"
+    },
+    {
+      "test": "IS65/OOS35 활성SR retention (hurdle D062, proxy) — 과적합 반증 시도",
+      "result": "survived",
+      "effect_retained": 0.66,
+      "detail": "retention 0.66 (measurement-graduation §3 하한 0.5 기준)"
+    },
+    {
+      "test": "계약 실측 재검(essence v2, backtested)",
+      "result": "survived",
+      "effect_retained": -1.533,
+      "detail": "oos_retention -1.53 / DSR NA / hard_fail=FALSE"
+    }
+  ],
+  "proxy_metrics": {
+    "cagr_pct": 10.22,
+    "sharpe": 0.456,
+    "mdd_pct": 60.27,
+    "excess_cagr": -0.27,
+    "source": "run_hurdle_gate (proxy). excess_cagr는 계약 미산출 — 상단 excess_cagr도 proxy값 유지"
+  },
+  "portfolio_alpha_t": -0.132,
+  "authoritative": {
+    "essence_grade": "F",
+    "portfolio_alpha_t_nw_lag3": -0.132,
+    "oos_retention": -1.533,
+    "dsr": "NA",
+    "audit_integrity": "WARNING",
+    "selection_type": "chain",
+    "chain_qualification": {
+      "selection_operator": "none_single_run",
+      "iteration_reason_logged": true,
+      "is_only_selection": "not_applicable_single_run",
+      "holdout_single_view": "not_queried_by_this_script",
+      "note": "run_alpha_search 1회=1가설 1전략 단일 실행(sweep 아님). 반복 개선 체인의 IS-only 변형선택·holdout 1회 규약 준수는 호출자 책임 (measurement-graduation §3 chain 자격요건 — 미충족 시 sweep 재분류 대상)."
+    },
+    "source": "authoritative_remeasure.json"
+  }
+}

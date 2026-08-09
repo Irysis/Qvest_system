@@ -173,7 +173,13 @@ pkg$challenge_flags <- c(pkg$challenge_flags, list(
   "[병행 중복 실행] 동일 WT 를 두 alpha-research 실행이 병렬 수행했다. 핵심 수치는 독립 재현됨(P1: D03 −3.443/t −1.093 · Q01 +3.771/t +1.606 양쪽 일치, F1/F4 일치, p_hit 0.386 vs 0.382). 이는 AX-008 triangulation 상 유리하나 중복 실행 자체는 v8.3 in-flight 인덱싱이 막았어야 할 사건 — Q-Lead 보고 대상.",
   "[추가 실측] F2 사이즈 교락 통제 — log(시총) 통제 후에도 개인 순매수 집중 잔존(D03 t −4.29 잔존 0.83 · Q01 t −4.33 잔존 1.13). 사이즈 대용 가설 배제.",
   "[추가 실측] Q01_EB rank-IC 의 시기 편중 — P1(2001-2014) +0.0327 t 2.78 / P2(2015-2019) −0.0010 / P3(2020-2026) −0.0037. 전표본 F1·P1 결과는 pre-2015 가중이다. 분할 판정이 아니라 advisory 진단의 정직 라벨.",
-  "[추가 실측] D03_EWMA 순위↔평균 부호 역전 — rank-IC Harvey-t +3.50(3.0 통과)인데 5분위 평균 연수익은 Q1 +13.1% → Q5 +8.0% 로 단조 감소(monotonicity 0.25). IC→PORT 전이 벽의 산술적 정체이며 'rank-IC Harvey-t>=3 ∧ monotonicity<0.5' 를 transfer_negative_component 자동 라벨 규칙으로 제안(소비면 ⑥).",
+  ## ★[2026-08-09 verification_followup 정정] 아래 문장은 **거짓 서술**을 담고 있었다.
+  ##   원문: "... 5분위 평균 연수익은 Q1 +13.1% → Q5 +8.0% 로 단조 감소(monotonicity 0.25)."
+  ##   실측: 단조가 아니라 **Q2 정점 역U형** [12.9, 15.4, 14.3, 11.8, 8.2] (Q1→Q2 +2.5%p 상승).
+  ##   더구나 Q5−Q1 평균 스프레드는 연 −4.72% (NW t −1.02) 로 **비유의**.
+  ##   같은 문장의 monotonicity 0.25 가 이미 비단조를 뜻해 수치와 서술이 자기모순이었다.
+  ##   ★이 스크립트는 이미 실행된 이력이다 — 재실행하면 정정 문안이 반영된다.
+  "[추가 실측 · 2026-08-09 정정] D03_EWMA 순위↔평균 형상 불일치 — rank-IC Harvey-t +3.46~3.50(3.0 통과)인데 5분위 평균 연수익은 Q2 정점 역U형 [12.9, 15.4, 14.3, 11.8, 8.2] (Q1→Q2 +2.5%p 상승, 하락은 Q3→Q5 국한). Q5−Q1 평균 스프레드 연 −4.72%(NW t −1.02) = 비유의. 확립 사실은 '부호 역전'이 아니라 '순위 통계 양(+) ∧ 평균 스프레드 비유의'. 'rank-IC Harvey-t>=3 ∧ monotonicity<0.5' 자동 라벨 제안은 유지하되 명칭은 '순위-평균 형상 불일치'가 정확(소비면 ⑥). 출처 = verification_followup/probe_d03_quintile.R",
   "[계약 표면 분열 보고] schema 는 ast_node.args 에 number 스칼라를 허용(윈도우·경계)하는데 ast_verify.py 는 비-dict 노드를 '노드 형상 오류'로 FAIL_CONTRACT 처리한다. init prompt 의 표준 예시(TS_SUM(leaf, 3))조차 이 형태다. ALB-005 와 동류의 두 계층 불일치 — 인프라 백로그 등재 권고."))
 
 write_json(pkg, PKG_F, pretty = TRUE, auto_unbox = TRUE, digits = NA, null = "null")
