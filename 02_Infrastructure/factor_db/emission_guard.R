@@ -207,12 +207,275 @@ factor_emission_check <- function(produced, reg_meta, ledger, ym, baseline = NUL
   report
 }
 
+#==============================================================================
+# 정체 검사 3축 (D / T / I) — 2026-08-09 FQ-210 실측 배선
+#
+# 왜 필요한가: 위 factor_emission_check 는 `n_rows > 0` 만 본다. 그래서
+#   · 다른 팩터와 **값이 같은** 배출 (C01≡C10, C11≡M25, C01≡C09 …)
+#   · 행은 나오는데 **횡단면 상수**라 소비면에 0으로 도달하는 배출
+#     (C15 50/50월 · D60/Q16 각 22/53월 = 2015-06~2025-12 연속 11년)
+# 을 **원리적으로** 못 본다. 존재를 확인했을 뿐 정체를 확인하지 않았다.
+#
+# ★추가 IO 가 0이다: 빌더가 넘기는 `result` 는 이미
+#   (Date, Ticker, Factor_Name, Raw_Value, Z_Score, Z_Sector, Rank_Pct, Coverage)
+#   전 스키마를 갖고 있는데(factor_db_builder.R:928) 기존 진입점이 첫 줄에서
+#   `n_rows` 만 세고 버렸다. 그 자리에서 세 축을 전부 잰다.
+#
+# ★★계측 사망 방지 (이 배선의 1차 교훈):
+#   FQ-210 초판이 "죽은 배출"의 판별통계로 `sd(Z_Score)` 를 썼다가 331종 전부
+#   정확히 1.0000 을 얻었다 — Z 는 횡단면 표준화 산물이라 sd=1 이 **항등**이고
+#   판별력이 원리적으로 0이다. 그런데 산출물은 "죽은 배출 0종"이라는 **결론처럼**
+#   생긴 문자열이었다. 재확인(2026-08-09, 커넥터 가시 989셀):
+#     sd(Z)      범위 [1.000000, 1.000000] · 고유값 1   → 죽은 통계
+#     modal_frac 범위 [0.010008, 0.983711] · 고유값 799 → 살아있음
+#     uniq_ratio 범위 [0.000589, 0.983240] · 고유값 824 → 살아있음
+#   ⇒ 축 D 는 sd 가 아니라 **Coverage 합**으로 판정하고(빌더가 sd<1e-12 를 이미
+#     Z=NA→Coverage=FALSE 로 번역해 둔다), 축 T 는 modal_frac 을 쓴다.
+#   ⇒ 나아가 **통계가 그 면에서 변동하는지를 가드 자신이 매 빌드 재확인**한다
+#     (`stat_liveness`). 퇴화하면 "경보 0"이 아니라 `UNMEASURED` 를 낸다.
+#     ★0 을 결론으로 발행하지 않는 것이 이 축들의 계약이다.
+#
+# 설계 원칙은 위와 동일 — 전부 warn + 기록. **stop() 없음.**
+#   정당한 상수 팩터(시장레벨 15종)가 실재하므로 전면 차단은 유해하다.
+#==============================================================================
+
+#------------------------------------------------------------------------------
+# registry `dedup` → 선언된 중복 쌍 집합. 축 I 는 이 대조 없이는 소음이 된다
+# (실측: 대조 없으면 |rho|>=0.99 가 139쌍 상시 발화 → 곧 무시됨. 대조 붙이면 5쌍).
+#------------------------------------------------------------------------------
+emission_dedup_pairs <- function(registry) {
+  if (is.character(registry) && length(registry) == 1L) {
+    if (!file.exists(registry)) return(character(0))
+    registry <- fromJSON(registry, simplifyVector = FALSE)
+  }
+  if (!is.list(registry) || length(registry) == 0L) return(character(0))
+  keys <- names(registry)
+  clus <- vapply(keys, function(k) {
+    v <- registry[[k]]$dedup$cluster
+    if (is.null(v) || length(v) == 0L) NA_character_ else as.character(v)[1]
+  }, character(1))
+  pk <- function(a, b) paste(pmin(a, b), pmax(a, b), sep = "||")
+  out <- character(0)
+  # (1) 같은 cluster 안의 모든 쌍
+  for (cl in unique(clus[!is.na(clus)])) {
+    mem <- sort(keys[!is.na(clus) & clus == cl])
+    if (length(mem) >= 2L) {
+      cb <- utils::combn(mem, 2L)
+      out <- c(out, pk(cb[1, ], cb[2, ]))
+    }
+  }
+  # (2) canonical / aliases / partners 로 명시된 쌍
+  for (k in keys) {
+    d <- registry[[k]]$dedup
+    if (is.null(d)) next
+    linked <- unlist(lapply(c("canonical", "aliases", "partners"), function(f) {
+      v <- d[[f]]; if (is.null(v)) character(0) else as.character(unlist(v))
+    }), use.names = FALSE)
+    linked <- linked[nzchar(linked) & linked != k]
+    if (length(linked)) out <- c(out, pk(rep(k, length(linked)), linked))
+  }
+  unique(out)
+}
+
+#------------------------------------------------------------------------------
+# 선언 래칫 — 정당한 상수/중복을 축별로 선언한다 (emission_expected_absent 방식 답습)
+#------------------------------------------------------------------------------
+emission_load_identity_baseline <- function(path) {
+  empty <- data.table(factor = character(), axis = character(),
+                      reason = character(), diagnosed = logical())
+  if (is.null(path) || !nzchar(path) || !file.exists(path)) return(empty)
+  b <- tryCatch(fromJSON(path, simplifyVector = FALSE), error = function(e) NULL)
+  if (is.null(b) || is.null(b$declared) || length(b$declared) == 0L) return(empty)
+  rbindlist(lapply(b$declared, function(e) data.table(
+    factor    = as.character(e$factor)[1],
+    axis      = if (is.null(e$axis)) "D" else as.character(e$axis)[1],
+    reason    = if (is.null(e$reason)) NA_character_ else as.character(e$reason)[1],
+    diagnosed = isTRUE(e$diagnosed))))
+}
+
+#------------------------------------------------------------------------------
+# ★핵심 순수 함수 — 위반 주입 테스트가 직접 구동하는 지점
+#
+# @param result     data.table(Factor_Name, Ticker, Raw_Value, Z_Score, Coverage)
+#                   = 빌더가 write 직전에 쥐고 있는 바로 그 객체
+# @param dedup_pairs emission_dedup_pairs() 산출 ("a||b" 정렬 키)
+# @param identity_baseline emission_load_identity_baseline() 산출
+# @return list(axis_D, axis_T, axis_I, warnings, verdict)  ★stop() 하지 않는다
+#------------------------------------------------------------------------------
+factor_identity_check <- function(result, ym,
+                                  dedup_pairs = character(0),
+                                  identity_baseline = NULL,
+                                  tie_warn = 0.99, tie_watch = 0.95,
+                                  rho_warn = 0.999, min_obs = 30L,
+                                  value_col = "Z_Score",
+                                  max_identity_factors = 1200L) {
+  ym_cur <- as.character(ym)[1]
+  if (is.null(identity_baseline)) {
+    identity_baseline <- data.table(factor = character(), axis = character(),
+                                    reason = character(), diagnosed = logical())
+  }
+  decl_axis <- function(ax) identity_baseline[axis == ax | axis == "ALL", factor]
+  warnings <- character(0)
+  na_dt <- function(...) data.table(...)
+
+  # ── 입력 계약 검사. ★못 재는 상태를 "이상 없음"으로 내려앉히지 않는다 ─────────
+  need <- c("Factor_Name", "Coverage")
+  missing_cols <- if (!is.data.table(result)) need else setdiff(need, names(result))
+  if (length(missing_cols) > 0L || is.null(result) || nrow(result) == 0L) {
+    why <- if (is.null(result) || !is.data.table(result)) "result 가 data.table 이 아님"
+           else if (nrow(result) == 0L) "result 0행"
+           else sprintf("필수 컬럼 결측: %s", paste(missing_cols, collapse = ","))
+    return(list(guard = "factor_identity_check", version = "1.0", ym = ym_cur,
+                axis_D = list(status = "UNMEASURED", reason = why, dead = character(0),
+                              dead_declared = character(0), detail = na_dt()),
+                axis_T = list(status = "UNMEASURED", reason = why, tie_warn = character(0),
+                              tie_watch = character(0), stat_liveness = NA_real_, detail = na_dt()),
+                axis_I = list(status = "UNMEASURED", reason = why, undeclared = na_dt(),
+                              n_pairs_hit = 0L, n_declared = 0L, detail = na_dt()),
+                warnings = sprintf("[identity_guard] %s — 3축 전부 측정 불가 (%s). ★'경보 0'이 아니라 UNMEASURED 다", ym_cur, why),
+                verdict = "UNMEASURED"))
+  }
+
+  cov_ok <- result$Coverage %in% TRUE
+  # ── 축 D: 무분산/죽은 배출 (행은 나오는데 소비면 도달 0) ────────────────────
+  #   ★sd 로 판정하지 않는다 — 빌더가 sd<1e-12 를 이미 Z=NA→Coverage=FALSE 로
+  #     번역해 두었고, Z 면의 sd 는 표준화 항등이라 판별력이 0이다.
+  dD <- result[, .(n_rows = .N, n_cov = sum(Coverage %in% TRUE),
+                   n_tickers = uniqueN(Ticker)), by = Factor_Name]
+  dD[, dead := n_rows > 0L & n_cov == 0L]
+  dead_all  <- sort(dD[dead == TRUE, Factor_Name])
+  dead_decl <- intersect(dead_all, decl_axis("D"))
+  dead_new  <- setdiff(dead_all, dead_decl)
+  if (length(dead_new) > 0L) {
+    warnings <- c(warnings, sprintf(
+      "[identity_guard] %s — 죽은 배출(축 D) %d종: 행은 배출되나 Coverage 전건 FALSE → 소비면 0행이고 선언에도 없음 → %s",
+      ym_cur, length(dead_new), paste(dead_new, collapse = ", ")))
+  }
+
+  # ── 축 T·I 는 소비면(커버된 행) 위에서 잰다 ─────────────────────────────────
+  vcol <- if (value_col %in% names(result)) value_col else NA_character_
+  live <- if (!is.na(vcol)) result[cov_ok & is.finite(get(vcol))] else result[0L]
+
+  axis_T <- list(status = "UNMEASURED", reason = NA_character_,
+                 tie_warn = character(0), tie_watch = character(0),
+                 stat_liveness = NA_real_, detail = na_dt())
+  axis_I <- list(status = "UNMEASURED", reason = NA_character_, undeclared = na_dt(),
+                 n_pairs_hit = 0L, n_declared = length(dedup_pairs), detail = na_dt())
+
+  if (is.na(vcol)) {
+    r <- sprintf("value_col '%s' 부재 — 축 T/I 측정 불가", value_col)
+    axis_T$reason <- r; axis_I$reason <- r
+    warnings <- c(warnings, sprintf("[identity_guard] %s — %s. ★'경보 0'이 아니라 UNMEASURED", ym_cur, r))
+  } else if (nrow(live) == 0L) {
+    r <- "커버된 유한값 0행 — 축 T/I 측정 불가"
+    axis_T$reason <- r; axis_I$reason <- r
+    warnings <- c(warnings, sprintf("[identity_guard] %s — %s. ★'경보 0'이 아니라 UNMEASURED", ym_cur, r))
+  } else {
+    # ── 축 T: 동률/준-죽은 배출 ──────────────────────────────────────────────
+    tstat <- live[, {
+      v <- sort(round(get(vcol), 10))
+      r <- rle(v)
+      .(n_obs = length(v), modal_frac = max(r$lengths) / length(v),
+        uniq_ratio = length(r$lengths) / length(v))
+    }, by = Factor_Name]
+    tstat <- tstat[n_obs >= min_obs]
+    if (nrow(tstat) == 0L) {
+      axis_T$reason <- sprintf("min_obs=%d 이상인 팩터 없음", min_obs)
+      warnings <- c(warnings, sprintf("[identity_guard] %s — 축 T %s. ★UNMEASURED", ym_cur, axis_T$reason))
+    } else {
+      # ★통계 자신의 생존 확인 — 퇴화하면 '경보 0'이 아니라 UNMEASURED 를 낸다
+      liveness <- if (nrow(tstat) >= 10L) stats::sd(tstat$modal_frac, na.rm = TRUE) else NA_real_
+      axis_T$stat_liveness <- liveness
+      if (nrow(tstat) >= 10L && (is.na(liveness) || liveness < 1e-9)) {
+        axis_T$status <- "UNMEASURED"
+        axis_T$reason <- sprintf("modal_frac 이 %d종에서 전부 동일(sd=%.3e) — 계측 사망 (sd(Z)=1 항등과 같은 계통)",
+                                 nrow(tstat), liveness)
+        warnings <- c(warnings, sprintf("[identity_guard] %s — ★축 T 계측 사망 의심: %s", ym_cur, axis_T$reason))
+      } else {
+        axis_T$status <- "OK"
+        tw <- sort(setdiff(tstat[modal_frac >= tie_warn, Factor_Name], decl_axis("T")))
+        tc <- sort(setdiff(tstat[modal_frac >= tie_watch & modal_frac < tie_warn, Factor_Name], decl_axis("T")))
+        axis_T$tie_warn <- tw; axis_T$tie_watch <- tc
+        if (length(tw) > 0L) {
+          warnings <- c(warnings, sprintf(
+            "[identity_guard] %s — 동률 배출(축 T) %d종: 최빈값 점유율 >= %.2f → %s",
+            ym_cur, length(tw), tie_warn,
+            paste(sprintf("%s(%.4f)", tw, tstat[match(tw, Factor_Name), modal_frac]), collapse = ", ")))
+        }
+      }
+      axis_T$detail <- tstat[order(-modal_frac)]
+    }
+
+    # ── 축 I: 정체/중복 배출 (랭크 상관) ─────────────────────────────────────
+    #   ★값 차이(maxdiff)가 아니라 **랭크**로 잰다. C09 = sign(sue)*sue^2 는
+    #     순증가 단조변환이라 maxdiff 1.85 인데 순위는 동일 — 값 축은 못 잡는다.
+    #   ★계열(prefix) 안으로 좁히지 않는다. C11≡M25 는 계열 교차이고,
+    #     전x전 격자 비용은 월 0.85초로 실측됐다.
+    nf <- uniqueN(live$Factor_Name)
+    if (nf < 2L) {
+      axis_I$reason <- sprintf("팩터 %d종 — 쌍 없음", nf)
+    } else if (nf > max_identity_factors) {
+      axis_I$reason <- sprintf("팩터 %d종 > 상한 %d — 격자 생략", nf, max_identity_factors)
+      warnings <- c(warnings, sprintf("[identity_guard] %s — 축 I %s. ★UNMEASURED", ym_cur, axis_I$reason))
+    } else {
+      W <- dcast(live, Ticker ~ Factor_Name, value.var = vcol, fun.aggregate = function(x) x[1])
+      M <- as.matrix(W[, -1L, with = FALSE])
+      R <- vapply(seq_len(ncol(M)), function(j) {
+        v <- M[, j]; r <- rep(NA_real_, length(v)); k <- is.finite(v)
+        if (any(k)) r[k] <- rank(v[k], ties.method = "average")
+        r
+      }, numeric(nrow(M)))
+      R <- matrix(R, ncol = ncol(M), dimnames = list(NULL, colnames(M)))
+      C <- suppressWarnings(stats::cor(R, use = "pairwise.complete.obs"))
+      A <- is.finite(R); storage.mode(A) <- "integer"; N <- crossprod(A)
+      ut <- upper.tri(C)
+      hit <- which(ut & is.finite(C) & abs(C) >= rho_warn & N >= min_obs, arr.ind = TRUE)
+      gn <- colnames(M)
+      det <- if (nrow(hit) == 0L) na_dt() else data.table(
+        factor_a = gn[hit[, 1]], factor_b = gn[hit[, 2]],
+        abs_rho = abs(C[hit]), signed_rho = C[hit], n_common = as.integer(N[hit]))
+      axis_I$status <- "OK"
+      axis_I$n_pairs_hit <- nrow(det)
+      if (nrow(det) > 0L) {
+        det[, pair_key := paste(pmin(factor_a, factor_b), pmax(factor_a, factor_b), sep = "||")]
+        det[, declared := pair_key %in% dedup_pairs]
+        setorder(det, -abs_rho)
+        axis_I$detail <- det
+        und <- det[declared == FALSE]
+        axis_I$undeclared <- und
+        if (nrow(und) > 0L) {
+          warnings <- c(warnings, sprintf(
+            "[identity_guard] %s — 중복 배출(축 I) 미선언 %d쌍 (|rho| >= %.3f, 선언 %d쌍은 침묵): %s",
+            ym_cur, nrow(und), rho_warn, det[declared == TRUE, .N],
+            paste(sprintf("%s~%s(%.6f)", und$factor_a, und$factor_b, und$abs_rho), collapse = ", ")))
+        }
+      }
+    }
+  }
+  axis_D <- list(status = "OK", reason = NA_character_, dead = dead_new,
+                 dead_declared = dead_decl,
+                 detail = dD[order(-as.integer(dead), Factor_Name)])
+
+  undiag <- identity_baseline[diagnosed == FALSE, factor]
+
+  list(guard = "factor_identity_check", version = "1.0", ym = ym_cur,
+       thresholds = list(tie_warn = tie_warn, tie_watch = tie_watch,
+                         rho_warn = rho_warn, min_obs = min_obs, value_col = value_col),
+       axis_D = axis_D, axis_T = axis_T, axis_I = axis_I,
+       baseline_declared = nrow(identity_baseline),
+       baseline_undiagnosed = sort(undiag),
+       warnings = warnings,
+       verdict = if (length(warnings) > 0L) "WARN" else "OK")
+}
+
 #------------------------------------------------------------------------------
 # 부작용 래퍼 — 빌더가 부르는 진입점. 경고 발행 + 사이드카 + 원장 append.
 # ★어떤 경우에도 빌드를 멈추지 않는다(설계 원칙 ①).
 #------------------------------------------------------------------------------
 factor_emission_guard <- function(result, ym, fdb_dir, registry_path,
-                                  baseline_path = NULL, write_artifacts = TRUE) {
+                                  baseline_path = NULL, write_artifacts = TRUE,
+                                  identity_baseline_path = NULL,
+                                  run_identity = TRUE) {
   out <- tryCatch({
     produced <- if (is.data.table(result) && nrow(result) > 0L) {
       result[, .(n_rows = .N, n_tickers = uniqueN(Ticker)), by = Factor_Name]
@@ -239,6 +502,35 @@ factor_emission_guard <- function(result, ym, fdb_dir, registry_path,
     }
     for (w in rep$warnings) warning(w, call. = FALSE)
 
+    # ── 정체 검사 3축 (D/T/I) — 존재 확인 다음에 정체 확인 ────────────────────
+    # ★가드 자체 실패가 존재 축까지 삼키지 않도록 별도 tryCatch 로 감싼다.
+    if (isTRUE(run_identity)) {
+      rep$identity <- tryCatch({
+        idr <- factor_identity_check(
+          result            = result,
+          ym                = ym,
+          dedup_pairs       = emission_dedup_pairs(registry_path),
+          identity_baseline = emission_load_identity_baseline(identity_baseline_path))
+        cat(sprintf("  [identity_guard] %s: 죽은배출 %d종(선언 %d) · 동률 %d종(관찰 %d) · 중복 미선언 %d쌍(선언대조 %d쌍) → %s\n",
+                    ym, length(idr$axis_D$dead), length(idr$axis_D$dead_declared),
+                    length(idr$axis_T$tie_warn), length(idr$axis_T$tie_watch),
+                    nrow(idr$axis_I$undeclared), idr$axis_I$n_declared, idr$verdict))
+        for (ax in c("axis_D", "axis_T", "axis_I")) {
+          if (identical(idr[[ax]]$status, "UNMEASURED")) {
+            cat(sprintf("  [identity_guard] ★%s UNMEASURED — %s (경보 0 이 아니다)\n",
+                        ax, idr[[ax]]$reason))
+          }
+        }
+        for (w in idr$warnings) warning(w, call. = FALSE)
+        idr
+      }, error = function(e) {
+        warning(sprintf("[identity_guard] 정체 검사 실패 (빌드·존재축은 계속) — %s",
+                        conditionMessage(e)), call. = FALSE)
+        list(guard = "factor_identity_check", ym = as.character(ym)[1],
+             verdict = "UNMEASURED", error = conditionMessage(e))
+      })
+    }
+
     if (isTRUE(write_artifacts)) {
       sc <- file.path(fdb_dir, sprintf("emission_report_%s.json", ym))
       write_json(rep, sc, auto_unbox = TRUE, pretty = TRUE, digits = NA, na = "null")
@@ -264,4 +556,4 @@ factor_emission_guard <- function(result, ym, fdb_dir, registry_path,
   invisible(out)
 }
 
-cat("[factor_db] emission_guard.R loaded (v1.0)\n")
+cat("[factor_db] emission_guard.R loaded (v1.1 — 존재축 + 정체 3축 D/T/I)\n")
