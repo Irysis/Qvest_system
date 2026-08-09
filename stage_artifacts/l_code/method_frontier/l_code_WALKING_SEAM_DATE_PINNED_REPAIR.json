@@ -1,0 +1,56 @@
+{
+ "l_code": "L-MF-20260809_WALKING_SEAM_DATE_PINNED_REPAIR",
+ "strategy_id": "BENCHMARK_SCALE_SEAM_20260804_09",
+ "grade": "N/A_data_integrity_defect",
+ "core_reference": "02_Infrastructure/data/naver_benchmark_update.py (수리) · 02_Infrastructure/contracts/audit_bt_result.R Check 17 (신설) · 08_Tests/hooks/{test_benchmark_scale_seam.py,test_benchmark_values_plausible.R} (검사기 2종) · 02_Infrastructure/validation/benchmark_source_parity.R (판정 지속화)",
+ "lesson_text": "도훈 적발 '26년 수익률 이상 — 어제 고쳤는데 왜이러냐 또?'. 벤치 2026 연간이 -81.8%(참값 +60.85%). ★결함 = benchmark.parquet 패처가 기존 리베이스 체인(8.834xKPI200)과 생 KPI200 레벨을 **레벨로 이어붙인 뒤** 전체에 pct_change 를 걸어, **경계 하루가 스케일비를 통째로 수익률로 삼킨다**(2026-07-29 -89.38%, 참값 -6.185%). 나머지 146/147일은 네이버와 <1e-9 일치 = 딱 하루짜리 결함. ★★재발 기전(제일 크다) = 호출부가 `--start_date \"$(date -d '10 days ago')\"`(daily_refresh.sh:122 / morning_briefing.sh:124)라 **cutoff 가 매일 전진하고 이음매도 따라 걷는다**. 08-08 수리가 07-27 을 날짜로 박아 고쳤더니 08-09 엔 07-29 에 생겼다 — **위치가 움직이는 결함에 날짜를 박으면 원리적으로 하루밖에 못 산다**. 게다가 그 수리는 단절의 *틀린 쪽*(구 스케일)으로 재체인해 정상이던 naver 꼬리를 되돌려놓아, daily 패치와 **두 writer 줄다리기**를 만들었다(각 writer 는 단독으로 보면 옳다). ★정본 수리 = **수익률 접합**(수익률은 스케일 불변 ⇒ 이음매가 구조적으로 불가능) + canonical 스케일 median + 앵커 후퇴 ⇒ **기존 이음매도 같은 경로에서 자동 치유**(멱등 실측: 1회차 healed 8행, 2회차 0행·정체 일치 100%). ★가드 교훈 = 기존 오심볼 가드 `naver_max>3000` 은 **크기 휴리스틱**이라 같은 자릿수 지수를 못 잡는다(위반 주입 INJ-2a 적발). 정본은 **스케일 불변 정체 검사** — 받아온 수익률이 cutoff 이전 저장 BM_Ret 과 >=90% 일치하는가. ★★2차 방어선 부재 = audit_bt_result 의 Check 5(benchmark_aligned)가 **날짜 겹침만 세서** -89.38% 벤치가 'alignment 5305 dates PASS' 로 통과했고, 그 벤치로 alpha_search 16 run 이 채점됐다(연 초과 15/16 부호 반전). Check 17 신설(값 타당성 + 퇴화계열, critical ⇒ is_official=FALSE). **문턱은 추측이 아니라 실측 캘리브레이션** — 수리된 KOSPI200 9,003일 실제 최대 |일간| 0.1998·|월간| 0.3534 vs 스케일 오류는 1.5배만 돼도 -0.333/+0.500 ⇒ 두 분포가 안 겹쳐 검사가 성립(일간 0.30·월간 0.45, 실데이터 466 run 재생에서 오염 16/16 발화·청정 450/450 오탐 0). ★★★3차 = **탐지는 됐는데 결정에 안 닿았다** — benchmark_source_parity.R 이 이미 존재·배선돼 있었고 오염 백업 재현 시 CRITICAL + 원인 귀속까지 정확했다. 그런데 출력이 bootstrap 콘솔 `[boot] WARN:` 한 줄뿐이라 5일간 떠 있었는지조차 사후 확인 불가(부트 로그에 parity 라인 0건). ⇒ **검사기를 늘릴 게 아니라 신호를 남겨야 한다**(latest.json + history.jsonl 신설). ★★계층별로 움직이는 등급이 다르다 = FQ100 재실행에서 **hurdle grade 는 B→B 불변**(SR/CAGR/MDD 기반 = 벤치 둔감)인데 **권위 essence_grade 는 C→F**(PORT_t 0.688→-0.132) ⇒ **벤치 오염을 hurdle 등급으로 점검하면 전부 놓친다**. ★★★전파 통로 = **sim_result$bm_xts 가 빌드 시점 벤치를 모듈에 얼린다**. 캐시를 고쳐도 기존 모듈은 안 낫고, FR 은 정본 캐시를 조인하는 게 아니라 **풀 모듈 중 가장 긴 bm_xts** 를 벤치로 채택해(run_fr002_scrap_pool.R:69) 오염을 그대로 실어날랐다(FR_002 벤치 max|ret| 0.9136). ⇒ 오염 집합 정의는 mode-scoped 파일 목록이 아니라 **직접 측정**으로 — fr_eligible 201건 전수 스캔에서 정확히 3건(나머지 198건 max 0.1998 = 실제 최대값). 내 alpha_search 한정 census 는 두 번 틀렸다(module_catalog 누락 → module_performance/FR 누락). ★부수 결함 = ①FR 스크립트가 module_performance ⊆ 패널 스냅샷을 가정해 신규 모듈 등재 직후 'columns not found' 사망(교집합+드롭 로그로 수리) ②**jsonlite 라운드트립이 편집 0에서도 module_catalog 1건을 바꾼다**(role: null → {}), register_module writer 도 같은 경로라 다음 등재 때 조용히 뒤집힌다 ⇒ 형태 보존이 필요하면 python 수술 ③내 절차 오류 = **가드를 쓰기 뒤에 뒀다** — 이미 쓴 뒤 적발돼 백업 복구가 필요했다. 가드는 쓰기 *전*에.",
+ "tags": [
+  "walking_defect_date_pinned_repair_fails",
+  "level_splice_vs_return_splice",
+  "two_writer_tug_of_war",
+  "existence_check_not_identity_check",
+  "detection_without_escalation",
+  "frozen_benchmark_in_sim_result",
+  "threshold_from_measurement_not_guess",
+  "guard_before_write"
+ ],
+ "created_at": "2026-08-09",
+ "session": "qvest_20260809_benchmark_scale_seam",
+ "source": "Q-Lead main session (도훈 적발 → 진단·수리·재실행·원장 정정 1~5)",
+ "record_type": "method_frontier_lesson",
+ "metric_type": "canonical_screen_diag",
+ "metric_type_note": "데이터 무결성·코드 동작 실측이며 전략 성과 지표 아님. harvester enum 부재로 'unavailable' 정규화가 의도된 결과.",
+ "next_probe": "①FR 이 정본 벤치를 조인하도록 설계 변경(현행은 임의 모듈의 얼어붙은 bm_xts 상속 — 이번 전파 통로이자 재빌드 시 커버리지 08-07→06-19 축소 원인). ②register_module writer 의 null→{} 라운드트립 비대칭 — 다음 등재 때 조용히 뒤집히므로 형태 고정 여부 결정. ③parity CRITICAL 을 상태라인·훅으로 격상할지(현행은 기록까지만).",
+ "falsification_attempts": [
+  {
+   "test": "독립 소스 대조 (네이버 KPI200 직접 조회, 읽기 전용)",
+   "result": "confirmed_defect",
+   "effect_retained": 1,
+   "detail": "캐시 BM_Ret 이 2026 146/147일 <1e-9 일치, 어긋난 날은 07-29 단 하루. 스케일비는 8.834 상수 — '2026 전체 부풀림' 초기 오독을 이 대조가 기각했다."
+  },
+  {
+   "test": "돌연변이 검출력 실증 (MUT-1, 구 레벨-접합 구현 재현)",
+   "result": "survived",
+   "effect_retained": 1,
+   "detail": "같은 정상 입력에서 구 구현은 -88.9% 이음매 생성, 신 구현은 -0.02. 통과가 검사기 사망이 아님을 증명."
+  },
+  {
+   "test": "실데이터 466 run 양방향 재생 (재현율·정밀도)",
+   "result": "survived",
+   "effect_retained": 1,
+   "detail": "오염 16/16 발화 · 청정 450/450 오탐 0. MUT-1 이 같은 입력에서 Check 5 는 PASS 임을 실증(메우는 구멍의 존재 증명)."
+  },
+  {
+   "test": "멱등성 (수리된 패처 2회 연속 실행)",
+   "result": "survived",
+   "effect_retained": 1,
+   "detail": "1회차 healed 8행 → 2회차 healed 0행, 정체 일치 1.0. 반복 실행이 새 이음매를 만들지 않음."
+  },
+  {
+   "test": "fr_eligible 201건 얼어붙은 벤치 전수 스캔",
+   "result": "confirmed_defect",
+   "effect_retained": 1,
+   "detail": "오염 정확히 3건 · 나머지 198건 max|ret| 0.1998(= 실제 최대값, 문턱 0.30 대비 여유). 파일 목록 기반 census 2회 오류를 이 측정이 수렴시켰다."
+  }
+ ]
+}

@@ -85,7 +85,9 @@ for (h in HS) {
     if (sum(on) < 30L) { say("    %.0f%%: ON %d일 — 표본 부족, 생략", thr*100, sum(on)); next }
     A <- stats_of(xx[on]); O <- stats_of(xx[!on]); obs <- A - O
     BB <- BOOT[[j]]; BB <- BB[complete.cases(BB), , drop = FALSE]
-    se <- apply(BB, 2, sd, na.rm = TRUE)
+    colnames(BB) <- stat_names
+    se <- apply(BB, 2, sd, na.rm = TRUE); names(se) <- stat_names
+    names(obs) <- stat_names; names(A) <- stat_names; names(O) <- stat_names
     for (k in seq_along(stat_names)) {
       pv <- mean(abs(BB[, k] - mean(BB[, k], na.rm = TRUE)) >= abs(obs[[k]]), na.rm = TRUE)
       rows[[length(rows)+1L]] <- data.table(

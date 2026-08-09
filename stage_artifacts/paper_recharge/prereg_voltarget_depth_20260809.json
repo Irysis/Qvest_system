@@ -1,0 +1,25 @@
+{
+  "prereg_id": "PREREG-VTDEPTH-20260809",
+  "created": "2026-08-09",
+  "mode": "regime",
+  "selection_type": "chain",
+  "chain_step": 4,
+  "chain_parent": "VolRateMatched (step 3)",
+  "mechanism_diagnosis_1line": "step 3 실측 — 발화율을 27.5%(목표 29.5%)로 맞춰도 ΔMDD -0.1746(개선 없음)이고 구속 낙폭 구간(2006-01~06) 발화 0/6. 반면 원본 voltgt(발화 71%)는 6/6 잡는다. ⇒ voltgt 의 방어는 **절대 문턱** min(1, 0.055/vol) 에서 오지 상대 분위에서 오지 않는다(2006 포트 vol 은 절대로는 목표의 1.6~2배지만 최근 60개월 분포로는 상위 30% 밖). 발화율 축은 막혔다.",
+  "question": "발화(절대 문턱)는 그대로 두고 **노출 깊이**만 완화하면 IR 대가가 줄면서 방어가 남는가? voltgt 는 평균 노출 0.793 까지 연속 축소해 ΔIR -0.508 을 낸다.",
+  "design": {
+    "treatment": "exposure = max(0.70, min(1, 0.055/vol))",
+    "control": "exposure = min(1, 0.055/vol) — 바닥 없음, 같은 파일·같은 PIT",
+    "why_internal_control": "하네스 내장 voltgt 는 PIT 가 shift-1 이고 본 어댑터는 shift-2(엄격)라, 내장 voltgt 와 직접 비교하면 **바닥 효과와 PIT 차이가 교락**된다. 반드시 같은 파일의 nofloor 를 통제로 쓴다.",
+    "vol": "포트 월간 수익 12개월 sd, 홀딩월 M-2 까지만(M-1 은 M 첫날에야 확정)",
+    "free_parameters": 0,
+    "param_provenance": "목표 0.055·창 12 = 하네스 내장 voltgt 상수 그대로 · 바닥 0.70 = CAT_EXPOSURE CAUTION 재사용. ★바닥값을 흔들면 sweep 이므로 1개 값만 잰다."
+  },
+  "falsifiers": [
+    "F1 (주 반증): 바닥을 넣었더니 ΔMDD 가 통제 대비 나빠지면(방어 소멸) — '깊이만 완화해도 방어가 남는다' 기각.",
+    "F2 (무효 반증): 바닥 대비 ΔIR 개선폭이 0.05 미만이면 — 깊이 축이 IR 대가의 주된 소재가 아님(발화율도 깊이도 아닌 제3의 축).",
+    "F3 (교락 반증): 통제(nofloor, shift-2)의 ΔMDD 가 하네스 내장 voltgt(shift-1, ΔMDD +0.0174)와 부호가 다르면 — PIT 차이가 결과를 지배하므로 바닥 효과 판정 불가."
+  ],
+  "gate_note": "ΔIR/ΔMDD 는 교체 대조 진단량. 자본 admit 아님(governor 수동). chain 이므로 DSR 게이트 부적용.",
+  "window": "271개월 (2004-02~2026-08) — 커버리지 게이트 OK(캐리어 = 북 최신월)"
+}
