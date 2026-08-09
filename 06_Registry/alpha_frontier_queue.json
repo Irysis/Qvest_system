@@ -5051,7 +5051,7 @@
    "id": "FQ-229",
    "lane": "conditional_strength",
    "title": "M26 계수의 횡단면 분산 의존 — disp_t 가 시간보다 강한 설명변수",
-   "status": "frontier_open",
+   "status": "config_scoped_negative_frontier_open",
    "owner": "alpha-research",
    "opened": "2026-08-10",
    "category": "conditional_alpha",
@@ -5063,7 +5063,52 @@
     "소비면 — disp_t 는 사후 관측이므로 **직전 달 disp(lag1)** 로 게이트했을 때 top-25 cap-w PORT_t 가 개선되는가. lag1 예측력이 없으면 소비 불가(진단으로만 유지)"
    ],
    "caveat": "disp_t 는 동시점 변수 — 본 라운드에서는 분해용이며 예측 주장 아님. 소비 검토는 lag1 판본으로만",
-   "artifacts": "stage_artifacts/infra/fq225_m26_modern_seasonality_20260810/a1_attribution_nested.csv"
+   "artifacts": "stage_artifacts/infra/fq225_m26_modern_seasonality_20260810/a1_attribution_nested.csv",
+   "wall_check": "FQ-229 측정(2026-08-10): 분산 의존은 **동시점 전용**. h=0 스케일 t +3.491 ∧ 기술(표준화기울기) t +3.400 (컨센서스 3종은 |t|<1.6 — 판별력 확인). h=1 은 5축x2채널 전부 |t|<1.71, M26 S1 t +0.747. 검정력: 외부기준(동시점계수 x 자기상관 0.462) 대비 80% 검정력 비율 0.703 ⇒ **착수 전 폐기**. 관측 기울기는 0 으로부터 0.75se · 감쇠함의치로부터 1.25se — 두 가설 어느 쪽도 기각 못함(의존 부재 주장 아님). 사전등록 게이트 G1~G4 재료자격 Δt 전부 음수(오염판 −0.079~−0.676 · 수리판 −0.287~−1.512, 8/8). 전이: M26 단독 PORT_t +1.5441(FQ-161 +1.544 parity) · 복합기저 +2.7413 · 게이트 복합 +2.81~+3.06 이나 구속력 있는 무게이트 대비 paired t 최대 +1.013(문턱 2.0 미달) · ΔIR 최대 +0.0586, 부호 일치 4/4. 위반 주입(승수 무작위 재배정 B=250): p 0.016~0.028 로 보이나 **무게이트(Δ=0)가 이미 귀무 상위 80~92%** (임의 월가중이 해롭기 때문) — 확립된 것은 '임의 가중보다 덜 해롭다'이지 '무게이트보다 낫다'가 아님. ★부수 확정(구조): 단일 팩터 게이팅 = 랭킹 불변 no-op |Δ|=0.00e+00 실측. 유동성 자 adv1_sameday_DEGRADED 라벨.",
+   "next_action": "FQ-230(현대 감쇠의 분산 귀속) · FQ-231(스칼라 시계열 예측자 소비면 라우팅) · FQ-232(헌법 유동성 자 복원)로 분기. lag 형태만 바꾸는 재시도는 e1 precheck(80% 검정력 비율 최대 0.702)로 미등재.",
+   "source_refs": [
+    "stage_artifacts/infra/fq229_m26_dispersion_gate_20260810/fq229_findings.json",
+    "stage_artifacts/infra/fq229_m26_dispersion_gate_20260810/PREREG.md"
+   ]
+  },
+  {
+   "id": "FQ-230",
+   "lane": "attribution",
+   "title": "분산 통제 하 M26 시간추세 — 분산은 설명변수가 아니라 억제변수, FQ-225 '판정 불가' 지평 재계산",
+   "hypothesis": "FQ-225 는 현대 약화를 '판정 불가'로 남겼다(추세검정 필요 501.8개월 = 추가 18.2년). 그 계산은 **무통제** 추세 기준이다. FQ-229 가 payoff 의 동시점 분산 비례를 확정했고(h=0 스케일 t +3.491 ∧ 기술 t +3.400), FQ-225 nested 표에서 disp_t 통제 시 시간계수 잔존율이 1.963 = **2배로 커진다**. 즉 분산은 감쇠를 설명하는 변수가 아니라 감쇠를 **가리는 억제변수**다. 가설: 분산을 통제하면 추세 추정이 커지고 잔차분산이 줄어 판정 지평이 크게 단축된다.",
+   "ev_rationale": "★사이징 실측(FQ-229 e2/e3, 즉시 산출): ①분산은 현대에 **증가**했다(초기 0.1082 → 현대 0.1145, 비 1.057). b_t 평균은 초기 0.002251 → 현대 0.000822 인데, 분산비만으로 예측되는 현대 평균은 0.002380 (즉 분산은 payoff 를 **키우는** 방향으로 움직였다) ⇒ '감쇠 = 분산 축소' 가설은 실측으로 기각, 설명분 −9.0%. 방향이 반대다. ②그 대신 억제 효과가 실재한다: 시간계수 -0.00009950 → -0.00016727 (배수 1.68) · |t| 0.85 → 1.48 · R2 0.0042 → 0.0963. ③필요표본(효과 지속 가정, FQ-225 A4 동일 규약): 무통제 502개월(추가 18.2년) → 분산통제 345개월(추가 5.2년), 지평 31% 단축. 80% 검정력 기준으로도 분산통제 436개월. 신규 데이터 없이 사양 변경만으로 얻는 이득이다.",
+   "wall_check": "미측정(사전등록 전). 주의 3종: ①분산통제 추세는 여전히 |t| 1.48 < 2.0 — 현 표본으로는 검출 아님. 지평 단축이지 판정 역전이 아니다. ②FQ-225 nested 표(잔존율 1.963)는 그 라운드가 A1 미검출을 이유로 N/A 처리한 셀이다 — 미등록 관측을 가설로 승격하는 것이므로 사전등록 필수. ③추세 t 는 횡단면 신호력 계수의 시간변화이지 PORT_t 감쇠가 아니다. 전이 벽 별도.",
+   "data_gate": "closed — alpha_scores.parquet + FQ-229 a1_monthly_components.csv 로 즉시 착수 가능. 신규 수집 불요",
+   "owner": "alpha-research",
+   "status": "frontier_open",
+   "next_action": "사전등록: 주판정 = 분산통제 연속 추세(분할 금지) · 보조 = 억제 구조 확인(disp_t 와 tau 의 상관 부호) · 양성 대조 = C01/C02/C04 에 같은 통제(억제가 M26 고유인가) · 필요표본 재산출. 소비면 = monitoring 감쇠 판정의 분산 정규화(저분산 달 payoff 저하를 신호 열화로 오독 차단) — 단 FQ-229 실측상 분산 정규화는 원계열 t 를 낮춘다(2.555 → 1.815)므로 정규화 방향을 먼저 규정할 것.",
+   "source_refs": "stage_artifacts/infra/fq229_m26_dispersion_gate_20260810/fq229_findings.json"
+  },
+  {
+   "id": "FQ-231",
+   "lane": "infrastructure",
+   "title": "스칼라 시계열 예측자의 소비면 라우팅 규칙 등재 (국면라벨·vol·crowding 공통 벽)",
+   "hypothesis": "월당 스칼라 예측자(분산·국면확률·vol·crowding)는 횡단면 순서를 단독으로 바꾸지 못한다. FQ-229 가 이 기하를 실측 확정했다: ①단일 팩터 노출 스케일 = canonical 랭킹 불변 no-op ②이진 on/off 는 점수 변환으로 표현 불가(동점 임의화) ③복합 내 상대 가중만 알파 범위 안. 이 지도를 못박지 않으면 후속 스칼라 예측자가 같은 벽을 재발견한다.",
+   "ev_rationale": "FQ-229 c1 실측: M26 단독 PORT_t +1.544110 vs M26xG4~ +1.544110, |Δ| = 0.00e+00 (구조적 사실, 논증 아님). 08-08 소비면 7종 순회 규약의 스칼라-예측자 판본.",
+   "wall_check": "해당 없음 — 측정이 아니라 지도 등재. 단 등재 후 기존 큐의 스칼라-예측자 항목 재라우팅 필요 여부는 실측으로 확인",
+   "data_gate": "closed",
+   "owner": "alpha-research",
+   "status": "frontier_open",
+   "next_action": "06_Registry 소비면 지도에 스칼라-예측자 절 추가 + 기존 큐에서 '노출 스케일'을 소비면으로 적은 항목 census",
+   "source_refs": "stage_artifacts/infra/fq229_m26_dispersion_gate_20260810/fq229_findings.json"
+  },
+  {
+   "id": "FQ-232",
+   "lane": "infrastructure",
+   "title": "canonical_screen_bt 소비 경로의 헌법 유동성 자 복원 (adv1_sameday_DEGRADED)",
+   "hypothesis": "월말-slim rawdata 를 넘기면 20일 평균 거래대금을 만들 수 없어 유동성 자가 **월말 1일치 Vol×Close** 로 강등된다(FQ-181 경고 발화). 즉 2e8 필터가 헌법 자가 아니다. 이 경로로 산출된 PORT_t 절대수준(FQ-161 +1.544 포함)이 헌법-자 기준이 아니다.",
+   "ev_rationale": "FQ-229 c1/c2 실행 전건에서 경고 발화 실측. 전 arm 동일 자라 상대비교는 무결하나, 절대수준 인용과 유동성 제약 준수 주장이 라벨 없이 유통될 위험.",
+   "wall_check": "미측정 — 일간 rawdata 경유 시 PORT_t 및 편입 종목이 바뀌는지 A/B 필요",
+   "data_gate": "closed — 일간 rawdata 보유(.cache/RAWDATA.parquet). slim 여부는 호출부 선택",
+   "owner": "alpha-research",
+   "status": "frontier_open",
+   "next_action": "일간 입력으로 canonical_screen_bt 재실행해 M26 단독·복합 기저 PORT_t 변화 실측 → 변화 유의하면 기존 canonical 기록에 자-라벨 소급 부착",
+   "source_refs": "stage_artifacts/infra/fq229_m26_dispersion_gate_20260810/fq229_findings.json"
   }
  ]
 }

@@ -1,0 +1,374 @@
+{
+  "round_id": "FQ-229",
+  "date": "2026-08-10",
+  "metric_type": "canonical_screen_diag",
+  "capital_claim": false,
+  "prereg": "stage_artifacts/infra/fq229_m26_dispersion_gate_20260810/PREREG.md",
+  "parent": "FQ-225(disp_t t=+4.14) · FQ-161(M26 cap-w PORT_t +1.544) · FQ-223(롤오버 오염 18.2%)",
+  "headline": "분산 의존은 **동시점에만** 실재한다(스케일 t +3.49 ∧ 기술 t +3.40). lag1 로는 이 표본이 '의존 없음'과 '자기상관만큼 전이'를 구별하지 못한다(80% 검정력 비율 0.703) ⇒ 착수 전 폐기. 부수로 소비면 기하가 실측 확정됐다(단일 팩터 게이팅 = 랭킹 불변 no-op, |Δ|=0).",
+  "power_precheck": {
+    "verdict": "ABORT_BEFORE_LAUNCH",
+    "external_bar_basis": "FQ-225 동시점 disp 계수 x lag1 자기상관 (모형 가정 — 본 라운드가 별도 시험)",
+    "contemporaneous_slope": 0.109364638181348,
+    "contemporaneous_t": 3.49130360782539,
+    "lag1_autocorr": 0.461987496686256,
+    "external_expected_slope": 0.0505250954193991,
+    "required_slope_power50": 0.0505587957391841,
+    "required_slope_power80": 0.0718344737581707,
+    "ratio_power50": 0.999333442988656,
+    "ratio_power80": 0.703354431042271,
+    "observed_slope": 0.0188846980418829,
+    "observed_se": 0.0252793978695921,
+    "se_from_zero": 0.747039076614988,
+    "se_from_attenuation": 1.25162780936232,
+    "tool_verdict": "INCONCLUSIVE_BAR_RESTATES_T",
+    "implied_t_threshold": 2.21545757411151,
+    "bar_restates_t": true,
+    "binary_gate_effective_n": 59.43,
+    "note": "★도구 바는 검정력 50% 바다(참효과=t_thresh x se ⇒ 기대 t=2.0). 폐기 판정은 배수 0.999(50%)가 아니라 0.703(80%)에 근거한다."
+  },
+  "mechanism_decomposition": {
+    "identity": "b_t = std_slope_t x disp_t / sd_z_t (재구성 최대오차 6.9e-18 — 항등식 성립)",
+    "h0_contemporaneous": {
+      "M26": {
+        "S1_t": 3.49130360782539,
+        "S2_t": 3.39968890287211,
+        "S1_r2": 0.0847000203057143
+      },
+      "M01": {
+        "S1_t": 3.37041513927191,
+        "S2_t": 3.04649435258264
+      },
+      "controls_C01_C02_C04_max_abs_t": 1.51825452995383,
+      "reading": "동시점 의존은 기계적 스케일의 재진술이 아니다 — 표준화 기울기(기술) 자체가 분산에 반응한다. M26·M01 만, 컨센서스 3종은 무반응."
+    },
+    "h1_lag1": {
+      "M26_S1_t": 0.747039076614988,
+      "M26_S2_t": 0.834970203164932,
+      "max_abs_t_all_axes": 1.70039197598888,
+      "reading": "5축 x 2채널 전부 |t| < 1.71 — lag1 에서 절벽"
+    },
+    "S3_differential_t": 1.34862818250846,
+    "moving_average_predictors": {
+      "note": "지속-국면 가정 시험(e1 precheck — 판정 인용 금지)",
+      "ma3_S1_t": 0.0053516735116844,
+      "ma6_S1_t": -0.560446536845798,
+      "ma12_S1_t": -0.612883169047146,
+      "reading": "전이계수는 커지는데(0.461→0.735) S1 t 는 0 근방·음수로 간다 ⇒ '분산 국면' 프레임 미지지"
+    },
+    "unregistered_cells_caveat": "지평 스캔 40셀 다중조회. h=2/3 및 대조축 셀(예: M01 h=2 S2 t −3.259)은 미등록 관측 — 판정 인용 금지."
+  },
+  "consumption_surface": {
+    "chosen": "복합신호 내 M26 상대 가중의 분산 조건부 조절 (ranking weight)",
+    "rationale": "분산은 월당 스칼라라 단독으로 횡단면 순서를 못 바꾼다. 상대 가중일 때만 순서가 바뀌고, 그 형태만 알파 범위 안이다.",
+    "rejected_signal_strength": {
+      "claim": "단일 팩터 노출 스케일 = canonical top-25 EW 랭킹 불변 no-op",
+      "proof_empirical": {
+        "m26_alone_port_t": 1.54410980134402,
+        "m26_x_G4_port_t": 1.54410980134402,
+        "abs_delta": 0
+      },
+      "note": "|Δ| = 0.00e+00 — 논증이 아니라 실측 사실. 선형 노출 축소 실패계열과 별개로 **구조적으로** 무효."
+    },
+    "rejected_firing_month": "이진 on/off 는 off 달 점수가 전부 0 이 되어 top-25 가 동점 임의화로 무너진다 ⇒ 점수 변환으로 표현 불가, 노출 결정(옵티마이저/오버레이) 필요 — 알파 범위 밖",
+    "composite_effective_weights": {
+      "C01_SUE": 0.875,
+      "C02_EPS_Chg_1m": 1.632,
+      "C04_ESBR": 0.621,
+      "M26_Revenue_Mom": 1.17
+    },
+    "composite_caveat": "raw z 열 합이라 등가-위험 가중이 아니다(C02 sd 1.632 지배). 재표준화 복합은 검증 안 됨 (가정)."
+  },
+  "gate_forms_prereg_all": [
+    {
+      "gate": "무게이트(기저)",
+      "t_gated": 2.5552525842524,
+      "mean_gated": 0.00167015652583299,
+      "sd_gated": 0.0104712780894609,
+      "mean_exposure": 1,
+      "t_base": 2.5552525842524,
+      "delta_t": 0
+    },
+    {
+      "gate": "G1 이진 상위30%",
+      "t_gated": 1.90721193945976,
+      "mean_gated": 0.00197192000326703,
+      "sd_gated": 0.0153838145320208,
+      "mean_exposure": 0.788848022901602,
+      "t_base": 2.5552525842524,
+      "delta_t": -0.648040644792639
+    },
+    {
+      "gate": "G2 이진 상위50%",
+      "t_gated": 1.93654221586207,
+      "mean_gated": 0.00162785884565072,
+      "sd_gated": 0.0129907843183882,
+      "mean_exposure": 0.90070443790999,
+      "t_base": 2.5552525842524,
+      "delta_t": -0.618710368390331
+    },
+    {
+      "gate": "G3 연속 선형 λ=1",
+      "t_gated": 2.41295176439722,
+      "mean_gated": 0.00226986669909623,
+      "sd_gated": 0.0144293092537853,
+      "mean_exposure": 1.04440528628792,
+      "t_base": 2.5552525842524,
+      "delta_t": -0.142300819855183
+    },
+    {
+      "gate": "G4 분위 조건부 {0.5,0.85,1.15,1.5}",
+      "t_gated": 2.51480456637703,
+      "mean_gated": 0.00192969978325883,
+      "sd_gated": 0.0120207593151855,
+      "mean_exposure": 1.02857940741859,
+      "t_base": 2.5552525842524,
+      "delta_t": -0.0404480178753732
+    }
+  ],
+  "transition": {
+    "basis_note": "★FQ-161 의 +1.544 는 *M26 단독* 값이다. 복합 arm 과 나란히 놓고 '움직였다'로 읽지 않는다.",
+    "arm0_M26_alone_port_t": 1.54410980134402,
+    "fq161_reference": 1.544,
+    "parity_abs_delta": 0.000109801344017502,
+    "arm1_EW_composite_port_t": 2.74129060262784,
+    "gated_arms": [
+      {
+        "arm": "arm2_comp_G1",
+        "n_common": 283,
+        "port_t": 2.92222404402742,
+        "port_t_base": 2.74129060262784,
+        "delta_port_t": 0.180933441399588,
+        "mean_diff_bp": 1.13267293684223,
+        "paired_t_nw3": 0.116954746112418,
+        "ir_base": 0.587278783819462,
+        "ir_gated": 0.593847124619161,
+        "delta_ir": 0.0065683407996987,
+        "sign_agree": true
+      },
+      {
+        "arm": "arm3_comp_G2",
+        "n_common": 283,
+        "port_t": 2.89977939955005,
+        "port_t_base": 2.74129060262784,
+        "delta_port_t": 0.158488796922211,
+        "mean_diff_bp": 1.99718184912274,
+        "paired_t_nw3": 0.240942019993795,
+        "ir_base": 0.587278783819462,
+        "ir_gated": 0.614441432834315,
+        "delta_ir": 0.0271626490148528,
+        "sign_agree": true
+      },
+      {
+        "arm": "arm4_comp_G3",
+        "n_common": 283,
+        "port_t": 2.81307976022034,
+        "port_t_base": 2.74129060262784,
+        "delta_port_t": 0.0717891575925047,
+        "mean_diff_bp": -1.95390629908822,
+        "paired_t_nw3": -0.282185924238388,
+        "ir_base": 0.587278783819462,
+        "ir_gated": 0.579637031678192,
+        "delta_ir": -0.00764175214127028,
+        "sign_agree": true
+      },
+      {
+        "arm": "arm5_comp_G4",
+        "n_common": 283,
+        "port_t": 3.06253377630793,
+        "port_t_base": 2.74129060262784,
+        "delta_port_t": 0.321243173680094,
+        "mean_diff_bp": 5.13058993454192,
+        "paired_t_nw3": 1.01345370694026,
+        "ir_base": 0.587278783819462,
+        "ir_gated": 0.645900014711615,
+        "delta_ir": 0.0586212308921532,
+        "sign_agree": true
+      }
+    ],
+    "binding_comparison": "무게이트 복합 대비 paired t(NW3)",
+    "max_abs_paired_t": 1.01345370694026,
+    "threshold": 2,
+    "sign_agreement_all": true,
+    "hard_2p95_caveat": "arm5(복합+G4) PORT_t 3.0625 > 2.95 이나 기저가 이미 2.7413 이고 증분 paired t 는 1.013 다. canonical 은 스크리닝이며 graduation 권위는 forge+essence_score. oos_retention·calmar 미산출(calmar=NA).",
+    "liquidity_ruler": "adv1_sameday_DEGRADED (FQ-181) — 월말-slim 입력이라 20일 평균 거래대금 불가. 전 arm 동일 자이므로 상대비교는 유효하나 PORT_t 절대수준을 헌법-자 수치로 인용 금지."
+  },
+  "controls_and_injection": {
+    "positive_control_h0": "동시점 판별력 확인 — C01/C02/C04 전부 |t|<1.6, M26·M01 만 유의. 검정이 아무 축에나 반응하지 않는다.",
+    "control_gates_axis_null": [
+      {
+        "factor": "C01_SUE",
+        "base_t": -0.0380466256545212,
+        "obs_dt": -0.00273567103248709,
+        "null_med": 0.0624962101594112,
+        "null_q05": -1.40797301347373,
+        "null_q95": 1.33037230156727,
+        "pctile": 0.4655,
+        "p_right": 0.5345
+      },
+      {
+        "factor": "C02_EPS_Chg_1m",
+        "base_t": 2.70921811556978,
+        "obs_dt": -3.47040889970049,
+        "null_med": -1.03607776056708,
+        "null_q05": -2.37016723935918,
+        "null_q95": 0.446202614150118,
+        "pctile": 0.0015,
+        "p_right": 0.9985
+      },
+      {
+        "factor": "C04_ESBR",
+        "base_t": 0.489642517138002,
+        "obs_dt": -1.49523854863035,
+        "null_med": -0.116916147552999,
+        "null_q05": -1.59950177936599,
+        "null_q95": 1.27273294200517,
+        "pctile": 0.0655,
+        "p_right": 0.9345
+      },
+      {
+        "factor": "M26_Revenue_Mom",
+        "base_t": 2.5552525842524,
+        "obs_dt": -0.648040644792639,
+        "null_med": -0.957266546945029,
+        "null_q05": -2.33766935243312,
+        "null_q95": 0.280045311513076,
+        "pctile": 0.6635,
+        "p_right": 0.3365
+      },
+      {
+        "factor": "M01",
+        "base_t": 1.95109208373868,
+        "obs_dt": -1.61214096787506,
+        "null_med": -0.702268917287399,
+        "null_q05": -2.08344099348387,
+        "null_q95": 0.691631384205584,
+        "pctile": 0.1515,
+        "p_right": 0.8485
+      }
+    ],
+    "control_verdict": "재료자격 축별 무작위-게이트 귀무 대비 유의(p<0.05) 축 0/5 (M26 백분위 66.3%)",
+    "consumption_injection": [
+      {
+        "gate": "G1_n",
+        "n_null": 250,
+        "obs_d_pt": 0.180933441399588,
+        "obs_ptrd": 0.116954746112418,
+        "obs_d_ir": 0.0065683407996987,
+        "null_med_d_pt": -0.417686201598243,
+        "pct_obs": 0.972,
+        "pct_zero": 0.916,
+        "pct_obs_ir": 0.956,
+        "pct_zero_ir": 0.944,
+        "frac_null_positive": 0.084
+      },
+      {
+        "gate": "G4_n",
+        "n_null": 250,
+        "obs_d_pt": 0.321243173680094,
+        "obs_ptrd": 1.01345370694026,
+        "obs_d_ir": 0.0586212308921532,
+        "null_med_d_pt": -0.165981277235972,
+        "pct_obs": 0.984,
+        "pct_zero": 0.804,
+        "pct_obs_ir": 0.988,
+        "pct_zero_ir": 0.868,
+        "frac_null_positive": 0.196
+      }
+    ],
+    "injection_reading": "★ΔPORT_t 가 무작위 재배정 귀무 대비 p 0.016~0.028 로 나오나, **무게이트(Δ=0)가 이미 귀무의 상위 80.4~91.6%** 다 — 귀무 중앙이 음수(월별 가중을 임의로 흔드는 것 자체가 해롭다)이기 때문. 분산 연결의 순증 백분위는 +5.6%p(G1) / +18.0%p(G4) 이고, 구속력 있는 무게이트 대비 paired t 는 +0.117 / +1.013 로 문턱 미달. 즉 확립된 것은 '분산 연결이 임의 가중보다 덜 해롭다'이지 '무게이트보다 낫다'가 아니다."
+  },
+  "contamination_robustness": {
+    "common_window_months": 279,
+    "plain_t": 2.47826452473205,
+    "repaired_t": 3.29928900286445,
+    "h0_S1_t": {
+      "plain": 3.67404857517456,
+      "repaired": 4.18912929496437
+    },
+    "h0_S2_t": {
+      "plain": 3.58051533783384,
+      "repaired": 3.38801916556584
+    },
+    "h1_S1_t": {
+      "plain": 0.714813413808043,
+      "repaired": 1.05213206134272
+    },
+    "gates_improving": 0,
+    "gates_total": 8,
+    "verdict": "오염판/수리판 양쪽에서 결론 불변 — h=0 유의 유지(수리판 S1 t +4.189), h=1 문턱 미달, 게이트 8/8 개선 없음"
+  },
+  "np1_sizing": {
+    "disp_early": 0.108246407658778,
+    "disp_modern": 0.114464499378349,
+    "disp_ratio": 1.05744386214804,
+    "b_early": 0.00225090335204722,
+    "b_modern": 0.000821761162320018,
+    "predicted_modern_from_disp": 0.00238020393391079,
+    "share_of_gap_explained_pct": -9.04742598693057,
+    "verdict": "★자기정정: 최초 가설('감쇠 = 분산 축소')은 실측으로 기각. 분산은 현대에 **증가**했다(비 1.057)이므로 분산은 감쇠를 설명하지 않는다(설명분 −9.0%). 대신 **억제변수**로 작동한다."
+  },
+  "selection_type": "chain_diagnostic_prereg (argmax pick 없음 — DSR 부적용)",
+  "n_specs_prereg": 17,
+  "caveats": [
+    "FMB 계수 t 는 횡단면 신호력 — 실현 포트폴리오 초과수익(PORT_t) 아님. IC→PORT_t 전이 벽 적용",
+    "graduation HARD 3종 미판정(oos_retention·calmar 미산출). 자본 주장 없음",
+    "폐기 판정은 '의존 없음'이 아니라 '이 표본이 0과 감쇠함의치를 구별 못함'이다 (0 으로부터 0.75se · 감쇠함의치로부터 1.25se)",
+    "유동성 자 adv1_sameday_DEGRADED — PORT_t 절대수준 인용 시 라벨 필수",
+    "'EW 복합'은 등가-위험 가중이 아니다(열 sd 0.621~1.632). 재표준화 복합 미측정",
+    "지평 스캔 40셀 다중조회 — h=2/3 및 대조축 셀은 미등록 관측",
+    "c2/c3 귀무 B=250 (계산비용 제약) — p 0.012~0.048 의 해상도는 ±0.013(이항 se) 수준"
+  ],
+  "challenge_note": "stage_artifacts/infra/fq229_m26_dispersion_gate_20260810/challenge_note.md",
+  "artifacts_dir": "stage_artifacts/infra/fq229_m26_dispersion_gate_20260810/",
+  "suppressor_recomputation": {
+    "source": "FQ-225 nested 표(disp_t 통제 시 시간계수 잔존율 1.963)를 본 라운드에서 직접 재산출",
+    "trend_uncontrolled": {
+      "c_tau": -9.94986201486361e-05,
+      "se": 0.000117458024561975,
+      "t": -0.847099383117386
+    },
+    "trend_disp_controlled": {
+      "c_tau": -0.000167274522798426,
+      "se": 0.000112655814195752,
+      "t": -1.48482813774502
+    },
+    "suppression_multiple": 1.68117429717662,
+    "required_months_uncontrolled": 501.784053684996,
+    "required_months_disp_controlled": 345.161467431461,
+    "required_months_disp_controlled_power80": 436.227562488462,
+    "fq225_reference_months": 501.784053684996,
+    "horizon_reduction_pct": 31.2131453965768,
+    "caveat": "분산통제 추세도 |t| 1.485 < 2.0 — **지평 단축이지 판정 역전이 아니다**. 필요표본은 관측 효과 지속 가정(FQ-225 A4 동일 규약). 잔존율 1.963 셀은 FQ-225 가 A1 미검출로 N/A 처리한 미등록 관측 — 사전등록 없이 판정 인용 금지.",
+    "routed_to": "FQ-230"
+  },
+  "injection_false_positive_averted": {
+    "what_happened": "c2 위반 주입이 p 0.016~0.048 로 나와 스크립트가 '개선이 분산 연결에 귀속'을 출력했다",
+    "why_wrong": "귀무 중앙이 음수 — 월별 가중을 임의로 흔드는 것 자체가 해롭다. 높은 백분위가 '덜 해롭다'를 뜻할 수 있다",
+    "decisive_check": "무게이트(Δ=0)의 귀무 백분위 = G1 91.6% · G4 80.4%",
+    "corrected_reading": "분산 연결의 순증 백분위는 +5.6%p(G1) / +18.0%p(G4). 구속력 있는 무게이트 대비 paired t 는 +0.117 / +1.013 로 문턱 2.0 미달. 확립된 것은 '임의 가중보다 덜 해롭다'이지 '무게이트보다 낫다'가 아니다",
+    "note": "c2 자동 판정 문구는 c3 판정으로 대체한다"
+  },
+  "next_probes": [
+    {
+      "id": "FQ-230",
+      "title": "분산 통제 하 M26 시간추세 — 억제변수 재산출로 FQ-225 판정 지평 502→345개월",
+      "why": "신규 데이터 없이 사양 변경만으로 지평 31% 단축. 단 |t| 1.485 로 현 표본 판정 아님"
+    },
+    {
+      "id": "FQ-231",
+      "title": "스칼라 시계열 예측자의 소비면 라우팅 규칙 등재",
+      "why": "단일 팩터 게이팅 = 랭킹 불변 no-op(|Δ|=0.00e+00) 실측 확정. 국면라벨·vol·crowding 이 같은 벽 재발견하는 것 차단"
+    },
+    {
+      "id": "FQ-232",
+      "title": "canonical_screen_bt 헌법 유동성 자 복원 (adv1_sameday_DEGRADED)",
+      "why": "이 경로 PORT_t 절대수준(FQ-161 +1.544 포함)이 헌법 자 기준이 아니다 — 측정 신뢰 축"
+    },
+    {
+      "id": "(미등재)",
+      "title": "lag 형태만 바꾸는 재시도",
+      "why": "e1 precheck 로 **등재하지 않음** — ma3/ma6/ma12 전부 80% 검정력 비율 0.38~0.45, 최대가 lag1 의 0.702"
+    }
+  ]
+}

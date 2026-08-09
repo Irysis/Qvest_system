@@ -1,0 +1,54 @@
+Warning message:
+package 'arrow' was built under R version 4.5.3 
+[config.R] PROJECT_ROOT: C:/Users/99922/OneDrive/Quant_Module_Moltbot
+[ramp_io.R] Loaded — ramp_write_parquet/ramp_write_json (§2.4 meta enforced)
+[backtest_result_contract.R] Loaded — Backtest Result Contract v1.0
+  Functions: build_bt_result() / validate_bt_result()
+  10 components: manifest, strategy_spec, nav, period_returns, holdings, benchmark_returns, metrics, benchmark_compare, rolling_metrics, drawdowns, audit
+[backtest_result_contract.R] Loaded — Backtest Result Contract v1.0
+  Functions: build_bt_result() / validate_bt_result()
+  10 components: manifest, strategy_spec, nav, period_returns, holdings, benchmark_returns, metrics, benchmark_compare, rolling_metrics, drawdowns, audit
+[canonical_screen_bt.R] Loaded — canonical_screen_bt() (v8.x WS1 real-computation helper)
+[factor_validation.R] Loaded — build_monthly_forward_returns / build_adv20_t1 / validate_factor / approve_factors
+[backtest_result_contract.R] Loaded — Backtest Result Contract v1.0
+  Functions: build_bt_result() / validate_bt_result()
+  10 components: manifest, strategy_spec, nav, period_returns, holdings, benchmark_returns, metrics, benchmark_compare, rolling_metrics, drawdowns, audit
+[canonical_screen_bt.R] Loaded — canonical_screen_bt() (v8.x WS1 real-computation helper)
+[c1] ★입력 실측: alpha_scores 69885행 · 283개월 · 관측단위 (Date x Ticker)
+[c1] 게이트 병합 후 69885행 · 게이트 결측 0
+          used (Mb) gc trigger   (Mb)  max used   (Mb)
+Ncells  900589 48.1    1565062   83.6   1508807   80.6
+Vcells 7416595 56.6  287576760 2194.1 359373465 2741.9
+[build_monthly_forward_returns] ★유동성 자 저하(FQ-181): 입력 패널의 캘린더월당 거래일 중앙값 = 1 (일간 아님).
+  20일 평균 거래대금을 입력에서 계산할 수 없어 **월말 1일치 Vol*Close** 로 대체합니다.
+  → liq_ruler='adv1_sameday_DEGRADED'. 헌법 자(20일 평균)로 재려면 slim 하지 말고 일간 rawdata 를 넘기십시오.
+Warning message:
+build_monthly_forward_returns: liq_ruler='adv1_sameday_DEGRADED' — 월말-slim 입력이라 20일 평균 거래대금 계산 불가 (FQ-181) 
+[c1] 수익 116092행 · 벤치 439행 · 유동성 116092행
+[c1] ★복합 구성요소 월별 sd 평균: C01_SUE 0.875 · C02_EPS_Chg_1m 1.632 · C04_ESBR 0.621 · M26_Revenue_Mom 1.170 ⇒ 'EW' 는 동일-sd 가중이 아니라 열 스케일 그대로의 합이다
+[c1] ================ canonical 실행 (top-25 EW · 15bps · liq 2e8) ================
+[c1]   arm0_M26_alone       PORT_t +1.5441 · n 283 · net_SR 0.354 · calmar NA · TO 11.742 · (1s · metric_type canonical_screen)
+[c1]       [dual-basis] EW-유니버스 PORT_t 2.041 · post2017 t 0.406
+[c1]   arm0g_M26_x_G4       PORT_t +1.5441 · n 283 · net_SR 0.354 · calmar NA · TO 11.742 · (1s · metric_type canonical_screen)
+[c1]       [dual-basis] EW-유니버스 PORT_t 2.041 · post2017 t 0.406
+[c1]   arm1_EW_composite    PORT_t +2.7413 · n 283 · net_SR 0.587 · calmar NA · TO 12.587 · (1s · metric_type canonical_screen)
+[c1]       [dual-basis] EW-유니버스 PORT_t 3.651 · post2017 t 1.428
+[c1]   arm2_comp_G1         PORT_t +2.9222 · n 283 · net_SR 0.594 · calmar NA · TO 13.326 · (1s · metric_type canonical_screen)
+[c1]       [dual-basis] EW-유니버스 PORT_t 4.141 · post2017 t 1.92
+[c1]   arm3_comp_G2         PORT_t +2.8998 · n 283 · net_SR 0.614 · calmar NA · TO 13.231 · (1s · metric_type canonical_screen)
+[c1]       [dual-basis] EW-유니버스 PORT_t 3.784 · post2017 t 1.793
+[c1]   arm4_comp_G3         PORT_t +2.8131 · n 283 · net_SR 0.58 · calmar NA · TO 13.028 · (1s · metric_type canonical_screen)
+[c1]       [dual-basis] EW-유니버스 PORT_t 3.628 · post2017 t 1.578
+[c1]   arm5_comp_G4         PORT_t +3.0625 · n 283 · net_SR 0.646 · calmar NA · TO 12.801 · (1s · metric_type canonical_screen)
+[c1]       [dual-basis] EW-유니버스 PORT_t 4.136 · post2017 t 1.836
+[c1] ================ 판정 ================
+[c1] ★arm0 M26 단독 PORT_t +1.5441 · FQ-161 기록 +1.544 · |Δ| 0.0001 ⇒ parity PASS
+[c1] ★구조 점검 (no-op): M26 단독 +1.544110 vs M26 x G4~ +1.544110 · |Δ| 0.00e+00 ⇒ 완전 일치 — 단일 팩터 게이팅은 랭킹 불변 no-op (구조적 사실)
+[c1]   arm2_comp_G1     PORT_t +2.9222 (Δ +0.1809) · 월평균 차 +1.13bp · paired t(NW3) +0.117 · ΔIR +0.0066 · 부호일치 TRUE
+[c1]   arm3_comp_G2     PORT_t +2.8998 (Δ +0.1585) · 월평균 차 +2.00bp · paired t(NW3) +0.241 · ΔIR +0.0272 · 부호일치 TRUE
+[c1]   arm4_comp_G3     PORT_t +2.8131 (Δ +0.0718) · 월평균 차 -1.95bp · paired t(NW3) -0.282 · ΔIR -0.0076 · 부호일치 TRUE
+[c1]   arm5_comp_G4     PORT_t +3.0625 (Δ +0.3212) · 월평균 차 +5.13bp · paired t(NW3) +1.013 · ΔIR +0.0586 · 부호일치 TRUE
+[c1] ★부호 일치 규약: 불일치 arm = 없음
+[c1] ★전이 판정: 복합 게이트 arm 중 |paired t| >= 2.0 인 arm = 0건 · HARD 2.95 도달 arm = arm5_comp_G4
+[c1] 저장 완료 -> C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/infra/fq229_m26_dispersion_gate_20260810
+[c1] ★★[C 요약] arm0 +1.544 (parity 1.544) · no-op |Δ| 0.0e+00 · 복합기저 +2.741 · 게이트 최대 +3.063 · HARD 2.95 도달 0 여부 FALSE
