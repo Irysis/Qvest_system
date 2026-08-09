@@ -294,6 +294,47 @@ cat(sprintf("  전 피처 완비 행 = %d (%.1f%%)  — 36m warm-up 때문에 �
 first_full <- DT[complete.cases(DT[, ..feat_cols]), min(ym)]
 cat(sprintf("  전 피처 완비 시작 ym = %s\n", first_full))
 
+# ------------------------------------------------------- [5b] 파생 피처 정합 검사
+cat("\n=== [5b] SANITY — 파생값 범위 + P0 기준값 대조 ===\n")
+rngchk <- function(nm, v, lo, hi) {
+  v <- v[is.finite(v)]
+  ok <- all(v >= lo - 1e-9 & v <= hi + 1e-9)
+  cat(sprintf("  %-18s min=%+.4f max=%+.4f  기대범위 [%.2f, %.2f] → %s\n",
+              nm, min(v), max(v), lo, hi, if (ok) "OK" else "★범위 이탈"))
+  ok
+}
+s_ok <- c(
+  rngchk("mdd_24",       DT$mdd_24,       0, 1),
+  rngchk("mdd_24_act",   DT$mdd_24_act,   0, 1),
+  rngchk("dsd_36",       DT$dsd_36,       0, 1),
+  rngchk("bm_dd_depth",  DT$bm_dd_depth, -1, 0),
+  rngchk("turnover_12",  DT$turnover_12,  0, 1),
+  rngchk("avg_pair_corr_36m", DT$avg_pair_corr_36m, -1, 1))
+cat(sprintf("  bm_dd_depth 최저 = %.4f  (P0 기준 BM MDD 47.1%% ⇒ -0.471 부근이어야)\n",
+            min(DT$bm_dd_depth, na.rm = TRUE)))
+# 마지막 행의 확장 조건부 평균 = 전 창 조건부 평균 ⇒ P0 사전실측과 직접 대조
+lastrow <- FF[["act_mean_down"]][K, ]; lastsur <- FF[["act_mean_surge"]][K, ]
+lastfla <- FF[["act_mean_flat"]][K, ]
+cat(sprintf("  [P0 대조] 최종행 확장 조건부평균의 모듈간 분포 (P0 기준값과 일치해야):\n"))
+cat(sprintf("    DOWN  mean=%+.3f%%/m sd=%.3f range[%+.3f,%+.3f]  | P0: +1.700 sd1.318 [-1.015,+7.358]\n",
+            100*mean(lastrow), 100*sd(lastrow), 100*min(lastrow), 100*max(lastrow)))
+cat(sprintf("    SURGE mean=%+.3f%%/m sd=%.3f range[%+.3f,%+.3f]  | P0: -2.026 sd1.345 [-7.638,+0.049]\n",
+            100*mean(lastsur), 100*sd(lastsur), 100*min(lastsur), 100*max(lastsur)))
+cat(sprintf("    FLAT  mean=%+.3f%%/m sd=%.3f                      | P0: +0.482 sd0.290\n",
+            100*mean(lastfla), 100*sd(lastfla)))
+cat(sprintf("    상태 개월수: DOWN=%d SURGE=%d FLAT=%d | P0: 31 / 49 / 174\n",
+            FF[["n_down"]][K,1], FF[["n_surge"]][K,1], FF[["n_flat"]][K,1]))
+p0_match <- (abs(100*mean(lastrow) - 1.700) < 0.02) && (abs(100*mean(lastsur) - (-2.026)) < 0.02) &&
+            (abs(100*mean(lastfla) - 0.482) < 0.02) &&
+            (FF[["n_down"]][K,1] == 31) && (FF[["n_surge"]][K,1] == 49) && (FF[["n_flat"]][K,1] == 174)
+cat(sprintf("  ⇒ P0 기준값 재현 = %s\n", p0_match))
+SAN <- list(range_checks_all_ok = all(s_ok),
+            bm_dd_min = min(DT$bm_dd_depth, na.rm = TRUE),
+            p0_state_reproduction = p0_match,
+            down = list(mean_pct_m = 100*mean(lastrow), sd = 100*sd(lastrow), n = FF[["n_down"]][K,1]),
+            surge = list(mean_pct_m = 100*mean(lastsur), sd = 100*sd(lastsur), n = FF[["n_surge"]][K,1]),
+            flat = list(mean_pct_m = 100*mean(lastfla), sd = 100*sd(lastfla), n = FF[["n_flat"]][K,1]))
+
 # ---------------------------------------------------------------- [6] 누출 검사
 cat("\n=== [6] LEAKAGE CHECKS ===\n")
 LC <- list()
@@ -438,6 +479,7 @@ rep <- list(
                first_full_ym = first_full,
                format = "long: ym, target_ym, module_id, <features>, y_ret, y_dd, y_dd_bear, y_bm_next"),
   features = feat_cols,
+  sanity = SAN,
   feature_notes = list(
     state_conditional = "act_mean_down/surge/flat = 확장창 조건부 평균 (상태는 그 달 bm: DOWN<=-5%, SURGE>=+5%, 나머지 FLAT). min 3관측.",
     regime_conditional = "act_mean_regime = 과거 중 '지금과 같은 국면 라벨'이 지배한 달들의 active 평균.",

@@ -588,4 +588,7 @@ if (Sys.getenv("QVEST_DISPATCH_NO_TG", "0") != "1") {
     tryCatch(tg_agent_brief(agent = "AlphaSearch", title = "논문 라우트 → 리서치 디스패치",
                             relaxed = TRUE, force = TRUE, lock_scope = sprintf("paper_dispatch_%s", today),
                             sections = secs),
-             error = function(e) cat(sprintf("[dispatch] tg fail: %s\n", condition
+             error = function(e) cat(sprintf("[dispatch] tg fail: %s\n", conditionMessage(e))))
+  }
+}
+cat("[dispatch] done\n")
