@@ -125,92 +125,6 @@ suppressPackageStartupMessages({
 }
 
 #------------------------------------------------------------------------------
-# .cons_epoch() / .cons_streak() — **카운트** 팩터용 창. 평균용(.cons_quarters)과 다르다.
-#
-# ★2026-08-10 수리(FQ-219). C11/M25 는 "연속 양수 SUE 의 개수"인데 `.cons_history()`
-#   가 준 **행**을 세고 있었다. 원천이 일간 캐리포워드라 한 분기에 여러 행이 들어간다 —
-#   실측 s_rows/s_qtr 비 = 41~70 (미필터 패널) / 21~31 (stale 필터 통과 live 앵커),
-#   unit_match 0.0000 (8개 sig_date 전건).
-#   ⇒ 값의 단위가 "분기"가 아니라 "영업일"이었다.
-#
-# ★.cons_quarters() 를 재사용할 수 없다. 두 축에서 카운트에 맞지 않는다:
-#   (a) 동률 병합 — 인접 분기 값이 같으면 런이 합쳐져 카운트를 **과소**한다.
-#       (실측 위험은 작다: 양수-양수 인접쌍 동률 0.0008. 그래도 카운트엔 편향.)
-#   (b) ★결번 미차단 — 런 기반은 커버리지 공백을 안 끊는다. epoch 결번률 0.1306
-#       이고, 현행 행-카운트는 양수 streak 종목의 10.7~13.7% 에서 **관측되지 않은
-#       분기를 가로질러** 옛 양수 런을 이어붙이고 있었다. "연속"의 정의 위반이다.
-#   그래서 창을 **릴리스 epoch 리샘플 + 인접성 요구**로 새로 정의한다.
-#
-# ★epoch 경계 = 달력. 실측 근거: sue 값 변경은 100% 월초(dom<=5)이고 4/6/9/12월에
-#   각 ~25%. 시대 안정성 확인 — 2001-2006 / 2007-2012 / 2013-2018 / 2019-2026
-#   네 구간 모두 경계 적중률 0.999+ (a5_q1_calendar_stability.csv). 달력만 쓰므로
-#   PIT 는 자명하다(미래 관측이 경계를 못 바꾼다 — 데이터 유도 경계와의 차이).
-#   ★가드 없음 — 처음엔 "릴리스일(1~5일) 이전 관측이 아직 이전 분기 값을 들고 있으니
-#     경계를 5일 뒤로 밀자"고 설계했는데, **기준값 대조에서 반증됐다**
-#     (v3_guard_adjudicate.csv): 경계를 밀면 분기의 마지막 관측이 *다음* 분기
-#     릴리스 직후 관측이 되어 다음 분기 값이 이 분기에 붙는다 —
-#       guard=0: 기준값 일치 0.9998 · 다음-분기 관측에서 가져옴 0.000
-#       guard=5: 기준값 일치 0.1652 · 다음-분기 관측에서 가져옴 0.835
-#     (기준값 = 경계+10일 이후 첫 관측. 릴리스는 100% dom<=5 라 그 관측은 확정적으로
-#      그 분기 값이다.) 경계는 4/1·6/1·9/1·12/1 그대로 둔다.
-#   남은 경계 사례: sig_date 가 릴리스 월의 1~2일이면 현재 분기의 "마지막 관측"이
-#     아직 이전 분기 값이라 인접 두 epoch 이 같은 값을 갖고 streak 이 1 부풀 수 있다.
-#     factor_db 는 월말 sig_date 만 쓰므로 생산 경로에는 나타나지 않는다.
-#
-# ★staleness: 앵커(최신 관측)가 한 릴리스 주기(130일) 밖이면 값을 만들지 않는다.
-#   현행은 커버리지가 7년 전에 끊긴 종목에도 그 시절 streak 을 2026년 신호로
-#   배출했다(sig 2026-06 기준 최신관측 400일 초과가 전체의 69.6%). 이 규칙은
-#   FQ-218 이 .cons_quarters 에 둔 max_lookback_days 와 같은 성격이고, 상수도 같다.
-#
-# 반환: data.table(Ticker, streak, n_epochs). 사용 가능 종목 없으면 NULL.
-#------------------------------------------------------------------------------
-.CONS_STREAK_STALE_MAX <- 130L    # = .CONS_QUARTER_GAP_MAX (정상 분기 간격 최대 121일 + 여유)
-
-.cons_epoch <- function(d) {
-  dd <- d
-  y <- as.integer(year(dd)); m <- as.integer(month(dd))
-  yy <- fifelse(m <= 3L, y - 1L, y)
-  ss <- fifelse(m <= 3L, 3L, fifelse(m <= 5L, 0L, fifelse(m <= 8L, 1L,
-        fifelse(m <= 11L, 2L, 3L))))
-  yy * 4L + ss
-}
-
-.cons_streak <- function(hist, metric, sig_d,
-                         max_stale_days = .CONS_STREAK_STALE_MAX) {
-  if (is.null(hist) || !is.data.table(hist) || nrow(hist) == 0L) return(NULL)
-  if (!all(c("Date", "Ticker", metric) %in% names(hist))) return(NULL)
-  h <- hist[, c("Ticker", "Date", metric), with = FALSE]
-  setnames(h, metric, "value")
-  h <- h[!is.na(value)]
-  if (nrow(h) == 0L) return(NULL)
-  if (!inherits(h$Date, "Date")) h[, Date := as.Date(Date)]
-  h <- h[Date <= sig_d]                      # PIT — 호출부를 신뢰하지 않고 다시 자른다
-  if (nrow(h) == 0L) return(NULL)
-
-  h[, ep := .cons_epoch(Date)]
-  setorderv(h, c("Ticker", "ep", "Date"), c(1L, 1L, 1L))
-  e <- h[, .(value = value[.N], last_date = Date[.N]), by = .(Ticker, ep)]
-
-  # 앵커 staleness — 죽은 커버리지에 옛 streak 을 현재 신호로 내지 않는다
-  anc <- e[, .(anchor_date = max(last_date)), by = Ticker]
-  live <- anc[as.integer(sig_d - anchor_date) <= max_stale_days, Ticker]
-  if (length(live) == 0L) return(NULL)
-  e <- e[Ticker %chin% live]
-
-  setorderv(e, c("Ticker", "ep"), c(1L, -1L))   # 최신 epoch 이 먼저
-  out <- e[, {
-    s <- 0L; pe <- NA_integer_
-    for (i in seq_len(.N)) {
-      if (i > 1L && (pe - ep[i]) != 1L) break   # 결번 분기 = 연속 아님
-      if (!is.na(value[i]) && value[i] > 0) { s <- s + 1L; pe <- ep[i] } else break
-    }
-    list(streak = as.numeric(s), n_epochs = as.integer(.N))
-  }, by = Ticker]
-  if (nrow(out) == 0L) return(NULL)
-  out[]
-}
-
-#------------------------------------------------------------------------------
 # 정본 위임 — 계산은 하되 배출하지 않는 팩터
 #
 # registry(factor_registry.json) 의 lifecycle.status="deprecated" 와 **짝을 이룬다**.
@@ -429,20 +343,20 @@ compute_consensus <- function(RAWDATA, sig_date, FUND = NULL, CONSENSUS = NULL) 
     .note_skip("C10_SUE_Persistence", "sue", .have_cons)
   }
 
-  # --- C11: Earnings Streak (연속 양수 SUE **분기** 수) ---
-  # 구 코드는 최신순 **행**을 세어 영업일을 카운트했다(FQ-219): 값 단위가 분기가 아니라
-  # 일이었고(행/분기 비 41~70 미필터 · 21~31 live), 결번 분기를 가로질렀다(10.7~13.7%).
-  # ⚠ M25_Earnings_Mom_Streak(compute_momentum.R)와 식·원천·정렬이 동일하다.
-  #   registry dedup DUPC-046 = C11 canonical / M25 alias. 두 구현이 갈리지 않도록
-  #   같은 헬퍼를 양쪽에 **동일 정의**로 두고 08_Tests 가 본문 일치를 강제한다.
+  # --- C11: Earnings Streak (consecutive positive SUE count) ---
+  # ⚠ M25_Earnings_Mom_Streak(compute_momentum.R:339-360)과 식·원천·정렬이 동일하다
+  #   (2026-08-08 코드 대조). 정본 일원화는 registry 처분 사안이라 여기서 단독
+  #   결정하지 않는다 — 배출은 유지하고 중복 판정을 별도 제안으로 올린다.
   if (!is.null(sue_hist)) {
-    q11 <- .cons_streak(sue_hist, "sue", sig_d)
-    if (!is.null(q11)) {
-      c11 <- q11[, .(Ticker, Factor_Name = "C11_Earnings_Streak", Raw_Value = streak)]
-      if (nrow(c11) > 0) results[["C11"]] <- c11
-    } else {
-      .note_skip("C11_Earnings_Streak", "sue(no live quarterly anchor)", .have_cons)
-    }
+    sue_streak <- sue_hist[, {
+      streak <- 0L
+      for (i in seq_len(.N)) {
+        if (!is.na(sue[i]) && sue[i] > 0) streak <- streak + 1L else break
+      }
+      list(streak = as.numeric(streak))
+    }, by = Ticker]
+    c11 <- sue_streak[, .(Ticker, Factor_Name = "C11_Earnings_Streak", Raw_Value = streak)]
+    if (nrow(c11) > 0) results[["C11"]] <- c11
   } else {
     .note_skip("C11_Earnings_Streak", "sue", .have_cons)
   }

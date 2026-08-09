@@ -14,63 +14,6 @@
 
 suppressPackageStartupMessages(library(data.table))
 
-#------------------------------------------------------------------------------
-# .cons_epoch() / .cons_streak() — M25 전용. **compute_consensus.R 의 정의와 축자
-# 동일해야 한다.** 두 파일은 빌더가 각각 별도 env 에 source 하므로(factor_db_builder.R
-# :543-544 `new.env` + `source(local=env)`) 헬퍼를 공유할 수 없다. 그래서 복제하되
-# 08_Tests/factor_db/test_streak_quarter_unit.R 가 두 정의의 **본문 일치를 강제**한다.
-# 복제가 조용히 갈라지는 것이 바로 이번 사고의 기전이었다(2026-08-08 에 "식·원천·정렬이
-# 동일"이라고 기록만 하고 강제가 없어 두 곳이 같이 틀린 채 남았다).
-#
-# 설계 근거·실측(비 41~70 · 결번 교량 10.7~13.7% · 달력 안정성 0.999+)은
-# compute_consensus.R 의 같은 블록 주석이 정본이다. FQ-219.
-#------------------------------------------------------------------------------
-.CONS_STREAK_STALE_MAX <- 130L    # = .CONS_QUARTER_GAP_MAX (정상 분기 간격 최대 121일 + 여유)
-
-.cons_epoch <- function(d) {
-  dd <- d
-  y <- as.integer(year(dd)); m <- as.integer(month(dd))
-  yy <- fifelse(m <= 3L, y - 1L, y)
-  ss <- fifelse(m <= 3L, 3L, fifelse(m <= 5L, 0L, fifelse(m <= 8L, 1L,
-        fifelse(m <= 11L, 2L, 3L))))
-  yy * 4L + ss
-}
-
-.cons_streak <- function(hist, metric, sig_d,
-                         max_stale_days = .CONS_STREAK_STALE_MAX) {
-  if (is.null(hist) || !is.data.table(hist) || nrow(hist) == 0L) return(NULL)
-  if (!all(c("Date", "Ticker", metric) %in% names(hist))) return(NULL)
-  h <- hist[, c("Ticker", "Date", metric), with = FALSE]
-  setnames(h, metric, "value")
-  h <- h[!is.na(value)]
-  if (nrow(h) == 0L) return(NULL)
-  if (!inherits(h$Date, "Date")) h[, Date := as.Date(Date)]
-  h <- h[Date <= sig_d]                      # PIT — 호출부를 신뢰하지 않고 다시 자른다
-  if (nrow(h) == 0L) return(NULL)
-
-  h[, ep := .cons_epoch(Date)]
-  setorderv(h, c("Ticker", "ep", "Date"), c(1L, 1L, 1L))
-  e <- h[, .(value = value[.N], last_date = Date[.N]), by = .(Ticker, ep)]
-
-  # 앵커 staleness — 죽은 커버리지에 옛 streak 을 현재 신호로 내지 않는다
-  anc <- e[, .(anchor_date = max(last_date)), by = Ticker]
-  live <- anc[as.integer(sig_d - anchor_date) <= max_stale_days, Ticker]
-  if (length(live) == 0L) return(NULL)
-  e <- e[Ticker %chin% live]
-
-  setorderv(e, c("Ticker", "ep"), c(1L, -1L))   # 최신 epoch 이 먼저
-  out <- e[, {
-    s <- 0L; pe <- NA_integer_
-    for (i in seq_len(.N)) {
-      if (i > 1L && (pe - ep[i]) != 1L) break   # 결번 분기 = 연속 아님
-      if (!is.na(value[i]) && value[i] > 0) { s <- s + 1L; pe <- ep[i] } else break
-    }
-    list(streak = as.numeric(s), n_epochs = as.integer(.N))
-  }, by = Ticker]
-  if (nrow(out) == 0L) return(NULL)
-  out[]
-}
-
 compute_momentum <- function(RAWDATA, sig_date, FUND = NULL, CONSENSUS = NULL) {
 
   sig_date <- as.Date(sig_date)
@@ -393,22 +336,26 @@ compute_momentum <- function(RAWDATA, sig_date, FUND = NULL, CONSENSUS = NULL) {
   mom_dt[, sec_avg_m01 := mean(M01, na.rm = TRUE), by = Sector]
   mom_dt[, M24 := fifelse(!is.na(M01) & !is.na(sec_avg_m01), M01 - sec_avg_m01, NA_real_)]
 
-  # ==== M25: Earnings Momentum (연속 양수 SUE **분기** 수) ====
-  # 구 코드는 최신순 **행**을 세어 영업일을 카운트했다(FQ-219). C11 과 동일 결함·동일 수리.
-  # registry dedup DUPC-046: C11_Earnings_Streak = canonical / M25 = alias.
+  # ==== M25: Earnings Momentum (SUE streak proxy from CONSENSUS) ====
+  # Number of consecutive positive SUE observations (trailing).
+  # DATA_NEEDED: CONSENSUS$sue data.table with Date, Ticker, sue
   mom_dt[, M25 := NA_real_]
   if (is.list(CONSENSUS) && "sue" %in% names(CONSENSUS) && is.data.table(CONSENSUS$sue) && nrow(CONSENSUS$sue) > 0L) {
     cs <- copy(CONSENSUS$sue)
     cs[, Date := as.Date(Date)]
     cs <- cs[Date <= sig_date & !is.na(sue)]
     if (nrow(cs) > 0L) {
-      q25 <- .cons_streak(cs, "sue", sig_date)
-      if (!is.null(q25)) {
-        mom_dt <- merge(mom_dt, q25[, .(Ticker, sue_streak = streak)],
-                        by = "Ticker", all.x = TRUE)
-        mom_dt[, M25 := sue_streak]
-        mom_dt[, sue_streak := NULL]
-      }
+      setorder(cs, Ticker, -Date)
+      sue_streak <- cs[, {
+        streak <- 0L
+        for (i in seq_len(.N)) {
+          if (!is.na(sue[i]) && sue[i] > 0) streak <- streak + 1L else break
+        }
+        list(sue_streak = as.numeric(streak))
+      }, by = Ticker]
+      mom_dt <- merge(mom_dt, sue_streak, by = "Ticker", all.x = TRUE)
+      mom_dt[, M25 := sue_streak]
+      mom_dt[, sue_streak := NULL]
     }
   }
 
