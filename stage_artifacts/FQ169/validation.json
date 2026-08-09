@@ -1,0 +1,54 @@
+{
+  "round_id": "FQ-169",
+  "parent": "WT-D20260809_003",
+  "as_of": "2026-08-09",
+  "metric_type": "canonical_screen_diag",
+  "capital_claim": false,
+  "prereg_ref": "stage_artifacts/FQ169/preregistration.json (측정 전 작성)",
+  "input_reality": {
+    "rows": 81298,
+    "months": 282,
+    "period": "2003-01 ~ 2026-06",
+    "factors_loaded": 11,
+    "load_path": "load_month_factors() 계약 경유 (C15)",
+    "coverage_min": 0.9749
+  },
+  "verdict": "FAMILY_WIDE",
+  "prereg_classification": {
+    "divergent_targets": ["D34_RealVol_21d", "D35_RealVol_63d", "D36_RealVol_126d", "D42_EWMA_Vol"],
+    "partial_targets": ["D41_Vol_of_Vol", "D45_Downside_Dev", "D47_CVaR_5pct"],
+    "aligned_targets": "D50_MaxDrawdown",
+    "n_divergent": 4,
+    "G1_family_wide": true,
+    "G2_d03_specific": false,
+    "G3_neg_controls_aligned": true,
+    "G4_pos_control": "DIVERGENT"
+  },
+  "stronger_finding": {
+    "statistic": "sp_gap = spearman(decile, 평균초과 − 중앙값초과)",
+    "prereg_status": "사전등록 statistics 목록에 포함된 지표 — 사후 도입 아님",
+    "targets_range": [-1, -0.951515151515151],
+    "pos_control": -1,
+    "neg_controls": [
+      {
+        "factor": "M26_Revenue_Mom",
+        "sp_gap": 0.721212121212121
+      },
+      {
+        "factor": "M01_Mom_12_1",
+        "sp_gap": 0.272727272727273
+      }
+    ],
+    "reading": "★대상 8종 + 양성대조 전부 sp_gap −0.95~−1.00, 음성대조는 +0.273/+0.721 — **겹침 0**. 즉 '평균−중앙값 격차가 decile 따라 감소' 라는 기전 자체는 vol/tail 계열에 **사실상 보편**이고, DIVERGENT/PARTIAL/ALIGNED 분류 차이는 그 기전이 mean 프로파일의 **부호를 뒤집을 만큼 강한가**의 문제일 뿐이다. sp_med 도 8종 전부 +0.855~+0.976 로 균질 — 갈리는 것은 sp_mean(−0.430~+0.297) 하나다.",
+    "honest_note": "분류 규칙(±0.30 문턱)이 이 연속체를 3구간으로 자른 것이며, 'DIVERGENT 4개' 라는 개수는 문턱 위치에 민감하다. 개수보다 sp_gap 분리가 강건한 진술이다."
+  },
+  "declared_confound_realized": {
+    "claim": "8종은 독립 8검정이 아니다 (사전등록 선언분)",
+    "measured_cor_spearman": "월평균 횡단면 상관 0.38~0.98 (D45↔D47 0.98 · D03↔D45 0.93 · D03↔D47 0.91 · D34↔D42 0.94)",
+    "row_identity": "D03_RealVol · D45_Downside_Dev · D47_CVaR_5pct 는 월별 행수·종목수가 완전 동일(536,458 / 3,352) — 동일 입력 계열 시사",
+    "implication": "★'4/8' 을 4건의 독립 확인으로 읽으면 안 된다. 유효 독립 개수는 그보다 훨씬 적다."
+  },
+  "implication": "rank-IC(순위)와 PORT_t·평균(원수익)의 괴리는 D03 고유가 아니라 **vol/tail 계열 성질**이다. measurement-graduation §2 가 rank-IC 를 ADVISORY 로 둔 규정의 적용 경계가 실측으로 그어졌다 — 변동성·꼬리 측도 계열에서는 rank-IC 를 재료 자격 근거로 인용하는 것이 구조적으로 위험하다.",
+  "scope_honesty": ["1유니버스·282개월·gross 관측. 비용·회전율 층은 보지 않았다.", "align_factor_direction 이 IC-추론 방향정렬을 하므로 rank-IC 부호 자체를 독립 증거로 인용하지 않는다(사전등록 선언분). 괴리 판정은 두 프로파일 간 비교라 이 정렬에 영향받지 않는다.", "형태→소비면 대응은 여전히 미측정(FQ-170)."],
+  "artifacts": ["preregistration.json", "p0_avail.R", "p1_load.R", "p2_divergence.R", "p2_divergence_summary.csv", "p2_decile_detail.csv", "panel.rds"]
+}

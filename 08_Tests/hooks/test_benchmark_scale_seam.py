@@ -33,13 +33,18 @@ CUTOFF = '2026-07-30'  # daily_refresh.sh 의 "10 days ago" 상당
 
 
 # ── 픽스처 ────────────────────────────────────────────────────────────────────
-def make_naver(n: int = 400, seed: int = 7, end: str = '2026-08-07') -> pd.DataFrame:
-    """합성 KPI200 일간 종가 (수백~천대, 실측 레벨대와 동일 자릿수)."""
+def make_naver(n: int = 400, seed: int = 7, end: str = '2026-08-07',
+               base: float = 320.0, drift: float = 0.00279) -> pd.DataFrame:
+    """합성 KPI200 일간 종가.
+
+    실측 레벨대에 맞춘다 — 2024-08 ~ 2026-08 KPI200 은 약 320 → 975 (일간 sd 1.5%).
+    ①번 크기 가드(>3000 = 종합 의심)가 **현실 자릿수 위에서** 시험되도록 하기 위함이다.
+    """
     rng = np.random.default_rng(seed)
     dates = pd.bdate_range(end=pd.Timestamp(end), periods=n)
-    ret = rng.normal(0.0008, 0.015, n)
+    ret = rng.normal(drift, 0.015, n)
     ret[0] = 0.0
-    close = 600.0 * np.cumprod(1 + ret)
+    close = base * np.cumprod(1 + ret)
     return pd.DataFrame({'Date': dates, 'Close': close})
 
 
@@ -163,19 +168,37 @@ def _():
     return f"주입 {pre:.4f} → 치유 {worst:.4f}, 앵커 {r['anchor_date']}, {r['healed_offscale_rows']}행"
 
 
-@case('INJ-2  오심볼(코스피 종합, 수천대) → sanity 가드 발화')
+@case('INJ-2a ★오심볼 — 다른 지수(비슷한 레벨, 다른 수익률경로) → 정체 가드 발화')
+def _():
+    """크기 가드가 못 잡는 오심볼. 예: KPI200 자리에 KOSDAQ150(수백대) — 자릿수가 같다.
+    수익률 경로가 다르므로 **스케일 불변** 정체 검사만이 잡는다."""
+    nv = make_naver()
+    bm = make_bm(nv)
+    other = make_naver(seed=99, base=740.0, drift=0.0006)   # 다른 지수, 같은 자릿수
+    assert other.Close.max() < 3000, '픽스처 오류 — 크기 가드가 대신 발화해버림'
+    try:
+        with Harness(bm, other) as h:
+            nbu.patch_benchmark_parquet(CUTOFF, '2026-08-07', backup=False)
+    except RuntimeError as e:
+        assert '정체' in str(e), f'다른 가드가 발화: {e}'
+        return f"차단됨: {str(e)[:78]}"
+    raise AssertionError('오심볼(동일 자릿수)이 통과됨 — 정체 가드 사망')
+
+
+@case('INJ-2b 오심볼 — 코스피 종합 자릿수(수천대) → 크기 가드 발화')
 def _():
     nv = make_naver()
     bm = make_bm(nv)
     nv_bad = nv.copy()
-    nv_bad['Close'] = nv_bad['Close'] * 6.42   # KPI200 → 종합 스케일
+    nv_bad['Close'] = nv_bad['Close'] * 6.42   # KPI200 → 종합 레벨 (실측 배수)
+    assert nv_bad.Close.max() > 3000, '픽스처 오류 — 종합 자릿수에 못 미침'
     try:
         with Harness(bm, nv_bad) as h:
             nbu.patch_benchmark_parquet(CUTOFF, '2026-08-07', backup=False)
     except RuntimeError as e:
         assert 'sanity' in str(e), f'다른 가드가 발화: {e}'
-        return f"차단됨: {str(e)[:70]}"
-    raise AssertionError('오심볼이 통과됨 — 가드 사망')
+        return f"차단됨: {str(e)[:78]}"
+    raise AssertionError('종합 자릿수가 통과됨 — 크기 가드 사망')
 
 
 @case('INJ-3  갱신구간 극단 이동(스케일 단절 모사) → 이음매 가드 발화')

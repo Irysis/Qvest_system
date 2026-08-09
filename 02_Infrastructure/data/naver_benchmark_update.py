@@ -144,6 +144,27 @@ def patch_benchmark_parquet(start_date: str = '2026-04-01',
         raise RuntimeError(f"[naver_benchmark] 스케일 추정 불가: 겹치는 날짜 {len(ov)}개 (<20) — 중단")
     ov['ratio'] = ov.BM_Close / ov.nv
     canon = float(ov.ratio.median())
+
+    # sanity 가드 ②: **정체 검사** — 받아온 시리즈가 정말 이 파일이 쓰던 그 지수인가.
+    #   ①의 >3000 은 레벨 크기 휴리스틱이라 지수가 낮은 국면에서 오심볼을 놓친다(위반 주입 INJ-2 적발).
+    #   수익률은 스케일 불변이므로, cutoff 이전 겹치는 날의 **저장된 BM_Ret 과 일치하는지**로
+    #   심볼 정체를 직접 검사한다. 종합↔200 은 일간 수익률이 갈리므로(실측 07-28: -11.553% vs
+    #   -10.837%) 즉시 발화한다. 기존 이음매 1~2일은 허용치(90%)가 흡수한다.
+    nvr = naver.copy()
+    nvr['nret'] = nvr.Close.pct_change()
+    idc = bm.merge(nvr[['Date', 'nret']], on='Date', how='inner')
+    idc = idc[(idc.Date < cutoff) & idc.nret.notna() & idc.BM_Ret.notna()]
+    if len(idc) >= 20:
+        agree = float(((idc.nret - idc.BM_Ret).abs() < 1e-6).mean())
+        if agree < 0.90:
+            raise RuntimeError(
+                f"[naver_benchmark] 벤치 sanity FAIL(정체): 받아온 시리즈의 일간수익률이 "
+                f"기존 BM_Ret 과 {agree:.1%}만 일치 (cutoff 이전 {len(idc)}일 대조, 기준 90%). "
+                f"symbol=KPI200 이 맞는지 / benchmark.parquet 이 다른 지수로 만들어졌는지 확인.")
+    else:
+        agree = float('nan')
+        print(f'  ⚠ 정체 검사 생략 — cutoff 이전 대조 가능일 {len(idc)}개 (<20)')
+
     ok = ov[(ov.ratio / canon - 1.0).abs() < SCALE_TOL]
     pre_ok = ok[ok.Date < cutoff]
     if len(pre_ok) == 0:
@@ -151,7 +172,9 @@ def patch_benchmark_parquet(start_date: str = '2026-04-01',
                            f"정합 앵커 없음 — 중단 (lookback 확대 필요)")
     anchor_date = pre_ok.Date.max()
     anchor_close = float(bm.loc[bm.Date == anchor_date, 'BM_Close'].iloc[0])
-    n_offscale = int((ov.Date > anchor_date).sum())
+    # ★앵커 **이후로 실제 스케일을 이탈한** 행만 센다. 재체인 대상 전부를 세면 정상 입력에서도
+    #   "치유했다"고 보고해 오염 유무를 구분 못 한다(위반 주입 POS-1 적발).
+    n_offscale = int(((ov.Date > anchor_date) & ((ov.ratio / canon - 1.0).abs() >= SCALE_TOL)).sum())
     print(f'  canonical scale = {canon:.6f}× (n_ok={len(ok)}/{len(ov)})  '
           f'anchor = {anchor_date.date()} @ {anchor_close:.3f}')
     if n_offscale:
@@ -208,6 +231,7 @@ def patch_benchmark_parquet(start_date: str = '2026-04-01',
         'anchor_date': anchor_date.strftime('%Y-%m-%d'),
         'anchor_close': anchor_close,
         'canonical_scale': canon,
+        'identity_agreement': agree,
         'healed_offscale_rows': n_offscale,
         'rechained_rows': len(tail),
         'seam_ret': seam_ret,
