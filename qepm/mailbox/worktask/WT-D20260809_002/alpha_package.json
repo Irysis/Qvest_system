@@ -1,0 +1,185 @@
+{
+  "task_id": "WT-D20260809_002",
+  "as_of_date": "2026-08-09",
+  "forecast_horizon": "1M",
+  "spec_version": "ast_v1.1",
+
+  "pit": {
+    "sig_date": "2026-07-31",
+    "decision_ts": "2026-08-09"
+  },
+
+  "hypothesis": {
+    "statement": "국면 라벨(CRISIS∪CAUTION)은 아무 하락은 못 맞히지만 심한 하락(월 <= -10%)은 맞힌다. 따라서 라벨을 심도-표적 노출 축소로만 소비하면 상시 보험료를 줄이면서 꼬리 손실을 절단할 수 있다.",
+    "mechanism": {
+      "agent": "제약-트리거 강제 매도 주체 3류: (1) 신용융자 담보유지비율(통상 140%) 하회 시 기계적 반대매매를 당하는 개인 신용계좌, (2) 글로벌 risk-off에서 VaR/트래킹 한도로 KR 노출을 기계적으로 축소하는 외국인 자금, (3) ELS 녹인 구간 진입 시 헤지 북을 조정하는 증권사 자기매매 데스크. 세 주체 모두 가격 수준 판단이 아니라 손실·변동성이 임계선을 넘었다는 사실에 의해 매도가 강제된다(비정보적 매도).",
+      "friction": "(1) KR 공매도 제약 + long-only 위임: 하락 방향 정보를 종목 공매도로 수익화할 수 없어 유일한 레버가 노출 스케일 — 정보가 있어도 차익거래 채널이 봉쇄됨. (2) limits of arbitrage: 강제 매도가 비정보적임을 아는 유동성 공급자도 같은 시점에 자기 VaR 한도 축소·자금 회수에 묶여 받아주지 못함. (3) 보험료 비대칭: 오버레이는 라벨 오발화 월마다 상방을 포기하는 상시 비용을 내는 구조라 꼬리 적중 lift가 충분히 높은 사건 정의에서만 순편익.",
+      "path": "월말 t까지의 데이터로 산출된 라벨을 홀딩월 t+1 시작 전 컷오프로 읽어(C5) 홀딩월 노출 w in [0,1] 을 축소한다. 수익화 형태는 평월 알파가 아니라 희소 사건 회피: 라벨-ON 구간 중 실현되는 심한 하락월(<= -10%)의 손실 절단이 MDD·Calmar·꼬리를 개선한다. 시점 구조상 이 기전은 에피소드의 첫 다리는 원리적으로 못 막고 다중-다리 에피소드의 후속 다리만 잡는다."
+    },
+    "falsification": [
+      {
+        "axis": "(a) 심도 분리의 에피소드-군집 강건성",
+        "field": "E7_unified_regime_3layer",
+        "fields": ["A4_benchmark_kospi200", "A1_RAWDATA_OHLCVS_daily"],
+        "observable": "라벨-ON 발화월의 다음 홀딩월 벤치 좌꼬리(<= -10%) 빈도가 OFF월과 구분되고, 그 분리가 단일 에피소드(1997-98 / 2008-09 / 2020) 제거 후에도 잔존해야 한다.",
+        "reject_if": "분리가 없거나 단일 에피소드 제거로 소멸하면 상태-검출 기전 기각",
+        "measured_outcome": "SURVIVED — C5-clean 정렬 전표본 lift 2.671 (p=3.15e-06, n=428/n_on=103/n_evt=28). 에피소드 제거 강건: GFC 제거 2.986(p=7.4e-07) / COVID 제거 2.773(p=1.3e-06) / 아시아위기 제거 2.623(p=3.0e-04) / 셋 다 제거 3.218(p=5.0e-05). 어느 단일 에피소드에도 업혀 있지 않다.",
+        "artifact": "stage_artifacts/fq143_tail_overlay_20260809/p8_episode_robustness.csv"
+      },
+      {
+        "axis": "(b) trailing 변동성 통제 후 라벨의 좌꼬리 증분",
+        "field": "E5_msm_crisis_prob",
+        "fields": ["E7_unified_regime_3layer", "A1_RAWDATA_OHLCVS_daily", "E1_fred_macro_raw"],
+        "observable": "홀딩월 이전 trailing 12M 실현변동성을 연속 통제한 뒤에도 라벨이 좌꼬리 확률에 증분 설명력을 가져야 한다(분할 아닌 연속 통제).",
+        "reject_if": "trailing 변동성 통제 후 라벨 증분이 0 이면 라벨은 vol 프록시일 뿐 — 본 가설(라벨 소비) 기각하고 실현변동성 직접 소비로 재설계",
+        "measured_outcome": "SURVIVED — 로지스틱(사건 = 다음달 시장 < -10%, n=426): 라벨 단독 beta +1.906(z +4.61) / vol 단독 beta +0.675(z +4.13) / vol+라벨 동시 투입 시 vol z=+0.67(p=0.506) 소멸, 라벨 z=+2.61(p=0.0090) 잔존. LR 증분: 라벨의 vol 대비 p=0.0106, vol 의 라벨 대비 p=0.5046. cor(라벨, vol z)=+0.754 공선에도 라벨이 지배 — vol 프록시가 아니다.",
+        "artifact": "stage_artifacts/fq143_tail_overlay_20260809/p7_falsification_vol.R"
+      },
+      {
+        "axis": "(c) 강제-flow 채널",
+        "field": "A6_investor_flow_stock_daily",
+        "fields": ["F3_investor_flow_market_level", "A4_benchmark_kospi200"],
+        "observable": "심한 하락월(<= -10%)의 시장 집계 외국인·개인 순매도 강도가 평범한 하락월(-5%~0%) 대비 유의하게 커야 한다.",
+        "reject_if": "구분되지 않으면 경제 기전(제약-트리거 증폭) 기각 — 통계 기전만 남으면 friction 서술이 무너져 프리미엄 지속 근거 상실",
+        "measured_outcome": "NOT_TESTED — (a)(b) 가 기전을 지지한 반면 레버 자체가 정량 천장(P6-b: 필요 lift 10.8~16.2x vs 실측 2.1~2.7x)으로 막혀 (c) 측정이 라운드 판정을 바꾸지 않는다. next_probe 로 이월 — 라벨을 위험모델·monitoring 입력으로 소비하는 경로에서는 (c) 가 여전히 판별 가치를 가진다.",
+        "artifact": null
+      }
+    ],
+    "regime_scope": {
+      "holds_in": [
+        "다중-다리 스트레스 에피소드 진행 구간 (고변동 + 강제매도 증폭 작동: 2008형 GFC, 2011 유로, 2022 긴축형)",
+        "CRISIS/CAUTION 확산 구간 중 변동성 고조 상태 (첫 다리 이후, 정책 개입 이전)"
+      ],
+      "weakens_or_reverses_in": [
+        "V자 반등 초입 (2020-04형, 2009형) — 상태변수 감쇠 지연으로 라벨이 반등월에 켜져 상방을 포기",
+        "저변동 완만 하락장(grind-down, 2018형) — 월 -10% 다리 없이 소폭 하락 누적, 증폭기 미작동",
+        "저변동 상승장/melt-up — 오발화 시 순비용만 발생 (보험료 비대칭)"
+      ],
+      "boundary_rationale": "경계는 기전에서 도출된다: 증폭기(제약-트리거 강제매도)는 손실·변동성 임계선을 넘어야만 존재하므로 유효 영역은 임계선이 이미 넘어진 에피소드 진행 중으로 한정된다. 임계선 아래에서는 잡을 사건 자체가 없고, 에피소드가 정책 개입으로 급종료되면 상태변수의 감쇠 지연이 그대로 상방 포기 비용이 된다."
+    }
+  },
+
+  "factors": [
+    {
+      "factor_id": "F1_regime_tail_exposure_scale",
+      "role": "market_level_exposure_conditioning (횡단면 alpha 아님 — 노출 스케일 조건화)",
+      "restatement_exposure": 1,
+      "ast": {
+        "op": "IF_ELSE",
+        "args": [
+          {
+            "op": "AS_OF",
+            "args": [
+              {
+                "leaf": "STORED_SCORE",
+                "escape_contract": {
+                  "escape_type": "STORED_SCORE",
+                  "provenance": {
+                    "store_build_hash": "unified_regime_signal.parquet@2026-08-09 (431행, 1990-10-31~2026-08-31, Date 월말 431/431)",
+                    "generator_code_path": "02_Infrastructure/regime/regime_ensemble.R (+ regime_signal.R / msm_daily_refit.R / ktri_v3_builder.R 합성)",
+                    "generated_at": "2026-08-09"
+                  },
+                  "production_parity_verified": false
+                }
+              },
+              "월말 t (홀딩월 t+1 시작 전)"
+            ]
+          },
+          0.5,
+          1.0
+        ]
+      }
+    }
+  ],
+  "combination_rule": "single_factor",
+  "verdict": "designed",
+
+  "self_pit_check": {
+    "performed": true,
+    "leaves_checked": [
+      {
+        "leaf": "E7_unified_regime_3layer (Category in {CRISIS, CAUTION, NEUTRAL, RISK_ON})",
+        "availability_rule": "fixed: 월말 관측 -> 다음 홀딩월 시작(익월 1일) 소비. 실측 간격 최소 1일 / 최대 1일 — assert_overlay_pit PASS 269/269.",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "A4_benchmark_kospi200",
+        "availability_rule": "fixed: t-1 close (benchmark_pinned_20260702.parquet, 9416 일별)",
+        "restatement_prone": false
+      },
+      {
+        "leaf": "A1_RAWDATA_OHLCVS_daily",
+        "availability_rule": "fixed: t-1 close",
+        "restatement_prone": false
+      }
+    ],
+    "verdict": "warn_restatement",
+    "verdict_rationale": "assert_overlay_pit HARD PASS + lag1 스트레스 통과(<-10% 셀 lag+1 lift 2.093 p=1.7e-3 유지)로 동월 look-ahead 는 배제됐다. 단 E7 은 STORED_SCORE 이고 production_parity_verified=false — 역사 라벨값이 현 시점 재생성으로 in-sample 적합됐을 가능성을 vintage 증거로 배제하지 못했다. 본 라운드 판정이 negative 이므로 이 잔여 위험은 안전한 방향으로 작용한다(낙관적일 수 있는 라벨로도 레버가 실패)."
+  },
+
+  "alpha_vector": {},
+  "confidence_vector": {},
+  "alpha_discovery_count": 0,
+  "signal_matrix_ref": "stage_artifacts/WT_D20260809_002/alpha_scores.parquet",
+
+  "factor_specs": [
+    {
+      "factor_family": "Regime/Tail-Risk (market-level)",
+      "proxy": "unified_regime_signal Category in {CRISIS, CAUTION} -> 홀딩월 노출 스케일 축소",
+      "formula": "w_t = 1 - depth * 1{Category(t-1 월말) in {CRISIS, CAUTION}}",
+      "lag_rule": "월말 라벨 -> 익월 1일 홀딩 시작 (C5, 간격 1일)",
+      "winsorization": "N/A (이산 라벨)",
+      "neutralization": "N/A (시장 레벨)",
+      "economic_rationale": "제약-트리거 강제 매도(신용 반대매매·외국인 VaR 청산·ELS 헤지)는 손실/변동성 임계선 초과 시에만 발화하며 자기강화 에피소드를 이룬다. 상태 검출기는 에피소드 진행을 탐지해 다음 심한 다리의 조건부 확률 상승을 포착한다. KR 공매도 제약으로 방향 수익화 채널이 봉쇄돼 노출 스케일이 유일 레버다.",
+      "redundancy_cluster_id": "RC_REGIME_VOLSTATE_KR",
+      "redundancy_evidence": "trailing 12M 실현변동성과 cor=+0.754 (공선). 단 꼬리 예측에서 라벨이 vol 을 지배 — vol+라벨 로지스틱에서 vol z=+0.67(p=0.506) / 라벨 z=+2.61(p=0.0090), LR 증분 p=0.0106. vol 프록시가 아니다.",
+      "weight_theta": 1.0,
+      "references": ["Brunnermeier-Pedersen 2009 (funding liquidity spirals)", "Shleifer-Vishny 1997 (limits of arbitrage)"]
+    }
+  ],
+
+  "diagnostics": {
+    "rank_ic": -0.0006,
+    "rank_ic_definition": "횡단면 rank-IC 아님 — 본 라운드는 시장레벨 오버레이라 종목 횡단면 점수가 없다. 기입값은 동형 대용: point-biserial spearman(라벨 신호 부호(-1=ON), 홀딩월 base ret_orig), 배포창 n=269. 전표본(시장수익 기준, n=428) = -0.0274. 음수 = 라벨 ON 월이 오히려 수익이 높았다.",
+    "alpha_inheritance_cor": 1.0,
+    "alpha_inheritance_note": "종목 선별을 전혀 바꾸지 않고 노출 스케일만 조건화 -> parent(STR_1715 on M4xR05) 대비 alpha 완벽 동일. role_card 역방향 사례: wt_type=discovery 부적격이며 sizing_only 재분류가 정확(reclassify_proposal).",
+    "canonical_port_t_nw_lag3": null,
+    "canonical_port_t_null_reason": "canonical_screen_bt 는 종목 횡단면 점수를 top-N EW 로 거르는 스크리너인데 본 라운드에 횡단면 점수가 없다(시장레벨 노출 오버레이). proxy 손계산으로 대체하지 않고 null 로 둔다 — measurement-graduation par.1.",
+    "paired_t_nw_lag3_vs_incumbent_depth50": -1.838,
+    "delta_ir_vs_incumbent_depth50": -0.1555,
+    "sign_agreement": true,
+    "sign_agreement_note": "paired t 와 dIR 이 모두 음수로 일치 — 부호 불일치로 인한 판정 유보 사유 없음. 단 두 값은 metric_type=canonical_screen_diag 이며 라벨 자격 관문 미통과로 book-marginal 판정으로 승격되지 않는다.",
+    "oracle_paired_t_nw_lag3": 3.177,
+    "oracle_delta_ir": 0.1249,
+    "oracle_delta_mdd_pp": -2.09,
+    "icir": null,
+    "monotonicity": null,
+    "subperiod_stability": 0.85,
+    "subperiod_stability_note": "라벨 자격(꼬리 lift)의 시대 안정성. pre-2004 lift 1.809(p=4.2e-4, n_on=74) vs post-2004 lift 2.061(p=0.251, n_on=29) — 점추정은 오히려 post 가 높고 차이는 검정력(n_on 74 vs 29). 창-정합 후 판별력 pre-2004 편중 서술은 지지되지 않는다.",
+    "turnover_proxy": 0.468,
+    "turnover_note": "라벨 오버레이 단독의 스케일 회전 (연 0.468회, incumbent 1.008회). 종목 회전과 별개 축.",
+    "harvey_t_stat": null,
+    "post_neutralization_ic": null,
+    "deflated_sharpe_ratio": null,
+    "dsr_note": "selection_type=chain (가설주도 단일 레버) — sweep 아님이라 DSR 게이트 부적용(measurement-graduation par.3). n_trials=1, n_iterations=1 (깊이 0.30/0.50/0.70 은 argmax 선택이 아니라 t 의 깊이-불변성 실증용 진단 격자 — 셋 다 t=-1.838 로 동일)."
+  },
+
+  "selection_objective": "canonical_port_t",
+  "selection_objective_note": "권위 지표를 canonical_port_t 로 선언하되 본 라운드는 횡단면 점수 부재로 산출 불가(null) — 대신 동일 계열의 실현 portfolio-alpha 축인 paired NW lag-3 t(vs incumbent, production base)를 판정량으로 썼다. SR/CAGR/MDD 를 선택 기준으로 쓰지 않았다.",
+
+  "challenge_flags": [
+    "ROUND VERDICT = config_scoped_negative (레버 차원). 가설의 반증 2축은 오히려 생존했다 — 라벨은 진짜 꼬리 검출기다. 실패한 것은 가설이 아니라 노출 스케일로 그것을 수익화한다는 경로다.",
+    "브리핑 인용 수치(lift 1.16/1.97/3.19)는 동월 정렬(A_same) 산물. C5-clean 정렬 재측정 = 0.972/1.607/2.671, strict-PIT A/B 인플레 15.8~16.4%(>5% 허용치) -> overlay_pit_guard look-ahead 의심 발행. 착수 근거는 유지되나(꼬리 셀은 clean 정렬에서도 ELIGIBLE) 수치는 교체되어야 한다.",
+    "배포창(2004-01~2026-05) 자격은 6개 셀 전부 INELIGIBLE. 단 검정력 실측이 lift 2.7에서 0.32 -> 이 null 은 판별력 없음이 아니라 UNDERPOWERED. 전표본 대비 점추정(2.135 vs 2.671)은 표본오차 범위.",
+    "레버 천장(정량): t=+2.0 도달에 필요한 꼬리 정밀도 = lift 10.8x(발화20%)~16.2x(발화5%). 실측 라벨 = 2.135x(배포창)/2.671x(전표본). 5~6배 부족 — 더 좋은 국면 라벨을 만든다는 방향으로는 이 격차가 메워지지 않는다.",
+    "오라클 천장(하네스 생존 실증 겸): 실현 하락을 아는 라벨로도 incumbent 위 paired t=+3.18 / dIR=+0.125 / dMDD=-2.09%pt 가 전부. incumbent 의 연속 스케일러가 이미 MDD 40.7%->23.3% 를 회수해 잔여 여지가 2%pt.",
+    "라벨 오버레이의 incumbent MDD 개선 = 정확히 0.00%pt (23.29%->23.29%) 이면서 연수익 -2.69%pt (45.16%->42.47%). 라벨은 incumbent 의 실제 최대낙폭 구간에 켜지지 않는다.",
+    "기전 확정: 라벨은 분산 검출기이지 방향 검출기가 아니다. trailing vol 통제 후 방향 계수 t=+0.01(p=0.990), 꼬리 계수 z=+2.61(p=0.009). 선형 노출 레버는 조건부 평균만 수익화하는데 그 평균이 양수(+4.01%/월 ON vs +3.41%/월 OFF)라 레버가 손해다.",
+    "NULLCTL(정보 0 교대 발화) paired t=-4.75 / -9.37%/yr — 무판별 신호의 발화-비례 유해성(WT-019) 재현. 관문을 지킨 이유의 실증.",
+    "E7 라벨은 STORED_SCORE / production_parity_verified=false. 역사 라벨의 vintage 증거 부재 — in-sample 적합 가능성 미배제. 판정이 negative 라 안전 방향이나, 라벨을 다른 소비면(위험모델·monitoring)으로 승격할 때는 vintage 확보가 선행 조건.",
+    "라벨 ON 은 20개 run 에 103개월이 몰린 에피소드 군집(무작위 기대 run 1.32 vs 실측 5.15) — 유효 독립단위는 명목의 19%. 자격 p(3.15e-6)은 이 팽창을 흡수할 여유가 있으나 배포창 셀은 그렇지 않다.",
+    "wt_type 재분류 권고: alpha_inheritance_cor=1.0 이므로 discovery 부적격 -> sizing_only. alpha_discovery_certificate 미발급이 정상.",
+    "ID 네임스페이스 불일치: 브리핑 FQ-143 = 원장에서 CV_Vol(무관, config_scoped_negative_20260804). alpha-hypothesis 에이전트가 독립 적발(2/2). Q-Lead 발번 정정 필요.",
+    "primary(book-marginal, 가중 규칙 2종 부호 일치)는 미착수 — G1 관문 차단. 가중 규칙 2종 축은 미충족이며 그 사실을 그대로 보고한다(충족한 척 하지 않음)."
+  ]
+}
