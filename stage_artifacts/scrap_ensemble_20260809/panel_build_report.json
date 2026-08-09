@@ -1,0 +1,135 @@
+{
+  "round": "FQ-174 scrap ensemble — ML feature panel",
+  "built_at": "2026-08-09 14:14:51",
+  "metric_type": "diagnostic_precheck",
+  "input": {
+    "source": "stage_artifacts/scrap_ensemble_20260809/p0_panel.rds",
+    "PAN_rows": 294,
+    "PAN_cols": 212,
+    "PAN_unit": "wide monthly: 1 row = 1 month, no duplicate ym, no calendar gap",
+    "PAN_ym_range": ["200203", "202608"],
+    "bm_scale": "decimal monthly return",
+    "scrap_ok": 195,
+    "elite_ok": 15
+  },
+  "window": {
+    "n_months": 254,
+    "ym_start": "200502",
+    "ym_end": "202603",
+    "n_modules_pre_dedup": 191,
+    "missing_cells_in_window": 0
+  },
+  "dedup": {
+    "method": "union-find on corr>=0.999, representative = first member",
+    "n_in": 191,
+    "n_out": 85,
+    "reduction_pct": 55.4973821989529,
+    "matches_p0f_reference_85": true,
+    "largest_group": 49
+  },
+  "panel": {
+    "rows": 21505,
+    "months": 253,
+    "modules": 85,
+    "n_features": 33,
+    "complete_rows": 18105,
+    "complete_pct": 84.1897233201581,
+    "first_full_ym": "200802",
+    "format": "long: ym, target_ym, module_id, <features>, y_ret, y_dd, y_dd_bear, y_bm_next"
+  },
+  "features": ["act_mean_36", "act_sd_36", "act_ir_36", "act_mean_12", "act_sd_12", "act_ir_12", "act_mean_down", "n_down", "act_mean_surge", "n_surge", "act_mean_flat", "n_flat", "act_mean_regime", "n_regime", "mdd_24", "mdd_24_act", "dsd_36", "beta_pc1_36", "beta_bm_36", "turnover_12", "bm_ret_1m", "bm_ret_3m", "bm_ret_12m", "bm_vol_12m", "bm_dd_depth", "cs_disp", "cs_disp_12m", "avg_pair_corr_36m", "state_now_down", "state_now_surge", "reg_cat_t", "reg_score_smooth_t", "reg_msm_crisis_t"],
+  "sanity": {
+    "range_checks_all_ok": true,
+    "bm_dd_min": -0.470509280564504,
+    "p0_state_reproduction": false,
+    "down": {
+      "mean_pct_m": 2.21740065307037,
+      "sd": 1.63163110224532,
+      "n": 31
+    },
+    "surge": {
+      "mean_pct_m": -2.52860085322115,
+      "sd": 1.68454017797622,
+      "n": 49
+    },
+    "flat": {
+      "mean_pct_m": 0.467883724141107,
+      "sd": 0.339998090228461,
+      "n": 174
+    }
+  },
+  "feature_notes": {
+    "state_conditional": "act_mean_down/surge/flat = 확장창 조건부 평균 (상태는 그 달 bm: DOWN<=-5%, SURGE>=+5%, 나머지 FLAT). min 3관측.",
+    "regime_conditional": "act_mean_regime = 과거 중 '지금과 같은 국면 라벨'이 지배한 달들의 active 평균.",
+    "pc1_beta": "PC1 을 확장창(1..t)으로 매월 재추정(미래 데이터 사용 없음), 부호는 적재합>0 로 결정적 고정, trailing 36m OLS 기울기.",
+    "turnover": "HOLDINGS_LOG name-level 0.5*sum|Δw| 실측 (proxy 아님). 리밸런스 없는 달=0, 모듈 관측범위 밖=NA. trailing 12m 평균.",
+    "drawdown": "mdd_24/mdd_24_act = PerformanceAnalytics::maxDrawdown (24m rolling). dsd_36 = DownsideDeviation(MAR=0, full).",
+    "market": "bm_ret_3m/12m = Return.cumulative. bm_dd_depth = Drawdowns() 확장 낙폭. 전부 월 t 까지.",
+    "excluded": null
+  },
+  "regime_source": {
+    "file": ".cache/unified_regime_signal_daily.parquet",
+    "available": true,
+    "unit": "daily, 1 row per date",
+    "rows": 10811,
+    "anchor_rule": "월 t 내 마지막 일별 관측 → 월 t+1 에 적용 (PIT C5)",
+    "pit_status": "unaudited_vintage",
+    "caveat": "vintage 컬럼 부재 + last_updated 전행 동일 + MSM smoothed prob 계열 ⇒ 과거 라벨이 소급 재계산일 위험. 소비 타이밍(C5)은 정상이나 vintage-swap 통제 전 HARD 판정 인용 금지."
+  },
+  "targets": {
+    "y_ret": "A[t+1,i] = r[t+1,i] - bm[t+1]",
+    "y_dd": "min(A[t+1,i], 0) — PRIMARY. 다음달 active 의 하방부분(월별 낙폭기여 구성요소)",
+    "y_dd_bear": "A[t+1,i] * 1{bm[t+1]<0} — SECONDARY",
+    "y_bm_next": "bm[t+1] (타깃측 보조필드, 피처 사용 금지)",
+    "y_dd_rationale": "MDD 는 경로의존 통계라 월 단위 타깃으로 분해 불가. 관측 가능한 최소 구성요소인 '그 달의 하방 active' 로 환원했고, bm 하락월 한정판(y_dd_bear)을 병기해 정의 민감도를 남긴다."
+  },
+  "leakage_checks": {
+    "check1_feature_date_before_target": {
+      "passed": 253,
+      "of": 253,
+      "min_slack_days": 1,
+      "note": "피처 소스 = 월t 말일 / 국면 anchor(월t 내 마지막 일별 관측). 타깃 = 월t+1."
+    },
+    "check2_shift_autocorr": {
+      "n_numeric_features": 32,
+      "n_categorical_features": 1,
+      "n_autocorr_gt_0_99999": 0,
+      "max_abs_corr_with_target": 0.155178826471113,
+      "max_corr_feature": "bm_vol_12m",
+      "note": "trailing 창 겹침으로 높은 자기상관은 정상. 타깃과의 상관이 판별선."
+    },
+    "check3_regime_anchor_gap": {
+      "median_days": 1,
+      "min_days": 1,
+      "max_days": 2,
+      "n_violation_le0": 0,
+      "pit_status": "unaudited_vintage",
+      "caveat": "parquet 에 vintage 컬럼 없음 + last_updated 전행 동일 + MSM smoothed prob 계열 → 과거 라벨이 소급 재계산일 위험(C1). 소비 타이밍은 C5 정상."
+    },
+    "check4_truncation_invariance": {
+      "cut_row": 200,
+      "cut_ym": "202109",
+      "n_blocks": 30,
+      "n_mismatch": 0,
+      "max_abs_diff": 0,
+      "mismatches": null,
+      "note": "행 T 를 미래 없는 패널에서 재계산해 전체판과 대조. 일치 = forward 정보 유입 0."
+    },
+    "check5_violation_injection": {
+      "injected": "forward_active_A[t+1]",
+      "detected_by_check4": true,
+      "note": "검사 #4 가 진짜 미래 의존을 잡는지 확인하는 양성 대조. TRUE = 검사 살아있음."
+    }
+  },
+  "constraints_note": {
+    "max_25_names": "모듈 HOLDINGS_LOG 실측 종목수는 20~30 → NAV-레벨 앙상블은 max25 자동 충족 안 됨. 본 산출은 screen-tier 진단, 자본 졸업 주장 없음.",
+    "no_self_synthesis": "누적수익/낙폭/하방편차 전부 PerformanceAnalytics 표준함수. known-case 검증 로그 기록.",
+    "scope": "모듈 멤버십/배합 축만. 노출 스케일(overlay/exposure timing)은 WT-D20260809_002 소관 — 미접촉."
+  },
+  "outputs": {
+    "rds": "stage_artifacts/scrap_ensemble_20260809/ml_feature_panel.rds",
+    "json": "stage_artifacts/scrap_ensemble_20260809/panel_build_report.json",
+    "turnover": "stage_artifacts/scrap_ensemble_20260809/turnover_monthly.rds"
+  },
+  "runtime_sec": 206.793736934662
+}

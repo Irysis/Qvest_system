@@ -110,6 +110,53 @@
       }
     },
     {
+      "method_id": "HurstTrendOverlay",
+      "route": "regime",
+      "adapter_kind": "exposure",
+      "paper_id": "arxiv:2607.19497",
+      "paper_title": "The Science and Practice of Trend-Following Systems",
+      "routed_on": "2026-08-09",
+      "mechanism": "TF alpha ∝ 저주파 스펙트럼 질량 — 시장이 지속성을 가질 때 추세형 노출이 보상받는다. 시장 레벨 Hurst(R/S, 252거래일) > 0.5 = 지속 국면 → 노출 유지, ≤ 0.5 = 평균회귀 국면 → 디리스크.",
+      "kr_mapping": "종목 선별이 아니라 **노출 스칼라**로 사상. exposure = 1.00 (H>0.5) / 0.70 (H<=0.5). 0.70 은 기존 하네스 CAT_EXPOSURE 의 CAUTION 값 재사용 — 새 자유도를 만들지 않기 위함. 자유 파라미터 0개(문턱 0.5 = 논문 주장의 분기점 그 자체).",
+      "axis_note": "★같은 논문의 **횡단면 팩터 축은 소진**(spec_mass·T_RetAutoCorr·Hurst 3회 QUARANTINE, 큐 paper_exhausted=TRUE). 그러나 큐의 regime_application 이 가리키는 축은 '시장 레벨 타이밍'으로 다르다. 축이 다르면 판결도 다르다 — 랭킹에서 죽은 재료가 필터로는 살았던 실측 선례가 있다(project-consumption-path-changes-verdict-20260802).",
+      "pit": "각 홀딩월 M 에 대해 벤치 일별수익 Date < first-day-of-M 만 사용, 그 창의 마지막 날짜를 used_cutoff 로 신고. wrap_exposure_adapter 가 cutoff >= 홀딩월 시작이면 로드 거부(pit.md C5).",
+      "adapter": "02_Infrastructure/methods/adapters/hurst_trend_overlay.R",
+      "entrypoint": "exposure_schedule",
+      "verdict": "implemented",
+      "blocker": null,
+      "unblock_requirement": null,
+      "similar_to": [],
+      "added": "2026-08-09",
+      "screen_axes": {
+        "shrinkage_builtin": "weak",
+        "statistic_order": "higher",
+        "screen_priority": "⭐",
+        "rationale": "R/S 는 창 내 다중 스케일 평균이라 약한 축소가 내장. 통계 차수는 누적편차 범위(2차 초과).",
+        "assigned": "2026-08-09"
+      }
+    },
+    {
+      "method_id": "StationaryAmbiguity",
+      "route": "regime",
+      "adapter_kind": "exposure",
+      "paper_id": "arxiv:2608.04832",
+      "paper_title": "Robust Control under Stationary Ambiguity",
+      "routed_on": "2026-08-09",
+      "mechanism": "시뮬레이터 학습 원칙 — 빠른 적응(ambiguity decay) 대신 stationary ambiguity 유지. 현재 레짐에 과적응하면 전환 후 성과 급락.",
+      "verdict": "blocked_by_capability",
+      "blocker": "노출 스케줄로 사상할 **관측 가능 신호가 없다**. 이 논문이 규율하는 것은 신호가 아니라 기존 레짐 필터의 **적응속도(감쇠율) 하이퍼파라미터**다 — exposure_schedule(ctx) 계약은 ctx 로부터 노출을 계산하는 함수를 요구하는데, 여기엔 계산할 대상이 없고 기존 필터의 설정을 바꾸라는 처방만 있다.",
+      "unblock_requirement": "unified 앙상블(또는 M4 BOCPD)의 감쇠율을 열거해 A/B 하는 형태로만 검증 가능. ★그 순간 열거집합 argmax = sweep 이므로 DSR≥0.5 HARD 게이트 대상이 된다(measurement-graduation §3). 사전등록 없이 착수 금지.",
+      "similar_to": [],
+      "added": "2026-08-09",
+      "screen_axes": {
+        "shrinkage_builtin": "yes",
+        "statistic_order": "<=2nd",
+        "screen_priority": "후순위",
+        "rationale": "robust control 은 ambiguity set 자체가 축소 장치. 다만 KR 노출 스케줄로 내려올 계산 대상이 없어 우선순위 후순위.",
+        "assigned": "2026-08-09"
+      }
+    },
+    {
       "method_id": "PathSignature",
       "route": "optimizer",
       "adapter_kind": "weight",
