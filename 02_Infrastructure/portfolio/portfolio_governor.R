@@ -1060,6 +1060,48 @@ pg1_admission_with_book_context <- function(portfolio_id, candidate_id,
   }
   # If standalone already DEFER, keep DEFER; book gain is informational only.
 
+  # ── [additive 2026-08-09] ★ΔIR 해상도 경고 (판정 불변 · 자문 필드만) ─────────
+  #  왜: 문턱 0.05 는 **이 저장소 표본 길이에서 해상도 아래**다. 실측(블록부트 block=12,
+  #  합성 rho0.4·IR_s0.5·w0.20): n=73 se 0.0935 / n=108 0.0760 / **n=269 0.0460**
+  #  → 문턱은 전기간에서도 1.09se. 2se 판별에 ~911개월(76년) 필요 = 가용치 3.4배.
+  #  ⇒ 점추정만으로 ADMIT 를 인증하면 **잡음을 자본 편입 근거로 쓰게 된다**.
+  #  ★비대칭: 큰 음수(DEFER)는 여러 se 밖이라 유효하고, **문턱 근처 통과만 무효**다.
+  #  ★결정 규칙은 바꾸지 않는다 — 자본 게이트 변경은 도훈 권한(FQ-199 에 등재).
+  #    여기서는 판정에 해상도 라벨을 붙여 **인증 문서가 불확실성을 숨기지 않게** 한다.
+  #  se 는 iid 하한으로만 외삽한다(실제 se 는 자기상관 때문에 더 크다) → 단측 주장:
+  #    "확실히 판별 불가" 만 단언하고 "판별 가능" 은 절대 주장하지 않는다.
+  .pg_dir_resolution <- function(d, thr, n_months) {
+    if (!is.finite(d) || !is.finite(thr)) return(list(state = "UNKNOWN", note = "ΔIR 미산출"))
+    n <- suppressWarnings(as.integer(n_months %||% NA_integer_))
+    if (!is.finite(n) || n < 12L) {
+      return(list(state = "UNKNOWN", n_months = n,
+                  note = "표본 길이 미상 — 해상도 판정 불가. n_months 를 산출하는 경로로 재측정 요망"))
+    }
+    se_lb <- 0.0460 * sqrt(269 / n)          # ★iid 하한 (실제 se >= 이 값)
+    margin <- abs(d - thr)
+    if (margin < 2 * se_lb) {
+      list(state = "UNRESOLVED", n_months = n, se_lower_bound = se_lb, margin = margin,
+           note = sprintf(paste0("ΔIR %.4f 과 문턱 %.2f 의 간격 %.4f 이 2*se 하한 %.4f 미만 — ",
+             "**이 표본(%d개월)에서 통과/미달을 통계적으로 구분할 수 없다**. ",
+             "실제 se 는 자기상관 때문에 이 하한보다 크므로 판별 불가는 확정. ",
+             "자본 편입 근거로 쓰려면 CI 하단이 문턱을 넘어야 한다(FQ-199)."),
+             d, thr, margin, 2*se_lb, n))
+    } else {
+      list(state = "OUTSIDE_BAND", n_months = n, se_lower_bound = se_lb, margin = margin,
+           note = sprintf(paste0("ΔIR %.4f 이 문턱에서 %.4f 떨어져 2*se 하한 %.4f 을 넘는다. ",
+             "★단 이는 '판별 가능' 의 증명이 아니다 — se 하한만 쓴 단측 판정이므로 ",
+             "실제 CI 는 여전히 문턱을 포함할 수 있다. 통과 인증에는 실측 CI 가 필요하다."),
+             d, margin, 2*se_lb))
+    }
+  }
+  .pg_res <- .pg_dir_resolution(delta_ir, marginal_ir_threshold,
+                                if (!is.null(recon)) recon$n_months else NA_integer_)
+  artifact$book_delta_ir_resolution <- .pg_res
+  if (identical(artifact$decision, "ADMIT") && identical(.pg_res$state, "UNRESOLVED")) {
+    artifact$rationale <- c(artifact$rationale,
+      sprintf("⚠해상도 경고: %s", .pg_res$note))
+  }
+
   if (length(artifact$rationale) == 0) artifact$rationale <- "All checks passed"
 
   # ── Step 4: append book-context fields ──────────────────────────────────────
