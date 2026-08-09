@@ -54,6 +54,11 @@ eqf <- function(a, b, tol = 1e-6) isTRUE(all.equal(as.numeric(a), as.numeric(b),
 
 suppressMessages(source(file.path(PROJ, "02_Infrastructure/ramp/factor_validation.R")))
 
+## ★본문 전체를 하나의 중괄호 블록으로 감싼다 — R 은 **최상위**에서 `if` 다음 줄의
+##   `else` 를 새 표현식으로 읽어 구문오류를 낸다(블록 안에서는 정상). 이 파일은
+##   if/else 판정이 축마다 반복되므로 블록으로 감싸는 편이 축마다 중괄호를 다는 것보다
+##   안전하다. PASS/FAIL 은 `<<-` 로 전역에 누적된다.
+{
 #==============================================================================
 # 합성 일간 패널 — 손계산 정답이 있는 입력
 #==============================================================================
@@ -252,6 +257,8 @@ if (c_leg[i_last] >= 2e8 && !is.na(c_new[i_last]) && c_new[i_last] < 2e8)
                                        c_leg[i_last], c_new[i_last]))
 else bad("D1_correction_tightens",
          sprintf("조임 방향 미실증 (leg=%.3g new=%.3g)", c_leg[i_last], c_new[i_last]))
+
+}   # ── 본문 블록 끝 ──
 
 #==============================================================================
 # 요약
