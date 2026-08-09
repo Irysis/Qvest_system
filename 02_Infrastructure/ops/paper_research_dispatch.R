@@ -262,31 +262,91 @@ if (n_opt > 0 || n_risk > 0) {
                                   else sprintf("가중 레버 아님: book IR %.3f 최고(최선 타방법 %s %.3f, ΔIR=%.3f, 게이트 %.2f 미달) → 채택 0", book_ir, best$method, best$IR, delta, DELTA_IR_GATE))
     cat(sprintf("[dispatch:optimizer] %s\n", opt_verdict$verdict))
   }
-  if (n_opt > 0)
-  actions$optimizer <- list(n = n_opt, papers = lapply(getrt("optimizer"), function(p) p$title %||% p$arxiv_id),
-                            verdict = opt_verdict,
-                            method_triage = if (exists("method_triage")) method_triage("optimizer") else NULL,
-                            screen_axes = check_screen_axes(getrt("optimizer"), "optimizer"),
-                            # ★기준선 정체성을 산출물에 박는다 — 나중에 이 수치를 인용할 때
-                            #   어느 책 위에서 잰 것인지 파일만 보고 알 수 있어야 한다(§7b).
-                            baseline_identity = if (exists("carrier_id")) carrier_id else NULL)
+  # ★배터리는 risk 만 있는 날에도 돌지만, optimizer *블록*은 optimizer 논문이 있을 때만 쓴다.
+  #   (중괄호 필수 — 이 저장소는 `if (..)` 다음 줄 표현식으로 파스 사고를 낸 전례가 있다.)
+  if (n_opt > 0) {
+    actions$optimizer <- list(n = n_opt, papers = lapply(getrt("optimizer"), function(p) p$title %||% p$arxiv_id),
+                              verdict = opt_verdict,
+                              method_triage = if (exists("method_triage")) method_triage("optimizer") else NULL,
+                              screen_axes = check_screen_axes(getrt("optimizer"), "optimizer"),
+                              # ★기준선 정체성을 산출물에 박는다 — 나중에 이 수치를 인용할 때
+                              #   어느 책 위에서 잰 것인지 파일만 보고 알 수 있어야 한다(§7b).
+                              baseline_identity = if (exists("carrier_id")) carrier_id else NULL)
+  }
 }
 
-# ── risk: method 레지스트리 triage ((b)안 2026-08-08) ──
-#   구판은 문자열 flag 한 줄("수동 분석")만 남겼다 — 등재와 처분이 구별되지 않아, 큐가 쌓여도
-#   무엇이 왜 안 돌았는지 기록에 없었다. 이제 레지스트리 verdict/blocker 를 그대로 싣는다.
-#   ★risk 레인 하네스(Σ-교체 A/B)는 아직 미배선이다. 그 사실을 **숨기지 않고 이름을 부른다** —
-#     "수동 분석"은 처분처럼 보이지만 실제로는 아무도 안 본다는 뜻이었다.
+# ── risk: method triage + **레인 판정** (2026-08-09 수리 ③) ──
+#   구판 이력: ① 06-18~08-07 = 문자열 flag 한 줄("수동 분석") ② 08-08 (b)안 = 레지스트리
+#   verdict/blocker 등재. 그런데 ②에서도 `harness_status`/`action` 이 **하드코딩 문자열**이라,
+#   ★08-09 실측에서 배터리가 risk method 2건을 실제로 쟀는데도(overlay CSV:
+#     minvar@ProperScoreGASFilter IR 0.920 · PreferenceRobustDistortion 0.658)
+#     산출물은 "하네스 미배선 · 자동 측정 아직 없음" 으로 **자기 실측을 부정**했다.
+#     등재≠처분 계통의 반대 방향 판본 — 이번엔 과소보고다. 상태는 선언이 아니라 실측에서 파생한다.
+#   ★그리고 판정 축이 없었다: Σ 추정기 교체의 옳은 대조는 비중 규칙을 고정한
+#     `minvar@<est>` vs `minvar_lw` 인데, 그 대조가 데이터에 있는데도 계산되지 않아
+#     optimizer 의 "최고 비중법" 경쟁에 흡수돼 조용히 졌다. 이제 레인 자체 대조를 낸다.
+#   ★Δ 는 대조 진단량이지 자본 게이트가 아니다(§4 book-marginal admit = governor 수동).
 if (n_risk > 0) {
   .rt <- if (exists("method_triage")) method_triage("risk") else list()
+  .arms <- if (exists("risk_lane_arms")) tryCatch(risk_lane_arms(), error = function(e) list()) else list()
+  risk_verdict <- NULL
+  risk_state <- NULL
+  if (!isTRUE(battery_fresh) || !file.exists(ov_csv)) {
+    risk_state <- "배터리 결과 부재/미실행 — risk arm 측정 없음"
+  } else if (!length(.arms)) {
+    risk_state <- "레지스트리에 verdict=implemented 인 risk method 0건 — 측정할 arm 없음"
+  } else {
+    .tb <- tryCatch(fread(ov_csv), error = function(e) NULL)
+    if (is.null(.tb) || !all(c("method", "IR") %in% names(.tb))) {
+      risk_state <- "overlay CSV 판독 실패 또는 컬럼 결손 — 대조 불가"
+    } else {
+      .ir <- setNames(as.numeric(.tb$IR), as.character(.tb$method))
+      .pt <- if ("PORT_t" %in% names(.tb)) setNames(as.numeric(.tb$PORT_t), as.character(.tb$method)) else setNames(numeric(0), character(0))
+      .rows <- lapply(.arms, function(a) {
+        got <- a$arm %in% names(.ir); ctl <- a$control %in% names(.ir)
+        list(method_id = a$method_id, paper_id = a$paper_id, adapter_kind = a$adapter_kind,
+             arm = a$arm, measured = got,
+             ir      = if (got) round(unname(.ir[[a$arm]]), 3) else NA_real_,
+             port_t  = if (got && a$arm %in% names(.pt)) round(unname(.pt[[a$arm]]), 3) else NA_real_,
+             control = a$control, control_basis = a$control_basis,
+             control_ir = if (ctl) round(unname(.ir[[a$control]]), 3) else NA_real_,
+             delta_ir   = if (got && ctl) round(unname(.ir[[a$arm]] - .ir[[a$control]]), 3) else NA_real_,
+             # ★arm 이 등재됐는데 CSV 에 없으면 그것이 **결함**이다 — 조용히 넘기지 않는다.
+             note = if (!got) "★등재 implemented 인데 배터리 산출에 arm 부재 — 어댑터 로드 실패 의심"
+                    else if (!ctl) sprintf("★대조군 %s 이 배터리 산출에 없음 — Δ 산출 불가", a$control)
+                    else NA_character_)
+      })
+      .nm <- sum(vapply(.rows, function(r) isTRUE(r$measured), logical(1)))
+      .win <- Filter(function(r) isTRUE(r$measured) && !is.na(r$delta_ir) && r$delta_ir > 0, .rows)
+      risk_verdict <- list(
+        metric_type = "canonical_screen",
+        basis = "Σ-A/B 배터리 overlay arm (캐리어 선별 고정 · 15bps · IR = net-active vs KOSPI200)",
+        n_arms = length(.rows), n_measured = .nm, n_improved = length(.win),
+        gate_note = "ΔIR 은 추정기/비중 **교체 대조** 진단량이다 — 자본 admission 게이트(§4 book-marginal, governor 수동)가 아니다.",
+        arms = .rows)
+      risk_state <- if (.nm == 0) sprintf("arm %d건 등재됐으나 배터리 산출에 0건 — 배선 확인 필요", length(.rows))
+                    else sprintf("Σ-A/B 배터리 합류 %d/%d건 측정 · 대조군 대비 개선 %d건", .nm, length(.rows), length(.win))
+    }
+  }
   actions$risk <- list(n = n_risk, papers = lapply(getrt("risk"), function(p) p$title %||% p$arxiv_id),
                        method_triage = .rt,
                        screen_axes = check_screen_axes(getrt("risk"), "risk"),
-                       harness_status = "risk 레인 Σ-교체 A/B 하네스 미배선 — optimizer 레인 검증 후 착수 예정",
-                       action = if (length(.rt)) sprintf("레지스트리 등재 %d건 (verdict 별도) — 자동 측정 아직 없음", length(.rt))
+                       harness_status = risk_state,          # ★실측 파생 — 하드코딩 문자열 폐기
+                       verdict = risk_verdict,
+                       action = if (!is.null(risk_verdict) && risk_verdict$n_measured > 0)
+                                  sprintf("자동 측정 %d건 (대조 Δ 동봉) — 채택은 도훈 수동", risk_verdict$n_measured)
+                                else if (length(.rt)) sprintf("레지스트리 등재 %d건 — 측정 0건 (사유: %s)", length(.rt), risk_state)
                                 else "레지스트리 미등재 — triage 필요")
   cat(sprintf("[dispatch:risk] %d편 · %s\n", n_risk,
               if (exists("method_triage_line")) method_triage_line("risk") else "triage 불가"))
+  cat(sprintf("[dispatch:risk] 레인 판정: %s\n", risk_state))
+  if (!is.null(risk_verdict)) for (r in risk_verdict$arms) {
+    cat(sprintf("    %-32s IR %s vs %s %s → ΔIR %s%s\n", r$arm,
+                if (is.na(r$ir)) "  n/a" else sprintf("%6.3f", r$ir), r$control,
+                if (is.na(r$control_ir)) "  n/a" else sprintf("%6.3f", r$control_ir),
+                if (is.na(r$delta_ir)) "n/a" else sprintf("%+.3f", r$delta_ir),
+                if (is.na(r$note)) "" else paste0("  ", r$note)))
+  }
 }
 # ── regime: H2 오버레이 후보 flag (candidate signal 추출 필요) ──
 if (n_reg > 0) {
@@ -309,7 +369,19 @@ if (Sys.getenv("QVEST_DISPATCH_NO_TG", "0") != "1") {
     bullets <- c()
     if (!is.null(opt_verdict)) bullets <- c(bullets, sprintf("optimizer(%d편) Σ-A/B: %s", n_opt, opt_verdict$verdict))
     else if (n_opt > 0) bullets <- c(bullets, sprintf("optimizer %d편 — Σ-배터리 미실행(결과 없음)", n_opt))
-    if (n_risk > 0) bullets <- c(bullets, sprintf("risk %d편 → risk-research stress/Σ 모듈 후보(수동 분석)", n_risk))
+    # ★(2026-08-09) 텔레그램도 실측에서 파생한다 — 구 하드코딩 "수동 분석"은 배터리가 실제로
+    #   risk arm 을 잰 날에도 그대로 나가 durable 기록과 보고가 함께 과소보고됐다.
+    if (n_risk > 0) {
+      .rv <- actions$risk$verdict
+      bullets <- c(bullets, if (!is.null(.rv) && .rv$n_measured > 0) {
+        .best <- Filter(function(r) isTRUE(r$measured) && !is.na(r$delta_ir), .rv$arms)
+        .bl <- if (length(.best)) {
+          .b <- .best[[which.max(vapply(.best, function(r) r$delta_ir, numeric(1)))]]
+          sprintf(" 최선 %s ΔIR=%+.3f (대조 %s)", .b$method_id, .b$delta_ir, .b$control)
+        } else ""
+        sprintf("risk(%d편) Σ-교체 A/B: %d건 측정 · 개선 %d건%s", n_risk, .rv$n_measured, .rv$n_improved, .bl)
+      } else sprintf("risk %d편 → %s", n_risk, actions$risk$harness_status %||% "측정 없음"))
+    }
     if (n_reg > 0) bullets <- c(bullets, sprintf("regime %d편 → H2 오버레이(candidate signal 추출 필요)", n_reg))
     if (length(bullets) < 2) bullets <- c(bullets, "자본 admit 없음 — 측정·보고만(governor 정지)")
     headline <- sprintf("논문 라우트 디스패치: optimizer %d·risk %d·regime %d", n_opt, n_risk, n_reg)

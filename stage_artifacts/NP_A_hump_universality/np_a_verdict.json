@@ -1,0 +1,307 @@
+{
+  "id": "NP-A",
+  "attributed_to": "WT-D20260808_003 next_probe NP-A (신규 WT 미생성)",
+  "generated_at": "2026-08-09T13:22:41",
+  "metric_type": "canonical_screen / diag",
+  "capital_claim": "없음",
+  "scope": {
+    "owned_by_NP_A": ["C01_SUE", "C02_EPS_Chg_1m", "C04_ESBR", "C06_TP_Gap", "Q07_Earnings_Stability", "M08_Residual_Mom", "Q25_Ohlson_O"],
+    "control_only_owned_by_FQ166": ["M26_Revenue_Mom", "Q01_EB", "D03_EWMA"],
+    "not_performed_here": ["net→gross→EW-basis 사다리 분해", "형태 갈림 설명변수 탐색(FQ-166 ③)", "음수 PORT_t 사다리 추적(FQ-166 ④)"],
+    "frame_for_cross_round_comparison": "prof2(ties=random) on P1$D(프레임A) / 적격집합 E(프레임B) · act = Ret_1m - BM_Ret · 5분위 등개수 · 연환산 100*12*mean"
+  },
+  "question": "중립 Q01 의 혹(hump) 분위 프로파일이 Q01 고유인가, KR long-only 신호의 공통 형태인가",
+  "primary_verdict": "Q01_SCOPED — 혹은 book 신호의 공통 형태가 아니다",
+  "primary_basis": {
+    "rule_applied": "조율자 축소 규칙: book 7종 다수(>=4/7) 혹 ⇒ 구조적 불리 / 다수 단조 ⇒ 탈락 재료의 특징",
+    "count_full_neutral": 2,
+    "count_full_raw": 3,
+    "count_denominator": 7,
+    "count_verdict_full": ["BOOK_MAJORITY_MONOTONE", "BOOK_MAJORITY_MONOTONE"],
+    "count_is_uninformative": ["INSIDE_NULL_90_계수_단독_인용_금지", "INSIDE_NULL_90_계수_단독_인용_금지", "OUTSIDE_NULL_90", "INSIDE_NULL_90_계수_단독_인용_금지"],
+    "count_null_full": {
+      "mean": 3.47,
+      "sd": 1.3816359273236,
+      "q05": 1,
+      "q95": 6
+    },
+    "decisive_axis": "크기(book-7 pooled 갭 월계열) — 계수가 귀무분포 안이라 단독 인용 불가",
+    "book7_pooled": {
+      "raw|full": {
+        "n": 295,
+        "n_dropped_signal_months": 1,
+        "ann_pct": 2.33461816119511,
+        "acf_r1": 0.00567966144358534,
+        "t_nw3": 2.98881767635432,
+        "t_nw12": 3.35758689685828
+      },
+      "raw|post2015": {
+        "n": 138,
+        "n_dropped_signal_months": 0,
+        "ann_pct": 0.147305198105912,
+        "acf_r1": 0.0107985526567177,
+        "t_nw3": 0.14450561617565,
+        "t_nw12": 0.178680309562023
+      },
+      "neutral|full": {
+        "n": 295,
+        "n_dropped_signal_months": 0,
+        "ann_pct": 2.60843217180734,
+        "acf_r1": -0.0547604605965127,
+        "t_nw3": 3.31476768462242,
+        "t_nw12": 3.58457442962411
+      },
+      "neutral|post2015": {
+        "n": 138,
+        "n_dropped_signal_months": 0,
+        "ann_pct": 1.34138245663288,
+        "acf_r1": -0.142842476658624,
+        "t_nw3": 1.45337874960048,
+        "t_nw12": 1.71375138708025
+      }
+    }
+  },
+  "inherited_window": {
+    "note": "부모 창(post-2015) 복제 — 새 분할 아님. 사전등록 저검정력 라벨",
+    "count_neutral": 3,
+    "count_raw": 5,
+    "verdicts": ["BOOK_MAJORITY_MONOTONE", "BOOK_MAJORITY_HUMP"],
+    "arms_disagree": true,
+    "pooled": {
+      "raw|post2015": {
+        "n": 138,
+        "n_dropped_signal_months": 0,
+        "ann_pct": 0.147305198105912,
+        "acf_r1": 0.0107985526567177,
+        "t_nw3": 0.14450561617565,
+        "t_nw12": 0.178680309562023
+      },
+      "neutral|post2015": {
+        "n": 138,
+        "n_dropped_signal_months": 0,
+        "ann_pct": 1.34138245663288,
+        "acf_r1": -0.142842476658624,
+        "t_nw3": 1.45337874960048,
+        "t_nw12": 1.71375138708025
+      }
+    },
+    "reading": "계수는 arm 에 따라 갈리지만 크기는 두 arm 모두 **비음(非陰)** — 혹 방향 증거 없음. raw 계수 5/7 도 귀무 90% 안(단측 p 0.196)"
+  },
+  "anchor_q01": {
+    "full": {
+      "ew_relative": [-2.26006567722835, -1.34021012672915, 1.60358807875314, 0.948045389936421, 1.04864233526793],
+      "gap_ann_pct": -0.554945743485205,
+      "t": -0.231954734496434,
+      "p_conservative": 0.826989121785941,
+      "rank_ascending": 2,
+      "pop_median": 2.87334025584977
+    },
+    "post2015": {
+      "ew_relative": [-3.80481480140649, 1.37356029808774, 3.05674456932017, 1.77990994694701, -2.40540001294843],
+      "gap_ann_pct": -5.4621445822686,
+      "t": -1.74050196724781,
+      "p_conservative": 0.0817709149386527,
+      "rank_ascending": 2,
+      "pop_median": 0.667337970422677
+    },
+    "reading": "Q01 의 혹은 모집단 10종 중 2번째로 음수(양 창) — 중앙값이 아니라 꼬리. 그리고 Q01 자신의 갭도 보수적 추론에서 5% 유의 미달"
+  },
+  "falsification_of_parent_reading": "부모 라운드의 '상단에 정보가 없다'는 서술은 Q01 에 한정된다. book 신호에서는 전표본 최상위분위가 중간분위를 연 +2.61%(중립, NW t +3.31) · +2.33%(raw, t +2.99) 이긴다 — 방향이 반대다.",
+  "nw_lag_discipline": {
+    "rule": "겹치는 창 함정 방지: 모든 판정 계열의 ACF r1 을 먼저 실측한다. r1 <= 0.30 이면 lag-3 인용, r1 > 0.30 이면 lag-12 + stride-12 부분표본을 병기하고 **더 보수적인 값만 인용**. 부모 라운드가 겹치는 60m 창 계열(ACF r1 0.86~0.94)에 lag-3 을 얹어 |t| 를 2.5~3.0배 부풀린 전례.",
+    "measured_acf_r1_book7_pooled": [0.00567966144358534, 0.0107985526567177, -0.0547604605965127, -0.142842476658624],
+    "cited_lag": 3,
+    "lag12_check": [3.35758689685828, 0.178680309562023, 3.58457442962411, 1.71375138708025],
+    "finding": "판정 계열은 겹치는 창 파생이 아니다(ACF r1 |.| <= 0.14). lag-12 로 늘려도 |t| 가 오히려 커지므로 lag-3 인용이 보수적"
+  },
+  "power": {
+    "tiebreak|A|neutral|full": {
+      "verdict": "PASS",
+      "implied_t_threshold": 9.86845134590141,
+      "required_annual_pct": 6.88187006512186,
+      "bar_restates_t": false,
+      "observed_ann_pct": 2.32096456021502,
+      "t": 3.32821248022761
+    },
+    "tiebreak|A|raw|full": {
+      "verdict": "PASS",
+      "implied_t_threshold": 9.10717760063454,
+      "required_annual_pct": 6.88187006512186,
+      "bar_restates_t": false,
+      "observed_ann_pct": 1.66230508965513,
+      "t": 2.19982468931719
+    },
+    "tiebreak|A|neutral|post2015": {
+      "verdict": "INCONCLUSIVE_UNDERPOWERED",
+      "implied_t_threshold": 11.6454055634777,
+      "required_annual_pct": 10.0618521935684,
+      "bar_restates_t": false,
+      "observed_ann_pct": 0.725045971895188,
+      "t": 0.839155081236677
+    },
+    "tiebreak|A|raw|post2015": {
+      "verdict": "INCONCLUSIVE_UNDERPOWERED",
+      "implied_t_threshold": 11.6553079091384,
+      "required_annual_pct": 10.0618521935684,
+      "bar_restates_t": false,
+      "observed_ann_pct": -0.670618451270838,
+      "t": -0.776821641656326
+    }
+  },
+  "power_reading": "implied_t_threshold 전부 9.11~11.66 — 2.0~3.2 재진술 구간 밖이므로 바는 외부(배포) 기준의 진짜 바다. 전표본 셀은 PASS, 승계창 셀은 INCONCLUSIVE_UNDERPOWERED (n=138 에서 필요 연 10.06%). 승계창의 null 을 '효과 부재'로 읽지 않는다.",
+  "defects_repaired": {
+    "empty_quintile_nan": {
+      "cause": "raw z 동점 — C02_EPS_Chg_1m 최빈값 점유 중앙 41.7%, 282개월 중 147개월 빈 분위",
+      "repair": "분위 랭크 동점처리 균일화(random, 시드 고정) + 대안(빈 분위 월 제외) 병행",
+      "noop_verified": true,
+      "both_repairs_agree": true
+    },
+    "inference_disagreement": {
+      "anchor_post2015": {
+        "boot_p_percentile": 0.026,
+        "boot_p_normal": 0.0483023483616134,
+        "nw_p2": 0.081770914938653
+      },
+      "repair": "세 추론 중 가장 보수적인 값만 인용(p_conservative 필드)"
+    }
+  },
+  "self_adversarial": {
+    "count_null_test": {
+      "observed": {
+        "full_raw": 3,
+        "full_neu": 2,
+        "p15_raw": 5,
+        "p15_neu": 3
+      },
+      "null_full": {
+        "mean": 3.47,
+        "sd": 1.3816359273236,
+        "q05": 1,
+        "q95": 6
+      },
+      "null_post2015": {
+        "mean": 3.392,
+        "sd": 1.28905365235016,
+        "q05": 1,
+        "q95": 5
+      },
+      "p_hump_side": [0.74, 0.928, 0.196, 0.748],
+      "p_monotone_side": [0.52, 0.26, 0.952, 0.532],
+      "n_draw": 500,
+      "verdict": "아래 해석 필드 참조 — 계수가 귀무 5~95%% 안이면 계수 규칙 단독 인용 금지"
+    },
+    "direction_flip_census": {
+      "table": [
+        {
+          "signal": "D03_EWMA",
+          "n_pair": 294,
+          "median_rho": 0.970993391505558,
+          "min_rho": -0.980339109497036,
+          "n_rho_neg": 1,
+          "n_rho_below_m05": 1
+        },
+        {
+          "signal": "Q25_Ohlson_O",
+          "n_pair": 294,
+          "median_rho": 1,
+          "min_rho": -0.975654254296969,
+          "n_rho_neg": 1,
+          "n_rho_below_m05": 1
+        },
+        {
+          "signal": "M08_Residual_Mom",
+          "n_pair": 294,
+          "median_rho": 0.863369691873611,
+          "min_rho": -0.883714672200279,
+          "n_rho_neg": 1,
+          "n_rho_below_m05": 1
+        },
+        {
+          "signal": "C06_TP_Gap",
+          "n_pair": 290,
+          "median_rho": 0.786760394585424,
+          "min_rho": -0.841267199289963,
+          "n_rho_neg": 8,
+          "n_rho_below_m05": 8
+        },
+        {
+          "signal": "M26_Revenue_Mom",
+          "n_pair": 294,
+          "median_rho": 0.604837071875894,
+          "min_rho": -0.0935201672132078,
+          "n_rho_neg": 8,
+          "n_rho_below_m05": 0
+        },
+        {
+          "signal": "C02_EPS_Chg_1m",
+          "n_pair": 281,
+          "median_rho": 0.314206446571716,
+          "min_rho": -0.0314710809336382,
+          "n_rho_neg": 1,
+          "n_rho_below_m05": 0
+        },
+        {
+          "signal": "C01_SUE",
+          "n_pair": 294,
+          "median_rho": 1,
+          "min_rho": 0.103150028859449,
+          "n_rho_neg": 0,
+          "n_rho_below_m05": 0
+        },
+        {
+          "signal": "C04_ESBR",
+          "n_pair": 294,
+          "median_rho": 1,
+          "min_rho": 0.210373690367866,
+          "n_rho_neg": 0,
+          "n_rho_below_m05": 0
+        },
+        {
+          "signal": "Q01_EB",
+          "n_pair": 294,
+          "median_rho": 0.999922249380377,
+          "min_rho": 0.711188934367337,
+          "n_rho_neg": 0,
+          "n_rho_below_m05": 0
+        },
+        {
+          "signal": "Q07_Earnings_Stability",
+          "n_pair": 294,
+          "median_rho": 1,
+          "min_rho": 0.903453726478433,
+          "n_rho_neg": 0,
+          "n_rho_below_m05": 0
+        }
+      ],
+      "n_signals_with_flip_signature": 4,
+      "method": "커넥터 산출 Z_Score_Aligned 의 월-대-월 횡단면 Spearman. C15 직접-read 우회 없음",
+      "design_change_note": "원 설계(factor DB parquet 직접 read 로 Z_Score 대비 부호)는 C15 우회라 폐기하고 설계를 바꿨다"
+    },
+    "test_count": {
+      "cells": 16,
+      "per_signal_gap_tests": 160,
+      "pooled_tests": 16,
+      "book7_verdicts": 16,
+      "conditioning_tests": 6,
+      "null_simulations": 2,
+      "prereg_primary": 1,
+      "note": "사전등록 주판정 = 전표본 A프레임 1건(조율자 축소 후 book-7 계수). 나머지는 강건성(수리 2종 × 프레임 2 × arm 2 × 창 2)·서술. 개별 신호 갭의 최대 |t| 를 단독 인용하지 않는다 — 계수/크기 두 축의 **일치**만 인용."
+    }
+  },
+  "handed_to_FQ166": {
+    "signals": ["M26_Revenue_Mom", "Q01_EB", "D03_EWMA"],
+    "reason": "형태 갈림의 설명(재료군·중립화·시대)·사다리 분해는 FQ-166(WT-D20260809_003) 소관",
+    "calibration_datum": "본 프레임에서의 대조군 형태 census 는 exploration.json / correct_p5.rds 에 있다. 교차 라운드 대조 시 프레임 정의: prof2(ties=random) on P1$D(프레임A) / 적격집합 E(프레임B) · act = Ret_1m - BM_Ret · 5분위 등개수 · 연환산 100*12*mean",
+    "exploratory_lead_do_not_treat_as_verdict": {
+      "gap_vs_persistence_spearman_full": ["C01_SUE", "C02_EPS_Chg_1m", "C04_ESBR", "C06_TP_Gap", "D03_EWMA", "M08_Residual_Mom", "M26_Revenue_Mom", "Q01_EB", "Q07_Earnings_Stability", "Q25_Ohlson_O"],
+      "note": "지속성(회전율 역수) 축 rho 는 exploration.json 참조 — n=10 서술. FQ-166 ③ 의 입력 후보"
+    }
+  },
+  "next_probe": {
+    "NP_A1": "book-7 중 유일하게 양 창·양 arm 에서 혹인 Q07_Earnings_Stability 를 단일 대상으로 가설-주도 진단(왜 이 신호만 상단이 죽는가). 소비면 = 선별 라벨 / 유니버스 필터",
+    "NP_A2": "형태가 아니라 **상단 폭**을 물어라: top-25(배포 단위)와 top-quintile(~55종) 의 갭이 book-7 에서 어떻게 갈리는지. 본 라운드는 분위 단위만 측정했고 배포 단위는 미측정",
+    "NP_A3": "방향 전환 서명이 있는 4종(특히 C06_TP_Gap 8개월)의 전환 월을 제외한 재측정 — 형태 주장의 잔여 취약점"
+  },
+  "revival_condition": "book 구성이 바뀌어 고-지속성 fundamental 신호 비중이 늘거나, 승계창(post-2015) 표본이 n>=240 개월로 늘어 필요 연효과가 book-7 pooled 크기 아래로 내려오면 재측정",
+  "forbidden_generalization": "본 라운드는 'top-N 선별이 KR 에서 구조적으로 불리하다'를 지지하지 않는다. 벽 일반화 금지"
+}

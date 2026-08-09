@@ -15,6 +15,20 @@ MO <- P1$MO; BASE <- P1$BASE; eval_dates <- P1$eval_dates; bmv <- P1$bmv
 TOPN <- 20L; MINN <- 15L; LAM <- 1.5; UB <- 0.20; UBCR <- 0.10; BPS <- 0.0015
 n_m <- length(MO)
 
+## MO 에 lag1 M26 주입 (스트레스 arm 용). 정본 정렬은 base ymi = m26 ymi + 1 이므로
+## lag1 = base ymi − 2 의 신호. P0d 실측 정렬을 한 칸 더 묵힌 것.
+{ m26 <- as.data.table(read_parquet("stage_artifacts/WT_D20260808_002/alpha_scores.parquet"))
+  m26[, Date := as.Date(Date)]
+  ymf <- function(d) as.integer(format(d,"%Y"))*12L + as.integer(format(d,"%m"))
+  m26[, ymi := ymf(Date)]
+  for (k in seq_len(n_m)) {
+    r <- m26[ymi == ymf(MO[[k]]$dd) - 2L & is.finite(M26_Revenue_Mom)]
+    MO[[k]]$m26_lag1 <- setNames(r$M26_Revenue_Mom, r$Ticker)
+  }
+  cat(sprintf("[P2-0] lag1 M26 주입 완료 · 커버 중앙 %.3f\n",
+    median(sapply(seq_len(n_m), function(k) mean(names(MO[[k]]$score) %in% names(MO[[k]]$m26_lag1))))))
+}
+
 .apply_tophi <- function(w_tilt, w_prev, phi, ub) {
   if (is.null(w_prev) || phi <= 0) return(w_tilt)
   wp <- numeric(length(w_tilt)); names(wp) <- names(w_tilt)
@@ -189,8 +203,6 @@ print(WC[, .(w, IR = round(IR,4), delta_IR = round(delta_IR,4),
              SR_geo = round(SR_geo,3), MDD = round(MDD,4), TO = round(turnover_ann,2))])
 
 ## ── 개입 규모 기술통계 ───────────────────────────────────────────────────────
-desc <- rbindlist(lapply(list(F_A_blend030 = sel_blend(0.30), F_B_filterD1 = sel_filterD1),
-  function(fn) NULL), fill = TRUE)
 chg <- sapply(seq_len(n_m), function(k) {
   m <- MO[[k]]
   b <- names(sel_base_pick <- { s <- elig_scores(m); n <- min(TOPN,length(s)); s[order(-s)][seq_len(n)] })
