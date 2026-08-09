@@ -46,6 +46,18 @@ cat(sprintf("[1] 폐지 풀 후보 (grade C|F) = %d / %d\n", length(scrap_ids), 
 
 P <- readRDS(file.path(PROJ, "stage_artifacts/scrap_ensemble_20260809/p0_panel.rds"))
 PAN <- P$PAN
+# [2026-08-09 수리] module_performance ⊄ PAN 을 가정하지 않는다.
+#   패널은 스냅샷이고 module_performance 는 계속 갱신되므로, 패널 이후 등재된 모듈이
+#   scrap_ids 에 들어오면 `subm[, ..scrap_ids]` 가 "columns not found" 로 죽는다
+#   (실측: 벤치 이음매 재실행분 2건 등재 직후 재빌드 실패). 교집합으로 좁히고 **드롭을 로그**한다
+#   — 조용히 줄이면 "풀이 원래 그만큼"으로 읽히므로 개수와 사유를 남긴다.
+.missing <- setdiff(scrap_ids, names(PAN))
+if (length(.missing)) {
+  cat(sprintf("[1b] ★패널 미수록 %d건 제외 (p0_panel 스냅샷 이후 등재): %s\n",
+              length(.missing), paste(utils::head(.missing, 5), collapse=", ")))
+  scrap_ids <- intersect(scrap_ids, names(PAN))
+}
+cat(sprintf("[1c] 패널 정합 후 풀 = %d\n", length(scrap_ids)))
 subm <- PAN[ym >= P$start_ym & is.finite(bm)]; setorder(subm, ym)
 Mall <- as.matrix(subm[, ..scrap_ids]); keepc <- which(colSums(is.finite(Mall)) >= 253)
 rowsc <- complete.cases(Mall[, keepc, drop = FALSE])

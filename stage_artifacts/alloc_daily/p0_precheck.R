@@ -36,14 +36,23 @@ say("=== 2. 일간 심도 === dd252 비결측 %d · 범위 %.3f ~ %.3f", sum(!is
 
 ## ---- 3. ★핵심: 에피소드 수는 관측단위를 바꿔도 그대로인가 --------------------
 say("=== 3. ★에피소드 구조 — 관측단위를 바꿔도 그대로인가 ===")
+## ★rle 에피소드는 문턱을 들락날락하는 잡음으로 **부풀려진다** — 짧은 간격은 같은 위기다.
+##   gap <= G 일이면 같은 에피소드로 병합한 '실질 에피소드' 를 함께 센다(과대 독립성 방지).
+merge_epi <- function(on, gap_days) {
+  idx <- which(on); if (!length(idx)) return(0L)
+  brk <- which(diff(idx) > gap_days)
+  length(brk) + 1L
+}
 for (thr in c(-0.10, -0.20, -0.30)) {
   on <- !is.na(BD$dd252) & BD$dd252 <= thr
-  r <- rle(on); ne <- sum(r$values)
-  lens <- r$lengths[r$values]
-  say("  dd252 <= %.0f%% : ON %d일(%.1f%%) · **에피소드 %d개** · 길이 중앙 %.0f일 최장 %d일",
+  r <- rle(on); ne <- sum(r$values); lens <- r$lengths[r$values]
+  say("  dd252 <= %.0f%% : ON %d일(%.1f%%) · rle 에피소드 %d · 길이 중앙 %.0f일 최장 %d일",
       thr*100, sum(on), 100*mean(on), ne, median(lens), max(lens))
+  say("    ★병합 에피소드(gap 기준): 20일 %d · 60일 %d · 120일 %d · 250일 %d",
+      merge_epi(on, 20), merge_epi(on, 60), merge_epi(on, 120), merge_epi(on, 250))
 }
-say("  ★대조: 월간 프레임의 dd12<=-20% 는 ON 46개월 / 에피소드 4개였다.")
+say("  ★대조: 월간 프레임의 dd12<=-20%% 는 ON 46개월 / 에피소드 4개였다.")
+say("  ★해석: rle 는 문턱 재교차로 부풀려진다. **병합 60~120일 수치가 실질 독립 사건 수**에 가깝다.")
 
 ## ---- 4. MDE 3종 대조 — 순진 vs HAC vs 에피소드-클러스터 ----------------------
 say("=== 4. ★MDE 대조 (착수 자격 판정) ===")
@@ -63,10 +72,11 @@ for (thr in c(-0.10, -0.20, -0.30)) {
   se_naive <- sd(D$fwd1) * sqrt(1/sum(on) + 1/sum(!on))
   ## (b) HAC lag 20 (약 1개월)
   se_hac <- sqrt(nw_se(D$fwd1[on], 20)^2 + nw_se(D$fwd1[!on], 20)^2)
-  ## (c) 에피소드-클러스터
-  r <- rle(on); ne <- sum(r$values)
+  ## (c) 에피소드-클러스터 — ★rle 아닌 **병합 60일** 기준(과대 독립성 방지, 보수적)
+  ne_rle <- sum(rle(on)$values)
+  idx <- which(on); ne <- if (length(idx)) sum(diff(idx) > 60) + 1L else 1L
   se_cl <- se_naive * sqrt(sum(on)/max(1, ne))
-  say("  dd252<=%.0f%% (ON %d일 · 에피소드 %d):", thr*100, sum(on), ne)
+  say("  dd252<=%.0f%% (ON %d일 · rle %d · **병합60 %d**):", thr*100, sum(on), ne_rle, ne)
   say("    효과 %+.5f/일 (연 %+.2f%%) · MDE 순진 %.5f(연 %.2f%%) · HAC20 %.5f(연 %.2f%%) · 클러스터 %.5f(연 %.2f%%)",
       d1, d1*252*100, 2*se_naive, 2*se_naive*252*100, 2*se_hac, 2*se_hac*252*100,
       2*se_cl, 2*se_cl*252*100)
