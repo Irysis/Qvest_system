@@ -150,6 +150,56 @@ R$repair_agreement <- (V[["tiebreak|full"]]$final == V[["dropmonths|full"]]$fina
                       (V[["tiebreak|post2015"]]$final == V[["dropmonths|post2015"]]$final)
 say("  ★ 두 수리 판정 일치: %s", R$repair_agreement)
 
+# ── 2b. ★범위 조정 (조율자 지시 2026-08-09) — book 7종으로 판정 축소 ────────
+#   FQ-166(WT-D20260809_003) 이 M26_Revenue_Mom · Q01_EB · D03_EWMA 3종의 형태-갈림을
+#   소관한다. NP-A 고유 기여 = **자본이 실제 배정된 book 신호 7종의 분위 형태 census**.
+#   조율자 판정 규칙(결과 무관하게 외부에서 지정됨):
+#     book 다수(>=4/7) 혹  ⇒ top-N 선별의 구조적 불리 (④construction 귀속 강화)
+#     book 다수 단조       ⇒ 혹은 '탈락 재료의 특징' — 벽 일반화 금지, Q01-scoped 축소
+#     혼재                 ⇒ 형태 census 만 확정 보고, 갈림 설명은 FQ-166 이관
+#   ★공개 의무: 이 부분집합 규칙은 필자가 10신호 표를 본 **뒤** 조율자로부터 도착했다.
+#     부분집합의 정의 기준은 'book 편입 여부'라는 결과-무관 외부 기준이지만,
+#     사후 도착 사실 자체를 challenge_note 에 명시한다(사후 서사 방지).
+BOOK7 <- c("C01_SUE","C02_EPS_Chg_1m","C04_ESBR","C06_TP_Gap",
+           "Q07_Earnings_Stability","M08_Residual_Mom","Q25_Ohlson_O")
+FQ166 <- c("M26_Revenue_Mom","Q01_EB","D03_EWMA")   # 대조군 — 사다리 분해 미수행(FQ-166 소관)
+say("=== 2b. 범위 조정: book 7종 판정 (대조군 %s 는 눈금 맞춤 전용) ===", paste(FQ166, collapse="/"))
+book_verdict <- function(ce) {
+  ps <- ce$per_signal[intersect(BOOK7, names(ce$per_signal))]
+  k <- length(ps); nh <- sum(sapply(ps, function(z) isTRUE(z$hump_weak)))
+  ns <- sum(sapply(ps, function(z) isTRUE(z$hump_strict)))
+  nt <- sum(sapply(ps, function(z) isTRUE(z$top_below_ew)))
+  gaps <- sapply(ps, function(z) z$gap_q5_q3$ann_pct)
+  ind <- sum(sapply(ps, function(z) z$gap_q5_q3$p_conservative < 0.05))
+  v <- if (nh >= 4L) "BOOK_MAJORITY_HUMP" else if (nh <= 3L && (k - nh) >= 4L) "BOOK_MAJORITY_MONOTONE" else "BOOK_MIXED"
+  list(n_book = k, hump_weak = nh, hump_strict = ns, top_below_ew = nt,
+       median_gap_ann_pct = median(gaps), mean_gap_ann_pct = mean(gaps),
+       n_individually_sig = ind, gaps = gaps, verdict = v)
+}
+BV <- list()
+for (rp in c("tiebreak","dropmonths")) for (fr in c("A","B")) for (ar in c("raw","neutral")) for (wn in c("full","post2015")) {
+  key <- paste(rp, fr, ar, wn, sep = "|"); bv <- book_verdict(CELLS[[key]]); BV[[key]] <- bv
+  say("  [%-10s|%s|%-7s|%-8s] book 혹 %d/%d · strict %d · top<EW %d · 중앙갭 %+.2f%% · 개별유의 %d ⇒ %s",
+      rp, fr, ar, wn, bv$hump_weak, bv$n_book, bv$hump_strict, bv$top_below_ew,
+      bv$median_gap_ann_pct, bv$n_individually_sig, bv$verdict)
+}
+R$book7_verdicts <- BV
+prim <- sapply(c("tiebreak|A|raw|full","tiebreak|A|neutral|full"), function(k) BV[[k]]$verdict)
+allc <- sapply(names(BV), function(k) BV[[k]]$verdict)
+R$book7_primary <- if (length(unique(prim)) == 1L) unname(prim[1]) else "BOOK_MIXED"
+R$book7_all_cells_agree <- length(unique(allc)) == 1L
+R$book7_verdict_distribution <- table(allc)
+say("  ★ book 판정(전표본 A프레임 raw∧neutral) = %s · 전 16셀 일치 %s",
+    R$book7_primary, R$book7_all_cells_agree)
+say("  ★ 대조군 %s 는 FQ-166 소관 — 본 라운드는 형태 census 만 인용, 사다리 분해·갈림 설명 미수행",
+    paste(FQ166, collapse="/"))
+R$scope_note <- list(
+  owned_by_NP_A = BOOK7,
+  control_only_owned_by_FQ166 = FQ166,
+  not_performed_here = c("net→gross→EW-basis 사다리 분해", "형태 갈림 설명변수 탐색(FQ-166 ③)",
+                         "음수 PORT_t 사다리 추적(FQ-166 ④)"),
+  frame_for_cross_round_comparison = "prof2(ties=random) on P1$D(프레임A) / 적격집합 E(프레임B) · act = Ret_1m - BM_Ret · 5분위 등개수 · 연환산 100*12*mean")
+
 # ── 3. 앵커 위치 + 검정력 라벨 ──────────────────────────────────────────────
 say("=== 3. 앵커 위치 (부모 중립 Q01) + 검정력 ===")
 anch <- list()
