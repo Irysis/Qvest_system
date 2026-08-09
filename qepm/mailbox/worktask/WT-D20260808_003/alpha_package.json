@@ -73,7 +73,15 @@
                 "generated_at": "2026-08-02T12:57"
               },
               "production_parity_verified": false
-            }
+            },
+            "provenance": {
+              "store_build_hash": "stage_artifacts/WT_D20260802_009/tuned_panel.parquet",
+              "generator_code_path": "run_wt009_tuned.R — Q01_EB = MUL(z, DIV_GUARD(1, ADD(1, MUL(TS_STD(z,36), TS_STD(z,36)))))",
+              "generated_at": "2026-08-02T12:57"
+            },
+            "production_parity_verified": false,
+            "vintage_available": true,
+            "vintage_note": "WT-009 저장 패널은 생성 후 불변(재생성 없음) — 개정 위험 없음"
           },
           "A2_universe_krx_monthly:Sector",
           {
@@ -311,6 +319,7 @@
     "STORED_SCORE Q01_EB 는 production_parity_verified=false (연구 파생 패널) — incumbent base 소비 불가. 본 라운드는 base 비교가 아니라 신호 자체의 프로파일 측정이라 §7b 저촉 없음",
     "국면 상호작용은 전부 ADVISORY·비유의 (중립 기울기 × 벤치 trailing12 +1.03%/1sd t 0.98 · × 개인 강도 +0.68% t 0.94). 승계 가설의 위기월 부호 반전 예측은 검정력 부족으로 확인도 반증도 못 함 — '효과 없음' 단정 금지",
     "동시기 관측 라벨 유지 — F3 개인 순매수는 인과 아님(부모 승계)",
+    "[계약 표면 분열 — 인프라 백로그, 본 라운드 판정과 무관] 발행 후 수동 검증 실측: JSON-Schema 위반 0건 · ast_spec_gate hard PASS · ast_verify FAIL_CONTRACT(non-block) 3건. 3건 전부 schema 와 ast_verify.py 의 dialect 불일치다 — (i) schema 는 ast_node.args 에 string 스칼라를 명시 허용하는데 ast_verify 는 '노드 형상 오류(비 dict)' 로 FAIL (부모 라운드가 number 스칼라에서 보고한 것과 동류, ALB-005 계열) (ii) schema 리프 설명은 'group_id 또는 group_id:field' 를 허용하는데 ast_verify 는 ':field' 접미를 '알 수 없는 리프 종류' 로 FAIL (iii) STORED_SCORE 계약을 schema 는 escape_contract 중첩으로, ast_verify 는 leaf sibling 키로 읽는다 — (iii)만 양쪽을 채워 해소했고 (i)(ii)는 정본(schema)을 따랐다. 우회가 아니라 분열 보고",
     "RF-A3 점검: recent 3Y ICIR 별도 산출 미실시(분할 금지 mandate 하에서 3Y 창은 유효표본 36으로 구조적 저검정력) — 시기 축은 연속 추세 + post-2015 서술로 대체"
   ]
 }
