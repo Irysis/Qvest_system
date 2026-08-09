@@ -582,13 +582,29 @@
         "7타모드이식: ★소비 — RAMP/FR 의 모듈 admission 기대치 prior. 다만 롱숏->long-only 전이율이 미측정이라 그대로 이식 금지(FQ 참조)"
       ],
       "next_probe": [
-        "FQ-A: 셀-정합 KR 재현 — 논문의 (기간 x 시총계층) 2x2 를 우리 screen-tier 재고에 적용해 KR 의 post-2005 non-micro 셀이 7bp 대비 어디인지 실측. KR 이 유의하게 위면 '공표 어노멀리 무용' 결론이 KR 로 전이되지 않는다는 뜻이고, long-only 탐색 공간이 가정보다 덜 소진된 것이다. dual-basis(cap-w/EW) 필수.",
-        "FQ-B: long-leg share 정량화 — 논문 수치는 롱숏 스프레드다. 우리가 이미 잰 KR 팩터들의 long_side_share 분포를 모아 전이율을 구한다(M26 실측 0.553 이 단일 관측). 계통적으로 ~0.5 면 우리 유효 천장은 7bp 의 절반 수준으로 **정량화된 구조 천장**이 되고, 이는 목표 SR 2.5 경로에서 return-파생 lane 의 우선순위를 수치로 확정한다."
+        "FQ-189: 셀-정합 KR 재현 — (기간 × 시총계층) 2×2 를 screen-tier 재고에 적용, KR post-2005 non-micro 셀이 논문의 7bp 대비 어디인지 실측(dual-basis 필수, 착수 전 required_effect_size 확인).",
+        "FQ-190: long-leg share 정량화 — 논문 수치는 롱숏 스프레드이므로 long-only 전이율 없이는 단위가 안 맞는다. M26 실측 0.553 이 단일 관측 — 분포를 모아 변환계수 확정."
       ],
       "paper_exhausted": true,
       "paper_exhausted_note": "메타분석 논문이라 추가 팩터 추출 여지 없음. 단 **증거로서는 소비됨**(선별라벨/타모드 prior). 신호 lane 에서만 종결.",
       "notable": true,
-      "session_note": "AS-20260809 수동 처리 — 무인 큐의 유일 pending 이 수 주간 미소비 상태였고, 오늘 exit_124 타임아웃 조사의 연장으로 착수. 실행 백테 없음(신호 부재)."
+      "session_note": "AS-20260809 수동 처리 — 무인 큐의 유일 pending 이 수 주간 미소비 상태였고, 오늘 exit_124 타임아웃 조사의 연장으로 착수. 실행 백테 없음(신호 부재).",
+      "evidence_basis": {
+        "read": "abstract only",
+        "sources": [
+          "stage_artifacts/paper_recharge/mcp_discovery_20260727.json (저장된 수집 레코드)",
+          "arXiv API get_abstract 2607.06502 (독립 재확인 — 저자 Chen & Welch 확정)"
+        ],
+        "full_text_retrieved": false,
+        "full_text_failure": "arxiv MCP download_paper: HTML 판 부재 + PDF 변환에 pdf extra 미설치. jina read_url(arxiv.org/pdf/...): HTTP 402.",
+        "why_abstract_suffices_for_skip": "초록이 방법을 완전히 기술한다 — CZ2022 약 200 어노멀리를 기간×시총계층으로 분할해 중앙값 수익을 보고. 신규 신호 제안이 아니다. 결론도 전면 부정형이라 '살아남는 부분집합' 이 있었다면 그것이 헤드라인이 됐을 것이다.",
+        "residual_risk": "★남은 위험 = 본문이 **생존 어노멀리 부분집합의 선별 규칙**을 제시했을 가능성. 그렇다면 그건 메타-선별 신호로 구현 가능하다. 초록의 '중앙값' 프레이밍은 분포를 함의하고 분포엔 상단 꼬리가 있다. 확률은 낮게 보나 0 은 아니다. ⚠단 CZ2022 는 US 데이터이므로 그 부분집합을 그대로 쓰는 것은 크로스마켓 금지 (CLAUDE.md 제약)에 걸린다 — 이식 가능한 것은 '규칙' 이지 '목록' 이 아니다."
+      },
+      "revival_condition": "①본문 확보 후 생존 어노멀리의 **선별 규칙**(목록 아님)이 기술돼 있으면 재검토 — KR 재현 가능한 규칙이면 신호 lane 부활. ②FQ-189 가 KR post-2005 non-micro 셀을 7bp 대비 **유의하게 위**로 실측하면 '공표 어노멀리 무용' prior 자체가 KR 로 전이되지 않는 것이므로, return-파생 lane 의 최후순위 지정을 재판정한다.",
+      "frontier_registered": [
+        "FQ-189",
+        "FQ-190"
+      ]
     }
   ],
   "schema_note": "processed = list of paper_id strings (set-like, paper 단위 dedup). records = 전체 시도 감사 로그(동일 paper에서 여러 factor 추출 시 factor_id로 구분). last_updated 갱신 의무.",
