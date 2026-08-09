@@ -2264,26 +2264,6 @@
       "last_validated": {},
       "deprecation_reason": {},
       "mutation_parent": {}
-    },
-    "dedup": {
-      "role": "alias",
-      "canonical": "C11_Earnings_Streak",
-      "cluster": "DUPC-046",
-      "deprecated_for_selection": true,
-      "adjudicated": true,
-      "mechanism": "compute_consensus.R:258-260 이 이미 'M25_Earnings_Mom_Streak (compute_momentum.R:339-360)과 식·원천·정렬이 동일' 이라고 2026-08-08 에 기록했으나 그 제안이 registry 에 도달하지 않았다. 값으로 독립 재확인: rho 1.0000000 (최소 0.9999933), 최대절대차 0.168 — 잔차는 커버리지 차이 (C11 757행 vs M25 735행)에서 온다.",
-      "reason": "C11 = consensus 네이티브 코드이며 커버리지가 넓다.",
-      "evidence": {
-        "max_rho": 1,
-        "min_rho": 0.9999933,
-        "max_abs_diff": 0.168,
-        "basis": "signal_rank",
-        "verdict": "DUP_RANK_IDENTICAL",
-        "measured_at": "2026-08-09",
-        "report": "04_Research/01_reports/factor_emission_identity_audit_20260809.md",
-        "window": "표본 6월 (200506/201006/201406/201806/202206/202606)"
-      },
-      "consumption_rule": "선별/Ω 추정에서는 canonical 만 사용(drop_alias_factors()). 코드 조회·과거 산출물 참조는 계속 유효 — 삭제·리넘버 없음."
     }
   },
   "M26_Revenue_Mom": {
@@ -7305,27 +7285,21 @@
       "mutation_parent": {}
     },
     "dedup": {
-      "role": "canonical",
+      "role": "redundant",
       "cluster": "DUPC-005",
-      "aliases": [
-        "C09_Earnings_Surprise_Sq",
-        "C10_SUE_Persistence"
-      ],
       "partners": [
         "C05_ESCR"
       ],
       "adjudicated": true,
       "needs_review": false,
-      "cluster_label": "earnings_surprise",
-      "reason": "SUE 원천 1종이 C01/C09/C10 3중 등록. C01 = 변환 없는 원본(compute_consensus.R:141 Raw_Value = sue) + 북 incumbent. 배출 이력은 3종 동률(300개월·동일 행수)이므로 이력이 아니라 **구성**이 정본을 정한다 — C09/C10 은 C01 의 파생이다.",
       "evidence": {
         "max_pair_abs_cor": 0.990436,
-        "note": "0.990436 은 partner C05_ESCR 과의 값(2026-08-02 측정). alias 쌍 통계는 각 alias 블록 참조.",
-        "measured_at": "2026-08-09",
-        "report": "04_Research/01_reports/factor_emission_identity_audit_20260809.md",
-        "window": "표본 6월 (200506/201006/201406/201806/202206/202606)"
+        "measured_at": "2026-08-02",
+        "report": "04_Research/01_reports/factor_db_dedup_20260802.md",
+        "window": "2005-01..2026-06 (258 months)"
       },
-      "consumption_rule": "alias(C09/C10)는 drop_alias_factors() 가 자동 축약한다. partner C05_ESCR 은 자동 병합 대상이 아니며 같은 풀에 함께 넣을 때 선언이 필요하다 (report_redundant_clusters())."
+      "consumption_rule": "자동 병합 금지. 같은 cluster 의 둘 이상을 한 선별 풀에 넣으면 report_redundant_clusters() 가 보고한다 — 선언하거나 하나로 접을 것.",
+      "cluster_label": "earnings_surprise"
     }
   },
   "C02_EPS_Chg_1m": {
@@ -7468,25 +7442,6 @@
       "last_validated": {},
       "deprecation_reason": {},
       "mutation_parent": {}
-    },
-    "dedup": {
-      "role": "canonical",
-      "cluster": "DUPC-045",
-      "aliases": [
-        "C13_Revision_Breadth_3m"
-      ],
-      "adjudicated": true,
-      "needs_review": false,
-      "cluster_label": "revision_breadth",
-      "reason": "C04 = compute_consensus.R:159 Raw_Value = esbr (원천 그대로). C13 은 그 3-관측 평균으로 등록됐으나 창이 무력해 비트동일.",
-      "evidence": {
-        "max_rho": 1,
-        "max_abs_diff": 0,
-        "measured_at": "2026-08-09",
-        "report": "04_Research/01_reports/factor_emission_identity_audit_20260809.md",
-        "window": "표본 6월 (200506/201006/201406/201806/202206/202606)"
-      },
-      "consumption_rule": "alias(C13)는 drop_alias_factors() 가 자동 축약한다."
     }
   },
   "C05_ESCR": {
@@ -7719,27 +7674,6 @@
       "last_validated": {},
       "deprecation_reason": {},
       "mutation_parent": {}
-    },
-    "dedup": {
-      "role": "alias",
-      "canonical": "C01_SUE",
-      "cluster": "DUPC-005",
-      "deprecated_for_selection": true,
-      "adjudicated": true,
-      "mechanism": "compute_consensus.R:236-237 C09 = sign(sue) * sue^2 — 같은 latest sue 의 **순증가 단조변환**이다(sign(x)x^2 는 R 전체에서 강증가). 따라서 순위가 구조적으로 동일하고, 값은 다르므로 최대절대차로는 안 잡히고 랭크로만 잡힌다 (실측 rho 0.9999982, 최대절대차 1.852). rho 가 정확히 1 이 아닌 것은 빌더의 winsorize(1/99)·±3 clip 이 변환 **후** 걸려 동률 구조를 바꾸기 때문.",
-      "reason": "registry 정의문 'sign(sue)*sue^2. Amplified surprises.' 의 증폭 의도는 순위 기반 소비(top-N 선별·rank-IC)에서 실현되지 않는다 — 순위가 같기 때문.",
-      "identity_scope": "★범위 한정(정직 라벨): 랭크 basis 에서 정보 손실 0. Z 값 basis 에서는 제곱이 꼬리를 재배치하므로 z(C09) != z(C01) 이다 — 랭크가 아니라 z 값을 가중합하는 소비자는 이 축약이 무손실이 아님을 인지할 것.",
-      "evidence": {
-        "max_rho": 0.9999982,
-        "min_rho": 0.9999838,
-        "max_abs_diff": 1.852,
-        "basis": "signal_rank",
-        "verdict": "DUP_RANK_IDENTICAL",
-        "measured_at": "2026-08-09",
-        "report": "04_Research/01_reports/factor_emission_identity_audit_20260809.md",
-        "window": "표본 6월 (200506/201006/201406/201806/202206/202606)"
-      },
-      "consumption_rule": "선별/Ω 추정에서는 canonical 만 사용(drop_alias_factors()). 코드 조회·과거 산출물 참조는 계속 유효 — 삭제·리넘버 없음."
     }
   },
   "C10_SUE_Persistence": {
@@ -7783,35 +7717,6 @@
       "last_validated": {},
       "deprecation_reason": {},
       "mutation_parent": {}
-    },
-    "dedup": {
-      "role": "alias",
-      "canonical": "C01_SUE",
-      "cluster": "DUPC-005",
-      "deprecated_for_selection": true,
-      "adjudicated": true,
-      "mechanism": "compute_consensus.R:249 C10 = mean(sue[1:min(N,4)]) — 의도는 '최근 4분기 평균 (PEAD proxy)' 이나 실제로는 최근 4**영업일** 평균이라 latest 와 비트동일하다 (실측 rho 1.000000, 최대절대차 0.000e+00).",
-      "reason": "C01 = 창 결함에 오염되지 않은 원본. C10 은 현 빌드에서 C01 의 복제다.",
-      "defect": {
-        "kind": "inert_rolling_window",
-        "detail": "★무력 창(inert window) — 롤링 평균 항이 값에 영향을 주지 못한다. .cons_history() 는 CONSENSUS 원천의 **관측 행**을 최신순으로 돌려주는데 원천이 일간이다(sue/esbr 관측 간격 중앙 1일, 2026-08-09 실측). 따라서 x[1:n] 은 n'분기'가 아니라 n'영업일'을 본다 — 창 span 중앙 2~5일, 창 내 고유값 중앙 1.0, mean(창)==latest 가 2010/2018/2024 전 티커에서 성립(비율 1.0000). C15_Forecast_Error_Trend 의 사망 기전과 **같은 뿌리**다. 이 alias 선언은 '정보가 같다'가 아니라 '현 빌드에서 값이 같다'는 조건부 선언이다.",
-        "shares_root_cause_with": [
-          "C13_Revision_Breadth_3m",
-          "C15_Forecast_Error_Trend"
-        ],
-        "revisit_on": ".cons_history() 가 분기 관측으로 축약되도록 수리되면 이 alias 선언은 **무효**다 — 재측정 후 재선언할 것. 수리 전까지만 유효."
-      },
-      "evidence": {
-        "max_rho": 1,
-        "min_rho": 1,
-        "max_abs_diff": 0,
-        "basis": "signal_rank",
-        "verdict": "DUP_EXACT_BITWISE",
-        "measured_at": "2026-08-09",
-        "report": "04_Research/01_reports/factor_emission_identity_audit_20260809.md",
-        "window": "표본 6월 (200506/201006/201406/201806/202206/202606)"
-      },
-      "consumption_rule": "선별/Ω 추정에서는 canonical 만 사용(drop_alias_factors()). 코드 조회·과거 산출물 참조는 계속 유효 — 삭제·리넘버 없음."
     }
   },
   "C11_Earnings_Streak": {
@@ -7855,28 +7760,6 @@
       "last_validated": {},
       "deprecation_reason": {},
       "mutation_parent": {}
-    },
-    "dedup": {
-      "role": "canonical",
-      "cluster": "DUPC-046",
-      "aliases": [
-        "M25_Earnings_Mom_Streak"
-      ],
-      "adjudicated": true,
-      "needs_review": false,
-      "cluster_label": "earnings_streak",
-      "reason": "동일 신호가 계열 교차로 2중 등록(consensus C11 / momentum M25). C11 = consensus 네이티브 + 커버리지 우위(배출 원장 실측: 중앙 757행·누적 217,198 vs M25 735행·204,800). 선례 정합 — M27_Analyst_Rev_Mom -> C02_EPS_Chg_1m 도 momentum 카테고리 재등록을 alias 로 접었다.",
-      "evidence": {
-        "max_rho": 1,
-        "min_rho": 0.9999933,
-        "max_abs_diff": 0.168,
-        "c11_median_rows": 757,
-        "m25_median_rows": 735,
-        "measured_at": "2026-08-09",
-        "report": "04_Research/01_reports/factor_emission_identity_audit_20260809.md",
-        "window": "표본 6월 (200506/201006/201406/201806/202206/202606)"
-      },
-      "consumption_rule": "alias(M25)는 drop_alias_factors() 가 자동 축약한다."
     }
   },
   "C12_Estimate_Dispersion_Proxy": {
@@ -7963,35 +7846,6 @@
       "last_validated": {},
       "deprecation_reason": {},
       "mutation_parent": {}
-    },
-    "dedup": {
-      "role": "alias",
-      "canonical": "C04_ESBR",
-      "cluster": "DUPC-045",
-      "deprecated_for_selection": true,
-      "adjudicated": true,
-      "mechanism": "compute_consensus.R:292 C13 = mean(esbr[1:min(N,3)]) — '3개월 롤링' 의도이나 원천 esbr 이 일간이라 실제 창 span 중앙 2일·고유값 1개 ⇒ mean==latest (비율 1.0000, 2010/2018/2024). C04 와 비트동일(최대절대차 0.000e+00).",
-      "reason": "C04 = 창 결함에 오염되지 않은 원본.",
-      "defect": {
-        "kind": "inert_rolling_window",
-        "detail": "★무력 창(inert window) — 롤링 평균 항이 값에 영향을 주지 못한다. .cons_history() 는 CONSENSUS 원천의 **관측 행**을 최신순으로 돌려주는데 원천이 일간이다(sue/esbr 관측 간격 중앙 1일, 2026-08-09 실측). 따라서 x[1:n] 은 n'분기'가 아니라 n'영업일'을 본다 — 창 span 중앙 2~5일, 창 내 고유값 중앙 1.0, mean(창)==latest 가 2010/2018/2024 전 티커에서 성립(비율 1.0000). C15_Forecast_Error_Trend 의 사망 기전과 **같은 뿌리**다. 이 alias 선언은 '정보가 같다'가 아니라 '현 빌드에서 값이 같다'는 조건부 선언이다.",
-        "shares_root_cause_with": [
-          "C10_SUE_Persistence",
-          "C15_Forecast_Error_Trend"
-        ],
-        "revisit_on": ".cons_history() 창 수리 후 이 선언은 무효 — 재측정 후 재선언."
-      },
-      "evidence": {
-        "max_rho": 1,
-        "min_rho": 1,
-        "max_abs_diff": 0,
-        "basis": "signal_rank",
-        "verdict": "DUP_EXACT_BITWISE",
-        "measured_at": "2026-08-09",
-        "report": "04_Research/01_reports/factor_emission_identity_audit_20260809.md",
-        "window": "표본 6월 (200506/201006/201406/201806/202206/202606)"
-      },
-      "consumption_rule": "선별/Ω 추정에서는 canonical 만 사용(drop_alias_factors()). 코드 조회·과거 산출물 참조는 계속 유효 — 삭제·리넘버 없음."
     }
   },
   "C14_Revenue_Surprise": {
