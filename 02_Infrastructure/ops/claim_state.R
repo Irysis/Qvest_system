@@ -51,8 +51,20 @@ claim_state <- function(entry) {
            else if (grepl("dohoon_decision|dohoon_confirm|도훈 결정 대기|도훈 confirm 대기", blob)) "dohoon"
            else if (grepl("blocked_by|blocked_until|data_gate_closed|^blocked", blob)) "blocked"
            else "unknown"
+  ## ★2026-08-09 3차 수리 — **상태 충돌 검출**.
+  ##   census 에서 FQ-139 가 owner="미배정" ∧ status="done" 인데 착수 가능으로 나왔다.
+  ##   owner 와 status 가 서로 다른 이야기를 하면 **조용히 한쪽을 고르면 안 된다** — 그게 중복 착수를 만든다.
+  ##   ⇒ 충돌이면 unknown 으로 강등하고 사유를 note 에 실어 **안전측 차단**.
+  own_says   <- grepl("UNCLAIMED|미배정", own)
+  stat_says  <- grepl("done|complete|COMPLETE|완료|resolved|established|closed|refuted|_negative|quarantine", sts)
+  conflict   <- own_says && stat_says
+  if (conflict) guess <- "unknown"
+
   list(state = guess, source = "inferred(레거시 — 선언 필드 부재)",
-       session = NA_character_, ts = NA_character_, note = own,
+       session = NA_character_, ts = NA_character_,
+       note = if (conflict) sprintf("★상태 충돌 — owner='%s' 는 미배정인데 status='%s' 는 완료다. 안전측 차단.",
+                                     substr(own, 1, 60), substr(sts, 1, 40)) else own,
+       conflict = conflict,
        ## ★추론은 안전측으로: unclaimed 로 **확신**될 때만 착수 허용
        safe_to_start = identical(guess, "unclaimed"))
 }
