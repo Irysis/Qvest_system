@@ -4048,7 +4048,20 @@
     "stage_artifacts/WT_D20260809_003/alpha_validation.json (primary_frame_shapes.arms — long_side_share 정의 및 5건 실측 출처)",
     "stage_artifacts/WT_D20260809_001/alpha_validation.json (M26 D10 +6.55 / D1 -5.298 → 0.553 정의 확인)"
    ],
-   "respec_note": "2026-08-09 19:1x — 발행 당일 재명세. 사전 확인 10분이 라운드 설계를 뒤집은 사례 (feedback-precheck-before-round-changes-design). 원 명세는 이력으로만 보존."
+   "respec_note": "2026-08-09 19:1x — 발행 당일 재명세. 사전 확인 10분이 라운드 설계를 뒤집은 사례 (feedback-precheck-before-round-changes-design). 원 명세는 이력으로만 보존.",
+   "consumer_census": {
+    "scanned": "저장소 전수 grep(long_side_share|long_leg_share) — 21 파일, 큐 .bak 제외 후 코드 4 + 원장/SOT 3",
+    "producer": "stage_artifacts/WT_D20260809_003/p1_shape.R:61 — abs(top)/(abs(top)+abs(bot)) · 부호 없음 확정",
+    "decision_consumers": [
+     "stage_artifacts/WT_D20260809_001/p0_precheck.R:103 — 사전선언 문턱 0.40 (D2_TAIL_BOUND 입력). 이것이 유일한 판정 소비처."
+    ],
+    "prose_consumers": [
+     "stage_artifacts/WT_D20260809_001/p6_ledger.R:26 — 원장 기술(판정 아님)",
+     "stage_artifacts/WT_D20260809_001/p7_bottleneck_map.R:24 — ★상시 SOT(layer_bottleneck_map.md)에 0.553 을 'long 측이 short 측보다 약간 강함' 이라는 **방향 해석**과 함께 싣는다. M26 엔 참(D10 +6.55 > |D1| 5.30)이나 같은 문형이 Q01_EB(0.868, 상단 -3.41%)에 재사용되면 정반대를 말한다. SOT 는 타 세션 소관이라 미수정 — 지적만 남긴다."
+    ],
+    "blast_radius": "★02_Infrastructure / 05_Production / contracts / hooks 소비처 **0건**. 2026-08-09 두 WT 라운드 안의 당일 패턴이며 졸업 게이트·배포 경로로 전파되지 않았다. 레거시 부채가 아니라 신생 관용구 — 지금 규약을 세우면 확산 전에 잡힌다.",
+    "trigger_status": "FQ-190 live_trigger ③('다른 소비처 발견 시 재개')은 **불발** — 추가 판정 소비처 없음. 축 종료."
+   }
   },
   {
    "id": "FQ-191",
@@ -4058,19 +4071,20 @@
    "ev_rationale": "이 저장소에서 **비-return 재료가 자본 문턱에 도전하는 첫 사례**. 데이터·신호·국면 정의 전량 기지불이고 사전등록도 이미 있다.",
    "wall_check": "★국면 OFF 월 처리를 **사전등록으로 고정**할 것 — 현금/벤치/유지 중 사후 선택 금지. max 25 · long-only · [0,0.20] · Σw=1 · 유동성 2e8 불변. 국면 스위칭 회전율을 |Δ보유명목|×15bps 로 실과금. ★2026 오염 미수리 — 제외판을 정본으로 하고 수리 후 포함판 재측정.",
    "data_gate": "없음 (gridx_* + panelx_A 재사용)",
-   "owner": "[CLAIMED] Q-Lead 2026-08-09 — HARD 3종 측정",
-   "status": "frontier_open",
-   "next_action": "①OFF 월 처리 사전등록 고정 ②HARD 3종 측정(2026 제외판) ③국면 스위칭 비용 실과금 ④oos_retention 은 essence_score 권위 경유",
+   "owner": "[COMPLETE] Q-Lead 2026-08-09 — HARD 3종 측정 완료 — H3 판정(자본 아님), 오버레이/선별 라벨 라우팅.",
+   "status": "h3_not_capital_routed_overlay_20260809",
+   "next_action": "★H3 판정 — 자본 자격 없음, **오버레이/선별 라벨 확정 라우팅**(사전등록 + FQ-138 live_trigger ③ 일치). HARD 3종(정본 2026 제외, n=73): PORT_t **+2.204**(문턱 2.95, −0.746) FAIL · oos_retention **+0.414**(문턱 0.7, ★<0.5 무조건 FAIL band) FAIL · calmar **+1.213**(문턱 0.64) PASS. 참조 CAGR +27.63% · MDD −22.77% · IR +0.935. ★무조건부 PORT_t +0.581 → 조건부 **+2.204(3.8배)** — 국면 조건부가 재료를 실제로 살려냈으나 문턱엔 미달. ★oos 진단: 국면 ON 27개월뿐이라 분할 시 표본 붕괴 — 사전등록 known_risks 가 예고한 위험 실현. '효과 부재' 아닌 **검정력 부족**. ★전환비용은 병목 아님: 전환 연 4.6회 · 총 4.50%p(연 0.68%p). ★OFF 월 감도(argmax 금지, 병기): 벤치 2.204 / 현금 −0.425 / sleeve 유지 1.651 — 고정 선택이 최고였으나 **측정 전 논리로 고정**했다.",
    "source_refs": [
     "stage_artifacts/FQ138/validation.json",
     "stage_artifacts/fq141_precheck_20260808/fq138_preregistration.json"
    ],
    "claim": {
-    "state": "claimed",
+    "state": "complete",
     "session": "Q-Lead 2026-08-09",
-    "ts": "2026-08-09T19:19:28",
-    "note": "HARD 3종 측정"
-   }
+    "ts": "2026-08-09T19:21:56",
+    "note": "HARD 3종 측정 완료 — H3 판정(자본 아님), 오버레이/선별 라벨 라우팅."
+   },
+   "result_ref": "stage_artifacts/FQ191/validation.json"
   },
   {
    "id": "FQ-192",
@@ -4099,6 +4113,22 @@
    "next_action": "①필드별 사전등록 1회씩(형태 고정: 하위 3분위 제외, 강도 k≈1) — **필드를 흔들어 최선을 고르면 sweep** 이므로 각 필드 독립 사전등록 + 음성대조/양성대조 동반. ②판정 기준은 게이트가 아니라 **무작위 q95**. ③회수율(ΔIR / 0.4153) 병기. ④F3 시대 분할 필수(겹침이 2020 11% → 2026 36% 추세).",
    "wall_check": "천장 실측 +0.4153(k=1) · 무작위 q95 +0.0537 · 기준선 book PORT_t 2.768(계약 창 79개월 — 전체 271개월 6.18 대비 불리한 창, 인용 시 병기)",
    "created": "2026-08-09"
+  },
+  {
+   "id": "FQ-194",
+   "lane": "non_return",
+   "title": "★계약 국면 sleeve 의 **오버레이 소비** — 현행 book 대비 book-marginal (H3 라우팅 수행)",
+   "hypothesis": "FQ-191 이 국면-조건부 계약 규칙을 H3(자본 아님) 로 판정하고 **오버레이/선별 라벨** 로 라우팅했다. 그 라우팅을 실제로 수행한다: 계약 sleeve 를 독립 자본 sleeve 가 아니라 **현행 book 위 오버레이 성분**으로 소비할 때 book-marginal ΔIR 이 문턱 0.05 를 넘는가. 근거: 조건부 IR +0.935 · calmar 1.213 · MDD −22.77% 는 book 과 결합 시 기여할 여지가 있는 프로파일이다.",
+   "ev_rationale": "H3 라우팅의 실행. FQ-191 이 이미 규칙·국면·비용을 확정했으므로 남은 것은 결합 측정뿐.",
+   "wall_check": "★base 는 **05_Production 현행 PG2 코드 파생만 권위**(§7b) — 재구성 base 금지(부호 반전 선례). book_state.json 부재 확인됨(2026-08-09) — base 확보 경로부터 사전 확인할 것. Production Constraints 불변. governor admit 은 수동.",
+   "data_gate": "★book base 확보 필요 — FQ-165 가 같은 벽에서 config_scoped_negative 로 끝났다. 착수 전 base 경로 확인 의무.",
+   "owner": "UNCLAIMED — FQ-191 이 발행. claim_state.R 경유 착수.",
+   "status": "frontier_open",
+   "next_action": "①production PG2 base 파생 경로 확인(FQ-165 가 막힌 지점) ②확보 시 book-marginal ΔIR ③|cor|<0.30 ④착수 전 power 바",
+   "source_refs": [
+    "stage_artifacts/FQ191/validation.json",
+    "stage_artifacts/FQ138/validation.json"
+   ]
   }
  ]
 }
