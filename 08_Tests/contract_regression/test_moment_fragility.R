@@ -61,3 +61,19 @@ chk("행 수 = k_max+1", nrow(d) == 4L)
 
 cat(sprintf("\n=== 결과: PASS %d · FAIL %d ===\n", PASS, FAIL))
 if (FAIL > 0) quit(status = 1)
+
+cat("=== 7. ★FQ-182 실사고 재현 — 초판 로직이 놓친 케이스 ===\n")
+## 실사고 구조: Bowley diff 가 거의 0 이나 **부호는 일치**(0.032), 적률 diff 0.581
+## 초판은 sign_ok=TRUE 로 ROBUST 를 냈다. 수리판은 drop-k 크기 붕괴로 잡아야 한다.
+set.seed(4242)
+on7  <- c(rnorm(2000, 0, 0.020), 0.22, 0.26)   # 극단 2개
+off7 <- rnorm(6700, 0, 0.014)
+r7 <- assert_moment_robust(on7, off7, "skew")
+chk("FQ-182 형 케이스 -> OUTLIER_DRIVEN", r7$verdict == "OUTLIER_DRIVEN",
+    sprintf("verdict=%s · flip_k=%s · collapse_k=%s · moment %+.3f · bowley %+.4f",
+            r7$verdict, r7$first_sign_flip_k, r7$first_collapse_k, r7$moment_diff, r7$bowley_diff))
+chk("부호 일치인데도 잡혔는가(초판 사각 실증)",
+    r7$verdict == "OUTLIER_DRIVEN" && sign(r7$bowley_diff) == sign(r7$moment_diff),
+    sprintf("bowley %+.4f · moment %+.3f", r7$bowley_diff, r7$moment_diff))
+cat(sprintf("\n=== 최종: PASS %d · FAIL %d ===\n", PASS, FAIL))
+if (FAIL > 0) quit(status = 1)
