@@ -1,0 +1,79 @@
+Warning message:
+package 'arrow' was built under R version 4.5.3 
+[config.R] PROJECT_ROOT: C:/Users/99922/OneDrive/Quant_Module_Moltbot
+[factor_db_connector] Loaded. Functions: load_month_factors(), load_daily_factors(),
+  compute_rolling_ic_all(), group_factors_by_family(), align_factor_direction()
+[adv] ★입력 실측: alpha_scores 85443행 · 302개월 · 2001-06 ~ 2026-07 · 컬럼 signal_ym,Date,Ticker,C01_SUE,C02_EPS_Chg_1m,C04_ESBR,C18_Earnings_CAR_3d,C10s_SUE_Persist_step,C13s_RevBreadth_step,C15s_SUE_Trend_step,Ret_1m,Size,K200,KQ150
+[adv] ================ L1: PIT parity (원천 재계산 C01 ↔ 커넥터 C01) ================
+[align_factor_direction] PIT-safe: sig_date=2003-09-30 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=0 / registry-fallback=1 / default-fallback=0 (n_factors=1)
+[align_factor_direction] PIT-safe: sig_date=2005-12-29 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=1 / registry-fallback=0 / default-fallback=0 (n_factors=1)
+[align_factor_direction] PIT-safe: sig_date=2008-04-30 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=1 / registry-fallback=0 / default-fallback=0 (n_factors=1)
+[align_factor_direction] PIT-safe: sig_date=2010-07-30 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=1 / registry-fallback=0 / default-fallback=0 (n_factors=1)
+[align_factor_direction] PIT-safe: sig_date=2012-10-31 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=1 / registry-fallback=0 / default-fallback=0 (n_factors=1)
+[align_factor_direction] PIT-safe: sig_date=2015-02-27 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=1 / registry-fallback=0 / default-fallback=0 (n_factors=1)
+[align_factor_direction] PIT-safe: sig_date=2017-05-31 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=1 / registry-fallback=0 / default-fallback=0 (n_factors=1)
+[align_factor_direction] PIT-safe: sig_date=2019-08-30 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=1 / registry-fallback=0 / default-fallback=0 (n_factors=1)
+[align_factor_direction] PIT-safe: sig_date=2021-12-30 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=1 / registry-fallback=0 / default-fallback=0 (n_factors=1)
+[align_factor_direction] PIT-safe: sig_date=2024-03-29 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=1 / registry-fallback=0 / default-fallback=0 (n_factors=1)
+[align_factor_direction] PIT-safe: sig_date=2026-07-31 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=1 / registry-fallback=0 / default-fallback=0 (n_factors=1)
+[adv] 월별 |spearman| 요약: 중앙 0.999993 · 최소 0.999986 · +1 근사(>0.999) 월 11/11 · -1 근사(<-0.999) 월 0
+[adv]   2003-09 n= 292 spearman +0.999996
+[adv]   2005-12 n= 396 spearman +0.999994
+[adv]   2008-04 n= 494 spearman +0.999994
+[adv]   2010-07 n= 602 spearman +0.999986
+[adv]   2012-10 n= 715 spearman +0.999988
+[adv]   2015-02 n= 799 spearman +0.999988
+[adv]   2017-05 n= 889 spearman +0.999995
+[adv]   2019-08 n= 960 spearman +0.999994
+[adv]   2021-12 n=1035 spearman +0.999991
+[adv]   2024-03 n=1075 spearman +0.999992
+[adv]   2026-07 n=1125 spearman +0.999993
+[adv] ★해석: |spearman|=1 이면 내 원천 PIT 처리 = 빌더와 동일(스텝 프로토타입도 같은 규약 위).
+[adv]        부호가 음이면 커넥터 방향정렬이 뒤집은 것 — L2 로 이어짐.
+[adv] ================ L2: z-basis / 부호 진단 ================
+[adv]   C18_Earnings_CAR_3d        단독 rank-IC -0.0291 (t -3.63 · IC>0 43.1% · 299개월) ⇒ 사전지정 부호(+)와 불일치
+[adv]   C10s_SUE_Persist_step      단독 rank-IC +0.0115 (t +2.22 · IC>0 53.5% · 299개월) ⇒ 사전지정 부호(+)와 일치
+[adv]   C13s_RevBreadth_step       단독 rank-IC +0.0184 (t +3.41 · IC>0 57.3% · 302개월) ⇒ 사전지정 부호(+)와 일치
+[adv]   C15s_SUE_Trend_step        단독 rank-IC -0.0007 (t -0.16 · IC>0 49.0% · 296개월) ⇒ 사전지정 부호(+)와 불일치
+[adv] ★프로토타입은 IC 로 사후 정렬하지 않았다(C13 규칙). 위는 진단이지 정렬이 아니다.
+[adv] ================ L3: C15s 의 증분 정체 ================
+[adv]   C15s vs C01 월별 spearman: 평균 +0.6207 (sd 0.083 · n=296개월)
+[adv]   ★C15s = step[1]-step[2] 이고 C01 ≈ step[1] 이므로, C01 통제 후 C15s 의 증분은
+[adv]     사실상 **-step[2](직전 분기 수준)** 의 정보다. 이는 '추세'가 아니라 '직전 수준의 역방향'일 수 있다 —
+[adv]     부호 해석 시 이 정체를 명시할 것(재료 자격 자체는 무효화하지 않음).
+[adv] ================ L4: C18 이벤트 자기선택 ================
+   has_c18     n   mean_ret   mean_c01 mean_size
+    <lgcl> <int>      <num>      <num>     <num>
+1:   FALSE 26989 0.01014342 0.04073953  26.88410
+2:    TRUE 58454 0.01009789 0.22054501  28.13081
+[adv]   C18 보유군 − 미보유군 익월 수익차: 월평균 +0.00046 · NW t +0.22 · 298개월
+[adv]   ★유의하면 C18 표본 자체가 수익 편의를 갖는다 = incumbent 통제의 의미가 달라진다.
+[adv]   [full  ] C01_SUE          n=283 · mean -0.000118 · t -0.17
+[adv]   [full  ] C02_EPS_Chg_1m   n=283 · mean +0.001334 · t +3.01
+[adv]   [full  ] C04_ESBR         n=283 · mean +0.000663 · t +0.61
+[adv]   [narrow] C01_SUE          n=283 · mean +0.000049 · t +0.07
+[adv]   [narrow] C02_EPS_Chg_1m   n=283 · mean +0.001183 · t +2.66
+[adv]   [narrow] C04_ESBR         n=283 · mean +0.001199 · t +0.84
+[adv] ================ L5: AX-001 v2 조건부 (bad/normal IC ratio) ================
+[adv]   C18_Earnings_CAR_3d        bad(bm<0) n=125 IC -0.0372 | normal n=174 IC -0.0234 | ratio +1.59 | crisis(bm<-10%) n=13 IC -0.1445
+[adv]   C10s_SUE_Persist_step      bad(bm<0) n=125 IC +0.0058 | normal n=174 IC +0.0156 | ratio +0.37 | crisis(bm<-10%) n=13 IC -0.0213
+[adv]   C13s_RevBreadth_step       bad(bm<0) n=127 IC +0.0124 | normal n=175 IC +0.0228 | ratio +0.54 | crisis(bm<-10%) n=13 IC -0.0036
+[adv]   C15s_SUE_Trend_step        bad(bm<0) n=124 IC +0.0026 | normal n=172 IC -0.0031 | ratio -0.83 | crisis(bm<-10%) n=12 IC -0.0152
+[adv] ================ L6: 탐색 자유도 ================
+[adv]   보고 arm 4 → Bonferroni 양측 alpha .05/4 ⇒ |t| >= 2.50
+[adv]   ★단 exploratory 3종은 사전등록 원안(4종 DB 팩터)에 없었고 P0 사전 확인 중 발견됐다.
+[adv]     '스텝 압축'은 내가 고른 여러 가능한 수리 중 하나다(대안: 분기 리샘플·달력 lag·이벤트 정렬).
+[adv]     ⇒ exploratory arm 은 primary 와 같은 증거력으로 읽지 말 것. 자본 경로 진입 전
+[adv]       **독립 사전등록 라운드에서 재현**이 조건이다(부활 조건에 명시).
+[adv] 저장 완료

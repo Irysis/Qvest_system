@@ -26,7 +26,7 @@ if (!length(QUAL)) { say("자격 arm 0 — 전이 측정 생략(측정할 재료
 
 ## ---- 입력 실측 (첫 출력) ----
 A <- as.data.table(read_parquet(file.path(OUT,"alpha_scores.parquet")))
-A[, Date := as.Date(Date)]
+setnames(A, "signal_date", "Date"); A[, Date := as.Date(Date)]
 say("★입력 실측: alpha_scores.parquet %d행 · %d개월 · 관측단위 = (월말 Date × Ticker) · %s ~ %s",
     nrow(A), uniqueN(A$Date), min(A$signal_ym), max(A$signal_ym))
 

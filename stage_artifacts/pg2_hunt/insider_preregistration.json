@@ -1,0 +1,59 @@
+{
+  "round_id": "INSIDER_BOOKMARGINAL_20260809",
+  "frozen_at": "2026-08-09 (측정 전 · 수익 미조회 상태에서 작성)",
+  "question": "DART 내부자 매도 신호가 PG2 를 book-marginal 로 이기는가 — 331 팩터DB 전수가 실패한 뒤 남은 비-return 원천",
+
+  "why_this_material": "331 전수(통과 0)의 기전은 상관·IR 동시 부족이었고, 통과 조건(rho<=0.277 ∧ IR>=need_ir)을 만족한 유일 사례가 계약수주(비-return, IR 0.758)였다. DB 331 중 IR>=0.758 은 0건 · 상관<=0.140 은 3건 · 둘 다는 0건 — 계약 슬리브는 DB 의 관측 지지집합 **밖**이다. insider 는 331 에 한 건도 없는 진짜 미측정 원천이다.",
+
+  "data": {
+    "panel": "stage_artifacts/WT_D20260718_002/insider_sell_panel.parquet",
+    "coverage": "89,355행 · 2004-12~2026-06 · 259개월 · 345종목 · balanced",
+    "overlap": "PG2 259/269 (96%) · FQ-191 파킹 73/73 (100%)",
+    "signals": ["cnv_off_3", "cnv_off_6", "cnv_off_12", "cnv_all_3", "cnv_all_6", "cnv_all_12"],
+    "known_defect_DECLARED": "|v|>1e12 인 488행(0.55% · 24종목)이 파싱 오버플로우(A011070 2019-01 = 8.77e28원). 칩 task_c92d3526 로 분리. ★본 라운드는 **랭킹 + 1e12 winsorize** 로 우회한다 — 실측: 1e12 절단 시 월내 랭킹 상관 1.000000, 순위 변경 0.32%",
+    "value_semantics": "거래금액(원). 비영·비오염 중앙 |v| 7.9억원. 0(47%) = 그 달 내부자 매매 없음 = 사건 희소성이지 결측 아님"
+  },
+
+  "signal_construction_FROZEN": {
+    "rank_scope": "월내 **비영 종목 안에서만** 랭킹 (0 동점이 top-25 를 무작위로 만드는 것 방지). 월별 비영 종목 중앙 183 · 25 미만은 259개월 중 2개월",
+    "winsorize": "±1e12 (오염 구간만 절단)",
+    "direction_DECLARED_BEFORE_MEASURING": "★내부자 매도는 음(-) 신호다(정보 우위자가 파는 것). long 포트는 **매도 강도가 낮은 종목**을 담는다 = 신호 **오름차순** 랭킹. 반대 방향은 부호 점검으로만 보고하며 1급이 아니다",
+    "zero_handling": "0(매도 없음) 종목은 '매도 강도 최저' 로 취급하지 않는다 — 사건 부재와 약한 매도는 다른 상태다. 1급은 비영 종목 내 랭킹이고, 0 포함 판본은 2급 민감도"
+  },
+
+  "measurement_frame_SAME_AS_331_HUNT": {
+    "sleeve": "canonical_screen_bt(top_n=25, cost_bps_oneway=15, liq_min=2e8)",
+    "arms": ["uncond (전 기간)", "parked (FQ-191 국면 라벨, 전환 15bps)"],
+    "weights": [0.05, 0.10, 0.15, 0.20, 0.30],
+    "judgment": "★verdict_ci (bm_delta_ir 의 블록부트 CI). 점추정 금지 — 문턱 0.05 는 269개월에서도 1.09se",
+    "alignment": "candidate month + 2 = PG2 month (bm_delta_ir 자동 감지)"
+  },
+
+  "primary_criterion": "rho <= 0.277 AND sleeve_IR >= need_ir(rho) — 331 라운드가 산출한 통과 조건. 계약 슬리브(0.140, 0.758)가 이 셀에 있다",
+  "primary_metric": "sleeve IR 과 incumbent 상관 (ΔIR 은 73/259개월에서 se 가 커서 2급)",
+  "no_argmax": "신호 6종 x 2 arm x weight 5 = 60셀. **전 셀 보고**. argmax 로 최종 1개를 고르지 않는다(고르면 selection_type=sweep → DSR 게이트 대상)",
+
+  "controls_MANDATORY": {
+    "null_shuffle": "월내 신호 무작위 셔플 200회 → (rho, IR, ΔIR) 귀무분포. 실측 백분위 보고",
+    "random_selection": "같은 종목수·비슷한 회전율의 무작위 선택 슬리브 200회",
+    "random_parking": "파킹 arm 은 같은 발화율 무작위 타이밍 200회 대조 (구조 vs 라벨 분리)",
+    "positive_control": "계약 슬리브(0.140/0.758)를 같은 스크립트로 재측정해 재현되는지 — 재현 실패 시 측정 경로가 바뀐 것이므로 라운드 무효",
+    "defect_sensitivity": "winsorize 문턱 1e11/1e12/1e13 에서 결과가 갈리면 오염이 판정을 만든 것 — 갈리면 라운드 보류"
+  },
+
+  "falsifiers": [
+    "6신호 x 2arm 12셀 전부에서 rho > 0.277 이면 직교 축 미달",
+    "rho 를 만족해도 IR < need_ir(rho) 이면 IR 축 미달",
+    "귀무 셔플 95 백분위를 못 넘으면 신호 무정보",
+    "파킹 arm 이 무작위 파킹 95 백분위를 못 넘으면 라벨 기여 없음",
+    "winsorize 문턱 민감도가 크면 오염 산물"
+  ],
+
+  "power_declaration": "uncond 259개월에서 ΔIR se ~0.047 · parked 73개월에서 ~0.093. 문턱 0.05 는 각각 1.06se / 0.54se ⇒ **ΔIR 로는 통과 단정 불가**. 그래서 1급을 (rho, IR) 로 두었다 — IR 은 같은 표본에서 훨씬 정밀하고 요구조건 지도와 직접 대조된다",
+
+  "what_cannot_be_claimed": [
+    "자본 편입 — governor 수동(도훈)",
+    "'PG2 를 이겼다' — verdict_ci 가 BEATS_PG2 여도 표본 길이상 UNRESOLVED 가 기본값",
+    "파싱 오염이 수리되기 전 결과는 **잠정** — 칩 task_c92d3526 수리 후 재측정 의무"
+  ]
+}

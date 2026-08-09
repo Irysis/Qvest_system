@@ -24,7 +24,7 @@ nw_t <- function(x, lag=3L){ x <- x[is.finite(x)]; n <- length(x); if (n<20L) re
   for (l in 1:lag) s <- s + 2*(1-l/(lag+1))*sum(e[(l+1):n]*e[1:(n-l)])/n; m/sqrt(s/n) }
 
 RES <- readRDS(file.path(OUT,"p1_results.rds"))
-A   <- as.data.table(read_parquet(file.path(OUT,"alpha_scores.parquet"))); A[, Date := as.Date(Date)]
+A   <- as.data.table(read_parquet(file.path(OUT,"alpha_scores.parquet"))); setnames(A, "signal_date", "Date"); A[, Date := as.Date(Date)]
 INCUMBENT <- RES$INCUMBENT; ARMS <- RES$ARMS
 say("★입력 실측: alpha_scores %d행 · %d개월 · %s ~ %s · 컬럼 %s",
     nrow(A), uniqueN(A$Date), min(A$signal_ym), max(A$signal_ym), paste(names(A), collapse=","))
