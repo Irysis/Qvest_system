@@ -7,17 +7,14 @@ source("02_Infrastructure/telegram/telegram_notify.R")
 
 secs <- list(
   list(type = "summary", heading = "오늘 한 일",
-       body = paste0("논문 라우트 3레인(optimizer/risk/regime) 점검 → risk·regime 레인이 측정은 되는데 ",
-                     "판정·보고가 없던 상태를 수리하고, 측정창을 269개월 → 271개월(2026-08)로 확장했습니다. ",
-                     "자본 편입은 없습니다(governor 정지).")),
+       body = "3레인 수리 + 측정창 269→271개월 확장. 자본 변경 없음(governor 정지)."),
 
-  list(type = "summary", heading = "쉬운 설명",
-       body = paste0("논문을 읽어 자동으로 검증하는 파이프라인이 3개 레인으로 나뉘어 있는데, ",
-                     "오늘 아침 기준 실제로 도는 건 1개(optimizer)뿐이었습니다. ",
-                     "risk 레인은 계산은 하면서 결과를 '측정 안 했다'고 잘못 보고하고 있었고, ",
-                     "regime 레인은 논문 제목만 적고 아무것도 재지 않았습니다. ",
-                     "둘 다 고쳐서 지금은 세 레인 모두 실제로 재고 판정합니다. ",
-                     "그리고 성과를 재는 기간이 2개월 뒤처져 있던 것도 최신으로 맞췄습니다.")),
+  list(type = "bullet", heading = "쉬운 설명",
+       items = c(
+         "논문을 자동 검증하는 파이프라인이 3레인인데, 오늘 아침 실제로 도는 건 1개(optimizer)뿐이었습니다",
+         "risk 레인은 계산은 하면서 '측정 안 했다'고 잘못 보고 중이었고, regime 레인은 논문 제목만 적고 아무것도 재지 않았습니다",
+         "둘 다 고쳐서 지금은 세 레인 모두 실제로 재고 판정합니다",
+         "성과를 재는 기간이 2개월 뒤처져 있던 것도 최신(2026-08)으로 맞췄습니다")),
 
   list(type = "bullet", heading = "3레인 판정 (271개월, KOSPI200 대비)",
        items = c(

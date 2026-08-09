@@ -3722,7 +3722,14 @@
     "challenge_note": "qepm/mailbox/worktask/WT-D20260809_004/challenge_note.md",
     "alpha_scores": "stage_artifacts/WT-D20260809_004/alpha_scores.parquet"
    },
-   "next_probes": ["NP-1 층3 단독을 EW-유니버스 기준으로 재판정 — cap-w FAIL(1.746/2.479) 이나 EW-대비 3.001/3.126, 보유 90.6%가 OTHER tier (v8.3 M2 벤치 미스매치 형태). screen_route 재분류 검토.", "NP-2 성장 합성 IC 감쇠 진단 — 2003-2014 0.0406(t 5.22) → 2015-2019 0.0102(t 1.12) → 2020-2026 0.0148(t 1.63). 컨센 커버리지 확대(724→2629종목) 교락인지 재료 소진인지 커버리지-정합 부분표본으로 분리.", "NP-3 인플레 틸트 부활 경로 — ①beta burn-in 36→24 로 창 +36개월 ②정원 대신 종목-레벨 beta_i 랭킹(승계 후보 3)으로 증분 분산 축소 ③심한 국면 조건부(월<-10% 등, 라벨 자격은 사건 정의에 조건부).", "NP-4 beta_s 패널 소비면 — 시장중립화 후에도 유틸 0.815·건강관리 0.809·철강 0.794 견고. 선택 알파로는 실패했으나 위험모델 섹터 노출 예산 / 오버레이 입력 / 유니버스 필터 면 미측정.", "NP-5 C01_SUE 를 dedup canonical C05_ESCR 로 교체한 3종 합성 재측정 (DUPC-005 redundant 해소).", "NP-6 양(+) 예측 실패 2섹터 기전 진단 — KR '에너지'=정유(원가=원유)라 전가력 아닌 재고효과 지배 가능. 채널 재정식화 후보."],
+   "next_probes": [
+    "NP-1 층3 단독을 EW-유니버스 기준으로 재판정 — cap-w FAIL(1.746/2.479) 이나 EW-대비 3.001/3.126, 보유 90.6%가 OTHER tier (v8.3 M2 벤치 미스매치 형태). screen_route 재분류 검토.",
+    "NP-2 성장 합성 IC 감쇠 진단 — 2003-2014 0.0406(t 5.22) → 2015-2019 0.0102(t 1.12) → 2020-2026 0.0148(t 1.63). 컨센 커버리지 확대(724→2629종목) 교락인지 재료 소진인지 커버리지-정합 부분표본으로 분리.",
+    "NP-3 인플레 틸트 부활 경로 — ①beta burn-in 36→24 로 창 +36개월 ②정원 대신 종목-레벨 beta_i 랭킹(승계 후보 3)으로 증분 분산 축소 ③심한 국면 조건부(월<-10% 등, 라벨 자격은 사건 정의에 조건부).",
+    "NP-4 beta_s 패널 소비면 — 시장중립화 후에도 유틸 0.815·건강관리 0.809·철강 0.794 견고. 선택 알파로는 실패했으나 위험모델 섹터 노출 예산 / 오버레이 입력 / 유니버스 필터 면 미측정.",
+    "NP-5 C01_SUE 를 dedup canonical C05_ESCR 로 교체한 3종 합성 재측정 (DUPC-005 redundant 해소).",
+    "NP-6 양(+) 예측 실패 2섹터 기전 진단 — KR '에너지'=정유(원가=원유)라 전가력 아닌 재고효과 지배 가능. 채널 재정식화 후보."
+   ],
    "revival_condition": "INV-7 경로-scoped. 부활 신호: ①NP-3 ①~③ 중 하나로 관측/필요 >= 1.0 을 확보 ②beta_s^orth 기반 예측 일치율이 독립 창에서 0.60+ 재현 ③오버레이/위험모델 소비면(NP-4)에서 유의. 본 라운드는 '연속 틸트도 무효'라는 강한 지식을 주장하지 **않는다** — 검정력이 그 결론을 지지하지 않는다."
   },
   {
@@ -3808,13 +3815,14 @@
    "ev_rationale": "FQ-176 의 유일한 기전-직격 후속. 패널·코드 전량 기지불. 에피소드-클러스터 se 로 검정.",
    "wall_check": "선별 축(랭킹력) 진단이며 자본 주장 없음. 제약 조건 안. ★대상은 개별 팩터가 아니라 P2 합성축 1개로 사전등록해 family 를 키우지 말 것.",
    "data_gate": "없음 (stage_artifacts/FQ176/panel_full.rds 재사용)",
-   "owner": "UNCLAIMED — FQ-176 이 발행. 착수 세션은 'CLAIMED <session> <ts>' 로 갱신 후 시작(배정 규약).",
-   "status": "frontier_open",
-   "next_action": "①표준화 심도 d_t 구성(월말 관측 가능) ②IC_{t+1} ~ d_t 회귀, 에피소드-클러스터 se ③착수 전 MDE 재산출로 개선폭 확인",
+   "owner": "COMPLETE — Q-Lead session 2026-08-09 (FQ-178·179 통합 라운드)",
+   "status": "inconclusive_continuous_depth_20260809",
+   "next_action": "★판정 L3_INCONCLUSIVE_UNDERPOWERED. spread_IC[t+1] ~ d[t] HAC(NW6) n=281: b1 **+0.1153** · t **+1.177** · MDE 0.196 · 관측/MDE **0.59**. ★연속화는 실제로 효과가 있었다 — 유효표본 4 → 38.9, MDE/1sd 0.168 → 0.0168(약 10배 개선, 사전 추정 2.96배보다 큼). 그런데도 문턱 미달 = **효과 자체가 작다**(1sd 심도당 spread 변화 0.0099 = spread sd 의 0.07배). ★부호가 사전등록과 **반대**(b1>0 ⇒ 깊은 낙폭 뒤 밸류가 퀄리티/성장 대비 우위) — 단 비유의라 방향 주장 불가. 성분 출처는 quality_growth(t 1.646), value 는 무반응(t 0.229). 대체 심도 3종 전부 동일 부호·전부 미달. ⚠2003-2012 만 t 2.072 이나 2급 진단·분할·다중조회라 **승격 금지**(FQ-176 GR02 순환과 동형). ⇒ FQ-180(문턱 그리드 착수 전 폐기 판정)으로 이관 — 연속화까지 했는데도 미달이면 구성상 한계를 문서화할 차례다.",
    "source_refs": [
     "stage_artifacts/FQ176/validation.json",
     "workflow wf_e36d0ab4-38a"
-   ]
+   ],
+   "result_ref": "stage_artifacts/FQ178/validation.json"
   },
   {
    "id": "FQ-179",
@@ -3824,13 +3832,14 @@
    "ev_rationale": "효과는 배증하고 family 는 21→1. 현 binom p=0.375 로 유의 아님 — **사전등록 대상이지 발견 아님**(사후 선택 금지).",
    "wall_check": "선별 축. 합성 구성은 사전등록에 고정하고 사후 조정 금지. 자본 주장 없음.",
    "data_gate": "없음 (stage_artifacts/FQ176/panel_full.rds 재사용)",
-   "owner": "UNCLAIMED — FQ-176 이 발행. 착수 세션은 'CLAIMED <session> <ts>' 로 갱신 후 시작(배정 규약).",
-   "status": "frontier_open",
-   "next_action": "①quality_growth / value 두 축의 EW-z 합성 사전 고정 ②스프레드 단일 통계 검정 ③P1 의 연속 심도와 결합",
+   "owner": "COMPLETE — Q-Lead session 2026-08-09 (FQ-178·179 통합 라운드)",
+   "status": "inconclusive_continuous_depth_20260809",
+   "next_action": "★판정 L3_INCONCLUSIVE_UNDERPOWERED. spread_IC[t+1] ~ d[t] HAC(NW6) n=281: b1 **+0.1153** · t **+1.177** · MDE 0.196 · 관측/MDE **0.59**. ★연속화는 실제로 효과가 있었다 — 유효표본 4 → 38.9, MDE/1sd 0.168 → 0.0168(약 10배 개선, 사전 추정 2.96배보다 큼). 그런데도 문턱 미달 = **효과 자체가 작다**(1sd 심도당 spread 변화 0.0099 = spread sd 의 0.07배). ★부호가 사전등록과 **반대**(b1>0 ⇒ 깊은 낙폭 뒤 밸류가 퀄리티/성장 대비 우위) — 단 비유의라 방향 주장 불가. 성분 출처는 quality_growth(t 1.646), value 는 무반응(t 0.229). 대체 심도 3종 전부 동일 부호·전부 미달. ⚠2003-2012 만 t 2.072 이나 2급 진단·분할·다중조회라 **승격 금지**(FQ-176 GR02 순환과 동형). ⇒ FQ-180(문턱 그리드 착수 전 폐기 판정)으로 이관 — 연속화까지 했는데도 미달이면 구성상 한계를 문서화할 차례다.",
    "source_refs": [
     "stage_artifacts/FQ176/validation.json",
     "workflow wf_e36d0ab4-38a"
-   ]
+   ],
+   "result_ref": "stage_artifacts/FQ178/validation.json"
   },
   {
    "id": "FQ-180",
