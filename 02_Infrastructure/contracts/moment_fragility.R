@@ -90,11 +90,22 @@ assert_moment_robust <- function(x_on, x_off, stat = c("skew", "kurt"), k_max = 
   dk <- moment_dropk(x_on, stat, k_max)
   flip_k <- if (any(dk$sign_flipped, na.rm = TRUE)) min(dk$k[which(dk$sign_flipped)]) else NA_integer_
 
-  ## 강건 측도는 유계([-1,1])라 적률과 스케일이 다르다 — **부호 일치**와
-  ## '표본 내 상대 크기'로만 비교한다(직접 크기 비교 금지).
+  ## 강건 측도는 유계([-1,1])라 적률과 스케일이 다르다 — **직접 크기 비교 금지**.
   sign_ok <- is.finite(rob_bow) && is.finite(rob_oct) && is.finite(mom) &&
              sign(rob_bow) == sign(mom) && sign(rob_oct) == sign(mom)
-  outlier_driven <- is.finite(flip_k) && flip_k <= 2L
+
+  ## ★2026-08-09 수리: 부호만 보면 **FQ-182 실사고 자체를 놓친다**.
+  ##   실사고 수치 = Bowley diff 0.032 (거의 0이나 **부호는 일치**) vs 적률 diff 0.581.
+  ##   초판 로직은 sign_ok=TRUE 로 ROBUST 를 냈다 — 원래 오류와 **같은 사각**(수리가 새 오답을 낳음).
+  ##   ⇒ 스케일 비교 대신 **drop-k 크기 붕괴**를 본다: 소수 관측 제거로 |통계량| 이 반감하면 이상치 지배.
+  ##   (붕괴는 스케일 무관 비율이라 적률/강건 측도 간 스케일 문제를 우회한다.)
+  collapse_k <- NA_integer_
+  if (is.finite(mom) && is.finite(dk$value[1]) && abs(dk$value[1]) > 1e-12) {
+    fr <- abs(dk$value) / abs(dk$value[1])
+    hit <- which(is.finite(fr) & fr < 0.5 & dk$k > 0 & dk$k <= 2L)
+    if (length(hit)) collapse_k <- min(dk$k[hit])
+  }
+  outlier_driven <- (is.finite(flip_k) && flip_k <= 2L) || is.finite(collapse_k)
 
   verdict <- if (outlier_driven) "OUTLIER_DRIVEN"
              else if (!sign_ok) "ROBUST_MEASURE_DISAGREES"
