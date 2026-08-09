@@ -30,15 +30,20 @@ charts <- charts[file.exists(charts)]
 cat(sprintf("[tg] 차트 %d장: %s\n", length(charts), paste(basename(charts), collapse=", ")))
 
 res <- tg_agent_brief(
-  agent = "alpha-research",
+  agent = "Alpha",
   title = "FQ-198 · 해금됐다던 컨센서스 4종 — 실제 신규 재료는 0종",
   sections = list(
-    list(type = "summary", emoji = "📌", heading = "한줄 결론", body = paste0(
-      "어제 데이터베이스를 다시 만들면서 '25년치가 새로 채워졌다'고 기록된 애널리스트 추정치 팩터 4종을 실제로 재봤더니 ",
-      "새로운 재료는 하나도 없었습니다. ",
-      "둘은 이미 쓰고 있는 팩터와 소수점까지 똑같은 복제본이었고, 하나는 아예 만들어지지도 않았으며, ",
-      "나머지 하나는 이름과 달리 실적 발표 반응이 아니라 월말 6일간 주가 등락이었습니다. ",
-      "판정 — 이 4종에는 실제 자본을 배정하지 않습니다. 대신 재료 목록의 잘못된 기록을 바로잡았습니다.")),
+    ## ★summary body 는 [20, 100]자 제약 (실측: tg_format_summary). 상세는 text 섹션으로.
+    list(type = "summary", emoji = "📌",
+         body = "새로 채워졌다던 팩터 4종을 다 재봤더니 실제 신규 재료는 0종이었습니다."),
+
+    list(type = "bullet", emoji = "🧭", heading = "무슨 일이었나",
+      items = c(
+        "어제 재빌드로 25년치가 새로 채워졌다던 애널리스트 추정치 팩터 4종을 실제로 재봤습니다",
+        "둘은 이미 쓰고 있는 팩터와 소수점까지 똑같은 복제본이었습니다",
+        "하나는 아예 만들어지지도 않았습니다",
+        "나머지 하나는 실적 발표 반응이 아니라 월말 6일간 주가 등락이었습니다",
+        "판정 — 이 4종에는 자본을 배정하지 않고 재료 목록의 잘못된 기록을 바로잡았습니다")),
 
     list(type = "bullet", emoji = "📖", heading = "쉬운 설명",
       items = c(
@@ -55,7 +60,7 @@ res <- tg_agent_brief(
         "차이를 계산하는 팩터는 같은 값끼리 빼서 항상 0 이라 분산이 0 이 되어 데이터베이스에 실리지 못했습니다")),
 
     list(type = "kv", emoji = "📊", heading = "팩터별 실측 판정",
-      items = list(
+      kv = list(
         "C10 SUE 지속성" = "C01_SUE와 완전 동일 · 표본 8개월 전건 최대오차 0.000e+00 · 순위상관 +1.000000",
         "C13 개정 폭 3개월" = "C04_ESBR와 완전 동일 · 최대오차 0.000e+00 · 순위상관 +1.000000",
         "C15 예측오차 추세" = "미산출 · 값이 정확히 0인 비율 1.000000 · 표준편차 0.000e+00",
@@ -86,7 +91,7 @@ res <- tg_agent_brief(
         "인프라 이관 4건: 기록 정정 · 중복 배출 처분 · 발표일 대용품 재설계 · 배출 감시에 정체 검사 축 추가")),
 
     list(type = "kv", emoji = "🔒", heading = "검증과 범위",
-      items = list(
+      kv = list(
         "미래참조 검증" = "통과 · 원본 재계산값과 데이터베이스값의 월별 순위상관 최소 0.999986 · 11개월 전건 부호 일치",
         "표본 편중" = "C18 표본은 대형주 편중 · 수익 편의는 없음 (t값 0.22)",
         "전이 진단" = "시가총액 가중 t값 -1.040 · 동일가중 -2.335 · 부호 뒤집어도 자본 기준 2.95에 크게 미달",
@@ -94,7 +99,7 @@ res <- tg_agent_brief(
         "데이터 버전" = "build_hash 20260809203741_8c9befe0 · 283개월 2003-01~2026-07")),
 
     list(type = "kv", emoji = "📁", heading = "산출물",
-      items = list(
+      kv = list(
         "판정 원본" = "stage_artifacts/WT_D20260809_005/alpha_validation.json",
         "패키지" = "qepm/mailbox/worktask/WT-D20260809_005/alpha_package.json",
         "적대검증" = "qepm/mailbox/worktask/WT-D20260809_005/challenge_note.md · 9건",
