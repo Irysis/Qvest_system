@@ -19,16 +19,17 @@ say("=== 0. 배정 가드 (claim_state.R 첫 실전) ===")
 cs <- claim_state(Q$entries[[i]])
 say("  state=%s · source=%s · safe_to_start=%s", cs$state, cs$source, cs$safe_to_start)
 say("  owner 원문: %s", substr(cs$note, 1, 150))
-assert_can_start(Q$entries[[i]], "FQ-164")   # 안전하지 않으면 여기서 stop()
-say("  ★가드 통과 — 착수 자격 확인")
+MY <- "Q-Lead 2026-08-09"
+g <- assert_can_start(Q$entries[[i]], "FQ-164", my_session = MY)  # 안전하지 않으면 stop()
+say("  ★가드 통과 — 착수 자격 확인 (재진입=%s)", isTRUE(g$reentry))
 
-## 착수 선언 (선언 필드로)
-Q$entries[[i]] <- make_claim(Q$entries[[i]], "claimed", "Q-Lead 2026-08-09",
-  "부분-리밸 연산자 측정. 완료 시 complete 로 전이하고 result_ref 기입.")
-Q$updated <- "2026-08-09"
-write_frontier_queue(Q)
-say("  claim 선언 기록 · 재읽기 state=%s",
-    claim_state(read_frontier_queue()$entries[[i]])$state)
+if (!isTRUE(g$reentry)) {   # 이미 내 claim 이면 재기록 불필요
+  Q$entries[[i]] <- make_claim(Q$entries[[i]], "claimed", MY,
+    "부분-리밸 연산자 측정. 완료 시 complete 로 전이하고 result_ref 기입.")
+  Q$updated <- "2026-08-09"; write_frontier_queue(Q)
+  say("  claim 선언 기록 · 재읽기 state=%s",
+      claim_state(read_frontier_queue()$entries[[i]])$state)
+}
 
 ## ---- 1. 입력 실측 -------------------------------------------------------------
 say("=== 1. 입력 실측 ===")
@@ -36,7 +37,7 @@ P <- readRDS(file.path(ROOT, "stage_artifacts/WT_D20260809_001/p0_panels.rds"))
 A <- as.data.table(P$A); ret <- as.data.table(P$ret); liq <- as.data.table(P$liq)
 say("  scores %d행 · %d개월 · %s ~ %s", nrow(A), uniqueN(A$Date), min(A$Date), max(A$Date))
 S <- A[, .(Date, Ticker, score = M26_Revenue_Mom)][!is.na(score)]
-say("  M26 점수 %d행 · 대상 = FQ-178 이 쓴 것과 동일 패널(중복 측정 회피)")
+say("  M26 점수 %d행 · 대상 = FQ-178 이 쓴 것과 동일 패널(중복 측정 회피)", nrow(S))
 
 ## ---- 2. ★핵심 사전 확인 — 경계 churn 이 실제로 존재하나 ----------------------
 say("=== 2. ★경계 churn 실측 — 부분-리밸이 잘라낼 대상이 있나 ===")

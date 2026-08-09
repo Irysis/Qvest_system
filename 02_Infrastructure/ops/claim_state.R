@@ -59,18 +59,28 @@ claim_state <- function(entry) {
 `%||%` <- function(a, b) if (is.null(a) || length(a) == 0L) b else a
 
 #' 착수 전 게이트 — 안전하지 않으면 stop(). 호출부가 무시할 수 없게 예외로 던진다.
-assert_can_start <- function(entry, id = NULL) {
+#'
+#' @param my_session 내 세션 식별자. ★**재진입 허용**에 쓴다 —
+#'   state="claimed" 인데 그 claim 이 **내 것**이면 같은 라운드의 재실행이므로 통과시킨다.
+#'   (2026-08-09 실전 적발: 스크립트가 claim 을 쓴 뒤 후단에서 죽자, 재실행이 **자기 claim 에 막혔다**.
+#'    "남이 잡음" 과 "내가 잡음" 을 구별하지 않은 설계 결함.)
+#'   ★단 complete/dohoon/blocked 는 내 것이어도 통과시키지 않는다 — 재착수 자체가 금지 대상이다.
+assert_can_start <- function(entry, id = NULL, my_session = NULL) {
   cs <- claim_state(entry)
   lab <- if (is.null(id)) (entry$id %||% "?") else id
-  msg <- sprintf("[claim] %s state=%s (source=%s)%s", lab, cs$state, cs$source,
-                 if (!is.na(cs$session)) paste0(" session=", cs$session) else "")
-  message(msg)
-  if (!isTRUE(cs$safe_to_start))
-    stop(sprintf("[claim] ★착수 금지 — %s 의 배정 상태가 '%s' 다. %s\n  근거: %s",
+  reentry <- identical(cs$state, "claimed") && !is.null(my_session) &&
+             !is.na(cs$session) && identical(as.character(cs$session), as.character(my_session))
+  message(sprintf("[claim] %s state=%s (source=%s)%s%s", lab, cs$state, cs$source,
+                  if (!is.na(cs$session)) paste0(" session=", cs$session) else "",
+                  if (reentry) " ★재진입(내 claim)" else ""))
+  if (!isTRUE(cs$safe_to_start) && !reentry)
+    stop(sprintf("[claim] ★착수 금지 — %s 의 배정 상태가 '%s' 다.%s%s\n  근거: %s",
                  lab, cs$state,
-                 if (cs$source != "declared") "선언 필드가 없어 자유 문자열에서 추론했다 — 안전측으로 차단한다." else "",
+                 if (cs$source != "declared") " 선언 필드가 없어 자유 문자열에서 추론했다 — 안전측으로 차단한다." else "",
+                 if (identical(cs$state, "claimed") && !is.null(my_session))
+                   sprintf(" (내 세션 '%s' ≠ claim 세션 '%s')", my_session, cs$session) else "",
                  substr(cs$note, 1, 200)))
-  invisible(cs)
+  invisible(c(cs, list(reentry = reentry)))
 }
 
 #' 배정 선언 — 착수 시 호출. 자유 문자열 owner 는 사람용 메모로 함께 갱신한다.
