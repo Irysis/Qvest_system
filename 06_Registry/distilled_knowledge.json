@@ -1,10 +1,10 @@
 {
   "schema_version": "distilled_knowledge_v1",
-  "generated_at": "2026-08-09T15:11:33+0900",
+  "generated_at": "2026-08-09T15:13:20+0900",
   "note": "Axiom 엔진 ②Distilled 계층 통합 인덱스. lifecycle: pending_5axis→[자동초안+적대검증]→proposed→[도훈 배치승인]→distilled→promoted|expired. INV-6(2026-07-04 재정의: 무인 활성화 금지): 주입/truths 소비는 status=distilled만 — proposed·pending_5axis 초안 텍스트 주입 금지(안전속성 보존).",
   "n_entries": 139,
   "n_distilled": 15,
-  "n_proposed": 3,
+  "n_proposed": 5,
   "entries": [
     {
       "dist_id": "DIST-AR-001",
@@ -1468,16 +1468,52 @@
       "type": "empirical",
       "polarity": "negative",
       "metric_type": "estimated",
-      "status": "pending_5axis",
-      "statement_refined": null,
+      "status": "proposed",
+      "statement_refined": "KR long-only top-25 모멘텀 신규 채널 탐색에서 직교성 확보는 반복 성공하지만 수익 전이는 반복 실패한다 — 실패는 세 유형으로 갈린다. (1) relabel: 피어군 이탈 모멘텀은 M01 과 공선 0.91 이고 직교 잔차의 incremental IC −0.022(Harvey −3.99)로 오히려 anti-predictive. (2) 직교하나 기전 역전/평탄: Hurst 추세지속성은 M01 corr ~0 로 직교이나 KR 에서 방향이 뒤집혀 고-Hurst 가 최약(t 0.73)·중-Hurst 가 최강(t 1.84)이고, Overnight Return Momentum 은 직교(M01 0.196)·신규인데 decile 이 평탄해 어디에도 신호가 없다. (3) redundant refinement: Liquidity Improvement 는 기존 2지표와 corr −0.613 / −0.635 로 기존 축의 재표현이다. 수급 구조 축도 같은 벽을 맞았다 — Quiet Accumulation 은 6셀 전부 PORT_t null~음(anchor −1.43)이고 price 잔차화가 raw flow 보다 악화됐으며, M36 Signed Flow Run-Length 는 INV09 와 distinct(corr −0.33)로 신규성은 유지하나 수익은 negative 다. ★단 하나의 예외가 방향을 지목한다: 기타법인(OtherCorp) accumulation 은 rank-IC 0.0201 · ICIR 0.285 · Harvey-t 3.38 이고 INV01-13/M01 과 corr~0 로 미사용 채널임이 확인된 캠페인 첫 실질 직교 신호다. 즉 미사용 채널은 가격-파생 변형이 아니라 수급 주체 축에서 나왔다.",
       "statement_draft": "[실증 실패 규칙 초안] family=momentum, tags=MOMENTUM,KR_LONGONLY,NON_RETURN, supporting=17건 L-code. (promote.R 5축 검증에서 범위·메커니즘·OOS 확정 필요)",
-      "retry_condition": null,
-      "adversarial_verdict": null,
-      "expiry": "2026-10-31",
-      "frontier": [],
-      "live_trigger": [],
-      "revival_spec": [],
-      "constraint_firewall": null,
+      "retry_condition": "가격-파생 모멘텀 변형의 추가 탐색은 저EV 다(직교해도 전이 실패가 반복 실측). 재도전 가치는 수급 주체 축에 있다: (1) 기타법인 채널의 하위 분해(법인 유형·거래 목적)로 신호 강도 재측정 (2) 미분류·기타 주체군에서 동일 accumulation 구조 탐색 (3) 주체 축과 공시 이벤트(비-return 원천)의 교차 — 두 축 모두 M01 과 직교가 확인된 영역.",
+      "adversarial_verdict": "REVISED — (a)과장: 'OtherCorp Harvey-t 3.38' 을 자본 자격으로 서술하지 않음(grade C, canonical_screen 단계). (b)근거: supporting 17건 실측(backtested 12 / canonical_screen 5), proxy 오라벨 없음. (c)AX-000: '모멘텀 계열 dead' 단정 없음 — 저EV 판정은 가격-파생 변형에 한정하고 수급 주체 축은 실측 근거와 함께 열어둠. (d)제약 방화벽(semantic): 실패를 종목수·long-only 에 귀속하지 않고 채널 중복(relabel)·기전 역전·재표현으로 귀속. 제약 완화 제시 없음. (e)프론티어: 미탐색 인접 3종 + live_trigger 3종 + expiry 기재(negative 필수 요건 충족).",
+      "expiry": "2027-02-09",
+      "frontier": [
+        "기타법인 채널 하위 분해 — 법인 유형·거래 목적별 accumulation 신호 강도 재측정",
+        "미분류·기타 주체군에서 동일 accumulation 구조 탐색 (주체 축 확장)",
+        "수급 주체 축 × 공시 이벤트(비-return 원천) 교차 — 두 축 모두 M01 직교 확인 영역"
+      ],
+      "live_trigger": [
+        {
+          "type": "data",
+          "condition": "투자자 주체 분류가 더 세분된 데이터원이 확보될 때 — 기타법인 하위 분해 재도전",
+          "monitored_source": "06_Registry/alpha_frontier_queue.json"
+        },
+        {
+          "type": "metric",
+          "condition": "기타법인 채널이 canonical PORT_t 로 재측정되어 전이 여부가 확정될 때",
+          "monitored_source": "canonical_screen_bt 산출"
+        },
+        {
+          "type": "time",
+          "condition": "expiry 도달 시 재검 — 그 사이 수급 채널 실측이 갱신됐는지 확인",
+          "monitored_source": "wall_clock"
+        }
+      ],
+      "revival_spec": [
+        {
+          "signal_id": "wall_clock_date",
+          "condition": "x >= as.Date('2027-02-09')",
+          "from_trigger": "expiry",
+          "status": "active"
+        },
+        {
+          "signal_id": "registry_present",
+          "condition": "x == TRUE",
+          "from_trigger": "data",
+          "status": "pending"
+        }
+      ],
+      "constraint_firewall": {
+        "mode": "backstop_passed",
+        "checked_at": "2026-08-09"
+      },
       "supporting_l_codes": [
         "L-AR-20260621_105345",
         "L-AR-20260621_105345B",
@@ -1503,7 +1539,7 @@
       "promoted_to_axiom": null,
       "created_at": "2026-08-02T12:31:51+00:00",
       "refined_at": null,
-      "drafted_at": null,
+      "drafted_at": "2026-08-09T15:13:20+0900",
       "approved_at": null,
       "source_file": "DIST-AR-041.json"
     },
@@ -5515,16 +5551,47 @@
       "type": "methodological",
       "polarity": "conditional",
       "metric_type": "estimated",
-      "status": "pending_5axis",
-      "statement_refined": null,
+      "status": "proposed",
+      "statement_refined": "KR long-only 에서 quality/earnings 계열 단일 팩터의 탈락 사유는 신호 부재가 아니라 MDD 단일 사유에 몰려 있다. Piotroski+RetAutocorr 는 score 45.4 · oos_retention 0.89 · stress 3/3 · IC improving 으로 naked 기준 최고 수준의 quality diversifier 인데 MDD 61.9% 가 유일한 hard fail 이고, CF_to_Accrual 은 MDD 55.9% 로 탈락하나 최근 3Y SR 0.919 로 신호 자체는 실재한다 (Q07_Earnings_Stability 도 MDD 62.7% hard fail, SR 0.332). 반면 accrual 을 방어 주축으로 놓은 구성은 방어 기능 자체가 없다 — EV Accrual Quality Defense 는 stress 0/3 outperform · MDD 67.7% 로 AX-001 조건부 기준 전항 실패. accrual 은 수익 축이지 방어 축이 아니다. 그리고 MDD 사유는 overlay 층이 다루는 문제다: DFA 국면 블렌딩이 동일 base 에서 MDD 48.2%→30.2% 축소를 실증했다. 따라서 이 계열의 판정은 naked 채점이 아니라 overlay 결합 상태에서 이뤄져야 한다. 승격 규약 교훈 병기: negative methodological 규칙을 exclusion 조항 없이 승격하면 scope 과광이 생긴다 (v1 승격 후 deprecated → v2 재승격 실사례). ★근거 한계: supporting 19건 중 18건이 metric_type=estimated 이므로 방향 판단용이며 자본 판정에는 canonical 재측정이 선행되어야 한다.",
       "statement_draft": "[방법론 조건부 규칙 초안] family=quality_earnings, tags=quality,s5_mutation,hard_fail_mdd, supporting=19건 L-code. (promote.R 5축 검증에서 범위·메커니즘·OOS 확정 필요)",
-      "retry_condition": null,
-      "adversarial_verdict": null,
-      "expiry": null,
-      "frontier": [],
-      "live_trigger": [],
-      "revival_spec": [],
-      "constraint_firewall": null,
+      "retry_condition": "(1) MDD 단일 사유로 탈락한 후보(Piotroski+RetAutocorr 등)를 overlay 결합 상태에서 canonical 재측정 — naked MDD 로 선기각하는 현 경로가 이 계열을 구조적으로 과소평가하는지 확인 (2) accrual 은 방어 축에서 제외하고 수익 축으로만 배치한 구성 재측정 (3) supporting 근거 전량 estimated→canonical 전환 후 hard fail 경계가 유지되는지 재확인.",
+      "adversarial_verdict": "REVISED — (a)과장: 'score 45.4 = Grade A급' 을 성과 주장으로 쓰지 않고 MDD hard fail 과 같은 문장에 병기. (b)근거: ★supporting 19건 중 18건 estimated — 본문에 한계 명시, backtested 로 오라벨하지 않음. (c)AX-000: 'quality 계열 불가' 단정 없음 — 탈락 사유를 단일 축으로 좁히고 overlay 결합 재측정 경로를 열어둠. (d)제약 방화벽(semantic): 실패를 종목수·long-only·유동성에 귀속하지 않고 MDD 채점 시점(naked vs overlay)과 축 오배치(accrual=수익축)로 귀속. 제약 완화 제시 없음. (e)프론티어: 미탐색 인접 3종 + live_trigger 2종 + expiry 기재.",
+      "expiry": "2027-02-09",
+      "frontier": [
+        "MDD 단일 사유 탈락 후보의 overlay 결합 상태 canonical 재측정 (naked 선기각의 구조적 과소평가 여부)",
+        "accrual 을 방어 축에서 빼고 수익 축 전용으로 배치한 구성",
+        "quality 신호를 종목 선택이 아니라 유니버스 필터로 소비했을 때의 증분 (소비 경로 전환)"
+      ],
+      "live_trigger": [
+        {
+          "type": "metric",
+          "condition": "estimated 근거가 canonical 로 재측정되어 MDD hard fail 경계가 갱신될 때",
+          "monitored_source": "canonical_screen_bt 산출"
+        },
+        {
+          "type": "regime",
+          "condition": "CRISIS 국면 진입 시 조건부 재평가(AX-001 v2) — naked MDD 가 아닌 에피소드-lens",
+          "monitored_source": ".cache/unified_regime_signal.parquet"
+        }
+      ],
+      "revival_spec": [
+        {
+          "signal_id": "wall_clock_date",
+          "condition": "x >= as.Date('2027-02-09')",
+          "from_trigger": "expiry",
+          "status": "active"
+        },
+        {
+          "signal_id": "regime_category",
+          "condition": "x %in% c('CRISIS','CAUTION')",
+          "from_trigger": "regime",
+          "status": "active"
+        }
+      ],
+      "constraint_firewall": {
+        "mode": "backstop_passed",
+        "checked_at": "2026-08-09"
+      },
       "supporting_l_codes": [
         "L-130",
         "L-137",
@@ -5552,7 +5619,7 @@
       "promoted_to_axiom": null,
       "created_at": "2026-07-26T08:52:22+00:00",
       "refined_at": null,
-      "drafted_at": null,
+      "drafted_at": "2026-08-09T15:13:20+0900",
       "approved_at": null,
       "source_file": "DIST-QPM-035.json"
     },

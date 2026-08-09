@@ -20,7 +20,7 @@
  "record_type": "method_frontier_lesson",
  "metric_type": "canonical_screen_diag",
  "metric_type_note": "데이터 무결성·코드 동작 실측이며 전략 성과 지표 아님. harvester enum 부재로 'unavailable' 정규화가 의도된 결과.",
- "next_probe": "①FR 이 정본 벤치를 조인하도록 설계 변경(현행은 임의 모듈의 얼어붙은 bm_xts 상속 — 이번 전파 통로이자 재빌드 시 커버리지 08-07→06-19 축소 원인). ②register_module writer 의 null→{} 라운드트립 비대칭 — 다음 등재 때 조용히 뒤집히므로 형태 고정 여부 결정. ③parity CRITICAL 을 상태라인·훅으로 격상할지(현행은 기록까지만).",
+ "next_probe": "①FR 이 정본 벤치를 조인하도록 설계 변경(현행은 임의 모듈의 얼어붙은 bm_xts 상속 — 이번 전파 통로이자 재빌드 시 커버리지 08-07→06-19 축소 원인). ②register_module writer 의 null→{} 라운드트립 비대칭 — 다음 등재 때 조용히 뒤집히므로 형태 고정 여부 결정. ③parity CRITICAL 을 상태라인·훅으로 격상할지(현행은 기록까지만). ④★벤치 경로가 **최소 3갈래**임이 실측 확인됨 — (a) .cache/benchmark.parquet(네이버 KPI200, 8.834x 리베이스 체인) (b) sim_result$bm_xts(빌드 시점 동결 스냅샷) (c) 유니버스 시총가중 재구성(FQ181 _legacy_factor_validation.R:51 — weighted.mean(Ret_1m, w=Size0), 캐시 미경유라 이번 오염과 무관). 세 갈래는 서로 다른 값을 내므로 **같은 '벤치 대비 초과수익'이라도 경로가 다르면 나란히 놓고 비교하면 틀린다**. 라운드 내부 일관성은 각자 유지되나, 교차 비교 시 basis 명시·경로 정합이 선행돼야 한다(이 세션에서 이미 겪은 '창/basis 안 맞추고 대비 주장' 계통). 소비자 census 로 어느 라운드가 어느 경로를 쓰는지 지도부터 만들 것.",
  "falsification_attempts": [
   {
    "test": "독립 소스 대조 (네이버 KPI200 직접 조회, 읽기 전용)",
