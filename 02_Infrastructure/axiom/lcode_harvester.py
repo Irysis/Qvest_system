@@ -437,7 +437,7 @@ _BODY_HINT_KEYS = ("finding", "findings", "lesson", "text", "description",
                    "mechanism", "mechanism_diagnosis", "title", "hypothesis")
 
 
-def _warn_empty_lessons(lcodes: list[dict]) -> int:
+def _warn_empty_lesson(entry: dict, raw: dict) -> bool:
     """★근본 방어: lesson_text 공란을 **소리나게** 만든다.
 
     고정 alias 목록은 emitter 스키마가 바뀔 때마다 같은 구멍을 다시 연다 —
@@ -447,21 +447,15 @@ def _warn_empty_lessons(lcodes: list[dict]) -> int:
     alias 를 늘리는 것으로는 다음 변형을 막지 못하므로, 공란이 나오면 **어느 파일의
     어느 키에 본문이 있는지**까지 찍어 다음 수리가 즉시 가능하게 한다.
     """
-    n = 0
-    for rec in lcodes:
-        if (rec.get("lesson_text") or "").strip():
-            continue
-        n += 1
-        raw = rec.get("_raw") if isinstance(rec.get("_raw"), dict) else {}
-        cands = [k for k in _BODY_HINT_KEYS if raw.get(k)]
-        print("[lcode_harvester][WARN] lesson_text 공란 — %s (%s). 본문 후보 키: %s. "
-              "_LEGACY_FIELD_MAP 의 lesson_text alias 에 추가할 것 (지식 손실 = 조용한 실패)"
-              % (rec.get("l_code"), rec.get("source_file"), ", ".join(cands) or "(없음 — emitter 측 결손)"),
-              file=sys.stderr)
-    if n:
-        print("[lcode_harvester][WARN] lesson_text 공란 총 %d건 — 이 건들은 knowledge_index·"
-              "주입면에서 검색되지 않는다." % n, file=sys.stderr)
-    return n
+    if (entry.get("lesson_text") or "").strip():
+        return False
+    cands = [k for k in _BODY_HINT_KEYS if isinstance(raw, dict) and raw.get(k)]
+    print("[lcode_harvester][WARN] lesson_text 공란 — %s (%s). 본문 후보 키: %s. "
+          "_LEGACY_FIELD_MAP 의 lesson_text alias 에 추가할 것 (지식 손실 = 조용한 실패)"
+          % (entry.get("l_code"), entry.get("source_file"),
+             ", ".join(cands) or "(없음 — emitter 측 결손)"),
+          file=sys.stderr)
+    return True
 
 
 def harvest(project_dir: str) -> dict:
