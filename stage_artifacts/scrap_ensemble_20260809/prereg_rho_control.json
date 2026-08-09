@@ -1,0 +1,96 @@
+{
+  "meta": {
+    "stage": "prereg_rho_control",
+    "n_months": 254,
+    "dedup": 85,
+    "metric_type": "diagnostic_precheck"
+  },
+  "R1_split_rule": [
+    {
+      "state": "DOWN",
+      "n": 31,
+      "rho_p0g": 0.70750439710768,
+      "n1_p0g": 19,
+      "n2_p0g": 12,
+      "rho_evensplit": 0.701113933945671,
+      "n1_even": 15,
+      "n2_even": 16
+    },
+    {
+      "state": "SURGE",
+      "n": 49,
+      "rho_p0g": 0.744615985929255,
+      "n1_p0g": 22,
+      "n2_p0g": 27,
+      "rho_evensplit": 0.708071135430917,
+      "n1_even": 24,
+      "n2_even": 25
+    },
+    {
+      "state": "FLAT",
+      "n": 174,
+      "rho_p0g": -0.00513973031072894,
+      "n1_p0g": 86,
+      "n2_p0g": 88,
+      "rho_evensplit": 0.0419972640218878,
+      "n1_even": 87,
+      "n2_even": 87
+    }
+  ],
+  "R2_negative_control": [
+    {
+      "state": "DOWN",
+      "n": 31,
+      "obs_rho": 0.70750439710768,
+      "null_mean": 0.0391657709595466,
+      "null_sd": 0.297350673074627,
+      "null_q05": -0.445802227867891,
+      "null_q95": 0.529728356458863,
+      "p_two_sided": 0.005
+    },
+    {
+      "state": "SURGE",
+      "n": 49,
+      "obs_rho": 0.744615985929255,
+      "null_mean": 0.121235440687903,
+      "null_sd": 0.282884237036689,
+      "null_q05": -0.394551495016611,
+      "null_q95": 0.547126245847175,
+      "p_two_sided": 0.0025
+    },
+    {
+      "state": "FLAT",
+      "n": 174,
+      "obs_rho": -0.00513973031072894,
+      "null_mean": 0.262848641782294,
+      "null_sd": 0.180523701910992,
+      "null_q05": -0.051609341410983,
+      "null_q95": 0.5331170607778,
+      "p_two_sided": 1
+    }
+  ],
+  "R3_beta_mechanism": {
+    "beta_median": 0.701317420260466,
+    "beta_corr_DOWN": -0.975083056478405,
+    "beta_corr_SURGE": 0.985108461989447,
+    "beta_corr_FLAT": 0.391850693765878,
+    "resid_rho_DOWN": -0.400801250732851,
+    "resid_rho_SURGE": -0.715927301153019,
+    "resid_rho_FLAT": -0.152218096540942
+  },
+  "R4_pit_upper_bound": {
+    "mean_pct": 0.441543912120939,
+    "sd_pct": 1.95082711156642,
+    "n": 253,
+    "t": 3.60010675525289,
+    "required_pct": 0.245294899367462,
+    "expected_oos_pct": 0.174604888757212,
+    "expected_t": 1.42363244574154,
+    "required_over_expected": 1.40485699520444,
+    "bucket_n": {
+      "DOWN": 30,
+      "SURGE": 49,
+      "FLAT": 174
+    }
+  }
+}

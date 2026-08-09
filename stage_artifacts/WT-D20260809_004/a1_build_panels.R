@@ -75,6 +75,9 @@ say("Sector 고유 %d", uniqueN(ELIG$Sector))
 print(ELIG[, .N, by = Sector][order(-N)][1:10])
 
 ## ── 5. 성장 팩터 3종 (load_month_factors 경유 = C15) ────────────────────────
+## config.R 선행 로드 — connector 의 .fdc_self_dir 이 sys.frame(1)$ofile 로 호출자 dir 을
+## 잡는 r-portability 함정(중첩 source) 회피. CACHE_DIR/FUNC_PATH 를 먼저 확정한다.
+source("02_Infrastructure/config.R")
 source("02_Infrastructure/factor_db/factor_db_connector.R")
 GF <- c("C01_SUE", "C02_EPS_Chg_1m", "M26_Revenue_Mom")
 fl <- lapply(sig_dates, function(d) {

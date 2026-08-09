@@ -137,8 +137,12 @@ if (!identical(out_id, admitted))
   cat(sprintf("[carrier] 출력 정체성 분리: output_id=%s (admitted=%s) — D3 캐리어 덮어쓰기 방지\n", out_id, admitted))
 safe_id <- gsub("[^A-Za-z0-9_]+", "_", out_id)
 # ★meta 도 같은 이유로 분리한다. carrier_meta.json 은 **D3 빌더 소유**다(배터리가 읽는 정본).
-meta_path <- if (identical(out_id, admitted)) file.path(outdir, "carrier_meta.json")
-             else file.path(outdir, sprintf("carrier_%s_meta.json", safe_id))
+#   (중괄호 필수 — R 최상위에서 `if (..) x` 다음 줄 `else` 는 파스 에러다. 이 저장소 기왕의 사고 축.)
+meta_path <- if (identical(out_id, admitted)) {
+  file.path(outdir, "carrier_meta.json")
+} else {
+  file.path(outdir, sprintf("carrier_%s_meta.json", safe_id))
+}
 csv_path <- file.path(outdir, sprintf("carrier_%s.csv", safe_id))
 pq_path  <- file.path(outdir, sprintf("carrier_%s.parquet", safe_id))
 fwrite(P, csv_path); write_parquet(P, pq_path)

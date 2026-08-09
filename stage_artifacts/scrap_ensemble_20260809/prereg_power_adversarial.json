@@ -1,0 +1,111 @@
+{
+  "meta": {
+    "stage": "prereg_power_adversarial",
+    "n_months": 254,
+    "dedup": 85,
+    "metric_type": "diagnostic_precheck"
+  },
+  "L1_selected_arm_sd": [
+    {
+      "state": "DOWN",
+      "n": 31,
+      "sd_selected_pct": 2.31040742814239,
+      "mean_IS_pct": 2.79147944451689,
+      "required_pct_per_month": 0.829922847872835,
+      "t_IS": 6.72708180446337
+    },
+    {
+      "state": "SURGE",
+      "n": 49,
+      "sd_selected_pct": 1.99802049894761,
+      "mean_IS_pct": 2.2447488823622,
+      "required_pct_per_month": 0.570862999699318,
+      "t_IS": 7.86440488714293
+    },
+    {
+      "state": "FLAT",
+      "n": 174,
+      "sd_selected_pct": 2.58252258354751,
+      "mean_IS_pct": 0.582535586541299,
+      "required_pct_per_month": 0.39156106361714,
+      "t_IS": 2.97545205930327
+    }
+  ],
+  "L2_pit_lagged_label": {
+    "label_persistence": {
+      "DOWN": 0.133333333333333,
+      "SURGE": 0.244897959183673,
+      "FLAT": 0.718390804597701
+    },
+    "buckets": [
+      {
+        "state": "lag1_DOWN",
+        "n": 30,
+        "sd_pct": 1.88181574070508,
+        "rho_splithalf": 0.463220637092046,
+        "is_ceiling_pct": 1.1938475315876,
+        "required_pct": 0.687141953501644,
+        "expected_oos_pct": 0.553014814172774,
+        "required_over_expected": 1.24253805845962
+      },
+      {
+        "state": "lag1_SURGE",
+        "n": 49,
+        "sd_pct": 2.15378011885113,
+        "rho_splithalf": 0.524330662497557,
+        "is_ceiling_pct": 1.17168193646962,
+        "required_pct": 0.61536574824318,
+        "expected_oos_pct": 0.614348765985536,
+        "required_over_expected": 1.00165538260016
+      },
+      {
+        "state": "lag1_FLAT",
+        "n": 174,
+        "sd_pct": 1.73089034106702,
+        "rho_splithalf": -0.206370920461208,
+        "is_ceiling_pct": 0.359207573383179,
+        "required_pct": 0.262436916242506,
+        "expected_oos_pct": 0,
+        "required_over_expected": "Inf"
+      }
+    ],
+    "lagged_switch_upper_bound": {
+      "mean_pct_per_month": 0.309889982095611,
+      "sd_pct": 2.79738189687736,
+      "t": 1.76204111315232,
+      "n": 253
+    }
+  },
+  "L3_multiple_testing": [
+    {
+      "n_trials": 1,
+      "bonferroni_t": 1.95996398454005,
+      "expected_noise_max_t": 0.674489750196082
+    },
+    {
+      "n_trials": 6,
+      "bonferroni_t": 2.63825727347675,
+      "expected_noise_max_t": 1.46523379268552
+    },
+    {
+      "n_trials": 20,
+      "bonferroni_t": 3.02334143973915,
+      "expected_noise_max_t": 1.98075239664728
+    },
+    {
+      "n_trials": 100,
+      "bonferroni_t": 3.48075640434624,
+      "expected_noise_max_t": 2.579268135445
+    },
+    {
+      "n_trials": 400,
+      "bonferroni_t": 3.83610693117603,
+      "expected_noise_max_t": 3.02409689044856
+    },
+    {
+      "n_trials": 4000,
+      "bonferroni_t": 4.36867959297483,
+      "expected_noise_max_t": 3.66232394757471
+    }
+  ]
+}
