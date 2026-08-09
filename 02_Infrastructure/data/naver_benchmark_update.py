@@ -81,6 +81,11 @@ def _write_bm_parquet(df: pd.DataFrame, path) -> None:
     pq.write_table(table, str(path))
 
 
+SCALE_LOOKBACK_DAYS = 150   # naver 재조회 여유 — canonical 스케일 추정 + 앵커 후퇴용
+SCALE_TOL = 1e-6            # 스케일 일치 판정 허용오차 (상대)
+SEAM_MAX_RET = 0.35         # 이음매 하루 수익률 상한 (2026-07-31 실측 +19.98% 통과, 스케일 단절 -89% 차단)
+
+
 def patch_benchmark_parquet(start_date: str = '2026-04-01',
                               end_date: str | None = None,
                               backup: bool = True) -> dict:
@@ -89,16 +94,107 @@ def patch_benchmark_parquet(start_date: str = '2026-04-01',
     Replaces existing rows from start_date onward.
     2026-07-02 도훈 mandate: symbol 'KOSPI'(코스피 종합) → 'KPI200'(코스피200) 정정.
     북 벤치는 코스피200이어야 함 (기존 종합은 버그, IKS200과 스케일 6.75× 불일치).
+
+    ★2026-08-09 수리 — **레벨 접합 → 수익률 접합** (도훈 적발 "어제 고쳤는데 또"):
+      구 구현은 `bm_pre`(리베이스 체인 스케일)와 `naver_post`(생 KPI200 레벨)를
+      **레벨로 이어붙인 뒤** 전체에 `pct_change()`를 걸었다. 두 구간의 스케일이
+      상수배(실측 8.834×)만큼 다르므로 **경계 하루의 수익률이 스케일비를 그대로 삼킨다**
+      — 2026-07-29 에 -89.38% (참값 -6.185%). 그리고 호출부가
+      `--start_date "$(date -d '10 days ago')"`(daily_refresh.sh:122 / morning_briefing.sh:124)
+      이므로 **이음매가 매일 하루씩 전진한다** → 날짜를 박은 국소 수리는 원리적으로 못 버틴다
+      (08-08 repair_benchmark_scale_break_20260727.R 이 07-27 을 고쳤으나 08-09 에 07-29 로 재발).
+
+      수리: 접합을 **수익률에서** 한다. 수익률은 스케일 불변이므로 이음매가 생길 수 없다.
+        1. canonical 스케일 = 겹치는 최근 구간의 median(BM_Close / naver_Close) — 오염 구간이
+           소수여도 median 이 흡수한다(실측: 150일 중 오염 8일 → median 불변 8.834).
+        2. 앵커 = 그 스케일과 일치하는 **마지막** 날짜. 직전 구간이 오염돼 있으면 자동으로
+           그 앞까지 후퇴한다 = **기존 이음매도 같은 경로로 치유**된다(별도 수리 스크립트 불요).
+        3. 앵커 다음날부터 BM_Ret := naver 수익률, BM_Close := 앵커종가 × cumprod(1+ret).
+           앵커 이전 행은 한 값도 건드리지 않는다.
     """
     if end_date is None:
         end_date = datetime.now().strftime('%Y-%m-%d')
 
-    # Fetch Naver
-    start_yyyymmdd = pd.to_datetime(start_date).strftime('%Y%m%d')
+    cutoff = pd.to_datetime(start_date)
+    # ★스케일 추정·앵커 후퇴를 위해 cutoff 보다 넉넉히 앞에서부터 조회 (호출 1회, 비용 동일)
+    fetch_from = cutoff - pd.Timedelta(days=SCALE_LOOKBACK_DAYS)
+    start_yyyymmdd = fetch_from.strftime('%Y%m%d')
     end_yyyymmdd = pd.to_datetime(end_date).strftime('%Y%m%d')
-    print(f'[naver_benchmark_update] Fetching {start_yyyymmdd} ~ {end_yyyymmdd} from Naver...')
+    print(f'[naver_benchmark_update] Fetching {start_yyyymmdd} ~ {end_yyyymmdd} from Naver '
+          f'(cutoff={cutoff.date()}, lookback={SCALE_LOOKBACK_DAYS}d)...')
     naver = fetch_naver_kospi(start_yyyymmdd, end_yyyymmdd, symbol='KPI200')  # ★코스피200 (구 'KOSPI' 종합 버그)
     print(f'  Naver returned {len(naver)} rows (KPI200/코스피200), latest={naver.Date.max().date()}')
+
+    # sanity 가드 ①: 코스피 종합(수천대) 오심볼 회귀 차단 — **생 naver 레벨**에서 검사한다.
+    #   (구 구현은 재척도 후 combined 에서 검사했는데, 수익률 접합 후 그 값은 정당하게 수천대다.)
+    naver_max = float(naver.Close.max())
+    if naver_max > 3000:
+        raise RuntimeError(f"[naver_benchmark] 벤치 sanity FAIL: naver 최근 {naver_max:.0f} — "
+                           f"코스피200 아닌 코스피 종합 의심 (symbol=KPI200 확인)")
+
+    bm = pd.read_parquet(BM_PATH)
+    bm['Date'] = pd.to_datetime(bm['Date'])
+    bm = bm.sort_values('Date').reset_index(drop=True)
+    n0, cols0 = len(bm), list(bm.columns)
+
+    # ── canonical 스케일 + 앵커 결정 ────────────────────────────────────────────
+    ov = bm.merge(naver.rename(columns={'Close': 'nv'})[['Date', 'nv']], on='Date', how='inner')
+    ov = ov[(ov.nv > 0) & ov.BM_Close.notna()]
+    if len(ov) < 20:
+        raise RuntimeError(f"[naver_benchmark] 스케일 추정 불가: 겹치는 날짜 {len(ov)}개 (<20) — 중단")
+    ov['ratio'] = ov.BM_Close / ov.nv
+    canon = float(ov.ratio.median())
+    ok = ov[(ov.ratio / canon - 1.0).abs() < SCALE_TOL]
+    pre_ok = ok[ok.Date < cutoff]
+    if len(pre_ok) == 0:
+        raise RuntimeError(f"[naver_benchmark] cutoff({cutoff.date()}) 이전에 스케일 {canon:.4f} "
+                           f"정합 앵커 없음 — 중단 (lookback 확대 필요)")
+    anchor_date = pre_ok.Date.max()
+    anchor_close = float(bm.loc[bm.Date == anchor_date, 'BM_Close'].iloc[0])
+    n_offscale = int((ov.Date > anchor_date).sum())
+    print(f'  canonical scale = {canon:.6f}× (n_ok={len(ok)}/{len(ov)})  '
+          f'anchor = {anchor_date.date()} @ {anchor_close:.3f}')
+    if n_offscale:
+        print(f'  ★기존 이음매 감지 — {anchor_date.date()} 이후 {n_offscale}행이 스케일 이탈, 재체인으로 치유')
+
+    # ── 수익률 접합: 앵커 다음날부터 naver 수익률로 재체인 ──────────────────────
+    nv = naver[naver.Date >= anchor_date].sort_values('Date').reset_index(drop=True).copy()
+    nv['ret'] = nv.Close.pct_change()
+    tail = nv[nv.Date > anchor_date].copy()
+    if len(tail) == 0:
+        raise RuntimeError(f"[naver_benchmark] 앵커({anchor_date.date()}) 이후 naver 행 없음 — 중단")
+    tail['BM_Ret'] = tail['ret'].astype('float64')
+    tail['BM_Close'] = anchor_close * (1.0 + tail['ret']).cumprod()
+
+    head = bm[bm.Date <= anchor_date][['Date', 'BM_Close', 'BM_Ret']].copy()
+    combined = pd.concat([head, tail[['Date', 'BM_Close', 'BM_Ret']]], ignore_index=True)
+    combined = combined.drop_duplicates(subset='Date', keep='last').sort_values('Date').reset_index(drop=True)
+
+    # ── 가드: 하나라도 어긋나면 쓰지 않는다 ─────────────────────────────────────
+    seam_ret = float(tail.BM_Ret.iloc[0])
+    worst_ret = float(tail.BM_Ret.abs().max())
+    if worst_ret > SEAM_MAX_RET:
+        raise RuntimeError(f"[naver_benchmark] 이음매 가드 FAIL: 갱신구간 max|ret|={worst_ret:.4f} "
+                           f"> {SEAM_MAX_RET} (스케일 단절 의심, seam_ret={seam_ret:.4f})")
+    # 앵커 이전은 완전 불변
+    h0 = bm[bm.Date <= anchor_date].reset_index(drop=True)
+    h1 = combined[combined.Date <= anchor_date].reset_index(drop=True)
+    if not (len(h0) == len(h1)
+            and h0.BM_Close.equals(h1.BM_Close)
+            and h0.BM_Ret.fillna(-9e9).equals(h1.BM_Ret.fillna(-9e9))):
+        raise RuntimeError("[naver_benchmark] 가드 FAIL: 앵커 이전 구간이 변경됨 — 중단")
+    # 내부 정합: BM_Ret == BM_Close 전일대비 (갱신구간)
+    chk = combined[combined.Date >= anchor_date].reset_index(drop=True)
+    rec = chk.BM_Close.pct_change().iloc[1:]
+    if float((rec - chk.BM_Ret.iloc[1:]).abs().max()) > 1e-9:
+        raise RuntimeError("[naver_benchmark] 가드 FAIL: 갱신구간 BM_Ret ↔ BM_Close 불일치 — 중단")
+    # 스케일 연속성: 갱신구간이 canonical 스케일 위에 있다
+    ck = combined.merge(naver.rename(columns={'Close': 'nv'})[['Date', 'nv']], on='Date', how='inner')
+    ck = ck[ck.Date > anchor_date]
+    if len(ck) and float((ck.BM_Close / ck.nv / canon - 1.0).abs().max()) > 1e-6:
+        raise RuntimeError("[naver_benchmark] 가드 FAIL: 갱신구간 스케일이 canonical 이탈 — 중단")
+    if len(combined) < n0 or list(combined.columns) != cols0:
+        raise RuntimeError(f"[naver_benchmark] 가드 FAIL: 행/열 축소 ({n0}→{len(combined)}) — 중단")
 
     if backup:
         ts = datetime.now().strftime('%Y%m%d_%H%M%S')
@@ -106,24 +202,15 @@ def patch_benchmark_parquet(start_date: str = '2026-04-01',
         shutil.copy(BM_PATH, backup_path)
         print(f'  Backup: {backup_path.name}')
 
-    bm = pd.read_parquet(BM_PATH)
-    bm['Date'] = pd.to_datetime(bm['Date'])
-    bm = bm.sort_values('Date').reset_index(drop=True)
-
-    cutoff = pd.to_datetime(start_date)
-    bm_pre = bm[bm.Date < cutoff].copy()[['Date', 'BM_Close']]
-    naver_post = naver.rename(columns={'Close': 'BM_Close'})
-    combined = pd.concat([bm_pre, naver_post], ignore_index=True)
-    combined = combined.drop_duplicates(subset='Date', keep='last').sort_values('Date').reset_index(drop=True)
-    combined['BM_Ret'] = combined['BM_Close'].pct_change().fillna(0.0)
-    # sanity 가드: 코스피 종합(수천대) 오심볼 회귀 차단 — 코스피200은 수백~천대
-    recent_max = combined[combined.Date >= cutoff]['BM_Close'].max()
-    if recent_max > 3000:
-        raise RuntimeError(f"[naver_benchmark] 벤치 sanity FAIL: 최근 {recent_max:.0f} — 코스피200 아닌 코스피 종합 의심 (symbol=KPI200 확인)")
     _write_bm_parquet(combined, BM_PATH)  # ★date32 정규화 (build_index_cache와 통일, POSIXct 회귀 차단)
 
     return {
-        'patched_rows_from': len(bm_pre),
+        'anchor_date': anchor_date.strftime('%Y-%m-%d'),
+        'anchor_close': anchor_close,
+        'canonical_scale': canon,
+        'healed_offscale_rows': n_offscale,
+        'rechained_rows': len(tail),
+        'seam_ret': seam_ret,
         'total_rows': len(combined),
         'latest_date': combined.Date.max().strftime('%Y-%m-%d'),
         'naver_latest': naver.Date.max().strftime('%Y-%m-%d'),

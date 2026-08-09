@@ -241,19 +241,28 @@ if (n_opt > 0 || n_risk > 0) {
       if (!is.null(tb)) { fwrite(tb, ov_csv); fresh <- TRUE }
     }
   } else cat("[dispatch] Σ-배터리 오늘자 결과 재사용\n")
-  if (fresh && file.exists(ov_csv)) {
+  battery_fresh <- isTRUE(fresh)     # ★risk 보고가 분기 밖에서 읽는다 (수리 ②)
+  if (fresh && file.exists(ov_csv) && n_opt > 0) {
     tb <- fread(ov_csv)
     book_ir <- tb[method == "strategy", IR]
     oth <- tb[method != "strategy"][order(-IR)]
     best <- oth[1]
     delta <- best$IR - book_ir
     beats <- isTRUE(delta >= DELTA_IR_GATE)
+    # ★(2026-08-09) arm 풀에는 **risk 라우트 유래 arm 도 섞여 있다**(같은 배터리가 잰다).
+    #   그래서 "최선 타방법"이 risk 논문일 수 있고, 그걸 optimizer 판정으로만 적으면 출처가 지워진다.
+    #   레인 라벨을 함께 싣는다 — 수치가 어느 레인 것인지 파일만 보고 알 수 있어야 한다.
+    .rk_arms <- if (exists("risk_lane_arms")) tryCatch(vapply(risk_lane_arms(), function(a) a$arm, character(1)),
+                                                      error = function(e) character(0)) else character(0)
     opt_verdict <- list(book_ir = round(book_ir, 3), best_method = best$method, best_ir = round(best$IR, 3),
+                        best_method_route = if (best$method %in% .rk_arms) "risk" else "optimizer_or_builtin",
+                        n_arms = nrow(oth), n_risk_route_arms = sum(.rk_arms %in% oth$method),
                         delta_ir = round(delta, 3), gate = DELTA_IR_GATE, beats_book = beats,
                         verdict = if (beats) sprintf("후보: %s ΔIR=%.3f (게이트 %.2f 이상) → 수동 검수", best$method, delta, DELTA_IR_GATE)
                                   else sprintf("가중 레버 아님: book IR %.3f 최고(최선 타방법 %s %.3f, ΔIR=%.3f, 게이트 %.2f 미달) → 채택 0", book_ir, best$method, best$IR, delta, DELTA_IR_GATE))
     cat(sprintf("[dispatch:optimizer] %s\n", opt_verdict$verdict))
   }
+  if (n_opt > 0)
   actions$optimizer <- list(n = n_opt, papers = lapply(getrt("optimizer"), function(p) p$title %||% p$arxiv_id),
                             verdict = opt_verdict,
                             method_triage = if (exists("method_triage")) method_triage("optimizer") else NULL,
