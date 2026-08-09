@@ -1,0 +1,37 @@
+{
+  "retrieved_at": "2026-08-09",
+  "how": "paper-search MCP download_with_fallback(arxiv) -> read_arxiv_paper. arxiv MCP download_paper(pdf extra 미설치)·jina read_url(402) 실패 후 3번째 경로.",
+  "authors": "Andrew Y. Chen (Federal Reserve Board) · Ivo Welch (UCLA), draft 2026-07-08",
+  "GATE_RESOLVED_long_leg": {
+    "_why": "★우리가 찾던 수치. 논문 Figure 1 Panel B + Table 2 의 `Long - Mkt` 는 각 어노멀리 **롱 레그 - 시장수익**이며 우리 헌법 권위 basis(raw net active)와 같은 구성물이다. 롱숏(7bp)이 아니라 **이것**이 우리 대응물이다.",
+    "mean_long_minus_mkt_pct_per_month": -0.04,
+    "mean_long_minus_mkt_pct_per_year": -0.48,
+    "mean_t_statistic": -0.31,
+    "var_t": 0.98,
+    "signal_share": 0.0,
+    "adjusted_means_top10": "전부 0.00 (Var(t)<1 이라 shrinkage factor 가 0 으로 truncate)",
+    "paper_conclusion_verbatim_gist": "결론 3번 — 생존자조차 shorting 이 필요했고, **long-only 수익은 selection bias 보정 후 기껏해야 0**(the long-only return was at most zero net of selection bias).",
+    "our_measurement_same_basis": {
+      "raw_long_only_active_median_pct_per_year": -1.942,
+      "positive_share_pct": 27,
+      "n": 22,
+      "window": "2005-02 ~ 2026-07"
+    },
+    "correspondence": "★부호 일치 · 자릿수 일치 · **basis 일치**. 논문 −0.48%/yr(평균) vs 우리 −1.94%/yr(중앙값). 앞서 Jensen(+0.87%)을 롱숏(0.84%)과 나란히 놓기를 거부한 것이 옳았다 — 진짜 대응물은 Long−Mkt 였다."
+  },
+  "micro_definition_confirmed": "'Standard and Pct Only give identical results because the 90% market-cap screen is more restrictive than the 3,000-stock rank screen.' ⇒ 구속 조건은 **누적 시총 90%** 하나이고 내 FQ-189 ② 계산 방식이 논문과 일치한다.",
+  "micro_exposure_reframed": "★논문의 핵심은 '알파는 micro 에 산다'(size 축이 중앙값을 절반으로 깎음). ⇒ 우리 유니버스의 17.46% 가 KR 기준 micro 대역이라면 그것은 **손실이 아니라 잔여 기회**다. 내가 쓴 '최악 셀에 구조적으로 놓인다' 도, 그 뒤 '함의가 반대' 정정도 **둘 다 롱숏 셀 기준**이라 롱 레그에는 애초에 적용되지 않았다 — 이제 롱 레그 수치가 있으므로 그 논쟁 자체가 불필요.",
+  "surviving_categories": {
+    "_note": "return-파생을 재시도한다면 이것이 좌표. 단 전부 롱숏 기준이며 롱 레그는 여전히 0.",
+    "profitability": "중앙 0.24 %/월 · %pos 78 — 유일하게 healthy",
+    "trading_liquidity": "중앙 0.11 · %pos 85",
+    "investment_growth": "중앙 0.06 · %pos 69",
+    "momentum": "중앙 0.05 · %pos 53 — essentially dead",
+    "value_fundamentals": "중앙 −0.04 · %pos 47 — dead",
+    "intangibles": "중앙 0.00 · %pos 50 — dead",
+    "top_survivors": "cash-based operating profitability(0.66) · oper.profit R&D-adj(0.60) · realized-implied vol spread(0.59) · off-season momentum(0.54) · net external financing(0.48). ★단 shrinkage 후 최대 6bp/월."
+  },
+  "shrinkage": "Var(t)=1.09 (롱숏) ⇒ 신호 지분 1−1/1.09 ≈ 0.08. 최고 생존자 raw 66bp/월 → 조정 후 **6bp**. 롱 레그는 Var(t)=0.98<1 이라 조정 후 **전부 0**.",
+  "not_claimed_by_paper": "논문 스스로 범위를 한정 — dynamic factor timing · volatility-managed · ML 결합 · proprietary/alternative data 는 '우리가 다루지 않은 것'으로 명시. ⇒ CLAUDE.md 의 비-return 신규 원천 lane 은 이 논문의 부정 범위 **밖**이다.",
+  "implication_for_us": "★우리 자체 posterior(standalone long-only 16/16 FAIL)가 **basis-정합 외부 대표본으로 확증**됐다. 논문은 170 어노멀리에서 롱 레그 평균 t = −0.31, 신호 지분 0 을 보고한다. ⇒ CLAUDE.md 도달경로의 배치(return-파생 standalone = 최후순위 · 비-return 원천 = 주력)는 **약화가 아니라 강화**되며, 이제 그 근거가 자체 실측 + 외부 대표본 두 축이다. ⚠단 논문은 US·CRSP 이고 KR 이 아니다. 전이 가정은 여전히 가정이다."
+}
