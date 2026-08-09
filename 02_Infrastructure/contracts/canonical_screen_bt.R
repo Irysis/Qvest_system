@@ -112,10 +112,56 @@ local({
   active_ew <- pe$ret_net - pe$ew_bench_ret
   p17 <- pe$date >= as.Date("2017-01-01")
   sd_a <- stats::sd(active_ew)
+
+  # ── [additive 2026-08-09] ★basis 전환의 채널 분해 ────────────────────────────
+  #  왜 필요한가: 이 진단의 t 를 "벤치 핸디캡을 걷어낸 진짜 t" 로 읽는 오독이
+  #  실제로 발생했다(2026-08-09 Q-Lead, FQ-191·M26·병목지도 v53~v55 로 4단 전파).
+  #  실측 기전: EW-유니버스 벤치는 포트(EW top-N)와 **구성이 닮아** active 변동이 작다.
+  #  8재료 측정 결과 se_EW/se_capw 중앙 0.729 → t 가 **부호 무관 x1.37 확대**된다
+  #  (음수 알파 5종이 더 음수가 된 것이 증거 — 배율기는 부호를 가리지 않는다).
+  #  mean 이동은 별개이며 상수에 가깝다(sd 0.00002, 8/8 동일부호).
+  #  ⇒ 두 채널을 분리해 내놓지 않으면 소비자가 배율을 신호로 읽는다. 필드로 못박는다.
+  #  se 는 계약 t 에서 역산(se = mean/t) — 새 통계 합성 없음(자체합성 금지 정합).
+  .se_from_t <- function(x) {
+    m <- mean(x); tt <- .canon_nw_t(x)
+    if (!is.finite(m) || !is.finite(tt) || abs(tt) < 1e-12) return(NA_real_)
+    m / tt
+  }
+  basis_ch <- local({
+    if (!("benchmark_ret" %in% names(pr))) {
+      return(list(available = FALSE,
+                  note = "pr 에 benchmark_ret(cap-w) 부재 — 채널 분해 불가"))
+    }
+    pc <- merge(pr[, .(date, ret_net, benchmark_ret)], pe[, .(date)], by = "date")
+    if (nrow(pc) < 12L) return(list(available = FALSE, note = "겹치는 월 <12 — 채널 분해 불가"))
+    ac <- pc$ret_net - pc$benchmark_ret
+    m_c <- mean(ac); s_c <- .se_from_t(ac); t_c <- .canon_nw_t(ac)
+    m_e <- mean(active_ew); s_e <- .se_from_t(active_ew); t_e <- .canon_nw_t(active_ew)
+    if (!all(is.finite(c(m_c, s_c, m_e, s_e))) || s_c <= 0 || s_e <= 0) {
+      return(list(available = FALSE, note = "se 역산 실패 — 채널 분해 불가"))
+    }
+    list(
+      available = TRUE,
+      t_capw = t_c, t_ew = t_e,
+      se_capw = s_c, se_ew = s_e,
+      se_ratio_ew_over_capw = s_e / s_c,
+      t_magnification = s_c / s_e,
+      mean_shift_monthly = m_e - m_c,
+      mean_shift_t_contrib = (m_e - m_c) / s_c,
+      se_shrink_t_contrib = m_e / s_e - m_e / s_c,
+      dominant_channel = if (abs(m_e / s_e - m_e / s_c) > abs((m_e - m_c) / s_c)) "se_shrink" else "mean_shift",
+      interpretation_note = paste0(
+        "★이 diag 의 t 를 '핸디캡을 걷어낸 진짜 t' 로 읽지 말 것. basis 전환은 두 채널의 합성이다: ",
+        "①mean 이동(벤치 수준 차 — 재료 무관 상수에 가깝다) ②se 축소(EW 벤치가 포트와 닮아 active 변동이 작아짐 → ",
+        "**부호 무관 배율**). se 채널은 알파의 증거가 아니다 — 음수 알파에 걸면 더 음수가 된다. ",
+        "자본 자격 주장은 cap-w basis 로만 하고, 이 t 는 '기각 전 재분류 확인'(v8.3 dual-basis 의무) 용도로만 쓴다."))
+  })
+
   list(
     metric_type = "canonical_screen_diag",
-    metric_type_note = "EW-유니버스(해당월 유동성필터 前 패널 동일가중) 벤치 대비 진단. HARD 게이트 비바인딩 — cap-w basis(bench_dt)가 판정 권위. 결측수익 종목은 그 달 EW 벤치에서 제외 — 본판정 0-fill과 비대칭, 진단에 보수(하방) 방향.",
+    metric_type_note = "EW-유니버스(해당월 유동성필터 前 패널 동일가중) 벤치 대비 진단. HARD 게이트 비바인딩 — cap-w basis(bench_dt)가 판정 권위. 결측수익 종목은 그 달 EW 벤치에서 제외 — 본판정 0-fill과 비대칭, 진단에 보수(하방) 방향. ★t 차이의 채널 분해는 basis_channels 필드 참조 — se 배율을 신호로 읽는 오독 방지(2026-08-09).",
     benchmark_id = "EW_universe_prefilter",
+    basis_channels = basis_ch,
     n_months = nrow(pe),
     portfolio_alpha_t_nw_lag3 = getbc("Portfolio_Alpha_t_NW_lag3"),
     portfolio_alpha_t_pvalue  = getbc("Portfolio_Alpha_t_pvalue"),
