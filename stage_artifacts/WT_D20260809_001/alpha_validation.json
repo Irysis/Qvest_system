@@ -1,0 +1,161 @@
+{
+  "wt_id": "WT-D20260809_001",
+  "parent": "WT-D20260808_002",
+  "fq_ref": "FQ-161 (+ FQ-090 전이 레버 격리 질문에 직접 응답)",
+  "factor": "M26_Revenue_Mom",
+  "as_of": "2026-08-09",
+  "prereg_ref": "stage_artifacts/WT_D20260809_001/preregistration.json (측정 전 작성) + p2_prediction.json (P2 측정 전 작성)",
+  "metric_type_primary": "canonical_screen (cap-w 판정 권위)",
+  "metric_type_secondary": "canonical_screen_diag (EW-basis · decile · 반사실 · N>25)",
+  "capital_claim": false,
+  "governor_invoked": false,
+
+  "input_reality": {
+    "scores_panel": "stage_artifacts/WT_D20260808_002/alpha_scores.parquet (재사용)",
+    "rows": 69885,
+    "months": 283,
+    "period": "2003-01 ~ 2026-07",
+    "observation_unit": "(월말 Date x Ticker)",
+    "rawdata_rows": 14059013,
+    "rawdata_unit": "daily",
+    "rawdata_unique_dates": 9003,
+    "declaration_match": "행 69885==69885 TRUE · 월 283==283 TRUE (사전등록 대조 통과)"
+  },
+
+  "verdict": {
+    "code": "D4_CHANNEL_UNIDENTIFIED",
+    "meaning": "사전등록한 3개 단일 채널 중 어느 것도 갭을 단독으로 설명하지 못한다. 갭은 **가법적으로 분해되며 각 성분이 개별적으로는 불충분**하다.",
+    "rule_evaluation": {
+      "D1_COST_BOUND": {"fired": false, "test": "gross(0bps) cap-w PORT_t >= 2.95", "observed": 2.0407, "threshold": 2.95},
+      "D2_TAIL_BOUND": {"fired": false, "test": "monotonicity < 0.50 OR long_side_share < 0.40", "observed_monotonicity": 0.879, "observed_long_side_share": 0.553},
+      "D3_BREADTH_BOUND": {"fired": false, "test": "PORT_t(50) - PORT_t(25) > 1.0", "observed": 0.147}
+    }
+  },
+
+  "headline_decomposition": {
+    "basis": "cap-w KOSPI200 total return · top-25 EW long-only · 유동성 2e8 · 283개월",
+    "ladder": [
+      {"step": "net 15bps, cap-w (판정 권위)", "port_t": 1.5441, "note": "HARD 2.95 미달 — 자본 자격 없음"},
+      {"step": "+ 비용 제거 (반사실 0bps)", "port_t": 2.0407, "delta": 0.4966, "note": "counterfactual_diag — 실계좌는 비용을 낸다"},
+      {"step": "+ EW-유니버스 basis (벤치-측)", "port_t": 2.8180, "delta": 0.7773, "note": "벤치-측 상수(arm 무관, 2026-08-08 확립) — 구성 진술 아님"},
+      {"step": "[참조] rank-IC t_NW3", "value": 2.9714},
+      {"step": "[참조] FMB NW3 t (3종 통제 증분)", "value": 2.5553}
+    ],
+    "reading": "★신호는 전이된다. 갭의 대부분이 (1)거래비용 (2)벤치-측 핸디캡 두 **비-신호** 채널로 회계된다. 단 둘을 모두 제거해도 2.818 < 2.95 이므로 '비용·벤치만 없으면 졸업'은 **아니다**.",
+    "honesty": "cap-w 가 판정 권위이므로 M26 standalone 은 자본 자격 없음. 본 분해는 '왜 미달인가'의 답이지 자격 주장이 아니다."
+  },
+
+  "CH_A_cost": {
+    "design": "동일 선별·비중·기간, cost_bps_oneway 15 -> 0",
+    "port_t_net": 1.5441, "port_t_gross": 2.0407, "delta_t": 0.4966,
+    "alpha_ann_net": 0.0586, "alpha_ann_gross": 0.0762, "delta_ann_pct": 1.76,
+    "turnover_annual": 11.7422,
+    "accounting_identity_check": "turnover 11.7422 x 15bps = 연 1.7613%p vs 실측 차이 1.76%p — 회계 일치",
+    "verdict": "비용 채널 실재·정량 확정. 단 단독으로는 불충분(D1 미발화)."
+  },
+
+  "CH_B_tail": {
+    "design": "월별 M26 decile EW gross 수익, 유니버스 EW 대비 초과. 283개월.",
+    "primary_liq_filtered": {
+      "monotonicity_spearman": 0.879,
+      "D10_ann_excess_pct": 6.550, "D10_t_nw3": 2.822,
+      "D1_ann_excess_pct": -5.298, "D1_t_nw3": -2.502,
+      "long_side_share": 0.553,
+      "D10_minus_D1_ann_pct": 11.848, "D10_minus_D1_t_nw3": 3.361,
+      "avg_stocks_per_decile": 24
+    },
+    "robustness_unfiltered": {
+      "monotonicity_spearman": 0.964,
+      "D10_ann_excess_pct": 6.464, "D10_t_nw3": 2.895,
+      "D1_ann_excess_pct": -5.504, "D1_t_nw3": -2.694,
+      "long_side_share": 0.540
+    },
+    "verdict": "TAIL_BOUND 반증. 순위-수익 관계는 단조에 가깝고(0.879/0.964) long 측이 short 측보다 **약간 더** 강하다(0.553). 인계 큐가 '검증 전'이라 못박은 기전 후보('rank-IC 가 고변동 꼬리 왜도를 못 봄')는 **본 실측으로 지지되지 않는다**.",
+    "caveat": "decile 은 비용 미적용 gross 진단. D10 의 +6.55%/yr 도 실행 시 회전율 비용을 낸다 — PORT_t 와 수준 직접 비교 금지. D10-D1 스프레드는 공매도 불가로 실행 불가(정보용)."
+  },
+
+  "CH_C_breadth": {
+    "design": "top_n in {15,25,50,75}, cost 15bps 고정. ★N>25 는 Production Constraints 밖 = 진단 전용.",
+    "port_t_capw": {"15": 1.617, "25": 1.544, "50": 1.691, "75": 1.168},
+    "port_t_ew": {"15": 1.823, "25": 2.041, "50": 2.771, "75": 2.278},
+    "turnover": {"15": 12.73, "25": 11.74, "50": 9.88, "75": 8.39},
+    "delta_50_minus_25": 0.147,
+    "verdict": "BREADTH_BOUND 반증 — cap-w 기준 곡선이 평탄(폭 0.52) 하고 N=75 에서 오히려 하락.",
+    "secondary_observation": "N=50 에서 oos_retention_approx 0.302(vs N=25 0.123)·post2017_t 0.984(vs 0.406) 로 개선. 단 (a) N>25 는 자본 주장 불가 (b) oos_retention_approx 는 진단 근사이지 권위(essence_score) 아님. 관찰로만 기록.",
+    "constraint_discipline": "어떤 N 도 챔피언으로 승격하지 않음. 제약 완화 레버로 인용 금지(INV-7)."
+  },
+
+  "P2_prediction_falsified_then_corrected": {
+    "prediction_written_before_measurement": "lag1_retention 0.233 이므로 보유기간 확장(K)은 비용 절감보다 알파 손실이 커서 net PORT_t 를 개선하지 못한다. falsifier = K=3 이 K=1 보다 +0.30 이상 높음.",
+    "first_measurement_offset0_only": {"K1": 1.544, "K2": 0.921, "K3": 1.852, "K6": 2.011},
+    "apparent_falsification": "K=3 이 +0.307 로 falsifier 문턱 초과 -> 예측 반증으로 보였음",
+    "mandated_investigation": "사전등록이 '반증 시 결과를 그대로 채택하지 말고 조사' 를 고정해 둔 조항 발동",
+    "P3_artifact_screen": {
+      "selected_ret_coverage": {"K1": 1.0000, "K2": 0.9962, "K3": 0.9962, "K6": 0.9934},
+      "coverage_verdict": "전부 계약 가드 0.95 초과 — NA->0 위장 혐의 기각",
+      "drop_arm_reproduction": {"K1": 1.544, "K2": 0.871, "K3": 1.805, "K6": 2.069},
+      "drop_verdict": "결측 슬롯을 0-fill 대신 제외해도 재현 — 인공물 아님",
+      "K3_phase_spread": 0.141
+    },
+    "P4_self_adversarial_gap": "★P3 은 K=3 만 위상 검정했다. K=6 은 위상이 6개인데 1개만 측정된 상태였음 — 자가 적대검증이 적발.",
+    "P4_result": {
+      "K6_all_phases_port_t": [2.011, 1.534, 1.467, 2.133, 0.841, 1.522],
+      "K6_phase_spread": 1.291,
+      "K6_phase_mean": 1.584,
+      "K6_beats_baseline": "2/6 위상만 K=1(1.544) 상회",
+      "K2_phase_spread": 0.816,
+      "phase_averaged_curve": {"K1": 1.544, "K2": 1.329, "K3": 1.778, "K6": 1.584}
+    },
+    "P5_paired_direct_test": {
+      "why": "arm 별 PORT_t 를 나란히 놓는 것은 차이의 유의성이 아니다 (FQ-090 next_action 3호 규약)",
+      "design": "동일 월·동일 벤치 -> paired 차이 = ret_net(K,phase) - ret_net(K=1). NW lag3 t.",
+      "cells": 11,
+      "max_paired_t": 0.858,
+      "min_paired_t": -1.437,
+      "n_cells_significant": 0,
+      "required_effect_ann_pct_range": [3.01, 5.55],
+      "observed_effect_ann_pct_range": [-2.70, 2.00],
+      "all_cells_verdict": "INCONCLUSIVE_UNDERPOWERED"
+    },
+    "final_reading": "★1차 '반증'은 **위상 단일추첨**이었다. paired 검정에서 11셀 전부 비유의. 원 예측('K 확장이 개선하지 못한다')은 방향으로는 유지되나, 검정력이 3.01~5.55%/yr 이라 **'개선 없음'을 확정할 수도 없다** — INCONCLUSIVE 가 정직한 라벨이다.",
+    "substantive_finding": "★회전율 11.74 -> 3.73/yr (-68%) 에서 net active 차이가 검출되지 않는다. 회계상 비용 절감 1.20%p 와 gross 알파 손실 1.17%p (7.62% -> 6.45%) 가 **거의 정확히 상쇄**된다. 보유기간은 M26 에서 공짜 레버가 아니다 — 비용과 신호감쇠를 1:1 로 교환한다."
+  },
+
+  "system_level_finding": {
+    "title": "★리밸 위상(어느 달에 리밸하는가)이 PORT_t 를 0.8~1.3 t 흔든다",
+    "evidence": "K=6 위상 6개 스프레드 1.291 (0.841~2.133) · K=2 위상 2개 스프레드 0.816 · K=3 위상 3개 스프레드 0.141",
+    "implication": "단일 위상으로 측정한 모든 PORT_t 는 이 폭만큼의 추첨 성분을 포함한다. HARD 2.95 문턱 근방 판정에서 이는 결정적일 수 있다.",
+    "scope_honesty": "본 관측은 M26 · staleness 연산자 위에서만 실측됐다. K=1(월간 리밸)은 위상 자유도가 없으므로 **현행 월간 리밸 측정에는 직접 적용되지 않는다** — 분기 이상 주기 arm 에만 해당. book 급 일반화는 미측정(NP-4).",
+    "prior_link": "project-threshold-single-draw-fragility-20260802 (멤버십 jitter 판본)의 **시간축 판본**"
+  },
+
+  "power_bars": {
+    "t2.95_n283_sd_spread25ew_0.0394": {"required_monthly": 0.00864, "required_annual_pct": 10.364},
+    "t2.95_n283_sd_m26_own_0.01047": {"required_monthly": 0.00230, "required_annual_pct": 2.754},
+    "observed_m26_fmb": {"monthly": 0.00167, "annual_pct": 2.004},
+    "interpretation_rule": "sd 가 arm 자신이면 바는 t 검정의 재진술이다(verdict_with_power 주석). 위 두 바를 병기해 바가 무엇을 재는지 명시."
+  },
+
+  "graduation_status_unchanged": {
+    "port_t_capw": 1.5441,
+    "hard_threshold": 2.95,
+    "hard_pass": false,
+    "oos_retention_approx": 0.123,
+    "oos_note": "measurement-graduation §3 <0.5 무조건 FAIL band. 본 라운드의 어떤 결과도 이 게이트를 건드리지 않는다.",
+    "conclusion": "M26 standalone 자본 경로는 여전히 미달. 본 라운드는 기전 규명이며 자격 재판정이 아니다."
+  },
+
+  "selection_type": "diagnostic_no_argmax",
+  "dsr_gate_applicable": false,
+  "dsr_note": "N sweep · K sweep 모두 argmax 선택 연산자 부재(사전등록 고정). 어떤 N·K 도 챔피언 승격 금지. 사후에 특정 값을 고르면 선언 위반이며 그 결과는 무효.",
+  "self_adversarial": "stage_artifacts/WT_D20260809_001/challenge_note.md",
+  "artifacts": [
+    "preregistration.json", "p2_prediction.json",
+    "p0_precheck.R / p0_results.rds / p0_panels.rds",
+    "p1_channel.R / p1_results.rds / p1_arms.csv",
+    "p2_staleness.R / p2_results.rds / p2_staleness.csv",
+    "p3_investigate.R / p3_results.rds",
+    "p4_k6_phase.R / p4_results.rds / p4_k_curve_phase_averaged.csv",
+    "p5_paired.R / p5_results.rds / p5_paired.csv"
+  ]
+}
