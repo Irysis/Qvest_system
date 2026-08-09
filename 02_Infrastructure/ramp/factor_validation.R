@@ -139,11 +139,16 @@ build_monthly_forward_returns <- function(rawdata, sig_dates) {
   }
   if (n_ret_firewall > 0)
     cat(sprintf("[build_monthly_forward_returns] Ret_1m sanity 방화벽: %d 물리불가 월수익 격리(>+500%%/<-100%%).\n", n_ret_firewall))
+  liq_out <- if (length(liq)) rbindlist(liq) else data.table()
+  # [FQ-181] 자 라벨을 데이터에 붙여 보낸다 — 소비자가 list 를 풀어 liq_dt 만 넘겨도
+  #   라벨이 따라가도록. (반환 list 의 liq_ruler 와 동일 값, 이중 경로)
+  data.table::setattr(liq_out, "liq_ruler", liq_ruler)
   list(
     returns_dt = if (length(out)) rbindlist(out) else data.table(),
     bench_dt = if (length(bench)) rbindlist(bench) else data.table(),
-    liq_dt = if (length(liq)) rbindlist(liq) else data.table(),
-    ret_firewall_dropped = n_ret_firewall   # [R44] 격리 카운트(진단)
+    liq_dt = liq_out,
+    ret_firewall_dropped = n_ret_firewall,  # [R44] 격리 카운트(진단)
+    liq_ruler = liq_ruler                   # [FQ-181] 자 라벨(기록 의무 — 상단 규약)
   )
 }
 
@@ -245,4 +250,4 @@ approve_factors <- function(metrics_dt, config, econ_present = NULL) {
 
 `%||%` <- function(a, b) if (is.null(a) || length(a) == 0L || (length(a) == 1L && is.na(a))) b else a
 
-cat("[factor_validation.R] Loaded — build_monthly_forward_returns / validate_factor / approve_factors\n")
+cat("[factor_validation.R] Loaded — build_monthly_forward_returns / build_adv20_t1 / validate_factor / approve_factors\n")
