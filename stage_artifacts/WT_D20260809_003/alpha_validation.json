@@ -1,0 +1,126 @@
+{
+  "wt_id": "WT-D20260809_003",
+  "fq_ref": "FQ-166",
+  "parents": ["WT-D20260809_001 (M26 단조형)", "WT-D20260808_003 (Q01 중립 혹형)"],
+  "as_of": "2026-08-09",
+  "prereg_ref": "preregistration.json (측정 전) + p3_prediction.json (P3 측정 전)",
+  "metric_type": "canonical_screen_diag (gross 분위 진단)",
+  "capital_claim": false,
+  "governor_invoked": false,
+
+  "input_reality": {
+    "panel": "merged_panel.rds — W1 x M2 내부조인 + W3 좌조인",
+    "rows": 69282, "months": 282, "period": "2003-01-30 ~ 2026-06-30", "tickers": 630,
+    "stocks_per_month_median": 284,
+    "return_coverage_after_merge": 1.0,
+    "declaration_match": "행 69282 · 월 282 사전등록 대조 통과",
+    "frame_cost": "W1 대비 잔존율 0.797 — 유니버스가 M26 가용분으로 좁아진다(사전등록 confound 선언분)"
+  },
+
+  "verdict": {
+    "E1_HETEROGENEOUS_WALL": {
+      "fired": true,
+      "evidence": "1급 프레임(유동성필터·전표본 282m·decile)에서 5 arm 이 3개 형태 class 로 갈림",
+      "meaning": "★전이 벽은 단일 현상이 아니다. 형태가 재료에 따라 다르며, 이는 프레임을 통일한 뒤에도 남는다."
+    },
+    "E3_TREATMENT_DRIVEN": {
+      "fired": false,
+      "evidence": "Q01_EB raw 와 z_neutral 이 **둘 다 HUMP**(전표본 decile: spearman +0.188 / +0.127, argmax D8 / D5)",
+      "meaning": "★중요한 음성 — WT-003 의 혹은 중립화가 만든 것이 아니라 **Q01 자체의 성질**이다. 중립화 귀속 서술은 쓰지 말 것."
+    },
+    "E4_ERA_CONDITIONAL": {
+      "fired": "partial",
+      "evidence": "M26·M01_PATHQ 가 full_282m decile 에서 MONOTONE_TOP 인데 post2015 decile 에서 UNCLASSIFIED. Q01·Q01_neutral·D03 는 창 무관 동일 class.",
+      "caveat": "★post2015 는 138개월 x 10분위라 검정력이 낮다. class 변화가 형태 변화인지 검정력인지 **미분리** — '시대 조건부' 확정으로 쓰지 않는다."
+    },
+    "resolution_sensitivity": {
+      "observed": "M01_PATHQ full_282m: 5분위 UNCLASSIFIED vs 10분위 MONOTONE_TOP. Q01_EB full_282m: 5분위 UNCLASSIFIED vs 10분위 HUMP.",
+      "meaning": "형태 class 는 분위 해상도에 민감하다 — 형태를 인용할 때 해상도를 반드시 병기해야 한다."
+    }
+  },
+
+  "primary_frame_shapes": {
+    "frame": "유동성필터 adv>=2e8 · 전표본 282개월 · decile · EW-유니버스 대비 gross 초과",
+    "arms": [
+      {"material": "M26_Revenue_Mom", "treatment": "raw", "spearman": 0.879, "argmax": 10, "top_ann_pct": 6.821, "median_ann_pct": -0.734, "long_side_share": 0.546, "shape": "MONOTONE_TOP"},
+      {"material": "M01_PATHQ", "treatment": "raw", "spearman": 0.770, "argmax": 10, "top_ann_pct": 10.470, "median_ann_pct": -1.595, "long_side_share": 0.844, "shape": "MONOTONE_TOP"},
+      {"material": "Q01_EB", "treatment": "raw", "spearman": 0.188, "argmax": 8, "top_ann_pct": -3.413, "median_ann_pct": -0.064, "long_side_share": 0.868, "shape": "HUMP"},
+      {"material": "Q01_neutral", "treatment": "neutral", "spearman": 0.127, "argmax": 5, "top_ann_pct": -0.006, "median_ann_pct": 0.079, "long_side_share": 0.002, "shape": "HUMP"},
+      {"material": "D03_EWMA", "treatment": "raw", "spearman": -0.685, "argmax": 3, "top_ann_pct": -5.124, "median_ann_pct": -0.338, "long_side_share": 0.769, "shape": "UNCLASSIFIED (문턱 -0.70 간발 미달 — 사실상 상단-역전형)"}
+    ],
+    "raw_decile_profiles_ann_pct": {
+      "M26_Revenue_Mom": [-5.67, -2.06, -2.37, -1.47, -3.60, 1.25, 2.89, 0.01, 4.28, 6.82],
+      "Q01_EB": [0.52, -4.19, -1.69, 0.05, 2.99, -0.65, -0.18, 3.70, 2.88, -3.41],
+      "Q01_neutral": [-3.57, -1.88, 0.65, 1.21, 3.49, 0.16, 0.77, -0.14, -0.53, -0.01],
+      "D03_EWMA": [-1.54, 1.99, 4.62, 3.85, 1.39, -0.92, 0.25, -2.84, -1.57, -5.12],
+      "M01_PATHQ": [-1.93, -3.13, -3.87, -1.85, -1.34, -5.41, -1.26, 3.38, 4.96, 10.47]
+    }
+  },
+
+  "sign_convention_check_P2": {
+    "why": "D03 spearman -0.685 를 발견으로 읽기 전에 원열이 역방향인지 확인 (존재 검사 전 정체 검사)",
+    "rank_ic_by_material": {
+      "M26_Revenue_Mom": {"mean": 0.01873, "t_nw3": 3.112},
+      "Q01_EB": {"mean": 0.00625, "t_nw3": 0.726},
+      "z_neutral": {"mean": 0.01029, "t_nw3": 2.538},
+      "D03_EWMA": {"mean": 0.03224, "t_nw3": 3.004},
+      "M01_PATHQ": {"mean": 0.01539, "t_nw3": 1.442}
+    },
+    "result": "5재료 전부 rank-IC 양수 = '높을수록 좋음' 정렬 정상. W1 원 라운드도 저값 꼬리를 배제(excl_*_q20 배제군 평균이 잔류군보다 낮음).",
+    "conclusion": "★D03 의 음수 decile 기울기는 규약 산물이 아니라 **실측**이다."
+  },
+
+  "P3_mechanism_test": {
+    "hypothesis": "rank-IC 는 수익 **순위**를 써서 이상치에 둔감하고, decile 평균·PORT_t 는 **원수익**을 써서 꼬리에 지배된다. 신호가 수익 왜도와 상관되면 두 통계가 구조적으로 갈린다.",
+    "provenance": "인계 큐(2026-08-08)가 '검증 전'이라 못박은 후보. WT-D20260809_001 이 **M26 에서** 검정해 기각했고, 본 라운드가 **D03 에서** 재검정 — 재료를 잘못 붙였을 뿐 기전은 살아 있었다.",
+    "predictions_fixed_before_measurement": {
+      "H1": {"claim": "D03 decile 중앙값 프로파일 상향 spearman >= +0.50", "observed": 0.503, "pass": true},
+      "H2": {"claim": "(평균-중앙값) 격차가 decile 따라 감소 spearman <= -0.50", "observed": -0.988, "pass": true},
+      "H3": {"claim": "M26 에서는 패턴 부재/약함 (음성 대조)", "observed_sp_gap": 0.430, "observed_sp_med": 0.794, "pass": true}
+    },
+    "falsifiers": {"F1_median_also_down": false, "F2_M26_same_strength": false},
+    "verdict": "MECHANISM_SUPPORTED",
+    "D03_detail": {
+      "spearman_dec_mean": -0.685,
+      "spearman_dec_median": 0.503,
+      "spearman_dec_gap": -0.988,
+      "spearman_dec_skew": -0.842,
+      "sd_D1": 0.1838, "sd_D10": 0.0784, "sd_ratio": 2.34,
+      "direction_confirmed": "D1 = 고변동 · D10 = 저변동 (sd 2.34배)",
+      "raw_mean_ann_pct": {"D1": 11.84, "D10": 8.25},
+      "raw_median_ann_pct": {"D1": -11.25, "D10": 1.65},
+      "reading": "★저변동 이상현상이 **중앙값·순위에서는 성립**(D10 중앙값 +1.65 vs D1 -11.25)하는데 **평균에서는 역전**(D10 +8.25 vs D1 +11.84)한다. 고변동 종목의 강한 우편향(소수 대박이 평균을 들어올림)이 원인. top-25 EW 포트는 **평균을 번다** ⇒ rank-IC +3.00 인데 PORT_t -1.73."
+    },
+    "other_materials": "M26 (sp_mean +0.879 / sp_med +0.794), Q01_EB (+0.188 / +0.164), M01_PATHQ (+0.770 / +0.758) — **어느 것도 부호가 갈리지 않는다**. 괴리는 D03 단독 = 변동성 계열 고유."
+  },
+
+  "P4_adversarial_verification": {
+    "suspicion_1_universe_subtraction_artifact": {
+      "test": "유니버스 차감 없는 생(raw) decile 평균/중앙값 재산출",
+      "result": "D03 spearman(dec,mean) -0.685 · (dec,median) +0.503 · (dec,gap) -0.988 — 차감판과 **동일**",
+      "verdict": "기각 — 인공물 아님"
+    },
+    "suspicion_2_direction": {
+      "test": "decile 별 수익 sd·백분위 직접 관찰",
+      "result": "sd D1 0.1838 -> D10 0.0784 단조 감소(2.34배) · p99 D1 +0.597 vs D10 +0.223 · p01 D1 -0.360 vs D10 -0.172",
+      "verdict": "D1=고변동 확정. 우측 꼬리 격차(p99)가 좌측(p01)보다 커 우편향 해석과 정합"
+    },
+    "suspicion_3_time_series_outliers": {
+      "my_hypothesis": "D10 평균 -5.12% 가 소수 극단 음수월에 지배된다",
+      "test": "D10 월별 초과수익 분포",
+      "result": "양(+)월 비율 **0.472 (<0.5)** · 중앙값 월초과 -0.00315 (음수) · 최악 5개월 제외 시 연 -5.12% -> -2.48%",
+      "verdict": "★**내 가설 기각** — 시계열 이상치 지배가 아니다. 월 중앙값도 음수이므로 괴리는 **순수 횡단면**(월 내부, 종목 간 왜도)이다. 극단월은 크기의 절반쯤 기여하나 부호를 만들지 않는다.",
+      "note": "이 정정이 오히려 기전을 강화한다 — 괴리가 시계열 잡음이 아니라 구조적 횡단면 성질이라는 뜻."
+    }
+  },
+
+  "implication": {
+    "for_measurement_graduation": "measurement-graduation §2 는 rank-IC 계열을 ADVISORY 로, portfolio-alpha t 를 권위로 둔다. 지금까지 근거는 **실측 캘리브레이션**(16후보)뿐이었는데, 본 라운드가 **기전 설명**을 붙였다: rank-IC 는 순위 통계라 왜도-상관 신호에서 평균 기반 실현수익과 구조적으로 갈린다. 변동성 계열에서 특히 위험.",
+    "for_shape_routing": "형태가 소비면을 가른다 — MONOTONE_TOP 은 상단 랭킹/composite, HUMP 는 중간분위/상단절단, 상단-역전형은 랭킹 자체가 역효과. 단 형태 인용 시 **해상도·창을 반드시 병기**(둘 다 민감).",
+    "scope_honesty": "5재료·1유니버스·282개월 관측이다. 형태-소비면 대응은 **가설**이며 각 형태에서 실제 소비면 성과를 잰 적은 없다."
+  },
+
+  "selection_type": "diagnostic_no_argmax",
+  "dsr_gate_applicable": false,
+  "self_adversarial": "stage_artifacts/WT_D20260809_003/challenge_note.md"
+}

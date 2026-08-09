@@ -1,7 +1,7 @@
 {
  "schema_version": "1.0",
  "sot": "02_Infrastructure/docs/qvest_v8_3_alpha_discovery_sot.md §4",
- "updated": "2026-08-09",
+ "updated": "2026-08-09 (도훈 결정: 신용/대차 업데이트 계획 없음 → FQ-003/005/136 data_gate_closed. era 선행 리프 경로 폐쇄, 사후탐지·robust선별 2경로만 잔존. 총 172건)",
  "consume_rule": "새 발굴 리서치 착수 전: hypothesis_index lookup → 본 큐 확인 → owner/status 갱신. 완료 시 result_ref(L-code/보고서) 기입. dohoon_decision 항목은 세션 임의 착수 금지.",
  "entries": [
   {
@@ -53,13 +53,17 @@
    "hypothesis": "공매도·대차잔고는 1급 short-interest 예측변수 — 알파 가설 자체는 미검정",
    "ev_rationale": "★최고 EV 비-return QEPM lane. KR 공매도제약(2023-11~2025 전면금지 등)으로 고-공매도-수요 종목 과대평가가 차익거래로 미해소(Miller 1977) → long-only가 회피/저비중 exclusion 신호로 하베스트 가능(무제약 시장은 short-side라 못 먹음). hypothesis_index virgin(0), envelope-안(타 투자자 short를 신호로, 우리는 long-only 유지). 데이터 depth 공매도잔고공시 2016-06~.",
    "wall_check": "비-return. 단 신호가 short-side 견인이면 long-only 하베스트 제한 벽에 걸릴 수 있음 — exclusion 소비 설계 필요",
-   "data_gate": "2026-07-10 재확인: KRX 공식 OPEN API(구 data-dbg.krx.co.kr /srt/* + 신 openapi.krx.co.kr) 둘 다 공매도 서비스 부재(404/미수록). KRX MDC(data.krx.co.kr MDCSTAT300 개별종목 공매도 종합정보)·공매도종합포털은 로그인 게이트. → 실무 경로 = 도훈 로그인 export. 권장: QuantiWise 공매도잔고/대차잔고 export(도훈 이미 QW 사용·기존 인제스트 파이프). 대안: 공매도종합포털 bulk 다운로드.",
+   "data_gate": "데이터 게이트 폐쇄 (2026-08-09 도훈 결정: '신용대차는 업데이트 계획 당분간 없어'). QuantiWise 신용/대차·공매도잔고 export 가 무기한 보류되어 이 lane 의 착수 조건이 성립하지 않는다. ★구조 판결 아님 — 데이터가 들어오면 즉시 재개(INV-7). 특히 FQ-136 은 WT-D20260803_006(era 사전 추정 FAIL, 전환 달 적중 0.2593) 이후 **유일하게 남은 선행 리프 후보**였으므로, 이 폐쇄로 era 문제는 예측이 아니라 ①사후 탐지 소비(FQ-134 재심사 트리거) ②era-robust 성분 선별 두 경로로만 남는다.",
    "owner": {},
-   "status": "dohoon_data_work",
+   "status": "data_gate_closed_20260809",
    "next_action": "도훈 QW 로그인 세션에서 공매도잔고(+대차잔고) K200∪KQ150 2016-06~ export(daily 또는 monthly). 랜딩 시 add_factor 선언→builder→canonical_screen_bt 예비 실측. Q가 온보딩 스캐폴드 사전 준비.",
    "source_refs": [
     "memory: next_session_task 07-05 미탐색 프론티어 맵",
     "result_ref: qepm/mailbox/worktask/WT-D20260706_003/infeasibility_report.json (feasibility NO_GO 실측)"
+   ],
+   "revival_conditions": [
+    "QuantiWise 신용/대차 또는 공매도잔고 export 가 재개되면 즉시 착수",
+    "대체 원천(거래소 공개 대차잔고 등)이 확보되면 재설계 후 재개"
    ]
   },
   {
@@ -93,13 +97,17 @@
    "hypothesis": "crowding 지표(신용/대차)로 과밀 팩터/종목 회피 — 미탐색",
    "ev_rationale": "research_philosophy ⑤(Crowding) 미충족 lane + 데이터가 기존 계약(QuantiWise) 안에 있음 ⚠ FQ-003(공매도잔고)과 동일 QW export 세션에서 신용/대차 함께 취득 권장(1회 로그인으로 crowding+short 동시).",
    "wall_check": "비-return. exclusion/timing 소비면 long-only 정합",
-   "data_gate": "QuantiWise 로그인 — 도훈 수동 (자동화는 로그인 UI에서 보류됨 07-01)",
+   "data_gate": "데이터 게이트 폐쇄 (2026-08-09 도훈 결정: '신용대차는 업데이트 계획 당분간 없어'). QuantiWise 신용/대차·공매도잔고 export 가 무기한 보류되어 이 lane 의 착수 조건이 성립하지 않는다. ★구조 판결 아님 — 데이터가 들어오면 즉시 재개(INV-7). 특히 FQ-136 은 WT-D20260803_006(era 사전 추정 FAIL, 전환 달 적중 0.2593) 이후 **유일하게 남은 선행 리프 후보**였으므로, 이 폐쇄로 era 문제는 예측이 아니라 ①사후 탐지 소비(FQ-134 재심사 트리거) ②era-robust 성분 선별 두 경로로만 남는다.",
    "owner": {},
-   "status": "dohoon_decision",
+   "status": "data_gate_closed_20260809",
    "next_action": "도훈 로그인 세션에서 인제스트 → 커버리지 확인",
    "source_refs": [
     "memory: project-quantiwise-refresh-automation",
     "memory: next_session_task 07-05"
+   ],
+   "revival_conditions": [
+    "QuantiWise 신용/대차 또는 공매도잔고 export 가 재개되면 즉시 착수",
+    "대체 원천(거래소 공개 대차잔고 등)이 확보되면 재설계 후 재개"
    ]
   },
   {
@@ -2735,10 +2743,14 @@
    "hypothesis": "WT-006 진단: 병목은 연산자가 아니라 **리프(정보)**다. 과거 수익 파생으로는 era 전환이 안 보인다. 비-return 원천 중 **대차/공매도 잔고**가 era 전환을 선행하는가 — 포지셔닝 정보라 수익보다 빠를 사전 근거가 있다.",
    "ev_rationale": "WT-006 NP-1. ★단 FQ-005(QuantiWise 신용/대차)·FQ-003(공매도잔고)이 도훈 export 대기 상태 — 데이터 census 가 착수 선행 조건.",
    "wall_check": "라벨 자격 관문(전이-조건부 적중 > base ∧ 순열 p<0.05) 통과가 소비 전제.",
-   "data_gate": "★QuantiWise export 대기(FQ-005/003) — 데이터 없이 착수 불가",
+   "data_gate": "데이터 게이트 폐쇄 (2026-08-09 도훈 결정: '신용대차는 업데이트 계획 당분간 없어'). QuantiWise 신용/대차·공매도잔고 export 가 무기한 보류되어 이 lane 의 착수 조건이 성립하지 않는다. ★구조 판결 아님 — 데이터가 들어오면 즉시 재개(INV-7). 특히 FQ-136 은 WT-D20260803_006(era 사전 추정 FAIL, 전환 달 적중 0.2593) 이후 **유일하게 남은 선행 리프 후보**였으므로, 이 폐쇄로 era 문제는 예측이 아니라 ①사후 탐지 소비(FQ-134 재심사 트리거) ②era-robust 성분 선별 두 경로로만 남는다.",
    "owner": "미배정",
-   "status": "blocked_data_gate",
-   "registered": "2026-08-03 Q-Lead (WT-D20260803_006 NP-1 파생)"
+   "status": "data_gate_closed_20260809",
+   "registered": "2026-08-03 Q-Lead (WT-D20260803_006 NP-1 파생)",
+   "revival_conditions": [
+    "QuantiWise 신용/대차 또는 공매도잔고 export 가 재개되면 즉시 착수",
+    "대체 원천(거래소 공개 대차잔고 등)이 확보되면 재설계 후 재개"
+   ]
   },
   {
    "id": "FQ-137",

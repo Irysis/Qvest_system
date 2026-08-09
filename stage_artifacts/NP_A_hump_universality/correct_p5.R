@@ -188,7 +188,12 @@ prim <- sapply(c("tiebreak|A|raw|full","tiebreak|A|neutral|full"), function(k) B
 allc <- sapply(names(BV), function(k) BV[[k]]$verdict)
 R$book7_primary <- if (length(unique(prim)) == 1L) unname(prim[1]) else "BOOK_MIXED"
 R$book7_all_cells_agree <- length(unique(allc)) == 1L
-R$book7_verdict_distribution <- table(allc)
+R$book7_verdict_distribution <- as.list(c(table(allc)))
+R$book7_cell_verdicts <- as.list(allc)
+# 창별 분리 보고 — 전표본(주판정) 과 승계 창(복제) 은 결론이 다르다. 섞어 인용 금지.
+R$book7_by_window <- list(
+  full     = as.list(allc[grepl("\\|full$", names(allc))]),
+  post2015 = as.list(allc[grepl("\\|post2015$", names(allc))]))
 say("  ★ book 판정(전표본 A프레임 raw∧neutral) = %s · 전 16셀 일치 %s",
     R$book7_primary, R$book7_all_cells_agree)
 say("  ★ 대조군 %s 는 FQ-166 소관 — 본 라운드는 형태 census 만 인용, 사다리 분해·갈림 설명 미수행",
