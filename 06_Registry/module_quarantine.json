@@ -1354,19 +1354,22 @@
     "STR_AS_20260808_082947_11528": {
       "strategy_id": "STR_AS_20260808_082947_11528",
       "grade": "F",
-      "role": null,
+      "role": {},
       "origin_mode": "alpha_search",
       "sim_result_path": "stage_artifacts/module_quarantine/STR_AS_20260808_082947_11528/sim_result.rds",
       "n_days": 5305,
-      "date_range": ["2005-02-03", "2026-08-07"],
+      "date_range": [
+        "2005-02-03",
+        "2026-08-07"
+      ],
       "registered_at": "2026-08-08T08:36:43+09:00",
       "metric_type": "proxy",
       "fr_eligible": false,
       "frozen": false,
-      "source_contract_id": null,
+      "source_contract_id": {},
       "module_hash": "10b038f77ea926094557582383239d65",
-      "build_version": null,
-      "cost_model_version": null,
+      "build_version": {},
+      "cost_model_version": {},
       "bt_result_path": "stage_artifacts/alpha_search/20260808_082947_11528/bt_result.rds",
       "contract": {
         "policy": "v8.1_fr_input_floor",
@@ -1376,15 +1379,57 @@
       "meta": {
         "strategy_idea": "12개월 월간수익 lag-1 자기상관 역방향(저 autocorr long) — 평균회귀 구간 종목 매수. Direction A(고 autocorr long) PORT_t=-0.295 역효과 확인 후 KR 구조 검증. FMB t=2.50* 신호력 존재, 방향 재검.",
         "score": 4.1,
-        "f_grade_reasons": ["게이트 사유: Turnover 3525% > 1100% | Structural drawdown (MDD>=70%, 55%+ episodes>=6, 45%+ days>=25%, max_underwater>=252d): MDD 86.6%, 45%+ episodes=1/15, max_underwater=4422/...", "FMT-01 Structural MDD: MDD 86.6% > 45% — 선택 종목군의 위기 동반급락(구조적 꼬리위험)", "FMT-02 Factor Degeneration: IR -0.82 < -0.1 & 초과CAGR -13.7%p < 0 — KR에서 팩터 방향 역작동 의심", "FMT-04 Regime Blindness: MDD 86.6% > 35% & BM상관 0.73 >= 0.7 — 위기국면 동조 낙폭(국면필터 부재)", "알파 부재: 정보비율 -0.82로 벤치 대비 기여가 음수/미약"],
-        "fmt_codes": ["FMT-01", "FMT-02", "FMT-04", "FMT-05"],
+        "f_grade_reasons": [
+          "게이트 사유: Turnover 3525% > 1100% | Structural drawdown (MDD>=70%, 55%+ episodes>=6, 45%+ days>=25%, max_underwater>=252d): MDD 86.6%, 45%+ episodes=1/15, max_underwater=4422/...",
+          "FMT-01 Structural MDD: MDD 86.6% > 45% — 선택 종목군의 위기 동반급락(구조적 꼬리위험)",
+          "FMT-02 Factor Degeneration: IR -0.82 < -0.1 & 초과CAGR -13.7%p < 0 — KR에서 팩터 방향 역작동 의심",
+          "FMT-04 Regime Blindness: MDD 86.6% > 35% & BM상관 0.73 >= 0.7 — 위기국면 동조 낙폭(국면필터 부재)",
+          "알파 부재: 정보비율 -0.82로 벤치 대비 기여가 음수/미약"
+        ],
+        "fmt_codes": [
+          "FMT-01",
+          "FMT-02",
+          "FMT-04",
+          "FMT-05"
+        ],
         "bt_result_path": "stage_artifacts/alpha_search/20260808_082947_11528/bt_result.rds",
+        "bt_contract_status": "OK"
+      }
+    },
+    "STR_AS_20260809_123327_46908": {
+      "strategy_id": "STR_AS_20260809_123327_46908",
+      "grade": "F",
+      "role": null,
+      "origin_mode": "alpha_search",
+      "sim_result_path": "stage_artifacts/module_quarantine/STR_AS_20260809_123327_46908/sim_result.rds",
+      "n_days": 5305,
+      "date_range": ["2005-02-03", "2026-08-07"],
+      "registered_at": "2026-08-09T12:40:48+09:00",
+      "metric_type": "proxy",
+      "fr_eligible": false,
+      "frozen": false,
+      "source_contract_id": null,
+      "module_hash": "5bcde77c77ef9b791945e87f68c3e060",
+      "build_version": null,
+      "cost_model_version": null,
+      "bt_result_path": "stage_artifacts/alpha_search/20260809_123327_46908/bt_result.rds",
+      "contract": {
+        "policy": "v8.1_fr_input_floor",
+        "contract_pass": false,
+        "eligibility_reason": "metric_type != backtested; contract_pass != TRUE; frozen != TRUE; source_contract_id missing; build_version missing; cost_model_version missing"
+      },
+      "meta": {
+        "strategy_idea": "섹터-중립 단기역전: 섹터 공통 드리프트 제거 후 종목-specific 역전 포착. arXiv:2608.05755 LSTM attribution 핵심 신호.",
+        "score": 0,
+        "f_grade_reasons": ["게이트 사유: Structural drawdown (45%+ episodes>=15, 55%+ episodes>=6): MDD 60.4%, 45%+ episodes=23/15, max_underwater=240/252", "FMT-01 Structural MDD: MDD 60.4% > 45% — 선택 종목군의 위기 동반급락(구조적 꼬리위험)"],
+        "fmt_codes": "FMT-01",
+        "bt_result_path": "stage_artifacts/alpha_search/20260809_123327_46908/bt_result.rds",
         "bt_contract_status": "OK"
       }
     }
   },
-  "last_updated": "2026-08-08T08:36:43+09:00",
-  "n_modules": 35,
+  "last_updated": "2026-08-09T12:40:48+09:00",
+  "n_modules": 36,
   "superseded": {
     "STR_AS_20260613_094148_265194": {
       "strategy_id": "STR_AS_20260613_094148_265194",

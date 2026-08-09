@@ -1,0 +1,122 @@
+{
+  "wt_id": "WT-D20260809_002",
+  "designed_by": "alpha-hypothesis",
+  "model_tier": "fable",
+  "designed_at": "2026-08-09",
+  "spec_version": "ast_v1.1_hypothesis_stage",
+
+  "prechecks": {
+    "hypothesis_index_hits": [
+      "07-05 regime-conditional 배분(팩터 배분 비중 소비) = settled-negative — 본 설계는 배분 층이 아니라 노출 스케일 overlay 층 (WT-015 실측: 로테이션 0.904 < base 1.403, 그러나 CRISIS 라벨월 active +4.98%로 정보 자체는 생존)",
+      "WT-019: 무판별 신호 overlay 강행 → ON 92개월 paired t -3.77 — '발화 월수에 비례해 유해'. 본 설계의 대응 형태 제약(깊고 드물게)의 직접 근거",
+      "WT-017 / FQ-117: 현행 CRISIS 라벨 = BM<0 recall 0.10 < base 0.41 (fisher p=1.0), 반등월 발화 지연 지표 — '아무 하락' 기준 무자격 실측. 본 설계는 이 판정을 뒤집는 게 아니라 사건 정의를 바꿔 자격이 살아나는 영역(≤-10%)만 소비",
+      "2026-08-03 '국면 라벨 무자격' 판정 → 2026-08-08 label_eligibility_gate.R 431개월 실측으로 '사건 정의에 조건부'로 정정 (memory: project-label-eligibility-is-event-conditional-20260808) — 본 라운드의 착수 근거",
+      "2026-07-05/06 BearProb 오버레이 look-ahead FALSIFIED (C5 컷오프 버그, SR 2.10→1.84 소멸) — 신호 무효가 아니라 소비 타이밍 사고. 본 설계 path 절에 C5 규약 명시",
+      "국면 병목 = 라벨이 아니라 대응 깊이 (memory: project-regime-label-response-depth-20260808): overlay MDD 개선의 83%가 타이밍, m4 한계기여 -0.00%pt, 위기월 사전식별 9종 전건 FAIL — '사전예측'이 아닌 '에피소드-중 상태 탐지'로 기전을 세워야 하는 근거"
+    ],
+    "frontier_queue_refs": [
+      "★ID 네임스페이스 불일치 기록: 착수 브리핑은 'FQ-143 큰 하락 표적 오버레이'를 인용하나 원장 FQ-143 = CV_Vol 유동성 불안정 (config_scoped_negative_20260804, 무관 항목). 본 가설의 실제 원장 앵커는 아래 3건 (memory: project-queue-citation-namespace-mismatch-20260808 계통 — Q-Lead 원장 정합 필요)",
+      "FQ-115 (frontier_open, consume_surface): 국면 정보의 배분-아닌 소비면 — CRISIS active +4.98%를 overlay/위험예산 입력으로. 본 설계가 이 항목의 overlay 갈래를 구체화",
+      "FQ-118 (overlay): 실현-하락 nowcast 대체 라벨 — 오라클 상금(+2.1%/yr, MDD 절반) 실재 확인. 상금의 존재 증명이자 '사전식별 전건 FAIL'의 경계 증거",
+      "FQ-119 (methodology_repair): 라벨 자격 관문 — 2026-08-08 배선 완료 실측이 본 라운드의 사건-조건부 자격(lift 3.19) 원천",
+      "dohoon_decision 항목 해당 없음 — 위 3건 모두 세션 착수 가능 status"
+    ],
+    "owner": "alpha-research (WT-D20260809_002) / 설계 구간: alpha-hypothesis",
+    "request_json_note": "request.json 부재 (WT 디렉토리 신규 생성) — hypothesis_title 주입 대상 파일 없음. Q-Lead /worktask 경유 request.json 생성 시 selected.hypothesis_title 을 이식할 것"
+  },
+
+  "candidates": [
+    {
+      "title": "국면 라벨 꼬리 표적 오버레이 (사건-조건부 자격 소비)",
+      "family": "overlay_regime_tail",
+      "mechanism_sketch": "라벨은 방향이 아니라 변동성/스트레스 '상태'를 재는 검출기 → 상태 검출은 심한 하락(제약-트리거 강제매도 증폭 에피소드)만 조건부 예보 가능. 노출 스케일을 심도-표적으로만 조절",
+      "why_not_selected": "SELECTED — 08-08 신규 실측(사건 정의 조건부 lift 1.16→1.97→3.19)의 직접 소비 + overlay = 유일 실증 β 레버 + 대응 깊이 병목(m4 한계기여 0) 직접 겨냥"
+    },
+    {
+      "title": "MSM_Crisis_Prob 연속값 심도 매핑 (이산 라벨 대체)",
+      "family": "overlay_continuous_signal",
+      "mechanism_sketch": "이산 CRISIS∪CAUTION 라벨의 임계화가 정보를 버린다면 연속 Crisis_Prob(E5, walk-forward·vintage 보유)를 노출 함수로 직접 매핑",
+      "why_not_selected": "선택안의 신호-형태 변형이지 독립 가설이 아님 — FQ-117이 별도 open. 선택안의 기전이 성립해야 연속화 개선도 의미. ⑤ 설계 단계(alpha-research)에서 A/B 축으로 소비 권장 — challenge_flags 보관"
+    },
+    {
+      "title": "시장 레벨 CV_Vol 오버레이 (원장 FQ-151)",
+      "family": "overlay_liquidity",
+      "mechanism_sketch": "KOSPI200 일별 거래량 21일 CV 급등 = 유동성 스트레스 → 노출 축소",
+      "why_not_selected": "신호 원천이 다른 별도 lane. 횡단면 FMB t=0.58 비유의 이력에 시장 레벨은 미측정 — 오늘의 신규 증거(라벨 자격 실측)와 무관하므로 이 라운드에서 혼입하지 않음"
+    },
+    {
+      "title": "crash 발생률 신호의 CVaR/ES·stress 소비 (위험모델 면)",
+      "family": "risk_model_tail",
+      "mechanism_sketch": "crash 발생률 lift(+4.22pp, rv63 통제 후 +1.21pp)는 2차 모멘트가 아닌 꼬리 사건 → CVaR/ES/tripwire가 정합 소비면",
+      "why_not_selected": "risk-research 소관 표면 (역할 경계) — 소비면 체크리스트 ④로 Q-Lead에 표기만"
+    },
+    {
+      "title": "KOSPI200 지수 저주파 스펙트럼 TF 오버레이 (원장 FQ-146)",
+      "family": "overlay_trend",
+      "mechanism_sketch": "지수 레벨 저주파 스펙트럼 초과 질량 = 추세 강도 → 노출 조절",
+      "why_not_selected": "오늘의 신규 증거와 무관한 별도 신호 family. frontier_open 유지 — 본 라운드 비혼입"
+    }
+  ],
+
+  "selected": {
+    "hypothesis_title": "국면 라벨(CRISIS∪CAUTION) 꼬리 표적 오버레이 — 상태 검출기의 사건-조건부 자격(≤-10% lift 3.19)을 심도-표적 노출 축소로만 소비",
+    "hypothesis_description": "현행 배포 국면 라벨(E7 unified regime, CRISIS∪CAUTION)은 '아무 하락'(월수익<0)에는 무자격(lift 1.16)이나 심한 하락일수록 자격이 살아난다(<-5%: 1.97, <-10%: 3.19, 431개월 실측 2026-08-08). 이는 라벨이 방향 검출기가 아니라 변동성/스트레스 에피소드 '상태' 검출기이기 때문이며, 심한 하락월은 거의 전부 그런 에피소드 안에서만 발생한다. 따라서 라벨을 평월 방향 베팅이나 배분 비중(둘 다 settled-negative)이 아니라, 심한 하락 다리(leg)의 조건부 확률이 높아진 구간에서만 노출 w∈[0,1]을 깊게 축소하는 꼬리 표적 오버레이로 소비하면 MDD/꼬리 개선이 성립한다. 대응 형태 제약: 발화는 드물고 깊게 — 얕고 넓은 대응은 m4 한계기여 -0.00%pt 실측이 기각하며, 무판별 영역(평월)으로 발화를 넓히면 WT-019형(ON 92개월 paired -3.77) 손실.",
+    "mechanism": {
+      "agent": "제약-트리거 강제 매도 주체 3류: ① 신용융자 담보유지비율(통상 140%) 하회 시 기계적 반대매매를 당하는 개인 신용계좌, ② 글로벌 risk-off에서 VaR/트래킹 한도로 KR 노출을 기계적으로 축소하는 외국인 자금, ③ ELS 녹인 구간 진입 시 헤지 북을 조정하는 증권사 자기매매 데스크. 세 주체 모두 '가격이 싸다/비싸다'가 아니라 손실·변동성이 임계선을 넘었다는 사실에 의해 매도가 강제된다(비정보적 매도)",
+      "friction": "① KR 공매도 제약 + long-only 위임: 하락 방향 정보를 종목 공매도로 수익화할 수 없어 유일한 레버가 노출 스케일 — 정보가 있어도 차익거래 채널이 봉쇄됨. ② limits of arbitrage: 강제 매도가 비정보적임을 아는 유동성 공급자도 같은 시점에 자기 VaR 한도 축소·자금 회수에 묶여 받아주지 못함(위기 유동성 공급 자본의 동시 위축). ③ 보험료 비대칭: 오버레이는 라벨 오발화 월마다 상방을 포기하는 상시 비용을 내는 구조라, 꼬리 적중 lift가 충분히 높은 사건 정의에서만 순편익 — 이 비용을 상시 지불할 참여자가 소수라 프리미엄이 경쟁으로 지워지지 않음",
+      "path": "월말 t까지의 데이터로 산출된 라벨(E7 — MSM Crisis_Prob·MRS 등 walk-forward 입력 합성)을 홀딩월 t+1 시작 전 컷오프로 읽어(C5, overlay_pit_guard assert_overlay_pit HARD — 2026-07-05/06 BearProb 동월 look-ahead 실사고 재발방지) 홀딩월 노출 w∈[0,1]을 축소한다. 수익화 형태는 평월 알파가 아니라 희소 사건 회피: 라벨-ON 구간 중 실현되는 심한 하락월(≤-10%)의 손실 절단이 MDD·Calmar·꼬리를 개선한다. 시점 구조상 이 기전은 에피소드의 '첫 다리'는 원리적으로 못 막고(사전식별 9종 전건 FAIL 실측과 정합) 다중-다리 에피소드의 후속 다리만 잡는다 — 기대 편익은 2008형(다중 다리)에 집중되고 2020형(단발 급락 후 V반등)에서는 작거나 음수"
+    },
+    "why_severity_conditional": {
+      "_purpose": "라운드 핵심 질문 — 왜 이 라벨이 아무 하락은 못 맞히면서 큰 하락은 맞히는가 (통계/경제 구분 서술)",
+      "statistical": "라벨 입력(Crisis_Prob·MRS·변동성 상태)은 수익률의 부호가 아니라 분산 상태의 함수다. 월간 수익 부호는 조건부 기대수익 마진이 월간 변동성에 묻혀 어떤 느린 상태변수로도 거의 판별 불가(하락월 base rate 0.41~0.457 실측 — 동전던지기 인접, 그래서 lift 1.16). 반면 월 -10% 도달은 변동성이 평시의 2~3배로 커진 상태에서 확률이 비선형으로 커지는 사건이다(평시 변동성에서는 2σ 초과 요구, 위기 변동성에서는 1σ 안팎 — 조건부 이분산의 직접 귀결). 즉 상태 검출기는 정의상 '꼬리 검출기이되 방향 검출기가 아니며', lift의 심도 단조성(1.16→1.97→3.19)은 사건 정의가 라벨이 실제로 재는 양(분산 상태)과 정렬되는 정도의 함수다. ⚠ 이 서술의 σ 배수 수치는 검증 안 됨 (가정 — 반증 조건 2축이 실측 대상)",
+      "economic": "심한 하락월은 대부분 agent 절의 제약-트리거 강제 매도가 작동한 월이다: 반대매매·VaR 청산·ELS 헤지는 손실/변동성이 임계선을 '넘어야만' 발화하고, 발화하면 가격 하락→추가 담보부족→추가 청산의 자기강화로 며칠~몇 주 지속되어 에피소드를 이룬다. 상태변수는 이 에피소드가 진행 중임을 탐지하므로 다음 심한 다리의 조건부 확률 상승을 포착한다. 평범한 하락월은 증폭기가 미작동한 확산적·개별적 충격의 합이라 어떤 시장-레벨 상태변수와도 체계적으로 연결되지 않는다 — 통계적 이유(이분산)와 별개로, 임계선-조건부로만 존재하는 매도 주체가 경제적 이유다"
+    },
+    "falsification": {
+      "observable": "기전이 참이면 성과 이전에 관측되어야 할 부수 증거 3축: (a) 심도 분리 — 라벨-ON 발화월의 홀딩월 벤치 수익 좌꼬리(≤-10% 빈도·심도 분포)가 OFF월과 구분되고, 이 분리가 특정 1개 에피소드(2008 또는 2020) 제외 부분표본에서도 잔존. (b) 상태 채널 — ON월의 직전(trailing, 홀딩월 이전) 실현 변동성이 OFF월 대비 유의하게 높고, ON월이 산발이 아니라 연속 run(에피소드)으로 군집. (c) 강제-flow 채널 — 심한 하락월(≤-10%)의 시장 집계 외국인·개인 순매도 강도가 평범한 하락월(-5%~0%) 대비 유의하게 큼(주체별 flow로 증폭 기전 실재 확인)",
+      "field_dictionary_refs": [
+        "E7_unified_regime_3layer (라벨 Category/Regime_Score/MSM_Crisis_Prob — 월간 431행)",
+        "E5_msm_crisis_prob (연속 Crisis_Prob, walk-forward·vintage 보유 — (b) 및 라벨 지연 분해)",
+        "A4_benchmark_kospi200 + A1_RAWDATA_OHLCVS_daily(BM_Ret) (홀딩월 실현 수익·trailing 실현변동성 — (a)(b))",
+        "A6_investor_flow_stock_daily (종목 일별 주체 flow → 시장 집계 — (c). 2000-01~2026-07 실측 커버리지)",
+        "E1_fred_macro_raw(VIX 등) ((b) 보조 상태변수)"
+      ],
+      "reject_if": [
+        "(a) 위반: 라벨-ON월의 ≤-10% 좌꼬리 분포가 OFF월과 구분되지 않거나, 분리가 단일 에피소드 제거로 소멸 → '상태 검출' 기전 기각 (08-08 lift는 전표본 단일 측정 — 에피소드-군집 자유도 축소 후 재확인이 기각 조건)",
+        "(b) 위반: ON월 trailing 변동성이 OFF월과 구분되지 않거나(상태 채널 부재), trailing 변동성 통제 후 라벨의 좌꼬리 증분이 0 → 전자는 기전 기각, 후자는 '라벨은 vol 프록시일 뿐' — 가설을 라벨이 아닌 실현변동성 직접 소비로 재설계해야 하므로 본 가설(라벨 소비) 기각",
+        "(c) 위반: 심한 하락월의 주체별 순매도 강도가 평범한 하락월과 구분되지 않음 → 경제 기전(제약-트리거 증폭) 기각 — 통계 기전만 남으면 friction 서술이 무너져 프리미엄 지속 근거 상실, economic_void 재분류 사유"
+      ],
+      "tautology_guard": "(a)는 착수 근거(lift 3.19)와 같은 데이터 면을 재측정하므로 단독으로는 준-동어반복 — 기각력은 에피소드-군집 조건과 (b)(c) 독립 채널에 있다. PORT_t/SR/MDD 등 성과 수치는 반증 조건에 미포함"
+      ,
+      "power_warning": "≤-10% 월은 431개월 중 희소하고 에피소드로 군집 — 유효 표본은 명목 사건 수보다 작다 (memory: project-underpowered-nulls-regime-conditional-20260808, 하루 3회 실증). 사전등록 전 required_effect_size.R 검정력 계산 의무 — 비현실적 필요효과면 (a)(b)(c) 중 검정 가능 축만 사전등록하고 나머지는 진단 기록으로 강등할 것"
+    },
+    "regime_scope": {
+      "holds_in": [
+        "다중-다리 스트레스 에피소드 진행 구간 (고변동 + 강제매도 증폭 작동: 2008형 GFC, 2011 유로, 2022 긴축형) — 라벨이 에피소드-중 상태를 탐지해 후속 다리를 잡는 영역",
+        "CRISIS/CAUTION 확산 구간 중 변동성 고조 상태 (첫 다리 이후, 정책 개입 이전)"
+      ],
+      "weakens_or_reverses_in": [
+        "V자 반등 초입 (정책 개입 직후: 2020-04형, 2009형) — 상태변수는 가격 회복보다 느리게 감쇠하므로 라벨이 반등월에 켜져 상방을 포기 (WT-017 실측: 라벨월 벤치 연율 +90.1% 사례와 정합)",
+        "저변동 완만 하락장 (grind-down: 2018형) — 월 -10% 다리 없이 소폭 하락 누적, 증폭기 미작동 → 라벨 자격 영역(lift 1.16) 밖이라 무력",
+        "저변동 상승장/melt-up — 오발화 시 순비용만 발생 (보험료 비대칭)"
+      ],
+      "boundary_rationale": "경계는 기전에서 도출된다: 증폭기(제약-트리거 강제매도)는 손실·변동성 임계선을 넘어야만 존재하므로, 기전의 유효 영역은 '임계선이 이미 넘어진 에피소드 진행 중'으로 한정된다. 임계선 아래(grind-down·평시)에서는 잡을 사건 자체가 없고, 에피소드가 정책 개입으로 급종료되면 상태변수의 감쇠 지연이 그대로 상방 포기 비용이 된다(지연은 상태 검출기의 수학적 성질 — trailing 창 기반 상태량은 가격 반전보다 느리다). 따라서 이 가설은 보편타당을 주장하지 않으며, 순편익은 '다중-다리 에피소드 빈도 × 후속 다리 심도'가 '오발화·반등월 상방 포기 비용'을 넘는 표본에서만 성립한다"
+    }
+  },
+
+  "challenge_flags": [
+    "대안 보관 1 (MSM_Crisis_Prob 연속 심도 매핑): ⑤ 설계에서 이산 라벨 vs 연속 Prob 매핑 A/B 축으로 소비 권장 — FQ-117 open과 연동. E5는 유일한 진짜 vintage 보유 자산(일별 refit 스냅샷 53개)이라 vintage-swap 통제에도 적합",
+    "대안 보관 2 (시장 레벨 CV_Vol 오버레이, 원장 FQ-151): 별도 신호 lane — 본 라운드 비혼입, 원장 open 유지",
+    "대안 보관 3 (crash 발생률 → CVaR/ES/tripwire): risk-research 소비면 — Q-Lead 소비면 체크리스트 ④ 표기",
+    "설계 제약 승계: 대응 형태는 '깊고 드물게' — 얕고 넓은 스케일링(m4형)은 한계기여 -0.00%pt 실측 기각. WT-019형 발화-월수 확장 금지. base 는 production 실코드 parity (05_Production read-only, .gitignore로 Grep 기본 스킵 주의)",
+    "측정 설계 경고: 오버레이 판정은 placebo/DSR/OOS가 못 잡는 동월 look-ahead 전력 2회(faith, BearProb) — lag1 스트레스 + strict-PIT A/B 의무 (pit.md C5 절). 심도-조건부 지표는 에피소드-군집 검정력 확인 선행 (required_effect_size.R)",
+    "★원장 정합 필요: 브리핑 인용 'FQ-143'은 원장에서 CV_Vol — 본 가설의 원장 앵커는 FQ-115/118/119. Q-Lead가 신규 FQ 발번 또는 FQ-115 하위 갱신으로 정리할 것"
+  ],
+
+  "verdict": "designed",
+
+  "handoff": {
+    "to": "alpha-research",
+    "next_steps": "Step 1~7 + ⑤ AST 구성. 신호 = 시장 레벨 라벨(E7)이므로 factors[]는 개별 종목 팩터가 아니라 노출 스케일 함수의 입력 리프로 구성 — E7은 STORED_SCORE(하위 KTRI/VEA walk-forward 미검증 상속 주의, PIT 등급 최약 입력 귀속), E5는 STORED_SCORE + vintage 보유. C5 assert_overlay_pit HARD + lag1 스트레스 + strict-PIT A/B 의무. 반증 3축 중 검정력 확인 통과분만 사전등록. 승계분(mechanism/falsification/regime_scope) 재작성 금지 — 결함 발견 시 challenge_note.md 기록 + 재설계 요청",
+    "request_json_action": "request.json 부재 — 생성 시 hypothesis_title 이식 필요 (prechecks.request_json_note 참조)"
+  }
+}

@@ -1,7 +1,7 @@
 {
  "schema_version": "1.0",
  "sot": "02_Infrastructure/docs/qvest_v8_3_alpha_discovery_sot.md §4",
- "updated": "2026-08-09 (FQ-163 수리 완료·실증 — 잠긴 재료 5종 회수 시범 확인, 전면 재빌드는 도훈 confirm 대기. factor_db_builder self-locate 결함 부수 수리. 총 167건)",
+ "updated": "2026-08-09",
  "consume_rule": "새 발굴 리서치 착수 전: hypothesis_index lookup → 본 큐 확인 → owner/status 갱신. 완료 시 result_ref(L-code/보고서) 기입. dohoon_decision 항목은 세션 임의 착수 금지.",
  "entries": [
   {
@@ -1868,15 +1868,16 @@
    "ev_rationale": "IC→PORT_t 전이 벽 = 시스템 1순위 병목(16/16 admission FAIL 해부: 신호 실재·cap-w PORT_t 사망). 전이층에 신호력과 직교하는 손잡이가 있는지는 아직 격리 측정된 적이 없다. 저비용(기존 하네스 파라미터 조작만).",
    "wall_check": "max 25종·long-only·[0,0.20]·Sw=1·유동성 2e8 불변 — 제약 조건 안 구성 축. 회전율 절감 주장은 |D보유명목|x15bps 실과금 기준으로만. 보유밴드/주기 grid는 selection operator=sweep형 → DSR HARD 적용 의무.",
    "data_gate": "없음(로컬)",
-   "owner": "미배정 (AS-20260802-R1 P1 파생)",
-   "status": "frontier_open",
-   "next_action": "1 PORT_t가 이미 양(+)인 기존 챔피언 신호 1건 고정 / 2 buffer_zone(keep_n/entry_n) 및 리밸 주기 grid A/B / 3 paired NW lag-3 t로 차이 유의성 직접 검정(비율 해석 금지) / 4 DSR 산출",
+   "owner": "Q-Lead session 2026-08-09 (WT-D20260809_001 이 M26 위에서 격리 측정)",
+   "status": "measured_turnover_lever_inconclusive_20260809",
+   "next_action": "★FQ-090 원 질문('회전율이 신호력과 독립적으로 PORT_t 를 움직이는가')에 M26 위에서 직접 응답: 동일 신호를 고정한 채 보유기간만 조작(점수 staleness K∈{1,2,3,6}, PIT 안전 — 오래된 정보만 사용). 회전율 11.74 → 9.17 → 6.62 → 3.73/yr 로 −68% 이동했으나 **paired NW3 차이는 11셀 전부 비유의**(최대 t 0.858). 기전: 비용 절감(1.76→0.56%p)과 gross 알파 손실(7.62→6.45%)이 거의 1:1 상쇄. ★★부수 확립 = **리밸 위상 추첨**. K=6 위상 6개 PORT_t 스프레드 1.291(0.841~2.133) · K=2 스프레드 0.816 · K=3 스프레드 0.141. 단일 위상 측정은 그만큼의 추첨 성분을 포함한다 — 단 K=1(월간 리밸)은 위상 자유도가 없으므로 **현행 월간 측정에는 비적용**(범위 제한 준수). next_probe: ①부분-리밸 연산자(점수는 fresh, 교체 상한만 부과 — staleness 와 다른 축이라 비대칭 교환 가능) ②위상 스프레드의 분기-이상 주기 sleeve census.",
    "source_refs": [
     "AS-20260802-R1 close_round",
     "L-AS-20260802_025436",
     "stage_artifacts/alpha_search_dualbasis_20260802/paired_test_20260802.csv",
     "parent: FQ-059"
-   ]
+   ],
+   "result_ref": "stage_artifacts/WT_D20260809_001/alpha_validation.json §P2~P5"
   },
   {
    "id": "FQ-091",
@@ -3373,9 +3374,9 @@
    "ev_rationale": "재료 자격은 확립됐으나 top-25 EW 전이에서 HARD 2.95 미달 — 소비면이 랭킹 슬롯이 아닐 수 있다(2026-08-02 MAX5 선례: 랭킹 사망·필터로는 ΔIR +0.169).",
    "wall_check": "cap-w PORT_t +1.544 (원신호) / +1.443 (3종 잔차) — 둘 다 HARD 2.95 미달. IC t_NW3 +2.97 와 괴리 = 전이 벽.",
    "data_gate": "없음 (factor_db M26 산출 중, 318/442월)",
-   "owner": "미배정",
-   "status": "open",
-   "next_action": "소비면 7종 순회: ①팩터 랭킹(측정완료·미달) ②유니버스 필터 ③오버레이/국면 입력 ④위험모델 ⑤monitoring ⑥선별 라벨 ⑦타 모드. 미측정 6면 중 ②⑥ 우선(랭킹 사망·필터 생존 선례). ★착수 전 의무(2026-08-08 추가): power_precheck_20260808 의 바(연 2.86~4.64%)를 M26 자체 diff sd 로 재계산해 대조하고, 미달이면 필터 형태를 착수 전 폐기한다. WT-D20260808_001 이 같은 소비면에서 검정력 미달로 유보된 직접 교훈.",
+   "owner": "Q-Lead session 2026-08-09 (WT-D20260809_001 채널 분해 수행)",
+   "status": "transition_channels_decomposed_20260809",
+   "next_action": "WT-D20260809_001 판정 = D4_CHANNEL_UNIDENTIFIED (사전등록 3채널 단독 미발화) + **가법 분해 확정**. 사다리(cap-w·top25·283m): net 1.5441 → 비용제거 2.0407(+0.497) → EW-basis 2.8180(+0.777) [참조 rank-IC t 2.971]. ★신호는 전이된다 — 갭 대부분이 거래비용·벤치핸디캡 두 비-신호 채널로 회계된다. 단 둘 다 제거해도 2.818<2.95 라 '비용·벤치만 없으면 졸업'은 아님. ★CH-B(꼬리) 반증: decile 단조성 spearman +0.879(무필터 +0.964) · D10 연초과 +6.550%(t +2.822) · long_side_share 0.553. 인계 큐가 '검증 전'이라 표시한 기전 후보('rank-IC 가 고변동 꼬리 왜도를 못 봄')는 지지되지 않음. ★CH-C(breadth) 반증: PORT_t(50)−PORT_t(25) = +0.147. ★비용 레버 검정: staleness K∈{2,3,6} 전 위상 11셀 paired NW3 최대 |t| 0.858 — 전건 INCONCLUSIVE_UNDERPOWERED(필요 연 3.01~5.55% vs 관측 −2.70~2.00%). 회전율 11.74→3.73/yr(−68%)에서 비용절감 1.20%p 와 gross 손실 1.17%p 가 상쇄 — 보유기간은 공짜 레버 아님. 다음: ②필터면은 **여전히 유효 후보**(꼬리가 살아 있으므로) 이나 착수 전 M26 고유 diff sd 로 power 재계산 의무 유지. 우선순위는 ⑥선별라벨/composite(FQ-164) — D10 gross 실재를 book-marginal 로 옮기는 축.",
    "source_refs": [
     "stage_artifacts/WT_D20260808_002/alpha_validation.json",
     "qepm/mailbox/worktask/WT-D20260808_002/alpha_package.json"
@@ -3394,7 +3395,8 @@
     "admission_bar": "★필터면 착수 자격 = 관측 가능 효과가 연 2.86~4.64% 를 넘을 개연이 있을 때만. 그 미만이면 착수 전 폐기하고 형태를 바꾼다(전표본 횡단면 회귀 등). 비교 기준선 = MAX5 선례(WT-014) 필터 ΔIR +0.1692 · PORT_t 2.879->3.620 — 이 저장소에서 필터면이 성공한 유일 사례.",
     "caveat": "①paired diff sd 는 M26 고유값이 아니라 WT-001 의 D03/Q01 실측을 대입한 참고치다. 착수 시 M26 자체 diff sd 로 재계산할 것. ②required_effect() 반환에서 design 필드가 NA 로 에코됐다(effective_n = n 이므로 분할 축소는 적용 안 됨 — 계산은 정상, 에코만 결손). ③이 계산은 t=2.0 재료 자격 기준이며 자본 게이트(HARD PORT_t 2.95)와 다른 문턱이다.",
     "evidence": "stage_artifacts/c14_revsurprise/m26_filter_power.R"
-   }
+   },
+   "result_ref": "stage_artifacts/WT_D20260809_001/alpha_validation.json (+ challenge_note.md)"
   },
   {
    "id": "FQ-162",
@@ -3437,6 +3439,47 @@
    "revival_conditions": [
     "재빌드 confirm 시 C10/C13/C15/C18 재료 자격 라운드 즉시 착수 가능",
     "emission_guard 가 향후 같은 유형 침묵을 사전 검거"
+   ]
+  },
+  {
+   "id": "FQ-164",
+   "lane": "transition_wall",
+   "title": "부분-리밸 연산자 — 점수는 fresh 유지, 교체 상한만 부과 (staleness 와 직교하는 회전율 축)",
+   "hypothesis": "WT-D20260809_001 이 staleness(점수를 늙히는 축)에서 비용절감과 신호감쇠가 1:1 상쇄됨을 실측했다. 부분-리밸은 다른 축이다: 매월 fresh 점수로 재평가하되 **하위 k 개만 교체**(교체 상한 c). 상위 신선도는 보존한 채 경계 churn 만 잘라내므로 교환이 비대칭일 수 있다.",
+   "ev_rationale": "비용 채널이 회계로 확정됨(0.497 t · 연 1.76%p). staleness 축은 소진에 가깝고 이 축은 미측정. 저비용(기존 하네스 파라미터).",
+   "wall_check": "max 25 · long-only · [0,0.20] · Σw=1 · 유동성 2e8 불변 — 제약 조건 안 구성 축. 회전율 절감 주장은 |Δ보유명목|×15bps 실과금 기준. c grid 는 sweep 이므로 챔피언 선택 시 DSR HARD 적용.",
+   "data_gate": "없음 (동일 패널 재사용)",
+   "owner": "미배정 (WT-D20260809_001 NP-1)",
+   "status": "frontier_open",
+   "next_action": "①교체상한 c∈{3,5,10,25} paired A/B ②위상 자유도 없음(매월 재평가) 확인 ③paired NW3 로 차이 직접 검정 — 필요 효과 연 3.0~5.5% 바 선산출"
+  },
+  {
+   "id": "FQ-165",
+   "lane": "consumption_surface",
+   "title": "M26 소비면 ⑥ — D10 gross 실재를 book-marginal 로 옮기는 composite/선별라벨 축",
+   "hypothesis": "M26 D10(상위 decile ~24종) 연초과 +6.550%(t_NW3 +2.822, 283개월, gross)가 실재하고 순위-수익이 단조(+0.879)다. standalone top-25 랭킹은 cap-w PORT_t 1.544 로 미달이나, book 기존 팩터와의 **결합**에서 book-marginal ΔIR 이 양일 수 있다 — 기존 컨센서스 3종 대비 max spearman 0.215 로 재탕이 아니기 때문.",
+   "ev_rationale": "MAX5 선례(랭킹 −1.616 死 / 필터 ΔIR +0.169 生)가 '소비 경로가 판정을 바꾼다'를 실증. M26 은 재료 자격·단조성·PIT 강건성이 모두 확립된 상태라 결합 측정의 사전확률이 높다.",
+   "wall_check": "book-marginal ΔIR ≥ 0.05 (measurement-graduation §4). ★base 는 05_Production 현행 PG2 코드 파생만 권위(§7b) — 저장 패널 재사용 금지. base 강도가 판정을 뒤집은 실측 선례 있음.",
+   "data_gate": "없음",
+   "owner": "미배정 (WT-D20260809_001 NP-2 · FQ-161 소비면 ⑥)",
+   "status": "frontier_open",
+   "next_action": "①production PG2 base 재산출(parity 라벨) ②M26 성분 추가 book-marginal ΔIR ③|cor|<0.30 확인 ④착수 전 power 바 산출"
+  },
+  {
+   "id": "FQ-166",
+   "lane": "transition_wall",
+   "title": "전이 벽 형태 분류 — 무엇이 '단조(상단 정보 有)' 와 '혹(상단 정보 無)' 를 가르는가",
+   "hypothesis": "2026-08-09 하루에 독립 두 라운드가 **정반대 분위 형태**를 실측했다. M26_Revenue_Mom(WT-D20260809_001): decile 단조성 spearman +0.879 · D10 연초과 +6.550%(t 2.822) ⇒ 상단에 정보 有, 갭은 비용(+0.497 t)+벤치(+0.777 t) 로 가법 분해. 중립 Q01_EB(WT-D20260808_003): EW 대비 5분위 [−3.81 +1.37 +3.05 +1.78 −2.41] = **혹** ⇒ 상단에 정보 無, 최상위가 EW 에도 뒤짐. ∴ '전이 벽'은 단일 현상이 아니다. 남은 질문은 **무엇이 형태를 가르는가** — 재료 종류(컨센서스 개정 vs 이익 서프라이즈)인가, 중립화 처리인가, 시대(전표본 vs post-2015)인가, 분위 해상도인가.",
+   "ev_rationale": "형태가 소비면을 직접 가른다: 단조형은 composite/비용축, 혹형은 중간분위/상단절단. 형태를 먼저 재면 소비면 선택이 추측이 아니라 도출이 된다. ★독립 데이터 2점이 이미 있고 세 재료(D03_EWMA PORT_t −1.73 포함)의 패널이 전부 존재해 저비용.",
+   "wall_check": "진단 라운드 — 자본 주장 없음. ★**동일 프레임 필수**: 두 관측은 5분위/post-2015/중립 vs 10분위/전표본/원신호로 프레임이 다르다. 수치를 같은 자로 읽지 말고 **한 프레임에서 재산출**한 뒤에만 형태를 대비한다. 사다리(net→gross 0bps→EW-basis)의 반사실 단은 counterfactual_diag 라벨 의무.",
+   "data_gate": "없음 (WT-D20260808_001/003 패널 재사용)",
+   "owner": "미배정 (WT-D20260809_001 NP-3)",
+   "status": "frontier_open",
+   "next_action": "①M26 · Q01_EB · D03_EWMA 를 **동일 프레임**(동일 분위수·동일 창·원신호/중립 양판)으로 분위 프로파일 재산출 ②각 재료에 net→gross→EW-basis 사다리 적용해 갭 성분 크기 대조 ③형태 갈림의 후보 설명변수(재료군·중립화·시대) 중 어느 것이 형태와 정렬되는지 ④음수 PORT_t(D03 −1.73)가 사다리 어느 단에서도 회복 안 되면 '제3 형태' 확립 ⑤형태별 소비면 라우팅 규약 초안 → 이후 라운드의 첫 진단으로 제도화",
+   "source_refs": [
+    "stage_artifacts/WT_D20260809_001/alpha_validation.json (M26 단조형)",
+    "memory: project-m26-transition-gap-additive-decomposition-20260809",
+    "memory: project-transfer-wall-is-no-top-information-20260809 (Q01 혹형)"
    ]
   }
  ]
