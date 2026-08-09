@@ -1,0 +1,316 @@
+{
+  "task_id": "WT-D20260808_003",
+  "as_of_date": "2026-08-08",
+  "forecast_horizon": "1M",
+  "spec_version": "ast_v1.1",
+  "hypothesis": {
+    "statement": "부모 라운드(WT-D20260808_001) 확립: Q01_EB 최상위 분위는 trailing 60m β 0.732 vs 유니버스 0.981(t −19.88) — long-only 슬롯이 정보 없는 저β 우측 꼬리를 산다(β-drag). 동시에 섹터+사이즈 중립화 시 Q01 rank-IC 가 1.28배·Harvey-t 5.34 로 강해진다(RF-A4 역방향). 본 가설: raw Q01 z 의 횡단면 분산 대부분은 섹터·사이즈의 구조적 이익안정성 격차(무정보·β 공변)가 점유하며, 중립화는 이 성분을 제거하고 밴드-내 상대 불안정 = mispricing 정보를 보존한다. 따라서 중립화 신호의 top-N 바스켓은 β 틸트가 유니버스로 수렴하고(F1), drag 성분이 소거되어 IC 가 PORT_t 로 전이된다(B1). ★본 라운드는 자본 라운드가 아니라 벽-귀속 판별 라운드다: 선행 posterior(WT-006 R4 선별-측 7/7 < 1.277)를 승계해 HARD 2.95 도달을 주장하지 않으며, 성공(B1)이면 전이 벽의 β 채널 귀속이, 실패(B2)면 재료-불변 벽의 채널-불변 확장이 각각 산출물이다. ★별도 분기 의무(B2): 중립화가 β 갭을 실제로 닫았는데도(F1 성공) PORT_t 가 안 오르면 벽은 β 채널이 아니다 — 이때 IC 강화의 정체는 순위-통계 개선(노이즈 축소)으로 재분류되고, D03 실측이 이미 보여준 순위↔평균 괴리(Harvey-t +3.50 ∧ monotonicity 0.25, 고변동 꼬리의 양의 왜도가 평균을 지배)가 Q01 에도 지배 구조임이 확정된다. ★시기 편중 분기(B4): raw Q01 정보는 pre-2015 편중(FQ-122 status 실측)이므로, 중립화 신호의 IC 시간프로파일이 post-2015 회복을 보이지 않으면 전이가 성립해도 자본 경로 부적격(FQ-122 부활 조건 미충족)이다 — full-sample 양성만으로 양성 주장 금지.",
+    "mechanism": {
+      "agent": "[정보 성분의 주체] 이익 불안정(고분산 earnings z) 종목의 성장 서사를 과대평가하는 개인투자자 수요 — 부모 실측: 개인 순매수가 저-z(불안정) 종목에 집중하고 log(시총) 통제 후 잔존(t −4.29/−4.33, 단 동시기 관측 라벨 승계). 과대평가는 동종(같은 섹터·같은 사이즈 밴드) 비교에서 발생하는 상대 판단 오류이므로 mispricing 의 자연 단위는 밴드-내 상대 z 다. [교란 성분의 주체] 오류 주체 없음 — 섹터·사이즈의 구조적 이익안정성 격차(유틸리티·금융 = 구조적 안정 / 바이오·성장 = 구조적 불안정)라는 산업 구조 그 자체. 이 성분은 raw z 횡단면 분산의 지배 지분을 점유하되 mispricing 정보가 없고, '구조적 안정 = 저β 대형·방어 섹터'로 β 와 공변한다 — raw top-분위 β 0.732 의 원천",
+      "friction": "이중 마찰(부모 승계 + 채널 특정): ① KR 공매도 제약(no_short_legal_kr, 고정 축) — 하위 꼬리(불안정 종목) 과대가격화를 short 으로 지울 수 없어 신호(IC)가 잔존한다. ② long-only 벤치상대 채점 구조 — raw 신호의 top-슬롯은 구조적 안정군(β 0.732)만 사는데 벤치 β≈0.92 경쟁에서 β 갭 −0.249 는 시장 초과드리프트에 비례하는 산술적 drag 를 만든다. 마찰 ①이 정보를 보존하고 마찰 ②가 raw 형태의 수확을 차단하는 구조 — 중립화는 ②의 채널(신호에 실린 구조적 β 틸트)만 선택 제거하는 개입이고, ①이 보존한 정보는 밴드-내 성분이므로 남는다는 것이 본 가설의 요체",
+      "path": "월간 선별 시점에 섹터×사이즈 밴드 내 상대화(중립화)한 Q01 z 로 선별 — [제거되는 것] 구조적 수준 성분: 무정보(밴드 간 안정성 격차는 이미 가격에 반영된 산업 특성)·β 공변(저β 방어 섹터 편중). [남는 것] 밴드-내 상대 이익불안정 = 개인 과대평가가 만든 mispricing 성분. [왜 IC 가 강해지는가 — RF-A4 역방향의 기전] RF-A4 는 '신호=노출'(중립화 후 붕괴 = 신호가 섹터 베팅에 불과)을 적발하는 규칙인데, Q01 은 노출⊥정보 구조라 부호가 반대다: 무정보 성분이 랭킹 분산의 지배 지분을 점유하며 정보 성분을 가리고 있었으므로, 제거 시 순위 정보가 선명해진다(1.28배는 부모 실측). 단 이 강화가 '정보 증가'인지 '분모 축소(t 상승)'인지는 별도 판별 의무 — challenge_note §4 절차. [수익화 시점·형태] 익월 보유 수익. 중립화 신호 top-N(전이 시험)과 M01 base 에 대한 하위분위 제외필터(부모 소비면 승계)의 paired forward active — 전이 성립 시 Δ 의 원천은 β-drag 소거분(Δmean_active ≈ β갭 × 벤치 초과드리프트, 착수 전 실측 기록 의무)과 밴드-내 정보의 순위 개선분"
+    },
+    "falsification": [
+      {
+        "group_id": "A1_RAWDATA_OHLCVS_daily",
+        "field": "FDB-B2_registry_rawdata_price_daily",
+        "expectation": "(F1 원문) 중립화 Q01 top-분위 바스켓의 trailing 60m β 가 유니버스 중앙값과 통계적 무차별(갭 |Δβ| < 0.05). [실측 P0/P6: 중립 최상위분위 갭 -0.153 · top-25 갭 -0.209 (raw -0.245 / -0.269 대비 부분 소거). 월별 음(-) 비율 94.2% / 95.4%, 겹치지 않는 stride-60 부분표본 평균 -0.152 / -0.216. → 사전등록 B3 조건(|갭| > 0.15 잔존) 충족 = F1 REJECTED, 채널 귀속 주장 금지. ★겹치는 60m 창 계열이므로 NW lag-3 |t| 는 인용하지 않는다(부풀림 — lag-60 t -5.01 / -4.61)]"
+      },
+      {
+        "field": "D03_EWMA",
+        "fields": [
+          "A1_RAWDATA_OHLCVS_daily"
+        ],
+        "expectation": "(F2 원문) MAX5 원변수 + vol63 을 횡단면 통제한 후 중립화 Q01 의 증분 순위정보 잔존. [실측: 통제 후 기울기 연 +1.27% vs 통제 전 +1.22% → 잔존율 1.038 (사전 문턱 0.30 통과). MAX5 단독 통제 +1.32%(t 2.06) · vol63 단독 +1.28%(t 2.21). 상위분위 Jaccard 중립Q01∩vol63 0.119 · ∩(-MAX5) 0.121, 월별 Spearman 중앙 +0.080 / +0.046 → vol/복권 축 재발견 아님. 부모 라운드 결손(MAX5 원변수 통제 부재) 해소]"
+      },
+      {
+        "group_id": "A6_investor_flow_stock_daily",
+        "field_ref": "F2_investor_flow_stock_level",
+        "expectation": "(F3 원문) 개인 순매수 집중이 raw z 가 아니라 중립화 z 의 하위에 부착되는가(연속 회귀, log시총 통제). [실측: raw z 기울기 -0.0228 (t -4.34) · 중립 z -0.0126 (t -2.96), 부착 잔존율 0.55. → 중립 z 에도 유의 부착하나 절반 가까이가 제거된 성분에 있었다 = PARTIAL. '제거된 성분은 무정보'라는 설계 전제를 부분 반증. 동시기 관측이며 예측 주장 아님(부모 라벨 승계)]"
+      },
+      {
+        "field": "Q01_GPA",
+        "group_id": "FDB-B1_registry_fundamental_quarterly",
+        "expectation": "(F4 예고 관측 원문) 중립화 z 5분위 평균수익 단조성 + rank-IC 병기 — Harvey-t 강한데 monotonicity < 0.5 지속이면 순위-평균 괴리 구조 지속(B2 예고). [실측: 중립 rank-IC +0.0198 · NW t +4.95 · monotonicity 정본(10분위 Spearman) 0.648 / WT-001 용례(5분위 4스텝) 0.75. → 'Harvey-t>=3 AND monotonicity<0.5' 시그니처는 발화하지 않음. 그러나 수익-단위 상단은 별개: top-분위 평균 active 차(중립-raw) -0.19%/yr (t -0.16), Q5-Q1 스프레드 차 -1.37%/yr (t -0.51)]"
+      },
+      {
+        "group_id": "A2_universe_krx_monthly",
+        "expectation": "(중립화 밴드 정의 원천) 섹터·사이즈 분류로 밴드 내 상대화가 실제 수행되었는가. [실측: Sector UNKNOWN 0.00% · log(Size) NA 0.00% · 중립화 성공 81,349행/295개월 · raw-중립 월별 Spearman 중앙 0.664]"
+      }
+    ],
+    "regime_scope": {
+      "holds_in": [
+        "상승 드리프트 국면(벤치 trailing 초과수익 양) — drag = β갭 × 시장 초과드리프트의 산술 구조상 raw 형태의 drag 가 최대인 국면이므로 중립화(drag 소거)의 상대 편익도 최대",
+        "개인 투기활동 高 국면(개인 거래비중·회전율 高) — 밴드-내 mispricing(정보 성분)의 원천인 개인 과대평가가 강해 중립화 신호의 정보 밀도가 짙어짐"
+      ],
+      "weakens_or_reverses_in": [
+        "급락/위기 국면 — raw top-분위의 저β 틸트(β 0.732)는 의도하지 않은 방어였고 중립화가 정확히 그것을 제거한다 → paired Δ(중립화 − raw) 부호 음(−) 예측, 중립화 arm 의 위기월 열화·MDD 악화가 기전의 연역적 귀결. 이 부호 반전 예측 자체가 국면 경계의 사전등록 관측 대상"
+      ],
+      "boundary_rationale": "경계는 관측이 아니라 drag 의 산술 구조에서 연역된다: drag 성분 = (β_top − β_bench) × 시장 초과드리프트이므로 중립화 편익은 시장 방향의 단조 함수이고, 정보 성분은 개인 투기활동 강도의 함수다. 각각 연속 관측 변수(벤치 trailing 초과수익률, 개인 거래비중)를 가지므로 검증은 국면 더미 분할이 아니라 paired 월별 Δ 를 이 연속변수에 회귀하는 상호작용 항으로만 수행한다(★분할 설계 금지 — 2026-08-08 하루 3회 검정력 파괴 실증: 국면분할 유효표본 80→18.2, 필요 연효과 27.71% 급). 상호작용 결과는 advisory(CI 보고, 부호만 관측)이며 주판정은 전표본이다. 보편타당 주장 아님 — 위기 국면 부호 반전이 명시적 약화 경계"
+    },
+    "falsification_original_text": "기전이 참이면 성과 밖에서 관측되어야 할 것 4건 — (F1) 채널 제거의 직접 관측: 중립화 Q01 top-분위 바스켓의 trailing 60m β 가 유니버스 중앙값과 통계적 무차별(갭 |Δβ| < 0.05 또는 NW t > −1). raw 갭 −0.249(t −19.88)가 소거되는지가 '중립화 = β 채널 제거'라는 설계 전제 자체의 시험. (F2) 재발견 배제: MAX5 원변수 + vol63 을 횡단면 통제한 후 중립화 Q01 의 증분 순위정보 잔존(전표본 부분 순위상관/FM 형태, 분할 금지). (F3) 주체 시그니처의 이전: 개인 순매수 집중이 raw z 가 아니라 중립화 z 의 하위에 부착되는가(연속 회귀, log시총 통제 — 부모 F2 프레임 재사용). 정보가 밴드-내 성분에 있다는 주장의 직접 검증. (F4, 예고 관측) 중립화 z 5분위 평균수익 단조성 + rank-IC 병기 — Harvey-t 강한데 monotonicity < 0.5 지속이면 순위↔평균 괴리 구조가 중립화 후에도 지속(B2 예고). ★F4 는 수익 기반이나 전략 성과가 아닌 신호 구조 관측(부모 선례 라벨 승계) — 단독 반증 축으로 쓰지 않는다",
+    "falsification_reject_if_original": "① F1 실패(중립화 후 β 갭 < −0.15 잔존, NW t 유의) → B3 격리: '섹터+사이즈 ⊉ β 채널' 확정, 전이 결과 해석 금지, C3 재설계로만 판별 가능. ② F2 실패(MAX5+vol63 통제 후 중립화 Q01 증분이 비통제 대비 붕괴 — RF-A4 준용 30% 미만) → vol-family 재발견 판정: FQ-092 QUARANTINE 재포장으로 기각, 양성 주장 전면 금지. ③ F3 실패(개인 순매수 시그니처가 중립화 z 에 부착되지 않고 raw z 전용) → 기전 기각: mispricing 정보는 제거된 성분에 있었던 것이고 IC 강화는 기계적(분모 축소) — economic story 없는 t 상승으로 강등 기록, 자본 경로 폐쇄. ④ B2 성립(F1 성공 ∧ PORT_t 무변) → β-drag 채널 설 기각 + 재료-불변 벽의 채널-불변 확장 확정(음성 자체가 1급 정보 — 2026-07-13 확립사실 강화로 산출). ★검정력 규약: 모든 반증 시험은 전표본 횡단면/연속 회귀로만 — 분할 설계 3/3 검정력 파괴 실측(2026-08-08). 저검정력 판정은 CI 보고, '효과 없음' 단정 금지(INCONCLUSIVE_UNDERPOWERED vs NEGATIVE_POWERED 구별)",
+    "inheritance_note": "mechanism / regime_scope / falsification 원문은 alpha_hypothesis.json(alpha-hypothesis, fable) 발행분을 재작성 없이 승계. schema 가 falsification 을 객체배열로 요구해 형식만 전치했고 원문 문자열은 falsification_original_text 에 전량 보존."
+  },
+  "pit": {
+    "sig_date": "2026-06-30",
+    "decision_ts": "2026-06-30",
+    "note": "패널 최신 월말. as_of_date 와의 차이는 팩터 패널 vintage lag"
+  },
+  "factors": [
+    {
+      "factor_id": "F1_Q01EB_sector_size_neutral",
+      "ast": {
+        "op": "CS_NEUTRALIZE",
+        "args": [
+          {
+            "leaf": "STORED_SCORE",
+            "escape_contract": {
+              "escape_type": "STORED_SCORE",
+              "provenance": {
+                "store_build_hash": "stage_artifacts/WT_D20260802_009/tuned_panel.parquet",
+                "generator_code_path": "run_wt009_tuned.R — Q01_EB = MUL(z, DIV_GUARD(1, ADD(1, MUL(TS_STD(z,36), TS_STD(z,36)))))",
+                "generated_at": "2026-08-02T12:57"
+              },
+              "production_parity_verified": false
+            }
+          },
+          "A2_universe_krx_monthly:Sector",
+          {
+            "op": "LOG",
+            "args": [
+              {
+                "leaf": "A2_universe_krx_monthly:Size"
+              }
+            ]
+          }
+        ]
+      },
+      "role": "core_signal",
+      "restatement_exposure": 1
+    },
+    {
+      "factor_id": "F2_ctrl_MAX5",
+      "ast": {
+        "op": "CS_ZSCORE",
+        "args": [
+          {
+            "op": "TS_MEAN",
+            "args": [
+              {
+                "op": "TS_MAX",
+                "args": [
+                  {
+                    "leaf": "A1_RAWDATA_OHLCVS_daily:Close"
+                  },
+                  21
+                ]
+              },
+              5
+            ]
+          }
+        ]
+      },
+      "role": "diagnostic_control",
+      "restatement_exposure": 0
+    },
+    {
+      "factor_id": "F3_ctrl_vol63",
+      "leaf_ref": "FDB-B2_registry_rawdata_price_daily",
+      "role": "diagnostic_control",
+      "restatement_exposure": 0
+    }
+  ],
+  "combination_rule": "single_factor",
+  "verdict": "designed",
+  "self_pit_check": {
+    "performed": true,
+    "leaves_checked": [
+      {
+        "leaf": "STORED_SCORE:Q01_EB",
+        "availability_rule": "fixed: 월말 z + trailing 36m 분산(당월 미포함). 기저 재무는 quarterly 45d / annual 익년 3/31(C4 2026-07-25)",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "A2_universe_krx_monthly:Sector",
+        "availability_rule": "fixed: 월말 스냅샷 분류 — 당월 말 시점 확정",
+        "restatement_prone": false
+      },
+      {
+        "leaf": "A2_universe_krx_monthly:Size",
+        "availability_rule": "fixed: 월말 시가총액 — t-1 종가 기준",
+        "restatement_prone": false
+      },
+      {
+        "leaf": "A1_RAWDATA_OHLCVS_daily:Close",
+        "availability_rule": "fixed: t-1 종가. MAX5 는 신호월 내 일간만 사용(홀딩월 시작 전)",
+        "restatement_prone": false
+      },
+      {
+        "leaf": "FDB-B2_registry_rawdata_price_daily",
+        "availability_rule": "fixed: trailing 63d EWMA vol, 당월 미포함",
+        "restatement_prone": false
+      }
+    ],
+    "verdict": "warn_restatement",
+    "notes": "Q01_EB 는 재무 기반이라 restatement 노출. lag1 스트레스 실측: 중립 z 기울기 잔존율 0.574(부호 유지·크기 감소 = 정상 감쇠, 급증 아님) → 동월 누출 징후 없음. C5: 신호는 홀딩월 시작 전 월말 d0 정보만. 벤치·수익은 build_monthly_forward_returns 계약 경유."
+  },
+  "alpha_vector": {
+    "A033100": 0.003621,
+    "A009240": 0.003605,
+    "A215200": 0.002888,
+    "A140860": 0.002706,
+    "A053800": 0.002582,
+    "A098460": 0.002544,
+    "A032640": 0.002507,
+    "A066570": 0.002369,
+    "A062040": 0.002364,
+    "A443060": 0.002348,
+    "A326030": 0.002323,
+    "A128940": 0.002278,
+    "A036570": 0.002132,
+    "A282330": 0.002061,
+    "A257720": 0.002055,
+    "A018290": 0.002026,
+    "A383220": 0.001968,
+    "A012750": 0.001934,
+    "A278470": 0.001922,
+    "A001040": 0.001865,
+    "A021240": 0.001821,
+    "A082920": 0.001752,
+    "A214150": 0.001727,
+    "A185750": 0.001722,
+    "A319660": 0.001718
+  },
+  "confidence_vector": {
+    "A001040": 0.56,
+    "A009240": 0.56,
+    "A012750": 0.56,
+    "A018290": 0.56,
+    "A021240": 0.56,
+    "A032640": 0.56,
+    "A033100": 0.56,
+    "A036570": 0.56,
+    "A053800": 0.56,
+    "A062040": 0.42,
+    "A066570": 0.56,
+    "A082920": 0.42,
+    "A098460": 0.56,
+    "A128940": 0.56,
+    "A140860": 0.56,
+    "A185750": 0.56,
+    "A214150": 0.56,
+    "A215200": 0.56,
+    "A257720": 0.56,
+    "A278470": 0.42,
+    "A282330": 0.56,
+    "A319660": 0.56,
+    "A326030": 0.56,
+    "A383220": 0.56,
+    "A443060": 0.42
+  },
+  "signal_matrix_ref": "stage_artifacts/WT_D20260808_003/alpha_scores.parquet",
+  "factor_specs": [
+    {
+      "factor_family": "Quality/EarningsStability",
+      "proxy": "Q01_EB_neutral (섹터+log시총 잔차화 EB-shrunk GPA)",
+      "formula": "resid( Q01_EB ~ log(Size) + factor(Sector) ), 월별 횡단면",
+      "lag_rule": "quarterly 45d 상속 + trailing 36m 분산, 월말 산출",
+      "winsorization": "none (EB shrink 내장)",
+      "neutralization": "sector+size",
+      "economic_rationale": "behavioral",
+      "weight_theta": 1,
+      "references": [
+        "WT-D20260808_001 A6 (중립화 rank-IC 1.28배)",
+        "WT-D20260802_009 Q01_EB 정의"
+      ],
+      "economic_rationale_detail": "밴드 내 이익불안정 종목의 성장 서사 과대평가(개인 수요) — 구조적 섹터·사이즈 안정성 격차를 제거하고 밴드-내 상대 성분만 남긴다",
+      "redundancy_cluster_id": "quality_stability_neutralized / KR_Q01_family",
+      "redundancy_evidence": "vol63 상위분위 Jaccard 0.119 · (-MAX5) 0.121 · 월별 Spearman 중앙 +0.080/+0.046 → FQ-092 vol family 와 중복 아님. 기존 선별층 M01_PATHQ 대비 |Spearman| 중앙 0.02 미만"
+    },
+    {
+      "factor_family": "Volatility/Lottery",
+      "proxy": "MAX5 (월내 상위 5일 평균 일수익)",
+      "formula": "mean(top5 daily return within signal month)",
+      "lag_rule": "daily t-1, 월말 산출",
+      "winsorization": "none",
+      "neutralization": "none",
+      "economic_rationale": "behavioral",
+      "weight_theta": 0,
+      "references": [
+        "Bali-Cakici-Whitelaw 2011",
+        "WT-020 MAX5 소멸 실측"
+      ],
+      "economic_rationale_detail": "F2 재발견 배제 통제 변수 — alpha 성분 아님(weight 0)",
+      "redundancy_cluster_id": "vol_lottery_family_FQ092"
+    }
+  ],
+  "diagnostics": {
+    "canonical_port_t_nw_lag3": 0.381932518836804,
+    "canonical_port_t_pvalue": 0.702511418915127,
+    "canonical_n_months": 295,
+    "canonical_port_t_raw_arm": -0.237535703432762,
+    "canonical_port_t_base_M01": 2.05037927267672,
+    "canonical_port_t_filter_arm": 2.30844964707587,
+    "rank_ic": 0.0198317003499187,
+    "icir": 0.268899615239735,
+    "harvey_t_stat": 4.95233762333489,
+    "rank_ic_raw_arm": 0.0162466974482199,
+    "harvey_t_stat_raw_arm": 2.15638669650811,
+    "monotonicity": 0.648484848484848,
+    "monotonicity_definition": "platform canonical — 10분위 평균수익 vs 분위순위 Spearman (ml_pipeline/quality_metrics.py:77-98). 범위 [-1,1]",
+    "monotonicity_q5_stepfrac_wt001": 0.75,
+    "monotonicity_q5_stepfrac_definition": "WT-001 용례 — 5분위 인접 4스텝 증가비율, 범위 {0,.25,.5,.75,1}. 정본과 척도가 달라 분리 기록",
+    "decile_mean_ann_pct": [-4.21980828400843, 0.582903970541174, -0.617554856515607, 0.145662006676398, 2.47463028828369, 1.324092762816, 2.47099166716081, 0.777306119252732, 0.387485006913506, 2.68197578660697],
+    "subperiod_stability": 0.6667,
+    "subperiod_stability_note": "3분기 중 rank-IC 양(+) 유지 비율 — 중립 신호는 pre-2015 +0.0245 / post-2015 +0.0146 양쪽 양(+), 전표본 대비 raw(pre +0.0327 / post -0.0025) 와 대비",
+    "turnover_proxy": 3.21030508474576,
+    "turnover_filter_arm": 7.67186440677966,
+    "net_sr_neutral_top25": 0.0832070975167224,
+    "deflated_sharpe_ratio": 0.657867103183668,
+    "deflated_sharpe_note": "진단 산출. selection_type=chain(가설주도 순차, n_trials=1) → measurement-graduation §3 상 DSR 게이트 부적용",
+    "post_neutralization_ic": 0.0198317003499187,
+    "alpha_inheritance_cor": 0.0628094177488814,
+    "alpha_inheritance_cor_note": "중립 Q01 vs 기존 선별층 M01_PATHQ 월별 Spearman 중앙 |·|. < 0.95 → wt_type=discovery 유지",
+    "fmb_slope_ann_pct_neutral": 1.21960005075995,
+    "fmb_slope_t_nw_neutral": 1.85948911948994,
+    "fmb_slope_ann_pct_raw": 0.8052484163387,
+    "fmb_slope_t_nw_raw": 0.7532605733303,
+    "fmb_slope_ann_pct_neutral_ctrl_MAX5_vol63": 1.26535387316302,
+    "fmb_slope_t_nw_neutral_ctrl_MAX5_vol63": 2.19576774894903,
+    "post2015_rank_ic_neutral": 0.0145745381368193,
+    "post2015_rank_ic_neutral_t": 2.72423410781361,
+    "post2015_rank_ic_raw": -0.00252217276852515,
+    "post2015_rank_ic_raw_t": -0.311812631127271,
+    "post2015_top25_active_ann_pct_capw": -12.1280433589009,
+    "post2015_top25_active_t_capw": -2.37517129268069,
+    "post2015_top25_active_ann_pct_ew": -5.72338687189334,
+    "post2015_top25_active_t_ew": -2.28953297755559,
+    "harvey_t_specs_pass_count": 1,
+    "harvey_t_specs_pass_count_note": "rank-IC NW t 4.95 만 3.0 통과. portfolio-alpha t 는 전 arm 미달 — 두 통계량 분리 보고(Cycle 2 교훈)",
+    "metric_type": "canonical_screen (arm) / diag (배터리·구조 관측)",
+    "selection_type": "chain",
+    "n_trials_cumulative": 1
+  },
+  "alpha_discovery_count": 0,
+  "selection_objective": "canonical_port_t",
+  "challenge_flags": [
+    "★B3 발화(사전등록) — 중립화가 β 갭을 부분만 닫는다(분위 -0.245→-0.153 · top-25 -0.269→-0.209, 문턱 -0.15 잔존). 섹터+사이즈는 β 채널을 span 하지 못하며 전이 결과의 채널 귀속 주장은 금지된다. C3(β-직접 잔차화)는 재설계 후보로만 승격, 본 라운드 arm 추가 없음",
+    "★handoff 제1 조건 이행 — paired 형태 2종을 착수 전 폐기(필요 연 4.00%/2.81% vs drag 함의 0.69%/0.12%). 판정 형태를 월-횡단면 FMB 로 전환. 부모 라운드 전 arm INCONCLUSIVE_UNDERPOWERED 재발 회피",
+    "★자본 자격 주장 없음 — 중립 top-25 canonical PORT_t +0.382 (HARD 2.95 대비 크게 미달). 필터 arm 2.308 도 미달. 본 라운드는 벽-귀속 판별 라운드",
+    "★전이 벽의 직접 관측(본 라운드 최대 산출) — post-2015 중립 Q01 rank-IC +0.0146 NW t +2.72 (양(+) 유의)인데 같은 창 top-25 바스켓 active 는 cap-w -12.13%/yr t -2.38 · EW-유니버스 -5.72%/yr t -2.29 (양쪽 basis 에서 음(-) 유의). 순위 정보와 상단-평균 수익이 같은 창에서 반대 부호로 동시에 유의한 최초 실측",
+    "★B4 부활 조건 발화 — FQ-122 부활 조건 'post-2015 양(+) 회복'은 중립 신호에서 rank-IC 축으로 충족(raw -0.0025 t -0.31 → 중립 +0.0146 t +2.72, paired 차 +0.0171 t +2.39). 단 사전등록 판정인 연속 시간추세는 비유의(중립 -0.00033/yr t -0.50) — '회복'이 아니라 '감쇠 정지'가 정확한 서술. 자본 경로 자격은 상단-수익 음(-)으로 별도 차단",
+    "★정보 증가 vs 노이즈 축소 — 3종 절차 결과가 갈린다. d1(수익-단위 스프레드): 중립-raw -1.37%/yr t -0.51 = 확대 없음(노이즈 축소 쪽). 절사 사다리에서 중립만 t 1.62→3.07 로 상승 = 전형적 분모 효과. d2(canonical 분해): Δmean +2.34%p · ΔSE -7.6% = 분자 쪽(정보 증가 쪽)이나 저검정력. d3(F3): 부착 잔존율 0.55 = 부분 지지. 종합 처분 = alpha lane 단독 승격 불가, risk/monitoring 소비 라벨 병행",
+    "★F3 부분 반증 — 개인 순매수 시그니처의 45%가 중립화로 제거된 성분에 있었다(raw -0.0228 t -4.34 → 중립 -0.0126 t -2.96). '제거되는 성분은 무정보'라는 설계 전제가 부분적으로 틀렸다. 승계 mechanism 의 결함이며 재작성하지 않고 challenge_note 로 보고(Charter 원칙 8)",
+    "★상단/하단 분해 — Q5-Q1 스프레드 축소는 하단에서 온다(중립 하위분위 -1.66%/yr vs raw -2.84%/yr, Δ +1.18%). 중립화가 좌측 꼬리 판별력을 잃는다 = 제외필터면(부모 소비면)에는 불리. 필터 arm paired +0.55%/yr t 0.44 (부모 raw 필터 +1.25% t 0.84 보다 약함, 둘 다 저검정력)",
+    "★F2 통과(재발견 배제 성립) — MAX5 원변수 통제는 부모 라운드가 명시한 결손이었고 본 라운드가 해소했다. 잔존율 1.038, Jaccard 0.12 수준 → FQ-092 vol QUARANTINE family 재포장 아님",
+    "★창-정합 통제 — A4(β 통제, n=259)가 A2(n=295)보다 약해 보이는 것은 β 통제가 아니라 표본이다. 동일 창에서 β 통제 순효과 1.287(오히려 강화), 표본 효과 0.449. 서로 다른 창의 수치를 나란히 놓고 통제 효과로 읽지 말 것",
+    "★겹치는 창 위 짧은 NW lag 금지(2026-08-09 정정) — β 갭 계열은 trailing 60m 이 매월 59개월 겹친다(ACF r1 0.86~0.93). 본 산출물은 |t| 를 인용하지 않고 점추정·월별 부호 일관성·stride-60 으로 서술한다. 참고 정정치: 중립 분위 갭 lag-3 t -13.20 → lag-60 t -5.01, Bartlett 유효 n 20.2/259",
+    "★paired Δβ top-25(+0.059)는 정정 추론에서 비유의(lag-60 t +1.74 · stride-60 t +1.34) — '중립화가 top-25 의 β 를 올렸다'는 주장은 분위 수준(+0.091)에서만 성립",
+    "monotonicity 정의 충돌 처리 — diagnostics.monotonicity 는 플랫폼 정본(10분위 Spearman, 중립 0.648)이고 WT-001 용례(5분위 4스텝, 0.75)는 별도 필드. 두 척도의 값 범위가 다르므로 문헌값 비교 시 정의 확인 의무",
+    "STORED_SCORE Q01_EB 는 production_parity_verified=false (연구 파생 패널) — incumbent base 소비 불가. 본 라운드는 base 비교가 아니라 신호 자체의 프로파일 측정이라 §7b 저촉 없음",
+    "국면 상호작용은 전부 ADVISORY·비유의 (중립 기울기 × 벤치 trailing12 +1.03%/1sd t 0.98 · × 개인 강도 +0.68% t 0.94). 승계 가설의 위기월 부호 반전 예측은 검정력 부족으로 확인도 반증도 못 함 — '효과 없음' 단정 금지",
+    "동시기 관측 라벨 유지 — F3 개인 순매수는 인과 아님(부모 승계)",
+    "RF-A3 점검: recent 3Y ICIR 별도 산출 미실시(분할 금지 mandate 하에서 3Y 창은 유효표본 36으로 구조적 저검정력) — 시기 축은 연속 추세 + post-2015 서술로 대체"
+  ]
+}

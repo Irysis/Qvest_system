@@ -23,8 +23,32 @@ tests <- c("test_essence_score.R",
            "test_hurdle_gate.R",
            "test_required_effect_size.R")
 
-.this_file <- sub("^--file=", "", grep("^--file=", commandArgs(FALSE), value = TRUE)[1])
-here <- dirname(normalizePath(.this_file, winslash = "/"))
+# ── 자기 위치 해석 (2026-08-08 수리) ────────────────────────────────────────
+# 구판은 commandArgs 의 `--file=` 만 봤다. 그런데 이 저장소의 헌법(R Execution Pattern)은
+# 한글 경로 인코딩 회피를 위해 **`Rscript -e 'source("...")'` 를 강제**하며 그 경로엔 `--file=` 이 없다.
+# ⇒ grep 이 character(0) → `[1]` 이 NA → 경로가 NA → 자식 5개 전부 exit=5.
+# 실패 모양이 "CRASHED: 5 / RESULT: FAIL" 이라 **계약이 깨진 것처럼 읽힌다**(실제론 러너가 길을 잃은 것).
+# 규약(r-portability 금칙④): resolver 우선순위 = CLAUDE_PROJECT_DIR 먼저. 못 찾으면 **크게 실패**한다.
+.resolve_here <- function() {
+  a <- grep("^--file=", commandArgs(FALSE), value = TRUE)
+  if (length(a) && !is.na(a[1]) && nzchar(a[1]))
+    return(dirname(normalizePath(sub("^--file=", "", a[1]), winslash = "/", mustWork = FALSE)))
+  for (root in c(Sys.getenv("CLAUDE_PROJECT_DIR"), Sys.getenv("QM_ROOT"))) {
+    if (nzchar(root)) {
+      p <- file.path(root, "08_Tests", "contract_regression")
+      if (dir.exists(p)) return(p)
+    }
+  }
+  if (file.exists(file.path(getwd(), "run_contract_regression.R"))) return(getwd())
+  stop("run_contract_regression: 자기 위치를 찾지 못했습니다. ",
+       "`--file=` 도 없고 CLAUDE_PROJECT_DIR/QM_ROOT 도 유효하지 않으며 cwd 도 아닙니다. ",
+       "★이것은 계약 실패가 아니라 러너 경로 해석 실패입니다 — 테스트 결과로 읽지 마십시오.")
+}
+here <- .resolve_here()
+if (!dir.exists(here)) {
+  stop(sprintf("run_contract_regression: 해석된 경로가 존재하지 않습니다 (%s). ", here),
+       "★러너 경로 실패이지 계약 실패가 아닙니다.")
+}
 rscript <- file.path(R.home("bin"),
                      if (.Platform$OS.type == "windows") "Rscript.exe" else "Rscript")
 

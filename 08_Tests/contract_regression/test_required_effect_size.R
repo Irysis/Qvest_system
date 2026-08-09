@@ -67,4 +67,31 @@ t_check("verdict: 작은 효과 + t 미달 -> INCONCLUSIVE_UNDERPOWERED",
 t_check("verdict: 큰 효과 + t 미달 -> NEGATIVE_POWERED",
         verdict_with_power(1.2, 0.05, 269)$verdict == "NEGATIVE_POWERED")
 
+# --- 바 퇴화 검출 (2026-08-08 WT-001 적대검증 렌즈1 적발) --------------------
+# 위반 주입: arm 자신의 sd 를 바로 쓰면 NEGATIVE_POWERED 가 도달 불가해진다.
+# WT-D20260808_001 P1/P2 실구성 재현 — sd_monthly = arm 자신의 delta sd.
+local({
+  n <- 295; sd_arm <- 0.02560
+  se_arm <- sd_arm / sqrt(n)               # 실제 NW 팽창 없음(delta 계열 무상관)
+  m_obs  <- 1.2 * se_arm                   # t = 1.2 (문턱 미달)
+  v <- verdict_with_power(1.2, m_obs, n, sd_monthly = sd_arm)
+  t_check("바 퇴화: arm 자신 sd -> INCONCLUSIVE_BAR_RESTATES_T",
+          v$verdict == "INCONCLUSIVE_BAR_RESTATES_T")
+  t_check("바 퇴화: NEGATIVE_POWERED 도달 불가 표기",
+          isFALSE(v$negative_powered_reachable))
+  t_check("바 퇴화: implied_t 가 문턱x팽창(2.5) 근방",
+          abs(v$implied_t_threshold - 2.5) < 0.01)
+})
+# 음성 대조 1: 외부 기준 sd (배포 노이즈가 arm 보다 훨씬 큼) -> 기존 의미 유지
+t_check("음성대조: 외부 기준 바 -> INCONCLUSIVE_UNDERPOWERED 유지",
+        verdict_with_power(1.2, 0.001, 28)$verdict == "INCONCLUSIVE_UNDERPOWERED")
+# 음성 대조 2: 바가 느슨 -> NEGATIVE_POWERED 정상 도달
+local({
+  v <- verdict_with_power(1.2, 0.05, 269)
+  t_check("음성대조: 느슨한 바 -> NEGATIVE_POWERED 유지", v$verdict == "NEGATIVE_POWERED")
+  t_check("음성대조: 느슨한 바는 도달 가능 표기", isTRUE(v$negative_powered_reachable))
+})
+# 음성 대조 3: PASS 경로도 진단 필드를 실는다
+t_check("PASS 도 진단 필드 보유", is.finite(verdict_with_power(2.5, 0.02, 80)$implied_t_threshold))
+
 t_summary("test_required_effect_size")

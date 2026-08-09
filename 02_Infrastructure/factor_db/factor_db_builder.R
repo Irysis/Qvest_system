@@ -24,16 +24,33 @@
 #==============================================================================
 
 # ─── Self-locate & source config ────────────────────────────────────────────
-.self_dir <- tryCatch(
-  dirname(sys.frame(1)$ofile),
-  error = function(e) {
-    if (exists("FUNC_PATH")) file.path(FUNC_PATH, "factor_db")
-    else file.path(
-      Sys.getenv("CLAUDE_PROJECT_DIR", Sys.getenv("QM_ROOT", "G:/Quant_Module_Moltbot")),
-      "02_Infrastructure", "factor_db"
-    )
+# ★2026-08-09 수리(FQ-163 시범 산출 중 적발). 구 코드는 `tryCatch(dirname(sys.frame(1)$ofile), ...)`
+#   하나만 믿었는데, **중첩 source 에서 `sys.frame(1)$ofile` 은 이 파일이 아니라 최상위 스크립트를
+#   가리키면서 에러를 던지지 않는다** → error 핸들러(올바른 resolver)가 영영 발화하지 않아
+#   fallback 이 dead code 였다. 실측: stage_artifacts/fq163/trial_build_consensus.R 이
+#   `source("factor_db/factor_db_builder.R")` 를 호출하자 config 를 `stage_artifacts/config.R` 에서
+#   찾다 중단. 같은 계통을 canonical_screen_bt.R(.CANON_DIR)에서 이미 한 번 수리했다(WT-015 R2).
+#   ★규약: **존재 검사로 정체 검사를 대체하지 말 것** — 후보 경로가 "있다"가 아니라
+#   "이 파일 자신을 담고 있다"를 확인한다(r-portability 금칙 ④ 정합).
+.ofile_guess <- tryCatch(dirname(sys.frame(1)$ofile), error = function(e) NA_character_)
+.self_dir <- local({
+  .is_self <- function(d) {
+    is.character(d) && length(d) == 1L && !is.na(d) && nzchar(d) &&
+      file.exists(file.path(d, "factor_db_builder.R")) &&
+      file.exists(file.path(dirname(d), "config.R"))     # 정체 확인 (marker 2종)
   }
-)
+  cands <- c(
+    .ofile_guess,
+    if (exists("FUNC_PATH")) file.path(FUNC_PATH, "factor_db") else NA_character_,
+    file.path(Sys.getenv("CLAUDE_PROJECT_DIR"), "02_Infrastructure", "factor_db"),
+    file.path(Sys.getenv("QM_ROOT"),            "02_Infrastructure", "factor_db"),
+    file.path(getwd(), "02_Infrastructure", "factor_db"),
+    file.path(getwd(), "factor_db")
+  )
+  for (d in cands) if (.is_self(d)) return(normalizePath(d, winslash = "/", mustWork = FALSE))
+  stop("[factor_db_builder] self_dir 해석 실패 — factor_db_builder.R 과 ../config.R 을 함께 담은 ",
+       "디렉토리를 찾지 못했습니다. CLAUDE_PROJECT_DIR 또는 QM_ROOT 를 설정하십시오.")
+})
 
 if (!exists("PROJECT_ROOT")) {
   source(file.path(dirname(.self_dir), "config.R"))

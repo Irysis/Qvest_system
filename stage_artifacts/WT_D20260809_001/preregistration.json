@@ -1,0 +1,110 @@
+{
+  "wt_id": "WT-D20260809_001",
+  "parent": "WT-D20260808_002 (M26_Revenue_Mom MATERIAL_QUALIFIED)",
+  "fq_ref": "FQ-161",
+  "written_at": "2026-08-09",
+  "written_before_measurement": true,
+  "title": "M26 전이 벽 채널 분해 — IC t 2.97 / FMB t 2.56 → cap-w PORT_t 1.544 의 갭 귀속",
+
+  "why_this_round": [
+    "인계 큐(next_session_task) 판정: M26 = '재료 품질에 흠이 없는데 전이에서 갈라지는 가장 깨끗한 사례'.",
+    "같은 날 D03_EWMA(rank-IC Harvey-t +3.50 → PORT_t −1.73)·Q01_EB(IC t +2.21 → PORT_t −0.21) 가 같은 자리에서 죽었다 — 전이 벽에 독립 데이터 3점.",
+    "기전 후보('monotonicity 0.25 — rank-IC 가 고변동 꼬리 왜도를 못 봄')는 인계 큐가 명시적으로 '검증 전'이라고 못박았다. 본 라운드가 그 검증이다.",
+    "FQ-161 next_action 이 지정한 소비면 ②필터는 랭킹과 **같은 순위**를 쓴다. 꼬리가 평평하면 필터도 함께 죽으므로, 채널 분해가 소비면 선택보다 논리적으로 선행한다."
+  ],
+
+  "not_in_scope": [
+    "재료 자격 재판정 — WT-D20260808_002 에서 확정. 재측정하지 않는다.",
+    "자본 주장 — 전 산출물 metric_type = canonical_screen / canonical_screen_diag. governor 미호출.",
+    "제약 완화 제안 — max 25 종목 / long-only / [0,0.20] / Σw=1 / 유동성 2e8 은 고정 축(AX-000 따름정리, axiom-engine INV-7)."
+  ],
+
+  "input_declared": {
+    "scores_panel": "stage_artifacts/WT_D20260808_002/alpha_scores.parquet (재사용 — 재빌드 금지, 중복 측정 회피)",
+    "expected_rows": 69885,
+    "expected_months": 283,
+    "expected_period": "2003-01 ~ 2026-07",
+    "observation_unit": "(월말 Date × Ticker)",
+    "returns": "build_monthly_forward_returns(RAWME, ME) — WT-002 와 동일 계약 경로",
+    "note": "★첫 출력은 입력 실측(행수·관측단위·범위)이며 위 선언과 대조한다. 불일치 시 측정 중단(feedback-assert-input-shape-before-measuring)."
+  },
+
+  "channels": {
+    "CH_A_cost": {
+      "question": "turnover 11.74/yr × 15bps 가 gross alpha 를 잠식해 전이가 죽는가",
+      "design": "동일 선별(top-25 EW, 유동성 2e8)에서 cost_bps_oneway ∈ {15, 0} 반사실 A/B. 선별·비중·기간 전부 동일 — 비용만 변화.",
+      "primary_stat": "PORT_t(NW lag3) cap-w basis, gross(0bps) vs net(15bps)",
+      "label_mandatory": "0bps arm = counterfactual_diag. 자본 주장 불가 — 실계좌는 비용을 낸다."
+    },
+    "CH_B_tail": {
+      "question": "FMB/rank-IC 기울기가 long-only 가 수확 가능한 상위 꼬리에 있는가, 아니면 하위(공매도 측)에 있는가",
+      "design": "월별 M26 decile(D1..D10) EW gross 수익 + 유니버스 EW 대비 초과. 단조성 = Spearman(decile rank, mean excess).",
+      "primary_stat": [
+        "monotonicity_spearman",
+        "top_decile_excess_ann / bottom_decile_excess_ann",
+        "long_side_share = |top excess| / (|top excess| + |bottom excess|)"
+      ],
+      "label_mandatory": "decile 은 유동성필터·비용 미적용 gross 진단(canonical_screen_diag). PORT_t 와 수준 직접 비교 금지."
+    },
+    "CH_C_breadth": {
+      "question": "신호가 확산형이라 25슬롯이 과집중인가",
+      "design": "top_n ∈ {15, 25, 50, 75} 에서 net PORT_t. 동일 점수·동일 비용.",
+      "primary_stat": "PORT_t(N) 곡선의 기울기, 특히 PORT_t(50) − PORT_t(25)",
+      "label_mandatory": "★N>25 arm 은 Production Constraints 밖 = **진단 전용**. 어떤 N 도 본 라운드에서 자본 주장·챔피언으로 승격 금지. 제약 완화 레버로 인용하는 것도 금지(INV-7).",
+      "dsr_note": "sweep 형태이나 argmax 선택을 하지 않는다(선택 연산자 부재) → DSR 게이트 부적용. 사후에 특정 N 을 고르면 이 선언 위반이며 그 결과는 무효."
+    }
+  },
+
+  "disposition_rules_fixed_before_results": [
+    {
+      "id": "D1",
+      "condition": "CH-A gross PORT_t ≥ 2.95 AND net PORT_t < 2.95",
+      "verdict": "COST_BOUND",
+      "meaning": "전이 벽의 바인딩 성분 = 구현 비용. 신호는 전이된다 — 회전율이 먹는다.",
+      "routing": "소비면 = 보유밴드(hysteresis)/리밸 주기 (FQ-090 전이 레버 격리, FQ-059 인접). 후속 라운드 사전등록 발행."
+    },
+    {
+      "id": "D2",
+      "condition": "CH-B long_side_share < 0.40 OR monotonicity_spearman < 0.50",
+      "verdict": "TAIL_BOUND",
+      "meaning": "기울기가 long-only 미수확 영역(하위 분위)에 있거나 순위-수익 관계가 단조가 아니다.",
+      "routing": "랭킹·필터 **양면** 死 (같은 순위를 쓰므로). 남는 소비면 = ③오버레이 입력 ④위험모델 ⑤monitoring 처럼 순위 아닌 채널. FQ-161 ② 필터면은 착수 전 폐기."
+    },
+    {
+      "id": "D3",
+      "condition": "CH-C PORT_t(50) − PORT_t(25) > 1.0",
+      "verdict": "BREADTH_BOUND",
+      "meaning": "신호가 확산형 — 25슬롯 집중이 정보를 버린다. 제약 안에서는 단독 sleeve 로 수확 불가.",
+      "routing": "소비면 = composite 성분/다중 sleeve 기여(단독 랭킹 아님). max 25 는 불변."
+    },
+    {
+      "id": "D4",
+      "condition": "D1·D2·D3 전부 미충족",
+      "verdict": "CHANNEL_UNIDENTIFIED",
+      "meaning": "세 채널 어느 것도 갭을 설명하지 못함. 이는 정보이지 실패가 아니다.",
+      "routing": "next_probe ≥2 도출 후 FQ 등재. 전이 벽의 미측정 축(신호수명×리밸 위상, 국면 조건부 전이)으로 이동."
+    },
+    {
+      "id": "D5",
+      "condition": "복수 조건 동시 충족",
+      "verdict": "다중 채널 — 전부 보고. argmax 채널 선택 금지.",
+      "routing": "각 채널의 라우팅을 병기하고 우선순위는 효과 크기가 아니라 **제약 조건 안 실행 가능성**으로 정한다."
+    }
+  ],
+
+  "power_discipline": {
+    "mandate_ref": "FQ-161 next_action ★착수 전 의무 (2026-08-08 추가)",
+    "rule": "각 판정에 required_effect() 바를 동반하고 implied_t_threshold 를 반드시 보고한다. arm 자신의 sd 로 바를 만들면 바가 t 검정의 재진술로 퇴화하므로(verdict_with_power 주석), 그 경우 NEGATIVE_POWERED 는 도달 불가라고 명시한다.",
+    "underpowered_handling": "검정력 미달 셀은 '효과 부재'가 아니라 INCONCLUSIVE_UNDERPOWERED 로만 기록. 분할 설계는 검정력을 파괴한다(2026-08-08 3/3 실증)."
+  },
+
+  "known_confounds_declared": [
+    "capw−EW 격차는 벤치-측 상수(sd 0.00106, arm 무관)이며 포트폴리오 사이즈 노출 진술이 아니다 — dual_basis 수치를 구성 진술로 읽지 않는다.",
+    "M26 lag1 retention 0.233(신호수명 <1개월) — CH-A 와 CH-C 는 이 사실과 정합해야 한다. 정합하지 않으면 측정 오류를 먼저 의심한다.",
+    "oos_retention_approx 0.123 — measurement-graduation §3 의 <0.5 무조건 FAIL band. 본 라운드가 어떤 채널을 확립해도 M26 단독 자본 경로는 이 게이트에서 별도로 막힌다. 채널 분해는 '왜 전이가 안 되나'의 답이지 자본 자격 주장이 아니다.",
+    "3구간 subperiod 는 전부 INCONCLUSIVE_UNDERPOWERED — 시대 감쇠를 확정으로 인용하지 않는다."
+  ],
+
+  "self_adversarial_required": true,
+  "close_round_required": true
+}

@@ -35,20 +35,58 @@ required_effect <- function(n, t_threshold = 2.0, sd_monthly = SPREAD_SD_MONTHLY
 }
 
 #' verdict_with_power — null 판정 시 '효과 부재' vs '검정력 부족' 구별
+#'
+#' ★2026-08-08 구조 보강 (WT-001 적대검증 렌즈1 적발): 이 함수는 호출자가 넘긴 `sd_monthly`
+#' 로 바를 만드는데, **그 sd 가 arm 자신의 계열 sd 면 바가 t 검정의 재진술로 퇴화**한다.
+#'   required = t_threshold x sd/sqrt(n) x nw_inflation 이므로 sd 가 arm 자신이면
+#'   required = t_threshold x nw_inflation x se_arm  ⇒  NEGATIVE_POWERED 는
+#'   |t| >= 2.5 이면서 동시에 |t| < 2.0 을 요구 = **논리적으로 도달 불가**.
+#'   그 결과 |t|<2 인 모든 셀이 기계적으로 INCONCLUSIVE_UNDERPOWERED 가 되어
+#'   라벨이 '|t| < 문턱' 이상의 정보를 담지 못한다(WT-D20260808_001 P1/P2 12셀 전건).
+#' ⇒ 관측 t 와 관측 효과에서 se_arm 을 역산해 **바가 무엇을 재는지 항상 보고**한다.
+#'   `implied_t_threshold` = required_monthly / se_arm = "이 바는 arm 자신의 se 기준 t 몇 짜리인가".
+#'     - 문턱 근방([t, t x 1.6]) => 바 = t 검정 재진술. NEGATIVE_POWERED 도달 불가 → 별도 판정 발행.
+#'     - 문턱보다 훨씬 큼      => 외부(배포) 노이즈 기준의 진짜 바. 기존 의미 유지.
+#'     - 문턱보다 훨씬 작음    => 바가 느슨. NEGATIVE_POWERED 가 정상 도달 가능.
+#'
 #' @param observed_t 실측 t · @param observed_monthly 실측 월평균 효과
 verdict_with_power <- function(observed_t, observed_monthly, n, t_threshold = 2.0, ...) {
   req <- required_effect(n = n, t_threshold = t_threshold, ...)
+
+  ## se_arm 역산 — 관측 t 가 유효할 때만. 0/비유한이면 진단 불가로 표기(추측 금지).
+  se_arm <- if (is.finite(observed_t) && abs(observed_t) > 1e-12)
+              abs(observed_monthly) / abs(observed_t) else NA_real_
+  implied_t <- if (is.finite(se_arm) && se_arm > 0) req$required_monthly / se_arm else NA_real_
+  ## NEGATIVE_POWERED 도달 가능 ⟺ 바가 t 검정보다 느슨해야 함
+  reachable <- if (is.finite(implied_t)) implied_t < t_threshold else NA
+  ## 바가 t 검정의 재진술인 구간 (nw_inflation 만큼만 더 엄격한 경우)
+  restates_t <- if (is.finite(implied_t)) (implied_t >= t_threshold && implied_t <= t_threshold * 1.6) else FALSE
+
+  diag <- list(se_arm = se_arm, implied_t_threshold = implied_t,
+               negative_powered_reachable = reachable, bar_restates_t = restates_t)
+
   if (is.finite(observed_t) && observed_t >= t_threshold) {
-    return(list(verdict = "PASS", note = "문턱 통과", required = req))
+    return(c(list(verdict = "PASS", note = "문턱 통과", required = req), diag))
   }
+
+  if (isTRUE(restates_t)) {
+    return(c(list(verdict = "INCONCLUSIVE_BAR_RESTATES_T",
+      note = sprintf(paste0("바가 arm 자신의 se 기준 t=%.2f 에 해당 — 문턱 %.2f 의 재진술이라 ",
+                            "NEGATIVE_POWERED 가 도달 불가하다. 이 라벨은 '|t| < %.2f' 이상의 정보를 담지 않는다. ",
+                            "검정력을 실제로 논하려면 sd_monthly 에 **외부 기준 계열**(배포 노이즈 등)을 넣어라."),
+                     implied_t, t_threshold, t_threshold),
+      required = req), diag))
+  }
+
   if (abs(observed_monthly) < req$required_monthly) {
-    return(list(verdict = "INCONCLUSIVE_UNDERPOWERED",
+    return(c(list(verdict = "INCONCLUSIVE_UNDERPOWERED",
       note = sprintf("실측 효과 %.4f/월(연 %.2f%%)가 문턱 도달 필요치 %.4f/월(연 %.2f%%) 미만 — 효과 부재가 아니라 검정력 부족",
                      observed_monthly, observed_monthly*12*100, req$required_monthly, req$required_annual*100),
-      required = req))
+      required = req), diag))
   }
-  list(verdict = "NEGATIVE_POWERED",
-       note = "효과크기는 검출 가능 범위인데 t 미달 — 효과 부재로 읽을 수 있음", required = req)
+
+  c(list(verdict = "NEGATIVE_POWERED",
+         note = "효과크기는 검출 가능 범위인데 t 미달 — 효과 부재로 읽을 수 있음", required = req), diag)
 }
 
 if (sys.nframe() == 0L) {
