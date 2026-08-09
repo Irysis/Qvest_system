@@ -1,0 +1,201 @@
+{
+  "meta": {
+    "round": "FQ-174 scrap ensemble",
+    "stage": "prereg_power_bars",
+    "window": "200502..202603",
+    "n_months": 254,
+    "universe_dedup": 85,
+    "dedup_rule": "corr>=0.999 union-find (p0f 재현)",
+    "base": "EW(dedup 85), Return.portfolio rebalance_on=months",
+    "t_threshold": 2,
+    "nw_lag": 3,
+    "nw_inflation_measured": 0.997334574134652,
+    "n_draws": {
+      "K12": 300,
+      "K25": 200
+    },
+    "boot": {
+      "rep": 1000,
+      "block": 12
+    },
+    "contract": "02_Infrastructure/contracts/required_effect_size.R (공식 동등, sd 는 실측 대체)",
+    "metric_type": "diagnostic_precheck"
+  },
+  "base_anchor": {
+    "ew191": {
+      "cagr": 11.95,
+      "sr": 0.6218,
+      "mdd": 41.5848579348131
+    },
+    "ew85": {
+      "cagr": 11.64,
+      "sr": 0.6486,
+      "mdd": 40.5209325713695
+    },
+    "elite": {}
+  },
+  "sd_distribution": {
+    "K12": [
+      {
+        "stat": "sd_full",
+        "median": 0.00730922682995356,
+        "q05": 0.00520007925327262,
+        "q95": 0.0108385202876498
+      },
+      {
+        "stat": "sd_DOWN",
+        "median": 0.0066836612608192,
+        "q05": 0.00473731578551586,
+        "q95": 0.00991837560054276
+      },
+      {
+        "stat": "sd_SURGE",
+        "median": 0.00802214375408066,
+        "q05": 0.00519627614727165,
+        "q95": 0.011866154497729
+      },
+      {
+        "stat": "sd_FLAT",
+        "median": 0.00669266357020032,
+        "q05": 0.00483672205000641,
+        "q95": 0.0100410064631552
+      },
+      {
+        "stat": "nwfac",
+        "median": 0.997334574134652,
+        "q05": 0.88291189001026,
+        "q95": 1.10141482345038
+      }
+    ],
+    "K25": [
+      {
+        "stat": "sd_full",
+        "median": 0.00452470931106737,
+        "q05": 0.00351309791012932,
+        "q95": 0.00648704582252264
+      },
+      {
+        "stat": "sd_DOWN",
+        "median": 0.00420275817245145,
+        "q05": 0.00284612083736628,
+        "q95": 0.0061287924904995
+      },
+      {
+        "stat": "sd_SURGE",
+        "median": 0.00499000817968322,
+        "q05": 0.00382089958698125,
+        "q95": 0.00718944889517872
+      },
+      {
+        "stat": "sd_FLAT",
+        "median": 0.00404827235625234,
+        "q05": 0.0032155440530982,
+        "q95": 0.00606847178417247
+      },
+      {
+        "stat": "nwfac",
+        "median": 1.00011613649423,
+        "q05": 0.894414712083413,
+        "q95": 1.09835397145188
+      }
+    ]
+  },
+  "bars": [
+    {
+      "arm_or_bucket": "FULL_254m",
+      "n": 254,
+      "sd_monthly_pct": 0.730922682995356,
+      "required_effect_pct_per_month": 0.0914798516925679,
+      "required_pct_per_year": 1.09775822031081,
+      "book_annual_contrib_pct": 1.09775822031081,
+      "nw_inflation": 0.997334574134652,
+      "is_ceiling_pct_per_month": 0.497277717035624,
+      "persistence_rho": -0.13,
+      "expected_oos_pct_per_month": 0,
+      "required_over_ceiling": 0.183961292771971,
+      "required_over_expected_oos": "Inf",
+      "plausible": false,
+      "metric_type": "diagnostic_precheck"
+    },
+    {
+      "arm_or_bucket": "DOWN_n31",
+      "n": 31,
+      "sd_monthly_pct": 0.66836612608192,
+      "required_effect_pct_per_month": 0.240084199878818,
+      "required_pct_per_year": 2.88101039854581,
+      "book_annual_contrib_pct": 0.351619379350079,
+      "nw_inflation": 1,
+      "is_ceiling_pct_per_month": 2.79147944451689,
+      "persistence_rho": 0.462,
+      "expected_oos_pct_per_month": 1.2896635033668,
+      "required_over_ceiling": 0.0860060783719539,
+      "required_over_expected_oos": 0.186160342796437,
+      "plausible": true,
+      "metric_type": "diagnostic_precheck"
+    },
+    {
+      "arm_or_bucket": "SURGE_n49",
+      "n": 49,
+      "sd_monthly_pct": 0.802214375408066,
+      "required_effect_pct_per_month": 0.229204107259447,
+      "required_pct_per_year": 2.75044928711337,
+      "book_annual_contrib_pct": 0.530598484521871,
+      "nw_inflation": 1,
+      "is_ceiling_pct_per_month": 2.2447488823622,
+      "persistence_rho": 0.498,
+      "expected_oos_pct_per_month": 1.11788494341637,
+      "required_over_ceiling": 0.102106792015974,
+      "required_over_expected_oos": 0.205033718907579,
+      "plausible": true,
+      "metric_type": "diagnostic_precheck"
+    },
+    {
+      "arm_or_bucket": "FLAT_n174",
+      "n": 174,
+      "sd_monthly_pct": 0.669266357020032,
+      "required_effect_pct_per_month": 0.101473903178013,
+      "required_pct_per_year": 1.21768683813616,
+      "book_annual_contrib_pct": 0.834163424549967,
+      "nw_inflation": 1,
+      "is_ceiling_pct_per_month": 0.582535586541299,
+      "persistence_rho": -0.436,
+      "expected_oos_pct_per_month": 0,
+      "required_over_ceiling": 0.174193483664228,
+      "required_over_expected_oos": "Inf",
+      "plausible": false,
+      "metric_type": "diagnostic_precheck"
+    },
+    {
+      "arm_or_bucket": "MDD_axis_blockboot",
+      "n": 254,
+      "sd_monthly_pct": 1.91194883853133,
+      "required_effect_pct_per_month": 3.82389767706266,
+      "required_pct_per_year": 3.82389767706266,
+      "unit_note": "단위는 %p(ΔMDD), 월수익률 아님",
+      "base_mdd_pct": 40.5209325713695,
+      "achievable_best_mdd_pct": 35.5637304646604,
+      "achievable_delta_pp": 4.95720210670906,
+      "achievable_t": 2.5927483030963,
+      "plausible": true,
+      "per_arm": [
+        {
+          "arm": "rand12_medianMDD",
+          "mdd_arm_pct": 41.7275381490504,
+          "delta_mdd_obs_pp": -1.20660557768095,
+          "se_delta_pp": 1.25793406187003,
+          "t_obs": -0.959196204519043,
+          "required_delta_pp": 2.51586812374005
+        },
+        {
+          "arm": "rand12_bestMDD",
+          "mdd_arm_pct": 35.5637304646604,
+          "delta_mdd_obs_pp": 4.95720210670906,
+          "se_delta_pp": 2.56596361519264,
+          "t_obs": 1.93190662461397,
+          "required_delta_pp": 5.13192723038527
+        }
+      ],
+      "metric_type": "diagnostic_precheck"
+    }
+  ]
+}

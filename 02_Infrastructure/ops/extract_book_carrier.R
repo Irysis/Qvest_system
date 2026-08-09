@@ -123,7 +123,22 @@ if (!is.na(valp) && file.exists(valp)) {
 
 # 6) 저장 (CSV=엑셀 readable + parquet=하니스용 + meta + validation)
 outdir <- "06_Registry/book_carrier"; dir.create(outdir, recursive = TRUE, showWarnings = FALSE)
-safe_id <- gsub("[^A-Za-z0-9_]+", "_", admitted)
+# ── (2026-08-09 수리) 출력 정체성 분리 — ★출력 경로 충돌 실사고 방지 ─────────────
+#   구판은 출력을 `carrier_<admitted>.parquet` 로 고정했다. 그런데 2026-08-08 에 추가된
+#   extract_book_carrier_d3.R 도 **같은 경로**에 쓴다(다른 내용: per-stock + invested/dR05 오버레이).
+#   즉 현 admitted 로 이 스크립트를 돌리면 D3 캐리어를 **덮어써서** invested 컬럼을 지우고,
+#   carrier_meta.json 까지 다른 스키마로 갈아치운다 → 배터리 오버레이가 조용히 구 layer5 로 낙하.
+#   ★두 빌더가 7주 간격으로 작성돼 서로를 몰랐다. 같은 산출물 이름을 두 생산자가 쓰면
+#     "나중에 돈 쪽이 이긴다"가 되고, 그건 어느 로그에도 안 보인다.
+#   수리: 출력 정체성을 config 의 `output_id` 로 분리한다(미지정 시 admitted — 하위호환).
+#         본 스크립트는 **per-stock 원천**을 만들고, D3 빌더가 그걸 읽어 오버레이를 얹는다.
+out_id <- as.character(src$output_id %||% admitted)
+if (!identical(out_id, admitted))
+  cat(sprintf("[carrier] 출력 정체성 분리: output_id=%s (admitted=%s) — D3 캐리어 덮어쓰기 방지\n", out_id, admitted))
+safe_id <- gsub("[^A-Za-z0-9_]+", "_", out_id)
+# ★meta 도 같은 이유로 분리한다. carrier_meta.json 은 **D3 빌더 소유**다(배터리가 읽는 정본).
+meta_path <- if (identical(out_id, admitted)) file.path(outdir, "carrier_meta.json")
+             else file.path(outdir, sprintf("carrier_%s_meta.json", safe_id))
 csv_path <- file.path(outdir, sprintf("carrier_%s.csv", safe_id))
 pq_path  <- file.path(outdir, sprintf("carrier_%s.parquet", safe_id))
 fwrite(P, csv_path); write_parquet(P, pq_path)
@@ -140,6 +155,8 @@ meta <- list(
   validated_against = valp %||% NA, book_state_updated_at = bs$updated_at %||% NA,
   csv = csv_path, parquet = pq_path, note = "PG2 변경 시 book_carrier_sources.json 갱신 후 재실행. 하니스는 parquet(ret_fwd,weight_strategy)을 읽는다."
 )
-write(toJSON(meta, pretty = TRUE, auto_unbox = TRUE, na = "null"), file.path(outdir, "carrier_meta.json"))
+meta$output_id <- out_id
+write(toJSON(meta, pretty = TRUE, auto_unbox = TRUE, na = "null"), meta_path)
+cat(sprintf("[carrier] meta → %s\n", meta_path))
 cat(sprintf("\n[carrier] saved: %d months, %d held rows → %s (+csv,+monthly,+validation,+meta)\n",
             meta$n_months, nrow(P), pq_path))

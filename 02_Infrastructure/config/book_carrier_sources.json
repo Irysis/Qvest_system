@@ -1,6 +1,23 @@
 {
   "_note": "현 book(PG2 admitted 전략) → faithful per-stock A/B 캐리어 소스 매핑 (도훈 mandate 2026-06-18). extract_book_carrier.R가 book_state.json의 admitted_ids[0]로 이 매핑을 조회해, 전략 run_all.R(285-405) 엔진을 그대로 복제하여 월별 *실제 보유종목 + tilt weight + forward 실현수익(RAWDATA prod(1+Ret)-1)* 캐리어를 1회 추출·캐시한다. ★PG2 변경 시: 새 admitted 전략 키를 여기 추가/갱신 후 extract_book_carrier.R 재실행만 하면 캐리어가 새 book을 추종한다.",
   "_carrier_fix_2026_06_18": "구 v1은 ret_col=Ret_1m을 종목수익으로 썼으나 trailing/contemporaneous 컬럼이라 전략 실현수익 재현 실패(top20 EW CAGR 15.6% vs 진실 48.9%, cor 0.12). 현재는 RAWDATA forward 복리로 종목수익을 재산출하고 validation_period_returns(03_period_returns.csv ret_gross)에 대조해 faithful 검증한다.",
+  "_pg2_switch_2026_07_19_gap": "07-19 PG2 전환(STR_1715_AR_on_M4_R05_overlay_PG2 → STR_1715_on_M4gAE_R05_noLayer4_PG2) 때 이 매핑이 갱신되지 않아 extract_book_carrier.R 이 stop('매핑 없음')으로 종료 = per-stock 캐리어가 2026-06-18 빌드에서 **연장 불가**로 얼어붙었다. 배터리는 그 캐리어의 269개월만 재고 있었고(북은 271개월/2026-08까지), 아무 로그도 그걸 말해주지 않았다. 아래 항목이 그 공백을 메운다. ★output_id 로 출력 정체성을 분리한다 — 미지정 시 carrier_<admitted>.parquet 에 쓰는데 그 경로는 extract_book_carrier_d3.R 소유(오버레이 invested 포함본)라 덮어쓰면 배터리 오버레이가 조용히 구 layer5 로 낙하한다.",
+  "STR_1715_on_M4gAE_R05_noLayer4_PG2": {
+    "output_id": "STR_1715_AR_on_M4_R05_overlay_PG2",
+    "alpha_scores": "stage_artifacts/WT_D20260425_010/alpha_scores.parquet",
+    "rawdata": ".cache/rawdata.parquet",
+    "validation_period_returns": "04_Research/strategies/STR_1715_WT016_Iter31_GridBestProd/output/03_period_returns.csv",
+    "score_col": "score_eff",
+    "top_n": 20,
+    "min_names": 15,
+    "liq_threshold": 200000000,
+    "lambda": 1.5,
+    "tophi": 3.0,
+    "ub_weight": 0.20,
+    "ub_weight_crisis": 0.10,
+    "commission_bps": 15,
+    "note": "현 PG2 의 per-stock 원천. ★per-stock 내용은 2-1 과 동일하다(carrier_meta F2 실측: 선별·비중·ret_fwd 동일, 차이는 오버레이뿐) — 그래서 같은 패널·같은 엔진 파라미터를 쓰고 output_id 로 2-1 정체성에 쓴다. 오버레이(invested/dR05)는 extract_book_carrier_d3.R 이 live_book_series 에서 얹는다. 체인: extract_book_carrier.R → carrier_STR_1715_AR_on_M4_R05_overlay_PG2.parquet → extract_book_carrier_d3.R → carrier_STR_1715_on_M4gAE_R05_noLayer4_PG2.parquet(배터리 입력)."
+  },
   "STR_1715_AR_on_M4_R05_overlay_PG2": {
     "alpha_scores": "stage_artifacts/WT_D20260425_010/alpha_scores.parquet",
     "rawdata": ".cache/rawdata.parquet",
