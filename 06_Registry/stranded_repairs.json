@@ -1,19 +1,19 @@
 {
   "_doc": "좌초 수리 감사 — worktree에 갇혀 main에 도달하지 못한 수리 탐지. 생성기 02_Infrastructure/ops/stranded_repairs_audit.sh. verdict: merged_upstream=worktree가 stale 사본(정리 가능) / lost=main에 전무(조치 필요) / mostly_lost=80%+ 미존재(사실상 유실) / partial=일부만 반영(수동 확인) / deletion_only=삭제만 / ledger_divergence=append-only 원장의 세션별 분기(수리 아님·경보 제외) / superseded_upstream=main이 그 경로에서 더 앞서 나감(구판 교체·조치 불요·경보 제외). ★lost/partial만 조치 대상이다 — 2026-08-08 이전 판은 뒤 2종을 유실로 계상해 경보의 80%가 허위였다(36건 중 진짜 7건). collisions=2개 이상 worktree가 같은 파일을 main 밖에서 수정 중(병합 순서 결정 필요).",
-  "generated_at": "2026-08-09 12:19:28",
+  "generated_at": "2026-08-09 20:02:46",
   "main_ref": "main",
   "stale_threshold_days": 3,
   "summary": {
-    "worktrees_total": 33,
-    "with_uncommitted": 31,
-    "with_unmerged": 3,
+    "worktrees_total": 34,
+    "with_uncommitted": 33,
+    "with_unmerged": 4,
     "stale_over_threshold": 28,
-    "files_lost": 4,
+    "files_lost": 29,
     "files_partial": 0,
-    "files_ledger_divergence": 29,
-    "files_superseded_upstream": 19,
+    "files_ledger_divergence": 31,
+    "files_superseded_upstream": 21,
     "files_scratch_artifact": 4,
-    "collisions": 2,
+    "collisions": 3,
     "prune_candidates": 0
   },
   "worktrees": [
@@ -127,7 +127,7 @@
       "path":"C:/Users/99922/OneDrive/Quant_Module_Moltbot/.claude/worktrees/distracted-greider-f54a99",
       "ahead_of_main":0,
       "dirty_files":4,
-      "last_commit_age_days":6,
+      "last_commit_age_days":7,
       "stale":true,
       "lost":0,
       "partial":0,
@@ -161,27 +161,14 @@
       "dirty_files":5,
       "last_commit_age_days":0,
       "stale":false,
-      "lost":4,
+      "lost":3,
       "partial":0,
       "files":[
-        {"path":"02_Infrastructure/ops/frontier_queue_io.R","state":"M","added_lines":130,"missing_in_main":127,"verdict":"mostly_lost"},
+        {"path":"02_Infrastructure/ops/frontier_queue_io.R","state":"M","added_lines":130,"missing_in_main":127,"verdict":"superseded_upstream"},
         {"path":"qepm/observability/events.jsonl","state":"M","added_lines":58,"missing_in_main":53,"verdict":"ledger_divergence"},
         {"path":"02_Infrastructure/ops/shared_registry_io.R","state":"??","added_lines":1,"missing_in_main":1,"verdict":"lost"},
         {"path":"02_Infrastructure/worktask/wt_inflight_lock.R","state":"??","added_lines":1,"missing_in_main":1,"verdict":"lost"},
         {"path":"08_Tests/worktask/","state":"??","added_lines":1,"missing_in_main":1,"verdict":"lost"}
-      ]
-    },
-    {
-      "worktree":"epic-mccarthy-4153cf",
-      "branch":"claude/epic-mccarthy-4153cf",
-      "path":"C:/Users/99922/OneDrive/Quant_Module_Moltbot/.claude/worktrees/epic-mccarthy-4153cf",
-      "ahead_of_main":2,
-      "dirty_files":0,
-      "last_commit_age_days":1,
-      "stale":false,
-      "lost":0,
-      "partial":0,
-      "files":[
       ]
     },
     {
@@ -190,7 +177,7 @@
       "path":"C:/Users/99922/OneDrive/Quant_Module_Moltbot/.claude/worktrees/friendly-liskov-9b9cd5",
       "ahead_of_main":0,
       "dirty_files":14,
-      "last_commit_age_days":6,
+      "last_commit_age_days":7,
       "stale":true,
       "lost":0,
       "partial":0,
@@ -223,7 +210,7 @@
       "partial":0,
       "files":[
         {"path":"02_Infrastructure/axiom/lcode_emit.R","state":"M","added_lines":36,"missing_in_main":0,"verdict":"merged_upstream"},
-        {"path":"02_Infrastructure/axiom/lcode_harvester.py","state":"M","added_lines":62,"missing_in_main":0,"verdict":"merged_upstream"},
+        {"path":"02_Infrastructure/axiom/lcode_harvester.py","state":"M","added_lines":62,"missing_in_main":3,"verdict":"superseded_upstream"},
         {"path":"02_Infrastructure/axiom/review.R","state":"M","added_lines":20,"missing_in_main":0,"verdict":"merged_upstream"},
         {"path":"02_Infrastructure/config.R","state":"M","added_lines":36,"missing_in_main":0,"verdict":"merged_upstream"},
         {"path":"02_Infrastructure/data/daily_refresh.sh","state":"M","added_lines":14,"missing_in_main":0,"verdict":"merged_upstream"},
@@ -269,7 +256,7 @@
       "path":"C:/Users/99922/OneDrive/Quant_Module_Moltbot/.claude/worktrees/gifted-lamarr-ff5ac2",
       "ahead_of_main":74,
       "dirty_files":0,
-      "last_commit_age_days":0,
+      "last_commit_age_days":1,
       "stale":false,
       "lost":0,
       "partial":0,
@@ -341,12 +328,52 @@
       ]
     },
     {
+      "worktree":"jovial-mcnulty-f7d018",
+      "branch":"claude/jovial-mcnulty-f7d018",
+      "path":"C:/Users/99922/OneDrive/Quant_Module_Moltbot/.claude/worktrees/jovial-mcnulty-f7d018",
+      "ahead_of_main":27,
+      "dirty_files":27,
+      "last_commit_age_days":0,
+      "stale":false,
+      "lost":26,
+      "partial":0,
+      "files":[
+        {"path":"qepm/observability/events.jsonl","state":"M","added_lines":190,"missing_in_main":183,"verdict":"ledger_divergence"},
+        {"path":"stage_artifacts/fq170_band_cost_20260809/ak2_result.json","state":"??","added_lines":1,"missing_in_main":1,"verdict":"lost"},
+        {"path":"stage_artifacts/fq170_band_cost_20260809/aq2_result.json","state":"??","added_lines":1,"missing_in_main":1,"verdict":"lost"},
+        {"path":"stage_artifacts/fq170_band_cost_20260809/as2_result.json","state":"??","added_lines":1,"missing_in_main":1,"verdict":"lost"},
+        {"path":"stage_artifacts/fq170_band_cost_20260809/au1_result.json","state":"??","added_lines":1,"missing_in_main":1,"verdict":"lost"},
+        {"path":"stage_artifacts/fq170_band_cost_20260809/au2_result.json","state":"??","added_lines":1,"missing_in_main":1,"verdict":"lost"},
+        {"path":"stage_artifacts/fq170_band_cost_20260809/az1_result.json","state":"??","added_lines":1,"missing_in_main":1,"verdict":"lost"},
+        {"path":"stage_artifacts/fq170_band_cost_20260809/bb4_result.json","state":"??","added_lines":1,"missing_in_main":1,"verdict":"lost"},
+        {"path":"stage_artifacts/fq170_band_cost_20260809/bd1_result.json","state":"??","added_lines":1,"missing_in_main":1,"verdict":"lost"},
+        {"path":"stage_artifacts/fq170_band_cost_20260809/bf2_result.json","state":"??","added_lines":1,"missing_in_main":1,"verdict":"lost"},
+        {"path":"stage_artifacts/fq170_band_cost_20260809/bh2_result.json","state":"??","added_lines":1,"missing_in_main":1,"verdict":"lost"},
+        {"path":"stage_artifacts/fq170_band_cost_20260809/bj1_result.json","state":"??","added_lines":1,"missing_in_main":1,"verdict":"lost"},
+        {"path":"stage_artifacts/fq170_band_cost_20260809/run_ak2_turnover.R","state":"??","added_lines":1,"missing_in_main":1,"verdict":"lost"},
+        {"path":"stage_artifacts/fq170_band_cost_20260809/run_aq2_decompose_decay.R","state":"??","added_lines":1,"missing_in_main":1,"verdict":"lost"},
+        {"path":"stage_artifacts/fq170_band_cost_20260809/run_as2_halflife.R","state":"??","added_lines":1,"missing_in_main":1,"verdict":"lost"},
+        {"path":"stage_artifacts/fq170_band_cost_20260809/run_au1_band_width.R","state":"??","added_lines":1,"missing_in_main":1,"verdict":"lost"},
+        {"path":"stage_artifacts/fq170_band_cost_20260809/run_au2_k4_rebound.R","state":"??","added_lines":1,"missing_in_main":1,"verdict":"lost"},
+        {"path":"stage_artifacts/fq170_band_cost_20260809/run_az1_inverted_screen.R","state":"??","added_lines":1,"missing_in_main":1,"verdict":"lost"},
+        {"path":"stage_artifacts/fq170_band_cost_20260809/run_az1b_probe.R","state":"??","added_lines":1,"missing_in_main":1,"verdict":"lost"},
+        {"path":"stage_artifacts/fq170_band_cost_20260809/run_az1c_census.R","state":"??","added_lines":1,"missing_in_main":1,"verdict":"lost"},
+        {"path":"stage_artifacts/fq170_band_cost_20260809/run_bb4_independence.R","state":"??","added_lines":1,"missing_in_main":1,"verdict":"lost"},
+        {"path":"stage_artifacts/fq170_band_cost_20260809/run_bd1_d03_pc1.R","state":"??","added_lines":1,"missing_in_main":1,"verdict":"lost"},
+        {"path":"stage_artifacts/fq170_band_cost_20260809/run_bd1b_d03_pc1.R","state":"??","added_lines":1,"missing_in_main":1,"verdict":"lost"},
+        {"path":"stage_artifacts/fq170_band_cost_20260809/run_bf2_hump_dim.R","state":"??","added_lines":1,"missing_in_main":1,"verdict":"lost"},
+        {"path":"stage_artifacts/fq170_band_cost_20260809/run_bh2_monotone_dim.R","state":"??","added_lines":1,"missing_in_main":1,"verdict":"lost"},
+        {"path":"stage_artifacts/fq170_band_cost_20260809/run_bj1_m26_pc1.R","state":"??","added_lines":1,"missing_in_main":1,"verdict":"lost"},
+        {"path":"stage_artifacts/fq170_band_cost_20260809/run_bl1_base_strengthen.R","state":"??","added_lines":1,"missing_in_main":1,"verdict":"lost"}
+      ]
+    },
+    {
       "worktree":"kind-einstein-a2961a",
       "branch":"claude/kind-einstein-a2961a",
       "path":"C:/Users/99922/OneDrive/Quant_Module_Moltbot/.claude/worktrees/kind-einstein-a2961a",
       "ahead_of_main":0,
       "dirty_files":4,
-      "last_commit_age_days":6,
+      "last_commit_age_days":7,
       "stale":true,
       "lost":0,
       "partial":0,
@@ -412,7 +439,7 @@
       "path":"C:/Users/99922/OneDrive/Quant_Module_Moltbot/.claude/worktrees/nostalgic-borg-464b19",
       "ahead_of_main":0,
       "dirty_files":16,
-      "last_commit_age_days":6,
+      "last_commit_age_days":7,
       "stale":true,
       "lost":0,
       "partial":0,
@@ -483,7 +510,7 @@
       "path":"C:/Users/99922/OneDrive/Quant_Module_Moltbot/.claude/worktrees/serene-liskov-598614",
       "ahead_of_main":0,
       "dirty_files":6,
-      "last_commit_age_days":7,
+      "last_commit_age_days":8,
       "stale":true,
       "lost":0,
       "partial":0,
@@ -530,7 +557,7 @@
       "path":"C:/Users/99922/OneDrive/Quant_Module_Moltbot/.claude/worktrees/upbeat-hamilton-55ca01",
       "ahead_of_main":0,
       "dirty_files":4,
-      "last_commit_age_days":6,
+      "last_commit_age_days":7,
       "stale":true,
       "lost":0,
       "partial":0,
@@ -547,7 +574,7 @@
       "path":"C:/Users/99922/OneDrive/Quant_Module_Moltbot/.claude/worktrees/upbeat-lumiere-f0aeaf",
       "ahead_of_main":0,
       "dirty_files":8,
-      "last_commit_age_days":6,
+      "last_commit_age_days":7,
       "stale":true,
       "lost":0,
       "partial":0,
@@ -577,6 +604,20 @@
       ]
     },
     {
+      "worktree":"wonderful-hofstadter-15b8bc",
+      "branch":"claude/wonderful-hofstadter-15b8bc",
+      "path":"C:/Users/99922/OneDrive/Quant_Module_Moltbot/.claude/worktrees/wonderful-hofstadter-15b8bc",
+      "ahead_of_main":30,
+      "dirty_files":1,
+      "last_commit_age_days":0,
+      "stale":false,
+      "lost":0,
+      "partial":0,
+      "files":[
+        {"path":"qepm/observability/events.jsonl","state":"M","added_lines":6,"missing_in_main":6,"verdict":"ledger_divergence"}
+      ]
+    },
+    {
       "worktree":"zealous-dubinsky-e0abe4",
       "branch":"claude/zealous-dubinsky-e0abe4",
       "path":"C:/Users/99922/OneDrive/Quant_Module_Moltbot/.claude/worktrees/zealous-dubinsky-e0abe4",
@@ -598,8 +639,9 @@
     }
   ],
   "collisions": [
-      {"path":"08_Tests/hooks/run_all_hooks.sh","worktree_count":2,"branches":["agitated-jones-cb731f","epic-mccarthy-4153cf"]},
-      {"path":"qepm/observability/events.jsonl","worktree_count":3,"branches":["agitated-jones-cb731f","epic-mccarthy-4153cf","gifted-lamarr-ff5ac2"]}
+      {"path":"02_Infrastructure/worktask/schema.json","worktree_count":2,"branches":["agitated-jones-cb731f","wonderful-hofstadter-15b8bc"]},
+      {"path":"08_Tests/hooks/run_all_hooks.sh","worktree_count":3,"branches":["agitated-jones-cb731f","jovial-mcnulty-f7d018","wonderful-hofstadter-15b8bc"]},
+      {"path":"qepm/observability/events.jsonl","worktree_count":4,"branches":["agitated-jones-cb731f","gifted-lamarr-ff5ac2","jovial-mcnulty-f7d018","wonderful-hofstadter-15b8bc"]}
   ],
   "prune_candidates": [
   ]
