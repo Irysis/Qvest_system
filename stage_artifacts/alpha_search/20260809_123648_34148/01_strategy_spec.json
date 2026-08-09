@@ -1,0 +1,21 @@
+{
+  "run_id": "ASBT_20260809_123648_34148",
+  "strategy_id": "STR_AS_20260809_123648_34148",
+  "strategy_name": "FQ100_ipm_sector_neutral",
+  "strategy_family": "alpha_search",
+  "signal_description": "업종-중립 순이익률 수준 (i_PM = 업종내 Z-score of TTM NetIncome/Revenue) — FQ-100: rank-IC 0.0143 양 시대 안정, PORT_t 전이 검증",
+  "universe_rule": "K200_KQ150 + 20d avg trading value >= 2e8 KRW (t-1 PIT)",
+  "rebalance_frequency": "monthly",
+  "signal_date_rule": "month_end_signal",
+  "execution_date_rule": "t_plus_1_first_trading_day",
+  "weighting_method": "equal",
+  "max_position_weight": 0.2,
+  "max_leverage": 1,
+  "cash_rule": "fully_invested_after_floor_shares",
+  "cost_model": "v2.4_delta_15bps",
+  "missing_data_rule": "exclude_na_scores",
+  "risk_controls": "buffer_zone(keep_n=50, entry_n=25)",
+  "lookahead_prevention": "detect_lookahead static scan CLEAN (PIT C1-C15)",
+  "survivorship_bias_control": "RAWDATA PIT membership / time-varying universe filters",
+  "factor_engine_path": "stage_artifacts/paper_recharge/factor_engine_FQ100_ipm_20260809.R"
+}
