@@ -1,0 +1,169 @@
+{
+  "wt_id": "WT-D20260809_005",
+  "frontier_queue_id": "FQ-198",
+  "designed_by": "alpha-hypothesis",
+  "model_tier": "fable",
+  "designed_at": "2026-08-09",
+  "spec_scope": "AST v1.1 ①~④ + Step 0 prechecks only — ⑤ AST 구성·팩터 소싱·실측은 alpha-research 소관 (재작성 금지, 결함 발견 시 challenge_note + 재설계 요청)",
+
+  "prechecks": {
+    "hypothesis_index_hits": [
+      "WT-D20260705_003_fwd_consensus_level — forward 컨센서스 '수준' 전략 negative (수준-전략 층, 본 라운드의 증분 층과 상이)",
+      "DIST-AR-017 [초안] — forward_consensus/value ic_port_t_wall (경로-scoped, 본 4종 미포함)",
+      "DIST-QPM-022 [초안] — consensus family REDUNDANT/MDD (10건 L-code) → 공선성 경고로 승계 (challenge_note CH-5)",
+      "SUE 계열 기존 측정 = C01 수준·M25 streak·M26/M28 revision 뿐 — C10/C13/C15/C18 은 2026-08-09 재빌드 전 442개월 전 구간 0행으로 물리적 미측정 (FQ-163 수리 산물, build_hash 20260809203741_8c9befe0)"
+    ],
+    "frontier_queue_refs": [
+      "FQ-198 등재·owner CLAIMED 확인 (alpha_frontier_queue.json:4319-4336, status=in_flight_20260809)",
+      "dohoon_decision 항목 아님 — 세션 착수 적격",
+      "parent FQ-163 (compute_consensus.R 침묵 스킵 7종 수리)"
+    ],
+    "owner": "alpha-research WT-D20260809_005 (가설설계 구간: alpha-hypothesis, fable)",
+    "discovery_seed": "부재 (request.json 에 hypothesis_title 기재 — Step 0 discovery 조건부 실행 요건 미해당, 설계 ①~④만 수행)",
+    "code_read_verification": {
+      "file": "02_Infrastructure/factor_db/compute_consensus.R",
+      "facts": [
+        "C10 (:246-255) = Ticker 별 최신 sue 관측 최대 4개의 평균 (mean(sue[seq_len(min(.N,4))]), .cons_history 정렬 = 최신 우선). '4분기'가 아니라 '4관측' — 관측 간격은 미실측 (P0 이관)",
+        "C13 (:289-298) = 최신 esbr 관측 최대 3개의 평균 — 최신 관측 포함 → C04 와 구성상 공선",
+        "C15 (:328-337) = sue[1L] − sue[2L] (N≥2 요건). C01 = latest sue 와 sue[1L] 동일 원천 → C01 통제 시 C15 증분 ≡ −sue[2] 정보 (정확한 선형 관계)",
+        "C18 (:358-406) = 발표일 프록시(최신 sue 관측일, sig_d−400 ≤ ad ≤ sig_d−3) 주변 [ad−3, ad+3] 캘린더 창의 Σ(Ret−BM_Ret), n_obs≥2. 이름의 '3d'와 달리 실창 최대 7일 · 발표일은 벤더 as-of 프록시 · PIT 는 창 전체 ≤ sig_d 보장 (FQ-163 수리 시 C1/C2 결함 제거 확인)",
+        "incumbent: C01 (:139-143) = 최신 sue 수준 / C02 (:145-149) = eps_chg_1m 최신 / C04 (:157-161) = esbr 최신",
+        "선택 소거 근거: C14/C17 = .CONSENSUS_DEPRECATED (:52-55, M26/M28 정본 위임) · C11 = M25 와 식·원천·정렬 동일 (:258-260 주석)"
+      ]
+    }
+  },
+
+  "candidates": [
+    {"title": "C10_SUE_Persistence 증분", "family": "consensus_sue_pead", "selected_as_primary": true},
+    {"title": "C13_Revision_Breadth_3m 증분", "family": "consensus_revision_breadth", "selected_as_primary": true},
+    {"title": "C15_Forecast_Error_Trend 증분", "family": "consensus_sue_pead", "selected_as_primary": true},
+    {"title": "C18_Earnings_CAR_3d 증분", "family": "earnings_event_return", "selected_as_primary": true},
+    {"title": "C11_Earnings_Streak", "family": "consensus_sue_pead", "selected_as_primary": false, "why_not_selected": "M25_Earnings_Mom_Streak 와 식·원천·정렬 동일 (compute_consensus.R:258-260) — 기측정 재료의 재포장이 됨"},
+    {"title": "C14_Revenue_Surprise / C17_OP_Revision", "family": "consensus_revision", "selected_as_primary": false, "why_not_selected": "M26/M28 정본 위임 deprecated (:52-55) — M26 은 WT-D20260808_002 에서 재료 자격 기획정"},
+    {"title": "C09_Earnings_Surprise_Sq", "family": "consensus_sue_pead", "selected_as_primary": false, "why_not_selected": "sign(sue)·sue² = C01 의 단조 변환 — 신규 정보 없음, 증분 프레임에서 공허"}
+  ],
+
+  "selected": {
+    "hypothesis_title": "해금된 컨센서스 4종(C10_SUE_Persistence · C13_Revision_Breadth_3m · C15_Forecast_Error_Trend · C18_Earnings_CAR_3d) 재료 자격 — 북 incumbent 컨센서스 3종 위 증분",
+    "hypothesis_description": "북 incumbent 컨센서스 3종(C01_SUE 수준 · C02_EPS_Chg_1m 리비전 · C04_ESBR 폭)을 통제한 FMB NW(lag3) 증분 회귀에서, 4종 각각(별도 primary, n_trials=4 사전등록 family grid)이 사전 지정 부호로 |t|≥2.0 을 내면 재료 자격. 자본 주장 금지 — IC→PORT_t 전이 벽은 별도 관문 (선례 M26: 재료 t +2.555 획득 후 전이 미달).",
+    "shared_controls": "z(C01_SUE) + z(C02_EPS_Chg_1m) + z(C04_ESBR) — 신규 4종은 각각 별도 회귀 (4종 동시 투입 금지, request boundary)",
+    "primaries": [
+      {
+        "factor": "C10_SUE_Persistence",
+        "definition_verified": "Ticker 별 최신 sue 관측 ≤4개의 단순평균 (compute_consensus.R:246-255)",
+        "prespecified_sign": "+",
+        "material_qualification": "FMB NW3 증분 t ≥ +2.0 (부호 정합 필수 — 부호 위반 |t|≥2 는 자격 아님, 기전 기각 정보)",
+        "mechanism": {
+          "agent": "실적 서프라이즈를 계절적 랜덤워크로 오인하는 KR 개인투자자 군집(유니버스 거래대금의 지배적 주체) + 예측 갱신에 anchoring 하는 sell-side 애널리스트 (Bernard-Thomas 1990 JAE; Abarbanell-Bernard 1992 JF — 애널리스트 예측 자체가 과거 서프라이즈에 과소반응)",
+          "friction": "KR 공매도 제약(long-only 유니버스에서 음의 정보 즉시 반영 불가) + 커버리지 얇은 KOSDAQ150/중형주에서 실적 정보의 확산 지연 + 아비트라지 자본의 유동성 하한(20d avg TV ≥ 2e8)·비용(15bps) 제한 — 다분기에 걸친 드리프트가 즉시 소거되지 않음",
+          "path": "SUE 는 다분기 양의 자기상관(Bernard-Thomas lag1~3) → 최근 4관측 평균이 높은 종목은 후속 발표·리비전에서 양의 재확인을 받으며 1M forward 초과수익으로 점진 반영. C01(최신 1관측) 통제 후 증분 = sue[2..4] 의 미소진 드리프트"
+        },
+        "incumbent_differentiation": "C01 = 서프라이즈 '수준'(최신 1관측) / C10 = '지속성'(4관측 평균). 증분 회귀가 묻는 것: 최신 서프라이즈를 안 뒤에도 과거 서프라이즈 이력이 추가 예측력을 갖는가 — PEAD 의 다분기성 그 자체가 검정 대상",
+        "falsification": {
+          "observable": "① [담체 검사] sue 관측 간격: Ticker 내 연속 sue 관측의 median gap 이 분기 스케일(≥40 거래일) 미달이면 '4분기 지속성' 해석 성립 불가 → 팩터가 평활-수준으로 재해석되고 본 기전 기각. ② [기전 필요조건] 패널 SUE lag-1 자기상관 ≤ 0 이면 지속성 드리프트의 담체 부재 → C10·C15 공동 기각. ③ [부호] 증분 계수 음(t ≤ −2.0)이면 과소반응이 아니라 과잉반응-정정 → 기각",
+          "field_dictionary_refs": ["C-CONSENSUS-QW (sue: 1,430,753행, 2001-09-03~)", "FDB-B3_registry_consensus_daily"],
+          "reject_if": "median inter-observation gap < 40 거래일 ∨ panel SUE lag-1 autocorr ≤ 0 ∨ 증분 t ≤ −2.0"
+        },
+        "regime_scope": {
+          "holds_in": ["neutral", "recovery", "저커버리지 중형주 우세 국면"],
+          "weakens_or_reverses_in": ["crisis (상관 청산이 기업-고유 실적 정보를 압도)", "mega-cap 고주의(high-attention) 구간 — 제한주의 기전은 주의 집중 지점에서 소멸"],
+          "boundary_rationale": "마찰(유동성 청산·주의 배분)에서 도출. ★본 라운드 판정은 전표본 횡단면 — regime_scope 는 사후 해석 가이드 전용, 판정 분할 금지 (project-underpowered-nulls-regime-conditional-20260808)"
+        },
+        "economic_rationale": "PEAD 다분기 드리프트 — 서프라이즈 이력의 underreaction (Bernard-Thomas 1989/1990)",
+        "redundancy_cluster_id": "consensus_sue_pead (인접: C01_SUE, C09, C11/M25_Earnings_Mom_Streak, C15)"
+      },
+      {
+        "factor": "C13_Revision_Breadth_3m",
+        "definition_verified": "Ticker 별 최신 esbr 관측 ≤3개의 단순평균 (compute_consensus.R:289-298)",
+        "prespecified_sign": "+",
+        "material_qualification": "FMB NW3 증분 t ≥ +2.0 (부호 정합 필수)",
+        "mechanism": {
+          "agent": "순차적·군집적으로 추정치를 갱신하는 sell-side 애널리스트 집단 (Welch 2000 JFE herding; Gleason-Lee 2003 TAR — 리비전 후 가격 드리프트) + 그 리비전을 지연 소비하는 투자자",
+          "friction": "애널리스트 리비전은 동시 갱신이 아니라 수주~수개월에 걸쳐 staggered 확산 (Hong-Stein 1999 점진 정보 확산) + KR 공매도 제약으로 하향 breadth 의 즉시 반영 불가 — 리비전 캠페인 중반에 정보가 미완 반영 상태로 남음",
+          "path": "3관측 평균 breadth 가 높은 종목 = 상향 리비전 캠페인이 '지속 중'인 종목 → 아직 갱신하지 않은 애널리스트의 후속 상향 + 투자자의 지연 반영이 1M forward 초과수익으로 실현. C04(시점 breadth) 통제 후 증분 = 캠페인의 지속성 정보"
+        },
+        "incumbent_differentiation": "C04 = 시점 '폭'(최신 1관측) / C13 = 폭의 '지속성'(3관측 평균). 증분 회귀가 묻는 것: 오늘의 breadth 를 안 뒤에도 지난 관측들의 breadth 가 추가 예측력을 갖는가 — 순수 노이즈 평활이면 증분 0 이 정직한 답",
+        "falsification": {
+          "observable": "① [캠페인 연속성] 기전이 참이면 고-C13 종목의 esbr 관측이 시차 양의 상관(캠페인 연속)을 보여야 함 — esbr 시차 상관 ≤ 0 이면 '지속 캠페인' 서사 기각, 평활 재포장 판정. ② [공선성 판별] VIF(C13, C04) 과도 + 증분 계수 부호 불안정이면 독립 정보 부재 판정. ③ [부호] 증분 t ≤ −2.0 이면 기각",
+          "field_dictionary_refs": ["C-CONSENSUS-QW (esbr: 2,200,779행, 2001-06-01~)", "FDB-B3_registry_consensus_daily"],
+          "reject_if": "esbr 시차 자기상관 ≤ 0 ∨ (VIF 과도 ∧ 부호 불안정) ∨ 증분 t ≤ −2.0"
+        },
+        "regime_scope": {
+          "holds_in": ["실적시즌 집중 월", "완만한 확장/중립 국면 — 종목-고유 리비전이 횡단면 분산의 주성분일 때"],
+          "weakens_or_reverses_in": ["매크로 쇼크 국면 — 리비전이 시장 일괄(systematic)이 되어 횡단면 판별력 붕괴", "crisis"],
+          "boundary_rationale": "기전의 담체가 '종목-고유' 리비전 캠페인이므로, 리비전이 매크로 공통충격으로 동기화되는 국면에서는 횡단면 신호가 구조적으로 소멸. 사후 해석 가이드 전용 — 판정 분할 금지"
+        },
+        "economic_rationale": "애널리스트 리비전 드리프트의 지속성 성분 (Gleason-Lee 2003; Stickel 1991)",
+        "redundancy_cluster_id": "consensus_revision_breadth (인접: C04_ESBR, C05_ESCR, C02/C03 eps_chg, C16, M26/M28)"
+      },
+      {
+        "factor": "C15_Forecast_Error_Trend",
+        "definition_verified": "sue[1] − sue[2] — C01(=sue[1]) 통제 시 증분 ≡ −sue[2] (정확한 선형 관계, compute_consensus.R:328-337)",
+        "prespecified_sign": "−",
+        "material_qualification": "FMB NW3 증분 t ≤ −2.0 (★부호 사전 지정이 음수 — 아래 도출 참조. t ≥ +2.0 은 자격 아님: 드리프트 분기 기각 + 가속 분기 재등재 사유)",
+        "sign_derivation": "C01 통제 하에서 C15 계수 = −(sue[2] 계수). C10 의 + 가설이 전제하는 다분기 드리프트(sue[2] 계수 +, Bernard-Thomas lag1~3 양의 자기상관)는 C15 계수 음(−)을 수학적으로 강제한다. '추세니까 +'는 이름-기반 사후 서술 — 기각하고 기전 도출 부호를 채택 (challenge_note CH-1). 경쟁 기전 = 실적 가속(He-Narayanamoorthy 2020 JAE, + 예측): t ≥ +2.0 실측 시 이 분기가 채택 후보가 되나 본 가설로는 기각이며 별도 재등재를 요한다",
+        "mechanism": {
+          "agent": "C10 과 동일 담체 — 서프라이즈 계절적 랜덤워크 오인 투자자 + anchoring 애널리스트. C15 는 같은 기전의 반대 모수화 검정(sharp test): 최신 서프라이즈를 안 뒤 전분기 서프라이즈의 잔존 예측력",
+          "friction": "C10 과 공유 (공매도 제약 + 확산 지연 + 아비트라지 비용)",
+          "path": "전분기 서프라이즈(sue[2])의 드리프트가 미소진이면 sue[2] 가 + 예측 → sue_d = sue[1]−sue[2] 는 C01 통제 하에 − 계수. C10(+)과 C15(−)의 동시 성립 = 다분기 드리프트 기전의 내부 정합 확인; 한쪽만 성립하면 드리프트의 시차 구조(lag2 단독 vs lag2~4 합산)에 대한 정보"
+        },
+        "incumbent_differentiation": "C01 = 수준 / C10 = 지속성(합산) / C15 = 변화율(차분) — 세 검정이 같은 SUE 담체 위에서 각각 sue[1] 수준·sue[2..4] 합·sue[2] 단독을 식별. C15 는 4종 중 유일하게 사전 부호가 음",
+        "falsification": {
+          "observable": "C10 과 담체 공유 — ① sue 관측 간격 median gap < 40 거래일이면 '전분기 대비' 해석 기각 ② 패널 SUE lag-1 자기상관 ≤ 0 이면 공동 기각 ③ [내부 정합 검사] C10 증분 + 유의 ∧ C15 증분 + 유의가 동시에 나오면 설계 모순 실현 — 두 결과 중 최소 하나는 공선성/노이즈 아티팩트이므로 둘 다 자격 보류 + VIF·표본 재검",
+          "field_dictionary_refs": ["C-CONSENSUS-QW (sue)", "FDB-B3_registry_consensus_daily"],
+          "reject_if": "median gap < 40 거래일 ∨ panel SUE lag-1 autocorr ≤ 0 ∨ 증분 t ≥ +2.0 (드리프트 분기 기각) ∨ (C10 + 유의 ∧ C15 + 유의 동시 실현)"
+        },
+        "regime_scope": {
+          "holds_in": ["C10 과 동일 (neutral/recovery, 저주의 세그먼트)"],
+          "weakens_or_reverses_in": ["crisis", "실적 추정 자체가 무의미해지는 극단 변동 국면 (추정치 stale 화로 sue 차분이 노이즈 지배)"],
+          "boundary_rationale": "C10 과 담체 공유이므로 경계도 공유 + 차분 연산은 노이즈 증폭이라 신호대잡음이 낮은 국면에서 먼저 죽는다. 사후 해석 가이드 전용"
+        },
+        "economic_rationale": "PEAD 다분기 드리프트의 시차-2 성분 식별 (Bernard-Thomas 1990; 대안 분기 = He-Narayanamoorthy 2020 earnings acceleration)",
+        "redundancy_cluster_id": "consensus_sue_pead (인접: C01, C10 — C10 과 기계적 음의 상관 경로(sue[2] 공유) 명시)"
+      },
+      {
+        "factor": "C18_Earnings_CAR_3d",
+        "definition_verified": "발표일 프록시(최신 sue 관측일, sig_d−400 ≤ ad ≤ sig_d−3) 주변 [ad−3, ad+3] 캘린더 창 Σ(Ret−BM_Ret), n_obs≥2 (compute_consensus.R:358-406). 이름과 달리 실창 최대 7일 · 발표일은 벤더 as-of 프록시 (challenge_note CH-6)",
+        "prespecified_sign": "+",
+        "material_qualification": "FMB NW3 증분 t ≥ +2.0 (부호 정합 필수) ∧ 아래 placebo-창 반증 통과 — return-파생 성격이 4종 중 가장 강하므로 placebo 미통과 시 t 무관 자격 불인정",
+        "mechanism": {
+          "agent": "발표창의 종합 정보(가이던스·질적 정보·컨퍼런스 내용 — 애널리스트 수치 모형이 못 담는 성분)에 과소반응하는 제한주의 투자자 (Chan-Jegadeesh-Lakonishok 1996 JF — 발표 수익률의 후속 드리프트; Brandt-Kishore-Santa-Clara-Venkatachalam 2008 — earnings announcement return 드리프트)",
+          "friction": "KR 가격제한폭 ±30% 가 발표일 큰 정보의 당일 완전 반영을 기계적으로 지연 + 공매도 제약 + 발표 집중기의 주의 희석 (다수 종목 동시 발표 시 개별 정보 처리 지연)",
+          "path": "발표창 CAR = 시장-기반 서프라이즈 측정 → 애널리스트-기반 SUE(C01) 와 비중첩인 정보 성분이 후속 1~3개월 드리프트로 반영. incumbent 3종 통제 후 증분 = market-based vs analyst-based 서프라이즈의 비중첩부"
+        },
+        "incumbent_differentiation": "incumbent 3종은 전부 애널리스트-모형 기반(추정치·리비전) / C18 은 유일한 시장반응 기반. 같은 발표를 애널리스트 자(SUE)와 시장 자(CAR)로 각각 잰 것의 차이가 증분의 원천 — 단 CAR 는 return-파생이라 모멘텀/반전 혼동 배제가 자격의 전제조건",
+        "falsification": {
+          "observable": "① [★placebo 비발표 창 — 1순위] 동일 종목·동일 시차 구조에서 발표 프록시일이 아닌 임의 위치 3일창(예: ad−45d 부근) CAR 로 동일 증분 회귀 — placebo 가 유사 크기의 t 를 내면 '발표 정보' 기전 기각(일반 단기수익률 효과의 재포장). ② [단기 return 통제] 직전 1M 수익률(FDB-B2 momentum/reversal 리프) 추가 시 C18 증분 소멸이면 기각 — request 명시 요구. ③ [프록시 정합] sue 관측일 vs 실제 공시일 격차 표본 대조(D6 공시 아카이브)에서 격차가 창 폭(±3d)을 상시 초과하면 '발표창' 해석 자체 기각. ④ [진단·비판정] ann_date staleness 분포 기록 — 드리프트는 발표 후 수개월 내 소진(Bernard-Thomas ~60거래일)이므로 stale 발표 지배 표본이면 해석 주의 (분할 판정 금지, 진단만)",
+          "field_dictionary_refs": ["A1_RAWDATA_OHLCVS_daily (Ret, BM_Ret)", "C-CONSENSUS-QW (sue 관측일)", "FDB-B2_registry_rawdata_price_daily (1M return 통제 리프)", "D6_disclosure_list_archive (공시일 대조)"],
+          "reject_if": "placebo 창 t 가 본창 t 의 유사 크기(구체 기준 = alpha-research 가 P0 에서 사전 수치화) ∨ 1M return 통제 후 증분 소멸 ∨ 프록시-공시일 격차 상시 > 3d ∨ 증분 t ≤ −2.0"
+        },
+        "regime_scope": {
+          "holds_in": ["실적시즌 직후 월", "neutral/recovery"],
+          "weakens_or_reverses_in": ["crisis/고변동 국면 — 시장 공통충격이 발표창 CAR 를 오염시켜 종목-고유 정보 측정 자체가 붕괴", "발표 stale 구간 (trailing 400d 상한 내 오래된 발표 지배 시)"],
+          "boundary_rationale": "CAR 측정의 분모가 '벤치 대비 종목-고유 반응'이므로 시장 변동이 지배하는 국면에서 측정 오염이 기전보다 먼저 발생. 사후 해석 가이드 전용 — 판정 분할 금지"
+        },
+        "economic_rationale": "발표창 시장반응의 후속 드리프트 — 시장-기반 서프라이즈의 underreaction (CJL 1996; BKSV 2008)",
+        "redundancy_cluster_id": "earnings_event_return (인접: consensus_sue_pead + 단기 모멘텀/반전 M-계열 — 이중 인접 명시, return-파생 클러스터와의 경계가 placebo 반증의 존재 이유)"
+      }
+    ]
+  },
+
+  "challenge_flags": [
+    "CH-1 (ACCEPT): C15 부호를 이름('Trend') 아닌 기전에서 도출 — 사전 부호 음(−). 대안 분기(가속, +) 는 별도 재등재 대상이지 본 가설 자격 아님",
+    "CH-2 (PARTIAL): 비성과 반증을 팩터별 ≥1 배치 (sue 관측 간격·SUE 자기상관·esbr 캠페인 연속성·placebo 창·공시일 정합)",
+    "CH-3 (REBUTTAL): 국면 경계는 마찰·주체에서 도출 — 단 본 라운드 판정 분할 금지, 사후 해석 가이드 전용",
+    "CH-4 (REBUTTAL): settled-negative 재포장 아님 — 인접 negative 는 수준-전략 층, 본 4종은 물리적 미측정 + 증분 층. DIST-QPM-022 REDUNDANT 경고는 CH-5 로 승계",
+    "CH-5 (PARTIAL): C10/C13 은 incumbent 를 구성상 포함(1/4·1/3 가중) — 증분이 기계적으로 얇음. VIF 프로브가 방어선. 직교화 변형은 새 trial 이므로 본 라운드 금지 (n_trials=4 사전등록), 미판정 시 next_probe 로만",
+    "CH-6 (PARTIAL): C18 정의 정직화 — 실창 ±3 캘린더일(최대 7일)·발표일은 벤더 프록시·trailing 400d stale 허용. placebo 창 반증을 자격의 전제조건으로 격상",
+    "대안 보관: C11(M25 중복)·C14/C17(M26/M28 위임)·C09(C01 단조 변환) 비선택 — 소거 근거는 candidates[] 참조"
+  ],
+
+  "handoff": {
+    "to": "alpha-research",
+    "next_steps": "Step 1~7 + ⑤ AST 구성. P0 사전 확인(request next_action)에 본 설계가 추가 요구: ① sue/esbr 의 Ticker 내 관측 간격 median 실측 (C10/C13/C15 담체 검사 — 40 거래일 문턱) ② 패널 SUE lag-1 자기상관 부호 ③ C18 placebo 창의 '유사 크기' 기준 사전 수치화 ④ sue 관측일 vs 공시일 격차 표본 대조. 반증 조건 중 하나라도 발화하면 해당 primary 는 회귀 착수 전 기각이 정당 (착수 전 사전 확인이 설계를 바꾼 4/4 선례 — feedback-precheck-before-round-changes-design)",
+    "constraints_inherited": "재료 자격까지만 — 자본 주장 금지 · 4종 동시 투입 금지 · pooled OLS 금지 (FMB NW lag3) · 국면 분할 판정 금지 · dual-basis/placebo/VIF/lag1 프로브는 request.required_probes 승계",
+    "no_rewrite": "본 mechanism/falsification/regime_scope 는 alpha-research 가 재작성 금지 — 결함 발견 시 challenge_note 기록 + 재설계 요청 (Charter 원칙 8)"
+  },
+
+  "verdict": "designed"
+}
