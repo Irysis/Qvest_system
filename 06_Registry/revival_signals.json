@@ -87,7 +87,7 @@
       "value_col": null,
       "sort_col": null,
       "status": "pending",
-      "note": "신규 데이터원 가용 플래그(monitored_source: 06_Registry/alpha_frontier_queue.json)."
+      "note": "[2026-08-09 활성화 보류 — 근거 기록] monitored_source 가 06_Registry/alpha_frontier_queue.json 이나 이 파일은 상시 존재하므로 kind=file_exists 로 승격하면 조건이 영구 TRUE 가 된다(항진명제 트리거 — 이를 참조하는 카드가 무조건 재부상해 경보가 무의미해진다). 의도한 조건은 '파일 존재'가 아니라 '큐에 비-return 원천 항목이 소비 가능 상태로 등장'이라는 내용 조건이다. 현행 monitor 지원 kind 는 time_now / file_exists / parquet_last / parquet_percentile 뿐이라 JSON 내용 조건을 표현할 수단이 없다. 승격 요건: (1) 내용 기반 kind 추가(예: json_query — 큐에서 특정 조건 항목 수 반환) 또는 (2) 데이터 도착을 나타내는 마커 파일 경로로 monitored_source 교체 (dart_insider_present 가 터미널월 CSV 를 마커로 쓰는 방식이 선례). 그 전까지 status=pending 유지가 정확한 상태다."
     }
   ],
   "not_yet_registered": {

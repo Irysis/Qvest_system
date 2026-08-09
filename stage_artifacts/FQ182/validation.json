@@ -1,0 +1,127 @@
+{
+  "round_id": "FQ-182",
+  "parent": "ALLOC_DAILY_20260809 next_probe ① (분포 형태 축 재서술)",
+  "origin_chain": "도훈 발안 2026-08-09 (위기신호 발현 시 총노출 확대) — 아크 6번째 라운드",
+  "as_of": "2026-08-09",
+  "metric_type": "canonical_screen_diag",
+  "capital_claim": false,
+  "governor_invoked": false,
+  "adversarial_workflow": "wf_03dc6cd7-f14 (5 렌즈 + 종합)",
+
+  "verdict": "REFUTED — 사전등록 1급 판정량 실패 + 대체 보고한 2급도 5축 반증",
+
+  "★my_preregistration_violation": {
+    "severity": "이 라운드 최대 결함 — 판정보다 먼저 기록한다",
+    "what_i_declared": "p1_forward.R 주석: '★사전 고정: 1급 = tail_asym(상방꼬리 − 하방꼬리) forward. 도훈 가설의 가장 날카로운 검정 가능 형태.'",
+    "what_happened": "tail_asym 이 **실패**했다 — ratio 0.571(−10%) / 0.996(−20%) / 0.401(−30%), 세 문턱 전부 1.0 미만.",
+    "what_i_did": "★그런데 2급이던 skew 를 들고 보고했다. 사전등록 1급이 떨어지자 더 좋아 보이는 통계로 갈아탄 것 = **forking path 위반**.",
+    "who_caught_it": "적대검증 other_markets 렌즈가 '(P1 이 1급으로 사전고정한 tail_asym 은 원측정에서 이미 문턱 미달)' 로 지적",
+    "irony": "같은 날 FQ-176 에서 에이전트가 GR02 순환('부호일관 선별 후 그 부호를 검정')을 깬 것을 내가 '규약' 으로 적립해 놓고, 몇 시간 뒤 같은 계통을 내가 저질렀다.",
+    "rule_established": "★사전등록 1급 판정량이 실패하면 **그것이 판정이다**. 2급을 승격해 보고하려면 새 사전등록이 필요하며, 같은 데이터 위에서는 불가하다."
+  },
+
+  "primary_statistic_result": {
+    "declared_primary": "tail_asym forward (h=1)",
+    "cells": [
+      {"thr": -10, "on": 0.0039, "off": -0.0020, "diff": 0.0058, "se": 0.0051, "ratio": 0.571},
+      {"thr": -20, "on": 0.0161, "off": -0.0039, "diff": 0.0200, "se": 0.0100, "ratio": 0.996},
+      {"thr": -30, "on": 0.0130, "off": -0.0005, "diff": 0.0135, "se": 0.0169, "ratio": 0.401}
+    ],
+    "verdict": "전건 미달 — 도훈 가설의 사전등록 검정은 **실패**했다"
+  },
+
+  "secondary_skew_claim_and_its_refutation": {
+    "claim_as_i_reported": "낙폭 뒤 forward 왜도가 부호를 뒤집는다 (−20%: ON +0.2717 vs OFF −0.3091, diff +0.5808, ratio 1.61)",
+    "reproduced": "5개 렌즈 전부 수치 재현 — 계산·정렬 오류 없음. 반증은 '계산이 틀렸다' 가 아니라 '그 수치가 근거가 되지 못한다'.",
+
+    "axis_1_single_day_domination": {
+      "finding": "★★2026-07-31 (+19.980%) **단독 기여 = ON 왜도의 99.3%** (thr−30: 84%)",
+      "drop3": "상위 3일 제거 → ON skew −0.0683 / −0.0014 (**부호 반전 소멸**)",
+      "drop1_max": "단일일 제거 최대 하락 44.4%",
+      "year2026_excl": "2026 제외 시 diff 0.5808 → 0.2994 · 0.6909 → 0.2857"
+    },
+
+    "axis_2_that_day_is_a_data_defect": {
+      "finding": "★★★Q-Lead 독립 측정: 2026-07-31 벤치 **+19.98%** vs 종목중앙 **+4.40%** → gap **0.1558 = 36년 전체 최대(100.00 백분위)**",
+      "method": "|BM_Ret − median(종목 Ret)| — 크기 휴리스틱 아닌 **정체 검사**",
+      "positive_control": "2008-10-30 gap 0.0128 · 2008-10-24 gap 0.0383 (실제 위기일은 벤치-종목이 타이트)",
+      "year_level": "2026 gap 중앙 0.0198 = 전체 중앙 0.0056 의 3.5배 · 벤치sd/종목중앙sd 2026 **2.15** vs 이전 **1.13**",
+      "convergence": "★두 경로가 같은 지점에서 만났다 — 에이전트는 '이 날이 효과의 99.3%', Q-Lead 는 '이 날은 데이터 인공물'. 합치면 왜도 반전 = **단일 오염 관측의 산물**.",
+      "escalation": "칩 분리(task_5452df6a) — 오늘 수리된 walking-seam 결함의 **잔여**로 판단"
+    },
+
+    "axis_3_my_robustness_argument_was_vacuous": {
+      "what_i_argued": "'왜도는 스케일 불변이라 변동성 확대의 산술적 산물이 아니다'",
+      "measurement": "자기-sd 표준화 시 |skew(z) − skew(raw)| = **1.11e-16 / 0.00e+00** = **수학적 항등변환, 정보량 0**",
+      "meaning": "★내 강건성 논증은 아무것도 검증하지 않는 항등식이었다. 스케일 불변 ≠ 이상치 강건 — 두 성질은 별개 축이다.",
+      "time_varying_vol": "EWMA(0.94) 표준화 diff +0.378/+0.435 · GARCH(1,1)-t 잔차 +0.333/+0.395 ⇒ **원 격차의 34~43%가 변동성 구조 산물**",
+      "robust_measures": "Bowley diff +0.032/+0.018 · octile +0.067/+0.053 — 분포 **몸통에는 반전 없음**"
+    },
+
+    "axis_4_null_simulation": {
+      "design": "3종 귀무(부호무작위 GARCH · 경험잔차 iid GARCH · 블록부트+dd252 재생성) × 2문턱 × 2조건화 = 12셀",
+      "result": "★**12셀 전부 귀무 분포 안** (p 0.096~0.163)",
+      "se_understated": "p1 방식 se 가 dd252 **재생성** 부트 대비 1.33x/1.87x 과소평가. 귀무 평균도 0 이 아님(+0.238/+0.377) = 조건화 자체가 양의 편향을 만든다"
+    },
+
+    "axis_5_horizon_generality": {
+      "finding": "★★효과는 **1~2일 전용**이고 20~60일에는 **부호가 반대로 유의**",
+      "table": "h=1 +0.580(1.615) · h=2 +0.386(1.021) · h=3 +0.214(0.500) · h=5 +0.081(0.158) · h=10 −0.027(0.043) · h=20 −0.437(0.623) · h=60 **−1.070(1.348)**",
+      "significant_reversals": "h=60 에서 5개 문턱(−15~−35%)이 ratio 1.077~1.348 로 **음의 방향 유의**",
+      "why_decisive": "배분 결정은 며칠 단위가 아니다. 의사결정 지평에서는 **반대 신호**다."
+    },
+
+    "axis_6_market_generality": {
+      "finding": "KR 벤치 외 **5계열 전부 부호 뒤집힘 0/5 · ratio>=1 0/5**",
+      "detail": "KOSDAQ 0.551 · KOSPI(broad) 0.434 · KOSPI_small **부호 반대**(−0.075) · KOSDAQ_small 0.377 · KOSPI200_EW 0.379",
+      "common_window": "2002~2026 9계열 공통창에서 ratio>1 은 KR_BM(1.138)·KOSPI200(1.093) 둘뿐 — 사실상 같은 계열",
+      "insufficient": "SP500 · KRW_USD 는 에피소드 부족(n_epi 1~2)"
+    }
+  },
+
+  "what_survives_honestly": {
+    "1_sign_and_threshold_monotonicity": "문턱 −5~−40% **8/8** 에서 ON>0 ∧ OFF<0 · skew_ON 이 깊이에 **완전 단조 증가**(0.151→0.558) · 최강은 −35%(내가 인용한 −20/−30% 아님) ⇒ **단일 셀 선택 혐의는 기각**",
+    "2_depth_monotonicity_structural": "경계층(−30%<dd<=−20%) **−0.242** ≈ OFF → 심층(<=−30%) **+0.396** → 초심층(<=−40%) **+0.558**. ★'낙폭에서 벗어나려면 큰 양수가 필요' 라는 기계적 선택으로 설명 안 됨(경계층이 OFF 와 같음)",
+    "3_not_short_reversal": "당일 BM_Ret<=−3% 인 297일 제외 시 diff 가 오히려 **강해짐**(+0.5808→+0.7244) ⇒ '급락 다음날 반등' 대리변수 설명 기각",
+    "4_episode_LOO": "LOO-1 28개 · LOO-2 전수 207쌍 부호 반전 **0건** · 에피소드-군집 부트 1000회 음수 draw 0. ★단 잭나이프는 **지배 관측을 제거하지 못한다**(연도 잭나이프는 2026 에서 즉시 반토막)",
+    "5_gfc_covid_hypothesis_rejected_backwards": "내가 세운 '2008·2020 의존' 가설은 **반대로 기각** — 두 에피소드 개별 왜도가 음수/근영이고 제거하면 효과가 **커진다**",
+    "6_residual_candidate": "EWMA 잔차 Bowley +0.0737(thr−20)이 3귀무 전부 통과(p 0.006/0.000/0.018). ★단 에이전트 자기비판: sGARCH 귀무에 **레버리지 항이 없어** GJR/EGARCH 로 바꾸면 귀무가 넓어져 이 생존이 약해질 공산 — **반증 결론은 이 축에서 더 강해진다**"
+  },
+
+  "allocation_translation_INDEPENDENT": {
+    "why_it_matters": "★논쟁 중인 통계와 **독립적으로** 의사결정 질문에 답했다 — 왜도가 살든 죽든 결론이 같다",
+    "method": "실측 경험분포(왜도·첨도 전부 포함) 위에서 CRRA 최적 노출 w* 수치최적화. 레버리지 금지 상한 1.0.",
+    "result": "★**12셀 전부 w*(ON) < w*(OFF)**",
+    "cells": "−10%/g2: 0.304 vs 1.000 (−0.696) · −20%/g2: 0.574 vs 0.852 (−0.277) · −20%/g5: 0.230 vs 0.341 (−0.112) · −30%/g2: 0.615 vs 0.765 (−0.150) · −30%/g5: 0.246 vs 0.307 (−0.061)",
+    "skew_does_not_change_it": "평균-분산 근사 −0.286/−0.161 vs 경험분포 −0.277/−0.150 — **부호·크기 거의 동일**. 왜도 개선은 분산 증가를 상쇄하기에 양적으로 너무 작다.",
+    "honest": "블록부트 P(차이>0) 0.28~0.31 — 음의 차이도 **유의하지 않다**. 근거는 12셀 전부 음수이고 어디서도 양수가 아니라는 것 + 기전(분산↑·평균 평평)이 명확하다는 것.",
+    "caveat": "★이 계산은 2026 포함이다. 오염 구간 제외 재산출 필요 — 단 방향은 분산 지배라 견고할 것으로 예상(미측정)."
+  },
+
+  "survivor_incremental_check": {
+    "question": "유일하게 강건한 sd 증가(ratio 2.86~3.53)가 기존 배관 대비 증분인가",
+    "result": "실현변동성(rv20+rv60) 기저에 dd252 추가 ΔR2 **+0.0027**(HAC20 t −2.89) vs 반대 방향 ΔR2 **+0.1204** ⇒ **정보의 주인은 실현변동성**(45배)",
+    "existing_wiring": "현행 국면 엔진과 상관 −0.556(MSM_Crisis_Prob) / −0.557(Regime_Score) — 이미 부분 배관",
+    "verdict": "기술적으로 0 아니나 경제적으로 작고 부분 중복. 그리고 sd 증가 자체는 **leverage effect(Black 1976) 재확인** = 교과서."
+  },
+
+  "literature_framing": {
+    "check": "openalex/semantic/ssrn/arxiv 2회 검색 — 직접 대응 문헌 0",
+    "rule": "★그것은 신규성의 증거가 아니다. 인접 확립 지식이 명백: leverage effect(Black 1976) · volatility feedback(Campbell–Hentschel 1992) · conditional skewness(Harvey–Siddique 2000)",
+    "framing": "'발견' 금지 — 'KR 벤치 1991~2026 실측 확인' 으로 서술. sd 증가는 신규 주장에서 제외."
+  },
+
+  "contract_built_from_this_failure": {
+    "file": "02_Infrastructure/contracts/moment_fragility.R (신설)",
+    "why": "적률 기반 왜도/첨도는 스케일 불변이나 이상치 지배가 정의상 구조적 — 사람이 매번 기억할 게 아니라 함수가 같이 내야 한다",
+    "api": "robust_skew()(Bowley·octile) · moment_dropk() · assert_moment_robust()(3축 전부 반환, 단일 스칼라 미제공)",
+    "self_defect_found": "★초판 로직이 **FQ-182 실사고 자체를 놓쳤다** — Bowley diff 0.032 가 '거의 0이나 부호는 일치' 라 sign_ok=TRUE → ROBUST. **수리가 원래 오류와 같은 사각**을 가짐",
+    "fix": "부호 비교 대신 **drop-k 크기 붕괴**(관측 1~2개 제거로 |통계량| 반감) 판정 추가 — 비율이라 스케일 문제 우회",
+    "test": "08_Tests/contract_regression/test_moment_fragility.R — 위반 주입 **17/17 PASS**(양성 대조 + FQ-182 실사고 재현 케이스 포함)"
+  },
+
+  "arc_cumulative_6_rounds": "①배분축 월간 판정불가 ②선별축 이분 판정불가(에피소드 4) ③선별축 연속 판정불가(효과 크기) ④선별축 42구성 LANE_CONFIG_CLOSED ⑤배분축 일간 착수전폐기(관측단위 하향은 정보 미증가) ⑥본 라운드 REFUTED. ★앞 5회는 '검출 불가' 였으나 **본 라운드는 처음으로 실질 판정**이다 — 분포는 실제로 달라지지만(변동성 2~3배) 그 변화가 **노출 축소**를 가리키고, 왜도 개선은 단일 오염 관측의 산물이었다.",
+
+  "artifacts": ["preregistration 주석(p1_forward.R)", "p0~p5 스크립트·결과", "literature_check.md",
+                "adv_* 68개(5렌즈)", "p2_optimal_exposure.csv", "p5_bench_stock_gap.csv"]
+}
