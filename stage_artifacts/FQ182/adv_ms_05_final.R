@@ -43,7 +43,7 @@ for (thr in c(-0.20,-0.30)) {
       sd(rb), mean(rb), abs(obs-mean(rb))/sd(rb))
   say("    ★se 과소평가 배수 = %.2fx  — p1 의 se 는 '낙폭 선택 자체의 표본변동'을 조건부로 고정해 제거했다",
       sd(rb)/sd(pb))
-  add(step="10a", key=sprintf("thr%.0f", thr*100), obs=obs, se_paired=sd(pb), se_regen=sd(rb),
+  add(step="10a", tag=sprintf("thr%.0f", thr*100), obs=obs, se_paired=sd(pb), se_regen=sd(rb),
       mean_regen=mean(rb), ratio_paired=abs(obs)/sd(pb), ratio_regen=abs(obs-mean(rb))/sd(rb))
 }
 
@@ -63,7 +63,7 @@ for (thr in c(-0.20,-0.30)) {
   say("  thr %.0f%% (base %+0.4f): 잭나이프 diff 범위 [%+0.4f, %+0.4f] · 부호반전 %d/%d",
       thr*100, base, min(jk$diff), max(jk$diff), sum(sign(jk$diff)!=sign(base)), nrow(jk))
   print(jk[order(diff)][1:4])
-  add(step="10b", key=sprintf("thr%.0f", thr*100), obs=base, se_paired=NA, se_regen=NA,
+  add(step="10b", tag=sprintf("thr%.0f", thr*100), obs=base, se_paired=NA, se_regen=NA,
       mean_regen=min(jk$diff), ratio_paired=NA, ratio_regen=NA)
 }
 
@@ -82,7 +82,7 @@ for (thr in c(-0.20,-0.30)) {
   k3 <- k1 & k2
   say("  thr %.0f%%: 전체 %+0.4f | 2026 제외 %+0.4f (ON %d일) | 최대1일 제외 %+0.4f | 둘 다 %+0.4f",
       thr*100, base, d1, sum(on & k1), d2, skew1(D$fwd1[on&k3])-skew1(D$fwd1[!on&k3]))
-  add(step="10c", key=sprintf("thr%.0f", thr*100), obs=base, se_paired=d1, se_regen=d2,
+  add(step="10c", tag=sprintf("thr%.0f", thr*100), obs=base, se_paired=d1, se_regen=d2,
       mean_regen=NA, ratio_paired=NA, ratio_regen=NA)
 }
 
@@ -114,7 +114,7 @@ for (nm in c("NULL_B_signflip","NULL_D_iidshape")) {
     say("  %s thr %.0f%%: 관측 %+0.4f | 귀무 mean %+0.4f sd %0.4f q95 %+0.4f | P(귀무>=관측)=%.4f %s",
         nm, c(-20,-30)[j], obs_r[j], mean(v), sd(v), quantile(v,.95,names=FALSE), pr,
         if (pr>0.05) "★귀무 안 → 반증" else "귀무 밖")
-    add(step="10d", key=sprintf("%s_thr%.0f", nm, c(-20,-30)[j]), obs=obs_r[j], se_paired=sd(v),
+    add(step="10d", tag=sprintf("%s_thr%.0f", nm, c(-20,-30)[j]), obs=obs_r[j], se_paired=sd(v),
         se_regen=quantile(v,.95,names=FALSE), mean_regen=mean(v), ratio_paired=pr, ratio_regen=NA) }
 }
 R <- rbindlist(res, fill=TRUE); fwrite(R, file.path(OUT,"adv_mechanical_selection.csv"))
