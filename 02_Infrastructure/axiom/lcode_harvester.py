@@ -616,6 +616,7 @@ def harvest(project_dir: str) -> dict:
                 if isinstance(v, (int, float)) and not isinstance(v, bool) and math.isfinite(v):
                     entry[top_key] = v
                     entry[f"{top_key}_source"] = f"authoritative.{nested_key}"
+        _warn_empty_lesson(entry, data)
         lcodes.append(entry)
 
     lcodes.sort(key=lambda x: x["l_code"])
