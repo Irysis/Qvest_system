@@ -1,0 +1,36 @@
+{
+  "prereg_id": "PREREG-HURST-RATE-20260809",
+  "created": "2026-08-09",
+  "mode": "regime",
+  "paper_id": "arxiv:2607.19497",
+  "selection_type": "chain",
+  "chain_step": 2,
+  "chain_parent": "HurstTrendOverlay (고정문턱 H>0.5)",
+  "mechanism_diagnosis_1line": "고정문턱 0.5 가 269개월 중 238개월(88.5%)에서 발화 → 사실상 상시 full 노출(평균 0.9654)이라 bare 로 수렴(IR 1.457 vs bare 1.477, MDD -0.4073 vs -0.4074). ΔIR +0.048 은 신호 가치가 아니라 오버레이 제거 효과였고, _x_book 이 ΔIR -0.027 · ΔMDD 0.0000 로 그것을 확인했다. ⇒ 실패 원인은 신호가 아니라 **발화율**이다.",
+  "reframe": "문턱을 튜닝하면 sweep(DSR 게이트 대상)이 된다. 대신 **발화율을 파라미터가 아니라 제약으로 고정**하고, 그 제약 하에서 Hurst 가 기존 unified 앙상블보다 '더 나은 달'을 고르는지만 묻는다. 이것이 신호 품질을 발화율 교락에서 분리하는 유일한 형태다.",
+  "design": {
+    "signal": "시장 레벨 Hurst (R/S, 252 거래일, 벤치 일별 BM_Ret)",
+    "firing_rule": "확장창(expanding) 백분위. 홀딩월 M 에서, M 이전 홀딩월들의 H 값만으로 분포를 만들고 현재 H 가 하위 q_M 백분위 이하면 디리스크.",
+    "target_rate_source": "q_M = M 이전 기간의 unified 앙상블 방어라벨(CRISIS∪CAUTION) **실현 발화율** — 상수가 아니라 확장창에서 파생. ⇒ 자유 파라미터 0개.",
+    "exposure": "발화 시 0.70 (기존 CAT_EXPOSURE CAUTION 재사용), 아니면 1.00",
+    "burn_in_months": 60,
+    "free_parameters": 0,
+    "pit": "H 창은 Date < first-day-of-holding-month. 백분위·목표발화율 모두 **직전 홀딩월까지**만 사용(C1 확장창). used_cutoff 월별 신고."
+  },
+  "falsifiers": [
+    "F1 (주장 반증): 발화율을 맞췄는데도 ΔMDD <= 0 (낙폭 완화 없음) 이면 — 'Hurst 는 발화율만 고치면 방어 레버' 주장 기각.",
+    "F2 (동률 반증): 같은 발화율에서 uni_cat 대비 ΔIR 과 ΔMDD 가 둘 다 유의하게 낫지 않으면 — 'Hurst 가 unified 보다 나은 달을 고른다' 기각.",
+    "F3 (배관 반증): 실현 발화율이 목표 발화율과 5%p 초과 이탈하면 구현 결함 — 판정 무효, 수리 후 재측정."
+  ],
+  "gate_note": "ΔIR/ΔMDD 는 교체 대조 진단량. 자본 admit 아님(governor 수동). chain 이므로 DSR 게이트 부적용이나 DSR 수치는 진단용 기록.",
+  "chain_compliance": {
+    "iteration_reason_recorded": true,
+    "is_only_selection": "본 단계는 IS 전체 창에서 1회 측정만 한다 — 변형 선택 없음(변형이 1개).",
+    "holdout": "미조회. 최종판 확정 시 1회만."
+  },
+  "consumption_surfaces_checked": [
+    "③오버레이/국면 입력 = 본 라운드",
+    "⑤monitoring 신호 — 발화율 제약형이 유효하면 live drift 경보 후보(미측정, FQ 대기)",
+    "④위험모델·β예산 — 미측정"
+  ]
+}

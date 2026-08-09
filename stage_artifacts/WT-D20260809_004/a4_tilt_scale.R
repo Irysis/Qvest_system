@@ -21,6 +21,11 @@ say("틸트 입력 패널 %d행 · sig_date %d (%s ~ %s) · 섹터/월 평균 %.
 
 ## 섹터 횡단면 z 표준화 β (스케일 정규화판)
 D[, zbeta := { s <- sd(beta); if (is.finite(s) && s > 0) (beta - mean(beta))/s else 0 }, by = sig_date]
+## ★scale-only 정규화 — 평균 이동 없이 단위만 (부호를 보존한다. demean 은 부호를 바꿔
+##   기전(β 부호가 방향을 정한다)을 변형하므로 판정판으로 쓰지 않는다.)
+D[, sbeta := { s <- sd(beta); if (is.finite(s) && s > 0) beta/s else 0 }, by = sig_date]
+say("sign(sbeta)==sign(beta) 비율 %.4f · sign(zbeta)==sign(beta) 비율 %.4f",
+    mean(sign(D$sbeta) == sign(D$beta)), mean(sign(D$zbeta) == sign(D$beta)))
 
 say("")
 say("=== 지수 인자 |λ·β·infl| 의 크기 ===")
@@ -56,9 +61,9 @@ alloc <- function(w, cap, total = 25L) {
 
 say("")
 say("=== 정원 n_s 가 λ=0 대비 실제로 바뀌는가 (Σ|Δn_s|/2 = 교체 슬롯 수) ===")
-res <- rbindlist(lapply(c("raw","z"), function(bk) rbindlist(lapply(c(0.5, 1.0), function(lam) {
+res <- rbindlist(lapply(c("raw","s","z"), function(bk) rbindlist(lapply(c(0.5, 1.0), function(lam) {
   x <- D[, {
-    b <- if (bk == "raw") beta else zbeta
+    b <- if (bk == "raw") beta else if (bk == "s") sbeta else zbeta
     w0 <- base
     w1 <- base * exp(lam * b * infl)
     n0 <- alloc(w0, n_s); n1 <- alloc(w1, n_s)
