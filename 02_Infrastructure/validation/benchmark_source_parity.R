@@ -226,7 +226,12 @@ benchmark_source_parity <- function(rawdata_path = NULL, bench_path = NULL,
 if (sys.nframe() == 0L && !interactive()) {
   a <- commandArgs(trailingOnly = TRUE)
   rd <- if (length(a) && nzchar(a[1])) as.integer(a[1]) else NULL
-  res <- benchmark_source_parity(recent_days = rd)
+  # [2026-08-09] 2번째 인자 = bench_path 오버라이드(위반 주입 테스트용).
+  #   주어지면 **기록을 남기지 않는다** — 비정본 소스의 판정이 실제 이력에 섞이면
+  #   이력 자체가 못 믿을 것이 된다(테스트가 관측을 오염시키는 형태).
+  bp <- if (length(a) >= 2L && nzchar(a[2])) a[2] else NULL
+  res <- if (is.null(bp)) benchmark_source_parity(recent_days = rd)
+         else benchmark_source_parity(recent_days = rd, bench_path = bp)
   cat(sprintf("[benchmark_source_parity] %s — %s\n", res$severity, res$note))
 
   # ── [2026-08-09 신설] 판정 지속화 ─────────────────────────────────────────
@@ -235,7 +240,9 @@ if (sys.nframe() == 0L && !interactive()) {
   #   "그때 발화했나"조차 확인 불가(부트 로그에 parity 라인 0건). 탐지력은 완전했는데
   #   **신호가 결정에 닿지 않았다** — 검사기를 늘릴 게 아니라 신호를 남겨야 한다.
   # latest = 현재 상태(상태라인·훅이 읽는 단일 지점) / history = 지속기간 추적(JSONL append).
-  tryCatch({
+  if (!is.null(bp)) {
+    cat(sprintf("[benchmark_source_parity] 테스트 모드(bench_path 오버라이드) — 이력 기록 생략\n"))
+  } else tryCatch({
     # ★.bsp_root() 는 실패 시 error 가 아니라 NA 를 반환한다(line 76 참조) — tryCatch 만으로는
     #   못 잡고 NA 경로에 쓰려다 엉뚱한 곳에 남는다. NA 를 명시 처리한다.
     .root <- tryCatch(.bsp_root(), error = function(e) NA_character_)

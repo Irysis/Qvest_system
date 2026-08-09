@@ -260,7 +260,13 @@ wrap_exposure_adapter <- function(fn, method_id) {
     #     (Hurst 는 상대적 정상이라 31.8% vs 목표 30.1% 로 보존됐다).
     #   ⇒ "발화율을 맞췄다"는 주장은 **측정해서 증명**해야 한다. 신고했는데 이탈하면 제외한다
     #     (수치는 나오지만 그 arm 은 다른 arm 과 비교 가능한 조건이 아니다 = 조용한 오비교).
-    fired_rate <- mean(e$exposure < 1 - 1e-12)
+    #   ★분모 계약: burn-in 처럼 **구조적으로 발화할 수 없는 구간**을 분모에 넣으면 어떤 어댑터도
+    #     목표를 못 맞춘다(실측: 같은 58개월이 전체 분모 21.4% vs 가용 분모 27.5% — 판정이 갈렸다).
+    #     그래서 어댑터가 `eligible_from`(이 날짜부터 발화 가능)을 신고하면 그 구간에서만 잰다.
+    #     미신고면 전체 구간(보수적). "무엇으로 나눴나"를 계약이 정하지 않으면 같은 수가 두 판정을 낸다.
+    ef <- suppressWarnings(as.Date(out$eligible_from %||% NA))
+    elig <- if (length(ef) == 1L && !is.na(ef)) e$Date >= ef else rep(TRUE, nrow(e))
+    fired_rate <- if (any(elig)) mean(e$exposure[elig] < 1 - 1e-12) else 0
     tr <- suppressWarnings(as.numeric(out$target_rate %||% NA_real_))
     if (length(tr) == 1L && is.finite(tr)) {
       if (abs(fired_rate - tr) > 0.05) {

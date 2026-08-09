@@ -100,6 +100,9 @@ exposure_schedule <- function(ctx) {
                             sum(fired[.ep]), sum(.ep), 100 * mean(fired[.ep])))
 
   # ★목표 발화율을 **래퍼에 신고**한다 — 자기 검사만으로는 계약이 아니다(래퍼가 ±5%p 로 강제).
+  # ★eligible_from = burn-in 이후 첫 평가일. 구조적으로 발화 불가한 구간을 분모에서 빼야
+  #   "발화율을 맞췄나"가 판정 가능해진다(분모 계약 — wrap_exposure_adapter 참조).
   list(exposure = data.table(Date = pr$eval_date, exposure = expo), used_cutoff = cut,
-       target_rate = tgt)
+       target_rate = tgt,
+       eligible_from = pr$eval_date[min(BURN_IN + 1L, n)])
 }
