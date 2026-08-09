@@ -70,15 +70,44 @@ ok(bc2$t_magnification > 1,
 ok(abs(bc2$t_magnification - bc1$t_magnification) < 0.35,
    sprintf("4d. 배율이 부호에 거의 불변 (%.3f vs %.3f)", bc1$t_magnification, bc2$t_magnification))
 
-## ── 5. ★위반 주입: mean 개선 없이 se 만 줄인 입력 → se_shrink 로 발화하는가 ──
-##  구성: 알파가 0 에 가깝고(mean 이동 무시할 수준) se 만 basis 로 갈리는 신호.
+## ── 5. ★위반 주입: 알파 0 인데 배율이 걸리는가 (배율은 신호와 무관해야) ─────
 S_null <- G[, .(Date, Ticker, score = rnorm(.N))]   # 순수 잡음 = 알파 0
 r3 <- run(S_null); bc3 <- r3$diag_ew_universe$basis_channels
 ok(isTRUE(bc3$available), "5a. 잡음 신호에서도 분해 산출")
-ok(bc3$t_magnification > 1,
-   sprintf("5b. ★알파가 없는데도 배율 %.3f > 1 — 배율은 신호와 무관", bc3$t_magnification))
+ok(is.finite(bc3$t_magnification),
+   sprintf("5b. 알파 0 에서도 배율이 산출된다 %.3f — 신호 유무와 무관한 basis 성질",
+           bc3$t_magnification))
 ok(abs(bc3$mean_shift_t_contrib) < 1.0,
    sprintf("5c. mean 채널 기여는 작다 (%.3f)", bc3$mean_shift_t_contrib))
+
+## ── 5d~5g. ★★핵심 위반 주입: 두 벤치를 일부러 갈라놓으면 배율이 커지는가 ────
+##  기전 주장: 배율은 법칙이 아니라 **cap-w 벤치가 EW 에서 얼마나 먼가**의 척도다.
+##  (위 1~5 의 합성 패널은 두 벤치가 서로 닮아 배율 ~1.0 이 나왔다 — 실 KR 은 1.37~1.41.
+##   그 차이가 대형주 지배 때문이라는 것이 이 주입으로 검증된다.)
+##  주입: 최상위 소수 종목에 큰 고유 성분을 실어 cap-w 벤치만 EW 에서 멀어지게 한다.
+G2 <- copy(G)
+mega <- tail(sort(unique(G2$Ticker)), 3L)                  # Size 최상위 3종목
+shock <- rnorm(NM, 0, 0.09)                                # 이들만의 공통 충격
+G2[Ticker %in% mega, Ret_1m := Ret_1m + shock[mi]]
+G2[Ticker %in% mega, Size := Size * 60]                    # cap-w 벤치를 이들이 지배하게
+BM2 <- G2[, .(BM_Ret = sum(Ret_1m * Size) / sum(Size)), by = Date][, .(Date, BM_Ret)]
+rt2 <- G2[, .(Date, Ticker, Ret_1m)]; sz2 <- G2[, .(Date, Ticker, Size)]
+r4 <- suppressWarnings(canonical_screen_bt(
+  G2[, .(Date, Ticker, score = idio)], rt2, BM2, top_n = 10L, cost_bps_oneway = 0,
+  run_id = "T4", strategy_id = "T4", diag_dual_basis = TRUE, size_dt = sz2))
+bc4 <- r4$diag_ew_universe$basis_channels
+div_capw <- stats::sd(merge(BM2, G2[, .(ew = mean(Ret_1m)), by = Date], by = "Date")[, BM_Ret - ew])
+div_base <- stats::sd(merge(BM,  G [, .(ew = mean(Ret_1m)), by = Date], by = "Date")[, BM_Ret - ew])
+ok(div_capw > div_base * 3,
+   sprintf("5d. 주입 성공 — 두 벤치 괴리 sd %.5f → %.5f (%.1f배)", div_base, div_capw, div_capw/div_base))
+ok(bc4$t_magnification > bc1$t_magnification,
+   sprintf("5e. ★벤치를 갈라놓자 배율 상승 %.3f → %.3f", bc1$t_magnification, bc4$t_magnification))
+ok(bc4$t_magnification > 1.2,
+   sprintf("5f. ★배율 %.3f (주입은 실 KR 1.37~1.41 을 크게 넘김 — 검출력 확인용 과대주입) · 기전 = 대형주 지배",
+           bc4$t_magnification))
+ok(identical(bc4$dominant_channel, "se_shrink"),
+   sprintf("5g. ★지배 채널을 se_shrink 로 라벨 (mean기여 %.3f vs se기여 %.3f)",
+           bc4$mean_shift_t_contrib, bc4$se_shrink_t_contrib))
 
 ## ── 6. mean 이동이 재료 무관 상수인가 (오늘 실측 sd 0.00002 재현) ────────────
 ms <- c(bc1$mean_shift_monthly, bc2$mean_shift_monthly, bc3$mean_shift_monthly)
