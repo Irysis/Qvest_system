@@ -1,0 +1,92 @@
+{
+  "round_id": "FQ-138",
+  "prereg_ref": "stage_artifacts/fq141_precheck_20260808/fq138_preregistration.json (FQ138_PREREG_20260808, registered_before_measurement=true)",
+  "executed_at": "2026-08-09",
+  "executed_by": "Q-Lead session 2026-08-09",
+  "metric_type": "canonical_screen",
+  "capital_claim": false,
+  "gate_eligible": false,
+  "governor_invoked": false,
+
+  "verdict": "SURVIVES_ALL_PREREGISTERED_CHECKS — 국면-조건부 초과분이 순풍과 구별된다",
+  "verdict_scope": "★사전등록이 이 라운드를 **구간추정**으로 재정의했다(pass/fail 아님). 자본 자격 주장 없음.",
+
+  "why_this_round_mattered": "원 발견(WT-D20260803_008, IC +0.1445 t_NW 5.17)이 동월/t-1/trailing3 **3-way look 후 선택**이라 사후였다. 사전등록으로 국면을 t-1 로 FROZEN 하고 중립 대조와의 차이(DiD)로 재판정했다.",
+
+  "data_pins_honored": {
+    "used": "gridx_returns/bench/universe_size + panelx_A (확장본)",
+    "forbidden": "grid_* 파일럿 (표본 절반)",
+    "verified": "returns 191,980행 · 80개월 · bench 80행 — 사전등록 기재와 3/3 일치",
+    "regime_base_rate": "실측 34.2% vs 사전등록 기재 35.0% (정합)"
+  },
+
+  "signal_identity_check": {
+    "why": "panelx_A 에 수치 컬럼 11개 — 사전등록은 '계약 score' 라고만 했다",
+    "my_first_guess": "n_contracts (수치 컬럼 첫 번째) — ★원 스크립트 **참조 0회**로 오답 확인",
+    "canonical": "score := w_amt / Size (원 스크립트 diag_fq125_stage1_controls.R:44) · 필터 score>0 ∧ adv>=2e8 ∧ member",
+    "reference_count": "w_amt 7파일 · w_ratio 5 · w_n 3 · n_contracts **0**",
+    "lesson": "★참조 횟수만으로 정하지 않고 코드 문맥(score <- ...)까지 확인했다. 오답이었으면 재현 실패를 '신호 소멸' 로 오독했을 것."
+  },
+
+  "primary_DiD": {
+    "model": "s_t = a + delta*1{t-1 mega_spread<=0}, s_t = SIG_t − NEU_t (net active), NW(lag3)",
+    "regime": "FROZEN t-1 mega_spread <= 0 (동월·trailing3 사용 금지 — 3-way look 이 원 사후성 원인)",
+    "control": "POOL_EW (신호 풀 전체 동일가중) — 사전등록 'POOL_EW 또는 무작위 25종'",
+    "delta_monthly": 0.02174, "delta_annual_pct": 26.09,
+    "se_nw3": 0.00587, "t_nw3": 3.705, "n_months": 79,
+    "intercept_annual_pct": -4.36,
+    "required_effect_prereg": "연 27.71% (interaction, 유효 n 18.2)"
+  },
+
+  "adversarial_4_axes": {
+    "axis1_NEU_composition": {
+      "concern": "초판 NEU 가 **단일 무작위 추출**(월 ~57종목 중 25종) — NEU 잡음이 DiD 를 만들 수 있다",
+      "pool_ew_deterministic": "delta 연 +26.09% · t +3.705",
+      "random_50_draws": "delta 중앙 연 +23.99% · t 중앙 +2.723 · t 5~95% [+1.69, +3.67]",
+      "key": "★**t>0 비율 100%** · |t|>=2 비율 0.84 — 대조군 구성에 robust",
+      "verdict": "PASS"
+    },
+    "axis2_placebo_200": {
+      "design": "계약 score 월내 무작위 셔플 → 동일 파이프라인 (사전등록 violation_injection)",
+      "null_dist": "t 중앙 +0.009 · sd 1.010 · |t|>=2 비율 **0.045** · q95 +1.862 · 최대 +3.176",
+      "key": "★귀무 분포가 이론값과 정합(5% 기대 vs 4.5% 실측) = **파이프라인 정상**",
+      "observed_percentile": 1.000, "p_one": 0.0000,
+      "verdict": "PASS — 위약이 문턱을 넘지 않고 실측은 귀무 밖"
+    },
+    "axis3_windfall_control": {
+      "prereg_concern": "mega_spread 와 d(cap-w − EW 벤치) 상관 **+0.896** — 국면 ON = 메가캡이 지는 달 = 소형 편향 top-25 EW 의 순풍",
+      "SIG_ON_annual_pct": 25.74, "NEU_ON_annual_pct": -1.05,
+      "SIG_OFF": -0.00309, "NEU_OFF": 0.00054,
+      "key": "★★**순풍 가설 정면 기각** — 중립 대조가 국면 ON 에서 −1.05%/yr 로 사실상 0. 사전등록이 'NEU_ON 이 SIG_ON 에 근접하면 원 결과는 순풍' 이라 명시했는데 근접하지 않는다.",
+      "verdict": "PASS"
+    },
+    "axis4_2026_contamination": {
+      "discovered_during": "P2 실행 중 canonical_screen_bt 의 sanity 경고에서 발견",
+      "finding": "★물리불가 월수익 68건 중 **63건이 2026**(최대 **152.85 = +15,285%**) — 오늘 확인한 2026 벤치 결함의 **종목-계열 판본**",
+      "concern": "FQ-138 국면이 2026 에 ON 이므로 양성 결과가 오염 산물일 수 있다",
+      "excl_2026": "delta 연 +26.09% → **+27.10%** (103.8% 잔존) · t +3.705 → **+3.806**",
+      "excl_2025_too": "delta 연 +19.74% · t +3.569",
+      "regime_on_year_dist": "2020:2 · 2021:6 · 2022:6 · 2023:3 · 2024:5 · 2025:4 · **2026:1**",
+      "key": "★2026 은 국면 ON 27개월 중 **1개월**뿐이고, 제외하면 결과가 **오히려 강해진다**",
+      "verdict": "PASS — 오염 산물 아님"
+    }
+  },
+
+  "honest_caveats": [
+    "★사전등록이 pass/fail 을 금지했다 — 본 결과는 **구간추정**이며 자본 자격 주장이 아니다. gate_eligible=false · capital_claim=none",
+    "n=79개월 · 국면 ON 27개월 — 짧다. 사전등록 required_effect 연 27.71% 와 관측 26.09%(2026 제외 27.10%)가 비슷한 크기 = 검정력 여유가 없다",
+    "계약 패널의 2026 오염은 **미수리**(칩 task_5452df6a 와 같은 뿌리). 본 라운드는 제외로 답했으나 수리 후 포함판이 정본이 되어야 한다",
+    "NEU 무작위 draw 중 16%(8/50)가 |t|<2 — 대조군 구성에 완전 무관하지는 않다",
+    "★타 시장·타 기간 이식성 미측정. 국면 정의(mega_spread)는 KR 고유 구성이다",
+    "사전등록 oos_opportunity: 2026-08-08 이후 관측월은 자동 clean OOS — 아직 소비하지 않았다"
+  ],
+
+  "what_this_does_not_claim": [
+    "계약 재료의 자본 자격 (HARD 3종 미측정 — PORT_t/oos_retention/calmar)",
+    "무조건부 알파 (SIG 단독 PORT_t +0.581 로 HARD 2.95 크게 미달)",
+    "국면 예측력 (국면은 t-1 관측치이며 예측 대상이 아니다)"
+  ],
+
+  "artifacts": ["p0_read_prereg.R", "p0b_signal_identity.R", "p1_measure.R", "p1_spread.csv",
+                "p2_neu_robust.R", "p2.rds", "p2_cut.rds"]
+}
