@@ -29,7 +29,7 @@ V <- list(
     what_2879_is = "WT-014 MAX5 유니버스-필터 라운드의 **base** PORT_t. 필터 적용 후 **3.620** 으로 통과했다(ΔIR +0.1692, abs MDD −55.9%→−44.4%). FQ-127 은 그 base 가 재구성본이라 production base(6.830)에서 부호가 뒤집힌다는 별건 경고, FQ-161 은 그 사례를 비교 기준선으로 인용.",
     verdict = "★진짜 되살림 후보 **0건**. 내 정규식이 base 를 후보로 오인했다 — 오늘 세 번째 '존재 검사 vs 정체 검사' 사례."),
 
-  ★generalizable_finding = list(
+  generalizable_finding = list(
     title = "★오염의 되살림 위험은 **통계량 종류에 의존**한다",
     mean_based = "PORT_t(평균 기반 t): 억압 ≤ 8.2% — 되살림 후보 0",
     tail_moment_based = "tail_asym(꼬리 확률): **+13.7%**(0.996→1.132) · 적률 왜도: **+94%**(0.299→0.581 역방향)",
