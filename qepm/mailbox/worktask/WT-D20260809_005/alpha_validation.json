@@ -1,0 +1,298 @@
+{
+  "wt_id": "WT-D20260809_005",
+  "frontier_queue_id": "FQ-198",
+  "measured_at": "2026-08-09",
+  "build_hash": "20260809203741_8c9befe0",
+  "metric_type": "canonical_screen_diag",
+  "scope_limit": "재료 자격까지만 — 자본 주장 금지. graduation HARD(PORT_t 2.95 / oos 0.7 / calmar 0.64) 판정 대상 아님.",
+  "input_measured": {
+    "factor_db_month_files": 442,
+    "factor_db_gb": 8.76,
+    "rawdata_rows": 14059013,
+    "rawdata_unique_dates": 9003,
+    "rawdata_unique_ym": 440,
+    "rawdata_observation_unit": "일간(daily)",
+    "rawdata_range": "1990-01-05 ~ 2026-08-07",
+    "forward_return_panel_rows": 116092,
+    "forward_return_months": 439,
+    "forward_return_unit": "(월말 anchor Date × Ticker), dating=signal_anchor, off=0",
+    "alpha_scores_rows": 85443,
+    "alpha_scores_months": 302,
+    "alpha_scores_range": "2001-06 ~ 2026-07"
+  },
+  "precheck_verdict": {
+    "headline": "원안 4종 중 재료로 성립하는 것은 0종. 2종은 incumbent 와 비트-동일, 1종은 미산출, 1종은 오구성 프록시.",
+    "mechanism": "consensus 원천이 **일간**(sue 고유 Date 6140개 · 인접 간격 중앙 1일)인데 sue/esbr 은 그 위의 **계단함수**다(인접 영업일 값 변화율 sue 0.015396 · esbr 0.015435). 빌더 compute_consensus.R 의 '최근 N개 관측' 집계가 의도된 N 분기/개월이 아니라 **N 영업일**로 실행되어, 이동평균이 항등변환이 되고 차분이 항등 0 이 된다.",
+    "C10_SUE_Persistence": {
+      "verdict": "DUPLICATE_OF_INCUMBENT",
+      "equals": "C01_SUE",
+      "evidence": "표본월 8건(2003-06~2026-07) 전건 완전동일 비율 1.0000 · 최대절대차 0.000e+00 · spearman/pearson +1.000000 (z·raw 양쪽) · 빌더 식 직접 재현 3 sig_date 재확인",
+      "why": "mean(sue[1:min(.N,4)]) = 최근 4영업일 평균인데 '최근 4개 관측 전부 동일' 티커 비율 = 1.000000",
+      "coverage_identical_to_C01": "유효월 299 · 종목-월 216,073 · 월중앙 757 (C01 과 바이트 동일)"
+    },
+    "C13_Revision_Breadth_3m": {
+      "verdict": "DUPLICATE_OF_INCUMBENT",
+      "equals": "C04_ESBR",
+      "evidence": "표본월 8건 전건 완전동일 1.0000 · 최대절대차 0.000e+00 · spearman +1.000000",
+      "coverage_identical_to_C04": "유효월 302 · 종목-월 328,778 · 월중앙 1,152 (C04 와 바이트 동일)"
+    },
+    "C15_Forecast_Error_Trend": {
+      "verdict": "NOT_EMITTED_ZERO_VARIANCE",
+      "evidence": "sue[1]-sue[2] = 인접 2영업일 차분 ⇒ **정확히 0 인 비율 1.000000** · 비영 0건 · sd 0.000000e+00 (sig_date 3건 전건). 커넥터 전량 로드 4개 표본월(2005/2012/2019/2026)에서 C-계열 16종 중 C15 부재",
+      "correction_of_record": "★FQ-163 verdict 의 'C15 300개월 실림' 진술은 성립하지 않는다 — 원장 정정 필요"
+    },
+    "C18_Earnings_CAR_3d": {
+      "verdict": "MEASURED_THEN_DISQUALIFIED (아래 primary 참조)",
+      "coverage": "유효월 299 (2001-09~2026-07) · 종목-월 98,917 · 월중앙 335종"
+    }
+  },
+  "primary": {
+    "arm": "C18_Earnings_CAR_3d",
+    "kind": "primary_preregistered",
+    "n_months": 283,
+    "months_range": "2003-01 ~ 2026-07",
+    "median_stocks_per_month": 218,
+    "fmb_nw3_t": -2.55073411898279,
+    "mean_coef": -0.00248523073679826,
+    "se_nw3": 0.000974319792213133,
+    "t_simple": -2.71123048490927,
+    "pos_rate": 0.420494699646643,
+    "solo_t_nw3": -2.18396485024414,
+    "rank_ic": -0.0245594477786625,
+    "rank_ic_t_nw3": -3.12473837304997,
+    "icir": -0.20241817814378,
+    "vif_med": 1.02283236699099,
+    "vif_max": 1.15051750907922,
+    "max_abs_spearman_vs_incumbent": 0.0471994983471336,
+    "placebo_p": 0,
+    "lag1_retention": -0.146376658893421,
+    "prereg_sign": "+",
+    "observed_sign": "−",
+    "sign_falsified": true,
+    "verdict": "REPACKAGED_NOT_MATERIAL",
+    "verdict_rationale": "|t| 2.551 은 문턱 2.0 과 Bonferroni 2.50 을 넘지만, **사전등록된 자격 전제조건**('모멘텀/반전 배제 미통과 시 t 무관 자격 불인정')을 통과하지 못한다. trailing 6일 시장조정 수익 통제 시 |t| 2.551 → 1.486 (유지율 0.58), 전체 통제 시 1.554 (0.61) 로 문턱 아래로 붕괴. 게다가 사전 부호(+, PEAD underreaction)와 반대 부호(−)가 관측됐다 = 기전 가설 자체가 반증됨."
+  },
+  "c18_identity": {
+    "finding": "C18 은 이벤트-CAR 가 아니라 **월말 고정 6일 시장조정 수익**(= 단기 반전 대용품)이다.",
+    "ann_proxy_measured": {
+      "note": "빌더의 '발표일 프록시' = sue_hist[Date <= sig_d-3 & >= sig_d-400] 의 Date[1]. sue 가 매 영업일 관측되므로 발표일을 식별하지 못한다.",
+      "median_lag_days_range": "3 ~ 7",
+      "distinct_ann_dates_per_month": "5 ~ 6 (같은 달 종목 287~382개에 대해)",
+      "frac_within_10d_range": "0.6246 ~ 0.8711",
+      "interpretation": "종목당 고유 발표일이면 고유 ann_date 가 수백 개여야 하는데 5~6개뿐 = 전 종목 공통 월말 창. 나머지 ~30% 는 sue 갱신이 끊긴 종목의 최대 335~397일 전 낡은 창."
+    },
+    "correlation_with_trailing": {
+      "vs_trail6d_mean_spearman": 0.674341747132788,
+      "vs_trail6d_sd": 0.23957285582611,
+      "vs_trail6d_p05": 0.232063751612219,
+      "vs_trail6d_p95": 0.942399863454007,
+      "vs_trail1m_mean_spearman": 0.319650938050108,
+      "n_months": 299
+    },
+    "reversal_control": {
+      "base": {
+        "spec": "base",
+        "n_months": 283,
+        "med_n": 218,
+        "mean": -0.00248523073679826,
+        "t_nw3": -2.55073411898279,
+        "t_trail1m": "NA",
+        "t_trail6d": "NA",
+        "t_trail12m": "NA"
+      },
+      "plus_1m": {
+        "spec": "plus_1m",
+        "n_months": 283,
+        "med_n": 218,
+        "mean": -0.00333263218234475,
+        "t_nw3": -3.50204649839537,
+        "t_trail1m": 2.03105033130274,
+        "t_trail6d": "NA",
+        "t_trail12m": "NA"
+      },
+      "plus_6d": {
+        "spec": "plus_6d",
+        "n_months": 283,
+        "med_n": 218,
+        "mean": -0.00203584200941435,
+        "t_nw3": -1.48589477925136,
+        "t_trail1m": "NA",
+        "t_trail6d": -0.448346190635625,
+        "t_trail12m": "NA"
+      },
+      "plus_1m_12m": {
+        "spec": "plus_1m_12m",
+        "n_months": 283,
+        "med_n": 218,
+        "mean": -0.00327555236818146,
+        "t_nw3": -3.7649403028298,
+        "t_trail1m": 1.84380259937863,
+        "t_trail6d": "NA",
+        "t_trail12m": 1.03991104523388
+      },
+      "full": {
+        "spec": "full",
+        "n_months": 283,
+        "med_n": 218,
+        "mean": -0.00185793073607406,
+        "t_nw3": -1.55350030172744,
+        "t_trail1m": 1.81055143384858,
+        "t_trail6d": -1.47324272199297,
+        "t_trail12m": 0.95916460487033
+      }
+    },
+    "retention_vs_base": {
+      "base": 1,
+      "plus_1m": 1.37295630788518,
+      "plus_6d": 0.582536128792569,
+      "plus_1m_12m": 1.47602224583534,
+      "full": 0.609040468062178
+    }
+  },
+  "exploratory": [
+    {
+      "arm": "C10s_SUE_Persist_step",
+      "kind": "exploratory_precheck_discovered",
+      "n_months": 283,
+      "fmb_nw3_t": -0.456388565574805,
+      "mean_coef": -0.000352218904619621,
+      "solo_t_nw3": -0.172963966355545,
+      "rank_ic": 0.00884079062721968,
+      "rank_ic_t_nw3": 1.80930574934416,
+      "icir": 0.110210449991815,
+      "vif_med": 1.41527903330339,
+      "max_abs_spearman_vs_incumbent": 0.544559129235611,
+      "placebo_p": 0.665,
+      "lag1_retention": 2.41592547737184,
+      "power_verdict": "INCONCLUSIVE_BAR_RESTATES_T",
+      "implied_t_threshold": 2.47793006782476,
+      "verdict": "NULL_UNDERPOWERED_BAR_RESTATES_T"
+    },
+    {
+      "arm": "C13s_RevBreadth_step",
+      "kind": "exploratory_precheck_discovered",
+      "n_months": 283,
+      "fmb_nw3_t": 0.737332894833607,
+      "mean_coef": 0.0012841776230216,
+      "solo_t_nw3": 1.48562735347032,
+      "rank_ic": 0.0138844679695731,
+      "rank_ic_t_nw3": 2.55421338606011,
+      "icir": 0.150069188044759,
+      "vif_med": 1.46804004487348,
+      "max_abs_spearman_vs_incumbent": 0.572055477512673,
+      "placebo_p": 0.425,
+      "lag1_retention": 1.14664798147458,
+      "power_verdict": "INCONCLUSIVE_BAR_RESTATES_T",
+      "implied_t_threshold": 2.44147815078553,
+      "verdict": "NULL_UNDERPOWERED_BAR_RESTATES_T"
+    },
+    {
+      "arm": "C15s_SUE_Trend_step",
+      "kind": "exploratory_precheck_discovered",
+      "n_months": 283,
+      "fmb_nw3_t": -0.909470331429523,
+      "mean_coef": -0.000886903939029727,
+      "solo_t_nw3": -1.02752390123941,
+      "rank_ic": -0.000440768845194646,
+      "rank_ic_t_nw3": -0.0994573495404439,
+      "icir": -0.00593948550361111,
+      "vif_med": 1.77671431681025,
+      "max_abs_spearman_vs_incumbent": 0.623053885422257,
+      "placebo_p": 0.375,
+      "lag1_retention": -0.357427341129395,
+      "power_verdict": "INCONCLUSIVE_BAR_RESTATES_T",
+      "implied_t_threshold": 2.57543184765572,
+      "verdict": "NULL_UNDERPOWERED_BAR_RESTATES_T"
+    }
+  ],
+  "transition": {
+    "note": "자격 미달 arm 에 대한 진단 측정 — 자본 주장 아님. 사전등록 부호(+)로 top-25 를 잡았으므로 음의 PORT_t 는 음의 FMB 계수의 거울상이지 독립 증거가 아니다.",
+    "capw_port_t_raw": -1.03968177127353,
+    "capw_port_t_resid": -0.848688534279725,
+    "ew_universe_port_t_raw": -2.3348547050971,
+    "ew_universe_port_t_resid": -1.84492605338554,
+    "post2017_t_ew": -1.08375985005435,
+    "net_sr_raw": -0.20970396236069,
+    "turnover_annual_raw": 16.986220735786,
+    "cap_tier_weight_share": {
+      "MEGA": 0.0449498327759197,
+      "MID": 0.0858862876254181,
+      "OTHER": 0.869163879598662,
+      "UNRANKED": 0
+    },
+    "hard_threshold": 2.95,
+    "verdict": "전이 미달 (부호 반전분을 감안해도 |capw| 1.04 << 2.95)"
+  },
+  "adversarial": {
+    "pit_parity": {
+      "test": "원천에서 재계산한 C01 ↔ 커넥터 C01 월별 spearman (내 원천 PIT 처리 = 빌더인가)",
+      "n_months": 11,
+      "median_abs_spearman": 0.999993234407982,
+      "min_abs_spearman": 0.999985905167948,
+      "n_positive": 11,
+      "verdict": "PASS — 부호 양(방향정렬 미반전) · |rho| ≈ 1 (최소 0.999986). 스텝 프로토타입도 동일 PIT 규약 위."
+    },
+    "c18_self_selection": {
+      "test": "C18 보유군(월~335종) vs 미보유군 익월 수익 차",
+      "mean_monthly_diff": 0.00046,
+      "t_nw3": 0.22,
+      "n_months": 298,
+      "incumbent_coef_stability": "full vs narrow 표본에서 C02_EPS_Chg_1m t +3.01 → +2.66 · C01 -0.17 → +0.07 · C04 +0.61 → +0.84",
+      "verdict": "기각 — 표본 자기선택이 수익 편의를 만들지 않는다(t 0.22). 단 C18 표본은 C01 평균 0.221 vs 0.041 · log(Size) 28.13 vs 26.88 로 **대형·고서프라이즈 편중**."
+    },
+    "ax001_v2": {
+      "C18_Earnings_CAR_3d": {
+        "arm": "C18_Earnings_CAR_3d",
+        "n_bad": 125,
+        "ic_bad": -0.0371631941880297,
+        "n_nor": 174,
+        "ic_nor": -0.0233842240430655,
+        "ratio": 1.58924213690342,
+        "n_crisis": 13,
+        "ic_crisis": -0.144470513315686
+      },
+      "C10s_SUE_Persist_step": {
+        "arm": "C10s_SUE_Persist_step",
+        "n_bad": 125,
+        "ic_bad": 0.0057937300500917,
+        "n_nor": 174,
+        "ic_nor": 0.015565344856422,
+        "ratio": 0.372219832167825,
+        "n_crisis": 13,
+        "ic_crisis": -0.0213354089619395
+      },
+      "C13s_RevBreadth_step": {
+        "arm": "C13s_RevBreadth_step",
+        "n_bad": 127,
+        "ic_bad": 0.0123971563915225,
+        "n_nor": 175,
+        "ic_nor": 0.0227555681093922,
+        "ratio": 0.544796611182195,
+        "n_crisis": 13,
+        "ic_crisis": -0.00356119365331165
+      },
+      "C15s_SUE_Trend_step": {
+        "arm": "C15s_SUE_Trend_step",
+        "n_bad": 124,
+        "ic_bad": 0.00257714848436957,
+        "n_nor": 172,
+        "ic_nor": -0.00310088785463188,
+        "ratio": -0.831100189747273,
+        "n_crisis": 12,
+        "ic_crisis": -0.0151881665005007
+      }
+    },
+    "search_dof": {
+      "n_trials_reported": 4,
+      "bonferroni_two_sided_t": 2.5,
+      "note": "exploratory 3종은 사전등록 원안에 없고 P0 중 발견. '스텝 압축'은 여러 가능한 수리 중 하나(대안: 분기 리샘플·달력 lag·이벤트 정렬) ⇒ primary 와 같은 증거력으로 읽지 말 것."
+    }
+  },
+  "round_verdict": {
+    "material_qualified_count": 0,
+    "statement": "원안 4종 · exploratory 3종 모두 재료 자격 불성립. 본 라운드의 산출은 알파가 아니라 **재료 인벤토리의 정정**이다.",
+    "selection_type": "preregistered_family_grid",
+    "n_trials": 4,
+    "dsr_applicability": "sweep 성격이나 자격 arm 0 이라 DSR 적용 대상 자체가 없음(선택할 챔피언 부재)"
+  }
+}

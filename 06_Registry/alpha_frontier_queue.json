@@ -3485,7 +3485,7 @@
    "data_gate": "없음 (수리는 코드 배선)",
    "owner": "Q-Lead session 2026-08-09 (재빌드 집행·검증 완료)",
    "status": "rebuilt_materials_unlocked_20260809",
-   "next_action": "제안서 stage_artifacts/WT_D20260808_002/duplicate_registration_proposal.json §proposal_B 배선 → 수리 후 C10/C13/C15/C18 재료 자격 라운드.",
+   "next_action": "제안서 stage_artifacts/WT_D20260808_002/duplicate_registration_proposal.json §proposal_B 배선 → 수리 후 C10/C13/C15/C18 재료 자격 라운드. ★정정(2026-08-09 Q-Lead session 832fa2fc · 병렬 세션 WT-D20260809_005 이관 요청 + **내 331 전수 실측 교차확인**): 'C15 300개월 실림' 진술은 실측과 불일치한다. 팩터DB 적격 331 목록에도 `coverage.csv` 에도 **C15 로 시작하는 팩터가 한 건도 없다**. `compute_consensus.R:125` 가 C15 를 이력 블록으로 언급하나 배출 결과가 없다(병렬 세션 진술 `not_emitted_zero_variance` 와 정합). ⇒ C15 기반 서술은 근거 없음. 재사용 전 배출 여부부터 확인할 것.",
    "source_refs": [
     "stage_artifacts/WT_D20260808_002/duplicate_registration_proposal.json",
     "stage_artifacts/WT_D20260808_002/consensus_silent_skip_census.csv"
@@ -4413,8 +4413,47 @@
    "ev_rationale": "도훈 지시 'PG2 를 이길 전략'. 단일 팩터 331 전수 0/331 후 남은 갭이 IR 이므로 합성(분산 효과)이 직접 레버였다. 요구조건 지도가 가리킨 유일한 남은 축.",
    "wall_check": "★전수 331: 무조건부 상관 중앙 **+0.4203(양수 331/331, 최소 +0.083)** · IR 중앙 -0.083 · ΔIR 양수 0.3% / 파킹 상관 중앙 +0.3242 · IR 중앙 -0.090 · ΔIR 양수 2.7% · **통과 0/331 양 arm**. 부족분 중앙 0.834 · 최소 **0.142(V18_AM parked: 상관 0.243·IR 0.576·필요 0.717)**. ★합성 8셀(K 2/3/5/8 x 2arm, 고유 27재료 greedy): verdict_ci **BEATS_PG2 0건**(UNRESOLVED 6·BELOW 2). 최고 K8 parked ΔIR +0.0071 < **단일 최고 V18_AM +0.0201** ⇒ 합성이 단일을 못 넘는다(희석). ★단 기전은 실재: parked IR K2 0.413→K8 **0.521** 단조 증가 · 상관 uncond K2 0.308→K8 0.242. 무작위 합성 대조(40회x4셀): 문턱 통과 **0.0% 전 셀** · 선별 백분위 parked K3 97.5% K8 **100%** (uncond 80/90%) ⇒ 선별은 **파킹 arm 에서만** 유의. ★부수: 중복 팩터 2쌍 검거 — R17_Market_Leverage≡V19_Debt_to_Market(r 0.9991) · L06_Zero_Trade_Days≡L20_Trade_Frequency(r 1.000000).",
    "next_action": "★next_probe(4) = ①**V18_AM 단독 심화** — 부족분 0.142 로 유일한 가시권. 이 재료의 IR 을 0.576→0.717 로 올리는 조건-안 레버(보유기간·밴드 소비·파킹 발화율 최적화)를 각각 재라. ②**중복 팩터 전수 검거** — 근접 30건에서만 2쌍이 나왔다. 331 전수 상호상관으로 유효 독립 개수를 산출하라 (오늘 폐지풀 라운드에서 명목 195→유효 85 전례). 중복은 합성의 분산 효과를 죽인다. ③**비-return 원천 확대** — 계약수주(IR 0.758)가 팩터DB 최고(0.576)를 넘는 유일한 재료였다. DART insider·공매도/대차·뉴스를 같은 book-marginal 자로 재라. ④**상관이 331/331 양수인 이유의 구조 분해** — 최소가 +0.083 이다. long-only·동일유니버스·top-25 중 어느 제약이 하한을 만드는지 분해하면 조건-안 회피 경로가 보일 수 있다(제약 완화 아님).",
-   "consumer_surfaces": ["알파 재료 선별 기준", "합성/composite 설계", "FQ 큐 우선순위", "병목지도 재료 행"],
+   "consumer_surfaces": [
+    "알파 재료 선별 기준",
+    "합성/composite 설계",
+    "FQ 큐 우선순위",
+    "병목지도 재료 행"
+   ],
    "revival_condition": "슬리브 IR 0.72 이상 재료가 등장하거나, 상관 0.1 미만을 만드는 구성이 발견되면 재도전",
+   "created": "2026-08-09"
+  },
+  {
+   "id": "FQ-203",
+   "title": "★C10⊂C01 · C13⊂C04 완전 중복 배출 + 2026-01 이후 배출 중단",
+   "status": "frontier_open",
+   "owner": "Q-Lead session 832fa2fc",
+   "claim": {
+    "state": "complete",
+    "session": "832fa2fc",
+    "note": "병렬 세션 이관 + 교차확인 2026-08-09"
+   },
+   "ev_rationale": "병렬 세션(WT-D20260809_005/FQ-198, alpha-hypothesis)이 compute_consensus.R 의 중복 배출을 Q-Lead 이관. 원장 쓰기 권한이 내 쪽이라 처리하되 **그 진술을 받지 않고 331 전수로 교차 확인**했다.",
+   "wall_check": "★실측: `C01_SUE` vs `C10_SUE_Persistence` — 교집합 66,543행에서 **Pearson·Spearman 둘 다 1.000000 · identical TRUE · 최대절대차 0.000e+00**. `C04_ESBR` vs `C13_Revision_Breadth_3m` 동일(교집합 73,282행). ★포함관계: **C10 단독 0행 / C01 단독 1,748행** · **C13 단독 0행 / C04 단독 1,910행** ⇒ C10⊂C01, C13⊂C04 진부분집합. ★부수 결함: 차이 나는 6개월이 전부 **2026-01~06 이고 그 달 C10/C13 종목수가 0** — 2026 들어 배출이 끊겼다. ★Pearson 만 보지 않았다 — 같은 날 insider 패널에서 이상치 하나가 Pearson 을 1.0 으로 만든 전례가 있어 Spearman 병행. ★내 자가 검거: h2 스크립트 자동 판정이 '단순 차단 시 정보 손실 가능' 이라 했는데 **방향이 반대**다 — C10 만 있는 달이 0 이므로 지워도 잃을 것이 없다.",
+   "next_action": "★next_probe(3) = ①`compute_consensus.R` 배출 차단/deprecated 처분 — factor_db **생산 변경**이므로 도훈 판단 대상(칩 분리 권고). C10⊂C01 이므로 차단 시 정보 손실 없음이 실측으로 확인됨. ②**2026-01 이후 C10/C13 배출 중단의 원인 규명** — 중복 처분과 별개 결함이다(이력 블록 `.cons_history()` 의존). ③중복 전수 재산출 — 종합이 추정한 유효 독립 295~307 을 실제 z 벡터 identical 검사로 확정(오늘은 근접 30건만 봤다).",
+   "consumer_surfaces": ["factor_db 배출", "유효 독립 재료 수 계산", "합성/composite 설계", "factor_registry 위생"],
+   "revival_condition": "compute_consensus.R 이 수정되거나 C10/C13 배출이 재개되면 재확인",
+   "created": "2026-08-09"
+  },
+  {
+   "id": "FQ-204",
+   "title": "★★계약 슬리브의 직교성은 유니버스가 아니라 **신호**에서 온다 (통제 통과) + IR 2성분 분해",
+   "status": "frontier_open",
+   "owner": "Q-Lead session 832fa2fc",
+   "claim": {
+    "state": "complete",
+    "session": "832fa2fc",
+    "note": "병렬 세션 이관 + 교차확인 2026-08-09"
+   },
+   "ev_rationale": "계약 슬리브(rho 0.140 · IR 0.758)가 331 전수에서 유일하게 통과 셀에 있었는데, 패널이 130종목뿐이라 **좁은 유니버스 아티팩트**일 가능성이 미검이었다. 결정적 통제.",
+   "wall_check": "★3-arm 실측(각 무작위 100회, parked arm): A 계약신호 rho **+0.140** · IR **+0.758** / B 계약유니버스 무작위 rho +0.273 [0.237, 0.318] · IR +0.062 / C 전체유니버스 무작위 rho +0.277 [0.203, 0.331] · IR **-0.289**. ①**B ≈ C** ⇒ 좁은 유니버스는 직교성을 만들지 않는다. ②A(0.140) 가 B 의 5% 분위(0.237) **밖** ⇒ 직교성은 **신호**가 만든다. ③uncond 에서는 A 0.564 ≈ B 0.581 ≈ C 0.558 로 셋이 같다 ⇒ **파킹과 결합했을 때만** 신호가 상관을 낮춘다. ★★IR 2성분 분해: 전체무작위 -0.289 → 계약유니버스무작위 +0.062 (**유니버스 효과 +0.351**) → 계약신호 +0.758 (**신호 효과 +0.696**). 즉 '계약 공시를 낸 회사' 라는 선별 자체에 정보가 있다.",
+   "next_action": "★next_probe(3) = ①**유니버스 필터 소비면** — '계약 공시 발생 종목' 을 신호 없이 유니버스 제약으로만 쓰면 IR +0.351 을 얻는다. 이건 슬리브가 아니라 **북 종목 필터**로 소비 가능하다(오늘 확립: 소비 경로가 판정을 바꾼다). ②**파킹 상호작용 규명** — uncond 에서 A≈B≈C 인데 parked 에서만 A 가 갈린다. 신호가 국면 ON 월에서만 직교 정보를 갖는다는 뜻인가, 아니면 파킹이 신호의 어떤 성분을 남기는가. ON 월만의 rho 를 직접 산출. ③insider 대조 재해석 — insider 도 사건-구동인데 파킹 후 rho 0.291(무작위 0.273 과 구분 안 됨)이었다. 즉 **사건-구동만으로는 부족**하고 계약 특유의 무언가가 있다. 두 원천의 차이를 직접 분해.",
+   "consumer_surfaces": ["유니버스 필터(북 종목 제약)", "오버레이 국면 입력", "book-marginal 후보", "비-return 원천 평가 기준"],
+   "revival_condition": "계약 신호의 국면 ON 월이 누적되거나, 같은 3-arm 통제를 통과하는 다른 원천이 나오면 확장",
    "created": "2026-08-09"
   }
  ]
