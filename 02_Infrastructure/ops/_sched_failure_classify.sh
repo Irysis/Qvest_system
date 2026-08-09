@@ -117,10 +117,20 @@ sched_retry_backoff_sec() { echo 0; }
 sched_failure_streak() {
   local comp="${1:-}" reason="${2:-}" adir="${3:-}"
   { [ -z "$adir" ] || [ ! -d "$adir" ]; } && { echo 0; return 0; }
-  local n=0 i=0 d
+  # ★별칭 인지 (2026-08-09): 사유 개명 직후 streak 이 0 으로 떨어지는 것을 막는다.
+  #   실측 결함: recent_count 에만 별칭을 넣었더니 같은 날 경보가 "연속=0 | 최근14일=6회" 로
+  #   서로 다른 것을 말했다 — 두 축이 다른 규약 위에 서 있으면 읽는 사람이 어느 쪽도 못 믿는다.
+  #   ⚠ 공유하는 건 **철자**뿐이다. streak 은 _resolved/ 를 보지 않는다 — 성공이 해소를
+  #     뜻한다는 streak 고유 의미는 그대로 둔다(그래서 recent_count 와 값이 갈리는 게 정상).
+  local aliases; aliases=$(sched_reason_aliases "$reason")
+  local n=0 i=0 d r hit
   while [ "$i" -lt 60 ]; do            # 최대 60일 역추적 (무한루프 방지)
     d=$(date -d "-${i} day" +%Y%m%d 2>/dev/null) || break
-    if [ -f "$adir/${comp}_${reason}_${d}.alert" ]; then
+    hit=0
+    for r in $aliases; do
+      [ -f "$adir/${comp}_${r}_${d}.alert" ] && { hit=1; break; }
+    done
+    if [ "$hit" -eq 1 ]; then
       n=$((n + 1))
     elif [ "$i" -gt 0 ]; then
       break                            # 오늘 마커는 아직 없을 수 있으니 i=0 만 관대하게
@@ -139,12 +149,23 @@ sched_failure_streak() {
 #   ∴ 후행 N일 창에서 (comp, reason) 마커 **개수**를 센다. _resolved/ 아카이브도 포함해야
 #     "성공이 역사를 지우는" 위 기전을 피한다.
 #   ★별칭: 사유 이름이 바뀌어도 역사가 끊기지 않도록 구 이름을 함께 센다.
+# ★사유 이름 별칭 — **여기가 유일 정의**. 소비자(streak/recent_count)는 이 함수를 부른다.
+#   같은 표를 두 곳에 적으면 한쪽만 갱신돼 조용히 갈라진다(이 저장소가 반복해서 물린 계통).
+#   목적: 사유를 개명해도 **역사가 끊기지 않는 것**. streak/recent 는 라벨의 철자가 아니라
+#   같은 실패를 세야 한다 — 개명일 전후로 카운터가 0 으로 떨어지면 그건 결함 소멸이 아니라
+#   계측 단절이다.
+sched_reason_aliases() {
+  case "${1:-}" in
+    timeout_kill) echo "timeout_kill exit_124" ;;   # 2026-08-09 개명
+    *)            echo "${1:-}" ;;
+  esac
+}
+
 SCHED_RECENT_WINDOW_DAYS="${SCHED_RECENT_WINDOW_DAYS:-14}"
 sched_failure_recent_count() {
   local comp="${1:-}" reason="${2:-}" adir="${3:-}"
   { [ -z "$adir" ] || [ ! -d "$adir" ]; } && { echo 0; return 0; }
-  local aliases="$reason"
-  [ "$reason" = "timeout_kill" ] && aliases="$reason exit_124"   # 2026-08-09 개명 전 마커
+  local aliases; aliases=$(sched_reason_aliases "$reason")
   local n=0 i=0 d r
   while [ "$i" -lt "$SCHED_RECENT_WINDOW_DAYS" ]; do
     d=$(date -d "-${i} day" +%Y%m%d 2>/dev/null) || break

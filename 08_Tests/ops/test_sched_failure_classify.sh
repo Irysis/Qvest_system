@@ -98,6 +98,28 @@ case "$ANN" in
   *)                    ng "annotate 가 partial 을 그대로 전달" "자동복구=partial" "$ANN" ;;
 esac
 
+echo "── ③b 사유 개명 전환기: streak 이 별칭을 못 보면 계측이 끊긴다 ────────"
+#   실사고(2026-08-09): recent_count 에만 별칭을 넣었더니 같은 경보가
+#   "연속=0 | 최근14일=6회" 로 서로 다른 것을 말했다. 개명일 전후 카운터 0 은
+#   결함 소멸이 아니라 **계측 단절**이다.
+eq "aliases(timeout_kill) 가 구 이름을 포함" "timeout_kill exit_124" \
+   "$(sched_reason_aliases timeout_kill)"
+eq "aliases(미지 사유) 는 원형 보존" "spend_limit" "$(sched_reason_aliases spend_limit)"
+
+ADIR2="$TMP/alerts2"; mkdir -p "$ADIR2/_resolved"
+D1=$(date -d "-1 day" +%Y%m%d)
+: > "$ADIR2/alpha_queue_exit_124_${D0}.alert"   # 개명 전 이름으로만 쌓인 이틀
+: > "$ADIR2/alpha_queue_exit_124_${D1}.alert"
+eq "구 이름 마커 2일 → streak(신 이름)=2 (별칭 인지)" "2" \
+   "$(sched_failure_streak alpha_queue timeout_kill "$ADIR2")"
+
+# ★두 축은 여전히 달라야 한다 — streak 은 _resolved/ 를 보지 않는다(해소 의미 보존).
+: > "$ADIR2/_resolved/alpha_queue_exit_124_$(date -d '-5 day' +%Y%m%d).alert"
+eq "streak 은 _resolved/ 를 세지 않는다" "2" \
+   "$(sched_failure_streak alpha_queue timeout_kill "$ADIR2")"
+eq "recent_count 는 _resolved/ 를 센다 (축 분리 확인)" "3" \
+   "$(sched_failure_recent_count alpha_queue timeout_kill "$ADIR2")"
+
 echo "── ④ 위반 주입: rc=124 분기를 죽이면 검사가 실제로 실패하는가 ─────────"
 #   ★이 절이 없으면 위 PASS 들은 "검사가 살아 있다"를 증명하지 못한다.
 MUT="$TMP/mutant.sh"
@@ -119,6 +141,29 @@ else
     ng "돌연변이에서 검사가 실패해야 함(검출력)" "timeout_kill 아님" "$MUT_OUT"
   else
     ok "돌연변이(rc=124 분기 제거) → '$MUT_OUT' 로 회귀, 검사가 잡는다"
+  fi
+fi
+
+echo "── ④b 위반 주입: 별칭표를 비우면 streak 이 끊기는가 ────────────────────"
+MUT2="$TMP/mutant2.sh"
+"${QVEST_PY:-python}" - "$SRC" "$MUT2" <<'PYEOF'
+import sys
+src, dst = sys.argv[1], sys.argv[2]
+t = open(src, 'rb').read().decode('utf-8')
+old = '    timeout_kill) echo "timeout_kill exit_124" ;;   # 2026-08-09 개명\r\n'
+if old not in t:
+    old = old.replace('\r\n', '\n')
+assert old in t, "별칭 돌연변이 앵커 없음 — 검사기가 낡았다"
+open(dst, 'wb').write(t.replace(old, '', 1).encode('utf-8'))
+PYEOF
+if [ ! -s "$MUT2" ]; then
+  ng "별칭 돌연변이 생성" "파일 생성" "빈 파일/실패"
+else
+  M2=$(bash -c 'source "$1"; sched_failure_streak alpha_queue timeout_kill "$2"' _ "$MUT2" "$ADIR2")
+  if [ "$M2" = "2" ]; then
+    ng "별칭 제거 돌연변이를 검사가 잡아야 함(검출력)" "2 아님" "$M2"
+  else
+    ok "돌연변이(별칭표 제거) → streak='$M2' 로 계측 단절, 검사가 잡는다"
   fi
 fi
 

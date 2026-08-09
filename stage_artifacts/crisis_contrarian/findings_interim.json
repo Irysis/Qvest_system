@@ -1,0 +1,65 @@
+{
+  "round_id": "CRISIS_CONTRARIAN_20260809",
+  "origin": "도훈 지시 2026-08-09 — 위기신호 발현 시 비중 확대 (시장 선행 논리)",
+  "status": "INTERIM — 가설은 살아 있으나 **현 라벨로는 시험 불가**",
+  "prereg_ref": "stage_artifacts/crisis_contrarian/preregistration.json",
+  "metric_type": "canonical_screen_diag",
+  "capital_claim": false,
+
+  "self_correction": {
+    "what_I_said_prematurely": "'도훈님 직관이 forward 축에서 확인됐습니다' — msm Crisis 익월 +29.0%/yr (t 2.23) 등 4셀 유의를 근거로 보고했다.",
+    "why_it_was_premature": "사전등록의 (b) forward 검정은 통과했으나, **그 라벨이 위기 라벨인지**를 확인하지 않았다. P3 에서 확인하니 아니었다.",
+    "correction": "forward 수치 자체는 실측이고 유효하다. 그러나 그것이 '위기신호의 역방향 소비' 를 지지하지는 **않는다** — 라벨이 위기를 표시하지 않기 때문이다."
+  },
+
+  "P2_forward_measurement": {
+    "cells": 47,
+    "significant_positive": 5, "significant_negative": 2, "underpowered": 40,
+    "crisis_type_states": [
+      {"label": "msm_hybrid::Regime", "state": "Crisis", "n_on": 123, "cur_ann": 21.3, "f1_diff_ann": 29.0, "t": 2.23, "verdict": "SIGNIFICANT"},
+      {"label": "unified::Layer1_Alert", "state": "TRUE", "n_on": 135, "cur_ann": 25.0, "f1_diff_ann": 25.5, "t": 2.02, "verdict": "SIGNIFICANT"},
+      {"label": "forecast::forecast_regime", "state": "CRISIS", "n_on": 89, "cur_ann": 38.8, "f1_diff_ann": 31.1, "t": 2.13, "verdict": "SIGNIFICANT"},
+      {"label": "macro::Sentiment_Weak", "state": "TRUE", "n_on": 32, "cur_ann": 43.9, "f1_diff_ann": 41.7, "t": 2.14, "verdict": "SIGNIFICANT"},
+      {"label": "unified::Category", "state": "CRISIS", "n_on": 66, "cur_ann": 35.5, "f1_diff_ann": 32.5, "t": 1.99, "verdict": "INCONCLUSIVE_UNDERPOWERED (바 32.6 간발)"},
+      {"label": "macro::Fin_Stress_Regime", "state": "severe", "n_on": 18, "cur_ann": 25.9, "f1_diff_ann": -32.0, "t": -1.26, "verdict": "INCONCLUSIVE_UNDERPOWERED"}
+    ],
+    "multiple_testing_note": "47셀 측정 — α=0.05 에서 우연 기대 ~2.4건. 유의 7건 중 2건은 양성의 여집합(Layer1_Alert FALSE)이라 독립 아님. 라벨들도 서로 겹칠 개연이 높다. **argmax 라벨 선택 금지**(사전등록 K4)."
+  },
+
+  "P3_PIT_gate_RESULT": {
+    "verdict": "★현 라벨은 위기 라벨이 아니다 — 가설 시험 자격 없음",
+    "decisive_evidence": {
+      "msm_Crisis_n124_bench_ann_pct": {"t_minus_2": 16.37, "t_minus_1": 18.19, "t_current": 21.29, "t_plus_1": 31.65},
+      "non_crisis_bench_ann_pct": {"t_minus_2": 9.57, "t_minus_1": 9.69, "t_current": 6.82, "t_plus_1": 2.70},
+      "reading": "★'Crisis' 라벨 월은 **전전월·전월·당월·익월이 전부 비-Crisis 보다 높다**. 하락을 앞두거나 겪는 국면이 아니라 **지속적 고수익 국면**을 표시하고 있다. 도훈 가설('나쁠 때 켜지는 신호를 뒤집는다')은 이 라벨로 시험할 수 없다 — 애초에 나쁠 때 안 켜진다."
+    },
+    "pit_integrity_unresolved": {
+      "vintage_storage": "없음 — .cache/{regime_vintage,vintage,msm_vintage,regime_history} 전부 부재. 매칭 1건은 무관(ast_asof_repair).",
+      "file_shape": "unified_regime_signal.parquet · msm_hybrid_latest.parquet 모두 **단일 'latest' 파일**(mtime 2026-08-09 12:17) — 과거 시점 라벨이 보존되지 않는다.",
+      "code_scan": "regime_ensemble.R: rolling/expanding 14 · MSM 적합 14 · full-sample 1 (롤링 배관은 존재). regime_engine_daily.R 은 z-score 20d MA smoothing 사용.",
+      "conclusion": "전표본 재적합 여부를 **확정하지 못했다**. 단 위 (전·당·익월 전부 고수익) 패턴은 **전표본 smoothing 지문과 정합**한다. 확정 전까지 이 라벨의 어떤 forward 수치도 자본 주장에 쓸 수 없다.",
+      "prior": "이 저장소는 동일 계열로 3회 데였다 — 저장 패널 동월 look-ahead(2.08x) · FRED vintage 미저장(FQ-137) · overlay 동월 누출."
+    }
+  },
+
+  "production_exposure_check": {
+    "concern_raised": "msm_hybrid 는 Crisis 월에 Target_Weight=0 (431개월 중 124개월 = 29%)",
+    "wiring_measured": "msm_hybrid/unified_regime_signal 소비자 = bootstrap.sh · daily_refresh.sh · build_module_performance.R · telegram_notify.R · freshness_audit.R — **전부 ops/보고 경로**",
+    "verdict": "포트폴리오 비중 산출 경로에 **미배선**. 현행 MDD 레버는 β_R05 단독(메모리 정합) ⇒ **라이브 결함 아님**. 과잉 경보하지 않는다."
+  },
+
+  "what_survives": {
+    "dohoon_hypothesis_status": "★미시험 — 기각도 지지도 아니다. 시험하려면 **실제로 하락 시점에 켜지는 신호**가 필요하다.",
+    "why_this_matters_anyway": "FQ-117/118 이 확립한 '라벨 품질이 병목' 을 **새 증거로 재확인**했다. 이번엔 recall/fisher 가 아니라 **라벨 주변 4개월 수익 프로파일**이라는 다른 축에서 같은 결론이 나왔다.",
+    "the_right_next_design": "라벨 엔진을 쓰지 말고 **기계적·PIT-자명한 하락 정의**로 신호를 만든다: (i) 당월 벤치수익 < −10% (ii) 트레일링 3개월 누적 < −15% (iii) 트레일링 최대낙폭 > 20%. 셋 다 월말에 관측 가능하고 재적합 여지가 없다. 그 위에서 forward 1~3M 수익을 재면 도훈 가설이 **깨끗하게** 시험된다.",
+    "power_note": "그런 정의는 n_ON 이 작아진다(<-10% 월은 표본에서 드물다). 착수 전 required_effect 재계산 의무 — 현 바: n_ON 25 → 연 50.6% · n_ON 40 → 40.7%."
+  },
+
+  "coordination": {
+    "adjacent_parallel_work": "stage_artifacts/fq143_tail_overlay_20260809/{p2_label_source.R,p3_eligibility_pit.R} — 병렬 세션이 **오늘 라벨 출처·PIT 자격**을 다루고 있다. 라벨 자격 축은 그 세션 소관으로 두고, 본 라인은 **기계적 하락 정의 위의 역방향 소비**로 범위를 좁힌다.",
+    "gate_reference": "08_Tests/contract_regression/test_label_eligibility_gate.R (FQ-119 관문) — 기계적 정의도 이 관문을 먼저 통과시켜야 소비 측정 자격이 생긴다."
+  },
+
+  "artifacts": ["preregistration.json", "p0_dup_check.R", "p1_label_census_power.R",
+                "p2_forward.R", "p2_forward_cells.csv", "p3_pit_gate.R", "p3_pit.rds"]
+}
