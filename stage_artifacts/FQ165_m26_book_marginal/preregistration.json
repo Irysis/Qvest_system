@@ -1,0 +1,166 @@
+{
+  "fq_ref": "FQ-165",
+  "wt_id": "WT-D20260809_004",
+  "parent": "WT-D20260809_001 (FQ-161 채널분해) → WT-D20260808_002 (M26 MATERIAL_QUALIFIED)",
+  "written_at": "2026-08-09",
+  "written_before_candidate_measurement": true,
+  "title": "M26_Revenue_Mom 을 현행 PG2 북에 결합했을 때 book-marginal ΔIR 이 양인가",
+
+  "written_after": [
+    "P0  입력 실측 (행수·관측단위·범위)",
+    "P0b 두 패널 시간축 오프셋 스캔",
+    "P0c Ret_1m 컬럼의 캘린더 월 특정 (rawdata 대조)",
+    "P0d 신호별 홀딩월 IC 스캔 — PIT 정렬 확정",
+    "P1  기준선 재현 + production parity + placebo 잡음 스케일 + 검정력 바"
+  ],
+  "written_before": [
+    "실제 M26 결합 arm 의 어떤 성과 수치도 산출하지 않은 상태에서 본 문서를 고정한다.",
+    "P1-C placebo 는 M26 을 **월별 무작위 순열**한 것이므로 실제 M26 정보를 포함하지 않는다."
+  ],
+
+  "승계_재측정_금지": {
+    "출처": "WT-D20260809_001 / WT-D20260808_002",
+    "승계항목": {
+      "decile_monotonicity_spearman": 0.879,
+      "D10_ann_excess_pct": 6.550,
+      "D10_t_nw3": 2.822,
+      "D1_ann_excess_pct": -5.298,
+      "long_side_share": 0.553,
+      "standalone_capw_port_t": 1.5441,
+      "rank_ic_t_nw3": 2.9714,
+      "oos_retention_approx": 0.123
+    },
+    "규칙": "M26 신호 산출을 재구현하지 않는다 — stage_artifacts/WT_D20260808_002/alpha_scores.parquet 패널을 그대로 승계한다."
+  },
+
+  "input_reality_measured": {
+    "base_score_panel": "stage_artifacts/WT_D20260425_010/alpha_scores.parquet · rows 81226 · unique Date 272 (2004-01-01~2026-08-01) · Ticker 859 · score_eff non-NA 62830 · (Date x Ticker) 중복 0",
+    "m26_panel": "stage_artifacts/WT_D20260808_002/alpha_scores.parquet · rows 69885 · unique Date 283 (2003-01-30~2026-07-31) · Ticker 630 · 중복 0",
+    "carrier": "06_Registry/book_carrier/carrier_STR_1715_on_M4gAE_R05_noLayer4_PG2.parquet · rows 5376 · months 269 (2004-01-01~2026-05-01)",
+    "rawdata": "rows 14,059,013 · unique Date 9,003 · 관측단위 DAILY (월간 아님) · 1990-01-05~2026-08-07",
+    "benchmark": "stage_artifacts/pg2_offense_overlay/benchmark_pinned_20260702.parquet · IKS200 · rows 9416 · vintage pin 20260702",
+    "measurement_window": "269개월 2004-01 ~ 2026-05 (base ∩ carrier overlay)",
+    "m26_coverage_in_base_universe_median": 0.967
+  },
+
+  "★PIT_정렬_확정": {
+    "문제": "base panel Date 는 월초(decision), M26 panel Date 는 월말(signal). 정확 일치 0건이라 오프셋을 정해야 하는데, 라벨만 보면 두 해석이 가능하고 하나는 동월 look-ahead 다.",
+    "라벨_기반_naive_join_의_함정": "두 패널의 Ret_1m 컬럼끼리 맞추면(k=0) exact 일치 98.8% 로 '정렬됐다'고 읽힌다. 그러나 두 컬럼 모두 panel_month 의 **익월** 실현수익(P0c: rawdata 대조 cor 0.92~0.96 at offset+1)이라 이는 라벨끼리의 일치일 뿐 결정시점 정렬이 아니다.",
+    "판별_실측": {
+      "방법": "각 신호의 rank-IC 를 rawdata 실현수익에 대해 holding_offset 0/1/2 로 스캔 (P0d)",
+      "base_score_eff": {"offset0": {"ic": 0.04588, "t_nw3": 4.513}, "offset1": {"ic": 0.04171, "t_nw3": 5.324}, "offset2": {"ic": 0.03082, "t_nw3": 4.267}},
+      "M26_Revenue_Mom": {"offset0": {"ic": 0.05461, "t_nw3": 8.758}, "offset1": {"ic": 0.01531, "t_nw3": 2.620}, "offset2": {"ic": 0.00663, "t_nw3": 1.112}},
+      "판정": "M26 은 offset0(=신호가 찍힌 그 달)에서 t 8.76 으로 뾰족하게 솟고 offset1 에서 2.62 로 3.6배 급락 = **offset0 은 동시성(당월) 상관이지 예측이 아니다**. base 는 offset0 4.51 / offset1 5.32 로 완만(고빈도 누출 형태 아님) — 엔진 규약(decision 월 = 보유월)과 정합.",
+      "확정_정렬": "base decision ymi = M26 signal ymi + 1  (월말 M 에 관측된 M26 → M+1 월 보유 결정에 투입).",
+      "교차확인": "이 정렬의 offset1 IC t 2.620 은 WT-D20260808_002 가 보고한 rank_ic t_NW3 2.9714 (패널 자체 Ret_1m 라벨 기준)와 같은 창을 가리킨다 — 승계 수치와 정합.",
+      "만약_k=0_을_썼다면": "IC t 가 2.62 → 8.76 (3.34배)으로 부풀었을 것. 본 라운드는 그 값을 쓰지 않는다."
+    }
+  },
+
+  "기준선_권위": {
+    "규약": "measurement-graduation §7b — base 는 05_Production 현행 코드 경로에서 파생한 신호만. 파생 저장 패널 재사용 금지.",
+    "admitted_id": "STR_1715_on_M4gAE_R05_noLayer4_PG2 (book_state.json::admitted_ids 키 접근 — grep 금지, 형제 키 admitted_ids_prior_* 오염)",
+    "carrier_identity_check": "carrier_meta.strategy == admitted_ids[1] → TRUE",
+    "score_원천": "stage_artifacts/WT_D20260425_010/alpha_scores.parquet (2-4 forward_weights_R05_noLayer4_M4gAE.R:38 이 읽는 파일)",
+    "가중_규약": "strategy_tilt_weights.R::linear_tilt_qd(λ=1.5) + tophi φ=3 + CRISIS ub 0.10 — admit·북 기록·incumbent_book_ir 1.416 을 측정한 정본. ★z-선형 실배포판이 아니다(2026-08-08 정렬 완료분 기준).",
+    "선별_순서": "top-20 by score_eff → 유동성(결정일 이전 20영업일 ADV ≥ 2e8) 교집합 (run_all.R 정본 순서)",
+    "overlay": "캐리어 실측 invested_t (M4∩AE gate × β_R05) — **arm 불변**(paired 유지)",
+    "비용": "15bps × Σ|Δ(invested·w)| (v2.4 delta 사상, 현금 leg 포함)",
+    "production_parity_verified": true,
+    "parity_table": [
+      {"metric": "SR_geo", "reproduced": 1.9053, "authority": 1.898, "source": "judge WT-D20260702_002", "tol": 0.06, "pass": true},
+      {"metric": "CAGR", "reproduced": 0.4541, "authority": 0.4526, "source": "judge", "tol": 0.02, "pass": true},
+      {"metric": "MDD", "reproduced": 0.23279, "authority": 0.2329, "source": "judge", "tol": 0.02, "pass": true},
+      {"metric": "IR_net_active_recon_v1", "reproduced": 1.40726, "authority": 1.416, "source": "book_state.incumbent_book_ir", "tol": 0.10, "pass": true}
+    ],
+    "ir_convention": "net_active_recon_v1 = mean(ret_net − BM_ret)/sd(·)·sqrt(12). gross/geo 혼용 금지."
+  },
+
+  "★검정력_착수전_산출": {
+    "n_months": 269,
+    "external_reference_series": "placebo — M26 을 월별 무작위 순열해 동일 형태(z-blend w=0.30)로 결합한 12 draw 의 paired 차이 sd. arm 자신의 sd 가 아니므로 바가 t 검정의 재진술로 퇴화하지 않는다.",
+    "placebo_paired_sd_monthly": 0.01537,
+    "placebo_sd_range": [0.01358, 0.01702],
+    "detection_floor_paired_t2": {"monthly": 0.00234, "annual_pct": 2.811},
+    "delta_ir_equivalent_of_detection_floor": 0.148,
+    "delta_ir_gate": 0.05,
+    "delta_ir_gate_in_return_terms_annual_pct": 0.951,
+    "delta_ir_gate_implied_paired_t": 0.68,
+    "★결론_착수전": "ΔIR≥0.05 게이트는 연 +0.95% 효과에 해당하고, 이 설계의 paired 검출 바닥은 연 +2.81% 다. 즉 **게이트는 검출 바닥의 약 1/3 지점에 있다** — ΔIR 통과와 통계적 확립은 같은 사건이 아니다. 두 축을 분리 보고하는 것이 본 라운드의 설계이며, 이 사실을 결과를 본 뒤에 발견한 것이 아님을 여기 고정한다.",
+    "설계_변경_검토_결과": "형태를 바꿔 검정력을 올릴 방법(표본 연장·개입 확대)을 착수 전 검토했으나 — 표본은 캐리어 269개월이 상한이고, 개입 확대(w↑)는 sweep/argmax 위험을 들여온다. 따라서 **형태는 유지하되 판정 라벨을 검정력에 맞게 3단(확립/게이트통과-미확증/미달)으로 사전 분리**한다. 무검정력 null 을 '효과 부재'로 읽지 않는다.",
+    "incumbent_IR_block_bootstrap": {"block": 12, "reps": 2000, "median": 1.621, "sd": 0.229, "q05": 1.237, "q95": 1.989}
+  },
+
+  "결합형태_사전열거_고정": {
+    "argmax_금지": "3 형태 전량 보고. 어떤 형태도 챔피언으로 승격하지 않는다. 사후에 하나를 고르면 본 선언 위반이며 그 결과는 무효.",
+    "selection_type": "diagnostic_no_argmax",
+    "n_primary_forms": 3,
+    "forms": [
+      {
+        "id": "F_A_blend030",
+        "type": "rerank (composite z-blend)",
+        "spec": "유동성 적격집합에서 blend = z_cs(score_eff) + 0.30 · z_cs(M26); top-20 by blend; 비중 = 정본 tilt 를 blend 점수 위에 적용.",
+        "w_fixed_rationale": "w=0.30 은 위성(satellite) 가중으로 **측정 전** 고정. 근거 = M26 standalone cap-w PORT_t 1.544 / 북 PORT_t 6.21 ≈ 0.25 를 0.30 으로 반올림. sweep 아님 — 이 값 하나만 1차 판정에 쓴다.",
+        "missing_handling": "M26 결측 종목은 z=0 (중립) — 제외하지 않는다. 커버리지 중앙 0.967.",
+        "개입유형_라벨": "rerank — FQ-127 실측상 base 가중 규칙에 상대적으로 강건한 유형"
+      },
+      {
+        "id": "F_B_filterD1",
+        "type": "filter (선별 라벨)",
+        "spec": "적격집합 내 M26 횡단면 하위 1분위(D1) 종목을 후보에서 제외 → 이후 정본 선별(top-20 by score_eff) + 정본 tilt (score_eff 위).",
+        "rationale": "승계 실측 D1 연초과 −5.298%(t −2.502) 이 이 형태의 유일한 사전 근거. 상위 D10 단독 필터는 후보를 ~30종으로 붕괴시켜 25종 제약과 양립 불가하므로 채택하지 않는다.",
+        "missing_handling": "M26 결측 종목은 **제외하지 않는다**(정보 없음 = 벌하지 않음).",
+        "개입유형_라벨": "filter — ★FQ-127 실측상 base 가중 라벨 없이 소비 불가한 유형. 본 라운드 base = rank-tilt(production 정본)이며 이는 08-02 MAX5 필터가 부호 반전했던 바로 그 가중 규칙이다. 결과 해석 시 이 사실을 명시한다."
+      },
+      {
+        "id": "F_C_carve4",
+        "type": "slot-carve",
+        "spec": "정본 top-16 by score_eff 에 정본 tilt 적용 후 합계 0.80 으로 정규화 + 적격집합 중 그 16종 밖에서 M26 상위 4종에 각 0.05 (합 0.20). 결합 벡터에 정본 tophi(φ=3) 적용.",
+        "k_fixed_rationale": "k=4 (=20/20 슬롯의 20%) 는 F_A 의 위성 가중 30% 와 같은 취지로 **측정 전** 고정. 슬롯수·carve 비중 어느 것도 탐색하지 않는다.",
+        "role_boundary": "이는 비중 *최적화*가 아니라 편입 **형태**의 사전고정 규칙이다. 공분산 추정·목적함수 최적화 없음. 정본 가중 함수 외 새 가중 규칙을 도입하지 않는다(carve 등가중은 규칙이지 해가 아님)."
+      }
+    ],
+    "control_arms_declared": [
+      {"id": "F_P_placebo030", "spec": "F_A 와 동일하되 M26 을 월별 무작위 순열 (12 seed). ★null 이 0 이 아니다 — 랭킹에 잡음을 섞는 것만으로 성과가 나빠질 수 있으므로, '정보 있음'의 대조군은 base 가 아니라 placebo 다."},
+      {"id": "F_A_lag1", "spec": "F_A 와 동일하되 M26 을 1개월 더 지연. 신호수명 + 동월 누출 잔여 혐의 스트레스."},
+      {"id": "F_A_wcurve", "spec": "w ∈ {0.10, 0.20, 0.30, 0.50, 1.00} 곡선. **diagnostic_no_argmax** — 어떤 w 도 챔피언 승격 금지. 곡선의 *모양*(단조/봉우리)만 기전 진단에 쓴다."}
+    ]
+  },
+
+  "직교성_사전확인": {
+    "cross_sectional_spearman_score_eff_vs_M26": {"mean": 0.1917, "median": 0.1898, "sd": 0.1091, "n_months": 271, "threshold": 0.30, "pass": true},
+    "top20_overlap_mean_names": 3.99,
+    "추가측정": "arm active 수익 시계열과 base active 수익 시계열의 상관도 보고. |cor| ≥ 0.30 초과 자체를 결과로 기록(재탕 판정)."
+  },
+
+  "판정규칙_결과보기전_고정": [
+    {"id": "D1", "condition": "ΔIR ≥ 0.05 AND paired NW3 t ≥ 2.0", "verdict": "BOOK_MARGINAL_POSITIVE_ESTABLISHED", "action": "상신 자격 확보까지만 기록. ★governor admit·book_state 쓰기 금지 — 자본 결정은 도훈 몫."},
+    {"id": "D2", "condition": "ΔIR ≥ 0.05 AND paired NW3 t < 2.0", "verdict": "GATE_PASS_STATISTICALLY_INCONCLUSIVE", "meaning": "게이트 문턱(연 +0.95%)은 넘었으나 이 설계의 검출 바닥(연 +2.81%) 아래 — 효과 확립 아님. '통과'를 '확립'으로 승격 금지."},
+    {"id": "D3", "condition": "0 < ΔIR < 0.05", "verdict": "BELOW_GATE", "action": "방향만 기록. 소비면 재순회."},
+    {"id": "D4", "condition": "ΔIR ≤ 0", "verdict": "NEGATIVE", "action": "★기전 분리 의무 — placebo 대비로 (a) 랭킹 잡음 열화(placebo 와 구별 불가) vs (b) M26 정보가 이 소비면에서 역방향 을 나눈다. 분리 없이 'M26 무용'으로 쓰지 않는다."},
+    {"id": "D5", "condition": "형태 간 부호 불일치", "verdict": "FORM_CONDITIONAL", "action": "전량 보고 + FQ-127 개입유형 축(filter vs rerank) 라벨 병기. argmax 금지. 우선순위는 효과 크기가 아니라 제약 조건-안 실행 가능성."}
+  ],
+
+  "not_in_scope": [
+    "governor admit / book_state.json 쓰기 — 절대 금지. 비가역 자본 게이트이며 Q-Lead + 도훈 수동 confirm 사항.",
+    "M26 재료 자격 재판정 (WT-D20260808_002 확정) · 전이 벽 채널 재분해 (WT-D20260809_001 확정)",
+    "WT-D20260809_003(FQ-166) 소관: M26·Q01_EB·D03_EWMA 동일 프레임 분위 프로파일 + net→gross→EW 사다리",
+    "NP-A 소관: 현행 book 7종 분위 형태 census",
+    "공분산 추정 · weight 최적화 (risk/optimizer 소관) · 제약 완화 / 벤치 변경 제안 (INV-7)"
+  ],
+
+  "규율_체크리스트": {
+    "입력형태_실측": "완료 (P0 — rawdata 일간 9003일 확인)",
+    "겹치는창_NW": "본 라운드는 **비중첩 월간 수익**이므로 lag-3 적합. ACF r1 을 산출해 기록한다(겹침 없음 확인).",
+    "수치_손기입_금지": "모든 보고 수치는 산출물(csv/rds/json)에서 읽는다.",
+    "검사기_0_반환": "0 은 결론이 아니라 정지 신호 — placebo 양성대조로 계측 생존 확인(placebo 평균효과가 0 이 아니면 배관 생존).",
+    "C15": "factor DB 신규 로드 없음 — 승계 패널 + rawdata + 캐리어만 소비. load_month_factors 경유 대상 아님.",
+    "vintage_pin": "benchmark_pinned_20260702.parquet · carrier built 2026-08-08 · base panel WT_D20260425_010",
+    "metric_type": "carrier_recon_paired (forge 아님, 자본 주장 아님)"
+  },
+
+  "self_adversarial_required": true,
+  "close_round_required": true,
+  "capital_claim": false,
+  "governor_invoked": false
+}

@@ -1,0 +1,159 @@
+{
+  "generated_at": "2026-08-09T13:12:20",
+  "SA1_count_null": {
+    "observed": {
+      "full_raw": 3,
+      "full_neu": 2,
+      "p15_raw": 5,
+      "p15_neu": 3
+    },
+    "null_full": {
+      "mean": 3.47,
+      "sd": 1.3816359273236,
+      "q05": 1,
+      "q95": 6
+    },
+    "null_post2015": {
+      "mean": 3.392,
+      "sd": 1.28905365235016,
+      "q05": 1,
+      "q95": 5
+    },
+    "p_hump_side": [0.74, 0.928, 0.196, 0.748],
+    "p_monotone_side": [0.52, 0.26, 0.952, 0.532],
+    "n_draw": 500,
+    "verdict": "아래 해석 필드 참조 — 계수가 귀무 5~95%% 안이면 계수 규칙 단독 인용 금지"
+  },
+  "SA1_interpretation": ["INSIDE_NULL_90_계수_단독_인용_금지", "INSIDE_NULL_90_계수_단독_인용_금지", "OUTSIDE_NULL_90", "INSIDE_NULL_90_계수_단독_인용_금지"],
+  "SA2_book7_pooled": {
+    "raw|full": {
+      "n": 295,
+      "n_dropped_signal_months": 1,
+      "ann_pct": 2.33461816119511,
+      "acf_r1": 0.00567966144358534,
+      "t_nw3": 2.98881767635432,
+      "t_nw12": 3.35758689685828
+    },
+    "raw|post2015": {
+      "n": 138,
+      "n_dropped_signal_months": 0,
+      "ann_pct": 0.147305198105912,
+      "acf_r1": 0.0107985526567177,
+      "t_nw3": 0.14450561617565,
+      "t_nw12": 0.178680309562023
+    },
+    "neutral|full": {
+      "n": 295,
+      "n_dropped_signal_months": 0,
+      "ann_pct": 2.60843217180734,
+      "acf_r1": -0.0547604605965127,
+      "t_nw3": 3.31476768462242,
+      "t_nw12": 3.58457442962411
+    },
+    "neutral|post2015": {
+      "n": 138,
+      "n_dropped_signal_months": 0,
+      "ann_pct": 1.34138245663288,
+      "acf_r1": -0.142842476658624,
+      "t_nw3": 1.45337874960048,
+      "t_nw12": 1.71375138708025
+    }
+  },
+  "SA3_direction_flips": {
+    "table": [
+      {
+        "signal": "D03_EWMA",
+        "n_pair": 294,
+        "median_rho": 0.970993391505558,
+        "min_rho": -0.980339109497036,
+        "n_rho_neg": 1,
+        "n_rho_below_m05": 1
+      },
+      {
+        "signal": "Q25_Ohlson_O",
+        "n_pair": 294,
+        "median_rho": 1,
+        "min_rho": -0.975654254296969,
+        "n_rho_neg": 1,
+        "n_rho_below_m05": 1
+      },
+      {
+        "signal": "M08_Residual_Mom",
+        "n_pair": 294,
+        "median_rho": 0.863369691873611,
+        "min_rho": -0.883714672200279,
+        "n_rho_neg": 1,
+        "n_rho_below_m05": 1
+      },
+      {
+        "signal": "C06_TP_Gap",
+        "n_pair": 290,
+        "median_rho": 0.786760394585424,
+        "min_rho": -0.841267199289963,
+        "n_rho_neg": 8,
+        "n_rho_below_m05": 8
+      },
+      {
+        "signal": "M26_Revenue_Mom",
+        "n_pair": 294,
+        "median_rho": 0.604837071875894,
+        "min_rho": -0.0935201672132078,
+        "n_rho_neg": 8,
+        "n_rho_below_m05": 0
+      },
+      {
+        "signal": "C02_EPS_Chg_1m",
+        "n_pair": 281,
+        "median_rho": 0.314206446571716,
+        "min_rho": -0.0314710809336382,
+        "n_rho_neg": 1,
+        "n_rho_below_m05": 0
+      },
+      {
+        "signal": "C01_SUE",
+        "n_pair": 294,
+        "median_rho": 1,
+        "min_rho": 0.103150028859449,
+        "n_rho_neg": 0,
+        "n_rho_below_m05": 0
+      },
+      {
+        "signal": "C04_ESBR",
+        "n_pair": 294,
+        "median_rho": 1,
+        "min_rho": 0.210373690367866,
+        "n_rho_neg": 0,
+        "n_rho_below_m05": 0
+      },
+      {
+        "signal": "Q01_EB",
+        "n_pair": 294,
+        "median_rho": 0.999922249380377,
+        "min_rho": 0.711188934367337,
+        "n_rho_neg": 0,
+        "n_rho_below_m05": 0
+      },
+      {
+        "signal": "Q07_Earnings_Stability",
+        "n_pair": 294,
+        "median_rho": 1,
+        "min_rho": 0.903453726478433,
+        "n_rho_neg": 0,
+        "n_rho_below_m05": 0
+      }
+    ],
+    "n_signals_with_flip_signature": 4,
+    "method": "커넥터 산출 Z_Score_Aligned 의 월-대-월 횡단면 Spearman. C15 직접-read 우회 없음",
+    "design_change_note": "원 설계(factor DB parquet 직접 read 로 Z_Score 대비 부호)는 C15 우회라 폐기하고 설계를 바꿨다"
+  },
+  "SA5_test_count": {
+    "cells": 16,
+    "per_signal_gap_tests": 160,
+    "pooled_tests": 16,
+    "book7_verdicts": 16,
+    "conditioning_tests": 6,
+    "null_simulations": 2,
+    "prereg_primary": 1,
+    "note": "사전등록 주판정 = 전표본 A프레임 1건(조율자 축소 후 book-7 계수). 나머지는 강건성(수리 2종 × 프레임 2 × arm 2 × 창 2)·서술. 개별 신호 갭의 최대 |t| 를 단독 인용하지 않는다 — 계수/크기 두 축의 **일치**만 인용."
+  }
+}
