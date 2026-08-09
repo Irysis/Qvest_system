@@ -52,12 +52,14 @@
       "no_split_verdict": "하위기간 분할 판정은 하지 않는다 (2026-08-08 검정력 파괴 mandate)."
     },
     "A3_rank_vs_mean_inversion": {
-      "headline": "D03_EWMA 에서 IC→PORT 전이 벽의 산술적 정체 관측 — 순위 공간과 평균-수익 공간의 부호 역전",
+      "headline": "[2026-08-09 정정] D03_EWMA 에서 순위 공간과 평균-수익 공간의 형상 불일치 관측 — '부호 역전'이 아니라 'Q2 정점 역U + 상위 3분위 하락 ∧ Q5−Q1 평균 스프레드 비유의'",
+      "headline_superseded_20260808": "D03_EWMA 에서 IC→PORT 전이 벽의 산술적 정체 관측 — 순위 공간과 평균-수익 공간의 부호 역전",
       "D03_EWMA": {"rank_ic": 0.0400, "icir": 0.196, "harvey_t_nw": 3.50, "monotonicity": 0.25, "quintile_mean_ann_pct": [13.1, 15.3, 14.6, 11.1, 8.0]},
       "Q01_EB": {"rank_ic": 0.0162, "icir": 0.126, "harvey_t_nw": 2.16, "monotonicity": 0.75, "quintile_mean_ann_pct": [9.1, 11.6, 14.0, 14.1, 13.7]},
       "M01_PATHQ": {"rank_ic": 0.0157, "icir": 0.090, "harvey_t_nw": 1.51, "monotonicity": 1.00, "quintile_mean_ann_pct": [9.0, 9.8, 10.6, 14.3, 18.5]},
       "harvey_t_specs_pass_count_ge3": 1,
-      "interpretation": "D03 는 3팩터 중 유일하게 rank-IC Harvey-t 3.0 을 통과하는데(3.50), 같은 패널의 5분위 평균 연수익은 Q1 +13.1% → Q5 +8.0% 로 단조 감소한다. 고변동 꼬리의 양의 왜도가 평균을 끌어올리기 때문이며, rank-IC 는 이를 보지 못하고 top-N EW 는 평균으로 채점된다. WT-021 이 기록한 D03 standalone PORT_t −1.73 의 정체가 이것이다.",
+      "interpretation": "[2026-08-09 정정] D03 는 3팩터 중 유일하게 rank-IC Harvey-t 3.0 을 통과하는데(재측정 +3.46), 같은 패널의 5분위 평균 연수익은 **단조 감소가 아니라 Q2 정점 역U형**이다 — 재측정 [12.91, 15.44, 14.30, 11.77, 8.19](구 발행 패널) · [12.96, 15.54, 14.94, 10.90, 7.93](재발행 패널). Q1→Q2 는 +2.5%p **상승**하고 하락은 Q3→Q5 구간에 국한된다. 게다가 Q5−Q1 평균 스프레드는 연 −4.72%(NW t −1.02) / −5.03%(t −1.05) 로 **비유의**다. 따라서 확립된 사실은 '순위와 평균의 부호 역전'이 아니라 '순위 통계는 양(+)인데 평균 스프레드는 유의하지 않다'이다. 고변동 꼬리의 양의 왜도가 평균을 끌어올린다는 기전 서술은 Q3→Q5 구간에 한해 여전히 후보이나, 전 분위 단조성을 근거로 삼을 수는 없다. WT-021 의 D03 standalone PORT_t −1.73 과의 연결도 이 약한 형태로만 유지된다. 출처 = verification_followup/probe_d03_quintile.R",
+      "interpretation_superseded_20260808": "D03 는 3팩터 중 유일하게 rank-IC Harvey-t 3.0 을 통과하는데(3.50), 같은 패널의 5분위 평균 연수익은 Q1 +13.1% → Q5 +8.0% 로 단조 감소한다. 고변동 꼬리의 양의 왜도가 평균을 끌어올리기 때문이며, rank-IC 는 이를 보지 못하고 top-N EW 는 평균으로 채점된다. WT-021 이 기록한 D03 standalone PORT_t −1.73 의 정체가 이것이다. [정정 사유: 같은 항목의 quintile_mean_ann_pct 배열 [13.1, 15.3, 14.6, 11.1, 8.0] 이 이미 Q2 > Q1 을 보여주고 monotonicity 0.25 도 비단조를 뜻했다 — 수치와 서술이 자기모순이었다.]",
       "relation_to_run1": "1차의 '손해의 정체는 D03 정보가 아니라 9.65종 제거의 희석(24-seed placebo 우측 p 0.833)' 과 상보적 — 희석이 왜 손해인지를 설명한다(빼는 대상이 평균 기여가 높은 종목이다).",
       "proposed_screening_rule": "'rank-IC Harvey-t >= 3.0 ∧ quintile monotonicity < 0.5' → hurdle_gate/screen_route 의 transfer_negative_component 자동 라벨 (소비면 ⑥)"
     },
