@@ -73,11 +73,17 @@ exposure_schedule <- function(ctx) {
     if (length(past) < BURN_IN) next
     rg_past <- rg[ym < pr$hold_ym[i]]
     if (nrow(rg_past) < BURN_IN) next
-    q <- mean(rg_past$Category %in% DEFENSIVE, na.rm = TRUE)   # 목표 발화율(확장창 파생)
+    q <- mean(rg_past$Category %in% DEFENSIVE, na.rm = TRUE)   # 목표 발화율
     if (!is.finite(q) || q <= 0 || q >= 1) next
     target[i] <- q
+    # ★(2026-08-09 수리) 확장창 → **rolling 분위**.
+    #   실사고: 확장창 분위는 신호가 비정상일 때 발화율을 보존하지 못한다 — vol 은 군집성이 강해
+    #   초기 고변동 구간이 분포 상단을 영구 점유하고, 이후 월이 문턱을 못 넘어 발화율이
+    #   8.1%(목표 29.5%)로 붕괴했다. Hurst(상대적 정상)에서는 같은 프레임이 보존됐다(31.8%).
+    #   ⇒ 최근 BURN_IN(60)개월 분포만 본다. ★새 자유 파라미터 아님 — 이미 고정된 상수 재사용.
+    past_roll <- tail(past, BURN_IN)
     # ★고변동 = 위험 → **상위** q 분위 이상이면 디리스크 (Hurst 는 하위였다 — 부호 반대)
-    thr <- stats::quantile(past, probs = 1 - q, names = FALSE, type = 7)
+    thr <- stats::quantile(past_roll, probs = 1 - q, names = FALSE, type = 7)
     if (V[i] >= thr) { expo[i] <- EXP_FIRE; fired[i] <- TRUE }
   }
   cut[is.na(cut)] <- pr$hold_start[is.na(cut)] - 1L
@@ -93,5 +99,7 @@ exposure_schedule <- function(ctx) {
   if (any(.ep)) cat(sprintf("[VolRateMatched] 구속 낙폭 구간(2006-01~06) 발화 %d/%d (%.0f%%) — F2 축\n",
                             sum(fired[.ep]), sum(.ep), 100 * mean(fired[.ep])))
 
-  list(exposure = data.table(Date = pr$eval_date, exposure = expo), used_cutoff = cut)
+  # ★목표 발화율을 **래퍼에 신고**한다 — 자기 검사만으로는 계약이 아니다(래퍼가 ±5%p 로 강제).
+  list(exposure = data.table(Date = pr$eval_date, exposure = expo), used_cutoff = cut,
+       target_rate = tgt)
 }

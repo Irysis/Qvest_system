@@ -252,8 +252,27 @@ wrap_exposure_adapter <- function(fn, method_id) {
     if (viol > 0) {
       cat(sprintf("[exposure_adapter:%s] ★C5 위반 — 신호 컷오프가 홀딩월 시작 이후인 기간 %d개월. 제외(pit.md C5)\n",
                   method_id, viol)); return(NULL) }
-    cat(sprintf("[exposure_adapter:%s] OK — %d개월 · 평균 노출 %.4f · 홀딩월까지 최소 간격 %.0f일\n",
-                method_id, nrow(e), mean(e$exposure), min(as.numeric(hold_start - uc))))
+    # ── (2026-08-09) 발화율 계약 — 어댑터가 목표 발화율을 신고하면 **래퍼가 검사**한다 ──
+    #   실사고: VolRateMatched 가 발화율 8.1%(목표 29.5%)로 2회 연속 이탈했는데, 그 검사가
+    #   **어댑터 자기 안에만** 있었다. 어댑터가 정직해야만 작동하는 검사는 계약이 아니다.
+    #   ★기전(같은 사고에서 확립): 확장창 분위 문턱은 **신호의 정상성에 의존**한다 — vol 처럼
+    #     군집성·비정상 신호에서는 초기 고변동이 분포 상단을 점유해 발화율이 붕괴한다
+    #     (Hurst 는 상대적 정상이라 31.8% vs 목표 30.1% 로 보존됐다).
+    #   ⇒ "발화율을 맞췄다"는 주장은 **측정해서 증명**해야 한다. 신고했는데 이탈하면 제외한다
+    #     (수치는 나오지만 그 arm 은 다른 arm 과 비교 가능한 조건이 아니다 = 조용한 오비교).
+    fired_rate <- mean(e$exposure < 1 - 1e-12)
+    tr <- suppressWarnings(as.numeric(out$target_rate %||% NA_real_))
+    if (length(tr) == 1L && is.finite(tr)) {
+      if (abs(fired_rate - tr) > 0.05) {
+        cat(sprintf("[exposure_adapter:%s] ★발화율 계약 위반 — 실현 %.1f%% vs 신고 목표 %.1f%% (>5%%p). 제외(조용한 오비교 방지)\n",
+                    method_id, 100 * fired_rate, 100 * tr))
+        return(NULL)
+      }
+      cat(sprintf("[exposure_adapter:%s] 발화율 계약 OK — 실현 %.1f%% vs 목표 %.1f%%\n",
+                  method_id, 100 * fired_rate, 100 * tr))
+    }
+    cat(sprintf("[exposure_adapter:%s] OK — %d개월 · 평균 노출 %.4f · 발화 %.1f%% · 홀딩월까지 최소 간격 %.0f일\n",
+                method_id, nrow(e), mean(e$exposure), 100 * fired_rate, min(as.numeric(hold_start - uc))))
     e[, .(Date, exposure)]
   }
 }

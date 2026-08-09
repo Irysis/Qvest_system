@@ -228,6 +228,36 @@ if (sys.nframe() == 0L && !interactive()) {
   rd <- if (length(a) && nzchar(a[1])) as.integer(a[1]) else NULL
   res <- benchmark_source_parity(recent_days = rd)
   cat(sprintf("[benchmark_source_parity] %s — %s\n", res$severity, res$note))
+
+  # ── [2026-08-09 신설] 판정 지속화 ─────────────────────────────────────────
+  # 사건: 2026-08-04~09 벤치 스케일 이음매로 이 검사가 **5일간 CRITICAL** 이었으나,
+  #   출력이 bootstrap 콘솔 `[boot] WARN:` 한 줄뿐이라 어디에도 남지 않았다. 사후에
+  #   "그때 발화했나"조차 확인 불가(부트 로그에 parity 라인 0건). 탐지력은 완전했는데
+  #   **신호가 결정에 닿지 않았다** — 검사기를 늘릴 게 아니라 신호를 남겨야 한다.
+  # latest = 현재 상태(상태라인·훅이 읽는 단일 지점) / history = 지속기간 추적(JSONL append).
+  tryCatch({
+    .root <- tryCatch(.bsp_root(), error = function(e) getwd())
+    rec <- list(
+      checked_at = res$checked_at, severity = res$severity, note = res$note,
+      n_common = res$n_common, n_mismatch = res$n_mismatch,
+      n_recent_mismatch = res$n_recent_mismatch,
+      max_abs_diff = res$max_abs_diff,
+      canonical_source = res$canonical_source,
+      recent_window_days = if (is.null(rd)) NA_integer_ else rd
+    )
+    dir.create(file.path(.root, ".cache"), showWarnings = FALSE, recursive = TRUE)
+    jsonlite::write_json(rec, file.path(.root, ".cache", "benchmark_parity_latest.json"),
+                         auto_unbox = TRUE, pretty = TRUE, na = "null", digits = NA)
+    hist_p <- file.path(.root, "06_Registry", "benchmark_parity_history.jsonl")
+    dir.create(dirname(hist_p), showWarnings = FALSE, recursive = TRUE)
+    cat(jsonlite::toJSON(rec, auto_unbox = TRUE, na = "null", digits = NA), "\n",
+        file = hist_p, sep = "", append = TRUE)
+    cat(sprintf("[benchmark_source_parity] 판정 기록 → .cache/benchmark_parity_latest.json + history.jsonl\n"))
+  }, error = function(e) {
+    # 기록 실패가 검사 자체를 죽이면 안 된다 — 다만 **조용히** 넘어가지도 않는다.
+    cat(sprintf("[benchmark_source_parity] ★판정 기록 실패: %s — 지속성 없음(콘솔만)\n",
+                conditionMessage(e)))
+  })
   if (res$n_mismatch > 0L) {
     cat("불일치 상위:\n"); print(head(res$mismatches, 12))
     if (nrow(res$bad_months)) { cat("월 누적 괴리:\n"); print(res$bad_months) }
