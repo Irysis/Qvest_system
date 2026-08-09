@@ -1,0 +1,57 @@
+{
+  "status": "OK",
+  "strategy_id": "STR_AS_20260809_131451_21880",
+  "strategy_name": "FQ100_ipm_sector_neutral",
+  "trigger_grade": "B",
+  "remeasured_at": "2026-08-09 13:28:37",
+  "run_id": "ASBT_20260809_131451_21880",
+  "bt_result_path": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/alpha_search/20260809_131451_21880/bt_result.rds",
+  "metric_type": "backtested",
+  "essence_grade": "C",
+  "essence": {
+    "net_sharpe": 0.547,
+    "net_ir": 0.152,
+    "portfolio_alpha_t_nw_lag3": 0.688,
+    "oos_retention": 0.083,
+    "dsr": "NA",
+    "mdd": 0.603,
+    "calmar": 0.169,
+    "cagr": 0.102,
+    "drawdown_profile": {
+      "severe45_count": 5,
+      "severe55_count": 2,
+      "severe45_total_periods": 50,
+      "severe45_max_periods": 36,
+      "severe45_period_frac": 0.0094,
+      "catastrophic_mdd_threshold": 0.7,
+      "severe45_hard_count": 15,
+      "severe55_hard_count": 6,
+      "severe45_period_hard_frac": 0.25,
+      "severe45_max_hard_periods": 252,
+      "tail_review": true,
+      "structural_hard_fail": false
+    }
+  },
+  "dsr_gate_applied": false,
+  "selection_type": "chain",
+  "chain_qualification": {
+    "selection_operator": "none_single_run",
+    "iteration_reason_logged": true,
+    "is_only_selection": "not_applicable_single_run",
+    "holdout_single_view": "not_queried_by_this_script",
+    "note": "run_alpha_search 1회=1가설 1전략 단일 실행(sweep 아님). 반복 개선 체인의 IS-only 변형선택·holdout 1회 규약 준수는 호출자 책임 (measurement-graduation §3 chain 자격요건 — 미충족 시 sweep 재분류 대상)."
+  },
+  "hard_fail": false,
+  "reasons": "Ensemble: positive alpha이나 B 미달 (블렌드에서만 가치)",
+  "contract": {
+    "integrity_status": "WARNING",
+    "audit_pass": 15,
+    "audit_fail": 0,
+    "audit_warn": 1,
+    "cagr": 0.102142,
+    "sharpe": 0.546629,
+    "mdd": 0.602653,
+    "calmar": 0.169487
+  },
+  "note": "build_bt_result+audit_bt_result+essence_score 계약 경유 실측 (proxy hurdle와 별도 권위값)"
+}

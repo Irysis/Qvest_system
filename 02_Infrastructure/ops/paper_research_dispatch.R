@@ -288,6 +288,10 @@ if (n_opt > 0 || n_risk > 0) {
 #   ★Δ 는 대조 진단량이지 자본 게이트가 아니다(§4 book-marginal admit = governor 수동).
 if (n_risk > 0) {
   .rt <- if (exists("method_triage")) method_triage("risk") else list()
+  # >>> RISK_LANE_VERDICT  (08_Tests/ops/test_risk_lane_verdict.R 가 이 블록을 원본에서 추출해
+  #     검사한다 — 사본 검사 금지. 마커를 바꾸면 검사기부터 고칠 것.)
+  #   입력 계약: battery_fresh(logical) · ov_csv(path) · risk_lane_arms() · fread()
+  #   출력 계약: risk_verdict(list|NULL) · risk_state(character)
   .arms <- if (exists("risk_lane_arms")) tryCatch(risk_lane_arms(), error = function(e) list()) else list()
   risk_verdict <- NULL
   risk_state <- NULL
@@ -328,6 +332,7 @@ if (n_risk > 0) {
                     else sprintf("Σ-A/B 배터리 합류 %d/%d건 측정 · 대조군 대비 개선 %d건", .nm, length(.rows), length(.win))
     }
   }
+  # <<< RISK_LANE_VERDICT
   actions$risk <- list(n = n_risk, papers = lapply(getrt("risk"), function(p) p$title %||% p$arxiv_id),
                        method_triage = .rt,
                        screen_axes = check_screen_axes(getrt("risk"), "risk"),

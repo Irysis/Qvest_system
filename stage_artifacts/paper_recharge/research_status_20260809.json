@@ -15,6 +15,9 @@
         "book_ir": 1.41,
         "best_method": "MVO_lw",
         "best_ir": 1.383,
+        "best_method_route": "optimizer_or_builtin",
+        "n_arms": 9,
+        "n_risk_route_arms": 2,
         "delta_ir": -0.026,
         "gate": 0.05,
         "beats_book": false,
@@ -88,8 +91,46 @@
         "missing": [],
         "invalid_enum": []
       },
-      "harness_status": "risk 레인 Σ-교체 A/B 하네스 미배선 — optimizer 레인 검증 후 착수 예정",
-      "action": "레지스트리 등재 2건 (verdict 별도) — 자동 측정 아직 없음"
+      "harness_status": "Σ-A/B 배터리 합류 2/2건 측정 · 대조군 대비 개선 0건",
+      "verdict": {
+        "metric_type": "canonical_screen",
+        "basis": "Σ-A/B 배터리 overlay arm (캐리어 선별 고정 · 15bps · IR = net-active vs KOSPI200)",
+        "n_arms": 2,
+        "n_measured": 2,
+        "n_improved": 0,
+        "gate_note": "ΔIR 은 추정기/비중 **교체 대조** 진단량이다 — 자본 admission 게이트(§4 book-marginal, governor 수동)가 아니다.",
+        "arms": [
+          {
+            "method_id": "PreferenceRobustDistortion",
+            "paper_id": "arxiv:2608.02854",
+            "adapter_kind": "weight",
+            "arm": "PreferenceRobustDistortion",
+            "measured": true,
+            "ir": 0.658,
+            "port_t": 2.789,
+            "control": "strategy",
+            "control_basis": "비중 규칙 교체 → 현 book 대비 book-marginal (optimizer 레인과 동일 컨벤션)",
+            "control_ir": 1.41,
+            "delta_ir": -0.751,
+            "note": null
+          },
+          {
+            "method_id": "ProperScoreGASFilter",
+            "paper_id": "arxiv:2608.02828",
+            "adapter_kind": "sigma",
+            "arm": "minvar@ProperScoreGASFilter",
+            "measured": true,
+            "ir": 0.92,
+            "port_t": 3.85,
+            "control": "minvar_lw",
+            "control_basis": "비중 규칙(minvar) 고정 · Σ 만 교체 → Δ = 추정기 효과. 대조군 Σ = Ledoit-Wolf",
+            "control_ir": 1.142,
+            "delta_ir": -0.222,
+            "note": null
+          }
+        ]
+      },
+      "action": "자동 측정 2건 (대조 Δ 동봉) — 채택은 도훈 수동"
     },
     "regime": {
       "n": 2,
