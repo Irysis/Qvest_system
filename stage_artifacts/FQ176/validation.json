@@ -1,0 +1,65 @@
+{
+  "round_id": "FQ-176",
+  "workflow_run": "wf_e36d0ab4-38a (14 agent · 0 error · 50분)",
+  "origin": "도훈 발안 2026-08-09 (위기신호 역방향) 의 횡단면 판본",
+  "as_of": "2026-08-09",
+  "metric_type": "canonical_screen_diag",
+  "capital_claim": false,
+  "verdict": "INCONCLUSIVE — 적대검증 생존 0건. 단 '효과 없음' 이 아니라 '이 프레임에서 검출 불가'.",
+  "design": {
+    "factors": 54,
+    "categories": 10,
+    "panel_rows": 81312,
+    "panel_months": 282,
+    "period": "2003-01-30 ~ 2026-06-30",
+    "stocks_per_month_median": 338,
+    "signals": "S1 당월 <= -10% / S2 3개월누적 <= -15% / S3 12개월낙폭 <= -20%",
+    "signal_n_on": {
+      "S1": 9,
+      "S2": 9,
+      "S3": 46
+    },
+    "eligibility_rule": "사전 고정: required = 2.0*ic_sd*sqrt(1/n_ON+1/n_OFF)*1.25 <= 2.0*|ic_mean| 인 (팩터,신호) 쌍만 측정",
+    "pairs_total": 162,
+    "pairs_eligible": 21,
+    "pairs_excluded": 141,
+    "exclusion_cause": "전건 단일 계통 required_exceeds_bar (degenerate split 0건). 침묵 스킵 0."
+  },
+  "headline": {
+    "title": "★구속 제약은 개월수가 아니라 **에피소드 수**다",
+    "evidence": "S3 는 ON 46개월이나 연속블록 **4개**뿐(2003-02~12 11m · 2008-02~2009-10 21m · 2018-11~2019-02 4m · 2022-07~2023-04 10m) 이며 2009-09~2018-10 사이 발화 **0개월**(9년 공백). 유효독립표본 ≈ 4.",
+    "mde": {
+      "monthly_se": "MDE median 0.0496 = 무조건부 ic_mean 의 1.32배",
+      "episode_cluster_se": "MDE median 0.168 = 무조건부 ic_mean 의 **4.6배** — 구조적 검출불가",
+      "observed": "|dIC| median 0.0079 · max 0.0390 (MDE 의 16~79%)"
+    },
+    "second_finding": "★자격 게이트의 1차 결정자도 팩터 신호강도가 아니라 **신호 발화빈도**였다. S1·S2 는 n_ON=9 라 sqrt(1/n_ON+1/n_OFF)=0.344 가 지배해 54팩터 중 **53종이 자동 탈락**(통과 V02_EP 1종). S3 는 n_ON=46 으로 계수 0.164 까지 내려가 19종 통과."
+  },
+  "adversarial": {
+    "lenses": ["placebo(순환이동 귀무)", "다중검정·독립발견수 재추정", "era 재현"],
+    "placebo": "S3 19쌍 개별 양측 p 최소 0.0532(GR02) · 중앙값 0.734 · p<0.05 **0개** · family-wise p 0.447 (관측 max|t| 1.438 vs 귀무 중앙값 1.393)",
+    "star_self_break": "★★종합 에이전트가 **자기 최유력 후보를 스스로 깼다**. era 렌즈가 GR02_Earnings_Growth 의 에피소드-수준 t=3.074(p 0.054)를 남겼는데, 이는 '4/4 부호일관 팩터를 고른 뒤 그 부호를 검정' 하는 **순환**이었다. 순환이동 귀무에서 동일한 선별-조건부 통계를 재계산: 귀무 max|t_epi| 중앙값 **3.508 > 관측 3.074**, 선별-조건부 **p = 0.6209**. 부호일관 팩터 수도 관측 1개 vs 귀무 기대 2.32개로 **우연 미만**. ⇒ 승격했으면 forking-path 위반.",
+    "era_fragility": "자격 자체가 시대취약 — FULL 21쌍 → E1(2003~2012) 유지 10쌍(48%) → E2(2013~2026) 유지 **1쌍(5%, V02_EP/S3)**",
+    "self_correction_in_lens": "era 렌즈의 '컷 민감도 5회 안정' 은 5개 컷이 전부 동일한 32/14 분할을 내므로 **vacuous**(독립 5회가 아니라 동일검정 5회) — 렌즈가 자가정정"
+  },
+  "not_excluded": {
+    "ci": "95% 구간은 |dIC| **0.104 (무조건부 IC 의 2.9배)** 까지 포함 — 실무적으로 큰 효과도 이 데이터로는 배제 못 한다",
+    "direction_pattern": "quality/growth 4/5 양수(mean +0.0116) vs value 1/5 양수(mean −0.0158), 스프레드 **0.027**(개별 최대 |dIC| 0.0252 보다 큼). binom p=0.375 로 유의 아님 — **사전등록 대상이지 발견 아님**"
+  },
+  "scope_honesty": {
+    "critical": "★★이 라운드는 도훈 원 가설을 직접 시험하지 않았다. 원 가설은 '비중 확대'(**배분·총노출** 축)인데 여기서 잰 것은 rank-IC(**선별** 축)다. 양성이 나왔더라도 '총 노출을 키워라' 를 지지하지 못한다 — 다른 질문에 답한 것이다.",
+    "partial_space": "141/162 쌍이 **측정 전** 제외됐다. '0건 생존' 은 자격 통과 **13%(21/162)** 에 대한 진술이다.",
+    "unmeasured": "D02_Beta · D04_Downside_Beta 는 자격 미통과로 한 번도 측정되지 않았다 — 베타 축 미검",
+    "alignment": "주 정렬 17/21 쌍은 신호↔수익창 1개월 갭 내포. 즉시실행 정렬은 4/21 에서만 측정(전부 음수·비유의)",
+    "advisory": "rank-IC 는 measurement-graduation 상 ADVISORY — 어느 방향이든 자본/졸업 판정 불가",
+    "upstream": "상류(p0_panels Ret_1m forward 구성 · dd12/cum3 신호 정의)는 검증 대상 밖. placebo 는 '효과 없음' 과 '효과가 배관에서 소멸' 을 구별 못 한다"
+  },
+  "byproducts_out_of_scope": {
+    "dup_factor": "CR02_Volume_Concentration ≡ L03_Volume_Mom (최대절대차 6.66e-15, 결측패턴 동일) — 실질 고유 팩터 53종. 둘 다 자격 미달이라 본 판정 무영향",
+    "constant_factor": "XF_LL01_DebtToCapital 은 2017-05~2026-02 **87개월 연속 횡단면 상수** → IC 산출월 195개월뿐. 타 팩터와 다른 창이라 병렬 비교 금지",
+    "label_flaw": "★내 워크플로 지시의 3분류 중 NULL_POWERED 는 **도달 불가**였다 — required=2.5*se 이므로 |dIC|>=required 이면 |t|>=2.5>2.0 이라 SIGNIFICANT 가 먼저 잡는다. 2026-08-08 [[project-power-label-tautology]] 와 **같은 계통을 내가 재도입**했다 (contract verdict_with_power() 를 쓰지 않고 프롬프트에 규칙을 하드코딩한 탓). 결과엔 무영향이나 규약 위반.",
+    "direction_label": "ON_stronger/ON_weaker 는 사후 부호 라벨이지 사전등록 아님 — 양측검정이 정본, 단측 수치를 발견으로 읽지 말 것"
+  },
+  "reusable_asset": "★이 라운드의 가장 재사용 가능한 산출물은 결과가 아니라 **방법**이다. 측정 *전에* 돌린 검정력 게이트가 141/162 쌍을 걸렀고, 통과한 21쌍마저 전부 미달일 것을 사실상 예고했다. 이 사전 게이트를 RAMP·factor-rotation 사전등록 절차에 편입할 것.",
+  "artifacts_dir": "stage_artifacts/FQ176/"
+}

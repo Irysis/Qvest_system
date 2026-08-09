@@ -3728,14 +3728,15 @@
    "ev_rationale": "검정력이 439개(월)에서 수만(종목×월)로 회복된다. 기존 하네스·패널 전량 재사용. 도훈 직접 발안이라 소비면 전개 의무 대상.",
    "wall_check": "제약 조건 안 — 선별 축이므로 max 25·long-only·[0,0.20]·Σw=1 불변. '비중 확대' 는 overlay 승수 상한 안에서만 논의하며 레버리지 도입 금지(INV-7). ★추가: 조건부 분할은 이 저장소에서 검정력 파괴가 반복 실증된 축이다 — 자격 미달 쌍은 **측정하지 않고 제외 사유와 함께 기록**한다(침묵 스킵 금지). INCONCLUSIVE 를 '효과 없음' 으로 읽지 않는다.",
    "data_gate": "없음 (벤치·팩터 패널 기지불)",
-   "owner": "CLAIMED Q-Lead session 2026-08-09 — 워크플로 wf_e36d0ab4-38a (54팩터×282개월 병렬적재 → 팩터별 검정력 게이팅 → 조건부 IC → 적대검증 3렌즈). 완료 시 result_ref 기입.",
-   "status": "in_flight_20260809",
-   "next_action": "①착수 전 required_effect — n_ON(월) × 월평균 종목수로 유효표본 회복 확인, 미달이면 착수 전 폐기 ②S3 12개월낙폭 −20%(n_ON 69) 기준 ON/OFF 팩터 IC 대비 ③위험조정(Sharpe) 기준 재판정 — 평균 개선이 분산 증가를 이기는지",
+   "owner": "COMPLETE — Q-Lead session 2026-08-09 (workflow wf_e36d0ab4-38a, 14 agent). 후속은 아래 등재분.",
+   "status": "inconclusive_episode_bound_20260809",
+   "next_action": "★판정 INCONCLUSIVE — 적대검증 생존 0건이나 '효과 없음' 아님. 자격통과 21/162쌍 전건 검정력 미달, max |t| 1.438. ★★핵심 기전 = **구속 제약이 개월수가 아니라 에피소드 수**: S3 ON 46개월이 연속블록 4개뿐이고 2009-09~2018-10 발화 0(9년 공백) ⇒ 유효독립표본 ≈4. 에피소드-클러스터 se 기준 MDE = 무조건부 IC 의 **4.6배** = 구조적 검출불가. ★자격 게이트 1차 결정자도 신호강도가 아니라 **발화빈도**(S1/S2 n_ON=9 → 54팩터 중 53종 자동 탈락). ★★최유력 후보를 종합 에이전트가 **자가 파괴**: GR02 에피소드 t=3.074 는 '부호일관 팩터 선별 후 검정' 순환 — 순환이동 귀무 중앙값 3.508>관측, 선별-조건부 p=0.62. ⚠배제 안 됨: 95%CI 가 |dIC| 0.104(무조건부 IC 2.9배)까지 포함. 방향 패턴(quality/growth vs value 스프레드 0.027)은 사전등록 대상이지 발견 아님. ★★범위 정직: 이 라운드는 **선별(rank-IC)** 을 쟀고 도훈 원 가설은 **배분(총노출)** 이다 — 양성이었어도 원 가설 지지 불가.",
    "source_refs": [
     "stage_artifacts/crisis_contrarian/validation.json",
     "stage_artifacts/crisis_contrarian/p4_mechanical_cells.csv"
    ],
-   "correction": "★등재 문구 정정(2026-08-09, 착수 전 자가 적발): 원 hypothesis 의 '검정력이 439개월에서 수만(종목×월)로 회복된다' 는 **부정확**하다. 조건부 rank-IC 는 월별 계열이므로 유효표본 n 은 여전히 **ON 개월수**이고, 종목수가 늘리는 것은 n 이 아니라 **월별 IC 관측의 정밀도(sd)** 다. 실측: 월별 30종목 표본 IC sd 0.1852 → 60종 0.1504 → 120종 0.1094 → 240종 0.0851 (정밀도는 실제로 개선) 이나 n_month 는 282 로 불변. ⇒ 필요 ΔIC = 2.0 × ic_sd × sqrt(1/n_ON + 1/n_OFF) × 1.25 이고, **팩터별 ic_sd 에 따라 자격이 갈린다**: vol 계열(ic_sd 0.16~0.20)은 필요 ΔIC 가 무조건부 IC 의 3.0~4.8배로 **사정권 밖**, M26 형(ic_sd 0.087)은 약 1.5배로 **사정권 안**. 따라서 라운드 설계를 '전 팩터 일괄 측정' 에서 **'팩터별 검정력 게이팅 후 자격분만 측정'** 으로 바꿨다 (자격 규칙 사전 고정: required <= 2.0 × |unconditional IC|). 착수 전 사전 확인이 라운드 설계를 바꾼 5번째 사례."
+   "correction": "★등재 문구 정정(2026-08-09, 착수 전 자가 적발): 원 hypothesis 의 '검정력이 439개월에서 수만(종목×월)로 회복된다' 는 **부정확**하다. 조건부 rank-IC 는 월별 계열이므로 유효표본 n 은 여전히 **ON 개월수**이고, 종목수가 늘리는 것은 n 이 아니라 **월별 IC 관측의 정밀도(sd)** 다. 실측: 월별 30종목 표본 IC sd 0.1852 → 60종 0.1504 → 120종 0.1094 → 240종 0.0851 (정밀도는 실제로 개선) 이나 n_month 는 282 로 불변. ⇒ 필요 ΔIC = 2.0 × ic_sd × sqrt(1/n_ON + 1/n_OFF) × 1.25 이고, **팩터별 ic_sd 에 따라 자격이 갈린다**: vol 계열(ic_sd 0.16~0.20)은 필요 ΔIC 가 무조건부 IC 의 3.0~4.8배로 **사정권 밖**, M26 형(ic_sd 0.087)은 약 1.5배로 **사정권 안**. 따라서 라운드 설계를 '전 팩터 일괄 측정' 에서 **'팩터별 검정력 게이팅 후 자격분만 측정'** 으로 바꿨다 (자격 규칙 사전 고정: required <= 2.0 × |unconditional IC|). 착수 전 사전 확인이 라운드 설계를 바꾼 5번째 사례.",
+   "result_ref": "stage_artifacts/FQ176/validation.json"
   },
   {
    "id": "FQ-177",
@@ -3751,6 +3752,54 @@
    "source_refs": [
     "stage_artifacts/crisis_contrarian/p3_pit_gate.R",
     "stage_artifacts/crisis_contrarian/findings_interim.json"
+   ]
+  },
+  {
+   "id": "FQ-178",
+   "lane": "regime_conditional",
+   "title": "★이분 국면을 **연속 낙폭심도 상호작용**으로 교체 — 유효표본 4 → 281 복원 (FQ-176 P1)",
+   "hypothesis": "FQ-176 이 확정한 기전: ON/OFF 46:236 이분이 심도 정보를 버리고 유효표본을 에피소드 4개로 붕괴시킨다. IC_{t+1} 을 표준화 낙폭심도 d_t 에 회귀하면 **전 281개월이 변동에 기여**하므로 MDE 가 원리적으로 낮아진다. 08-08 실측([[project-label-eligibility-is-event-conditional]] 월<0% lift 1.16x 미달 vs <-10% 3.19x 통과)이 '심도가 자격을 가른다' 를 이미 지지한다.",
+   "ev_rationale": "FQ-176 의 유일한 기전-직격 후속. 패널·코드 전량 기지불. 에피소드-클러스터 se 로 검정.",
+   "wall_check": "선별 축(랭킹력) 진단이며 자본 주장 없음. 제약 조건 안. ★대상은 개별 팩터가 아니라 P2 합성축 1개로 사전등록해 family 를 키우지 말 것.",
+   "data_gate": "없음 (stage_artifacts/FQ176/panel_full.rds 재사용)",
+   "owner": "UNCLAIMED — FQ-176 이 발행. 착수 세션은 'CLAIMED <session> <ts>' 로 갱신 후 시작(배정 규약).",
+   "status": "frontier_open",
+   "next_action": "①표준화 심도 d_t 구성(월말 관측 가능) ②IC_{t+1} ~ d_t 회귀, 에피소드-클러스터 se ③착수 전 MDE 재산출로 개선폭 확인",
+   "source_refs": [
+    "stage_artifacts/FQ176/validation.json",
+    "workflow wf_e36d0ab4-38a"
+   ]
+  },
+  {
+   "id": "FQ-179",
+   "lane": "regime_conditional",
+   "title": "21쌍을 **사전등록 합성축 스프레드 1개**로 접기 — family 21→1, 효과 배증 (FQ-176 P2)",
+   "hypothesis": "19/21 쌍이 동일 S3 ON 집합을 공유해 독립검정이 아니다(risk_vol 6종 |dIC| 전부 ~0.006 = 사실상 1검정). 개별 검정은 family 만 부풀리고 효과를 희석한다. 관측 방향 패턴: quality/growth 4/5 양수 mean +0.0116 vs value 1/5 양수 mean −0.0158, **스프레드 0.027 > 개별 최대 |dIC| 0.0252**. EW-z 합성 2축 스프레드를 단일 통계로 사전등록 검정한다.",
+   "ev_rationale": "효과는 배증하고 family 는 21→1. 현 binom p=0.375 로 유의 아님 — **사전등록 대상이지 발견 아님**(사후 선택 금지).",
+   "wall_check": "선별 축. 합성 구성은 사전등록에 고정하고 사후 조정 금지. 자본 주장 없음.",
+   "data_gate": "없음 (stage_artifacts/FQ176/panel_full.rds 재사용)",
+   "owner": "UNCLAIMED — FQ-176 이 발행. 착수 세션은 'CLAIMED <session> <ts>' 로 갱신 후 시작(배정 규약).",
+   "status": "frontier_open",
+   "next_action": "①quality_growth / value 두 축의 EW-z 합성 사전 고정 ②스프레드 단일 통계 검정 ③P1 의 연속 심도와 결합",
+   "source_refs": [
+    "stage_artifacts/FQ176/validation.json",
+    "workflow wf_e36d0ab4-38a"
+   ]
+  },
+  {
+   "id": "FQ-180",
+   "lane": "regime_conditional",
+   "title": "낙폭 문턱 그리드의 **착수 전 폐기 판정** — 반복 라운드 기계적 차단 (FQ-176 P3)",
+   "hypothesis": "문턱을 낮추면 에피소드는 늘지만 회당 효과가 줄어 순 검정력이 개선된다는 보장이 없다. 문턱 그리드에 required_effect_size.R 를 **측정 착수 전** 돌려 n_episodes ↔ 필요효과 트레이드오프 표를 만든다. 어떤 문턱도 관측 효과대(|dIC| ~0.025)를 검출할 n_episodes 를 못 주면 **이분 국면-조건부 rank-IC 레인은 KR 2003~2026 에서 구성상 닫힘**을 문서화하고 재시도를 멈춘다.",
+   "ev_rationale": "저검정력 패턴이 하루 3회 재현된 축([[project-underpowered-nulls-regime-conditional-20260808]] · [[project-conditional-splits-destroy-power-20260808]])의 **기계적 예방책**. 폐기 판정 자체가 의사결정 가치.",
+   "wall_check": "메타-절차 라운드. 측정 없음 → 자본 주장 없음. ★결과가 '닫힘' 이어도 그것은 이 측정 프레임 한정이며 방향의 영구 판결이 아니다(INV-7).",
+   "data_gate": "없음 (stage_artifacts/FQ176/panel_full.rds 재사용)",
+   "owner": "UNCLAIMED — FQ-176 이 발행. 착수 세션은 'CLAIMED <session> <ts>' 로 갱신 후 시작(배정 규약).",
+   "status": "frontier_open",
+   "next_action": "①문턱 그리드 × n_episodes × 필요효과 표 산출 ②RAMP·factor-rotation 사전등록 절차에 사전 게이트 편입 ③닫힘 판정 시 부활 조건 명시",
+   "source_refs": [
+    "stage_artifacts/FQ176/validation.json",
+    "workflow wf_e36d0ab4-38a"
    ]
   }
  ]
