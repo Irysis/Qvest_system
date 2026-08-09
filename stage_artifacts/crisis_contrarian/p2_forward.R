@@ -36,12 +36,31 @@ extract <- function(D, tag) {
   if (!length(dc)) { say("  %s: 날짜열 없음 — 제외", tag); return(NULL) }
   dc <- dc[1]
   cc <- setdiff(names(D), dc)
-  ## 상태 후보 = 문자/팩터 또는 저-cardinality 컬럼
-  cand <- cc[vapply(cc, function(k) is.character(D[[k]])||is.factor(D[[k]])||
-                      (is.numeric(D[[k]]) && uniqueN(D[[k]]) <= 8), logical(1))]
-  say("  %s: 날짜열=%s · 상태후보=%s", tag, dc, paste(cand, collapse=", "))
+  ## 상태 후보 = **저-cardinality** 컬럼만 (문자든 수치든 2~8개 수준). YM 같은 키 컬럼 배제.
+  cand <- cc[vapply(cc, function(k) {
+    u <- uniqueN(D[[k]]); u >= 2L && u <= 8L &&
+      (is.character(D[[k]]) || is.factor(D[[k]]) || is.numeric(D[[k]]) || is.logical(D[[k]]))
+  }, logical(1))]
+  say("  %s: 날짜열=%s · 상태후보(카디널리티 2~8)=%s", tag, dc,
+      if (length(cand)) paste(cand, collapse=", ") else "(없음)")
   if (!length(cand)) return(NULL)
-  X <- copy(D); X[, .dt := as.Date(get(dc))]
+  X <- copy(D)
+  dv <- X[[dc]]
+  parse_dt <- function(v) {
+    if (inherits(v, "Date") || inherits(v, "POSIXct")) return(as.Date(v))
+    s <- as.character(v)
+    ## "YYYY-MM-DD" / "YYYY-MM" / "YYYYMM" 전부 수용 (형식을 가정하지 않고 실측 분기)
+    s2 <- ifelse(grepl("^[0-9]{4}-[0-9]{2}-[0-9]{2}", s), substr(s, 1, 10),
+          ifelse(grepl("^[0-9]{4}-[0-9]{2}$",        s), paste0(s, "-01"),
+          ifelse(grepl("^[0-9]{6}$",                 s),
+                 paste0(substr(s,1,4), "-", substr(s,5,6), "-01"), NA_character_)))
+    suppressWarnings(as.Date(s2))
+  }
+  X[, .dt := parse_dt(dv)]
+  bad <- mean(is.na(X$.dt))
+  if (bad > 0) say("  %s: 날짜 파싱 결측 %.1f%% (샘플 '%s')", tag, bad*100, as.character(dv)[1])
+  if (bad == 1) { say("  %s: 날짜 전건 파싱 실패 — 제외(침묵 아님)", tag); return(NULL) }
+  X <- X[!is.na(.dt)]
   X[, ym := format(.dt, "%Y-%m")]
   out <- list()
   for (k in cand) {
@@ -67,8 +86,9 @@ for (tg in names(EX)) {
     states <- unique(M$v); states <- states[!is.na(states)]
     if (length(states) < 2L || length(states) > 8L) next
     for (s in states) {
-      on <- M$v == s
+      on <- !is.na(M$v) & M$v == s          # NA 상태월은 ON 아님 (비교 결과 NA 방지)
       n_on <- sum(on & !is.na(M$f1)); n_off <- sum(!on & !is.na(M$f1))
+      if (!is.finite(n_on) || !is.finite(n_off) || n_off < 5L) next
       if (n_on < 5L) next
       d1 <- mean(M$f1[on], na.rm=TRUE) - mean(M$f1[!on], na.rm=TRUE)
       se <- sd(M$f1, na.rm=TRUE) * sqrt(1/n_on + 1/n_off) * 1.25

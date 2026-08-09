@@ -53,6 +53,18 @@
 # 읽기 전용 아님 — 실행 전 백업 경로 확인할 것.
 suppressPackageStartupMessages({ library(arrow); library(data.table) })
 
+# ── SUPERSEDED 차단 (2026-08-09) ──────────────────────────────────────────────
+# 이 수리는 벤치를 8.834× 구 스케일로 되돌려 daily naver 패치와 줄다리기를 만든다.
+# 재실행 = 이음매 재생산. 근본 수리는 naver_benchmark_update.py(수익률 접합)에 있다.
+if (!identical(Sys.getenv("QVEST_ALLOW_SUPERSEDED_BENCH_REPAIR"), "1")) {
+  cat("[repair] ★SUPERSEDED — 실행 차단 (2026-08-09).\n",
+      "  이 스크립트는 스케일 단절의 *틀린 쪽*을 고치고 날짜를 박아, 07-27 수리 다음날\n",
+      "  07-29 로 재발시켰다. 정본 수리 = naver_benchmark_update.py 의 수익률 접합.\n",
+      "  검사기 = 08_Tests/hooks/test_benchmark_scale_seam.py\n",
+      "  그래도 실행하려면 QVEST_ALLOW_SUPERSEDED_BENCH_REPAIR=1 를 명시할 것.\n", sep = "")
+  quit(status = 0L)
+}
+
 ROOT <- Sys.getenv("QM_ROOT", "C:/Users/99922/OneDrive/Quant_Module_Moltbot")
 setwd(ROOT)
 BENCH_P <- ".cache/benchmark.parquet"

@@ -41,6 +41,41 @@
       "paper_exhausted": false,
       "paper_exhausted_note": "2608.05755 factor attribution 1회 시도(within_sector_reversal). L3 fidelity FAIL 아님(팩터 추출 성공, 신호 방향 확인됨) — 동 논문 추가 팩터 발굴 가능(sector_industry_momentum 등 미시도).",
       "notable": true
+    },
+    {
+      "paper_id": "FQ-100",
+      "factor_id": "FQ100_ipm_sector_neutral",
+      "strategy_id": "STR_AS_20260809_131451_21880",
+      "strategy_name": "FQ100_ipm_sector_neutral",
+      "fq_id": "FQ-100",
+      "gate_decision": "QUARANTINE",
+      "gate_failed_layers": "L3_robustness (PORT_t=0.688<<2.95 HARD, Calmar=0.169<<0.64 HARD)",
+      "gate_checked_at": "2026-08-09T13:31:07+0900",
+      "port_t": 0.6877,
+      "port_t_source": "forge-authoritative: 07_benchmark_compare.csv Portfolio_Alpha_t_NW_lag3",
+      "oos_retention": 0.66,
+      "calmar": 0.1695,
+      "mdd": 60.27,
+      "grade": "B",
+      "score": 44.2,
+      "sharpe": 0.5466,
+      "cagr": 10.21,
+      "ic_mean": 0.0127,
+      "icir": 0.138,
+      "ic_pos_rate": 0.581,
+      "fmb_nw_t": -0.713,
+      "ff3_alpha_annual_pct": 2.025,
+      "ff3_alpha_tstat": 0.756,
+      "beta_to_bm": 0.4814,
+      "quarantine_reason": "PORT_t=0.688 << 2.95 HARD FAIL. Calmar=0.169 << 0.64 HARD FAIL. OOS_retention=0.66 borderline(미달). FMB Score NW_t=-0.713(음수: 사이즈/모멘텀 통제 후 역전). MDD 60.27%(구조적 낙폭). AX-004/DIST-QPM-003 quality single-signal 계열 확인. 업종-중립 수준 조건 추가해도 PORT_t 전이 미달.",
+      "mechanism_diagnosis": "업종-중립 순이익률 수준(i_PM) IC=0.0127(pos_rate 58.1%) 방향성 존재. FMB Score t=-0.713(음수): 규모효과·모멘텀 교락 후 cross-sectional pricing 없음. Beta=0.48 저베타 구조. AlphaTrend 1.39(최근 개선). OOS 0.66 robust이나 PORT_t·Calmar 두 HARD 기준 미달 — standalone 배포 불가.",
+      "next_probe": [
+        "FQ-100B: i_PM × Beta 조건부 (저베타 β<0.6 국면 한정)",
+        "FQ-100C: i_PM 오버레이 리스크 신호 소비 (스코어 하위 종목 long 축소 트리거)",
+        "FQ-100D: i_PM × CAPEX/매출 복합 팩터"
+      ],
+      "verify_path": "stage_artifacts/paper_recharge/auto_verify_FQ100_ipm_20260809.json",
+      "notable": true
     }
   ]
 }
