@@ -3,9 +3,9 @@
   "dist_id": "DIST-RAMP-018",
   "cluster_key": "f70fa9d382ed",
   "candidate_id": "CAND_20260809_ramp_mixed_conditional_L-RAMP-20260618_131316_L-RAMP-20260618_131316B_L-RAMP-20260618_131316C",
-  "status": "pending_5axis",
-  "statement_refined": null,
-  "retry_condition": null,
+  "status": "proposed",
+  "statement_refined": "KR long-only top-25 구성에서 다수 약신호의 직교 조합 + 회전 제어는 단독 신호를 이기지만, 그 우위가 자본 게이트까지 올라오지는 않는다(경로-scoped). 실측: factor_db 316 전수에서 standalone PORT_t>1 인 단일 팩터 0/316. 반면 11개 직교군 EW 조합에 회전 제어(13.1→7.8x)를 걸면 개별군이 전부 음수(net_sr −0.18~−0.85)인데도 조합은 net_sr +0.083 · PORT_t +0.21 로 break-even 을 넘는다(분산 효익 실증). 확장 M-code 는 EW-유니버스 대비 PORT_t(NW) 2.39(IS 2.89 / OOS +0.56), 최량 구성 M_regdd 는 PORT_t 3.66 에 도달하나 oos_retention 0.15 · calmar 0.37 로 HARD 2종 미달 — 병목은 횡단면 신호력이 아니라 지속성·위험조정이다. 결합 방식에는 방향성이 있다: 316 팩터 equal-weight 는 희석 붕괴(PORT_t 0.82)이고 IC-가중 composite 가 oos_retention 0.66→0.76 으로 해소하는 반면, 종목 비중에서는 EW 가 SCORE/INVVOL/top40 를 전부 이긴다 (약신호에 정교 가중은 노이즈 증폭). 국면 층은 경제 선험룰로 주면 역효과다: CAUTION/CRISIS 에서 방어군 1.5x·공격군 0.5x 고정룰이 net_sr −0.151 로 무국면 M0_EW −0.037 보다 악화됐고(방어로 증액한 LowRisk 군이 최악 −0.65), 인베스터 역할분화도 OOS active IR −0.192 < M0_only −0.080 으로 단순 baseline 미달이다. 따라서 국면 가중은 데이터-구동 추정만 유효하고 선험 배정은 유해하다.",
+  "retry_condition": "병목이 oos_retention 이므로 재도전은 지속성 축을 직접 겨냥할 때만 의미가 있다: (1) IC-가중을 팩터군 층에만 적용하고 종목 비중은 EW 로 고정한 분리 측정으로 oos_retention 귀속 확정 (2) 비-return 원천 신호를 직교군에 편입해 조합의 지속성이 게이트까지 오르는지 재측정 (3) 회전 제어를 7.8x 아래로 더 낮춘 구간에서 net_sr 과 PORT_t 의 교환비 측정.",
   "refined_at": null,
   "refined_by": null,
   "promoted_to_axiom": null,
@@ -257,5 +257,45 @@
     "oos_effect_vs_is": 0.002,
     "note": "L-code oos_retention 실값 16건 median (IS65/OOS35 활성SR retention) + oos_months 실값 4건 median — promote.R essence_score 경유 재확정"
   },
-  "cluster_members_count": 46
+  "cluster_members_count": 46,
+  "adversarial_verdict": "REVISED — (a)과장: 초안이 '조합>단독'만 부각했으나 graduation 2종 미달(oos_retention 0.15 · calmar 0.37)을 본문에 병기해 강등. (b)근거: 전 수치가 supporting L-code 실측(metric_type backtested 33 / canonical_screen 11 / unavailable 2), proxy 를 backtested 로 오라벨한 지점 없음. (c)AX-000: 구조적 한계 단정 없음 — 경로-scoped 로 한정하고 지속성 축은 미검 상태로 열어둠. (d)제약 방화벽(semantic): 실패를 long-only·종목수·유동성 하한에 귀속하지 않았고 제약 완화를 레버로 제시하지 않음. 레버는 전부 조건-안(직교군 구성·회전 제어·IC 가중 층 분리·비-return 원천). (e)프론티어: 미탐색 인접 4종 + live_trigger 3종 + expiry 기재.",
+  "expiry": "2027-02-09",
+  "frontier": ["IC-가중을 팩터군 층에만 적용하고 종목 비중은 EW 고정 — 두 층이 섞여 oos_retention 귀속이 불가한 현 상태를 분리", "회전 제어 7.8x 미만 구간의 net_sr·PORT_t 교환비 측정 (현재 13.1→7.8 구간만 관측)", "비-return 원천(공시 insider·계약 magnitude) 신호를 직교군에 편입해 조합 지속성이 게이트까지 오르는지", "데이터-구동 국면 추정의 추정오차를 가중에 반영(선험 배정은 실측 역효과이므로 추정 불확실성 자체를 입력으로)"],
+  "live_trigger": [
+    {
+      "type": "data",
+      "condition": "비-return 원천 팩터가 직교군에 편입 가능해질 때 — 조합 지속성 재측정",
+      "monitored_source": "06_Registry/alpha_frontier_queue.json"
+    },
+    {
+      "type": "metric",
+      "condition": "직교군 조합의 oos_retention 이 0.5 이상으로 관측되면 graduation 재시도",
+      "monitored_source": "essence_score / hurdle_result 산출"
+    },
+    {
+      "type": "time",
+      "condition": "expiry 도달 시 재검 — 회전 제어·가중 층 실측이 갱신됐는지 확인",
+      "monitored_source": "wall_clock"
+    }
+  ],
+  "revival_spec": [
+    {
+      "signal_id": "wall_clock_date",
+      "condition": "x >= as.Date('2027-02-09')",
+      "from_trigger": "expiry",
+      "status": "active"
+    },
+    {
+      "signal_id": "registry_present",
+      "condition": "x == TRUE",
+      "from_trigger": "data",
+      "status": "pending"
+    }
+  ],
+  "constraint_firewall": {
+    "mode": "backstop_passed",
+    "checked_at": "2026-08-09"
+  },
+  "drafted_at": "2026-08-09T15:06:47+0900",
+  "drafted_by": "cleaner_session_20260809"
 }
