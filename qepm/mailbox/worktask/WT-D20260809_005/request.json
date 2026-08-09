@@ -1,0 +1,34 @@
+{
+  "wt_id": "WT-D20260809_005",
+  "created": "2026-08-09",
+  "mode": "QEPM",
+  "stage": "alpha",
+  "frontier_queue_id": "FQ-198",
+  "hypothesis_title": "해금된 컨센서스 4종(C10_SUE_Persistence · C13_Revision_Breadth_3m · C15_Forecast_Error_Trend · C18_Earnings_CAR_3d) 재료 자격 — 북 incumbent 컨센서스 3종 위 증분",
+  "hypothesis_summary": "FQ-163 빌더 수리(compute_consensus.R 영구 거짓 게이트 7종 제거) + 2026-08-09 factor_db 전면 재빌드(440개월, build_hash 20260809203741_8c9befe0)로, 442개월 전 구간 0행이던 4종이 실제로 실렸다(C10/C15/C18 각 300개월 · C13 303개월). 이 4종은 M2x 계열에 등가물이 없어 저장소에서 한 번도 측정된 적이 없는 진짜 유실분이다. 북 incumbent 컨센서스 3종(C01_SUE · C02_EPS_Chg_1m · C04_ESBR)을 통제한 뒤에도 각각 증분 설명력이 남는가.",
+  "universe": "KR_top342 (KOSPI200 ∪ KOSDAQ150, 20일 평균 거래대금 >= 2e8 KRW)",
+  "cost_model_version": "v2.4_kr_retail_15bps",
+  "primary_metric": "증분 회귀 fwd_ret ~ z(C01_SUE)+z(C02_EPS_Chg_1m)+z(C04_ESBR)+z(신규) 의 신규 계수 Fama-MacBeth NW(lag3) t. pooled OLS 금지.",
+  "threshold": "|t| >= 2.0 = 재료 자격 (자본 게이트 아님)",
+  "n_trials": 4,
+  "selection_type": "preregistered_family_grid",
+  "dsr_applicability": "n_trials=4 사전등록 family grid = sweep 성격 → DSR 진단 산출 + Bonferroni 문턱 병기. 단 본 라운드 판정은 재료 자격(|t|>=2.0)이며 자본 graduation 게이트(PORT_t 2.95 / oos_retention 0.7 / calmar 0.64) 적용 대상이 아님.",
+  "scope_limit": "★재료 자격까지만 주장 가능 — 자본 주장 금지. 선례 M26_Revenue_Mom(WT-D20260808_002)이 동일 프레임에서 재료 자격(FMB NW3 t +2.555)은 얻었으나 전이는 미달(cap-w PORT_t 1.544 < 2.95 · oos_retention 0.123 · 회전율 11.74 > 11.0). IC→PORT_t 전이는 본 라운드에서 해소되지 않는 별도 관문.",
+  "frame_reuse": "stage_artifacts/WT_D20260808_002/np_m26_increment.R (M26 재료 자격 선례) 프레임 그대로 재사용",
+  "required_probes": [
+    "placebo (월내 셔플)",
+    "VIF (증분 회귀 공선성)",
+    "lag1 스트레스",
+    "dual-basis (cap-w + EW-uni + cap-tier MEGA/MID 분해)",
+    "AX-001 v2 조건부 병기 (방어형 여부 판정 시)"
+  ],
+  "boundary": [
+    "05_Production/ · 01_Literature/ 수정 금지",
+    "governor / book_state 쓰기 금지",
+    "공분산 / weight 계산 금지 (alpha-research 역할 경계)",
+    "4종을 한 회귀에 동시 투입 금지 — 각각 별도 primary (공선성 상호 소거 방지)"
+  ],
+  "boundary_note_20260809": "세션 간 소관 경계: 본 WT = 컨센서스 재료 4종의 횡단면 증분 자격. WT-D20260809_001(M26 전이 갭 채널 분해)과 재료는 인접하나 층이 다름(그쪽=전이 채널 진단, 본 라운드=신규 재료 자격). WT-D20260809_002(꼬리 표적 오버레이)·003(전이 벽 형태)·004(인플레 나침반)과 재료 겹침 없음. 쓰기 격리: stage_artifacts/WT_D20260809_005/ 전용 + qepm/mailbox/worktask/WT-D20260809_005/. 공유 원장은 frontier_queue_io.R 경유만.",
+  "id_collision_note": "프롬프트가 지시한 'FQ-174' 는 병렬 세션(ba4a1c30, 폐지풀 ML 앙상블)이 선점 중이었다. consume_rule 규약(하드코딩 금지·최대번호+1·재읽기 확인)에 따라 FQ-198 로 재배정하고 등재 확인 완료.",
+  "build_hash": "20260809203741_8c9befe0"
+}

@@ -1,0 +1,64 @@
+{
+  "round_id": "PG2_COMBO_20260809",
+  "question": "단일 팩터가 PG2 를 못 이긴다면(48표본 0/48, 부족분 중앙 1.063), 직교 팩터 조합은 넘는가",
+  "frozen_at": "2026-08-09 (측정 전 작성)",
+  "incumbent": {
+    "id": "STR_1715_on_M4_R05_noLayer4_PG2",
+    "source": "05_Production/.../04_backtest_results (read-only)",
+    "net_active_ir": 1.416,
+    "active_mean_monthly": 0.022402,
+    "active_sd_monthly": 0.054802
+  },
+  "threshold": {
+    "primary": "book-marginal delta_IR >= 0.05 (measurement-graduation 4절)",
+    "weight_rule": "static_blend_w_on_sleeve, w in {0.05,0.10,0.15,0.20,0.30}",
+    "requirement_map_w020": {
+      "rho_0.0": 0.380, "rho_0.2": 0.659, "rho_0.4": 0.925, "rho_0.6": 1.181, "rho_0.8": 1.428
+    }
+  },
+
+  "primary_hypothesis": "서로 상관이 낮은 팩터들의 합성 점수로 만든 top-25 슬리브는 단일 팩터보다 슬리브 IR 이 높아지고(분산 효과), PG2 와의 상관은 크게 늘지 않으므로 delta_IR 이 개선된다",
+  "primary_metric": "OOS 구간 delta_IR (w=0.20). ★1급이 떨어지면 그것이 판정이다 — 2급으로 갈아타지 않는다",
+  "secondary_metrics": ["슬리브 IR", "PG2 상관", "전 weight sweep 통과 여부"],
+
+  "design": {
+    "selection_window": "전체 270개월의 앞 60% (IS) — 선택은 IS 에서만",
+    "measurement_window": "뒤 40% (OOS) — 선택에 쓰이지 않은 구간",
+    "why_split": "선별 후 검정은 순환이다. IS 에서 고르고 OOS 에서만 잰다 (오늘 확립: 선별 후 검정은 귀무도 같은 선별로)",
+    "selection_criteria": [
+      {"id": "A_IC", "rule": "IS rank-IC 상위 K 개 (패널 수준, 백테스트 불필요)"},
+      {"id": "B_DIV", "rule": "IS rank-IC 양수 중, 점수 상호상관이 낮도록 greedy 선택 K 개"},
+      {"id": "C_IC_DIV", "rule": "IS rank-IC 상위 40 후보 중 상호상관 최소화 greedy K 개"}
+    ],
+    "K_values": [2, 3, 5, 8, 12],
+    "composite_rule": "선택된 팩터 z 의 **단순 평균** (가중 최적화 금지 — 자유도 추가 시 DSR 게이트 대상이 됨)",
+    "sleeve_construction": "canonical_screen_bt(top_n=25, cost 15bps, liq 2e8) — 단일 팩터와 동일 경로"
+  },
+
+  "controls_MANDATORY": {
+    "random_subset": "같은 K 의 **무작위** 팩터 조합 100회 → OOS delta_IR 귀무분포. 선택 규칙이 무작위 조합을 못 넘으면 선별은 무정보다",
+    "single_best": "같은 IS 창에서 IS rank-IC 1등 **단일** 팩터의 OOS delta_IR — 조합이 단일을 못 넘으면 조합 이득 없음",
+    "positive_control": "계약 국면규칙 슬리브를 같은 OOS 창에서 재측정 — 알려진 양성이 여전히 검출되는지(검사 무효화 방지)",
+    "note": "무작위 조합도 직교성 덕에 delta_IR 이 양수일 수 있다. 진짜 대조군은 base 가 아니라 **동일 강도 무작위**다"
+  },
+
+  "falsifiers": [
+    "선택 규칙 3종 x K 5종 = 15셀 중 OOS delta_IR >= 0.05 가 0 이면 조합 축 config-scoped negative",
+    "조합이 무작위 조합 95 백분위를 못 넘으면(15셀 중 다수) 선별 무정보",
+    "조합이 단일 최고를 못 넘으면 조합 이득 부재",
+    "합성 슬리브의 PG2 상관이 단일 중앙(0.402) 보다 **높아지면** 조합은 직교성을 오히려 해친다"
+  ],
+
+  "power_declaration": {
+    "oos_months_approx": 108,
+    "note": "OOS 108개월에서 delta_IR 의 검출 가능 최소 효과를 측정 전에 산출해 기록한다. 도달 불가 설계면 착수 전에 밝힌다"
+  },
+
+  "what_this_round_cannot_claim": [
+    "자본 편입 — governor admit 은 도훈 수동",
+    "delta_IR 은 weight_rule/창에 조건부인 국소량",
+    "선택 규칙을 3종 돌리므로 최종 1개를 argmax 로 고르면 selection_type=sweep → DSR 게이트 대상. 본 라운드는 **셀 전수 보고**로 argmax 선택을 하지 않는다"
+  ],
+
+  "collision_note": "동시 실행 중인 워크플로 wf_8c401997-47a 는 **단일 팩터 331 전수**를 잰다. 본 라운드는 **조합**이라 측정 대상이 겹치지 않는다"
+}

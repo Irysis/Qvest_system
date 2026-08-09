@@ -86,7 +86,7 @@ bm_ir <- function(active, ppy = 12L) {
 bm_delta_ir <- function(sleeve, weight = 0.20,
                         weight_rule = "static_blend_w_on_sleeve",
                         require_overlap = 60L, ppy = 12L, incumbent = NULL,
-                        align_offset = NULL) {
+                        align_offset = NULL, bootstrap = TRUE, B_boot = 1000L) {
   stopifnot(is.data.frame(sleeve))
   S <- as.data.table(sleeve)
   dcol <- names(S)[which(tolower(names(S)) %in% c("date","period","ym"))[1]]
@@ -116,8 +116,50 @@ bm_delta_ir <- function(sleeve, weight = 0.20,
   ir_sleeve_standalone <- bm_ir(X$sleeve_ret - X$benchmark_ret, ppy)
 
   d <- ir_book - ir_inc
+
+  # ── [additive 2026-08-09] ★ΔIR 신뢰구간 + CI-기반 verdict ────────────────────
+  #  왜: 문턱 0.05 는 **이 표본 길이에서 해상도 아래**다. 실측(합성 rho0.4·IR_s0.5·w0.20):
+  #    73개월 se 0.0935 / 108개월 0.0760 / **269개월 0.0460** → 문턱은 269개월에서도 1.09se.
+  #    2se 판별에 ~911개월(75.9년) 필요 = 가용치의 3.4배.
+  #  ⇒ 점추정만 보고 "BEATS_PG2" 를 찍으면 **잡음을 통과로 보고**하게 된다(2026-08-09 실사고:
+  #    Q-Lead 가 계약 슬리브를 그 라벨로 보고했고 CI 는 0 을 포함하고 있었다).
+  #  ★비대칭이 핵심: **탈락 판정은 유효**(큰 음수는 여러 se 밖) · **통과 판정은 무효**.
+  #  ★문턱을 낮추는 것이 아니다(제약 완화 금지 INV-7) — 문턱은 그대로 두고 CI 를 병기한다.
+  #  블록 부트스트랩(block=12): active 계열은 자기상관이 있어 iid 는 se 를 과소추정한다
+  #  (저장소 holdout 규약과 동일 블록 길이).
+  ci <- local({
+    if (!isTRUE(bootstrap) || n < 24L) return(list(available = FALSE, note = "n<24 또는 bootstrap=FALSE"))
+    a_i <- X$ret_net - X$benchmark_ret; a_s <- X$sleeve_ret - X$benchmark_ret
+    bl <- min(12L, max(2L, floor(n / 6)))
+    nb <- ceiling(n / bl); starts <- seq_len(n - bl + 1L)
+    dd <- vapply(seq_len(B_boot), function(b) {
+      idx <- unlist(lapply(sample(starts, nb, TRUE), function(s) s:(s + bl - 1L)))[seq_len(n)]
+      bm_ir((1 - weight) * a_i[idx] + weight * a_s[idx], ppy) - bm_ir(a_i[idx], ppy)
+    }, numeric(1))
+    dd <- dd[is.finite(dd)]
+    if (length(dd) < 100L) return(list(available = FALSE, note = "부트스트랩 유효 표본 부족"))
+    list(available = TRUE, block = bl, n_boot = length(dd),
+         se = stats::sd(dd), lo = unname(stats::quantile(dd, 0.05)),
+         hi = unname(stats::quantile(dd, 0.95)),
+         p_above_threshold = mean(dd >= 0.05), p_above_zero = mean(dd > 0))
+  })
+
+  # CI 기반 verdict — 점추정 verdict 는 point_verdict 로 보존(비파괴)
+  verdict_ci <- if (!isTRUE(ci$available)) "UNRESOLVED_NO_CI"
+    else if (ci$lo >= 0.05) "BEATS_PG2"
+    else if (ci$hi < 0)     "NO_IMPROVEMENT"
+    else if (ci$hi < 0.05)  "BELOW_THRESHOLD"
+    else                    "UNRESOLVED"
+
   list(
     status = "MEASURED",
+    delta_ir_ci = ci,
+    verdict_ci = verdict_ci,
+    verdict_note = paste0(
+      "★verdict_ci 가 권위다. verdict(점추정)는 ΔIR 의 표준오차를 무시하므로 ",
+      "문턱 근처에서 잡음을 통과로 보고한다(실측: 269개월에서도 문턱은 1.09 표준오차). ",
+      "UNRESOLVED = 통과도 미달도 단정 불가 — 증거 누적 대기. ",
+      "★탈락 판정(NO_IMPROVEMENT)은 신뢰할 수 있고 통과 판정은 CI 하단이 문턱을 넘을 때만 유효하다."),
     metric_type = "backtested",
     ir_convention = "net_active_recon_v1",
     base_provenance = "05_Production/2-3.STR_1715_on_M4_R05_noLayer4_PG2/04_backtest_results (production 자기 산출)",
@@ -141,12 +183,21 @@ bm_delta_ir_sweep <- function(sleeve, weights = c(0.05, 0.10, 0.15, 0.20, 0.30),
   inc <- bm_load_incumbent()
   r <- lapply(weights, function(w) {
     o <- bm_delta_ir(sleeve, weight = w, incumbent = inc, ...)
+    ci <- o$delta_ir_ci
     data.table(weight = w, status = o$status, n = o$n_overlap %||% NA_integer_,
-               delta_ir = o$delta_ir %||% NA_real_, verdict = o$verdict %||% NA_character_,
+               delta_ir = o$delta_ir %||% NA_real_,
+               ci_lo = if (isTRUE(ci$available)) ci$lo else NA_real_,
+               ci_hi = if (isTRUE(ci$available)) ci$hi else NA_real_,
+               se = if (isTRUE(ci$available)) ci$se else NA_real_,
+               verdict_ci = o$verdict_ci %||% NA_character_,
+               verdict_point = o$verdict %||% NA_character_,
                book_ir = o$book_ir %||% NA_real_, cor_inc = o$correlation_with_incumbent %||% NA_real_)
   })
   R <- rbindlist(r, fill = TRUE)
-  R[, beats := is.finite(delta_ir) & delta_ir >= 0.05]
+  ## ★beats 는 **CI 하단**이 문턱을 넘을 때만 TRUE. 점추정 기준 통과는 beats_point 로 분리 보존.
+  R[, beats := is.finite(ci_lo) & ci_lo >= 0.05]
+  R[, beats_point := is.finite(delta_ir) & delta_ir >= 0.05]
+  R[, unresolved := verdict_ci == "UNRESOLVED"]
   R[]
 }
 
