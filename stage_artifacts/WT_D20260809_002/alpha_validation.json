@@ -1,0 +1,246 @@
+{
+  "task_id": "WT-D20260809_002",
+  "round": "tail-targeted regime overlay (브리핑 인용 FQ-143 — 원장 ID 불일치, 아래 id_namespace 참조)",
+  "generated_at": "2026-08-09",
+  "generated_by": "alpha-research",
+  "verdict": "config_scoped_negative — 레버(선형 노출 스케일) 차원. 가설·라벨은 생존.",
+
+  "id_namespace": {
+    "briefing_cites": "FQ-143",
+    "registry_FQ143_is": "CV_Vol (일별 거래량 변동계수) — status config_scoped_negative_20260804, STR_AS_20260804_075423_18032. 본 라운드와 무관.",
+    "true_lineage_anchor": ["FQ-119 라벨 자격 관문", "2026-08-08 label_eligibility_gate 실측"],
+    "independent_detection": "alpha-hypothesis 에이전트가 동일 불일치를 독립 적발 (2/2 일치)"
+  },
+
+  "input_shape_verified_first": {
+    "note": "측정 첫 출력 = 입력 실측 (규약: 입력 형태를 가정하고 재기 시작 금지)",
+    "production_panel": {
+      "path": "05_Production/2.Factor_Model/2-2.STR_1715_FaithTrend_on_M4_R05_overlay_PG2/04_backtest_results/period_returns_layer5_faith.csv",
+      "n_rows": 269, "n_cols": 12, "range_return_ym": "2004-01 ~ 2026-05",
+      "observation_unit": "monthly"
+    },
+    "label_source": {
+      "path": ".cache/unified_regime_signal.parquet",
+      "n_rows": 431, "range": "1990-10-31 ~ 2026-08-31",
+      "date_is_month_end": "431/431",
+      "category_counts": {"RISK_ON": 279, "CRISIS": 66, "NEUTRAL": 47, "CAUTION": 39},
+      "label_on_rate_full": 0.244, "label_on_rate_deploy_window": 0.1041
+    },
+    "benchmark": {"path": "stage_artifacts/pg2_offense_overlay/benchmark_pinned_20260702.parquet",
+                  "n_rows_daily": 9416, "range": "1990-01-04 ~ 2026-06-30", "observation_unit": "daily"}
+  },
+
+  "holding_month_identity_resolved_empirically": {
+    "why": "패널에 realized_ym / return_ym / anchor_date 3개 시간축이 있고, 어느 것이 홀딩월인지에 따라 PIT 컷오프가 통째로 달라진다(BearProb 실사고 = 이 축을 틀린 것). 명명 규약을 믿지 않고 시장 월수익 정합으로 판정.",
+    "H1_holding_is_realized_ym": {"cor_ret_orig_vs_bm": 0.0756},
+    "H2_holding_is_return_ym":   {"cor_ret_orig_vs_bm": 0.6850},
+    "resolved": "H2 — 홀딩월 = return_ym. anchor_date(= realized_ym 첫 거래일)는 홀딩월 종료 후. overlay_pit_guard 의 period_returns 규칙과 일치.",
+    "side_finding": "패널의 regime 컬럼은 홀딩월과 동시대 정보를 담는다(ON 월 홀딩월 시장수익 -5.70% vs OFF +1.68%, 직전 관측월은 ON +4.48% vs OFF +0.77% — 하락 신호가 상승 뒤에 켜지는 동월 서명). ★그러나 배포 스케일(beta_R05 x m4)의 축소월은 그 서명이 없다(홀딩월 -0.66%pt, 직전월 +0.04%pt) — 즉 패널의 regime 컬럼은 서술 주석이지 book 을 구동하는 신호가 아니다. incumbent 오염 아님."
+  },
+
+  "gate_G1_label_eligibility": {
+    "tool": "02_Infrastructure/contracts/label_eligibility_gate.R",
+    "strict_pit_ab": {
+      "why": "브리핑이 인용한 lift 는 월말 라벨을 같은 달 홀딩에 붙인 A_same 정렬 산물이다. C5 준수 정렬은 B_clean(월말 라벨 -> 다음달 홀딩).",
+      "cells": [
+        {"event": "ret < 0%",   "A_same": 1.129, "B_clean": 0.972, "inflation_pct": 16.2},
+        {"event": "ret < -5%",  "A_same": 1.870, "B_clean": 1.607, "inflation_pct": 16.4},
+        {"event": "ret < -10%", "A_same": 3.094, "B_clean": 2.671, "inflation_pct": 15.8}
+      ],
+      "verdict": "3/3 셀 인플레 >5% 허용치 -> overlay_lookahead_ab LOOK-AHEAD 의심 발행. 판정은 전부 B_clean 값으로 수행."
+    },
+    "full_sample_clean": [
+      {"event": "ret < 0%",   "n": 428, "n_on": 103, "recall": 0.4563, "base": 0.4696, "lift": 0.972, "fisher_p": 6.64e-01, "verdict": "INELIGIBLE"},
+      {"event": "ret < -5%",  "n": 428, "n_on": 103, "recall": 0.2816, "base": 0.1752, "lift": 1.607, "fisher_p": 1.34e-03, "verdict": "ELIGIBLE"},
+      {"event": "ret < -10%", "n": 428, "n_on": 103, "recall": 0.1748, "base": 0.0654, "lift": 2.671, "fisher_p": 3.15e-06, "verdict": "ELIGIBLE"}
+    ],
+    "deploy_window_clean_2004_01_to_2026_05": [
+      {"basis": "market bm_ret", "event": "< 0%",   "n": 269, "n_on": 28, "lift": 0.850, "fisher_p": 8.19e-01, "verdict": "INELIGIBLE"},
+      {"basis": "base ret_orig", "event": "< 0%",   "n": 269, "n_on": 28, "lift": 1.264, "fisher_p": 2.37e-01, "verdict": "INELIGIBLE"},
+      {"basis": "market bm_ret", "event": "< -5%",  "n": 269, "n_on": 28, "lift": 1.240, "fisher_p": 4.08e-01, "verdict": "INELIGIBLE"},
+      {"basis": "base ret_orig", "event": "< -5%",  "n": 269, "n_on": 28, "lift": 1.724, "fisher_p": 8.84e-02, "verdict": "INELIGIBLE"},
+      {"basis": "market bm_ret", "event": "< -10%", "n": 269, "n_on": 28, "lift": 2.135, "fisher_p": 2.38e-01, "verdict": "INELIGIBLE"},
+      {"basis": "base ret_orig", "event": "< -10%", "n": 269, "n_on": 28, "lift": 2.620, "fisher_p": 9.44e-02, "verdict": "INELIGIBLE"}
+    ],
+    "underpowered_warning": "★배포창 null 은 기각이 아니다. 자격 검정의 검출력 실측(4000 sim): event <-10% base=0.0335 n_on=28 에서 lift 2.7 검출력 0.32 / lift 3.5 검출력 0.53. 점추정(2.135~2.620)은 전표본(2.671)과 표본오차 범위 내로 정합.",
+    "gate_decision": "BLOCK — 배포창 전 셀 미통과이므로 규율 4에 따라 소비면 primary 측정 착수 금지. 이후 수치는 전부 진단(metric_type=canonical_screen_diag)."
+  },
+
+  "gate_G2_power": {
+    "tool": "02_Infrastructure/contracts/required_effect_size.R",
+    "deploy_window": {"n": 269, "n_label_on": 28, "on_rate": 0.1041},
+    "required_monthly_for_t2_depth50": 0.00295,
+    "required_annual_pct": 3.54,
+    "achievable": {
+      "E_ret_orig_given_ON": 0.04015, "E_ret_orig_given_OFF": 0.03409, "gap": 0.00606,
+      "note": "부호가 반대 — 라벨 ON 월이 오히려 평균 수익이 높다. 노출 축소의 기대 효과는 음수."
+    },
+    "observed_paired_t_by_depth": {"0.25": -1.418, "0.50": -1.418, "0.70": -1.418,
+      "note": "t 는 깊이에 불변(선형 스케일). 깊이 조정으로는 부호를 못 바꾼다."},
+    "required_precision_inversion": [
+      {"firing_rate": 0.05, "required_E_ret_given_fire": -0.0801, "required_tail_precision": 0.664, "required_lift": 16.2},
+      {"firing_rate": 0.10, "required_E_ret_given_fire": -0.0556, "required_tail_precision": 0.531, "required_lift": 13.0},
+      {"firing_rate": 0.20, "required_E_ret_given_fire": -0.0393, "required_tail_precision": 0.443, "required_lift": 10.8}
+    ],
+    "measured_lift": {"deploy": 2.135, "full": 2.671},
+    "verdict": "필요 정밀도 대비 5~6배 부족. 더 좋은 국면 라벨 방향으로는 이 격차가 메워지지 않는다.",
+    "verdict_with_power_selfcheck": "verdict_with_power(sd=arm 자신) -> INCONCLUSIVE_BAR_RESTATES_T (implied_t_threshold=2.12, bar_restates_t=TRUE). 즉 그 바는 t 검정의 재진술이라 정보가 없다 — 그래서 위 역산(외부 기준)을 판정 근거로 쓴다."
+  },
+
+  "gate_G3_pit_battery": {
+    "assert_overlay_pit": {"result": "PASS", "detail": "라벨 관측시각(월말) < 홀딩월 시작, 간격 최소 1일 / 최대 1일, 269/269"},
+    "strict_pit_ab": {"result": "LOOK-AHEAD in naive alignment", "detail": "인플레 15.8~16.4% (3/3 셀). B_clean 값으로 재판정 완료."},
+    "lag1_stress": {
+      "lag+0": {"lt5_lift": 1.607, "lt5_p": 1.34e-03, "lt10_lift": 2.671, "lt10_p": 3.15e-06},
+      "lag+1": {"lt5_lift": 1.340, "lt5_p": 5.04e-02, "lt10_lift": 2.093, "lt10_p": 1.69e-03},
+      "lag+2": {"lt5_lift": 1.462, "lt5_p": 1.22e-02, "lt10_lift": 2.109, "lt10_p": 1.55e-03},
+      "verdict": "꼬리 셀(<-10%)은 lag+1/+2 에서도 ELIGIBLE 유지 -> 동월 누출 잔재 아님(상태 지속성과 정합). -5% 셀은 lag+1 에서 무너져 자격이 사건정의에 조건부라는 결론을 재확인."
+    }
+  },
+
+  "gate_G4_oracle_positive_control": {
+    "why": "0 이나 무효가 나올 때 계측 사망과 진짜 무효를 구별하는 유일한 수단",
+    "standalone_vs_base": [
+      {"arm": "ORACLE 실현 ret_orig < -10% (깊이 50%)", "n_on": 11,  "paired_t_nw3": 3.033,  "ann_pct": 3.48},
+      {"arm": "ORACLE 실현 ret_orig < -5% (깊이 50%)",  "n_on": 39,  "paired_t_nw3": 5.868,  "ann_pct": 7.72},
+      {"arm": "REAL CRISIS∪CAUTION (C5-clean, 깊이 50%)", "n_on": 28, "paired_t_nw3": -1.504, "ann_pct": -2.51},
+      {"arm": "REAL CRISIS only (깊이 50%)",             "n_on": 14, "paired_t_nw3": -1.656, "ann_pct": -2.07},
+      {"arm": "NULLCTL 교대(정보 0)",                    "n_on": 135, "paired_t_nw3": -4.745, "ann_pct": -9.37}
+    ],
+    "verdict": "하네스 생존 확인 (오라클 +3.03 / +5.87). 실측 negative 는 계측 사망이 아니라 실제 결과.",
+    "nullctl_reading": "정보 0 신호가 -9.37%/yr — 무판별 라벨의 발화-비례 유해성(WT-019 paired -3.77) 독립 재현."
+  },
+
+  "increment_on_incumbent_diagnostic": {
+    "metric_type": "canonical_screen_diag",
+    "base": "production 실코드 산출 패널 (measurement-graduation par.7b)",
+    "arms": [
+      {"arm": "incumbent x label(-30%)", "paired_t_nw3": -1.837, "ann_pct": -1.29, "dIR": -0.0879, "sign_agree": true},
+      {"arm": "incumbent x label(-50%)", "paired_t_nw3": -1.838, "ann_pct": -2.16, "dIR": -0.1555, "sign_agree": true},
+      {"arm": "incumbent x label(-70%)", "paired_t_nw3": -1.839, "ann_pct": -3.03, "dIR": -0.2274, "sign_agree": true},
+      {"arm": "ORACLE incumbent x realized<-5%(-50%)",  "paired_t_nw3": 6.361, "ann_pct": 5.83, "dIR": 0.3513, "sign_agree": true},
+      {"arm": "ORACLE incumbent x realized<-10%(-50%)", "paired_t_nw3": 3.177, "ann_pct": 2.25, "dIR": 0.1249, "sign_agree": true}
+    ],
+    "sign_agreement_all": true
+  },
+
+  "dual_basis_and_drawdown": {
+    "metric_type": "canonical_screen_diag",
+    "variants": [
+      {"variant": "base_no_overlay",       "ann_ret": 0.4552, "SR": 1.678, "MDD": 0.4074, "Calmar": 1.118, "scale_turnover_per_yr": 0.000},
+      {"variant": "incumbent_M4xR05",      "ann_ret": 0.4516, "SR": 1.894, "MDD": 0.2329, "Calmar": 1.939, "scale_turnover_per_yr": 1.008},
+      {"variant": "tail_target_CC50",      "ann_ret": 0.4272, "SR": 1.721, "MDD": 0.2899, "Calmar": 1.474, "scale_turnover_per_yr": 0.468},
+      {"variant": "tail_target_CRISIS30",  "ann_ret": 0.4203, "SR": 1.660, "MDD": 0.3261, "Calmar": 1.289, "scale_turnover_per_yr": 0.343}
+    ],
+    "on_top_of_incumbent": [
+      {"variant": "incumbent",                          "ann_ret": 0.4516, "MDD": 0.2329, "Calmar": 1.939, "dMDD_pp": 0.00,  "dCalmar": 0.000},
+      {"variant": "inc x label(-50%)",                  "ann_ret": 0.4247, "MDD": 0.2329, "Calmar": 1.823, "dMDD_pp": 0.00,  "dCalmar": -0.116},
+      {"variant": "inc x label(-70%)",                  "ann_ret": 0.4133, "MDD": 0.2329, "Calmar": 1.775, "dMDD_pp": 0.00,  "dCalmar": -0.164},
+      {"variant": "ORACLE inc x realized<-10%(-50%)",   "ann_ret": 0.4877, "MDD": 0.2121, "Calmar": 2.300, "dMDD_pp": -2.09, "dCalmar": 0.361},
+      {"variant": "ORACLE inc x realized<-10%(-100%)",  "ann_ret": 0.5225, "MDD": 0.2121, "Calmar": 2.464, "dMDD_pp": -2.09, "dCalmar": 0.525}
+    ],
+    "key_reading": "★라벨 오버레이는 incumbent MDD 를 정확히 0.00%pt 개선하면서 연수익을 2.69%pt 깎는다 — 라벨이 incumbent 의 실제 최대낙폭 구간에 켜지지 않는다. 완전 예지로 꼬리월 노출을 0 으로 만들어도 dMDD 는 -2.09%pt 가 천장. incumbent 의 연속 스케일러가 이미 MDD 40.74% -> 23.29% 를 회수했다.",
+    "ax001_conditional_note": "AX-001 v2 (방어형 조건부 평가) 정합 병기: 전기간 SR 로 방어형을 재지 않았다. 조건부 축(꼬리 사건 적중 lift·crisis 구간 dMDD)으로 별도 평가했고 그 축에서도 incumbent 대비 한계기여 0.00%pt 로 미달이다. 즉 전기간 지표 때문에 탈락한 것이 아니다."
+  },
+
+  "mechanism_decomposition": {
+    "headline": "라벨은 분산 검출기이지 방향 검출기가 아니다. 선형 노출 레버는 조건부 '평균'만 수익화한다.",
+    "variance_channel": {
+      "deploy_sd_on": 0.1155, "deploy_sd_off": 0.0731, "ratio": 1.58,
+      "full_sd_on": 0.1289, "full_sd_off": 0.0604, "ratio_full": 2.14
+    },
+    "direction_channel": {
+      "deploy_E_on": 0.04015, "deploy_E_off": 0.03409, "gap": 0.00606,
+      "full_E_on": 0.0224, "full_E_off": 0.0060, "gap_full": 0.0164,
+      "note": "양 창 모두 gap 이 양수 — 라벨 ON 월의 평균이 더 높다."
+    },
+    "vol_control_logistic": {
+      "n": 426, "event": "다음달 시장 < -10%",
+      "label_only_beta": 1.906, "label_only_z": 4.61,
+      "vol_only_beta": 0.675, "vol_only_z": 4.13,
+      "joint_vol_z": 0.67, "joint_vol_p": 0.5056,
+      "joint_label_z": 2.61, "joint_label_p": 0.0090,
+      "LR_label_over_vol_p": 0.0106, "LR_vol_over_label_p": 0.5046,
+      "cor_label_volz": 0.754
+    },
+    "vol_control_direction_ols": {
+      "label_alone_beta": 0.01648, "label_alone_t": 1.76, "label_alone_p": 0.0787,
+      "joint_label_beta": 0.00018, "joint_label_t": 0.01, "joint_label_p": 0.9900,
+      "reading": "방향 신호는 통제 후 정확히 소멸 — 라벨 고유의 방향 정보는 0."
+    },
+    "episode_robustness": [
+      {"drop": "none", "lift": 2.671, "p": 3.15e-06}, {"drop": "GFC_2008_09", "lift": 2.986, "p": 7.36e-07},
+      {"drop": "COVID_2020", "lift": 2.773, "p": 1.34e-06}, {"drop": "ASIA_1997_98", "lift": 2.623, "p": 3.04e-04},
+      {"drop": "both_GFC_COVID", "lift": 3.120, "p": 2.66e-07}, {"drop": "all_three", "lift": 3.218, "p": 4.95e-05}
+    ],
+    "clustering": {
+      "label_on_runs": 20, "label_on_months": 103, "mean_run_len": 5.15, "random_expected_run_len": 1.32,
+      "effective_independent_units_pct": 19,
+      "tail_event_months": 28, "tail_event_runs": 23,
+      "tail_years": ["1992","1996","1997","1998","1999","2000","2001","2002","2008","2011","2018","2020","2022","2026"]
+    },
+    "era": [
+      {"era": "pre-2004",  "n": 159, "n_on": 74, "mean_on": 0.0193, "mean_off": -0.0029, "lift_lt10": 1.809, "p": 4.18e-04},
+      {"era": "post-2004", "n": 269, "n_on": 29, "mean_on": 0.0303, "mean_off": 0.0092,  "lift_lt10": 2.061, "p": 2.51e-01}
+    ],
+    "era_reading": "★창-정합 후 point estimate 는 post-2004 가 오히려 높다(2.061 vs 1.809). 차이는 라벨 성질이 아니라 검정력(n_on 74 vs 29). '판별력 pre-2004 편중' 서술은 지지되지 않는다 — 08-08 메모 자가정정."
+  },
+
+  "artifacts": {
+    "scripts_dir": "stage_artifacts/fq143_tail_overlay_20260809/",
+    "scripts": ["p0_explore.R", "p1_alignment.R", "p2_label_source.R", "p3_eligibility_pit.R",
+                "p4_deploywindow_power.R", "p5_pit_oracle_mechanism.R", "p6_increment_ceiling.R",
+                "p7_falsification_vol.R", "p8_episode_robustness.R", "p9_emit.R", "p10_ic.R"],
+    "tables": ["p3_eligibility_table.csv", "p4_eligibility_windows.csv", "p5_oracle_arms.csv",
+               "p5_variant_diag.csv", "p6_increment.csv", "p8_episode_robustness.csv",
+               "p9_oracle_mdd_ceiling.csv"],
+    "panel": "stage_artifacts/WT_D20260809_002/alpha_scores.parquet (269행 x 12열 — 월간 노출 스케일 패널. 종목별 alpha 아님)"
+  },
+
+  "next_probe": [
+    {
+      "id": "NP-1",
+      "surface": "⑤ monitoring / tripwire",
+      "probe": "라벨을 노출 레버가 아니라 무비용 경보로 소비 — CRISIS∪CAUTION 발화 시 도훈 알림 + 낙폭 tripwire 감시 강화. 근거: 꼬리 자격은 확립(lift 2.671, p=3.15e-06, 에피소드-제거 강건 4/4)인데 손실을 내는 유일한 이유가 '노출을 실제로 줄이기 때문'이다. 경보는 상방을 포기하지 않으므로 보험료가 0.",
+      "expected_cost": "없음 (배선만)"
+    },
+    {
+      "id": "NP-2",
+      "surface": "④ 위험모델 (risk-research 소관 — 본 에이전트 경계 밖, 라우팅만)",
+      "probe": "라벨이 재는 것이 분산(sd 비 1.58~2.14x)이고 방향은 0(t=+0.01)이므로 소속면은 alpha 가 아니라 Sigma 다. 국면-조건부 공분산 스케일링 / crowding 입력으로 라벨을 투입했을 때 optimizer 단계에서 집중도가 자동 축소되는지 측정. ★이 경로는 베타를 줄이지 않고 꼬리를 줄일 수 있어 P6-b 천장(선형 노출 레버의 부호 제약)에 걸리지 않는다.",
+      "expected_cost": "risk-research 1라운드"
+    },
+    {
+      "id": "NP-3",
+      "surface": "① 종목 선별 (조건-안 레버)",
+      "probe": "노출(베타) 축소 대신 **집중도** 축소 — 라벨 발화 시 25종 상한 안에서 유효 종목수/최대비중을 조이는 변형. 제약 완화가 아니라 제약 안쪽 이동이라 INV-7 저촉 없음. 선형 노출 레버가 조건부 평균에만 걸리는 것과 달리 집중도는 꼬리에 비선형으로 걸리므로 P6-b 역산이 그대로 적용되지 않는다. optimizer-research 소관 — 라우팅.",
+      "expected_cost": "optimizer-research 1라운드"
+    },
+    {
+      "id": "NP-4",
+      "surface": "라벨 vintage 확보 (측정 신뢰)",
+      "probe": "E7 unified_regime 의 production_parity_verified=false 해소 — 역사 라벨이 현 시점 재생성으로 in-sample 적합됐는지 vintage-swap 통제. 본 라운드 판정에는 안전 방향이나, NP-1/NP-2 로 승격하려면 선행 조건.",
+      "expected_cost": "0.5 라운드"
+    },
+    {
+      "id": "NP-5",
+      "surface": "반증축 (c) 미측정분",
+      "probe": "심한 하락월(<= -10%)의 시장 집계 외국인·개인 순매도 강도 vs 평범한 하락월 (A6_investor_flow_stock_daily). 경제 기전(제약-트리거 증폭)의 유일한 직접 증거이며 NP-2 의 설계 입력이 된다.",
+      "expected_cost": "0.5 라운드"
+    }
+  ],
+
+  "revival_conditions": [
+    "선형 노출 레버로의 부활 조건 = 라벨의 꼬리 정밀도가 lift 10.8x(발화 20% 기준) 이상으로 개선. 현행 2.1~2.7x 대비 5~6배 — 국면 라벨 계열 개선으로는 도달 근거 없음. 다른 재료(비-return 원천)로 꼬리 정밀도를 재구성한 경우에만 재측정.",
+    "base 전략의 연복리수익률이 크게 낮아져 노출 축소의 기회비용이 줄면 산식이 바뀐다 — 현행 base 45.5%/yr 가 보험료를 비싸게 만드는 주 원인. incumbent 교체 시 재판정.",
+    "incumbent 의 연속 스케일러가 제거·약화되면 라벨 오버레이의 잔여 여지가 다시 열린다(현재는 MDD 40.7%->23.3% 를 incumbent 가 이미 회수해 잔여 2.09%pt).",
+    "배포창 자격이 UNDERPOWERED 이므로, 배포창 라벨 ON 표본이 축적되어(현 n_on=28) 검정력 0.8 에 도달하면 자격 재판정 대상."
+  ],
+
+  "labels": {
+    "metric_type_primary": "canonical_screen_diag",
+    "capital_claim": false,
+    "graduation_claim": false,
+    "note": "본 라운드는 자본 판정이 아니다(오버레이 설계 실측). governor / book_state 미접촉. 05_Production read-only 소비만."
+  }
+}
