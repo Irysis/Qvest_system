@@ -207,6 +207,41 @@ load_sigma_estimators <- function(only = NULL, root = .mr_root()) {
   out
 }
 
+#' risk 레인 arm ↔ 정합 대조군 지도 (2026-08-09 신설).
+#'
+#' 왜 있나: **측정됐다 ≠ 판정됐다.** 2026-08-09 실측 — `ProperScoreGASFilter`·
+#'   `PreferenceRobustDistortion` 두 건이 Σ-A/B 배터리에 실제로 합류해
+#'   `h1b_sigma_ab_overlay.csv` 에 IR 0.920 / 0.658 이 찍혔는데, `research_status_20260809.json`
+#'   의 risk 블록은 `harness_status="… 하네스 미배선"` · `action="자동 측정 아직 없음"` 이라는
+#'   **하드코딩 문자열로 자기 실측을 부정**했다. 등재≠처분 계통의 반대 방향 판본이다
+#'   (이번엔 산출물이 자기 측정을 과소보고). 상태 문자열은 선언이 아니라 실측에서 파생해야 한다.
+#'
+#' ★대조군은 "무엇이 달라졌나"의 축으로 정한다 — 여기서만 Δ 가 추정기/비중 탓이라고 말할 수 있다:
+#'   - adapter_kind=sigma  → arm `minvar@<id>` vs **`minvar_lw`**: 비중 규칙(minvar) 고정, Σ 만 교체.
+#'       ★대조군 Σ 는 Ledoit-Wolf 다. "표본 Σ 대비"가 아니므로 라벨에 박아 둔다.
+#'   - adapter_kind=weight → arm `<id>` vs **`strategy`**(현 book): 비중 규칙 자체를 바꾸므로
+#'       optimizer 레인과 동일한 book-marginal 컨벤션으로 잰다.
+#' ★반환 Δ 는 **대조 진단량이지 자본 admission 게이트가 아니다**(§4 book-marginal 은 governor 수동).
+risk_lane_arms <- function(root = .mr_root()) {
+  rp <- file.path(root, METHOD_REGISTRY_PATH)
+  if (!file.exists(rp)) return(list())
+  reg <- fromJSON(rp, simplifyVector = FALSE)
+  ms <- Filter(function(m) identical(m$route, "risk") && identical(m$verdict, "implemented"),
+               reg$methods %||% list())
+  lapply(ms, function(m) {
+    kind <- m$adapter_kind %||% "weight"
+    if (identical(kind, "sigma")) {
+      list(method_id = m$method_id, paper_id = m$paper_id %||% NA_character_, adapter_kind = kind,
+           arm = paste0("minvar@", m$method_id), control = "minvar_lw",
+           control_basis = "비중 규칙(minvar) 고정 · Σ 만 교체 → Δ = 추정기 효과. 대조군 Σ = Ledoit-Wolf")
+    } else {
+      list(method_id = m$method_id, paper_id = m$paper_id %||% NA_character_, adapter_kind = kind,
+           arm = m$method_id, control = "strategy",
+           control_basis = "비중 규칙 교체 → 현 book 대비 book-marginal (optimizer 레인과 동일 컨벤션)")
+    }
+  })
+}
+
 #' 라우트별 triage 요약 — "등재됐다"가 아니라 "무슨 처분을 받았나"를 낸다.
 #' ★원장 등재(존재)를 판정(처분)으로 읽는 사고가 반복돼 왔다([[project-screen-route-consumer-zero-20260802]]).
 #'   그래서 보고에는 항상 verdict 와 blocker 를 함께 싣는다.
