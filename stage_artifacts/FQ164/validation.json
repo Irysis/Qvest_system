@@ -1,0 +1,43 @@
+{
+  "round_id": "FQ-164",
+  "parent": "WT-D20260809_001 NP-1",
+  "as_of": "2026-08-09",
+  "metric_type": "canonical_screen_diag",
+  "capital_claim": false,
+  "verdict": "ABORTED_BEFORE_MEASUREMENT — 가설의 전제가 사전 확인에서 깨짐",
+  "hypothesis_premise": "부분-리밸(점수는 fresh 유지, 하위 k개만 교체)은 **경계 churn 만 잘라내므로** 상위 신선도를 보존한 채 비용을 줄인다 — staleness 와 달리 교환이 비대칭일 수 있다",
+  "premise_broken": {
+    "p1_churn_not_at_boundary": {
+      "monthly_turnover": "12.2 / 25종 = 48.9%",
+      "rank_profile": "이탈 종목 직전 순위 중앙 **15.0** · 신규 진입 현재 순위 중앙 **16.0**",
+      "bottom_share": "이탈 중 하위권(rk>15) **48.7%** · 신규 중 하위권 **49.5%**",
+      "reading": "★교체가 경계에 몰려 있지 않다 — 이탈·신규 모두 약 절반만 하위권이고 **상위권에서도 절반이 갈린다**. 교체 상한은 경계 churn 만 자르는 게 아니라 상위 교체까지 막는다."
+    },
+    "p2_turnover_creates_value": {
+      "out_group": 0.01351,
+      "keep_group": 0.01756,
+      "new_group": 0.01729,
+      "new_minus_out": "+0.00378/월 = **연 +4.54%**",
+      "t": 1.048,
+      "n_months": 282,
+      "reading": "★★**교체가 가치를 만든다** — 나가는 종목이 들어오는 종목보다 나빴다. 교체를 막으면 연 4.5%를 버리고 회전율 비용 몇 %를 아끼는 **불리한 거래**가 된다.",
+      "honesty": "t 1.048 로 유의하지 않다. 그러나 판정 근거는 유의성이 아니라 **부호가 가설과 반대**라는 것 — 가설은 '교체가 소모' 를 전제했다."
+    }
+  },
+  "turnover_axis_synthesis": {
+    "staleness_FQ178": "점수를 늙히는 축 — 회전율 11.74→3.73/yr(−68%)에 비용절감 1.20%p ≈ gross 손실 1.17%p = **1:1 교환**, paired 11셀 전부 비유의",
+    "partial_rebal_FQ164": "교체를 제한하는 축 — 교체가 연 +4.54% 가치를 만들므로 **불리한 교환**",
+    "conclusion": "★★**M26 의 회전율 11.74/yr 는 낭비가 아니라 필요 비용**이다. 신호 수명이 짧아 자주 갈아타야 하고, 갈아타는 것이 실제로 이득이다. 회전율 축은 이 재료에서 레버가 아니다.",
+    "implication": "FQ-178 이 확인한 '비용 채널 +0.497 t' 는 실재하나 **회수 불가능**하다 — 두 회수 경로가 모두 닫혔다."
+  },
+  "guard_first_use_log": {
+    "context": "오늘 신설한 claim_state.R 의 첫 실전 사용",
+    "fix_1": "구판 owner 자유 문자열 판정이 '완료 — Q-Lead session cee0bdd0' 를 놓쳐 FQ-165 중복 착수 직전까지 감 → 선언 필드 도입",
+    "fix_2": "★신판이 **거울상 결함** — bare `도훈` 패턴이 'UNCLAIMED — ... 도훈 지시' 를 dohoon 으로 오분류해 착수를 막음. 원인 = ①명시 선언을 부수 언급보다 나중에 검사 ②패턴 과대. 수리 = 명시 선언 최우선 + 상태 토큰만 좁게",
+    "fix_3": "★재진입 미지원 — 스크립트가 claim 을 쓴 뒤 후단에서 죽자 재실행이 **자기 claim 에 막힘**. 수리 = my_session 인자로 재진입 허용(단 complete/dohoon/blocked 는 내 것이어도 차단)",
+    "tests": "08_Tests/contract_regression/test_claim_state.R — 위반 주입 **36/36 PASS**(양성 대조·거울상 재현·재진입 포함)",
+    "lesson": "★세 번 고쳐서 작동했다. 그리고 세 결함이 각각 다른 방향(false negative → false positive → 재진입)이라 **한 방향만 시험한 테스트로는 못 잡는다**."
+  },
+  "honest_caveats": ["p2 의 신규−이탈 +4.54%(t 1.048)는 유의하지 않다 — '교체가 가치를 만든다' 를 확립으로 쓰지 말 것. 판정은 **가설 전제의 반대 부호** 확인이다", "교체군 성과 비교는 비용 미반영 gross — 실제 교체는 15bps 를 낸다. 그래도 4.54%p 대비 회전율 비용은 작다", "M26 단일 재료 관측 — 다른 재료에서 교체가 소모일 수 있다(FQ-090 원 질문은 챔피언 신호 대상이었다)"],
+  "artifacts": ["p0_claim_precheck.R", "p0_churn.csv", "p0_perf.csv"]
+}
