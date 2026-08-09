@@ -4756,8 +4756,40 @@
    "ev_rationale": "FQ-216 next_probe ① 실행. 무작위 대조를 원점으로 라벨 후보 17종(unified 연속축 7종 x 양방향 + jump 2종 + mega_spread)을 동일 12전략·동일 73개월·발화율 35.6% 통일로 줄 세웠다.",
    "wall_check": "★**무작위급(|Δ|<=0.05) 0개** — 좋음 7 / 나쁨 10 으로 완전 이봉. 축은 전부 정보를 담고 **부호만 갈린다**. 1위 Regime_Score_high **-0.4679**(11/12) · Regime_Score_smooth_high -0.2964(**12/12**) · mega_spread -0.2021(11/12) · 최하 KTRI_Score_high +0.9739(0/12). 7축 중 5축이 '국면 점수가 좋다고 할 때 보유' 방향에서 좋음(MSM_Crisis_Prob 만 양방향 실패). ★★자기정정: o1/n1/n2 에서 unified(Regime_Score **low**)를 '무작위보다 0.64 나쁜 역방향 정보' 로 세 번 서술했는데, **같은 축을 뒤집으면 17종 1위**다 = 나쁜 라벨이 아니라 **부호를 반대로 건 좋은 축**. 여집합 아님(35.6% low/high 는 다른 꼬리). ★긴 창 확인(사전등록 falsifier 2종 고정): 216~267개월에서 개선 **12/13** · Δ vs 무작위 -0.1651 · raw 판본도 12/13 · 귀무 창 게이트 inside 4/5 ⇒ **생존**. ★막힌 길 개통: mega_spread 73개월로는 STR_1698(2024-04 종료) 겹침 51<60 이라 **측정 불가**였는데 Regime_Score 439개월로 243개월 측정됨 — **라벨 교체가 계열 연장(칩 task_b065b34d)보다 쌌다**. ★단 STR_1698 은 통과 아님: 점추정 ΔIR +0.0613(문턱 위)이나 **verdict_ci UNRESOLVED** (90% CI [-0.0320, +0.1458], P(>=0.05) 57.7%) + **harness tier `unvalidated`(AX-002 차단)**. deflation: 무처리 부족분 +0.0866 이 13전략 중 최소였고 파킹 Δ(-0.171)는 중앙(-0.117) 수준 = **파킹이 특별한 게 아니라 출발점이 가장 좋았다**. PIT 는 통과(간격 2일 · lag0 동월판이 오히려 최악 +0.624 = 누출 반증). 취약: lag +1 -0.085 → +2 +0.274 → +3 +0.359 = 신호 기억 ~1개월, 타이밍 여유 0.",
    "next_action": "★next_probe(4) = ①**부호 사전등록** — 축 7종의 좋은 방향이 5/7 에서 '국면 점수 양호 시 보유' 로 일치했다. 새 축은 **재기 전에 부호를 선언**하고 맞히는지 보면 기전 가설이 검정된다(현재는 사후 선택). ②**MSM_Crisis_Prob 만 양방향 실패** — 7축 중 유일. 이 축이 왜 정보가 없는지가 나머지 6축이 왜 있는지를 말해줄 수 있다. ③**신호 기억 1개월의 수리** — lag+2 에서 급락한다. 평활 창을 늘리면 기억이 늘어나는가, 아니면 정보가 사라지는가(Regime_Score_smooth 는 이미 평활판인데 raw 와 12/13 동률). ④**STR_1698 하네스 적격화** — 통계는 UNRESOLVED 지만 `unvalidated` 는 통계 이전 문제다. 10-component 계약 retrofit 없이는 어떤 수치도 자본 주장이 안 된다(STR_1675 와 동일한 벽).",
-   "consumer_surfaces": ["오버레이 라벨 선정", "국면 라벨 설계", "파킹 레버 인용", "book-marginal 후보 평가", "screen_route 라우팅"],
+   "consumer_surfaces": [
+    "오버레이 라벨 선정",
+    "국면 라벨 설계",
+    "파킹 레버 인용",
+    "book-marginal 후보 평가",
+    "screen_route 라우팅"
+   ],
    "revival_condition": "새 라벨/축 확보 시 무작위 대조 원점 + 양방향 동시 측정 의무 · STR_1698 retrofit 완료 시 재측정",
+   "created": "2026-08-09"
+  },
+  {
+   "id": "FQ-218",
+   "lane": "infra_measurement_integrity",
+   "title": ".cons_history() 무력 롤링 창 수리 (C10/C13/C15 공통 뿌리)",
+   "hypothesis": "consensus 파생 팩터 중 '최근 n분기 롤링' 을 표방하는 블록이 실제로는 최근 n**영업일**을 본다. .cons_history() 는 원천 관측 행을 최신순으로 주는데 원천 sue/esbr 이 일간이기 때문(관측 간격 중앙 1일, 2026-08-09 실측). 결과: C10_SUE_Persistence = mean(sue[1:4]) 가 창 span 3~5일·고유값 1개로 latest 와 비트동일(mean==latest 비율 1.0000, 2010/2018/2024 전 티커), C13_Revision_Breadth_3m 도 동일(span 2일). C15_Forecast_Error_Trend 의 sue[1]-sue[2]==0 사망도 같은 뿌리. 창을 분기 관측으로 축약하면 세 팩터가 **의도한 신호를 처음으로** 배출한다 — 신규 팩터 3종에 준하는 회수.",
+   "ev_rationale": "회수 대상이 이미 배출 중인 코드 3종이라 등록·명명 비용이 0. C10 은 PEAD proxy 로 설계됐는데 PEAD 는 KR 에서 미검 축이다. 단 실측 전 기대는 미상 — 창 수리가 신호를 만든다는 보장은 없다(현재는 '중복'이 아니라 '아직 측정된 적 없음' 상태라는 것만 확실).",
+   "wall_check": "미측정. 수리 후 canonical_screen_bt 로 PORT_t 실측 필요. ★수리하면 2026-08-09 registry 갱신이 등재한 alias 선언(C10_SUE_Persistence -> C01_SUE, C13_Revision_Breadth_3m -> C04_ESBR)이 **무효**가 된다 — 그 선언은 '정보가 같다'가 아니라 '현 빌드에서 값이 같다'는 조건부 선언이며, factor_registry.json 의 해당 dedup.defect.revisit_on 필드가 조건을 명시한다. 창 수리 후 재측정하여 재선언할 것.",
+   "status": "frontier_open",
+   "owner": "UNCLAIMED",
+   "blocked_by": null,
+   "source_ref": "04_Research/01_reports/factor_emission_identity_audit_20260809.md §3 next_probe①; 실측 stage_artifacts/infra/factor_dedup_wiring_20260809/d3_cons_history_spacing.csv; 코드 02_Infrastructure/factor_db/compute_consensus.R:31-42(.cons_history), :249(C10), :292(C13), :331(C15)",
+   "created": "2026-08-09"
+  },
+  {
+   "id": "FQ-219",
+   "lane": "infra_measurement_integrity",
+   "title": "redundant 113종 판정 + 소비자별 dedup=TRUE 결정 (이중 투표 잔여분)",
+   "hypothesis": "de-dup 소비 배선(2026-08-09)은 **alias 만** 자동 축약한다. 실측상 그 효과는 top-25 중 평균 1.33종(6개월 프로브)으로 작다. 반면 cluster 당 1종만 남기는 상한 시나리오는 top-25 중 평균 **13.67종(55%)** 을 바꾼다 — 이중 투표의 질량은 자동 축약분이 아니라 **미판정 redundant 113종/40 cluster** 에 있다. registry 규약상 redundant 는 자동 병합 금지(구성이 다른데 실측만 겹치는 쌍은 리서치 판단)이므로, 남은 일은 배선이 아니라 **판정**이다.",
+   "ev_rationale": "40 cluster 중 3+ 멤버가 14개(최대 DUPC-010 = 변동성 계열 14종). 이 계열들이 선별 풀에서 한 신호에 14표를 준다면 ICIR 랭킹·Ω 추정 양쪽이 왜곡된다(WT-D20260802_003 의 Ω 전소가 그 사례). 동시에 '접으면 결함이 숨는다' 축도 실재한다 — V13_EV_Sales/V16_Tobins_Q 의 무력 항 사례처럼 동일성이 **버그 서명**인 경우가 있어 일괄 병합은 금물.",
+   "wall_check": "상한 13.67/25 는 EW 합성 프로브(diagnostic)이지 PORT_t 가 아니다 — 판정 후보가 정해지면 canonical_screen_bt 로 재측정할 것. 또한 소비자별 dedup=TRUE 전환은 리서치 결과를 바꾸므로 도훈 confirm 대상.",
+   "status": "frontier_open",
+   "owner": "UNCLAIMED",
+   "blocked_by": null,
+   "source_ref": "실측 stage_artifacts/infra/factor_dedup_wiring_20260809/d8_impact_scenarios.csv; 배선 02_Infrastructure/factor_db/factor_db_connector.R(load_month_factors/ compute_rolling_ic_all/group_factors_by_family 의 dedup 인자), 02_Infrastructure/factor_db/factor_dup_scan.R::collapse_alias_rows(); 검사 08_Tests/factor_db/test_factor_dedup_consumption.R",
    "created": "2026-08-09"
   }
  ]

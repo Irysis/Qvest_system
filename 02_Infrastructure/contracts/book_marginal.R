@@ -201,5 +201,65 @@ bm_delta_ir_sweep <- function(sleeve, weights = c(0.05, 0.10, 0.15, 0.20, 0.30),
   R[]
 }
 
+#' ★파킹 계열 구성 — **정렬을 계약 안에서** 한다 (2026-08-09 실사고 재발방지)
+#'
+#' 실사고: 파킹은 `ifelse(on, sleeve_r, benchmark_ret)` 인데, 나는 벤치를
+#'   `merge(inc[, .(m, benchmark_ret)], S[, .(m, r)], by = "m")` 로 **손으로** 붙였다.
+#'   슬리브 계열(`s1_inventory`)은 월 인덱스 `m` 만 보존하고 **date 를 버려** 라벨 규약이 소실됐고,
+#'   실측 결과 12전략 중 **10건이 +1 어긋나** 있었다(offset0 상관 ~0, +1 에서 0.42~0.75).
+#'   ⇒ OFF 월에 **한 달 전 벤치**를 넣고 있었다. `bm_delta_ir` 는 내부 정렬(`.bm_align_offset`)을
+#'   갖지만 그건 **평가 시점**이고, 파킹 **구성**은 그 호출 *이전*에 계약 밖에서 일어났다.
+#' ★지문: 무작위 라벨 파킹의 실현 β 가 **OFF 비율과 거의 같아진다**(실측 0.636 vs 0.644).
+#'   정렬돼 있으면 β ≈ ON·β_sleeve + OFF·1 이라 1 근방이어야 한다.
+#' ★피해: 부호가 뒤집힌 라벨 2건 · 전략-무관 예측 규칙(bm_gap) rho 0.815 → **0.156 으로 소멸**.
+#'
+#' @param sleeve data.table(m, r) — 슬리브 월수익 (월 인덱스 `m` = .bm_mi(date))
+#' @param label  data.table(m, on) — 국면 라벨 (`m` 은 슬리브와 같은 공간)
+#' @param incumbent bm_load_incumbent() 산출
+#' @param cost_bps 라벨 전환 시 레그당 비용 (기본 15bps)
+#' @param offset NULL 이면 실측(상관 최대). 정수를 주면 그 값을 쓰되 실측과 다르면 경고.
+#' @return list(parked = data.table(date, m, ret_net, on), alignment = <선언 필드>)
+bm_park <- function(sleeve, label, incumbent, cost_bps = 15, offset = NULL,
+                    min_overlap = 60L, min_cor = 0.15) {
+  stopifnot(all(c("m","r") %in% names(sleeve)), all(c("m","on") %in% names(label)))
+  S <- as.data.table(sleeve)[, .(m, r)]
+  I <- as.data.table(incumbent)[, .(m = .bm_mi(date), date, benchmark_ret)]
+  ## ①정렬 실측 — 슬리브 수익과 벤치 수익의 상관이 최대인 오프셋
+  ks <- -3:3
+  cc <- vapply(ks, function(k) {
+    Z <- merge(I[, .(m = m - k, benchmark_ret)], S, by = "m")
+    if (nrow(Z) < 40L) return(NA_real_)
+    suppressWarnings(stats::cor(Z$r, Z$benchmark_ret, use = "complete.obs"))
+  }, numeric(1))
+  k_meas <- if (all(is.na(cc))) NA_integer_ else as.integer(ks[which.max(cc)])
+  c_max  <- if (all(is.na(cc))) NA_real_ else max(cc, na.rm = TRUE)
+  ## ★저베타 슬리브는 정렬을 상관으로 못 정한다 — 조용히 0 을 고르지 말고 표시한다
+  ambiguous <- !is.finite(c_max) || c_max < min_cor
+  k_use <- if (!is.null(offset)) as.integer(offset) else if (ambiguous) 0L else k_meas
+  if (!is.null(offset) && is.finite(k_meas) && !ambiguous && as.integer(offset) != k_meas)
+    warning(sprintf("bm_park: 선언 offset %+d 이 실측 %+d 과 다릅니다 (max cor %.3f)",
+                    as.integer(offset), k_meas, c_max))
+  ## ★부호 규약을 **이름으로** 못박는다 — 검사에서 4/4 가 부호 반대로 읽혀 드러난 모호성.
+  ##   offset = inc 의 월 라벨 − 슬리브의 월 라벨 (같은 수익월에 대해).
+  ##   적용은 항상 `I[, m := m - offset]` (= inc 를 슬리브 월 공간으로 옮긴다).
+  ## ②정렬된 벤치로 파킹 구성
+  X <- merge(I[, .(m = m - k_use, date, benchmark_ret)], S, by = "m")
+  X <- merge(X, as.data.table(label)[, .(m, on)], by = "m")
+  setorder(X, m)
+  if (nrow(X) < min_overlap)
+    return(list(parked = NULL, alignment = list(status = "INSUFFICIENT_OVERLAP", n = nrow(X),
+                offset_applied = k_use, offset_inc_minus_sleeve = k_meas, max_cor = c_max)))
+  X[, sw := c(0L, abs(diff(as.integer(on))))]
+  X[, ret_net := ifelse(on, r, benchmark_ret) - sw * cost_bps / 1e4]
+  list(parked = X[, .(date, m, ret_net, on, sleeve_r = r, benchmark_ret)],
+       alignment = list(status = if (ambiguous) "AMBIGUOUS_LOWCOR" else "MEASURED",
+                        offset_applied = k_use, offset_inc_minus_sleeve = k_meas, max_cor = c_max,
+                        cor_at_zero = cc[ks == 0L], n = nrow(X), cost_bps = cost_bps,
+                        note = paste0("★offset_inc_minus_sleeve = inc 월라벨 − 슬리브 월라벨(같은 수익월). ",
+                                      "적용은 항상 I[, m := m - offset]. 슬리브 계열의 월-라벨 규약 차이다. ",
+                                      "AMBIGUOUS_LOWCOR 이면 상관으로 정렬을 정할 수 없으므로 ",
+                                      "판정 인용 시 이 라벨을 병기할 것.")))
+}
+
 `%||%` <- function(a, b) if (is.null(a)) b else a
-cat("[book_marginal.R] Loaded — bm_load_incumbent() / bm_delta_ir() / bm_delta_ir_sweep()\n")
+cat("[book_marginal.R] Loaded — bm_load_incumbent() / bm_delta_ir() / bm_delta_ir_sweep() / bm_park()\n")

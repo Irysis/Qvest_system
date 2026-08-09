@@ -28,6 +28,12 @@ suppressPackageStartupMessages({
   library(data.table)
 })
 
+## 이 파일은 단독 source 될 수 있다(테스트·스캐너 러너). base R 의 %||% 는 4.4+
+## 에서만 있고 저장소 관례가 방어적 정의이므로 동일 형태로 맞춘다.
+if (!exists("%||%", mode = "function")) {
+  `%||%` <- function(a, b) if (is.null(a) || length(a) == 0L) b else a
+}
+
 #' Wide Z-score matrix for one month, via the C15-safe connector.
 #'
 #' loader 를 인자로 받는 이유: 위반 주입 테스트가 합성 패널을 밀어넣을 수 있어야
@@ -275,6 +281,86 @@ drop_alias_factors <- function(factor_names, registry = NULL, warn = TRUE) {
   if (warn && length(dropped)) {
     cat(sprintf("[dup_scan] alias %d개 제거: %s\n", length(dropped),
                 paste(sprintf("%s->%s", dropped, canon[!keep]), collapse = ", ")))
+  }
+  out
+}
+
+#' alias 를 canonical 까지 **연쇄 해석**한다 (alias -> alias -> canonical 방어).
+#' resolve_factor_canonical() 은 1-hop 계약이고 테스트가 그 계약에 걸려 있으므로
+#' 바꾸지 않는다 — 대신 그 원시함수를 고정점까지 반복한다.
+#' 순환이면 마지막 값에서 멈추고 경고한다 (무한루프 금지).
+.fds_resolve_chain <- function(factor_names, registry = NULL, max_depth = 5L) {
+  cur <- as.character(factor_names)
+  for (i in seq_len(max_depth)) {
+    nxt <- resolve_factor_canonical(cur, registry)
+    if (identical(nxt, cur)) return(cur)
+    cur <- nxt
+  }
+  warning("[dup_scan] alias 연쇄가 ", max_depth,
+          "단계에서 수렴하지 않음 — registry 순환 의심: ",
+          paste(utils::head(unique(cur), 5), collapse = ", "), call. = FALSE)
+  cur
+}
+
+#' **패널 수준** 정본 해석 — 로드된 long 패널에서 alias 행을 접는다.
+#'
+#' 이름 수준 API(drop_alias_factors)와 의도적으로 다른 규칙을 쓴다:
+#'
+#'   * alias A 의 canonical C 가 **같은 패널에 있을 때만** A 행을 제거한다.
+#'   * C 가 없으면 A 를 **그대로 남긴다 — 이름을 바꾸지 않는다.**
+#'     ★근거: A 를 C 로 개명하면 그 달 실제로 배출되지 않은 코드를 날조하게 된다
+#'     (커버리지 미달·미요청으로 C 가 빠진 달이 실재한다). 결손을 정상값으로
+#'     내려앉히지 않는다는 규약의 직접 적용.
+#'   * redundant(자동 병합 금지분)는 **건드리지 않고 보고만** 한다.
+#'
+#' 입력을 참조 수정하지 않는다. 반환값 attribute 로 무엇을 했는지 전부 노출한다
+#' (조용한 축소 금지).
+#'
+#' @param dt long data.table — factor_col 컬럼 보유.
+#' @return dt (필터됨) + attributes:
+#'   `dedup_dropped`        제거된 alias 이름
+#'   `dedup_orphan_alias`   canonical 부재로 **남긴** alias 이름
+#'   `dedup_redundant`      같은 풀에 남은 미해결 redundant cluster 표
+collapse_alias_rows <- function(dt, registry = NULL, factor_col = "Factor_Name",
+                                warn = TRUE) {
+  if (is.null(dt) || !nrow(dt)) return(dt)
+  if (!factor_col %in% names(dt)) {
+    stop("[dup_scan] collapse_alias_rows: 컬럼 '", factor_col, "' 부재")
+  }
+  reg <- .fds_load_registry(registry)
+  present <- unique(as.character(dt[[factor_col]]))
+
+  is_alias <- vapply(present, function(f) {
+    identical(reg[[f]]$dedup$role %||% "", "alias")
+  }, logical(1))
+  alias_names <- present[is_alias]
+
+  canon_of <- setNames(.fds_resolve_chain(alias_names, reg), alias_names)
+  drop   <- alias_names[canon_of[alias_names] %in% present]
+  orphan <- setdiff(alias_names, drop)
+
+  out <- if (length(drop)) dt[!(as.character(dt[[factor_col]]) %in% drop)] else dt
+  kept <- unique(as.character(out[[factor_col]]))
+
+  red <- report_redundant_clusters(kept, reg)
+
+  attr(out, "dedup_dropped")      <- drop
+  attr(out, "dedup_orphan_alias") <- orphan
+  attr(out, "dedup_redundant")    <- red
+
+  if (warn) {
+    if (length(drop)) {
+      cat(sprintf("[dup_scan] 정본 해석: alias %d종 제거 (%s)\n", length(drop),
+                  paste(sprintf("%s->%s", drop, canon_of[drop]), collapse = ", ")))
+    }
+    if (length(orphan)) {
+      cat(sprintf("[dup_scan] 정본 부재로 **유지**한 alias %d종: %s\n",
+                  length(orphan), paste(orphan, collapse = ", ")))
+    }
+    if (nrow(red)) {
+      cat(sprintf("[dup_scan] 미해결 redundant %d종 / cluster %d개 — 자동 병합 대상 아님(선언 필요)\n",
+                  nrow(red), uniqueN(red$cluster)))
+    }
   }
   out
 }

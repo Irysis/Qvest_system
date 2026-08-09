@@ -214,10 +214,25 @@ if (!HAVE_PANEL) {
   bad("N0_negative_controls", "실패널 부재로 음성 대조 불가")
 } else {
   und <- BASE$axis_I$undeclared
+  det <- BASE$axis_I$detail
+  ## 2026-08-09 갱신 — 이 4쌍은 FQ-213 에서 registry dedup 에 **정본 지정**됐다
+  ## (C09/C10 -> C01_SUE, C13 -> C04_ESBR, M25 -> C11_Earnings_Streak).
+  ## 그래서 이제 `undeclared` 에 없는 것이 **정상**이다. 다만 그 이유가 "선언됐다"
+  ## 인지 "검출기가 죽었다"인지는 겉보기가 같으므로, 판정을 약하게 푸는 대신
+  ## **더 강하게** 건다: 여전히 detail 에 잡히고(=검출 생존) ∧ declared=TRUE
+  ## (=선언 반영). 둘 중 어느 쪽이 깨졌는지 사유를 구분해 보고한다.
   chk_pair <- function(id, a, b) {
-    h <- if (nrow(und) == 0L) und else und[(factor_a == a & factor_b == b) | (factor_a == b & factor_b == a)]
-    if (nrow(h)) ok(id, sprintf("%s ~ %s 검거 (|rho| %.6f)", a, b, h$abs_rho[1]))
-    else         bad(id, sprintf("★%s ~ %s 미검거 — 기확정 중복을 놓침", a, b))
+    h <- if (is.null(det) || !nrow(det)) det[0] else
+      det[(factor_a == a & factor_b == b) | (factor_a == b & factor_b == a)]
+    if (!nrow(h)) {
+      bad(id, sprintf("★%s ~ %s 를 검출기가 아예 못 봄 — 축 I 사망(선언 여부와 무관)", a, b))
+      return(invisible(NULL))
+    }
+    if (isTRUE(h$declared[1])) {
+      ok(id, sprintf("%s ~ %s 검출 유지 + 선언 반영 (|rho| %.6f)", a, b, h$abs_rho[1]))
+    } else {
+      bad(id, sprintf("★%s ~ %s 가 검출은 됐으나 declared=FALSE — registry dedup 선언이 소실됨", a, b))
+    }
   }
   chk_pair("N1_C01_eq_C10", "C01_SUE", "C10_SUE_Persistence")
   chk_pair("N2_C04_eq_C13", "C04_ESBR", "C13_Revision_Breadth_3m")

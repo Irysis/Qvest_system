@@ -80,6 +80,70 @@ FACTOR_REG_PATH <- file.path(FACTOR_DB_DIR, "factor_registry.json")
   .fdc_registry
 }
 
+# ---- de-dup 소비 배선 (2026-08-09) --------------------------------------------
+# registry 의 dedup 선언을 **행동으로** 잇는 지점. 라벨만 있고 소비자가 0이면
+# 선언된 중복은 선별·Ω 추정에서 계속 이중 투표한다(2026-08-09 실측: 표본 6월
+# 전건에서 선언 cluster 44개·224쌍이 같은 풀에 동시 출현, 초과 표 82~83 = 풀의 ~25%).
+#
+# ★기본 동작 무변경 원칙: 모든 진입점의 dedup 기본값은 FALSE 다. 인자 없이 부르면
+#   기존과 **값이 동일**하다. 정본 해석은 명시 opt-in(dedup=TRUE)으로만 일어난다.
+#   대신 접을 수 있는 alias 가 풀에 있는데 접지 않은 경우 **세션당 1회** 알린다
+#   (매 호출 경고는 소음이 되어 무시된다 — emission_guard 설계원칙 ②).
+.fdc_dedup_notified <- FALSE
+
+.fdc_dedup_available <- function() {
+  if (exists("collapse_alias_rows", mode = "function")) return(TRUE)
+  p <- file.path(.fdc_self_dir, "factor_dup_scan.R")
+  if (!file.exists(p)) return(FALSE)
+  source(p)
+  exists("collapse_alias_rows", mode = "function")
+}
+
+#' dedup=TRUE 요청을 처리한다. API 를 못 찾으면 **fail-closed** — 조용히
+#' 미적용 데이터를 돌려주면 "요청했으니 됐겠지"가 되어 결손이 정상값으로
+#' 내려앉는다. 그래서 stop() 한다.
+.fdc_apply_dedup <- function(dt, dedup, what = "panel") {
+  if (!isTRUE(dedup)) return(dt)
+  if (!.fdc_dedup_available()) {
+    stop("[connector] dedup=TRUE 인데 factor_dup_scan.R 의 collapse_alias_rows() 를 ",
+         "로드할 수 없다 — 정본 해석 없이 반환하지 않는다(fail-closed). 경로: ",
+         file.path(.fdc_self_dir, "factor_dup_scan.R"))
+  }
+  collapse_alias_rows(dt, registry = .load_registry())
+}
+
+# alias -> canonical 지도는 세션당 1회만 만든다 (매 호출 registry 순회 방지).
+.fdc_alias_map <- NULL
+.fdc_get_alias_map <- function() {
+  if (!is.null(.fdc_alias_map)) return(.fdc_alias_map)
+  reg <- .load_registry()
+  m <- vapply(reg, function(e) {
+    d <- e$dedup
+    if (is.null(d) || !identical(as.character(d$role)[1], "alias") ||
+        is.null(d$canonical)) NA_character_ else as.character(d$canonical)[1]
+  }, character(1))
+  .fdc_alias_map <<- m[!is.na(m)]
+  .fdc_alias_map
+}
+
+#' dedup 을 끈 채로 접을 수 있는 alias 가 풀에 있으면 세션당 1회 알린다.
+.fdc_dedup_notice <- function(factor_names) {
+  if (.fdc_dedup_notified) return(invisible(NULL))
+  if (identical(Sys.getenv("QVEST_DEDUP_NOTICE"), "0")) return(invisible(NULL))
+  amap <- .fdc_get_alias_map()
+  if (!length(amap)) return(invisible(NULL))
+  fn <- unique(as.character(factor_names))
+  cand <- intersect(names(amap), fn)
+  al <- cand[amap[cand] %in% fn]
+  if (!length(al)) return(invisible(NULL))
+  .fdc_dedup_notified <<- TRUE
+  cat(sprintf(paste0("[connector] NOTE: 이 풀에 정본과 함께 등재된 alias %d종이 있다",
+                     " (%s). 선별/Ω 추정이면 dedup=TRUE 로 접을 것 — 기본값은 무변경",
+                     "(FALSE)이라 지금은 중복 투표한다. 이 알림은 세션당 1회.\n"),
+              length(al), paste(al, collapse = ", ")))
+  invisible(NULL)
+}
+
 # ---- IC history (cached) ----
 .fdc_ic_hist <- NULL
 .fdc_ic_dir_cache <- new.env(parent = emptyenv())
@@ -194,7 +258,14 @@ FACTOR_REG_PATH <- file.path(FACTOR_DB_DIR, "factor_registry.json")
 #'   (합성 시 거래일 월말 그리드와 어긋나 AS_OF 조인이 전월값을 당김 — 2026-08-02
 #'   ast_compile factor_db_monthly provider 1개월 stale 사건).
 #'   attr "factor_db_asof_date" 는 로드 실패/0행 시 NA — 소비자는 fail-closed 처리.
-load_month_factors <- function(sig_date, coverage_min = 0.05, factor_names = NULL) {
+#' @param dedup Logical (기본 FALSE = 기존 동작과 값 동일). TRUE 면 registry
+#'   dedup 선언에 따라 **alias 행을 접는다** — canonical 이 같은 패널에 있을 때만
+#'   제거하고, 없으면 alias 를 그대로 남긴다(개명하지 않는다: 그 달 배출되지 않은
+#'   코드를 날조하지 않기 위해). 반환값 attribute `dedup_dropped` /
+#'   `dedup_orphan_alias` / `dedup_redundant` 에 무엇을 했는지 전부 노출된다.
+#'   ★선별·랭킹·Ω 추정에 쓰는 풀이면 TRUE 를 권장한다. 단순 조회·재현은 FALSE.
+load_month_factors <- function(sig_date, coverage_min = 0.05, factor_names = NULL,
+                               dedup = FALSE) {
   sig_d <- as.Date(sig_date)
   ym_tag <- format(sig_d, "%Y%m")
   fpath <- file.path(FACTOR_DB_DIR, paste0("factor_db_", ym_tag, ".parquet"))
@@ -265,6 +336,15 @@ load_month_factors <- function(sig_date, coverage_min = 0.05, factor_names = NUL
   dt <- align_factor_direction(dt, registry, sig_date = sig_d)
 
   result <- dt[, .(Ticker, Factor_Name, Z_Score_Aligned)]
+
+  # de-dup 소비 (기본 FALSE = 무변경). collapse_alias_rows() 가 자기 attribute
+  # (dedup_dropped/dedup_orphan_alias/dedup_redundant)를 붙이고, 아래에서 factor_db
+  # attribute 를 덧붙인다 — 둘 다 보존된다.
+  if (isTRUE(dedup)) {
+    result <- .fdc_apply_dedup(result, TRUE, "load_month_factors")
+  } else {
+    .fdc_dedup_notice(unique(result$Factor_Name))
+  }
 
   # v54 Gate 13.1 — attach build hash for traceability
   build_hash_path <- file.path(FACTOR_DB_DIR, "build_hash.txt")
@@ -592,8 +672,14 @@ align_factor_direction <- function(factor_dt, registry, sig_date = NULL, min_ic_
 #' @param sig_date Date. Current signal date
 #' @param min_months Integer. Min months for valid ICIR (default 36)
 #' @param max_months Integer. Max lookback months (default 120)
+#' @param dedup Logical (기본 FALSE = 무변경). TRUE 면 반환 표에서 alias 행을
+#'   접는다. ★이 표는 ICIR 랭킹의 입력이다 — alias 를 두면 같은 신호가 상위
+#'   K 자리를 두 번 차지하고 ICIR 가중합에서도 두 번 계산된다
+#'   (소비자: alpha_search/fe_factor_momentum.R, regime_factor_alloc_engine.R,
+#'    factor_research_pipeline.R). 랭킹·가중에 쓰면 TRUE 권장.
 #' @return data.table: Factor_Name, Mean_IC, ICIR, Hit_Rate, N_Months
-compute_rolling_ic_all <- function(sig_date, min_months = 36L, max_months = 120L) {
+compute_rolling_ic_all <- function(sig_date, min_months = 36L, max_months = 120L,
+                                   dedup = FALSE) {
   sig_d <- as.Date(sig_date)
   ic_hist <- .load_ic_history()
 
@@ -638,7 +724,10 @@ compute_rolling_ic_all <- function(sig_date, min_months = 36L, max_months = 120L
     }
   }, by = Factor_Name]
 
-  result[!is.na(ICIR)]
+  result <- result[!is.na(ICIR)]
+  if (isTRUE(dedup)) result <- .fdc_apply_dedup(result, TRUE, "compute_rolling_ic_all")
+  else .fdc_dedup_notice(result$Factor_Name)
+  result
 }
 
 
@@ -648,8 +737,13 @@ compute_rolling_ic_all <- function(sig_date, min_months = 36L, max_months = 120L
 
 #' Group factor names by economic family (7 groups for allocation).
 #' @param registry Parsed factor_registry.json (default: auto-load)
+#' @param dedup Logical (기본 FALSE = 무변경). TRUE 면 각 그룹에서 alias 를 빼고
+#'   canonical 만 남긴다(drop_alias_factors). 이 함수의 산출은 그룹 내 ICIR
+#'   가중의 입력이 되므로(regime_factor_alloc_engine.R), 배분에 쓰면 TRUE 권장.
+#'   ★이름 수준 API 를 쓴다 — 패널이 아니라 이름 목록을 돌려주기 때문이다.
+#'   그래서 여기서는 canonical 부재 시 개명이 아니라 **중복 제거**만 일어난다.
 #' @return Named list: group_name -> character vector of factor IDs
-group_factors_by_family <- function(registry = NULL) {
+group_factors_by_family <- function(registry = NULL, dedup = FALSE) {
   if (is.null(registry)) registry <- .load_registry()
 
   # Map registry categories to 7 allocation groups
@@ -672,6 +766,17 @@ group_factors_by_family <- function(registry = NULL) {
     if (length(factors) > 0) groups[[gname]] <- factors
   }
 
+  if (isTRUE(dedup)) {
+    if (!.fdc_dedup_available()) {
+      stop("[connector] dedup=TRUE 인데 factor_dup_scan.R 의 drop_alias_factors() 를 ",
+           "로드할 수 없다 (fail-closed).")
+    }
+    groups <- lapply(groups, function(g)
+      drop_alias_factors(g, registry = registry, warn = TRUE))
+  } else {
+    .fdc_dedup_notice(unlist(groups, use.names = FALSE))
+  }
+
   # Excluded: regime, size (used as controls, not alpha sources)
   groups
 }
@@ -679,3 +784,4 @@ group_factors_by_family <- function(registry = NULL) {
 
 cat("[factor_db_connector] Loaded. Functions: load_month_factors(), load_daily_factors(),\n")
 cat("  compute_rolling_ic_all(), group_factors_by_family(), align_factor_direction()\n")
+cat("  de-dup: 위 3종 모두 dedup=FALSE 기본(무변경). 선별/랭킹/Ω 추정이면 dedup=TRUE.\n")

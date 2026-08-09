@@ -556,6 +556,21 @@ SUITES=(
   #   주입 없이 구별 불가 — 그래서 완전/근사/부호반전 3종 주입 + rho~0.80 판별
   #   대조 + 대조쌍 생존 확인까지 검사한다.
   "08_Tests/hooks/test_factor_dup_scan.R"
+  # 2026-08-09 추가: de-dup **소비 배선**. 위 test_factor_dup_scan 은 registry 의
+  #   *선언 구조*(role/cluster/양방향)를 지키는데, 선언이 행동으로 이어지는지는
+  #   아무도 안 봤다. 실측이 그 대가를 보여줬다 — drop_alias_factors()/
+  #   resolve_factor_canonical()/report_redundant_clusters() 의 **실코드 소비자가 0**
+  #   이라, 선언된 224쌍이 표본 6월 전건에서 같은 풀에 동시 출현하며 그대로 이중
+  #   투표했다(초과 표 82~83 = 풀의 ~25%). 이 저장소의 "존재 = 배선 완료" 계통
+  #   ([[project-wiring-map-standards-unconsumed-20260808]])의 factor_db 판본이다.
+  #   ★이 검사의 본체는 **위반 주입 2종**이다: ① alias 를 안 접는 돌연변이(role 강등)
+  #   ② 정본↔alias 를 반대로 매핑하는 돌연변이. 후자가 결과를 안 바꾸면 배선이
+  #   registry 를 실제로 읽지 않는다는 뜻이므로, 정상 경로만으로는 구별이 안 된다.
+  #   ★기본 동작 무변경(dedup=FALSE)도 여기서 회귀 방화벽으로 잠근다 — 이 배선의
+  #   전제가 "인자 없이 부르면 값이 같다"이므로 그게 깨지면 수백 개 기존 caller 가
+  #   조용히 다른 값을 받는다. 대상 0(접을 alias 없음)은 PASS 가 아니라 SKIP 으로
+  #   내보내 "0건"을 청결로 오독하지 않는다.
+  "08_Tests/factor_db/test_factor_dedup_consumption.R"
   # 2026-08-02 추가: distilled 재등재 supersede(부분집합 구 카드 자동 회수) 위반 주입.
   #   원 갭 = 같은 클러스터가 supporting L-code 성장 시 새 dist_id 로 재등재되는데 구 카드가
   #   회수되지 않아 pending_5axis 가 07-17 49 → 08-02 89건(완전 중복 0, **부분집합 쌍 30**).
