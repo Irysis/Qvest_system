@@ -1,0 +1,41 @@
+{
+  "schema": "alpha_search_contamination_label_v1",
+  "labeled_at": "2026-08-09T14:18:11+0900",
+  "verdict": "GRADE_VOID_BENCHMARK_CONTAMINATED",
+  "defect": {
+    "what": "benchmark.parquet 스케일 이음매 — 리베이스 체인(8.834xKPI200)과 생 KPI200 을 레벨로 접합 후 pct_change",
+    "effect": "경계 하루가 스케일비를 수익률로 삼킴 (실측 -89.38%, 참값 -6.185%)",
+    "why_recurring": "호출부가 --start_date '10 days ago' 라 이음매가 매일 전진 — 날짜 고정 수리는 하루만 유지",
+    "seam_date_in_this_run": "20260806_203507_48376",
+    "fixed_by": ["02_Infrastructure/data/naver_benchmark_update.py (수익률 접합, 2026-08-09)", "02_Infrastructure/contracts/audit_bt_result.R Check 17 (측정층 차단)"]
+  },
+  "remeasured": {
+    "metric_type": "recomputed_bench_relative",
+    "basis": "수리된 .cache/benchmark.parquet 재조인 · 전략 ret_net 불변",
+    "years": 21.5,
+    "strategy_cagr_pct": 8.87,
+    "benchmark_cagr_pct": {
+      "contaminated": -0.07,
+      "repaired": 10.59
+    },
+    "active_cagr_pp": {
+      "contaminated": 8.94,
+      "repaired": -1.72
+    },
+    "information_ratio": {
+      "contaminated": 0.124,
+      "repaired": -0.047
+    },
+    "beta": {
+      "contaminated": 0.466,
+      "repaired": 0.797
+    },
+    "alpha_t_daily_ols": {
+      "contaminated": 1.68,
+      "repaired": 0.44
+    },
+    "note": "alpha_t 는 일간 OLS — 규약 PORT_t(NW lag-3) 아님. 권위 판정은 파이프라인 재실행분."
+  },
+  "disposition": "재실행 없음 — 등급 무효 처리 (재측정상 alpha t 게이트 근처 아님)",
+  "registry_impact": "backtest_registry.csv 미등재 (실측 0건). family_alpha_search.json 등재는 SpectralPersistence_Hurst / FQ100_ipm_sector_neutral 2건만."
+}
