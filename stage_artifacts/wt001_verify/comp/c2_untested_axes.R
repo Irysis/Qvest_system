@@ -67,11 +67,15 @@ for (f in c("D03_EWMA","Q01_EB")) {
   tt <- nw_t(b)
   v <- verdict_with_power(observed_t=tt, observed_monthly=mean(b), n=length(b),
                           sd_monthly=sd(b), design="full")
-  req <- required_effect_size(n=length(b), sd_monthly=sd(b))
+  req <- required_effect(n=length(b), sd_monthly=sd(b))
+  reqp <- 100*req$required_annual
   say("  %s  기울기 연 %+.3f%%  NW t=%+.3f  n월=%d | 필요효과 연 %.2f%% | 관측/필요 %.2f | 라벨 %s",
-      f, 100*12*mean(b), tt, length(b),
-      as.numeric(req$required_annual_pct %||% req[[1]]),
-      abs(100*12*mean(b))/as.numeric(req$required_annual_pct %||% req[[1]]), v$verdict)
+      f, 100*12*mean(b), tt, length(b), reqp, abs(100*12*mean(b))/reqp, v$verdict)
+  # 사전등록 바(placebo sd 0.0256/0.01727) 기준으로도
+  sdpre <- if (f=="D03_EWMA") 0.02560 else 0.01727
+  req2 <- required_effect(n=length(b), sd_monthly=sdpre)
+  say("     사전등록 sd 기준 필요효과 연 %.2f%% → 관측/필요 %.2f",
+      100*req2$required_annual, abs(100*12*mean(b))/(100*req2$required_annual))
 }
 say("── T4b F1 기각 규칙(D03 Q1-Q3 t > -1 이면 좌측국소화 REJECT) ──")
 for (f in c("D03_EWMA","Q01_EB")) {
@@ -109,11 +113,14 @@ eq <- excl_set("Q01_EB", 0.20)
 rq <- run_w1(eq, "q01_q20")
 say("  Q01_q20 PORT_t=%+.3f (재현 확인)", rq$portfolio_alpha_t_nw_lag3)
 # 무작위 제외: 동월 동개수, ELIG 전체에서 (Q01 가용 여부 무관)
-cnt <- eq[, .N, by=Date]
-set.seed(20260809L); pt <- numeric(0)
-for (s in 1:12) {
-  ex <- ELIG[, .(Ticker=sample(Ticker, min(.N-30L, cnt[.BY$Date==Date, N][1]))), by=Date]
-  ex <- ex[!is.na(Ticker)]
+cnt <- eq[, .(k=.N), by=Date]
+POOL <- merge(ELIG[, .(Date, Ticker)], cnt, by="Date")
+say("  월별 제외 개수 k: 평균 %.1f 중앙 %d (ELIG 월평균 %.1f 대비 %.1f%%)",
+    mean(cnt$k), as.integer(median(cnt$k)), nrow(ELIG)/uniqueN(ELIG$Date),
+    100*mean(cnt$k)/(nrow(ELIG)/uniqueN(ELIG$Date)))
+set.seed(20260809L); pt <- numeric(0); NSEED <- 12L
+for (s in seq_len(NSEED)) {
+  ex <- POOL[, .(Ticker=sample(Ticker, min(k[1], .N-30L))), by=Date]
   r <- run_w1(ex[, .(Date, Ticker)], paste0("plc", s))
   pt <- c(pt, r$portfolio_alpha_t_nw_lag3)
   say("  placebo seed %02d PORT_t=%+.3f", s, r$portfolio_alpha_t_nw_lag3)
