@@ -2022,11 +2022,12 @@
    "id": "FQ-096",
    "title": "PORT_t-정렬 '가중' x 비-return 패널 — 가중 slot 정렬을 insider 등 비-감쇠 재료에 재검 (WT-003 NP1)",
    "status": "frontier_open",
-   "owner": {},
+   "owner": "Q-Lead (사전확인 2026-08-09 · 측정 라운드 미착수 — 착수 시 owner 갱신)",
    "ev_rationale": "WT-D20260802_003 실측: 가중 slot 의 PORT_t-정렬은 사전등록 paired +2.569 로 유효하나(기존선별 풀 위 0.59->1.34), 정렬 정보의 지배 carrier 는 membership 이라 천장(2.937) 돌파는 불가. 미검 = return-derived 감쇠가 없는 비-return 재료(DART insider 역사 258개월 등) 위에서 같은 가중 정렬이 어떻게 작동하나. FQ-001 인접. 2x2 기전 지식('정렬은 주입 지점에 비대칭')의 첫 이식 시험. [08-02 WT-007 반영 — 설계 전제 재검토] insider selection 축 실측: cr-정규화 primary cap-w +1.371(개선 실재·유의 미달)·EW-uni -0.788. 즉 '비-return 패널'로 insider 를 쓰려면 (a) 단독 팩터가 아니라 **풀의 한 원소**로 넣고 PORT_t-정렬 가중이 그것을 선택하는지 보는 형태가 정확하다(가중 정렬의 기능 = 전이-생존 클러스터로 질량 이동, WT-003 기전). (b) WT-003 risk 실측상 가중 slot 천장 = 풀 내 최강 원소의 t 이므로, insider(+1.37)가 최강 원소가 아니면 가중 정렬로는 그 이상이 안 나온다 — 착수 전 풀 구성(기존 팩터 + insider)의 원소별 t 분포부터 확인할 것. 이 사전 확인이 라운드 자체를 대체할 수 있다(최강 원소 t < 2.95 면 측정 전에 결론이 보인다).",
    "registered": "2026-08-02 Q-Lead (WT-003 close 시 next_probe 승격)",
    "precheck_measured": "★착수 전 사전 확인 (2026-08-03 Q-Lead) — 메모리 명시 의무('풀 원소별 t 분포 확인, 최강 원소 t<2.95면 측정 전 결론') 이행. WT-D20260802_007 실측 재판독: insider 풀 원소별 cap-w PORT_t = INS_MAG_NOFILT3 +1.594 · INS_MAGQ3(primary) +1.371 · INS_SEQ12 +0.980 · INS_EVT3 +0.963 · INS02_BREADTH6 +0.632 · INS01_BASE3 +0.554. **최강 원소 INS_MAG_NOFILT3 = +1.594 << 2.95**. WT-003 확립 기전('가중 slot 천장 = 풀 최강 원소 t')을 적용하면 **이 풀 위에서 가중 정렬을 어떻게 해도 자본 게이트 도달 불가 — 측정 전 확정**. ⇒ 라운드 성격 재정의: 자본 주장은 처음부터 불가하고 산출은 **기전 지식 하나**(정렬 정보가 비-감쇠 재료에서도 membership-지배인가). 그런데 WT-003 이 이미 '지배 carrier = membership' 을 확립했으므로 비-return 재료에서 다르게 나올 사전 근거가 약하다. ⇒ **우선순위 하향**(P1→P3): 착수하려면 '왜 비-return 에서는 다를 것인가'의 구체적 기전 가설이 선행돼야 한다. 그 가설 없이 착수하면 확립된 결론의 재확인에 세션을 태운다.",
-   "priority_note": "P3 하향 (2026-08-03 사전 확인) — 기전 가설 선행 조건"
+   "priority_note": "P3 하향 (2026-08-03 사전 확인) — 기전 가설 선행 조건",
+   "next_action": "[사전확인 2026-08-09 — 착수 전 read-only 실측] insider 축 데이터 게이트 OPEN (D3 패널 89,233행 · 258 신호월 2005-01~2026-06 · 재크롤 불요). in-flight 충돌 없음. ★설계 확정 근거: 3팩터는 독립이 아니다 — 월별 횡단면 spearman 중앙값 INS01xINS02 +0.737 / INS01xINS03 +0.614 / INS02xINS03 +0.595 (253개월, IQR 좁음). 고유 커버리지는 갈린다: 단독 정의 비율 INS03 32.9% / INS02 7.5% / INS01 0.3%. ⇒ primary = INS03_OffNetBuyRecency 단독(근거는 커버리지 폭이 아니라 고유 커버리지). INS01 은 후보 제외 — >=100종목 월 52개월뿐이고 고유 정보 0.3%(다른 둘의 부분집합), 구조상 창 길이 x 사건 희소성의 곱이라 회수 가능한 표본 없음(builder:94 rep3>0 조건). 미검 축: INS03 단독 정의 12,113 종목-월이 나머지와 다른 성격인지(결손이 정보일 가능성)."
   },
   {
    "id": "FQ-097",
@@ -2174,9 +2175,10 @@
    "ev_rationale": "WT-011 NP-1(P1). 스펙트럼 분해 실측(수익축 보존율 -0.22 vs flow축 1.00)이 소비면을 지정함 — 신호가 죽은 게 아니라 소비 경로가 틀렸다는 각도. monitoring-면은 cap-tier 벽이 안 걸리는 면(R33 선례).",
    "wall_check": "비적용 — monitoring 소비면은 top-25 전이층을 경유하지 않음. 자본 주장 없음.",
    "data_gate": "없음 (flow 패널·시그니처 패널 현행분 재사용)",
-   "owner": "미배정",
+   "owner": "Q-Lead (사전확인 2026-08-09 · 측정 라운드 미착수 — 착수 시 owner 갱신)",
    "status": "frontier_open",
-   "registered": "2026-08-02 Q-Lead (WT-D20260802_011 NP-1 파생)"
+   "registered": "2026-08-02 Q-Lead (WT-D20260802_011 NP-1 파생)",
+   "next_action": "[사전확인 2026-08-09 — 착수 전 read-only 실측] insider 축 데이터 게이트 OPEN (D3 패널 89,233행 · 258 신호월 2005-01~2026-06 · 재크롤 불요). in-flight 충돌 없음. ★설계 확정 근거: 3팩터는 독립이 아니다 — 월별 횡단면 spearman 중앙값 INS01xINS02 +0.737 / INS01xINS03 +0.614 / INS02xINS03 +0.595 (253개월, IQR 좁음). 고유 커버리지는 갈린다: 단독 정의 비율 INS03 32.9% / INS02 7.5% / INS01 0.3%. ⇒ primary = INS03_OffNetBuyRecency 단독(근거는 커버리지 폭이 아니라 고유 커버리지). INS01 은 후보 제외 — >=100종목 월 52개월뿐이고 고유 정보 0.3%(다른 둘의 부분집합), 구조상 창 길이 x 사건 희소성의 곱이라 회수 가능한 표본 없음(builder:94 rep3>0 조건). 미검 축: INS03 단독 정의 12,113 종목-월이 나머지와 다른 성격인지(결손이 정보일 가능성)."
   },
   {
    "id": "FQ-106",
@@ -2306,10 +2308,11 @@
    "ev_rationale": "WT-012 NP-1(P1). 기각 판정 자체의 타당성을 좌우 — 비정합 비교로 내린 기각은 재검 대상. 저비용(문턱 재계산 + 기존 패널 재사용).",
    "wall_check": "비적용 — monitoring 소비면(자본 무관). cap-tier 벽 비경유.",
    "data_gate": "없음 (WT-012 r43_coverage.parquet 등 재사용)",
-   "owner": "미배정",
+   "owner": "Q-Lead (사전확인 2026-08-09 · 측정 라운드 미착수 — 착수 시 owner 갱신)",
    "status": "frontier_open",
    "registered": "2026-08-02 Q-Lead (WT-D20260802_012 NP-1 파생)",
-   "precheck_measured": "★착수 전 사전 확인 실측 (2026-08-02 Q-Lead, insider_axes_panel.parquet 원값 87,978행): INS02_BREADTH6 는 [-1,1] 유계인데 **원값의 41.8%가 정확히 상한 +1.000**이고 p95=p99=max=+1.000 — 상한 포화형 분포. 반면 INS_MAGQ3 는 무계 롱테일(sd 4.046, p95 +2.670, p99 +8.641, max +69.1, 원값 >=1 비중 14.8%). ⇒ ① R43-F1(문턱 도달 불가 침묵 49.8%)의 **직접 기전 증거** — 상한에 41.8%가 몰린 지표는 월 분포가 압축되면 표준화 후 max z 가 1.0 을 못 넘는다. ② FQ-113 의 논점(같은 z 문턱 비정합)도 실물 확인 — 상한 포화형과 롱테일형에 동일 z 문턱을 걸면 선별률이 구조적으로 달라진다. 라운드는 이 분포 사실을 전제로 선택률-정합 문턱을 설계할 것. ★사전 확인 2단 (2026-08-02, 월별 z 표준화 후 실측): 같은 z>=1.0 에서 발화율이 **INS02 16.58% vs MAGQ3 6.83% = 2.4배 차이** — WT-012 는 MAGQ3 를 2.4배 엄격하게 거른 상태로 비교하고 '증분 없음'을 판정했다. **정합 문턱 산출 완료**: INS02 발화율(0.1658)에 맞추려면 MAGQ3 는 **z >= +0.485**(현행 1.0 대비 -0.515), 역방향으로 MAGQ3 발화율(0.0683)에 맞추려면 INS02 는 z >= +1.154. 라운드는 이 값을 사전등록 문턱으로 그대로 쓰면 되고, 기각 판정이 비정합 탓인지 정합 후에도 유지되는지가 깔끔히 갈린다."
+   "precheck_measured": "★착수 전 사전 확인 실측 (2026-08-02 Q-Lead, insider_axes_panel.parquet 원값 87,978행): INS02_BREADTH6 는 [-1,1] 유계인데 **원값의 41.8%가 정확히 상한 +1.000**이고 p95=p99=max=+1.000 — 상한 포화형 분포. 반면 INS_MAGQ3 는 무계 롱테일(sd 4.046, p95 +2.670, p99 +8.641, max +69.1, 원값 >=1 비중 14.8%). ⇒ ① R43-F1(문턱 도달 불가 침묵 49.8%)의 **직접 기전 증거** — 상한에 41.8%가 몰린 지표는 월 분포가 압축되면 표준화 후 max z 가 1.0 을 못 넘는다. ② FQ-113 의 논점(같은 z 문턱 비정합)도 실물 확인 — 상한 포화형과 롱테일형에 동일 z 문턱을 걸면 선별률이 구조적으로 달라진다. 라운드는 이 분포 사실을 전제로 선택률-정합 문턱을 설계할 것. ★사전 확인 2단 (2026-08-02, 월별 z 표준화 후 실측): 같은 z>=1.0 에서 발화율이 **INS02 16.58% vs MAGQ3 6.83% = 2.4배 차이** — WT-012 는 MAGQ3 를 2.4배 엄격하게 거른 상태로 비교하고 '증분 없음'을 판정했다. **정합 문턱 산출 완료**: INS02 발화율(0.1658)에 맞추려면 MAGQ3 는 **z >= +0.485**(현행 1.0 대비 -0.515), 역방향으로 MAGQ3 발화율(0.0683)에 맞추려면 INS02 는 z >= +1.154. 라운드는 이 값을 사전등록 문턱으로 그대로 쓰면 되고, 기각 판정이 비정합 탓인지 정합 후에도 유지되는지가 깔끔히 갈린다.",
+   "next_action": "[사전확인 2026-08-09 — 착수 전 read-only 실측] insider 축 데이터 게이트 OPEN (D3 패널 89,233행 · 258 신호월 2005-01~2026-06 · 재크롤 불요). in-flight 충돌 없음. ★설계 확정 근거: 3팩터는 독립이 아니다 — 월별 횡단면 spearman 중앙값 INS01xINS02 +0.737 / INS01xINS03 +0.614 / INS02xINS03 +0.595 (253개월, IQR 좁음). 고유 커버리지는 갈린다: 단독 정의 비율 INS03 32.9% / INS02 7.5% / INS01 0.3%. ⇒ primary = INS03_OffNetBuyRecency 단독(근거는 커버리지 폭이 아니라 고유 커버리지). INS01 은 후보 제외 — >=100종목 월 52개월뿐이고 고유 정보 0.3%(다른 둘의 부분집합), 구조상 창 길이 x 사건 희소성의 곱이라 회수 가능한 표본 없음(builder:94 rep3>0 조건). 미검 축: INS03 단독 정의 12,113 종목-월이 나머지와 다른 성격인지(결손이 정보일 가능성)."
   },
   {
    "id": "FQ-114",
@@ -2319,10 +2322,11 @@
    "ev_rationale": "WT-012 NP-2(P1). 침묵 실패 계열 — '발화 0'이 '안전'으로 오독되는 구조. WIRE-1 라벨 배선은 증상 표기이고, 이 프로브가 원인 규명.",
    "wall_check": "비적용 — 관측가능성 계층. 자본 주장 없음.",
    "data_gate": "없음 (r43_live_monthly_maxz.parquet + 국면 라벨 현행분)",
-   "owner": "미배정",
+   "owner": "Q-Lead (사전확인 2026-08-09 · 측정 라운드 미착수 — 착수 시 owner 갱신)",
    "status": "frontier_open",
    "registered": "2026-08-02 Q-Lead (WT-D20260802_012 R43-F1 파생)",
-   "precheck_measured": "★착수 전 사전 확인 (2026-08-08, Q-Lead read-only) — **설계 교정 필요, 착수 보류**. (1) 가설이 '침묵월의 **국면 라벨** 분포'를 주판정으로 두는데, 08-03 실측이 그 라벨의 판별력 부재를 확정했다(CRISIS recall 0.096 < base 0.457 fisher p 0.388 · 독립 음성대조 0.3669). **무자격 라벨로 귀속 측정을 하면 결과가 양수든 음수든 해석 불가**이고, 신설 관문(`label_eligibility_gate.R`)의 차단 대상이다. (2) data_gate 가 지목한 '국면 라벨 현행분'의 정본 위치가 불명 — `.cache/regime_daily_v2.parquet` 실측 결과 **라벨 컬럼이 없다**(8,239행 · 컬럼 = Date/MRS/exposure/n_axes_firing/VIX_z_smooth 등 **연속값**). CRISIS/CAUTION 4분류의 산출 지점을 먼저 특정해야 한다. ⇒ **교정안**: 주판정을 라벨 귀속이 아니라 **실현 시장 상태**(월 변동성·수익률·낙폭 연속값) 귀속으로 전환하고, 라벨 축은 관문 통과 시에만 보조로 병기. 가설 서술에 이미 '시장 변동성/방향과의 결합'이 있어 범위 확대가 아니라 **축 우선순위 교체**다. ★★사전확인 2차 (2026-08-08, 관문 현장 실증) — **1차 판단 정정**. 라벨 정본은 `.cache/unified_regime_signal.parquet`(Category, 431개월 1990-10~2026-08, CRISIS 66/CAUTION 39/NEUTRAL 47/RISK_ON 279). 신설 관문으로 재보니 **자격이 사건 정의에 조건부**다: 월수익<0% → recall 0.533 vs base 0.459(lift 1.16x, p 0.0511) **INELIGIBLE** / 월수익<-5% → 0.333 vs 0.169(**lift 1.97x**, p<1e-4) **ELIGIBLE** / 월수익<-10% → 0.200 vs 0.063(**lift 3.19x**, p<1e-4) **ELIGIBLE**. 즉 **라벨은 작은 하락은 못 잡지만 큰 하락은 잡고, 심할수록 판별력이 커진다**. ⇒ 내 1차 서술('라벨 무자격이라 착수 불가')은 과잉 일반화였다 — 08-03 실측(recall 0.096)은 CRISIS 단독·다른 사건 정의의 결과이고 본 실측(CRISIS∪CAUTION·전구간·벤치 월수익)과 **동일 비교가 아니다**. ⇒ FQ-114 는 **착수 가능**하되 사건 정의를 사전등록에 명시할 것(권고: <-5% 와 <-10% 병기)."
+   "precheck_measured": "★착수 전 사전 확인 (2026-08-08, Q-Lead read-only) — **설계 교정 필요, 착수 보류**. (1) 가설이 '침묵월의 **국면 라벨** 분포'를 주판정으로 두는데, 08-03 실측이 그 라벨의 판별력 부재를 확정했다(CRISIS recall 0.096 < base 0.457 fisher p 0.388 · 독립 음성대조 0.3669). **무자격 라벨로 귀속 측정을 하면 결과가 양수든 음수든 해석 불가**이고, 신설 관문(`label_eligibility_gate.R`)의 차단 대상이다. (2) data_gate 가 지목한 '국면 라벨 현행분'의 정본 위치가 불명 — `.cache/regime_daily_v2.parquet` 실측 결과 **라벨 컬럼이 없다**(8,239행 · 컬럼 = Date/MRS/exposure/n_axes_firing/VIX_z_smooth 등 **연속값**). CRISIS/CAUTION 4분류의 산출 지점을 먼저 특정해야 한다. ⇒ **교정안**: 주판정을 라벨 귀속이 아니라 **실현 시장 상태**(월 변동성·수익률·낙폭 연속값) 귀속으로 전환하고, 라벨 축은 관문 통과 시에만 보조로 병기. 가설 서술에 이미 '시장 변동성/방향과의 결합'이 있어 범위 확대가 아니라 **축 우선순위 교체**다. ★★사전확인 2차 (2026-08-08, 관문 현장 실증) — **1차 판단 정정**. 라벨 정본은 `.cache/unified_regime_signal.parquet`(Category, 431개월 1990-10~2026-08, CRISIS 66/CAUTION 39/NEUTRAL 47/RISK_ON 279). 신설 관문으로 재보니 **자격이 사건 정의에 조건부**다: 월수익<0% → recall 0.533 vs base 0.459(lift 1.16x, p 0.0511) **INELIGIBLE** / 월수익<-5% → 0.333 vs 0.169(**lift 1.97x**, p<1e-4) **ELIGIBLE** / 월수익<-10% → 0.200 vs 0.063(**lift 3.19x**, p<1e-4) **ELIGIBLE**. 즉 **라벨은 작은 하락은 못 잡지만 큰 하락은 잡고, 심할수록 판별력이 커진다**. ⇒ 내 1차 서술('라벨 무자격이라 착수 불가')은 과잉 일반화였다 — 08-03 실측(recall 0.096)은 CRISIS 단독·다른 사건 정의의 결과이고 본 실측(CRISIS∪CAUTION·전구간·벤치 월수익)과 **동일 비교가 아니다**. ⇒ FQ-114 는 **착수 가능**하되 사건 정의를 사전등록에 명시할 것(권고: <-5% 와 <-10% 병기).",
+   "next_action": "[사전확인 2026-08-09 — 착수 전 read-only 실측] insider 축 데이터 게이트 OPEN (D3 패널 89,233행 · 258 신호월 2005-01~2026-06 · 재크롤 불요). in-flight 충돌 없음. ★설계 확정 근거: 3팩터는 독립이 아니다 — 월별 횡단면 spearman 중앙값 INS01xINS02 +0.737 / INS01xINS03 +0.614 / INS02xINS03 +0.595 (253개월, IQR 좁음). 고유 커버리지는 갈린다: 단독 정의 비율 INS03 32.9% / INS02 7.5% / INS01 0.3%. ⇒ primary = INS03_OffNetBuyRecency 단독(근거는 커버리지 폭이 아니라 고유 커버리지). INS01 은 후보 제외 — >=100종목 월 52개월뿐이고 고유 정보 0.3%(다른 둘의 부분집합), 구조상 창 길이 x 사건 희소성의 곱이라 회수 가능한 표본 없음(builder:94 rep3>0 조건). 미검 축: INS03 단독 정의 12,113 종목-월이 나머지와 다른 성격인지(결손이 정보일 가능성)."
   },
   {
    "id": "FQ-115",
@@ -3554,7 +3558,7 @@
    "hypothesis": "within_sector_reversal_20260809(Grade F, MDD 60.4%)의 next_probe. OOS 열위가 고변동성 구간 집중인지 확인 후, 시장 변동성 3분위 하단(저변동 국면)에서만 신호 활성화. 근거: 섹터-중립 선형 제거가 급락 구간 비선형 동조를 제거하지 못함 — 저변동 국면에서는 섹터 간 동조성 약화 → 순수 종목-specific 역전 포착 조건 성립 가능.",
    "ev_rationale": "within_sector_reversal IC 0.0271(포지티브 비율 57.4%)은 방향성 존재. MDD 구조 결함이 고변동 집중이면 regime-filter가 MDD 선택적 억제 가능. stress 2/4 outperform(GFC+9.3%, EuDebt+22.0%) = 방어성 잠재력 부분 존재.",
    "wall_check": "변동성 조건부는 settled-negative 계열(05-07일 2세션 robust FAIL) 가장자리. 단 그 실험들은 ML sizing/선택이었고 이 팩터는 *신호 필터(발화 조건)*로 소비 — 구조 상이. wall check: QUARANTINE 가능성 높으나 체크 비용 낮(동일 팩터 재사용). 중복 재실험 아닌 소비면 전환.",
-   "data_gate": "★폐쇄 2026-08-09: 인용 재료 벤치-오염 무효 — 재측정 선행 (contamination_precheck 참조). 구: 없음 (within_sector_reversal 신호 재사용 + VIX/VKOSPI 월간 or 시장 변동성 rolling sd)",
+   "data_gate": "없음 (within_sector_reversal 신호 재사용 + VIX/VKOSPI 월간 or 시장 변동성 rolling sd)",
    "owner": "미배정",
    "status": "frontier_open",
    "registered": "2026-08-09 Q-Lead (within_sector_reversal QUARANTINE next_probe 1)",
@@ -3565,7 +3569,7 @@
     "저변동 국면 한정 시 MDD < 40% AND PORT_t > 2.0(조건부 착수 기준)",
     "OOS retention 0.5 이상 달성 시"
    ],
-   "contamination_precheck_20260809": "★착수 전 사전 확인 (2026-08-09, Q-Lead ba4a1c30 — 점유 아님, 미배정 유지): 본 항목이 인용하는 within_sector_reversal_20260809(STR_AS_20260809_123327_46908)는 **2026-08-09 14:18 GRADE_VOID_BENCHMARK_CONTAMINATED** 판정 (stage_artifacts/alpha_search/20260809_123327_46908/CONTAMINATED_benchmark_scale_seam.json — benchmark.parquet 스케일 이음매, 경계 하루 실측 -89.38% vs 참값 -6.185%, '걸어다니는 이음매' 계통). ⇒ 인용된 Grade F·IC·OOS 열위 등 **벤치-의존 수치 전부 무효**. MDD 60.4% 는 전략 NAV 성질이라 생존 가능하나 재확인 필요. ★data_gate 실질 폐쇄: 수리된 벤치 위 재측정(재실행) 전 착수 금지 — 무효 전제 위에 게이팅 리서치를 세우면 판정 자체가 오염된다. 재측정 후 본 주석 해제할 것."
+   "contamination_precheck_20260809": "★착수 전 사전 확인 (2026-08-09, Q-Lead ba4a1c30 — 점유 아님, 미배정 유지): 본 항목이 인용하는 within_sector_reversal_20260809(STR_AS_20260809_123327_46908)는 **2026-08-09 14:18 GRADE_VOID_BENCHMARK_CONTAMINATED** 판정 (stage_artifacts/alpha_search/20260809_123327_46908/CONTAMINATED_benchmark_scale_seam.json — benchmark.parquet 스케일 이음매, 경계 하루 실측 -89.38% vs 참값 -6.185%, '걸어다니는 이음매' 계통). ⇒ 인용된 Grade F·IC·OOS 열위 등 **벤치-의존 수치 전부 무효**. MDD 60.4% 는 전략 NAV 성질이라 생존 가능하나 재확인 필요. ★data_gate 실질 폐쇄: 수리된 벤치 위 재측정(재실행) 전 착수 금지 — 무효 전제 위에 게이팅 리서치를 세우면 판정 자체가 오염된다. 재측정 후 본 주석 해제할 것. || ★게이트 해제 (2026-08-09 — 등재 직후 자기정정): 수리 벤치 위 clean 재실행분이 **이미 존재**했다 — ASBT_20260809_141324_57032 (contaminated=FALSE, **grade F 유지**). 내 사전 확인(15:44)이 오염 딱지(14:18)는 찾고 재실행분(14:13)은 놓쳤다 — '오염 발견 시 재실행분 존재 여부를 같은 스캔에서 확인' 규약화 대상. ⇒ 전제 재검증 완료: Grade F 는 clean 벤치에서도 유지 — 본 항목의 가설은 유효 전제 위에 있다. 인용은 clean run(141324_57032) 산출물로 교체할 것(12:33 오염 run 인용 금지). data_gate 원상 복구."
   },
   {
    "id": "FQ-168",
@@ -3574,7 +3578,7 @@
    "hypothesis": "within_sector_reversal_20260809 QUARANTINE next_probe 2. IC 0.0271(포지티브 57.4%)는 방향성 있으나 long-only MDD 구조 결함. 소비면 전환: 섹터-조정 역전 스코어 하위 25%(섹터 내 최고 성과 → 역전 기대 低) 종목을 기존 포트 비중 축소 트리거로 소비. 근거: 섹터-중립 역전 high score(=섹터 내 저성과, 역전 기대)가 short-leg 신호 본질 → 오버레이 long 축소에 전용.",
    "ev_rationale": "signal의 short-leg 본질을 활용(측정: FMB NW_t=1.01은 long premia 미검출 — short premia 가능성). standalone long 불가 ≠ overlay 소비 불가. 오버레이 소비면(③: 비중 조정 입력)이 untested.",
    "wall_check": "QEPM 오버레이 파이프라인 진입 필요. FQ-153(Hurst overlay) 유사 구조. overlay lane에서 먼저 시뮬레이션 가능(alpha-search로 timing 효과 proxy 측정).",
-   "data_gate": "★폐쇄 2026-08-09: 인용 재료 벤치-오염 무효 — 재측정 선행 (contamination_precheck 참조). 구: 없음 (within_sector_reversal 신호 재사용)",
+   "data_gate": "없음 (within_sector_reversal 신호 재사용)",
    "owner": "미배정",
    "status": "frontier_open",
    "registered": "2026-08-09 Q-Lead (within_sector_reversal QUARANTINE next_probe 2)",
@@ -3585,7 +3589,7 @@
     "overlay A/B에서 ΔIR > 0.05 실측(book-marginal 기준)",
     "short-leg 신호 방향 IC < 0 확인(현재 IC+0.0271의 역방향)"
    ],
-   "contamination_precheck_20260809": "★착수 전 사전 확인 (2026-08-09, Q-Lead ba4a1c30 — 점유 아님, 미배정 유지): 본 항목이 인용하는 within_sector_reversal_20260809(STR_AS_20260809_123327_46908)는 **2026-08-09 14:18 GRADE_VOID_BENCHMARK_CONTAMINATED** 판정 (stage_artifacts/alpha_search/20260809_123327_46908/CONTAMINATED_benchmark_scale_seam.json — benchmark.parquet 스케일 이음매, 경계 하루 실측 -89.38% vs 참값 -6.185%, '걸어다니는 이음매' 계통). ⇒ 인용된 Grade F·IC·OOS 열위 등 **벤치-의존 수치 전부 무효**. MDD 60.4% 는 전략 NAV 성질이라 생존 가능하나 재확인 필요. ★data_gate 실질 폐쇄: 수리된 벤치 위 재측정(재실행) 전 착수 금지 — 무효 전제 위에 게이팅 리서치를 세우면 판정 자체가 오염된다. 재측정 후 본 주석 해제할 것."
+   "contamination_precheck_20260809": "★착수 전 사전 확인 (2026-08-09, Q-Lead ba4a1c30 — 점유 아님, 미배정 유지): 본 항목이 인용하는 within_sector_reversal_20260809(STR_AS_20260809_123327_46908)는 **2026-08-09 14:18 GRADE_VOID_BENCHMARK_CONTAMINATED** 판정 (stage_artifacts/alpha_search/20260809_123327_46908/CONTAMINATED_benchmark_scale_seam.json — benchmark.parquet 스케일 이음매, 경계 하루 실측 -89.38% vs 참값 -6.185%, '걸어다니는 이음매' 계통). ⇒ 인용된 Grade F·IC·OOS 열위 등 **벤치-의존 수치 전부 무효**. MDD 60.4% 는 전략 NAV 성질이라 생존 가능하나 재확인 필요. ★data_gate 실질 폐쇄: 수리된 벤치 위 재측정(재실행) 전 착수 금지 — 무효 전제 위에 게이팅 리서치를 세우면 판정 자체가 오염된다. 재측정 후 본 주석 해제할 것. || ★게이트 해제 (2026-08-09 — 등재 직후 자기정정): 수리 벤치 위 clean 재실행분이 **이미 존재**했다 — ASBT_20260809_141324_57032 (contaminated=FALSE, **grade F 유지**). 내 사전 확인(15:44)이 오염 딱지(14:18)는 찾고 재실행분(14:13)은 놓쳤다 — '오염 발견 시 재실행분 존재 여부를 같은 스캔에서 확인' 규약화 대상. ⇒ 전제 재검증 완료: Grade F 는 clean 벤치에서도 유지 — 본 항목의 가설은 유효 전제 위에 있다. 인용은 clean run(141324_57032) 산출물로 교체할 것(12:33 오염 run 인용 금지). data_gate 원상 복구."
   },
   {
    "id": "FQ-169",
