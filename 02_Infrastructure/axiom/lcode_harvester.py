@@ -396,7 +396,7 @@ _MODE_ALIASES = {"qepm": "qepm_legacy"}  # lcode_schema.R LCODE_MODE_ALIASES 정
 #   본문 보유 키는 finding 6 / mechanism 6 / title 8 — 의미상 lesson 의 직접 대응물은 finding.
 _LEGACY_FIELD_MAP = [
     ("l_code", ("l_code_id", "lcode")),
-    ("lesson_text", ("lesson", "text", "description", "finding")),
+    ("lesson_text", ("lesson", "text", "description", "finding", "findings")),
     ("grade", ("verdict",)),
     ("core_reference", ("factor_id",)),
     ("created_at", ("date",)),

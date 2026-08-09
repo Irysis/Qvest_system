@@ -7,6 +7,7 @@ MB  <- "qepm/mailbox/worktask/WT-D20260809_004"
 P <- readRDS(file.path(OUT,"panels.rds")); L <- readRDS(file.path(OUT,"layers.rds"))
 AR <- readRDS(file.path(OUT,"arms.rds")); S <- readRDS(file.path(OUT,"stress.rds"))
 DG <- readRDS(file.path(OUT,"diagnostics.rds")); IH <- readRDS(file.path(OUT,"inherit.rds"))
+AD <- readRDS(file.path(OUT,"adversarial.rds"))
 HY <- fromJSON(file.path(MB,"alpha_hypothesis.json"), simplifyVector = FALSE)
 
 sel <- as.data.table(DG$scp)
@@ -37,8 +38,14 @@ pkg <- list(
            expectation = paste0("원자재-연동 섹터(에너지·소재)의 β_s > 0, 규제-가격(유틸리티·통신) 및 ",
              "장기듀레이션(소프트웨어·건강관리·미디어) 섹터의 β_s < 0 이 표본 대부분에서 유지. ",
              "부호가 무작위면 성과가 나와도 인플레 기전이 아니다 (성과-독립 관측). ",
-             "[실측 2026-08-09] 예측 부여 10섹터 일치율 0.649 (stride-12 0.638, 이항 p=0.0005) → 기각되지 않음. ",
-             "단 방향 비대칭: 음(-) 예측 5섹터 전건 통과 vs 양(+) 예측은 철강 0.799·화학 0.732 만 통과, 에너지 0.434·상사자본재 0.105 는 예측 반대."),
+             "[실측 2026-08-09] 예측 부여 10섹터 일치율 0.649 (stride-12 0.638, 이항 p=0.0005). ",
+             "★그러나 자기 적대검증의 대안 설명 통제에서 이 통과가 무너진다: **같은 예측표를 인플레 β 가 아니라 ",
+             "섹터 시장베타 β^mkt 로 채점하면 일치율 0.822 로 더 높다** — 예측표의 음(-) 집합이 사실상 저베타 ",
+             "방어섹터, 양(+) 집합이 고베타 경기섹터이기 때문이다. 시장성분을 회귀로 제거한 β_s^⊥ 로 재검정하면 ",
+             "일치율 0.600 · stride-12 0.571 · 이항 p 0.0845 로 **5% 유의성 상실**. ",
+             "⇒ 판정 정정: primary falsification 은 '통과'가 아니라 **시장베타 교락으로 INCONCLUSIVE**. ",
+             "방향 비대칭도 병기: 음(-) 예측 5섹터는 통과하나 양(+) 예측은 철강 0.794 만 견고하고 ",
+             "에너지 0.410·상사자본재 0.066 은 예측과 반대."),
            source_leaf = "A1_RAWDATA_OHLCVS_daily (Sector 26종 + 월수익 → 섹터 EW 초과수익)"),
       list(field = "E1_fred_macro_raw",
            expectation = paste0("합성 인플레 지수의 T5YIE(Breakeven_5Y)·Copper_Price 성분이 실재 신호를 담아야 한다. ",
@@ -214,6 +221,7 @@ pkg <- list(
     "[C01_SUE 중복] registry dedup 상 C01_SUE = DUPC-005 redundant(canonical C05_ESCR, cor 0.990). 3종 pairwise Spearman 은 낮으나(C01~C02 0.074·C01~M26 0.058·C02~M26 0.178) 동일 클러스터 canonical 로의 교체가 next_probe 대상.",
     "[유동성 근사] 본 라운드는 20거래일 평균 mean(Close*Vol) 을 adv 로 썼다(repo 표준 canonical 경로의 단일일 Vol0*Close0 근사보다 엄격). 두 정의의 차이는 미측정 — 비교 인용 시 정의 라벨 확인 필요.",
     "[대안 보관 — 승계] 종목-레벨 β_i 직접 랭킹 / 오버레이 소비면 / KR_CPI 단독 단순판 (alpha_hypothesis.json challenge_flags 승계)",
+    "[★자기 적대검증 ACCEPT — 자기 결론 정정] primary falsification 의 통제 전 통과(0.649, p 0.0005)는 **시장베타 교락**이다. 같은 예측표를 섹터 시장베타로 채점하면 0.822 로 더 잘 맞고(β_s 와 β^mkt 섹터평균 상관 +0.509), 시장성분을 제거한 β_s^⊥ 로 재검정하면 0.600·stride-12 0.571·p 0.0845 로 유의성을 잃는다. ⇒ '인플레 채널 확인' 주장 철회, INCONCLUSIVE 로 정정. 이 통제는 사전등록에 없었고 적대검증 라운드에서 추가된 것이다(a11_adversarial.R).",
     "[★인프라 결함 발견 — 본 패키지 결함 아님] schema.json ast_node 와 02_Infrastructure/ast/ast_verify.py 의 리프·연산자 방언이 갈라져 있다. ①리프: schema 는 {\"leaf\":\"<factor_id>\"} 를 정본으로 두는데(system prompt 예시·기존 v1.1 패키지 전부 이 형태) ast_verify 는 leaf 값을 *종류*(FIELD/REGISTRY/...)로 읽어 '알 수 없는 리프 종류'로 반려한다. ②연산자: schema enum 의 DIV_GUARD/CS_ZSCORE/CS_WINSORIZE/CS_NEUTRALIZE/CS_DEMEAN/TS_DELTA 가 ast_verify 의 DIV/ZSCORE/WINSORIZE/NEUTRALIZE/DEMEAN/DELTA 와 이름이 다르다. 실증: 기존 WT-D20260802_003 도 동일하게 FAIL_CONTRACT(leaf_count 1 에서 순회 중단). ALB-005/006 과 같은 계약 표면 분열 계통이며 ast_spec_gate 가 FAIL_CONTRACT 를 non-block 으로 둔 덕에 드러나지 않고 있었다. 본 패키지는 저장소 정본 방언(기존 패키지와 동일)을 따랐다."
   )
 )
@@ -249,9 +257,21 @@ val <- list(
   ),
   falsification_results = list(
     primary_beta_sign = list(hit_rate = 0.649, hit_rate_stride12 = 0.638, n = 1919L,
-      binom_p = 0.0005, ci95 = c(0.559, 0.712), threshold = 0.50, verdict = "PASS",
-      asymmetry = "음(-) 예측 5섹터 전건 통과 / 양(+) 예측은 철강 0.799·화학 0.732 만 통과, 에너지 0.434·상사자본재 0.105 반대",
-      per_sector = L$persec),
+      binom_p = 0.0005, ci95 = c(0.559, 0.712), threshold = 0.50,
+      naive_verdict = "PASS (통제 전)",
+      market_beta_confound_control = list(
+        motivation = "예측표의 음(-) 집합 = 저베타 방어섹터, 양(+) 집합 = 고베타 경기섹터. infl 이 경기와 동행하면 부호 패턴이 인플레 채널이 아니라 시장베타의 재진술일 수 있다.",
+        cor_beta_infl_vs_beta_mkt = AD$cor_beta_bmkt,
+        hit_rate_using_market_beta_instead = AD$hit_mkt,
+        hit_rate_using_infl_beta = AD$hit_infl,
+        reading_1 = "같은 예측표를 시장베타로 채점하면 0.822 로 인플레 β(0.649)보다 **더 잘 맞는다** — 대안 설명이 우세.",
+        orthogonalized = list(method = "r_s 를 벤치에 회귀해 잔차만 남긴 뒤 동일 창에서 Δinfl 민감도 재추정",
+                              hit_rate = AD$hit_orth, hit_rate_stride12 = AD$hit_orth_stride,
+                              binom_p = AD$binom_p_orth),
+        reading_2 = "시장중립화 후 0.600 / stride-12 0.571 / p 0.0845 → 5% 유의성 상실"),
+      verdict = "INCONCLUSIVE — 시장베타 교락. 통제 전 통과는 채널 확인 근거로 쓸 수 없다.",
+      asymmetry = "시장중립화 후에도 유틸 0.815·건강관리 0.809·철강 0.794 는 견고 / 에너지 0.410·상사자본재 0.066 은 예측 반대",
+      per_sector = L$persec, per_sector_orthogonalized = AD$per_sector_orth),
     F1_lag1 = list(retention_l0.5 = 0.84, retention_l1.0 = 1.20, threshold = 0.50, verdict = "PASS",
       caveat = "base 증분 자체가 비유의 — 통과의 정보량 낮음"),
     F2_beta_stability = list(flip_rate_predicted = 0.234, flip_rate_all = 0.209, threshold = 0.30,
