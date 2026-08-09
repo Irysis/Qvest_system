@@ -36,6 +36,28 @@ cat("=== 4. 양성 대조 — 진짜 미배정은 통과해야 한다 ===\n")
 chk("UNCLAIMED 문자열 -> 통과", can(list(id="Z", owner="UNCLAIMED — FQ-182 가 발행", status="frontier_open")))
 chk("미배정 문자열 -> 통과",   can(list(id="Z", owner="미배정 (WT-005 NP-2)", status="frontier_open")))
 
+cat("=== 4b. ★거울상 결함 재현 — 초판이 만든 false positive (FQ-164 실사고) ===\n")
+## 초판은 bare `도훈` 패턴 때문에 UNCLAIMED 항목을 'dohoon' 으로 오분류해 **착수를 막았다**.
+## ★양성 대조가 너무 쉬웠던 것이 원인 — "도훈" 이 안 들어간 문자열만 시험했다.
+fq164 <- list(id="FQ-164", status="frontier_open",
+  owner=paste0("UNCLAIMED — WT-D20260809_001 이 발행한 next_probe. 착수 세션은 이 필드를 ",
+               "'CLAIMED <session> <ts>' 로 먼저 갱신하고 시작할 것(세션 간 중복 착수 방지, 도훈 지시 2026-08-09)."))
+chk("★UNCLAIMED ∧ '도훈 지시' 부수언급 -> **통과**해야 한다", can(fq164),
+    paste("state =", claim_state(fq164)$state))
+chk("  (분류가 unclaimed 인가)", claim_state(fq164)$state == "unclaimed")
+## 출처 표기로서의 도훈 언급 여러 형태
+for (o in c("미배정 (도훈 mandate 2026-06-05 파생)",
+            "UNCLAIMED — 도훈 confirm 으로 신설된 축",
+            "미배정 — 도훈 지시 2026-07-13 소비면 전개")) {
+  e <- list(id="Z2", owner=o, status="frontier_open")
+  chk(sprintf("출처표기 도훈 '%s' -> 통과", substr(o,1,30)), can(e), paste("state =", claim_state(e)$state))
+}
+## 반대로 진짜 도훈 결정 대기는 여전히 차단
+for (o in c("dohoon_decision", "도훈 결정 대기 — 자본 게이트", "dohoon_confirm 대기")) {
+  e <- list(id="Z3", owner="", status=o)
+  chk(sprintf("진짜 도훈대기 '%s' -> 차단", substr(o,1,24)), !can(e), paste("state =", claim_state(e)$state))
+}
+
 cat("=== 5. ★알 수 없는 상태는 **안전측으로 차단** ===\n")
 chk("빈 owner -> 차단(unknown)", !can(list(id="W", owner="", status="")))
 chk("정체불명 문자열 -> 차단",  !can(list(id="W", owner="아무말", status="아무값")))

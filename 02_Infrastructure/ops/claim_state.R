@@ -39,11 +39,17 @@ claim_state <- function(entry) {
   own <- if (is.null(entry$owner)) "" else paste(entry$owner, collapse = " ")
   sts <- if (is.null(entry$status)) "" else as.character(entry$status)[1]
   blob <- paste(own, sts)
-  guess <- if (grepl("완료|COMPLETE|complete|done|resolved|established|closed|negative|refuted", blob)) "complete"
-           else if (grepl("CLAIMED|in_flight|in-flight|진행", blob) && !grepl("UNCLAIMED", blob)) "claimed"
-           else if (grepl("dohoon_decision|도훈", blob)) "dohoon"
-           else if (grepl("blocked|blocked_by|data_gate_closed", blob)) "blocked"
-           else if (grepl("UNCLAIMED|미배정", blob)) "unclaimed"
+  ## ★2026-08-09 수리 — 초판이 **거울상 결함**을 만들었다(FQ-164 false positive).
+  ##   owner="UNCLAIMED — ... **도훈 지시** 2026-08-09" 가 bare `도훈` 패턴에 걸려 'dohoon' 으로 오분류됐다.
+  ##   원인 2가지: ①명시 선언(UNCLAIMED)을 **부수 언급보다 나중에** 검사 ②`도훈` 패턴이 너무 넓음
+  ##     — 원장 전체가 "도훈 지시/mandate/confirm" 을 **출처 표기**로 쓴다. 상태 토큰은 `dohoon_decision` 뿐.
+  ##   ⇒ ①명시 선언을 **최우선** ②상태 토큰만 좁게 매칭.
+  ##   (같은 계통: [[feedback-identify-before-existence-check]] "수리가 새 오답을 낳는다")
+  guess <- if (grepl("^\\s*(UNCLAIMED|미배정)|\\bUNCLAIMED\\b|^\\s*미배정", blob)) "unclaimed"
+           else if (grepl("\\[COMPLETE\\]|완료|\\bdone\\b|resolved|established|closed|refuted|_negative", blob)) "complete"
+           else if (grepl("\\[CLAIMED\\]|\\bCLAIMED\\b|in_flight|in-flight", blob)) "claimed"
+           else if (grepl("dohoon_decision|dohoon_confirm|도훈 결정 대기|도훈 confirm 대기", blob)) "dohoon"
+           else if (grepl("blocked_by|blocked_until|data_gate_closed|^blocked", blob)) "blocked"
            else "unknown"
   list(state = guess, source = "inferred(레거시 — 선언 필드 부재)",
        session = NA_character_, ts = NA_character_, note = own,
