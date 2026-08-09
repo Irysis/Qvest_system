@@ -1,0 +1,70 @@
+{
+  "l_code": "L-AS-20260809_143328_35280",
+  "strategy_id": "STR_AS_20260809_143328_35280",
+  "grade": "B",
+  "core_reference": "Hurst R/S 지수(rolling 252일) 기반 스펙트럼 지속성: H>0.5 종목(추세 지속)을 long — 수익률 저주파 스펙트럼 질량 초과가 추세추종 알파의 이론적 근거 (Sepp & Lucic arXiv:2607.19497)",
+  "lesson_text": "SpectralPersistence_Hurst: 등급 B, 연복리 11.3% (벤치마크 대비 +0.9%p), 샤프 0.42. 근접 탈락 — 보강 후 재검증 후보. [실측재측정: essence C, PORT_t(NW) 0.42, metric_type=backtested]",
+  "tags": ["ALPHA_SEARCH", "FAST_VALIDATION", "VALIDATED_HARD_FAIL"],
+  "created_at": "2026-08-09",
+  "research_mode": "alpha_search",
+  "created_by": "AlphaSearch",
+  "metric_type": "backtested",
+  "construction_type": "momentum",
+  "lcode_schema_version": 2,
+  "cagr_pct": 11.35,
+  "sharpe": 0.531,
+  "mdd_pct": 63.79,
+  "excess_cagr": 0.86,
+  "mechanism_hypothesis": "가설 'Hurst R/S 지수(rolling 252일) 기반 스펙트럼 지속성: H>0.5 종목(추세 지속)을 long — 수익률 저주파 스펙트럼 질량 초과가 추세추종 알파의 이론적' — 검증 결과 지배 요인: FMT-01(MDD 63.8% > 45% — 선택 종목군의 위기 동반급락(구조적 꼬리위험)); FMT-04(MDD 63.8% > 35% & BM상관 0.73 >= 0.7 — 위기국면 동조 낙폭(국면필터 부재))",
+  "data_supported_conclusion": "측정치(proxy hurdle + 계약 실측 병기): CAGR 11.3% (BM 대비 +0.9%p), 샤프 0.42, MDD -63.8%, IR 0.04, 회전율 연 238%, OOS retention 0.73 | 실측(backtested): essence C, PORT_t(NW lag-3) 0.42, OOS_ret -0.87.",
+  "next_probe": "MDD 축 탈락(63.8%) — 신호력 보존 시 OVERLAY_CANDIDATE 라우트(국면/DD overlay는 S5/QEPM 단계) 또는 저변동 결합 재검증.",
+  "fmt_codes": [
+    "FMT-01",
+    "FMT-04"
+  ],
+  "oos_retention": -0.866,
+  "falsification_attempts": [
+    {
+      "test": "PIT 정적스캔(detect_lookahead)",
+      "result": "survived",
+      "effect_retained": 1,
+      "detail": "CLEAN — 위반 시 백테 중단 정책으로 emit 시점 통과 보장"
+    },
+    {
+      "test": "IS65/OOS35 활성SR retention (hurdle D062, proxy) — 과적합 반증 시도",
+      "result": "survived",
+      "effect_retained": 0.727,
+      "detail": "retention 0.73 (measurement-graduation §3 하한 0.5 기준)"
+    },
+    {
+      "test": "계약 실측 재검(essence v2, backtested)",
+      "result": "survived",
+      "effect_retained": -0.866,
+      "detail": "oos_retention -0.87 / DSR NA / hard_fail=FALSE"
+    }
+  ],
+  "proxy_metrics": {
+    "cagr_pct": 11.35,
+    "sharpe": 0.416,
+    "mdd_pct": 63.79,
+    "excess_cagr": 0.86,
+    "source": "run_hurdle_gate (proxy). excess_cagr는 계약 미산출 — 상단 excess_cagr도 proxy값 유지"
+  },
+  "portfolio_alpha_t": 0.421,
+  "authoritative": {
+    "essence_grade": "C",
+    "portfolio_alpha_t_nw_lag3": 0.421,
+    "oos_retention": -0.866,
+    "dsr": "NA",
+    "audit_integrity": "WARNING",
+    "selection_type": "chain",
+    "chain_qualification": {
+      "selection_operator": "none_single_run",
+      "iteration_reason_logged": true,
+      "is_only_selection": "not_applicable_single_run",
+      "holdout_single_view": "not_queried_by_this_script",
+      "note": "run_alpha_search 1회=1가설 1전략 단일 실행(sweep 아님). 반복 개선 체인의 IS-only 변형선택·holdout 1회 규약 준수는 호출자 책임 (measurement-graduation §3 chain 자격요건 — 미충족 시 sweep 재분류 대상)."
+    },
+    "source": "authoritative_remeasure.json"
+  }
+}

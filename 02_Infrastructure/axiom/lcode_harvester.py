@@ -380,14 +380,23 @@ def _check_promoted(l_code: str, project_dir: str) -> str | None:
 _MODE_ALIASES = {"qepm": "qepm_legacy"}  # lcode_schema.R LCODE_MODE_ALIASES 정합 (promote GEN 폴백 봉합)
 
 
-# 전략트리 아티팩트는 2개 스키마가 공존한다 (2026-07-25 실측):
+# 전략트리 아티팩트는 여러 스키마가 공존한다 (2026-07-25 실측 → 2026-08-09 3세대 확인):
 #   구(42건): l_code    / lesson      / verdict / factor_id      — 2026-03 QEPM 배치
 #   신(44건): l_code_id / lesson_text / grade   / core_reference
+#   3세대   : l_code_id / finding     / mechanism|mechanism_diagnosis / key_metrics
 # 종전 harvester 는 신 필드명만 읽어 구스키마를 lesson_text="" 로 만들었다.
+# ★2026-08-09 재발: 같은 결함이 3세대(`finding`)에서 그대로 다시 열렸다 — 이번 주 발행 45건 중
+#   4건이 lesson_text="" 로 수확됐다(corpus 전체 481건 중 공란 5건 = 이번 주가 4건).
+#   증상이 **오류가 아니라 빈 문자열**이라 L-code 는 정상 계상되는데 지식만 사라진다
+#   (corpus → knowledge_index → 주입면까지 공란이 전파 = 검색·회수 불가).
+#   ★고정 alias 목록은 emitter 스키마가 바뀔 때마다 같은 구멍을 다시 연다 —
+#   근본 방어는 아래 표가 아니라 `_assert_lesson_reachable()`(수확 후 공란율 감시)다.
 # 원본은 건드리지 않고 읽는 시점에만 canonical 필드로 투영한다 (원 필드도 그대로 남김).
+# alias 선택 근거 = 데이터 실측(2026-08-09): canonical 키가 빈 아티팩트 10건 중
+#   본문 보유 키는 finding 6 / mechanism 6 / title 8 — 의미상 lesson 의 직접 대응물은 finding.
 _LEGACY_FIELD_MAP = [
     ("l_code", ("l_code_id", "lcode")),
-    ("lesson_text", ("lesson", "text", "description")),
+    ("lesson_text", ("lesson", "text", "description", "finding")),
     ("grade", ("verdict",)),
     ("core_reference", ("factor_id",)),
     ("created_at", ("date",)),
