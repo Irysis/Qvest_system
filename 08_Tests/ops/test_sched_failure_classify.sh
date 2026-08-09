@@ -179,5 +179,12 @@ fi
 
 echo
 echo "════ test_sched_failure_classify: PASS=$PASS FAIL=$FAIL ════"
+# ★러너 집계용 요약 JSON — 이 줄이 없으면 run_all_hooks.sh 가 이 suite 를
+#   UNREPORTED(=1 fail)로 계상하고 **통과 건수는 통째로 사라진다**(러너 주석 실측:
+#   1/7 빈도로 27/0/27 ↔ 17/1/18). 즉 "등록했다"와 "집계된다"는 다른 사건이다.
+#   러너는 마지막 줄이 아니라 뒤에서부터 첫 유효 요약 JSON 을 집으므로 위치는 자유롭되
+#   반드시 한 줄 통째로 유효 JSON 이어야 한다.
+printf '{"test":"sched_failure_classify","pass":%d,"fail":%d,"total":%d}\n' \
+  "$PASS" "$FAIL" "$((PASS + FAIL))"
 [ "$FAIL" -eq 0 ] || exit 1
 exit 0
