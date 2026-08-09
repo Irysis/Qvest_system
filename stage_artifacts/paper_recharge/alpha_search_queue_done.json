@@ -734,7 +734,38 @@
       "frontier_registered": [
         "FQ-189",
         "FQ-190"
-      ]
+      ],
+      "correction_20260809_cell_placement": {
+        "measured_at": "2026-08-09",
+        "criterion": "논문 기준 non-micro = top-3,000 stocks AND top 90% of market cap. KR 상장사는 월중앙 ~1,970(최대 2,775)이라 top-3,000 은 비구속 ⇒ 구속 조건은 **전체 시장 누적시총 90% 밖 = micro** 하나.",
+        "micro_share_of_universe_pct": {
+          "no_liquidity_filter": {
+            "median": 19.17,
+            "p90": 40.75,
+            "max": 62.82
+          },
+          "with_liquidity_filter_2e8": {
+            "median": 17.46,
+            "p90": 37.15,
+            "max": 62.82
+          },
+          "months_with_zero_micro": "0 / 260"
+        },
+        "liquidity_filter_is_near_nonbinding": "월평균 7.2 종목만 제거(유니버스 312.6 -> 배포 305.4). K200∪KQ150 이 이미 유동성 상위라 **micro 노출을 걷어내는 장치가 사실상 없다**.",
+        "era_variation_pct_median": {
+          "2005-09": 20.37,
+          "2010-17": 28.19,
+          "2018-23": 6.29,
+          "2024-26": 11.7
+        },
+        "recent_spike": "2026-05~08 이 50.7~62.8% 로 급등. **관측이지 설명이 아니다** — 상장사 수가 2,550->2,760 으로 늘어 90% 컷오프가 이동한 영향 가능. 미확인.",
+        "CORRECTION": "★오늘 내가 원장·FQ-189/190·라운드 종료 기록에 쓴 '우리 설정은 논문의 최악 셀(7bp)에 **구조적으로** 놓인다' 는 **정정 대상**이다. 근거였던 '유니버스가 정의상 non-micro' 는 검증 없이 쓴 가정이었고, 실측은 260개월 **전부** 에서 일부가 micro 대역이라고 말한다. 함의 방향이 반대다 — 7bp 단일 셀이 아니라 7bp/26bp **혼합**이라면 기대 천장이 내가 적은 것보다 높다.",
+        "caveat_do_not_overclaim": "⚠이 컷은 **KR 시장 내부 상대 기준**이다. 'KR 하위 10% 시총' 이 논문의 US microcap 과 같은 절대 크기 대역이라는 뜻이 아니다. 논문 결론의 전이를 논하려면 **크기 대역 대응**부터 확인해야 한다 — 그 전에는 셀 배치를 확정하지 말 것.",
+        "artifacts": [
+          "stage_artifacts/FQ189_capfloor_20260809.csv",
+          "stage_artifacts/FQ189_capfloor_liq_20260809.csv"
+        ]
+      }
     }
   ],
   "schema_note": "processed = list of paper_id strings (set-like, paper 단위 dedup). records = 전체 시도 감사 로그(동일 paper에서 여러 factor 추출 시 factor_id로 구분). last_updated 갱신 의무.",
