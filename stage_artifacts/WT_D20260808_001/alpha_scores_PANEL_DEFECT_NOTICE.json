@@ -4,7 +4,6 @@
   "raised_at": "2026-08-09",
   "raised_by": "Q-Lead (적대검증 §5-1 지적 → 독립 재측정으로 확인)",
   "severity": "사전등록 고정 축 위반 — 소비 전 반드시 읽을 것",
-
   "defect": {
     "what": "발행 패널에 유동성 필터가 적용되지 않았다. `run_fq122_emit.R:11-28` 에 adv/liq 관련 코드가 없다.",
     "why_it_matters": "`preregistration_addendum.json::implementation_discipline_checks.hard_axes` 가 `adv>=2e8` 을 **'고정 축, 완화 제안 금지(INV-7)'** 로 명시한다. Production Constraints 의 유동성 축이며 배포 현실이 정의한 문제의 축이다 — 완화 대상이 아니다.",
@@ -21,26 +20,36 @@
     },
     "note_on_differing_figure": "적대검증 종합은 5.03%(4,376행)로 보고했다. 그쪽은 **측정 패널(82,566행)과의 차분**이고 이쪽은 **발행 패널에 필터 직접 적용**이라 서로 다른 양이다. 위반 존재는 두 측정이 일치하나 **수치를 같은 자로 읽지 말 것**."
   },
-
   "impact_scope": {
     "contaminated": "`alpha_package.json::diagnostics` 의 advisory 배터리(rank_ic · icir · monotonicity · harvey_t_stat · post_neutralization_ic · subperiod_stability)는 판정량과 **다른 유니버스**에서 산출됐고 그 사실이 무라벨이다.",
     "NOT_contaminated": "최신월 `alpha_vector` 25종 자체는 청정하다(전 종목 adv>=2e8, 최소 5.50e9). 결함은 벡터가 아니라 패널이다.",
     "downstream": "`stage_artifacts/WT_D20260808_001/risk/` 스크립트가 이 패널을 참조한다. ★단 본 WT 의 risk 단계는 **완료된 산출물이 없다**(risk_package.json 부재) — 완결된 하류 판정으로는 아직 전파되지 않았다."
   },
-
   "consumption_rule_until_repaired": [
     "①이 패널로 산출한 어떤 수치도 **자본 게이트 판정에 쓰지 말 것**.",
     "②진단 목적 소비는 허용하되 산출물에 `universe=no_liquidity_filter` 라벨을 **반드시 병기**하라.",
     "③판정 패널(eligible_set, adv>=2e8 적용)과의 대조 없이 두 패널 수치를 나란히 놓지 말 것 — 유니버스가 다르다.",
     "④수리 전까지 이 패널을 새 라운드의 base 로 승계하지 말 것."
   ],
-
   "repair_spec": {
     "owner": "alpha-research (WT-D20260808_001 소관 — Q-Lead 는 발행물 재작성 안 함)",
     "action": "`run_fq122_emit.R` 에 사전등록 eligible_set 정의(adv>=2e8)를 적용해 재발행하고, advisory 배터리를 재산출한다.",
     "must_not": "두 패널을 병존시키지 말 것 — 같은 관측치에 두 값이 조정 없이 공존하는 것이 이 라운드에서 이미 검거된 결함이다(F3 0.765 vs 0.709).",
     "verification": "재발행 후 본 파일의 measured_independently 절차를 재실행해 rows_failing_adv_2e8 == 0 을 확인할 것. 위반 주입(필터 제거판)으로 검사기 발화도 함께 보일 것."
   },
-
-  "provenance": "적대검증 워크플로 wf_73808a6b-a37 (렌즈 4 + 완전성 비판 + 종합) §5-1. 종합자와 완전성 비판이 독립적으로 지적했고, Q-Lead 가 세 번째로 직접 재측정해 확인."
+  "provenance": "적대검증 워크플로 wf_73808a6b-a37 (렌즈 4 + 완전성 비판 + 종합) §5-1. 종합자와 완전성 비판이 독립적으로 지적했고, Q-Lead 가 세 번째로 직접 재측정해 확인.",
+  "resolution_20260809": {
+    "status": "RESOLVED",
+    "resolved_by": "alpha-research · verification_followup_20260809 (run_fu_task4_emit_repair.R)",
+    "rows_before": 86942,
+    "rows_after": 82156,
+    "rows_removed": 4786,
+    "emitted_basis": "adv_contract(Vol0*Close0) >= 2e8 AND adv20_raw(frollmean 20d) >= 2e8",
+    "verification": "재발행판 자A 미달 0 · 자B(고지문 절차) 미달 0 · 결측 0 → CLEAN. 위반 주입(필터 제거판) → 자A 4376 · 자B 2875 미달로 VIOLATION 발화 = 검사 실효 확인.",
+    "superseded_panel": "stage_artifacts/WT_D20260808_001/alpha_scores_superseded_20260809.parquet",
+    "advisory_battery": "재산출 완료 — alpha_package.json::diagnostics (구 값은 diagnostics.superseded_20260808_pre_liquidity_repair 보존)",
+    "alpha_vector": "최신월 25종 불변 — 본 고지문의 'NOT_contaminated: 벡터는 청정' 주장 확인",
+    "correction_to_this_notice": "본 고지문의 note_on_differing_figure(3.31% vs 5.03% 를 '측정 패널과의 차분 vs 직접 적용' 으로 설명)는 **부정확하다**. 실측 결과 둘은 서로 다른 **유동성 자**의 산물이다: 자B(rawdata 20일 평균) 미달 2,875행 · 자A(계약 liq_dt = Vol0*Close0 월말 1일치) 미달 4,376행. 4,376 은 86,942 − 82,566(eligible_set 차분)과도 정확히 일치하는데 eligible_set 이 곧 자A 필터이기 때문이며, 두 설명은 모순이 아니라 같은 수를 다르게 부른 것이다.",
+    "newly_found": "★파생 발견: 판정 유니버스(eligible_set 82,566행) 자체도 Production Constraints 정의(20일 평균)로 재면 395행(0.478%)이 미달이고, **실제 선별된 top-25 중 224~225 종-월(3.04%)이 20일-ADV 2e8 미만**이다(92~96개월에 분포, 미달 종목 adv20 중앙 1.14e8, 최다 월 2003-03 16종). 즉 결함은 발행 패널에 국한되지 않고 판정 arm 의 유동성 축에도 닿아 있다. 이는 계약 함수의 라벨↔구현 불일치에서 오며 본 WT 가 단독 수리할 수 없다 — 인프라 상신 대상."
+  }
 }

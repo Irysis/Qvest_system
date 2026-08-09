@@ -1,0 +1,367 @@
+{
+  "wt_id": "WT-D20260809_004",
+  "fq_id": "FQ-173",
+  "as_of": "2026-08-09",
+  "metric_type": "canonical_screen",
+  "capital_claim": false,
+  "governor_invoked": false,
+  "vintage": {
+    "rawdata": {
+      "path": ".cache/rawdata.parquet",
+      "size": 422725995,
+      "mtime": "2026-08-09 12:13:41.89245"
+    },
+    "fred": {
+      "path": ".cache/fred_macro.parquet",
+      "size": 307827,
+      "mtime": "2026-08-08 01:03:51.646244"
+    },
+    "ecos": {
+      "path": ".cache/ecos_bond_rates.parquet",
+      "size": 169684,
+      "mtime": "2026-08-09 12:22:00.522179"
+    }
+  },
+  "measurement_order_followed": ["①검정력 바(a2)", "②사전등록(preregistration.json + amendment_1)", "③층 분해 F3(a5)", "④결합/스트레스/플라시보(a6)"],
+  "power_bar": {
+    "screen_sd_reference": 0.0394,
+    "required_annual_pct": {
+      "n284": 7.014,
+      "n246": 7.536,
+      "n209": 8.137
+    },
+    "port_t_2p95_required_annual_pct_n209": 12.06,
+    "confirmatory_external_sd": {
+      "lambda0.5": 0.0115053021910905,
+      "lambda1.0": 0.0167292898716688
+    },
+    "confirmatory_required_annual_pct": {
+      "lambda0.5": 2.3875151810182,
+      "lambda1.0": 3.47156753233247
+    },
+    "observed_over_required": {
+      "lambda0.5": 0.45810036130622,
+      "lambda1.0": 0.394250260977647
+    },
+    "verdict": {
+      "lambda0.5": "INCONCLUSIVE_BAR_RESTATES_T",
+      "lambda1.0": "INCONCLUSIVE_BAR_RESTATES_T"
+    }
+  },
+  "pit": {
+    "offset_scan": {
+      "offset_plus1_ic": 0.027,
+      "offset_plus1_t_nw3": 5.054,
+      "offset0_ic": 0.0989,
+      "offset0_t_nw3": 13.264,
+      "ratio": 2.62,
+      "reading": "same-day 컨센서스의 동시성 상관 실재. 본 라운드는 offset+1 만 소비."
+    },
+    "assert_overlay_pit": "5축 HARD PASS (T5YIE / KR_CPI·Copper M-2 / 성장팩터 / β_s / adv20)",
+    "violation_injection_test": "PASS — 컷오프를 홀딩월 시작 이후로 주입 시 검사기 발화 확인",
+    "adv_floor_on_emitted_panel": {
+      "min_adv20": 200300000,
+      "threshold": 200000000,
+      "pass": true
+    }
+  },
+  "falsification_results": {
+    "primary_beta_sign": {
+      "hit_rate": 0.649,
+      "hit_rate_stride12": 0.638,
+      "n": 1919,
+      "binom_p": 0.0005,
+      "ci95": [0.559, 0.712],
+      "threshold": 0.5,
+      "verdict": "PASS",
+      "asymmetry": "음(-) 예측 5섹터 전건 통과 / 양(+) 예측은 철강 0.799·화학 0.732 만 통과, 에너지 0.434·상사자본재 0.105 반대",
+      "per_sector": [
+        {
+          "Sector": "통신서비스",
+          "hit_rate": 0.894736842105263,
+          "n": 209,
+          "mean_beta": -0.0346081903166427,
+          "pred": -1
+        },
+        {
+          "Sector": "건강관리",
+          "hit_rate": 0.851674641148325,
+          "n": 209,
+          "mean_beta": -0.0164409389760828,
+          "pred": -1
+        },
+        {
+          "Sector": "유틸리티",
+          "hit_rate": 0.835616438356164,
+          "n": 146,
+          "mean_beta": -0.0277126729277989,
+          "pred": -1
+        },
+        {
+          "Sector": "철강",
+          "hit_rate": 0.799043062200957,
+          "n": 209,
+          "mean_beta": 0.026086734788606,
+          "pred": 1
+        },
+        {
+          "Sector": "화학",
+          "hit_rate": 0.732057416267943,
+          "n": 209,
+          "mean_beta": 0.00749582009295094,
+          "pred": 1
+        },
+        {
+          "Sector": "소프트웨어",
+          "hit_rate": 0.674846625766871,
+          "n": 163,
+          "mean_beta": -0.00382592612390014,
+          "pred": -1
+        },
+        {
+          "Sector": "비철,목재등",
+          "hit_rate": 0.550239234449761,
+          "n": 209,
+          "mean_beta": 0.005055874591922,
+          "pred": 1
+        },
+        {
+          "Sector": "미디어,교육",
+          "hit_rate": 0.524038461538462,
+          "n": 208,
+          "mean_beta": -0.00731785397476814,
+          "pred": -1
+        },
+        {
+          "Sector": "에너지",
+          "hit_rate": 0.434146341463415,
+          "n": 205,
+          "mean_beta": -0.00132829415987487,
+          "pred": 1
+        },
+        {
+          "Sector": "상사,자본재",
+          "hit_rate": 0.105263157894737,
+          "n": 152,
+          "mean_beta": -0.0178479882897896,
+          "pred": 1
+        }
+      ]
+    },
+    "F1_lag1": {
+      "retention_l0.5": 0.84,
+      "retention_l1.0": 1.2,
+      "threshold": 0.5,
+      "verdict": "PASS",
+      "caveat": "base 증분 자체가 비유의 — 통과의 정보량 낮음"
+    },
+    "F2_beta_stability": {
+      "flip_rate_predicted": 0.234,
+      "flip_rate_all": 0.209,
+      "threshold": 0.3,
+      "verdict": "PASS",
+      "overlapping_window_evidence": "예측 섹터 β 평균 t: NW60(정본) vs NW3(오용) = 화학 3.14/5.06 · 철강 3.43/7.97 · 상사자본재 -4.38/-9.63 · 통신 -3.52/-7.59 (1.6~2.3배 부풀림)"
+    },
+    "F3_attribution": {
+      "tilt_alone_port_t": {
+        "A0_base_random": -1.039,
+        "A_l0.5": -0.889,
+        "A_l1.0": -1.163,
+        "seed_sd": [0.471, 0.525, 0.325],
+        "n_seeds": 20
+      },
+      "increment_c_minus_b": {
+        "l0.5": {
+          "annual_pct": 1.094,
+          "t_nw3": 1.07,
+          "sd_monthly": 0.0109
+        },
+        "l1.0": {
+          "annual_pct": 1.369,
+          "t_nw3": 0.98,
+          "sd_monthly": 0.0156
+        }
+      },
+      "structure_cost_b_minus_r0": {
+        "annual_pct": -2.986,
+        "t_nw3": -1.35
+      },
+      "verdict": "틸트 단독 무효 ∧ 증분 비유의 → 인플레 층 제외, 종목선택 알파로 재라벨 (사전등록 규칙 그대로)"
+    },
+    "F4_placebo": {
+      "block_judged": 12,
+      "draws": 200,
+      "l0.5": {
+        "observed_annual_pct": 1.094,
+        "placebo_mean": 0.229479311152685,
+        "placebo_sd": 0.988412906695593,
+        "percentile": 80.5,
+        "p95": 1.7962986274946
+      },
+      "l1.0": {
+        "observed_annual_pct": 1.369,
+        "placebo_mean": 0.455543301027754,
+        "placebo_sd": 1.60830439429845,
+        "percentile": 71,
+        "p95": 3.1543634803033
+      },
+      "block_sensitivity_diagnostic_only": {
+        "b6_pct": 79,
+        "b24_pct": 82
+      },
+      "verdict": "95분위 미달 — 단 검정력 조건 미충족이라 '기각' 라벨 미발동 (INCONCLUSIVE)"
+    }
+  },
+  "arms_common_window_209m": {
+    "window": "2009-03-31 ~ 2026-07-31 (β_s burn-in 구속)",
+    "R0_growth_only": {
+      "port_t": 1.746,
+      "p": 0.0807,
+      "ir": 0.464,
+      "alpha_ann": 0.0841,
+      "net_sr": 0.464,
+      "to": 14.21
+    },
+    "B_lambda0": {
+      "port_t": 1.09,
+      "ir": 0.266,
+      "alpha_ann": 0.0668,
+      "to": 15.2
+    },
+    "C_combined_l0.5": {
+      "port_t": 1.299,
+      "ir": 0.328,
+      "alpha_ann": 0.0776,
+      "to": 15.21
+    },
+    "C_combined_l1.0": {
+      "port_t": 1.399,
+      "ir": 0.363,
+      "alpha_ann": 0.0788,
+      "to": 14.89
+    },
+    "Craw_literal_l0.5": {
+      "port_t": 1.062
+    },
+    "Craw_literal_l1.0": {
+      "port_t": 1.066
+    },
+    "no_argmax": "어떤 arm 도 챔피언으로 승격하지 않음. selection_type = diagnostic_no_argmax."
+  },
+  "layer3_full_window_284m": {
+    "window": "2002-12-30 ~ 2026-07-31 · ★공통창 수치와 병렬 비교 금지",
+    "port_t": 2.479,
+    "ir": 0.558,
+    "alpha_ann": 0.0838,
+    "net_sr": 0.558,
+    "to": 13.55
+  },
+  "dual_basis_diagnostic": {
+    "binding": false,
+    "metric_type": "canonical_screen_diag",
+    "ew_universe_common_window": {
+      "R0": 3.001,
+      "B": 2.505,
+      "C_l0.5": 2.697,
+      "C_l1.0": 2.621
+    },
+    "ew_universe_post2017_t": {
+      "R0": 1.63,
+      "B": 1.65,
+      "C_l0.5": 1.05,
+      "C_l1.0": 0.95
+    },
+    "ew_universe_oos_approx": {
+      "R0": 0.549,
+      "B": 0.964,
+      "C_l0.5": 0.686,
+      "C_l1.0": 0.833
+    },
+    "ew_universe_full_window_R0": {
+      "port_t": 3.126,
+      "post2017_t": 1.63,
+      "oos_approx": 0.642
+    },
+    "cap_tier_weight_share": {
+      "MEGA": 0.04,
+      "MID": 0.055,
+      "OTHER": 0.906,
+      "basis": "R0 공통창"
+    },
+    "label": "cap-w FAIL ∧ EW-대비 생존 → v8.3 M2 '벤치 구성 미스매치 가능' 라벨. 판정 권위는 cap-w 불변."
+  },
+  "advisory_battery": {
+    "rank_ic_full": 0.0270018626051321,
+    "icir_full": 0.297863605670395,
+    "t_nw3_full": 5.05377064450108,
+    "rank_ic_common": 0.0238510721020478,
+    "t_nw3_common": 3.93211276859671,
+    "subperiod": [
+      {
+        "per": "2003-2014",
+        "ic": 0.0406059960997204,
+        "t": 5.2177595889749,
+        "n": 145
+      },
+      {
+        "per": "2015-2019",
+        "ic": 0.0101594517386831,
+        "t": 1.12337845028915,
+        "n": 60
+      },
+      {
+        "per": "2020-2026",
+        "ic": 0.0148239549503427,
+        "t": 1.62862518338599,
+        "n": 79
+      }
+    ],
+    "monotonicity": 0.76969696969697,
+    "decile_d10_minus_d1_annual_pct": 10.61,
+    "post_neutral_ic": 0.0209030511285549,
+    "post_neutral_retention": 0.774133674933298,
+    "pairwise_spearman": {
+      "C01_C02": 0.074,
+      "C01_M26": 0.058,
+      "C02_M26": 0.178
+    }
+  },
+  "hard_gate_status": {
+    "port_t_2p95": "FAIL (max 2.479, 층3 전창 cap-w)",
+    "oos_retention": "alpha 단계 미산출 — forge-authoritative. 진단 근사(EW-basis) 0.549~0.964",
+    "calmar": "alpha 단계 미산출 — forge-authoritative",
+    "conclusion": "graduation 미충족. 상신 자격 없음. 자본 자격 주장 없음."
+  },
+  "next_probes": [
+    {
+      "id": "NP-1",
+      "probe": "층3 단독(성장 합성)을 cap-w 가 아니라 EW-유니버스 기준으로 재판정 — R0 가 3.00~3.13 으로 문턱을 넘고 보유의 91%가 OTHER tier 다. cap-tier 조건부 재분류(MID/OTHER 국소화)가 진짜 알파인지 벤치 아티팩트인지 분리.",
+      "owner": "open"
+    },
+    {
+      "id": "NP-2",
+      "probe": "감쇠 진단: 성장 합성 IC 가 2015 이후 1/4 로 축소. 컨센서스 커버리지 확대(월평균 커버 724→2629)가 원인인지, 재료 소진인지 — 커버리지-정합 부분표본으로 분리.",
+      "owner": "open"
+    },
+    {
+      "id": "NP-3",
+      "probe": "인플레 틸트의 부활 조건: 본 라운드는 '무효'가 아니라 '미확립'(관측/필요 0.39~0.46). 검정력을 얻는 경로 = ①창 확장(β burn-in 을 36→24 로 낮춰 +36개월) ②증분 분산 축소(정원 대신 종목-레벨 β_i 랭킹 = 승계 후보 3) ③사건 조건부(월<-10% 등 심한 국면에서만 — 라벨 자격은 사건 정의에 조건부라는 2026-08-08 실측).",
+      "owner": "open"
+    },
+    {
+      "id": "NP-4",
+      "probe": "β_s 패널 자체의 소비면: 예측 부호 일치율 0.649·부호 안정 0.234 로 β_s 는 실재하는 섹터 민감도 지도다. 선택 알파로는 실패했으나 ①위험모델 섹터 노출 예산 ②오버레이 입력 ③유니버스 필터 면에서 미측정 — FQ 등재 대상.",
+      "owner": "open"
+    },
+    {
+      "id": "NP-5",
+      "probe": "C01_SUE 를 dedup canonical C05_ESCR 로 교체한 3종 합성 재측정 (DUPC-005 redundant 해소).",
+      "owner": "open"
+    },
+    {
+      "id": "NP-6",
+      "probe": "양(+) 예측 실패 2섹터(에너지 β≈0·상사자본재 β<0) 의 기전 진단 — KR '에너지' 섹터는 정유(원가=원유)라 전가력이 아니라 재고효과가 지배할 수 있다. 채널 재정식화 후보.",
+      "owner": "open"
+    }
+  ]
+}
