@@ -19,7 +19,7 @@ IN3 <- file.path(ROOT, "stage_artifacts/WT_D20260808_003")
 say <- function(fmt, ...) cat(sprintf(paste0("[np-a sa] ", fmt, "\n"), ...))
 source("02_Infrastructure/config.R")
 source("02_Infrastructure/factor_db/factor_db_connector.R")
-set.seed(20260809L)
+set.seed(20260809L); setDTthreads(2L); Sys.setenv(OMP_NUM_THREADS = "2")
 
 SPN <- readRDS(file.path(OUT, "signal_panel_neutral.rds"))
 P0  <- readRDS(file.path(IN3, "p0_panels.rds")); P1p <- readRDS(file.path(IN3, "prereg_p1.rds"))
@@ -93,31 +93,28 @@ for (arm in c("raw","neutral")) for (wn in c("full","post2015")) {
       arm, wn, r$ann_pct, r$acf_r1, r$t_nw3, r$t_nw12, r$n) }
 S$SA2_book7_pooled <- p7
 
-# ── SA-3: 방향 정렬 뒤집힘 census ───────────────────────────────────────────
-say("=== SA-3: Z_Score_Aligned 방향 전환 census (전환 있으면 '최상위 분위' 의미가 변한다) ===")
-SIGD <- sort(unique(P0$E$Date))
-probe <- SIGD[seq(1, length(SIGD), by = 6)]   # 6개월 간격 표본 (49개월)
-FDB8 <- setdiff(unique(SPN$Factor_Name), c("D03_EWMA","Q01_EB"))
-ref <- NULL; flips <- list()
-for (dd in probe) {
-  fm <- tryCatch(load_month_factors(dd, coverage_min = 0.0, factor_names = FDB8), error = function(e) NULL)
-  if (is.null(fm)) next
-  raw <- tryCatch(as.data.table(arrow::read_parquet(
-      file.path(FACTOR_DB_DIR, sprintf("factor_db_%s.parquet", format(dd, "%Y%m"))),
-      col_select = c("Ticker","Factor_Name","Z_Score")))[Factor_Name %in% FDB8], error = function(e) NULL)
-  if (is.null(raw)) next
-  m <- merge(as.data.table(fm), raw, by = c("Ticker","Factor_Name"))
-  sg <- m[, .(sgn = sign(cor(Z_Score_Aligned, Z_Score, method = "spearman"))), by = Factor_Name]
-  sg[, Date := dd]; flips[[as.character(dd)]] <- sg
-}
-FL <- rbindlist(flips)
-fl_tab <- FL[, .(n_probe = .N, n_negative_alignment = sum(sgn < 0),
-                 n_switch = sum(diff(sgn) != 0)), by = Factor_Name][order(-n_switch)]
-print(fl_tab)
-say("  ★ 방향 전환이 있는 신호: %s",
-    if (nrow(fl_tab[n_switch > 0])) paste(fl_tab[n_switch > 0]$Factor_Name, collapse=", ") else "없음")
-S$SA3_direction_flips <- list(table = fl_tab, n_probe_months = uniqueN(FL$Date),
-  note = "Z_Score_Aligned vs 원 Z_Score 의 월별 Spearman 부호. 전환 = 최상위분위의 의미 변화 위험")
+# ── SA-3: 방향 전환 census — **커넥터 산출물만으로** (C15 우회 금지) ────────
+#   원 설계는 factor DB parquet 을 직접 읽어 Z_Score 대비 부호를 보려 했으나 그것은 C15 우회다
+#   (커넥터가 Raw_Value/Z_Score 를 반환하지 않는다). 설계를 바꾼다:
+#   방향이 뒤집히면 **정렬 점수의 월-대-월 횡단면 rank 상관이 강한 음수**로 나타난다.
+#   커넥터 산출물(Z_Score_Aligned)만으로 관측 가능하며 우회가 없다.
+say("=== SA-3: 방향 전환 census — 정렬점수의 월-대-월 rank 상관 (커넥터 산출물만) ===")
+flip_tab <- rbindlist(lapply(sort(unique(SPN$Factor_Name)), function(fn) {
+  d <- SPN[Factor_Name == fn & is.finite(z), .(Date, Ticker, z)]
+  dts <- sort(unique(d$Date))
+  rho <- sapply(seq_along(dts)[-1], function(i) {
+    a <- d[Date == dts[i-1], .(Ticker, r0 = z)]; b <- d[Date == dts[i], .(Ticker, r1 = z)]
+    m <- merge(a, b, by = "Ticker"); if (nrow(m) < 30L) NA_real_ else cor(m$r0, m$r1, method = "spearman") })
+  rho <- rho[is.finite(rho)]
+  data.table(signal = fn, n_pair = length(rho), median_rho = median(rho), min_rho = min(rho),
+             n_rho_neg = sum(rho < 0), n_rho_below_m05 = sum(rho < -0.5)) }))[order(min_rho)]
+print(flip_tab)
+n_flip_sig <- nrow(flip_tab[n_rho_below_m05 > 0])
+say("  ★ 방향 전환 의심(월-대-월 rho < -0.5 발생) 신호: %d / %d — %s", n_flip_sig, nrow(flip_tab),
+    if (n_flip_sig) paste(flip_tab[n_rho_below_m05 > 0]$signal, collapse = ", ") else "없음")
+S$SA3_direction_flips <- list(table = flip_tab, n_signals_with_flip_signature = n_flip_sig,
+  method = "커넥터 산출 Z_Score_Aligned 의 월-대-월 횡단면 Spearman. C15 직접-read 우회 없음",
+  design_change_note = "원 설계(factor DB parquet 직접 read 로 Z_Score 대비 부호)는 C15 우회라 폐기하고 설계를 바꿨다")
 
 # ── SA-5: 검정 수 ───────────────────────────────────────────────────────────
 S$SA5_test_count <- list(cells = 16L, per_signal_gap_tests = 160L, pooled_tests = 16L,

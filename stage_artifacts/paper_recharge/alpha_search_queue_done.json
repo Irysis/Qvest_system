@@ -446,8 +446,53 @@
         "dohoon_triage: KR 종목별 LSTM 수익 예측이 M18_IndustrMom과 실질 다른 잔차 신호(cor < 0.8)를 산출하면 D1 EV 탈출 가능 — sector embedding 대신 KR 가용 특성(재무/시장) 기반 LSTM 시도"
       ],
       "session_note": "AS-20260808 큐소비자 런 2/2 — M18_IndustrMom DB 거주 확인(DIST-QPM-027 + STR_1692 FAIL). IndustrySectorMomentum_LSTM_partial = M18 동치 신호 공간. S&P500 long-short 구조·섹터임베딩 = batch_434(KR long-only 이식 불가). EV_D1_GATED, 백테 실행 없음."
+    },
+    {
+      "paper_id": "2608.05755",
+      "paper_title": "Cross-Sectional Heterogeneity in LSTM Networks for Financial Time Series",
+      "factor_id": "within_sector_reversal",
+      "factor_name": "섹터-중립 단기역전 (r_{i,t-1} - mean_sector_{r,t-1})",
+      "fq_id": "within_sector_reversal_20260809",
+      "strategy_id": "STR_AS_20260809_123327_46908",
+      "gate_decision": "QUARANTINE",
+      "gate_failed_layers": "L3_robustness",
+      "port_t": -0.0715,
+      "oos_retention": -0.491,
+      "calmar": 0.0697,
+      "mdd": 60.43,
+      "grade": "F",
+      "score": 0,
+      "sharpe": 0.147,
+      "cagr": 4.21,
+      "ic_mean": 0.0271,
+      "icir": 0.226,
+      "ic_pos_rate": 0.574,
+      "fmb_nw_t": 1.013,
+      "ff3_alpha_annual_pct": -3.48,
+      "ff3_alpha_tstat": -1.21,
+      "processed_date": "20260809",
+      "verify_path": "stage_artifacts/paper_recharge/auto_verify_within_sector_reversal_20260809.json",
+      "quarantine_reason": "PORT_t=-0.07 << 2.95(음수). OOS retention=-0.49 << 0.5 FAIL. Calmar=0.070 << 0.64 HARD. MDD 60.4%(구조적 낙폭). 알파 트렌드 감쇠(ratio -1.10). 섹터-중립 선형 처리가 고변동 구간 비선형 동조 제거 불가. long-only 포트에서 MDD 구조 해소 못함.",
+      "mechanism_diagnosis": "섹터-중립화(선형 차감) 후 종목-specific 역전 신호 IC=+0.027(pos_rate 57.4%)로 방향성 존재. 그러나 급락 구간 비선형 동조 미제거 — COVID alpha -3.5%/Rate alpha -0.4%. FMB NW_t=1.01: 횡단면 long 프리미엄 미유의(short-leg 신호 본질 시사). 고회전(968%/yr) + 15bps 비용 부담. 최근 3Y 감쇠(ratio -1.10). 2017+ KR 시장 구조 변화로 역전 효과 약화.",
+      "consumer_surfaces_checked": [
+        "1팩터랭킹: QUARANTINE (PORT_t 음수, FMB t=1.01 비유의)",
+        "2유니버스필터: 미측정",
+        "3오버레이: 미측정",
+        "4위험모델: beta≈0.92 공유 구조",
+        "5monitoring: 미설정",
+        "6선별라벨: 미설정",
+        "7타모드이식: FQ-168 오버레이 리스크 신호 소비 후보"
+      ],
+      "next_probe": [
+        "FQ-167: 섹터-중립 역전 + 저변동 국면 조건부 (3분위 하단 한정 적용) — MDD 개선 여부 실측",
+        "FQ-168: 섹터 내 역전 스코어 하위 25% → long 축소 오버레이 리스크 신호 소비"
+      ],
+      "notable": true,
+      "paper_exhausted": false,
+      "paper_exhausted_note": "2608.05755 factor 2회 시도(IndustrySectorMomentum EV_D1_GATED + within_sector_reversal QUARANTINE). 논문 내 추가 신호 미소진.",
+      "session_note": "AS-20260809 큐소비자 런 1/2 — 이전 세션(12:40)에서 실행 완료, 현 세션 done 원장 기입. L3 robustness FAIL, L5 gate QUARANTINE 확정(auto_quarantine_20260809.json)."
     }
   ],
   "schema_note": "processed = list of paper_id strings (set-like, paper 단위 dedup). records = 전체 시도 감사 로그(동일 paper에서 여러 factor 추출 시 factor_id로 구분). last_updated 갱신 의무.",
-  "last_updated": "20260808"
+  "last_updated": "20260809"
 }
