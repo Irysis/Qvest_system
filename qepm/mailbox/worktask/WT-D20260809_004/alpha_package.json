@@ -54,29 +54,30 @@
   },
   "factors": [
     {
-      "factor_id": "F1_growth_consensus_composite",
+      "factor_id": "C01_SUE",
       "role": "core_signal",
       "ast": {
-        "op": "DIV_GUARD",
-        "args": [
-          {
-            "op": "ADD",
-            "args": [
-              {
-                "leaf": "C01_SUE"
-              },
-              {
-                "leaf": "C02_EPS_Chg_1m"
-              },
-              {
-                "leaf": "M26_Revenue_Mom"
-              }
-            ]
-          },
-          3
-        ]
+        "leaf": "C01_SUE"
       },
-      "note": "리프는 load_month_factors 의 Z_Score_Aligned (C13 방향정렬·C15 관문 경유). 동일가중 고정, 스윕 없음.",
+      "note": "load_month_factors 의 Z_Score_Aligned (C13 방향정렬·C15 관문). 동일가중 결합, 스윕 없음.",
+      "restatement_exposure": 0
+    },
+    {
+      "factor_id": "C02_EPS_Chg_1m",
+      "role": "core_signal",
+      "ast": {
+        "leaf": "C02_EPS_Chg_1m"
+      },
+      "note": "동일",
+      "restatement_exposure": 0
+    },
+    {
+      "factor_id": "M26_Revenue_Mom",
+      "role": "core_signal",
+      "ast": {
+        "leaf": "M26_Revenue_Mom"
+      },
+      "note": "동일",
       "restatement_exposure": 0
     },
     {
@@ -108,8 +109,8 @@
       "restatement_exposure": 0
     }
   ],
-  "combination_rule": "model_internal",
-  "combination_rule_detail": "α̂(종목) = F1 (Z_Score_Aligned 3종 동일가중 평균). 조립층(포트폴리오 구성 규칙, alpha 산출 밖): w_s ∝ base_s·exp(λ·β̃_s,t·infl_t) → n_s = largest-remainder(25·w_s) → 섹터 내 F1 상위 n_s. enum 5종 중 어느 것도 '섹터 정원 + 섹터 내 상위'를 표현하지 못해 model_internal 로 선언한다 (z_score_aligned_* 는 종목-레벨 선형 결합 전제).",
+  "combination_rule": "z_score_aligned_equal_weight",
+  "combination_rule_detail": "α̂(종목) = mean(Z_Score_Aligned: C01_SUE, C02_EPS_Chg_1m, M26_Revenue_Mom) — 동일가중 고정, 스윕 없음. ★조립층은 alpha 산출 밖이다: 본 라운드가 측정한 포트폴리오 구성 규칙 w_s ∝ base_s·exp(λ·β̃_s,t·infl_t) → n_s = largest-remainder(25·w_s) → 섹터 내 α̂ 상위 n_s 는 combination_rule enum 5종 어디에도 없다(전부 종목-레벨 결합 전제). 그 층은 F3 귀속 판정에서 **알파 기여 미확립**으로 나왔으므로 α̂ 정의에 포함하지 않고 factors[] 의 conditioner 역할과 alpha_validation.json arms 절에 실측으로만 남긴다.",
   "verdict": "designed",
   "self_pit_check": {
     "performed": true,
@@ -931,5 +932,5 @@
     "alpha_discovery_count": 1
   },
   "selection_objective": "canonical_port_t",
-  "challenge_flags": ["[F3 귀속 — 사전등록 규칙 발동] 틸트 단독 arm(A, 섹터 내 무작위 20시드) PORT_t 평균 -0.889(λ=0.5)/-1.163(λ=1.0), 짝 통제 A0 -1.039 → 인플레 틸트 단독 알파 없음. 결합-종목선택 증분 +1.094%/yr(t 1.07)·+1.369%/yr(t 0.98) 비유의, 플라시보 백분위 80.5%/71.0%(95분위 미달). ⇒ **결합 성과를 인플레 층에 귀속 금지. 알파는 종목선택(층3) 것이다.**", "[★검정력 라벨 — 소비면 종료 근거 아님] 층-증분의 관측/필요 비 = 0.46(λ=0.5)/0.39(λ=1.0), verdict_with_power = INCONCLUSIVE_BAR_RESTATES_T (implied_t 2.34/2.50 = t 검정 재진술 구간). FQ-172 비대칭 규약에 따라 '인플레 층 기각' 라벨을 발동하지 않는다 — config-scoped 미확립이며 부활 조건은 next_probes 참조.", "[HARD 미달] canonical PORT_t 2.479(층3 전창) / 1.746(층3 공통창) / 1.399(결합 λ=1.0 공통창) 전건 < 2.95. 자본 자격 주장 없음 — 상신 자격도 미충족.", "[★설계 스케일 수정 — No Silent Override 고지] 승계 가설의 문자 그대로의 exp(λ·β_s·infl) 는 λ∈{0.5,1.0} 에서 산술적으로 불활성(25슬롯 중 교체 0인 달 60.8~65.6%). 판정판을 scale-only 정규화 β/sd 로 고정하고(부호 보존율 1.0000) 문자 그대로 판도 병기 측정(PORT_t 1.062/1.066, 증분 -0.05%/yr). 근거·전후 수치 = prereg_amendment_1.json. 승계 mechanism/falsification/regime_scope 는 무수정.", "[★진단 오용 자가 적발·수리] 초판은 scores_dt 에 선택 25종만 실어 canonical 의 diag_ew_universe 벤치가 포트 자신의 gross 가 됐다(active = -비용 → PORT_t -53~-66). 전-유니버스 점수판으로 수리, cap-w 본판정 parity 차 0.00e+00 확인. 수리 후 EW-유니버스 진단 = R0 +3.001 / B +2.505 / C_l0.5 +2.697 / C_l1.0 +2.621 (공통창), R0 전창 +3.126.", "[★dual-basis 라벨] cap-w(권위)에서는 전건 HARD 미달이나 EW-유니버스 진단에서는 R0 가 3.00~3.13 으로 2.95 를 넘는다. cap-tier 분해상 보유의 91%가 OTHER(31위 밖)이라 v8.3 M2 가 문서화한 **cap-w 벤치 구성 미스매치** 형태에 정확히 해당한다. 진단은 비바인딩 — 판정은 cap-w 유지하되 screen_route 재분류 검토 대상으로 부기.", "[감쇠] 성장 합성 IC 부기간: 2003-2014 0.0406(t 5.22) → 2015-2019 0.0102(t 1.12) → 2020-2026 0.0148(t 1.63). post2017 EW-대비 t 1.63. 전창 우세가 초기 구간에 집중된다.", "[구조 손실] 섹터 정원 구조 자체(B − R0)가 -2.986%/yr (t -1.35). 즉 '섹터 대표성 배분'은 top-25 성장 단순 선별 대비 비용이며, 틸트가 그 중 1.1~1.4%p 를 되돌리는 형태다. 논문식 섹터-우선 구조가 KR 25종 제약에서 불리하다는 실측.", "[RF-A2 유사] composite(결합 설계)가 baseline(R0 단순 top-25) 대비 개선이 아니라 **악화**(1.399 vs 1.746). Red Flag 규칙의 '개선 <5%' 보다 강한 형태 — 조립층을 알파 근거로 쓸 수 없다.", "[창 불일치 고지] 결합 arm 공통창 = 209개월(2009-03~2026-07, β_s burn-in 구속). 승계 설계 문서의 '2003~ 280개월'은 T5YIE 원계열 기준이었고 expanding z 36개월 + β 36개월 burn-in 을 반영하면 실제 창은 이렇게 짧다. 헌법 고정창 2005~ 와도 다르다.", "[컨센서스 same-day] 3종 전부 lag_rule 'Date <= sig_d'. offset 스캔 t0/t1 = 2.62 (13.264 vs 5.054) — 동시성 상관이 실재하므로 이 계열을 쓰는 후속 라운드는 반드시 forward 정렬을 실증할 것.", "[C01_SUE 중복] registry dedup 상 C01_SUE = DUPC-005 redundant(canonical C05_ESCR, cor 0.990). 3종 pairwise Spearman 은 낮으나(C01~C02 0.074·C01~M26 0.058·C02~M26 0.178) 동일 클러스터 canonical 로의 교체가 next_probe 대상.", "[유동성 근사] 본 라운드는 20거래일 평균 mean(Close*Vol) 을 adv 로 썼다(repo 표준 canonical 경로의 단일일 Vol0*Close0 근사보다 엄격). 두 정의의 차이는 미측정 — 비교 인용 시 정의 라벨 확인 필요.", "[대안 보관 — 승계] 종목-레벨 β_i 직접 랭킹 / 오버레이 소비면 / KR_CPI 단독 단순판 (alpha_hypothesis.json challenge_flags 승계)"]
+  "challenge_flags": ["[F3 귀속 — 사전등록 규칙 발동] 틸트 단독 arm(A, 섹터 내 무작위 20시드) PORT_t 평균 -0.889(λ=0.5)/-1.163(λ=1.0), 짝 통제 A0 -1.039 → 인플레 틸트 단독 알파 없음. 결합-종목선택 증분 +1.094%/yr(t 1.07)·+1.369%/yr(t 0.98) 비유의, 플라시보 백분위 80.5%/71.0%(95분위 미달). ⇒ **결합 성과를 인플레 층에 귀속 금지. 알파는 종목선택(층3) 것이다.**", "[★검정력 라벨 — 소비면 종료 근거 아님] 층-증분의 관측/필요 비 = 0.46(λ=0.5)/0.39(λ=1.0), verdict_with_power = INCONCLUSIVE_BAR_RESTATES_T (implied_t 2.34/2.50 = t 검정 재진술 구간). FQ-172 비대칭 규약에 따라 '인플레 층 기각' 라벨을 발동하지 않는다 — config-scoped 미확립이며 부활 조건은 next_probes 참조.", "[HARD 미달] canonical PORT_t 2.479(층3 전창) / 1.746(층3 공통창) / 1.399(결합 λ=1.0 공통창) 전건 < 2.95. 자본 자격 주장 없음 — 상신 자격도 미충족.", "[★설계 스케일 수정 — No Silent Override 고지] 승계 가설의 문자 그대로의 exp(λ·β_s·infl) 는 λ∈{0.5,1.0} 에서 산술적으로 불활성(25슬롯 중 교체 0인 달 60.8~65.6%). 판정판을 scale-only 정규화 β/sd 로 고정하고(부호 보존율 1.0000) 문자 그대로 판도 병기 측정(PORT_t 1.062/1.066, 증분 -0.05%/yr). 근거·전후 수치 = prereg_amendment_1.json. 승계 mechanism/falsification/regime_scope 는 무수정.", "[★진단 오용 자가 적발·수리] 초판은 scores_dt 에 선택 25종만 실어 canonical 의 diag_ew_universe 벤치가 포트 자신의 gross 가 됐다(active = -비용 → PORT_t -53~-66). 전-유니버스 점수판으로 수리, cap-w 본판정 parity 차 0.00e+00 확인. 수리 후 EW-유니버스 진단 = R0 +3.001 / B +2.505 / C_l0.5 +2.697 / C_l1.0 +2.621 (공통창), R0 전창 +3.126.", "[★dual-basis 라벨] cap-w(권위)에서는 전건 HARD 미달이나 EW-유니버스 진단에서는 R0 가 3.00~3.13 으로 2.95 를 넘는다. cap-tier 분해상 보유의 91%가 OTHER(31위 밖)이라 v8.3 M2 가 문서화한 **cap-w 벤치 구성 미스매치** 형태에 정확히 해당한다. 진단은 비바인딩 — 판정은 cap-w 유지하되 screen_route 재분류 검토 대상으로 부기.", "[감쇠] 성장 합성 IC 부기간: 2003-2014 0.0406(t 5.22) → 2015-2019 0.0102(t 1.12) → 2020-2026 0.0148(t 1.63). post2017 EW-대비 t 1.63. 전창 우세가 초기 구간에 집중된다.", "[구조 손실] 섹터 정원 구조 자체(B − R0)가 -2.986%/yr (t -1.35). 즉 '섹터 대표성 배분'은 top-25 성장 단순 선별 대비 비용이며, 틸트가 그 중 1.1~1.4%p 를 되돌리는 형태다. 논문식 섹터-우선 구조가 KR 25종 제약에서 불리하다는 실측.", "[RF-A2 유사] composite(결합 설계)가 baseline(R0 단순 top-25) 대비 개선이 아니라 **악화**(1.399 vs 1.746). Red Flag 규칙의 '개선 <5%' 보다 강한 형태 — 조립층을 알파 근거로 쓸 수 없다.", "[창 불일치 고지] 결합 arm 공통창 = 209개월(2009-03~2026-07, β_s burn-in 구속). 승계 설계 문서의 '2003~ 280개월'은 T5YIE 원계열 기준이었고 expanding z 36개월 + β 36개월 burn-in 을 반영하면 실제 창은 이렇게 짧다. 헌법 고정창 2005~ 와도 다르다.", "[컨센서스 same-day] 3종 전부 lag_rule 'Date <= sig_d'. offset 스캔 t0/t1 = 2.62 (13.264 vs 5.054) — 동시성 상관이 실재하므로 이 계열을 쓰는 후속 라운드는 반드시 forward 정렬을 실증할 것.", "[C01_SUE 중복] registry dedup 상 C01_SUE = DUPC-005 redundant(canonical C05_ESCR, cor 0.990). 3종 pairwise Spearman 은 낮으나(C01~C02 0.074·C01~M26 0.058·C02~M26 0.178) 동일 클러스터 canonical 로의 교체가 next_probe 대상.", "[유동성 근사] 본 라운드는 20거래일 평균 mean(Close*Vol) 을 adv 로 썼다(repo 표준 canonical 경로의 단일일 Vol0*Close0 근사보다 엄격). 두 정의의 차이는 미측정 — 비교 인용 시 정의 라벨 확인 필요.", "[대안 보관 — 승계] 종목-레벨 β_i 직접 랭킹 / 오버레이 소비면 / KR_CPI 단독 단순판 (alpha_hypothesis.json challenge_flags 승계)", "[★인프라 결함 발견 — 본 패키지 결함 아님] schema.json ast_node 와 02_Infrastructure/ast/ast_verify.py 의 리프·연산자 방언이 갈라져 있다. ①리프: schema 는 {\"leaf\":\"<factor_id>\"} 를 정본으로 두는데(system prompt 예시·기존 v1.1 패키지 전부 이 형태) ast_verify 는 leaf 값을 *종류*(FIELD/REGISTRY/...)로 읽어 '알 수 없는 리프 종류'로 반려한다. ②연산자: schema enum 의 DIV_GUARD/CS_ZSCORE/CS_WINSORIZE/CS_NEUTRALIZE/CS_DEMEAN/TS_DELTA 가 ast_verify 의 DIV/ZSCORE/WINSORIZE/NEUTRALIZE/DEMEAN/DELTA 와 이름이 다르다. 실증: 기존 WT-D20260802_003 도 동일하게 FAIL_CONTRACT(leaf_count 1 에서 순회 중단). ALB-005/006 과 같은 계약 표면 분열 계통이며 ast_spec_gate 가 FAIL_CONTRACT 를 non-block 으로 둔 덕에 드러나지 않고 있었다. 본 패키지는 저장소 정본 방언(기존 패키지와 동일)을 따랐다."]
 }
