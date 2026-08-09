@@ -494,6 +494,53 @@
       "session_note": "AS-20260809 큐소비자 런 1/2 — 이전 세션(12:40)에서 실행 완료, 현 세션 done 원장 기입. L3 robustness FAIL, L5 gate QUARANTINE 확정(auto_quarantine_20260809.json)."
     }
   ],
+    {
+      "paper_id": "FQ-100",
+      "paper_title": "업종-중립 순이익률 수준 (i_PM) PORT_t 전이 검증",
+      "factor_id": "FQ100_ipm_sector_neutral",
+      "factor_name": "업종내 Z-score of TTM NetIncome/Revenue",
+      "fq_id": "FQ-100",
+      "strategy_id": "STR_AS_20260809_131451_21880",
+      "gate_decision": "QUARANTINE",
+      "gate_failed_layers": "L3_robustness (PORT_t=0.688<<2.95 HARD, Calmar=0.169<<0.64 HARD)",
+      "port_t": 0.6877,
+      "oos_retention": 0.66,
+      "calmar": 0.1695,
+      "mdd": 60.27,
+      "grade": "B",
+      "score": 44.2,
+      "sharpe": 0.5466,
+      "cagr": 10.21,
+      "ic_mean": 0.0127,
+      "icir": 0.138,
+      "ic_pos_rate": 0.581,
+      "fmb_nw_t": -0.713,
+      "ff3_alpha_annual_pct": 2.025,
+      "ff3_alpha_tstat": 0.756,
+      "beta_to_bm": 0.4814,
+      "processed_date": "20260809",
+      "verify_path": "stage_artifacts/paper_recharge/auto_verify_FQ100_ipm_20260809.json",
+      "bt_result_dir": "stage_artifacts/alpha_search/20260809_131451_21880",
+      "quarantine_reason": "PORT_t=0.688 << 2.95 HARD. Calmar=0.169 << 0.64 HARD. FMB Score NW_t=-0.713(음수). MDD 60.27%. AX-004/DIST-QPM-003 quality single-signal 계열 확인. 업종-중립 수준 조건 추가해도 PORT_t 전이 미달.",
+      "mechanism_diagnosis": "업종-중립 i_PM IC=0.0127(pos_rate 58.1%) 방향성 존재. FMB t=-0.713(음수): 규모·모멘텀 교락 후 cross-sectional pricing 없음. Beta=0.48 저베타. AlphaTrend 1.39(최근 개선). OOS 0.66 robust이나 PORT_t·Calmar HARD 기준 미달. AX-004 DIST-QPM-003 supporting.",
+      "consumer_surfaces_checked": [
+        "1팩터랭킹: QUARANTINE",
+        "2유니버스필터: 미측정",
+        "3오버레이: FQ-100C",
+        "4위험모델: Beta=0.48 저베타 참고",
+        "5monitoring: 수익성 집중도 감시 후보",
+        "6선별라벨: screen_pass=FALSE",
+        "7타모드이식: RAMP 팩터군 후보(수익성 축)"
+      ],
+      "next_probe": [
+        "FQ-100B: i_PM × Beta 조건부 (저베타 국면 한정)",
+        "FQ-100C: i_PM 오버레이 리스크 신호 소비",
+        "FQ-100D: i_PM × CAPEX/매출 복합"
+      ],
+      "notable": true,
+      "session_note": "AS-20260809 큐소비자 런 2/2 — FQ-100 업종-중립 순이익률 수준 실행 완료. AX-004/DIST-QPM-003 quality single-signal 계열 추가 확인. IC 안정성(0.0127 양 시대 유사) 확인이나 standalone PORT_t 전이 미달. hypothesis_index lookup: profit_margin/i_PM no prior attempt matched."
+    }
+  ],
   "schema_note": "processed = list of paper_id strings (set-like, paper 단위 dedup). records = 전체 시도 감사 로그(동일 paper에서 여러 factor 추출 시 factor_id로 구분). last_updated 갱신 의무.",
   "last_updated": "20260809"
 }
