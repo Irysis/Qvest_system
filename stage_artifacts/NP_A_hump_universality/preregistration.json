@@ -1,0 +1,79 @@
+{
+  "id": "NP-A",
+  "question": "혹(hump) 분위 프로파일이 Q01 고유인가 KR long-only 공통인가",
+  "attributed_to": "WT-D20260808_003 next_probe NP-A (신규 WT 아님)",
+  "registered_at": "2026-08-09T12:47:21",
+  "capital_claim": "없음 — 자본 자격 주장 금지",
+  "population": {
+    "n_signals": 10,
+    "signals": ["C01_SUE", "C02_EPS_Chg_1m", "C04_ESBR", "C06_TP_Gap", "Q07_Earnings_Stability", "M08_Residual_Mom", "Q25_Ohlson_O", "M26_Revenue_Mom", "D03_EWMA", "Q01_EB"],
+    "source": {
+      "factor_db_via_load_month_factors": ["C01_SUE", "C02_EPS_Chg_1m", "C04_ESBR", "C06_TP_Gap", "Q07_Earnings_Stability", "M08_Residual_Mom", "Q25_Ohlson_O", "M26_Revenue_Mom"],
+      "tuned_panel_WT_D20260802_009": ["D03_EWMA", "Q01_EB"]
+    },
+    "anchor_extra": "Q01_EB_NEU (부모의 정확한 참조 arm) — 계수 통계에는 미포함, 앵커로만 보고",
+    "rule": "사후에 신호/종목을 빼지 않는다. 커버리지 부족 월은 사전 문턱(월 적격 30종목)으로만 제외."
+  },
+  "frames": {
+    "A_common": "P1$D 행(부모 판정패널 = Q01 커버 stock-month). 전 신호 동일 stock-month → 사과-대-사과. **판정 프레임**",
+    "B_own": "각 신호 자체 커버리지(적격집합 E 내). 사전등록 강건성 확인",
+    "disagreement_rule": "A/B 판정 불일치 시 공통형/고유 단정 금지 → 혼재로 강등하고 축 보고"
+  },
+  "arms": {
+    "raw_primary": "as-loaded 방향정렬 z (배포 형태)",
+    "neutral_primary": "섹터+log(Size) 중립 (부모 혹이 관측된 형태)",
+    "rule": "두 arm 은 공동-주판정. 판정 규칙을 각각 적용하고 **일치할 때만** 공통형/고유 단정. 불일치 = 혼재 + 축 표기"
+  },
+  "window": {
+    "primary": "전표본 (295개월, 2001-12~2026-06)",
+    "inherited_replication": "post-2015 (부모 창을 전 신호에 **동일 고정** 적용 — 새 분할 아님, 승계 창 복제. 저검정력 라벨 의무)",
+    "era_axis": "연속 조건화만 — 월별 갭 계열 ~ 시간지수 회귀 (분할 금지)"
+  },
+  "measurement": {
+    "profile_fn": "run_selfadv_p8.R::prof() **원문 이식** (probe_p0.R 에서 최대편차 8.9e-15 로 재현 확인)",
+    "ew_relative": "profile - mean(profile) (등개수 5분위이므로 평균 = EW 유니버스 active)",
+    "gap": "gap_q5_q3 = 월별 (q5 - q3) 계열. 연환산 = 100*12*mean",
+    "top_vs_ew": "월별 (q5 - 5분위평균) 계열",
+    "shape_flags": {
+      "hump_weak": "gap_q5_q3 < 0 (최상위 < 중간)",
+      "hump_strict": "argmax(profile) 이 내부분위 {2,3,4}",
+      "top_below_ew": "EW-상대 q5 < 0"
+    },
+    "observation_unit": "MONTHLY (월별 횡단면 평균의 시계열) — 첫 출력에 실측 인쇄",
+    "nw_lag_rule": "겹치는 창 함정 방지: 모든 판정 계열의 ACF r1 을 먼저 실측한다. r1 <= 0.30 이면 lag-3 인용, r1 > 0.30 이면 lag-12 + stride-12 부분표본을 병기하고 **더 보수적인 값만 인용**. 부모 라운드가 겹치는 60m 창 계열(ACF r1 0.86~0.94)에 lag-3 을 얹어 |t| 를 2.5~3.0배 부풀린 전례.",
+    "inference_primary": "월별 갭 계열의 이동블록 부트스트랩(block=12, B=2000) 95% CI + 양측 p (자기상관 내성)",
+    "inference_secondary": "NW t (위 lag 규칙)"
+  },
+  "primary_tests": {
+    "P1_pooled": "월별로 가용 신호들의 gap_q5_q3 을 평균한 단일 계열 → 블록 부트스트랩 CI + NW t. 신호간 상관에 내성",
+    "P2_count": "hump_weak 인 신호 수 / 10 (정확 이항 p vs 0.5). ★신호간 독립 위배 — 서술용, 단독 판정 근거 아님",
+    "P3_persig": "신호별 갭 + CI (개별 유의성은 외부기준 바에서 검정 불가 — 라벨 의무)"
+  },
+  "decision_rule": {
+    "common": "hump_weak >= 7/10 (>=2/3) AND P1_pooled 갭이 0 미만이며 부트스트랩 95% CI 가 0 을 배제 ⇒ 공통형",
+    "q01_specific": "hump_weak <= 3/10 (<=1/3) ⇒ Q01 고유. 벽 일반화 금지",
+    "mixed": "그 외(계수는 충족하나 pooled CI 가 0 포함 등) ⇒ 혼재. 무엇이 혹형/단조형을 가르는지 연속 조건화로 **탐색**(판정 아님, 사후 서사 금지)",
+    "tie_break": "raw arm 과 neutral arm 이 불일치하면 무조건 혼재로 강등"
+  },
+  "conditioning_vars_for_mixed": ["persistence = 신호 월간 rank 자기상관(회전율 역수)", "coverage = 적격집합 내 평균 커버리지", "family = fundamental / estimate_revision / price_based", "capacity = 최상위분위 평균 log(Size)"],
+  "conditioning_label": "n=10 신호 → 신호간 회귀는 서술적 탐색. 판정 근거 아님",
+  "power": {
+    "full": {
+      "n": 295,
+      "external_ref_sd_monthly": 0.0394,
+      "external_ref_source": "required_effect_size.R::SPREAD_SD_MONTHLY_25EW (top-25 EW 바스켓 쌍 월수익차 실측)",
+      "required_annual_pct_external": 6.88187006512186,
+      "inherited_effect_annual_pct": 0.5549
+    },
+    "post2015": {
+      "n": 138,
+      "external_ref_sd_monthly": 0.0394,
+      "external_ref_source": "required_effect_size.R::SPREAD_SD_MONTHLY_25EW (top-25 EW 바스켓 쌍 월수익차 실측)",
+      "required_annual_pct_external": 10.0618521935684,
+      "inherited_effect_annual_pct": 5.4622
+    }
+  },
+  "power_note": "verdict_with_power 는 측정 후 호출하되 **외부 기준 계열**(SPREAD_SD_MONTHLY_25EW)을 넣는다. 반환 implied_t_threshold 를 반드시 확인하고 2.0~3.2 구간이면 INCONCLUSIVE_BAR_RESTATES_T = 정보 없음으로 취급한다. arm 자신의 sd 를 넣은 값도 투명성 목적으로 병기하되 '재진술' 라벨을 붙인다.",
+  "forbidden": ["공분산/weight/사전 최적화", "제약 완화 제안(INV-7)", "자본 자격 주장", "결과 열람 후 모집단·분위 정의 변경", "rank-IC 단독으로 전이 예측", "부분표본 분할 판정"],
+  "metric_type": "canonical_screen / diag (실측 · proxy 손계산 없음)"
+}
