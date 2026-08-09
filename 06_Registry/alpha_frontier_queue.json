@@ -4062,6 +4062,16 @@
     ],
     "blast_radius": "★02_Infrastructure / 05_Production / contracts / hooks 소비처 **0건**. 2026-08-09 두 WT 라운드 안의 당일 패턴이며 졸업 게이트·배포 경로로 전파되지 않았다. 레거시 부채가 아니라 신생 관용구 — 지금 규약을 세우면 확산 전에 잡힌다.",
     "trigger_status": "FQ-190 live_trigger ③('다른 소비처 발견 시 재개')은 **불발** — 추가 판정 소비처 없음. 축 종료."
+   },
+   "feasibility_census": {
+    "measured_at": "2026-08-09",
+    "population_exists": true,
+    "population": "alpha_search 런 중 `07_benchmark_compare.csv` 보유 **469런**. 202606 배치는 **417종 고유 전략 / 425런** — 파라미터 스윕이 아니라 다양한 재료 확인. 롱 레그 실현값 = 각 런의 top-N long-only 실현 초과수익(Alpha_Annualized · PORT_t) 이며 이는 우리 **배포 형태 그대로**다(decile 분석보다 적합).",
+    "vintage_split_measured": "★날짜 추정이 아니라 벤치 시계열 실측 대조. 202606 표본 vs 202608 표본의 `05_benchmark_returns.csv` 를 **공통 5,265일**에서 비교: **100% 전부 불일치**, 최대 절대차 1.34%p(2008-10-27). 두 배치 **내부는 각각 일관**(표본 3개씩) ⇒ '두 빈티지' 프레임 성립. 벤치 차이 연환산 **+1.1649%p**(신 벤치가 높음) ⇒ 구 벤치로 잰 알파는 그만큼 부풀려져 있다. 메모리 reference-benchmark-iks200-bug-fix 의 '07-02 이전 재베이스 의무'가 **가정이 아니라 실측으로 확인**됨.",
+    "usable_now": "즉시 가용 ~26런(202607 10 + 202608 32 − 이음매 오염 ~16건, memory project-walking-seam-defect-date-pinned-repair-fails-20260809). 재베이스 시 ~460런.",
+    "rebase_cost": "427런 × `build_benchmark_compare` 재실행. 경로는 존재하나 실질 비용. ⚠벤치 차이 +1.16%p 는 **벤치-측 상수**이므로 개별 알파에서 일률 차감 금지 — 개별 재베이스만 유효(memory project-capw-ew-gap-is-bench-side-constant-20260808 계통).",
+    "failed_approach": "★선언 필드로 빈티지를 가르려 한 계획 **실패**: `benchmark_id` 가 469런 전부 'KOSPI200' 이라 판별력 0. 필드가 존재해도 판별되는 것이 아니다(AX-001 훅 필드명 판별력 0 계통). 부수: 컬럼명을 `benchmark_return` 으로 가정했다가 빈 결과 — 실제는 `benchmark_ret`. '0은 결론이 아니라 정지 신호' 규약이 잡았다.",
+    "open_decision": "표본 26 으로 분포를 주장할지 vs 427런 재베이스에 투자할지 = **라운드 규모 결정**. 26 은 중앙값·양수비율 정도는 내나 셀 분해(FQ-189)를 감당 못한다."
    }
   },
   {
