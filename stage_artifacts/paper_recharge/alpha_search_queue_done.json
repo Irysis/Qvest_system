@@ -14,7 +14,8 @@
     "FQ-110",
     "FQ-110B",
     "2608.05755",
-    "FQ-100"
+    "FQ-100",
+    "2607.06502"
   ],
   "records": [
     {
@@ -356,7 +357,10 @@
       "verify_path": "stage_artifacts/paper_recharge/auto_verify_FQ110_JumpShare_20260808.json",
       "quarantine_reason": "PORT_t=0.618 << 2.95 HARD. Calmar=0.172 << 0.64 HARD. IC=-0.028(음수: 방향 A 역효과). MDD 55.47% 구조적 낙폭. ★IC 음수 = frog-in-the-pan REVERSE 기전 시사 — 방향 B(저 jump-share long) next_probe.",
       "mechanism_diagnosis": "고 jump-share 종목이 저성과(방향 A 역효과). frog-in-the-pan = 분산된 소폭 누적(저 jump-share)이 지속 모멘텀. 방향 B 착수 근거 성립.",
-      "next_probe": ["FQ-110B: low jump-share long(Direction B)", "FQ-110C: cap-tier jump-share 방향 분리"],
+      "next_probe": [
+        "FQ-110B: low jump-share long(Direction B)",
+        "FQ-110C: cap-tier jump-share 방향 분리"
+      ],
       "notable": true,
       "session_note": "AS-20260808 Q-Lead 직접 처리. 방향 A 실행 완료. PENDING→QUARANTINE. 방향 B = 즉시 착수 가능(동일 데이터, 부호 반전만).",
       "prior_pending_note": "AS-20260807 에이전트 런에서 FQ-110 대신 SpectralPersistence_Hurst 실행(batch_434) → 무효. 20260808 Q-Lead 재실행으로 정식 처리."
@@ -381,7 +385,10 @@
       "processed_date": "20260808",
       "verify_path": "stage_artifacts/paper_recharge/auto_verify_SpectralPersistence_Hurst_20260808.json",
       "quarantine_reason": "PORT_t=0.978 << 2.95. OOS_retention=0.369 < 0.5. Calmar=0.178 < 0.64. R/S ≠ DFT spectral mass(fidelity FAIL). 동 논문 3번째 standalone QUARANTINE. paper closed.",
-      "next_probe": ["FQ-152: 단기(60일) Hurst", "FQ-153: 시장 레벨 Hurst 오버레이"],
+      "next_probe": [
+        "FQ-152: 단기(60일) Hurst",
+        "FQ-153: 시장 레벨 Hurst 오버레이"
+      ],
       "notable": true,
       "session_note": "AS-20260808 공식 처리. 원 실행은 AS-20260807(unauthorized), 오늘 formal verification 적용. 동 논문 2607.19497 fully processed(3 factor attempts).",
       "paper_exhausted": true
@@ -404,7 +411,7 @@
       "ic_mean": 0.0278,
       "ic_icir": 0.248,
       "ic_pos_rate": 0.624,
-      "alpha_trend_ratio": 2.60,
+      "alpha_trend_ratio": 2.6,
       "hard_fail": true,
       "hard_fail_reason": "Structural drawdown (45%+ episodes>=15): MDD 62.7%, 45%+ episodes=16/15",
       "grade": "F",
@@ -538,6 +545,50 @@
       ],
       "notable": true,
       "session_note": "AS-20260809 큐소비자 런 2/2 — FQ-100 업종-중립 순이익률 수준 실행 완료. AX-004/DIST-QPM-003 quality single-signal 계열 추가 확인. IC 안정성(0.0127 양 시대 유사) 확인이나 standalone PORT_t 전이 미달. hypothesis_index lookup: profit_margin/i_PM no prior attempt matched."
+    },
+    {
+      "paper_id": "2607.06502",
+      "paper_title": "What Useful Alphas? (Chen & Welch, arXiv 2607.06502, q-fin.GN, 2026-07-07)",
+      "factor_id": null,
+      "factor_name": null,
+      "strategy_id": null,
+      "gate_decision": "QUARANTINE",
+      "gate_failed_layers": "batch_434_no_implementable_signal",
+      "port_t": null,
+      "grade": null,
+      "processed_date": "20260809",
+      "verify_path": null,
+      "quarantine_reason": "batch_434 — 구현 가능한 신호 부재. 이 논문은 팩터 논문이 아니라 Chen-Zimmermann(2022) 약 200개 **공표 롱숏 어노멀리** 포트폴리오의 메타분석(q-fin.GN)이다. 새 신호를 제안하지 않고 기존 어노멀리 집합의 표본 분할(기간 x 시총계층) 수익 감쇠를 보고한다. 논문이 기술하지 않은 신호를 폴백으로 합성하는 것은 batch_434 위반이므로 코드 생성 없이 skip.",
+      "routing_note": "★pending 근거가 취약했다 — 동 논문 5회 라우팅 중 4회가 route=risk/skip kr_feasible=False 였고, testable 로 만든 것은 alpha_search_route_20260727 1건뿐인데 그 레코드는 factor_candidate 가 비어 있다(팩터 미추출). 즉 술어의 폴백 분기(route=alpha AND kr_feasible, verdict 부재 시)로만 큐에 올라 있었고, 그 상태로 수 주간 무인 런의 대상이 됐다.",
+      "external_evidence": {
+        "_label": "EXTERNAL — 논문 보고 수치. 우리 측정 아님(metric_type=external_literature).",
+        "dataset": "Chen-Zimmermann (2022), 약 200 published long-short anomalies, US",
+        "median_zero_investment_bp_per_month": {
+          "pre2005_all_stocks": 48,
+          "post2005_all_stocks": 19,
+          "non_micro_all_periods": 26,
+          "post2005_and_non_micro": 7
+        },
+        "authors_conclusion": "운·거래비용을 조금만 반영해도 7bp 는 소멸 — 21세기 non-micro 운용자에게 공표 어노멀리는 무용."
+      },
+      "why_it_matters_here": "우리 설정은 논문의 **최악 셀에 구조적으로 놓여 있다**: (1) 유니버스가 KOSPI200∪KOSDAQ150 + 유동성 하한(20일 평균 거래대금 >= 2e8 KRW)이라 **정의상 non-micro** (2) 표본 기간이 헌법상 2005~ 고정이라 **post-2005** (3) 논문 수치는 **zero-investment 롱숏**인데 우리는 long-only 라 short leg 미하베스트. 즉 7bp(pre-cost) 셀에서 그 일부만 취하면서 15bps one-way 거래비용을 낸다. 이는 본 시스템의 자체 실측 posterior(standalone long-only 16/16 FAIL, CLAUDE.md 도달경로 3)에 대한 **독립·대표본 외부 확증**이며, 기존에 없던 **크기(magnitude)** 를 준다.",
+      "consumer_surfaces_checked": [
+        "1팩터랭킹: 해당없음 — 신호 부재",
+        "2유니버스필터: 해당없음",
+        "3오버레이: 해당없음",
+        "4위험모델: 해당없음",
+        "5monitoring: 해당없음",
+        "6선별라벨: ★소비 — 신규 standalone return-파생 팩터 제안의 사전 EV 를 '낮음'으로 두는 정량 근거(기존엔 자체 16/16 뿐, 이제 외부 대표본 + 크기)",
+        "7타모드이식: ★소비 — RAMP/FR 의 모듈 admission 기대치 prior. 다만 롱숏->long-only 전이율이 미측정이라 그대로 이식 금지(FQ 참조)"
+      ],
+      "next_probe": [
+        "FQ-A: 셀-정합 KR 재현 — 논문의 (기간 x 시총계층) 2x2 를 우리 screen-tier 재고에 적용해 KR 의 post-2005 non-micro 셀이 7bp 대비 어디인지 실측. KR 이 유의하게 위면 '공표 어노멀리 무용' 결론이 KR 로 전이되지 않는다는 뜻이고, long-only 탐색 공간이 가정보다 덜 소진된 것이다. dual-basis(cap-w/EW) 필수.",
+        "FQ-B: long-leg share 정량화 — 논문 수치는 롱숏 스프레드다. 우리가 이미 잰 KR 팩터들의 long_side_share 분포를 모아 전이율을 구한다(M26 실측 0.553 이 단일 관측). 계통적으로 ~0.5 면 우리 유효 천장은 7bp 의 절반 수준으로 **정량화된 구조 천장**이 되고, 이는 목표 SR 2.5 경로에서 return-파생 lane 의 우선순위를 수치로 확정한다."
+      ],
+      "paper_exhausted": true,
+      "paper_exhausted_note": "메타분석 논문이라 추가 팩터 추출 여지 없음. 단 **증거로서는 소비됨**(선별라벨/타모드 prior). 신호 lane 에서만 종결.",
+      "notable": true,
+      "session_note": "AS-20260809 수동 처리 — 무인 큐의 유일 pending 이 수 주간 미소비 상태였고, 오늘 exit_124 타임아웃 조사의 연장으로 착수. 실행 백테 없음(신호 부재)."
     }
   ],
   "schema_note": "processed = list of paper_id strings (set-like, paper 단위 dedup). records = 전체 시도 감사 로그(동일 paper에서 여러 factor 추출 시 factor_id로 구분). last_updated 갱신 의무.",

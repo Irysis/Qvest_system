@@ -59,12 +59,20 @@ say("  ★사전등록 기재 base rate 35.0%% (28/80) — 대조 %.1f%%", 100*m
 
 ## ---- 3. SIG / NEU 포트 월수익 ------------------------------------------------
 say("=== 3. SIG(계약 신호 top-25) vs NEU(중립 대조) ===")
-say("  panelx_A 수치 컬럼: %s",
-    paste(names(PA)[vapply(PA, is.numeric, logical(1))], collapse=", "))
-sig_col <- setdiff(names(PA)[vapply(PA, is.numeric, logical(1))], c("Date"))
-say("  ★신호 컬럼 후보 %d개 — 사전등록은 '계약 score' 단일. 첫 후보 사용: %s",
-    length(sig_col), sig_col[1])
-S <- PA[, .(Date, Ticker, score = get(sig_col[1]))][!is.na(score)]
+## ★신호 정의는 **정체 검사로 확정**(p0b): 원 스크립트 diag_fq125_stage1_controls.R:44
+##   S[, score := ifelse(is.finite(Size) & Size > 0, w_amt / Size, NA_real_)]
+##   필터 = score > 0 ∧ adv >= 2e8 ∧ member (동상 47행)
+##   ⚠내 초판은 수치 컬럼 첫 번째(n_contracts)를 집었는데 **원 스크립트 참조 0회** = 오답이었다.
+US <- as.data.table(read_parquet(pin$usize)); US[, Date := as.Date(Date)]
+me <- data.table(Date = sort(unique(R$Date)))
+me[, ym := as.integer(format(Date, "%Y%m"))]
+PA[, ym := as.integer(ym)]
+S <- merge(me, PA[, .(ym, Ticker, w_amt)], by = "ym", allow.cartesian = TRUE)
+S <- merge(S, US[, .(Date, Ticker, Size)], by = c("Date","Ticker"))
+S[, score := ifelse(is.finite(Size) & Size > 0, w_amt / Size, NA_real_)]
+S <- S[is.finite(score) & score > 0, .(Date, Ticker, score)]
+say("  ★신호 = w_amt / Size (원 스크립트 정본) · %d행 · %d개월 · 월중앙 %d종목",
+    nrow(S), uniqueN(S$Date), as.integer(median(S[, .N, by=Date]$N)))
 
 rt <- R[!is.na(ret_1m), .(Date, Ticker, Ret_1m = ret_1m)]
 bd <- BM[, .(Date, BM_Ret = get(setdiff(names(BM), "Date")[1]))]
