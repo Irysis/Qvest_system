@@ -145,4 +145,9 @@ if (grepl("route=regime 노출 어댑터", paste(lg, collapse = " "))) {
 
 setwd(.wd)
 cat(sprintf("\nFINAL: passed=%d failed=%d\n", PASS, FAIL))
+## ★러너 집계용 요약 JSON — 이 줄이 없으면 run_all_hooks.sh 가 이 suite 를
+##   UNREPORTED(=1 fail)로 계상하고 **통과 건수는 통째로 사라진다**.
+##   위 FINAL 줄은 사람용이라 유지한다(둘 다 남긴다). 2026-08-09 추가.
+cat(sprintf("{\"test\":\"exposure_adapter_contract\",\"pass\":%d,\"fail\":%d,\"total\":%d}\n",
+            PASS, FAIL, PASS + FAIL))
 quit(status = if (FAIL > 0) 1 else 0)

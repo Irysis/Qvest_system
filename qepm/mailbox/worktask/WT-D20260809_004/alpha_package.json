@@ -861,10 +861,11 @@
       "lag_rule": "Date <= sig_d (same-day 컨센서스 — offset+1 소비)",
       "winsorization": "factor_db 빌더 기본",
       "neutralization": "none (섹터 중립화는 조립층 정원이 대행)",
-      "economic_rationale": "어닝 서프라이즈는 컨센 개정 지연으로 1~3개월 drift — 인플레 전가력 실현을 이익 수치로 먼저 입증한 종목",
+      "economic_rationale": "behavioral",
+      "economic_rationale_detail": "어닝 서프라이즈는 컨센 개정 지연으로 1~3개월 drift — 인플레 전가력 실현을 이익 수치로 먼저 입증한 종목",
       "weight_theta": 0.333333333333333,
       "redundancy_cluster_id": "DUPC-005 (redundant; canonical=C05_ESCR, cor 0.990)",
-      "references": "Bernard-Thomas 1989 PEAD"
+      "references": ["Bernard-Thomas 1989 PEAD"]
     },
     {
       "factor_family": "Growth/Consensus_Revision",
@@ -873,10 +874,11 @@
       "lag_rule": "Date <= sig_d (same-day — offset+1 소비)",
       "winsorization": "factor_db 빌더 기본",
       "neutralization": "none",
-      "economic_rationale": "애널리스트 개정 모멘텀 — 정보 반영 지연",
+      "economic_rationale": "behavioral",
+      "economic_rationale_detail": "애널리스트 개정 모멘텀 — 정보 반영 지연",
       "weight_theta": 0.333333333333333,
       "redundancy_cluster_id": "DUPC-006 (canonical; 동군 M27_Analyst_Rev_Mom)",
-      "references": "Chan-Jegadeesh-Lakonishok 1996"
+      "references": ["Chan-Jegadeesh-Lakonishok 1996"]
     },
     {
       "factor_family": "Growth/Revenue_Revision",
@@ -885,10 +887,11 @@
       "lag_rule": "Date <= sig_d (same-day — offset+1 소비)",
       "winsorization": "factor_db 빌더 기본",
       "neutralization": "none",
-      "economic_rationale": "매출 전망 개정 — 인플레기 명목 매출 성장과 마진 훼손을 구별하는 축",
+      "economic_rationale": "behavioral",
+      "economic_rationale_detail": "매출 전망 개정 — 인플레기 명목 매출 성장과 마진 훼손을 구별하는 축",
       "weight_theta": 0.333333333333333,
       "redundancy_cluster_id": "미지정 (dedup 클러스터 없음)",
-      "references": "FQ-165 / WT-D20260808_002 실측"
+      "references": ["FQ-165 / WT-D20260808_002 실측"]
     },
     {
       "factor_family": "Macro/Inflation_Conditioner",
@@ -897,10 +900,11 @@
       "lag_rule": "T5YIE: <= sig_date / KR_CPI·Copper: 참조월 M-2",
       "winsorization": "none",
       "neutralization": "n/a (시장 레벨 스칼라)",
-      "economic_rationale": "기대(T5YIE)+실현(KR_CPI)+실물확인(Copper) 3축으로 인플레 국면 강도를 연속 측정",
+      "economic_rationale": "structural",
+      "economic_rationale_detail": "기대(T5YIE)+실현(KR_CPI)+실물확인(Copper) 3축으로 인플레 국면 강도를 연속 측정",
       "weight_theta": 0,
       "redundancy_cluster_id": "n/a — 조건화 변수(종목 스코어 아님)",
-      "references": "cssanalytics Inflation Compass 2026-07-27 (출발점, 승인서 아님)"
+      "references": ["cssanalytics Inflation Compass 2026-07-27 (출발점, 승인서 아님)"]
     },
     {
       "factor_family": "Macro/Sector_Sensitivity",
@@ -909,10 +913,11 @@
       "lag_rule": "추정창 종점 < sig_date",
       "winsorization": "none",
       "neutralization": "n/a",
-      "economic_rationale": "원가 전가력·듀레이션 차이를 KR 데이터에서 추정 (논문 고정 매핑 이식 근거 부재)",
+      "economic_rationale": "structural",
+      "economic_rationale_detail": "원가 전가력·듀레이션 차이를 KR 데이터에서 추정 (논문 고정 매핑 이식 근거 부재)",
       "weight_theta": 0,
       "redundancy_cluster_id": "n/a",
-      "references": "본 라운드 실측 — 부호 패턴 일치율 0.649"
+      "references": ["본 라운드 실측 — 부호 패턴 일치율 0.649"]
     }
   ],
   "diagnostics": {
