@@ -97,10 +97,17 @@ check_screen_axes <- function(items, route) {
                     error = function(e) { cat(sprintf("[dispatch] method_registry source 실패: %s\n",
                                                       conditionMessage(e))); FALSE })
 
-# ── optimizer: Σ-가중 A/B 배터리 자동 실행 + ΔIR 게이트 판정 ──
+# ── Σ-가중 A/B 배터리 자동 실행 + ΔIR 게이트 판정 ──
+#   (2026-08-09 수리 ①) 발화 조건을 optimizer 단독 → **optimizer ∪ risk** 로 넓힌다.
+#   같은 배터리가 risk 레인의 Σ-추정기 arm(`minvar@<est>`)도 잰다. 구판 `if (n_opt > 0)` 은
+#   **optimizer 0편 · risk N편인 날엔 risk method 를 한 번도 안 돌렸다**(실측: 20260704 opt 0/risk 1,
+#   20260702 opt 0/risk 0/regime 1). "optimizer 레인 소속"이라는 코드 배치가 곧 소비 경계였던 것.
+#   (2026-08-09 수리 ②) ov_csv / battery_fresh 를 **분기 밖으로** 뺀다 — risk 보고가 이 값을 읽는데,
+#   계산 분기 안에 두면 캐시 날·optimizer 0편 날에 보고가 통째로 죽는다((b)안 ④ 교훈의 재발 방지).
 opt_verdict <- NULL
-if (n_opt > 0) {
-  ov_csv <- file.path("06_Registry/book_carrier", "h1b_sigma_ab_overlay.csv")
+ov_csv <- file.path("06_Registry/book_carrier", "h1b_sigma_ab_overlay.csv")
+battery_fresh <- FALSE
+if (n_opt > 0 || n_risk > 0) {
   # (2026-08-08 1안 ④) 캐리어 = carrier_meta 경유 (하드코딩이 구 PG2 7주 사용의 원인 — 도훈 적발)
   carrier <- tryCatch({
     mt <- fromJSON("06_Registry/book_carrier/carrier_meta.json", simplifyVector = FALSE)
