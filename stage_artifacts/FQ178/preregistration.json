@@ -1,0 +1,69 @@
+{
+  "round_id": "FQ-178 + FQ-179 (통합)",
+  "parent": "FQ-176 (INCONCLUSIVE — 에피소드 4개 구속)",
+  "origin_chain": "도훈 발안 2026-08-09 (위기신호 역방향) → 배분축 판정불가 → 선별축 FQ-176 판정불가 → 본 라운드",
+  "written_at": "2026-08-09",
+  "written_before_measurement": true,
+  "title": "연속 낙폭심도 × 합성축 스프레드 — 유효표본과 family 를 동시에 고침",
+
+  "why_combined": "FQ-178 의 next_action 이 '대상은 개별 팩터가 아니라 FQ-179 합성축 1개' 를 명시한다. 두 결함(유효표본 4 · family 21)을 따로 고치면 서로를 재도입하므로 한 라운드로 묶는다.",
+
+  "precheck_completed_and_passed": {
+    "question": "연속화가 **실제로** 유효표본을 회복하는가 (낙폭은 자기상관이 높아 자동이 아니다)",
+    "autocorrelation_dd12": {"lag1": 0.877, "lag3": 0.639, "lag6": 0.372, "lag12": -0.000, "lag24": 0.096},
+    "n_eff": {"binary_episodes": 4, "continuous_bartlett": 38.9, "inflation_factor": 10.99},
+    "mde_comparison": {"binary_cluster": 0.168, "continuous_corrected_per_1sd_depth": 0.0567, "improvement": "2.96x"},
+    "eligibility_rule_fixed": "보정 MDE × sd(d_lag) < 0.168 이어야 착수 자격 — 실측 0.0567 < 0.168 ⇒ **통과**",
+    "era_caveat": "★심도 변동이 시대별로 불균등하다 — sd(dd12) pre2003 0.139 · 2003-09 0.120 · **2010-17 0.0439** · 2018+ 0.0751. 2010-17 은 변동이 거의 없어 정보 기여가 낮다. FQ-176 의 '9년 공백' 이 연속 프레임에서는 '저분산 구간' 으로 나타난다 — 사라진 게 아니다."
+  },
+
+  "input_declared": {
+    "panel": "stage_artifacts/FQ176/panel_full.rds",
+    "rows": 81312, "months": 282, "period": "2003-01-30 ~ 2026-06-30",
+    "stocks_per_month_median": 338,
+    "liquidity": "adv >= 2e8 (패널이 이미 필터됨 — 재필터 시 행수 불변 확인)",
+    "bench": "WT_D20260809_001/p0_panels.rds 의 bench. ★BM_Ret[t] 는 t→t+1 forward 이므로 월말 t 실현수익 = shift(BM_Ret,1)",
+    "assert_rule": "첫 출력 = 입력 실측. 위 선언과 불일치 시 중단."
+  },
+
+  "composite_axes_fixed_before_measurement": {
+    "quality_growth": ["Q02_ROE", "Q03_ROA", "Q04_Piotroski_F", "GR02_Earnings_Growth", "GR04_GPA_Growth"],
+    "value": ["V02_EP", "V03_CFP", "V04_fPER"],
+    "construction": "월별 횡단면 z-score 후 EW 평균 (성분 가중 조정 금지 — 사후 튜닝 방지)",
+    "rationale": "FQ-176 관측 방향 패턴(quality/growth 4/5 양수 mean +0.0116 vs value 1/5 양수 mean −0.0158, 스프레드 0.027)에서 도출. ★그 관측은 **유의하지 않았고**(binom p=0.375) 본 라운드의 사전등록 대상일 뿐 발견이 아니다.",
+    "measured_baseline": {"icA_mean": 0.0364, "icA_sd": 0.1009, "icV_mean": 0.0443, "icV_sd": 0.1307, "spread_mean": -0.0078, "spread_sd": 0.1435, "n_months": 282}
+  },
+
+  "primary_statistic_single": {
+    "model": "spread_IC[t+1] ~ b0 + b1 * d[t]",
+    "spread_IC": "rank-IC(quality_growth 합성축) − rank-IC(value 합성축), 월별 횡단면 spearman",
+    "d": "12개월 롤링 낙폭(dd12), 월말 t 관측 가능, 값은 음수(깊을수록 작음)",
+    "se": "HAC(Newey-West), lag = 6 (자기상관 lag6 0.372 · lag12 ~0 실측 기반)",
+    "family_size": 1,
+    "direction_expectation": "도훈 가설이 옳다면 **깊은 낙폭 뒤 quality/growth 판별력이 상대적으로 강해진다** ⇒ d 가 음수로 클수록 spread 증가 ⇒ **b1 < 0**",
+    "note": "방향은 사전등록하되 **양측검정이 정본**. 단측 수치를 발견으로 읽지 않는다."
+  },
+
+  "secondary_diagnostics_declared": [
+    "성분별 회귀 icA ~ d, icV ~ d — 스프레드 효과가 어느 쪽에서 오는지",
+    "심도 대체 정의 3종(3개월 누적 · 24개월 낙폭 · 변동성 조정 낙폭) robustness",
+    "시대 분할(2003-2012 / 2013-2026) — 단 분할은 검정력을 파괴하므로 재현 실패를 '효과 없음' 으로 읽지 않는다"
+  ],
+
+  "disposition_rules_fixed_before_results": [
+    {"id": "L1", "condition": "b1 의 |t_HAC| >= 2.0 AND 방향이 사전등록과 일치(b1<0)", "verdict": "DEPTH_CONDITIONAL_SUPPORTED", "action": "적대검증(순환이동 placebo · 심도 정의 robustness · 시대) 착수. 통과 시 **선별 축** 소비면 설계 — 배분(총노출) 주장 금지."},
+    {"id": "L2", "condition": "|t_HAC| >= 2.0 이나 방향이 반대(b1>0)", "verdict": "REVERSED_SIGN", "action": "도훈 가설과 반대 방향 — 그 자체가 1급 정보. 기전 재서술 후 등재. argmax 로 방향을 사후 재선언하지 말 것."},
+    {"id": "L3", "condition": "|t_HAC| < 2.0 AND |관측 효과| < MDE", "verdict": "INCONCLUSIVE_UNDERPOWERED", "action": "FQ-180(문턱 그리드 폐기 판정)으로 이관 — 연속화까지 했는데도 미달이면 이 레인의 구성상 한계를 문서화한다."},
+    {"id": "L4", "condition": "|t_HAC| < 2.0 AND |관측 효과| >= MDE", "verdict": "NULL_POWERED", "action": "검정력이 있었는데 효과가 없었다 = 진짜 negative. settled 로 기록하고 부활 조건 명시."}
+  ],
+
+  "guards": [
+    "★L3/L4 구분은 이 라운드의 핵심이다 — FQ-176 에서 내가 하드코딩한 라벨은 L4 가 도달 불가였다. 이번엔 MDE 를 se 와 **독립으로** 산출한다(MDE = 2 × HAC se, 관측효과와 직접 비교).",
+    "성분 가중·심도 정의·HAC lag 는 **측정 전 고정**. 결과를 보고 조정하면 그 결과는 무효.",
+    "rank-IC 는 ADVISORY 지표 — 어느 방향이든 자본/졸업 판정 불가. metric_type = canonical_screen_diag.",
+    "이 라운드도 **선별(rank-IC)** 축이다. 도훈 원 가설(배분·총노출)은 여전히 별개이며 양성이어도 총노출 확대를 지지하지 않는다."
+  ],
+
+  "self_adversarial_required": true,
+  "close_round_required": true
+}
