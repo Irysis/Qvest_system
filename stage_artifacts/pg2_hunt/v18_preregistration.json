@@ -1,0 +1,49 @@
+{
+  "round_id": "V18_AM_DEEPEN_20260809",
+  "frozen_at": "2026-08-09 (측정 전 작성)",
+  "question": "331 전수에서 유일한 가시권(부족분 0.142)인 V18_AM 의 슬리브 IR 을 조건-안 레버로 0.576 → 0.717 이상 올릴 수 있는가",
+
+  "material": {
+    "id": "V18_AM",
+    "definition": "TotalAssets / MarketCap (자산/시가총액 — 가치 계열)",
+    "known_defect": "factor_registry 기록: V16_Tobins_Q 와 rank |cor| 1.0000 (258개월) — V16 의 +TotalLiab 항이 무력. 본 라운드는 V18 만 쓰므로 직접 영향 없으나 합성 시 중복 주의",
+    "measured_baseline_parked": {"cor": 0.243, "sleeve_ir": 0.576, "required_ir": 0.717, "shortfall": 0.142, "delta_ir": 0.0201}
+  },
+
+  "selection_bias_DECLARED": {
+    "issue": "V18_AM 은 331 중 **최댓값**으로 선택됐다. 최댓값의 추정치는 상방 편향(winner's curse)이며, 여기서 레버를 찾으면 편향이 중첩된다",
+    "mitigation_MANDATORY": "모든 레버를 **무작위 20재료에도 동일 적용**해 개선폭 분포를 산출한다. V18 개선이 그 분포 안이면 '레버는 일반적, V18 의 수준 우위는 별개' 로 읽고, 분포 밖이어야 V18 고유 이득이다",
+    "no_argmax": "레버 설정을 argmax 로 고르지 않는다 — **전 셀 보고**. argmax 선택 시 selection_type=sweep 이 되어 DSR 게이트 대상"
+  },
+
+  "primary_metric": "parked arm 슬리브 IR (요구조건 지도의 필요치 0.717 과 직접 대조)",
+  "primary_judgment": "★verdict_ci (점추정 금지). ΔIR 문턱 0.05 는 이 표본에서 1.09se 이므로 통과 단정 불가 — UNRESOLVED 를 정직한 결과로 받는다",
+  "secondary": ["PG2 상관(올라가면 이득 상쇄)", "회전율", "ΔIR 점추정과 CI"],
+
+  "levers_ALL_WITHIN_CONSTRAINTS": [
+    {"id": "L1_hold", "desc": "보유기간 연장 — 리밸런싱 주기 1/2/3/6개월", "rationale": "회전율↓ → 비용↓. 단 신호 손실과 1:1 교환일 수 있다(오늘 M26 실측 전례)", "settings": [1, 2, 3, 6]},
+    {"id": "L2_band", "desc": "분위 밴드 소비 — top-25 대신 상위 분위 밴드에서 25종목", "rationale": "오늘 FQ-170 이 형태-조건부 밴드 소비를 확립(HUMP 재료에서 +5.62%p). V18 의 분위 형태를 먼저 재고 혹 위치에서 소비", "settings": ["top", "band_by_shape"]},
+    {"id": "L3_fire", "desc": "파킹 발화율 — 국면 ON 문턱 변경으로 발화율 20/35.6/50/65%", "rationale": "파킹이 상관을 낮추는 검증된 레버. 발화율이 상관 인하와 신호 손실을 어떻게 교환하는지 미측정", "settings": [0.20, 0.356, 0.50, 0.65]}
+  ],
+
+  "controls_MANDATORY": {
+    "random_factors": "무작위 20재료에 동일 레버 적용 → 개선폭 분포. V18 백분위 보고",
+    "positive_control": "레버 적용 전 baseline 이 재현되는가(IR 0.576 · 상관 0.243 · ΔIR 0.0201). 재현 안 되면 측정 경로가 바뀐 것이므로 라운드 무효",
+    "negative_control": "L3 발화율을 무작위 타이밍으로 대체 → 발화율 효과가 라벨 정보인지 구조인지 분리"
+  },
+
+  "falsifiers": [
+    "전 셀에서 슬리브 IR < 0.717 이면 V18 축 config-scoped negative",
+    "IR 이 올라도 상관이 함께 올라 ΔIR CI 하단이 문턱을 못 넘으면 미달",
+    "V18 개선폭이 무작위 20재료 개선폭 분포의 95 백분위 안이면 'V18 고유 이득 없음'",
+    "baseline 재현 실패 시 라운드 무효(측정 경로 변경)"
+  ],
+
+  "power_note": "ΔIR 은 파킹 창 73개월에서 se ~0.093 이라 문턱 판별 불가. **1급 지표를 슬리브 IR 로 둔 이유**가 이것 — IR 은 같은 표본에서 훨씬 정밀하다. ΔIR 은 2급으로만 보고",
+
+  "what_cannot_be_claimed": [
+    "자본 편입 — governor 수동(도훈)",
+    "'PG2 를 이겼다' — verdict_ci 가 BEATS_PG2 여도 73개월 표본에서는 UNRESOLVED 가 기본값",
+    "레버 설정의 최적값 — argmax 선택 금지, 전 셀 보고"
+  ]
+}
