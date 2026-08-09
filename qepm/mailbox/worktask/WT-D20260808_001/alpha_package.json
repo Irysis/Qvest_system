@@ -448,7 +448,12 @@
     "[후속검증 ④ 2026-08-09] 발행 패널 유동성 수리 — 86942행 → 82156행(제거 4786). 위반 주입 테스트 PASS(수리판 CLEAN ∧ 필터제거판 VIOLATION). 최신월 25종 불변. 구 패널은 alpha_scores_superseded_20260809.parquet.",
     "[인프라 상신 2026-08-09] 유동성 축이 **두 양**이다 — 계약 build_monthly_forward_returns() 의 adv 는 주석과 달리 Vol0*Close0(1일치)이고 Production Constraints/고지문은 20일 평균이다. 상관 0.929 · 판정 불일치 2.61%. 이 WT 범위 밖(하류 다수 측정 영향)이라 수리하지 않고 basis 를 선언 필드로 못 박았다. 02_Infrastructure/ramp/factor_validation.R 라벨↔구현 불일치 = 인프라 백로그.",
     "[출처 결손 2026-08-09] alpha_validation 의 placebo.seeds_24_W3 8값은 probe_adversarial.R 콘솔 출력 전사이며 측정 객체(RDS)가 없다. 본 라운드는 재산출하지 않고 provenance_gap 라벨만 붙였다 — 재인용 전 재산출 필요.",
-    "[검정력 바 진단 2026-08-09] primary 두 셀의 implied_t_threshold = 2.59 / 2.21 로 문턱 2.0 의 재진술 구간이다 — INCONCLUSIVE_UNDERPOWERED 라벨이 '|t|<2' 이상의 정보를 담지 않는다. 외부 기준 sd 확보가 미해결 항목."
+    "[검정력 바 진단 2026-08-09] primary 두 셀의 implied_t_threshold = 2.59 / 2.21 로 문턱 2.0 의 재진술 구간이다 — INCONCLUSIVE_UNDERPOWERED 라벨이 '|t|<2' 이상의 정보를 담지 않는다. 외부 기준 sd 확보가 미해결 항목.",
+    "[자기적대검증 C-1 2026-08-09] F3 는 D03 에 대해 거의 동어반복이다 — D03_EWMA 는 EWMA 실현변동성이라 그 최상위 분위는 정의상 최저변동 집합이고 저변동↔저β 는 산술적 귀결에 가깝다. 기전이 거짓이어도 관측되는 양이라 반증력이 낮다. HAC 교정은 추론을 고칠 뿐 관측의 반증력을 회복시키지 않는다. ★반면 Q01_EB 는 이익안정성 축이라 저β 와 정의상 연결이 없는데도 gap 이 −0.249 로 D03(−0.215)보다 **크다** — 원 판정이 D03 을 SUPPORTED, Q01 을 WEAK 로 적은 것은 독해가 뒤집힌 것이며 정보량은 Q01 쪽이 크다(alpha_validation 정정 반영).",
+    "[자기적대검증 C-2 2026-08-09] NW lag-60 은 n=259 의 23% 대역폭이라 그 자체로 편향·고분산이다. 겹치는 60개월 창의 유효 독립 관측은 ~4개 수준이므로 이 계열의 어떤 t 도 강한 증거로 읽어선 안 된다. 방어 근거 = 대역폭 비의존 경로인 MBB(L=60, B=2000)가 −4.84/−6.39 로 정합 + Andrews −4.66/−7.07 로 자릿수 일치 (lag-3 만 12~20 대로 튄다). 단일 t 인용 금지 라벨.",
+    "[자기적대검증 C-3 2026-08-09] ②의 회전율 통제는 교락 통제가 아니라 **매개 통제(bad control)** 일 수 있다 — 기전이 '개인 lottery 수요' 라면 회전율은 그 수요의 결과다. 부분 방어: 순수 매개면 계수가 0 을 향해 줄지만 실측은 0 을 지나 +2.49 로 역전하며, 교락 실재가 독립 확인된다(회전율→개인 순매수 t +7.61 · D03 z↔회전율 cor −0.559 vs Q01 −0.001). ⇒ 확립된 최대치는 'D03 의 개인-flow 귀속은 거래활동과 분리 불가' 이며 '연관이 허구였다' 는 더 센 진술은 하지 않는다. 판별은 NP-F2.",
+    "[자기적대검증 C-4/C-9 2026-08-09] (C-4) 수리는 유니버스 불일치를 없앤 게 아니라 3.31%→0.50% 로 줄였다 — 발행 패널은 판정 유니버스의 부분집합(밖 0행 실측)이며 advisory 배터리는 판정 arm 과 정확히 같은 유니버스가 아니다. (C-9) ⑤ 정정은 '단조 감소 → 고변동 꼬리 왜도 → 제거 대상이 평균 기여 높아 희석이 손해' 3단 사슬의 1단을 무너뜨렸고 Q5−Q1 평균 스프레드도 비유의(t −1.02)라 사슬 전체가 약한 후보로 강등된다. 대체 설명은 세우지 않았다. NOT_CONSUMABLE 결론은 플라시보 p=0.833 이라는 독립 근거가 지탱하므로 불변.",
+    "[자기적대검증 C-6 2026-08-09 · REBUTTAL] '섹터-중립화에 미래참조' 의심은 실측 반증 — RAWDATA Sector 는 시변 라벨이다(월말 관측 3,388종 중 824종·24.4% 가 시간에 따라 섹터 변경, 60개월 이상 관측 2,897종 중 791종·27.3%). 정적 스냅샷의 소급 적용이 아니다. 단 재분류 반영 시점 lag 는 미확인이라 약한 잔여 의심으로 남기고 판정 근거로 쓰지 않았다. 출처 = verification_followup/probe_sector_pit.R"
   ],
   "pit": {
     "sig_date": "2026-06-30",
@@ -910,8 +915,20 @@
       "claim_A": {
         "false_statement": "D03 5분위 평균수익이 Q1 +13.1% → Q5 +8.0% 로 **단조 감소**",
         "measured": {
-          "repaired_panel_quintile_ann_pct": [12.961, 15.539, 14.936, 10.901, 7.927],
-          "superseded_panel_quintile_ann_pct": [12.912, 15.443, 14.297, 11.769, 8.189],
+          "repaired_panel_quintile_ann_pct": [
+            12.961,
+            15.539,
+            14.936,
+            10.901,
+            7.927
+          ],
+          "superseded_panel_quintile_ann_pct": [
+            12.912,
+            15.443,
+            14.297,
+            11.769,
+            8.189
+          ],
           "argmax_quintile": 2,
           "q1_to_q2_pp": 2.531,
           "monotonicity": 0.25,
@@ -923,14 +940,25 @@
             "repaired": -1.054,
             "superseded": -1.018
           },
-          "spread_ci_ann_pct_superseded": [-13.854, 4.408],
+          "spread_ci_ann_pct_superseded": [
+            -13.854,
+            4.408
+          ],
           "rank_ic_superseded": 0.041185,
           "rank_ic_harvey_t_superseded": 3.703
         },
         "corrected_statement": "Q2 정점 역U + 상위 3분위 하락. Q1→Q2 는 +2.53%p **상승**하고 하락은 Q3→Q5 구간에 국한된다. Q5−Q1 평균 스프레드는 연 -4.72%(NW t -1.02, CI [-13.85, +4.41]) 로 **비유의**. 확립 사실은 '역전'이 아니라 **'순위/중앙값 양(+) ∧ 평균 스프레드 비유의'**.",
         "self_contradiction": "같은 문장이 함께 보고한 monotonicity 0.25 가 이미 비단조를 뜻한다 — 수치와 서술이 자기모순이었고 아무도 검산하지 않았다.",
         "downstream_impact": "이 서술은 '고변동 꼬리의 양의 왜도가 평균을 끌어올린다' → 'WT-021 D03 standalone PORT_t −1.73 의 산술적 정체' → '제거 대상이 평균 기여가 높은 종목이라 희석이 손해' 로 3단 연결됐다. 평균 스프레드가 비유의인 이상 이 연쇄는 **약한 후보**로만 남으며 '확립'으로 인용할 수 없다.",
-        "propagation_sites_corrected": ["qepm/mailbox/worktask/WT-D20260808_001/alpha_package.json (challenge_flags)", "qepm/mailbox/worktask/WT-D20260808_001/challenge_note.md:87", "qepm/mailbox/worktask/WT-D20260808_001/challenge_note_contract_repair.md:80", "stage_artifacts/WT_D20260808_001/alpha_validation_replication_20260808.json:56(headline),:60(interpretation)", "stage_artifacts/WT_D20260808_001/create_wt2.R:10", "stage_artifacts/WT_D20260808_001/repair_package_contract.R:176", "stage_artifacts/WT_D20260808_001/alpha_validation.json (본 블록)"],
+        "propagation_sites_corrected": [
+          "qepm/mailbox/worktask/WT-D20260808_001/alpha_package.json (challenge_flags)",
+          "qepm/mailbox/worktask/WT-D20260808_001/challenge_note.md:87",
+          "qepm/mailbox/worktask/WT-D20260808_001/challenge_note_contract_repair.md:80",
+          "stage_artifacts/WT_D20260808_001/alpha_validation_replication_20260808.json:56(headline),:60(interpretation)",
+          "stage_artifacts/WT_D20260808_001/create_wt2.R:10",
+          "stage_artifacts/WT_D20260808_001/repair_package_contract.R:176",
+          "stage_artifacts/WT_D20260808_001/alpha_validation.json (본 블록)"
+        ],
         "preservation": "전 지점에서 구 문구를 삭제하지 않고 superseded_/취소선/주석으로 보존."
       },
       "claim_B": {
@@ -946,10 +974,30 @@
           "Q01_EB": 1.356
         },
         "corrected_statement": "사전 기대치(F1 기반 예측) +0.79%/+0.81% 대비 **실제 관측은 D03 -3.14%/yr(부호 반대) · Q01 +1.36%/yr** 이다. 사전 기대치를 관측으로 표기하면 '예측이 맞았다'는 인상을 주는데 D03 은 방향 자체가 반대였다.",
-        "propagation_sites_corrected": ["stage_artifacts/WT_D20260808_001/create_wt2.R:9", "stage_artifacts/WT_D20260808_001/send_brief.R:18"]
+        "propagation_sites_corrected": [
+          "stage_artifacts/WT_D20260808_001/create_wt2.R:9",
+          "stage_artifacts/WT_D20260808_001/send_brief.R:18"
+        ]
       },
       "lesson": "두 오류의 공통 기전 = **자기 결론을 지지하는 방향의 수치를 검산 없이 승격**. A 는 원 데이터 배열이 바로 옆에서 반증하고 있었고(quintile 배열 · monotonicity 0.25), B 는 원 필드명(prior_effect_from_F1)이 정체를 명시하고 있었다. 둘 다 '값을 옮길 때 출처 필드를 함께 읽었으면' 막혔다 — audit_input 이 강제하려는 그 습관이다.",
       "provenance": "stage_artifacts/WT_D20260808_001/verification_followup/probe_d03_quintile.R + preregistration.json 원 필드 조회"
+    },
+    "self_adversarial_challenge": {
+      "note_path": "stage_artifacts/WT_D20260808_001/verification_followup/challenge_note_followup.md",
+      "concerns_raised": 9,
+      "accept": 5,
+      "partial": 3,
+      "rebuttal": 1,
+      "high_severity": 3,
+      "escalation_triggered": false,
+      "manual_escalation": "C-5(판정 arm 의 top-25 중 3.04% 가 20일-ADV 2e8 미만 · 계약 함수 라벨↔구현 불일치) 는 자동 트리거 미발화이나 Q-Lead 수동 상신 대상",
+      "items": [
+        "[자기적대검증 C-1 2026-08-09] F3 는 D03 에 대해 거의 동어반복이다 — D03_EWMA 는 EWMA 실현변동성이라 그 최상위 분위는 정의상 최저변동 집합이고 저변동↔저β 는 산술적 귀결에 가깝다. 기전이 거짓이어도 관측되는 양이라 반증력이 낮다. HAC 교정은 추론을 고칠 뿐 관측의 반증력을 회복시키지 않는다. ★반면 Q01_EB 는 이익안정성 축이라 저β 와 정의상 연결이 없는데도 gap 이 −0.249 로 D03(−0.215)보다 **크다** — 원 판정이 D03 을 SUPPORTED, Q01 을 WEAK 로 적은 것은 독해가 뒤집힌 것이며 정보량은 Q01 쪽이 크다(alpha_validation 정정 반영).",
+        "[자기적대검증 C-2 2026-08-09] NW lag-60 은 n=259 의 23% 대역폭이라 그 자체로 편향·고분산이다. 겹치는 60개월 창의 유효 독립 관측은 ~4개 수준이므로 이 계열의 어떤 t 도 강한 증거로 읽어선 안 된다. 방어 근거 = 대역폭 비의존 경로인 MBB(L=60, B=2000)가 −4.84/−6.39 로 정합 + Andrews −4.66/−7.07 로 자릿수 일치 (lag-3 만 12~20 대로 튄다). 단일 t 인용 금지 라벨.",
+        "[자기적대검증 C-3 2026-08-09] ②의 회전율 통제는 교락 통제가 아니라 **매개 통제(bad control)** 일 수 있다 — 기전이 '개인 lottery 수요' 라면 회전율은 그 수요의 결과다. 부분 방어: 순수 매개면 계수가 0 을 향해 줄지만 실측은 0 을 지나 +2.49 로 역전하며, 교락 실재가 독립 확인된다(회전율→개인 순매수 t +7.61 · D03 z↔회전율 cor −0.559 vs Q01 −0.001). ⇒ 확립된 최대치는 'D03 의 개인-flow 귀속은 거래활동과 분리 불가' 이며 '연관이 허구였다' 는 더 센 진술은 하지 않는다. 판별은 NP-F2.",
+        "[자기적대검증 C-4/C-9 2026-08-09] (C-4) 수리는 유니버스 불일치를 없앤 게 아니라 3.31%→0.50% 로 줄였다 — 발행 패널은 판정 유니버스의 부분집합(밖 0행 실측)이며 advisory 배터리는 판정 arm 과 정확히 같은 유니버스가 아니다. (C-9) ⑤ 정정은 '단조 감소 → 고변동 꼬리 왜도 → 제거 대상이 평균 기여 높아 희석이 손해' 3단 사슬의 1단을 무너뜨렸고 Q5−Q1 평균 스프레드도 비유의(t −1.02)라 사슬 전체가 약한 후보로 강등된다. 대체 설명은 세우지 않았다. NOT_CONSUMABLE 결론은 플라시보 p=0.833 이라는 독립 근거가 지탱하므로 불변.",
+        "[자기적대검증 C-6 2026-08-09 · REBUTTAL] '섹터-중립화에 미래참조' 의심은 실측 반증 — RAWDATA Sector 는 시변 라벨이다(월말 관측 3,388종 중 824종·24.4% 가 시간에 따라 섹터 변경, 60개월 이상 관측 2,897종 중 791종·27.3%). 정적 스냅샷의 소급 적용이 아니다. 단 재분류 반영 시점 lag 는 미확인이라 약한 잔여 의심으로 남기고 판정 근거로 쓰지 않았다. 출처 = verification_followup/probe_sector_pit.R"
+      ]
     }
   }
 }
