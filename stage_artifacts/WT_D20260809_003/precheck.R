@@ -1,4 +1,4 @@
-## WT-D20260809_002 (FQ-166) 착수 전 사전 확인 — 세 재료 패널이 동일 프레임으로 맞춰지는가
+## WT-D20260809_003 (FQ-166) 착수 전 사전 확인 — 세 재료 패널이 동일 프레임으로 맞춰지는가
 ## read-only. 라운드 성립 조건 판정용. 가정 금지 — 전부 실측 출력.
 suppressPackageStartupMessages({ library(data.table); library(arrow) })
 ROOT <- Sys.getenv("QM_ROOT", "C:/Users/99922/OneDrive/Quant_Module_Moltbot"); setwd(ROOT)
@@ -39,5 +39,5 @@ if (length(info) >= 2L) {
   say("  종목 교집합 %d (개별 %s)", length(Reduce(intersect, tk)),
       paste(sprintf("%s=%d", names(tk), lengths(tk)), collapse = " · "))
 }
-saveRDS(info[names(info)], "stage_artifacts/WT_D20260809_002/precheck_info.rds")
+saveRDS(info[names(info)], "stage_artifacts/WT_D20260809_003/precheck_info.rds")
 say("=== 사전 확인 완료 ===")

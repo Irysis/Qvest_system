@@ -17,4 +17,4 @@ wt_id <- wt_create(
   universe = "KOSPI200_KOSDAQ150_intersection",
   benchmark = "KOSPI200_total_return")
 cat("[wt] created:", wt_id, "\n")
-writeLines(wt_id, "stage_artifacts/WT_D20260809_002/wt_id.txt")
+writeLines(wt_id, "stage_artifacts/WT_D20260809_003/wt_id.txt")

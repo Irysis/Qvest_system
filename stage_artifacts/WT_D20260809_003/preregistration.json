@@ -1,0 +1,99 @@
+{
+  "wt_id": "WT-D20260809_003",
+  "fq_ref": "FQ-166",
+  "parents": ["WT-D20260809_001 (M26 단조형)", "WT-D20260808_003 (Q01 중립 혹형)"],
+  "written_at": "2026-08-09",
+  "written_before_measurement": true,
+  "title": "전이 벽 형태 분류 — 형태 차이가 재료 속성인가 프레임 산물인가",
+
+  "why_this_round": [
+    "2026-08-09 하루에 독립 두 라운드가 정반대 분위 형태를 보고했다: M26 decile 단조 +0.879(D10 t +2.822) vs 중립 Q01 5분위 혹([-3.81 +1.37 +3.05 +1.78 -2.41]).",
+    "★그러나 두 관측은 프레임이 다르다 — 10분위/전표본/원신호 vs 5분위/post-2015/중립화. 형태 차이가 재료 때문인지 프레임 때문인지 **미분리**다.",
+    "'벽이 이질적이다' 를 확립으로 쓰려면 이 분리가 선행해야 한다. 현재 두 메모리 카드 모두 이 주장을 담고 있어, 분리 실패 시 **양쪽 다 정정 대상**이다.",
+    "사전 확인(P0b)에서 동일-행 프레임이 성립함을 실측: 내부조인 69,282행 x 282개월 x 630종목, 월중앙 284종목(decile 당 28), z_raw↔Q01_EB 상관 1.0000."
+  ],
+
+  "input_declared": {
+    "panel": "stage_artifacts/WT_D20260809_003/merged_panel.rds (P0b 산출)",
+    "expected_rows": 69282,
+    "expected_months": 282,
+    "expected_period": "2003-01-30 ~ 2026-06-30",
+    "materials": ["M26_Revenue_Mom", "Q01_EB", "D03_EWMA", "M01_PATHQ"],
+    "neutral_arm": "z_neutral (WT-003 섹터+사이즈 중립화 Q01, 커버리지 0.9655)",
+    "returns": "build_monthly_forward_returns 계약 경로 (WT-D20260809_001/p0_panels.rds 재사용)",
+    "assert_rule": "첫 출력은 입력 실측이며 위 선언과 대조한다. 불일치 시 측정 중단."
+  },
+
+  "design": {
+    "primary": "동일 행 위에서 재료별 분위 프로파일 — EW-유니버스 대비 gross 초과, NW lag-3 t",
+    "crossed_factors": {
+      "resolution": [5, 10],
+      "window": ["full_282m", "post2015"],
+      "treatment": ["raw", "neutral(Q01만)"]
+    },
+    "liquidity": "primary = adv>=2e8 적용(canonical 선별과 같은 투자가능 유니버스) · robustness = 미적용",
+    "shape_statistics": ["monotonicity_spearman", "argmax_quantile", "long_side_share", "top_vs_median_gap"],
+    "label_mandatory": "분위 프로파일은 비용 미적용 gross 진단(canonical_screen_diag). PORT_t 와 수준 직접 비교 금지."
+  },
+
+  "shape_classification_rules_fixed_before_results": {
+    "MONOTONE_TOP": "monotonicity_spearman >= 0.70 AND argmax = 최상위 분위",
+    "HUMP": "argmax 가 중간 분위(5분위 기준 2~4 / 10분위 기준 4~8) AND 최상위 초과 < 분위 중앙값 초과",
+    "INVERTED": "monotonicity_spearman <= -0.70",
+    "UNCLASSIFIED": "위 어느 것도 아님 — 형태 미결로 기록하고 추측하지 않는다"
+  },
+
+  "disposition_rules_fixed_before_results": [
+    {
+      "id": "E1",
+      "condition": "동일 프레임(같은 해상도·창·처리)에서 재료들이 서로 다른 형태 class 를 받는다",
+      "verdict": "HETEROGENEOUS_WALL",
+      "action": "'전이 벽은 단일 현상이 아니다' 확립. 형태 진단을 전이 라운드의 1번 절차로 제도화 제안(FQ 등재)."
+    },
+    {
+      "id": "E2",
+      "condition": "동일 프레임에서 전 재료가 같은 형태 class 를 받는다",
+      "verdict": "FRAME_ARTIFACT",
+      "action": "★08-09 두 관측의 차이는 재료가 아니라 프레임이 만든 것. 내 카드(project-m26-...)와 상대 카드(project-transfer-wall-...)의 '정반대 형태' 서술을 **양쪽 다 정정**한다. 이는 실패가 아니라 1급 정보."
+    },
+    {
+      "id": "E3",
+      "condition": "Q01_EB raw 와 z_neutral 이 서로 다른 형태 class",
+      "verdict": "TREATMENT_DRIVEN",
+      "action": "형태는 재료 속성이 아니라 **중립화 처리의 산물**. WT-003 의 혹 관측은 중립화에 귀속되며 원신호로 일반화 금지."
+    },
+    {
+      "id": "E4",
+      "condition": "같은 재료가 full 창과 post2015 창에서 다른 형태 class",
+      "verdict": "ERA_CONDITIONAL",
+      "action": "형태는 시대-조건부. 형태 기반 소비면 라우팅은 창을 명시해야 하며 정적 규약 불가."
+    },
+    {
+      "id": "E5",
+      "condition": "복수 발화",
+      "verdict": "전부 보고. argmax 설명 선택 금지 — 설명력 순위를 매기려면 별도 사전등록이 필요하다."
+    }
+  ],
+
+  "power_discipline": {
+    "rule": "분위 초과 t 는 arm 자신 sd 기반이므로 required_effect 의 바가 t 검정 재진술로 퇴화한다. implied_t_threshold 를 병기해 바가 무엇을 재는지 명시한다.",
+    "split_warning": "post2015 창(약 138개월)과 5분위 분할은 검정력을 떨어뜨린다. 형태 class 는 **점추정 패턴** 판정이며 각 분위 t 의 유의성 주장과 구분한다.",
+    "no_claim_rule": "UNCLASSIFIED 는 '형태 없음'이 아니라 '판별 못함'이다."
+  },
+
+  "known_confounds_declared": [
+    "동일-행 조인이 W1 패널의 20.3%를 떨어뜨린다(잔존율 0.797) — 유니버스가 M26 가용분으로 좁아진다. 따라서 이 라운드의 Q01/D03 프로파일은 **원 라운드의 값과 다를 수 있고**, 그 차이 자체가 프레임 효과의 일부다.",
+    "z_neutral 커버리지 0.9655 — 중립 arm 은 나머지 3.45% 결측 위에서 측정된다.",
+    "WT-003 은 alpha_hat 기반 5분위였고 본 라운드는 score 분위다. 완전 재현이 아니라 **동일 프레임 재산출**이다.",
+    "분위 프로파일은 gross — 비용·회전율 차이는 이 축에서 보이지 않는다. 형태와 실현 PORT_t 는 별개 층."
+  ],
+
+  "not_in_scope": [
+    "어떤 재료의 자격 판정도 하지 않는다(진단 라운드).",
+    "자본 주장 없음 — governor 미호출.",
+    "사다리(net->gross->EW-basis) 재산출은 형태 판정 후 별도 단계(P2)로만."
+  ],
+
+  "self_adversarial_required": true,
+  "close_round_required": true
+}

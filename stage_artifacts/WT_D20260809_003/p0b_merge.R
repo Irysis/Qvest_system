@@ -1,9 +1,9 @@
-## WT-D20260809_002 (FQ-166) P0b — 동일 프레임 병합 패널 실측
+## WT-D20260809_003 (FQ-166) P0b — 동일 프레임 병합 패널 실측
 ## 목적: 4재료(M26 · Q01_EB · D03_EWMA · M01_PATHQ)를 **동일 행** 위에 올릴 수 있는지, 규모가 라운드를 지탱하는지.
 ## read-only 진단. 결과에 따라 라운드 설계가 바뀐다(사전 확인이 설계를 바꾼 선례 4/4).
 suppressPackageStartupMessages({ library(data.table); library(arrow) })
 ROOT <- Sys.getenv("QM_ROOT", "C:/Users/99922/OneDrive/Quant_Module_Moltbot"); setwd(ROOT)
-OUT  <- file.path(ROOT, "stage_artifacts/WT_D20260809_002")
+OUT  <- file.path(ROOT, "stage_artifacts/WT_D20260809_003")
 say  <- function(fmt, ...) { cat(sprintf(paste0("[p0b] ", fmt, "\n"), ...)); flush.console() }
 
 W1 <- as.data.table(read_parquet("stage_artifacts/WT_D20260808_001/alpha_scores.parquet"))
