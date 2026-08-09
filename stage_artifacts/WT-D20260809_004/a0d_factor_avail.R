@@ -17,7 +17,8 @@ res <- rbindlist(lapply(yms, function(ym) {
   if (is.null(d)) return(NULL)
   d <- d[Factor_Name %in% targets]
   if (!nrow(d)) return(data.table(ym = ym, Factor_Name = NA_character_, n = 0L))
-  d[, .(n = sum(!is.na(Z_Score))), by = .(ym = ym, Factor_Name)]
+  o <- d[, .(n = sum(!is.na(Z_Score))), by = Factor_Name]
+  o[, ym := ym][]
 }), fill = TRUE)
 
 for (f in targets) {
