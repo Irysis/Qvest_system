@@ -21,11 +21,13 @@
       },
       {
         "group_id": "A6_investor_flow_stock_daily",
-        "expectation": "(F2 원문) 주체: D03 하위(고변동) 분위 종목에 개인 순매수 강도가 연속 조건화 회귀에서 유의하게 집중(Q01 은 동일 회귀 별도 실행 — 주체가 다를 수 있음을 사전 인정). [실측: log(시총) 교락 통제 후에도 잔존 — D03 −0.0378 t −4.29 (잔존 0.83) · Q01 −0.0228 t −4.33 (잔존 1.13) → SUPPORTED, 사이즈 대용 아님. 단 동시기 연관이며 예측 주장 아님]"
+        "expectation": "(F2 원문) 주체: D03 하위(고변동) 분위 종목에 개인 순매수 강도가 연속 조건화 회귀에서 유의하게 집중(Q01 은 동일 회귀 별도 실행). [**2026-08-09 재측정**: 윈저화(1%/99%) + 회전율(log 거래대금/시총) 통제 시 D03 t -5.15 → -0.65 로 소멸하고 순위변환+통제에서는 부호 역전(t +2.49) → **D03 은 반증 확정, 개인 flow 가 아니라 거래활동 대용**. Q01 은 전 9사양에서 잔존(t -3.75 → -4.09) 하며 회전율과 직교(cor −0.001) → SUPPORTED 유지. 종전 log(시총) 단독 통제 결과(D03 −4.29 · Q01 −4.33)는 필요한 통제를 빠뜨린 사양이었다]",
+        "expectation_superseded_20260808": "(F2 원문) 주체: D03 하위(고변동) 분위 종목에 개인 순매수 강도가 연속 조건화 회귀에서 유의하게 집중(Q01 은 동일 회귀 별도 실행 — 주체가 다를 수 있음을 사전 인정). [실측: log(시총) 교락 통제 후에도 잔존 — D03 −0.0378 t −4.29 (잔존 0.83) · Q01 −0.0228 t −4.33 (잔존 1.13) → SUPPORTED, 사이즈 대용 아님. 단 동시기 연관이며 예측 주장 아님]"
       },
       {
         "group_id": "A1_RAWDATA_OHLCVS_daily",
-        "expectation": "(F3 원문) 구조: D03 최상위(초저변동) 분위의 시장 β 가 유니버스 중앙값 대비 유의하게 낮음(β-drag 경로). [실측 trailing 60m PIT: D03 최상위 0.765 vs 유니버스 중앙 0.979, 차 −0.215 NW t −12.71 → SUPPORTED]"
+        "expectation": "(F3 원문) 구조: D03 최상위(초저변동) 분위의 시장 β 가 유니버스 중앙값 대비 유의하게 낮음(β-drag 경로). [실측 trailing 60m PIT · **2026-08-09 HAC 교정**: D03 최상위 0.765 vs 유니버스 중앙 0.979, 차 -0.215. 겹치는 창(ACF r1 0.935) 때문에 종전 NW lag-3 t -12.71 는 무효 추론량이며 교정치는 NW lag-60 t -5.07 (lag-59 -5.06 · Andrews -4.66 · MBB(L=60) -4.84) → SUPPORTED 유지, 유의성 크기 약 2.5배 축소. 섹터-중립 잔차 β 로는 gap 이 -0.118 로 축소(잔존 0.55, t -5.89) = 이 gap 의 45% 는 섹터 구성 귀속]",
+        "expectation_superseded_20260808": "(F3 원문) 구조: D03 최상위(초저변동) 분위의 시장 β 가 유니버스 중앙값 대비 유의하게 낮음(β-drag 경로). [실측 trailing 60m PIT: D03 최상위 0.765 vs 유니버스 중앙 0.979, 차 −0.215 NW t −12.71 → SUPPORTED]"
       },
       {
         "field": "M01_Mom_12_1",
@@ -289,60 +291,127 @@
     "canonical_port_t_base": 2.05,
     "canonical_port_t_pvalue": 0.018,
     "canonical_n_months": 295,
-    "rank_ic": 0.008974,
-    "icir": 0.052905,
+    "rank_ic": 0.013389,
+    "icir": 0.076341,
     "monotonicity": 0.75,
     "subperiod_stability": 0.3333,
     "turnover_proxy": 7.68,
-    "harvey_t_stat": 0.9133,
-    "post_neutralization_ic": 0.020561,
+    "harvey_t_stat": 1.3007,
+    "post_neutralization_ic": 0.019643,
     "paired_marginal_contribution_ann_pct": 1.35588484638794,
     "paired_marginal_t_nw_lag3": 0.915039853098516,
     "production_arm_ann_pct": 2.1024032104893,
     "production_arm_t_nw_lag3": 1.31465503285463,
     "note": "canonical_port_t_nw_lag3 = Q01_q20 필터 arm(재구성 base) 실측. rank-IC 계열은 본 라운드 판정 대상이 아니라 미산출(NA) — 판정량은 paired 한계기여",
-    "alpha_inheritance_cor": 0.733,
+    "alpha_inheritance_cor": 0.73,
     "alpha_inheritance_cor_note": "Spearman 월별 중앙값 (emitted masked score vs base M01_PATHQ). < 0.95 → wt_type=discovery 유지, 재분류 제안 불요.",
-    "advisory_battery_note": "[계약 수리 2026-08-08] 종전 6개 필드가 null 이었으나 schema 는 number 를 요구한다. 본 라운드 판정량이 paired 한계기여인 것은 맞으나 Step 4-B advisory 배터리는 기록 의무이므로 실측해 채웠다. 값은 emitted 패널(score_q01filtered) 기준이며 판정 권위 아님(measurement-graduation §3 advisory).",
+    "advisory_battery_note": "[유동성 수리 2026-08-09] 재발행 패널(82156행 · adv>=2e8 두 자 교집합) 기준 재산출. 종전 값은 유동성 미필터 유니버스 산출이라 판정량과 다른 유니버스였고 그 사실이 무라벨이었다 (superseded_20260808_pre_liquidity_repair 에 보존). advisory 이며 판정 권위 아님.",
     "advisory_battery_by_factor": {
       "emitted_masked": {
-        "rank_ic": 0.008974,
-        "harvey_t": 0.9133,
+        "rank_ic": 0.013389,
+        "harvey_t": 1.3007,
         "monotonicity": 0.75,
-        "quintile_mean_ann_pct": [12.16, 9.998, 11.017, 14.454, 19.003]
+        "quintile_mean_ann_pct": [11.28, 9.902, 10.118, 14.421, 20.296]
       },
       "base_M01": {
-        "rank_ic": 0.012875,
-        "harvey_t": 1.291,
-        "monotonicity": 0.75,
-        "quintile_mean_ann_pct": [10.452, 9.446, 10.793, 13.909, 17.904]
+        "rank_ic": 0.016316,
+        "harvey_t": 1.555,
+        "monotonicity": 1,
+        "quintile_mean_ann_pct": [8.944, 9.779, 10.419, 14.498, 18.619]
       },
       "Q01_EB_filter_axis": {
-        "rank_ic": 0.01611,
-        "harvey_t": 2.2517,
+        "rank_ic": 0.016164,
+        "harvey_t": 2.1277,
         "subperiod_stability": 0.3333
+      },
+      "D03_EWMA_filter_axis": {
+        "rank_ic": 0.039602,
+        "harvey_t": 3.4573,
+        "monotonicity": 0.25
       }
     },
     "subperiod_rank_ic_emitted": [
       {
         "period": "P1",
-        "ic_mean": 0.021523,
-        "ic_t_nw": 1.5456,
+        "ic_mean": 0.029984,
+        "ic_t_nw": 2.0162,
         "n_months": 157
       },
       {
         "period": "P2",
-        "ic_mean": -0.008663,
-        "ic_t_nw": -0.4355,
+        "ic_mean": -0.009003,
+        "ic_t_nw": -0.4523,
         "n_months": 60
       },
       {
         "period": "P3",
-        "ic_mean": -0.00272,
-        "ic_t_nw": -0.1505,
+        "ic_mean": -0.002789,
+        "ic_t_nw": -0.1546,
         "n_months": 78
       }
-    ]
+    ],
+    "superseded_20260808_pre_liquidity_repair": {
+      "note": "유동성 미필터 유니버스(86,942행)에서 산출된 종전 advisory 값 — 무라벨 상태였다. 보존용, 인용 금지.",
+      "rank_ic": 0.008974,
+      "icir": 0.052905,
+      "monotonicity": 0.75,
+      "subperiod_stability": 0.3333,
+      "harvey_t_stat": 0.9133,
+      "post_neutralization_ic": 0.020561,
+      "alpha_inheritance_cor": 0.733,
+      "advisory_battery_by_factor": {
+        "emitted_masked": {
+          "rank_ic": 0.008974,
+          "harvey_t": 0.9133,
+          "monotonicity": 0.75,
+          "quintile_mean_ann_pct": [
+            12.16,
+            9.998,
+            11.017,
+            14.454,
+            19.003
+          ]
+        },
+        "base_M01": {
+          "rank_ic": 0.012875,
+          "harvey_t": 1.291,
+          "monotonicity": 0.75,
+          "quintile_mean_ann_pct": [
+            10.452,
+            9.446,
+            10.793,
+            13.909,
+            17.904
+          ]
+        },
+        "Q01_EB_filter_axis": {
+          "rank_ic": 0.01611,
+          "harvey_t": 2.2517,
+          "subperiod_stability": 0.3333
+        }
+      },
+      "subperiod_rank_ic_emitted": [
+        {
+          "period": "P1",
+          "ic_mean": 0.021523,
+          "ic_t_nw": 1.5456,
+          "n_months": 157
+        },
+        {
+          "period": "P2",
+          "ic_mean": -0.008663,
+          "ic_t_nw": -0.4355,
+          "n_months": 60
+        },
+        {
+          "period": "P3",
+          "ic_mean": -0.00272,
+          "ic_t_nw": -0.1505,
+          "n_months": 78
+        }
+      ]
+    },
+    "universe_basis": "adv_contract(Vol0*Close0) >= 2e8 AND adv20_raw(frollmean 20d) >= 2e8"
   },
   "selection_objective": "canonical_port_t",
   "challenge_flags": [
@@ -359,11 +428,462 @@
     "[추가 실측] F2 사이즈 교락 통제 — log(시총) 통제 후에도 개인 순매수 집중 잔존(D03 t −4.29 잔존 0.83 · Q01 t −4.33 잔존 1.13). 사이즈 대용 가설 배제.",
     "[추가 실측] Q01_EB rank-IC 의 시기 편중 — P1(2001-2014) +0.0327 t 2.78 / P2(2015-2019) −0.0010 / P3(2020-2026) −0.0037. 전표본 F1·P1 결과는 pre-2015 가중이다. 분할 판정이 아니라 advisory 진단의 정직 라벨.",
     "[추가 실측] D03_EWMA 순위↔평균 부호 역전 — rank-IC Harvey-t +3.50(3.0 통과)인데 5분위 평균 연수익은 Q1 +13.1% → Q5 +8.0% 로 단조 감소(monotonicity 0.25). IC→PORT 전이 벽의 산술적 정체이며 'rank-IC Harvey-t>=3 ∧ monotonicity<0.5' 를 transfer_negative_component 자동 라벨 규칙으로 제안(소비면 ⑥).",
-    "[계약 표면 분열 보고] schema 는 ast_node.args 에 number 스칼라를 허용(윈도우·경계)하는데 ast_verify.py 는 비-dict 노드를 '노드 형상 오류'로 FAIL_CONTRACT 처리한다. init prompt 의 표준 예시(TS_SUM(leaf, 3))조차 이 형태다. ALB-005 와 동류의 두 계층 불일치 — 인프라 백로그 등재 권고."
+    "[계약 표면 분열 보고] schema 는 ast_node.args 에 number 스칼라를 허용(윈도우·경계)하는데 ast_verify.py 는 비-dict 노드를 '노드 형상 오류'로 FAIL_CONTRACT 처리한다. init prompt 의 표준 예시(TS_SUM(leaf, 3))조차 이 형태다. ALB-005 와 동류의 두 계층 불일치 — 인프라 백로그 등재 권고.",
+    "[후속검증 ① 2026-08-09] F3 β-drag 의 종전 t(−12.71/−19.88)는 겹치는 60개월 창(ACF r1 0.935/0.909) 위 lag-3 NW 로 **무효 추론량**이었다. 교정치 NW lag-60 = -5.07 / -6.67 (MBB -4.84 / -6.39). 관측은 유지되나 유의성 크기 2.5~3배 축소 — 구 t 인용 금지.",
+    "[후속검증 ② 2026-08-09] D03 의 F2(개인 순매수 집중) **반증 확정** — 회전율 통제 시 t -5.15 → -0.65, 순위변환+통제에서 부호 역전(+2.49). 표본축소·공선성 아티팩트 아님(결측 0.018%·VIF 2.05). Q01 은 잔존(회전율과 직교). ⇒ verdict.b_D03 의 기전 서술을 **미확립**으로 강등.",
+    "[후속검증 ③ 2026-08-09] 섹터-중립 β gap: 렌즈4 의 잔존율 0.46/0.24 는 **크기 불재현**(12셀 전수 D03 [0.549,0.639] · Q01 [0.334,0.371]) 이나 **방향 재현** — Q01 gap 의 63~67%가 섹터 구성 귀속(D03 은 36~45%). 섹터-중립 잔차 gap 도 교정 SE 에서 유의 유지(D03 t -5.89 · Q01 t -11.17) — 주장 A 는 크기 축소, 존폐는 유지.",
+    "[후속검증 ④ 2026-08-09] 발행 패널 유동성 수리 — 86942행 → 82156행(제거 4786). 위반 주입 테스트 PASS(수리판 CLEAN ∧ 필터제거판 VIOLATION). 최신월 25종 불변. 구 패널은 alpha_scores_superseded_20260809.parquet.",
+    "[인프라 상신 2026-08-09] 유동성 축이 **두 양**이다 — 계약 build_monthly_forward_returns() 의 adv 는 주석과 달리 Vol0*Close0(1일치)이고 Production Constraints/고지문은 20일 평균이다. 상관 0.929 · 판정 불일치 2.61%. 이 WT 범위 밖(하류 다수 측정 영향)이라 수리하지 않고 basis 를 선언 필드로 못 박았다. 02_Infrastructure/ramp/factor_validation.R 라벨↔구현 불일치 = 인프라 백로그.",
+    "[출처 결손 2026-08-09] alpha_validation 의 placebo.seeds_24_W3 8값은 probe_adversarial.R 콘솔 출력 전사이며 측정 객체(RDS)가 없다. 본 라운드는 재산출하지 않고 provenance_gap 라벨만 붙였다 — 재인용 전 재산출 필요.",
+    "[검정력 바 진단 2026-08-09] primary 두 셀의 implied_t_threshold = 2.59 / 2.21 로 문턱 2.0 의 재진술 구간이다 — INCONCLUSIVE_UNDERPOWERED 라벨이 '|t|<2' 이상의 정보를 담지 않는다. 외부 기준 sd 확보가 미해결 항목."
   ],
   "pit": {
     "sig_date": "2026-06-30",
     "decision_ts": "2026-06-30",
     "note": "패널 최신 월말. as_of_date 2026-08-08 과의 차이는 팩터 패널 vintage lag"
+  },
+  "verification_followup_20260809": {
+    "round_id": "verification_followup_20260809",
+    "fq_ref": "FQ-122",
+    "parent": "WT-D20260808_001 적대검증 워크플로 wf_73808a6b-a37",
+    "scope": "새 발견 라운드 아님 — 기존 산출물의 통계 처리 교정 + 발행 패널 수리",
+    "metric_type": "diag (진단 재측정) · 판정량 변경 없음 · 자본 자격 주장 없음",
+    "task1_f3_hac_correction": {
+      "defect": "보고된 F3 t(−12.71/−19.88)는 **겹치는 60개월 trailing 창** 위 gap 계열에 NW lag-3 을 얹은 값이다. 계열 ACF r1 = 0.935(D03)/0.909(Q01) 로 lag-3 커널은 자기상관의 일부만 흡수 → SE 과소 → |t| 과대. 유효 추론량이 아니었다.",
+      "beta_panel": {
+        "rows": 81918,
+        "months": 259,
+        "window": "trailing 60m 겹침(overlapping) · 최소 24관측 · 당월 미포함(PIT)"
+      },
+      "D03_EWMA": {
+        "beta_top_quintile_median": 0.7646,
+        "beta_universe_median": 0.9791,
+        "n_months": 259,
+        "mean_gap": -0.21455,
+        "acf_r1": 0.935,
+        "acf_r6": 0.782,
+        "acf_r12": 0.615,
+        "t_nw_lag3_SUPERSEDED": -12.714,
+        "t_nw_lag59": -5.059,
+        "t_nw_lag60": -5.068,
+        "t_andrews_qs": -4.658,
+        "t_hansen_hodrick_59": -5.691,
+        "hansen_hodrick_note": null,
+        "t_mbb_L60_B2000": -4.841
+      },
+      "Q01_EB": {
+        "beta_top_quintile_median": 0.7317,
+        "beta_universe_median": 0.9806,
+        "n_months": 259,
+        "mean_gap": -0.2489,
+        "acf_r1": 0.909,
+        "acf_r6": 0.788,
+        "acf_r12": 0.634,
+        "t_nw_lag3_SUPERSEDED": -19.876,
+        "t_nw_lag59": -6.698,
+        "t_nw_lag60": -6.673,
+        "t_andrews_qs": -7.07,
+        "t_hansen_hodrick_59": -5.519,
+        "hansen_hodrick_note": null,
+        "t_mbb_L60_B2000": -6.385
+      },
+      "primary_estimator": "t_nw_lag60 (창 길이와 정합). lag59·Andrews·MBB 가 로버스트 집합.",
+      "hansen_hodrick_caveat": "절단(Truncated) 커널은 이 계열에서 불안정하다 — Q01 섹터잔차에서 비-PSD 분산이 나왔고 Sector_Lv2 판본에서는 |t| 26.8 로 발산했다. HH 는 참고치로만 읽을 것.",
+      "verdict": "F3 구조 관측(최상위 분위 β 저하)은 교정 후에도 유의 — D03 t −5.07 · Q01 t −6.67 (lag-60). 즉 **관측 자체는 살아남고 유의성 크기가 2.5~3배 축소**된다. 구 t 는 무효 추론량이므로 인용 금지.",
+      "adversarial_expectation_check": "적대검증 기대치 lag59/60 −5.07/−6.67 · MBB −4.76/−6.28 은 본 재측정(−5.06/−5.07, −6.70/−6.67 · MBB −4.84/−6.39)과 일치. 단 Andrews 는 불일치 — 기대 −7.46/−11.63 vs 본 측정 −4.66/−7.07. 대역폭 선택(prewhite/커널)이 다른 것으로 보이며, 본 측정치가 더 보수적이다. ★불일치를 조정하지 않고 그대로 보고한다."
+    },
+    "task3_sector_neutral_beta": {
+      "question": "F3 gap 이 종목 저β 인가 섹터 구성인가 — 렌즈4 단독 결과(D03 0.46 / Q01 0.24) 재현 여부",
+      "design": "월별 섹터 평균 제거 잔차 β 로 동일 gap 재산출. 섹터 셀 <3종목은 OTHER_SMALL 로 병합(단일 셀 잔차=0 인공물 방지). ★판정은 ①의 교정 SE 위에서만 — lag-3 재사용 안 함.",
+      "grid": [
+        {
+          "key": "D03_EWMA|rawdata_Sector|median",
+          "factor": "D03_EWMA",
+          "sector_def": "rawdata_Sector",
+          "stat": "median",
+          "gap_raw": -0.21455,
+          "gap_resid": -0.11771,
+          "retention": 0.549
+        },
+        {
+          "key": "D03_EWMA|rawdata_Sector_Lv2|median",
+          "factor": "D03_EWMA",
+          "sector_def": "rawdata_Sector_Lv2",
+          "stat": "median",
+          "gap_raw": -0.21455,
+          "gap_resid": -0.12096,
+          "retention": 0.564
+        },
+        {
+          "key": "D03_EWMA|wt009_sector_panel|median",
+          "factor": "D03_EWMA",
+          "sector_def": "wt009_sector_panel",
+          "stat": "median",
+          "gap_raw": -0.21455,
+          "gap_resid": -0.11771,
+          "retention": 0.549
+        },
+        {
+          "key": "D03_EWMA|rawdata_Sector|mean",
+          "factor": "D03_EWMA",
+          "sector_def": "rawdata_Sector",
+          "stat": "mean",
+          "gap_raw": -0.20648,
+          "gap_resid": -0.12649,
+          "retention": 0.613
+        },
+        {
+          "key": "D03_EWMA|rawdata_Sector_Lv2|mean",
+          "factor": "D03_EWMA",
+          "sector_def": "rawdata_Sector_Lv2",
+          "stat": "mean",
+          "gap_raw": -0.20648,
+          "gap_resid": -0.13191,
+          "retention": 0.639
+        },
+        {
+          "key": "D03_EWMA|wt009_sector_panel|mean",
+          "factor": "D03_EWMA",
+          "sector_def": "wt009_sector_panel",
+          "stat": "mean",
+          "gap_raw": -0.20648,
+          "gap_resid": -0.12649,
+          "retention": 0.613
+        },
+        {
+          "key": "Q01_EB|rawdata_Sector|median",
+          "factor": "Q01_EB",
+          "sector_def": "rawdata_Sector",
+          "stat": "median",
+          "gap_raw": -0.2489,
+          "gap_resid": -0.0859,
+          "retention": 0.345
+        },
+        {
+          "key": "Q01_EB|rawdata_Sector_Lv2|median",
+          "factor": "Q01_EB",
+          "sector_def": "rawdata_Sector_Lv2",
+          "stat": "median",
+          "gap_raw": -0.2489,
+          "gap_resid": -0.08325,
+          "retention": 0.334
+        },
+        {
+          "key": "Q01_EB|wt009_sector_panel|median",
+          "factor": "Q01_EB",
+          "sector_def": "wt009_sector_panel",
+          "stat": "median",
+          "gap_raw": -0.2489,
+          "gap_resid": -0.0859,
+          "retention": 0.345
+        },
+        {
+          "key": "Q01_EB|rawdata_Sector|mean",
+          "factor": "Q01_EB",
+          "sector_def": "rawdata_Sector",
+          "stat": "mean",
+          "gap_raw": -0.24625,
+          "gap_resid": -0.09138,
+          "retention": 0.371
+        },
+        {
+          "key": "Q01_EB|rawdata_Sector_Lv2|mean",
+          "factor": "Q01_EB",
+          "sector_def": "rawdata_Sector_Lv2",
+          "stat": "mean",
+          "gap_raw": -0.24625,
+          "gap_resid": -0.08363,
+          "retention": 0.34
+        },
+        {
+          "key": "Q01_EB|wt009_sector_panel|mean",
+          "factor": "Q01_EB",
+          "sector_def": "wt009_sector_panel",
+          "stat": "mean",
+          "gap_raw": -0.24625,
+          "gap_resid": -0.09138,
+          "retention": 0.371
+        }
+      ],
+      "headline_D03": {
+        "retention_vs_raw": 0.549,
+        "n_months": 259,
+        "mean_gap": -0.11771,
+        "acf_r1": 0.834,
+        "acf_r6": 0.6,
+        "acf_r12": 0.46,
+        "t_nw_lag3_SUPERSEDED": -14.802,
+        "t_nw_lag59": -5.894,
+        "t_nw_lag60": -5.885,
+        "t_andrews_qs": -6.869,
+        "t_hansen_hodrick_59": -5.389,
+        "hansen_hodrick_note": null,
+        "t_mbb_L60_B2000": -5.259
+      },
+      "headline_Q01": {
+        "retention_vs_raw": 0.345,
+        "n_months": 259,
+        "mean_gap": -0.0859,
+        "acf_r1": 0.786,
+        "acf_r6": 0.477,
+        "acf_r12": 0.248,
+        "t_nw_lag3_SUPERSEDED": -14.739,
+        "t_nw_lag59": -11.062,
+        "t_nw_lag60": -11.167,
+        "t_andrews_qs": -8.03,
+        "t_hansen_hodrick_59": null,
+        "hansen_hodrick_note": "비-PSD 분산 -8.311e-06 — 이 커널은 이 계열에서 유효 추정 불가",
+        "t_mbb_L60_B2000": -10.83
+      },
+      "retention_range_D03": [0.549, 0.639],
+      "retention_range_Q01": [0.334, 0.371],
+      "reproduction_verdict_D03": "불재현",
+      "reproduction_verdict_Q01": "불재현",
+      "verdict": "**크기 불재현 · 방향 재현.** 섹터 정의 3종(RAWDATA Sector · Sector_Lv2 · WT-009 sector_panel) x 통계 2종(중앙값·평균) 12셀 전수에서 잔존율은 D03 [0.549, 0.639] · Q01 [0.334, 0.371] 이며 렌즈4 의 0.46 / 0.24 는 두 구간 밖이다. ★단 방향 주장은 재현된다: Q01 gap 은 D03 보다 섹터 구성 귀속이 훨씬 크다. 실측 귀속률 = Q01 63~67%가 섹터 / D03 36~45%가 섹터. 따라서 '주장 A 는 크기가 줄되 존폐로는 살아남는다' — 섹터-중립 잔차 gap 은 교정 SE 에서도 여전히 유의하다(D03 t −5.89 · Q01 t −11.17, lag-60). Q01 의 β-drag 는 과반이 섹터 구성이지만 종목 수준 성분도 소멸하지 않는다.",
+      "note_sector_panel_identity": "WT-009 sector_panel.parquet 은 RAWDATA Sector 와 동일 결과를 낸다(잔존율 소수 3자리까지 일치) — 독립 정의가 아니다."
+    },
+    "task2_f2_remeasure": {
+      "question": "D03 의 개인 순매수 집중이 회전율 교락의 대용인가",
+      "design": "월별 횡단면 회귀(FMB) — y = 개인 월간 순매수/시총, x = 필터 z. y 는 1%/99% 윈저화. 통제 = log(시총) · log(20일 거래대금) · log(월간 거래대금/시총 = 회전율). 순위변환 판본 병행. 계수 계열은 창 비겹침이라 NW lag-3 적정(ACF r1 0.04~0.27 병기).",
+      "D03_EWMA": [
+        {
+          "spec": "M0_raw",
+          "controls": "none",
+          "b": -0.04541,
+          "t_nw_lag3": -5.147,
+          "ci_lo": -0.06277,
+          "ci_hi": -0.02805,
+          "n_month": 295
+        },
+        {
+          "spec": "M1_wins",
+          "controls": "none",
+          "b": -0.04054,
+          "t_nw_lag3": -4.712,
+          "ci_lo": -0.05747,
+          "ci_hi": -0.02361,
+          "n_month": 295
+        },
+        {
+          "spec": "M2_wins_size",
+          "controls": "lsz",
+          "b": -0.0328,
+          "t_nw_lag3": -3.815,
+          "ci_lo": -0.04973,
+          "ci_hi": -0.01588,
+          "n_month": 295
+        },
+        {
+          "spec": "M3_wins_size_adv",
+          "controls": "lsz+ladv",
+          "b": -0.0241,
+          "t_nw_lag3": -3.429,
+          "ci_lo": -0.03792,
+          "ci_hi": -0.01027,
+          "n_month": 295
+        },
+        {
+          "spec": "M4_wins_size_turn",
+          "controls": "lsz+lturn",
+          "b": -0.00531,
+          "t_nw_lag3": -0.647,
+          "ci_lo": -0.02146,
+          "ci_hi": 0.01084,
+          "n_month": 295
+        },
+        {
+          "spec": "M5_wins_all",
+          "controls": "lsz+ladv+lturn",
+          "b": -0.00429,
+          "t_nw_lag3": -0.529,
+          "ci_lo": -0.02022,
+          "ci_hi": 0.01165,
+          "n_month": 295
+        },
+        {
+          "spec": "M6_rank_only",
+          "controls": "none",
+          "b": -0.01888,
+          "t_nw_lag3": -2.299,
+          "ci_lo": -0.03503,
+          "ci_hi": -0.00272,
+          "n_month": 295
+        },
+        {
+          "spec": "M7_rank_size_turn",
+          "controls": "lsz+lturn",
+          "b": 0.02223,
+          "t_nw_lag3": 2.333,
+          "ci_lo": 0.00348,
+          "ci_hi": 0.04098,
+          "n_month": 295
+        },
+        {
+          "spec": "M8_rank_all",
+          "controls": "lsz+ladv+lturn",
+          "b": 0.02338,
+          "t_nw_lag3": 2.489,
+          "ci_lo": 0.0049,
+          "ci_hi": 0.04186,
+          "n_month": 295
+        }
+      ],
+      "Q01_EB": [
+        {
+          "spec": "M0_raw",
+          "controls": "none",
+          "b": -0.02022,
+          "t_nw_lag3": -3.753,
+          "ci_lo": -0.03083,
+          "ci_hi": -0.00962,
+          "n_month": 295
+        },
+        {
+          "spec": "M1_wins",
+          "controls": "none",
+          "b": -0.0226,
+          "t_nw_lag3": -3.931,
+          "ci_lo": -0.03391,
+          "ci_hi": -0.01128,
+          "n_month": 295
+        },
+        {
+          "spec": "M2_wins_size",
+          "controls": "lsz",
+          "b": -0.02514,
+          "t_nw_lag3": -4.507,
+          "ci_lo": -0.03612,
+          "ci_hi": -0.01416,
+          "n_month": 295
+        },
+        {
+          "spec": "M3_wins_size_adv",
+          "controls": "lsz+ladv",
+          "b": -0.02258,
+          "t_nw_lag3": -4.138,
+          "ci_lo": -0.03333,
+          "ci_hi": -0.01184,
+          "n_month": 295
+        },
+        {
+          "spec": "M4_wins_size_turn",
+          "controls": "lsz+lturn",
+          "b": -0.02231,
+          "t_nw_lag3": -4.088,
+          "ci_lo": -0.03306,
+          "ci_hi": -0.01157,
+          "n_month": 295
+        },
+        {
+          "spec": "M5_wins_all",
+          "controls": "lsz+ladv+lturn",
+          "b": -0.02169,
+          "t_nw_lag3": -4.002,
+          "ci_lo": -0.03236,
+          "ci_hi": -0.01103,
+          "n_month": 295
+        },
+        {
+          "spec": "M6_rank_only",
+          "controls": "none",
+          "b": -0.03143,
+          "t_nw_lag3": -4.483,
+          "ci_lo": -0.04523,
+          "ci_hi": -0.01763,
+          "n_month": 295
+        },
+        {
+          "spec": "M7_rank_size_turn",
+          "controls": "lsz+lturn",
+          "b": -0.03398,
+          "t_nw_lag3": -5.012,
+          "ci_lo": -0.04732,
+          "ci_hi": -0.02064,
+          "n_month": 295
+        },
+        {
+          "spec": "M8_rank_all",
+          "controls": "lsz+ladv+lturn",
+          "b": -0.03338,
+          "t_nw_lag3": -4.929,
+          "ci_lo": -0.0467,
+          "ci_hi": -0.02005,
+          "n_month": 295
+        }
+      ],
+      "confound_evidence": {
+        "turnover_to_individual_flow_t": 7.61,
+        "cor_D03z_turnover": -0.559,
+        "cor_Q01z_turnover": -0.001,
+        "vif_D03": 2.05,
+        "vif_Q01": 1.02,
+        "sample_attrition_pct": 0.018,
+        "note": "통제 추가로 표본이 줄지 않았고(결측 0.018%) 공선성도 허용범위(VIF 2.05)라 계수 소멸은 분산팽창·표본선택 아티팩트가 아니다. 회전율 자체는 개인 순매수와 강하게 연관(t +7.61)하고 D03 z 는 회전율과 −0.559 로 얽혀 있다 — 교락이 실재한다. 출처: verification_followup/probe_f2_diag.R"
+      },
+      "verdict_D03": "**반증 확정.** 회전율 통제 시 t −5.15 → −0.65(M4) / −0.53(M5) 로 소멸하고, 순위변환 + 회전율 통제에서는 부호가 **역전**해 유의(+2.33 / +2.49)한다. log(거래대금)만 통제한 판본(−3.43)이나 log(시총)만 통제한 판본(−3.81, 종전 보고 −4.29)은 교락을 잡지 못한다 — 필요한 통제는 회전율(거래대금/시총)이었다. D03_EWMA 는 실현변동성 계열이고 변동성↔회전율이 강결합이므로, '개인 lottery 수요' 로 읽힌 것은 거래활동의 대용이다.",
+      "verdict_Q01": "**강화 유지.** 전 9사양에서 부호·유의 불변(t −3.75 ~ −5.01)이고 회전율 통제에서 오히려 소폭 강화된다(−4.09). Q01 z 는 회전율과 직교(cor −0.001)라 교락 경로 자체가 없다. Q01 의 F2(주체) 관측은 살아남는다.",
+      "adversarial_expectation_check": "적대검증 기대치(회전율 통제 t −0.78 · 순위 −0.55 · Q01 −5.39)와 본 재측정(−0.65 · 순위단독 −2.30/순위+통제 +2.33 · Q01 −5.01)은 **결론 일치, 수치 불일치**. 특히 '순위변환 단독 → −0.55' 는 재현되지 않았다(본 측정 −2.30). 순위변환만으로는 D03 연관이 죽지 않으며 죽이는 것은 회전율 통제다. ★수치를 같은 자로 읽지 말 것."
+    },
+    "task4_panel_repair": {
+      "defect_notice": "alpha_scores_PANEL_DEFECT_NOTICE.json (PANEL_DEFECT_20260809_WT001_LIQUIDITY)",
+      "two_rulers_finding": {
+        "ruler_A": "계약 liq_dt.adv = build_monthly_forward_returns() 의 Vol0*Close0 = **월말 당일 1일치 거래대금** (02_Infrastructure/ramp/factor_validation.R — 주석은 '20d ADV at t-1' 이라 적혀 있으나 코드는 1일치다)",
+        "ruler_B": "고지문·Production Constraints 정의 = rawdata frollmean(Vol*Close, 20) 월말값 = 20일 평균 거래대금",
+        "correlation": 0.929,
+        "disagreement_rows": 2305,
+        "disagreement_pct": 2.61,
+        "implication": "판정 유니버스(eligible_set)는 자A 로 걸렀고 고지문 검증은 자B 로 잰다. 같은 이름의 축이 두 양이었다 — 08-08 '상한 0.20 basis' 사건과 동류. ★계약 함수의 라벨↔구현 불일치는 본 WT 범위 밖(하류 다수 측정에 영향) — 인프라 백로그로 상신.",
+        "figure_reconciliation": "고지문이 '서로 다른 양'이라 한 3.31%(2,875행) vs 적대검증 5.03%(4,376행)는 실은 **자B 미달 2,875행 / 자A 미달 4,376행** 이다. 4,376 = 86,942 − 82,566 (eligible_set 차분)과도 정확히 일치한다 — eligible_set 이 자A 필터이기 때문. 두 설명이 같은 수를 가리킨다."
+      },
+      "emitted_basis": "adv_contract(Vol0*Close0) >= 2e8 AND adv20_raw(frollmean 20d) >= 2e8",
+      "rows_before": 86942,
+      "rows_after": 82156,
+      "months": 295,
+      "rows_removed": 4786,
+      "superseded_panel": "stage_artifacts/WT_D20260808_001/alpha_scores_superseded_20260809.parquet",
+      "verification": {
+        "repaired_fail_contract": 0,
+        "repaired_fail_raw20": 0,
+        "repaired_verdict": "CLEAN",
+        "injected_fail_contract": 4376,
+        "injected_fail_raw20": 2875,
+        "injected_verdict": "VIOLATION",
+        "injection_test_pass": true,
+        "note": "위반 주입 = 유동성 필터를 제거한 판본. 검사기가 수리판은 CLEAN, 주입판은 VIOLATION 을 발행 = 검사 실효 확인(0 이 '합격'이 아님을 보증)."
+      },
+      "alpha_vector_change": {
+        "kept": 25,
+        "added": 0,
+        "dropped": 0,
+        "note": "최신월 25종은 불변 — 고지문의 '벡터는 청정, 결함은 패널' 주장 확인. 값은 재발행 패널에서 기계 파생."
+      },
+      "advisory_battery_note": "재발행(청정 유니버스) 패널에서 재산출. 종전 값은 유동성 미필터 유니버스 산출이라 무라벨 상태였다. advisory 이며 판정 권위 아님(measurement-graduation §3)."
+    },
+    "power_bar_diagnosis": {
+      "cells": [
+        {
+          "cell": "D03_EWMA_q20",
+          "observed_t": -1.497,
+          "implied_t_threshold": 2.588,
+          "bar_restates_t": true,
+          "negative_powered_reachable": false,
+          "verdict": "INCONCLUSIVE_BAR_RESTATES_T"
+        },
+        {
+          "cell": "Q01_EB_q20",
+          "observed_t": 0.837,
+          "implied_t_threshold": 2.208,
+          "bar_restates_t": true,
+          "negative_powered_reachable": false,
+          "verdict": "INCONCLUSIVE_BAR_RESTATES_T"
+        }
+      ],
+      "note": "verdict_with_power 개정판 진단 — 두 primary 셀 모두 implied_t_threshold 가 문턱(2.0) 근방이라 바가 t 검정의 재진술이다. 즉 INCONCLUSIVE 라벨은 '|t| < 2' 이상의 정보를 담지 않는다. 검정력을 실제로 논하려면 외부 기준 계열의 sd 가 필요하다 — 미해결 항목으로 표시."
+    },
+    "unreconciled_dual_values_fixed": {
+      "what": "같은 관측치에 두 값이 조정 없이 공존하던 결함을 해소했다. F3 β: alpha_package 0.765/0.979 vs alpha_validation 0.709/0.889. F2 t: wt122_results −5.15/−3.75 vs alpha_validation −11.87/−10.17.",
+      "resolution": "본 라운드가 원 사양을 직접 재측정한 결과 F3 β는 0.7646/0.9791(D03) · 0.7317/0.9806(Q01) 로 **alpha_package 판본이 맞고 alpha_validation 판본이 틀렸다**. F2 raw t 도 −5.15/−3.75(wt122_results)가 재현된다. alpha_validation 의 −11.87/−10.17 · 0.709/0.889 는 병행 중복 실행분의 전사로 보이며 측정 객체가 보존돼 있지 않아 출처 검증이 불가능하다. 구 값은 superseded_ 로 보존.",
+      "provenance_gap": "★별건: alpha_validation 의 placebo.seeds_24_W3 8값도 측정 객체 없이 probe_adversarial.R 콘솔 출력에서 전사된 손코딩 리터럴이다(RDS 미보존). 본 라운드는 이를 재산출하지 않았으므로 값을 그대로 두되 provenance_gap 라벨을 붙인다 — 재인용 시 재산출 필요."
+    }
   }
 }

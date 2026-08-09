@@ -129,12 +129,29 @@ run_regime_overlay_ab <- function(carrier_path = NULL, cost_bps = 15,
   uni_x_book <- if (!is.null(book_exp)) stack(book_exp, uni_exp) else uni_exp
   vt_x_book  <- if (!is.null(book_exp)) stack(book_exp, vt_exp)  else vt_exp
 
+  # ★논문 유래 후보 합류점. extra_exposures 의 원소는 **함수**다
+  #   (method_registry::wrap_exposure_adapter 가 계약검사를 두른 exposure_schedule).
+  #   여기서 ctx 를 만들어 호출한다 — 스케줄을 미리 만들어 넘기면 어댑터가 periods 를 못 봐서
+  #   PIT 컷오프를 자기 창에 맞춰 신고할 수 없다(계약의 핵심이 그 신고다).
+  .ctx <- list(periods = periods[, .(decision_date, eval_date)], bare_gross = copy(bare_gross))
+  .extra_dt <- list()
+  for (.nm in names(extra_exposures)) {
+    .e <- tryCatch(extra_exposures[[.nm]](.ctx),
+                   error = function(err) { cat(sprintf("[regime_ab] 어댑터 %s 예외: %s — 제외\n",
+                                                       .nm, conditionMessage(err))); NULL })
+    if (is.null(.e)) { cat(sprintf("[regime_ab] 어댑터 %s 계약 미통과 — 제외\n", .nm)); next }
+    .e <- as.data.table(.e)
+    .extra_dt[[.nm]] <- .e
+    # 논문 후보도 standalone / book-stacked 두 형태로 잰다 — 기존 후보와 같은 대우.
+    if (!is.null(book_exp)) .extra_dt[[paste0(.nm, "_x_book")]] <- stack(book_exp, .e)
+  }
+  if (length(extra_exposures) && !length(.extra_dt))
+    cat("[regime_ab] ★등재 어댑터는 있으나 계약 통과 0건 — 조용히 넘기지 않고 호명\n")
+
   scen <- c(list(bare = NULL, book_L5 = book_exp,
                  uni_cat = uni_exp, uni_cat_lag1 = uni_lag1, uni_cat_x_book = uni_x_book,
                  voltgt = vt_exp, voltgt_x_book = vt_x_book),
-            # ★논문 유래 후보 합류점 — 없으면 빈 list 라 아무 것도 안 붙는다(조용한 통과 아님:
-            #   소비단이 등재 0건을 이름 붙여 보고한다).
-            lapply(extra_exposures, function(e) as.data.table(e)))
+            .extra_dt)
   res <- list()
   for (nm in names(scen)) {
     r <- weighted_screen_bt(W_strat, returns_dt, bench_dt, cost_bps_oneway = cost_bps,
@@ -161,7 +178,11 @@ run_regime_overlay_ab <- function(carrier_path = NULL, cost_bps = 15,
 
   list(tab = tab, crisis = crisis_tab, n_months = nrow(bench_dt),
        book_basis = book_basis, carrier = basename(carrier_path),
-       n_extra = length(extra_exposures),
+       # ★등재 수와 **실제 합류 수**를 따로 낸다 — 계약 미통과가 등재 수에 묻히면
+       #   "논문이 소비됐다"가 거짓이 된다(등재≠처분 계통).
+       n_extra_registered = length(extra_exposures),
+       n_extra_joined = length(.extra_dt),
+       extra_joined = names(.extra_dt),
        pit = list(label = "regime_ab/unified_cat",
                   max_used_cutoff = as.character(max(uc$pit$used_cutoff)),
                   min_gap_days = as.numeric(min(uc$pit$holding_start - uc$pit$used_cutoff))))

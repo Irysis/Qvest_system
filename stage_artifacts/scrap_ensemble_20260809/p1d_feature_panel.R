@@ -327,10 +327,28 @@ cat(sprintf("    상태 개월수: DOWN=%d SURGE=%d FLAT=%d | P0: 31 / 49 / 174\
 p0_match <- (abs(100*mean(lastrow) - 1.700) < 0.02) && (abs(100*mean(lastsur) - (-2.026)) < 0.02) &&
             (abs(100*mean(lastfla) - 0.482) < 0.02) &&
             (FF[["n_down"]][K,1] == 31) && (FF[["n_surge"]][K,1] == 49) && (FF[["n_flat"]][K,1] == 174)
-cat(sprintf("  ⇒ P0 기준값 재현 = %s\n", p0_match))
+cat(sprintf("  ⇒ P0 기준값 재현(dedup 85 기준) = %s\n", p0_match))
+# ★ 불일치 진단: 범위·개월수는 정확 일치인데 mean/sd 만 다르다 → 모집단 차이 가설을 직접 검정
+A191 <- M - matrix(bmv, nrow(M), ncol(M))
+st_w <- ifelse(bmv <= -0.05, "DOWN", ifelse(bmv >= 0.05, "SURGE", "FLAT"))
+p191 <- vapply(c("DOWN","SURGE","FLAT"),
+               function(s) 100*mean(colMeans(A191[st_w == s, , drop = FALSE])), 0)
+cat(sprintf("  [모집단 검정] 같은 통계를 dedup **이전 191** 위에서: DOWN %+.3f / SURGE %+.3f / FLAT %+.3f\n",
+            p191["DOWN"], p191["SURGE"], p191["FLAT"]))
+p0_on_191 <- abs(p191["DOWN"]-1.700) < 0.02 && abs(p191["SURGE"]+2.026) < 0.02 && abs(p191["FLAT"]-0.482) < 0.02
+cat(sprintf("  ⇒ P0 §5 는 **191(dedup 전) 기준** = %s  (라운드 지침은 'dedup 85 위에서' 였다)\n", p0_on_191))
+cat(sprintf("     기전: 최대 중복그룹 49개가 191 중 25.7%%%% 가중을 차지해 평균을 끌어내림.\n"))
+cat(sprintf("     ⇒ 본 패널의 상태-조건부 피처는 dedup 85 기준이며, P0 §5 수치와 나란히 인용하면 안 된다.\n"))
 SAN <- list(range_checks_all_ok = all(s_ok),
             bm_dd_min = min(DT$bm_dd_depth, na.rm = TRUE),
-            p0_state_reproduction = p0_match,
+            p0_state_reproduction_on_dedup85 = p0_match,
+            p0_state_reproduction_on_raw191 = as.logical(p0_on_191),
+            p0_basis_finding = paste(
+              "P0 §5 의 상태별 산포(DOWN +1.700 / SURGE -2.026 / FLAT +0.482)는 dedup 이전 191 기준.",
+              "dedup 85 기준 재측정 = DOWN +2.217 / SURGE -2.529 / FLAT +0.468.",
+              "범위와 상태 개월수는 양쪽 동일(31/49/174) — 차이는 중복 그룹 가중뿐.",
+              "본 패널 피처는 dedup 85 기준."),
+            raw191_means_pct_m = as.list(p191),
             down = list(mean_pct_m = 100*mean(lastrow), sd = 100*sd(lastrow), n = FF[["n_down"]][K,1]),
             surge = list(mean_pct_m = 100*mean(lastsur), sd = 100*sd(lastsur), n = FF[["n_surge"]][K,1]),
             flat = list(mean_pct_m = 100*mean(lastfla), sd = 100*sd(lastfla), n = FF[["n_flat"]][K,1]))
@@ -480,6 +498,13 @@ rep <- list(
                format = "long: ym, target_ym, module_id, <features>, y_ret, y_dd, y_dd_bear, y_bm_next"),
   features = feat_cols,
   sanity = SAN,
+  p0_reconciliation = local({
+    pf <- file.path(OUT, "p1f_persistence.json")
+    if (file.exists(pf)) c(list(
+      note = "P0 §5 재료(상태-조건부 지속성)를 dedup 85 위에서 재측정한 결과. 상세 = p1f_persistence.json",
+      source = "p1f_persistence_dedup.R"), fromJSON(pf, simplifyVector = TRUE)[c("results","verdict","negative_control")])
+    else list(note = "p1f_persistence.json 미생성")
+  }),
   feature_notes = list(
     state_conditional = "act_mean_down/surge/flat = 확장창 조건부 평균 (상태는 그 달 bm: DOWN<=-5%, SURGE>=+5%, 나머지 FLAT). min 3관측.",
     regime_conditional = "act_mean_regime = 과거 중 '지금과 같은 국면 라벨'이 지배한 달들의 active 평균.",

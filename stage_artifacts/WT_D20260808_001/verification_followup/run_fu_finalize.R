@@ -203,7 +203,7 @@ VF <- list(
     provenance_gap = paste0("★별건: alpha_validation 의 placebo.seeds_24_W3 8값도 측정 객체 없이 ",
       "probe_adversarial.R 콘솔 출력에서 전사된 손코딩 리터럴이다(RDS 미보존). ",
       "본 라운드는 이를 재산출하지 않았으므로 값을 그대로 두되 provenance_gap 라벨을 붙인다 — ",
-      "재인용 시 재산출 필요.")
+      "재인용 시 재산출 필요."))
 )
 
 # ── alpha_package.json ───────────────────────────────────────────────────────
