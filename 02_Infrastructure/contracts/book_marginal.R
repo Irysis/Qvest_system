@@ -64,9 +64,29 @@ bm_ir <- function(active, ppy = 12L) {
 #' @param weight 후보 비중 w. book = (1-w)*incumbent + w*sleeve
 #' @param weight_rule 선언 필드. 판정 재현에 필수 — 값이 다르면 다른 판정이다.
 #' @param require_overlap 최소 겹침 개월(기본 60) — 짧은 창의 국소 ΔIR 은 판정 불가
+#' 월 인덱스 (연도 넘김 안전 — ym 정수 산술 금지: 200412+2 = 200414 는 존재하지 않는 달)
+.bm_mi <- function(d) as.integer(format(d, "%Y")) * 12L + as.integer(format(d, "%m"))
+
+#' ★날짜 규약 정렬 — 두 계열은 **같은 수익월을 다르게 라벨**한다 (2026-08-09 실측 확정)
+#'  PG2      : 수익월의 **다음 달 초**로 라벨 (2008-10 수익 → 2008-11-XX 행)
+#'  후보 패널 : **신호월 말**로 라벨 (2008-10 수익 → 2008-09-30 행)
+#'  ⇒ candidate month_index + 2 = PG2 month_index
+#'  근거 3중: 벤치 상관 0.9375(2위 0.247) · 부호일치 88.1%(offset0 46.1%) · 2008-11 위기월 정합.
+#'  ★날짜 그대로 merge 하면 겹침 0 이 되어 전 후보가 INSUFFICIENT_OVERLAP 으로 조용히 탈락한다.
+.bm_align_offset <- function(sleeve_dates, incumbent_dates) {
+  ds <- as.integer(format(sleeve_dates, "%d")); di <- as.integer(format(incumbent_dates, "%d"))
+  s_is_eom <- stats::median(ds, na.rm = TRUE) >= 26
+  i_is_eom <- stats::median(di, na.rm = TRUE) >= 26
+  if (s_is_eom && !i_is_eom) return(list(offset = 2L, basis = "sleeve=월말(신호월) · incumbent=월초(수익월+1) → +2"))
+  if (!s_is_eom && !i_is_eom) return(list(offset = 0L, basis = "양쪽 동일 규약(월초) → 0"))
+  if (s_is_eom && i_is_eom)  return(list(offset = 0L, basis = "양쪽 동일 규약(월말) → 0"))
+  list(offset = -2L, basis = "sleeve=월초 · incumbent=월말 → -2")
+}
+
 bm_delta_ir <- function(sleeve, weight = 0.20,
                         weight_rule = "static_blend_w_on_sleeve",
-                        require_overlap = 60L, ppy = 12L, incumbent = NULL) {
+                        require_overlap = 60L, ppy = 12L, incumbent = NULL,
+                        align_offset = NULL) {
   stopifnot(is.data.frame(sleeve))
   S <- as.data.table(sleeve)
   dcol <- names(S)[which(tolower(names(S)) %in% c("date","period","ym"))[1]]
@@ -75,12 +95,19 @@ bm_delta_ir <- function(sleeve, weight = 0.20,
   S <- data.table(date = as.Date(S[[dcol]]), sleeve_ret = as.numeric(S[[rcol]]))
 
   B <- if (is.null(incumbent)) bm_load_incumbent() else as.data.table(incumbent)
-  X <- merge(B, S, by = "date")
+  al <- if (is.null(align_offset)) .bm_align_offset(S$date, B$date)
+        else list(offset = as.integer(align_offset), basis = "caller 명시")
+  S[, m := .bm_mi(date) + al$offset]
+  B2 <- copy(B)[, m := .bm_mi(date)]
+  X <- merge(B2, S[, .(m, sleeve_ret)], by = "m")
   n <- nrow(X)
   if (n < require_overlap) {
     return(list(status = "INSUFFICIENT_OVERLAP", n_overlap = n,
                 required = require_overlap, delta_ir = NA_real_,
-                note = sprintf("겹침 %d개월 < %d — 국소 ΔIR 은 판정 불가(창 의존)", n, require_overlap)))
+                align_offset = al$offset, align_basis = al$basis,
+                note = sprintf(paste0("겹침 %d개월 < %d — 국소 ΔIR 은 판정 불가(창 의존). ",
+                  "★겹침 0 이면 날짜 규약 불일치를 먼저 의심하라(적용 offset %+d: %s)"),
+                  n, require_overlap, al$offset, al$basis)))
   }
   ## ★incumbent IR 은 **겹침 창에서** 재계산한다. 전기간 1.416 과 비교하면 창이 달라 판정이 갈린다.
   ir_inc  <- bm_ir(X$active, ppy)
@@ -95,6 +122,7 @@ bm_delta_ir <- function(sleeve, weight = 0.20,
     ir_convention = "net_active_recon_v1",
     base_provenance = "05_Production/2-3.STR_1715_on_M4_R05_noLayer4_PG2/04_backtest_results (production 자기 산출)",
     weight_rule = weight_rule, weight = weight,
+    align_offset = al$offset, align_basis = al$basis,
     n_overlap = n, window = c(as.character(min(X$date)), as.character(max(X$date))),
     incumbent_ir_full_period = 1.416,
     incumbent_ir_on_overlap = ir_inc,
