@@ -16,6 +16,7 @@ source("02_Infrastructure/contracts/essence_score.R")
 HYP <- fromJSON(file.path(MBX, "alpha_hypothesis.json"), simplifyVector = FALSE)
 P0 <- readRDS(file.path(OUT, "p0_panels.rds")); M2 <- readRDS(file.path(OUT, "measure_p2.rds"))
 A3 <- readRDS(file.path(OUT, "addendum_p3.rds")); C6 <- readRDS(file.path(OUT, "corrections_p6.rds"))
+S8 <- readRDS(file.path(OUT, "selfadv_p8.rds"))
 V  <- fromJSON(file.path(OUT, "alpha_validation.json"), simplifyVector = FALSE)
 V2 <- fromJSON(file.path(OUT, "alpha_validation_addendum2.json"), simplifyVector = FALSE)
 V3 <- fromJSON(file.path(OUT, "alpha_validation_dualbasis.json"), simplifyVector = FALSE)
@@ -232,7 +233,8 @@ PKG <- list(
     "★B3 발화(사전등록) — 중립화가 β 갭을 부분만 닫는다(분위 -0.245→-0.153 · top-25 -0.269→-0.209, 문턱 -0.15 잔존). 섹터+사이즈는 β 채널을 span 하지 못하며 전이 결과의 채널 귀속 주장은 금지된다. C3(β-직접 잔차화)는 재설계 후보로만 승격, 본 라운드 arm 추가 없음",
     "★handoff 제1 조건 이행 — paired 형태 2종을 착수 전 폐기(필요 연 4.00%/2.81% vs drag 함의 0.69%/0.12%). 판정 형태를 월-횡단면 FMB 로 전환. 부모 라운드 전 arm INCONCLUSIVE_UNDERPOWERED 재발 회피",
     "★자본 자격 주장 없음 — 중립 top-25 canonical PORT_t +0.382 (HARD 2.95 대비 크게 미달). 필터 arm 2.308 도 미달. 본 라운드는 벽-귀속 판별 라운드",
-    "★전이 벽의 직접 관측(본 라운드 최대 산출) — post-2015 중립 Q01 rank-IC +0.0146 NW t +2.72 (양(+) 유의)인데 같은 창 top-25 바스켓 active 는 cap-w -12.13%/yr t -2.38 · EW-유니버스 -5.72%/yr t -2.29 (양쪽 basis 에서 음(-) 유의). 순위 정보와 상단-평균 수익이 같은 창에서 반대 부호로 동시에 유의한 최초 실측",
+    "★전이 벽의 직접 관측(본 라운드 최대 산출) — post-2015 중립 Q01 rank-IC +0.0146 NW t +2.72 (양(+) 유의)인데 같은 창 top-25 바스켓 active 는 cap-w -12.13%/yr t -2.38 · EW-유니버스 -5.72%/yr t -2.29 (양쪽 basis 에서 음(-) 유의). 순위 정보와 상단-평균 수익이 같은 창에서 반대 부호로 동시에 유의",
+    "★[Self-Adversarial SA-2 자기정정] 위 관측의 기전은 '좌측-국소화'가 아니라 **혹(hump) 모양 프로파일**이다. post-2015 중립 5분위 연수익(EW-유니버스 대비) = [-3.81 +1.37 +3.05 +1.78 -2.41] — 최상위분위가 중간분위보다 나쁘고 EW 유니버스에도 뒤진다. rank-IC 가 양(+)인 것은 하위 절반의 서열이 맞기 때문이며 상단 꼬리는 오히려 역전한다. ⇒ '상단에 정보가 있는데 β 때문에 못 번다'가 아니라 '상단에 정보가 없다'. 이 정정 전에 나는 좌측-국소화로 읽고 있었고, 그 독법은 필터면이 작동할 것을 예측하는데 실측은 그렇지 않다(필터면 전표본 +0.55% t 0.44 · post-2015 +0.65% t 0.34)",
     "★B4 부활 조건 발화 — FQ-122 부활 조건 'post-2015 양(+) 회복'은 중립 신호에서 rank-IC 축으로 충족(raw -0.0025 t -0.31 → 중립 +0.0146 t +2.72, paired 차 +0.0171 t +2.39). 단 사전등록 판정인 연속 시간추세는 비유의(중립 -0.00033/yr t -0.50) — '회복'이 아니라 '감쇠 정지'가 정확한 서술. 자본 경로 자격은 상단-수익 음(-)으로 별도 차단",
     "★정보 증가 vs 노이즈 축소 — 3종 절차 결과가 갈린다. d1(수익-단위 스프레드): 중립-raw -1.37%/yr t -0.51 = 확대 없음(노이즈 축소 쪽). 절사 사다리에서 중립만 t 1.62→3.07 로 상승 = 전형적 분모 효과. d2(canonical 분해): Δmean +2.34%p · ΔSE -7.6% = 분자 쪽(정보 증가 쪽)이나 저검정력. d3(F3): 부착 잔존율 0.55 = 부분 지지. 종합 처분 = alpha lane 단독 승격 불가, risk/monitoring 소비 라벨 병행",
     "★F3 부분 반증 — 개인 순매수 시그니처의 45%가 중립화로 제거된 성분에 있었다(raw -0.0228 t -4.34 → 중립 -0.0126 t -2.96). '제거되는 성분은 무정보'라는 설계 전제가 부분적으로 틀렸다. 승계 mechanism 의 결함이며 재작성하지 않고 challenge_note 로 보고(Charter 원칙 8)",

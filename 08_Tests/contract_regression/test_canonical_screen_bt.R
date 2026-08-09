@@ -15,8 +15,18 @@ suppressPackageStartupMessages({
   library(data.table); library(xts); library(PerformanceAnalytics)
 })
 
-.this_file <- sub("^--file=", "", grep("^--file=", commandArgs(FALSE), value = TRUE)[1])
-.here <- dirname(normalizePath(.this_file, winslash = "/"))
+## 자기 위치 해석 (2026-08-08 수리) — 구판은 `--file=` 만 봤다. 헌법은 `source(...)` 를 강제하는데
+## 그 경로엔 `--file=` 이 없어 NA → "Execution halted" 로만 죽었다(원인 불가시).
+.here <- local({
+  a <- grep("^--file=", commandArgs(FALSE), value = TRUE)
+  if (length(a) && !is.na(a[1]) && nzchar(a[1]))
+    return(dirname(normalizePath(sub("^--file=", "", a[1]), winslash = "/", mustWork = FALSE)))
+  for (r in c(Sys.getenv("CLAUDE_PROJECT_DIR"), Sys.getenv("QM_ROOT")))
+    if (nzchar(r) && dir.exists(file.path(r, "08_Tests", "contract_regression")))
+      return(file.path(r, "08_Tests", "contract_regression"))
+  if (file.exists(file.path(getwd(), "helpers.R"))) return(getwd())
+  stop("자기 위치 해석 실패 — ★도구 경로 실패이지 계약 실패가 아닙니다.")
+})
 source(file.path(.here, "helpers.R"))
 ROOT <- t_root()
 
