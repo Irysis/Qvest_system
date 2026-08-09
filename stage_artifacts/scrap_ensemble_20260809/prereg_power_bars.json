@@ -1,31 +1,55 @@
 {
   "meta": {
-    "round": "FQ-174 scrap ensemble",
+    "round": "FQ-174 scrap ensemble (폐지줍기)",
     "stage": "prereg_power_bars_FINAL",
     "window": "200502..202603",
     "n_months": 254,
     "universe_dedup": 85,
-    "base": "EW(dedup 85) via Return.portfolio",
-    "t_threshold": 2,
     "K": 12,
-    "sd_basis": "선택된 arm 의 paired diff sd (무작위 arm 아님 — p2 L1 수정)",
-    "contract": "02_Infrastructure/contracts/required_effect_size.R 공식 동등, sd 실측 대체",
-    "metric_type": "diagnostic_precheck"
+    "base": "EW(dedup 85) Return.portfolio",
+    "t_threshold": 2,
+    "sd_basis": "선택된 arm 의 paired diff sd (무작위 arm 아님)",
+    "contract": "02_Infrastructure/contracts/required_effect_size.R — required_effect() 호출(V1), sd 는 실측 대체",
+    "metric_type": "diagnostic_precheck",
+    "verdict": "ABORT"
   },
-  "reconciliation": {
-    "p0_sec5_rho_source": "p0e.log = 191 비-dedup 모듈",
-    "dedup85_rho": {
-      "DOWN": 0.7075,
-      "SURGE": 0.7446,
-      "FLAT": -0.0051
+  "p0_citation_corrections": {
+    "sec4_uncond_rho": {
+      "cited": -0.13,
+      "source": "191 비-dedup(p0d)",
+      "dedup85_vs_bm": 0.2371,
+      "dedup85_vs_base_IR": 0.298671096345515,
+      "impact": "부호 반전 — 무조건부 arm 은 유효한 음성대조가 아니다"
     },
-    "note": "브리프 규약(dedup 85)상 dedup 값이 정본. DOWN/SURGE 는 P0 인용보다 높고 FLAT 반지속성은 소멸."
+    "sec5_state_rho": {
+      "cited": {
+        "DOWN": 0.462,
+        "SURGE": 0.498,
+        "FLAT": -0.436
+      },
+      "source": "191 비-dedup(p0e.log)",
+      "dedup85": {
+        "DOWN": 0.7075,
+        "SURGE": 0.7446,
+        "FLAT": -0.0051
+      },
+      "impact": "DOWN/SURGE 는 더 높고 FLAT 반지속성은 소멸"
+    },
+    "sec6_resid": {
+      "cited_n_t_gt2": 16,
+      "recomputed_vs_base": 15
+    }
   },
   "mechanism": {
-    "beta_rank_corr_DOWN": -0.9751,
-    "beta_rank_corr_SURGE": 0.9851,
-    "beta_residual_rho_DOWN": -0.4008,
-    "beta_residual_rho_SURGE": -0.7159,
+    "beta_rank_corr": {
+      "DOWN": -0.9751,
+      "SURGE": 0.9851,
+      "FLAT": 0.3919
+    },
+    "beta_residual_rho": {
+      "DOWN": -0.4008,
+      "SURGE": -0.7159
+    },
     "label_persistence": {
       "DOWN": 0.133,
       "SURGE": 0.245,
@@ -36,7 +60,36 @@
       "SURGE": 0.192913385826772,
       "FLAT": 0.68503937007874
     },
-    "verdict": "상태-조건부 순위 = beta (rank R^2 0.95~0.97). beta 잔차화 시 지속성 음수. 노출 스케일 축 = WT-D20260809_002 소관"
+    "verdict": "상태-조건부 모듈순위 = beta(rank R^2 0.95~0.97). beta 잔차화 시 지속성 음수 ⇒ 노출 스케일 축(WT-D20260809_002 소관), 멤버십 축 아님"
+  },
+  "V1_design_comparison": [
+    {
+      "state": "DOWN",
+      "interaction_eff_n": 27.2165354330709,
+      "interaction_req_annual": 8.65793738581267,
+      "bucket_n": 30,
+      "bucket_req_annual": 8.24651082579778
+    },
+    {
+      "state": "SURGE",
+      "interaction_eff_n": 39.5472440944882,
+      "interaction_req_annual": 8.22051125796683,
+      "bucket_n": 49,
+      "bucket_req_annual": 7.38514285714286
+    }
+  ],
+  "V2_mdd": {
+    "search_min_mdd_pct": {
+      "p0e_600": 34.1,
+      "p0c_4000": 34.5,
+      "p0g_300": 30.5,
+      "p1_400": 35.6,
+      "p4_400": 33.4
+    },
+    "search_range_pp": 5.1,
+    "required_delta_pp": 4.4901071179217,
+    "oos_delta_mdd_pp": [1.90664174118131, 3.27674758296848, 2.45259363033576, 4.49297722243773, 2.37437532523251],
+    "oos_mean_pp": 2.90066710043116
   },
   "bars": [
     {
@@ -49,9 +102,13 @@
       "is_ceiling_pct_per_month": 0.497277717035624,
       "persistence_rho": 0.298671096345515,
       "expected_oos_pct_per_month": 0.148522480935225,
-      "required_over_expected": 1.8539427622735,
+      "expected_t": 1.07878195632501,
+      "power_at_t2.0": 0.178468299819871,
+      "power_at_t2.64": 0.0592361565332324,
+      "pit_legal": true,
+      "in_scope": true,
       "plausible": false,
-      "note": "무조건부 trailing 선택 = P0 §4 음성대조 arm",
+      "note": "무조건부 trailing 선택. rho 는 dedup 85 정정값(+0.299), P0 §4 의 -0.130 은 191 값",
       "metric_type": "diagnostic_precheck"
     },
     {
@@ -64,9 +121,13 @@
       "is_ceiling_pct_per_month": 2.79147944451689,
       "persistence_rho": 0.70750439710768,
       "expected_oos_pct_per_month": 1.9749839814314,
-      "required_over_expected": 0.420217508433327,
-      "plausible": true,
-      "note": "동월 상태라벨 = PIT 불가(참고용 상한)",
+      "expected_t": 4.7594399563609,
+      "power_at_t2.0": 0.997104973692486,
+      "power_at_t2.64": 0.98297334846919,
+      "pit_legal": false,
+      "in_scope": false,
+      "plausible": false,
+      "note": "동월 라벨 = PIT 불가. 순위는 beta rank-R2 0.951",
       "metric_type": "diagnostic_precheck"
     },
     {
@@ -79,9 +140,13 @@
       "is_ceiling_pct_per_month": 2.2447488823622,
       "persistence_rho": 0.744615985929255,
       "expected_oos_pct_per_month": 1.67147590220372,
-      "required_over_expected": 0.341532294271593,
-      "plausible": true,
-      "note": "동월 상태라벨 = PIT 불가(참고용 상한)",
+      "expected_t": 5.85596159878679,
+      "power_at_t2.0": 0.999942362207771,
+      "power_at_t2.64": 0.999349958862726,
+      "pit_legal": false,
+      "in_scope": false,
+      "plausible": false,
+      "note": "동월 라벨 = PIT 불가. 순위는 beta rank-R2 0.970",
       "metric_type": "diagnostic_precheck"
     },
     {
@@ -94,9 +159,13 @@
       "is_ceiling_pct_per_month": 0.582535586541299,
       "persistence_rho": -0.00513973031072894,
       "expected_oos_pct_per_month": 0,
-      "required_over_expected": "Inf",
+      "expected_t": 0,
+      "power_at_t2.0": 0.0227501319481792,
+      "power_at_t2.64": 0.00414530136103608,
+      "pit_legal": false,
+      "in_scope": true,
       "plausible": false,
-      "note": "동월 상태라벨 = PIT 불가(참고용 상한)",
+      "note": "dedup 후 rho 소멸(-0.005). P0 §5 의 -0.436 은 191 값",
       "metric_type": "diagnostic_precheck"
     },
     {
@@ -109,9 +178,13 @@
       "is_ceiling_pct_per_month": 1.1938475315876,
       "persistence_rho": 0.514950166112957,
       "expected_oos_pct_per_month": 0.614771984704577,
-      "required_over_expected": 1.11771839087925,
+      "expected_t": 1.78935948117191,
+      "power_at_t2.0": 0.416583896074547,
+      "power_at_t2.64": 0.197484537042676,
+      "pit_legal": true,
+      "in_scope": false,
       "plausible": false,
-      "note": "PIT 적법 t-1 라벨",
+      "note": "PIT 적법. 단 라벨 지속성 0.133 ~ base rate 0.122 = 예측력 없음. beta 축",
       "metric_type": "diagnostic_precheck"
     },
     {
@@ -124,9 +197,13 @@
       "is_ceiling_pct_per_month": 1.17168193646962,
       "persistence_rho": 0.539026773500098,
       "expected_oos_pct_per_month": 0.631567933783565,
-      "required_over_expected": 0.974346092203697,
-      "plausible": true,
-      "note": "PIT 적법 t-1 라벨",
+      "expected_t": 2.05265871747539,
+      "power_at_t2.0": 0.520998083978138,
+      "power_at_t2.64": 0.27848726027597,
+      "pit_legal": true,
+      "in_scope": false,
+      "plausible": false,
+      "note": "PIT 적법. 라벨 지속성 0.245 vs base 0.193. beta 축 = WT-002 소관",
       "metric_type": "diagnostic_precheck"
     },
     {
@@ -139,9 +216,13 @@
       "is_ceiling_pct_per_month": 0.359207573383179,
       "persistence_rho": -0.278854797733047,
       "expected_oos_pct_per_month": 0,
-      "required_over_expected": "Inf",
+      "expected_t": 0,
+      "power_at_t2.0": 0.0227501319481792,
+      "power_at_t2.64": 0.00414530136103608,
+      "pit_legal": true,
+      "in_scope": true,
       "plausible": false,
-      "note": "PIT 적법 t-1 라벨",
+      "note": "rho 음수",
       "metric_type": "diagnostic_precheck"
     },
     {
@@ -154,24 +235,32 @@
       "is_ceiling_pct_per_month": 0.44126532760183,
       "persistence_rho": 0.281453976939613,
       "expected_oos_pct_per_month": 0.124195881339096,
-      "required_over_expected": 2.50582837388889,
+      "expected_t": 0.798139258394668,
+      "power_at_t2.0": 0.114708743463239,
+      "power_at_t2.64": 0.0327477611887694,
+      "pit_legal": true,
+      "in_scope": true,
       "plausible": false,
-      "note": "PC1 잔차-알파 선택 (P0 §6 축). 전표본 PC1 = 상한",
+      "note": "PC1 잔차 선택. 전이 rho +0.281 가 무조건부 IR 전이 +0.299 를 못 넘음 = 이점 없음",
       "metric_type": "diagnostic_precheck"
     },
     {
       "arm_or_bucket": "MDD_axis_blockboot",
       "n": 254,
-      "sd_monthly_pct": 2.05122422490749,
-      "required_effect_pct_per_month": 4.10244844981499,
-      "required_pct_per_year": 4.10244844981499,
-      "unit_note": "단위 %p (ΔMDD). 월수익률 아님",
+      "sd_monthly_pct": 2.24505355896085,
+      "required_effect_pct_per_month": 4.4901071179217,
+      "required_pct_per_year": 4.4901071179217,
+      "unit_note": "단위 %p(ΔMDD), 월수익률 아님",
       "base_mdd_pct": 40.5209325713695,
-      "achievable_delta_pp": 7.13684108170238,
-      "achievable_t": 3.47930811026973,
-      "noise_max_t_400trials": 3.02409689044856,
-      "plausible": true,
-      "note": "달성치는 400회 IS-argmax 산물 — 다중검정 보정 후 판단",
+      "search_min_mdd_range_pp": 5.1,
+      "oos_delta_mdd_mean_pp": 2.90066710043116,
+      "expected_t": 1.29202579103448,
+      "power_at_t2.0": 0.239480636935961,
+      "power_at_t2.64": 0.0888333390020267,
+      "pit_legal": true,
+      "in_scope": true,
+      "plausible": false,
+      "note": "탐색간 산포가 필요 ΔMDD 보다 커서 바가 개선과 탐색운을 구별 못함. IS→OOS 전이 실측 첨부",
       "metric_type": "diagnostic_precheck"
     }
   ]

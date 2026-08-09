@@ -47,9 +47,13 @@ R0 <- merge(prevmap, RET[, .(prev_sig = Date, Ticker, ret_cur = Ret_1m)], by = "
             allow.cartesian = TRUE)[, .(sig_date, Ticker, ret_cur)]              # offset 0
 IC <- merge(SC[, .(sig_date, Ticker, growth)], R1, by = c("sig_date","Ticker"))
 IC <- merge(IC, R0, by = c("sig_date","Ticker"), all.x = TRUE)
-ics <- IC[, .(ic1 = suppressWarnings(cor(growth, ret_fwd, method="spearman", use="complete.obs")),
-              ic0 = suppressWarnings(cor(growth, ret_cur, method="spearman", use="complete.obs")),
-              n = .N), by = sig_date][n >= 30]
+safe_ic <- function(a, b) {
+  ok <- is.finite(a) & is.finite(b)
+  if (sum(ok) < 30L) return(NA_real_)
+  suppressWarnings(stats::cor(a[ok], b[ok], method = "spearman"))
+}
+ics <- IC[, .(ic1 = safe_ic(growth, ret_fwd), ic0 = safe_ic(growth, ret_cur), n = .N),
+          by = sig_date][n >= 30]
 nw_t <- function(x, lag) {
   x <- x[is.finite(x)]; n <- length(x); if (n < 10) return(NA_real_)
   m <- mean(x); e <- x - m; g0 <- sum(e^2)/n; s <- g0
