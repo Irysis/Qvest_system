@@ -427,6 +427,48 @@ if (!is.null(wrapped) && !is.null(wrapped$identity)) {
 }
 
 #==============================================================================
+cat("\n=== S. 사이드카 — 3축 판정이 기록까지 도달하는가 ===\n")
+#==============================================================================
+# ★래퍼의 tryCatch 는 정체 검사 실패를 삼킨다(빌드를 죽이지 않기 위해). 그래서
+#   중첩 data.table 직렬화가 깨지면 **경고도 사이드카도 없이** 조용히 사라진다.
+#   판정이 났다는 것과 그 판정이 기록됐다는 것은 다른 사실이다 — 밟아서 확인한다.
+tmpd <- file.path(tempdir(), paste0("id_sidecar_", as.integer(Sys.time())))
+unlink(tmpd, recursive = TRUE); dir.create(tmpd, recursive = TRUE, showWarnings = FALSE)
+s_tk <- sprintf("A%05d", 1:80)
+set.seed(9)
+s_live <- rbindlist(lapply(paste0("SYN", sprintf("%02d", 1:15)), function(f)
+  data.table(Ticker = s_tk, Factor_Name = f, Raw_Value = rnorm(80),
+             Z_Score = rnorm(80), Coverage = TRUE)))
+s_res <- rbindlist(list(
+  s_live,
+  copy(s_live[Factor_Name == "SYN01"])[, Factor_Name := "SYN01_CLONE"],
+  data.table(Ticker = s_tk, Factor_Name = "SYN_DEAD", Raw_Value = 1.0,
+             Z_Score = NA_real_, Coverage = FALSE),
+  data.table(Ticker = s_tk, Factor_Name = "SYN_TIE", Raw_Value = 0,
+             Z_Score = 0, Coverage = TRUE)), use.names = TRUE)
+invisible(suppressWarnings(factor_emission_guard(
+  result = s_res, ym = "209901", fdb_dir = tmpd, registry_path = REGISTRY,
+  write_artifacts = TRUE, identity_baseline_path = IDBASE)))
+sc <- file.path(tmpd, "emission_report_209901.json")
+if (!file.exists(sc)) {
+  bad("S1_sidecar_written", "★사이드카 미생성 — 판정이 기록에 도달하지 않음")
+} else {
+  j <- tryCatch(fromJSON(sc, simplifyVector = FALSE), error = function(e) NULL)
+  d_ok <- !is.null(j) && identical(unlist(j$identity$axis_D$dead), "SYN_DEAD")
+  t_ok <- !is.null(j) && identical(unlist(j$identity$axis_T$tie_warn), "SYN_TIE")
+  i_ok <- !is.null(j) && length(j$identity$axis_I$undeclared) == 1L
+  w_ok <- !is.null(j) && length(j$identity$warnings) >= 3L
+  if (d_ok && t_ok && i_ok && w_ok) {
+    ok("S1_sidecar_written", sprintf("3축 판정 + 경고 %d건이 JSON 왕복 후 보존 (%.1f KB)",
+                                     length(j$identity$warnings), file.size(sc) / 1024))
+  } else {
+    bad("S1_sidecar_written", sprintf("직렬화 손실 — D %s · T %s · I %s · warnings %s",
+                                      d_ok, t_ok, i_ok, w_ok))
+  }
+}
+unlink(tmpd, recursive = TRUE)
+
+#==============================================================================
 cat("\n=== W. 배선 — 빌더가 정체 축을 실제로 켜서 호출하는가 ===\n")
 #==============================================================================
 b <- readLines(BUILDER_SRC, warn = FALSE)
