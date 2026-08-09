@@ -319,10 +319,15 @@ stopifnot(all(ok1))
 cat("  [2] 피처 lag-1 자기상관 (모듈 내 pooled). trailing 창은 겹침이 커서 높은 게 정상 —\n")
 cat("      판정선은 '1.0 과 구분 불가(>0.99999)' 인 것만 의심으로 본다.\n")
 setorder(DT_all, module_id, ym)
-ac <- data.table(feature = feat_cols, lag1_autocorr = NA_real_, corr_with_y = NA_real_,
+num_feat <- feat_cols[vapply(feat_cols, function(f) is.numeric(DT_all[[f]]), logical(1))]
+cat_feat <- setdiff(feat_cols, num_feat)
+cat(sprintf("      수치 피처 %d개 / 범주 피처 %d개 (%s) — 상관 검사는 수치 피처만\n",
+            length(num_feat), length(cat_feat),
+            if (length(cat_feat)) paste(cat_feat, collapse = ",") else "-"))
+ac <- data.table(feature = num_feat, lag1_autocorr = NA_real_, corr_with_y = NA_real_,
                  lag1_corr_with_y = NA_real_)
-for (i in seq_along(feat_cols)) {
-  f <- feat_cols[i]
+for (i in seq_along(num_feat)) {
+  f <- num_feat[i]
   X <- DT_all[[f]]; Xl <- DT_all[, shift(get(f), 1L), by = module_id]$V1
   ac$lag1_autocorr[i] <- suppressWarnings(cor(X, Xl, use = "complete.obs"))
   ac$corr_with_y[i]   <- suppressWarnings(cor(X, DT_all$y_ret, use = "complete.obs"))
@@ -336,7 +341,8 @@ cat(sprintf("      |corr(feature_t, y_ret_t)| 최대 = %.4f  (%s)  — 1 에 근
             ac$feature[which.max(abs(ac$corr_with_y))]))
 print(ac[order(-abs(corr_with_y))][1:8])
 LC$check2_shift_autocorr <- list(
-  n_features = nrow(ac), n_autocorr_gt_0_99999 = nrow(susp),
+  n_numeric_features = nrow(ac), n_categorical_features = length(cat_feat),
+  n_autocorr_gt_0_99999 = nrow(susp),
   max_abs_corr_with_target = max(abs(ac$corr_with_y), na.rm = TRUE),
   max_corr_feature = ac$feature[which.max(abs(ac$corr_with_y))],
   note = "trailing 창 겹침으로 높은 자기상관은 정상. 타깃과의 상관이 판별선.")

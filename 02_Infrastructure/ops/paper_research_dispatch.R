@@ -58,6 +58,43 @@ actions <- list()
 #   규약 2축: ① 결과가 **실제로 읽는 입력 전부**보다 새로운가 ② max-age 백스톱
 #     (입력 mtime 이 우연히 안 움직여도 새 실현월이 반영되도록).
 #   ★입력이 하나도 없으면 "최신"이 아니라 **판정 불가** — 부재를 fresh 로 내려앉히지 않는다.
+# ── 커버리지 게이트 (2026-08-09, 도훈 "269개월 하드코딩 없애고 최신 데이터 기반으로") ──
+#   ★신선도와 커버리지는 **다른 질문**이다:
+#     신선도 = "입력 파일이 바뀌었나"(mtime)  /  커버리지 = "측정창이 최신 데이터까지 닿나"
+#   실사고: 배터리가 269개월을 재고 있었는데 북은 271개월(2026-08)까지 있었다. 269 는 **어디에도
+#   하드코딩돼 있지 않았다** — 상류 per-stock 캐리어가 2026-06-18 빌드에서 얼어붙었고,
+#   07-19 PG2 전환 때 `book_carrier_sources.json` 매핑이 갱신되지 않아 재생산이 stop() 으로
+#   막혀 있었다. 신선도 게이트는 이걸 못 본다(캐리어 파일은 안 바뀌었으니 '최신'이다).
+#   ⇒ 창이 뒤처져도 **아무 로그도 말해주지 않는 상태**였다. 이 함수가 그 침묵을 없앤다.
+#   차단하지 않는다(측정·보고 스크립트) — 호명 + 산출물에 lag 기록이 방어선이다.
+coverage_check <- function(carrier_path, label = "battery") {
+  out <- list(status = "unverifiable", carrier_ym_max = NA_character_,
+              book_ym_max = NA_character_, lag_months = NA_integer_)
+  bsp <- tryCatch({
+    bs <- fromJSON("qepm/mailbox/governor/book_state.json", simplifyVector = TRUE)
+    sprintf("06_Registry/live_track/%s/live_book_series.csv", as.character(bs$admitted_ids)[1])
+  }, error = function(e) NA_character_)
+  if (is.na(carrier_path) || !file.exists(carrier_path) || is.na(bsp) || !file.exists(bsp)) {
+    cat(sprintf("[dispatch:%s] ★커버리지 판정 불가 — 캐리어 또는 북 시계열 부재\n", label)); return(out)
+  }
+  cy <- tryCatch({
+    d <- as.data.table(arrow::read_parquet(carrier_path, col_select = "eval_date"))
+    max(format(as.Date(d$eval_date), "%Y-%m")) }, error = function(e) NA_character_)
+  by <- tryCatch(max(fread(bsp)$realized_ym), error = function(e) NA_character_)
+  if (is.na(cy) || is.na(by)) return(out)
+  lag <- length(seq(as.Date(paste0(cy, "-01")), as.Date(paste0(by, "-01")), by = "month")) - 1L
+  out <- list(status = if (lag <= 0) "current" else "BEHIND",
+              carrier_ym_max = cy, book_ym_max = by, lag_months = lag,
+              note = if (lag > 0)
+                "측정창이 북보다 뒤처짐 — per-stock 캐리어 재생산 필요(extract_book_carrier.R → extract_book_carrier_d3.R). D3 빌더는 재현 cor<0.999 시 fail-closed 로 저장을 거부한다."
+              else "측정창 = 북 최신월")
+  if (lag > 0) {
+    cat(sprintf("[dispatch:%s] ★★커버리지 뒤처짐 %d개월 — 캐리어 %s vs 북 %s\n", label, lag, cy, by))
+    cat(sprintf("    → 이 배터리 수치는 **최신 %d개월을 못 본 창**에서 잰 것이다. 인용 시 창을 병기할 것.\n", lag))
+  } else cat(sprintf("[dispatch:%s] 커버리지 OK — 캐리어 %s = 북 %s\n", label, cy, by))
+  out
+}
+
 stale_check <- function(out_path, inputs, max_age_days = 35, label = "battery") {
   present <- inputs[file.exists(inputs)]
   if (length(present) < length(inputs))
@@ -185,6 +222,8 @@ if (n_opt > 0 || n_risk > 0) {
   }
   carrier_id <- carrier_identity_check(carrier)
   # <<< CARRIER_IDENTITY_GATE
+  # ★정체성(맞는 책인가)과 커버리지(최신까지 닿는가)는 다른 질문 — 둘 다 묻는다.
+  carrier_cov <- coverage_check(carrier, "optimizer")
 
   # >>> SIGMA_AB_FRESHNESS_GATE
   # (2026-08-08 수리) 구 게이트 = `ov_csv$mtime >= carrier$mtime` 단독.
@@ -298,7 +337,9 @@ if (n_opt > 0 || n_risk > 0) {
                               screen_axes = check_screen_axes(getrt("optimizer"), "optimizer"),
                               # ★기준선 정체성을 산출물에 박는다 — 나중에 이 수치를 인용할 때
                               #   어느 책 위에서 잰 것인지 파일만 보고 알 수 있어야 한다(§7b).
-                              baseline_identity = if (exists("carrier_id")) carrier_id else NULL)
+                              baseline_identity = if (exists("carrier_id")) carrier_id else NULL,
+                              # ★측정창을 산출물에 박는다 — "몇 개월로 잰 수치인가"가 파일만 보고 보여야 한다.
+                              coverage = if (exists("carrier_cov")) carrier_cov else NULL)
   }
 }
 
@@ -406,6 +447,7 @@ if (n_reg > 0) {
     "06_Registry/method_registry.json",
     list.files("02_Infrastructure/methods/adapters", pattern = "\\.R$", full.names = TRUE))
   .rgf <- stale_check(rg_csv, .rg_inputs, label = "regime")
+  reg_cov <- coverage_check(if (length(.rg_carrier)) .rg_carrier else NA_character_, "regime")
   reg_fresh <- .rgf$fresh; reg_out <- NULL; n_reg_adapters <- 0L
   if (!reg_fresh) {
     cat(sprintf("[dispatch:regime] H2 배터리 stale 판정: %s → 재실행\n", .rgf$why))
@@ -477,6 +519,7 @@ if (n_reg > 0) {
   }
   actions$regime <- list(n = n_reg, papers = lapply(getrt("regime"), function(p) p$title %||% p$arxiv_id),
                          harness_status = reg_state,
+                         coverage = reg_cov,
                          verdict = reg_verdict,
                          action = if (!is.null(reg_verdict))
                                     sprintf("H2 오버레이 A/B 자동 측정 (후보 %d) — 채택은 도훈 수동", length(reg_verdict$candidates))
@@ -545,7 +588,4 @@ if (Sys.getenv("QVEST_DISPATCH_NO_TG", "0") != "1") {
     tryCatch(tg_agent_brief(agent = "AlphaSearch", title = "논문 라우트 → 리서치 디스패치",
                             relaxed = TRUE, force = TRUE, lock_scope = sprintf("paper_dispatch_%s", today),
                             sections = secs),
-             error = function(e) cat(sprintf("[dispatch] tg fail: %s\n", conditionMessage(e))))
-  }
-}
-cat("[dispatch] done\n")
+             error = function(e) cat(sprintf("[dispatch] tg fail: %s\n", condition
