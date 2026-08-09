@@ -246,6 +246,68 @@ lookup_distilled <- function(keywords, root = .dist_root(), max_rows = 20L,
 }
 
 
+# ══ revival_spec 역방향 동기화 (2026-08-09 신설) ══════════════════════════════
+# ★왜: 위 .dist_author_revival_spec 은 **카드 작성 시점의** 신호 상태로 status 를 박는다.
+#   신호가 나중에 active 로 승격돼도 이미 쓰인 카드 원소를 되돌아가 승격시키는 경로가 없어,
+#   조건이 참인데도 monitor 가 skip 하는 상태가 무기한 지속된다.
+#   실측 적발(2026-08-09): dart_insider_present 는 명부에서 active 이고 마커
+#   (.cache/dart/insider_backfill/202606.csv, 390KB, 2026-07-14)가 실재해 조건이 이미 참인데,
+#   이를 참조하는 distilled 카드 3건(DIST-AR-001/AR-003/QPM-005)이 pending 인 채로
+#   26일간 재부상하지 않았다. monitor 는 결백하다 — pending 을 세어 n_pending 으로 노출한다
+#   (조용한 소실 아님). 빠진 것은 명부→카드 방향의 전파다.
+# 양방향으로 맞춘다: 명부 active → 카드 active(승격), 명부 pending/부재 → 카드 pending(강등).
+#   한 방향만 맞추면 지금 고치는 결함과 같은 계통을 반대쪽에 남긴다(죽은 신호 위의 active 원소).
+sync_revival_spec_status <- function(root = .dist_root(), dry_run = FALSE,
+                                     registry_path = .dist_revival_signals_path(root)) {
+  if (!file.exists(registry_path)) stop("[distilled] 신호명부 부재: ", registry_path)
+  reg <- fromJSON(registry_path, simplifyVector = FALSE)
+  active_ids <- character(0)
+  for (s in (reg$signals %||% list())) {
+    if (identical(s$status %||% "active", "active"))
+      active_ids <- c(active_ids, s$signal_id %||% "")
+  }
+
+  dir <- file.path(root, "qepm", "memory", "axioms", "distilled")
+  files <- list.files(dir, pattern = "\\.json$", full.names = TRUE)
+  promoted <- demoted <- list()
+  n_files_changed <- 0L
+
+  for (f in files) {
+    d <- tryCatch(fromJSON(f, simplifyVector = FALSE), error = function(e) NULL)
+    if (is.null(d)) next
+    spec <- d$revival_spec %||% list()
+    if (!length(spec)) next
+    changed <- FALSE
+    for (i in seq_along(spec)) {
+      sid <- spec[[i]]$signal_id %||% ""
+      cur <- spec[[i]]$status %||% "active"
+      want <- if (nzchar(sid) && sid %in% active_ids) "active" else "pending"
+      if (identical(cur, want)) next
+      rec <- list(dist_id = d$dist_id %||% basename(f), signal_id = sid,
+                  from = cur, to = want)
+      if (identical(want, "active")) promoted[[length(promoted) + 1L]] <- rec
+      else                            demoted[[length(demoted) + 1L]] <- rec
+      spec[[i]]$status <- want
+      changed <- TRUE
+    }
+    if (changed && !dry_run) {
+      d$revival_spec <- spec
+      d$revival_spec_synced_at <- format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z")
+      write_json(d, f, pretty = TRUE, auto_unbox = TRUE, null = "null")
+    }
+    if (changed) n_files_changed <- n_files_changed + 1L
+  }
+
+  message(sprintf(
+    "[distilled] revival_spec 동기화%s — 승격 %d · 강등 %d · 카드 %d건 변경 (명부 active %d종)",
+    if (dry_run) "(dry-run)" else "", length(promoted), length(demoted),
+    n_files_changed, length(active_ids)))
+  invisible(list(promoted = promoted, demoted = demoted,
+                 n_files_changed = n_files_changed,
+                 active_signals = active_ids, dry_run = dry_run))
+}
+
+
 # ── quarantine 차단 가드 (draft/refine 공용) ──
 .dist_block_quarantined <- function(d) {
   if (identical(d$status, "quarantined_evidence"))
