@@ -305,7 +305,7 @@ emission_load_identity_baseline <- function(path) {
 factor_identity_check <- function(result, ym,
                                   dedup_pairs = character(0),
                                   identity_baseline = NULL,
-                                  tie_warn = 0.99, tie_watch = 0.95,
+                                  tie_warn = 2.00, tie_watch = 2.00,
                                   rho_warn = 0.999, min_obs = 30L,
                                   value_col = "Z_Score",
                                   max_identity_factors = 1200L) {
