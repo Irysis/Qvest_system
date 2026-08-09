@@ -248,6 +248,7 @@ PKG <- list(
     "국면 상호작용은 전부 ADVISORY·비유의 (중립 기울기 × 벤치 trailing12 +1.03%/1sd t 0.98 · × 개인 강도 +0.68% t 0.94). 승계 가설의 위기월 부호 반전 예측은 검정력 부족으로 확인도 반증도 못 함 — '효과 없음' 단정 금지",
     "동시기 관측 라벨 유지 — F3 개인 순매수는 인과 아님(부모 승계)",
     "[계약 표면 분열 — 인프라 백로그, 본 라운드 판정과 무관] 발행 후 수동 검증 실측: JSON-Schema 위반 0건 · ast_spec_gate hard PASS · ast_verify FAIL_CONTRACT(non-block) 3건. 3건 전부 schema 와 ast_verify.py 의 dialect 불일치다 — (i) schema 는 ast_node.args 에 string 스칼라를 명시 허용하는데 ast_verify 는 '노드 형상 오류(비 dict)' 로 FAIL (부모 라운드가 number 스칼라에서 보고한 것과 동류, ALB-005 계열) (ii) schema 리프 설명은 'group_id 또는 group_id:field' 를 허용하는데 ast_verify 는 ':field' 접미를 '알 수 없는 리프 종류' 로 FAIL (iii) STORED_SCORE 계약을 schema 는 escape_contract 중첩으로, ast_verify 는 leaf sibling 키로 읽는다 — (iii)만 양쪽을 채워 해소했고 (i)(ii)는 정본(schema)을 따랐다. 우회가 아니라 분열 보고",
+    "★[다중비교 정직 라벨] 본 라운드 보고 검정 29건(FMB 8 · 분위배터리 4 · 시기 6 · 반증 4 · canonical arm 4 · 국면 3), 사전등록 주판정은 A2 1건. FMB 계열 최대 |t| 는 2.21 이며 단독 인용 금지. 본 라운드가 인용하는 결론은 '같은 창에서 부호가 반대인 두 유의 결과의 결합'이고, 결합은 단일 max-t 보다 우연 발생이 어렵다는 근거로만 사용한다",
     "RF-A3 점검: recent 3Y ICIR 별도 산출 미실시(분할 금지 mandate 하에서 3Y 창은 유효표본 36으로 구조적 저검정력) — 시기 축은 연속 추세 + post-2015 서술로 대체"))
 
 write_json(PKG, file.path(MBX, "alpha_package.json"), pretty = TRUE, auto_unbox = TRUE, digits = NA, null = "null")
