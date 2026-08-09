@@ -1,0 +1,102 @@
+{
+  "round_id": "FQ-223",
+  "date": "2026-08-10",
+  "metric_type": "canonical_screen_diag",
+  "capital_claim": false,
+  "prereg": "stage_artifacts/infra/fq223_rollover_downstream_20260810/PREREG.md",
+  "target_statistic": "z(M26_Revenue_Mom) FMB NW(lag3) t in 4-factor cross-sectional regression",
+  "threshold": 2,
+  "verdict": "REAFFIRM",
+  "method_A_exclusion": {
+    "t_full": 2.5552525842524,
+    "n_full": 283,
+    "t_A": 2.22219529518399,
+    "n_A": 235,
+    "t_A_expected_if_no_contamination": 2.32849092442541,
+    "delta_vs_expected": -0.106295629241418,
+    "required_monthly": 0.00165663159893178,
+    "required_annual_pct": 1.98795791871813,
+    "power_label": "PASS",
+    "welch_p_aprmay_vs_other": 0.485738916673619,
+    "contribution_share": 0.278859147576152,
+    "control_M01_failed": true,
+    "control_M01_note": "M01_Mom_12_1(컨센서스 무관) 도 4·5월 제외 시 t 1.951→0.613 (Welch p 0.0017) — 4·5월은 횡단면 신호 전반에 유리한 달. ⇒ 방법 A 는 달력 계절성과 교락되어 롤오버 증거로 쓸 수 없다"
+  },
+  "method_B_rollover_aware": {
+    "common_window_months": 279,
+    "t_plain": 2.47826452473205,
+    "t_RA_aprdet": 3.12805502577443,
+    "t_RA_rawdet": 3.29928900286445,
+    "t_RA_0405only": 2.81008044354883,
+    "delta_t_aprdet": 0.649790501042373,
+    "delta_t_rawdet": 0.821024478132396,
+    "delta_t_0405only": 0.331815918816778,
+    "fake_control_oct1_delta": 0.145116512322841,
+    "fake_control_jul1_delta": 0.398266695817506,
+    "fake_max_abs": 0.398266695817506,
+    "rollover_attribution": "부분적 — 진짜 Δt(+0.650) 가 가짜 최대(+0.398) 를 넘지만 2배 미달. 창-단축 부수효과와 완전 분리 불가",
+    "verdict_robustness": "6 arm 전부 t >= 2.478 > 문턱 2.0 — 판정은 귀속 논쟁과 무관하게 성립"
+  },
+  "contamination_scale": {
+    "m26_contaminated_frac_judgment_panel": 0.1588,
+    "m26_apr_frac": 0.8728,
+    "m26_may_frac": 0.8873,
+    "m26_apr_may_concentration": 0.94,
+    "m28_contaminated_frac": 0.16183730414252,
+    "m28_apr_may_concentration": 0.941,
+    "apr_magnitude_ratio_revenue": 7.59724079251184,
+    "apr_positive_ratio_revenue": 2.11981683876969,
+    "matched_control_target_price_ratio": 0.97341990021741
+  },
+  "downstream": {
+    "composites": "M32_Composite_Mom_v2 = mean(z(M01),z(M10),z(M13),z(M24),z(M25)) — M26/M28 미포함 (compute_momentum.R:522-525 실측). M09_Composite_Mom = mean(z(M01),z(M02),z(M05)) — 미포함",
+    "aliases": "C14_Revenue_Surprise / C17_OP_Revision = M26/M28 과 동일 식(compute_consensus.R:487-506,541-544) 이나 .CONSENSUS_DEPRECATED 로 배출 차단 — emission_ledger n=0 실측",
+    "pg2_book": "현행 PG2 book 팩터 7종 = C01_SUE/C02_EPS_Chg_1m/C04_ESBR/C06_TP_Gap + Q07_Earnings_Stability/M08_Residual_Mom/Q25_Ohlson_O (05_Production/2.Factor_Model/2-3.../_recompute_alpha_asof.R:13-14). M26/M28/M32 소비 0",
+    "pg2_instrument_alive": "양성 대조: 같은 grep 이 05_Production 에서 Q07/M08/Q25/V01/Z_Score_Aligned 를 검출 — '0건' 은 계측 사망이 아님",
+    "research_consumers": "M26 은 RAMP 연구 프로브 3곳이 소비: 02_Infrastructure/ramp/run_ramp_oos_probe_broad.R:11 · run_ramp_oos_probe_fwl.R:8 · ramp/search/build_cache.R:10. M28 은 0곳. 자본 경로 아님",
+    "production_field_fingerprint": "PG2 소비 벤더필드(sue/eps_chg_1m/esbr) 4월 양비율배수 0.74/1.35/0.71 — 롤오버 지문(≈2.1) 미검출"
+  },
+  "caveats": [
+    "판정 문턱 2.0 = '재료 자격' 스크린이지 자본 게이트 아님. graduation HARD 3종 미판정",
+    "부기간 진단(08-08): 2017-2026 t = 0.884 — 현대 구간 약화가 롤오버보다 큰 실질 위험",
+    "DB이식 t_B 는 Δt 가 basis 불변이라는 가정 위의 외삽 — 1급 수치는 arm t 원값",
+    "오염 비중은 판정 패널(K200∪KQ150 630종목) scope. 전 유니버스 비중은 미측정"
+  ],
+  "n_arms": 6,
+  "selection_type": "chain_diagnostic_prereg_battery (DSR 부적용 — argmax pick 없음, 판정은 min over RA arms)",
+  "robustness": {
+    "block_bootstrap": {
+      "B": 2000,
+      "block": 12,
+      "delta_t_q05": -0.408545614278308,
+      "delta_t_q95": 1.08548078478012,
+      "delta_t_pos_frac": 0.7555,
+      "t_RA_ge2_frac": 0.8885,
+      "t_plain_ge2_frac": 0.803,
+      "real_beats_fake_frac": 0.4825,
+      "reading": "Δt 90% 구간이 0 포함 · 진짜가 가짜를 이기는 비율 0.4825 ⇒ 개선 크기·롤오버 귀속 주장 철회. 판정(양 arm 문턱 위)은 유지"
+    },
+    "leave_one_year_out": {
+      "n_years": 24,
+      "delta_t_positive_years": 24,
+      "min_delta_t": 0.355047659249203,
+      "min_t_RA": 2.69558651753602,
+      "min_t_plain": 2.05251653523312,
+      "reading": "24/24 해에서 Δt>0 · t_RA 최소 2.696 · t_plain 최소 2.053 — 연도 강건"
+    },
+    "month_drop": {
+      "drop_apr_t_plain": 1.85,
+      "drop_apr_t_RA": 2.6497,
+      "drop_aprmay_t_plain_recon279": 1.9577,
+      "drop_aprmay_t_RA_recon279": 2.2679,
+      "drop_aprmay_t_DB283": 2.2222,
+      "reading": "★원(오염) M26 은 4월 제외 시 1.850 으로 문턱 미달 · 수리판은 2.650 유지. 1.958(재구성/279m) vs 2.222(DB/283m) 는 basis·창이 함께 달라 나란히 읽지 말 것"
+    }
+  },
+  "verdict_basis": "REAFFIRM 은 방법 B(사전등록 결정적 반증)에 근거한다. 방법 A 는 M01 대조 실패로 달력 계절성과 교락되어 증거로 쓰지 않는다.",
+  "headline_numbers": {
+    "primary": "공통 279개월 재구성 basis: t_plain +2.4783 → t_RA +3.1281 (사전등록 arm) / 최솟값 arm +2.8101",
+    "secondary_extrapolation": "DB basis 이식 t_B = +3.2050 (Δt basis 불변 가정 위의 외삽 — 1급 아님)",
+    "method_A": "t_A = +2.2222 (DB basis 283→235개월) · 기대 +2.3285 · Δ -0.1063"
+  }
+}
