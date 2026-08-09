@@ -1,0 +1,68 @@
+{
+  "task_id": "WT-D20260809_002",
+  "wt_type": "discovery",
+  "wt_type_reclassify_proposal": {
+    "proposed": "sizing_only",
+    "evidence": "alpha_inheritance_cor = 1.0 — 종목 선별을 전혀 바꾸지 않고 집계 노출 스케일만 조건화. role_card 역방향 사례(Reference STR_1715 사고와 동형). alpha_discovery_certificate 미발급이 정상.",
+    "requires": "도훈 confirm 후 wt_advance"
+  },
+  "pg1_eligibility": "certificate_not_expected",
+  "discovery_of": null,
+
+  "provenance_note": "★본 파일은 alpha-research 가 Q-Lead 브리핑에서 재구성했다. WT 디렉토리는 alpha-hypothesis 스폰 시 생성됐고 request.json 은 부재했다(정규 경로 = Q-Lead 발행). 내용은 브리핑 원문에 근거하며 새 요구사항을 창작하지 않았다 — Q-Lead 는 이 파일을 정본으로 승인하거나 교체할 것.",
+
+  "theme": "tail_targeted_regime_overlay",
+  "hypothesis_title": "국면 라벨(CRISIS∪CAUTION) 꼬리 표적 오버레이 — 상태 검출기의 사건-조건부 자격을 심도-표적 노출 축소로만 소비",
+  "hypothesis_description": "2026-08-08 label_eligibility_gate 실측이 현행 국면 라벨의 하락 적중 lift 가 사건 정의에 조건부임을 보였다(월<0% 무자격 / <-10% 통과). 2026-08-03 '국면 라벨은 판별력 없다' 판정은 과잉 일반화였다. MDD 방어는 큰 하락만 막으면 되는 일이므로, 이 라벨로 꼬리 표적 오버레이가 성립하는지가 본 라운드의 질문이다. 자본 판정 아님 — 오버레이 설계 실측.",
+  "hypothesis_source": "q_lead_briefing",
+  "hypothesis_design_delegated_to": "alpha-hypothesis (model: fable) -> alpha_hypothesis.json",
+
+  "as_of_date": "2026-08-09",
+  "forecast_horizon": "1M",
+  "rebalance_frequency": "monthly",
+  "selection_type": "chain",
+
+  "incumbent_base": {
+    "authority": "measurement-graduation par.7b — production 실코드 경로",
+    "path": "05_Production/2.Factor_Model/2-2.STR_1715_FaithTrend_on_M4_R05_overlay_PG2/04_backtest_results/period_returns_layer5_faith.csv",
+    "series_definition": "ret_noL4 = beta_R05 * m4 * ret_orig - |delta beta_R05| * 15bps",
+    "note": "재구성 base ΔIR 은 상신 근거 불가(2026-08-02 실사고)."
+  },
+
+  "universe_definition": {
+    "label": "KOSPI200_KOSDAQ150_intersection",
+    "note": "본 라운드는 시장레벨 노출 오버레이라 유니버스 선별을 변경하지 않는다(상속)."
+  },
+  "benchmark_definition": "KOSPI200_total_return (benchmark_pinned_20260702.parquet, IKS200)",
+  "cost_model_version": "v2.4_kr_retail_15bps",
+  "current_portfolio": "STR_1715_on_M4_R05_noLayer4_PG2",
+
+  "data_lag_rules": {
+    "overlay_signal": "C5 — 홀딩월 시작 전 데이터만. 월말 라벨 -> 익월 홀딩. assert_overlay_pit HARD.",
+    "price": "t-1 close",
+    "ic_history": "Usable_Date <= sig_date"
+  },
+
+  "hard_mandate": {
+    "pit_enforcement": "C1-C15 all enforced",
+    "mandate_restrictions": {"no_short_legal_kr": true, "no_cross_market": true, "kr_domestic_only": true},
+    "constraint_firewall": "INV-7 — long-only / max 25 / 15bps / [0,0.20] / sum w = 1 은 문제의 고정 축. 제약 완화를 레버로 제시 금지."
+  },
+
+  "boundaries": [
+    "governor / book_state 접촉 금지",
+    "05_Production 수정 금지 (read-only 실행/소비만)",
+    "01_Literature 접근 금지",
+    "공분산 추정 / target weights 제안 금지 (alpha 역할 경계)"
+  ],
+
+  "mandated_gates": [
+    "라벨 자격 관문 (label_eligibility_gate.R) — 사건 정의별",
+    "검정력 사전 판정 (required_effect_size.R) — 비현실적이면 측정 전 폐기",
+    "PIT 3종 — assert_overlay_pit / lag1 스트레스 / strict-PIT A/B",
+    "오라클 양성 대조 — 같은 실행에",
+    "dual-basis + AX-001 조건부 병기 + AST v1.1 3층 + ast_spec_gate 통과 + Self-Adversarial -> challenge_note.md"
+  ],
+
+  "id_namespace_warning": "브리핑 인용 'FQ-143' 은 06_Registry/alpha_frontier_queue.json 에서 CV_Vol(config_scoped_negative_20260804) 이며 본 라운드와 무관. 실제 계보 앵커 = FQ-119 + 2026-08-08 라벨 자격 실측. Q-Lead 발번 정정 필요."
+}

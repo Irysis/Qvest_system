@@ -1,0 +1,103 @@
+{
+  "date": "20260809",
+  "schema": "paper_research_dispatch_v1",
+  "note": "라우터 큐 → 리서치 액션 배선. optimizer=Σ배터리 ΔIR게이트 자동, risk/regime=수동 flag. 자본 admit 없음(governor 정지).",
+  "actions": {
+    "optimizer": {
+      "n": 4,
+      "papers": [
+        "Knowledge-Optimising Investment Decisions with Informative Datasets",
+        "From Value Bounds to Policy-Distance and Active-Face Certificates: Same-Grid Duality for Constrained Dynamic Portfolios",
+        "Path Portfolio Optimization: Defect, Lift, and the Price of Path Complexity",
+        "Conformal Kelly: Conformal Prediction Intervals as the Scale in Fractional Kelly Position Sizing"
+      ],
+      "verdict": {
+        "book_ir": 1.41,
+        "best_method": "MVO_lw",
+        "best_ir": 1.383,
+        "delta_ir": -0.026,
+        "gate": 0.05,
+        "beats_book": false,
+        "verdict": "가중 레버 아님: book IR 1.410 최고(최선 타방법 MVO_lw 1.383, ΔIR=-0.026, 게이트 0.05 미달) → 채택 0"
+      },
+      "method_triage": [
+        {
+          "method_id": "ConformalKelly",
+          "paper_id": "arxiv:2608.01494",
+          "verdict": "implemented",
+          "blocker": null,
+          "unblock_requirement": null
+        },
+        {
+          "method_id": "PathSignature",
+          "paper_id": "arxiv:2608.02355",
+          "verdict": "blocked_by_capability",
+          "blocker": "signature depth=2 도 25종목 × 월간 리밸에서 관측당 파라미터 비율이 과대 — 논문 자체가 추정 불안정을 경고. 현 측정틀(250일 창)에서 식별 불가",
+          "unblock_requirement": "일별 리밸 또는 유니버스 확대(v2 KR_TOP500)에서 재검토. 또는 depth=1 축약형으로 선행 실측"
+        },
+        {
+          "method_id": "MFCCA",
+          "paper_id": "arxiv:2608.04987",
+          "verdict": "blocked_by_capability",
+          "blocker": "scale × order 2D 스펙트럼 추정에 필요한 관측수가 250일 창 × 25종목을 크게 초과. 논문 실증은 ARFIMA+MSM 합성 과정 기반",
+          "unblock_requirement": "일별 창 확대(≥1250일) 또는 held_tickers 전체(442종) 풀에서 Σ 대체로 선행 실측"
+        }
+      ],
+      "screen_axes": {
+        "n_items": 4,
+        "coverage": 1,
+        "missing": [],
+        "invalid_enum": []
+      },
+      "baseline_identity": {
+        "status": "ok",
+        "carrier_strategy": "STR_1715_on_M4gAE_R05_noLayer4_PG2",
+        "admitted_ids": "STR_1715_on_M4gAE_R05_noLayer4_PG2",
+        "carrier_book_state_at": "2026-07-19T05:12:00+09:00",
+        "book_state_updated_at": "2026-07-19T05:12:00+09:00",
+        "identity_match": true,
+        "carrier_older_than_book_state": false
+      }
+    },
+    "risk": {
+      "n": 3,
+      "papers": [
+        "Portfolio Allocation under Heterogeneous Scales and Multifractality",
+        "Proper-score observation-driven filters: local geometry, estimation, and continuous-time limits",
+        "AI Governance for Institutional Readiness in Finance"
+      ],
+      "method_triage": [
+        {
+          "method_id": "PreferenceRobustDistortion",
+          "paper_id": "arxiv:2608.02854",
+          "verdict": "implemented",
+          "blocker": null,
+          "unblock_requirement": null
+        },
+        {
+          "method_id": "ProperScoreGASFilter",
+          "paper_id": "arxiv:2608.02828",
+          "verdict": "implemented",
+          "blocker": null,
+          "unblock_requirement": null
+        }
+      ],
+      "screen_axes": {
+        "n_items": 3,
+        "coverage": 1,
+        "missing": [],
+        "invalid_enum": []
+      },
+      "harness_status": "risk 레인 Σ-교체 A/B 하네스 미배선 — optimizer 레인 검증 후 착수 예정",
+      "action": "레지스트리 등재 2건 (verdict 별도) — 자동 측정 아직 없음"
+    },
+    "regime": {
+      "n": 2,
+      "papers": [
+        "Robust Control under Stationary Ambiguity",
+        "The Science and Practice of Trend-Following Systems"
+      ],
+      "action": "H2 오버레이 후보 — candidate timing signal 추출 필요(자동 불가, 수동)"
+    }
+  }
+}

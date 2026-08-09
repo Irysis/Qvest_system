@@ -79,8 +79,11 @@ pooled7 <- function(arm, cut) {
     X <- merge(SPN[Factor_Name == fn, .(Date, Ticker, z, zn)], ACT_A, by = c("Date","Ticker"))
     X <- X[Date >= cut & is.finite(get(zc)) & is.finite(act)]
     s <- prof2(X, zc); data.table(Date = s$Date, fn = fn, g = s$q5 - s$q3) }))
+  n_bad <- sum(!is.finite(gl$g)); gl <- gl[is.finite(g)]   # 빈 분위 잔재 명시 제거(무음 금지)
   P <- gl[, .(g = mean(g)), by = Date][order(Date)]
-  list(n = nrow(P), ann_pct = 100*12*mean(P$g), acf_r1 = as.numeric(acf(P$g, lag.max=1, plot=FALSE)$acf[2]),
+  say("    (%s) 비유한 신호-월 %d건 제외 후 %d개월", arm, n_bad, nrow(P))
+  list(n = nrow(P), n_dropped_signal_months = n_bad,
+       ann_pct = 100*12*mean(P$g), acf_r1 = as.numeric(acf(P$g, lag.max=1, plot=FALSE)$acf[2]),
        t_nw3 = nw_t(P$g, 3L), t_nw12 = nw_t(P$g, 12L)) }
 p7 <- list()
 for (arm in c("raw","neutral")) for (wn in c("full","post2015")) {
