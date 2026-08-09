@@ -4971,8 +4971,8 @@
   },
   {
    "id": "FQ-226",
-   "title": "4·5월 횡단면 신호 계절성 — 롤오버와 무관한 return-side 현상 (M01 대조 실패에서 발견)",
-   "status": "measured_open",
+   "title": "4월 단독 횡단면 신호 계절성 (구 '4·5월') — 모멘텀 가족 한정, M01 잔여 미귀속",
+   "status": "measured_partially_attributed",
    "owner": "alpha-research",
    "opened": "2026-08-10",
    "category": "return_seasonality",
@@ -4980,11 +4980,90 @@
    "mechanism": "FQ-223 에서 '4·5월 제외' 를 롤오버 오염 제거 도구로 쓰려 했는데, 롤오버와 무관한 M01_Mom_12_1(순수 가격 모멘텀)에서 **더 큰** 4·5월 효과가 나왔다: 4-팩터 FMB 에서 t 1.951 → 0.613 (4·5월 제외), 4·5월 평균계수 0.01265 vs 평월 0.00107 (Welch p 0.0017). C02_EPS_Chg_1m 도 t 2.709 → 1.556 (p 0.0237). M26 은 오히려 작다(t 2.555 → 2.222, p 0.486). ⇒ KR 4·5월은 횡단면 신호 전반이 잘 듣는 달이며, 그 효과 크기는 롤오버 노출과 **역순**이다.",
    "why_it_matters": "① 방법론: '특정 달 제외' 를 데이터 결함의 통제로 쓰는 설계는 이 계절성과 교락된다 — 달-제외 통제를 쓰는 모든 라운드에 적용되는 제약. ② 알파: 계절성 자체가 미탐색 축이다.",
    "next_probe": [
-    "4·5월 효과가 고립 봉우리인가 넓은 고원인가 — 슬라이딩 창(2·3·4개월)으로 재확인(feedback-sliding-window-before-bucket-claims 규약)",
-    "결산·배당락·기관 리밸런싱 캘린더 중 무엇이 기전인가 — 12개월 계수 분해에서 2월(t 3.13)·10월(t 1.83)도 양이라 4월 단독 서사는 미성립"
+    "M01 4월 효과의 종목 단면 — 4월 초과가 어떤 종목군(사이즈·유동성·기관보유·회계연도)에 집중되는가. 기전 후보를 관측 가능한 형태로 좁히는 유일한 남은 축",
+    "4월 효과의 소비 가능성 — 4월 한정 모멘텀 가중 상향이 top-25 cap-w PORT_t 를 움직이는가(연 1회 발화 = 24 관측, 사전 검정력 산출 필수)"
    ],
    "caveat": "월별 n=23~24 (연 1회 관측) — 구조적 저검정력. 사전등록 전 required_effect_size.R 필수",
-   "artifacts": "stage_artifacts/infra/fq223_rollover_downstream_20260810/a1_month_of_year_decomp.csv, a1_exclusion_and_controls.csv"
+   "artifacts": "stage_artifacts/infra/fq225_m26_modern_seasonality_20260810/ (PREREG.md · fq225_226_findings.json · challenge_note.md)",
+   "measured": {
+    "date": "2026-08-10",
+    "round": "FQ-225/226 diagnostic",
+    "metric_type": "canonical_screen_diag",
+    "frame_correction": "5월은 12개월 중 11위(−0.000617/월) — '4·5월' 프레임 폐기, 4월 단독",
+    "primary": "순열 max-month p = 0.2015 ⇒ 무지정 탐색으로는 계절성 미확립",
+    "apriori": "사전지정 4월 p = 0.0185 · 이웃차 p = 0.0197 ⇒ 4월 한정 유의",
+    "sliding_window": "고립 봉우리 확정 — 희석비 w3 0.155 (순수 고립 이론치 0.333 보다 작음) · 하모닉 K=1~5 전부 F p>0.46",
+    "mechanism": "롤오버 지지(수리가 58.4% 제거·가짜 basis 통제는 못 죽임) / 결산집중·배당락·분산 3종 기각",
+    "residual": "★M01_Mom_12_1 4월 초과 표준화 0.5912 · p_apr 0.0050 · 유일하게 max-month 통과(p 0.0367) — 네 기전 전부로 미설명",
+    "power": "월별 n=24 · 4월 여유 +2.2% (필요치 0.005980)",
+    "controls": "위반주입 p 0.0002 검출 · 음성대조 1종오류 0.0437~0.0477(명목 0.05, n=3000)"
+   }
+  },
+  {
+   "id": "FQ-227",
+   "lane": "material_qualification",
+   "title": "M26 현대 구간 약화 — 판정 불가 확정 + 부활 표본 조건 (FQ-161 후속)",
+   "status": "measured_underpowered_parked",
+   "owner": "alpha-research",
+   "opened": "2026-08-10",
+   "category": "power_bounded_verdict",
+   "parent": "FQ-161 / FQ-223",
+   "hypothesis": "08-08 이 남긴 '2017-2026 t=0.884, 세 시대 전부 INCONCLUSIVE_UNDERPOWERED' 를 분할이 아니라 연속 시간 상호작용으로 다시 물었다.",
+   "measured": {
+    "date": "2026-08-10",
+    "metric_type": "canonical_screen_diag",
+    "verdict": "JUDGMENT_NOT_POSSIBLE — '약화됐다'도 '안 됐다'도 이 표본으로는 기각 불가",
+    "level": "현대 n=115 · 연 +0.986% · NW3 t +0.884 / 초기 n=168 · 연 +2.701% · t +2.527",
+    "trend": "연속 추세(n=283) -0.000099/yr · t -0.847 — 미검출. 검출 가능 최소 기울기 +0.000235/yr (관측의 2.36배)",
+    "era_diff": "직접 시대차 +1.715%/yr · NW SE 기준 t +1.110 — 비유의",
+    "power_bar": "현대 n=115 검출 필요치 연 2.631% vs 초기 실측 연 2.701% — 여유 2.68% (뒤집힘 sd 배수 1.0268)",
+    "contamination_robustness": "FQ-223 6 arm 재판정: 추세 |t| 최대 1.189 · 현대 level |t| 최대 1.135 — 오염 제거해도 불변",
+    "control": "대조 4종(C01/C02/C04/M01) 전부 추세 미검출 — 대조 유효. 6/6 계열 음의 점기울기이나 유의 0개 = 시대 공통 약드리프트"
+   },
+   "revival_condition": {
+    "level": "현대 효과 크기 유지 시 |t|=2.0 도달에 818개월(68.2년) 필요 — 현재 115개월. 자연 축적으로는 도달 불가",
+    "trend": "추세 검출에는 총 502개월(41.8년) 필요 — 추가 18.2년",
+    "alternative": "표본을 기다리는 대신 **효과크기를 키우는 축**으로 이동하라 — 유니버스 확장(KR_TOP500_FREEFLOAT), 국면 조건부 발화로 유효 관측 집중, 또는 소비면 전환(랭킹→필터)"
+   },
+   "caveat": "FMB 계수 t 는 신호력이지 PORT_t 아님. M26 cap-w PORT_t 는 FQ-161 에서 이미 +1.544 로 HARD 미달 — 본 항목은 그 판정을 바꾸지 않는다",
+   "artifacts": "stage_artifacts/infra/fq225_m26_modern_seasonality_20260810/ (a1_trend_by_series.csv · d1_arm_reassessment.csv · d1_power_sensitivity.csv)"
+  },
+  {
+   "id": "FQ-228",
+   "lane": "return_seasonality",
+   "title": "★KR 4월 가격-모멘텀 프리미엄 — 사전등록 4기전 전부로 미설명된 잔여",
+   "status": "frontier_open",
+   "owner": "alpha-research",
+   "opened": "2026-08-10",
+   "category": "unattributed_effect",
+   "parent": "FQ-226",
+   "hypothesis": "M01_Mom_12_1(가격 12-1 모멘텀)의 FMB 계수는 4월에 표준화 +0.5912 초과를 보이며, 6개 계수계열 중 **유일하게** 다중검정 보정 max-month 순열검정을 통과한다(p_max 0.0367 · p_apr 0.0050 · 이웃차 p 0.0460). 사전등록한 네 기전 — FY1 롤오버(M01 은 컨센서스 필드 미사용) · 결산 집중(서프라이즈 계열 표준화 초과 −0.0303 으로 부재) · 배당락(절편 4월 초과 −0.010074, p 0.7736) · 횡단면 분산/기관 리밸런싱(4월 disp 비 1.033, p 0.2904 · 정규화 후 유지) — 전부 기각됐다. 가족 분리는 선명하다: 모멘텀 +0.4407 vs 서프라이즈 −0.0303 vs 수준 −0.1587.",
+   "why_it_matters": "① 미탐색 알파 축: 연 1회 발화이나 효과크기가 크다(M01 4월 계수 +0.017746 vs 평월 +0.001675). ② 방법론: '특정 달 제외'를 데이터 결함 통제로 쓰는 설계는 이 효과와 교락된다(FQ-223 방법 A 가 그렇게 무효화됐다). ③ M26 4월의 44%(M01 통제 시 잔존율 0.558)가 이 공통 성분이다.",
+   "next_probe": [
+    "종목 단면 분해 — 4월 모멘텀 초과가 사이즈/유동성/기관보유/12월결산 여부 중 무엇과 교차하는가. 각 후보가 참일 때 다르게 나타나는 관측을 먼저 고정할 것",
+    "국제 대조 — KR 4월이 회계연도(일본식 4월 시작 기업 관행)와 결부되는지, 아니면 3월 정기주총/배당기준일 이후 유동성 재개와 결부되는지. 크로스마켓 데이터 금지이므로 KR 내부에서 12월결산 vs 3월결산 종목군 대비로 대리 검정",
+    "소비 가능성 — 4월 한정 모멘텀 틸트가 top-25 cap-w PORT_t 를 움직이는가. ★연 1회 발화 = 24 관측이므로 착수 전 required_effect_size.R 필수, 미달이면 측정 전 폐기"
+   ],
+   "caveat": "월별 n=24 구조적 저검정력. p_max 0.0367 은 명목 0.05 를 통과하나 경험적 보정문턱 0.0525 에 근접 — 단일 라운드로 확립 선언 금지",
+   "artifacts": "stage_artifacts/infra/fq225_m26_modern_seasonality_20260810/ (c1_standardized_april_excess.csv · b1_breadth_across_series.csv)"
+  },
+  {
+   "id": "FQ-229",
+   "lane": "conditional_strength",
+   "title": "M26 계수의 횡단면 분산 의존 — disp_t 가 시간보다 강한 설명변수",
+   "status": "frontier_open",
+   "owner": "alpha-research",
+   "opened": "2026-08-10",
+   "category": "conditional_alpha",
+   "parent": "FQ-225(본 라운드) A2 부산물",
+   "hypothesis": "M26 FMB 계수를 시간에 회귀하면 R2 0.004(t −0.77)에 그치나, 월별 횡단면 수익 sd(disp_t)를 넣으면 disp_t 계수 t=+3.63 · R2 0.092 로 뛴다(전채널 사양에서 t=+4.14 · R2 0.112). 즉 M26 의 횡단면 신호력은 '시대'보다 '그 달의 수익 분산'에 조건부다. 이는 기울기가 분산에 기계적으로 비례하는 부분과, 분산 국면에서 정보가 실제로 더 잘 반영되는 부분이 섞여 있어 분해가 필요하다.",
+   "why_it_matters": "① 기계적 성분이면 국면-조건부 알파가 아니라 스케일 아티팩트이므로 표준화 규격을 고쳐야 한다. ② 정보 성분이면 disp 국면 조건부 발화가 유효 관측을 집중시켜 FQ-227 의 '표본을 기다릴 수 없다' 문제를 우회하는 레버가 된다.",
+   "next_probe": [
+    "기계 vs 정보 분해 — 계수를 disp_t 로 정규화한 계열(rank-IC 등 스케일 불변 통계와 대조)에서 disp 의존이 남는가. 남으면 정보 성분",
+    "소비면 — disp_t 는 사후 관측이므로 **직전 달 disp(lag1)** 로 게이트했을 때 top-25 cap-w PORT_t 가 개선되는가. lag1 예측력이 없으면 소비 불가(진단으로만 유지)"
+   ],
+   "caveat": "disp_t 는 동시점 변수 — 본 라운드에서는 분해용이며 예측 주장 아님. 소비 검토는 lag1 판본으로만",
+   "artifacts": "stage_artifacts/infra/fq225_m26_modern_seasonality_20260810/a1_attribution_nested.csv"
   }
  ]
 }

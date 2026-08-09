@@ -1,0 +1,215 @@
+{
+  "round_id": "FQ-225/226-diagnostic",
+  "date": "2026-08-10",
+  "metric_type": "canonical_screen_diag",
+  "capital_claim": false,
+  "prereg": "stage_artifacts/infra/fq225_m26_modern_seasonality_20260810/PREREG.md",
+  "parent": "FQ-223 (롤오버 하류) · FQ-161 (M26 재료 자격) · FQ-226 (계절성)",
+  "target_statistic": "z(M26_Revenue_Mom) FMB NW(lag3) 월별 계수 계열 (4-팩터 횡단면 회귀)",
+  "panel": {
+    "source": "stage_artifacts/WT_D20260808_002/alpha_scores.parquet",
+    "rows": 69885,
+    "months": 283,
+    "range": "2003-01 ~ 2026-07",
+    "tickers": 630,
+    "complete_case_frac": 1,
+    "parity_t": 2.5552525842524
+  },
+  "A_modern_attenuation": {
+    "verdict": "JUDGMENT_NOT_POSSIBLE",
+    "headline": "현대 구간 약화는 '약화됐다'도 '안 됐다'도 판정 불가. 이 사실이 결론이다.",
+    "level_test": {
+      "n_modern": 115,
+      "mean_monthly": 0.000821761162320018,
+      "annual_pct": 0.986113394784022,
+      "sd": 0.00940329107553536,
+      "t_nw3": 0.883750017034632,
+      "n_early": 168,
+      "mean_early_monthly": 0.00225090335204722,
+      "annual_early_pct": 2.70108402245666,
+      "t_early": 2.52742003856686
+    },
+    "power_gate": {
+      "required_monthly": 0.00219215353530499,
+      "required_annual_pct": 2.63058424236599,
+      "tool_verdict": "INCONCLUSIVE_BAR_RESTATES_T",
+      "implied_t_threshold": 2.35751677372879,
+      "bar_restates_t": true,
+      "early_effect_detectable_in_modern": true,
+      "margin_pct": 2.68000465277893,
+      "flip_sd_multiplier": 1.02680004652779,
+      "note": "여유 2.7% — 현대 sd 가 2.68% 커지거나 NW 팽창이 1.40 이면 원천 판정 불가로 전환"
+    },
+    "trend_test_primary": {
+      "design": "연속 시간 상호작용 (분할 금지)",
+      "n": 283,
+      "slope_per_yr": -9.94986201486361e-05,
+      "t_nw3": -0.847099383117386,
+      "detected": false,
+      "min_detectable_slope_per_yr": 0.000234916049123951,
+      "detectable_multiple": 2.36099805980245
+    },
+    "era_diff_secondary": {
+      "diff_monthly": 0.0014291421897272,
+      "diff_annual_pct": 1.71497062767264,
+      "nw_se": 0.00128755214025415,
+      "t": 1.10996840053802,
+      "significant": false
+    },
+    "attribution": {
+      "verdict": "N/A — A1 추세 미검출이므로 귀속 대상 자체가 없다(무엇을 설명할지가 통계적으로 확립되지 않음)",
+      "note": "A1 미검출 ⇒ 귀속 대상 없음. 다만 nested 회귀에서 disp_t(횡단면 수익 sd)가 강한 설명력",
+      "disp_channel": "M26 계수 ~ tau + disp_t: disp_t t=+3.63 (R2 0.004→0.092) · 전채널 t=+4.14 (R2 0.112)"
+    },
+    "sample_required": {
+      "level_months": 818.367837362019,
+      "level_years": 68.1973197801683,
+      "trend_months": 501.784053684996,
+      "trend_years": 41.815337807083,
+      "trend_additional_years": 18.2320044737496
+    },
+    "positive_control": {
+      "valid": true,
+      "controls_t": {
+        "M26_Revenue_Mom": -0.847099383117386,
+        "C01_SUE": -0.714475967015485,
+        "C02_EPS_Chg_1m": -0.870660539943236,
+        "C04_ESBR": -0.999449574250438,
+        "M01": -0.442682430419766,
+        "intercept": -1.04914022214868
+      },
+      "reading": "대조 4종 전부 |t|<2.0 → 대조 유효. 6/6 계열이 음의 점기울기이나 유의 0개 = 시대 공통 약드리프트"
+    },
+    "contamination_robustness": {
+      "note": "자가 적대검증 C1 — 오염된 M26 위에서 잰 것 아니냐는 반론을 6 arm 재판정으로 답함",
+      "arms": ["FAKE_10/1(통제)", "FAKE_7/1(통제)", "RA_04·05국한", "RA_4월탐지", "RA_원탐지기", "plain(재구성)"],
+      "trend_t": [-0.377042583075725, -0.560945281454205, -1.1860159819072, -0.900713758308166, -1.18947446408993, -0.548199621501054],
+      "modern_level_t": [1.00846020158256, 1.13546097623277, 0.50772125309547, 1.10410859628329, 1.10410859628329, 0.941808442222736],
+      "early_t": [2.69025056761798, 2.87237729339196, 3.22408776999382, 3.10238558253388, 3.31480097121978, 2.46676686523733],
+      "required_months": [619.68539016351, 527.34962653577, 3217.54715049002, 612.078597706219, 612.078597706219, 748.753505888965],
+      "verdict": "6/6 arm 추세 미검출(|t|max 1.189) · 6/6 현대 level 미달(|t|max 1.135) — 결론 불변"
+    }
+  },
+  "B_seasonality": {
+    "verdict_primary": "NOT_ESTABLISHED_AFTER_MULTIPLICITY",
+    "verdict_apriori": "APRIL_ONLY_SIGNIFICANT_AS_PRESPECIFIED",
+    "frame_correction": {
+      "claim": "'4·5월 계절성' 프레임은 실측과 어긋난다 — 5월은 12개월 중 11위",
+      "may_mean_monthly": -0.000617004078276572,
+      "may_rank": 11,
+      "apr_mean_monthly": 0.00610883634106186,
+      "apr_rank": 1,
+      "why_may_was_paired": "FQ-223 롤오버 창(sig−63일이 4/1 을 가로지르는 sig 월 = 04,05) 때문이지 관측된 5월 효과가 아님"
+    },
+    "power_gate": {
+      "n_per_month": 24,
+      "observed_apr": 0.00610883634106186,
+      "required_monthly": 0.00597975738683752,
+      "required_annual_pct": 7.17570886420502,
+      "margin_pct": 2.15859851619513,
+      "passed": true,
+      "note": "여유 +2.2% — 단일 사전지정 달에 한해 간신히 검출 가능 범위"
+    },
+    "sliding_window": {
+      "excess_w1": 0.00443867981522888,
+      "excess_w3": 0.000686268133937417,
+      "excess_w5": 0.000563119991636563,
+      "dilution_ratio_w3": 0.154610866857949,
+      "dilution_ratio_w5": 0.126866549306965,
+      "theoretical_isolated_w3": 0.333333333333333,
+      "theoretical_isolated_w5": 0.2,
+      "verdict": "고립 봉우리 — 관측 희석비 0.155 가 순수 고립 이론치 0.333 보다도 작다 = 이웃이 평균 이하",
+      "auto_label_correction": "b1 자동라벨 'w3 최대창 중심 03월 ⇒ 경계효과 의심'은 오독. 5월이 11위라 {03,04,05} 창이 손해 볼 뿐이며 4월 고립의 *귀결*이다",
+      "harmonics": {
+        "K": [1, 2, 3, 4, 5],
+        "r2": [0.00546986187014128, 0.00857032507984938, 0.00955439178117827, 0.0233242196926846, 0.0276326632543514],
+        "F_p": [0.463994450136676, 0.662373489821022, 0.849115076153829, 0.58730704166396, 0.654869354947379],
+        "reading": "K=1~5 전부 F p 0.46~0.85 — 매끄러운 연주기 자체가 부재. 고원 서사 기각"
+      }
+    },
+    "permutation": {
+      "design": "연내(year-wise) 월 라벨 재배정 · 관측 패턴 조건부 보존 · B=20000",
+      "p_max_month": 0.20153992300385,
+      "p_april_prespecified": 0.0184990750462477,
+      "p_neighbor": 0.0196990150492475,
+      "calibrated_cutoff": {
+        "mx": 0.0525323733813309,
+        "apr": 0.0552972351382431,
+        "nb": 0.0554972251387431
+      },
+      "empirical_type1_at_005": {
+        "mx": 0.0476666666666667,
+        "apr": 0.0436666666666667,
+        "nb": 0.0436666666666667
+      },
+      "reading": "주판정 p_max 0.2015 = 무지정 최대월 탐색으로는 미확립 / 사전지정 4월 p 0.0185 = 유의"
+    },
+    "mechanism_discrimination": {
+      "rollover_FY1": {
+        "supported": true,
+        "evidence": "진짜 4/1 basis 수리: 4월 초과 +0.005263 (p 0.0129) → +0.002188 (p 0.1531) · 제거율 58.4%",
+        "alternative_exclusion": "가짜 basis 통제 2종은 4월을 못 죽임 — FAKE_10/1 p 0.0127 · FAKE_7/1 p 0.0140 ⇒ 작동한 것은 창 단축이 아니라 basis 정체",
+        "arm_table": {
+          "arm": ["plain(재구성)", "RA_4월탐지", "RA_원탐지기", "RA_04·05국한", "FAKE_10/1(통제)", "FAKE_7/1(통제)"],
+          "apr_excess": [0.00526330452823243, 0.00218756492158174, 0.00202054809805766, 0.00225640173191481, 0.00514325861925079, 0.00493474095167695],
+          "p": [0.0128733908261467, 0.153105861767279, 0.170228721409824, 0.151731033620797, 0.0127484064491939, 0.0139982502187227]
+        }
+      },
+      "fiscal_reporting_concentration": {
+        "supported": false,
+        "evidence": "서프라이즈(수준) 계열에 4월 부재 — C04_ESBR 표준화 초과 +0.0060 · C01_SUE −0.0667. 결산 집중이 기전이면 여기 나와야 함"
+      },
+      "dividend_exdate": {
+        "supported": false,
+        "evidence": "FMB 절편(수준)의 4월 초과 −0.010074 · p_apr 0.7736 — 배당은 수준에 작용해야 하는데 부호가 반대"
+      },
+      "institutional_rebalancing_dispersion": {
+        "supported": false,
+        "evidence": "4월 횡단면 수익 sd 비 1.033 · 순열 p 0.2904 · disp 정규화 후에도 4월 p_apr 0.0099 유지"
+      },
+      "residual_unattributed": {
+        "finding": "★M01_Mom_12_1(가격 12-1 모멘텀)의 4월 효과가 가장 크고 네 기전 전부로 설명 안 됨",
+        "std_excess_by_family": {
+          "momentum": 0.4407,
+          "surprise": -0.0303,
+          "level": -0.1587
+        },
+        "m01": {
+          "apr_excess": 0.016071,
+          "std_excess": 0.5912,
+          "p_apr": 0.005,
+          "p_max": 0.0367,
+          "note": "6 계열 중 유일하게 다중검정 보정 max-month 검정 통과"
+        },
+        "directionality": "M01 통제 후 M26 4월 더미 t +2.046→+1.171 (잔존 0.558) / 역방향 M01 은 t +3.263→+2.498 (잔존 0.732) ⇒ M01 이 독립 현상",
+        "era_reproduction": "M01 4월 초과 전반 +0.014745 / 후반 +0.017447 — 양 시대 재현"
+      }
+    },
+    "positive_control": {
+      "injection": {
+        "delta": 0.00597975738683752,
+        "p_max_after": 0.0001999600079984,
+        "detected": true,
+        "note": "B0 필요치 크기를 4월에 주입 → p 0.0002 검출. 검정 살아있음"
+      },
+      "negative_control": {
+        "n_fake": 3000,
+        "type1_at_005": {
+          "mx": 0.0476666666666667,
+          "apr": 0.0436666666666667,
+          "nb": 0.0436666666666667
+        },
+        "note": "명목 0.05 대비 0.0437~0.0477 — 정상 보정. b1 초판의 0.0767(n=300)은 표본잡음이었고 자기정정함"
+      },
+      "seasonality_irrelevant_axis": "M01(컨센서스 무관)을 '무관해야 할 축'으로 세웠으나 오히려 최대 효과 — 이 대조 실패가 기전 판정의 핵심 축이 됨"
+    }
+  },
+  "selection_type": "chain_diagnostic_prereg (argmax pick 없음 — DSR 부적용)",
+  "n_specs": {
+    "A": 12,
+    "B": 10
+  },
+  "caveats": ["FMB 계수 t 는 횡단면 신호력 — 실현 포트폴리오 초과수익(PORT_t) 아님. IC→PORT_t 전이 벽 적용", "graduation HARD 3종(PORT_t 2.95 / oos_retention 0.7 / calmar 0.64) 미판정. 자본 주장 없음", "M26 cap-w PORT_t 는 FQ-161 기록에서 +1.544 로 이미 HARD 미달 — 본 라운드가 그 판정을 바꾸지 않음", "A0 검정력 여유 2.7% — 뒤집힘 배수 sd×1.0268 / NW 팽창 1.40. 단일 문장 확실성으로 읽지 말 것", "귀속용 disp_t/N_t 는 동시점 변수(분해이지 예측 아님). 국면 대리변수 vol12_t/dd_t 만 lag 처리", "월별 n=23~24 — 구조적 저검정력. 4월 결과는 사전지정 단일가설 자격에 의존"],
+  "challenge_note": "stage_artifacts/infra/fq225_m26_modern_seasonality_20260810/challenge_note.md",
+  "artifacts_dir": "stage_artifacts/infra/fq225_m26_modern_seasonality_20260810/"
+}
