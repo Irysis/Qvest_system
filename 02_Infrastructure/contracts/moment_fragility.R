@@ -115,7 +115,7 @@ assert_moment_robust <- function(x_on, x_off, stat = c("skew", "kurt"), k_max = 
        moment_on = f(x_on), moment_off = f(x_off), moment_diff = mom,
        bowley_on = rs_on$bowley, bowley_off = rs_off$bowley, bowley_diff = rob_bow,
        octile_on = rs_on$octile, octile_off = rs_off$octile, octile_diff = rob_oct,
-       dropk = dk, first_sign_flip_k = flip_k,
+       dropk = dk, first_sign_flip_k = flip_k, first_collapse_k = collapse_k,
        n_on = length(x_on), n_off = length(x_off),
        note = paste0(
          "적률 기반 왜도/첨도는 **스케일 불변이지만 이상치에 지배된다** — 두 성질은 별개다. ",
