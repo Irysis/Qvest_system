@@ -136,6 +136,37 @@
       }
     },
     {
+      "method_id": "HurstRateMatched",
+      "route": "regime",
+      "adapter_kind": "exposure",
+      "paper_id": "arxiv:2607.19497",
+      "paper_title": "The Science and Practice of Trend-Following Systems (chain step 2 — 발화율 제약형)",
+      "routed_on": "2026-08-09",
+      "selection_type": "chain",
+      "chain_step": 2,
+      "chain_parent": "HurstTrendOverlay",
+      "mechanism_diagnosis": "step 1 고정문턱 H>0.5 가 269개월 중 238개월(88.5%) 발화 → 상시 full 노출로 bare 에 수렴(IR 1.457 vs bare 1.477 · MDD -0.4073 vs -0.4074). ΔIR +0.048 은 신호 가치가 아니라 오버레이 제거 효과였고 _x_book(ΔIR -0.027 · ΔMDD 0.0000)이 확인. 실패 원인 = 신호가 아니라 발화율.",
+      "mechanism": "발화율을 파라미터가 아니라 **제약**으로 고정하고, 그 제약 하에서 Hurst 가 unified 앙상블보다 나은 달을 고르는지만 묻는다. 목표 발화율은 상수가 아니라 unified 방어라벨(CRISIS∪CAUTION)의 **확장창 실현 발화율**에서 파생 — 자유 파라미터 0개.",
+      "kr_mapping": "확장창 백분위: 홀딩월 M 에서 이전 홀딩월들의 H 분포 하위 q_M 이하면 노출 0.70, 아니면 1.00. q_M = M 이전 unified 방어라벨 실현율. burn-in 60개월.",
+      "pit": "① H 창 Date < first-day-of-holding-month ② 백분위·목표율 모두 직전 홀딩월까지만(확장창, C1 — full-sample 금지). used_cutoff 월별 신고.",
+      "prereg": "stage_artifacts/paper_recharge/prereg_hurst_rate_matched_20260809.json",
+      "adapter": "02_Infrastructure/methods/adapters/hurst_rate_matched_overlay.R",
+      "entrypoint": "exposure_schedule",
+      "verdict": "implemented",
+      "blocker": null,
+      "unblock_requirement": null,
+      "similar_to": ["HurstTrendOverlay"],
+      "similar_to_note": "같은 신호(H)를 쓰지만 발화 규칙이 다르다 — redundant 아님. 두 팔의 차이가 곧 '발화율이 원인이었나'의 검정이다.",
+      "added": "2026-08-09",
+      "screen_axes": {
+        "shrinkage_builtin": "yes",
+        "statistic_order": "higher",
+        "screen_priority": "⭐",
+        "rationale": "확장창 백분위가 축소 역할(수준이 아니라 순위를 씀). 통계 차수는 R/S 누적편차 범위.",
+        "assigned": "2026-08-09"
+      }
+    },
+    {
       "method_id": "StationaryAmbiguity",
       "route": "regime",
       "adapter_kind": "exposure",
