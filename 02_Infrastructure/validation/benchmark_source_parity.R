@@ -236,7 +236,10 @@ if (sys.nframe() == 0L && !interactive()) {
   #   **신호가 결정에 닿지 않았다** — 검사기를 늘릴 게 아니라 신호를 남겨야 한다.
   # latest = 현재 상태(상태라인·훅이 읽는 단일 지점) / history = 지속기간 추적(JSONL append).
   tryCatch({
-    .root <- tryCatch(.bsp_root(), error = function(e) getwd())
+    # ★.bsp_root() 는 실패 시 error 가 아니라 NA 를 반환한다(line 76 참조) — tryCatch 만으로는
+    #   못 잡고 NA 경로에 쓰려다 엉뚱한 곳에 남는다. NA 를 명시 처리한다.
+    .root <- tryCatch(.bsp_root(), error = function(e) NA_character_)
+    if (length(.root) != 1L || is.na(.root) || !nzchar(.root)) .root <- getwd()
     rec <- list(
       checked_at = res$checked_at, severity = res$severity, note = res$note,
       n_common = res$n_common, n_mismatch = res$n_mismatch,

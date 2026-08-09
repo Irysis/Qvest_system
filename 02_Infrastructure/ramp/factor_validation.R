@@ -17,7 +17,54 @@ source("02_Infrastructure/contracts/canonical_screen_bt.R")
 #    sig_date(t)의 신호 → t→t+1M 실현수익. 자체합성 아님: 일별 Ret을 월구간 단순누적은
 #    피하고, '월말 종가 대비 다음 월말 종가' 변화율(실현 forward return)을 직접 산출.
 #==============================================================================
-#' @return list(returns_dt(Date=sig월말, Ticker, Ret_1m=forward), bench_dt(Date, BM_Ret), liq_dt)
+#==============================================================================
+# [FQ-181 2026-08-09] 유동성 자(ruler) 이원화 수리
+#
+# 결함(확정): 구판은 주석에 "20d ADV at t-1" 이라 써 놓고 `adv = Vol0 * Close0`
+#   (= 월말 **당일 1일치** 거래대금)를 계산했다. 헌법 정의(CLAUDE.md Production
+#   Constraints · .claude/rules/pit.md C10)는 **20일 평균 거래대금 >= 2e8**이다.
+#   두 자의 상관 0.929 · 판정 불일치 2.61% · 실선별 top-25 중 3.04%가 20일-자 미달.
+#   → 자는 헌법이 이미 정의했으므로 선택 문제가 아니다. 구현을 헌법에 맞춘다.
+#
+# ★규약 (자 라벨 의무 — 두 자 병존 기간):
+#   이 함수의 `liq_dt` 를 소비하는 모든 산출물은 반환값 `liq_ruler`(= liq_dt 의
+#   attr "liq_ruler")를 **그대로 기록**해야 한다. 자 라벨 없는 유동성 수치를
+#   서로 비교하거나 인용하지 말 것 — 교정 전후 산출물은 서로 다른 자로 잰 값이다.
+#
+# ★입력 형태가 자를 결정한다 (2026-08-09 census 실측):
+#   호출부 149건 중 103건(69%)이 rawdata 를 **월말 거래일만으로 slim** 해서 넘긴다
+#   (`rawdata[Date %in% .me]` — asof_close 전체스캔 회피 목적). 월말 행만 있는
+#   패널에서는 20일 평균을 **원리적으로 계산할 수 없다**(일간 관측이 입력에 없다).
+#   그런 입력에 `frollmean(.,20)` 을 걸면 20 *개월* 평균이 나온다 — 조용히 틀린 값.
+#   ⇒ 함수가 입력 관측단위를 **실측**해서 분기하고, 계산 불가일 때는 라벨로 자백한다.
+#   ⇒ NA 로 비우지 않는다: canonical_screen_bt 는 `is.na(adv) | adv >= liq_min` 이라
+#     NA 가 **통과**한다(= 제약 완화 방향). 결손을 정상값으로 내려앉히지 않는다.
+#==============================================================================
+
+#' 20일 평균 거래대금(t-1 기준) — 일간 패널에서만 계산 가능
+#'
+#' 창 = 신호일 **직전 거래일까지의 20 거래일** (당일 미포함, C10 t-1 PIT).
+#' 워밍업(종목의 첫 20 거래일)은 NA 로 비우지 않고 **가용 일수만큼의 확장평균**으로
+#' 채운다 — NA 는 하류에서 필터를 통과해버리므로(위 규약) 결손을 완화로 바꾸지 않는다.
+#' i >= 20 구간에서는 adaptive 창 폭이 20 으로 고정되어 표준 frollmean(.,20) 과 동일하다.
+#' @param daily data.table(Date, Ticker, Vol, Close) 일간 패널
+#' @param at_dates 값을 뽑을 날짜(월말 거래일). NULL 이면 전 구간 반환.
+#' @return data.table(Date, Ticker, adv)
+build_adv20_t1 <- function(daily, at_dates = NULL) {
+  stopifnot(all(c("Date", "Ticker", "Vol", "Close") %in% names(daily)))
+  DV <- data.table::as.data.table(daily)[, .(Ticker, Date = as.Date(Date), dval = Vol * Close)]
+  data.table::setorder(DV, Ticker, Date)
+  # adaptive: 창 폭 = min(누적 관측수, 20). 그 다음 shift(1) 로 당일을 창에서 제외한다.
+  DV[, adv := data.table::shift(
+        data.table::frollmean(dval, n = pmin(seq_len(.N), 20L),
+                              adaptive = TRUE, na.rm = TRUE), 1L), by = Ticker]
+  res <- if (is.null(at_dates)) DV[, .(Date, Ticker, adv)]
+         else DV[Date %in% as.Date(at_dates), .(Date, Ticker, adv)]
+  res[]
+}
+
+#' @return list(returns_dt(Date=sig월말, Ticker, Ret_1m=forward), bench_dt(Date, BM_Ret),
+#'              liq_dt(Date, Ticker, adv), ret_firewall_dropped, liq_ruler)
 build_monthly_forward_returns <- function(rawdata, sig_dates) {
   # 각 종목 월말 종가 → 다음 월말 종가 forward return
   sig_dates <- sort(as.Date(sig_dates))
@@ -29,6 +76,38 @@ build_monthly_forward_returns <- function(rawdata, sig_dates) {
     if (nrow(sub) == 0) return(NULL)
     md <- max(sub$Date)
     rawdata[Date == md]
+  }
+
+  # ── [FQ-181] 입력 관측단위 실측 → 유동성 자 결정 ───────────────────────────
+  #   판정 지표: 캘린더월당 고유 거래일 수의 중앙값. 일간 패널 ~21, 월말-slim = 1.
+  .udates <- sort(unique(as.Date(rawdata$Date)))
+  .dpm_med <- if (length(.udates)) {
+    stats::median(as.integer(table(format(.udates, "%Y-%m"))))
+  } else 0
+  .has_px <- all(c("Vol", "Close") %in% names(rawdata))
+  .daily_ok <- (.dpm_med >= 15) && .has_px
+  adv_tbl <- NULL
+  if (.daily_ok) {
+    liq_ruler <- "adv20_t1"          # 헌법 정의 — 20일 평균 거래대금, 당일 미포함
+    .md <- unique(vapply(sig_dates, function(d) {
+      v <- .udates[.udates <= d]
+      if (length(v)) as.character(max(v)) else NA_character_
+    }, character(1)))
+    .md <- as.Date(.md[!is.na(.md)])
+    adv_tbl <- build_adv20_t1(rawdata[Date <= max(sig_dates), .(Date, Ticker, Vol, Close)],
+                              at_dates = .md)
+    data.table::setkeyv(adv_tbl, c("Date", "Ticker"))
+  } else {
+    liq_ruler <- "adv1_sameday_DEGRADED"   # 20일 자 계산 불가 — 구판과 동일한 1일치
+    cat(sprintf(paste0(
+      "[build_monthly_forward_returns] ★유동성 자 저하(FQ-181): 입력 패널의 캘린더월당 ",
+      "거래일 중앙값 = %.0f (일간 아님%s).\n",
+      "  20일 평균 거래대금을 입력에서 계산할 수 없어 **월말 1일치 Vol*Close** 로 대체합니다.\n",
+      "  → liq_ruler='adv1_sameday_DEGRADED'. 헌법 자(20일 평균)로 재려면 slim 하지 말고 ",
+      "일간 rawdata 를 넘기십시오.\n"),
+      .dpm_med, if (!.has_px) ", Vol/Close 결측" else ""))
+    warning("build_monthly_forward_returns: liq_ruler='adv1_sameday_DEGRADED' ",
+            "— 월말-slim 입력이라 20일 평균 거래대금 계산 불가 (FQ-181)", call. = FALSE)
   }
   for (i in seq_len(length(sig_dates) - 1L)) {
     d0 <- sig_dates[i]; d1 <- sig_dates[i + 1L]
@@ -43,8 +122,14 @@ build_monthly_forward_returns <- function(rawdata, sig_dates) {
     .bad <- is.finite(m$Ret_1m) & (m$Ret_1m > 5.0 | m$Ret_1m < -1.0)
     if (any(.bad)) { n_ret_firewall <- n_ret_firewall + sum(.bad); m <- m[!.bad] }
     out[[length(out) + 1L]] <- m[, .(Date = d0, Ticker, Ret_1m)]
-    # liquidity proxy: 20d ADV at t-1 (사용은 단순 Vol0*Close0; canonical_screen_bt liq_dt)
-    liq[[length(liq) + 1L]] <- m[, .(Date = d0, Ticker, adv = Vol0 * Close0)]
+    # [FQ-181] liquidity = 20일 평균 거래대금(t-1). 계산 불가 입력이면 1일치로 저하 + 라벨.
+    if (!is.null(adv_tbl)) {
+      md0 <- c0$Date[1L]
+      .a <- adv_tbl[.(md0, m$Ticker), .(adv), on = c("Date", "Ticker")]$adv
+      liq[[length(liq) + 1L]] <- data.table(Date = d0, Ticker = m$Ticker, adv = .a)
+    } else {
+      liq[[length(liq) + 1L]] <- m[, .(Date = d0, Ticker, adv = Vol0 * Close0)]
+    }
     # benchmark forward return = 유니버스 시총(Size)가중 forward return (실측 cross-section,
     #   compounding 없는 단일구간 가중평균 — KOSPI200∪KQ150 cap-weighted market proxy).
     bm_w <- if (sum(!is.na(m$Size0) & m$Size0 > 0) > 0)
