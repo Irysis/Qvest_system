@@ -217,20 +217,20 @@ def _():
     raise AssertionError('스케일 단절이 통과됨 — 가드 사망')
 
 
-@case('INJ-4  cutoff 이전이 전부 스케일 이탈 → 앵커 없음으로 중단')
+@case('INJ-4  겹치는 날 부족(짧은/빈 응답) → 스케일 추정 불가로 중단')
 def _():
+    """naver 가 짧은 창만 돌려주면 canonical 스케일을 못 정한다.
+    이때 **조용히 아무 스케일이나 쓰는 것**이 최악이므로 명시 중단해야 한다."""
     nv = make_naver()
-    bm = make_bm(nv, corrupt_from='2020-01-01')   # 사실상 전 구간 ratio 1.0
-    bm2 = bm.copy()
-    tail = bm2.Date >= pd.Timestamp(CUTOFF)
-    bm2.loc[tail, 'BM_Close'] = bm2.loc[tail, 'BM_Close'] * SCALE  # 꼬리만 canonical → median 이 canonical
+    bm = make_bm(nv)
+    short = nv.tail(8).copy()      # 겹치는 날 8개 (<20)
     try:
-        with Harness(bm2, nv) as h:
+        with Harness(bm, short) as h:
             nbu.patch_benchmark_parquet(CUTOFF, '2026-08-07', backup=False)
     except RuntimeError as e:
-        assert '앵커' in str(e) or '스케일 추정' in str(e), f'다른 가드가 발화: {e}'
-        return f"차단됨: {str(e)[:70]}"
-    raise AssertionError('앵커 없는 입력이 통과됨 — 가드 사망')
+        assert '스케일 추정 불가' in str(e), f'다른 가드가 발화: {e}'
+        return f"차단됨: {str(e)[:78]}"
+    raise AssertionError('겹침 부족 입력이 통과됨 — 가드 사망')
 
 
 @case('MUT-1  ★검출력 실증: 구 구현(레벨 접합)은 같은 입력에서 이음매를 만든다')
