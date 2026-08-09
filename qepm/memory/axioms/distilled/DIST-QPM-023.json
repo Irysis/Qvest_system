@@ -3,9 +3,9 @@
   "dist_id": "DIST-QPM-023",
   "cluster_key": "4e9c346265da",
   "candidate_id": "CAND_20260809_qepm_legacy_defense_conditional_L-136_L-1551_L-1555-c",
-  "status": "pending_5axis",
-  "statement_refined": null,
-  "retry_condition": null,
+  "status": "proposed",
+  "statement_refined": "KR long-only 에서 defense sleeve 의 낙폭 방어력은 팩터 선택이 아니라 DD overlay 가 만든다. standalone defense 팩터는 두 방식으로 갈라진다: 방어 자체에 실패하거나(D44_Kurtosis MDD 66.9% · SR 0.350, Q17_ROIC+D43_Skewness 블렌드 MDD 59.7% hard fail), 방어에 성공해도 수익이 남지 않는다 (D25+Q07 은 MDD 10.2% 로 방어 목적에 부합하나 CAGR 2.59% 로 실질 수익이 없어 편입 시 전체 CAGR 을 희석). overlay 를 걸면 D01_IdioVol 이 MDD 53.7%→31.9% 로 제어되지만, Core 대비 상관 0.690 이라 2-sleeve 결합의 MDD 개선은 2%p 에 그치고 CAGR 은 1.85%p 를 지불한다. overlay 파라미터를 더 조이는 것도 수확체감이다: DD brake 8/22→6/20 에서 MDD 29.8→29.28%(−0.52%p) 대 CAGR 16.09→15.58%(−0.51%p) 로 사실상 1:1 교환이다. 다중 sleeve 로 올려도 유의성은 별개다 — BL 5-sleeve 앙상블은 CAGR 18.1% · SR 1.198 이나 FMB t −0.491 로 유의하지 않다. ★근거 한계: 본 카드의 supporting 19건 중 18건이 metric_type=estimated 다. 수치는 방향 판단용이며 자본 판정에는 canonical 재측정이 선행되어야 한다.",
+  "retry_condition": "(1) 최우선 = supporting 근거의 estimated→canonical 재측정(canonical_screen_bt) — 현 카드는 자본 판정 자격이 없다 (2) 방어 축을 co-skewness 계열이 아니라 low-vol/tail 계열로 교체한 구성에서 재측정 (3) defense 를 standalone sleeve 가 아니라 overlay 입력(국면 조건부 활성화)으로만 쓰는 구성 — 실측상 방어력의 실제 생산자가 overlay 이므로 역할을 그쪽에 두는 편이 기전 정합적이다.",
   "refined_at": null,
   "refined_by": null,
   "promoted_to_axiom": null,
@@ -113,9 +113,44 @@
     "causal_plausibility": null
   },
   "oos_validation_draft": {
-    "oos_months": 159.0,
+    "oos_months": 159,
     "oos_effect_vs_is": -0.553,
     "note": "L-code oos_retention 실값 1건 median (IS65/OOS35 활성SR retention) + oos_months 실값 1건 median — promote.R essence_score 경유 재확정"
   },
-  "cluster_members_count": 19
+  "cluster_members_count": 19,
+  "adversarial_verdict": "REVISED — (a)과장: 'BL 5-sleeve CAGR 18.1% / SR 1.198' 을 성과 주장으로 쓰지 않고 FMB t −0.491(비유의)을 같은 문장에 병기. (b)근거: ★supporting 19건 중 18건이 estimated 라 본문에 한계를 명시하고 estimated 를 backtested 로 오라벨하지 않음. (c)AX-000: 'defense 불가' 단정 없음 — 역할 재배치(overlay 입력)와 재측정 경로를 열어둠. (d)제약 방화벽(semantic): 실패를 long-only·종목수에 귀속하지 않고 drag 기전(방어 성공 시 수익 부재)과 상관 구조(Core 0.690)로 귀속. 제약 완화 제시 없음. (e)프론티어: 미탐색 인접 3종 + live_trigger 2종 + expiry 기재.",
+  "expiry": "2027-02-09",
+  "frontier": ["defense 를 standalone sleeve 가 아니라 overlay 입력으로만 배치 (방어력 생산자가 overlay 라는 실측에 정합)", "co-skewness 축(D43/D44) 대신 low-vol·tail 축으로 교체한 구성의 canonical 재측정", "supporting 근거 전량 estimated→canonical 전환 후 drag 수치(CAGR 2.59%)가 유지되는지 재확인"],
+  "live_trigger": [
+    {
+      "type": "regime",
+      "condition": "CRISIS/급락 국면 진입 시 에피소드-lens 조건부 재평가(AX-001 v2)",
+      "monitored_source": ".cache/unified_regime_signal.parquet"
+    },
+    {
+      "type": "metric",
+      "condition": "estimated 근거가 canonical 로 재측정되어 drag 수치가 갱신될 때 재판정",
+      "monitored_source": "canonical_screen_bt 산출"
+    }
+  ],
+  "revival_spec": [
+    {
+      "signal_id": "wall_clock_date",
+      "condition": "x >= as.Date('2027-02-09')",
+      "from_trigger": "expiry",
+      "status": "active"
+    },
+    {
+      "signal_id": "regime_category",
+      "condition": "x %in% c('CRISIS','CAUTION')",
+      "from_trigger": "regime",
+      "status": "active"
+    }
+  ],
+  "constraint_firewall": {
+    "mode": "backstop_passed",
+    "checked_at": "2026-08-09"
+  },
+  "drafted_at": "2026-08-09T15:11:33+0900",
+  "drafted_by": "cleaner_session_20260809"
 }

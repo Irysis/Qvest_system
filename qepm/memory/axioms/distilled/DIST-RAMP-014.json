@@ -3,9 +3,9 @@
   "dist_id": "DIST-RAMP-014",
   "cluster_key": "c4308a214e2b",
   "candidate_id": "CAND_20260718_ramp_value_conditional_L-RAMP-20260618_131316B_L-RAMP-20260619_140656_L-RAMP-20260619_150531",
-  "status": "pending_5axis",
-  "statement_refined": null,
-  "retry_condition": null,
+  "status": "proposed",
+  "statement_refined": "지수-비중 최적화 계열(Black-Litterman / Shu-Mulvey)을 KR 배포 형태인 top-25 횡단면으로 변환하면 엣지가 남지 않는다 — 손실 지점은 신호 부재가 아니라 변환이다. 4접근{univ all|index × weighting} 전수 변환에서 배포 가능 구성 0. 같은 라인에서 국면엔진 결합도 역효과였다: Cascade 단독 PORT_t 2.85 대비 순진 앙상블 2.61 · 트레일링IR 가중 앙상블 2.65 · 다축 경제분업 2.71 로 셋 다 미달하며, 원인은 엔진 간 redundancy 다 (트레일링 IR 0.195~0.203 으로 사실상 동일 → 결합이 최강 엔진을 희석). 이 라인은 방법론 경고 2건을 함께 남겼다: (1) 앞서 보고된 'oos_retention 0.52 조건부 졸업'은 sweep 부풀림 아티팩트였고 (2) grid-ensemble PORT_t 3.0 은 de-bias 가 아니라 과매끈 config(λ=100)를 섞은 나쁜 구성의 평균이었다 — 유효 검증은 완전 인과적 rolling re-tune(매 시점 과거 데이터만) 뿐이다. 전제 실측: factor_db 316 전수에서 standalone PORT_t>1 은 0/316 이고, 직교성은 gross 가 아니라 active(−BM) basis 에 존재한다(core↔def 0.45).",
+  "retry_condition": "재도전은 변환 손실을 직접 겨냥할 때만 의미가 있다: (1) 지수-비중이 담은 정보를 top-25 안에서 보존하는 구성(예: 비중 정보를 종목 선택이 아니라 sleeve 배분에 사용) (2) 엔진 redundancy 해소 — 트레일링 IR 상관이 낮은 신규 국면 축을 먼저 확보한 뒤 결합 (3) 인과적 rolling re-tune 프로토콜을 다른 계열에 이식해 sweep 부풀림 없는 oos 를 재산출.",
   "refined_at": null,
   "refined_by": null,
   "promoted_to_axiom": null,
@@ -237,9 +237,44 @@
     "causal_plausibility": null
   },
   "oos_validation_draft": {
-    "oos_months": 24.0,
+    "oos_months": 24,
     "oos_effect_vs_is": -0.043,
     "note": "L-code oos_retention 실값 16건 median (IS65/OOS35 활성SR retention) + oos_months 실값 5건 median — promote.R essence_score 경유 재확정"
   },
-  "cluster_members_count": 31
+  "cluster_members_count": 31,
+  "adversarial_verdict": "REVISED — (a)과장: 'PORT_t 3.0 달성' 류 수치를 본문에서 제거하고 그것이 나쁜 config 평균이었다는 자기정정을 명시. (b)근거: supporting 31건 실측(backtested 23 / canonical_screen 7 / unavailable 1). (c)AX-000: 구조적 한계 단정 없음 — 변환 손실이라는 기전 귀속 + 미검 경로 3종 명시. (d)제약 방화벽(semantic): 실패를 종목수·long-only 에 귀속하지 않고 **방법의 breadth 의존성**으로 귀속. 제약 완화를 레버로 제시하지 않았고 레버는 전부 조건-안. (e)프론티어: 미탐색 인접 3종 + live_trigger 2종 + expiry 기재.",
+  "expiry": "2027-02-09",
+  "frontier": ["지수-비중 정보를 종목 선택이 아니라 sleeve 배분 층에 태우는 변환 (breadth 의존을 우회)", "트레일링 IR 상관이 낮은 신규 국면 축 확보 후 결합 — redundancy 가 해소된 상태에서만 앙상블 재시도", "인과적 rolling re-tune 프로토콜의 타 계열 이식 (sweep 부풀림 없는 oos 재산출 표준)"],
+  "live_trigger": [
+    {
+      "type": "data",
+      "condition": "기존 엔진과 트레일링 IR 상관이 낮은 국면 축 데이터원이 등재될 때",
+      "monitored_source": "06_Registry/alpha_frontier_queue.json"
+    },
+    {
+      "type": "metric",
+      "condition": "인과적 rolling re-tune 으로 oos_retention 이 0.5 이상 재산출되면 재판정",
+      "monitored_source": "essence_score / hurdle_result 산출"
+    }
+  ],
+  "revival_spec": [
+    {
+      "signal_id": "wall_clock_date",
+      "condition": "x >= as.Date('2027-02-09')",
+      "from_trigger": "expiry",
+      "status": "active"
+    },
+    {
+      "signal_id": "registry_present",
+      "condition": "x == TRUE",
+      "from_trigger": "data",
+      "status": "pending"
+    }
+  ],
+  "constraint_firewall": {
+    "mode": "backstop_passed",
+    "checked_at": "2026-08-09"
+  },
+  "drafted_at": "2026-08-09T15:11:33+0900",
+  "drafted_by": "cleaner_session_20260809"
 }
