@@ -59,22 +59,28 @@ jesc() { printf '%s' "$1" | sed -e 's/\\/\\\\/g' -e 's/"/\\"/g' -e 's/\t/\\t/g' 
 # ── 정규화: 선행/후행 공백 제거 + 빈 줄·주석기호단독 제외 (형식 차이로 인한 오탐 축소)
 norm() { sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//' | grep -vE '^$|^#$|^//$' ; }
 
-# ── 파일 1건 triage: 추가 라인 중 main 파일에 없는 개수 산출
-#    stdout: "<추가라인수> <미존재수>"
-triage_file() {
-  local wt="$1" f="$2"
-  git -C "$wt" diff -- "$f" 2>/dev/null \
-    | grep '^+' | grep -v '^+++' | sed 's/^+//' | norm \
-    | head -n "$MAX_LINES_PER_FILE" | sort -u > "$TMP/added.txt"
+# ── 파일 1건 triage: 추가 라인 중 main 파일에 없는 개수 + main 고유 줄 수
+#    stdout: "<추가라인수> <미존재수> <main고유수>"
+#    $1=추가라인 원본(raw) 파일 · $2=경로 · $3=worktree 판 전체 파일(없으면 "")
+#    main고유수 = worktree 판에는 없고 main 에만 있는 줄 → **방향 판정의 내용 근거**(아래 supersede 절).
+triage_added() {
+  local addsrc="$1" f="$2" theirs="${3:-}"
+  norm < "$addsrc" | head -n "$MAX_LINES_PER_FILE" | sort -u > "$TMP/added.txt"
   local tot; tot=$(wc -l < "$TMP/added.txt" | tr -d ' ')
-  if [ "${tot:-0}" -eq 0 ]; then echo "0 0"; return; fi
   if [ -f "$PROJECT/$f" ]; then
     norm < "$PROJECT/$f" | sort -u > "$TMP/target.txt"
   else
     : > "$TMP/target.txt"
   fi
-  local missing; missing=$(comm -23 "$TMP/added.txt" "$TMP/target.txt" 2>/dev/null | wc -l | tr -d ' ')
-  echo "$tot ${missing:-0}"
+  local missing=0 extra=0
+  if [ "${tot:-0}" -gt 0 ]; then
+    missing=$(comm -23 "$TMP/added.txt" "$TMP/target.txt" 2>/dev/null | wc -l | tr -d ' ')
+  fi
+  if [ -n "$theirs" ] && [ -f "$theirs" ] && [ -f "$PROJECT/$f" ]; then
+    norm < "$theirs" | sort -u > "$TMP/theirs_n.txt"
+    extra=$(comm -13 "$TMP/theirs_n.txt" "$TMP/target.txt" 2>/dev/null | wc -l | tr -d ' ')
+  fi
+  echo "${tot:-0} ${missing:-0} ${extra:-0}"
 }
 
 verdict_of() {   # $1=tot $2=missing
@@ -116,6 +122,20 @@ is_scratch() { printf '%s' "$1" | grep -qE "$SCRATCH_RE"; }
 #         구판 초안의 26줄이 '유실'로 계상
 #     판정 근거는 **git 이력**(main 이 그 경로를 마지막으로 커밋한 시각) 우선. main 에 파일이
 #     아예 없으면 교체일 수 없으므로 재분류하지 않는다(진짜 유실은 그대로 유실로 남는다).
+#
+#     ★2026-08-13 수리 — **시각만으로는 방향을 못 정한다.**
+#       triage 는 "이 줄들이 main 에 있나"를 묻는데 recency 는 "이 경로가 나중에 손댔나"를
+#       묻는다. **다른 질문이다.** 그래서 bulk auto-commit 한 번이면 무조건 "나중"이 된다.
+#       실측: eloquent-cray 의 frontier_queue_io.R 은 CAS·뮤텍스·churn 예산 **162줄**을 담은
+#       동시쓰기 가드였는데(FQ-122 갱신 2회 유실의 직접 대응), main 쪽은 3113ac4f 가 무관한
+#       `perl=TRUE` **10줄**을 넣었을 뿐이다. 그 10줄이 더 최신이라는 이유로 127/130 미도달이
+#       `superseded_upstream` 으로 접혀 경보에서 **사라졌다** — 그동안 main 의 프론티어 큐
+#       writer 는 CAS 없이 돌았다. ★"10줄이 162줄을 대체했다"는 판정을 시각 비교가 만들어낸다.
+#       ⇒ 재분류에 **내용 근거**를 요구한다: main 고유 줄(worktree 판에 없는 main 줄)이
+#         미도달 줄 수 이상일 것. 상위판 교체라면 main 은 자기 몫의 내용을 그만큼 갖고 있다.
+#         (실측 대조: test_deployed_holdings_check.sh 는 main 371줄이 worktree 246줄의 상위판
+#          → 조건 충족 → 교체 유지. frontier_queue_io.R 은 미충족 → 유실 유지.)
+#       근거 수치는 `main_extra_lines` 로 산출물에 남긴다 — 판정이 사후 감사 가능해야 한다.
 main_recency() {   # $1=path → main 이 그 경로를 마지막으로 갱신한 epoch (0 = 근거 없음)
   local p="$1" ct
   ct=$(git -C "$PROJECT" log -1 --format=%ct "$MAIN_REF" -- "$p" 2>/dev/null || echo 0)
@@ -170,19 +190,60 @@ while IFS='|' read -r wt br; do
       {\"branch\":\"$(jesc "$sb")\",\"path\":\"$(jesc "$wt")\",\"age_days\":$age}"
   fi
 
+  # ── 대상 경로 = 미커밋(dirty) ∪ **미병합 커밋**(${MAIN_REF}...${sb})
+  #   ★2026-08-13 수리 — 사각지대. 구판은 dirty 만 triage 하고 커밋된 미병합분은 충돌 후보로만
+  #     넘겼다. 그런데 이 저장소는 Stop 훅 auto-commit 이 세션 변경분을 **자기 브랜치에** 커밋한다
+  #     → 파일이 dirty→committed 로 옮겨가는 순간 유실 계수에서 사라진다. main 에는 여전히 없는데.
+  #     실측(08-13): 경보는 "유실 4" 였는데, 미병합 커밋에 든 main-부재 파일이 **257건**이었다
+  #     (jovial-mcnulty 254 · agitated-jones 3). 08-09 에 유실 29로 잡혔던 fq170 산출물 26건도
+  #     고쳐진 게 아니라 **커밋되어 조용해진** 것이었다(29→4 감소의 정체).
+  #   ⇒ 두 출처를 합쳐 같은 어휘로 triage 한다. 상태코드에 'B'(branch) 를 붙여 출처를 남긴다 — porcelain 의 'C'(copied)와 겹치지 않게.
+  : > "$TMP/paths.txt"
+  awk '{c=$1; $1=""; sub(/^ /,""); print c"\t"$0}' "$TMP/st.txt" >> "$TMP/paths.txt"
+  if [ "${ahead:-0}" -gt 0 ] 2>/dev/null; then
+    git -C "$PROJECT" diff --name-only "${MAIN_REF}...${sb}" 2>/dev/null \
+      | awk 'NF{print "C\t"$0}' >> "$TMP/paths.txt"
+  fi
+  # 같은 경로가 양쪽에 있으면 상태를 합친다(예: "M+B")
+  awk -F'\t' '{ if(!($2 in s)){s[$2]=$1; o[++n]=$2} else if(index(s[$2],$1)==0) s[$2]=s[$2]"+"$1 }
+              END{for(i=1;i<=n;i++) print s[o[i]]"\t"o[i]}' "$TMP/paths.txt" > "$TMP/paths_u.txt"
+
   # ── 파일 단위 triage
   FILES_JSON=""; wt_lost=0; wt_partial=0
-  while read -r code path; do
+  while IFS=$'\t' read -r code path; do
     [ -z "${path:-}" ] && continue
+    # theirs = 이 worktree/브랜치가 가진 판본 (방향 판정의 내용 근거로 쓴다)
+    THEIRS=""
+    if [ -f "$wt/$path" ]; then THEIRS="$wt/$path"
+    elif case "$code" in *B*) true ;; *) false ;; esac; then
+      if MSYS_NO_PATHCONV=1 git -C "$PROJECT" show "$sb:$path" > "$TMP/theirs_blob" 2>/dev/null; then
+        THEIRS="$TMP/theirs_blob"
+      fi
+    fi
+    # 추가 라인 = 미커밋 diff ∪ 미병합 커밋 diff
+    : > "$TMP/add_raw"
+    case "$code" in
+      *M*|*A*|*R*|*U*) git -C "$wt" diff -- "$path" 2>/dev/null \
+                         | grep '^+' | grep -v '^+++' | sed 's/^+//' >> "$TMP/add_raw" ;;
+    esac
+    case "$code" in
+      *B*) MSYS_NO_PATHCONV=1 git -C "$PROJECT" diff "${MAIN_REF}...${sb}" -- "$path" 2>/dev/null \
+             | grep '^+' | grep -v '^+++' | sed 's/^+//' >> "$TMP/add_raw" ;;
+    esac
+
     case "$code" in
       "??")   # untracked — main 존재/동일 여부로 판정
-        if [ ! -e "$PROJECT/$path" ]; then v="lost"; tot=1; miss=1
-        elif diff -q "$PROJECT/$path" "$wt/$path" >/dev/null 2>&1; then v="merged_upstream"; tot=1; miss=0
-        else v="partial"; tot=1; miss=1; fi
+        if [ ! -e "$PROJECT/$path" ]; then v="lost"; tot=1; miss=1; extra=0
+        elif diff -q "$PROJECT/$path" "$wt/$path" >/dev/null 2>&1; then v="merged_upstream"; tot=1; miss=0; extra=0
+        else v="partial"; tot=1; miss=1; extra=0; fi
         ;;
-      D|*D*)  v="deletion_only"; tot=0; miss=0 ;;
+      D|*D*)  v="deletion_only"; tot=0; miss=0; extra=0 ;;
       *)
-        read -r tot miss <<< "$(triage_file "$wt" "$path")"
+        read -r tot miss extra <<< "$(triage_added "$TMP/add_raw" "$path" "$THEIRS")"
+        # ★커밋된 미병합 신규 파일: 추가 라인이 있는데 main 에 파일 자체가 없다 = 전량 미도달.
+        if [ "${tot:-0}" -eq 0 ] && case "$code" in *B*) true ;; *) false ;; esac && [ ! -e "$PROJECT/$path" ]; then
+          tot=1; miss=1
+        fi
         v="$(verdict_of "${tot:-0}" "${miss:-0}")"
         ;;
     esac
@@ -193,8 +254,14 @@ while IFS='|' read -r wt br; do
       v="scratch_artifact"
     elif [ "$v" = "lost" ] || [ "$v" = "mostly_lost" ] || [ "$v" = "partial" ]; then
       if [ -e "$PROJECT/$path" ]; then
-        _mr="$(main_recency "$path")"; _wm="$(stat -c %Y "$wt/$path" 2>/dev/null || echo 0)"
-        if [ "${_mr:-0}" -gt 0 ] && [ "${_wm:-0}" -gt 0 ] && [ "${_mr}" -gt "${_wm}" ]; then
+        _mr="$(main_recency "$path")"
+        _wm="$(stat -c %Y "$wt/$path" 2>/dev/null || echo 0)"
+        if [ "${_wm:-0}" -eq 0 ]; then   # 커밋-only 경로는 파일이 worktree 에 없을 수 있다
+          _wm=$(git -C "$PROJECT" log -1 --format=%ct "$sb" -- "$path" 2>/dev/null || echo 0); _wm="${_wm:-0}"
+        fi
+        # ★시각 + **내용** 둘 다 요구한다. 시각만 보면 무관한 10줄 커밋이 162줄 수리를 덮는다.
+        if [ "${_mr:-0}" -gt 0 ] && [ "${_wm:-0}" -gt 0 ] && [ "${_mr}" -gt "${_wm}" ] \
+           && [ "${extra:-0}" -ge "${miss:-0}" ]; then
           v="superseded_upstream"
         fi
       fi
@@ -215,14 +282,8 @@ while IFS='|' read -r wt br; do
     esac
     [ -n "$FILES_JSON" ] && FILES_JSON="$FILES_JSON,"
     FILES_JSON="$FILES_JSON
-        {\"path\":\"$(jesc "$path")\",\"state\":\"$(jesc "$code")\",\"added_lines\":${tot:-0},\"missing_in_main\":${miss:-0},\"verdict\":\"$v\"}"
-  done < <(awk '{c=$1; $1=""; sub(/^ /,""); print c" "$0}' "$TMP/st.txt")
-
-  # 미병합 커밋이 건드린 파일도 충돌 후보에 포함 (커밋됐어도 main엔 없으므로 동일 위험)
-  if [ "${ahead:-0}" -gt 0 ] 2>/dev/null; then
-    git -C "$PROJECT" diff --name-only "${MAIN_REF}...${sb}" 2>/dev/null \
-      | while read -r cf; do [ -n "$cf" ] && printf '%s\t%s\n' "$cf" "$short" >> "$TMP/touched.txt"; done
-  fi
+        {\"path\":\"$(jesc "$path")\",\"state\":\"$(jesc "$code")\",\"added_lines\":${tot:-0},\"missing_in_main\":${miss:-0},\"main_extra_lines\":${extra:-0},\"verdict\":\"$v\"}"
+  done < "$TMP/paths_u.txt"
 
   if [ "$wt_lost" -gt 0 ]; then
     LOST_SUMMARY="${LOST_SUMMARY}${short}(${wt_lost}건·${age}일) "

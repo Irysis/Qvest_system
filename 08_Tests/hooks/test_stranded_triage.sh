@@ -45,7 +45,9 @@ build_fixture() {
   touch "$R/$MARKER_REL"
   printf 'base\n'            > "$R/src/genuine.txt"     # main 이 이후 손대지 않을 파일
   printf 'base\n'            > "$R/src/superseded.txt"  # main 이 이후 앞서 나갈 파일
+  printf 'base\n'            > "$R/src/false_super.txt" # main 이 **무관한 1줄**만 나중에 넣을 파일
   printf '{"e":0}\n'         > "$R/qepm/observability/events.jsonl"
+  mkdir -p "$R/06_Registry"; printf '{"a":0}\n' > "$R/06_Registry/ast_structure_log.jsonl"
   git -C "$R" add -A >/dev/null 2>&1; git -C "$R" commit -qm base >/dev/null 2>&1
 
   # ★경로에 literal 'worktrees' 가 있어야 감사기가 대상으로 잡는다(원본 :95 필터)
@@ -60,6 +62,17 @@ build_fixture() {
   printf 'raw run log\n'                     > "$W/src/_runlog.txt"    # 파생 스크래치
   printf 'x <- 1\n'                          > "$W/src/_helper.R"      # ★_ 접두이나 **소스**
   printf 'old registry\n'                    > "$W/src/reg.json.bak_20260802"
+  # ★false-supersede 축: worktree 가 5줄 수리, main 은 나중에 **무관한 1줄**만 넣는다.
+  printf 'base\nREPAIR1\nREPAIR2\nREPAIR3\nREPAIR4\nREPAIR5\n' > "$W/src/false_super.txt"
+
+  # ── 커밋된 미병합분 (2026-08-13 사각지대 축) ────────────────────────────────
+  #   auto-commit 이 세션 변경분을 브랜치에 커밋하면 dirty 목록에서 사라진다. main 에는
+  #   여전히 없는데 경보만 조용해진다 — 그 경로를 여기서 만든다(add 는 **대상만** 지정:
+  #   `add -A` 로 쓸어담으면 T1/T2 의 미커밋 상태가 사라져 픽스처가 자기를 무효화한다).
+  printf 'committed only\n'                  > "$W/src/committed_new.txt"
+  printf '{"a":0}\n{"a":"wt1"}\n'            > "$W/06_Registry/ast_structure_log.jsonl"
+  git -C "$W" add src/committed_new.txt 06_Registry/ast_structure_log.jsonl >/dev/null 2>&1
+  git -C "$W" commit -qm feat-committed >/dev/null 2>&1
   sleep 1
 
   # ★두 번째 worktree — 충돌 판정을 **공허하지 않게** 만든다.
@@ -70,10 +83,17 @@ build_fixture() {
   git -C "$R" worktree add -q -b feat2 "$W2" >/dev/null 2>&1
   printf 'base\nGENUINE_REPAIR_LINE_B\n'     > "$W2/src/genuine.txt"     # lost 접점 ×2 → 충돌
   printf 'base\nOLD_DRAFT_LINE_B\n'          > "$W2/src/superseded.txt"  # 상위판 접점 ×2 → 충돌 아님
+  # wt2 도 원장을 **커밋**한다 → 두 브랜치가 미병합 커밋으로 같은 원장을 건드림.
+  #   구판은 미병합 커밋 파일을 triage 없이 충돌 후보에 넣어서 이걸 충돌로 셌다(원장인데도).
+  printf '{"a":0}\n{"a":"wt2"}\n'            > "$W2/06_Registry/ast_structure_log.jsonl"
+  git -C "$W2" add 06_Registry/ast_structure_log.jsonl >/dev/null 2>&1
+  git -C "$W2" commit -qm feat2-committed >/dev/null 2>&1
   sleep 1
 
   # main 이 그 파일에서 **앞서 나간다** (구판 줄을 더 나은 줄로 교체 후 커밋)
   printf 'base\nBETTER_CONSOLIDATED_LINE\n'  > "$R/src/superseded.txt"
+  # ★대조군: main 이 나중에 손대긴 했으나 **무관한 1줄**뿐 — 5줄 수리를 대체할 리 없다.
+  printf 'base\nUNRELATED_TYPO_FIX\n'        > "$R/src/false_super.txt"
   git -C "$R" add -A >/dev/null 2>&1; git -C "$R" commit -qm advance >/dev/null 2>&1
   # main 자신의 원장 append (두 계열이 갈린다)
   printf '{"e":0}\n{"e":"main-session"}\n'   > "$R/qepm/observability/events.jsonl"
@@ -144,6 +164,54 @@ chk "T6 돌연변이(교체 판정 제거) → T4 가 유실로 뒤집힘" "lost
 # ── T7 재분류 후에도 양성 대조는 살아 있다(돌연변이 없이 재확인 = 순서 의존 배제)
 build_fixture; run_audit
 chk "T7 재실행 후에도 T1 유지(멱등)"                   "lost" "$(verdict_of_path "$R" src/genuine.txt)"
+
+# ══ 2026-08-13 추가 축 ═══════════════════════════════════════════════════════
+# 두 결함 모두 "경보를 **조용하게** 만드는" 형태다 — 죽은 검사와 겉보기가 같아서
+# 반드시 양성 대조 + 돌연변이로 실증한다.
+
+# ── T8 ★사각지대: 커밋된 미병합분도 triage 대상이다.
+#    실사고(08-13): 경보 "유실 4" 인데 미병합 커밋의 main-부재 파일이 257건. 08-09 의 유실 26건은
+#    수리된 게 아니라 auto-commit 이 브랜치에 커밋해 **계수에서 사라진** 것이었다(29→4).
+chk "T8 커밋된 미병합 신규파일 → lost (dirty 아님)"    "lost" "$(verdict_of_path "$R" src/committed_new.txt)"
+
+# ── T8b 검출력: 미병합 커밋 수집을 끄면 T8 이 목록에서 아예 사라져야 한다.
+#    (사라짐 = 구판 거동. 이 축이 없으면 T8 의 PASS 가 어디서 오는지 실증되지 않는다.)
+sed 's|awk .NF{print "B\\t"\$0}.|awk '"'"'NF{print ""}'"'"'|' "$AUDIT" > "$TMP/mut_branch.sh"
+build_fixture; run_audit "$TMP/mut_branch.sh"
+chk "T8b 돌연변이(미병합 수집 제거) → T8 이 목록에서 소멸" "ABSENT" "$(verdict_of_path "$R" src/committed_new.txt)"
+
+# ── T9 ★false-supersede: main 이 나중에 손댔어도 **내용 근거**가 없으면 교체가 아니다.
+#    실사고(08-13): main 의 무관한 10줄(perl=TRUE)이 worktree 의 162줄 CAS 수리를 덮어
+#    127/130 미도달이 경보에서 사라졌다. 그동안 프론티어 큐 writer 는 CAS 없이 돌았다.
+build_fixture; run_audit
+chk "T9 main 이 더 최신이나 무관 1줄뿐 → lost 유지"    "lost" "$(verdict_of_path "$R" src/false_super.txt)"
+# ── T9b 경계: 진짜 상위판 교체(T4)는 여전히 교체로 남는다 = 규칙이 과잉 차단하지 않는다.
+chk "T9b 내용 근거 있는 교체는 그대로 superseded"      "superseded_upstream" "$(verdict_of_path "$R" src/superseded.txt)"
+# ── T9c 돌연변이: 내용 조건을 빼면 T9 가 교체로 뒤집힌다(= 그 조건이 판정을 실제로 만든다).
+sed 's|&& \[ "\${extra:-0}" -ge "\${miss:-0}" \]|\&\& true|' "$AUDIT" > "$TMP/mut_extra.sh"
+build_fixture; run_audit "$TMP/mut_extra.sh"
+chk "T9c 돌연변이(내용 근거 제거) → T9 가 교체로 뒤집힘" "superseded_upstream" "$(verdict_of_path "$R" src/false_super.txt)"
+
+# ── T10 미병합 커밋 경로의 원장 접점은 충돌이 아니다.
+#    두 브랜치가 ast_structure_log.jsonl 을 각각 커밋 → 구판은 충돌로 셌다(병합할 것이 없는데).
+#    충돌은 여전히 genuine.txt 1건이어야 한다(0 도 2 도 오답 = 공허 통과 방지).
+build_fixture; run_audit
+COLLS2=$("$PYX" -c "
+import json,io,sys
+d=json.load(io.open(sys.argv[1],encoding='utf-8'))
+print('%d:%s'%(d['summary']['collisions'], ','.join(sorted(c['path'] for c in d.get('collisions',[])))))" \
+  "$R/06_Registry/stranded_repairs.json" 2>/dev/null)
+chk "T10 미병합 커밋의 원장 접점은 충돌 아님"          "1:src/genuine.txt" "${COLLS2:-X}"
+
+# ── T11 판정 근거 수치가 산출물에 남는다(사후 감사 가능성).
+EXTRA=$("$PYX" -c "
+import json,io,sys
+d=json.load(io.open(sys.argv[1],encoding='utf-8'))
+for w in d.get('worktrees',[]):
+    for f in w.get('files',[]):
+        if f['path']==sys.argv[2]: print(f.get('main_extra_lines','MISSING')); raise SystemExit
+print('ABSENT')" "$R/06_Registry/stranded_repairs.json" src/false_super.txt 2>/dev/null)
+chk "T11 main_extra_lines 근거 기록 (무관 1줄)"        "1" "${EXTRA:-X}"
 
 TOTAL=$((PASS+FAIL))
 echo "  ── $PASS/$TOTAL pass"

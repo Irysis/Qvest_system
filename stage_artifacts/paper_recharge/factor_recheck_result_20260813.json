@@ -1,0 +1,30 @@
+{
+  "date": "20260813",
+  "n_input": 1,
+  "promoted": [
+    {
+      "paper_id": "2608.09641",
+      "factor_name": "min_eigenvalue_loading_60d",
+      "verdict": "testable",
+      "mechanism": "Marchenko-Pastur(RMT) 하한 미만 고유값 개수 m⁻ = 시장 동조화 붕괴 지표. 롤링 상관행렬의 하부 스펙트럼이 분산화 기회 축소(수치 영공간 증가)를 포착. 종목 횡단면 적재량 = 최소 고유벡터에서 해당 종목이 속한 클러스터의 하중.",
+      "novelty": "레지스트리 373개 팩터 전수 대조 — RMT(Marchenko-Pastur 임계값) 기반 스펙트럼 팩터 전무. 유사 후보: RE02_Vol_Regime_Pctile(VIX 기반), CR03_Herding_Dispersion(분산 기반), D01_IdioVol(종목 특이 변동성). 메커니즘·계산경로 모두 이질 → 신규 확정.",
+      "in_our_inventory": false,
+      "closest_existing": "RE02_Vol_Regime_Pctile(시장 레짐 신호), CR03_Herding_Dispersion(동조화 측정) — 메커니즘 별개",
+      "impl_sketch": "【Track A: 시장 레짐 오버레이 (논문 검증)】① 월말 리밸 시점 직전 60 거래일 일별 수익률 수집 (K200∪KQ150 ~350종목, PIT: ret_t 사용). ② Ward 계층적 군집화로 k=10 클러스터 축소(k < 60 조건 충족; λ=k/T=10/60=0.167). ③ 클러스터 수익률(등가중 내부) 10×10 상관행렬 → 고유분해. ④ λ_min = (1-√0.167)² ≈ 0.351; m⁻ = λ_min 미만 고유값 개수(정수). ⑤ 시장 레짐 신호: m⁻ ≥ 5 = 고동조화 위기 국면. 【Track B: 종목 횡단면 신호】⑥ λ_min 미만 고유벡터(들) 추출 → 클러스터별 적재량(squared loading 권장). ⑦ 종목 신호 = 해당 종목 클러스터의 적재량(클러스터 내 등가중). ⑧ EWMA 대안: decay δ=0.7 + 긴 창(w=1000일)으로 직접 종목-수준 상관행렬 구성(논문 §3.3 방법). 【부호】양방향 empirical — 고적재(고동조화) 종목이 위기 노출 큰지(음성 알파) 또는 방어재 역할(양성 알파) 실측 필요. 【PIT C1 준수】t-1일까지 수익률만 사용. C15: load_month_factors 불필요(RAWDATA 직접). 【검정력 사전등록】contracts/required_effect_size.R 착수 전 호출.",
+      "data_sources": ["RAWDATA daily returns (Date/Ticker/Ret)", "scipy/R eigen decomposition", "hierarchical clustering (Ward)"],
+      "kr_feasibility": "충분. 외부 데이터·alt-data·옵션 불필요. 클러스터 차원축소 시 n<T 조건 자동 충족.",
+      "pit_issues": "없음. 롤링 과거창 수익률만 사용. 재무제표 lag 무관.",
+      "paper_validates": "시장 레짐 Track A(S&P500+Nikkei 대상 m⁻ 기술·예측 실증). 종목 횡단면 Track B는 논문 미검증 — 충실한 재구성(batch_434 날조 아님)으로 분류. 검증 필요.",
+      "priority": "Track A 먼저(논문 직접 검증), Track B는 후속"
+    }
+  ],
+  "confirmed_infeasible": [],
+  "redundant": [],
+  "still_uncertain": [],
+  "summary": {
+    "n_promoted": 1,
+    "n_infeasible": 0,
+    "n_redundant": 0,
+    "n_still_uncertain": 0
+  }
+}

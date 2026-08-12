@@ -64,6 +64,8 @@
     "weight_bounds": [0.0, 0.20],
     "weight_bounds_rationale": "v2.4 (2026-06-11~12) — Long-only, 종목별 20% hard cap. 기존 15% 기본값은 alpha-top 희석 위험이 있어 v8.1 문서/Hook hard cap과 동기화. HHI cap은 별도 과집중 방어선으로 유지.",
     "weight_bounds_basis": "strategy_pre_cash",
+    "weight_bound_hi_crisis": 0.10,
+    "weight_bound_hi_crisis_rationale": "★2026-08-13 등재 (도훈 승인). 상한은 **국면 조건부**다 — 승인된 생성기가 regime=CRISIS 에서 ub 를 0.20→0.10 으로 조인다(forward_weights_D3_M4gAE.R: `ub_use <- if (identical(rg,\"CRISIS\")) min(UB, UB_CRISIS) else UB`, UB_CRISIS<-0.10). 그런데 이 상수가 생성기 코드에만 있고 제약 정본에는 없어서, Gate D(deployed_holdings_check.py)가 CRISIS 달에도 무조건 0.20 으로 검사했다 — 즉 **배포 코드가 자기 상한으로 자기를 통과시키는 자기인증**. 실측(2026-08, CRISIS): 전략비중 max 0.1739 로 0.20 기준 PASS 였으나 승인 규칙(0.10) 기준 1.74배 초과 4종(기가비스 0.1739·대우건설 0.1726·SK하이닉스 0.1222·삼성전자 0.1212). 소비자: deployed_holdings_check.py(regime=CRISIS 시 이 값 적용). 비-CRISIS 달 판정은 무변경(회귀 없음).",
     "weight_bounds_basis_rationale": "2026-08-08 기준 명시 — 상한은 현금 배분 이전, 합=1로 정규화된 전략 비중에 적용한다. 배포 비중 = 전략비중 x invested 이므로 배포 벡터에 0.20을 걸면 invested<1인 달에 상한이 비구속이 된다. 근거(실측): 2026-07 배포분의 전략 비중 max가 정확히 0.2000(상한 도달 100%)인데 같은 달 배포 비중 max는 0.0600(상한 대비 30%) — 실제로 구속력을 행사하는 쪽은 전략 비중이다. 두 벡터 모두 합=1이라 sum_weights_absolute=1 만으로는 구별되지 않으므로 이 필드로 못박는다. 소비자: deployed_holdings_check.py(정규화 후 비교), forward_weights_D3_M4gAE.R(normalize_long_only target_sum=1 후 ub 적용). 표본 한계: 배포 파일 2건(2026-07/08) 모두 invested 0.30 — invested~1 달로 교차확인되면 재확인할 것.",
 
     "hhi_cap": 0.15,

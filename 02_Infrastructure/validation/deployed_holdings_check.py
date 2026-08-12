@@ -46,6 +46,8 @@ def load_constraints() -> dict:
         "max_names": int(t["max_names"]),
         "w_lo": float(t["weight_bounds"][0]),
         "w_hi": float(t["weight_bounds"][1]),
+        # 상한은 국면 조건부 — 생성기가 CRISIS 에서 ub 를 조인다. 상수는 여기(정본)에서만 읽는다.
+        "w_hi_crisis": float(t.get("weight_bound_hi_crisis", t["weight_bounds"][1])),
         "long_only": bool(t["long_only"]),
         "sum_w": float(t["sum_weights_absolute"]),
         "liq_min": float(t["liquidity_min_won_20d_avg"]),
@@ -121,6 +123,13 @@ def main() -> int:
     with open(a.manifest, encoding="utf-8-sig") as fh:
         man = json.load(fh)
 
+    # ★2026-08-13: 상한은 국면 조건부다. 승인된 생성기는 regime=CRISIS 에서 ub 0.20→0.10 을 적용하는데
+    #   구판 검사기는 그 분기를 몰라 CRISIS 달에도 0.20 으로 쟀다 — **배포 코드가 자기 상한으로
+    #   자기를 통과시키는 자기인증**(2026-08 실측: 0.20 기준 PASS 였으나 승인 규칙 0.10 기준 4종 초과).
+    #   regime 은 아래 매니페스트 정합 절에서도 다시 읽지만, 상한 판정이 그보다 앞서므로 여기서 선취한다.
+    _regime0 = str(((man.get("overlays", {}) or {}).get("beta_R05_V5") or {}).get("regime") or "")
+    w_hi_eff = C["w_hi_crisis"] if _regime0 == "CRISIS" else C["w_hi"]
+
     eq = df[df.Ticker != "CASH"].copy()
     cash_rows = df[df.Ticker == "CASH"]
     cash_w = float(cash_rows.Weight.iloc[0]) if len(cash_rows) else 0.0
@@ -137,7 +146,10 @@ def main() -> int:
     print("=" * 72)
     print(f"  총 행 {len(df)} (CASH {len(cash_rows)} + 주식 {len(eq)}) · 실질 보유 {len(held)}종")
     print(f"  현금 {cash_w:.4f} · 투자 {eq.Weight.sum():.6f} · Sum(w) {df.Weight.sum():.10f}")
-    print(f"  최대 개별비중 {eq.Weight.max():.6f}  (상한 {C['w_hi']})")
+    _ub_note = ""
+    if w_hi_eff != C["w_hi"]:
+        _ub_note = " ← regime={} 조건부 (평시 {})".format(_regime0, C["w_hi"])
+    print("  최대 개별비중 {:.6f}  (상한 {}{})".format(eq.Weight.max(), w_hi_eff, _ub_note))
 
     # ── 하드 제약 (constraint_defaults.json tier_soft_deployment) ───────────────
     # 종목수는 '행 수'가 아니라 '실질 보유(>0)'로 잰다 — Weight=0 행이 실려 나오는 것이 정상 동작이라
@@ -165,12 +177,18 @@ def main() -> int:
     else:
         strat_w = eq.Weight / invested
         strat_max = float(strat_w.max())
-        n_over = int((strat_w > C["w_hi"] + TOL_W).sum())
+        n_over = int((strat_w > w_hi_eff + TOL_W).sum())
+        over_names = sorted(
+            ((t, float(w)) for t, w in zip(eq.Ticker, strat_w) if w > w_hi_eff + TOL_W),
+            key=lambda x: -x[1])
         print(f"  최대 전략비중 {strat_max:.6f} (= 배포 {eq.Weight.max():.6f} / invested {invested:.4f})"
-              f" · 상한 도달률 {100*strat_max/C['w_hi']:.0f}%")
+              f" · 상한 도달률 {100*strat_max/w_hi_eff:.0f}%")
         chk(n_over == 0,
-            f"OK   개별 상한(전략기준) <= {C['w_hi']}",
-            f"FAIL 상한 초과(전략기준) {n_over}건 · max {strat_max:.6f} > {C['w_hi']}")
+            f"OK   개별 상한(전략기준) <= {w_hi_eff}"
+            + (f" [regime={_regime0} 조건부]" if w_hi_eff != C["w_hi"] else ""),
+            f"FAIL 상한 초과(전략기준) {n_over}건 · 상한 {w_hi_eff}"
+            + (f" [regime={_regime0} 조건부, 평시 {C['w_hi']}]" if w_hi_eff != C["w_hi"] else "")
+            + f" · {[(t, round(w, 4)) for t, w in over_names[:5]]}")
     chk(abs(df.Weight.sum() - C["sum_w"]) < TOL_SUM,
         f"OK   Sum(w) = {C['sum_w']}",
         f"FAIL Sum(w) = {df.Weight.sum():.10f} (기대 {C['sum_w']})")

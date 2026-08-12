@@ -10,8 +10,10 @@
   ],
   "STR_1715_on_M4gAE_R05_noLayer4_PG2": {
     "mirror": "02_Infrastructure/portfolio/forward_weights_D3_M4gAE.R",
-    "sha1": "36c5eb22471af4c509c56223982b422a99fde228",
-    "pinned": "2026-08-08",
+    "sha1": "65a3289e30b9db33cfac57ce6392a434dc8236d0",
+    "pinned": "2026-08-13",
+    "sha1_prior_pre_gapfix": "36c5eb22471af4c509c56223982b422a99fde228",
+    "note_20260813_gapfix": "★2026-08-13 크래시 수리 (도훈 승인 '1,2 승인'): w_prev 체인의 gap 계산이 n_gap=0 일 때 seq(Date, by='month', length.out=0) 로 에러(zero-length component [[5]] in non-empty POSIXlt). 발화 조건 = 캐리어 종점이 AS_OF 직전월 = 공백월 없는 정상 운용 상태. 08-08 정렬 때 w_prev 체인이 신규 추가됐으나 그날 캐리어가 2개월 이전이라 n_gap=1 로 우회돼 통과했고, 08-09 14:46 캐리어가 2026-07-01 로 연장되면서 n_gap=0 경로가 도달 가능해졌다 — 08-13 AS_OF=2026-08-01 실행이 실제로 크래시. 수리 = 로직 동등, 0 케이스만 as.Date(character(0)) 로 방어. 검증 11/11: 단위 5(n_gap 0/1/2/13 + gap<AS_OF 불변식, 배포 파일 텍스트 직접 평가 — 재구현 아님) + 돌연변이 3(구판이 n_gap=0 에서 실제 에러 = 검출력 실증, n_gap=1 은 구판/신판 결과 동일 = 회귀 아님) + 통합 3(캐리어 추월 stop / 캐리어 부재 stop / gap=1 체인 replay 발화). 추가 정합: 2026-08-01 산출이 수리 전 검증본과 md5 동일(fe713940), replay 경유(06-01→07-01→08-01)와 실캐리어 경유 산출도 md5 동일 = 생성기와 북 기록 엔진 동일성 실증.",
     "note": "production 2-4 사본(1c432a77, 2026-07-19 admitted) 대비 변경 3건: ① AS_OF 기본값 2026-07-01 하드코딩 → 당월 1일 동적(도훈 mandate 08-01 하드코딩 제거; 실행기는 항상 PG2_AS_OF 명시라 결정 무영향) ② q20 소스 2-1 정적사본(2026-06 동결) → WT-H rerun 정본(실측 Δq20=-0.0005, 2026-08 zlt 판정 동일 TRUE — 판정 뒤집힘 없음 확인 후 교체) ③ ★2026-08-08 가중 규약 정본 정렬(도훈 승인 '정본으로 정렬해', chip task_fea61227): 인라인 z-선형 .tilt → strategy_tilt_weights.R::linear_tilt_to_penalty_qd(rank-tilt λ=1.5 + tophi φ=3 + CRISIS ub 0.10) source, w_prev 체인은 book_carrier 종점에서 이어받아 공백월 replay, 선별순서를 정본(top-N by score_eff → 유동성 교집합)으로 교정. 근거: 구판은 북 기록 체계와 월 24~42% 괴리이고 overlay 결합 MDD 29.02%(제약 위반) vs 정본 23.28%(충족). 수용 검증: 2026-08 산출이 canonical replay 와 max|dw| 1.8e-16 일치(PASS), 구 배포분은 동일 검사기가 24.5% 괴리로 여전히 FAIL(차단 실효 유지). 주의: production 2-4 사본은 미정렬 — promote_to_production() 경유 별도 반영 대기(핀 계약상 실행체는 미러이므로 배포 정합은 확보됨)"
   }
 }
