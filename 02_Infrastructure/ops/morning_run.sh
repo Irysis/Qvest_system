@@ -151,6 +151,15 @@ stage_result() {   # $1=표시명 $2=exit코드 $3=경보 컴포넌트명
       LC_ALL='English_United States.utf8' \
       Rscript "$BASE/02_Infrastructure/ops/paper_research_dispatch.R" >> /tmp/qm_paper_dispatch.log 2>&1
     stage_result "paper_dispatch" "$?" "paper_dispatch"
+    # (2026-08-13) 백로그 소급 — 위 호출은 **오늘 큐**만 본다. 소비자가 생산자(라우터)보다 먼저
+    #   도는 날이 있고(08-13 실측: dispatch 06:47 → 라우터 큐 07:02), 그날 안에 뒤 틱이 없으면
+    #   그 큐는 영구 미소비로 남는다(06-19 25편 · 07-05 18편 실측). 라우터는 07-10 에 7일 백로그
+    #   스캔을 받았는데 **소비자에는 안 들어가 있었다** — 그 비대칭을 여기서 닫는다.
+    #   창 밖 날짜는 실행하지 않되 목록으로 찍힌다(무음 절단 금지). 전 기간 드레인은 수동 --all.
+    if [ -f "$BASE/02_Infrastructure/ops/paper_dispatch_backfill.sh" ]; then
+      bash "$BASE/02_Infrastructure/ops/paper_dispatch_backfill.sh" >> /tmp/qm_paper_dispatch.log 2>&1
+      stage_result "paper_dispatch_backfill" "$?" "paper_dispatch_backfill"
+    fi
   else
     echo "      paper_dispatch skip (QVEST_PAPER_DISPATCH_ENABLE!=1 or missing)"
   fi

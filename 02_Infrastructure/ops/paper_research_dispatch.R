@@ -580,7 +580,10 @@ if (Sys.getenv("QVEST_DISPATCH_NO_TG", "0") != "1") {
       } else sprintf("regime %d편 → %s", n_reg, actions$regime$harness_status %||% "측정 없음"))
     }
     if (length(bullets) < 2) bullets <- c(bullets, "자본 admit 없음 — 측정·보고만(governor 정지)")
-    headline <- sprintf("논문 라우트 디스패치: optimizer %d·risk %d·regime %d", n_opt, n_risk, n_reg)
+    # ★(2026-08-13) 큐 날짜를 헤드라인에 명시한다. 백로그 소급 구동(paper_dispatch_backfill.sh)이
+    #   2개월 전 큐를 처리해도 구 문구는 오늘 결과처럼 읽혔다 — 보고가 시점을 숨기면 안 된다.
+    .qlbl <- if (identical(today, format(Sys.Date(), "%Y%m%d"))) today else sprintf("%s · 백로그 소급", today)
+    headline <- sprintf("논문 라우트 디스패치 [큐 %s]: optimizer %d·risk %d·regime %d", .qlbl, n_opt, n_risk, n_reg)
     secs <- list(
       list(type = "summary", heading = "디스패치", body = headline),
       list(type = "bullet", heading = "리서치 액션", items = bullets)
