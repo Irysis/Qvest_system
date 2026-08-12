@@ -118,14 +118,24 @@ QEPM Codex Critic Round(외부 codex auto-spawn)는 **2026-06-30 v8.2에서 폐�
 | 계층 | 위치 | 시점 | 범위 |
 |---|---|---|---|
 | 부팅 WARN | `bootstrap.sh` §4h | 세션 시작 | 존재/개수/방치일 (경량, ~6s) |
-| 감사 + 경보 | `ops/stranded_repairs_audit.sh` | 무인 daily 12:00·20:00 (`Qvest_StrandedRepairs`) | 파일 단위 triage + 충돌 + prune 후보 (~16s) |
+| 감사 + 경보 | `ops/stranded_repairs_audit.sh` | 무인 daily 12:00·20:00 (`Qvest_StrandedRepairs`) | 파일 단위 triage + 충돌 + prune 후보 (2026-08-13 미병합 커밋 편입 후 수 분 대. 구 "~16s"는 미커밋만 보던 시절 값) |
 
-**triage 판정** (worktree 로컬 변경의 추가 라인이 main 파일에 존재하는가):
+**triage 대상** (2026-08-13 확장): 미커밋(`git status --porcelain`) **∪ 미병합 커밋**(`main...<branch>`). 상태코드에 `B` 가 붙으면 후자 출처(양쪽이면 `M+B`).
+> ★확장 이유 — 구판은 미커밋만 봤다. 그런데 Stop 훅 auto-commit 이 세션 변경분을 **자기 브랜치에** 커밋하므로, 파일이 dirty→committed 로 옮겨가는 순간 유실 계수에서 사라진다(main 엔 여전히 없는데). 실측 08-13: 경보는 "유실 4" 인데 미병합 커밋의 main-부재 파일이 **257건**이었고, 08-09 "유실 29"가 08-13 "4"로 준 것도 수리가 아니라 **커밋되어 조용해진** 것이었다. 경보가 줄어든 것과 문제가 고쳐진 것은 겉보기가 같다.
+
+**triage 판정** (변경의 추가 라인이 main 파일에 존재하는가):
 - `merged_upstream` — 전량 존재. worktree는 stale 사본, 정리 가능
 - `lost` — 전무. main에 없는 진짜 유실 ★조치
 - `mostly_lost` — 80%+ 미존재. 사실상 유실 ★조치
 - `partial` — 일부만. 별도 경로 반영 또는 충돌 — 수동 확인
 - `deletion_only` — 삭제만
+- `ledger_divergence` / `scratch_artifact` / `superseded_upstream` — 수리가 아님, 경보 제외 (2026-08-08)
+
+**방향(supersede) 판정 = 시각 + 내용 둘 다** (2026-08-13):
+`superseded_upstream` 은 ① main 이 그 경로를 나중에 갱신했고 ② **`main_extra_lines` ≥ `missing_in_main`** 일 때만 발급한다. ②가 없으면 시각만으로 방향을 정하게 되는데, triage 는 "이 줄들이 main 에 있나"를 묻고 recency 는 "이 경로를 나중에 손댔나"를 물어 **질문이 다르다** — bulk auto-commit 한 번이면 무조건 "나중"이 된다.
+> ★실사고 08-13: `frontier_queue_io.R` 의 CAS·뮤텍스·churn 예산 **162줄**(FQ-122 갱신 2회 유실의 직접 대응)이, main 쪽 무관한 `perl=TRUE` **10줄** 커밋이 더 최신이라는 이유로 `superseded` 로 접혀 경보에서 사라졌다. 그동안 프론티어 큐 writer 는 CAS 없이 돌았다. 근거 수치는 `main_extra_lines` 로 산출물에 남는다.
+
+**계약검사**: `08_Tests/hooks/test_stranded_triage.sh` (18축 — 양성 대조 + 위반 주입 4종 + **돌연변이가 실제로 적용됐는지** 자체를 확인하는 `mutate()` 가드).
 
 **충돌 탐지**: 2개 이상 worktree가 같은 파일을 main 밖에서 수정 중이면 `collisions`에 등재. 병합 순서를 정하지 않으면 뒤에 병합되는 쪽이 앞을 덮는다. 미커밋 + 미병합 커밋 양쪽 모두 대상.
 
