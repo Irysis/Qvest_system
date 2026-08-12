@@ -69,9 +69,16 @@ car <- as.data.table(read_parquet(car_path)); car[, decision_date := as.Date(dec
 last_dd <- max(car$decision_date)
 if (last_dd >= AS_OF) stop(sprintf("[base] 캐리어 종점(%s)이 AS_OF(%s) 이상 — 체인 방향 이상, 중단", last_dd, AS_OF))
 w_prev <- { x <- car[decision_date==last_dd]; setNames(x$weight_strategy, x$Ticker) }
-gap <- seq(seq(last_dd, by="month", length.out=2)[2], by="month",
-           length.out=max(0L, 12L*(as.integer(format(AS_OF,"%Y"))-as.integer(format(last_dd,"%Y"))) +
-                             (as.integer(format(AS_OF,"%m"))-as.integer(format(last_dd,"%m"))) - 1L))
+## ★2026-08-13 수리 (도훈 승인): n_gap=0 일 때 seq(Date, by="month", length.out=0) 가 에러
+##   (`zero-length component [[5]] in non-empty "POSIXlt"`). 발화 조건 = 캐리어 종점이 AS_OF
+##   직전월 = **공백월 없는 정상 운용 상태**. 08-08 수용검증은 그날 캐리어가 2개월 이전이라
+##   n_gap=1 로 우회돼 통과했고, 08-09 캐리어 연장으로 n_gap=0 경로가 도달 가능해졌다.
+##   로직 동등 — 0 케이스만 빈 벡터로 방어한다.
+.n_gap <- max(0L, 12L*(as.integer(format(AS_OF,"%Y"))-as.integer(format(last_dd,"%Y"))) +
+                  (as.integer(format(AS_OF,"%m"))-as.integer(format(last_dd,"%m"))) - 1L)
+gap <- if (.n_gap > 0L) {
+  seq(seq(last_dd, by="month", length.out=2)[2], by="month", length.out=.n_gap)
+} else as.Date(character(0))
 gap <- gap[gap < AS_OF]
 for (g in as.list(gap)) { w_prev <- .canon_month(as.Date(g), w_prev)$w
   cat(sprintf("[chain] %s 경유 (n=%d)\n", as.Date(g), length(w_prev))) }
