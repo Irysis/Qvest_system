@@ -275,11 +275,44 @@ canonical_screen_bt <- function(scores_dt, returns_dt, bench_dt,
   }
   # [additive 2026-07-10] 유동성필터 前 패널 유니버스 스냅샷 — diag_ew_universe(EW 벤치)용.
   univ_prefilter <- if (isTRUE(diag_dual_basis)) unique(S[, .(Date, Ticker)]) else NULL
+  # ── [FQ-232 2026-08-10] 유동성 자(ruler) 라벨을 **소비 지점에서 읽는다** ──────
+  #   FQ-181 은 라벨을 발행만 했다(build_monthly_forward_returns → liq_ruler + attr).
+  #   실측 결과 그 라벨을 읽는 소비자가 0 이었다 = "자가 신고는 하는데 아무도 안 읽는"
+  #   상태. 발행과 소비는 별개의 배선이며, 읽히지 않는 라벨은 없는 라벨과 같다.
+  #   여기서 라벨을 반환값에 **기록**하고(모든 하류 산출물이 자를 달고 다니도록),
+  #   DEGRADED(월말 1일치 대체) 면 경고한다. 값·판정은 불변(순수 additive).
+  liq_ruler <- attr(liq_dt, "liq_ruler", exact = TRUE)
+  liq_ruler_source <- attr(liq_dt, "liq_ruler_source", exact = TRUE)
+  liq_filter <- list(applied = FALSE, liq_min = liq_min,
+                     n_before = nrow(S), n_after = nrow(S), n_dropped = 0L, n_na_pass = 0L)
   if (!is.null(liq_dt)) {
     L <- as.data.table(liq_dt)
+    n_before <- nrow(S)
     S <- merge(S, L[, .(Date, Ticker, adv)], by = c("Date","Ticker"), all.x = TRUE)
+    n_na <- sum(is.na(S$adv))
     S <- S[is.na(adv) | adv >= liq_min]   # 유동성필터(adv 없으면 통과 — 호출자 책임)
     S[, adv := NULL]
+    liq_filter <- list(applied = TRUE, liq_min = liq_min,
+                       n_before = n_before, n_after = nrow(S),
+                       n_dropped = n_before - nrow(S),
+                       n_na_pass = n_na)   # NA 는 통과한다 = 결손이 완화로 내려앉는 자리
+    if (is.null(liq_ruler)) liq_ruler <- "unlabeled"
+  } else {
+    if (is.null(liq_ruler)) liq_ruler <- "none_no_liquidity_filter"
+  }
+  if (identical(liq_ruler, "adv1_sameday_DEGRADED")) {
+    .strict <- isTRUE(tolower(Sys.getenv("QVEST_LIQ_RULER_STRICT", "")) %in% c("1","true","yes"))
+    .m <- paste0("[canonical_screen_bt] ★유동성 자 = 'adv1_sameday_DEGRADED' — ",
+                 "헌법 정의(20일 평균 거래대금 >= ", format(liq_min, scientific = TRUE),
+                 ", pit.md C10)가 아니라 **월말 1일치 Vol*Close** 로 걸렀다. ",
+                 "이 산출물의 PORT_t 절대수준은 헌법-자 기준이 아니다 — 인용 시 자 라벨 병기 의무. ",
+                 "복원: build_monthly_forward_returns(..., liq_daily=<일간패널 또는 build_adv20_t1 산출>) (FQ-232)")
+    if (.strict) stop(.m, " [QVEST_LIQ_RULER_STRICT 활성]")
+    warning(.m, call. = FALSE)
+  } else if (identical(liq_ruler, "unlabeled")) {
+    warning("[canonical_screen_bt] liq_dt 에 자 라벨(attr 'liq_ruler')이 없다 — ",
+            "어느 자로 걸렀는지 불명. build_monthly_forward_returns 경유 또는 ",
+            "setattr(liq_dt,'liq_ruler',...) 로 라벨을 붙일 것 (FQ-232).", call. = FALSE)
   }
 
   # per-Date: top_n EW long-only weights
@@ -356,6 +389,10 @@ canonical_screen_bt <- function(scores_dt, returns_dt, bench_dt,
     mean_active_net = mean(active),
     turnover_annual = turnover_annual,
     selected_ret_coverage = sel_cov,
+    # [FQ-232] 자 라벨 + 필터 실측 — 모든 하류 산출물이 "무엇으로 걸렀나"를 달고 다니게.
+    liq_ruler = liq_ruler,
+    liq_ruler_source = if (is.null(liq_ruler_source)) NA_character_ else liq_ruler_source,
+    liq_filter = liq_filter,
     benchmark_compare = bc,
     period_returns = pr   # [2026-06-18 additive] 월별 시계열(date·ret_net·benchmark_ret) — 오버레이 등 후처리용
   )

@@ -116,6 +116,24 @@ prl <- fread(file.path(ROOT,"qepm/mailbox/worktask/WT-H20260513_001/output/perio
 q20_past <- as.numeric(quantile(prl$R05_z_avg[!is.na(prl$R05_z_avg)],0.20,na.rm=TRUE)); zlt <- !is.na(R05_z_avg)&&R05_z_avg<q20_past
 beta_R05 <- fcase(REGIME=="CRISIS"&zlt,0.30, REGIME=="CRISIS",0.50, REGIME=="CAUTION"&zlt,0.50, REGIME=="CAUTION",0.70, REGIME%in%c("BULL","NORMAL")&zlt,0.85, default=1.0)
 cat(sprintf("[β_R05] regime=%s z=%.3f → %.2f\n", REGIME, R05_z_avg, beta_R05))
+## ── FQ-119 라벨 자격 관문 (2026-08-08 배선) — ★경고 전용, 배포 무개입 ─────────────
+##   위 fcase 는 REGIME 라벨을 실자본 노출(β)로 바꾼다. 그 라벨이 자격이 있는지를 **기록**한다.
+##   ★차단하지 않는다: 라이브 리밸을 관문이 멈추는 것은 도훈 confirm 사안이고, 비중 산출은
+##     이 블록 이전에 이미 끝나 있다(아래 tryCatch 는 어떤 경우에도 w_fin 을 건드리지 않는다).
+##   ★basis = alpha_scores_regime_state — 배포가 읽는 바로 그 라벨(어휘가 unified 계열과 다르다).
+LABEL_GATE <- tryCatch({
+  .rlg_f <- c("02_Infrastructure/contracts/regime_label_gate.R",
+              file.path(ROOT, "02_Infrastructure/contracts/regime_label_gate.R"))
+  .rlg_f <- .rlg_f[file.exists(.rlg_f)]
+  if (!length(.rlg_f)) stop("regime_label_gate.R 부재")
+  source(.rlg_f[1])
+  g <- regime_label_gate(asof = AS_OF, label_basis = "alpha_scores_regime_state", proj = ROOT)
+  rlg_enforce(g, site = "forward_weights_D3_M4gAE/beta_R05", mode = "warn")   # ★mode 고정 — env 로 block 승격 불가
+  cat(sprintf("[FQ-119 라벨 자격] %s | lift %.2fx p %.5f (n=%d월) | lag1 보존율 %.2f\n",
+              g$verdict, g$lift, g$fisher_p, g$n, g$diag_lag1$retention))
+  rlg_summary(g)
+}, error = function(e) list(verdict = "GATE_ERROR", reason = conditionMessage(e),
+                            note = "관문 실패는 배포에 영향 없음(경고 전용) — 판정 부재로 기록"))
 
 ## --- 5. 결합 (gate × β_R05, β_faith 없음) + 저장 ---
 invested <- gate*beta_R05; cash <- 1-invested; w_fin <- w_base*invested
@@ -139,7 +157,9 @@ man <- list(strategy="STR_1715_on_M4gAE_R05_noLayer4_PG2", as_of=as.character(AS
   overlays=list(m4_scalar=m4_scalar, ae_fire_seq=ae_fire, m4_ae_gate=gate,
     gate_rule="0.70 if (m4<0.999 AND ae_fire==1) else 1.00",
     beta_faith=list(value=1.0, status="REMOVED_Layer4"),
-    beta_R05_V5=list(value=beta_R05,regime=REGIME,R05_z_avg=R05_z_avg)),
+    beta_R05_V5=list(value=beta_R05,regime=REGIME,R05_z_avg=R05_z_avg,
+      # FQ-119: β 를 정한 라벨의 자격 판정을 manifest 에 동반 기록(경고 전용 — 배포 미개입).
+      label_gate=LABEL_GATE)),
   invested=invested, cash_pct=cash, n_equity=sum(out$Ticker!="CASH"),
   inert_note=sprintf("2026-07 m4=%.4f(미발화)→gate=1.0 → noLayer4와 동일(swap 실효 0). D3 첫 실효=M4 발화 첫 달", m4_scalar),
   pit=list(no_future_reference=TRUE, ae_last_feat=ae_lfd, ae_pit_ok=(is.na(ae_lfd)||as.Date(ae_lfd)<AS_OF)),

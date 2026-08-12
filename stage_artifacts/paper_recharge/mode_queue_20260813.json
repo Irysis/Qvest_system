@@ -1,0 +1,62 @@
+{
+  "date": "20260813",
+  "schema_version": "mode_queue_v1",
+  "generated_at": "2026-08-13",
+  "optimizer": [
+    {
+      "title": "Objective-oriented quantitative investment: A specification-driven framework for automated synthesis of trading strategy pipelines",
+      "id": "2608.10410",
+      "source": "arxiv",
+      "pdf_path": "01_Literature/Alpha_Search_Recharge/20260813/mcp_arxiv/MCP_2608_10410.pdf",
+      "source_url": "https://arxiv.org/pdf/2608.10410v1",
+      "abstract_summary": "전략 파이프라인을 '명세(spec)' 기반으로 합성하는 OOQI 프레임워크. 8개 요구사항 계열(pure alpha / style중립 / turnover / capacity 등)을 측정가능 절(clause)로 형식화하고 컴파일러가 어셈블리를 생성·검증. 결과지향(result-oriented) 선택은 IS IC 1위이지만 명세 25%만 충족; 명세지향(spec-driven)은 100% 충족에 성과 5.5% 손실만. 검증은 만족률(satisfaction rate) 자체를 통계적 객체로 처리(search inflation 보정).",
+      "suggested_use": "α̂ 고정 A/B 프레임에서: ① 기존 optimizer(HRP/MVO/RP 등)의 '명세 만족률'(style중립·turnover·capacity 클로즈)을 측정 기준으로 추가 비교 축 확보. ② 새 비중 방법론 후보를 명세 만족률로 사전 스크리닝 → 불필요한 백테 감소.",
+      "shrinkage_builtin": "no",
+      "statistic_order": "<=2nd",
+      "screen_priority": "⭐",
+      "screen_priority_reason": "shrinkage 미내장. 방법 자체가 비중 추정기보다 '명세 준수 검증기'이므로 Σ 추정 개선 효과 없음. 단 명세 다양성(clause-based) 아이디어는 optimizer 평가 다각화에 유용 → 조건부."
+    }
+  ],
+  "risk": [
+    {
+      "title": "Lower spectrum of financial correlation matrices: a new perspective on market synchronization",
+      "id": "2608.09641",
+      "source": "arxiv",
+      "pdf_path": "01_Literature/Alpha_Search_Recharge/20260813/mcp_arxiv/MCP_2608_09641.pdf",
+      "source_url": "https://arxiv.org/pdf/2608.09641v1",
+      "abstract_summary": "금융 상관행렬의 하위 스펙트럼(최소 고유값)이 시장 동기화(synchronization)에 관한 추가 정보를 담는다. PCA/RMT는 최대 고유값(시장팩터)에 주목하지만, 최소 고유값도 서술적·예측적 설정에서 유의한 정보 내포. 실증: 시계열 + 예측 설정 모두 검증.",
+      "suggested_use": "risk-research의 Σ 진단 도구: ① 최소 고유값 추이로 KR 시장 동기화 수준 모니터링(고동기화 = 분산효과 감소 경보). ② 조건수(condition number) 분석 보완. ③ 최소 고유값 방향 적재량을 종목별 '군집 이탈도(de-sync score)'로 alpha-research에 보조 신호 제공(uncertain 수준).",
+      "shrinkage_builtin": "weak",
+      "statistic_order": "<=2nd",
+      "screen_priority": "⭐⭐",
+      "screen_priority_reason": "RMT 노이즈 경계 사용(약한 내장 필터) + 고유값 = 2차 통계량 → STEP 1-b 양 축 모두 충족 수준. 단 Σ 직접 추정기가 아니라 진단 도구이므로 A/B 비교보다 리스크 모니터링 스택으로 소비."
+    },
+    {
+      "title": "Robustness or Crowding: Experimental Design for Trading Strategy Capacity",
+      "id": "2608.08405",
+      "source": "arxiv",
+      "pdf_path": "01_Literature/Alpha_Search_Recharge/20260813/mcp_arxiv/MCP_2608_08405.pdf",
+      "source_url": "https://arxiv.org/pdf/2608.08405v1",
+      "abstract_summary": "전략 용량(capacity)은 배포 자본이 얼마나 늘어야 알파가 사라지는지의 인과 질문. 'same-date design'이 시장충격 제거를 가능케 하지만 집합 포지셔닝(crowding) 효과도 제거해버려 용량 자체를 측정 못하는 딜레마. 각 설계(같은 날짜 vs 시간 변동)가 식별하는 것과 비용을 특성화하고, 유한 노출 레벨 집합이 밝힐 수 있는 것과 없는 것을 서술.",
+      "suggested_use": "risk-research의 crowding 진단 확장: ① KR PG2 전략의 용량 측정을 위한 실험설계 참고 → 동일 날짜 비교 vs 시간 변동 비교의 식별 한계 명문화. ② 'private response vs aggregate crowding' 분리 개념을 crowding_score 보완에 적용.",
+      "shrinkage_builtin": "no",
+      "statistic_order": "<=2nd",
+      "screen_priority": "⭐",
+      "screen_priority_reason": "방법론 참고 소스이지 Σ 추정기가 아님. shrinkage 없음. crowding 진단 방법 설계에서 ⭐ 조건부 소비."
+    },
+    {
+      "title": "Lambda-quantiles under the microscope",
+      "id": "2608.07122",
+      "source": "arxiv",
+      "pdf_path": "01_Literature/Alpha_Search_Recharge/20260813/mcp_arxiv/MCP_2608_07122.pdf",
+      "source_url": "https://arxiv.org/pdf/2608.07122v1",
+      "abstract_summary": "고전 분위수(constant λ)를 함수형 파라미터 Λ: R → [0,1]로 일반화한 Lambda-분위수 리스크 측도. 단조 Λ와 BV Λ 모두 포괄; 혼합 표현(mixture representation) 정리로 복잡도 축소. 비단조 Λ는 inf-집합이나 혼합에서 자연스럽게 나타남. CVaR/VaR 클래스의 상위 일반화.",
+      "suggested_use": "risk-research에서 CVaR 기반 테일 리스크 추정 보완책으로 참고. T=250 단창에서 파라미터 추정 어려움 → 비중 최적화 목적함수로 직접 사용보다 이론 참고 및 진단용.",
+      "shrinkage_builtin": "no",
+      "statistic_order": "tail_quantile",
+      "screen_priority": "후순위",
+      "screen_priority_reason": "꼬리 분위수 기반 + shrinkage 없음 → STEP 1-b 후순위 판정. T=250, 25종목 창에서 α=0.99 분위수는 관측 2~3개에 의존. PRD 실측 사례(settled-negative 계열) 참고. INV-7: 유니버스 확대·일별 리밸 설정에서 재검토 가능."
+    }
+  ],
+  "regime": []
+}

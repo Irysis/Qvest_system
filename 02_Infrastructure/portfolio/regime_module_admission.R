@@ -22,6 +22,20 @@
 suppressPackageStartupMessages({ library(data.table); library(arrow); library(jsonlite); library(xts) })
 if (!exists("PROJ")) PROJ <- Sys.getenv("CLAUDE_PROJECT_DIR", Sys.getenv("QM_ROOT", "G:/Quant_Module_Moltbot"))
 if (!exists("%||%")) `%||%` <- function(a,b) if(is.null(a)||length(a)==0||all(is.na(a))) b else a
+# ── FQ-119 라벨 자격 관문 배선 (2026-08-08) ────────────────────────────────────
+# RCMA 는 국면 라벨로 모듈 성과를 분할해 (module × regime) 셀을 admit 한다. 그 라벨이
+# 실제 시장 상태를 판별하지 못하면 셀 판정은 양수든 음수든 **해석 불가**다(WT-017/019).
+# 어댑터 부재 = admission 이 선언된 관문 없이 도는 상태이므로 조용히 넘기지 않고 중단한다.
+# (어댑터가 %||% 를 덮어쓰지 않도록 계약 본체는 격리 환경에 로드된다 — regime_label_gate.R ③)
+local({
+  cands <- c("02_Infrastructure/contracts/regime_label_gate.R",
+             file.path(PROJ, "02_Infrastructure/contracts/regime_label_gate.R"))
+  hit <- cands[file.exists(cands)]
+  if (length(hit) == 0L)
+    stop("[regime_module_admission] FQ-119 라벨 자격 관문 어댑터 부재 — 관문 없이 admission 을 돌릴 수 없음: ",
+         paste(cands, collapse = " | "))
+  source(hit[1], local = FALSE)
+})
 ANN <- 252
 ir_ann <- function(a, annf=ANN){ a<-a[is.finite(a)]; if(length(a) < (if(annf<=12) 8L else 20L) || sd(a)==0) return(NA_real_); mean(a)/sd(a)*sqrt(annf) }
 
@@ -78,6 +92,16 @@ compute_rcma <- function(asof_date, ctx = NULL, proj = PROJ,
   AL <- ctx$AL; mod_ids <- ctx$mod_ids; regimes <- ctx$regimes; MP <- ctx$MP; FREQ <- ctx$FREQ %||% list()
   asof_date <- as.Date(asof_date)
 
+  # ── FQ-119 관문 호출부 ①: 셀 판정 **전에** 라벨 자체의 자격을 묻는다 ──────────
+  #   ★asof 이하만 사용 — 관문이 미래를 보면 관문 자신이 walk-forward lookahead 원천이 된다.
+  #   기본 warn (판정은 반환값·진단 JSON 에 기록). block 승격 = QVEST_LABEL_GATE_MODE=block.
+  #   실측(2026-08-08): 판정축 bm_m<-5% 에서 full-sample ELIGIBLE(lift 1.67x p 1.2e-4)이나
+  #   **asof 1998 이전 창은 INELIGIBLE(n=108 p 0.116)** — 그래서 기본값이 block 이 아니다.
+  label_gate <- tryCatch(regime_label_gate(asof = asof_date, proj = proj),
+                         error = function(e) list(eligible = NA, verdict = "GATE_ERROR",
+                                                  reason = conditionMessage(e), n = 0L))
+  rlg_enforce(label_gate, site = "regime_module_admission")
+
   cells <- list(); pool_t_vec <- c()
   for(sid in mod_ids){
     d <- AL[[sid]][Date <= asof_date]                       # ★ PIT: asof 이하만
@@ -100,7 +124,8 @@ compute_rcma <- function(asof_date, ctx = NULL, proj = PROJ,
         regime_ir=round(full_ir,3), is_ir=round(is_ir,3), oos_ir=round(oos_ir,3), t_stat=round(tstat,2))
     } }
   if(length(cells)==0) return(list(CELL=data.table(), admitted_by_regime=setNames(vector("list",length(regimes)),regimes),
-                                   admitted_modules=character(0), pool_oos_rho=NA_real_, asof=asof_date, n_modules=0L))
+                                   admitted_modules=character(0), pool_oos_rho=NA_real_, asof=asof_date, n_modules=0L,
+                                   label_gate=label_gate))
   CELL <- rbindlist(cells)
   CELL[, grade := vapply(module, function(s) as.character(MP$modules[[s]]$grade %||% "ungraded"), character(1))]
 
@@ -152,7 +177,8 @@ compute_rcma <- function(asof_date, ctx = NULL, proj = PROJ,
   admitted_modules <- sort(unique(CELL[admitted==TRUE]$module))
   list(CELL=CELL, admitted_by_regime=admitted_by_regime, admitted_modules=admitted_modules,
        pool_oos_rho=pool_rho, asof=asof_date, n_modules=length(mod_ids),
-       rare_mode=isTRUE(rare_mode), rare_def="cell-level: regime in STRESS_POOL & n_months<12 (v2.1)")
+       rare_mode=isTRUE(rare_mode), rare_def="cell-level: regime in STRESS_POOL & n_months<12 (v2.1)",
+       label_gate=label_gate)   # FQ-119: 라벨 자격 판정 동반 반환(소비측이 판정 없이 쓰지 못하게)
 }
 
 # ── 정적 진단 JSON 산출 (asof = max date). run_wf_ensemble는 함수를 직접 호출. ─────────
@@ -176,6 +202,9 @@ compute_rcma <- function(asof_date, ctx = NULL, proj = PROJ,
     method="RCMA 국면조건부 모듈 admission (★WALK-FORWARD: compute_rcma(asof) point-in-time). 본 JSON은 asof=max date 진단용. 실측 권위 = run_wf_ensemble의 WF 함수 호출. 6기준(IR≥0.5|top⅓ / n≥12m / asof창 IS·OOS sign+ / |t|≥2 / 경제논리 / 한계기여). overall 등급 게이트 폐지(도훈 2026-06-05).",
     pit_note="lookahead 차단: 멤버십이 asof 시점 데이터로만 산정(고정 2012 cut 폐기). 본 정적 JSON은 진단용이며 walk-forward 실측이 권위.",
     thresholds=list(ir_floor=IR_FLOOR, min_months=MIN_MONTHS, t_min=T_MIN),
+    # FQ-119: 라벨 자격 판정을 산출물에 **동반 기록**. 소비자가 admission 을 읽을 때
+    # "이 국면 라벨이 애초에 자격이 있었나"를 같은 파일에서 보게 한다(별도 조회 요구 = 미조회).
+    label_gate=tryCatch(rlg_summary(res$label_gate), error=function(e) list(verdict="GATE_SUMMARY_ERROR", reason=conditionMessage(e))),
     diagnostic_asof=as.character(res$asof), pool_oos_rho=round(res$pool_oos_rho,3),
     n_modules=length(mod_ids), n_admitted_cells=CELL[admitted==TRUE,.N], n_admitted_modules=length(res$admitted_modules),
     admitted_modules=res$admitted_modules, admission=adm)
@@ -183,6 +212,11 @@ compute_rcma <- function(asof_date, ctx = NULL, proj = PROJ,
 
   cat(sprintf("\nRCMA[진단 asof=%s]: %d/%d 모듈 · %d (module×regime) 셀 admitted | pool OOS ρ=%.3f\n",
     as.character(res$asof), length(res$admitted_modules), length(mod_ids), CELL[admitted==TRUE,.N], res$pool_oos_rho))
+  .lg <- res$label_gate
+  cat(sprintf("  [FQ-119 라벨 자격] %s | %s | recall %.3f vs base %.3f (lift %.2fx) fisher p %.5f · n=%d월\n",
+    as.character(.lg$verdict %||% "?"), as.character(.lg$event_definition %||% "?"),
+    .lg$recall %||% NA_real_, .lg$base_rate %||% NA_real_, .lg$lift %||% NA_real_,
+    .lg$fisher_p %||% NA_real_, as.integer(.lg$n %||% 0L)))
   for(L in regimes){ a<-CELL[admitted==TRUE & regime==L][order(-regime_ir)]
     cat(sprintf("  [%-8s] admitted %2d  top: %s\n", L, nrow(a),
       paste(sprintf("%s(IR%.2f,%s)", head(a$module,3), head(a$regime_ir,3), head(a$grade,3)), collapse=" "))) }

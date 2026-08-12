@@ -1,0 +1,113 @@
+{
+  "schema_version": "alpha_search_strategy_manifest_v1",
+  "created_at": "2026-08-13T07:21:33+0900",
+  "mode": "alpha_search",
+  "strategy_id": "STR_AS_20260813_071419_38300",
+  "strategy_name": "STR_AS_CIRCUIT_UPPER_21D",
+  "strategy_idea": "가격제한(서킷브레이커) 시장에서 상한가 마감 후 잠재 초과수익 이월 효과: 최근 21거래일 상한가 근접 경험 비율이 높을수록 다음 달 양수 수익 예측 (Das 2026 arXiv:2608.08625)",
+  "factor_engine_path": "04_Research/strategies/STR_circuit_hit_upper/factor_engine.R",
+  "execution": {
+    "universe": "K200_KQ150",
+    "universe_n": 313,
+    "n_holdings": 25,
+    "weight_method": "equal",
+    "commission": 0.0015,
+    "risk_controls": {
+      "vol_target": null,
+      "vol_lookback": 60,
+      "dd_brake": null,
+      "buffer_zone": {
+        "keep_n": 50,
+        "entry_n": 25
+      },
+      "use_default_buffer": true,
+      "cov_method": "sample"
+    },
+    "bt_result_path": "stage_artifacts/alpha_search/20260813_071419_38300/bt_result.rds"
+  },
+  "pit": {
+    "code_scan": "detect_lookahead",
+    "status": "CLEAN",
+    "factor_engine_path": "04_Research/strategies/STR_circuit_hit_upper/factor_engine.R",
+    "note": "AlphaSearch stops before backtest when detect_lookahead reports violations."
+  },
+  "backtest_contract": {
+    "status": "OK",
+    "run_id": "ASBT_20260813_071419_38300",
+    "metric_type": "backtested",
+    "bt_result_path": "stage_artifacts/alpha_search/20260813_071419_38300/bt_result.rds",
+    "output_dir": "stage_artifacts/alpha_search/20260813_071419_38300",
+    "integrity_status": "WARNING",
+    "audit_pass": 16,
+    "audit_fail": 0,
+    "audit_warn": 2,
+    "validation_errors": [],
+    "return_series": {
+      "status": "OK",
+      "source": "bt_result.period_returns",
+      "csv_path": "stage_artifacts/alpha_search/20260813_071419_38300/03_period_returns.csv",
+      "date_col": "date",
+      "ret_col": "ret_net",
+      "n_obs": 5307,
+      "start_date": "2005-02-03",
+      "end_date": "2026-08-11",
+      "post2008_obs": 4588,
+      "frequency": "daily"
+    },
+    "note": "standard Backtest Result Contract saved for every AlphaSearch run; grade/admission remains separate"
+  },
+  "verdict": {
+    "grade": "F",
+    "score": 41.6,
+    "hurdle_pass": false,
+    "hard_fail": true,
+    "fail_reasons": [
+      "Structural drawdown (55%+ episodes>=6): MDD 64.4%, 45%+ episodes=3/15, max_underwater=117/252"
+    ],
+    "f_grade_reasons": [
+      "게이트 사유: Structural drawdown (55%+ episodes>=6): MDD 64.4%, 45%+ episodes=3/15, max_underwater=117/252",
+      "FMT-01 Structural MDD: MDD 64.4% > 45% — 선택 종목군의 위기 동반급락(구조적 꼬리위험)",
+      "FMT-04 Regime Blindness: MDD 64.4% > 35% & BM상관 0.79 >= 0.7 — 위기국면 동조 낙폭(국면필터 부재)"
+    ],
+    "screening": {
+      "screen_pass": false,
+      "screen_route": "NONE",
+      "drawdown_tail_review": false,
+      "note": "탐색 게이트 — 자본/졸업 게이트 아님 (graduation HARD 불변). PIT만 절대."
+    }
+  },
+  "metrics": {
+    "CAGR": 11.51,
+    "AnnVol": 23.84,
+    "Sharpe": 0.483,
+    "Sharpe_m": 0.561,
+    "IR": 0.062,
+    "MDD": 64.37,
+    "Calmar": 0.179,
+    "Turnover_Ann": 83.1,
+    "Top10_Conc": 50,
+    "Rolling3Y_Pos": 78.1,
+    "BM_Corr": 0.788,
+    "ES99_d": 6.38,
+    "ES99_m": 23.14,
+    "GradeA_Corr": null,
+    "Rolling6M_Hit": 62.3,
+    "Worst6M_Ret": -57.18,
+    "MaxConsecNegAlpha": 6,
+    "Rolling12M_Hit": 68.5
+  },
+  "excess_cagr_pct": 0.95,
+  "fmt": [
+    {
+      "code": "FMT-01",
+      "label": "Structural MDD",
+      "reason": "MDD 64.4% > 45% — 선택 종목군의 위기 동반급락(구조적 꼬리위험)"
+    },
+    {
+      "code": "FMT-04",
+      "label": "Regime Blindness",
+      "reason": "MDD 64.4% > 35% & BM상관 0.79 >= 0.7 — 위기국면 동조 낙폭(국면필터 부재)"
+    }
+  ],
+  "authoritative": null
+}

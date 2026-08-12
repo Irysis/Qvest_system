@@ -63,9 +63,83 @@ build_adv20_t1 <- function(daily, at_dates = NULL) {
   res[]
 }
 
+#==============================================================================
+# [FQ-232 2026-08-10] 월말-slim 입력에서도 헌법 자(20일 평균) 복원 — 주입 경로
+#
+# FQ-181 은 "일간 입력이면 헌법 자, slim 이면 DEGRADED + 자백"까지 갔다. 남은 것은
+#   slim 경로 자체의 복원이다. slim 관용구의 원인은 `asof_close()` 의 전체스캔이지
+#   유동성이 아니다 — 즉 **호출부는 slim 직전까지 일간 패널을 손에 들고 있다**
+#   (실측: `RAW <- read_parquet(...); RAWME <- RAW[Date %in% ME]; rm(RAW)`).
+#   ⇒ 자를 복원하는 데 새 I/O 가 필요 없다. 20일 평균을 **slim 하기 전에** 계산해
+#     넘기면 된다(실측 비용: 일간 14,059,013행에서 build_adv20_t1 3.2초).
+#
+# ★기본 동작 무변경: `liq_daily = NULL`(기본)이면 FQ-181 판본과 **동일 분기·동일 값**.
+#   자를 바꾸는 것은 호출부의 명시적 선택이며, 그래야 과거 판정과의 비교가 깨지지 않는다.
+#
+# ★사용법 (호출부 2줄 추가, 추가 I/O 0):
+#     ADV20 <- build_adv20_t1(RAW[, .(Date, Ticker, Vol, Close)], at_dates = ME)
+#     RAWME <- RAW[Date %in% ME]; rm(RAW)
+#     fwd   <- build_monthly_forward_returns(RAWME, ME, liq_daily = ADV20)
+#
+# ★자 라벨은 이제 소비 지점에서도 읽힌다: `canonical_screen_bt()` 가
+#   attr(liq_dt,'liq_ruler') 를 읽어 반환값 `liq_ruler` 로 기록하고 DEGRADED 면 경고한다.
+#   (FQ-181 은 라벨을 *발행*만 했고 읽는 소비자가 0 이었다 — "자가 신고는 하는데
+#    아무도 안 읽는" 상태. 발행과 소비는 별개의 배선이다.)
+#==============================================================================
+
+#' liq_daily 인자 해석 — 무엇을 받았고 그것이 어떤 자인가를 **정체 검사**로 판정
+#'
+#' 존재 검사(NULL 아님)로 정체 검사를 대체하지 않는다: 컬럼 구성을 실측해 분기하고,
+#' 어느 갈래에도 해당하지 않으면 **조용히 통과시키지 않고 stop** 한다.
+#' @param liq_daily NULL | data.frame(Date,Ticker,Vol,Close) | data.frame(Date,Ticker,adv) | 경로
+#' @param at_dates 월말 거래일 벡터
+#' @return NULL 또는 list(tbl = data.table(Date,Ticker,adv), source = <chr>)
+.resolve_liq_daily <- function(liq_daily, at_dates) {
+  if (is.null(liq_daily)) return(NULL)
+  src <- NA_character_
+  if (is.character(liq_daily) && length(liq_daily) == 1L) {
+    p <- liq_daily
+    if (!file.exists(p)) stop("build_monthly_forward_returns: liq_daily 경로 부재 — ", p)
+    ext <- tolower(tools::file_ext(p))
+    D <- if (ext == "parquet") {
+      if (!requireNamespace("arrow", quietly = TRUE))
+        stop("build_monthly_forward_returns: liq_daily parquet 인데 arrow 미설치")
+      as.data.table(arrow::read_parquet(p, col_select = c("Date", "Ticker", "Vol", "Close")))
+    } else if (ext == "rds") as.data.table(readRDS(p))
+    else stop("build_monthly_forward_returns: liq_daily 확장자 미지원 — ", ext)
+    liq_daily <- D; src <- "injected_path"
+  }
+  if (!is.data.frame(liq_daily))
+    stop("build_monthly_forward_returns: liq_daily 형식 미지원 — ", class(liq_daily)[1])
+  D <- as.data.table(liq_daily)
+  nm <- names(D)
+  if (all(c("Date", "Ticker", "Vol", "Close") %in% nm)) {
+    tbl <- build_adv20_t1(D[, .(Date, Ticker, Vol, Close)], at_dates = at_dates)
+    if (is.na(src)) src <- "injected_daily"
+  } else if (all(c("Date", "Ticker", "adv") %in% nm)) {
+    tbl <- as.data.table(D)[, .(Date = as.Date(Date), Ticker, adv)]
+    tbl <- tbl[Date %in% as.Date(at_dates)]
+    src <- "injected_adv20"
+  } else {
+    stop("build_monthly_forward_returns: liq_daily 컬럼이 (Date,Ticker,Vol,Close) 도 ",
+         "(Date,Ticker,adv) 도 아님 — 실제 [", paste(nm, collapse = ", "), "]")
+  }
+  if (!nrow(tbl))
+    stop("build_monthly_forward_returns: liq_daily 해석 결과 0행 — ",
+         "at_dates 와 패널 날짜가 어긋났을 개연(월말 거래일 불일치).")
+  data.table::setkeyv(tbl, c("Date", "Ticker"))
+  list(tbl = tbl, source = src)
+}
+
+#' @param liq_daily [FQ-232] 유동성 자 복원용 입력. NULL(기본) = 동작 무변경.
+#'        허용 형태 3종: ①일간 data.table(Date,Ticker,Vol,Close) ②사전계산
+#'        data.table(Date,Ticker,adv) — build_adv20_t1() 산출 ③parquet/rds 경로.
+#' @param liq_strict [FQ-232] TRUE 면 자가 DEGRADED 로 떨어질 때 경고가 아니라 stop.
+#'        NULL(기본) 이면 환경변수 QVEST_LIQ_RULER_STRICT(1/true) 를 따르고, 없으면 FALSE.
 #' @return list(returns_dt(Date=sig월말, Ticker, Ret_1m=forward), bench_dt(Date, BM_Ret),
-#'              liq_dt(Date, Ticker, adv), ret_firewall_dropped, liq_ruler)
-build_monthly_forward_returns <- function(rawdata, sig_dates) {
+#'              liq_dt(Date, Ticker, adv), ret_firewall_dropped, liq_ruler, liq_ruler_source)
+build_monthly_forward_returns <- function(rawdata, sig_dates, liq_daily = NULL,
+                                          liq_strict = NULL) {
   # 각 종목 월말 종가 → 다음 월말 종가 forward return
   sig_dates <- sort(as.Date(sig_dates))
   out <- list(); bench <- list(); liq <- list()
@@ -86,28 +160,58 @@ build_monthly_forward_returns <- function(rawdata, sig_dates) {
   } else 0
   .has_px <- all(c("Vol", "Close") %in% names(rawdata))
   .daily_ok <- (.dpm_med >= 15) && .has_px
-  adv_tbl <- NULL
-  if (.daily_ok) {
+  # 월말 앵커(= 각 sig_date 이하 최종 거래일). 주입/자체계산 양 경로가 같은 앵커를 쓴다.
+  .md <- unique(vapply(sig_dates, function(d) {
+    v <- .udates[.udates <= d]
+    if (length(v)) as.character(max(v)) else NA_character_
+  }, character(1)))
+  .md <- as.Date(.md[!is.na(.md)])
+  adv_tbl <- NULL; liq_ruler_source <- NA_character_
+  # ── [FQ-232] ①주입 경로 우선(명시가 암시를 이긴다) ─────────────────────────
+  .inj <- .resolve_liq_daily(liq_daily, .md)
+  if (!is.null(.inj)) {
+    adv_tbl <- .inj$tbl
+    liq_ruler <- "adv20_t1"
+    liq_ruler_source <- .inj$source
+    # 주입 패널이 실제로 이 측정창을 덮는가 — 존재 검사가 아니라 **덮개 실측**.
+    .cov <- mean(as.character(.md) %in% as.character(unique(adv_tbl$Date)))
+    if (.cov < 1) {
+      warning(sprintf(paste0(
+        "build_monthly_forward_returns: liq_daily 가 월말 앵커의 %.1f%%만 덮음(%d/%d) — ",
+        "미덮인 달은 adv 결측이 되고 canonical_screen_bt 의 is.na(adv) 규칙상 **통과**한다 ",
+        "(결손이 완화로 내려앉음). vintage 불일치 의심."),
+        100 * .cov, sum(as.character(.md) %in% as.character(unique(adv_tbl$Date))), length(.md)),
+        call. = FALSE)
+    }
+    cat(sprintf(paste0("[build_monthly_forward_returns] [FQ-232] 유동성 자 복원: ",
+      "liq_ruler='adv20_t1' (source=%s) · 앵커 덮개 %.1f%% (%d행)\n"),
+      liq_ruler_source, 100 * .cov, nrow(adv_tbl)))
+  } else if (.daily_ok) {
+    # ── ②입력이 일간이면 자체 계산(FQ-181 경로, 불변) ────────────────────────
     liq_ruler <- "adv20_t1"          # 헌법 정의 — 20일 평균 거래대금, 당일 미포함
-    .md <- unique(vapply(sig_dates, function(d) {
-      v <- .udates[.udates <= d]
-      if (length(v)) as.character(max(v)) else NA_character_
-    }, character(1)))
-    .md <- as.Date(.md[!is.na(.md)])
+    liq_ruler_source <- "input_daily"
     adv_tbl <- build_adv20_t1(rawdata[Date <= max(sig_dates), .(Date, Ticker, Vol, Close)],
                               at_dates = .md)
     data.table::setkeyv(adv_tbl, c("Date", "Ticker"))
   } else {
+    # ── ③계산 불가 — 자백 경로(FQ-181). 조용히 쓰지 않는다 ───────────────────
     liq_ruler <- "adv1_sameday_DEGRADED"   # 20일 자 계산 불가 — 구판과 동일한 1일치
-    cat(sprintf(paste0(
-      "[build_monthly_forward_returns] ★유동성 자 저하(FQ-181): 입력 패널의 캘린더월당 ",
+    liq_ruler_source <- "degraded_slim"
+    .strict <- if (is.null(liq_strict)) {
+      isTRUE(tolower(Sys.getenv("QVEST_LIQ_RULER_STRICT", "")) %in% c("1", "true", "yes"))
+    } else isTRUE(liq_strict)
+    .msg <- sprintf(paste0(
+      "[build_monthly_forward_returns] ★유동성 자 저하(FQ-181/232): 입력 패널의 캘린더월당 ",
       "거래일 중앙값 = %.0f (일간 아님%s).\n",
       "  20일 평균 거래대금을 입력에서 계산할 수 없어 **월말 1일치 Vol*Close** 로 대체합니다.\n",
-      "  → liq_ruler='adv1_sameday_DEGRADED'. 헌법 자(20일 평균)로 재려면 slim 하지 말고 ",
-      "일간 rawdata 를 넘기십시오.\n"),
-      .dpm_med, if (!.has_px) ", Vol/Close 결측" else ""))
+      "  → liq_ruler='adv1_sameday_DEGRADED'. 헌법 자(20일 평균)로 재려면 ",
+      "liq_daily= 인자로 일간 패널 또는 build_adv20_t1() 산출을 넘기십시오(FQ-232).\n"),
+      .dpm_med, if (!.has_px) ", Vol/Close 결측" else "")
+    if (.strict) stop(.msg, "  [QVEST_LIQ_RULER_STRICT 활성 — 경고가 아니라 중단]")
+    cat(.msg)
     warning("build_monthly_forward_returns: liq_ruler='adv1_sameday_DEGRADED' ",
-            "— 월말-slim 입력이라 20일 평균 거래대금 계산 불가 (FQ-181)", call. = FALSE)
+            "— 월말-slim 입력이라 20일 평균 거래대금 계산 불가. liq_daily= 로 복원 가능 ",
+            "(FQ-181/FQ-232)", call. = FALSE)
   }
   for (i in seq_len(length(sig_dates) - 1L)) {
     d0 <- sig_dates[i]; d1 <- sig_dates[i + 1L]
@@ -143,12 +247,14 @@ build_monthly_forward_returns <- function(rawdata, sig_dates) {
   # [FQ-181] 자 라벨을 데이터에 붙여 보낸다 — 소비자가 list 를 풀어 liq_dt 만 넘겨도
   #   라벨이 따라가도록. (반환 list 의 liq_ruler 와 동일 값, 이중 경로)
   data.table::setattr(liq_out, "liq_ruler", liq_ruler)
+  data.table::setattr(liq_out, "liq_ruler_source", liq_ruler_source)  # [FQ-232] 출처도 동행
   list(
     returns_dt = if (length(out)) rbindlist(out) else data.table(),
     bench_dt = if (length(bench)) rbindlist(bench) else data.table(),
     liq_dt = liq_out,
     ret_firewall_dropped = n_ret_firewall,  # [R44] 격리 카운트(진단)
-    liq_ruler = liq_ruler                   # [FQ-181] 자 라벨(기록 의무 — 상단 규약)
+    liq_ruler = liq_ruler,                  # [FQ-181] 자 라벨(기록 의무 — 상단 규약)
+    liq_ruler_source = liq_ruler_source     # [FQ-232] input_daily/injected_*/degraded_slim
   )
 }
 

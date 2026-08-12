@@ -229,7 +229,13 @@ sanitize_rawdata <- function(dry_run = FALSE) {
     } else {
       bm[Date == d_0401, Date := d_0331]
     }
-    cat("  Benchmark도 교정 완료.\n")
+    ## ★2026-08-10 (FQ-127 F5): 이 줄은 `dry_run` 과 무관하게 "완료" 를 주장했다.
+    ##   메모리상 bm 은 실제로 고쳐지지만 **저장은 뒤의 `if (!dry_run)` 안에서만** 일어나므로,
+    ##   드라이런 사용자는 파일이 안 고쳐졌는데 "완료" 를 본다.
+    ##   (close_round 의 '마커 발행 → Stop 게이트 자동 통과' 와 동형 — 억제 플래그 하의 거짓 보고.)
+    ##   동작은 그대로 두고 **문구만** 실제와 맞춘다.
+    cat(sprintf("  Benchmark도 교정%s\n",
+                if (isTRUE(dry_run)) " (메모리상 — dry_run 이라 **미저장**)." else " 완료."))
   }
 
   # ─── Step 3: 비거래일 행 제거 ───────────────────────────────────────────────

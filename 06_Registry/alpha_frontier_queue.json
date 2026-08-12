@@ -2401,11 +2401,16 @@
    "ev_rationale": "WT-019 NP-1(P1). 5-라벨 실측 기준선 확보(DD10 0.351/DD5 0.532/DD15 0.180/vol 0.081/단월음수 0.441, base 0.413) — 관문의 문턱이 이미 정량화돼 있다. 방법론 수리라 앞으로의 모든 국면·라벨 라운드에 복리로 작용.",
    "wall_check": "비적용 — 판정 프레임 위생. 자본 주장 없음.",
    "data_gate": "없음 (WT-017/019 산출물 + 기존 소비 지점 코드)",
-   "owner": "Q-Lead (관문 함수+검사 완료 2026-08-08, 배선 미완)",
-   "status": "partially_built_wiring_pending",
+   "owner": "Q-Lead (관문 함수+검사 2026-08-08 · 배선 6지점 완료 2026-08-08)",
+   "status": "wired",
    "registered": "2026-08-02 Q-Lead (WT-D20260802_019 NP-1 파생)",
    "precheck_measured": "★착수 전 소비 지점 census (2026-08-02 Q-Lead, read-only 코드 조사). 국면 라벨을 읽는 지점 3곳: ① `02_Infrastructure/ops/auto_regime_overlay_ab.R` — CAT_EXPOSURE 스케줄(RISK_ON/NEUTRAL 1.00 · CAUTION 0.70 · CRISIS/RISK_OFF 0.40) = **라벨 단독 트리거** ② `02_Infrastructure/portfolio/regime_module_admission.R` — 국면별 모듈 admission ③ `02_Infrastructure/portfolio/forward_weights_D3_M4gAE.R:78` — **실배포 비중 산출**. ★★핵심 발견: 현 book 의 beta_R05 는 라벨 단독이 아니라 **라벨 × z 조합**이다 — `fcase(REGIME=='CRISIS'&zlt, 0.30, REGIME=='CRISIS', 0.50, REGIME=='CAUTION'&zlt, 0.50, REGIME=='CAUTION', 0.70, REGIME %in% c('BULL','NORMAL')&zlt, 0.85, default=1.0)` (zlt = R05_z_avg < q20 하위 20% 분위). ⇒ **관문 설계가 달라진다**: 라벨 자체에 관문을 걸면 현 book(WT-017 실측에서 BOOK 단독이 전 구성 지배, absSR 1.711)도 함께 차단되는 오탐이 난다. 관문은 **'라벨을 단독 트리거로 쓰는 소비'**(①번 형태)에 걸어야 하고, 라벨×연속축 조합(③번)은 별도 판정 — 실제로 왜 무판별 라벨을 쓰는 book overlay 가 작동하는지가 라운드의 부수 질문이 된다(가설: z 축이 실질 판별을 하고 라벨은 강도 조절만).",
-   "verdict": "★관문 **함수·검사는 완성, 소비자는 0** (2026-08-08 정직 상태). 신설: `02_Infrastructure/contracts/label_eligibility_gate.R` (`label_eligibility()` / `assert_label_eligible()` — 통과 조건 recall>base ∧ fisher 단측 p<0.05, 문턱 sweep 금지 고정). 검사 `08_Tests/contract_regression/test_label_eligibility_gate.R` **17/17 양방향 통과**(자격 라벨 lift 4.09x p<1e-4 통과 · 무작위/역방향 차단 · 빈입력·상수입력은 합격 아닌 UNMEASURABLE 로 분리 · assert 차단 실효 발화). 배터리 등재 완료. ★★그러나 **호출부가 없다** — 이 상태로 두면 이 저장소가 반복 수리한 '정의만 있고 소비 없는 dead code' 계통 그대로다. 배선 보류 사유: 소비 지점이 전부 배포 경로(forward_weights_D3_M4gAE.R · portfolio_governor.R · regime_module_admission.R · strategy_tilt_weights.R)이거나 worktask schema 이고, 08-08 시점에 alpha 라운드 2건이 emit 중이라 스키마 변경 시 그 라운드들이 깨진다. **서두른 배선보다 명시적 미완이 낫다**.",
+   "verdict": "★배선 완료 (2026-08-08). 구 상태 '함수·검사 완성, 소비자 0' 해소 — 호출부 6지점. **배선 지점**: ① `02_Infrastructure/portfolio/regime_module_admission.R::compute_rcma` (셀 판정 전, asof-sliced, warn 기본·QVEST_LABEL_GATE_MODE=block 승격 가능 · 판정을 반환 list + module_regime_admission.json 에 동반 기록) ② `02_Infrastructure/ops/auto_regime_overlay_ab.R::build_unified_cat_exposure` (라벨→exposure 변환 직전 = FQ-119 precheck 이 지목한 '라벨 단독 트리거' ①번 형태 · warn · h2_regime_label_gate.json 동반 산출) ③ `02_Infrastructure/worktask/schema.json` (label_eligibility_evidence + label_consumption 조건부 required — **opt-in**: 미선언 패키지는 종전대로 유효) ④ `02_Infrastructure/hooks/worktask_artifact_validator.sh` (③의 **실행 표면**. 이 저장소엔 JSON-Schema 엔진이 없어(R jsonvalidate 미설치·wt_validate_package 호출부 0) 스키마만 고치면 그것도 dead 계약이다. 증거결측/무자격/증거불완전 + **미선언 우회 탐지** 4종 warn) ⑤ `02_Infrastructure/portfolio/forward_weights_D3_M4gAE.R` (배포 β_R05 — **경고 전용 고정**, mode 인자 하드코딩으로 env block 승격 불가 + tryCatch) ⑥ `02_Infrastructure/portfolio/portfolio_governor.R::.pg_get_regime` (세션당 1회, 경고 전용, PG0 아티팩트 regime_state.label_gate 기록). 신설 어댑터 `02_Infrastructure/contracts/regime_label_gate.R` — 계약 본체는 **무수정**(고정), 어댑터가 사이트별 라벨 구성(basis 4종)·사건정의 고정·warn/block 해석을 담당. 계약을 격리 환경에 sys.source 해 전역 %||% 오염 차단. **검사**: `08_Tests/hooks/test_label_gate_wiring.R` 49/49 (배선 존재 + ★호출부 제거 돌연변이 5/5 검출 + warn/block 양방향 + 현장 basis 4종) · `08_Tests/hooks/test_label_gate_schema_hook.py` 23/23 (스키마 위반주입 10 + ★구판 검거 0→개정판 6 + 훅 실발화 6). 둘 다 배터리 등재. **비파괴 실증**: 실물 alpha_package 213건 개정 전후 유효성 변화 0 · 배포 경로 A/B(2026-08-01) 비중 CSV **바이트 동일**, manifest 는 label_gate 29키 추가·삭제 0·값변경 0. **실측 판정**: 판정축 bm_m<-5% 에서 basis 4종 전부 ELIGIBLE — daily_t1_monthstart 1.67x(p 1.16e-04) · monthly_prev 1.72x · monthly_same 1.99x · alpha_scores_regime_state(배포) 4.84x(p 1.32e-07). ★★배포 라벨만 lift 가 2.9배 높고 lag1 보존율 0.26(다른 셋 0.84~0.89) → 동월 누출 의심으로 보고했으나, **창-정합 통제로 같은 날 자가 정정**: 위 4종은 창이 서로 다르다(배포 271m 2004~ vs unified 439m 1990~). 공통 271개월로 맞추면 배포 lift 우위는 **유지**(배수 2.67)이나 나머지 보존율이 0.84~0.89→**0.57~0.83** 으로 내려가고 **네 라벨 전부 lag1 비유의**(p 0.27~0.46) — \"배포만 붕괴\"는 과장이었다. 동월 누출은 의심 수준이며 이 축만으로 확정·기각 불가(n_on=21). 다음 통제 = **vintage-swap**(placebo·lag 단독 미검거 계열). **부수 발견**: `monthly_prev`(overlay A/B 사이트 라벨)는 **post-2004 INELIGIBLE**(lift 1.41 p 0.270) — 판별력이 pre-2004 편중. 관문을 최근 창으로 asof-제한하면 사이트 ②가 실제 경고를 낸다. **차단 미승격 사유**: RCMA walk-forward 에서 asof≤1998 창은 INELIGIBLE(n=108 p 0.116) → hard block 시 초기 창 admission 전면 차단 = FR 결과 변경. 배포 2지점은 라이브 중단 위험으로 도훈 confirm 사안.",
+   "wiring_unwired_remaining": [
+    "국면 라벨을 읽는 ops/ 하위 스크립트 전수 census 미실시 — 본 라운드는 FQ-119 precheck 이 지목한 3지점 + 실행 표면 3지점만 덮었다",
+    "worktask 라운드가 label_consumption 선언을 생략하면 스키마 조건부는 발화하지 않는다 — 훅의 흔적 탐지(warn)가 유일 보완이고 이는 오탐 가능한 휴리스틱이다",
+    "risk/optimizer/forge 패키지는 라벨 소비 축 미배선 (alpha_package 만 덮음)"
+   ],
    "wiring_plan": [
     "① regime_module_admission.R — 국면 기반 모듈 admission 직전 assert (경고→차단 단계적)",
     "② worktask schema — 라벨 소비 라운드는 label_eligibility 증거 필드 제출 의무",
@@ -2413,7 +2418,7 @@
     "★배선 후 반드시 위반 주입 재실행 — 호출부가 실제로 발화하는지(WIRE-1 선례)"
    ],
    "revival_conditions": [
-    "진행 중 라운드 emit 완료 후 즉시 배선 착수(①→②→③ 순)"
+    "배선 완료 — 남은 축은 ①배포 라벨 동월누출 **vintage-swap 통제**(lag1 단독은 창 교락으로 결론 불가 확인됨) ②overlay 사이트 라벨 post-2004 INELIGIBLE 의 소비 함의 판정 ③배포 2지점 warn→block 승격(도훈 confirm) ④PostToolUse warn→PreToolUse block 이설(현 훅은 구조상 block 불가)"
    ]
   },
   {

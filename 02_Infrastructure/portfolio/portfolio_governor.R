@@ -191,6 +191,14 @@ if (!exists("%||%")) {
       warning("[pg] regime_signal.R not found in: ", paste(rs_candidates, collapse = " | "))
     }
   }
+  # ── FQ-119 라벨 자격 관문 (2026-08-08 배선) — ★경고 전용, governor 판정 무개입 ────────
+  #   .PG_REGIME_ADJ 는 이 라벨로 sleeve 배분을 조정한다. 그 라벨이 자격이 있는지를 세션당
+  #   한 번 재서 경고·부착한다. ★차단하지 않는다 — 자본 게이트 차단은 도훈 confirm 사안이고
+  #   (measurement-graduation §4: governor admit 자동화 금지), 실패해도 governor 는 계속 돈다.
+  #   basis = monthly_same: get_regime_at_date 는 "date 이하 가장 가까운 월" = **동월** 라벨을
+  #   돌려준다(lag 없음). 다른 basis 로 재면 governor 가 쓰는 라벨을 잰 게 아니다.
+  .pg_label_gate_once(date)
+
   if (exists("get_regime_at_date", envir = .GlobalEnv)) {
     tryCatch(get_regime_at_date(date), error = function(e) {
       warning("[pg] get_regime_at_date failed — NEUTRAL/0 fallback 사용: ", e$message)
@@ -200,6 +208,27 @@ if (!exists("%||%")) {
     warning("[pg] get_regime_at_date 부재 — NEUTRAL/0 fallback 사용 (엔진값 아님)")
     data.table(Category = "NEUTRAL", Regime_Score = 0, source = "fallback")
   }
+}
+
+#' FQ-119 라벨 자격 판정 — 세션당 1회 (반복 호출 비용 회피). 결과는 .PG_LABEL_GATE 에 보관.
+#' ★어떤 실패도 governor 를 멈추지 않는다. 단 "재지 못했다"를 "통과했다"로 접지 않기 위해
+#'   실패도 verdict 로 남긴다(빈 결과=합격 계통 차단).
+.PG_LABEL_GATE <- NULL
+.pg_label_gate_once <- function(date = Sys.Date() - 1) {
+  if (!is.null(.PG_LABEL_GATE)) return(invisible(.PG_LABEL_GATE))
+  g <- tryCatch({
+    cands <- c("02_Infrastructure/contracts/regime_label_gate.R",
+               file.path(dirname(.pg_root), "contracts", "regime_label_gate.R"))
+    hit <- cands[file.exists(cands)]
+    if (!length(hit)) stop("regime_label_gate.R 부재")
+    source(hit[1], local = FALSE)
+    gg <- regime_label_gate(asof = date, label_basis = "monthly_same")
+    rlg_enforce(gg, site = "portfolio_governor/regime_adj", mode = "warn")  # ★mode 고정
+    rlg_summary(gg)
+  }, error = function(e) list(verdict = "GATE_ERROR", reason = conditionMessage(e),
+                              note = "관문 실패는 governor 판정에 영향 없음(경고 전용)"))
+  .PG_LABEL_GATE <<- g
+  invisible(g)
 }
 
 #' Classify alpha family for a strategy (mirrors hurdle_gate.R logic)
@@ -375,7 +404,10 @@ pg0_gap_review <- function(portfolio_id,
     regime_state     = list(
       date     = as.character(Sys.Date() - 1),
       category = regime_category,
-      score    = regime_score
+      score    = regime_score,
+      # FQ-119: 이 국면 라벨이 애초에 판별력이 있었는지를 같은 아티팩트에 동반 기록.
+      # (별도 파일 조회를 요구하면 조회되지 않는다 — 이 저장소의 반복 실측)
+      label_gate = .PG_LABEL_GATE
     ),
     family_concentration = family_counts
   )

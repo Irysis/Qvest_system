@@ -1,0 +1,39 @@
+[p3] ★입력 실측: 14059013행 · 9003 거래일
+[ramp_io.R] Loaded — ramp_write_parquet/ramp_write_json (§2.4 meta enforced)
+[backtest_result_contract.R] Loaded — Backtest Result Contract v1.0
+  Functions: build_bt_result() / validate_bt_result()
+  10 components: manifest, strategy_spec, nav, period_returns, holdings, benchmark_returns, metrics, benchmark_compare, rolling_metrics, drawdowns, audit
+[backtest_result_contract.R] Loaded — Backtest Result Contract v1.0
+  Functions: build_bt_result() / validate_bt_result()
+  10 components: manifest, strategy_spec, nav, period_returns, holdings, benchmark_returns, metrics, benchmark_compare, rolling_metrics, drawdowns, audit
+[canonical_screen_bt.R] Loaded — canonical_screen_bt() (v8.x WS1 real-computation helper)
+[factor_validation.R] Loaded — build_monthly_forward_returns / build_adv20_t1 / validate_factor / approve_factors
+[build_monthly_forward_returns] ★유동성 자 저하(FQ-181/232): 입력 패널의 캘린더월당 거래일 중앙값 = 1 (일간 아님).
+  20일 평균 거래대금을 입력에서 계산할 수 없어 **월말 1일치 Vol*Close** 로 대체합니다.
+  → liq_ruler='adv1_sameday_DEGRADED'. 헌법 자(20일 평균)로 재려면 liq_daily= 인자로 일간 패널 또는 build_adv20_t1() 산출을 넘기십시오(FQ-232).
+[backtest_result_contract.R] Loaded — Backtest Result Contract v1.0
+  Functions: build_bt_result() / validate_bt_result()
+  10 components: manifest, strategy_spec, nav, period_returns, holdings, benchmark_returns, metrics, benchmark_compare, rolling_metrics, drawdowns, audit
+[canonical_screen_bt.R] Loaded — canonical_screen_bt() (v8.x WS1 real-computation helper)
+[backtest_result_contract.R] Loaded — Backtest Result Contract v1.0
+  Functions: build_bt_result() / validate_bt_result()
+  10 components: manifest, strategy_spec, nav, period_returns, holdings, benchmark_returns, metrics, benchmark_compare, rolling_metrics, drawdowns, audit
+[canonical_screen_bt.R] Loaded — canonical_screen_bt() (v8.x WS1 real-computation helper)
+[p3] diag_ew_universe class: old list / new list
+[p3] names old: [metric_type, metric_type_note, benchmark_id, n_months, portfolio_alpha_t_nw_lag3, portfolio_alpha_t_pvalue, information_ratio, alpha_annualized, net_sr, oos_retention_approx, oos_retention_approx_note, post2017_t_nw_lag3, n_months_post2017, benchmark_compare, period_returns]
+[p3] names new: [metric_type, metric_type_note, benchmark_id, basis_channels, n_months, portfolio_alpha_t_nw_lag3, portfolio_alpha_t_pvalue, information_ratio, alpha_annualized, net_sr, oos_retention_approx, oos_retention_approx_note, post2017_t_nw_lag3, n_months_post2017, benchmark_compare, period_returns]
+[p3]   ★불일치 필드 'metric_type_note': class old=character new=character
+[p3]     old=EW-유니버스(해당월 유동성필터 前 패널 동일가중) 벤치 대비 진단. HARD 게이트 비바인딩 — cap-w basis(bench_dt)가 판정 권위. 결측수익 종목은 그 달 EW 벤치에서 제외 — 본판정 0-fill과 비대칭, 진단에 보수(하방) 방향. / new=EW-유니버스(해당월 유동성필터 前 패널 동일가중) 벤치 대비 진단. HARD 게이트 비바인딩 — cap-w basis(bench_dt)가 판정 권위. 결측수익 종목은 그 달 EW 벤치에서 제외 — 본판정 0-fill과 비대칭, 진단에 보수(하방) 방향. ★t 차이의 채널 분해는 basis_channels 필드 참조 — se 배율을 신호로 읽는 오독 방지(2026-08-09).
+[p3]     all.equal msg: 1 string mismatch
+[p3]   ★불일치 필드 'basis_channels': class old=NULL new=list
+[p3]     old= / new=TRUE,1.54410980134402,2.04074114553073
+[p3]     all.equal msg: target is NULL, current is list
+[backtest_result_contract.R] Loaded — Backtest Result Contract v1.0
+  Functions: build_bt_result() / validate_bt_result()
+  10 components: manifest, strategy_spec, nav, period_returns, holdings, benchmark_returns, metrics, benchmark_compare, rolling_metrics, drawdowns, audit
+[canonical_screen_bt.R] Loaded — canonical_screen_bt() (v8.x WS1 real-computation helper)
+[p3] 동일 판본 2회 실행 시 diag_ew_universe 동일 = TRUE
+[p3] 동일 판본 2회 PORT_t 동일 = TRUE
+[p3] 완료
+Warning message:
+package 'arrow' was built under R version 4.5.3 

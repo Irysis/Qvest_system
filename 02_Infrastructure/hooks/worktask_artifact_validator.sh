@@ -128,6 +128,48 @@ elif missing_v62:
 else:
     print(f"[OK] {fp} ({pkg_type}) schema + v6.2 mandate PASS", file=sys.stderr)
 
+# ── FQ-119 라벨 자격 관문 (2026-08-08 배선, warn level) ────────────────────────
+# 왜 여기인가: schema.json 에는 조건부 required 를 넣었지만 이 저장소에 JSON-Schema
+# 실행 엔진이 배선돼 있지 않다(R jsonvalidate 미설치 · wt_validate_package 호출부 0).
+# 그래서 스키마만 고치면 그것도 dead 계약이 된다 — 실제로 발화하는 표면은 이 훅이다.
+# PostToolUse 라 block 은 불가(구조상 warn) — 승격은 PreToolUse 이설이 필요하며 별건.
+LBL_DECL_HINTS = ("CRISIS", "CAUTION", "RISK_ON", "RISK_OFF",
+                  "regime_label", "regime_category", "unified_regime_signal")
+lc = pkg.get("label_consumption")
+declared = isinstance(lc, dict) and lc.get("consumes_regime_label") is True
+
+def _lbl_warn(kind, detail):
+    print(f"[WARN] {fp} ({pkg_type}) label_gate {kind}: {detail}", file=sys.stderr)
+    with open(alerts, "a") as f:
+        f.write(f"{time.strftime('%Y-%m-%dT%H:%M:%S')} | {pkg_type} | {fp} | label_gate_{kind}={detail}\n")
+
+if declared:
+    ev = lc.get("label_eligibility")
+    if not isinstance(ev, dict):
+        _lbl_warn("evidence_missing",
+                  "consumes_regime_label=true 인데 label_eligibility 증거 없음 (02_Infrastructure/contracts/label_eligibility_gate.R 경유 제출 필요)")
+    else:
+        verdict = ev.get("verdict")
+        gaps = [k for k in ("event_definition", "label_definition", "contract", "fisher_p") if not ev.get(k)]
+        if gaps:
+            _lbl_warn("evidence_incomplete", "증거 필드 누락 " + str(gaps) + " — 사건정의 없는 판정은 인용 불가(자격은 (라벨,사건정의) 쌍에 붙는다)")
+        elif verdict != "ELIGIBLE":
+            _lbl_warn("ineligible_label",
+                      f"verdict={verdict} — 판별력 없는 라벨은 중립이 아니라 발화 월수에 비례해 유해(WT-019 paired -3.77). 이 라운드의 소비면 결과는 해석 불가")
+        else:
+            print(f"[OK] {fp} label_gate ELIGIBLE ({ev.get('event_definition')})", file=sys.stderr)
+else:
+    # 미선언 우회 탐지 — 선언을 생략하면 스키마 조건부는 영원히 발화하지 않는다.
+    #   ★한글 혼재 텍스트라 정규식 경계(\b)는 조용히 FALSE 가 되므로 부분문자열 포함만 쓴다.
+    try:
+        blob = json.dumps(pkg, ensure_ascii=False)
+    except Exception:
+        blob = ""
+    hits = sorted({t for t in LBL_DECL_HINTS if t in blob})
+    if hits:
+        _lbl_warn("undeclared_consumption",
+                  "라벨 소비 흔적 " + str(hits) + " 이 있는데 label_consumption 선언·자격 증거 없음 (흔적 기반 warn — 오탐 가능)")
+
 # v7.0 Sprint 1 Charter §10 Positive Certifier — qvest_cert_eval router 위임
 if pkg_type == "forge_package" and not missing:
     import os, sys as _sys

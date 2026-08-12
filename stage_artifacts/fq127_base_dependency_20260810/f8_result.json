@@ -1,0 +1,99 @@
+{
+  "verdict": "U1_REAL",
+  "control_ok": true,
+  "n_files": 19,
+  "n_unguarded": 13,
+  "unguarded": [
+    {
+      "file": "2I/ops/update_research_philosophy.R",
+      "flags": "dry_run",
+      "writes_guarded": 0,
+      "writes_unguarded": 12,
+      "sample": "writeLines(baseline_sha, BASELINE_FILE)"
+    },
+    {
+      "file": "2I/telegram/telegram_notify.R",
+      "flags": "dry_run",
+      "writes_guarded": 1,
+      "writes_unguarded": 11,
+      "sample": "writeLines(meta, file.path(lock_dir, \"owner.txt\"))"
+    },
+    {
+      "file": "2I/axiom/distilled.R",
+      "flags": "dry_run",
+      "writes_guarded": 0,
+      "writes_unguarded": 8,
+      "sample": "write_json(out, .dist_index(root), pretty = TRUE, auto_unbox = TRUE, null = \"null\")"
+    },
+    {
+      "file": "2I/validation/v8_readiness_gate.R",
+      "flags": "no_write",
+      "writes_guarded": 3,
+      "writes_unguarded": 7,
+      "sample": "unlink(tmp_out)"
+    },
+    {
+      "file": "2I/alpha_search/run_alpha_search.R",
+      "flags": "dry_run",
+      "writes_guarded": 0,
+      "writes_unguarded": 5,
+      "sample": "writeLines(owner, file.path(lock_dir, \"owner.txt\"))"
+    },
+    {
+      "file": "2I/ops/cert_backfill_audit.R",
+      "flags": "dry_run",
+      "writes_guarded": 1,
+      "writes_unguarded": 5,
+      "sample": "writeLines(msg, LOG_FH)"
+    },
+    {
+      "file": "2I/axiom/review.R",
+      "flags": "apply",
+      "writes_guarded": 3,
+      "writes_unguarded": 4,
+      "sample": "write_json(axiom, dst, pretty = TRUE, auto_unbox = TRUE, null = \"null\")"
+    },
+    {
+      "file": "2I/data/cache_freshness_audit.R",
+      "flags": "persist",
+      "writes_guarded": 2,
+      "writes_unguarded": 3,
+      "sample": "write_json(list(signature = alert_sig, last_sent_at = format(today_ts, \"%Y-%m-%dT%H:%M:%"
+    },
+    {
+      "file": "2I/alpha_search/run_bsc_momentum.R",
+      "flags": "dry_run",
+      "writes_guarded": 0,
+      "writes_unguarded": 1,
+      "sample": "writeLines(toJSON(result, auto_unbox = TRUE, pretty = TRUE, na = \"null\"), file.path(OUT_"
+    },
+    {
+      "file": "2I/alpha_search/run_dm_momentum.R",
+      "flags": "dry_run",
+      "writes_guarded": 0,
+      "writes_unguarded": 1,
+      "sample": "writeLines(toJSON(result, auto_unbox = TRUE, pretty = TRUE, na = \"null\"), file.path(OUT_"
+    },
+    {
+      "file": "2I/alpha_search/run_volmanaged.R",
+      "flags": "dry_run",
+      "writes_guarded": 0,
+      "writes_unguarded": 1,
+      "sample": "writeLines(toJSON(result, auto_unbox = TRUE, pretty = TRUE, na = \"null\"), file.path(OUT_"
+    },
+    {
+      "file": "2I/axiom/inject.R",
+      "flags": "do_write",
+      "writes_guarded": 2,
+      "writes_unguarded": 1,
+      "sample": "writeLines(c(sprintf(\"--- CLAUDE.md (before inject %s)\", axiom$axiom_id), sprintf(\"+++ C"
+    },
+    {
+      "file": "2I/axiom/lcode_emit.R",
+      "flags": "dry_run",
+      "writes_guarded": 0,
+      "writes_unguarded": 1,
+      "sample": "write_json(lcode, path, auto_unbox = TRUE, pretty = TRUE)"
+    }
+  ]
+}

@@ -1,0 +1,134 @@
+{
+  "schema_version": "overlay_q1_v1",
+  "measured_at": "2026-08-10",
+  "treatment": "within_sector_reversal 하위25%(1개월·Sector Lv1) 제외형 오버레이",
+  "definition": "q1 = base 의 top-25 중 오버레이가 자를 분위(하위25%)의 월평균 비중. 균등 = 0.25",
+  "window": "266개월(PG2 정렬 구간) · 유동성 20일 평균 2e8 이상 · top-25 EW · 15bps",
+  "evidence": "P15 4점 실측(2-arm canonical_screen_bt, 커버리지 1.0): FAM_L 0.148→Δ+0.736 · FAM_CR 0.150→+0.210 · FAM_S 0.195→+0.116 · PG2 0.308→-0.846. 경로: FQ-170 순열 4/4 · FQ-168 P14(PG2 19% 초과보유) · P15",
+  "caveats": ["자본 후보 아님 — 오버레이 후 최고 PORT_t +0.538. 약한 재료를 덜 나쁘게 만들 뿐", "문턱 0.25/0.28 은 균등 기준의 잠정값이며 최적화되지 않았다", "★★이 표는 reversal 처리 전용이다 — P20 이 D03 밴드로 일반화를 시험해 Q2_PARTIAL(방향은 맞으나 상위3 Δ +0.712 vs 하위3 +0.922 로 미미하고, 유일 음수 Δ 를 낸 CORE4_EW 의 band_share 가 20 중 10위). 공통 원리(오버레이는 base 의 판단을 되돌린다)는 유지되나 **예측자가 처리마다 다르다**: reversal=자를 종목의 비중(q1) / D03 밴드=버려지는 순위구간 14~25 의 base-내 가치. 다른 처리에 이 문턱을 적용하지 말 것", "PORT_t Δ 는 4 base 만 실측. 나머지는 q1 과 eff(보유 내부 차이)만 있다"],
+  "consumer": "02_Infrastructure/contracts/overlay_precheck.R :: overlay_q1_precheck() / overlay_q1_lookup()",
+  "bases": [
+    {
+      "base": "CORE4_EW",
+      "q1": 0.2899,
+      "eff_ann": 8.422
+    },
+    {
+      "base": "FAM_AC",
+      "q1": 0.2512,
+      "eff_ann": 2.849
+    },
+    {
+      "base": "FAM_C",
+      "q1": 0.3383,
+      "eff_ann": 5.945
+    },
+    {
+      "base": "FAM_CR",
+      "q1": 0.15,
+      "eff_ann": -9.066,
+      "port_t_base": -1.07,
+      "port_t_ovl": -0.861,
+      "delta": 0.21
+    },
+    {
+      "base": "FAM_D",
+      "q1": 0.2196,
+      "eff_ann": -5.589
+    },
+    {
+      "base": "FAM_GR",
+      "q1": 0.266,
+      "eff_ann": -6.879
+    },
+    {
+      "base": "FAM_IN",
+      "q1": 0.2433,
+      "eff_ann": -6.582
+    },
+    {
+      "base": "FAM_INV",
+      "q1": 0.3428,
+      "eff_ann": -0.499
+    },
+    {
+      "base": "FAM_L",
+      "q1": 0.1479,
+      "eff_ann": -7.753,
+      "port_t_base": -2.408,
+      "port_t_ovl": -1.671,
+      "delta": 0.736
+    },
+    {
+      "base": "FAM_M",
+      "q1": 0.2864,
+      "eff_ann": 0.887
+    },
+    {
+      "base": "FAM_MA",
+      "q1": 0.2826,
+      "eff_ann": -5.118
+    },
+    {
+      "base": "FAM_MK",
+      "q1": 0.2498,
+      "eff_ann": -0.759
+    },
+    {
+      "base": "FAM_Q",
+      "q1": 0.2596,
+      "eff_ann": -2.728
+    },
+    {
+      "base": "FAM_R",
+      "q1": 0.2395,
+      "eff_ann": -6.577
+    },
+    {
+      "base": "FAM_RE",
+      "q1": 0.254,
+      "eff_ann": -0.161
+    },
+    {
+      "base": "FAM_S",
+      "q1": 0.1951,
+      "eff_ann": -16.856,
+      "port_t_base": 0.421,
+      "port_t_ovl": 0.538,
+      "delta": 0.116
+    },
+    {
+      "base": "FAM_SE",
+      "q1": 0.1964,
+      "eff_ann": -2.88
+    },
+    {
+      "base": "FAM_TR",
+      "q1": 0.3052,
+      "eff_ann": 3.245
+    },
+    {
+      "base": "FAM_V",
+      "q1": 0.215,
+      "eff_ann": -0.584
+    },
+    {
+      "base": "FAM_XF",
+      "q1": 0.2621,
+      "eff_ann": -2.784
+    },
+    {
+      "base": "M26_Revenue_Mom",
+      "q1": 0.3033,
+      "eff_ann": -1.648
+    },
+    {
+      "base": "PG2",
+      "q1": 0.3084,
+      "eff_ann": 5.74,
+      "port_t_base": 2.494,
+      "port_t_ovl": 1.648,
+      "delta": -0.846
+    }
+  ]
+}

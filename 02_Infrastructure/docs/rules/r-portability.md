@@ -233,6 +233,7 @@ regmatches site 69개 = safe(perl/fixed/useBytes) 23
 | ✅ **수리(감사 부활)** | `worktask/v61_compliance_audit.R:24` | ③ | 2026-08-02 적발·수리. 구 `LOCKBOX_LOG_PATTERN` 이 선행슬래시 tmp 리터럴 → Windows R 은 `C:/tmp/…`, bash 훅(`lockbox_audit_trail.sh`)은 MSYS `/tmp`(=`AppData\Local\Temp`)에 썼다. **접근기록 4건이 감사자가 안 보는 디렉토리에 있었고** `audit_p2_data_separation()` 은 항상 `pass=TRUE, "no_lockbox_access (clean)"` — 실측 **237/237 WT 구조적 PASS**, P2 는 실패할 수 없었다. ★이 항목은 baseline 에 "수용된 기존 위반"으로 이미 있었다 — 린트로는 수용됐지만 **행동 결과(감사 사망)는 아무도 보지 않았다**. 원장 등재 ≠ 무해. 수리 = 경로를 프로젝트-상대(`.cache/lockbox`)로 이전 + 언어별 1정의(`lockbox_paths.R`/`.sh`) + **판정 의미 수정**(기록 부재를 PASS 아닌 `NA`=unmeasured 로; trail 가동 여부는 heartbeat 로 판정). 강제 = `test_lockbox_audit_path.R`(위반 주입 + 돌연변이 2축) |
 | ✅ 수리 | `worktask/v61_compliance_audit.R:25` | ③ | 2026-08-02. `BOOK_STATE` 등 3상수(`WT_ROOT`/`BOOK_STATE`/`MONITORING_DIR`)가 상대경로라 cwd 가 다르면 136KB 실파일이 있는데도 P8 이 `"no_book_state_yet"` 으로 통과했다(실측 재현). marker 게이트 루트 해석으로 절대화. ★**3상수를 함께 고쳐야 한다** — `BOOK_STATE` 만 절대화하면 book 은 찾고 monitoring 디렉토리는 못 찾아 **거짓 FAIL** 이 된다 |
 | ✅ 수리 | `worktask/lineage_utils.R` | ⑤ | 2026-08-02. `git_dirty`가 2026-06~08 **79건 전량 `false`로 위장**(미측정). 수리 후 미측정 = `UNAVAILABLE`/`null` + `git_state_error`. 소급 수정 없음(역사 보존) |
+| ✅ **수리(계보 사망)** | `worktask/lineage_utils.R` | ③④ | 2026-08-09. **읽기·쓰기 전부 상대경로**였다 — `append_lineage(wt_root="qepm/mailbox/worktask")` · `record_package_lineage(pkg_path)` · `smoke_reproduce` · `capture_input_hashes`. 그래서 cwd=프로젝트 루트일 때만 동작했는데 **이 저장소의 문서화된 R 실행 패턴은 "전략/스테이지 디렉토리로 cd 후 Rscript"** 라, 정본 호출 규약이 계보 기록을 정확히 깨뜨렸다. 실측 재현(WT-D20260809_002, cwd=`stage_artifacts/fq143_tail_overlay_20260809/`): `cannot open file 'qepm/mailbox/worktask/…/artifact_lineage.json'` — 루트에서 재실행하면 성공. ⚠**초판 서술 정정(2026-08-09 당일)**: 이 행은 원래 "계보는 Judge P7 감사 입력이라 여기서 죽으면 감사 자취가 사라진다" 였는데 **검증 없는 단정**이었다. 실측 = `v61_compliance_audit.R::audit_p7_lineage()`(계보 부재를 `pass=FALSE` 로 기각하는 올바른 코드)의 **프로덕션 호출자 0** · `.claude/agents/judge.md` 게이트 목록(A~F)에 계보 게이트 **없음** · `judge_init.md` 의 lineage 언급 **0건**. ⇒ 계보는 설계상 감사 입력이나 **현재 어떤 게이트도 소비하지 않는다**. 결손의 실피해는 "게이트가 뚫렸다"가 아니라 "**재현 자취가 조용히 비어 간다**"이다. ★설계 문서의 서술을 배선으로 읽는 것이 이 저장소의 반복 부류(`project-wiring-map-standards-unconsumed-20260808` 동형)이고, 이번엔 **내가 그 오독을 3곳(코드 주석·이 행·메모리 카드)에 전파했다가 같은 날 회수**했다. ★★**실패 형태가 함수마다 다르고 갈수록 조용해진다**: `append_lineage`=예외(시끄러움) → `record_package_lineage`=`file.exists` FALSE 라 `file_path`·`file_hash_sha256` **두 필드가 오류 없이 증발** → `capture_input_hashes`=**조용히 NA** → `smoke_reproduce`=`reason="no_lineage"` 라는 **그럴듯한 정상 반환값**(호출자가 "계보 없음"으로 읽는다). 게다가 호출부 다수가 `tryCatch(…, error=cat("[lineage] skip:"))` 로 감싸 예외마저 삼킨다. 수리 = 표지 기반 `lineage_project_root()`(CPD→QM_ROOT→상향탐색, **지연해석**) + 모든 경로 `file.path(ROOT, …)`. **절대 `wt_root` 는 재-접두하지 않고**, 입력 해시는 **cwd 우선 → 루트 폴백**(호출자 기준 경로를 깨뜨리지 않기 위함), 기록 키·`file_path` 는 **호출자가 준 형태 유지**(기존 388 entry 와 형식 정합). WT 디렉토리 부재는 **자동생성 없이** 해석된 절대경로를 실은 명시 오류(유령 WT 누적 방지). 강제 = `08_Tests/hooks/test_lineage_cwd_root.R` |
 | ✅ 수리 | `ops/update_research_philosophy.R:104` | ⑤ | 2026-08-02. `system("git add -A && git commit …", intern=FALSE)` → `&&` 이하가 `git add`의 pathspec이 되어 **auto-baseline 커밋이 한 번도 생성되지 않았고** exit status마저 버려졌다. ★그 상태에서 `.git_rollback()`의 `git reset --hard <이전 SHA>`는 미커밋 작업을 파괴한다 — 안전장치가 정반대로 작동 |
 | ✅ 수리 | `ops/cert_backfill_audit.R:697` | ⑤ | 2026-07-26 CBA-06(선행 수리). `"2>&1 \| grep -E …"`가 내부 Rscript의 리터럴 argv로 전달 |
 | ✅ 수리 | `telegram/telegram_notify.R:1114` | ⑥ | 2026-08-02. 중복발송 lock `scope_key`를 TRE로 뽑던 자리 → `perl=TRUE`. 이모지가 WT-id 앞에 오면 키 열화(`WT-D20260802_012`→`T-D20260802_012`→`-D20260802_012 R`, 재현 실측) → 단일 발송 강제가 조용히 무력화. title 452건 중 선행 non-BMP 0건이라 **잠복**이었다 |
@@ -300,6 +301,29 @@ Python 하드코딩 폴백 부재). **두 검사기를 합쳐야 계약 전체�
 - **돌연변이로 검출력 실증**(2026-08-02): 수리를 구판으로 되돌린 사본에서 4축이 실제로 뒤집힘
   (`injected_dirty_not_false` · `json_dirty_null` · `json_error_label_present` · `seed_task_deterministic`).
   안 뒤집혔다면 그 11/11은 계측 사망이다.
+- ⚠ **이 suite 는 `setwd(PROJ)` 로 시작하므로 cwd 의존성을 구조적으로 못 본다** — 그 표면은 아래 자매편.
+
+`08_Tests/hooks/test_lineage_cwd_root.R` — 같은 파일의 **cwd 독립성**(금칙 ③④) 검사기
+(2026-08-09 신설, 배터리 편입 **16/16**). 위 suite 와 표면이 갈린다: 저쪽은 "결손이 라벨로 도달하는가"(금칙 ⑤),
+이쪽은 "**루트 아닌 곳에서 불러도 같은 곳에 쓰는가**". 저쪽이 첫 줄에서 `setwd(PROJ)` 하는 한 이 결함은 영영 안 보인다.
+
+- ★**실트리를 건드리지 않는다.** 표지를 갖춘 **합성 트리**(tempdir)를 세우고 `CLAUDE_PROJECT_DIR`로 가리킨 뒤
+  cwd 를 무관한 tempdir 로 옮겨 판정한다. 실 mailbox 에 synthetic WT 를 만드는 방식은 금칙 ② 사례
+  (유령 WT 5건 잔류)의 재발이다. 임시 트리 정리도 최상위 `on.exit` 가 아니라 `reg.finalizer(onexit=TRUE)`.
+- 축: 앵커 순서 고정 · **위반 주입**(표지 없는 후보 수락 여부 · 비-루트 cwd) · 우선순위(CPD > QM_ROOT) ·
+  기록 도달(파일·JSON·해시) · **오검출 통제 3종**(cwd-상대 입력 불변 / 절대 `wt_root` 무변경 / 진짜 부재는 NA 유지) ·
+  유령 WT 자동생성 금지 · **돌연변이**(`.lineage_abs(wt_root)` 를 되돌린 사본에서 핵심 축이 뒤집히는지)
+- **검출력 실증**: 수리 전 파일(`git show HEAD:…`)로 갈아 끼우면 **4 pass / 12 fail**. 수리판 16/16.
+  ★구판에서 **조기 halt 하지 않는다** — halt 하면 빨갛기는 해도 어느 축이 뒤집혔는지 안 보이고
+  읽는 사람이 "검사기가 깨졌다"로 오독한다. 구판에 없는 심볼은 존재 확인 후 해당 축을 FAIL 로 계상한다.
+- ★**개발 중 이 검사기 자신이 "빈 결과 = 침묵" 계통을 앓았다**: 길이-0 메시지를 `sprintf` 에 넘기면 결과가
+  `character(0)` 이라 `cat` 이 아무것도 안 찍는다 → 카운터는 올라가는데 **줄이 사라져 "15줄인데 총계 16"**.
+  구판 실행에서 `ent=NULL` → `as.character(NULL)` 로 실제로 발생했다. `ok()/bad()` 에 길이-1 정규화를 넣어 폐쇄.
+- ○ **의도적 무변경**: `capture_git_state()` 는 계속 **cwd 기준**으로 git 을 조회한다(`-C ROOT` 미도입).
+  ① 계보가 기록할 것은 스크립트가 실제로 실행된 트리의 상태이고 ② `-C ROOT` 로 바꾸면 자매 suite 의
+  위반 주입 4축(비-리포 cwd → exit 128 유도)이 통째로 무력해진다. ⚠따라서 worktree 실행 시
+  `git_commit`=worktree HEAD, 기록 위치=`lineage_project_root()` 가 고른 트리로 **갈릴 수 있다** —
+  갈리면 `ANCHOR OVERRIDE` 메시지가 발화한다(낙하는 금칙 ④ 계약대로 정당하고, 금지되는 것은 침묵뿐).
 
 **위반 주입 12종 내장**(위반 주입 테스트): 금칙 6종 각각의 합성 위반 fixture(⑤는 redirect·chain·pipe·env-prefix 5형태, ⑥은 inline·변수형·regexec 3형태)를 실제로 잡는지 + 정본 패턴을 오검출하지 않는지 자체 검증.
 

@@ -1,0 +1,65 @@
+{
+  "verdict": "T1_SYSTEMIC",
+  "n_files": 577,
+  "n_parse_fail": 0,
+  "n_with_flags": 24,
+  "n_suspect": 8,
+  "suspects": [
+    {
+      "file": "2I/alpha_search/run_alpha_search.R",
+      "flags": "dry_run",
+      "guarded": true,
+      "acts_outside": 10,
+      "sample": "cat(\"[AlphaSearch] register_module(grade 갱신) 생략:\", conditionMessage(e), \"\\n\")"
+    },
+    {
+      "file": "2I/data/rawdata_sanitize.R",
+      "flags": "dry_run",
+      "guarded": true,
+      "acts_outside": 3,
+      "sample": "cat(\" Benchmark도 교정 완료.\\n\")"
+    },
+    {
+      "file": "2I/axiom/distilled.R",
+      "flags": "dry_run",
+      "guarded": true,
+      "acts_outside": 2,
+      "sample": "warning(\"strategic_truths.md 없음 — 블록 갱신 생략\")"
+    },
+    {
+      "file": "2I/regime/overlay_candidate_queue.R",
+      "flags": "write",
+      "guarded": true,
+      "acts_outside": 2,
+      "sample": "cat(sprintf(\"[queue] WARN: %s 읽기 실패 — LH 수동 등재 생략\\n\", d2_rds))"
+    },
+    {
+      "file": "2I/axiom/lcode_emit.R",
+      "flags": "dry_run",
+      "guarded": true,
+      "acts_outside": 1,
+      "sample": "warning(sprintf(\"[emit_lcode] %s 재적립(동일 strategy=%s) — 기존 기록 갱신 의도인지 확인\", l_code, .owner), call."
+    },
+    {
+      "file": "2I/axiom/review.R",
+      "flags": "apply",
+      "guarded": true,
+      "acts_outside": 1,
+      "sample": "cat(sprintf(\"\\n[review] 완료 — %d 건 처리 (apply=%s)\\n\", length(results), apply))"
+    },
+    {
+      "file": "2I/data/cache_freshness_audit.R",
+      "flags": "persist",
+      "guarded": true,
+      "acts_outside": 1,
+      "sample": "cat(sprintf(\"alert_delivery 기록마저 실패: %s\\n\", e2$message))"
+    },
+    {
+      "file": "2I/portfolio/gap_vector_steering.R",
+      "flags": "write",
+      "guarded": true,
+      "acts_outside": 1,
+      "sample": "cat(sprintf(\"[gv_steering] WARN: book '%s' 실측 meta 미등재 — builder current_profile 유지 (.GVS_BOOK_M"
+    }
+  ]
+}

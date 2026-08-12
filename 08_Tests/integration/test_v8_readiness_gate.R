@@ -294,6 +294,99 @@ if (loaded) {
          recursive = TRUE, force = TRUE)
 }
 
+# ─────────────────────────────────────────────────────────────────────────────
+# Test 8: schema_active_wt 위반 주입 (2026-08-13 수리 동반)
+#
+# 왜: check_schema_active_wt 는 "종결 WT 는 검증 대상 아님"을 **자유 서술 phase 문자열
+#   정규식**으로 판정했다. 실측 238 status.json 에서 종결 표현이 26종으로 갈라져 있어
+#   ALPHA_NEGATIVE_NO_MATERIAL(재료 자격 arm 0 = alpha_vector 미발행이 정상)이
+#   'alpha INVALID' 로 계상됐다 — 정상 종결을 결함으로 오독. 음성 종결은 이 시스템의
+#   표준 산출이므로 라운드마다 재발하는 상시 FAIL 이고, 상시 FAIL 은 진짜 FAIL 을 가린다.
+#   수리 = 정규식 확장이 아니라 **구조화 필드**(advance_to_risk) 판독.
+#   ★수리가 검사를 죽이지 않았음을 여기서 고정한다: advance 를 선언한 WT 의 invalid 는
+#   여전히 FAIL 이어야 하고, 필드가 없는 legacy 도 종전대로 FAIL 이어야 한다.
+# ─────────────────────────────────────────────────────────────────────────────
+if (loaded) {
+  # 스텁 router — alpha_vector 가 null 이면 rc=1(INVALID). 실제 스키마 검증은
+  # 별도 테스트 소관이고, 여기서 시험하는 것은 게이트의 **분기**(검증할지 건너뛸지)다.
+  .stub_router <- c(
+    "import sys, io",
+    "args = sys.argv[1:]",
+    "pkg = None",
+    "for i, a in enumerate(args):",
+    "    if a == '--package' and i + 1 < len(args):",
+    "        pkg = args[i + 1]",
+    "txt = io.open(pkg, encoding='utf-8').read() if pkg else ''",
+    "sys.exit(1 if 'null' in txt else 0)")
+
+  .mkwt <- function(tag) {
+    r <- gsub("\\\\", "/", tempfile(paste0("v8gate_wt_", tag, "_")))
+    dir.create(file.path(r, "02_Infrastructure/hooks"), recursive = TRUE,
+               showWarnings = FALSE)
+    writeLines(.stub_router,
+               file.path(r, "02_Infrastructure/hooks/qvest_hook_router.py"))
+    r
+  }
+  # advance: TRUE / FALSE / NA(필드 자체를 안 씀) · valid: alpha_vector 유효 여부
+  .add_wt <- function(root, wt_id, advance, valid) {
+    d <- file.path(root, "qepm/mailbox/worktask", wt_id)
+    dir.create(d, recursive = TRUE, showWarnings = FALSE)
+    adv <- if (is.na(advance)) "" else
+      sprintf(',\n  "advance_to_risk": %s', if (advance) "true" else "false")
+    writeLines(sprintf('{\n  "task_id": "%s",\n  "current_phase": "ALPHA_NEGATIVE_NO_MATERIAL"%s\n}',
+                       wt_id, adv),
+               file.path(d, "status.json"))
+    writeLines(if (valid) '{"alpha_vector": [{"ticker": "005930", "alpha": 0.01}]}'
+               else '{"alpha_vector": null}',
+               file.path(d, "alpha_package.json"))
+    invisible(d)
+  }
+  .expect_wt <- function(label, root, want, want_detail = NULL) {
+    got <- tryCatch(check_schema_active_wt(root, no_write = TRUE),
+                    error = function(e) list(status = paste0("ERROR:",
+                                                             conditionMessage(e)),
+                                             details = ""))
+    ok <- identical(got$status, want) &&
+      (is.null(want_detail) || grepl(want_detail, got$details, fixed = TRUE))
+    if (ok) mark_pass(label, sprintf("%s — %s", want, substr(got$details, 1, 70)))
+    else    mark_fail(label, sprintf("기대 %s%s / 실제 %s — %s", want,
+                                     if (is.null(want_detail)) "" else
+                                       sprintf("(+'%s')", want_detail),
+                                     got$status, substr(got$details, 1, 90)))
+    invisible(got)
+  }
+
+  # (1) ★수리 대상: 비-전진 선언 WT 의 alpha_vector 결측은 결함이 아니다.
+  #     같은 root 에 정상 WT 를 함께 둬서 "건너뛰었다"를 validated=1 failed=0 으로 실증
+  #     (WARN='validable WT 없음' 으로 새는 경로와 구분된다).
+  w1 <- .mkwt("declared_stop")
+  .add_wt(w1, "WT-D20260101_001", advance = FALSE, valid = FALSE)
+  .add_wt(w1, "WT-D20260101_002", advance = NA,    valid = TRUE)
+  .expect_wt("inject_schema_declared_stop_skipped", w1, "PASS", "validated=1 failed=0")
+
+  # (2) ★검사 생존: 전진을 선언했는데 alpha_vector 가 없으면 여전히 FAIL
+  w2 <- .mkwt("advancing_invalid")
+  .add_wt(w2, "WT-D20260101_001", advance = TRUE, valid = FALSE)
+  .expect_wt("inject_schema_advancing_invalid", w2, "FAIL", "failed=1")
+
+  # (3) ★기존 동작 불변: 필드 없는 legacy WT 의 invalid 는 종전대로 FAIL
+  w3 <- .mkwt("legacy_invalid")
+  .add_wt(w3, "WT-D20260101_001", advance = NA, valid = FALSE)
+  .expect_wt("inject_schema_no_field_invalid", w3, "FAIL", "failed=1")
+
+  # (4) ★양성 대조: 정상 WT 는 PASS (항상-FAIL 은 검사가 아니다)
+  w4 <- .mkwt("healthy")
+  .add_wt(w4, "WT-D20260101_001", advance = TRUE, valid = TRUE)
+  .expect_wt("inject_schema_healthy_pass", w4, "PASS", "failed=0")
+
+  # (5) 비-전진 선언만 있으면 검증 대상 0 — PASS 로 새지 않고 WARN 으로 보고
+  w5 <- .mkwt("all_stopped")
+  .add_wt(w5, "WT-D20260101_001", advance = FALSE, valid = FALSE)
+  .expect_wt("inject_schema_all_skipped_is_warn", w5, "WARN")
+
+  unlink(c(w1, w2, w3, w4, w5), recursive = TRUE, force = TRUE)
+}
+
 # Final
 total <- PASS_COUNT + FAIL_COUNT
 cat("\n", strrep("=", 70), "\n", sep = "")

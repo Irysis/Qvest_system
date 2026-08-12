@@ -189,10 +189,32 @@ else bad("B4_slim_naive_is_wrong", "합성 데이터가 이 축을 구별하지 
 #==============================================================================
 cat("=== C. 함수 통합 계약 ===\n")
 
-# C5: 시그니처 불변 (하위호환 — FQ-173 등 병행 소비자 보호)
-fm <- names(formals(build_monthly_forward_returns))
-if (identical(fm, c("rawdata", "sig_dates"))) ok("C5_signature_unchanged", paste(fm, collapse = ", "))
-else bad("C5_signature_unchanged", sprintf("시그니처가 바뀌었다: %s", paste(fm, collapse = ", ")))
+# C5: 하위호환 계약 (FQ-173 등 병행 소비자 보호)
+#  [2026-08-10 FQ-232 개정] 초판은 formals 를 `c("rawdata","sig_dates")` 로 **동결**했다.
+#  그런데 이 검사가 지키려던 것은 이름 목록이 아니라 **기존 2-인자 호출이 그대로 도는가**다.
+#  FQ-232 가 자 복원 인자(liq_daily/liq_strict)를 기본값과 함께 추가했고, 기본값이 있는 한
+#  기존 호출부는 영향이 없다. 동결 assert 를 유지하면 정상 확장을 결함으로 신고하고
+#  (거짓 빨강), 반대로 **첫 두 인자의 순서/이름이 바뀌는 진짜 파괴**는 여전히 잡아야 한다.
+#  ⇒ 축을 의도대로 다시 쓴다: ①선두 2개 위치인자 고정 ②추가 인자는 전부 기본값 보유.
+fa <- formals(build_monthly_forward_returns)
+fm <- names(fa)
+head_ok  <- identical(fm[1:2], c("rawdata", "sig_dates"))
+extra    <- fm[-(1:2)]
+## 기본값 없는 인자 = missing() 로 남는 빈 심볼. 그런 게 있으면 2-인자 호출이 깨진다.
+no_default <- extra[vapply(extra, function(k) identical(fa[[k]], quote(expr = )), logical(1))]
+if (head_ok && !length(no_default))
+  ok("C5_signature_backcompat",
+     sprintf("선두 2인자 고정 + 추가 %d개 전부 기본값 보유 (%s)",
+             length(extra), paste(fm, collapse = ", ")))
+else bad("C5_signature_backcompat",
+         sprintf("하위호환 파괴: 선두2=%s · 기본값없는 추가인자 [%s] (전체: %s)",
+                 head_ok, paste(no_default, collapse = ","), paste(fm, collapse = ", ")))
+## 위반 주입: 기본값 없는 필수 인자를 가진 판본은 이 축이 반드시 FAIL 해야 한다.
+.mut_sig <- function(rawdata, sig_dates, must_have) NULL
+.fa2 <- formals(.mut_sig); .ex2 <- names(.fa2)[-(1:2)]
+.nd2 <- .ex2[vapply(.ex2, function(k) identical(.fa2[[k]], quote(expr = )), logical(1))]
+if (length(.nd2) == 1L) ok("C5b_backcompat_injection", "필수 추가인자 주입판을 축이 검출")
+else bad("C5b_backcompat_injection", "하위호환 축이 필수 인자 주입을 못 잡음 — 검사 사망")
 
 RD <- DAILY[, .(Date, Ticker, Close, Vol, Size, K200, KQ150)]
 fwd_daily <- suppressWarnings(build_monthly_forward_returns(RD, ME))

@@ -62,6 +62,7 @@ close_round <- function(round_id,
                         live_trigger = NULL,
                         layer = NULL,
                         evidence_refs = character(0),
+                        baseline = NULL,
                         write_marker = TRUE) {
   # ── 계약 검증 (미충족 = stop, 종료 거부) ──────────────────────────────────
   if (missing(round_id) || !nzchar(paste(round_id, collapse = "")))
@@ -100,6 +101,24 @@ close_round <- function(round_id,
     }, error = function(e) NULL)
   }
 
+  # ── baseline 선언 (2026-08-10 신설, FQ-127 F1) ────────────────────────────
+  #  왜: 비교·개선 주장("+0.85 개선", "ΔIR +0.17")은 **base 를 명시하지 않으면 해석 불가**다.
+  #      2026-08-09 FQ-170 이 순열 통제 4/4 로 확립: **Δ 의 부호 자체가 base 에 조건부**이며,
+  #      같은 규칙이 base 에 따라 +0.845 / +0.264 / **-0.293** 로 갈린다.
+  #  ★설계: **탐지하지 않고 선언받는다.** 본문에서 '개선 주장' 을 정규식으로 찾는 방식은
+  #      2026-08-10 FQ-127 C1 에서 실패했다 — 표본 5/5 오분류(어휘가 한/영 혼재:
+  #      인컴번트·book IR·plain·EW→ERC / 반대로 `+5.22` 는 개선 패턴에 안 걸림 = 양방향 오류).
+  #      ⇒ 사후 텍스트 마이닝은 원리적으로 못 고친다. **발행 시점에 필드로 받는다.**
+  #  ★비파괴: 인자는 선택이고 미지정 시 stop 하지 않는다(기존 호출부 전부 그대로 동작).
+  #      대신 `baseline_declared = FALSE` 를 기록해 **감사가 구조적 질문이 되게** 한다
+  #      ("본문에 base 가 적혔나"(불가) → "필드가 선언됐나"(가능)).
+  bl <- if (is.null(baseline)) character(0) else Filter(nzchar, as.character(baseline))
+  bl_declared <- length(bl) > 0L
+  if (!bl_declared)
+    message("[close_round] baseline 미선언 — 비교·개선 주장을 포함한 라운드면 ",
+            "`baseline=` 로 기준선을 밝힐 것(예: \"PG2 score_eff\", \"무밴드 top-25\"). ",
+            "Δ 의 부호는 base 에 조건부다(FQ-170 순열 통제 4/4).")
+
   # ── 종료 기록 발행 ────────────────────────────────────────────────────────
   now <- format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z")
   rec <- list(
@@ -113,6 +132,8 @@ close_round <- function(round_id,
     live_trigger = lt,
     layer = layer,
     evidence_refs = as.character(evidence_refs),
+    baseline = bl,                    # 선언된 기준선 (없으면 길이 0)
+    baseline_declared = bl_declared,  # ★감사용 구조 필드 — 텍스트 판독 불요
     firewall_note = fw_note,
     closed_at = now
   )
@@ -140,7 +161,16 @@ close_round <- function(round_id,
     sprintf("부활 조건: %s\n", lt_line),
     if (!is.null(layer)) sprintf("병목 계층: %s\n", layer) else "",
     if (!is.null(fw_note)) paste0(fw_note, "\n") else "",
-    sprintf("마커 발행 → Stop 게이트 자동 통과 (%s)\n", now)
+    ## ★2026-08-10 정정: 이 줄은 `write_marker` 와 **무관하게** 항상 "마커 발행" 을 주장했다.
+    ##   `write_marker=FALSE`(검사·드라이런)에서도 "Stop 게이트 자동 통과" 로 찍혀,
+    ##   **일어나지 않은 일을 사실로 보고**했다 — 오늘 반복된 '빈 결과 = 합격' 계통.
+    ##   (FQ-127 F1 검사를 쓰다가 그 출력에서 발견.)
+    if (isTRUE(write_marker))
+      sprintf("마커 발행 → Stop 게이트 자동 통과 (%s)\n", now)
+    else
+      sprintf("★마커 **미발행**(write_marker=FALSE) — Stop 게이트 통과 아님 (%s)\n", now),
+    if (!bl_declared) "★baseline 미선언 — 비교·개선 주장이 있으면 `baseline=` 을 채울 것\n" else
+      sprintf("기준선: %s\n", paste(bl, collapse = " · "))
   )
   cat(summary)
   invisible(rec)

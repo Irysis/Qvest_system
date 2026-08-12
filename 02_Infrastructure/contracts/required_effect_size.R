@@ -7,11 +7,52 @@
 # 기준 변동성(실측, 2026-08-08): K200∪KQ150 유니버스에서 top-25 EW 바스켓 2개의 월 수익차
 #   sd = 0.0394 (무작위 쌍 120 draw 중앙값 · 5~95% 0.0330~0.0448 · 창 2019-12~2026-07)
 #   출처: stage_artifacts/fq141_precheck_20260808/np_fq138f_power.R
+#
+# ★자매 계약 — **상관/군집 축은 이 파일이 아니라 `cluster_power.R`** (2026-08-10 신설):
+#   이 파일은 평균·DiD 축(효과크기 vs 표본 n)을 덮는다. **base 간 상관**을 주장하는 설계는
+#   묶이는 단위가 관측 수가 아니라 **군집(계열) 수**이므로 여기서 계산하면 과대평가된다.
+#   실사고: FQ-170 에서 계열-간 상관 설계가 하루에 4회 미달(P9c/P17a/P19b/P20a) — 매번
+#   팩터 수 40~52 로 검정력을 생각했고 실제로 묶는 건 계열 15~19 였다.
+#   ⇒ 상관 설계는 착수 전 `cp_declare(target_rho, n_clusters, n_obs)` 를 호출할 것.
+#   ⚠**두 파일이 겹치는 양(필요 표본 수)을 각자 다른 식으로 계산하지 말 것** — 실제로 갈렸다:
+#     이 계열의 근사식이 'rho 0.45 → 필요 23' 을 냈으나 t-기반 정확해는 **20** 이다
+#     (n=19 → 0.4555 · n=20 → 0.4437). 상관 축의 단일 출처는 `cluster_power.R` 이다.
 # =============================================================================
 
 SPREAD_SD_MONTHLY_25EW <- 0.0394          # 두 top-25 EW 바스켓 수익차의 월 sd (실측)
 SPREAD_SD_BAND         <- c(0.0330, 0.0448)
-NW_INFLATION_DEFAULT   <- 1.25            # NW(lag3) SE 팽창 근사
+NW_INFLATION_DEFAULT   <- 1.25            # NW(lag3) SE 팽창 **가정치** — 아래 경고 참조
+
+# ⚠[2026-08-09 실측] NW_INFLATION_DEFAULT=1.25 는 **가정이지 측정치가 아니며, 월간 횡단면
+#   스프레드 계열에서는 체계적으로 과대하다.** 실측(Q01_EB/M26/M01_PATHQ/D03_EWMA/z_neutral 의
+#   band-vs-top 차이 계열 + top25 초과 계열 = 10계열 · 266개월 · 유동성필터):
+#     NW3 SE / iid SE  중앙값 0.986 · 범위 0.900~1.063 · **1.25 초과 0건**
+#     AR(1) -0.054~+0.146  ← 자기상관이 거의 없어 NW 팽창이 애초에 발생하지 않는다
+#   ⇒ 1.25 를 쓰면 바가 **중앙값 27% 과대**해지고, 그만큼 라운드가 과하게 기각된다.
+#   실사례: FQ-170 관문에서 관측 +5.62%p(NW3 t=2.361)가 1.25-바(6.17%p)에는 미달로 읽혔다.
+#
+# ★그렇다고 상수를 0.99 로 갈아끼우지 않는다 — 위 10계열은 전부 **월간 횡단면 스프레드**다.
+#   NAV·오버레이·일간 계열은 자기상관이 실재해 1.25 가 맞을 수 있다. 1건(또는 1계열류)으로
+#   상수를 교체하는 것이 이 저장소의 반복 실패다.
+#   정본 = **계열이 있으면 재고, 없으면 가정치를 쓰되 무엇을 썼는지 항상 신고한다.**
+#   (이 파일의 2026-08-08 원칙 "바가 무엇을 재는지 자기 신고" 의 nw 축 확장)
+NW_INFLATION_MEASURED_NOTE <- "monthly cross-sectional spread: measured median 0.986 (n=10 series, 2026-08-09)"
+
+#' nw_inflation_measured — 계열에서 NW(lag) SE / iid SE 비를 **실측**
+#' @param x 월 계열 (스프레드·초과수익 등)
+#' @param lag NW lag (기본 3)
+#' @return SE_NW / SE_iid. 계산 불가 시 NA_real_
+#' ★t 비로 역산한다: t_iid / t_nw = SE_nw / SE_iid (평균은 공통이라 소거).
+nw_inflation_measured <- function(x, lag = 3L) {
+  x <- x[is.finite(x)]
+  if (length(x) < 12L) return(NA_real_)
+  if (!exists(".nw_t_mean")) return(NA_real_)   # canonical_screen_bt.R 미로드 시 조용히 NA
+  t_nw <- try(.nw_t_mean(x, lag = lag), silent = TRUE)
+  if (inherits(t_nw, "try-error") || !is.finite(t_nw) || abs(t_nw) < 1e-9) return(NA_real_)
+  t_iid <- mean(x) / (stats::sd(x) / sqrt(length(x)))
+  if (!is.finite(t_iid)) return(NA_real_)
+  t_iid / t_nw
+}
 
 #' required_effect — 문턱 t 도달에 필요한 월평균/연환산 효과크기
 #' @param n 관측 개월수
@@ -19,19 +60,36 @@ NW_INFLATION_DEFAULT   <- 1.25            # NW(lag3) SE 팽창 근사
 #' @param sd_monthly 대상 계열의 월 sd (기본 = 25EW 스프레드 실측)
 #' @param design "full" 전표본 · "split" 부분표본 분할(분산 2배 근사) · "interaction" 국면 상호작용
 #' @param regime_frac design="interaction" 일 때 국면 ON 비율
+#' @param nw_inflation NW SE 팽창 인자. 기본 = 가정 상수(위 경고 참조)
+#' @param series 있으면 이 계열에서 nw_inflation 을 **실측**해 사용(nw_inflation 인자보다 우선)
+#' @return list. `nw_inflation_source` = "measured" | "assumed_default" | "caller_supplied" 로
+#'   **바가 무엇을 가정했는지 항상 신고**한다. `nw_inflation_assumed_default` 로 대조값도 동봉.
 required_effect <- function(n, t_threshold = 2.0, sd_monthly = SPREAD_SD_MONTHLY_25EW,
                             design = c("full","split","interaction"), regime_frac = 0.35,
-                            nw_inflation = NW_INFLATION_DEFAULT) {
+                            nw_inflation = NW_INFLATION_DEFAULT, series = NULL) {
   design <- match.arg(design)
   eff_n <- switch(design,
     full        = n,
     split       = n / 2,                                  # 분산 2배 ≒ 유효 n 절반
     interaction = n * regime_frac * (1 - regime_frac))    # 더미 계수의 유효 표본
+
+  # ★계열이 주어지면 실측이 가정을 이긴다. 실측 실패는 NA 로 떨어뜨리지 말고 가정으로
+  #  낙하하되 **낙하 사실을 source 에 남긴다**(조용한 fall-through 금지).
+  nw_src <- if (identical(nw_inflation, NW_INFLATION_DEFAULT)) "assumed_default" else "caller_supplied"
+  if (!is.null(series)) {
+    m_nw <- nw_inflation_measured(series)
+    if (is.finite(m_nw)) { nw_inflation <- m_nw; nw_src <- "measured" }
+    else                 { nw_src <- paste0(nw_src, "_series_unmeasurable") }
+  }
+
   se <- sd_monthly / sqrt(eff_n) * nw_inflation
   m  <- t_threshold * se
   list(n = n, design = design, effective_n = eff_n,
        required_monthly = m, required_annual = m * 12,
-       sd_monthly = sd_monthly, t_threshold = t_threshold)
+       sd_monthly = sd_monthly, t_threshold = t_threshold,
+       nw_inflation = nw_inflation,
+       nw_inflation_source = nw_src,
+       nw_inflation_assumed_default = NW_INFLATION_DEFAULT)
 }
 
 #' verdict_with_power — null 판정 시 '효과 부재' vs '검정력 부족' 구별

@@ -1,0 +1,77 @@
+{
+  "paper_id": "arXiv:2608.08625",
+  "paper_title": "Retained hidden excess generates memory in price-limited markets",
+  "author": "Debraj Das",
+  "factor_code": "T11_CIRCUIT_HIT_UPPER_21D",
+  "strategy_id": "STR_AS_20260813_071419_38300",
+  "run_date": "2026-08-13",
+  "run_id": "20260813_071419_38300",
+
+  "gates": {
+    "L1_pit_pass": true,
+    "L1_note": "lookahead_detector CLEAN (133 lines scanned). lag 1 처리로 sig_date 동일시점 포함 방지. 상한가 기준 날짜 분기(2015-06-15)는 역사적 공지 사항으로 PIT-safe.",
+
+    "L2_contract_pass": true,
+    "L2_note": "audit_bt_result PASS=16 FAIL=0 WARN=2 (integrity=WARNING, 심각하지 않음). bt_result 10-component 완성, metric_type=proxy(alpha_search 경로).",
+
+    "L3_robustness_pass": false,
+    "L3_note": "oos_retention=1.40 (IS SR 0.423 → OOS SR 0.591, 개선) — 기계적으로는 통과. 그러나 IC=-0.0269(음수), pos_rate=38%로 신호 방향이 역방향. Sharpe=0.483, MDD=64.4% — hard fail 기준(MDD 구조적). screen_pass=false. Grade F.",
+
+    "L4_fidelity_pass": true,
+    "L4_note": "논문 신호 정의(상한가 근접 = Close >= prevClose * upper_limit * 0.999) 충실 구현. KR ±15%→±30% 제도 분기 적용. 최소 15일 유효 데이터 요건. 월간 리밸, EW top-25. 단 희소성(Score>0: 7.5%)로 신호가 매우 희박."
+  },
+
+  "key_metrics": {
+    "CAGR_pct": 11.51,
+    "AnnVol_pct": 23.84,
+    "Sharpe": 0.483,
+    "MDD_pct": 64.37,
+    "Calmar": 0.179,
+    "IR": 0.062,
+    "Turnover_Ann_pct": 83.1,
+    "BM_Corr": 0.788,
+    "IC": -0.0269,
+    "ICIR": -0.350,
+    "IC_pos_rate_pct": 38.0,
+    "OOS_retention": 1.40,
+    "IS_SR": 0.423,
+    "OOS_SR": 0.591,
+    "FMB_lambda_t": -1.18,
+    "grade": "F",
+    "score": 41.6,
+    "screen_pass": false
+  },
+
+  "sparsity_analysis": {
+    "score_positive_pct": 7.5,
+    "threshold_warning_pct": 5.0,
+    "sparsity_warning_triggered": false,
+    "note": "FACTORS rows=475273, Score>0=35551 (7.5%). 5% 경계는 통과했으나 신호가 매우 희박. IC=-0.0269(음수)가 확증: 상한가 경험 비율이 높을수록 오히려 다음 달 수익이 낮음 → 방향 역전."
+  },
+
+  "regime_structure": {
+    "pre_2015_regime": "±15% (KR)",
+    "post_2015_regime": "±30% (KR)",
+    "gfc_2008_alpha_pct": -9.4,
+    "covid_2020_alpha_pct": -3.8,
+    "rate_2022_alpha_pct": 13.4,
+    "eudebt_2011_alpha_pct": 3.5,
+    "note": "위기 시(GFC, COVID)에서 언더퍼폼, 금리상승(2022)에서 아웃퍼폼. 상한가 경험 종목은 투기적 소형주 성격 → 위기 시 더 취약."
+  },
+
+  "diagnosis": {
+    "signal_direction": "REVERSED",
+    "mechanism": "상한가 경험 빈도 높음 → 투기적·변동성 큰 종목 선별 → 다음 달 수익 오히려 낮음. 논문의 '다음 날(t+1)' 효과가 KR 대형주에서 '다음 달' 스케일에서는 역전됨.",
+    "frequency_mismatch": "논문: 일별(next-day) 효과. 구현: 월간 리밸. 21일 집계가 일별 신호를 평준화하여 방향 희석 또는 역전.",
+    "universe_mismatch": "논문: NSE 전 종목(개별 상한가 hit 분석). 구현: KOSPI200∪KOSDAQ150(대형주 위주). 대형주에서 상한가 경험 = 이례적 강세 후 평균회귀 가능성.",
+    "ev_map_classification": "D4(event/occurrence형)에 근접하나 구분됨. D3(미시구조)와도 유사. 이 신호의 실패는 'occurrence 집계 빈도가 월간 수익 예측에 부적합'하다는 패턴을 추가 확증.",
+    "viable_alternative": "일별(next-day) 전략으로 구현하면 논문 기전 재현 가능하나 Qvest는 월간 리밸 시스템. 또는 상한가 연속 발생 이후 '직후 다음 달' 조건부 이벤트 전략으로 재설계 필요."
+  },
+
+  "final_verdict": "QUARANTINE",
+  "verdict_reason": "Grade F. IC 음수(-0.0269). 신호 방향 역전. MDD 64.4% 구조적 hard fail. screen_pass=false. 논문의 일별(t+1) 효과가 월간 리밸 시스템에서 재현되지 않음. 희소성(7.5%)과 방향 역전이 동반 발생 — '상한가 경험 = 투기성 선별 → 평균회귀'로 해석 가능. 의미있는 실패: L-code 적립 완료.",
+
+  "l_code_path": "stage_artifacts/l_code/alpha_search/l_code_STR_AS_20260813_071419_38300.json",
+  "output_dir": "stage_artifacts/alpha_search/20260813_071419_38300",
+  "challenge_note": "stage_artifacts/paper_recharge/challenge_note_circuit_20260813.md"
+}

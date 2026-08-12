@@ -1,0 +1,91 @@
+[p1] vintage pin: .cache/RAWDATA.parquet | 422725995 bytes | mtime 2026-08-10 00:05:06
+[p1] ★입력 실측 RAW: 14059013행 · 9003 거래일 · 관측단위=일간(월당 중앙 21일)
+[ramp_io.R] Loaded — ramp_write_parquet/ramp_write_json (§2.4 meta enforced)
+[backtest_result_contract.R] Loaded — Backtest Result Contract v1.0
+  Functions: build_bt_result() / validate_bt_result()
+  10 components: manifest, strategy_spec, nav, period_returns, holdings, benchmark_returns, metrics, benchmark_compare, rolling_metrics, drawdowns, audit
+[backtest_result_contract.R] Loaded — Backtest Result Contract v1.0
+  Functions: build_bt_result() / validate_bt_result()
+  10 components: manifest, strategy_spec, nav, period_returns, holdings, benchmark_returns, metrics, benchmark_compare, rolling_metrics, drawdowns, audit
+[canonical_screen_bt.R] Loaded — canonical_screen_bt() (v8.x WS1 real-computation helper)
+[factor_validation.R] Loaded — build_monthly_forward_returns / build_adv20_t1 / validate_factor / approve_factors
+[p1] slim RAWME 688653행 · ADV20 688653행 (월말 앵커 440)
+[p1] === (d) 기본 동작 무변경 검증 ===
+[p1] 수리 전 판본 소스: C:/Users/99922/AppData/Local/Temp/claude/C--Users-99922-OneDrive-Quant-Module-Moltbot/731a7a86-b8bf-4640-9de7-b5e7830e4ad8/scratchpad/fv_old.R
+[ramp_io.R] Loaded — ramp_write_parquet/ramp_write_json (§2.4 meta enforced)
+[backtest_result_contract.R] Loaded — Backtest Result Contract v1.0
+  Functions: build_bt_result() / validate_bt_result()
+  10 components: manifest, strategy_spec, nav, period_returns, holdings, benchmark_returns, metrics, benchmark_compare, rolling_metrics, drawdowns, audit
+[canonical_screen_bt.R] Loaded — canonical_screen_bt() (v8.x WS1 real-computation helper)
+[factor_validation.R] Loaded — build_monthly_forward_returns / build_adv20_t1 / validate_factor / approve_factors
+[p1]   old 시그니처: build_monthly_forward_returns(rawdata, sig_dates)
+[build_monthly_forward_returns] ★유동성 자 저하(FQ-181): 입력 패널의 캘린더월당 거래일 중앙값 = 1 (일간 아님).
+  20일 평균 거래대금을 입력에서 계산할 수 없어 **월말 1일치 Vol*Close** 로 대체합니다.
+  → liq_ruler='adv1_sameday_DEGRADED'. 헌법 자(20일 평균)로 재려면 slim 하지 말고 일간 rawdata 를 넘기십시오.
+[ramp_io.R] Loaded — ramp_write_parquet/ramp_write_json (§2.4 meta enforced)
+[backtest_result_contract.R] Loaded — Backtest Result Contract v1.0
+  Functions: build_bt_result() / validate_bt_result()
+  10 components: manifest, strategy_spec, nav, period_returns, holdings, benchmark_returns, metrics, benchmark_compare, rolling_metrics, drawdowns, audit
+[canonical_screen_bt.R] Loaded — canonical_screen_bt() (v8.x WS1 real-computation helper)
+[factor_validation.R] Loaded — build_monthly_forward_returns / build_adv20_t1 / validate_factor / approve_factors
+[p1]   new 시그니처: build_monthly_forward_returns(rawdata, sig_dates, liq_daily, liq_strict)
+[build_monthly_forward_returns] ★유동성 자 저하(FQ-181/232): 입력 패널의 캘린더월당 거래일 중앙값 = 1 (일간 아님).
+  20일 평균 거래대금을 입력에서 계산할 수 없어 **월말 1일치 Vol*Close** 로 대체합니다.
+  → liq_ruler='adv1_sameday_DEGRADED'. 헌법 자(20일 평균)로 재려면 liq_daily= 인자로 일간 패널 또는 build_adv20_t1() 산출을 넘기십시오(FQ-232).
+[p1]   returns 동일=TRUE · bench 동일=TRUE · liq 동일=FALSE · firewall 동일=TRUE
+[p1]   자 라벨: old='adv1_sameday_DEGRADED' → new='adv1_sameday_DEGRADED' (source=degraded_slim)
+[p1] === 자 복원 호출 (liq_daily = ADV20) ===
+[build_monthly_forward_returns] [FQ-232] 유동성 자 복원: liq_ruler='adv20_t1' (source=injected_adv20) · 앵커 덮개 100.0% (688653행)
+[p1]   liq_ruler='adv20_t1' source='injected_adv20' · returns 동일=TRUE · bench 동일=TRUE
+[p1]   attr 도달: deg='adv1_sameday_DEGRADED' / res='adv20_t1'
+[p1] === 두 자 대조 (전 유니버스 116092 종-월) ===
+[p1]   통과: DEGRADED 104440 → 복원 107983 (순 +3543, +3.052%p)
+[p1]   DEGRADED만 통과 1388 · 복원만 통과 4931 · 판정 불일치 5.443%
+[p1]   adv NA: deg 0 · res 2 | pearson 0.9168 · spearman 0.9390
+[p1] ★입력 실측 alpha_scores: 69885행 · 283개월 · 2003-01~2026-07
+[p1] === (c) M26 전이 재산출 ===
+[backtest_result_contract.R] Loaded — Backtest Result Contract v1.0
+  Functions: build_bt_result() / validate_bt_result()
+  10 components: manifest, strategy_spec, nav, period_returns, holdings, benchmark_returns, metrics, benchmark_compare, rolling_metrics, drawdowns, audit
+[canonical_screen_bt.R] Loaded — canonical_screen_bt() (v8.x WS1 real-computation helper)
+[p1]   [raw_DEGRADED] PORT_t=+1.5441 · ruler=adv1_sameday_DEGRADED(degraded_slim) · n_months=283 · net_sr=0.3536 · TO=11.74
+[p1]       liq_filter: before 69885 → after 68120 (drop 1765, NA통과 0, min 2e+08)
+[p1]   [raw_RESTORED] PORT_t=+1.5922 · ruler=adv20_t1(injected_adv20) · n_months=283 · net_sr=0.3625 · TO=11.71
+[p1]       liq_filter: before 69885 → after 68929 (drop 956, NA통과 0, min 2e+08)
+[p1]   [resid_DEGRADED] PORT_t=+1.4432 · ruler=adv1_sameday_DEGRADED(degraded_slim) · n_months=283 · net_sr=0.3316 · TO=12.61
+[p1]       liq_filter: before 69885 → after 68120 (drop 1765, NA통과 0, min 2e+08)
+[p1]   [resid_RESTORED] PORT_t=+1.3308 · ruler=adv20_t1(injected_adv20) · n_months=283 · net_sr=0.3041 · TO=12.54
+[p1]       liq_filter: before 69885 → after 68929 (drop 956, NA통과 0, min 2e+08)
+[p1]   [복제검증 raw_DEGRADED] n=283 · max|Δret_net| = 0 → 복제 = canonical 선별과 동일
+[p1]   [복제검증 raw_RESTORED] n=283 · max|Δret_net| = 0 → 복제 = canonical 선별과 동일
+[p1] === 멤버십 변화 (top-25, M26 원신호) ===
+[p1]   283개월 중 변동월 79 (27.9%) · 평균 교체 0.403 종목/월 · 최대 5 · 평균 jaccard 0.9701
+[p1]   월별 선정수: deg 중앙 25(min 25) · res 중앙 25(min 25)
+[p1] === 통과 종목 수 (M26 점수 패널 69885 종-월) ===
+[p1]   월평균 유니버스 246.9 · DEGRADED 통과 240.7 · 복원 통과 243.6 (Δ +2.86/월)
+[p1]   통과수 다른 달 226/283 (79.9%)
+[p1] === 양성 대조: 문턱 극단 변경이 멤버십을 바꾸는가 ===
+[p1]   liq_min 2e8 → 1e12: 변동월 54/54 (100.0%) · 평균 교체 24.65 · 평균 jaccard 0.013
+[p1]   liq_min 0 vs 무필터: 변동월 0 (0이어야 정상)
+[p1]   [raw_RESTORED_liqmin1e12] PORT_t=+0.3728 · ruler=adv20_t1(injected_adv20) · n_months=54 · net_sr=0.1879 · TO=3.91
+[p1]       liq_filter: before 69885 → after 84 (drop 69801, NA통과 0, min 1e+12)
+[p1] === 무관축 불변 대조: 종목수 제약(top_n=25) ===
+[p1]   선정 종목수 max: deg 25 · res 25 · 극단 5 (전부 <= 25 여야 함)
+                    arm                 ruler   port_t    net_sr        ir
+                 <char>                <char>    <num>     <num>     <num>
+1:         raw_DEGRADED adv1_sameday_DEGRADED 1.544110 0.3535790 0.3535790
+2:         raw_RESTORED              adv20_t1 1.592151 0.3625250 0.3625250
+3:       resid_DEGRADED adv1_sameday_DEGRADED 1.443210 0.3316184 0.3316184
+4:       resid_RESTORED              adv20_t1 1.330836 0.3040894 0.3040894
+5: raw_RESTORED_liq1e12              adv20_t1 0.372789 0.1878599 0.1878599
+   n_months  turnover
+      <int>     <num>
+1:      283 11.742191
+2:      283 11.708269
+3:      283 12.613993
+4:      283 12.539364
+5:       54  3.911111
+[p1] ★M26 원신호: FQ-161 기록 +1.5441 · 본 라운드 DEGRADED +1.5441 (parity Δ -0.000000) → 복원 +1.5922 (Δ +0.0480)
+[p1] 총 소요 94.7s
+Warning message:
+package 'arrow' was built under R version 4.5.3 

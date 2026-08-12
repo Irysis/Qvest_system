@@ -1,0 +1,76 @@
+{
+  "schema_version": "v54_ax_p0_mode",
+  "candidate_id": "CAND_20260812_ramp_value_mixed_L-RAMP-20260618_134000_L-RAMP-20260711_152314",
+  "research_mode": "ramp",
+  "metric_type": "backtested",
+  "type": "empirical",
+  "polarity": "mixed",
+  "statement_draft": "[실증 혼재(방향불명) 규칙 초안] family=value, tags=R,A,M, supporting=2건 L-code. (promote.R 5축 검증에서 범위·메커니즘·OOS 확정 필요)",
+  "supporting_l_codes": [
+    "L-RAMP-20260618_134000",
+    "L-RAMP-20260711_152314"
+  ],
+  "scope_draft": {
+    "market": "KR",
+    "factor_family": "value",
+    "regime": null,
+    "construction_types": null
+  },
+  "evidence_draft": {
+    "independent_l_codes": 2,
+    "independent_strategies": 2,
+    "strategies": [
+      "RAMP_OVERLAY_BULLWINDOW_20260618",
+      "RAMP_R3_SLEEVE_ADDITION_20260711"
+    ],
+    "effect_direction_consistency": null,
+    "note": "evidence_draft — promote.R 5축 검증에서 hurdle_result/grade_a_catalog 교차검증으로 확정",
+    "n_eff_signatures": 2,
+    "independent_constructions": 2,
+    "constructions": [
+      "chain",
+      "composite"
+    ],
+    "metric_types": [
+      "backtested"
+    ]
+  },
+  "falsification_draft": {
+    "attempts": [
+      {
+        "test": "lag1-regime 스트레스(A3, 전월 regime → 당월 배분)",
+        "result": "survived_stronger",
+        "detail": "paired_t full +2.52 > 원본 +1.54 → 동월 look-ahead 아티팩트 부재(07-06 BearProb 대비)"
+      },
+      {
+        "test": "placebo(A3 regime 12m 시프트, crisis 정렬 파괴)",
+        "result": "mechanism_falsified",
+        "detail": "paired_t full +2.18 ≈ 원본 → crisis 조건부 방어 아닌 시점-무관 스타일 틸트"
+      },
+      {
+        "test": "A4 FWL 잔차 tail(스타일 제거)",
+        "result": "negative",
+        "detail": "paired_t −1.64 → 방어값은 raw 저-tail-risk 스타일 노출뿐, 잔차 tail은 해로움"
+      },
+      {
+        "test": "dual-basis(B, cap-w vs EW-uni)",
+        "result": "captier_trap_reproduced",
+        "detail": "EW-uni Δ+1.0 >> cap-w Δ+0.54 → 알파는 소형/OTHER tier, cap-w authoritable 미달"
+      }
+    ],
+    "note": "L-code 기록 반증 시도 실값 집계"
+  },
+  "mechanism_draft": {
+    "economic_explanation": "국면-IC 가중 base 배분에 tail 방어 sleeve(A) 또는 V02_EP EW-가중 sleeve(B)를 성분 추가 시 cap-w 배분-레벨 paired 증분이 발생하는가 — A는 P3가 punt한 overlay-부재 환경 tail 기여, B는 EW-basis 생존(4.40)의 배분 재라우팅. (멤버 가설 2건 — promote.R에서 일치성 재검증)",
+    "mechanism_type": "unknown",
+    "causal_plausibility": null
+  },
+  "oos_validation_draft": {
+    "oos_months": 24.0,
+    "oos_effect_vs_is": -0.28,
+    "note": "L-code oos_retention 실값 1건 median (IS65/OOS35 활성SR retention) + oos_months 실값 1건 median — promote.R essence_score 경유 재확정"
+  },
+  "cluster_members_count": 2,
+  "status": "pending_5axis",
+  "created_at": "2026-08-12T22:21:43+00:00"
+}

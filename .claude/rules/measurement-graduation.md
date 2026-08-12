@@ -50,6 +50,7 @@
 ## 참조
 - `.claude/rules/backtest-contract.md`(10-component) / `pit.md` / `research_philosophy.md`(④⑤⑥) / `answer-principles.md`(자체합성 금지)
 - `02_Infrastructure/contracts/{backtest_result_contract,canonical_screen_bt,registry_writer}.R` · `hooks/discovery_graduation_gate.sh` · `portfolio/portfolio_governor.R`
+- 검정력 계약 2종 (착수 **전** 호출): `contracts/required_effect_size.R`(평균·DiD 축) · `contracts/cluster_power.R`(상관·군집 축, 2026-08-10 신설). **base 간 상관을 주장하는 설계는 묶이는 단위가 관측 수가 아니라 군집(계열) 수** — 팩터 331종을 다 써도 **선언 계열은 15종**(`factor_registry.json` 의 `category`/`economic_family`)이라 계열-군집 유의엔 |rho| ≥ 0.514 가 필요하다 — 계열 수를 **이름 접두로 유추하지 말 것**(2026-08-10 실측: 휴리스틱 19 vs 선언 15, 판정이 뒤집힘). 근거: FQ-170 에서 계열-간 상관이 하루 4회 미달(P9c/P17a/P19b/P20a) vs base-내부 설계 5회 결정적(순열 통제 4/4 + P21a) — **설계 유형이 성패를 갈랐다**. ⇒ **묶이는 단위(군집)를 피할 수 있는 내부 설계가 있으면 그것을 먼저 쓴다**: 같은 가설을 base-내부 시계열(52 base × 228 월 관측)로 물으니 유의 음수 1.9% · 유의 양수 1.9% = **양 꼬리가 정확히 귀무 비율** ⇒ '미결(검정력 부족)' 이 아니라 **'효과 없음' 으로 종결**됐다. ★★그리고 그것이 교차-계열 rho 0.41~0.50 의 정체를 설명한다 — base **내부**엔 기전이 없는데 base **간**엔 상관이 있으면 그건 **구성(composition) 효과이지 인과가 아니다**. ★**'미결(underpowered)' 과 '종결(powered null)' 은 처분이 다르므로 라벨을 구분할 것.** 검사 `08_Tests/hooks/test_cluster_power.R`(25/25, 상수↔레지스트리 드리프트 대조 포함).
 - 메모리: [[learning-gate-calibration-longonly]] / [[reference-alpha-trends-2024-2026]] / [[reference-str1715-structure]]
 - SOT: `02_Infrastructure/docs/qvest_v8_0_upgrade_plan.md`
 

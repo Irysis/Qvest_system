@@ -445,6 +445,20 @@ check_schema_active_wt <- function(project_root, no_write = FALSE) {
       stance_val <- status_data$codex_stance %||% ""
       if (grepl("FAIL|REJECT", result_val, ignore.case = TRUE) ||
           identical(toupper(stance_val), "REJECT")) next
+      # [2026-08-13] 구조화 선언 우선 — phase 는 자유 서술이라 패턴 감사에 부적합하다.
+      #   실측(238 status.json): 위 정규식이 못 덮는 종결 표현이 26종으로 갈라져 있다
+      #   (TERMINATED / ABORTED / ALPHA_KILLED / ALPHA_DONE_NEGATIVE /
+      #    ALPHA_NEGATIVE_NO_MATERIAL / ALPHA_DONE_NON_GRADUATING / ...).
+      #   ★정규식을 넓히는 것은 같은 병을 키운다(자유 형식을 패턴으로 감사) — 대신
+      #   **발행 시점에 구조화된** 필드를 읽는다. advance_to_risk=FALSE 는 "하류가 소비할
+      #   alpha_vector 를 발행하지 않는다"는 WT 자신의 선언이므로, 그 WT 에서 alpha_vector
+      #   결측은 결함이 아니라 계약대로의 정상이다.
+      #   ★검사 사망 방지: TRUE 이거나 필드 부재면 종전대로 전부 검증한다(위반 주입 테스트
+      #   inject_schema_advancing_invalid / inject_schema_no_field_invalid 가 이를 고정).
+      #   실사고: WT-D20260809_005(재료 자격 통과 arm 0 → alpha_vector 미발행이 정상 종결)가
+      #   'alpha INVALID' 로 계상돼 readiness 가 상시 FAIL — 정상 종결을 결함으로 오독했다.
+      #   음성 종결이 이 시스템의 표준 산출이므로 이 오독은 라운드마다 재발한다.
+      if (identical(status_data$advance_to_risk, FALSE)) next
     }
     # Try alpha_package validation if present
     alpha_pkg_abs <- file.path(wt_dir, "alpha_package.json")
@@ -471,7 +485,8 @@ check_schema_active_wt <- function(project_root, no_write = FALSE) {
   }
   if (validated == 0 && failed == 0) {
     return(mk_check("schema_active_wt", "Active WT schema validation",
-                    "WARN", "validable WT 없음 (alpha_package 부재)"))
+                    "WARN",
+                    "validable WT 없음 (alpha_package 부재 또는 전 WT 가 비-전진 선언)"))
   }
   status <- if (failed == 0) "PASS" else "FAIL"
   mk_check("schema_active_wt", "Active WT schema validation",
