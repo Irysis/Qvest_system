@@ -1,0 +1,44 @@
+{
+  "round_id": "FQ170-F1-fixed-mid-band-net-20260809",
+  "written_before_results": true,
+  "parent": "FQ-170 (UNCLAIMED). 본 라운드는 E2 결과에 따른 재설계 관문",
+
+  "why_this_design": [
+    "E2 실측: argmax **위치**는 4/5 재료에서 프레임 이동 <=0.10 으로 안정(불안정은 Q01_EB 단독 0.30). 부서지는 것은 분류 **규칙**(명명클래스<->UNCLASSIFIED)이지 프로파일 내용이 아니다.",
+    "⇒ 밴드를 argmax 추종이 아니라 **사전 고정**으로 두면 (a) argmax 사후선택 편의가 제거되고 (b) 위치가 안정적이라 거의 같은 자리를 짚으며 (c) 규칙 취약성을 우회한다.",
+    "⇒ 그리고 사전 고정 중간분위는 MONOTONE_TOP 의 top-25(D10)와 **구조적으로 겹치지 않으므로** 직전 라운드에서 항등식이 되어 공허했던 음성대조가 **비퇴화**로 복원된다(E1/F4 동시 해결)."
+  ],
+
+  "design_fixed_before_results": {
+    "band": "★사전 고정 decile {4,5,6} — 전 재료 동일. argmax 미사용, 재료별 조정 없음",
+    "arm_band": "밴드 안에서 점수 상위 25종 EW",
+    "arm_top": "점수 상위 25종 EW",
+    "universe": "K200 U KQ150 패널 + 유동성 adv >= 2e8",
+    "window": "전표본, nmo>=125 인 달",
+    "rebalance": "월간",
+    "cost_model": "v2.4_kr_retail_15bps delta-based: cost_t = 0.0015 * sum|w_t - w_{t-1}|",
+    "t_statistic": "NW lag-3",
+    "power_bar": "required_effect(n, series=net diff) — 실측 NW 인자, nw_inflation_source 병기",
+    "overlap_field": "★arm_top 과 arm_band 의 종목 겹침률을 산출물 필드로 발행. 겹침>0.50 인 arm 은 판정에서 제외하고 그 사실을 보고(직전 라운드의 항등식 대조 재발 방지)"
+  },
+
+  "shape_assignment_fixed": {
+    "MONOTONE_TOP_negative_control": ["M26_Revenue_Mom", "M01_PATHQ"],
+    "HUMP_or_INVERTED_treatment": ["Q01_EB", "D03_EWMA", "z_neutral"],
+    "note": "WT-D20260809_003 분류 승계. 본 라운드가 재분류하지 않음"
+  },
+
+  "decision_rules_fixed_before_results": [
+    "G1 지지: treatment 3종 중 >=2 종이 net > 0 ∧ t_NW3 >= 2.0, 그리고 negative control 2종이 모두 net < 0 (겹침<=0.50 조건 충족 하에) → 중간분위 밴드가 top-25 대비 우위라는 방향 지지. 형태 분류 없이 소비 가능한 규칙으로 승격 후보.",
+    "G2 config-scoped negative: G1 미충족 시 이 config(고정 D4~D6 · 15bps · breadth25 · 월간)에서 미달로 기록. 부활 조건 = 밴드 폭/위치 사전고정 대안(D3~D5, D5~D7) 또는 회전율 저감 구성에서 재측정.",
+    "G3 음성대조 실패: negative control 중 하나라도 net > 0 ∧ t >= 2.0 이면 '중간분위 우위'를 형태가 아닌 일반효과(극단 회피)에 귀속하고 형태-예측 주장을 기각한다.",
+    "G4 대조 퇴화 점검: 어느 arm 이든 겹침 > 0.50 이면 그 arm 은 판정에서 제외하고 '측정 아님'으로 라벨한다. 제외 후 남은 arm 이 규칙 정족수를 못 채우면 판정은 G2 가 아니라 INSUFFICIENT_NONDEGENERATE_ARMS 다.",
+    "G5 자본 자격 주장 금지: 기전 라운드. PORT_t/oos/calmar 미측정, 졸업 후보 제시 없음."
+  ],
+
+  "known_limits_declared": [
+    "재료 5종·1시장·1기간. 형태별 표본 2~3건이라 계열 일반화 금지.",
+    "밴드 {4,5,6} 자체는 E2 의 위치 분포(treatment argmax 백분위 0.25~0.75)를 보고 고른 것이라 완전한 사전성은 아니다 — 이 선택 경로를 명시한다. 완전 사전성은 OOS 창에서만 얻어진다.",
+    "비용은 delta-based 15bps 단일 시나리오. 시장충격 미반영."
+  ]
+}

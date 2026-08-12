@@ -1,0 +1,44 @@
+{
+  "round_id": "FQ170-H1-band-neutral-selection-20260809",
+  "written_before_results": true,
+  "parent": "FQ-170 (UNCLAIMED). F1 이 드러낸 설계 결함의 수리 라운드",
+
+  "why_this_design": [
+    "F1 실측에서 발견: '밴드 안에서 점수 상위 25' 라는 선별 규칙은 arm 을 **밴드의 위쪽 가장자리**에 앉힌다. 밴드 {4,5,6} 의 상위 25 는 실질 D6, {4,5} 는 D5, {2,3} 은 D3 — 밴드 하위 분위는 한 번도 소비되지 않았다.",
+    "⇒ 지금까지의 모든 '밴드' 결과(A1 · B2 · FQ170 · F1)는 **top-edge 결과**이며, 밴드 가설은 아직 검정된 적이 없다.",
+    "⇒ 본 라운드는 밴드-내 선별을 **밴드-중립**으로 바꿔 밴드 가설을 처음으로 검정한다."
+  ],
+
+  "design_fixed_before_results": {
+    "band": "사전 고정 decile {4,5,6} (F1 과 동일 — 밴드 정의는 바꾸지 않고 선별만 바꾼다)",
+    "arm_top": "점수 상위 25종 EW (대조 기준, F1 과 동일)",
+    "arm_band_ew": "밴드 전체 EW — 밴드를 실제로 대표. breadth 가 25 와 다르며 그 사실을 보고한다",
+    "arm_band_rand25": "★밴드 내 **무작위 25종**, 독립 draw 20회 평균. 점수-무관이므로 밴드-중립. breadth 를 25 로 고정해 arm_top 과 폭을 맞춘다",
+    "draw_protocol": "seed = 20260809 + draw_index. 월별 독립 추출. draw 간 산포(sd)를 함께 보고 — 단일 draw 판정의 취약성(2026-08-02 실측 sd 0.378)을 피하기 위함",
+    "effective_decile_field": "★각 arm 의 **유효 분위 위치**(선택 종목의 평균 decile)를 산출물 필드로 발행. F1 의 결함(집합이 아니라 가장자리를 잼)이 재발했는지 기계로 확인 가능하게 한다",
+    "universe": "K200 U KQ150 + adv >= 2e8 · nmo>=125 · 월간 · 전표본",
+    "cost_model": "v2.4_kr_retail_15bps delta-based",
+    "t_statistic": "NW lag-3",
+    "power_bar": "required_effect(n, series=net diff) 실측 NW 인자"
+  },
+
+  "shape_assignment_fixed": {
+    "MONOTONE_TOP_negative_control": ["M26_Revenue_Mom", "M01_PATHQ"],
+    "HUMP_or_INVERTED_treatment": ["Q01_EB", "D03_EWMA", "z_neutral"]
+  },
+
+  "decision_rules_fixed_before_results": [
+    "H1a 지지: arm_band_rand25 기준 treatment 3종 중 >=2 종이 net > 0 ∧ t_NW3 >= 2.0 ∧ negative control 2종 모두 net < 0 → 밴드 가설 처음으로 지지. FQ-170 정식 라운드 승격.",
+    "H1b config-scoped negative: 미충족 시 이 config 에서 미달 기록. 부활 조건 = 밴드 위치/폭 대안(D3~D5, D5~D7) 또는 비-return 원천 결합.",
+    "H1c 대조 실패: negative control 중 하나라도 net > 0 ∧ t >= 2.0 이면 형태-예측 주장 기각.",
+    "H1d 유효분위 검증: arm_band_rand25 의 유효 분위가 밴드 중심(5.0)에서 ±0.5 를 벗어나면 선별이 여전히 밴드-중립이 아니라는 뜻 — 판정 전에 이 사실을 보고하고 결함으로 라벨한다.",
+    "H1e draw 산포 보고: 20 draw 의 net_ann sd 를 반드시 보고한다. sd 가 효과 크기와 같은 자릿수면 판정을 단일 추정으로 내리지 않는다.",
+    "H1f 자본 자격 주장 금지: 기전 라운드. PORT_t/oos/calmar 미측정."
+  ],
+
+  "known_limits_declared": [
+    "arm_band_ew 는 breadth 가 25 가 아니므로 arm_top 과 직접 비교 시 폭 효과가 섞인다 — 참고용이며 판정은 arm_band_rand25 로 한다.",
+    "밴드 {4,5,6} 선택 경로는 F1 사전등록에 기록된 대로 E2 분포를 보고 고른 것이라 완전한 사전성은 아니다.",
+    "재료 5종·1시장·1기간. 계열 일반화 금지."
+  ]
+}

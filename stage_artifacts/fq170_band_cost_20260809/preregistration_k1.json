@@ -1,0 +1,39 @@
+{
+  "round_id": "FQ170-K1-shape-as-filter-20260809",
+  "written_before_results": true,
+  "parent": "FQ-170 아크. 랭킹 축 3형태 전부 미달 후 **소비 경로 전환** 라운드",
+
+  "why_this_design": [
+    "F1/H1/I3 실측: 형태는 부호를 견고하게 예측하지만(3소비형태 x 5재료 부호 일치) 랭킹 축에서는 breadth<=25 조건에서 어느 형태도 t>=2.0 크기를 못 낸다.",
+    "이 저장소의 확립된 교훈: **소비 경로가 판정을 바꾼다**(2026-08-02 실측 — 랭킹으로 죽은 MAX5 가 필터로는 ΔIR +0.169).",
+    "형태 부호가 견고하다는 것은 **분류기로서 살아 있다**는 뜻이다. 분류기의 자연스러운 소비면은 알파(랭킹)가 아니라 **필터**다 — 그 면은 이 아크에서 한 번도 열지 않았다.",
+    "★조건-안: 필터 후 결원을 base 다음 순위로 채워 breadth 를 25 로 고정한다(종목수 제약 준수 + 폭 효과 혼입 방지)."
+  ],
+
+  "design_fixed_before_results": {
+    "base": "top-25 by M26_Revenue_Mom (MONOTONE_TOP · 이 표본에서 가장 강한 단일 재료). EW 월간",
+    "filter_rule": "형태가 지시하는 **나쁜 구역**의 종목을 base 에서 제외한다. HUMP(Q01_EB) → 양 극단 5분위 {1,5} 가 나쁜 구역(프로파일 [-3.81 +1.37 +3.05 +1.78 -2.41]). INVERTED(D03_EWMA) → 상단 decile {9,10} 이 나쁜 구역.",
+    "refill": "제외 후 M26 순위 다음 종목으로 25종을 채운다(나쁜 구역 종목은 refill 에서도 제외)",
+    "arms": ["base(top25 M26)", "filt_Q01", "filt_D03", "filt_both", "rand_control"],
+    "rand_control": "★그 달 필터가 제외한 종목 수 k 와 **동일한 k 종을 무작위 제외** 후 같은 방식으로 refill. 독립 draw 20회 평균. 필터의 이득이 '정보' 인지 '단순 교체' 인지 가른다",
+    "judgment_quantity": "net(arm) - net(base), paired 월 계열, NW lag-3",
+    "cost_model": "v2.4_kr_retail_15bps delta-based (필터는 회전을 늘리므로 net 으로만 판정)",
+    "universe": "K200 U KQ150 + adv>=2e8 · nmo>=125 · 전표본",
+    "power_bar": "required_effect(n, series=net diff) 실측 NW 인자",
+    "reported_fields": "월평균 제외 종목수 k · 유효 rank(교체로 순위가 얼마나 밀렸는지)"
+  },
+
+  "decision_rules_fixed_before_results": [
+    "L1 지지: filt_Q01 · filt_D03 · filt_both 중 최소 1개가 net > 0 ∧ t_NW3 >= 2.0 이고, **동일 arm 이 rand_control 을 초과**(paired 비교에서 net_filter > net_rand) → 형태의 필터 소비면 확립. FQ 등재 + 정식 라운드 승격.",
+    "L2 config-scoped negative: L1 미충족 시 이 config(base=M26 top25 · 15bps · breadth25 고정)에서 미달 기록. 부활 조건 = 다른 base(다른 재료/PG2 북) 또는 다른 나쁜-구역 정의.",
+    "L3 정보 아님 귀속: 필터 arm 이 유의한데 rand_control 도 같은 수준이면 이득을 '단순 교체 효과'(순위 하위 편입에 따른 우연)로 귀속하고 형태-필터 주장을 기각한다.",
+    "L4 비용 지배: gross > 0 ∧ net < 0 ∧ |t_gross| >= 1.5 이면 '신호는 있으나 회전 비용이 먹는다'로 라벨(I3 의 J4 오발화를 피하려 유의성 조건을 넣었다).",
+    "L5 자본 자격 주장 금지: 기전 라운드. PORT_t/oos/calmar 미측정."
+  ],
+
+  "known_limits_declared": [
+    "base 를 M26 으로 고른 것은 이 표본에서 가장 강해서다 — 사후선택 편의가 있으며 다른 base 로의 일반화는 미검(L2 부활 조건에 명시).",
+    "나쁜 구역 정의(HUMP 양극단 / INVERTED 상단)는 FQ-166 프로파일에서 왔고 E2 가 라벨 취약성을 보인 만큼 프레임 의존이 남아 있다.",
+    "재료 3종(base 1 + 필터 2)·1시장·1기간. 계열 일반화 금지."
+  ]
+}

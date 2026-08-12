@@ -1,0 +1,28 @@
+{
+  "n_total": 228,
+  "n_exact": 70,
+  "n_with_nx": 47,
+  "n_missing_nx": 23,
+  "n_candidates": 3,
+  "undecidable_ids": ["FQ-098", "FQ-106", "FQ-108", "FQ-109", "FQ-117", "FQ-121", "FQ-124", "FQ-126", "FQ-127", "FQ-128", "FQ-108b", "FQ-108c", "FQ-108d", "FQ-131", "FQ-132", "FQ-133", "FQ-134", "FQ-135", "FQ-137", "FQ-140", "FQ-142", "FQ-153", "FQ-219"],
+  "candidates": [
+    {
+      "id": "FQ-158",
+      "lane": "infra_guard",
+      "title": "dual_basis 산출부 기계 라벨 — \"격차는 벤치 수익차이지 구성에 대한 진술이 아님\"",
+      "nx": "metric_type_note 에 해석 경계 1줄 추가 + 위반 주입 테스트(오독 문구 검출)."
+    },
+    {
+      "id": "FQ-167",
+      "lane": "alpha_search",
+      "title": "섹터-중립 역전 × 변동성 조건부 — 저변동 국면 한정 적용",
+      "nx": "①시장 변동성 3분위 분위수 정의(KOSPI200 or 전유니버스 rolling 12m sd) ②within_sector_reversal 신호를 저변동 달만 발화 → 나머지 달은 hold 또는 EW ③OOS 구간에서 저/고변동 분리 수익률 비교 ④vol-regime gating이 MDD를 60%→25% 수준으로 개선하는지 확인"
+    },
+    {
+      "id": "FQ-168",
+      "lane": "overlay_probe",
+      "title": "섹터-중립 역전 → 오버레이 리스크 신호 소비 (스코어 하위 25% long 축소 트리거)",
+      "nx": "①스코어 하위 25% long 축소 오버레이 설계 ②기존 PG2 포트에 within_sector_reversal risk signal 추가 시 ΔIR 측정(overlay A/B) ③short-leg 신호 reverse 방향(스코어 하위 = long 기피)이 기대 방향 맞는지 month-by-month 확인"
+    }
+  ]
+}

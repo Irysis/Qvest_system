@@ -1,0 +1,12 @@
+suppressPackageStartupMessages({ library(jsonlite); library(data.table) })
+setwd("C:/Users/99922/OneDrive/Quant_Module_Moltbot/.claude/worktrees/jovial-mcnulty-f7d018")
+j <- fromJSON(".cache/test_results/hook_dryrun_results.json", simplifyVector = TRUE)
+T <- as.data.table(j$tests)
+cat(sprintf("총 %d 스위트 · pass %d / fail %d / skip %d · status %s\n",
+            nrow(T), j$total_pass, j$total_fail, j$total_skipped, j$status))
+cat("\n=== fail > 0 ===\n"); print(T[fail > 0][order(-fail)])
+cat("\n=== 내 스위트 3종 ===\n")
+print(T[grepl("lineage_cwd_root|power_bar_nw_factor|lineage_git_state", test)])
+cat("\n=== 등록됐는데 결과 없는 스위트가 있나 (0건 = 안 돎) ===\n")
+mine <- c("lineage_cwd_root","power_bar_nw_factor")
+for (m in mine) cat(sprintf("  %-24s 결과행 %d\n", m, nrow(T[test == m])))

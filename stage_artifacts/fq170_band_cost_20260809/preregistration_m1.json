@@ -1,0 +1,36 @@
+{
+  "round_id": "FQ170-M1M3-filter-minus-random-and-dilution-curve-20260809",
+  "written_before_results": true,
+  "parent": "FQ-170 아크. K1 이 발견한 판정량을 사전등록해 정식 검정 + 희석 비용 곡선",
+
+  "why_this_design": [
+    "K1 실측: base(top-25 M26)에서 12종 **무작위** 교체 = net -2.193%p(t -1.572). 교체 자체에 신호 희석 비용이 실재한다.",
+    "같은 12종을 형태-필터로 고르면 +0.481%p → 무작위 대비 +2.674%p (draw 산포 0.862 의 3배). 그러나 이는 **사전등록된 판정량이 아니었다**.",
+    "⇒ M1: 판정량을 **filter - random(동일 강도, 월별 k 일치)** 로 사전등록해 paired NW3 로 검정한다.",
+    "⇒ M3: 희석 비용이 k 에 선형인 상수인지(=기준선으로 쓸 수 있는지) k in {3,6,12,18} 곡선으로 확인한다. 상수가 아니면 상수화하지 않고 라운드마다 무작위 통제를 의무화한다(오늘 NW 인자 상수화에서 배운 규율)."
+  ],
+
+  "design_fixed_before_results": {
+    "base": "top-25 by M26_Revenue_Mom, EW 월간 (K1 과 동일)",
+    "filter_arms": "fQ(HUMP Q01_EB 양극단 5분위 {1,5} 제외) · fD(INVERTED D03_EWMA 상단 decile {9,10} 제외) · fB(둘 다). refill = M26 다음 순위(나쁜 구역 제외), breadth 25 고정",
+    "matched_random": "★각 필터 arm 마다 **그 달 그 arm 이 실제로 제외한 종목 수 k_t 와 동일한 k_t 를 무작위 제외** 후 같은 refill. 독립 draw 20회 평균. 월별 k 일치가 핵심 — 고정 k 로 맞추면 강도가 어긋나 비교가 깨진다",
+    "M1_judgment_quantity": "★paired 월 계열 = net(filter_t) - net(matched_random_t). NW lag-3. 이것이 사전등록 판정량이다(base 대비 아님)",
+    "M3_dilution_curve": "k in {3,6,12,18} 고정 강도로 무작위 교체(20 draw) → net vs base. per-swap 비용 = net_ann / k. k 에 걸쳐 per-swap 이 일정한지 본다",
+    "cost_model": "v2.4_kr_retail_15bps delta-based",
+    "power_bar": "required_effect(n, series=M1 paired 계열) 실측 NW 인자"
+  },
+
+  "decision_rules_fixed_before_results": [
+    "N1 지지: 필터 arm 3종 중 최소 1개가 **filter-minus-random > 0 ∧ t_NW3 >= 2.0** → 형태-필터 소비면 확립. FQ 등재 + 정식 라운드 승격.",
+    "N2 config-scoped negative: 미충족 시 이 config(base=M26 top25 · 15bps · breadth25)에서 미달 기록. 부활 조건 = 다른 base(PG2 북=M4) 또는 오버레이 입력 소비.",
+    "N3 희석 상수화 판정: M3 곡선의 per-swap 비용이 k in {3,6,12,18} 에서 상대 산포(sd/|mean|) <= 0.25 이면 '기준선 상수' 로 채택 가능. 초과하면 상수화 금지 — 라운드마다 무작위 통제 의무화로 기록한다.",
+    "N4 부호 점검: matched_random 의 net(base 대비)이 음이 아니면 K1 의 희석 비용 관측이 재현되지 않은 것이므로, M1 판정 전에 그 사실을 보고하고 K1 결과를 재검토 대상으로 표시한다.",
+    "N5 자본 자격 주장 금지: 기전 라운드. PORT_t/oos/calmar 미측정."
+  ],
+
+  "known_limits_declared": [
+    "base=M26 은 K1 과 동일한 사후선택이다. 실전 base(PG2 북) 일반화는 M4 소관.",
+    "나쁜 구역 정의는 FQ-166 프로파일 기반이며 E2 가 라벨 프레임 취약성을 보였다.",
+    "draw 20회 — 산포를 함께 보고하고 효과가 산포와 같은 자릿수면 단일 추정으로 판정하지 않는다."
+  ]
+}

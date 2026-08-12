@@ -121,7 +121,15 @@ if Draft202012Validator is not None:
 
     # ── A. 비파괴 (실물 전건) ────────────────────────────────────────────────
     print("\n── A 비파괴 (실물 alpha_package 전건, 개정 전후 대조) ──")
-    old_raw = subprocess.run(["git", "-C", CODE_ROOT, "show", "HEAD:" + SCHEMA_REL],
+    # ★기준판(구판)은 **고정 ref** 여야 한다 (2026-08-13 수리).
+    #   초판은 `HEAD:schema.json` 을 구판으로 썼다. 그런데 HEAD 는 움직인다 — Stop 훅
+    #   auto-commit 이 개정 스키마를 커밋하는 순간 "구판"이 곧 개정판이 되고, C 축은
+    #   `old_catch == 0` 을 영구히 못 만족한다. 실측: 커밋(aad71aee) 직후부터 원 worktree
+    #   에서도 22/1 FAIL 로 고정됐다(2026-08-13 재현). ★검사가 죽는 것이 아니라 **영구 오탐**
+    #   이 되는 형태라 더 나쁘다 — 진짜 회귀와 구분이 안 되고, 배터리에 상시 빨간 줄을 남긴다.
+    #   ⇒ 개정 **직전** 커밋을 SHA 로 못박는다. 없으면(얕은 클론 등) 축을 건너뛴다.
+    SCHEMA_BASELINE_REF = "2c35ca19"      # 2026-08-02, label 축 도입 직전 판
+    old_raw = subprocess.run(["git", "-C", CODE_ROOT, "show", SCHEMA_BASELINE_REF + ":" + SCHEMA_REL],
                              capture_output=True)
     vo = None
     if old_raw.returncode == 0 and old_raw.stdout:

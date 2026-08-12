@@ -1,0 +1,41 @@
+{
+  "round_id": "FQ170-I3-top-concentration-20260809",
+  "written_before_results": true,
+  "parent": "FQ-170 아크. H1 의 음성대조 강도를 뒤집어 읽는 라운드",
+
+  "why_this_design": [
+    "H1 실측: MONOTONE_TOP 재료에서 중간분위(D4~6, 밴드-중립 25종)가 top-25 대비 net -9.212(t -3.239) · -13.258(t -3.285). 이 아크 전체에서 **가장 큰 실측 효과**이며 방향이 매우 견고하다.",
+    "뒤집어 읽으면: MONOTONE_TOP 재료는 상단으로 갈수록 좋다 ⇒ **top-25 를 더 좁히면(top-10/15) 이득이 나야 한다**.",
+    "지금까지 이 아크의 소비면은 전부 '회피 규칙'(어디를 피하라)이었다. 본 라운드는 처음으로 **양성 규칙**(어디로 집중하라)을 검정한다.",
+    "★조건-안: top-10/15 는 종목수 max 25 제약 **안**이다. breadth 확대(H1 의 band-EW n~74)와 달리 배포 가능하다."
+  ],
+
+  "design_fixed_before_results": {
+    "arms": "top-25(기준) · top-15 · top-10 — 전부 점수 상위, EW, 월간 리밸",
+    "judgment_quantity": "net(top-N) - net(top-25), N in {10,15}. paired 월 계열, NW lag-3",
+    "cost_model": "v2.4_kr_retail_15bps delta-based. ★좁힐수록 종목당 비중이 커져 회전 비용이 오를 수 있으므로 net 으로만 판정한다",
+    "universe": "K200 U KQ150 + adv >= 2e8 · nmo>=125 · 전표본",
+    "power_bar": "required_effect(n, series=net diff) 실측 NW 인자",
+    "effective_position_field": "각 arm 의 평균 decile 과 평균 rank 를 발행(H1 에서 도입한 유효위치 필드 규약 유지)"
+  },
+
+  "arm_assignment_fixed": {
+    "treatment_expected_positive": ["M26_Revenue_Mom", "M01_PATHQ"],
+    "negative_control_expected_null_or_negative": ["Q01_EB", "D03_EWMA", "z_neutral"],
+    "rationale": "HUMP/INVERTED 재료는 상단에 정보가 없거나 역전돼 있으므로 상단 집중이 도움되면 안 된다. 도움되면 '상단 집중'은 형태와 무관한 일반효과(집중도 프리미엄/소형주 편향 등)다."
+  },
+
+  "decision_rules_fixed_before_results": [
+    "J1 지지: MONOTONE_TOP 2종 모두 top-10 또는 top-15 에서 net > 0 ∧ t_NW3 >= 2.0, 그리고 negative control 3종 중 2종 이상이 net <= 0 또는 t < 2.0 → 형태-지시 상단집중이 양성 소비면으로 확립. FQ 등재 + 정식 라운드 승격.",
+    "J2 config-scoped negative: J1 미충족 시 이 config(top-10/15 · 15bps · 월간)에서 미달 기록. 부활 조건 = 집중도 대안(top-20) 또는 회전 저감 결합.",
+    "J3 일반효과 귀속: negative control 3종 전부 net > 0 ∧ t >= 2.0 이면 상단집중 이득을 형태가 아닌 **일반 집중효과**에 귀속하고 형태-지시 주장을 기각한다.",
+    "J4 비용 지배 점검: gross 는 양인데 net 이 음이면 '신호는 있으나 회전 비용이 먹는다'로 라벨하고 부활 조건에 회전 저감을 명시한다.",
+    "J5 자본 자격 주장 금지: 기전 라운드. PORT_t/oos/calmar 미측정."
+  ],
+
+  "known_limits_declared": [
+    "top-10 은 집중도가 높아 분산이 커진다 — t 가 낮아도 효과 부재와 구별해야 하므로 검정력 바를 반드시 병기한다.",
+    "재료 5종·1시장·1기간. MONOTONE_TOP 표본이 2건뿐이라 계열 일반화 금지.",
+    "종목수 축소는 유동성/체결 제약을 악화시킬 수 있으나 본 라운드는 미반영(adv>=2e8 필터만)."
+  ]
+}

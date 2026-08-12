@@ -1,0 +1,7 @@
+suppressPackageStartupMessages(library(data.table))
+setwd("C:/Users/99922/OneDrive/Quant_Module_Moltbot")
+B <- as.data.table(readRDS("stage_artifacts/WT_D20260809_003/merged_panel.rds"))
+cat("cols:", paste(names(B), collapse=" | "), "\n")
+cat("rows", nrow(B), "months", uniqueN(B$Date), "\n")
+nm <- setdiff(names(B), c("Date","Ticker","ym"))
+for (k in nm) cat(sprintf("  %-24s nonNA %6d\n", k, sum(!is.na(B[[k]]))))

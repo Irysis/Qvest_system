@@ -1,0 +1,50 @@
+{
+  "round_id": "FQ170-band-vs-top-net-cost-20260809",
+  "written_before_results": true,
+  "parent": "FQ-170 (형태별 소비면 대응의 실측) — UNCLAIMED. 본 라운드는 그 결정 관문이며 FQ-170 claim 이 아니다",
+  "prior_evidence_gross_only": {
+    "source": "A1/B2 관문 (2026-08-09, 사전등록 없음 — 판정 아님)",
+    "note": "고정 D8~D9 밴드 · gross(비용 미반영) · 266개월 · 유동성필터",
+    "band_minus_top_annual_pct": {
+      "M26_Revenue_Mom": -4.06, "M01_PATHQ": -4.96,
+      "Q01_EB": 5.62, "D03_EWMA": 4.46, "z_neutral": 0.54
+    },
+    "t_nw3": { "M26_Revenue_Mom": -1.837, "M01_PATHQ": -1.722,
+               "Q01_EB": 2.361, "D03_EWMA": 2.860, "z_neutral": 0.209 }
+  },
+
+  "hypothesis": "형태가 '상단절단(밴드 선별)이 top-25 를 이기는가' 의 부호를 예측한다. HUMP·상단역전형에서는 argmax-추종 밴드가 top-25 를 net 기준으로도 앞서고, MONOTONE_TOP 에서는 뒤진다.",
+
+  "design_fixed_before_results": {
+    "universe": "K200 U KQ150 패널 (merged_panel WT_D20260809_003) + 유동성 adv >= 2e8",
+    "window": "전표본, nmo>=125 인 달만 (밴드에서 25종 확보 가능)",
+    "breadth": "양 팔 모두 25종 EW — 폭을 맞춰야 비교가 구성이 아니라 위치를 잰다",
+    "arm_top": "점수 상위 25",
+    "arm_band": "★argmax-추종: 각 재료의 decile 프로파일 argmax 를 a 라 할 때 밴드 = {a-1, a} 교집합 [1,10] 에서 점수 상위 25. 고정 D8~D9 아님 (z_neutral 이 argmax D5 인데 D8~D9 로 재서 null 이 나온 것이 이 변경의 근거)",
+    "argmax_source": "동일 프레임에서 본 라운드가 재산출 (WT-003 값 재사용 아님)",
+    "rebalance": "월간",
+    "cost_model": "cost_model_version v2.4_kr_retail_15bps — delta-based, 종목별 |Δw| 에 레그당 15bps. cost_t = 0.0015 * sum|w_t - w_{t-1}|",
+    "t_statistic": "NW lag-3 (.nw_t_mean)",
+    "power_bar": "required_effect(n, series=<해당 arm 의 net diff 계열>) — 실측 NW 인자 사용, nw_inflation_source 를 함께 보고"
+  },
+
+  "shape_assignment_fixed": {
+    "MONOTONE_TOP_negative_control": ["M26_Revenue_Mom", "M01_PATHQ"],
+    "HUMP_or_INVERTED_treatment": ["Q01_EB", "D03_EWMA", "z_neutral"],
+    "note": "형태는 WT-D20260809_003 이 사전에 확정한 분류를 그대로 승계한다(본 라운드가 재분류하지 않음)"
+  },
+
+  "decision_rules_fixed_before_results": [
+    "R1 지지: treatment 3종 중 최소 2종이 net band-top > 0 이고 t_NW3 >= 2.0 ∧ negative control 2종이 모두 net < 0 → '형태가 밴드절단 부호를 예측한다' 방향 지지.",
+    "R2 config-scoped negative: treatment 가 R1 을 못 채우면 이 config(15bps·월간·breadth25·argmax±1)에서 미달로 기록. 부활 조건 = 회전율 저감 구성(보유기간 연장·부분 리밸)에서 재측정.",
+    "R3 음성대조 실패: negative control 중 하나라도 net > 0 이고 t >= 2.0 이면 형태-예측 주장을 기각하고 밴드절단의 이득을 형태가 아닌 다른 요인(예: 극단값 회피 일반효과)에 귀속한다.",
+    "R4 자본 자격 주장 금지: 본 라운드는 기전 라운드다. PORT_t 2.95 / oos_retention / calmar 를 재지 않으며 어떤 arm 도 졸업 후보로 제시하지 않는다.",
+    "R5 검정력: 각 arm 의 net diff 계열로 실측 바를 산출해 함께 보고한다. 관측이 바에 미달하면 '효과 부재' 가 아니라 '저검정력' 으로 라벨한다."
+  ],
+
+  "known_limits_declared": [
+    "재료 5종·1시장·1기간. 형태 3종 각각의 표본이 1~3건이라 계열 일반화 금지.",
+    "argmax 는 동일 표본에서 뽑으므로 사후선택 편의가 잔존한다. 본 라운드는 그것을 제거하지 않고 명시만 한다(제거는 OOS argmax 라운드 소관).",
+    "비용은 delta-based 15bps 단일 시나리오. 시장충격·부분체결 미반영."
+  ]
+}
