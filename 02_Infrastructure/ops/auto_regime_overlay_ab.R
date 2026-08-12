@@ -15,6 +15,13 @@ source("02_Infrastructure/contracts/weighted_screen_bt.R")
 Sys.setenv(QVEST_WEIGHTING_AB_NORUN = "1")
 source("02_Infrastructure/ops/auto_weighting_ab.R")   # build_period_bench / build_overlay_exposure / WEIGHTERS$strategy
 source("02_Infrastructure/validation/overlay_pit_guard.R")  # assert_overlay_pit (C5 HARD, 2026-07-06 도훈 지시)
+# FQ-119 라벨 자격 관문 (2026-08-08 배선. 2026-08-13 좌초 회수 — agitated-jones-cb731f 에
+# 커밋된 채 main 에 도달하지 못했던 구간을 08-09 basis 수리분 **위에** 합집합으로 재적용).
+# 본 스크립트의 CAT_EXPOSURE 는 **라벨을 단독 트리거로** 쓰는 소비면 — 관문이 겨냥한 바로
+# 그 형태다(FQ-119 precheck ①번 형태).
+# 기본 warn: A/B 는 "라벨이 도움이 되나"를 *재는* 절차라 차단하면 측정 자체가 불가능해진다.
+# 대신 판정을 산출물(h2_regime_overlay_ab.csv 동반 JSON)과 콘솔에 **동반 기록**한다.
+source("02_Infrastructure/contracts/regime_label_gate.R")
 
 # ── (2026-08-09 basis 수리 ①) 캐리어는 carrier_meta.json 에서 파생 ──────────────
 #   구판은 `carrier_STR_1715_AR_on_M4_R05_overlay_PG2.parquet` **하드코딩**이었다.
@@ -42,6 +49,16 @@ VT_WIN <- 12L
 
 #' 후보 regime exposure 스케줄(Date=eval_date, exposure) PIT 직전월 lag.
 build_unified_cat_exposure <- function(periods) {
+  # ── FQ-119 관문 호출부 ②: 라벨을 exposure 로 바꾸기 **직전** 자격을 묻는다 ────────
+  #   label_basis = "monthly_prev" — 아래 `.prev_month_ym` 규약과 **동일 구성**으로 잰다.
+  #   ★사이트가 쓰는 것과 다른 구성으로 재면 대용품 검사다(두 구성 라벨 일치율 0.804 실측).
+  #   asof = 마지막 eval 월 (이 A/B 는 전기간 측정이라 창 절단 없음).
+  .lg <- tryCatch(regime_label_gate(asof = max(as.Date(periods$eval_date)),
+                                    label_basis = "monthly_prev"),
+                  error = function(e) list(eligible = NA, verdict = "GATE_ERROR", reason = conditionMessage(e)))
+  rlg_enforce(.lg, site = "auto_regime_overlay_ab/unified_cat")
+  assign(".RLG_LAST_UNIFIED_CAT", .lg, envir = globalenv())   # 산출물 기록용
+
   # ★(2026-08-09) 신호 행의 실제 Date 도 함께 끌어온다 — PIT 컷오프를 **가정하지 말고 실측**해야
   #   assert_overlay_pit 이 대용품이 아니라 진짜 사용시점을 검사한다([[feedback-identify-before-existence-check]]).
   u <- as.data.table(read_parquet(".cache/unified_regime_signal.parquet"))[
@@ -185,7 +202,11 @@ run_regime_overlay_ab <- function(carrier_path = NULL, cost_bps = 15,
        extra_joined = names(.extra_dt),
        pit = list(label = "regime_ab/unified_cat",
                   max_used_cutoff = as.character(max(uc$pit$used_cutoff)),
-                  min_gap_days = as.numeric(min(uc$pit$holding_start - uc$pit$used_cutoff))))
+                  min_gap_days = as.numeric(min(uc$pit$holding_start - uc$pit$used_cutoff))),
+       # FQ-119: 라벨 자격 판정을 결과와 **같은 객체**에 실어 보낸다. 소비자가 A/B 수치를
+       # 인용할 때 "그 라벨이 자격이 있었나"를 별도 조회 없이 보게 하기 위함(별도 조회 = 미조회).
+       label_gate = tryCatch(rlg_summary(get(".RLG_LAST_UNIFIED_CAT", envir = globalenv())),
+                             error = function(e) list(verdict = "GATE_NOT_RECORDED", reason = conditionMessage(e))))
 }
 
 if ((sys.nframe() == 0L || identical(environment(), globalenv())) && Sys.getenv("QVEST_REGIME_AB_NORUN") != "1") {
@@ -197,6 +218,13 @@ if ((sys.nframe() == 0L || identical(environment(), globalenv())) && Sys.getenv(
   print(out$crisis)
   fwrite(out$tab, "06_Registry/book_carrier/h2_regime_overlay_ab.csv")
   fwrite(out$crisis, "06_Registry/book_carrier/h2_regime_crisis_eval.csv")
+  # FQ-119: 판정 동반 산출 — CSV 를 읽는 쪽이 라벨 자격을 같은 디렉터리에서 보게 한다.
+  jsonlite::write_json(out$label_gate, "06_Registry/book_carrier/h2_regime_label_gate.json",
+                       auto_unbox = TRUE, pretty = TRUE, digits = NA, na = "null")
+  cat(sprintf("\n[FQ-119 라벨 자격] %s | %s | lift %.2fx p %.5f (n=%s월)\n",
+              as.character(out$label_gate$verdict), as.character(out$label_gate$event_definition),
+              as.numeric(out$label_gate$lift), as.numeric(out$label_gate$fisher_p),
+              as.character(out$label_gate$n_months)))
   cat("\n주: book_L5=현 book 오버레이. uni_cat=앙상블 regime standalone. uni_cat_lag1=신호 1개월 추가지연(동월누출 판별).\n")
   cat("    *_x_book=book에 stacked(추가레버 검증). voltgt=변동성타겟. adopt 수동.\n")
   cat(sprintf("    basis: book_exposure=%s · carrier=%s · PIT 최소 간격 %.0f일\n",

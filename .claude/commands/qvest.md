@@ -1,11 +1,11 @@
 ---
 name: qvest
-description: "Qvest 시스템 구동 (v8.3 · Opus 5-Native · 4-Mode +RAMP) — Work Task 기반 리서치 엔진 부트스트랩"
+description: "Qvest 시스템 구동 (v8.4 · Opus 5-Native · 4-Mode +RAMP) — Work Task 기반 리서치 엔진 부트스트랩"
 disable-model-invocation: true
 user-invocable: true
 ---
 
-# Qvest — Work Task System (현행 버전은 CLAUDE.md Active Version이 정본 — 2026-07-26 v8.3)
+# Qvest — Work Task System (현행 버전은 CLAUDE.md Active Version이 정본 — 2026-08-13 v8.4)
 
 전천후 포트폴리오 수확을 위한 QEPM 기반 자율 리서치 시스템.
 

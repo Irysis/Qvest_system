@@ -58,7 +58,7 @@ case "${QVEST_BOOT_SANITIZED:-}" in
   *)      echo "[boot] WARN: utf8_output_guard INACTIVE (python3/guard 부재 또는 외부 QVEST_BOOT_SANITIZED 선점) — 이모지 포함 출력 시 API 400 위험" ;;
 esac
 
-echo "=== Qvest v8.3 부트스트랩 (Opus 5-Native · 4-Mode +RAMP) ==="
+echo "=== Qvest v8.4 부트스트랩 (Opus 5-Native · 4-Mode +RAMP) ==="
 
 # 1. (제거됨 v8.0 2026-05-29) tmux rc telegram inbound listener — outbound tg_agent_brief()는
 #    영향 없음. inbound 명령 listener 불필요 판단(도훈). 필요 시 persistent_remote_control.sh 수동 기동.
@@ -1025,7 +1025,7 @@ echo ""
 if [ "${BOOT_FAILS:-0}" -gt 0 ]; then
   echo "=== 부트스트랩 DEGRADED — ${BOOT_FAILS}개 게이트 실패 (위 ERROR 라인 확인, '완료' 아님) ==="
 else
-  echo "=== 부트스트랩 완료 (Qvest v8.3 — Opus 5-Native · 4-Mode +RAMP · 알파 발굴 중심 · 실측 거버넌스) ==="
+  echo "=== 부트스트랩 완료 (Qvest v8.4 — Opus 5-Native · 4-Mode +RAMP · 비대칭 알파 중심 · 실측 거버넌스) ==="
 fi
 
 # (2026-07-17 B2) 부트 스탬프 — SessionStart 카나리아(hooks/boot_stamp_check.sh)의 신선도 판정 원천.
@@ -1035,7 +1035,8 @@ printf '{"ts":"%s","ts_epoch":%s,"boot_fails":%s}\n' "$(date '+%Y-%m-%dT%H:%M:%S
 if [ -n "$PG2_INFO" ]; then
   echo "$PG2_INFO"
 fi
-echo "v8.3:       알파 발굴 중심 재편(canonical PORT_t 1급·dual-basis·frontier 큐 확인 의무) + 2026-08-08 모델 라우팅 재핀(alpha-hypothesis=fable · QEPM 나머지=opus, 구 핀제거·상속 정책 대체) / 4-Mode 헌법(alpha-search 논문복제·K200∪KQ150·2005 / factor-rotation Lane3 / RAMP Gate0~11 / Axiom r7) / 실측 거버넌스 / register_module 자동흐름"
+echo "v8.4:       비대칭 알파 중심 재편(도훈 2026-08-13) — 표적을 평균→분포로(조건부 분위·왜도·꼬리초과확률) / 3 lane: A 분포-표적 학습 · B 일별 축 회수(9,005거래일·flow 1.25GB) · C 수리통계 구조추정 / 비-return FQ-001~005 주력 해제(2건 데이터게이트 폐쇄·3건 실측 negative, 구조판결 아님) / 금지4: ML결합기·ML사이징·평균표적 ML라운드·sweep DSR회피"
+echo "v8.3 base:  알파 발굴 중심(canonical PORT_t 1급·dual-basis·frontier 큐 확인 의무) + 2026-08-08 모델 라우팅 재핀(alpha-hypothesis=fable · QEPM 나머지=opus) / 4-Mode 헌법(alpha-search 논문복제·K200∪KQ150·2005 / factor-rotation Lane3 / RAMP Gate0~11 / Axiom r7) / 실측 거버넌스 / register_module 자동흐름"
 echo "v8.0 base:  R+Python 1급 / SR목표 2.5 / agent effort(judge·gov xhigh) / axiom_context_inject / qvest-*-style skill"
 echo "Modes:      ① QEPM(/worktask) ② alpha-search ③ factor-rotation ④ RAMP(/ramp · Gate0~11·CCS 13-score · governor 정지/자본 수동) — CLAUDE.md 4-Mode 헌법(RAMP 2026-06-17)"
 echo "Skills:     $(ls "$PROJECT"/.claude/skills/*/SKILL.md 2>/dev/null | wc -l)개 (2026-07-24 C3: exec/mon=off 은닉·리서치 3종=user-invocable 스텁·구 worktask/telegram-protocol 삭제)"

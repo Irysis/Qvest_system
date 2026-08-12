@@ -2,12 +2,21 @@
 
 ## Active Version
 
-**Qvest v8.3 — Opus 5-Native · 4-Mode 헌법 · 실측 거버넌스 · 알파 발굴 중심 재편** (세션 모델 정본 `claude-opus-5`. 2026-07-10 / **2026-08-08 QEPM 모델 라우팅 재핀 — 가설설계(`alpha-hypothesis`)만 `model: fable`, QEPM 나머지 전 구간 `model: opus`(현행 Opus 5)**. 구 2026-07-24 "핀 제거·세션 상속" 정책 대체. 폴백 = 한도 시 opus 재시도. SOT `02_Infrastructure/docs/rules/caching.md` 모델 라우팅 절)
+**Qvest v8.4 — Opus 5-Native · 4-Mode 헌법 · 실측 거버넌스 · 비대칭 알파 중심 재편(ML·수리통계 주력)** (세션 모델 정본 `claude-opus-5`. 2026-07-10 / **2026-08-08 QEPM 모델 라우팅 재핀 — 가설설계(`alpha-hypothesis`)만 `model: fable`, QEPM 나머지 전 구간 `model: opus`(현행 Opus 5)**. 구 2026-07-24 "핀 제거·세션 상속" 정책 대체. 폴백 = 한도 시 opus 재시도. SOT `02_Infrastructure/docs/rules/caching.md` 모델 라우팅 절)
 
 > **★모델 표기 단일 출처**: 위 줄이 세션 모델의 **유일한 정본**이다(`boot_currency_check.sh` C0가 여기서 파생해 배너·상태라인 C1~C3를 대조). 다른 문서·룰은 모델명을 재기입하지 말고 "메인 세션 모델(정본 = 본 절)"로 위임할 것 — 재기입 지점이 2026-07-24 Fable 5 패치 후 3곳에서 동시 낙후된 전례.
 
-**계보**: **v8.3** (현재 active) — 전체 계보(v6.4.0~)·릴리스 상세·검증 이력 = `02_Infrastructure/docs/CHANGELOG_constitution.md` (2026-07-24 C5 이관)
+**계보**: **v8.4** (현재 active) — 전체 계보(v6.4.0~)·릴리스 상세·검증 이력 = `02_Infrastructure/docs/CHANGELOG_constitution.md` (2026-07-24 C5 이관)
 **Branch**: `main` (Qvest active — GitHub default)
+
+**v8.4 핵심 (비대칭 알파 중심 재편, 도훈 mandate 2026-08-13)** — SOT `02_Infrastructure/docs/qvest_v8_4_asymmetry_ml_sot.md`:
+- **주력 교체**: v8.3 도달 경로 ①(비-return 신규 원천)을 **주력에서 해제** → **기존 데이터풀 총동원 + ML·수리통계로 시장 비대칭 알파 도출**이 주력. 근거 = 비-return 5레인 중 **2건 데이터 게이트 폐쇄(도훈 08-09)** + 3건 실측 negative(insider 3-프레임 삼각-null · 계약 두 소비면 닫힘 · 담보/감사의견 SPARSITY_WALL). ★구조 판결 아님 — 부활 조건은 SOT §1
+- **표적은 평균이 아니라 분포**: `ml_complexity` 트랙 실측 **126건 전부**가 표적을 "다음 달 평균 수익률(또는 순위)"로 놓았다. 죽은 자리 = ①결합기(앙상블 수십 변형이 SR 0.492 한 점으로 수렴·MDD 52~64%) ②사이징/selection(DPL 06-26 · uncertainty 07-05 2세션) ③평균 예측기(SR ~0.49, 3~4건). **분포의 비대칭 구조를 표적으로 삼은 라운드는 0건**
+- **실증 근거**: D03 Q5−Q1 **평균 −5.10%(t −1.07)** vs **중앙값 +12.01%(t +2.57)** — **부호가 반대다**. 분위별 왜도 Q1 +0.96 → Q5 +0.69. 형태도 단조/혹/상단-역전으로 갈린다 ⇒ 평균 기반 선형 측정이 놓치는 구조가 실측으로 존재
+- **미소비 표면 = 일별 축**: 알파 리서치는 전부 월간 횡단면인데 데이터는 **9,005 거래일**(RAWDATA 14.06M행) + **flow_features_daily 1.25GB**(9.36M행 22피처). 월간으로 접는 순간 분포 정보가 소멸 — 비대칭은 접히기 전에만 관측된다. ⚠factor DB 331 전수는 이미 소진(book-marginal 통과 0), 증분은 일별 원천에 있다
+- **3 lane**: A 분포-표적 학습(1순위, 평균-표적 대조군 동반 의무) · B 일별 축 정보 회수(PIT 최우선) · C 수리통계 구조 추정(ML의 음성 대조)
+- **금지 4종(경로-scoped, INV-7)**: ML 결합기 · ML 사이징/selection · **표적이 "다음 달 평균 수익률"인 ML 라운드**(대조군으로만) · sweep 의 DSR 회피
+- **불변**: Graduation HARD 3종 · cap-w 게이트 권위 · 6-agent · Production Constraints(INV-7) · governor 수동 · v8.3 골격(dual-basis·프론티어 큐·지식 환류)
 
 **v8.3 핵심 (알파 발굴 중심 재편, 도훈 mandate 2026-07-10)** — SOT `02_Infrastructure/docs/qvest_v8_3_alpha_discovery_sot.md`:
 - **벽-정합 측정**: alpha 단계 선별 1급 지표 = canonical PORT_t(실측, IC는 advisory) — IC→PORT_t 전이 벽 정합. **dual-basis 진단**: cap-w HARD 판정 불변 + 기각 전 EW-유니버스 대비·cap-tier(MEGA/MID) 분해 확인 의무(post-2017 감쇠의 상당부분 = mega-cap 벤치 아티팩트 실측)
@@ -19,7 +28,7 @@
 **v8.1 핵심 (흡수 — 8불릿 상세는 CHANGELOG_constitution.md 이관 아카이브 + `qvest_v8_1_sot.md`)**: 3-Mode 헌법(alpha-search **논문 완전 복제** + 유니버스 K200∪KQ150 고정 + 기간 2005~ 고정 · FR Lane3 · Axiom r7 복원) + 실측-only 거버넌스(measurement-graduation) + `register_module` 표준화·자동흐름(자본게이트 book confirm+실주문 2버튼만 수동).
 **KR 데이터 한계 reference**: value/BM 2002-08~ · M08_ResidMom 1995~ · factor DB 1990~ (`feedback-alpha-search-paper-replication`)
 
-**★ Active SOT (단일 진실)**: `02_Infrastructure/docs/qvest_v8_1_sot.md` (v8.1 설계 SOT) + `qvest_v8_3_alpha_discovery_sot.md` (v8.3 발굴 재편 SOT) + `qvest_ast_v1_1_sot.md` (**AST 계층 v1.1** — 2026-07-25 도훈 승인: alpha 3층 스펙(AST-우선+escape 리프 4종)·PIT 3중 구조 예방·구조특징 사전분포. field_dictionary = `06_Registry/ast_field_map_v0.json`. C4 연간=3/31 확정) + `qvest_v8_0_upgrade_plan.md` (v8.0 base 흡수, retain)
+**★ Active SOT (단일 진실)**: `02_Infrastructure/docs/qvest_v8_4_asymmetry_ml_sot.md` (**v8.4 비대칭 재편 SOT** — 주력 레인 정본) + `qvest_v8_1_sot.md` (v8.1 설계 SOT) + `qvest_v8_3_alpha_discovery_sot.md` (v8.3 발굴 재편 SOT — 골격 승계, 도달 경로 ①만 해제) + `qvest_ast_v1_1_sot.md` (**AST 계층 v1.1** — 2026-07-25 도훈 승인: alpha 3층 스펙(AST-우선+escape 리프 4종)·PIT 3중 구조 예방·구조특징 사전분포. field_dictionary = `06_Registry/ast_field_map_v0.json`. C4 연간=3/31 확정) + `qvest_v8_0_upgrade_plan.md` (v8.0 base 흡수, retain)
 **전임 SOT (흡수됨)**: `02_Infrastructure/docs/qvest_v6_4_sot.md` (v6.4 base 흡수, read-only retain)
 **Legacy boundary**: `02_Infrastructure/docs/qvest_legacy_boundary.md` (v55 / S0~S7 격리)
 
@@ -121,7 +130,9 @@ Qvest 시스템 전체 구동. bootstrap.sh 실행 → 플러그인 리로드 �
 
 ### 제2목표: SR 2.5+ / CAGR 16%+ / MDD <25% (SR 2.0→2.5 상향, 2026-05-29 도훈 mandate — KR 구조적 상승 반영)
 
-도달 경로 (2026-07-10 v8.3 재편 갱신 — 실측 순위 재조정. 원 confirm 2026-07-03): ① **비-return 신규 원천**(DART exec-insider 역사·계약금액 magnitude·공매도/대차 등 — 주력, `06_Registry/alpha_frontier_queue.json` FQ-001~005) ② **screen-tier 재고 회수 + EW-대비/cap-tier 재분류**(overlay 큐 16건 드레인 · 벤치-아티팩트 기각 후보 재라우팅, FQ-006~008) ③ overlay 잔여 정교화(실증 유일 β 레버이나 clean 잔여폭 좁음 — 07-05/06 양방향 negative 실측). 잔차-직교 sleeve 스태킹은 07-05 RAMP R1 config-scoped 미달(survivors 0, §6) — 구조판결 아님·frontier 조건부. 신규 standalone return-파생 팩터 사냥은 16/16 FAIL posterior로 최후순위.
+도달 경로 (**2026-08-13 v8.4 재편 — 도훈 mandate**. 구 2026-07-10 v8.3 순위 대체): ① **비대칭 알파 도출**(기존 데이터풀 총동원 + ML·수리통계. 표적을 **평균 → 분포**로 교체 — 조건부 분위·왜도·꼬리초과확률. 3 lane = 분포-표적 학습 / 일별 축 정보 회수 / 수리통계 구조 추정. SOT `qvest_v8_4_asymmetry_ml_sot.md`) ② **screen-tier 재고 회수 + EW-대비/cap-tier 재분류**(overlay 큐 드레인 · 벤치-아티팩트 기각 후보 재라우팅, FQ-006~008) ③ overlay 잔여 정교화(실증 유일 β 레버이나 clean 잔여폭 좁음 — 07-05/06 양방향 negative 실측).
+**주력에서 해제 (2026-08-13 도훈 지시, 구 ①)**: 비-return 신규 원천 FQ-001~005 — 2건은 **도훈이 데이터 게이트를 닫았고**(08-09 공매도/신용대차), 3건은 실측 negative. ★구조 판결 아님, 부활 조건은 SOT §1(INV-7).
+잔차-직교 sleeve 스태킹은 07-05 RAMP R1 config-scoped 미달(survivors 0, §6) — 구조판결 아님·frontier 조건부. 신규 standalone **평균-표적** return-파생 팩터 사냥은 16/16 FAIL posterior + factor DB 331 전수 book-marginal 통과 0으로 최후순위(계열 15종이 구속 해상도).
 
 ### 제약 (방침)
 
@@ -133,7 +144,8 @@ Qvest 시스템 전체 구동. bootstrap.sh 실행 → 플러그인 리로드 �
 
 ## Production Constraints
 
-> **★이것은 배포 현실이 정의한 문제의 고정 축이다 — 최적화로 없앨 변수가 아니다.** AX-000 따름정리: 이 봉투 *안에서* 풀어라; 제약 완화(>25종·short 허용·유동성 하향 등)를 레버로 제시하는 것은 게임을 이기는 게 아니라 바꾸는 것이다(실패지식 제약 방화벽 — `02_Infrastructure/docs/rules/axiom-engine.md` INV-7). envelope-안 레버만 프론티어 — 현행(2026-07-10 실측 갱신): ① 비-return 데이터 ② screen-tier 재고 회수(overlay 큐) ③ EW-대비/cap-tier 재분류 ④ overlay 잔여·잔차sleeve(조건부)·multi-sleeve·composite. 구 목록의 **DPL(06-26)·regime-conditional 교차결합(07-05)·ML/uncertainty sizing(07-05 2세션)은 settled-negative 실측 — 레버 아님**(부활신호 발화 시에만 재검토, INV-7).
+> **★이것은 배포 현실이 정의한 문제의 고정 축이다 — 최적화로 없앨 변수가 아니다.** AX-000 따름정리: 이 봉투 *안에서* 풀어라; 제약 완화(>25종·short 허용·유동성 하향 등)를 레버로 제시하는 것은 게임을 이기는 게 아니라 바꾸는 것이다(실패지식 제약 방화벽 — `02_Infrastructure/docs/rules/axiom-engine.md` INV-7). 조건-안 레버만 프론티어 — 현행(**2026-08-13 v8.4 갱신**): ① **비대칭 표적**(분포-표적 학습 · 일별 축 정보 회수 · 수리통계 구조 추정 — 주력) ② screen-tier 재고 회수(overlay 큐) ③ EW-대비/cap-tier 재분류 ④ overlay 잔여·잔차sleeve(조건부)·multi-sleeve·composite. **DPL(06-26)·regime-conditional 교차결합(07-05)·ML/uncertainty sizing(07-05 2세션)은 settled-negative 실측 — 레버 아님**(부활신호 발화 시에만 재검토, INV-7).
+⚠**①이 과거 ML 실패의 부활이 아님을 구분할 것**: 죽은 것은 ML 을 **결합기·사이징·평균 예측기**로 쓴 경로(126건 실측)이고, ①은 **표적 자체를 분포로 바꾸는** 미측정 축이다. 표적이 "다음 달 평균 수익률"인 ML 라운드는 **금지**(대조군으로만 등장) — SOT §6 금지 4종.
 
 | 제약 | 값 |
 |---|---|
