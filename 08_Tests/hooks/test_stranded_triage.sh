@@ -117,6 +117,22 @@ done
 [ -n "$PYX" ] || { echo "python 해석 실패" >&2
   echo '{"test":"stranded_triage","pass":0,"fail":1,"total":1,"preflight":"no_python"}'; exit 1; }
 
+# mutate <sed식> <출력경로> — 돌연변이본을 만들되 **실제로 바뀌었는지 확인**한다.
+#   ★2026-08-13: T8b 의 sed 가 이스케이프 때문에 원본과 동일한 사본을 냈다. 그러면 그 축은
+#     "돌연변이해도 안 바뀐다"가 아니라 **돌연변이를 안 한 것**인데, 결과만 보면 구분이 안 된다
+#     (오늘 하루 세 번 만난 계통 — 실패가 정상값 모양으로 나온다). 그래서 변화 자체를 검사한다.
+mutate() {
+  local expr="$1" out="$2"
+  sed "$expr" "$AUDIT" > "$out"
+  if cmp -s "$AUDIT" "$out"; then
+    FAIL=$((FAIL+1)); echo "  FAIL 돌연변이 미적용(축이 공허) — $expr"; return 1
+  fi
+  if ! bash -n "$out" 2>/dev/null; then
+    FAIL=$((FAIL+1)); echo "  FAIL 돌연변이본 문법 오류 — $expr"; return 1
+  fi
+  return 0
+}
+
 run_audit() {   # $1=스크립트 경로(돌연변이 주입용)
   ( cd "$R" && QM_ROOT="$R" CLAUDE_PROJECT_DIR="$R" \
       bash "${1:-$AUDIT}" --no-telegram --quiet ) >/dev/null 2>&1
@@ -153,11 +169,11 @@ print('%d:%s'%(d['summary']['collisions'], ','.join(sorted(c['path'] for c in d.
 chk "T4e 충돌 = 조치 대상 접점만(상위판 접점 제외)" "1:src/genuine.txt" "${COLLS:-X}"
 
 # ── T5/T6 돌연변이 ★면제 규칙이 실제로 일을 하는지: 무력화하면 T3/T4 가 유실로 뒤집혀야 한다.
-sed 's|^LEDGER_RE=.*|LEDGER_RE="^__never_matches__$"|' "$AUDIT" > "$TMP/mut_ledger.sh"
+mutate 's|^LEDGER_RE=.*|LEDGER_RE="^__never_matches__$"|' "$TMP/mut_ledger.sh"
 build_fixture; run_audit "$TMP/mut_ledger.sh"
 chk "T5 돌연변이(원장 규칙 제거) → T3 이 유실로 뒤집힘" "lost" "$(verdict_of_path "$R" qepm/observability/events.jsonl)"
 
-sed 's|v="superseded_upstream"|v="$v"|' "$AUDIT" > "$TMP/mut_super.sh"
+mutate 's|v="superseded_upstream"|v="$v"|' "$TMP/mut_super.sh"
 build_fixture; run_audit "$TMP/mut_super.sh"
 chk "T6 돌연변이(교체 판정 제거) → T4 가 유실로 뒤집힘" "lost" "$(verdict_of_path "$R" src/superseded.txt)"
 
@@ -176,7 +192,7 @@ chk "T8 커밋된 미병합 신규파일 → lost (dirty 아님)"    "lost" "$(v
 
 # ── T8b 검출력: 미병합 커밋 수집을 끄면 T8 이 목록에서 아예 사라져야 한다.
 #    (사라짐 = 구판 거동. 이 축이 없으면 T8 의 PASS 가 어디서 오는지 실증되지 않는다.)
-sed 's|awk .NF{print "B\\t"\$0}.|awk '"'"'NF{print ""}'"'"'|' "$AUDIT" > "$TMP/mut_branch.sh"
+mutate 's#.*MUTATE_ANCHOR_BRANCH_COLLECT.*#      | awk "NF{next}" >> "$TMP/paths.txt"#' "$TMP/mut_branch.sh"
 build_fixture; run_audit "$TMP/mut_branch.sh"
 chk "T8b 돌연변이(미병합 수집 제거) → T8 이 목록에서 소멸" "ABSENT" "$(verdict_of_path "$R" src/committed_new.txt)"
 
@@ -188,7 +204,7 @@ chk "T9 main 이 더 최신이나 무관 1줄뿐 → lost 유지"    "lost" "$(v
 # ── T9b 경계: 진짜 상위판 교체(T4)는 여전히 교체로 남는다 = 규칙이 과잉 차단하지 않는다.
 chk "T9b 내용 근거 있는 교체는 그대로 superseded"      "superseded_upstream" "$(verdict_of_path "$R" src/superseded.txt)"
 # ── T9c 돌연변이: 내용 조건을 빼면 T9 가 교체로 뒤집힌다(= 그 조건이 판정을 실제로 만든다).
-sed 's|&& \[ "\${extra:-0}" -ge "\${miss:-0}" \]|\&\& true|' "$AUDIT" > "$TMP/mut_extra.sh"
+mutate 's|-ge "${miss:-0}" \]|-ge -1 ]|' "$TMP/mut_extra.sh"
 build_fixture; run_audit "$TMP/mut_extra.sh"
 chk "T9c 돌연변이(내용 근거 제거) → T9 가 교체로 뒤집힘" "superseded_upstream" "$(verdict_of_path "$R" src/false_super.txt)"
 

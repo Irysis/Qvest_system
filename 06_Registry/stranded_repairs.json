@@ -1,19 +1,19 @@
 {
   "_doc": "좌초 수리 감사 — worktree에 갇혀 main에 도달하지 못한 수리 탐지. 생성기 02_Infrastructure/ops/stranded_repairs_audit.sh. verdict: merged_upstream=worktree가 stale 사본(정리 가능) / lost=main에 전무(조치 필요) / mostly_lost=80%+ 미존재(사실상 유실) / partial=일부만 반영(수동 확인) / deletion_only=삭제만 / ledger_divergence=append-only 원장의 세션별 분기(수리 아님·경보 제외) / superseded_upstream=main이 그 경로에서 더 앞서 나감(구판 교체·조치 불요·경보 제외). ★lost/partial만 조치 대상이다 — 2026-08-08 이전 판은 뒤 2종을 유실로 계상해 경보의 80%가 허위였다(36건 중 진짜 7건). collisions=2개 이상 worktree가 같은 파일을 main 밖에서 수정 중(병합 순서 결정 필요).",
-  "generated_at": "2026-08-13 06:53:56",
+  "generated_at": "2026-08-13 08:01:00",
   "main_ref": "main",
   "stale_threshold_days": 3,
   "summary": {
-    "worktrees_total": 34,
-    "with_uncommitted": 34,
-    "with_unmerged": 2,
-    "stale_over_threshold": 34,
-    "files_lost": 4,
-    "files_partial": 0,
-    "files_ledger_divergence": 32,
-    "files_superseded_upstream": 22,
+    "worktrees_total": 35,
+    "with_uncommitted": 35,
+    "with_unmerged": 4,
+    "stale_over_threshold": 33,
+    "files_lost": 0,
+    "files_partial": 7,
+    "files_ledger_divergence": 33,
+    "files_superseded_upstream": 16,
     "files_scratch_artifact": 4,
-    "collisions": 2,
+    "collisions": 0,
     "prune_candidates": 0
   },
   "worktrees": [
@@ -28,12 +28,12 @@
       "lost":0,
       "partial":0,
       "files":[
-        {"path":"02_Infrastructure/docs/rules/r-portability.md","state":"M","added_lines":15,"missing_in_main":10,"verdict":"superseded_upstream"},
-        {"path":"02_Infrastructure/tests/test_continuity_gate.py","state":"M","added_lines":47,"missing_in_main":0,"verdict":"merged_upstream"},
-        {"path":"08_Tests/hooks/run_all_hooks.sh","state":"M","added_lines":12,"missing_in_main":4,"verdict":"superseded_upstream"},
-        {"path":"08_Tests/regime/run_all.R","state":"M","added_lines":42,"missing_in_main":0,"verdict":"merged_upstream"},
-        {"path":"qepm/observability/events.jsonl","state":"M","added_lines":97,"missing_in_main":97,"verdict":"ledger_divergence"},
-        {"path":"08_Tests/hooks/test_runner_anchor_selffirst.sh","state":"??","added_lines":1,"missing_in_main":0,"verdict":"merged_upstream"}
+        {"path":"02_Infrastructure/docs/rules/r-portability.md","state":"M","added_lines":15,"missing_in_main":10,"main_extra_lines":116,"verdict":"superseded_upstream"},
+        {"path":"02_Infrastructure/tests/test_continuity_gate.py","state":"M","added_lines":47,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"08_Tests/hooks/run_all_hooks.sh","state":"M","added_lines":12,"missing_in_main":4,"main_extra_lines":512,"verdict":"superseded_upstream"},
+        {"path":"08_Tests/regime/run_all.R","state":"M","added_lines":42,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"qepm/observability/events.jsonl","state":"M","added_lines":97,"missing_in_main":97,"main_extra_lines":9839,"verdict":"ledger_divergence"},
+        {"path":"08_Tests/hooks/test_runner_anchor_selffirst.sh","state":"??","added_lines":1,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"}
       ]
     },
     {
@@ -47,8 +47,8 @@
       "lost":0,
       "partial":0,
       "files":[
-        {"path":"qepm/observability/events.jsonl","state":"M","added_lines":40,"missing_in_main":40,"verdict":"ledger_divergence"},
-        {"path":"08_Tests/lib/","state":"??","added_lines":1,"missing_in_main":0,"verdict":"merged_upstream"}
+        {"path":"qepm/observability/events.jsonl","state":"M","added_lines":40,"missing_in_main":40,"main_extra_lines":9840,"verdict":"ledger_divergence"},
+        {"path":"08_Tests/lib/","state":"??","added_lines":1,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"}
       ]
     },
     {
@@ -62,7 +62,7 @@
       "lost":0,
       "partial":0,
       "files":[
-        {"path":"qepm/observability/events.jsonl","state":"M","added_lines":183,"missing_in_main":183,"verdict":"ledger_divergence"}
+        {"path":"qepm/observability/events.jsonl","state":"M","added_lines":183,"missing_in_main":183,"main_extra_lines":9842,"verdict":"ledger_divergence"}
       ]
     },
     {
@@ -76,7 +76,18 @@
       "lost":0,
       "partial":0,
       "files":[
-        {"path":"qepm/observability/events.jsonl","state":"M","added_lines":25,"missing_in_main":25,"verdict":"ledger_divergence"}
+        {"path":"qepm/observability/events.jsonl","state":"M+B","added_lines":200,"missing_in_main":200,"main_extra_lines":9842,"verdict":"ledger_divergence"},
+        {"path":"02_Infrastructure/contracts/regime_label_gate.R","state":"B","added_lines":185,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"02_Infrastructure/hooks/worktask_artifact_validator.sh","state":"B","added_lines":37,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"02_Infrastructure/ops/auto_regime_overlay_ab.R","state":"B","added_lines":26,"missing_in_main":2,"main_extra_lines":108,"verdict":"superseded_upstream"},
+        {"path":"02_Infrastructure/portfolio/forward_weights_D3_M4gAE.R","state":"B","added_lines":21,"missing_in_main":0,"main_extra_lines":10,"verdict":"merged_upstream"},
+        {"path":"02_Infrastructure/portfolio/portfolio_governor.R","state":"B","added_lines":31,"missing_in_main":0,"main_extra_lines":36,"verdict":"merged_upstream"},
+        {"path":"02_Infrastructure/portfolio/regime_module_admission.R","state":"B","added_lines":35,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"02_Infrastructure/worktask/schema.json","state":"B","added_lines":39,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"06_Registry/alpha_frontier_queue.json","state":"B","added_lines":9,"missing_in_main":0,"main_extra_lines":1197,"verdict":"merged_upstream"},
+        {"path":"08_Tests/hooks/run_all_hooks.sh","state":"B","added_lines":20,"missing_in_main":0,"main_extra_lines":230,"verdict":"merged_upstream"},
+        {"path":"08_Tests/hooks/test_label_gate_schema_hook.py","state":"B","added_lines":184,"missing_in_main":1,"main_extra_lines":9,"verdict":"superseded_upstream"},
+        {"path":"08_Tests/hooks/test_label_gate_wiring.R","state":"B","added_lines":175,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"}
       ]
     },
     {
@@ -90,7 +101,7 @@
       "lost":0,
       "partial":0,
       "files":[
-        {"path":"qepm/observability/events.jsonl","state":"M","added_lines":68,"missing_in_main":68,"verdict":"ledger_divergence"}
+        {"path":"qepm/observability/events.jsonl","state":"M","added_lines":68,"missing_in_main":68,"main_extra_lines":9842,"verdict":"ledger_divergence"}
       ]
     },
     {
@@ -104,7 +115,7 @@
       "lost":0,
       "partial":0,
       "files":[
-        {"path":"qepm/observability/events.jsonl","state":"M","added_lines":200,"missing_in_main":200,"verdict":"ledger_divergence"}
+        {"path":"qepm/observability/events.jsonl","state":"M","added_lines":200,"missing_in_main":200,"main_extra_lines":9842,"verdict":"ledger_divergence"}
       ]
     },
     {
@@ -118,7 +129,7 @@
       "lost":0,
       "partial":0,
       "files":[
-        {"path":"qepm/observability/events.jsonl","state":"M","added_lines":198,"missing_in_main":198,"verdict":"ledger_divergence"}
+        {"path":"qepm/observability/events.jsonl","state":"M","added_lines":198,"missing_in_main":198,"main_extra_lines":9842,"verdict":"ledger_divergence"}
       ]
     },
     {
@@ -132,10 +143,10 @@
       "lost":0,
       "partial":0,
       "files":[
-        {"path":"02_Infrastructure/strategy_analyzer.R","state":"M","added_lines":74,"missing_in_main":0,"verdict":"merged_upstream"},
-        {"path":"08_Tests/hooks/run_all_hooks.sh","state":"M","added_lines":9,"missing_in_main":0,"verdict":"merged_upstream"},
-        {"path":"qepm/observability/events.jsonl","state":"M","added_lines":165,"missing_in_main":165,"verdict":"ledger_divergence"},
-        {"path":"08_Tests/contract_regression/test_sample_alignment_empty.R","state":"??","added_lines":1,"missing_in_main":0,"verdict":"merged_upstream"}
+        {"path":"02_Infrastructure/strategy_analyzer.R","state":"M","added_lines":74,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"08_Tests/hooks/run_all_hooks.sh","state":"M","added_lines":9,"missing_in_main":0,"main_extra_lines":521,"verdict":"merged_upstream"},
+        {"path":"qepm/observability/events.jsonl","state":"M","added_lines":165,"missing_in_main":165,"main_extra_lines":9842,"verdict":"ledger_divergence"},
+        {"path":"08_Tests/contract_regression/test_sample_alignment_empty.R","state":"??","added_lines":1,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"}
       ]
     },
     {
@@ -149,8 +160,8 @@
       "lost":0,
       "partial":0,
       "files":[
-        {"path":"08_Tests/portfolio/test_deployed_holdings_check.sh","state":"M","added_lines":121,"missing_in_main":110,"verdict":"superseded_upstream"},
-        {"path":"qepm/observability/events.jsonl","state":"M","added_lines":156,"missing_in_main":156,"verdict":"ledger_divergence"}
+        {"path":"08_Tests/portfolio/test_deployed_holdings_check.sh","state":"M","added_lines":121,"missing_in_main":110,"main_extra_lines":242,"verdict":"superseded_upstream"},
+        {"path":"qepm/observability/events.jsonl","state":"M","added_lines":156,"missing_in_main":156,"main_extra_lines":9842,"verdict":"ledger_divergence"}
       ]
     },
     {
@@ -161,14 +172,28 @@
       "dirty_files":5,
       "last_commit_age_days":4,
       "stale":true,
-      "lost":3,
+      "lost":0,
       "partial":0,
       "files":[
-        {"path":"02_Infrastructure/ops/frontier_queue_io.R","state":"M","added_lines":130,"missing_in_main":127,"verdict":"superseded_upstream"},
-        {"path":"qepm/observability/events.jsonl","state":"M","added_lines":58,"missing_in_main":58,"verdict":"ledger_divergence"},
-        {"path":"02_Infrastructure/ops/shared_registry_io.R","state":"??","added_lines":1,"missing_in_main":1,"verdict":"lost"},
-        {"path":"02_Infrastructure/worktask/wt_inflight_lock.R","state":"??","added_lines":1,"missing_in_main":1,"verdict":"lost"},
-        {"path":"08_Tests/worktask/","state":"??","added_lines":1,"missing_in_main":1,"verdict":"lost"}
+        {"path":"02_Infrastructure/ops/frontier_queue_io.R","state":"M","added_lines":130,"missing_in_main":0,"main_extra_lines":13,"verdict":"merged_upstream"},
+        {"path":"qepm/observability/events.jsonl","state":"M","added_lines":58,"missing_in_main":58,"main_extra_lines":9842,"verdict":"ledger_divergence"},
+        {"path":"02_Infrastructure/ops/shared_registry_io.R","state":"??","added_lines":1,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"02_Infrastructure/worktask/wt_inflight_lock.R","state":"??","added_lines":1,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"08_Tests/worktask/","state":"??","added_lines":1,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"}
+      ]
+    },
+    {
+      "worktree":"epic-mccarthy-4153cf",
+      "branch":"claude/grounding-repair-alarm-urgent-8a9a90",
+      "path":"C:/Users/99922/OneDrive/Quant_Module_Moltbot/.claude/worktrees/epic-mccarthy-4153cf",
+      "ahead_of_main":0,
+      "dirty_files":1,
+      "last_commit_age_days":3,
+      "stale":true,
+      "lost":0,
+      "partial":0,
+      "files":[
+        {"path":"qepm/observability/events.jsonl","state":"M","added_lines":200,"missing_in_main":198,"main_extra_lines":330,"verdict":"ledger_divergence"}
       ]
     },
     {
@@ -180,22 +205,22 @@
       "last_commit_age_days":10,
       "stale":true,
       "lost":0,
-      "partial":0,
+      "partial":1,
       "files":[
-        {"path":"02_Infrastructure/docs/rules/r-portability.md","state":"M","added_lines":25,"missing_in_main":0,"verdict":"merged_upstream"},
-        {"path":"02_Infrastructure/hooks/lockbox_audit_trail.sh","state":"M","added_lines":14,"missing_in_main":0,"verdict":"merged_upstream"},
-        {"path":"02_Infrastructure/hooks/lockbox_post_judge_seal.sh","state":"M","added_lines":5,"missing_in_main":0,"verdict":"merged_upstream"},
-        {"path":"02_Infrastructure/hooks/selection_contamination_detector.sh","state":"M","added_lines":11,"missing_in_main":0,"verdict":"merged_upstream"},
-        {"path":"02_Infrastructure/prompts/judge_init.md","state":"M","added_lines":3,"missing_in_main":0,"verdict":"merged_upstream"},
-        {"path":"02_Infrastructure/validation/judge_oos_helper.R","state":"M","added_lines":3,"missing_in_main":0,"verdict":"merged_upstream"},
-        {"path":"02_Infrastructure/worktask/v61_compliance_audit.R","state":"M","added_lines":84,"missing_in_main":0,"verdict":"merged_upstream"},
-        {"path":"02_Infrastructure/worktask/windowing.R","state":"M","added_lines":26,"missing_in_main":0,"verdict":"merged_upstream"},
-        {"path":"08_Tests/hooks/_r_portability_baseline.json","state":"M","added_lines":4,"missing_in_main":3,"verdict":"superseded_upstream"},
-        {"path":"08_Tests/hooks/run_all_hooks.sh","state":"M","added_lines":6,"missing_in_main":0,"verdict":"merged_upstream"},
-        {"path":"qepm/observability/events.jsonl","state":"M","added_lines":193,"missing_in_main":193,"verdict":"ledger_divergence"},
-        {"path":"02_Infrastructure/hooks/lockbox_paths.sh","state":"??","added_lines":1,"missing_in_main":0,"verdict":"merged_upstream"},
-        {"path":"02_Infrastructure/worktask/lockbox_paths.R","state":"??","added_lines":1,"missing_in_main":1,"verdict":"superseded_upstream"},
-        {"path":"08_Tests/hooks/test_lockbox_audit_path.R","state":"??","added_lines":1,"missing_in_main":0,"verdict":"merged_upstream"}
+        {"path":"02_Infrastructure/docs/rules/r-portability.md","state":"M","added_lines":25,"missing_in_main":0,"main_extra_lines":97,"verdict":"merged_upstream"},
+        {"path":"02_Infrastructure/hooks/lockbox_audit_trail.sh","state":"M","added_lines":14,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"02_Infrastructure/hooks/lockbox_post_judge_seal.sh","state":"M","added_lines":5,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"02_Infrastructure/hooks/selection_contamination_detector.sh","state":"M","added_lines":11,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"02_Infrastructure/prompts/judge_init.md","state":"M","added_lines":3,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"02_Infrastructure/validation/judge_oos_helper.R","state":"M","added_lines":3,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"02_Infrastructure/worktask/v61_compliance_audit.R","state":"M","added_lines":84,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"02_Infrastructure/worktask/windowing.R","state":"M","added_lines":26,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"08_Tests/hooks/_r_portability_baseline.json","state":"M","added_lines":4,"missing_in_main":3,"main_extra_lines":95,"verdict":"superseded_upstream"},
+        {"path":"08_Tests/hooks/run_all_hooks.sh","state":"M","added_lines":6,"missing_in_main":0,"main_extra_lines":524,"verdict":"merged_upstream"},
+        {"path":"qepm/observability/events.jsonl","state":"M","added_lines":193,"missing_in_main":193,"main_extra_lines":9844,"verdict":"ledger_divergence"},
+        {"path":"02_Infrastructure/hooks/lockbox_paths.sh","state":"??","added_lines":1,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"02_Infrastructure/worktask/lockbox_paths.R","state":"??","added_lines":1,"missing_in_main":1,"main_extra_lines":0,"verdict":"partial"},
+        {"path":"08_Tests/hooks/test_lockbox_audit_path.R","state":"??","added_lines":1,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"}
       ]
     },
     {
@@ -209,26 +234,26 @@
       "lost":0,
       "partial":0,
       "files":[
-        {"path":"02_Infrastructure/axiom/lcode_emit.R","state":"M","added_lines":36,"missing_in_main":0,"verdict":"merged_upstream"},
-        {"path":"02_Infrastructure/axiom/lcode_harvester.py","state":"M","added_lines":62,"missing_in_main":3,"verdict":"superseded_upstream"},
-        {"path":"02_Infrastructure/axiom/review.R","state":"M","added_lines":20,"missing_in_main":0,"verdict":"merged_upstream"},
-        {"path":"02_Infrastructure/config.R","state":"M","added_lines":36,"missing_in_main":0,"verdict":"merged_upstream"},
-        {"path":"02_Infrastructure/data/daily_refresh.sh","state":"M","added_lines":14,"missing_in_main":0,"verdict":"merged_upstream"},
-        {"path":"02_Infrastructure/memory/loop_integrator.R","state":"M","added_lines":35,"missing_in_main":0,"verdict":"merged_upstream"},
-        {"path":"02_Infrastructure/memory/memory_health_check.R","state":"M","added_lines":15,"missing_in_main":0,"verdict":"merged_upstream"},
-        {"path":"02_Infrastructure/memory/monthly_distill.sh","state":"M","added_lines":8,"missing_in_main":0,"verdict":"merged_upstream"},
-        {"path":"02_Infrastructure/memory/weekly_distill.sh","state":"M","added_lines":8,"missing_in_main":0,"verdict":"merged_upstream"},
-        {"path":"02_Infrastructure/ops/bootstrap.sh","state":"M","added_lines":60,"missing_in_main":5,"verdict":"superseded_upstream"},
-        {"path":"02_Infrastructure/ops/weekly_cleaner_sweep.R","state":"M","added_lines":70,"missing_in_main":0,"verdict":"merged_upstream"},
-        {"path":"02_Infrastructure/portfolio/daily_portfolio_nav.R","state":"M","added_lines":13,"missing_in_main":0,"verdict":"merged_upstream"},
-        {"path":"02_Infrastructure/portfolio/promote_to_production.R","state":"M","added_lines":18,"missing_in_main":0,"verdict":"merged_upstream"},
-        {"path":"02_Infrastructure/reports/report_agent_llm.R","state":"M","added_lines":28,"missing_in_main":0,"verdict":"merged_upstream"},
-        {"path":"02_Infrastructure/stage_gate_engine.R","state":"M","added_lines":22,"missing_in_main":0,"verdict":"merged_upstream"},
-        {"path":"06_Registry/index_descriptions.json","state":"M","added_lines":64,"missing_in_main":0,"verdict":"merged_upstream"},
-        {"path":"02_Infrastructure/memory/distill_stats.R","state":"??","added_lines":1,"missing_in_main":0,"verdict":"merged_upstream"},
-        {"path":"02_Infrastructure/memory/monthly_distill.R","state":"??","added_lines":1,"missing_in_main":0,"verdict":"merged_upstream"},
-        {"path":"02_Infrastructure/memory/weekly_distill.R","state":"??","added_lines":1,"missing_in_main":0,"verdict":"merged_upstream"},
-        {"path":"06_Registry/lcode_id_collision_review_20260725.md","state":"??","added_lines":1,"missing_in_main":0,"verdict":"merged_upstream"}
+        {"path":"02_Infrastructure/axiom/lcode_emit.R","state":"M","added_lines":36,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"02_Infrastructure/axiom/lcode_harvester.py","state":"M","added_lines":62,"missing_in_main":3,"main_extra_lines":43,"verdict":"superseded_upstream"},
+        {"path":"02_Infrastructure/axiom/review.R","state":"M","added_lines":20,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"02_Infrastructure/config.R","state":"M","added_lines":36,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"02_Infrastructure/data/daily_refresh.sh","state":"M","added_lines":14,"missing_in_main":0,"main_extra_lines":82,"verdict":"merged_upstream"},
+        {"path":"02_Infrastructure/memory/loop_integrator.R","state":"M","added_lines":35,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"02_Infrastructure/memory/memory_health_check.R","state":"M","added_lines":15,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"02_Infrastructure/memory/monthly_distill.sh","state":"M","added_lines":8,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"02_Infrastructure/memory/weekly_distill.sh","state":"M","added_lines":8,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"02_Infrastructure/ops/bootstrap.sh","state":"M","added_lines":60,"missing_in_main":5,"main_extra_lines":380,"verdict":"superseded_upstream"},
+        {"path":"02_Infrastructure/ops/weekly_cleaner_sweep.R","state":"M","added_lines":70,"missing_in_main":0,"main_extra_lines":84,"verdict":"merged_upstream"},
+        {"path":"02_Infrastructure/portfolio/daily_portfolio_nav.R","state":"M","added_lines":13,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"02_Infrastructure/portfolio/promote_to_production.R","state":"M","added_lines":18,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"02_Infrastructure/reports/report_agent_llm.R","state":"M","added_lines":28,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"02_Infrastructure/stage_gate_engine.R","state":"M","added_lines":22,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"06_Registry/index_descriptions.json","state":"M","added_lines":64,"missing_in_main":0,"main_extra_lines":6,"verdict":"merged_upstream"},
+        {"path":"02_Infrastructure/memory/distill_stats.R","state":"??","added_lines":1,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"02_Infrastructure/memory/monthly_distill.R","state":"??","added_lines":1,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"02_Infrastructure/memory/weekly_distill.R","state":"??","added_lines":1,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"06_Registry/lcode_id_collision_review_20260725.md","state":"??","added_lines":1,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"}
       ]
     },
     {
@@ -240,28 +265,28 @@
       "last_commit_age_days":10,
       "stale":true,
       "lost":0,
-      "partial":0,
+      "partial":1,
       "files":[
-        {"path":"06_Registry/ast_structure_log.jsonl","state":"M","added_lines":20,"missing_in_main":20,"verdict":"ledger_divergence"},
-        {"path":"qepm/observability/events.jsonl","state":"M","added_lines":200,"missing_in_main":200,"verdict":"ledger_divergence"},
-        {"path":"02_Infrastructure/alpha_search/factor_engine_fq081_dupont_indrel.R","state":"??","added_lines":1,"missing_in_main":1,"verdict":"superseded_upstream"},
-        {"path":"02_Infrastructure/alpha_search/fq081_dupont_panel.R","state":"??","added_lines":1,"missing_in_main":0,"verdict":"merged_upstream"},
-        {"path":"02_Infrastructure/alpha_search/fq081_run_diag.R","state":"??","added_lines":1,"missing_in_main":0,"verdict":"merged_upstream"},
-        {"path":"02_Infrastructure/alpha_search/fq081_run_subdiag.R","state":"??","added_lines":1,"missing_in_main":0,"verdict":"merged_upstream"}
+        {"path":"06_Registry/ast_structure_log.jsonl","state":"M","added_lines":20,"missing_in_main":20,"main_extra_lines":5588,"verdict":"ledger_divergence"},
+        {"path":"qepm/observability/events.jsonl","state":"M","added_lines":200,"missing_in_main":200,"main_extra_lines":9846,"verdict":"ledger_divergence"},
+        {"path":"02_Infrastructure/alpha_search/factor_engine_fq081_dupont_indrel.R","state":"??","added_lines":1,"missing_in_main":1,"main_extra_lines":0,"verdict":"partial"},
+        {"path":"02_Infrastructure/alpha_search/fq081_dupont_panel.R","state":"??","added_lines":1,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"02_Infrastructure/alpha_search/fq081_run_diag.R","state":"??","added_lines":1,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"02_Infrastructure/alpha_search/fq081_run_subdiag.R","state":"??","added_lines":1,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"}
       ]
     },
     {
       "worktree":"gifted-lamarr-ff5ac2",
       "branch":"claude/pg2-strategy-explanation-8d6823",
       "path":"C:/Users/99922/OneDrive/Quant_Module_Moltbot/.claude/worktrees/gifted-lamarr-ff5ac2",
-      "ahead_of_main":0,
+      "ahead_of_main":7,
       "dirty_files":1,
-      "last_commit_age_days":3,
-      "stale":true,
+      "last_commit_age_days":0,
+      "stale":false,
       "lost":0,
       "partial":0,
       "files":[
-        {"path":"qepm/observability/events.jsonl","state":"M","added_lines":11,"missing_in_main":11,"verdict":"ledger_divergence"}
+        {"path":"qepm/observability/events.jsonl","state":"M+B","added_lines":155,"missing_in_main":155,"main_extra_lines":336,"verdict":"ledger_divergence"}
       ]
     },
     {
@@ -273,11 +298,11 @@
       "last_commit_age_days":10,
       "stale":true,
       "lost":0,
-      "partial":0,
+      "partial":1,
       "files":[
-        {"path":"02_Infrastructure/hooks/auto_commit_on_stop.sh","state":"M","added_lines":43,"missing_in_main":0,"verdict":"merged_upstream"},
-        {"path":"qepm/observability/events.jsonl","state":"M","added_lines":35,"missing_in_main":35,"verdict":"ledger_divergence"},
-        {"path":"08_Tests/hooks/test_auto_commit_worktree_target.sh","state":"??","added_lines":1,"missing_in_main":1,"verdict":"superseded_upstream"}
+        {"path":"02_Infrastructure/hooks/auto_commit_on_stop.sh","state":"M","added_lines":43,"missing_in_main":0,"main_extra_lines":38,"verdict":"merged_upstream"},
+        {"path":"qepm/observability/events.jsonl","state":"M","added_lines":35,"missing_in_main":35,"main_extra_lines":9846,"verdict":"ledger_divergence"},
+        {"path":"08_Tests/hooks/test_auto_commit_worktree_target.sh","state":"??","added_lines":1,"missing_in_main":1,"main_extra_lines":0,"verdict":"partial"}
       ]
     },
     {
@@ -291,7 +316,7 @@
       "lost":0,
       "partial":0,
       "files":[
-        {"path":"02_Infrastructure/portfolio/measurement_basis_audit.R","state":"M","added_lines":4,"missing_in_main":0,"verdict":"merged_upstream"}
+        {"path":"02_Infrastructure/portfolio/measurement_basis_audit.R","state":"M","added_lines":4,"missing_in_main":0,"main_extra_lines":71,"verdict":"merged_upstream"}
       ]
     },
     {
@@ -305,7 +330,7 @@
       "lost":0,
       "partial":0,
       "files":[
-        {"path":"qepm/observability/events.jsonl","state":"M","added_lines":47,"missing_in_main":47,"verdict":"ledger_divergence"}
+        {"path":"qepm/observability/events.jsonl","state":"M","added_lines":47,"missing_in_main":47,"main_extra_lines":9846,"verdict":"ledger_divergence"}
       ]
     },
     {
@@ -317,15 +342,15 @@
       "last_commit_age_days":10,
       "stale":true,
       "lost":0,
-      "partial":0,
+      "partial":1,
       "files":[
-        {"path":"08_Tests/data/test_contract_panel.R","state":"M","added_lines":34,"missing_in_main":0,"verdict":"merged_upstream"},
-        {"path":"08_Tests/factor_db/test_build_hash_provenance.R","state":"M","added_lines":22,"missing_in_main":0,"verdict":"merged_upstream"},
-        {"path":"08_Tests/factor_db/test_ic_frontier_check.R","state":"M","added_lines":36,"missing_in_main":0,"verdict":"merged_upstream"},
-        {"path":"08_Tests/hooks/run_all_hooks.sh","state":"M","added_lines":64,"missing_in_main":0,"verdict":"merged_upstream"},
-        {"path":"08_Tests/portfolio/test_deployed_holdings_check.sh","state":"M","added_lines":50,"missing_in_main":36,"verdict":"superseded_upstream"},
-        {"path":"qepm/observability/events.jsonl","state":"M","added_lines":191,"missing_in_main":191,"verdict":"ledger_divergence"},
-        {"path":"08_Tests/hooks/test_prereq_skip_contract.sh","state":"??","added_lines":1,"missing_in_main":1,"verdict":"superseded_upstream"}
+        {"path":"08_Tests/data/test_contract_panel.R","state":"M","added_lines":34,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"08_Tests/factor_db/test_build_hash_provenance.R","state":"M","added_lines":22,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"08_Tests/factor_db/test_ic_frontier_check.R","state":"M","added_lines":36,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"08_Tests/hooks/run_all_hooks.sh","state":"M","added_lines":64,"missing_in_main":0,"main_extra_lines":461,"verdict":"merged_upstream"},
+        {"path":"08_Tests/portfolio/test_deployed_holdings_check.sh","state":"M","added_lines":50,"missing_in_main":36,"main_extra_lines":236,"verdict":"superseded_upstream"},
+        {"path":"qepm/observability/events.jsonl","state":"M","added_lines":191,"missing_in_main":191,"main_extra_lines":9847,"verdict":"ledger_divergence"},
+        {"path":"08_Tests/hooks/test_prereq_skip_contract.sh","state":"??","added_lines":1,"missing_in_main":1,"main_extra_lines":0,"verdict":"partial"}
       ]
     },
     {
@@ -336,11 +361,257 @@
       "dirty_files":2,
       "last_commit_age_days":3,
       "stale":true,
-      "lost":1,
+      "lost":0,
       "partial":0,
       "files":[
-        {"path":"qepm/observability/events.jsonl","state":"M","added_lines":8,"missing_in_main":8,"verdict":"ledger_divergence"},
-        {"path":"stage_artifacts/fq168_overlay_deltair_20260810/run_p25_q1_era_persistence.R","state":"??","added_lines":1,"missing_in_main":1,"verdict":"lost"}
+        {"path":"qepm/observability/events.jsonl","state":"M+B","added_lines":200,"missing_in_main":190,"main_extra_lines":8992,"verdict":"ledger_divergence"},
+        {"path":"stage_artifacts/fq168_overlay_deltair_20260810/run_p25_q1_era_persistence.R","state":"??","added_lines":1,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":".claude/rules/measurement-graduation.md","state":"B","added_lines":1,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"02_Infrastructure/contracts/close_round.R","state":"B","added_lines":30,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"02_Infrastructure/contracts/cluster_power.R","state":"B","added_lines":121,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"02_Infrastructure/contracts/overlay_precheck.R","state":"B","added_lines":130,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"02_Infrastructure/contracts/required_effect_size.R","state":"B","added_lines":54,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"02_Infrastructure/data/rawdata_sanitize.R","state":"B","added_lines":7,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"02_Infrastructure/docs/rules/r-portability.md","state":"B","added_lines":22,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"02_Infrastructure/worktask/lineage_utils.R","state":"B","added_lines":145,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"06_Registry/cache_only_ledgers_snapshot_20260809_README.md","state":"B","added_lines":32,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"06_Registry/continuity_blocks_snapshot_20260809.jsonl","state":"B","added_lines":77,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"06_Registry/failure_revival_history_snapshot_20260809.jsonl","state":"B","added_lines":39,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"06_Registry/hygiene_manifest_snapshot_20260809.jsonl","state":"B","added_lines":200,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"06_Registry/overlay_base_q1_share_20260810.json","state":"B","added_lines":91,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"06_Registry/round_closures_snapshot_20260809.jsonl","state":"B","added_lines":200,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"06_Registry/round_closures_snapshot_20260809_README.md","state":"B","added_lines":13,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"06_Registry/round_closures_snapshot_20260809_index.json","state":"B","added_lines":82,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"08_Tests/hooks/run_all_hooks.sh","state":"B","added_lines":51,"missing_in_main":0,"main_extra_lines":191,"verdict":"merged_upstream"},
+        {"path":"08_Tests/hooks/test_close_round_baseline.R","state":"B","added_lines":87,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"08_Tests/hooks/test_cluster_power.R","state":"B","added_lines":96,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"08_Tests/hooks/test_dryrun_no_side_effects.R","state":"B","added_lines":91,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"08_Tests/hooks/test_lineage_cwd_root.R","state":"B","added_lines":178,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"08_Tests/hooks/test_overlay_precheck.R","state":"B","added_lines":131,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"08_Tests/hooks/test_power_bar_nw_factor.R","state":"B","added_lines":104,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"stage_artifacts/fq127_base_dependency_20260810/c1_result.json","state":"B","added_lines":62,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"stage_artifacts/fq127_base_dependency_20260810/f5_result.json","state":"B","added_lines":35,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"stage_artifacts/fq127_base_dependency_20260810/f8_result.json","state":"B","added_lines":50,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"stage_artifacts/fq127_base_dependency_20260810/g1_result.json","state":"B","added_lines":9,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"stage_artifacts/fq127_base_dependency_20260810/g1b_result.json","state":"B","added_lines":9,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"stage_artifacts/fq127_base_dependency_20260810/h2_result.json","state":"B","added_lines":15,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"stage_artifacts/fq127_base_dependency_20260810/run_c1_improvement_claim_census.R","state":"B","added_lines":64,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"stage_artifacts/fq127_base_dependency_20260810/run_f5_dryrun_message_honesty.R","state":"B","added_lines":95,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"stage_artifacts/fq127_base_dependency_20260810/run_f8_unguarded_writes.R","state":"B","added_lines":92,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"stage_artifacts/fq127_base_dependency_20260810/run_g1_delta_ir_base.R","state":"B","added_lines":54,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"stage_artifacts/fq127_base_dependency_20260810/run_g1b_book_state_identity.R","state":"B","added_lines":47,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"stage_artifacts/fq127_base_dependency_20260810/run_h2_reconstruct_incumbent.R","state":"B","added_lines":74,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"stage_artifacts/fq168_overlay_deltair_20260810/p0_result.json","state":"B","added_lines":20,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"stage_artifacts/fq168_overlay_deltair_20260810/p11_result.json","state":"B","added_lines":31,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"stage_artifacts/fq168_overlay_deltair_20260810/p14_result.json","state":"B","added_lines":12,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"stage_artifacts/fq168_overlay_deltair_20260810/p15_result.json","state":"B","added_lines":40,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"stage_artifacts/fq168_overlay_deltair_20260810/p16_result.json","state":"B","added_lines":158,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"stage_artifacts/fq168_overlay_deltair_20260810/p20_result.json","state":"B","added_lines":94,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"stage_artifacts/fq168_overlay_deltair_20260810/p23_result.json","state":"B","added_lines":35,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"stage_artifacts/fq168_overlay_deltair_20260810/p23b_result.json","state":"B","added_lines":33,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"stage_artifacts/fq168_overlay_deltair_20260810/p24_result.json","state":"B","added_lines":38,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"stage_artifacts/fq168_overlay_deltair_20260810/p2_result.json","state":"B","added_lines":10,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"stage_artifacts/fq168_overlay_deltair_20260810/p3a_result.json","state":"B","added_lines":8,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"stage_artifacts/fq168_overlay_deltair_20260810/p3b_result.json","state":"B","added_lines":10,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"stage_artifacts/fq168_overlay_deltair_20260810/p5_result.json","state":"B","added_lines":24,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"stage_artifacts/fq168_overlay_deltair_20260810/p6_result.json","state":"B","added_lines":42,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"stage_artifacts/fq168_overlay_deltair_20260810/p9_result.json","state":"B","added_lines":33,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"stage_artifacts/fq168_overlay_deltair_20260810/p9b_result.json","state":"B","added_lines":34,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"stage_artifacts/fq168_overlay_deltair_20260810/run_p0_resolution_precheck.R","state":"B","added_lines":59,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"stage_artifacts/fq168_overlay_deltair_20260810/run_p11_lv1_grid.R","state":"B","added_lines":74,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"stage_artifacts/fq168_overlay_deltair_20260810/run_p14_overlap_mechanism.R","state":"B","added_lines":69,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"stage_artifacts/fq168_overlay_deltair_20260810/run_p15_low_q1_bases.R","state":"B","added_lines":106,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"stage_artifacts/fq168_overlay_deltair_20260810/run_p16_q1share_predicts_overlay.R","state":"B","added_lines":99,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"stage_artifacts/fq168_overlay_deltair_20260810/run_p19_publish_q1_table.R","state":"B","added_lines":42,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"stage_artifacts/fq168_overlay_deltair_20260810/run_p20_treatment_generalization.R","state":"B","added_lines":83,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"stage_artifacts/fq168_overlay_deltair_20260810/run_p23_rel14_extreme_contrast.R","state":"B","added_lines":73,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"stage_artifacts/fq168_overlay_deltair_20260810/run_p23b_tie_group_contrast.R","state":"B","added_lines":65,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"stage_artifacts/fq168_overlay_deltair_20260810/run_p24_q1_persistence.R","state":"B","added_lines":61,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"stage_artifacts/fq168_overlay_deltair_20260810/run_p2_panel_high_resolution.R","state":"B","added_lines":82,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"stage_artifacts/fq168_overlay_deltair_20260810/run_p3a_sector_availability.R","state":"B","added_lines":59,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"stage_artifacts/fq168_overlay_deltair_20260810/run_p3b_direction_check.R","state":"B","added_lines":74,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"stage_artifacts/fq168_overlay_deltair_20260810/run_p5_definition_sensitivity.R","state":"B","added_lines":80,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"stage_artifacts/fq168_overlay_deltair_20260810/run_p6_coordinate_grid.R","state":"B","added_lines":87,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"stage_artifacts/fq168_overlay_deltair_20260810/run_p9_era_decomposition.R","state":"B","added_lines":75,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"stage_artifacts/fq168_overlay_deltair_20260810/run_p9b_common_window_shape.R","state":"B","added_lines":70,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"stage_artifacts/fq170_band_cost_20260809/aa1_result.json","state":"B","added_lines":24,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"stage_artifacts/fq170_band_cost_20260809/ac1_result.json","state":"B","added_lines":20,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"stage_artifacts/fq170_band_cost_20260809/ad1_result.json","state":"B","added_lines":35,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"stage_artifacts/fq170_band_cost_20260809/ag2_result.json","state":"B","added_lines":16,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"stage_artifacts/fq170_band_cost_20260809/ai1_result.json","state":"B","added_lines":43,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"stage_artifacts/fq170_band_cost_20260809/ak1_result.json","state":"B","added_lines":4,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"stage_artifacts/fq170_band_cost_20260809/ak2_result.json","state":"B","added_lines":30,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"stage_artifacts/fq170_band_cost_20260809/aq2_result.json","state":"B","added_lines":36,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"stage_artifacts/fq170_band_cost_20260809/as2_result.json","state":"B","added_lines":37,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"stage_artifacts/fq170_band_cost_20260809/au1_result.json","state":"B","added_lines":30,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"stage_artifacts/fq170_band_cost_20260809/au2_result.json","state":"B","added_lines":9,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"stage_artifacts/fq170_band_cost_20260809/az1_result.json","state":"B","added_lines":12,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"stage_artifacts/fq170_band_cost_20260809/bb4_result.json","state":"B","added_lines":9,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"stage_artifacts/fq170_band_cost_20260809/bd1_result.json","state":"B","added_lines":7,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"stage_artifacts/fq170_band_cost_20260809/bf2_result.json","state":"B","added_lines":10,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"stage_artifacts/fq170_band_cost_20260809/bh2_result.json","state":"B","added_lines":9,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"stage_artifacts/fq170_band_cost_20260809/bj1_result.json","state":"B","added_lines":8,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"stage_artifacts/fq170_band_cost_20260809/bl1_result.json","state":"B","added_lines":25,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"stage_artifacts/fq170_band_cost_20260809/bn1_result.json","state":"B","added_lines":18,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"stage_artifacts/fq170_band_cost_20260809/bn3_result.json","state":"B","added_lines":15,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"stage_artifacts/fq170_band_cost_20260809/bq1_result.json","state":"B","added_lines":26,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"stage_artifacts/fq170_band_cost_20260809/bs2_result.json","state":"B","added_lines":22,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"stage_artifacts/fq170_band_cost_20260809/bu1_result.json","state":"B","added_lines":54,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"stage_artifacts/fq170_band_cost_20260809/bw1_result.json","state":"B","added_lines":25,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"stage_artifacts/fq170_band_cost_20260809/e2_argmax_stability.R","state":"B","added_lines":71,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"stage_artifacts/fq170_band_cost_20260809/e2_result.json","state":"B","added_lines":28,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"stage_artifacts/fq170_band_cost_20260809/f1_result.json","state":"B","added_lines":47,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"stage_artifacts/fq170_band_cost_20260809/h1_result.json","state":"B","added_lines":59,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"stage_artifacts/fq170_band_cost_20260809/i3_result.json","state":"B","added_lines":72,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"stage_artifacts/fq170_band_cost_20260809/k1_result.json","state":"B","added_lines":26,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"stage_artifacts/fq170_band_cost_20260809/l2_result.json","state":"B","added_lines":58,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"stage_artifacts/fq170_band_cost_20260809/l5_result.json","state":"B","added_lines":59,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"stage_artifacts/fq170_band_cost_20260809/m1_result.json","state":"B","added_lines":46,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"stage_artifacts/fq170_band_cost_20260809/next_queue_precheck.json","state":"B","added_lines":127,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"stage_artifacts/fq170_band_cost_20260809/p10c_result.json","state":"B","added_lines":82,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"stage_artifacts/fq170_band_cost_20260809/p11a_result.json","state":"B","added_lines":81,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"stage_artifacts/fq170_band_cost_20260809/p11c_result.json","state":"B","added_lines":134,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"stage_artifacts/fq170_band_cost_20260809/p12a_result.json","state":"B","added_lines":95,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"stage_artifacts/fq170_band_cost_20260809/p13b_result.json","state":"B","added_lines":96,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"stage_artifacts/fq170_band_cost_20260809/p14b_result.json","state":"B","added_lines":46,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"stage_artifacts/fq170_band_cost_20260809/p15b_result.json","state":"B","added_lines":36,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"stage_artifacts/fq170_band_cost_20260809/p15c_result.json","state":"B","added_lines":75,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"stage_artifacts/fq170_band_cost_20260809/p16a_result.json","state":"B","added_lines":66,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"stage_artifacts/fq170_band_cost_20260809/p17a_result.json","state":"B","added_lines":141,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"stage_artifacts/fq170_band_cost_20260809/p19b_result.json","state":"B","added_lines":124,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"stage_artifacts/fq170_band_cost_20260809/p1a_result.json","state":"B","added_lines":24,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"stage_artifacts/fq170_band_cost_20260809/p1e_result.json","state":"B","added_lines":23,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"stage_artifacts/fq170_band_cost_20260809/p1g_result.json","state":"B","added_lines":18,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"stage_artifacts/fq170_band_cost_20260809/p1n_result.json","state":"B","added_lines":20,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"stage_artifacts/fq170_band_cost_20260809/p1q_result.json","state":"B","added_lines":8,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"stage_artifacts/fq170_band_cost_20260809/p20a_result.json","state":"B","added_lines":48,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"stage_artifacts/fq170_band_cost_20260809/p21a_result.json","state":"B","added_lines":84,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"stage_artifacts/fq170_band_cost_20260809/p22b2_result.json","state":"B","added_lines":61,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"stage_artifacts/fq170_band_cost_20260809/p22b_result.json","state":"B","added_lines":91,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"stage_artifacts/fq170_band_cost_20260809/p23a_result.json","state":"B","added_lines":45,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"stage_artifacts/fq170_band_cost_20260809/p2_result.json","state":"B","added_lines":44,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"stage_artifacts/fq170_band_cost_20260809/p2c_result.json","state":"B","added_lines":25,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"stage_artifacts/fq170_band_cost_20260809/p5a_result.json","state":"B","added_lines":21,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"stage_artifacts/fq170_band_cost_20260809/p6c_result.json","state":"B","added_lines":23,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"stage_artifacts/fq170_band_cost_20260809/p7a_result.json","state":"B","added_lines":22,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"stage_artifacts/fq170_band_cost_20260809/p8a_recon.json","state":"B","added_lines":24,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"stage_artifacts/fq170_band_cost_20260809/p8a_result.json","state":"B","added_lines":39,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"stage_artifacts/fq170_band_cost_20260809/p8b_result.json","state":"B","added_lines":77,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"stage_artifacts/fq170_band_cost_20260809/p8c_result.json","state":"B","added_lines":130,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"stage_artifacts/fq170_band_cost_20260809/p8d_result.json","state":"B","added_lines":24,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"stage_artifacts/fq170_band_cost_20260809/p9a_result.json","state":"B","added_lines":144,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"stage_artifacts/fq170_band_cost_20260809/p9b_result.json","state":"B","added_lines":24,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"stage_artifacts/fq170_band_cost_20260809/p9c_result.json","state":"B","added_lines":161,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"stage_artifacts/fq170_band_cost_20260809/peek_battery_results.R","state":"B","added_lines":12,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"stage_artifacts/fq170_band_cost_20260809/peek_panel.R","state":"B","added_lines":7,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"stage_artifacts/fq170_band_cost_20260809/preregistration.json","state":"B","added_lines":42,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"stage_artifacts/fq170_band_cost_20260809/preregistration_f1.json","state":"B","added_lines":37,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"stage_artifacts/fq170_band_cost_20260809/preregistration_h1.json","state":"B","added_lines":37,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"stage_artifacts/fq170_band_cost_20260809/preregistration_i3.json","state":"B","added_lines":34,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"stage_artifacts/fq170_band_cost_20260809/preregistration_k1.json","state":"B","added_lines":34,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"stage_artifacts/fq170_band_cost_20260809/preregistration_m1.json","state":"B","added_lines":31,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"stage_artifacts/fq170_band_cost_20260809/q2_result.json","state":"B","added_lines":65,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"stage_artifacts/fq170_band_cost_20260809/q8_result.json","state":"B","added_lines":23,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"stage_artifacts/fq170_band_cost_20260809/q9_fq167_power.json","state":"B","added_lines":19,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"stage_artifacts/fq170_band_cost_20260809/r1_result.json","state":"B","added_lines":56,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"stage_artifacts/fq170_band_cost_20260809/result.json","state":"B","added_lines":64,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"stage_artifacts/fq170_band_cost_20260809/run_aa1_cross_validation.R","state":"B","added_lines":69,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"stage_artifacts/fq170_band_cost_20260809/run_ac1_argmax_attribution.R","state":"B","added_lines":39,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"stage_artifacts/fq170_band_cost_20260809/run_ad1_adjacent_pair.R","state":"B","added_lines":62,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"stage_artifacts/fq170_band_cost_20260809/run_ae1_capital_track.R","state":"B","added_lines":62,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"stage_artifacts/fq170_band_cost_20260809/run_ag2_swap.R","state":"B","added_lines":73,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"stage_artifacts/fq170_band_cost_20260809/run_ai1_exposure_curve.R","state":"B","added_lines":56,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"stage_artifacts/fq170_band_cost_20260809/run_ak1_cap_tier.R","state":"B","added_lines":55,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"stage_artifacts/fq170_band_cost_20260809/run_ak2_turnover.R","state":"B","added_lines":66,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"stage_artifacts/fq170_band_cost_20260809/run_aq2_decompose_decay.R","state":"B","added_lines":64,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"stage_artifacts/fq170_band_cost_20260809/run_as2_halflife.R","state":"B","added_lines":64,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"stage_artifacts/fq170_band_cost_20260809/run_au1_band_width.R","state":"B","added_lines":58,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"stage_artifacts/fq170_band_cost_20260809/run_au2_k4_rebound.R","state":"B","added_lines":82,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"stage_artifacts/fq170_band_cost_20260809/run_az1_inverted_screen.R","state":"B","added_lines":32,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"stage_artifacts/fq170_band_cost_20260809/run_az1b_probe.R","state":"B","added_lines":14,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"stage_artifacts/fq170_band_cost_20260809/run_az1c_census.R","state":"B","added_lines":67,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"stage_artifacts/fq170_band_cost_20260809/run_band_cost.R","state":"B","added_lines":102,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"stage_artifacts/fq170_band_cost_20260809/run_bb4_independence.R","state":"B","added_lines":61,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"stage_artifacts/fq170_band_cost_20260809/run_bd1_d03_pc1.R","state":"B","added_lines":54,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"stage_artifacts/fq170_band_cost_20260809/run_bd1b_d03_pc1.R","state":"B","added_lines":61,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"stage_artifacts/fq170_band_cost_20260809/run_bf2_hump_dim.R","state":"B","added_lines":70,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"stage_artifacts/fq170_band_cost_20260809/run_bh2_monotone_dim.R","state":"B","added_lines":68,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"stage_artifacts/fq170_band_cost_20260809/run_bj1_m26_pc1.R","state":"B","added_lines":62,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"stage_artifacts/fq170_band_cost_20260809/run_bl1_base_strengthen.R","state":"B","added_lines":75,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"stage_artifacts/fq170_band_cost_20260809/run_bn1_base_retry.R","state":"B","added_lines":71,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"stage_artifacts/fq170_band_cost_20260809/run_bn3_coverage_audit.R","state":"B","added_lines":54,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"stage_artifacts/fq170_band_cost_20260809/run_bq1_combine.R","state":"B","added_lines":85,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"stage_artifacts/fq170_band_cost_20260809/run_bs2_orthogonal_base.R","state":"B","added_lines":93,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"stage_artifacts/fq170_band_cost_20260809/run_bu1_composite_orth.R","state":"B","added_lines":100,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"stage_artifacts/fq170_band_cost_20260809/run_bw1_selection_split.R","state":"B","added_lines":60,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"stage_artifacts/fq170_band_cost_20260809/run_evidence_trackability_census.R","state":"B","added_lines":67,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"stage_artifacts/fq170_band_cost_20260809/run_f1_fixed_band.R","state":"B","added_lines":87,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"stage_artifacts/fq170_band_cost_20260809/run_h1_band_neutral.R","state":"B","added_lines":100,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"stage_artifacts/fq170_band_cost_20260809/run_i3_top_concentration.R","state":"B","added_lines":76,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"stage_artifacts/fq170_band_cost_20260809/run_k1_shape_filter.R","state":"B","added_lines":94,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"stage_artifacts/fq170_band_cost_20260809/run_l2_cache_only_ledger_census.R","state":"B","added_lines":74,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"stage_artifacts/fq170_band_cost_20260809/run_l5_scanner_fixed_ast.R","state":"B","added_lines":136,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"stage_artifacts/fq170_band_cost_20260809/run_m1_filter_vs_random.R","state":"B","added_lines":93,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"stage_artifacts/fq170_band_cost_20260809/run_next_queue_precheck.R","state":"B","added_lines":78,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"stage_artifacts/fq170_band_cost_20260809/run_p10c_delta_distribution.R","state":"B","added_lines":44,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"stage_artifacts/fq170_band_cost_20260809/run_p11a_swapd_to_portt.R","state":"B","added_lines":85,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"stage_artifacts/fq170_band_cost_20260809/run_p11c_turnover_cost.R","state":"B","added_lines":94,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"stage_artifacts/fq170_band_cost_20260809/run_p12a_strong_bases.R","state":"B","added_lines":93,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"stage_artifacts/fq170_band_cost_20260809/run_p13b_random_composite_null.R","state":"B","added_lines":85,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"stage_artifacts/fq170_band_cost_20260809/run_p14b_c_family_reproduction.R","state":"B","added_lines":99,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"stage_artifacts/fq170_band_cost_20260809/run_p15b_era_split.R","state":"B","added_lines":96,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"stage_artifacts/fq170_band_cost_20260809/run_p15c_band_permutation.R","state":"B","added_lines":98,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"stage_artifacts/fq170_band_cost_20260809/run_p16a_perm_other_bases.R","state":"B","added_lines":107,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"stage_artifacts/fq170_band_cost_20260809/run_p17a_mechanism_predictor.R","state":"B","added_lines":100,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"stage_artifacts/fq170_band_cost_20260809/run_p19b_decay_recovery.R","state":"B","added_lines":100,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"stage_artifacts/fq170_band_cost_20260809/run_p1a_anchor_align.R","state":"B","added_lines":57,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"stage_artifacts/fq170_band_cost_20260809/run_p1e_pg2_base.R","state":"B","added_lines":73,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"stage_artifacts/fq170_band_cost_20260809/run_p1g_vintage_lag.R","state":"B","added_lines":58,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"stage_artifacts/fq170_band_cost_20260809/run_p1n_direction_census.R","state":"B","added_lines":48,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"stage_artifacts/fq170_band_cost_20260809/run_p1q_return_direction.R","state":"B","added_lines":46,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"stage_artifacts/fq170_band_cost_20260809/run_p20a_recovery_fresh_sample.R","state":"B","added_lines":98,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"stage_artifacts/fq170_band_cost_20260809/run_p21a_within_base_recovery.R","state":"B","added_lines":86,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"stage_artifacts/fq170_band_cost_20260809/run_p22b2_declared_taxonomy.R","state":"B","added_lines":69,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"stage_artifacts/fq170_band_cost_20260809/run_p22b_family_constant_audit.R","state":"B","added_lines":77,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"stage_artifacts/fq170_band_cost_20260809/run_p23a_stratification_impact.R","state":"B","added_lines":68,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"stage_artifacts/fq170_band_cost_20260809/run_p2_fd_robustness.R","state":"B","added_lines":79,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"stage_artifacts/fq170_band_cost_20260809/run_p2c_why_pg2_strong.R","state":"B","added_lines":61,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"stage_artifacts/fq170_band_cost_20260809/run_p5a_three_way.R","state":"B","added_lines":90,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"stage_artifacts/fq170_band_cost_20260809/run_p6c_core4_shape.R","state":"B","added_lines":79,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"stage_artifacts/fq170_band_cost_20260809/run_p7a_overlap_mechanism.R","state":"B","added_lines":71,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"stage_artifacts/fq170_band_cost_20260809/run_p8a_rank_quality.R","state":"B","added_lines":91,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"stage_artifacts/fq170_band_cost_20260809/run_p8a_reconcile.R","state":"B","added_lines":31,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"stage_artifacts/fq170_band_cost_20260809/run_p8b_slope_rule_holdout.R","state":"B","added_lines":118,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"stage_artifacts/fq170_band_cost_20260809/run_p8c_shared_term_artifact.R","state":"B","added_lines":96,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"stage_artifacts/fq170_band_cost_20260809/run_p8d_dedup_and_power.R","state":"B","added_lines":54,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"stage_artifacts/fq170_band_cost_20260809/run_p9a_slope_rule_powered.R","state":"B","added_lines":109,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"stage_artifacts/fq170_band_cost_20260809/run_p9b_base_composition.R","state":"B","added_lines":35,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"stage_artifacts/fq170_band_cost_20260809/run_p9c_stratified.R","state":"B","added_lines":98,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"stage_artifacts/fq170_band_cost_20260809/run_q2_ready_now_shortlist.R","state":"B","added_lines":60,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"stage_artifacts/fq170_band_cost_20260809/run_q8_reliable_shortlist.R","state":"B","added_lines":60,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"stage_artifacts/fq170_band_cost_20260809/run_q9_fq167_power_precheck.R","state":"B","added_lines":57,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"stage_artifacts/fq170_band_cost_20260809/run_r1_monotonicity.R","state":"B","added_lines":87,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"stage_artifacts/fq170_band_cost_20260809/run_snapshot_hygiene_jsonl.R","state":"B","added_lines":39,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"stage_artifacts/fq170_band_cost_20260809/run_snapshot_hygiene_manifest.R","state":"B","added_lines":22,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"stage_artifacts/fq170_band_cost_20260809/run_snapshot_index_json.R","state":"B","added_lines":17,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"stage_artifacts/fq170_band_cost_20260809/run_snapshot_remaining_ledgers.R","state":"B","added_lines":48,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"stage_artifacts/fq170_band_cost_20260809/run_snapshot_round_ledger.R","state":"B","added_lines":57,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"stage_artifacts/fq170_band_cost_20260809/run_t1_decompose.R","state":"B","added_lines":65,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"stage_artifacts/fq170_band_cost_20260809/run_t2_width_vs_intensity.R","state":"B","added_lines":70,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"stage_artifacts/fq170_band_cost_20260809/run_v1_adaptivity.R","state":"B","added_lines":63,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"stage_artifacts/fq170_band_cost_20260809/run_v2_kt_regime.R","state":"B","added_lines":54,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"stage_artifacts/fq170_band_cost_20260809/run_v3_residual_robustness.R","state":"B","added_lines":66,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"stage_artifacts/fq170_band_cost_20260809/run_y3_material_generalization.R","state":"B","added_lines":63,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"stage_artifacts/fq170_band_cost_20260809/run_z1_generalization_fixed.R","state":"B","added_lines":64,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"stage_artifacts/fq170_band_cost_20260809/run_z2_contiguity.R","state":"B","added_lines":67,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"stage_artifacts/fq170_band_cost_20260809/t1_result.json","state":"B","added_lines":43,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"stage_artifacts/fq170_band_cost_20260809/t2_result.json","state":"B","added_lines":28,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"stage_artifacts/fq170_band_cost_20260809/v1_result.json","state":"B","added_lines":19,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"stage_artifacts/fq170_band_cost_20260809/v2_result.json","state":"B","added_lines":21,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"stage_artifacts/fq170_band_cost_20260809/v3_result.json","state":"B","added_lines":7,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"stage_artifacts/fq170_band_cost_20260809/y3_result.json","state":"B","added_lines":32,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"stage_artifacts/fq170_band_cost_20260809/z1_result.json","state":"B","added_lines":29,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"stage_artifacts/fq170_band_cost_20260809/z2_result.json","state":"B","added_lines":38,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"}
       ]
     },
     {
@@ -354,10 +625,10 @@
       "lost":0,
       "partial":0,
       "files":[
-        {"path":"02_Infrastructure/telegram/telegram_notify.R","state":"M","added_lines":38,"missing_in_main":0,"verdict":"merged_upstream"},
-        {"path":"08_Tests/hooks/run_all_hooks.sh","state":"M","added_lines":11,"missing_in_main":0,"verdict":"merged_upstream"},
-        {"path":"qepm/observability/events.jsonl","state":"M","added_lines":149,"missing_in_main":149,"verdict":"ledger_divergence"},
-        {"path":"08_Tests/hooks/test_telegram_entity_scan.R","state":"??","added_lines":1,"missing_in_main":0,"verdict":"merged_upstream"}
+        {"path":"02_Infrastructure/telegram/telegram_notify.R","state":"M","added_lines":38,"missing_in_main":0,"main_extra_lines":10,"verdict":"merged_upstream"},
+        {"path":"08_Tests/hooks/run_all_hooks.sh","state":"M","added_lines":11,"missing_in_main":0,"main_extra_lines":519,"verdict":"merged_upstream"},
+        {"path":"qepm/observability/events.jsonl","state":"M","added_lines":149,"missing_in_main":149,"main_extra_lines":9851,"verdict":"ledger_divergence"},
+        {"path":"08_Tests/hooks/test_telegram_entity_scan.R","state":"??","added_lines":1,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"}
       ]
     },
     {
@@ -371,14 +642,14 @@
       "lost":0,
       "partial":0,
       "files":[
-        {"path":"02_Infrastructure/contracts/register_module.R","state":"M","added_lines":116,"missing_in_main":0,"verdict":"merged_upstream"},
-        {"path":"02_Infrastructure/docs/rules/factor-rotation.md","state":"M","added_lines":1,"missing_in_main":0,"verdict":"merged_upstream"},
-        {"path":"06_Registry/INDEX.md","state":"M","added_lines":1,"missing_in_main":1,"verdict":"superseded_upstream"},
-        {"path":"06_Registry/module_quarantine.json","state":"M","added_lines":82,"missing_in_main":3,"verdict":"superseded_upstream"},
-        {"path":"08_Tests/hooks/run_all_hooks.sh","state":"M","added_lines":12,"missing_in_main":2,"verdict":"superseded_upstream"},
-        {"path":"qepm/observability/events.jsonl","state":"M","added_lines":200,"missing_in_main":200,"verdict":"ledger_divergence"},
-        {"path":"02_Infrastructure/tools/reconcile_module_registries.R","state":"??","added_lines":1,"missing_in_main":0,"verdict":"merged_upstream"},
-        {"path":"08_Tests/contract_regression/test_module_registry_exclusivity.R","state":"??","added_lines":1,"missing_in_main":0,"verdict":"merged_upstream"}
+        {"path":"02_Infrastructure/contracts/register_module.R","state":"M","added_lines":116,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"02_Infrastructure/docs/rules/factor-rotation.md","state":"M","added_lines":1,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"06_Registry/INDEX.md","state":"M","added_lines":1,"missing_in_main":1,"main_extra_lines":1,"verdict":"superseded_upstream"},
+        {"path":"06_Registry/module_quarantine.json","state":"M","added_lines":82,"missing_in_main":3,"main_extra_lines":265,"verdict":"superseded_upstream"},
+        {"path":"08_Tests/hooks/run_all_hooks.sh","state":"M","added_lines":12,"missing_in_main":2,"main_extra_lines":510,"verdict":"superseded_upstream"},
+        {"path":"qepm/observability/events.jsonl","state":"M","added_lines":200,"missing_in_main":200,"main_extra_lines":9851,"verdict":"ledger_divergence"},
+        {"path":"02_Infrastructure/tools/reconcile_module_registries.R","state":"??","added_lines":1,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"08_Tests/contract_regression/test_module_registry_exclusivity.R","state":"??","added_lines":1,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"}
       ]
     },
     {
@@ -392,7 +663,7 @@
       "lost":0,
       "partial":0,
       "files":[
-        {"path":"qepm/observability/events.jsonl","state":"M","added_lines":85,"missing_in_main":85,"verdict":"ledger_divergence"}
+        {"path":"qepm/observability/events.jsonl","state":"M","added_lines":85,"missing_in_main":85,"main_extra_lines":9851,"verdict":"ledger_divergence"}
       ]
     },
     {
@@ -406,7 +677,7 @@
       "lost":0,
       "partial":0,
       "files":[
-        {"path":"qepm/observability/events.jsonl","state":"M","added_lines":36,"missing_in_main":36,"verdict":"ledger_divergence"}
+        {"path":"qepm/observability/events.jsonl","state":"M","added_lines":36,"missing_in_main":36,"main_extra_lines":9851,"verdict":"ledger_divergence"}
       ]
     },
     {
@@ -418,24 +689,24 @@
       "last_commit_age_days":10,
       "stale":true,
       "lost":0,
-      "partial":0,
+      "partial":1,
       "files":[
-        {"path":"02_Infrastructure/factor_db/factor_registry.json","state":"M","added_lines":63,"missing_in_main":0,"verdict":"merged_upstream"},
-        {"path":"08_Tests/hooks/run_all_hooks.sh","state":"M","added_lines":11,"missing_in_main":0,"verdict":"merged_upstream"},
-        {"path":"qepm/observability/events.jsonl","state":"M","added_lines":198,"missing_in_main":198,"verdict":"ledger_divergence"},
-        {"path":"02_Infrastructure/factor_db/apply_factor_dedup.R","state":"??","added_lines":1,"missing_in_main":0,"verdict":"merged_upstream"},
-        {"path":"02_Infrastructure/factor_db/factor_dup_scan.R","state":"??","added_lines":1,"missing_in_main":1,"verdict":"superseded_upstream"},
-        {"path":"02_Infrastructure/factor_db/factor_registry.json.bak_20260802_dedup","state":"??","added_lines":1,"missing_in_main":1,"verdict":"scratch_artifact"},
-        {"path":"04_Research/01_reports/_dedup_selection_impact_20260802.txt","state":"??","added_lines":1,"missing_in_main":1,"verdict":"scratch_artifact"},
-        {"path":"04_Research/01_reports/_factor_dup_scan_log_20260802.txt","state":"??","added_lines":1,"missing_in_main":1,"verdict":"scratch_artifact"},
-        {"path":"04_Research/01_reports/_factor_dup_scan_rank_log_20260802.txt","state":"??","added_lines":1,"missing_in_main":1,"verdict":"scratch_artifact"},
-        {"path":"04_Research/01_reports/dedup_selection_impact_20260802.json","state":"??","added_lines":1,"missing_in_main":0,"verdict":"merged_upstream"},
-        {"path":"04_Research/01_reports/factor_db_dedup_20260802.md","state":"??","added_lines":1,"missing_in_main":0,"verdict":"merged_upstream"},
-        {"path":"04_Research/01_reports/factor_dup_scan_meta_20260802.json","state":"??","added_lines":1,"missing_in_main":0,"verdict":"merged_upstream"},
-        {"path":"04_Research/01_reports/run_dedup_selection_impact_20260802.R","state":"??","added_lines":1,"missing_in_main":0,"verdict":"merged_upstream"},
-        {"path":"04_Research/01_reports/run_factor_dup_scan_20260802.R","state":"??","added_lines":1,"missing_in_main":0,"verdict":"merged_upstream"},
-        {"path":"04_Research/01_reports/run_factor_dup_scan_rank_20260802.R","state":"??","added_lines":1,"missing_in_main":0,"verdict":"merged_upstream"},
-        {"path":"08_Tests/hooks/test_factor_dup_scan.R","state":"??","added_lines":1,"missing_in_main":0,"verdict":"merged_upstream"}
+        {"path":"02_Infrastructure/factor_db/factor_registry.json","state":"M","added_lines":63,"missing_in_main":0,"main_extra_lines":111,"verdict":"merged_upstream"},
+        {"path":"08_Tests/hooks/run_all_hooks.sh","state":"M","added_lines":11,"missing_in_main":0,"main_extra_lines":519,"verdict":"merged_upstream"},
+        {"path":"qepm/observability/events.jsonl","state":"M","added_lines":198,"missing_in_main":198,"main_extra_lines":9851,"verdict":"ledger_divergence"},
+        {"path":"02_Infrastructure/factor_db/apply_factor_dedup.R","state":"??","added_lines":1,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"02_Infrastructure/factor_db/factor_dup_scan.R","state":"??","added_lines":1,"missing_in_main":1,"main_extra_lines":0,"verdict":"partial"},
+        {"path":"02_Infrastructure/factor_db/factor_registry.json.bak_20260802_dedup","state":"??","added_lines":1,"missing_in_main":1,"main_extra_lines":0,"verdict":"scratch_artifact"},
+        {"path":"04_Research/01_reports/_dedup_selection_impact_20260802.txt","state":"??","added_lines":1,"missing_in_main":1,"main_extra_lines":0,"verdict":"scratch_artifact"},
+        {"path":"04_Research/01_reports/_factor_dup_scan_log_20260802.txt","state":"??","added_lines":1,"missing_in_main":1,"main_extra_lines":0,"verdict":"scratch_artifact"},
+        {"path":"04_Research/01_reports/_factor_dup_scan_rank_log_20260802.txt","state":"??","added_lines":1,"missing_in_main":1,"main_extra_lines":0,"verdict":"scratch_artifact"},
+        {"path":"04_Research/01_reports/dedup_selection_impact_20260802.json","state":"??","added_lines":1,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"04_Research/01_reports/factor_db_dedup_20260802.md","state":"??","added_lines":1,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"04_Research/01_reports/factor_dup_scan_meta_20260802.json","state":"??","added_lines":1,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"04_Research/01_reports/run_dedup_selection_impact_20260802.R","state":"??","added_lines":1,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"04_Research/01_reports/run_factor_dup_scan_20260802.R","state":"??","added_lines":1,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"04_Research/01_reports/run_factor_dup_scan_rank_20260802.R","state":"??","added_lines":1,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"08_Tests/hooks/test_factor_dup_scan.R","state":"??","added_lines":1,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"}
       ]
     },
     {
@@ -449,12 +720,12 @@
       "lost":0,
       "partial":0,
       "files":[
-        {"path":"02_Infrastructure/docs/rules/r-portability.md","state":"M","added_lines":41,"missing_in_main":0,"verdict":"merged_upstream"},
-        {"path":"02_Infrastructure/telegram/telegram_notify.R","state":"M","added_lines":10,"missing_in_main":0,"verdict":"merged_upstream"},
-        {"path":"08_Tests/hooks/_r_portability_baseline.json","state":"M","added_lines":27,"missing_in_main":4,"verdict":"superseded_upstream"},
-        {"path":"08_Tests/hooks/test_r_portability.R","state":"M","added_lines":186,"missing_in_main":0,"verdict":"merged_upstream"},
-        {"path":"CLAUDE.md","state":"M","added_lines":1,"missing_in_main":0,"verdict":"merged_upstream"},
-        {"path":"qepm/observability/events.jsonl","state":"M","added_lines":141,"missing_in_main":141,"verdict":"ledger_divergence"}
+        {"path":"02_Infrastructure/docs/rules/r-portability.md","state":"M","added_lines":41,"missing_in_main":0,"main_extra_lines":83,"verdict":"merged_upstream"},
+        {"path":"02_Infrastructure/telegram/telegram_notify.R","state":"M","added_lines":10,"missing_in_main":0,"main_extra_lines":36,"verdict":"merged_upstream"},
+        {"path":"08_Tests/hooks/_r_portability_baseline.json","state":"M","added_lines":27,"missing_in_main":4,"main_extra_lines":74,"verdict":"superseded_upstream"},
+        {"path":"08_Tests/hooks/test_r_portability.R","state":"M","added_lines":186,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"CLAUDE.md","state":"M","added_lines":1,"missing_in_main":0,"main_extra_lines":26,"verdict":"merged_upstream"},
+        {"path":"qepm/observability/events.jsonl","state":"M","added_lines":141,"missing_in_main":141,"main_extra_lines":9851,"verdict":"ledger_divergence"}
       ]
     },
     {
@@ -466,18 +737,18 @@
       "last_commit_age_days":10,
       "stale":true,
       "lost":0,
-      "partial":0,
+      "partial":1,
       "files":[
-        {"path":"02_Infrastructure/factor_db/compute_accrual.R","state":"M","added_lines":2,"missing_in_main":0,"verdict":"merged_upstream"},
-        {"path":"02_Infrastructure/factor_db/compute_growth.R","state":"M","added_lines":2,"missing_in_main":0,"verdict":"merged_upstream"},
-        {"path":"02_Infrastructure/factor_db/compute_quality.R","state":"M","added_lines":3,"missing_in_main":0,"verdict":"merged_upstream"},
-        {"path":"02_Infrastructure/factor_db/compute_risk.R","state":"M","added_lines":2,"missing_in_main":0,"verdict":"merged_upstream"},
-        {"path":"02_Infrastructure/factor_db/compute_value.R","state":"M","added_lines":36,"missing_in_main":0,"verdict":"merged_upstream"},
-        {"path":"02_Infrastructure/factor_db/xlsx_factor_calculator.R","state":"M","added_lines":2,"missing_in_main":0,"verdict":"merged_upstream"},
-        {"path":"08_Tests/hooks/run_all_hooks.sh","state":"M","added_lines":5,"missing_in_main":0,"verdict":"merged_upstream"},
-        {"path":"qepm/observability/events.jsonl","state":"M","added_lines":168,"missing_in_main":168,"verdict":"ledger_divergence"},
-        {"path":"04_Research/01_reports/factor_db_marketcap_scale_defect_20260802.md","state":"??","added_lines":1,"missing_in_main":0,"verdict":"merged_upstream"},
-        {"path":"08_Tests/factor_db/test_ev_term_not_inert.R","state":"??","added_lines":1,"missing_in_main":1,"verdict":"superseded_upstream"}
+        {"path":"02_Infrastructure/factor_db/compute_accrual.R","state":"M","added_lines":2,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"02_Infrastructure/factor_db/compute_growth.R","state":"M","added_lines":2,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"02_Infrastructure/factor_db/compute_quality.R","state":"M","added_lines":3,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"02_Infrastructure/factor_db/compute_risk.R","state":"M","added_lines":2,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"02_Infrastructure/factor_db/compute_value.R","state":"M","added_lines":36,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"02_Infrastructure/factor_db/xlsx_factor_calculator.R","state":"M","added_lines":2,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"08_Tests/hooks/run_all_hooks.sh","state":"M","added_lines":5,"missing_in_main":0,"main_extra_lines":515,"verdict":"merged_upstream"},
+        {"path":"qepm/observability/events.jsonl","state":"M","added_lines":168,"missing_in_main":168,"main_extra_lines":9851,"verdict":"ledger_divergence"},
+        {"path":"04_Research/01_reports/factor_db_marketcap_scale_defect_20260802.md","state":"??","added_lines":1,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"08_Tests/factor_db/test_ev_term_not_inert.R","state":"??","added_lines":1,"missing_in_main":1,"main_extra_lines":0,"verdict":"partial"}
       ]
     },
     {
@@ -489,14 +760,14 @@
       "last_commit_age_days":11,
       "stale":true,
       "lost":0,
-      "partial":0,
+      "partial":1,
       "files":[
-        {"path":"02_Infrastructure/docs/rules/r-portability.md","state":"M","added_lines":25,"missing_in_main":3,"verdict":"superseded_upstream"},
-        {"path":"02_Infrastructure/hooks/resolve_project.sh","state":"M","added_lines":70,"missing_in_main":0,"verdict":"merged_upstream"},
-        {"path":"02_Infrastructure/ops/resolve_project.sh","state":"M","added_lines":45,"missing_in_main":0,"verdict":"merged_upstream"},
-        {"path":"08_Tests/hooks/run_all_hooks.sh","state":"M","added_lines":7,"missing_in_main":0,"verdict":"merged_upstream"},
-        {"path":"qepm/observability/events.jsonl","state":"M","added_lines":153,"missing_in_main":153,"verdict":"ledger_divergence"},
-        {"path":"08_Tests/hooks/test_resolve_project_marker.sh","state":"??","added_lines":1,"missing_in_main":1,"verdict":"superseded_upstream"}
+        {"path":"02_Infrastructure/docs/rules/r-portability.md","state":"M","added_lines":25,"missing_in_main":3,"main_extra_lines":160,"verdict":"superseded_upstream"},
+        {"path":"02_Infrastructure/hooks/resolve_project.sh","state":"M","added_lines":70,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"02_Infrastructure/ops/resolve_project.sh","state":"M","added_lines":45,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"08_Tests/hooks/run_all_hooks.sh","state":"M","added_lines":7,"missing_in_main":0,"main_extra_lines":632,"verdict":"merged_upstream"},
+        {"path":"qepm/observability/events.jsonl","state":"M","added_lines":153,"missing_in_main":153,"main_extra_lines":9851,"verdict":"ledger_divergence"},
+        {"path":"08_Tests/hooks/test_resolve_project_marker.sh","state":"??","added_lines":1,"missing_in_main":1,"main_extra_lines":0,"verdict":"partial"}
       ]
     },
     {
@@ -510,7 +781,7 @@
       "lost":0,
       "partial":0,
       "files":[
-        {"path":"qepm/observability/events.jsonl","state":"M","added_lines":189,"missing_in_main":189,"verdict":"ledger_divergence"}
+        {"path":"qepm/observability/events.jsonl","state":"M","added_lines":189,"missing_in_main":189,"main_extra_lines":9851,"verdict":"ledger_divergence"}
       ]
     },
     {
@@ -524,7 +795,7 @@
       "lost":0,
       "partial":0,
       "files":[
-        {"path":"02_Infrastructure/portfolio/measurement_basis_audit.R","state":"M","added_lines":72,"missing_in_main":0,"verdict":"merged_upstream"}
+        {"path":"02_Infrastructure/portfolio/measurement_basis_audit.R","state":"M","added_lines":72,"missing_in_main":0,"main_extra_lines":4,"verdict":"merged_upstream"}
       ]
     },
     {
@@ -538,10 +809,10 @@
       "lost":0,
       "partial":0,
       "files":[
-        {"path":"02_Infrastructure/docs/rules/r-portability.md","state":"M","added_lines":27,"missing_in_main":26,"verdict":"superseded_upstream"},
-        {"path":"08_Tests/hooks/run_all_hooks.sh","state":"M","added_lines":38,"missing_in_main":1,"verdict":"superseded_upstream"},
-        {"path":"08_Tests/hooks/test_resolve_project_marker.sh","state":"M","added_lines":91,"missing_in_main":0,"verdict":"merged_upstream"},
-        {"path":"qepm/observability/events.jsonl","state":"M","added_lines":68,"missing_in_main":68,"verdict":"ledger_divergence"}
+        {"path":"02_Infrastructure/docs/rules/r-portability.md","state":"M","added_lines":27,"missing_in_main":26,"main_extra_lines":120,"verdict":"superseded_upstream"},
+        {"path":"08_Tests/hooks/run_all_hooks.sh","state":"M","added_lines":38,"missing_in_main":1,"main_extra_lines":494,"verdict":"superseded_upstream"},
+        {"path":"08_Tests/hooks/test_resolve_project_marker.sh","state":"M","added_lines":91,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"qepm/observability/events.jsonl","state":"M","added_lines":68,"missing_in_main":68,"main_extra_lines":9851,"verdict":"ledger_divergence"}
       ]
     },
     {
@@ -555,14 +826,14 @@
       "lost":0,
       "partial":0,
       "files":[
-        {"path":".claude/rules/axioms.md","state":"M","added_lines":1,"missing_in_main":0,"verdict":"merged_upstream"},
-        {"path":"02_Infrastructure/hooks/_shared_parse.sh","state":"M","added_lines":24,"missing_in_main":0,"verdict":"merged_upstream"},
-        {"path":"02_Infrastructure/hooks/axiom_enforcement_hook.sh","state":"M","added_lines":10,"missing_in_main":0,"verdict":"merged_upstream"},
-        {"path":"02_Infrastructure/hurdle_gate.R","state":"M","added_lines":79,"missing_in_main":0,"verdict":"merged_upstream"},
-        {"path":"08_Tests/hooks/run_all_hooks.sh","state":"M","added_lines":6,"missing_in_main":0,"verdict":"merged_upstream"},
-        {"path":"qepm/memory/axioms/active/AX-001.json","state":"M","added_lines":15,"missing_in_main":0,"verdict":"merged_upstream"},
-        {"path":"qepm/observability/events.jsonl","state":"M","added_lines":197,"missing_in_main":197,"verdict":"ledger_divergence"},
-        {"path":"08_Tests/hooks/test_ax001_defense_scope.R","state":"??","added_lines":1,"missing_in_main":0,"verdict":"merged_upstream"}
+        {"path":".claude/rules/axioms.md","state":"M","added_lines":1,"missing_in_main":0,"main_extra_lines":1,"verdict":"merged_upstream"},
+        {"path":"02_Infrastructure/hooks/_shared_parse.sh","state":"M","added_lines":24,"missing_in_main":0,"main_extra_lines":14,"verdict":"merged_upstream"},
+        {"path":"02_Infrastructure/hooks/axiom_enforcement_hook.sh","state":"M","added_lines":10,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"02_Infrastructure/hurdle_gate.R","state":"M","added_lines":79,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"08_Tests/hooks/run_all_hooks.sh","state":"M","added_lines":6,"missing_in_main":0,"main_extra_lines":524,"verdict":"merged_upstream"},
+        {"path":"qepm/memory/axioms/active/AX-001.json","state":"M","added_lines":15,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"qepm/observability/events.jsonl","state":"M","added_lines":197,"missing_in_main":197,"main_extra_lines":9853,"verdict":"ledger_divergence"},
+        {"path":"08_Tests/hooks/test_ax001_defense_scope.R","state":"??","added_lines":1,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"}
       ]
     },
     {
@@ -576,21 +847,23 @@
       "lost":0,
       "partial":0,
       "files":[
-        {"path":"qepm/observability/events.jsonl","state":"M","added_lines":95,"missing_in_main":95,"verdict":"ledger_divergence"}
+        {"path":"qepm/observability/events.jsonl","state":"M","added_lines":95,"missing_in_main":95,"main_extra_lines":9853,"verdict":"ledger_divergence"}
       ]
     },
     {
       "worktree":"wonderful-hofstadter-15b8bc",
       "branch":"claude/qvest-a12d03",
       "path":"C:/Users/99922/OneDrive/Quant_Module_Moltbot/.claude/worktrees/wonderful-hofstadter-15b8bc",
-      "ahead_of_main":0,
+      "ahead_of_main":2,
       "dirty_files":1,
-      "last_commit_age_days":3,
-      "stale":true,
+      "last_commit_age_days":0,
+      "stale":false,
       "lost":0,
       "partial":0,
       "files":[
-        {"path":"qepm/observability/events.jsonl","state":"M","added_lines":3,"missing_in_main":3,"verdict":"ledger_divergence"}
+        {"path":"qepm/observability/events.jsonl","state":"M+B","added_lines":198,"missing_in_main":198,"main_extra_lines":343,"verdict":"ledger_divergence"},
+        {"path":"02_Infrastructure/validation/v8_readiness_gate.R","state":"B","added_lines":16,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"08_Tests/integration/test_v8_readiness_gate.R","state":"B","added_lines":80,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"}
       ]
     },
     {
@@ -604,19 +877,17 @@
       "lost":0,
       "partial":0,
       "files":[
-        {"path":".claude/skills/cleaner/SKILL.md","state":"M","added_lines":4,"missing_in_main":0,"verdict":"merged_upstream"},
-        {"path":"02_Infrastructure/axiom/cluster_extractor.py","state":"M","added_lines":185,"missing_in_main":0,"verdict":"merged_upstream"},
-        {"path":"02_Infrastructure/axiom/distilled.R","state":"M","added_lines":43,"missing_in_main":0,"verdict":"merged_upstream"},
-        {"path":"02_Infrastructure/docs/rules/axiom-engine.md","state":"M","added_lines":2,"missing_in_main":0,"verdict":"merged_upstream"},
-        {"path":"08_Tests/hooks/run_all_hooks.sh","state":"M","added_lines":9,"missing_in_main":0,"verdict":"merged_upstream"},
-        {"path":"qepm/observability/events.jsonl","state":"M","added_lines":172,"missing_in_main":172,"verdict":"ledger_divergence"},
-        {"path":"08_Tests/axiom/","state":"??","added_lines":1,"missing_in_main":0,"verdict":"merged_upstream"}
+        {"path":".claude/skills/cleaner/SKILL.md","state":"M","added_lines":4,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"02_Infrastructure/axiom/cluster_extractor.py","state":"M","added_lines":185,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"02_Infrastructure/axiom/distilled.R","state":"M","added_lines":43,"missing_in_main":0,"main_extra_lines":49,"verdict":"merged_upstream"},
+        {"path":"02_Infrastructure/docs/rules/axiom-engine.md","state":"M","added_lines":2,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
+        {"path":"08_Tests/hooks/run_all_hooks.sh","state":"M","added_lines":9,"missing_in_main":0,"main_extra_lines":511,"verdict":"merged_upstream"},
+        {"path":"qepm/observability/events.jsonl","state":"M","added_lines":172,"missing_in_main":172,"main_extra_lines":9853,"verdict":"ledger_divergence"},
+        {"path":"08_Tests/axiom/","state":"??","added_lines":1,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"}
       ]
     }
   ],
   "collisions": [
-      {"path":"08_Tests/hooks/run_all_hooks.sh","worktree_count":2,"branches":["agitated-jones-cb731f","jovial-mcnulty-f7d018"]},
-      {"path":"qepm/observability/events.jsonl","worktree_count":2,"branches":["agitated-jones-cb731f","jovial-mcnulty-f7d018"]}
   ],
   "prune_candidates": [
   ]

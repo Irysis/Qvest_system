@@ -15,7 +15,8 @@
     "FQ-110B",
     "2608.05755",
     "FQ-100",
-    "2607.06502"
+    "2607.06502",
+    "2608.08625"
   ],
   "records": [
     {
@@ -804,8 +805,55 @@
         "not_claimed_by_paper": "논문 스스로 범위를 한정 — dynamic factor timing · volatility-managed · ML 결합 · proprietary/alternative data 는 '우리가 다루지 않은 것'으로 명시. ⇒ CLAUDE.md 의 비-return 신규 원천 lane 은 이 논문의 부정 범위 **밖**이다.",
         "implication_for_us": "★우리 자체 posterior(standalone long-only 16/16 FAIL)가 **basis-정합 외부 대표본으로 확증**됐다. 논문은 170 어노멀리에서 롱 레그 평균 t = −0.31, 신호 지분 0 을 보고한다. ⇒ CLAUDE.md 도달경로의 배치(return-파생 standalone = 최후순위 · 비-return 원천 = 주력)는 **약화가 아니라 강화**되며, 이제 그 근거가 자체 실측 + 외부 대표본 두 축이다. ⚠단 논문은 US·CRSP 이고 KR 이 아니다. 전이 가정은 여전히 가정이다."
       }
+    },
+    {
+      "paper_id": "2608.08625",
+      "paper_title": "Retained hidden excess generates memory in price-limited markets",
+      "factor_id": "T11_CIRCUIT_HIT_UPPER_21D",
+      "factor_name": "circuit_hit_upper_ratio_21d (상한가 경험 비율, 21거래일 롤링)",
+      "fq_id": null,
+      "strategy_id": "STR_AS_20260813_071419_38300",
+      "gate_decision": "QUARANTINE",
+      "gate_failed_layers": "L3_robustness",
+      "port_t": null,
+      "oos_retention": 1.4,
+      "calmar": 0.179,
+      "mdd": 64.37,
+      "sharpe": 0.483,
+      "cagr": 11.51,
+      "ic_mean": -0.0269,
+      "icir": -0.35,
+      "ic_pos_rate": 38.0,
+      "fmb_nw_t": -1.18,
+      "grade": "F",
+      "score": 41.6,
+      "processed_date": "20260813",
+      "verify_path": "stage_artifacts/paper_recharge/auto_verify_circuit_2608_08625_20260813.json",
+      "bt_result_dir": "stage_artifacts/alpha_search/20260813_071419_38300",
+      "quarantine_reason": "IC=-0.0269(음수·방향 역전). MDD=64.4%(구조적 hard fail). Calmar=0.179<<0.64 HARD. screen_pass=False. 논문의 일별(t+1) 상한가 지속 효과가 KR 월간 리밸에서 방향 역전 — 상한가 경험 = 투기적 종목 선별 → 평균회귀.",
+      "mechanism_diagnosis": "상한가 경험 빈도 높음 = 투기적·고변동성 종목 → 다음 달 평균회귀. 일별(t+1) 지속 효과(논문)가 월간 스케일로 집계 시 방향 희석/역전. 희소성(Score>0: 7.5%) 동반. GFC/COVID 언더퍼폼 — 위기 시 더 취약. 상한가 제도 분기(±15%→±30%, 2015-06-15)는 PIT-safe 구현.",
+      "signal_direction": "REVERSED",
+      "sparsity_pct": 7.5,
+      "consumer_surfaces_checked": [
+        "1팩터랭킹: QUARANTINE (IC 음수, FMB t=-1.18)",
+        "2유니버스필터: 미측정 — 상한가 0회 종목 제외 필터 소비면 → FQ 등재",
+        "3오버레이: 미측정 — 시장 상한가 hit 비율 오버레이(변동성 대리 지표) → FQ 등재",
+        "4위험모델: 고변동 투기주 선별 구조 참고",
+        "5monitoring: 미설정",
+        "6선별라벨: 상한가 경험 = 투기성 선별 라벨로 활용 가능",
+        "7타모드이식: 일별 intraday 시스템(Qvest 범위 밖)에서만 재현 가능"
+      ],
+      "next_probe": [
+        "방향 B: 상한가 경험 0회(무경험) 종목 long — 안정·대형주 선별 신호로서 소비면 검토",
+        "시장 레벨 상한가 hit율 오버레이 — 시장 과열 지표로서 방어 오버레이 타이밍 후보"
+      ],
+      "notable": true,
+      "l_code": "l_code_STR_AS_20260813_071419_38300",
+      "paper_exhausted": true,
+      "paper_exhausted_note": "일별 효과가 월간 시스템에서 방향 역전 확인. 논문 다른 신호 없음(단일 기전). 재시도 부활조건: 일별(t+1) 시스템 구축 or 상한가 연속일 이벤트-조건부 전략으로 재설계 시.",
+      "session_note": "AS-20260813 큐소비자 런 — 오전 세션 실행(071419) 후 done 원장 미기입. 현 세션 소급 등재. 오늘 route의 유일한 testable candidate 처리 완료."
     }
   ],
   "schema_note": "processed = list of paper_id strings (set-like, paper 단위 dedup). records = 전체 시도 감사 로그(동일 paper에서 여러 factor 추출 시 factor_id로 구분). last_updated 갱신 의무.",
-  "last_updated": "20260809"
+  "last_updated": "20260813"
 }

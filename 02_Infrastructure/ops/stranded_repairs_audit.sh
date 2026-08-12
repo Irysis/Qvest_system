@@ -202,7 +202,7 @@ while IFS='|' read -r wt br; do
   awk '{c=$1; $1=""; sub(/^ /,""); print c"\t"$0}' "$TMP/st.txt" >> "$TMP/paths.txt"
   if [ "${ahead:-0}" -gt 0 ] 2>/dev/null; then
     git -C "$PROJECT" diff --name-only "${MAIN_REF}...${sb}" 2>/dev/null \
-      | awk 'NF{print "C\t"$0}' >> "$TMP/paths.txt"
+      | awk 'NF{print "B\t"$0}' >> "$TMP/paths.txt"   # MUTATE_ANCHOR_BRANCH_COLLECT
   fi
   # 같은 경로가 양쪽에 있으면 상태를 합친다(예: "M+B")
   awk -F'\t' '{ if(!($2 in s)){s[$2]=$1; o[++n]=$2} else if(index(s[$2],$1)==0) s[$2]=s[$2]"+"$1 }
@@ -235,7 +235,16 @@ while IFS='|' read -r wt br; do
       "??")   # untracked — main 존재/동일 여부로 판정
         if [ ! -e "$PROJECT/$path" ]; then v="lost"; tot=1; miss=1; extra=0
         elif diff -q "$PROJECT/$path" "$wt/$path" >/dev/null 2>&1; then v="merged_upstream"; tot=1; miss=0; extra=0
-        else v="partial"; tot=1; miss=1; extra=0; fi
+        elif [ -f "$wt/$path" ]; then
+          # ★내용이 다르면 **줄 단위로** 잰다 (2026-08-13). 구판은 1/1 센티넬을 박아
+          #   미도달량도 방향 근거도 없이 partial 로 두었고, 그래서 방향 재분류가 mtime 에만
+          #   의존할 수밖에 없었다. untracked 는 파일 전체가 곧 '추가 라인'이다.
+          read -r tot miss extra <<< "$(triage_added "$wt/$path" "$path" "$wt/$path")"
+          v="$(verdict_of "${tot:-0}" "${miss:-0}")"
+        else
+          # 디렉터리 등 줄로 잴 수 없는 대상 — 센티넬 유지(수동 확인)
+          v="partial"; tot=1; miss=1; extra=0
+        fi
         ;;
       D|*D*)  v="deletion_only"; tot=0; miss=0; extra=0 ;;
       *)
