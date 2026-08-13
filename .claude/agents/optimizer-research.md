@@ -124,6 +124,12 @@ SOT: `.claude/skills/qvest-telegram/SKILL.md` (v6.5). `tg_agent_brief(agent=...)
    - 비중 규칙/목적함수 교체 → `adapter_kind="weight"` → `method_weights(ctx) -> 선호 벡터`
      ctx = list(assets, R(obs×assets, PIT trailing), mu, Sigma)
    - Σ 추정기 교체 → `adapter_kind="sigma"` → `sigma_estimate(ctx) -> matrix`
+   - ★**필요한 입력이 ctx 에 없으면 provider 를 등록해서 바로 만든다**(도훈 standing policy).
+     `source("02_Infrastructure/methods/ctx_providers.R")` 후
+     `register_ctx_provider(name, fn=function(decision_date, assets)…, pit_note=…, fixture_fn=…)`
+     한 줄이면 `ctx$<name>()` 로 실린다. **배터리(측정 경로)는 건드리지 않는다.**
+     ★pit_note 미신고는 등록 거부(PIT 근거 없는 입력 금지) · fixture_fn 도 같이 선언할 것
+     (게이트가 실데이터를 물면 판정이 vintage 에 묶인다 — 실측으로 확인된 함정).
    - ★**특성 기반 방법**(CD-DFM 계열)도 이제 가능하다 — `ctx$characteristics()` 가
      `list(sig_date, panel)` 또는 **NULL**(패널 부재/로드 실패)을 낸다. 2026-08-13 확장 전엔
      ctx 가 수익률·알파뿐이라 이 계열이 원리적으로 불가였다. **없던 건 데이터가 아니라 배선**이었다.

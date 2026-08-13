@@ -20,6 +20,7 @@ set.seed(20260813)
 })()
 setwd(.root)
 suppressWarnings(suppressMessages(source("02_Infrastructure/methods/register_method.R")))
+suppressWarnings(suppressMessages(source("02_Infrastructure/methods/ctx_providers.R")))
 
 PASS <- 0; FAIL <- 0
 chk <- function(name, ok, detail = "") {
@@ -66,8 +67,12 @@ chk("T3 특성 sig_date < 홀딩월 시작 (C5 동형)",
     sprintf("(sig %s < hold_start %s)", ch$sig_date, hold_start))
 
 # ── T3b production 경로도 같은 규약인가 — 소스에서 컷오프 식을 직접 확인
-srcl <- readLines("02_Infrastructure/ops/auto_sigma_weighting_ab.R", warn = FALSE)
+# ★2026-08-13 2차: PIT/C15 로직이 배터리에서 **ctx_providers.R 로 이동**했다(provider 레지스트리화).
+#   검사가 옛 위치를 계속 보면 이동 후 **거짓 FAIL** 을 낸다 — 실제로 T3b/T3c 가 그렇게 갈렸고,
+#   그건 대상의 결함이 아니라 검사가 이사를 못 따라간 것이다(오늘 반복 확인한 계통).
+srcl <- readLines("02_Infrastructure/methods/ctx_providers.R", warn = FALSE)
 src  <- paste(srcl, collapse = "\n")
+btl  <- readLines("02_Infrastructure/ops/auto_sigma_weighting_ab.R", warn = FALSE)
 chk("T3b production 이 '직전 월말'을 sig_date 로 쓴다",
     grepl('format\\(as\\.Date\\(decision_date\\), "%Y-%m-01"\\)\\) - 1L', src))
 # ★C15 검사는 **줄 단위**로 한다. 초판은 collapse 한 문자열에 `read_parquet\\(.*factor_db` 를 걸었는데
@@ -77,6 +82,17 @@ chk("T3c production 이 load_month_factors 경유 (C15)",
     any(grepl("load_month_factors\\(sig\\)", srcl, fixed = FALSE)))
 chk("T3d factor_db parquet 직독 없음 (C15) — 줄 단위 검사",
     !any(grepl("read_parquet", srcl) & grepl("factor_db", srcl)))
+# T3e 배터리는 이제 **splice 만** 한다 — 입력 추가가 측정 경로 수정을 요구하면 안 된다
+# ★주석은 배제하고 **코드만** 본다. 초판이 주석 한 줄("…load_month_factors() 경유")을
+#   하드코딩으로 세어 거짓 FAIL 을 냈다 — 설명문을 위반으로 읽는 검사는 고쳐야 할 쪽이 검사다.
+.btl_code <- sub("#.*$", "", btl)
+chk("T3e 배터리가 provider 레지스트리 경유(입력별 하드코딩 없음)",
+    any(grepl("build_ctx_extras", .btl_code, fixed = TRUE)) &&
+      !any(grepl("load_month_factors", .btl_code, fixed = TRUE)))
+# T3f provider 계약 강제 — pit_note 없는 등록은 거부된다
+.rej <- tryCatch({ register_ctx_provider("t_nopit", function(d, a) 1); FALSE },
+                 error = function(e) grepl("pit_note", conditionMessage(e)))
+chk("T3f PIT 미신고 provider 등록 거부", isTRUE(.rej))
 
 # ── T4 ★NULL 처리 — 축을 다시 설계했다 (초판 결함).
 #   초판은 NULL 상황에서 **등재 검증**을 돌려 통과 여부를 봤는데, 그건 성립하지 않는다:

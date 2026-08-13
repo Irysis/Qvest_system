@@ -125,33 +125,28 @@ sigma_weights_month <- function(tk, ret_sub, method, mu = NULL,
     #   ★지연(thunk)인 이유 둘: ①기존 arm 은 이 필드를 읽지 않으므로 결과가 **바뀔 수 없다**
     #     (순수 가산 — 회귀 위험 0) ②269개월 × arm 마다 factor DB I/O 를 물리면 쓰지도 않는
     #     arm 이 비용을 낸다. 필요한 어댑터만 호출한다.
-    #   ★C15 준수: parquet 직독 금지 — 반드시 `load_month_factors()` 경유.
+    #   ★PIT·C15 규율은 이제 **provider 쪽 책임**이다(ctx_providers.R 이 pit_note 를 강제하고
+    #     각 provider 가 자기 컷오프·소스 규약을 신고한다). 이 파일은 splice 만 한다.
     #   ★PIT: 컷오프를 **홀딩월 시작 전**으로 잡는다(수익률 `raw[Date < start_d]` 와 같은 규약,
     #     C5 동형). decision_date 당월 패널은 동월 누출 위험이 있어 **직전 월말**을 sig_date 로 준다.
     #     어댑터는 반환된 `sig_date` 를 그대로 컷오프 신고에 쓸 수 있다.
-    .ctx_chars <- local({
-      .cache <- NULL; .done <- FALSE
-      function() {
-        if (.done) return(.cache)
-        .done <<- TRUE
-        sig <- as.Date(format(as.Date(decision_date), "%Y-%m-01")) - 1L
-        got <- tryCatch({
-          if (!exists("load_month_factors"))
-            suppressWarnings(source(file.path(Sys.getenv("QM_ROOT", getwd()),
-                                              "02_Infrastructure/factor_db/factor_db_connector.R")))
-          load_month_factors(sig)
-        }, error = function(e) {
-          cat(sprintf("[ctx_chars] 특성 패널 로드 실패(%s) — NULL. 어댑터가 이 경우를 처리해야 한다\n",
-                      conditionMessage(e))); NULL
-        })
-        .cache <<- if (is.null(got)) NULL else list(sig_date = sig, panel = got)
-        .cache
-      }
-    })
-    ctx <- list(Sigma = Sigma, R = rm, mu = mu, assets = colnames(Sigma), ub = UB,
-                lookback_days = LOOKBACK_DAYS,
-                decision_date = decision_date, eval_date = eval_date,
-                characteristics = .ctx_chars)
+    #   ★2026-08-13 2차 개정 (도훈 standing policy: "인프라가 필요하면 그냥 바로 구현할 수 있게
+    #     배선해") — 특성 thunk 를 여기 **하드코딩하던 것을 provider 레지스트리로 교체**한다.
+    #     초판은 논문 하나(CD-DFM)를 여는 방식이었지 다음 논문을 여는 방식이 아니었다.
+    #     다음엔 거래량·일중·매크로·텍스트가 필요할 것이고 그때마다 **측정 경로를 손대게 된다** —
+    #     배터리를 자주 건드리는 것 자체가 회귀 위험이다.
+    #   ⇒ 입력 추가는 이제 `register_ctx_provider(name, fn, pit_note)` **선언 한 줄**이고,
+    #     이 파일은 두 번 다시 고치지 않는다. PIT 근거 미신고 provider 는 등록 시점에 거부된다.
+    if (!exists("build_ctx_extras")) {
+      suppressWarnings(try(source(file.path(Sys.getenv("QM_ROOT", getwd()),
+                                            "02_Infrastructure/methods/ctx_providers.R")), silent = TRUE))
+    }
+    .extras <- if (exists("build_ctx_extras"))
+      build_ctx_extras(decision_date, colnames(Sigma)) else list()
+    ctx <- c(list(Sigma = Sigma, R = rm, mu = mu, assets = colnames(Sigma), ub = UB,
+                  lookback_days = LOOKBACK_DAYS,
+                  decision_date = decision_date, eval_date = eval_date),
+             .extras)
     return(.fill_dropped(extra[[method]](ctx), tk))
   }
   w_surv <- switch(sub("_.*$", "", method),
