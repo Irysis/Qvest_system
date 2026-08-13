@@ -25,6 +25,8 @@ suppressPackageStartupMessages({
   library(TTR)
   library(data.table)
   library(PerformanceAnalytics)
+  library(jsonlite)   # 2026-08-13 P3: 파라미터 핀 판독
+  library(digest)     # 2026-08-13 P3: 핀 sha1 대조
 })
 
 #──────────────────────────────────────────────────────────────────────────────
@@ -99,24 +101,51 @@ DataFrame extract_msm_path(vec returns, int k_bar, double m0, double sigma, doub
 #──────────────────────────────────────────────────────────────────────────────
 # 2. Load MSM parameters from latest K_Fractal_Master
 #──────────────────────────────────────────────────────────────────────────────
-msm_dir <- file.path(PROJECT_ROOT, "05_Production", "1.Regime_Def_Model", "1-1.MSM")
-master_files <- list.files(msm_dir, pattern = "^K_Fractal_Master_.*\\.xlsx$", full.names = TRUE)
+## ★2026-08-13 P3 수리 (도훈 지시): mtime 선택 → **명시 핀**.
+##   구 규약 `which.max(file.info(master_files)$mtime)` 는 파일명 날짜가 아니라 **수정시각**을 본다.
+##   옛 파일을 열어보기만 해도·백업 복원·OneDrive 재동기화로 mtime 이 갱신되면 파라미터가
+##   조용히 교체되고 Hamilton 필터 전 구간이 다른 값을 낸다.
+##   실측: 후보 2개의 mtime 차이가 **1초**(2026-06-08 04:25:49 vs :50)이고 그마저 일괄 복사
+##   순서였다(생성시각 동일) — 선택 근거가 사실상 임의.
+##   ★선례: promote_to_production.R 주석 34-39 가 같은 함정("이관으로 mtime 이 눌려 임의 선택")을
+##   이미 기록·수리했다. 같은 저장소 두 번째다.
+##   ⚠현 구성에선 두 후보의 파라미터가 4개 항목 소수 10자리까지 동일해 **산출 영향은 0**.
+##   이 핀은 파라미터가 다른 파일이 추가되는 시점을 대비한 잠재 위험 차단이다.
+.msm_pin_path <- file.path(PROJECT_ROOT, "02_Infrastructure", "ops", "msm_param_pin.json")
+if (!file.exists(.msm_pin_path))
+  stop(sprintf("[msm_update] 파라미터 핀 부재: %s — 어느 K_Fractal_Master 를 쓸지 명시해야 한다(mtime 자동 선택 폐지)", .msm_pin_path))
+.msm_pin <- jsonlite::fromJSON(.msm_pin_path)
+latest_master <- file.path(PROJECT_ROOT, .msm_pin$file)
+if (!file.exists(latest_master))
+  stop(sprintf("[msm_update] 핀된 파라미터 파일 부재: %s", .msm_pin$file))
 
-if (length(master_files) == 0) {
-  # Try alternative path
-  alt_dir <- "/mnt/c/Users/User/OneDrive/바탕 화면/Quant Module/1.Stratagy/1.Factor Model/1-5.MSM"
-  master_files <- list.files(alt_dir, pattern = "^K_Fractal_Master_.*\\.xlsx$", full.names = TRUE)
-}
+## ① 무결성 — 바이트 변경 검출
+.msm_sha1 <- digest::digest(file = latest_master, algo = "sha1")
+if (!identical(tolower(.msm_sha1), tolower(.msm_pin$sha1)))
+  stop(sprintf(paste0("[msm_update] 파라미터 파일 sha1 불일치 — 핀 갱신 없이 파일이 바뀌었다.\n",
+                      "  핀 %s vs 실측 %s (%s)\n",
+                      "  의도된 교체면 msm_param_pin.json 을 실측 sha1·params 로 갱신할 것 ",
+                      "(핀 갱신 커밋 = 승인 흔적)."),
+               substr(.msm_pin$sha1, 1, 12), substr(.msm_sha1, 1, 12), .msm_pin$file))
 
-if (length(master_files) == 0) stop("[msm_update] No K_Fractal_Master file found!")
+cat(sprintf("[msm_update] Loading params from: %s (핀 sha1 %s 일치)\n",
+            basename(latest_master), substr(.msm_sha1, 1, 12)))
 
-# Use the latest by modification time
-file_info <- file.info(master_files)
-latest_master <- master_files[which.max(file_info$mtime)]
-cat(sprintf("[msm_update] Loading params from: %s\n", basename(latest_master)))
-
-params_df <- read.xlsx(latest_master, sheet = "Model_Parameters")
+.msm_sheet <- if (!is.null(.msm_pin$sheet) && nzchar(.msm_pin$sheet)) .msm_pin$sheet else "Model_Parameters"
+params_df <- read.xlsx(latest_master, sheet = .msm_sheet)
 PARAMS <- setNames(params_df$Value, params_df$Parameter)
+
+## ② 의미 검증 — sha1 이 서식/메타 변경으로 바뀐 경우와 파라미터가 실제로 바뀐 경우를 구분한다
+.tol <- if (!is.null(.msm_pin$param_tolerance)) as.numeric(.msm_pin$param_tolerance) else 1e-9
+for (.k in names(.msm_pin$params)) {
+  .want <- as.numeric(.msm_pin$params[[.k]]); .got <- as.numeric(PARAMS[.k])
+  if (is.na(.got))
+    stop(sprintf("[msm_update] 핀에 선언된 파라미터 '%s' 가 파일에 없음", .k))
+  if (abs(.got - .want) > .tol)
+    stop(sprintf("[msm_update] 파라미터 '%s' 불일치 — 핀 %.10f vs 파일 %.10f (허용 %.0e)",
+                 .k, .want, .got, .tol))
+}
+cat(sprintf("[msm_update] 파라미터 %d항목 핀 대조 통과\n", length(.msm_pin$params)))
 cat(sprintf("  m0=%.4f, sigma=%.6f, b=%.4f, gamma_1=%.6f\n",
             PARAMS["m0"], PARAMS["sigma"], PARAMS["b"], PARAMS["gamma_1"]))
 
