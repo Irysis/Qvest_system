@@ -145,6 +145,46 @@ multi <- Filter(function(e) nzchar(e$key_metrics$other_lane_measurements %||% ""
 chk("T7b 복수 레인 측정은 other_lane_measurements 로 병기된다", length(multi) > 0L,
     sprintf("%d건", length(multi)))
 
+# ── T8 ★측정 **원천**이 둘 다 살아 있는가 (2026-08-13 N6)
+#   측정치는 두 곳에서 온다: research_status(dispatch 기록) · A/B CSV. 하나가 조용히 끊기면
+#   측정 건수만 줄고 **아무 소리도 안 난다**(오늘 실제로 risk 4건이 그렇게 사라져 있었다 —
+#   콜렉터가 CSV 만 읽던 시절). 원천 목록은 상수(HI_PAPER_AB_SOURCES)+코드인데 그걸 묻는 축이
+#   없었다. ⇒ **두 원천이 각각 최소 1건씩 기여하는지**를 축으로 세운다.
+srcs <- vapply(pl_of()$pl, function(e) as.character(e$key_metrics$ab_source %||% "")[1], "")
+srcs <- srcs[nzchar(srcs)]
+n_rs  <- sum(grepl("research_status", srcs))
+n_csv <- sum(grepl("\\.csv$", srcs))
+chk("T8 ★측정 원천 2종이 모두 기여한다(하나 끊기면 조용히 줄기만 한다)",
+    n_rs > 0L && n_csv > 0L, sprintf("research_status %d · csv %d", n_rs, n_csv))
+
+# ── T9 ★텔레그램 중복차단이 **기본값**인가 (2026-08-13 N6)
+#   `force=TRUE` 는 tg_agent_brief 의 중복차단(TTL 30분)을 끈다. 오늘 그것 때문에 같은 메시지가
+#   재실행마다 나갔고 도훈이 적발했다. 기본을 FALSE 로 되돌렸지만 **그 기본값을 지키는 축이 없다**
+#   — 누가 다시 TRUE 로 두어도 아무것도 빨개지지 않는다.
+#   ★소스 grep 이 아니라 **표현식을 평가**한다(리팩터에 거짓 FAIL 나지 않게).
+#   ★최상위 스캔으로는 못 찾는다 — 그 대입은 `if (…NO_TG…) { }` **블록 안**에 있다.
+#     초판이 그래서 NA 를 받아 **주입해도 안 잡히는 죽은 축**이었다(정상/주입 모두 NA).
+#     규칙-축 대응을 감사하는 라운드에서 죽은 축을 만들 뻔했다 — 재귀로 훑는다.
+.find_assign <- function(x, target) {
+  if (is.call(x)) {
+    if (length(x) >= 3 && identical(as.character(x[[1]])[1], "<-") &&
+        identical(as.character(x[[2]])[1], target)) return(list(x[[3]]))
+    return(unlist(lapply(as.list(x), .find_assign, target = target), recursive = FALSE))
+  }
+  NULL
+}
+.tgf <- tryCatch({
+  ex <- parse(file.path(.root, "02_Infrastructure/ops/paper_research_dispatch.R"))
+  rhs <- unlist(lapply(as.list(ex), .find_assign, target = ".TG_FORCE"), recursive = FALSE)
+  old <- Sys.getenv("QVEST_DISPATCH_TG_FORCE", unset = NA_character_)
+  Sys.unsetenv("QVEST_DISPATCH_TG_FORCE")            # 기본 환경에서 평가
+  got <- if (length(rhs)) eval(rhs[[1]], envir = new.env(parent = globalenv())) else NA
+  if (!is.na(old)) Sys.setenv(QVEST_DISPATCH_TG_FORCE = old)
+  got
+}, error = function(e) NA)
+chk("T9 ★기본 환경에서 tg force=FALSE (중복 발송 억제가 기본값)",
+    isFALSE(.tgf), sprintf("평가값 %s", as.character(.tgf)))
+
 TOTAL <- PASS + FAIL
 cat(sprintf("  ── %d/%d pass\n", PASS, TOTAL))
 cat(sprintf('{"test":"hypothesis_index_paper_lane","pass":%d,"fail":%d,"total":%d}\n', PASS, FAIL, TOTAL))
