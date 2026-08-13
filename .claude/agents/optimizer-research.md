@@ -114,6 +114,11 @@ SOT: `.claude/skills/qvest-telegram/SKILL.md` (v6.5). `tg_agent_brief(agent=...)
 그 논문을 **실제 측정**으로 만드는 경로는 아래 하나뿐이다. 안 타면 큐에만 남는다
 (2026-08-13 실측: 라우팅 고유 83편 vs 레지스트리 고유 9편 — 등재가 병목이다).
 
+0. **원문부터 연다** — 큐의 `pdf` 필드를 믿지 말 것(실측 2026-08-13: 기재 4건 중 실재 1건.
+   라우터는 `MCP_2606.14798.pdf`(점)로 적는데 파일은 `MCP_2606_14798.pdf`(밑줄)이다).
+   `source("02_Infrastructure/methods/paper_source.R"); paper_pdf(<id>)` 로 해석한다 —
+   숫자 id·파일명 양쪽을 보며 큐 전건 **86/86 도달** 확인됨. 못 찾으면 이름을 부르고 NULL 이다.
+   ★원문 없이 memo 만 보고 구현하면 그것이 날조다. 어댑터 헤더가 요구하는 "충실한 재구성"이 성립하지 않는다.
 1. 논문 기전 1문단 + **KR long-only 사상** + PIT 근거를 어댑터 헤더에 적는다(재구성이지 날조 아님).
 2. `02_Infrastructure/methods/adapters/<snake_name>.R`, 진입점은 kind 고정:
    - 비중 규칙/목적함수 교체 → `adapter_kind="weight"` → `method_weights(ctx) -> 선호 벡터`
