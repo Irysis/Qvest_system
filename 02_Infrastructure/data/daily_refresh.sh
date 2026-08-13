@@ -278,6 +278,27 @@ run_r '
     error = function(e) cat(sprintf("Regime signal (daily) skipped: %s\n", e$message)))
 '
 
+# ─── 국면 계열 append-only 원장 (도훈 지시 2026-08-13 "1번 가자") ──────────────
+#   위 rebuild 는 계열을 **전량 재생성**한다. 내부 생성 재서술(MSM 전체표본 디민)은
+#   commit b514830e 로 수리했으나, **외부 개정은 코드로 못 막는다** — FRED 핀 스냅샷 실측:
+#   2026-09 핀 → 라이브 과거 **3,000셀** 변경(Chi_Fin_Cond 1,320 · StL_Fin_Stress 1,361 ·
+#   US_M2 312, 최초 2000-01-07). FRED 는 Regime_Score 합성의 35%(0.35*FRED_MRS)다.
+#   ⇒ 발행 원장이 완료 구간을 동결하고, 재생성본의 과거 재서술은 보고만 하고 버린다.
+#   ★진행 중인 구간(월간=당월, 일간=오늘)은 동결 대상이 아니다 — 매일 갱신이 정상이므로
+#     그것까지 막으면 정상 갱신을 재서술로 오탐한다. 검증 19/19.
+#   exit 1 = 동결 구간 재서술 시도(발행본 보존) → 경고만 하고 계속. 소비자는 안정된 이력을 본다.
+cd "$QM_ROOT" 2>/dev/null || cd "$INFRA/.."
+for _series in monthly daily; do
+  "$RSCRIPT" --no-save "$QM_ROOT/02_Infrastructure/regime/regime_append_only.R" --series "$_series" 2>&1
+  _rc=$?
+  case "$_rc" in
+    0) echo "[regime-append/$_series] OK" ;;
+    1) echo "!! [regime-append/$_series] 동결 구간 재서술 시도 검출 — 발행본 보존됨(상류 확인 필요)" ;;
+    *) echo "XX [regime-append/$_series] 게이트 실패(rc=$_rc) — 계열 신뢰 불가" ;;
+  esac
+done
+cd "$INFRA"
+
 # ─── regime_daily_v2 (9-axis daily MRS) rebuild — FRED 직후 (2026-07-25 배선) ─────
 #   기존엔 morning_briefing(07:10)만 rebuild → 머신 지연 기상/주말이면 macro_fred만 갱신되고
 #   regime_daily_v2가 수영업일 뒤처짐 (AST 리프 맵 §3-3 실측 ~4영업일 — 07-25 실사례:
