@@ -520,8 +520,31 @@ if (n_reg > 0) {
         # ★lag1 스트레스 = 오버레이 동월 누출의 **유일 판별검정**(2026-07-06 BearProb 실사고).
         #   base 대비 붕괴하면 누출 의심. 비율로 기록해 다음 사람이 판단할 수 있게 한다.
         .lag_ratio <- if (nrow(.lag1) && nrow(.uni) && .uni$IR != 0) round(.lag1$IR / .uni$IR, 3) else NA_real_
+        # ★per-arm 기록 (2026-08-13 N1). optimizer 와 **같은 결함이 regime 에도** 있었다 —
+        #   `cand` 에 행별 delta_ir·delta_mdd 가 이미 계산돼 있는데 .best 만 남겼다. 그래서
+        #   regime 라우트 논문(CompLikFGnOverlay·TFCostOptSpan)이 hypothesis_index 에서 미측정으로
+        #   남았다. 콜렉터가 CSV 로 일부를 줍고 있었을 뿐 dispatch 기록은 공백이었다.
+        #   ★scenario 는 `X` 와 `X_x_book` 두 형태로 나온다(오버레이 단독 / 북 결합). 같은 method 라
+        #     **단독 팔을 먼저** 싣는다(콜렉터는 레인 내 첫 건을 쓴다).
+        #   ★avg_exposure 를 함께 싣는다 — ΔIR 의 86%를 설명하는 교란 변수라 수치와 같은 자리에
+        #     있어야 한다(T6c/T7 계약).
+        .mk_reg_arm <- function(i) {
+          .s <- as.character(cand$scenario[i])
+          list(method_id = sub("_x_book$", "", sub("^[^@]+@", "", .s)), arm = .s,
+               measured = TRUE,
+               ir = round(as.numeric(cand$IR[i]), 4),
+               delta_ir = as.numeric(cand$delta_ir[i]),
+               delta_mdd = as.numeric(cand$delta_mdd[i]),
+               avg_exposure = if ("avg_exposure" %in% names(cand))
+                 round(as.numeric(cand$avg_exposure[i]), 4) else NULL,
+               control = "book_L5",
+               control_basis = "H2 오버레이 A/B · 가중 고정 · 노출 스칼라만 교체",
+               delta_ir_caveat = "exposure_confounded_R2_0.858_use_exposure_matched_residual")
+        }
+        .ord <- c(which(!grepl("_x_book$", cand$scenario)), which(grepl("_x_book$", cand$scenario)))
         reg_verdict <- list(
           metric_type = "canonical_screen",
+          arms = lapply(.ord, .mk_reg_arm),
           basis = sprintf("H2 오버레이 A/B (가중 = 현 book strategy 고정 · 노출 스칼라만 교체 · %s · carrier=%s)",
                           rt$book_basis[1] %||% "?", rt$carrier[1] %||% "?"),
           baseline = "book_L5", baseline_ir = round(.base$IR, 3), baseline_mdd = round(.base$abs_MDD, 4),
