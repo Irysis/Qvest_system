@@ -229,6 +229,28 @@ for w in d.get('worktrees',[]):
 print('ABSENT')" "$R/06_Registry/stranded_repairs.json" src/false_super.txt 2>/dev/null)
 chk "T11 main_extra_lines 근거 기록 (무관 1줄)"        "1" "${EXTRA:-X}"
 
+# ── T12 상한은 **반드시 보고**된다 (2026-08-13). 미병합 커밋 편입으로 소요가 ~16s → 수 분대가
+#    되어 브랜치당 경로 상한을 넣었는데, 상한은 곧 커버리지 축소다. 조용히 자르면
+#    "전부 훑었다"로 읽힌다 — 잘린 수가 산출물에 남는지를 계약으로 고정한다.
+build_fixture
+( cd "$R" && QM_ROOT="$R" CLAUDE_PROJECT_DIR="$R" STRANDED_MAX_FILES=1 \
+    bash "$AUDIT" --no-telegram --quiet ) >/dev/null 2>&1
+CAP=$("$PYX" -c "
+import json,io,sys
+d=json.load(io.open(sys.argv[1],encoding='utf-8'))
+print(d['summary'].get('uninspected_over_cap','MISSING'))" \
+  "$R/06_Registry/stranded_repairs.json" 2>/dev/null)
+if [ "${CAP:-0}" -gt 0 ] 2>/dev/null; then PASS=$((PASS+1)); echo "  ok   T12 상한 초과분이 산출물에 보고됨(미검 ${CAP}건)"
+else FAIL=$((FAIL+1)); echo "  FAIL T12 상한 적용됐는데 uninspected_over_cap 미보고 — 실제 '${CAP:-없음}'"; fi
+# ── T12b 상한 미도달 시엔 0 (상시 발화하는 가짜 경보가 아님)
+build_fixture; run_audit
+CAP0=$("$PYX" -c "
+import json,io,sys
+d=json.load(io.open(sys.argv[1],encoding='utf-8'))
+print(d['summary'].get('uninspected_over_cap','MISSING'))" \
+  "$R/06_Registry/stranded_repairs.json" 2>/dev/null)
+chk "T12b 기본 상한에선 미검 0 (공허 경보 아님)"       "0" "${CAP0:-X}"
+
 TOTAL=$((PASS+FAIL))
 echo "  ── $PASS/$TOTAL pass"
 printf '{"test":"stranded_triage","pass":%d,"fail":%d,"total":%d}\n' "$PASS" "$FAIL" "$TOTAL"

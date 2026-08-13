@@ -34,6 +34,8 @@ OUT="$PROJECT/06_Registry/stranded_repairs.json"
 STALE_DAYS="${STRANDED_STALE_DAYS:-3}"
 MAIN_REF="${STRANDED_MAIN_REF:-main}"
 MAX_LINES_PER_FILE=200          # triage 대조 상한 (대용량 diff 방어)
+# worktree 1개당 triage 경로 상한 (2026-08-13). 초과분은 **미검으로 명시 보고**한다 — 무음 절단 금지.
+MAX_FILES_PER_WT="${STRANDED_MAX_FILES:-400}"
 DO_TG=1; QUIET=0; DO_PRUNE=0
 for a in "$@"; do
   case "$a" in
@@ -149,7 +151,7 @@ main_recency() {   # $1=path → main 이 그 경로를 마지막으로 갱신�
 
 NOW_S=$(date +%s)
 N_WT=0; N_DIRTY=0; N_AHEAD=0; N_STALE=0; N_LOST=0; N_PARTIAL=0; N_PRUNE=0
-N_LEDGER=0; N_SUPER=0; N_SCRATCH=0
+N_LEDGER=0; N_SUPER=0; N_SCRATCH=0; N_CAPPED=0
 WT_JSON=""; PRUNE_JSON=""; LOST_SUMMARY=""
 : > "$TMP/touched.txt"   # "<path>\t<branch>" — 동시 수정 충돌 탐지용
 
@@ -207,6 +209,19 @@ while IFS='|' read -r wt br; do
   # 같은 경로가 양쪽에 있으면 상태를 합친다(예: "M+B")
   awk -F'\t' '{ if(!($2 in s)){s[$2]=$1; o[++n]=$2} else if(index(s[$2],$1)==0) s[$2]=s[$2]"+"$1 }
               END{for(i=1;i<=n;i++) print s[o[i]]"\t"o[i]}' "$TMP/paths.txt" > "$TMP/paths_u.txt"
+
+  # ── 상한 (2026-08-13): 미병합 커밋 편입으로 경로당 git 호출이 늘어 소요가 ~16s → 수 분대가 됐다
+  #   (실측: jovial-mcnulty 246파일). 파일 수천 개짜리 브랜치 하나가 무인 런을 몇 시간 붙잡는 것을 막는다.
+  #   ★단, 무음 절단 금지 — 잘린 수를 로그와 산출물에 **반드시** 남긴다. 조용히 자르면
+  #     "전부 훑었다"로 읽히고, 그게 이 스크립트가 고치려는 실패 형태와 같은 부류다.
+  wt_capped=0
+  _npaths=$(wc -l < "$TMP/paths_u.txt" | tr -d ' ')
+  if [ "${_npaths:-0}" -gt "$MAX_FILES_PER_WT" ] 2>/dev/null; then
+    wt_capped=$(( _npaths - MAX_FILES_PER_WT ))
+    head -n "$MAX_FILES_PER_WT" "$TMP/paths_u.txt" > "$TMP/paths_cap.txt"
+    mv "$TMP/paths_cap.txt" "$TMP/paths_u.txt"
+    hb "★상한 적용: $short — 경로 ${_npaths}건 중 ${MAX_FILES_PER_WT}건만 triage · **${wt_capped}건 미검**(STRANDED_MAX_FILES 로 조정)"
+  fi
 
   # ── 파일 단위 triage
   FILES_JSON=""; wt_lost=0; wt_partial=0
@@ -294,6 +309,7 @@ while IFS='|' read -r wt br; do
         {\"path\":\"$(jesc "$path")\",\"state\":\"$(jesc "$code")\",\"added_lines\":${tot:-0},\"missing_in_main\":${miss:-0},\"main_extra_lines\":${extra:-0},\"verdict\":\"$v\"}"
   done < "$TMP/paths_u.txt"
 
+  N_CAPPED=$((N_CAPPED + ${wt_capped:-0}))
   if [ "$wt_lost" -gt 0 ]; then
     LOST_SUMMARY="${LOST_SUMMARY}${short}(${wt_lost}건·${age}일) "
   fi
@@ -311,6 +327,7 @@ while IFS='|' read -r wt br; do
       \"stale\":$([ "$is_stale" -eq 1 ] && echo true || echo false),
       \"lost\":$wt_lost,
       \"partial\":$wt_partial,
+      \"uninspected_over_cap\":${wt_capped:-0},
       \"files\":[${FILES_JSON}
       ]
     }"
@@ -359,7 +376,8 @@ cat > "$OUT" <<JSON
     "files_superseded_upstream": $N_SUPER,
     "files_scratch_artifact": $N_SCRATCH,
     "collisions": $N_COLL,
-    "prune_candidates": $N_PRUNE
+    "prune_candidates": $N_PRUNE,
+    "uninspected_over_cap": $N_CAPPED
   },
   "worktrees": [${WT_JSON}
   ],

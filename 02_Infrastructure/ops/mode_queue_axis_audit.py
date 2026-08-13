@@ -42,6 +42,14 @@ import re
 import sys
 
 AXES = ("screen_priority", "shrinkage_builtin", "statistic_order")
+# ★비정본 키 (2026-08-13 적발): 라우터가 07-27 · 08-04 · 08-08 3일간 `screen_priority` 대신
+#   숫자 `priority`(1/2/3, 28건)를 실었다. 프롬프트에는 그런 지시가 **없다**(git -S 확인) —
+#   라우터 임의 키이고, 소비자는 이 키를 읽지 않으므로 **발행됐지만 소비되지 않는 표기**다.
+#   (07-27 은 `queue{}` 중첩으로 14편이 드롭된 날과 같은 날 — 같은 계통의 스키마 이탈.)
+#   ★1/2/3 ↔ ⭐⭐/⭐/후순위 매핑은 **근거가 없다**(두 키가 한 번도 동시 등장하지 않아 대조 불가).
+#     그래서 표기로도 미표기로도 세지 않고 **별도 버킷**으로 드러낸다 — 추측 매핑으로 채우면
+#     그 뒤 모든 우선순위가 근거 없는 수 위에 서게 된다.
+NONCANON_PRIO_KEYS = ("priority",)
 # 축이 요구되는 레인 — prompt:59 는 optimizer/risk 에만 요구한다(regime 은 어댑터 종류가 다름)
 AXIS_LANES = ("optimizer", "risk")
 LANES = ("optimizer", "risk", "regime")
@@ -81,6 +89,18 @@ def _title(it):
 
 def _norm_title(t):
     return re.sub(r"[^a-z0-9]+", "", t.lower())[:60]
+
+
+def _item_id(it):
+    """★식별자 필드를 **한 번에 다** 읽는다 (2026-08-13).
+    큐 항목은 날짜마다 `id` / `arxiv_id` 를 섞어 쓴다. 하나만 읽으면 같은 논문이 두 키로
+    갈려 '고유' 수가 부푼다 — 실측: id 만 읽었을 때 unranked 76건 안에 제목 중복 17건.
+    (오늘 이 계통으로 수를 세 번 틀렸다: 행/entry 혼동 → join 과소/과다 → 식별자 필드 누락.)"""
+    for k in ("id", "arxiv_id", "paper_id", "arxivId"):
+        v = it.get(k)
+        if v:
+            return _norm_id(str(v))
+    return ""
 
 
 def _norm_id(x):
@@ -134,32 +154,44 @@ def main():
                     title2id.setdefault(nk, pid)
     n_reg = len([m for m in ms if isinstance(m, dict)])
 
+    # ── 소급 표기 오버레이 (2026-08-13). 원 큐는 수정하지 않고 여기서 join 한다.
+    #   역사 산출물을 덮어쓰면 "원래 무엇이 표기돼 있었나"를 잃는다 — 표기 출처가
+    #   라우터인지 소급인지 구분 가능해야 감사가 성립한다.
+    bf = _load(os.path.join(root, "06_Registry", "adapter_axis_backfill_20260813.json")) or {}
+    overlay = {r["paper_key"]: r for r in (bf.get("rows") or []) if isinstance(r, dict)}
+
     tot = req = filled = 0
     per_date = []
     cands, unranked = [], []
+    nonc = 0           # 비정본 키로 표기된 항목 (표기도 미표기도 아님)
     seen = {}          # paper_key -> row (고유 논문 단위 집계)
     seen_reg = set()   # 큐에 등장했고 등재된 고유 논문
     for f in files:
         d = f[len("mode_queue_"):-len(".json")]
         q = _load(os.path.join(stage, f))
         if q is None:
-            per_date.append((d, 0, 0, 0, "PARSE_FAIL"))
+            per_date.append((d, 0, 0, 0, 0, "PARSE_FAIL"))
             continue
-        dt = dr = df = 0
+        dt = dr = df = dn = 0
         for lane, it in _items(q):
             tot += 1
             dt += 1
             need = lane in AXIS_LANES
             has = all(it.get(x) is not None for x in AXES)
+            noncanon = (it.get("screen_priority") is None
+                        and any(it.get(k) is not None for k in NONCANON_PRIO_KEYS))
             if need:
                 req += 1
                 dr += 1
                 if has:
                     filled += 1
                     df += 1
+                elif noncanon:
+                    nonc += 1
+                    dn += 1
             t = _title(it)
             nt = _norm_title(t)
-            ni = _norm_id(it.get("id") or "")
+            ni = _item_id(it)
             # ① 선언 식별자(paper_id) 우선 ② 제목은 **완전일치만** 보조.
             #   ★부분일치(`nt in rk or rk in nt`)를 쓰면 반대 방향으로 틀린다 — 60자 절단 제목끼리
             #     포함관계가 쉽게 성립해 등재 11건인데 **23건**이 매칭됐다(실측). 과소 6 → 과다 23.
@@ -180,33 +212,44 @@ def main():
             #   등재 쪽도 마찬가지: 레지스트리 11 entry 의 고유 paper_id 는 9 다(한 논문에서
             #   변형 어댑터 여럿). **양쪽 단위를 맞춰야 비율이 의미를 갖는다.**
             key = ni or nt
+            ov = overlay.get(key)
             prev = seen.get(key)
             row = {"paper_key": key, "first_date": d, "dates": [d], "lane": lane, "title": t,
-                   "screen_priority": it.get("screen_priority"),
-                   "shrinkage_builtin": it.get("shrinkage_builtin"),
-                   "statistic_order": it.get("statistic_order")}
+                   "screen_priority": it.get("screen_priority") or (ov or {}).get("screen_priority"),
+                   "shrinkage_builtin": it.get("shrinkage_builtin") or (ov or {}).get("shrinkage_builtin"),
+                   "statistic_order": it.get("statistic_order") or (ov or {}).get("statistic_order"),
+                   "axis_source": ("router" if it.get("screen_priority") is not None
+                                   else ("retro_backfill_20260813" if ov else None)),
+                   "meets_frontier_criteria": (ov or {}).get("meets_frontier_criteria", False)}
             if prev is None:
                 seen[key] = row
             else:
                 if d not in prev["dates"]:
                     prev["dates"].append(d)
                 # 축은 나중 표기가 있으면 채운다(뒤 날짜에서 표기된 경우)
+                #   ★출처 라벨도 같이 갱신한다 — 안 하면 첫 행 기준으로 굳어 provenance 가 틀린다
+                #     (실측: ranked 3건이 값은 있는데 axis_source=None 이었다).
                 for ax in AXES:
                     if prev.get(ax) is None and it.get(ax) is not None:
                         prev[ax] = it.get(ax)
-        per_date.append((d, dt, dr, df, ""))
+                        if ax == "screen_priority":
+                            prev["axis_source"] = "router"
+        per_date.append((d, dt, dr, df, dn, ""))
 
     for row in seen.values():
         (cands if row.get("screen_priority") in PRIO_RANK else unranked).append(row)
 
     print("== 비-alpha 큐 우선순위 축 채움 (계약: optimizer/risk 항목은 3축 전부) ==")
-    for d, dt, dr, df, err in per_date:
+    for d, dt, dr, df, dn, err in per_date:
         pct = ("%3.0f%%" % (100.0 * df / dr)) if dr else "  -  "
-        flag = " ★미표기" if dr and df < dr else ""
-        print("  %s  항목 %3d · 축요구 %3d · 표기 %3d  %s%s%s" % (d, dt, dr, df, pct, flag, (" " + err) if err else ""))
+        flag = " ★미표기" if dr and (df + dn) < dr else ""
+        nc = (" · 비정본키 %d" % dn) if dn else ""
+        print("  %s  항목 %3d · 축요구 %3d · 표기 %3d%s  %s%s%s"
+              % (d, dt, dr, df, nc, pct, flag, (" " + err) if err else ""))
     print("  ── 전체: 항목 %d · 축요구 %d · 표기 %d (%.0f%%)" %
           (tot, req, filled, (100.0 * filled / req) if req else 0.0))
-    print("  ★미표기 %d건은 **정렬 불가**다 — 0 이나 최하위로 접지 않는다(미측정 위장 금지)." % (req - filled))
+    print("  ★비정본 키(priority 1/2/3) %d건 — 표기도 미표기도 아님. 매핑 근거 없어 추측 금지." % nonc)
+    print("  ★정렬 불가 %d건 — 0 이나 최하위로 접지 않는다(미측정 위장 금지)." % (req - filled - nonc))
     print("  ── 단위: 큐 행 %d = 고유 논문 %d편 · 레지스트리 %d entry = 고유 %d편 · 큐↔등재 교집합 %d편"
           % (tot, len(seen) + len(seen_reg), n_reg, len(reg_ids), len(seen_reg)))
     print("  ★미등재 고유 논문 %d편 — 이것이 등재 병목의 실제 크기다(행 수 아님)." % len(seen))
@@ -230,6 +273,7 @@ def main():
                           "비율은 **고유:고유** 로만 의미가 있다."),
             "join_note": "join = paper_id(선언 식별자) 완전일치 우선 + 제목 정규화 완전일치 보조(id 없는 항목용).",
             "n_ranked": len(cands), "n_unranked": len(unranked),
+            "n_meets_frontier": sum(1 for r in cands + unranked if r.get("meets_frontier_criteria")),
             "ranked": cands, "unranked": unranked,
         }
         op = os.path.join(root, "06_Registry", "adapter_registration_queue.json")
