@@ -682,6 +682,16 @@ SUITES=(
   #     잴 대상을 잃는다 — 그건 "제약 준수"가 아니라 대상 0 이다(SKIP 이지 PASS 아님).
   "08_Tests/contracts/test_liquidity_ruler_restore.R"
 
+  # (2026-08-13) ctx 특성 확장 계약 — 어댑터 ctx 에 characteristics 접근자를 붙여
+  #   특성 기반 방법(CD-DFM 계열)을 열었다. ★확장은 선언만으로 살지 않는다 —
+  #   "존재 = 배선 완료" 착각(screen_route 소비자 0 계통)을 여기서 막는다.
+  #   본체는 T3(특성 sig_date 가 홀딩월 시작 전인가 — 당월이면 동월 look-ahead)와
+  #   T4(패널 NULL 일 때 죽는 어댑터가 검출되는가).
+  #   ★T4 는 축을 한 번 다시 설계했다: NULL 상황에서 등재검증으로 재면 정상 어댑터도
+  #     중립(EW)을 내서 비-퇴화 게이트에 걸린다 — 정상과 고장이 **둘 다 EW** 로 수렴해
+  #     구분이 안 됐다. 그래서 생존(예외 없이 유효 길이)만 묻는 축으로 바꿨다.
+  "08_Tests/methods/test_ctx_characteristics.R"
+
   # ── 2026-08-13 좌초 수리 회수: 아래 8건은 병렬 세션 worktree 에 커밋된 채 main 에
   #    도달하지 못했던 검사다(agitated-jones 2 · jovial-mcnulty 6). 감사기가 '유실' 로
   #    세지 못한 구간 — 미커밋만 triage 하고 **커밋된 미병합분은 안 봤다**. 원 주석 보존.
