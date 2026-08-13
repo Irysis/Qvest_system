@@ -338,9 +338,27 @@ if (n_opt > 0 || n_risk > 0) {
     #   레인 라벨을 함께 싣는다 — 수치가 어느 레인 것인지 파일만 보고 알 수 있어야 한다.
     .rk_arms <- if (exists("risk_lane_arms")) tryCatch(vapply(risk_lane_arms(), function(a) a$arm, character(1)),
                                                       error = function(e) character(0)) else character(0)
+    # ★per-arm 기록을 남긴다 (2026-08-13 수리). 구 코드는 `oth` 에 행별 측정이 **이미 다 있는데**
+    #   집계(best_method/delta_ir)만 뽑고 버렸다. risk 레인은 arms[] 를 남기는데 optimizer 는
+    #   안 남겨서, optimizer 논문은 아무리 측정돼도 hypothesis_index 에서 **영원히 미측정**이었다
+    #   (콜렉터는 method_id 로 조인한다). 같은 배터리를 타는데 기록 형태만 달랐던 것 —
+    #   콜렉터를 아무리 고쳐도 해결이 안 되는 층이었다.
+    #   ★arm 이름은 `minvar@X` 처럼 접두가 붙을 수 있어 method_id 를 따로 뽑는다(risk 와 동일 규약).
+    .opt_arms <- lapply(seq_len(nrow(oth)), function(i) {
+      .a <- as.character(oth$method[i])
+      .mid <- sub("^[^@]+@", "", .a)
+      list(method_id = .mid, arm = .a,
+           route = if (.a %in% .rk_arms) "risk" else "optimizer_or_builtin",
+           measured = TRUE,
+           ir = round(as.numeric(oth$IR[i]), 4),
+           control = "strategy",
+           control_basis = "Σ-가중 A/B 배터리 · book(캐리어) strategy 팔",
+           delta_ir = round(as.numeric(oth$IR[i]) - book_ir, 4))
+    })
     opt_verdict <- list(book_ir = round(book_ir, 3), best_method = best$method, best_ir = round(best$IR, 3),
                         best_method_route = if (best$method %in% .rk_arms) "risk" else "optimizer_or_builtin",
                         n_arms = nrow(oth), n_risk_route_arms = sum(.rk_arms %in% oth$method),
+                        arms = .opt_arms,
                         delta_ir = round(delta, 3), gate = DELTA_IR_GATE, beats_book = beats,
                         verdict = if (beats) sprintf("후보: %s ΔIR=%.3f (게이트 %.2f 이상) → 수동 검수", best$method, delta, DELTA_IR_GATE)
                                   else sprintf("가중 레버 아님: book IR %.3f 최고(최선 타방법 %s %.3f, ΔIR=%.3f, 게이트 %.2f 미달) → 채택 0", book_ir, best$method, best$IR, delta, DELTA_IR_GATE))

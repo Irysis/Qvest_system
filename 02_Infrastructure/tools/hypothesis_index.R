@@ -449,7 +449,20 @@ HI_PAPER_AB_SOURCES <- c("06_Registry/book_carrier/h2_regime_overlay_ab.csv",
              decreasing = TRUE)
   for (p in rs) {
     j <- tryCatch(fromJSON(p, simplifyVector = FALSE), error = function(e) NULL); if (is.null(j)) next
-    for (ln in names(j$actions %||% list())) {
+    # ★레인 순서가 **대조 기준을 정한다** (2026-08-13 수리 — 내 변경이 만든 함정).
+    #   같은 method 를 두 레인이 잰다: risk 는 `minvar_lw`(옵티마이저 고정·Σ만 교체)와,
+    #   optimizer 배터리는 `strategy`(북 전체)와 비교한다. 대조가 다르니 ΔIR 도 다르다
+    #   (실측: ProperScoreGASFilter −0.219 vs −0.477 · LMGarch2DMC −0.236 vs −0.494).
+    #   ⇒ 아무 순서로 집으면 **측정은 그대로인데 숫자만 조용히 바뀐다**. sigma 어댑터는
+    #     Σ 효과만 분리하는 risk 쪽 대조가 옳으므로 risk 를 먼저 집는다.
+    #   ★남는 한계: weight 어댑터는 optimizer 대조가, sigma 는 risk 대조가 맞는데 여기서는
+    #     레인 우선순위로 근사한다. adapter_kind 별 대조 선택이 정본이나 레지스트리 조회가
+    #     필요해 이 함수의 책임을 넘는다 — FQ 등재 대상. control_basis 가 함께 실리므로
+    #     소비자는 최소한 **무엇과 비교한 값인지 알 수 있다**.
+    .ln_all <- names(j$actions %||% list())
+    .ln_ord <- c(intersect(c("risk", "optimizer", "regime"), .ln_all),
+                 setdiff(.ln_all, c("risk", "optimizer", "regime")))
+    for (ln in .ln_ord) {
       for (a in (j$actions[[ln]]$verdict$arms %||% list())) {
         mid <- as.character(a$method_id %||% "")[1]
         if (!nzchar(mid) || !is.null(out[[mid]])) next        # 이미 더 새 기록이 있으면 유지
