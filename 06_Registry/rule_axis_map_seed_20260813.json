@@ -1,621 +1,5498 @@
 {
   "generated_at": "2026-08-13",
-  "scope": "논문 레인 배관 + 검사군",
-  "method": "규칙성 구조(대문자 상수·kind 매핑·선호표)를 열거하고, 그 심볼명이 검사군 텍스트에 등장하는지로 **축 후보 존재의 약한 신호**만 붙였다. ★'등장함'이 '축이 있다'를 뜻하지 않는다 — 오늘 T6c/T6b 는 이름이 등장하면서도 박제 때문에 무너졌다. 판정은 수기다.",
-  "caveat": "자동 판정 금지. 각 항목에 '이 규칙이 뒤집히면 어떤 축이 빨개지는가'를 사람이 적고, 적을 수 없으면 그것이 N2 의 산출(축 부재)이다.",
-  "n_rules": 75,
-  "n_no_name_in_tests": 14,
-  "entries": [
+  "n_rows": 784,
+  "scope": "논문 레인 배관 6 + 검사군 5",
+  "method": "AST 순회로 (a) $field·[[\"field\"]] 접근 (b) 식별자 모양 문자열 리터럴 (c) 호출 인자 **이름** 을 수집한다. (c)가 없으면 switch(sigma=…) 형태의 kind 매핑을 통째로 놓친다.",
+  "positive_control": "알려진 실패 4건 전건 검출 (4/4). 정규식판은 2/4 였다.",
+  "caveat": "★'검사군에 등장'이 '축이 있다'를 뜻하지 않는다 — 등장하면서도 박제로 무너진 실례가 있다(T6c/T6b). 판정은 수기다. 이 산출은 **후보 목록**이다.",
+  "rows": [
     {
       "file": "02_Infrastructure/methods/register_method.R",
-      "line": 67,
-      "type": "constant",
-      "code": "REGISTER_METHOD_PATH <- \"06_Registry/method_registry.json\"",
-      "symbol": "REGISTER_METHOD_PATH",
-      "axis_hint": "검사군에 이름 등장"
+      "form": "field_ref",
+      "token": "action",
+      "n": 1,
+      "in_tests": true
     },
     {
       "file": "02_Infrastructure/methods/register_method.R",
-      "line": 71,
-      "type": "constant",
-      "code": ".RM_ENTRY <- c(weight = \"method_weights\", sigma = \"sigma_estimate\", exposure = \"exposure_s",
-      "symbol": ".RM_ENTRY",
-      "axis_hint": "★이름 등장 없음"
+      "form": "field_ref",
+      "token": "adapter",
+      "n": 3,
+      "in_tests": true
     },
     {
       "file": "02_Infrastructure/methods/register_method.R",
-      "line": 140,
-      "type": "constant",
-      "code": ".ARM_WRAPPER <- c(weight = \"wrap_adapter\", sigma = \"wrap_sigma_estimator\",",
-      "symbol": ".ARM_WRAPPER",
-      "axis_hint": "검사군에 이름 등장"
+      "form": "field_ref",
+      "token": "adapter_kind",
+      "n": 2,
+      "in_tests": true
     },
     {
       "file": "02_Infrastructure/methods/register_method.R",
-      "line": 142,
-      "type": "constant",
-      "code": ".ARM_ENTRY <- c(weight = \"method_weights\", sigma = \"sigma_estimate\",",
-      "symbol": ".ARM_ENTRY",
-      "axis_hint": "검사군에 이름 등장"
+      "form": "field_ref",
+      "token": "allow_fixture_degenerate",
+      "n": 1,
+      "in_tests": true
     },
     {
       "file": "02_Infrastructure/methods/register_method.R",
-      "line": 144,
-      "type": "constant",
-      "code": ".ARM_LABEL <- c(weight = \"max|dw|\", sigma = \"rel max|dSigma|\", exposure = \"max|d_exposure|",
-      "symbol": ".ARM_LABEL",
-      "axis_hint": "검사군에 이름 등장"
+      "form": "field_ref",
+      "token": "assets",
+      "n": 4,
+      "in_tests": true
     },
     {
       "file": "02_Infrastructure/methods/register_method.R",
-      "line": 145,
-      "type": "constant",
-      "code": ".ARM_NEAR <- c(weight = 5e-3, sigma = 1e-3, exposure = 1e-3)",
-      "symbol": ".ARM_NEAR",
-      "axis_hint": "검사군에 이름 등장"
+      "form": "field_ref",
+      "token": "auto_unbox",
+      "n": 1,
+      "in_tests": true
     },
     {
       "file": "02_Infrastructure/methods/register_method.R",
-      "line": 115,
-      "type": "kindmap",
-      "code": "weight = c(list(assets = a, R = R, mu = mu, Sigma = S,",
-      "symbol": {},
-      "axis_hint": "(수기 판정 필요)"
+      "form": "field_ref",
+      "token": "bare_gross",
+      "n": 1,
+      "in_tests": false
     },
     {
       "file": "02_Infrastructure/methods/register_method.R",
-      "line": 117,
-      "type": "kindmap",
-      "code": "sigma = c(list(assets = a, R = R, lookback_days = n_obs,",
-      "symbol": {},
-      "axis_hint": "(수기 판정 필요)"
+      "form": "field_ref",
+      "token": "budget_lines",
+      "n": 1,
+      "in_tests": false
     },
     {
       "file": "02_Infrastructure/methods/register_method.R",
-      "line": 119,
-      "type": "kindmap",
-      "code": "exposure = list(",
-      "symbol": {},
-      "axis_hint": "(수기 판정 필요)"
+      "form": "field_ref",
+      "token": "by",
+      "n": 1,
+      "in_tests": true
     },
     {
       "file": "02_Infrastructure/methods/register_method.R",
-      "line": 141,
-      "type": "kindmap",
-      "code": "exposure = \"wrap_exposure_adapter\")",
-      "symbol": {},
-      "axis_hint": "(수기 판정 필요)"
+      "form": "field_ref",
+      "token": "checks",
+      "n": 7,
+      "in_tests": true
     },
     {
       "file": "02_Infrastructure/methods/register_method.R",
-      "line": 143,
-      "type": "kindmap",
-      "code": "exposure = \"exposure_schedule\")",
-      "symbol": {},
-      "axis_hint": "(수기 판정 필요)"
+      "form": "field_ref",
+      "token": "constraints",
+      "n": 1,
+      "in_tests": false
     },
     {
       "file": "02_Infrastructure/methods/register_method.R",
-      "line": 151,
-      "type": "preftbl",
-      "code": "if (kind %in% c(\"weight\", \"sigma\")) {",
-      "symbol": {},
-      "axis_hint": "(수기 판정 필요)"
+      "form": "field_ref",
+      "token": "Date",
+      "n": 1,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/methods/register_method.R",
+      "form": "field_ref",
+      "token": "decision_date",
+      "n": 3,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/methods/register_method.R",
+      "form": "field_ref",
+      "token": "deterministic",
+      "n": 3,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/methods/register_method.R",
+      "form": "field_ref",
+      "token": "digits",
+      "n": 1,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/methods/register_method.R",
+      "form": "field_ref",
+      "token": "dimnames",
+      "n": 1,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/methods/register_method.R",
+      "form": "field_ref",
+      "token": "entry",
+      "n": 2,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/methods/register_method.R",
+      "form": "field_ref",
+      "token": "entrypoint",
+      "n": 3,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/methods/register_method.R",
+      "form": "field_ref",
+      "token": "envir",
+      "n": 16,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/methods/register_method.R",
+      "form": "field_ref",
+      "token": "err",
+      "n": 1,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/methods/register_method.R",
+      "form": "field_ref",
+      "token": "error",
+      "n": 7,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/methods/register_method.R",
+      "form": "field_ref",
+      "token": "eval_date",
+      "n": 3,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/methods/register_method.R",
+      "form": "field_ref",
+      "token": "exposure",
+      "n": 10,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/methods/register_method.R",
+      "form": "field_ref",
+      "token": "failure_reason",
+      "n": 1,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/methods/register_method.R",
+      "form": "field_ref",
+      "token": "file_exists",
+      "n": 1,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/methods/register_method.R",
+      "form": "field_ref",
+      "token": "fixture",
+      "n": 2,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/methods/register_method.R",
+      "form": "field_ref",
+      "token": "free_params",
+      "n": 1,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/methods/register_method.R",
+      "form": "field_ref",
+      "token": "inherits",
+      "n": 2,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/methods/register_method.R",
+      "form": "field_ref",
+      "token": "kr_mapping",
+      "n": 1,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/methods/register_method.R",
+      "form": "field_ref",
+      "token": "length.out",
+      "n": 3,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/methods/register_method.R",
+      "form": "field_ref",
+      "token": "lookback_days",
+      "n": 2,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/methods/register_method.R",
+      "form": "field_ref",
+      "token": "measured",
+      "n": 1,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/methods/register_method.R",
+      "form": "field_ref",
+      "token": "mechanism",
+      "n": 1,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/methods/register_method.R",
+      "form": "field_ref",
+      "token": "method_id",
+      "n": 5,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/methods/register_method.R",
+      "form": "field_ref",
+      "token": "methods",
+      "n": 3,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/methods/register_method.R",
+      "form": "field_ref",
+      "token": "mu",
+      "n": 1,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/methods/register_method.R",
+      "form": "field_ref",
+      "token": "nearest_arm",
+      "n": 4,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/methods/register_method.R",
+      "form": "field_ref",
+      "token": "non_degenerate",
+      "n": 4,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/methods/register_method.R",
+      "form": "field_ref",
+      "token": "nrow",
+      "n": 1,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/methods/register_method.R",
+      "form": "field_ref",
+      "token": "null",
+      "n": 1,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/methods/register_method.R",
+      "form": "field_ref",
+      "token": "ok",
+      "n": 11,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/methods/register_method.R",
+      "form": "field_ref",
+      "token": "paper_id",
+      "n": 1,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/methods/register_method.R",
+      "form": "field_ref",
+      "token": "paper_title",
+      "n": 1,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/methods/register_method.R",
+      "form": "field_ref",
+      "token": "parent",
+      "n": 4,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/methods/register_method.R",
+      "form": "field_ref",
+      "token": "periods",
+      "n": 1,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/methods/register_method.R",
+      "form": "field_ref",
+      "token": "pretty",
+      "n": 1,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/methods/register_method.R",
+      "form": "field_ref",
+      "token": "r",
+      "n": 1,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/methods/register_method.R",
+      "form": "field_ref",
+      "token": "R",
+      "n": 3,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/methods/register_method.R",
+      "form": "field_ref",
+      "token": "reason",
+      "n": 6,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/methods/register_method.R",
+      "form": "field_ref",
+      "token": "registration",
+      "n": 1,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/methods/register_method.R",
+      "form": "field_ref",
+      "token": "root",
+      "n": 1,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/methods/register_method.R",
+      "form": "field_ref",
+      "token": "route",
+      "n": 1,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/methods/register_method.R",
+      "form": "field_ref",
+      "token": "routed_on",
+      "n": 1,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/methods/register_method.R",
+      "form": "field_ref",
+      "token": "scope_note",
+      "n": 1,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/methods/register_method.R",
+      "form": "field_ref",
+      "token": "screen_axes",
+      "n": 1,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/methods/register_method.R",
+      "form": "field_ref",
+      "token": "selection_type",
+      "n": 1,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/methods/register_method.R",
+      "form": "field_ref",
+      "token": "sigma",
+      "n": 9,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/methods/register_method.R",
+      "form": "field_ref",
+      "token": "Sigma",
+      "n": 1,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/methods/register_method.R",
+      "form": "field_ref",
+      "token": "silent",
+      "n": 3,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/methods/register_method.R",
+      "form": "field_ref",
+      "token": "similar_to",
+      "n": 1,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/methods/register_method.R",
+      "form": "field_ref",
+      "token": "simplifyVector",
+      "n": 2,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/methods/register_method.R",
+      "form": "field_ref",
+      "token": "sources",
+      "n": 1,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/methods/register_method.R",
+      "form": "field_ref",
+      "token": "text",
+      "n": 1,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/methods/register_method.R",
+      "form": "field_ref",
+      "token": "unverified",
+      "n": 3,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/methods/register_method.R",
+      "form": "field_ref",
+      "token": "unverified_on_fixture",
+      "n": 1,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/methods/register_method.R",
+      "form": "field_ref",
+      "token": "unverified_reason",
+      "n": 1,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/methods/register_method.R",
+      "form": "field_ref",
+      "token": "verdict",
+      "n": 3,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/methods/register_method.R",
+      "form": "field_ref",
+      "token": "verified_by",
+      "n": 1,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/methods/register_method.R",
+      "form": "field_ref",
+      "token": "weight",
+      "n": 10,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/methods/register_method.R",
+      "form": "field_ref",
+      "token": "what",
+      "n": 1,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/methods/register_method.R",
+      "form": "str_literal",
+      "token": "build_ctx_extras",
+      "n": 2,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/methods/register_method.R",
+      "form": "str_literal",
+      "token": "err",
+      "n": 3,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/methods/register_method.R",
+      "form": "str_literal",
+      "token": "exposure",
+      "n": 4,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/methods/register_method.R",
+      "form": "str_literal",
+      "token": "exposure_schedule",
+      "n": 2,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/methods/register_method.R",
+      "form": "str_literal",
+      "token": "implemented",
+      "n": 2,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/methods/register_method.R",
+      "form": "str_literal",
+      "token": "method_registry.json",
+      "n": 1,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/methods/register_method.R",
+      "form": "str_literal",
+      "token": "method_weights",
+      "n": 2,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/methods/register_method.R",
+      "form": "str_literal",
+      "token": "month",
+      "n": 1,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/methods/register_method.R",
+      "form": "str_literal",
+      "token": "normalize_long_only",
+      "n": 1,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/methods/register_method.R",
+      "form": "str_literal",
+      "token": "null",
+      "n": 1,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/methods/register_method.R",
+      "form": "str_literal",
+      "token": "registration_failed",
+      "n": 1,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/methods/register_method.R",
+      "form": "str_literal",
+      "token": "sigma",
+      "n": 5,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/methods/register_method.R",
+      "form": "str_literal",
+      "token": "sigma_estimate",
+      "n": 2,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/methods/register_method.R",
+      "form": "str_literal",
+      "token": "sr_guard_write",
+      "n": 1,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/methods/register_method.R",
+      "form": "str_literal",
+      "token": "sr_read",
+      "n": 1,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/methods/register_method.R",
+      "form": "str_literal",
+      "token": "sr_with_lock",
+      "n": 1,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/methods/register_method.R",
+      "form": "str_literal",
+      "token": "weight",
+      "n": 5,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/methods/register_method.R",
+      "form": "str_literal",
+      "token": "wrap_adapter",
+      "n": 2,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/methods/register_method.R",
+      "form": "str_literal",
+      "token": "wrap_exposure_adapter",
+      "n": 2,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/methods/register_method.R",
+      "form": "str_literal",
+      "token": "wrap_sigma_estimator",
+      "n": 2,
+      "in_tests": false
     },
     {
       "file": "02_Infrastructure/methods/new_adapter.R",
-      "line": 33,
-      "type": "constant",
-      "code": ".NA_ENTRY <- c(weight = \"method_weights\", sigma = \"sigma_estimate\", exposure = \"exposure_s",
-      "symbol": ".NA_ENTRY",
-      "axis_hint": "★이름 등장 없음"
+      "form": "field_ref",
+      "token": "entrypoint",
+      "n": 1,
+      "in_tests": true
     },
     {
       "file": "02_Infrastructure/methods/new_adapter.R",
-      "line": 34,
-      "type": "constant",
-      "code": ".NA_CTX <- c(",
-      "symbol": ".NA_CTX",
-      "axis_hint": "★이름 등장 없음"
+      "form": "field_ref",
+      "token": "exposure",
+      "n": 3,
+      "in_tests": true
     },
     {
       "file": "02_Infrastructure/methods/new_adapter.R",
-      "line": 38,
-      "type": "constant",
-      "code": ".NA_RET <- c(",
-      "symbol": ".NA_RET",
-      "axis_hint": "★이름 등장 없음"
+      "form": "field_ref",
+      "token": "file",
+      "n": 1,
+      "in_tests": true
     },
     {
       "file": "02_Infrastructure/methods/new_adapter.R",
-      "line": 35,
-      "type": "kindmap",
-      "code": "weight = \"assets, R(obs x assets, PIT trailing), mu, Sigma, ub, lookback_days, decision_da",
-      "symbol": {},
-      "axis_hint": "(수기 판정 필요)"
+      "form": "field_ref",
+      "token": "recursive",
+      "n": 1,
+      "in_tests": true
     },
     {
       "file": "02_Infrastructure/methods/new_adapter.R",
-      "line": 36,
-      "type": "kindmap",
-      "code": "sigma = \"R, assets, lookback_days, decision_date, eval_date (Sigma 는 주지 않는다 - 그걸 만드는 게 일)\"",
-      "symbol": {},
-      "axis_hint": "(수기 판정 필요)"
+      "form": "field_ref",
+      "token": "register_stub",
+      "n": 1,
+      "in_tests": true
     },
     {
       "file": "02_Infrastructure/methods/new_adapter.R",
-      "line": 37,
-      "type": "kindmap",
-      "code": "exposure = \"periods(decision_date, eval_date), bare_gross(Date, r)\")",
-      "symbol": {},
-      "axis_hint": "(수기 판정 필요)"
+      "form": "field_ref",
+      "token": "sep",
+      "n": 1,
+      "in_tests": true
     },
     {
       "file": "02_Infrastructure/methods/new_adapter.R",
-      "line": 39,
-      "type": "kindmap",
-      "code": "weight = \"named 선호 벡터 (스케일 자유 - wrapper 가 합-정규화 후 상한 적용)\",",
-      "symbol": {},
-      "axis_hint": "(수기 판정 필요)"
+      "form": "field_ref",
+      "token": "showWarnings",
+      "n": 1,
+      "in_tests": true
     },
     {
       "file": "02_Infrastructure/methods/new_adapter.R",
-      "line": 40,
-      "type": "kindmap",
-      "code": "sigma = \"matrix (assets x assets, 대칭·PD)\",",
-      "symbol": {},
-      "axis_hint": "(수기 판정 필요)"
+      "form": "field_ref",
+      "token": "sigma",
+      "n": 3,
+      "in_tests": true
     },
     {
       "file": "02_Infrastructure/methods/new_adapter.R",
-      "line": 41,
-      "type": "kindmap",
-      "code": "exposure = \"list(exposure = data.frame(Date, exposure in [0,1]), used_cutoff = Date[], eli",
-      "symbol": {},
-      "axis_hint": "(수기 판정 필요)"
+      "form": "field_ref",
+      "token": "weight",
+      "n": 3,
+      "in_tests": true
     },
     {
       "file": "02_Infrastructure/methods/new_adapter.R",
-      "line": 71,
-      "type": "kindmap",
-      "code": "list(exposure = data.frame(Date = as.Date(pr$eval_date), exposure = expo),",
-      "symbol": {},
-      "axis_hint": "(수기 판정 필요)"
+      "form": "str_literal",
+      "token": "exposure",
+      "n": 2,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/methods/new_adapter.R",
+      "form": "str_literal",
+      "token": "exposure_schedule",
+      "n": 1,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/methods/new_adapter.R",
+      "form": "str_literal",
+      "token": "method_weights",
+      "n": 1,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/methods/new_adapter.R",
+      "form": "str_literal",
+      "token": "sigma",
+      "n": 1,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/methods/new_adapter.R",
+      "form": "str_literal",
+      "token": "sigma_estimate",
+      "n": 1,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/methods/paper_source.R",
+      "form": "field_ref",
+      "token": "collapse",
+      "n": 1,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/methods/paper_source.R",
+      "form": "field_ref",
+      "token": "fixed",
+      "n": 1,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/methods/paper_source.R",
+      "form": "field_ref",
+      "token": "found",
+      "n": 1,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/methods/paper_source.R",
+      "form": "field_ref",
+      "token": "full.names",
+      "n": 1,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/methods/paper_source.R",
+      "form": "field_ref",
+      "token": "id",
+      "n": 1,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/methods/paper_source.R",
+      "form": "field_ref",
+      "token": "name",
+      "n": 3,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/methods/paper_source.R",
+      "form": "field_ref",
+      "token": "num",
+      "n": 5,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/methods/paper_source.R",
+      "form": "field_ref",
+      "token": "pattern",
+      "n": 1,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/methods/paper_source.R",
+      "form": "field_ref",
+      "token": "quiet",
+      "n": 1,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/methods/paper_source.R",
+      "form": "field_ref",
+      "token": "recursive",
+      "n": 1,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/methods/paper_source.R",
+      "form": "field_ref",
+      "token": "row.names",
+      "n": 1,
+      "in_tests": false
     },
     {
       "file": "02_Infrastructure/methods/ctx_providers.R",
-      "line": 43,
-      "type": "constant",
-      "code": ".CTX_PROVIDERS <- new.env(parent = emptyenv())",
-      "symbol": ".CTX_PROVIDERS",
-      "axis_hint": "★이름 등장 없음"
+      "form": "field_ref",
+      "token": ".a",
+      "n": 1,
+      "in_tests": true
     },
     {
       "file": "02_Infrastructure/methods/ctx_providers.R",
-      "line": 133,
-      "type": "constant",
-      "code": "MACRO_PUB_LAG_DAYS <- 5L # 보수적 균일 발표시차. 아래 pit_note 참조 — 사전고정, sweep 아님",
-      "symbol": "MACRO_PUB_LAG_DAYS",
-      "axis_hint": "★이름 등장 없음"
+      "form": "field_ref",
+      "token": "by",
+      "n": 1,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/methods/ctx_providers.R",
+      "form": "field_ref",
+      "token": "char_size",
+      "n": 1,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/methods/ctx_providers.R",
+      "form": "field_ref",
+      "token": "char_value",
+      "n": 1,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/methods/ctx_providers.R",
+      "form": "field_ref",
+      "token": "collapse",
+      "n": 1,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/methods/ctx_providers.R",
+      "form": "field_ref",
+      "token": "cutoff",
+      "n": 2,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/methods/ctx_providers.R",
+      "form": "field_ref",
+      "token": "Date",
+      "n": 4,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/methods/ctx_providers.R",
+      "form": "field_ref",
+      "token": "drop",
+      "n": 1,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/methods/ctx_providers.R",
+      "form": "field_ref",
+      "token": "envir",
+      "n": 5,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/methods/ctx_providers.R",
+      "form": "field_ref",
+      "token": "error",
+      "n": 1,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/methods/ctx_providers.R",
+      "form": "field_ref",
+      "token": "Fed_Funds_Rate",
+      "n": 1,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/methods/ctx_providers.R",
+      "form": "field_ref",
+      "token": "fixture_fn",
+      "n": 5,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/methods/ctx_providers.R",
+      "form": "field_ref",
+      "token": "fn",
+      "n": 5,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/methods/ctx_providers.R",
+      "form": "field_ref",
+      "token": "HY_Spread",
+      "n": 1,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/methods/ctx_providers.R",
+      "form": "field_ref",
+      "token": "inherits",
+      "n": 1,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/methods/ctx_providers.R",
+      "form": "field_ref",
+      "token": "length.out",
+      "n": 2,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/methods/ctx_providers.R",
+      "form": "field_ref",
+      "token": "name",
+      "n": 4,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/methods/ctx_providers.R",
+      "form": "field_ref",
+      "token": "panel",
+      "n": 2,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/methods/ctx_providers.R",
+      "form": "field_ref",
+      "token": "parent",
+      "n": 1,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/methods/ctx_providers.R",
+      "form": "field_ref",
+      "token": "pit_note",
+      "n": 6,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/methods/ctx_providers.R",
+      "form": "field_ref",
+      "token": "row.names",
+      "n": 1,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/methods/ctx_providers.R",
+      "form": "field_ref",
+      "token": "series",
+      "n": 2,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/methods/ctx_providers.R",
+      "form": "field_ref",
+      "token": "sig_date",
+      "n": 2,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/methods/ctx_providers.R",
+      "form": "field_ref",
+      "token": "source_note",
+      "n": 5,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/methods/ctx_providers.R",
+      "form": "field_ref",
+      "token": "StL_Fin_Stress",
+      "n": 1,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/methods/ctx_providers.R",
+      "form": "field_ref",
+      "token": "stringsAsFactors",
+      "n": 2,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/methods/ctx_providers.R",
+      "form": "field_ref",
+      "token": "Ticker",
+      "n": 1,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/methods/ctx_providers.R",
+      "form": "field_ref",
+      "token": "VIX",
+      "n": 1,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/methods/ctx_providers.R",
+      "form": "str_literal",
+      "token": "characteristics",
+      "n": 1,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/methods/ctx_providers.R",
+      "form": "str_literal",
+      "token": "day",
+      "n": 1,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/methods/ctx_providers.R",
+      "form": "str_literal",
+      "token": "load_month_factors",
+      "n": 1,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/methods/ctx_providers.R",
+      "form": "str_literal",
+      "token": "macro",
+      "n": 1,
+      "in_tests": true
     },
     {
       "file": "02_Infrastructure/tools/hypothesis_index.R",
-      "line": 91,
-      "type": "constant",
-      "code": "QM_ROOT <- Sys.getenv(\"QM_ROOT\", \"C:/Users/99922/OneDrive/Quant_Module_Moltbot\")",
-      "symbol": "QM_ROOT",
-      "axis_hint": "검사군에 이름 등장"
+      "form": "field_ref",
+      "token": "ab_source",
+      "n": 2,
+      "in_tests": true
     },
     {
       "file": "02_Infrastructure/tools/hypothesis_index.R",
-      "line": 92,
-      "type": "constant",
-      "code": "HI_INDEX_PATH <- file.path(QM_ROOT, \"06_Registry/hypothesis_index.json\")",
-      "symbol": "HI_INDEX_PATH",
-      "axis_hint": "검사군에 이름 등장"
+      "form": "field_ref",
+      "token": "accruals",
+      "n": 1,
+      "in_tests": false
     },
     {
       "file": "02_Infrastructure/tools/hypothesis_index.R",
-      "line": 97,
-      "type": "constant",
-      "code": "SIGNAL_PATTERNS <- list(",
-      "symbol": "SIGNAL_PATTERNS",
-      "axis_hint": "★이름 등장 없음"
+      "form": "field_ref",
+      "token": "actions",
+      "n": 2,
+      "in_tests": true
     },
     {
       "file": "02_Infrastructure/tools/hypothesis_index.R",
-      "line": 125,
-      "type": "constant",
-      "code": "FAMILY_PATTERNS <- list(",
-      "symbol": "FAMILY_PATTERNS",
-      "axis_hint": "★이름 등장 없음"
+      "form": "field_ref",
+      "token": "adapter",
+      "n": 1,
+      "in_tests": true
     },
     {
       "file": "02_Infrastructure/tools/hypothesis_index.R",
-      "line": 433,
-      "type": "constant",
-      "code": "HI_PAPER_AB_SOURCES <- c(\"06_Registry/book_carrier/h2_regime_overlay_ab.csv\",",
-      "symbol": "HI_PAPER_AB_SOURCES",
-      "axis_hint": "검사군에 이름 등장"
+      "form": "field_ref",
+      "token": "adapter_kind",
+      "n": 2,
+      "in_tests": true
     },
     {
       "file": "02_Infrastructure/tools/hypothesis_index.R",
-      "line": 589,
-      "type": "constant",
-      "code": "HI_INFLIGHT_FRESH_DAYS <- 14L",
-      "symbol": "HI_INFLIGHT_FRESH_DAYS",
-      "axis_hint": "★이름 등장 없음"
+      "form": "field_ref",
+      "token": "alpha_search_hurdle_fallback",
+      "n": 4,
+      "in_tests": false
     },
     {
       "file": "02_Infrastructure/tools/hypothesis_index.R",
-      "line": 590,
-      "type": "constant",
-      "code": "HI_WT_TERMINAL_REGEX <- \"TERMINAT|ABORT|ARCHIV|REJECT|KILL|FAIL|NEGATIVE|DEFERRED|ADMIT|GO",
-      "symbol": "HI_WT_TERMINAL_REGEX",
-      "axis_hint": "★이름 등장 없음"
+      "form": "field_ref",
+      "token": "alpha_search_manifest",
+      "n": 4,
+      "in_tests": false
     },
     {
       "file": "02_Infrastructure/tools/hypothesis_index.R",
-      "line": 906,
-      "type": "constant",
-      "code": "HI_QUERY_ALIAS <- list(",
-      "symbol": "HI_QUERY_ALIAS",
-      "axis_hint": "★이름 등장 없음"
+      "form": "field_ref",
+      "token": "alpha_search_parse_fail",
+      "n": 6,
+      "in_tests": false
     },
     {
       "file": "02_Infrastructure/tools/hypothesis_index.R",
-      "line": 545,
-      "type": "kindmap",
-      "code": "sigma = c(\"risk\", \"optimizer\", \"csv\", \"regime\"),",
-      "symbol": {},
-      "axis_hint": "(수기 판정 필요)"
+      "form": "field_ref",
+      "token": "alpha_search_skipped_empty",
+      "n": 4,
+      "in_tests": false
     },
     {
       "file": "02_Infrastructure/tools/hypothesis_index.R",
-      "line": 546,
-      "type": "kindmap",
-      "code": "weight = c(\"optimizer\", \"risk\", \"csv\", \"regime\"),",
-      "symbol": {},
-      "axis_hint": "(수기 판정 필요)"
+      "form": "field_ref",
+      "token": "alpha_verdict",
+      "n": 1,
+      "in_tests": false
     },
     {
       "file": "02_Infrastructure/tools/hypothesis_index.R",
-      "line": 547,
-      "type": "kindmap",
-      "code": "exposure = c(\"regime\", \"csv\", \"optimizer\", \"risk\"),",
-      "symbol": {},
-      "axis_hint": "(수기 판정 필요)"
+      "form": "field_ref",
+      "token": "arms",
+      "n": 1,
+      "in_tests": true
     },
     {
       "file": "02_Infrastructure/tools/hypothesis_index.R",
-      "line": 463,
-      "type": "preftbl",
-      "code": ".ln_ord <- c(intersect(c(\"risk\", \"optimizer\", \"regime\"), .ln_all),",
-      "symbol": {},
-      "axis_hint": "(수기 판정 필요)"
+      "form": "field_ref",
+      "token": "auto_unbox",
+      "n": 1,
+      "in_tests": true
     },
     {
       "file": "02_Infrastructure/tools/hypothesis_index.R",
-      "line": 464,
-      "type": "preftbl",
-      "code": "setdiff(.ln_all, c(\"risk\", \"optimizer\", \"regime\")))",
-      "symbol": {},
-      "axis_hint": "(수기 판정 필요)"
+      "form": "field_ref",
+      "token": "behavioral",
+      "n": 1,
+      "in_tests": false
     },
     {
       "file": "02_Infrastructure/tools/hypothesis_index.R",
-      "line": 482,
-      "type": "preftbl",
-      "code": "for (k in setdiff(names(a), c(\"measured\", \"method_id\"))) {",
-      "symbol": {},
-      "axis_hint": "(수기 판정 필요)"
+      "form": "field_ref",
+      "token": "beta",
+      "n": 1,
+      "in_tests": false
     },
     {
       "file": "02_Infrastructure/tools/hypothesis_index.R",
-      "line": 548,
-      "type": "preftbl",
-      "code": "c(\"risk\", \"optimizer\", \"regime\", \"csv\"))",
-      "symbol": {},
-      "axis_hint": "(수기 판정 필요)"
+      "form": "field_ref",
+      "token": "blocked_reason",
+      "n": 1,
+      "in_tests": false
     },
     {
       "file": "02_Infrastructure/tools/hypothesis_index.R",
-      "line": 822,
-      "type": "preftbl",
-      "code": "wdirs <- wdirs[!basename(wdirs) %in% c(\"processed\", \"integration\")]",
-      "symbol": {},
-      "axis_hint": "(수기 판정 필요)"
+      "form": "field_ref",
+      "token": "cagr",
+      "n": 3,
+      "in_tests": false
     },
     {
       "file": "02_Infrastructure/tools/hypothesis_index.R",
-      "line": 910,
-      "type": "preftbl",
-      "code": "defense = c(\"defense\", \"defensive\", \"방어\", \"low-beta\", \"lowbeta\", \"저베타\", \"lowvol\", \"저변동\", \"",
-      "symbol": {},
-      "axis_hint": "(수기 판정 필요)"
+      "form": "field_ref",
+      "token": "CAGR",
+      "n": 1,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "field_ref",
+      "token": "calmar",
+      "n": 3,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "field_ref",
+      "token": "Calmar",
+      "n": 1,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "field_ref",
+      "token": "collapse",
+      "n": 10,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "field_ref",
+      "token": "conditional",
+      "n": 2,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "field_ref",
+      "token": "consensus",
+      "n": 2,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "field_ref",
+      "token": "construction_type",
+      "n": 1,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "field_ref",
+      "token": "coverage",
+      "n": 1,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "field_ref",
+      "token": "crash_protection",
+      "n": 1,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "field_ref",
+      "token": "created_at",
+      "n": 3,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "field_ref",
+      "token": "csv",
+      "n": 2,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "field_ref",
+      "token": "current_phase",
+      "n": 1,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "field_ref",
+      "token": "date",
+      "n": 16,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "field_ref",
+      "token": "decreasing",
+      "n": 1,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "field_ref",
+      "token": "defense",
+      "n": 2,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "field_ref",
+      "token": "delta_ir",
+      "n": 1,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "field_ref",
+      "token": "delta_ir_caveat",
+      "n": 1,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "field_ref",
+      "token": "dist_id",
+      "n": 4,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "field_ref",
+      "token": "distilled_indexed",
+      "n": 4,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "field_ref",
+      "token": "distilled_skipped",
+      "n": 6,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "field_ref",
+      "token": "distilled_status",
+      "n": 4,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "field_ref",
+      "token": "dividend",
+      "n": 2,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "field_ref",
+      "token": "drop",
+      "n": 1,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "field_ref",
+      "token": "earnings",
+      "n": 1,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "field_ref",
+      "token": "earnings_revision",
+      "n": 1,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "field_ref",
+      "token": "entries",
+      "n": 3,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "field_ref",
+      "token": "error",
+      "n": 21,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "field_ref",
+      "token": "execution",
+      "n": 1,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "field_ref",
+      "token": "expiry",
+      "n": 1,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "field_ref",
+      "token": "exposure",
+      "n": 1,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "field_ref",
+      "token": "family",
+      "n": 4,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "field_ref",
+      "token": "final_verdict",
+      "n": 1,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "field_ref",
+      "token": "fixed",
+      "n": 3,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "field_ref",
+      "token": "flow",
+      "n": 3,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "field_ref",
+      "token": "frontier",
+      "n": 1,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "field_ref",
+      "token": "fscore",
+      "n": 1,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "field_ref",
+      "token": "full.names",
+      "n": 1,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "field_ref",
+      "token": "generated_at",
+      "n": 1,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "field_ref",
+      "token": "grade",
+      "n": 22,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "field_ref",
+      "token": "hard_fail",
+      "n": 2,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "field_ref",
+      "token": "hurdle_pass",
+      "n": 1,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "field_ref",
+      "token": "hypothesis",
+      "n": 1,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "field_ref",
+      "token": "hypothesis_description",
+      "n": 1,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "field_ref",
+      "token": "hypothesis_signature",
+      "n": 10,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "field_ref",
+      "token": "hypothesis_title",
+      "n": 1,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "field_ref",
+      "token": "ignore.case",
+      "n": 4,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "field_ref",
+      "token": "ir",
+      "n": 4,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "field_ref",
+      "token": "IR",
+      "n": 3,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "field_ref",
+      "token": "key_metrics",
+      "n": 13,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "field_ref",
+      "token": "kr_mapping",
+      "n": 1,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "field_ref",
+      "token": "l_code",
+      "n": 8,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "field_ref",
+      "token": "label",
+      "n": 1,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "field_ref",
+      "token": "lcode_indexed",
+      "n": 4,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "field_ref",
+      "token": "lcode_skipped",
+      "n": 4,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "field_ref",
+      "token": "lcode_supplement_indexed",
+      "n": 4,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "field_ref",
+      "token": "lcode_supplement_parse_fail",
+      "n": 4,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "field_ref",
+      "token": "lcode_supplement_skipped_dup",
+      "n": 4,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "field_ref",
+      "token": "lcodes",
+      "n": 1,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "field_ref",
+      "token": "lesson_text",
+      "n": 1,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "field_ref",
+      "token": "liquidity",
+      "n": 3,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "field_ref",
+      "token": "live_trigger",
+      "n": 1,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "field_ref",
+      "token": "lottery",
+      "n": 1,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "field_ref",
+      "token": "low_volatility",
+      "n": 1,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "field_ref",
+      "token": "mandate",
+      "n": 1,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "field_ref",
+      "token": "mdd",
+      "n": 3,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "field_ref",
+      "token": "MDD",
+      "n": 1,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "field_ref",
+      "token": "measured",
+      "n": 1,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "field_ref",
+      "token": "measured_lane",
+      "n": 3,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "field_ref",
+      "token": "measured_on",
+      "n": 1,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "field_ref",
+      "token": "mechanism",
+      "n": 1,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "field_ref",
+      "token": "meta",
+      "n": 1,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "field_ref",
+      "token": "method_id",
+      "n": 3,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "field_ref",
+      "token": "methods",
+      "n": 1,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "field_ref",
+      "token": "metrics",
+      "n": 1,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "field_ref",
+      "token": "ml",
+      "n": 2,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "field_ref",
+      "token": "ml_complexity",
+      "n": 1,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "field_ref",
+      "token": "module_indexed",
+      "n": 4,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "field_ref",
+      "token": "module_skipped",
+      "n": 4,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "field_ref",
+      "token": "modules",
+      "n": 1,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "field_ref",
+      "token": "momentum",
+      "n": 3,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "field_ref",
+      "token": "mtime",
+      "n": 11,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "field_ref",
+      "token": "n_entries",
+      "n": 1,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "field_ref",
+      "token": "n_holdings",
+      "n": 1,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "field_ref",
+      "token": "na.rm",
+      "n": 3,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "field_ref",
+      "token": "negative",
+      "n": 2,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "field_ref",
+      "token": "note",
+      "n": 1,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "field_ref",
+      "token": "null",
+      "n": 1,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "field_ref",
+      "token": "oos_retention",
+      "n": 2,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "field_ref",
+      "token": "origin_mode",
+      "n": 1,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "field_ref",
+      "token": "other_lane_measurements",
+      "n": 1,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "field_ref",
+      "token": "out_path",
+      "n": 2,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "field_ref",
+      "token": "overlay",
+      "n": 1,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "field_ref",
+      "token": "overwrite",
+      "n": 1,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "field_ref",
+      "token": "paper_id",
+      "n": 1,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "field_ref",
+      "token": "paper_lane_indexed",
+      "n": 3,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "field_ref",
+      "token": "paper_lane_measured",
+      "n": 3,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "field_ref",
+      "token": "paper_lane_skipped",
+      "n": 3,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "field_ref",
+      "token": "paper_title",
+      "n": 1,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "field_ref",
+      "token": "pass",
+      "n": 1,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "field_ref",
+      "token": "perl",
+      "n": 5,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "field_ref",
+      "token": "phase",
+      "n": 1,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "field_ref",
+      "token": "polarity",
+      "n": 2,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "field_ref",
+      "token": "port_t",
+      "n": 1,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "field_ref",
+      "token": "portfolio_alpha_t",
+      "n": 3,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "field_ref",
+      "token": "positive",
+      "n": 2,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "field_ref",
+      "token": "pretty",
+      "n": 1,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "field_ref",
+      "token": "profitability",
+      "n": 2,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "field_ref",
+      "token": "qmj",
+      "n": 1,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "field_ref",
+      "token": "quality",
+      "n": 2,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "field_ref",
+      "token": "quality_earnings",
+      "n": 1,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "field_ref",
+      "token": "quality_profitability",
+      "n": 1,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "field_ref",
+      "token": "recursive",
+      "n": 3,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "field_ref",
+      "token": "refined_at",
+      "n": 2,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "field_ref",
+      "token": "regime",
+      "n": 1,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "field_ref",
+      "token": "regime_overlay",
+      "n": 1,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "field_ref",
+      "token": "registered_at",
+      "n": 2,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "field_ref",
+      "token": "residual_momentum",
+      "n": 1,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "field_ref",
+      "token": "retry_condition",
+      "n": 1,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "field_ref",
+      "token": "retry_policy",
+      "n": 4,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "field_ref",
+      "token": "reversal",
+      "n": 2,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "field_ref",
+      "token": "right",
+      "n": 1,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "field_ref",
+      "token": "route",
+      "n": 1,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "field_ref",
+      "token": "scenario",
+      "n": 2,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "field_ref",
+      "token": "schema_version",
+      "n": 1,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "field_ref",
+      "token": "score",
+      "n": 5,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "field_ref",
+      "token": "score_breakdown",
+      "n": 1,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "field_ref",
+      "token": "screen_pass",
+      "n": 1,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "field_ref",
+      "token": "screening",
+      "n": 1,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "field_ref",
+      "token": "seasonality",
+      "n": 1,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "field_ref",
+      "token": "selection_type",
+      "n": 2,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "field_ref",
+      "token": "sep",
+      "n": 1,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "field_ref",
+      "token": "shareholder_yield",
+      "n": 1,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "field_ref",
+      "token": "sharpe",
+      "n": 5,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "field_ref",
+      "token": "Sharpe",
+      "n": 1,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "field_ref",
+      "token": "showWarnings",
+      "n": 1,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "field_ref",
+      "token": "sigma",
+      "n": 1,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "field_ref",
+      "token": "signature",
+      "n": 1,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "field_ref",
+      "token": "simplifyVector",
+      "n": 12,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "field_ref",
+      "token": "size",
+      "n": 3,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "field_ref",
+      "token": "source",
+      "n": 1,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "field_ref",
+      "token": "source_file",
+      "n": 2,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "field_ref",
+      "token": "source_paths",
+      "n": 11,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "field_ref",
+      "token": "source_types",
+      "n": 13,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "field_ref",
+      "token": "statement_draft",
+      "n": 2,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "field_ref",
+      "token": "statement_refined",
+      "n": 4,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "field_ref",
+      "token": "status",
+      "n": 3,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "field_ref",
+      "token": "strategy",
+      "n": 1,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "field_ref",
+      "token": "strategy_id",
+      "n": 21,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "field_ref",
+      "token": "strategy_idea",
+      "n": 2,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "field_ref",
+      "token": "strategy_name",
+      "n": 1,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "field_ref",
+      "token": "stringsAsFactors",
+      "n": 2,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "field_ref",
+      "token": "sue",
+      "n": 1,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "field_ref",
+      "token": "supporting_l_codes",
+      "n": 1,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "field_ref",
+      "token": "tags",
+      "n": 2,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "field_ref",
+      "token": "task_id",
+      "n": 2,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "field_ref",
+      "token": "terminal",
+      "n": 2,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "field_ref",
+      "token": "theme",
+      "n": 2,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "field_ref",
+      "token": "timestamp",
+      "n": 1,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "field_ref",
+      "token": "title",
+      "n": 12,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "field_ref",
+      "token": "total_score",
+      "n": 1,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "field_ref",
+      "token": "trailingOnly",
+      "n": 1,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "field_ref",
+      "token": "type",
+      "n": 1,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "field_ref",
+      "token": "tz",
+      "n": 1,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "field_ref",
+      "token": "units",
+      "n": 1,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "field_ref",
+      "token": "universe",
+      "n": 1,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "field_ref",
+      "token": "universe_definition",
+      "n": 1,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "field_ref",
+      "token": "use.names",
+      "n": 1,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "field_ref",
+      "token": "value",
+      "n": 8,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "field_ref",
+      "token": "verbose",
+      "n": 2,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "field_ref",
+      "token": "verdict",
+      "n": 21,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "field_ref",
+      "token": "volatility",
+      "n": 1,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "field_ref",
+      "token": "warn",
+      "n": 1,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "field_ref",
+      "token": "weight",
+      "n": 1,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "field_ref",
+      "token": "weight_method",
+      "n": 1,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "field_ref",
+      "token": "wt_id",
+      "n": 1,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "field_ref",
+      "token": "wt_inflight_indexed",
+      "n": 4,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "field_ref",
+      "token": "wt_inflight_merged_completed",
+      "n": 4,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "field_ref",
+      "token": "wt_inflight_parse_fail",
+      "n": 6,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "field_ref",
+      "token": "wt_inflight_skipped_empty",
+      "n": 4,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "field_ref",
+      "token": "wt_inflight_skipped_terminal",
+      "n": 4,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "field_ref",
+      "token": "wt_type",
+      "n": 1,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "str_literal",
+      "token": "alpha_search_hurdle",
+      "n": 1,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "str_literal",
+      "token": "alpha_search_manifest",
+      "n": 1,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "str_literal",
+      "token": "amihud",
+      "n": 1,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "str_literal",
+      "token": "avg_exposure",
+      "n": 1,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "str_literal",
+      "token": "baseline",
+      "n": 1,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "str_literal",
+      "token": "book",
+      "n": 1,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "str_literal",
+      "token": "build",
+      "n": 1,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "str_literal",
+      "token": "buyback",
+      "n": 1,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "str_literal",
+      "token": "contrarian",
+      "n": 1,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "str_literal",
+      "token": "csv",
+      "n": 7,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "str_literal",
+      "token": "days",
+      "n": 1,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "str_literal",
+      "token": "defense",
+      "n": 1,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "str_literal",
+      "token": "defensive",
+      "n": 1,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "str_literal",
+      "token": "distilled",
+      "n": 2,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "str_literal",
+      "token": "distilled_knowledge",
+      "n": 2,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "str_literal",
+      "token": "dividend",
+      "n": 1,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "str_literal",
+      "token": "earnings",
+      "n": 1,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "str_literal",
+      "token": "ensemble",
+      "n": 1,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "str_literal",
+      "token": "expired",
+      "n": 1,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "str_literal",
+      "token": "flow",
+      "n": 1,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "str_literal",
+      "token": "hgb",
+      "n": 1,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "str_literal",
+      "token": "hurdle_result.json",
+      "n": 1,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "str_literal",
+      "token": "hypothesis_index_v1",
+      "n": 1,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "str_literal",
+      "token": "illiquid",
+      "n": 1,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "str_literal",
+      "token": "insider",
+      "n": 1,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "str_literal",
+      "token": "integration",
+      "n": 1,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "str_literal",
+      "token": "ipca",
+      "n": 1,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "str_literal",
+      "token": "kospi200_kosdaq150_intersection",
+      "n": 1,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "str_literal",
+      "token": "lcode_corpus",
+      "n": 1,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "str_literal",
+      "token": "lcode_supplement",
+      "n": 1,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "str_literal",
+      "token": "lightgbm",
+      "n": 1,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "str_literal",
+      "token": "liquidity",
+      "n": 1,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "str_literal",
+      "token": "lookup",
+      "n": 1,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "str_literal",
+      "token": "loser",
+      "n": 1,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "str_literal",
+      "token": "lowbeta",
+      "n": 1,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "str_literal",
+      "token": "lowvol",
+      "n": 1,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "str_literal",
+      "token": "measured",
+      "n": 1,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "str_literal",
+      "token": "method_id",
+      "n": 1,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "str_literal",
+      "token": "module_catalog",
+      "n": 1,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "str_literal",
+      "token": "mom",
+      "n": 1,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "str_literal",
+      "token": "momentum",
+      "n": 1,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "str_literal",
+      "token": "negative",
+      "n": 1,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "str_literal",
+      "token": "null",
+      "n": 1,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "str_literal",
+      "token": "optimizer",
+      "n": 6,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "str_literal",
+      "token": "other",
+      "n": 3,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "str_literal",
+      "token": "overlay",
+      "n": 1,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "str_literal",
+      "token": "paper_",
+      "n": 1,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "str_literal",
+      "token": "paper_lane",
+      "n": 1,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "str_literal",
+      "token": "pbr",
+      "n": 1,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "str_literal",
+      "token": "pending_5axis",
+      "n": 2,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "str_literal",
+      "token": "per",
+      "n": 1,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "str_literal",
+      "token": "processed",
+      "n": 1,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "str_literal",
+      "token": "profitability",
+      "n": 1,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "str_literal",
+      "token": "qmj",
+      "n": 1,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "str_literal",
+      "token": "quality",
+      "n": 1,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "str_literal",
+      "token": "regime",
+      "n": 7,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "str_literal",
+      "token": "regime_overlay",
+      "n": 1,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "str_literal",
+      "token": "registration_failed",
+      "n": 1,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "str_literal",
+      "token": "request.json",
+      "n": 3,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "str_literal",
+      "token": "reversal",
+      "n": 1,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "str_literal",
+      "token": "revision",
+      "n": 1,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "str_literal",
+      "token": "risk",
+      "n": 6,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "str_literal",
+      "token": "roa",
+      "n": 1,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "str_literal",
+      "token": "roe",
+      "n": 1,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "str_literal",
+      "token": "scenario",
+      "n": 1,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "str_literal",
+      "token": "sdf",
+      "n": 1,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "str_literal",
+      "token": "shareholder",
+      "n": 1,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "str_literal",
+      "token": "short",
+      "n": 1,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "str_literal",
+      "token": "size",
+      "n": 1,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "str_literal",
+      "token": "smallcap",
+      "n": 1,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "str_literal",
+      "token": "status.json",
+      "n": 3,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "str_literal",
+      "token": "strategy_manifest.json",
+      "n": 1,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "str_literal",
+      "token": "sue",
+      "n": 1,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "str_literal",
+      "token": "timing",
+      "n": 1,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "str_literal",
+      "token": "trend",
+      "n": 1,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "str_literal",
+      "token": "unknown",
+      "n": 21,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "str_literal",
+      "token": "validated_hard_fail",
+      "n": 1,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "str_literal",
+      "token": "value",
+      "n": 1,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "str_literal",
+      "token": "wt_",
+      "n": 1,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "str_literal",
+      "token": "wt_inflight",
+      "n": 1,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "form": "str_literal",
+      "token": "xgboost",
+      "n": 1,
+      "in_tests": false
     },
     {
       "file": "02_Infrastructure/ops/paper_research_dispatch.R",
-      "line": 50,
-      "type": "constant",
-      "code": "DELTA_IR_GATE <- 0.05 # book-marginal admission 문턱(§4) — 측정 기준만(자본 admit 아님)",
-      "symbol": "DELTA_IR_GATE",
-      "axis_hint": "★이름 등장 없음"
+      "form": "field_ref",
+      "token": "abs_MDD",
+      "n": 3,
+      "in_tests": false
     },
     {
       "file": "02_Infrastructure/ops/paper_research_dispatch.R",
-      "line": 125,
-      "type": "constant",
-      "code": "SCREEN_AX_ENUM <- list(",
-      "symbol": "SCREEN_AX_ENUM",
-      "axis_hint": "★이름 등장 없음"
+      "form": "field_ref",
+      "token": "action",
+      "n": 2,
+      "in_tests": true
     },
     {
       "file": "02_Infrastructure/ops/paper_research_dispatch.R",
-      "line": 257,
-      "type": "constant",
-      "code": "SIGMA_AB_MAX_AGE_DAYS <- 35",
-      "symbol": "SIGMA_AB_MAX_AGE_DAYS",
-      "axis_hint": "★이름 등장 없음"
+      "form": "field_ref",
+      "token": "actions",
+      "n": 1,
+      "in_tests": true
     },
     {
       "file": "02_Infrastructure/ops/paper_research_dispatch.R",
-      "line": 622,
-      "type": "constant",
-      "code": ".TG_FORCE <- identical(Sys.getenv(\"QVEST_DISPATCH_TG_FORCE\", \"0\"), \"1\")",
-      "symbol": ".TG_FORCE",
-      "axis_hint": "검사군에 이름 등장"
+      "form": "field_ref",
+      "token": "adapter_kind",
+      "n": 2,
+      "in_tests": true
     },
     {
       "file": "02_Infrastructure/ops/paper_research_dispatch.R",
-      "line": 538,
-      "type": "kindmap",
-      "code": "avg_exposure = if (\"avg_exposure\" %in% names(cand))",
-      "symbol": {},
-      "axis_hint": "(수기 판정 필요)"
+      "form": "field_ref",
+      "token": "admitted_ids",
+      "n": 3,
+      "in_tests": false
     },
     {
       "file": "02_Infrastructure/ops/paper_research_dispatch.R",
-      "line": 42,
-      "type": "preftbl",
-      "code": ".known <- c(\"date\", \"schema\", \"schema_version\", \"note\", \"dispatch_note\",",
-      "symbol": {},
-      "axis_hint": "(수기 판정 필요)"
+      "form": "field_ref",
+      "token": "agent",
+      "n": 3,
+      "in_tests": true
     },
     {
       "file": "02_Infrastructure/ops/paper_research_dispatch.R",
-      "line": 126,
-      "type": "preftbl",
-      "code": "shrinkage_builtin = c(\"yes\", \"weak\", \"no\"),",
-      "symbol": {},
-      "axis_hint": "(수기 판정 필요)"
+      "form": "field_ref",
+      "token": "append",
+      "n": 1,
+      "in_tests": false
     },
     {
       "file": "02_Infrastructure/ops/paper_research_dispatch.R",
-      "line": 141,
-      "type": "preftbl",
-      "code": "for (f in c(\"arxiv_id\", \"id\", \"paper_id\")) {",
-      "symbol": {},
-      "axis_hint": "(수기 판정 필요)"
+      "form": "field_ref",
+      "token": "arm",
+      "n": 11,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/ops/paper_research_dispatch.R",
+      "form": "field_ref",
+      "token": "arms",
+      "n": 6,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/ops/paper_research_dispatch.R",
+      "form": "field_ref",
+      "token": "auto_unbox",
+      "n": 2,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/ops/paper_research_dispatch.R",
+      "form": "field_ref",
+      "token": "avg_exposure",
+      "n": 3,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/ops/paper_research_dispatch.R",
+      "form": "field_ref",
+      "token": "bare_ir",
+      "n": 2,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/ops/paper_research_dispatch.R",
+      "form": "field_ref",
+      "token": "bare_mdd",
+      "n": 2,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/ops/paper_research_dispatch.R",
+      "form": "field_ref",
+      "token": "baseline",
+      "n": 1,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/ops/paper_research_dispatch.R",
+      "form": "field_ref",
+      "token": "baseline_identity",
+      "n": 1,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/ops/paper_research_dispatch.R",
+      "form": "field_ref",
+      "token": "baseline_ir",
+      "n": 3,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/ops/paper_research_dispatch.R",
+      "form": "field_ref",
+      "token": "baseline_mdd",
+      "n": 2,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/ops/paper_research_dispatch.R",
+      "form": "field_ref",
+      "token": "basis",
+      "n": 2,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/ops/paper_research_dispatch.R",
+      "form": "field_ref",
+      "token": "beats_book",
+      "n": 4,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/ops/paper_research_dispatch.R",
+      "form": "field_ref",
+      "token": "best_candidate",
+      "n": 2,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/ops/paper_research_dispatch.R",
+      "form": "field_ref",
+      "token": "best_ir",
+      "n": 2,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/ops/paper_research_dispatch.R",
+      "form": "field_ref",
+      "token": "best_method",
+      "n": 1,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/ops/paper_research_dispatch.R",
+      "form": "field_ref",
+      "token": "best_method_route",
+      "n": 1,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/ops/paper_research_dispatch.R",
+      "form": "field_ref",
+      "token": "body",
+      "n": 4,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/ops/paper_research_dispatch.R",
+      "form": "field_ref",
+      "token": "book_basis",
+      "n": 1,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/ops/paper_research_dispatch.R",
+      "form": "field_ref",
+      "token": "book_ir",
+      "n": 1,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/ops/paper_research_dispatch.R",
+      "form": "field_ref",
+      "token": "book_state_updated_at",
+      "n": 2,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/ops/paper_research_dispatch.R",
+      "form": "field_ref",
+      "token": "book_ym_max",
+      "n": 2,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/ops/paper_research_dispatch.R",
+      "form": "field_ref",
+      "token": "by",
+      "n": 1,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/ops/paper_research_dispatch.R",
+      "form": "field_ref",
+      "token": "candidates",
+      "n": 3,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/ops/paper_research_dispatch.R",
+      "form": "field_ref",
+      "token": "carrier",
+      "n": 1,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/ops/paper_research_dispatch.R",
+      "form": "field_ref",
+      "token": "carrier_book_state_at",
+      "n": 1,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/ops/paper_research_dispatch.R",
+      "form": "field_ref",
+      "token": "carrier_older_than_book_state",
+      "n": 1,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/ops/paper_research_dispatch.R",
+      "form": "field_ref",
+      "token": "carrier_strategy",
+      "n": 1,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/ops/paper_research_dispatch.R",
+      "form": "field_ref",
+      "token": "carrier_ym_max",
+      "n": 2,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/ops/paper_research_dispatch.R",
+      "form": "field_ref",
+      "token": "col_select",
+      "n": 1,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/ops/paper_research_dispatch.R",
+      "form": "field_ref",
+      "token": "collapse",
+      "n": 6,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/ops/paper_research_dispatch.R",
+      "form": "field_ref",
+      "token": "control",
+      "n": 10,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/ops/paper_research_dispatch.R",
+      "form": "field_ref",
+      "token": "control_basis",
+      "n": 4,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/ops/paper_research_dispatch.R",
+      "form": "field_ref",
+      "token": "control_ir",
+      "n": 3,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/ops/paper_research_dispatch.R",
+      "form": "field_ref",
+      "token": "coverage",
+      "n": 3,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/ops/paper_research_dispatch.R",
+      "form": "field_ref",
+      "token": "crisis",
+      "n": 1,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/ops/paper_research_dispatch.R",
+      "form": "field_ref",
+      "token": "date",
+      "n": 1,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/ops/paper_research_dispatch.R",
+      "form": "field_ref",
+      "token": "delta_ir",
+      "n": 20,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/ops/paper_research_dispatch.R",
+      "form": "field_ref",
+      "token": "delta_ir_caveat",
+      "n": 1,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/ops/paper_research_dispatch.R",
+      "form": "field_ref",
+      "token": "delta_mdd",
+      "n": 11,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/ops/paper_research_dispatch.R",
+      "form": "field_ref",
+      "token": "delta_mdd_convention",
+      "n": 1,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/ops/paper_research_dispatch.R",
+      "form": "field_ref",
+      "token": "error",
+      "n": 26,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/ops/paper_research_dispatch.R",
+      "form": "field_ref",
+      "token": "eval_date",
+      "n": 1,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/ops/paper_research_dispatch.R",
+      "form": "field_ref",
+      "token": "extra_adapters",
+      "n": 1,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/ops/paper_research_dispatch.R",
+      "form": "field_ref",
+      "token": "extra_exposures",
+      "n": 1,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/ops/paper_research_dispatch.R",
+      "form": "field_ref",
+      "token": "file",
+      "n": 1,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/ops/paper_research_dispatch.R",
+      "form": "field_ref",
+      "token": "force",
+      "n": 2,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/ops/paper_research_dispatch.R",
+      "form": "field_ref",
+      "token": "fresh",
+      "n": 6,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/ops/paper_research_dispatch.R",
+      "form": "field_ref",
+      "token": "full.names",
+      "n": 2,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/ops/paper_research_dispatch.R",
+      "form": "field_ref",
+      "token": "gate",
+      "n": 2,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/ops/paper_research_dispatch.R",
+      "form": "field_ref",
+      "token": "gate_note",
+      "n": 2,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/ops/paper_research_dispatch.R",
+      "form": "field_ref",
+      "token": "harness_status",
+      "n": 4,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/ops/paper_research_dispatch.R",
+      "form": "field_ref",
+      "token": "heading",
+      "n": 7,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/ops/paper_research_dispatch.R",
+      "form": "field_ref",
+      "token": "identity_match",
+      "n": 1,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/ops/paper_research_dispatch.R",
+      "form": "field_ref",
+      "token": "invalid_enum",
+      "n": 1,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/ops/paper_research_dispatch.R",
+      "form": "field_ref",
+      "token": "ir",
+      "n": 5,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/ops/paper_research_dispatch.R",
+      "form": "field_ref",
+      "token": "IR",
+      "n": 19,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/ops/paper_research_dispatch.R",
+      "form": "field_ref",
+      "token": "items",
+      "n": 2,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/ops/paper_research_dispatch.R",
+      "form": "field_ref",
+      "token": "kv",
+      "n": 1,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/ops/paper_research_dispatch.R",
+      "form": "field_ref",
+      "token": "label",
+      "n": 1,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/ops/paper_research_dispatch.R",
+      "form": "field_ref",
+      "token": "lag_months",
+      "n": 2,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/ops/paper_research_dispatch.R",
+      "form": "field_ref",
+      "token": "lag1_stress",
+      "n": 4,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/ops/paper_research_dispatch.R",
+      "form": "field_ref",
+      "token": "lane",
+      "n": 1,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/ops/paper_research_dispatch.R",
+      "form": "field_ref",
+      "token": "lock_scope",
+      "n": 2,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/ops/paper_research_dispatch.R",
+      "form": "field_ref",
+      "token": "mdd_improved_candidates",
+      "n": 1,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/ops/paper_research_dispatch.R",
+      "form": "field_ref",
+      "token": "measured",
+      "n": 6,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/ops/paper_research_dispatch.R",
+      "form": "field_ref",
+      "token": "method",
+      "n": 8,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/ops/paper_research_dispatch.R",
+      "form": "field_ref",
+      "token": "method_id",
+      "n": 5,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/ops/paper_research_dispatch.R",
+      "form": "field_ref",
+      "token": "method_triage",
+      "n": 2,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/ops/paper_research_dispatch.R",
+      "form": "field_ref",
+      "token": "metric_type",
+      "n": 2,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/ops/paper_research_dispatch.R",
+      "form": "field_ref",
+      "token": "missing",
+      "n": 1,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/ops/paper_research_dispatch.R",
+      "form": "field_ref",
+      "token": "mtime",
+      "n": 4,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/ops/paper_research_dispatch.R",
+      "form": "field_ref",
+      "token": "n",
+      "n": 3,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/ops/paper_research_dispatch.R",
+      "form": "field_ref",
+      "token": "n_arms",
+      "n": 2,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/ops/paper_research_dispatch.R",
+      "form": "field_ref",
+      "token": "n_improved",
+      "n": 2,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/ops/paper_research_dispatch.R",
+      "form": "field_ref",
+      "token": "n_items",
+      "n": 1,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/ops/paper_research_dispatch.R",
+      "form": "field_ref",
+      "token": "n_measured",
+      "n": 6,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/ops/paper_research_dispatch.R",
+      "form": "field_ref",
+      "token": "n_risk_route_arms",
+      "n": 1,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/ops/paper_research_dispatch.R",
+      "form": "field_ref",
+      "token": "na",
+      "n": 1,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/ops/paper_research_dispatch.R",
+      "form": "field_ref",
+      "token": "note",
+      "n": 6,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/ops/paper_research_dispatch.R",
+      "form": "field_ref",
+      "token": "optimizer",
+      "n": 1,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/ops/paper_research_dispatch.R",
+      "form": "field_ref",
+      "token": "paper",
+      "n": 1,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/ops/paper_research_dispatch.R",
+      "form": "field_ref",
+      "token": "paper_adapters_registered",
+      "n": 3,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/ops/paper_research_dispatch.R",
+      "form": "field_ref",
+      "token": "paper_id",
+      "n": 2,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/ops/paper_research_dispatch.R",
+      "form": "field_ref",
+      "token": "papers",
+      "n": 3,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/ops/paper_research_dispatch.R",
+      "form": "field_ref",
+      "token": "parquet",
+      "n": 2,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/ops/paper_research_dispatch.R",
+      "form": "field_ref",
+      "token": "pattern",
+      "n": 2,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/ops/paper_research_dispatch.R",
+      "form": "field_ref",
+      "token": "port_t",
+      "n": 1,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/ops/paper_research_dispatch.R",
+      "form": "field_ref",
+      "token": "PORT_t",
+      "n": 1,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/ops/paper_research_dispatch.R",
+      "form": "field_ref",
+      "token": "pretty",
+      "n": 1,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/ops/paper_research_dispatch.R",
+      "form": "field_ref",
+      "token": "queue",
+      "n": 2,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/ops/paper_research_dispatch.R",
+      "form": "field_ref",
+      "token": "QVEST_REGIME_AB_NORUN",
+      "n": 1,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/ops/paper_research_dispatch.R",
+      "form": "field_ref",
+      "token": "QVEST_SIGMA_AB_NORUN",
+      "n": 1,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/ops/paper_research_dispatch.R",
+      "form": "field_ref",
+      "token": "realized_ym",
+      "n": 1,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/ops/paper_research_dispatch.R",
+      "form": "field_ref",
+      "token": "regime",
+      "n": 4,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/ops/paper_research_dispatch.R",
+      "form": "field_ref",
+      "token": "relaxed",
+      "n": 2,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/ops/paper_research_dispatch.R",
+      "form": "field_ref",
+      "token": "retention",
+      "n": 2,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/ops/paper_research_dispatch.R",
+      "form": "field_ref",
+      "token": "risk",
+      "n": 4,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/ops/paper_research_dispatch.R",
+      "form": "field_ref",
+      "token": "route",
+      "n": 2,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/ops/paper_research_dispatch.R",
+      "form": "field_ref",
+      "token": "scenario",
+      "n": 7,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/ops/paper_research_dispatch.R",
+      "form": "field_ref",
+      "token": "schema",
+      "n": 1,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/ops/paper_research_dispatch.R",
+      "form": "field_ref",
+      "token": "scope_note",
+      "n": 1,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/ops/paper_research_dispatch.R",
+      "form": "field_ref",
+      "token": "screen_axes",
+      "n": 2,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/ops/paper_research_dispatch.R",
+      "form": "field_ref",
+      "token": "screen_priority",
+      "n": 2,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/ops/paper_research_dispatch.R",
+      "form": "field_ref",
+      "token": "sections",
+      "n": 2,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/ops/paper_research_dispatch.R",
+      "form": "field_ref",
+      "token": "sep",
+      "n": 1,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/ops/paper_research_dispatch.R",
+      "form": "field_ref",
+      "token": "shrinkage_builtin",
+      "n": 1,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/ops/paper_research_dispatch.R",
+      "form": "field_ref",
+      "token": "sigma_estimators",
+      "n": 1,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/ops/paper_research_dispatch.R",
+      "form": "field_ref",
+      "token": "silent",
+      "n": 1,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/ops/paper_research_dispatch.R",
+      "form": "field_ref",
+      "token": "simplifyVector",
+      "n": 6,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/ops/paper_research_dispatch.R",
+      "form": "field_ref",
+      "token": "statistic_order",
+      "n": 1,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/ops/paper_research_dispatch.R",
+      "form": "field_ref",
+      "token": "status",
+      "n": 7,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/ops/paper_research_dispatch.R",
+      "form": "field_ref",
+      "token": "strategy",
+      "n": 1,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/ops/paper_research_dispatch.R",
+      "form": "field_ref",
+      "token": "tab",
+      "n": 1,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/ops/paper_research_dispatch.R",
+      "form": "field_ref",
+      "token": "title",
+      "n": 7,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/ops/paper_research_dispatch.R",
+      "form": "field_ref",
+      "token": "ts",
+      "n": 1,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/ops/paper_research_dispatch.R",
+      "form": "field_ref",
+      "token": "type",
+      "n": 7,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/ops/paper_research_dispatch.R",
+      "form": "field_ref",
+      "token": "uni_cat_ir",
+      "n": 2,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/ops/paper_research_dispatch.R",
+      "form": "field_ref",
+      "token": "uni_cat_lag1_ir",
+      "n": 2,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/ops/paper_research_dispatch.R",
+      "form": "field_ref",
+      "token": "units",
+      "n": 2,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/ops/paper_research_dispatch.R",
+      "form": "field_ref",
+      "token": "updated_at",
+      "n": 1,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/ops/paper_research_dispatch.R",
+      "form": "field_ref",
+      "token": "verdict",
+      "n": 10,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/ops/paper_research_dispatch.R",
+      "form": "field_ref",
+      "token": "why",
+      "n": 7,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/ops/paper_research_dispatch.R",
+      "form": "field_ref",
+      "token": "with_overlay",
+      "n": 1,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/ops/paper_research_dispatch.R",
+      "form": "field_ref",
+      "token": "등재 경로",
+      "n": 1,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/ops/paper_research_dispatch.R",
+      "form": "field_ref",
+      "token": "주의",
+      "n": 1,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/ops/paper_research_dispatch.R",
+      "form": "field_ref",
+      "token": "후보 큐",
+      "n": 1,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/ops/paper_research_dispatch.R",
+      "form": "str_literal",
+      "token": "arxiv_id",
+      "n": 1,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/ops/paper_research_dispatch.R",
+      "form": "str_literal",
+      "token": "avg_exposure",
+      "n": 1,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/ops/paper_research_dispatch.R",
+      "form": "str_literal",
+      "token": "bare",
+      "n": 2,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/ops/paper_research_dispatch.R",
+      "form": "str_literal",
+      "token": "bullet",
+      "n": 2,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/ops/paper_research_dispatch.R",
+      "form": "str_literal",
+      "token": "canonical_screen",
+      "n": 2,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/ops/paper_research_dispatch.R",
+      "form": "str_literal",
+      "token": "carrier_cov",
+      "n": 1,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/ops/paper_research_dispatch.R",
+      "form": "str_literal",
+      "token": "carrier_id",
+      "n": 1,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/ops/paper_research_dispatch.R",
+      "form": "str_literal",
+      "token": "carrier_meta.json",
+      "n": 1,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/ops/paper_research_dispatch.R",
+      "form": "str_literal",
+      "token": "current",
+      "n": 1,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/ops/paper_research_dispatch.R",
+      "form": "str_literal",
+      "token": "date",
+      "n": 1,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/ops/paper_research_dispatch.R",
+      "form": "str_literal",
+      "token": "days",
+      "n": 2,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/ops/paper_research_dispatch.R",
+      "form": "str_literal",
+      "token": "dispatch_note",
+      "n": 1,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/ops/paper_research_dispatch.R",
+      "form": "str_literal",
+      "token": "eval_date",
+      "n": 1,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/ops/paper_research_dispatch.R",
+      "form": "str_literal",
+      "token": "generated_at",
+      "n": 1,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/ops/paper_research_dispatch.R",
+      "form": "str_literal",
+      "token": "generated_by",
+      "n": 1,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/ops/paper_research_dispatch.R",
+      "form": "str_literal",
+      "token": "h1b_sigma_ab_overlay.csv",
+      "n": 1,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/ops/paper_research_dispatch.R",
+      "form": "str_literal",
+      "token": "h2_regime_overlay_ab.csv",
+      "n": 1,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/ops/paper_research_dispatch.R",
+      "form": "str_literal",
+      "token": "higher",
+      "n": 1,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/ops/paper_research_dispatch.R",
+      "form": "str_literal",
+      "token": "method",
+      "n": 1,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/ops/paper_research_dispatch.R",
+      "form": "str_literal",
+      "token": "method_triage",
+      "n": 2,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/ops/paper_research_dispatch.R",
+      "form": "str_literal",
+      "token": "method_triage_line",
+      "n": 1,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/ops/paper_research_dispatch.R",
+      "form": "str_literal",
+      "token": "month",
+      "n": 1,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/ops/paper_research_dispatch.R",
+      "form": "str_literal",
+      "token": "note",
+      "n": 1,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/ops/paper_research_dispatch.R",
+      "form": "str_literal",
+      "token": "null",
+      "n": 1,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/ops/paper_research_dispatch.R",
+      "form": "str_literal",
+      "token": "optimizer",
+      "n": 9,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/ops/paper_research_dispatch.R",
+      "form": "str_literal",
+      "token": "optimizer_or_builtin",
+      "n": 2,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/ops/paper_research_dispatch.R",
+      "form": "str_literal",
+      "token": "paper_id",
+      "n": 1,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/ops/paper_research_dispatch.R",
+      "form": "str_literal",
+      "token": "paper_research_dispatch_v1",
+      "n": 1,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/ops/paper_research_dispatch.R",
+      "form": "str_literal",
+      "token": "queue",
+      "n": 2,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/ops/paper_research_dispatch.R",
+      "form": "str_literal",
+      "token": "regime",
+      "n": 6,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/ops/paper_research_dispatch.R",
+      "form": "str_literal",
+      "token": "risk",
+      "n": 10,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/ops/paper_research_dispatch.R",
+      "form": "str_literal",
+      "token": "risk_lane_arms",
+      "n": 2,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/ops/paper_research_dispatch.R",
+      "form": "str_literal",
+      "token": "router_version",
+      "n": 1,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/ops/paper_research_dispatch.R",
+      "form": "str_literal",
+      "token": "run_regime_overlay_ab",
+      "n": 1,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/ops/paper_research_dispatch.R",
+      "form": "str_literal",
+      "token": "run_sigma_ab",
+      "n": 1,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/ops/paper_research_dispatch.R",
+      "form": "str_literal",
+      "token": "scenario",
+      "n": 1,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/ops/paper_research_dispatch.R",
+      "form": "str_literal",
+      "token": "schema",
+      "n": 1,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/ops/paper_research_dispatch.R",
+      "form": "str_literal",
+      "token": "schema_version",
+      "n": 1,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/ops/paper_research_dispatch.R",
+      "form": "str_literal",
+      "token": "source",
+      "n": 1,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/ops/paper_research_dispatch.R",
+      "form": "str_literal",
+      "token": "strategy",
+      "n": 3,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/ops/paper_research_dispatch.R",
+      "form": "str_literal",
+      "token": "summary",
+      "n": 3,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/ops/paper_research_dispatch.R",
+      "form": "str_literal",
+      "token": "tail_quantile",
+      "n": 1,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/ops/paper_research_dispatch.R",
+      "form": "str_literal",
+      "token": "text",
+      "n": 1,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/ops/paper_research_dispatch.R",
+      "form": "str_literal",
+      "token": "tg_agent_brief",
+      "n": 1,
+      "in_tests": true
+    },
+    {
+      "file": "02_Infrastructure/ops/paper_research_dispatch.R",
+      "form": "str_literal",
+      "token": "uni_cat",
+      "n": 1,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/ops/paper_research_dispatch.R",
+      "form": "str_literal",
+      "token": "uni_cat_lag1",
+      "n": 2,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/ops/paper_research_dispatch.R",
+      "form": "str_literal",
+      "token": "unverifiable",
+      "n": 3,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/ops/paper_research_dispatch.R",
+      "form": "str_literal",
+      "token": "weak",
+      "n": 1,
+      "in_tests": false
+    },
+    {
+      "file": "02_Infrastructure/ops/paper_research_dispatch.R",
+      "form": "str_literal",
+      "token": "yes",
+      "n": 1,
+      "in_tests": false
     },
     {
       "file": "08_Tests/ops/test_hypothesis_index_paper_lane.R",
-      "line": 25,
-      "type": "constant",
-      "code": "PASS <- 0; FAIL <- 0",
-      "symbol": "PASS",
-      "axis_hint": "검사군에 이름 등장"
+      "form": "field_ref",
+      "token": "ab_source",
+      "n": 1,
+      "in_tests": true
     },
     {
       "file": "08_Tests/ops/test_hypothesis_index_paper_lane.R",
-      "line": 215,
-      "type": "constant",
-      "code": "TOTAL <- PASS + FAIL",
-      "symbol": "TOTAL",
-      "axis_hint": "검사군에 이름 등장"
+      "form": "field_ref",
+      "token": "actions",
+      "n": 2,
+      "in_tests": true
     },
     {
       "file": "08_Tests/ops/test_hypothesis_index_paper_lane.R",
-      "line": 137,
-      "type": "kindmap",
-      "code": "sigma = grepl(\"minvar\", ck), # Σ 교체만 분리",
-      "symbol": {},
-      "axis_hint": "(수기 판정 필요)"
+      "form": "field_ref",
+      "token": "adapter",
+      "n": 1,
+      "in_tests": true
     },
     {
       "file": "08_Tests/ops/test_hypothesis_index_paper_lane.R",
-      "line": 138,
-      "type": "kindmap",
-      "code": "weight = grepl(\"strategy|book\", ck), # 북 전체 대비",
-      "symbol": {},
-      "axis_hint": "(수기 판정 필요)"
+      "form": "field_ref",
+      "token": "adapter_kind",
+      "n": 4,
+      "in_tests": true
     },
     {
       "file": "08_Tests/ops/test_hypothesis_index_paper_lane.R",
-      "line": 139,
-      "type": "kindmap",
-      "code": "exposure = grepl(\"csv|regime|book\", ck), # 노출 스케줄 대비",
-      "symbol": {},
-      "axis_hint": "(수기 판정 필요)"
+      "form": "field_ref",
+      "token": "all",
+      "n": 2,
+      "in_tests": true
     },
     {
       "file": "08_Tests/ops/test_hypothesis_index_paper_lane.R",
-      "line": 143,
-      "type": "kindmap",
-      "code": "chk(\"T7 ★대조 기준이 adapter_kind 와 정합(sigma=minvar · weight=book · exposure=노출)\",",
-      "symbol": {},
-      "axis_hint": "(수기 판정 필요)"
+      "form": "field_ref",
+      "token": "arms",
+      "n": 1,
+      "in_tests": true
     },
     {
       "file": "08_Tests/ops/test_hypothesis_index_paper_lane.R",
-      "line": 45,
-      "type": "preftbl",
-      "code": "req <- c(\"strategy_id\",\"hypothesis_signature\",\"title\",\"verdict\",\"grade\",",
-      "symbol": {},
-      "axis_hint": "(수기 판정 필요)"
+      "form": "field_ref",
+      "token": "auto_unbox",
+      "n": 1,
+      "in_tests": true
+    },
+    {
+      "file": "08_Tests/ops/test_hypothesis_index_paper_lane.R",
+      "form": "field_ref",
+      "token": "avg_exposure",
+      "n": 2,
+      "in_tests": true
+    },
+    {
+      "file": "08_Tests/ops/test_hypothesis_index_paper_lane.R",
+      "form": "field_ref",
+      "token": "collapse",
+      "n": 5,
+      "in_tests": true
+    },
+    {
+      "file": "08_Tests/ops/test_hypothesis_index_paper_lane.R",
+      "form": "field_ref",
+      "token": "control",
+      "n": 2,
+      "in_tests": true
+    },
+    {
+      "file": "08_Tests/ops/test_hypothesis_index_paper_lane.R",
+      "form": "field_ref",
+      "token": "control_basis",
+      "n": 1,
+      "in_tests": true
+    },
+    {
+      "file": "08_Tests/ops/test_hypothesis_index_paper_lane.R",
+      "form": "field_ref",
+      "token": "decreasing",
+      "n": 1,
+      "in_tests": true
+    },
+    {
+      "file": "08_Tests/ops/test_hypothesis_index_paper_lane.R",
+      "form": "field_ref",
+      "token": "delta_ir",
+      "n": 2,
+      "in_tests": true
+    },
+    {
+      "file": "08_Tests/ops/test_hypothesis_index_paper_lane.R",
+      "form": "field_ref",
+      "token": "delta_ir_caveat",
+      "n": 2,
+      "in_tests": true
+    },
+    {
+      "file": "08_Tests/ops/test_hypothesis_index_paper_lane.R",
+      "form": "field_ref",
+      "token": "entries",
+      "n": 2,
+      "in_tests": true
+    },
+    {
+      "file": "08_Tests/ops/test_hypothesis_index_paper_lane.R",
+      "form": "field_ref",
+      "token": "envir",
+      "n": 1,
+      "in_tests": true
+    },
+    {
+      "file": "08_Tests/ops/test_hypothesis_index_paper_lane.R",
+      "form": "field_ref",
+      "token": "error",
+      "n": 4,
+      "in_tests": true
+    },
+    {
+      "file": "08_Tests/ops/test_hypothesis_index_paper_lane.R",
+      "form": "field_ref",
+      "token": "exposure",
+      "n": 1,
+      "in_tests": true
+    },
+    {
+      "file": "08_Tests/ops/test_hypothesis_index_paper_lane.R",
+      "form": "field_ref",
+      "token": "key_metrics",
+      "n": 8,
+      "in_tests": true
+    },
+    {
+      "file": "08_Tests/ops/test_hypothesis_index_paper_lane.R",
+      "form": "field_ref",
+      "token": "kr_mapping",
+      "n": 1,
+      "in_tests": true
+    },
+    {
+      "file": "08_Tests/ops/test_hypothesis_index_paper_lane.R",
+      "form": "field_ref",
+      "token": "measured",
+      "n": 1,
+      "in_tests": true
+    },
+    {
+      "file": "08_Tests/ops/test_hypothesis_index_paper_lane.R",
+      "form": "field_ref",
+      "token": "measured_lane",
+      "n": 1,
+      "in_tests": true
+    },
+    {
+      "file": "08_Tests/ops/test_hypothesis_index_paper_lane.R",
+      "form": "field_ref",
+      "token": "mechanism",
+      "n": 1,
+      "in_tests": true
+    },
+    {
+      "file": "08_Tests/ops/test_hypothesis_index_paper_lane.R",
+      "form": "field_ref",
+      "token": "method_id",
+      "n": 3,
+      "in_tests": true
+    },
+    {
+      "file": "08_Tests/ops/test_hypothesis_index_paper_lane.R",
+      "form": "field_ref",
+      "token": "methods",
+      "n": 4,
+      "in_tests": true
+    },
+    {
+      "file": "08_Tests/ops/test_hypothesis_index_paper_lane.R",
+      "form": "field_ref",
+      "token": "mtime",
+      "n": 1,
+      "in_tests": true
+    },
+    {
+      "file": "08_Tests/ops/test_hypothesis_index_paper_lane.R",
+      "form": "field_ref",
+      "token": "null",
+      "n": 1,
+      "in_tests": true
+    },
+    {
+      "file": "08_Tests/ops/test_hypothesis_index_paper_lane.R",
+      "form": "field_ref",
+      "token": "other_lane_measurements",
+      "n": 1,
+      "in_tests": true
+    },
+    {
+      "file": "08_Tests/ops/test_hypothesis_index_paper_lane.R",
+      "form": "field_ref",
+      "token": "paper_id",
+      "n": 1,
+      "in_tests": true
+    },
+    {
+      "file": "08_Tests/ops/test_hypothesis_index_paper_lane.R",
+      "form": "field_ref",
+      "token": "paper_title",
+      "n": 1,
+      "in_tests": true
+    },
+    {
+      "file": "08_Tests/ops/test_hypothesis_index_paper_lane.R",
+      "form": "field_ref",
+      "token": "parent",
+      "n": 1,
+      "in_tests": true
+    },
+    {
+      "file": "08_Tests/ops/test_hypothesis_index_paper_lane.R",
+      "form": "field_ref",
+      "token": "pl",
+      "n": 13,
+      "in_tests": true
+    },
+    {
+      "file": "08_Tests/ops/test_hypothesis_index_paper_lane.R",
+      "form": "field_ref",
+      "token": "pretty",
+      "n": 1,
+      "in_tests": true
+    },
+    {
+      "file": "08_Tests/ops/test_hypothesis_index_paper_lane.R",
+      "form": "field_ref",
+      "token": "QVEST_DISPATCH_TG_FORCE",
+      "n": 1,
+      "in_tests": true
+    },
+    {
+      "file": "08_Tests/ops/test_hypothesis_index_paper_lane.R",
+      "form": "field_ref",
+      "token": "recursive",
+      "n": 2,
+      "in_tests": true
+    },
+    {
+      "file": "08_Tests/ops/test_hypothesis_index_paper_lane.R",
+      "form": "field_ref",
+      "token": "registered_at",
+      "n": 1,
+      "in_tests": true
+    },
+    {
+      "file": "08_Tests/ops/test_hypothesis_index_paper_lane.R",
+      "form": "field_ref",
+      "token": "route",
+      "n": 1,
+      "in_tests": true
+    },
+    {
+      "file": "08_Tests/ops/test_hypothesis_index_paper_lane.R",
+      "form": "field_ref",
+      "token": "scenario",
+      "n": 1,
+      "in_tests": true
+    },
+    {
+      "file": "08_Tests/ops/test_hypothesis_index_paper_lane.R",
+      "form": "field_ref",
+      "token": "selection_type",
+      "n": 1,
+      "in_tests": true
+    },
+    {
+      "file": "08_Tests/ops/test_hypothesis_index_paper_lane.R",
+      "form": "field_ref",
+      "token": "sigma",
+      "n": 1,
+      "in_tests": true
+    },
+    {
+      "file": "08_Tests/ops/test_hypothesis_index_paper_lane.R",
+      "form": "field_ref",
+      "token": "simplifyVector",
+      "n": 4,
+      "in_tests": true
+    },
+    {
+      "file": "08_Tests/ops/test_hypothesis_index_paper_lane.R",
+      "form": "field_ref",
+      "token": "source_types",
+      "n": 1,
+      "in_tests": true
+    },
+    {
+      "file": "08_Tests/ops/test_hypothesis_index_paper_lane.R",
+      "form": "field_ref",
+      "token": "status",
+      "n": 1,
+      "in_tests": true
+    },
+    {
+      "file": "08_Tests/ops/test_hypothesis_index_paper_lane.R",
+      "form": "field_ref",
+      "token": "strategy_id",
+      "n": 5,
+      "in_tests": true
+    },
+    {
+      "file": "08_Tests/ops/test_hypothesis_index_paper_lane.R",
+      "form": "field_ref",
+      "token": "stringsAsFactors",
+      "n": 1,
+      "in_tests": true
+    },
+    {
+      "file": "08_Tests/ops/test_hypothesis_index_paper_lane.R",
+      "form": "field_ref",
+      "token": "target",
+      "n": 2,
+      "in_tests": true
+    },
+    {
+      "file": "08_Tests/ops/test_hypothesis_index_paper_lane.R",
+      "form": "field_ref",
+      "token": "unset",
+      "n": 1,
+      "in_tests": true
+    },
+    {
+      "file": "08_Tests/ops/test_hypothesis_index_paper_lane.R",
+      "form": "field_ref",
+      "token": "verbose",
+      "n": 2,
+      "in_tests": true
+    },
+    {
+      "file": "08_Tests/ops/test_hypothesis_index_paper_lane.R",
+      "form": "field_ref",
+      "token": "verdict",
+      "n": 3,
+      "in_tests": true
+    },
+    {
+      "file": "08_Tests/ops/test_hypothesis_index_paper_lane.R",
+      "form": "field_ref",
+      "token": "warn",
+      "n": 3,
+      "in_tests": true
+    },
+    {
+      "file": "08_Tests/ops/test_hypothesis_index_paper_lane.R",
+      "form": "field_ref",
+      "token": "weight",
+      "n": 1,
+      "in_tests": true
+    },
+    {
+      "file": "08_Tests/ops/test_hypothesis_index_paper_lane.R",
+      "form": "str_literal",
+      "token": "chain",
+      "n": 1,
+      "in_tests": true
+    },
+    {
+      "file": "08_Tests/ops/test_hypothesis_index_paper_lane.R",
+      "form": "str_literal",
+      "token": "date",
+      "n": 1,
+      "in_tests": true
+    },
+    {
+      "file": "08_Tests/ops/test_hypothesis_index_paper_lane.R",
+      "form": "str_literal",
+      "token": "exposure",
+      "n": 1,
+      "in_tests": true
+    },
+    {
+      "file": "08_Tests/ops/test_hypothesis_index_paper_lane.R",
+      "form": "str_literal",
+      "token": "grade",
+      "n": 1,
+      "in_tests": true
+    },
+    {
+      "file": "08_Tests/ops/test_hypothesis_index_paper_lane.R",
+      "form": "str_literal",
+      "token": "hypothesis_signature",
+      "n": 1,
+      "in_tests": true
+    },
+    {
+      "file": "08_Tests/ops/test_hypothesis_index_paper_lane.R",
+      "form": "str_literal",
+      "token": "implemented",
+      "n": 1,
+      "in_tests": true
+    },
+    {
+      "file": "08_Tests/ops/test_hypothesis_index_paper_lane.R",
+      "form": "str_literal",
+      "token": "key_metrics",
+      "n": 1,
+      "in_tests": true
+    },
+    {
+      "file": "08_Tests/ops/test_hypothesis_index_paper_lane.R",
+      "form": "str_literal",
+      "token": "method_registry",
+      "n": 1,
+      "in_tests": true
+    },
+    {
+      "file": "08_Tests/ops/test_hypothesis_index_paper_lane.R",
+      "form": "str_literal",
+      "token": "minvar",
+      "n": 1,
+      "in_tests": true
+    },
+    {
+      "file": "08_Tests/ops/test_hypothesis_index_paper_lane.R",
+      "form": "str_literal",
+      "token": "null",
+      "n": 1,
+      "in_tests": true
+    },
+    {
+      "file": "08_Tests/ops/test_hypothesis_index_paper_lane.R",
+      "form": "str_literal",
+      "token": "paper_lane",
+      "n": 1,
+      "in_tests": true
+    },
+    {
+      "file": "08_Tests/ops/test_hypothesis_index_paper_lane.R",
+      "form": "str_literal",
+      "token": "probe",
+      "n": 4,
+      "in_tests": true
+    },
+    {
+      "file": "08_Tests/ops/test_hypothesis_index_paper_lane.R",
+      "form": "str_literal",
+      "token": "regime_overlay",
+      "n": 1,
+      "in_tests": true
+    },
+    {
+      "file": "08_Tests/ops/test_hypothesis_index_paper_lane.R",
+      "form": "str_literal",
+      "token": "risk",
+      "n": 1,
+      "in_tests": true
+    },
+    {
+      "file": "08_Tests/ops/test_hypothesis_index_paper_lane.R",
+      "form": "str_literal",
+      "token": "scenario",
+      "n": 1,
+      "in_tests": true
+    },
+    {
+      "file": "08_Tests/ops/test_hypothesis_index_paper_lane.R",
+      "form": "str_literal",
+      "token": "sigma",
+      "n": 1,
+      "in_tests": true
+    },
+    {
+      "file": "08_Tests/ops/test_hypothesis_index_paper_lane.R",
+      "form": "str_literal",
+      "token": "source_paths",
+      "n": 1,
+      "in_tests": true
+    },
+    {
+      "file": "08_Tests/ops/test_hypothesis_index_paper_lane.R",
+      "form": "str_literal",
+      "token": "source_types",
+      "n": 1,
+      "in_tests": true
+    },
+    {
+      "file": "08_Tests/ops/test_hypothesis_index_paper_lane.R",
+      "form": "str_literal",
+      "token": "strategy_id",
+      "n": 1,
+      "in_tests": true
+    },
+    {
+      "file": "08_Tests/ops/test_hypothesis_index_paper_lane.R",
+      "form": "str_literal",
+      "token": "title",
+      "n": 1,
+      "in_tests": true
+    },
+    {
+      "file": "08_Tests/ops/test_hypothesis_index_paper_lane.R",
+      "form": "str_literal",
+      "token": "verdict",
+      "n": 1,
+      "in_tests": true
     },
     {
       "file": "08_Tests/ops/test_queue_id_schema_tolerance.R",
-      "line": 22,
-      "type": "constant",
-      "code": "PASS <- 0; FAIL <- 0",
-      "symbol": "PASS",
-      "axis_hint": "검사군에 이름 등장"
+      "form": "field_ref",
+      "token": "arxiv_id",
+      "n": 5,
+      "in_tests": true
     },
     {
       "file": "08_Tests/ops/test_queue_id_schema_tolerance.R",
-      "line": 28,
-      "type": "constant",
-      "code": "SRC <- \"02_Infrastructure/ops/paper_research_dispatch.R\"",
-      "symbol": "SRC",
-      "axis_hint": "검사군에 이름 등장"
+      "form": "field_ref",
+      "token": "collapse",
+      "n": 1,
+      "in_tests": true
     },
     {
       "file": "08_Tests/ops/test_queue_id_schema_tolerance.R",
-      "line": 94,
-      "type": "constant",
-      "code": "TOTAL <- PASS + FAIL",
-      "symbol": "TOTAL",
-      "axis_hint": "검사군에 이름 등장"
+      "form": "field_ref",
+      "token": "envir",
+      "n": 4,
+      "in_tests": true
     },
     {
       "file": "08_Tests/ops/test_queue_id_schema_tolerance.R",
-      "line": 57,
-      "type": "preftbl",
-      "code": "for (ln in c(\"optimizer\", \"risk\", \"regime\")) for (it in (src[[ln]] %||% list())) {",
-      "symbol": {},
-      "axis_hint": "(수기 판정 필요)"
+      "form": "field_ref",
+      "token": "error",
+      "n": 4,
+      "in_tests": true
     },
     {
       "file": "08_Tests/ops/test_queue_id_schema_tolerance.R",
-      "line": 82,
-      "type": "preftbl",
-      "code": "for (ln in c(\"optimizer\", \"risk\", \"regime\")) for (it in (src[[ln]] %||% list())) {",
-      "symbol": {},
-      "axis_hint": "(수기 판정 필요)"
+      "form": "field_ref",
+      "token": "id",
+      "n": 5,
+      "in_tests": true
+    },
+    {
+      "file": "08_Tests/ops/test_queue_id_schema_tolerance.R",
+      "form": "field_ref",
+      "token": "memo",
+      "n": 1,
+      "in_tests": true
+    },
+    {
+      "file": "08_Tests/ops/test_queue_id_schema_tolerance.R",
+      "form": "field_ref",
+      "token": "other",
+      "n": 1,
+      "in_tests": true
+    },
+    {
+      "file": "08_Tests/ops/test_queue_id_schema_tolerance.R",
+      "form": "field_ref",
+      "token": "paper_id",
+      "n": 1,
+      "in_tests": true
+    },
+    {
+      "file": "08_Tests/ops/test_queue_id_schema_tolerance.R",
+      "form": "field_ref",
+      "token": "parent",
+      "n": 1,
+      "in_tests": true
+    },
+    {
+      "file": "08_Tests/ops/test_queue_id_schema_tolerance.R",
+      "form": "field_ref",
+      "token": "queue",
+      "n": 6,
+      "in_tests": true
+    },
+    {
+      "file": "08_Tests/ops/test_queue_id_schema_tolerance.R",
+      "form": "field_ref",
+      "token": "simplifyVector",
+      "n": 2,
+      "in_tests": true
+    },
+    {
+      "file": "08_Tests/ops/test_queue_id_schema_tolerance.R",
+      "form": "field_ref",
+      "token": "source",
+      "n": 1,
+      "in_tests": true
+    },
+    {
+      "file": "08_Tests/ops/test_queue_id_schema_tolerance.R",
+      "form": "field_ref",
+      "token": "status",
+      "n": 2,
+      "in_tests": true
+    },
+    {
+      "file": "08_Tests/ops/test_queue_id_schema_tolerance.R",
+      "form": "field_ref",
+      "token": "title",
+      "n": 3,
+      "in_tests": true
+    },
+    {
+      "file": "08_Tests/ops/test_queue_id_schema_tolerance.R",
+      "form": "str_literal",
+      "token": "arxiv",
+      "n": 1,
+      "in_tests": true
+    },
+    {
+      "file": "08_Tests/ops/test_queue_id_schema_tolerance.R",
+      "form": "str_literal",
+      "token": "arxiv_id",
+      "n": 3,
+      "in_tests": true
+    },
+    {
+      "file": "08_Tests/ops/test_queue_id_schema_tolerance.R",
+      "form": "str_literal",
+      "token": "optimizer",
+      "n": 2,
+      "in_tests": true
+    },
+    {
+      "file": "08_Tests/ops/test_queue_id_schema_tolerance.R",
+      "form": "str_literal",
+      "token": "other",
+      "n": 2,
+      "in_tests": true
+    },
+    {
+      "file": "08_Tests/ops/test_queue_id_schema_tolerance.R",
+      "form": "str_literal",
+      "token": "queue",
+      "n": 6,
+      "in_tests": true
+    },
+    {
+      "file": "08_Tests/ops/test_queue_id_schema_tolerance.R",
+      "form": "str_literal",
+      "token": "regime",
+      "n": 2,
+      "in_tests": true
+    },
+    {
+      "file": "08_Tests/ops/test_queue_id_schema_tolerance.R",
+      "form": "str_literal",
+      "token": "risk",
+      "n": 2,
+      "in_tests": true
     },
     {
       "file": "08_Tests/methods/test_nearest_arm_axis.R",
-      "line": 21,
-      "type": "constant",
-      "code": "PASS <- 0; FAIL <- 0",
-      "symbol": "PASS",
-      "axis_hint": "검사군에 이름 등장"
+      "form": "field_ref",
+      "token": "adapter",
+      "n": 4,
+      "in_tests": true
     },
     {
       "file": "08_Tests/methods/test_nearest_arm_axis.R",
-      "line": 110,
-      "type": "constant",
-      "code": "TOTAL <- PASS + FAIL",
-      "symbol": "TOTAL",
-      "axis_hint": "검사군에 이름 등장"
+      "form": "field_ref",
+      "token": "adapter_kind",
+      "n": 2,
+      "in_tests": true
     },
     {
       "file": "08_Tests/methods/test_nearest_arm_axis.R",
-      "line": 73,
-      "type": "kindmap",
-      "code": "\" list(exposure = data.frame(Date = as.Date(pr$eval_date), exposure = rep(1, nrow(pr))),\",",
-      "symbol": {},
-      "axis_hint": "(수기 판정 필요)"
+      "form": "field_ref",
+      "token": "allow_fixture_degenerate",
+      "n": 1,
+      "in_tests": true
     },
     {
       "file": "08_Tests/methods/test_nearest_arm_axis.R",
-      "line": 105,
-      "type": "kindmap",
-      "code": "identical(.arm_value(\"exposure\", data.frame(Date = Sys.Date() + 0:2, exposure = c(1, .7, 1",
-      "symbol": {},
-      "axis_hint": "(수기 판정 필요)"
+      "form": "field_ref",
+      "token": "checks",
+      "n": 5,
+      "in_tests": true
     },
     {
       "file": "08_Tests/methods/test_nearest_arm_axis.R",
-      "line": 30,
-      "type": "preftbl",
-      "code": "for (kind in c(\"weight\", \"sigma\", \"exposure\")) {",
-      "symbol": {},
-      "axis_hint": "(수기 판정 필요)"
+      "form": "field_ref",
+      "token": "Date",
+      "n": 2,
+      "in_tests": true
     },
     {
       "file": "08_Tests/methods/test_nearest_arm_axis.R",
-      "line": 98,
-      "type": "preftbl",
-      "code": "all(c(\"weight\",\"sigma\",\"exposure\") %in% names(.ARM_WRAPPER)) &&",
-      "symbol": {},
-      "axis_hint": "(수기 판정 필요)"
+      "form": "field_ref",
+      "token": "exposure",
+      "n": 1,
+      "in_tests": true
     },
     {
       "file": "08_Tests/methods/test_nearest_arm_axis.R",
-      "line": 99,
-      "type": "preftbl",
-      "code": "all(c(\"weight\",\"sigma\",\"exposure\") %in% names(.ARM_ENTRY)) &&",
-      "symbol": {},
-      "axis_hint": "(수기 판정 필요)"
+      "form": "field_ref",
+      "token": "fixed",
+      "n": 1,
+      "in_tests": true
     },
     {
       "file": "08_Tests/methods/test_nearest_arm_axis.R",
-      "line": 100,
-      "type": "preftbl",
-      "code": "all(c(\"weight\",\"sigma\",\"exposure\") %in% names(.ARM_LABEL)) &&",
-      "symbol": {},
-      "axis_hint": "(수기 판정 필요)"
+      "form": "field_ref",
+      "token": "method_id",
+      "n": 5,
+      "in_tests": true
     },
     {
       "file": "08_Tests/methods/test_nearest_arm_axis.R",
-      "line": 101,
-      "type": "preftbl",
-      "code": "all(c(\"weight\",\"sigma\",\"exposure\") %in% names(.ARM_NEAR)))",
-      "symbol": {},
-      "axis_hint": "(수기 판정 필요)"
+      "form": "field_ref",
+      "token": "methods",
+      "n": 1,
+      "in_tests": true
+    },
+    {
+      "file": "08_Tests/methods/test_nearest_arm_axis.R",
+      "form": "field_ref",
+      "token": "nearest_arm",
+      "n": 5,
+      "in_tests": true
+    },
+    {
+      "file": "08_Tests/methods/test_nearest_arm_axis.R",
+      "form": "field_ref",
+      "token": "overwrite",
+      "n": 1,
+      "in_tests": true
+    },
+    {
+      "file": "08_Tests/methods/test_nearest_arm_axis.R",
+      "form": "field_ref",
+      "token": "recursive",
+      "n": 1,
+      "in_tests": true
+    },
+    {
+      "file": "08_Tests/methods/test_nearest_arm_axis.R",
+      "form": "field_ref",
+      "token": "showWarnings",
+      "n": 1,
+      "in_tests": true
+    },
+    {
+      "file": "08_Tests/methods/test_nearest_arm_axis.R",
+      "form": "field_ref",
+      "token": "simplifyVector",
+      "n": 1,
+      "in_tests": true
+    },
+    {
+      "file": "08_Tests/methods/test_nearest_arm_axis.R",
+      "form": "field_ref",
+      "token": "status",
+      "n": 1,
+      "in_tests": true
+    },
+    {
+      "file": "08_Tests/methods/test_nearest_arm_axis.R",
+      "form": "field_ref",
+      "token": "verdict",
+      "n": 1,
+      "in_tests": true
+    },
+    {
+      "file": "08_Tests/methods/test_nearest_arm_axis.R",
+      "form": "field_ref",
+      "token": "x",
+      "n": 1,
+      "in_tests": true
+    },
+    {
+      "file": "08_Tests/methods/test_nearest_arm_axis.R",
+      "form": "str_literal",
+      "token": "exposure",
+      "n": 10,
+      "in_tests": true
+    },
+    {
+      "file": "08_Tests/methods/test_nearest_arm_axis.R",
+      "form": "str_literal",
+      "token": "implemented",
+      "n": 1,
+      "in_tests": true
+    },
+    {
+      "file": "08_Tests/methods/test_nearest_arm_axis.R",
+      "form": "str_literal",
+      "token": "nearest",
+      "n": 1,
+      "in_tests": true
+    },
+    {
+      "file": "08_Tests/methods/test_nearest_arm_axis.R",
+      "form": "str_literal",
+      "token": "sigma",
+      "n": 5,
+      "in_tests": true
+    },
+    {
+      "file": "08_Tests/methods/test_nearest_arm_axis.R",
+      "form": "str_literal",
+      "token": "weight",
+      "n": 5,
+      "in_tests": true
     },
     {
       "file": "08_Tests/methods/test_new_adapter_scaffold.R",
-      "line": 23,
-      "type": "constant",
-      "code": "PASS <- 0; FAIL <- 0",
-      "symbol": "PASS",
-      "axis_hint": "검사군에 이름 등장"
+      "form": "field_ref",
+      "token": "entrypoint",
+      "n": 1,
+      "in_tests": true
     },
     {
       "file": "08_Tests/methods/test_new_adapter_scaffold.R",
-      "line": 55,
-      "type": "constant",
-      "code": "TOTAL <- PASS + FAIL",
-      "symbol": "TOTAL",
-      "axis_hint": "검사군에 이름 등장"
+      "form": "field_ref",
+      "token": "envir",
+      "n": 2,
+      "in_tests": true
     },
     {
       "file": "08_Tests/methods/test_new_adapter_scaffold.R",
-      "line": 29,
-      "type": "kindmap",
-      "code": "EP <- c(weight = \"method_weights\", sigma = \"sigma_estimate\", exposure = \"exposure_schedule",
-      "symbol": {},
-      "axis_hint": "(수기 판정 필요)"
+      "form": "field_ref",
+      "token": "error",
+      "n": 4,
+      "in_tests": true
+    },
+    {
+      "file": "08_Tests/methods/test_new_adapter_scaffold.R",
+      "form": "field_ref",
+      "token": "exposure",
+      "n": 1,
+      "in_tests": true
+    },
+    {
+      "file": "08_Tests/methods/test_new_adapter_scaffold.R",
+      "form": "field_ref",
+      "token": "file",
+      "n": 3,
+      "in_tests": true
+    },
+    {
+      "file": "08_Tests/methods/test_new_adapter_scaffold.R",
+      "form": "field_ref",
+      "token": "inherits",
+      "n": 1,
+      "in_tests": true
+    },
+    {
+      "file": "08_Tests/methods/test_new_adapter_scaffold.R",
+      "form": "field_ref",
+      "token": "kind",
+      "n": 3,
+      "in_tests": true
+    },
+    {
+      "file": "08_Tests/methods/test_new_adapter_scaffold.R",
+      "form": "field_ref",
+      "token": "ok",
+      "n": 2,
+      "in_tests": true
+    },
+    {
+      "file": "08_Tests/methods/test_new_adapter_scaffold.R",
+      "form": "field_ref",
+      "token": "paper_id",
+      "n": 3,
+      "in_tests": true
+    },
+    {
+      "file": "08_Tests/methods/test_new_adapter_scaffold.R",
+      "form": "field_ref",
+      "token": "parent",
+      "n": 1,
+      "in_tests": true
+    },
+    {
+      "file": "08_Tests/methods/test_new_adapter_scaffold.R",
+      "form": "field_ref",
+      "token": "reason",
+      "n": 1,
+      "in_tests": true
+    },
+    {
+      "file": "08_Tests/methods/test_new_adapter_scaffold.R",
+      "form": "field_ref",
+      "token": "register_stub",
+      "n": 1,
+      "in_tests": true
+    },
+    {
+      "file": "08_Tests/methods/test_new_adapter_scaffold.R",
+      "form": "field_ref",
+      "token": "showWarnings",
+      "n": 1,
+      "in_tests": true
+    },
+    {
+      "file": "08_Tests/methods/test_new_adapter_scaffold.R",
+      "form": "field_ref",
+      "token": "sigma",
+      "n": 1,
+      "in_tests": true
+    },
+    {
+      "file": "08_Tests/methods/test_new_adapter_scaffold.R",
+      "form": "field_ref",
+      "token": "status",
+      "n": 1,
+      "in_tests": true
+    },
+    {
+      "file": "08_Tests/methods/test_new_adapter_scaffold.R",
+      "form": "field_ref",
+      "token": "weight",
+      "n": 1,
+      "in_tests": true
+    },
+    {
+      "file": "08_Tests/methods/test_new_adapter_scaffold.R",
+      "form": "str_literal",
+      "token": "bogus",
+      "n": 1,
+      "in_tests": true
+    },
+    {
+      "file": "08_Tests/methods/test_new_adapter_scaffold.R",
+      "form": "str_literal",
+      "token": "exposure_schedule",
+      "n": 1,
+      "in_tests": true
+    },
+    {
+      "file": "08_Tests/methods/test_new_adapter_scaffold.R",
+      "form": "str_literal",
+      "token": "method_weights",
+      "n": 1,
+      "in_tests": true
+    },
+    {
+      "file": "08_Tests/methods/test_new_adapter_scaffold.R",
+      "form": "str_literal",
+      "token": "scaf",
+      "n": 1,
+      "in_tests": true
+    },
+    {
+      "file": "08_Tests/methods/test_new_adapter_scaffold.R",
+      "form": "str_literal",
+      "token": "sigma_estimate",
+      "n": 1,
+      "in_tests": true
+    },
+    {
+      "file": "08_Tests/methods/test_new_adapter_scaffold.R",
+      "form": "str_literal",
+      "token": "weight",
+      "n": 2,
+      "in_tests": true
     },
     {
       "file": "08_Tests/methods/test_ctx_characteristics.R",
-      "line": 25,
-      "type": "constant",
-      "code": "PASS <- 0; FAIL <- 0",
-      "symbol": "PASS",
-      "axis_hint": "검사군에 이름 등장"
+      "form": "field_ref",
+      "token": "assets",
+      "n": 1,
+      "in_tests": true
     },
     {
       "file": "08_Tests/methods/test_ctx_characteristics.R",
-      "line": 176,
-      "type": "constant",
-      "code": "TOTAL <- PASS + FAIL",
-      "symbol": "TOTAL",
-      "axis_hint": "검사군에 이름 등장"
+      "form": "field_ref",
+      "token": "characteristics",
+      "n": 5,
+      "in_tests": true
+    },
+    {
+      "file": "08_Tests/methods/test_ctx_characteristics.R",
+      "form": "field_ref",
+      "token": "checks",
+      "n": 1,
+      "in_tests": true
+    },
+    {
+      "file": "08_Tests/methods/test_ctx_characteristics.R",
+      "form": "field_ref",
+      "token": "collapse",
+      "n": 1,
+      "in_tests": true
+    },
+    {
+      "file": "08_Tests/methods/test_ctx_characteristics.R",
+      "form": "field_ref",
+      "token": "ConformalKelly",
+      "n": 1,
+      "in_tests": true
+    },
+    {
+      "file": "08_Tests/methods/test_ctx_characteristics.R",
+      "form": "field_ref",
+      "token": "cutoff",
+      "n": 2,
+      "in_tests": true
+    },
+    {
+      "file": "08_Tests/methods/test_ctx_characteristics.R",
+      "form": "field_ref",
+      "token": "Date",
+      "n": 3,
+      "in_tests": true
+    },
+    {
+      "file": "08_Tests/methods/test_ctx_characteristics.R",
+      "form": "field_ref",
+      "token": "decision_date",
+      "n": 1,
+      "in_tests": true
+    },
+    {
+      "file": "08_Tests/methods/test_ctx_characteristics.R",
+      "form": "field_ref",
+      "token": "envir",
+      "n": 2,
+      "in_tests": true
+    },
+    {
+      "file": "08_Tests/methods/test_ctx_characteristics.R",
+      "form": "field_ref",
+      "token": "err",
+      "n": 5,
+      "in_tests": true
+    },
+    {
+      "file": "08_Tests/methods/test_ctx_characteristics.R",
+      "form": "field_ref",
+      "token": "error",
+      "n": 4,
+      "in_tests": true
+    },
+    {
+      "file": "08_Tests/methods/test_ctx_characteristics.R",
+      "form": "field_ref",
+      "token": "fixed",
+      "n": 3,
+      "in_tests": true
+    },
+    {
+      "file": "08_Tests/methods/test_ctx_characteristics.R",
+      "form": "field_ref",
+      "token": "fixture",
+      "n": 2,
+      "in_tests": true
+    },
+    {
+      "file": "08_Tests/methods/test_ctx_characteristics.R",
+      "form": "field_ref",
+      "token": "len",
+      "n": 3,
+      "in_tests": true
+    },
+    {
+      "file": "08_Tests/methods/test_ctx_characteristics.R",
+      "form": "field_ref",
+      "token": "macro",
+      "n": 2,
+      "in_tests": true
+    },
+    {
+      "file": "08_Tests/methods/test_ctx_characteristics.R",
+      "form": "field_ref",
+      "token": "msg",
+      "n": 2,
+      "in_tests": true
+    },
+    {
+      "file": "08_Tests/methods/test_ctx_characteristics.R",
+      "form": "field_ref",
+      "token": "non_degenerate",
+      "n": 1,
+      "in_tests": true
+    },
+    {
+      "file": "08_Tests/methods/test_ctx_characteristics.R",
+      "form": "field_ref",
+      "token": "ok",
+      "n": 3,
+      "in_tests": true
+    },
+    {
+      "file": "08_Tests/methods/test_ctx_characteristics.R",
+      "form": "field_ref",
+      "token": "panel",
+      "n": 3,
+      "in_tests": true
+    },
+    {
+      "file": "08_Tests/methods/test_ctx_characteristics.R",
+      "form": "field_ref",
+      "token": "parent",
+      "n": 1,
+      "in_tests": true
+    },
+    {
+      "file": "08_Tests/methods/test_ctx_characteristics.R",
+      "form": "field_ref",
+      "token": "reason",
+      "n": 1,
+      "in_tests": true
+    },
+    {
+      "file": "08_Tests/methods/test_ctx_characteristics.R",
+      "form": "field_ref",
+      "token": "SchurDamping",
+      "n": 1,
+      "in_tests": true
+    },
+    {
+      "file": "08_Tests/methods/test_ctx_characteristics.R",
+      "form": "field_ref",
+      "token": "sep",
+      "n": 2,
+      "in_tests": true
+    },
+    {
+      "file": "08_Tests/methods/test_ctx_characteristics.R",
+      "form": "field_ref",
+      "token": "series",
+      "n": 4,
+      "in_tests": true
+    },
+    {
+      "file": "08_Tests/methods/test_ctx_characteristics.R",
+      "form": "field_ref",
+      "token": "showWarnings",
+      "n": 1,
+      "in_tests": true
+    },
+    {
+      "file": "08_Tests/methods/test_ctx_characteristics.R",
+      "form": "field_ref",
+      "token": "sig_date",
+      "n": 4,
+      "in_tests": true
+    },
+    {
+      "file": "08_Tests/methods/test_ctx_characteristics.R",
+      "form": "field_ref",
+      "token": "sigma",
+      "n": 1,
+      "in_tests": true
+    },
+    {
+      "file": "08_Tests/methods/test_ctx_characteristics.R",
+      "form": "field_ref",
+      "token": "status",
+      "n": 1,
+      "in_tests": true
+    },
+    {
+      "file": "08_Tests/methods/test_ctx_characteristics.R",
+      "form": "field_ref",
+      "token": "warn",
+      "n": 2,
+      "in_tests": true
+    },
+    {
+      "file": "08_Tests/methods/test_ctx_characteristics.R",
+      "form": "field_ref",
+      "token": "weight",
+      "n": 5,
+      "in_tests": true
+    },
+    {
+      "file": "08_Tests/methods/test_ctx_characteristics.R",
+      "form": "str_literal",
+      "token": "build_ctx_extras",
+      "n": 1,
+      "in_tests": true
+    },
+    {
+      "file": "08_Tests/methods/test_ctx_characteristics.R",
+      "form": "str_literal",
+      "token": "ctxchar",
+      "n": 1,
+      "in_tests": true
+    },
+    {
+      "file": "08_Tests/methods/test_ctx_characteristics.R",
+      "form": "str_literal",
+      "token": "err",
+      "n": 1,
+      "in_tests": true
+    },
+    {
+      "file": "08_Tests/methods/test_ctx_characteristics.R",
+      "form": "str_literal",
+      "token": "factor_db",
+      "n": 1,
+      "in_tests": true
+    },
+    {
+      "file": "08_Tests/methods/test_ctx_characteristics.R",
+      "form": "str_literal",
+      "token": "load_month_factors",
+      "n": 1,
+      "in_tests": true
+    },
+    {
+      "file": "08_Tests/methods/test_ctx_characteristics.R",
+      "form": "str_literal",
+      "token": "method_weights",
+      "n": 1,
+      "in_tests": true
+    },
+    {
+      "file": "08_Tests/methods/test_ctx_characteristics.R",
+      "form": "str_literal",
+      "token": "pit_note",
+      "n": 1,
+      "in_tests": true
+    },
+    {
+      "file": "08_Tests/methods/test_ctx_characteristics.R",
+      "form": "str_literal",
+      "token": "read_parquet",
+      "n": 1,
+      "in_tests": true
+    },
+    {
+      "file": "08_Tests/methods/test_ctx_characteristics.R",
+      "form": "str_literal",
+      "token": "t_nopit",
+      "n": 1,
+      "in_tests": true
+    },
+    {
+      "file": "08_Tests/methods/test_ctx_characteristics.R",
+      "form": "str_literal",
+      "token": "weight",
+      "n": 2,
+      "in_tests": true
     }
-  ],
-  "backcheck": {
-    "measured_on": "2026-08-13",
-    "method": "오늘 무너진 규칙이 이 열거에 **같은 파일에서** 잡히는지 확인(양성 대조). 파일 무관 매치로 세면 부풀려진다 — 다른 파일의 우연한 일치를 hit 로 센다.",
-    "denominator_correction": "★초판은 6건으로 셌으나 2건이 무효였다: `memo 단독 읽기`는 커밋된 소스가 아니라 **세션 스크래치 스크립트**의 결함이었고(디스패처엔 주석에만 등장), `콜렉터 허용목록`은 **이미 수리돼 코드에서 사라졌다**(열거기가 눈먼 게 아니라 대상 부재). 유효 분모는 4.",
-    "coverage": "2 / 4",
-    "caught": ["큐 식별자(arxiv_id 관용 읽기) — 상수/함수로 존재", "kind→lane 선호표 — 선호표 패턴에 걸림"],
-    "missed": ["검사 T6c(avg_exposure 전건 요구) — 검사 술어 안의 인라인 필드 참조", "검사 T6b(ab_source 원천 선택자) — 검사 술어 안의 인라인 문자열 참조"],
-    "gap_mechanism": "정규식 열거는 **상수 선언·선호표**를 잡고, **술어 안의 인라인 필드/문자열 참조**를 못 잡는다. 놓친 2건이 정확히 그 형태이고 둘 다 검사 파일에 있다 — 즉 **검사 자신의 박제**가 이 방식의 사각이다. 허용목록 벡터(c(\"ir\",\"port_t\",…))도 같은 사각이나 그 인스턴스는 이미 수리돼 현 코드로는 재현 불가 — 형태로서의 갭은 실재한다(수리 전 실물이 있었다).",
-    "verdict": "★완결성의 근거로 쓰지 말 것. 상수·선호표 층은 열거가 유효하고, **술어 인라인 참조 층은 이 방식으로 못 본다** — 그 층은 정규식이 아니라 파스트리 순회가 필요하다. 열거된 75건은 '상수·선호표 층의 출발점'이라는 한정된 의미만 갖는다.",
-    "self_correction": "이 역검증은 **두 번 틀렸다**: ①파일을 안 보고 매치해 3/6 → 같은 파일 조건으로 2/6 ②분모에 무효 2건이 섞여 2/6 → 2/4. 커버리지 수치는 계수 규약과 분모 정의를 함께 인용해야 한다."
-  }
+  ]
 }
