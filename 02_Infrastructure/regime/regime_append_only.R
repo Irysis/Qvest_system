@@ -21,7 +21,12 @@
 ## 사용: Rscript regime_append_only.R [--series monthly|daily] [--as-of YYYY-MM-DD] [--init] [--dry-run]
 ## 종료: 0 정상 / 1 동결행 결정값 재서술 검출(발행본 보존) / 2 입력·환경 오류
 
+## ★★arrow 교착 방어 — `ARROW_IO_THREADS=1` ∧ `mmap=FALSE` 에서만 read_parquet 가 자기 교착한다
+##   (2026-08-13 2×3 격자 실측. 상세 = m4_append_only.R 상단). 이 스크립트도 mmap=FALSE 를 쓰므로
+##   호출자가 =1 을 걸면 daily_refresh 가 조용히 멈춘다. 저장소 관행(reports/ 15개)대로 2로 올린다.
+if (suppressWarnings(as.integer(Sys.getenv("ARROW_IO_THREADS", "0"))) %in% 1L) Sys.setenv(ARROW_IO_THREADS = "2")
 suppressPackageStartupMessages({library(data.table); library(arrow); library(jsonlite)})
+try(if (arrow::io_thread_count() < 2L) arrow::set_io_thread_count(2L), silent = TRUE)
 options(scipen = 999)
 ROOT <- Sys.getenv("CLAUDE_PROJECT_DIR", Sys.getenv("QM_ROOT", "C:/Users/99922/OneDrive/Quant_Module_Moltbot"))
 

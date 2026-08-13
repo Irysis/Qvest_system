@@ -30,7 +30,22 @@
 ## 종료:  0 정상 / 1 드리프트 검출(과거 재서술 시도, 발행본 보존) / 2 입력·환경 오류
 ##        3 AS_OF 행 미생성(침묵 낡음 차단) / 4 PIT 위반(결정일 이후 매크로 관측 사용)
 
+## ★진행 표식 (2026-08-13) — 러너 안에서 **첫 출력 전에** 블록되는 사례를 잡기 위해.
+##   블록 지점이 라이브러리 로드인지 파일 열기인지 로그만으로 갈리도록 단계마다 찍는다.
+##   (단독 실행은 1초인데 러너 안에서 무한 대기 — 재현은 되나 지점 미특정 상태였다)
+cat(sprintf("[m4-append] start %s pid=%d\n", format(Sys.time(), "%H:%M:%S"), Sys.getpid())); flush(stdout())
+## ★★arrow 교착 방어 (2026-08-13 실측 확정 — 이 게이트가 러너 안에서 무한 대기한 진짜 원인)
+##   `ARROW_IO_THREADS=1` ∧ `mmap=FALSE` 조합에서만 read_parquet 가 자기 교착한다.
+##   2×3 격자 실측(271행 파일): io미설정×{T,F} OK · io=1×mmap=TRUE OK · **io=1×mmap=FALSE HANG**
+##   · io=2×F OK · io=4×F OK — 정확히 한 칸만 멈춘다(단일 IO 스레드풀 self-deadlock).
+##   호출자(run_nolayer4_monthly.sh)가 =1 을 export 했고 이 스크립트는 mmap=FALSE 를 쓴다.
+##   저장소 관행이 이미 `Sys.setenv(ARROW_IO_THREADS="2")` (reports/ 등 15개 스크립트) — 그 관행에 합류.
+##   ★호출자 환경에 의존하지 않도록 **여기서** 올린다. library(arrow) **전에** 걸어야 한다.
+if (suppressWarnings(as.integer(Sys.getenv("ARROW_IO_THREADS", "0"))) %in% 1L) Sys.setenv(ARROW_IO_THREADS = "2")
 suppressPackageStartupMessages({library(data.table); library(arrow)})
+try(if (arrow::io_thread_count() < 2L) arrow::set_io_thread_count(2L), silent = TRUE)  # 로드 후 2차 방어
+cat(sprintf("[m4-append] libs ok (arrow io_threads=%s)\n",
+            tryCatch(arrow::io_thread_count(), error = function(e) "?"))); flush(stdout())
 options(scipen = 999)
 
 ROOT <- Sys.getenv("CLAUDE_PROJECT_DIR", Sys.getenv("QM_ROOT", "C:/Users/99922/OneDrive/Quant_Module_Moltbot"))
@@ -62,7 +77,16 @@ if (as.integer(format(AS_OF, "%d")) != 1L) die(2, sprintf("--as-of 는 월 1일�
 rp <- function(p) as.data.table(read_parquet(p, mmap = FALSE))
 
 if (!file.exists(PANEL)) die(2, sprintf("m4 패널 부재: %s", PANEL))
+
+## ★오진 기록(남겨둠 — 같은 함정에 다시 빠지지 않기 위해): 이 read 가 러너 안에서 무한 대기했을 때
+##   "스텝[1]이 방금 쓴 파일을 OneDrive/잔존 핸들이 잡고 있다"고 가정하고 크기-안정화 대기 + 임시사본
+##   경유 읽기를 넣었다 — **둘 다 헛수고**였다. 판별한 것은 **카나리아**(무관한 271행 파일을 먼저 읽기)로,
+##   그 작은 파일에서도 똑같이 멈춰 원인이 파일이 아니라 **arrow 스레드풀**임을 드러냈다(위 상단 격자 참조).
+##   교훈 = "막힌 대상"을 고치기 전에 **무관한 대조 대상**으로 대상 특정성부터 가를 것.
+cat(sprintf("[m4-append] opening PANEL (size=%s bytes)\n",
+            format(file.info(PANEL)$size, big.mark = ","))); flush(stdout())
 fresh <- rp(PANEL); fresh[, Date := as.Date(Date)]
+cat("[m4-append] PANEL read ok\n"); flush(stdout())
 setorder(fresh, Date)
 say("[m4-append] 재생성본 n=%d  %s ~ %s\n", nrow(fresh), min(fresh$Date), max(fresh$Date))
 

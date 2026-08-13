@@ -8,7 +8,12 @@
 set -uo pipefail
 export QM_ROOT="${QM_ROOT:-C:/Users/99922/OneDrive/Quant_Module_Moltbot}"
 export CLAUDE_PROJECT_DIR="$QM_ROOT"
-export R_DATATABLE_NUM_THREADS=1 OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 ARROW_IO_THREADS=1
+## ★ARROW_IO_THREADS 를 1 로 두지 말 것 (2026-08-13 실측 확정). `=1` ∧ `read_parquet(mmap=FALSE)`
+##   조합에서 arrow 가 자기 교착해 **무한 대기**한다 — 2×3 격자: 미설정×{TRUE,FALSE} OK · 1×TRUE OK ·
+##   **1×FALSE HANG** · 2×FALSE OK · 4×FALSE OK. 여기는 export 라 하위 전 스텝이 상속하므로,
+##   되쓸 파일을 mmap=FALSE 로 읽는 스텝([1a] m4 게이트)이 통째로 멈췄다. 저장소 관행도 이미 2다
+##   (02_Infrastructure/reports/*.R 15개가 Sys.setenv(ARROW_IO_THREADS="2")). 다른 스레드 핀은 1 유지.
+export R_DATATABLE_NUM_THREADS=1 OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 ARROW_IO_THREADS=2
 cd "$QM_ROOT"
 B23="05_Production/2.Factor_Model/2-3.STR_1715_on_M4_R05_noLayer4_PG2/01_reproducible_code"
 # B21(2-1 슬롯) 참조 제거 (2026-08-02) — base 패널 빌더는 02_Infrastructure/portfolio/ 로 이전
@@ -31,10 +36,20 @@ kill_stray; PG2_AS_OF="$AS_OF" bash "$B23/run_pg2_forward_noLayer4.sh" >> "$LOG"
 #     이 게이트가 발행 원장(06_Registry/m4_published/)을 정본으로 삼아 과거를 되돌리고 새 달만 잇는다.
 #     ★[1b] 배포 생성기가 이 패널을 읽으므로 **반드시 [1] 과 [1b] 사이**에 있어야 한다.
 #     exit 1 = 과거 재서술 시도 검출(발행본은 보존됨) → 경고만 하고 계속. 배포 비중은 안정된 이력 위에서 산출된다.
+#     ★2026-08-13 리허설이 잡은 결함: 이 호출이 **무한 대기**했다(단독 실행은 1초, 러너 안에서만 재현).
+#     원인 = 11행의 `ARROW_IO_THREADS=1` 상속 ∧ 게이트의 `read_parquet(mmap=FALSE)` → arrow 자기 교착.
+#     (오진 2회: "파일 잠김"으로 보고 크기-안정화 대기·임시사본 경유를 넣었으나 둘 다 무효였다.
+#      판별한 것은 무관한 271행 파일을 먼저 읽는 카나리아 — 그것도 멈춰 대상 특정성이 없음이 드러났다.)
+#     수리는 11행에서 했고, 여기 timeout 은 **원인과 무관하게 남긴다** — 무한 대기는 리밸을 조용히
+#     멈추지만 timeout 은 로그를 남기고 중단시킨다. 다음 교착이 무엇이든 유한 실패로 받는 그물이다.
 kill_stray
 QM_ROOT="$QM_ROOT" CLAUDE_PROJECT_DIR="$QM_ROOT" \
-  "$RSCRIPT" --no-save "$QM_ROOT/02_Infrastructure/regime/m4_append_only.R" --as-of "$AS_OF" >> "$LOG" 2>&1
+  timeout 300 "$RSCRIPT" --no-save "$QM_ROOT/02_Infrastructure/regime/m4_append_only.R" --as-of "$AS_OF" >> "$LOG" 2>&1
 _m4rc=$?
+if [ "$_m4rc" -eq 124 ]; then
+  echo "XX [1a] m4 게이트 300초 타임아웃 — 교착 의심. arrow io_threads 와 mmap 조합부터 확인할 것. 중단" | tee -a "$LOG"
+  exit 15
+fi
 case "$_m4rc" in
   0) echo "── [1a] m4 append-only OK (과거 불변 + 신규행 PIT 통과)" | tee -a "$LOG" ;;
   1) echo "!! [1a] m4 과거 재서술 시도 검출 — 발행본 보존됨(로그 확인). 상류 매크로 국면 재생성 점검 필요" | tee -a "$LOG" ;;
@@ -61,7 +76,7 @@ if resolve_admitted_slot; then
     kill_stray
     QM_ROOT="$QM_ROOT" CLAUDE_PROJECT_DIR="$QM_ROOT" PG2_AS_OF="$AS_OF" \
     PG2_OUT_DIR="$SLOT_DIR/02_holdings_universe" \
-    R_DATATABLE_NUM_THREADS=1 OMP_NUM_THREADS=1 ARROW_IO_THREADS=1 \
+    R_DATATABLE_NUM_THREADS=1 OMP_NUM_THREADS=1 \
       "$RSCRIPT" --no-save "$GEN_SCRIPT" >> "$LOG" 2>&1 \
       || echo "[warn] deployed 생성기($( basename "$GEN_SCRIPT")) 비정상 — ★이 경로엔 후속 검증 없음(아래 주석)" | tee -a "$LOG"
     # ★2026-08-08 주석 정정: 구 문구는 "Gate C/D 가 최종 검증"이라 주장했으나 **거짓**이다.
