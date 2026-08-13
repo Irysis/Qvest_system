@@ -1,0 +1,53 @@
+{
+  "_doc": "어댑터 구현가능성 오버레이. ★'프론티어 조건 충족'(shrinkage∧≤2nd) 은 **주제** 축이지 **구현가능성** 축이 아니다 — 그 축 5/5 인데 실제 구현가능은 1/5 였다. memo 로는 판정 불가하고 **원문을 열어야** 안다. 구현가능성 판정 기준 = ①필요 입력이 ctx 안에 있는가 ②산출이 weight/sigma/exposure 셋 중 하나인가 ③결론이 우리 제약(Σw=1 long-only) 안에서 표현 가능한가. 불가 사유 taxonomy: inputs_not_in_ctx / theory_no_estimator / wrong_object / wrong_object_and_constraint_void.",
+  "generated": "2026-08-13",
+  "ctx_contract": {
+    "weight": "Sigma, R, mu, assets, ub, lookback_days, decision_date, eval_date",
+    "sigma": "R, assets, lookback_days, decision_date, eval_date (Sigma 미제공)",
+    "exposure": "periods(decision_date, eval_date), bare_gross",
+    "note": "★firm characteristics · 펀더멘털 · 팩터DB 접근 없음 — 수익률과 알파뿐."
+  },
+  "n_examined": 5,
+  "n_feasible": 1,
+  "rows": [
+    {
+      "paper_key": "260614798",
+      "title": "Two Sides of Schur Damping",
+      "feasible": true,
+      "kind": "weight",
+      "why": "상관행렬에서 블록별 감쇠 Schur 보수 → 잔여위험 역수 배분. 입력이 R/상관뿐이고 산출이 횡단면 선호 벡터 — ctx 계약과 정확히 같은 모양. 구현·등재 완료."
+    },
+    {
+      "paper_key": "260724410",
+      "title": "The Fundamental Structure of Risk (CD-DFM)",
+      "feasible": false,
+      "kind": "sigma",
+      "reason": "inputs_not_in_ctx",
+      "why": "characteristic-driven 잠재팩터 오토인코더 — 입력이 **firm characteristics/펀더멘털**인데 ctx 에 없다. 수익률로 흉내 내면 그건 CD-DFM 이 아니라 날조다. ctx 확장(특성 패널 주입) 전에는 원리적으로 불가."
+    },
+    {
+      "paper_key": "260627462",
+      "title": "Decision Geometry of Covariance Estimation for GMVP",
+      "feasible": false,
+      "kind": "sigma",
+      "reason": "theory_no_estimator",
+      "why": "새 추정기를 제안하지 않는다 — 추정오차가 GMVP regret 으로 사상되는 방식을 증명하는 **이론**(정확 regret 항등식·비점근 한계·(p−1)차원 불변 방향). 구현할 estimator 가 없다. 소비면은 어댑터가 아니라 **평가 지표**(기존 arm 들을 matrix-norm 대신 decision regret 으로 다시 줄 세우기)."
+    },
+    {
+      "paper_key": "260611318",
+      "title": "Mean-Variance Optimization in Ambiguous Markets with Learning",
+      "feasible": false,
+      "kind": "weight",
+      "reason": "wrong_object_and_constraint_void",
+      "why": "연속시간 Black-Scholes 다자산 확률제어(드리프트 모호성 + 학습). 산출이 동적 전략이지 횡단면 비중 규칙이 아니다. ★핵심 결론('모호성 회피 투자자는 위험자산을 **덜** 보유')은 **레버리지 진술**이라 Σw=1 long-only 에서는 표현될 수 없다 — 우리는 항상 만기 투자다."
+    },
+    {
+      "paper_key": "260718813",
+      "title": "Mixing-Law Uncertainty in NMVM Mixtures",
+      "feasible": false,
+      "kind": "weight",
+      "reason": "wrong_object",
+      "why": "NMVM 혼합법칙 6종 + 비모수 MLE 로 모호성 집합을 만들고, **주어진 하나의 포트폴리오 방향** 위에서 CPT(누적전망이론) 노출을 분포적 견고 최적화. 산출이 1차원 노출이지 횡단면 비중 벡터가 아니다. 게다가 CPT 선호는 현 목적함수 계열 밖."
+    }
+  ]
+}
