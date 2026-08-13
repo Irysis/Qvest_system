@@ -647,6 +647,50 @@
       },
       "measured": false,
       "similar_to": []
+    },
+    {
+      "method_id": "LMGarch2DMC",
+      "route": "risk",
+      "adapter_kind": "sigma",
+      "paper_id": "arxiv:2607.25189",
+      "paper_title": "Long-memory GARCH via a two-dimensional Markov chain",
+      "routed_on": "2026-08-02",
+      "mechanism": "조건부 분산을 잠재 멱법칙 커널 h(t)=μ+a/(t+c)^p 로 만들고, 충격마다 level 과 slope 를 동시에 맞춰 갱신한다(원문 식 6·7). 상태가 (X,c) 2차원이고 c 가 **내생적 기억 척도**라 고정 감쇠 GARCH 와 달리 장기기억이 유한차원 Markov 로 나온다.",
+      "kr_mapping": "일변량 변동성 모형이므로 Σ = D C D 로 올린다 — D=모형 조건부 sd, C=표본 상관. ★상관은 손대지 않는다: 이 논문이 바꾸는 건 분산의 시간구조이지 종목 간 결합이 아니다. 추정 실패 종목은 제외가 아니라 표본 sd 로 중립(차원 유지 = A/B 통제 전제).",
+      "adapter": "02_Infrastructure/methods/adapters/longmemory_garch_2dmc.R",
+      "entrypoint": "sigma_estimate",
+      "verdict": "implemented",
+      "registration": {
+        "verified_by": "register_method.R (production wrapper 경유 · 합성 fixture)",
+        "checks": {
+          "file_exists": true,
+          "sources": true,
+          "entrypoint": "sigma_estimate",
+          "deterministic": true,
+          "non_degenerate": "rel_dev=0.3749"
+        },
+        "failure_reason": null,
+        "unverified_on_fixture": false,
+        "unverified_reason": null,
+        "fixture": "rm_fixture(n_assets=8, n_obs=260, seed=20260813)",
+        "scope_note": "계약 준수 검증이지 성과 검증이 아니다. 성과는 dispatch Σ-A/B 가 잰다."
+      },
+      "screen_axes": {
+        "shrinkage_builtin": "no",
+        "statistic_order": "<=2nd",
+        "screen_priority": "미정(2축은 우선순위를 결정하지 않음 — 실측)"
+      },
+      "selection_type": "chain",
+      "free_params": {
+        "LMG_P": 1.5,
+        "LMG_GAMMA": 1,
+        "LMG_TAU": 1,
+        "LMG_MU_SH": 0.5,
+        "LMG_XI": 0.05,
+        "note": "원문은 MLE 추정. 269개월×25종목 MLE 비용을 피해 **단일 사전고정**으로 대체 — sweep 아님(DSR 부적용). ⚠이 arm 의 성적은 '이 모수에서의 성적'이지 모형의 최선이 아니다 — 미달이어도 모형 판결 아님(INV-7)."
+      },
+      "measured": false,
+      "similar_to": []
     }
   ],
   "cross_method_synthesis": {
