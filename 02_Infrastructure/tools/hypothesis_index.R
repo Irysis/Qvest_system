@@ -555,9 +555,16 @@ HI_PAPER_AB_SOURCES <- c("06_Registry/book_carrier/h2_regime_overlay_ab.csv",
   km$adapter_kind <- kind
   km$selection_type <- e$selection_type %||% "unknown"
   # verdict — 자본 판정이 아니라 **소비 가능성** 상태다(이 레인의 역할 자체가 가능성 판별).
-  verdict <- if (identical(e$verdict %||% "", "registration_failed")) "FAIL"
+  # ★blocked 를 AVAILABLE 로 뭉개지 않는다 (2026-08-13 N7). 레지스트리에 `blocked_by_capability`
+  #   로 명시된 3건(StationaryAmbiguity·PathSignature·MFCCA — 어댑터 파일 자체가 없다)을
+  #   초판은 AVAILABLE 로 냈다. **막힌 것을 '가용'이라 부르면 모드가 그걸 리드로 집어 벽에 부딪힌다.**
+  #   ★게이트 우회는 아니었다 — 능력 부재가 정직하게 기록돼 있었고, 그걸 뭉갠 건 내 파서였다.
+  .rv <- as.character(e$verdict %||% "")[1]
+  verdict <- if (identical(.rv, "registration_failed")) "FAIL"
+             else if (grepl("^blocked", .rv)) "PAPER_LANE_BLOCKED"
              else if (length(.cand)) "PAPER_LANE_MEASURED"
              else "PAPER_LANE_AVAILABLE"
+  if (grepl("^blocked", .rv)) km$blocked_reason <- .rv
   list(
     strategy_id = paste0("PL_", mid),
     hypothesis_signature = .hi_signature(
