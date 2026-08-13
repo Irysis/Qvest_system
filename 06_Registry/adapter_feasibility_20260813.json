@@ -7,7 +7,7 @@
     "exposure": "periods(decision_date, eval_date), bare_gross",
     "note": "★firm characteristics · 펀더멘털 · 팩터DB 접근 없음 — 수익률과 알파뿐."
   },
-  "n_examined": 5,
+  "n_examined": 6,
   "n_feasible": 1,
   "rows": [
     {
@@ -49,8 +49,18 @@
       "kind": "exposure",
       "reason": "wrong_kind_my_error",
       "why": "★정정(내 오판): '주어진 한 방향 위의 1차원 노출'이 **바로 exposure 레인의 대상**이다(선별·비중 고정, 스칼라 노출만 교체). weight 로 보려 해서 wrong_object 로 판정했다."
+    },
+    {
+      "paper_key": "260609025",
+      "title": "Continuous Cash-Overlay Filters for a Static Growth-Defensive Risky Sleeve",
+      "feasible": null,
+      "kind": "exposure",
+      "reason": "method_is_a_sweep",
+      "why": "입력은 이제 전부 갖춰졌다(macro provider 신설로 VIX·크레딧·금리·스트레스 확보, 낙폭·재진입은 bare_gross 에서 계산). ★그러나 **방법 자체가 216점 그리드 선택**이다: αvix{0.50,0.67} × λrate{0.25,0.50} × λcredit{0,0.25} × maxcash{0.50,0.75,1.00} × brakeτ{0.50,0.75,1.00} × convexity{3,4,5} = 216, 다기준 점수로 argmax. measurement-graduation §3 기준 **sweep** 이므로 selection_type='sweep' + DSR≥0.5 HARD 가 적용되고 n_trials 기록 의무가 붙는다. 저자들도 '다중검정 보정 추론은 future work' 라고 명시한다. ⇒ 등재하려면 ①그리드를 재현하고 sweep 으로 라벨(DSR 게이트) 또는 ②단일 사전고정 1점으로 축소(논문 결과 아님을 명시, LMGarch2DMC 선례). ⚠추가로 점수→현금 **사상식 원문 추출 미완** — 없이 구현하면 날조다.",
+      "evidence_basis": "원문 정독(32쪽) — Table 4 파라미터 그리드 확인"
     }
   ],
   "n_feasible_revised": "1 확정 + 4 조건부(ctx 확장 1 · 소비면 전환 1 · kind 정정 2)",
-  "_correction_20260813": "★도훈 지적 '구현 가능한 인프라가 없으면 깔면 되잖아' 로 재검토 — 초판 '불가 4건' 중 **3건이 내 오판**이었다. 오류 형태 둘: ①논문을 **kind 하나에만** 대보고 나머지 두 레인을 안 봤다(exposure 레인이 '얼마나 태울지'라 레버리지형 결론을 정확히 담는데 weight 로만 봤다) ②ctx 를 **고정 상수로** 가정했다(특성 패널은 이미 저장소에 있고 확장 지점은 한 곳이다). ⇒ 판정 어휘를 '불가' 대신 **ctx_extension_required / different_consumption_surface / wrong_kind** 로 바꾼다. 진짜 불가는 아직 0건이다."
+  "_correction_20260813": "★도훈 지적 '구현 가능한 인프라가 없으면 깔면 되잖아' 로 재검토 — 초판 '불가 4건' 중 **3건이 내 오판**이었다. 오류 형태 둘: ①논문을 **kind 하나에만** 대보고 나머지 두 레인을 안 봤다(exposure 레인이 '얼마나 태울지'라 레버리지형 결론을 정확히 담는데 weight 로만 봤다) ②ctx 를 **고정 상수로** 가정했다(특성 패널은 이미 저장소에 있고 확장 지점은 한 곳이다). ⇒ 판정 어휘를 '불가' 대신 **ctx_extension_required / different_consumption_surface / wrong_kind** 로 바꾼다. 진짜 불가는 아직 0건이다.",
+  "_note_sweep": "★새 판정 사유 추가: `method_is_a_sweep`. 입력이 갖춰져도 **방법이 그리드 선택이면** 등재는 DSR 규율을 부른다. 구현가능성 3기준(입력·산출·제약)에 더해 **선택 유형**을 착수 전에 봐야 한다 — 이 축을 안 보면 sweep 논문을 chain 으로 등재해 다중검정 보정을 건너뛰게 된다."
 }
