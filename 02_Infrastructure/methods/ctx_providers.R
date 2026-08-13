@@ -127,3 +127,48 @@ register_ctx_provider(
     if (is.null(panel)) return(NULL)
     list(sig_date = sig, panel = panel)
   })
+
+# ── macro — VIX·크레딧·금리·금융스트레스 일별 계열 (cash-overlay 계열 논문이 요구하는 입력)
+#   2026-08-13 신설. 도훈 standing policy 로 "필요하면 바로 배선" 의 첫 적용 사례다.
+MACRO_PUB_LAG_DAYS <- 5L   # 보수적 균일 발표시차. 아래 pit_note 참조 — 사전고정, sweep 아님
+register_ctx_provider(
+  name = "macro",
+  pit_note = paste(
+    "컷오프 = **홀딩월 시작 −", MACRO_PUB_LAG_DAYS, "일**. 두 겹으로 막는다.",
+    "①월별 스탬프(`macro_regime.parquet`)를 쓰지 않는다 — 그 파일의 마지막 YM 은",
+    "**진행 중인 달**이라(실측 2026-08-13 기준 YM=2026-08) 월중 조회가 곧 동월 look-ahead 다.",
+    "대신 일별 `fred_macro_wide.parquet` 을 날짜로 자른다.",
+    "②C11 발표시차 — FRED 의 Date 는 **관측 기준일**이지 공표일이 아니다. 계열별 시차가 다르고",
+    "가장 느린 계열은 ~73일이므로, 균일 5일은 **빠른 계열(VIX·금리·크레딧 = 일별 시장가)에만",
+    "충분**하다. 느린 거시계열(CPI·고용·산업생산 등)을 쓰려면 어댑터가 자기 시차를 추가로",
+    "적용해야 한다 — 이 provider 는 그것을 대신해주지 않는다."),
+  source_note = ".cache/fred_macro_wide.parquet (일별 24계열). 월별 스탬프 사용 금지.",
+  fixture_fn = function(decision_date, assets) {
+    # ★fixture 도 **production 과 같은 컷오프 규칙**을 따라야 한다. 초판은 계열을 max(d) 까지
+    #   생성해 마지막 날짜가 홀딩월 시작과 같아졌고(=침범), 계약검사 T3h 가 그것을 잡았다.
+    #   게이트용 합성값이 규칙을 어기면 그 게이트는 자기가 강제하는 규칙을 스스로 위반한다.
+    d <- sort(unique(as.Date(decision_date)))
+    cut <- as.Date(format(min(d), "%Y-%m-01")) - MACRO_PUB_LAG_DAYS
+    n <- max(400L, 30L * length(d))
+    g <- seq(cut - n, cut, by = "day")
+    set.seed(20260813)
+    list(cutoff = cut,
+         series = data.frame(Date = g,
+                             VIX        = 15 + 10 * abs(sin(seq_along(g) / 90)),
+                             HY_Spread  = 3  +  2 * abs(cos(seq_along(g) / 120)),
+                             Fed_Funds_Rate = 2 + sin(seq_along(g) / 300),
+                             StL_Fin_Stress = sin(seq_along(g) / 150)))
+  },
+  fn = function(decision_date, assets) {
+    fp <- file.path(Sys.getenv("QM_ROOT", getwd()), ".cache/fred_macro_wide.parquet")
+    if (!file.exists(fp)) return(NULL)
+    suppressWarnings(suppressMessages(library(arrow)))
+    df <- as.data.frame(arrow::read_parquet(fp))
+    if (!("Date" %in% names(df))) return(NULL)
+    df$Date <- as.Date(df$Date)
+    # ★컷오프 = 가장 이른 홀딩월 시작 − 발표시차. **홀딩월 안의 관측은 한 줄도 쓰지 않는다.**
+    cut <- as.Date(format(min(as.Date(decision_date)), "%Y-%m-01")) - MACRO_PUB_LAG_DAYS
+    out <- df[df$Date <= cut, , drop = FALSE]
+    if (!nrow(out)) return(NULL)
+    list(cutoff = cut, series = out)
+  })

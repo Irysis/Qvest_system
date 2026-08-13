@@ -111,6 +111,30 @@ chk("T3e 배터리가 provider 레지스트리 경유(입력별 하드코딩 없
                  error = function(e) grepl("pit_note", conditionMessage(e)))
 chk("T3f PIT 미신고 provider 등록 거부", isTRUE(.rej))
 
+# ── T3g/T3h ★macro provider — 동월 look-ahead 두 겹 방어가 실제로 서는가 (2026-08-13 신설)
+#   ①월별 스탬프(macro_regime.parquet)는 마지막 YM 이 **진행 중인 달**이라(실측 2026-08-13 기준
+#     YM=2026-08) 월중 조회가 곧 동월 누출 → 일별 패널을 날짜로 자른다.
+#   ②C11 발표시차 — Date 는 관측 기준일이지 공표일이 아니다. 균일 5일을 뺀다.
+#   ★행동 검사로 잰다(구현 grep 금지 — 오늘 그 방식이 3번 거짓 FAIL 을 냈다).
+.mac_ok <- TRUE; .mac_d <- ""
+.mac_dates <- as.Date(c("2020-06-01", "2024-03-01"))
+for (.k in seq_along(.mac_dates)) {
+  .dd <- .mac_dates[.k]
+  .m <- tryCatch(build_ctx_extras(.dd, character(0))$macro(), error = function(e) NULL)
+  if (is.null(.m)) next                       # 실데이터 부재 환경 → 축 건너뜀(공허 통과 아님: 아래 fixture 축이 있음)
+  .hs <- as.Date(format(.dd, "%Y-%m-01"))
+  if (!(max(.m$series$Date) < .hs) || !identical(.m$cutoff, .hs - 5L)) {
+    .mac_ok <- FALSE
+    .mac_d <- sprintf("(%s: last %s · cutoff %s · hold_start %s)", .dd, max(.m$series$Date), .m$cutoff, .hs)
+    break
+  }
+}
+chk("T3g macro 컷오프가 홀딩월 시작 −5일 · 홀딩월 침범 0", .mac_ok, .mac_d)
+.mf <- build_ctx_extras(as.Date("2024-03-01"), character(0), fixture = TRUE)$macro()
+chk("T3h macro fixture 도 같은 규약(게이트 vintage 비의존)",
+    !is.null(.mf) && max(.mf$series$Date) < as.Date("2024-03-01") &&
+      all(c("VIX", "HY_Spread") %in% names(.mf$series)))
+
 # ── T4 ★NULL 처리 — 축을 다시 설계했다 (초판 결함).
 #   초판은 NULL 상황에서 **등재 검증**을 돌려 통과 여부를 봤는데, 그건 성립하지 않는다:
 #   신호가 전부 특성에서 오는 어댑터는 패널이 없으면 **중립(EW)을 내는 것이 옳고**,
