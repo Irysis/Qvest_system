@@ -465,8 +465,13 @@ HI_PAPER_AB_SOURCES <- c("06_Registry/book_carrier/h2_regime_overlay_ab.csv",
     for (ln in .ln_ord) {
       for (a in (j$actions[[ln]]$verdict$arms %||% list())) {
         mid <- as.character(a$method_id %||% "")[1]
-        if (!nzchar(mid) || !is.null(out[[mid]])) next        # 이미 더 새 기록이 있으면 유지
+        if (!nzchar(mid)) next
         if (!isTRUE(a$measured)) next
+        # ★후보를 **레인별로 다 보관**한다 (2026-08-13 N4). 레인마다 대조가 달라
+        #   어느 것이 옳은지는 **그 어댑터의 kind** 가 정한다 — 여기서 하나로 접으면 그 판단을
+        #   콜렉터가 대신 내려버린다. 선택은 kind 를 아는 `.hi_parse_paper_lane` 이 한다.
+        if (is.null(out[[mid]])) out[[mid]] <- list()
+        if (!is.null(out[[mid]][[ln]])) next                  # 같은 레인은 최신 파일 우선
         km <- list()
         for (k in c("ir", "port_t", "delta_ir", "control_ir")) {
           v <- suppressWarnings(as.numeric(a[[k]] %||% NA)); if (is.finite(v)) km[[k]] <- v
@@ -476,8 +481,9 @@ HI_PAPER_AB_SOURCES <- c("06_Registry/book_carrier/h2_regime_overlay_ab.csv",
         }
         if (!length(km)) next
         km$measured_on <- sub(".*research_status_([0-9]+)\\.json$", "\\1", basename(p))
-        km$ab_source <- "research_status(dispatch 실행 기록 — 대조 기준 명시)"
-        out[[mid]] <- km
+        km$ab_source <- sprintf("research_status[%s] (dispatch 실행 기록 — 대조 기준 명시)", ln)
+        km$measured_lane <- ln
+        out[[mid]][[ln]] <- km
       }
     }
   }
@@ -503,7 +509,10 @@ HI_PAPER_AB_SOURCES <- c("06_Registry/book_carrier/h2_regime_overlay_ab.csv",
       #   노출-정합 비교(잔차) 없이 ΔIR 순위를 실력으로 읽지 말 것.
       if (grepl("regime_overlay", rel, fixed = TRUE))
         km$delta_ir_caveat <- "exposure_confounded_R2_0.858_use_exposure_matched_residual"
-      .sc <- as.character(t$scenario[i]); if (is.null(out[[.sc]])) out[[.sc]] <- km
+      km$measured_lane <- "csv"
+      .sc <- as.character(t$scenario[i])
+      if (is.null(out[[.sc]])) out[[.sc]] <- list()
+      if (is.null(out[[.sc]][["csv"]])) out[[.sc]][["csv"]] <- km
     }
   }
   out
@@ -515,12 +524,30 @@ HI_PAPER_AB_SOURCES <- c("06_Registry/book_carrier/h2_regime_overlay_ab.csv",
   kind <- e$adapter_kind %||% "unknown"
   ttl  <- e$paper_title %||% mid
   text <- .hi_lc(c(mid, ttl, e$mechanism %||% "", e$kr_mapping %||% ""))
-  km <- meas[[mid]] %||% list()
+  # ★대조 기준은 **kind 가 고른다** (2026-08-13 N4). 같은 method 를 여러 레인이 서로 다른
+  #   대조로 재기 때문에(risk=minvar_lw 로 Σ만 분리 / optimizer=strategy 로 북 전체 대비 /
+  #   regime CSV=book_L5), 아무거나 집으면 **측정은 그대로인데 숫자만 바뀐다**
+  #   (실측: ProperScoreGASFilter −0.219 vs −0.477). 콜렉터는 후보를 레인별로 다 담아두고,
+  #   kind 를 아는 여기서 고른다 — 판단을 아는 쪽이 내려야 한다.
+  #     sigma  → risk (옵티마이저 고정·Σ 교체만 = Σ 효과 분리)
+  #     weight → optimizer (북 대비 = 가중법 전체 효과)
+  #     exposure → regime/csv (노출 스케줄 대비)
+  .pref <- switch(kind,
+                  sigma    = c("risk", "optimizer", "csv", "regime"),
+                  weight   = c("optimizer", "risk", "csv", "regime"),
+                  exposure = c("regime", "csv", "optimizer", "risk"),
+                  c("risk", "optimizer", "regime", "csv"))
+  .cand <- meas[[mid]] %||% list()
+  km <- list()
+  for (.p in .pref) if (!is.null(.cand[[.p]])) { km <- .cand[[.p]]; break }
+  if (!length(km) && length(.cand)) km <- .cand[[1]]   # 선호 밖 레인만 있으면 그거라도(라벨 동반)
+  if (length(km) && length(.cand) > 1L)
+    km$other_lane_measurements <- paste(setdiff(names(.cand), km$measured_lane %||% ""), collapse = ",")
   km$adapter_kind <- kind
   km$selection_type <- e$selection_type %||% "unknown"
   # verdict — 자본 판정이 아니라 **소비 가능성** 상태다(이 레인의 역할 자체가 가능성 판별).
   verdict <- if (identical(e$verdict %||% "", "registration_failed")) "FAIL"
-             else if (length(meas[[mid]] %||% list())) "PAPER_LANE_MEASURED"
+             else if (length(.cand)) "PAPER_LANE_MEASURED"
              else "PAPER_LANE_AVAILABLE"
   list(
     strategy_id = paste0("PL_", mid),
