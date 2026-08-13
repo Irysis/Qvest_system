@@ -19,7 +19,7 @@
 #==============================================================================
 
 .ps_root <- function() {
-  for (c in c(Sys.getenv("QM_ROOT"), Sys.getenv("CLAUDE_PROJECT_DIR"), getwd()))
+  for (c in c(Sys.getenv("CLAUDE_PROJECT_DIR"), Sys.getenv("QM_ROOT"), getwd()))
     if (nzchar(c) && dir.exists(file.path(c, "01_Literature"))) return(c)
   getwd()
 }

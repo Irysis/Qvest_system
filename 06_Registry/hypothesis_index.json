@@ -1,6 +1,6 @@
 {
   "schema_version": "hypothesis_index_v1",
-  "generated_at": "2026-08-13T07:50:43+0900",
+  "generated_at": "2026-08-13T14:15:15+0900",
   "note": "AS-03 duplicate-hypothesis prevention index. signature = family|signal_group|universe|structure. Rebuild: Rscript 02_Infrastructure/tools/hypothesis_index.R build",
   "coverage": {
     "alpha_search_manifest": 472,
@@ -20,9 +20,12 @@
     "wt_inflight_skipped_terminal": 87,
     "wt_inflight_skipped_empty": 15,
     "wt_inflight_parse_fail": 0,
-    "wt_inflight_merged_completed": 16
+    "wt_inflight_merged_completed": 16,
+    "paper_lane_indexed": 16,
+    "paper_lane_measured": 5,
+    "paper_lane_skipped": 0
   },
-  "n_entries": 1187,
+  "n_entries": 1203,
   "entries": [
     {
       "strategy_id": "STR_AS_20260602_164125",
@@ -16405,6 +16408,265 @@
       "source_paths": "06_Registry/distilled_knowledge.json",
       "source_types": "distilled_knowledge",
       "date": "2026-07-08"
+    },
+    {
+      "strategy_id": "PL_ConformalKelly",
+      "hypothesis_signature": "other|conformal_kelly_conformal_prediction_int|kospi200_kosdaq150_intersection|paper_weight",
+      "title": "ConformalKelly [weight/optimizer] Conformal Kelly: Conformal Prediction Intervals as the Scale in Fractional Kelly Position Sizing",
+      "verdict": "PAPER_LANE_AVAILABLE",
+      "grade": "",
+      "key_metrics": {
+        "adapter_kind": "weight",
+        "selection_type": "chain"
+      },
+      "source_paths": ["02_Infrastructure/methods/adapters/conformal_kelly.R", "06_Registry/method_registry.json", "arxiv:2608.01494"],
+      "source_types": "paper_lane",
+      "date": ""
+    },
+    {
+      "strategy_id": "PL_HurstTrendOverlay",
+      "hypothesis_signature": "momentum|momentum+regime_overlay|kospi200_kosdaq150_intersection|paper_exposure",
+      "title": "HurstTrendOverlay [exposure/regime] The Science and Practice of Trend-Following Systems",
+      "verdict": "PAPER_LANE_MEASURED",
+      "grade": "",
+      "key_metrics": {
+        "ir": 1.4452,
+        "delta_ir": 0.0124,
+        "avg_exposure": 0.9657,
+        "abs_MDD": -0.4074,
+        "abs_SR": 1.4252,
+        "ab_source": "h2_regime_overlay_ab.csv",
+        "delta_ir_caveat": "exposure_confounded_R2_0.858_use_exposure_matched_residual",
+        "adapter_kind": "exposure",
+        "selection_type": "unknown"
+      },
+      "source_paths": ["02_Infrastructure/methods/adapters/hurst_trend_overlay.R", "06_Registry/method_registry.json", "arxiv:2607.19497"],
+      "source_types": "paper_lane",
+      "date": ""
+    },
+    {
+      "strategy_id": "PL_VolTargetFloored",
+      "hypothesis_signature": "defense|volatility+regime_overlay|kospi200_kosdaq150_intersection|paper_exposure",
+      "title": "VolTargetFloored [exposure/regime] 절대-문턱 vol 오버레이 + 노출 바닥 (chain step 4, 처리군)",
+      "verdict": "PAPER_LANE_MEASURED",
+      "grade": "",
+      "key_metrics": {
+        "ir": 1.1449,
+        "delta_ir": -0.2878,
+        "avg_exposure": 0.8332,
+        "abs_MDD": -0.3098,
+        "abs_SR": 1.4321,
+        "ab_source": "h2_regime_overlay_ab.csv",
+        "delta_ir_caveat": "exposure_confounded_R2_0.858_use_exposure_matched_residual",
+        "adapter_kind": "exposure",
+        "selection_type": "chain"
+      },
+      "source_paths": ["02_Infrastructure/methods/adapters/voltarget_depth_overlay.R", "06_Registry/method_registry.json", "internal:step3-derived"],
+      "source_types": "paper_lane",
+      "date": ""
+    },
+    {
+      "strategy_id": "PL_VolTargetStrict",
+      "hypothesis_signature": "overlay|volatility+regime_overlay|kospi200_kosdaq150_intersection|paper_exposure",
+      "title": "VolTargetStrict [exposure/regime] 절대-문턱 vol 오버레이 (chain step 4, 내부 통제군 — 바닥 없음)",
+      "verdict": "PAPER_LANE_MEASURED",
+      "grade": "",
+      "key_metrics": {
+        "ir": 1.0185,
+        "delta_ir": -0.4143,
+        "avg_exposure": 0.7947,
+        "abs_MDD": -0.2993,
+        "abs_SR": 1.4138,
+        "ab_source": "h2_regime_overlay_ab.csv",
+        "delta_ir_caveat": "exposure_confounded_R2_0.858_use_exposure_matched_residual",
+        "adapter_kind": "exposure",
+        "selection_type": "chain"
+      },
+      "source_paths": ["02_Infrastructure/methods/adapters/voltarget_depth_overlay.R", "06_Registry/method_registry.json", "internal:step3-derived"],
+      "source_types": "paper_lane",
+      "date": ""
+    },
+    {
+      "strategy_id": "PL_VolRateMatched",
+      "hypothesis_signature": "defense|volatility+regime_overlay|kospi200_kosdaq150_intersection|paper_exposure",
+      "title": "VolRateMatched [exposure/regime] 발화율 제약형 변동성 오버레이 (chain step 3 — np2 실측에서 도출)",
+      "verdict": "PAPER_LANE_MEASURED",
+      "grade": "",
+      "key_metrics": {
+        "ir": 1.2689,
+        "delta_ir": -0.1638,
+        "avg_exposure": 0.9358,
+        "abs_MDD": -0.4074,
+        "abs_SR": 1.4163,
+        "ab_source": "h2_regime_overlay_ab.csv",
+        "delta_ir_caveat": "exposure_confounded_R2_0.858_use_exposure_matched_residual",
+        "adapter_kind": "exposure",
+        "selection_type": "chain"
+      },
+      "source_paths": ["02_Infrastructure/methods/adapters/vol_rate_matched_overlay.R", "06_Registry/method_registry.json", "internal:np2-derived"],
+      "source_types": "paper_lane",
+      "date": ""
+    },
+    {
+      "strategy_id": "PL_HurstRateMatched",
+      "hypothesis_signature": "ml_complexity|momentum+ml|kospi200_kosdaq150_intersection|paper_exposure",
+      "title": "HurstRateMatched [exposure/regime] The Science and Practice of Trend-Following Systems (chain step 2 — 발화율 제약형)",
+      "verdict": "PAPER_LANE_MEASURED",
+      "grade": "",
+      "key_metrics": {
+        "ir": 1.347,
+        "delta_ir": -0.0857,
+        "avg_exposure": 0.9258,
+        "abs_MDD": -0.4074,
+        "abs_SR": 1.3601,
+        "ab_source": "h2_regime_overlay_ab.csv",
+        "delta_ir_caveat": "exposure_confounded_R2_0.858_use_exposure_matched_residual",
+        "adapter_kind": "exposure",
+        "selection_type": "chain"
+      },
+      "source_paths": ["02_Infrastructure/methods/adapters/hurst_rate_matched_overlay.R", "06_Registry/method_registry.json", "arxiv:2607.19497"],
+      "source_types": "paper_lane",
+      "date": ""
+    },
+    {
+      "strategy_id": "PL_StationaryAmbiguity",
+      "hypothesis_signature": "other|robust_control_under_stationary_ambiguit|kospi200_kosdaq150_intersection|paper_exposure",
+      "title": "StationaryAmbiguity [exposure/regime] Robust Control under Stationary Ambiguity",
+      "verdict": "PAPER_LANE_AVAILABLE",
+      "grade": "",
+      "key_metrics": {
+        "adapter_kind": "exposure",
+        "selection_type": "unknown"
+      },
+      "source_paths": ["exposure", "06_Registry/method_registry.json", "arxiv:2608.04832"],
+      "source_types": "paper_lane",
+      "date": ""
+    },
+    {
+      "strategy_id": "PL_PathSignature",
+      "hypothesis_signature": "quality_earnings|path_portfolio_optimization_defect_lift_|kospi200_kosdaq150_intersection|paper_weight",
+      "title": "PathSignature [weight/optimizer] Path Portfolio Optimization: Defect, Lift, and the Price of Path Complexity",
+      "verdict": "PAPER_LANE_AVAILABLE",
+      "grade": "",
+      "key_metrics": {
+        "adapter_kind": "weight",
+        "selection_type": "unknown"
+      },
+      "source_paths": ["weight", "06_Registry/method_registry.json", "arxiv:2608.02355"],
+      "source_types": "paper_lane",
+      "date": ""
+    },
+    {
+      "strategy_id": "PL_MFCCA",
+      "hypothesis_signature": "other|portfolio_allocation_under_heterogeneous|kospi200_kosdaq150_intersection|paper_weight",
+      "title": "MFCCA [weight/optimizer] Portfolio Allocation under Heterogeneous Scales and Multifractality",
+      "verdict": "PAPER_LANE_AVAILABLE",
+      "grade": "",
+      "key_metrics": {
+        "adapter_kind": "weight",
+        "selection_type": "unknown"
+      },
+      "source_paths": ["weight", "06_Registry/method_registry.json", "arxiv:2608.04987"],
+      "source_types": "paper_lane",
+      "date": ""
+    },
+    {
+      "strategy_id": "PL_PreferenceRobustDistortion",
+      "hypothesis_signature": "other|preference_robust_distortion_risk_measur|kospi200_kosdaq150_intersection|paper_weight",
+      "title": "PreferenceRobustDistortion [weight/risk] Preference robust distortion risk measures",
+      "verdict": "PAPER_LANE_AVAILABLE",
+      "grade": "",
+      "key_metrics": {
+        "adapter_kind": "weight",
+        "selection_type": "chain"
+      },
+      "source_paths": ["02_Infrastructure/methods/adapters/preference_robust_distortion.R", "06_Registry/method_registry.json", "arxiv:2608.02854"],
+      "source_types": "paper_lane",
+      "date": ""
+    },
+    {
+      "strategy_id": "PL_ProperScoreGASFilter",
+      "hypothesis_signature": "other|volatility|kospi200_kosdaq150_intersection|paper_sigma",
+      "title": "ProperScoreGASFilter [sigma/risk] Proper-score observation-driven filters: local geometry, estimation, and continuous-time limits",
+      "verdict": "PAPER_LANE_AVAILABLE",
+      "grade": "",
+      "key_metrics": {
+        "adapter_kind": "sigma",
+        "selection_type": "chain"
+      },
+      "source_paths": ["02_Infrastructure/methods/adapters/proper_score_gas.R", "06_Registry/method_registry.json", "arxiv:2608.02828"],
+      "source_types": "paper_lane",
+      "date": ""
+    },
+    {
+      "strategy_id": "PL_SchurDamping",
+      "hypothesis_signature": "other|two_sides_of_schur_damping_high_dimensio|kospi200_kosdaq150_intersection|paper_weight",
+      "title": "SchurDamping [weight/optimizer] Two Sides of Schur Damping: High-Dimensional Pseudo-Likelihoods and Portfolio Allocation",
+      "verdict": "PAPER_LANE_AVAILABLE",
+      "grade": "",
+      "key_metrics": {
+        "adapter_kind": "weight",
+        "selection_type": "chain"
+      },
+      "source_paths": ["02_Infrastructure/methods/adapters/schur_damping.R", "06_Registry/method_registry.json", "arxiv:2606.14798"],
+      "source_types": "paper_lane",
+      "date": ""
+    },
+    {
+      "strategy_id": "PL_LMGarch2DMC",
+      "hypothesis_signature": "other|volatility|kospi200_kosdaq150_intersection|paper_sigma",
+      "title": "LMGarch2DMC [sigma/risk] Long-memory GARCH via a two-dimensional Markov chain",
+      "verdict": "PAPER_LANE_AVAILABLE",
+      "grade": "",
+      "key_metrics": {
+        "adapter_kind": "sigma",
+        "selection_type": "chain"
+      },
+      "source_paths": ["02_Infrastructure/methods/adapters/longmemory_garch_2dmc.R", "06_Registry/method_registry.json", "arxiv:2607.25189"],
+      "source_types": "paper_lane",
+      "date": ""
+    },
+    {
+      "strategy_id": "PL_TFCostOptSpan",
+      "hypothesis_signature": "momentum|momentum+volatility+regime_overlay|kospi200_kosdaq150_intersection|paper_exposure",
+      "title": "TFCostOptSpan [exposure/regime] The Science and Practice of Trend-Following Systems",
+      "verdict": "PAPER_LANE_AVAILABLE",
+      "grade": "",
+      "key_metrics": {
+        "adapter_kind": "exposure",
+        "selection_type": "chain"
+      },
+      "source_paths": ["02_Infrastructure/methods/adapters/tf_cost_optimal_span.R", "06_Registry/method_registry.json", "arxiv:2607.19497"],
+      "source_types": "paper_lane",
+      "date": ""
+    },
+    {
+      "strategy_id": "PL_TailConformalBand",
+      "hypothesis_signature": "other|crash_protection|kospi200_kosdaq150_intersection|paper_weight",
+      "title": "TailConformalBand [weight/risk] Conformal Prediction Intervals with Tail-Specific Guarantees",
+      "verdict": "PAPER_LANE_AVAILABLE",
+      "grade": "",
+      "key_metrics": {
+        "adapter_kind": "weight",
+        "selection_type": "chain"
+      },
+      "source_paths": ["02_Infrastructure/methods/adapters/tail_conformal_band.R", "06_Registry/method_registry.json", "arxiv:2606.18199"],
+      "source_types": "paper_lane",
+      "date": ""
+    },
+    {
+      "strategy_id": "PL_CompLikFGnOverlay",
+      "hypothesis_signature": "quality_earnings|earnings_revision+momentum+consensus|kospi200_kosdaq150_intersection|paper_exposure",
+      "title": "CompLikFGnOverlay [exposure/regime] Composite likelihood inference of fractional Gaussian processes with sequentially optimal subset selection",
+      "verdict": "PAPER_LANE_AVAILABLE",
+      "grade": "",
+      "key_metrics": {
+        "adapter_kind": "exposure",
+        "selection_type": "chain"
+      },
+      "source_paths": ["02_Infrastructure/methods/adapters/complik_fgn_overlay.R", "06_Registry/method_registry.json", "arxiv:2606.11962"],
+      "source_types": "paper_lane",
+      "date": ""
     },
     {
       "strategy_id": "WT-D20260424_002",

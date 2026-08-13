@@ -10,7 +10,7 @@
 #   빈 골격이 거부되어야만 "사람이 원문을 읽어야 통과한다"가 성립한다.
 set.seed(20260813)
 .root <- (function() {
-  for (c in c(Sys.getenv("QM_ROOT"), Sys.getenv("CLAUDE_PROJECT_DIR"), getwd()))
+  for (c in c(Sys.getenv("CLAUDE_PROJECT_DIR"), Sys.getenv("QM_ROOT"), getwd()))
     if (nzchar(c) && dir.exists(file.path(c, "06_Registry"))) return(c)
   getwd()
 })()

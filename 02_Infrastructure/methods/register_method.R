@@ -58,7 +58,7 @@ suppressWarnings(suppressMessages({
 }))
 
 .rm_root <- function() {
-  for (c in c(Sys.getenv("QM_ROOT"), Sys.getenv("CLAUDE_PROJECT_DIR"), getwd())) {
+  for (c in c(Sys.getenv("CLAUDE_PROJECT_DIR"), Sys.getenv("QM_ROOT"), getwd())) {
     if (nzchar(c) && dir.exists(file.path(c, "06_Registry"))) return(normalizePath(c, "/", TRUE))
   }
   getwd()
@@ -123,6 +123,96 @@ rm_fixture <- function(n_assets = 8L, n_obs = 260L, seed = 20260813L) {
 }
 
 #------------------------------------------------------------------------------
+# 기등재 arm 과의 **구별성** (2026-08-13 신설 → 08-13 3 kind 전부로 일반화)
+#
+# 왜: 비-퇴화 검사는 기준선(EW · 표본공분산 · 상수1)과만 비교한다. 그래서 **이미 등재된
+#   어댑터와 사실상 동일한 arm** 을 못 막는다 — 그러면 배터리가 같은 것을 두 이름으로 재고,
+#   결과표엔 독립 arm 두 개로 보인다. 계기: TailConformalBand 가 ConformalKelly 와
+#   max|Δw| 1.4e-03(왜곡 주입해도 거의 불변)이었다.
+#
+# ★초판은 weight 에만 붙였다 — 그 다음에 등재한 exposure 어댑터(CompLikFGnOverlay)가
+#   하필 "기존 arm 과 기전이 같다"고 내가 **미리 예고한** 건인데 축이 안 돌았다.
+#   부분 수리는 '검사했다'는 인상만 남기고 사각을 그대로 둔다. 그래서 kind 로 일반화한다.
+#
+# 차단하지 않고 **수치로 신고**한다 — 방향만 다른 대조 쌍이나 선언된 추정기-교체 짝은
+#   의도적으로 가까울 수 있다. 판정은 사람 몫이고, 검사기의 일은 보이게 만드는 것이다.
+#------------------------------------------------------------------------------
+.ARM_WRAPPER <- c(weight = "wrap_adapter", sigma = "wrap_sigma_estimator",
+                  exposure = "wrap_exposure_adapter")
+.ARM_ENTRY   <- c(weight = "method_weights", sigma = "sigma_estimate",
+                  exposure = "exposure_schedule")
+.ARM_LABEL   <- c(weight = "max|dw|", sigma = "rel max|dSigma|", exposure = "max|d_exposure|")
+.ARM_NEAR    <- c(weight = 5e-3, sigma = 1e-3, exposure = 1e-3)
+
+#' wrapper 산출을 비교 가능한 수치 벡터로. exposure 는 **data.table(Date, exposure)** 로 오므로
+#' `$exposure` 로 뽑는다(list 로 읽으면 NULL → 비교가 조용히 건너뛰어진다).
+.arm_value <- function(kind, out) {
+  if (is.null(out)) return(NULL)
+  if (kind %in% c("weight", "sigma")) {
+    v <- suppressWarnings(as.numeric(out))
+    return(if (length(v) && all(is.finite(v))) v else NULL)
+  }
+  df <- as.data.frame(out)
+  if (!("exposure" %in% names(df))) return(NULL)
+  v <- suppressWarnings(as.numeric(df$exposure))
+  if (length(v) && all(is.finite(v))) v else NULL
+}
+
+#' fixture 에서 **발화하지 않은** 산출인가. ★비교의 전제 검사다.
+#' 계기(2026-08-13): 축을 3 kind 로 넓히자마자 VolRateMatched ↔ HurstRateMatched 가
+#'   거리 **정확히 0** 으로 ★근접을 띄웠다. 확인해 보니 중복이 아니라 **둘 다 0/60 발화**
+#'   (상수 1.0)였다 — rate-matched 계열은 문턱을 자기 과거 신호 분포에서 뽑아 합성 fixture 에서
+#'   침묵한다(allow_fixture_degenerate 경로). 침묵끼리는 언제나 거리 0 이므로
+#'   **"둘 다 안 잰 것"이 "같은 것을 잰 것"으로 보고된다.** 못 잡는 것(초판)과 반대 방향의
+#'   같은 병 — 결손을 정상값 모양으로 내려앉히는 계통이다.
+.arm_degenerate <- function(kind, v) {
+  if (is.null(v) || !length(v)) return(TRUE)
+  if (identical(kind, "exposure")) return(all(abs(v - 1) < 1e-9))
+  length(unique(round(v, 12))) <= 1L
+}
+
+.nearest_arm <- function(kind, method_id, self_val, fx, wenv, root) {
+  tryCatch({
+    if (is.null(self_val)) return("자기 산출 비교 불가")
+    if (.arm_degenerate(kind, self_val))
+      return("비교 불가 — 자기 산출이 fixture 에서 비발화(침묵끼리는 거리가 늘 0)")
+    reg0 <- jsonlite::fromJSON(file.path(root, REGISTER_METHOD_PATH), simplifyVector = FALSE)
+    wrapper <- get(.ARM_WRAPPER[[kind]], envir = wenv)
+    ctx <- fx[[kind]]
+    best <- NA_character_; bd <- Inf; n_cmp <- 0L; n_mute <- 0L
+    for (m in (reg0$methods %||% list())) {
+      if (!identical(m$adapter_kind, kind) || !identical(m$verdict, "implemented")) next
+      if (identical(m$method_id, method_id)) next
+      ap2 <- file.path(root, m$adapter %||% "")
+      if (!nzchar(m$adapter %||% "") || !file.exists(ap2)) next
+      e2 <- new.env(parent = globalenv())
+      if (!isTRUE(tryCatch({ sys.source(ap2, envir = e2); TRUE }, error = function(z) FALSE))) next
+      fn2 <- tryCatch(get(m$entrypoint %||% .ARM_ENTRY[[kind]], envir = e2), error = function(z) NULL)
+      if (!is.function(fn2)) next
+      o3 <- NULL   # 상대 어댑터의 콘솔 로그는 삼킨다(검증 출력이 아니다)
+      invisible(utils::capture.output(
+        o3 <- tryCatch(wrapper(fn2, m$method_id)(ctx), error = function(z) NULL)))
+      v3 <- .arm_value(kind, o3)
+      if (is.null(v3) || length(v3) != length(self_val)) next
+      # ★비발화 상대는 비교에서 제외하되 **개수를 신고**한다(조용한 축소 금지 — 제외를
+      #   말하지 않으면 "전부 비교했다"로 읽힌다).
+      if (.arm_degenerate(kind, v3)) { n_mute <- n_mute + 1L; next }
+      n_cmp <- n_cmp + 1L
+      dd <- max(abs(self_val - v3))
+      if (identical(kind, "sigma")) {          # Σ 는 스케일이 제각각 — 상대편차로 본다
+        den <- max(abs(self_val))
+        dd <- if (is.finite(den) && den > 0) dd / den else dd
+      }
+      if (is.finite(dd) && dd < bd) { bd <- dd; best <- m$method_id }
+    }
+    mute <- if (n_mute > 0L) sprintf(" · 비발화 제외 %d건", n_mute) else ""
+    if (!is.finite(bd)) return(paste0("비교 대상 없음", mute))
+    sprintf("%s (%s=%.3g · 비교 %d건%s)%s", best, .ARM_LABEL[[kind]], bd, n_cmp, mute,
+            if (bd < .ARM_NEAR[[kind]]) "  ★근접 — 같은 것을 두 번 재는지 확인할 것" else "")
+  }, error = function(z) paste("비교 실패:", conditionMessage(z)))
+}
+
+#------------------------------------------------------------------------------
 # 어댑터 1건 검증. list(ok, reason, checks)
 #------------------------------------------------------------------------------
 verify_adapter <- function(adapter_path, kind, method_id = "CANDIDATE", root = .rm_root(),
@@ -182,31 +272,7 @@ verify_adapter <- function(adapter_path, kind, method_id = "CANDIDATE", root = .
       return(fail("퇴화 — 출력이 EW 와 동일. 어댑터가 실질적으로 아무 것도 하지 않는다"))
     chk$non_degenerate <- sprintf("max|w-EW|=%.4g", max(abs(as.numeric(o1) - ew)))
     chk$constraints <- sprintf("sum=%.6f max=%.4f", sum(o1), max(o1))
-    # ★기존 arm 과의 **구별성** (2026-08-13 신설). 비-퇴화는 EW 와만 비교하므로 **이미 등재된
-    #   어댑터와 사실상 동일한 arm** 을 막지 못한다 — 그러면 배터리가 같은 것을 두 이름으로 재고,
-    #   결과표엔 독립 arm 두 개로 보인다. 실측 계기: TailConformalBand 가 ConformalKelly 와
-    #   max|Δw| 1.4e-03(왜곡 주입해도 거의 불변)이었다. 차단은 하지 않되 **수치로 신고**한다
-    #   (판정은 사람 몫 — 방향만 다른 대조 쌍은 의도적으로 가까울 수 있다).
-    chk$nearest_arm <- tryCatch({
-      reg0 <- jsonlite::fromJSON(file.path(root, REGISTER_METHOD_PATH), simplifyVector = FALSE)
-      best <- NA_character_; bd <- Inf
-      for (m in (reg0$methods %||% list())) {
-        if (!identical(m$adapter_kind, "weight") || !identical(m$verdict, "implemented")) next
-        if (identical(m$method_id, method_id)) next
-        ap2 <- file.path(root, m$adapter %||% ""); if (!nzchar(m$adapter %||% "") || !file.exists(ap2)) next
-        e2 <- new.env(parent = globalenv())
-        if (!isTRUE(tryCatch({ sys.source(ap2, envir = e2); TRUE }, error = function(z) FALSE))) next
-        fn2 <- tryCatch(get(m$entrypoint %||% "method_weights", envir = e2), error = function(z) NULL)
-        if (!is.function(fn2)) next
-        o3 <- tryCatch(get("wrap_adapter", envir = wenv)(fn2, m$method_id)(fx$weight), error = function(z) NULL)
-        if (is.null(o3) || length(o3) != length(o1)) next
-        dd <- max(abs(as.numeric(o1) - as.numeric(o3)))
-        if (is.finite(dd) && dd < bd) { bd <- dd; best <- m$method_id }
-      }
-      if (is.finite(bd)) sprintf("%s (max|Δw|=%.3g)%s", best, bd,
-                                 if (bd < 5e-3) "  ★근접 — 같은 것을 두 번 재는지 확인할 것" else "")
-      else "비교 대상 없음"
-    }, error = function(z) paste("비교 실패:", conditionMessage(z)))
+    chk$nearest_arm <- .nearest_arm("weight", method_id, .arm_value("weight", o1), fx, wenv, root)
 
   } else if (kind == "sigma") {
     w <- get("wrap_sigma_estimator", envir = wenv)(fn, method_id)
@@ -220,6 +286,7 @@ verify_adapter <- function(adapter_path, kind, method_id = "CANDIDATE", root = .
     if (!is.finite(rel) || rel < 1e-8)
       return(fail("퇴화 — 표본공분산과 구별되지 않음(폴백했거나 추정기가 사실상 표본공분산)"))
     chk$non_degenerate <- sprintf("rel_dev=%.4g", rel)
+    chk$nearest_arm <- .nearest_arm("sigma", method_id, .arm_value("sigma", o1), fx, wenv, root)
 
   } else {  # exposure
     w <- get("wrap_exposure_adapter", envir = wenv)(fn, method_id)
@@ -242,14 +309,21 @@ verify_adapter <- function(adapter_path, kind, method_id = "CANDIDATE", root = .
       #     답을 보고 검사를 고치는 것이다. 둘 다 하지 않고 "검증 안 됨"으로 분리한다.
       #   등재자는 `allow_fixture_degenerate=<사유>` 로 명시 선언해야 하며, 그 사유가 원장에 남는다.
       if (nzchar(allow_fixture_degenerate %||% ""))
+        # ★이 경로도 nearest_arm 을 **보고**한다(2026-08-13 수리). 초판은 여기서 조기 반환해
+        #   구별성 축이 아예 돌지 않았고, `.nearest_arm` 안의 자기-침묵 검사는 **도달 불가**였다
+        #   — 보호처럼 보이는 죽은 코드. 그 상태에서 검사는 빈 문자열을 받아 공허하게 통과했다
+        #   ("빈 결과 = 합격" 계통). 여기서는 "비교 불가"라고 **말하게** 만든다.
         return(list(ok = TRUE, unverified = TRUE,
                     reason = sprintf("fixture 비발화 — 선언 사유: %s", allow_fixture_degenerate),
-                    checks = c(chk, list(non_degenerate = "UNVERIFIED_ON_FIXTURE"))))
+                    checks = c(chk, list(
+                      non_degenerate = "UNVERIFIED_ON_FIXTURE",
+                      nearest_arm = .nearest_arm(kind, method_id, ex, fx, wenv, root)))))
       return(fail(paste0("퇴화 — 노출이 상수 1(오버레이가 아무것도 하지 않음). ",
                          "확장창 분위 문턱처럼 실신호 분포에 의존해 합성 fixture 에서 발화가 0 이 되는 ",
                          "부류라면 allow_fixture_degenerate=<사유> 로 선언할 것(원장에 기록됨).")))
     }
     chk$non_degenerate <- sprintf("발화 %d/%d · 평균 %.3f", sum(ex < 1 - 1e-9), length(ex), mean(ex))
+    chk$nearest_arm <- .nearest_arm("exposure", method_id, ex, fx, wenv, root)
   }
   list(ok = TRUE, reason = NA_character_, checks = chk)
 }

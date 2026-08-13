@@ -419,6 +419,80 @@ FAMILY_PATTERNS <- list(
 }
 
 # --------------------------------------------------------------------
+# (f) 논문 레인 파서 (2026-08-13 신설, 도훈 지시)
+#
+# ★경계: 논문 라우팅은 **가능성을 보는 단계**다. 각 에이전트가 후속 연구를 스스로 끌고 가는
+#   단계가 아니라, 1차 리서치까지 하고 **여기 인덱스에 남겨** 각 리서치 모드(QEPM/alpha-search/
+#   factor-rotation/RAMP)가 소비할 수 있게 올려두는 것이 종착이다.
+#   그 전까지 method_registry 는 인덱스의 원천 6종 어디에도 없었다 — 등재된 어댑터가
+#   **모드에게 보이지 않았다**. 큐를 아무리 드레인해도 소비면이 닫혀 있던 셈이다.
+#
+# 측정치는 **A/B 결과표와 자동 조인**한다(손으로 넣으면 다음 논문부터 또 수기가 된다).
+#   scenario 열의 값 == method_id 규약을 이용한다.
+# --------------------------------------------------------------------
+HI_PAPER_AB_SOURCES <- c("06_Registry/book_carrier/h2_regime_overlay_ab.csv",
+                         "06_Registry/book_carrier/h1b_sigma_ab_overlay.csv")
+
+#' A/B 표들을 훑어 scenario→key_metrics 사전을 만든다. 없으면 빈 list.
+.hi_paper_lane_measurements <- function(root) {
+  out <- list()
+  for (rel in HI_PAPER_AB_SOURCES) {
+    p <- file.path(root, rel); if (!file.exists(p)) next
+    t <- tryCatch(utils::read.csv(p, stringsAsFactors = FALSE), error = function(z) NULL)
+    if (is.null(t) || !("scenario" %in% names(t)) || !("IR" %in% names(t))) next
+    b <- suppressWarnings(as.numeric(t$IR[t$scenario %in% c("book_L5", "book", "baseline")]))
+    base <- if (length(b) && is.finite(b[1])) b[1] else NA_real_
+    for (i in seq_len(nrow(t))) {
+      km <- list()
+      ir <- suppressWarnings(as.numeric(t$IR[i]))
+      if (is.finite(ir)) km$ir <- ir
+      if (is.finite(ir) && is.finite(base)) km$delta_ir <- ir - base
+      for (cn in c("avg_exposure", "abs_MDD", "abs_SR")) {
+        if (cn %in% names(t)) { v <- suppressWarnings(as.numeric(t[[cn]][i])); if (is.finite(v)) km[[cn]] <- v }
+      }
+      km$ab_source <- basename(rel)
+      # ★교란 경고를 수치와 **같은 자리에** 붙인다 — 따로 조회해야 알면 dead 배관이다.
+      #   2026-08-13 실측: regime overlay A/B 21 시나리오에서 cor(avg_exposure, ΔIR)=0.926,
+      #   R² 0.858. 즉 ΔIR 의 86%가 '얼마나 태웠나'로 설명된다 — 타이밍 실력 지표가 아니다.
+      #   노출-정합 비교(잔차) 없이 ΔIR 순위를 실력으로 읽지 말 것.
+      if (grepl("regime_overlay", rel, fixed = TRUE))
+        km$delta_ir_caveat <- "exposure_confounded_R2_0.858_use_exposure_matched_residual"
+      out[[as.character(t$scenario[i])]] <- km
+    }
+  }
+  out
+}
+
+.hi_parse_paper_lane <- function(e, meas = list()) {
+  mid <- e$method_id %||% NA_character_
+  if (is.na(mid) || !nzchar(mid)) return(NULL)
+  kind <- e$adapter_kind %||% "unknown"
+  ttl  <- e$paper_title %||% mid
+  text <- .hi_lc(c(mid, ttl, e$mechanism %||% "", e$kr_mapping %||% ""))
+  km <- meas[[mid]] %||% list()
+  km$adapter_kind <- kind
+  km$selection_type <- e$selection_type %||% "unknown"
+  # verdict — 자본 판정이 아니라 **소비 가능성** 상태다(이 레인의 역할 자체가 가능성 판별).
+  verdict <- if (identical(e$verdict %||% "", "registration_failed")) "FAIL"
+             else if (length(meas[[mid]] %||% list())) "PAPER_LANE_MEASURED"
+             else "PAPER_LANE_AVAILABLE"
+  list(
+    strategy_id = paste0("PL_", mid),
+    hypothesis_signature = .hi_signature(
+      .hi_infer_family(text), .hi_infer_signal_group(text, ttl),
+      "kospi200_kosdaq150_intersection", paste0("paper_", kind)),
+    title = sprintf("%s [%s/%s] %s", mid, kind, e$route %||% "?", ttl),
+    verdict = verdict,
+    grade = "",
+    key_metrics = km[!vapply(km, is.null, logical(1))],
+    source_paths = c(e$adapter %||% NA_character_, "06_Registry/method_registry.json",
+                     e$paper_id %||% NA_character_),
+    source_types = "paper_lane",
+    date = substr(as.character(e$registered_at %||% e$date %||% ""), 1, 10)
+  )
+}
+
+# --------------------------------------------------------------------
 # (e) in-flight WT 파서 (2026-07-10 M6 — F6 병렬 세션 중복실행 실사고 2건 대응)
 #   반환: NULL(양쪽 json 파싱 실패) / list(terminal=TRUE)(완주·중단 — 스킵 사유) / 엔트리.
 #   phase 정보는 title에 [PHASE]로 임베드 — .hi_row 반환 스키마 불변 유지.
@@ -510,7 +584,8 @@ build_hypothesis_index <- function(root = QM_ROOT, out_path = HI_INDEX_PATH,
               distilled_indexed = 0L, distilled_skipped = 0L,
               wt_inflight_indexed = 0L, wt_inflight_skipped_terminal = 0L,
               wt_inflight_skipped_empty = 0L, wt_inflight_parse_fail = 0L,
-              wt_inflight_merged_completed = 0L)
+              wt_inflight_merged_completed = 0L,
+              paper_lane_indexed = 0L, paper_lane_measured = 0L, paper_lane_skipped = 0L)
 
   add_entry <- function(e) {
     if (is.null(e)) return(FALSE)
@@ -625,6 +700,27 @@ build_hypothesis_index <- function(root = QM_ROOT, out_path = HI_INDEX_PATH,
       })
       if (add_entry(pe)) cov$distilled_indexed <- cov$distilled_indexed + 1L
       else cov$distilled_skipped <- cov$distilled_skipped + 1L
+    }
+  }
+
+  # --- (f) 논문 레인 = method_registry (2026-08-13 신설, 도훈 지시) ---
+  #   논문 라우팅의 종착 = 여기. 1차 리서치 결과를 모드가 조회 가능한 형태로 올려둔다.
+  #   ★자기 strategy_id 공간(PL_*)을 쓰므로 (a)~(e) 와 병합 충돌이 없다 — 순서 무관.
+  ml_path <- file.path(root, "06_Registry/method_registry.json")
+  if (file.exists(ml_path)) {
+    ml <- tryCatch(fromJSON(ml_path, simplifyVector = FALSE), error = function(e) NULL)
+    pmeas <- tryCatch(.hi_paper_lane_measurements(root), error = function(e) list())
+    for (e in (ml$methods %||% list())) {
+      pe <- tryCatch(.hi_parse_paper_lane(e, pmeas), error = function(err) {
+        message(sprintf("[hypothesis_index][WARN] paper_lane parse 실패 skip: %s (%s)",
+                        e$method_id %||% "?", conditionMessage(err)))
+        NULL
+      })
+      if (add_entry(pe)) {
+        cov$paper_lane_indexed <- cov$paper_lane_indexed + 1L
+        if (identical(pe$verdict, "PAPER_LANE_MEASURED"))
+          cov$paper_lane_measured <- cov$paper_lane_measured + 1L
+      } else cov$paper_lane_skipped <- cov$paper_lane_skipped + 1L
     }
   }
 
@@ -768,7 +864,14 @@ HI_QUERY_ALIAS <- list(
   idx_mt <- file.info(index_path)$mtime
   srcs <- c("06_Registry/distilled_knowledge.json",
             "06_Registry/module_catalog.json",
-            ".cache/lcode_corpus.json")
+            ".cache/lcode_corpus.json",
+            # (2026-08-13) 논문 레인 원천 — 이게 빠져 있으면 어댑터를 등재해도 인덱스가
+            #   stale 로 안 잡히고 lookup 이 **옛 인덱스를 조용히 내준다**. 콜렉터만 붙이고
+            #   여기를 안 고치면 "등재했는데 모드에겐 안 보이는" 상태가 그대로 남는다
+            #   — 이 저장소가 반복 확인한 '존재 = 배선 완료' 오독 계통.
+            "06_Registry/method_registry.json",
+            "06_Registry/book_carrier/h2_regime_overlay_ab.csv",
+            "06_Registry/book_carrier/h1b_sigma_ab_overlay.csv")
   stale <- character(0)
   for (s in srcs) {
     p <- file.path(root, s)

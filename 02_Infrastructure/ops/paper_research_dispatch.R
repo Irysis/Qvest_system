@@ -126,12 +126,30 @@ SCREEN_AX_ENUM <- list(
   shrinkage_builtin = c("yes", "weak", "no"),
   statistic_order   = c("<=2nd", "higher", "tail_quantile")
 )
+
+#' 큐 항목의 논문 식별자. ★필드명이 두 가지다 — 구판 `id`, 신판 `arxiv_id`.
+#'
+#' 2026-08-13 실측: 큐 항목 159건 중 **132건(83%)이 구판 `id`** 이고 27건만 `arxiv_id` 다.
+#'   게다가 시간순도 아니다(0618 신판 → 0619~0705 구판 → 0802 신판 → 0803 구판 …) —
+#'   **두 생산자가 서로 다른 스키마로 동시에 쓰고 있다**. `arxiv_id` 만 읽으면 83%가
+#'   식별자 없이 에이전트에 도달하고, 그러면 `paper_pdf()` 로 원문을 열 수 없다.
+#'   원문 없이 memo 만 보고 구현하는 것이 이 레인의 날조 시작점이므로 관용 읽기가 필수다.
+#' ★값 자체는 멀쩡하다: 구판 id 의 89%가 정상 arxiv 형식이고 나머지는 실무 논문 PDF 파일명
+#'   (Research Affiliates / GMO / Man AHL / CFM / Scientific Beta). `paper_pdf()` 도달 **82/82**.
+#'   즉 문제는 자료가 아니라 **필드 이름 하나**였다.
+.pq_paper_id <- function(p) {
+  for (f in c("arxiv_id", "id", "paper_id")) {
+    v <- p[[f]]
+    if (!is.null(v) && length(v) >= 1L && nzchar(as.character(v)[1])) return(as.character(v)[1])
+  }
+  NA_character_
+}
 check_screen_axes <- function(items, route) {
   n <- length(items); if (n == 0L) return(NULL)
   miss <- character(0); badv <- character(0)
   for (i in seq_len(n)) {
     p <- items[[i]]
-    lbl <- p$arxiv_id %||% (p$title %||% sprintf("#%d", i))
+    lbl <- .pq_paper_id(p) %||% (p$title %||% sprintf("#%d", i))
     for (f in names(SCREEN_AX_ENUM)) {
       v <- p[[f]]
       if (is.null(v) || !nzchar(as.character(v)[1])) miss <- c(miss, sprintf("%s:%s", lbl, f))
@@ -331,7 +349,7 @@ if (n_opt > 0 || n_risk > 0) {
   # ★배터리는 risk 만 있는 날에도 돌지만, optimizer *블록*은 optimizer 논문이 있을 때만 쓴다.
   #   (중괄호 필수 — 이 저장소는 `if (..)` 다음 줄 표현식으로 파스 사고를 낸 전례가 있다.)
   if (n_opt > 0) {
-    actions$optimizer <- list(n = n_opt, papers = lapply(getrt("optimizer"), function(p) p$title %||% p$arxiv_id),
+    actions$optimizer <- list(n = n_opt, papers = lapply(getrt("optimizer"), function(p) sprintf("%s [%s]", p$title %||% "(제목없음)", .pq_paper_id(p))),
                               verdict = opt_verdict,
                               method_triage = if (exists("method_triage")) method_triage("optimizer") else NULL,
                               screen_axes = check_screen_axes(getrt("optimizer"), "optimizer"),
@@ -401,7 +419,7 @@ if (n_risk > 0) {
     }
   }
   # <<< RISK_LANE_VERDICT
-  actions$risk <- list(n = n_risk, papers = lapply(getrt("risk"), function(p) p$title %||% p$arxiv_id),
+  actions$risk <- list(n = n_risk, papers = lapply(getrt("risk"), function(p) sprintf("%s [%s]", p$title %||% "(제목없음)", .pq_paper_id(p))),
                        method_triage = .rt,
                        screen_axes = check_screen_axes(getrt("risk"), "risk"),
                        harness_status = risk_state,          # ★실측 파생 — 하드코딩 문자열 폐기
@@ -517,7 +535,7 @@ if (n_reg > 0) {
       }
     }
   }
-  actions$regime <- list(n = n_reg, papers = lapply(getrt("regime"), function(p) p$title %||% p$arxiv_id),
+  actions$regime <- list(n = n_reg, papers = lapply(getrt("regime"), function(p) sprintf("%s [%s]", p$title %||% "(제목없음)", .pq_paper_id(p))),
                          harness_status = reg_state,
                          coverage = reg_cov,
                          verdict = reg_verdict,
@@ -553,6 +571,14 @@ cat(sprintf("[dispatch] saved %s\n", opath))
 
 if (Sys.getenv("QVEST_DISPATCH_NO_TG", "0") != "1") {
   tg_ok <- tryCatch({ suppressWarnings(source("02_Infrastructure/telegram/telegram_notify.R")); exists("tg_agent_brief") }, error = function(e) FALSE)
+  # ★중복 발송 기본 차단 (2026-08-13 도훈 지적 "이 텔레그램은 왜 몇번씩 오는거야?").
+  #   구 코드는 4개 발송 전부에 force=TRUE 를 줬는데, 그 인자는 `tg_agent_brief` 의
+  #   **중복 차단(TTL 30분)을 통째로 끈다**(telegram_notify.R:1178). 그래서 같은 날 디스패처를
+  #   다시 돌리면 같은 메시지가 그대로 또 나갔다 — 수동 재실행·백필 검증 때마다 도훈 채널이 울렸다.
+  #   force 는 여기서 아무 이득이 없다: 백필은 날짜가 달라 lock_scope 가 이미 다르고,
+  #   일일 cron 은 하루 1회라 애초에 중복이 안 난다.
+  #   ⇒ 기본 FALSE(=차단 활성). 의도적 재발송이 필요할 때만 env 로 연다.
+  .TG_FORCE <- identical(Sys.getenv("QVEST_DISPATCH_TG_FORCE", "0"), "1")
   if (tg_ok) {
     bullets <- c()
     if (!is.null(opt_verdict)) bullets <- c(bullets, sprintf("optimizer(%d편) Σ-A/B: %s", n_opt, opt_verdict$verdict))
@@ -601,21 +627,49 @@ if (Sys.getenv("QVEST_DISPATCH_NO_TG", "0") != "1") {
               sprintf("큐 %d편 → 어댑터 등재 %d건 → 측정 arm %d개", n_q, n_arm, n_arm)
             else
               sprintf("큐 %d편 → **어댑터 등재 0건 → 이 논문들은 아직 측정되지 않았습니다**", n_q)
-      secs2 <- list(
+      # ★섹션 타입은 **항목 수가 정한다** (2026-08-13 실사고 수리).
+      #   `tg_agent_brief` 는 bullet 섹션에 items>=2 를 요구한다. 큐가 1편이거나 결과가 1줄이면
+      #   **레인 메시지 전체가 거부**되고, tryCatch 가 그걸 삼켜 무인 런에서는 로그만 남는다.
+      #   실측(2026-08-13 14:03 런): optimizer 1편·risk 결과 1줄 → **레인 2건 전부 미발송**,
+      #   요약 1건만 도착. 도훈이 보고한 "risk/optimizer 결과가 텔레그램에 온 적 없다"의 실체다.
+      #   ★내 앞선 '렌더링 확인'이 이걸 못 잡은 이유: 발송을 **가로채서** 봤기 때문이다 —
+      #     가로채면 검증 주체(tg_agent_brief)를 건너뛴다. 계약 검증은 실제 경로로 해야 한다.
+      #   ★타입마다 제약이 다르다(실측): bullet = items>=2 · summary = body 20~100자.
+      #     그래서 개수와 **길이**를 둘 다 보고 고른다. 긴 1건은 'text'(길이 제약 없음).
+      .sec <- function(heading, items) {
+        it <- Filter(nzchar, as.character(items))
+        if (length(it) == 0L) return(NULL)
+        if (length(it) >= 2L) return(list(type = "bullet", heading = heading, items = as.list(it)))
+        n <- nchar(it[[1]])
+        if (n >= 20L && n <= 100L) list(type = "summary", heading = heading, body = it[[1]])
+        else list(type = "text", heading = heading, body = it[[1]])
+      }
+      secs2 <- Filter(Negate(is.null), list(
         list(type = "summary", heading = sprintf("%s 레인", lane), body = st),
-        list(type = "bullet", heading = "이번 큐 논문", items = .titles(lane)),
-        list(type = "bullet", heading = "측정 결과(등재된 arm 기준)", items = result_line),
+        .sec("이번 큐 논문", .titles(lane)),
+        .sec("측정 결과(등재된 arm 기준)", result_line),
         list(type = "kv", heading = "다음 단계",
              kv = list("등재 경로" = "02_Infrastructure/methods/register_method.R",
                        "후보 큐" = "06_Registry/adapter_registration_queue.json",
                        "주의" = "측정 arm 수는 큐 길이가 아니라 등재 수에 비례합니다"))
-      )
+      ))
       tryCatch(tg_agent_brief(agent = agent_name,
                               title = sprintf("논문 → %s 리서치", lane),
-                              relaxed = TRUE, force = TRUE,
+                              relaxed = TRUE, force = .TG_FORCE,
                               lock_scope = sprintf("paper_dispatch_%s_%s", lane, today),
                               sections = secs2),
-               error = function(e) cat(sprintf("[dispatch] tg fail(%s): %s\n", lane, conditionMessage(e))))
+               error = function(e) {
+                 # ★실패를 **파일로** 남긴다. 무인 런에서 stdout 은 아무도 안 읽는다 —
+                 #   2026-08-13 실사고: 레인 2건이 items>=2 규칙에 걸려 거부됐는데 로그만 남아
+                 #   "텔레그램이 온 적 없다"가 원인 미상으로 몇 주 지속됐다.
+                 cat(sprintf("[dispatch] ★★tg fail(%s): %s\n", lane, conditionMessage(e)))
+                 try({
+                   .fp <- file.path(stage, sprintf("tg_send_failures_%s.jsonl", today))
+                   cat(toJSON(list(ts = format(Sys.time(), "%Y-%m-%dT%H:%M:%S"), lane = lane,
+                                   agent = agent_name, error = conditionMessage(e)),
+                              auto_unbox = TRUE), "\n", file = .fp, append = TRUE, sep = "")
+                 }, silent = TRUE)
+               })
     }
     .n_arm_opt  <- tryCatch(length(opt_verdict$arms %||% list()), error = function(e) 0L)
     .n_arm_risk <- tryCatch(as.integer(actions$risk$verdict$n_measured %||% 0L), error = function(e) 0L)
@@ -635,7 +689,7 @@ if (Sys.getenv("QVEST_DISPATCH_NO_TG", "0") != "1") {
       list(type = "bullet", heading = "리서치 액션", items = bullets)
     )
     tryCatch(tg_agent_brief(agent = "AlphaSearch", title = "논문 라우트 → 리서치 디스패치",
-                            relaxed = TRUE, force = TRUE, lock_scope = sprintf("paper_dispatch_%s", today),
+                            relaxed = TRUE, force = .TG_FORCE, lock_scope = sprintf("paper_dispatch_%s", today),
                             sections = secs),
              error = function(e) cat(sprintf("[dispatch] tg fail: %s\n", conditionMessage(e))))
   }
