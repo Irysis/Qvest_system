@@ -3,7 +3,7 @@
   "scope": "논문 레인 배관 + 검사군",
   "method": "규칙성 구조(대문자 상수·kind 매핑·선호표)를 열거하고, 그 심볼명이 검사군 텍스트에 등장하는지로 **축 후보 존재의 약한 신호**만 붙였다. ★'등장함'이 '축이 있다'를 뜻하지 않는다 — 오늘 T6c/T6b 는 이름이 등장하면서도 박제 때문에 무너졌다. 판정은 수기다.",
   "caveat": "자동 판정 금지. 각 항목에 '이 규칙이 뒤집히면 어떤 축이 빨개지는가'를 사람이 적고, 적을 수 없으면 그것이 N2 의 산출(축 부재)이다.",
-  "n_rules": 49,
+  "n_rules": 75,
   "n_no_name_in_tests": 14,
   "entries": [
     {
@@ -59,7 +59,7 @@
       "line": 115,
       "type": "kindmap",
       "code": "weight = c(list(assets = a, R = R, mu = mu, Sigma = S,",
-      "symbol": null,
+      "symbol": {},
       "axis_hint": "(수기 판정 필요)"
     },
     {
@@ -67,7 +67,7 @@
       "line": 117,
       "type": "kindmap",
       "code": "sigma = c(list(assets = a, R = R, lookback_days = n_obs,",
-      "symbol": null,
+      "symbol": {},
       "axis_hint": "(수기 판정 필요)"
     },
     {
@@ -75,7 +75,7 @@
       "line": 119,
       "type": "kindmap",
       "code": "exposure = list(",
-      "symbol": null,
+      "symbol": {},
       "axis_hint": "(수기 판정 필요)"
     },
     {
@@ -83,7 +83,7 @@
       "line": 141,
       "type": "kindmap",
       "code": "exposure = \"wrap_exposure_adapter\")",
-      "symbol": null,
+      "symbol": {},
       "axis_hint": "(수기 판정 필요)"
     },
     {
@@ -91,7 +91,7 @@
       "line": 143,
       "type": "kindmap",
       "code": "exposure = \"exposure_schedule\")",
-      "symbol": null,
+      "symbol": {},
       "axis_hint": "(수기 판정 필요)"
     },
     {
@@ -99,7 +99,7 @@
       "line": 151,
       "type": "preftbl",
       "code": "if (kind %in% c(\"weight\", \"sigma\")) {",
-      "symbol": null,
+      "symbol": {},
       "axis_hint": "(수기 판정 필요)"
     },
     {
@@ -131,7 +131,7 @@
       "line": 35,
       "type": "kindmap",
       "code": "weight = \"assets, R(obs x assets, PIT trailing), mu, Sigma, ub, lookback_days, decision_da",
-      "symbol": null,
+      "symbol": {},
       "axis_hint": "(수기 판정 필요)"
     },
     {
@@ -139,7 +139,7 @@
       "line": 36,
       "type": "kindmap",
       "code": "sigma = \"R, assets, lookback_days, decision_date, eval_date (Sigma 는 주지 않는다 - 그걸 만드는 게 일)\"",
-      "symbol": null,
+      "symbol": {},
       "axis_hint": "(수기 판정 필요)"
     },
     {
@@ -147,7 +147,7 @@
       "line": 37,
       "type": "kindmap",
       "code": "exposure = \"periods(decision_date, eval_date), bare_gross(Date, r)\")",
-      "symbol": null,
+      "symbol": {},
       "axis_hint": "(수기 판정 필요)"
     },
     {
@@ -155,7 +155,7 @@
       "line": 39,
       "type": "kindmap",
       "code": "weight = \"named 선호 벡터 (스케일 자유 - wrapper 가 합-정규화 후 상한 적용)\",",
-      "symbol": null,
+      "symbol": {},
       "axis_hint": "(수기 판정 필요)"
     },
     {
@@ -163,7 +163,7 @@
       "line": 40,
       "type": "kindmap",
       "code": "sigma = \"matrix (assets x assets, 대칭·PD)\",",
-      "symbol": null,
+      "symbol": {},
       "axis_hint": "(수기 판정 필요)"
     },
     {
@@ -171,7 +171,7 @@
       "line": 41,
       "type": "kindmap",
       "code": "exposure = \"list(exposure = data.frame(Date, exposure in [0,1]), used_cutoff = Date[], eli",
-      "symbol": null,
+      "symbol": {},
       "axis_hint": "(수기 판정 필요)"
     },
     {
@@ -179,7 +179,7 @@
       "line": 71,
       "type": "kindmap",
       "code": "list(exposure = data.frame(Date = as.Date(pr$eval_date), exposure = expo),",
-      "symbol": null,
+      "symbol": {},
       "axis_hint": "(수기 판정 필요)"
     },
     {
@@ -267,7 +267,7 @@
       "line": 545,
       "type": "kindmap",
       "code": "sigma = c(\"risk\", \"optimizer\", \"csv\", \"regime\"),",
-      "symbol": null,
+      "symbol": {},
       "axis_hint": "(수기 판정 필요)"
     },
     {
@@ -275,7 +275,7 @@
       "line": 546,
       "type": "kindmap",
       "code": "weight = c(\"optimizer\", \"risk\", \"csv\", \"regime\"),",
-      "symbol": null,
+      "symbol": {},
       "axis_hint": "(수기 판정 필요)"
     },
     {
@@ -283,7 +283,7 @@
       "line": 547,
       "type": "kindmap",
       "code": "exposure = c(\"regime\", \"csv\", \"optimizer\", \"risk\"),",
-      "symbol": null,
+      "symbol": {},
       "axis_hint": "(수기 판정 필요)"
     },
     {
@@ -291,7 +291,7 @@
       "line": 463,
       "type": "preftbl",
       "code": ".ln_ord <- c(intersect(c(\"risk\", \"optimizer\", \"regime\"), .ln_all),",
-      "symbol": null,
+      "symbol": {},
       "axis_hint": "(수기 판정 필요)"
     },
     {
@@ -299,7 +299,7 @@
       "line": 464,
       "type": "preftbl",
       "code": "setdiff(.ln_all, c(\"risk\", \"optimizer\", \"regime\")))",
-      "symbol": null,
+      "symbol": {},
       "axis_hint": "(수기 판정 필요)"
     },
     {
@@ -307,7 +307,7 @@
       "line": 482,
       "type": "preftbl",
       "code": "for (k in setdiff(names(a), c(\"measured\", \"method_id\"))) {",
-      "symbol": null,
+      "symbol": {},
       "axis_hint": "(수기 판정 필요)"
     },
     {
@@ -315,7 +315,7 @@
       "line": 548,
       "type": "preftbl",
       "code": "c(\"risk\", \"optimizer\", \"regime\", \"csv\"))",
-      "symbol": null,
+      "symbol": {},
       "axis_hint": "(수기 판정 필요)"
     },
     {
@@ -323,7 +323,7 @@
       "line": 822,
       "type": "preftbl",
       "code": "wdirs <- wdirs[!basename(wdirs) %in% c(\"processed\", \"integration\")]",
-      "symbol": null,
+      "symbol": {},
       "axis_hint": "(수기 판정 필요)"
     },
     {
@@ -331,7 +331,7 @@
       "line": 910,
       "type": "preftbl",
       "code": "defense = c(\"defense\", \"defensive\", \"방어\", \"low-beta\", \"lowbeta\", \"저베타\", \"lowvol\", \"저변동\", \"",
-      "symbol": null,
+      "symbol": {},
       "axis_hint": "(수기 판정 필요)"
     },
     {
@@ -371,7 +371,7 @@
       "line": 538,
       "type": "kindmap",
       "code": "avg_exposure = if (\"avg_exposure\" %in% names(cand))",
-      "symbol": null,
+      "symbol": {},
       "axis_hint": "(수기 판정 필요)"
     },
     {
@@ -379,7 +379,7 @@
       "line": 42,
       "type": "preftbl",
       "code": ".known <- c(\"date\", \"schema\", \"schema_version\", \"note\", \"dispatch_note\",",
-      "symbol": null,
+      "symbol": {},
       "axis_hint": "(수기 판정 필요)"
     },
     {
@@ -387,7 +387,7 @@
       "line": 126,
       "type": "preftbl",
       "code": "shrinkage_builtin = c(\"yes\", \"weak\", \"no\"),",
-      "symbol": null,
+      "symbol": {},
       "axis_hint": "(수기 판정 필요)"
     },
     {
@@ -395,8 +395,226 @@
       "line": 141,
       "type": "preftbl",
       "code": "for (f in c(\"arxiv_id\", \"id\", \"paper_id\")) {",
-      "symbol": null,
+      "symbol": {},
       "axis_hint": "(수기 판정 필요)"
+    },
+    {
+      "file": "08_Tests/ops/test_hypothesis_index_paper_lane.R",
+      "line": 25,
+      "type": "constant",
+      "code": "PASS <- 0; FAIL <- 0",
+      "symbol": "PASS",
+      "axis_hint": "검사군에 이름 등장"
+    },
+    {
+      "file": "08_Tests/ops/test_hypothesis_index_paper_lane.R",
+      "line": 215,
+      "type": "constant",
+      "code": "TOTAL <- PASS + FAIL",
+      "symbol": "TOTAL",
+      "axis_hint": "검사군에 이름 등장"
+    },
+    {
+      "file": "08_Tests/ops/test_hypothesis_index_paper_lane.R",
+      "line": 137,
+      "type": "kindmap",
+      "code": "sigma = grepl(\"minvar\", ck), # Σ 교체만 분리",
+      "symbol": {},
+      "axis_hint": "(수기 판정 필요)"
+    },
+    {
+      "file": "08_Tests/ops/test_hypothesis_index_paper_lane.R",
+      "line": 138,
+      "type": "kindmap",
+      "code": "weight = grepl(\"strategy|book\", ck), # 북 전체 대비",
+      "symbol": {},
+      "axis_hint": "(수기 판정 필요)"
+    },
+    {
+      "file": "08_Tests/ops/test_hypothesis_index_paper_lane.R",
+      "line": 139,
+      "type": "kindmap",
+      "code": "exposure = grepl(\"csv|regime|book\", ck), # 노출 스케줄 대비",
+      "symbol": {},
+      "axis_hint": "(수기 판정 필요)"
+    },
+    {
+      "file": "08_Tests/ops/test_hypothesis_index_paper_lane.R",
+      "line": 143,
+      "type": "kindmap",
+      "code": "chk(\"T7 ★대조 기준이 adapter_kind 와 정합(sigma=minvar · weight=book · exposure=노출)\",",
+      "symbol": {},
+      "axis_hint": "(수기 판정 필요)"
+    },
+    {
+      "file": "08_Tests/ops/test_hypothesis_index_paper_lane.R",
+      "line": 45,
+      "type": "preftbl",
+      "code": "req <- c(\"strategy_id\",\"hypothesis_signature\",\"title\",\"verdict\",\"grade\",",
+      "symbol": {},
+      "axis_hint": "(수기 판정 필요)"
+    },
+    {
+      "file": "08_Tests/ops/test_queue_id_schema_tolerance.R",
+      "line": 22,
+      "type": "constant",
+      "code": "PASS <- 0; FAIL <- 0",
+      "symbol": "PASS",
+      "axis_hint": "검사군에 이름 등장"
+    },
+    {
+      "file": "08_Tests/ops/test_queue_id_schema_tolerance.R",
+      "line": 28,
+      "type": "constant",
+      "code": "SRC <- \"02_Infrastructure/ops/paper_research_dispatch.R\"",
+      "symbol": "SRC",
+      "axis_hint": "검사군에 이름 등장"
+    },
+    {
+      "file": "08_Tests/ops/test_queue_id_schema_tolerance.R",
+      "line": 94,
+      "type": "constant",
+      "code": "TOTAL <- PASS + FAIL",
+      "symbol": "TOTAL",
+      "axis_hint": "검사군에 이름 등장"
+    },
+    {
+      "file": "08_Tests/ops/test_queue_id_schema_tolerance.R",
+      "line": 57,
+      "type": "preftbl",
+      "code": "for (ln in c(\"optimizer\", \"risk\", \"regime\")) for (it in (src[[ln]] %||% list())) {",
+      "symbol": {},
+      "axis_hint": "(수기 판정 필요)"
+    },
+    {
+      "file": "08_Tests/ops/test_queue_id_schema_tolerance.R",
+      "line": 82,
+      "type": "preftbl",
+      "code": "for (ln in c(\"optimizer\", \"risk\", \"regime\")) for (it in (src[[ln]] %||% list())) {",
+      "symbol": {},
+      "axis_hint": "(수기 판정 필요)"
+    },
+    {
+      "file": "08_Tests/methods/test_nearest_arm_axis.R",
+      "line": 21,
+      "type": "constant",
+      "code": "PASS <- 0; FAIL <- 0",
+      "symbol": "PASS",
+      "axis_hint": "검사군에 이름 등장"
+    },
+    {
+      "file": "08_Tests/methods/test_nearest_arm_axis.R",
+      "line": 110,
+      "type": "constant",
+      "code": "TOTAL <- PASS + FAIL",
+      "symbol": "TOTAL",
+      "axis_hint": "검사군에 이름 등장"
+    },
+    {
+      "file": "08_Tests/methods/test_nearest_arm_axis.R",
+      "line": 73,
+      "type": "kindmap",
+      "code": "\" list(exposure = data.frame(Date = as.Date(pr$eval_date), exposure = rep(1, nrow(pr))),\",",
+      "symbol": {},
+      "axis_hint": "(수기 판정 필요)"
+    },
+    {
+      "file": "08_Tests/methods/test_nearest_arm_axis.R",
+      "line": 105,
+      "type": "kindmap",
+      "code": "identical(.arm_value(\"exposure\", data.frame(Date = Sys.Date() + 0:2, exposure = c(1, .7, 1",
+      "symbol": {},
+      "axis_hint": "(수기 판정 필요)"
+    },
+    {
+      "file": "08_Tests/methods/test_nearest_arm_axis.R",
+      "line": 30,
+      "type": "preftbl",
+      "code": "for (kind in c(\"weight\", \"sigma\", \"exposure\")) {",
+      "symbol": {},
+      "axis_hint": "(수기 판정 필요)"
+    },
+    {
+      "file": "08_Tests/methods/test_nearest_arm_axis.R",
+      "line": 98,
+      "type": "preftbl",
+      "code": "all(c(\"weight\",\"sigma\",\"exposure\") %in% names(.ARM_WRAPPER)) &&",
+      "symbol": {},
+      "axis_hint": "(수기 판정 필요)"
+    },
+    {
+      "file": "08_Tests/methods/test_nearest_arm_axis.R",
+      "line": 99,
+      "type": "preftbl",
+      "code": "all(c(\"weight\",\"sigma\",\"exposure\") %in% names(.ARM_ENTRY)) &&",
+      "symbol": {},
+      "axis_hint": "(수기 판정 필요)"
+    },
+    {
+      "file": "08_Tests/methods/test_nearest_arm_axis.R",
+      "line": 100,
+      "type": "preftbl",
+      "code": "all(c(\"weight\",\"sigma\",\"exposure\") %in% names(.ARM_LABEL)) &&",
+      "symbol": {},
+      "axis_hint": "(수기 판정 필요)"
+    },
+    {
+      "file": "08_Tests/methods/test_nearest_arm_axis.R",
+      "line": 101,
+      "type": "preftbl",
+      "code": "all(c(\"weight\",\"sigma\",\"exposure\") %in% names(.ARM_NEAR)))",
+      "symbol": {},
+      "axis_hint": "(수기 판정 필요)"
+    },
+    {
+      "file": "08_Tests/methods/test_new_adapter_scaffold.R",
+      "line": 23,
+      "type": "constant",
+      "code": "PASS <- 0; FAIL <- 0",
+      "symbol": "PASS",
+      "axis_hint": "검사군에 이름 등장"
+    },
+    {
+      "file": "08_Tests/methods/test_new_adapter_scaffold.R",
+      "line": 55,
+      "type": "constant",
+      "code": "TOTAL <- PASS + FAIL",
+      "symbol": "TOTAL",
+      "axis_hint": "검사군에 이름 등장"
+    },
+    {
+      "file": "08_Tests/methods/test_new_adapter_scaffold.R",
+      "line": 29,
+      "type": "kindmap",
+      "code": "EP <- c(weight = \"method_weights\", sigma = \"sigma_estimate\", exposure = \"exposure_schedule",
+      "symbol": {},
+      "axis_hint": "(수기 판정 필요)"
+    },
+    {
+      "file": "08_Tests/methods/test_ctx_characteristics.R",
+      "line": 25,
+      "type": "constant",
+      "code": "PASS <- 0; FAIL <- 0",
+      "symbol": "PASS",
+      "axis_hint": "검사군에 이름 등장"
+    },
+    {
+      "file": "08_Tests/methods/test_ctx_characteristics.R",
+      "line": 176,
+      "type": "constant",
+      "code": "TOTAL <- PASS + FAIL",
+      "symbol": "TOTAL",
+      "axis_hint": "검사군에 이름 등장"
     }
-  ]
+  ],
+  "backcheck": {
+    "measured_on": "2026-08-13",
+    "method": "오늘 실제로 무너진 규칙 6건이 이 열거 안에 **같은 파일에서** 잡히는지 확인 (양성 대조). 파일 무관 매치로 세면 3/6 이 나오는데 그건 느슨한 계수다 — 다른 파일의 우연한 문자열 일치를 hit 로 센다.",
+    "coverage": "2 / 6",
+    "caught": ["큐 식별자(arxiv_id)", "kind→lane 선호표"],
+    "missed": ["큐 서술(memo 인라인 필드 접근)", "검사 T6c(avg_exposure 요구)", "검사 T6b(ab_source 선택자)", "콜렉터 필드 허용목록 c(\"ir\",\"port_t\",…)"],
+    "gap_mechanism": "정규식 3종(대문자 상수·kind 매핑·선호표)이 **인라인 필드명 리터럴**과 **허용목록 벡터**를 못 본다. 오늘 무너진 6건 중 4건이 그 형태다.",
+    "verdict": "★이 시드는 완결성의 근거가 아니다. 2/6 은 사전등록한 재설계 조건('절반 이하')에 해당한다. 열거된 75건은 **출발점**으로만 쓰고, '여기 없으면 안전'으로 읽지 말 것. 우선 과제는 빈칸 채우기(N2a)가 아니라 **열거 방식 재설계**(N2c-2): 인라인 필드 접근·허용목록 벡터를 잡는 패턴을 추가하고 커버리지를 다시 잰다.",
+    "positive_control_note": "★이 역검증 자체도 한 번 틀렸다 — 초판이 파일을 안 보고 매치해 3/6 을 냈다. 조이니 2/6. 커버리지 수치를 인용할 땐 계수 규약을 함께."
+  }
 }
