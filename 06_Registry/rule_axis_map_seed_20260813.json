@@ -1,0 +1,402 @@
+{
+  "generated_at": "2026-08-13",
+  "scope": "논문 레인 배관 + 검사군",
+  "method": "규칙성 구조(대문자 상수·kind 매핑·선호표)를 열거하고, 그 심볼명이 검사군 텍스트에 등장하는지로 **축 후보 존재의 약한 신호**만 붙였다. ★'등장함'이 '축이 있다'를 뜻하지 않는다 — 오늘 T6c/T6b 는 이름이 등장하면서도 박제 때문에 무너졌다. 판정은 수기다.",
+  "caveat": "자동 판정 금지. 각 항목에 '이 규칙이 뒤집히면 어떤 축이 빨개지는가'를 사람이 적고, 적을 수 없으면 그것이 N2 의 산출(축 부재)이다.",
+  "n_rules": 49,
+  "n_no_name_in_tests": 14,
+  "entries": [
+    {
+      "file": "02_Infrastructure/methods/register_method.R",
+      "line": 67,
+      "type": "constant",
+      "code": "REGISTER_METHOD_PATH <- \"06_Registry/method_registry.json\"",
+      "symbol": "REGISTER_METHOD_PATH",
+      "axis_hint": "검사군에 이름 등장"
+    },
+    {
+      "file": "02_Infrastructure/methods/register_method.R",
+      "line": 71,
+      "type": "constant",
+      "code": ".RM_ENTRY <- c(weight = \"method_weights\", sigma = \"sigma_estimate\", exposure = \"exposure_s",
+      "symbol": ".RM_ENTRY",
+      "axis_hint": "★이름 등장 없음"
+    },
+    {
+      "file": "02_Infrastructure/methods/register_method.R",
+      "line": 140,
+      "type": "constant",
+      "code": ".ARM_WRAPPER <- c(weight = \"wrap_adapter\", sigma = \"wrap_sigma_estimator\",",
+      "symbol": ".ARM_WRAPPER",
+      "axis_hint": "검사군에 이름 등장"
+    },
+    {
+      "file": "02_Infrastructure/methods/register_method.R",
+      "line": 142,
+      "type": "constant",
+      "code": ".ARM_ENTRY <- c(weight = \"method_weights\", sigma = \"sigma_estimate\",",
+      "symbol": ".ARM_ENTRY",
+      "axis_hint": "검사군에 이름 등장"
+    },
+    {
+      "file": "02_Infrastructure/methods/register_method.R",
+      "line": 144,
+      "type": "constant",
+      "code": ".ARM_LABEL <- c(weight = \"max|dw|\", sigma = \"rel max|dSigma|\", exposure = \"max|d_exposure|",
+      "symbol": ".ARM_LABEL",
+      "axis_hint": "검사군에 이름 등장"
+    },
+    {
+      "file": "02_Infrastructure/methods/register_method.R",
+      "line": 145,
+      "type": "constant",
+      "code": ".ARM_NEAR <- c(weight = 5e-3, sigma = 1e-3, exposure = 1e-3)",
+      "symbol": ".ARM_NEAR",
+      "axis_hint": "검사군에 이름 등장"
+    },
+    {
+      "file": "02_Infrastructure/methods/register_method.R",
+      "line": 115,
+      "type": "kindmap",
+      "code": "weight = c(list(assets = a, R = R, mu = mu, Sigma = S,",
+      "symbol": null,
+      "axis_hint": "(수기 판정 필요)"
+    },
+    {
+      "file": "02_Infrastructure/methods/register_method.R",
+      "line": 117,
+      "type": "kindmap",
+      "code": "sigma = c(list(assets = a, R = R, lookback_days = n_obs,",
+      "symbol": null,
+      "axis_hint": "(수기 판정 필요)"
+    },
+    {
+      "file": "02_Infrastructure/methods/register_method.R",
+      "line": 119,
+      "type": "kindmap",
+      "code": "exposure = list(",
+      "symbol": null,
+      "axis_hint": "(수기 판정 필요)"
+    },
+    {
+      "file": "02_Infrastructure/methods/register_method.R",
+      "line": 141,
+      "type": "kindmap",
+      "code": "exposure = \"wrap_exposure_adapter\")",
+      "symbol": null,
+      "axis_hint": "(수기 판정 필요)"
+    },
+    {
+      "file": "02_Infrastructure/methods/register_method.R",
+      "line": 143,
+      "type": "kindmap",
+      "code": "exposure = \"exposure_schedule\")",
+      "symbol": null,
+      "axis_hint": "(수기 판정 필요)"
+    },
+    {
+      "file": "02_Infrastructure/methods/register_method.R",
+      "line": 151,
+      "type": "preftbl",
+      "code": "if (kind %in% c(\"weight\", \"sigma\")) {",
+      "symbol": null,
+      "axis_hint": "(수기 판정 필요)"
+    },
+    {
+      "file": "02_Infrastructure/methods/new_adapter.R",
+      "line": 33,
+      "type": "constant",
+      "code": ".NA_ENTRY <- c(weight = \"method_weights\", sigma = \"sigma_estimate\", exposure = \"exposure_s",
+      "symbol": ".NA_ENTRY",
+      "axis_hint": "★이름 등장 없음"
+    },
+    {
+      "file": "02_Infrastructure/methods/new_adapter.R",
+      "line": 34,
+      "type": "constant",
+      "code": ".NA_CTX <- c(",
+      "symbol": ".NA_CTX",
+      "axis_hint": "★이름 등장 없음"
+    },
+    {
+      "file": "02_Infrastructure/methods/new_adapter.R",
+      "line": 38,
+      "type": "constant",
+      "code": ".NA_RET <- c(",
+      "symbol": ".NA_RET",
+      "axis_hint": "★이름 등장 없음"
+    },
+    {
+      "file": "02_Infrastructure/methods/new_adapter.R",
+      "line": 35,
+      "type": "kindmap",
+      "code": "weight = \"assets, R(obs x assets, PIT trailing), mu, Sigma, ub, lookback_days, decision_da",
+      "symbol": null,
+      "axis_hint": "(수기 판정 필요)"
+    },
+    {
+      "file": "02_Infrastructure/methods/new_adapter.R",
+      "line": 36,
+      "type": "kindmap",
+      "code": "sigma = \"R, assets, lookback_days, decision_date, eval_date (Sigma 는 주지 않는다 - 그걸 만드는 게 일)\"",
+      "symbol": null,
+      "axis_hint": "(수기 판정 필요)"
+    },
+    {
+      "file": "02_Infrastructure/methods/new_adapter.R",
+      "line": 37,
+      "type": "kindmap",
+      "code": "exposure = \"periods(decision_date, eval_date), bare_gross(Date, r)\")",
+      "symbol": null,
+      "axis_hint": "(수기 판정 필요)"
+    },
+    {
+      "file": "02_Infrastructure/methods/new_adapter.R",
+      "line": 39,
+      "type": "kindmap",
+      "code": "weight = \"named 선호 벡터 (스케일 자유 - wrapper 가 합-정규화 후 상한 적용)\",",
+      "symbol": null,
+      "axis_hint": "(수기 판정 필요)"
+    },
+    {
+      "file": "02_Infrastructure/methods/new_adapter.R",
+      "line": 40,
+      "type": "kindmap",
+      "code": "sigma = \"matrix (assets x assets, 대칭·PD)\",",
+      "symbol": null,
+      "axis_hint": "(수기 판정 필요)"
+    },
+    {
+      "file": "02_Infrastructure/methods/new_adapter.R",
+      "line": 41,
+      "type": "kindmap",
+      "code": "exposure = \"list(exposure = data.frame(Date, exposure in [0,1]), used_cutoff = Date[], eli",
+      "symbol": null,
+      "axis_hint": "(수기 판정 필요)"
+    },
+    {
+      "file": "02_Infrastructure/methods/new_adapter.R",
+      "line": 71,
+      "type": "kindmap",
+      "code": "list(exposure = data.frame(Date = as.Date(pr$eval_date), exposure = expo),",
+      "symbol": null,
+      "axis_hint": "(수기 판정 필요)"
+    },
+    {
+      "file": "02_Infrastructure/methods/ctx_providers.R",
+      "line": 43,
+      "type": "constant",
+      "code": ".CTX_PROVIDERS <- new.env(parent = emptyenv())",
+      "symbol": ".CTX_PROVIDERS",
+      "axis_hint": "★이름 등장 없음"
+    },
+    {
+      "file": "02_Infrastructure/methods/ctx_providers.R",
+      "line": 133,
+      "type": "constant",
+      "code": "MACRO_PUB_LAG_DAYS <- 5L # 보수적 균일 발표시차. 아래 pit_note 참조 — 사전고정, sweep 아님",
+      "symbol": "MACRO_PUB_LAG_DAYS",
+      "axis_hint": "★이름 등장 없음"
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "line": 91,
+      "type": "constant",
+      "code": "QM_ROOT <- Sys.getenv(\"QM_ROOT\", \"C:/Users/99922/OneDrive/Quant_Module_Moltbot\")",
+      "symbol": "QM_ROOT",
+      "axis_hint": "검사군에 이름 등장"
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "line": 92,
+      "type": "constant",
+      "code": "HI_INDEX_PATH <- file.path(QM_ROOT, \"06_Registry/hypothesis_index.json\")",
+      "symbol": "HI_INDEX_PATH",
+      "axis_hint": "검사군에 이름 등장"
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "line": 97,
+      "type": "constant",
+      "code": "SIGNAL_PATTERNS <- list(",
+      "symbol": "SIGNAL_PATTERNS",
+      "axis_hint": "★이름 등장 없음"
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "line": 125,
+      "type": "constant",
+      "code": "FAMILY_PATTERNS <- list(",
+      "symbol": "FAMILY_PATTERNS",
+      "axis_hint": "★이름 등장 없음"
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "line": 433,
+      "type": "constant",
+      "code": "HI_PAPER_AB_SOURCES <- c(\"06_Registry/book_carrier/h2_regime_overlay_ab.csv\",",
+      "symbol": "HI_PAPER_AB_SOURCES",
+      "axis_hint": "검사군에 이름 등장"
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "line": 589,
+      "type": "constant",
+      "code": "HI_INFLIGHT_FRESH_DAYS <- 14L",
+      "symbol": "HI_INFLIGHT_FRESH_DAYS",
+      "axis_hint": "★이름 등장 없음"
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "line": 590,
+      "type": "constant",
+      "code": "HI_WT_TERMINAL_REGEX <- \"TERMINAT|ABORT|ARCHIV|REJECT|KILL|FAIL|NEGATIVE|DEFERRED|ADMIT|GO",
+      "symbol": "HI_WT_TERMINAL_REGEX",
+      "axis_hint": "★이름 등장 없음"
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "line": 906,
+      "type": "constant",
+      "code": "HI_QUERY_ALIAS <- list(",
+      "symbol": "HI_QUERY_ALIAS",
+      "axis_hint": "★이름 등장 없음"
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "line": 545,
+      "type": "kindmap",
+      "code": "sigma = c(\"risk\", \"optimizer\", \"csv\", \"regime\"),",
+      "symbol": null,
+      "axis_hint": "(수기 판정 필요)"
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "line": 546,
+      "type": "kindmap",
+      "code": "weight = c(\"optimizer\", \"risk\", \"csv\", \"regime\"),",
+      "symbol": null,
+      "axis_hint": "(수기 판정 필요)"
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "line": 547,
+      "type": "kindmap",
+      "code": "exposure = c(\"regime\", \"csv\", \"optimizer\", \"risk\"),",
+      "symbol": null,
+      "axis_hint": "(수기 판정 필요)"
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "line": 463,
+      "type": "preftbl",
+      "code": ".ln_ord <- c(intersect(c(\"risk\", \"optimizer\", \"regime\"), .ln_all),",
+      "symbol": null,
+      "axis_hint": "(수기 판정 필요)"
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "line": 464,
+      "type": "preftbl",
+      "code": "setdiff(.ln_all, c(\"risk\", \"optimizer\", \"regime\")))",
+      "symbol": null,
+      "axis_hint": "(수기 판정 필요)"
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "line": 482,
+      "type": "preftbl",
+      "code": "for (k in setdiff(names(a), c(\"measured\", \"method_id\"))) {",
+      "symbol": null,
+      "axis_hint": "(수기 판정 필요)"
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "line": 548,
+      "type": "preftbl",
+      "code": "c(\"risk\", \"optimizer\", \"regime\", \"csv\"))",
+      "symbol": null,
+      "axis_hint": "(수기 판정 필요)"
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "line": 822,
+      "type": "preftbl",
+      "code": "wdirs <- wdirs[!basename(wdirs) %in% c(\"processed\", \"integration\")]",
+      "symbol": null,
+      "axis_hint": "(수기 판정 필요)"
+    },
+    {
+      "file": "02_Infrastructure/tools/hypothesis_index.R",
+      "line": 910,
+      "type": "preftbl",
+      "code": "defense = c(\"defense\", \"defensive\", \"방어\", \"low-beta\", \"lowbeta\", \"저베타\", \"lowvol\", \"저변동\", \"",
+      "symbol": null,
+      "axis_hint": "(수기 판정 필요)"
+    },
+    {
+      "file": "02_Infrastructure/ops/paper_research_dispatch.R",
+      "line": 50,
+      "type": "constant",
+      "code": "DELTA_IR_GATE <- 0.05 # book-marginal admission 문턱(§4) — 측정 기준만(자본 admit 아님)",
+      "symbol": "DELTA_IR_GATE",
+      "axis_hint": "★이름 등장 없음"
+    },
+    {
+      "file": "02_Infrastructure/ops/paper_research_dispatch.R",
+      "line": 125,
+      "type": "constant",
+      "code": "SCREEN_AX_ENUM <- list(",
+      "symbol": "SCREEN_AX_ENUM",
+      "axis_hint": "★이름 등장 없음"
+    },
+    {
+      "file": "02_Infrastructure/ops/paper_research_dispatch.R",
+      "line": 257,
+      "type": "constant",
+      "code": "SIGMA_AB_MAX_AGE_DAYS <- 35",
+      "symbol": "SIGMA_AB_MAX_AGE_DAYS",
+      "axis_hint": "★이름 등장 없음"
+    },
+    {
+      "file": "02_Infrastructure/ops/paper_research_dispatch.R",
+      "line": 622,
+      "type": "constant",
+      "code": ".TG_FORCE <- identical(Sys.getenv(\"QVEST_DISPATCH_TG_FORCE\", \"0\"), \"1\")",
+      "symbol": ".TG_FORCE",
+      "axis_hint": "검사군에 이름 등장"
+    },
+    {
+      "file": "02_Infrastructure/ops/paper_research_dispatch.R",
+      "line": 538,
+      "type": "kindmap",
+      "code": "avg_exposure = if (\"avg_exposure\" %in% names(cand))",
+      "symbol": null,
+      "axis_hint": "(수기 판정 필요)"
+    },
+    {
+      "file": "02_Infrastructure/ops/paper_research_dispatch.R",
+      "line": 42,
+      "type": "preftbl",
+      "code": ".known <- c(\"date\", \"schema\", \"schema_version\", \"note\", \"dispatch_note\",",
+      "symbol": null,
+      "axis_hint": "(수기 판정 필요)"
+    },
+    {
+      "file": "02_Infrastructure/ops/paper_research_dispatch.R",
+      "line": 126,
+      "type": "preftbl",
+      "code": "shrinkage_builtin = c(\"yes\", \"weak\", \"no\"),",
+      "symbol": null,
+      "axis_hint": "(수기 판정 필요)"
+    },
+    {
+      "file": "02_Infrastructure/ops/paper_research_dispatch.R",
+      "line": 141,
+      "type": "preftbl",
+      "code": "for (f in c(\"arxiv_id\", \"id\", \"paper_id\")) {",
+      "symbol": null,
+      "axis_hint": "(수기 판정 필요)"
+    }
+  ]
+}
