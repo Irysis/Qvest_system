@@ -119,9 +119,39 @@ sigma_weights_month <- function(tk, ret_sub, method, mu = NULL,
   Sigma <- cc$cov
   # ★등록 어댑터 우선 조회 — 빌트인 이름과 충돌하지 않도록 정확 일치만.
   if (!is.null(extra[[method]])) {
+    # ── (2026-08-13) ctx 특성 확장 — **지연 접근자**로 붙인다 (도훈 "인프라 없으면 깔면 되잖아").
+    #   왜: 어댑터 ctx 가 수익률·알파뿐이라 **특성 기반 논문(CD-DFM 계열)이 구현 불가**였다.
+    #     그런데 특성 패널은 이미 저장소에 있다 — 없던 건 데이터가 아니라 **배선 한 칸**이었다.
+    #   ★지연(thunk)인 이유 둘: ①기존 arm 은 이 필드를 읽지 않으므로 결과가 **바뀔 수 없다**
+    #     (순수 가산 — 회귀 위험 0) ②269개월 × arm 마다 factor DB I/O 를 물리면 쓰지도 않는
+    #     arm 이 비용을 낸다. 필요한 어댑터만 호출한다.
+    #   ★C15 준수: parquet 직독 금지 — 반드시 `load_month_factors()` 경유.
+    #   ★PIT: 컷오프를 **홀딩월 시작 전**으로 잡는다(수익률 `raw[Date < start_d]` 와 같은 규약,
+    #     C5 동형). decision_date 당월 패널은 동월 누출 위험이 있어 **직전 월말**을 sig_date 로 준다.
+    #     어댑터는 반환된 `sig_date` 를 그대로 컷오프 신고에 쓸 수 있다.
+    .ctx_chars <- local({
+      .cache <- NULL; .done <- FALSE
+      function() {
+        if (.done) return(.cache)
+        .done <<- TRUE
+        sig <- as.Date(format(as.Date(decision_date), "%Y-%m-01")) - 1L
+        got <- tryCatch({
+          if (!exists("load_month_factors"))
+            suppressWarnings(source(file.path(Sys.getenv("QM_ROOT", getwd()),
+                                              "02_Infrastructure/factor_db/factor_db_connector.R")))
+          load_month_factors(sig)
+        }, error = function(e) {
+          cat(sprintf("[ctx_chars] 특성 패널 로드 실패(%s) — NULL. 어댑터가 이 경우를 처리해야 한다\n",
+                      conditionMessage(e))); NULL
+        })
+        .cache <<- if (is.null(got)) NULL else list(sig_date = sig, panel = got)
+        .cache
+      }
+    })
     ctx <- list(Sigma = Sigma, R = rm, mu = mu, assets = colnames(Sigma), ub = UB,
                 lookback_days = LOOKBACK_DAYS,
-                decision_date = decision_date, eval_date = eval_date)
+                decision_date = decision_date, eval_date = eval_date,
+                characteristics = .ctx_chars)
     return(.fill_dropped(extra[[method]](ctx), tk))
   }
   w_surv <- switch(sub("_.*$", "", method),

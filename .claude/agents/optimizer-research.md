@@ -124,6 +124,11 @@ SOT: `.claude/skills/qvest-telegram/SKILL.md` (v6.5). `tg_agent_brief(agent=...)
    - 비중 규칙/목적함수 교체 → `adapter_kind="weight"` → `method_weights(ctx) -> 선호 벡터`
      ctx = list(assets, R(obs×assets, PIT trailing), mu, Sigma)
    - Σ 추정기 교체 → `adapter_kind="sigma"` → `sigma_estimate(ctx) -> matrix`
+   - ★**특성 기반 방법**(CD-DFM 계열)도 이제 가능하다 — `ctx$characteristics()` 가
+     `list(sig_date, panel)` 또는 **NULL**(패널 부재/로드 실패)을 낸다. 2026-08-13 확장 전엔
+     ctx 가 수익률·알파뿐이라 이 계열이 원리적으로 불가였다. **없던 건 데이터가 아니라 배선**이었다.
+     PIT = 직전 월말 sig_date(홀딩월 시작 전, C5 동형) · C15 준수(load_month_factors 경유).
+     ★NULL 처리를 반드시 넣을 것 — 성공 경로만 있는 어댑터는 패널이 빈 달에 죽는다.
    ★route 와 adapter_kind 는 **다른 축**이다 — 틀리면 loader 가 영원히 안 싣는다.
 3. `source("02_Infrastructure/methods/register_method.R"); register_method(...)`.
    통과분만 implemented. **비-퇴화 검사**가 본체다: 출력이 EW 와 구별되지 않으면 거부된다

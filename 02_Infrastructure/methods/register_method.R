@@ -100,11 +100,24 @@ rm_fixture <- function(n_assets = 8L, n_obs = 260L, seed = 20260813L) {
   n_m <- 60L
   dd  <- seq(as.Date("2021-01-01"), by = "month", length.out = n_m)
   vol <- c(rep(0.02, 24), rep(0.075, 12), rep(0.025, 24))[seq_len(n_m)]
+  # ── 특성 접근자 (2026-08-13 ctx 확장 대응) ──────────────────────────────────
+  #   production 은 `ctx$characteristics()` 가 list(sig_date, panel) 또는 **NULL** 을 낸다
+  #   (factor DB 부재/실패 시). fixture 도 **양쪽 모양을 다 흉내** 내야 한다 — 성공 경로만
+  #   주면 "패널이 없을 때 죽는 어댑터"가 등재를 통과한다(오늘 반복 확인한 계통).
+  #   기본은 합성 패널을 주고, 어댑터가 NULL 처리를 하는지는 아래 rm_fixture_nochar() 로 잰다.
+  .chars <- function() list(
+    sig_date = d0 - 1L,
+    panel = data.frame(Ticker = a,
+                       char_value = seq(-1, 1, length.out = n_assets),
+                       char_size  = seq(1, 2, length.out = n_assets),
+                       stringsAsFactors = FALSE))
   list(
     weight = list(assets = a, R = R, mu = mu, Sigma = S,
-                  decision_date = d0, eval_date = d0 + 30, lookback_days = n_obs),
+                  decision_date = d0, eval_date = d0 + 30, lookback_days = n_obs,
+                  characteristics = .chars),
     sigma  = list(assets = a, R = R, lookback_days = n_obs,
-                  decision_date = d0, eval_date = d0 + 30),
+                  decision_date = d0, eval_date = d0 + 30,
+                  characteristics = .chars),
     exposure = list(
       periods    = data.frame(decision_date = dd, eval_date = dd + 27),
       bare_gross = data.frame(Date = dd + 27, r = stats::rnorm(n_m, 0.004, 1) * vol))

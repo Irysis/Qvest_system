@@ -74,7 +74,12 @@ SOT: `.claude/skills/qvest-telegram/SKILL.md` (v6.5). `tg_agent_brief(agent=...)
    - Σ 추정기를 갈아끼우면 `adapter_kind="sigma"` → `sigma_estimate(ctx) -> matrix`
      ctx = list(R, assets, lookback_days, decision_date, eval_date). **Σ 는 주지 않는다 — 그걸 만드는 게 일.**
    - 목적함수/비중 규칙을 바꾸면 `adapter_kind="weight"` → `method_weights(ctx) -> 선호 벡터`
-     ★route 와 adapter_kind 는 **다른 축**이다. route=risk 인데 구현이 weight 인 경우가 실제로 있다
+     - ★**특성 기반 방법**(CD-DFM 계열)도 이제 가능하다 — `ctx$characteristics()` 가
+     `list(sig_date, panel)` 또는 **NULL**(패널 부재/로드 실패)을 낸다. 2026-08-13 확장 전엔
+     ctx 가 수익률·알파뿐이라 이 계열이 원리적으로 불가였다. **없던 건 데이터가 아니라 배선**이었다.
+     PIT = 직전 월말 sig_date(홀딩월 시작 전, C5 동형) · C15 준수(load_month_factors 경유).
+     ★NULL 처리를 반드시 넣을 것 — 성공 경로만 있는 어댑터는 패널이 빈 달에 죽는다.
+   ★route 와 adapter_kind 는 **다른 축**이다. route=risk 인데 구현이 weight 인 경우가 실제로 있다
      (PreferenceRobustDistortion). kind 를 틀리면 loader 가 영원히 안 싣는다.
 3. `source("02_Infrastructure/methods/register_method.R"); register_method(...)` 로 등재.
    통과분만 `verdict="implemented"` 가 된다. 검증 내용: 로드·진입점·결정성·계약 준수 +
