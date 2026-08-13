@@ -152,7 +152,23 @@ cat(sprintf("[msm_update] BM data: %s ~ %s (%d days)\n",
 #──────────────────────────────────────────────────────────────────────────────
 ret_xts <- Return.calculate(price_xts, method = "log")
 ret_vec <- as.numeric(ret_xts[-1])
-ret_vec <- ret_vec - mean(ret_vec, na.rm = TRUE)  # De-meaning
+## ★2026-08-13 PIT 수리 (도훈 승인 "2번 실행") — 전체표본 디민 → expanding past-only.
+##   구판 `ret_vec - mean(ret_vec)` 은 **전체표본 평균**을 빼므로, 새 달이 붙어 평균이 이동하면
+##   **과거 모든 날짜의 입력이 통째로 바뀐다**. extract_msm_path 는 완벽히 인과적인 Hamilton
+##   필터인데도 과거 산출이 재서술되던 원인이 이 한 줄이었다(통제 실험: 구판 8954/8975일(99.8%)
+##   변경 vs 디민 제거 0/8975(0.0%)). C1 full-sample 통계 위반.
+##   수리 = 각 t 에서 mean(r_1..r_t) 만 사용(당일 포함 — 필터가 t 에 r_t 를 관측해 갱신하므로 정합).
+##   ★워밍업 창을 두지 않는 이유: 초기 N일에 고정창 평균을 쓰면 그 창 **안에서** 미래참조가 생긴다.
+##   영향 실측(P1, FRED/KTRI/VEA 고정): Avg_Prob 440/440개월 변경이나 하류는 포화(layer1 은
+##   msm>=0.8 에서 40 고정)와 Cash_Pct 불감대(score<45 → 0)가 흡수해 **Cash_Pct 4개월 ·
+##   Category 2개월**만 이동(전부 1992~2001년), **최근 24개월 0**.
+##   ★NA-안전: 구판은 na.rm=TRUE 였으므로 cumsum 그대로 쓰면 첫 NA 이후가 전부 NA 가 된다.
+##   (현 데이터엔 NA 0건이라 아래 식은 단순 cumsum/seq 와 동일 — 방어일 뿐 값 변경 없음)
+.cs_n <- cumsum(!is.na(ret_vec))
+.cs_s <- cumsum(ifelse(is.na(ret_vec), 0, ret_vec))
+ret_vec <- ret_vec - .cs_s / pmax(.cs_n, 1L)   # De-meaning (expanding past-only, PIT)
+cat(sprintf("[msm_update] 디민: expanding past-only (n=%d, NA %d건)\n",
+            length(ret_vec), sum(is.na(ret_vec))))
 
 cat(sprintf("[msm_update] Returns: %d observations\n", length(ret_vec)))
 
