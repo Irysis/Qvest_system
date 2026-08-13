@@ -118,6 +118,33 @@ if (length(meas)) {
       all(ctx_ok), sprintf("%d/%d", sum(ctx_ok), length(ctx_ok)))
 }
 
+# ── T7 ★대조 기준이 **kind 에 맞는가** (2026-08-13 N5 신설)
+#   같은 method 를 레인마다 다른 대조로 잰다: risk=minvar_lw(Σ만 교체) / optimizer=strategy(북 전체)
+#   / regime csv=book_L5. 아무거나 집으면 **측정은 그대로인데 숫자만 바뀐다**
+#   (실측: ProperScoreGASFilter −0.219 vs −0.477). 그래서 kind 가 고르게 만들었는데,
+#   그 선호표는 지금 **코드에만 있고 검사가 없었다** — sigma 가 strategy 대조로 뒤집혀도
+#   기존 축은 전부 통과한다. 오늘 세 번 확인한 계통(검사 없는 규칙은 다음 확장에서 조용히 뒤집힘).
+#   ★sigma 는 Σ 효과만 분리해야 하므로 minvar 계열 대조가 아니면 그 수치는 다른 것을 재고 있다.
+meas2 <- Filter(function(e) !is.null(e$key_metrics$delta_ir), pl_of()$pl)
+bad <- character(0)
+for (e in meas2) {
+  k <- e$key_metrics; ck <- tolower(k$control %||% k$measured_lane %||% "")
+  ok <- switch(k$adapter_kind %||% "?",
+               sigma    = grepl("minvar", ck),                       # Σ 교체만 분리
+               weight   = grepl("strategy|book", ck),                # 북 전체 대비
+               exposure = grepl("csv|regime|book", ck),              # 노출 스케줄 대비
+               TRUE)
+  if (!isTRUE(ok)) bad <- c(bad, sprintf("%s[%s]=%s", e$strategy_id, k$adapter_kind %||% "?", ck))
+}
+chk("T7 ★대조 기준이 adapter_kind 와 정합(sigma=minvar · weight=book · exposure=노출)",
+    length(meas2) > 0L && length(bad) == 0L,
+    if (length(bad)) sprintf("★불일치 %d: %s", length(bad), paste(head(bad, 3), collapse="; "))
+    else sprintf("%d건 전건 정합", length(meas2)))
+# T7b 여러 레인이 잰 경우 **대안을 숨기지 않는다** — 고르되 나머지를 기록해야 재판정이 가능하다
+multi <- Filter(function(e) nzchar(e$key_metrics$other_lane_measurements %||% ""), meas2)
+chk("T7b 복수 레인 측정은 other_lane_measurements 로 병기된다", length(multi) > 0L,
+    sprintf("%d건", length(multi)))
+
 TOTAL <- PASS + FAIL
 cat(sprintf("  ── %d/%d pass\n", PASS, TOTAL))
 cat(sprintf('{"test":"hypothesis_index_paper_lane","pass":%d,"fail":%d,"total":%d}\n', PASS, FAIL, TOTAL))
