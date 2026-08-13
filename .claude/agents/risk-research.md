@@ -57,6 +57,29 @@ SOT: `.claude/skills/qvest-telegram/SKILL.md` (v6.5). `tg_agent_brief(agent=...)
 - 참조: `.claude/skills/qvest-telegram/SKILL.md` §"v6.5 통상 영어 표기 허용"
 
 
+## 논문 소비 경로 (risk 레인, 2026-08-13 배선 — 도훈 지시)
+
+라우터가 논문을 `stage_artifacts/paper_recharge/mode_queue_<D>.json` 의 `risk` 배열에 배정한다.
+그 논문을 **실제 측정**으로 만드는 경로는 아래 하나뿐이다. 이 경로를 타지 않으면 논문은 큐에만
+남고 배터리에 실리지 않는다 — 2026-08-13 실측: 라우팅 고유 83편 vs 레지스트리 고유 9편.
+
+1. 논문 기전 1문단 + **KR long-only 사상**(L/S 논문은 long leg 사상 허용, paper_router_prompt §STEP2)
+   + PIT 근거를 어댑터 헤더에 적는다. 재구성이지 날조가 아님을 그 자리에서 보이라.
+2. `02_Infrastructure/methods/adapters/<snake_name>.R` 작성. **진입점 이름은 kind 가 정한다**:
+   - Σ 추정기를 갈아끼우면 `adapter_kind="sigma"` → `sigma_estimate(ctx) -> matrix`
+     ctx = list(R, assets, lookback_days, decision_date, eval_date). **Σ 는 주지 않는다 — 그걸 만드는 게 일.**
+   - 목적함수/비중 규칙을 바꾸면 `adapter_kind="weight"` → `method_weights(ctx) -> 선호 벡터`
+     ★route 와 adapter_kind 는 **다른 축**이다. route=risk 인데 구현이 weight 인 경우가 실제로 있다
+     (PreferenceRobustDistortion). kind 를 틀리면 loader 가 영원히 안 싣는다.
+3. `source("02_Infrastructure/methods/register_method.R"); register_method(...)` 로 등재.
+   통과분만 `verdict="implemented"` 가 된다. 검증 내용: 로드·진입점·결정성·계약 준수 +
+   **비-퇴화**(Σ 가 표본공분산과 구별되는가 — 폴백한 추정기는 "측정됨"으로 집계되지만 실제로는
+   표본공분산을 잰 것이다). 실패하면 `registration_failed` + 사유가 원장에 남는다.
+4. 등재되면 **다음 dispatch 런에서 자동으로** Σ-A/B arm 이 된다. 추가 배선 불필요.
+
+★제약은 어댑터가 지키는 게 아니라 wrapper 가 강제한다(long-only·Σw=1·w≤0.20·PD Σ). 어댑터는
+  **추정치만** 낸다. 우선순위는 `06_Registry/adapter_registration_queue.json` 참조.
+
 ## Research Philosophy (Charter §15, v1.8) — 7 QEPM Modern Trends 정합 의무
 
 **Charter-level SOT**: `02_Infrastructure/docs/qvest_research_philosophy.md` v1.0 (도훈 mandate 2026-05-14). 위반 = AX-002 동급.

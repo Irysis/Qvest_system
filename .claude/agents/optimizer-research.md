@@ -108,6 +108,28 @@ SOT: `.claude/skills/qvest-telegram/SKILL.md` (v6.5). `tg_agent_brief(agent=...)
 - 참조: `.claude/skills/qvest-telegram/SKILL.md` §"v6.5 통상 영어 표기 허용"
 
 
+## 논문 소비 경로 (optimizer 레인, 2026-08-13 배선 — 도훈 지시)
+
+라우터가 논문을 `stage_artifacts/paper_recharge/mode_queue_<D>.json` 의 `optimizer` 배열에 배정한다.
+그 논문을 **실제 측정**으로 만드는 경로는 아래 하나뿐이다. 안 타면 큐에만 남는다
+(2026-08-13 실측: 라우팅 고유 83편 vs 레지스트리 고유 9편 — 등재가 병목이다).
+
+1. 논문 기전 1문단 + **KR long-only 사상** + PIT 근거를 어댑터 헤더에 적는다(재구성이지 날조 아님).
+2. `02_Infrastructure/methods/adapters/<snake_name>.R`, 진입점은 kind 고정:
+   - 비중 규칙/목적함수 교체 → `adapter_kind="weight"` → `method_weights(ctx) -> 선호 벡터`
+     ctx = list(assets, R(obs×assets, PIT trailing), mu, Sigma)
+   - Σ 추정기 교체 → `adapter_kind="sigma"` → `sigma_estimate(ctx) -> matrix`
+   ★route 와 adapter_kind 는 **다른 축**이다 — 틀리면 loader 가 영원히 안 싣는다.
+3. `source("02_Infrastructure/methods/register_method.R"); register_method(...)`.
+   통과분만 implemented. **비-퇴화 검사**가 본체다: 출력이 EW 와 구별되지 않으면 거부된다
+   (wrap_adapter 는 퇴화 입력을 EW 로 내려앉히므로, 그대로 두면 "측정됨"으로 집계되고
+   실제로는 EW 를 잰다 — 실사고 기록 method_registry.R:73-78).
+4. 등재되면 **다음 dispatch 런에서 자동으로** Σ-A/B arm 이 된다.
+
+★어댑터는 **선호 벡터만** 낸다. long-only·Σw=1·w≤0.20 은 wrapper 가 강제한다. 스케일은
+  자유롭게 둬도 된다(wrapper 가 먼저 합-정규화 후 상한 적용).
+  우선순위는 `06_Registry/adapter_registration_queue.json`.
+
 ## Research Philosophy (Charter §15, v1.8) — 7 QEPM Modern Trends 정합 의무
 
 **Charter-level SOT**: `02_Infrastructure/docs/qvest_research_philosophy.md` v1.0 (도훈 mandate 2026-05-14). 위반 = AX-002 동급.
