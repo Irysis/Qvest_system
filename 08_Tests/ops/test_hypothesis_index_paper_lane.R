@@ -53,8 +53,15 @@ chk("T3b source_types 가 paper_lane 으로 식별된다",
 # ── T4 ★stale 원천에 논문 레인이 포함된다 (행동 검사 — 소스 문자열 아님)
 #     소스를 grep 하면 정당한 리팩터에 거짓 FAIL 이 난다(오늘 3회 실측). 발화를 본다.
 idx <- HI_INDEX_PATH
+# ★T4a 는 **먼저 인덱스를 최신화한 뒤** 물어야 한다 (2026-08-13 수리).
+#   초판은 그냥 물었는데, 디스패치가 A/B CSV 를 재생성한 직후에 돌면 인덱스가 **정말로**
+#   뒤처져 있어서 stale 이 뜬다 — 그건 오탐이 아니라 정탐이다. 그 상태로 FAIL 을 내면
+#   "검출기 고장"과 "인덱스가 legitimately stale"을 구분하지 못하고, 배터리가 디스패치
+#   직후에만 간헐적으로 빨개진다(실측: 단독 10/1 → 재실행 11/11 × 3).
+#   ⇒ 최신화 후에도 stale 이 뜨면 그때가 진짜 오탐이다.
+invisible(suppressMessages(build_hypothesis_index(verbose = FALSE)))
 s0 <- .hi_stale_check(idx, warn = FALSE)
-chk("T4a 현재 상태에서 오탐 없음", length(s0) == 0L,
+chk("T4a 재빌드 직후에는 stale 없음(오탐 아님을 그때 판정)", length(s0) == 0L,
     if (length(s0)) paste(s0, collapse=", ") else "")
 mrp <- "06_Registry/method_registry.json"
 mt0 <- file.info(mrp)$mtime
@@ -95,8 +102,20 @@ if (length(meas)) {
       length(ov) > 0L && all(vapply(ov, function(e) nzchar(e$key_metrics$delta_ir_caveat %||% ""), logical(1))),
       sprintf("%d건 중 경고 동반 %d", length(ov),
               sum(vapply(ov, function(e) nzchar(e$key_metrics$delta_ir_caveat %||% ""), logical(1)))))
-  chk("T6c delta_ir 옆에 avg_exposure 가 함께 있다(교란을 눈으로 볼 수 있게)",
-      all(vapply(meas, function(e) !is.null(e$key_metrics$avg_exposure), logical(1))))
+  # ★T6c 일반화 (2026-08-13 수리) — 원래 의도는 "avg_exposure 가 있어야 한다"가 아니라
+  #   **"수치 옆에 그 수치를 읽는 데 필요한 맥락이 함께 있어야 한다"** 였다.
+  #   맥락이 무엇인지는 원천이 정한다:
+  #     · regime overlay A/B → `avg_exposure` (ΔIR 의 86%를 설명하는 교란 변수)
+  #     · research_status(dispatch 기록) → `control` / `control_basis` (무엇과 비교했는가)
+  #   초판은 avg_exposure 를 전건에 요구해서, risk 레인 arm(weight·sigma)이 붙자마자 FAIL 했다 —
+  #   그 arm 들에는 노출 개념 자체가 없다. 필드를 박제하면 새 원천이 붙을 때 검사가 먼저 깨진다.
+  ctx_ok <- vapply(meas, function(e) {
+    k <- e$key_metrics
+    if (grepl("regime_overlay", k$ab_source %||% "")) !is.null(k$avg_exposure)
+    else !is.null(k$control_basis) || !is.null(k$control) || !is.null(k$avg_exposure)
+  }, logical(1))
+  chk("T6c 측정치 옆에 **읽는 맥락**이 함께 있다(overlay=노출 / dispatch=대조기준)",
+      all(ctx_ok), sprintf("%d/%d", sum(ctx_ok), length(ctx_ok)))
 }
 
 TOTAL <- PASS + FAIL

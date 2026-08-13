@@ -434,8 +434,41 @@ HI_PAPER_AB_SOURCES <- c("06_Registry/book_carrier/h2_regime_overlay_ab.csv",
                          "06_Registry/book_carrier/h1b_sigma_ab_overlay.csv")
 
 #' A/B 표들을 훑어 scenario→key_metrics 사전을 만든다. 없으면 빈 list.
+#'
+#' ★원천이 둘이고 **권위가 다르다** (2026-08-13 수리):
+#'   ①`research_status_<date>.json::actions$<lane>$verdict$arms` — 디스패치 자신의 실행 기록.
+#'      method_id·control·control_basis·port_t 까지 있어 **대조 기준이 명시**된다. 1순위.
+#'   ②A/B CSV — scenario 열만 있어 대조를 내가 추정해야 한다(book_L5 가정). 보완용.
+#'   초판은 ②만 읽었고, 그 결과 risk 레인이 4건을 실측했는데도 인덱스엔 **0건**이 붙었다
+#'   (risk 측정치는 CSV 가 아니라 research_status 에 산다). "측정했는데 안 보이는" 상태 —
+#'   이 저장소가 반복 확인한 '다음 칸이 안 읽는' 계통이다.
 .hi_paper_lane_measurements <- function(root) {
   out <- list()
+  # ── ① research_status (신규 우선). 같은 method_id 는 **최신 파일이 이긴다**.
+  rs <- sort(Sys.glob(file.path(root, "stage_artifacts/paper_recharge/research_status_*.json")),
+             decreasing = TRUE)
+  for (p in rs) {
+    j <- tryCatch(fromJSON(p, simplifyVector = FALSE), error = function(e) NULL); if (is.null(j)) next
+    for (ln in names(j$actions %||% list())) {
+      for (a in (j$actions[[ln]]$verdict$arms %||% list())) {
+        mid <- as.character(a$method_id %||% "")[1]
+        if (!nzchar(mid) || !is.null(out[[mid]])) next        # 이미 더 새 기록이 있으면 유지
+        if (!isTRUE(a$measured)) next
+        km <- list()
+        for (k in c("ir", "port_t", "delta_ir", "control_ir")) {
+          v <- suppressWarnings(as.numeric(a[[k]] %||% NA)); if (is.finite(v)) km[[k]] <- v
+        }
+        for (k in c("control", "control_basis", "arm")) {
+          v <- as.character(a[[k]] %||% "")[1]; if (nzchar(v)) km[[k]] <- v
+        }
+        if (!length(km)) next
+        km$measured_on <- sub(".*research_status_([0-9]+)\\.json$", "\\1", basename(p))
+        km$ab_source <- "research_status(dispatch 실행 기록 — 대조 기준 명시)"
+        out[[mid]] <- km
+      }
+    }
+  }
+  # ── ② A/B CSV (①에 없는 것만 보완)
   for (rel in HI_PAPER_AB_SOURCES) {
     p <- file.path(root, rel); if (!file.exists(p)) next
     t <- tryCatch(utils::read.csv(p, stringsAsFactors = FALSE), error = function(z) NULL)
@@ -457,7 +490,7 @@ HI_PAPER_AB_SOURCES <- c("06_Registry/book_carrier/h2_regime_overlay_ab.csv",
       #   노출-정합 비교(잔차) 없이 ΔIR 순위를 실력으로 읽지 말 것.
       if (grepl("regime_overlay", rel, fixed = TRUE))
         km$delta_ir_caveat <- "exposure_confounded_R2_0.858_use_exposure_matched_residual"
-      out[[as.character(t$scenario[i])]] <- km
+      .sc <- as.character(t$scenario[i]); if (is.null(out[[.sc]])) out[[.sc]] <- km
     }
   }
   out
