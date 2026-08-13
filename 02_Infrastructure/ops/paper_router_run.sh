@@ -202,6 +202,16 @@ try:
 except Exception: print('?')" "$_rj" 2>/dev/null)
     log "라우팅 결과: route JSON 수록 ${_routed:-?}편 (등록기준 downloaded=$DL — 중복·기처리 포함이라 신규수와 다름)"
   fi
+  # (2026-08-13) 발행 **직후** 우선순위 축 채움 검사 — 사후 패턴 감사 아님, 필드 존재 확인.
+  #   비-alpha 레인의 실질 병목은 백로그가 아니라 어댑터 등재이고(Σ-A/B 는 큐가 아니라
+  #   method_registry 에서 arm 을 고른다), 등재 우선순위는 이 3축(screen_priority ·
+  #   shrinkage_builtin · statistic_order) 없이는 매길 수 없다. 축 지시는 08-08 도입 후
+  #   11/11 준수 중 — 이 검사는 **그 준수가 조용히 풀리는 것**을 잡는 회귀 감시다.
+  _AX="$BASE/02_Infrastructure/ops/mode_queue_axis_audit.py"
+  if [ -f "$_AX" ]; then
+    _pbx="${PYBIN:-$(command -v sched_resolve_python >/dev/null 2>&1 && sched_resolve_python || echo "${QVEST_PY:-python}")}"
+    "$_pbx" "$_AX" --date "$TODAY" >> "$LOG" 2>&1 || log "axis audit 실패(비치명)"
+  fi
 fi
 if [ "$rc" -eq 0 ] && command -v sched_mark_resolved >/dev/null 2>&1; then
   _mv=$(sched_mark_resolved "paper_router" "$BASE/.cache/scheduler_alerts")

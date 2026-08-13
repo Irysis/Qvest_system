@@ -12,7 +12,21 @@
 #   10 7 * * 1-5 bash .../02_Infrastructure/ops/morning_run.sh cron
 
 BASE=$(ls -d /c/Users/99922/OneDrive/Quant_Module_Moltbot /mnt/c/Users/99922/OneDrive/Quant_Module_Moltbot /g/Quant_Module_Moltbot /mnt/g/Quant_Module_Moltbot /mnt/c/Users/*/OneDrive/바탕\ 화면/Quant_Module_Moltbot 2>/dev/null | head -1 || echo "$PWD")
-LOG="/tmp/qm_morning_run.log"
+# ★로그는 **스케줄러가 가리키는 곳**에 남긴다 (2026-08-13 수리).
+#   구판은 LOG=/tmp/qm_morning_run.log 였는데, 본문 전체가 `} >> "$LOG"`(:193)로 자기 stdout 을
+#   삼킨다. 그래서 Qvest_MorningBrief.bat 의 `>> .cache/scheduler_logs/morning_run.log` 에는
+#   **아무것도 도달하지 않았다** — 그 파일은 2026-06-08 이후 **0바이트**(66일).
+#   ★파이프라인은 정상 동작 중이었다. 죽은 건 관측이다: 다른 스케줄러 로그가 전부 모여 있는
+#   자리에 빈 파일이 있으니 "돌긴 했나"를 그 자리에서 답할 수 없고, 빈 로그와 미실행이
+#   구분되지 않는다(감사기 hb() 주석이 지적한 바로 그 형태). 게다가 Git Bash 의 /tmp 는
+#   프로젝트 밖 휘발성 경로라 진짜 로그도 보존되지 않았다.
+#   BASE 해석 실패 시에만 /tmp 로 낙하 — 그때도 어디로 갔는지 한 줄 남긴다.
+if [ -n "${BASE:-}" ] && [ -d "$BASE/.cache/scheduler_logs" ]; then
+  LOG="$BASE/.cache/scheduler_logs/morning_run.log"
+else
+  LOG="/tmp/qm_morning_run.log"
+  echo "[morning_run] BASE 해석 실패 — 로그를 $LOG 로 낙하(스케줄러가 보는 자리 아님)" >&2
+fi
 TRIGGER="${1:-manual}"
 TODAY=$(date +%Y%m%d)
 LOCK="/tmp/qm_morning_run_${TODAY}.lock"
