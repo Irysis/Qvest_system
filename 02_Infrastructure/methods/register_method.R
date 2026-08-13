@@ -87,23 +87,35 @@ rm_fixture <- function(n_assets = 8L, n_obs = 260L, seed = 20260813L) {
   mu <- stats::setNames(seq(0.004, -0.001, length.out = n_assets), a)
   S <- stats::cov(R); dimnames(S) <- list(a, a)
   d0 <- as.Date("2026-06-01")
+  # ── exposure fixture (2026-08-13 정정) ───────────────────────────────────────
+  # ★초판이 두 군데 틀렸고, 그 결과 **정상 어댑터 4건을 FAIL 로 냈다**(레지스트리가 죽었다고
+  #   보고할 뻔했다). 검사기의 오탐은 대상의 결함과 겉보기가 같다.
+  #   ① 날짜 규약 역전 — decision_date 를 **월말**로 뒀다. wrapper 는 hold_start 를
+  #      월초(month(decision_date))로 잡으므로 월말 decision 은 컷오프가 hold_start 뒤에 와서
+  #      **모든** 어댑터가 C5 위반으로 거부된다(실측 6개월 위반). production 규약대로
+  #      decision_date = **홀딩월 1일** → 컷오프(직전월)가 앞선다.
+  #   ② 길이 부족 — 24개월인데 vol-target 류는 burn-in 12개월을 먹는다. 남은 12개월
+  #      백색잡음에선 문턱을 못 넘어 발화 0 → 상수 1 → 비-퇴화 검사가 정상 어댑터를 잡는다.
+  #      60개월 + **국면이 실제로 바뀌는** 변동성(저변동 ↔ 고변동)을 준다.
+  n_m <- 60L
+  dd  <- seq(as.Date("2021-01-01"), by = "month", length.out = n_m)
+  vol <- c(rep(0.02, 24), rep(0.075, 12), rep(0.025, 24))[seq_len(n_m)]
   list(
     weight = list(assets = a, R = R, mu = mu, Sigma = S,
                   decision_date = d0, eval_date = d0 + 30, lookback_days = n_obs),
     sigma  = list(assets = a, R = R, lookback_days = n_obs,
                   decision_date = d0, eval_date = d0 + 30),
     exposure = list(
-      periods = data.frame(decision_date = seq(as.Date("2024-01-31"), by = "month", length.out = 24),
-                           eval_date     = seq(as.Date("2024-03-01"), by = "month", length.out = 24)),
-      bare_gross = data.frame(Date = seq(as.Date("2024-03-01"), by = "month", length.out = 24),
-                              r = stats::rnorm(24, 0.005, 0.03)))
+      periods    = data.frame(decision_date = dd, eval_date = dd + 27),
+      bare_gross = data.frame(Date = dd + 27, r = stats::rnorm(n_m, 0.004, 1) * vol))
   )
 }
 
 #------------------------------------------------------------------------------
 # 어댑터 1건 검증. list(ok, reason, checks)
 #------------------------------------------------------------------------------
-verify_adapter <- function(adapter_path, kind, method_id = "CANDIDATE", root = .rm_root()) {
+verify_adapter <- function(adapter_path, kind, method_id = "CANDIDATE", root = .rm_root(),
+                           allow_fixture_degenerate = NULL) {
   chk <- list(); fail <- function(r) list(ok = FALSE, reason = r, checks = chk)
   if (!(kind %in% names(.RM_ENTRY))) return(fail(sprintf("adapter_kind 미지원: %s", kind)))
   ap <- if (file.exists(adapter_path)) adapter_path else file.path(root, adapter_path)
@@ -180,8 +192,22 @@ verify_adapter <- function(adapter_path, kind, method_id = "CANDIDATE", root = .
     .edf <- as.data.frame(o1)
     if (!("exposure" %in% names(.edf))) return(fail("wrapper 반환에 exposure 열 없음 — 계약 변경 의심"))
     ex <- as.numeric(.edf$exposure)
-    if (all(abs(ex - 1) < 1e-9))
-      return(fail("퇴화 — 노출이 상수 1(오버레이가 아무것도 하지 않음)"))
+    if (all(abs(ex - 1) < 1e-9)) {
+      # ★제3 결과 — 합성 fixture 로 **원리적으로** 판정 불가한 부류가 있다 (2026-08-13).
+      #   확장창 분위 문턱(rate-matched) 어댑터는 문턱을 자기 과거 신호 분포에서 뽑는다.
+      #   그 분포는 실신호의 정상성/군집성에 의존하므로(method_registry.R:258-261 에 기전 기록:
+      #   초기 고변동이 분포 상단을 점유해 발화율이 붕괴) 합성 계열에선 발화가 0 이 될 수 있다.
+      #   ⇒ 여기서 FAIL 을 내면 **정상 어댑터를 막고**, 통과시키려 fixture 를 손보면
+      #     답을 보고 검사를 고치는 것이다. 둘 다 하지 않고 "검증 안 됨"으로 분리한다.
+      #   등재자는 `allow_fixture_degenerate=<사유>` 로 명시 선언해야 하며, 그 사유가 원장에 남는다.
+      if (nzchar(allow_fixture_degenerate %||% ""))
+        return(list(ok = TRUE, unverified = TRUE,
+                    reason = sprintf("fixture 비발화 — 선언 사유: %s", allow_fixture_degenerate),
+                    checks = c(chk, list(non_degenerate = "UNVERIFIED_ON_FIXTURE"))))
+      return(fail(paste0("퇴화 — 노출이 상수 1(오버레이가 아무것도 하지 않음). ",
+                         "확장창 분위 문턱처럼 실신호 분포에 의존해 합성 fixture 에서 발화가 0 이 되는 ",
+                         "부류라면 allow_fixture_degenerate=<사유> 로 선언할 것(원장에 기록됨).")))
+    }
     chk$non_degenerate <- sprintf("발화 %d/%d · 평균 %.3f", sum(ex < 1 - 1e-9), length(ex), mean(ex))
   }
   list(ok = TRUE, reason = NA_character_, checks = chk)
@@ -194,12 +220,14 @@ register_method <- function(method_id, paper_id, paper_title, route, adapter_kin
                             adapter, mechanism, kr_mapping,
                             screen_axes = NULL, selection_type = "chain",
                             free_params = NULL, routed_on = NULL,
+                            allow_fixture_degenerate = NULL,
                             root = .rm_root(), dry_run = FALSE) {
   stopifnot(nzchar(method_id), nzchar(paper_id), nzchar(adapter_kind), nzchar(adapter))
   if (!nzchar(mechanism %||% "") || !nzchar(kr_mapping %||% ""))
     stop("[register_method] mechanism · kr_mapping 필수 — 기전 없이 등재하면 나중에 무엇을 쟀는지 복원 불가.")
 
-  v <- verify_adapter(adapter, adapter_kind, method_id, root = root)
+  v <- verify_adapter(adapter, adapter_kind, method_id, root = root,
+                      allow_fixture_degenerate = allow_fixture_degenerate)
   cat(sprintf("[register_method] %s (%s) 검증: %s%s\n", method_id, adapter_kind,
               if (v$ok) "PASS" else "FAIL", if (v$ok) "" else paste0(" — ", v$reason)))
   for (k in names(v$checks)) cat(sprintf("    %-16s %s\n", k, as.character(v$checks[[k]])))
@@ -216,6 +244,8 @@ register_method <- function(method_id, paper_id, paper_title, route, adapter_kin
       verified_by = "register_method.R (production wrapper 경유 · 합성 fixture)",
       checks = v$checks,
       failure_reason = if (v$ok) NULL else v$reason,
+      unverified_on_fixture = isTRUE(v$unverified),
+      unverified_reason = if (isTRUE(v$unverified)) v$reason else NULL,
       fixture = "rm_fixture(n_assets=8, n_obs=260, seed=20260813)",
       scope_note = "계약 준수 검증이지 성과 검증이 아니다. 성과는 dispatch Σ-A/B 가 잰다."
     ),
