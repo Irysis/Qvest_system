@@ -182,6 +182,31 @@ verify_adapter <- function(adapter_path, kind, method_id = "CANDIDATE", root = .
       return(fail("퇴화 — 출력이 EW 와 동일. 어댑터가 실질적으로 아무 것도 하지 않는다"))
     chk$non_degenerate <- sprintf("max|w-EW|=%.4g", max(abs(as.numeric(o1) - ew)))
     chk$constraints <- sprintf("sum=%.6f max=%.4f", sum(o1), max(o1))
+    # ★기존 arm 과의 **구별성** (2026-08-13 신설). 비-퇴화는 EW 와만 비교하므로 **이미 등재된
+    #   어댑터와 사실상 동일한 arm** 을 막지 못한다 — 그러면 배터리가 같은 것을 두 이름으로 재고,
+    #   결과표엔 독립 arm 두 개로 보인다. 실측 계기: TailConformalBand 가 ConformalKelly 와
+    #   max|Δw| 1.4e-03(왜곡 주입해도 거의 불변)이었다. 차단은 하지 않되 **수치로 신고**한다
+    #   (판정은 사람 몫 — 방향만 다른 대조 쌍은 의도적으로 가까울 수 있다).
+    chk$nearest_arm <- tryCatch({
+      reg0 <- jsonlite::fromJSON(file.path(root, REGISTER_METHOD_PATH), simplifyVector = FALSE)
+      best <- NA_character_; bd <- Inf
+      for (m in (reg0$methods %||% list())) {
+        if (!identical(m$adapter_kind, "weight") || !identical(m$verdict, "implemented")) next
+        if (identical(m$method_id, method_id)) next
+        ap2 <- file.path(root, m$adapter %||% ""); if (!nzchar(m$adapter %||% "") || !file.exists(ap2)) next
+        e2 <- new.env(parent = globalenv())
+        if (!isTRUE(tryCatch({ sys.source(ap2, envir = e2); TRUE }, error = function(z) FALSE))) next
+        fn2 <- tryCatch(get(m$entrypoint %||% "method_weights", envir = e2), error = function(z) NULL)
+        if (!is.function(fn2)) next
+        o3 <- tryCatch(get("wrap_adapter", envir = wenv)(fn2, m$method_id)(fx$weight), error = function(z) NULL)
+        if (is.null(o3) || length(o3) != length(o1)) next
+        dd <- max(abs(as.numeric(o1) - as.numeric(o3)))
+        if (is.finite(dd) && dd < bd) { bd <- dd; best <- m$method_id }
+      }
+      if (is.finite(bd)) sprintf("%s (max|Δw|=%.3g)%s", best, bd,
+                                 if (bd < 5e-3) "  ★근접 — 같은 것을 두 번 재는지 확인할 것" else "")
+      else "비교 대상 없음"
+    }, error = function(z) paste("비교 실패:", conditionMessage(z)))
 
   } else if (kind == "sigma") {
     w <- get("wrap_sigma_estimator", envir = wenv)(fn, method_id)
