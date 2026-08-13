@@ -70,6 +70,9 @@ SOT: `.claude/skills/qvest-telegram/SKILL.md` (v6.5). `tg_agent_brief(agent=...)
    ★원문 없이 memo 만 보고 구현하면 그것이 날조다. 어댑터 헤더가 요구하는 "충실한 재구성"이 성립하지 않는다.
 1. 논문 기전 1문단 + **KR long-only 사상**(L/S 논문은 long leg 사상 허용, paper_router_prompt §STEP2)
    + PIT 근거를 어댑터 헤더에 적는다. 재구성이지 날조가 아님을 그 자리에서 보이라.
+   - 골격은 `source("02_Infrastructure/methods/new_adapter.R"); new_adapter(<id>, kind=, paper_id=)`
+     로 만든다 — 진입점 이름·NULL 처리·헤더 규약·등재 stub 이 깔린다(오늘 두 번 틀린 지점).
+     ★골격은 **비어 있으므로 등재가 거부된다** — TODO(원문) 칸을 채워야만 통과한다.
 2. `02_Infrastructure/methods/adapters/<snake_name>.R` 작성. **진입점 이름은 kind 가 정한다**:
    - Σ 추정기를 갈아끼우면 `adapter_kind="sigma"` → `sigma_estimate(ctx) -> matrix`
      ctx = list(R, assets, lookback_days, decision_date, eval_date). **Σ 는 주지 않는다 — 그걸 만드는 게 일.**

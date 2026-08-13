@@ -120,6 +120,9 @@ SOT: `.claude/skills/qvest-telegram/SKILL.md` (v6.5). `tg_agent_brief(agent=...)
    숫자 id·파일명 양쪽을 보며 큐 전건 **86/86 도달** 확인됨. 못 찾으면 이름을 부르고 NULL 이다.
    ★원문 없이 memo 만 보고 구현하면 그것이 날조다. 어댑터 헤더가 요구하는 "충실한 재구성"이 성립하지 않는다.
 1. 논문 기전 1문단 + **KR long-only 사상** + PIT 근거를 어댑터 헤더에 적는다(재구성이지 날조 아님).
+   - 골격은 `source("02_Infrastructure/methods/new_adapter.R"); new_adapter(<id>, kind=, paper_id=)`
+     로 만든다 — 진입점 이름·NULL 처리·헤더 규약·등재 stub 이 깔린다(오늘 두 번 틀린 지점).
+     ★골격은 **비어 있으므로 등재가 거부된다** — TODO(원문) 칸을 채워야만 통과한다.
 2. `02_Infrastructure/methods/adapters/<snake_name>.R`, 진입점은 kind 고정:
    - 비중 규칙/목적함수 교체 → `adapter_kind="weight"` → `method_weights(ctx) -> 선호 벡터`
      ctx = list(assets, R(obs×assets, PIT trailing), mu, Sigma)
