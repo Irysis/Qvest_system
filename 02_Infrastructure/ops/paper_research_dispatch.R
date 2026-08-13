@@ -580,6 +580,52 @@ if (Sys.getenv("QVEST_DISPATCH_NO_TG", "0") != "1") {
       } else sprintf("regime %d편 → %s", n_reg, actions$regime$harness_status %||% "측정 없음"))
     }
     if (length(bullets) < 2) bullets <- c(bullets, "자본 admit 없음 — 측정·보고만(governor 정지)")
+
+    # ══ 레인별 발송 (2026-08-13 도훈 보고: "리스크·옵티마이저 논문 리서치 결과가 온 적이 없다") ══
+    #   원인 2중. ①**라벨** — 전 레인을 `AlphaSearch`(🔭) 하나로 보냈다. `Risk`(🛡️)·`Optimizer`(⚖️)
+    #     라벨이 이미 있는데 안 썼다. 받는 쪽에선 전부 알파 메시지로 보인다.
+    #   ②★**논문이 한 편도 안 나온다** — 본문에 제목이 없고, 수치는 큐가 아니라 레지스트리 arm 에서
+    #     나오므로 **다른 논문 집합인데 숫자가 똑같다**(실측: 큐 1편인 08-13 과 5편인 07-05 의
+    #     optimizer 줄이 ΔIR=-0.021 로 완전 동일). 그러면 "이 논문들을 리서치한 결과"로 읽힐 수 없다.
+    #   ⇒ 레인별로 그 에이전트 이름으로 보내고, **큐 N편 → 어댑터 등재 M편 → 측정 arm K개**를
+    #     명시한다. M=0 이면 "등재 0 — 이 논문들은 아직 측정되지 않았다"가 본문에 찍힌다.
+    #     (등재 경로는 02_Infrastructure/methods/register_method.R)
+    .titles <- function(rt, k = 5L) {
+      x <- getrt(rt); if (!length(x)) return(character(0))
+      tt <- vapply(x, function(e) as.character(e$title %||% e$paper %||% "?"), character(1))
+      if (length(tt) > k) c(tt[seq_len(k)], sprintf("… 외 %d편", length(tt) - k)) else tt
+    }
+    .lane_send <- function(lane, agent_name, n_q, n_arm, result_line) {
+      if (n_q <= 0) return(invisible(NULL))
+      st <- if (n_arm > 0)
+              sprintf("큐 %d편 → 어댑터 등재 %d건 → 측정 arm %d개", n_q, n_arm, n_arm)
+            else
+              sprintf("큐 %d편 → **어댑터 등재 0건 → 이 논문들은 아직 측정되지 않았습니다**", n_q)
+      secs2 <- list(
+        list(type = "summary", heading = sprintf("%s 레인", lane), body = st),
+        list(type = "bullet", heading = "이번 큐 논문", items = .titles(lane)),
+        list(type = "bullet", heading = "측정 결과(등재된 arm 기준)", items = result_line),
+        list(type = "kv", heading = "다음 단계",
+             kv = list("등재 경로" = "02_Infrastructure/methods/register_method.R",
+                       "후보 큐" = "06_Registry/adapter_registration_queue.json",
+                       "주의" = "측정 arm 수는 큐 길이가 아니라 등재 수에 비례합니다"))
+      )
+      tryCatch(tg_agent_brief(agent = agent_name,
+                              title = sprintf("논문 → %s 리서치", lane),
+                              relaxed = TRUE, force = TRUE,
+                              lock_scope = sprintf("paper_dispatch_%s_%s", lane, today),
+                              sections = secs2),
+               error = function(e) cat(sprintf("[dispatch] tg fail(%s): %s\n", lane, conditionMessage(e))))
+    }
+    .n_arm_opt  <- tryCatch(length(opt_verdict$arms %||% list()), error = function(e) 0L)
+    .n_arm_risk <- tryCatch(as.integer(actions$risk$verdict$n_measured %||% 0L), error = function(e) 0L)
+    .n_arm_reg  <- tryCatch(as.integer(actions$regime$verdict$paper_adapters_registered %||% 0L), error = function(e) 0L)
+    .lane_send("optimizer", "Optimizer", n_opt, .n_arm_opt,
+               bullets[grepl("^optimizer", bullets)] %||% "측정 결과 없음")
+    .lane_send("risk", "Risk", n_risk, .n_arm_risk,
+               bullets[grepl("^risk", bullets)] %||% "측정 결과 없음")
+    .lane_send("regime", "Q-Lead", n_reg, .n_arm_reg,
+               bullets[grepl("^regime", bullets)] %||% "측정 결과 없음")
     # ★(2026-08-13) 큐 날짜를 헤드라인에 명시한다. 백로그 소급 구동(paper_dispatch_backfill.sh)이
     #   2개월 전 큐를 처리해도 구 문구는 오늘 결과처럼 읽혔다 — 보고가 시점을 숨기면 안 된다.
     .qlbl <- if (identical(today, format(Sys.Date(), "%Y%m%d"))) today else sprintf("%s · 백로그 소급", today)
