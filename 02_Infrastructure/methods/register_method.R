@@ -158,6 +158,11 @@ verify_adapter <- function(adapter_path, kind, method_id = "CANDIDATE", root = .
   #   어댑터가 통과하는가)가 그걸 잡았다. 의존 결손을 조용히 넘기지 않고 이름 붙여 실패시킨다.
   dep <- file.path(root, "02_Infrastructure/portfolio/strategy_tilt_weights.R")
   if (file.exists(dep)) suppressWarnings(try(sys.source(dep, envir = wenv), silent = TRUE))
+  # ★wrap_exposure_adapter 는 data.table 을 쓴다(`as.data.table`, `e[, .(Date, exposure)]`).
+  #   production 은 호출자가 이미 로드한 상태로 돈다 — 검증기에서 빠뜨리면 **어댑터가 정상인데
+  #   "실행 예외"로 거부**된다(실측: TFCostOptSpan 이 자기 로그까지 찍고 나서 wrapper 에서 죽었다).
+  #   normalize_long_only 때와 같은 계열 — wrapper 의존은 한 곳에 모아 갖춘다.
+  suppressWarnings(suppressMessages(try(library(data.table), silent = TRUE)))
   ok <- tryCatch({ sys.source(mrp, envir = wenv); TRUE }, error = function(e) conditionMessage(e))
   if (!isTRUE(ok)) return(fail(sprintf("method_registry.R source 실패: %s", ok)))
   if (kind == "weight" && !exists("normalize_long_only", envir = wenv, inherits = TRUE))

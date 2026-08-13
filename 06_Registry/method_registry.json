@@ -691,6 +691,48 @@
       },
       "measured": false,
       "similar_to": []
+    },
+    {
+      "method_id": "TFCostOptSpan",
+      "route": "regime",
+      "adapter_kind": "exposure",
+      "paper_id": "arxiv:2607.19497",
+      "paper_title": "The Science and Practice of Trend-Following Systems",
+      "routed_on": "2026-07-26",
+      "mechanism": "European TF(EWMA) 손익을 변동성-정규화 수익률의 자기상관으로 닫아 푼다: Ψν=Σν^m ρ(m) (5.3) → 적재 Aν/Bν/Kν (5.8·5.9) → 일별 적률 (5.7) → 비용 차감 (5.10). 이 닫힌 형 net Sharpe 를 ν 에 대해 최대화해 **비용-최적 span** 을 유도한다. TF 알파 = 저주파 초과 스펙트럼 질량.",
+      "kr_mapping": "논문 TF 포지션은 부호가 있으나 헌법상 long-only 이므로 **long leg 사상**: exposure=clamp(정규화 TF 신호,0,1) — 추세가 음이면 현금으로 물러난다. regime 레인 정의(얼마나 태울지)와 같은 대상. 컷오프는 홀딩월 시작 전 마지막 관측으로 잡고 used_cutoff 로 신고(계약 필수, 최소 간격 1일 실측).",
+      "adapter": "02_Infrastructure/methods/adapters/tf_cost_optimal_span.R",
+      "entrypoint": "exposure_schedule",
+      "verdict": "implemented",
+      "registration": {
+        "verified_by": "register_method.R (production wrapper 경유 · 합성 fixture)",
+        "checks": {
+          "file_exists": true,
+          "sources": true,
+          "entrypoint": "exposure_schedule",
+          "deterministic": true,
+          "non_degenerate": "발화 24/60 · 평균 0.750"
+        },
+        "failure_reason": null,
+        "unverified_on_fixture": false,
+        "unverified_reason": null,
+        "fixture": "rm_fixture(n_assets=8, n_obs=260, seed=20260813)",
+        "scope_note": "계약 준수 검증이지 성과 검증이 아니다. 성과는 dispatch Σ-A/B 가 잰다."
+      },
+      "screen_axes": {
+        "shrinkage_builtin": "no",
+        "statistic_order": "<=2nd",
+        "screen_priority": "미정(2축은 우선순위를 결정하지 않음)"
+      },
+      "selection_type": "chain",
+      "free_params": {
+        "TFCOS_C": 0.0015,
+        "TFCOS_S": 24,
+        "TFCOS_MINN": 36,
+        "note": "★ν 는 **유도**된다(해석식 최대화) — sweep 아님. measurement-graduation §3 의 sweep 은 '열거된 trial 에서 백테 결과를 argmax' 인데 여기선 닫힌 형 식을 최대화한다(입력은 추정된 ρ·κ·μ·c 뿐, 백테 미사용). MLE 가 sweep 이 아닌 것과 같다. c=15bps 는 헌법 상수, S=24 만 사전고정(바꿔가며 고르지 않음). 대비: 같은 계열 2606.09025 는 216점 백테 그리드라 sweep — 등재 보류."
+      },
+      "measured": false,
+      "similar_to": []
     }
   ],
   "cross_method_synthesis": {
