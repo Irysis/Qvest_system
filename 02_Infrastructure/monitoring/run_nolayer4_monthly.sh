@@ -24,6 +24,25 @@ echo "=== noLayer4 월간 트래킹 $AS_OF ($(date)) ===" | tee "$LOG"
 #    (내부: _recompute_alpha_asof.R + STR_1715 run_all.R + m4 factor_engine → m4_extended.csv/alpha 신선)
 kill_stray; PG2_AS_OF="$AS_OF" bash "$B23/run_pg2_forward_noLayer4.sh" >> "$LOG" 2>&1 || echo "[warn] run_pg2_forward_noLayer4 비정상(로그 확인)" | tee -a "$LOG"
 
+# 1a) ★m4 append-only 게이트 (도훈 지시 2026-08-13 "과거값 소급변경 시키지말고 최신 데이터만 행 추가시켜")
+#     [1]의 factor_engine 은 패널을 **전량 재생성**한다. m4 자체 기계는 안정이나(ret_net·bocpd_norm·
+#     decay_* 변경 0) **매크로 국면 입력이 과거를 재서술**해서 최종 weight_str1715 가 소급 변경된다
+#     — 2026-07-02 백업 대비 8행 변경(2008-02-01 1.0→0.844 등) + **2026-07 행 통째 유실** 실측.
+#     이 게이트가 발행 원장(06_Registry/m4_published/)을 정본으로 삼아 과거를 되돌리고 새 달만 잇는다.
+#     ★[1b] 배포 생성기가 이 패널을 읽으므로 **반드시 [1] 과 [1b] 사이**에 있어야 한다.
+#     exit 1 = 과거 재서술 시도 검출(발행본은 보존됨) → 경고만 하고 계속. 배포 비중은 안정된 이력 위에서 산출된다.
+kill_stray
+QM_ROOT="$QM_ROOT" CLAUDE_PROJECT_DIR="$QM_ROOT" \
+  "$RSCRIPT" --no-save "$QM_ROOT/02_Infrastructure/regime/m4_append_only.R" --as-of "$AS_OF" >> "$LOG" 2>&1
+_m4rc=$?
+case "$_m4rc" in
+  0) echo "── [1a] m4 append-only OK (과거 불변 + 신규행 PIT 통과)" | tee -a "$LOG" ;;
+  1) echo "!! [1a] m4 과거 재서술 시도 검출 — 발행본 보존됨(로그 확인). 상류 매크로 국면 재생성 점검 필요" | tee -a "$LOG" ;;
+  3) echo "XX [1a] m4 AS_OF 행 미생성 — 이대로 가면 배포 생성기가 직전 달 m4 를 조용히 쓴다. 중단" | tee -a "$LOG"; exit 13 ;;
+  4) echo "XX [1a] ★m4 PIT 위반 — 신규 행이 결정일 이후 매크로 관측 사용. 중단" | tee -a "$LOG"; exit 14 ;;
+  *) echo "XX [1a] m4 append-only 게이트 실패(rc=$_m4rc) — 패널 신뢰 불가, 중단" | tee -a "$LOG"; exit 13 ;;
+esac
+
 # 1b) ★deployed 슬롯 생성기 — book_state.admitted_ids 가 슬롯 2-3 이 아닐 때만 추가 실행.
 #     2026-07-19 D3 swap-in 이후 admitted = STR_1715_on_M4gAE_R05_noLayer4_PG2(슬롯 2-4)인데
 #     이 실행기는 슬롯 2-3 만 돌리고 있었다 — m4 발화월(실측 37개월 중 36개월)에는
