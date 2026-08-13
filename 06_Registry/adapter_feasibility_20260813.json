@@ -15,39 +15,42 @@
       "title": "Two Sides of Schur Damping",
       "feasible": true,
       "kind": "weight",
-      "why": "상관행렬에서 블록별 감쇠 Schur 보수 → 잔여위험 역수 배분. 입력이 R/상관뿐이고 산출이 횡단면 선호 벡터 — ctx 계약과 정확히 같은 모양. 구현·등재 완료."
+      "why": "상관행렬에서 블록별 감쇠 Schur 보수 → 잔여위험 역수 배분. 입력이 R/상관뿐이고 산출이 횡단면 선호 벡터 — ctx 계약과 정확히 같은 모양. 구현·등재 완료.",
+      "reason": "implemented_and_registered"
     },
     {
       "paper_key": "260724410",
       "title": "The Fundamental Structure of Risk (CD-DFM)",
-      "feasible": false,
+      "feasible": null,
       "kind": "sigma",
-      "reason": "inputs_not_in_ctx",
-      "why": "characteristic-driven 잠재팩터 오토인코더 — 입력이 **firm characteristics/펀더멘털**인데 ctx 에 없다. 수익률로 흉내 내면 그건 CD-DFM 이 아니라 날조다. ctx 확장(특성 패널 주입) 전에는 원리적으로 불가."
+      "reason": "ctx_extension_required",
+      "why": "★정정(도훈 지적): '불가'가 아니라 **ctx 확장 필요**다. 특성 패널은 저장소에 이미 있다(factor DB · load_month_factors() · bulk_loader_pit_safe.R). sigma ctx 에 PIT-정렬 특성 행렬(assets × characteristics)을 추가하면 열린다. 확장 지점 = auto_sigma_weighting_ab.R:122 한 곳."
     },
     {
       "paper_key": "260627462",
       "title": "Decision Geometry of Covariance Estimation for GMVP",
-      "feasible": false,
-      "kind": "sigma",
-      "reason": "theory_no_estimator",
-      "why": "새 추정기를 제안하지 않는다 — 추정오차가 GMVP regret 으로 사상되는 방식을 증명하는 **이론**(정확 regret 항등식·비점근 한계·(p−1)차원 불변 방향). 구현할 estimator 가 없다. 소비면은 어댑터가 아니라 **평가 지표**(기존 arm 들을 matrix-norm 대신 decision regret 으로 다시 줄 세우기)."
+      "feasible": null,
+      "kind": "evaluation_metric",
+      "reason": "different_consumption_surface",
+      "why": "★정정: '불가'가 아니라 **소비면이 어댑터가 아닌 것**이다. arm 을 matrix-norm 이 아니라 decision regret 으로 재정렬하는 평가 지표로 소비한다 — 그 평가기를 깔면 된다."
     },
     {
       "paper_key": "260611318",
       "title": "Mean-Variance Optimization in Ambiguous Markets with Learning",
-      "feasible": false,
-      "kind": "weight",
-      "reason": "wrong_object_and_constraint_void",
-      "why": "연속시간 Black-Scholes 다자산 확률제어(드리프트 모호성 + 학습). 산출이 동적 전략이지 횡단면 비중 규칙이 아니다. ★핵심 결론('모호성 회피 투자자는 위험자산을 **덜** 보유')은 **레버리지 진술**이라 Σw=1 long-only 에서는 표현될 수 없다 — 우리는 항상 만기 투자다."
+      "feasible": null,
+      "kind": "exposure",
+      "reason": "wrong_kind_my_error",
+      "why": "★정정(내 오판): '레버리지 진술이라 Σw=1 에서 표현 불가'라고 썼는데 **exposure 레인이 정확히 그 축**이다(exposure∈[0,1] = 얼마나 태울지 = 위험자산을 덜 보유). weight kind 하나만 놓고 본 것이 오류. 모호성 회피도 → 노출 축소로 사상 가능."
     },
     {
       "paper_key": "260718813",
       "title": "Mixing-Law Uncertainty in NMVM Mixtures",
-      "feasible": false,
-      "kind": "weight",
-      "reason": "wrong_object",
-      "why": "NMVM 혼합법칙 6종 + 비모수 MLE 로 모호성 집합을 만들고, **주어진 하나의 포트폴리오 방향** 위에서 CPT(누적전망이론) 노출을 분포적 견고 최적화. 산출이 1차원 노출이지 횡단면 비중 벡터가 아니다. 게다가 CPT 선호는 현 목적함수 계열 밖."
+      "feasible": null,
+      "kind": "exposure",
+      "reason": "wrong_kind_my_error",
+      "why": "★정정(내 오판): '주어진 한 방향 위의 1차원 노출'이 **바로 exposure 레인의 대상**이다(선별·비중 고정, 스칼라 노출만 교체). weight 로 보려 해서 wrong_object 로 판정했다."
     }
-  ]
+  ],
+  "n_feasible_revised": "1 확정 + 4 조건부(ctx 확장 1 · 소비면 전환 1 · kind 정정 2)",
+  "_correction_20260813": "★도훈 지적 '구현 가능한 인프라가 없으면 깔면 되잖아' 로 재검토 — 초판 '불가 4건' 중 **3건이 내 오판**이었다. 오류 형태 둘: ①논문을 **kind 하나에만** 대보고 나머지 두 레인을 안 봤다(exposure 레인이 '얼마나 태울지'라 레버리지형 결론을 정확히 담는데 weight 로만 봤다) ②ctx 를 **고정 상수로** 가정했다(특성 패널은 이미 저장소에 있고 확장 지점은 한 곳이다). ⇒ 판정 어휘를 '불가' 대신 **ctx_extension_required / different_consumption_surface / wrong_kind** 로 바꾼다. 진짜 불가는 아직 0건이다."
 }
