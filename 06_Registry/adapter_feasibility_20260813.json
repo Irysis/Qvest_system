@@ -7,7 +7,7 @@
     "exposure": "periods(decision_date, eval_date), bare_gross",
     "note": "★firm characteristics · 펀더멘털 · 팩터DB 접근 없음 — 수익률과 알파뿐."
   },
-  "n_examined": 6,
+  "n_examined": 12,
   "n_feasible": 1,
   "rows": [
     {
@@ -58,9 +58,79 @@
       "reason": "method_is_a_sweep",
       "why": "입력은 이제 전부 갖춰졌다(macro provider 신설로 VIX·크레딧·금리·스트레스 확보, 낙폭·재진입은 bare_gross 에서 계산). ★그러나 **방법 자체가 216점 그리드 선택**이다: αvix{0.50,0.67} × λrate{0.25,0.50} × λcredit{0,0.25} × maxcash{0.50,0.75,1.00} × brakeτ{0.50,0.75,1.00} × convexity{3,4,5} = 216, 다기준 점수로 argmax. measurement-graduation §3 기준 **sweep** 이므로 selection_type='sweep' + DSR≥0.5 HARD 가 적용되고 n_trials 기록 의무가 붙는다. 저자들도 '다중검정 보정 추론은 future work' 라고 명시한다. ⇒ 등재하려면 ①그리드를 재현하고 sweep 으로 라벨(DSR 게이트) 또는 ②단일 사전고정 1점으로 축소(논문 결과 아님을 명시, LMGarch2DMC 선례). ⚠추가로 점수→현금 **사상식 원문 추출 미완** — 없이 구현하면 날조다.",
       "evidence_basis": "원문 정독(32쪽) — Table 4 파라미터 그리드 확인"
+    },
+    {
+      "paper_key": "260613618",
+      "title": "A Declining CVaR Glidepath Framework for Target-Date Fund Design",
+      "feasible": false,
+      "kind": "n/a",
+      "reason": "wrong_object",
+      "why": "생애주기 glidepath — 감소 스케줄이 **은퇴연령·기여율·기대수명**에 색인된다. 우리 대상(269개월 고정 슬리브의 월별 비중/노출)에 대응물이 없다. CVaR 제약 자체는 표현 가능하나 목표수익이 외생 은퇴 파라미터라 그 축이 비어 있다.",
+      "evidence_basis": "abstract (원문 초록 정독 — 전문 미독, 판정 강도 약함)"
+    },
+    {
+      "paper_key": "260609104",
+      "title": "Addressing Market Regime Changes and Heavy-Tailed Returns (BAVAR-BLED)",
+      "feasible": null,
+      "kind": "weight",
+      "reason": "feasible_heavy_build",
+      "why": "DRL + Bayesian-averaged VAR + Black-Litterman. 입력은 수익률로 충족, 산출은 비중 규칙 ✓, long-only 표현 가능. ⚠**DRL 학습 빌드**라 규모가 크고 하이퍼파라미터 선택유형을 원문에서 확인해야 한다(백테 튜닝이면 sweep).",
+      "evidence_basis": "abstract (원문 초록 정독 — 전문 미독, 판정 강도 약함)"
+    },
+    {
+      "paper_key": "260619318",
+      "title": "Fitting Accumulated Stock Returns with Tempered Skew t-Distribution",
+      "feasible": false,
+      "kind": "n/a",
+      "reason": "wrong_object",
+      "why": "S&P 다일누적수익의 **주변분포 적합**(tempered Skew-t). 포트폴리오 객체(비중/Σ/노출)를 내지 않는다. 꼬리 진단 지표로는 쓸 수 있으나 어댑터 대상은 아니다.",
+      "evidence_basis": "abstract (원문 초록 정독 — 전문 미독, 판정 강도 약함)"
+    },
+    {
+      "paper_key": "260618199",
+      "title": "Conformal Prediction Intervals with Tail-Specific Guarantees",
+      "feasible": true,
+      "kind": "weight",
+      "reason": "feasible_now",
+      "why": "꼬리별 보정 conformal 구간. **이미 등재된 ConformalKelly 와 같은 사상**(구간폭 → 비중 스케일)이라 선례가 있다. 입력은 ctx$R 로 충분, 산출은 선호 벡터.",
+      "evidence_basis": "abstract (원문 초록 정독 — 전문 미독, 판정 강도 약함)"
+    },
+    {
+      "paper_key": "260611962",
+      "title": "Composite likelihood inference of fractional Gaussian processes",
+      "feasible": true,
+      "kind": "sigma",
+      "reason": "feasible_now",
+      "why": "fBm/fGn 장기기억 모수의 composite likelihood 추정(Godambe 정보). **LMGarch2DMC 와 같은 자리**(분산 시간구조 → Σ=DCD). 선택유형 = 우도 최대화라 sweep 아님.",
+      "evidence_basis": "abstract (원문 초록 정독 — 전문 미독, 판정 강도 약함)"
+    },
+    {
+      "paper_key": "260608141",
+      "title": "A Structural Matrix Autoregressive Model (returns·RV·volume)",
+      "feasible": null,
+      "kind": "sigma",
+      "reason": "provider_required",
+      "why": "수익률·실현변동성·**거래량** 결합동학 → 대차원 공분산 구조. 거래량이 ctx 에 없다 — 단 RAWDATA 에 `Vol` 열이 있으므로 **volume provider 선언 한 줄**이면 열린다(characteristics·macro 선례).",
+      "evidence_basis": "abstract (원문 초록 정독 — 전문 미독, 판정 강도 약함)"
     }
   ],
   "n_feasible_revised": "1 확정 + 4 조건부(ctx 확장 1 · 소비면 전환 1 · kind 정정 2)",
   "_correction_20260813": "★도훈 지적 '구현 가능한 인프라가 없으면 깔면 되잖아' 로 재검토 — 초판 '불가 4건' 중 **3건이 내 오판**이었다. 오류 형태 둘: ①논문을 **kind 하나에만** 대보고 나머지 두 레인을 안 봤다(exposure 레인이 '얼마나 태울지'라 레버리지형 결론을 정확히 담는데 weight 로만 봤다) ②ctx 를 **고정 상수로** 가정했다(특성 패널은 이미 저장소에 있고 확장 지점은 한 곳이다). ⇒ 판정 어휘를 '불가' 대신 **ctx_extension_required / different_consumption_surface / wrong_kind** 로 바꾼다. 진짜 불가는 아직 0건이다.",
-  "_note_sweep": "★새 판정 사유 추가: `method_is_a_sweep`. 입력이 갖춰져도 **방법이 그리드 선택이면** 등재는 DSR 규율을 부른다. 구현가능성 3기준(입력·산출·제약)에 더해 **선택 유형**을 착수 전에 봐야 한다 — 이 축을 안 보면 sweep 논문을 chain 으로 등재해 다중검정 보정을 건너뛰게 된다."
+  "_note_sweep": "★새 판정 사유 추가: `method_is_a_sweep`. 입력이 갖춰져도 **방법이 그리드 선택이면** 등재는 DSR 규율을 부른다. 구현가능성 3기준(입력·산출·제약)에 더해 **선택 유형**을 착수 전에 봐야 한다 — 이 축을 안 보면 sweep 논문을 chain 으로 등재해 다중검정 보정을 건너뛰게 된다.",
+  "_note_tally": "★N2 중간 집계(2026-08-13). 초판의 '구현가능 1/5' 는 **당시 4건을 잘못 불가로 판정**해서 나온 수치였다. kind 재배정·provider 추가·소비면 전환을 반영하면 도달 가능이 9/11 이다. ⚠판정 강도: 6편은 **초록만** 읽었다 — 전문을 열면 선택유형(sweep 여부)과 자유도가 달라질 수 있다. 특히 DRL 계열은 하이퍼파라미터 선택을 확인해야 한다.",
+  "tally": {
+    "표본": 12,
+    "사유별": {
+      "implemented_and_registered": 1,
+      "ctx_extension_required": 1,
+      "different_consumption_surface": 1,
+      "wrong_kind_my_error": 2,
+      "method_is_a_sweep": 1,
+      "wrong_object": 2,
+      "feasible_heavy_build": 1,
+      "feasible_now": 2,
+      "provider_required": 1
+    },
+    "요약": "등재완료 1 · 현 계약 구현가능 2 · provider 추가 후 2 · kind 재배정 2 · 소비면 전환 1 · sweep(DSR 필요) 1 · 무거운 빌드 1 · **대상 아님 2** ⇒ 표본 12편 중 **어떤 형태로든 도달 가능 10/12(83%)**, 진짜 대상 아님 17%."
+  }
 }
