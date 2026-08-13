@@ -97,8 +97,12 @@ chk("T5b 원상복구 확인(주입 항목 제거됨)",
 meas <- Filter(function(e) !is.null(e$key_metrics$delta_ir), pl_of()$pl)
 chk("T6 A/B 측정이 자동 조인된 항목이 있다", length(meas) > 0L, sprintf("%d건", length(meas)))
 if (length(meas)) {
-  ov <- Filter(function(e) grepl("regime_overlay", e$key_metrics$ab_source %||% ""), meas)
-  chk("T6b ★regime overlay 항목은 교란 경고를 동반한다(따로 조회해야 알면 dead 배관)",
+  # ★선택자를 **원천 문자열이 아니라 의미**로 (2026-08-13 재수리). 초판은 ab_source 가
+  #   `h2_regime_overlay_ab.csv` 인 것만 골랐는데, regime 측정이 research_status 로 옮겨가자
+  #   대상 0건이 되어 FAIL 했다 — 경고는 실제로 붙어 있는데 **선택자가 옛 원천에 박제**된 것.
+  #   교란은 원천이 아니라 **노출 오버레이라는 성질**에서 나온다 ⇒ adapter_kind 로 고른다.
+  ov <- Filter(function(e) identical(e$key_metrics$adapter_kind, "exposure"), meas)
+  chk("T6b ★exposure(노출 오버레이) 측정은 교란 경고를 동반한다(따로 조회해야 알면 dead 배관)",
       length(ov) > 0L && all(vapply(ov, function(e) nzchar(e$key_metrics$delta_ir_caveat %||% ""), logical(1))),
       sprintf("%d건 중 경고 동반 %d", length(ov),
               sum(vapply(ov, function(e) nzchar(e$key_metrics$delta_ir_caveat %||% ""), logical(1)))))
@@ -150,12 +154,35 @@ chk("T7b 복수 레인 측정은 other_lane_measurements 로 병기된다", leng
 #   측정 건수만 줄고 **아무 소리도 안 난다**(오늘 실제로 risk 4건이 그렇게 사라져 있었다 —
 #   콜렉터가 CSV 만 읽던 시절). 원천 목록은 상수(HI_PAPER_AB_SOURCES)+코드인데 그걸 묻는 축이
 #   없었다. ⇒ **두 원천이 각각 최소 1건씩 기여하는지**를 축으로 세운다.
-srcs <- vapply(pl_of()$pl, function(e) as.character(e$key_metrics$ab_source %||% "")[1], "")
-srcs <- srcs[nzchar(srcs)]
-n_rs  <- sum(grepl("research_status", srcs))
-n_csv <- sum(grepl("\\.csv$", srcs))
-chk("T8 ★측정 원천 2종이 모두 기여한다(하나 끊기면 조용히 줄기만 한다)",
-    n_rs > 0L && n_csv > 0L, sprintf("research_status %d · csv %d", n_rs, n_csv))
+#   ★초판은 "두 원천이 모두 ≥1건 기여" 로 썼는데 그건 **유효한 불변식이 아니다** —
+#     한 원천이 다른 것을 포섭하면 정당하게 0이 된다(실제로 regime arms 신설 후 csv 가 0이 되며
+#     FAIL 했다). 의도는 "원천이 조용히 끊기지 않는다" 였다.
+#     ⇒ **커버리지**로 다시 쓴다: 어느 원천에든 측정 기록이 있는 등재 method 는 인덱스에서도
+#       반드시 measured 여야 한다. 원천 하나가 끊기면 그 method 가 커버리지에서 빠져 빨개진다.
+.src_ids <- character(0)
+for (p in sort(Sys.glob("stage_artifacts/paper_recharge/research_status_*.json"), decreasing = TRUE)) {
+  jj <- tryCatch(fromJSON(p, simplifyVector = FALSE), error = function(e) NULL); if (is.null(jj)) next
+  for (ln in names(jj$actions %||% list()))
+    for (a in (jj$actions[[ln]]$verdict$arms %||% list()))
+      if (isTRUE(a$measured)) .src_ids <- c(.src_ids, as.character(a$method_id %||% "")[1])
+}
+for (cf in c("06_Registry/book_carrier/h2_regime_overlay_ab.csv",
+             "06_Registry/book_carrier/h1b_sigma_ab_overlay.csv")) {
+  if (!file.exists(cf)) next
+  tt <- tryCatch(utils::read.csv(cf, stringsAsFactors = FALSE), error = function(e) NULL)
+  if (!is.null(tt) && "scenario" %in% names(tt)) .src_ids <- c(.src_ids, as.character(tt$scenario))
+}
+.src_ids <- unique(.src_ids[nzchar(.src_ids)])
+.reg_ids <- vapply(mr$methods %||% list(), function(m) as.character(m$method_id %||% "")[1], "")
+.should  <- intersect(.reg_ids, .src_ids)
+.is_meas <- vapply(pl_of()$pl, function(e)
+  identical(e$verdict, "PAPER_LANE_MEASURED"), logical(1))
+.meas_ids <- sub("^PL_", "", vapply(pl_of()$pl, function(e) e$strategy_id, "")[.is_meas])
+.gap <- setdiff(.should, .meas_ids)
+chk("T8 ★어느 원천에든 측정 기록이 있는 등재 method 는 인덱스에서도 measured (원천 무음 차단)",
+    length(.should) > 0L && length(.gap) == 0L,
+    sprintf("대상 %d · 누락 %d%s", length(.should), length(.gap),
+            if (length(.gap)) sprintf(" ★%s", paste(head(.gap, 3), collapse = ",")) else ""))
 
 # ── T9 ★텔레그램 중복차단이 **기본값**인가 (2026-08-13 N6)
 #   `force=TRUE` 는 tg_agent_brief 의 중복차단(TTL 30분)을 끈다. 오늘 그것 때문에 같은 메시지가

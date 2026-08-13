@@ -472,12 +472,21 @@ HI_PAPER_AB_SOURCES <- c("06_Registry/book_carrier/h2_regime_overlay_ab.csv",
         #   콜렉터가 대신 내려버린다. 선택은 kind 를 아는 `.hi_parse_paper_lane` 이 한다.
         if (is.null(out[[mid]])) out[[mid]] <- list()
         if (!is.null(out[[mid]][[ln]])) next                  # 같은 레인은 최신 파일 우선
+        # ★필드 **허용목록을 쓰지 않는다** (2026-08-13 재수리). 초판은 ir/port_t/delta_ir/
+        #   control_ir + control/control_basis/arm 만 복사했는데, regime arms 에 새로 실은
+        #   `delta_ir_caveat`·`avg_exposure`·`delta_mdd` 가 목록에 없어 **콜렉터가 버렸다** —
+        #   생산 측이 교란 경고를 실었는데 소비 측이 지운 셈이고, T6b 가 "7건 중 경고 0" 으로 잡았다.
+        #   오늘만 여섯 번째 같은 형태(필드명을 코드에 박제 → 확장 시 조용히 결손).
+        #   ⇒ **스칼라 필드는 전부 옮긴다.** 무엇이 유용한지는 생산 측이 정한다.
         km <- list()
-        for (k in c("ir", "port_t", "delta_ir", "control_ir")) {
-          v <- suppressWarnings(as.numeric(a[[k]] %||% NA)); if (is.finite(v)) km[[k]] <- v
-        }
-        for (k in c("control", "control_basis", "arm")) {
-          v <- as.character(a[[k]] %||% "")[1]; if (nzchar(v)) km[[k]] <- v
+        for (k in setdiff(names(a), c("measured", "method_id"))) {
+          v <- a[[k]]
+          if (is.null(v) || is.list(v) || length(v) != 1L) next
+          if (is.numeric(v) || is.logical(v)) {
+            .n <- suppressWarnings(as.numeric(v)); if (is.finite(.n)) km[[k]] <- .n
+          } else {
+            .s <- as.character(v)[1]; if (nzchar(.s)) km[[k]] <- .s
+          }
         }
         if (!length(km)) next
         km$measured_on <- sub(".*research_status_([0-9]+)\\.json$", "\\1", basename(p))
