@@ -150,7 +150,22 @@ run_regime_overlay_ab <- function(carrier_path = NULL, cost_bps = 15,
   #   (method_registry::wrap_exposure_adapter 가 계약검사를 두른 exposure_schedule).
   #   여기서 ctx 를 만들어 호출한다 — 스케줄을 미리 만들어 넘기면 어댑터가 periods 를 못 봐서
   #   PIT 컷오프를 자기 창에 맞춰 신고할 수 없다(계약의 핵심이 그 신고다).
-  .ctx <- list(periods = periods[, .(decision_date, eval_date)], bare_gross = copy(bare_gross))
+  # ★(2026-08-13) exposure 경로도 **provider 레지스트리 경유**로 통일한다.
+  #   weight/sigma 만 붙여두면 "입력이 없으면 provider 를 등록하면 된다"는 규약이 레인마다
+  #   달라지고, 그 불일치가 곧 "이 레인에선 불가"라는 잘못된 판정을 만든다(오늘 실제로
+  #   exposure 후보 2편을 kind 오판으로 기각했다). PIT 근거는 provider 가 신고한다.
+  #   ★weight/sigma 는 월별 루프 **안에서** 호출되므로 decision_date 가 스칼라이지만,
+  #     exposure 어댑터는 periods 전체를 한 번에 받는다 — 여기서 스칼라를 주면 provider 가
+  #     한 달치 스냅샷만 내고 어댑터는 계열을 못 만든다. 그래서 **전 구간 벡터**를 넘긴다.
+  #     (계약: provider 는 decision_date 가 벡터로 올 수 있음을 전제하고 계열을 반환한다.)
+  if (!exists("build_ctx_extras")) {
+    suppressWarnings(try(source(file.path(Sys.getenv("QM_ROOT", getwd()),
+                                          "02_Infrastructure/methods/ctx_providers.R")), silent = TRUE))
+  }
+  .ex_extras <- if (exists("build_ctx_extras"))
+    build_ctx_extras(as.Date(periods$decision_date), character(0)) else list()
+  .ctx <- c(list(periods = periods[, .(decision_date, eval_date)], bare_gross = copy(bare_gross)),
+            .ex_extras)
   .extra_dt <- list()
   for (.nm in names(extra_exposures)) {
     .e <- tryCatch(extra_exposures[[.nm]](.ctx),

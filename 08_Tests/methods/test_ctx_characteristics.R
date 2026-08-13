@@ -73,8 +73,25 @@ chk("T3 특성 sig_date < 홀딩월 시작 (C5 동형)",
 srcl <- readLines("02_Infrastructure/methods/ctx_providers.R", warn = FALSE)
 src  <- paste(srcl, collapse = "\n")
 btl  <- readLines("02_Infrastructure/ops/auto_sigma_weighting_ab.R", warn = FALSE)
-chk("T3b production 이 '직전 월말'을 sig_date 로 쓴다",
-    grepl('format\\(as\\.Date\\(decision_date\\), "%Y-%m-01"\\)\\) - 1L', src))
+# ★T3b 를 **행동 검사**로 바꿨다 (2026-08-13, 3번째 교훈).
+#   초판은 구현 문자열(`format(as.Date(decision_date), "%Y-%m-01")) - 1L`)을 grep 했는데,
+#   provider 가 벡터 decision_date 를 받도록 `min()` 을 넣는 **정당한 리팩터**에 거짓 FAIL 을 냈다.
+#   오늘 소스-문자열 검사가 리팩터에 깨진 게 세 번째다(파일 이동 2회 + 이번 1회).
+#   ⇒ 구현이 아니라 **성질**을 잰다: 여러 기준일에 대해 sig_date 가 항상 직전 월말인가.
+.pit_ok <- TRUE; .pit_detail <- ""
+# ★`for (d in as.Date(v))` 는 **Date 클래스를 벗긴다**(numeric 으로 순회) — 그러면
+#   format(d, "%Y-%m-01") 이 형식문자열을 `trim` 인자로 먹고 죽는다. 인덱스로 돈다.
+.pit_dates <- as.Date(c("2020-01-15", "2023-03-01", "2026-06-01", "2026-12-31"))
+for (.k in seq_along(.pit_dates)) {
+  .d <- .pit_dates[.k]
+  .want <- as.Date(format(.d, "%Y-%m-01")) - 1L
+  .got  <- tryCatch(build_ctx_extras(.d, c("A", "B"), fixture = TRUE)$characteristics()$sig_date,
+                    error = function(e) NA)
+  if (!identical(as.Date(.got), .want)) {
+    .pit_ok <- FALSE; .pit_detail <- sprintf("(%s → %s, 기대 %s)", .d, .got, .want); break
+  }
+}
+chk("T3b provider 가 항상 '직전 월말'을 sig_date 로 낸다(행동 검사 4점)", .pit_ok, .pit_detail)
 # ★C15 검사는 **줄 단위**로 한다. 초판은 collapse 한 문자열에 `read_parquet\\(.*factor_db` 를 걸었는데
 #   R 정규식의 `.` 는 개행도 먹어서 23행의 read_parquet 가 파일 저 뒤의 factor_db 와 매칭됐다
 #   — 무관한 두 줄이 한 위반으로 보고됐다(오늘 반복 확인한 과잉매칭 계통).

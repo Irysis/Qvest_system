@@ -29,6 +29,10 @@
 #   ① `pit_note` 필수 — PIT 근거를 신고하지 않는 입력은 받지 않는다. 부재를 "아마 괜찮음"으로
 #      내려앉히는 것이 이 저장소의 반복 결함이고, 오버레이 C5 사고가 정확히 그 형태였다.
 #   ② fn 은 **(decision_date, assets) 2인자** — 그래야 PIT 컷오프를 provider 가 스스로 계산한다.
+#      ★`decision_date` 는 **스칼라일 수도, 벡터일 수도** 있다. weight/sigma 레인은 월별 루프
+#        안에서 부르므로 스칼라이고, exposure 레인은 periods 전체를 한 번에 넘기므로 벡터다
+#        (스칼라만 가정하면 exposure 어댑터가 계열을 못 만든다). provider 는 길이에 맞춰
+#        스냅샷 또는 계열을 반환한다.
 #   ③ 반환은 값 또는 **NULL**. 실패를 예외로 던져 배터리를 죽이지 않는다(fail-soft).
 #
 # ★소비 측 규약: ctx$<name> 은 **함수(thunk)** 다. 지연 평가라
@@ -107,13 +111,15 @@ register_ctx_provider(
   source_note = "load_month_factors() 경유 — factor DB parquet 직독 금지(C15).",
   # 게이트용 합성 패널 — 실데이터를 쓰면 판정이 vintage 에 묶인다(위 build_ctx_extras 주석).
   fixture_fn = function(decision_date, assets) list(
-    sig_date = as.Date(format(as.Date(decision_date), "%Y-%m-01")) - 1L,
+    sig_date = as.Date(format(as.Date(decision_date[1]), "%Y-%m-01")) - 1L,
     panel = data.frame(Ticker = assets,
                        char_value = seq(-1, 1, length.out = length(assets)),
                        char_size  = seq(1, 2, length.out = length(assets)),
                        stringsAsFactors = FALSE)),
   fn = function(decision_date, assets) {
-    sig <- as.Date(format(as.Date(decision_date), "%Y-%m-01")) - 1L
+    # 특성 패널은 월별 스냅샷이 정본이다 — 벡터가 오면 **가장 이른** 홀딩월 기준으로 잡는다
+    # (exposure 레인이 전 구간을 넘기는 경우. 계열이 필요하면 별도 provider 를 등록할 것).
+    sig <- as.Date(format(min(as.Date(decision_date)), "%Y-%m-01")) - 1L
     if (!exists("load_month_factors"))
       suppressWarnings(source(file.path(Sys.getenv("QM_ROOT", getwd()),
                                         "02_Infrastructure/factor_db/factor_db_connector.R")))
