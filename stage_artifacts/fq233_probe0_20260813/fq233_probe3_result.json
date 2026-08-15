@@ -1,0 +1,51 @@
+{
+ "status": "INVALID_FRAME_ERROR",
+ "invalidated_at": "2026-08-13",
+ "reason": "★이 산출물은 **구 측정 프레임**에서 나왔다. factor DB sig_date T 팩터를 T월 수익과 짝지어(build_monthly_forward_returns 앵커='sig_date 이하 최종거래일', 월초가 거래일인 달엔 앵커가 그날 자신) 팩터가 채점 대상 월을 봤다. 수정 = 팩터 Date +1개월.",
+ "evidence": "M04_Mom_1 평균 IC: 구 -0.9423 -> 수정 +0.0170 · |평균IC|>0.10 팩터: 46종 -> 0종",
+ "do_not_cite": "이 파일의 수치를 인용하지 말 것. 유효 정본 = r30_reframe_result.json",
+ "kept_for": "프레임 오류 사례로 보존(삭제 아님)",
+ "_original": {
+  "schema": "fq233_probe3_v1",
+  "round_id": "FQ-233-probe3",
+  "measured_at": "2026-08-13",
+  "question": "중앙값-우위(probe0: Q5-Q1 중앙값 +15.51% t3.375 vs 평균 -1.81% t-0.368)가 top-25 실현수익(PORT_t)으로 전이되는가",
+  "verdict": "INVALID_MEASUREMENT_POSITIVE_CONTROL_FAILED",
+  "verdict_note": "결과 인용 금지. 값이 나왔으나 검사가 살아있음을 증명하지 못했다.",
+  "factor_resolved": "D03_RealVol (probe0 미확인 항목 ④ 해소)",
+  "attempts": [
+   {
+    "tag": "3a",
+    "universe_restricted": false,
+    "join_coverage_pct": 5.7,
+    "contract_warning": "top-N 선택분 Ret_1m 커버리지 5.7% < 95% — NA→0 강제로 수익이 0으로 위장될 수 있음",
+    "port_t_raw": -1.009,
+    "port_t_inverted": -1.009,
+    "ew_uni_raw": -2.5795,
+    "ew_uni_inverted": -2.7899
+   },
+   {
+    "tag": "3b",
+    "universe_restricted": true,
+    "join_coverage_pct": 98.4,
+    "contract_warning": "top-N 커버리지 경고 소멸 (liq_ruler 라벨 부재 경고만 잔존)",
+    "port_t_raw": -1.009,
+    "port_t_inverted": -1.009,
+    "ew_uni_raw": -1.5867,
+    "ew_uni_inverted": -1.6301
+   }
+  ],
+  "failure_fingerprints": [
+   "★양성 대조 실패: score 부호를 반전했는데 cap-w PORT_t 가 소수 3자리까지 동일(-1.009). 선택이 결과를 못 바꾸면 그 측정은 선택을 재고 있지 않다.",
+   "★입력 무반응: 조인 커버리지를 5.7% -> 98.4% (17배) 로 고쳤는데 PORT_t 가 -1.009 로 불변.",
+   "☆단 EW-uni 진단은 arm 마다 다르다(3b: -1.5867 vs -1.6301, 3a: -2.5795 vs -2.7899) => 보유는 실제로 다르다. cap-w PORT_t 만 불변."
+  ],
+  "interpretation": "보유가 다른데(EW-uni 진단이 갈림) cap-w PORT_t 가 동일하다는 것은, 그 값이 내가 넘긴 scores 에 반응하지 않는다는 뜻이다. 원인 후보 2개이며 **아직 확정하지 못했다**: (a) 내 호출 규약 결함 — 정본 경로 build_monthly_forward_returns 를 안 쓰고 ret_dt/bench_dt/liq_dt 를 수동 구성했다(계약이 liq_ruler 라벨 부재를 두 번 경고). bench_dt 의 한 달 당김이 active 계열을 무력화했을 가능성. (b) 계약 경로 문제 — 이 호출 형태에서 portfolio_alpha_t_nw_lag3 가 입력 무반응. ★(b) 라면 같은 경로로 나온 과거 판정이 영향을 받으므로 확정이 중요하다. 다만 (a) 가 더 그럴듯하다.",
+  "next_probes": [
+   "정본 입력 경로로 재실행: build_monthly_forward_returns() 로 returns/bench/liq 를 만들고(liq_ruler 라벨 포함) 동일 arm 2개를 돌린다. 값이 갈리면 원인 (a) 확정 = 내 수동 구성 결함.",
+   "값이 여전히 동일하면 canonical_screen_bt 내부에 위반 주입: 무작위 score 를 넣어 PORT_t 가 변하는지 확인. 안 변하면 계약 쪽 결함으로 격상하고 과거 판정 영향 범위를 조사.",
+   "bench_dt 한 달 당김 규약 검증 — scores(ym=M) 와 bench 를 같은 키로 놓는 것이 계약 기대와 맞는지 실측(canonical_screen_bt 가 내부에서 정렬하는지 호출자 책임인지)."
+  ],
+  "discipline_note": "이 라운드가 스스로를 검거한 경로 = **양성 대조**(부호 반전)와 **계약 자체 경고**다. 숫자(-1.009, p 0.313)는 그럴듯했다 — 값의 정오로는 탐지 불가였다. 3a 만 돌리고 멈췄으면 '전이 실패' 라는 그럴듯한 negative 를 보고했을 것이다."
+ }
+}

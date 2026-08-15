@@ -1,0 +1,57 @@
+{
+ "status": "INVALID_FRAME_ERROR",
+ "invalidated_at": "2026-08-13",
+ "reason": "★이 산출물은 **구 측정 프레임**에서 나왔다. factor DB sig_date T 팩터를 T월 수익과 짝지어(build_monthly_forward_returns 앵커='sig_date 이하 최종거래일', 월초가 거래일인 달엔 앵커가 그날 자신) 팩터가 채점 대상 월을 봤다. 수정 = 팩터 Date +1개월.",
+ "evidence": "M04_Mom_1 평균 IC: 구 -0.9423 -> 수정 +0.0170 · |평균IC|>0.10 팩터: 46종 -> 0종",
+ "do_not_cite": "이 파일의 수치를 인용하지 말 것. 유효 정본 = r30_reframe_result.json",
+ "kept_for": "프레임 오류 사례로 보존(삭제 아님)",
+ "_original": {
+  "schema": "alpha_r8_v1",
+  "round_id": "v84-R8",
+  "measured_at": "2026-08-13",
+  "question": "R7 의 oos_retention 음의 결정력(-0.0633)이 구현 결함인가 개념 결함인가",
+  "verdict": "R7_WAS_IMPLEMENTATION_DEFECT_GATE_IS_SUPPORTED",
+  "metric_type": "panel_statistic",
+  "results": {
+   "impl_v2_anchored3": {
+    "rho": 0.2457,
+    "n": 34096,
+    "note": "essence_score.R v2 로직 동형 — splits{.55,.65,.75}, k>=6 & n-k>=6, is_ir>0.05 가드, finite 중앙값"
+   },
+   "winsorized_ratio": {
+    "rho": -0.0633,
+    "n": 70440,
+    "note": "1/99 백분위 절단 — ★변화 없음"
+   },
+   "raw_ratio_R7": {
+    "rho": -0.0633,
+    "n": 70440,
+    "note": "R7 원판(abs(s1)>1e-8 만 가드)"
+   },
+   "null_random": {
+    "rho": 0.0013,
+    "n": 70440
+   }
+  },
+  "root_cause": "★극단값이 아니라 **부호**가 문제였다. 윈저화(1/99 절단)로도 rho 가 -0.0633 에서 안 움직였다. 원판은 abs(s1)>1e-8 만 걸어 **IS IR 이 음수인 관측을 통과**시켰고 거기서 비율 부호가 뒤집혔다. 실구현의 is_ir>0.05 가드는 그런 관측 36,344건(51.6%)을 배제한다. 원판 분포 min -7092.81 / max +5394.98 이 그 흔적.",
+  "gate_verdict_corrected": {
+   "port_t": 0.5639,
+   "calmar": 0.5491,
+   "oos_retention_real_impl": 0.2457,
+   "conclusion": "★자본 게이트 HARD 3종 **전부** 미래 결정력 보유(귀무 +0.0013 대비). 현행 설계 실측 지지. 단 oos_retention 은 다른 둘보다 낮다."
+  },
+  "lesson": "★가드는 장식이 아니라 통계량의 일부다 — 같은 개념이 가드 없으면 -0.06(무작위 이하), 있으면 +0.25.",
+  "caveats": [
+   "★R7 보고 정정: 'oos_retention 음의 결정력'은 **내 구현 결함**이었다. R7 이 범위를 '게이트 감사 아님·실구현과 다른 통계량'으로 제한하고 재측정을 next_probe 1순위로 건 절차가 오보를 막았다.",
+   "실구현 판본은 **48.4%만 유효**(절반이 NA). 운용에서 NA 를 통과로 보는지 차단으로 보는지가 게이트 실효를 가른다 — 미확인.",
+   "rho 절대값 인용 금지(팩터 정체성 지속성 오염) — 상대 순위/귀무 대비만.",
+   "팩터 수준 대리 포트(top-decile EW)이지 forge 포트가 아니다. H=12 단일 지평."
+  ],
+  "next_probes": [
+   "NA 처리 규약 확인: essence_score/discovery_graduation_gate 에서 oos_retention 이 NA 일 때 통과인가 차단인가 — 48.4% 유효율이면 이 규약이 게이트 실효를 지배한다",
+   "게이트 3종의 **증분** 결정력: 셋을 함께 넣었을 때 서로 대체재인가 보완재인가(다중회귀/조건부 rho)",
+   "다중검정 보정 후 R5~R8 통합 재판정",
+   "R4 배관 무효 원인 특정 — 합성 경로 오염 지점"
+  ]
+ }
+}

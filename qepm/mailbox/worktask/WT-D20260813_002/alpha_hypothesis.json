@@ -1,0 +1,147 @@
+{
+  "wt_id": "WT-D20260813_002",
+  "designed_by": "alpha-hypothesis",
+  "model_tier": "fable",
+  "designed_at": "2026-08-13",
+  "spec_version": "ast_v1.1_hypothesis_stage",
+
+  "prechecks": {
+    "hypothesis_index_hits": [
+      {
+        "id": "DIST-RAMP-006",
+        "relation": "선행 대조 (승계 — 재조사 아님, 도훈 지시로 카드 직접 확인 완료)",
+        "content": "국면-조건부 팩터배분 = 25종 long-only에서 PORT_t 천장 ~2.85 (AR+MSM 2.73 · Cascade 2.85 · Shu-Mulvey 0.83, supporting 9 L-code, metric_type=backtested). 카드 진단 = '국면엔진 한계가 아니라 알파 자체 한계'. 금지 ① 인덱스-배분 졸업수치(pt 7.72)의 25종 재시도 ② DPL 재제안. frontier 2번 = 'overlay-on-tuned-base 재튜닝 — 천장-초과 주역 레버(유일한 long-only β 레버)'.",
+        "compliance": "본 설계는 금지 ①② 미저촉 — primary가 현금 overlay 축(= frontier 2번 lane)이고 팩터배분은 대조군으로만 두며 천장 돌파를 주장하지 않는다."
+      },
+      {
+        "id": "WT-D20260809_002",
+        "relation": "in-flight 인접 — 중복 아님, 차별점 기록",
+        "content": "'국면 라벨(CRISIS∪CAUTION) 꼬리 표적 오버레이 — 상태 검출기의 사건-조건부 자격을 심도-표적 노출 축소로만 소비' (IN_PROGRESS).",
+        "distinction": "그 WT는 상태 검출기의 라벨 발화를 트리거로 유지하고 표적만 심도로 옮긴다(이산 게이트 구조 승계). 본 라운드는 예측 표적 자체를 꼬리특성(하방 꼬리확률·조건부 심도·왜도)으로 교체하고 상태 라벨 트리거에 묶이지 않는 연속 입력을 가설로 세운다 — 상태-게이트 발화율 7.0%(19/271 실측)의 구조 한계 자체가 본 라운드가 겨냥하는 마찰이다. 결과 비교 시 두 WT는 상호 대조군 가치가 있음(Q-Lead 수집 시 교차 대조 권고)."
+      },
+      {
+        "id": "STR_AS_20260613_074757_250299",
+        "relation": "인접 기록 (재포장 아님)",
+        "content": "Realized Skewness 국면 overlay (alpha-search lean-lane, MARGINAL, grade C, SR 0.669·MDD 44.8%). 30종 EW 프레임 + realized(사후) 왜도를 상태 신호로 소비 — 꼬리특성 '예측'도 book-marginal 기준도 아니었다.",
+        "distinction": "본 라운드는 예측기(사전 산출) + book-marginal ΔIR 판정 + incumbent PG2 대비 — 측정 프레임과 판정 기준이 다르다."
+      },
+      {
+        "id": "settled_negative_인접_3건",
+        "relation": "경계 명시 (본 설계가 밟지 않는 땅)",
+        "content": "(a) 종목-레벨 하방위험 페널티(downside_beta/semivol/crash_exposure/ncskew) 횡단면 감점 = config-scoped NEGATIVE 20변형 전멸 — 'long-only momentum MDD 무료레버는 selection이 아니라 overlay/timing 유일' 3-라운드 확증 (frontier queue 실측 기록). (b) overlay_candidate_queue 16건 드레인 전량 INFERIOR(최대 paired NW-t -1.199, 07-10) — 시장타이밍 오버레이의 사전 기대는 낮다. (c) 국면조건부 lightgbm = 07-05 RAMP R2 config-scoped negative.",
+        "compliance": "본 설계는 (a)의 횡단면 축을 후보에서 명시 기각했고, (b)를 정직 prior로 병기하며(아래 honest_priors), (c) 프레임을 재사용하지 않는다."
+      }
+    ],
+    "frontier_queue_refs": [
+      "DIST-RAMP-006 frontier[1]: 'overlay-on-tuned-base 재튜닝' — 본 라운드의 lane",
+      "FQ 맥락: 요청서가 v8.4 재편 큐 FQ-233~237 세션 실측(R32/R33/armB)을 근거로 인용 — 해당 산출물 직접 확인 완료",
+      "wall_check 승계: 'overlay는 유일 실증 long-only β 레버. 단 KR 시장타이밍 4중 부정·PIT C5 가드 의무 — overlay_pit_guard HARD 통과 필수' (frontier queue 원문)"
+    ],
+    "owner": "dohoon_decision — 본 WT 자체가 도훈 직접 지시(2026-08-13 '국면예측 → 팩터 및 현금 배분으로 접근해봐')이므로 세션 임의 착수 아님. hypothesis_source=user_defined.",
+    "duplication_verdict": "국면 축에서 '예측 표적을 상태→꼬리특성으로 교체'는 hypothesis_index 미검 — 선행 9건(DIST-RAMP-006 supporting)은 전부 평균-state 예측이었다. 재포장 아님."
+  },
+
+  "candidates": [
+    {
+      "title": "[선택] 하방-꼬리 특성 표적 예측 → 현금 배분 연속 입력 (primary) + 팩터배분 대조군",
+      "family": "regime_tail_overlay",
+      "mechanism_sketch": "예측 표적을 평균-state에서 하방 꼬리특성으로 교체, 산출을 현금 비중 결정의 연속 입력으로 소비. 팩터배분 축은 선행 천장 ~2.85 재확인용 대조군.",
+      "why_selected": "도훈 지시 축과 정합 + DIST-RAMP-006 frontier 2번 lane + 표적 교체가 국면 축에서 미검 + 같은 세션 실측(R32 cor -0.728 · armB 표적-지배 사례 · PG2 분해 84%/7.0%)이 기전의 각 요소를 독립 지지."
+    },
+    {
+      "title": "상태-게이트 수정으로만 소비 — m4 게이트 구성에 꼬리축 추가",
+      "family": "regime_gate_composition",
+      "mechanism_sketch": "현행 m4(국면나쁨 ∧ 자기알파감쇠 교집합) 게이트에 꼬리 예측축을 추가해 발화 조건을 넓힌다.",
+      "why_not_selected": "이산 게이트 구조를 승계 — 발화율 7.0%(19/271)·crisis 라벨 4/271의 구조 한계가 그대로 남는다. 또 in-flight WT-D20260809_002(상태 라벨 트리거 + 심도 표적)와 구조 중복 위험. 단 primary가 성립하면 소비면 후보로 부활 가능(challenge_flags 보관)."
+    },
+    {
+      "title": "종목-레벨 하방꼬리 감점 (횡단면 selection)",
+      "family": "downside_selection",
+      "mechanism_sketch": "종목별 하방꼬리 노출을 횡단면 감점으로 소비.",
+      "why_not_selected": "settled negative — downside_beta/semivol/crash_exposure/ncskew 20변형 전부 OOS<base(config-scoped NEGATIVE), 'MDD 무료레버는 selection도 weighting도 아닌 overlay/timing 유일' 3-라운드 확증. INV-7 부활신호 미발화. 재도전 근거 없음."
+    },
+    {
+      "title": "q90 상방 분위 표적 — top-N 평균 소비와의 정합 검증",
+      "family": "quantile_target_selection",
+      "mechanism_sketch": "armB striking_pattern(rank-IC↔실현 SR 4/4 역순)의 next_probe — 상방 꼬리 표적이 top-N 평균 소비와 정합적인지.",
+      "why_not_selected": "종목선택 레인이지 국면/현금 레인이 아님 — 본 WT의 도훈 지시 범위 밖. armB 사전등록 §3이 본 라운드 내 primary 교체를 금지했으므로 별도 사전등록 라운드로만 유효(FQ 등재 후보로 보관)."
+    },
+    {
+      "title": "꼬리-표적으로 팩터배분 천장 돌파 시도",
+      "family": "regime_factor_allocation",
+      "mechanism_sketch": "꼬리특성 예측을 팩터배분 결정에 직접 소비해 PORT_t 2.95 돌파 시도.",
+      "why_not_selected": "DIST-RAMP-006이 명시 금지한 재탕 방향 — 카드 진단이 '국면엔진 한계가 아니라 알파 자체 한계'이므로 표적 개선이 천장을 올린다는 주장은 카드와 정면 충돌. 대조군으로만 편입(선행 정합 재확인 기대 — 개선 주장 없음)."
+    }
+  ],
+
+  "selected": {
+    "hypothesis_title": "국면의 꼬리특성 예측 → 현금배분(주) + 팩터배분(대조)",
+    "hypothesis_description": "선행 9건(DIST-RAMP-006 supporting)은 전부 국면의 상태(평균-state)를 예측해 배분했고 천장 ~2.85에 막혔다. 본 라운드는 예측 표적을 국면의 하방 꼬리특성(하방 꼬리확률 · 조건부 심도 · 왜도)으로 교체하고, 그 산출을 (primary) 현금 비중 결정의 연속 입력으로, (control) 팩터배분 결정으로 각각 소비해 갈라 측정한다. primary 판정은 standalone이 아니라 book-marginal(현 PG2 incumbent 대비 ΔIR ≥ 0.05)이다. control은 선행 천장 재확인 기대 — 개선 주장 없음.",
+    "mechanism": {
+      "agent": "① 하방 회피 수요 주체 = KR long-only 국내 기관(연기금 포함)·개인 — 하방 위험을 피하려는 수요는 상시 존재하나 이를 가격에 반영할 표현 수단이 제한된 주체. ② 오류 주체 = 상태-분류기 기반 리스크 시스템을 쓰는 운용자들(현행 PG2 자신 포함) — 노출 축소 결정이 평균-state 라벨 발화에 묶인 주체. 실측: PG2 라이브 271개월에서 현금 결정의 84%가 상시-완만한 β_R05 몫이고 국면 게이트 발화는 19회(7.0%), crisis 라벨은 4/271뿐이며, 라벨 CRISIS · MSM 0.99999인 달에도 m4 승수는 1.0이었다(국면나쁨 ∧ 자기알파감쇠 교집합 구조 + decay축 0). 즉 시스템이 꼬리 앞에서 상태 기계장치로는 못 자른다는 것이 자기 실측이다.",
+      "friction": "3중 마찰로 오류가 지워지지 않는다. (i) KR 공매도 제약 + long-only mandate — 하방 견해를 표현할 수단이 현금뿐이라 하방 정보가 숏·풋 수요를 통해 가격에 선반영되는 경로가 막혀 있다(개인 옵션 접근성·KOSPI200 옵션의 종목-레벨 헤지 불가). DIST-RAMP-006이 overlay를 '유일한 long-only β 레버'로 지목한 것과 동일 구조. (ii) 표적-불일치 마찰 — 상태-예측기(MSM·BearProb·m4)는 평균-수익 국면 분류를 표적으로 적합되고 포화·불감대가 산출을 흡수하므로, 예측 정밀도를 아무리 올려도 꼬리 사건에 대한 정보가 늘지 않는다. 이것은 '더 잘 맞히면 되는' 문제가 아니라 '무엇을 맞히느냐'의 문제라는 실현-포트 수준 사례가 같은 세션 armB다(진단 rank-IC 4배 개선 → 실현 전이 없음, paired NW3 t -1.25). (iii) 분포 구조 마찰 — KR 횡단면에서 평균과 꼬리는 체계적으로 갈린다: R32 320종 전수에서 cor(왜도기울기, 중앙값-평균 gap) = -0.728 · 준-단조 분위 프로파일 0종, R33에서 D03 Q1은 중앙값 -15.68%인데 평균 +10.54%(왜도 1.027이 평균을 떠받침). 평균-표적 기계장치는 이 갈림 위에서 꼬리를 구조적으로 놓친다.",
+      "path": "홀딩월 시작 전(C5 컷오프) 가용 데이터로 산출한 하방-꼬리 특성 예측치를 현금 비중의 연속 입력으로 매핑(이산 게이트 아님 — 발화율 7.0% 마찰의 직접 우회) → 하방 꼬리월에서 노출이 사전 축소 → 실현 손실 회피분 × 노출 delta가 book 수준 개선으로 전이. 수익의 원천은 종목선택이 아니라 시점-노출 조절이며, 전이 사슬은 '꼬리월 판별력(기전 관측, ③에서 사전 고정) → 꼬리월 회피 실현 → book-marginal ΔIR'로 각 고리가 독립 관측 가능하다. 구체 매핑 함수·파라미터는 ⑤ 이후 소관(여기서 지정하지 않음)."
+    },
+    "falsification": {
+      "observable": "[기전 관측 — 성과와 독립] 꼬리-표적 예측기의 예측 하방꼬리확률 상위 구간(예: 상위 20% 월)이 실현 하방 꼬리월(벤치 월수익 하위 10분위 — A4 벤치마크 BM_Ret 월간 집계로 관측)을 base rate 대비 유의 lift로 포착하고, 그 판별력이 기존 상태-예측기 2종(E5 MSM Crisis_Prob · E6 SJM BearProb)을 같은 표적·같은 기간에서 상회해야 한다. 이 관측은 포트폴리오 성과(PORT_t·ΔIR)와 독립으로 측정 가능하다 — 예측기 산출과 벤치 실현 수익만으로 계산되며 보유·비중·비용이 개입하지 않는다.",
+      "field_dictionary_refs": [
+        "A4_benchmark_kospi200 (BM_Ret — 실현 하방 꼬리월 정의의 관측 리프)",
+        "A1_RAWDATA_OHLCVS_daily (Ret/BM_Ret — 월간 집계 대체 경로)",
+        "E5_msm_crisis_prob (상태-예측기 대조군 1)",
+        "E6_sjm_bearprob (상태-예측기 대조군 2)",
+        "E3_macro_regime_monthly · E1_fred_macro_raw (예측기 입력 후보 — 소비 시 C5/C1 위해요소 challenge_flags 참조)"
+      ],
+      "reject_if": "[사전 고정 — 어느 하나라도 충족 시 해당 판정] (F1) 기전 기각: 꼬리-표적 예측기가 실현 하방 꼬리월 판별에서 상태-예측기 2종 대비 우위를 보이지 못하면(같은 표적 위 lift/판별력 열위 또는 무차별), 성과가 우연히 좋아 보여도 기전 기각 — 표적 교체 축의 정보 우위 자체가 부재. (F2) primary 기각: 기전이 성립해도 book-marginal ΔIR < 0.05 (incumbent = 현 PG2 STR_1715_on_M4gAE_R05_noLayer4_PG2, ir_convention=net_active_recon_v1, measurement-graduation §4)이면 현금축 기각 — 요청서 사전 선언대로 '표적 교체 축을 국면 레인에서 닫는다'(단 INV-7 부활조건은 challenge_note에 별도 명기). (F3) 무효: overlay_pit_guard HARD 불통과, lag1 스트레스에서 개선 붕괴, 또는 strict-PIT A/B 인플레 >5% — 동월 누출로 측정 자체 무효(성립/기각 판정 불가, 재측정). (F4) control 축은 기각 조건이 아니라 정합 확인 — PORT_t ≤ ~2.95면 선행 정합(기대), 초과하면 본 설계의 주장 밖 사건으로 Q-Lead escalate(sweep 규율 재점검 후 별도 라운드)."
+    },
+    "regime_scope": {
+      "holds_in": [
+        "고변동·스트레스 진입 전이 구간 — 하방 꼬리월이 군집하는 구간(2008 · 2011 · 2020 · 2022 유형). 회피 대상이 실재해 수익 경로(꼬리월 회피 × 노출 delta)의 분자가 존재",
+        "상태-라벨 중립인데 꼬리 위험이 두꺼운 구간 — 상태-예측기와의 차별 정보가 정의상 존재하는 곳(라벨 CRISIS · MSM 0.99999에도 m4=1.0이던 실측 유형의 달). 본 가설의 정보 우위가 성립한다면 가장 먼저 여기서 보여야 한다"
+      ],
+      "weakens_or_reverses_in": [
+        "저변동 강세 지속 국면 — 꼬리확률 예측치가 바닥에 붙어 현금 입력의 변별력이 0으로 수렴, incumbent β_R05와 구분 불가(개선의 분모 부재). 이 구간에서 ΔIR≈0은 실패가 아니라 예측된 무차별",
+        "V자 급반등(crisis rebound) 구간 — 꼬리 예측이 맞아도 현금 보유가 리바운드를 놓쳐 회피 이득을 복귀 지연 비용이 잠식, book-marginal 음수 가능(frontier queue 'crisis 리바운드 클리핑 기전' 실측 주의 승계)",
+        "꼬리월 희소 표본 구간 — crisis 라벨 4/271 실측이 보여주듯 표적 사건 자체가 희소해, 짧은 부분구간 판정은 검정력 부족으로 성립/기각 어느 쪽도 선언 불가(판정은 전기간 + 사건-조건부 집계로만)"
+      ],
+      "boundary_rationale": "경계는 메커니즘의 수익 경로에서 직접 도출된다: path = '꼬리월 회피 × 노출 delta'이므로 (a) 꼬리월이 없는 국면(저변동 강세)에서는 분자가 0이라 정의상 무차별하고, (b) 회피 직후 복귀가 빠른 국면(급반등)에서는 회피 이득을 복귀 비용이 상쇄해 역전 가능하며, (c) 표적 사건이 희소한 구간은 통계가 아니라 사건 수의 문제로 판정력이 죽는다. '모든 국면에서 개선'을 주장하지 않는다 — 개선은 꼬리 사건 밀도가 있는 구간에 국소화되어야 하고, 만약 저변동 구간에서 큰 ΔIR이 관측되면 그것은 오히려 누출(C5 위반) 신호로 역해석해야 한다(경계가 진단 도구를 겸함)."
+    }
+  },
+
+  "support_criteria": {
+    "primary_cash_axis": "기전 관측(F1 통과) ∧ book-marginal ΔIR ≥ 0.05 (net_active_recon_v1, incumbent = 현 PG2) ∧ PIT 3종(overlay_pit_guard HARD · lag1 스트레스 생존 · strict-PIT A/B 인플레 ≤5%) 전부 통과. standalone 성과 개선은 자본 자격이 아니다(§4).",
+    "control_factor_axis": "지지 기준 = 선행 정합 확인(PORT_t ≤ ~2.95 재확인). 이 축에서 개선을 주장하지 않는다 — DIST-RAMP-006 재탕 방지가 이 축의 존재 이유.",
+    "note": "graduation HARD 3종(PORT_t 2.95 · oos_retention 0.7 · calmar 0.64)은 forge-authoritative 값에만 적용 — 가설설계 단계에서 어떤 수치도 게이트 통과로 선언하지 않는다."
+  },
+
+  "honest_priors": {
+    "expectation": "낮음~중간 (정직 라벨 — 낮은 사전 기대를 숨기지 않는다)",
+    "grounds_for_low": [
+      "KR 시장타이밍 오버레이의 실측 prior가 나쁘다 — overlay_candidate_queue 16건 드레인 전량 INFERIOR(최대 paired NW-t -1.199, 2026-07-10), '시장타이밍 4중 부정'",
+      "incumbent가 이미 튜닝된 생존자다 — β_R05는 271개월 라이브에서 현금 결정의 84%를 담당하며 작동 중. ΔIR ≥ 0.05는 tuned base 대비 한계 개선 요구로 문턱이 실질적으로 높다",
+      "armB의 표적-지배 사례는 종목-레벨(횡단면)에서 관측된 것 — 시계열 현금축으로의 전이는 본 라운드가 검증할 가설이지 확립 사실이 아니다"
+    ],
+    "grounds_for_nonzero": [
+      "상태 기계장치의 꼬리 불감이 자기 실측이다(게이트 발화 7.0% · crisis 라벨 4/271 · CRISIS월 m4=1.0) — 개선 여지의 존재 자체는 측정돼 있다",
+      "평균↔꼬리 갈림이 320종 전수에서 기전 수준으로 측정됐다(cor -0.728 · 준-단조 0종) — 표적 교체의 재료가 실재한다",
+      "현금 overlay는 negative 지형에서 유일하게 카드가 '천장-초과 주역'으로 지목한 lane이다"
+    ]
+  },
+
+  "challenge_flags": [
+    "[대안 보관] 후보 2(m4 게이트 꼬리축 추가)는 primary 성립 시 소비면 후보로 부활 가능 — WT-D20260809_002 결과와 교차 대조 후 판단",
+    "[대안 보관] 후보 4(q90 상방 분위 표적)는 별도 사전등록 라운드로만 유효 — FQ 등재 권고(armB next_probe 승계)",
+    "[PIT 위해요소 — alpha-research 필수 인지] 예측기 입력에 E3 macro_regime 소비 시: 월말스탬프 마지막 행이 진행 중인 달 — 월중 조회 = 동월 look-ahead (memory 실측). C5 컷오프(홀딩월 시작 전) 강제 + anchor 간격 실증 의무",
+    "[PIT 위해요소] E5 MSM 소비 시: full-sample 디민이 과거 입력을 재서술(8954/8975일 변경 실측, C1 위반) — 대조군으로 쓸 때도 pinned/append-only 계열(msm_param_pin · regime_append_only 수리분) 경유 또는 인과 재계산 의무. 예측기 피처로는 부적격 가능성 높음",
+    "[측정 설계 경고] 꼬리월 판별 lift 검정은 사건 수가 지배 — 벤치 하위 10분위 = 전기간 ~26개월. 부분구간 분해는 판정이 아니라 기술 통계로만 보고할 것(regime_scope 3번 경계)",
+    "[역해석 가드] 저변동 구간에서 큰 ΔIR 관측 시 개선이 아니라 누출 신호로 우선 해석(boundary_rationale 명기) — lag1/strict A/B 재확인 트리거",
+    "[in-flight 중복 관리] WT-D20260809_002와 결과 수집 시점에 교차 대조 의무 — 상태-트리거 vs 표적-교체의 판별 실험이 공짜로 생긴다",
+    "[승계 금지선] 팩터배분 대조군에서 예상외 천장 초과 시 본 설계의 주장으로 소비 금지 — F4 절차(escalate + sweep 규율 재점검 + 별도 라운드)만 유효"
+  ],
+
+  "verdict": "designed",
+
+  "handoff": {
+    "to": "alpha-research",
+    "next_steps": "Step 1~7 + ⑤ AST 구성. 승계분(mechanism/falsification/regime_scope) 재작성 금지 — 결함 발견 시 challenge_note 기록 + 재설계 요청(Charter 원칙 8). 특기사항: (1) 본 WT는 표준 25종 종목선택이 아니라 국면/현금 overlay 축 — 예측기 설계·검증이 본체이고 실측은 canonical/forge + book-marginal 경로. (2) 기전 관측(F1)을 성과 측정보다 먼저 배치할 것 — F1 기각이면 F2 측정 전에 라운드를 닫을 수 있다(비용 절약 + 사후합리화 차단). (3) 현금 매핑 함수형·파라미터는 이 문서가 지정하지 않았다 — 설계 자유이나 grid argmax로 고르면 sweep 분류 + DSR 게이트 적용임을 사전 인지(measurement-graduation §3, '무엇을 보고 고르는가'가 판별 기준). (4) C5 의무 4종(overlay_pit_guard HARD · lag1 · strict A/B · anchor 간격 실증) 전부 통과 전 어떤 개선 수치도 인용 금지."
+  }
+}

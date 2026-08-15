@@ -66,7 +66,7 @@ Qvest 시스템 전체 구동. bootstrap.sh 실행 → 플러그인 리로드 �
 
 세션 종료 시:
 - 메모리 파일 modified 시 `# 최종 업데이트:` date 갱신
-- 새 L-code 추가 시 **아티팩트 emit → harvester 재수확** + MEMORY.md 헤더 갱신 (2026-07-25 도훈 승인 정정 — 구 표기 `methodology_active.md 등재`는 **부재 파일** 지시였음. 해당 md는 `methodology_archive.md`·`qepm/memory/methodology_memory.md`와 함께 저장소·메모리 어디에도 없으며, 현행 적립 경로는 `l_code*.json` 아티팩트 → `02_Infrastructure/axiom/lcode_harvester.py` → `.cache/lcode_corpus.json` → `ops/build_knowledge_index.R` → `06_Registry/knowledge_index.json`. harvester 스캔범위 = 루트 `stage_artifacts/` + `04_Research/strategies/*/stage_artifacts/`)
+- 새 L-code 추가 시 **아티팩트 emit → harvester 재수확** + MEMORY.md 헤더 갱신 (2026-07-25 도훈 승인 정정 — 구 표기 `methodology_active.md 등재`는 **부재 파일** 지시였음. 해당 md는 `methodology_archive.md`·`qepm/memory/methodology_memory.md`와 함께 저장소·메모리 어디에도 없으며, 현행 적립 경로는 `l_code*.json` 아티팩트 → `02_Infrastructure/axiom/lcode_harvester.py` → `.cache/lcode_corpus.json` → `02_Infrastructure/ops/build_knowledge_index.R` → `06_Registry/knowledge_index.json`. harvester 스캔범위 = 루트 `stage_artifacts/` + `04_Research/strategies/*/stage_artifacts/`. **2026-08-13 경로 정정** — 구 표기 `ops/build_knowledge_index.R` 은 **최상위 `ops/` 자체가 부재**라 실행되지 않는다(07-25 정정이 고친 것과 같은 계통의 경로 오기). ★**검색면(`hypothesis_index`)은 별개 빌더**다: `Rscript 02_Infrastructure/tools/hypothesis_index.R build` — **`build` 서브커맨드 필수**. 인자 없이 부르면 usage 만 찍고 **exit 0** 이라 호출자가 재빌드된 줄 오인한다(2026-08-13 실측: L-code 3건이 corpus 492 에는 들어갔는데 index 1204 에는 없었고, 인자 부여 후 1213 으로 회복). 적립은 **corpus 수확 + index build 둘 다** 해야 다음 라운드 Step 0 lookup 에 도달한다)
 - infra 변경 시 관련 SOT/rules 문서 갱신 + 메모리 적립 (구 `infrastructure_state.md` 참조는 파일 부재 확인으로 2026-07-18 정정 — 도훈 승인)
 
 ---

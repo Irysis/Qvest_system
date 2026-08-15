@@ -1,0 +1,38 @@
+{
+  "stage": "vol_basis_correction",
+  "self_caught": true,
+  "issue": "f1b_diagnosis.R 가 VOL 을 필터된 367행 위에서 expanding-z 했고 TAIL 은 전체 427행 위에서 했다. expanding-z 는 시점 간 단조변환이 아니라 warm-up 이 다르면 순위가 바뀐다(spearman 0.9246 이지만 AUC 는 0.7729 -> 0.7504).",
+  "detected_by": "적대검증 격자(4 lookback x 5 event)의 252d/q10 칸이 f1b 수치와 어긋난 것을 대조하다 발견",
+  "auc_vol_wrong_basis": 0.772858,
+  "auc_vol_correct_basis": 0.750369,
+  "correct_auc": {
+    "VOL": 0.750369,
+    "TAIL": 0.714333,
+    "MSM": 0.747174,
+    "BEAR": 0.67887,
+    "TAIL_SHAPE": 0.554873
+  },
+  "vol_direction": {
+    "down": 0.750369,
+    "up": 0.756593,
+    "asym": -0.006224
+  },
+  "vol_resid_msm_auc": 0.40181,
+  "null_band": [0.408, 0.6118],
+  "cor": {
+    "tail_vol": 0.838148,
+    "vol_msm": 0.822942
+  },
+  "ts_rank_ic_vol": 0.025607,
+  "vol_vs_msm": {
+    "d": 0.0032,
+    "p_gt0": 0.61,
+    "ci90": [-0.0374, 0.048]
+  },
+  "vol_vs_tail": {
+    "d": 0.036,
+    "p_gt0": 0.928,
+    "ci90": [-0.0037, 0.0836]
+  },
+  "impact": "'TAIL < VOL' 결론 불변(0.7143 < 0.7504, P(d>0)=0.928). 그러나 'VOL 이 MSM 을 상회' 는 0.0257 -> 0.0032(P 0.804 -> 0.610)로 축소되어 **사실상 동률** — 해당 서술을 하향 수정했다. F1 판정(TAIL_FAIL)에는 영향 없음(VOL 은 사후 진단 통제군이고 사전등록 baseline 이 아니다)."
+}

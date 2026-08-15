@@ -1,0 +1,206 @@
+{
+  "wt_id": "WT-D20260813_004",
+  "designed_by": "alpha-hypothesis",
+  "model_tier": "fable",
+  "designed_at": "2026-08-13",
+  "spec_version": "ast_v1.1_stages_1_to_4",
+
+  "prechecks": {
+    "hypothesis_index_hits": [
+      {
+        "id": "WT-D20260813_003 (직전 라운드, 본 WT 의 유래)",
+        "verdict": "VT2b_REJECT",
+        "content": "분산 예측 능력 실재(VT1 spearman 0.7219 · VT2 G 0.1408 vs 순열 q95 0.0427) ∧ cov(e,r) 수확 채널 사망(-1.480%/yr, 순 -0.691%/yr) ∧ ★404년 벽(순효과 |t|=1.96 에 ~4,845개월 필요). 닫은 범위 = 연속 비율 매핑 형태의 시장-레벨 노출 소비.",
+        "relation_to_this_round": "본 라운드의 출발 사실. next_probe 2(표면 이동 — 평균 수확을 요구하지 않는 소비면) 를 소비한다."
+      },
+      {
+        "id": "WT-D20260813_002",
+        "verdict": "F1_FAIL",
+        "content": "국면 예측기 4종은 방향이 아니라 분산을 예측(방향 rank-IC 전부 |t|<1, 하방/상방 AUC 대칭). ★tripwire 면 관련 직결 실측: VOL(σ̂ 계열) AUC 0.7504 vs MSM 0.7472 = 사실상 동률(d=0.0032, P(d>0)=0.610), VOL 의 MSM 대비 직교화 잔차 AUC 0.397~0.402 = 영가설 밴드 안(증분 없음).",
+        "relation_to_this_round": "후보 면 ⑤(monitoring tripwire) 의 증분 가치가 이미 ≈0 으로 측정돼 있음 — 착수 전 배제의 1차 근거."
+      },
+      {
+        "id": "FQ108_TAILVOL_RISK_AXIS (L-MF-20260803_FQ108, method_frontier)",
+        "verdict": "config_scoped_negative_frontier_open (대각 채널)",
+        "content": "단기 vol 항을 현행 Σ 대각에 추가 = 증분 없음(PRIMARY 실 book total-분산 × lw_nls, n=173, DM t +0.724 — lw_nls 가 97.5% 흡수). ★구조 발견: 집중 book(HHI 0.115)의 총분산은 상관·시장성분이 지배 — **대각은 병목이 아니다**. 사후 하이브리드(상관 60m 동결 + 분산 단창) 4셀 중 3셀 유의(-3.588/-2.756/-2.374), PRIMARY 셀 미달(-1.658). next_probe: FQ-108b 상관 채널 / FQ-108c CVaR·ES·tripwire. revival: 상관-채널 라운드 유의(DM t ≤ -2.0).",
+        "relation_to_this_round": "★가장 인접한 실측. 본 설계는 FQ-108 이 닫은 대각(개별분산) 채널이 아니라 그 실측이 병목으로 지목한 **공통성분(시장성분) 분산** 채널을 시험한다. 재포장 방어 = 반증 F-b(개선 기여 분해에서 공통성분 몫 하한). 비교가능성 = PRIMARY 셀을 FQ-108 과 동일 프레임(실 book total-분산 × 핀된 incumbent)으로 고정. ★정직 기대: 가장 가까운 측정 arm(하이브리드)이 PRIMARY 셀에서 -1.658 로 미달했으므로 사전 기대 = 중하."
+      },
+      {
+        "id": "FQ-057 (cap-tier block Σ + lw_nls ADOPT)",
+        "verdict": "arc_converged_split — (a)ADOPT lw_nls / (b)KEEP EWMA",
+        "relation_to_this_round": "incumbent Σ 정의의 SOT. 측정 시 incumbent 를 pin_tag 로 고정하는 것이 판정 전제 — incumbent 분산 처리가 이미 빠른(EWMA) 구성이면 gap 항이 부분 흡수될 수 있다(regime_scope 경계 (c)로 명문화)."
+      },
+      {
+        "id": "WT-D20260803_003",
+        "verdict": "CANCELLED_LANE_MISROUTE",
+        "content": "위험모델(Σ) 진단을 QEPM WT 로 착수 → 취소, method_frontier lane(FQ-108) 재투입. 취소 사유 원문: '위험·최적화 방법론 진단은 WT 가 아니라 FQ lane 으로 생성할 것'(도훈 mandate 07-18 이원화).",
+        "relation_to_this_round": "★lane 선례 — 본 설계의 선택 면(위험모델)은 실행(측정) 주체가 risk-research 여야 하고(alpha 의 Σ 추정 금지), lane 배치(본 WT 내 risk-research spawn vs method_frontier 재투입)는 Q-Lead 라우팅 결정 사항. handoff 에 명시 flag."
+      },
+      {
+        "id": "FQ-087 (변동성-랭크 예측 가능 / 수익-랭크 불가 — 예측 대상 교체)",
+        "verdict": "capability_established__3faces_negative_20260808",
+        "relation_to_this_round": "'분산은 예측되나 수익은 아니다' 의 독립 실측 + selection/사이징 면 negative. 본 설계가 선별(selection) 면을 후보에 넣지 않는 근거의 하나."
+      },
+      {
+        "id": "OVL_book_voltarget_R3 / PL_VolTarget 2-arm / 06-18 H2",
+        "verdict": "전부 negative (backtested / paper-lane)",
+        "relation_to_this_round": "노출-스케줄(평균 수확) 면의 인접 negative 3건 — WT-003 이 병목을 '수확 채널' 로 특정 완료. 본 라운드가 그 면을 후보에서 배제하는 근거(월 벽 wall_gate C4)."
+      }
+    ],
+    "frontier_queue_refs": [
+      "본 가설(WT-003 next_probe 2 표면 이동)은 Q-Lead 지시로 WT 직행 — request.json hypothesis_source=user_defined. dohoon_decision 항목 아님(세션 임의 착수 금지 조항 비저촉).",
+      "인접 큐: FQ-108(consume_surface, config_scoped_negative_frontier_open — 대각 채널 닫힘·상관/공통성분 미소진) · FQ-057 잔여 frontier(위험모델 상관(C) 채널 Hadamard tier-damping — 본 설계와 채널 구분: 그쪽은 상관 행렬의 tier 구조, 본 설계는 공통성분 분산의 시간 조건화) · FQ-234(일별 축, 반증 시 라우팅 목적지 — request ③ 지정).",
+      "owner 표기: 본 항목 owner = WT-D20260813_004 (Q-Lead 발행), 설계 = alpha-hypothesis."
+    ],
+    "owner": "WT-D20260813_004 (alpha-hypothesis 설계 → Q-Lead 라우팅 → 측정 실행 주체는 handoff 참조)",
+    "hypothesis_title_injection": "불필요 — request.json 에 hypothesis_title 기재됨('확립된 분산 예측 능력의 표면 이동 — 평균 수확을 요구하지 않는 소비면')."
+  },
+
+  "inherited_facts": {
+    "sources": [
+      "stage_artifacts/WT_D20260813_002/alpha_validation.json (367개월 신호 패널·AUC 배터리)",
+      "stage_artifacts/WT_D20260813_003/{alpha_validation,vt_final,vt_scope}.json (366개월 노출 스케줄·VT 판정·검정력 실측)"
+    ],
+    "facts": [
+      "분산 예측 능력은 실재한다 — VT1 spearman(σ̂, 홀딩월 실현vol) 0.7219 · 실현vol ac1 0.7796 · VT2 분산 타이밍 이득 G 0.1408 vs 순열 q95 0.0427 (p<0.0005, 최소효과 7배)",
+      "죽는 곳은 cov(e,r) 평균 수확 채널 — -1.480%/yr, 드래그이득 +0.790 → 순 -0.691%/yr (사전등록 tie_rule 기각)",
+      "★404년 벽 — 순효과 |t|=1.96 에 ~4,845개월 필요(월별 d 연환산 sd 7.081%). 시장-레벨 overlay 의 이 채널은 월간 벤치 자료로 원리적 미해소",
+      "국면 예측기 4종 전부 방향이 아니라 분산을 예측(WT-002) — 소비면은 분산-단위 판정 통계량을 가져야 신호의 정보 축과 정합",
+      "KR long-only book 총위험은 시장성분이 지배 — β≈0.92 · PC1 분산 몫 0.76 (§6) · 집중 book 총분산은 상관·시장성분 지배(FQ-108 구조 발견)",
+      "신호 패널 승계 지목(재구축 금지): σ̂ 계열 = stage_artifacts/WT_D20260813_003/alpha_scores.parquet (WT-002 VOL 과 parity max|diff|=0 실증 완료)"
+    ]
+  },
+
+  "wall_gate_analysis": {
+    "note": "★설계 1항 (request 착수 전 필수) — 각 후보 면에 대해 '판정 통계량이 평균 초과수익에 의존하는가' 를 먼저 판정. 의존하면 404년 벽에 동일하게 걸리므로 착수 전 배제.",
+    "wall_definition": "벽의 실체 = 평균 채널의 신호/잡음: 월간 벤치 평균수익 계열은 sd(연환산 d)=7.081% 에 효과 ~0.7%/yr 라 |t|=1.96 에 4,845개월. 분산 계열은 같은 자료에서 ac1 0.78·spearman 0.72 로 신호가 강해 검정이 10^2 개월 규모에서 해소된다(실측 anchor: FQ-108 DM |t| 2.2~6.2, n=173).",
+    "faces": [
+      {
+        "face": "④-a 위험모델 Σ — 공통성분(시장성분) 분산 조건화 [선택]",
+        "verdict_statistic": "실현 총분산 예측오차(QLIKE)의 DM 검정 + 개선 기여 분해 — 전부 2차 모멘트 단위. 평균 초과수익 불개입.",
+        "wall": "PASS — 분산-단위 통계량. 동종 통계량의 실측 해소 규모 = n 173 개월에서 |t| 1.7~6.2 (FQ-108). 벽 대비 ~28배 유리.",
+        "caveat": "이 면의 '자본 가치'(개선된 Σ → weight → 성과)는 평균-단위라 벽에 걸린다 — 따라서 본 라운드는 자본 주장을 하지 않는다(capital_claim=false). 라운드 가치 = 예측 정확도 + 기계적 소비 존재 확인까지."
+      },
+      {
+        "face": "④-b 위험모델 Σ — 대각(개별분산) 채널",
+        "wall": "PASS 이나 착수 불가 — FQ-108 이 동일 통계량으로 이미 측정: 증분 없음(DM t +0.724, lw_nls 97.5% 흡수). 재포장 금지 대상.",
+        "verdict_statistic": "동일 (QLIKE/DM)"
+      },
+      {
+        "face": "④-c 위험모델 — 상관/꼬리의존(TDC) 채널 (FQ-108b)",
+        "wall": "PASS (분산·의존구조 단위). 미선택 사유 = candidates C3 참조 (쌍-수준 추정 부담 + 본 라운드 확립 능력이 시장-레벨 1계열이라 공통성분이 1차 정합). 기각 시 인접 라우팅 후보.",
+        "verdict_statistic": "쌍별 의존구조 예측오차 / DM"
+      },
+      {
+        "face": "⑤ monitoring tripwire (사건-수준 경보)",
+        "verdict_statistic": "사건 lift / AUC — 평균 초과수익 불개입.",
+        "wall": "산술상 PASS. 그러나 착수 전 배제 — 벽이 아니라 **기측정 중복**: WT-002 가 σ̂ 계열(VOL)의 사건 판별을 이미 측정 — incumbent MSM 과 동률(d=0.0032, P=0.610) + MSM 대비 직교화 증분 AUC 0.397~0.402 영가설 밴드 안. σ̂ 기반 신규 tripwire = incumbent 재포장. 부차: 사건 37건의 자체 검정력 한계 + label 자격 관문이 p-단독(lift 하한 부재, 08-13 실측 결함)이라 판정이 n-구동으로 오염될 표면.",
+        "exclusion_label": "excluded_before_start_prior_measurement_duplicate"
+      },
+      {
+        "face": "β 예산의 노출-스케줄 소비 (현금 배합·문턱형 포함 일체의 시장-레벨 exposure 결정)",
+        "verdict_statistic": "ΔIR / PORT_t / 순효과 — 평균-단위.",
+        "wall": "FAIL — WT-003 이 실측한 바로 그 벽(4,845개월). 착수 전 배제. (문턱형 × TAIL 은 '선별 월 평균수익의 사건-수준 검정' 으로 재설계된 WT-003 next_probe 1 이며 본 라운드 소관 아님.)",
+        "exclusion_label": "excluded_before_start_wall_fail"
+      }
+    ]
+  },
+
+  "candidates": [
+    {
+      "title": "C1 [선택] — σ̂ 의 Σ 공통성분(시장성분) 분산 조건화",
+      "family": "risk_model_common_component_variance",
+      "mechanism_sketch": "시장-레벨 σ̂ (확립 능력, spearman 0.7219) 로 Σ 의 공통성분 분산 항만 시간 조건화(상관 행렬·개별잔차 분산 동결) → 실현 총분산 예측오차 감소가 국면 전환 구간·공통성분에 국소화되는가.",
+      "why_selected": "① 확립 능력(시장-레벨 1계열 분산 예측)과 병목(집중 book 총분산의 시장성분 지배 — FQ-108 구조 발견·PC1 0.76)이 정확히 맞물리는 유일한 면 ② 판정 통계량이 분산-단위라 404년 벽 통과 ③ FQ-108 이 닫은 대각 채널의 보완 채널이라 선행 negative 승계가 정확히 가능."
+    },
+    {
+      "title": "C2 — σ̂ 문턱형 monitoring tripwire",
+      "family": "monitoring_signal",
+      "why_not_selected": "벽이 아니라 기측정 중복 — WT-002 실측: VOL≈MSM 동률(d=0.0032) + 직교화 증분 영가설 밴드 안. 신규 정보 ≈0 인 재포장. 부차: label 자격 관문 p-단독 결함(08-13) 위에 판정을 얹게 됨 + 자본 경로 없는 종착 소비면. wall_gate_analysis ⑤ 참조."
+    },
+    {
+      "title": "C3 — 상관/꼬리의존(TDC) 채널 σ̂ 조건화 (FQ-108b 승계)",
+      "family": "risk_model_correlation_channel",
+      "why_not_selected": "wall PASS 이나 ① 쌍-수준(N×N) 의존구조 추정 = 표본·다중검정 부담(사전등록 쌍 집합 고정 필요) ② 본 라운드의 확립 능력이 '시장-레벨 1계열' 이라 공통성분 분산이 1차 정합 — 상관 급변 구간은 본 설계 regime_scope 경계 (c)로 명시하고, C1 기각·부분지지 시 인접 라우팅 후보로 보관(FQ-108 revival 조건 '상관-채널 유의 DM t ≤ -2.0' 과 접속)."
+    },
+    {
+      "title": "C4 — β 예산의 노출-스케줄 소비 재변형 (문턱형 등)",
+      "family": "overlay_exposure",
+      "why_not_selected": "wall FAIL — 판정 통계량이 평균-단위(ΔIR/순효과)라 404년 벽 그대로. WT-003 이 연속 형태를 실측 기각했고, 문턱형은 '사건-수준 검정' 으로 재설계된 별도 next_probe(WT-003 NP1). 본 라운드 배제."
+    },
+    {
+      "title": "C5 — 일별 축 소비 (FQ-234 인접)",
+      "family": "daily_axis",
+      "why_not_selected": "관측 수 ~24배로 벽 부분 완화 가능성 있으나, request ③ 이 본 라운드 반증 시의 라우팅 목적지로 지정 — 순서상 본 라운드 아님. 계열 확대 금지(INV-7) 준수."
+    }
+  ],
+
+  "selected": {
+    "hypothesis_title": "분산 예측의 위험모델 소비 — Σ 공통성분(시장성분) 분산 조건화 (평균 수확 불요 소비면)",
+    "hypothesis_description": "확립된 시장-레벨 분산 예측 능력(σ̂: trailing 252d 벤치 실현변동성, spearman(σ̂, 홀딩월 실현vol)=0.7219, WT-002/003 승계)을 Σ 추정의 **공통성분(시장성분) 분산 항** 시간 조건화로 소비하면 — 상관 행렬과 개별(잔차) 분산은 동결한 채 — 실 book 총분산의 1-step 예측오차(QLIKE)가 핀된 incumbent(FQ-057 채택 구성) 대비 유의하게 감소하고(DM t ≤ -2.0 ∧ 상대 QLIKE 개선 ≥5%), 그 개선이 (i) 공통성분 기여로 (ii) σ̂ 혁신(국면 전환) 구간으로 국소화된다. ★벽 통과 논증(설계 1항): 판정 통계량 전부가 2차 모멘트 단위 — 평균 초과수익이 어디에도 개입하지 않는다. 동종 통계량의 실측 해소 규모 = n 173 개월에서 DM |t| 1.7~6.2(FQ-108) vs 평균 채널 4,845개월 — ~28배. ★정직 라벨(사전 기대 = 중하): 가장 인접한 측정 arm(FQ-108 사후 하이브리드 — 개별분산 단창화)이 PRIMARY 셀에서 DM t -1.658 로 문턱 미달했다. 본 설계의 차별 축(시장-레벨 1계열 조건화 = 추정잡음 최소 + 공통성분 국소화 + 252d 창의 실증된 예측 링크 0.7219)은 미측정이며, 그 차별이 -1.658 을 -2.0 아래로 밀 수 있는지가 본 라운드의 실질 질문이다. ★자본 주장 없음(capital_claim=false): 개선된 Σ 의 성과 전이는 평균-단위라 벽 안이므로 본 라운드 범위 밖 — 라운드 가치 = 위험예측 정확도의 실측 + 기계적 소비 존재(weight 응답) 확인 + 분산-단위 소비자(TE 예측·국면 조건부 상한 판정 입력) 배관 자격.",
+    "mechanism": {
+      "agent": "① 예측 가능한 공통성분 분산 변동을 만드는 주체 = 레버리지·마진 제약 하의 강제 청산 주체(신용융자 개인 계정·마진콜 대상 포지션) — 고변동기에 가격-비탄력적 매도를 집행해 시장-레벨 변동성 군집을 지속시킨다(WT-003 mechanism.agent ① 승계 — 실현vol ac1 0.7796 이 이 군집의 실측). ② 그 예측 가능성을 흘리는 오류 주체 = 현행 QEPM 위험 층의 장창 공통성분 추정 관행 — incumbent Σ(FQ-057 채택 프레임)의 상관·공통 구조는 60m(5년) 급 장창에서 추정되어 국면을 평균한다: 고변동 진입월에 공통성분 분산을 과소예측하고 진정 후에는 과대예측한다. 이 오류 주체는 시장이 아니라 우리 자신의 배관이며, 실명 실측 근거 = FQ-108 의 '단기 vol 정보의 미소비'(D35 factor DB 등재 후 소비자 0) + 집중 book 총분산의 병목이 대각이 아니라 상관·시장성분이라는 구조 발견.",
+      "friction": "격차가 저절로 닫히지 않는 마찰 3중 — 전부 실명·실측 기반. (i) 추정 분산 트레이드오프의 비대칭: N×N 상관을 단창으로 추정하면 p>n 잡음이 지배(FQ-108 실측 — linear LW 가 p>n 에서 Σ≈μI 퇴화)라 장창 고정이 합리적 관행인데, 시장-레벨 분산은 1계열·일별 252관측이라 단창에서도 정밀 추정된다. '상관은 장창, 공통분산은 단창' 분리가 가능한데 현행 구조는 분리하지 않는다 — 이 비대칭이 격차의 존속 이유이자 본 설계가 여는 레버. (ii) 형태 마찰(실측): 파이프라인의 vol 정보 유통이 횡단면 z-형태(load_month_factors Z_Score_Aligned)라 분산의 레벨이 소거된다 — FQ-108 구조 발견 (2): vol-tail 계열 8종이 위험모델 입력으로 형태 부적합, 'D35 소비자 0' 의 일부는 무관심이 아니라 형태 불일치. 시장-레벨 σ̂ 는 레벨 그대로 승계 패널에 존재하므로 이 마찰을 우회한다. (iii) 재현성·pin 관행: 위험모델 구성은 pin_tag 재현성 규율(§7 vintage pinning) 아래 변경 비용이 높아, 개선 후보가 실측 관문(QLIKE/DM 사전등록) 없이는 채택되지 않는다 — 격차가 '알려져 있어도' 남아 있는 조직적 이유. 본 라운드가 바로 그 관문을 설계한다.",
+      "path": "σ̂_m (홀딩월 시작 전 C5 컷오프, WT-003 패널 승계 지목 — 재구축 금지) → Σ'_t = incumbent 에서 공통성분(시장성분) 분산 항만 σ̂²_m 으로 조건화(상관 행렬·개별잔차 분산 동결; factor 구조 표기로 Σ = B Ω B' + D 에서 Ω 의 시장 요인 분산만 교체 — 구현 추정기 선택은 risk-research 소관, 본 설계는 채널만 지정) → [판정 1차 P1] 실 book 총분산 1-step 예측 QLIKE 의 DM 검정 (vs 핀된 incumbent, FQ-108 PRIMARY 와 동일 프레임 — 비교가능성 확보) → [판정 2차 P2] 개선 국소화 분해: 공통성분 기여 몫 + σ̂ 혁신 월 집중도 → [소비 존재 확인 P3, 기계 통계량] 동결된 과거 alpha 입력(production-parity) 위에서 Σ→Σ' 교체가 optimizer weight 를 실제로 움직이는가: ||Δw||₁ 분포 + bind 월의 β-틸트 방향. ★'weight 불변이면 값 0' 함정 정면 처리: Σ→λΣ 비례 스케일은 full-invested(Σw=1) 최적해를 바꾸지 못한다 — 본 조건화는 공통성분만 움직이는 **비-비례** 변화라 고β↔저β 상대 위험기여가 이동해 weight 가 β-축으로 응답한다. 응답 크기는 후보군 β 횡단면 분산에 비례(미측정 — P3 가 실측할 대상이며, 압착 구간은 regime_scope 경계 (d)). P3 가 0 으로 나와도 분산-단위 소비자 2종(TE 예측 정확도 → monitoring 입력 / 국면 조건부 종목상한(CRISIS 0.10, 08-13 정본 편입) 판정의 위험상태 입력)이 잔존하나, 그 경우 라운드 라벨을 '예측 정확도 확립·weight 소비 부재' 로 강등한다. ★성과(평균-단위) 주장은 어느 단계에도 없다 — P1~P3 전부 2차 모멘트·기계 통계량."
+    },
+    "falsification": {
+      "observable": "성과와 독립인 부수 관측 2종 + 진단 겸용 1종 (전부 field_dictionary 리프에서 산출 가능, 1차 검정 P1 의 동어반복 아님). [F-a 지연 격차의 실존 — 기전 부수 관측] 기전이 참이면 incumbent 장창 공통성분 분산 예측의 부호 있는 오차(과소/과대)가 σ̂ 혁신(Δσ̂_m)과 양의 상관이어야 한다: 국면 진입월(Δσ̂>0)에 과소예측이 군집. A1/A4 리프의 일별 BM_Ret 로 월내 실현 시장분산을 만들고 incumbent 형 장창 추정과의 오차 계열을 구성해 cor(signed error, Δσ̂) 의 NW t 로 검정. 이 상관이 부재하면 — 설령 QLIKE 총량이 다른 이유로 개선되더라도 — '장창 지연 격차' 기전은 기각(개선의 출처를 재진단하기 전에 소비 금지). [F-b 국소화 — settled-negative 재포장 방어] QLIKE 개선의 기여 분해에서 공통성분 몫이 지배(≥50%)해야 한다. 개별분산(대각) 기여가 지배하면 FQ-108 이 닫은 채널의 재포장이므로 기각. [F-c 저변동 무차별 — 진단 겸용, WT-003 장치 승계] gap 항 = ββ'(σ̂²_m − σ̄²_장창) 이므로 σ̂ 가 장창 평균에 근접한 저변동 지속 구간에서는 개선이 구조적으로 ≈0 이어야 한다. 그 구간에서 유의 개선이 관측되면 성립 증거가 아니라 누출(C5 위반) 의심 신호로 역해석 — 판정 중단·재측정 트리거(VT3 동형).",
+      "field_dictionary_refs": [
+        "A1_RAWDATA_OHLCVS_daily (BM_Ret 일별 원장 — σ̂ 구성·월내 실현 시장분산·F-a 오차 계열. WT-003 self_pit_check 통과 리프)",
+        "A4_benchmark_kospi200 (홀딩월 수익·월내 실현 vol — P1/F-a/F-c 산출. WT-003 통과 리프)",
+        "E5_msm_crisis_prob (대조군 전용 — C1 전표본 디민 실측으로 피처 자격 없음, WT-002/003 규약 승계. F-c 구간 라벨 보조로만)",
+        "E6_sjm_bearprob (대조군 전용 — 동일)"
+      ],
+      "reject_if": "① P1 미달(DM t > -2.0 또는 상대 QLIKE 개선 <5%, PRIMARY 셀) → '시장-레벨 분산 예측 능력은 실재하나 공통성분 조건화 증분은 핀된 incumbent 에 흡수' 로 기각 — request ③ 지정 문구('분산 예측 능력은 실재하나 현 배포 조건에서 소비 가능한 면이 미발견')를 라운드 기록에 승계하고 남은 면 = 일별 축(FQ-234)으로 라우팅. ★INV-7 계열 확대 금지: '위험모델 면 전체 무용' 으로 확대하지 않는다 — 닫히는 범위는 '시장-레벨 σ̂ 의 공통성분 분산 조건화 × 핀된 incumbent 구성' 이며, 상관/TDC 채널(C3)·일별 축은 미검 잔존. ② P1 통과 ∧ F-a 부재 → 개선 출처 미상 — 기전 기각·소비 보류(출처 재진단 라운드 필요, 성립 선언 금지). ③ P1 통과 ∧ F-b 위반(대각 지배) → FQ-108 재포장으로 기각. ④ F-c 발화 → 판정 불가·재측정(기각 아님). ⑤ P1·F-a·F-b 통과 ∧ P3 weight 응답 ≈0 → 부분 성립 — '예측 정확도 확립·weight 소비 부재' 라벨로 강등, 분산-단위 소비자(TE 예측·상한 판정 입력) 배관만 자격 부여."
+    },
+    "regime_scope": {
+      "holds_in": [
+        "고변동 군집 진입·지속 구간(2008 · 2011 · 2020 · 2022 유형) — gap 항 ββ'(σ̂²−σ̄²_장창) 이 큰 유일한 영역이자 F-a 과소예측 군집이 예측되는 곳",
+        "국면 전환이 잦은 구간 — 장창(60m 급) 평균과 단창(252d) σ̂ 의 괴리가 구조적으로 커져 조건화의 정보 이득이 최대"
+      ],
+      "weakens_or_reverses_in": [
+        "저변동 지속(정착) 구간 — σ̂ ≈ 장창 평균 → gap→0, 예측된 무차별(개선 0 은 실패가 아니라 설계 정합; 유의 개선 시 F-c 누출 역해석)",
+        "군집 단절·경고 없는 첫 충격월(2020-03 진입 속도 유형) — trailing σ̂ 는 사건 후에만 반응, 첫 점프의 예측오차는 정의상 개선 불가(WT-003 경계 승계). 개선은 군집의 지속 부분에만 존재",
+        "상관 구조 자체가 급변하는 구간(위기 시 상관 동반 급등) — 본 설계는 상관 동결이 전제라 공통성분 분산 조건화로 잡히지 않는 오차(상관 항)가 지배할 수 있음 — 개선 희석. 이 잔여가 유의하게 크면 C3(상관 채널)의 몫이지 본 채널의 반증이 아님을 사전 구분",
+        "incumbent 분산 처리가 이미 빠른(EWMA 급) 구성인 경우 — gap 항이 부분 흡수되어 증분 축소(config 경계). 측정 시 incumbent pin_tag 고정 + incumbent 의 실효 분산 창 명시가 판정 전제",
+        "후보군 β 횡단면 분산이 압착된 구간 — P3 weight 응답이 0 에 접근(비-비례 변화의 지렛대가 β 분산이므로). 이 구간에서는 소비 가치가 분산-단위 소비자로 한정"
+      ],
+      "boundary_rationale": "경계 전부가 gap 항 식 ββ'(σ̂²_m − σ̄²_장창) 과 두 동결 가정(상관·개별잔차)에서 해석적으로 도출된다 — 사후 데이터 관찰이 아니다. (a) gap→0 저변동 경계는 식의 영점, (b) 첫 충격 경계는 trailing 추정의 구조적 지연, (c) 상관 급변 경계는 동결 가정의 잔여항, (d) β 압착 경계는 비-비례 변화가 weight 를 미는 지렛대의 소실점. 보편타당 주장 없음 — 개선은 국면 전환 구간·공통성분에 국소화되어야 하며, 상시·전역 개선 관측은 오히려 설계 의심(F-c) 신호다."
+    }
+  },
+
+  "effect_size_precalc": {
+    "metric_type": "design_projection_from_measured_anchors",
+    "detection_scale": "분산-단위 DM 통계량의 실측 해소 규모 = n 173 개월에서 |t| 1.7~6.2 (FQ-108: D35 vs linear LW -6.166 / vs lw_nls -2.235 / 하이브리드 셀 -3.588·-2.756·-2.374·PRIMARY -1.658). 본 설계 표본: 실 book 프레임 n≈173 (FQ-108 동일) + 벤치-분산 보조 프레임 n≈366.",
+    "decision_threshold": "PRIMARY 셀 DM t ≤ -2.0 ∧ 상대 QLIKE 개선 ≥5% (유의-but-미미 통과 방지 — label p-단독 결함의 교훈 08-13. 최소효과 수치는 측정 착수 전 prereg 에 고정, 변경 금지)",
+    "wall_contrast": "평균 채널 필요 표본 4,845개월(실측, WT-003 A4) vs 본 통계량 ~173개월 해소(실측 anchor) — ~28배. 이것이 '벽 통과' 의 정량 실체.",
+    "honest_prior": "중하 — 가장 인접한 측정 arm(FQ-108 하이브리드)이 PRIMARY 에서 -1.658 미달. 본 설계 차별 축(시장-레벨 1계열·공통성분 국소화·252d 실증 링크 0.7219)의 증분 기여는 미측정."
+  },
+
+  "pit_plan": {
+    "signal_timing": "σ̂_m 소비 컷오프 = Date < first-day-of-decision-month (C5 동형 — Σ 는 결정월 초 weight 산출 입력이므로 오버레이 타이밍 규약 준용). 승계 패널의 assert_overlay_pit PASS·위반주입 발화 실증(WT-003) 승계.",
+    "stress": "lag1 스트레스(σ̂ shift+1 시 QLIKE 개선 잔존율 — ac1 0.78 이므로 부분 잔존이 정상, 전멸 시 동월 누출 의심) + strict-PIT A/B (인플레 >5% 면 strict 값 재판정) 의무 — request 경계 조항 준수.",
+    "vintage": "incumbent Σ 구성·비교 대상 전부 pin_tag 고정(§7) + F-c 저변동 무차별을 누출 검출기로 겸용."
+  },
+
+  "challenge_flags": [
+    "[대안 보관 C3] 상관/꼬리의존(TDC) 채널 σ̂ 조건화 — FQ-108b 승계. P1 기각·부분지지 시 인접 라우팅 후보(FQ-108 revival 조건 'DM t ≤ -2.0' 접속). 사전등록 쌍 집합 고정 의무.",
+    "[대안 보관 C2 배제 근거 보존] tripwire 면은 벽이 아니라 기측정 중복으로 배제 — WT-002 실측(VOL≈MSM 동률 d=0.0032 · 직교화 증분 영가설 밴드 안)이 근거. 부활 조건 = WT-002 revival (a)~(c) (상태-예측기와 spearman<0.40 ∧ AUC>0.70 인 신규 예측기 / 비대칭 ≥0.10 신호 / 비-return 원천 꼬리 정보).",
+    "[★lane 라우팅 flag — Q-Lead 결정 필요] 선택 면이 위험모델이므로 측정 실행 주체는 risk-research 가 적격(alpha 의 Σ 추정 = 역할경계 위반). 선례 WT-D20260803_003 CANCELLED_LANE_MISROUTE('위험·최적화 방법론 진단은 FQ lane 으로'). 본 WT 프레임 유지 시 Q-Lead 가 risk-research 를 spawn 하는 경로와 method_frontier lane 재투입 경로 중 결정 필요 — 설계는 lane-중립으로 작성됨.",
+    "[정직 라벨 — 사전 기대 중하] 가장 인접한 측정 arm(FQ-108 하이브리드, 개별분산 단창화)이 PRIMARY 셀 -1.658 미달. 본 설계의 차별(시장-레벨 1계열 조건화)이 그 갭을 넘는지가 실질 질문이며, 넘지 못하면 request ③ 문구대로 기록 후 일별 축(FQ-234) 라우팅.",
+    "[P3 의 실행 의존성] weight 응답 확인(P3)은 optimizer 실행이 필요 — 동결된 과거 alpha 입력(production-parity 라벨 의무, §7b) 위 기계 통계량으로 한정하고 성과 채점 금지. P3 설계 상세는 실행 주체가 prereg 에 고정.",
+    "[incumbent 정의 리스크] FQ-057 'KEEP EWMA' 가 incumbent 분산 처리에 이미 빠른 창을 포함하면 gap 축소 — 측정 전 incumbent 실효 분산 창을 실측·명시하지 않으면 P1 판정이 config 미상으로 오염. pin_tag + 구성 명세가 판정 전제."
+  ],
+
+  "verdict": "designed",
+
+  "handoff": {
+    "to": "alpha-research",
+    "next_steps": "Step 1~7 + ⑤ AST 구성. 단 ★역할·lane 주의: 본 가설의 1차 판정(P1 QLIKE/DM · F-a/F-b 분해)은 Σ 추정을 수반하므로 alpha-research 가 직접 실측할 수 없다(공분산 추정 금지 — strict_prohibitions ①). 권고 경로: alpha-research 는 신호 스케줄(σ̂ 계열)의 AST 표현·승계 검수·prereg 초안까지 담당하고, Σ 측 실측은 Q-Lead 가 risk-research 로 라우팅(WT-D20260803_003 선례 참조 — FQ lane 재투입도 유효 경로). 승계 재작성 금지 — 결함 발견 시 challenge_note 기록 + 재설계 요청.",
+    "inherited_panels": [
+      "stage_artifacts/WT_D20260813_003/alpha_scores.parquet (σ̂ + 노출 스케줄, 366행 — parity 실증 완료)",
+      "stage_artifacts/WT_D20260813_002/alpha_scores.parquet (신호 패널, 367행)"
+    ],
+    "prereg_obligations_for_executor": "① PRIMARY 셀 = 실 book 총분산 × 핀된 incumbent (FQ-108 비교가능 프레임) ② 최소효과(상대 QLIKE ≥5%) 사전 고정 ③ selection_type=chain (매핑·창 grid 금지 — σ̂ 는 승계 1계열, 조건화 형태 1개 사전 고정) ④ F-a/F-b/F-c 전건 사전등록 ⑤ 사전등록은 문서가 아니라 코드에(WT-003 §5 교훈 — verdict 로직에 tie/threshold 전건 구현) ⑥ lag1 + strict A/B + assert_overlay_pit HARD."
+  }
+}

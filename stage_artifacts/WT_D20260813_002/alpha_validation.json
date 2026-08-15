@@ -1,0 +1,871 @@
+{
+  "wt_id": "WT-D20260813_002",
+  "stage": "alpha_validation",
+  "produced_by": "alpha-research",
+  "produced_at": "2026-08-13",
+  "metric_type": "mechanism_observation",
+  "prereg": "stage_artifacts/WT_D20260813_002/prereg_F1.json",
+  "verdict": "F1_FAIL",
+  "verdict_statement": "꼬리-표적 예측기가 실현 하방 꼬리월 판별에서 상태-예측기 2종을 상회하지 못했다(AUC TAIL 0.7143 < MSM 0.7472). 사전등록 규칙(두 baseline 모두 상회 + bootstrap P>=0.90 + label 자격)에서 첫 두 조건 미충족. 규칙에 따라 성과 측정(F2 book-marginal, control 팩터배분)은 착수하지 않았다. 적대검증 20 격자점(4 lookback x 5 사건정의)에서도 TAIL 이 두 baseline 을 모두 상회한 칸은 0.",
+  "inherited_falsification_status": {
+    "F1_mechanism": "REJECTED",
+    "F2_book_marginal": "NOT_MEASURED — F1 선행 규칙에 의해 미착수(승계 handoff (2)). 미달이 아니라 미산출",
+    "F3_pit_invalidation": "NOT_TRIGGERED — assert_overlay_pit 전건 PASS. lag1/strict A/B 는 성과 검정이라 F2 착수 시로 이월",
+    "F4_control_ceiling": "NOT_MEASURED — 예측기의 정보 전제가 무너져 대조군은 동어반복. escalate 트리거 없음"
+  },
+  "headline_numbers": {
+    "n_months": 367,
+    "window": [
+      "1996-02",
+      "2026-08"
+    ],
+    "n_events_bottom_decile": 37,
+    "join_loss_pct": 0,
+    "auc_bottom_decile": {
+      "TAIL": 0.714333,
+      "TAIL_SHAPE": 0.554873,
+      "VOL": 0.750437,
+      "MSM": 0.747174,
+      "BEAR": 0.67887
+    },
+    "bootstrap_TAIL_vs_MSM": {
+      "d_auc": -0.032842,
+      "p_gt0": 0.181,
+      "ci90": [
+        -0.092,
+        0.0237
+      ],
+      "block": 6,
+      "B": 2000
+    },
+    "incremental_TAIL_over_MSM": {
+      "resid_auc": 0.436108,
+      "null_band": [
+        0.408,
+        0.6118
+      ],
+      "reading": "증분 없음(반정보 아님)"
+    },
+    "direction_symmetry": {
+      "TAIL_down": 0.714333,
+      "TAIL_up": 0.712367,
+      "asym": 0.001966,
+      "reading": "방향이 아니라 분산을 예측"
+    },
+    "positive_control_same_month_vol_auc": 0.837302
+  },
+  "artifacts": {
+    "f1_result": {
+      "wt_id": "WT-D20260813_002",
+      "stage": "F1",
+      "metric_type": "mechanism_observation",
+      "prereg": "stage_artifacts/WT_D20260813_002/prereg_F1.json",
+      "n_months": 367,
+      "window": [
+        "1996-02",
+        "2026-08"
+      ],
+      "join_loss_pct": 0,
+      "event_A": {
+        "rule": "bottom decile",
+        "q10": -0.078084,
+        "n": 37,
+        "rate": 0.100817
+      },
+      "event_B": {
+        "rule": "bm_ret < -0.07",
+        "n": 46,
+        "rate": 0.125341
+      },
+      "auc": [
+        {
+          "predictor": "TAIL",
+          "auc_A": 0.714333,
+          "auc_B": 0.690641
+        },
+        {
+          "predictor": "TAIL_SHAPE",
+          "auc_A": 0.554873,
+          "auc_B": 0.557632
+        },
+        {
+          "predictor": "MSM",
+          "auc_A": 0.747174,
+          "auc_B": 0.718813
+        },
+        {
+          "predictor": "BEAR",
+          "auc_A": 0.67887,
+          "auc_B": 0.631383
+        }
+      ],
+      "eligibility": [
+        {
+          "predictor": "TAIL",
+          "n_on": 34,
+          "recall_A": 0.264706,
+          "base_A": 0.100817,
+          "lift_A": 2.625596,
+          "p_A": 0.003358,
+          "elig_A": true,
+          "recall_B": 0.264706,
+          "base_B": 0.125341,
+          "lift_B": 2.111893,
+          "p_B": 0.016036,
+          "elig_B": true
+        },
+        {
+          "predictor": "TAIL_SHAPE",
+          "n_on": 66,
+          "recall_A": 0.181818,
+          "base_A": 0.100817,
+          "lift_A": 1.80344,
+          "p_A": 0.018659,
+          "elig_A": true,
+          "recall_B": 0.212121,
+          "base_B": 0.125341,
+          "lift_B": 1.692358,
+          "p_B": 0.019822,
+          "elig_B": true
+        },
+        {
+          "predictor": "MSM",
+          "n_on": 44,
+          "recall_A": 0.318182,
+          "base_A": 0.100817,
+          "lift_A": 3.15602,
+          "p_A": 0.000014,
+          "elig_A": true,
+          "recall_B": 0.340909,
+          "base_B": 0.125341,
+          "lift_B": 2.719862,
+          "p_B": 0.000053,
+          "elig_B": true
+        },
+        {
+          "predictor": "BEAR",
+          "n_on": 65,
+          "recall_A": 0.184615,
+          "base_A": 0.100817,
+          "lift_A": 1.831185,
+          "p_A": 0.016461,
+          "elig_A": true,
+          "recall_B": 0.184615,
+          "base_B": 0.125341,
+          "lift_B": 1.47291,
+          "p_B": 0.086742,
+          "elig_B": false
+        }
+      ],
+      "bootstrap": {
+        "vs": "MSM",
+        "block": 6,
+        "B_eff": 2000,
+        "d_auc": -0.032842,
+        "p_gt0": 0.1815,
+        "ci90": [
+          -0.092023,
+          0.023675
+        ]
+      },
+      "spearman_cor": [
+        {
+          "TAIL": 1,
+          "TAIL_SHAPE": 0.503179,
+          "MSM": 0.76404,
+          "BEAR": 0.433207,
+          "_row": "TAIL"
+        },
+        {
+          "TAIL": 0.503179,
+          "TAIL_SHAPE": 1,
+          "MSM": 0.168236,
+          "BEAR": 0.118809,
+          "_row": "TAIL_SHAPE"
+        },
+        {
+          "TAIL": 0.76404,
+          "TAIL_SHAPE": 0.168236,
+          "MSM": 1,
+          "BEAR": 0.595617,
+          "_row": "MSM"
+        },
+        {
+          "TAIL": 0.433207,
+          "TAIL_SHAPE": 0.118809,
+          "MSM": 0.595617,
+          "BEAR": 1,
+          "_row": "BEAR"
+        }
+      ],
+      "subperiod_descriptive": [
+        {
+          "sub": "pre2008",
+          "n": 143,
+          "n_evt": 24,
+          "auc_TAIL": 0.722339,
+          "auc_MSM": 0.667717,
+          "auc_BEAR": 0.596639
+        },
+        {
+          "sub": "2008_2016",
+          "n": 108,
+          "n_evt": 5,
+          "auc_TAIL": 0.730097,
+          "auc_MSM": 0.813592,
+          "auc_BEAR": 0.786408
+        },
+        {
+          "sub": "post2017",
+          "n": 116,
+          "n_evt": 8,
+          "auc_TAIL": 0.541667,
+          "auc_MSM": 0.649306,
+          "auc_BEAR": 0.726852
+        }
+      ],
+      "verdict": "F1_FAIL",
+      "pit": {
+        "assert_overlay_pit": "PASS",
+        "cutoff_rule": "Date < first-day-of-holding-month",
+        "msm_caveat": "full-sample demean C1 — baseline 유리 방향(보수적)",
+        "bear_caveat": "SJM 전표본 적합 — 동일 보수 방향"
+      }
+    },
+    "f1b_diagnosis": {
+      "wt_id": "WT-D20260813_002",
+      "stage": "F1b_diagnosis",
+      "metric_type": "mechanism_observation_posthoc",
+      "note": "판정 변경 불가 — F1_FAIL 은 사전등록 규칙으로 확정. 본 산출은 기전 진단 전용.",
+      "D1_vol_control": [
+        {
+          "predictor": "TAIL",
+          "auc_A": 0.714333
+        },
+        {
+          "predictor": "VOL",
+          "auc_A": 0.772858
+        },
+        {
+          "predictor": "TAIL_SHAPE",
+          "auc_A": 0.554873
+        },
+        {
+          "predictor": "MSM",
+          "auc_A": 0.747174
+        },
+        {
+          "predictor": "BEAR",
+          "auc_A": 0.67887
+        }
+      ],
+      "D1_cor": {
+        "tail_vol": 0.722508,
+        "vol_msm": 0.723958
+      },
+      "D2_incremental": [
+        {
+          "series": "TAIL_resid_MSM (TAIL 이 MSM 위에 더하는 것)",
+          "auc_A": 0.436108,
+          "n": 338
+        },
+        {
+          "series": "MSM_resid_TAIL (MSM 이 TAIL 위에 더하는 것)",
+          "auc_A": 0.659045,
+          "n": 338
+        }
+      ],
+      "D3_calm_subset": {
+        "n_subset": 323,
+        "n_event": 23,
+        "base_rate": 0.071207,
+        "auc_TAIL_in_calm": 0.718261,
+        "auc_TAIL_SHAPE_in_calm": 0.535942,
+        "auc_BEAR_in_calm": 0.660725
+      },
+      "D3_eligibility": {
+        "recall": 0,
+        "base": 0.071207,
+        "lift": 0,
+        "p": 1,
+        "verdict": "INELIGIBLE_NO_DISCRIMINATION"
+      },
+      "D4_positive_control_same_month_vol_auc": 0.837265,
+      "SUPERSEDED_VOL_NOTE": "★SUPERSEDED — 이 하위 산출물의 VOL 값(0.772858)은 잘못된 expanding-z basis(필터된 367행 위 표준화)로 계산됐다. 정본은 artifacts.vol_basis_correction 및 headline_numbers.auc_bottom_decile.VOL = 0.750437. TAIL/SHAPE/MSM/BEAR 값은 영향 없음(각각 전체 427행 basis · raw 확률)."
+    },
+    "f1c_addendum": {
+      "wt_id": "WT-D20260813_002",
+      "stage": "F1c_addendum",
+      "metric_type": "mechanism_observation_posthoc",
+      "A1_calm_operating_point": {
+        "n": 323,
+        "n_on_top20": 15,
+        "recall_top20": 0,
+        "base_rate": 0.071207,
+        "verdict_top20": "INELIGIBLE_NO_DISCRIMINATION",
+        "n_on_top35": 31,
+        "recall_top35": 0.096774,
+        "lift_top35": 1.359046,
+        "p_top35": 0.383036,
+        "verdict_top35": "INELIGIBLE_NO_DISCRIMINATION"
+      },
+      "A2_vol_vs_state": {
+        "d_auc_vol_msm": 0.025684,
+        "p_gt0_vol_msm": 0.804,
+        "ci90_vol_msm": [
+          -0.024196,
+          0.07352
+        ],
+        "d_auc_vol_tail": 0.058525,
+        "p_gt0_vol_tail": 0.9005,
+        "ci90_vol_tail": [
+          -0.011802,
+          0.137969
+        ]
+      },
+      "A3_incremental": {
+        "vol_resid_msm_auc": 0.396927,
+        "subperiod": [
+          {
+            "sub": "pre2008",
+            "n": 143,
+            "n_evt": 24,
+            "auc_VOL": 0.77154,
+            "auc_MSM": 0.667717,
+            "auc_TAIL": 0.722339
+          },
+          {
+            "sub": "2008_2016",
+            "n": 108,
+            "n_evt": 5,
+            "auc_VOL": 0.702913,
+            "auc_MSM": 0.813592,
+            "auc_TAIL": 0.730097
+          },
+          {
+            "sub": "post2017",
+            "n": 116,
+            "n_evt": 8,
+            "auc_VOL": 0.5625,
+            "auc_MSM": 0.649306,
+            "auc_TAIL": 0.541667
+          }
+        ]
+      },
+      "SUPERSEDED_VOL_NOTE": "★SUPERSEDED — 이 하위 산출물의 VOL 값(0.772858)은 잘못된 expanding-z basis(필터된 367행 위 표준화)로 계산됐다. 정본은 artifacts.vol_basis_correction 및 headline_numbers.auc_bottom_decile.VOL = 0.750437. TAIL/SHAPE/MSM/BEAR 값은 영향 없음(각각 전체 427행 basis · raw 확률)."
+    },
+    "f1e_direction": {
+      "stage": "F1e_direction_v2",
+      "q10": -0.078084,
+      "q90": 0.094188,
+      "auc_by_direction": [
+        {
+          "predictor": "TAIL",
+          "auc_DOWN": 0.714333,
+          "auc_UP": 0.712367,
+          "asym": 0.001966
+        },
+        {
+          "predictor": "TAIL_SHAPE",
+          "auc_DOWN": 0.554873,
+          "auc_UP": 0.477477,
+          "asym": 0.077396
+        },
+        {
+          "predictor": "VOL",
+          "auc_DOWN": 0.772858,
+          "auc_UP": 0.728169,
+          "asym": 0.044689
+        },
+        {
+          "predictor": "MSM",
+          "auc_DOWN": 0.747174,
+          "auc_UP": 0.728256,
+          "asym": 0.018919
+        },
+        {
+          "predictor": "BEAR",
+          "auc_DOWN": 0.67887,
+          "auc_UP": 0.666749,
+          "asym": 0.012121
+        }
+      ],
+      "on_off_descriptive": [
+        {
+          "ON": true,
+          "n": 34,
+          "mean_ret": -0.024665,
+          "sd_ret": 0.120036,
+          "min_ret": -0.263558,
+          "p_down_tail": 0.264706,
+          "p_up_tail": 0.117647,
+          "flag": "on_TAIL"
+        },
+        {
+          "ON": false,
+          "n": 333,
+          "mean_ret": 0.012118,
+          "sd_ret": 0.073968,
+          "min_ret": -0.209624,
+          "p_down_tail": 0.084084,
+          "p_up_tail": 0.099099,
+          "flag": "on_TAIL"
+        },
+        {
+          "ON": true,
+          "n": 44,
+          "mean_ret": -0.019858,
+          "sd_ret": 0.119293,
+          "min_ret": -0.263558,
+          "p_down_tail": 0.318182,
+          "p_up_tail": 0.113636,
+          "flag": "on_MSM"
+        },
+        {
+          "ON": false,
+          "n": 323,
+          "mean_ret": 0.012602,
+          "sd_ret": 0.072253,
+          "min_ret": -0.209624,
+          "p_down_tail": 0.071207,
+          "p_up_tail": 0.099071,
+          "flag": "on_MSM"
+        }
+      ],
+      "reading": "DOWN 과 UP 의 AUC 가 나란히 0.5 를 크게 넘고 asym 이 0 근방이면 신호는 방향이 아니라 **분산**을 예측한다. long-only 현금 스케일링은 평균을 사고파는 연산이므로 대칭 분산 신호와 소비 형태가 불일치한다.",
+      "SUPERSEDED_VOL_NOTE": "★SUPERSEDED — 이 하위 산출물의 VOL 값(0.772858)은 잘못된 expanding-z basis(필터된 367행 위 표준화)로 계산됐다. 정본은 artifacts.vol_basis_correction 및 headline_numbers.auc_bottom_decile.VOL = 0.750437. TAIL/SHAPE/MSM/BEAR 값은 영향 없음(각각 전체 427행 basis · raw 확률)."
+    },
+    "f1g_source_robustness": {
+      "stage": "F1g_source_robustness",
+      "rawdata": {
+        "n": 367,
+        "auc_TAIL": 0.714333
+      },
+      "benchmark_parquet": {
+        "n": 367,
+        "auc_TAIL": 0.714333
+      },
+      "delta_auc": 0,
+      "sanity_known_crisis_months": [
+        {
+          "ym": "1997-12",
+          "rawdata": -0.082699,
+          "benchparq": -0.082699
+        },
+        {
+          "ym": "2008-09",
+          "rawdata": -0.012384,
+          "benchparq": -0.012384
+        },
+        {
+          "ym": "2008-10",
+          "rawdata": -0.209624,
+          "benchparq": -0.209624
+        },
+        {
+          "ym": "2011-08",
+          "rawdata": -0.126123,
+          "benchparq": -0.126123
+        },
+        {
+          "ym": "2020-03",
+          "rawdata": -0.116409,
+          "benchparq": -0.116409
+        },
+        {
+          "ym": "2022-06",
+          "rawdata": -0.133525,
+          "benchparq": -0.133525
+        }
+      ]
+    },
+    "f1d_null_control": {
+      "stage": "F1d_null_control",
+      "null_resid_auc": {
+        "mean": 0.504746,
+        "sd": 0.061172,
+        "q05": 0.407979,
+        "q95": 0.611778,
+        "n_draw": 200
+      },
+      "tail_resid_auc": 0.436108,
+      "tail_resid_pctile": 0.14,
+      "vol_resid_auc": 0.396927,
+      "vol_resid_pctile": 0.035,
+      "interpretation_rule": "영가설 평균이 0.5 에서 벗어나면 sub-0.5 는 도구 아티팩트. 관측치가 영가설 분포 안이면 '증분 없음'이지 '반정보' 아님."
+    },
+    "adversarial_robustness": {
+      "stage": "adversarial_robustness",
+      "declaration": "판정 변경 불가 — 사전등록 스펙(252d, 하위10분위) 판정은 확정. 격자 승리는 argmax 이므로 주장 불가, next_probe 이월 전용.",
+      "grid": [
+        {
+          "LB": 63,
+          "evt": "abs10",
+          "n": 376,
+          "n_evt": 24,
+          "TAIL": 0.738045,
+          "SHAPE": 0.563329,
+          "VOL": 0.76965,
+          "MSM": 0.764915,
+          "BEAR": 0.718277,
+          "tail_beats_both": false,
+          "best": "VOL"
+        },
+        {
+          "LB": 63,
+          "evt": "abs7",
+          "n": 376,
+          "n_evt": 47,
+          "TAIL": 0.650779,
+          "SHAPE": 0.504107,
+          "VOL": 0.690422,
+          "MSM": 0.713704,
+          "BEAR": 0.627369,
+          "tail_beats_both": false,
+          "best": "MSM"
+        },
+        {
+          "LB": 63,
+          "evt": "q05",
+          "n": 376,
+          "n_evt": 19,
+          "TAIL": 0.727554,
+          "SHAPE": 0.52263,
+          "VOL": 0.772225,
+          "MSM": 0.754681,
+          "BEAR": 0.718414,
+          "tail_beats_both": false,
+          "best": "VOL"
+        },
+        {
+          "LB": 63,
+          "evt": "q10",
+          "n": 376,
+          "n_evt": 38,
+          "TAIL": 0.675568,
+          "SHAPE": 0.473762,
+          "VOL": 0.740657,
+          "MSM": 0.736453,
+          "BEAR": 0.669262,
+          "tail_beats_both": false,
+          "best": "VOL"
+        },
+        {
+          "LB": 63,
+          "evt": "q20",
+          "n": 376,
+          "n_evt": 76,
+          "TAIL": 0.581404,
+          "SHAPE": 0.494386,
+          "VOL": 0.620439,
+          "MSM": 0.661184,
+          "BEAR": 0.556842,
+          "tail_beats_both": false,
+          "best": "MSM"
+        },
+        {
+          "LB": 126,
+          "evt": "abs10",
+          "n": 373,
+          "n_evt": 24,
+          "TAIL": 0.727555,
+          "SHAPE": 0.505372,
+          "VOL": 0.767073,
+          "MSM": 0.763968,
+          "BEAR": 0.71884,
+          "tail_beats_both": false,
+          "best": "VOL"
+        },
+        {
+          "LB": 126,
+          "evt": "abs7",
+          "n": 373,
+          "n_evt": 47,
+          "TAIL": 0.663099,
+          "SHAPE": 0.463778,
+          "VOL": 0.709046,
+          "MSM": 0.712831,
+          "BEAR": 0.628508,
+          "tail_beats_both": false,
+          "best": "MSM"
+        },
+        {
+          "LB": 126,
+          "evt": "q05",
+          "n": 373,
+          "n_evt": 19,
+          "TAIL": 0.708445,
+          "SHAPE": 0.477252,
+          "VOL": 0.76851,
+          "MSM": 0.753643,
+          "BEAR": 0.719001,
+          "tail_beats_both": false,
+          "best": "VOL"
+        },
+        {
+          "LB": 126,
+          "evt": "q10",
+          "n": 373,
+          "n_evt": 38,
+          "TAIL": 0.708955,
+          "SHAPE": 0.475648,
+          "VOL": 0.760801,
+          "MSM": 0.735585,
+          "BEAR": 0.669992,
+          "tail_beats_both": false,
+          "best": "VOL"
+        },
+        {
+          "LB": 126,
+          "evt": "q20",
+          "n": 373,
+          "n_evt": 75,
+          "TAIL": 0.587069,
+          "SHAPE": 0.469664,
+          "VOL": 0.628949,
+          "MSM": 0.662282,
+          "BEAR": 0.554855,
+          "tail_beats_both": false,
+          "best": "MSM"
+        },
+        {
+          "LB": 252,
+          "evt": "abs10",
+          "n": 367,
+          "n_evt": 24,
+          "TAIL": 0.747449,
+          "SHAPE": 0.639213,
+          "VOL": 0.757896,
+          "MSM": 0.761297,
+          "BEAR": 0.720117,
+          "tail_beats_both": false,
+          "best": "MSM"
+        },
+        {
+          "LB": 252,
+          "evt": "abs7",
+          "n": 367,
+          "n_evt": 46,
+          "TAIL": 0.690641,
+          "SHAPE": 0.557632,
+          "VOL": 0.708316,
+          "MSM": 0.718813,
+          "BEAR": 0.631383,
+          "tail_beats_both": false,
+          "best": "MSM"
+        },
+        {
+          "LB": 252,
+          "evt": "q05",
+          "n": 367,
+          "n_evt": 19,
+          "TAIL": 0.728826,
+          "SHAPE": 0.627344,
+          "VOL": 0.758167,
+          "MSM": 0.75121,
+          "BEAR": 0.720357,
+          "tail_beats_both": false,
+          "best": "VOL"
+        },
+        {
+          "LB": 252,
+          "evt": "q10",
+          "n": 367,
+          "n_evt": 37,
+          "TAIL": 0.714333,
+          "SHAPE": 0.554873,
+          "VOL": 0.750369,
+          "MSM": 0.747174,
+          "BEAR": 0.67887,
+          "tail_beats_both": false,
+          "best": "VOL"
+        },
+        {
+          "LB": 252,
+          "evt": "q20",
+          "n": 367,
+          "n_evt": 74,
+          "TAIL": 0.634812,
+          "SHAPE": 0.535975,
+          "VOL": 0.641177,
+          "MSM": 0.664238,
+          "BEAR": 0.556637,
+          "tail_beats_both": false,
+          "best": "MSM"
+        },
+        {
+          "LB": 504,
+          "evt": "abs10",
+          "n": 355,
+          "n_evt": 24,
+          "TAIL": 0.718404,
+          "SHAPE": 0.621224,
+          "VOL": 0.727341,
+          "MSM": 0.757931,
+          "BEAR": 0.728223,
+          "tail_beats_both": false,
+          "best": "MSM"
+        },
+        {
+          "LB": 504,
+          "evt": "abs7",
+          "n": 355,
+          "n_evt": 43,
+          "TAIL": 0.720036,
+          "SHAPE": 0.652057,
+          "VOL": 0.71452,
+          "MSM": 0.729204,
+          "BEAR": 0.639609,
+          "tail_beats_both": false,
+          "best": "MSM"
+        },
+        {
+          "LB": 504,
+          "evt": "q05",
+          "n": 355,
+          "n_evt": 18,
+          "TAIL": 0.722387,
+          "SHAPE": 0.586383,
+          "VOL": 0.765579,
+          "MSM": 0.785361,
+          "BEAR": 0.739862,
+          "tail_beats_both": false,
+          "best": "MSM"
+        },
+        {
+          "LB": 504,
+          "evt": "q10",
+          "n": 355,
+          "n_evt": 36,
+          "TAIL": 0.740944,
+          "SHAPE": 0.621648,
+          "VOL": 0.762017,
+          "MSM": 0.756357,
+          "BEAR": 0.663009,
+          "tail_beats_both": false,
+          "best": "VOL"
+        },
+        {
+          "LB": 504,
+          "evt": "q20",
+          "n": 355,
+          "n_evt": 71,
+          "TAIL": 0.655078,
+          "SHAPE": 0.594872,
+          "VOL": 0.644515,
+          "MSM": 0.658302,
+          "BEAR": 0.552023,
+          "tail_beats_both": false,
+          "best": "MSM"
+        }
+      ],
+      "tail_beats_both_count": 0,
+      "grid_points": 20,
+      "best_distribution": {
+        "MSM": 11,
+        "VOL": 9
+      },
+      "shape_max_auc": 0.652057
+    },
+    "vol_basis_correction": {
+      "stage": "vol_basis_correction",
+      "self_caught": true,
+      "issue": "f1b_diagnosis.R 가 VOL 을 필터된 367행 위에서 expanding-z 했고 TAIL 은 전체 427행 위에서 했다. expanding-z 는 시점 간 단조변환이 아니라 warm-up 이 다르면 순위가 바뀐다(spearman 0.9246 이지만 AUC 는 0.7729 -> 0.7504).",
+      "detected_by": "적대검증 격자(4 lookback x 5 event)의 252d/q10 칸이 f1b 수치와 어긋난 것을 대조하다 발견",
+      "auc_vol_wrong_basis": 0.772858,
+      "auc_vol_correct_basis": 0.750369,
+      "correct_auc": {
+        "VOL": 0.750369,
+        "TAIL": 0.714333,
+        "MSM": 0.747174,
+        "BEAR": 0.67887,
+        "TAIL_SHAPE": 0.554873
+      },
+      "vol_direction": {
+        "down": 0.750369,
+        "up": 0.756593,
+        "asym": -0.006224
+      },
+      "vol_resid_msm_auc": 0.40181,
+      "null_band": [
+        0.408,
+        0.6118
+      ],
+      "cor": {
+        "tail_vol": 0.838148,
+        "vol_msm": 0.822942
+      },
+      "ts_rank_ic_vol": 0.025607,
+      "vol_vs_msm": {
+        "d": 0.0032,
+        "p_gt0": 0.61,
+        "ci90": [
+          -0.0374,
+          0.048
+        ]
+      },
+      "vol_vs_tail": {
+        "d": 0.036,
+        "p_gt0": 0.928,
+        "ci90": [
+          -0.0037,
+          0.0836
+        ]
+      },
+      "impact": "'TAIL < VOL' 결론 불변(0.7143 < 0.7504, P(d>0)=0.928). 그러나 'VOL 이 MSM 을 상회' 는 0.0257 -> 0.0032(P 0.804 -> 0.610)로 축소되어 **사실상 동률** — 해당 서술을 하향 수정했다. F1 판정(TAIL_FAIL)에는 영향 없음(VOL 은 사후 진단 통제군이고 사전등록 baseline 이 아니다)."
+    }
+  },
+  "pit": {
+    "overlay_pit_guard": "PASS (features / MSM asof / BEAR asof)",
+    "cutoff_rule": "Date < first-day-of-holding-month",
+    "lag1_stress": "deferred to F2 (성과 검정)",
+    "strict_pit_ab": "deferred to F2 (성과 검정)",
+    "join_loss_pct": 0,
+    "excluded_features": [
+      "E3_macro_regime (월말스탬프 마지막 행 = 진행 중인 달)",
+      "E5 MSM 디민 계열 (피처 사용 금지 — 대조군으로만)"
+    ],
+    "source_robustness": "벤치 원천 2종(A1/A4)에서 동일 표본·동일 AUC 0.7143"
+  },
+  "selection": {
+    "selection_type": "chain",
+    "n_trials": 1,
+    "dsr_applicable": false,
+    "rationale": "사전등록 단일 스펙의 통과/미달 판정. 후보 열거·argmax 0회. 백테 미실행이라 DSR 부적용. 적대검증 20 격자는 판정 후 견고성 확인용이며 '무엇을 보고 고르는가' 기준으로 선택이 아니다 — 어떤 칸도 채택하지 않았고 전건 보고했다(feedback-sweep-is-about-what-you-select-on 정합)."
+  },
+  "next_probe": [
+    {
+      "id": "NP1",
+      "title": "소비 형태를 분산에 맞춘 오버레이 — 현금이 아니라 변동성-표적 스케일",
+      "rationale": "실측 핵심: 네 예측기 전부 방향이 아니라 분산을 예측한다(TAIL 하방 0.7143 / 상방 0.7124 · VOL 0.7504 / 0.7566 · MSM 0.7472 / 0.7283). 현금 스케일링은 평균을 사고파는 연산이라 대칭 분산 신호와 형태 불일치다 — 이것이 시계열 rank-IC 가 네 예측기 전부 |t|<1 인 이유이고, overlay 드레인 16건 전량 INFERIOR 라는 기존 실측에 처음으로 기전을 준다(종래엔 prior 로만 인용). 형태를 맞추려면 표적이 '수익 회피' 가 아니라 '실현 변동성 상수화' 여야 한다.",
+      "first_test": "vol-target 노출 계열의 실현 active vol 이 incumbent 대비 실제로 낮아지는가 — 성과 이전에 분산 관측으로 먼저 판정",
+      "gate_before_start": "required_effect_size.R 로 ΔIR 해상도 사전 확인 (book_marginal 문턱 0.05 는 269개월에서도 1.09 표준오차)"
+    },
+    {
+      "id": "NP2",
+      "title": "상태-예측기의 인과 재구축 — 대조 기준선을 정직하게",
+      "rationale": "본 라운드 대조군 MSM 은 전표본 디민(C1) 경로를 포함한다. 오염 방향이 baseline 을 유리하게 해 우리 검정을 보수적으로 만들었으나, 역으로 '현행 국면 기계장치의 실제 인과 판별력' 은 여전히 미측정이다. 실측 단서: 꼬리 특징 0개인 순수 인과 VOL 이 AUC 0.7504 로 MSM 0.7472 와 **사실상 동률**(d=0.0032, P(d>0)=0.610, CI90 [-0.037, +0.048]). 즉 '국면 기계장치가 단순 실현변동성보다 나은가' 가 현 증거로는 미해결이며, 이는 인프라 자체에 대한 질문이라 값이 크다.",
+      "first_test": "디민 제거판 MSM 재산출 -> tail-month AUC 재측정 -> 인과 VOL 대비 paired block bootstrap",
+      "byproduct": "ast_field_map_v0.json E5 항목의 pit_hazards 갱신(현행 서술이 디민 경로를 누락)"
+    },
+    {
+      "id": "NP3",
+      "title": "극단 조작점 전용 라운드 — 꼬리 회피 가치가 상위 꼬리에만 있는가",
+      "rationale": "전체 순위는 대칭이나 상위 20% 조작점에서는 비대칭이 있다: 발화월 하방꼬리 0.2647 vs 상방꼬리 0.1176, 평균수익 -2.47% vs 비발화 +1.21%(Welch t -1.75, p 0.088). 5% 미달이고 MSM 이 같은 구조에서 더 강하므로(하방 lift 3.16x) 본 가설을 살리지는 못하나, '꼬리 회피 가치는 극단 조작점에만 존재한다' 는 별개 명제는 미검이다.",
+      "first_test": "required_effect_size.R 로 필요 사건 수 산출 -> 충족 가능하면 극단 조작점 사전등록 라운드",
+      "gate_before_start": "사건 37건이 지배 — 검정력 사전 계산 없이 착수 금지"
+    }
+  ],
+  "revival_conditions": [
+    "(a) 상태-예측기와 spearman < 0.40 이면서 tail-month AUC > 0.70 인 예측기 등장",
+    "(b) 하방/상방 AUC 비대칭이 0.10 이상인 신호 등장 (본 라운드 최대 비대칭 = TAIL_SHAPE 0.077, 단 절대 판별력이 우연 수준)",
+    "(c) 비-return 원천(옵션 IV skew · 대차/공매도 잔고 · 투자자 flow)에서 꼬리 정보가 수익 계열과 독립으로 유입 — 본 라운드는 return-파생 꼬리 통계량만 시험했다"
+  ],
+  "scope_caveats": [
+    "★범위 한정: 기각된 것은 '벤치 일수익에서 파생한 꼬리 통계량을 상태-예측기 대체 표적으로 쓰는 구성' 이다. '꼬리 위험이 무용' 도 '국면 축이 닫혔다' 도 아니다(INV-7 재도전 대상).",
+    "판정 표본 = KOSPI200 벤치 월간 367개월(1996-02~2026-08) · 하위 10분위 사건 37건. 사건 24건이 pre-2008 에 몰려 있어 최근 국면 진술은 검정력 부족.",
+    "성과(PORT_t · ΔIR · Calmar · SR) 는 어떤 값도 산출하지 않았다 — 인용 금지.",
+    "cost/turnover 도 미산출 — 신호 단계에서 종료됐다."
+  ],
+  "stale_value_guard": "embedded 원본 산출물 3건(f1b/f1c/f1e)에 잘못된 basis 의 VOL 수치가 남아 있다. 삭제하지 않고 SUPERSEDED 스탬프를 붙인 이유: 원본을 고쳐 쓰면 무엇이 언제 틀렸는지 감사 불가가 된다. ★인용 시 headline_numbers 또는 vol_basis_correction 만 사용할 것."
+}

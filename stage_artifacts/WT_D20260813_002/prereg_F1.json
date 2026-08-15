@@ -1,0 +1,85 @@
+{
+  "wt_id": "WT-D20260813_002",
+  "stage": "F1_mechanism_observation",
+  "registered_by": "alpha-research",
+  "registered_at": "2026-08-13",
+  "registered_before_measurement": true,
+  "purpose": "가설 F1 반증조건 사전 고정. 꼬리-표적 예측기가 실현 하방 꼬리월 판별에서 상태-예측기 2종(MSM Crisis_Prob · SJM Bear_Prob)을 상회하는가. 성과(PORT_t/ΔIR)와 독립 — 예측기 산출 × 벤치 실현수익만 사용, 보유·비중·비용 미개입.",
+
+  "sample": {
+    "unit": "holding month",
+    "primary_window": "1996-01 ~ 2026-07 (expanding z 안정화 위해 월 60건 사전 이력 요구 후 시작)",
+    "secondary_window_diagnostic": "2003-01 ~ 2026-07 (PG2 incumbent 시대)",
+    "cutoff_rule": "c_m = first calendar day of holding month m. 모든 예측기 입력은 Date < c_m 만. assert_overlay_pit() HARD 강제.",
+    "join_loss_rule": "조인 후 개월수를 이론값과 대조. 손실 >5% 시 중단하고 키 컨벤션 의심."
+  },
+
+  "event_definitions": {
+    "E_A_primary": {
+      "name": "bottom_decile_month",
+      "rule": "벤치 월수익이 표본 월수익 분포의 하위 10분위",
+      "caveat": "분위 문턱이 전표본 산출 = 라벨 측 look-ahead. 4개 예측기에 대칭 적용되므로 비교 편향 없음. 기술적 판별력 관측 전용이며 어떤 성과 주장에도 사용 불가."
+    },
+    "E_B_secondary": {
+      "name": "abs_threshold_month",
+      "rule": "벤치 월수익 < -7% (절대 문턱, 고정, look-ahead 없음)",
+      "caveat": "문턱 -7%는 사전 고정 — 탐색으로 고르지 않음"
+    }
+  },
+
+  "predictors": [
+    {
+      "id": "TAIL",
+      "role": "primary_new",
+      "definition": "trailing 252 거래일 일별 벤치수익 r 로부터 3특징을 expanding z-score(인과) 후 등가중 평균. (1) dn_semivol = sqrt(mean(min(r,0)^2)) (2) neg_skew = -skewness(r) (3) tail_exc = mean(r < -0.02)",
+      "fixed_before_measurement": true,
+      "lookback_days": 252,
+      "standardization": "expanding mean/sd over prior monthly observations only (C1 clean)"
+    },
+    {
+      "id": "TAIL_SHAPE",
+      "role": "secondary_diagnostic",
+      "definition": "변동성 수준을 제거한 꼬리 '형태'만: expanding z of {neg_skew, tail_exc_std = mean(r < -2*sd(r))} 등가중 평균",
+      "purpose": "TAIL 의 판별력이 단순 변동성 수준의 재포장인지 분리 진단",
+      "not_a_selection_alternative": "F1 판정은 TAIL 로만. TAIL_SHAPE 결과가 좋아도 primary 교체 금지."
+    },
+    {
+      "id": "MSM",
+      "role": "state_baseline_1",
+      "source": ".cache/msm_daily_latest.parquet::Crisis_Prob (E5)",
+      "pit_caveat": "full-sample 디민(C1 위반, 8954/8975일 재서술 실측). 오염은 baseline 을 유리하게 만들어 본 검정을 보수적으로 만든다 — 방향이 우리에게 불리하므로 사용 가능하되 라벨 의무."
+    },
+    {
+      "id": "BEAR",
+      "role": "state_baseline_2",
+      "source": ".cache/regime_jump_daily.parquet::Bear_Prob (E6)",
+      "pit_caveat": "SJM 도 전표본 적합 계열 — 동일 보수 방향 caveat"
+    }
+  ],
+
+  "metrics": [
+    "AUC (threshold-free rank discrimination)",
+    "lift @ top-20% — 문턱은 expanding percentile(PIT-clean). 판정은 계약 02_Infrastructure/contracts/label_eligibility_gate.R::label_eligibility() 경유(자체 구현 금지)",
+    "paired stationary block bootstrap (block=6 months, B=2000) — ΔAUC vs 더 나은 baseline"
+  ],
+
+  "decision_rule": {
+    "F1_PASS": "AUC(TAIL) > max(AUC(MSM), AUC(BEAR)) AND bootstrap P(dAUC > 0 vs better baseline) >= 0.90 AND label_eligibility(TAIL top-20%, E_A) == ELIGIBLE",
+    "F1_MARGINAL": "AUC(TAIL) > 두 baseline 모두 이나 bootstrap P < 0.90, 또는 eligible 이나 AUC 우위 미미",
+    "F1_FAIL": "그 외 — 상태-예측기 대비 우위 부재. F2(성과/ΔIR) 측정 착수 금지, 라운드를 기전 기각으로 수집",
+    "authority": "F1_FAIL 이면 성과 측정을 하지 않는다. 성과를 먼저 보면 동어반복이 되므로 순서가 규율이다(handoff (2))."
+  },
+
+  "selection_discipline": {
+    "selection_type": "chain",
+    "n_trials_F1": 1,
+    "rationale": "예측기 정의·lookback·표준화·문턱·사건정의를 측정 전 본 문서로 고정. grid/argmax 없음. TAIL_SHAPE 는 진단이지 선택 후보가 아니다.",
+    "dsr_applicability": "F1 은 백테가 아니므로 DSR 부적용. F2 로 진행 시 현금매핑 선택 방식에 따라 재판정(사전 고정 매핑이면 chain, grid argmax 면 sweep + DSR>=0.5 HARD)."
+  },
+
+  "known_hazards_acknowledged": [
+    "E3 macro_regime 월말스탬프 마지막 행 = 진행 중인 달 → F1 에서 macro_regime 미사용(피처 배제)",
+    "E5 MSM full-sample demean C1 → baseline 으로만 사용, 예측기 피처로 미사용",
+    "꼬리월 희소 — 하위 10분위는 정의상 표본의 10%. 부분구간 분해는 기술통계로만 보고(검정력 부족)"
+  ]
+}

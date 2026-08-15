@@ -1,0 +1,28 @@
+{
+ "research_mode": "QPM",
+ "emitted_at": "2026-08-13",
+ "emitted_by": "Q-Lead session (/qvest 부팅 세션, 2026-08-13)",
+ "l_code": "L-AR-20260813_WT002",
+ "strategy_id": "wt002_regime_tail_target_20260813",
+ "grade": "N/A_mechanism_gate_fail",
+ "metric_type": "panel_statistic",
+ "family": "overlay_regime",
+ "tags": [
+  "regime",
+  "tail_target",
+  "auc",
+  "overlay",
+  "fq233",
+  "mechanism_gate"
+ ],
+ "core_reference": "WT-D20260813_002 · prereg_F1.json(측정 전) · stage_artifacts/WT_D20260813_002/alpha_validation.json",
+ "scope": "국면 예측 표적을 상태→꼬리특성으로 교체하는 축. 367개월·사건 37건·조인손실 0.00%. 자본 주장 0.",
+ "lesson_text": "★판정 F1_FAIL — 기전 관문에서 기각, 성과 미산출(미달이 아니라 미측정). 하방 꼬리월 AUC: 신규 꼬리표적 0.7143 < MSM 상태-baseline 0.7472 (VOL 0.7504 · BEAR 0.6789). ■기전 3중 — (1) **꼬리 '형태' 에는 정보가 거의 없다**: vol 성분 제거한 TAIL_SHAPE AUC **0.5549 ≈ 우연**. 판별력은 전부 변동성 수준에서 온다(spearman TAIL~VOL 0.838). (2) **증분 없음**: MSM 직교화 잔차 AUC 0.4361(영가설 밴드 [0.408,0.612] 내), 역방향 MSM|TAIL 0.6590 = MSM 이 TAIL 을 정보적으로 포함. (3) ★★**소비 형태 불일치 — 네 예측기 전부 방향이 아니라 분산을 예측한다**(시계열 rank-IC 넷 다 |t|<1). 이것이 **overlay 드레인 16건 전량 INFERIOR 라는 기존 실측에 처음으로 기전을 준다**(종래엔 prior 로만 인용). ■20 격자 전수(4 lookback × 5 사건정의)에서 신규 표적이 두 baseline 을 모두 상회한 칸 **0/20**. ■가설이 **사전 지목한** MSM-중립 323개월에서도 사건 포착 **0건**. ■자기 적발: expanding-z warm-up 불일치(VOL 367행 vs TAIL 427행)로 초판이 VOL 0.7729 과대평가 → 재산출 0.7504, 자기 주장 하향(F1 판정 불변).",
+ "mechanism_confirmed": "국면 예측기 계열은 방향 정보를 담지 않고 분산만 예측한다 — 4종 전부.",
+ "next_probes": [
+  "소비 형태를 분산에 맞춘 오버레이(vol-target) — 성과 이전에 실현 vol 감소로 판정. ⇒ WT-D20260813_003 에서 실행(VT2 PASS/VT2b REJECT).",
+  "MSM 전표본 디민 제거판 재산출 후 인과 VOL 과 재대조 — '국면 기계장치가 단순 실현변동성보다 나은가' 미해결(d=0.0032, P 0.610).",
+  "극단 조작점 전용 사전등록(상위 20%서 하방 lift 2.63x vs 상방 1.18x, t -1.75 p 0.088) — 사건 37건 지배, 검정력 사전계산 없이 착수 금지."
+ ],
+ "revival_condition": "상태-예측기와 spearman<0.40 ∧ AUC>0.70 인 예측기 / 하방·상방 비대칭 ≥0.10(본 라운드 최고 0.0774, TAIL 0.0020) / 비-return 원천(옵션 IV skew·대차잔고·flow)의 꼬리 정보. ★본 판정은 '벤치 일수익 파생 꼬리 통계량' 한정 config-scoped negative."
+}

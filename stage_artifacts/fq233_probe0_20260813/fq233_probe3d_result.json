@@ -1,0 +1,71 @@
+{
+ "status": "INVALID_FRAME_ERROR",
+ "invalidated_at": "2026-08-13",
+ "reason": "★이 산출물은 **구 측정 프레임**에서 나왔다. factor DB sig_date T 팩터를 T월 수익과 짝지어(build_monthly_forward_returns 앵커='sig_date 이하 최종거래일', 월초가 거래일인 달엔 앵커가 그날 자신) 팩터가 채점 대상 월을 봤다. 수정 = 팩터 Date +1개월.",
+ "evidence": "M04_Mom_1 평균 IC: 구 -0.9423 -> 수정 +0.0170 · |평균IC|>0.10 팩터: 46종 -> 0종",
+ "do_not_cite": "이 파일의 수치를 인용하지 말 것. 유효 정본 = r30_reframe_result.json",
+ "kept_for": "프레임 오류 사례로 보존(삭제 아님)",
+ "_original": {
+  "schema": "fq233_probe3d_v1",
+  "round_id": "FQ-233-probe3d",
+  "measured_at": "2026-08-13",
+  "metric_type": "canonical_screen",
+  "metric_type_note": "canonical_screen_bt 실측. forge build_bt_result 가 authoritative — 자본 판정 아님.",
+  "question": "probe0 의 중앙값-우위(Q5-Q1 중앙값 +15.51% t3.375 vs 평균 -1.81% t-0.368)가 top-25 실현수익으로 전이되는가",
+  "verdict": "TRANSFER_FAILS_WITH_SIGN_REVERSAL",
+  "frame": {
+   "factor": "D03_RealVol",
+   "direction": "align_factor_direction IC-inferred (PIT-safe)",
+   "universe": "KOSPI200 UNION KOSDAQ150",
+   "period": "2005-01 ~ 2026-08",
+   "n_months": 259,
+   "top_n": 25,
+   "weighting": "EW long-only",
+   "cost_bps_oneway": 15,
+   "liq_min": 200000000,
+   "liq_ruler": "adv20_t1 (input_daily)",
+   "inputs": "build_monthly_forward_returns() 정본 경로 — bench = 유니버스 cap-weighted forward return",
+   "scores_restricted_to": "정본 returns 패널 (Date,Ticker) 키 — 월평균 308종목"
+  },
+  "arms": [
+   {
+    "tag": "top25_raw",
+    "port_t": -2.163,
+    "p": 0.0305,
+    "ew_uni": -2.9552
+   },
+   {
+    "tag": "top25_inverted",
+    "port_t": 1.6884,
+    "p": 0.0913,
+    "ew_uni": 2.0869
+   },
+   {
+    "tag": "top25_random",
+    "port_t": -1.1256,
+    "p": 0.26,
+    "ew_uni": -2.4268
+   }
+  ],
+  "positive_control": {
+   "passed": true,
+   "evidence": "부호 반전이 PORT_t 를 -2.163 -> +1.688 로 뒤집고, 무작위(-1.126)는 둘 사이에서 비유의. 계약의 커버리지 경고도 미발화.",
+   "prior_invalid_attempts": "3a(수동입력·scores 미제한) 3b(수동입력·scores 제한) 세 arm 동일 -1.009 / 3c(정본입력·scores 미제한) 커버리지 5.7% + random 이 실제와 동급"
+  },
+  "finding": "★전이가 감쇠가 아니라 **부호 반전**이다. probe0 에서 Q5(최고 점수)는 중앙값 우위가 있었는데, 그 끝을 top-25 로 집중 보유하면 PORT_t -2.163 (유의한 열위)이고, 반대 끝(Q1)을 보유하면 +1.688 이다. 기전은 probe0 이 이미 냈다: 왜도가 Q1 1.015 -> Q5 0.699 로 **단조 감소**하므로 Q1 의 소수 극단 상승이 평균을 만든다. top-N 포트는 보유 종목 수익의 합 = **평균-basis 객체**라 중앙값 우위를 못 받고 꼬리를 받는다.",
+  "implication_v84": "v8.4 Lane A 의 핵심 전제가 실측으로 확인됐다 — 분위/중앙값 구조와 실현 top-N 포트가 **반대 방향**을 가리킨다. 다만 함의는 '분위 표적이 더 낫다'가 아니라 **'표적과 소비 형태가 정합해야 한다'** 이다: 중앙값 표적으로 고른 종목을 평균-basis 포트로 소비하면 부호가 뒤집힌다. => Lane A 설계에 소비 형태(top-N 집중 vs 분산 vs 밴드)를 자유도로 명시할 것.",
+  "caveats": [
+   "★자본 주장 아님 — 세 arm 모두 graduation 문턱 PORT_t 2.95 미달(inverted 1.688 도 p 0.0913).",
+   "★inverted(+1.688)를 전략 제안으로 읽지 말 것 — 진단 arm 의 거울상이고, 단일 팩터·단일 config·DSR/oos_retention 미산출이다.",
+   "direction 은 IC-inferred 이므로 'raw' 가 가리키는 물리적 방향(고변동성/저변동성)을 인용 전 확인할 것.",
+   "EW-uni 는 부호무관 배율(x1.371 계열) — cap-w 판정과 한 문장에 놓지 말 것.",
+   "단일 재료(D03_RealVol) 결과다. 일반성은 FQ-171 census 로 다른 재료에 같은 프레임을 적용해야 선다."
+  ],
+  "next_probes": [
+   "일반성: Q01(혹형)·M26(단조)에 동일 프레임 적용 — 부호 반전이 D03 고유인가 형태-조건부인가 (FQ-170 형태=라우팅 라벨 가설과 합류)",
+   "소비 형태 자유도: top-25 집중 대신 Q5 전체 EW / 밴드(D8~D9) 로 소비하면 중앙값 우위가 살아나는가 — 표적-소비 정합 가설의 직접 시험",
+   "Lane A arm A 기준선: 이제 배관이 검증됐으므로 평균-표적 예측기 SR ~0.49 재현 착수 가능"
+  ],
+  "discipline_note": "유효 측정에 도달하기까지 무효 3판(3a/3b/3c)이 필요했다. 매번 잡은 것은 **계약의 자체 경고(커버리지)와 양성 대조(부호 반전·무작위)** 였다. 3a 만 보고 멈췄으면 '전이 실패'라는 결론을 **맞는 방향으로 우연히** 냈을 것이다 — 값(-1.009)은 음수였으니까. 그러나 그 근거는 NA->0 오염이었고, 부호 반전 arm 도 같은 값이었다."
+ }
+}

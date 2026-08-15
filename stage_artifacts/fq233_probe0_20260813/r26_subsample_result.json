@@ -1,0 +1,58 @@
+{
+ "status": "INVALID_FRAME_ERROR",
+ "invalidated_at": "2026-08-13",
+ "reason": "★이 산출물은 **구 측정 프레임**에서 나왔다. factor DB sig_date T 팩터를 T월 수익과 짝지어(build_monthly_forward_returns 앵커='sig_date 이하 최종거래일', 월초가 거래일인 달엔 앵커가 그날 자신) 팩터가 채점 대상 월을 봤다. 수정 = 팩터 Date +1개월.",
+ "evidence": "M04_Mom_1 평균 IC: 구 -0.9423 -> 수정 +0.0170 · |평균IC|>0.10 팩터: 46종 -> 0종",
+ "do_not_cite": "이 파일의 수치를 인용하지 말 것. 유효 정본 = r30_reframe_result.json",
+ "kept_for": "프레임 오류 사례로 보존(삭제 아님)",
+ "_original": {
+  "schema": "alpha_r26_v1",
+  "round_id": "v84-R26",
+  "measured_at": "2026-08-13",
+  "question": "K200/KQ150 격차가 횡단면 크기(측정 잡음)의 산물인가 — R25 의 '일부는 잡음' 완화를 확정/철회",
+  "verdict": "NOISE_HYPOTHESIS_REJECTED_SIZE_EFFECT_STANDS",
+  "metric_type": "panel_statistic",
+  "design": "K200 을 매월 무작위 150종목(KQ150 과 동일 횡단면)으로 축소해 재측정. ★규율: 부분표본은 **월별 1회 추출을 전 팩터가 공유** — 팩터마다 다르게 뽑으면 유니버스 축소가 아니라 팩터별 잡음 주입이 된다.",
+  "results": [
+   {
+    "frame": "K200_full",
+    "tickers_per_month": 198,
+    "pass_avg": 17.3,
+    "flip": 0.1978,
+    "align_diff": 2.871,
+    "t_nonoverlap": 11.68
+   },
+   {
+    "frame": "K200_sub150",
+    "tickers_per_month": 150,
+    "pass_avg": 18.2,
+    "flip": 0.2062,
+    "align_diff": 3.571,
+    "t_nonoverlap": 9.51
+   },
+   {
+    "frame": "KQ150_actual",
+    "tickers_per_month": "~150",
+    "pass_avg": 23.6,
+    "flip": 0.2523,
+    "align_diff": 1.939,
+    "t_nonoverlap": 7.31
+   }
+  ],
+  "key_finding": "★횡단면을 KQ150 과 같은 150종목으로 줄여도 효과가 **떨어지지 않는다**(+2.871 -> +3.571). KQ150 의 1.939 와 **1.84배** 격차 잔존. 전환율도 0.1978 -> 0.2062 로 소폭만 오르고 KQ150 의 0.2523 에 못 미친다 => **KQ150 의 부호 불안정은 종목 수 때문이 아니다**. H-noise 기각. 격차는 횡단면 크기가 아니라 **종목 집단의 성질**에서 온다.",
+  "retracts": "★R25 의 '일부는 소형 유니버스의 측정 잡음에서 온다' 완화를 **철회**한다. R25a 가 관측한 전환율 격차(0.2523 vs 0.1978)는 실재하나 그 원인이 종목 수가 아님이 R26 에서 확정됐다.",
+  "unexplained": "⚠subsample 이 전체보다 효과가 **컸다**(+0.700). 후보 = 대형주 편중 완화 / 통과 팩터 수 변화(17.3->18.2) / **단일 시드의 우연**. 시드 1개 결과라 이 방향은 **인용하지 않는다**.",
+  "caveats": [
+   "★subsample 은 **시드 1개** — 상승 방향은 다중 시드 전까지 인용 금지.",
+   "각 유니버스가 자기 벤치를 쓴다.",
+   "t 절대값 인용 금지(12개월 겹침).",
+   "잔여 기전(유동성·종목 집단 성질)은 여전히 미검."
+  ],
+  "next_probes": [
+   "다중 시드(10회) subsample — 상승이 우연인지 구조인지",
+   "유동성 채널 — 통과군을 거래대금 분위로 분해",
+   "KQ150 부호 불안정의 진짜 원인 — 종목 수가 아니면 무엇인가(회전율? 이벤트 밀도?)",
+   "INV07 감사 결과 수령 후 표본 영향 재확인"
+  ]
+ }
+}

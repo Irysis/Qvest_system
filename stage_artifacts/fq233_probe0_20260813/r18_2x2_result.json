@@ -1,0 +1,100 @@
+{
+ "status": "INVALID_FRAME_ERROR",
+ "invalidated_at": "2026-08-13",
+ "reason": "★이 산출물은 **구 측정 프레임**에서 나왔다. factor DB sig_date T 팩터를 T월 수익과 짝지어(build_monthly_forward_returns 앵커='sig_date 이하 최종거래일', 월초가 거래일인 달엔 앵커가 그날 자신) 팩터가 채점 대상 월을 봤다. 수정 = 팩터 Date +1개월.",
+ "evidence": "M04_Mom_1 평균 IC: 구 -0.9423 -> 수정 +0.0170 · |평균IC|>0.10 팩터: 46종 -> 0종",
+ "do_not_cite": "이 파일의 수치를 인용하지 말 것. 유효 정본 = r30_reframe_result.json",
+ "kept_for": "프레임 오류 사례로 보존(삭제 아님)",
+ "_original": {
+  "schema": "alpha_r18_v1",
+  "round_id": "v84-R18",
+  "measured_at": "2026-08-13",
+  "question": "정렬일치는 문턱 여유(buffer)의 대리인가 독립 정보인가 — R10/R11 '4번째 축' 주장의 존폐",
+  "verdict": "INDEPENDENT_NOT_A_BUFFER_PROXY_AXIS_SURVIVES",
+  "metric_type": "panel_statistic",
+  "sample": "HARD 통과 4,639 팩터-월 · 222개월 · corr(E_align, b_min) 월내순위 +0.3771",
+  "cells_2x2": [
+   {
+    "align": "일치",
+    "buffer": "큼",
+    "n": 1643,
+    "future_pct": 5.061
+   },
+   {
+    "align": "일치",
+    "buffer": "작음",
+    "n": 802,
+    "future_pct": 4.494
+   },
+   {
+    "align": "불일치",
+    "buffer": "큼",
+    "n": 728,
+    "future_pct": 2.877
+   },
+   {
+    "align": "불일치",
+    "buffer": "작음",
+    "n": 1466,
+    "future_pct": 1.729
+   }
+  ],
+  "align_effect_within_buffer_strata": [
+   {
+    "stratum": "여유 큼",
+    "aligned": 5.119,
+    "mismatch": 3.079,
+    "diff_pp": 2.041,
+    "t_nw12": 7.39,
+    "t_nonoverlap": 5.38
+   },
+   {
+    "stratum": "여유 작음",
+    "aligned": 4.891,
+    "mismatch": 1.72,
+    "diff_pp": 3.17,
+    "t_nw12": 6.29,
+    "t_nonoverlap": 5.55
+   }
+  ],
+  "buffer_effect_within_align_strata": [
+   {
+    "stratum": "정렬 일치",
+    "hi_buf": 5.119,
+    "lo_buf": 4.891,
+    "diff_pp": 0.229,
+    "t_nw12": 0.57,
+    "t_nonoverlap": 0.94,
+    "note": "★비유의 — 정렬이 좋으면 여유는 거의 무관"
+   },
+   {
+    "stratum": "정렬 불일치",
+    "hi_buf": 3.079,
+    "lo_buf": 1.72,
+    "diff_pp": 1.358,
+    "t_nw12": 3.37,
+    "t_nonoverlap": 3.79,
+    "note": "정렬이 나쁠 때만 여유가 완충"
+   }
+  ],
+  "head_to_head_as_selection_label": {
+   "E_align": 2.884,
+   "b_min": 1.629,
+   "reading": "정렬이 여유를 압도 (+2.884 vs +1.629 %p)"
+  },
+  "mechanism_correction_of_R17": "★R17 이 세운 '정렬 불일치 -> 여유 없음 -> 탈락' 인과 사슬에서 **여유는 매개가 아니다**. 정확한 구조: **정렬이 1차 변수, 여유는 정렬이 나쁠 때만 작동하는 2차 변수**. 정렬 일치면 여유가 작아도 4.891% 로 잘 하고(여유 효과 비유의 t 0.94), 정렬이 어긋날 때만 여유가 완충한다(+1.358%p, t 3.79).",
+  "implication": "★R10/R11 의 '4번째 축' 주장 **생존**. 정렬 일치는 게이트값 크기(여유)로 환원되지 않는 정보를 갖는다 — 두 축이 같은 방향을 가리키는지 여부는 게이트값이 얼마나 높은지와 **다른 질문**이다. 월내 순위상관 +0.377 로 겹치지만 다른 것을 본다.",
+  "caveats": [
+   "★t 절대값 인용 금지 — 12개월 겹침 오염. 셀 간 크기 순서와 층별 부호 일관성만 읽었다.",
+   "여유(b_min) 정의는 세 게이트 상대여유의 최소값 — 다른 정의(평균·가중)에서 재현 미검.",
+   "중앙값 분할이라 상대적 — 절대 문턱 기준 아님.",
+   "게이트값이 팩터 대리 포트 동형 (R14 계약 대조 진행 중, 미완). **이 전체 사슬의 전이 여부는 R14 가 결정한다.**"
+  ],
+  "next_probes": [
+   "★R14 계약 대조 완료 후 통합 판정 — 대리가 계약을 따르면 R12~R18 전이, 아니면 전부 대리 한정 강등",
+   "여유 정의 민감도: b_min 대신 평균여유·PORT_t 단독여유로 2x2 재현",
+   "정렬 1차/여유 2차 구조가 지평(6/24개월)에서도 유지되는가",
+   "정렬 불일치 팩터 중 여유 큰 것(n=728)의 정체 — 어떤 계열인가, 회수 가능한가"
+  ]
+ }
+}

@@ -1,0 +1,42 @@
+{
+ "status": "INVALID_FRAME_ERROR",
+ "invalidated_at": "2026-08-13",
+ "reason": "★이 산출물은 **구 측정 프레임**에서 나왔다. factor DB sig_date T 팩터를 T월 수익과 짝지어(build_monthly_forward_returns 앵커='sig_date 이하 최종거래일', 월초가 거래일인 달엔 앵커가 그날 자신) 팩터가 채점 대상 월을 봤다. 수정 = 팩터 Date +1개월.",
+ "evidence": "M04_Mom_1 평균 IC: 구 -0.9423 -> 수정 +0.0170 · |평균IC|>0.10 팩터: 46종 -> 0종",
+ "do_not_cite": "이 파일의 수치를 인용하지 말 것. 유효 정본 = r30_reframe_result.json",
+ "kept_for": "프레임 오류 사례로 보존(삭제 아님)",
+ "_original": {
+  "schema": "alpha_r11_v1",
+  "round_id": "v84-R11",
+  "measured_at": "2026-08-13",
+  "question": "R10 의 E_align 증분(+0.01510)이 후보 11종 훑기의 산물인가",
+  "verdict": "SURVIVES_MULTIPLE_TESTING",
+  "metric_type": "panel_statistic",
+  "design": "팩터 블록 순열 B=300. **팩터 단위로** 후보 계열 전체를 재배정하되 11 후보에 **동일 배정** => within-factor 지속성 + 후보 간 상관 구조 온존, 결과-후보 연결만 절단. 귀무 통계량 = 11종 **최대 증분**(내가 실제로 고른 방식과 동일).",
+  "results": {
+   "observed_max": 0.0151,
+   "observed_argmax": "E_align",
+   "null_median": 0.0017,
+   "null_p90": 0.0041,
+   "null_p95": 0.005,
+   "null_p99": 0.007,
+   "null_max": 0.0085,
+   "p_corrected": "< 0.0033 (300 draw 중 0건 — B=300 이므로 해상도 1/300)",
+   "ratio_obs_over_null_max": 1.77
+  },
+  "self_correction": "★초판 2결함 자가검거: ①argmax 라벨을 'E_align' 으로 **하드코딩**해 찍었는데 실제 argmax 는 E_icir 이었다 ②R10 은 후보를 rk() **순위화** 후 평가했는데 초판 R11 은 **raw** 를 썼다. E_icir=평균/sd 는 분모 0 근처서 폭발(raw 범위 -0.802~4.938)해 증분 0.03744 를 만들었다 — R8 의 oos 비율형과 같은 병. 순위화로 프레임을 R10 에 맞추니 argmax 가 E_align(0.01510)로 복귀.",
+  "caveats": [
+   "★p 표기는 'p < 0.0033' 이 정확 — B=300 해상도. 'p=0.0000' 으로 쓰지 말 것.",
+   "블록 순열은 팩터 라벨만 섞고 **시간 구조는 공유**한다(모든 팩터가 같은 달을 봄) — 시장 공통 요인 잔존 가능.",
+   "E_align 은 0/1 이진의 확장창 평균이라 분포가 [0.658,1.000] 로 좁다. 순위화가 이를 편다.",
+   "증분 절대 크기는 여전히 작다(R^2 0.1277 -> 0.1428).",
+   "팩터 수준 대리 포트(top-decile EW). forge 실포트 미검."
+  ],
+  "next_probes": [
+   "★E_align 을 **선별 라벨**로 쓰는 경로 실측 — 게이트 확장은 도훈 결정이나 선별 활용은 세션 범위",
+   "forge 실포트에서 게이트 3종 상관(0.9434) 재측정 — R9/R10 결론의 적용 범위 확정",
+   "E_align 의 기전 해석: 정렬 불일치가 '미탐색 방향' 을 표시하는가 '측정 잡음' 을 표시하는가",
+   "R^2 0.1428 의 나머지 86% — 국면/군집/용량"
+  ]
+ }
+}

@@ -1,0 +1,85 @@
+{
+  "wt_id": "WT-D20260813_003",
+  "stage": "VT",
+  "metric_type": "mechanism_observation",
+  "prereg": "stage_artifacts/WT_D20260813_003/prereg_VT.json",
+  "n_months": 366,
+  "window": ["1996-02", "2026-07"],
+  "mean_exposure": 0.887916,
+  "bind_rate": 0.418033,
+  "floor_rate": 0.051913,
+  "VT1": {
+    "role": "record_only",
+    "spearman": 0.721905,
+    "pearson": 0.663071,
+    "realized_vol_ac1": 0.779582,
+    "note": "예측기 = trailing 252d 실현변동성 자체. '더 나은 예측 입력' 신규성 주장 없음(승계 자인)."
+  },
+  "VT2": {
+    "G": 0.140782,
+    "sd_scaled": 0.060924,
+    "sd_control": 0.070907,
+    "sd_base": 0.079857,
+    "null_mean": -0.018377,
+    "null_q95": 0.042722,
+    "p_perm": 0,
+    "B": 2000,
+    "min_effect": 0.02,
+    "pass": true,
+    "positive_control_G_same_month_vol": 0.172299,
+    "negative_control_shuffle_meanG": -0.020313,
+    "robust_expanding_control_G": 0.078315
+  },
+  "VT2b": {
+    "mean_d_monthly": -0.001234,
+    "mean_d_annual_pct": -1.48034,
+    "nw_lag3_t": -1.107976,
+    "reject": false,
+    "variance_drag_gain_annual_pct": 0.789594,
+    "net_effect_annual_pct": -0.690746,
+    "robust_expanding_control": {
+      "mean_d": -0.000294,
+      "nw_lag3_t": -0.307259
+    }
+  },
+  "VT3": {
+    "assert_overlay_pit": "PASS",
+    "clip_identity_max_abs": 0,
+    "lag1_G": 0.123551,
+    "lag1_retention": 0.877603,
+    "loose_cutoff_G": 0.160977,
+    "ab_inflation": 0.143446,
+    "ab_lookahead_suspected": true,
+    "guard_violation_injection_fires": true,
+    "variance_contrib": {
+      "total": -0.486933,
+      "bind": -0.597601,
+      "clip": 0.110668,
+      "low_sigma_half": 0.091992
+    }
+  },
+  "subperiod_descriptive": [
+    {
+      "sub": "pre2008",
+      "n": 143,
+      "mean_e": 0.798075,
+      "G": 0.137776,
+      "mean_d_ann_pct": -1.470621
+    },
+    {
+      "sub": "2008_2016",
+      "n": 108,
+      "mean_e": 0.944048,
+      "G": 0.048634,
+      "mean_d_ann_pct": -1.226185
+    },
+    {
+      "sub": "post2017",
+      "n": 115,
+      "mean_e": 0.946918,
+      "G": 0.138782,
+      "mean_d_ann_pct": -1.73111
+    }
+  ],
+  "verdict": "VT2_VT2b_PASS_PROCEED_VT4"
+}

@@ -1,0 +1,75 @@
+{
+ "status": "INVALID_FRAME_ERROR",
+ "invalidated_at": "2026-08-13",
+ "reason": "★이 산출물은 **구 측정 프레임**에서 나왔다. factor DB sig_date T 팩터를 T월 수익과 짝지어(build_monthly_forward_returns 앵커='sig_date 이하 최종거래일', 월초가 거래일인 달엔 앵커가 그날 자신) 팩터가 채점 대상 월을 봤다. 수정 = 팩터 Date +1개월.",
+ "evidence": "M04_Mom_1 평균 IC: 구 -0.9423 -> 수정 +0.0170 · |평균IC|>0.10 팩터: 46종 -> 0종",
+ "do_not_cite": "이 파일의 수치를 인용하지 말 것. 유효 정본 = r30_reframe_result.json",
+ "kept_for": "프레임 오류 사례로 보존(삭제 아님)",
+ "_original": {
+  "schema": "alpha_armA_culprit_v1",
+  "round_id": "v84-armA-culprit",
+  "measured_at": "2026-08-13",
+  "question": "ML QEPM arm A 기준선이 PORT_t 26.89 를 낸 원인 — 합성 경로 결함인가 개별 팩터 오염인가",
+  "verdict": "SEVEN_M_SERIES_FACTORS_HAVE_SAME_MONTH_LOOKAHEAD",
+  "metric_type": "panel_statistic",
+  "contaminated": [
+   {
+    "fac": "M04_Mom_1",
+    "mean_ic": -0.9423
+   },
+   {
+    "fac": "M19_MACD",
+    "mean_ic": -0.8704
+   },
+   {
+    "fac": "M20_Keller_Mom",
+    "mean_ic": -0.759
+   },
+   {
+    "fac": "M18_RSI",
+    "mean_ic": -0.7435
+   },
+   {
+    "fac": "M30_Mom_10d",
+    "mean_ic": -0.6265
+   },
+   {
+    "fac": "M16_Trend_Factor",
+    "mean_ic": -0.6195
+   },
+   {
+    "fac": "M15_Mom_3",
+    "mean_ic": -0.5009
+   },
+   {
+    "fac": "INV07_Retail_Contrarian",
+    "mean_ic": 0.4798,
+    "note": "8위 — 앞서 R20/R21 에서 미판정으로 남긴 건이 여기서 연결"
+   }
+  ],
+  "scale_reference": "320 팩터 전체 |IC| 평균 ~0.018 · 건전 최대 ~0.033 => 오염 7종은 15~28배",
+  "corroboration": [
+   "lag 스트레스: M04_Mom_1 PORT_t -38.95(L0) -> -0.71(L1) -> -1.51(L2). 채점 대상 월을 못 보게 되는 순간 신호가 죽는다.",
+   "R14 36 층화표본에서 M04_Mom_1 이 계약 PORT_t -38.95 로 최하단 이상치.",
+   "IC 가중 합성: 포트 월평균 +23.4% · Hit_Ratio_vs_BM **1.000(223/223)** · Excess_Total_Return 8.67e19. 벤치 계열은 정상(월 +0.79%)."
+  ],
+  "reinterprets_R21": "★R21 을 재해석해야 한다. 당시 '대조군 3종이 똑같이 붕괴하므로 lag 스트레스는 판별력 없음' 이라 결론했는데, M04_Mom_1 의 붕괴는 **신선도 소멸이 아니라 동월 look-ahead 제거**였다. => lag 스트레스는 **판별에 성공했고 내가 오독했다**. 다만 TR01/R06 이 같이 붕괴한 것은 별개 사유일 수 있어 '대조군도 오염 의심' 으로 재분류하고 재검이 필요하다.",
+  "blast_radius": {
+   "single_factor_rounds_R5_R28": "영향 낮음 — 팩터-월 패널 통계이고 개별 팩터를 섞지 않았다. 다만 320종 **분포**에 오염 7종이 포함돼 재확인 대상.",
+   "composite_rounds_R4_armA": "★직접 오염 — IC 가중 합성이 이 7종을 통해 누출을 전달. R4 무효 판정(당시 원인 미확정)의 정체가 이것.",
+   "alignment_proposal": "정렬 라벨 결론은 320종 분포 기반이라 7종 제거 후 재확인 필요. 결론을 만든 것은 아니나 검증 의무."
+  },
+  "why_composite_looked_broken": "합성 IC 0.7421 은 **누출이 아니라 전달**이다 — 개별 최고치(0.9423) 의 0.8배로 오히려 낮다. 즉 합성 경로 자체는 정상 작동했고, 오염된 입력을 충실히 반영했을 뿐이다. R4 를 '배관 오염' 으로 부른 내 초기 진단은 **부정확**했다.",
+  "caveats": [
+   "빌더 코드는 미확인 — 결함 위치(빌더 vs sig_date 스탬핑)는 chip task_4c7aa9cd 소관.",
+   "이 스캔은 |IC| 상위만 드러낸다. 더 약한 오염이 남아 있을 수 있다.",
+   "INV07 은 부호가 양(+0.4798)이라 기전이 M-계열과 다를 수 있다."
+  ],
+  "next_probes": [
+   "★오염 7~8종 제외 후 R5/R10/R11 재실행 — 정렬 라벨 결론이 유지되는지",
+   "chip task_4c7aa9cd 빌더 감사 결과 수령",
+   "R21 재검 — TR01_ADX_Proxy · R06_MDD 도 오염인가 진짜 단기신호인가",
+   "오염 제외 후 arm A 기준선 재시도 — ML QEPM 착수 조건"
+  ]
+ }
+}

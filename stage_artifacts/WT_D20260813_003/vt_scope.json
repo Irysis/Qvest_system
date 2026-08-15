@@ -1,0 +1,115 @@
+{
+  "wt_id": "WT-D20260813_003",
+  "stage": "VT_scope",
+  "metric_type": "mechanism_observation_posthoc",
+  "note": "판정(VT2b_REJECT) 확정 후 범위 진단. 파라미터 격자 탐색 0회 — selection_type=chain 불변.",
+  "sigma_quintiles": [
+    {
+      "sq": "1",
+      "n": 74,
+      "sigma_mean": 0.007951,
+      "mean_r_pct": 0.059901,
+      "med_r_pct": 0.29471,
+      "sd_r_pct": 3.437356,
+      "realized_vol": 0.007922,
+      "mean_e": 1,
+      "mean_over_sd": 0.017427
+    },
+    {
+      "sq": "2",
+      "n": 73,
+      "sigma_mean": 0.010387,
+      "mean_r_pct": 0.180117,
+      "med_r_pct": -0.108255,
+      "sd_r_pct": 6.120207,
+      "realized_vol": 0.011602,
+      "mean_e": 1,
+      "mean_over_sd": 0.02943
+    },
+    {
+      "sq": "3",
+      "n": 73,
+      "sigma_mean": 0.012809,
+      "mean_r_pct": 0.862541,
+      "med_r_pct": 0.232483,
+      "sd_r_pct": 7.242059,
+      "realized_vol": 0.012546,
+      "mean_e": 0.976731,
+      "mean_over_sd": 0.119102
+    },
+    {
+      "sq": "4",
+      "n": 73,
+      "sigma_mean": 0.017283,
+      "mean_r_pct": 1.137838,
+      "med_r_pct": 1.322424,
+      "sd_r_pct": 7.22098,
+      "realized_vol": 0.016583,
+      "mean_e": 0.89036,
+      "mean_over_sd": 0.157574
+    },
+    {
+      "sq": "5",
+      "n": 73,
+      "sigma_mean": 0.0269,
+      "mean_r_pct": 2.232213,
+      "med_r_pct": 1.201109,
+      "sd_r_pct": 12.890065,
+      "realized_vol": 0.025782,
+      "mean_e": 0.570955,
+      "mean_over_sd": 0.173173
+    }
+  ],
+  "relation": {
+    "spearman": 0.060618,
+    "spearman_p": 0.247361,
+    "pearson": 0.088269,
+    "pearson_p": 0.091756,
+    "ols_slope": 1.018261,
+    "slope_nw_lag3_t": 1.276481,
+    "cov_rank_series_nw_lag3_t": 1.51481,
+    "hi_half_mean_pct": 1.56432,
+    "lo_half_mean_pct": 0.220163,
+    "welch_t": 1.613605,
+    "welch_p": 0.107817,
+    "realized_vol_hi": 0.019723,
+    "realized_vol_lo": 0.010013
+  },
+  "generality": {
+    "cov_rank_r_VOL": 0.002085,
+    "by_predictor": [
+      {
+        "predictor": "TAIL",
+        "cov_rank_r": 0.001161,
+        "spearman": 0.01381
+      },
+      {
+        "predictor": "TAIL_SHAPE",
+        "cov_rank_r": -0.000146,
+        "spearman": 0.010288
+      },
+      {
+        "predictor": "VOL",
+        "cov_rank_r": 0.001619,
+        "spearman": 0.032403
+      },
+      {
+        "predictor": "MSM",
+        "cov_rank_r": 0.001373,
+        "spearman": 0.034676
+      },
+      {
+        "predictor": "BEAR",
+        "cov_rank_r": 0.001381,
+        "spearman": 0.048128
+      }
+    ],
+    "statement": "e=g(sigma_hat) 가 단조감소이면 cov(e,r) 부호 = -sign(cov(rank sigma_hat, r)). 실측 cov>0 이므로 sigma*/바닥 값과 무관하게 모든 단조감소 vol-target 매핑이 평균수익을 희생한다. 즉 기각의 범위는 내 파라미터가 아니라 KR 의 sigma->수익 관계."
+  },
+  "required_mean_channel": {
+    "drag_gain_annual_pct": 0.789594,
+    "required_mean_channel_annual_pct": -0.789594,
+    "observed_mean_channel_annual_pct": -1.48034,
+    "shortfall_pp": 0.690746
+  }
+}

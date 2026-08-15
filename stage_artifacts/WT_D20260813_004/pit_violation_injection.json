@@ -1,0 +1,34 @@
+{
+  "purpose": "PIT 방향 검사의 차단 실효 확인 — 검사기가 실제 위반에 발화하는가",
+  "n_months": 427,
+  "window": ["1991-02", "2026-08"],
+  "arms": {
+    "clean": {
+      "arm": "sigma_hat: Date < 홀딩월 1일 (승계 패널과 동일 규약)",
+      "cor_same_month": 0.67876417383,
+      "cor_next_month": 0.74344566919,
+      "margin": 0.064681495366,
+      "passed": true
+    },
+    "injected_violation": {
+      "arm": "sigma_dirty: Date <= 홀딩월 말일 (동월 정보 포함 = C5 위반 주입)",
+      "cor_same_month": 0.74521080828,
+      "cor_next_month": 0.77466775581,
+      "margin": 0.029456947527,
+      "passed": true
+    }
+  },
+  "detector_verdict": {
+    "clean_passed": true,
+    "violation_caught": false,
+    "both_directions_ok": false,
+    "separation": 0.035224547839
+  },
+  "reading": "clean 판이 PASS 하고 오염 판이 FAIL 해야 검사가 살아 있다. 둘 다 PASS 면 이 검사는 판별력이 없는 것이며 s1 의 PASS 를 근거로 인용해서는 안 된다.",
+  "metric_type": "interface_verification_violation_injection",
+  "role_boundary": {
+    "covariance_estimated": false,
+    "weights_proposed": false,
+    "performance_measured": false
+  }
+}

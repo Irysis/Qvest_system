@@ -1,0 +1,60 @@
+{
+ "schema": "alpha_r32_v1",
+ "round_id": "v84-R32",
+ "measured_at": "2026-08-13",
+ "metric_type": "panel_statistic",
+ "question": "평균/중앙값 갈림이 D03 고유인가 factor DB 전반의 성질인가 (수정 프레임)",
+ "frame": {
+  "source": "master_panel_FIXED.rds",
+  "n_factors": 320,
+  "n_months": 258,
+  "stat": "월별 5분위 통계의 시계열 평균 · NW lag-3 t · 방향정렬 후"
+ },
+ "results": {
+  "sign_divergence": {
+   "n": 123,
+   "pct": 38.4,
+   "median_pos_mean_neg_D03type": 102,
+   "mean_pos_median_neg_opposite": 21,
+   "note": "★비대칭이다 — 무작위면 대략 반반이어야 하는데 102 대 21 로 한쪽으로 쏠린다"
+  },
+  "cor_mean_vs_median_spread": {
+   "pearson": 0.222,
+   "spearman": 0.273
+  },
+  "median_significant_mean_not": {
+   "n": 99,
+   "pct": 30.9,
+   "of_which_mean_negative": 46,
+   "criterion": "t_medspread > 2 AND |t_spread| < 2"
+  },
+  "mechanism": {
+   "cor_skewslope_vs_gap": -0.728,
+   "gap_def": "gap = 중앙값스프레드 - 평균스프레드",
+   "reading": "★Q1 왜도가 Q5 보다 클수록 평균이 중앙값 아래로 끌린다 — 기전이 직접 측정됐다",
+   "gap_median_monthly": 0.0025,
+   "gap_median_ann_pct": 2.97,
+   "gap_positive_n": 233,
+   "gap_positive_pct": 72.8
+  },
+  "monotonicity": {
+   "m_mono_median": 0.5029,
+   "n_over_0.8": 0,
+   "reading": "factor DB 320종 중 준-단조 분위 프로파일을 가진 팩터가 **0종** — 선형/단조 가정이 광범위하게 깨진다"
+  }
+ },
+ "verdict": "GENERAL_PROPERTY_NOT_D03_SPECIFIC__MECHANISM_MEASURED",
+ "notable": {
+  "quality_family_concentration": "t_medspread 상위 10종이 quality/profitability 계열에 집중 — Q23_Sustainable_Growth(t_med 4.99) · Q02_ROE(4.79) · Q17_ROIC(4.45) · Q03_ROA(4.29) · XF_PR01_EBITDA_Margin(4.20) · Q32_Interest_Coverage(4.17) · Q11_Net_Margin(3.87). 전부 t_mean 은 1.1~1.8 로 비유의. ★DIST-QPM-003(구 AX-004: quality single-signal long-only 구조적 실패)와 대조할 가치 — 그 실패의 일부가 **재료의 부재가 아니라 측정 형태**일 가능성. 단 이는 가설이며 본 라운드가 검증하지 않았다."
+ },
+ "critical_caveat": [
+  "★★중앙값 스프레드는 **자본으로 전환되지 않는다** — long-only top-N 이 버는 것은 보유 종목의 **평균**이다. '중앙값이 유의하게 양수' 를 '알파가 있다' 로 읽으면 오독이다.",
+  "이 값들을 graduation HARD(PORT_t 2.95)와 같은 문장에 놓지 말 것 — 횡단면 분위 통계이지 게이트 값이 아니다.",
+  "따라서 Lane A 의 질문은 여전히 '표적을 바꾸면 **PORT_t 전이**가 달라지는가' 이고 본 라운드는 답하지 않는다."
+ ],
+ "next_probes": [
+  "★arm A 기준선 재현(SR ~0.49) — 관문. 그 다음 arm B(pinball) 가 이 갈림을 PORT_t 로 전이시키는지",
+  "FQ-237 재측정 — 선별 목적함수를 rank-IC → 분위 평균 스프레드로 바꾸면 top-N 전이가 개선되는가 (본 라운드가 근거를 줌)",
+  "quality 계열 46종 중 '평균 음수·중앙값 유의 양수' 군의 DIST-QPM-003 대조 — 실패가 재료인가 측정 형태인가"
+ ]
+}

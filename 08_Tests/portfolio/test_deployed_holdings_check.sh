@@ -91,7 +91,7 @@ preflight_fail() {
 #   (실측: grep 은 10, 실제 판정은 21). 대신 이 상수를 선언하고,
 #   test_prereq_skip_contract.sh 가 **전제 충족 실행의 pass 수와 대조**해 참임을 실증한다
 #   (정적 대조가 아니라 측정 대조 — 축이 늘거나 줄면 그 검사가 즉시 빨개진다).
-N_AXES=21
+N_AXES=22
 
 # ── 전제 부재 = 판정 없음(제3상태) vs 실제 결함(fail) 의 분기 ──────────────────
 # 해석기(venv)는 **gitignore 산출물**이다 — 이 트리에 없는 것이 회귀는 아니다.
@@ -140,28 +140,62 @@ cleanup(){ rm -rf "$TD"; }
 trap cleanup EXIT   # ★함수 프레임 아님(스크립트 최상위) — bash trap 은 발화한다(R on.exit 금칙과 무관)
 
 # ── 픽스처: 규약을 만족하는 base 홀딩/매니페스트 + 전월본 ────────────────────
-"$PY" - "$TD" <<'PYEOF'
-import json, sys, csv, os
-TD = sys.argv[1]
+# ★2026-08-13 3회차 재발 수리 — 픽스처 여유를 **상수로 적지 않는다**.
+#   08-02 는 CASH 교락, 08-09 는 배포기준↔전략기준 basis 전환으로 이 파일이 썩었다.
+#   이번 원인은 basis 의 **국면 조건부화**: 같은 날 검사기가 regime=CRISIS 에서 상한을
+#   0.20→0.10 으로 읽도록 수리됐는데(자기인증 차단), 픽스처의 "여유 33%" 는 0.20 기준
+#   계산이라 T2/T4 의 보정 비중이 전략기준 0.1333·0.1562 = 새 상한의 1.3~1.6배가 됐다.
+#   → 상한 검사가 먼저 발화해 long_only·sum_w 가 다시 그늘에 가림(T17b/T17d 실패).
+#   ★교훈의 일반형: 픽스처는 검사기가 **실제로 쓰는 유효 상한**에서 역산해야 한다.
+#     상수를 적으면 정본이 움직일 때마다 픽스처가 조용히 먼저 썩는다. 이제 종목수를
+#     cap_eff 에서 파생하고(각 종목 = 유효상한의 FIX_UTIL 배 이하), fx.json 으로 넘겨
+#     T1~T4 가 같은 근거를 공유한다. 여유 붕괴는 T18 이 사유까지 찍어 잡는다.
+"$PY" - "$TD" "$PROJ" <<'PYEOF'
+import json, sys, csv, os, math
+TD, PROJ = sys.argv[1], sys.argv[2]
 def write(name, rows):
     with open(os.path.join(TD, name), "w", newline="", encoding="utf-8") as f:
         w = csv.writer(f); w.writerow(["rank","Ticker","Name","Sector","Weight"])
         for i, (t, wt) in enumerate(rows): w.writerow([i, t, f"N{t}", "테스트", wt])
-# invested 0.30 = gate 1.00 x beta 0.30 · 주식 10종(각 0.03) · CASH 0.70
-cur = [("CASH", 0.70)] + [(f"A{i:06d}", 0.03) for i in range(1, 11)]
+
+# 검사기와 **같은 정본**에서 유효 상한을 읽는다 (deployed_holdings_check.load_constraints 와 동형)
+with open(os.path.join(PROJ, "02_Infrastructure/worktask/constraint_defaults.json"),
+          encoding="utf-8-sig") as fh:
+    _t = json.load(fh)["tier_soft_deployment"]
+MAX_NAMES = int(_t["max_names"])
+W_HI      = float(_t["weight_bounds"][1])
+W_HI_CRIS = float(_t.get("weight_bound_hi_crisis", _t["weight_bounds"][1]))
+REGIME    = "CRISIS"                       # 아래 매니페스트가 선언하는 값과 반드시 일치
+CAP_EFF   = W_HI_CRIS if REGIME == "CRISIS" else W_HI
+INVESTED  = 0.30                           # gate 1.00 x beta 0.30
+FIX_UTIL  = 0.55                           # 기본 픽스처의 상한 사용률 — 위반 주입 보정분 여유
+
+# 종목수 = 각 종목의 **전략기준** 비중(1/N)이 유효상한의 FIX_UTIL 배 이하가 되는 최소 N
+N_EQ = max(2, math.ceil(1.0 / (FIX_UTIL * CAP_EFF)))
+if N_EQ > MAX_NAMES:
+    raise SystemExit("픽스처 불성립: 유효상한 %.4f 에서 필요한 종목수 %d > max_names %d "
+                     "— FIX_UTIL 재조정 또는 제약 정본 확인" % (CAP_EFF, N_EQ, MAX_NAMES))
+PER_W = INVESTED / N_EQ
+
+cur = [("CASH", 1.0 - INVESTED)] + [(f"A{i:06d}", PER_W) for i in range(1, N_EQ + 1)]
 write("cur.csv", cur)
-# 전월: 다른 비중(지문이 달라야 정상)
-prev = [("CASH", 0.70)] + [(f"A{i:06d}", 0.03 if i != 1 else 0.029) for i in range(1, 11)]
-prev[1] = ("A000001", 0.029); prev.append(("A000011", 0.001))
+# 전월: 다른 비중(지문이 달라야 정상) — 1종을 0.001 줄이고 그만큼 신규 1종에 준다
+prev = [("CASH", 1.0 - INVESTED)] + [(f"A{i:06d}", PER_W - 0.001 if i == 1 else PER_W)
+                                     for i in range(1, N_EQ + 1)]
+prev.append((f"A{N_EQ+1:06d}", 0.001))
 write("prev.csv", prev)
 man = {
   "strategy": "TEST", "as_of": "2026-08-01",
   "overlays": {"m4_scalar": 1.0, "ae_fire_seq": 1, "m4_ae_gate": 1.0,
-               "beta_R05_V5": {"value": 0.30, "regime": "CRISIS", "R05_z_avg": -0.35}},
-  "invested": 0.30, "cash_pct": 0.70, "n_equity": 10,
+               "beta_R05_V5": {"value": 0.30, "regime": REGIME, "R05_z_avg": -0.35}},
+  "invested": INVESTED, "cash_pct": 1.0 - INVESTED, "n_equity": N_EQ,
   "pit": {"no_future_reference": True, "ae_last_feat": "2026-06-30", "ae_pit_ok": True},
 }
 json.dump(man, open(os.path.join(TD, "man.json"), "w", encoding="utf-8"), ensure_ascii=False)
+# 하류 블록(T1~T4·T18)이 같은 근거를 쓰도록 파생값을 넘긴다 — 재계산은 드리프트의 씨앗
+json.dump({"cap_eff": CAP_EFF, "w_hi": W_HI, "regime": REGIME, "max_names": MAX_NAMES,
+           "invested": INVESTED, "n_eq": N_EQ, "per_w": PER_W, "fix_util": FIX_UTIL},
+          open(os.path.join(TD, "fx.json"), "w", encoding="utf-8"))
 PYEOF
 
 run(){ "$PY" "$CHK" --as-of "${AS_OF:-2026-08-01}" --holdings "$1" --manifest "$2" \
@@ -178,46 +212,59 @@ echo "── T1~T4 홀딩 제약 위반 주입 (단일-제약) ─────�
 #   ("위반 주입이 발화했다" ≠ "그 제약을 쟀다" — 다른 검사가 낸 1 일 수 있다.)
 #   수리 = CASH 를 0.70 에 고정하고 **주식 쪽만** 변형해 목표 제약 하나만 위반시킨다.
 "$PY" - "$TD" <<'PYEOF'
-import pandas as pd, os, sys
+import pandas as pd, json, os, sys
 TD = sys.argv[1]; h = pd.read_csv(os.path.join(TD, "cur.csv"))
+FX = json.load(open(os.path.join(TD, "fx.json"), encoding="utf-8"))
+CAP, INV, N, PER, MAXN = (FX["cap_eff"], FX["invested"], FX["n_eq"], FX["per_w"], FX["max_names"])
+CASH = 1.0 - INV
 def put(name, df): df.to_csv(os.path.join(TD, name), index=False)
 
-# T1 종목수만: 주식 26종 × (0.30/26) — 주식합 0.30 유지, CASH 0.70, Σw=1
-rows = [{"rank": 0, "Ticker": "CASH", "Name": "CASH", "Sector": "Cash", "Weight": 0.70}]
-for i in range(1, 27):
+# T1 종목수만: 주식 (max_names+1)종 균등 — 주식합 INV 유지, Σw=1.
+#   전략기준 각 1/(N+1) 은 상한보다 한참 아래(상한이 그늘을 만들지 않음).
+NOVER = MAXN + 1
+rows = [{"rank": 0, "Ticker": "CASH", "Name": "CASH", "Sector": "Cash", "Weight": CASH}]
+for i in range(1, NOVER + 1):
     rows.append({"rank": i, "Ticker": f"A{i:06d}", "Name": f"N{i}", "Sector": "t",
-                 "Weight": 0.30/26})
+                 "Weight": INV/NOVER})
 put("v_names.csv", pd.DataFrame(rows))
 
-# T2 음수만: A2 = 0.03→-0.01 (Δ -0.04) 를 A1·A3·A4·A5 에 **분산** 상계(각 0.03→0.04).
-#   주식합 0.30 유지, CASH 0.70, long_only 만 위반.
-#   ★2026-08-09 수리 — 구판은 Δ 를 A1 하나에 몰아 0.07 로 뒀고 "최대 0.07 < 0.20" 이라 안전하다고 봤다.
-#     그런데 2026-08-08 에 상한 검사의 basis 가 **전략기준**(주식 내 정규화)으로 명시되면서
-#     0.07/0.30 = **0.2333 > 0.20** 이 되어 상한 위반이 함께 발화했다
-#     (실측 로그: "FAIL 상한 초과(전략기준) 1건 · max 0.233333 > 0.2").
-#     그 결과 T2 와 돌연변이 축 T17b(long_only 제거 → 뒤집힘) 가 **자기가 재려는 제약을 못 쟀다**
-#     — 다른 검사가 낸 1 이 그늘을 만든 것이고, 이 파일이 08-02 에 고친 바로 그 실패 모드다.
-#   ★교훈: 픽스처의 안전 여유는 **검사기가 쓰는 basis 로** 계산해야 한다. 배포기준(CASH 포함)
-#     0.07 은 안전해 보이지만 전략기준으로는 상한의 1.17배다. basis 가 바뀌면 픽스처가 먼저 썩는다.
-#   분산 후 전략기준 최대 = 0.04/0.30 = 0.1333 < 0.20 (여유 33%).
+# T2 음수만: A2 를 -0.01 로 내리고 그만큼(PER+0.01)을 **나머지 전 종목에 균등 분산** 상계.
+#   주식합 INV 유지 · CASH 그대로 · Σw=1 → long_only 만 위반.
+#   ★분산 폭이 상한을 넘지 않도록 종목수 N 을 유효상한에서 역산해 뒀다(base 픽스처 주석 참조).
+#     각 보정 후 전략기준 = (PER + (PER+0.01)/(N-1)) / INV.
+NEG = -0.01
 b = h.copy()
-b.loc[b.Ticker == "A000002", "Weight"] = -0.01
-for _t in ("A000001", "A000003", "A000004", "A000005"):
-    b.loc[b.Ticker == _t, "Weight"] = 0.04
+b.loc[b.Ticker == "A000002", "Weight"] = NEG
+_bump = (PER - NEG) / (N - 1)
+_oth = (b.Ticker != "CASH") & (b.Ticker != "A000002")
+b.loc[_oth, "Weight"] = PER + _bump
 put("v_neg.csv", b)
 
-# T3 상한만: A3 = 0.25(>0.20), 나머지 9종이 0.05 를 균분. 주식합 0.30, CASH 0.70
+# T3 상한만: A3 이 유효상한을 명백히 초과(전략기준 0.83), 나머지가 잔여를 균분.
+#   주식합 INV · CASH 그대로 · Σw=1 · 음수 없음 → 상한만 위반.
+UB_W = round(INV * 0.833333, 6)
 c = h.copy()
-c.loc[c.Ticker == "A000003", "Weight"] = 0.25
+c.loc[c.Ticker == "A000003", "Weight"] = UB_W
 oth = (c.Ticker != "CASH") & (c.Ticker != "A000003")
-c.loc[oth, "Weight"] = 0.05/int(oth.sum())
+c.loc[oth, "Weight"] = (INV - UB_W)/int(oth.sum())
 put("v_ub.csv", c)
 
-# T4 Σw만: A1 을 0.03→0.05 (주식합 0.32). CASH 0.70 그대로 → Σw=1.02, cash 정합은 통과
+# T4 Σw만: A1 에 DELTA 를 더해 주식합 INV+DELTA. CASH 그대로 → Σw=1+DELTA.
+#   ★DELTA 는 상한을 건드리지 않는 최대 폭에서 고른다: (PER+D)/(INV+D) <= 0.9*CAP.
+#     상수 0.02 를 쓰던 구판은 상한이 0.10 으로 조여지자 전략기준 0.1562 로 그늘을 만들었다.
+_dmax = (0.9*CAP*INV - PER) / (1.0 - 0.9*CAP)
+DELTA = round(min(0.01, max(_dmax, 0.0)), 6)
+if DELTA < 1e-5:
+    raise SystemExit("픽스처 불성립: 상한 %.4f 에서 Σw 전용 위반 폭이 없음 (dmax=%.6g)" % (CAP, _dmax))
 d = h.copy()
-d.loc[d.Ticker == "A000001", "Weight"] = 0.05
+d.loc[d.Ticker == "A000001", "Weight"] = PER + DELTA
 put("v_sum.csv", d)
 PYEOF
+# ★픽스처 생성 실패는 **조용히 지나가면 안 된다** — 파일이 없는 채로 T1~T4 를 돌리면
+#   "0건 발화"가 통과처럼 보이거나 사유 없는 빨강이 된다(2026-08-13 주입 실측에서 재현).
+#   판정 축은 늘리지 않는다(N_AXES 고정) — 결손 자체는 T18 이 파일 부재로 잡고,
+#   여기서는 원인 줄만 눈에 띄게 남긴다.
+[ $? -eq 0 ] || echo "  ⚠ 픽스처 생성 중단 — 위 오류 참조 (유효상한에서 단일-제약 위반 불성립 가능). T18 이 결손을 판정한다."
 
 # 단일-제약 단언 — rc 뿐 아니라 **어느 검사가 발화했는지**까지 고정한다.
 #   rc=1 만 보면 그늘에 가린 미검사를 다시 놓친다(위 교락이 정확히 그 형태였다).
@@ -371,6 +418,46 @@ PYEOF
   mut_case "T17b long_only 제거 → T2 뒤집힘"   neg   "$TD/v_neg.csv"   'chk(n_neg == 0'
   mut_case "T17c upper_bound 제거 → T3 뒤집힘" ub    "$TD/v_ub.csv"    'chk(n_over == 0'
   mut_case "T17d sum_w 제거 → T4 뒤집힘"       sum   "$TD/v_sum.csv"   'chk(abs(df.Weight.sum()'
+fi
+
+echo "── T18 픽스처 여유 자기검사 (그늘의 원인을 사유로 말하게 한다) ───────────"
+# 왜 별도 축인가: T2/T4 가 그늘에 가리면 증상은 "무관 발화가 섞였다"로만 보이고, **왜**
+#   섞였는지(= 픽스처 여유가 정본 변경으로 썩었다)는 안 나온다. 08-02·08-09·08-13 세 번
+#   모두 진단에 시간이 든 지점이 정확히 거기다. 이 축은 "상한을 재지 않아야 할 픽스처가
+#   전략기준으로 유효상한 안에 있는가"를 직접 단언해, 다음 basis 변경 때 조치 가능한
+#   메시지(어느 픽스처가 상한의 몇 배인지)를 먼저 낸다.
+_T18="$("$PY" - "$TD" <<'PYEOF'
+import pandas as pd, json, os, sys
+TD = sys.argv[1] if len(sys.argv) > 1 else os.environ.get("TD", "")
+FX = json.load(open(os.path.join(TD, "fx.json"), encoding="utf-8"))
+CAP = FX["cap_eff"]
+bad = []
+# 상한을 재는 축(v_ub)은 당연히 초과해야 하므로 제외 — 나머지는 상한 안에 있어야 한다.
+# ★결손도 사유다: 픽스처 생성이 중간에 죽으면 파일이 없고, 그때 이 축이 조용히 비면
+#   "여유 붕괴"가 아니라 아무 말도 못 하는 빨강이 된다(주입 실측에서 실제로 그랬다).
+for name in ("cur.csv", "v_names.csv", "v_neg.csv", "v_sum.csv"):
+    p = os.path.join(TD, name)
+    if not os.path.exists(p):
+        bad.append("%s 부재 — 픽스처 생성이 중단됨(유효상한 %.4f 에서 성립 불가 가능)" % (name, CAP))
+        continue
+    try:
+        df = pd.read_csv(p)
+        eq = df[df.Ticker != "CASH"]
+        inv = eq.Weight.sum()
+        smax = (eq.Weight.max() / inv) if inv > 0 else float("inf")
+    except Exception as e:
+        bad.append("%s 판독 실패 — %s" % (name, e)); continue
+    if smax > CAP:
+        bad.append("%s 전략기준 max %.4f = 유효상한 %.4f 의 %.2f배" % (name, smax, CAP, smax/CAP))
+print("OK" if not bad else "BAD " + " · ".join(bad))
+PYEOF
+)"
+_T18="$(printf '%s' "$_T18" | tr -d '\r')"
+if [ "${_T18%% *}" = "OK" ]; then
+  PASS=$((PASS+1)); echo "  ok   T18 비-상한 픽스처가 유효상한 안에 있음 (그늘 없음)"
+else
+  FAIL=$((FAIL+1))
+  echo "  FAIL T18 픽스처 여유 붕괴 — 상한 검사가 T2/T4 를 가린다: ${_T18#BAD }"
 fi
 
 echo ""

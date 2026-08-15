@@ -3,14 +3,14 @@
   "dist_id": "DIST-AR-026",
   "cluster_key": "9cc9cfc93922",
   "candidate_id": "CAND_20260718_alpha_research_value_positive_L-AR-20260705_190548_L-AR-20260705_193300_L-AR-20260706_095035",
-  "status": "pending_5axis",
-  "statement_refined": null,
+  "status": "proposed",
+  "statement_refined": "밸류 축의 소비면은 알파-레벨이 아니라 배포-레벨이다 — standalone 선별에서는 반복 미달인데 오버레이가 적용된 배포 북의 위험축에 얹으면 config-scoped positive 가 나온다. 단 그 양성은 시간-특이(pre-2024 집중)라 자본 게이트로는 올라오지 않는다.\n■배포-레벨 양성(전기간 269개월, clean recon basis, forge 실측): 밸류 추가가 오버레이 북을 강화 — Calmar 0.724->1.141(B2)/1.124(Z6) · MDD 0.349->0.278 · SR_geo 1.089->1.369 · PORT_t(NW3) 3.455->4.533 · book-marginal dIR +0.269(B2, paired-t 3.079)/+0.232(Z6). 방어 채널도 실재한다(down-market bench<-3%, n=53 에서 capture 0.693->0.645/0.640).\n■그러나 자본 NO-GO: 강화 지배분이 2024+ 에 역전된 pre-2024 알파다 — value marginal paired-t pre-2024 +4.24(B2)/+4.31(Z6) -> post-2024 -1.26/-1.64, post-2024 book active baseline +85bps -> B2 +14bps -> Z6 -22bps. oos_retention v2 는 3 arm 전부 0.244/0.195/0.142 로 HARD 문턱 0.7 에 크게 못 미치고 밸류가 retention 을 오히려 악화시킨다.\n■정의축은 일반화되지 않는다: cap-w top-25 paired AND-게이트(paired>=2.0 ∧ dIR>=0.05) 통과는 EBIT_EV(2.378) 유일이고 신규 6종 전멸(SP 1.523 · SHY 1.275 · BM 1.291 · EP 1.229 · CFP 0.332 · FCF -0.214). ★2024+ 감쇠는 밸류 보편이 아니라 정의-특이다 — 기업가치배수는 죽고 (EBIT_EV pre 2.21->post 0.92 · FCF 0.00->-0.52) 매출·이익 yield 는 살아 있다 (SP 0.99->1.85 · EP 0.77->1.33 · CFP -0.03->0.79) = 밸류 정의축 내부의 스타일 로테이션.\n■같은 벽이 컨센서스 절대수준까지 일반화된다: forward-consensus level yield composite 는 rank-IC 가 실재(Harvey-t 5.09, post-2017 IC 감쇠 없음)하고 북과 직교(active-cor -0.075)인데도 modern-regime book-marginal dIR -0.008 로 음이다 = 직교성은 수익을 뜻하지 않는다.\n⇒ 운용 규칙: 밸류 계열은 알파-레벨 선별 성적으로 폐기·채택을 결정하지 말고 오버레이 적용 배포 북의 위험축에서 한 번 더 재고, 정의별로 나눠서 판정한다(정의축 평균으로 뭉개면 살아 있는 yield 정의가 죽은 배수 정의에 가려진다).",
   "retry_condition": null,
   "refined_at": null,
   "refined_by": null,
   "promoted_to_axiom": null,
   "created_at": "2026-07-18T00:23:16+00:00",
-  "updated_at": "2026-08-12T22:21:45+00:00",
+  "updated_at": "2026-08-15T04:19:42+00:00",
   "research_mode": "alpha_research",
   "metric_type": "estimated",
   "type": "empirical",
@@ -168,9 +168,41 @@
     "causal_plausibility": null
   },
   "oos_validation_draft": {
-    "oos_months": 268.0,
+    "oos_months": 268,
     "oos_effect_vs_is": 0.127,
     "note": "L-code oos_retention 실값 2건 median (IS65/OOS35 활성SR retention) + oos_months 실값 7건 median — promote.R essence_score 경유 재확정"
   },
-  "cluster_members_count": 13
+  "cluster_members_count": 13,
+  "adversarial_verdict": "(a)과장: 카드 polarity 가 positive 이나 헤드라인을 '자본 자격'이 아니라 '배포-레벨 config-scoped positive + 자본 NO-GO' 로 강등 — oos_retention 0.244/0.195/0.142 와 post-2024 역전을 같은 절에 병기. (b)근거: 전기간 수치는 forge 실측(overlay 적용 배포 북), 정의축 수치는 weighted_screen, 컨센서스는 canonical_screen — 라벨을 문장에 명시하고 서로 섞지 않음. (c)AX-000: 밸류를 구조적 실패로 단정하지 않음 — 정의축 내부 로테이션(yield 계열 생존)을 명시적 미해결 축으로 남김. (d)제약 방화벽: 고정 제약 귀속·완화 제시 없음 — 원인 귀속은 시간 구조(pre/post-2024)와 정의 선택이라는 방법 축. (e)프론티어: 3건 생성.",
+  "expiry": "2027-02-15",
+  "frontier": [
+    "yield 계열(SP/EP/CFP) 단독으로 배포-레벨 재측정 — 정의축 평균이 아니라 생존 정의만으로 오버레이 북 위험축 재산출",
+    "밸류의 시간 구조를 결과량으로 삼는 설계 — pre/post-2024 부호 반전 자체를 예측 대상으로 놓고 스타일 로테이션 시점을 사전 관측 가능한지 검정",
+    "밸류를 순위 표적이 아니라 분위 평균 스프레드·꼬리 표적으로 재선별(측정 형태 아크 R31~R33 정합) 후 배포-레벨 재측정"
+  ],
+  "live_trigger": {
+    "type": "spread",
+    "condition": "기업가치배수 정의(EBIT_EV/FCF)의 paired-t 가 post-2024 구간에서 다시 양으로 전환하거나 yield 정의(SP/EP/CFP)의 우위가 12개월 이상 지속되면 정의축 재판정",
+    "monitored_source": "06_Registry/layer_bottleneck_map.md"
+  },
+  "revival_spec": [
+    {
+      "signal_id": "wall_clock_date",
+      "condition": "x >= as.Date('2027-02-15')",
+      "from_trigger": "expiry",
+      "status": "active"
+    },
+    {
+      "signal_id": "value_quality_spread",
+      "condition": "x >= 0.90",
+      "from_trigger": "spread",
+      "status": "active"
+    }
+  ],
+  "constraint_firewall": {
+    "mode": "backstop_passed",
+    "checked_at": "2026-08-15"
+  },
+  "drafted_at": "2026-08-15T13:51:14+0900",
+  "drafted_by": "cleaner_session_main_20260815"
 }

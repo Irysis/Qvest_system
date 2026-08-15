@@ -1,0 +1,106 @@
+{
+  "panel": "lane_a_feature_panel.parquet",
+  "built_at": "2026-08-13",
+  "n_rows": 80293,
+  "n_months": 259,
+  "n_features_raw": 331,
+  "target": "fwd_ret_1m",
+  "pit": "load_month_factors + Z_Score_Aligned (C13/C15) · 팩터 Date +1개월 스탬프(앵커 규약) · 유니버스 K200∪KQ150 플래그 참 · ym 키 조인 · forward = build_monthly_forward_returns 정본",
+  "alias_audit": [
+    {
+      "alias": "V19_Debt_to_Market",
+      "canonical": "R17_Market_Leverage",
+      "in_panel": true,
+      "cor": 0.99912424,
+      "identical_frac": 0,
+      "note": "중복 확정"
+    },
+    {
+      "alias": "V20_SP",
+      "canonical": "V08_PSR",
+      "in_panel": true,
+      "cor": 0.3702673,
+      "identical_frac": 0,
+      "note": "중복 아님 — 드롭 금지"
+    },
+    {
+      "alias": "M25_Earnings_Mom_Streak",
+      "canonical": "C11_Earnings_Streak",
+      "in_panel": true,
+      "cor": 0.99986687,
+      "identical_frac": 0,
+      "note": "중복 확정"
+    },
+    {
+      "alias": "M27_Analyst_Rev_Mom",
+      "canonical": "C02_EPS_Chg_1m",
+      "in_panel": true,
+      "cor": 0.99791384,
+      "identical_frac": 0,
+      "note": "중복 아님 — 드롭 금지"
+    },
+    {
+      "alias": "M29_Mom_5d",
+      "canonical": "M11_ST_Reversal",
+      "in_panel": true,
+      "cor": 1,
+      "identical_frac": 1,
+      "note": "중복 확정"
+    },
+    {
+      "alias": "C09_Earnings_Surprise_Sq",
+      "canonical": "C01_SUE",
+      "in_panel": true,
+      "cor": 0.88671705,
+      "identical_frac": 0,
+      "note": "중복 아님 — 드롭 금지"
+    },
+    {
+      "alias": "C10_SUE_Persistence",
+      "canonical": "C01_SUE",
+      "in_panel": true,
+      "cor": 1,
+      "identical_frac": 0.99560294,
+      "note": "중복 확정"
+    },
+    {
+      "alias": "C13_Revision_Breadth_3m",
+      "canonical": "C04_ESBR",
+      "in_panel": true,
+      "cor": 1,
+      "identical_frac": 0.99564688,
+      "note": "중복 확정"
+    },
+    {
+      "alias": "R12_Idiosyncratic_Risk",
+      "canonical": "D01_IdioVol",
+      "in_panel": true,
+      "cor": 1,
+      "identical_frac": 1,
+      "note": "중복 확정"
+    },
+    {
+      "alias": "CR04_Ownership_Concentration",
+      "canonical": "L02_Turnover",
+      "in_panel": true,
+      "cor": 0.99989468,
+      "identical_frac": 0.02963055,
+      "note": "중복 확정"
+    },
+    {
+      "alias": "XF_LL05_WorkingCapital",
+      "canonical": "Q31_WC_to_Assets",
+      "in_panel": true,
+      "cor": 0.27362948,
+      "identical_frac": 0.46161914,
+      "note": "중복 아님 — 드롭 금지"
+    }
+  ],
+  "dedup_recommendation": {
+    "drop": ["V19_Debt_to_Market", "M25_Earnings_Mom_Streak", "M29_Mom_5d", "C10_SUE_Persistence", "C13_Revision_Breadth_3m", "R12_Idiosyncratic_Risk", "CR04_Ownership_Concentration"],
+    "n_after_drop": 324,
+    "rationale": "연결자 기본 dedup=FALSE 이므로 패널에 alias 가 정본과 함께 실려 있다. ML 선별에서 중복 피처는 중요도 분산·정규화 왜곡을 낳는다. ★arm 사전등록에서 drop 여부를 명시할 것 — 측정 후 바꾸면 사양 변경이다.",
+    "default_for_lane_a": "drop (선별/랭킹 용도 = 연결자 권고 dedup=TRUE 와 동치)"
+  },
+  "caveat": "본 감사는 중복 여부만 판정한다. 드롭 자체는 수행하지 않았다(패널 원본 불변)."
+}

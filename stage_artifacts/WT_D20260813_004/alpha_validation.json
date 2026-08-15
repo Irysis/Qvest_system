@@ -1,0 +1,256 @@
+{
+  "schema_check": {
+    "validator": "jsonvalidate 미설치 — 수기 required 검사로 대체",
+    "validator_pass": null,
+    "manual_required_missing": [],
+    "manual_required_pass": true,
+    "conditional_branches_applied": ["spec_version=ast_v1.1 -> hypothesis/verdict/pit", "verdict=designed -> factors/combination_rule/self_pit_check"],
+    "mechanism_3fields": true,
+    "falsification_n": 3,
+    "regime_scope_nonempty": true
+  },
+  "inheritance": {
+    "declared_basis": "expanding z-score(exp_z) on anchored grid — 정의 WT-002/f1b_diagnosis.R:30, 재구축 WT-003/s1_prereg.R:50-53",
+    "reconstruction_grid": {
+      "daily_source": ".cache/RAWDATA.parquet::BM_Ret (unique Date, finite, Date <= 2026-08-08)",
+      "daily_n": 9003,
+      "daily_range": [
+        "1990-01-05",
+        "2026-08-07"
+      ],
+      "anchored_grid_months": 427,
+      "anchored_grid_range": [
+        "1991-02",
+        "2026-08"
+      ],
+      "warmup_months_before_panel_start": 60,
+      "note": "★emitted 패널(366/367)은 427개월 격자의 창 — anchored 변환(exp_z / expanding median sigma_star)은 패널만으로 재현 불가."
+    },
+    "level_parity_sigma_hat": {
+      "pair": "reconstructed sigma_d (full grid) vs WT-003 alpha_scores.sigma_hat_daily",
+      "n": 366,
+      "n_theory": 366,
+      "matches_theory": true,
+      "max_abs_diff": 0,
+      "spearman": 1
+    },
+    "z_parity_VOL": {
+      "pair": "reconstructed exp_z (full grid) vs WT-002 alpha_scores.VOL",
+      "n": 367,
+      "n_theory": 367,
+      "matches_theory": true,
+      "max_abs_diff": 0,
+      "spearman": 1
+    },
+    "warmup_truncation_control": {
+      "pair": "exp_z(emitted 366행만) vs WT-002 VOL — warm-up 60개월 결손판",
+      "n": 365,
+      "max_abs_diff": 2.8272670336,
+      "spearman": 0.924038369,
+      "note": "정상 자료에 잘못된 격자를 적용하면 이 값이 나온다. 0 이 아닌 이 수치를 '승계 불일치'로 읽는 것이 본 인터페이스의 최대 오독 위험 — risk-research 는 anchored 변환을 재현할 때 반드시 427개월 격자에서 산출할 것."
+    },
+    "bm_ret_parity": {
+      "max_abs_diff": 0,
+      "identical": true
+    },
+    "prereg_wt003_claim": {
+      "spearman": 1,
+      "max_abs_diff": 0,
+      "n": 367,
+      "note": "WT-003 prereg_VT.json 기록치 — 본 라운드 독립 재실측으로 재현됨(z_parity_VOL)."
+    }
+  },
+  "axis": {
+    "wt003": {
+      "tag": "WT_D20260813_003",
+      "n_rows": 366,
+      "ym_class": "character",
+      "ym_format_ok": true,
+      "ym_unique": true,
+      "ym_sorted_ascending": true,
+      "ym_range": [
+        "1996-02",
+        "2026-07"
+      ],
+      "n_months_expected": 366,
+      "calendar_gaps": [],
+      "hold_start_is_month1": true,
+      "cutoff_equals_holdstart": true,
+      "cutoff_minus_holdstart_days_range": [
+        0,
+        0
+      ]
+    },
+    "wt002": {
+      "tag": "WT_D20260813_002",
+      "n_rows": 367,
+      "ym_class": "character",
+      "ym_format_ok": true,
+      "ym_unique": true,
+      "ym_sorted_ascending": true,
+      "ym_range": [
+        "1996-02",
+        "2026-08"
+      ],
+      "n_months_expected": 367,
+      "calendar_gaps": [],
+      "hold_start_is_month1": true,
+      "cutoff_equals_holdstart": true,
+      "cutoff_minus_holdstart_days_range": [
+        0,
+        0
+      ]
+    }
+  },
+  "missing": {
+    "wt003_cols_with_na": {},
+    "wt003_total_na": 0,
+    "wt002_cols_with_na": {},
+    "wt002_total_na": 0
+  },
+  "join_003_002": {
+    "key": "ym (chr YYYY-MM)",
+    "n_wt003": 366,
+    "n_wt002": 367,
+    "n_joined": 366,
+    "n_theory": 366,
+    "join_matches_theory": true,
+    "loss_vs_smaller_pct": 0,
+    "dropped_ym": "2026-08"
+  },
+  "pit_lag": {
+    "cutoff_rule_declared": "Date < first-day-of-holding-month (C5)",
+    "cutoff_semantics": "signal_cutoff 는 EXCLUSIVE upper bound — 일별 데이터는 Date < signal_cutoff 만 사용됨. signal_cutoff == hold_start == 홀딩월 1일.",
+    "ac1_sigma_hat": 0.99020537631,
+    "ac1_realized_vol": 0.77958177214,
+    "spearman_sigma_hat_m_vs_realvol_m": 0.72190514187,
+    "spearman_sigma_hat_mplus1_vs_realvol_m": 0.78389380662,
+    "pit_direction_test": {
+      "rule": "clean PIT 이면 cor(sigma_hat_{m+1}, realvol_m) > cor(sigma_hat_m, realvol_m) — 후자 창은 월 m 을 아직 못 봄",
+      "passed": true,
+      "margin": 0.061988664754
+    },
+    "outcome_columns_do_not_feed": [
+      "bm_ret_holding_month",
+      "realized_vol_in_month",
+      "exposure_e(파생)"
+    ],
+    "outcome_note": "bm_ret_holding_month / realized_vol_in_month 는 홀딩월 '내' 실현값 = 검정 대상(target). 피처로 넣으면 C2 동월 순환참조.",
+    "direction_test_status": "RETRACTED_NO_POWER",
+    "retraction_note": "초판은 pit_direction_test PASS 를 PIT 근거로 실었다. 위반 주입 결과 오염 판도 PASS 해 판별력 0. 대안 통계량 2종도 실패. PIT 근거를 구성-수준 재현 + assert_overlay_pit 으로 교체했다."
+  },
+  "consumer_join": {
+    "book_file": "06_Registry/live_track/STR_1715_on_M4gAE_R05_noLayer4_PG2/live_book_series.csv",
+    "book_n_rows": 271,
+    "book_date_columns": {
+      "date": "실제 결정일(거래일) — 월초 1일이 아님. 정확일치 merge 시 대량 손실(08-13 실사고: 271→142)",
+      "realized_ym": "결정월 라벨",
+      "return_ym": "수익이 실현된 홀딩월 라벨 — 본 패널 ym 과 동일 의미축"
+    },
+    "key_candidates": [
+      {
+        "book_key": "return_ym",
+        "n_joined": 271,
+        "cor_bm_vs_book_unlevered": 0.6999707489
+      },
+      {
+        "book_key": "realized_ym",
+        "n_joined": 270,
+        "cor_bm_vs_book_unlevered": 0.082874449598
+      }
+    ],
+    "axis_identification_note": "cor 은 성과 통계량이 아니라 '어느 라벨이 같은 달을 가리키나' 의 축 식별 진단(metric_type=interface_diagnostic).",
+    "canonical_recipe": "merge(sigma_panel, book, by.x='ym', by.y='return_ym') — Date 형 정확일치 금지."
+  },
+  "emitted": {
+    "path": "stage_artifacts/WT_D20260813_004/alpha_scores.parquet",
+    "n_rows": 366,
+    "n_cols": 24,
+    "verbatim_parity_vs_wt003": 0
+  },
+  "pit_evidence": {
+    "accepted": {
+      "construction_reproduction": {
+        "claim": "승계 패널이 strict 컷오프(Date < hold_start)로 구성됐음을 원천 재구축으로 재현",
+        "max_abs_diff": 0,
+        "n": 366,
+        "source": "inherit_verify.json::inheritance_parity.level_parity_sigma_hat"
+      },
+      "assert_overlay_pit": "WT-003 s1_prereg.R:44 HARD 통과 (승계)"
+    },
+    "rejected": {
+      "statistical_timing_diagnostics": {
+        "reason": "위반 주입에 발화하지 않음 — 판별력 0",
+        "violation_injection": {
+          "clean": {
+            "arm": "sigma_hat: Date < 홀딩월 1일 (승계 패널과 동일 규약)",
+            "cor_same_month": 0.67876417383,
+            "cor_next_month": 0.74344566919,
+            "margin": 0.064681495366,
+            "passed": true
+          },
+          "injected_violation": {
+            "arm": "sigma_dirty: Date <= 홀딩월 말일 (동월 정보 포함 = C5 위반 주입)",
+            "cor_same_month": 0.74521080828,
+            "cor_next_month": 0.77466775581,
+            "margin": 0.029456947527,
+            "passed": true
+          }
+        },
+        "detector_verdict": {
+          "clean_passed": true,
+          "violation_caught": false,
+          "both_directions_ok": false,
+          "separation": 0.035224547839
+        },
+        "alternatives_tested": [
+          {
+            "statistic": "A: cor(sig_{m+1},rv_m) - cor(sig_m,rv_m)  [s3 판]",
+            "clean": 0.064681495366,
+            "injected": 0.029456947527,
+            "separation": 0.035224547839,
+            "discriminates": false
+          },
+          {
+            "statistic": "B: cor(sig_m,rv_{m-1}) - cor(sig_m,rv_m)  [창-밖/안 대비]",
+            "clean": 0.065531084288,
+            "injected": 0.030255981404,
+            "separation": 0.035275102883,
+            "discriminates": false
+          },
+          {
+            "statistic": "C: cor(sig_m, |홀딩월 첫 거래일 수익|)  [동월 반응 직접]",
+            "clean": 0.33801599238,
+            "injected": 0.35379567122,
+            "separation": -0.015779678839,
+            "discriminates": false
+          }
+        ]
+      }
+    },
+    "residual_risk": "구성 재현은 오늘 시점 원장 기준 — 향후 restatement 는 배제하지 않음(pin 의무로 덮음)."
+  },
+  "round_labels": {
+    "metric_type_of_this_artifact": "interface_verification",
+    "performance_measured": false,
+    "covariance_estimated": false,
+    "weights_proposed": false,
+    "new_factor_sourced": false,
+    "alpha_discovery_count": 0,
+    "alpha_inheritance_cor": 1,
+    "capital_claim": false,
+    "note": "본 문서의 어떤 수치도 성과(SR/alpha/PORT_t) 통계량이 아니다. 상관 계열 2건(pit_lag, consumer_join)은 각각 PIT 방향 진단과 조인 축 식별용이며 metric_type 을 명시했다."
+  },
+  "gates": {
+    "applicable": {
+      "ast_spec_gate": "PASS — 최초 write 시 falsification 리프가 field_dictionary 밖(group_id:field 형)이라 block 되어 bare group_id 로 수정 후 통과. 게이트 차단 실효 실증.",
+      "role_objective_guard": "PASS — selection_objective 미기재(후보 선택 0건). 금지값 미사용.",
+      "role_boundary": "PASS — cov/weight/성과 산출 0"
+    },
+    "not_applicable": {
+      "discovery_graduation_gate": "미적용 — graduation HARD 3종(PORT_t/oos_retention/calmar)은 forge-authoritative 값 대상. 본 라운드는 forge 미경유·성과 미산출.",
+      "DSR": "미적용 — selection_type=chain, 후보 선택 0건이라 sweep 성립 불가",
+      "rank_ic_advisory": "산출 불가 — 시장-레벨 1계열(횡단면 분산 0). 정의상 부재이지 측정 실패 아님"
+    }
+  }
+}

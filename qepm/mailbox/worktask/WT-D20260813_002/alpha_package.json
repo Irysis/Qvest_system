@@ -1,0 +1,290 @@
+{
+  "task_id": "WT-D20260813_002",
+  "as_of_date": "2026-08-13",
+  "forecast_horizon": "1M",
+  "spec_version": "ast_v1.1",
+
+  "pit": {
+    "sig_date": "2026-08-08",
+    "decision_ts": "2026-08-13",
+    "note": "F1 관측 표본의 마지막 신호 가용일. 오버레이 컷오프 규약 = Date < first-day-of-holding-month (C5). 벤치 일별 원장은 말단 2영업일(2026-08-11/12 BM_Ret=0 채움)을 배제해 2026-08-08 까지만 소비."
+  },
+
+  "hypothesis": {
+    "statement": "선행 9건(DIST-RAMP-006 supporting)은 전부 국면의 상태(평균-state)를 예측해 배분했고 천장 ~2.85에 막혔다. 본 라운드는 예측 표적을 국면의 하방 꼬리특성(하방 꼬리확률 · 조건부 심도 · 왜도)으로 교체하고, 그 산출을 (primary) 현금 비중 결정의 연속 입력으로, (control) 팩터배분 결정으로 각각 소비해 갈라 측정한다. primary 판정은 standalone이 아니라 book-marginal(현 PG2 incumbent 대비 ΔIR ≥ 0.05)이다. control은 선행 천장 재확인 기대 — 개선 주장 없음.",
+    "mechanism": {
+      "agent": "① 하방 회피 수요 주체 = KR long-only 국내 기관(연기금 포함)·개인 — 하방 위험을 피하려는 수요는 상시 존재하나 이를 가격에 반영할 표현 수단이 제한된 주체. ② 오류 주체 = 상태-분류기 기반 리스크 시스템을 쓰는 운용자들(현행 PG2 자신 포함) — 노출 축소 결정이 평균-state 라벨 발화에 묶인 주체. 실측: PG2 라이브 271개월에서 현금 결정의 84%가 상시-완만한 β_R05 몫이고 국면 게이트 발화는 19회(7.0%), crisis 라벨은 4/271뿐이며, 라벨 CRISIS · MSM 0.99999인 달에도 m4 승수는 1.0이었다(국면나쁨 ∧ 자기알파감쇠 교집합 구조 + decay축 0). 즉 시스템이 꼬리 앞에서 상태 기계장치로는 못 자른다는 것이 자기 실측이다.",
+      "friction": "3중 마찰로 오류가 지워지지 않는다. (i) KR 공매도 제약 + long-only mandate — 하방 견해를 표현할 수단이 현금뿐이라 하방 정보가 숏·풋 수요를 통해 가격에 선반영되는 경로가 막혀 있다(개인 옵션 접근성·KOSPI200 옵션의 종목-레벨 헤지 불가). DIST-RAMP-006이 overlay를 '유일한 long-only β 레버'로 지목한 것과 동일 구조. (ii) 표적-불일치 마찰 — 상태-예측기(MSM·BearProb·m4)는 평균-수익 국면 분류를 표적으로 적합되고 포화·불감대가 산출을 흡수하므로, 예측 정밀도를 아무리 올려도 꼬리 사건에 대한 정보가 늘지 않는다. 이것은 '더 잘 맞히면 되는' 문제가 아니라 '무엇을 맞히느냐'의 문제라는 실현-포트 수준 사례가 같은 세션 armB다(진단 rank-IC 4배 개선 → 실현 전이 없음, paired NW3 t -1.25). (iii) 분포 구조 마찰 — KR 횡단면에서 평균과 꼬리는 체계적으로 갈린다: R32 320종 전수에서 cor(왜도기울기, 중앙값-평균 gap) = -0.728 · 준-단조 분위 프로파일 0종, R33에서 D03 Q1은 중앙값 -15.68%인데 평균 +10.54%(왜도 1.027이 평균을 떠받침). 평균-표적 기계장치는 이 갈림 위에서 꼬리를 구조적으로 놓친다.",
+      "path": "홀딩월 시작 전(C5 컷오프) 가용 데이터로 산출한 하방-꼬리 특성 예측치를 현금 비중의 연속 입력으로 매핑(이산 게이트 아님 — 발화율 7.0% 마찰의 직접 우회) → 하방 꼬리월에서 노출이 사전 축소 → 실현 손실 회피분 × 노출 delta가 book 수준 개선으로 전이. 수익의 원천은 종목선택이 아니라 시점-노출 조절이며, 전이 사슬은 '꼬리월 판별력(기전 관측, ③에서 사전 고정) → 꼬리월 회피 실현 → book-marginal ΔIR'로 각 고리가 독립 관측 가능하다. 구체 매핑 함수·파라미터는 ⑤ 이후 소관(여기서 지정하지 않음)."
+    },
+    "falsification": [
+      {
+        "group_id": "A4_benchmark_kospi200",
+        "expectation": "[F1 기전 관측 — 승계 원문] 리프 필드 BM_Ret 로 정의한 실현 하방 꼬리월(벤치 월수익 하위 10분위)을, 꼬리-표적 예측기의 상위 20% 월이 base rate 대비 유의 lift 로 포착해야 한다. 성과(PORT_t·ΔIR)와 독립 — 예측기 산출과 벤치 실현 수익만으로 계산되며 보유·비중·비용이 개입하지 않는다."
+      },
+      {
+        "group_id": "E5_msm_crisis_prob",
+        "expectation": "[F1 대조군 1 — 승계 원문] 리프 필드 Crisis_Prob. 꼬리-표적 예측기의 판별력이 같은 표적·같은 기간에서 이 상태-예측기를 상회해야 한다. 상회하지 못하면 표적 교체 축의 정보 우위 자체가 부재이므로 성과가 우연히 좋아 보여도 기전 기각."
+      },
+      {
+        "group_id": "E6_sjm_bearprob",
+        "expectation": "[F1 대조군 2 — 승계 원문] 리프 필드 Bear_Prob. 동일하게 판별력 우위가 관측되어야 한다. 두 상태-예측기 중 어느 하나에도 밀리면 F1 기각."
+      },
+      {
+        "group_id": "A1_RAWDATA_OHLCVS_daily",
+        "expectation": "[F3 무효 조건 — 승계 원문] 리프 필드 BM_Ret 의 일별 원장에서 신호 컷오프와 홀딩월 시작 간격을 실증한다. overlay_pit_guard HARD 불통과, lag1 스트레스에서 개선 붕괴, 또는 strict-PIT A/B 인플레 >5%면 동월 누출로 측정 자체 무효(성립/기각 판정 불가, 재측정)."
+      }
+    ],
+    "regime_scope": {
+      "holds_in": [
+        "고변동·스트레스 진입 전이 구간 — 하방 꼬리월이 군집하는 구간(2008 · 2011 · 2020 · 2022 유형). 회피 대상이 실재해 수익 경로(꼬리월 회피 × 노출 delta)의 분자가 존재",
+        "상태-라벨 중립인데 꼬리 위험이 두꺼운 구간 — 상태-예측기와의 차별 정보가 정의상 존재하는 곳(라벨 CRISIS · MSM 0.99999에도 m4=1.0이던 실측 유형의 달). 본 가설의 정보 우위가 성립한다면 가장 먼저 여기서 보여야 한다"
+      ],
+      "weakens_or_reverses_in": [
+        "저변동 강세 지속 국면 — 꼬리확률 예측치가 바닥에 붙어 현금 입력의 변별력이 0으로 수렴, incumbent β_R05와 구분 불가(개선의 분모 부재). 이 구간에서 ΔIR≈0은 실패가 아니라 예측된 무차별",
+        "V자 급반등(crisis rebound) 구간 — 꼬리 예측이 맞아도 현금 보유가 리바운드를 놓쳐 회피 이득을 복귀 지연 비용이 잠식, book-marginal 음수 가능(frontier queue 'crisis 리바운드 클리핑 기전' 실측 주의 승계)",
+        "꼬리월 희소 표본 구간 — crisis 라벨 4/271 실측이 보여주듯 표적 사건 자체가 희소해, 짧은 부분구간 판정은 검정력 부족으로 성립/기각 어느 쪽도 선언 불가(판정은 전기간 + 사건-조건부 집계로만)"
+      ],
+      "boundary_rationale": "경계는 메커니즘의 수익 경로에서 직접 도출된다: path = '꼬리월 회피 × 노출 delta'이므로 (a) 꼬리월이 없는 국면(저변동 강세)에서는 분자가 0이라 정의상 무차별하고, (b) 회피 직후 복귀가 빠른 국면(급반등)에서는 회피 이득을 복귀 비용이 상쇄해 역전 가능하며, (c) 표적 사건이 희소한 구간은 통계가 아니라 사건 수의 문제로 판정력이 죽는다. '모든 국면에서 개선'을 주장하지 않는다 — 개선은 꼬리 사건 밀도가 있는 구간에 국소화되어야 하고, 만약 저변동 구간에서 큰 ΔIR이 관측되면 그것은 오히려 누출(C5 위반) 신호로 역해석해야 한다(경계가 진단 도구를 겸함)."
+    },
+    "inheritance_note": "statement / mechanism(agent·friction·path) / regime_scope 는 alpha_hypothesis.json(alpha-hypothesis, model: fable) 원문 그대로 승계 — 재작성 없음. falsification 은 승계 원문을 schema #/definitions/ast_hypothesis 가 요구하는 field-지목 객체배열 형태로 전사(轉寫)했을 뿐 내용 변경 없음 (원문 observable/reject_if 는 각 expectation 에 보존, F2/F4 조항은 alpha_validation.json 에 그대로 승계)."
+  },
+
+  "label_consumption": {
+    "consumes_regime_label": true,
+    "consumption_surface": "overlay",
+    "label_eligibility": {
+      "eligible": true,
+      "verdict": "ELIGIBLE",
+      "recall": 0.264706,
+      "base_rate": 0.100817,
+      "lift": 2.625596,
+      "fisher_p": 0.003358,
+      "n_months": 367,
+      "n_label_on": 34,
+      "n_event": 37,
+      "event_definition": "벤치(KOSPI200) 월수익이 표본 월수익 분포의 하위 10분위 이하 (q10 = -0.0781). 라벨-측 전표본 분위 사용 = 기술적 look-ahead 이나 4개 예측기에 대칭 적용 — 기전 관측 전용, 성과 주장 불가",
+      "label_definition": "TAIL 신호(3-특징 등가중 expanding-z 합성)의 expanding percentile >= 0.80 인 홀딩월",
+      "label_basis": "신호는 홀딩월 시작 전(Date < first-day-of-holding-month) 252 거래일 벤치 일수익만으로 산출. 문턱은 expanding percentile (전표본 분위 아님 — PIT clean)",
+      "label_source": "stage_artifacts/WT_D20260813_002/alpha_scores.parquet",
+      "asof": "2026-08-08",
+      "contract": "02_Infrastructure/contracts/label_eligibility_gate.R::label_eligibility()",
+      "gate_scope_caveat": "★자격 관문 통과는 '이 라벨이 절대적으로 판별력이 있다'만 말한다. 본 라운드의 사전등록 F1 기준은 그보다 강한 **상태-예측기 대비 상대 우위**였고 그 기준은 미달이다(AUC TAIL 0.7143 < MSM 0.7472, P(dAUC>0)=0.181). 자격 통과를 라운드 통과로 읽지 말 것."
+    }
+  },
+
+  "factors": [
+    {
+      "factor_id": "F1_tail_composite",
+      "role": "core_signal",
+      "restatement_exposure": 1,
+      "ast": {
+        "op": "MUL",
+        "args": [
+          {
+            "op": "ADD",
+            "args": [
+              {
+                "op": "ADD",
+                "args": [
+                  {
+                    "leaf": "SPECIAL_OP",
+                    "escape_contract": {
+                      "escape_type": "SPECIAL_OP",
+                      "op_code_path": "stage_artifacts/WT_D20260813_002/f1_mechanism.R::exp_z(dn_semivol)",
+                      "walk_forward": true
+                    }
+                  },
+                  {
+                    "leaf": "SPECIAL_OP",
+                    "escape_contract": {
+                      "escape_type": "SPECIAL_OP",
+                      "op_code_path": "stage_artifacts/WT_D20260813_002/f1_mechanism.R::exp_z(neg_skew)",
+                      "walk_forward": true
+                    }
+                  }
+                ]
+              },
+              {
+                "leaf": "SPECIAL_OP",
+                "escape_contract": {
+                  "escape_type": "SPECIAL_OP",
+                  "op_code_path": "stage_artifacts/WT_D20260813_002/f1_mechanism.R::exp_z(tail_exc)",
+                  "walk_forward": true
+                }
+              }
+            ]
+          },
+          0.3333333333
+        ]
+      },
+      "ast_note": "SPECIAL_OP 3건은 **expanding(확장창) 표준화** 때문이다 — 𝒪 의 TS_MEAN/TS_STD 는 고정창만 받고 확장창 연산자가 없다. 내부 계산은 전부 𝒪-표현 가능하며 계약에 명기: dn_semivol = SQRT(TS_MEAN(MUL(CLIP(r,-1,0),CLIP(r,-1,0)),252)) · neg_skew = MUL(-1, DIV_GUARD(TS_MEAN(MUL(MUL(d,d),d),252), MUL(MUL(s,s),s))) where d=SUB(r,TS_MEAN(r,252)), s=TS_STD(r,252) · tail_exc = TS_MEAN(MUL(SUB(1,SIGN(ADD(r,0.02))),0.5),252), r = A4_benchmark_kospi200 리프 필드 BM_Ret. 확장창 표준화만 escape 로 격리했다(우회 구현 아님 — SOT §1 escape 리프 4종의 SPECIAL_OP 용도 그대로)."
+    },
+    {
+      "factor_id": "F2_tail_shape",
+      "role": "diagnostic",
+      "restatement_exposure": 1,
+      "ast": {
+        "op": "MUL",
+        "args": [
+          {
+            "op": "ADD",
+            "args": [
+              {
+                "leaf": "SPECIAL_OP",
+                "escape_contract": {
+                  "escape_type": "SPECIAL_OP",
+                  "op_code_path": "stage_artifacts/WT_D20260813_002/f1_mechanism.R::exp_z(neg_skew)",
+                  "walk_forward": true
+                }
+              },
+              {
+                "leaf": "SPECIAL_OP",
+                "escape_contract": {
+                  "escape_type": "SPECIAL_OP",
+                  "op_code_path": "stage_artifacts/WT_D20260813_002/f1_mechanism.R::exp_z(tail_exc_std)",
+                  "walk_forward": true
+                }
+              }
+            ]
+          },
+          0.5
+        ]
+      },
+      "ast_note": "변동성 수준을 제거한 꼬리 '형태'만. tail_exc_std 는 문턱을 -2*sd(r) 로 두어 vol 스케일을 나눈 판. 사전등록 predictors 절에서 '진단이지 선택 후보 아님' 으로 못박음."
+    },
+    {
+      "factor_id": "F3_vol_control",
+      "role": "control",
+      "restatement_exposure": 1,
+      "ast": {
+        "leaf": "SPECIAL_OP",
+        "escape_contract": {
+          "escape_type": "SPECIAL_OP",
+          "op_code_path": "stage_artifacts/WT_D20260813_002/f1b_diagnosis.R::exp_z(sd(tail(r,252)))",
+          "walk_forward": true
+        }
+      },
+      "ast_note": "꼬리 특징 0개인 순수 실현변동성. 사후 진단 통제군 — F1 판정 후 추가(판정 변경 불가). '꼬리 표적' 이 변동성 수준의 재포장인지 가르는 칼."
+    },
+    {
+      "factor_id": "F4_state_baseline_msm",
+      "role": "control",
+      "leaf_ref": "E5_msm_crisis_prob",
+      "restatement_exposure": 0
+    },
+    {
+      "factor_id": "F5_state_baseline_bearprob",
+      "role": "control",
+      "leaf_ref": "E6_sjm_bearprob",
+      "restatement_exposure": 0
+    }
+  ],
+
+  "combination_rule": "z_score_aligned_equal_weight",
+  "verdict": "designed",
+
+  "self_pit_check": {
+    "performed": true,
+    "leaves_checked": [
+      {
+        "leaf": "A4_benchmark_kospi200",
+        "availability_rule": "fixed: 일배치 T-1 정합(daily_refresh 00:03 KST). 소비 컷오프는 그보다 엄격 — Date < first-day-of-holding-month",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "A1_RAWDATA_OHLCVS_daily",
+        "availability_rule": "fixed: 거래일 종가 확정치, t-1. 2026-08-08 IKS200 수리분 사용. A4 와 일별 cor 0.999931 · 동일 표본 AUC 완전 일치(0.7143) 확인",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "E5_msm_crisis_prob",
+        "availability_rule": "fixed: 거래일 종가 기준 walk-forward 산출(msm_daily_refit.R min_warmup 252, refit 30d). 소비 asof 중앙값 gap = 1.0 거래일 (홀딩월 시작 전)",
+        "restatement_prone": false
+      },
+      {
+        "leaf": "E6_sjm_bearprob",
+        "availability_rule": "fixed: online DP walk-forward(refit 126d, warmup 504). 소비 asof 중앙값 gap = 1.0 거래일",
+        "restatement_prone": false
+      }
+    ],
+    "verdict": "warn_restatement",
+    "notes": "① 벤치 리프 2종이 registry 기준 restatement_prone=true — 일별 원장 소급 갱신 가능성. F1 은 예측기 *비교* 라 두 계열에 대칭 작용하며, 두 독립 원천(A1/A4)에서 AUC 가 소수 4자리까지 일치해 원천-특이 아티팩트는 배제됐다. ② ★registry 불일치 신고: E5 의 restatement_prone=false / pit_hazards 는 'expanding 이라 clean' 이라고 적혀 있으나 2026-08-13 통제 실험은 MSM 입력 디민이 ret_vec - mean(ret_vec)(전표본 평균)이라 새 달마다 과거 입력 8954/8975일(99.8%)을 재서술함을 실측했다(디민 제거 시 0/8975). ast_field_map_v0.json 의 E5 항목이 이 경로를 담고 있지 않다 — 본 라운드는 E5 를 **대조군으로만** 소비했고 예측기 피처로 쓰지 않았다. 오염 방향은 대조군을 유리하게 만들어 본 검정을 보수적으로 만든다(우리가 넘어야 할 문턱을 높인다). ③ E3 macro_regime(월말스탬프 마지막 행 = 진행 중인 달)은 사전등록 단계에서 피처 후보에서 배제 — 미소비."
+  },
+
+  "alpha_vector": {},
+  "confidence_vector": {},
+  "alpha_discovery_count": 0,
+  "alpha_vector_note": "본 라운드는 종목-횡단면 알파가 아니라 시장-레벨 시계열 오버레이 신호를 설계·측정했다. 따라서 Ticker→기대초과수익 벡터가 정의되지 않으며 빈 객체가 정상 산출이다. 실제 산출 신호 패널은 signal_matrix_ref 참조.",
+  "signal_matrix_ref": "stage_artifacts/WT_D20260813_002/alpha_scores.parquet",
+
+  "factor_specs": [
+    {
+      "factor_family": "Regime_TailRisk",
+      "proxy": "TAIL = EW(expanding-z of {downside semivol_252d, -skewness_252d, P(daily r < -2%)_252d})",
+      "formula": "mean( z_exp(sqrt(mean(min(r,0)^2))), z_exp(-skew(r)), z_exp(mean(r < -0.02)) ), r = 벤치 일수익 trailing 252거래일, 컷오프 Date < 홀딩월 1일",
+      "lag_rule": "C5 overlay: 신호는 홀딩월 시작 전 데이터만 (assert_overlay_pit HARD PASS)",
+      "winsorization": "none (expanding z, 3-특징 평균이 이미 극값 완충)",
+      "neutralization": "none",
+      "economic_rationale": "behavioral",
+      "weight_theta": 0.3333333333,
+      "references": [
+        "Bali-Cakici-Whitelaw 2011 (극단 수익과 기대수익)",
+        "Kelly-Jiang 2014 (tail risk 시계열 추정)",
+        "DIST-RAMP-006 (선행 국면-배분 천장 실측, 내부)"
+      ],
+      "redundancy_cluster_id": "REGIME_VOLSTATE_TS",
+      "redundancy_note": "★본 라운드 실측으로 이 팩터는 기존 상태-예측기 군집과 **같은 군집**임이 확인됐다(spearman TAIL~MSM 0.764, TAIL~VOL 0.838; MSM 위 증분 AUC 0.4361 = 영가설 밴드 [0.408, 0.612] 안 = 증분 없음). Factor Zoo 축소 원칙(research_philosophy ①)상 신규 팩터 자격 없음."
+    },
+    {
+      "factor_family": "Regime_TailShape",
+      "proxy": "TAIL_SHAPE = EW(expanding-z of {-skewness_252d, P(r < -2*sd(r))_252d})",
+      "formula": "mean( z_exp(-skew(r)), z_exp(mean(r < -2*sd(r))) )",
+      "lag_rule": "C5 overlay: 홀딩월 시작 전만",
+      "winsorization": "none",
+      "neutralization": "none",
+      "economic_rationale": "behavioral",
+      "weight_theta": 0.0,
+      "references": ["사전등록 diagnostic — 선택 후보 아님"],
+      "redundancy_cluster_id": "REGIME_TAILSHAPE_TS",
+      "redundancy_note": "기존 군집과 낮은 상관(MSM 0.168 / BEAR 0.119)이나 판별력 자체가 우연 수준(AUC 0.5549). '직교하지만 정보 없음'."
+    }
+  ],
+
+  "diagnostics": {
+    "rank_ic": 0.0079,
+    "rank_ic_basis": "★횡단면 아님 — 시계열 basis. spearman(TAIL_t, 다음달 벤치수익_t) over 367 개월, t = +0.15. 본 라운드는 종목-횡단면 알파가 아니라 시장-레벨 오버레이 신호라 cross-sectional rank-IC 가 정의되지 않는다. 비교값: TAIL_SHAPE +0.0131 / VOL +0.0256 / MSM +0.0275 / BEAR +0.0443 — **네 예측기 전부 |t| < 1**.",
+    "alpha_inheritance_cor": 0.0,
+    "alpha_inheritance_note": "parent 없음(discovery, discovery_of=null). 횡단면 alpha 0건 산출이므로 승계 상관 정의상 0.",
+    "canonical_port_t_nw_lag3": null,
+    "canonical_port_t_pvalue": null,
+    "canonical_n_months": null,
+    "canonical_null_reason": "사전등록(prereg_F1.json) 규칙에 따라 F1 기전 관측 FAIL 시 성과 측정 착수 금지. F1 = FAIL 이므로 canonical_screen_bt / forge 경로 미실행. 미산출이지 미달이 아니다 — 성과를 먼저 보면 동어반복이 되므로 순서가 규율(승계 handoff (2))."
+  },
+
+  "selection_objective": "canonical_port_t",
+  "selection_objective_note": "선언값은 F2 로 진행했을 경우의 선택 권위. **실제로는 선택이 0회 발생하지 않았다** — F1 은 사전등록된 단일 스펙의 통과/미달 판정이고 후보 열거·argmax 가 없다. selection_type = chain, n_trials = 1. DSR 은 F1 에 부적용(백테 아님).",
+  "f1_gate_objective": "tail-month AUC vs 상태-예측기 2종 (사전등록 prereg_F1.json — selection_objective enum 밖이라 별도 필드로 기록)",
+
+  "challenge_flags": [
+    "[★라운드 판정] F1 = FAIL. 꼬리-표적 예측기 TAIL 의 하방 꼬리월 판별 AUC 0.7143 < MSM 0.7472, > BEAR 0.6789. 사전등록 규칙은 '두 baseline 모두 상회'를 요구 — 미충족. paired block bootstrap(block=6, B=2000) P(dAUC>0 vs MSM) = 0.181, CI90 [-0.0920, +0.0237]. 표적 교체 축의 정보 우위 부재.",
+    "[★기전 진단 1 — 표적 교체가 실패한 이유] 꼬리 '형태' 는 정보를 거의 안 갖는다: TAIL_SHAPE(변동성 수준 제거) AUC 0.5549 ≈ 우연. 반대로 꼬리 특징이 0개인 순수 실현변동성 VOL 은 AUC 0.7504 로 TAIL(0.7143)보다 **높다**(paired bootstrap P(d>0)=0.928, CI90 [-0.0037, +0.0836]). 즉 TAIL 의 판별력은 전부 변동성 수준에서 오고(spearman TAIL~VOL 0.838), 꼬리 특징을 섞은 것이 오히려 희석했다. ⚠VOL 은 MSM 과는 사실상 동률이다(d=0.0032, P(d>0)=0.610) — '단순 변동성이 국면 기계장치를 이긴다' 는 주장은 성립하지 않는다.",
+    "[★기전 진단 2 — 증분 없음] MSM 에 expanding OLS 로 직교화한 TAIL 잔차의 AUC = 0.4361. 영가설 통제(MSM 과 rho 0.72 로 상관된 순수 잡음 200 draw)의 잔차 AUC 분포는 mean 0.5047 · CI90 [0.4080, 0.6118] — 관측치가 그 안에 있다. 따라서 올바른 해석은 '반정보' 가 아니라 **증분 없음**. 역방향(MSM 을 TAIL 로 직교화)은 AUC 0.6590 = MSM 이 TAIL 을 정보적으로 포함한다(비대칭).",
+    "[★기전 진단 3 — 소비 형태 불일치] 네 예측기 전부 **방향이 아니라 분산을 예측**한다. TAIL 의 하방-꼬리 AUC 0.7143 vs 상방-꼬리 AUC 0.7124 (비대칭 0.0020). VOL 0.7504/0.7566 (비대칭 -0.0062 — 오히려 상방 쪽이 근소 우위), MSM 0.7472/0.7283. long-only 현금 스케일링은 평균을 사고파는 연산이므로 대칭 분산 신호와 소비 형태가 구조적으로 불일치한다. 이것이 시계열 rank-IC 가 네 예측기 전부 |t|<1 인 이유이고, overlay_candidate_queue 16건 전량 INFERIOR 라는 기존 실측에 기전을 준다(종래엔 사전 prior 로만 인용됨).",
+    "[★가설이 지목한 곳도 비었다] 승계 regime_scope.holds_in[2] = '상태 라벨 중립인데 꼬리가 두꺼운 구간 — 정보 우위가 성립한다면 가장 먼저 여기서 보여야 한다'. 실측: MSM expanding pct < 0.80 인 323개월 안에서 TAIL top-20% 는 15개월 발화, 사건 포착 0건. 발화 희소를 감안해 관대 문턱(top-35%, n_on=31)으로 재측정해도 recall 0.097 vs base 0.071 (lift 1.36x, fisher p 0.383) = INELIGIBLE_NO_DISCRIMINATION.",
+    "[★조작점 비대칭 — 반대 방향 정직 기록] 전체 순위에서는 대칭(비대칭 0.0020)이나 상위 20% 조작점에서는 비대칭이 있다: 발화월 하방꼬리 비율 0.2647 vs 상방꼬리 0.1176, 평균수익 -2.47% vs 비발화 +1.21%(Welch t = -1.75, p = 0.088). 다만 (a) 5% 유의 미달이고 (b) MSM 이 같은 구조에서 더 강하다(하방 lift 3.16x, 평균차 -3.25%, t -1.76). 즉 조작점 비대칭은 존재하나 **꼬리-표적 교체의 산물이 아니라 상태-예측기가 이미 가진 성질**이다.",
+    "[★적대검증 — 단일 구성의 우연인가] 내 negative 의 가장 큰 약점은 '꼬리 표적' 을 한 가지 구성(252d 창 · 3특징 EW)으로만 시험한 것이다. 판정을 고정한 뒤 4 lookback(63/126/252/504d) × 5 사건정의(하위 5%/10%/20% · 절대 -7%/-10%) = **20 격자점**을 전수 측정했다. 결과: TAIL 이 두 baseline 을 모두 상회한 격자점 **0 / 20**. 각 격자점 최우수는 MSM 11회 · VOL 9회 — TAIL 과 TAIL_SHAPE 는 **한 번도 최우수가 아니다**. TAIL_SHAPE 최대 AUC 는 0.6521(504d/절대-7%)로 창을 늘리면 형태에 약간의 정보가 붙지만 그래도 baseline 아래. ★이 스윕은 판정을 바꿀 수 없다고 측정 전에 선언했다(argmax 승리 주장 금지) — 목적은 반대 방향, negative 의 구성-견고성 확인이었고 그 확인은 통과했다.",
+    "[★자기 적발 — 표준화 basis 불일치 수리] 적대검증 격자의 252d/하위10% 칸이 f1b 진단의 VOL 수치와 어긋나는 것을 대조하다 내 파이프라인 결함을 찾았다: f1b 는 VOL 을 **필터된 367행** 위에서 expanding-z 했는데 TAIL 은 **전체 427행** 위에서 했다. expanding-z 는 시점 간 단조변환이 아니라 warm-up 이 다르면 순위가 바뀐다(두 판의 spearman 0.9246 인데 AUC 는 0.7729 vs 0.7504). 정본 basis(TAIL 과 동일)로 전량 재산출했고 본 패키지의 VOL 수치는 수정판이다. 영향: 'TAIL < VOL' 결론 불변(P(d>0)=0.928), 그러나 초판이 쓴 'VOL 이 MSM 을 상회(+0.0257)' 는 **+0.0032, P(d>0)=0.610 = 사실상 동률**로 하향됐다. F1 판정에는 영향 없음(VOL 은 사후 진단 통제군이지 사전등록 baseline 이 아니다). 상세 stage_artifacts/WT_D20260813_002/vol_basis_correction.json.",
+    "[검정력·표본 한계 — 정직 기록] 사건 37건이 판정을 지배하고 그 중 24건이 pre-2008 이다(2008~2016 5건 · post-2017 8건). 따라서 본 판정은 상당 부분 pre-2008 표본의 진술이며, 최근 국면에서 같은 결론이 성립하는지는 **검정력 부족으로 미해결**(부기간 AUC 는 기술통계로만 기록: post-2017 TAIL 0.5417 / MSM 0.6493 / BEAR 0.7269). 부분구간 수치를 판정으로 인용 금지.",
+    "[baseline 소비 규약 편차 — 방향 명시] E6 Bear_Prob 는 파일이 *_lag 컬럼을 제공하고 registry 가 '소비 측은 lag 컬럼만' 이라 적었으나, 본 라운드는 raw 컬럼을 홀딩월 시작 전 최종 거래일 기준으로 읽었다(C5 는 충족). 이는 baseline 에 **더 최신 정보를 주는** 방향이므로 우리가 넘어야 할 문턱을 높인다 — 보수적 편차이며 결론을 살리는 방향이 아니다.",
+    "[PIT 3종] assert_overlay_pit HARD PASS (features · MSM asof · BEAR asof 전건). lag1 스트레스 / strict-PIT A/B 는 **성과 측정에 붙는 검정**이므로 F1_FAIL 로 성과 미측정인 현 상태에서는 미실행 — F2 착수 시 의무. 컷오프 간격 실증: 상태-예측기 asof 중앙값 gap 1.0 거래일(홀딩월 시작 전).",
+    "[조인 손실 0%] 이론 427 → 최종 427 (loss 0.00%). 평가창은 expanding 안정화 60개월 소진 후 367개월(1996-02 ~ 2026-08).",
+    "[원천 견고성] 벤치 원천 2종(A1 RAWDATA BM_Ret / A4 benchmark.parquet)에서 동일 표본·동일 AUC 0.7143. 라벨 정합 대조: 2008-10 -20.96% · 2011-08 -12.61% · 2020-03 -11.64% · 2022-06 -13.35% — 월 라벨이 수익 발생 월과 일치.",
+    "[잣대 양성 대조] 동월 실현변동성(사후 정보)을 넣으면 AUC 0.8373 — 판별 잣대가 살아 있음을 확인. 0.5 근방이면 검사기 고장이었을 것.",
+    "[★registry 불일치 신고 — No Silent Override] ast_field_map_v0.json 의 E5_msm_crisis_prob 은 restatement_prone=false 이고 pit_hazards 를 'expanding 이라 clean' 으로 적었으나, MSM 입력의 전표본 디민 경로가 항목에 없다. 2026-08-13 통제 실험 실측 = 현행 8954/8975일(99.8%) 재서술 vs 디민 제거 0/8975. 본 라운드는 E5 를 대조군으로만 소비(피처 미사용)했으므로 결과에 영향 없으나, field map 항목 갱신을 architect 큐로 권고.",
+    "[대조군 축 미실행 — 사유] 팩터배분 대조군(control)은 같은 꼬리-표적 예측기를 배분 결정에 소비해 DIST-RAMP-006 천장 ~2.85 재확인을 목표로 했다. 그 예측기의 정보 전제(F1)가 무너졌으므로 대조군을 돌려도 '정보 없는 신호로 배분했더니 천장 아래' 라는 동어반복만 나온다. 미실행이며 F4 절차(escalate) 트리거 없음.",
+    "[in-flight 교차 대조] WT-D20260809_002(상태 라벨 트리거 + 심도 표적)와의 교차 대조는 그 WT 수집 시점에 Q-Lead 소관. 본 라운드가 제공하는 대조 정보: 상태 라벨 트리거를 유지하는 그 설계는 본 라운드가 기각한 '표적 교체' 축과 독립이며, 본 라운드 실측(MSM 이 TAIL 을 정보적으로 포함, 증분 AUC 0.4361)은 그 WT 의 트리거 선택(상태 라벨 유지)을 오히려 지지하는 방향이다.",
+    "[승계분 무결성] mechanism / regime_scope / statement 는 alpha_hypothesis.json 원문 그대로. falsification 만 schema 객체배열로 전사(내용 불변). 재설계 요청 사항 없음 — 승계 설계는 자기 반증조건이 실제로 작동해 라운드를 조기에 닫는 데 성공했다(F1 선행 배치가 비용을 절약하고 사후합리화를 차단).",
+    "[O 확장 관찰 — backlog 미등재] expanding(확장창) 표준화가 연산자 라이브러리에 없어 SPECIAL_OP escape 3건을 썼다. verdict 가 blocked_by_capability 가 아니므로 ast_operator_backlog.json 에 등재하지 않는다(선제 확장 금지 준수). TS_EXPANDING_MEAN / TS_EXPANDING_STD 가 있으면 escape 3건이 순수 연산자로 환원된다는 관찰만 남긴다."
+  ]
+}

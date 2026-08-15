@@ -1,0 +1,112 @@
+{
+ "status": "INVALID_FRAME_ERROR",
+ "invalidated_at": "2026-08-13",
+ "reason": "★이 산출물은 **구 측정 프레임**에서 나왔다. factor DB sig_date T 팩터를 T월 수익과 짝지어(build_monthly_forward_returns 앵커='sig_date 이하 최종거래일', 월초가 거래일인 달엔 앵커가 그날 자신) 팩터가 채점 대상 월을 봤다. 수정 = 팩터 Date +1개월.",
+ "evidence": "M04_Mom_1 평균 IC: 구 -0.9423 -> 수정 +0.0170 · |평균IC|>0.10 팩터: 46종 -> 0종",
+ "do_not_cite": "이 파일의 수치를 인용하지 말 것. 유효 정본 = r30_reframe_result.json",
+ "kept_for": "프레임 오류 사례로 보존(삭제 아님)",
+ "_original": {
+  "schema": "alpha_r19r21_v1",
+  "round_id": "v84-R19-R21",
+  "measured_at": "2026-08-13",
+  "metric_type": "canonical_screen",
+  "R19_bench_basis": {
+   "question": "지금까지 전 라운드가 유니버스 cap-w 벤치였다 — KOSPI200 basis 에서도 유지되는가",
+   "verdict": "RANK_PRESERVED_LEVEL_SHIFTS_DOWN",
+   "bench_compare": {
+    "corr": 0.9921,
+    "kospi200_ann_pct": 13.95,
+    "universe_ann_pct": 12.76,
+    "note": "KOSPI200 이 연 1.19%p 높다 => 그만큼 알파가 깎인다"
+   },
+   "port_t": {
+    "pearson": 0.9993,
+    "spearman": 0.9943,
+    "universe_range": [
+     -38.95,
+     26.29
+    ],
+    "kospi200_range": [
+     -35.75,
+     24.65
+    ],
+    "universe_median": 0.18,
+    "kospi200_median": -0.28,
+    "delta_median": -0.301,
+    "delta_mean": -0.157,
+    "delta_range": [
+     -1.64,
+     3.2
+    ],
+    "pass_2_95": {
+     "universe": 5,
+     "kospi200": 3
+    }
+   },
+   "reading": "★basis 전환은 순위를 거의 그대로 두고(spearman 0.9943) 수준만 일정하게 낮춘다(중앙 -0.301). => R7~R18 의 결론(순위·부호·층별 일관성 기반)이 KOSPI200 basis 에서 유지되고, 이제 자본 문턱과 **같은 basis** 에서 말할 수 있다.",
+   "do_not_misread": "⚠KOSPI200 기준 통과 3종(INV07 24.65 · TR01_ADX_Proxy 8.50 · R06_MDD 3.07)도 **자본 자격이 아니다** — PORT_t 는 HARD 3종 중 하나일 뿐이고 oos_retention·calmar·book-marginal ΔIR 이 남아 있다."
+  },
+  "R20_inv07_coverage": {
+   "question": "INV07 PORT_t 24.65 (PG2 6.21 의 4배) 가 커버리지 결함인가",
+   "verdict": "COVERAGE_DEFECT_RULED_OUT",
+   "evidence": {
+    "months": 259,
+    "span": "2005-01 ~ 2026-07",
+    "median_tickers_after_universe": 343,
+    "months_below_25_tickers": 0,
+    "constant_score_months": 0,
+    "yearly_coverage": "균등(2005 월평균 1688 -> 2026 2603, 단조 증가)"
+   },
+   "reading": "'선택 없는 알파'(top-25 가 사실상 전량 보유) 가설 기각. 정상 커버리지."
+  },
+  "R21_lag_stress": {
+   "question": "INV07 이 PIT 위반인가 — lag1 스트레스로 판별",
+   "verdict": "TEST_HAS_NO_DISCRIMINATING_POWER_INCONCLUSIVE",
+   "results": [
+    {
+     "fac": "INV07_Retail_Contrarian",
+     "L0": 26.29,
+     "L1": -1.01,
+     "L2": -0.38,
+     "retention_pct": -3.8
+    },
+    {
+     "fac": "TR01_ADX_Proxy",
+     "L0": 8.64,
+     "L1": 0.75,
+     "L2": -0.46,
+     "retention_pct": 8.7
+    },
+    {
+     "fac": "R06_MDD",
+     "L0": 4.13,
+     "L1": -0.19,
+     "L2": -0.48,
+     "retention_pct": -4.7
+    },
+    {
+     "fac": "M04_Mom_1",
+     "L0": -38.95,
+     "L1": -0.71,
+     "L2": -1.51,
+     "retention_pct": 1.8
+    }
+   ],
+   "why_inconclusive": "★대조군 3종이 **똑같이 붕괴**한다. 이들은 단기 신호(M04=1개월 모멘텀·TR01=ADX·R06=MDD)라 1개월 지연이 신호 신선도를 파괴한다. lag 스트레스는 '동월 look-ahead' 를 잡는 도구인데 여기선 이미 PIT 정합 스탬프(factor DB sig_date)를 쓰므로 잡을 것이 없고 신선도만 죽인다.",
+   "what_saved_me": "★★대조군이 오보를 막았다. 대조군 없이 INV07 만 봤다면 '잔존 -3.8% => PIT 위반' 이라고 보고했을 것이다. 메모리 규약 '대조군은 base 아닌 동일강도' · '검사기는 양방향으로 재라' 가 작동했다.",
+   "status": "INV07 의 PORT_t 24.65 는 **미판정**. 남은 판별 경로 = strict-PIT A/B (빌더 원천의 실제 관측가능 시점 확인). chip task_547b3df7 발행."
+  },
+  "caveats": [
+   "★t/PORT_t 절대값은 12개월 겹침·대리 과대 이슈로 인용 시 basis 와 프레임 명시 의무.",
+   "R19 는 36 층화표본이지 전수 316 아님.",
+   "R21 은 판별 실패이지 'PIT 정상' 증명이 아니다 — 미판정이다.",
+   "자본 경로에 아무것도 올리지 않았다."
+  ],
+  "next_probes": [
+   "chip task_547b3df7 — INV07/INV 계열 빌더 strict-PIT 감사(원천 관측가능 시점)",
+   "단기 신호군에 쓸 수 있는 PIT 판별 도구 설계 — lag 스트레스가 무력한 구간을 덮을 대안",
+   "R7~R18 결론을 KOSPI200 basis 로 재서술 — 이제 가능해졌으므로 선별 라벨 설계안에 반영",
+   "36 층화 -> 전수 316 으로 대리↔계약 충실도 확장(현재 spearman 0.9753 은 표본 기반)"
+  ]
+ }
+}

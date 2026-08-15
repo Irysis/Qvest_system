@@ -1,0 +1,201 @@
+{
+  "task_id": "WT-D20260813_003",
+  "as_of_date": "2026-08-13",
+  "forecast_horizon": "1M",
+  "spec_version": "ast_v1.1",
+  "pit": {
+    "sig_date": "2026-08-07",
+    "decision_ts": "2026-08-13",
+    "note": "신호 가용 마지막 거래일(벤치 일별 원장 말단 0채움 2영업일 배제). 소비 컷오프 = Date < first-day-of-holding-month (C5). 평가 마지막 홀딩월 = 2026-07 (2026-08 은 미완료월로 배제)."
+  },
+  "hypothesis": {
+    "statement": "WT-002 가 확정한 사실(국면 예측기는 방향이 아니라 분산을 예측한다)의 재해석: 분산 신호를 현금 '방향 배팅'(평균을 사고파는 연산)에 소비한 것이 결함이 아니라 소비면 오배치였다면, 분산을 관리하는 연산(vol-target: e_m = min(1, σ*/σ̂_m), 노출 바닥 부착)에 소비하면 실현 변동성이 exposure-matched 통제 대비 추가로 낮아져야 하고(분산 타이밍 이득), 그 감소가 수익 희생 없이 일어나야 한다. 판정 순서는 WT-002 규율 승계 — 기전(VT1·VT2·VT2b, 성과와 독립인 관측) 선행, 성과(VT4)는 기전 통과 후에만. ★정직 라벨: 인접 실측 3건(OVL_book_voltarget_R3 backtested FAIL · PL_VolTarget 2-arm ΔIR -0.29/-0.41 · 06-18 H2 스케줄 실패)이 전부 negative 이므로 VT4(성과) 사전 기대는 낮다. 본 라운드의 기대 가치는 성과가 아니라 실패 사슬의 분해다: 인접 3건은 성과만 측정해 '예측이 죽었는지 수확이 죽었는지' 를 가르지 못했고, 본 설계는 그것을 가른다 — 어느 쪽으로 갈리든 분산 예측기 소비면 지도(어느 면이 남는가)가 갱신된다.",
+    "mechanism": {
+      "agent": "① 변동성 군집과 고변동기 보상 저하를 만드는 주체 = 레버리지·마진 제약 하의 강제 청산 주체(신용융자 개인 계정·마진콜 대상 레버리지 포지션) — 고변동기에 가격-비탄력적 매도를 집행해 변동성을 지속시키고 단위위험당 보상(μ/σ²)을 그 구간에서 낮춘다(WT-002 실측 정합: TAIL 발화월 평균 -2.47%/sd 0.120 vs 비발화 +1.21%/sd 0.074 — 고변동월은 분산만 큰 게 아니라 평균도 낮은 방향, 단 평균 차는 p 0.088 미확립). ② 이 보상 구조를 수확하지 못하는 오류/제약 주체 = 상시 full-investment 관행의 KR long-only 운용자(현행 PG2 자신 포함) — PG2 라이브 271개월 실측에서 현금 결정의 84%가 변동성 상태와 무관한 상시-완만 β_R05 몫이고 노출의 87.5%가 0.85 이상, 즉 고변동월에도 β 를 거의 유지한다.",
+      "friction": "차익거래가 이 구조를 지우지 못하는 마찰 3중. (i) 레버리지 제약 — vol-timing 차익의 절반(저변동기 노출>1)이 신용융자 비용·한도·mandate 로 막혀 있어 프리미엄이 완전 청산되지 않는다(Frazzini-Pedersen 레버리지 제약 기전의 시계열 판). 같은 제약이 본 전략에도 걸리므로 우리는 하방 절반(고변동기 노출<1)만 수확 가능 — 이것은 한계이지 마찰의 부정이 아니다. (ii) KR 공매도 제약 + long-only mandate — 하방 견해의 표현 수단이 현금 배합뿐이라 β 조절이 가격에 선반영되는 경로가 막혀 있다(DIST-RAMP-006 이 overlay 를 '유일한 long-only β 레버' 로 지목한 것과 동일 구조. §6 실측: KR long-only 총위험은 시장성분 β≈0.92·PC1 분산 0.76 이 지배하는데 w≥0·Σw=1 아래 종목선택으로는 β 를 못 만지고 현금 배합만이 β 를 움직인다). (iii) 관행·추적오차 마찰 — 기관의 상시 β≈1 관행(현금 보유 = 벤치 추적 규정·career risk)이 변동성 조건부 노출 조절의 채택을 막아 군집 구간의 보상 저하가 잔존한다.",
+      "path": "홀딩월 시작 전(C5 컷오프) 가용한 σ̂_m → e_m = min(1, σ*/σ̂_m) (노출 바닥 부착, σ* 사전 고정 1개 — grid 금지) → 고변동월 사전 노출 축소. e_m 변경의 실물 거래 = 25종 바스켓 전체의 pro-rata 매매(회전 |Δe_m|, 15bps 편도) — 종목 교체가 아니라 β 조절이다. 수익 전이 사슬 2채널: (확립 채널) 분산 드래그 감소 — 기하수익 ≈ μ − σ²/2 이므로 고변동월 분산 절단은 평균 예측 없이도 복리 이득. WT-002 발표 수치 기반 설계 투영 ≈ +0.24%/yr(하단 effect_size_precalc, 소규모임을 사전 인정) + 실현 vol 안정화가 MDD/Calmar 게이트(HARD 0.64)에 직결. (미확립 채널) 고변동월 평균이 실제로 낮으면(op-point Welch t -1.75, p 0.088) 평균 채널 ≈ +1.5%/yr 이 추가되나 이는 현 증거로 미확립 — 라운드가 검증할 대상이지 전제가 아니다. ★현금 방향 배팅 대비 정합성 논증(동어반복 아님): 현금 배팅의 판정 함수는 sign(E[r]) 로 예측기가 갖지 못한 정보(방향 rank-IC 4종 전부 |t|<1)를 요구하고, vol-target 의 판정 함수는 σ̂ 순위로 예측기가 실제로 가진 정보(분산 판별 AUC ~0.75)만 요구한다. 소비 연산의 수익 원천이 1차 모멘트(cov(e,r))가 아니라 2차 모멘트(cov(e,σ²))로 이동하는 것이 '재배치' 의 실체다."
+    },
+    "falsification": [
+      {
+        "field": "A4_benchmark_kospi200",
+        "challenge": "VT1/VT2/VT2b 전부 이 리프(월간 홀딩월 수익 + 일별 원장의 월내 실현 vol)에서 산출. 승계 falsification.observable VT1·VT2 원문 적용.",
+        "inherited_rule": "VT2: e 계열 실현 vol 이 exposure-matched 통제 대비 추가로 낮은가 (순열 q95 초과 ∧ 상대 vol 이득 >= 2%)"
+      },
+      {
+        "field": "A1_RAWDATA_OHLCVS_daily",
+        "challenge": "sigma_hat = trailing 252거래일 BM_Ret 표준편차. 원천 이중화 대조 + VT3 컷오프 간격 실증.",
+        "inherited_rule": "VT2b: mean((e - ebar) * r) 의 NW lag-3 t <= -2.0 이면 수익 희생으로 기각. 점추정 음수·비유의면 순효과 부호로 판정(tie_rule)."
+      },
+      {
+        "field": "E5_msm_crisis_prob",
+        "challenge": "대조군 전용 — C1 전표본 디민 실측으로 피처 자격 없음(승계 규약). 본 라운드 피처 미사용."
+      },
+      {
+        "field": "E6_sjm_bearprob",
+        "challenge": "대조군 전용 — 동일. s4 일반성 대조표에만 등장(순위-수익 공분산 부호 확인)."
+      }
+    ],
+    "regime_scope": {
+      "holds_in": [
+        "고변동 군집 구간(2008 · 2011 · 2020 · 2022 유형) — σ̂ > σ* 로 매핑이 bind 하는 유일한 영역. 레버가 존재하는 곳이자 분산 드래그 절단의 분자가 있는 곳",
+        "변동성 지속성(자기상관)이 높은 구간 — VT2 이득은 cov(e, σ²) 이므로 vol 군집이 지속될수록 커진다. 군집 강도가 이득의 상한(VT1 기록 의무의 이유)"
+      ],
+      "weakens_or_reverses_in": [
+        "저변동 구간 — σ*/σ̂ > 1 이 e=1 로 클리핑되어 오버레이 ≡ base(예측된 무차별 — 실패 아님). ★고정 축: w≥0·Σw=1·레버리지 불가이므로 저변동기 초과 노출로 이득을 보전하는 경로는 설계상 부재하며 이를 완화 레버로 제시하지 않는다(AX-000 따름정리). 단 σ* 를 낮게 잡으면 bind 영역이 넓어져 상시 저노출 β drag 로 역전 — PL 2-arm 의 평균 노출 0.79~0.83 / ΔIR 음수가 이 함정의 실측",
+        "V자 급반등(crisis rebound) 구간 — 실현 vol 은 저점 이후에도 한동안 높게 유지되므로 trailing 기반 σ̂ 는 리바운드 구간에 저노출을 지속 → 회피 이득을 복귀 지연 비용이 잠식(frontier queue 'crisis 리바운드 클리핑' 실측 주의 + WT-002 regime_scope 동일 조항 승계)",
+        "변동성 급변·군집 단절 구간 — 경고 없는 점프(2020-03 유형 진입 속도)는 trailing σ̂ 가 사건 후에만 반응하므로 첫 충격월은 정의상 회피 불가. 타이밍 이득은 군집의 지속 부분에만 존재"
+      ],
+      "boundary_rationale": "경계 전부가 매핑 식 e = min(1, σ*/σ̂) 에서 해석적으로 도출된다(사후 데이터 관찰 아님): (a) clip 이 활성인 저변동 영역은 정의상 무차별 — 역으로 저변동 구간에서 유의한 VT2 이득이 관측되면 그것은 누출(C5 위반) 신호로 역해석한다(경계가 진단 도구를 겸함, WT-002 장치 승계). (b) 이득 항 cov(e, σ²) 은 σ̂ 와 미래 σ 의 동조(군집 지속)에 비례하므로 군집 단절·첫 충격에서 0 으로 붕괴. (c) 리바운드 잠식은 trailing 추정의 구조적 지연에서 도출. (d) 레버리지 문헌(Moreira-Muniz 2017 의 이득 상당분이 노출>1 측)에 비추어 KR long-only 는 구조의 절반만 수확 — '모든 국면 개선' 을 주장하지 않으며 개선은 bind 영역에 국소화되어야 한다."
+    }
+  },
+  "factors": [
+    {
+      "factor_id": "VT1_voltarget_exposure",
+      "role": "exposure_scaler",
+      "restatement_exposure": 1,
+      "ast": {
+        "op": "CLIP",
+        "args": [
+          {
+            "op": "DIV",
+            "args": [
+              {
+                "leaf": "SPECIAL_OP",
+                "escape_contract": {
+                  "escape_type": "SPECIAL_OP",
+                  "op_code_path": "stage_artifacts/WT_D20260813_003/s1_prereg.R::sigma_star = expanding median(sigma_d[1:m])",
+                  "walk_forward": true
+                }
+              },
+              {
+                "op": "TS_STD",
+                "args": [
+                  {
+                    "leaf": "A1_RAWDATA_OHLCVS_daily:BM_Ret"
+                  },
+                  252
+                ]
+              }
+            ]
+          },
+          0.5,
+          1
+        ]
+      },
+      "note": "종목-횡단면 팩터가 아니라 시장-레벨 노출 스케줄. sigma_star(expanding median)는 O 에 TS 분위/확장중앙값 연산자가 없어 SPECIAL_OP escape 로 표현(walk-forward). O 확장 후보 = TS_QUANTILE / TS_MEDIAN (expanding)."
+    }
+  ],
+  "combination_rule": "single_factor",
+  "verdict": "designed",
+  "self_pit_check": {
+    "performed": true,
+    "leaves_checked": [
+      {
+        "leaf": "A1_RAWDATA_OHLCVS_daily:BM_Ret",
+        "availability_rule": "fixed: 거래일 종가 확정치 t-1. 소비 컷오프는 그보다 엄격 — Date < first-day-of-holding-month. 독립 원천(.cache/benchmark.parquet) 일별 cor 0.999931.",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "A4_benchmark_kospi200",
+        "availability_rule": "fixed: 일배치 T-1 정합. 홀딩월 수익은 apply.monthly(Return.cumulative) 표준함수 경유, 승계 패널 bm_ret 과 max|diff|=0.",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "SPECIAL_OP (expanding median sigma_star)",
+        "availability_rule": "walk-forward: m 시점 median(sigma_hat[1:m]) — 전 입력이 홀딩월 시작 전 가용. 자유 파라미터 아님.",
+        "restatement_prone": false
+      }
+    ],
+    "verdict": "clean",
+    "evidence": {
+      "assert_overlay_pit": "PASS (sigma_hat / rf_asof)",
+      "violation_injection_fires": true,
+      "lag1_retention": 0.877603,
+      "injected_leak_ab_inflation": 0.143446,
+      "true_ab_inflation": 0,
+      "clip_identity_max_abs": 0
+    }
+  },
+  "alpha_vector": {},
+  "confidence_vector": {},
+  "alpha_discovery_count": 0,
+  "alpha_vector_note": "시장-레벨 시계열 노출 스케줄 — Ticker→기대초과수익 벡터가 정의되지 않으며 빈 객체가 정상 산출. 실제 산출 = signal_matrix_ref 의 exposure_e 계열.",
+  "signal_matrix_ref": "stage_artifacts/WT_D20260813_003/alpha_scores.parquet",
+  "factor_specs": [
+    {
+      "factor_family": "Regime_VolTarget_Overlay",
+      "proxy": "e_m = clip(sigma_star_m / sigma_hat_m, 0.50, 1.00)",
+      "formula": "sigma_hat_m = sd(trailing 252 거래일 BM_Ret, Date < 홀딩월 1일); sigma_star_m = expanding median(sigma_hat[1:m])",
+      "lag_rule": "C5 overlay: 홀딩월 시작 전 데이터만 (assert_overlay_pit HARD PASS)",
+      "winsorization": "none (clip 0.50~1.00 이 매핑에 내장)",
+      "neutralization": "none",
+      "economic_rationale": "risk_premium",
+      "economic_rationale_detail": "변동성 군집 + 레버리지 제약 하 분산 관리. 승계 mechanism 3요건(agent/friction/path) 참조 — 재작성 금지.",
+      "weight_theta": 1,
+      "references": [
+        "Moreira-Muniz 2017 (Volatility-Managed Portfolios)",
+        "Frazzini-Pedersen 2014 (Betting Against Beta — 레버리지 제약)",
+        "OVL_book_voltarget_R3 (내부 실측 negative, 2026-07-06)",
+        "PL_VolTargetFloored/Strict (내부 실측 negative, 2026-08-09)"
+      ],
+      "redundancy_cluster_id": "REGIME_VOLSTATE_TS",
+      "redundancy_note": "승계 WT-002 와 동일 클러스터(sigma_hat = 그 라운드 VOL 계열의 level 판). 신규 예측 원천 아님 — 신규성은 판정 분해에 있음(승계 자인)."
+    }
+  ],
+  "diagnostics": {
+    "canonical_port_t_nw_lag3": null,
+    "canonical_port_t_pvalue": null,
+    "canonical_n_months": null,
+    "canonical_null_reason": "사전등록 판정순서상 VT2b 기각 시 성과 측정 착수 금지. VT2b = REJECT 이므로 canonical_screen_bt / forge 미실행. 미산출이지 미달이 아니다.",
+    "rank_ic": 0.060618,
+    "rank_ic_basis": "★횡단면 아님 — 시계열 basis. spearman(sigma_hat_m, 홀딩월 벤치수익) over 366 개월 = +0.0606 (p=0.2474). 시장-레벨 오버레이라 cross-sectional rank-IC 는 정의되지 않는다.",
+    "advisory_ic_family_note": "icir / monotonicity / subperiod_stability / harvey_t_stat / post_neutralization_ic 는 횡단면 알파 전용 지표라 시장-레벨 노출 스케줄에 정의되지 않는다. null 대신 키를 생략한다(schema 는 number 형을 요구 — null 기입이 형 위반).",
+    "turnover_proxy": 0.133807,
+    "alpha_inheritance_cor": 0,
+    "alpha_inheritance_note": "parent 없음(discovery). 횡단면 alpha 0건 산출이므로 승계 상관 정의상 0. 신호 승계(WT-002 VOL)는 alpha_inheritance 가 아니라 예측기 승계 — parity spearman 1.000000 별도 기록.",
+    "vt1_spearman_sigma_realized": 0.721905,
+    "vt2_G": 0.140782,
+    "vt2_null_q95": 0.042722,
+    "vt2_p_perm": 0,
+    "vt2_pass": true,
+    "vt2b_mean_d_annual_pct": -1.48034,
+    "vt2b_nw_lag3_t": -1.107976,
+    "vt2b_variance_drag_gain_annual_pct": 0.789594,
+    "vt2b_net_effect_annual_pct": -0.690746,
+    "vt2b_boot_p_net_gt0": 0.26475,
+    "vt_verdict": "VT2b_REJECT"
+  },
+  "selection_objective": "canonical_port_t",
+  "selection_objective_note": "선언값은 VT4 로 진행했을 경우의 선택 권위. 실제로는 선택이 0회 발생하지 않았다 — 사전등록된 단일 매핑의 통과/기각 판정이고 후보 열거·argmax 가 없다. selection_type=chain, n_trials=1.",
+  "vt_gate_objective": "VT2(분산 타이밍 이득, exposure-matched 통제 + circular block 순열) -> VT2b(cov(e,r) 수익 희생, NW lag-3 + tie_rule). selection_objective enum 밖이라 별도 필드로 기록(WT-002 선례).",
+  "challenge_flags": [
+    "[★라운드 판정] VT2 PASS · VT2b REJECT. 분산 타이밍 이득은 실재한다 — exposure-matched 통제 대비 상대 vol 이득 G=0.1408 (순열 q95=0.0427, p<0.0005, 최소 효과크기 2% 를 7배 초과). 그러나 그 이득을 수익으로 수확하지 못한다 — mean((e-ebar)·r) = -1.480%/yr, 분산드래그 이득 +0.790%/yr, 순효과 -0.691%/yr (사전등록 tie_rule 에 따라 기각). 표준함수 대조(Return.annualized): 스케일 5.976% vs 통제 6.768% = -0.792%p.",
+    "[★기전 특정 — 인접 negative 3건의 병목이 '수확' 으로 확정] OVL_book_voltarget_R3 / PL_VolTarget 2-arm / 06-18 H2 는 전부 순성과만 재서 '예측이 죽었는지 수확이 죽었는지' 를 가르지 못했다. 본 라운드가 갈랐다: 예측은 살아있고(VT1 spearman(sigma_hat, 실현vol) = 0.7219 · 실현vol ac1 0.7796) 분산 관리도 작동한다(VT2 PASS). 죽는 곳은 cov(e, r) — 즉 'vol-managed KR 비이전' 이 관찰에서 기전으로 승격됐다.",
+    "[★범위 — 파라미터가 아니라 KR 의 sigma->수익 관계] e=g(sigma_hat) 가 단조감소이면 cov(e,r) 부호 = -sign(cov(rank sigma_hat, r)). 실측 cov(rank sigma_hat, r) = +0.002085 (>0) 이므로 sigma*·바닥 값과 무관하게 모든 단조감소 vol-target 매핑이 평균수익을 희생한다. 승계 예측기 5종 중 4종(TAIL·VOL·MSM·BEAR)이 같은 부호 — TAIL_SHAPE 만 -0.000146. 따라서 '내가 고른 파라미터의 문제' 로 축소 해석 금지.",
+    "[★sigma_hat 5분위 — vol-managed 전제의 역방향] 다음달 벤치 평균수익이 저변동 0.060%/월 -> 고변동 2.232%/월 로 단조 증가하고, 평균/표준편차 비도 0.017 -> 0.173 으로 단조 증가한다. 즉 KR 에서 고변동 국면은 '보상이 낮은 구간' 이 아니다. 승계 mechanism.path 의 미확립 평균채널(+1.48%/yr, TAIL 상위20% 조작점 Welch t -1.75 p 0.088)은 VOL 기반 bind 영역(153개월)에서 **부호가 반대**로 측정됐다(-1.48%/yr). 승계 설계는 이 채널을 '미확립' 으로 정직 라벨했고 그 라벨이 맞았다 — 다만 방향까지 반대일 가능성은 설계가 예상하지 못했다.",
+    "[★유의성 정직 라벨 — 기각은 점추정 규칙이지 '유의한 해악' 아님] VT2b 의 NW lag-3 t = -1.108 (|t|<2), 순효과 블록부트스트랩 P(net>0) = 0.265, CI90 = [-2.792, +1.282]%/yr. 부호는 통계적으로 해소되지 않았다. 기각의 근거는 사전등록 tie_rule(점추정 순효과 부호)이며, 이 라운드가 확립한 것은 '해롭다' 가 아니라 '순이득의 증거가 없다 + 점추정이 음수' 다.",
+    "[★확립 채널은 투영보다 컸으나 여전히 부족] 분산드래그 이득 실측 +0.790%/yr — 승계 설계 투영(+0.24%/yr, TAIL 조작점 산술)과 prereg VOL 재투영(+0.731%/yr) 대비 각각 3.3배·1.08배. 즉 승계 handoff (2) '효과크기 VOL 패널 재계산' 의무를 이행한 결과 확립 채널은 오히려 커졌다. 그럼에도 순효과가 음수인 것은 평균채널이 -1.48%/yr 로 더 크기 때문 — 자본 관문 규모 도달은 애초에 미확립 평균채널에 의존한다는 승계 정직 진술이 실측으로 확인됐다.",
+    "[★리바운드 클리핑 예측은 부분적으로 빗나감] 승계 regime_scope 는 V자 급반등 구간의 복귀 지연 잠식을 주요 약화 기전으로 지목했다. 실측 기여 분해: bind_normal(120개월) -1.123%/yr vs bind_rebound(직전3M<-10%, 33개월) -0.578%/yr. 리바운드가 아니라 **평범한 고변동월**이 더 큰 유출원이다. 리바운드월 평균수익은 0.575%/월로 bind_normal 2.063%/월보다 오히려 낮다. 국면 경계 항목 (ii)(첫 충격 회피 불가)와 clip 무차별(+0.221%/yr 기여, 구조 항등식 max|scaled-base|=0 확인)은 성립.",
+    "[★자기적발 1 — 사전등록 규칙 미구현] s2_vt.R 의 verdict 로직이 prereg tie_rule 을 구현하지 않고 t<=-2.0 만 검사해 'PROCEED_VT4'(성과 착수 허용) 을 발행했다. 규칙은 처음부터 '점추정 음수·비유의면 순효과 부호로 판정' 이었고, s3_diag.R 이 규칙 그대로 적용해 REJECT 로 정정했다. 규칙 변경이 아니라 구현 결손 — 잡지 못했으면 기각 대상에 성과를 재고 그 수치가 라운드 서사를 지배했을 것이다.",
+    "[★자기적발 2 — 침묵 실패] s2 의 승계-수익 parity 대조가 EV 에 bm_ret 컬럼 부재로 numeric(0) 을 평가해 max()= -Inf 로 조용히 통과했다(경고만 발생). s3 에서 실측 수행 — 재산출 r vs 승계 bm_ret max|diff| = 0.000e+00, cor = 1.00000000. 결손이 정상값으로 내려앉는 전형.",
+    "[★자기적발 3 — 고장난 통계량] s4 초판이 회귀 기울기의 NW t 를 (x-xbar)*resid 의 NW t 로 계산했는데 이는 OLS 1계조건으로 평균이 항등적으로 0 이라 데이터와 무관하게 t=0.000 이 나온다. 샌드위치로 정정: 기울기 NW lag-3 t = +1.276, cov(rank sigma_hat, r) 계열 NW t = +1.515.",
+    "[★검출기 양방향 실증] 양성 대조 — 동월 실현 vol(사후정보)을 sigma_hat 자리에 넣으면 G = 0.1723 > 실측 0.1408 (잣대 살아있음). 음성 대조 — i.i.d. 셔플 e 는 평균 G = -0.0203 (영가설 평균과 일치). 누출 주입 — 느슨 컷오프(홀딩월 말 정보 포함)판 G = 0.1610, 인플레 14.3% > 5% 문턱 발화. 가드 위반 주입 — assert_overlay_pit 정상 발화(TRUE). 실측 자체는 strict 컷오프이므로 진짜 A/B 인플레는 0%.",
+    "[★rf=0 가정의 크기 — 구조상 상쇄] exposure-matched 통제도 (1-ebar) 만큼 현금을 보유하므로 **상수 rf 는 처치-통제 간 정확히 상쇄**되고 효과는 cov(e, rf) 에서만 나온다. ECOS CD91 커버 구간(2005-09~2026-07, 251개월, 평균 rf 2.75%/yr)에서 rf 도입 시 순효과 변화 = -0.010%p (부족분의 -1.2%). 부호도 미미하게 불리(cor(e, rf) = +0.063). 1996-02~2005-07 은 CD91 미커버 — KR 고금리·고변동이 겹치는 구간이라 rf 채널이 가장 클 곳이나 관측이 없다. 크기 미측정 · 방향도 커버 구간 증거로는 유리하다 단정 불가.",
+    "[★부분표본은 더 나쁨 — pre-2005 아티팩트 아님] rf 커버 구간(2005-09~2026-07)만 봐도 rf=0 순효과 -1.285%/yr 로 전표본 -0.691%/yr 보다 나쁘다. 시대-분해: within-era -1.496%/yr · between-era +0.016%/yr — 시대 구성 교란이 아니다. 부기간 3구간 전부 within-era 음수(pre2008 -0.522 / 2008-2016 -1.366 / post2017 -2.829 %/yr, 기술통계·판정 인용 금지).",
+    "[★robust 통제 변형의 해석 — 확인이 아니라 감쇠] expanding-mean 통제(ebar_m = mean(e[1:m]))에서는 G=0.0783, mean(d)=-0.35%/yr, t=-0.307 로 대비가 약해진다. 이는 독립 확인이 아니라 **통제군이 처치 변동을 부분 흡수**하기 때문이다(ebar_exp 가 e 자신의 이동평균). 시대-분해가 between-era 성분을 +0.016%/yr 로 배제했으므로 시대 드리프트 설명은 기각. 사전등록 primary(전표본 상수 통제)가 정본.",
+    "[★신규성 경계 자인 — 승계] 1차 예측기 sigma_hat = trailing 252d 실현변동성 그 자체. '더 나은 예측 입력' 주장은 WT-002 20격자 실측으로 이미 닫혀 있다. 본 라운드가 OVL R3 와 다른 것은 입력이 아니라 판정 구조(exposure-matched 통제 + 기전 선행 + 검정력 사전 계산)다. 그 분해가 실제로 새 정보를 만들었는지는 위 [기전 특정]·[범위] 항목이 답한다.",
+    "[★AST 표현 한계] sigma_star = expanding median 은 연산자 라이브러리 O 에 확장-분위/중앙값 연산자가 없어 SPECIAL_OP escape 리프로 표현했다(walk_forward=TRUE, op_code_path 명기). O 확장 후보 = TS_MEDIAN / TS_QUANTILE (expanding 모드). 본 패키지 verdict 는 designed 이므로 ast_operator_backlog 적립 근거(blocked_by_capability)에는 해당하지 않는다 — 관측만 기록.",
+    "[★★검정력 벽 — 레인급 발견 (이 라운드의 가장 무거운 산출)] 순효과 점추정 -0.691%/yr, 월별 d 계열 연환산 sd = 7.081%. |t|=1.96 도달 필요 표본 = 약 4,845개월(404년). 현 366개월에서 순효과 |t| ~= 0.539. 즉 **시장-레벨 overlay 의 cov(e,r) 채널은 월간 벤치 자료로 원리적 미해소**다. 따름: ① 사전등록 tie_rule(점추정)은 편의가 아니라 유일하게 실행 가능한 결정 규칙이었다(유의성 관문을 걸었다면 어떤 vol-target 라운드도 영원히 '미해소' 로만 끝난다) ② 인접 negative 3건이 성과로 갈리지 못한 구조적 이유 — ΔIR·Calmar 가 같은 분모(벤치 월변동)를 공유한다 ③ overlay 라인 판정 설계 전반에 영향하므로 Q-Lead 보고 대상.",
+    "[★매핑 '형태' 가 예측기보다 크게 갈랐다 — 소비면을 통째로 닫지 않는 근거] 동일 PIT-clean 규칙(expanding percentile >= 0.80)으로 선별 월의 벤치 평균수익: TAIL n=33 -2.333%/월 (Welch t -1.644, p 0.109) vs sigma_hat n=38 +0.079%/월 (t -0.384, p 0.703), 겹침 23. spearman(TAIL,VOL)=0.838 · 꼬리월 AUC 0.714 vs 0.750 으로 유사한데 선별 월의 평균수익은 갈린다. 그리고 내가 시험한 **연속 비율 매핑**은 -1.480%/yr 를 잃은 반면 sigma_hat 문턱형은 비용 중립에 가깝다. 해석(가설-생성 관측, 판정 자격 없음): 연속 매핑은 sigma_hat 이 절대적으로 가장 높은 달 — 위기 바닥·반등 포함 — 에서 가장 깊게 자르고, expanding-pct 문턱형은 '자기 이력 대비 처음 높아지는' 국면 진입에 발화한다. ⇒ 본 라운드가 닫는 범위를 **연속 비율 매핑(continuous ratio scaling) 형태**로 한정한다. 문턱형은 미검(별도 사전등록 라운드 필요). 위 표의 어느 칸도 유의하지 않음.",
+    "[★자기적발 4 — 사과-오렌지 비교 직전 적발] 초판 A2 가 TAIL 을 expanding-pct>=0.80(실제 발화율 9%)로, sigma_hat 을 전표본 rank>=0.80(20%)로 골라 비교해 '-2.33% vs +2.23%, 부호 반대' 라는 극적 문장을 쓸 뻔했다. 선별율을 맞추자 +2.231 -> +0.079 로 바뀐다(대비는 존속, 크기는 다름). 극적인 수치일수록 비교 축을 먼저 의심.",
+    "[★NW lag 민감도 — 겹치는 252d 창의 과소보정 우려 해소] VT2b t: lag3 -1.108 / lag6 -1.116 / lag12 -1.114 / lag24 -1.382. d 계열 자기상관 ac1 0.156 · ac3 0.027 · ac12 -0.085 (r 이 거의 무상관이라 d 도 낮음). lag 선택이 판정을 만들지 않는다.",
+    "[★말단 절단 감도 — 최근 국면 의존 아님] 창을 2025-07 / 2024-07 / 2021-07 로 잘라도 G 0.132~0.143, mean(d) -1.26~-1.29%/yr, 순효과 -0.62~-0.66%/yr 로 안정. 2026 고변동 구간이 결론을 만들지 않았다.",
+    "[★인프라 결함 발견 — 나눗셈 연산자 계층 분열 (ALB-005 동류, 리서치 산출 아님)] schema.json `#/definitions/ast_node` op enum 은 `DIV_GUARD` 만 등재하고, ast_spec_gate.sh 가 실제 참조하는 `02_Infrastructure/ast/operator_library.json` 은 `DIV` 만 등재한다(집합 차 = schema-only {DIV_GUARD} / library-only {DIV}, 나머지 27개 일치). 따라서 **나눗셈을 쓰는 AST 는 두 계층을 동시에 만족할 수 없다** — DIV_GUARD 는 게이트 block(\"𝒪 밖 연산자 {DIV_GUARD}\"), DIV 는 jsonschema 위반. 실차단 계층(게이트)을 따라 DIV 를 채택하고 schema 불일치를 여기 보고한다. 수리는 alpha 소관 밖(둘 중 하나로 통일 — 이름이 `_GUARD` 인 쪽이 0-나눗셈 보호 의미를 담으므로 library 를 DIV_GUARD 로 개명하는 방향이 의미 보존적). 발견 경위: 본 패키지를 게이트에 태우고 위반 주입 4종을 함께 돌린 결과 as-written 이 block 됐다 — 게이트를 안 태웠으면 schema 만 보고 통과로 오판했을 것.",
+    "[대안 보관 C2] 위험모델 Σ/상관 채널 — VT2 통과로 '분산 예측 능력' 은 재확인됐으므로 타이밍 이득(수확)을 요구하지 않는 소비면이 1순위 라우팅. FQ-108 이 대각 채널 증분 없음을 실측했으므로 상관 채널·Hadamard tier-damping 이 미소진 면.",
+    "[대안 보관 C3] monitoring 문턱형 경보 — VT1 spearman 0.7219 로 예측 링크가 실증돼 판별력 자격이 부분 해소. 단 label_eligibility 관문(lift 하한 부재 이슈, 08-13 기록)을 통과해야 하며 자본 경로가 없는 종착 소비면.",
+    "[대안 보관 C4] sigma_hat 조건부 리밸 강도 조절(비용 축) — 계측 부재로 이번 라운드 아님. 본 라운드가 회전 지표(월평균 |Δe| = 기록)를 남겼으므로 착수 시 재사용 가능.",
+    "[next_probe 1 — 문턱형 × TAIL, 별도 사전등록] 연속 비율 매핑 대신 PIT-clean expanding-percentile 문턱형(e = 1 - k·1{pct >= tau})으로 소비. 예측기는 TAIL(꼬리월 AUC 열위이나 선별 월 평균수익 -2.333%/월). 근거: 본 라운드가 닫은 것은 연속 형태이고 문턱형은 미검이며, 두 형태가 선별하는 달이 실제로 다르다(겹침 23/33). ★사전등록 의무 — 위 관측은 사후이므로 판정 자격 없음. ★검정력 벽(위 항목) 때문에 시장-레벨 순성과로는 해소 불가 -> 판정 통계량을 '선별 월 평균수익의 사건-수준 검정' 으로 사전 고정할 것.",
+    "[next_probe 2 — 검정력 벽 우회: 표면 이동] cov(e,r) 채널이 404년을 요구하므로 관측 수를 늘리는 표면으로 이동한다. 후보 3: (a) 위험모델 상관 채널(FQ-open, Hadamard tier-damping — 타이밍 이득 불요·횡단면이라 관측 수가 N_stock 배) (b) CVaR/ES·tripwire 꼬리 채널(문턱형 사건 검정, 성과 분모 회피) (c) 일별 축 소비(월간으로 접으면 비대칭이 소멸한다는 v8.4 재편 관측과 정합 — 9,005 거래일). 셋 다 VT2 가 확립한 '분산 예측 능력' 을 소비하되 VT2b 가 막힌 '평균 수확' 을 요구하지 않는다.",
+    "[next_probe 3 — TAIL vs VOL 의 선별 불일치 자체가 미측정 축] spearman 0.838 · AUC 0.714/0.750 으로 유사한 두 예측기가 PIT-clean 문턱에서 평균수익 -2.333% vs +0.079% 로 갈린다. WT-002 는 '꼬리월 판별 AUC' 로 TAIL 을 기각했는데, 소비면이 요구하는 것은 꼬리월 판별이 아니라 **선별 월의 평균수익 부호**다. 즉 WT-002 의 선별 통계량(AUC)과 소비 형태의 목적함수가 불일치했을 가능성 — 08-13 메모리 '선별 통계량 <-> 소비 형태 정합' 항목과 동형. 별도 라운드로 사전등록 검증 대상."
+  ]
+}

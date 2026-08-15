@@ -1,0 +1,62 @@
+{
+ "status": "INVALID_FRAME_ERROR",
+ "invalidated_at": "2026-08-13",
+ "reason": "★이 산출물은 **구 측정 프레임**에서 나왔다. factor DB sig_date T 팩터를 T월 수익과 짝지어(build_monthly_forward_returns 앵커='sig_date 이하 최종거래일', 월초가 거래일인 달엔 앵커가 그날 자신) 팩터가 채점 대상 월을 봤다. 수정 = 팩터 Date +1개월.",
+ "evidence": "M04_Mom_1 평균 IC: 구 -0.9423 -> 수정 +0.0170 · |평균IC|>0.10 팩터: 46종 -> 0종",
+ "do_not_cite": "이 파일의 수치를 인용하지 말 것. 유효 정본 = r30_reframe_result.json",
+ "kept_for": "프레임 오류 사례로 보존(삭제 아님)",
+ "_original": {
+  "schema": "alpha_r25_v1",
+  "round_id": "v84-R25",
+  "measured_at": "2026-08-13",
+  "question": "시총 효과 1.46배의 기전 — 측정 잡음/추정 성숙도로 설명되는가(내 주장의 자기반증 축)",
+  "verdict": "MATURITY_REJECTED_NOISE_PARTIAL_SIZE_CLAIM_STANDS_WITH_QUALIFIER",
+  "metric_type": "panel_statistic",
+  "preregistered": {
+   "H_noise": "KQ150 은 횡단면이 작아 정렬 부호 판정이 잡음 => 효과 희석 (성립 시 시총효과 아님, 단서 완화 필요)",
+   "H_maturity": "KQ150 은 확장창 이력이 짧아 E_align 이 덜 수렴",
+   "H_real": "둘을 통제해도 격차가 남으면 진짜 시총 효과"
+  },
+  "results": {
+   "a_stability": {
+    "K200": {
+     "align_ratio": 0.8846,
+     "monthly_flip": 0.1978
+    },
+    "KQ150": {
+     "align_ratio": 0.8438,
+     "monthly_flip": 0.2523
+    },
+    "gap_flip": 0.0545,
+    "reading": "★KQ150 부호 판정이 실제로 27% 더 불안정 — **잡음 채널 실재**. 다만 이것만으로 1.46배를 만들기엔 크기 부족."
+   },
+   "b_maturity": {
+    "K200_all": 2.871,
+    "K200_maturity_matched": 2.75,
+    "delta": -0.121,
+    "KQ150": 1.939,
+    "ratio_after": 1.42,
+    "ratio_before": 1.46,
+    "nprev_median": {
+     "K200_all": 141,
+     "K200_matched": 119.5,
+     "KQ150": 113
+    },
+    "reading": "★성숙도 통제 후에도 1.42x 유지 => H-maturity 기각."
+   }
+  },
+  "final_statement": "★정확한 서술: 'K200 에서 약 1.4~1.5배 강하며, 그중 **일부는 소형 유니버스의 측정 잡음**에서 온다.' 기간 산물 아님(R24 1.46 유지) · 추정 성숙도 산물 아님(R25b 1.42 유지) · 부호 판정 잡음 부분 기여(전환율 27% 차) · 잔여는 유동성·선택압 등 **미검**. 원인을 단정하지 않는다.",
+  "caveats": [
+   "잡음 채널의 **기여 크기**는 미정량 — 전환율 격차가 효과 격차의 몇 %를 설명하는지 미측정.",
+   "직접 반증 검사(K200 을 KQ150 횡단면 크기로 subsample)는 패널 재구축이 필요해 미실행.",
+   "각 유니버스가 자기 벤치를 쓴다.",
+   "t 절대값 인용 금지(12개월 겹침)."
+  ],
+  "next_probes": [
+   "★직접 subsample 검사 — K200 을 매월 무작위 150종목으로 줄여 재측정. 잡음 기여를 정량화하는 결정적 축",
+   "유동성 채널 — 통과군의 거래대금 분위별 효과 분해",
+   "제안서 §6 서술을 '원인 미단정' 판으로 정밀화",
+   "INV07 감사 결과 수령 후 표본 영향 재확인"
+  ]
+ }
+}

@@ -1,0 +1,74 @@
+{
+ "status": "INVALID_FRAME_ERROR",
+ "invalidated_at": "2026-08-13",
+ "reason": "★이 산출물은 **구 측정 프레임**에서 나왔다. factor DB sig_date T 팩터를 T월 수익과 짝지어(build_monthly_forward_returns 앵커='sig_date 이하 최종거래일', 월초가 거래일인 달엔 앵커가 그날 자신) 팩터가 채점 대상 월을 봤다. 수정 = 팩터 Date +1개월.",
+ "evidence": "M04_Mom_1 평균 IC: 구 -0.9423 -> 수정 +0.0170 · |평균IC|>0.10 팩터: 46종 -> 0종",
+ "do_not_cite": "이 파일의 수치를 인용하지 말 것. 유효 정본 = r30_reframe_result.json",
+ "kept_for": "프레임 오류 사례로 보존(삭제 아님)",
+ "_original": {
+  "schema": "alpha_r6_v1",
+  "round_id": "v84-R6",
+  "measured_at": "2026-08-13",
+  "question": "R5 의 E_align 음의 결정력(-0.19) 재현 + 실행형 재서술 — 팩터 매매 방향을 IC 부호로 정하는가 분위 평균 기울기 부호로 정하는가",
+  "metric_type": "panel_statistic",
+  "verdict": "REPRODUCED_IN_DIRECTION_BORDERLINE_SIGNIFICANCE",
+  "frame": {
+   "panel": "팩터 320종 x 259월 -> 유효 70,440 팩터-월 (burn-in 36m)",
+   "rule": "d_ic=sign(E_ic) vs d_sl=sign(E_spread), 확장창 t-1 까지(PIT)",
+   "outcome": "t+1..t+12 실현 분위 평균 스프레드",
+   "months": 222,
+   "group_split": "일치 83.5% / 불일치 16.5%"
+  },
+  "point_estimates": {
+   "IC방향_월pct": 1.8759,
+   "기울기방향_월pct": 2.0288,
+   "무작위_월pct": 0.0177,
+   "차이_월pct": 0.1529,
+   "불일치군_기울기방향_월pct": 0.509
+  },
+  "overlap_correction": {
+   "issue": "F_spread 가 t+1..t+12 평균이라 인접 월이 11개월 겹치는데 초판이 NW lag-3 을 얹었다 — 08-08 동형 사건 재발",
+   "diff_t": {
+    "lag3": 2.464,
+    "lag12": 1.92,
+    "lag18": 1.978,
+    "lag24": 2.091,
+    "nonoverlap_stride12": [
+     2.14,
+     2.1,
+     1.62
+    ]
+   },
+   "mismatch_slope_t": {
+    "lag3": 3.091,
+    "lag12": 2.31,
+    "lag18": 2.357,
+    "lag24": 2.494,
+    "nonoverlap_stride12": [
+     2.18,
+     2.33,
+     1.94
+    ]
+   }
+  },
+  "findings": [
+   "점추정 일관: 기울기 방향 규칙이 IC 방향보다 월 +0.15~0.17%p 우위. 불일치군에서 +0.50~0.55%/월.",
+   "★t 는 겹침 보정 후 1.6~2.5 대역 — 초판 lag3(2.46/3.09)은 과대. 문헌 문턱 2.0 경계, **다중검정 문턱 2.95/3.0 은 확실히 미달**.",
+   "★불일치군의 'IC방향 = -기울기방향' 은 **정의상 항등**(d_ic=-d_sl) — 새 정보 아님. 실질은 '불일치군에서 기울기방향이 양인가' 하나뿐이며 그것은 성립.",
+   "IC방향/기울기방향 절대 t(13~18)는 팩터가 align_factor_direction 으로 이미 IC 정렬된 산물 — 절대 수준 인용 금지, 차이만 유효.",
+   "R5 의 rho -0.19 가 시사한 것보다 크기·유의성 모두 약하다."
+  ],
+  "caveats": [
+   "분위 스프레드는 롱숏 개념 — long-only 자본 판정 아님. PORT_t 미측정.",
+   "다중검정 미보정: 척도 15종·규칙 2종을 훑은 뒤 나온 t 이므로 실효 문턱은 더 높다.",
+   "H=12 단일 지평. 비겹침 표본은 n=19 로 검정력이 낮다(offset 3 에서 1.62/1.94 로 흔들림).",
+   "불일치 판정 자체가 확장창 추정이라 초기 구간에서 불안정할 수 있다."
+  ],
+  "next_probes": [
+   "long-only 전이: 불일치군을 기울기 방향으로 정렬한 뒤 top-25 PORT_t 실측 — 스프레드 우위가 자본 게이트 기준으로 살아남는가 (R4 배관 수리 선행 필요)",
+   "현행 자본 게이트 HARD 3종(PORT_t·oos_retention·calmar)의 미래 결정력 측정 — R5 프레임에 게이트를 넣는다. 게이트 타당성이 걸린 질문",
+   "다중검정 보정: 훑은 척도·규칙 수를 세어 실효 문턱 재계산 후 R5/R6 결과 재판정",
+   "지평 민감도 H={3,6,24} — 12개월 단일 지평 의존 확인"
+  ]
+ }
+}

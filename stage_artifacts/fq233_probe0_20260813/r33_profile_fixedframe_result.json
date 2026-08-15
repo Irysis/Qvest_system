@@ -1,0 +1,106 @@
+{
+ "schema": "alpha_r33_v1",
+ "round_id": "v84-R33",
+ "measured_at": "2026-08-13",
+ "metric_type": "panel_statistic",
+ "question": "D03_RealVol 5점 분위 프로파일의 형태 — 혹(hump)형인가 (무효 probe0 의 미해결 잔여)",
+ "frame": {
+  "universe": "KOSPI200 ∪ KOSDAQ150 (us_k200.K200==1 ∪ us_kq150.KQ150==1)",
+  "period": "2005-01 ~ 2026-08",
+  "n_months": 259,
+  "median_names_per_month": 343,
+  "rows": 79973,
+  "factor_source": "load_month_factors() 경유 · Z_Score_Aligned (C13/C15 준수)",
+  "forward": "build_monthly_forward_returns() 정본 · ★팩터 Date +1개월 스탬프(앵커 규약 수정)",
+  "script": "stage_artifacts/fq233_probe0_20260813/r33_profile.R + r33_profile_stage2.R"
+ },
+ "profile": [
+  {
+   "q": 1,
+   "ann_mean_pct": 10.536,
+   "ann_median_pct": -15.68,
+   "skew": 1.0273
+  },
+  {
+   "q": 2,
+   "ann_mean_pct": 16.608,
+   "ann_median_pct": -1.54,
+   "skew": 0.9934
+  },
+  {
+   "q": 3,
+   "ann_mean_pct": 12.693,
+   "ann_median_pct": -4.023,
+   "skew": 0.8503
+  },
+  {
+   "q": 4,
+   "ann_mean_pct": 11.33,
+   "ann_median_pct": -1.095,
+   "skew": 0.8001
+  },
+  {
+   "q": 5,
+   "ann_mean_pct": 8.172,
+   "ann_median_pct": -0.255,
+   "skew": 0.7256
+  }
+ ],
+ "spreads": {
+  "q5_q1_mean_ann_pct": -2.36,
+  "q5_q1_median_ann_pct": 15.42,
+  "skew_slope_q5_q1": -0.3017
+ },
+ "verdict": "HUMP_CONFIRMED_PEAK_AT_Q2",
+ "cross_check_vs_R31": {
+  "note": "R31 은 FIXED 패널의 월별 집계, R33 은 원천(팩터+forward)에서 재구축 — **독립 경로**",
+  "mean_spread": {
+   "R31": -2.71,
+   "R33": -2.36
+  },
+  "median_spread": {
+   "R31": 15.6,
+   "R33": 15.42
+  },
+  "skew_slope": {
+   "R31": -0.315,
+   "R33": -0.302
+  },
+  "reading": "두 경로가 0.3%p 안쪽에서 일치 — 수치의 프레임 정합에 대한 독립 확인"
+ },
+ "vs_invalid_probe0": {
+  "probe0_profile_pct": [
+   10.49,
+   14.43,
+   14.65,
+   10.42,
+   8.68
+  ],
+  "probe0_peak": "Q3",
+  "fixed_profile_pct": [
+   10.54,
+   16.61,
+   12.69,
+   11.33,
+   8.17
+  ],
+  "fixed_peak": "Q2",
+  "reading": "혹형이라는 **형태 주장은 재현**됐다(Q1·Q5 는 10.49/10.54 · 8.68/8.17 로 근접). 정점 위치만 Q3→Q2 로 다르다. 단 이것이 probe0 을 되살리지는 않는다 — 무효 사유는 '틀렸다' 가 아니라 '검증되지 않았다' 였고 이제 검증된 값이 따로 있다."
+ },
+ "mechanism_visible_in_profile": "★Q1 은 **중앙값이 압도적 최악(-15.68%)인데 평균은 10.54%** 이고 **왜도가 최고(1.027)** 다 — 소수 극단 상승이 Q1 의 평균을 떠받친다. 왜도는 Q1→Q5 단조 감소(1.027→0.726). ⇒ '평균 표적은 Q1 꼬리에 속는다' 가 분위 프로파일에서 직접 보인다.",
+ "honest_labels": [
+  "★유동성 필터(20일 평균 거래대금 ≥ 2e8) **미적용** — 본 라운드는 패널 통계이지 배포 스크린이 아니다. canonical_screen_bt 경로의 값과 직접 비교 금지.",
+  "★★중앙값 스프레드는 자본으로 전환되지 않는다 — long-only top-N 이 버는 것은 보유 종목의 **평균**이다. 이 값들을 graduation HARD(PORT_t 2.95)와 같은 문장에 놓지 말 것.",
+  "단일 팩터(D03) 결과다. 320종 전반 성질은 R32 참조."
+ ],
+ "defects_caught_in_this_round": [
+  "①us_k200/us_kq150 은 멤버십 목록이 아니라 **전 시장 패널 + 0/1/NA 플래그** — 초판이 플래그를 무시해 전 행을 멤버로 취급했다.",
+  "②Date 컨벤션 불일치 — 정확일치 join 이 259→**165개월(64%)** 로 잘랐다(월말 휴일 달의 거래일말 vs 캘린더말). ym 키로 수정해 259/259 회복.",
+  "★초판은 두 결함을 안고도 월중앙 **345종목(≈350)** 이 나와 그럴듯했다 — 잡은 것은 종목수 대조가 아니라 **월 수 대조**였다. 이제 스크립트에 조인 손실 감시(>5% 손실 시 stop)를 박았다."
+ ],
+ "next_probes": [
+  "★arm A 기준선 재현(SR ~0.49) — ML QEPM 착수 관문. 여기부터 venv qvest_ml.",
+  "혹형의 정점이 Q2 인 것이 D03 고유인가 — R32 의 '준-단조 0종' 과 결합해 분위 형태 유형학(typology) 을 낼 수 있는지",
+  "FQ-237 — 선별 목적함수를 rank-IC → 분위 평균 스프레드로 바꾸면 top-N 전이가 개선되는가"
+ ]
+}

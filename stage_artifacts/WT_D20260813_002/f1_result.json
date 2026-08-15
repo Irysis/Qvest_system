@@ -1,0 +1,171 @@
+{
+  "wt_id": "WT-D20260813_002",
+  "stage": "F1",
+  "metric_type": "mechanism_observation",
+  "prereg": "stage_artifacts/WT_D20260813_002/prereg_F1.json",
+  "n_months": 367,
+  "window": ["1996-02", "2026-08"],
+  "join_loss_pct": 0,
+  "event_A": {
+    "rule": "bottom decile",
+    "q10": -0.078084,
+    "n": 37,
+    "rate": 0.100817
+  },
+  "event_B": {
+    "rule": "bm_ret < -0.07",
+    "n": 46,
+    "rate": 0.125341
+  },
+  "auc": [
+    {
+      "predictor": "TAIL",
+      "auc_A": 0.714333,
+      "auc_B": 0.690641
+    },
+    {
+      "predictor": "TAIL_SHAPE",
+      "auc_A": 0.554873,
+      "auc_B": 0.557632
+    },
+    {
+      "predictor": "MSM",
+      "auc_A": 0.747174,
+      "auc_B": 0.718813
+    },
+    {
+      "predictor": "BEAR",
+      "auc_A": 0.67887,
+      "auc_B": 0.631383
+    }
+  ],
+  "eligibility": [
+    {
+      "predictor": "TAIL",
+      "n_on": 34,
+      "recall_A": 0.264706,
+      "base_A": 0.100817,
+      "lift_A": 2.625596,
+      "p_A": 0.003358,
+      "elig_A": true,
+      "recall_B": 0.264706,
+      "base_B": 0.125341,
+      "lift_B": 2.111893,
+      "p_B": 0.016036,
+      "elig_B": true
+    },
+    {
+      "predictor": "TAIL_SHAPE",
+      "n_on": 66,
+      "recall_A": 0.181818,
+      "base_A": 0.100817,
+      "lift_A": 1.80344,
+      "p_A": 0.018659,
+      "elig_A": true,
+      "recall_B": 0.212121,
+      "base_B": 0.125341,
+      "lift_B": 1.692358,
+      "p_B": 0.019822,
+      "elig_B": true
+    },
+    {
+      "predictor": "MSM",
+      "n_on": 44,
+      "recall_A": 0.318182,
+      "base_A": 0.100817,
+      "lift_A": 3.15602,
+      "p_A": 0.000014,
+      "elig_A": true,
+      "recall_B": 0.340909,
+      "base_B": 0.125341,
+      "lift_B": 2.719862,
+      "p_B": 0.000053,
+      "elig_B": true
+    },
+    {
+      "predictor": "BEAR",
+      "n_on": 65,
+      "recall_A": 0.184615,
+      "base_A": 0.100817,
+      "lift_A": 1.831185,
+      "p_A": 0.016461,
+      "elig_A": true,
+      "recall_B": 0.184615,
+      "base_B": 0.125341,
+      "lift_B": 1.47291,
+      "p_B": 0.086742,
+      "elig_B": false
+    }
+  ],
+  "bootstrap": {
+    "vs": "MSM",
+    "block": 6,
+    "B_eff": 2000,
+    "d_auc": -0.032842,
+    "p_gt0": 0.1815,
+    "ci90": [-0.092023, 0.023675]
+  },
+  "spearman_cor": [
+    {
+      "TAIL": 1,
+      "TAIL_SHAPE": 0.503179,
+      "MSM": 0.76404,
+      "BEAR": 0.433207,
+      "_row": "TAIL"
+    },
+    {
+      "TAIL": 0.503179,
+      "TAIL_SHAPE": 1,
+      "MSM": 0.168236,
+      "BEAR": 0.118809,
+      "_row": "TAIL_SHAPE"
+    },
+    {
+      "TAIL": 0.76404,
+      "TAIL_SHAPE": 0.168236,
+      "MSM": 1,
+      "BEAR": 0.595617,
+      "_row": "MSM"
+    },
+    {
+      "TAIL": 0.433207,
+      "TAIL_SHAPE": 0.118809,
+      "MSM": 0.595617,
+      "BEAR": 1,
+      "_row": "BEAR"
+    }
+  ],
+  "subperiod_descriptive": [
+    {
+      "sub": "pre2008",
+      "n": 143,
+      "n_evt": 24,
+      "auc_TAIL": 0.722339,
+      "auc_MSM": 0.667717,
+      "auc_BEAR": 0.596639
+    },
+    {
+      "sub": "2008_2016",
+      "n": 108,
+      "n_evt": 5,
+      "auc_TAIL": 0.730097,
+      "auc_MSM": 0.813592,
+      "auc_BEAR": 0.786408
+    },
+    {
+      "sub": "post2017",
+      "n": 116,
+      "n_evt": 8,
+      "auc_TAIL": 0.541667,
+      "auc_MSM": 0.649306,
+      "auc_BEAR": 0.726852
+    }
+  ],
+  "verdict": "F1_FAIL",
+  "pit": {
+    "assert_overlay_pit": "PASS",
+    "cutoff_rule": "Date < first-day-of-holding-month",
+    "msm_caveat": "full-sample demean C1 — baseline 유리 방향(보수적)",
+    "bear_caveat": "SJM 전표본 적합 — 동일 보수 방향"
+  }
+}

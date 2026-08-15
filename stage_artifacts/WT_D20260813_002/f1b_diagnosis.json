@@ -1,0 +1,60 @@
+{
+  "wt_id": "WT-D20260813_002",
+  "stage": "F1b_diagnosis",
+  "metric_type": "mechanism_observation_posthoc",
+  "note": "판정 변경 불가 — F1_FAIL 은 사전등록 규칙으로 확정. 본 산출은 기전 진단 전용.",
+  "D1_vol_control": [
+    {
+      "predictor": "TAIL",
+      "auc_A": 0.714333
+    },
+    {
+      "predictor": "VOL",
+      "auc_A": 0.772858
+    },
+    {
+      "predictor": "TAIL_SHAPE",
+      "auc_A": 0.554873
+    },
+    {
+      "predictor": "MSM",
+      "auc_A": 0.747174
+    },
+    {
+      "predictor": "BEAR",
+      "auc_A": 0.67887
+    }
+  ],
+  "D1_cor": {
+    "tail_vol": 0.722508,
+    "vol_msm": 0.723958
+  },
+  "D2_incremental": [
+    {
+      "series": "TAIL_resid_MSM (TAIL 이 MSM 위에 더하는 것)",
+      "auc_A": 0.436108,
+      "n": 338
+    },
+    {
+      "series": "MSM_resid_TAIL (MSM 이 TAIL 위에 더하는 것)",
+      "auc_A": 0.659045,
+      "n": 338
+    }
+  ],
+  "D3_calm_subset": {
+    "n_subset": 323,
+    "n_event": 23,
+    "base_rate": 0.071207,
+    "auc_TAIL_in_calm": 0.718261,
+    "auc_TAIL_SHAPE_in_calm": 0.535942,
+    "auc_BEAR_in_calm": 0.660725
+  },
+  "D3_eligibility": {
+    "recall": 0,
+    "base": 0.071207,
+    "lift": 0,
+    "p": 1,
+    "verdict": "INELIGIBLE_NO_DISCRIMINATION"
+  },
+  "D4_positive_control_same_month_vol_auc": 0.837265
+}

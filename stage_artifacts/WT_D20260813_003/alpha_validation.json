@@ -1,0 +1,488 @@
+{
+  "wt_id": "WT-D20260813_003",
+  "as_of_date": "2026-08-13",
+  "metric_type": "mechanism_observation",
+  "prereg": "stage_artifacts/WT_D20260813_003/prereg_VT.json",
+  "judgment_order": "VT1(record) -> VT2(1차) -> VT2b(결정 관문) -> VT3(무효조건) -> VT4(성과, 미착수)",
+  "verdict": "VT2b_REJECT",
+  "vt4_authorized": false,
+  "n_months": 366,
+  "window": ["1996-02", "2026-07"],
+  "inheritance": {
+    "signal_panel": "stage_artifacts/WT_D20260813_002/alpha_scores.parquet",
+    "VOL_parity_spearman": 1,
+    "VOL_parity_max_abs_diff": 0,
+    "return_parity_max_abs_diff": 0,
+    "note": "매핑이 level 을 요구해 raw sigma_hat 을 동일 컷오프로 재산출. 승계 VOL(expanding-z)과 완전 일치(max|diff|=0) — 재구축이지 재설계 아님."
+  },
+  "VT1": {
+    "role": "record_only",
+    "spearman": 0.721905,
+    "pearson": 0.663071,
+    "realized_vol_ac1": 0.779582,
+    "note": "예측기 = trailing 252d 실현변동성 자체. '더 나은 예측 입력' 신규성 주장 없음(승계 자인)."
+  },
+  "VT2": {
+    "G": 0.140782,
+    "sd_scaled": 0.060924,
+    "sd_control": 0.070907,
+    "sd_base": 0.079857,
+    "null_mean": -0.018377,
+    "null_q95": 0.042722,
+    "p_perm": 0,
+    "B": 2000,
+    "min_effect": 0.02,
+    "pass": true,
+    "positive_control_G_same_month_vol": 0.172299,
+    "negative_control_shuffle_meanG": -0.020313,
+    "robust_expanding_control_G": 0.078315
+  },
+  "VT2b": {
+    "mean_d_annual_pct": -1.48034,
+    "nw_lag3_t": -1.107976,
+    "variance_drag_gain_annual_pct": 0.789594,
+    "net_effect_annual_pct": -0.690746,
+    "geo_scaled_annual_pct": 5.975537,
+    "geo_control_annual_pct": 6.767976,
+    "geo_diff_pp": -0.792439,
+    "tie_rule_applied": true,
+    "reject": true,
+    "bootstrap": {
+      "B": 4000,
+      "p_net_gt0": 0.26475,
+      "ci90": [-2.792214, 1.282029]
+    }
+  },
+  "VT3": {
+    "assert_overlay_pit": "PASS",
+    "clip_identity_max_abs": 0,
+    "lag1_G": 0.123551,
+    "lag1_retention": 0.877603,
+    "loose_cutoff_G": 0.160977,
+    "ab_inflation": 0.143446,
+    "ab_lookahead_suspected": true,
+    "guard_violation_injection_fires": true,
+    "variance_contrib": {
+      "total": -0.486933,
+      "bind": -0.597601,
+      "clip": 0.110668,
+      "low_sigma_half": 0.091992
+    }
+  },
+  "VT3_relabel": {
+    "true_ab_inflation": 0,
+    "injected_leak_ab_inflation": 0.143446,
+    "interpretation": "실측은 strict 컷오프 자체 -> 인플레 0. 느슨 컷오프 주입 시 14.3% 인플레 = 검출기 검출력 실증(양성 대조). 'LOOK-AHEAD 의심' 메시지는 주입 대조의 정상 발화이지 본 측정의 위반이 아니다."
+  },
+  "era_decomposition": {
+    "within_era_annual_pct": -1.495974,
+    "within_era_nw_t": -1.235487,
+    "between_era_annual_pct": 0.015634,
+    "between_era_nw_t": 0.037241,
+    "by_sub": [
+      {
+        "sub": "pre2008",
+        "n": 143,
+        "mean_e": 0.798075,
+        "mean_r_pct": 0.879801,
+        "d_within_ann_pct": -0.522107
+      },
+      {
+        "sub": "2008_2016",
+        "n": 108,
+        "mean_e": 0.944048,
+        "mean_r_pct": 0.208033,
+        "d_within_ann_pct": -1.366312
+      },
+      {
+        "sub": "post2017",
+        "n": 115,
+        "mean_e": 0.946918,
+        "mean_r_pct": 1.550272,
+        "d_within_ann_pct": -2.828724
+      }
+    ],
+    "note": "primary(전표본 상수 통제)와 robust(expanding-mean 통제) 불일치의 원인 진단."
+  },
+  "mechanism_segments": [
+    {
+      "seg": "clip(e=1)",
+      "n": 213,
+      "mean_r_pct": 0.281753,
+      "mean_e": 1,
+      "contrib_ann_pct": 0.220541
+    },
+    {
+      "seg": "bind_normal",
+      "n": 120,
+      "mean_r_pct": 2.063191,
+      "mean_e": 0.747222,
+      "contrib_ann_pct": -1.122781
+    },
+    {
+      "seg": "bind_rebound(직전3M<-10%)",
+      "n": 33,
+      "mean_r_pct": 0.574673,
+      "mean_e": 0.676085,
+      "contrib_ann_pct": -0.5781
+    }
+  ],
+  "bind_vs_clip": {
+    "mean_r_bind_pct": 1.742138,
+    "n_bind": 153,
+    "mean_r_clip_pct": 0.281753,
+    "n_clip": 213,
+    "welch_t": 1.553237,
+    "welch_p": 0.121964,
+    "realized_vol_bind": 0.020896,
+    "realized_vol_clip": 0.010538
+  },
+  "scope": {
+    "wt_id": "WT-D20260813_003",
+    "stage": "VT_scope",
+    "metric_type": "mechanism_observation_posthoc",
+    "note": "판정(VT2b_REJECT) 확정 후 범위 진단. 파라미터 격자 탐색 0회 — selection_type=chain 불변.",
+    "sigma_quintiles": [
+      {
+        "sq": "1",
+        "n": 74,
+        "sigma_mean": 0.007951,
+        "mean_r_pct": 0.059901,
+        "med_r_pct": 0.29471,
+        "sd_r_pct": 3.437356,
+        "realized_vol": 0.007922,
+        "mean_e": 1,
+        "mean_over_sd": 0.017427
+      },
+      {
+        "sq": "2",
+        "n": 73,
+        "sigma_mean": 0.010387,
+        "mean_r_pct": 0.180117,
+        "med_r_pct": -0.108255,
+        "sd_r_pct": 6.120207,
+        "realized_vol": 0.011602,
+        "mean_e": 1,
+        "mean_over_sd": 0.02943
+      },
+      {
+        "sq": "3",
+        "n": 73,
+        "sigma_mean": 0.012809,
+        "mean_r_pct": 0.862541,
+        "med_r_pct": 0.232483,
+        "sd_r_pct": 7.242059,
+        "realized_vol": 0.012546,
+        "mean_e": 0.976731,
+        "mean_over_sd": 0.119102
+      },
+      {
+        "sq": "4",
+        "n": 73,
+        "sigma_mean": 0.017283,
+        "mean_r_pct": 1.137838,
+        "med_r_pct": 1.322424,
+        "sd_r_pct": 7.22098,
+        "realized_vol": 0.016583,
+        "mean_e": 0.89036,
+        "mean_over_sd": 0.157574
+      },
+      {
+        "sq": "5",
+        "n": 73,
+        "sigma_mean": 0.0269,
+        "mean_r_pct": 2.232213,
+        "med_r_pct": 1.201109,
+        "sd_r_pct": 12.890065,
+        "realized_vol": 0.025782,
+        "mean_e": 0.570955,
+        "mean_over_sd": 0.173173
+      }
+    ],
+    "relation": {
+      "spearman": 0.060618,
+      "spearman_p": 0.247361,
+      "pearson": 0.088269,
+      "pearson_p": 0.091756,
+      "ols_slope": 1.018261,
+      "slope_nw_lag3_t": 1.276481,
+      "cov_rank_series_nw_lag3_t": 1.51481,
+      "hi_half_mean_pct": 1.56432,
+      "lo_half_mean_pct": 0.220163,
+      "welch_t": 1.613605,
+      "welch_p": 0.107817,
+      "realized_vol_hi": 0.019723,
+      "realized_vol_lo": 0.010013
+    },
+    "generality": {
+      "cov_rank_r_VOL": 0.002085,
+      "by_predictor": [
+        {
+          "predictor": "TAIL",
+          "cov_rank_r": 0.001161,
+          "spearman": 0.01381
+        },
+        {
+          "predictor": "TAIL_SHAPE",
+          "cov_rank_r": -0.000146,
+          "spearman": 0.010288
+        },
+        {
+          "predictor": "VOL",
+          "cov_rank_r": 0.001619,
+          "spearman": 0.032403
+        },
+        {
+          "predictor": "MSM",
+          "cov_rank_r": 0.001373,
+          "spearman": 0.034676
+        },
+        {
+          "predictor": "BEAR",
+          "cov_rank_r": 0.001381,
+          "spearman": 0.048128
+        }
+      ],
+      "statement": "e=g(sigma_hat) 가 단조감소이면 cov(e,r) 부호 = -sign(cov(rank sigma_hat, r)). 실측 cov>0 이므로 sigma*/바닥 값과 무관하게 모든 단조감소 vol-target 매핑이 평균수익을 희생한다. 즉 기각의 범위는 내 파라미터가 아니라 KR 의 sigma->수익 관계."
+    },
+    "required_mean_channel": {
+      "drag_gain_annual_pct": 0.789594,
+      "required_mean_channel_annual_pct": -0.789594,
+      "observed_mean_channel_annual_pct": -1.48034,
+      "shortfall_pp": 0.690746
+    }
+  },
+  "rf_sensitivity": {
+    "wt_id": "WT-D20260813_003",
+    "stage": "VT_rf_sensitivity",
+    "metric_type": "mechanism_observation_posthoc",
+    "structural_note": "exposure-matched 통제도 (1-ebar) 현금을 보유하므로 **상수 rf 는 처치-통제 간 정확히 상쇄**. rf 효과는 cov(e_m, rf_m) 에서만 발생.",
+    "coverage": {
+      "source": ".cache/ecos_bond_rates.parquet::KR_CD91",
+      "n_covered": 251,
+      "n_full": 366,
+      "window": ["2005-09", "2026-07"],
+      "mean_rf_annual": 0.027498,
+      "pit_asof_rule": "Date < first-day-of-holding-month (assert PASS)",
+      "limitation": "1996-02~2005-07 미커버. 그 구간이 KR 고금리·고변동(1997-98 위기) 이라 rf 채널이 가장 클 곳인데 관측 부재 — 방향(처치군 유리)은 알지만 크기는 미측정. 정직 라벨."
+    },
+    "subsample_ab": {
+      "rf_zero": {
+        "mean_d_ann": -0.017966,
+        "t": -1.585689,
+        "drag_ann": 0.00512,
+        "net_ann": -0.012846,
+        "G": 0.105691
+      },
+      "rf_cd91": {
+        "mean_d_ann": -0.01805,
+        "t": -1.619696,
+        "drag_ann": 0.005102,
+        "net_ann": -0.012948,
+        "G": 0.105312
+      },
+      "net_change_pp": -0.010195,
+      "cov_e_rf_annual": 0.000085,
+      "cor_e_rf": 0.062522,
+      "cor_sigma_rf": 0.231364
+    },
+    "required_rf_channel": {
+      "full_sample_net_shortfall_annual": 0.00691,
+      "observed_neg_cov_subsample": -0.000085,
+      "coverage_ratio": -0.01223
+    },
+    "verdict_impact": "판정 불변 — prereg 는 rf=0 을 고정했고 구조상 상수 rf 는 상쇄. 부분표본 실측 rf 채널 크기를 감도로 병기."
+  },
+  "adversarial": {
+    "wt_id": "WT-D20260813_003",
+    "stage": "self_adversarial_numbers",
+    "metric_type": "mechanism_observation_posthoc",
+    "A1_nw_lag_sensitivity": [
+      {
+        "lag": 3,
+        "t": -1.107976
+      },
+      {
+        "lag": 6,
+        "t": -1.115842
+      },
+      {
+        "lag": 12,
+        "t": -1.114214
+      },
+      {
+        "lag": 24,
+        "t": -1.381599
+      }
+    ],
+    "A1_d_autocorr": {
+      "ac1": 0.156449,
+      "ac3": 0.027211,
+      "ac12": -0.085117
+    },
+    "A2_extreme_region": [
+      {
+        "top_frac": 0.5,
+        "n_on": 183,
+        "mean_r_on_pct": 1.56432,
+        "mean_r_off_pct": 0.220163,
+        "diff_pct": 1.344156,
+        "welch_t": 1.613605,
+        "welch_p": 0.107817
+      },
+      {
+        "top_frac": 0.3,
+        "n_on": 110,
+        "mean_r_on_pct": 2.136024,
+        "mean_r_off_pct": 0.357804,
+        "diff_pct": 1.77822,
+        "welch_t": 1.579662,
+        "welch_p": 0.116466
+      },
+      {
+        "top_frac": 0.2,
+        "n_on": 74,
+        "mean_r_on_pct": 2.230779,
+        "mean_r_off_pct": 0.553023,
+        "diff_pct": 1.677756,
+        "welch_t": 1.095437,
+        "welch_p": 0.276539
+      },
+      {
+        "top_frac": 0.1,
+        "n_on": 37,
+        "mean_r_on_pct": 1.039824,
+        "mean_r_off_pct": 0.875644,
+        "diff_pct": 0.164179,
+        "welch_t": 0.074252,
+        "welch_p": 0.941195
+      },
+      {
+        "top_frac": 0.05,
+        "n_on": 19,
+        "mean_r_on_pct": 5.696015,
+        "mean_r_off_pct": 0.629211,
+        "diff_pct": 5.066805,
+        "welch_t": 1.781577,
+        "welch_p": 0.091007
+      }
+    ],
+    "A2b_rate_matched": [
+      {
+        "rule": "expanding-pct >= 0.80",
+        "n_TAIL": 33,
+        "mean_TAIL_on_pct": -2.3326,
+        "n_SIGMA": 38,
+        "mean_SIGMA_on_pct": 0.078643,
+        "overlap": 23
+      },
+      {
+        "rule": "전표본 rank 상위 20%",
+        "n_TAIL": 74,
+        "mean_TAIL_on_pct": 1.066486,
+        "n_SIGMA": 74,
+        "mean_SIGMA_on_pct": 2.230779,
+        "overlap": 62
+      },
+      {
+        "rule": "전표본 rank 상위 9%",
+        "n_TAIL": 33,
+        "mean_TAIL_on_pct": 0.349787,
+        "n_SIGMA": 33,
+        "mean_SIGMA_on_pct": 2.510328,
+        "overlap": 23
+      }
+    ],
+    "A2b_note": "초판은 TAIL(expanding-pct, 발화율 9%) 과 sigma_hat(전표본 rank, 20%) 을 비교해 선별율이 2배 어긋났다 — 자기적발 후 동일 규칙으로 재산출.",
+    "A2_inherited_TAIL_opoint": {
+      "n_on": 33,
+      "mean_on_pct": -2.3326,
+      "mean_off_pct": 1.21182,
+      "welch_t": -1.644042,
+      "welch_p": 0.109282,
+      "sigma_same_rule_n": 38,
+      "sigma_same_rule_mean_pct": 0.078643
+    },
+    "A3_endpoint_sensitivity": [
+      {
+        "window": "1996-02 ~ 2026-07",
+        "n": 366,
+        "G": 0.140782,
+        "mean_d_ann_pct": -1.48034,
+        "net_ann_pct": -0.690746,
+        "t": -1.107976
+      },
+      {
+        "window": "1996-02 ~ 2025-07",
+        "n": 354,
+        "G": 0.132165,
+        "mean_d_ann_pct": -1.270565,
+        "net_ann_pct": -0.662914,
+        "t": -1.003696
+      },
+      {
+        "window": "1996-02 ~ 2024-07",
+        "n": 342,
+        "G": 0.134186,
+        "mean_d_ann_pct": -1.262855,
+        "net_ann_pct": -0.641098,
+        "t": -0.968191
+      },
+      {
+        "window": "1996-02 ~ 2021-07",
+        "n": 306,
+        "G": 0.143387,
+        "mean_d_ann_pct": -1.287234,
+        "net_ann_pct": -0.618641,
+        "t": -0.913459
+      }
+    ],
+    "A4_power": {
+      "net_annual_pct": -0.690746,
+      "sd_d_annualized_pct": 7.08085,
+      "n_months_required_for_t196": 4845,
+      "years_required": 403.75,
+      "n_current": 366
+    }
+  },
+  "reject_scope_limit": "본 라운드가 닫는 범위 = **연속 비율 매핑(continuous ratio scaling) 형태**의 vol-target 노출 소비. 문턱형(expanding-percentile step)은 미검 — 두 형태가 선별하는 달이 실제로 다름을 실측(challenge_flags '매핑 형태' 항목). INV-7: '분산 예측기는 어디서도 안 통한다' 로 확대 금지.",
+  "subperiod_descriptive": [
+    {
+      "sub": "pre2008",
+      "n": 143,
+      "mean_e": 0.798075,
+      "G": 0.137776,
+      "mean_d_ann_pct": -1.470621
+    },
+    {
+      "sub": "2008_2016",
+      "n": 108,
+      "mean_e": 0.944048,
+      "G": 0.048634,
+      "mean_d_ann_pct": -1.226185
+    },
+    {
+      "sub": "post2017",
+      "n": 115,
+      "mean_e": 0.946918,
+      "G": 0.138782,
+      "mean_d_ann_pct": -1.73111
+    }
+  ],
+  "self_caught": {
+    "s2_verdict_bug": "s2_vt.R 의 verdict 로직이 prereg tie_rule 미구현(t<=-2.0 만 검사) -> 'PROCEED_VT4' 오판. 본 스크립트가 사전등록 규칙 그대로 적용해 정정. 규칙 변경 아님.",
+    "s2_parity_silent_fail": "s2 의 승계-수익 parity 대조가 EV 에 bm_ret 컬럼 부재로 numeric(0) 평가 -> max()=-Inf 로 침묵 통과. s3 에서 실측 수행(max|diff|=0, cor=1)."
+  },
+  "universe_comparison": {
+    "applicable": false,
+    "reason": "본 라운드는 종목-횡단면 알파가 아니라 시장-레벨 노출 스케줄이다. 유니버스(KR_top342 vs KR_TOP500_FREEFLOAT)는 벤치 시계열과 무관하므로 v2 비교 mandate(L-227 ICIR attenuation 진단) 조건에 해당하지 않는다."
+  },
+  "selection": {
+    "type": "chain",
+    "n_trials": 1,
+    "note": "매핑 파라미터 grid 0회. DSR HARD 부적용(sweep 아님). s4 범위 진단도 격자 탐색이 아니라 매핑-무관 비모수 관계 관측."
+  },
+  "cost_note": "VT2/VT2b 는 벤치-스케일 산술이라 거래비용이 개입하지 않는다. 회전(|Δe| 월평균)만 기록 — VT4 착수 시 15bps 부과 대상.",
+  "turnover_delta_e_monthly_mean": 0.011151,
+  "turnover_delta_e_annual": 0.133807
+}

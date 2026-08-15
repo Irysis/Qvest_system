@@ -1,0 +1,83 @@
+{
+ "round_id": "FQ233_ARMB_20260813",
+ "prereg": "PREREG_armB_20260813.md",
+ "metric_type": "canonical_screen",
+ "selection_type": "chain",
+ "primary": "q50",
+ "verdict": "NOT_SUPPORTED_NO_DIFFERENCE",
+ "primary_result": {
+  "total_sr": 0.51398223,
+  "port_t": -0.40216678,
+  "port_t_p": 0.68756129,
+  "active_ir": -0.1149399,
+  "cagr": 0.08896725,
+  "mdd": 0.55869389,
+  "turnover": 19.10110553,
+  "n_months": 198
+ },
+ "paired_vs_armA": {
+  "n_months": 198,
+  "mean_diff_monthly": -0.00524426,
+  "mean_diff_ann_pct": -6.29311722,
+  "nw3_t": -1.24731809,
+  "threshold": 2
+ },
+ "secondary": [
+  {
+   "tag": "q10",
+   "total_sr": 0.43714919,
+   "port_t": -1.3403969,
+   "mdd": 0.45867471
+  },
+  {
+   "tag": "q90",
+   "total_sr": 0.60607768,
+   "port_t": 0.94263191,
+   "mdd": 0.67014605
+  }
+ ],
+ "note": "secondary 는 기록 전용 — 사전등록 §3 이 primary 교체를 금지한다.",
+ "mechanism_reading": "★★이 라운드 최대 수확 = 실패의 **형태**. 표적을 평균→분위(q50)로 바꾸자 진단 rank-IC 는 +0.0074 → +0.0299 로 **4배** 올랐는데 실현 total SR 은 0.6039 → 0.5140 으로 오히려 낮고 paired NW3 t -1.25 로 구분 불가다. ⇒ **순위 통계 개선이 top-N 평균 소비로 전이되지 않는다.** 이는 같은 날 R32 가 320종 전수에서 측정한 '선별 통계량 ↔ 소비 형태 불일치'(cor(왜도기울기, 중앙값-평균 gap) = -0.728)의 **실현 포트 수준 재현**이다.",
+ "striking_pattern": {
+  "observation": "4 arm 에서 rank-IC 순서와 total SR 순서가 **정확히 역순**",
+  "table": [
+   {
+    "arm": "q10",
+    "rank_ic": 0.0438,
+    "total_sr": 0.4371,
+    "port_t": -1.3404
+   },
+   {
+    "arm": "q50",
+    "rank_ic": 0.0299,
+    "total_sr": 0.514,
+    "port_t": -0.4022
+   },
+   {
+    "arm": "armA_mean",
+    "rank_ic": 0.0074,
+    "total_sr": 0.6039,
+    "port_t": 0.6301
+   },
+   {
+    "arm": "q90",
+    "rank_ic": -0.0281,
+    "total_sr": 0.6061,
+    "port_t": 0.9426
+   }
+  ],
+  "caution": "⚠n=4 이고 arm 들은 같은 패널·같은 피처를 공유해 **독립이 아니다**. 4/4 단조 역순은 눈에 띄는 패턴이지 검정된 효과가 아니다. 게다가 PORT_t 는 전 arm |t|<1.4 로 어느 것도 0 과 유의하게 다르지 않다 — '역순' 은 서열 관찰이지 성과 주장이 아니다.",
+  "why_it_matters": "현 파이프라인은 rank-IC 로 팩터를 고르고 top-N 평균으로 소비한다. 이 관찰이 재현되면 그 조합은 **체계적으로 잘못된 방향으로 고른다**. FQ-237 의 직접 근거."
+ },
+ "honest_labels": [
+  "자본 자격 주장 아님 — 전 arm 이 PORT_t 2.95·MDD 25%·회전율 11.0 을 전부 미충족.",
+  "★primary 를 q90 으로 바꾸지 않았다 — 사전등록 §3 이 금지한다. q90 이 성과가 좋아 보이는 것은 **측정 후에 알게 된 사실**이고, 그걸로 primary 를 고르면 그 순간 sweep 이며 DSR 이 붙는다.",
+  "q50 이 arm A 보다 낮은 것도 유의하지 않다(t -1.25) — '분위가 열등하다' 가 아니라 '구분 불가' 다."
+ ],
+ "next_probes": [
+  "★q90(상방 분위) 표적을 **별도 사전등록**으로 정면 검증 — 본 라운드에선 secondary 라 주장 불가. 가설: top-N 평균 소비는 상방 꼬리를 맞히는 표적과 정합적이다.",
+  "FQ-237 — 선별 목적함수를 rank-IC → 분위 평균 스프레드로. 본 라운드가 '개선해도 전이 안 됨' 의 실현-포트 사례를 공급했다.",
+  "arm C(왜도·꼬리초과확률, CRPS 채점) — 표적을 분포의 **형태**로 옮기는 마지막 축.",
+  "rank-IC↔실현 역순이 팩터 수준에서도 성립하는지 — R32 의 320종 위에서 top-N 실현과 대조."
+ ]
+}

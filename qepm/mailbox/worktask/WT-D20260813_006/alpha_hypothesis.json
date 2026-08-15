@@ -1,0 +1,193 @@
+{
+  "wt_id": "WT-D20260813_006",
+  "designed_by": "alpha-hypothesis",
+  "model_tier": "fable",
+  "designed_at": "2026-08-13",
+  "fq_ref": "FQ-234 (Lane B — 일별 축 정보 회수)",
+  "spec_version_target": "ast_v1.1",
+
+  "prechecks": {
+    "hypothesis_index_hits": [
+      {
+        "ref": "L-AR-20260808_120900 (AR_max_lottery_captier_fullspec)",
+        "verdict": "FAIL — MAX5 효과는 전량 vol·size 대리 (MID t -5.42→0.14, SMALL -6.21→0.34, 438개월 FMB). 부활 조건 ① = 'vol 과 직교하도록 구성한 대리(왜도·IVOL 잔차 등)를 별도 사전등록'",
+        "bearing": "월내 극단수익-계열 후보(C2·C4)의 직접 판례. vol/size 통제 FMB 를 반증 축에 내장하지 않은 월내-적률 설계는 재포장."
+      },
+      {
+        "ref": "DIST-QPM-005 (KR 개인 순매수 contrarian 단일팩터)",
+        "verdict": "DISTILLED_NEG — 월간 개인 순매수 level 신호는 알파 부재 + 외국인-개인 divergence 재구성도 -z_individual 공유 hidden clone (cor 0.897, L-160A)",
+        "bearing": "선택 가설(C1)은 level 이 아니라 월내 결합 구조(2차 교차-모멘트)다. 재포장 여부는 주장으로 끝내지 않고 반증 F3(월간 level 과의 횡단면 상관 사전 상한)로 기계 검사한다. retry_policy 의 프론티어 문구('독립 측정으로 구성, hidden-clone 회피') 방향과 정합."
+      },
+      {
+        "ref": "FQ-029 / R16 마이크로스트럭처 5종 (VSHK_P/TOD_DT/AMT_ASY/VPRC_CORR/ILLIQ_VOL)",
+        "verdict": "CONFIG_SCOPED_NEGATIVE — canonical cap-w PORT_t 전부 <2.95 (max 1.157), 실선택 신호는 존재(placebo 4/5 p<0.001)하나 cap-tier 국소화(보유 95~98% OTHER 소형)가 흡수",
+        "bearing": "일별-파생 신규 팩터의 최근접 전례. 전부 volume/유동성 계열 — 투자자 유형별 flow 방향성·flow×수익 결합은 미포함(차별점). 단 cap-tier 국소화 리스크는 동형으로 상속됨 — regime_scope 와 챌린지에 명기."
+      },
+      {
+        "ref": "MAX_Lottery_Bali2011 (STR_AS_20260607, F) · Coskewness_HS2000 (STR_AS_20260606, F) · 하방 베타 · factor DB D05_MaxRet/D16_Coskew/D17_Cokurt/D43_Skew/D44_Kurt/D45_Downside/Semi 계열",
+        "verdict": "장창(252d) 적률·co-moment 는 DB 기존 + 331 전수 book-marginal 통과 0 소진에 포함",
+        "bearing": "'일별수익 적률' 자체는 신규성 0. 증분 주장이 성립하려면 (i) 월간 합/장창 적률에서 복원 불가한 구조이거나 (ii) 등록된 부활 조건(vol-직교) 위에 서야 한다."
+      },
+      {
+        "ref": "DIST-QPM-026 (vwap_spread/liquidity microstructure)",
+        "verdict": "실증 실패 규칙 초안 (flow_supply, L-code 2건)",
+        "bearing": "유동성-스프레드 계열 회피. C1 은 스프레드가 아니라 투자자 유형별 방향성 flow 의 월내 배치."
+      },
+      {
+        "ref": "AR_contract_mechanism_flow_20260808",
+        "verdict": "MARGINAL C — flow 기전에서 유효 주체는 institutional 이 아니라 foreign",
+        "bearing": "반증 F1 의 후속-flow 관측 주체 설계에 반영: foreign 을 1차 관측 주체로, institutional 은 보조."
+      },
+      {
+        "ref": "FQ-234 precheck_20260813 (큐 내 기록)",
+        "verdict": "flow_features_daily.parquet 는 (i) fwd_* 미래 라벨이 피처와 같은 표에 혼입(값으로 확인: cor +0.789 at t+21) (ii) 이미 5d/20d/60d 로 접혀 있어 '접기 전 구조'가 없음",
+        "bearing": "★재료 소스를 flow_features_daily 로 잡으면 가설-데이터 불일치 + 직접 look-ahead 위험. 본 설계의 flow 원천은 .cache/investor_stock/investor_wide.parquet (A6/F2, 일별 원시 flow) 로 고정하고 컬럼은 allowlist 명시 열거."
+      }
+    ],
+    "frontier_queue_refs": [
+      "FQ-234 (본 라운드, status CLAIMED_20260813__designing, WT-D20260813_006 명시)",
+      "FQ-233 Lane A (표적 교체) — 큐 next_action ④ '피처 교체와 표적 교체를 같은 라운드에 섞지 말 것' 준수: 본 설계는 표준 평균-표적 소비 고정",
+      "FQ-237 (선별↔소비 정합) — depth_aligned 실측(paired t 0.493→1.571, PORT_t 0.990→1.777)이 정합 레버 실재의 근거",
+      "FQ-029 (R16, done_config_scoped_negative) — 중복 회피 대조"
+    ],
+    "owner": "Q-Lead session 2026-08-13 저녁 (큐 owner 필드 실측 확인 — 본 WT 로 점유 명시)",
+    "dohoon_decision_check": "FQ-234 는 dohoon_decision 항목 아님 — 착수 적법",
+    "request_json_hypothesis_title": "이미 주입되어 있음 (worktask 생성 시) — 재주입 불요, 불변 유지"
+  },
+
+  "shared_design_gates_note": "설계 관문 3종 공통 프레임: (c) 404년 벽은 '시장-레벨 단일 시계열의 평균차'가 |t|=1.96 에 4,845개월을 요구한 것(WT-003: 366개월 |t| 0.539). 본 설계의 판정 통계량은 전부 '월별 횡단면 통계(FMB 기울기·canonical PORT_t·paired active)의 시계열 NW-t' — 횡단면 ~340종목 평균화로 월당 효과/잡음비가 다른 급이며, 같은 하네스에서 438개월 FMB |t| 5.4~6.2(MAX precheck)·placebo 분리 p<0.001(R16)이 실측 전례다. 즉 통계량 계급으로서 벽을 통과하며, 남는 위험은 효과크기이지 판정 불능이 아니다. 반대로 시장-레벨 오버레이형 소비(월간 노출 스케일)는 어떤 후보에도 판정 축으로 쓰지 않는다.",
+
+  "candidates": [
+    {
+      "id": "C1",
+      "title": "월내 flow×수익 경로 결합 — '하락일 개인 흡수 강도' (선택)",
+      "family": "flow_supply/behavioral",
+      "feature_prose": "홀딩월 시작 전 3개월(평활)의 일별 데이터에서, 종목별로 (개인 순매수, 당일 수익)의 월내 결합 구조를 잰다. 대표 정의: 하락일에 배치된 개인 순매수 비중 − 상승일 배치 비중 (또는 동치로 corr_월내(개인 순매수_d, ret_d) 의 음의 강도). 원천 = investor_wide(일별)·RAWDATA Ret(일별).",
+      "mechanism": {
+        "agent": "KR 개인투자자의 하락일 역추세 매수 군집(처분효과·평균단가 낮추기) ↔ 반대편의 정보 보유 매도 주체(외국인·기관)",
+        "friction": "KR 공매도 제약(개인 사실상 불가·기관 제한/금지기)으로 부정 정보는 보유자 매도로만 반영되어 매수측 정보보다 느리게 가격에 들어간다. 하락일에 개인이 유동성을 공급하면 조정이 추가 지연되고, 가격제한폭(±30%)은 큰 정보의 당일 완전 반영을 구조적으로 차단해 정보를 여러 날의 경로에 흩뿌린다. 차익거래자는 대차 비용·공매도 제약으로 이 지연을 즉시 제거하지 못한다.",
+        "path": "직전 1~3개월 '하락일-개인흡수'가 강한 종목은 미반영 부정 정보 잔량이 크고, 후속 1~3개월 외국인/기관 순매도 지속과 함께 음의 초과수익으로 실현된다. long-only top-N 소비에서는 그 여집합(하락을 개인이 아니라 기관/외국인이 받아낸, 또는 상승일에 스마트머니 매수가 배치된 종목)이 상위로 온다."
+      },
+      "why_monthly_folding_destroys_it": "월간 개인 순매수 합계는 '언제, 어떤 가격 경로에서 샀는가'를 지운다. cov_월내(flow_d, ret_d) 는 두 일별 시계열의 곱의 합이므로 월간 합 (Σflow_d, Σret_d) 에서 수학적으로 복원 불가 — 존재하는 월간 INV 계열(Foreign_NetBuy_20d 등 level)과 정보 집합 자체가 다르다. 이 배치(timing) 정보가 '정보성 매도 흡수'와 '단순 유동성 공급'을 가르는 유일한 관측면이다.",
+      "gates": {
+        "a_incremental_over_monthly": "PASS(구조적) — 2차 교차-모멘트로 월간 집계의 함수가 아님. 단 주장으로 안 끝냄: 반증 F3 = 월간 flow-level 팩터(INV01~13, −z_individual)와의 횡단면 상관 사전 상한(|cor| ≥ 0.8 이면 재포장 판정·기각)을 기계 검사로 내장.",
+        "b_topn_mean_consistency": "PASS — 기전이 꼬리 재분포가 아니라 수준(level) 이동(미반영 정보의 후속 drift)이므로 top-N 평균 소비와 정합. 꼬리-표적 통계량 불요. FQ-233(표적 교체)과의 자유도 분리 유지.",
+        "c_wall_statistic": "PASS — 판정 = 월별 횡단면 FMB(NW) + canonical_screen_bt cap-w PORT_t + paired active NW-t. flow 지평 2000-01~2026-07 ≈ 318개월, 횡단면 ~340종목. shared_design_gates_note 의 전례 해상도 적용."
+      },
+      "expected_prior": "중 (정직 라벨). 지지: flow family 는 이 저장소에서 유일하게 forge 2.35 에 도달한 전례(FLOW)가 있는 비-소진 family + 본 후보는 DIST-QPM-005 retry_policy 가 명시한 프론티어 방향. 반대: R16 전례상 일별-파생 신규 팩터는 cap-tier 국소화로 cap-w hurdle 에 흡수됐음 — cap-w PORT_t 2.95 도달 사전 확률은 낮게 본다. 정보성 판정(EW-대비·tier 분해 병기)이 먼저 나올 것."
+    },
+    {
+      "id": "C2",
+      "title": "vol·size-직교 월내 부호 비대칭 (단창 왜도 잔차) — 대안 보관",
+      "family": "defense/behavioral",
+      "feature_prose": "월내(≈21d) 일별수익 부호 비대칭(상승일 기여 비중 등)을 횡단면에서 vol·size 에 사전등록 직교화한 잔차.",
+      "mechanism": {
+        "agent": "복권형 선호 개인 수요 (고왜도 종목 과대평가)",
+        "friction": "공매도 제약으로 과대평가가 즉시 청산되지 않음",
+        "path": "과대평가의 점진 해소 — 익월 저수익 (long-only 는 회피측으로 소비)"
+      },
+      "why_not_selected": "관문 (a) 는 조건부 통과(장창 D16/D43 과 다르고, MAX L-code 의 등록된 부활 조건 ① 그 자체) — INV-7 상 적법한 재도전 경로다. 그러나 관문 (b) 가 약하다: 왜도-계열 신호의 소비 전이는 정확히 벽의 정면이고(R32: 준-단조 프로파일 0종, 평균-중앙값 갈림), 이를 살리려면 표적 교체(Lane A)와 결합해야 하는데 큐 next_action ④ 가 피처/표적 동시 교체를 금지한다. C1 라운드 판정 후 Lane A 와의 교차 라운드로 이월.",
+      "gates": {
+        "a_incremental_over_monthly": "CONDITIONAL — 단창 + 직교화 잔차만 미측정 공간. raw 판본은 vol 대리로 이미 기각.",
+        "b_topn_mean_consistency": "WEAK — 꼬리 재료의 평균 전이가 미입증 (본 저장소 실측이 반대 방향).",
+        "c_wall_statistic": "PASS — 횡단면 FMB(vol·size 통제) 동일 프레임."
+      }
+    },
+    {
+      "id": "C3",
+      "title": "정보 확산 경로 — 점진 vs 점프 (information discreteness) — 대안 보관",
+      "family": "momentum/behavioral",
+      "feature_prose": "월내 양(+)수익일 비율 − 음(−)수익일 비율에 수익 부호를 곱한 정보 이산성(ID) — '같은 월수익이 며칠에 걸쳐 왔는가'. Da-Gurun-Warachka(frog-in-the-pan)형.",
+      "mechanism": {
+        "agent": "제한 주의(limited attention)의 개인 비중 높은 KR 투자자층",
+        "friction": "점진 정보는 주의 문턱 아래로 흘러 과소반응 지속, 공매도 제약이 교정 지연",
+        "path": "점진-정보 종목의 1~3개월 drift 지속, 점프-정보 종목은 즉시 반영 후 무drift"
+      },
+      "why_not_selected": "관문 (a) 통과(경로 속성 — 월간 수익에서 복원 불가)이나 기전이 모멘텀 조건화라 KR 모멘텀 약세 prior 에 얹혀 있고, 조건부(상호작용) 소비는 자유도를 늘린다. hypothesis_index 에 KR 직접 측정 전례 없음(신규성은 있음) — C1 판정 후 후속 후보.",
+      "gates": {
+        "a_incremental_over_monthly": "PASS — 경로 속성.",
+        "b_topn_mean_consistency": "CONDITIONAL — drift(수준)라 평균 정합이나 base 모멘텀이 약하면 조건화할 대상이 없음.",
+        "c_wall_statistic": "PASS — 횡단면."
+      }
+    },
+    {
+      "id": "C4",
+      "title": "월내 최대낙폭·하방 경로 심도 — 착수 전 배제",
+      "family": "defense",
+      "why_excluded_pregate": "관문 (a) FAIL — MAX 판례가 동형 실측(단순 스펙 강신호 → vol·size 통제 후 전량 소멸)이고 D-family 장창 Downside/Semi/MaxRet 이 331 소진에 포함. 월내 MDD 는 vol 과의 기계적 상관이 극대인 통계량이라 '독립 재료' 주장 성립 경로가 없다. WT-D20260813_004 규율(후보 3/4 착수 전 배제) 동형 적용.",
+      "gates": { "a_incremental_over_monthly": "FAIL — vol 대리 posterior 정면", "b_topn_mean_consistency": "n/a", "c_wall_statistic": "n/a" }
+    },
+    {
+      "id": "C5",
+      "title": "야간(overnight) vs 장중(intraday) 수익 분해 — 데이터 게이트 보류",
+      "family": "behavioral/clientele",
+      "feature_prose": "Open/Close 로 월내 수익을 야간분(정보·기관 성향)과 장중분(개인 거래 성향)으로 분해한 배치 구조 (Lou-Polk-Skouras 계열).",
+      "mechanism": {
+        "agent": "장중 거래 집중 개인 vs 시가·종가 단일가 중심 기관/외국인",
+        "friction": "clientele 분리 + 공매도 제약",
+        "path": "장중-편중 수익(개인 주도)은 되돌림, 야간-편중(정보 반영)은 지속"
+      },
+      "why_not_selected": "관문 3종은 통과 가능성 있으나 데이터 게이트 미해결: A1 pit_hazards ④ 'Ret 재계산 금지 — stored Ret 만 참값, Close 재계산은 corporate-action hole artifact'. Open/High/Low 의 수정주가 정합성이 미검증이라 Open→Close 분해가 같은 artifact 를 정면으로 밟는다. 정합성 census(액면분할일 전후 Open/Close 비율 점검) 가 선행 과제 — 통과 시에만 후보 부활.",
+      "gates": { "a_incremental_over_monthly": "PASS(구조적)", "b_topn_mean_consistency": "PLAUSIBLE", "c_wall_statistic": "PASS", "data_gate": "OPEN — 수정주가 정합성 미검증" }
+    }
+  ],
+
+  "selected": {
+    "hypothesis_title": "월내 flow×수익 경로 결합 — 하락일 개인 흡수 강도는 월간 집계가 소거하는 정보이며 top-N 평균 소비와 정합적인 수준(level) 신호다 (FQ-234 Lane B)",
+    "hypothesis_description": "월간 개인 순매수 level 은 알파 부재로 settled(DIST-QPM-005)다. 그러나 level 은 '언제 샀는가'를 지운 통계량이다. 본 가설: 같은 원천(investor_wide 일별 flow)에서 월내 배치 — 개인 순매수가 하락일에 집중되는 강도 — 를 재면, 공매도 제약·가격제한폭 하에서 '정보성 매도를 개인이 흡수 중'인 종목(후속 음의 drift)과 그렇지 않은 종목이 갈리고, 이 구분은 월간 합에서 수학적으로 복원 불가능한 증분이다. 소비는 표준 평균-표적 횡단면 선별(top-N EW screening)로 고정 — 표적 교체(Lane A)와 자유도 분리. 피처 원천은 investor_wide.parquet(일별 원시) + RAWDATA Ret 로 고정하고 flow_features_daily 는 사용 금지(fwd_* 혼입 + 이미 접힌 패널 — 큐 precheck 실측). 피처 컬럼은 allowlist 명시 열거.",
+    "mechanism": {
+      "agent": "KR 개인투자자의 하락일 역추세 매수 군집(처분효과·물타기 — KOSDAQ 개인 거래비중 과반)과, 그 반대편에서 매도하는 정보 보유 주체(외국인·기관). '시장'이 아니라 특정 가능한 두 주체의 월내 상호작용이다.",
+      "friction": "① KR 공매도 제약: 개인 사실상 불가·기관도 제한/금지기 — 부정 정보는 신규 공매도가 아니라 보유자 매도로만 가격에 반영되어 반영 속도가 비대칭적으로 느리다. ② 하락일의 개인 유동성 공급이 그 조정을 추가 지연시킨다(정보 없는 매수벽). ③ 가격제한폭 ±30%: 큰 부정 정보의 당일 완전 반영을 구조적으로 차단해 정보를 여러 거래일의 경로에 분산시킨다 — 월내 배치에 흔적이 남는 제도적 이유. ④ 차익거래자는 대차 비용과 공매도 규제로 이 지연을 즉시 제거하지 못한다. 이 마찰들이 월간 집계가 소거하는 바로 그 시간축(일별 배치)에 정보를 남긴다.",
+      "path": "신호 형성: 홀딩월 시작 전 3개월 창에서 종목별 하락일-개인흡수 강도 산출(월간 리밸, t-1 settlement lag). 가격 반영: 흡수 강도 상위 종목은 미반영 부정 정보 잔량이 커서 후속 1~3개월 외국인/기관 순매도 지속과 함께 음의 초과수익 실현 — long-only top-25 는 여집합(스마트머니가 하락을 받아냈거나 상승일에 매수가 배치된 종목)을 보유해 평균 수준의 초과수익으로 소비한다."
+    },
+    "falsification": {
+      "observable": "기전 관측 3종 — 성과 동어반복 아님. F1(기전 핵심): 하락일-개인흡수 상위 분위 종목의 후속 1~3개월 외국인(1차)·기관(보조) 순매수가 하위 분위 대비 유의하게 낮지 않으면(= '정보성 매도 지속'의 flow 흔적 부재) 기전 기각 — AR_contract_flow 판례(foreign not institutional)에 따라 foreign 을 1차 관측 주체로 고정. F2(독립성): 월별 횡단면 FMB 에 vol·size 통제 투입 시 계수가 소멸하면(MAX 판례 동형 검사) 독립 재료 기각. F3(재포장): 피처와 월간 개인 flow level(INV 계열·−z_individual)의 횡단면 상관 |cor| ≥ 0.8 (사전 고정) 이면 DIST-QPM-005 hidden-clone 재포장으로 기각.",
+      "field_dictionary_refs": [
+        "A6_investor_flow_stock_daily (investor_wide — F1 후속 flow 관측 + 피처 원천)",
+        "F2_investor_flow_stock_level (동일 원천 FIELD 그룹)",
+        "FDB-B4_registry_investor_flow_monthly (INV01~13 — F3 hidden-clone 대조)",
+        "A1_RAWDATA_OHLCVS_daily (일별 Ret — 결합 구조의 수익측)"
+      ],
+      "reject_if": "F1 후속-flow 분위차 무유의(부호 무관) OR F2 통제 후 |t| < 2 (438개월급 표본에서) OR F3 |cor| ≥ 0.8. 셋 중 하나라도 발화하면 '일별 축의 정보 우위 미확립'으로 기록하고 큐의 사전 지정 라우팅(비-return 원천)으로 — 계열 확대 금지(INV-7)."
+    },
+    "regime_scope": {
+      "holds_in": [
+        "평시·회복 국면 (개인 참여가 정보 흐름 대비 유동성 공급 역할로 안정적으로 작동하는 구간)",
+        "공매도 제약이 실질 구속인 구간 (전면/부분 금지기 포함 — 마찰 ①이 강할수록 반영 지연이 커져 신호 강화)",
+        "MID/소형 tier (개인 거래비중 높고 개인 흡수 채널이 실재하는 집합)"
+      ],
+      "weakens_or_reverses_in": [
+        "crisis 국면 (마진콜·강제 청산 매도가 정보성 매도를 압도 — 하락일 개인 흡수가 '정보 흡수'가 아니라 패닉 유동성 이벤트가 되어 신호의 식별 가정 붕괴)",
+        "MEGA tier (외국인 지분·프로그램 매매 지배로 개인 흡수 채널 자체가 약함 — 기전의 agent 가 한계적)"
+      ],
+      "boundary_rationale": "경계는 기전에서 도출된다: 신호의 식별력은 '하락일 매도가 정보성'이라는 가정에 걸려 있는데, crisis 에서는 매도의 지배 원인이 유동성 청산으로 바뀌므로 같은 관측이 다른 것을 재게 된다(약화·역전). tier 경계는 agent(개인 유동성 공급)의 존재 강도에서 온다. ★정직 표기: MEGA 경계는 기전 도출에 더해 R16 실측 전례(cap-tier 국소화가 cap-w 판정을 흡수)라는 관측-유래 근거를 병용한다 — cap-w HARD 판정 권위는 불변이며, 본 가설이 MID 국소 신호로 판명되면 그것은 '경계 확인'이지 cap-w 게이트 면제 사유가 아니다."
+    },
+    "design_requirements_for_alpha_research": {
+      "pit": "① 월내 피처는 홀딩월 시작 전 데이터만 — assert_overlay_pit(used_cutoff, holding_start) HARD ② lag1 스트레스 ③ strict-PIT A/B. 동월 look-ahead 는 placebo/OOS/DSR/subperiod 전부 통과함 — 이 3종만이 판별(큐 승계 그대로). PIT 검사기 자체의 판별력을 위반 주입으로 먼저 실증할 것(WT-004 가 판별력 0 을 자기 적발한 전례).",
+      "flow_lag": "investor flow 는 T+1 공시 — strict Date < cutoff 에 settlement lag 1d 추가. 원천 QW export 수동 ~60d lag(F2 availability) — 백테스트에는 무해하나 라이브 소비 시 스테일 라벨 의무.",
+      "coverage_census": "investor_wide 2000-01-04~2026-07-01 (field map footer 실측 10,394,859행) — 착수 시 월 수·내부 gap 을 이론치와 재대조 + RAWDATA(~2026-08)와의 종료일 괴리(~1.5개월)를 창 정의에 명시. 조인은 개수 검문 + 축 정합(return_ym 규약, WT-004 book 키 전례) 이중 확인.",
+      "column_allowlist": "피처 입력 컬럼은 allowlist 명시 열거 (investor_wide 의 개인/외국인/기관 순매수 + RAWDATA Ret/Vol/Size). blocklist 방식 금지 — fwd_* 신종 컬럼 유입 시 뚫린다(큐 precheck).",
+      "cost_ceiling_precompute": "측정 전 사전 계산 의무: 후보 피처의 월간 순위 자기상관 → 예상 회전 도출. 고정 축 = Implementation Discipline TO ≤ 11.0/yr·15bps. 1개월 raw 창은 회전 위험이 크므로 primary 스펙 = 3개월 평활(1M raw 는 진단 전용). 예상 순비용 증가분이 사전 기대 gross 증분을 잠식하면(비율 < 2, failure_rules Rule 1) 착수 스펙 강등.",
+      "judgment": "선택 권위 = canonical_screen_bt cap-w PORT_t (IS-only, chain). dual-basis(EW-유니버스·cap-tier MEGA/MID) 병기 의무 — 기각 전 EW-대비 생존 확인(v8.3). FMB vol·size 통제(F2)는 438개월급 표본으로.",
+      "dof_separation": "표적 교체(Lane A)·선별 통계량 교체(FQ-237) 와 같은 라운드에 섞지 말 것 — 피처 신규성 단일 자유도."
+    }
+  },
+
+  "challenge_flags": [
+    "CH1 (대안 보관) C2 vol-직교 월내 비대칭 — MAX L-code 등록 부활 경로. C1 판정 후 Lane A 교차 라운드로 이월.",
+    "CH2 (대안 보관) C3 정보 이산성(FIP) — KR 미측정 신규성 있음, 모멘텀 조건화 부담으로 후순위.",
+    "CH3 (착수 전 배제 기록) C4 월내 MDD — vol-대리 posterior 정면, 관문 (a) FAIL.",
+    "CH4 (데이터 게이트 보류) C5 야간/장중 분해 — Open 수정주가 정합성 census 선행 시 부활.",
+    "CH5 선택 가설의 최대 리스크 = cap-tier 국소화 (R16 동형). MID 국소 신호로 판명 시 cap-w HARD 는 통과 못 하며, 그 경우 산출물은 screen-tier 라우팅 후보이지 자본 후보가 아니다 — 사전 인지.",
+    "CH6 DIST-QPM-005 의 실패 원인이 'KR 개인의 약한 정보비대칭'이라면 결합 구조도 무정보일 수 있다 — F1 이 이를 직접 검사하도록 설계됨 (성과 이전에 기전이 먼저 기각되는 구조).",
+    "CH7 flow 지평이 2000-01 시작이라 1990년대 불포함 — 판정 표본 ≈318개월로 사전 명시 (438개월 FMB 전례보다 짧음)."
+  ],
+
+  "verdict": "designed",
+
+  "handoff": {
+    "to": "alpha-research",
+    "next_steps": "Step 1~7 + ⑤ AST 구성. 승계 불변(mechanism/falsification/regime_scope 재작성 금지 — 결함 발견 시 challenge_note 기록 + 재설계 요청). design_requirements_for_alpha_research 절의 PIT 3종·allowlist·비용 사전계산·dual-basis 는 착수 전 이행 항목.",
+    "note": "본 문서는 설계만 — 팩터 소싱·신호공학·실측·AST·alpha_package 없음 (alpha-hypothesis 역할 경계)."
+  }
+}

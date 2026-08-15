@@ -1,0 +1,45 @@
+{
+ "l_code": "L-AR-20260813_R31R33",
+ "strategy_id": "AR_fq233_lane_a_target_form_premise_20260813",
+ "grade": "N/A_panel_statistic",
+ "metric_type": "panel_statistic",
+ "research_mode": "QPM",
+ "scope": "v8.4 Lane A(FQ-233) 착수 관문 — 표적 교체(평균→분포) 논리의 **기전 전제**를 수정 프레임에서 확립. 자본 주장 아님(패널 통계이지 게이트 값 아님).",
+ "core_reference": "FQ-233. 산출 = stage_artifacts/fq233_probe0_20260813/{r31_d03_fixedframe,r32_general_fixedframe,r33_profile_fixedframe}_result.json. 재현 스크립트 r33_profile.R + r33_profile_stage2.R 보존.",
+ "lesson_text": "★이 라운드가 확립한 것 = '평균 표적은 꼬리에 속고 순위·중앙값 표적은 안 속는다' 가 **factor DB 전반의 측정 가능한 성질**이라는 것. 세 층에서 독립 확인됐다.\n■R31 (D03_RealVol 단일, 258개월): rank-IC +0.0462(NW3 t +3.95)로 선별력은 강한데 Q5-Q1 **평균** 스프레드는 연 -2.71%(t -0.55)로 0과 구별 불가이고 **중앙값** 스프레드는 연 +15.60%(t +3.33). 같은 팩터·같은 기간에서 평균만 뒤집힌다.\n■R32 (320종 전수): 평균/중앙값 부호 갈림 **123/320(38.4%)** 이고 **비대칭**이다 — '중앙값 양수 & 평균 음수'(D03형) 102종 vs 반대형 21종(무작위면 반반이어야 한다). '중앙값 유의 양수(t>2) ∧ 평균 비유의(|t|<2)' = 99종(30.9%), 그중 **46종은 평균이 음수**(꼬리가 부호를 뒤집는다). ★★기전 직접 측정: **cor(왜도기울기, 중앙값-평균 gap) = -0.728** — Q1 왜도가 Q5보다 클수록 평균이 중앙값 아래로 끌린다. gap>0 인 팩터 233/320(72.8%). ★부수: **준-단조(m_mono>=0.8) 분위 프로파일을 가진 팩터가 320종 중 0종** — 선형/단조 가정이 광범위하게 깨져 있다.\n■R33 (D03 5점 프로파일, 259개월·월중앙 343종목): **혹(hump)형 정점 Q2**. Q1 은 중앙값이 압도적 최악(-15.68%)인데 평균은 10.54% 이고 왜도가 최고(1.027) — 소수 극단 상승이 Q1 평균을 떠받친다. 왜도 Q1->Q5 단조 감소(1.027->0.726). R31(패널 집계)과 R33(원천 재구축)은 **독립 경로**인데 평균 -2.71 vs -2.36 · 중앙값 +15.60 vs +15.42 · 왜도기울기 -0.315 vs -0.302 로 0.3%p 안쪽 일치.\n■선행 무효분 처리: probe0·probe4 는 둘 다 INVALID_FRAME_ERROR 스탬프가 이미 있었는데 **qvest_v8_4_asymmetry_ml_sot.md §3 이 그 수치 위에 'Lane A 의 근거가 실측으로 섰다' 를 세워두고 있었다**(산출물은 고쳐졌고 문서는 안 고쳐짐). 본 라운드가 무효 표기 + 재산출로 교체했다.",
+ "mechanism_confirmed": "평균-표적이 좌측 분위의 우측 꼬리에 끌린다는 기전이 (a)단일 팩터 스프레드 부호 갈림 (b)320종 전반 비대칭 분포 (c)왜도기울기와 gap 의 cor -0.728 (d)분위 프로파일의 Q1 중앙값-평균 괴리, 4중으로 확인.",
+ "process_lessons": [
+  "★유니버스 조인에서 결함 2건을 냈다: ①us_k200/us_kq150 은 멤버십 목록이 아니라 전 시장 패널 + 0/1/NA 플래그인데 플래그를 무시해 전 행을 멤버로 취급 ②Date 컨벤션 불일치로 정확일치 join 이 259->165개월(64%)로 절단. ★그런데도 월중앙 345종목(기대 ~350)이 나와 **그럴듯했다** — 잡은 것은 종목수 대조가 아니라 **월 수 대조**다. 수리 후 스크립트에 조인 손실 감시(>5% 시 stop)를 박았다.",
+  "factor_db_connector.R:38 의 `.fdc_self_dir <- dirname(sys.frame(1)$ofile)` 은 '연결자가 최상위에서 source 된다'는 **프레임 깊이 가정** — 다른 스크립트 안에서 부르면 config.R 을 호출자 위치에서 찾는다. config.R 선로드로 우회(연결자 51행 가드). 즉사하므로 침묵 실패 계열은 아님.",
+  "선행 세션이 master_panel_FIXED.rds 생성 스크립트를 남기지 않아 재산출 경로를 처음부터 다시 썼다. **라운드는 수치뿐 아니라 그 수치를 만든 경로도 남긴다** — r33_profile*.R 저장소 보존."
+ ],
+ "notable_lead": "t_medspread 상위 10종이 quality/profitability 에 집중(Q02_ROE 4.79 · Q17_ROIC 4.45 · Q03_ROA 4.29 · Q11_Net_Margin 3.87 …, 전부 t_mean 1.1~1.8 비유의). **DIST-QPM-003**(구 AX-004: quality single-signal long-only 구조적 실패)와 대조할 가치 — 그 실패의 일부가 재료 부재가 아니라 **측정 형태**일 가능성. 가설이며 본 라운드 미검증.",
+ "honest_labels": [
+  "★★중앙값 스프레드는 자본으로 전환되지 않는다 — long-only top-N 이 버는 것은 보유 종목의 **평균**이다. '중앙값 유의 양수'를 '알파가 있다'로 읽으면 오독.",
+  "graduation HARD(PORT_t 2.95)와 같은 문장에 놓지 말 것 — 횡단면 분위 통계이지 게이트 값이 아니다.",
+  "R33 은 유동성 필터(20일 ADV >= 2e8) 미적용 — canonical_screen_bt 값과 직접 비교 금지.",
+  "★전이는 여전히 미측정 — Lane A 의 1급 질문('표적을 바꾸면 PORT_t 전이가 달라지는가')에 본 라운드는 답하지 않는다. 답할 자격이 있는 전제를 세웠을 뿐이다."
+ ],
+ "next_probes": [
+  "★arm A 기준선 재현(SR ~0.49) — ML QEPM 착수 관문. 못 세우면 arm B/C 미착수(비교 기준선 부재). venv qvest_ml.",
+  "FQ-237 재측정 — 선별 목적함수를 rank-IC -> 분위 평균 스프레드로 교체 시 top-N 전이가 개선되는가. R32 의 cor -0.728 과 '준-단조 0종' 이 근거를 준다(구 프레임 산출이라 재측정 대상이던 항목).",
+  "quality 계열 대조 — '평균 음수 ∧ 중앙값 유의 양수' 군을 DIST-QPM-003 과 맞대어, 그 실패가 재료인가 측정 형태인가.",
+  "분위 형태 유형학 — 준-단조 0종 + D03 혹형(정점 Q2) 을 320종으로 확장해 형태 유형을 분류할 수 있는가."
+ ],
+ "emitted_at": "2026-08-13",
+ "emitted_by": "Q-Lead session (/qvest 부팅 세션, 2026-08-13)",
+ "family": "measurement_form",
+ "tags": [
+  "lane_a",
+  "fq233",
+  "fq237",
+  "target_form",
+  "rank_ic_vs_mean",
+  "quintile_profile",
+  "skewness",
+  "fixed_frame",
+  "d03_realvol"
+ ],
+ "construction_type": "panel_statistic_diagnostic",
+ "selection_type": "chain"
+}

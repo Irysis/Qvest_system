@@ -1,0 +1,77 @@
+{
+ "schema": "alpha_armA_v1",
+ "round_id": "FQ233_ARMA_20260813",
+ "measured_at": "2026-08-13",
+ "prereg": "PREREG_armA_20260813.md (측정 전 발행·고정)",
+ "metric_type": "canonical_screen",
+ "selection_type": "chain",
+ "question": "수정 프레임에서 평균-표적 ML 이 참조 대역 SR ~0.49 를 재현하는가",
+ "verdict": "REPRODUCED",
+ "frame": {
+  "universe": "K200∪KQ150",
+  "panel": "lane_a_feature_panel.parquet",
+  "n_features": 324,
+  "dropped_alias": 7,
+  "model": "XGBoost 사전고정 파라미터·HPO 없음",
+  "walkforward": "확장창·burn-in 60개월",
+  "n_months": 198,
+  "top_n": 25,
+  "weighting": "EW long-only",
+  "cost_bps_oneway": 15,
+  "liq_min": 200000000.0,
+  "selected_ret_coverage": 1.0,
+  "measurement": "canonical_screen_bt() · 벤치 일별→월간은 apply.monthly+Return.cumulative(표준함수)"
+ },
+ "results": {
+  "total_net_sr": 0.6039,
+  "active_sr_ir": 0.1963,
+  "portfolio_alpha_t_nw_lag3": 0.6301,
+  "portfolio_alpha_t_pvalue": 0.5286,
+  "alpha_annualized": 0.0715,
+  "mean_active_net": 0.0036,
+  "cagr": 0.1384,
+  "mdd": 0.6404,
+  "calmar": 0.216,
+  "turnover_annual": 16.7373,
+  "diag_rank_ic_mean": 0.0074,
+  "diag_icir": 0.069
+ },
+ "gate_decision": {
+  "band": [
+   0.3,
+   0.7
+  ],
+  "reference": "SOT §2③ XGBoost 0.493 · RF 0.493 · MLFactorRet 0.464",
+  "measured_axis": "total net SR",
+  "result": 0.6039,
+  "consequence": "★관문 통과 — arm B(pinball q10/q50/q90)·arm C(왜도·꼬리초과확률) 착수 가능. 비교 기준선 확보."
+ },
+ "self_caught_defects": [
+  "★★basis 혼동 — 사전등록 §4 가 'net SR' 이라고만 쓰고 **축을 못 박지 않았다**. 계약의 `net_sr` 은 `mean(active)/sd(active)*sqrt(12)` = **active SR(=IR)** 인데(canonical_screen_bt.R:376) 참조 0.493 은 전략 **total SR** 이다. 초판이 active 0.1963 을 밴드에 대고 **NOT_REPRODUCED_LOW 를 낼 뻔했다**. ⚠문턱 이동 아님 — 밴드는 원래 참조와 같은 축(total)에 걸려던 것이고 축을 바로잡은 것이다. 양쪽 다 기록.",
+  "★벤치마크가 **일별**(9,007행·간격 1일)인데 월간처럼 필터해 133행만 남겼고, 그 결과 백테가 199→**101개월(51%)** 로 조용히 잘렸다. 수리 = apply.monthly+Return.cumulative 로 월간 집계 후 ym 키 조인 → 198/199개월(99.5%). ⚠repo 의 `fq081_build_benchmark()` 는 `prod(1+r)-1` 자체 합성이라 재사용하지 않았다.",
+  "★오늘 세 번째 조인-손실 사례(유니버스 R33 · 벤치 여기). 이제 두 스크립트 모두 손실>5% 시 stop/warn 을 갖는다."
+ ],
+ "honest_labels": [
+  "★자본 자격 주장 아님 — 대조군이다. PORT_t 0.63(p 0.53)은 HARD 2.95 에 한참 못 미치고, MDD 64.04% 는 제약 25% 를 크게 위반하며, 회전율 16.74/yr 은 Implementation Discipline 11.0 초과다. 이 값들은 '기준선이 어디인가' 를 고정할 뿐 편입 후보를 만들지 않는다.",
+  "MDD 64% 는 SOT §2 의 'ML 트랙 MDD<=25% 충족 0/84' 와 정합 — 재현이 그 실측을 재확인한다.",
+  "diag rank-IC +0.0074 는 진단이며 판정 축 아님. 누출 지문(불가능값)은 없다."
+ ],
+ "next_probes": [
+  "★arm B — 조건부 분위 표적(LightGBM pinball q10/q50/q90). 동일 패널·동일 유니버스·동일 비용. ★하이퍼파라미터를 탐색하면 selection_type=sweep 으로 재선언 + DSR>=0.5 HARD 부착(arm A 의 chain 선언은 승계 안 됨).",
+  "arm C — 조건부 왜도·꼬리초과확률 표적. 채점에 properscoring CRPS 사용(설치 완료).",
+  "★arm B/C 사전등록 시 basis 를 **명시**할 것 — arm A 가 겪은 함정. 1급 축 = total net SR(참조 비교) + canonical PORT_t(자본 축) 병기.",
+  "R32 의 '분위 평균 스프레드 목적함수'(FQ-237)와 arm B 는 다른 질문이다 — 전자는 선별 기준, 후자는 예측 표적. 교차 설계 가능."
+ ],
+ "artifacts": [
+  "armA_score.py",
+  "armA_scores.parquet",
+  "armA_score_meta.json",
+  "armA_measure.R",
+  "armA_canonical_result.{rds,json}",
+  "armA_basis.R",
+  "armA_basis.rds",
+  "PREREG_armA_20260813.md",
+  "lane_a_feature_panel.parquet",
+  "lane_a_panel_manifest.json"
+ ]
+}

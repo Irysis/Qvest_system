@@ -1,0 +1,82 @@
+{
+  "wt_id": "WT-D20260813_003",
+  "written_at": "2026-08-13 18:19:28",
+  "stage": "prereg_VT",
+  "authority": "alpha_hypothesis.json judgment_order 승계 — 재작성 아님",
+  "selection_type": "chain",
+  "n_trials": 1,
+  "selection_note": "매핑 파라미터 grid 탐색 0회. sigma_star=expanding median(자기 교정값), e_min/e_max 각 1개 사전 고정. DSR HARD 부적용(sweep 아님) — 수치는 진단 산출.",
+  "panel": {
+    "inherited_signal_panel": "stage_artifacts/WT_D20260813_002/alpha_scores.parquet",
+    "inheritance_parity": {
+      "spearman": 1,
+      "pearson": 1,
+      "max_abs_diff": 0,
+      "n": 367,
+      "note": "매핑 e=min(1, sigma*/sigma_hat) 은 z 가 아니라 level 을 요구하므로 동일 컷오프·동일 창으로 raw sigma_hat 을 재산출했다. 승계 VOL 과 동일 대상임을 spearman>=0.99 로 실증(재구축이지 재설계 아님)."
+    },
+    "daily_source_parity_cor": 0.99993091,
+    "n_months_eval": 366,
+    "window": ["1996-02", "2026-07"],
+    "excluded_incomplete_month": "2026-08"
+  },
+  "mapping": {
+    "formula": "e_m = clip(sigma_star_m / sigma_hat_m, 0.50, 1.00)",
+    "sigma_hat": "trailing 252 거래일 벤치 일수익 표준편차, Date < first-day-of-holding-month (C5)",
+    "sigma_star": "sigma_hat 의 expanding median (1..m) — 자기 교정값, 자유 파라미터 아님",
+    "e_min": 0.5,
+    "e_max": 1,
+    "e_max_rationale": "레버리지 불가 = 고정 축(AX-000 따름정리). 저변동기 e>1 경로는 설계상 부재.",
+    "e_min_rationale": "구조적 하한(현금 최대 50%). 데이터에서 도출한 값 아님 — 대안 바닥 미측정(grid 금지). VT2/VT2b 는 exposure-matched 통제라 바닥 수준에 판정이 의존하지 않는다.",
+    "cash_return": "rf = 0 가정. rf>0 이면 저노출 월이 현금이자를 벌어 처치군에 유리 — 따라서 보수적."
+  },
+  "judgment_rules": {
+    "VT1": {
+      "role": "기록 의무(관문 아님)",
+      "stat": "spearman(sigma_hat_m, 홀딩월 내 실현 벤치 vol)",
+      "note": "1차 예측기 VOL = trailing 실현변동성 그 자체 — '더 나은 예측' 신규성 주장 없음(승계 자인)."
+    },
+    "VT2": {
+      "role": "1차 판정",
+      "stat": "G = 1 - sd(e_m*r_m) / sd(ebar*r_m)   (basis = 총 실현 vol, active/TE 아님)",
+      "control": "exposure-matched: ebar = mean(e) — 노출 축소의 기계적 vol 감소를 제거",
+      "null": "e 계열 circular block permutation (block=6개월, B=2000). e 자기상관 보존 + r 과의 정렬만 파괴",
+      "pass_rule": "G > q95(null) AND G >= 0.02 (최소 효과크기, 승계 고정)",
+      "min_effect_provenance": "alpha_hypothesis.json effect_size_precalc 에서 승계(TAIL 조작점 산술). VOL 패널 재투영값 G_proj 를 아래 병기 — 문턱은 승계값 유지(사후 하향 금지)"
+    },
+    "VT2b": {
+      "role": "결정 관문",
+      "stat": "d_m = (e_m - ebar) * r_m ;  mean(d) 의 NW lag-3 t (.nw_t_mean 재사용, 자체합성 금지)",
+      "reject_rule": "t <= -2.0 이면 '수익 희생' 으로 기각",
+      "tie_rule": "점추정 음수·비유의면 순효과 = mean(d) + (var(control)-var(scaled))/2 (기하수익 근사) 부호로 판정"
+    },
+    "VT3": {
+      "role": "PIT 무효 조건(상시)",
+      "checks": ["assert_overlay_pit HARD", "lag1 스트레스: e shift(1) 판에서 G 붕괴 여부", "strict-PIT A/B: 느슨 컷오프(동월말 정보) 판 대비 인플레 >5% 면 재판정", "저변동 구간 유의 이득 = 누출 역진단(승계 boundary_rationale (a))"]
+    },
+    "VT4": {
+      "role": "성과 — VT2 PASS AND VT2b 비기각 시에만 착수",
+      "note": "canonical_screen_bt / forge 경로. 사전 기대 낮음(인접 negative 3건) 라벨 승계."
+    }
+  },
+  "power_projection": {
+    "metric_type": "design_projection_from_sigma_marginal",
+    "method": "실현 월 분산 ∝ sigma_hat^2 자기정합 가정. sigma_hat 주변분포만 사용 — VT2/VT2b 통계량(수익 정렬) 미사용.",
+    "mean_exposure": 0.88791643,
+    "G_projected": 0.14462839,
+    "variance_drag_reduction_annual_pct": 0.73087033,
+    "bind_rate": 0.41803279,
+    "floor_rate": 0.05191257,
+    "e_quantiles": {
+      "0%": 0.5,
+      "10%": 0.5284,
+      "25%": 0.7911,
+      "50%": 1,
+      "75%": 1,
+      "90%": 1,
+      "100%": 1
+    },
+    "obligation_note": "승계 handoff (2) '효과크기 VOL 패널 재계산' 이행. 승계 설계 투영(+0.24%/yr, TAIL 조작점 산술)과 비교해 기록."
+  },
+  "falsification_inherited": "alpha_hypothesis.json::selected.falsification (재작성 금지 — 그대로 적용)"
+}

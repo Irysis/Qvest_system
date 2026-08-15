@@ -1,0 +1,71 @@
+{
+ "status": "INVALID_FRAME_ERROR",
+ "invalidated_at": "2026-08-13",
+ "reason": "★probe0 은 수동 forward return(calendar month compounding, nd>=15)을 썼고 sig_date 정합을 검증하지 않았다. R30 이 확정한 앵커 규약 오류와 같은 계통. 실제로 probe4 가 정본 빌더로 재산출했을 때 D03 분위 프로파일이 혹형->단조감소로 뒤집혔다.",
+ "do_not_cite": "유효 정본 = r30_reframe_result.json",
+ "_original": {
+  "schema": "fq233_probe0_v1",
+  "round_id": "FQ-233-probe0",
+  "purpose": "v8.4 재편 동기로 인용된 두 수치가 산문(layer_bottleneck_map.md)에만 있어 구조화 재현이 필요했다. WT_D20260808_001 산출물 전체에 '12.01' 문자열 부재.",
+  "measured_at": "2026-08-13",
+  "metric_type": "canonical_screen",
+  "frame": {
+   "factor": "D03* (factor DB 선언명, load_month_factors 경유 — C15 준수)",
+   "universe": "KOSPI200 UNION KOSDAQ150",
+   "period": "2005-01 ~ 2026-08",
+   "n_months": 258,
+   "n_obs": 80264,
+   "quantiles": 5,
+   "forward": "t+1 month (동월 사용 금지)",
+   "min_trading_days_per_month": 15,
+   "direction": "align_factor_direction IC-inferred (PIT-safe, min_months=36)"
+  },
+  "prose_claim": {
+   "median_spread_ann_pct": 12.01,
+   "median_spread_t": 2.57,
+   "skew_q1": 0.96,
+   "skew_q5": 0.69,
+   "source": "layer_bottleneck_map.md (산문) — 구조화 출처 없음"
+  },
+  "reproduction": {
+   "mean_spread_ann_pct": -1.81,
+   "mean_spread_t_nw3": -0.368,
+   "median_spread_ann_pct": 15.51,
+   "median_spread_t_nw3": 3.375,
+   "skew_by_quintile": {
+    "q1": 1.0147,
+    "q2": 0.9764,
+    "q3": 0.8171,
+    "q4": 0.7561,
+    "q5": 0.6991
+   },
+   "ann_mean_by_quintile_pct": {
+    "q1": 10.487,
+    "q2": 14.426,
+    "q3": 14.646,
+    "q4": 10.419,
+    "q5": 8.675
+   }
+  },
+  "verdict": "REPRODUCED_DIRECTION_NOT_MAGNITUDE",
+  "findings": [
+   "부호 반대 재현: 평균 스프레드는 t -0.368 로 0 과 구별 불가(연 -1.81%), 중앙값은 t +3.375 로 유의(연 +15.51%).",
+   "왜도 단조 감소 재현: Q1 1.015 -> Q5 0.699. 산문 기록(0.96 / 0.69)과 Q5 는 소수 2자리 일치, Q1 은 +0.05 차.",
+   "크기는 프레임 의존 — 중앙값 연 15.51% vs 산문 12.01%, t 3.375 vs 2.57. 산문 프레임(기간/유니버스/분위수)이 미상이라 정확 일치 주장 불가.",
+   "★신규(산문에 없던 구조): 분위별 연평균 수익이 혹(hump)형 — Q1 10.49 / Q2 14.43 / Q3 14.65 / Q4 10.42 / Q5 8.68%. 평균으로는 중간 분위가 최고다.",
+   "★기전 해석: Q1 은 평균 중간인데 왜도 최고 = 소수 극단 상승이 평균을 끌어올린다. Q5 는 평균 최저·왜도 최저. 중앙값 스프레드가 Q5-Q1 양수인데 평균이 음수인 것은 **Q1 의 꼬리가 평균을 뒤집기 때문**이다.",
+   "=> v8.4 Lane A 의 근거가 실측으로 섰다: 평균 표적은 Q1 꼬리에 속고 분위/중앙값 표적은 안 속는다."
+  ],
+  "caveats": [
+   "이것은 횡단면 분위 통계이지 자본 게이트 값이 아니다. PORT_t/graduation 문턱과 같은 문장에 놓지 말 것.",
+   "long-only top-N 은 평균도 중앙값도 아닌 실제 보유 종목의 실현 수익이다. 이 구분이 PORT_t 로 어떻게 전이되는지가 Lane A 의 1급 질문이며 본 probe 는 답하지 않는다.",
+   "산문 프레임 미상이므로 '산문 수치가 틀렸다' 고 말할 수 없다 — 다른 프레임의 같은 구조일 가능성이 크다.",
+   "D03 계열 팩터명을 로그 tail 에서 확인하지 못했다(D03* 첫 항목 사용). 인용 전 정확명 확정 필요."
+  ],
+  "next_probes": [
+   "Lane A arm A: 평균-표적 월간 예측기가 SR ~0.49 대역을 재현하는가(기준선 성립 조건). 미재현이면 비교 불가로 착수 중단.",
+   "혹(hump)형 분위 수익이 D03 고유인가 재료-일반인가 — Q01/M26 등 다른 재료에 같은 프레임 적용(FQ-171 census 와 합류)",
+   "중앙값-우위가 top-N 실현 수익(PORT_t)으로 전이되는가 — canonical_screen_bt 로 Q5 top-25 실측"
+  ]
+ }
+}

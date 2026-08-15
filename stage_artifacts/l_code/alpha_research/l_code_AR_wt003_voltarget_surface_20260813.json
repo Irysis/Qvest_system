@@ -1,0 +1,27 @@
+{
+ "research_mode": "QPM",
+ "emitted_at": "2026-08-13",
+ "emitted_by": "Q-Lead session (/qvest 부팅 세션, 2026-08-13)",
+ "l_code": "L-AR-20260813_WT003",
+ "strategy_id": "wt003_voltarget_surface_20260813",
+ "grade": "N/A_mechanism_gate_fail",
+ "metric_type": "panel_statistic",
+ "family": "overlay_regime",
+ "tags": [
+  "vol_target",
+  "overlay",
+  "exposure_matched",
+  "power_wall",
+  "mechanism_gate"
+ ],
+ "core_reference": "WT-D20260813_003 · prereg_VT.json(측정 전) · stage_artifacts/WT_D20260813_003/vt_final.json",
+ "scope": "WT-002 진단(분산 예측기)을 소비면 오배치 가설로 재해석해 vol-target 으로 시험. 366개월. 자본 주장 0.",
+ "lesson_text": "★VT2 PASS / **VT2b REJECT** — VT4(성과) 미착수. VT1 예측 링크 실재(spearman(sigma_hat, 홀딩월 실현vol) **0.7219**) · VT2 분산 타이밍 이득 실재(**G 0.1408** vs circular-shift 순열 q95 0.0427, p<0.0005, 최소효과 0.02 의 7배) · **VT2b 에서 죽는다**(cov(e,r) **-1.480%/yr** NW3 t -1.108 / 드래그 이득 +0.790 / 순 **-0.691%/yr**. 표준함수 대조 Return.annualized 5.976% vs 통제 6.768% = -0.792%p, 근사와 일치). ■★**분해 성공** — 인접 negative 3건(OVL_book_voltarget_R3 Calmar 1.267 vs base 1.940 · PL_VolTargetFloored/Strict ΔIR -0.288/-0.414 · 06-18 H2)은 전부 **순성과만** 재서 '예측이 죽었는지 수확이 죽었는지' 를 못 갈랐다. 본 라운드가 병목을 **수확(cov(e,r))** 으로 확정. ⇒ 'vol-managed KR 비이전' 이 관찰에서 **기전**으로 승격. ■★★**404년 검정력 벽**: 순효과 |t|=1.96 도달에 약 **4,845개월(404년)** 필요(현 366, |t|~0.539). **시장-레벨 overlay 의 cov(e,r) 채널은 월간 벤치 자료로 원리적 미해소**이며, 인접 3건이 ΔIR·Calmar 로 갈리지 못한 것은 구현 실수가 아니라 **구조**였다. 사전등록 tie_rule(점추정)은 편의가 아니라 유일하게 실행 가능한 결정 규칙이었다. ■★설계 핵심 = **exposure-matched 통제** — vol-target 은 노출을 줄여 **기계적으로** vol 을 낮추므로 통제 없이는 'vol 감소' 가 성공으로 위장된다. ■기각 범위 = **연속 비율 매핑 한정**: 동일 PIT-clean 규칙에서 TAIL 선별월 -2.333%/월 vs sigma_hat 선별월 +0.079%/월(겹침 23/33) — spearman 0.838 인데 부호가 갈린다. 문턱형 미검. ■자기 적발 4건(발행 전 정정): tie_rule 미구현으로 PROCEED_VT4 오판 직전(그대로 갔으면 기각 대상에 성과를 쟀다) · parity 대조 numeric(0)→max=-Inf 침묵 통과 · 회귀 기울기 NW t 가 OLS 1계조건으로 항등 0(지문 '+0.000') · 선별율 불일치 비교(9% vs 20%).",
+ "mechanism_confirmed": "분산 예측 능력은 실재하고 분산 관리도 작동하나, 평균 수확 채널(cov(e,r))에서 소멸한다.",
+ "next_probes": [
+  "문턱형 × TAIL — 별도 사전등록. 판정 통계량을 **사건-수준 검정**으로 고정(연속 매핑의 검정력 벽 회피).",
+  "★검정력 벽 우회 = **표면 이동**: 위험모델 상관 채널 / CVaR·tripwire / **일별 축**. VT2 가 확립한 분산 예측 능력을 쓰되 VT2b 가 막힌 평균 수확을 요구하지 않는다. ⇒ WT-004(Σ 공통성분·주차) · WT-006(일별) 로 전개.",
+  "TAIL vs VOL 선별 불일치 규명 — spearman 0.838 인데 선별월 수익 부호가 갈린 실측이 단서."
+ ],
+ "revival_condition": "문턱형 × 사건-수준 검정이 유의한 분리를 내면 부활(본 판정은 **연속 비율 매핑** 한정 config-scoped negative — 형태 판결이지 계열 판결이 아니다) / 일별 축 자료로 cov(e,r) 검정력 확보 시 즉시 재측정 — **404년 벽은 월간 벤치 자료의 한계이지 기전의 부재가 아니다** / VT2 능력이 위험모델·tripwire 소비면에서 유효하면 본 negative 는 '소비면 오배치' 진단의 확증으로 전환."
+}

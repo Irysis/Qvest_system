@@ -1,0 +1,60 @@
+{
+ "status": "INVALID_FRAME_ERROR",
+ "invalidated_at": "2026-08-13",
+ "reason": "★이 산출물은 **구 측정 프레임**에서 나왔다. factor DB sig_date T 팩터를 T월 수익과 짝지어(build_monthly_forward_returns 앵커='sig_date 이하 최종거래일', 월초가 거래일인 달엔 앵커가 그날 자신) 팩터가 채점 대상 월을 봤다. 수정 = 팩터 Date +1개월.",
+ "evidence": "M04_Mom_1 평균 IC: 구 -0.9423 -> 수정 +0.0170 · |평균IC|>0.10 팩터: 46종 -> 0종",
+ "do_not_cite": "이 파일의 수치를 인용하지 말 것. 유효 정본 = r30_reframe_result.json",
+ "kept_for": "프레임 오류 사례로 보존(삭제 아님)",
+ "_original": {
+  "schema": "alpha_r22_v1",
+  "round_id": "v84-R22",
+  "measured_at": "2026-08-13",
+  "question": "제안서 핵심 효과가 H=12 단일 지평 의존인가 — 깨지면 제안서 자진 철회",
+  "verdict": "REPRODUCED_ACROSS_ALL_HORIZONS_PROPOSAL_STANDS",
+  "metric_type": "panel_statistic",
+  "design": "실제 HARD 문턱(2.95/0.7/0.64) 통과군 내부 정렬라벨 상/하위 성과차 · H=6/12/24 · 대조 E_random · 비겹침은 stride=H",
+  "results": [
+   {
+    "H": 6,
+    "align_diff": 2.869,
+    "random_diff": -0.06,
+    "t_nonoverlap": 16.83,
+    "n_nonoverlap": 37,
+    "months": 222,
+    "pass_avg": 20.9
+   },
+   {
+    "H": 12,
+    "align_diff": 2.884,
+    "random_diff": -0.088,
+    "t_nonoverlap": 13.05,
+    "n_nonoverlap": 19,
+    "months": 222,
+    "pass_avg": 20.9
+   },
+   {
+    "H": 24,
+    "align_diff": 2.859,
+    "random_diff": -0.096,
+    "t_nonoverlap": 11.72,
+    "n_nonoverlap": 10,
+    "months": 222,
+    "pass_avg": 20.9
+   }
+  ],
+  "key_finding": "★효과 크기가 지평에 거의 **불변**(2.859~2.884, 폭 0.025%p). 무작위 대조 전 지평 -0.06~-0.10. => H=12 단일 지평 의존 아님. 내가 스스로 건 철회 조건을 통과했다.",
+  "cross_check": "★대비가 정합한다: **관문 유지율 격차는 지평에 단조 증가**(+4.86->+7.24->+10.08%p, R16)인데 **성과 격차는 지평에 불변**이다. 유지율은 누적 이탈이라 시간 비례, 성과는 연율 수준이라 시간 중립 — 두 결과가 서로 다른 것을 재고 있음을 뜻하며 모순이 아니다.",
+  "caveats": [
+   "★H=24 비겹침 표본 n=10 — t 크기 인용 금지. 부호와 크기 안정성만 읽었다.",
+   "겹침 NW t(10~14)도 인용 금지 — 지평만큼 겹친다.",
+   "통과군 정의는 실제 HARD 문턱이나 게이트값은 팩터 대리 포트 동형(R14 spearman 0.9753 로 계약 추종 확인).",
+   "여전히 단일 유니버스(K200∪KQ150)·단일 표본기간."
+  ],
+  "next_probes": [
+   "다른 유니버스에서 재현 — 지평은 통과했으나 유니버스 축은 미검",
+   "INV07 오염 판명 시 R14/R19/R22 재확인(36 표본 최상단 이탈 영향)",
+   "제안서 §6 에 지평 재현 결과 반영",
+   "전수 316 으로 대리↔계약 충실도 확장"
+  ]
+ }
+}

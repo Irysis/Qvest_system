@@ -1,0 +1,327 @@
+{
+  "task_id": "WT-D20260813_004",
+  "as_of_date": "2026-08-13",
+  "forecast_horizon": "1M",
+  "spec_version": "ast_v1.1",
+
+  "round_character": {
+    "type": "inheritance_and_interface_handoff_only",
+    "produced_this_round": [
+      "신호 패널 승계(verbatim) + 승계 parity 독립 재실측",
+      "risk-research 소비 인터페이스 검증(축·결측·PIT 스탬프·lag 구조·조인키)",
+      "AST 구성 + 본 패키지 발행 + risk-research 핸드오프 명세"
+    ],
+    "NOT_produced_this_round": [
+      "공분산행렬 Sigma 추정 — 역할경계(strict_prohibitions 1). 본 라운드 주제가 위험모델이므로 '인터페이스 검증' 명목의 Sigma 접촉도 금지로 취급했다.",
+      "portfolio weight 결정 / 사전 최적화",
+      "성과 측정(canonical_screen_bt / forge / build_bt_result) — 본 가설의 1차 판정은 risk 단계 이후",
+      "신규 팩터 소싱 — 신호 승계 라운드"
+    ],
+    "capital_claim": false
+  },
+
+  "pit": {
+    "sig_date": "2026-07-01",
+    "decision_ts": "2026-08-13",
+    "sig_date_rationale": "인도 패널의 최종 완료 홀딩월 = 2026-07, 그 결정 컷오프 = 2026-07-01(EXCLUSIVE). 리프 소비 구간은 전부 Date < 2026-07-01 이내로 한정된다. 2026-08 행은 미완료월로 승계 단계에서 배제(WT-003 규약 승계)."
+  },
+
+  "hypothesis": {
+    "statement": "확립된 시장-레벨 분산 예측 능력(sigma_hat: trailing 252d 벤치 실현변동성, spearman(sigma_hat, 홀딩월 실현vol)=0.7219, WT-002/003 승계)을 Sigma 추정의 공통성분(시장성분) 분산 항 시간 조건화로 소비하면 — 상관 행렬과 개별(잔차) 분산은 동결한 채 — 실 book 총분산의 1-step 예측오차(QLIKE)가 핀된 incumbent(FQ-057 채택 구성) 대비 유의하게 감소하고(DM t <= -2.0 AND 상대 QLIKE 개선 >= 5%), 그 개선이 (i) 공통성분 기여로 (ii) sigma_hat 혁신(국면 전환) 구간으로 국소화된다. 판정 통계량 전부가 2차 모멘트 단위이므로 평균 초과수익이 어디에도 개입하지 않는다(404년 벽 통과 논증). 사전 기대 = 중하(가장 인접한 측정 arm FQ-108 하이브리드가 PRIMARY 셀 DM t -1.658 미달). 자본 주장 없음.",
+    "inheritance_note": "본 hypothesis 층은 alpha_hypothesis.json::selected 를 그대로 승계한 것이며 alpha-research 가 재작성하지 않았다(Charter 원칙 8 No Silent Override). falsification 만 schema 형식(배열 + 리프 지목)으로 전사 — 내용 변경 없음. 원문 대조 원천 = qepm/mailbox/worktask/WT-D20260813_004/alpha_hypothesis.json.",
+    "mechanism": {
+      "agent": "(1) 예측 가능한 공통성분 분산 변동을 만드는 주체 = 레버리지·마진 제약 하의 강제 청산 주체(신용융자 개인 계정·마진콜 대상 포지션) — 고변동기에 가격-비탄력적 매도를 집행해 시장-레벨 변동성 군집을 지속시킨다(WT-003 mechanism.agent 1 승계 — 실현vol ac1 0.7796 이 이 군집의 실측). (2) 그 예측 가능성을 흘리는 오류 주체 = 현행 QEPM 위험 층의 장창 공통성분 추정 관행 — incumbent Sigma(FQ-057 채택 프레임)의 상관·공통 구조는 60m(5년) 급 장창에서 추정되어 국면을 평균한다: 고변동 진입월에 공통성분 분산을 과소예측하고 진정 후에는 과대예측한다. 이 오류 주체는 시장이 아니라 우리 자신의 배관이며, 실명 실측 근거 = FQ-108 의 '단기 vol 정보의 미소비'(D35 factor DB 등재 후 소비자 0) + 집중 book 총분산의 병목이 대각이 아니라 상관·시장성분이라는 구조 발견.",
+      "friction": "격차가 저절로 닫히지 않는 마찰 3중 — 전부 실명·실측 기반. (i) 추정 분산 트레이드오프의 비대칭: N×N 상관을 단창으로 추정하면 p>n 잡음이 지배(FQ-108 실측 — linear LW 가 p>n 에서 Sigma 근사 mu*I 퇴화)라 장창 고정이 합리적 관행인데, 시장-레벨 분산은 1계열·일별 252관측이라 단창에서도 정밀 추정된다. '상관은 장창, 공통분산은 단창' 분리가 가능한데 현행 구조는 분리하지 않는다 — 이 비대칭이 격차의 존속 이유이자 본 설계가 여는 레버. (ii) 형태 마찰(실측): 파이프라인의 vol 정보 유통이 횡단면 z-형태(load_month_factors Z_Score_Aligned)라 분산의 레벨이 소거된다 — FQ-108 구조 발견 (2): vol-tail 계열 8종이 위험모델 입력으로 형태 부적합, 'D35 소비자 0' 의 일부는 무관심이 아니라 형태 불일치. 시장-레벨 sigma_hat 는 레벨 그대로 승계 패널에 존재하므로 이 마찰을 우회한다. (iii) 재현성·pin 관행: 위험모델 구성은 pin_tag 재현성 규율(measurement-graduation 7절 vintage pinning) 아래 변경 비용이 높아, 개선 후보가 실측 관문(QLIKE/DM 사전등록) 없이는 채택되지 않는다 — 격차가 '알려져 있어도' 남아 있는 조직적 이유. 본 라운드가 바로 그 관문을 설계한다.",
+      "path": "sigma_hat_m (홀딩월 시작 전 C5 컷오프, WT-003 패널 승계 지목 — 재구축 금지) -> Sigma'_t = incumbent 에서 공통성분(시장성분) 분산 항만 sigma_hat^2_m 으로 조건화(상관 행렬·개별잔차 분산 동결; factor 구조 표기로 Sigma = B Omega B' + D 에서 Omega 의 시장 요인 분산만 교체 — 구현 추정기 선택은 risk-research 소관, 본 설계는 채널만 지정) -> [판정 1차 P1] 실 book 총분산 1-step 예측 QLIKE 의 DM 검정 (vs 핀된 incumbent, FQ-108 PRIMARY 와 동일 프레임) -> [판정 2차 P2] 개선 국소화 분해: 공통성분 기여 몫 + sigma_hat 혁신 월 집중도 -> [소비 존재 확인 P3, 기계 통계량] 동결된 과거 alpha 입력(production-parity) 위에서 Sigma->Sigma' 교체가 optimizer weight 를 실제로 움직이는가: L1 norm of delta-w 분포 + bind 월의 beta-틸트 방향. Sigma->lambda*Sigma 비례 스케일은 full-invested(sum w = 1) 최적해를 바꾸지 못하나 본 조건화는 공통성분만 움직이는 비-비례 변화라 고beta 대 저beta 상대 위험기여가 이동해 weight 가 beta-축으로 응답한다. 응답 크기는 후보군 beta 횡단면 분산에 비례(미측정 — P3 가 실측할 대상). P3 가 0 으로 나와도 분산-단위 소비자 2종(TE 예측 정확도 -> monitoring 입력 / 국면 조건부 종목상한 판정의 위험상태 입력)이 잔존하나, 그 경우 라운드 라벨을 '예측 정확도 확립·weight 소비 부재' 로 강등한다. 성과(평균-단위) 주장은 어느 단계에도 없다."
+    },
+    "falsification": [
+      {
+        "leaf": "A1_RAWDATA_OHLCVS_daily",
+        "expectation": "[F-a 지연 격차의 실존 — 기전 부수 관측] 기전이 참이면 incumbent 장창 공통성분 분산 예측의 부호 있는 오차(과소/과대)가 sigma_hat 혁신(delta sigma_hat_m)과 양의 상관이어야 한다: 국면 진입월(delta sigma_hat > 0)에 과소예측이 군집. 일별 BM_Ret 로 월내 실현 시장분산을 만들고 incumbent 형 장창 추정과의 오차 계열을 구성해 cor(signed error, delta sigma_hat) 의 NW t 로 검정. 이 상관이 부재하면 — 설령 QLIKE 총량이 다른 이유로 개선되더라도 — '장창 지연 격차' 기전은 기각(개선의 출처를 재진단하기 전에 소비 금지)."
+      },
+      {
+        "leaf": "F5_live_ops_book_nav",
+        "expectation": "[F-b 국소화 — settled-negative 재포장 방어] QLIKE 개선의 기여 분해에서 공통성분 몫이 지배(50% 이상)해야 한다. 개별분산(대각) 기여가 지배하면 FQ-108 이 닫은 채널의 재포장이므로 기각."
+      },
+      {
+        "leaf": "A4_benchmark_kospi200",
+        "expectation": "[F-c 저변동 무차별 — 진단 겸용, WT-003 장치 승계] gap 항 = beta*beta'*(sigma_hat^2_m - sigma_bar^2_장창) 이므로 sigma_hat 가 장창 평균에 근접한 저변동 지속 구간에서는 개선이 구조적으로 0 에 가까워야 한다. 그 구간에서 유의 개선이 관측되면 성립 증거가 아니라 누출(C5 위반) 의심 신호로 역해석 — 판정 중단·재측정 트리거(VT3 동형)."
+      }
+    ],
+    "regime_scope": {
+      "holds_in": [
+        "고변동 군집 진입·지속 구간(2008 · 2011 · 2020 · 2022 유형) — gap 항이 큰 유일한 영역이자 F-a 과소예측 군집이 예측되는 곳",
+        "국면 전환이 잦은 구간 — 장창(60m 급) 평균과 단창(252d) sigma_hat 의 괴리가 구조적으로 커져 조건화의 정보 이득이 최대"
+      ],
+      "weakens_or_reverses_in": [
+        "저변동 지속(정착) 구간 — sigma_hat 이 장창 평균에 근접 -> gap 이 0 으로, 예측된 무차별(개선 0 은 실패가 아니라 설계 정합; 유의 개선 시 F-c 누출 역해석)",
+        "군집 단절·경고 없는 첫 충격월(2020-03 진입 속도 유형) — trailing sigma_hat 는 사건 후에만 반응, 첫 점프의 예측오차는 정의상 개선 불가(WT-003 경계 승계). 개선은 군집의 지속 부분에만 존재",
+        "상관 구조 자체가 급변하는 구간(위기 시 상관 동반 급등) — 본 설계는 상관 동결이 전제라 공통성분 분산 조건화로 잡히지 않는 오차(상관 항)가 지배할 수 있음 — 개선 희석. 이 잔여가 유의하게 크면 C3(상관 채널)의 몫이지 본 채널의 반증이 아님을 사전 구분",
+        "incumbent 분산 처리가 이미 빠른(EWMA 급) 구성인 경우 — gap 항이 부분 흡수되어 증분 축소(config 경계). 측정 시 incumbent pin_tag 고정 + incumbent 의 실효 분산 창 명시가 판정 전제",
+        "후보군 beta 횡단면 분산이 압착된 구간 — P3 weight 응답이 0 에 접근(비-비례 변화의 지렛대가 beta 분산이므로). 이 구간에서는 소비 가치가 분산-단위 소비자로 한정"
+      ],
+      "boundary_rationale": "경계 전부가 gap 항 식 beta*beta'*(sigma_hat^2_m - sigma_bar^2_장창) 과 두 동결 가정(상관·개별잔차)에서 해석적으로 도출된다 — 사후 데이터 관찰이 아니다. (a) gap 이 0 이 되는 저변동 경계는 식의 영점, (b) 첫 충격 경계는 trailing 추정의 구조적 지연, (c) 상관 급변 경계는 동결 가정의 잔여항, (d) beta 압착 경계는 비-비례 변화가 weight 를 미는 지렛대의 소실점. 보편타당 주장 없음 — 상시·전역 개선 관측은 오히려 설계 의심(F-c) 신호다."
+    }
+  },
+
+  "factors": [
+    {
+      "factor_id": "F1_sigma_hat_market_252d",
+      "ast": {
+        "op": "TS_STD",
+        "args": [
+          { "leaf": "A1_RAWDATA_OHLCVS_daily:BM_Ret" },
+          252
+        ]
+      },
+      "role": "conditioning",
+      "restatement_exposure": 1,
+      "ast_notes": "AS_OF 노드 미기재는 누락이 아니다 — operator_library.json AS_OF output.definition: '리프 기본 AS_OF 규율(컴파일러 소유)은 명시 노드 없이도 항상 적용, 본 연산자는 추가 보수화 전용'. 본 팩터의 컷오프(Date < 홀딩월 1일)는 기본 규율로 충족되며 self_pit_check 에 명시했다.",
+      "dimensionality_note": "정직 라벨 — 본 리프는 벤치 일수익 브로드캐스트라 sigma_hat 는 시장-레벨 1계열이고 횡단면 분산이 0 이다. TS_STD grouping=by=Ticker 는 종목별로 동일값을 낸다. 따라서 이 팩터는 종목 선별 알파가 아니라 위험모델 조건화 입력이며, 횡단면 통계량(rank-IC/monotonicity/decile)은 측정치가 아니라 정의상 부재다(diagnostics 참조).",
+      "escape_leaf_used": false,
+      "stored_panel_disguise_check": "승계 패널(alpha_scores.parquet)을 FIELD 리프로 위장하지 않았다 — 리프는 원천 A1:BM_Ret 이고, 승계 패널은 그 리프에서 본 AST 로 재현 가능함을 실측했다(level parity max|diff| = 0.00e+00)."
+    }
+  ],
+  "combination_rule": "single_factor",
+  "verdict": "designed",
+
+  "self_pit_check": {
+    "performed": true,
+    "leaves_checked": [
+      {
+        "leaf": "A1_RAWDATA_OHLCVS_daily:BM_Ret",
+        "availability_rule": "fixed: 일배치 cron 00:03 KST, Naver T+0 PRIMARY + KRX fallback. 의사결정 시점 t 가용 최신행 = t-1 거래일. 본 팩터 소비 컷오프 = Date < first-day-of-holding-month (C5, EXCLUSIVE).",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "A4_benchmark_kospi200",
+        "availability_rule": "fixed: 일배치 00:03 KST Naver patch, T-1 정합. F-c 구간 판정 보조 및 홀딩월 실현 vol 산출용.",
+        "restatement_prone": true
+      }
+    ],
+    "verdict": "warn_restatement",
+    "notes": "clean 이 아니라 warn_restatement 로 판정한 근거: A1·A4 둘 다 ast_field_map restatement_prone=TRUE(수정주가 원장 전기간 재작성 + 벤치 writer 2계 공존). 다중라운드 판정이므로 measurement-graduation 7절에 따라 risk-research 는 pin_cache/pin_tag 고정 후 측정할 의무가 있다.",
+    "pit_evidence_basis": {
+      "accepted_evidence": "★구성-수준 재현 — 원천 리프에서 strict 컷오프(Date < hold_start) 규약으로 sigma_hat 를 재구축한 결과가 승계 패널과 max|diff| = 0.00e+00 (n=366/366). 즉 패널이 실제로 strict 컷오프로 만들어졌음이 재현으로 확인된다. 여기에 WT-003 의 assert_overlay_pit HARD 통과가 더해진다.",
+      "rejected_evidence": "★통계적 타이밍 진단(방향 검사)은 근거로 채택하지 않는다 — 위반 주입 테스트에서 판별력 0 으로 실측됐다(s3/s4). 상세는 challenge_flags CF-9.",
+      "residual_risk": "구성 재현은 '패널이 선언된 규약대로 만들어졌다' 를 보이지만 '규약 자체가 옳다' 를 보이지는 않는다. 규약의 정당성은 C5 정의(홀딩월 시작 전)에서 오며 그 정의는 pit.md 정본이다. 그리고 재현은 오늘 시점 원장 기준이라 향후 restatement 를 배제하지 않는다 — pin 의무가 그 잔여를 덮는다."
+    }
+  },
+
+  "alpha_vector": {},
+  "confidence_vector": {},
+  "alpha_discovery_count": 0,
+  "signal_matrix_ref": "stage_artifacts/WT_D20260813_004/alpha_scores.parquet",
+
+  "factor_specs": [
+    {
+      "factor_family": "Risk_Volatility_MarketLevel",
+      "proxy": "sigma_hat_market_252d (trailing 252 거래일 벤치 일수익 표본표준편차)",
+      "formula": "sd(tail(BM_Ret[Date < first_day_of_holding_month], 252))",
+      "lag_rule": "C5 overlay timing — Date < first-day-of-holding-month (EXCLUSIVE). 재무 lag 무관(가격계 리프).",
+      "winsorization": "none (레벨 보존이 소비 조건 — 횡단면 z 형태로 바꾸면 분산 레벨이 소거되어 위험모델 입력 자격 상실. friction (ii) 참조)",
+      "neutralization": "none (시장-레벨 1계열 — 중립화 대상 횡단면 없음)",
+      "economic_rationale": "레버리지·마진 제약 하 강제 청산 주체의 가격-비탄력적 매도가 시장-레벨 변동성 군집을 지속시킨다(실현vol ac1 0.7796). 그 군집성이 trailing 252d 실현변동성에 의해 다음 달 실현 분산으로 전이된다(spearman 0.7219, WT-003 VT1 실측). 신규 예측력 주장 아님 — 확립된 능력의 소비면 이동이 본 라운드의 대상이다.",
+      "weight_theta": 1.0,
+      "source": "db_derived (승계 — WT-D20260813_003 alpha_scores.parquet 을 재구축 없이 그대로 인도)",
+      "redundancy_cluster_id": "CLU_market_level_realized_vol (WT-002 VOL / WT-003 sigma_hat 와 동일 대상 — 신규성 없음, 승계 자인)",
+      "references": [
+        "WT-D20260813_003 alpha_validation.json (VT1 spearman 0.7219 / VT2 G 0.1408 vs 순열 q95 0.0427)",
+        "WT-D20260813_002 vol_basis_correction.json (VOL basis 자기 적발·교정 기록)",
+        "FQ108_TAILVOL_RISK_AXIS (대각 채널 증분 없음 — 본 채널의 보완 관계)"
+      ]
+    }
+  ],
+
+  "diagnostics": {
+    "rank_ic": 0,
+    "rank_ic_status": "structurally_undefined_not_measured_zero",
+    "rank_ic_note": "schema type=number 라 0 을 기입했으나 이는 '측정해서 0' 이 아니라 '정의상 부재' 다. sigma_hat 는 시장-레벨 1계열이라 횡단면 분산이 0 이고 종목 간 순위가 존재하지 않는다. 이 값을 advisory 진단으로도 인용하지 말 것.",
+    "alpha_inheritance_cor": 1,
+    "alpha_inheritance_cor_basis": "verbatim 승계 — 재구축 아님. 독립 재실측 max|diff| = 0.00e+00 (원천 리프에서 AST 재구축 vs WT-003 sigma_hat_daily, n=366/366). cor=1.0 은 설계상 자명값이 아니라 실측 결과.",
+    "canonical_port_t_nw_lag3": null,
+    "canonical_port_t_null_reason": "본 라운드는 성과 측정 금지(승계·인터페이스 전용). 더 근본적으로 이 가설의 1차 판정 통계량은 PORT_t 가 아니라 QLIKE/DM(2차 모멘트)이며, 평균-단위 통계량은 WT-003 이 실측한 404년 벽(순효과 |t|=1.96 에 약 4,845개월)에 걸린다. canonical_port_t 를 산출하는 것 자체가 벽에 다시 들어가는 행위라 설계상 부적합.",
+    "icir": null,
+    "monotonicity": null,
+    "subperiod_stability": null,
+    "turnover_proxy": null,
+    "harvey_t_stat": null,
+    "deflated_sharpe_ratio": null,
+    "dsr_applicability": "selection_type=chain (승계 1계열, 조건화 형태 1개 사전 고정, grid 0회) -> DSR HARD 부적용. 본 라운드는 후보 선택 자체가 0건이므로 sweep 성립 불가.",
+    "inheritance_parity_measured": {
+      "level_parity_sigma_hat": { "n": 366, "n_theory": 366, "max_abs_diff": 0, "spearman": 1 },
+      "z_parity_VOL": { "n": 367, "n_theory": 367, "max_abs_diff": 0, "spearman": 1 },
+      "bm_ret_parity_003_vs_002": { "max_abs_diff": 0, "identical": true },
+      "metric_type": "interface_verification"
+    },
+    "interface_verification_summary": {
+      "axis_integrity": "PASS — ym 유일·정렬·캘린더 공백 0, hold_start = 월 1일, signal_cutoff == hold_start (양 패널 동일)",
+      "missing_cells": 0,
+      "join_003_002_loss_pct": 0,
+      "pit_direction_test": "RETRACTED_NO_POWER — clean 판이 PASS(margin +0.0647)한 것은 사실이나, 동일 검사에 C5 위반을 주입한 판도 PASS(margin +0.0295)했다. 판별력 0 이므로 이 PASS 를 PIT 근거로 인용하지 말 것(CF-9).",
+      "pit_evidence_actually_used": "구성-수준 재현 (strict 컷오프 재구축 vs 승계 패널 max|diff| = 0.00e+00) + WT-003 assert_overlay_pit HARD"
+    }
+  },
+
+  "risk_research_handoff": {
+    "purpose": "본 라운드의 1차 판정(P1 QLIKE/DM · F-a/F-b 분해)은 Sigma 추정을 수반하므로 alpha-research 가 실행할 수 없다(strict_prohibitions 1). 아래는 인도 명세이며, 측정 주체는 Q-Lead 라우팅 결정에 따른다(challenge_flags CF-2 참조).",
+    "panel_path": "stage_artifacts/WT_D20260813_004/alpha_scores.parquet",
+    "panel_shape": { "rows": 366, "cols": 24, "window": ["1996-02", "2026-07"] },
+    "columns_delivered": [
+      { "col": "ym", "role": "JOIN KEY (정본)", "type": "character YYYY-MM", "semantics": "홀딩월 = 수익이 실현되는 달" },
+      { "col": "hold_start", "role": "축 보조", "type": "Date", "semantics": "홀딩월 1일" },
+      { "col": "signal_cutoff", "role": "PIT 스탬프", "type": "Date", "semantics": "EXCLUSIVE upper bound — 일별 리프는 Date < signal_cutoff 만 사용됨. signal_cutoff == hold_start" },
+      { "col": "sigma_hat_daily", "role": "1급 입력 (처치 신호)", "type": "double", "semantics": "trailing 252 거래일 벤치 일수익 표본표준편차, 레벨(z 아님)" },
+      { "col": "sigma_hat_monthly", "role": "표시용", "type": "double", "semantics": "sigma_hat_daily * sqrt(21) — 단순 스케일, 정보 동일" },
+      { "col": "VOL_wt002", "role": "대조 (WT-002 승계)", "type": "double", "semantics": "anchored expanding-z 값. 레벨 아님 — 위험모델 입력으로 쓰지 말 것(레벨 소거)" },
+      { "col": "MSM_control / BEAR_control", "role": "대조군 전용", "type": "double", "semantics": "C1 전표본 디민 실측으로 피처 자격 없음(WT-002/003 규약 승계). F-c 구간 라벨 보조로만." },
+      { "col": "exposure_e / bind / at_floor / sigma_star", "role": "승계 이력(비소비)", "type": "double/logical", "semantics": "WT-003 노출 스케줄 = 평균 수확 채널의 산물. 본 라운드가 배제한 면이라 risk 측정 입력 아님" },
+      { "col": "bm_ret_holding_month / realized_vol_in_month", "role": "OUTCOME (target)", "type": "double", "semantics": "홀딩월 '내' 실현값. 피처로 투입하면 C2 동월 순환참조 — 검정 대상으로만 사용" }
+    ],
+    "join_key_convention": {
+      "primary_key": "ym (character YYYY-MM)",
+      "book_side_key": "return_ym",
+      "canonical_recipe": "merge(sigma_panel, book, by.x='ym', by.y='return_ym')",
+      "measured_evidence": {
+        "book_file": "06_Registry/live_track/STR_1715_on_M4gAE_R05_noLayer4_PG2/live_book_series.csv (271행)",
+        "join_on_return_ym": { "n_joined": 271, "axis_diag_cor": 0.699971 },
+        "join_on_realized_ym": { "n_joined": 270, "axis_diag_cor": 0.082874 },
+        "reading": "행 수는 271 대 270 으로 거의 같아 개수만 보면 두 키가 구분되지 않는다. 갈리는 것은 축 정합(0.70 대 0.08) — realized_ym 은 결정월 라벨이라 1개월 어긋난다. 조인 손실이 없어도 키가 틀릴 수 있다.",
+        "metric_type": "interface_diagnostic (성과 통계량 아님 — 어느 라벨이 같은 달을 가리키는지의 축 식별용)"
+      },
+      "prohibited": [
+        "book 의 date 컬럼(실제 결정 거래일)과 hold_start(월 1일)의 Date 정확일치 merge — 08-13 실사고 유형(271에서 142로 52% 소실). 본 패널은 월초 1일 스탬프이고 book date 는 거래일이라 대부분 불일치한다.",
+        "realized_ym 조인 — 손실은 1행뿐이라 '손실 5% 검문'을 통과하면서 축이 1개월 어긋난다."
+      ],
+      "post_join_assertion": "조인 후 개수를 이론값과 대조하고 손실 5% 초과 시 중단(WT-003 s1_prereg.R:70 선례). 개수 검문만으로는 위 realized_ym 오류가 잡히지 않으므로 축 정합 진단을 함께 볼 것."
+    },
+    "pit_contract": {
+      "cutoff_semantics": "Date < signal_cutoff (EXCLUSIVE). signal_cutoff == hold_start == 홀딩월 1일. 홀딩월이 시작되기 전 데이터만 sigma_hat 에 들어갔다.",
+      "guard": "source('02_Infrastructure/validation/overlay_pit_guard.R'); assert_overlay_pit(used_cutoff, holding_start) HARD 통과 의무 (WT-003 실증 승계)",
+      "stress_required": [
+        "lag1 스트레스 — sigma_hat shift(1) 판에서 QLIKE 개선 잔존율. ac1 0.9902 이므로 부분 잔존이 정상이고 전멸이면 동월 누출 의심",
+        "strict-PIT A/B — 느슨 컷오프(동월말 정보) 판 대비 인플레 5% 초과면 strict 값으로 재판정",
+        "F-c 저변동 무차별을 누출 검출기로 겸용 (저변동 구간 유의 개선 = 성립 아닌 누출 신호)"
+      ],
+      "stress_power_caveat": {
+        "severity": "HIGH — 관문 설계에 직접 영향",
+        "measured": "본 라운드가 C5 위반(홀딩월 말까지 포함)을 실제로 주입해 3개 통계량을 시험한 결과 전부 판별 실패: A 방향검사(clean +0.0647 / 오염 +0.0295) · B 창밖-창안 대비(+0.0656 / +0.0303) · C 동월 첫날 반응(0.3380 / 0.3538). 어느 것도 부호가 뒤집히거나 문턱을 넘지 않았다.",
+        "why": "252거래일 창에 홀딩월 약 21일을 더해도 창의 약 8% 만 바뀐다. sigma_hat 의 ac1 이 0.9902 라 지속성이 통계량을 지배해 한 달 오염이 묻힌다.",
+        "implication_for_this_round": "★lag1 스트레스에도 같은 논리가 적용될 소지가 크다 — ac1 0.9902 신호를 1개월 미는 것은 창의 약 8% 변경이며, 같은 크기의 창 변경(위반 주입)이 본 라운드에서 통계량 A 를 +0.0647 에서 +0.0295 로 움직이는 데 그쳤다(부호 불변·문턱 미도달). 따라서 lag1 판에서 개선이 잔존하더라도 그 잔존이 'clean 이라서' 인지 '검사가 둔감해서' 인지 두 해석이 구분되지 않는다. 이 추론은 lag1 자체를 측정한 것이 아니라 동형 크기의 창 변경 실측에서 옮긴 것이므로, 확정이 아니라 사전 경고로 취급하고 risk-research 가 lag1 검사에 직접 위반 주입을 해 확인할 것.",
+        "instruction": "lag1/strict A/B 를 통과 근거로 쓰려면 먼저 그 검사에 위반을 주입해 발화하는지 확인할 것(양성 대조). 발화하지 않으면 통과는 정보가 없다. 본 패널의 PIT 근거는 통계 진단이 아니라 구성-수준 재현(max|diff| 0)과 assert_overlay_pit 이며, risk-research 는 자기가 새로 만드는 파생물에 대해 같은 급의 구성-수준 증거를 세워야 한다."
+      },
+      "outcome_columns_forbidden_as_features": ["bm_ret_holding_month", "realized_vol_in_month"]
+    },
+    "warmup_hazard": {
+      "severity": "HIGH — 본 인터페이스의 최대 오독 지점",
+      "fact": "인도 패널(366행, 1996-02 시작)은 427개월 anchored 격자(1991-02 ~ 2026-08)의 창(window)이다. 그 앞 60개월이 패널에 없다.",
+      "consequence": "exp_z / expanding median 같은 anchored 변환은 패널만으로 재현되지 않는다. 실측: 패널 366행만으로 exp_z 를 재현하면 WT-002 VOL 과 max|diff| = 2.827, spearman = 0.924 가 나온다 — 이는 승계 불일치가 아니라 warm-up 결손이다.",
+      "instruction": "anchored 변환을 재현·확장해야 하면 반드시 원천(.cache/RAWDATA.parquet BM_Ret)에서 427개월 격자를 다시 만들어 산출할 것. sigma_hat_daily 레벨 자체는 격자 무관하게 패널 값이 정본이다(max|diff| 0.00e+00 실증).",
+      "why_it_matters_here": "본 라운드가 처음 측정할 때 이 함정에 걸려 정상 패널을 '승계 불일치'로 오독할 뻔했다. 원인은 자료가 아니라 basis 를 코드가 아닌 눈으로 추정한 것 — 08-13 borrowed-basis 패턴과 동형이다."
+    },
+    "leaf_hazards": [
+      "A4_benchmark_kospi200 의 Date dtype = timestamp[ns] 인데 A1_RAWDATA 는 date32 — by='Date' 조인 시 silent all-NA 실사고 전력(fdb_daily beta 54팩터 전멸). 소비 전 dtype 정규화 필수(ast_field_map A4 pit_hazards 1).",
+      "A4 IKS001(코스피 종합) 오염 전력 — 2026-07-02 이전 고-PORT_t 기록 인용 전 재베이스 의무.",
+      "A1·A4 둘 다 restatement_prone=TRUE — 다중라운드 판정은 pin_cache 의무(measurement-graduation 7절). 실사고: benchmark 재생성으로 F5 SR 2.224 에서 2.161 로 tipping.",
+      "일별 원장 말단 배제 규약 승계: Date <= 2026-08-08 (말단 0채움 배제). 미완료월(2026-08)은 평가 표본에서 제외 — 진행 중인 달을 완료로 취급하면 동월 look-ahead."
+    ],
+    "prereg_obligations_carried": {
+      "source": "alpha_hypothesis.json::handoff.prereg_obligations_for_executor — 재작성 없이 이월",
+      "items": [
+        "1. PRIMARY 셀 = 실 book 총분산 x 핀된 incumbent (FQ-108 비교가능 프레임)",
+        "2. 최소효과(상대 QLIKE 5% 이상) 사전 고정 — 사후 하향 금지",
+        "3. selection_type=chain (매핑·창 grid 금지 — sigma_hat 는 승계 1계열, 조건화 형태 1개 사전 고정)",
+        "4. F-a/F-b/F-c 전건 사전등록",
+        "5. 사전등록은 문서가 아니라 코드에 (WT-003 5절 교훈 — verdict 로직에 tie/threshold 전건 구현)",
+        "6. lag1 + strict A/B + assert_overlay_pit HARD"
+      ],
+      "additional_from_this_round": [
+        "7. incumbent 의 실효 분산 창을 측정 전에 실측·명시 (FQ-057 KEEP EWMA 가 이미 빠른 창을 포함하면 gap 부분 흡수 — challenge_flags CF-6 승계)",
+        "8. 조인 후 개수를 이론값과 대조하되, 개수 통과가 축 정합을 보장하지 않음을 전제로 축 진단 병행"
+      ]
+    },
+    "decision_thresholds_inherited": {
+      "P1_primary": "DM t <= -2.0 AND 상대 QLIKE 개선 >= 5%",
+      "P2": "개선 기여 분해에서 공통성분 몫 >= 50% (미달 시 FQ-108 재포장으로 기각)",
+      "P3": "기계 통계량 L1 norm of delta-w 분포 + bind 월 beta-틸트 방향. 성과 채점 금지, 동결 alpha 입력 production-parity 라벨 의무(measurement-graduation 7b)",
+      "honest_prior": "중하 — 가장 인접한 측정 arm(FQ-108 하이브리드)이 PRIMARY 셀 DM t -1.658 미달"
+    }
+  },
+
+  "challenge_flags": [
+    {
+      "id": "CF-1",
+      "severity": "MEDIUM",
+      "type": "wt_type_reclassify_proposal",
+      "detail": "request.json wt_type=discovery 인데 실측 alpha_inheritance_cor = 1.0 (verbatim 승계, 신규 discovery 0건). alpha_research_init.md role_cards_by_wt_type 의 Reverse case 조항에 따라 재분류 권고를 발행한다. 가장 가까운 role card = sizing_only(alpha 0건이 정상 산출물 + inheritance_cor 0.95 이상 명시 + certificate 미발급이 정상). 단 본 라운드는 sizing 도 하지 않으므로 정확히는 inheritance_and_interface_handoff. alpha_discovery_certificate 미발급이 정상 동작이며 그 자체를 결함으로 읽지 말 것. 도훈/Q-Lead confirm 후 wt_advance."
+    },
+    {
+      "id": "CF-2",
+      "severity": "HIGH",
+      "type": "lane_routing_decision_required",
+      "detail": "선택 면이 위험모델이라 측정 실행 주체는 risk-research 가 적격이며 alpha-research 는 Sigma 를 만질 수 없다(strict_prohibitions 1). 선례 WT-D20260803_003 = CANCELLED_LANE_MISROUTE(위험·최적화 방법론 진단은 WT 가 아니라 FQ lane 으로). 본 WT 내 risk-research spawn 경로와 method_frontier(FQ-108b 인접) 재투입 경로 중 Q-Lead 결정 필요. alpha_hypothesis 가 이미 동일 flag 를 올렸고 본 라운드가 승계·재확인한다."
+    },
+    {
+      "id": "CF-3",
+      "severity": "HIGH",
+      "type": "interface_misread_hazard",
+      "detail": "anchored warm-up 결손 — 인도 패널은 427개월 격자의 366행 창이다. 패널만으로 exp_z/expanding median 을 재현하면 max|diff| 2.827·spearman 0.924 가 나오며 이를 승계 불일치로 읽는 것이 최대 오독 위험. 상세·수치·회피법 = risk_research_handoff.warmup_hazard. 본 라운드가 실제로 이 함정에 한 번 걸렸다가 코드(f1b_diagnosis.R:30, s1_prereg.R:50-53)에서 basis 를 읽고 원천 재구축으로 해소했다."
+    },
+    {
+      "id": "CF-4",
+      "severity": "MEDIUM",
+      "type": "join_key_hazard",
+      "detail": "book 축 조인은 ym 대 return_ym 만 정본. realized_ym 조인은 손실이 1행(271에서 270)뿐이라 손실 5% 검문을 통과하면서 축이 1개월 어긋난다(축 진단 0.70 에서 0.08). 개수 검문이 키 오류를 잡아주지 못하는 사례로 명시 인계."
+    },
+    {
+      "id": "CF-5",
+      "severity": "MEDIUM",
+      "type": "diagnostics_field_semantics",
+      "detail": "diagnostics.rank_ic = 0 은 측정값이 아니라 schema type=number 강제에 따른 자리표시다(sigma_hat = 시장-레벨 1계열, 횡단면 분산 0 이므로 순위 부재). rank_ic_status=structurally_undefined_not_measured_zero 를 함께 읽지 않으면 신호 없음으로 오독된다. canonical_port_t_nw_lag3 = null 도 미산출이 아니라 설계상 부적합(404년 벽)이다."
+    },
+    {
+      "id": "CF-6",
+      "severity": "MEDIUM",
+      "type": "incumbent_definition_risk",
+      "detail": "alpha_hypothesis 승계 — FQ-057 KEEP EWMA 가 incumbent 분산 처리에 이미 빠른 창을 포함하면 gap 항이 부분 흡수되어 증분이 축소된다. incumbent 실효 분산 창을 측정 전에 실측·명시하지 않으면 P1 판정이 config 미상으로 오염된다. pin_tag + 구성 명세가 판정 전제."
+    },
+    {
+      "id": "CF-7",
+      "severity": "LOW",
+      "type": "field_omitted_deliberately",
+      "detail": "selection_objective 를 기재하지 않았다. 본 라운드 후보 선택 0건(승계 전용)이라 enum 5종 중 무엇을 써도 하지 않은 선택을 주장하게 된다. role_objective_guard.sh 는 필드 부재를 allow(backward compat)하며 금지값(sharpe/net_ir/cagr/mdd)만 block 한다. 선택이 실제로 발생하는 단계는 risk-research P1 이며 그 objective 는 QLIKE/DM 이다(alpha enum 밖 — 역할이 다르므로 정상)."
+    },
+    {
+      "id": "CF-9",
+      "severity": "HIGH",
+      "type": "self_caught_retraction_detector_has_no_power",
+      "detail": "본 라운드 초판은 alpha_package 에 'PIT 방향 검사 PASS(margin +0.0620)' 를 PIT 근거로 실었다. finalize 전 위반 주입 테스트를 돌린 결과 C5 위반을 심은 판도 동일하게 PASS 해(margin +0.0295) 판별력이 0 임이 드러났고, 대안 통계량 2종(창밖-창안 대비 / 동월 첫날 반응)도 전부 실패했다. 해당 주장을 철회하고 근거를 구성-수준 재현(strict 컷오프 재구축 vs 승계 패널 max|diff| = 0.00e+00) + assert_overlay_pit 으로 교체했다. 산출물 = stage_artifacts/WT_D20260813_004/{pit_violation_injection,detector_power}.json. 파급: 승계 prereg 의 lag1 스트레스도 같은 둔감성을 가질 수 있어 risk_research_handoff.pit_contract.stress_power_caveat 로 이월했다. 교훈 형태 = '검사 PASS 는 결함 없음과 검사 사망을 구분하지 못한다'."
+    },
+    {
+      "id": "CF-8",
+      "severity": "LOW",
+      "type": "operator_library_gap_observed",
+      "detail": "승계 패널의 sigma_star(expanding median)는 연산자 집합으로 표현되지 않는다(TS 계열에 median 부재 + anchored 창 부재). 단 sigma_star 는 본 라운드가 배제한 노출-스케줄 면의 산물이라 인도 대상이 아니므로 blocked_by_capability 사유가 아니다. 연산자 확장 근거는 blocked verdict 적립분만이라는 규율(선제 확장 금지)에 따라 backlog 등재하지 않고 관측만 기록한다."
+    }
+  ],
+
+  "governance": {
+    "role_boundary_self_audit": {
+      "covariance_estimated": false,
+      "weights_proposed": false,
+      "performance_measured": false,
+      "new_factors_sourced": false,
+      "inherited_hypothesis_rewritten": false,
+      "note": "hypothesis 층은 승계 원문 유지, falsification 만 schema 배열 형식으로 전사(내용 무변경). 결함 발견 시 수정이 아니라 challenge_note 기록 + 재설계 요청이라는 Charter 원칙 8 을 준수했으며, 본 라운드에서 승계분 결함은 발견되지 않았다."
+    },
+    "next_probe": [
+      "NP1 — risk-research(또는 FQ lane) 가 본 핸드오프 명세로 P1(QLIKE/DM) 사전등록을 코드에 고정하고 PRIMARY 셀을 측정한다. 관문은 DM t <= -2.0 AND 상대 QLIKE 개선 5% 이상.",
+      "NP2 — P1 기각 시 인접 라우팅 = C3 상관/꼬리의존(TDC) 채널(FQ-108b, revival 조건 DM t <= -2.0 접속) 또는 일별 축(FQ-234). 계열 확대 금지(INV-7) — 닫히는 범위는 시장-레벨 sigma_hat x 공통성분 분산 조건화 x 핀된 incumbent 구성 이지 위험모델 면 전체 가 아니다.",
+      "NP3 — 인터페이스 부산물: anchored 격자 warm-up 결손이 승계 패널 일반의 재현성 함정인지(본 건이 첫 관측인지) 점검. 승계 패널을 내보낼 때 격자 원점을 메타로 함께 실어야 하는지의 배관 질문."
+    ],
+    "revival_conditions": [
+      "본 채널 기각 후에도, incumbent 분산 처리가 장창으로 확인되고(CF-6 실측) 상관-채널 라운드가 유의(DM t <= -2.0)하면 공통성분 조건화를 상관 채널과 결합해 재도전 가능",
+      "일별 축(FQ-234)에서 관측 수가 약 24배로 늘어 평균 채널 벽이 부분 완화되면 소비면 판정 자체를 재개할 수 있다"
+    ]
+  }
+}

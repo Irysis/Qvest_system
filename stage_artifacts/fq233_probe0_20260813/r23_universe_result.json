@@ -1,0 +1,55 @@
+{
+ "status": "INVALID_FRAME_ERROR",
+ "invalidated_at": "2026-08-13",
+ "reason": "★이 산출물은 **구 측정 프레임**에서 나왔다. factor DB sig_date T 팩터를 T월 수익과 짝지어(build_monthly_forward_returns 앵커='sig_date 이하 최종거래일', 월초가 거래일인 달엔 앵커가 그날 자신) 팩터가 채점 대상 월을 봤다. 수정 = 팩터 Date +1개월.",
+ "evidence": "M04_Mom_1 평균 IC: 구 -0.9423 -> 수정 +0.0170 · |평균IC|>0.10 팩터: 46종 -> 0종",
+ "do_not_cite": "이 파일의 수치를 인용하지 말 것. 유효 정본 = r30_reframe_result.json",
+ "kept_for": "프레임 오류 사례로 보존(삭제 아님)",
+ "_original": {
+  "schema": "alpha_r23_v1",
+  "round_id": "v84-R23",
+  "measured_at": "2026-08-13",
+  "question": "마지막 미검 축 — 정렬 라벨 효과가 K200 단독·KQ150 단독에서도 재현되는가",
+  "verdict": "REPRODUCED_IN_BOTH_STRONGER_IN_LARGE_CAP",
+  "metric_type": "panel_statistic",
+  "design": "각 하위유니버스가 **자기 벤치**(자기 cap-w forward return)를 갖는 독립 프레임. HARD 통과군 내부 정렬 라벨 상/하위. H=12.",
+  "results": [
+   {
+    "uni": "K200",
+    "months": 222,
+    "pass_avg": 17.3,
+    "align_diff": 2.871,
+    "random_diff": -0.048,
+    "t_nonoverlap": 11.68
+   },
+   {
+    "uni": "KQ150",
+    "months": 161,
+    "pass_avg": 23.6,
+    "align_diff": 1.939,
+    "random_diff": 0.198,
+    "t_nonoverlap": 7.31
+   }
+  ],
+  "key_finding": "★둘 다 양수, 무작위 대조 0 근처. 효과는 K200 에서 1.48배 크다(2.871 vs 1.939). K200 단독(+2.871)이 전체 유니버스 결과(+2.884)와 거의 같다 => 효과가 대형주 쪽에서 주로 오나 중소형주에서도 살아 있다.",
+  "caveats": [
+   "★KQ150 월수 161 vs K200 222 — 코스닥150 지수 출범이 늦어 **같은 기간 비교가 아니다**.",
+   "KQ150 무작위 대조 +0.198 로 K200(-0.048)보다 0 에서 멀다 — 짧은 표본의 대조군 잡음.",
+   "각 하위유니버스가 자기 벤치를 쓰므로 전체 유니버스 결과와 **basis 가 다르다**. 수치 직접 비교 시 주의.",
+   "t 절대값 인용 금지(12개월 겹침)."
+  ],
+  "axis_status": {
+   "horizon": "닫힘(R22: H6/12/24 불변)",
+   "universe": "닫힘(R23: 양쪽 재현)",
+   "benchmark_basis": "닫힘(R19: KOSPI200 spearman 0.9943)",
+   "proxy_vs_contract": "닫힘(R14: spearman 0.9753, 36 층화표본)",
+   "remaining": "①INV07 오염 여부(36 표본 최상단) ②전수 316 확장 ③다른 표본기간"
+  },
+  "next_probes": [
+   "제안서 §3/§6 에 유니버스 재현 반영",
+   "INV07 감사 결과 수령 후 R14/R19/R22/R23 표본 영향 재확인",
+   "K200 vs KQ150 효과 격차(1.48배)의 기전 — 유동성? 커버리지? 표본기간?",
+   "동일 기간(KQ150 출범 이후)으로 K200 을 잘라 공정 비교"
+  ]
+ }
+}

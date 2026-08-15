@@ -1,0 +1,119 @@
+{
+  "wt_id": "WT-D20260813_001",
+  "designed_by": "alpha-hypothesis",
+  "model_tier": "fable",
+  "designed_at": "2026-08-13",
+  "prechecks": {
+    "hypothesis_index_hits": [
+      {
+        "strategy_id": "STR_AS_20260612_131514_237951",
+        "title": "Tail Quantile Risk",
+        "verdict": "FAIL",
+        "relation": "재포장 아님 — crash_protection(하방 꼬리를 리스크로 소비). 본 WT 는 상방 분위를 예측 표적으로 삼는 축으로 소비 방향이 반대."
+      },
+      {
+        "strategy_id": "STR_AS_20260613_081217_254169",
+        "title": "Quantile Regression Forest — 수익률 분포 예측 → CVaR 최소화 종목 선정",
+        "verdict": "MARGINAL",
+        "relation": "재포장 아님 — 분포 예측을 하방 리스크(CVaR) 최소화로 소비. 본 WT 는 상방 분위(q90)를 top-N 평균 소비와 정합시키는 축."
+      },
+      {
+        "strategy_id": "DIST-QPM-003",
+        "title": "KR quality single-signal long-only 반복 실패 (Distilled)",
+        "verdict": "DISTILLED_NEG",
+        "relation": "직접 충돌 없음. 단 R32 notable 이 지적한 대로 quality 계열 실패의 일부가 '재료 부재가 아니라 측정 형태' 일 가능성은 본 가설이 참일 때의 파생 함의 — 본 WT 는 검증하지 않음."
+      }
+    ],
+    "frontier_queue_refs": [
+      {
+        "id": "FQ-233",
+        "status": "armA_reproduced_gate_passed__armBC_open",
+        "owner": "CLAIMED — Q-Lead session 2026-08-13",
+        "relation": "본 WT = arm B next_probes 1항('q90 표적을 별도 사전등록으로 정면 검증')의 승계 라운드. dohoon_decision 잠금 없음."
+      },
+      {
+        "id": "FQ-237",
+        "status": "INVALID_frame_error_20260813_see_r30 (수정 프레임 재측정 대기)",
+        "owner": "UNCLAIMED",
+        "relation": "인접하나 다른 질문 — FQ-237 은 선별 목적함수(rank-IC→분위 평균 스프레드), 본 WT 는 예측 표적. 본 WT 산출이 FQ-237 의 근거를 공급하되 착수하지 않음."
+      }
+    ],
+    "owner": "WT-D20260813_001 (독립 사전등록 라운드, FQ-233 승계)"
+  },
+  "candidates": [
+    {
+      "title": "C1 (선택) — 상방 분위(q90) pinball 표적, arm A 동일 프레임 독립 사전등록",
+      "family": "target_form/upside_quantile",
+      "mechanism_summary": "top-N EW 평균은 상방 꼬리가 지배(R33 실측) — 조건부 q90 을 표적으로 한 예측기가 소비 형태와 정합.",
+      "why_not_selected": null
+    },
+    {
+      "title": "C2 — τ=0.9 expectile 표적",
+      "family": "target_form/expectile",
+      "mechanism_summary": "expectile 은 평균-기반 꼬리 통계량(elicitable·coherent)이라 이론상 '평균 소비 정합' 이 q90 분위보다 더 직접적.",
+      "why_not_selected": "arm B 에 pinned 관측이 없는 신규 추정 축 — 사전등록 대조 없이 novelty 를 추가하면 사후선택 통제가 더 어려워짐. q90 1차 판정 후 next_probe 로 보관."
+    },
+    {
+      "title": "C3 — 절사평균(양측 5% trim) 표적 = 음성 대조",
+      "family": "target_form/trimmed_mean_negative_control",
+      "mechanism_summary": "기전이 참이면 '꼬리를 잘라낸 평균' 표적은 arm A(평균) 대비 개선이 없거나 열등해야 함 — 기전의 방향 판별 대조.",
+      "why_not_selected": "단독 가설이 아니라 대조 설계 요소. challenge_flags 로 alpha-research 에 대조 arm 편입을 권고(채택 여부는 alpha-research 자율, HPO 아님·사전 고정 파라미터 유지 조건)."
+    },
+    {
+      "title": "C4 — 선별 목적함수 교체(rank-IC → 분위 평균 스프레드)",
+      "family": "selection_statistic (FQ-237)",
+      "mechanism_summary": "같은 불일치 기전의 다른 층 — 표적이 아니라 선별 기준을 바꾸는 축.",
+      "why_not_selected": "별도 큐 항목(FQ-237, UNCLAIMED·frame 재측정 대기)이고 질문이 다름(선별 vs 표적). 본 WT 범위 밖 — owner 잠금 절차를 따로 밟아야 함."
+    },
+    {
+      "title": "C5 — 꼬리초과확률 분류 표적 P(r > 횡단면 q90)",
+      "family": "target_form/tail_exceedance_classification",
+      "mechanism_summary": "상방 꼬리를 이진 사건으로 직접 표적화.",
+      "why_not_selected": "FQ-233 arm C(왜도·꼬리초과확률·CRPS) 소관과 중복 + magnitude 정보 소실. arm C 에 위임."
+    }
+  ],
+  "selected": {
+    "hypothesis_title": "상방 분위(q90) 표적 학습 — top-N 평균 소비와 정합적인 예측 표적",
+    "hypothesis_description": "KR K200∪KQ150 월간 횡단면에서, long-only top-25 EW 포트가 버는 것은 보유 종목의 평균이고 그 평균은 소수 종목의 상방 점프가 지배한다(R33 실측: D03 Q1 중앙값 -15.68% vs 평균 +10.54%·왜도 1.027, 왜도 Q1→Q5 단조 감소 / R32 실측: cor(왜도기울기, 중앙값-평균 gap) = -0.728, 부호 갈림 123/320 중 102:21 비대칭, 준-단조 프로파일 0종). 따라서 중앙값·순위(rank-IC)를 최적화하는 표적은 소비 형태와 어긋나고, 조건부 상방 분위(q90)를 표적으로 학습한 예측기가 소비 형태와 정합적이다. 동일 패널(lane_a_feature_panel.parquet 324피처)·동일 비용(15bps)·동일 확장창 워크포워드·사전 고정 파라미터에서 표적만 q90 으로 교체해, 사전등록 대조군 arm A(평균 표적, total net SR 0.6039·PORT_t 0.63·198개월, REPRODUCED) 대비 paired 로 판정한다. ★승계 한정: q90 의 우위 관찰은 arm B(2026-08-13)의 secondary 이며 n=4·arm 간 비독립·전 arm PORT_t |t|<1.4 — 서열 관찰이지 검정된 효과가 아니다. 특히 total SR 축의 관찰 우위는 +0.0022(0.6061 vs 0.6039)로 사실상 동률이고 우위는 PORT_t/active 축(+0.94 vs +0.63)에 있다. 지지 문턱(paired NW3 t ≥ +2.0) 대비 관찰 효과크기가 한참 작으므로, 본 라운드의 사전 기대는 '축을 깨끗이 닫는다(config-scoped negative)' 쪽이 우세함을 설계 시점에 명시한다.",
+    "support_criterion": "지지 = [동일 198개월 프레임에서 q90-표적 arm 의 월간 net 수익 - arm A 월간 net 수익의 paired NW lag-3 t ≥ +2.0] (arm B paired_vs_armA 와 동일 컨벤션·basis 명시: 월간 total net return 차분). 병기 기록 의무 = canonical PORT_t(자본 축, canonical_screen_bt 실측)·active IR. 이 성과 기준은 '가설 지지' 판정용이며 ③의 반증(기전 기각)과 별개 축이다. 미달 시 '표적 형태(q90)' 축은 이 config(패널·모델·고정 파라미터·top-25 EW·15bps)에 한정한 negative 로 닫고, 기전 부수관측(③) 결과에 따라 FQ-237/arm C 로 라우팅한다.",
+    "mechanism": {
+      "agent": "① KR 개인투자자 — 복권형 수요를 salience(관측 가능한 고변동성·최근 급등·테마 노출)에만 지불한다: D03 Q1(고변동성 분위)의 중앙값 -15.68%(R33)는 '전형적 복권주 보유의 결과가 손실' 이라는 과대가격의 직접 지문이다. ② 국내 기관투자자 — 트래킹에러·유동성 하한·집중도 mandate 로 고-idiosyncratic-vol 점프 후보의 분산 바스켓을 구조적으로 담지 못한다. 두 주체의 행동이 결합해 '관측 가능한 skew 프록시는 과대가격, 다변량 조건부(324피처 결합)로만 식별되는 비-salient 상방 후보는 방치' 라는 비대칭을 만든다.",
+      "friction": "① 개별종목 상방 꼬리(점프)는 KR 에서 파생으로 직접 거래·차익거래할 수 없다 — 개별주식옵션 유동성 부재로 skew 의 가격화 채널이 닫혀 있다. ② 점프는 종목 단위로 저확률·분산적이어서 집중 베팅으로 수확 불가 — 분산 보유(top-N EW)로만 수확 가능한데, 기관은 mandate 마찰로 그 바스켓을 못 담고 개인은 salient 특성으로만 몰린다. ③ 공매도 제약이 salient 복권주 과대가격의 청산을 막아 이 비대칭 구조 자체가 지속된다. ⇒ 조건부 상방 분위 정보는 '지워질 주체가 구조적으로 부재' 한 영역에 남는다.",
+      "path": "월간 리밸 top-25 EW 가 조건부 q90 예측 상위 종목을 1M 보유 → 보유 중 소수 종목이 상방 점프(실적 서프라이즈·공시 이벤트·수급 유입)를 실현 → EW 평균이 그 꼬리 수익을 그대로 흡수해 포트 수익이 된다. 반영 형태는 '전 종목이 조금씩' 이 아니라 '소수 종목이 크게' — R33 프로파일(평균과 중앙값의 대규모 괴리)이 이 형태를 직접 보여준다. 시점 = 1M 보유월 내 실현, 월간 리밸로 반복 수확."
+    },
+    "falsification": {
+      "observable": "기전이 참이려면 성과와 무관하게 다음 부수 관측이 성립해야 한다: (F1) 상방 적중 — q90-표적 top-25 보유 종목이 보유월에 횡단면 상위 분위(월별 횡단면 q90) 수익을 실현하는 빈도(tail-hit rate)가 arm A(평균-표적) top-25 대비 높아야 한다. 예측기가 '상방 꼬리를 실제로 더 잘 찾는다' 는 전제 자체의 검사이며, 월별 횡단면 수익 분포는 일별 가격 패널에서 직접 계산된다. (F2) 수익 구성 형태 — q90 arm 포트 월수익에서 상위-3 기여 종목의 기여 집중도가 arm A 대비 낮지 않아야 한다('평균은 꼬리가 견인' 경로의 직접 관측). (F3) 왜도 연결 — 실현 횡단면 왜도가 높은 달에 q90 arm 의 상대 우위가 집중되어야 한다(R32 의 cor(왜도기울기, gap) = -0.728 의 보유-포트 수준 대응).",
+      "field_dictionary_refs": [
+        "A1_RAWDATA_OHLCVS_daily",
+        "FDB-B2_registry_rawdata_price_daily",
+        "A4_benchmark_kospi200",
+        "A9_liquidity_avgtv20_convention"
+      ],
+      "reject_if": "F1 기각 시 기전 기각: q90-표적 top-25 의 보유월 tail-hit rate 가 arm A 대비 유의하게 높지 않으면(paired, one-sided, 사전 문턱 t ≥ 2.0), 포트 성과가 어떻게 나오든 '상방 분위 표적이 상방 꼬리를 식별한다' 는 기전을 기각한다. F2·F3 은 보조 기각 축 — F1 성립·F2/F3 불성립이면 '식별은 되나 소비 경로가 다르다' 로 기전을 부분 기각하고 경로 재진단을 next_probe 로 도출한다. ★성과 동어반복 아님을 명시: F1~F3 은 전부 PORT_t/SR 이 아닌 보유 종목 실현수익의 분포·구성 관측이며, '예측기가 꼬리를 맞히는데 포트가 못 버는' 경우와 '포트가 버는데 꼬리 경로가 아닌' 경우를 성과 지표와 독립적으로 분리한다."
+    },
+    "regime_scope": {
+      "holds_in": [
+        "neutral",
+        "recovery"
+      ],
+      "weakens_or_reverses_in": [
+        "crisis",
+        "overheat_retail_crowding"
+      ],
+      "boundary_rationale": "경계는 기전에서 도출된다. ① crisis 약화/역전: 기전의 수익원은 종목 고유(idiosyncratic) 상방 점프인데, 위기 국면은 공통 하방 요인과 유동성 청산이 횡단면을 지배해 상방 점프의 발생 자체가 희소해지고, 조건부 상방 후보(고 idio-vol 성향)는 청산 압력에 가장 먼저 노출된다 — arm B 관찰에서 q90 arm 의 MDD 가 4 arm 중 최악(67.0%)인 것은 이 도출과 정합하는 사후 관찰(도출 근거가 아니라 정합 확인). ② overheat(개인 복권수요 과열) 약화: 기전은 '비-salient 상방 후보가 방치됨' 에 의존하는데, 과열 국면에서는 개인 수요가 상방 후보군 전반으로 확산해 사전 가격화(선반영)가 일어나 forward q90 실현과 예측의 연결이 끊긴다. ③ neutral/recovery 성립: 점프 발생(실적 서프라이즈·공시·수급)이 종목 고유 정보로 구동되고 mandate 마찰·salience 비대칭이 정상 작동하는 국면. 국면 라벨은 E7_unified_regime_3layer / E5_msm_crisis_prob 어휘 기준 — overheat_retail_crowding 은 E7 상위층의 과열 라벨에 대응시키되 정확한 매핑은 측정 단계에서 확정."
+    }
+  },
+  "challenge_flags": [
+    "[사후선택 통제 — 본 WT 최대 취약점] q90 선택은 arm B 4-arm 관측 후에 이루어졌다. 통제 장치: ① primary 를 q90 단일로 사전 고정·교체 금지(arm B 사전등록 §3 관행 승계), ② 모델·파라미터는 arm A/B 와 동일한 사전 고정값 유지 — 어떤 하이퍼파라미터 탐색이든 발생 시 selection_type=sweep 재선언 + DSR≥0.5 HARD 부착 의무, ③ 암묵 시행 이력 정직 신고 — 본 가설에 도달하기까지 관측된 arm 은 4개(mean/q10/q50/q90)이며 이 이력은 judge/graduation 단계에서 다중검정 맥락으로 소비되어야 함(method_shopping_log 에 4-arm 이력 기재), ④ 지지 판정은 paired t ≥ +2.0 성과 축과 별개로 기전 부수관측(F1~F3)의 동시 발화를 요구 — 성과만 통과하고 기전 관측이 죽으면 '지지' 가 아니라 '미해명 양성' 으로 라벨.",
+    "[동일-config 재실행의 정보가치 한계] arm B 의 q90 secondary 와 동일 패널·동일 고정 파라미터로 재실행하면 수치가 거의 재현될 뿐 새 데이터가 없다. 본 라운드의 신규 정보는 (a) 사전등록 primary 지위의 정식 부여, (b) 기전 부수관측 F1~F3 의 최초 측정, (c) 아래 대조 arm 이다. alpha-research 는 이를 인지하고 측정 설계에 F1~F3 을 필수 포함할 것.",
+    "[음성 대조 권고] C3 절사평균(양측 5% trim) 표적 arm 편입 권고 — 기전이 참이면 '꼬리를 잘라낸 평균' 표적은 개선이 없어야 한다. q90 과 절사평균이 같은 방향으로 개선되면 꼬리 기전이 아니라 다른 요인(예: 표적 잡음 축소 일반효과)이다. 사전 고정 파라미터 유지 조건(HPO 금지) 하에서 대조 arm 은 sweep 이 아니다 — 단 대조 arm 결과로 primary 를 바꾸는 순간 sweep.",
+    "[β/vol 틸트 교란] q90 예측 상위는 고변동성·고β 종목으로 기울 개연성이 있다 — total SR 우위가 β 적재 아티팩트일 수 있다. active/PORT_t basis 병기(support_criterion 명시)로 부분 통제되나, 측정 단계에서 q90 arm 선택 종목의 D03(실현변동성) 분위 분포를 arm A 와 대조해 기록할 것. 상방 적중(F1)이 고변동성 분위 편중만으로 설명되면 기전의 '조건부(비-salient)' 주장이 약화된다.",
+    "[승계 한정 — 정직 라벨] 선행 근거의 한정을 전 단계에 승계: n=4·arm 비독립·전 arm PORT_t |t|<1.4·전 arm 이 자본 게이트(PORT_t 2.95·MDD 25%·회전율 11.0) 전부 미충족. 본 WT 는 '표적 형태 축의 판정' 라운드이지 자본 후보 생성 라운드가 아니다. R32/R33 기전 측정도 같은 세션·같은 패널 계열 — 독립 데이터 재현이 아님.",
+    "[대안 보관] C2 expectile(τ=0.9) 표적 — q90 판정 후 next_probe 1순위. C4 선별 목적함수 축은 FQ-237 별도 owner 잠금 필요. C5 꼬리초과확률은 FQ-233 arm C 소관."
+  ],
+  "verdict": "designed",
+  "handoff": {
+    "to": "alpha-research",
+    "next_steps": "Step 1~7 + ⑤ AST 구성. 승계 사항: ① 본 hypothesis(mechanism/falsification/regime_scope) 재작성 금지 — 결함 발견 시 challenge_note.md 기록 + 재설계 요청(Charter 원칙 8). ② 측정 설계에 F1~F3 기전 부수관측 필수 포함 + basis 명시(arm A 의 self_caught_defect 함정 — total vs active 축 사전 못박기). ③ 파라미터 사전 고정 유지 — HPO 발생 시 selection_type=sweep 재선언 + DSR HARD. ④ method_shopping_log 에 선행 4-arm 관측 이력 기재. ⑤ q90 표적은 escape 리프 MODEL_SCORE(학습창 종점 ≤ t_d-1 + 학습 리프 목록) 경유가 예상됨 — escape_contract 의무. ⑥ NOT_SUPPORTED 로 닫히면 config-scoped negative + FQ-237(선별 통계량 축)/arm C(분포 형태 표적) 라우팅 + C2 expectile 을 next_probe 로 — 방향(family) 판결로 확대 금지(INV-7)."
+  }
+}

@@ -1,0 +1,143 @@
+{
+ "status": "INVALID_FRAME_ERROR",
+ "invalidated_at": "2026-08-13",
+ "reason": "★이 산출물은 **구 측정 프레임**에서 나왔다. factor DB sig_date T 팩터를 T월 수익과 짝지어(build_monthly_forward_returns 앵커='sig_date 이하 최종거래일', 월초가 거래일인 달엔 앵커가 그날 자신) 팩터가 채점 대상 월을 봤다. 수정 = 팩터 Date +1개월.",
+ "evidence": "M04_Mom_1 평균 IC: 구 -0.9423 -> 수정 +0.0170 · |평균IC|>0.10 팩터: 46종 -> 0종",
+ "do_not_cite": "이 파일의 수치를 인용하지 말 것. 유효 정본 = r30_reframe_result.json",
+ "kept_for": "프레임 오류 사례로 보존(삭제 아님)",
+ "_original": {
+  "schema": "alpha_r5_v1",
+  "round_id": "v84-R5",
+  "measured_at": "2026-08-13",
+  "mandate": "도훈 2026-08-13: 팩터 퀄리티 성과 측정 척도 변경 검토 — 어떤 척도가 미래 수익률에 결정력이 있는지 / 신규 척도는 논문 기반 + 자체 판단 합쳐서",
+  "metric_type": "panel_statistic",
+  "design": "팩터-월 패널(320종·259월·유효 70,440). 척도는 t까지 확장창(PIT, burn-in 36m), 결과량은 t+1..t+12 실현. spearman.",
+  "bias_disclosure": "★각 척도는 자기와 같은 결과량을 가장 잘 맞춘다(E_top이 미래top에서 1위). 두 결과량 모두에서 성립하는 것만 인용할 것. rho 절대값은 팩터 정체성 지속성에 오염 — 상대 순위만 유효.",
+  "ranking": [
+   {
+    "metric": "E_spread",
+    "label": "분위 평균 스프레드",
+    "src": "자체",
+    "rho_spread": 0.5897,
+    "rho_top": 0.5487
+   },
+   {
+    "metric": "E_mono",
+    "label": "단조성",
+    "src": "자체",
+    "rho_spread": 0.5809,
+    "rho_top": 0.5466
+   },
+   {
+    "metric": "E_fm",
+    "label": "Fama-MacBeth 계수",
+    "src": "논문 FM1973",
+    "rho_spread": 0.5805,
+    "rho_top": 0.5371
+   },
+   {
+    "metric": "E_fm_t",
+    "label": "FM t",
+    "src": "논문",
+    "rho_spread": 0.5789,
+    "rho_top": 0.5328
+   },
+   {
+    "metric": "E_top",
+    "label": "top-decile 초과",
+    "src": "자체",
+    "rho_spread": 0.5669,
+    "rho_top": 0.57
+   },
+   {
+    "metric": "E_topbm",
+    "label": "top-decile vs 벤치",
+    "src": "자체",
+    "rho_spread": 0.5609,
+    "rho_top": 0.57
+   },
+   {
+    "metric": "E_icir",
+    "label": "ICIR",
+    "src": "논문 Grinold",
+    "rho_spread": 0.5508,
+    "rho_top": 0.497
+   },
+   {
+    "metric": "E_ic_t",
+    "label": "IC t",
+    "src": "논문 HLZ2016",
+    "rho_spread": 0.5496,
+    "rho_top": 0.4944
+   },
+   {
+    "metric": "E_ic",
+    "label": "rank-IC",
+    "src": "논문",
+    "rho_spread": 0.5452,
+    "rho_top": 0.4946
+   },
+   {
+    "metric": "E_medspread",
+    "label": "분위 중앙값 스프레드",
+    "src": "자체",
+    "rho_spread": 0.5417,
+    "rho_top": 0.4915
+   },
+   {
+    "metric": "E_spread_vw",
+    "label": "시총가중 분위 스프레드",
+    "src": "논문 HXZ2020",
+    "rho_spread": 0.5186,
+    "rho_top": 0.5015
+   },
+   {
+    "metric": "E_skewslope",
+    "label": "왜도 기울기",
+    "src": "자체",
+    "rho_spread": 0.3887,
+    "rho_top": 0.3807
+   },
+   {
+    "metric": "E_xsd",
+    "label": "횡단면 분산",
+    "src": "자체",
+    "rho_spread": 0.0278,
+    "rho_top": 0.0315
+   },
+   {
+    "metric": "E_random",
+    "label": "무작위(귀무)",
+    "src": "대조",
+    "rho_spread": 0.0009,
+    "rho_top": 0.0013
+   },
+   {
+    "metric": "E_align",
+    "label": "정렬 일치(IC부호==평균기울기부호)",
+    "src": "자체 R1발견",
+    "rho_spread": -0.1885,
+    "rho_top": -0.1491
+   }
+  ],
+  "findings": [
+   "★rank-IC 계열(E_ic 9위/E_ic_t 8위/E_icir 7위)이 **두 결과량 모두에서 하위**. 평균 기반 척도(분위 스프레드·단조성·FM 계수)가 일관되게 앞선다 — 편향과 무관하게 성립하므로 R3 드라이버 진단(선별 통계량↔소비 형태 정합)을 독립 지지.",
+   "★★E_align 이 **음의 결정력**(-0.1885 / -0.1491). IC 부호와 평균 기울기 부호가 **일치하는** 팩터일수록 미래가 나쁘다 = R1 의 불일치 68종이 결함이 아니라 **정보**일 가능성. 반직관적 — 별도 검증 필요.",
+   "시총가중 스프레드(0.5186) < 동일가중(0.5897) — Hou-Xue-Zhang(2020) 'VW 에서 anomaly 약화' 와 정합.",
+   "횡단면 분산(E_xsd 0.0278)은 사실상 무결정력 — 신호가 벌어지는 정도는 미래를 못 맞춘다.",
+   "귀무(무작위 척도) rho +0.0009 — 절차 자체는 편향 없음(대조 통과)."
+  ],
+  "caveats": [
+   "rho 절대값 인용 금지 — 팩터-월 패널의 반복 관측(팩터 정체성 지속성)이 상관을 부풀린다. 상대 순위만.",
+   "결과량이 척도와 같은 통계량이면 자기예측 편향 — 두 결과량 교차 확인이 최소 방어.",
+   "PORT_t 미포함(R4 배관 무효 원인 미확정). 자본 게이트 타당성 판정 아님.",
+   "H=12 단일 지평. 지평 민감도 미검."
+  ],
+  "next_probes": [
+   "E_align 음의 결정력 검증: 불일치 팩터군 vs 일치 팩터군의 미래 실현 성과를 직접 대조(패널 상관이 아니라 군 비교). 반직관적 결과이므로 재현 우선.",
+   "게이트 타당성: 현행 HARD 3종(PORT_t·oos_retention·calmar)을 같은 프레임에 넣어 미래 결정력 순위 산출 — 자본 게이트가 실제로 예측하는가.",
+   "지평 민감도: H={3,6,12,24} 로 순위 안정성 확인. 순위가 뒤집히면 '어떤 지평의 미래인가'가 척도 선택을 바꾼다.",
+   "R4 배관 무효 원인 특정(무작위 가중도 PORT_t +16.0) — 합성 경로의 오염 지점."
+  ]
+ }
+}

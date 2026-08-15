@@ -3,14 +3,14 @@
   "dist_id": "DIST-RAMP-013",
   "cluster_key": "5f3bdccc164d",
   "candidate_id": "CAND_20260718_ramp_overlay_regime_conditional_L-RAMP-20260618_131316_L-RAMP-20260618_134000_L-RAMP-20260618_142650",
-  "status": "pending_5axis",
-  "statement_refined": null,
+  "status": "proposed",
+  "statement_refined": "RAMP 에서 국면 정보는 soft membership 과 축 추가로 소비할 때만 성과가 올랐고, 노출 타이밍(감β)으로 소비하면 일관되게 악화했다 — 같은 국면 엔진이 소비 형태에 따라 반대 방향으로 작동한다.\n■올린 경로(누적 실측): hard 4-bin regime 을 Absorption Ratio 기반 soft 3-state membership (AR_z softmax, 합 1, hard switch 없음)으로 교체하니 pt_capwt 1.81->2.49(+0.68) · oos_retention -0.56->-0.27 · IR 0.43->0.55 전부 개선. 여기에 축을 하나 더 얹고(AR+MSM) 리밸 주기를 분기로 바꾸니 pt_capwt 2.73 · oos_retention -0.02 · IR 0.61 · 회전 절반. 두 레버가 스택된다(분기리밸 = oos 레버, 2축 = pt 레버). 팩터 희석도 가중으로 해소된다 — 316팩터 equal-weight 는 pt 0.82 로 붕괴하는데 IC-가중 composite 는 oos_retention 0.66->0.76 으로 과적합 게이트를 통과시킨다.\n■내린 경로: 경제 선험룰 국면틸트(CAUTION/CRISIS 에서 방어군 1.5x·공격군 0.5x 고정)는 net_sr -0.151 로 무조건부 EW(-0.037)보다 나쁘다 — 방어로 증액한 LowRisk 군이 실제로는 최악(-0.65)이었다. regime-cash 오버레이(CRISIS 0.3/CAUTION 0.6)는 net_sr +0.110->-0.105 로 악화하고, Cascade 노출 스케줄(1.0/0.7/0.4) soft 타이밍도 calmar 0.38->0.32 · abs_SR 0.79->0.71 · CAGR 0.184->0.144 로 악화하는데 MDD 는 -0.485->-0.453 으로 거의 안 준다. 기전 = 깊은 낙폭이 3개월 CRISIS 가 아니라 여러 달 grinding bear 이고 엔진 신호가 지연되어 부분 디리스크로는 못 피한다.\n■역할 분업도 지지되지 않았다: 인베스터 에이전트 OOS active IR -0.192 가 단순 M0_only(-0.080)보다 나쁘고 INVESTOR 는 NoRegime 과 사실상 같았다.\n■잔존 벽(정직): 최선 조합에서도 pt 2.73<2.95 · oos<0.7 · calmar 0.38<0.64 로 자본 문턱 미달이다. 측정창 의존도 남아 있다 — regime-cash 가 악화한 창(2015-2026)은 깊은 위기가 적고, 동일 오버레이가 2005-2026 캐리어에서는 크게 기여한 기록이 있어 오버레이 가치는 창의 위기빈도에 의존한다.\n⇒ 운용 규칙: 국면 엔진을 붙일 때 (1) hard switch 대신 soft membership 으로 먼저 붙이고 (2) 국면 가중을 경제 선험룰이 아니라 데이터 구동으로 두고 (3) 노출 타이밍 소비면은 exposure-matched 통제 없이는 평가하지 않는다.",
   "retry_condition": null,
   "refined_at": null,
   "refined_by": null,
   "promoted_to_axiom": null,
   "created_at": "2026-07-18T00:23:16+00:00",
-  "updated_at": "2026-08-12T22:21:45+00:00",
+  "updated_at": "2026-08-15T04:19:42+00:00",
   "research_mode": "ramp",
   "metric_type": "estimated",
   "type": "methodological",
@@ -78,5 +78,37 @@
     "oos_effect_vs_is": null,
     "note": "promote.R r4_regime_payoff / essence_score 경유 확정"
   },
-  "cluster_members_count": 11
+  "cluster_members_count": 11,
+  "adversarial_verdict": "(a)과장: 개선 경로(1.81->2.73)를 성과 주장으로 쓰지 않고 '자본 문턱 미달(pt 2.73<2.95 · oos<0.7 · calmar 0.38<0.64)'을 같은 절에 병기. 측정창 의존 caveat 도 본문에 포함. (b)근거: 전부 backtested 라벨 실측. 'oos_retention -0.02' 처럼 음수 값을 개선으로 서술할 때 절대 문턱(0.7) 미달을 함께 적어 오독 차단. (c)AX-000: 감β 타이밍을 구조 판결로 쓰지 않음 — 기전(grinding bear · 신호 지연)을 명시하고 문턱형·다른 신호 지연 구조는 미검으로 열어둠. (d)제약 방화벽: 고정 제약 귀속·완화 제시 없음 — 개선/악화 귀속은 membership 형태·가중 산출 방식· 리밸 주기라는 방법 축. 참고로 supporting 중 한 라운드는 제약을 푼 조건에서 측정했는데 그 조건에서도 타이밍이 악화했다는 사실만 인용하고, 제약 완화를 레버로 제시하지 않는다. (e)프론티어: 3건 생성.",
+  "expiry": "2027-02-15",
+  "frontier": [
+    "soft membership 축을 더 늘렸을 때의 수확 체감 측정 — AR+MSM 2축에서 3축 이상으로 확장 시 pt 레버가 유지되는지",
+    "노출 타이밍을 연속 비율이 아니라 문턱형(이진)으로 바꿔 재측정 — grinding bear 에서 부분 디리스크가 실패한다면 전량/무 스위치는 다른 결과일 수 있음(exposure-matched 통제 필수)",
+    "IC-가중 composite 의 가중 산출을 순위 기반에서 분위 평균 스프레드 기반으로 교체(측정 형태 아크 정합)"
+  ],
+  "live_trigger": {
+    "type": "regime",
+    "condition": "측정창에 깊은 위기 에피소드가 2건 이상 추가되면(창 위기빈도 상승) regime-cash 오버레이 판정 재산출",
+    "monitored_source": "02_Infrastructure/regime/"
+  },
+  "revival_spec": [
+    {
+      "signal_id": "wall_clock_date",
+      "condition": "x >= as.Date('2027-02-15')",
+      "from_trigger": "expiry",
+      "status": "active"
+    },
+    {
+      "signal_id": "regime_category",
+      "condition": "x %in% c('CRISIS','CAUTION')",
+      "from_trigger": "regime",
+      "status": "active"
+    }
+  ],
+  "constraint_firewall": {
+    "mode": "backstop_passed",
+    "checked_at": "2026-08-15"
+  },
+  "drafted_at": "2026-08-15T13:51:14+0900",
+  "drafted_by": "cleaner_session_main_20260815"
 }

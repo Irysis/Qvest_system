@@ -13,7 +13,21 @@
 
 ## 2. Python 환경 표준
 
-- venv: `C:/Users/99922/OneDrive/Quant_Module_Moltbot/.venv_qvest_ml/ (Windows venv, 2026-06-10 재생성)` (`source .../bin/activate` 후 실행). 주요: PyTorch/cu124 · xgboost · lightgbm · ngboost · optuna · mapie · statsmodels · properscoring.
+- venv: `C:/Users/99922/OneDrive/Quant_Module_Moltbot/.venv_qvest_ml/ (Windows venv, 2026-06-10 재생성)`.
+  실행기 = `.venv_qvest_ml/Scripts/python.exe` (Windows venv 이므로 `bin/python` 아님).
+- **★설치 실측 (2026-08-13 감사 → 같은 날 도훈 지시로 결손 해소).** 선언을 믿지 말고 착수 전 import 로 확인할 것.
+  - **현재 전 항목 실재** (python 3.12.10): `torch 2.12.1+cpu` · `xgboost 3.4.0` · `lightgbm 4.6.0` ·
+    `ngboost 0.5.11` · `optuna 4.9.0` · `mapie 1.4.1` · `statsmodels 0.14.6` · `properscoring 0.1` ·
+    `numpy 2.4.6` · `pandas 2.3.3` · `pyarrow 24.0.0` · `sklearn 1.9.0`.
+  - 감사 시점 결손 3종(`xgboost`·`optuna`·`properscoring`)은 **2026-08-13 설치 완료**(도훈 "노트북 환경이라
+    없을거야, 깔아줘"). import 뿐 아니라 **실동작 1회씩 확인**: xgboost fit · properscoring CRPS ·
+    optuna 12-trial 탐색.
+  - ⚠**torch 는 CUDA 아님**(`+cpu`) — 구 선언 "PyTorch/cu124" 는 현 노트북 환경과 불일치. 이는 결손이 아니라
+    **환경 사실**이므로 GPU 전제 라운드(예: 구 DPL 8config GPU 전수)는 이 머신에서 재현되지 않는다.
+  - 교훈: 이 결손은 v8.4 Lane A arm A(참조 기준선이 XGBoost)의 착수 직전에 발견됐다 — **환경 선언은
+    라운드 전제이므로 착수 전에 실측**한다(선언만 읽고 들어가면 관문에서 사이클을 버린다).
+  - 재확인 1줄:
+    `.venv_qvest_ml/Scripts/python.exe -c "import importlib;[print(m, getattr(importlib.import_module(m),'__version__','?')) for m in ('torch','xgboost','lightgbm','ngboost','optuna','mapie','statsmodels','properscoring')]"`
 - **한글 경로 회피**: `normalizePath()` 류 금지. 스크립트 내 상대경로 또는 환경변수 PROJECT_ROOT 사용. R의 `source('run_all.R')` 패턴과 동등하게 Python도 `cd` 후 실행.
 - I/O: parquet 표준 (pyarrow). RAWDATA 컬럼명 R과 동일 (`Vol`/`Size`/`Ret`/`Close`/`BM_Ret`/`Ticker`).
 - 동시성: RAM 80% 이하, 프로세스당 4GB 이하 (R 규칙과 동일).

@@ -1,0 +1,100 @@
+{
+ "status": "PARTIALLY_VALID_SEE_SCOPE",
+ "revised_at": "2026-08-13",
+ "scope": {
+  "valid": "★NX1~5 신규 팩터의 자체 측정(IC/ICIR/기울기/창-반응/자기상관)은 **유효**. R2 에서 이미 스탬프 +1개월 수정을 적용했으므로(당시 IC 0.8243 look-ahead 자가검거 후 정정) 프레임이 R30 수정판과 동일하다. R3 드라이버 분해(추정잡음 가설 기각·부호 불일치 창-단조)도 NX 팩터 기반이므로 유효.",
+  "invalid": "⚠'기존 320종 대비 |IC| 백분위' 비교는 **구 프레임 factor DB 값**과 대조한 것이므로 무효. 수정 프레임에서 320종 최대 |평균 IC| 는 0.0509 이므로 백분위가 완전히 달라진다.",
+  "note": "R2 의 look-ahead 자가검거 기록 자체가 R30 프레임 오류의 예고편이었다 — 같은 버그를 기존 팩터 경로에 적용하지 않은 것이 20판의 대가."
+ },
+ "_original": {
+  "schema": "alpha_r2r3_v1",
+  "round_id": "v84-R2-R3",
+  "measured_at": "2026-08-13",
+  "mandate": "도훈 2026-08-13: ①Factor DB 밖 신규 팩터 직접 제작·테스트(적재 금지) ②수학/통계로 집요하게 breakdown 해 퀄리티 핵심 드라이버 파악 후 개선",
+  "metric_type": "canonical_screen",
+  "storage_note": "★factor DB 미적재 (도훈 지시). stage_artifacts/ 에만 보존.",
+  "new_factors": {
+   "gap_evidence": "registry 373종 스캔: 점프 0종 · 분위 0종 (왜도 5·첨도 3·semivar 5·MAX 3·꼬리 15는 기존)",
+   "built": [
+    "NX1_JumpFreq",
+    "NX2_JumpAsym",
+    "NX3_MeanMedGap",
+    "NX4_TailRatio",
+    "NX5_UpVolShare"
+   ],
+   "n_obs": 80604,
+   "pit_incident": {
+    "what": "초판이 ym 월 일별데이터로 만든 팩터를 Date=ym 1일로 스탬프 -> 정본 빌더가 sig_date 이하 최종거래일을 앵커로 잡아 **ym 월 수익**을 forward 로 매칭 = 동월 look-ahead(C2)",
+    "fingerprint": "IC 0.8243 / ICIR 14.831 (기존 320종 최고 IC 0.0333) — 물리적 불가능값",
+    "caught_by": "기존 320종 대비 백분위 대조(상위 1%)",
+    "after_fix": "IC 0.8243 -> -0.0175 (48배 부풀림). 스탬프를 다음 달 1일로 이동",
+    "note": "기존 팩터는 load_month_factors 가 PIT 정합 스탬프를 갖고 있어 무사. 신규 제작분만 해당."
+   },
+   "eval_after_fix": {
+    "NX1_JumpFreq": {
+     "ic": -0.0083,
+     "icir": -0.107,
+     "slope": 3.63
+    },
+    "NX2_JumpAsym": {
+     "ic": -0.0063,
+     "icir": -0.08,
+     "slope": 3.16
+    },
+    "NX3_MeanMedGap": {
+     "ic": -0.0118,
+     "icir": -0.157,
+     "slope": -0.17
+    },
+    "NX4_TailRatio": {
+     "ic": -0.0133,
+     "icir": -0.118,
+     "slope": 2.68
+    },
+    "NX5_UpVolShare": {
+     "ic": -0.0175,
+     "icir": -0.144,
+     "slope": 5.37
+    }
+   },
+   "verdict": "신규 5종 모두 약함 — |IC| 백분위 58~83%(기존 320종 대비), ICIR 전부 |0.16| 미만"
+  },
+  "driver_breakdown": {
+   "frame": "Grinold-Clarke 근본법칙 IR ~= IC * sqrt(BR) * TC — ★TC(전이계수)가 이 저장소 'IC->PORT_t 전이 벽'의 수학적 이름",
+   "grid": "창 {21,63,126,252}일 x 팩터 5종 = 20셀 · 259개월",
+   "preregistered": {
+    "H_A_estimation_noise": "창 늘리면 |IC|/|ICIR| 단조 증가해야",
+    "H_B_persistence": "창 늘리면 rho1 상승 -> 회전율/비용 감소",
+    "H_C_sign_mismatch": "꼬리 구조 팩터는 IC와 평균기울기 부호가 구조적으로 어긋남"
+   },
+   "verdicts": {
+    "H_A": {
+     "result": "REJECTED",
+     "evidence": "|IC| 상승 2/5 · |ICIR| 상승 1/5. NX4_TailRatio 는 0.0168 -> 0.0013 (0.08x 붕괴)"
+    },
+    "H_B": {
+     "result": "CONFIRMED",
+     "evidence": "rho1 5/5 상승, 중앙 0.017 -> 0.889 (창 21 -> 252)"
+    },
+    "H_C": {
+     "result": "CONFIRMED_AND_MONOTONE_IN_WINDOW",
+     "evidence": "불일치 비율 창21 60% -> 창252 100%. 평균기울기는 커짐(NX1 3.64->6.53 · NX4 -0.04->6.70)"
+    }
+   },
+   "key_finding": "★창을 12배 늘려 추정을 안정화(rho1 0.017->0.889)했는데 |IC| 는 움직이지 않았다. **잡음을 제거했는데 신호가 커지지 않았다** => 추정 정밀도는 병목이 아니다. 대신 같은 신호가 창이 길수록 '순위로는 무의미 / 평균으로는 유의미' 상태로 수렴한다.",
+   "driver_identified": "★★핵심 드라이버 = **평가 통계량과 소비 형태의 정합**. rank-IC 는 순위 통계(중앙값 근사)이고 PORT_t / long-only top-N 은 평균 통계(꼬리 지배)다. 꼬리 구조 신호에서 이 둘이 체계적으로 갈린다 — R1 의 변동성 68종 정렬 불일치와 동일 현상. 현재 파이프라인은 **선별 단계에서 소비 형태와 다른 통계량을 쓰고 있다**.",
+   "improvement_path": "팩터 설계 목적함수를 rank-IC 최대화 -> **분위 평균 스프레드 최대화**로 교체. ★미검증 제안 — 다음 라운드가 시험한다."
+  },
+  "caveats": [
+   "신규 5종 자체는 약하다: |IC| 0.001~0.027 · |slope| 0.04~6.70%p (기존 D56_Up_Vol 는 -29.95%p).",
+   "개선 경로(목적함수 교체)는 아직 **제안**이며 실측되지 않았다.",
+   "PORT_t 미측정 — 이 라운드는 IC/기울기/자기상관 층까지다. 자본 판정 아님.",
+   "H-A 기각은 '이 5종에서' 다. 다른 팩터군에서 추정잡음이 병목일 가능성은 남는다."
+  ],
+  "next_probes": [
+   "목적함수 교체 시험: 같은 원재료로 (a)rank-IC 최대화 (b)분위 평균 스프레드 최대화 두 판본을 만들어 PORT_t 를 대조. 개선 경로의 직접 검증.",
+   "R1 의 정렬 불일치 68종을 방향 교정 후 PORT_t 실측 — 교정만으로 살아나는 팩터가 있는가.",
+   "선별 파이프라인 감사: 현재 어느 게이트가 rank-IC 를 쓰고 어느 게이트가 평균 통계를 쓰는지 전수 확인 (통계량 불일치의 배선 지도)."
+  ]
+ }
+}

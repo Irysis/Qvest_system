@@ -1,0 +1,90 @@
+{
+ "status": "INVALID_FRAME_ERROR",
+ "invalidated_at": "2026-08-13",
+ "reason": "★이 산출물은 **구 측정 프레임**에서 나왔다. factor DB sig_date T 팩터를 T월 수익과 짝지어(build_monthly_forward_returns 앵커='sig_date 이하 최종거래일', 월초가 거래일인 달엔 앵커가 그날 자신) 팩터가 채점 대상 월을 봤다. 수정 = 팩터 Date +1개월.",
+ "evidence": "M04_Mom_1 평균 IC: 구 -0.9423 -> 수정 +0.0170 · |평균IC|>0.10 팩터: 46종 -> 0종",
+ "do_not_cite": "이 파일의 수치를 인용하지 말 것. 유효 정본 = r30_reframe_result.json",
+ "kept_for": "프레임 오류 사례로 보존(삭제 아님)",
+ "_original": {
+  "schema": "alpha_r13_v1",
+  "round_id": "v84-R13",
+  "measured_at": "2026-08-13",
+  "question": "R12(정렬일치 선별라벨 +2.15%p)가 임의 문턱(상위 20%)의 산물인가",
+  "verdict": "ROBUST_TO_THRESHOLD_AND_HOLDS_UNDER_REAL_HARD_GATES",
+  "metric_type": "panel_statistic",
+  "quantile_sensitivity": [
+   {
+    "thr": "top10",
+    "n_pass": 15.9,
+    "diff": 3.071,
+    "t_nw12": 12.57,
+    "t_nonoverlap": 11.451,
+    "rnd_diff": -0.174
+   },
+   {
+    "thr": "top20",
+    "n_pass": 31,
+    "diff": 2.152,
+    "t_nw12": 9.745,
+    "t_nonoverlap": 7.903,
+    "rnd_diff": -0.054
+   },
+   {
+    "thr": "top30",
+    "n_pass": 46,
+    "diff": 1.608,
+    "t_nw12": 8.445,
+    "t_nonoverlap": 7.17,
+    "rnd_diff": -0.08
+   },
+   {
+    "thr": "top50",
+    "n_pass": 76.3,
+    "diff": 1.377,
+    "t_nw12": 11.407,
+    "t_nonoverlap": 8.873,
+    "rnd_diff": -0.016
+   }
+  ],
+  "real_hard_gates": {
+   "rule": "PORT_t>=2.95 & oos_retention>=0.7 & calmar>=0.64 (헌법 정본)",
+   "pass": 4639,
+   "total": 33610,
+   "pass_pct": 13.8,
+   "n_pass_monthly": 20.9,
+   "months": 222,
+   "hi": 5.035,
+   "lo": 2.151,
+   "diff": 2.884,
+   "t_nw12": 12.739,
+   "t_nonoverlap": 13.055,
+   "rnd_diff": -0.088
+  },
+  "individual_pass_rates": {
+   "port_t_2_95": 20.7,
+   "oos_0_7": 49.6,
+   "calmar_0_64": 19.6,
+   "all_three": 13.8,
+   "note": "독립이면 0.207*0.496*0.196=2.0% 여야 하는데 13.80% = **7배** — R9 의 '3중이 사실상 1중' 을 통과율 쪽에서 재확인"
+  },
+  "findings": [
+   "★4개 분위 문턱 전부 부호 유지 — 임의 문턱 산물 아님.",
+   "★★엄격할수록 효과가 커진다(top10 +3.07 > top50 +1.38) — 기전 정합: 통과 기준이 엄격할수록 '불안정한 통과' vs '일관된 통과' 차이가 벌어진다.",
+   "★★★실제 헌법 HARD 문턱 통과군(13.80%, 222개월 전부 통과자 존재)에서 +2.884% — 대리 문턱이 아닌 진짜 게이트에서 성립.",
+   "무작위 대조 전 문턱 -0.02~-0.17%, 절차 건전.",
+   "개별 통과율 PORT_t 20.7 / oos 49.6 / calmar 19.6 vs 전건 13.80 — 독립 가정 대비 7배, R9 재확인."
+  ],
+  "caveats": [
+   "★t 절대값 인용 금지 — 12개월 겹침. 방향과 문턱 간 단조성만 인용.",
+   "★게이트 값이 **팩터 대리 포트(top-decile EW) 동형**이지 forge 실포트가 아니다 — 마지막 미검 축.",
+   "문턱 4종을 훑었으나 전부 같은 방향이라 cherry-pick 은 아님. 다만 다중검정 미보정.",
+   "top10 무작위 대조 t_nw12 -2.314 vs 비겹침 +0.46 — 겹침 아티팩트로 보이나 미확정."
+  ],
+  "next_probes": [
+   "★forge 실포트에서 재현 — 대리 포트 동형이 아닌 실제 build_bt_result 산출 게이트값으로 같은 분할. 이게 마지막 미검 축이고 통과하면 배선 논의 자격",
+   "기전 확증: '불안정한 통과' 가설 직접 시험 — 불일치 통과 팩터의 게이트 값이 시간에 따라 더 흔들리는가(게이트값 시계열 분산 비교)",
+   "선별 라벨 배선 설계: screen_route 판정에 align 을 보조 라벨로 부착하는 최소 변경안(도훈 승인 전 설계만)",
+   "다중검정 보정 — 문턱 4종 + 라벨 11종 훑기 누적 반영"
+  ]
+ }
+}

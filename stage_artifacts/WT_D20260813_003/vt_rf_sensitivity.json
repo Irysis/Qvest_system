@@ -1,0 +1,41 @@
+{
+  "wt_id": "WT-D20260813_003",
+  "stage": "VT_rf_sensitivity",
+  "metric_type": "mechanism_observation_posthoc",
+  "structural_note": "exposure-matched 통제도 (1-ebar) 현금을 보유하므로 **상수 rf 는 처치-통제 간 정확히 상쇄**. rf 효과는 cov(e_m, rf_m) 에서만 발생.",
+  "coverage": {
+    "source": ".cache/ecos_bond_rates.parquet::KR_CD91",
+    "n_covered": 251,
+    "n_full": 366,
+    "window": ["2005-09", "2026-07"],
+    "mean_rf_annual": 0.027498,
+    "pit_asof_rule": "Date < first-day-of-holding-month (assert PASS)",
+    "limitation": "1996-02~2005-07 미커버. 그 구간이 KR 고금리·고변동(1997-98 위기) 이라 rf 채널이 가장 클 곳인데 관측 부재 — 방향(처치군 유리)은 알지만 크기는 미측정. 정직 라벨."
+  },
+  "subsample_ab": {
+    "rf_zero": {
+      "mean_d_ann": -0.017966,
+      "t": -1.585689,
+      "drag_ann": 0.00512,
+      "net_ann": -0.012846,
+      "G": 0.105691
+    },
+    "rf_cd91": {
+      "mean_d_ann": -0.01805,
+      "t": -1.619696,
+      "drag_ann": 0.005102,
+      "net_ann": -0.012948,
+      "G": 0.105312
+    },
+    "net_change_pp": -0.010195,
+    "cov_e_rf_annual": 0.000085,
+    "cor_e_rf": 0.062522,
+    "cor_sigma_rf": 0.231364
+  },
+  "required_rf_channel": {
+    "full_sample_net_shortfall_annual": 0.00691,
+    "observed_neg_cov_subsample": -0.000085,
+    "coverage_ratio": -0.01223
+  },
+  "verdict_impact": "판정 불변 — prereg 는 rf=0 을 고정했고 구조상 상수 rf 는 상쇄. 부분표본 실측 rf 채널 크기를 감도로 병기."
+}

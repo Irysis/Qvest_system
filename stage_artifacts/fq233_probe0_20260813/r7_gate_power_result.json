@@ -1,0 +1,85 @@
+{
+ "status": "INVALID_FRAME_ERROR",
+ "invalidated_at": "2026-08-13",
+ "reason": "★이 산출물은 **구 측정 프레임**에서 나왔다. factor DB sig_date T 팩터를 T월 수익과 짝지어(build_monthly_forward_returns 앵커='sig_date 이하 최종거래일', 월초가 거래일인 달엔 앵커가 그날 자신) 팩터가 채점 대상 월을 봤다. 수정 = 팩터 Date +1개월.",
+ "evidence": "M04_Mom_1 평균 IC: 구 -0.9423 -> 수정 +0.0170 · |평균IC|>0.10 팩터: 46종 -> 0종",
+ "do_not_cite": "이 파일의 수치를 인용하지 말 것. 유효 정본 = r30_reframe_result.json",
+ "kept_for": "프레임 오류 사례로 보존(삭제 아님)",
+ "_original": {
+  "schema": "alpha_r7_v1",
+  "round_id": "v84-R7",
+  "measured_at": "2026-08-13",
+  "question": "현행 자본 게이트 HARD 3종(PORT_t 2.95 · oos_retention 0.7 · calmar 0.64)이 미래를 예측하는가",
+  "metric_type": "panel_statistic",
+  "scope_limit": "★게이트 감사 아님 — 재는 것은 게이트 **통계량 계열**의 예측력이다. 실제 게이트는 forge 포트(비용·유동성·25종 상한)에 적용되고, oos_retention 실구현은 essence_score.R 의 anchored 3분할{55/65/75} 중앙값(v2)인데 여기선 후반/전반 Sharpe **비율**을 썼다. 다른 통계량이다.",
+  "frame": "팩터 320종 x 259월 -> 유효 70,440. 확장창(t-1, burn-in 36m). 결과량 = t+1..t+12 top-decile 초과. spearman.",
+  "ranking": [
+   {
+    "rank": 1,
+    "metric": "top-decile 초과",
+    "rho": 0.57,
+    "n": 70440
+   },
+   {
+    "rank": 2,
+    "metric": "[게이트] PORT_t 동형",
+    "rho": 0.5639,
+    "n": 70440
+   },
+   {
+    "rank": 3,
+    "metric": "[게이트] calmar 동형",
+    "rho": 0.5491,
+    "n": 69954
+   },
+   {
+    "rank": 4,
+    "metric": "분위 평균 스프레드",
+    "rho": 0.5487,
+    "n": 70440
+   },
+   {
+    "rank": 5,
+    "metric": "ICIR",
+    "rho": 0.497,
+    "n": 70440
+   },
+   {
+    "rank": 6,
+    "metric": "rank-IC",
+    "rho": 0.4946,
+    "n": 70440
+   },
+   {
+    "rank": 7,
+    "metric": "무작위(귀무)",
+    "rho": 0.0013,
+    "n": 70440
+   },
+   {
+    "rank": 8,
+    "metric": "[게이트] oos_retention 동형",
+    "rho": -0.0633,
+    "n": 70440
+   }
+  ],
+  "findings": [
+   "★PORT_t 동형(2위 rho +0.5639) · calmar 동형(3위 +0.5491) — 둘 다 rank-IC(6위 +0.4946) 보다 명확히 높다. 현행 자본 게이트 두 축은 미래 결정력으로 실측 지지.",
+   "★★oos_retention 동형 = **-0.0633**, 귀무(+0.0013)보다 낮은 **음의 결정력**. 과적합 방어 주책임 축이라 중대.",
+   "무작위 귀무 +0.0013 — 절차 편향 없음(대조 통과).",
+   "PORT_t 2위에는 자기-결과량 근접 편향 일부 포함(둘 다 top-decile 기반). 단 calmar 도 같은 기반인데 분위 스프레드와 동급이라 편향만으로 설명되지 않는다."
+  ],
+  "caveats": [
+   "rho 절대값 인용 금지 — 팩터 정체성 지속성 오염. 상대 순위만.",
+   "oos_retention 비율형은 분모가 0 근처면 폭발 — 꼬리가 rho 를 오염시킬 수 있다. 실구현(v2 3분할 중앙값)으로 재측정 필요.",
+   "H=12 단일 지평. 다중검정 미보정.",
+   "팩터 수준 대리 포트(top-decile EW)이지 forge 포트가 아니다."
+  ],
+  "next_probes": [
+   "oos_retention 실구현(essence_score.R v2 anchored 3분할 중앙값)으로 재측정 — 비율형의 결함인지 개념의 결함인지 분리. 게이트 존치/개정의 갈림길.",
+   "비율형 oos_retention 의 꼬리 절단(윈저화) 후 재측정 — 음의 rho 가 극단값 산물인지 확인.",
+   "PORT_t 편향 제거: 결과량을 분위 스프레드로 바꿔 게이트 3종 재순위(자기-결과량 근접 통제).",
+   "다중검정 보정 후 R5/R6/R7 통합 재판정."
+  ]
+ }
+}

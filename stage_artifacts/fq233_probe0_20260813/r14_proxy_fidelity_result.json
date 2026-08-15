@@ -1,0 +1,51 @@
+{
+ "status": "INVALID_FRAME_ERROR",
+ "invalidated_at": "2026-08-13",
+ "reason": "★이 산출물은 **구 측정 프레임**에서 나왔다. factor DB sig_date T 팩터를 T월 수익과 짝지어(build_monthly_forward_returns 앵커='sig_date 이하 최종거래일', 월초가 거래일인 달엔 앵커가 그날 자신) 팩터가 채점 대상 월을 봤다. 수정 = 팩터 Date +1개월.",
+ "evidence": "M04_Mom_1 평균 IC: 구 -0.9423 -> 수정 +0.0170 · |평균IC|>0.10 팩터: 46종 -> 0종",
+ "do_not_cite": "이 파일의 수치를 인용하지 말 것. 유효 정본 = r30_reframe_result.json",
+ "kept_for": "프레임 오류 사례로 보존(삭제 아님)",
+ "_original": {
+  "schema": "alpha_r14_v1",
+  "round_id": "v84-R14b",
+  "measured_at": "2026-08-13",
+  "question": "R7~R18 의 게이트값은 팩터 대리 포트(top-decile EW) 동형이다 — 계약 실측(canonical_screen_bt)을 충실히 따르는가",
+  "verdict": "PROXY_TRACKS_CONTRACT_TRANSFER_ENABLED",
+  "metric_type": "canonical_screen",
+  "design": "대리 PORT_t 로 층화한 36 팩터 · canonical_screen_bt(top-25 EW · 15bps · liq 2e8 · 유니버스 cap-w 벤치) 전기간 실행",
+  "results": {
+   "pearson": 0.9866,
+   "spearman": 0.9753,
+   "sign_agreement": "31/36 (86%)",
+   "proxy_range": [
+    -82.02,
+    39.1
+   ],
+   "contract_range": [
+    -38.95,
+    26.29
+   ],
+   "proxy_median": 0.02,
+   "contract_median": 0.18,
+   "pass_2_95": {
+    "contract": 5,
+    "proxy": 5
+   }
+  },
+  "key_finding": "★순위 상관 0.9753 — 대리가 계약을 충실히 따른다. R7~R18 전이 가능. ★단 **크기는 대리가 부풀린다**(대리 -82~+39 vs 계약 -39~+26): top-decile EW(비용·유동성 필터 없음) vs top-25 EW(15bps·2e8 필터) 차이. => 순위는 인용 가능, **크기는 인용 금지** — 내내 지켜온 규율과 정합.",
+  "do_not_misread": "⚠상위 5종(INV07_Retail_Contrarian 26.29 · TR01_ADX_Proxy 8.64 · R06_MDD 4.13 · INV13_Foreign_Resid_Individual_63d 3.23 · R13_NCSKEW 2.95)이 2.95 를 넘지만 **자본 문턱 통과가 아니다**: 이 프레임 벤치는 **유니버스 cap-w** 이지 KOSPI200 이 아니고, book-marginal ΔIR 은 아예 다른 게이트다. 헌법의 '팩터DB 전수 book-marginal 통과 0' 과 충돌하지 않는다.",
+  "design_defect_fixed": "초판 R14a 는 팩터별로 260개월을 각각 로드해 36x260 = **9,360회** 파일 접근(수십 분 후 미완). 월별 1회 로드에 36 팩터명 벡터 전달로 **260회** 로 축소 => 수 분. 같은 답을 훨씬 싸게 얻는 경로가 있었다.",
+  "caveats": [
+   "★크기 인용 금지 — 대리가 양쪽 꼬리 모두 과대.",
+   "부호 불일치 5/36(14%) — 대부분 0 근처 팩터로 추정되나 개별 확인 미실시.",
+   "36 층화 표본이지 전수 316 아님.",
+   "벤치가 유니버스 cap-w — 헌법 자본 게이트(KOSPI200 기준)와 다른 basis."
+  ],
+  "next_probes": [
+   "R7~R18 통합 판정 — 전이 확정됐으므로 선별 라벨 배선 설계안 작성(도훈 승인 전 적용 없음)",
+   "부호 불일치 5종 개별 확인 — 0 근처인가 진짜 반전인가",
+   "KOSPI200 벤치로 같은 36종 재측정 — basis 차이의 크기 정량화",
+   "INV07_Retail_Contrarian 계약 +26.29 의 정체 — 비정상적으로 높다(PG2 6.21 의 4배). 벤치 basis 산물인지 팩터 결함인지"
+  ]
+ }
+}

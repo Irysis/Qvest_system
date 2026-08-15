@@ -1,0 +1,69 @@
+{
+ "status": "INVALID_FRAME_ERROR",
+ "invalidated_at": "2026-08-13",
+ "reason": "★이 산출물은 **구 측정 프레임**에서 나왔다. factor DB sig_date T 팩터를 T월 수익과 짝지어(build_monthly_forward_returns 앵커='sig_date 이하 최종거래일', 월초가 거래일인 달엔 앵커가 그날 자신) 팩터가 채점 대상 월을 봤다. 수정 = 팩터 Date +1개월.",
+ "evidence": "M04_Mom_1 평균 IC: 구 -0.9423 -> 수정 +0.0170 · |평균IC|>0.10 팩터: 46종 -> 0종",
+ "do_not_cite": "이 파일의 수치를 인용하지 말 것. 유효 정본 = r30_reframe_result.json",
+ "kept_for": "프레임 오류 사례로 보존(삭제 아님)",
+ "_original": {
+  "schema": "alpha_r9_v1",
+  "round_id": "v84-R9",
+  "measured_at": "2026-08-13",
+  "question": "자본 게이트 HARD 3종은 대체재인가 보완재인가 — 3중 게이트가 실제로 3중인가",
+  "verdict": "SUBSTITUTES_EFFECTIVELY_SINGLE_GATE",
+  "metric_type": "panel_statistic",
+  "frame": "팩터-월 33,610 (3종 동시 유효) · 확장창 t-1 · 결과량 t+1..t+12 top-decile 초과 · 순위화 후 편상관/다중회귀",
+  "cross_correlation": {
+   "port_t~calmar": 0.9434,
+   "port_t~oos": 0.5447,
+   "calmar~oos": 0.5598
+  },
+  "partial": [
+   {
+    "gate": "PORT_t",
+    "solo": 0.3442,
+    "partial": 0.0352,
+    "retention": 0.102
+   },
+   {
+    "gate": "oos_retention",
+    "solo": 0.2391,
+    "partial": 0.0518,
+    "retention": 0.217
+   },
+   {
+    "gate": "calmar",
+    "solo": 0.3522,
+    "partial": 0.0789,
+    "retention": 0.224
+   }
+  ],
+  "r2": {
+   "port_t": 0.1185,
+   "oos": 0.0572,
+   "calmar": 0.1241,
+   "all_three": 0.1277,
+   "increment_over_best_solo": 0.0036
+  },
+  "na_handling_resolved": "★R8 미확인 항목 해소 — 양쪽 다 fail-closed. 훅 discovery_graduation_gate.sh:171 'oos_retention 미산출 -> hard_fail(fail-closed)' · 계약 essence_score.R:290 oos_ok 는 is.finite() 조건. 48.4% 유효율은 '절반 무력'이 아니라 '절반 자격미달 차단'.",
+  "findings": [
+   "★PORT_t~calmar 상관 0.9434 — 거의 동일 정보. 둘 중 하나는 사실상 중복.",
+   "★잔존율 0.10~0.22 — 다른 둘 통제 시 각 게이트 고유 기여가 10~22%만 남는다.",
+   "★증분 R^2 +0.0036 (0.1241 -> 0.1277) — 셋을 다 써도 최고 단독 대비 2.9% 상대 증가.",
+   "=> **3중 HARD 게이트는 실측상 1중에 가깝다.** 단 '게이트를 줄이라'가 아니라 '3중이라고 3배 안전한 게 아니다'.",
+   "oos_retention 이 가장 독립적(상관 0.54~0.56)이나 단독 결정력은 가장 낮다(0.239) — 독립성과 강도의 상충."
+  ],
+  "caveats": [
+   "R^2 0.13 — 셋을 다 써도 미래 분산의 13%만 설명.",
+   "팩터 수준 대리 포트(top-decile EW)이지 forge 포트가 아니다. 실제 게이트에서 상관 구조가 다를 수 있다.",
+   "H=12 단일 지평. 다중검정 미보정.",
+   "3종 동시 유효 표본(33,610)은 전체(70,440)의 절반 — 선택 표본이다."
+  ],
+  "next_probes": [
+   "★이 셋과 상관이 낮은 **4번째 축** 탐색 — R5 척도 15종 중 게이트 3종과 저상관인 것(분위 형태·정렬 일치 계열 후보). 진짜 방어를 늘리려면 독립 축이어야 한다.",
+   "PORT_t vs calmar 중복 확인: forge 실포트에서도 0.94 인가 — 팩터 대리 포트의 산물일 수 있다.",
+   "R^2 0.13 의 나머지 87% — 미래 성과를 지배하는 미측정 요인 탐색(국면·군집·용량 등)",
+   "다중검정 보정 후 R5~R9 통합 재판정"
+  ]
+ }
+}

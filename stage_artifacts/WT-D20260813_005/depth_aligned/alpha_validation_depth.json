@@ -1,0 +1,616 @@
+{
+  "task_id": "WT-D20260813_005",
+  "round": "depth_aligned (FQ-237 P4)",
+  "produced_by": "alpha-research",
+  "produced_at": "2026-08-13 21:26:29",
+  "prereg_ref": "stage_artifacts/WT-D20260813_005/depth_aligned/PREREG_depth.md (측정 착수 전 봉인)",
+  "prior_round_ref": "stage_artifacts/WT-D20260813_005/alpha_validation.json (Q5 판정 — 불변)",
+  "selection_type": "chain",
+  "selection_objective": "canonical_port_t",
+  "design": {
+    "single_change": "선별 목적함수의 상위 버킷 깊이 Q5(20%, 월 ~68종) → top-25(절대 개수, 중앙 7.27%)",
+    "depth_D": 25,
+    "depth_frac_median": 0.07267442,
+    "derived_not_tuned": "D=25 는 소비 top_n=25 에서 파생. 깊이 스윕 0회 (스윕 시 sweep+DSR HARD 재선언 의무).",
+    "K": 5,
+    "trailing_window_months": 36,
+    "top_n": 25,
+    "cost_bps_oneway": 15,
+    "n_factors_material": 320,
+    "combination": "z_score_aligned_equal_weight",
+    "normalization_held_constant": "전 arm NW lag-3 t — '깊이' 축만 격리",
+    "n_holding_months": 221,
+    "period": "2008-03-01 ~ 2026-07-01",
+    "universe": "KOSPI200 ∪ KOSDAQ150 (패널 승계, 월중앙 344종목)",
+    "benchmark": "IKS200 (.cache/benchmark.parquet 일별 → apply.monthly(Return.cumulative), ym 키)",
+    "basis": "net_sr = active SR (= IR), total SR 아님. 1급 축 = paired 월별 active NW3 t + canonical PORT_t(cap-w)."
+  },
+  "change_reached_output": {
+    "cor_q5_vs_depth_cellwise": 0.82298916,
+    "sd_q5": 0.02430053,
+    "sd_depth": 0.03385043,
+    "sd_ratio": 1.39299115,
+    "sign_split_vs_rankic": {
+      "depth": 154,
+      "q5": 140,
+      "n": 320
+    },
+    "jaccard_depth_vs_q5_selection_median": 0.25,
+    "note": "깊이 변경이 코드에만 있고 산출에 없는 경우를 배제 — 셀 상관 0.823·sd 1.393배·선별집합 Jaccard 중앙 0.25"
+  },
+  "frame_reproduction": {
+    "rule": "깊이만 바꿨으므로 직전 arm 은 소수점까지 재현되어야 한다 (PREREG §6)",
+    "obj_rank_port_t": {
+      "got": 0.94741072,
+      "prereg": 0.94741
+    },
+    "obj_rank_ir": {
+      "got": 0.22808608,
+      "prereg": 0.22811
+    },
+    "obj_mean_q5_port_t": {
+      "got": 0.98990841,
+      "prereg": 0.98991
+    },
+    "obj_mean_q5_paired_t": {
+      "got": 0.4929802,
+      "prereg": 0.49298
+    },
+    "pass": true
+  },
+  "primary_endpoint": {
+    "definition": "paired 월별 active 차이 (OBJ_MEAN_DEPTH − OBJ_RANK) NW lag-3 t",
+    "nw3_t": 1.57062356,
+    "threshold": 2,
+    "verdict": "NOT_SUPPORTED",
+    "n": 221,
+    "mean_monthly": 0.00502233,
+    "annualized_pct": 6.02679219
+  },
+  "three_way_comparison": {
+    "OBJ_RANK": {
+      "role": "base",
+      "paired_nw3_t": {},
+      "capw_port_t": 0.94741072,
+      "active_sr_ir": 0.22808608
+    },
+    "OBJ_MEAN_Q5": {
+      "role": "보조 대조(직전)",
+      "paired_nw3_t": 0.4929802,
+      "capw_port_t": 0.98990841,
+      "active_sr_ir": 0.26677507
+    },
+    "OBJ_MEAN_DEPTH": {
+      "role": "primary(신규)",
+      "paired_nw3_t": 1.57062356,
+      "capw_port_t": 1.77748315,
+      "active_sr_ir": 0.48594499
+    },
+    "depth_effect_point": 1.07764336,
+    "depth_vs_q5_direct_paired": {
+      "mean": 0.00346858,
+      "nw3_t": 1.17531321,
+      "interpretation": "깊이가 점추정을 3.2배(월 +0.00155→+0.00502) 옮겼으나, DEPTH−Q5 자체의 직접 paired t 는 +1.18 로 두 arm 을 추론 강도로 구분하지 못한다. '깊이가 드라이버' 는 방향 수준 진술이지 검정된 진술이 아니다."
+    }
+  },
+  "falsification": {
+    "axis1_set_divergence": {
+      "jaccard_median": 0,
+      "jaccard_mean": 0.06438986,
+      "reject_if": "> 0.8",
+      "fired": false,
+      "note": "중앙 0.0 — 깊이-정합 선별은 rank 선별과 거의 겹치지 않는다(기전이 작동할 물리적 여지 최대)"
+    },
+    "axis2_skew_profile": {
+      "inherited_quintile_slope": {
+        "mean_diff": -0.07704333,
+        "nw3_t": -7.08458153,
+        "predicted": "음 (rank-단독 군이 더 음의 왜도기울기)",
+        "direction_ok": true
+      },
+      "depth_native_top25_skew": {
+        "mean_diff": 0.23063932,
+        "nw3_t": 11.27365467,
+        "predicted": "양 (depth-단독 군의 상위25 왜도가 더 큼)",
+        "direction_ok": true
+      },
+      "fired": false,
+      "note": "두 축 모두 예측 방향 + |t|>2 — 깊이-정합 선별이 실제로 우측꼬리-두꺼운 팩터를 고른다는 기전이 구조 관측으로 확인됨(성과와 독립)"
+    },
+    "axis3_negative_control": {
+      "objmed_depth_paired_nw3_t": -1.62112816,
+      "objmed_depth_capw_port_t": -0.23528693,
+      "reject_if": ">= +2.0",
+      "fired": false,
+      "note": "같은 깊이의 중앙값 선별은 오히려 악화(paired −1.62, PORT_t −0.24). 특이성 강함 — 개선은 '깊이 자체'가 아니라 '깊이+평균' 조합에 특이적"
+    }
+  },
+  "stability_cost_test": {
+    "turnover_ratio_depth_over_rank": 1.00263306,
+    "threshold": 1.5,
+    "self_overlap_jaccard_median": {
+      "OBJ_RANK": 0.66666667,
+      "OBJ_MEAN_DEPTH": 0.66666667,
+      "OBJ_MEAN_Q5": 0.66666667,
+      "OBJ_MED_DEPTH": 0.66666667
+    },
+    "verdict": "미발화 — 회전율 배율 1.003 (불안정 비용 가설 기각)"
+  },
+  "detection_power": {
+    "design": "PREREG §5 — 선별창에 홀딩월 자신을 포함시킨 위반 주입 arm 실측",
+    "lookahead_port_t": 3.56040009,
+    "clean_port_t": 1.77748315,
+    "delta_port_t": 1.78291694,
+    "lookahead_paired_t": 4.02816211,
+    "clean_paired_t": 1.57062356,
+    "delta_paired_t": 2.45753855,
+    "lag1_port_t": 1.18541568,
+    "lag1_paired_t": 0.76478924,
+    "monotone_lag_response": true,
+    "verdict": "판별력 있음 — 1개월 누출이 PORT_t 를 +1.78, paired t 를 +2.46 이동. 직전 라운드(+2.44/+3.66)와 같은 자릿수. 따라서 NOT_SUPPORTED 는 장치의 무능이 아니다.",
+    "caveat": "주입 효과가 직전보다 다소 작다(PORT_t Δ 2.44→1.78) — clean arm 자체가 높아진 만큼 상대 여유가 줄었다. 절대 판별력은 유지."
+  },
+  "robustness": {
+    "positive_month_share": 0.54751131,
+    "median_monthly": 0.00484984,
+    "subperiod": [
+      {
+        "sp": 1,
+        "n": 82,
+        "mean": 0.01182387,
+        "t": 1.88355887
+      },
+      {
+        "sp": 2,
+        "n": 60,
+        "mean": 0.0039008,
+        "t": 0.67125514
+      },
+      {
+        "sp": 3,
+        "n": 79,
+        "mean": -0.00118571,
+        "t": -0.3152401
+      }
+    ],
+    "influence_leave_out_top_k": [
+      {
+        "dropped": 0,
+        "n": 221,
+        "mean": 0.00502233,
+        "t": 1.57062356
+      },
+      {
+        "dropped": 1,
+        "n": 220,
+        "mean": 0.00433884,
+        "t": 1.34195803
+      },
+      {
+        "dropped": 3,
+        "n": 218,
+        "mean": 0.00317047,
+        "t": 1.05841128
+      },
+      {
+        "dropped": 5,
+        "n": 216,
+        "mean": 0.00215873,
+        "t": 0.76313988
+      }
+    ],
+    "top3_month_share_of_cumulative": 0.3772936,
+    "finding": "★본 라운드 최대 반대 증거: 이득이 전반부에 몰려 있다 — sp1(2008-2014) 월 +0.0118 t 1.88 / sp2 +0.0039 t 0.67 / sp3(2020+) −0.0012 t −0.32. 상위 3개월이 누적차의 37.7%, 상위 5개월 제거 시 t 1.571→0.763. 꼬리-구동 기전이므로 소수 월 집중은 기전 정합이기도 하나, 최근 6.5년 이득 부재는 정합으로 설명되지 않는다."
+  },
+  "advisory": {
+    "OBJ_RANK": {
+      "rank_ic": 0.0373043,
+      "icir": 0.37017291,
+      "harvey_t": 5.30189415,
+      "monotonicity": 0.1321267,
+      "subperiod": {
+        "sp1": 0.04117956,
+        "sp2": 0.00695071,
+        "sp3": 0.05633522,
+        "stability": 0.12338119
+      },
+      "post_neutralization_ic": 0.02784005
+    },
+    "OBJ_MEAN_DEPTH": {
+      "rank_ic": 0.0237631,
+      "icir": 0.19422983,
+      "harvey_t": 2.43654554,
+      "monotonicity": 0.09321267,
+      "subperiod": {
+        "sp1": 0.03847137,
+        "sp2": 0.00160207,
+        "sp3": 0.02532745,
+        "stability": 0.04164313
+      },
+      "post_neutralization_ic": 0.02142208
+    },
+    "OBJ_MEAN_Q5": {
+      "rank_ic": 0.02032157,
+      "icir": 0.17511449,
+      "harvey_t": 2.33782621,
+      "monotonicity": 0.08144796,
+      "subperiod": {
+        "sp1": 0.04680962,
+        "sp2": -0.00407955,
+        "sp3": 0.01136016,
+        "stability": 0
+      },
+      "post_neutralization_ic": 0.01572861
+    },
+    "OBJ_MED_DEPTH": {
+      "rank_ic": 0.03233925,
+      "icir": 0.26020437,
+      "harvey_t": 3.65219394,
+      "monotonicity": 0.06561086,
+      "subperiod": {
+        "sp1": 0.01999604,
+        "sp2": 0.01027705,
+        "sp3": 0.06190729,
+        "stability": 0.16600706
+      },
+      "post_neutralization_ic": 0.02864358
+    }
+  },
+  "dsr": {
+    "OBJ_RANK": {
+      "active_sr_monthly": 0.06584278,
+      "n_obs": 221,
+      "dsr_trials1": 0.8356,
+      "dsr_trials4": 0.5673,
+      "note": "chain → 게이트 아님(measurement-graduation §3). n_trials=4 는 판정 후보 arm 4종을 보수적으로 센 경우(주입/LAG1 대조군 제외)"
+    },
+    "OBJ_MEAN_DEPTH": {
+      "active_sr_monthly": 0.14028024,
+      "n_obs": 221,
+      "dsr_trials1": 0.9813,
+      "dsr_trials4": 0.8986,
+      "note": "chain → 게이트 아님(measurement-graduation §3). n_trials=4 는 판정 후보 arm 4종을 보수적으로 센 경우(주입/LAG1 대조군 제외)"
+    },
+    "OBJ_MEAN_Q5": {
+      "active_sr_monthly": 0.07701133,
+      "n_obs": 221,
+      "dsr_trials1": 0.8733,
+      "dsr_trials4": 0.6313,
+      "note": "chain → 게이트 아님(measurement-graduation §3). n_trials=4 는 판정 후보 arm 4종을 보수적으로 센 경우(주입/LAG1 대조군 제외)"
+    }
+  },
+  "dual_basis": {
+    "OBJ_RANK": {
+      "capw_port_t": 0.94741072,
+      "ew_universe_port_t": 2.0878059,
+      "ew_n_months": 221
+    },
+    "OBJ_MEAN_DEPTH": {
+      "capw_port_t": 1.77748315,
+      "ew_universe_port_t": 2.97335491,
+      "ew_n_months": 221
+    },
+    "OBJ_MEAN_Q5": {
+      "capw_port_t": 0.98990841,
+      "ew_universe_port_t": 2.26058081,
+      "ew_n_months": 221
+    },
+    "OBJ_MED_DEPTH": {
+      "capw_port_t": -0.23528693,
+      "ew_universe_port_t": 0.33350551,
+      "ew_n_months": 221
+    }
+  },
+  "regime_advisory": {
+    "source": ".cache/msm_daily_latest.parquet (Crisis_Prob>=0.5, 홀딩월 시작 전 최종관측)",
+    "n_crisis": 39,
+    "n_total": 221,
+    "noncrisis": {
+      "n": 182,
+      "mean": 0.00577441,
+      "nw3_t": 1.62734056
+    },
+    "crisis": {
+      "n": 39,
+      "mean": 0.0015126,
+      "nw3_t": 0.20799061
+    },
+    "caveat": "에피소드 수 병목 — 판정 축 아님(사전 라벨). 검정력 낮음.",
+    "q5_comparison": "직전 Q5 arm 은 crisis 에서 t −2.77 로 크게 손해였는데 깊이-정합 arm 은 +0.21(중립). 사전등록 regime_scope 의 'crisis 약화' 와 정합하되 방향은 '역전'이 아니라 '소멸'. advisory — 판정 축 아님."
+  },
+  "ax001_v2": {
+    "applicable_note": "선별층 실험 — standalone 방어형 팩터 승격 주장 아님. 조건부 축은 기록 목적.",
+    "crisis_alpha_depth_arm": 0.0072768,
+    "crisis_alpha_rank_arm": 0.0057642,
+    "bad_normal_ic_ratio": 1.95199136
+  },
+  "family_composition": [
+    {
+      "arm": "OBJ_RANK",
+      "family": "Q",
+      "n": 188
+    },
+    {
+      "arm": "OBJ_RANK",
+      "family": "L",
+      "n": 185
+    },
+    {
+      "arm": "OBJ_RANK",
+      "family": "V",
+      "n": 156
+    },
+    {
+      "arm": "OBJ_RANK",
+      "family": "D",
+      "n": 128
+    },
+    {
+      "arm": "OBJ_RANK",
+      "family": "C",
+      "n": 83
+    },
+    {
+      "arm": "OBJ_MEAN_DEPTH",
+      "family": "L",
+      "n": 206
+    },
+    {
+      "arm": "OBJ_MEAN_DEPTH",
+      "family": "V",
+      "n": 156
+    },
+    {
+      "arm": "OBJ_MEAN_DEPTH",
+      "family": "S",
+      "n": 140
+    },
+    {
+      "arm": "OBJ_MEAN_DEPTH",
+      "family": "D",
+      "n": 114
+    },
+    {
+      "arm": "OBJ_MEAN_DEPTH",
+      "family": "M",
+      "n": 77
+    },
+    {
+      "arm": "OBJ_MEAN_Q5",
+      "family": "L",
+      "n": 199
+    },
+    {
+      "arm": "OBJ_MEAN_Q5",
+      "family": "Q",
+      "n": 109
+    },
+    {
+      "arm": "OBJ_MEAN_Q5",
+      "family": "D",
+      "n": 106
+    },
+    {
+      "arm": "OBJ_MEAN_Q5",
+      "family": "S",
+      "n": 101
+    },
+    {
+      "arm": "OBJ_MEAN_Q5",
+      "family": "AC",
+      "n": 84
+    },
+    {
+      "arm": "OBJ_MED_DEPTH",
+      "family": "L",
+      "n": 185
+    },
+    {
+      "arm": "OBJ_MED_DEPTH",
+      "family": "D",
+      "n": 176
+    },
+    {
+      "arm": "OBJ_MED_DEPTH",
+      "family": "V",
+      "n": 131
+    },
+    {
+      "arm": "OBJ_MED_DEPTH",
+      "family": "Q",
+      "n": 125
+    },
+    {
+      "arm": "OBJ_MED_DEPTH",
+      "family": "R",
+      "n": 96
+    }
+  ],
+  "live": {
+    "as_of_holding_month": "2026-08-01",
+    "selected_factors": [
+      "GR02_Earnings_Growth",
+      "Q22_Earnings_Growth",
+      "L11_Kyle_Lambda",
+      "XF_LL02_NetDebt",
+      "V18_AM"
+    ],
+    "n_names": 347,
+    "fm_slope_full": 0.0059896,
+    "fm_slope_10y": 0.00132953,
+    "fm_slope_5y": 0.00556621,
+    "alpha_mean": 0.00158129,
+    "alpha_sd": 0.00369926,
+    "caveat": "배포 근거 아님 — 본 라운드 primary 는 NOT_SUPPORTED, cap-w PORT_t 1.78 << 2.95"
+  },
+  "method_shopping_log": {
+    "candidates_tried": 4,
+    "method_log": [
+      {
+        "name": "OBJ_RANK (base, rank-IC 선별)",
+        "port_t": 0.94741072,
+        "selected": false
+      },
+      {
+        "name": "OBJ_MEAN_DEPTH (primary, top-25 평균 선별)",
+        "port_t": 1.77748315,
+        "selected": true
+      },
+      {
+        "name": "OBJ_MEAN_Q5 (보조 대조, 직전 라운드 재현)",
+        "port_t": 0.98990841,
+        "selected": false
+      },
+      {
+        "name": "OBJ_MED_DEPTH (negative control)",
+        "port_t": -0.23528693,
+        "selected": false
+      }
+    ],
+    "note": "LOOKAHEAD_DEPTH / LAG1_DEPTH 는 후보가 아니라 검사 판별력 대조군 — 선택 풀 제외. 깊이·K·W 스윕 0회."
+  },
+  "capital_eligibility": {
+    "capw_port_t": 1.77748315,
+    "hard_gate": 2.95,
+    "eligible": false,
+    "note": "screening 실측(metric_type=canonical_screen). 자본 판정 권위는 forge build_bt_result + essence_score + discovery_graduation_gate. EW-유니버스 대비 2.9734 는 dual-basis 진단(비바인딩) — cap-w 판정 불변."
+  },
+  "routing": {
+    "branch": "C_depth_moves_estimate_but_below_threshold",
+    "verdict": "NOT_SUPPORTED (primary t +1.5706 < 문턱 +2.0)",
+    "parent_rule_check": "부모 지시의 두 분기 중 어느 쪽도 그대로 성립하지 않는다: (i) t ≥ +2.0 아님 → '깊이 정합이 드라이버' 확립 불가. (ii) OBJ_MEAN_DEPTH ≈ OBJ_MEAN_Q5 도 아님(0.4930 → 1.5706, PORT_t 0.99 → 1.78, IR 0.27 → 0.49) → '깊이는 드라이버 아님' 도 이 데이터가 지지하지 않는다. 따라서 '선별 통계량 교체는 레버 아님' 을 여기서 확정하지 않는다.",
+    "destination": "재료 축(FQ-234 일별 · 비-return 원천) — 강화된 근거: 선별 규칙 4종 전부가 sp3 에서 음수 활성. 선별 축은 '기각'이 아니라 '재료가 살아 있는 구간에서만 물을 수 있는 질문'으로 조건부 보류.",
+    "forbidden": "계열 확대 금지 (INV-7) — 깊이/K/W 격자 스윕, 문턱 사후 조정, 부기간 선택 금지",
+    "next_probe": [
+      "P1 (완료 — 본 라운드에서 실측): 이득의 sp1 집중·sp3 소멸은 **연료 감쇠가 아니라 프레임 공통 감쇠**다. 연료(상위25 왜도 0.595→0.797, 평균−중앙값 갈림 −0.00048→−0.00300)는 오히려 두꺼워졌는데, sp3(2020-01~)에서 4개 arm 전부 활성 음수(월 −0.006~−0.013, t −0.9~−1.5)다. ⇒ 선별할 알파 자체가 재료에서 사라졌다. 후속 축은 선별층이 아니라 재료층(P3). 상세 = mechanism_timeline 블록.",
+      "P2 (깊이 + 국면의 교차, 새 사전등록 필수): crisis 에서 Q5 −2.77 → DEPTH +0.21 로 손실이 소멸했다. '깊이 정합이 crisis 취약성을 제거한다'는 별개 가설이며 본 라운드 데이터로 판정 금지(사후선택). 착수 전 primary·문턱·국면 라벨 규약 봉인 요구.",
+      "P3 (재료 축 — 부모 라우팅 승계): FQ-234 일별 축. 월간으로 접으면 비대칭이 소멸한다는 v8.4 진단과, 본 라운드가 보인 '깊을수록 갈림 증가'(부호 갈림 43.8%→48.1%, sd 1.39배)가 같은 방향을 가리킨다 — 재료의 해상도를 올리면 깊이 효과가 커질 여지.",
+      "P4 (결합층 감쇠 — 직전 P5 승계, 미소진): K=5 EW 결합이 단일 팩터의 상위-깊이 우위를 희석하는 크기는 여전히 미측정. K=1 또는 선별통계 가중 결합으로 감쇠분만 분리.",
+      "P5 (신규, 재료 축 판정의 전제 조건): '월간 return-파생 320종의 활성 소멸' 은 **basis 의존**이라 미해결이다 (cap-w sp3 음수 4/4 vs EW 1/4). 벤치 구성(2020+ mega-cap 지배)과 재료 감쇠를 가르려면 cap-tier 분해(MEGA top-10 / MID 11-30 / OTHER — canonical_screen_bt diag_cap_tier 이미 산출) 를 sp3 에 국한해 읽고, EW-대비 t 는 se_shrink 채널을 뺀 mean_shift 채널로만 해석해야 한다. 본 라운드 데이터로 판정 금지(사후선택) — 새 사전등록 필요."
+    ],
+    "revival_condition": "선별 축 재도전 조건: (a) P1 에서 왜도 구조 감쇠가 아니라 프레임 공통 감쇠로 판명되거나, (b) P3 재료 축이 갈림이 더 큰 패널을 제공하거나, (c) P2 가 새 사전등록 하에 국면 조건부로 양성. 그 전까지 이 프레임(월간·return-파생 320종·top-25 EW·pooled)에서 깊이/통계량 변형 추가 탐색 금지."
+  },
+  "challenge_flags": [
+    "CF1 primary NOT_SUPPORTED — paired NW3 t +1.5706 < 사전등록 문턱 +2.0. 문턱 사후 조정 없음.",
+    "CF2 깊이 효과는 방향 수준 — DEPTH vs Q5 직접 paired t +1.1753 로 두 arm 을 추론 강도로 구분 못 함. '깊이가 드라이버' 를 확정 진술로 쓰지 말 것.",
+    "CF3 ★시간 구조 — sp3(2020-01~) 월평균 −0.0012 (t −0.32). 최근 6.5년 이득 부재. 전기간 +1.57 은 sp1(t 1.88) 기여.",
+    "CF4 꼬리 집중 — 상위 3개월이 누적차의 37.7%, 상위 5개월 제거 시 t 0.763. 기전(꼬리 구동)과 정합이나 견고성 약점.",
+    "CF5 자본 자격 아님 — cap-w PORT_t 1.7775 << 2.95. EW-유니버스 2.9734 는 dual-basis 진단(비바인딩), 자본 판정 아님.",
+    "CF6 승계 자산 결함 계승 — master_panel_FIXED.rds 는 원천 재현 실패(직전 라운드 실측 27종 중 cor>=0.99 8종). 본 라운드는 '재료 정의(320종 팩터 집합)' 만 승계하고 통계는 lane_a 원천에서 전부 재산출. 결함 자체는 미수리(보고 대상).",
+    "CF7 라이브 α̂ 스케일 창-민감 (전기간 +0.005990 / 10y +0.001330 / 5y +0.005566). 배포 근거로 쓰지 말 것 — 본 라운드는 NOT_SUPPORTED.",
+    "CF8 부모 라우팅 두 분기 미성립 — 제3 결과. '선별 통계량 교체는 레버 아님' 확정은 이 데이터가 지지하지 않는다(routing.parent_rule_check).",
+    "CF9 ★자기적발 정정 — 초판(d6)에서 'sp3 에 4개 arm 전부 음수 ⇒ 선별할 알파가 사라졌다' 로 썼으나, EW-유니버스 basis 확인(v8.3 dual-basis 의무)에서 sp3 음수는 1/4 뿐이었다. 결론 철회 후 'basis 의존·미해결' 로 교체. 부수 소득: paired primary 는 basis 불변(1.5706 vs 1.5709)이라 판정 자체는 벤치 논쟁과 독립."
+  ],
+  "mechanism_timeline": {
+    "purpose": "CF3(이득의 sp1 집중·sp3 소멸)의 기전을 가른다 — (a)연료 감쇠 vs (b)프레임 공통 감쇠. 진단 전용, 판정 축 아님.",
+    "fuel_trend": {
+      "skewtop_per_yr": 0.01561105,
+      "gap_depth_per_yr": -0.00020343,
+      "split_share_per_yr": 0.00087508,
+      "by_block": [
+        {
+          "blk": "sp1",
+          "years": 7,
+          "skewtop": 0.59534346,
+          "gap_depth": -0.00048429,
+          "sd_meandepth": 0.03299417,
+          "split_share": 0.28485745
+        },
+        {
+          "blk": "sp2",
+          "years": 5,
+          "skewtop": 0.49849858,
+          "gap_depth": -0.00115064,
+          "sd_meandepth": 0.02913378,
+          "split_share": 0.28631825
+        },
+        {
+          "blk": "sp3",
+          "years": 7,
+          "skewtop": 0.79684449,
+          "gap_depth": -0.00299933,
+          "sd_meandepth": 0.03961,
+          "split_share": 0.29066475
+        }
+      ],
+      "reading": "연료는 마르지 않았다 — 상위25 왜도(skewtop) sp1 0.595 → sp3 0.797 로 **증가**(추세 +0.0156/yr), 평균−중앙값 갈림(gap_depth)은 −0.00048 → −0.00300 으로 **확대**, rank 와의 부호 갈림 비중 0.285 → 0.291 유지. 기전이 먹는 구조는 최근이 오히려 두껍다."
+    },
+    "level_decomposition": {
+      "mean_active_by_block": {
+        "sp1": {
+          "OBJ_RANK": 0.01623923,
+          "OBJ_MEAN_Q5": 0.02341611,
+          "OBJ_MEAN_DEPTH": 0.02806311,
+          "OBJ_MED_DEPTH": 0.01097327
+        },
+        "sp2": {
+          "OBJ_RANK": -0.00270575,
+          "OBJ_MEAN_Q5": 0.00244673,
+          "OBJ_MEAN_DEPTH": 0.00119505,
+          "OBJ_MED_DEPTH": -0.00611414
+        },
+        "sp3": {
+          "OBJ_RANK": -0.00573211,
+          "OBJ_MEAN_Q5": -0.01274825,
+          "OBJ_MEAN_DEPTH": -0.00691783,
+          "OBJ_MED_DEPTH": -0.00952533
+        }
+      },
+      "nw3_t_by_block": {
+        "sp1": {
+          "OBJ_RANK": 3.50160908,
+          "OBJ_MEAN_DEPTH": 3.38826046
+        },
+        "sp3": {
+          "OBJ_RANK": -0.88913612,
+          "OBJ_MEAN_DEPTH": -1.2402089
+        }
+      },
+      "both_arms_declined": true,
+      "reading": "★ sp3 에서 **4개 arm 전부** 활성이 음수다 (월 −0.006 ~ −0.013, NW3 t −0.9 ~ −1.5). sp1 에서는 4개 전부 양수(t 1.8 ~ 3.5). 즉 2020년 이후 이 재료(월간·return-파생 320종)에서는 **어떤 선별 규칙도 활성을 못 낸다** — 선별 축의 이득이 사라진 게 아니라 **선별할 알파가 사라졌다**."
+    },
+    "verdict": "(수정) 연료(왜도·갈림)는 감쇠하지 않았다 — 이 부분은 유지(구조 관측이라 basis 무관). 그러나 '재료의 활성이 죽었다' 는 cap-w basis 에서만 성립하며 EW-유니버스에서는 sp3 음수 arm 1/4 뿐이다 ⇒ **미해결**. 확립된 것은 좁다: paired 차이(DEPTH−RANK)의 sp3 소멸은 두 basis 모두에서 유지된다(−0.32 / −0.32).",
+    "consequence": "pooled t +1.5706 은 sp1 신호와 sp3 무신호를 섞은 값이다(판정 불변). 재료 축 라우팅의 근거는 '재료가 죽었다' 가 아니라 '이 프레임의 선별 축이 sp1 이후 구간에서 이득을 재현하지 못한다' 로 좁혀 서술한다.",
+    "label": "diagnostic — 판정 축 아님. 성과 선택·사후 문턱 조정에 사용 금지.",
+    "basis_dependence_check": {
+      "why": "D6 의 '재료 사망' 결론이 cap-w 단일 basis 위에 있었다. v8.3 dual-basis 의무(기각·결론 전 EW-대비 확인)를 뒤늦게 적용해 반증됨.",
+      "sp3_negative_arm_count": {
+        "capw": 4,
+        "ew": 1,
+        "of": 4
+      },
+      "sp3_mean_active": {
+        "capw": {
+          "OBJ_RANK": -0.00573211,
+          "OBJ_MEAN_DEPTH": -0.00691783
+        },
+        "ew": {
+          "OBJ_RANK": 0.006042,
+          "OBJ_MEAN_DEPTH": 0.00484413
+        }
+      },
+      "paired_primary_is_basis_invariant": {
+        "capw_t": 1.57062356,
+        "ew_t": 1.57085748,
+        "note": "★paired 설계의 부수 이득 — 벤치가 차분에서 상쇄돼 primary 는 basis 에 거의 불변(1.5706 vs 1.5709). 따라서 판정은 벤치 구성 논쟁과 독립이다. sp3 paired 도 두 basis 모두 −0.32 로 동일."
+      },
+      "ew_caveat": "EW t 는 계약이 명시하듯 se_shrink 채널을 포함한다(전 arm 지배채널 se_shrink, t배율 1.37~1.68) — 알파 증거가 아니다. 따라서 'EW 에서 양수니 재료는 살아 있다' 도 주장하지 않는다.",
+      "corrected_reading": "sp3 활성 소멸은 **basis 의존**이며 원인(재료 감쇠 vs 벤치 구성 = 2020+ mega-cap 지배)은 본 라운드가 가르지 못한다. D6 의 '선별할 알파가 사라졌다' 는 철회한다."
+    }
+  },
+  "patch_log": [
+    {
+      "at": "2026-08-13 21:29:09",
+      "by": "d6_patch_validation.R",
+      "what": "mechanism_timeline 블록 추가 + routing.next_probe P1 실측 답으로 교체 + P5 신규 + destination 근거 강화",
+      "unchanged": "primary_endpoint / verdict / 문턱 / falsification / detection_power / three_way_comparison 전부 불변"
+    },
+    {
+      "at": "2026-08-13 21:33:29",
+      "by": "d9_correct_timeline_claim.R",
+      "what": "mechanism_timeline.verdict/consequence 정정 + basis_dependence_check 추가 + next_probe P5 교체 + CF9 신설",
+      "unchanged": "primary_endpoint / verdict / 문턱 / falsification / detection_power / three_way_comparison / robustness 불변",
+      "reason": "자기 반증 — D6 결론이 단일 basis 위에 있었고 D7/D8 이 반증. Charter 원칙 8(No Silent Override): 조용히 고치지 않고 철회 사실을 남긴다."
+    }
+  ]
+}

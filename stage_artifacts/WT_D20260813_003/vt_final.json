@@ -1,0 +1,100 @@
+{
+  "wt_id": "WT-D20260813_003",
+  "stage": "VT_final",
+  "metric_type": "mechanism_observation",
+  "self_caught": {
+    "s2_verdict_bug": "s2_vt.R 의 verdict 로직이 prereg tie_rule 미구현(t<=-2.0 만 검사) -> 'PROCEED_VT4' 오판. 본 스크립트가 사전등록 규칙 그대로 적용해 정정. 규칙 변경 아님.",
+    "s2_parity_silent_fail": "s2 의 승계-수익 parity 대조가 EV 에 bm_ret 컬럼 부재로 numeric(0) 평가 -> max()=-Inf 로 침묵 통과. s3 에서 실측 수행(max|diff|=0, cor=1)."
+  },
+  "parity_inherited_returns": {
+    "n": 366,
+    "max_abs_diff": 0,
+    "cor": 1
+  },
+  "VT2b_final": {
+    "mean_d_annual_pct": -1.48034,
+    "nw_lag3_t": -1.107976,
+    "variance_drag_gain_annual_pct": 0.789594,
+    "net_effect_annual_pct": -0.690746,
+    "geo_scaled_annual_pct": 5.975537,
+    "geo_control_annual_pct": 6.767976,
+    "geo_diff_pp": -0.792439,
+    "tie_rule_applied": true,
+    "reject": true,
+    "bootstrap": {
+      "B": 4000,
+      "p_net_gt0": 0.26475,
+      "ci90": [-2.792214, 1.282029]
+    }
+  },
+  "era_decomposition": {
+    "within_era_annual_pct": -1.495974,
+    "within_era_nw_t": -1.235487,
+    "between_era_annual_pct": 0.015634,
+    "between_era_nw_t": 0.037241,
+    "by_sub": [
+      {
+        "sub": "pre2008",
+        "n": 143,
+        "mean_e": 0.798075,
+        "mean_r_pct": 0.879801,
+        "d_within_ann_pct": -0.522107
+      },
+      {
+        "sub": "2008_2016",
+        "n": 108,
+        "mean_e": 0.944048,
+        "mean_r_pct": 0.208033,
+        "d_within_ann_pct": -1.366312
+      },
+      {
+        "sub": "post2017",
+        "n": 115,
+        "mean_e": 0.946918,
+        "mean_r_pct": 1.550272,
+        "d_within_ann_pct": -2.828724
+      }
+    ],
+    "note": "primary(전표본 상수 통제)와 robust(expanding-mean 통제) 불일치의 원인 진단."
+  },
+  "mechanism_segments": [
+    {
+      "seg": "clip(e=1)",
+      "n": 213,
+      "mean_r_pct": 0.281753,
+      "mean_e": 1,
+      "contrib_ann_pct": 0.220541
+    },
+    {
+      "seg": "bind_normal",
+      "n": 120,
+      "mean_r_pct": 2.063191,
+      "mean_e": 0.747222,
+      "contrib_ann_pct": -1.122781
+    },
+    {
+      "seg": "bind_rebound(직전3M<-10%)",
+      "n": 33,
+      "mean_r_pct": 0.574673,
+      "mean_e": 0.676085,
+      "contrib_ann_pct": -0.5781
+    }
+  ],
+  "bind_vs_clip": {
+    "mean_r_bind_pct": 1.742138,
+    "n_bind": 153,
+    "mean_r_clip_pct": 0.281753,
+    "n_clip": 213,
+    "welch_t": 1.553237,
+    "welch_p": 0.121964,
+    "realized_vol_bind": 0.020896,
+    "realized_vol_clip": 0.010538
+  },
+  "VT3c_relabel": {
+    "true_ab_inflation": 0,
+    "injected_leak_ab_inflation": 0.143446,
+    "interpretation": "실측은 strict 컷오프 자체 -> 인플레 0. 느슨 컷오프 주입 시 14.3% 인플레 = 검출기 검출력 실증(양성 대조). 'LOOK-AHEAD 의심' 메시지는 주입 대조의 정상 발화이지 본 측정의 위반이 아니다."
+  },
+  "verdict": "VT2b_REJECT",
+  "vt4_authorized": false
+}

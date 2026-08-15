@@ -1,0 +1,113 @@
+{
+  "schema": "distill_manifest_v1",
+  "week_of": "2026-W33",
+  "distilled_at": "2026-08-15",
+  "owner": "session_main",
+  "digest_path": "04_Research/01_reports/weekly/weekly_digest_20260815.md",
+  "scope_note": "artifact-storage.md §2 루트 고정 위반 잔재만 표적. §4 절대보존 존(05_Production·01_Literature·stage_artifacts·qepm/{memory,registry,mailbox}·06_Registry·outputs·04_Research/strategies 등)은 대상에서 제외. 루트 위반 6건 중 5건은 2026-W32 증류가 이미 사유와 함께 보존 결정했으므로 재판정하지 않고 승계했다 — 재삭제 시 문서화된 보존 판단을 뒤집게 된다.",
+  "root_items_before": 20,
+  "root_items_after": 19,
+  "deleted": [
+    {
+      "path": "printed",
+      "bytes": 79,
+      "reason": "R 콘솔 진단 출력이 쉘 리다이렉션 사고로 파일화된 것(전체 내용 3줄: 'idx = 1 0' / 'length(v[idx]) = 1' / '  element class: NULL  - as: PIT(기본값)'). 2026-08-02 11:11:53 auto-commit fac52cfc 로 유입. 2026-W32 증류가 삭제한 '1+)'(2,104바이트 close_round 콘솔 출력)와 동일 부류의 리다이렉션 산물이며 고유 지식이 없다.",
+      "ref_check": "0건 — 경로형 참조 검색(git grep '\"printed\"' / file.path(...printed) / source(...printed), 대상 *.R *.py *.sh *.json *.bat) 매치 0. 단어 'printed' 의 텍스트 매치 다수는 전부 stage_artifacts/paper_recharge/mcp_discovery_*.json 의 논문 초록 영문 산문(\"the printed bid of a calendar-vertical basket\")이지 경로 참조가 아님을 개별 확인. hygiene_report.json / distill_manifest_20260809.json 등장은 '무허가 루트 항목' 위반 목록 그 자체이지 기능 참조 아님.",
+      "shape_correction": "2026-W32 manifest 는 이 항목을 'printed/'(디렉터리)로 기록해 preserved_deferred 에 넣었으나 실측은 79바이트 일반 파일이다. 디렉터리 가정 하에 '재배치 대상'으로 분류된 것이며, 파일임을 확인한 본 주차에 삭제 부류로 재판정했다."
+    }
+  ],
+  "preserved_deferred": [
+    {
+      "path": "run_as_queue_20260806.R",
+      "bytes": 21800,
+      "reason": "2026-W32 보존 결정 승계 — alpha-search 큐 소비자 실행기(2026-08-06, MAX_ALPHA=2). 실제 리서치 실행 코드라 삭제 시 해당 런 재현 능력이 사라진다. 조치는 삭제가 아니라 이동이며 이동은 참조 경로 영향이 있어 도훈 confirm 후 별도 라운드.",
+      "ref_check": "실행 참조 0건 (매치 3건 = distill_manifest_20260809.json · hygiene_report.json · qepm/observability/events.jsonl.1 — 전부 기록물이지 소비자 아님)"
+    },
+    {
+      "path": "run_fx_intensity.R",
+      "bytes": 1113,
+      "reason": "2026-W32 보존 결정 승계 — FX_Intensity 리서치 실행기(FQ-149 계열, L-AS-20260804_081020 / L-AS-20260806_203146 연결).",
+      "ref_check": "실행 참조 0건 (매치 3건 전부 기록물)"
+    },
+    {
+      "path": "run_spec_lowfreq_mass.R",
+      "bytes": 649,
+      "reason": "2026-W32 보존 결정 승계 — spectral low-frequency mass 실행기(07-27 라운드 계열).",
+      "ref_check": "실행 참조 0건 (매치 2건 전부 기록물)"
+    },
+    {
+      "path": "run_within_sector_reversal.R",
+      "bytes": 686,
+      "reason": "2026-W32 보존 결정 승계 — 섹터內 리버설 실행기. 본 주차 L-AS-20260809_123327_46908 / L-AS-20260809_141324_57032 두 런의 실행기라 오히려 이번 주 산출물과 직접 연결된다.",
+      "ref_check": "실행 참조 0건 (매치 3건 전부 기록물)"
+    },
+    {
+      "path": "downloads/",
+      "bytes": 16777216,
+      "reason": "2026-W32 보존 결정 승계 + 본 주차 재확인 — arXiv PDF 7건(2607.13968 / 2607.16450 / 2607.24410 / 2607.26859 / 2607.27461 외) 약 16MB. 논문 레인의 실자료이며 06_Registry/alpha_frontier_queue.json 이 참조한다(기록물 아닌 실참조). 삭제 불가.",
+      "ref_check": "참조 1건 이상 — 06_Registry/alpha_frontier_queue.json (기능 참조). 보존."
+    }
+  ],
+  "not_deleted_note": "루트 무허가 6건 중 1건만 삭제. 나머지 5건은 (a) 2026-W32 가 사유를 명시해 보존 결정한 실행 코드 4건 — 조치는 삭제가 아니라 이동이고 이동은 도훈 confirm 사안 (b) downloads/ 는 실참조 보유. §④ '판단이 갈리면 보존' 적용.",
+  "sweep_deleted_n": 1,
+  "sweep_deleted_note": "무인 기계 스윕(weekly_cleaner_sweep.R, 2026-08-15 13:15:36) 이 별도로 1건 삭제: /tmp/qvest_tg_skeleton_warn.log (weekly_temp_logs_30d, OS temp 30일+). .cache/hygiene_manifest.log 기록.",
+  "hygiene_warnings_note": "hygiene_n_warnings 32(W32) → 77(W33), +45. 분해 실측: root_unauthorized 6 + infra_underscore 1 + misplaced_outputs 1 + unindexed_top 69(= 02_Infrastructure 2 + 06_Registry 59 + 08_Tests 8) = 77 로 총계 정합. 증가분 지배 원인은 06_Registry 의 alpha_frontier_queue.json.bak_* 30개 — 08-08/08-09 세션이 공유 큐를 쓸 때마다 백업을 남긴 결과다. 06_Registry 는 §④ 절대보존 존이라 본 증류의 삭제 대상이 아니며, 백업 누적 자체를 줄이려면 frontier_queue_io.R 쪽 백업 정책(회전·상한)이 필요하다 — 후속 등재.",
+  "distilled_knowledge_stale_flags": {
+    "note": "SKILL §③-③ distilled ↔ settled-negative 주기 대조 결과. 아래는 status=distilled(현재 주입 스트림이 실제 소비 중)인 카드가 이미 판정이 끝난 레인을 '미검증 레버'로 광고하는 건이다. 본 증류는 등재만 하고 재정제는 실행하지 않았다 — 주입 내용 변경이므로 도훈 확인 사안.",
+    "cards": [
+      {
+        "dist_id": "DIST-AR-003",
+        "refined_at": "2026-07-04",
+        "stale_item": "frontier 1번 항목이 'C23/C27 flow catalyst를 DPL 입력 피처로' 를 활성 레버로 제시하고, statement 도 screen-route 'DPL_FEATURE' 를 조건부 후보로 서술",
+        "why_stale": "DPL 은 2026-06-26 settled-negative(8config+GPU SR 0.75~0.89 ≪ PG2 1.52, 재제안 금지, measurement-graduation §5) 이고 DPL_FEATURE screen_route 는 v8.3(2026-07-10)에서 발급 중단(TURNOVER_REVIEW 대체). 카드 정제일 07-04 는 두 결정보다 앞선다."
+      },
+      {
+        "dist_id": "DIST-AS-008",
+        "refined_at": "2026-07-04",
+        "stale_item": "frontier 2번 '감쇠 견디는 후보를 overlay/DPL feature로 소비' + retry_condition 의 'DPL feature' 소비 경로",
+        "why_stale": "동일 — DPL settled-negative(06-26) · DPL_FEATURE 발급 중단(v8.3 07-10) 이후 정제 안 됨."
+      },
+      {
+        "dist_id": "DIST-AR-009",
+        "refined_at": "2026-07-10",
+        "stale_item": "frontier 2번 '비-return 원천(DART exec-insider 역사·공매도잔고 — 데이터 게이트 FQ-001/003)'",
+        "why_stale": "공매도/대차 데이터 게이트는 도훈이 2026-08-09 에 닫았고 insider 는 3-프레임 삼각-null 로 실측 negative. v8.4(08-13)가 비-return FQ-001~005 를 주력에서 해제. 카드는 이를 대기 중 게이트로 서술."
+      },
+      {
+        "dist_id": "DIST-QPM-005",
+        "refined_at": "2026-07-04",
+        "stale_item": "frontier 1번 'DART insider 등 개인-flow와 algebraic 독립인 진짜 신규 비-return 정보원으로 재설계'",
+        "why_stale": "insider 레인은 이후 실측 negative(3-프레임 삼각-null). 카드는 미시도 레버로 광고."
+      },
+      {
+        "dist_id": "DIST-RAMP-006",
+        "refined_at": "2026-07-18",
+        "stale_item": "frontier 1번 항목의 라벨 '(v8.3 주력 프론티어, FQ-001~005)'",
+        "why_stale": "라벨만 낙후 — v8.4(2026-08-13)가 비-return 을 주력에서 해제했다. ★단 이 카드의 DPL·잔차 sleeve 서술은 정확하다(둘 다 settled-negative 로 올바르게 표기 + 금지 목록에 DPL 재제안 명시) — 키워드 적중만으로 stale 처리하면 안 되는 반례라 함께 기록한다.",
+        "severity": "label_only"
+      }
+    ],
+    "not_stale_verified": [
+      {
+        "dist_id": "DIST-RAMP-003",
+        "note": "'신규 비-return 정보원/윈도우 확장' 은 특정 폐쇄 레인을 지목하지 않은 일반 서술이라 stale 아님 — 키워드 적중분 중 제외."
+      }
+    ],
+    "suggested_action": "Rscript -e 'source(\"02_Infrastructure/axiom/distilled.R\"); refine_distilled(\"DIST-AR-003\", ...)' — 도훈 확인 후 4건(AR-003/AS-008/AR-009/QPM-005) frontier 재정제 + RAMP-006 라벨 갱신."
+  },
+  "lcode_emitted": [
+    {
+      "l_code": "L-AR-20260810_FQ168",
+      "reason": "미적립 학습 소급 적립 — stage_artifacts/fq168_overlay_deltair_20260810/ 16 probe 산출물이 실재하는데 L-code 가 없어 corpus(492)·hypothesis_index(1213) 어디에도 없었다. record_type=process · metric_type=unavailable(패널 산술, 성과 게이트 미측정).",
+      "corpus_after": 493
+    }
+  ],
+  "distilled_drafted": ["DIST-AR-051", "DIST-AR-026", "DIST-JG-005", "DIST-RAMP-013", "DIST-QPM-034"],
+  "distilled_status_after": {
+    "distilled": 15,
+    "proposed": 10,
+    "pending_5axis": 89,
+    "expired": 26,
+    "quarantined_evidence": 6
+  }
+}

@@ -1,0 +1,53 @@
+{
+  "schema": "alpha_r30_v1",
+  "round_id": "v84-R30",
+  "measured_at": "2026-08-13",
+  "question": "이 세션 알파 측정의 sig_date↔forward 짝짓기가 한 달 어긋났는가 (전 결과 유효성)",
+  "verdict": "FRAME_ERROR_CONFIRMED_20_ROUNDS_INVALIDATED",
+  "metric_type": "panel_statistic",
+  "root_cause": "build_monthly_forward_returns 앵커 = 'sig_date 이하 최종 거래일'. 팩터를 월초 1일로 스탬프해 넘기면 월초가 거래일인 달에는 앵커가 그날 자신이 되어 forward 가 그 달 수익이 된다. factor DB sig_date T 는 T월 말 관측이므로 팩터가 채점 대상 월을 본다. 수정 = 팩터 Date 를 +1개월.",
+  "verification": {
+    "M04_Mom_1_IC": {
+      "old": -0.9423,
+      "fixed": 0.017
+    },
+    "factors_over_0_10": {
+      "old": 46,
+      "fixed": 0
+    },
+    "max_abs_mean_IC": {
+      "old": 0.9423,
+      "fixed": 0.0509
+    }
+  },
+  "invalidated": {
+    "scope": "R10~R28 정렬(alignment) 아크 전체",
+    "items": ["4번째 축(R10)", "다중검정 통과(R11)", "선별 라벨 +2.884%p(R12/R13)", "문턱·지평·유니버스 재현(R13/R22/R23/R24)", "여유 기전(R17/R18)", "시총 효과(R25~R28)", "'46종 오염'(R29)"],
+    "fixed_frame_result": "통과군 내부 차이 -0.1731%p · 비겹침 t -0.41 · 무작위(-0.098)와 구분 불가",
+    "proposal": "04_Research/01_reports/proposal_alignment_selection_label_20260813.md 철회 표기 완료"
+  },
+  "survived": {
+    "gates": {
+      "oos_retention": 0.1293,
+      "calmar": 0.1151,
+      "port_t": 0.093,
+      "null": -0.0019,
+      "note": "★순위 역전 — 구 프레임의 'oos 가 가장 약하다'(R7/R8)는 무효"
+    },
+    "rank_ic": {
+      "rho": -0.0163,
+      "rank": "11종 중 최하위(유일 음수)",
+      "note": "R3/R5 핵심 진단 유지. 단 전 척도 0.003~0.097 이라 실무 의미 약함"
+    },
+    "hard_pass_rate": {
+      "old": 13.8,
+      "fixed": 2.07,
+      "monthly": 4.5
+    },
+    "ml_history": "ml_complexity 126건 이력은 팩터 프레임과 무관하므로 유효"
+  },
+  "meta_lesson": "★R2 에서 내가 만든 신규 팩터에 정확히 같은 스탬프 버그를 내고 고쳤다. 그때 산출물에 '기존 팩터는 load_month_factors 가 PIT 정합 스탬프를 갖고 있어 무사' 라고 적었는데 그 한 줄이 **검증하지 않은 가정**이었다. 검증했으면 20판을 아꼈다. => 내 코드에서 발견한 결함은 같은 층의 모든 경로에 검사할 것. 위임은 검증이 아니다.",
+  "what_saved_me": ["arm A 의 223개월 전승(Hit_Ratio 1.000)", "'IC -0.94 는 물리적으로 불가능' 이라는 규모 감각", "★'팩터가 오염됐다' 는 내 결론을 한 번 더 의심한 것 — 없었으면 factor DB 에 없는 결함을 보고하고 칩 2건으로 남의 시간까지 썼다(발행 후 회수)"],
+  "assets": ["stage_artifacts/fq233_probe0_20260813/master_panel_FIXED.rds (수정 프레임 패널, 재구축 불요)", "구 프레임 패널(master_panel/r23/r26/r27/r28)은 폐기 대상"],
+  "next_probes": ["★수정 프레임에서 arm A 기준선 재측정 — ML QEPM 착수 관문", "게이트 3종 순위 역전의 함의 재검토(oos 가 1위인 프레임에서 R9 '3중=1중' 재측정)", "INV07 PORT_t 24.65 · R21 lag 해석도 수정 프레임에서 재확인", "구 프레임 산출물 13종 JSON 에 무효 표기 부착"]
+}

@@ -5123,10 +5123,15 @@
    "ev_rationale": "D03 Q5-Q1 평균 스프레드 연 -5.10%(NW t -1.07) vs 중앙값 +12.01%(t +2.57) — **부호가 반대**. 분위별 횡단면 왜도 Q1 +0.96 -> Q5 +0.69. rank-IC(순위·이상치 둔감)와 PORT_t(평균·꼬리 지배)의 불일치가 비대칭의 지문. 평균 기반 선형 측정이 놓치는 구조가 실측으로 존재한다.",
    "wall_check": "IC->PORT_t 전이 벽. 단 이 lane 은 벽 자체를 재서술한다 — PORT_t 가 평균량이므로 '분위 표적이 PORT_t 로 전이되는가' 가 1급 질문.",
    "data_gate": "없음 — factor DB + RAWDATA 기존 보유. venv qvest_ml(LightGBM pinball / quantile regression).",
-   "owner": "Q-Lead session (2026-08-13 v8.4 재편 세션) — 착수 0항 실행 완료. arm A 부터는 미배정: 착수 전 owner 잠금 필요.",
-   "status": "probe4_alignment_mismatch_mechanism_identified",
-   "next_action": "[probe4 2026-08-13] 3재료 일반성 시험 완료. 산출물 fq233_probe4_result.json. delta(raw-inv) 가 분위 평균 기울기를 따름: D03 -17.84->-3.85 · Q01 +7.40->+0.89 · M26 +22.03->+6.85. ★단 이 관계는 거의 항등식이라 발견으로 승격 금지. ★★진짜 발견 = **D03 은 IC-정렬 방향과 평균-기울기 방향이 반대**(Q1 21.81% vs Q5 3.97%). 기전: rank-IC 는 순위(중앙값 근사) · 평균은 꼬리 지배 · D03 왜도 Q1 1.977 -> Q5 0.444 급락 = 저분위에 극단상승. Q01/M26 은 왜도 평평해서 불일치 없음. => IC->PORT_t 전이 벽에 **구체 기전 하나 특정: 정렬 기준 불일치**. ⚠벤치가 유니버스 cap-w 이지 KOSPI200 아님 — **자본 문턱과 같은 문장 금지**. M26 raw +5.102 를 '문턱 통과'로 읽으면 오보(08-08 라운드 M26 cap-w PORT_t 는 1.544, 다른 basis). ⚠probe0 D03 분위 프로파일(혹형) **철회** — 정본 프레임에선 완전 단조감소. 구조 주장은 더 강하게 재현. [다음] ①★factor DB 전수: IC-정렬 방향과 평균-기울기 부호가 어긋나는 팩터 수 — 전이 벽 기전의 크기를 전수로 잰다 ②벤치 basis 정합(유니버스 cap-w vs KOSPI200)으로 3재료 재측정 ③왜도급락->음의기울기 예측력 전수 상관.",
-   "source_refs": "02_Infrastructure/docs/qvest_v8_4_asymmetry_ml_sot.md"
+   "owner": "CLAIMED — Q-Lead session 2026-08-13 (/qvest 부팅 세션). arm A 대조군 재측정부터 담당. 선행 세션의 착수 0항(수정 프레임 확립)을 승계하며 패널은 재구축하지 않는다 (stage_artifacts/fq233_probe0_20260813/master_panel_FIXED.rds).",
+   "status": "armA_reproduced_gate_passed__armBC_open",
+   "next_action": "★arm A 관문 통과(total net SR 0.6039 ∈ 밴드[0.30,0.70], 참조 0.493 · 198개월). 다음 = arm B(LightGBM pinball q10/q50/q90, primary=q50) · arm C(왜도·꼬리초과확률, CRPS). ★사전등록 필수 2항: ①basis 명시(arm A 가 active/total 혼동으로 판정 뒤집힐 뻔) ②하이퍼파라미터 탐색 시 selection_type=sweep + DSR>=0.5 HARD (arm A 의 chain 선언 승계 불가).",
+   "source_refs": "02_Infrastructure/docs/qvest_v8_4_asymmetry_ml_sot.md",
+   "prereg_stance": "착수 전 사전등록 입장 (SOT §8 '착수 전 필수 확인' 2항 = sweep/chain 확정). **기본값 = sweep + DSR>=0.5 HARD 적용**. 근거: SOT §7-4 가 'ML HPO·모델 grid 는 selection_type=sweep' 을 명시하고, arm B(LightGBM pinball q10/q50/q90)·arm C 는 하이퍼파라미터 선택을 수반한다. chain 으로 주장하려면 자격요건 3항(iteration 변경사유 기록 · 선택은 IS-only · holdout 최종 1회)을 전부 충족해야 하며, '파라미터 수가 적다'는 chain 근거가 아니다 — 판별 기준은 '이 값 바꿔가며 백테를 돌려봤나'다. 완화(=chain 재분류)는 도훈 승인 사항으로 남긴다.",
+   "entry_gate": "arm A 재현이 관문: SOT §8-1 이 요구하는 SR ~0.49 대역을 수정 프레임에서 못 세우면 비교 기준선이 없으므로 arm B/C 미착수. ⚠구 프레임 arm A(PORT_t 26.89 · Hit_Ratio 1.000)는 앵커 규약 오류 산물로 무효 — 인용 금지.",
+   "verification_fingerprint": "수정 프레임 확인 (2026-08-13 재검증 3/3 일치): M04_Mom_1 평균 IC +0.0170 · |평균IC|>0.10 = 0종 · 최대 |평균IC| 0.0509 (V14_EBIT_EV). 패널 81,963행 · 320팩터 · 258월.",
+   "result_ref": "r31_d03_fixedframe_result.json (D03 기전 전제 재확립: rank-IC +0.0462 t 3.95 / 평균 스프레드 -2.71%/yr t -0.55 / 중앙값 +15.60%/yr t +3.33) · r32_general_fixedframe_result.json (★320종 전반 성질: 부호 갈림 123/320=38.4%, 비대칭 102 vs 21 / '중앙값 유의∧평균 비유의' 99종 중 46종 평균 음수 / **cor(왜도기울기, 중앙값-평균 gap) = -0.728** = 기전 직접 측정 / 준-단조 분위 프로파일 **0종**) · r33_profile_fixedframe_result.json (혹형 확정 정점 Q2 · 259개월 · R31 과 독립경로 0.3%p 일치) · armA_result.json (REPRODUCED — total net SR 0.6039 / active IR 0.1963 / PORT_t 0.63 p 0.53 / CAGR 13.84% / MDD 64.04% / 회전 16.74. ★대조군이므로 자본 자격 주장 아님. 사전등록 PREREG_armA_20260813.md)",
+   "entry_prereq_env": "★해소 (2026-08-13, 도훈 지시 '노트북 환경이라 없을거야, 깔아줘'). 감사 시점 결손 3종 xgboost/optuna/properscoring 을 .venv_qvest_ml 에 설치 완료 — xgboost 3.4.0 · optuna 4.9.0 · properscoring 0.1. import 뿐 아니라 실동작 1회씩 확인(xgboost fit · CRPS · optuna 12-trial). ⇒ arm A 를 참조 기준선(XGBoost 다음달 수익 직접 예측 SR 0.493)으로 **충실 재현 가능**, arm C 의 CRPS 채점·HPO 도 가용. 실행기 = .venv_qvest_ml/Scripts/python.exe. ⚠잔여 환경 사실: torch 는 2.12.1+cpu(CUDA 아님) — GPU 전제 라운드는 이 머신에서 재현 불가."
   },
   {
    "id": "FQ-234",
@@ -5136,11 +5141,13 @@
    "ev_rationale": "factor DB 331 전수는 book-marginal 통과 0 으로 소진됐고 선언 계열 15종이 구속 해상도다 — 증분은 factor DB 가 아니라 **일별 원천 패널**에 있다. 이 표면은 미소비.",
    "wall_check": "IC->PORT_t 전이 벽 + 회전율(일별 피처는 회전을 올릴 수 있음 — 비용 채널 사전 상한 계산 의무).",
    "data_gate": "없음 — RAWDATA(1990-01-05~2026-08-11) + flow_features_daily(2000-01-04~2026-07-01) 보유. ⚠flow 패널 종료일이 RAWDATA 보다 앞선다(커버리지 확인 후 창 명시).",
-   "owner": "UNCLAIMED — v8.4 재편(도훈 2026-08-13)으로 신설. 착수 전 owner 잠금 의무.",
-   "status": "frontier_open",
+   "owner": "CLAIMED — Q-Lead session 2026-08-13 저녁. 선별 축(FQ-237) 조건부 보류 후 주력 이동. WT-D20260813_006 로 착수.",
+   "status": "CLAIMED_20260813__designing",
    "next_action": "①★PIT 최우선 — 월내 피처는 홀딩월 **시작 전**까지만(C5 오버레이 타이밍 규약 동형). assert_overlay_pit() HARD + lag1 스트레스 + strict-PIT A/B 의무. 동월 look-ahead 는 placebo/OOS/DSR/subperiod 를 다 통과하므로 이 3종만이 판별한다 ②커버리지 실측 먼저 — flow 패널 2026-07-01 종료 · 창 개수와 내부 gap 을 이론 개월수와 대조(창 오귀속 전례 3건) ③비용 채널 상한 사전 계산 — 회전 증가분이 알파를 먹으면 레버 아님(M26 선례: 1:1 교환) ④Lane A 와 교차 시 자유도 분리 — 피처 교체와 표적 교체를 같은 라운드에 섞지 말 것.",
    "source_refs": "02_Infrastructure/docs/qvest_v8_4_asymmetry_ml_sot.md",
-   "precheck_20260813": "[precheck 2026-08-13 · 착수 0항 ② 커버리지 실측 — owner 미변경(잠금 아님)] flow_features_daily.parquet: 9,362,399행 · 22컬럼 · 2000-01-04~2026-07-01 · 고유 319개월 · **내부 결측 0 · 이론=실측=319** (창 오귀속 위험 없음). 최근 ~1.5개월 공백(패널 7/1 종료). ★★발견 1 — 이 패널엔 **미래 라벨이 피처와 같은 표에 섞여 있다**: `fwd_inst_foreign_netbuy_21d` · `fwd_flow_top20`(0/1). 이름이 아니라 **값으로 확인**: cor(fwd(t), inst+foreign_20d(t+21)) = **+0.789** vs 동시점 −0.115 · t−21 +0.103 (표본 A950210 405행, row_group 8). 즉 진짜 t+21 정보다. 컬럼을 넓게 잡는 방식(수치형 전부 등)으로 피처를 뽑으면 **직접 look-ahead** 이고, 이건 FQ-234 자신이 적은 대로 placebo/OOS/DSR/subperiod 를 전부 통과한다. ⇒ 피처 선택은 **allowlist 로 명시 열거**(fwd_* 배제를 blocklist 로 걸면 새 fwd 컬럼 추가 시 뚫린다). ★★발견 2 — 이 패널은 Lane B 가 원하는 재료가 **아니다**: 컬럼이 이미 5d/20d/60d 롤링으로 접혀 있어 '월간으로 접기 전 분포 구조'(월내 왜도·첨도·점프빈도·상방/하방 분리 실현변동성·월내 최대낙폭)는 여기 없다. 그 재료는 RAWDATA 일별 가격에서 새로 계산해야 한다 — 착수 설계에서 소스를 flow 패널로 잡으면 가설과 데이터가 어긋난다."
+   "precheck_20260813": "[precheck 2026-08-13 · 착수 0항 ② 커버리지 실측 — owner 미변경(잠금 아님)] flow_features_daily.parquet: 9,362,399행 · 22컬럼 · 2000-01-04~2026-07-01 · 고유 319개월 · **내부 결측 0 · 이론=실측=319** (창 오귀속 위험 없음). 최근 ~1.5개월 공백(패널 7/1 종료). ★★발견 1 — 이 패널엔 **미래 라벨이 피처와 같은 표에 섞여 있다**: `fwd_inst_foreign_netbuy_21d` · `fwd_flow_top20`(0/1). 이름이 아니라 **값으로 확인**: cor(fwd(t), inst+foreign_20d(t+21)) = **+0.789** vs 동시점 −0.115 · t−21 +0.103 (표본 A950210 405행, row_group 8). 즉 진짜 t+21 정보다. 컬럼을 넓게 잡는 방식(수치형 전부 등)으로 피처를 뽑으면 **직접 look-ahead** 이고, 이건 FQ-234 자신이 적은 대로 placebo/OOS/DSR/subperiod 를 전부 통과한다. ⇒ 피처 선택은 **allowlist 로 명시 열거**(fwd_* 배제를 blocklist 로 걸면 새 fwd 컬럼 추가 시 뚫린다). ★★발견 2 — 이 패널은 Lane B 가 원하는 재료가 **아니다**: 컬럼이 이미 5d/20d/60d 롤링으로 접혀 있어 '월간으로 접기 전 분포 구조'(월내 왜도·첨도·점프빈도·상방/하방 분리 실현변동성·월내 최대낙폭)는 여기 없다. 그 재료는 RAWDATA 일별 가격에서 새로 계산해야 한다 — 착수 설계에서 소스를 flow 패널로 잡으면 가설과 데이터가 어긋난다.",
+   "why_now": "★오늘 6축 실측이 공통으로 가리킨 방향 = '월간 집계가 정보를 죽인다'. 근거 3중: (1) **404년 벽** — 시장-레벨 overlay 의 cov(e,r) 채널은 순효과 |t|=1.96 에 4,845개월 필요(WT-D20260813_003). 일별 축이 이 벽의 유일한 근본 해법. (2) 분산 예측 능력은 실재하나(VT1 0.7219 · VT2 G 0.1408 = 순열 q95 의 3.3배) 월간 소비에서 소멸(VT2b cov(e,r) -1.480%/yr). (3) 선별↔소비 **정합이 점추정을 3.2배** 옮겼다(FQ-237 depth: paired t 0.49→1.57 · PORT_t 0.99→1.78) — 정합이 실효 레버임을 보였으나 월간 재료 위에서는 문턱 미달. ⇒ 같은 정합 원리를 **일별 분포 구조** 위에서 적용하는 것이 다음 축.",
+   "claim_note": "★점유 판정 버그 기록(2026-08-13): 초판이 `'CLAIMED' not in owner` 로 점유를 판정했는데 **'UNCLAIMED' 가 'CLAIMED' 를 부분문자열로 포함**해 미점유 항목을 점유로 오판했다(거짓 차단). 수리 = 단어경계 + 부정 lookbehind `(?<!UN)\bCLAIMED\b`. ★부정형 판정을 substring 으로 하면 반대말이 걸린다 — 같은 계통이 재발하면 이 줄을 참조."
   },
   {
    "id": "FQ-235",
@@ -5176,10 +5183,12 @@
    "ev_rationale": "R3 실측: 창 21->252일로 추정을 12배 안정화(rho1 0.017->0.889)해도 |IC| 불변(상승 2/5), 그런데 불일치 비율은 60%->100% 로 단조 증가하고 평균기울기는 커진다. R1 실측: factor DB 320종 중 68종(21.2%)이 정렬 불일치, cor(왜도기울기, 평균기울기) +0.599.",
    "wall_check": "IC->PORT_t 전이 벽 — 이 항목은 벽의 **기전 하나를 통계량 불일치로 특정**한다.",
    "data_gate": "없음 — 기존 패널. 신규 팩터는 factor DB 미적재(stage_artifacts 보존).",
-   "owner": "UNCLAIMED — v8.4 R3 에서 도출(2026-08-13). 착수 전 owner 잠금.",
-   "status": "INVALID_frame_error_20260813_see_r30",
+   "owner": "CLAIMED — Q-Lead session 2026-08-13. 도훈 '알파창출 각이 보여?' 에 대한 Q-Lead 권고로 착수. 구 상태 INVALID_frame_error 는 해소 — R32 가 수정 프레임 근거를 공급했다.",
+   "status": "CLAIMED_20260813__evidence_thickened_launching",
    "next_action": "[★★★무효 2026-08-13 R30] 이 항목의 R5~R28 근거는 **측정 프레임 오류**로 무효다. build_monthly_forward_returns 앵커가 'sig_date 이하 최종거래일' 이라 팩터를 월초 1일로 넘기면 월초가 거래일인 달에 앵커가 그날 자신이 되어 forward 가 그 달 수익이 된다. factor DB sig_date T 는 T월 말 관측이므로 팩터가 채점 대상 월을 봤다. 수정 = 팩터 Date +1개월. 검증 지문: M04_Mom_1 평균 IC -0.9423 -> +0.0170 · |평균IC|>0.10 팩터 46종 -> 0종 · 최대 0.9423 -> 0.0509. ★수정 프레임 재측정: 정렬 라벨 통과군 내부 차이 +2.884%p -> **-0.1731%p (비겹침 t -0.41)** = 무작위와 구분 불가. => 정렬(alignment) 아크 전체 무효, 제안서 철회 완료. ★살아남음: 게이트 3종 결정력(oos +0.1293 **1위** · calmar +0.1151 · PORT_t +0.0930, 귀무 -0.0019) — 단 **순위 역전**이라 구 프레임의 'oos 가 가장 약하다'(R7/R8)도 무효. rank-IC 는 11종 중 최하위(-0.0163)로 R3/R5 진단 유지. HARD 통과율 13.80% -> 2.07%(월 4.5개). 산출물: r30_reframe_result.json 이 **유효 정본**, 나머지 26종은 INVALID_FRAME_ERROR 표기 부착됨. 재사용: master_panel_FIXED.rds. 상세 = 메모리 project-anchor-convention-invalidated-20-rounds-20260813. [다음] ①수정 프레임 arm A 기준선 재측정(ML QEPM 착수 관문) ②게이트 순위 역전 함의로 R9 재측정 ③INV07 24.65 · R21 lag 해석 재확인 ④정렬 라벨은 새 증거 없이 재제안 금지. \n\n--- 무효 이전 기록(보존) ---\n[제안서 2026-08-13] 04_Research/01_reports/proposal_alignment_selection_label_20260813.md 작성. ★도훈 결정 2문항: Q1 정렬 라벨을 screen_route 에 부착할 것인가(판정 무변경, 배선 1곳) Q2 관문 4번째 축 확장 논의를 할 것인가(증분 R^2 0.1277->0.1428 로 작음, 과거 판정 소급 재분류 수반). ★R19 basis 전환 완료 — KOSPI200 벤치서 spearman 0.9943 유지, 수준만 -0.301 이동 => 이제 자본 문턱과 같은 basis 로 서술 가능. 문턱 2.95 통과 유니버스 5 -> KOSPI200 3. ★R20/R21: INV07 PORT_t 24.65 는 **미판정** — 커버리지 결함 기각(259개월·월중앙 343종목), lag 스트레스는 **판별력 없음**(대조군 3종 동일 붕괴, 단기신호라 신선도만 파괴). ★대조군이 오보를 막았다 — 없었으면 'PIT 위반' 오보. chip task_547b3df7 로 빌더 감사 분리. ⚠INV07 이 오염으로 판명되면 36 표본 최상단이 빠지므로 R14/R19 상관 재확인 필요. [다음] ①도훈 결정 대기(적용 없음) ②다른 유니버스·지평 재현 ③전수 316 으로 대리↔계약 확장 ④단기신호군용 PIT 판별 도구 설계(lag 스트레스 무력 구간) ⑤R4 배관 오염. \n\n--- 이전 라운드 기록(보존) ---\n[R12/R13 2026-08-13] 정렬일치를 **선별 라벨**로: 게이트 통과군 내부에서 라벨 상위군이 하위군 대비 +2.15%p(상위20%). ★부호 반전 — 무조건부(R5/R10)는 음(-0.19)인데 통과군 내부는 양 (Simpson 계열 조건부). 기전 = 통과했는데 IC·평균기울기 부호가 어긋나면 '불안정한 통과'. ★R13 문턱 검증: 상위 10/20/30/50% 전부 부호 유지 + 엄격할수록 증가(3.071>2.152>1.608>1.377), **실제 HARD(2.95/0.7/0.64) 통과군 13.80%서 +2.884%**(비겹침 t 13.055), 무작위 -0.088. 부수: 개별 통과율 20.7/49.6/19.6 vs 전건 13.80 = 독립가정 7배 -> R9 '3중=1중' 재확인. ⚠t 절대값 인용 금지(12m 겹침) · 게이트값이 팩터 대리포트 동형이지 forge 실포트 아님. [다음] ①★forge 실포트 재현(마지막 미검 축) ②기전 확증(불일치 통과 팩터의 게이트값 시계열 분산) ③screen_route 보조라벨 최소변경안 설계(승인 전 적용 없음) ④누적 다중검정 보정. 산출물 r12_selection_label_result.json · r13_threshold_result.json \n\n--- 이전 라운드 기록(보존) ---\n[R11 2026-08-13] 다중검정 보정 **통과**. 팩터 블록 순열 B=300(11 후보 동일 배정 — 지속성·후보간상관 온존). 관측 최대증분 0.01510(E_align) vs 귀무 최대 0.00853 · p95 0.00498 => **p < 0.0033**(300 중 0건), 1.77배. ★초판 2결함 자가검거: argmax 라벨 하드코딩(실제는 E_icir) · R10 은 순위화인데 R11 초판은 raw (E_icir 분모 0 근처 폭발, raw -0.802~4.938 → 증분 0.03744 허위). 순위화로 프레임 일치시켜 복귀. ⚠p 표기는 'p<0.0033'(B=300 해상도) — 'p=0.0000' 금지. 증분 절대크기 작음(R^2 0.1277→0.1428). [다음] ①★E_align 을 **선별 라벨**로 쓰는 경로 실측(게이트 확장은 도훈 결정, 선별 활용은 세션 범위) ②forge 실포트 게이트 상관 재측정 ③E_align 기전 해석(미탐색 방향 표시 vs 측정 잡음 표시) ④R^2 나머지 86% ⑤R4 배관 오염.",
-   "source_refs": "stage_artifacts/fq233_probe0_20260813/alpha_r2r3_result.json"
+   "source_refs": "stage_artifacts/fq233_probe0_20260813/alpha_r2r3_result.json",
+   "evidence_20260813": "★근거 3중(전부 수정 프레임): (1) R32 320종 전수 — 평균/중앙값 스프레드 부호 갈림 123/320(38.4%)이고 **비대칭**(중앙값+/평균- 102 vs 반대 21, 무작위면 반반) · '중앙값 유의 ∧ 평균 비유의' 99종 중 46종은 평균 음수 · 기전 cor(왜도기울기, 중앙값-평균 gap) = **-0.728** · **준-단조 분위 프로파일 0종**. (2) armB 실현-포트 사례 — 표적 교체로 rank-IC 4배(+0.0074→+0.0299) 개선했는데 실현 SR 은 0.6039→0.5140 로 낮아짐(paired NW3 t -1.2473). 순위 개선이 top-N 평균 소비로 전이되지 않음. (3) 4 arm 서열 역순 관찰(q10 .0438/0.437 · q50 .0299/0.514 · 평균 .0074/0.604 · q90 -.0281/0.606) — ⚠n=4·비독립·전 arm PORT_t |t|<1.4 이므로 관찰이지 검정 아님. ⇒ 가설: 현 파이프라인은 rank-IC(순위/중앙값 근사)로 고르고 top-N 평균(꼬리 지배)으로 소비한다 = **체계적으로 어긋난 방향으로 고른다**.",
+   "why_highest_priority": "재료를 바꾸지 않고 **고르는 법만** 바꾼다 — 새 데이터·새 가설 불요. 실패해도 '선별 통계량은 병목이 아니다' 라는 큰 정보가 남고, 그때는 재료(일별 축 FQ-234·비-return)로 라우팅이 명확해진다. 오늘 실측된 벽(재료-불변)에 대한 유일한 비-재료 가설."
   },
   {
    "id": "FQ-238",
@@ -5193,6 +5202,17 @@
    "status": "OPEN_ready_to_start",
    "next_action": "①A등급을 adapter_kind 별로 묶어 착수(weight 9 · sigma 6 · exposure 5) — 같은 kind 는 fixture·wrapper 가 같아 한 번에 여러 건이 빠르다. ②착수 시 **원문을 반드시 열 것**: 이 분류의 근거는 큐 서술 155자 발췌이지 정독이 아니다. 원문에서 구체 산출이 없으면 즉시 C 로 재분류하고 사유를 기록한다(GMVP 결정기하 선례 — '추정기처럼 보였으나 평가 지표'였다). ③sweep/chain 을 **등재 전에** 확정한다(2606.09025 는 216점 백테 격자 = sweep + DSR). ④등재분은 자동으로 hypothesis_index PL_ 항목이 되어 모드에 노출된다(배선 완료).",
    "source_refs": "06_Registry/paper_feasibility_20260813.json | A등급 목록 — regime: 2606.09025(exposure) 2606.23492(exposure) 2606.27932(exposure) 2607.19005(sigma) 2607.27063(exposure) | risk: 2607.24410(sigma) 2608.09641(sigma) 2607.13112(sigma) 2606.08141(sigma) 2606.20145(sigma) 2606.30037(sigma) | optimizer: 2606.12612(weight) 2606.11318(weight) 2606.09104(weight) 2607.18813(weight) 2607.16450(weight) 2607.28230(weight) 2607.27461(weight) 2607.01705(weight) smartbeta_ra(weight)"
+  }
+ ],
+ "parked_rounds": [
+  {
+   "wt_id": "WT-D20260813_004",
+   "parked_at": "2026-08-13",
+   "phase": "ALPHA_DONE",
+   "reason": "Q-Lead 판단으로 FQ-237 우선 — WT-004 사전 기대 '중하'(최인접 arm FQ-108 하이브리드 PRIMARY 셀 -1.658 미달) vs FQ-237 근거 3중. 폐기 아님.",
+   "resume_cost": "risk-research 1회 — alpha_package.json 에 핸드오프 명세 + prereg 6항 이월 완비",
+   "selected_surface": "Σ 공통성분(시장성분) 분산 조건화 · PRIMARY = 실 book 총분산 QLIKE 의 DM 검정",
+   "wall_check": "404년 벽 PASS(QLIKE/DM 2차 모멘트, 해소 규모 n≈173개월 vs 4,845 — 28배 유리)"
   }
  ]
 }

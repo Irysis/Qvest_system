@@ -1,0 +1,63 @@
+{
+ "status": "INVALID_FRAME_ERROR",
+ "invalidated_at": "2026-08-13",
+ "reason": "★이 산출물은 **구 측정 프레임**에서 나왔다. factor DB sig_date T 팩터를 T월 수익과 짝지어(build_monthly_forward_returns 앵커='sig_date 이하 최종거래일', 월초가 거래일인 달엔 앵커가 그날 자신) 팩터가 채점 대상 월을 봤다. 수정 = 팩터 Date +1개월.",
+ "evidence": "M04_Mom_1 평균 IC: 구 -0.9423 -> 수정 +0.0170 · |평균IC|>0.10 팩터: 46종 -> 0종",
+ "do_not_cite": "이 파일의 수치를 인용하지 말 것. 유효 정본 = r30_reframe_result.json",
+ "kept_for": "프레임 오류 사례로 보존(삭제 아님)",
+ "_original": {
+  "schema": "alpha_r15_v1",
+  "round_id": "v84-R15",
+  "measured_at": "2026-08-13",
+  "question": "R12/R13 을 설명하는 '불안정한 통과' 기전이 실재하는가",
+  "verdict": "M2_M3_SUPPORT_M1_REFUTES_MECHANISM_CORRECTED_IN_R17",
+  "metric_type": "panel_statistic",
+  "preregistered": {
+   "M1": "불일치 통과 팩터의 게이트값 시계열이 더 흔들린다",
+   "M2": "불일치 통과 팩터는 12개월 뒤 통과 상태를 덜 유지한다",
+   "M3": "불일치 통과 팩터는 평균기울기 부호가 더 자주 뒤집힌다"
+  },
+  "sample": "HARD 통과 4,656 팩터-월 · 월평균 20.9 · 불일치군 47.3%",
+  "results": {
+   "M2": {
+    "support": true,
+    "mismatch_retention_pct": 88.64,
+    "aligned_retention_pct": 95.88,
+    "gap_pp": 7.24,
+    "n_mismatch": 2113,
+    "n_aligned": 2353
+   },
+   "M3": {
+    "support": true,
+    "aligned_flip_pct": 20.35,
+    "mismatch_flip_pct": 38.29,
+    "diff": 0.179,
+    "t": 4.26,
+    "n_fac": 30
+   },
+   "M1": {
+    "support": false,
+    "invalid": true,
+    "aligned_sd_port": 2.855,
+    "mismatch_sd_port": 0.97,
+    "aligned_sd_calmar": 74.217,
+    "mismatch_sd_calmar": 0.681,
+    "why_invalid": "①sd_calmar 74.2 = calmar(CAGR/|MDD|) 의 MDD~0 폭발, 이상치가 평균 지배 ②게이트값 수준이 다른 두 군의 **절대 sd** 비교라 스케일 효과 혼입. 변동계수 또는 로버스트 산포로 재측정 필요."
+   }
+  },
+  "conclusion": "M2/M3 가 기전 핵심을 지지: 정렬 불일치 상태로 통과한 팩터는 12개월 뒤 통과 유지율이 7.24%p 낮고 평균기울기 부호가 거의 2배 자주 뒤집힌다. 이것이 R12/R13 의 성과 차이를 설명한다 — 불일치 통과는 실제로 **덜 안정적인 통과**다.",
+  "caveats": [
+   "★M1 은 내 설계 결함으로 무효 — 가설 반박 아님. 로버스트 산포로 재측정 전까지 M1 축은 미판정.",
+   "M1/M3 는 팩터 30개(15/15)만 12개월 이상 통과 구간 보유 — 검정력 낮음. M2 는 팩터-월 4,466 으로 견고.",
+   "게이트값이 팩터 대리 포트 동형 (R14 에서 계약 대조 진행 중).",
+   "불일치 정의가 월별 중앙값 분할이라 상대적 — 절대 기준 아님."
+  ],
+  "next_probes": [
+   "M1 로버스트 재측정: 변동계수(sd/|mean|) 또는 MAD 로 산포 재정의 후 재판정",
+   "M2 를 지평별로(6/12/24개월) — 유지율 격차가 지평에 어떻게 반응하는가",
+   "M3 부호 전환이 성과 하락에 선행하는가 — 전환 시점 정렬 이벤트 스터디",
+   "R14 계약 대조 결과와 통합 — 대리가 계약을 따르면 M2/M3 도 전이"
+  ],
+  "correction_20260813": "★R15 는 M1 을 '내 설계 결함으로 무효' 처리했는데 **부정확했다**. R16 에서 cv/mad/iqr 3정의로 수리해도 PORT_t 축은 일관되게 가설과 **반대**(차이 -0.082/-0.110/-0.152, t -3.08/-3.18/-3.35). calmar 축만 정의-민감·비유의. => M1 은 무효가 아니라 **가설 반증**이며, 그 반증이 R17 의 올바른 기전(문턱 여유)으로 이어졌다."
+ }
+}

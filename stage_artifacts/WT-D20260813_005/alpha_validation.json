@@ -1,0 +1,234 @@
+{
+  "task_id": "WT-D20260813_005",
+  "produced_by": "alpha-research",
+  "produced_at": "2026-08-13 21:02:05.325512",
+  "prereg_ref": "stage_artifacts/WT-D20260813_005/PREREG_impl_lock.md (측정 착수 전 봉인)",
+  "selection_type": "chain",
+  "selection_objective": "canonical_port_t",
+  "design": {
+    "K": 5,
+    "trailing_window_months": 36,
+    "top_n": 25,
+    "cost_bps_oneway": 15,
+    "quantile": "Q5 of 5",
+    "n_factors_material": 320,
+    "combination": "z_score_aligned_equal_weight",
+    "normalization_held_constant": "3 arm 전부 NW lag-3 t — '평균 vs 순위' 축만 격리",
+    "n_holding_months": 221,
+    "period": "2008-03-01 ~ 2026-07-01",
+    "universe": "KOSPI200 ∪ KOSDAQ150 (패널 승계, 월중앙 344종목)",
+    "benchmark": "IKS200 (.cache/benchmark.parquet 일별 → apply.monthly(Return.cumulative), ym 키)"
+  },
+  "primary_endpoint": {
+    "nw3_t": 0.49298,
+    "threshold": 2,
+    "verdict": "NOT_SUPPORTED",
+    "mean_monthly": 0.001554,
+    "annualized_pct": 1.864493
+  },
+  "falsification": {
+    "axis1_set_divergence": {
+      "jaccard_median": 0.111111,
+      "reject_if": "> 0.8",
+      "fired": false,
+      "note": "두 통계량이 실제로 다른 집합을 고른다 — 기전이 작동할 물리적 여지 확인"
+    },
+    "axis2_skew_profile": {
+      "n_months": 221,
+      "mean_rank_only": -0.01240517,
+      "mean_mean_only": 0.09034056,
+      "mean_diff": -0.10429759,
+      "nw3_t": -9.78814006,
+      "direction_ok": true,
+      "significant": true,
+      "fired": false
+    },
+    "axis3_negative_control": {
+      "objmed_paired_nw3_t": -0.667268,
+      "reject_if": ">= +2.0",
+      "fired": false,
+      "note": "대조군 미개선 — 개선이 임의 통계량 교체 효과가 아님(단 본 라운드는 개선 자체가 미달)"
+    }
+  },
+  "stability_cost_test": {
+    "turnover_ratio_mean_over_rank": 1.027083,
+    "threshold": 1.5,
+    "self_overlap_jaccard_median": {
+      "OBJ_RANK": 0.666667,
+      "OBJ_MEAN": 0.666667,
+      "OBJ_MED": 0.666667
+    },
+    "verdict": "미발화 — 불안정 비용 가설 기각(회전율 배율 1.027)"
+  },
+  "detection_power": {
+    "design": "PREREG §4 — 선별창에 홀딩월 자신을 포함시킨 위반 주입 arm(LOOKAHEAD) 실측",
+    "lookahead_port_t": 3.428926,
+    "clean_port_t": 0.989908,
+    "delta": 2.439018,
+    "lookahead_paired_t": 4.155744,
+    "lag1_paired_t": -0.196528,
+    "lag1_port_t": 0.526899,
+    "verdict": "판별력 있음 — 1개월 누출이 PORT_t 를 +2.44, paired t 를 +3.66 이동. 따라서 clean arm 의 PIT 통과 진술이 근거로 성립하고, NOT_SUPPORTED 도 검정력 부족의 산물이 아니다.",
+    "monotone_lag_response": "LAG1 0.527 < clean 0.990 < LOOKAHEAD 3.429 — 단조 lag-반응 = 오염이 아니라 약한 실신호의 지문"
+  },
+  "advisory": {
+    "OBJ_RANK": {
+      "rank_ic": 0.0373043,
+      "icir": 0.37017291,
+      "harvey_t": 5.30189415,
+      "monotonicity": 0.1321267,
+      "subperiod": {
+        "sp1": 0.04117956,
+        "sp2": 0.00695071,
+        "sp3": 0.05633522,
+        "stability": 0.12338119
+      },
+      "post_neutralization_ic": 0.02784005
+    },
+    "OBJ_MEAN": {
+      "rank_ic": 0.02032157,
+      "icir": 0.17511449,
+      "harvey_t": 2.33782621,
+      "monotonicity": 0.08144796,
+      "subperiod": {
+        "sp1": 0.04680962,
+        "sp2": -0.00407955,
+        "sp3": 0.01136016,
+        "stability": 0
+      },
+      "post_neutralization_ic": 0.01572861
+    },
+    "OBJ_MED": {
+      "rank_ic": 0.03606844,
+      "icir": 0.28855999,
+      "harvey_t": 4.34801469,
+      "monotonicity": 0.1,
+      "subperiod": {
+        "sp1": 0.03976222,
+        "sp2": 0.00741064,
+        "sp3": 0.0539998,
+        "stability": 0.13723465
+      },
+      "post_neutralization_ic": 0.02736199
+    }
+  },
+  "dsr": {
+    "OBJ_RANK": {
+      "active_sr_monthly": 0.06584278,
+      "n_obs": 221,
+      "dsr_trials1": 0.8356,
+      "dsr_trials3": 0.6479,
+      "note": "chain → 게이트 아님(measurement-graduation §3). n_trials=3 은 arm 3종을 보수적으로 센 경우"
+    },
+    "OBJ_MEAN": {
+      "active_sr_monthly": 0.07701133,
+      "n_obs": 221,
+      "dsr_trials1": 0.8733,
+      "dsr_trials3": 0.7073,
+      "note": "chain → 게이트 아님(measurement-graduation §3). n_trials=3 은 arm 3종을 보수적으로 센 경우"
+    }
+  },
+  "regime_advisory": {
+    "source": ".cache/msm_daily_latest.parquet (Crisis_Prob >= 0.5, 홀딩월 시작 전 최종관측)",
+    "n_crisis": 39,
+    "n_total": 221,
+    "noncrisis": {
+      "n": 182,
+      "mean": 0.00642089,
+      "nw3_t": 2.14673646
+    },
+    "crisis": {
+      "n": 39,
+      "mean": -0.02115961,
+      "nw3_t": -2.7655816
+    },
+    "caveat": "에피소드 수 병목 — 승계 preregistration 이 '판정 축 아님' 으로 사전 라벨. 검정력 낮음."
+  },
+  "dual_basis": {
+    "OBJ_RANK": {
+      "capw_port_t": 0.94741072,
+      "ew_universe_port_t": 2.0878059,
+      "ew_n_months": 221
+    },
+    "OBJ_MEAN": {
+      "capw_port_t": 0.98990841,
+      "ew_universe_port_t": 2.26058081,
+      "ew_n_months": 221
+    }
+  },
+  "ax001_v2": {
+    "applicable_note": "선별층 실험 — standalone 방어형 팩터 승격 주장 아님. 조건부 축은 기록 목적.",
+    "crisis_alpha_mean_arm": -0.01539541,
+    "crisis_alpha_rank_arm": 0.0057642,
+    "bad_normal_ic_ratio": 1.04987384
+  },
+  "frame_check": {
+    "n_abs_gt_010": 0,
+    "max_abs_mean_ic": 0.04880367,
+    "m04_mean_ic_source_faithful": 0.00403967,
+    "last_complete_month": "2026-07-01",
+    "dropped_months": [
+      {
+        "anchor": "2026-08-01",
+        "n": 347,
+        "mean_fwd": 0.1361472,
+        "sd_fwd": 0.1282334
+      },
+      {
+        "anchor": "2026-09-01",
+        "n": 347,
+        "mean_fwd": 0,
+        "sd_fwd": 0
+      }
+    ]
+  },
+  "r32_replication": {
+    "n_sign_split": 127,
+    "asym_med_pos_mean_neg": 99,
+    "asym_reverse": 28,
+    "cor_skewslope_gap": -0.67545712,
+    "n_medsig_mean_nonsig": 77,
+    "n_medsig_mean_negative": 40
+  },
+  "inherited_asset_defect": {
+    "asset": "stage_artifacts/fq233_probe0_20260813/master_panel_FIXED.rds",
+    "finding": "원천(load_month_factors) 재현 실패 — 27종 표본 중 cor>=0.99 8종(중앙 0.9257, 3종 <0.5). 지문 팩터 M04_Mom_1 cor 0.3372.",
+    "control": "동일 표본에서 lane_a_feature_panel.parquet 는 27/27 cor>=0.9945 (중앙 0.9982)",
+    "action": "지문 규약을 '원천 재현성 + IC 프로파일 정상성' 으로 대체 후 진행. No Silent Override — PREREG/challenge_note 기록.",
+    "downstream": "R32/R33 결론이 이 패널 기반 — 소급 점검 필요. 단 R32 전제 4종은 원천-충실 패널에서 재현됨."
+  },
+  "method_shopping_log": {
+    "candidates_tried": 3,
+    "method_log": [
+      {
+        "name": "OBJ_RANK (base, rank-IC 선별)",
+        "port_t": 0.947411,
+        "selected": false
+      },
+      {
+        "name": "OBJ_MEAN (primary, 평균 스프레드 선별)",
+        "port_t": 0.989908,
+        "selected": true
+      },
+      {
+        "name": "OBJ_MED (negative control)",
+        "port_t": 0.380796,
+        "selected": false
+      }
+    ],
+    "note": "LOOKAHEAD/LAG1 은 후보가 아니라 **검사 판별력 대조군** — 선택 풀에 포함되지 않음. K·W 스윕 0회(단일 고정, PREREG §1)."
+  },
+  "routing": {
+    "verdict": "not-supported → 재료 축 라우팅 (승계 on_failure 규약)",
+    "destination": "FQ-234 (일별 축 재료) · 비-return 원천",
+    "forbidden": "계열 확대 금지 (INV-7) — 선별 통계량 변형 추가 탐색 금지",
+    "next_probe": [
+      "P1: 국면 조건부 선별 — 본 라운드 advisory 에서 non-crisis paired t +2.1467 / crisis −2.7656 로 사전등록 regime_scope 와 방향 일치. 국면 게이팅(crisis 에서 rank-선별로 전환)을 **새 사전등록**으로 검정. 사후선택이므로 본 라운드 데이터로 판정 금지 — primary/문턱/국면 라벨 규약을 착수 전 봉인할 것.",
+      "P2: 선별 통계량이 아니라 **결합 가중** 축 — WT-D20260802_003(realized-PORT_t 정렬 조합가중) 결과와 교차. 본 건 음성 + 그쪽 양성이면 드라이버는 실현 경로·성과지속(R6 분해 정보).",
+      "P3: 승계 자산 결함 소급 — master_panel_FIXED 를 소비한 R32/R33 및 하류 결론의 원천-충실 재산출(본 라운드가 재산출 경로 s1_build_monthly_factor_stats.R 를 남겨둠).",
+      "P4: ★분위 깊이 불일치 — 본 라운드의 선별 통계량은 Q5(상위 20%, 월 ~69종)인데 소비는 top-25(~7.3%)다. 가설의 핵심 주장이 '소비 형태와 같은 함수형' 인데 깊이가 3배 어긋나 정합이 부분적이다. 소비 깊이에 맞춘 선별 통계량(top-25 상당 분위 또는 top-N 직접 평균)으로 재검정 — 사후 변경 금지이므로 본 라운드 판정은 Q5 로 확정하고 별도 사전등록 라운드로만 적법.",
+      "P5: 결합층 교란 — 선별 K=5 를 EW 평균으로 합치는 단계가 '단일 팩터의 상위분위 평균 우위' 를 희석할 수 있다(두 arm 공통이라 편향은 아니나 효과 감쇠 요인). K=1 선별 또는 선별통계 가중 결합으로 감쇠 여부만 분리 측정."
+    ]
+  },
+  "revival_condition": "선별 통계량 축의 부활 조건: (a) 국면 조건부 P1 이 사전등록 하에 양성이거나 (b) 재료 축이 mean/rank 갈림이 더 큰 패널(일별·비-return)을 제공할 때. 그 전까지 이 프레임(월간·return-파생 320종·top-25 EW)에서 재도전 금지."
+}

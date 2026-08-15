@@ -1,0 +1,47 @@
+{
+ "schema": "alpha_r31_v1",
+ "round_id": "v84-R31",
+ "measured_at": "2026-08-13",
+ "metric_type": "panel_statistic",
+ "question": "무효 probe0 이 주장한 Lane A 기전 전제(평균은 꼬리에 속고 중앙값은 안 속는다)가 수정 프레임에서도 성립하는가",
+ "why": "probe0·probe4 가 둘 다 INVALID_FRAME_ERROR 인데 qvest_v8_4_asymmetry_ml_sot.md §3 이 그 수치 위에 'Lane A 의 근거가 실측으로 섰다' 를 세워두고 있었다. 산출물은 무효 스탬프됐고 문서는 안 따라갔다.",
+ "frame": {
+  "source": "stage_artifacts/fq233_probe0_20260813/master_panel_FIXED.rds (재구축 불요 자산)",
+  "factor": "D03_RealVol",
+  "n_months": 258,
+  "direction": "align_factor_direction 적용 후",
+  "stat": "월별 5분위 통계의 시계열 평균 · NW lag-3 t",
+  "anchor_fix": "팩터 Date +1개월 스탬프 (build_monthly_forward_returns 앵커='sig_date 이하 최종거래일' 대응)",
+  "fingerprint_verified": {
+   "M04_Mom_1_mean_IC": 0.017,
+   "n_factors_absIC_over_0.10": 0,
+   "max_abs_mean_IC": 0.0509
+  }
+ },
+ "results": {
+  "rank_ic_mean": 0.0462,
+  "rank_ic_t_nw3": 3.95,
+  "q5_q1_mean_spread_monthly": -0.0023,
+  "q5_q1_mean_spread_ann_pct": -2.71,
+  "q5_q1_mean_spread_t_nw3": -0.552,
+  "q5_q1_median_spread_monthly": 0.013,
+  "q5_q1_median_spread_ann_pct": 15.6,
+  "q5_q1_median_spread_t_nw3": 3.331,
+  "skew_slope_q5_q1": -0.315,
+  "monotonicity_mean": 0.4961,
+  "top_n_mean_monthly": -0.0035
+ },
+ "verdict": "MECHANISM_PREMISE_REESTABLISHED_SHAPE_STILL_UNMEASURED",
+ "reading": "순위 통계(rank-IC +0.0462 t 3.95)는 강한 선별력을 말하는데 평균 스프레드는 0 과 구별 불가(t -0.55)이고 중앙값 스프레드는 유의하게 양(t +3.33). 같은 팩터·같은 기간에서 평균만 뒤집힌다 = 평균이 꼬리에 끌린다. 왜도 기울기 음수가 방향을 뒷받침. => Lane A 표적 교체 논리의 전제 성립.",
+ "not_established": [
+  "5점 분위 프로파일의 **형태** — m_mono 0.4961 은 '단조 아님' 까지만 말하고 혹(hump)형인지 다른 비단조인지 구분 못 함.",
+  "구 §3 의 'Q1 10.49 / Q2 14.43 / Q3 14.65 / Q4 10.42 / Q5 8.68' 은 무효 산출 — 형태 서술 인용 금지.",
+  "★전이 미측정 — long-only top-N 은 평균도 중앙값도 아닌 실제 보유 종목 실현 수익. 이 값들을 PORT_t 2.95 와 같은 문장에 놓지 말 것."
+ ],
+ "note_on_probe0": "수정 프레임 값이 probe0 과 근접(-2.71 vs -1.81 · +15.60 vs +15.51)한 것은 probe0 이 수동 캘린더월 경로였기 때문으로 보이나 **그것이 probe0 을 되살리지는 않는다** — 무효 사유는 '틀렸다' 가 아니라 '검증되지 않았다' 였고, 이제 검증된 경로의 값이 따로 있다.",
+ "next_probes": [
+  "5점 분위 프로파일 재산출 (build_monthly_forward_returns + 팩터 Date +1개월) — 혹형 여부 확정",
+  "arm A 기준선 재현 (SR ~0.49) — ML QEPM 착수 관문",
+  "★평균/중앙값 갈림이 top-N 전이에서 어떻게 나타나는가 — m_top -0.0035 가 평균 스프레드와 같은 부호인 점이 단서"
+ ]
+}

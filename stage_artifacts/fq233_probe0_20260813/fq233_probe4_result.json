@@ -1,0 +1,142 @@
+{
+ "status": "INVALID_FRAME_ERROR",
+ "invalidated_at": "2026-08-13",
+ "reason": "★이 산출물은 **구 측정 프레임**에서 나왔다. factor DB sig_date T 팩터를 T월 수익과 짝지어(build_monthly_forward_returns 앵커='sig_date 이하 최종거래일', 월초가 거래일인 달엔 앵커가 그날 자신) 팩터가 채점 대상 월을 봤다. 수정 = 팩터 Date +1개월.",
+ "evidence": "M04_Mom_1 평균 IC: 구 -0.9423 -> 수정 +0.0170 · |평균IC|>0.10 팩터: 46종 -> 0종",
+ "do_not_cite": "이 파일의 수치를 인용하지 말 것. 유효 정본 = r30_reframe_result.json",
+ "kept_for": "프레임 오류 사례로 보존(삭제 아님)",
+ "_original": {
+  "schema": "fq233_probe4_v1",
+  "round_id": "FQ-233-probe4",
+  "measured_at": "2026-08-13",
+  "metric_type": "canonical_screen",
+  "question": "top-25 부호반전이 D03 고유인가 형태-조건부인가 (사전등록 H1 형태-조건부 / H0 재료-일반)",
+  "verdict": "H1_SUPPORTED_BUT_AXIS_DIFFERENT_THAN_PREREGISTERED",
+  "frame": {
+   "universe": "KOSPI200 UNION KOSDAQ150",
+   "period": "2005-01 ~ 2026-08",
+   "n_months": 259,
+   "top_n": 25,
+   "weighting": "EW long-only",
+   "cost_bps_oneway": 15,
+   "liq_min": 200000000,
+   "inputs": "build_monthly_forward_returns() 정본 경로",
+   "direction": "align_factor_direction IC-inferred",
+   "quantile_split": "D03/Q01 = quantile breaks · M26 = 동점강건 랭크분할(breaks 동점 크래시 수리)"
+  },
+  "benchmark_warning": "★★이 프레임의 벤치는 **유니버스(K200 UNION KQ150) cap-weighted forward return** 이지 KOSPI200(IKS200)이 아니다. 헌법 자본 게이트(PORT_t 2.95)는 KOSPI200 벤치 기준이므로 **여기 PORT_t 를 자본 문턱과 같은 문장에 놓지 말 것**. 특히 M26 raw +5.102 를 '자본 문턱 통과'로 읽으면 오보다 — 08-08 라운드의 M26 cap-w PORT_t 는 1.544 였다(다른 basis).",
+  "results": [
+   {
+    "factor": "D03_RealVol",
+    "monotonicity": 0,
+    "q_ann_mean": [
+     21.809,
+     15.71,
+     8.706,
+     6.143,
+     3.968
+    ],
+    "q_median": [
+     -8.863,
+     -2.235,
+     -2.665,
+     0,
+     -2.091
+    ],
+    "q_skew": [
+     1.977,
+     1.159,
+     0.857,
+     0.518,
+     0.444
+    ],
+    "mean_slope_q5_q1": -17.841,
+    "port_t": {
+     "raw": -2.163,
+     "inverted": 1.6884,
+     "random": -1.1256
+    },
+    "delta": -3.8514
+   },
+   {
+    "factor": "Q01_GPA",
+    "monotonicity": 1,
+    "q_ann_mean": [
+     6.73,
+     9.704,
+     12.797,
+     14.09,
+     14.134
+    ],
+    "q_median": [
+     -5.253,
+     -4.181,
+     0,
+     -2.112,
+     0
+    ],
+    "q_skew": [
+     1.894,
+     1.563,
+     1.502,
+     2.04,
+     2.059
+    ],
+    "mean_slope_q5_q1": 7.404,
+    "port_t": {
+     "raw": -0.1649,
+     "inverted": -1.0547,
+     "random": -1.822
+    },
+    "delta": 0.8898
+   },
+   {
+    "factor": "M26_Revenue_Mom",
+    "monotonicity": 1,
+    "q_ann_mean": [
+     3.273,
+     5.263,
+     8.167,
+     12.665,
+     25.307
+    ],
+    "q_median": [
+     -8.511,
+     -5.38,
+     -5.481,
+     0,
+     7.818
+    ],
+    "q_skew": [
+     1.411,
+     1.451,
+     2.207,
+     1.368,
+     1.297
+    ],
+    "mean_slope_q5_q1": 22.034,
+    "port_t": {
+     "raw": 5.102,
+     "inverted": -1.7431,
+     "random": -1.2147
+    },
+    "delta": 6.845
+   }
+  ],
+  "finding": "delta(raw-inverted) 가 **분위 평균 기울기(Q5-Q1)의 부호와 크기를 따른다**: D03 기울기 -17.84 -> delta -3.85 · Q01 +7.40 -> +0.89 · M26 +22.03 -> +6.85. 사전등록 H1(형태-조건부)은 지지되나 **축이 다르다** — 나는 '상단역전/혹/단조' 라벨로 정렬될 것이라 예측했는데 실제 설명변수는 **연속량인 분위 평균 기울기**였다.",
+  "honesty_downgrade": "★이 관계는 거의 **항등식에 가깝다** — top-25 는 최고점수 종목을 사는 것이고, 분위 평균 기울기가 양수면 최고점수 분위의 평균이 높으니 PORT_t 가 높은 것이 당연하다. 따라서 'delta ~ 기울기'를 발견으로 승격하지 말 것. **진짜 발견은 D03 이 왜 음의 기울기를 갖는가**이다.",
+  "real_finding": "★★D03_RealVol 은 **IC(순위상관)로 정렬한 방향과 평균 수익이 높은 방향이 반대**다. align_factor_direction 이 IC 기준으로 부호를 맞추므로 'aligned top'(Q5)이 평균 기준으로는 최악이다 (Q1 21.81% vs Q5 3.97%). 기전: rank-IC 는 **순위** 기반이라 중앙값에 가깝고 평균은 **꼬리**가 지배하는데, D03 은 왜도가 Q1 1.977 -> Q5 0.444 로 급락한다 = 저분위에 극단 상승이 몰려 있다. Q01/M26 은 왜도가 거의 평평(1.9->2.1 / 1.4->1.3)해서 이 불일치가 없다. => **v8.4 'IC->PORT_t 전이 벽'에 구체 기전 하나가 특정됐다: 정렬 기준의 불일치.**",
+  "probe0_correction": "★probe0 의 D03 분위 프로파일이 정본 프레임에서 **재현되지 않는다**. probe0(수동 forward: calendar month compounding, nd>=15): Q1 10.49 / Q3 14.65 / Q5 8.68 = 혹(hump)형. probe4(정본 build_monthly_forward_returns: 월말종가->다음월말종가): Q1 21.81 -> Q5 3.97 = 완전 단조감소. => probe0 의 **수치는 프레임 결함으로 철회**한다. 단 구조 주장(평균 vs 중앙값 부호 반대 · 왜도 단조감소)은 정본 프레임에서 **더 강하게** 재현된다: 평균 Q5-Q1 -17.84%p vs 중앙값 +6.77%p · 왜도 1.977->0.444.",
+  "next_probes": [
+   "★factor DB 전수 진단: IC-정렬 방향과 분위 평균 기울기 부호가 **어긋나는** 팩터가 몇 개인가. 어긋나는 팩터는 IC 가 아무리 좋아도 long-only top-N 에서 죽는다 — 이것이 전이 벽의 한 기전이고 전수로 크기를 잴 수 있다.",
+   "벤치 basis 정합: 이 프레임(유니버스 cap-w)과 헌법 벤치(KOSPI200)로 같은 3재료를 재측정해 PORT_t 차이를 정량화. M26 5.102 vs 08-08 라운드 1.544 의 괴리가 basis 로 설명되는지 확인.",
+   "왜도-기울기 관계 일반화: 왜도 급락(Q1>>Q5)이 음의 평균기울기를 예측하는가 — 3재료로는 근거 부족, factor DB 전수로 상관 측정."
+  ],
+  "caveats": [
+   "n=3 재료. delta~기울기 상관은 3점이라 통계량이 아니다.",
+   "벤치가 유니버스 cap-w — 자본 문턱 비교 금지(위 benchmark_warning).",
+   "M26 은 동점강건 분할, D03/Q01 은 quantile breaks — 분할 방식이 재료 간 완전 동일하지 않다.",
+   "direction 이 IC-inferred이므로 'raw' 의 물리적 방향(고/저 변동성 등)은 별도 확인 필요."
+  ]
+ }
+}

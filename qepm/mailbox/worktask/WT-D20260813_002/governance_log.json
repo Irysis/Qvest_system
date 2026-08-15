@@ -1,0 +1,53 @@
+{
+  "task_id": "WT-D20260813_002",
+  "events": [
+    {
+      "timestamp": "2026-08-13T17:01:07+0900",
+      "agent": "q-lead",
+      "action": "WT_CREATED",
+      "summary": "Work Task 생성: 국면의 꼬리특성 예측 → 현금배분(주) + 팩터배분(대조) | source=user_defined"
+    },
+    {
+      "timestamp": "2026-08-13T17:46:49+0900",
+      "agent": "alpha-research",
+      "action": "PREREG_F1",
+      "summary": "F1 기전 관측 사전등록 — 예측기/lookback/사건정의/판정규칙을 측정 전 고정(stage_artifacts/WT_D20260813_002/prereg_F1.json). selection_type=chain, n_trials=1."
+    },
+    {
+      "timestamp": "2026-08-13T17:46:49+0900",
+      "agent": "alpha-research",
+      "action": "F1_VERDICT_FAIL",
+      "summary": "F1 = FAIL. 꼬리-표적 예측기 AUC 0.7143 < MSM 0.7472 (P(dAUC>0)=0.181, CI90 [-0.092,+0.024]), 367개월/사건 37건. 사전등록 규칙에 따라 F2 성과 측정(book-marginal ΔIR) 및 control 팩터배분 축 **미착수** — 미달이 아니라 미산출."
+    },
+    {
+      "timestamp": "2026-08-13T17:46:49+0900",
+      "agent": "alpha-research",
+      "action": "ADVERSARIAL_ROBUSTNESS",
+      "summary": "자기 적대검증: 4 lookback x 5 사건정의 = 20 격자점 전수. TAIL 이 두 baseline 모두 상회한 칸 0/20 (최우수 MSM 11 / VOL 9). 판정 전 argmax 승리 주장 금지를 선언하고 전건 보고 — 선택 아님."
+    },
+    {
+      "timestamp": "2026-08-13T17:46:49+0900",
+      "agent": "alpha-research",
+      "action": "SELF_CAUGHT_DEFECT",
+      "summary": "자기 적발 수리: VOL 의 expanding-z warm-up 이 TAIL 과 달라(367행 vs 427행) AUC 가 0.7729/0.7504 로 갈렸다. 정본 basis 로 전량 재산출, 'VOL 이 MSM 을 상회' 서술을 +0.0257 -> +0.0032(동률)로 하향. F1 판정 불변."
+    },
+    {
+      "timestamp": "2026-08-13T17:46:49+0900",
+      "agent": "alpha-research",
+      "action": "REGISTRY_DISCREPANCY_REPORTED",
+      "summary": "ast_field_map_v0.json E5_msm_crisis_prob 의 pit_hazards 가 MSM 입력의 전표본 디민 경로를 누락(restatement_prone=false 로 등재). 2026-08-13 통제실험 실측 8954/8975일 재서술. 본 라운드 결과 영향 없음(대조군 전용 소비) — architect 큐 권고."
+    },
+    {
+      "timestamp": "2026-08-13T17:46:49+0900",
+      "agent": "alpha-research",
+      "action": "ALPHA_PACKAGE_EMITTED",
+      "summary": "alpha_package.json (spec_version=ast_v1.1, verdict=designed, alpha_discovery_count=0) + alpha_scores.parquet(367행 시계열 신호 패널) + alpha_validation.json + challenge_note.md. schema 검증 0 error, ast_spec_gate PASS, lineage 기록 완료. next_probe 3건 + revival_conditions 3건 이월."
+    },
+    {
+      "timestamp": "2026-08-13T17:50:29+0900",
+      "agent": "q-lead",
+      "action": "PHASE_ADVANCE",
+      "summary": "SPEC_APPROVED -> ALPHA_DONE"
+    }
+  ]
+}
