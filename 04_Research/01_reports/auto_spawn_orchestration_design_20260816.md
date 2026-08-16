@@ -10,7 +10,12 @@
 > ② `drain_verdict()` dv_v1 판정 코드화 + `--verdict-batch --write`로 기존 19건 스탬프 — **양성 대조: 07-10 STR_AS_ 16건 전건 INFERIOR = 세션 수기 판정(L-OVL-20260710_153559) 재현**, 스키마 다른 LH 계열 2건은 INDETERMINATE(억지 판정 금지)
 > ③ `close_round()` frontier 선언↔실기록 대조 — 부재 FQ-id 비차단 경고 + `frontier_update_verified` 구조 필드. ★도입 당일 위반 주입 T3b가 실결함 검거(id 추출 정규식 상한이 긴 id 절단 → `FQ-[0-9]+`로 수리)
 > ④ `st_record_disposition()` + CLI `--dispose=` — 처분 원장 기록 배관 (원자 쓰기 + 기록 후 재읽기 확인)
-> 미착수 잔여: Layer 1 enrichment 어댑터 · Layer 2 auto_spawn_queue · Layer 3 `/improve-drain` 스킬 + 부트 주입 (다음 구현 라운드). **D2(소비자 0 라벨 2종 처분)는 미결 — 도훈 결정 대기.**
+> **★Layer 1~3 + D2 구현 완료 (2026-08-16 도훈 결정: "FR_RCMA 재정의, Layer 1-3 착수")** — 위반 주입 19/19 PASS (`test_auto_spawn_layers.R`, 배터리 등재) + P0 회귀 25/25:
+> - **Layer 1**: `02_Infrastructure/regime/improvement_potential.R` — ip_v1 per-regime 평가(드레인 어댑터 재사용, **pin_cache 경유 강제 + pin_tag 기록** §7 봉합). 실측: backlog 17건 중 16 평가 / 1 어댑터 미지원 정직 표기 (pin_tag `ip_20260816`). `run_alpha_search.R` 6d+ 삽입 — screen_pass 런은 같은 런에서 자동 평가.
+> - **Layer 2**: `02_Infrastructure/ops/auto_spawn_queue.R` — kind 4종 · kill switch(`auto_spawn_config.json`) · capacity · 상태 이월 · mutex-dir claim(stale 6h) · JSONL 내구 로그. **D2 재정의 소비**: FR_RCMA = "register_module 유도 라벨" (catalog 부재→induce / fr_eligible→처분 제안). `ST_ROUTE_CONSUMERS` FR_RCMA consumer=TRUE 전환.
+> - **Layer 3**: `.claude/skills/improve-drain/SKILL.md` + bootstrap 8k 부트 표면(`AutoSpawn:` 상태라인).
+> - **실큐 초회 build**: 10 entries — fr_disposition_suggest 5 + standalone_review 5 (overlay 17건은 전부 measured라 drain pending 0 = 정합). **TURNOVER_REVIEW는 기록 전용 유지** (D2 범위 밖).
+> 잔여: ip_v1 판별력 검증 루프(§5, 분기별) · L2 무인 드레인 배치(도훈 별도 결정 시).
 
 ---
 
