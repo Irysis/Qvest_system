@@ -15,6 +15,15 @@
 #   b2. 02_Infrastructure 내 '_' 접두 파일 (§3 — 인프라 코드전용)
 #   b3. 4대 산출물 존 밖 산출물성 파일 (results/output 명명 데이터 파일)
 #   b4. index_descriptions.json 미등재 신규 최상위 항목 (존별 미분류)
+#   b5. .claude/worktrees 누적 + 등록/디스크 불일치 (2026-08-16 신설)
+#   b6. MAX_PATH 초과 경로 + 워크트리 진입 시 초과 잠복 (2026-08-16 신설)
+#
+# (b5/b6 근거 — 2026-08-16 실사고) 워크트리 43개가 3주간 무정리 누적해 5.3GB(저장소 파일의
+#   88%)를 점유했고, 삭제를 막은 것은 MAX_PATH(260) 초과였다. AX-PENDING_CAND_*.json 이
+#   266자, candidates/CAND_* 가 287자이고 '.claude/worktrees/<name>/' 가 40자를 더해 넘긴다.
+#   ★초과는 오류가 아니라 '조용한 건너뜀'으로 나타난다 — .NET/R 재귀삭제는 첫 초과 파일에서
+#   트리 전체를 포기하면서 성공처럼 보인다. 그래서 계수 감지가 유일한 조기 신호다.
+#   측정 기준선(2026-08-16, 워크트리 제외 본체 56,953파일): 초과 67 / 잠복 93.
 #
 # 산출: <registry>/hygiene_report.json 갱신. 위반 존재 시 stderr [hygiene][WARN].
 # 텔레그램 직접 발송 금지 (tg 규약) — daily_refresh 로그로만 노출.
@@ -27,6 +36,10 @@ suppressWarnings(suppressMessages(library(jsonlite)))
 DRY  <- Sys.getenv("QVEST_HYGIENE_DRY", "0") == "1"
 LOG_RETENTION_DAYS     <- 90
 SCRATCH_RETENTION_DAYS <- 30
+# (b5/b6) 2026-08-16 신설 — 임계는 상수로 선언, 리포트에 함께 기록해 드리프트를 보이게 한다
+WORKTREE_WARN_N   <- 5    # 디스크상 워크트리가 이 수를 넘으면 누적 경고 (실사고 시 43개)
+MAXPATH_LIMIT     <- 260  # Windows MAX_PATH. LongPathsEnabled=1 이면 무력 — 리포트에 상태 병기
+MAXPATH_SCAN_SKIP <- Sys.getenv("QVEST_HYGIENE_SKIP_PATHSCAN", "0") == "1"
 now <- Sys.time()
 
 # ---- 경로 해석 (QM_ROOT env 우선 — normalizePath 미사용, 한글경로 정책) --------
