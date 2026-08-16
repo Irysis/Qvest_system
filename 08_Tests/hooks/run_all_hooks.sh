@@ -393,6 +393,15 @@ SUITES=(
   #   ★run_audit 에 '픽스처 밖 감사' 가드가 있다 — env 주입이 실패하면 테스트가 **실제 저장소**를
   #     재고 조용히 통과한다(실측으로 겪음). 가드 없이는 이 검사가 공허해진다.
   "08_Tests/ops/test_hygiene_worktree_maxpath_axes.R"
+  # 2026-08-16 추가: weekly_cleaner_sweep [2c] 워크트리 **무인 자동 prune**.
+  #   ★토 09:00 스케줄러가 사람 없이 지운다 — 판정이 한 칸 틀리면 진행 중 작업이 사라진다.
+  #     그래서 '지운다'(T1~T3)보다 **'안 지운다'(T4~T6)를 더 많이** 시험한다:
+  #     활동 중(무활동<24h) · 미병합 커밋 · main 에 없는 미커밋 내용 = 전부 KEEP.
+  #   ★T2 = churn 제외. 이게 없으면 prune 대상이 사실상 0 이 된다(실측: 병합완료 31건 중
+  #     28건에서 events.jsonl 이 유일한 차이). 픽스처는 churn 을 **추적 파일**로 만든다 —
+  #     untracked 로 두면 git status 가 상위 디렉토리로 접어 보고해 경로 매칭이 성립하지 않는다.
+  #   ★T8(DRY 는 실제로 안 지움) / T9(prune 돼도 브랜치 ref 보존) = 설계의 안전 근거 자체를 검증.
+  "08_Tests/ops/test_weekly_worktree_prune.R"
   # 2026-08-02 추가: alpha_search_queue pending 산정 위반 주입 (키 불일치 2건 수리 고정).
   #   원 결함 = 양방향 오계수인데 **둘 다 오류 없이 조용히**, 그리고 **서로를 상쇄**했다 —
   #     ① route_20260727 의 id 는 "arxiv:2607.19497", done 원장은 bare → 접두 붙은 건이

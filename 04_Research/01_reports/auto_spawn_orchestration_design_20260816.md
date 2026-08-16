@@ -5,6 +5,13 @@
 - **근거**: 6축 배관 지도화 (읽기 전용, 6 에이전트, 도구 호출 218회 — 라벨 발급·드레인 도구·평가기·트리거 표면·거버넌스 레일·소비 계약). 인용 수치는 전부 코드/원장 실측.
 - **불변 전제**: governor admit·book_state 쓰기·실주문은 어떤 안에서도 수동 (헌법 CLAUDE.md "자본게이트 book confirm+실주문 2버튼만 수동" — 역으로 그 앞 전 구간은 자동화 허용 영역이 헌법에 명시되어 있음).
 
+> **★구현 상태 (2026-08-16 갱신)**: 도훈 결정 — **D1 = L1 채택, D3 = P0부터** (2026-08-16). **P0 루프 닫기 수리 4건 구현 완료 + 위반 주입 테스트 25/25 PASS** (`08_Tests/hooks/test_p0_loop_closure.R`, 배터리 등재):
+> ① hypothesis_index 원천 (g) `overlay_ab_results` 등재 — 재빌드 실측 1,233 entries에 `OVL_` 19건 유입, 스테일 감시 포함
+> ② `drain_verdict()` dv_v1 판정 코드화 + `--verdict-batch --write`로 기존 19건 스탬프 — **양성 대조: 07-10 STR_AS_ 16건 전건 INFERIOR = 세션 수기 판정(L-OVL-20260710_153559) 재현**, 스키마 다른 LH 계열 2건은 INDETERMINATE(억지 판정 금지)
+> ③ `close_round()` frontier 선언↔실기록 대조 — 부재 FQ-id 비차단 경고 + `frontier_update_verified` 구조 필드. ★도입 당일 위반 주입 T3b가 실결함 검거(id 추출 정규식 상한이 긴 id 절단 → `FQ-[0-9]+`로 수리)
+> ④ `st_record_disposition()` + CLI `--dispose=` — 처분 원장 기록 배관 (원자 쓰기 + 기록 후 재읽기 확인)
+> 미착수 잔여: Layer 1 enrichment 어댑터 · Layer 2 auto_spawn_queue · Layer 3 `/improve-drain` 스킬 + 부트 주입 (다음 구현 라운드). **D2(소비자 0 라벨 2종 처분)는 미결 — 도훈 결정 대기.**
+
 ---
 
 ## 0. 요약과 결정 요청
