@@ -112,10 +112,23 @@ if len(hits) == 0:
     out({"hookSpecificOutput": {"hookEventName": "PreToolUse",
          "additionalContext": "[hypothesis_precheck_gate] 조회 결과 0건 — empty_reason 선언 확인, 통과."}})
 
-bad = [i for i, h in enumerate(hits)
-       if not isinstance(h, dict) or not str(h.get("ref") or "").strip()]
+# ★형상-불문 판정 — 원소가 **비어 있지만 않으면** 통과.
+#   실측(2026-08-16 전수, 11 파일): 원소 키 분포 verdict 26 · id 22 · (비-dict 순수문자열) 20 ·
+#   relation 12 · content 12 · ref 7. 즉 식별자 이름이 id/ref 로 갈리고 맨 문자열 인용도 흔하다.
+#   초판이 `ref` 를 단일 예시에서 박제해 실제 산출물 12/13 을 오차단했다(회귀검사로 검출).
+#   ⇒ 이 게이트의 계약은 "조회를 수행했다는 선언"이지 특정 스키마가 아니다(위 비-목표 절 정합).
+def _nonempty(h):
+    if isinstance(h, str):
+        return bool(h.strip())
+    if isinstance(h, dict):
+        return any(str(v).strip() for v in h.values() if v is not None)
+    if isinstance(h, (list, tuple)):
+        return len(h) > 0
+    return h is not None
+
+bad = [i for i, h in enumerate(hits) if not _nonempty(h)]
 if bad:
-    BLOCK("hypothesis_index_hits 원소 %s 에 ref 필드가 없다(형식 위반)." % bad[:3])
+    BLOCK("hypothesis_index_hits 원소 %s 가 비어 있다(조회 결과 미기재)." % bad[:3])
 
 out({"hookSpecificOutput": {"hookEventName": "PreToolUse",
      "additionalContext": "[hypothesis_precheck_gate] 사전지식 조회절 %d건 확인 — 통과." % len(hits)}})
