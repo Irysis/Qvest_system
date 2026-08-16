@@ -545,15 +545,24 @@ drain_main <- function(candidate_id, suffix = "", queue_path = DRAIN_QUEUE_PATH_
 if (sys.nframe() == 0L && Sys.getenv("QVEST_DRAIN_NORUN") != "1") {
   args <- commandArgs(trailingOnly = TRUE)
   pos <- args[!grepl("^--", args)]
-  if (length(pos) < 1) stop("usage: Rscript overlay_candidate_drain.R <candidate_id> [--suffix=] [--no-queue-update] [--queue=] [--result-dir=] [--cost-bps=]")
   getopt <- function(key, default) {
     hit <- grep(paste0("^--", key, "="), args, value = TRUE)
     if (length(hit) == 0) default else sub(paste0("^--", key, "="), "", hit[1])
   }
-  drain_main(candidate_id = pos[1],
-             suffix = getopt("suffix", ""),
-             queue_path = getopt("queue", DRAIN_QUEUE_PATH_DEFAULT),
-             result_dir = getopt("result-dir", DRAIN_RESULT_DIR_DEFAULT),
-             cost_bps = as.numeric(getopt("cost-bps", "15")),
-             update_queue = !("--no-queue-update" %in% args))
+  if ("--verdict-batch" %in% args) {
+    # P0#2: 기존 결과 전수 재판정. --write 없으면 dry-run(파일 불변).
+    vb <- drain_verdict_batch(result_dir = getopt("result-dir", DRAIN_RESULT_DIR_DEFAULT),
+                              write = ("--write" %in% args))
+    print(vb, digits = 4)
+  } else {
+    if (length(pos) < 1)
+      stop("usage: Rscript overlay_candidate_drain.R <candidate_id> [--suffix=] [--no-queue-update] [--queue=] [--result-dir=] [--cost-bps=]\n",
+           "       Rscript overlay_candidate_drain.R --verdict-batch [--write] [--result-dir=]")
+    drain_main(candidate_id = pos[1],
+               suffix = getopt("suffix", ""),
+               queue_path = getopt("queue", DRAIN_QUEUE_PATH_DEFAULT),
+               result_dir = getopt("result-dir", DRAIN_RESULT_DIR_DEFAULT),
+               cost_bps = as.numeric(getopt("cost-bps", "15")),
+               update_queue = !("--no-queue-update" %in% args))
+  }
 }

@@ -183,6 +183,114 @@ run_step("weekly_temp_logs_30d", {
 })
 
 # =============================================================================
+# [2c] 소비 완료 워크트리 prune (2026-08-16 신설 — 도훈 지시)
+#
+# ★배경(실사고): 워크트리 43개가 3주간 무정리 누적해 5.3GB(저장소 파일의 88%)를 점유했다.
+#   누적을 막는 장치가 없었고, 일간 감사도 감지하지 못했다(같은 날 (b5) 축 신설).
+#
+# ★삭제 안전성을 `git diff main` 으로 재면 안 된다 — 방향을 구분하지 않아 '워크트리가 뒤처짐'을
+#   '고유 내용'으로 오독한다(실측: 4,846건 중 대부분이 main 이 더 새로운 것). 정본 판정 =
+#   ① ahead 커밋 수  ② 미커밋 편집 중 main 과 실제로 다른 것  두 축을 따로 센다.
+#
+# ★`git worktree remove` 는 브랜치를 지우지 않는다 — 커밋된 작업은 전부 브랜치 ref 로 남는다
+#   (실측 확인). 그래서 잃을 수 있는 것은 **미커밋 편집뿐**이고, 아래 판정은 그것만 본다.
+#
+# prune 조건 (전부 충족해야 삭제):
+#   c1. git 에 등록된 워크트리 (main 워크트리 제외)
+#   c2. ahead 커밋 0 (브랜치가 main 에 병합 완료)
+#   c3. churn 제외 후 main 과 다른 미커밋 편집 0건 · main 에 없는 untracked 0건
+#   c4. 무활동 >= WT_PRUNE_IDLE_HOURS (진행 중 세션 보호 — 실사고 때 활성 2건이 있었다)
+# 추가로: 파일 0개인 껍데기 디렉토리(git 미등록)는 무조건 삭제 대상 (오늘 7건 실재)
+#
+# churn = 어느 워크트리에서든 항상 dirty 로 뜨는 append-only/로컬 파일. 실측: events.jsonl 이
+#   병합완료 31건 중 28건에서 유일한 차이였다 — 제외하지 않으면 prune 대상이 사실상 0 이 된다.
+#
+# 모든 판정은 삭제 여부와 무관하게 verdicts 에 사유와 함께 기록한다(조용한 누락 금지).
+# =============================================================================
+WT_PRUNE_IDLE_HOURS <- 24
+WT_CHURN <- c("qepm/observability/events.jsonl", ".claude/settings.local.json")
+worktree_prune <- list(pruned = character(0), kept = list(), failed = character(0))
+
+run_step("weekly_worktree_prune", {
+  wt_dir <- file.path(root, ".claude", "worktrees")
+  if (!dir.exists(wt_dir)) return(invisible(TRUE))
+
+  gitq <- function(dir, args) {
+    out <- suppressWarnings(system2("git", c("-C", shQuote(dir), args),
+                                    stdout = TRUE, stderr = FALSE))
+    st <- attr(out, "status")
+    if (!is.null(st) && st != 0) return(NULL)
+    out
+  }
+  keep <- function(nm, why) worktree_prune$kept[[nm]] <- why
+
+  registered <- if (dir.exists(file.path(root, ".git", "worktrees")))
+    list.files(file.path(root, ".git", "worktrees"), no.. = TRUE) else character(0)
+
+  for (nm in list.files(wt_dir, no.. = TRUE)) {
+    p <- file.path(wt_dir, nm)
+    if (!dir.exists(p)) next
+
+    n_files <- length(list.files(p, recursive = TRUE, all.files = TRUE, no.. = TRUE))
+
+    # 껍데기(파일 0 + git 미등록) — 오늘 7건 실재. 잃을 내용이 없으므로 조건 없이 삭제
+    if (n_files == 0 && !(nm %in% registered)) {
+      ok <- if (DRY) TRUE else isTRUE(unlink(p, recursive = TRUE, force = TRUE) == 0)
+      if (ok && (DRY || !dir.exists(p))) {
+        worktree_prune$pruned <- c(worktree_prune$pruned, nm)
+        log_deletion("weekly_worktree_shell", p)
+      } else worktree_prune$failed <- c(worktree_prune$failed, nm)
+      next
+    }
+    if (!(nm %in% registered)) { keep(nm, "미등록이나 파일 존재 — 수동 확인 필요"); next }
+
+    # c4. 무활동 — 변경파일 목록의 mtime 만 본다(전트리 stat 은 부팅 5분+ 회귀 전례)
+    st <- gitq(p, c("status", "--porcelain"))
+    if (is.null(st)) { keep(nm, "git status 실패"); next }
+    changed <- if (length(st)) trimws(substring(st, 4)) else character(0)
+    mt <- c(file.info(p)$mtime,
+            if (length(changed)) file.info(file.path(p, changed))$mtime else NULL)
+    idle_h <- suppressWarnings(as.numeric(difftime(now, max(mt, na.rm = TRUE), units = "hours")))
+    if (is.na(idle_h) || idle_h < WT_PRUNE_IDLE_HOURS) {
+      keep(nm, sprintf("활동 중 (무활동 %.1fh < %dh)", idle_h, WT_PRUNE_IDLE_HOURS)); next
+    }
+
+    # c2. ahead 커밋
+    ah <- gitq(p, c("rev-list", "--count", "main..HEAD"))
+    ahead <- suppressWarnings(as.integer(ah[1]))
+    if (is.na(ahead)) { keep(nm, "ahead 산정 실패"); next }
+    if (ahead > 0) { keep(nm, sprintf("미병합 커밋 %d개", ahead)); next }
+
+    # c3. churn 제외 후 main 과 실제로 다른 미커밋 편집 / main 에 없는 untracked
+    mod <- trimws(substring(st[grepl("^\\s*[MARC]", st)], 4))
+    unt <- trimws(substring(st[grepl("^\\?\\?", st)], 4))
+    mod <- setdiff(mod, WT_CHURN); unt <- setdiff(unt, WT_CHURN)
+    uniq <- character(0)
+    for (f in mod) if (length(gitq(p, c("diff", "main", "--name-only", "--", shQuote(f))))) uniq <- c(uniq, f)
+    for (f in unt) if (is.null(gitq(p, c("cat-file", "-e", shQuote(paste0("main:", f)))))) uniq <- c(uniq, f)
+    if (length(uniq)) { keep(nm, sprintf("main 에 없는 내용 %d건: %s", length(uniq),
+                                         paste(head(uniq, 3), collapse = ", "))); next }
+
+    # 통과 — git 경유 제거(브랜치는 보존된다)
+    if (DRY) {
+      worktree_prune$pruned <- c(worktree_prune$pruned, nm)
+      log_deletion("weekly_worktree_prune", p)
+    } else {
+      suppressWarnings(system2("git", c("-C", shQuote(root), "worktree", "remove", "--force", shQuote(p)),
+                               stdout = FALSE, stderr = FALSE))
+      if (dir.exists(p)) {
+        # 긴 경로에서 부분 실패 가능 — 성공으로 위장하지 않는다((b5) 축이 다음 감사에서 재적발)
+        worktree_prune$failed <- c(worktree_prune$failed, nm)
+      } else {
+        worktree_prune$pruned <- c(worktree_prune$pruned, nm)
+        log_deletion("weekly_worktree_prune", p)
+      }
+    }
+  }
+  invisible(TRUE)
+})
+
+# =============================================================================
 # [3] 주간 리서치 인벤토리 (지난 7일) — 증류 세션(/cleaner)의 입력
 # =============================================================================
 cutoff <- now - INVENTORY_DAYS * 86400
