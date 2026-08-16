@@ -127,8 +127,10 @@ close_round <- function(round_id,
   fq_ids <- character(0); fq_missing <- character(0); fq_verified <- NA
   if (has_frontier) {
     blob <- paste(frontier_update, collapse = " ")
-    # perl=TRUE — TRE 색인 위 regmatches 금칙(r-portability ⑥) 회피
-    m <- gregexpr("FQ-[0-9]{1,4}", blob, perl = TRUE)
+    # perl=TRUE — TRE 색인 위 regmatches 금칙(r-portability ⑥) 회피.
+    # [0-9]+ (상한 없음) — {1,4} 상한은 긴 id 를 절단 추출해 "쓴 id ≠ 대조한 id" 를
+    #   만든다 (위반 주입 테스트 T3b 가 실측 검출, 2026-08-16).
+    m <- gregexpr("FQ-[0-9]+", blob, perl = TRUE)
     fq_ids <- unique(unlist(regmatches(blob, m)))
     fq_ids <- fq_ids[nzchar(fq_ids)]
     if (length(fq_ids)) {
