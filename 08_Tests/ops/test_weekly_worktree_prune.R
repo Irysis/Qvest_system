@@ -30,10 +30,12 @@ bad <- function(m, d = "") { FAIL <<- FAIL + 1L; cat(sprintf("  FAIL  %s — %s\
 g <- function(dir, ...) suppressWarnings(system2("git", c("-C", shQuote(dir), ...),
                                                  stdout = TRUE, stderr = FALSE))
 age_it <- function(p, hours) {           # 무활동 시간 조작
+  # ★디렉토리도 aging 해야 한다 — git status 는 untracked 디렉토리를 'dir/' 로 접어 보고하고,
+  #   sweep 은 그 항목의 mtime 을 본다. 파일만 aging 하면 활동 중으로 오판된다(실측으로 겪음).
   t <- Sys.time() - hours * 3600
-  for (f in c(p, list.files(p, recursive = TRUE, all.files = TRUE, full.names = TRUE, no.. = TRUE)))
-    try(Sys.setFileTime(f, t), silent = TRUE)
-  try(Sys.setFileTime(p, t), silent = TRUE)
+  targets <- c(list.files(p, recursive = TRUE, all.files = TRUE, full.names = TRUE, no.. = TRUE),
+               rev(list.dirs(p, recursive = TRUE, full.names = TRUE)), p)
+  for (f in targets) try(Sys.setFileTime(f, t), silent = TRUE)
 }
 
 # ---- 픽스처: 실제 git 저장소 + 실제 워크트리 (판정 로직을 재구현하지 않는다) --------
