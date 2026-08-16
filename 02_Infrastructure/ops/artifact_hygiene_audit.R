@@ -23,7 +23,9 @@
 #   266자, candidates/CAND_* 가 287자이고 '.claude/worktrees/<name>/' 가 40자를 더해 넘긴다.
 #   ★초과는 오류가 아니라 '조용한 건너뜀'으로 나타난다 — .NET/R 재귀삭제는 첫 초과 파일에서
 #   트리 전체를 포기하면서 성공처럼 보인다. 그래서 계수 감지가 유일한 조기 신호다.
-#   측정 기준선(2026-08-16, 워크트리 제외 본체 56,953파일): 초과 67 / 잠복 93.
+#   측정 기준선(2026-08-16, 워크트리 제외 본체 약 57k 파일): 초과 67(최장 277) / 잠복 417.
+#   ★잠복은 basis 를 밝히지 않으면 무의미하다 — 워크트리 오버헤드 40 이면 93, 49 면 417 이다.
+#   본 감사는 오버헤드를 WORKTREE_NAME_MAX 상수(=49)로 고정해 추세를 안정시킨다.
 #
 # 산출: <registry>/hygiene_report.json 갱신. 위반 존재 시 stderr [hygiene][WARN].
 # 텔레그램 직접 발송 금지 (tg 규약) — daily_refresh 로그로만 노출.
@@ -39,6 +41,11 @@ SCRATCH_RETENTION_DAYS <- 30
 # (b5/b6) 2026-08-16 신설 — 임계는 상수로 선언, 리포트에 함께 기록해 드리프트를 보이게 한다
 WORKTREE_WARN_N   <- 5    # 디스크상 워크트리가 이 수를 넘으면 누적 경고 (실사고 시 43개)
 MAXPATH_LIMIT     <- 260  # Windows MAX_PATH. LongPathsEnabled=1 이면 무력 — 리포트에 상태 병기
+# ★잠복 계수는 '워크트리 오버헤드'에 극도로 민감하다 — 2026-08-16 실측: 오버헤드 40 이면 93건,
+#   49 면 417건. 관측 최대명으로 도출하면 워크트리가 뜨고 질 때마다 지표가 출렁여 추세를 못 읽는다.
+#   ⇒ 명명규칙 설계 최대값을 상수로 고정하고, 실제 이름이 이를 넘으면 '상수 낙후'로 별도 경고한다
+#   (숫자를 안정시키되 규칙 변경은 놓치지 않는다).
+WORKTREE_NAME_MAX <- 30   # 관측 분포 19~30자 (adjective-surname-hash6). 초과 시 드리프트 경고
 MAXPATH_SCAN_SKIP <- Sys.getenv("QVEST_HYGIENE_SKIP_PATHSCAN", "0") == "1"
 now <- Sys.time()
 
@@ -277,9 +284,11 @@ if (!MAXPATH_SCAN_SKIP) {
   # 워크트리 내부 사본 제외 — 이미 오버헤드가 붙은 경로에 또 얹는 것은 없는 시나리오
   rel <- rel[!startsWith(rel, ".claude/worktrees/")]
   full_len <- nchar(root) + 1L + nchar(rel)
-  # ★오버헤드를 상수로 박지 않는다 — 실제 워크트리 이름에서 도출(없으면 명명규칙 기본값)
-  wt_prefix <- nchar(".claude/worktrees/") + 1L
-  wt_over   <- if (length(wt_on_disk)) wt_prefix + max(nchar(wt_on_disk)) else wt_prefix + 22L
+  # 오버헤드 = '.claude/worktrees/<name>/' 삽입분. 안정 기준선을 위해 설계 상수로 고정하고,
+  # 실제 이름이 상수를 넘으면 아래에서 '상수 낙후' 경고 (관측치로 산정하면 지표가 출렁인다)
+  wt_prefix   <- nchar(".claude/worktrees/") + 1L
+  wt_over     <- wt_prefix + WORKTREE_NAME_MAX
+  wt_name_obs <- if (length(wt_on_disk)) max(nchar(wt_on_disk)) else 0L
   over_idx   <- which(full_len >= MAXPATH_LIMIT)
   latent_idx <- which(full_len < MAXPATH_LIMIT & (full_len + wt_over) >= MAXPATH_LIMIT)
   zone_of <- function(ix) {
@@ -290,7 +299,9 @@ if (!MAXPATH_SCAN_SKIP) {
   }
   maxpath <- list(
     scanned = TRUE, limit = MAXPATH_LIMIT,
-    worktree_overhead = wt_over, overhead_source = if (length(wt_on_disk)) "observed" else "default_naming",
+    worktree_overhead = wt_over, overhead_basis = "WORKTREE_NAME_MAX 상수(설계 최대명)",
+    worktree_name_max_const = WORKTREE_NAME_MAX, worktree_name_observed_max = wt_name_obs,
+    overhead_const_stale = wt_name_obs > WORKTREE_NAME_MAX,
     files_scanned = length(rel),
     n_over = length(over_idx), n_latent = length(latent_idx),
     max_len = if (length(full_len)) max(full_len) else 0L,
@@ -310,7 +321,8 @@ n_warn <- length(warnings_out$root_unauthorized) +
           length(warnings_out$misplaced_outputs) +
           sum(vapply(unindexed, length, 0L)) +
           length(warnings_out$worktree_prunable) + n_wt_accum +
-          (if (isTRUE(maxpath$scanned)) maxpath$n_over else 0L)
+          (if (isTRUE(maxpath$scanned)) maxpath$n_over else 0L) +
+          (if (isTRUE(maxpath$overhead_const_stale)) 1L else 0L)
 n_del  <- length(deleted$logs) + length(deleted$scratch) + length(deleted$empty_dirs)
 
 report <- list(
@@ -360,6 +372,10 @@ if (n_warn > 0) {
     w("[hygiene][WARN] 워크트리 정리 후보 %d (껍데기 %d / stale admin %d): %s\n",
       length(warnings_out$worktree_prunable), ws$orphan_dirs, ws$stale_admin,
       paste(utils::head(unlist(warnings_out$worktree_prunable), 10), collapse = ", "))
+  if (isTRUE(maxpath$overhead_const_stale))
+    w(paste0("[hygiene][WARN] WORKTREE_NAME_MAX 상수 낙후 — 상수 %d < 실제 최장 워크트리명 %d. ",
+             "잠복 계수가 과소평가 중이니 artifact_hygiene_audit.R 상수를 갱신할 것\n"),
+      maxpath$worktree_name_max_const, maxpath$worktree_name_observed_max)
   if (isTRUE(maxpath$scanned) && maxpath$n_over > 0)
     w(paste0("[hygiene][WARN] MAX_PATH(%d) 초과 %d건 (최장 %d) — 복사/백업/재귀삭제가 ",
              "오류 없이 건너뛸 수 있음. 잠복(워크트리 진입 시 초과) %d건. 존: %s\n"),
