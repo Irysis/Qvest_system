@@ -247,6 +247,28 @@ else
   bad "C9 UNKNOWN — python-policy.md 부재 (통과로 위장 금지)"
 fi
 
+# ── C10 삭제 감시 카나리아 생존 ──────────────────────────────────────────────
+# 2026-08-16: venv 가 16:02:11 에 비워졌으나 파일시스템 감사가 꺼져 있어 주체가 영구
+#   추적 불가로 확정됐다. 이후 감사(4660/4663)+폴더 SACL 을 걸고 양성 대조로 기록됨을
+#   실증했지만, Security 로그는 관리자 권한이라 이 검사가 읽을 수 없다. 대신 표식 파일의
+#   생존만 본다 — 사라졌으면 "삭제 주체가 실재"이고, 그때 관리자가 로그를 조회하면 된다.
+#   ★이 축은 "언제"만 답한다. "누가"는 관리자 조회 몫 — 그 한계를 메시지에 적어 둔다.
+if [ -n "${_pypath:-}" ]; then
+  _venvdir=$(dirname "$(dirname "$_pypath")")
+  if [ -d "$_venvdir" ]; then
+    _can=$(ls "$_venvdir"/.canary_* 2>/dev/null | head -1)
+    if [ -n "$_can" ]; then
+      ok "C10 삭제 감시 카나리아 생존 ($(basename "$_can"))"
+    else
+      bad "C10 카나리아 소실 — venv 트리의 삭제 감시 표식이 사라짐. 의도적 재생성이면 표식을 다시 놓을 것. 아니면 관리자 PowerShell 로 주체 조회: Get-WinEvent -FilterHashtable @{LogName='Security';Id=4660,4663}"
+    fi
+  else
+    bad "C10 UNKNOWN — venv 디렉터리 부재 ($_venvdir) — 카나리아 판정 불가"
+  fi
+else
+  bad "C10 UNKNOWN — 실행기 경로 파생 실패로 venv 디렉터리를 특정 못 함"
+fi
+
 # ── 출력 ─────────────────────────────────────────────────────────────────────
 if [ "$MODE" = "--boot" ]; then
   if [ "$FAIL" -eq 0 ]; then

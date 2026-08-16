@@ -70,6 +70,8 @@ EOF
   mkdir -p "$FX/.venv_fake/Scripts"
   printf '#!/bin/sh\n' > "$FX/.venv_fake/Scripts/python.exe"; chmod +x "$FX/.venv_fake/Scripts/python.exe"
   printf '실행기 = `%s` (합성)\n' "$FX/.venv_fake/Scripts/python.exe" > "$FX/pypolicy.md"
+  # C10 픽스처: 삭제 감시 카나리아 생존 상태
+  printf 'placed=synthetic\n' > "$FX/.venv_fake/.canary_fixture"
 }
 
 run_chk() { # 픽스처 세트로 checker 실행 → exit code 반환, 출력은 $OUT
@@ -136,6 +138,9 @@ if run_chk; then bad "T9 book_state 부재 = FAIL" "통과됨(fail-open)"; else
 
 v10() { printf '실행기 = `%s/.venv_ghost/Scripts/python.exe` (합성)\n' "$FX" > "$FX/pypolicy.md"; }
 inject "V10 선언된 ML 실행기 부재 검출(환경 결손)" "C9 " v10
+
+v11() { rm -f "$FX/.venv_fake/.canary_fixture"; }
+inject "V11 카나리아 소실 검출(삭제 주체 실재 신호)" "C10 " v11
 
 # ── T10. Lawbook INDEX 부재 = UNKNOWN FAIL (fail-open 금지) ──────────────────
 mk_clean; rm -f "$FX/lawbook_index.md"
