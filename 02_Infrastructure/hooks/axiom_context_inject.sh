@@ -79,7 +79,12 @@ esac
 TRUTHS_FILE="$DIR/02_Infrastructure/prompts/strategic_truths.md"
 DIST_INDEX="$DIR/06_Registry/distilled_knowledge.json"
 REVIVAL_FLAGS="$DIR/.cache/failure_revival_flags.json"
-ESC=$(printf '%s' "$HEADER" | CB="$CACHE_BODY" TF="$TRUTHS_FILE" DI="$DIST_INDEX" RV="$REVIVAL_FLAGS" "$QVEST_PY_BIN" -c "
+# (2026-08-16 폐쇄루프 감사 수리) DIST 랭킹 = refined_at → **실사용 빈도**.
+#   근거: 주입 top-5 중 4건이 인용 0건이고 최다 인용 카드(DIST-QPM-003, 19파일)는 빠져 있었다.
+#   생산자 = 02_Infrastructure/ops/build_distilled_usage.py → .cache/distilled_usage.json
+#   ★파일 부재/파싱실패 시 기존 refined_at 정렬로 폴백(회귀 없음).
+DIST_USAGE="$DIR/.cache/distilled_usage.json"
+ESC=$(printf '%s' "$HEADER" | CB="$CACHE_BODY" TF="$TRUTHS_FILE" DI="$DIST_INDEX" DU="$DIST_USAGE" RV="$REVIVAL_FLAGS" "$QVEST_PY_BIN" -c "
 import json, os, sys
 def rd(p):
     try:
@@ -112,7 +117,14 @@ try:
              if e.get('status') == 'distilled'
              and e.get('polarity') in ('negative', 'conditional')
              and (e.get('statement_refined') or '').strip()]
-    picks.sort(key=lambda e: e.get('refined_at') or '', reverse=True)
+    # 실사용 빈도 우선, 동률이면 refined_at 최신. usage 부재 = 전건 0 이라 refined_at 정렬로 자연 폴백.
+    usage = {}
+    try:
+        usage = (json.load(open(os.environ.get('DU', ''), encoding='utf-8')) or {}).get('usage') or {}
+    except Exception:
+        usage = {}
+    picks.sort(key=lambda e: (int(usage.get(e.get('dist_id'), 0)), e.get('refined_at') or ''),
+               reverse=True)
     lines = []
     for e in picks[:5]:
         tag = '탐색됨→프론티어(INV-7 봉투 안 차별점 시 진행)' if e.get('polarity') == 'negative' else '조건부'
