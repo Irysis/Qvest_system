@@ -337,12 +337,22 @@ tg_send <- function(msg, parse_mode = "", silent = FALSE,
       text       = msg,
       parse_mode = parse_mode
     ), encode = "json")
-    if (!silent && http_error(resp)) {
-      cat(sprintf("[tg] Send failed: %s\n", content(resp, "text", encoding = "UTF-8")))
+    if (http_error(resp)) {
+      .body <- content(resp, "text", encoding = "UTF-8")
+      if (!silent) cat(sprintf("[tg] Send failed: %s\n", .body))
+      # silent 여도 원장에는 남긴다 — silent 는 "조용히"이지 "없던 일"이 아니다.
+      .tg_record_send_failure("http_error", .body, msg, parse_mode, status_code(resp))
+      invisible(list(ok = FALSE, kind = "http_error",
+                     status = status_code(resp), error = .body))
+    } else {
+      invisible(list(ok = TRUE, kind = "sent",
+                     status = status_code(resp), error = NA_character_))
     }
-    invisible(resp)
   }, error = function(e) {
     cat(sprintf("[tg] Error: %s\n", e$message))
+    .tg_record_send_failure("exception", e$message, msg, parse_mode)
+    invisible(list(ok = FALSE, kind = "exception",
+                   status = NA_integer_, error = e$message))
   })
 }
 
