@@ -119,6 +119,38 @@ close_round <- function(round_id,
             "`baseline=` 로 기준선을 밝힐 것(예: \"PG2 score_eff\", \"무밴드 top-25\"). ",
             "Δ 의 부호는 base 에 조건부다(FQ-170 순열 통제 4/4).")
 
+  # ── frontier_update 선언↔실기록 대조 (2026-08-16 P0#3, L1 — FQ-167/168 계보) ──
+  #   왜: frontier_update 는 서술 문자열일 뿐 이 함수는 큐를 쓰지 않는다 — 병렬 세션
+  #   충돌로 등재가 조용히 생략되면 close_round 서술이 거짓이 된다(2026-08-09 실사고,
+  #   큐 consume_rule ③ "선언에서 파생 금지"의 근원). 발행 시점에 서술이 언급한 FQ-id 의
+  #   큐 실재를 대조해 구조 필드로 기록한다. 경고 레벨 — 비차단(판정 자체는 막지 않는다).
+  fq_ids <- character(0); fq_missing <- character(0); fq_verified <- NA
+  if (has_frontier) {
+    blob <- paste(frontier_update, collapse = " ")
+    # perl=TRUE — TRE 색인 위 regmatches 금칙(r-portability ⑥) 회피
+    m <- gregexpr("FQ-[0-9]{1,4}", blob, perl = TRUE)
+    fq_ids <- unique(unlist(regmatches(blob, m)))
+    fq_ids <- fq_ids[nzchar(fq_ids)]
+    if (length(fq_ids)) {
+      qp <- file.path(.cr_root(), "06_Registry", "alpha_frontier_queue.json")
+      if (file.exists(qp)) {
+        qtxt <- paste(readLines(qp, warn = FALSE, encoding = "UTF-8"), collapse = "\n")
+        pres <- vapply(fq_ids, function(id)
+          grepl(paste0("\"", id, "\""), qtxt, fixed = TRUE), logical(1))
+        fq_missing <- fq_ids[!pres]
+        fq_verified <- length(fq_missing) == 0L
+        if (!fq_verified)
+          message("[close_round] ⚠ frontier 선언↔실기록 불일치 — 큐에 없는 FQ-id: ",
+                  paste(fq_missing, collapse = ", "),
+                  " (FQ-167/168 계보: frontier_update 는 실제 기록 결과에서 파생시킬 것. ",
+                  "큐 기록 후 재확인 — 비차단 경고)")
+      } else {
+        message("[close_round] frontier 대조 불가 — alpha_frontier_queue.json 부재")
+      }
+    }
+    # FQ-id 미언급 서술(예: '항목 status 갱신')은 대조 불가(NA) — 억지 판정 금지
+  }
+
   # ── 종료 기록 발행 ────────────────────────────────────────────────────────
   now <- format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z")
   rec <- list(
@@ -129,6 +161,11 @@ close_round <- function(round_id,
     next_probes = np,
     consumer_surfaces = cs,
     frontier_update = if (has_frontier) frontier_update else NULL,
+    # P0#3 (2026-08-16): 선언↔실기록 대조 결과 — TRUE=전 id 큐 실재 / FALSE=부재 id 있음 /
+    #   NA=대조 불가(FQ-id 미언급 또는 큐 파일 부재). 감사가 구조적 질문이 되게 한다.
+    frontier_ids = if (length(fq_ids)) fq_ids else NULL,
+    frontier_update_verified = fq_verified,
+    frontier_ids_missing = if (length(fq_missing)) fq_missing else NULL,
     live_trigger = lt,
     layer = layer,
     evidence_refs = as.character(evidence_refs),
@@ -158,6 +195,12 @@ close_round <- function(round_id,
     "next_probe:\n", paste(probe_lines, collapse = "\n"), "\n",
     sprintf("소비면: %s\n", cons_line),
     if (has_frontier) sprintf("frontier: %s\n", frontier_update) else "",
+    if (has_frontier && length(fq_ids)) sprintf("frontier 대조: %s\n",
+      if (isTRUE(fq_verified)) sprintf("큐 실재 확인 (%s)", paste(fq_ids, collapse = ", "))
+      else if (identical(fq_verified, FALSE))
+        sprintf("★불일치 — 큐 부재 id: %s (선언≠실기록, 비차단 경고)",
+                paste(fq_missing, collapse = ", "))
+      else "대조 불가 (큐 파일 부재)") else "",
     sprintf("부활 조건: %s\n", lt_line),
     if (!is.null(layer)) sprintf("병목 계층: %s\n", layer) else "",
     if (!is.null(fw_note)) paste0(fw_note, "\n") else "",
@@ -193,12 +236,4 @@ if (identical(environment(), globalenv()) && !interactive() &&
     TRUE
   }, error = function(e) { cat("FAIL:", conditionMessage(e), "\n"); FALSE })
   # 계약 위반 케이스: next_probes 1개 → stop 기대
-  viol <- tryCatch({
-    close_round("SELFTEST_R1", "config_scoped_negative",
-                "기전 진단 20자 이상 채운 데모 문장입니다.",
-                next_probes = c("하나뿐"), consumer_surfaces = "x",
-                live_trigger = "y", write_marker = FALSE)
-    FALSE  # stop 안 나면 실패
-  }, error = function(e) TRUE)
-  cat(sprintf("[selftest] valid_close=%s  contract_reject=%s\n", ok, viol))
-}
+  viol <- t
