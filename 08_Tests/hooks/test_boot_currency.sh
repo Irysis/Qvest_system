@@ -66,6 +66,10 @@ EOF
 {"admitted_ids": ["STR_1111_TEST_PG2"]}
 EOF
   mkdir -p "$FX/agents"; : > "$FX/agents/a1.md"; : > "$FX/agents/a2.md"
+  # C9 픽스처: 선언된 ML 실행기가 실재하는 상태 (절대경로 — PROJECT 상대해석 우회)
+  mkdir -p "$FX/.venv_fake/Scripts"
+  printf '#!/bin/sh\n' > "$FX/.venv_fake/Scripts/python.exe"; chmod +x "$FX/.venv_fake/Scripts/python.exe"
+  printf '실행기 = `%s` (합성)\n' "$FX/.venv_fake/Scripts/python.exe" > "$FX/pypolicy.md"
 }
 
 run_chk() { # 픽스처 세트로 checker 실행 → exit code 반환, 출력은 $OUT
@@ -73,7 +77,7 @@ run_chk() { # 픽스처 세트로 checker 실행 → exit code 반환, 출력은
     QVEST_BCC_QVEST_MD="$FX/qvest.md" QVEST_BCC_SETTINGS="$FX/settings.json" \
     QVEST_BCC_DISPATCH="$FX/dispatch.json" QVEST_BCC_BOOK_STATE="$FX/book.json" \
     QVEST_BCC_AGENTS_DIR="$FX/agents" QVEST_BCC_LAWBOOK_INDEX="$FX/lawbook_index.md" \
-    bash "$CHK" 2>&1)
+    QVEST_BCC_PY_POLICY="$FX/pypolicy.md" bash "$CHK" 2>&1)
   return $?
 }
 
@@ -129,6 +133,9 @@ inject "V9c SOT 커버리지 누락 검출(신규 SOT가 INDEX에 없음)" "C8c 
 mk_clean; rm -f "$FX/book.json"
 if run_chk; then bad "T9 book_state 부재 = FAIL" "통과됨(fail-open)"; else
   echo "$OUT" | grep -q "C7 UNKNOWN" && ok "T9 book_state 부재 = UNKNOWN FAIL" || bad "T9" "다른 사유"; fi
+
+v10() { printf '실행기 = `%s/.venv_ghost/Scripts/python.exe` (합성)\n' "$FX" > "$FX/pypolicy.md"; }
+inject "V10 선언된 ML 실행기 부재 검출(환경 결손)" "C9 " v10
 
 # ── T10. Lawbook INDEX 부재 = UNKNOWN FAIL (fail-open 금지) ──────────────────
 mk_clean; rm -f "$FX/lawbook_index.md"

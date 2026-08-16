@@ -18,6 +18,7 @@
 #   C7 PG2   : qvest.md에 등장하는 *_PG2 id ↔ book_state.json admitted_ids
 #   C8a 항해도: CLAUDE.md Active Version ↔ 00_Lawbook/INDEX.md 헤더 버전
 #   C8c 커버리지: CLAUDE.md "★ Active SOT" 나열 ⊆ 00_Lawbook/INDEX.md 인용
+#   C9  환경  : python-policy.md 가 선언한 ML 실행기(venv)가 실제로 실행 가능한가
 #
 # C8 배경 (2026-08-16 감사 wf_31a04a99): 00_Lawbook/INDEX.md 가 v8.1.0(06-12)에서 2개월·
 #   헌법 4회 전이분 낙후. 원인 1위는 "안 열어서"가 아니라 **부분 갱신이 버전 배너를 안
@@ -58,6 +59,7 @@ F_DISPATCH="${QVEST_BCC_DISPATCH:-$PROJECT/02_Infrastructure/hooks/policies/rout
 F_BOOK="${QVEST_BCC_BOOK_STATE:-$PROJECT/qepm/mailbox/governor/book_state.json}"
 D_AGENTS="${QVEST_BCC_AGENTS_DIR:-$PROJECT/.claude/agents}"
 F_LAWBOOK="${QVEST_BCC_LAWBOOK_INDEX:-$PROJECT/00_Lawbook/INDEX.md}"
+F_PYPOLICY="${QVEST_BCC_PY_POLICY:-$PROJECT/.claude/rules/python-policy.md}"
 
 MODE="${1:-detail}"
 PASS=0; FAIL=0; WARN_LINES=()
@@ -221,6 +223,28 @@ if [ -f "$F_LAWBOOK" ]; then
       bad "C8c SOT 커버리지 낡음 — CLAUDE.md Active SOT 중 ${MISS8}가 00_Lawbook/INDEX.md 에 없음 (헌법 전이 후 INDEX §1 미갱신)"
     fi
   fi
+fi
+
+# ── C9 환경 정합: 선언된 ML 실행기가 실재하나 ────────────────────────────────
+# 2026-08-16 실사고: .venv_qvest_ml 이 16:02 에 비워졌는데(생성 06-10) 부팅은 아무것도
+#   말하지 않았고, 무관한 배터리 실패를 쫓다 우연히 발견했다. python-policy.md 는 "환경
+#   선언은 라운드 전제이므로 착수 전 실측"을 요구하지만 그 실측을 기계가 하지 않았다.
+#   결손 시 v8.4 Lane A(분포-표적 ML) 가 착수 불가이므로 알파 라운드를 직접 막는다.
+# 기대 경로는 하드코딩하지 않는다 — python-policy.md 선언에서 파생(C0 계약과 동일).
+if [ -f "$F_PYPOLICY" ]; then
+  DECL_PY=$(grep -oE '`[^`]*\.venv[^`]*python\.exe`' "$F_PYPOLICY" 2>/dev/null | tr -d '`' | head -1)
+  if [ -z "$DECL_PY" ]; then
+    bad "C9 python-policy.md 에서 ML 실행기 선언을 못 찾음 — 선언 포맷 변경 시 이 파서도 갱신 필요"
+  else
+    case "$DECL_PY" in /*|[A-Za-z]:*) _pypath="$DECL_PY" ;; *) _pypath="$PROJECT/$DECL_PY" ;; esac
+    if [ -x "$_pypath" ]; then
+      ok "C9 ML 실행기 실재 = $DECL_PY"
+    else
+      bad "C9 선언된 ML 실행기 부재/실행불가 — python-policy.md '$DECL_PY' (ML 라운드 착수 불가. 선언≠실측 — venv 재생성 또는 선언 갱신 필요)"
+    fi
+  fi
+else
+  bad "C9 UNKNOWN — python-policy.md 부재 (통과로 위장 금지)"
 fi
 
 # ── 출력 ─────────────────────────────────────────────────────────────────────
