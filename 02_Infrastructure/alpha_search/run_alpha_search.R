@@ -367,6 +367,20 @@ run_alpha_search <- function(strategy_name,
     bt_contract = bt_contract
   )
 
+  # ---- 6d+. Layer 1 개선-여지 평가 자동 첨부 (2026-08-16 L1 자동 스폰 — 도훈 승인) ----
+  #   screen_pass 라벨 보유 런은 같은 런 안에서 improvement_potential 을 실측해 레지스트리에
+  #   적재한다 (권위측정 사다리와 같은 자리 — 라벨이 후속 측정을 자동 트리거하는 기존 전례).
+  #   비치명: 평가 실패는 정직 WARN — 본 러너 산출물은 불변.
+  if (isTRUE(screening$screen_pass)) tryCatch({
+    if (!exists("improvement_potential_for_run", mode = "function")) {
+      Sys.setenv(QVEST_IP_NORUN = "1")
+      source(file.path(PROJECT_ROOT, "02_Infrastructure", "regime", "improvement_potential.R"))
+    }
+    improvement_potential_for_run(OUT_DIR)
+  }, error = function(e)
+    cat(sprintf("[AlphaSearch][WARN] improvement_potential 평가 실패 (비치명): %s\n",
+                conditionMessage(e))))
+
   # ---- 6e. FR-eligible 승격: 권위측정 OK일 때만 canonical module_catalog로 등록 ----
   if (!is.null(auth) && identical(auth$status, "OK")) tryCatch({
     if (!exists("register_module", mode = "function"))

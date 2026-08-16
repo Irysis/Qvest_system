@@ -1659,6 +1659,9 @@ run_hurdle_gate <- function(sim_result,
     } else {
       # v8.3(2026-07-10): FR_RCMA 무조건 첨부 폐지(판별력 0) — register_module 계약 floor
       #   (cost floor: 회전율 hard-fail 이내 = 운용가능 비용구조) 충족 가능 케이스만 첨부.
+      # ★2026-08-16 D2 재정의(도훈): FR_RCMA = "register_module 유도 라벨" — 소비자는
+      #   auto_spawn_queue.R (catalog 부재 → 등재 유도 / 등재+fr_eligible → 처분 제안).
+      #   FR/RCMA 는 라벨을 직접 읽지 않는다 — module_catalog(fr_eligible)가 그쪽 입력.
       .routes <- c(.routes, "FR_RCMA")
     }
     paste(unique(.routes), collapse = "|")

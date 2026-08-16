@@ -61,7 +61,11 @@ ST_ROUTE_CONSUMERS <- list(
   NONE              = list(consumer = NA,    ref = "무발급 라우트(신호력 미달) — 소비 대상 아님"),
   OVERLAY_CANDIDATE = list(consumer = TRUE,  ref = "02_Infrastructure/regime/overlay_candidate_queue.R"),
   STANDALONE_TRACK  = list(consumer = TRUE,  ref = "02_Infrastructure/portfolio/standalone_track_queue.R (본 파일, 2026-08-02 신설)"),
-  FR_RCMA           = list(consumer = FALSE, ref = "소비자 0 — factor-rotation/RCMA 측 라벨 판독 코드 없음 (regime_module_admission.R 입력에 screen_route 항 부재)"),
+  FR_RCMA           = list(consumer = TRUE,  ref = paste(
+    "02_Infrastructure/ops/auto_spawn_queue.R (2026-08-16 D2 재정의 — 도훈:",
+    "FR_RCMA = 'register_module 유도 라벨'. catalog 부재 → register_module_induce /",
+    "등재+fr_eligible → fr_disposition_suggest. 구 '소비자 0 — RCMA 측 판독 코드 없음'은",
+    "라벨 의미 재정의로 해소 — RCMA 는 라벨이 아니라 module_catalog(fr_eligible)를 소비한다)")),
   TURNOVER_REVIEW   = list(consumer = FALSE, ref = "소비자 0 — 설계상 기록 전용(hurdle_gate.R:1590 주석). 발급 실적 0건"),
   DPL_FEATURE       = list(consumer = FALSE, ref = "v8.3 발급 중단(measurement-graduation §5). 구 manifest 호환 문자열만 잔존")
 )

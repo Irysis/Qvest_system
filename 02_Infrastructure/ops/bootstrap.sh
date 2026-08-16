@@ -988,6 +988,16 @@ if [ -f "$STQ_R" ]; then
   [ -z "$STANDALONE_TRACK_STATUS" ] && STANDALONE_TRACK_STATUS="StandaloneTrk: UNREPORTED — 큐 빌더가 상태라인을 못 냄 (Rscript $STQ_R 로 사유 확인)"
 fi
 
+# 8k. (2026-08-16) 자동 스폰 큐 노출 — L1 (도훈 승인). 기계가 적재한 개선 라운드 후보를
+#      세션이 소비하도록 부트 표면에 띄운다 (/improve-drain 스킬 소비). advisory(무중단).
+#      상태라인은 읽기 전용 — 큐 build 는 여기서 하지 않는다 (원장 갱신과 노출 분리, 8j 규약).
+AUTO_SPAWN_STATUS=""
+ASQ_R="$PROJECT/02_Infrastructure/ops/auto_spawn_queue.R"
+if [ -f "$ASQ_R" ]; then
+  AUTO_SPAWN_STATUS=$(cd "$PROJECT" && Rscript "$ASQ_R" --status-line 2>/dev/null | tr -d '\r' | grep -m1 'AutoSpawn:' | sed 's/^[[:space:]]*//' || true)
+  [ -z "$AUTO_SPAWN_STATUS" ] && AUTO_SPAWN_STATUS="AutoSpawn: UNREPORTED — 상태라인 실패 (Rscript $ASQ_R --status-line 로 사유 확인)"
+fi
+
 SMOKE_STATUS=""
 SMOKE_SCRIPT="$PROJECT/02_Infrastructure/ops/boot_status_smoke.py"
 if [ -f "$SMOKE_SCRIPT" ] && python3 -c 'import sys' >/dev/null 2>&1; then
