@@ -352,5 +352,18 @@ if (n_warn > 0) {
   if (sum(vapply(unindexed, length, 0L)) > 0)
     w("[hygiene][WARN] index_descriptions.json 미등재 최상위 항목 %d (존: %s)\n",
       sum(vapply(unindexed, length, 0L)), paste(names(unindexed), collapse = ", "))
+  ws <- warnings_out$worktree_summary
+  if (isTRUE(ws$over_threshold))
+    w("[hygiene][WARN] .claude/worktrees 누적 %d개 (임계 %d) — 병합완료·고유내용 0 건은 prune 대상\n",
+      ws$on_disk, ws$warn_threshold)
+  if (length(warnings_out$worktree_prunable))
+    w("[hygiene][WARN] 워크트리 정리 후보 %d (껍데기 %d / stale admin %d): %s\n",
+      length(warnings_out$worktree_prunable), ws$orphan_dirs, ws$stale_admin,
+      paste(utils::head(unlist(warnings_out$worktree_prunable), 10), collapse = ", "))
+  if (isTRUE(maxpath$scanned) && maxpath$n_over > 0)
+    w(paste0("[hygiene][WARN] MAX_PATH(%d) 초과 %d건 (최장 %d) — 복사/백업/재귀삭제가 ",
+             "오류 없이 건너뛸 수 있음. 잠복(워크트리 진입 시 초과) %d건. 존: %s\n"),
+      maxpath$limit, maxpath$n_over, maxpath$max_len, maxpath$n_latent,
+      paste(utils::head(names(maxpath$over_zones), 3), collapse = ", "))
 }
 cat("[hygiene] done\n")
