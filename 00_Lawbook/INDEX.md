@@ -160,6 +160,12 @@ SPEC_APPROVED → ALPHA_DONE → RISK_DONE → OPTIMIZER_DONE → FORGE_DONE
 
 ## Maintenance
 
+> ★**낙후는 이제 기계가 알린다 (2026-08-16)** — `02_Infrastructure/ops/boot_currency_check.sh`가 매 부팅에 감시(**WARN-only**, 차단 아님):
+> **C8a** CLAUDE.md Active Version ↔ 본 문서 헤더 버전 · **C8c** CLAUDE.md "★ Active SOT" 나열 ⊆ 본 문서 §1 인용.
+> 갱신은 여전히 **사람 몫**이다(이 문서는 자동 생성 대상이 아니다 — 담는 게 파일 목록이 아니라 판단이라서). 기계는 "어긋났다"까지만 말한다.
+> ⇒ **헤더 4행의 `vX.Y` 표기는 파서 계약**이다. 포맷을 바꾸면 C8a가 먼저 깨진다. 부분 갱신 시에도 이 줄을 함께 고칠 것 — 낙후 원인 1위가 "본문은 고치면서 배너를 안 고친 것"이었다(07-03·07-04 두 번 편집됐는데 헤더는 06-12 그대로 → 한 문서 안에 세 vintage 공존).
+> 검사 자신의 위반 주입 테스트 = `08_Tests/hooks/test_boot_currency.sh` (13/13, 실제 구판으로 검출력 실증).
+
 - 인프라 reorg / 헌법 버전 전이 시 본 INDEX.md 갱신 (CHANGELOG에 "INDEX.md update" 의무)
 - **자동생성 X** — Lawbook churn 결합 회피. `build_artifact_index.R`의 4개 존 INDEX와 역할이 다르다(그쪽=파일 인벤토리, 여기=**항해도**)
 - ★**갱신 시 개수를 다시 박제하지 말 것** — 낙후의 기전이 그것이었다. 개수가 필요하면 확인 명령이나 존 INDEX로 위임한다
