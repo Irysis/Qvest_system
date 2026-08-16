@@ -82,8 +82,19 @@ import json,io,os
 p=os.environ['USAGE']; low=os.environ['LOW_ID']
 d=json.load(io.open(p,encoding='utf-8'))
 d['usage']={low: 999999}          # 최하위를 압도적 1위로 조작
-io.open(p,'w',encoding='utf-8').write(json.dumps(d,ensure_ascii=False))
+with io.open(p,'w',encoding='utf-8') as f:
+    json.dump(d,f,ensure_ascii=False)
 "
+# ★setup 자기검증 — 조작이 실제로 파일에 반영됐는지 확인. 안 하면 setup 실패가 본 검사의
+#   거짓 FAIL 로 나타난다(2026-08-16 실제로 발생: 파일 핸들 미플러시로 조작이 유실됐다).
+SETUP_OK=$("$PY" -c "
+import json,io,os
+d=json.load(io.open(os.environ['USAGE'],encoding='utf-8'))
+u=d.get('usage',{})
+print('YES' if u.get(os.environ['LOW_ID'])==999999 and len(u)==1 else 'NO:'+str(list(u.items())[:3]))
+")
+[ "$SETUP_OK" = "YES" ] && ok "A2-setup usage 조작이 파일에 반영" \
+  || bad "A2-setup usage 조작이 파일에 반영" "$SETUP_OK"
 GOT2=$(fire)
 [ "$GOT2" = "$LOW_ID" ] && ok "A2 usage 조작 시 주입이 따라 바뀜(위반 주입)" \
   || bad "A2 usage 조작 시 주입이 따라 바뀜" "기대 $LOW_ID 실제 $GOT2 — 훅이 usage 를 안 읽음"
