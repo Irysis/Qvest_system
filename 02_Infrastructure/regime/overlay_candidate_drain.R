@@ -402,7 +402,9 @@ drain_verdict <- function(paired, n_selection = NULL) {
                best_paired_nw_t_lag3 = NA_real_, lag1_scenario = NA_character_,
                lag1_paired_t = NA_real_, n_selection = NA_integer_, null_max_t = NA_real_,
                reason = "")
-  P <- tryCatch(as.data.table(paired), error = function(e) NULL)
+  # copy() — as.data.table 은 이미 data.table 인 입력을 참조로 돌려주므로, := 가
+  #   호출측 테이블(out$paired)을 변이시키지 않도록 사본에서 판정한다.
+  P <- tryCatch(copy(as.data.table(paired)), error = function(e) NULL)
   if (is.null(P) || !nrow(P) || !all(c("scenario", "paired_nw_t_lag3") %in% names(P))) {
     base$reason <- "paired_nw 비어있음/스키마 불일치 — 판정 불가"
     return(base)
