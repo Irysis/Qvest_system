@@ -302,6 +302,54 @@ build_standalone_track_queue <- function(root = .st_root(), write = TRUE) {
 }
 
 #------------------------------------------------------------------------------
+# 처분 기록 배관 (2026-08-16 P0#4 — L1 자동 스폰 설계, 도훈 승인)
+#   왜: 큐 신설(08-02) 후 backlog 50건에 dispositions.json 이 빈 맵({}) — 처분을
+#   *기록하는* 함수가 저장소에 없어 스캔의 disposition='none' 이 영구 상태였다.
+#   처분은 판정이 아니라 라우팅 기록 — graduation HARD/governor 는 불변.
+#------------------------------------------------------------------------------
+ST_DISPO_VERDICTS <- c("standalone_reject", "overlay_routed", "fr_routed", "ramp_routed",
+                       "frontier_queued", "revival_wait", "graduation_candidate", "duplicate")
+
+st_record_disposition <- function(strategy_id, verdict, note = "", by = "Q-Lead",
+                                  root = .st_root()) {
+  if (!nzchar(strategy_id %||% "")) stop("[standalone_track] strategy_id 필수")
+  if (!nzchar(verdict %||% ""))
+    stop("[standalone_track] verdict 필수 — 표준: ", paste(ST_DISPO_VERDICTS, collapse = ", "))
+  if (!(verdict %in% ST_DISPO_VERDICTS))
+    message("[standalone_track] 비표준 verdict '", verdict, "' — 표준: ",
+            paste(ST_DISPO_VERDICTS, collapse = ", "), " (기록은 진행)")
+  dp <- file.path(root, DISPO_REL)
+  d <- .st_json(dp)
+  if (is.null(d)) d <- list(schema_version = "standalone_dispositions_v1",
+                            `_doc` = paste("standalone_track_queue 처분 원장 —",
+                                           "st_record_disposition() 로만 기록.",
+                                           "verdict 는 라우팅 기록이지 자본 판정 아님."),
+                            dispositions = list())
+  if (is.null(d$dispositions)) d$dispositions <- list()
+  prior <- d$dispositions[[strategy_id]]
+  rec <- list(verdict = verdict, note = note, by = by,
+              recorded_at = format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z"))
+  if (!is.null(prior)) rec$supersedes <- prior$recorded_at %||% NA_character_
+  d$dispositions[[strategy_id]] <- rec
+  # 원자적 temp-rename (OneDrive/Win 확립 관행 — hypothesis_index F-1 선례)
+  tmp <- paste0(dp, ".tmp", Sys.getpid())
+  write_json(d, tmp, auto_unbox = TRUE, pretty = TRUE, null = "null", na = "null")
+  if (file.exists(dp)) suppressWarnings(file.remove(dp))
+  if (!isTRUE(suppressWarnings(file.rename(tmp, dp)))) {
+    ok <- suppressWarnings(file.copy(tmp, dp, overwrite = TRUE))
+    suppressWarnings(file.remove(tmp))
+    if (!isTRUE(ok)) stop("[standalone_track] dispositions 원자 기록 실패: ", dp)
+  }
+  # 기록 후 재읽기 확인 (frontier 큐 consume_rule 관행 승계 — 조용한 유실 차단)
+  chk <- .st_json(dp)
+  if (is.null(chk$dispositions[[strategy_id]]))
+    stop("[standalone_track] 기록 후 재읽기 실패 — 처분이 저장되지 않음: ", strategy_id)
+  cat(sprintf("[standalone_track] 처분 기록: %s -> %s (by %s)%s\n", strategy_id, verdict, by,
+              if (!is.null(prior)) " [기존 기록 supersede]" else ""))
+  invisible(rec)
+}
+
+#------------------------------------------------------------------------------
 # 상태 1줄 (bootstrap §8j 소비)
 #------------------------------------------------------------------------------
 standalone_track_status_line <- function(root = .st_root()) {
@@ -332,6 +380,17 @@ standalone_track_status_line <- function(root = .st_root()) {
 if (.st_invoked_directly()) {
   args <- commandArgs(trailingOnly = TRUE)
   root <- .st_root()
+  # --dispose: 처분 기록 (P0#4). 예: --dispose=STR_AS_x --verdict=overlay_routed [--note=..]
+  dv <- grep("^--dispose=", args, value = TRUE)
+  if (length(dv)) {
+    gv <- function(key) {
+      h <- grep(paste0("^--", key, "="), args, value = TRUE)
+      if (length(h)) sub(paste0("^--", key, "="), "", h[1]) else ""
+    }
+    st_record_disposition(sub("^--dispose=", "", dv[1]), gv("verdict"), gv("note"),
+                          by = if (nzchar(gv("by"))) gv("by") else "Q-Lead", root = root)
+    quit(save = "no", status = 0L)
+  }
   # --status-line: 부팅 표면 전용(읽기만). 매 부팅 write 는 generated_at 만 바꿔
   #   git 잡음(auto-commit 밸브)을 만든다 — 상태 노출과 원장 갱신을 분리한다.
   if ("--status-line" %in% args) {

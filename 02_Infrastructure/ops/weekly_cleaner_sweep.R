@@ -258,8 +258,8 @@ run_step("weekly_worktree_prune", {
     # c2. ahead 커밋
     ah <- gitq(p, c("rev-list", "--count", "main..HEAD"))
     ahead <- suppressWarnings(as.integer(ah[1]))
-    if (is.na(ahead)) { keep(nm, "ahead 산정 실패"); next }
-    if (ahead > 0) { keep(nm, sprintf("미병합 커밋 %d개", ahead)); next }
+    if (is.na(ahead)) { worktree_prune$kept[[nm]] <- "ahead 산정 실패"; next }
+    if (ahead > 0) { worktree_prune$kept[[nm]] <- sprintf("미병합 커밋 %d개", ahead); next }
 
     # c3. churn 제외 후 main 과 실제로 다른 미커밋 편집 / main 에 없는 untracked
     mod <- trimws(substring(st[grepl("^\\s*[MARC]", st)], 4))
@@ -268,8 +268,9 @@ run_step("weekly_worktree_prune", {
     uniq <- character(0)
     for (f in mod) if (length(gitq(p, c("diff", "main", "--name-only", "--", shQuote(f))))) uniq <- c(uniq, f)
     for (f in unt) if (is.null(gitq(p, c("cat-file", "-e", shQuote(paste0("main:", f)))))) uniq <- c(uniq, f)
-    if (length(uniq)) { keep(nm, sprintf("main 에 없는 내용 %d건: %s", length(uniq),
-                                         paste(head(uniq, 3), collapse = ", "))); next }
+    if (length(uniq)) {
+      worktree_prune$kept[[nm]] <- sprintf("main 에 없는 내용 %d건: %s", length(uniq),
+                                           paste(head(uniq, 3), collapse = ", ")); next }
 
     # 통과 — git 경유 제거(브랜치는 보존된다)
     if (DRY) {
@@ -792,4 +793,4 @@ cat(sprintf("[cleaner] done — steps: %s%s\n",
             if (length(fails)) sprintf(" (FAIL %d단계 — fail-soft 계속됨)", length(fails)) else ""))
 
 # 스윕 lock 해제 (정상 종료 경로 — 오류 종료는 상단 finalizer가 처리)
-try(unlink(sweep_
+try(unlink(sweep_lock_path), silent = TRUE)
