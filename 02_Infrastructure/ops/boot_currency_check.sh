@@ -16,12 +16,27 @@
 #   C5 인벤토리: qvest.md "실측 N종" 스냅샷 ↔ 실제 .claude/agents/*.md 수
 #   C6 훅 총계: CLAUDE.md "NN distinct .sh" ↔ 실측(직접∪dispatch)
 #   C7 PG2   : qvest.md에 등장하는 *_PG2 id ↔ book_state.json admitted_ids
+#   C8a 항해도: CLAUDE.md Active Version ↔ 00_Lawbook/INDEX.md 헤더 버전
+#   C8c 커버리지: CLAUDE.md "★ Active SOT" 나열 ⊆ 00_Lawbook/INDEX.md 인용
+#
+# C8 배경 (2026-08-16 감사 wf_31a04a99): 00_Lawbook/INDEX.md 가 v8.1.0(06-12)에서 2개월·
+#   헌법 4회 전이분 낙후. 원인 1위는 "안 열어서"가 아니라 **부분 갱신이 버전 배너를 안
+#   고치는 것** — 07-03·07-04 두 번 편집됐는데 헤더는 06-12 그대로여서 한 문서 안에 세
+#   vintage 가 공존했다. 원인 2위는 낙후 감시 대상이 전부 하드코딩 열거라 이 파일이 어느
+#   목록에도 없던 것. C8a 가 1위를, "대상을 CLAUDE.md에서 파생"하는 이 파일의 설계 계약이
+#   2위를 각각 막는다. 그 문서는 자동 생성 대상이 아니다(빌더 존 목록 4개에 부재) —
+#   기계는 낙후를 **알리기만** 하고 갱신은 사람이 한다(WARN-only).
+#   ※C8b(개수 박제 ↔ handbook_facts.json 실측 대조)는 **미구현** — key 가 영문
+#     (axioms_active)이고 문서는 한국어라 key→문구 매핑 테이블이 필요한데, 그 테이블
+#     자체가 이 저장소가 반복 실패한 "자유 형식 패턴 감사" 형태다. 생산자(handbook_facts
+#     _audit.sh)가 doc-facing 라벨을 함께 emit 하면 매핑 없이 가능해진다.
 #
 # 원칙: 부재/파싱실패 = UNKNOWN(FAIL 계상) — 0이나 통과로 위장 금지 (fail-open 금지).
 # 출력: --boot  → [boot] 접두 1~N줄 (bootstrap용, WARN-only)
 #       기본    → 상세 + 마지막 줄 JSON {"test":"boot_currency","pass":N,"fail":N,"total":N}
 # 테스트 오버라이드: QVEST_BCC_CLAUDE_MD / _BOOTSTRAP / _QVEST_MD / _SETTINGS / _DISPATCH
-#                    / _BOOK_STATE / _AGENTS_DIR  (08_Tests/hooks/test_boot_currency.sh 전용)
+#                    / _BOOK_STATE / _AGENTS_DIR / _LAWBOOK_INDEX
+#                    (08_Tests/hooks/test_boot_currency.sh 전용)
 #==============================================================================
 set -u
 
@@ -42,6 +57,7 @@ F_SETTINGS="${QVEST_BCC_SETTINGS:-$PROJECT/.claude/settings.json}"
 F_DISPATCH="${QVEST_BCC_DISPATCH:-$PROJECT/02_Infrastructure/hooks/policies/router_dispatch.json}"
 F_BOOK="${QVEST_BCC_BOOK_STATE:-$PROJECT/qepm/mailbox/governor/book_state.json}"
 D_AGENTS="${QVEST_BCC_AGENTS_DIR:-$PROJECT/.claude/agents}"
+F_LAWBOOK="${QVEST_BCC_LAWBOOK_INDEX:-$PROJECT/00_Lawbook/INDEX.md}"
 
 MODE="${1:-detail}"
 PASS=0; FAIL=0; WARN_LINES=()
@@ -100,6 +116,20 @@ else
     ok "C3 배너 모드 = $N_MODE"
   else
     bad "C3 bootstrap 배너에 '$N_MODE' 부재 — 모드 수 변경 미반영"
+  fi
+
+  # ── C8a 항해도 배너 정합: 헌법 버전 ↔ 00_Lawbook/INDEX.md 헤더 ─────────────
+  # 시간 문턱(mtime N일)을 쓰지 않는다 — 헌법 문자열이 실제로 움직였을 때만 발화해야
+  # 오탐이 없다(고정 문턱은 분포가 이동하면 정상을 결함으로 신고한다).
+  if [ -f "$F_LAWBOOK" ]; then
+    if head -8 "$F_LAWBOOK" 2>/dev/null | grep -q "$VER"; then
+      ok "C8a Lawbook INDEX 헤더 = $VER"
+    else
+      _lw=$(head -8 "$F_LAWBOOK" 2>/dev/null | grep -oE 'v[0-9]+\.[0-9]+' | head -1)
+      bad "C8a Lawbook INDEX 헤더 낡음 — 헌법 $VER vs INDEX '${_lw:-표기없음}' (00_Lawbook/INDEX.md 는 자동 생성 대상이 아니므로 사람이 갱신)"
+    fi
+  else
+    bad "C8a UNKNOWN — 00_Lawbook/INDEX.md 부재 (통과로 위장 금지)"
   fi
 fi
 
@@ -168,6 +198,29 @@ if [ -f "$F_BOOK" ]; then
   fi
 else
   bad "C7 UNKNOWN — book_state.json 부재"
+fi
+
+# ── C8c SOT 커버리지: CLAUDE.md ★Active SOT ⊆ Lawbook INDEX ──────────────────
+# basename 으로 비교한다 — 경로 표기(전체경로/축약)가 정규화돼도 불변이라, 병행 중인
+# 경로 정규화 작업과 충돌하지 않는다. 대상 목록은 CLAUDE.md 에서 파생(하드코딩 금지).
+if [ -f "$F_LAWBOOK" ]; then
+  SOT_LINE=$(grep -m1 'Active SOT' "$F_CLAUDE" 2>/dev/null)
+  if [ -z "$SOT_LINE" ]; then
+    bad "C8c CLAUDE.md에서 '★ Active SOT' 절을 못 찾음 — 절 포맷 변경 시 이 파서도 갱신 필요"
+  else
+    MISS8=""; N8=0
+    for _f in $(printf '%s' "$SOT_LINE" | grep -oE '`[^`]+\.md`' | tr -d '`' | sed 's|.*/||' | sort -u); do
+      N8=$((N8+1))
+      grep -qF "$_f" "$F_LAWBOOK" || MISS8="$MISS8$_f "
+    done
+    if [ "$N8" -eq 0 ]; then
+      bad "C8c Active SOT 절에서 .md 참조 0건 추출 — 파서 갱신 필요 (통과로 위장 금지)"
+    elif [ -z "$MISS8" ]; then
+      ok "C8c SOT 커버리지 = INDEX가 Active SOT ${N8}건 전부 인용"
+    else
+      bad "C8c SOT 커버리지 낡음 — CLAUDE.md Active SOT 중 ${MISS8}가 00_Lawbook/INDEX.md 에 없음 (헌법 전이 후 INDEX §1 미갱신)"
+    fi
+  fi
 fi
 
 # ── 출력 ─────────────────────────────────────────────────────────────────────

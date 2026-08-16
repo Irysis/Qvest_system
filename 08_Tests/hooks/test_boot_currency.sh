@@ -32,6 +32,18 @@ mk_clean() {
 **Qvest v9.9 — Testfam 7-Native · 5-Mode 헌법** (세션 모델 `claude-testfam-7`)
 
 - **현행 hook 등록 = settings.json 2 distinct .sh** (합성)
+
+**★ Active SOT (단일 진실)**: `02_Infrastructure/docs/synth_alpha_sot.md` (합성)
+EOF
+  cat > "$FX/lawbook_index.md" <<'EOF'
+# Qvest Index
+
+**합성 항해도** — navigation + debug map.
+**v9.9 — 5-Mode 헌법** (합성).
+
+## 1. Active SOT
+
+- `02_Infrastructure/docs/synth_alpha_sot.md` — 합성 SOT
 EOF
   cat > "$FX/bootstrap.sh" <<'EOF'
 echo "=== Qvest v9.9 부트스트랩 (Testfam 7-Native · 5-Mode +X) ==="
@@ -60,7 +72,8 @@ run_chk() { # 픽스처 세트로 checker 실행 → exit code 반환, 출력은
   OUT=$(env QVEST_BCC_CLAUDE_MD="$FX/CLAUDE.md" QVEST_BCC_BOOTSTRAP="$FX/bootstrap.sh" \
     QVEST_BCC_QVEST_MD="$FX/qvest.md" QVEST_BCC_SETTINGS="$FX/settings.json" \
     QVEST_BCC_DISPATCH="$FX/dispatch.json" QVEST_BCC_BOOK_STATE="$FX/book.json" \
-    QVEST_BCC_AGENTS_DIR="$FX/agents" bash "$CHK" 2>&1)
+    QVEST_BCC_AGENTS_DIR="$FX/agents" QVEST_BCC_LAWBOOK_INDEX="$FX/lawbook_index.md" \
+    bash "$CHK" 2>&1)
   return $?
 }
 
@@ -106,10 +119,21 @@ inject "V7 PG2 참조 낡음 검출" "C7 " v7
 v8() { sed -i 's/^## Active Version/## 다른 절/' "$FX/CLAUDE.md"; }
 inject "V8 정본 파생 실패 = FAIL(통과 위장 금지)" "C0 " v8
 
+v9a() { sed -i 's/^\*\*v9\.9 — 5-Mode/**v9.1 — 5-Mode/' "$FX/lawbook_index.md"; }
+inject "V9a Lawbook INDEX 헤더 낡음 검출" "C8a " v9a
+
+v9c() { sed -i '/Active SOT/s|$| + `qvest_ghost_sot.md` (합성2)|' "$FX/CLAUDE.md"; }
+inject "V9c SOT 커버리지 누락 검출(신규 SOT가 INDEX에 없음)" "C8c " v9c
+
 # ── T9. 파일 부재 = UNKNOWN FAIL (fail-open 금지) ────────────────────────────
 mk_clean; rm -f "$FX/book.json"
 if run_chk; then bad "T9 book_state 부재 = FAIL" "통과됨(fail-open)"; else
   echo "$OUT" | grep -q "C7 UNKNOWN" && ok "T9 book_state 부재 = UNKNOWN FAIL" || bad "T9" "다른 사유"; fi
+
+# ── T10. Lawbook INDEX 부재 = UNKNOWN FAIL (fail-open 금지) ──────────────────
+mk_clean; rm -f "$FX/lawbook_index.md"
+if run_chk; then bad "T10 Lawbook INDEX 부재 = FAIL" "통과됨(fail-open)"; else
+  echo "$OUT" | grep -q "C8a UNKNOWN" && ok "T10 Lawbook INDEX 부재 = UNKNOWN FAIL" || bad "T10" "다른 사유"; fi
 
 echo ""
 echo "PASS=$PASS FAIL=$FAIL"
