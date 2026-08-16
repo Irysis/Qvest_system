@@ -249,13 +249,68 @@ if (file.exists(desc_path)) {
 } else warnings_out$index_db_missing <- desc_path
 warnings_out$unindexed_top <- unindexed
 
+# (b5) .claude/worktrees 누적 + 등록/디스크 불일치 -----------------------------
+#   감지만 — 워크트리 삭제는 커밋 유무 판정이 필요하므로 자동화하지 않는다.
+#   ★삭제 안전성은 `git diff main` 으로 재면 안 된다(방향 미구분 → 뒤처짐을 고유내용으로 오독).
+#   여기서는 '정리 후보가 쌓였다'는 신호만 낸다.
+wt_dir    <- file.path(root, ".claude", "worktrees")
+wt_admin  <- file.path(root, ".git", "worktrees")
+wt_on_disk   <- if (dir.exists(wt_dir))   list.files(wt_dir,   no.. = TRUE) else character(0)
+wt_registered<- if (dir.exists(wt_admin)) list.files(wt_admin, no.. = TRUE) else character(0)
+# 껍데기 = 디스크에 있으나 git 미등록 / stale = 등록됐으나 gitdir 백포인터 결측
+wt_orphan <- setdiff(wt_on_disk, wt_registered)
+wt_stale  <- wt_registered[!file.exists(file.path(wt_admin, wt_registered, "gitdir"))]
+warnings_out$worktree_prunable <- as.list(sort(unique(c(wt_orphan, wt_stale))))
+warnings_out$worktree_summary  <- list(
+  on_disk = length(wt_on_disk), registered = length(wt_registered),
+  orphan_dirs = length(wt_orphan), stale_admin = length(wt_stale),
+  warn_threshold = WORKTREE_WARN_N,
+  over_threshold = length(wt_on_disk) > WORKTREE_WARN_N
+)
+
+# (b6) MAX_PATH 초과 + 워크트리 진입 시 초과 잠복 ------------------------------
+#   길이만 보므로 stat 없이 list.files 로 충분(98k 파일에서 file.info 회피가 비용의 핵심).
+maxpath <- list(scanned = FALSE, skipped_reason = "QVEST_HYGIENE_SKIP_PATHSCAN=1")
+if (!MAXPATH_SCAN_SKIP) {
+  t0  <- Sys.time()
+  rel <- list.files(root, recursive = TRUE, all.files = TRUE, no.. = TRUE)
+  # 워크트리 내부 사본 제외 — 이미 오버헤드가 붙은 경로에 또 얹는 것은 없는 시나리오
+  rel <- rel[!startsWith(rel, ".claude/worktrees/")]
+  full_len <- nchar(root) + 1L + nchar(rel)
+  # ★오버헤드를 상수로 박지 않는다 — 실제 워크트리 이름에서 도출(없으면 명명규칙 기본값)
+  wt_prefix <- nchar(".claude/worktrees/") + 1L
+  wt_over   <- if (length(wt_on_disk)) wt_prefix + max(nchar(wt_on_disk)) else wt_prefix + 22L
+  over_idx   <- which(full_len >= MAXPATH_LIMIT)
+  latent_idx <- which(full_len < MAXPATH_LIMIT & (full_len + wt_over) >= MAXPATH_LIMIT)
+  zone_of <- function(ix) {
+    if (!length(ix)) return(list())
+    z <- vapply(strsplit(rel[ix], "/", fixed = TRUE),
+                function(p) paste(utils::head(p, 3), collapse = "/"), "")
+    as.list(sort(table(z), decreasing = TRUE))
+  }
+  maxpath <- list(
+    scanned = TRUE, limit = MAXPATH_LIMIT,
+    worktree_overhead = wt_over, overhead_source = if (length(wt_on_disk)) "observed" else "default_naming",
+    files_scanned = length(rel),
+    n_over = length(over_idx), n_latent = length(latent_idx),
+    max_len = if (length(full_len)) max(full_len) else 0L,
+    over_zones = zone_of(over_idx), latent_zones = zone_of(latent_idx),
+    over_examples = as.list(utils::head(rel[over_idx][order(-full_len[over_idx])], 10)),
+    scan_seconds = round(as.numeric(difftime(Sys.time(), t0, units = "secs")), 1)
+  )
+}
+warnings_out$maxpath <- maxpath
+
 # =============================================================================
 # 리포트 + stderr WARN
 # =============================================================================
+n_wt_accum <- if (isTRUE(warnings_out$worktree_summary$over_threshold)) 1L else 0L
 n_warn <- length(warnings_out$root_unauthorized) +
           length(warnings_out$infra_underscore) +
           length(warnings_out$misplaced_outputs) +
-          sum(vapply(unindexed, length, 0L))
+          sum(vapply(unindexed, length, 0L)) +
+          length(warnings_out$worktree_prunable) + n_wt_accum +
+          (if (isTRUE(maxpath$scanned)) maxpath$n_over else 0L)
 n_del  <- length(deleted$logs) + length(deleted$scratch) + length(deleted$empty_dirs)
 
 report <- list(
