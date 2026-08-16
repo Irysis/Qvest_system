@@ -21,6 +21,10 @@ continuity_gate.py — 포기 원천차단 게이트의 판정기 (Continuity Fi
 
 배선: research_continuity_guard.sh(Stop hook)가 `--transcript`로 호출. 반환 = 훅 JSON.
 안전: 어떤 오류든 통과('{}'). 무한루프 = per-turn cap(기본 3) + ERR trap.
+
+마커 정체(2026-08-16): 종료 마커는 **내 세션이 이번 턴에** 쓴 것만 인정한다. mtime 단독
+  판정은 병렬 워크트리 세션(공유 `.cache`)의 라운드 종료로 내 턴이 열리는 누수였다 —
+  marker_fresh() 위 주석 참조.
 """
 import json
 import os
@@ -269,30 +273,140 @@ def _has_any(text, markers):
     return any(m and m in text for m in markers)
 
 
-def marker_fresh(root, user_ts):
-    """close_round()가 이번 턴에 쓴 마커의 신선도. user_ts 이후 mtime이면 fresh."""
-    p = os.path.join(root, ".cache", "last_round_closure.json")
+# ──────────────────────────────────────────────────────────────────────────
+# 마커 정체 검사 (2026-08-16 수리 — 교차-세션 누수)
+#
+# 결함: 구 marker_fresh 는 `.cache/last_round_closure.json` 의 **mtime 만** 봤다.
+#   그 파일은 프로젝트 루트 단일 파일이고(게다가 main 의 `.cache` 는 `/c/qm_cache`
+#   심볼릭 링크 = 머신 공유), settings.json 이 `DIR=${CLAUDE_PROJECT_DIR:-${QM_ROOT:-$PWD}}`
+#   로 훅을 세우는데 Bash/훅 환경에 CLAUDE_PROJECT_DIR 이 없어 **모든 워크트리 세션이
+#   main 루트의 같은 마커**를 읽고 쓴다. ⇒ 병렬 세션이 내 프롬프트 이후 아무 라운드나
+#   닫으면 mtime 이 내 턴 안으로 들어와 **남이 생산한 계속으로 내 턴이 통과**했다.
+#   docstring 은 "이번 턴에 쓴 마커" 라고 선언했고 round_id 를 읽기까지 했으나
+#   **검증에 쓰지 않았다**(존재/신선도 검사로 정체 검사를 대체 — 저장소 상습 기전).
+#   실측 재현(2026-08-16, 실제 훅 경로 · user_ts 존재): 같은 종결 텍스트가
+#   user_ts=07:25Z 면 PASS(marker_round_id=INFRA-WT-PURGE-20260816-P2, 이 세션이 만든
+#   라운드가 아님) · user_ts=07:35Z 면 BLOCK. 갈린 것은 서술이 아니라 **남의 mtime**.
+#
+# 수리 = 신선도 ∧ **정체**. 두 축을 함께 요구한다:
+#   ① close_round() 가 마커에 `session_id` 를 쓴다(발행자 신고).
+#   ② 게이트가 **자기 세션 id** 와 대조한다. transcript 파일명 = session_id 가 훅 경로의
+#      권위 출처다(실측: `<CLAUDE_CODE_SESSION_ID>.jsonl`). env 는 폴백.
+#   ③ 세션별 마커 파일을 함께 발행한다. ①②만으로는 **병렬 세션이 내 마커를 덮어쓰는**
+#      역방향 회귀가 생긴다(내가 정당히 close_round 했는데 B 가 덮어써서 내가 차단됨) —
+#      공유 파일은 마지막 1건만 담기 때문. 세션별 파일이 그 경로를 보존한다.
+# ★fail-closed: 정체를 확인할 수 없으면(세션 불명·필드 없음·불일치) 마커를 인정하지 않는다.
+#   인라인 경로(next_probe≥2 + 부활조건)는 그대로 살아 있으므로 정당한 종료는 계속 통과한다.
+# ──────────────────────────────────────────────────────────────────────────
+SESSION_MARKER_DIR = "round_closure_by_session"
+
+
+def _sanitize_sid(sid):
+    return re.sub(r"[^A-Za-z0-9._-]", "_", sid or "")[:120]
+
+
+def current_session_id(transcript_path=None):
+    """이 턴을 소유한 세션 식별자. transcript 파일명이 권위(훅 경로), env 는 폴백."""
+    if transcript_path:
+        b = os.path.basename(transcript_path)
+        if b.lower().endswith(".jsonl"):
+            b = b[:-6]
+        b = b.strip()
+        if b:
+            return b
+    for k in ("CLAUDE_CODE_SESSION_ID", "CLAUDE_SESSION_ID"):
+        v = (os.environ.get(k) or "").strip()
+        if v:
+            return v
+    return ""
+
+
+def _read_marker(p):
+    """(exists, mtime, round_id, marker_session_id). 읽기 실패 = 미인정 쪽으로."""
     if not os.path.exists(p):
-        return False, None
+        return False, None, None, None
     try:
         mt = os.path.getmtime(p)
     except Exception:
-        return False, None
-    ref = _ts_to_epoch(user_ts)
-    if ref is not None:
-        fresh = mt >= (ref - 2)  # user 프롬프트 이후 작성 = 이번 턴
-    else:
-        fresh = (time.time() - mt) <= 1800  # 폴백: 30분 창
-    rid = None
+        return False, None, None, None
+    rid = msid = None
     try:
         with open(p, encoding="utf-8") as f:
-            rid = json.load(f).get("round_id")
+            d = json.load(f)
+        rid = d.get("round_id")
+        msid = (d.get("session_id") or "").strip() or None
     except Exception:
         pass
-    return fresh, rid
+    return True, mt, rid, msid
 
 
-def check_contract(text, cases, root, user_ts, marker_override=None):
+def _marker_roots(root):
+    """마커를 찾을 루트 후보 (자기 루트 우선, 그 다음 공유 루트).
+
+    ★쓰는 쪽과 읽는 쪽의 루트가 갈려 있다 (실측 2026-08-16):
+      close_round() 는 Bash 툴에서 도는데 그 환경엔 CLAUDE_PROJECT_DIR 이 **없어**
+      QM_ROOT(=main)의 `.cache` 에 쓰고, Stop 훅에는 CLAUDE_PROJECT_DIR 이 **설정돼**
+      게이트는 **워크트리 루트**의 `.cache` 를 읽는다 ⇒ 워크트리 세션에선 정당하게 닫은
+      마커가 **원리적으로 안 보인다**(포장도로 사망).
+      근거: 워크트리 `.cache` 에 `continuity_blocks.jsonl`·`continuity_gate_counters` 는
+      게이트가 써서 존재하는데 closure 파일은 **0건**이고, 종료 기록 468건 전부가 main 의
+      `.cache`(→ `/c/qm_cache` 심볼릭 링크)에 있다.
+    ⇒ 공유 루트까지 훑는다. **정체 검사가 있으므로 훑어도 안전하다** — 남의 마커는
+      foreign_session 으로 떨어진다. 정체 없이 공유하면 누수지만, 정체가 있으면
+      공유 디렉토리는 그냥 공용 보관소다.
+    """
+    out = []
+    for c in (root, os.environ.get("QM_ROOT", ""), os.environ.get("CLAUDE_PROJECT_DIR", "")):
+        c = (c or "").strip()
+        if not c:
+            continue
+        n = os.path.abspath(c).replace("\\", "/")
+        if n not in out and os.path.isdir(c):
+            out.append(n)
+    return out or [root]
+
+
+def marker_fresh(root, user_ts, session_id=None):
+    """close_round() 가 **이 세션이** **이번 턴에** 쓴 마커인가.
+
+    반환 (accepted, round_id, why). why ∈ {own, unknown_session, no_marker,
+    unattributed, foreign_session, stale} — 차단 사유를 진단 가능하게 남긴다.
+    """
+    sid = (session_id or "").strip()
+    if not sid:
+        # 세션을 특정할 수 없으면 어떤 마커도 '내 것'이라 주장할 수 없다.
+        return False, None, "unknown_session"
+    ref = _ts_to_epoch(user_ts)
+
+    def _is_fresh(mt):
+        if ref is not None:
+            return mt >= (ref - 2)          # user 프롬프트 이후 작성 = 이번 턴
+        return (time.time() - mt) <= 1800   # 폴백: 30분 창
+
+    cands = []
+    for rt in _marker_roots(root):
+        cands.append(os.path.join(rt, ".cache", SESSION_MARKER_DIR, _sanitize_sid(sid) + ".json"))
+        cands.append(os.path.join(rt, ".cache", "last_round_closure.json"))
+    why, rid_seen = "no_marker", None
+    rank = {"no_marker": 0, "unattributed": 1, "foreign_session": 2, "stale": 3}
+    for p in cands:
+        exists, mt, rid, msid = _read_marker(p)
+        if not exists:
+            continue
+        if msid is None:
+            cause = "unattributed"      # 구판 마커(발행자 미신고) — 귀속 불가
+        elif msid != sid:
+            cause = "foreign_session"   # 병렬 세션의 라운드 종료 — 이 누수의 본체
+        elif not _is_fresh(mt):
+            cause = "stale"             # 내 마커지만 이번 턴 것이 아님
+        else:
+            return True, rid, "own"
+        if rank[cause] >= rank[why]:
+            why, rid_seen = cause, rid
+    return False, rid_seen, why
+
+
+def check_contract(text, cases, root, user_ts, marker_override=None, session_id=None):
     probes = _count_next_probes(text)
     routing_ok = _has_any(text, cases.get("routing_markers", []))
     live_ok = _has_any(text, cases.get("live_trigger_markers", []))
@@ -300,9 +414,9 @@ def check_contract(text, cases, root, user_ts, marker_override=None):
                       ["negative", "config-scoped", "screen-tier", "screen_tier",
                        "미달", "기각", "FAIL", "졸업 불가", "graduation=FALSE"])
     if marker_override is None:
-        mk_fresh, mk_rid = marker_fresh(root, user_ts)
+        mk_fresh, mk_rid, mk_why = marker_fresh(root, user_ts, session_id)
     else:
-        mk_fresh, mk_rid = bool(marker_override), "override"
+        mk_fresh, mk_rid, mk_why = bool(marker_override), "override", "override"
     # ★정밀도 원칙: bald 포기 vs 정당 종료를 가르는 최고신호 = next_probe≥2 (+negative면 live_trigger).
     #   소비면 라우팅(연속성 4호)은 하드 차단 조건이 아니라 soft 권고 — 라우팅 어휘 편차로 정당한
     #   종료를 오차단(false positive)하지 않기 위함. 4호의 하드 강제는 close_round()의 인자 계약이 담당.
@@ -315,12 +429,22 @@ def check_contract(text, cases, root, user_ts, marker_override=None):
             missing.append("next_probe ≥2 (기전 진단에서 다음 가설 2개 이상 도출 — 연속성 3호)")
         if is_negative and not live_ok:
             missing.append("부활 조건(live_trigger) — negative는 영구 판결 아님, 경로-scoped 재도전 신호 필수 (INV-7)")
+        if mk_why == "foreign_session":
+            recommend.append(
+                f"마커가 있으나 **다른 세션의 라운드**입니다 (round_id={mk_rid}) — 병렬 세션의 "
+                "close_round()는 내 턴의 계약을 충족시키지 못합니다. 이 턴의 계속은 이 턴이 생산해야 합니다.")
+        elif mk_why == "unattributed":
+            recommend.append(
+                f"마커에 session_id가 없습니다 (round_id={mk_rid}) — 발행자를 귀속할 수 없어 인정하지 않습니다. "
+                "close_round()를 다시 호출하면 정체가 기록됩니다.")
     if not routing_ok:
         recommend.append("소비면 라우팅/frontier 등재 권고 (팩터랭킹/유니버스/오버레이/위험/monitoring/선별라벨/타모드 또는 FQ 큐 — 연속성 4호. close_round()의 consumer_surfaces 인자로 강제됨)")
     return {
         "satisfied": satisfied,
         "marker_fresh": mk_fresh,
         "marker_round_id": mk_rid,
+        "marker_why": mk_why,          # own/foreign_session/unattributed/stale/no_marker/unknown_session
+        "session_id": session_id or "",
         "probes": probes,
         "routing_ok": routing_ok,
         "live_ok": live_ok,
@@ -388,7 +512,7 @@ def _reframe_hint(cases, categories):
 
 
 def judge_text(text, tool_inputs, cases, root, user_ts=None, marker_override=None,
-               use_llm=False, verdict_artifact_override=None):
+               use_llm=False, verdict_artifact_override=None, session_id=None):
     # tool_inputs: 의도적 판정 제외(미소비 유지) — tool 호출 인자는 코드/경로/과거-판정 인용
     # 노이즈라 종결 어휘 오탐만 늘림. 판정 대상 = assistant 서술 텍스트만.
     diag = {"research_context": False, "detected": False}
@@ -423,7 +547,7 @@ def judge_text(text, tool_inputs, cases, root, user_ts=None, marker_override=Non
     diag.update({"detected": detected, "closure": cl, "llm": llm})
     if not detected:
         return {"block": False, "diag": diag}
-    ct = check_contract(text, cases, root, user_ts, marker_override)
+    ct = check_contract(text, cases, root, user_ts, marker_override, session_id)
     diag["contract"] = ct
     if ct["satisfied"]:
         return {"block": False, "diag": diag}
@@ -571,8 +695,10 @@ def run_transcript(tp, cap=3):
     root = project_root()
     cases = load_cases(root)
     turn = extract_current_turn(tp)
+    # 세션 정체는 transcript 경로에서 온다 — 훅이 넘긴 그 파일의 소유자가 이 턴의 소유자다.
     res = judge_text(turn["text"], turn["tool_inputs"], cases, root,
-                     user_ts=turn["user_ts"], use_llm=True)
+                     user_ts=turn["user_ts"], use_llm=True,
+                     session_id=current_session_id(tp))
     if not res["block"]:
         _count_pass(root, res)  # C4: FP율 분모
         return {}
@@ -771,11 +897,23 @@ def _main():
         rest = args[1:]
         marker = "--marker-fresh" in rest
         no_va = "--no-verdict-artifact" in rest  # C1 판별 강제(운영-턴 재현 테스트용)
-        pos = [a for a in rest if a not in ("--marker-fresh", "--no-verdict-artifact")]
+        sid = ""
+        pos = []
+        i = 0
+        while i < len(rest):
+            a = rest[i]
+            if a == "--session" and i + 1 < len(rest):
+                sid = rest[i + 1]; i += 2; continue
+            if a not in ("--marker-fresh", "--no-verdict-artifact"):
+                pos.append(a)
+            i += 1
         text = pos[0] if pos else sys.stdin.read()
         cases = load_cases(root)
+        # ⚠ --text 에는 transcript 가 없다 → --session 미지정이면 세션 불명 = 마커 미인정
+        #   (fail-closed). 훅 경로는 transcript 파일명에서 정체를 얻으므로 영향 없음.
         res = judge_text(text, "", cases, root, marker_override=(True if marker else None),
-                         verdict_artifact_override=(False if no_va else None))
+                         verdict_artifact_override=(False if no_va else None),
+                         session_id=(sid or current_session_id()))
         print(json.dumps({"block": res["block"], "reason": res.get("reason"),
                           "diag": res["diag"]}, ensure_ascii=False, indent=2))
         return

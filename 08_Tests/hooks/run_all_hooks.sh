@@ -799,6 +799,30 @@ SUITES=(
   #   ★미측정은 **NA**(0 위장 금지) · 표는 '자본 후보 아님' 경고를 함께 담는다(수치만 옮겨가는 것 방지).
   #   ⚠이 레버는 약한 재료를 덜 나쁘게 할 뿐 — 오버레이 후 최고 PORT_t +0.538.
   "08_Tests/hooks/test_overlay_precheck.R"
+  # 2026-08-16 추가: 연속성 마커의 **정체 검사** 차단 실효 (교차-세션 누수).
+  #   원 결함 = `marker_fresh` 가 `.cache/last_round_closure.json` 의 **mtime 만** 봤다.
+  #   그 파일은 루트 단일 파일이고(main 의 `.cache` 는 `/c/qm_cache` 심볼릭 링크 = 머신 공유)
+  #   훅이 `DIR=${CLAUDE_PROJECT_DIR:-${QM_ROOT:-$PWD}}` 로 서는데 CLAUDE_PROJECT_DIR 이
+  #   Bash/훅 환경에 없어 **모든 워크트리 세션이 main 의 같은 마커**를 읽고 쓴다 ⇒ 병렬
+  #   세션이 내 프롬프트 이후 아무 라운드나 닫으면 **남이 생산한 계속으로 내 턴이 통과**.
+  #   실측(실훅 경로·user_ts 존재): 같은 종결 텍스트가 user_ts=07:25Z→PASS
+  #   (marker_round_id=INFRA-WT-PURGE-20260816-P2, 이 세션 것 아님) / 07:35Z→BLOCK.
+  #   갈린 것은 서술이 아니라 **남의 mtime** — 방화벽의 핵심 속성("계속을 *생산*해야 한다")이
+  #   병렬 세션 수만큼 무력화된다.
+  #   ★기존 continuity 배터리는 이 결함을 **구조적으로 못 본다**: 판정 root 를 빈 임시
+  #     디렉토리로 격리하고 포장도로는 `marker_override=True` 로 주입해 marker_fresh 의
+  #     본문이 한 번도 실행되지 않았다(무커버 축). 그래서 별도 suite 다.
+  #   ★수리가 정체 검사 **단독**이면 역방향 회귀가 난다 — 병렬 세션이 공유 파일을 덮어써
+  #     내가 정당히 닫은 턴이 차단된다. 그래서 세션별 마커를 함께 발행하고 F 축이 그걸 잰다.
+  #   ★I 축(돌연변이) = 구 mtime-only 복원 시 B 가 PASS 로 뒤집히는지. B 의 BLOCK 이
+  #     정체 검사에서 온 것임을 매 실행 실증(오탐 제거와 검사 사망은 겉보기가 같다).
+  #   ★L 축(루트 갈림) = 수리 중 나온 **반대 방향 동반 결함**. close_round 는 Bash 툴
+  #     (CLAUDE_PROJECT_DIR 부재)에서 QM_ROOT=main 에 쓰는데 훅은 CLAUDE_PROJECT_DIR 이
+  #     설정돼 **워크트리 루트**에서 읽는다 ⇒ 워크트리 세션은 제 마커를 원리적으로 못 찾는다
+  #     (포장도로 사망 = 상시 오차단). 실측: 워크트리 .cache 에 게이트 산출물은 있는데
+  #     closure 파일 0건, 종료 기록 468건 전부 main. L1 이 복구를, L2 가 "공유 루트를 훑어도
+  #     남의 마커는 여전히 차단" 을 확인한다(루트 확장이 누수를 되열지 않는지).
+  "08_Tests/hooks/test_continuity_marker_identity.py"
 )
 
 # (2026-08-02) .py 분기 추가 — 종전엔 확장자 무관 `bash` 로 던져 파이썬 suite 가
