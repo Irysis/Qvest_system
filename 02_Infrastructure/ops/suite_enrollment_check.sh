@@ -79,7 +79,10 @@ else
         printf '%s\n' "$ENROLLED" | grep -qxF "$(basename "$rp")" || continue
         AGG_DIRS="$AGG_DIRS$(dirname "$rp")\n"
       done < <(find "$TESTS_DIR" -type f \( -name 'run_*.R' -o -name 'run_*.sh' \) -not -path '*/_archive*/*' 2>/dev/null)
-      AGG_DIRS=$(printf '%b' "$AGG_DIRS" | grep -c . 2>/dev/null || echo 0)
+      # ★`grep -c .` 은 0건이어도 "0" 을 **출력하고** exit 1 이다. `|| echo 0` 를 붙이면
+      #   "0\n0" 이 되어 산술 비교가 깨지고 검사가 **무조건 FAIL** 로 굳는다(2026-08-16
+      #   실측 — 양성 대조 T0 가 아니었으면 "FAIL 기대" 축들이 공허하게 통과했다).
+      AGG_DIRS=$(printf '%b' "$AGG_DIRS" | grep -c . || true)
 
       # ── 커버리지 판정 ────────────────────────────────────────────────────
       UNCOVERED=""; n_files=0
@@ -98,7 +101,7 @@ else
         UNCOVERED="$UNCOVERED  ${_rel}\n"
       done < <(find "$TESTS_DIR" -type f \( -name 'test_*.R' -o -name 'test_*.sh' \) -not -path '*/_archive*/*' 2>/dev/null | sort)
 
-      n_unc=$(printf '%b' "$UNCOVERED" | grep -c . 2>/dev/null || echo 0)
+      n_unc=$(printf '%b' "$UNCOVERED" | grep -c . || true)
       if [ "$n_files" -eq 0 ]; then
         bad "E2 UNKNOWN — test_* 파일 0건 발견 (스캔 실패로 위장 금지)"
       elif [ "$n_unc" -eq 0 ]; then

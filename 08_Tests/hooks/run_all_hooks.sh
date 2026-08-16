@@ -243,6 +243,12 @@ SUITES=(
   "08_Tests/data/test_frontier_coherence.R"
   # 2026-07-26 추가: 부팅 자기-정합 검사(boot_currency_check) 위반 주입 — 부팅 최신화 자동 배선의 가드
   "08_Tests/hooks/test_boot_currency.sh"
+  # 2026-08-16 추가: 편입 드리프트 검사(suite_enrollment_check) 위반 주입.
+  #   ★이 SUITES 배열이 하드코딩 열거라 새 테스트가 자동 편입되지 않는다 — 실측에서
+  #   test_*.{R,sh} 121건 중 40건이 배터리에서 **한 번도 실행되지 않고** 있었고, 그중
+  #   contract_regression 15건은 essence_score(등급 권위)·hurdle_gate·canonical_screen_bt
+  #   같은 알파 판정 계약을 지키는 테스트였다. 이 축이 그 드리프트를 매 배터리에 노출한다.
+  "08_Tests/hooks/test_suite_enrollment.sh"
   # 2026-07-26 추가: cache_freshness worse-of lag 위반 주입 (CFA-02 수리 가드).
   #   forward-dated / 파일명-추정 캐시는 생성기가 죽어 파일이 동결돼도 data_lag 가 낮아
   #   FRESH 로 보고됐다 — 동결을 보는 유일 축(mtime)이 폐기되던 구조.

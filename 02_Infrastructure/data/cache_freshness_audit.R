@@ -589,9 +589,20 @@ cache_freshness_audit <- function(telegram_alert = TRUE,
       # note 동반 (2026-07-26): lag/max 만으로는 사유가 안 보이는 항목이 있다 —
       #   value_sanity(VALUE_FAIL)·ic_month_frontier 는 lag 축이 없어 "lag=n/a, max=n/a"
       #   로만 나가 무슨 일인지 알 수 없었다(조용한 실패). note 가 있으면 붙인다.
+      #────────────────────────────────────────────────────────────────────────
+      # (2026-08-16 CFA-05) Markdown 이스케이프 — 이 알림은 07-03~08-15 최소 20건이
+      #   전부 HTTP 400 "can't parse entities" 로 거부됐다. 원인은 본문에 보간되는
+      #   **파일 경로의 언더스코어**(stage_artifacts / method_frontier /
+      #   firm_level_scaffold / nps_headcount_raw / BM_Ret …)가 legacy Markdown 의
+      #   이탤릭 시작으로 읽혀, 아래 orphan_note 의 의도된 _..._ 짝과 어긋나는 것.
+      #   실측 재구성: 언더스코어 17개(홀수) → 마지막 _ 가 byte offset 584 에서 미종결
+      #   = API 가 지목한 오프셋과 정확히 일치.
+      #   ⇒ 정적 서식(*bold*, _italic_)은 유지하고 **동적 값만** 이스케이프한다.
+      #────────────────────────────────────────────────────────────────────────
+      .md_esc <- function(x) gsub("([_*\\[`])", "\\\\\\1", as.character(x))
       .fmt_alert <- function(r) sprintf("- %s (lag=%s, max=%s)%s",
-                                        r$path, r$lag_used %||% "n/a", r$max_lag_days %||% "n/a",
-                                        if (!is.null(r$note)) paste0("\n  ", r$note) else "")
+                                        .md_esc(r$path), r$lag_used %||% "n/a", r$max_lag_days %||% "n/a",
+                                        if (!is.null(r$note)) paste0("\n  ", .md_esc(r$note)) else "")
       crit_list <- sapply(Filter(function(r) r$severity == "CRITICAL", alert_items), .fmt_alert)
       warn_list <- sapply(Filter(function(r) r$severity == "WARN", alert_items), .fmt_alert)
       orphan_note <- if (n_orphan > 0)
@@ -603,11 +614,29 @@ cache_freshness_audit <- function(telegram_alert = TRUE,
                       if (length(crit_list) > 0) paste(head(crit_list, 10), collapse = "\n") else "(none)",
                       if (length(warn_list) > 0) paste(head(warn_list, 10), collapse = "\n") else "(none)",
                       reminder_tag, orphan_note)
-      tg_send(msg, parse_mode = "Markdown")
-      write_json(list(signature = alert_sig,
-                      last_sent_at = format(today_ts, "%Y-%m-%dT%H:%M:%S%z"),
-                      reason = send_reason),
-                 alert_state_path, auto_unbox = TRUE)
+      #────────────────────────────────────────────────────────────────────────
+      # (2026-08-16 CFA-06) 발송 결과를 **검사한다**. 구판은 tg_send 반환을 버리고
+      #   무조건 alert_state 를 스탬프했다 — HTTP 400 은 R 에러가 아니므로 아래
+      #   tryCatch(error=) 의 CFA-04 기록도 도달하지 못했다(실측: 400 거부된 런의
+      #   latest JSON 에 alert_delivery 필드 자체가 부재). 결과는 "경보 채널이 죽었는데
+      #   last_sent_at 은 배달된 것처럼 갱신" — 감시망 전체가 정상을 보고했다.
+      #   ⇒ ①성패를 alert_delivery 에 남기고 ②실패면 서명 스탬프를 **보류**해서
+      #     다음 런이 같은 상태를 '변화 없음'으로 삼키지 않게 한다.
+      #────────────────────────────────────────────────────────────────────────
+      .send <- tg_send(msg, parse_mode = "Markdown")
+      .ok <- isTRUE(.send$ok)
+      audit$alert_delivery <- if (.ok) "SENT" else
+        sprintf("FAILED: status=%s %s", .send$status %||% "NA", substr(.send$error %||% "unknown", 1, 300))
+      write_json(audit, latest_path, pretty = TRUE, auto_unbox = TRUE, na = "null")
+      if (.ok) {
+        write_json(list(signature = alert_sig,
+                        last_sent_at = format(today_ts, "%Y-%m-%dT%H:%M:%S%z"),
+                        reason = send_reason),
+                   alert_state_path, auto_unbox = TRUE)
+      } else {
+        cat(sprintf("[cache_freshness][★] 경보 발송 실패 — alert_state 스탬프 보류(다음 런 재시도 대상): %s\n",
+                    audit$alert_delivery))
+      }
     }, error = function(e) {
       #────────────────────────────────────────────────────────────────────────
       # (2026-07-26 CFA-04 수리, probe② 감사 확정) 발송 실패를 cat 으로만 흘리면,
