@@ -40,7 +40,11 @@ LOG_RETENTION_DAYS     <- 90
 SCRATCH_RETENTION_DAYS <- 30
 # (b5/b6) 2026-08-16 신설 — 임계는 상수로 선언, 리포트에 함께 기록해 드리프트를 보이게 한다
 WORKTREE_WARN_N   <- 5    # 디스크상 워크트리가 이 수를 넘으면 누적 경고 (실사고 시 43개)
-MAXPATH_LIMIT     <- 260  # Windows MAX_PATH. LongPathsEnabled=1 이면 무력 — 리포트에 상태 병기
+# Windows MAX_PATH. LongPathsEnabled=1 이면 무력 — 리포트에 한계값을 항상 기록한다.
+# 한계값에 env seam 을 둔 이유: 260자 파일은 픽스처로 *생성 자체가 불가*(만드는 순간 같은 벽에
+# 막힌다)라, 낮은 한계를 주입해야만 실제 코드 경로로 위반 주입 테스트가 가능하다.
+MAXPATH_LIMIT     <- suppressWarnings(as.integer(Sys.getenv("QVEST_HYGIENE_MAXPATH_LIMIT", "260")))
+if (is.na(MAXPATH_LIMIT) || MAXPATH_LIMIT < 1) MAXPATH_LIMIT <- 260L
 # ★잠복 계수는 '워크트리 오버헤드'에 극도로 민감하다 — 2026-08-16 실측: 오버헤드 40 이면 93건,
 #   49 면 417건. 관측 최대명으로 도출하면 워크트리가 뜨고 질 때마다 지표가 출렁여 추세를 못 읽는다.
 #   ⇒ 명명규칙 설계 최대값을 상수로 고정하고, 실제 이름이 이를 넘으면 '상수 낙후'로 별도 경고한다
