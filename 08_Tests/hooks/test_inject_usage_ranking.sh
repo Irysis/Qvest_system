@@ -53,6 +53,7 @@ echo "=== test_inject_usage_ranking ==="
 [ -f "$USAGE" ] && ok "usage 산출물 생성" || bad "usage 산출물 생성" "$USAGE 부재"
 
 # 주입 후보군(필터 통과분) 중 실사용 1위/최하위 id 를 계산 — 하드코딩 금지
+export ROOT USAGE
 read -r TOP_ID LOW_ID < <("$PY" -c "
 import json,io,os
 root=os.environ['ROOT']
@@ -63,8 +64,7 @@ p=[e for e in d['entries'] if e.get('status')=='distilled'
    and (e.get('statement_refined') or '').strip()]
 p.sort(key=lambda e:(int(u.get(e['dist_id'],0)), e.get('refined_at') or ''), reverse=True)
 print(p[0]['dist_id'], p[-1]['dist_id'])
-" ROOT="$ROOT")
-export ROOT
+")
 [ -n "${TOP_ID:-}" ] && ok "후보군 1위/최하위 산출 ($TOP_ID / $LOW_ID)" || bad "후보군 산출" "빈 값"
 
 # ── A축 (기능): 현행 usage 로 1위가 주입되는가 ────────────────────────────────
@@ -76,13 +76,14 @@ GOT=$(fire)
 #   ★안 바뀌면 훅이 usage 를 안 읽는다는 뜻 = 배선 사망. 이 축이 본 검사의 본체다.
 BAK="$USAGE.bak_test_$$"
 cp -f "$USAGE" "$BAK"
+export LOW_ID
 "$PY" -c "
-import json,io,os,sys
+import json,io,os
 p=os.environ['USAGE']; low=os.environ['LOW_ID']
 d=json.load(io.open(p,encoding='utf-8'))
 d['usage']={low: 999999}          # 최하위를 압도적 1위로 조작
 io.open(p,'w',encoding='utf-8').write(json.dumps(d,ensure_ascii=False))
-" USAGE="$USAGE" LOW_ID="$LOW_ID"
+"
 GOT2=$(fire)
 [ "$GOT2" = "$LOW_ID" ] && ok "A2 usage 조작 시 주입이 따라 바뀜(위반 주입)" \
   || bad "A2 usage 조작 시 주입이 따라 바뀜" "기대 $LOW_ID 실제 $GOT2 — 훅이 usage 를 안 읽음"

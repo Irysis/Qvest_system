@@ -305,6 +305,11 @@ if (!nrow(ret) || !nrow(bench)) {
 }
 
 cat(sprintf("\n[test_liquidity_ruler_restore] PASS %d / FAIL %d / SKIP %d\n", PASS, FAIL, SKIP))
+# 요약 JSON 계약 — run_all_hooks.sh 는 **마지막 줄**을 JSON 으로 파싱한다. 이 줄이 없으면
+# 27/0 로 전부 통과해도 배터리가 "UNREPORTED"로 실패 계상한다(2026-08-16 실측: FINAL 8 fail
+# 중 2건이 이 형태 = 초록 스위트의 영구 빨간 줄). 사람용 줄은 위에 남기고 JSON 을 끝에 둔다.
+cat(sprintf('{"test":"liquidity_ruler_restore","pass":%d,"fail":%d,"skipped":%d,"total":%d}\n',
+            PASS, FAIL, SKIP, PASS + FAIL))
 if (FAIL > 0L) {
   if (!interactive() && length(grep("^--file=", commandArgs(FALSE)))) quit(status = 1L)
   stop(sprintf("test_liquidity_ruler_restore: %d FAIL", FAIL))
