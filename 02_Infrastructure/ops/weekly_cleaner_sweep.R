@@ -11,6 +11,10 @@
 #       2a. .cache 루트 '_' 접두 스크래치 7일+ 삭제 (일간 30일 → 주간 7일. keep-list 보호 유지)
 #       2b. OS temp qm_/qvest_ 접두 *.log 30일+ 삭제 (일간 90일 → 주간 30일)
 #       (빈 디렉토리는 [1] hygiene audit (a3)가 이미 처리 — 재구현 안 함)
+#   [2c] 소비 완료 워크트리 prune (2026-08-16 도훈 지시. 실사고: 43개·5.3GB 3주 누적)
+#       조건 = 병합완료(ahead 0) ∧ churn 제외 후 main 에 없는 미커밋 내용 0 ∧ 무활동 24h+.
+#       브랜치는 보존된다(`git worktree remove` 는 ref 를 안 지운다 — 잃는 건 미커밋 편집뿐).
+#       파일 0 껍데기는 무조건 삭제. 보존분도 **사유와 함께** cleaner_pending 에 기록.
 #   [3] 주간 리서치 인벤토리 수집:
 #       stage_artifacts 지난 7일 신규 엔트리 / hypothesis_index 델타 / 신규 L-code /
 #       git log --since 요약
@@ -642,7 +646,9 @@ run_step("continuity_review", {
 sweep_deleted_n <- length(weekly_deleted$cache_scratch) + length(weekly_deleted$temp_logs) +
   # (2026-07-26 WCS-04) NA(=hygiene 감사 산출 미판독)를 0 으로 흡수하면 "삭제 0건" 과
   #   구분 불가. 합계에는 0 을 쓰되 미관측 사실은 아래 pending 에 별도 필드로 남긴다.
-  (if (is.na(hygiene_deleted_n)) 0L else hygiene_deleted_n)
+  (if (is.na(hygiene_deleted_n)) 0L else hygiene_deleted_n) +
+  # (2026-08-16) [2c] 워크트리 prune — 합계에 포함하지 않으면 5GB 회수가 "삭제 0건" 으로 보인다
+  length(worktree_prune$pruned)
 # (2026-07-26 WCS-01 수리) DRY 에서도 canonical cleaner_pending.json 을 덮어써
 #   /cleaner 소비 상태·mtime 을 건드렸고, sweep_deleted_n 이 '실삭제'인지 '삭제 예정'인지
 #   구분되지 않았다. DRY 는 별 파일로 분기하고 집계 키를 이름으로 나눈다.
@@ -687,6 +693,15 @@ run_step("write_pending", {
     # WCS-01: DRY 는 삭제하지 않았으므로 실삭제 수를 null 로 두고 '예정' 을 별 키로 분리
     sweep_deleted_n   = if (DRY) NA_integer_ else sweep_deleted_n,
     would_delete_n    = if (DRY) sweep_deleted_n else NA_integer_,
+    # (2026-08-16) [2c] 워크트리 prune — 삭제분뿐 아니라 **보존 사유까지** 싣는다.
+    #   조용한 누락 금지: 왜 안 지웠는지가 없으면 "대상 0" 과 "판정 실패" 가 구분되지 않는다.
+    worktree_prune    = list(
+      pruned      = as.list(worktree_prune$pruned),
+      kept        = worktree_prune$kept,
+      failed      = as.list(worktree_prune$failed),
+      idle_hours  = WT_PRUNE_IDLE_HOURS,
+      churn_paths = as.list(WT_CHURN)
+    ),
     sweep_detail  = list(
       hygiene_audit_deleted_n     = hygiene_deleted_n,
       # (WCS-09) 일간 감사 경고를 /cleaner 증류가 소비할 수 있게 운반
