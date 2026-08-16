@@ -240,17 +240,19 @@ run_step("weekly_worktree_prune", {
       } else worktree_prune$failed <- c(worktree_prune$failed, nm)
       next
     }
-    if (!(nm %in% registered)) { keep(nm, "미등록이나 파일 존재 — 수동 확인 필요"); next }
+    if (!(nm %in% registered)) {
+      worktree_prune$kept[[nm]] <- "미등록이나 파일 존재 — 수동 확인 필요"; next }
 
     # c4. 무활동 — 변경파일 목록의 mtime 만 본다(전트리 stat 은 부팅 5분+ 회귀 전례)
     st <- gitq(p, c("status", "--porcelain"))
-    if (is.null(st)) { keep(nm, "git status 실패"); next }
+    if (is.null(st)) { worktree_prune$kept[[nm]] <- "git status 실패"; next }
     changed <- if (length(st)) trimws(substring(st, 4)) else character(0)
     mt <- c(file.info(p)$mtime,
             if (length(changed)) file.info(file.path(p, changed))$mtime else NULL)
     idle_h <- suppressWarnings(as.numeric(difftime(now, max(mt, na.rm = TRUE), units = "hours")))
     if (is.na(idle_h) || idle_h < WT_PRUNE_IDLE_HOURS) {
-      keep(nm, sprintf("활동 중 (무활동 %.1fh < %dh)", idle_h, WT_PRUNE_IDLE_HOURS)); next
+      worktree_prune$kept[[nm]] <-
+        sprintf("활동 중 (무활동 %.1fh < %dh)", idle_h, WT_PRUNE_IDLE_HOURS); next
     }
 
     # c2. ahead 커밋
@@ -790,4 +792,4 @@ cat(sprintf("[cleaner] done — steps: %s%s\n",
             if (length(fails)) sprintf(" (FAIL %d단계 — fail-soft 계속됨)", length(fails)) else ""))
 
 # 스윕 lock 해제 (정상 종료 경로 — 오류 종료는 상단 finalizer가 처리)
-try(unlink(sweep_lock_path), silent = TRUE)
+try(unlink(sweep_
