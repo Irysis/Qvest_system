@@ -45,6 +45,10 @@ build <- function() {
   dir.create(file.path(fx, ".cache"), recursive = TRUE, showWarnings = FALSE)
   dir.create(file.path(fx, ".claude", "worktrees"), recursive = TRUE, showWarnings = FALSE)
   writeLines("base", file.path(fx, "base.txt"))
+  # churn 파일은 실제 저장소에서 **추적 대상**이다(append-only 로그). untracked 로 두면
+  # git status 가 상위 디렉토리로 접어 보고해 churn 경로 매칭이 성립하지 않는다 — 현실과 맞춘다.
+  dir.create(file.path(fx, "qepm", "observability"), recursive = TRUE, showWarnings = FALSE)
+  writeLines("{}", file.path(fx, "qepm/observability/events.jsonl"))
   g(fx, "init", "-q", ".")
   g(fx, "config", "user.email", "t@t"); g(fx, "config", "user.name", "t")
   g(fx, "config", "core.longpaths", "true")
@@ -65,8 +69,8 @@ build <- function() {
   writeLines("only here", file.path(wp("wt-unique"), "unique_note.md"))
   age_it(wp("wt-unique"), 48)
   wt("wt-churn",    "b-churn")
-  dir.create(file.path(wp("wt-churn"), "qepm", "observability"), recursive = TRUE, showWarnings = FALSE)
-  writeLines("{}", file.path(wp("wt-churn"), "qepm/observability/events.jsonl"))
+  writeLines(c("{}", "{\"appended\":true}"),          # 추적 파일을 수정 → ' M' 으로 보고됨
+             file.path(wp("wt-churn"), "qepm/observability/events.jsonl"))
   age_it(wp("wt-churn"), 48)
   dir.create(wp("shell-empty"), recursive = TRUE, showWarnings = FALSE)   # 미등록 + 파일 0
   fx

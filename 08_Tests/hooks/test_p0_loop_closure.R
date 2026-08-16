@@ -195,4 +195,7 @@ if (file.exists(real_idx)) {
 unlink(troot, recursive = TRUE, force = TRUE)
 
 cat(sprintf("\n=== test_p0_loop_closure: %d PASS / %d FAIL ===\n", n_pass, n_fail))
+# 배터리(run_all_hooks.sh) 계약: 마지막 stdout 줄 = 요약 JSON
+cat(sprintf('{"test":"p0_loop_closure","pass":%d,"fail":%d,"total":%d}\n',
+            n_pass, n_fail, n_pass + n_fail))
 if (n_fail > 0) quit(save = "no", status = 1L)
