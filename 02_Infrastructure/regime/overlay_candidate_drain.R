@@ -379,6 +379,108 @@ drain_update_queue <- function(queue_path, candidate_id, result_path, measured_a
   invisible(TRUE)
 }
 
+# ---------------------------------------------------------------------------
+# 판정 계층 dv_v1 (2026-08-16 P0#2 — L1 자동 스폰 설계, 도훈 승인)
+#   왜: 07-10 드레인 16건의 SURVIVOR/INFERIOR 판정이 결과 JSON에 없고 세션 수기
+#   (L-OVL-20260710_153559)에만 있었다 — 재현 불가 판정. 규약을 코드로 이관:
+#   ① best_t = paired 증분 NW-t(lag-3, scenario − bare)의 최대
+#   ② null_max_t = sqrt(2·ln(n_selection)) — n개 비교의 우연 최대 t 근사
+#      (07-10 세션 판정 "null max-t(N16~2.35)" 규약의 일반화. n_selection 기본 =
+#       이 후보의 유한 비교 수, 배치 재판정 시 배치 전체 비교 수를 전달 — 보수적)
+#   ③ verdict: best_t ≤ 0 → INFERIOR (bare 대비 개선 없음 — 우연 문턱 불요)
+#              best_t ≥ null_max_t ∧ lag1 게이트 통과 → SURVIVOR
+#              그 외 → INDETERMINATE
+#   ④ lag1 게이트(SURVIVOR 전제): best 시나리오의 lag1 짝 paired t > 0 — 동월 누출
+#      방어(note의 "lag1 스트레스 의무"를 판정에 바인딩). lag1 짝 부재 시 SURVIVOR
+#      불가(INDETERMINATE cap) — 억지 승격 금지.
+#   tier=screen_diagnostic 불변 — 이 판정은 자본게이트가 아니다 (HARD 3종/governor 별도).
+# ---------------------------------------------------------------------------
+drain_verdict <- function(paired, n_selection = NULL) {
+  base <- list(rule_version = "dv_v1",
+               basis = "screen_diagnostic — 자본게이트 판정 아님 (HARD 3종/governor 불변)",
+               verdict = "INDETERMINATE", best_scenario = NA_character_,
+               best_paired_nw_t_lag3 = NA_real_, lag1_scenario = NA_character_,
+               lag1_paired_t = NA_real_, n_selection = NA_integer_, null_max_t = NA_real_,
+               reason = "")
+  P <- tryCatch(as.data.table(paired), error = function(e) NULL)
+  if (is.null(P) || !nrow(P) || !all(c("scenario", "paired_nw_t_lag3") %in% names(P))) {
+    base$reason <- "paired_nw 비어있음/스키마 불일치 — 판정 불가"
+    return(base)
+  }
+  P[, paired_nw_t_lag3 := suppressWarnings(as.numeric(paired_nw_t_lag3))]
+  P <- P[is.finite(paired_nw_t_lag3)]
+  if (!nrow(P)) { base$reason <- "유한한 paired t 없음 — 판정 불가"; return(base) }
+  n_sel <- max(as.integer(if (is.null(n_selection)) nrow(P) else n_selection), 2L)
+  nmt <- sqrt(2 * log(n_sel))
+  bi <- which.max(P$paired_nw_t_lag3)
+  bs <- as.character(P$scenario[bi]); bt <- P$paired_nw_t_lag3[bi]
+  lag_nm <- if (grepl("lag1", bs, fixed = TRUE)) bs
+            else if (grepl("_cost$", bs)) sub("_cost$", "_lag1_cost", bs)
+            else paste0(bs, "_lag1")
+  lr <- P[scenario == lag_nm]
+  lt <- if (nrow(lr)) lr$paired_nw_t_lag3[1] else NA_real_
+  verdict <- if (bt <= 0) "INFERIOR"
+             else if (bt >= nmt && is.finite(lt) && lt > 0) "SURVIVOR"
+             else "INDETERMINATE"
+  reason <- if (bt <= 0) sprintf("best paired NW-t %.3f <= 0 — bare 대비 개선 없음", bt)
+            else if (identical(verdict, "SURVIVOR"))
+              sprintf("best %.3f >= null_max_t %.3f (n_sel %d) AND lag1 %.3f > 0", bt, nmt, n_sel, lt)
+            else if (bt < nmt)
+              sprintf("best %.3f in (0, null_max_t %.3f) — 선택공간 n=%d 의 우연과 미구분", bt, nmt, n_sel)
+            else sprintf("best %.3f >= null_max_t %.3f 이나 lag1 게이트 미통과(lag1 t=%s) — 동월 누출 방어",
+                         bt, nmt, if (is.finite(lt)) sprintf("%.3f", lt) else "짝 부재")
+  modifyList(base, list(verdict = verdict, best_scenario = bs, best_paired_nw_t_lag3 = bt,
+                        lag1_scenario = lag_nm, lag1_paired_t = lt,
+                        n_selection = n_sel, null_max_t = round(nmt, 4), reason = reason))
+}
+
+# JSON 재판독용: paired_nw(리스트-of-리스트) → data.table (스칼라만 추출, 결측 NA)
+.dv_paired_dt <- function(pn) {
+  if (is.null(pn) || !length(pn)) return(data.table(scenario = character(0), paired_nw_t_lag3 = numeric(0)))
+  data.table(
+    scenario = vapply(pn, function(r) as.character((r$scenario %||% NA_character_)[1]), character(1)),
+    paired_nw_t_lag3 = vapply(pn, function(r)
+      suppressWarnings(as.numeric((r$paired_nw_t_lag3 %||% NA_real_)[1])), numeric(1))
+  )
+}
+
+# 배치 재판정 — 기존 결과 전수에 dv_v1 적용. n_selection = 배치 전체 유한 비교 수(보수적).
+#   write=TRUE 면 각 결과 JSON에 verdict 블록 append (원자적, judged_at/judged_by 기록).
+#   ★"빈 결과 = 합격" 금지 — 결과 0건이면 stop.
+drain_verdict_batch <- function(result_dir = DRAIN_RESULT_DIR_DEFAULT, write = FALSE) {
+  fs <- Sys.glob(file.path(result_dir, "*.json"))
+  if (!length(fs)) stop("[drain] verdict-batch: 결과 파일 0건 — ", result_dir, " (빈 결과 = 합격 아님)")
+  parsed <- lapply(fs, function(p) tryCatch(.null_to_na(read_json(p, simplifyVector = FALSE)),
+                                            error = function(e) NULL))
+  keep <- !vapply(parsed, is.null, logical(1))
+  if (any(!keep)) message("[drain] verdict-batch: parse 실패 skip — ",
+                          paste(basename(fs[!keep]), collapse = ", "))
+  fs <- fs[keep]; parsed <- parsed[keep]
+  pdts <- lapply(parsed, function(d) .dv_paired_dt(d$paired_nw))
+  n_total <- sum(vapply(pdts, function(P) sum(is.finite(P$paired_nw_t_lag3)), numeric(1)))
+  rows <- vector("list", length(fs))
+  for (i in seq_along(fs)) {
+    v <- drain_verdict(pdts[[i]], n_selection = n_total)
+    d <- parsed[[i]]
+    if (isTRUE(write)) {
+      d$verdict <- c(v, list(judged_at = format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z"),
+                             judged_by = "drain_verdict_batch"))
+      .atomic_write_json(d, fs[i], auto_unbox = TRUE, pretty = TRUE, digits = 6, na = "null")
+    }
+    rows[[i]] <- data.table(
+      candidate_id = as.character(d$candidate_id %||% basename(fs[i])),
+      verdict = v$verdict,
+      best_t = v$best_paired_nw_t_lag3, best_scenario = v$best_scenario,
+      null_max_t = v$null_max_t, n_selection = v$n_selection)
+  }
+  out <- rbindlist(rows, fill = TRUE)
+  tb <- table(out$verdict)
+  cat(sprintf("[drain] verdict-batch: %d건 판정 (n_selection=%d, write=%s) — %s\n",
+              nrow(out), as.integer(n_total), write,
+              paste(sprintf("%s=%d", names(tb), as.integer(tb)), collapse = " ")))
+  out
+}
+
 drain_main <- function(candidate_id, suffix = "", queue_path = DRAIN_QUEUE_PATH_DEFAULT,
                        result_dir = DRAIN_RESULT_DIR_DEFAULT, cost_bps = 15, update_queue = TRUE) {
   q <- read_json(queue_path, simplifyVector = FALSE)
@@ -419,8 +521,13 @@ drain_main <- function(candidate_id, suffix = "", queue_path = DRAIN_QUEUE_PATH_
     scenarios = out$tab,
     paired_nw = out$paired,
     crisis_conditional = out$crisis,
-    lag1_stress = out$lag1_stress
+    lag1_stress = out$lag1_stress,
+    # P0#2 (2026-08-16): 판정 계층 dv_v1 — 수기 판정의 재현 불가능성 제거.
+    verdict = c(drain_verdict(out$paired),
+                list(judged_at = format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z"),
+                     judged_by = "drain_main"))
   )
+  cat(sprintf("\n[verdict dv_v1] %s — %s\n", result$verdict$verdict, result$verdict$reason))
   .atomic_write_json(result, result_path, auto_unbox = TRUE, pretty = TRUE, digits = 6, na = "null")
   fwrite(out$tab, sub("\\.json$", "_scenarios.csv", result_path))
   cat(sprintf("\n[drain] wrote %s\n", result_path))
