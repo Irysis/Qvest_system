@@ -236,4 +236,12 @@ if (identical(environment(), globalenv()) && !interactive() &&
     TRUE
   }, error = function(e) { cat("FAIL:", conditionMessage(e), "\n"); FALSE })
   # 계약 위반 케이스: next_probes 1개 → stop 기대
-  viol <- t
+  viol <- tryCatch({
+    close_round("SELFTEST_R1", "config_scoped_negative",
+                "기전 진단 20자 이상 채운 데모 문장입니다.",
+                next_probes = c("하나뿐"), consumer_surfaces = "x",
+                live_trigger = "y", write_marker = FALSE)
+    FALSE  # stop 안 나면 실패
+  }, error = function(e) TRUE)
+  cat(sprintf("[selftest] valid_close=%s  contract_reject=%s\n", ok, viol))
+}

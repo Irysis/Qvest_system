@@ -212,9 +212,9 @@ WT_CHURN <- c("qepm/observability/events.jsonl", ".claude/settings.local.json")
 worktree_prune <- list(pruned = character(0), kept = list(), failed = character(0))
 
 run_step("weekly_worktree_prune", {
+  # ★expr 은 promise 라 global 에서 평가된다 — 아래 갱신은 전부 일반 `<-`(파일 상단 주의 참조).
+  #   보조 함수 안에서 갱신하면 지역 사본에 들어가므로 판정 기록은 루프 본문에서 직접 한다.
   wt_dir <- file.path(root, ".claude", "worktrees")
-  if (!dir.exists(wt_dir)) return(invisible(TRUE))
-
   gitq <- function(dir, args) {
     out <- suppressWarnings(system2("git", c("-C", shQuote(dir), args),
                                     stdout = TRUE, stderr = FALSE))
@@ -222,12 +222,10 @@ run_step("weekly_worktree_prune", {
     if (!is.null(st) && st != 0) return(NULL)
     out
   }
-  keep <- function(nm, why) worktree_prune$kept[[nm]] <- why
-
   registered <- if (dir.exists(file.path(root, ".git", "worktrees")))
     list.files(file.path(root, ".git", "worktrees"), no.. = TRUE) else character(0)
 
-  for (nm in list.files(wt_dir, no.. = TRUE)) {
+  for (nm in if (dir.exists(wt_dir)) list.files(wt_dir, no.. = TRUE) else character(0)) {
     p <- file.path(wt_dir, nm)
     if (!dir.exists(p)) next
 
