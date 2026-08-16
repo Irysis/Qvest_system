@@ -91,7 +91,11 @@ else
         _agg=$(find "$d" -maxdepth 1 -type f \( -name 'run_*.R' -o -name 'run_*.sh' \) 2>/dev/null | while IFS= read -r r; do
                  printf '%s\n' "$ENROLLED" | grep -qxF "$(basename "$r")" && echo hit; done | head -1)
         [ -n "$_agg" ] && continue
-        UNCOVERED="$UNCOVERED  $(printf '%s' "$f" | sed "s|^$PROJECT/||")\n"
+        # ★sed 로 접두 제거 금지 — PROJECT 가 Windows 경로(C:\Users\99922\...)면
+        #   `\99922` 가 **백레퍼런스로 해석**돼 "Invalid back reference" 로 죽는다
+        #   (r-portability 계통, 2026-08-16 실측). 쉘 파라미터 확장으로 자른다.
+        _rel="${f#"$PROJECT"/}"
+        UNCOVERED="$UNCOVERED  ${_rel}\n"
       done < <(find "$TESTS_DIR" -type f \( -name 'test_*.R' -o -name 'test_*.sh' \) -not -path '*/_archive*/*' 2>/dev/null | sort)
 
       n_unc=$(printf '%b' "$UNCOVERED" | grep -c . 2>/dev/null || echo 0)
