@@ -827,6 +827,11 @@ SUITES=(
   #   ★T3b 가 도입 당일 실결함 검거 — id 추출 정규식 상한 {1,4} 이 긴 id 를 절단해
   #    "쓴 id ≠ 대조한 id" 를 만들었다(수리: FQ-[0-9]+). 주입이 빨개지는 것까지가 한 축.
   "08_Tests/hooks/test_p0_loop_closure.R"
+  # 2026-08-16 추가: Layer 1~3 (L1 자동 스폰 — 도훈 승인) 위반 주입.
+  #   L1 ip_per_regime(ip_v1 — 표본 미달 시 판정 없음) · L2 build_auto_spawn_queue
+  #   (kind 4종 + kill switch + capacity + 상태 이월 + D2 FR_RCMA 재정의 소비) ·
+  #   claim 프로토콜(선점/중복 거부/done 보존) · 내구 로그·상태라인.
+  "08_Tests/hooks/test_auto_spawn_layers.R"
 )
 
 # (2026-08-02) .py 분기 추가 — 종전엔 확장자 무관 `bash` 로 던져 파이썬 suite 가

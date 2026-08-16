@@ -99,9 +99,11 @@ build_auto_spawn_queue <- function(root = .asq_root(), write = TRUE) {
   ipreg <- .asq_json(file.path(root, ASQ_IP_REL))
   ip_of <- function(id) (ipreg$entries %||% list())[[id]]
 
-  # standalone 스캔 — 라벨 전수·처분·catalog 정합은 정본 스캐너 재사용 (root 인자화 픽스처 가능)
+  # standalone 스캔 — 라벨 전수·처분·catalog 정합은 정본 스캐너 재사용 (root 인자화 픽스처 가능).
+  #   ★코드는 코드 루트(.asq_root)에서 소싱 — root 인자는 데이터 루트다 (픽스처 루트에
+  #   코드가 없어도 동작해야 함).
   if (!exists("standalone_track_scan", mode = "function")) {
-    stq <- file.path(root, "02_Infrastructure/portfolio/standalone_track_queue.R")
+    stq <- file.path(.asq_root(), "02_Infrastructure/portfolio/standalone_track_queue.R")
     if (!file.exists(stq)) stop("[auto_spawn] standalone_track_queue.R 부재")
     source(stq)
   }

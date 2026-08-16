@@ -1098,6 +1098,8 @@ if [ -n "$STANDALONE_TRACK_STATUS" ]; then
 else
   echo "StandaloneTrk: SKIP (standalone_track_queue.R 부재 — 신규 클론)"
 fi
+# 8k 표면 (2026-08-16 L1): 스폰 큐 pending 노출 — 세션 소비 유도
+[ -n "$AUTO_SPAWN_STATUS" ] && echo "$AUTO_SPAWN_STATUS"
 [ -n "$SMOKE_STATUS" ] && echo "$SMOKE_STATUS"
 command -v free >/dev/null 2>&1 && free -m | awk '/Mem:/ {printf "RAM:        %.0f%%\n", $3/$2*100}' || true
 # (Remote tmux rc 라인 제거 v8.0 — inbound listener 폐지)
