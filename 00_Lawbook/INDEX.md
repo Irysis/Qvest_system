@@ -68,6 +68,7 @@ Rscript 02_Infrastructure/tools/hypothesis_index.R build   # ★build 필수
 | Search index stale | `02_Infrastructure/search/build_index.R` (`qvest_search --rebuild`) |
 | R 스크립트가 Windows에서 조용히 실패 | `02_Infrastructure/docs/rules/r-portability.md` 금칙 6종 + `08_Tests/hooks/test_r_portability.R` |
 | 과거 값이 소급 재서술됨 | append-only 계약: `02_Infrastructure/regime/{m4,regime}_append_only.R` — 원인은 대개 **전체표본 통계 or 외부 개정** |
+| 부팅에 `boot-currency` WARN | `02_Infrastructure/ops/boot_currency_check.sh` (C0~C8c) — 문서가 헌법보다 낡았다는 뜻. WARN-only이나 **세션이 즉시 수리**가 원칙 |
 | 산출물 위치 판단 | `02_Infrastructure/docs/rules/artifact-storage.md` + `06_Registry/hygiene_report.json` |
 
 ## 4. Flow 1-liners
