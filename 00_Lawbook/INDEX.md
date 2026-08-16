@@ -1,60 +1,83 @@
 # Qvest Index
 
 **3개월 후 도훈이 즉시 찾을 수 있게** — 1 page navigation + debug map.
-v8.1.0 3-Mode Architecture + FR input-floor hardening (2026-06-12).
+**v8.4 — 4-Mode 헌법 · 비대칭 알파 중심 재편(ML·수리통계 주력)** (2026-08-16 갱신).
+
+> ★**숫자 박제 금지** — 이 문서가 v8.1에서 2개월 낙후된 기전이 "8 axioms / 30 hook / 203 paper notes" 같은 **개수 하드코딩**이었다. 개수·목록은 아래 *확인 명령*으로 위임하고, 본문은 **어디를 보는지**만 적는다.
 
 ---
 
+## 0. 헌법 계층 (어디가 정본인가)
+
+| 층 | 위치 | 성격 |
+|---|---|---|
+| 1 | `CLAUDE.md` (루트) | **현행 헌법 본문** — 모델 표기·모드·제약의 단일 정본 |
+| 2 | `.claude/rules/` | 코어 룰 (매 세션 autoload): pit / axioms / answer-principles / backtest-contract / measurement-graduation / python-policy |
+| 3 | `02_Infrastructure/docs/rules/` | 확장 룰 (on-demand Read, **효력 동일**) — harness / axiom-engine / r-portability / continuity-firewall / caching / factor-db / lockbox-scope / artifact-{naming,storage} / factor-rotation / ramp / research_philosophy / data_table_shift_convention |
+| 4 | `00_Lawbook/` (본 폴더) | **원전 법전** + INDEX + DEPRECATION — 2·3층의 상당수가 여기서 파생 |
+
+세션 모델명은 **여기 재기입하지 않는다** — 정본은 `CLAUDE.md` Active Version 절 (재기입 지점이 동시 낙후된 전례).
+
 ## 1. Active SOT
 
-- `02_Infrastructure/docs/qvest_v8_1_sot.md` — Qvest active SOT (3-mode constitution + measurement governance + module flow)
-- `02_Infrastructure/docs/qvest_modes_sot.md` — 3-mode constitution (per-mode evaluation/self-development + shared honesty gates)
+- `02_Infrastructure/docs/qvest_v8_4_asymmetry_ml_sot.md` — **v8.4 주력 SOT** (비대칭 알파 재편: 4 lane A/D/B/C, 금지 4종, 부활 조건)
+- `02_Infrastructure/docs/qvest_v8_3_alpha_discovery_sot.md` — v8.3 발굴 재편 (골격 승계 — dual-basis · 프론티어 큐 · 지식 환류)
+- `02_Infrastructure/docs/qvest_v8_1_sot.md` — v8.1 설계 SOT (measurement governance + module flow)
+- `02_Infrastructure/docs/qvest_ast_v1_1_sot.md` — AST 계층 v1.1 (alpha 3층 스펙 + PIT 3중 예방)
+- `02_Infrastructure/docs/qvest_modes_sot.md` — 모드 헌법 (모드별 자기평가 + 공유 정직 게이트)
+- `02_Infrastructure/docs/qvest_v8_0_upgrade_plan.md` — v8.0 base (retain) · `qvest_v6_4_sot.md` — v6.4 base (read-only)
 - `02_Infrastructure/docs/qvest_legacy_boundary.md` — v55/S0~S7 격리 정책
-- `00_Lawbook/DEPRECATION.md` — active vs legacy 자산 inventory + EOL plan
+- `02_Infrastructure/docs/CHANGELOG_constitution.md` — 버전 계보·릴리스 상세 (CLAUDE.md에서 분리)
+- `00_Lawbook/DEPRECATION.md` — active vs legacy 자산 inventory + EOL
 
 ## 2. Daily Use CLI
 
 | Command | 용도 |
 |---|---|
-| `/qvest` | Session start + bootstrap (gap 확인 + harness_health 30/29) |
-| `/worktask` | WT lifecycle CRUD |
-| `qvest_observe wt <ID>` | Per-WT timeline JSON (rebuild + dump) |
-| `qvest_wt <ID>` | Per-WT ASCII pretty (alpha/risk/opt/forge/judge/governor tree) |
-| `qvest_wt --active` | Book admit WT 1-line summary |
-| `qvest_wt --recent N` | Recent N WT (status.json mtime DESC, WT-D9999 자동 제외) |
-| `qvest_search "<q>"` | Unified search (lcode/wt/cert/paper/axiom/registry/lawbook/critic/governance) |
-| `qvest_search "<q>" --type <T>` | Type 필터 |
-| `qvest_search --rebuild` | Force re-index |
-| `qvest_observe events --since=24h` | Event ledger query (qepm/observability/events.jsonl) |
-| `qvest_observe stats` | Hook count + p50/p99 + decision breakdown |
-| `bash 08_Tests/hooks/run_all_hooks.sh` | hook dry-run |
+| `/qvest` | Session start + bootstrap (gap 확인 + harness health) |
+| `/worktask` | WT lifecycle CRUD (QEPM 모드) |
+| `/alpha-search` · `/factor-rotation <track>` · `/ramp <stage>` | 모드 진입 (②③④) |
+| `/qlead` | Q-Lead session dashboard |
+| `02_Infrastructure/observability/qvest_observe wt <ID>` | Per-WT timeline JSON (rebuild + dump) |
+| `02_Infrastructure/observability/qvest_wt <ID>` | Per-WT ASCII pretty · `--active` book admit · `--recent N` |
+| `02_Infrastructure/search/qvest_search "<q>" [--type T] [--rebuild]` | Unified search (lcode/wt/cert/paper/axiom/registry/lawbook) |
 | `02_Infrastructure/tools/qvest_v8_ready --strict --json --no-write` | v8 readiness gate |
+| `bash 08_Tests/hooks/run_all_hooks.sh` | hook dry-run 배터리 |
+
+**지식 적립 2단 — 둘 다 해야 다음 라운드 Step 0 lookup에 도달**:
+```bash
+python 02_Infrastructure/axiom/lcode_harvester.py          # L-code → .cache/lcode_corpus.json
+Rscript 02_Infrastructure/tools/hypothesis_index.R build   # ★build 필수
+```
+⚠ `hypothesis_index.R`을 **인자 없이 부르면 usage만 찍고 exit 0** — 호출자가 재빌드된 줄 오인한다(2026-08-13 실측: corpus엔 들어갔는데 index엔 없던 L-code 3건).
 
 ## 3. Debug Map
 
 | 증상 | 1차 확인 file |
 |---|---|
-| Hook block 원인 추적 | `02_Infrastructure/hooks/qvest_hook_router.py` (4 policy 단일 진입) |
-| Cert 발급 실패 | `02_Infrastructure/worktask/cert_rules.R` + `02_Infrastructure/hooks/policies/cert_rules.json` (data layer) |
-| State transition 거부 | `02_Infrastructure/worktask/state_machine.R` + `state_transitions.json` (11 phase) |
-| Schema invalid | `02_Infrastructure/schemas/{packages,certs,state}/` (14 schema, Draft-07) |
-| Telegram 차단 | `qepm/telegram/` + `qvest-telegram` skill (v5 ENFORCE) |
-| Self-Adversarial Challenge 누락 | challenge_note.md (self-adversarial record) — agent 내 자체 적대검증 (v8.2: Codex Round 훅 제거, 강제 훅 없음) |
-| WT phase jump | `02_Infrastructure/worktask/state_machine.R::sm_validated_advance` (force_waiver=TRUE 필요) |
-| Cert backfill (Layer 2) | `02_Infrastructure/ops/cert_backfill_audit.R` (--auto / --manual / --dry-run) |
-| Measurement Coherence DRIFTED | `02_Infrastructure/portfolio/measurement_basis_audit.R` + bootstrap L7c auto |
-| FR pool에 proxy 유입 의심 | `02_Infrastructure/contracts/register_module.R` + `06_Registry/module_quarantine.json` + `02_Infrastructure/regime/build_module_performance.R` |
+| Hook block 원인 추적 | `02_Infrastructure/hooks/qvest_hook_router.py` (policy 단일 진입) |
+| Cert 발급 실패 | `02_Infrastructure/worktask/cert_rules.R` + `02_Infrastructure/hooks/policies/cert_rules.json` |
+| State transition 거부 | `02_Infrastructure/worktask/state_machine.R` + `02_Infrastructure/hooks/policies/state_transitions.json` |
+| Schema invalid | `02_Infrastructure/schemas/{packages,certs,state}/` (Draft-07) |
+| Telegram 미발송/중복 | `02_Infrastructure/telegram/` + `qvest-telegram` skill — ★섹션 타입은 **항목 수**가 결정(bullet은 2개 이상), 실패는 JSONL 기록 |
+| Stop hook이 턴을 block | `02_Infrastructure/axiom/continuity_gate.py` + `02_Infrastructure/docs/rules/continuity-firewall.md` — 통과는 `close_round()`(next_probe≥2·소비면·부활조건) |
+| WT phase jump | `state_machine.R::sm_validated_advance` (force_waiver=TRUE 필요) |
+| Cert backfill | `02_Infrastructure/ops/cert_backfill_audit.R` (--auto / --manual / --dry-run) |
+| Measurement Coherence DRIFTED | `02_Infrastructure/portfolio/measurement_basis_audit.R` + bootstrap 자동 |
+| FR pool에 proxy 유입 의심 | `02_Infrastructure/contracts/register_module.R` + `06_Registry/module_quarantine.json` |
 | Search index stale | `02_Infrastructure/search/build_index.R` (`qvest_search --rebuild`) |
-| Synthetic WT residue | `08_Tests/integration/_e2e_cleanup_guard.sh --check` (CI gate) |
+| R 스크립트가 Windows에서 조용히 실패 | `02_Infrastructure/docs/rules/r-portability.md` 금칙 6종 + `08_Tests/hooks/test_r_portability.R` |
+| 과거 값이 소급 재서술됨 | append-only 계약: `02_Infrastructure/regime/{m4,regime}_append_only.R` — 원인은 대개 **전체표본 통계 or 외부 개정** |
+| 산출물 위치 판단 | `02_Infrastructure/docs/rules/artifact-storage.md` + `06_Registry/hygiene_report.json` |
 
 ## 4. Flow 1-liners
 
-**Hook flow (PreToolUse + PostToolUse)**:
+**Hook flow**:
 ```
 Tool → PreToolUse (safety_guard / axiom / agent_role / worktask_*)
      → Tool exec
-     → PostToolUse (artifact_validator / pipeline_trigger / 5 cert certifier / lineage_recorder)
-     → Stop (auto_commit_on_stop)
+     → PostToolUse (artifact_validator / pipeline_trigger / cert certifier / lineage_recorder)
+     → Stop (auto_commit + research_continuity_guard)
 ```
 
 **Cert flow (5 type, PostToolUse 자동 발급)**:
@@ -71,60 +94,75 @@ SPEC_APPROVED → ALPHA_DONE → RISK_DONE → OPTIMIZER_DONE → FORGE_DONE
               (또는 ABORTED / JUDGE_FAILED / GOVERNOR_REJECTED → ABORTED)
 ```
 
-**Self-Adversarial Challenge (v8.2 — Codex Round 제거, Opus 4.8 자체 적대검증, 모든 agent spawn)**:
+**Self-Adversarial Challenge** (v8.2 — 외부 Codex Round 폐지, 모든 agent spawn):
 ```
-1. Draft 작성 (메인 에이전트 산출)
-2. 자체 적대검증 (Opus 4.8 in-agent self-adversarial challenge — 외부 codex spawn 폐지)
-3. challenge_note.md 의무 (self-adversarial record: ACCEPT/PARTIAL/REBUTTAL 분류)
-4. Final 작성 (challenge 반영)
-- 강제 훅(codex_round_*) 폐지 — 2026-06-30 도훈 mandate, 자산 archive: 00_Lawbook/DEPRECATION.md
+1. Draft 작성 → 2. 메인 세션 모델 자체 적대검증 (모델 정본 = CLAUDE.md Active Version 절)
+3. challenge_note.md 의무 (ACCEPT/PARTIAL/REBUTTAL) → 4. Final
+- AX-008 3-source(Forge + Self-Adversarial + Architect) 중 2/3 PASS
+- 구 codex_round_* 훅 폐지 (2026-06-30 도훈 mandate, 자산 archive: DEPRECATION.md)
 ```
 
 ## 5. Memory & Registry
 
-- `qepm/memory/README.md` — v7.2.1 Memory layer SOT/lifecycle 정의 (지식 계층 + Authority + axiom_class)
-- `qepm/memory/methodology_memory_v55_extensions.md` — L-001~L-249+ (active L-codes, qvest_search type=lcode)
-- `qepm/memory/methodology_memory.md` — DEPRECATED (L-000~L-129 archive)
-- `qepm/memory/axioms/active/AX-*.json` — 8 axioms v7.2.1 (000~005, 007, 008 — AX-006 candidate-only)
-- `qepm/memory/axioms/axiom_sot_map.json` — Documented ↔ JSON 매핑 (8 documented + AX-006 evidence_paths)
-- `qepm/memory/lessons/L-*.json` — active lessons (qvest_search type=lesson)
-- `qepm/memory/evidence_summary/*.json` — 233 factor evidence (qvest_search type=evidence_summary)
-- `06_Registry/strategy_registry.json` — 600+ strategies + grades (242KB)
-- `06_Registry/idea_registry.json` / `paper_registry.json` / `strategy_grades.json`
-- `04_Research/paper_notes/P*.md` — 203 paper notes (qvest_search type=paper)
-- `qepm/observability/events.jsonl` — append-only event ledger (retain)
-- `qepm/observability/memory_inventory.json` — counts snapshot (v7.2.1)
-- `qepm/observability/memory_health_latest.json` — Memory Health Gate latest
-- `qepm/observability/timelines/wt_*.json` — per-WT timeline cache (regenerable)
-- `qepm/observability/search_index.jsonl` — search index (gitignore, regenerable)
+**Axiom (2-Tier)** — `qepm/memory/axioms/`:
+- `active/AX-{000,001,002,008}.json` — **active Law 4건**. AX-003/004/005/007은 2026-07-05 **Distilled 강등**(`deprecated/`, INV-7 재도전 대상 — enforcement 대상 아님)
+- `active/modes/{alpha_search,factor_rotation,qepm,ramp}/` — mode-local `AX-<MODE>-NNN` (★디렉터리는 full name, 코드는 AS/FR/QPM/RAMP로 다름) · `candidates/` — pending
+- `axiom_sot_map.json` — Documented ↔ JSON 매핑 · 엔진 SOT = `02_Infrastructure/docs/rules/axiom-engine.md`
+
+**Knowledge**:
+- `qepm/memory/README.md` — Memory layer SOT/lifecycle · `methodology_memory_v55_extensions.md` — active L-codes
+- `06_Registry/knowledge_index.json` / `.md` — 지식 인덱스 (`02_Infrastructure/ops/build_knowledge_index.R` 산출 — ★루트 `ops/`는 **부재**, 접두 필수)
+- `06_Registry/hypothesis_index.json` — **가설 검색면** (발굴 착수 전 lookup 의무. 빌더 = `02_Infrastructure/tools/hypothesis_index.R build`)
+- `06_Registry/distilled_knowledge.json` · `revival_signals.json` — Distilled 탐색지도 + 부활신호
+
+**v8.3/v8.4 운영 SOT** (발굴 착수 전 확인 의무):
+- `06_Registry/alpha_frontier_queue.json` — **"다음에 뭘 시도할지" 상설 큐 SOT**. `dohoon_decision` 항목 세션 임의 착수 금지
+- `06_Registry/layer_bottleneck_map.md` — "목표 갭이 어느 계층에 막혀 있나" 상시 실측 지도. 자율 라운드 선택은 이 지도를 따름
+- `06_Registry/method_registry.json` — 논문 레인 등재 어댑터 (`register_method()`) · `continuity_cases.json` — Continuity Firewall 자가발전
+
+**Registry / Observability**:
+- `06_Registry/{strategy_registry,module_catalog,module_performance,module_quarantine,paper_registry}.json`
+- `06_Registry/live_track/<ID>/` — 라이브 페이퍼트래킹 + holdout_interval
+- `qepm/observability/events.jsonl` — append-only event ledger · `timelines/wt_*.json` — per-WT cache (regenerable)
+
+> 개수·최근갱신·크기는 **자동 생성 존 INDEX**가 권위: `06_Registry/INDEX.md` (+ `02_Infrastructure` / `04_Research` / `08_Tests` / 루트 `ARTIFACTS.md`). 재생성 `Rscript 02_Infrastructure/tools/build_artifact_index.R` — **그 4개는 직접 수정 금지**(덮어씀). 본 파일은 수동 유지 대상이라 안전.
 
 ## 6. Schema Locations
 
-- `02_Infrastructure/schemas/packages/` — 6 (alpha/risk/optimization/forge/judge_verdict/governor_admission)
-- `02_Infrastructure/schemas/certs/` — 5 (alpha_discovery/sr_provenance/schedule_fidelity/forge_package_validated/governor_concord)
-- `02_Infrastructure/schemas/state/` — 4 (book_state/governance_log/artifact_lineage/axiom v7.2.1)
-- 검증: `python3 02_Infrastructure/hooks/qvest_hook_router.py validate-schema --schema <name> --package <path>`
+- `02_Infrastructure/schemas/packages/` — alpha / risk / optimization / forge / judge_verdict / governor_admission
+- `02_Infrastructure/schemas/certs/` — alpha_discovery / sr_provenance / schedule_fidelity / forge_package_validated / governor_concord
+- `02_Infrastructure/schemas/state/` — book_state / governance_log / artifact_lineage / axiom
+- 검증: `python 02_Infrastructure/hooks/qvest_hook_router.py validate-schema --schema <name> --package <path>`
 
-## 7. Examples + Tests
+## 7. Skills · Agents · Tests
 
-- `02_Infrastructure/docs/examples/qvest_workflows/` — 3 표준 WT (Sprint 4) — discovery happy / cert_fail / pit_violation (구 `examples/`, 2026-07-04 이동)
-- `08_Tests/hooks/run_all_hooks.sh` — 30 hook dry-run
-- `08_Tests/integration/test_execution_path_unified.R` — wt_advance + cert parity 7/7
-- `08_Tests/integration/test_wt_lifecycle_e2e.R` — 4 시나리오 12/12
-- `08_Tests/integration/_cert_threshold_audit.R` — cert_rules.R hardcode 0건 audit
-- `08_Tests/integration/_e2e_cleanup_guard.sh` — synthetic WT residue 0건 CI gate
+- **Skills** `.claude/skills/` — 모드 진입(alpha-search/factor-rotation/ramp) · 절차(qvest-worktask/qvest-telegram/cleaner) · 스타일(qvest-{alpha,risk,opt,attribution}-style) · 디버그(qvest-hook-debug/qvest-cert-paths) · 발굴(factor-db-discovery/kr-inverse-pattern-miner)
+- **Agents** `.claude/agents/` — active 6 (alpha-hypothesis → alpha-research → risk → optimizer → forge → judge → governor) + ondemand 4 (architect/blender/execution/monitoring). 상세 = CLAUDE.md Multi-Agent 절
+- **Commands** `.claude/commands/` — qvest / worktask / alpha-search / factor-rotation / ramp / qlead
+- **Tests** `08_Tests/` — 진입점 `08_Tests/hooks/run_all_hooks.sh`(hook dry-run) · `08_Tests/contract_regression/run_contract_regression.R` · `08_Tests/integration/test_wt_lifecycle_e2e.R` · `08_Tests/integration/_e2e_cleanup_guard.sh`(CI gate). 스위트별 정체 = `08_Tests/INDEX.md`
+- **Examples** `02_Infrastructure/docs/examples/qvest_workflows/` — 표준 WT 3종 (discovery happy / cert_fail / pit_violation)
 
 ## 8. Version Tags
 
-- `v6.4.0` — Harness Kernel Stabilization
-- `v7.0.0` — Hardening Release (kernel unification + CI + 14 schema + E2E + legacy + observability)
-- `v7.0.1` — Residue Hardening Patch (synthetic cleanup + cert refactor + harness_health sync + error masking)
-- `v7.1.0-lite` — Solo Operator Productivity Patch (qvest_search + qvest_wt + INDEX + examples)
-- `v7.2.0` — v8.0 Design Readiness Gate (14 checks + soak rule + JSON CLI)
-- `v7.2.1` — Memory Knowledge Hardening (axiom_schema + AX-007/008 materialize + lcode_corpus + memory_health 6+6 + 15 readiness)
+| Tag | 내용 |
+|---|---|
+| `v6.4.0` | Harness Kernel Stabilization |
+| `v7.0.x` | Hardening Release + Residue Hardening Patch |
+| `v7.1.0-lite` | Solo Operator Productivity (qvest_search + qvest_wt + INDEX) |
+| `v7.2.x` | v8.0 Design Readiness Gate + Memory Knowledge Hardening |
+| `v8.0` | R/Python 1급 + 실측-only 거버넌스 (measurement-graduation) |
+| `v8.1` | 3-Mode 헌법 + 논문 완전 복제 + register_module 표준화 |
+| `v8.2` | Codex Round 제거 → Self-Adversarial Challenge |
+| `v8.3` | 알파 발굴 중심 재편 (dual-basis · 프론티어 큐 · 지식 환류) |
+| **`v8.4`** | **비대칭 알파 중심 재편** — ML·수리통계 분포-표적 4 lane, 비-return 주력 해제 |
+
+계보 상세·검증 이력 = `02_Infrastructure/docs/CHANGELOG_constitution.md`
 
 ## Maintenance
 
-- 인프라 reorg 시 본 INDEX.md 1줄 업데이트 (CHANGELOG에 "INDEX.md update on infra reorg" 의무)
-- 자동생성 X — Lawbook churn 결합 회피
-- 새 CLI 추가 시 §2 + §3 (해당하면) update
+- 인프라 reorg / 헌법 버전 전이 시 본 INDEX.md 갱신 (CHANGELOG에 "INDEX.md update" 의무)
+- **자동생성 X** — Lawbook churn 결합 회피. `build_artifact_index.R`의 4개 존 INDEX와 역할이 다르다(그쪽=파일 인벤토리, 여기=**항해도**)
+- ★**갱신 시 개수를 다시 박제하지 말 것** — 낙후의 기전이 그것이었다. 개수가 필요하면 확인 명령이나 존 INDEX로 위임한다
+- ★**경로는 루트 기준 전체 경로로** — 축약(`ops/…`·`docs/rules/…`)은 grep으로 안 걸리고, 실제로 구판이 `state_transitions.json`·텔레그램 경로를 2개월간 틀린 자리로 가리키고 있었다. 예외는 바로 위 헤더가 상위 경로를 명시한 목록(§5 axiom 하위)뿐
+- 갱신 후 **경로 전수 검증**(문서의 백틱 경로를 기계 추출 → `test -e`)을 돌릴 것 — 손으로 고른 목록은 빠뜨린다
+- 새 CLI 추가 시 §2 + (해당하면) §3 update · 새 모드/룰 층 추가 시 §0 update
