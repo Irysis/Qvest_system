@@ -65,6 +65,11 @@ p=[e for e in d['entries'] if e.get('status')=='distilled'
 p.sort(key=lambda e:(int(u.get(e['dist_id'],0)), e.get('refined_at') or ''), reverse=True)
 print(p[0]['dist_id'], p[-1]['dist_id'])
 ")
+# ★Windows CRLF 제거 — python stdout 의 트레일링 \r 가 붙으면 키 대조가 조용히 어긋난다
+#   (2026-08-16 실제 발생: LOW_ID="DIST-QPM-014\r" 로 usage 를 써서 훅 조회와 불일치 →
+#    본 검사가 '훅이 usage 를 안 읽음' 이라는 **거짓 FAIL** 을 냈다. setup 검증도 같은 \r 값끼리
+#    대조해 자기정합적으로 통과했다 — 기지 함정 reference-rscript-stdout-crlf-bash-compare)
+TOP_ID="${TOP_ID%$'\r'}"; LOW_ID="${LOW_ID%$'\r'}"
 [ -n "${TOP_ID:-}" ] && ok "후보군 1위/최하위 산출 ($TOP_ID / $LOW_ID)" || bad "후보군 산출" "빈 값"
 
 # ── A축 (기능): 현행 usage 로 1위가 주입되는가 ────────────────────────────────

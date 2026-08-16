@@ -126,5 +126,84 @@ def build(root, verbose=True):
     return payload
 
 
+PREFIX_START = "<!-- DISTILLED_MAP_START (generated — build_distilled_usage.py) -->"
+PREFIX_END = "<!-- DISTILLED_MAP_END -->"
+
+
+def write_prefix_block(root, top_k=5, verbose=True):
+    """_shared_prefix.md 에 실사용-랭킹 distilled 블록을 멱등 갱신.
+
+    ★도달 경로 정직 표기: `_shared_prefix.md` 는 하네스가 서브에이전트에 자동 주입하는 면이 아니다.
+      10개 agent 정의(.claude/agents/*.md)가 '모든 agent autoload' 로 지목하는 **의무 pull** 면이다.
+      2026-08-16 폐쇄루프 감사 실측: PreToolUse additionalContext 는 호출자 컨텍스트에 붙어
+      서브에이전트 도달 0/247. 그래서 훅만으로는 push 가 성립하지 않는다.
+    """
+    usage = {}
+    up = os.path.join(root, ".cache", "distilled_usage.json")
+    try:
+        with open(up, encoding="utf-8") as f:
+            usage = (json.load(f) or {}).get("usage") or {}
+    except Exception:
+        usage = {}
+
+    dk = os.path.join(root, "06_Registry", "distilled_knowledge.json")
+    try:
+        with open(dk, encoding="utf-8") as f:
+            entries = json.load(f).get("entries", [])
+    except Exception:
+        if verbose:
+            print("[distilled_usage] distilled_knowledge.json 읽기 실패 — prefix 갱신 생략")
+        return False
+
+    picks = [e for e in entries
+             if e.get("status") == "distilled"
+             and e.get("polarity") in ("negative", "conditional")
+             and (e.get("statement_refined") or "").strip()]
+    # 훅과 **동일한 정렬 키** — 두 소비면이 갈리면 그 자체가 드리프트다
+    picks.sort(key=lambda e: (int(usage.get(e.get("dist_id"), 0)), e.get("refined_at") or ""),
+               reverse=True)
+
+    lines = [PREFIX_START,
+             "<distilled_map>",
+             "[Distilled 탐색지도 — 가설 착수 전 대조. 판결이 아니라 방향(프론티어) 표시다.]",
+             "[선정 = 실사용 빈도순(소비면 파일 수), 동률 시 최신 정제순. 생산자 = build_distilled_usage.py]"]
+    for e in picks[:top_k]:
+        tag = "탐색됨→프론티어(INV-7 조건-안 차별점 시 진행)" if e.get("polarity") == "negative" else "조건부"
+        n = int(usage.get(e.get("dist_id"), 0))
+        stmt = " ".join((e.get("statement_refined") or "").split())[:180]
+        lines.append(f"  - {e.get('dist_id')} [{tag}· 인용 {n}] {stmt}")
+    lines += ["</distilled_map>", PREFIX_END]
+    block = "\n".join(lines)
+
+    pp = os.path.join(root, "02_Infrastructure", "prompts", "_shared_prefix.md")
+    cur = _read(pp)
+    if not cur:
+        if verbose:
+            print("[distilled_usage] _shared_prefix.md 부재 — 갱신 생략")
+        return False
+
+    if PREFIX_START in cur and PREFIX_END in cur:
+        pre, _, rest = cur.partition(PREFIX_START)
+        _, _, post = rest.partition(PREFIX_END)
+        new = pre + block + post
+    else:
+        new = cur.rstrip() + "\n\n" + block + "\n"
+
+    if new == cur:
+        if verbose:
+            print("[distilled_usage] _shared_prefix.md 변경 없음(멱등)")
+        return True
+    with open(pp, "w", encoding="utf-8") as f:
+        f.write(new)
+    if verbose:
+        print("[distilled_usage] _shared_prefix.md <distilled_map> 갱신 — top%d: %s"
+              % (top_k, ", ".join(f"{e.get('dist_id')}({int(usage.get(e.get('dist_id'),0))})"
+                                  for e in picks[:top_k])))
+    return True
+
+
 if __name__ == "__main__":
-    build(_root(), verbose=("--quiet" not in sys.argv))
+    q = "--quiet" in sys.argv
+    build(_root(), verbose=not q)
+    if "--no-prefix" not in sys.argv:
+        write_prefix_block(_root(), verbose=not q)

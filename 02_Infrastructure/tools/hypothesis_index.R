@@ -31,6 +31,12 @@
 #       중복 키 규칙: strategy_id = WT task_id. 원천 (e)는 마지막에 합류하므로 동일 id가
 #       (a)~(d)에 이미 있으면 그쪽이 base — .hi_merge가 IN_PROGRESS로 기존 verdict를
 #       덮지 않음(완주 산출물 우선). 완주 후 재빌드 시 (e) 엔트리는 terminal 스킵으로 자연 소멸.
+#   (g) 06_Registry/overlay_ab_results/*.json  overlay 드레인 실측       (2026-08-16 P0#1)
+#       L1 자동 스폰 설계(도훈 승인) 루프 닫기 수리 — 07-10 드레인 16건(FQ-006)이 이
+#       원천 목록에 없어 Step 0 lookup 에 도달하지 않았다(method_registry (f)와 동형 결함).
+#       자기 id 공간(OVL_<candidate_id>)이라 (a)~(f)와 병합 충돌 없음. verdict 는
+#       결과 JSON 의 dv_v1 판정 블록(OVERLAY_SURVIVOR/INFERIOR/INDETERMINATE)을 쓰고,
+#       판정 미기록 구판 결과는 OVERLAY_MEASURED (억지 판정 금지).
 #
 # 산출: 06_Registry/hypothesis_index.json
 #
@@ -582,6 +588,61 @@ HI_PAPER_AB_SOURCES <- c("06_Registry/book_carrier/h2_regime_overlay_ab.csv",
 }
 
 # --------------------------------------------------------------------
+# (g) overlay 드레인 산출물 파서 (2026-08-16 P0#1 — L1 자동 스폰 설계, 도훈 승인)
+#   후보 id → 전략명 매핑은 overlay_candidate_queue.json 에서 1회 로드.
+# --------------------------------------------------------------------
+.hi_overlay_queue_names <- function(root) {
+  qp <- file.path(root, "06_Registry/overlay_candidate_queue.json")
+  if (!file.exists(qp)) return(list())
+  q <- tryCatch(fromJSON(qp, simplifyVector = FALSE), error = function(e) NULL)
+  out <- list()
+  for (cd in (q$candidates %||% list())) {
+    id <- as.character(cd$id %||% "")[1]
+    if (nzchar(id)) out[[id]] <- as.character(cd$strategy_name %||% "")[1]
+  }
+  out
+}
+
+.hi_parse_overlay_drain <- function(path, root, qnames = list()) {
+  d <- fromJSON(path, simplifyVector = FALSE)
+  cid <- .hi_join(d$candidate_id)
+  if (!nzchar(cid)) cid <- sub("\\.json$", "", basename(path))
+  nm <- .hi_join(qnames[[cid]])
+  ts <- vapply(d$paired_nw %||% list(), function(r)
+    suppressWarnings(as.numeric((r$paired_nw_t_lag3 %||% NA_real_)[1])), numeric(1))
+  best_t <- suppressWarnings(max(ts, na.rm = TRUE))
+  if (!is.finite(best_t)) best_t <- NA_real_
+  v <- d$verdict
+  vs <- if (!is.null(v)) .hi_join(v$verdict) else ""
+  verdict <- if (nzchar(vs)) paste0("OVERLAY_", toupper(vs)) else "OVERLAY_MEASURED"
+  text <- .hi_lc(c(nm, cid, "overlay regime"))
+  km <- list(best_paired_nw_t_lag3 = best_t,
+             n_scenarios = sum(is.finite(ts)),
+             tier = .hi_join(d$tier %||% "screen_diagnostic"),
+             adapter = .hi_join(d$adapter))
+  if (!is.null(v)) {
+    km$null_max_t <- .hi_num(v$null_max_t)
+    km$verdict_rule <- .hi_join(v$rule_version)
+  }
+  list(
+    strategy_id = paste0("OVL_", cid),
+    hypothesis_signature = .hi_signature(
+      .hi_infer_family(text), "regime_overlay",
+      "kospi200_kosdaq150_intersection", "overlay_drain"),
+    title = sprintf("OVL %s: %s [best paired NW-t %s]", cid,
+                    if (nzchar(nm)) nm else "(strategy_name 미상)",
+                    if (is.na(best_t)) "NA" else sprintf("%.3f", best_t)),
+    verdict = verdict,
+    grade = NA_character_,
+    key_metrics = km[!vapply(km, is.null, logical(1))],
+    source_paths = c(sub(paste0("^", QM_ROOT, "/"), "", gsub("\\\\", "/", path)),
+                     "06_Registry/overlay_candidate_queue.json"),
+    source_types = "overlay_drain",
+    date = substr(.hi_join(d$measured_at), 1, 10)
+  )
+}
+
+# --------------------------------------------------------------------
 # (e) in-flight WT 파서 (2026-07-10 M6 — F6 병렬 세션 중복실행 실사고 2건 대응)
 #   반환: NULL(양쪽 json 파싱 실패) / list(terminal=TRUE)(완주·중단 — 스킵 사유) / 엔트리.
 #   phase 정보는 title에 [PHASE]로 임베드 — .hi_row 반환 스키마 불변 유지.
@@ -674,7 +735,9 @@ build_hypothesis_index <- function(root = QM_ROOT, out_path = HI_INDEX_PATH,
               wt_inflight_indexed = 0L, wt_inflight_skipped_terminal = 0L,
               wt_inflight_skipped_empty = 0L, wt_inflight_parse_fail = 0L,
               wt_inflight_merged_completed = 0L,
-              paper_lane_indexed = 0L, paper_lane_measured = 0L, paper_lane_skipped = 0L)
+              paper_lane_indexed = 0L, paper_lane_measured = 0L, paper_lane_skipped = 0L,
+              overlay_drain_indexed = 0L, overlay_drain_skipped = 0L,
+              overlay_drain_parse_fail = 0L)
 
   add_entry <- function(e) {
     if (is.null(e)) return(FALSE)
@@ -813,6 +876,24 @@ build_hypothesis_index <- function(root = QM_ROOT, out_path = HI_INDEX_PATH,
     }
   }
 
+  # --- (g) overlay 드레인 실측 (2026-08-16 P0#1 — 드레인 결과의 Step 0 lookup 도달) ---
+  #   자기 id 공간(OVL_)이라 순서 무관. 드레인 결과 없이 큐만 있는 상태는 원천 아님.
+  od_dir <- file.path(root, "06_Registry/overlay_ab_results")
+  if (dir.exists(od_dir)) {
+    qnames <- tryCatch(.hi_overlay_queue_names(root), error = function(e) list())
+    for (p in Sys.glob(file.path(od_dir, "*.json"))) {
+      pe <- tryCatch(.hi_parse_overlay_drain(p, root, qnames), error = function(err) {
+        message(sprintf("[hypothesis_index][WARN] overlay_drain parse 실패 skip: %s (%s)",
+                        basename(p), conditionMessage(err)))
+        cov$overlay_drain_parse_fail <<- cov$overlay_drain_parse_fail + 1L
+        NULL
+      })
+      if (is.null(pe)) next
+      if (add_entry(pe)) cov$overlay_drain_indexed <- cov$overlay_drain_indexed + 1L
+      else cov$overlay_drain_skipped <- cov$overlay_drain_skipped + 1L
+    }
+  }
+
   # --- (e) in-flight WT mailbox (2026-07-10 M6 — 원천 5) ---
   #   반드시 (a)~(d) 뒤에 합류: 동일 strategy_id 병합 시 완주 산출물이 base가 되어
   #   IN_PROGRESS가 확정 verdict를 덮지 않는다 (.hi_merge verdict 규칙).
@@ -892,6 +973,10 @@ build_hypothesis_index <- function(root = QM_ROOT, out_path = HI_INDEX_PATH,
                 cov$wt_inflight_indexed, cov$wt_inflight_skipped_terminal,
                 cov$wt_inflight_skipped_empty, cov$wt_inflight_parse_fail,
                 cov$wt_inflight_merged_completed))
+    cat(sprintf("  paper_lane=%d (measured %d, skip %d)  overlay_drain=%d (skip %d, parse_fail %d)\n",
+                cov$paper_lane_indexed, cov$paper_lane_measured, cov$paper_lane_skipped,
+                cov$overlay_drain_indexed, cov$overlay_drain_skipped,
+                cov$overlay_drain_parse_fail))
   }
   invisible(out)
 }
@@ -960,7 +1045,9 @@ HI_QUERY_ALIAS <- list(
             #   — 이 저장소가 반복 확인한 '존재 = 배선 완료' 오독 계통.
             "06_Registry/method_registry.json",
             "06_Registry/book_carrier/h2_regime_overlay_ab.csv",
-            "06_Registry/book_carrier/h1b_sigma_ab_overlay.csv")
+            "06_Registry/book_carrier/h1b_sigma_ab_overlay.csv",
+            # (2026-08-16 P0#1) overlay 드레인 원천 — 큐 파일. 결과 디렉토리는 아래 glob 감시.
+            "06_Registry/overlay_candidate_queue.json")
   stale <- character(0)
   for (s in srcs) {
     p <- file.path(root, s)
@@ -979,6 +1066,13 @@ HI_QUERY_ALIAS <- list(
   if (length(wt_files)) {
     wt_mt <- suppressWarnings(max(file.info(wt_files)$mtime, na.rm = TRUE))
     if (is.finite(wt_mt) && wt_mt > idx_mt) stale <- c(stale, "qepm/mailbox/worktask (in-flight WT)")
+  }
+  # (2026-08-16 P0#1) overlay 드레인 결과가 인덱스보다 최신이면 stale — 신규 드레인이
+  #   lookup 에 자동 반영되도록 결과 계층을 직접 감시 (method_registry 08-13 결함과 동형 예방).
+  od_files <- Sys.glob(file.path(root, "06_Registry/overlay_ab_results/*.json"))
+  if (length(od_files)) {
+    od_mt <- suppressWarnings(max(file.info(od_files)$mtime, na.rm = TRUE))
+    if (is.finite(od_mt) && od_mt > idx_mt) stale <- c(stale, "06_Registry/overlay_ab_results (overlay drain)")
   }
   if (length(stale) && warn) {
     message(sprintf("[hypothesis_index][경고] 인덱스 stale — 다음 원천이 인덱스보다 최신: %s. build 권장 (Rscript 02_Infrastructure/tools/hypothesis_index.R build)",
