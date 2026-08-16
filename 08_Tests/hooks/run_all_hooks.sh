@@ -811,6 +811,13 @@ SUITES=(
   #   ★미측정은 **NA**(0 위장 금지) · 표는 '자본 후보 아님' 경고를 함께 담는다(수치만 옮겨가는 것 방지).
   #   ⚠이 레버는 약한 재료를 덜 나쁘게 할 뿐 — 오버레이 후 최고 PORT_t +0.538.
   "08_Tests/hooks/test_overlay_precheck.R"
+  # 2026-08-16 추가: P0 루프 닫기 수리 4건 (L1 자동 스폰 설계, 도훈 승인) 위반 주입.
+  #   ①hypothesis_index 원천 (g) overlay_ab_results 파서/스테일 감시 ②drain_verdict dv_v1
+  #   판정 코드화 + **양성 대조**(07-10 실측 16건 재판정 = 세션 수기 INFERIOR 전건 일치)
+  #   ③close_round frontier 선언↔실기록 대조(부재 FQ-id 경고 + 구조 필드) ④처분 기록 배관.
+  #   ★T3b 가 도입 당일 실결함 검거 — id 추출 정규식 상한 {1,4} 이 긴 id 를 절단해
+  #    "쓴 id ≠ 대조한 id" 를 만들었다(수리: FQ-[0-9]+). 주입이 빨개지는 것까지가 한 축.
+  "08_Tests/hooks/test_p0_loop_closure.R"
 )
 
 # (2026-08-02) .py 분기 추가 — 종전엔 확장자 무관 `bash` 로 던져 파이썬 suite 가
