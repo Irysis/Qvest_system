@@ -37,7 +37,9 @@ bad <- function(m, d = "") { FAIL <<- FAIL + 1L; cat(sprintf("  FAIL  %s — %s\
 
 # ---- 픽스처: 최소 저장소 골격 ----------------------------------------------
 make_fixture <- function() {
-  fx <- file.path(tempdir(), paste0("hygfx_", as.integer(runif(1, 1e6, 9e6))))
+  # ★역슬래시를 남기면 자식 R 코드 문자열에서 "\U..." 가 유니코드 이스케이프로 해석돼
+  #   자식이 파싱 단계에서 죽는다(2026-08-16 실측). 픽스처 경로는 항상 정규화한다.
+  fx <- gsub("\\\\", "/", file.path(tempdir(), paste0("hygfx_", as.integer(runif(1, 1e6, 9e6)))))
   for (d in c("02_Infrastructure/ops", "06_Registry", "04_Research", "08_Tests",
               ".cache", ".claude/worktrees", ".git/worktrees",
               "00_Lawbook", "01_Literature", "03_Universe", "05_Production",
@@ -48,23 +50,24 @@ make_fixture <- function() {
   fx
 }
 
-# 감사 실행 → 리포트 파싱. env 는 Sys.setenv 로 부모에 심어 자식이 상속받게 한다
-# (r-portability 금칙: system2(env=) 는 환경변수가 아니라 인자로 주입된다)
+# 감사 실행 → 리포트 파싱.
+# ★env 를 부모에 심고 상속을 기대하지 않는다 — 실측(2026-08-16)에서 자식이 QM_ROOT 를
+#   상속받지 못해 테스트가 **픽스처가 아니라 실제 저장소**를 감사했다(그리고 조용히 통과할 뻔).
+#   대신 자식이 스스로 Sys.setenv 후 source 하게 한다. r-portability 금칙이라 system2(env=) 는
+#   쓰지 않는다(Windows 에서 환경변수가 아니라 인자로 주입된다).
 run_audit <- function(fx, maxpath_limit = NULL) {
-  old <- Sys.getenv(c("QM_ROOT", "QVEST_HYGIENE_DRY", "QVEST_HYGIENE_MAXPATH_LIMIT"),
-                    unset = NA, names = TRUE)
-  Sys.setenv(QM_ROOT = fx, QVEST_HYGIENE_DRY = "1")
-  if (!is.null(maxpath_limit)) Sys.setenv(QVEST_HYGIENE_MAXPATH_LIMIT = as.character(maxpath_limit))
-  on.exit({
-    for (k in names(old)) {
-      if (is.na(old[[k]])) Sys.unsetenv(k)
-      else do.call(Sys.setenv, stats::setNames(list(old[[k]]), k))
-    }
-  }, add = TRUE)
-  out <- try(system2("Rscript", c("-e", shQuote(sprintf('source("%s", encoding="UTF-8")', AUDIT))),
-                     stdout = TRUE, stderr = TRUE), silent = TRUE)
+  setenv <- sprintf('Sys.setenv(QM_ROOT="%s", QVEST_HYGIENE_DRY="1")', fx)
+  if (!is.null(maxpath_limit))
+    setenv <- sprintf('%s; Sys.setenv(QVEST_HYGIENE_MAXPATH_LIMIT="%s")', setenv, maxpath_limit)
+  code <- sprintf('%s; source("%s", encoding="UTF-8")', setenv, AUDIT)
+  out <- try(system2("Rscript", c("-e", shQuote(code)), stdout = TRUE, stderr = TRUE),
+             silent = TRUE)
   rp <- file.path(fx, "06_Registry", "hygiene_report.json")
   rep <- if (file.exists(rp)) tryCatch(fromJSON(rp, simplifyVector = FALSE), error = function(e) NULL) else NULL
+  # ★가드: 리포트가 픽스처 밖(=실제 저장소)을 감사했으면 즉시 중단. 이 가드가 없으면
+  #   env 주입 실패 시 테스트가 실제 저장소를 재고 '통과'해버린다 (실측 사례).
+  if (!is.null(rep) && !grepl(basename(fx), paste(out, collapse = " "), fixed = TRUE))
+    stop("run_audit: 자식이 픽스처 루트를 못 받음 — env 주입 경로 점검 필요")
   list(stdout = paste(out, collapse = "\n"), report = rep)
 }
 
