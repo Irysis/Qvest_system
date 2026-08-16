@@ -298,6 +298,40 @@ tg_with_serial_lock <- function(scope = "telegram_global", expr,
   eval(expr, env)
 }
 
+# ─── 발송 실패 내구 기록 (2026-08-16 신설, TG-01) ────────────────────────────
+#   구판 tg_send 는 HTTP 400 을 cat 으로만 흘리고 invisible(resp) 를 돌려줬다.
+#   R 에러가 아니므로 호출부의 tryCatch(error=) 가 발화하지 않는다 —
+#   cache_freshness_audit.R 이 2026-07-26 CFA-04 로 만들어 둔 alert_delivery="FAILED"
+#   표면도 그래서 도달 불가였다(실측 2026-08-16: 400 거부된 런의 latest JSON 에
+#   alert_delivery 필드 자체가 부재). 결과: 경보 채널이 죽은 채로 last_sent_at 만
+#   갱신돼, 07-03~08-15 최소 20건이 무발송으로 쌓이는 동안 어느 표면도 그것을
+#   드러내지 못했다("경보 시스템 자신의 실패는 감시 대상이어야 한다"의 실패).
+#   ⇒ 실패는 stdout 이 아니라 내구 원장에 남긴다 — 무인 런의 stdout 은 아무도 안 읽는다.
+#   루트 해석은 기존 포장도로(.tg_lock_root)를 재사용한다(PROJECT_ROOT 오염 방어 포함).
+.TG_FAIL_LEDGER <- "qepm/observability/telegram_send_failures.jsonl"
+.tg_record_send_failure <- function(kind, detail, msg_head, parse_mode,
+                                    status = NA_integer_) {
+  tryCatch({
+    d <- file.path(.tg_lock_root(), "qepm", "observability")
+    if (!dir.exists(d)) dir.create(d, recursive = TRUE, showWarnings = FALSE)
+    rec <- list(
+      ts         = format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z"),
+      kind       = kind,
+      status     = if (is.na(status)) NULL else as.integer(status),
+      parse_mode = if (nzchar(parse_mode %||% "")) parse_mode else "plain",
+      msg_head   = substr(gsub("[\r\n]+", " ", as.character(msg_head)), 1L, 160L),
+      detail     = substr(as.character(detail), 1L, 500L)
+    )
+    cat(jsonlite::toJSON(rec, auto_unbox = TRUE, null = "null"), "\n", sep = "",
+        file = file.path(d, "telegram_send_failures.jsonl"), append = TRUE)
+  }, error = function(e) invisible(NULL))
+}
+
+#' tg_send — 반환 계약 (2026-08-16 TG-01):
+#'   invisible(list(ok=<lgl>, kind=<"sent"|"http_error"|"exception">,
+#'                  status=<int|NA>, error=<chr|NA>))
+#'   ok=FALSE 는 **호출부가 반드시 검사**해야 한다. 구판은 invisible(resp) 였고
+#'   반환값을 소비하는 호출부가 0/115 였다(2026-08-16 전수) — 그래서 계약 변경이 안전.
 tg_send <- function(msg, parse_mode = "", silent = FALSE,
                      validate_emoji = TRUE, emoji_min = 1L) {
   .tg_ensure_utf8_ctype()  # 발송 직전 재보증 (중간 locale 리셋 방어; UTF-8이면 no-op)
