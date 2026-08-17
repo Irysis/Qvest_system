@@ -60,19 +60,25 @@ after <- nlines(LEDGER)
 
 chk("T1a tg_send 가 구조화 상태를 반환 (list + ok 필드)",
     is.list(res) && !is.null(res$ok), sprintf("(got %s)", class(res)[1]))
-chk("T1b 주입된 위반이 ok=FALSE 로 잡힘",
-    identical(res$ok, FALSE), sprintf("(ok=%s)", res$ok))
-chk("T1c status 가 400 (entity parse 거부)",
-    identical(as.integer(res$status %||% NA), 400L), sprintf("(status=%s)", res$status))
-chk("T1d error 본문에 parse entities 사유가 담김",
-    grepl("parse entities", res$error %||% "", fixed = TRUE), "")
-chk("T2  실패가 내구 원장에 1줄 적립됨 (stdout 아님)",
-    after == before + 1L, sprintf("(before=%d after=%d)", before, after))
 
-if (after > before) {
-  last <- jsonlite::fromJSON(tail(readLines(LEDGER, warn = FALSE), 1))
-  chk("T2b 원장 레코드 kind=http_error", identical(last$kind, "http_error"), "")
-  chk("T2c 원장 레코드가 parse_mode 를 보존", identical(last$parse_mode, "Markdown"), "")
+# 네트워크 단절이면 API 왕복 축은 시험 불가 — 거짓 FAIL 대신 SKIP 으로 드러낸다.
+#   단 "실제로 발송돼 버림(ok=TRUE)"은 네트워크와 무관한 **진짜 회귀**이므로 FAIL 유지.
+if (identical(res$kind, "exception")) {
+  skp("T1b~T2c 라이브 API 축", sprintf("네트워크/예외 (%s) — 계약 축은 검증 못함", substr(res$error %||% "", 1, 80)))
+} else {
+  chk("T1b 주입된 위반이 ok=FALSE 로 잡힘",
+      identical(res$ok, FALSE), sprintf("(ok=%s — TRUE 면 주입이 통과해 버린 것)", res$ok))
+  chk("T1c status 가 400 (entity parse 거부)",
+      identical(as.integer(res$status %||% NA), 400L), sprintf("(status=%s)", res$status))
+  chk("T1d error 본문에 parse entities 사유가 담김",
+      grepl("parse entities", res$error %||% "", fixed = TRUE), "")
+  chk("T2  실패가 내구 원장에 1줄 적립됨 (stdout 아님)",
+      after == before + 1L, sprintf("(before=%d after=%d)", before, after))
+  if (after > before) {
+    last <- jsonlite::fromJSON(tail(readLines(LEDGER, warn = FALSE), 1))
+    chk("T2b 원장 레코드 kind=http_error", identical(last$kind, "http_error"), "")
+    chk("T2c 원장 레코드가 parse_mode 를 보존", identical(last$parse_mode, "Markdown"), "")
+  }
 }
 
 cat("\n=== T3 양성대조 — 이스케이프 후 엔티티 짝 (파서 레벨, 무발송) ===\n")
@@ -114,5 +120,6 @@ chk("T5a 돌연변이 — 성공 시엔 SENT",
 chk("T5b 돌연변이 — 성공 시엔 스탬프함 (T4 가 상시-참이 아님)",
     identical(s$stamped, TRUE), "")
 
-cat(sprintf("\n=== test_telegram_send_contract: %d PASS / %d FAIL ===\n", PASS, FAIL))
+cat(sprintf("\n=== test_telegram_send_contract: %d PASS / %d FAIL / %d SKIP ===\n", PASS, FAIL, SKIP))
+if (SKIP > 0) cat("  ⚠SKIP>0 — 라이브 API 축이 돌지 않았다. '전부 초록'으로 읽지 말 것.\n")
 if (FAIL > 0) quit(status = 1)
