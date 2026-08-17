@@ -254,6 +254,16 @@ SUITES=(
   #   FRESH 로 보고됐다 — 동결을 보는 유일 축(mtime)이 폐기되던 구조.
   #   caches_override/today/persist 주입 파라미터의 첫 소비자(노출만 돼 있고 케이스 0건이었음).
   "08_Tests/data/test_cache_freshness_worse_of.R"
+  # 2026-08-16 추가: 텔레그램 발송 계약 위반 주입 (TG-01/CFA-05/CFA-06 수리 가드).
+  #   실사고: cache_freshness 경보가 07-03~08-15 최소 20건 전부 HTTP 400("can't parse
+  #   entities")으로 거부됐는데 **어느 표면도 그것을 드러내지 못했다** — 구 tg_send 가
+  #   400 을 cat 으로만 흘리고 R 에러를 안 냈으므로 ①호출부 tryCatch(error=) 미발화
+  #   ②CFA-04 의 alert_delivery 미기록 ③last_sent_at 은 배달된 듯 갱신, 셋이 동시에.
+  #   즉 **경보 시스템 자신의 실패가 무감시**였다(위 worse-of 축과 같은 계통: 감시기 사망).
+  #   ★주입(살아있는 _ 홀수)이 실제로 400 을 유발하는지까지 본다 — 주입이 위반이 아니면
+  #     검사는 아무것도 시험하지 않는다(초판이 _ 2개를 써서 200 으로 통과한 실측 함정).
+  #   네트워크 단절 시 라이브 축은 SKIP 으로 계상해 드러낸다(거짓 FAIL 방지, 초록 위장 방지).
+  "08_Tests/data/test_telegram_send_contract.R"
   # 2026-08-02 추가: 무인 일일 체인(daily_refresh.sh)에 내장된 run_r 'R 코드' 블록의
   #   **구문 사전검사**. 실사고: r18(완료/부분실패 통보) 블록의 최상위 if/else 가 두 줄로
   #   쪼개져 "unexpected 'else'" 로 죽었고 — 하필 그 블록이 실패를 알리는 스텝이라

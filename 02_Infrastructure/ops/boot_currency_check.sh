@@ -19,6 +19,9 @@
 #   C8a 항해도: CLAUDE.md Active Version ↔ 00_Lawbook/INDEX.md 헤더 버전
 #   C8c 커버리지: CLAUDE.md "★ Active SOT" 나열 ⊆ 00_Lawbook/INDEX.md 인용
 #   C9  환경  : python-policy.md 가 선언한 ML 실행기(venv)가 실제로 실행 가능한가
+#   C10 카나리아: venv 트리의 삭제 감시 표식이 살아 있는가 ("언제"만 답함)
+#   C11 감사감시: 상승권한 작업의 디제스트가 **신선하고** 정책 on · SACL 부착 · 이벤트 0 인가
+#                ("누가"를 답할 수 있는 상태인지 — 디제스트 정체도 실패로 잡는다)
 #
 # C8 배경 (2026-08-16 감사 wf_31a04a99): 00_Lawbook/INDEX.md 가 v8.1.0(06-12)에서 2개월·
 #   헌법 4회 전이분 낙후. 원인 1위는 "안 열어서"가 아니라 **부분 갱신이 버전 배너를 안
