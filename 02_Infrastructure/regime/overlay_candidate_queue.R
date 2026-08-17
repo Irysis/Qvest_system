@@ -13,6 +13,9 @@
 #   ② 06_Registry/module_catalog.json + module_quarantine.json meta (register_module 경유분 — 현재 0건, 배관 선설치)
 #   ③ manual_entries — 레지스트리 밖 산출물 수동 등재 (첫 케이스: LH/D2 loser-augment, 07-03 메모리 최우선 큐.
 #       수치는 D2_forge_result.rds 실측값을 런타임에 읽음 — 손기입 금지)
+#   ④ standalone_track_dispositions.json 의 verdict=overlay_routed 처분 (2026-08-17 신설 —
+#       /improve-drain R1. 처분 원장을 큐 적재로 잇는 기계 소비자: 이게 없으면 overlay_routed
+#       처분이 죽은 주소 선언이 된다 — FR_RCMA "소비자 0" 전례의 재발 방지)
 # A/B 실측 결과(06_Registry/overlay_ab_results/<id>.json 존재 시) → 후보에 ab_result 첨부 + status="measured".
 #
 # 실행: Rscript 02_Infrastructure/regime/overlay_candidate_queue.R  (재실행 idempotent — 전량 재생성)
@@ -133,6 +136,42 @@ collect_manual <- function() {
   out
 }
 
+# ── ④ 처분 원장 재라우팅 (2026-08-17 — /improve-drain R1, 도훈 "재개") ────────
+#   standalone HARD 심사가 "신호 실재·구조 사유 기각"을 overlay_routed 로 처분하면
+#   여기가 그 처분을 큐 후보로 승격한다. source="alpha_search_manifest" + bt_result_path
+#   → drain adapter B (bt_result_rds) 경로 그대로 소비 가능.
+collect_dispo_routed <- function() {
+  out <- list()
+  dp <- "06_Registry/standalone_track_dispositions.json"
+  d <- if (file.exists(dp)) tryCatch(fromJSON(dp, simplifyVector = FALSE), error = function(e) NULL) else NULL
+  for (sid in names(d$dispositions %||% list())) {
+    rec <- d$dispositions[[sid]]
+    if (!identical(.chr(rec$verdict), "overlay_routed")) next
+    rd <- sub("^STR_AS_", "", sid)
+    run_dir <- file.path("stage_artifacts/alpha_search", rd)
+    bt <- file.path(run_dir, "bt_result.rds")
+    mf <- file.path(run_dir, "strategy_manifest.json")
+    if (!identical(rd, sid) && file.exists(bt)) {
+      m <- if (file.exists(mf)) tryCatch(fromJSON(mf, simplifyVector = FALSE), error = function(e) NULL) else NULL
+      out[[length(out) + 1]] <- list(
+        id = sid, source = "alpha_search_manifest",
+        source_path = mf,
+        strategy_name = .chr(m$strategy_name) %||% sid,
+        screen_route = "OVERLAY_CANDIDATE(dispo:overlay_routed)",
+        label_time = .chr(rec$recorded_at),
+        grade = "screen_tier", essence_grade = NA_character_,
+        metric_type = "registry_record",
+        bt_result_path = bt,
+        disposition_note = .chr(rec$note)
+      )
+    } else {
+      # 죽은 처분 가시화 — 조용히 건너뛰지 않는다 (부재를 정상으로 내려앉힘 금지)
+      cat(sprintf("[queue] WARN: overlay_routed 처분 %s — bt_result.rds 부재/비표준 id, 적재 생략\n", sid))
+    }
+  }
+  out
+}
+
 # ── A/B 실측 결과 첨부 ────────────────────────────────────────────────────────
 attach_ab_results <- function(cands) {
   for (i in seq_along(cands)) {
@@ -147,7 +186,8 @@ attach_ab_results <- function(cands) {
 
 # ── main ─────────────────────────────────────────────────────────────────────
 build_overlay_candidate_queue <- function(write = TRUE) {
-  cands <- c(collect_manifests(), collect_module_registries(), collect_manual())
+  cands <- c(collect_manifests(), collect_module_registries(), collect_manual(),
+             collect_dispo_routed())
   # dedupe by id (manifest 우선순위 유지 — 최초 발견분)
   ids <- vapply(cands, function(x) x$id, "")
   cands <- cands[!duplicated(ids)]

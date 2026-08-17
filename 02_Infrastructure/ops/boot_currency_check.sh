@@ -269,6 +269,37 @@ else
   bad "C10 UNKNOWN — 실행기 경로 파생 실패로 venv 디렉터리를 특정 못 함"
 fi
 
+# ── C11 감사 감시 생존: 삭제 주체를 볼 수 있는 상태인가 ──────────────────────
+# C10 은 "표식이 사라졌다"까지만 말한다. "누가 지웠나"는 Security 로그(4660/4663)에
+#   있는데 그건 관리자 권한이라 이 검사가 못 읽는다. 그래서 상승 권한 스케줄 작업
+#   (Qvest_AuditWatch.bat → audit_watch.ps1)이 대신 읽어 평탄 JSON 으로 떨구고,
+#   여기서는 그 **결론만** 읽는다.
+# ★세 가지를 한꺼번에 본다 — 어느 하나만 빠져도 "조용함"이 "안전"으로 위장된다:
+#   ① 디제스트가 신선한가(작업이 살아 있나) ② 감사 정책이 켜져 있나 ③ SACL 이 붙어 있나
+#   특히 ①이 없으면 작업이 죽은 순간부터 영원히 초록이다(2026-08-16 에 감사 자체가
+#   꺼져 있어 삭제 주체를 영구히 잃은 것과 같은 구조).
+F_AUDITW="${QVEST_BCC_AUDIT_WATCH:-$PROJECT/.cache/audit_watch_status.json}"
+AUDITW_MAX_AGE_H="${QVEST_BCC_AUDIT_MAX_AGE_H:-30}"
+if [ ! -f "$F_AUDITW" ]; then
+  bad "C11 감사 감시 미배선 — $F_AUDITW 부재. 삭제 주체를 볼 수 없다(4660/4663 는 관리자만 읽음). 등록: 02_Infrastructure/ops/scheduler/Qvest_AuditWatch.bat 을 '가장 높은 수준의 권한으로 실행'으로 예약"
+else
+  _gen=$(grep -oE '"generated_epoch"[[:space:]]*:[[:space:]]*[0-9]+' "$F_AUDITW" | grep -oE '[0-9]+$' | head -1)
+  _now=$(date +%s)
+  if [ -z "$_gen" ]; then
+    bad "C11 UNKNOWN — 디제스트에서 generated_epoch 파싱 실패 (포맷 변경 시 파서 갱신). 통과로 위장 금지"
+  elif [ $(( (_now - _gen) / 3600 )) -gt "$AUDITW_MAX_AGE_H" ]; then
+    bad "C11 감사 디제스트 정체 $(( (_now - _gen) / 3600 ))h (> ${AUDITW_MAX_AGE_H}h) — 감시 작업이 돌지 않는다. 죽은 감시는 '이벤트 0'과 구분되지 않는다"
+  else
+    _verd=$(grep -oE '"verdict"[[:space:]]*:[[:space:]]*"[A-Z]+"' "$F_AUDITW" | grep -oE '[A-Z]+"$' | tr -d '"' | head -1)
+    case "$_verd" in
+      OK)       ok "C11 감사 감시 생존 (정책 on · SACL 부착 · 삭제 이벤트 0)" ;;
+      DEGRADED) bad "C11 감사 감시 불능(DEGRADED) — 대개 권한 부족. 작업을 '가장 높은 수준의 권한으로 실행'으로 재등록할 것. 사유: $(grep -oE '"[^"]*(NOT ELEVATED|UNPARSEABLE|threw)[^"]*"' "$F_AUDITW" | head -1)" ;;
+      ALERT)    bad "C11 ★감사 경보(ALERT) — $(grep -oE '"[^"]*(AUDIT POLICY OFF|SACL MISSING|WATCHED PATH ABSENT|DELETION ACTIVITY)[^"]*"' "$F_AUDITW" | head -2 | tr '\n' ' ')" ;;
+      *)        bad "C11 UNKNOWN — verdict 파싱 실패 (값='$_verd')" ;;
+    esac
+  fi
+fi
+
 # ── 출력 ─────────────────────────────────────────────────────────────────────
 if [ "$MODE" = "--boot" ]; then
   if [ "$FAIL" -eq 0 ]; then
