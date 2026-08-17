@@ -122,4 +122,10 @@ chk("T5b 돌연변이 — 성공 시엔 스탬프함 (T4 가 상시-참이 아�
 
 cat(sprintf("\n=== test_telegram_send_contract: %d PASS / %d FAIL / %d SKIP ===\n", PASS, FAIL, SKIP))
 if (SKIP > 0) cat("  ⚠SKIP>0 — 라이브 API 축이 돌지 않았다. '전부 초록'으로 읽지 말 것.\n")
+# 러너 집계 계약 (run_all_hooks.sh:882 _last_summary_json → :906-909):
+#   "test" 키를 가진 **마지막** JSON 한 줄에서 pass/fail/skipped 를 읽는다.
+#   ★키는 "skipped" 다("skip" 아님) — 이 줄이 없으면 SUITES 에 등재돼도 집계 0 이라
+#     "등재했으니 돌겠지"가 조용히 거짓이 된다(2026-08-16 등재 직전 실측으로 발견).
+cat(sprintf('{"test":"telegram_send_contract","pass":%d,"fail":%d,"skipped":%d,"total":%d}\n',
+            PASS, FAIL, SKIP, PASS + FAIL + SKIP))
 if (FAIL > 0) quit(status = 1)

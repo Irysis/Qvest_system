@@ -1,0 +1,30 @@
+{
+  "l_code": "L-OVL-20260817_165326",
+  "strategy_id": "OVL_standalone_reroute_batch_20260817",
+  "grade": "C",
+  "core_reference": "/improve-drain R1 배치 B — 06_Registry/overlay_ab_results/{STR_AS_20260709_074129_30048, STR_AS_20260612_154914_1055315, STR_AS_20260612_161342_1312338, STR_AS_20260612_143809_686286, STR_AS_20260612_132740_321995}.json (dv_v1) + 06_Registry/improvement_potential.json (pin_tag ip_20260817)",
+  "lesson_text": "standalone HARD 탈락 상위 PORT_t 재고(2.2~2.6)의 overlay 결합 구제 — 신규 5건 전건 INFERIOR (best paired NW-t -1.19~-1.74, 전건 ≤0, dv_v1 null_max_t 2.04). 07-10 16건과 합산 시 이 계열(알파서치 재고 × 시장-레벨 overlay A/B) 21/21 INFERIOR. 기전: 이 재고의 결격 사유는 위기-노출(MDD)이 아니라 신호 감쇠다(oos_retention 5건 전건 <0.1, decay-pattern) — overlay는 노출(β)을 고치는 레버이지 신호의 시간 위상을 고치지 못한다. ★ip_v1 판별력 첫 표본(n=5)이 공식의 핵심 가설을 반증: 최고점 1.429(ir_normal 0.797·ir_crisis -0.632 — 'crisis에서 잃는 신호일수록 overlay 이득' 가설이 보상하는 정확히 그 프로파일)가 그대로 INFERIOR. 'crisis에서 잃는다'는 overlay 결합 이득의 충분조건이 아니다 — regime overlay ΔIR이 대부분 노출 수준 재측정이라는 08-13 실측과 정합.",
+  "tags": ["OVERLAY_COMBINATION", "SCREEN_TIER", "CONFIG_SCOPED_NEGATIVE", "DECAY_PATTERN", "IP_V1_DISCRIMINATION_SAMPLE", "AUTO_SPAWN_R1"],
+  "created_at": "2026-08-17",
+  "research_mode": "overlay_research",
+  "created_by": "emit:improve_drain_R1",
+  "metric_type": "backtested_monthly_agg",
+  "tier": "screen_diagnostic",
+  "construction_type": "overlay_ab_paired",
+  "mechanism_hypothesis": "HARD 탈락 재고 중 '평시 상회·위기 하회' 프로파일은 감베타 overlay 결합으로 net 개선된다 — 기각(5/5). 재서술: 이 재고의 사망 축은 oos 감쇠이며 overlay가 접근 불가한 축이다.",
+  "lcode_schema_version": 2,
+  "screen_verdict": "CONFIG_SCOPED_NEGATIVE",
+  "n_new_drained": 5,
+  "n_family_total_inferior": 21,
+  "best_paired_nw_t_max": -1.193,
+  "best_paired_nw_t_min": -1.736,
+  "null_max_t_dv1": 2.039,
+  "ip_v1_top_score": 1.429,
+  "ip_v1_top_verdict": "INFERIOR",
+  "oos_retention_range": "-0.400~0.082",
+  "next_probe": "①ip_v1 공식 개정 후보 — crisis-loss 항(max(0,-ir_crisis))의 가중 재검토: 첫 표본이 반증, 표본 누적 후 분기 판별력 검증에서 결정 ②R2 소비 라운드 — backlog 자동 충원분 10건(fr 5·standalone 5) 순차 드레인 ③overlay 결합의 미측정 인접 경로 = 문턱형·에피소드-조건부 설계(연속 비율 매핑 한정 판정의 밖, INV-7)",
+  "falsification_attempts": [
+    {"test": "재라우팅 5건 paired 증분 NW-t (scenario-bare, lag-3, 비용 포함 8시나리오)", "result": "falsified", "effect_retained": 0, "note": "best t 전건 ≤0 — 개선 없음. dv_v1 자동 판정 = 세션 수기 규약의 코드화판"},
+    {"test": "ip_v1 스코어 상위가 SURVIVOR를 예측하는가 (첫 판별력 표본)", "result": "falsified", "effect_retained": 0, "note": "score 0.59~1.43 전건 eligible인데 판정 5/5 INFERIOR — 공식 개정 후보"}
+  ]
+}
