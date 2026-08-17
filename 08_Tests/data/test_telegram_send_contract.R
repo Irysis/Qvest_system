@@ -25,11 +25,14 @@
 ROOT <- Sys.getenv("QM_ROOT", "C:/Users/99922/OneDrive/Quant_Module_Moltbot")
 setwd(ROOT)
 
-PASS <- 0L; FAIL <- 0L
+PASS <- 0L; FAIL <- 0L; SKIP <- 0L
 chk <- function(name, cond, detail = "") {
   if (isTRUE(cond)) { PASS <<- PASS + 1L; cat(sprintf("  PASS  %s\n", name)) }
   else { FAIL <<- FAIL + 1L; cat(sprintf("  FAIL  %s %s\n", name, detail)) }
 }
+# ★SKIP 은 합격이 아니다 — 배터리 편입 시 네트워크 단절이 거짓 FAIL 을 내지 않게 하되,
+#   건너뛴 축은 반드시 **눈에 보이게** 센다(이 저장소의 "빈 결과 = 합격" 위장 방지 규약).
+skp <- function(name, why) { SKIP <<- SKIP + 1L; cat(sprintf("  SKIP  %s — %s\n", name, why)) }
 
 suppressMessages({
   source("02_Infrastructure/config.R")

@@ -72,6 +72,11 @@ EOF
   printf '실행기 = `%s` (합성)\n' "$FX/.venv_fake/Scripts/python.exe" > "$FX/pypolicy.md"
   # C10 픽스처: 삭제 감시 카나리아 생존 상태
   printf 'placed=synthetic\n' > "$FX/.venv_fake/.canary_fixture"
+  # C11 픽스처: 감사 감시 디제스트가 신선하고 verdict=OK 인 상태
+  #   ★epoch 를 실행 시점에서 생성한다 — 리터럴로 박으면 픽스처가 늙어서
+  #     어느 날 갑자기 "정체"로 빨개진다(고정 문턱 함정과 같은 계통).
+  printf '{\n  "generated_epoch":  %s,\n  "verdict":  "OK",\n  "notes": []\n}\n' \
+    "$(date +%s)" > "$FX/audit_watch.json"
 }
 
 run_chk() { # 픽스처 세트로 checker 실행 → exit code 반환, 출력은 $OUT
@@ -79,7 +84,8 @@ run_chk() { # 픽스처 세트로 checker 실행 → exit code 반환, 출력은
     QVEST_BCC_QVEST_MD="$FX/qvest.md" QVEST_BCC_SETTINGS="$FX/settings.json" \
     QVEST_BCC_DISPATCH="$FX/dispatch.json" QVEST_BCC_BOOK_STATE="$FX/book.json" \
     QVEST_BCC_AGENTS_DIR="$FX/agents" QVEST_BCC_LAWBOOK_INDEX="$FX/lawbook_index.md" \
-    QVEST_BCC_PY_POLICY="$FX/pypolicy.md" bash "$CHK" 2>&1)
+    QVEST_BCC_PY_POLICY="$FX/pypolicy.md" QVEST_BCC_AUDIT_WATCH="$FX/audit_watch.json" \
+    bash "$CHK" 2>&1)
   return $?
 }
 
@@ -141,6 +147,23 @@ inject "V10 선언된 ML 실행기 부재 검출(환경 결손)" "C9 " v10
 
 v11() { rm -f "$FX/.venv_fake/.canary_fixture"; }
 inject "V11 카나리아 소실 검출(삭제 주체 실재 신호)" "C10 " v11
+
+# ── C11 감사 감시: "조용함"이 "안전"으로 위장되는 4경로를 각각 막는다 ────────
+v12() { rm -f "$FX/audit_watch.json"; }
+inject "V12 감사 디제스트 부재 = 미배선 검출" "C11 " v12
+
+# ★가장 중요한 축: 감시 작업이 죽으면 디제스트가 굳는다. 그때 verdict 는 여전히
+#   "OK" 라서, 신선도를 안 보면 **작업이 죽은 순간부터 영원히 초록**이 된다.
+v13() { printf '{\n  "generated_epoch":  %s,\n  "verdict":  "OK",\n  "notes": []\n}\n' \
+          "$(( $(date +%s) - 40*3600 ))" > "$FX/audit_watch.json"; }
+inject "V13 디제스트 정체 검출(죽은 감시가 OK로 위장)" "C11 " v13
+
+v14() { printf '{\n  "generated_epoch":  %s,\n  "verdict":  "ALERT",\n  "notes": ["AUDIT POLICY OFF - deletions are no longer recorded."]\n}\n' \
+          "$(date +%s)" > "$FX/audit_watch.json"; }
+inject "V14 감사 정책 꺼짐(ALERT) 검출" "C11 " v14
+
+v15() { printf '{\n  "verdict":  "OK",\n  "notes": []\n}\n' > "$FX/audit_watch.json"; }
+inject "V15 epoch 파싱 실패 = UNKNOWN FAIL(통과 위장 금지)" "C11 " v15
 
 # ── T10. Lawbook INDEX 부재 = UNKNOWN FAIL (fail-open 금지) ──────────────────
 mk_clean; rm -f "$FX/lawbook_index.md"
