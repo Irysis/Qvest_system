@@ -1,6 +1,6 @@
 # Knowledge Index — 순차 뷰 (안정 ID 불변 · 활성 집합 1..N 자동)
 
-생성: 2026-08-20T21:56:31+0900 · `build_knowledge_index.R` · **안정 ID(AX-003/L-132/DIST-*)는 provenance 앵커 = 영구 불변**. 순번(#)은 현재 활성 집합의 위치일 뿐 — 증류/강등되면 뷰에서 자동 제외되어 항상 1..N 연속(구멍 없음). 빠진 것도 아카이브+검색+부활로 보존.
+생성: 2026-08-20T22:15:02+0900 · `build_knowledge_index.R` · **안정 ID(AX-003/L-132/DIST-*)는 provenance 앵커 = 영구 불변**. 순번(#)은 현재 활성 집합의 위치일 뿐 — 증류/강등되면 뷰에서 자동 제외되어 항상 1..N 연속(구멍 없음). 빠진 것도 아카이브+검색+부활로 보존.
 
 ## Active Law (4)
 
@@ -31,7 +31,7 @@
 | 14 | DIST-RAMP-005 | positive | RAMP infra/process: 11개 저상관(pairwise cor 0.11) 직교 약신호군을 EW로 조합하고 회전제어(13.1->7.8x)를 걸면, 개별군이 전부 음의 ne… | 3 |
 | 15 | DIST-RAMP-006 | conditional | KR 시장에서 value/국면-조건부 팩터배분은 배포 envelope(25종 long-only)에서 실현 PORT_t 천장이 ~2.85로, 모든 regime 변형(AR+MSM 2.… | 9 |
 
-## L-code 코퍼스 — 모드별 순차 (총 496 · 글로벌 연속 #)
+## L-code 코퍼스 — 모드별 순차 (총 497 · 글로벌 연속 #)
 
 안정 ID(L-...)는 불변. 아래 #는 활성 코퍼스 내 위치(모드 그룹 · 글로벌 연속).
 
@@ -580,12 +580,13 @@
 | 493 | L-RAMP-20260717_195731 | infra_process | B | [데이터무결성 근원수리] R47 R46-P1 — R46 tripwire가 특정한 218 source-seam Close 구멍을 KRX 백필로 실수리. ★rawda… |
 | 494 | L-RAMP-20260802_204804 | flow_supply | C | insider INS_MAGQ3 보조 tripwire 증분 = 기각. 그러나 본 과제보다 큰 관측가능성 결함(R43-F1)을 적발·수리했다. ① 증분 판정 UND… |
 | 495 | L-RAMP-20260820_212848 | low_vol | F | FQ-239 P0-2 (도훈 mandate 2026-08-20 자본졸업 루프 착수 게이트). run_ramp_shumulvey.R bt()(:179-199)와 _… |
+| 496 | L-RAMP-20260820_221500 | low_vol | C | FQ-239 (도훈 mandate 자본졸업 루프, prereg smv_v5_prereg_20260820, pin smv_r2_20260820). 보정 회계(월말 … |
 
 ### regime_research
 
 | # | L-code | family | grade | 요지 |
 |---|--------|--------|-------|------|
-| 496 | L-RR-20260704_114303 | value | F | KR book(STR_1715_AR_on_M4_R05_overlay_PG2) 인버스 ETF(-1x 114800/-2x 252670) 헤지 슬리브 전면 REJECT… |
+| 497 | L-RR-20260704_114303 | value | F | KR book(STR_1715_AR_on_M4_R05_overlay_PG2) 인버스 ETF(-1x 114800/-2x 252670) 헤지 슬리브 전면 REJECT… |
 
 ## 강등/아카이브 (뷰 제외 · 참조 영구 보존, 4)
 

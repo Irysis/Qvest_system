@@ -763,6 +763,35 @@ if (file.exists(kif_path)) {
   cat("  knowledge_index 신선도: 검사기 부재 (ops/knowledge_index_freshness.R) — 건너뜀\n")
 }
 
+# ─── WARN_11: 주입 사본(failure_revival_flags) 신선도 (2026-08-20 배선) ──────
+#   배경: DIST 카드의 frontier 를 고쳐도 **주입면에는 구 문장이 계속 나갔다**.
+#   경로가 하나 더 있었기 때문 — .cache/failure_revival_flags.json 이 frontier *사본*을
+#   들고 있고 axiom_context_inject 의 '부활 발화' 블록이 그 사본을 주입한다.
+#   그 파일 갱신자는 모닝 파이프라인(morning_briefing.sh:99)인데 morning_run.sh:195 가
+#   **주말엔 morning_briefing 을 skip** 하므로 최대 3~4일 지연이 난다(08-13 사본이
+#   08-20 까지 주입된 실사례). refine_distilled 에 동기 갱신을 배선해 그 경로는 닫았으나,
+#   ★다른 경로(카드 직접 편집·approve_proposed·수동 JSON 수정)로 낡으면 여전히 안 보인다.
+#   ⇒ mtime 역전을 계기로 만든다. 판정 근거는 '얼마나 오래됐나'(대리 지표)가 아니라
+#     **정본보다 뒤처졌는가**(순서 관계)다 — 사본은 정본보다 새것이어야 한다.
+flags_p <- file.path(PROJ_ROOT, ".cache", "failure_revival_flags.json")
+dist_p  <- file.path(PROJ_ROOT, "06_Registry", "distilled_knowledge.json")
+if (file.exists(flags_p) && file.exists(dist_p)) {
+  f_mt <- file.info(flags_p)$mtime; d_mt <- file.info(dist_p)$mtime
+  lag_h <- as.numeric(difftime(d_mt, f_mt, units = "hours"))
+  if (is.finite(lag_h) && lag_h > 0) {
+    add_warn("WARN_11_revival_flags_stale",
+             sprintf(paste0("주입 사본이 정본보다 %.1fh 뒤처짐 — DIST frontier 수정이 주입면에 ",
+                            "미반영일 수 있음 (정본 %s > 사본 %s). ",
+                            "복구: Rscript -e 'source(\"02_Infrastructure/ops/failure_revival_monitor.R\"); ",
+                            "revival_monitor_run(write_flags=TRUE)'"),
+                     lag_h, format(d_mt, "%m-%d %H:%M"), format(f_mt, "%m-%d %H:%M")))
+  } else {
+    cat(sprintf("  주입 사본 신선도: OK (사본이 정본보다 %.1fh 최신)\n", -lag_h))
+  }
+} else {
+  cat("  주입 사본 신선도: 대상 파일 부재 — 건너뜀\n")
+}
+
 # ─── Summary ─────────────────────────────────────────────────────
 cat("\n=== SUMMARY ===\n")
 cat(sprintf("Hard fails: %d\n", length(hard_fails)))

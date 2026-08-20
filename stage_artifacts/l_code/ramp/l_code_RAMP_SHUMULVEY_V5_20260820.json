@@ -1,0 +1,23 @@
+{
+  "l_code": "L-RAMP-20260820_221500",
+  "strategy_id": "RAMP_SHUMULVEY_V5_20260820",
+  "grade": "C",
+  "core_reference": "Shu-Mulvey KR v5 corrected-accounting remeasure: signal real (placebo p=0.033) but ALL capital gates fail (pt 1.03, oos 0.163, calmar 0.394). Daily online filter rejected (all 16 cells negative, flip-noise). Value is crisis-conditional -> consumption surfaces, not standalone allocation.",
+  "lesson_text": "FQ-239 (도훈 mandate 자본졸업 루프, prereg smv_v5_prereg_20260820, pin smv_r2_20260820). 보정 회계(월말 결정→익월 적용/일별 T+2)+신규 vintage 지수(r202608)+계약 채점(essence_score v2, chain, n_trials=16) 위에서 KR Shu-Mulvey 재측정. [확정 1 — 회계] P0-2 shift A/B로 동월 적용 결함 확정: 6월 헤드라인의 약 2/3가 결함 산물(pt 3.46→0.98 등, paired NW-t +5.1~+5.8). 6월 BL_20260619 'HARD 2/3 통과' 최종 철회. [확정 2 — 케이던스] 논문 원 프로토콜(일별 온라인 필터+T+2)은 KR에서 전 16셀 IR_vsEW 음수(−0.18~−0.56)·턴오버 2배+·MDD 악화로 기각. λ_mult 2가 1보다 단조 우위 = flip 노이즈 귀속. causal re-tune으로도 일별 구제 불가. 단 위기월(시장 하위 5% 월)에선 D1이 M0 대비 우위(+0.57 vs +0.18 %/mo) — 반응성 가치는 위기-조건부로만 실재. [확정 3 — 피처] 논문 시장환경 금리 피처 2종(ECOS 3Y·10Y−3Y)은 KR에서도 무기여~소폭 역기여(US 실측 가중≈0과 정합, 17종 완성 대조 달성). [확정 4 — 게이트] 헤드라인 M0-roll TE3: PORT_t 1.033(5bps)/0.631(15bps), oos_retention 0.163/0.031(<0.5 무조건 FAIL — DIST-RAMP-014 live_trigger(b) 미발화), calmar 0.394. HARD 3종 전패. 동월 결함 제거 후 구속 게이트가 oos→PORT_t로 이동. [확정 5 — 신호 실재] placebo 30-seed(뷰 월-블록 셔플): M0 5bps real +0.049 vs 셔플 −0.309(sd 0.219) p=0.033 → 약양성 타이밍 정보는 실재. 15bps에선 비용이 삼킴(IR −0.108이나 셔플 대비 p=0.000). ⇒ screen_tier_routed: 알파가 아니라 조건변수/오버레이 재료. 산출: smv_factor_regime_daily.parquet(6팩터 bear_prob 연속, 자유도 0 상대근접도) + FQ-236 Lane D 핸드오프. [방법론] 검증 하네스 자기결함 2건을 라운드 중 검거 — ①system2+shQuote가 Windows 자식에 리터럴 따옴표 전달→전 하위실행 즉사에도 'done' 출력(상태 미검사) ②TE 필터 부동소수점 0.03*100≠3→빈 grid 붕괴. 초록 출력이 아니라 요약 부재를 읽어서 잡음(verify-both-directions).",
+  "tags": "RAMP,regime,BL,SJM,placebo,screen_tier,PIT",
+  "created_at": "2026-08-20",
+  "research_mode": "ramp",
+  "created_by": "emit:ramp",
+  "metric_type": "backtested",
+  "construction_type": "chain",
+  "mechanism_hypothesis": "월간 국면 신호의 정보는 실재하나 크기가 작고(월 ~10bp급), 일별 반영은 노이즈 flip 비용이 정보 이득을 초과. 반응성 가치가 위기월에 집중 → 상시 배분이 아니라 조건부 소비(overlay 노출 스케일·Lane D 조건변수)가 정합 그릇.",
+  "dist_ref": "DIST-RAMP-014",
+  "fq_ref": "FQ-239",
+  "headline_m0roll_te3": {"pt_capwt_5bps": 1.033, "pt_capwt_15bps": 0.631, "oos_retention_5bps": 0.163, "oos_retention_15bps": 0.031, "calmar_5bps": 0.394, "net_sharpe": 0.65, "net_ir": 0.281},
+  "placebo": {"m0_5bps_p": 0.033, "m0_5bps_real": 0.049, "mean": -0.309, "sd": 0.219, "n": 30, "d1_5bps_p": 0.133},
+  "d1_verdict": "all_16_cells_negative_ir_vsew",
+  "crisis_conditional": {"d1_crisis_actE_mo": 0.00573, "m0_crisis_actE_mo": 0.001762},
+  "evidence": "04_Research/ramp/reports/shumulvey_v5_20260820.md | outputs/ramp/smv_v5_results_f15.csv | outputs/ramp/smv_v5_placebo_f15.csv | outputs/ramp/smv_p02_shift_ab_20260820.csv",
+  "family": "low_vol",
+  "family_source": "RAMP_SHUMULVEY 계열 승계"
+}
