@@ -264,6 +264,17 @@ SUITES=(
   #     검사는 아무것도 시험하지 않는다(초판이 _ 2개를 써서 200 으로 통과한 실측 함정).
   #   네트워크 단절 시 라이브 축은 SKIP 으로 계상해 드러낸다(거짓 FAIL 방지, 초록 위장 방지).
   "08_Tests/data/test_telegram_send_contract.R"
+  # 2026-08-20 추가: 거래일 지평선 단일점 감시 (BMG-01 가드의 위반 주입).
+  #   실사고 2026-08-14~20 — .cache/benchmark.parquet 은 naver_benchmark_update.py 가
+  #   유일하게 쓰는 파일이고(그 스크립트가 스스로 "저장 단일점"이라 선언),
+  #   trading_calendar 는 RAWDATA 순환참조를 끊으려고 **이 파일만** 거래일 권위로 삼는다.
+  #   venv 소실로 갱신기가 죽자 벤치마크가 08-14 에 얼었고 → 캘린더가 얼고 → Naver 는
+  #   "already >= target", KRX 는 "gap 0 days" 를 **정직하게** 보고했다. 거래일 3일이
+  #   비었는데 리프레시는 6일 내내 "실패 0" 으로 마감 — fail-soft 가 지평선을 삼킨 것.
+  #   ★검사는 A축(갱신기 rc)과 B축(파일 정체)을 따로 주입한다. 실사고 lag=6 은 B축
+  #     문턱(7)으로 **통과**하므로 B 를 방어선으로 읽으면 안 된다는 사실 자체를 케이스로
+  #     박제했다(I1/I2) — 문턱을 바꾸면 그 테스트가 먼저 빨개져서 주석 갱신을 강제한다.
+  "08_Tests/data/test_benchmark_currency_gate.R"
   # 2026-08-02 추가: 무인 일일 체인(daily_refresh.sh)에 내장된 run_r 'R 코드' 블록의
   #   **구문 사전검사**. 실사고: r18(완료/부분실패 통보) 블록의 최상위 if/else 가 두 줄로
   #   쪼개져 "unexpected 'else'" 로 죽었고 — 하필 그 블록이 실패를 알리는 스텝이라
@@ -887,6 +898,26 @@ SUITES=(
   "08_Tests/contract_regression/test_moment_fragility.R"
   "08_Tests/contract_regression/test_claim_state.R"
   "08_Tests/contract_regression/test_bm_park.R"
+  # ── 2026-08-20 추가: 미편입 15건 (요약 계약 정합 후 등재) ──────────────────
+  #   3건은 이미 배터리 JSON 을 내고 있었는데 SUITES 에 없어서 안 돌았고(순수 열거 누락),
+  #   12건은 요약 줄이 없어 등재해도 UNREPORTED 가 될 상태였다 → 요약 줄 추가 후 등재.
+  #   ★test_c15_load_path_scan 은 카운터가 main() 지역변수라 최상위 발행이 죽었다 —
+  #     스코프 안에서 발행하도록 고쳤다(같은 형태를 만들면 'object not found' 로 죽는다).
+  "08_Tests/ops/test_frontier_queue_io.R"
+  "08_Tests/ops/test_paper_dispatch_backfill.sh"
+  "08_Tests/worktask/test_wt_inflight_lock.R"
+  "08_Tests/regime/test_briefing_partial.R"
+  "08_Tests/regime/test_fred_robust.R"
+  "08_Tests/regime/test_ktri_v3_builder.R"
+  "08_Tests/regime/test_msm_daily_refit.R"
+  "08_Tests/regime/test_regime_signal_merge.R"
+  "08_Tests/portfolio/test_mvo_turnover_penalty.R"
+  "08_Tests/portfolio/test_optimizer_breadth.R"
+  "08_Tests/portfolio/test_pg2_coherence_check.R"
+  "08_Tests/data/test_dart_account_id_fallback.R"
+  "08_Tests/ops/test_frontier_citation_scan.R"
+  "08_Tests/ops/test_paper_intake_resolvers.R"
+  "08_Tests/hooks/test_c15_load_path_scan.R"
 )
 
 # (2026-08-02) .py 분기 추가 — 종전엔 확장자 무관 `bash` 로 던져 파이썬 suite 가

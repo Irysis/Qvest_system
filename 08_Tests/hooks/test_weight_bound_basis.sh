@@ -80,5 +80,7 @@ if [ "$LEG" = "0" ]; then ok "③ 구판 로직은 같은 위반을 **놓침**(0
 
 echo
 echo "[결과] PASS $PASS / FAIL $FAIL"
+# 2026-08-20: 배터리는 마지막 유효 JSON 줄만 읽는다 — 이 줄이 없어 미편입 상태였다.
+echo "{\"test\":\"test_weight_bound_basis\",\"pass\":$PASS,\"fail\":$FAIL,\"total\":$((PASS+FAIL))}"
 [ "$FAIL" -eq 0 ] || exit 1
 echo "[OK] 상한 기준 strategy_pre_cash 차단 실효 확인"

@@ -68,11 +68,12 @@ main <- function() {
   cat(sprintf("\n[운영 경로 현황] %d파일 | PASS %d · NOTES %d · FAIL %d\n", nrow(real),
               sum(real$verdict=="PASS"), sum(real$verdict=="PASS_WITH_NOTES"), sum(real$verdict=="FAIL")))
   cat(sprintf("\n===== %d PASS / %d FAIL =====\n", pass, fail))
+  # 2026-08-20: 배터리는 마지막 유효 JSON 줄만 읽는다. 카운터가 main() 지역변수라
+  #   최상위에 두면 'object not found' 로 죽는다 — 스코프 안에서 발행한다.
+  cat(sprintf("{\"test\":\"test_c15_load_path_scan\",\"pass\":%d,\"fail\":%d,\"total\":%d}\n",
+              pass, fail, pass + fail))
   if (fail == 0L) 0L else 1L
 }
 
 .rc <- main()
-# 2026-08-20: 배터리는 마지막 유효 JSON 줄만 읽는다 — 이 줄이 없어 미편입 상태였다.
-cat(sprintf("{\"test\":\"test_c15_load_path_scan\",\"pass\":%d,\"fail\":%d,\"total\":%d}
-", pass, fail, pass + fail))
 if (!interactive()) quit(status = .rc)

@@ -134,4 +134,6 @@ mv -f "$BAK" "$USAGE"; BAK=""
 
 echo
 echo "=== $PASS PASS / $FAIL FAIL ==="
+# 2026-08-20: 배터리는 마지막 유효 JSON 줄만 읽는다 — 이 줄이 없어 미편입 상태였다.
+echo "{\"test\":\"test_inject_usage_ranking\",\"pass\":$PASS,\"fail\":$FAIL,\"total\":$((PASS+FAIL))}"
 [ "$FAIL" -eq 0 ]
