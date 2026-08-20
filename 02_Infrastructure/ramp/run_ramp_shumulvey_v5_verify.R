@@ -17,10 +17,14 @@ IRf<-function(x){x<-x[is.finite(x)];if(length(x)<6)return(NA);mean(x)/sd(x)*sqrt
 hd<-function(a_,l_,t_,b_){ i<-RES$arm==a_ & RES$te==t_ & RES$cost_bps==b_ &
     (if(is.na(l_)) is.na(RES$lam_mult) else (!is.na(RES$lam_mult) & RES$lam_mult==l_))
   RES[which(i)][1] }
-run_engine<-function(kv){  # kv = named list of SMV_* values → 하위 Rscript 인자 주입
-  setenv_str<-paste(sprintf('Sys.setenv(%s="%s")',names(kv),unlist(kv)),collapse="; ")
-  code<-paste0(setenv_str,'; source("02_Infrastructure/ramp/run_ramp_shumulvey_v5_daily.R")')
-  system2("Rscript", args=c("-e", shQuote(code)), stdout=TRUE, stderr=TRUE)
+run_engine<-function(kv){  # kv = named list of SMV_* values → 임시 .R 파일 경유 (Windows 인용 함정 회피 — shQuote는 자식에 리터럴 따옴표 전달로 즉사했음)
+  tf<-tempfile(fileext=".R")
+  writeLines(c(sprintf('Sys.setenv(%s="%s")',names(kv),unlist(kv)),
+               'source("02_Infrastructure/ramp/run_ramp_shumulvey_v5_daily.R")'), tf)
+  out<-system2("Rscript", args=tf, stdout=TRUE, stderr=TRUE)
+  unlink(tf)
+  if(!any(grepl("V5_DONE",out))) cat("  [run_engine WARN] 자식 실패:",paste(tail(out,3),collapse=" | "),"\n")
+  invisible(out)
 }
 
 cat("=== v5 verify (KEY=",KEY,") ===\n",sep="")

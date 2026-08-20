@@ -1,6 +1,6 @@
 # Knowledge Index — 순차 뷰 (안정 ID 불변 · 활성 집합 1..N 자동)
 
-생성: 2026-08-20T20:59:04+0900 · `build_knowledge_index.R` · **안정 ID(AX-003/L-132/DIST-*)는 provenance 앵커 = 영구 불변**. 순번(#)은 현재 활성 집합의 위치일 뿐 — 증류/강등되면 뷰에서 자동 제외되어 항상 1..N 연속(구멍 없음). 빠진 것도 아카이브+검색+부활로 보존.
+생성: 2026-08-20T21:56:31+0900 · `build_knowledge_index.R` · **안정 ID(AX-003/L-132/DIST-*)는 provenance 앵커 = 영구 불변**. 순번(#)은 현재 활성 집합의 위치일 뿐 — 증류/강등되면 뷰에서 자동 제외되어 항상 1..N 연속(구멍 없음). 빠진 것도 아카이브+검색+부활로 보존.
 
 ## Active Law (4)
 
@@ -31,7 +31,7 @@
 | 14 | DIST-RAMP-005 | positive | RAMP infra/process: 11개 저상관(pairwise cor 0.11) 직교 약신호군을 EW로 조합하고 회전제어(13.1->7.8x)를 걸면, 개별군이 전부 음의 ne… | 3 |
 | 15 | DIST-RAMP-006 | conditional | KR 시장에서 value/국면-조건부 팩터배분은 배포 envelope(25종 long-only)에서 실현 PORT_t 천장이 ~2.85로, 모든 regime 변형(AR+MSM 2.… | 9 |
 
-## L-code 코퍼스 — 모드별 순차 (총 494 · 글로벌 연속 #)
+## L-code 코퍼스 — 모드별 순차 (총 496 · 글로벌 연속 #)
 
 안정 ID(L-...)는 불변. 아래 #는 활성 코퍼스 내 위치(모드 그룹 · 글로벌 연속).
 
@@ -503,87 +503,89 @@
 | 426 | L-QPM-20260718_101841 | infra_process | ? | Cleaner 증류 2-pass 중복실행 방지 = cleaner_pending.json에 distill_status(pending/in_progress/done)… |
 | 427 | L-QPM-20260718_190624 | risk_sigma_method | B | FQ-057 method-frontier 1호 아크(R1→NP3→NP4→P1, 2026-07-18, pin fq057_20260718_171024) 수렴 — (1… |
 | 428 | L-QPM-20260718_201043 | drawdown_aware_construction | C | FQ-058 method-frontier(2026-07-18, round fq058_20260718_191740, pin 상속 fq057): drawdown-aw… |
+| 429 | L-QPM-20260820_PROXY_CHECKER_INSTALL | infra_process | ? | 2026-08-20 계기(檢査器) 층 교체 라운드 — 대리 지표 4종을 내용 기반으로 바꾸고, 그 과정에서 '계기가 산다'는 것의 조건 세 가지를 실측으로 분리했… |
 
 ### QPM
 
 | # | L-code | family | grade | 요지 |
 |---|--------|--------|-------|------|
-| 429 | L-AR-20260809_214500 | momentum | F | ★**'재빌드로 해금된 신규 재료 4종'은 실제로 0종이었다.** 2026-08-09 factor_db 전면 재빌드(440개월)가 C10_SUE_Persisten… |
-| 430 | L-AR-20260813_R31R33 | measurement_form | N/A_panel_statistic | ★이 라운드가 확립한 것 = '평균 표적은 꼬리에 속고 순위·중앙값 표적은 안 속는다' 가 **factor DB 전반의 측정 가능한 성질**이라는 것. 세 층에서… |
-| 431 | L-AR-20260813_WT002 | overlay_regime | N/A_mechanism_gate_fail | ★판정 F1_FAIL — 기전 관문에서 기각, 성과 미산출(미달이 아니라 미측정). 하방 꼬리월 AUC: 신규 꼬리표적 0.7143 < MSM 상태-baselin… |
-| 432 | L-AR-20260813_WT003 | overlay_regime | N/A_mechanism_gate_fail | ★VT2 PASS / **VT2b REJECT** — VT4(성과) 미착수. VT1 예측 링크 실재(spearman(sigma_hat, 홀딩월 실현vol) **0… |
-| 433 | L-AR-20260813_WT005 | measurement_form | C | ★2단 라운드. **1차(깊이 20%)** paired NW3 t **+0.4930** < 문턱 2.0 = NOT_SUPPORTED. 자기 적발한 최강 비판 = … |
+| 430 | L-AR-20260809_214500 | momentum | F | ★**'재빌드로 해금된 신규 재료 4종'은 실제로 0종이었다.** 2026-08-09 factor_db 전면 재빌드(440개월)가 C10_SUE_Persisten… |
+| 431 | L-AR-20260813_R31R33 | measurement_form | N/A_panel_statistic | ★이 라운드가 확립한 것 = '평균 표적은 꼬리에 속고 순위·중앙값 표적은 안 속는다' 가 **factor DB 전반의 측정 가능한 성질**이라는 것. 세 층에서… |
+| 432 | L-AR-20260813_WT002 | overlay_regime | N/A_mechanism_gate_fail | ★판정 F1_FAIL — 기전 관문에서 기각, 성과 미산출(미달이 아니라 미측정). 하방 꼬리월 AUC: 신규 꼬리표적 0.7143 < MSM 상태-baselin… |
+| 433 | L-AR-20260813_WT003 | overlay_regime | N/A_mechanism_gate_fail | ★VT2 PASS / **VT2b REJECT** — VT4(성과) 미착수. VT1 예측 링크 실재(spearman(sigma_hat, 홀딩월 실현vol) **0… |
+| 434 | L-AR-20260813_WT005 | measurement_form | C | ★2단 라운드. **1차(깊이 20%)** paired NW3 t **+0.4930** < 문턱 2.0 = NOT_SUPPORTED. 자기 적발한 최강 비판 = … |
 
 ### ramp
 
 | # | L-code | family | grade | 요지 |
 |---|--------|--------|-------|------|
-| 434 | L-RAMP-20260618_131316 | overlay_regime | F | [failure-ledger/INV-7] 순진한 국면틸트(CAUTION/CRISIS서 방어군 1.5x·공격군 0.5x 고정룰) 역효과: net_sr −0.151 … |
-| 435 | L-RAMP-20260618_131316B | infra_process | C | factor_db 316 전수 sweep + 풀 479 PCA: standalone long-only PORT_t>1 인 단일팩터 0/316. 직교성은 gross… |
-| 436 | L-RAMP-20260618_131316C | infra_process | B | 11 직교 약신호군 EW 조합 + 회전제어(13.1→7.8x) → long-only net_sr +0.083(양수), port_t +0.21. 개별군 전부 음수(… |
-| 437 | L-RAMP-20260618_131800 | infra_process | B | Gate6 iteration: 최고=M0_smooth net_sr=+0.083 port_t=+0.21 TO=7.8 (기준 M0_EW −0.04). 회전제어=핵심레… |
-| 438 | L-RAMP-20260618_134000 | value | C | regime-cash 오버레이(CRISIS 0.3/CAUTION 0.6)를 M_regime_dd에 얹으니 net_sr +0.110→−0.105 악화. 원인=측정창… |
-| 439 | L-RAMP-20260618_140528 | ? | B | Round1 고레버리지: best=H3_regdd_conviction net_sr=+0.110 port_t=+0.26 oos=-1.067 (직전 +0.110). … |
-| 440 | L-RAMP-20260618_142650 | overlay_regime | A | ★유의 달성: RAMP M-code(11직교군+데이터구동 regime, top-25 long-only net) port_t(NW)=2.39 vs EW-univer… |
-| 441 | L-RAMP-20260618_175207 | infra_process | A | Graduation 시도: best=M_regdd port_t=3.66 oos_reten=0.15 calmar=0.37 DSR=3.24 (vs EW-uni). 게… |
-| 442 | L-RAMP-20260619_070753 | overlay_regime | B | 가이드북 Gate6-8 정식구현(역할 M0-M4 + drift 플래그 + 인베스터 레짐배분). Gate9: INVESTOR OOS active IR -0.192 … |
-| 443 | L-RAMP-20260619_081702 | overlay_regime | B | 팩터군 보강(2005-2026 전체 316팩터). equal-weight 316=희석 붕괴(pt 0.82) → IC-가중 composite가 해소: oos_ret… |
-| 444 | L-RAMP-20260619_103729 | overlay_regime | A | 미배선 Absorption Ratio(Kritzman 2010, 횡단면 상관 top15 고유값 분산비=시장동조화) 엔진을 RAMP에 배선. 헌법 §3.5 정합 s… |
-| 445 | L-RAMP-20260619_105903 | ? | A | 자율 자가발전: AR-soft 배선 위 {AR/AR+MSM}×{monthly/quarterly} 4변형. best=AR+MSM_quarterly pt_capwt … |
-| 446 | L-RAMP-20260619_132312 | momentum | A | 국면엔진 리서치풀 14개(인프라7:Cascade/AR/MSM/MRS9/Jump/Forecaster/hard4 + 신규리서치4:Trend/RealizedVol/Dr… |
-| 447 | L-RAMP-20260619_135237 | overlay_regime | B | 제약완화(도훈): active-only 제약 풀고 Gate8 soft 타이밍(Cascade Category 노출스케줄 1.0/0.7/0.4, 헌법 Σa≤1 허용·… |
-| 448 | L-RAMP-20260619_140656 | ml_complexity | B | 국면엔진 강화 3종 전부 Cascade 단독(pt 2.85) 미달: 순진앙상블 2.61·스마트앙상블(트레일링IR가중) 2.65·multi-axis 경제분업 2.7… |
-| 449 | L-RAMP-20260619_141402 | momentum | B | 새 국면엔진 설계(최신페이퍼 Shu-Mulvey 2024 arXiv 2410.14841 per-factor Sparse Jump Model): 각 군 IC시계열에… |
-| 450 | L-RAMP-20260619_144257 | low_vol | B | Shu-Mulvey 2024(arXiv 2410.14841) 충실구현(도훈 '모든 제약 해지'). 7 롱온리 스타일팩터 인덱스(Market+Value/Size/M… |
-| 451 | L-RAMP-20260619_150531 | overlay_regime | B | Shu-Mulvey 옵션1(인덱스 2003~확장, 2008 GFC 테스트포함)+옵션2(per-factor λ/κ CV튜닝, online filter는 월간 las… |
-| 452 | L-RAMP-20260619_151835 | overlay_regime | C | ★정정: 앞선 'Shu-Mulvey 조건부졸업 oos 0.52'는 sweep-부풀림 아티팩트였음. 도훈 '더 튜닝할 여지?'에 답해 논문 본래 메커니즘(rolli… |
-| 453 | L-RAMP-20260619_152736 | ml_complexity | A | ★★최종 정정(도훈 '파라미터 튜닝 적절했다' 2회 + '맘대로 마감 마라'): 직전 de-bias 'screen-tier' 결론은 내 오판이었다. grid-en… |
-| 454 | L-RAMP-20260619_173504 | overlay_regime | F | ★중대발견(도훈 '25종목 제약 넣어서 진행'): RAMP_02(Shu-Mulvey)는 25종목 제약에서 엣지 소멸=배포불가. BL 21팩터 인덱스비중→횡단면 종… |
-| 455 | L-RAMP-20260619_180008 | ml_complexity | C | 도훈 'direction 1,2 해보고 대안도': 25종목 RAMP_01 강화 시도, 둘 다 천장확인. ★Direction1(Shu-Mulvey 국면방법을 RAM… |
-| 456 | L-RAMP-20260619_193015 | overlay_regime | F | 도훈 'DPL 해보고 RAMP_02 로직 돌파법 최대추론'. 추론: RAMP_02 엣지=broad base 작은tilt timing, 25종목=집중 → compo… |
-| 457 | L-RAMP-20260620_103109 | momentum | B | ★새 접근 성공(도훈 '기존 틀말고 새 접근'): 25종목서 OOS 양수+calmar 통과하는 첫 배포가능 전략. ★결정적 발견(alpha OOS probe): … |
-| 458 | L-RAMP-20260620_104415 | momentum | B | ★도훈 교정 검증(국면조건부 다차원 블렌딩 > 정적 모멘텀-중심): 내 'momentum이 유일 생존알파' 프레임은 *무조건부 OOS*만 본 좁은 시각. Valu… |
-| 459 | L-RAMP-20260620_132802 | overlay_regime | C | 도훈 'FWL+국면엔진 개발진행'. ★내 'FWL이 최대 미사용 레버' 단언 측정이 반박(과신 정정). blanket FWL(전팩터 size중립화)=Size팩터(… |
-| 460 | L-RAMP-20260620_161507 | momentum | A | ★도훈 goal 달성: 정직 실측으로 현 Book 초과 포트 발굴. 8-구성요소 grid(3024 config, 공유캐시 병렬) 탐색→robust 승자 selec… |
-| 461 | L-RAMP-20260620_171915 | overlay_regime | A | 도훈 옵션2(Book을 factor로 흡수 재최적화, 25종목준수). ★전제정정: 직전 '31종목 결합 Book초과'는 25종목 위반(book20∪sleeve25… |
-| 462 | L-RAMP-20260620_184509 | momentum | F | ★중대 PIT 정정: 옵션2 book-흡수 '25종목 beat'(book_momcons pt 3.05)와 construction(book_base 6.73)은 L… |
-| 463 | L-RAMP-20260620_184815 | momentum | A | ★PIT-클린 25종목 Book 돌파 회복(구성요소 g=cap-weight 강화, look-ahead 제거 후). book score(shift0 PIT-veri… |
-| 464 | L-RAMP-20260620_185554 | momentum | A | ★8-구성요소 전수 강화 종합(도훈 goal '25종목 BOOK 성과돌파', PIT-클린). 각 레버 결과: z(raw best, FWL refuted)·R국면(… |
-| 465 | L-RAMP-20260705_184828 | overlay_regime | B | RAMP R1 잔차-직교 sleeve 스태킹 실측 — DIST-RAMP-006 '미검증' 프론티어 측정(프레임: canonical top-25 EW long-on… |
-| 466 | L-RAMP-20260705_191446 | infra_process | B | RAMP R2 Track A top-N 민감도(N∈{15,20,25}, 15bps 고정, envelope-안) — R1 음성 재확인. N축소가 IS PORT_t … |
-| 467 | L-RAMP-20260705_191446_02 | ml_complexity | B | RAMP R2 Track B 국면조건부 lightgbm 앙상블(11 직교 sleeve + regime soft-membership → forward return,… |
-| 468 | L-RAMP-20260711_152314 | value | B | RAMP R3 — 지정 재도전 경로 2개(A tail 방어 sleeve / B V02_EP EW-가중 sleeve)를 국면-IC 가중 base(M_regdd, o… |
-| 469 | L-RAMP-20260711_181539 | ml_complexity | F | RAMP R4 Boruta 팩터-존 축소 배분(정적 arm S) VALIDATED_NEGATIVE(config-scoped): rolling 학습창(36/60m,… |
-| 470 | L-RAMP-20260711_184155 | ml_complexity | F | RAMP R5(Branch B): 선별-규율 계열(Boruta shadow-null + Stability Selection[glmnet LASSO compleme… |
-| 471 | L-RAMP-20260711_200226 | ? | C | RAMP R6: 선별 기질을 relevance(R4/R5)에서 realized-PORT_t(trailing 배포권 실측 성과)로 교체 = R5 부활신호 발화. 결… |
-| 472 | L-RAMP-20260712_161537 | infra_process | C | RAMP R7 (FQ-015, R6 잔존 frontier ②): 선별 라벨 basis 교체 실험 — trailing 선별 라벨을 cap-w active NW-t(… |
-| 473 | L-RAMP-20260712_175852 | infra_process | C | RAMP R8 (FQ-016) = R7 종결의 판정 절차 보완(re-sweep 아님, n_trials family=20 불변). R7이 R6-best Ppure_… |
-| 474 | L-RAMP-20260713_084821 | infra_process | C | RAMP R10 (FQ-023, 도훈 '비중 결정 통계적 고도화 적용해봤니'): P-pure(W36_K20) 동일가중(종목 EW × 팩터 EW)을 알파/점수-비례… |
-| 475 | L-RAMP-20260713_093129 | ? | C | RAMP R11 (FQ-024, 도훈 'P-pure 더 발전시켜봐'): P-pure(W36_K20)의 바인딩 실패=oos·post-2017 감쇠 추적을 세 독립 … |
-| 476 | L-RAMP-20260713_100638 | ? | C | RAMP R12 (FQ-025, 도훈 mandate — R11 next_probe 수렴점 소비 '퇴출 빠르게·진입 엄격하게'): P-pure(W36_K20) 감쇠… |
-| 477 | L-RAMP-20260713_102944 | ? | F | RAMP R13 (FQ-026) = R12 메타진단 축전환 소비: construction 4축(비중2.930·vintage2.895·신선도2.852·비대칭퇴출2.… |
-| 478 | L-RAMP-20260713_110343 | ? | F | RAMP R14 퇴출 결합(FQ-027): R12 F-1(순위 퇴출·cap-w 2.937)과 R13 D-2(감쇠 퇴출·oos+0.045) 트리거를 AND/OR 결… |
-| 479 | L-RAMP-20260713_112544 | ? | F | RAMP R15 충원(fill) 규율 축(FQ-028, R14 next_probe 1순위 소비): 퇴출 트리거를 챔피언 F-1(순위-단독)에 고정하고 빈 슬롯 충… |
-| 480 | L-RAMP-20260713_211037 | momentum | B | ★RAMP_03C(book+mom6 cap-weight) 단일 config 재현 = DEMOTED(재현 실패). FQ-018 감사의 A급 원장 유일 명목 HARD… |
-| 481 | L-RAMP-20260713_213904 | infra_process | F | ★RAMP_03C EW/score-tilt variant book-marginal ΔIR 진단(#65 next_probe 2 소비) = blend 기여 없음, c… |
-| 482 | L-RAMP-20260715_004100 | flow_supply | F | RAMP R9 insider 확장 패널 × PORT_t-정렬 선별 (FQ-019, 선별-규율 아크 R4~R15 잔존 frontier ① 소비 — 비-수익 subs… |
-| 483 | L-RAMP-20260715_015734 | flow_supply | C | insider 소비면 전환(R9 next_probe P1): 선별/필터 3면(R9 pool-선별·A net-seller exclusion paired t=-0.0… |
-| 484 | L-RAMP-20260715_022534 | low_vol | C | insider net-buy 클러스터(INS02 z>=+1.0) monitoring tripwire 배선 + 북-레벨 de-risk 진단(R33 P1 소비). 북… |
-| 485 | L-RAMP-20260715_040901 | overlay_regime | B | insider net-buy SAFE 청산-타이밍 대칭검정 (R38/FQ-052, R34 P3/R37 P1 소비). SAFE 진입 정보성(R33/R34 확립)이 … |
-| 486 | L-RAMP-20260715_043643 | flow_supply | B | [monitoring 배선] R39 FQ-053 insider SAFE_FADING 상태전이 tripwire 실배선 (R38 P2 소비, wiring 태스크·새 … |
-| 487 | L-RAMP-20260715_053646 | flow_supply | B | [monitoring 배선 refine] R41 FQ-053 insider SAFE_FADING horizon-bounded 실배선 (R40 P1 소비, wiri… |
-| 488 | L-RAMP-20260715_055418 | flow_supply | B | [monitoring 배선 — live OOS 추적] R42 FQ-053 P2 insider SAFE/SAFE_FADING live 발화 종목 익월 실현위험 OO… |
-| 489 | L-RAMP-20260715_070019 | infra_process | B | [데이터무결성 방화벽 배선] R44 FQ-054 R1+R4 — R43 적발 'canonical 입력단 Ret winsorize 방화벽 부재'(물리불가 Ret 통과… |
-| 490 | L-RAMP-20260715_072549 | infra_process | B | [데이터무결성 근원진단] R45 FQ-054 P3 — R44가 남긴 'stored Ret vs recompute max|Δ|=4.86(non-universe mi… |
-| 491 | L-RAMP-20260715_075509 | infra_process | B | [데이터무결성 배선정련] R46 FQ-054 P2+P3 — R45 근원 지식(date-gap 불일치=Close 시계열 구멍 span recompute 스퓨리어스·… |
-| 492 | L-RAMP-20260717_195731 | infra_process | B | [데이터무결성 근원수리] R47 R46-P1 — R46 tripwire가 특정한 218 source-seam Close 구멍을 KRX 백필로 실수리. ★rawda… |
-| 493 | L-RAMP-20260802_204804 | flow_supply | C | insider INS_MAGQ3 보조 tripwire 증분 = 기각. 그러나 본 과제보다 큰 관측가능성 결함(R43-F1)을 적발·수리했다. ① 증분 판정 UND… |
+| 435 | L-RAMP-20260618_131316 | overlay_regime | F | [failure-ledger/INV-7] 순진한 국면틸트(CAUTION/CRISIS서 방어군 1.5x·공격군 0.5x 고정룰) 역효과: net_sr −0.151 … |
+| 436 | L-RAMP-20260618_131316B | infra_process | C | factor_db 316 전수 sweep + 풀 479 PCA: standalone long-only PORT_t>1 인 단일팩터 0/316. 직교성은 gross… |
+| 437 | L-RAMP-20260618_131316C | infra_process | B | 11 직교 약신호군 EW 조합 + 회전제어(13.1→7.8x) → long-only net_sr +0.083(양수), port_t +0.21. 개별군 전부 음수(… |
+| 438 | L-RAMP-20260618_131800 | infra_process | B | Gate6 iteration: 최고=M0_smooth net_sr=+0.083 port_t=+0.21 TO=7.8 (기준 M0_EW −0.04). 회전제어=핵심레… |
+| 439 | L-RAMP-20260618_134000 | value | C | regime-cash 오버레이(CRISIS 0.3/CAUTION 0.6)를 M_regime_dd에 얹으니 net_sr +0.110→−0.105 악화. 원인=측정창… |
+| 440 | L-RAMP-20260618_140528 | ? | B | Round1 고레버리지: best=H3_regdd_conviction net_sr=+0.110 port_t=+0.26 oos=-1.067 (직전 +0.110). … |
+| 441 | L-RAMP-20260618_142650 | overlay_regime | A | ★유의 달성: RAMP M-code(11직교군+데이터구동 regime, top-25 long-only net) port_t(NW)=2.39 vs EW-univer… |
+| 442 | L-RAMP-20260618_175207 | infra_process | A | Graduation 시도: best=M_regdd port_t=3.66 oos_reten=0.15 calmar=0.37 DSR=3.24 (vs EW-uni). 게… |
+| 443 | L-RAMP-20260619_070753 | overlay_regime | B | 가이드북 Gate6-8 정식구현(역할 M0-M4 + drift 플래그 + 인베스터 레짐배분). Gate9: INVESTOR OOS active IR -0.192 … |
+| 444 | L-RAMP-20260619_081702 | overlay_regime | B | 팩터군 보강(2005-2026 전체 316팩터). equal-weight 316=희석 붕괴(pt 0.82) → IC-가중 composite가 해소: oos_ret… |
+| 445 | L-RAMP-20260619_103729 | overlay_regime | A | 미배선 Absorption Ratio(Kritzman 2010, 횡단면 상관 top15 고유값 분산비=시장동조화) 엔진을 RAMP에 배선. 헌법 §3.5 정합 s… |
+| 446 | L-RAMP-20260619_105903 | ? | A | 자율 자가발전: AR-soft 배선 위 {AR/AR+MSM}×{monthly/quarterly} 4변형. best=AR+MSM_quarterly pt_capwt … |
+| 447 | L-RAMP-20260619_132312 | momentum | A | 국면엔진 리서치풀 14개(인프라7:Cascade/AR/MSM/MRS9/Jump/Forecaster/hard4 + 신규리서치4:Trend/RealizedVol/Dr… |
+| 448 | L-RAMP-20260619_135237 | overlay_regime | B | 제약완화(도훈): active-only 제약 풀고 Gate8 soft 타이밍(Cascade Category 노출스케줄 1.0/0.7/0.4, 헌법 Σa≤1 허용·… |
+| 449 | L-RAMP-20260619_140656 | ml_complexity | B | 국면엔진 강화 3종 전부 Cascade 단독(pt 2.85) 미달: 순진앙상블 2.61·스마트앙상블(트레일링IR가중) 2.65·multi-axis 경제분업 2.7… |
+| 450 | L-RAMP-20260619_141402 | momentum | B | 새 국면엔진 설계(최신페이퍼 Shu-Mulvey 2024 arXiv 2410.14841 per-factor Sparse Jump Model): 각 군 IC시계열에… |
+| 451 | L-RAMP-20260619_144257 | low_vol | B | Shu-Mulvey 2024(arXiv 2410.14841) 충실구현(도훈 '모든 제약 해지'). 7 롱온리 스타일팩터 인덱스(Market+Value/Size/M… |
+| 452 | L-RAMP-20260619_150531 | overlay_regime | B | Shu-Mulvey 옵션1(인덱스 2003~확장, 2008 GFC 테스트포함)+옵션2(per-factor λ/κ CV튜닝, online filter는 월간 las… |
+| 453 | L-RAMP-20260619_151835 | overlay_regime | C | ★정정: 앞선 'Shu-Mulvey 조건부졸업 oos 0.52'는 sweep-부풀림 아티팩트였음. 도훈 '더 튜닝할 여지?'에 답해 논문 본래 메커니즘(rolli… |
+| 454 | L-RAMP-20260619_152736 | ml_complexity | A | ★★최종 정정(도훈 '파라미터 튜닝 적절했다' 2회 + '맘대로 마감 마라'): 직전 de-bias 'screen-tier' 결론은 내 오판이었다. grid-en… |
+| 455 | L-RAMP-20260619_173504 | overlay_regime | F | ★중대발견(도훈 '25종목 제약 넣어서 진행'): RAMP_02(Shu-Mulvey)는 25종목 제약에서 엣지 소멸=배포불가. BL 21팩터 인덱스비중→횡단면 종… |
+| 456 | L-RAMP-20260619_180008 | ml_complexity | C | 도훈 'direction 1,2 해보고 대안도': 25종목 RAMP_01 강화 시도, 둘 다 천장확인. ★Direction1(Shu-Mulvey 국면방법을 RAM… |
+| 457 | L-RAMP-20260619_193015 | overlay_regime | F | 도훈 'DPL 해보고 RAMP_02 로직 돌파법 최대추론'. 추론: RAMP_02 엣지=broad base 작은tilt timing, 25종목=집중 → compo… |
+| 458 | L-RAMP-20260620_103109 | momentum | B | ★새 접근 성공(도훈 '기존 틀말고 새 접근'): 25종목서 OOS 양수+calmar 통과하는 첫 배포가능 전략. ★결정적 발견(alpha OOS probe): … |
+| 459 | L-RAMP-20260620_104415 | momentum | B | ★도훈 교정 검증(국면조건부 다차원 블렌딩 > 정적 모멘텀-중심): 내 'momentum이 유일 생존알파' 프레임은 *무조건부 OOS*만 본 좁은 시각. Valu… |
+| 460 | L-RAMP-20260620_132802 | overlay_regime | C | 도훈 'FWL+국면엔진 개발진행'. ★내 'FWL이 최대 미사용 레버' 단언 측정이 반박(과신 정정). blanket FWL(전팩터 size중립화)=Size팩터(… |
+| 461 | L-RAMP-20260620_161507 | momentum | A | ★도훈 goal 달성: 정직 실측으로 현 Book 초과 포트 발굴. 8-구성요소 grid(3024 config, 공유캐시 병렬) 탐색→robust 승자 selec… |
+| 462 | L-RAMP-20260620_171915 | overlay_regime | A | 도훈 옵션2(Book을 factor로 흡수 재최적화, 25종목준수). ★전제정정: 직전 '31종목 결합 Book초과'는 25종목 위반(book20∪sleeve25… |
+| 463 | L-RAMP-20260620_184509 | momentum | F | ★중대 PIT 정정: 옵션2 book-흡수 '25종목 beat'(book_momcons pt 3.05)와 construction(book_base 6.73)은 L… |
+| 464 | L-RAMP-20260620_184815 | momentum | A | ★PIT-클린 25종목 Book 돌파 회복(구성요소 g=cap-weight 강화, look-ahead 제거 후). book score(shift0 PIT-veri… |
+| 465 | L-RAMP-20260620_185554 | momentum | A | ★8-구성요소 전수 강화 종합(도훈 goal '25종목 BOOK 성과돌파', PIT-클린). 각 레버 결과: z(raw best, FWL refuted)·R국면(… |
+| 466 | L-RAMP-20260705_184828 | overlay_regime | B | RAMP R1 잔차-직교 sleeve 스태킹 실측 — DIST-RAMP-006 '미검증' 프론티어 측정(프레임: canonical top-25 EW long-on… |
+| 467 | L-RAMP-20260705_191446 | infra_process | B | RAMP R2 Track A top-N 민감도(N∈{15,20,25}, 15bps 고정, envelope-안) — R1 음성 재확인. N축소가 IS PORT_t … |
+| 468 | L-RAMP-20260705_191446_02 | ml_complexity | B | RAMP R2 Track B 국면조건부 lightgbm 앙상블(11 직교 sleeve + regime soft-membership → forward return,… |
+| 469 | L-RAMP-20260711_152314 | value | B | RAMP R3 — 지정 재도전 경로 2개(A tail 방어 sleeve / B V02_EP EW-가중 sleeve)를 국면-IC 가중 base(M_regdd, o… |
+| 470 | L-RAMP-20260711_181539 | ml_complexity | F | RAMP R4 Boruta 팩터-존 축소 배분(정적 arm S) VALIDATED_NEGATIVE(config-scoped): rolling 학습창(36/60m,… |
+| 471 | L-RAMP-20260711_184155 | ml_complexity | F | RAMP R5(Branch B): 선별-규율 계열(Boruta shadow-null + Stability Selection[glmnet LASSO compleme… |
+| 472 | L-RAMP-20260711_200226 | ? | C | RAMP R6: 선별 기질을 relevance(R4/R5)에서 realized-PORT_t(trailing 배포권 실측 성과)로 교체 = R5 부활신호 발화. 결… |
+| 473 | L-RAMP-20260712_161537 | infra_process | C | RAMP R7 (FQ-015, R6 잔존 frontier ②): 선별 라벨 basis 교체 실험 — trailing 선별 라벨을 cap-w active NW-t(… |
+| 474 | L-RAMP-20260712_175852 | infra_process | C | RAMP R8 (FQ-016) = R7 종결의 판정 절차 보완(re-sweep 아님, n_trials family=20 불변). R7이 R6-best Ppure_… |
+| 475 | L-RAMP-20260713_084821 | infra_process | C | RAMP R10 (FQ-023, 도훈 '비중 결정 통계적 고도화 적용해봤니'): P-pure(W36_K20) 동일가중(종목 EW × 팩터 EW)을 알파/점수-비례… |
+| 476 | L-RAMP-20260713_093129 | ? | C | RAMP R11 (FQ-024, 도훈 'P-pure 더 발전시켜봐'): P-pure(W36_K20)의 바인딩 실패=oos·post-2017 감쇠 추적을 세 독립 … |
+| 477 | L-RAMP-20260713_100638 | ? | C | RAMP R12 (FQ-025, 도훈 mandate — R11 next_probe 수렴점 소비 '퇴출 빠르게·진입 엄격하게'): P-pure(W36_K20) 감쇠… |
+| 478 | L-RAMP-20260713_102944 | ? | F | RAMP R13 (FQ-026) = R12 메타진단 축전환 소비: construction 4축(비중2.930·vintage2.895·신선도2.852·비대칭퇴출2.… |
+| 479 | L-RAMP-20260713_110343 | ? | F | RAMP R14 퇴출 결합(FQ-027): R12 F-1(순위 퇴출·cap-w 2.937)과 R13 D-2(감쇠 퇴출·oos+0.045) 트리거를 AND/OR 결… |
+| 480 | L-RAMP-20260713_112544 | ? | F | RAMP R15 충원(fill) 규율 축(FQ-028, R14 next_probe 1순위 소비): 퇴출 트리거를 챔피언 F-1(순위-단독)에 고정하고 빈 슬롯 충… |
+| 481 | L-RAMP-20260713_211037 | momentum | B | ★RAMP_03C(book+mom6 cap-weight) 단일 config 재현 = DEMOTED(재현 실패). FQ-018 감사의 A급 원장 유일 명목 HARD… |
+| 482 | L-RAMP-20260713_213904 | infra_process | F | ★RAMP_03C EW/score-tilt variant book-marginal ΔIR 진단(#65 next_probe 2 소비) = blend 기여 없음, c… |
+| 483 | L-RAMP-20260715_004100 | flow_supply | F | RAMP R9 insider 확장 패널 × PORT_t-정렬 선별 (FQ-019, 선별-규율 아크 R4~R15 잔존 frontier ① 소비 — 비-수익 subs… |
+| 484 | L-RAMP-20260715_015734 | flow_supply | C | insider 소비면 전환(R9 next_probe P1): 선별/필터 3면(R9 pool-선별·A net-seller exclusion paired t=-0.0… |
+| 485 | L-RAMP-20260715_022534 | low_vol | C | insider net-buy 클러스터(INS02 z>=+1.0) monitoring tripwire 배선 + 북-레벨 de-risk 진단(R33 P1 소비). 북… |
+| 486 | L-RAMP-20260715_040901 | overlay_regime | B | insider net-buy SAFE 청산-타이밍 대칭검정 (R38/FQ-052, R34 P3/R37 P1 소비). SAFE 진입 정보성(R33/R34 확립)이 … |
+| 487 | L-RAMP-20260715_043643 | flow_supply | B | [monitoring 배선] R39 FQ-053 insider SAFE_FADING 상태전이 tripwire 실배선 (R38 P2 소비, wiring 태스크·새 … |
+| 488 | L-RAMP-20260715_053646 | flow_supply | B | [monitoring 배선 refine] R41 FQ-053 insider SAFE_FADING horizon-bounded 실배선 (R40 P1 소비, wiri… |
+| 489 | L-RAMP-20260715_055418 | flow_supply | B | [monitoring 배선 — live OOS 추적] R42 FQ-053 P2 insider SAFE/SAFE_FADING live 발화 종목 익월 실현위험 OO… |
+| 490 | L-RAMP-20260715_070019 | infra_process | B | [데이터무결성 방화벽 배선] R44 FQ-054 R1+R4 — R43 적발 'canonical 입력단 Ret winsorize 방화벽 부재'(물리불가 Ret 통과… |
+| 491 | L-RAMP-20260715_072549 | infra_process | B | [데이터무결성 근원진단] R45 FQ-054 P3 — R44가 남긴 'stored Ret vs recompute max|Δ|=4.86(non-universe mi… |
+| 492 | L-RAMP-20260715_075509 | infra_process | B | [데이터무결성 배선정련] R46 FQ-054 P2+P3 — R45 근원 지식(date-gap 불일치=Close 시계열 구멍 span recompute 스퓨리어스·… |
+| 493 | L-RAMP-20260717_195731 | infra_process | B | [데이터무결성 근원수리] R47 R46-P1 — R46 tripwire가 특정한 218 source-seam Close 구멍을 KRX 백필로 실수리. ★rawda… |
+| 494 | L-RAMP-20260802_204804 | flow_supply | C | insider INS_MAGQ3 보조 tripwire 증분 = 기각. 그러나 본 과제보다 큰 관측가능성 결함(R43-F1)을 적발·수리했다. ① 증분 판정 UND… |
+| 495 | L-RAMP-20260820_212848 | low_vol | F | FQ-239 P0-2 (도훈 mandate 2026-08-20 자본졸업 루프 착수 게이트). run_ramp_shumulvey.R bt()(:179-199)와 _… |
 
 ### regime_research
 
 | # | L-code | family | grade | 요지 |
 |---|--------|--------|-------|------|
-| 494 | L-RR-20260704_114303 | value | F | KR book(STR_1715_AR_on_M4_R05_overlay_PG2) 인버스 ETF(-1x 114800/-2x 252670) 헤지 슬리브 전면 REJECT… |
+| 496 | L-RR-20260704_114303 | value | F | KR book(STR_1715_AR_on_M4_R05_overlay_PG2) 인버스 ETF(-1x 114800/-2x 252670) 헤지 슬리브 전면 REJECT… |
 
 ## 강등/아카이브 (뷰 제외 · 참조 영구 보존, 4)
 
