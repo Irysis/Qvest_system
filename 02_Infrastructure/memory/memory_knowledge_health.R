@@ -730,10 +730,10 @@ if (length(missing_np) > 0) {
 #   ★이것이 오늘 감사가 지목한 '표준은 있는데 소비자가 0' 계통 그 자체다 — 수리하며 하나 더 만든 셈.
 #   판정은 mtime 이 아니라 **카운트 대조**(corpus n_lcodes ↔ index counts.lcode_corpus).
 #   SKIP(파일 부재/파싱 실패)은 조용히 통과시키지 않고 사유를 인쇄한다.
-kif_path <- file.path(root, "02_Infrastructure", "ops", "knowledge_index_freshness.R")
+kif_path <- file.path(PROJ_ROOT, "02_Infrastructure", "ops", "knowledge_index_freshness.R")
 if (file.exists(kif_path)) {
   kif <- tryCatch({
-    local({ source(kif_path, local = TRUE); check_knowledge_index_freshness(root = root) })
+    local({ source(kif_path, local = TRUE); check_knowledge_index_freshness(root = PROJ_ROOT) })
   }, error = function(e) list(status = "SKIP", reason = "checker_error",
                               detail = conditionMessage(e)))
   kst <- as.character(kif$status %||% "SKIP")[1]
