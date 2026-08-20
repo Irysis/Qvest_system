@@ -14,7 +14,9 @@ Z<-readRDS(sprintf(".cache/_smv_v5_%s.rds",KEY)); RES<-Z$RES
 nwt<-function(x){x<-x[is.finite(x)];if(length(x)<12)return(NA);m<-lm(x~1);as.numeric(coeftest(m,vcov=sandwich::NeweyWest(m,lag=3,prewhite=F))[1,3])}
 IRf<-function(x){x<-x[is.finite(x)];if(length(x)<6)return(NA);mean(x)/sd(x)*sqrt(12)}
 
-hd<-function(arm,lm,te,bps) RES[arm==..arm & (is.na(lam_mult)|lam_mult==..lm) & te==..te & cost_bps==..bps][1]
+hd<-function(a_,l_,t_,b_){ i<-RES$arm==a_ & RES$te==t_ & RES$cost_bps==b_ &
+    (if(is.na(l_)) is.na(RES$lam_mult) else (!is.na(RES$lam_mult) & RES$lam_mult==l_))
+  RES[which(i)][1] }
 run_engine<-function(kv){  # kv = named list of SMV_* values → 하위 Rscript 인자 주입
   setenv_str<-paste(sprintf('Sys.setenv(%s="%s")',names(kv),unlist(kv)),collapse="; ")
   code<-paste0(setenv_str,'; source("02_Infrastructure/ramp/run_ramp_shumulvey_v5_daily.R")')
