@@ -462,23 +462,26 @@ run_step("axiom_weekly_cycle", {
     for (cand in cands) {
       out <- suppressWarnings(system2("Rscript", c(shQuote(promote_r), shQuote(cand)),
                                       stdout = TRUE, stderr = TRUE))
-      hit <- grep("\\[promote\\].*(PASS|FAIL)", out, value = TRUE)
-      if (!length(hit)) {
-        # PASS/FAIL 미매칭 = 침묵 crash 의심 — stderr tail을 로그 + pending JSON에 보존
+      v <- .promote_crash_verdict(out)
+      if (v$crash) {
+        # crash 2축(exit≠0 / verdict 줄 부재) — stderr tail 을 로그 + pending JSON 에 보존
         #   (진단면 독립 확보: 원인 수리 여부와 무관하게 침묵 소실 재발 방지)
-        st_code <- attr(out, "status")
         tail_txt <- paste(tail(out[nzchar(out)], 6), collapse = " | ")
         promote_n_crash <- promote_n_crash + 1L
         promote_failures[[length(promote_failures) + 1L]] <- list(
           candidate = basename(cand),
-          exit = if (is.null(st_code)) 0L else as.integer(st_code),
+          exit = v$exit,
+          detected_by = v$reason,          # exit_nonzero / no_verdict_line / both
+          exit_parsed = v$exit_parsed,     # FALSE = status 해석 불가 → 보수적 비정상 처리
+          verdict_line = v$verdict_line,   # exit≠0 인데 찍힌 verdict (구 로직이 초록으로 오독하던 줄)
           output_tail = substr(tail_txt, 1, 800),
           at = format(Sys.time(), "%Y-%m-%d %H:%M:%S"))
       }
       cat(sprintf("  | [axiom] promote %s: %s\n", basename(cand),
-                  if (length(hit)) hit[1]
-                  else sprintf("출력 미확인 (fail-soft) — exit=%s tail: %s",
-                               if (is.null(attr(out, "status"))) "0" else attr(out, "status"),
+                  if (!v$crash) v$verdict_line
+                  else sprintf("CRASH(%s) exit=%s — %s | tail: %s", v$reason, v$exit,
+                               if (is.na(v$verdict_line)) "출력 미확인 (fail-soft)"
+                               else sprintf("verdict 출력됨: %s", v$verdict_line),
                                substr(paste(tail(out[nzchar(out)], 3), collapse = " | "), 1, 300))))
     }
   }
@@ -630,6 +633,9 @@ run_step("axiom_candidates_summary", {
     n_candidates_total = length(cand_fs),
     n_pending = n_pending,
     n_promote_crash = promote_n_crash,
+    # crash 판정 2축(2026-08-20): exit status ≠0 **또는** verdict 줄 부재. 각 레코드 detected_by 참조.
+    #   구 판정은 verdict 줄 유무 단일축이라 exit≠0 인데 verdict 를 찍은 자식이 crash 0 으로 샜다.
+    promote_crash_criteria = "exit_status_nonzero OR missing_verdict_line (v2, 2026-08-20)",
     promote_failures = promote_failures,
     lcode_integrity = lcode_integrity,
     failing_axis_histogram = hist_tab,

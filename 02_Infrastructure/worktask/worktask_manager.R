@@ -107,7 +107,10 @@ wt_create <- function(hypothesis_title = NULL,
     #   주석으로 "constraint_defaults.json 정합" 을 *주장*했다 — 정합을 강제하지 않는
     #   주석은 드리프트 경로다(2026-05-29 20→25 변경이 이곳을 수동으로 따라와야 했다).
     #   정본 결측 시에만 25L 폴백(회귀 없음).
-    .wt_mn <- defaults$tier_soft_deployment$max_names
+    #   ★`$` 는 리스트에서 **부분 일치**를 한다 — max_names 가 빠지면 max_names_rationale
+    #   (문자열)에 매칭돼 as.integer 가 NA 를 낸다(폴백이 아니라 그럴듯한 쓰레기).
+    #   검사가 도입 당일 이걸 잡았다. [[ ]] 는 기본이 정확 일치라 안전.
+    .wt_mn <- defaults[["tier_soft_deployment"]][["max_names"]]
     effective_max_names <- if (is.null(.wt_mn)) 25L else as.integer(.wt_mn)
     effective_long_only <- TRUE
     effective_bounds <- defaults$tier_soft_deployment$weight_bounds
@@ -120,7 +123,10 @@ wt_create <- function(hypothesis_title = NULL,
     #   주석으로 "constraint_defaults.json 정합" 을 *주장*했다 — 정합을 강제하지 않는
     #   주석은 드리프트 경로다(2026-05-29 20→25 변경이 이곳을 수동으로 따라와야 했다).
     #   정본 결측 시에만 25L 폴백(회귀 없음).
-    .wt_mn <- defaults$tier_soft_deployment$max_names
+    #   ★`$` 는 리스트에서 **부분 일치**를 한다 — max_names 가 빠지면 max_names_rationale
+    #   (문자열)에 매칭돼 as.integer 가 NA 를 낸다(폴백이 아니라 그럴듯한 쓰레기).
+    #   검사가 도입 당일 이걸 잡았다. [[ ]] 는 기본이 정확 일치라 안전.
+    .wt_mn <- defaults[["tier_soft_deployment"]][["max_names"]]
     effective_max_names <- if (is.null(.wt_mn)) 25L else as.integer(.wt_mn)
     effective_long_only <- TRUE
     effective_bounds <- defaults$tier_soft_deployment$weight_bounds

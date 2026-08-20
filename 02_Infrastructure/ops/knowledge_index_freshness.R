@@ -39,10 +39,18 @@ if (!exists("%||%")) {
   `%||%` <- function(a, b) if (is.null(a) || length(a) == 0) b else a
 }
 
+# 루트 해석 — r-portability 금칙 4 정합: CLAUDE_PROJECT_DIR 우선.
+# ★존재 검사가 아니라 **정체성 검사**를 한다(dir.exists 만으로는 워크트리처럼
+#   레지스트리가 없는 루트를 정본으로 오인한다 — 08-16 marker root-split 사고 계통).
+#   후보는 06_Registry/ 와 02_Infrastructure/ 를 둘 다 가져야 채택된다.
+.kif_root_ok <- function(p) {
+  nzchar(p) && dir.exists(p) &&
+    dir.exists(file.path(p, "06_Registry")) && dir.exists(file.path(p, "02_Infrastructure"))
+}
 .kif_root <- function() {
-  for (p in c(Sys.getenv("QM_ROOT", ""), Sys.getenv("CLAUDE_PROJECT_DIR", ""),
+  for (p in c(Sys.getenv("CLAUDE_PROJECT_DIR", ""), Sys.getenv("QM_ROOT", ""),
               "C:/Users/99922/OneDrive/Quant_Module_Moltbot", getwd())) {
-    if (nzchar(p) && dir.exists(p)) return(p)
+    if (.kif_root_ok(p)) return(p)
   }
   getwd()
 }
@@ -229,7 +237,12 @@ repair_knowledge_index <- function(root = .kif_root(), verbose = TRUE, force = F
 
 # ── CLI ───────────────────────────────────────────────────────────────────────
 # exit code: 0 = OK, 1 = STALE, 2 = SKIP(입력 부재/파싱 실패 — 판정 보류)
-if (identical(environment(), globalenv()) && !interactive()) {
+.kif_is_main <- function() {
+  ca <- commandArgs(trailingOnly = FALSE)
+  f <- sub("^--file=", "", ca[grepl("^--file=", ca)])
+  length(f) == 1L && identical(basename(f), "knowledge_index_freshness.R")
+}
+if (.kif_is_main() && !interactive()) {
   .kif_args <- commandArgs(trailingOnly = TRUE)
   if (length(.kif_args) && any(.kif_args %in% c("--repair", "repair"))) {
     .kif_res <- repair_knowledge_index()

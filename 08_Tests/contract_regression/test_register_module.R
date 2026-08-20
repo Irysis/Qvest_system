@@ -93,20 +93,55 @@ t_check("register:RM03b_not_frozen_quarantined",
         isTRUE(r3b$quarantined) &&
         grepl("frozen != TRUE", r3b$reason, fixed = TRUE))
 
-# --- RM04: hash determinism ---------------------------------------------------
+# --- RM04: hash determinism + 이명(異名) 등록 차단 (2026-08-20 batch_434 가드) --
+# 구판 RM04 는 "동일 sim 을 다른 id 로 등록하면 같은 hash 로 **성공**"을 기대했다 —
+# 그 허용이 정확히 batch_434 오염 경로(130/275 이명 등재)였으므로 축을 반전한다:
+# 이명 등록은 기본 BLOCK 이고, QVEST_ALLOW_DUP_MODULE_HASH=1 에서만 duplicate_of
+# 주석과 함께 통과한다. 위반 주입 + 오발화(다른 sim) 대조 + 같은 id 갱신 경계 포함.
+Sys.unsetenv("QVEST_ALLOW_DUP_MODULE_HASH")
+err_of2 <- function(expr) tryCatch({ expr; "" }, error = function(e) conditionMessage(e))
 sim_a <- mk_sim()
 h_expected <- local({
   tmp <- tempfile(fileext = ".rds"); on.exit(unlink(tmp))
   saveRDS(sim_a, tmp); unname(tools::md5sum(tmp))
 })
 r4a <- reg("TST_HASH_A", sim = sim_a)          # auto-computed hash
-r4b <- reg("TST_HASH_B", sim = mk_sim())       # identical content
-r4c <- reg("TST_HASH_C", sim = mk_sim(1e-6))   # mutated content
-t_check("register:RM04_hash_match_identical_sim",
-        identical(r4a$entry$module_hash, h_expected) &&
-        identical(r4a$entry$module_hash, r4b$entry$module_hash))
-t_check("register:RM04b_hash_mismatch_mutated_sim",
+t_check("register:RM04_hash_match_expected_md5",
+        identical(r4a$entry$module_hash, h_expected))
+
+# 위반 주입: 동일 content 를 다른 id 로 → BLOCK 발화해야 한다
+e4b <- err_of2(reg("TST_HASH_B", sim = mk_sim()))
+t_check("register:RM04b_dup_hash_alias_blocked",
+        grepl("DUP_MODULE_HASH BLOCK", e4b, fixed = TRUE) &&
+        grepl("TST_HASH_A", e4b, fixed = TRUE))
+cat_after_block <- fromJSON(CATALOG, simplifyVector = FALSE)
+t_check("register:RM04b2_blocked_alias_not_in_catalog",
+        is.null(cat_after_block$modules[["TST_HASH_B"]]))
+
+# override 경로: 통과하되 duplicate_of 주석이 강제 기록된다
+Sys.setenv(QVEST_ALLOW_DUP_MODULE_HASH = "1")
+r4b_ok <- reg("TST_HASH_B", sim = mk_sim())
+Sys.unsetenv("QVEST_ALLOW_DUP_MODULE_HASH")
+t_check("register:RM04c_override_registers_with_duplicate_of",
+        isTRUE(r4b_ok$fr_eligible) &&
+        identical(r4b_ok$entry$module_hash, r4a$entry$module_hash) &&
+        identical(r4b_ok$entry$meta$duplicate_of, "TST_HASH_A"))
+
+# 오발화 대조: 내용이 다른 sim 은 차단 없이 등록 + hash 상이
+r4c <- reg("TST_HASH_C", sim = mk_sim(1e-6))
+t_check("register:RM04d_mutated_sim_not_blocked_hash_differs",
+        isTRUE(r4c$fr_eligible) &&
         !identical(r4a$entry$module_hash, r4c$entry$module_hash))
+
+# 경계: 같은 id 재등록(upsert 갱신)은 이명이 아니므로 차단하지 않는다
+r4e <- reg("TST_HASH_A", sim = sim_a)
+t_check("register:RM04e_same_id_reregister_allowed",
+        isTRUE(r4e$fr_eligible))
+
+# 경계: quarantine-행 등록(floor 미달)은 가드 대상 아님 — 동일 sim 이라도 격리로 간다
+r4f <- reg("TST_HASH_QUAR", sim = mk_sim(), metric_type = "proxy")
+t_check("register:RM04f_quarantine_path_not_guarded",
+        isTRUE(r4f$quarantined))
 
 # --- RM05: sim schema validation hard stops -----------------------------------
 err_of <- function(expr) tryCatch({ expr; "" }, error = function(e) conditionMessage(e))

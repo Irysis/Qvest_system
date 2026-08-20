@@ -29,6 +29,15 @@
 ##     §1 — proxy 는 backtested 보다 하위 증거 tier 이므로 권위 측정을 뒤집을 수 없다.
 ##     (6c 는 매 실행 proxy 로 먼저 등록한다. 대칭 삭제로 만들면 재실행 때마다 catalog 행이
 ##      일시 소멸하고, 6c~6e 사이에 죽으면 영구 소실된다.) 의도적 강등은 거버넌스 수동 작업.
+##
+## ── 동일-산출물 이명 차단 (2026-08-20 신설) ─────────────────────────────────
+## ★불변식: catalog.modules 안에서 하나의 module_hash 는 **최대 한** strategy_id 에만
+##   결려 있다(이명 등록은 기본 차단, QVEST_ALLOW_DUP_MODULE_HASH=1 + duplicate_of
+##   주석으로만 예외). 근거 실사고 = batch_434 (2026-06-12/13): codegen-blocked 러너를
+##   keyword-fallback 콤보로 치환 실행한 batch 가 서로 다른 가설명 116건을 바이트 동일
+##   sim_result 로 catalog 에 등재 — 30개 실산출물이 130개 "독립 모듈"로 위장, FR 입력면
+##   128/210 오염 + v8.4 ML 원장 "동일 3짝 클러스터 16+9건"의 정체가 이것이었음
+##   (16/16·9/9 id 대응 실측). 전수/수리: audits/module_catalog_dup_hash_audit_20260820.
 ## ============================================================================
 suppressMessages({ library(data.table); library(jsonlite) })
 
@@ -169,6 +178,20 @@ MODULE_QUARANTINE_PATH <- file.path(.RM_ROOT(), "06_Registry", "module_quarantin
   obj <- .read_json_obj(catalog_path, NULL)
   if (is.null(obj) || is.null(obj$modules)) return(NULL)
   obj$modules[[strategy_id]]
+}
+
+#' catalog 원장에서 같은 module_hash 를 가진 **다른** strategy_id 들을 찾는다.
+#' 반환: character(0) = 이명 없음. 파일 부재/파손도 character(0) — 이 자리는
+#' "차단할 근거를 못 찾음 = 통과"가 맞는 방향이다(신규 원장 생성 경로를 막으면 안 됨).
+.catalog_hash_dups <- function(catalog_path, module_hash, strategy_id) {
+  if (!.nz1(module_hash) || !file.exists(catalog_path)) return(character(0))
+  obj <- .read_json_obj(catalog_path, NULL)
+  if (is.null(obj) || is.null(obj$modules) || !length(obj$modules)) return(character(0))
+  ids <- names(obj$modules)
+  hit <- vapply(ids, function(id) {
+    identical(as.character(obj$modules[[id]]$module_hash %||% ""), as.character(module_hash))
+  }, logical(1))
+  setdiff(ids[hit], strategy_id)
 }
 
 #' quarantine.superseded 에 tombstone 기록. mode = "promoted" | "shadowed".
@@ -312,6 +335,31 @@ register_module <- function(sim_result, strategy_id, grade = NA_character_,
                           entry = entry, fr_eligible = FALSE, quarantined = TRUE,
                           reason = reason, shadowed = FALSE,
                           quarantine_reclaimed = FALSE)))
+  }
+
+  # ── 동일-산출물 이명(異名) 등록 차단 (2026-08-20 신설 — batch_434 치환 오염 재발 방지) ──
+  # 같은 module_hash(= sim_result 바이트 동일)가 이미 **다른** strategy_id 로 catalog 에
+  # 있으면 이 등록은 "새 모듈"이 아니라 기존 산출물의 이명이다. 실사고: 2026-06-12/13
+  # batch_434 keyword-fallback 치환이 서로 다른 가설명 116건을 바이트 동일 sim 으로 등재
+  # → catalog 275 중 130 이 30개 실산출물의 복제본, FR 입력면(module_performance) 210 중
+  # 128 오염 (전수: 04_Research/01_reports/audits/module_catalog_dup_hash_audit_20260820).
+  # 동일 가설의 의도적 재등록이면 QVEST_ALLOW_DUP_MODULE_HASH=1 로 통과시키되
+  # meta$duplicate_of 주석이 강제 기록된다. 같은 id 재등록(upsert 갱신)은 대상 아님.
+  # quarantine-행 등록도 대상 아님(소비면이 아니고, run_alpha_search 6c proxy 선등록을 막으면 안 됨).
+  dup_ids <- .catalog_hash_dups(catalog_path, contract$module_hash, strategy_id)
+  if (length(dup_ids)) {
+    if (!.as_flag(Sys.getenv("QVEST_ALLOW_DUP_MODULE_HASH", ""))) {
+      stop(sprintf(paste0(
+        "[register_module] DUP_MODULE_HASH BLOCK %s: module_hash %s 가 이미 다른 id 로 catalog 에 존재 — %s.\n",
+        "  같은 sim_result 를 다른 가설명으로 등재하면 label≠signal 오염(batch_434 계통)이 된다.\n",
+        "  동일 가설의 의도적 재등록이면 QVEST_ALLOW_DUP_MODULE_HASH=1 로 재실행 (meta$duplicate_of 자동 기록)."),
+        strategy_id, contract$module_hash, paste(dup_ids, collapse = ", ")))
+    }
+    if (is.null(entry$meta)) entry$meta <- list()
+    entry$meta$duplicate_of <- dup_ids[[1]]
+    entry$meta$dup_module_hash_ack <- .now_stamp()
+    cat(sprintf("[register_module] WARN DUP_MODULE_HASH %s == %s (override 승인) — meta$duplicate_of=%s 기록\n",
+                strategy_id, paste(dup_ids, collapse = ", "), dup_ids[[1]]))
   }
 
   # 승격 방향: catalog 를 **먼저** 쓰고 그 다음 격리행을 회수한다.
