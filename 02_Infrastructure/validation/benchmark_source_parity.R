@@ -87,6 +87,21 @@ benchmark_source_parity <- function(rawdata_path = NULL, bench_path = NULL,
   b <- b[, ..bcols]
   setnames(b, "BM_Ret", "bm_bench")
 
+  # ── 증거축 (c) 준비: benchmark 자기재현 수익률 (2026-08-20 신설) ──────────────
+  #   benchmark.parquet 은 BM_Close 를 갖고 있으므로 BM_Ret 을 **자기 자신으로부터**
+  #   검증할 수 있다. 실측 2026-08-20: 9,010행 전수에서 |BM_Ret - ret_from_close| 최대
+  #   2.22e-16 (1e-9 초과 0건) — 즉 benchmark 는 내부적으로 완전 정합이다.
+  #   ⇒ 두 소스가 갈렸는데 한쪽만 close 로 재현되면 **재현 안 되는 쪽이 오염**이다.
+  #   RAWDATA 에는 BM_Close 가 없어 이 검증을 못 하므로 축은 비대칭이지만, 판정에는
+  #   충분하다(재현되는 쪽이 무결하다는 뜻은 아니고, 재현 안 되는 쪽이 계산 경로를
+  #   벗어났다는 뜻 — 실제로 krx_build_rawdata.R:223 의 자체계산이 그 경로다).
+  if ("BM_Close" %in% names(b)) {
+    setorder(b, Date)
+    b[, ret_from_close := BM_Close / shift(BM_Close) - 1]
+  } else {
+    b[, ret_from_close := NA_real_]
+  }
+
   r <- as.data.table(read_parquet(rawdata_path, col_select = c("Date", "BM_Ret")))
   r <- unique(r)                       # Date별 (Ticker 무관 동일이 정상)
   setnames(r, "BM_Ret", "bm_raw")
@@ -159,14 +174,23 @@ benchmark_source_parity <- function(rawdata_path = NULL, bench_path = NULL,
   #   (08-08 실측: 1990-01-05 = benchmark.parquet 첫 행, ret_from_close=NA → 0 이 정상).
   dirs <- if (nrow(mism) == 0L) data.table() else {
     d <- copy(mism)   # mism 은 이미 경계 제외분(cmpbase) 위에서 계산됨
+    #  ★축 순서가 곧 우선순위다. (c) 는 반드시 (a) **뒤**에 온다:
+    #    2026-07-27 형 benchmark 스케일 단절은 BM_Close 에도 단절이 있어 (c) 로는
+    #    "benchmark 정상"으로 읽힌다 — (a) value_plausibility 가 먼저 잡아야 뒤집히지 않는다.
+    .rc_ok <- function(x) !is.na(d$ret_from_close) & abs(x - d$ret_from_close) <= tol
+    .rc_no <- function(x) !is.na(d$ret_from_close) & abs(x - d$ret_from_close) >  tol
     d[, contaminated := fifelse(abs(bm_bench) > impl_bound, "benchmark.parquet",
                         fifelse(abs(bm_raw)   > impl_bound, "RAWDATA::BM_Ret",
                          fifelse(bm_raw == 0 & bm_bench != 0, "RAWDATA::BM_Ret",
                           fifelse(bm_bench == 0 & bm_raw != 0, "benchmark.parquet",
-                                  NA_character_))))]
+                           fifelse(.rc_ok(bm_bench) & .rc_no(bm_raw), "RAWDATA::BM_Ret",
+                            fifelse(.rc_ok(bm_raw) & .rc_no(bm_bench), "benchmark.parquet",
+                                    NA_character_))))))]
     d[, evidence := fifelse(abs(bm_bench) > impl_bound | abs(bm_raw) > impl_bound,
                             "value_plausibility",
-                     fifelse(is.na(contaminated), "undetermined", "zero_masked"))]
+                     fifelse((bm_raw == 0 & bm_bench != 0) | (bm_bench == 0 & bm_raw != 0),
+                             "zero_masked",
+                      fifelse(is.na(contaminated), "undetermined", "close_reproducible")))]
     d[, .(Date, bm_raw, bm_bench, diff, contaminated, evidence)]
   }
   impl_b <- if (nrow(mism)) mism[abs(bm_bench) > impl_bound] else mism
