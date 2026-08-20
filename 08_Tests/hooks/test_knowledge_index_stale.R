@@ -97,13 +97,11 @@ fx_ok <- new_fixture("ok")
 st <- fx_state(fx_ok)
 # ★조작 선행검증: 무변형 사본이 정본과 같은 상태인지 먼저 확인
 if (identical(st$n_corpus, st$n_index) && st$n_corpus == real_state$n_corpus)
-  ok("setup_ok_fixture_is_matched", sprintf("사본 corpus %d = index %d (정본과 동일)", st$n_corpus, st$n_index))
-else
+  ok("setup_ok_fixture_is_matched", sprintf("사본 corpus %d = index %d (정본과 동일)", st$n_corpus, st$n_index)) else
   bad("setup_ok_fixture_is_matched", sprintf("사본이 의도한 일치 상태가 아님 (c=%s i=%s)", st$n_corpus, st$n_index))
 
 r <- fx_check(fx_ok)
-if (identical(r$status, "OK")) ok("normal_no_alarm", sprintf("status=OK (%s)", r$reason))
-else bad("normal_no_alarm", sprintf("일치 상태인데 경보 — status=%s reason=%s", r$status, r$reason))
+if (identical(r$status, "OK")) ok("normal_no_alarm", sprintf("status=OK (%s)", r$reason)) else bad("normal_no_alarm", sprintf("일치 상태인데 경보 — status=%s reason=%s", r$status, r$reason))
 
 # ── [위반 주입 A] index 카운트를 낮춘 사본 → 경보 ───────────────────────────
 # 실사고 재현: corpus 는 늘었는데 index 만 정체 (부팅 없는 세션의 L-code 적립).
@@ -118,16 +116,14 @@ st_a <- fx_state(fx_a)
 # ★조작 선행검증
 if (st_a$n_index == real_state$n_index - 3L && identical(st_a$index_counts_field, st_a$n_index))
   ok("setup_A_mutation_took", sprintf("index %d → %d (counts 필드도 %d 로 동반 하향 = 자기일관 낙후)",
-                                      real_state$n_index, st_a$n_index, st_a$index_counts_field))
-else
+                                      real_state$n_index, st_a$n_index, st_a$index_counts_field)) else
   bad("setup_A_mutation_took", sprintf("조작 미적용 — index=%s counts=%s (기대 %d)",
                                        st_a$n_index, st_a$index_counts_field, real_state$n_index - 3L))
 
 r <- fx_check(fx_a)
 if (identical(r$status, "STALE") && r$n_missing_in_index == 3L)
   ok("inject_A_alarm", sprintf("status=STALE · missing_in_index=%d · %s",
-                               r$n_missing_in_index, paste(r$missing_sample, collapse = ",")))
-else
+                               r$n_missing_in_index, paste(r$missing_sample, collapse = ","))) else
   bad("inject_A_alarm", sprintf("진짜 낙후를 못 잡음 — status=%s reason=%s", r$status, r$reason))
 
 # ── [위반 주입 B] corpus 에 L-code 추가 → 경보 ──────────────────────────────
@@ -146,15 +142,13 @@ st_b <- fx_state(fx_b)
 # ★조작 선행검증: 새 ID 가 corpus 에 실재하고 index 엔 없는지
 if (st_b$n_corpus == real_state$n_corpus + 1L && NEWID %in% st_b$corpus_ids && !(NEWID %in% st_b$index_ids))
   ok("setup_B_mutation_took", sprintf("corpus %d → %d, %s 가 corpus 에만 존재",
-                                      real_state$n_corpus, st_b$n_corpus, NEWID))
-else
+                                      real_state$n_corpus, st_b$n_corpus, NEWID)) else
   bad("setup_B_mutation_took", sprintf("조작 미적용 — n_corpus=%s, id 존재=%s",
                                        st_b$n_corpus, NEWID %in% st_b$corpus_ids))
 
 r <- fx_check(fx_b)
 if (identical(r$status, "STALE") && NEWID %in% r$missing_sample)
-  ok("inject_B_alarm", sprintf("status=STALE · %s (신규 적립분이 index 결측으로 지목됨)", r$reason))
-else
+  ok("inject_B_alarm", sprintf("status=STALE · %s (신규 적립분이 index 결측으로 지목됨)", r$reason)) else
   bad("inject_B_alarm", sprintf("신규 적립 낙후를 못 잡음 — status=%s reason=%s", r$status, r$reason))
 
 # ── [위반 주입 C] 카운트는 같은데 멤버가 다름 → 경보 (카운트 단독의 사각) ───
@@ -167,16 +161,14 @@ fx_c <- new_fixture("swapped", mutate_index = function(ix) {
 st_c <- fx_state(fx_c)
 # ★조작 선행검증: 개수는 같고 ID 집합만 달라졌는지
 if (identical(st_c$n_index, st_c$n_corpus) && SWAPID %in% st_c$index_ids)
-  ok("setup_C_mutation_took", sprintf("개수 동일(%d=%d)인데 index 에 %s 삽입", st_c$n_index, st_c$n_corpus, SWAPID))
-else
+  ok("setup_C_mutation_took", sprintf("개수 동일(%d=%d)인데 index 에 %s 삽입", st_c$n_index, st_c$n_corpus, SWAPID)) else
   bad("setup_C_mutation_took", sprintf("조작 미적용 — n=%s/%s, swap 존재=%s",
                                        st_c$n_index, st_c$n_corpus, SWAPID %in% st_c$index_ids))
 
 r <- fx_check(fx_c)
 if (identical(r$status, "STALE") && r$n_extra_in_index >= 1L && r$n_missing_in_index >= 1L)
   ok("inject_C_alarm_beats_count_only", sprintf("status=STALE · missing %d / extra %d (카운트만 봤으면 초록)",
-                                                r$n_missing_in_index, r$n_extra_in_index))
-else
+                                                r$n_missing_in_index, r$n_extra_in_index)) else
   bad("inject_C_alarm_beats_count_only", sprintf("동수-다른멤버를 못 잡음 — status=%s reason=%s", r$status, r$reason))
 
 # ── [위반 주입 D] counts 필드만 낙후 (행은 최신) → 경보 ─────────────────────
@@ -189,14 +181,12 @@ fx_d <- new_fixture("counts_field_drift", mutate_index = function(ix) {
 })
 st_d <- fx_state(fx_d)
 if (st_d$index_counts_field == st_d$n_index - 7L)
-  ok("setup_D_mutation_took", sprintf("counts 필드 %d vs 실제 행 %d", st_d$index_counts_field, st_d$n_index))
-else
+  ok("setup_D_mutation_took", sprintf("counts 필드 %d vs 실제 행 %d", st_d$index_counts_field, st_d$n_index)) else
   bad("setup_D_mutation_took", sprintf("조작 미적용 — counts=%s rows=%s", st_d$index_counts_field, st_d$n_index))
 
 r <- fx_check(fx_d)
 if (identical(r$status, "STALE") && grepl("index_counts_field_stale", r$reason))
-  ok("inject_D_alarm", sprintf("status=STALE · %s", r$reason))
-else
+  ok("inject_D_alarm", sprintf("status=STALE · %s", r$reason)) else
   bad("inject_D_alarm", sprintf("counts 필드 드리프트를 못 잡음 — status=%s reason=%s", r$status, r$reason))
 
 # ── [대리 지표 대조] mtime 만 봤다면 무엇이 초록이었나 ──────────────────────
@@ -213,14 +203,12 @@ Sys.setFileTime(cp, Sys.time() - 3600)
 Sys.setFileTime(ip, Sys.time())
 proxy_green <- file.info(ip)$mtime > file.info(cp)$mtime      # 구식 mtime 계기의 판정
 if (isTRUE(proxy_green))
-  ok("setup_proxy_green", "mtime 대리 지표는 초록 (index 가 더 최신으로 보임)")
-else
+  ok("setup_proxy_green", "mtime 대리 지표는 초록 (index 가 더 최신으로 보임)") else
   bad("setup_proxy_green", "mtime 조작 미적용 — 대조의 전제가 성립 안 함")
 
 r <- fx_check(fx_p)
 if (isTRUE(proxy_green) && identical(r$status, "STALE"))
-  ok("content_beats_mtime_proxy", sprintf("mtime=초록인데 내용 계기는 STALE (%s) — append 로 계기 끄기 불가", r$reason))
-else
+  ok("content_beats_mtime_proxy", sprintf("mtime=초록인데 내용 계기는 STALE (%s) — append 로 계기 끄기 불가", r$reason)) else
   bad("content_beats_mtime_proxy", sprintf("대리 지표와 같이 눈멀었음 — status=%s", r$status))
 
 # ── [advisory 오탐 방지] 내용 일치 + corpus 타임스탬프만 최신 → OK 유지 ─────
@@ -230,44 +218,34 @@ fx_adv <- new_fixture("ts_only", mutate_corpus = function(co) {
 })
 r <- fx_check(fx_adv)
 if (identical(r$status, "OK") && isTRUE(r$ts_advisory))
-  ok("advisory_not_escalated", sprintf("status=OK 유지 + advisory 표기 (%s)", r$reason))
-else if (identical(r$status, "OK"))
-  ok("advisory_not_escalated", sprintf("status=OK 유지 (ts_advisory=%s)", r$ts_advisory))
-else
+  ok("advisory_not_escalated", sprintf("status=OK 유지 + advisory 표기 (%s)", r$reason)) else if (identical(r$status, "OK"))
+  ok("advisory_not_escalated", sprintf("status=OK 유지 (ts_advisory=%s)", r$ts_advisory)) else
   bad("advisory_not_escalated", sprintf("타임스탬프 단독으로 STALE 승격 = 오탐 — reason=%s", r$reason))
 
 # ── [폴백] 입력 부재 / 파싱 실패 → 죽지 않고 명확한 사유 ────────────────────
 cat("\n--- [폴백] 입력 부재·손상 ---\n")
 fx_nc <- new_fixture("no_corpus", drop_corpus = TRUE)
 r <- tryCatch(fx_check(fx_nc), error = function(e) e)
-if (inherits(r, "error")) bad("fallback_corpus_missing", paste("stop() 으로 죽음:", conditionMessage(r)))
-else if (identical(r$status, "SKIP") && grepl("corpus_missing", r$reason))
-  ok("fallback_corpus_missing", sprintf("status=SKIP · %s", r$reason))
-else bad("fallback_corpus_missing", sprintf("부재를 SKIP 으로 처리 안 함 — status=%s reason=%s", r$status, r$reason))
+if (inherits(r, "error")) bad("fallback_corpus_missing", paste("stop() 으로 죽음:", conditionMessage(r))) else if (identical(r$status, "SKIP") && grepl("corpus_missing", r$reason))
+  ok("fallback_corpus_missing", sprintf("status=SKIP · %s", r$reason)) else bad("fallback_corpus_missing", sprintf("부재를 SKIP 으로 처리 안 함 — status=%s reason=%s", r$status, r$reason))
 
 fx_ni <- new_fixture("no_index", drop_index = TRUE)
 r <- tryCatch(fx_check(fx_ni), error = function(e) e)
-if (inherits(r, "error")) bad("fallback_index_missing", paste("stop() 으로 죽음:", conditionMessage(r)))
-else if (identical(r$status, "SKIP") && grepl("index_missing", r$reason))
-  ok("fallback_index_missing", sprintf("status=SKIP · %s", r$reason))
-else bad("fallback_index_missing", sprintf("부재를 SKIP 으로 처리 안 함 — status=%s reason=%s", r$status, r$reason))
+if (inherits(r, "error")) bad("fallback_index_missing", paste("stop() 으로 죽음:", conditionMessage(r))) else if (identical(r$status, "SKIP") && grepl("index_missing", r$reason))
+  ok("fallback_index_missing", sprintf("status=SKIP · %s", r$reason)) else bad("fallback_index_missing", sprintf("부재를 SKIP 으로 처리 안 함 — status=%s reason=%s", r$status, r$reason))
 
 fx_bad <- new_fixture("corrupt_index")
 writeLines("{ this is not json", file.path(fx_bad, "06_Registry/knowledge_index.json"))
 r <- tryCatch(fx_check(fx_bad), error = function(e) e)
-if (inherits(r, "error")) bad("fallback_index_corrupt", paste("stop() 으로 죽음:", conditionMessage(r)))
-else if (identical(r$status, "SKIP") && grepl("parse_error", r$reason))
-  ok("fallback_index_corrupt", sprintf("status=SKIP · %s", substr(r$reason, 1, 60)))
-else bad("fallback_index_corrupt", sprintf("손상 파일을 SKIP 으로 처리 안 함 — status=%s", r$status))
+if (inherits(r, "error")) bad("fallback_index_corrupt", paste("stop() 으로 죽음:", conditionMessage(r))) else if (identical(r$status, "SKIP") && grepl("parse_error", r$reason))
+  ok("fallback_index_corrupt", sprintf("status=SKIP · %s", substr(r$reason, 1, 60))) else bad("fallback_index_corrupt", sprintf("손상 파일을 SKIP 으로 처리 안 함 — status=%s", r$status))
 
 # 스키마 이탈(필드명 변경) — STALE 로 오보하지 않고 SKIP
 fx_sch <- new_fixture("schema_drift", mutate_index = function(ix) {
   ix$lcode_corpus <- NULL; ix })
 r <- tryCatch(fx_check(fx_sch), error = function(e) e)
-if (inherits(r, "error")) bad("fallback_schema_drift", paste("stop() 으로 죽음:", conditionMessage(r)))
-else if (identical(r$status, "SKIP") && grepl("no_lcode_corpus_field", r$reason))
-  ok("fallback_schema_drift", sprintf("status=SKIP · %s", r$reason))
-else bad("fallback_schema_drift", sprintf("스키마 이탈을 오보 — status=%s reason=%s", r$status, r$reason))
+if (inherits(r, "error")) bad("fallback_schema_drift", paste("stop() 으로 죽음:", conditionMessage(r))) else if (identical(r$status, "SKIP") && grepl("no_lcode_corpus_field", r$reason))
+  ok("fallback_schema_drift", sprintf("status=SKIP · %s", r$reason)) else bad("fallback_schema_drift", sprintf("스키마 이탈을 오보 — status=%s reason=%s", r$status, r$reason))
 
 # ── [부작용 없음] 검사가 정본을 건드리지 않는지 ─────────────────────────────
 cat("\n--- [부작용 없음] 검사기는 정본을 쓰지 않는다 ---\n")
@@ -275,15 +253,13 @@ before <- file.info(c(REAL_INDEX, file.path(PROJ, "06_Registry/knowledge_index.m
 invisible(check_knowledge_index_freshness(root = PROJ))
 after <- file.info(c(REAL_INDEX, file.path(PROJ, "06_Registry/knowledge_index.md")))$mtime
 if (isTRUE(all(before == after)))
-  ok("check_is_read_only", "정본 knowledge_index.{json,md} mtime 불변")
-else
+  ok("check_is_read_only", "정본 knowledge_index.{json,md} mtime 불변") else
   bad("check_is_read_only", "검사가 정본을 재작성함 — 계기가 증거를 지운다")
 
 # ── [repair opt-in] 명시 호출 시에만 재빌드 ─────────────────────────────────
 cat("\n--- [repair] 명시 opt-in 재빌드 ---\n")
 if (!is.function(get0("repair_knowledge_index")))
-  bad("repair_exists", "repair_knowledge_index() 부재")
-else {
+  bad("repair_exists", "repair_knowledge_index() 부재") else {
   # 픽스처 루트를 빌더가 요구하는 최소 구조로 채운다 (정본에서 복사).
   fx_r <- new_fixture("repair", mutate_index = function(ix) {
     ix$lcode_corpus <- ix$lcode_corpus[seq_len(length(ix$lcode_corpus) - 5L)]
@@ -302,15 +278,13 @@ else {
 
   pre <- fx_check(fx_r)
   if (identical(pre$status, "STALE"))
-    ok("setup_repair_fixture_is_stale", sprintf("재빌드 전 STALE (%s)", pre$reason))
-  else
+    ok("setup_repair_fixture_is_stale", sprintf("재빌드 전 STALE (%s)", pre$reason)) else
     bad("setup_repair_fixture_is_stale", sprintf("픽스처가 STALE 이 아님 — status=%s", pre$status))
 
   res <- suppressMessages(repair_knowledge_index(root = fx_r, verbose = FALSE))
   post <- fx_check(fx_r)
   if (isTRUE(res$rebuilt) && identical(post$status, "OK"))
-    ok("repair_restores_ok", sprintf("재빌드 후 corpus %d / index %d 일치", post$n_corpus, post$n_index))
-  else
+    ok("repair_restores_ok", sprintf("재빌드 후 corpus %d / index %d 일치", post$n_corpus, post$n_index)) else
     bad("repair_restores_ok", sprintf("재빌드 실패 또는 미해소 — rebuilt=%s status=%s", res$rebuilt, post$status))
 }
 
