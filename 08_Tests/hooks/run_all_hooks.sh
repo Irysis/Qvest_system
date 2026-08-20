@@ -918,6 +918,15 @@ SUITES=(
   "08_Tests/ops/test_frontier_citation_scan.R"
   "08_Tests/ops/test_paper_intake_resolvers.R"
   "08_Tests/hooks/test_c15_load_path_scan.R"
+  # ── 2026-08-20 추가: integration 3 + hooks 셸 3 (요약 계약 정합 후 등재) ────
+  #   test_weight_bound_basis 는 08-16 분류에서 "PASS 1 / FAIL 2" 였는데 venv 복구 후
+  #   3/0 으로 회복 — 그 실패는 결함이 아니라 **환경 결손의 하류**였다(오진 방지 기록).
+  "08_Tests/integration/test_execution_path_unified.R"
+  "08_Tests/integration/test_v8_readiness_gate.R"
+  "08_Tests/integration/test_wt_lifecycle_e2e.R"
+  "08_Tests/hooks/test_hypothesis_precheck_gate.sh"
+  "08_Tests/hooks/test_inject_usage_ranking.sh"
+  "08_Tests/hooks/test_weight_bound_basis.sh"
 )
 
 # (2026-08-02) .py 분기 추가 — 종전엔 확장자 무관 `bash` 로 던져 파이썬 suite 가
