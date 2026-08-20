@@ -76,11 +76,24 @@ extract_paths <- function(file, root_var, follow_alias = TRUE) {
       for (i in seq_along(e)) try(collect(e[[i]]), silent = TRUE)
     }
   }
-  if (isTRUE(follow_alias)) for (pass in 1:3) for (i in seq_along(ex)) collect(ex[[i]])
+  # ★사전 collect 패스 제거(2026-08-20) — 순서를 무시해 "마지막 할당" 상태로
+  #   재할당 *이전*의 정당 접근까지 죽였다. walk 가 순서대로 할당을 처리한다.
 
   walk <- function(e) {
     if (is.call(e)) {
       op <- as.character(e[[1]])[1]
+      # 순서 인지: 할당을 만나면 우변을 먼저 채점한 뒤 roots 를 갱신한다.
+      if (isTRUE(follow_alias) && op %in% c("<-", "=", "<<-") &&
+          length(e) == 3 && is.symbol(e[[2]])) {
+        walk(e[[3]])
+        lhs <- as.character(e[[2]]); r <- chain_of(e[[3]])
+        if (!is.null(r) && length(r$chain) > 0 && !is.null(roots[[r$root]])) {
+          roots[[lhs]] <<- c(roots[[r$root]], r$chain)
+        } else if (!identical(lhs, root_var) && !is.null(roots[[lhs]])) {
+          roots[[lhs]] <<- NULL
+        }
+        return(invisible(NULL))
+      }
       if (op %in% c("$", "[[") && length(e) >= 3) {
         chain <- character(0); cur <- e
         while (is.call(cur) && as.character(cur[[1]])[1] %in% c("$", "[[")) {
