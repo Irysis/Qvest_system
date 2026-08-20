@@ -64,12 +64,22 @@ if (identical(d2$non_return_datasource$status, "open"))
   ng("폴백인데 강등이 적용됨 (거짓 성공)")
 
 cat("== [D] 박제 아님 — 정본 순서 변경이 전파 ==\n")
-# 정본에서 ①②를 맞바꾼 판본 (screen-tier 를 앞으로)
-swapped <- sub("① 비대칭 표적\\(분포-표적 학습 · 일별 축 정보 회수 · 수리통계 구조 추정 — 주력\\) ② screen-tier 재고 회수\\(overlay 큐\\)",
-               "① screen-tier 재고 회수(overlay 큐) ② 비대칭 표적(분포-표적 학습)",
-               cm)
-writeLines(swapped, file.path(TMP, "CLAUDE.md"), useBytes = TRUE)
-d3 <- suppressWarnings(gv_apply_constitution_order(root = TMP))
+# ★조작 선행검증 의무: 치환이 실제로 먹었는지 **먼저** 확인한다.
+#   초판이 이 검증을 빼먹어 bold 마커(**)를 뺀 패턴으로 치환에 실패했고,
+#   파일이 안 바뀌었으니 순위도 그대로였는데 그걸 '전파 실패(=박제)'로 오귀속했다.
+#   음성 대조는 자기 조작이 유효함을 먼저 증명해야 결론을 낼 자격이 생긴다.
+i_lv <- grep("조건-안 레버만 프론티어", cm)[1]
+orig <- cm[i_lv]
+swapped_line <- sub("① \\*\\*비대칭 표적\\*\\*(.+?) ② screen-tier 재고 회수\\(overlay 큐\\)",
+                    "① screen-tier 재고 회수(overlay 큐) ② **비대칭 표적**\\1",
+                    orig, perl = TRUE)
+if (identical(swapped_line, orig)) {
+  ng("[선행검증] 정본 줄 치환 실패 — 이 축은 판정 불가(테스트 패턴이 원문과 어긋남)")
+} else {
+  ok("[선행검증] 정본 줄 치환이 실제로 적용됨")
+  cm2 <- cm; cm2[i_lv] <- swapped_line
+  writeLines(cm2, file.path(TMP, "CLAUDE.md"), useBytes = TRUE)
+  d3 <- suppressWarnings(gv_apply_constitution_order(root = TMP))
 if (isTRUE(d3$screen_tier_recovery$priority < d3$asymmetry_distribution_target$priority))
   ok("정본에서 순서를 바꾸니 파생 순위도 바뀜 (하드코딩 아님)") else
   ng(sprintf("정본 변경 미전파 — 어딘가 아직 박제 (screen=%s asym=%s)",
