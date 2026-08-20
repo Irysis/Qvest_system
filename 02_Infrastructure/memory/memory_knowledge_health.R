@@ -732,6 +732,9 @@ if (length(missing_np) > 0) {
 #   SKIP(파일 부재/파싱 실패)은 조용히 통과시키지 않고 사유를 인쇄한다.
 kif_path <- file.path(PROJ_ROOT, "02_Infrastructure", "ops", "knowledge_index_freshness.R")
 if (file.exists(kif_path)) {
+  # [임시 진단] health 환경에서 실제 인자 값을 찍는다
+  cat("  [kif probe] PROJ_ROOT len=", length(PROJ_ROOT), " val=", paste(PROJ_ROOT, collapse="|"), "
+", sep="")
   kif <- tryCatch({
     withCallingHandlers(
       local({ source(kif_path, local = TRUE); check_knowledge_index_freshness(root = PROJ_ROOT) }),
