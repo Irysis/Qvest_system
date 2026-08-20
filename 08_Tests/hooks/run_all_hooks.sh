@@ -886,6 +886,35 @@ SUITES=(
   #   ★[D]는 **조작 선행검증**을 먼저 한다 — 초판이 bold(**) 마커를 뺀 패턴으로 치환에 실패해
   #    "치환 실패"를 "전파 실패(박제)"로 오귀속했다. 음성 대조는 자기 조작의 유효성을 먼저 증명해야 한다.
   "08_Tests/hooks/test_gvs_constitution_order.R"
+  # ── 2026-08-20 추가: 대리 지표 검사기 4종 → 내용 기반 교체 (폐쇄루프 감사 Rank3/7/9 + knowledge_index) ──
+  #   뿌리 = "정정 역전파 부재 — 그 정체를 재는 검사기가 전부 대리 지표를 본다".
+  #   대리 지표는 append 만으로 초록이 되므로 갱신 없이 헤더만 쌓는 행위가 계기를 끄는 스위치가 된다.
+  #   실사고: 계층지도 표 9행이 13일·48커밋 바이트 동일인데 mtime 은 갱신돼 두 감시기 모두 초록.
+  #   ★4건 전부 독립 재현자가 power=True regress=True 확인(검출력 사망 아님).
+  #   ① 지도 신선도: mtime → 표 본문 sha. [위반] 30일 표-정체 + touch 에서 lag 719.5h 발화,
+  #      같은 상태에서 구 mtime 판정은 초록 = 이 교체의 존재 이유가 실측으로 증명됨.
+  "08_Tests/hooks/test_map_freshness_content.R"
+  #   ② promote crash: stdout grep → exit status. exit!=0 인데 PASS/FAIL 을 찍는 후보를 검거
+  #      (구 로직은 crash 0 으로 집계 — MAX_PATH 로 죽은 1건이 그렇게 새어나갔다).
+  "08_Tests/hooks/test_promote_crash_exit.R"
+  #   ③ [초안] 마커: 정제 여부(statement_refined 존재) → 승인 여부(status).
+  #      proposed 는 정제문을 갖지만 미승인이라 주입 대상이 아니다(INV-6). 무차별 마킹은 오탐 15건으로 잡힘.
+  "08_Tests/hooks/test_draft_marker_approval.R"
+  #   ④ knowledge_index 신선도: 검사가 아예 0줄이었음 → 카운트 대조 신설(mtime 아닌 내용).
+  #      트리거 비대칭(빌더는 bootstrap 말미에서만 호출)이라 부팅 없는 세션의 적립이 조용히 뒤처졌다.
+  "08_Tests/hooks/test_knowledge_index_stale.R"
+  # ── 2026-08-20 추가: 정본 소비경로 AST 추출기 (같은 질문에 토큰 grep 이 6번 실패한 뒤 도구 교체) ──
+  #   실패 6종은 전부 **표기 형태 가정**: CRLF·bold 마커·모듈명·로드 리터럴 위치·os.path.join·별칭.
+  #   파서는 d[["a"]][["b"]] 와 d$a$b 를 같은 경로로 정규화한다 — grep 이 원리적으로 못 하는 것.
+  #   축: 양성(정본 실재) · 음성(가짜 뿌리 0) · 위반주입 · 별칭 ON/OFF · 재할당 무효화 · 과잉교정 아님.
+  #   ★[F] 재할당 축은 도입 당일 R 판의 잠복 과잉교정을 검거했다(python 만 고치고 R 은 안 고쳤던 것).
+  "08_Tests/hooks/test_sot_access_paths.R"
+  "08_Tests/hooks/test_sot_access_paths_py.py"
+  # ── 2026-08-20 추가: mvo 주석↔서명 기본값 정합 (문서 드리프트 금지) ──
+  #   주석은 산문이라 파생할 수 없으므로 **드리프트를 금지**한다. 값은 정규식이 아니라
+  #   R 파서 formals() 에서 읽어 서명 형식 변경에 안 깨진다. 4필드가 실제로 갈려 있었다
+  #   (bounds 0.10 vs 0.15 · max_names 20 vs 25 · min_names 15 vs 20 · hhi_cap 0.10 vs 0.15).
+  "08_Tests/hooks/test_mvo_doc_default_parity.R"
   # ── 2026-08-20 추가: contract_regression 15건 (측정 권위 계약의 회귀 보호) ──
   #   이 15건은 essence_score(Grade 산정 권위) · hurdle_gate(게이트 2계층) ·
   #   canonical_screen_bt(실측 진입점) · register_module(모듈 계약 floor) ·
