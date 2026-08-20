@@ -177,6 +177,7 @@ if(nzchar(PSEED)){
 
 ## ==== STAGE 4: c 캘리브 (각 refit일 ex-ante TE 이분탐색 — 인과) ====
 TE_T<-c(0.01,0.02,0.03,0.04)
+if(nzchar(TE_FILTER)) TE_T<-TE_T[c(0.01,0.02,0.03,0.04)*100 %in% as.numeric(strsplit(TE_FILTER,",")[[1]])]
 cmat<-matrix(NA_real_,NM,length(TE_T))
 for(mi in seq_len(NM)){ ei<-meix[mi]; if(!is.finite(SIG[1,1,ei]))next
   vv<-view_me[mi,]; if(any(!is.finite(vv)))next
@@ -205,7 +206,8 @@ metrics_row<-function(net_d, dlt_d, lab, lm_mult, te, bps, first_t){
   pr<-pr[mids]; mk<-mk[mids]; ewm_<-ewm_[mids]
   actM<-pr-mk; actE<-pr-ewm_
   nav<-cumprod(1+ifelse(is.finite(net_d[sel]),net_d[sel],0)); mdd<-min(nav/cummax(nav)-1)
-  data.table(arm=lab, featset=FEATSET, lam_mult=lm_mult, te=te, cost_bps=bps, acct_shift=SHIFT, n_mo=length(pr),
+  data.table(arm=lab, featset=FEATSET, lam_mult=lm_mult, te=te, cost_bps=bps, acct_shift=SHIFT,
+    placebo_seed=ifelse(nzchar(PSEED),as.integer(PSEED),NA_integer_), n_mo=length(pr),
     IR_vsMkt=IRf(actM), IR_vsEW=IRf(actE), pt_capwt=nwt(actM), abs_SR=IRf(pr),
     abs_CAGR=prod(1+pr)^(12/length(pr))-1, abs_MDD=mdd, TO_ann=mean(dlt_d[sel],na.rm=TRUE)*PER,
     series=list(list(pr=pr,actM=actM,actE=actE,months=unique(ym)[mids])))
@@ -237,6 +239,7 @@ if("M0" %in% ARMS){
       actM<-pr-mk; actE<-pr-ewv
       nav<-cumprod(1+pr); mdd<-min(nav/cummax(nav)-1)
       RESULTS[[length(RESULTS)+1]]<-data.table(arm="M0",featset=FEATSET,lam_mult=NA_real_,te=TE_T[k]*100,cost_bps=bps,acct_shift=NA_integer_,
+        placebo_seed=ifelse(nzchar(PSEED),as.integer(PSEED),NA_integer_),
         n_mo=length(pr), IR_vsMkt=IRf(actM), IR_vsEW=IRf(actE), pt_capwt=nwt(actM), abs_SR=IRf(pr),
         abs_CAGR=prod(1+pr)^(12/length(pr))-1, abs_MDD=mdd, TO_ann=mean(tov)*12,
         series=list(list(pr=pr,actM=actM,actE=actE,months=as.character(mon$medate[rng[ii]])))) }
