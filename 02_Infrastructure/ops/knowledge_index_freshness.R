@@ -159,11 +159,10 @@ check_knowledge_index_freshness <- function(root = .kif_root(),
 
   reasons <- character(0)
   if (!identical(n_corpus, n_index)) reasons <- c(reasons, sprintf("count_mismatch(corpus=%d, index=%d)", n_corpus, n_index))
-  if (length(missing_in_index))      reasons <- c(reasons, sprintf("missing_in_index=%d", length(missing_in_index)))
-  if (length(extra_in_index))        reasons <- c(reasons, sprintf("extra_in_index=%d", length(extra_in_index)))
+  # MUTANT M2: ID 집합 축 제거 (카운트-only 퇴화)
   if (index_self_inconsistent)       reasons <- c(reasons, sprintf("index_counts_field_stale(counts=%s, rows=%d)", n_index_decl, n_index_rows))
 
-  status <- "OK"  # MUTANT M1: 판정 사망 (항상 초록)
+  status <- if (length(reasons)) "STALE" else "OK"
   # advisory 단독으로는 STALE 로 올리지 않는다 — 주 판정은 내용이다.
   if (identical(status, "OK") && isTRUE(ts_advisory)) {
     reasons <- c(reasons, sprintf("advisory_ts_lag=%.0fs (내용은 일치 — 재빌드 불요)", ts_lag))
