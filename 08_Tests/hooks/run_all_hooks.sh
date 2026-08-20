@@ -894,6 +894,14 @@ SUITES=(
   #   ★[D]는 **조작 선행검증**을 먼저 한다 — 초판이 bold(**) 마커를 뺀 패턴으로 치환에 실패해
   #    "치환 실패"를 "전파 실패(박제)"로 오귀속했다. 음성 대조는 자기 조작의 유효성을 먼저 증명해야 한다.
   "08_Tests/hooks/test_gvs_constitution_order.R"
+  # 2026-08-20 추가: 주입 사본(failure_revival_flags) 동기화 2층.
+  #   실사고 — DIST 카드 frontier 를 고쳤는데 주입면에는 구 문장이 그대로 나갔다.
+  #   .cache/failure_revival_flags.json 이 frontier *사본*을 들고 있고 부활 발화 블록이 그걸 주입하는데,
+  #   그 갱신자(morning_briefing.sh:99)를 morning_run.sh:195 가 **주말엔 skip** 해 3~4일 지연이 났다.
+  #   [예방] refine_distilled 동기 갱신(0.82초) + [관측] WARN_11 mtime 역전 — 한 층만으론 부족하다
+  #   (예방만이면 approve_proposed·수동편집 경로가 남고, 관측만이면 매번 사람이 고쳐야 한다).
+  #   ★[D] 축은 주석이 아니라 **본문 호출**을 확인한다(주석만 남고 배선이 빠지는 회귀 방지).
+  "08_Tests/hooks/test_revival_flags_sync.R"
   # ── 2026-08-20 추가: 대리 지표 검사기 4종 → 내용 기반 교체 (폐쇄루프 감사 Rank3/7/9 + knowledge_index) ──
   #   뿌리 = "정정 역전파 부재 — 그 정체를 재는 검사기가 전부 대리 지표를 본다".
   #   대리 지표는 append 만으로 초록이 되므로 갱신 없이 헤더만 쌓는 행위가 계기를 끄는 스위치가 된다.
