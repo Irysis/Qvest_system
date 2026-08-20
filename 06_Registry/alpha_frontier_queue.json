@@ -5202,6 +5202,19 @@
    "status": "OPEN_ready_to_start",
    "next_action": "①A등급을 adapter_kind 별로 묶어 착수(weight 9 · sigma 6 · exposure 5) — 같은 kind 는 fixture·wrapper 가 같아 한 번에 여러 건이 빠르다. ②착수 시 **원문을 반드시 열 것**: 이 분류의 근거는 큐 서술 155자 발췌이지 정독이 아니다. 원문에서 구체 산출이 없으면 즉시 C 로 재분류하고 사유를 기록한다(GMVP 결정기하 선례 — '추정기처럼 보였으나 평가 지표'였다). ③sweep/chain 을 **등재 전에** 확정한다(2606.09025 는 216점 백테 격자 = sweep + DSR). ④등재분은 자동으로 hypothesis_index PL_ 항목이 되어 모드에 노출된다(배선 완료).",
    "source_refs": "06_Registry/paper_feasibility_20260813.json | A등급 목록 — regime: 2606.09025(exposure) 2606.23492(exposure) 2606.27932(exposure) 2607.19005(sigma) 2607.27063(exposure) | risk: 2607.24410(sigma) 2608.09641(sigma) 2607.13112(sigma) 2606.08141(sigma) 2606.20145(sigma) 2606.30037(sigma) | optimizer: 2606.12612(weight) 2606.11318(weight) 2606.09104(weight) 2607.18813(weight) 2607.16450(weight) 2607.28230(weight) 2607.27461(weight) 2607.01705(weight) smartbeta_ra(weight)"
+  },
+  {
+   "id": "FQ-239",
+   "lane": "regime_allocation",
+   "title": "★Shu-Mulvey KR v5 — 동월-적용 결함 보정 재기준선 + 일별 온라인 필터 + 인과 re-tune (자본 졸업 루프, 도훈 mandate 2026-08-20)",
+   "hypothesis": "기존 KR 복제(RAMP_SHUMULVEY_BL_20260619)의 월간 백테 회계는 월말-결정 비중을 같은 달 수익에 곱하는 동월 적용(~1개월 look-ahead)이라 헤드라인·oos 전부 재기준선화 대상이다. 보정 회계 위에서 ①논문 원 프로토콜인 일별 온라인 필터(월간 케이던스에선 smoother 마지막상태와 동일 no-op이었던 미탐색 축) ②시장환경 피처 완전화(ECOS 3Y·10Y−3Y 복원, 15→17종) ③완전 인과적 rolling re-tune으로 oos_retention의 진짜 값을 재산출하면 graduation HARD 재판정이 가능하고, 배포 형태는 sleeve-배분층 변환(DIST-RAMP-014 frontier 1)으로 공략한다.",
+   "ev_rationale": "①2026-08-20 코드 직접 검증 — run_ramp_shumulvey.R bt() :179-199가 W[rng[i]](월말 mi 결정 비중)를 mon[rng[i]](같은 달 수익)에 곱함. _verify/_v2/_v3/_v4/_contract port() 전 계열 동일. 같은 파일 Stage 2B(:127-128)는 (ei+1):nx 익월 적용이라 파일 내 불일치 = 버그 판단. calib_c(:172-176) 전기간 TE 캘리브 = 2차 look-ahead. 기존 placebo/oos/분해는 이 결함류를 판별 못하는 검정(BearProb 실사고 동형 — overlay_pit_guard 헤더 명문). ②DIST-RAMP-014 frontier ③(인과적 rolling re-tune 이식) + live_trigger (b)(oos_retention ≥ 0.5 재산출 시 재판정, expiry 2027-02-09). ③도훈 mandate 2026-08-20 '자본졸업을 목표로 지속 강화해나가보자' + 승인 계획 — ev_map D7(RAMP chain) 죽은 계급의 도훈 confirm 요건 충족. ★D7이 인용하는 Shu-Mulvey 7.65~7.72 자체가 동월 회계+sweep 위 수치라 D7 근거도 보정 재실측 대상.",
+   "wall_check": "oos_retention decay-cap(원장 기록 0.31~0.54, 2회 실측)이 병목이나 전부 결함 회계 위 측정 — 보정 재실측이 벽의 진짜 높이를 처음 잰다. 배포 형태 벽(25종 직접 변환 4접근 전수 음수)은 sleeve-배분층 변환으로 공략(breadth 의존 우회). IC→PORT_t 전이 벽과는 층이 다름(배분층 전략).",
+   "data_gate": "없음 — 지수 재빌드 rebal 캡 2026-07-31(완결 월말, factor_db_202608 진행월 소비 금지). ecos_bond_rates 현행(2001~, daily_refresh 배선). US VIX(fred_macro_wide) 전기간. VKOSPI 실데이터 43행뿐 → 본선 실현변동성 프록시 유지(피처 정의 중간 변경 금지).",
+   "owner": "CLAIMED — Q-Lead session 2026-08-20 (도훈 승인 계획 + 자본졸업 지시)",
+   "status": "CLAIMED_20260820_p0_launching",
+   "next_action": "P0 동결입력 재현 → ★shift A/B(보정 기준선 M0 확정 + 기존 원장 정정 주석 + 인플레율 문서화) → 동일창 재빌드(신규 파일) → 확장 빌드(~2026-07-31). P1 일별 온라인 필터(사다리 M0→D1→D2(f17)→D3(인과 re-tune), 사전등록 outputs/ramp/smv_v5_prereg_20260820.json 선기록 완료, 16셀 전수보고+헤드라인 사전지정). 게이트 4종(assert_overlay_pit/lag1/strict A/B/placebo) 전부 clean 후 헤드라인 승격. P1c oos 재산출(essence_score v2 경유) → ≥0.5 시 live_trigger (b) 발화 절차. P2 소비면(bear_prob 연속 export → book overlay A/B → Lane D 스펙 핸드오프, FQ-115/FQ-236 교차참조). P3 sleeve-배분층 + book-marginal ΔIR≥0.05 → governor 수동(도훈). 계획 정본 = ~/.claude/plans/shu-yu-mulvey-rippling-nautilus.md",
+   "source_refs": "04_Research/ramp/reports/shumulvey_faithful_replication_20260619.md | qepm/memory/axioms/distilled/DIST-RAMP-014.json | 06_Registry/ramp/ramp_registry.json::RAMP_SHUMULVEY_BL_20260619 | 02_Infrastructure/ramp/run_ramp_shumulvey.R | arXiv:2410.14841"
   }
  ],
  "parked_rounds": [
