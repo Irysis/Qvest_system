@@ -59,6 +59,15 @@ t_near <- function(a, b, tol = 1e-10) {
 t_summary <- function(label) {
   cat(sprintf("TESTSUMMARY %s pass=%d fail=%d defect=%d\n",
               label, .TREG$pass, .TREG$fail, .TREG$defect))
+  # 2026-08-20: 배터리(run_all_hooks.sh)는 TESTSUMMARY 를 못 읽는다 — 마지막 줄의
+  #   {"test":..,"pass":..,"fail":..} 만 본다. 그래서 이 계약을 쓰는 5건(essence_score·
+  #   hurdle_gate·canonical_screen_bt·register_module·required_effect_size = 측정 권위
+  #   그 자체)이 배터리에 등재조차 못 된 채 남아 있었다. 두 소비자를 동시에 만족시킨다.
+  #   ★spec_defect 는 target 코드 버그라 테스트 실패가 아니다(러너 규약과 동일) —
+  #     fail 에 합산하지 않고 total 에만 반영한다.
+  cat(sprintf("{\"test\":\"%s\",\"pass\":%d,\"fail\":%d,\"total\":%d}\n",
+              label, .TREG$pass, .TREG$fail,
+              .TREG$pass + .TREG$fail + .TREG$defect))
   quit(save = "no", status = if (.TREG$fail > 0L) 1L else 0L)
 }
 

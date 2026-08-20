@@ -51,7 +51,12 @@ case "$CTX" in *"결합기"*|*"평균 예측기"*) ok "ML 카브아웃 적재 (L
                 *) ng "ML 카브아웃 부재 — 분포-표적이 settled ML 로 오독될 위험" ;; esac
 
 echo "== [B] 마커 제거 시 폴백 실효 (위반 주입) =="
-TMP=$(mktemp -d)
+# ★temp root 는 반드시 **native Windows 경로**여야 한다.
+#   mktemp -d 는 MSYS 형(/tmp/...)을 주는데, 훅 L15-16 주석대로 그 형태를 native python glob 에
+#   넘기면 0건 매치 → CACHE_BODY regen 실패 → 훅이 '{}' 로 조기 종료한다.
+#   그러면 B/C/E 가 '수리 실패' 처럼 보이지만 실제로는 **검사 하네스 결함**이다(초판이 이 함정에 빠졌다).
+TMP="$ROOT/.cache/_test_frontier_axes_root"
+rm -rf "$TMP"
 mkdir -p "$TMP/qepm/memory/axioms/active" "$TMP/.cache" "$TMP/06_Registry" "$TMP/02_Infrastructure/prompts"
 cp -r "$ROOT/qepm/memory/axioms/active/." "$TMP/qepm/memory/axioms/active/" 2>/dev/null
 cp "$ROOT/06_Registry/distilled_knowledge.json" "$TMP/06_Registry/" 2>/dev/null

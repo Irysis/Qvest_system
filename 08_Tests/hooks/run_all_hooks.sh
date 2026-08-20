@@ -848,6 +848,37 @@ SUITES=(
   #   (kind 4종 + kill switch + capacity + 상태 이월 + D2 FR_RCMA 재정의 소비) ·
   #   claim 프로토콜(선점/중복 거부/done 보존) · 내구 로그·상태라인.
   "08_Tests/hooks/test_auto_spawn_layers.R"
+  # 2026-08-17 추가: 주입 훅 프론티어 줄의 CLAUDE.md 정본 파생(폐쇄루프 감사 Rank2).
+  #   구 하드코딩(M7 07-10)이 v8.4 재편(08-13) 후 38일 낙후 → 매 spawn 마다 도훈이 08-09 에
+  #   닫은 lane 을 ①순위 레버로 광고했다(주입문 v8.4 키워드 5종 실측 0건).
+  #   양방향: [A/D] 정본 파생 + v8.4 키워드 실적재 · [B] 마커 제거 시 폴백 실효(위반 주입) ·
+  #   [C] CLAUDE.md 부재 내성 · [E] 정본 settled lane 변경의 주입문 전파.
+  #   ★temp root 는 native Windows 경로 필수 — MSYS 형(/tmp)을 쓰면 훅의 native python glob 이
+  #    0건 매치 → CACHE_BODY regen 실패 → '{}' 조기종료라 **수리 실패로 오독**된다(초판 5 FAIL 의 정체).
+  "08_Tests/hooks/test_frontier_axes_derive.sh"
+  # ── 2026-08-20 추가: contract_regression 15건 (측정 권위 계약의 회귀 보호) ──
+  #   이 15건은 essence_score(Grade 산정 권위) · hurdle_gate(게이트 2계층) ·
+  #   canonical_screen_bt(실측 진입점) · register_module(모듈 계약 floor) ·
+  #   book_marginal_ci / required_effect_size / subsample_null(자본 게이트 통계) 을
+  #   지키는데, SUITES 가 하드코딩 열거라 **한 번도 배터리에서 돌지 않고** 있었다.
+  #   등재를 막고 있던 건 목록이 아니라 출력 계약이었다 — 5건은 helpers.R 의
+  #   TESTSUMMARY 만, 10건은 자체 형식만 내서 배터리가 읽지 못했다(→ 2026-08-20
+  #   t_summary 에 배터리 JSON 동시 발행 + 10건에 요약 줄 추가로 해소).
+  "08_Tests/contract_regression/test_essence_score.R"
+  "08_Tests/contract_regression/test_hurdle_gate.R"
+  "08_Tests/contract_regression/test_canonical_screen_bt.R"
+  "08_Tests/contract_regression/test_register_module.R"
+  "08_Tests/contract_regression/test_required_effect_size.R"
+  "08_Tests/contract_regression/test_proxy_axis.R"
+  "08_Tests/contract_regression/test_basis_channels.R"
+  "08_Tests/contract_regression/test_subsample_null.R"
+  "08_Tests/contract_regression/test_book_marginal_ci.R"
+  "08_Tests/contract_regression/test_governor_dir_resolution.R"
+  "08_Tests/contract_regression/test_report_guard.R"
+  "08_Tests/contract_regression/test_harness_compliance.R"
+  "08_Tests/contract_regression/test_moment_fragility.R"
+  "08_Tests/contract_regression/test_claim_state.R"
+  "08_Tests/contract_regression/test_bm_park.R"
 )
 
 # (2026-08-02) .py 분기 추가 — 종전엔 확장자 무관 `bash` 로 던져 파이썬 suite 가

@@ -76,4 +76,8 @@ chk("부호 일치인데도 잡혔는가(초판 사각 실증)",
     r7$verdict == "OUTLIER_DRIVEN" && sign(r7$bowley_diff) == sign(r7$moment_diff),
     sprintf("bowley %+.4f · moment %+.3f", r7$bowley_diff, r7$moment_diff))
 cat(sprintf("\n=== 최종: PASS %d · FAIL %d ===\n", PASS, FAIL))
+# 2026-08-20: 배터리는 마지막 줄의 JSON 요약만 읽는다. 이 줄이 없어 이 파일은
+#   등재조차 되지 못했다(측정 권위 계약이 회귀 보호 밖에 있었음).
+cat(sprintf("{\"test\":\"test_moment_fragility\",\"pass\":%d,\"fail\":%d,\"total\":%d}
+", PASS, FAIL, PASS + FAIL))
 if (FAIL > 0) quit(status = 1)

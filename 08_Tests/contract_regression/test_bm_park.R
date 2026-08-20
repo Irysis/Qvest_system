@@ -73,4 +73,8 @@ ok("n 보고",                      s$alignment$n == 40L)
 ok("정렬 필드 보고",              "offset_inc_minus_sleeve" %in% names(s$alignment))
 
 cat(sprintf("\n=== test_bm_park: %d PASS / %d FAIL (총 %d) ===\n", P, FA, P+FA))
+# 2026-08-20: 배터리는 마지막 줄의 JSON 요약만 읽는다. 이 줄이 없어 이 파일은
+#   등재조차 되지 못했다(측정 권위 계약이 회귀 보호 밖에 있었음).
+cat(sprintf("{\"test\":\"test_bm_park\",\"pass\":%d,\"fail\":%d,\"total\":%d}
+", P, FA, P + FA))
 if (FA > 0L) quit(status = 1L)

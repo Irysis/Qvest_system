@@ -100,4 +100,8 @@ chk("UNCLAIMED ∧ negative status -> 차단", !can(conf2))
 chk("미배정 ∧ frontier_open -> 통과", can(list(id="Y", owner="미배정 (NP-2)", status="frontier_open")))
 chk("UNCLAIMED ∧ 빈 status -> 통과", can(list(id="Y", owner="UNCLAIMED — 발행", status="")))
 cat(sprintf("\n=== 최종: PASS %d · FAIL %d ===\n", PASS, FAIL))
+# 2026-08-20: 배터리는 마지막 줄의 JSON 요약만 읽는다. 이 줄이 없어 이 파일은
+#   등재조차 되지 못했다(측정 권위 계약이 회귀 보호 밖에 있었음).
+cat(sprintf("{\"test\":\"test_claim_state\",\"pass\":%d,\"fail\":%d,\"total\":%d}
+", PASS, FAIL, PASS + FAIL))
 if (FAIL > 0) quit(status = 1)

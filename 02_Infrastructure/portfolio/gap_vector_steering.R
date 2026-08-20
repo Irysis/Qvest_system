@@ -79,11 +79,22 @@ if (!exists("%||%")) `%||%` <- function(a, b) if (!is.null(a)) a else b
 # negative·clean 잔여폭 좁음)과 v8.3 DPL_FEATURE 발급 중단(measurement-graduation §5)에
 # 의해 폐기 — 본 파일이 alpha Step 0 조준 계기판 생성기이므로 헌법 현행과 단일화.
 GV_STEERING_DIRECTIONS <- list(
-  non_return_datasource = list(
+  # (2026-08-17) v8.4 ① 신설. 종전 이 표에는 v8.4 주력 lane 자체가 **없었고**
+  #   non_return 이 priority 1L '주력' 자리를 유지했다 — 조준기가 도훈이 08-09 에 닫은
+  #   lane 을 Step 0 1순위로 겨누고 있었다. priority 는 아래 gv_apply_constitution_order()
+  #   가 CLAUDE.md 정본에서 매 호출 재파생하므로 여기 값은 폴백 기본값이다.
+  asymmetry_distribution_target = list(
     status   = "open",
     priority = 1L,
-    label    = "비-return 신규 원천 (DART exec-insider 역사·계약금액 magnitude·공매도/대차 등) — 주력",
-    evidence = "CLAUDE.md 제2목표 경로 ① (v8.3 2026-07-10 실측 갱신) + 06_Registry/alpha_frontier_queue.json FQ-001~005. return-파생 횡단 alpha 소진 실측(memory project-corr-recovery-lane-nondart-exhaustion-20260706)"
+    label    = "비대칭 표적 (분포-표적 학습 · 일별 축 정보 회수 · 수리통계 구조 추정) — 주력",
+    evidence = "CLAUDE.md 제2목표 경로 ① (v8.4 2026-08-13 도훈 mandate) + SOT 02_Infrastructure/docs/qvest_v8_4_asymmetry_ml_sot.md. 표적을 평균→분포로 교체(조건부 분위·왜도·꼬리초과확률). ★ML 카브아웃: 죽은 것은 ML 을 결합기·사이징·평균 예측기로 쓴 경로(126건 실측)이고 본 lane 은 표적 자체를 바꾸는 미측정 축 — 표적이 '다음 달 평균 수익률'인 ML 라운드는 금지(대조군으로만)"
+  ),
+  non_return_datasource = list(
+    status   = "open",
+    priority = 5L,
+    label    = "비-return 신규 원천 (DART exec-insider 역사·계약금액 magnitude 등) — v8.4 주력 해제",
+    posterior = "v8.4(2026-08-13) 주력 해제: 5레인 중 2건 데이터 게이트 폐쇄(도훈 08-09 공매도/대차) + 3건 실측 negative(insider 3-프레임 삼각-null · 계약 두 소비면 닫힘 · 담보/감사의견 SPARSITY_WALL). ★구조 판결 아님 — 부활 조건은 qvest_v8_4_asymmetry_ml_sot.md §1 (INV-7)",
+    evidence = "CLAUDE.md 제2목표 '주력에서 해제(2026-08-13 도훈 지시, 구 ①)' + 06_Registry/alpha_frontier_queue.json FQ-001~005 (deprioritized_v84_20260813 / data_gate_closed_20260809)"
   ),
   screen_tier_recovery = list(
     status   = "open",
@@ -119,6 +130,90 @@ GV_STEERING_DIRECTIONS <- list(
     evidence  = "measurement-graduation §6 '직교 ≠ 수익': standalone long-only 16/16 admission FAIL (사유 = PORT_t 실현 net active, BAB port_t -2.02 등)"
   )
 )
+
+# ─── gv_apply_constitution_order — 정본(CLAUDE.md) 파생 우선순위 ──────────────
+# (2026-08-17 폐쇄루프 감사) 위 표의 priority 를 **하드코딩으로 두면 낙후한다**.
+#   실사고: v8.4 재편(2026-08-13)이 비-return 을 주력에서 해제했는데 이 표는 38일간
+#   priority 1L '주력' 을 유지해, Step 0 조준기(sleeve_needs)가 도훈이 08-09 에 닫은
+#   lane 을 1순위로 겨눴다. 같은 계통이 axiom_context_inject.sh 에도 있었다(같은 날 수리).
+#   ⇒ priority 는 CLAUDE.md 의 FRONTIER_AXES 마커 구간에서 **매 호출 재파생**한다(캐시 없음).
+#   ★파싱 실패/마커 부재/파일 부재 시 표의 정적 priority 를 그대로 쓴다(회귀 없음, WARN만).
+.GVS_CONSTITUTION_KEYS <- list(
+  asymmetry_distribution_target = c("비대칭", "분포-표적", "분포 표적"),
+  screen_tier_recovery          = c("screen-tier", "cap-tier", "EW-대비"),
+  overlay_refinement            = c("overlay 잔여", "overlay 잔여·", "overlay"),
+  residual_orthogonal_sleeve    = c("잔차sleeve", "잔차 sleeve", "residual sleeve"),
+  non_return_datasource         = c("비-return", "non-return")
+)
+
+#' CLAUDE.md FRONTIER_AXES 구간에서 레버 순서를 파생해 priority 재배정
+#'
+#' 정본에 열거된 레버는 등장 순서대로 priority 1..N.
+#' 정본이 더 이상 레버로 열거하지 않는 open 방향은 demoted_by_constitution 으로 강등
+#' (closed 방향은 손대지 않음 — 이미 판정된 것).
+#'
+#' @param dirs list: GV_STEERING_DIRECTIONS
+#' @param root Character: 프로젝트 루트
+#' @return list: priority/status 가 정본 정합으로 갱신된 dirs (실패 시 입력 그대로)
+gv_apply_constitution_order <- function(dirs = GV_STEERING_DIRECTIONS,
+                                        root = if (nzchar(Sys.getenv("QM_ROOT"))) Sys.getenv("QM_ROOT") else .gvs_proj) {
+  cm <- file.path(root, "CLAUDE.md")
+  txt <- tryCatch(readLines(cm, warn = FALSE, encoding = "UTF-8"), error = function(e) NULL)
+  if (is.null(txt)) {
+    warning("[gvs] CLAUDE.md 미독 — 정적 priority 유지(회귀 없음)")
+    return(dirs)
+  }
+  blob <- paste(txt, collapse = "\n")
+  if (!grepl("FRONTIER_AXES_START", blob, fixed = TRUE) ||
+      !grepl("FRONTIER_AXES_END", blob, fixed = TRUE)) {
+    warning("[gvs] FRONTIER_AXES 마커 부재 — 정적 priority 유지(회귀 없음)")
+    return(dirs)
+  }
+  seg <- sub(".*FRONTIER_AXES_START", "", blob)
+  seg <- sub("FRONTIER_AXES_END.*", "", seg)
+  lever_line <- grep("조건-안 레버만 프론티어", strsplit(seg, "\n")[[1]], value = TRUE)
+  if (!length(lever_line)) {
+    warning("[gvs] 레버 선언 줄 미발견 — 정적 priority 유지(회귀 없음)")
+    return(dirs)
+  }
+  lever <- sub(".*조건-안 레버만 프론티어", "", lever_line[1])
+  # settled 절('...은 settled-negative...') 이후는 레버가 아니라 제외 목록이므로 절단
+  lever_open <- strsplit(lever, "settled-negative", fixed = TRUE)[[1]][1]
+
+  # 정본 등장 위치 → 순위
+  rank_of <- vapply(names(dirs), function(nm) {
+    keys <- .GVS_CONSTITUTION_KEYS[[nm]]
+    if (is.null(keys)) return(NA_integer_)
+    pos <- vapply(keys, function(k) {
+      p <- regexpr(k, lever_open, fixed = TRUE)[1]
+      if (p > 0L) p else NA_integer_
+    }, integer(1))
+    pos <- pos[!is.na(pos)]
+    if (!length(pos)) NA_integer_ else as.integer(min(pos))
+  }, integer(1))
+
+  listed <- names(dirs)[!is.na(rank_of)]
+  if (!length(listed)) {
+    warning("[gvs] 정본 레버와 매칭된 방향 0건 — 정적 priority 유지(회귀 없음)")
+    return(dirs)
+  }
+  listed <- listed[order(rank_of[listed])]
+  for (i in seq_along(listed)) dirs[[listed[i]]]$priority <- as.integer(i)
+  dirs[listed] <- lapply(dirs[listed], function(d) {
+    d$constitution <- "listed_current"; d
+  })
+
+  # 정본이 레버로 열거하지 않는 open 방향 = 강등 (closed 는 불변)
+  for (nm in setdiff(names(dirs), listed)) {
+    if (identical(dirs[[nm]]$status, "closed")) next
+    dirs[[nm]]$priority <- 50L
+    dirs[[nm]]$status <- "demoted_by_constitution"
+    dirs[[nm]]$constitution <- sprintf(
+      "CLAUDE.md FRONTIER_AXES 현행 레버 목록에 미열거 — 자동 강등(%s). 부활은 정본 갱신 시 자동.",
+      format(Sys.Date()))
+  }
+  dirs
+}
 
 # ─── gv_check_staleness ──────────────────────────────────────────────────────
 
@@ -288,9 +383,12 @@ steer_gap_vector <- function(gap_path = .GVS_GAP_PATH,
   }
 
   # ── 4. sleeve_needs 조향 재정의 ──────────────────────────────────────────────
-  prios <- vapply(GV_STEERING_DIRECTIONS, function(d) d$priority, integer(1))
-  open_mask <- vapply(GV_STEERING_DIRECTIONS, function(d) d$status != "closed", logical(1))
-  open_dirs <- names(GV_STEERING_DIRECTIONS)[open_mask][order(prios[open_mask])]
+  # (2026-08-17) priority 는 CLAUDE.md 정본에서 매 호출 재파생 — 표의 정적 값은 폴백.
+  #   구 동작(정적 값 고정)은 v8.4 재편을 38일간 못 받아 조준기가 폐쇄 lane 을 1순위로 겨눴다.
+  DIRS <- gv_apply_constitution_order(GV_STEERING_DIRECTIONS)
+  prios <- vapply(DIRS, function(d) d$priority, integer(1))
+  open_mask <- vapply(DIRS, function(d) d$status != "closed", logical(1))
+  open_dirs <- names(DIRS)[open_mask][order(prios[open_mask])]
 
   sleeve_needs_raw <- gv$sleeve_needs %||% NULL
 
@@ -311,7 +409,7 @@ steer_gap_vector <- function(gap_path = .GVS_GAP_PATH,
   out$frontier_queue   <- .GVS_FRONTIER_QUEUE_REL  # v8.3 M5 상설 큐 포인터 (착수 전 확인 의무)
   out$sleeve_needs     <- as.list(open_dirs)          # 1차 조향 입력 = 실증-열린 방향만
   out$sleeve_needs_raw_builder <- sleeve_needs_raw    # 빌더 원본 보존
-  out$sleeve_needs_steering <- GV_STEERING_DIRECTIONS # enum 전체 (closed 포함, evidence/posterior)
+  out$sleeve_needs_steering <- DIRS # enum 전체 (closed 포함, evidence/posterior) — 정본 파생 반영분
   out$steering <- list(
     steered_at       = format(Sys.time(), "%Y-%m-%dT%H:%M:%S"),
     steering_version = .GVS_VERSION,

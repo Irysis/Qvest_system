@@ -86,4 +86,8 @@ ok(identical(r7$verdict_ci, "UNRESOLVED_NO_CI") && is.finite(r7$delta_ir),
    "7. bootstrap=FALSE 시 UNRESOLVED_NO_CI 로 명시 (조용히 통과시키지 않음)")
 
 cat(sprintf("\n=== 결과: %d PASS / %d FAIL ===\n", P, F))
+# 2026-08-20: 배터리는 마지막 줄의 JSON 요약만 읽는다. 이 줄이 없어 이 파일은
+#   등재조차 되지 못했다(측정 권위 계약이 회귀 보호 밖에 있었음).
+cat(sprintf("{\"test\":\"test_book_marginal_ci\",\"pass\":%d,\"fail\":%d,\"total\":%d}
+", P, F, P + F))
 if (F > 0) quit(status = 1L)

@@ -72,4 +72,8 @@ ok(is.finite(i2) && !any(grepl("artifact\\$decision <-", src[max(1,i2-3):(i2+2)]
    "5c. ★경고 블록이 decision 을 변경하지 않는다 (자본 게이트는 도훈 권한)")
 
 cat(sprintf("\n=== 결과: %d PASS / %d FAIL ===\n", P, F))
+# 2026-08-20: 배터리는 마지막 줄의 JSON 요약만 읽는다. 이 줄이 없어 이 파일은
+#   등재조차 되지 못했다(측정 권위 계약이 회귀 보호 밖에 있었음).
+cat(sprintf("{\"test\":\"test_governor_dir_resolution\",\"pass\":%d,\"fail\":%d,\"total\":%d}
+", P, F, P + F))
 if (F > 0) quit(status = 1L)

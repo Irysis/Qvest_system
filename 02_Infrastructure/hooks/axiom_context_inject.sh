@@ -125,12 +125,20 @@ def _fa_derive():
     for ln in seg.splitlines():
         t = ln.lstrip('>').strip()
         if '조건-안 레버만 프론티어' in t and not lever:
-            lever = _fa_strip(t.split('조건-안 레버만 프론티어', 1)[1]).lstrip('-').strip()
+            lever = _fa_strip(t.split('조건-안 레버만 프론티어', 1)[1])
+            # 원문이 '프론티어 — 현행(...)' 이라 선두 대시/구두점 잔재 제거
+            lever = lever.lstrip('-–—:').strip()
         elif '부활이 아님을 구분' in t and not carve:
             carve = _fa_strip(t)
     if not lever:
         return _FRONTIER_FALLBACK, _SETTLED_FALLBACK
-    out = '  조건-안 레버 프론티어(CLAUDE.md 정본 파생): ' + lever[:300]
+    # 문장 중간 절단 방지 — 상한 안에서 마지막 닫는 구두점까지만
+    _lv = lever[:330]
+    if len(lever) > 330:
+        _cut = max(_lv.rfind(')'), _lv.rfind('.'))
+        if _cut > 160:
+            _lv = _lv[:_cut + 1]
+    out = '  조건-안 레버 프론티어(CLAUDE.md 정본 파생): ' + _lv
     if carve:
         out = out + chr(10) + '  ' + carve[:200]
     # settled lane 토큰도 같은 정본 문장에서 파생 (revival 세그먼트 skip 용, 아래 _settled_rv)

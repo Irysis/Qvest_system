@@ -45,4 +45,8 @@ ok("논리형 필드 보존",  isTRUE(field(NL, "inside")))
 ok("빈 리스트도 stop",  inherits(try(field(list(), "x"), silent=TRUE), "try-error"))
 
 cat(sprintf("\n=== test_report_guard: %d PASS / %d FAIL (총 %d) ===\n", P, F, P+F))
+# 2026-08-20: 배터리는 마지막 줄의 JSON 요약만 읽는다. 이 줄이 없어 이 파일은
+#   등재조차 되지 못했다(측정 권위 계약이 회귀 보호 밖에 있었음).
+cat(sprintf("{\"test\":\"test_report_guard\",\"pass\":%d,\"fail\":%d,\"total\":%d}
+", P, F, P + F))
 if (F > 0L) quit(status = 1L)
