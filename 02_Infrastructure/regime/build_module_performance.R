@@ -91,10 +91,17 @@ HASH_QUARANTINE_LOG <- file.path(PROJ, "06_Registry/module_hash_quarantine.log")
   root <- normalizePath(PROJ, winslash="/", mustWork=FALSE)
   sub(paste0("^", gsub("([][{}()+*^$.|?\\\\-])", "\\\\\\1", root), "/?"), "", p)
 }
+mc <- tryCatch(fromJSON(file.path(PROJ,"06_Registry/module_catalog.json"), simplifyVector=FALSE)$modules, error=function(e) NULL)
 gac <- tryCatch(as.data.table(fromJSON(file.path(PROJ,"04_Research/grade_a_catalog.json"))$strategies), error=function(e) NULL)
 if(!is.null(gac) && nrow(gac)) for(i in seq_len(nrow(gac))) {
   .attach(gac$strategy_id[i], gac$grade[i], if("role" %in% names(gac)) gac$role[i] else NA, "qepm")
   if(identical(as.character(gac$grade[i]), "A")) {
+    # ★2026-08-20: module_catalog 에 행이 있는 id 는 legacy 경로로 allowlist 에 넣지 않는다 —
+    #   catalog 이 권위 (register_module 2026-08-02 상호배타 계약과 동일 원칙). 실사고:
+    #   dup-hash 감사가 de-FR 한 비대표 3건(160537/021015/044603)이 6월 proxy-A 라벨로
+    #   여기서 재진입 — proxy 시절 등급이 backtested 판정·fr_eligible 게이트를 우회했다.
+    #   legacy 예외의 존재이유는 catalog 에 **없는** 구세대 QEPM 전략의 이관이므로 그 범위로 한정.
+    if(!is.null(mc) && gac$strategy_id[i] %in% names(mc)) next
     sim_path <- .find_sim(gac$strategy_id[i])
     .verify_module_hash(gac$strategy_id[i], sim_path, NULL)   # legacy = hash 계약 부재 → hash_missing WARN만
     .add_eligible(gac$strategy_id[i], sim_path, gac$grade[i],
@@ -102,7 +109,6 @@ if(!is.null(gac) && nrow(gac)) for(i in seq_len(nrow(gac))) {
                   "legacy_qepm_grade_a")
   }
 }
-mc <- tryCatch(fromJSON(file.path(PROJ,"06_Registry/module_catalog.json"), simplifyVector=FALSE)$modules, error=function(e) NULL)
 if(!is.null(mc)) for(id in names(mc)) {
   .attach(id, mc[[id]]$grade, mc[[id]]$role, mc[[id]]$origin_mode)
   if(.is_fr_eligible(mc[[id]])) {
