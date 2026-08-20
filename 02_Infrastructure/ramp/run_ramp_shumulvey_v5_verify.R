@@ -85,21 +85,22 @@ for(bps in c(5,15)){
 if(!SKIP){
   for(sd in seq_len(NPL)){
     f<-sprintf(".cache/_smv_v5_%s_p%d.rds",KEY,sd); if(file.exists(f))next
-    run_engine(list(SMV_IDXFILE=Z$idxfile, SMV_FEATSET=fs, SMV_ARMS="D1", SMV_LAMMULT="1",
+    run_engine(list(SMV_IDXFILE=Z$idxfile, SMV_FEATSET=fs, SMV_ARMS="M0,D1", SMV_LAMMULT="1",
                     SMV_TE="3", SMV_PLACEBO_SEED=as.character(sd), SMV_KEY=sprintf("%s_p%d",KEY,sd)))
     cat(sprintf("  placebo %d/%d done\n",sd,NPL))
   }
 }
 pl<-list()
 for(sd in seq_len(NPL)){ f<-sprintf(".cache/_smv_v5_%s_p%d.rds",KEY,sd)
-  if(file.exists(f)){ r<-readRDS(f)$RES; r<-r[arm=="D1"&te==3]; pl[[length(pl)+1]]<-r[,!"series"] } }
+  if(file.exists(f)){ r<-readRDS(f)$RES; r<-r[te==3]; pl[[length(pl)+1]]<-r[,!"series"] } }
 if(length(pl)){
   PL<-rbindlist(pl,fill=TRUE)
-  for(bps in c(5,15)){
-    real<-RES[arm=="D1"&(!is.na(lam_mult)&lam_mult==1)&te==3&cost_bps==bps]$IR_vsEW
-    ps<-PL[cost_bps==bps]$IR_vsEW
-    if(length(ps)&&length(real))cat(sprintf("[게이트④ placebo %dbps] real IR_vsEW=%.3f | placebo mean=%.3f sd=%.3f | p(placebo>=real)=%.3f (n=%d)\n",
-        bps,real,mean(ps,na.rm=TRUE),sd(ps,na.rm=TRUE),mean(ps>=real,na.rm=TRUE),length(ps)))
+  for(armx in c("M0","D1")) for(bps in c(5,15)){
+    real<-if(armx=="M0") RES[arm=="M0"&te==3&cost_bps==bps]$IR_vsEW
+          else RES[arm=="D1"&(!is.na(lam_mult)&lam_mult==1)&te==3&cost_bps==bps]$IR_vsEW
+    ps<-PL[arm==armx&cost_bps==bps]$IR_vsEW
+    if(length(ps)&&length(real))cat(sprintf("[게이트④ placebo %s %dbps] real IR_vsEW=%.3f | placebo mean=%.3f sd=%.3f | p(placebo>=real)=%.3f (n=%d)\n",
+        armx,bps,real,mean(ps,na.rm=TRUE),sd(ps,na.rm=TRUE),mean(ps>=real,na.rm=TRUE),length(ps)))
   }
   fwrite(PL, sprintf("outputs/ramp/smv_v5_placebo_%s.csv",KEY))
 }
