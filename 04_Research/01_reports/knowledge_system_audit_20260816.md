@@ -299,6 +299,38 @@ alpha-hypothesis 에이전트가 착수 전 과거 지식을 조회하고 **설�
 실패의 값싼 쪽으로 넘어지게 한다. 억제 사유는 `foreign_closure_only` 로 별도 라벨링해
 사후 FP율을 transcript 재발굴 없이 `passes_*.json` 에서 셀 수 있게 했다.
 
+#### 5-c. 같은 계통 전수 감사 (2026-08-17, 5-b 의 next_probe ③)
+
+live 인프라의 mtime 판독 **43지점 전수** 분류(git 추적 `.R/.py/.sh` · 테스트 제외):
+
+| 용도 | 판정 |
+|---|---|
+| 캐시 나이 · 락 나이 | 정당 — 주장 대상이 **공유 상태**이므로 공유 파일을 읽는 게 맞다 |
+| pick-newest `which.max(file.mtime)` | **다른** 위험군(최신≠정답). 2건은 이미 수리 주석 보유, 4건 잔존 |
+| 표시/라벨 · 필터 창 | 판정에 안 쓰임 |
+| **'이 턴이 했나' 귀속 → 차단 좌우** | `continuity_gate` **뿐** |
+
+⇒ **enforcement 계통의 3번째 사례는 없다.** 표본이 아니라 모집단 열거라 *powered negative*
+(⚠모집단 = git 추적 3개 확장자·비-테스트로 한정).
+
+**★그러나 루트 갈림 계통의 3번째는 있다 — `boot_stamp_check.sh`(SessionStart 부트 카나리아).**
+실제 훅 실행, 같은 시각·같은 머신:
+
+| 실행 루트 | 출력 |
+|---|---|
+| 워크트리 | `boot_stamp.json 부재 — 풀 부트스트랩 미실행` |
+| main | `마지막 풀 부트스트랩 127h 경과` |
+
+writer(`bootstrap.sh:1044` → `resolve_project.sh`)는 **`QM_ROOT` 우선 = main**, reader
+(`boot_stamp_check.sh:13`)는 **`CLAUDE_PROJECT_DIR` 우선 = 워크트리**. ⇒ 워크트리에서 `/qvest`
+를 돌려도 스탬프는 main 에 쓰이므로 **그 경고는 원리적으로 꺼지지 않는다**(워크트리 9/9 부재 ·
+main 만 존재). warn-only라 차단은 아니나 **꺼질 수 없는 경보는 정보량이 0**이다.
+★방향이 5-a/5-b 와 **반대**다: 그쪽은 공유 파일이 요구를 잘못 **충족**(오통과), 이쪽은 루트
+갈림이 잘못 **경보**(오차단). 칩 `task_7ae8b9c9`.
+⇒ **일반화**: 이 저장소엔 루트 해석 규약이 **둘 공존**한다 — 정본 resolver 의 `QM_ROOT`-우선과
+훅 인라인의 `CLAUDE_PROJECT_DIR`-우선. **둘이 만나는 핸드오프마다 같은 결함이 난다**;
+핸드오프를 감사할 땐 writer/reader 의 우선순위를 나란히 놓고 읽을 것.
+
 검사 `08_Tests/hooks/test_continuity_verdict_artifact_identity.py` **28/28** (배터리 등재).
 기존 `test_continuity_gate.py` **31/31** · `test_continuity_marker_identity.py` **31/31** 불변.
 ★이 배터리가 별도로 필요한 이유도 같다 — 기존 continuity 배터리는
