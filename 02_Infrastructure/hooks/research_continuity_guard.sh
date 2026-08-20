@@ -96,7 +96,14 @@ def mf_table_rows(map_p):
         lines = fh.read().split('\n')
     rows = [_EOL_RE.sub('', x) for x in lines]
     rows = [x for x in rows if x.startswith('|')]
-    return [x for x in rows if not _SEP_RE.match(x)]
+    rows = [x for x in rows if not _SEP_RE.match(x)]
+    # ★공백 정규화(2026-08-20 수리) — R 판(.mf_table_rows)과 **동일 규칙**이어야 한다.
+    #   구판은 EOL 만 떼서 표 내용이 그대로인데도 공백 한 칸에 sha 가 변해 신선도 시계가 리셋됐다.
+    #   실측: 행끝 공백 2칸 · 셀 안 공백 1칸 둘 다 침묵 우회였다.
+    #   ⚠R 쪽만 고치면 두 판정기가 갈라져 B1_hash_parity 가 깨진다(실제로 깨졌다).
+    rows = [re.sub(r'[ 	 ]+', ' ', x) for x in rows]
+    rows = [re.sub(r' *\| *', '|', x) for x in rows]
+    return [x.strip() for x in rows]
 
 
 def mf_table_sha(rows):
