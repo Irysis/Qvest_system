@@ -51,6 +51,21 @@ has_marker  <- function(t, did, mk) startsWith(title_body(t, did), mk)
 # 어떤 종류든 대괄호 마커로 시작하는가 (승인 카드는 FALSE 여야 함)
 any_marker  <- function(t, did) grepl("^\\[", title_body(t, did))
 
+# ★테스트-측 독립 oracle — 구현(.hi_draft_marker)을 재사용하지 않는다.
+#   구현을 그대로 불러 기대값을 만들면 "구현이 자기 자신과 같다"만 확인하게 된다
+#   (자기검증은 자기와 같은 오류를 못 잡는다). 여기 표는 사양서에서 손으로 옮긴 값.
+expected_marker <- function(status) {
+  s <- if (is.null(status)) "" else paste(unlist(status), collapse = "")
+  if (is.na(s)) s <- ""
+  switch(s,
+         distilled            = "",
+         proposed             = "[미승인 초안]",
+         pending_5axis        = "[초안]",
+         quarantined_evidence = "[증거 격리]",
+         expired              = "[만료]",
+         "[초안]")   # 결측/미지 → 보수적
+}
+
 cat("=== test_draft_marker_approval.R ===\n")
 cat("SRC =", SRC, "\n")
 
