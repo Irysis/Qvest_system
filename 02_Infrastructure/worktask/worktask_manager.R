@@ -102,14 +102,26 @@ wt_create <- function(hypothesis_title = NULL,
   } else if (wt_type == "deployment") {
     # Deployment: HARD + SOFT 모두 강제
     liquidity_floor <- defaults$tier_soft_deployment$liquidity_min_won_20d_avg
-    effective_max_names <- 25L  # 도훈 mandate 2026-05-29 20→25 (constraint_defaults.json 정합, 2026-06-10 fix)
+    # (2026-08-20) 하드코딩 제거 — 정본은 이미 defaults 로 로드돼 있고, 같은 블록의
+    #   liquidity_floor·weight_bounds 는 이미 그것을 읽는다. max_names 만 값을 복제하면서
+    #   주석으로 "constraint_defaults.json 정합" 을 *주장*했다 — 정합을 강제하지 않는
+    #   주석은 드리프트 경로다(2026-05-29 20→25 변경이 이곳을 수동으로 따라와야 했다).
+    #   정본 결측 시에만 25L 폴백(회귀 없음).
+    .wt_mn <- defaults$tier_soft_deployment$max_names
+    effective_max_names <- if (is.null(.wt_mn)) 25L else as.integer(.wt_mn)
     effective_long_only <- TRUE
     effective_bounds <- defaults$tier_soft_deployment$weight_bounds
     pg1_eligibility <- "deployment_track"  # 검증 alpha 직접 편성
   } else {
     # sizing_only / hyperparameter_sweep: parent inheritance만, alpha 0건이 정상
     liquidity_floor <- defaults$tier_soft_deployment$liquidity_min_won_20d_avg
-    effective_max_names <- 25L  # 도훈 mandate 2026-05-29 20→25 (constraint_defaults.json 정합, 2026-06-10 fix)
+    # (2026-08-20) 하드코딩 제거 — 정본은 이미 defaults 로 로드돼 있고, 같은 블록의
+    #   liquidity_floor·weight_bounds 는 이미 그것을 읽는다. max_names 만 값을 복제하면서
+    #   주석으로 "constraint_defaults.json 정합" 을 *주장*했다 — 정합을 강제하지 않는
+    #   주석은 드리프트 경로다(2026-05-29 20→25 변경이 이곳을 수동으로 따라와야 했다).
+    #   정본 결측 시에만 25L 폴백(회귀 없음).
+    .wt_mn <- defaults$tier_soft_deployment$max_names
+    effective_max_names <- if (is.null(.wt_mn)) 25L else as.integer(.wt_mn)
     effective_long_only <- TRUE
     effective_bounds <- defaults$tier_soft_deployment$weight_bounds
     pg1_eligibility <- "certificate_required"  # alpha_discovery_certificate 미발급 → passive deny

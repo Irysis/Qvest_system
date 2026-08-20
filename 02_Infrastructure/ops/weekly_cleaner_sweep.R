@@ -404,8 +404,39 @@ run_step("inv_git_log", {
 #       engine-core 스크립트 호출만 (fail-soft run_step 규약). DRY 시 promote 생략.
 # =============================================================================
 axiom_candidates_summary <- NULL
-promote_failures <- list()   # promote 순회 PASS/FAIL 미매칭(침묵 crash 의심) 보존 — pending JSON 노출
+promote_failures <- list()   # promote 순회 crash(2축) 보존 — pending JSON 노출
 promote_n_crash <- 0L
+
+# ---- promote 자식 프로세스 crash 판정 (2026-08-20 수리 — 대리 지표 → exit status 1급) ----
+# 구 로직은 crash 를 **stdout 에 [promote] ... PASS/FAIL 줄이 있었는가**로만 판정했다.
+#   ⇒ 자식이 exit≠0 으로 죽어도 그 전에 verdict 한 줄을 찍었으면 crash 0 으로 집계된다
+#     (실사고: MAX_PATH 초과로 죽은 후보 1건이 'crash 0' 으로 보고됨).
+#   대리 지표(stdout 문자열)는 **출력만으로 초록이 되므로** 계기를 끄는 스위치가 된다.
+# 수리: exit status 를 1급 축으로 승격하되 **기존 축(verdict 줄 부재)은 유지** — 둘 다 crash 사유.
+#   어느 축으로 잡혔는지 `reason` 에 남긴다(exit_nonzero / no_verdict_line / both).
+#   그래야 다음 감사가 "crash 0" 을 볼 때 *무엇이* 0 인지 안다.
+# 폴백(회귀 방지): status 속성 부재 = 정상종료(exit 0) — R `system2(stdout=TRUE)` 규약.
+#   status 가 비수치/NA 로 해석 불가하면 보수적으로 비정상(1) 처리하고 사유를 남긴다.
+.promote_crash_verdict <- function(out) {
+  st <- attr(out, "status")
+  if (is.null(st) || length(st) == 0L) {
+    exit_code <- 0L; exit_parsed <- TRUE
+  } else {
+    ec <- suppressWarnings(as.integer(st[1]))
+    if (is.na(ec)) { exit_code <- 1L; exit_parsed <- FALSE } else { exit_code <- ec; exit_parsed <- TRUE }
+  }
+  lines <- if (is.character(out)) out else as.character(out)
+  hit <- grep("\\[promote\\].*(PASS|FAIL)", lines, value = TRUE)
+  exit_nonzero <- exit_code != 0L
+  no_verdict   <- length(hit) == 0L
+  reason <- if (exit_nonzero && no_verdict) "both"
+            else if (exit_nonzero) "exit_nonzero"
+            else if (no_verdict) "no_verdict_line"
+            else NA_character_
+  list(crash = isTRUE(exit_nonzero || no_verdict), reason = reason,
+       exit = exit_code, exit_parsed = exit_parsed,
+       verdict_line = if (length(hit)) hit[1] else NA_character_)
+}
 run_step("axiom_weekly_cycle", {
   ax_dir <- file.path(root, "02_Infrastructure", "axiom")
   # bare python 금지 — venv(qvest_ml) 우선, QVEST_PY 환경변수로 override
