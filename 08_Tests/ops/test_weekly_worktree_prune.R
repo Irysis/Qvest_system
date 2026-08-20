@@ -131,4 +131,8 @@ if (any(grepl("b-prunable", brs))) {
 
 unlink(fx, recursive = TRUE, force = TRUE)
 cat(sprintf("\n=== 결과: %d PASS / %d FAIL ===\n", PASS, FAIL))
+# 2026-08-20: 배터리는 마지막 유효 JSON 줄만 읽는다 — 이 줄이 없어 UNREPORTED(=1 fail)로
+#   계상됐다(내부는 전건 통과였다). 계약 결측이지 결함이 아니었음.
+cat(sprintf("{\"test\":\"weekly_worktree_prune\",\"pass\":%d,\"fail\":%d,\"total\":%d}
+", PASS, FAIL, PASS + FAIL))
 if (FAIL > 0) quit(status = 1)

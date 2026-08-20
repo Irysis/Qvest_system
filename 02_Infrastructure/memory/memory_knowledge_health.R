@@ -734,8 +734,13 @@ kif_path <- file.path(PROJ_ROOT, "02_Infrastructure", "ops", "knowledge_index_fr
 if (file.exists(kif_path)) {
   kif <- tryCatch({
     local({ source(kif_path, local = TRUE); check_knowledge_index_freshness(root = PROJ_ROOT) })
-  }, error = function(e) list(status = "SKIP", reason = "checker_error",
-                              detail = conditionMessage(e)))
+  }, error = function(e) {
+    # 진단용: 호출 스택을 남긴다 — 'checker_error' 만으로는 어느 줄인지 알 수 없다.
+    cat("  [kif debug] ", conditionMessage(e), "
+")
+    try(print(utils::tail(sys.calls(), 6)), silent = TRUE)
+    list(status = "SKIP", reason = "checker_error", detail = conditionMessage(e))
+  })
   kst <- as.character(kif$status %||% "SKIP")[1]
   if (identical(kst, "STALE")) {
     add_warn("WARN_10_knowledge_index_stale",

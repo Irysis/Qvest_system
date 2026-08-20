@@ -182,4 +182,8 @@ if (after_n > base_n) {
 } else bad("T8 n_warnings 미반영", sprintf("%s→%s — 경고가 집계에서 증발", base_n, after_n))
 
 cat(sprintf("\n=== 결과: %d PASS / %d FAIL ===\n", PASS, FAIL))
+# 2026-08-20: 배터리는 마지막 유효 JSON 줄만 읽는다 — 이 줄이 없어 UNREPORTED(=1 fail)로
+#   계상됐다(내부는 전건 통과였다). 계약 결측이지 결함이 아니었음.
+cat(sprintf("{\"test\":\"hygiene_worktree_maxpath_axes\",\"pass\":%d,\"fail\":%d,\"total\":%d}
+", PASS, FAIL, PASS + FAIL))
 if (FAIL > 0) quit(status = 1)
