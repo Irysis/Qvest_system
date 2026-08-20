@@ -564,7 +564,18 @@ if (file.exists(settings_path)) {
                  error = function(e) character(0))
   ln <- sub("[\r\n]+$", "", ln)
   rows <- ln[startsWith(ln, "|")]
-  rows[!grepl("^\\|[[:space:]:|-]+\\|[[:space:]]*$", rows)]
+  rows <- rows[!grepl("^\\|[[:space:]:|-]+\\|[[:space:]]*$", rows)]
+  # ★공백 정규화(2026-08-20 수리) — 구판은 CR/LF 만 떼서 **표 내용이 그대로인데도**
+  #   공백 한 칸 차이로 sha 가 변해 신선도 시계가 리셋됐다(= 침묵 우회).
+  #   실측 재현(대상 줄 127, 기준 sha dcc8992e7f14):
+  #     B1 행 끝 공백 2칸  -> dfb557aa28af  ★침묵
+  #     B3 셀 안 공백 1칸  -> 6237e6cc374b  ★침묵  (재현자도 미발견, 종합이 적발)
+  #   고쳐진 것은 '아무 touch/헤더 append 로 초록'이었고, 남아 있던 것은
+  #   '파이프-줄 영역의 아무 바이트 변경으로 초록' — 같은 계통의 축소판이다.
+  #   내용 동일성만 보도록 (1) 연속 공백 1칸 축약 (2) 셀 경계 앞뒤 공백 제거 (3) 양끝 trim.
+  rows <- gsub("[[:space:]]+", " ", rows)
+  rows <- gsub(" *\\| *", "|", rows)
+  trimws(rows)
 }
 
 # sha256 은 digest → openssl 순으로 시도. 둘 다 없으면 NULL (→ 호출자가 mtime 폴백).
