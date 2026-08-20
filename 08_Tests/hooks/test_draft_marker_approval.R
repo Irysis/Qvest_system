@@ -241,11 +241,12 @@ if (!inherits(r_unknown, "error"))
   ok("5d 미지 status → 보수적 [초안] (조용한 승인 승격 차단)",
      has_marker(r_unknown$title, "DIST-FIXT-007", "[초안]"), substr(r_unknown$title, 1, 70))
 # 헬퍼 직접 축 — 배열/NA/빈문자 유입
-ok("5e .hi_draft_marker(NULL) = [초안]",   identical(.hi_draft_marker(NULL), "[초안]"))
-ok("5f .hi_draft_marker('') = [초안]",     identical(.hi_draft_marker(""), "[초안]"))
-ok("5g .hi_draft_marker(NA) = [초안]",     identical(.hi_draft_marker(NA), "[초안]"))
+dm <- function(x) if (has_helper_env) tryCatch(.hi_draft_marker(x), error = function(e) "<ERR>") else "<NO-HELPER>"
+ok("5e .hi_draft_marker(NULL) = [초안]",   identical(dm(NULL), "[초안]"))
+ok("5f .hi_draft_marker('') = [초안]",     identical(dm(""), "[초안]"))
+ok("5g .hi_draft_marker(NA) = [초안]",     identical(dm(NA), "[초안]"))
 ok("5h .hi_draft_marker(list('proposed')) = [미승인 초안] (배열-안전)",
-   identical(.hi_draft_marker(list("proposed")), "[미승인 초안]"))
+   identical(dm(list("proposed")), "[미승인 초안]"))
 
 # ---------------------------------------------------------------------
 # 6) 폴백 엔트리(.hi_min_distilled_entry) 도 같은 판정을 쓰는가
