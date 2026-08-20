@@ -320,7 +320,13 @@ tg_with_serial_lock <- function(scope = "telegram_global", expr,
       status     = if (is.na(status)) NULL else as.integer(status),
       parse_mode = if (nzchar(parse_mode %||% "")) parse_mode else "plain",
       msg_head   = substr(gsub("[\r\n]+", " ", as.character(msg_head)), 1L, 160L),
-      detail     = substr(as.character(detail), 1L, 500L)
+      detail     = substr(as.character(detail), 1L, 500L),
+      # (2026-08-20) 원장 자기라벨링 — 검사 픽스처가 죽은 포트로 쏘면 그 실패도 여기 쌓인다
+      #   (실측: 7줄 중 3줄이 127.0.0.1:1 테스트 노이즈). 기록을 **막지는 않는다**:
+      #   test_telegram_send_contract 의 T2 가 "실패가 원장에 적립되는가"를 보는 축이라,
+      #   테스트 기록을 빼면 그 검증이 죽는다(검증기를 건너뛰는 수리 = 이 저장소 반복 실패).
+      #   대신 실경로 여부를 필드로 남겨 진짜 장애만 골라낼 수 있게 한다.
+      live       = startsWith(.TG_API %||% "", "https://api.telegram.org")
     )
     cat(jsonlite::toJSON(rec, auto_unbox = TRUE, null = "null"), "\n", sep = "",
         file = file.path(d, "telegram_send_failures.jsonl"), append = TRUE)

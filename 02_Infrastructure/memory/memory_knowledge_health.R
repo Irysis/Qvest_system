@@ -635,7 +635,7 @@ if (file.exists(settings_path)) {
                 lag_h = lag_h, table_sha = sha, n_rows = length(rows),
                 reason = "스냅샷 read/write 불가 (.cache/layer_bottleneck_map_content.json)"))
   }
-  lag_h <- (newest_s - obs) / 3600
+  lag_h <- as.numeric(difftime(as.POSIXct(newest_s, origin = "1970-01-01"), file.info(map_path)$mtime, units = "hours"))  # MUT-M1
   list(basis = "content", stale = isTRUE(is.finite(lag_h) && lag_h > .MF_THRESH_H),
        lag_h = lag_h, table_sha = sha, n_rows = length(rows), reason = NA_character_)
 }

@@ -111,7 +111,35 @@ for h, ids in sorted(dup.items(), key=lambda kv: -len(kv[1])):
             "quarantine_mismatch": is_mismatch,  # --quarantine-mismatch 시 격리 이동
         })
 
+# ── 확장 (2026-08-20 continuity 사이클): 유니크-hash 치환분 ───────────────────
+# June 감사(batch_434) 런 중 현행 catalog 등재 + dup census 밖 = 치환됐지만 콤보가
+# 유니크해 중복으로 안 잡힌 것. dup 가드는 원리적으로 못 잡는다(산출물 유니크) —
+# 라벨 주석이 유일한 방어선이므로 플랜에 편입한다. de-FR 대상 아님(복제본이 아님).
+dup_ids_all = {r["strategy_id"] for r in census_rows}
+uniq_rows = []
+for sid, j in june.items():
+    if sid in mods and sid not in dup_ids_all:
+        is_mismatch = "MISMATCH" in j.get("label_class", "")
+        plan_rows.append({
+            "strategy_id": sid,
+            "dup_hash_group": "",
+            "cluster_rep": "",
+            "annotate_duplicate_of": "",
+            "annotate_label_class": j.get("label_class", ""),
+            "annotate_actual_factor_names": (j.get("actual_factor_names", "") or "").replace('"")', "").strip('", '),
+            "defr_nonrep": False,
+            "quarantine_mismatch": is_mismatch,
+        })
+        uniq_rows.append({
+            "strategy_id": sid,
+            "label_class": j.get("label_class", ""),
+            "actual_factor_names": (j.get("actual_factor_names", "") or "").replace('"")', "").strip('", '),
+            "fr_eligible": mods[sid].get("fr_eligible", ""),
+            "strategy_idea_head": idea(sid)[:90],
+        })
+
 for name, rows in (("census_dup_hash_20260820.csv", census_rows),
+                   ("unique_hash_substituted_20260820.csv", uniq_rows),
                    ("catalog_patch_plan_20260820.csv", plan_rows)):
     p = os.path.join(HERE, name)
     with open(p, "w", newline="", encoding="utf-8-sig") as f:

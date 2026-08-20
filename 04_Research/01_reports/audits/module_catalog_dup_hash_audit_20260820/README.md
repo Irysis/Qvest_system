@@ -78,7 +78,31 @@ SOT 의 "서로 다른 결합 규칙이 같은 점을 낸다 — 같은 5전략 
 3. 본 디렉토리: `build_census_and_plan.py` (재현 가능 census) + `census_dup_hash_20260820.csv`
    (130행 전수) + `catalog_patch_plan_20260820.csv` + `apply_catalog_dup_annotations.R`.
 
-## 도훈 결정 대기 (기존 catalog 130건의 처분 — June 선례대로 confirm 후 적용)
+## 확장 census (continuity 사이클, 2026-08-20 동일 세션)
+
+dup-hash census 는 **복제본만** 잡는다 — batch_434 치환 런 중 콤보가 유니크해 중복이 안 된
+**37건이 추가로 현행 catalog 에 등재**(전원 fr_eligible=true, June label_class: PROXY_PLAUSIBLE 23 ·
+MISMATCH 계열 14 — Residual Reversal·FF5 Alpha Filtered·잔차 Alpha 추출 등). 이들은 신설
+dup 가드로도 원리적으로 안 잡히므로(산출물 유니크) **라벨 주석이 유일한 방어선**.
+플랜에 편입 완료: `unique_hash_substituted_20260820.csv` + 플랜 167행.
+**catalog label-integrity 조치대상 상한 = 130 + 37 = 167 / 275.**
+
+## 연속성 계약 (이 라운드의 종료 형태)
+
+이 감사는 **config-scoped 판정 수집**이지 방향 종결이 아니다:
+- **부활 조건 (live_trigger, INV-7)**: ①"결합기 계열 negative" 는 치환-제외 클린셋(84−34=50건)
+  재판독에서 게이트-미달이 재현될 때에만 유효 negative 로 복권 ②반대로 **실제 결합 로직을 정직
+  구현한 대조 실측 1건**이 치환 콤보와 유의하게 다른 분포를 내면 결합기 축은 "미측정 axis" 로
+  부활 (v8.4 Lane A arm A 대조군 규약과 동형) ③catalog 처분 적용 트리거 = 도훈 confirm.
+- **소비면 라우팅 (연속성 4호)**: ⑤monitoring — dup 가드 현역(등록면) + 부팅 위생 census 는
+  본 감사 스크립트 재실행으로 대체 가능 · ⑥선별 라벨 — label_class/actual_factor_names 주석이
+  RCMA·improve-drain 의 선별 입력이 됨 · FQ 등재 권고 2건 = (i) "치환-제외 ML 원장 재판독으로
+  v8.4 죽은자리① 근거 재산정" (ii) "결합기 1건 정직 실측 대조군".
+- **next_probe**: ①치환-제외 50건 클린셋으로 sharpe/mdd/oos 분포 재산출 → SOT 수치 재검
+  ②적용 후 module_performance 재빌드 → RCMA 선정 변화 실측 ③dispositions 40건 재판정
+  (복제본 처분의 대표-단위 통합).
+
+## 도훈 결정 대기 (기존 catalog 167건의 처분 — June 선례대로 confirm 후 적용)
 
 ```bash
 cd /c/Users/99922/OneDrive/Quant_Module_Moltbot && Rscript -e 'source("04_Research/01_reports/audits/module_catalog_dup_hash_audit_20260820/apply_catalog_dup_annotations.R")'
@@ -86,9 +110,9 @@ cd /c/Users/99922/OneDrive/Quant_Module_Moltbot && Rscript -e 'source("04_Resear
 
 | 레버 | 대상 | 효과 |
 |---|---|---|
-| `--apply` (주석만) | 130건 | meta 에 dup_hash_group/duplicate_of/label_class/actual_factor_names 기록. fr_eligible 불변 — 소비자가 스스로 걸러야 함 |
+| `--apply` (주석만) | 167건 (dup 130 + 유니크 치환 37) | meta 에 dup_hash_group/duplicate_of/label_class/actual_factor_names 기록. fr_eligible 불변 — 소비자가 스스로 걸러야 함 |
 | `--apply --defr-nonrep` | 비대표 100건 | 복제본 fr_eligible=false → FR 입력면 128→30 대표만. **권고 최소선** |
-| `--apply --defr-nonrep --quarantine-mismatch` | +mismatch 122건 | label≠signal 전체 격리 이동 (June 감사의 동일 옵션). 가장 정직하나 catalog 275→153 |
+| `--apply --defr-nonrep --quarantine-mismatch` | +mismatch 136건 | label≠signal 전체 격리 이동 (June 감사의 동일 옵션). 가장 정직하나 catalog 축소 폭 최대 |
 
 적용 후속 의무: `build_module_performance.R` 재실행 + standalone_track_queue 재빌드.
 추가 결정: v8.4 SOT "동일 3짝" 절의 기전 서술 정정 여부 (위 함의 절).
@@ -100,4 +124,4 @@ cd /c/Users/99922/OneDrive/Quant_Module_Moltbot && Rscript -e 'source("04_Resear
 - **감사가 수리를 만들었어도 적용이 게이트에 걸려 있으면 오염은 현역이다** — dry-run 대기
   상태 2개월. 결정 대기 항목은 시효를 갖고 재부상해야 한다.
 - 구 테스트 RM04 가 오염 경로를 **정상 동작으로 박제**하고 있었다 — "동일 sim → 동일 hash
-  등록 성공" 검증은 hash 결정론 검사였는데 이명 허용까지 함께 봉인했다.
+  등록 성공" 검증은 hash 결정론 검사였는데 �
