@@ -194,6 +194,55 @@ if (!identical(Sys.getenv("QVEST_TEST_PROMOTE_LIVE", "0"), "1")) {
   }
 }
 
+## ── [7] 배선 검사 — 스윕의 **실제 루프 본문**이 이 판정을 쓰는가 ───────────
+## 함수만 고치고 호출부가 구 로직을 남겨두면 검사는 초록인데 운영은 그대로다.
+## 그래서 파일에서 `for (cand in cands)` 표현식 자체를 꺼내 stub 환경에서 돌린다(복제 아님).
+cat("\n[7] 배선: weekly_cleaner_sweep.R 의 promote 순회 루프 본문 직접 실행\n")
+find_for <- function(e) {
+  if (is.call(e)) {
+    if (identical(as.character(e[[1]]), "for") && identical(as.character(e[[2]]), "cand")) return(e)
+    for (i in seq_along(e)) {
+      s <- tryCatch(e[[i]], error = function(...) NULL)
+      if (!is.null(s)) { r <- find_for(s); if (!is.null(r)) return(r) }
+    }
+  }
+  NULL
+}
+loop_expr <- NULL
+for (e in exprs) { loop_expr <- find_for(e); if (!is.null(loop_expr)) break }
+if (is.null(loop_expr)) {
+  bad("T7a_loop_found", "`for (cand in cands)` 루프를 파일에서 못 찾음 — 구조가 바뀌었으면 이 검사를 갱신할 것")
+} else {
+  ok("T7a_loop_found", "promote 순회 루프 표현식 추출")
+  run_loop <- function(fake_path) {
+    LE <- new.env(parent = globalenv())
+    assign(".promote_crash_verdict", verdict, envir = LE)
+    assign("cands", file.path(TD, "dummy_candidate.json"), envir = LE)
+    assign("promote_r", fake_path, envir = LE)
+    assign("promote_n_crash", 0L, envir = LE)
+    assign("promote_failures", list(), envir = LE)
+    invisible(capture.output(eval(loop_expr, envir = LE)))
+    list(n = get("promote_n_crash", envir = LE), f = get("promote_failures", envir = LE),
+         log = capture.output(eval(loop_expr, envir = LE)))
+  }
+  rA <- run_loop(FAKE$exit3_with_verdict)
+  chk("T7b_loop_counts_exit_nonzero", identical(rA$n, 1L),
+      sprintf("exit≠0 ∧ verdict 있음 → promote_n_crash=%s (구 배선이면 0)", rA$n))
+  chk("T7c_loop_records_reason",
+      length(rA$f) == 1L && identical(rA$f[[1]]$detected_by, "exit_nonzero") &&
+        identical(rA$f[[1]]$exit, 3L),
+      sprintf("promote_failures 레코드에 detected_by=%s exit=%s 기록 — '무엇이 0인가' 를 다음 감사가 알 수 있어야 한다",
+              if (length(rA$f)) rA$f[[1]]$detected_by else "(없음)",
+              if (length(rA$f)) rA$f[[1]]$exit else "(없음)"))
+  chk("T7d_loop_log_says_crash", any(grepl("CRASH\\(exit_nonzero\\)", rA$log)),
+      "콘솔 로그도 CRASH 로 말한다 — 초록으로 보이는 줄이 남지 않는다")
+  rD <- run_loop(FAKE$exit0_with_verdict)
+  chk("T7e_loop_no_false_alarm", identical(rD$n, 0L) && length(rD$f) == 0L,
+      "정상 종료에서는 루프도 crash 0 (오탐 없음)")
+  chk("T7f_loop_log_verdict", any(grepl("hurdles", rD$log)) && !any(grepl("CRASH", rD$log)),
+      "정상 경로 로그는 구 동작대로 verdict 줄을 출력")
+}
+
 try(unlink(TD, recursive = TRUE), silent = TRUE)
 
 cat(sprintf("\nTOTAL: %d pass / %d fail / %d skip\n", PASS, FAIL, SKIP))
