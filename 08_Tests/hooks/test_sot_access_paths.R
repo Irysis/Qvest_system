@@ -57,6 +57,40 @@ if (is.na(i)) {
 }
 unlink(TMP, recursive = TRUE)
 
+cat("== [E] 별칭 추적 (2026-08-20 추가) ==
+")
+# ★ON/OFF 대조가 본체 — ON 만 재면 "원래 잡히던 것"과 구별이 안 된다.
+#   worktask_manager.R 은 별칭 재접근이 0건이라 실제 파일로는 이 축을 실증할 수 없어
+#   전용 픽스처를 쓴다(2단 체인 포함).
+FX <- file.path(ROOT, ".cache", "_test_alias_fx")
+unlink(FX, recursive = TRUE); dir.create(FX, recursive = TRUE, showWarnings = FALSE)
+fx <- file.path(FX, "fx.R")
+writeLines(c(
+  'defaults <- fromJSON("x.json")',
+  'ts <- defaults$tier_soft_deployment',
+  'a <- ts$max_names',
+  'b <- ts[["weight_bounds"]]',
+  'inner <- defaults[["tier_hard_mandate"]]',
+  'c2 <- inner$liquidity_floor_won_20d_avg',
+  'deep <- ts$beta_target_tier',
+  'd2 <- deep$MEDIUM'), fx, useBytes = TRUE)
+if (file.exists(fx)) ok("[선행검증] 픽스처 생성 확인") else ng("[선행검증] 픽스처 생성 실패")
+pon  <- extract_paths(fx, "defaults", follow_alias = TRUE)
+poff <- extract_paths(fx, "defaults", follow_alias = FALSE)
+want <- c("defaults$tier_soft_deployment$max_names",
+          "defaults$tier_soft_deployment$weight_bounds",
+          "defaults$tier_hard_mandate$liquidity_floor_won_20d_avg",
+          "defaults$tier_soft_deployment$beta_target_tier$MEDIUM")
+nbad <- 0L
+for (w in want) if (!(w %in% pon)) { nbad <- nbad + 1L; cat("      ON 미검출:", w, "
+") }
+if (nbad == 0L) ok(sprintf("별칭 경유 4종 전부 검출 (2단 체인 포함, ON=%d)", length(pon))) else
+  ng(sprintf("별칭 추적 %d건 미검출", nbad))
+nleak <- sum(want %in% poff)
+if (nleak == 0L) ok(sprintf("OFF 에서는 전부 미검출 (OFF=%d) - ON/OFF 대조 성립", length(poff))) else
+  ng(sprintf("OFF 인데 %d건 검출 - 대조 무효(원래 잡히던 것)", nleak))
+unlink(FX, recursive = TRUE)
+
 cat("== [D] 소비면 산출 스모크 ==
 ")
 r <- sot_unconsumed(SOT, list(c(SRC, "defaults")))

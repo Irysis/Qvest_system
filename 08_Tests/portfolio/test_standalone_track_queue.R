@@ -153,14 +153,28 @@ if (s4$n_unconsumed == 1L) {
 #------------------------------------------------------------------------------
 # ③ 위반 주입: 소비자 없는 route / 미지의 신규 route
 #------------------------------------------------------------------------------
-r5 <- mk_root(runs = list(list(dir = "20260701_130000_222", id = "STR_AS_20260701_130000_222",
-                               route = "FR_RCMA", grade = "C")),
-              catalog = list())
-s5 <- standalone_track_scan(r5)
-if (s5$n_route_no_consumer >= 1L) {
-  ok("injection_route_without_consumer", "FR_RCMA 단독 발급 검출")
+# 2026-08-20 정정: 구판은 route="FR_RCMA" 를 "소비자 0" 예시로 썼는데, 그 전제는
+#   2026-08-16 도훈의 D2 재정의로 폐기됐다(FR_RCMA = "register_module 유도 라벨" →
+#   ST_ROUTE_CONSUMERS 에서 consumer=TRUE). 즉 이 축의 FAIL 은 검사기 사망이 아니라
+#   **낡은 기대값**이었다. 축의 목적(등록돼 있으나 소비자가 없는 route 를 잡는가)은
+#   유효하므로, 실제로 consumer=FALSE 인 TURNOVER_REVIEW 로 예시를 교체한다.
+#   ★예시 route 를 여기 박제한 것이 낡음의 원인이므로, 소비자 맵에서 파생해 고른다 —
+#     맵이 또 바뀌어도 이 축은 따라간다(전제가 사라지면 skip 이 아니라 FAIL).
+.no_consumer_routes <- names(Filter(function(m) identical(m$consumer, FALSE), ST_ROUTE_CONSUMERS))
+if (length(.no_consumer_routes) == 0L) {
+  bad("injection_route_without_consumer",
+      "ST_ROUTE_CONSUMERS 에 consumer=FALSE 인 route 가 하나도 없다 — 이 축의 전제가 사라졌다(통과로 위장 금지)")
 } else {
-  bad("injection_route_without_consumer", "소비자 0 route 를 못 봄")
+  .inj_route <- .no_consumer_routes[[1]]
+  r5 <- mk_root(runs = list(list(dir = "20260701_130000_222", id = "STR_AS_20260701_130000_222",
+                                 route = .inj_route, grade = "C")),
+                catalog = list())
+  s5 <- standalone_track_scan(r5)
+  if (s5$n_route_no_consumer >= 1L) {
+    ok("injection_route_without_consumer", sprintf("%s 단독 발급 검출(소비자 맵에서 파생)", .inj_route))
+  } else {
+    bad("injection_route_without_consumer", sprintf("소비자 0 route(%s) 를 못 봄", .inj_route))
+  }
 }
 
 r6 <- mk_root(runs = list(list(dir = "20260701_140000_333", id = "STR_AS_20260701_140000_333",
