@@ -127,7 +127,6 @@ online_states<-function(lm_mult){
       Cb<-matrix(0,nrow(Xb),2)
       for(k in 1:2){d2<-sweep(Xb,2,rf$th[k,],"-")^2; Cb[,k]<-as.numeric(d2 %*% rf$wj)}
       Cb[bad,]<-0   # 무증거일: 상태 전환 이득 없음 → jump penalty가 유지 편향
-      base<-ei-rf$win_lo+1
       for(t in (ei+1):nx){ q<-t-rf$win_lo+1
         if(bad[q]){ S[t,fi]<-S[t-1,fi]; next }
         S[t,fi]<-jumpDPlast(Cb[1:q,,drop=FALSE],lam_o)
