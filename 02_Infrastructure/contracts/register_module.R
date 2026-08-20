@@ -346,7 +346,11 @@ register_module <- function(sim_result, strategy_id, grade = NA_character_,
   # 동일 가설의 의도적 재등록이면 QVEST_ALLOW_DUP_MODULE_HASH=1 로 통과시키되
   # meta$duplicate_of 주석이 강제 기록된다. 같은 id 재등록(upsert 갱신)은 대상 아님.
   # quarantine-행 등록도 대상 아님(소비면이 아니고, run_alpha_search 6c proxy 선등록을 막으면 안 됨).
-  dup_ids <- .catalog_hash_dups(catalog_path, contract$module_hash, strategy_id)
+  # ★같은 id 의 **갱신**(catalog 에 이미 내 행이 있음)도 대상 아님 — 이명 "생성"만 막는다.
+  #   (override 로 승인된 이명이 하나 생기면 hash 는 이미 2-id 상태가 되는데, 그때 원본의
+  #    재측정 갱신까지 차단되면 정상 6e 재등록 경로가 죽는다 — RM04e 실측.)
+  dup_ids <- if (is.null(.catalog_entry(catalog_path, strategy_id)))
+    .catalog_hash_dups(catalog_path, contract$module_hash, strategy_id) else character(0)
   if (length(dup_ids)) {
     if (!.as_flag(Sys.getenv("QVEST_ALLOW_DUP_MODULE_HASH", ""))) {
       stop(sprintf(paste0(

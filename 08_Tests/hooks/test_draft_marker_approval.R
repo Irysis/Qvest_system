@@ -52,7 +52,25 @@ has_marker  <- function(t, did, mk) startsWith(title_body(t, did), mk)
 any_marker  <- function(t, did) grepl("^\\[", title_body(t, did))
 
 cat("=== test_draft_marker_approval.R ===\n")
-cat("SRC =", SRC, "\n\n")
+cat("SRC =", SRC, "\n")
+
+# ---------------------------------------------------------------------
+# ★PRE-0 소스 정체 증명 — "무엇을 검사하고 있는지"를 파일 내용으로 확인한다.
+#   (경로만 믿지 않는다: 위 주석의 .Renviron 덮어쓰기 사고가 정확히 그 실패였다)
+# ---------------------------------------------------------------------
+cat("\n[PRE-0] ★소스 정체 증명 (경로가 아니라 내용으로)\n")
+has_helper_txt <- any(grepl("^\\.hi_draft_marker <- function", SRC_TXT))
+has_helper_env <- exists(".hi_draft_marker", mode = "function")
+cat("      SRC 파일에 '.hi_draft_marker' 정의 존재 =", has_helper_txt,
+    " / 소스 후 함수 존재 =", has_helper_env, "\n")
+cat("      SRC bytes =", file.info(SRC)$size, " lines =", length(SRC_TXT), "\n")
+ok("PRE-0a 파일 내용과 소스 결과가 일치(엉뚱한 파일 소스 아님)",
+   identical(has_helper_txt, has_helper_env))
+if (!has_helper_txt) {
+  cat("\n★ 이 소스는 **수리 전(pre-fix) 버전**이다 — 이하 [2]/[3]/[4] 위반 주입 축이\n",
+      "   반드시 FAIL 해야 정상이다(검출력 실증 모드).\n", sep = "")
+}
+cat("\n")
 
 # ---------------------------------------------------------------------
 # 0) 정본 원본 status 축 전수 나열 (추측 금지 — 실제 값 집합 확인)
