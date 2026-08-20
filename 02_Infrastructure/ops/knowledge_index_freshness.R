@@ -69,7 +69,7 @@ if (!exists("%||%")) {
 }
 
 .kif_read_json <- function(path) {
-  if (!file.exists(path)) return(list(ok = FALSE, why = "missing", data = NULL))
+  if (!file.exists(path)) stop("MUTANT M3: 입력 부재 시 죽음 — ", path)
   d <- tryCatch(fromJSON(path, simplifyVector = FALSE), error = function(e) e)
   if (inherits(d, "error")) return(list(ok = FALSE, why = paste0("parse_error: ", conditionMessage(d)), data = NULL))
   list(ok = TRUE, why = "", data = d)
@@ -159,7 +159,8 @@ check_knowledge_index_freshness <- function(root = .kif_root(),
 
   reasons <- character(0)
   if (!identical(n_corpus, n_index)) reasons <- c(reasons, sprintf("count_mismatch(corpus=%d, index=%d)", n_corpus, n_index))
-  # MUTANT M2: ID 집합 축 제거 (카운트-only 퇴화)
+  if (length(missing_in_index))      reasons <- c(reasons, sprintf("missing_in_index=%d", length(missing_in_index)))
+  if (length(extra_in_index))        reasons <- c(reasons, sprintf("extra_in_index=%d", length(extra_in_index)))
   if (index_self_inconsistent)       reasons <- c(reasons, sprintf("index_counts_field_stale(counts=%s, rows=%d)", n_index_decl, n_index_rows))
 
   status <- if (length(reasons)) "STALE" else "OK"

@@ -646,13 +646,30 @@ if (length(raw_lc_files) == 0) {
     add_warn("WARN_8_bottleneck_map_missing",
              "06_Registry/layer_bottleneck_map.md 부재 — 병목지도 현행화 필요")
   } else {
-    lag_h <- as.numeric(difftime(newest_lc_mt, file.info(lbm_path)$mtime, units = "hours"))
-    if (is.finite(lag_h) && lag_h > 24) {
-      add_warn("WARN_8_bottleneck_map_stale",
-               sprintf("layer_bottleneck_map.md가 최신 L-code보다 %.1fh 뒤처짐 (임계 24h) — 병목지도 현행화 필요",
-                       lag_h))
+    lbm_fresh <- .mf_judge(PROJ_ROOT, lbm_path, newest_lc_mt)
+    if (identical(lbm_fresh$basis, "content")) {
+      if (isTRUE(lbm_fresh$stale)) {
+        add_warn("WARN_8_bottleneck_map_stale",
+                 sprintf(paste0("layer_bottleneck_map.md **표 본문**이 최신 L-code보다 %.1fh 뒤처짐 ",
+                                "(임계 24h · basis=content · table_sha=%s · %d행) — ",
+                                "mtime 갱신·헤더 부기로는 해소되지 않습니다. 계층 행·갭 귀속을 갱신하세요."),
+                         lbm_fresh$lag_h, substr(lbm_fresh$table_sha, 1, 10), lbm_fresh$n_rows))
+      } else {
+        cat(sprintf("  bottleneck map fresh (표 본문 기준 lag %.1fh <= 24h, sha=%s, %d행)\n",
+                    max(lbm_fresh$lag_h, 0), substr(lbm_fresh$table_sha, 1, 10), lbm_fresh$n_rows))
+      }
     } else {
-      cat(sprintf("  bottleneck map fresh (최신 L-code 대비 lag %.1fh <= 24h)\n", max(lag_h, 0)))
+      # 폴백: 내용 대조 불가 → 구 mtime 판정 그대로 + 폴백 사실 자체를 경고로 남김.
+      add_warn("WARN_8_bottleneck_map_basis_fallback",
+               sprintf("layer_bottleneck_map 신선도가 내용 대조 불가로 mtime 폴백 (사유: %s) — 검사 약화 상태",
+                       lbm_fresh$reason))
+      if (isTRUE(lbm_fresh$stale)) {
+        add_warn("WARN_8_bottleneck_map_stale",
+                 sprintf("layer_bottleneck_map.md가 최신 L-code보다 %.1fh 뒤처짐 (임계 24h · basis=mtime 폴백) — 병목지도 현행화 필요",
+                         lbm_fresh$lag_h))
+      } else {
+        cat(sprintf("  bottleneck map fresh (mtime 폴백 lag %.1fh <= 24h)\n", max(lbm_fresh$lag_h, 0)))
+      }
     }
   }
 }
