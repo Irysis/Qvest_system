@@ -13,10 +13,10 @@
     "v2.4": "2026-06-11~12 v8.1 sync — max_names 25, 종목별 hard cap 20%, delta-based 15bps cost_model_version=v2.4_kr_retail_15bps.",
     "v2.5": "2026-07-03 아키텍처 감사 CAP-P0-1/MC-01 — tier_graduation에 min_oos_retention=0.7·min_calmar=0.64 (severity hard) 등재. measurement-graduation §3 HARD 3종(PORT_t 2.95·oos 0.7·calmar 0.64)과 discovery_graduation_gate.sh 배선 정합. 문턱값 신설 아닌 기존 룰 문서값 배선."
   },
-
   "tier_hard_mandate": {
     "description": "불가항력 제약 (PIT + legal + scientific). Discovery + Deployment 모두 강제.",
     "pit_enforcement": {
+      "_note": "★이 블록은 **선언**이지 스위치가 아니다 (2026-08-20 실측 등재). c1~c15 플래그를 파싱하는 코드는 저장소 전수 **0건**이다 — 예: c5_overlay_t1 을 false 로 바꿔도 아무 동작도 바니지 않는다. PIT 강제의 실체는 02_Infrastructure/validation/pit_enforcement.R + lookahead_detector.R + PIT 훅 + judge Gate + .claude/rules/pit.md 이며, 본 블록은 그 계약을 기계 독독 가능한 형태로 적어둔 목록이다. 문턴을 바꾸려면 위 구현체를 고쳐야 하고, 본 블록은 그에 맞춰 갱신한다. 제어면으로 쓰려면 먼저 소비처를 배선할 것.",
       "c1_rolling_only": true,
       "c2_t1_lag": true,
       "c3_no_period_circular": true,
@@ -31,18 +31,20 @@
       "pit_enforcement_r": "02_Infrastructure/validation/pit_enforcement.R",
       "lookahead_detector_r": "02_Infrastructure/validation/lookahead_detector.R"
     },
-
     "liquidity_floor_won_20d_avg": 50000000,
     "liquidity_floor_rationale": "5천만원 — 실행 가능성의 절대 하한. 더 낮으면 유동성 위험.",
-
     "mandate_restrictions": {
       "no_short_legal_kr": true,
       "no_cross_market": true,
       "kr_domestic_only": true
     },
-
-    "universe_allowed": ["KOSPI200", "KOSDAQ150", "KOSPI200_KOSDAQ150_intersection", "KR_top500", "KR_top1000"],
-
+    "universe_allowed": [
+      "KOSPI200",
+      "KOSDAQ150",
+      "KOSPI200_KOSDAQ150_intersection",
+      "KR_top500",
+      "KR_top1000"
+    ],
     "data_lag_rules_default": {
       "fundamental": "quarterly 45d (재무제표 발표 지연)",
       "fundamental_annual": "annual May (연간 재무제표 5월 리밸런싱)",
@@ -52,35 +54,40 @@
       "ic_history": "Usable_Date <= sig_date (Factor DB 강제)"
     }
   },
-
   "tier_soft_deployment": {
     "description": "Deployment WT 전용 제약. Discovery WT는 면제 (breadth 허용). R1+R13 구현.",
     "max_names": 25,
     "max_names_rationale": "사용자 실전 운용 확정 (v2.2 20종 → 도훈 mandate 2026-05-29 25종 완화) — 최종 포트폴리오 25종 hard. 슬리브당이 아님(합산 ≤25). Deployment 전용. multi-sleeve blend 여유 확보 목적.",
-
     "min_names": 20,
     "min_names_rationale": "사용자 실전 운용 확정 (v2.2, 2026-04-24) — n=20 hard. min=max=20으로 정확히 20종목 편입 강제. Pilot 4 forced fill 이슈는 max_w 상향(0.10→0.15)으로 완화.",
-
-    "weight_bounds": [0.0, 0.20],
+    "weight_bounds": [
+      0.0,
+      0.2
+    ],
     "weight_bounds_rationale": "v2.4 (2026-06-11~12) — Long-only, 종목별 20% hard cap. 기존 15% 기본값은 alpha-top 희석 위험이 있어 v8.1 문서/Hook hard cap과 동기화. HHI cap은 별도 과집중 방어선으로 유지.",
     "weight_bounds_basis": "strategy_pre_cash",
-    "weight_bound_hi_crisis": 0.10,
+    "weight_bound_hi_crisis": 0.1,
     "weight_bound_hi_crisis_rationale": "★2026-08-13 등재 (도훈 승인). 상한은 **국면 조건부**다 — 승인된 생성기가 regime=CRISIS 에서 ub 를 0.20→0.10 으로 조인다(forward_weights_D3_M4gAE.R: `ub_use <- if (identical(rg,\"CRISIS\")) min(UB, UB_CRISIS) else UB`, UB_CRISIS<-0.10). 그런데 이 상수가 생성기 코드에만 있고 제약 정본에는 없어서, Gate D(deployed_holdings_check.py)가 CRISIS 달에도 무조건 0.20 으로 검사했다 — 즉 **배포 코드가 자기 상한으로 자기를 통과시키는 자기인증**. 실측(2026-08, CRISIS): 전략비중 max 0.1739 로 0.20 기준 PASS 였으나 승인 규칙(0.10) 기준 1.74배 초과 4종(기가비스 0.1739·대우건설 0.1726·SK하이닉스 0.1222·삼성전자 0.1212). 소비자: deployed_holdings_check.py(regime=CRISIS 시 이 값 적용). 비-CRISIS 달 판정은 무변경(회귀 없음).",
     "weight_bounds_basis_rationale": "2026-08-08 기준 명시 — 상한은 현금 배분 이전, 합=1로 정규화된 전략 비중에 적용한다. 배포 비중 = 전략비중 x invested 이므로 배포 벡터에 0.20을 걸면 invested<1인 달에 상한이 비구속이 된다. 근거(실측): 2026-07 배포분의 전략 비중 max가 정확히 0.2000(상한 도달 100%)인데 같은 달 배포 비중 max는 0.0600(상한 대비 30%) — 실제로 구속력을 행사하는 쪽은 전략 비중이다. 두 벡터 모두 합=1이라 sum_weights_absolute=1 만으로는 구별되지 않으므로 이 필드로 못박는다. 소비자: deployed_holdings_check.py(정규화 후 비교), forward_weights_D3_M4gAE.R(normalize_long_only target_sum=1 후 ub 적용). 표본 한계: 배포 파일 2건(2026-07/08) 모두 invested 0.30 — invested~1 달로 교차확인되면 재확인할 것.",
-
     "hhi_cap": 0.15,
     "hhi_cap_rationale": "v2.2 (2026-04-24) — n=20 + max_w=0.15 환경에 맞춰 HHI cap 0.10→0.15 상향. 20종 균등 → HHI=0.05 (하한), 단일 15% + 나머지 등가중 → HHI≈0.069. 0.15는 편향 허용 한계. 과집중 방지 여전 유지.",
-
     "alpha_winsor_sigma": 3.0,
     "alpha_winsor_rationale": "v2.3 (2026-04-24) — L-195 fix 계승. winsor 3σ로 완화 (2σ 이중 cap은 Alpha-Uniform Collapse 유발).",
-
-    "beta_target_baseline": 0.90,
+    "beta_target_baseline": 0.9,
     "beta_target_baseline_rationale": "v2.3 (2026-04-24) — AX-007 Sprint + 사용자 철학. β=0.75 hard (Pilot 4~7)는 KOSPI 강세장 25% leverage loss. Codex 0.86 + Architect 확인 → baseline 0.90. Grinold-Kahn Ch.5 β는 α 자신감 함수.",
-
     "beta_target_tier": {
-      "HIGH": [1.00, 1.05],
-      "MEDIUM": [0.90, 1.00],
-      "LOW": [0.80, 0.90]
+      "HIGH": [
+        1.0,
+        1.05
+      ],
+      "MEDIUM": [
+        0.9,
+        1.0
+      ],
+      "LOW": [
+        0.8,
+        0.9
+      ]
     },
     "beta_target_tier_criteria": {
       "HIGH": "DSR > 0.8 AND rank_IC > 0.04 AND ICIR > 0.5 AND FF3_retention > 0.30",
@@ -88,66 +95,48 @@
       "LOW": "DSR > 0.2 AND rank_IC > 0.02",
       "REJECT": "below LOW → 전략 재검토"
     },
-
     "gamma_beta_default": 0.5,
     "gamma_beta_mode": "soft",
-
-    "alpha_divergence_filter": 0.80,
+    "alpha_divergence_filter": 0.8,
     "alpha_divergence_filter_rationale": "v2.3 (2026-04-24) — L-195a fix. Risk universe 선발 후 unique_alpha/n ≥ 0.80 강제. Pilot 6/7 sub-universe cluster 50~65% 재발 방지. MinVar 후퇴 구조 해소.",
-
     "long_only": true,
     "long_only_rationale": "KR 증권사 실무 long-only. Discovery WT는 configurable (market-neutral 가설 허용).",
-
     "sum_weights_absolute": 1.0,
     "sum_weights_active": 0.0,
     "sum_weights_rationale": "benchmark-relative active management. absolute는 1, active는 0.",
-
     "liquidity_min_won_20d_avg": 200000000,
     "liquidity_rationale": "20일 평균 거래대금 >= 2억원 (실투 실행 가능성). Discovery는 5천만 floor만 적용.",
-
-    "sector_active_weight_cap": 0.10,
+    "sector_active_weight_cap": 0.1,
     "sector_active_weight_cap_rationale": "단일 섹터 활성 비중 10% 이하 (분산 유지)",
-
     "turnover_cap_annual": 3.0,
     "turnover_cap_rationale": "연 300% 초과 시 penalty. 1100%(11.0/yr round-trip) 이상은 hard fail (도훈 mandate 2026-05-29 — 기존 600%에서 완화. KR alpha turnover-intensive 반영. research_philosophy Trend 6 amend). 비용은 cost_model v2.4 delta 15bps로 계속 차감 — 고회전 시 net alpha > cost 입증 의무.",
     "turnover_hard_fail_annual": 11.0,
-
     "cost_model_version": "v2.4_kr_retail_15bps",
     "transaction_cost_bps_one_way": 15,
     "market_impact_model": "linear_sqrt_ADV",
-    "capacity_adv_multiplier": 0.10,
+    "capacity_adv_multiplier": 0.1,
     "cost_rationale": "KR 리테일 증권사 평균 수수료 + 시장 충격 근사. v2.4 (2026-06-11 도훈 confirm): 리밸마다 종목별 |Δ보유 명목|에 매수/매도 각 15bps (delta-based, B0 후속). 구 v2.3 flat per-rebalance 기록과 비교 시 라벨 확인 의무."
   },
-
   "tier_graduation": {
     "description": "Discovery → Deployment 전환 조건. discovery_graduation_gate.sh 강제. v8.x WS2 재설계(2026-05-29): rank-IC 계열은 long-only 실현 alpha와 어긋나(16후보 calibration 실측: rank_ic가 FLOW 거짓탈락+NN/TECH 거짓통과) advisory로 강등, portfolio-alpha t(forge NW lag-3)를 hard로. DSR hard는 sweep형 selection만(2026-06-10 개정 — chain/단일은 advisory). hard 기준은 forge-authoritative 값(alpha-stage proxy 아님)에 적용.",
     "min_rank_ic": 0.04,
     "min_rank_ic_rationale": "KR top-universe benchmark. <0.04는 IC 약함. (v8.x severity=advisory — long-only 실현 alpha 미전이)",
-
-    "min_icir": 0.20,
+    "min_icir": 0.2,
     "min_icir_rationale": "Alpha Lab Gate. (v8.x severity=advisory)",
-
-    "min_subperiod_stability": 0.50,
+    "min_subperiod_stability": 0.5,
     "min_subperiod_stability_rationale": "3개 subperiod 안정성. (v8.x severity=advisory)",
-
     "max_drawdown_days": 100,
     "max_drawdown_days_rationale": "100일 이상 drawdown 지속 시 alpha decay 의심. (severity=advisory)",
-
     "min_harvey_t_stat": 3.0,
     "min_harvey_t_stat_rationale": "rank-IC Harvey-t. (v8.x severity=advisory — rank-IC t는 portfolio-alpha t와 구분, 후자가 권위)",
-
     "min_deflated_sharpe_ratio": 0.5,
     "min_deflated_sharpe_ratio_rationale": "Bailey-Lopez de Prado DSR — multi-testing 보정 SR. (severity=HARD는 sweep형 selection만 — ML스윕/optimizer서치/앙상블·사전등록 grid. 가설주도 chain/단일검증은 advisory 강등+진단산출. 도훈 mandate 2026-05-31/2026-06-10, measurement-graduation §3)",
-
     "min_portfolio_alpha_t_nw": 2.95,
     "min_portfolio_alpha_t_nw_rationale": "★v8.x 신규 HARD. forge-authoritative 실현 portfolio-alpha t (NW lag-3, forge_package.portfolio_alpha_t_nw_lag3). Harvey-Liu-Zhu 2016 hurdle. rank-IC t 아님. 게이트 핵심 판별(16후보 중 FLOW만 통과=정확).",
-
     "min_oos_retention": 0.7,
     "min_oos_retention_rationale": "★v2.5 HARD 배선(문턱은 measurement-graduation §3 2026-05-31/06-10 기존값). 활성 Sharpe OOS/IS retention — anchored 3분할 {55/65/75} 중앙값(essence_score.R oos_stat_version=v2). ≥0.7 단독 PASS / <0.5 무조건 FAIL / [0.5,0.7) band는 보강증거 2/3 조건부 PASS(판정 권위=essence_score.R, 훅은 warn). forge-authoritative 값에만 적용 — 단일전략 과적합 방어 주책임.",
-
     "min_calmar": 0.64,
     "min_calmar_rationale": "★v2.5 HARD 배선(문턱은 measurement-graduation §3 2026-05-31 기존값). Calmar = CAGR/|MDD| ≥ 0.64 (=16%/25%, 제2목표 CAGR16·MDD25에서 도출한 위험조정 게이트). forge-authoritative 값에만 적용.",
-
     "severity": {
       "rank_ic": "advisory",
       "icir": "advisory",
@@ -160,17 +149,18 @@
     },
     "severity_rationale": "hard = block(우회불가), advisory = warn(screening). hard 4종(DSR/portfolio_alpha_t_nw/oos_retention/calmar)은 forge-authoritative 값에만 적용 — alpha-stage proxy로 graduation 선언 금지(v8.x WS1 정합). DSR hard는 sweep형 selection 한정, oos_retention은 <0.5 무조건 block + [0.5,0.7) band 조건부(measurement-graduation §3)."
   },
-
   "discovery_defaults": {
     "description": "Discovery WT 전용 느슨한 기본값. schema validation의 max_names 등 면제.",
     "max_names": null,
-    "weight_bounds": [0.0, 1.0],
+    "weight_bounds": [
+      0.0,
+      1.0
+    ],
     "long_only": "configurable",
     "liquidity_min_won_20d_avg": 50000000,
     "universe_allowed_extended": true,
     "soft_constraints_enforced": false
   },
-
   "deployment_defaults": {
     "description": "Deployment WT 기본값. 모든 hard + soft 제약 강제.",
     "inherits_hard": "tier_hard_mandate",
@@ -178,7 +168,6 @@
     "requires_discovery_parent": false,
     "requires_graduation_pass": "recommended_not_enforced"
   },
-
   "agent_role_boundaries": {
     "alpha_agent_forbidden": [
       "covariance matrix 계산",
@@ -199,26 +188,71 @@
       "조용한 제약 완화 (infeasibility_report 필수)"
     ]
   },
-
   "work_task_sequence": {
-    "enforced_order": ["alpha", "risk", "optimizer", "forge", "judge", "governor"],
+    "enforced_order": [
+      "alpha",
+      "risk",
+      "optimizer",
+      "forge",
+      "judge",
+      "governor"
+    ],
     "parallel_allowed_across_tasks": true,
     "parallel_forbidden_within_task": true,
     "challenge_loop_max_rounds": 2,
     "rationale": "1 WT 내부는 순차 + challenge loop 2회 허용. WT 간은 병렬."
   },
-
   "success_criteria_v61_r10": {
     "description": "R10 Multi-Objective Success Criteria — SR 단일 최대화 탈피. Judge + Governor가 Pareto + weighted score 병행.",
     "metrics": {
-      "expected_active_return": {"direction": "max", "weight": 0.20, "threshold_deployment": 0.03, "threshold_discovery": 0.02},
-      "expected_tracking_error": {"direction": "min", "weight": 0.10, "threshold_deployment": 0.10, "threshold_discovery": 0.15},
-      "net_information_ratio": {"direction": "max", "weight": 0.25, "threshold_deployment": 0.30, "threshold_discovery": 0.20},
-      "turnover_annual": {"direction": "min", "weight": 0.10, "threshold_deployment": 3.00, "threshold_discovery": 11.00},
-      "crowding_adjusted_return": {"direction": "max", "weight": 0.10, "threshold_deployment": 0.02, "threshold_discovery": 0.01},
-      "capacity_adjusted_return": {"direction": "max", "weight": 0.05, "threshold_deployment": 0.02, "threshold_discovery": 0.01},
-      "regime_robustness_score": {"direction": "max", "weight": 0.15, "threshold_deployment": 0.60, "threshold_discovery": 0.50},
-      "interpretability_score": {"direction": "max", "weight": 0.05, "threshold_deployment": 0.50, "threshold_discovery": 0.40}
+      "expected_active_return": {
+        "direction": "max",
+        "weight": 0.2,
+        "threshold_deployment": 0.03,
+        "threshold_discovery": 0.02
+      },
+      "expected_tracking_error": {
+        "direction": "min",
+        "weight": 0.1,
+        "threshold_deployment": 0.1,
+        "threshold_discovery": 0.15
+      },
+      "net_information_ratio": {
+        "direction": "max",
+        "weight": 0.25,
+        "threshold_deployment": 0.3,
+        "threshold_discovery": 0.2
+      },
+      "turnover_annual": {
+        "direction": "min",
+        "weight": 0.1,
+        "threshold_deployment": 3.0,
+        "threshold_discovery": 11.0
+      },
+      "crowding_adjusted_return": {
+        "direction": "max",
+        "weight": 0.1,
+        "threshold_deployment": 0.02,
+        "threshold_discovery": 0.01
+      },
+      "capacity_adjusted_return": {
+        "direction": "max",
+        "weight": 0.05,
+        "threshold_deployment": 0.02,
+        "threshold_discovery": 0.01
+      },
+      "regime_robustness_score": {
+        "direction": "max",
+        "weight": 0.15,
+        "threshold_deployment": 0.6,
+        "threshold_discovery": 0.5
+      },
+      "interpretability_score": {
+        "direction": "max",
+        "weight": 0.05,
+        "threshold_deployment": 0.5,
+        "threshold_discovery": 0.4
+      }
     },
     "judge_pass_rule_deployment": "all threshold meet OR (weighted_score >= 0.65 AND Pareto-non-dominated in at least 4/8 metrics)",
     "judge_pass_rule_discovery": "net_information_ratio threshold + 4/8 metric threshold",

@@ -158,7 +158,15 @@ wt_create <- function(hypothesis_title = NULL,
     cost_model_version = defaults$tier_soft_deployment$cost_model_version,
     current_portfolio = current_portfolio,
     hard_mandate = list(
-      pit_enforcement = "C1-C15 all enforced",
+      # (2026-08-20) 무조건 참인 주장 제거. 구 값 "C1-C15 all enforced" 는 221/248 request 에
+      #   동일 문자열로 박혀 있었고(값 분포 1종, 예외 0), 이를 검증하는 코드도 읽는 소비자도
+      #   0 건이었다 — 즉 PIT 준수 여부와 무관하게 항상 참인 문장이 연구 기록에 사실로 적혔다.
+      #   ★죽은 것은 강제가 아니라 기록이다 — PIT 강제는 pit_enforcement.R 함수·훅·judge·pit.md 로
+      #   살아 있다. 본 필드는 **선언**이지 검증이 아니므로 그렇게 읽히도록 문구를 고친다.
+      #   문자열 형태 유지 = 기존 221건과 스키마 호환(소비자 0 이므로 회귀 없음).
+      pit_enforcement = paste0("C1-C15 declared (선언 — 검증 아님). ",
+                               "강제 실체: 02_Infrastructure/validation/pit_enforcement.R + PIT 훅 + judge Gate. ",
+                               "준수 여부는 본 필드가 아니라 해당 검증 산출물로 판정할 것."),
       liquidity_floor_won_20d_avg = defaults$tier_hard_mandate$liquidity_floor_won_20d_avg,
       mandate_restrictions = defaults$tier_hard_mandate$mandate_restrictions,
       long_only_mandate = effective_long_only
