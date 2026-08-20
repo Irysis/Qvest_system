@@ -131,7 +131,9 @@ def mf_observed_at(root, table_sha, n_rows, now_s):
 
 def mf_newest_lcode(root):
     """W8(.lc_research_time)과 동일: 3-glob, /superseded/ 제외, created_at(부재 시 mtime)."""
-    pats = [os.path.join(root, 'stage_artifacts', 'l_code', '*', 'l_code_*.json')]  # MUT-M5
+    pats = [os.path.join(root, 'stage_artifacts', 'l_code', '*', 'l_code_*.json'),
+            os.path.join(root, 'stage_artifacts', 'l_code_*.json'),
+            os.path.join(root, '04_Research', 'strategies', '*', 'stage_artifacts', '[Ll]_code*.json')]
     files = []
     for p in pats:
         files.extend(glob.glob(p))
