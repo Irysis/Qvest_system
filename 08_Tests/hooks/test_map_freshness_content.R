@@ -262,8 +262,10 @@ chk("G1_below_threshold_silent", !isTRUE(.mf_judge(SBX, MAP, ts23)$stale), "lag 
 s$observed_at <- NOW - 25 * 3600; write_json(s, SNAP, auto_unbox = TRUE)
 chk("G2_above_threshold_fires", isTRUE(.mf_judge(SBX, MAP, ts23)$stale), "lag 25h > 24h → 경보")
 chk("G3_thresh_constant", identical(.MF_THRESH_H, 24), "R 임계 상수 = 24h")
-chk("G4_py_thresh_same", any(grepl("MF_THRESH_H\\s*=\\s*24", strsplit(PYSRC, "\n")[[1]])),
-    "python 임계 상수도 24 — 두 구현이 같은 문턱 (드리프트하면 여기서 잡힘)")
+## ★`24` 를 접두 부분일치로 재면 240 으로 바뀌어도 통과한다(이 검사 작성 중 M2 돌연변이가
+##   실제로 그렇게 빠져나갔다). 값 경계까지 고정한다.
+chk("G4_py_thresh_same", any(grepl("^\\s*MF_THRESH_H\\s*=\\s*24(\\.0)?\\s*(#.*)?$", strsplit(PYSRC, "\n")[[1]])),
+    "python 임계 상수도 정확히 24 — 두 구현이 같은 문턱 (드리프트하면 여기서 잡힘)")
 chk("G5_py_schema_same", any(grepl('MF_SCHEMA\\s*=\\s*"map_freshness_v1"', strsplit(PYSRC, "\n")[[1]])),
     "스냅샷 schema 문자열도 동일 — 서로의 스냅샷을 읽는다")
 
