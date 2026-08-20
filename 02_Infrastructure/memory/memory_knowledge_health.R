@@ -733,12 +733,22 @@ if (length(missing_np) > 0) {
 kif_path <- file.path(PROJ_ROOT, "02_Infrastructure", "ops", "knowledge_index_freshness.R")
 if (file.exists(kif_path)) {
   kif <- tryCatch({
-    local({ source(kif_path, local = TRUE); check_knowledge_index_freshness(root = PROJ_ROOT) })
+    withCallingHandlers(
+      local({ source(kif_path, local = TRUE); check_knowledge_index_freshness(root = PROJ_ROOT) }),
+      error = function(e) {
+        cs <- sys.calls()
+        cat("  [kif stack]
+")
+        for (i in seq_along(cs)) {
+          txt <- paste(deparse(cs[[i]]), collapse = " ")
+          if (grepl("kif|knowledge_index|check_", txt)) cat("    ", substr(txt, 1, 130), "
+")
+        }
+      })
   }, error = function(e) {
     # 진단용: 호출 스택을 남긴다 — 'checker_error' 만으로는 어느 줄인지 알 수 없다.
     cat("  [kif debug] ", conditionMessage(e), "
 ")
-    try(print(utils::tail(sys.calls(), 6)), silent = TRUE)
     list(status = "SKIP", reason = "checker_error", detail = conditionMessage(e))
   })
   kst <- as.character(kif$status %||% "SKIP")[1]
