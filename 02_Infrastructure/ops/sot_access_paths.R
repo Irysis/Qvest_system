@@ -1,0 +1,101 @@
+#==============================================================================
+# sot_access_paths.R — 정본(JSON) 소비 경로를 **AST 로** 추출한다
+#
+# 배경 (2026-08-20 세션, 실측):
+#   "constraint_defaults.json 의 어느 필드가 실제로 소비되는가" 를 토큰 grep 으로 재려다
+#   **같은 부류로 6번 실패**했다:
+#     ① 리프 이름 grep + CRLF 오염 → 소비율이 아니라 **줄바꿈 방식**을 쟀다(81/100 허위)
+#     ② 리프 grep 정정 → 블록 단위 소비를 못 봄(40/100 여전히 허위)
+#     ③ 블록 이름 grep → `severity` 293건·`metrics` 718건 = 일반 영단어 오탐
+#     ④ 모듈명 매칭을 필드 소비로 오독(`[pit_enforcement] Loading` 은 자기 이름)
+#     ⑤ 로드 호출과 경로 리터럴이 같은 줄이라 가정 → 상수 경유(WT_CONSTRAINT_DEFAULTS) 누락
+#     ⑥ 변수 할당이 문자열 리터럴이라 가정 → os.path.join(...) 누락
+#   공통 기전 = **표기 형태를 가정**한 것. 파서를 쓰면 표기가 달라도 같은 경로로 정규화된다
+#   (`d[["a"]][["b"]]` 와 `d$a$b` 가 동일 경로로 모임 — grep 은 이걸 못 한다).
+#
+# 사용:
+#   source("02_Infrastructure/ops/sot_access_paths.R")
+#   extract_paths("02_Infrastructure/worktask/worktask_manager.R", "defaults")
+#   sot_unconsumed("02_Infrastructure/worktask/constraint_defaults.json",
+#                  list(c("02_Infrastructure/worktask/worktask_manager.R", "defaults")))
+#
+# 한계 (정직):
+#   - **R 전용**. python 로더는 미커버(ast 모듈로 동형 구현 가능하나 미구현).
+#   - 뿌리 변수명을 알아야 한다. 로드 지점을 사람이 지정한다.
+#   - 동적 접근(`d[[key]]` 에서 key 가 변수)은 NA 로 버려진다 — 과소 추출 방향(안전).
+#==============================================================================
+
+#' 파일에서 root_var 에 뿌리를 둔 `$` / `[[` 접근 체인을 전부 추출
+#'
+#' @param file      R 소스 경로
+#' @param root_var  정본이 담긴 변수명 (예 "defaults")
+#' @return character: "defaults$a$b" 형태 정규화 경로 (정렬·중복 제거)
+extract_paths <- function(file, root_var) {
+  ex <- parse(file, keep.source = FALSE)
+  out <- character(0)
+  walk <- function(e) {
+    if (is.call(e)) {
+      op <- as.character(e[[1]])[1]
+      if (op %in% c("$", "[[") && length(e) >= 3) {
+        chain <- character(0); cur <- e
+        while (is.call(cur) && as.character(cur[[1]])[1] %in% c("$", "[[")) {
+          k <- cur[[3]]
+          # 문자열 키 또는 심볼 키만 채택. 변수 키(동적)는 NA → 체인 폐기(과소 추출 = 안전)
+          key <- if (is.character(k)) k else if (is.symbol(k)) as.character(k) else NA_character_
+          chain <- c(key, chain); cur <- cur[[2]]
+        }
+        if (is.symbol(cur) && identical(as.character(cur), root_var) && !any(is.na(chain)))
+          out <<- c(out, paste(c(root_var, chain), collapse = "$"))
+      }
+      for (i in seq_along(e)) if (!is.null(e[[i]])) try(walk(e[[i]]), silent = TRUE)
+    } else if (is.pairlist(e) || is.expression(e)) {
+      for (i in seq_along(e)) try(walk(e[[i]]), silent = TRUE)
+    }
+  }
+  for (i in seq_along(ex)) walk(ex[[i]])
+  sort(unique(out))
+}
+
+#' 추출 경로가 정본에 실재하는지 확인 (양성 대조)
+#' @return list(ok = logical, missing = character)
+verify_paths_exist <- function(paths, sot_list) {
+  miss <- character(0)
+  for (x in paths) {
+    parts <- strsplit(x, "$", fixed = TRUE)[[1]][-1]
+    v <- sot_list; okp <- TRUE
+    for (k in parts) { v <- v[[k]]; if (is.null(v)) { okp <- FALSE; break } }
+    if (!okp) miss <- c(miss, x)
+  }
+  list(ok = length(miss) == 0L, missing = miss)
+}
+
+#' 정본 리프 중 어떤 로더도 접근하지 않는 것을 산출
+#' @param sot_json  정본 JSON 경로
+#' @param loaders   list of c(file, root_var)
+sot_unconsumed <- function(sot_json, loaders) {
+  if (!requireNamespace("jsonlite", quietly = TRUE)) stop("jsonlite 필요")
+  d <- jsonlite::fromJSON(sot_json, simplifyVector = FALSE)
+  hit <- character(0)
+  for (L in loaders) hit <- c(hit, extract_paths(L[1], L[2]))
+  # 뿌리 변수명 제거 → 정본 상대 경로. ★정규식 미사용 — heredoc/JSON 경계에서
+  #   백슬래시 한 겹이 먹혀 정규식이 깔종 조용히 망가지는 기지 함정(L-code WORD_BOUNDARY_SILENT_FALSE).
+  hit <- unique(vapply(hit, function(h) {
+    pp <- strsplit(h, "$", fixed = TRUE)[[1]]
+    paste(pp[-1], collapse = "$")
+  }, character(1), USE.NAMES = FALSE))
+  leaves <- character(0)
+  wlk <- function(o, p = "") {
+    if (is.list(o) && !is.null(names(o))) {
+      for (nm in names(o)) wlk(o[[nm]], if (nzchar(p)) paste(p, nm, sep = "$") else nm)
+    } else if (nzchar(p)) leaves <<- c(leaves, p)
+  }
+  wlk(d)
+  # 리프가 접근됐거나, 그 조상 블록이 통째로 접근됐으면 소비로 본다
+  consumed <- vapply(leaves, function(lf) {
+    any(vapply(hit, function(h) identical(h, lf) || startsWith(lf, paste0(h, "$")), logical(1)))
+  }, logical(1))
+  list(n_leaf = length(leaves), n_consumed = sum(consumed),
+       unconsumed = sort(leaves[!consumed]), accessed = sort(hit))
+}
+
+cat("[sot_access_paths] Loaded. extract_paths() / verify_paths_exist() / sot_unconsumed()\n")

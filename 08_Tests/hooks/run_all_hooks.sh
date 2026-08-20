@@ -985,6 +985,11 @@ SUITES=(
   #   ★K0 양성 대조 = 초판 E2E 가 케이스 사전 없는 샌드박스에서 fail-open `{}` 을 뱉어
   #    '통과' 축이 게이트를 돌리지도 않고 초록이었다. 차단 능력을 먼저 보인 뒤 통과를 주장한다.
   "08_Tests/hooks/test_continuity_verdict_artifact_identity.py"
+  # 2026-08-16~20 L1 자동 스폰 아크 (도훈 승인) — 충돌 해소 시 재등재 (2026-08-20:
+  #   elegant-rhodes 신판 러너가 main 의 이 2건 등재를 모른 채 병합돼 전파일 충돌 →
+  #   신판 채택 + 여기 재등재. P0 루프닫기 주입 25종 + Layer1~3 주입 19종.)
+  "08_Tests/hooks/test_p0_loop_closure.R"
+  "08_Tests/hooks/test_auto_spawn_layers.R"
 )
 
 # (2026-08-02) .py 분기 추가 — 종전엔 확장자 무관 `bash` 로 던져 파이썬 suite 가

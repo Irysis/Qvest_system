@@ -1,0 +1,73 @@
+{
+  "schema_version": "v54_ax_p0_mode",
+  "candidate_id": "CAND_20260820_qepm_legacy_drawdown_aware_construction_unknown_L-QPM-20260718_201043",
+  "research_mode": "qepm_legacy",
+  "metric_type": "estimated",
+  "type": "empirical",
+  "polarity": "unknown",
+  "statement_draft": "[실증 규칙(성과증거 미분류) 초안] family=drawdown_aware_construction, tags=O,R,N, supporting=1건 L-code. (promote.R 5축 검증에서 범위·메커니즘·OOS 확정 필요)",
+  "supporting_l_codes": [
+    "L-QPM-20260718_201043"
+  ],
+  "scope_draft": {
+    "market": "KR",
+    "factor_family": "drawdown_aware_construction",
+    "regime": null,
+    "construction_types": null
+  },
+  "evidence_draft": {
+    "independent_l_codes": 1,
+    "independent_strategies": 1,
+    "strategies": [
+      "FQ058_DRAWDOWN_AWARE_CONSTRUCTION"
+    ],
+    "effect_direction_consistency": null,
+    "note": "evidence_draft — promote.R 5축 검증에서 hurdle_result/grade_a_catalog 교차검증으로 확정",
+    "n_eff_signatures": 1,
+    "independent_constructions": 1,
+    "constructions": [
+      "single_sleeve_long_only_topN"
+    ],
+    "metric_types": [
+      "canonical_screen"
+    ]
+  },
+  "falsification_draft": {
+    "attempts": [
+      {
+        "test": "위험 measure 격리(MinCDaR vs MinVar — alpha-drop 교란 제거 동일 basket)",
+        "result": "falsified",
+        "effect_retained": "DD 개선 1/2 재료뿐·paired 비유의 — measure 효과 부재"
+      },
+      {
+        "test": "2-재료 교차(mom_6_1/mom_12_1)",
+        "result": "falsified",
+        "effect_retained": "mom_12_1 개선이 mom_6_1서 반전 — 재료-강건성 없음"
+      },
+      {
+        "test": "DSR 5-trial sweep 보정",
+        "result": "survived",
+        "effect_retained": "best arm=EW/MinVar 0.88/0.92 — 단 treatment arm 아님(형식 PASS의 실질 = 대조군 우위)"
+      },
+      {
+        "test": "hard constraint/LP 무결성 감사(1970셀·fallback 0)",
+        "result": "survived",
+        "effect_retained": "negative가 구현 결함 아닌 실측임을 지지"
+      }
+    ],
+    "note": "L-code 기록 반증 시도 실값 집계"
+  },
+  "mechanism_draft": {
+    "economic_explanation": "long-only 25종 momentum basket의 structural drawdown은 고모멘텀 종목의 동반 급락(systematic)이라 동일 basket 내 위험 measure 교체(분산→CDaR/CVaR)는 재배치 marginal만 남고 crash 노출 자체를 못 줄임. 위험최적화는 회전·비용만 증가. breadth+저회전의 EW가 지배(Grinold IR=IC*sqrt(breadth)).",
+    "mechanism_type": "structural",
+    "causal_plausibility": null
+  },
+  "oos_validation_draft": {
+    "oos_months": 60.0,
+    "oos_effect_vs_is": -0.4,
+    "note": "L-code oos_retention 실값 1건 median (IS65/OOS35 활성SR retention) + oos_months 실값 1건 median — promote.R essence_score 경유 재확정"
+  },
+  "cluster_members_count": 1,
+  "status": "pending_5axis",
+  "created_at": "2026-08-20T12:07:58+00:00"
+}
