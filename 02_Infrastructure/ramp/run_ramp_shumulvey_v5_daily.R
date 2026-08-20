@@ -258,6 +258,16 @@ if("M0" %in% ARMS){
       ewv[q]<-sum(wE2*ri); wd2<-wE2*(1+ri); wE2<-wd2/sum(wd2)
       if(as.integer(format(mon$medate[rng[i]],"%m")) %% 3 == 0) wE2<-rep(1/7,7) }   # 달력 분기말 리셋 — D1 일별 EW와 동일 규약
     mk<-mr[ii,1]
+    ## 일별 회계 (계약 측정용 build_bt_result 입력): 적용월 동안 결정 비중 보유·드리프트, 월 첫 거래일 리밸 비용
+    net5d<-rep(NA_real_,NS); net15d<-rep(NA_real_,NS); wheldD<-rep(1/7,7)
+    for(q in seq_along(ii)){ i<-ii[q]; wtD<-Wr[i-1,]
+      mrows<-which(ym==mon$ym[rng[i]]); if(!length(mrows))next
+      dltD<-sum(abs(wtD-wheldD))
+      for(j in seq_along(mrows)){ t<-mrows[j]; ri<-RmatAll[t,]
+        g<-sum(wtD*ri)
+        net5d[t]<-g-(if(j==1)5e-4*dltD else 0); net15d[t]<-g-(if(j==1)15e-4*dltD else 0)
+        wd<-wtD*(1+ri); wtD<-wd/sum(wd) }
+      wheldD<-wtD }
     for(bps in c(5,15)){ pr<-if(bps==5)pr5 else pr15
       actM<-pr-mk; actE<-pr-ewv
       nav<-cumprod(1+pr); mdd<-min(nav/cummax(nav)-1)
@@ -265,7 +275,8 @@ if("M0" %in% ARMS){
         placebo_seed=ifelse(nzchar(PSEED),as.integer(PSEED),NA_integer_),
         n_mo=length(pr), IR_vsMkt=IRf(actM), IR_vsEW=IRf(actE), pt_capwt=nwt(actM), abs_SR=IRf(pr),
         abs_CAGR=prod(1+pr)^(12/length(pr))-1, abs_MDD=mdd, TO_ann=mean(tov)*12,
-        series=list(list(pr=pr,actM=actM,actE=actE,months=as.character(mon$medate[rng[ii]])))) }
+        series=list(list(pr=pr,actM=actM,actE=actE,months=as.character(mon$medate[rng[ii]]),
+                         net_d=if(bps==5)net5d else net15d))) }
   }
   pg("M0 done\n")
 }
