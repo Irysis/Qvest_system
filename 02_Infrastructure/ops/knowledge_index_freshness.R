@@ -35,9 +35,16 @@
 
 suppressWarnings(suppressMessages(library(jsonlite)))
 
-if (!exists("%||%")) {
-  `%||%` <- function(a, b) if (is.null(a) || length(a) == 0) b else a
-}
+# ★무조건 정의(2026-08-20 수리) — 구 `if (!exists("%||%"))` 가드는 **호출자의 판본을 상속**했다.
+#   실사고: memory_knowledge_health.R 에 배선하자 status=SKIP(checker_error
+#   "'length = 4' in coercion to 'logical(1)'")으로 조용히 무력화. 원인은 health 가 source 하는
+#   memory_metadata_normalize.R:10 이 전역 %||% 를
+#   `if (!is.null(a) && length(a) > 0 && nzchar(as.character(a))) a else b` 로 덮어쓰기 때문 —
+#   a 가 길이 4 리스트(idx$counts)면 as.character 가 길이 4 를 내고 `&&` 가 터진다.
+#   ⇒ 라이브러리 코드는 **자기 의미론을 소유**해야 한다. exists() 가드는 "이미 있으면 남의 것을
+#     쓴다"는 뜻이라 오염 경로다(존재 검사로 정체성 검사를 대체한 형태 — r-portability 공통 기전).
+#   ⚠단독 실행에서는 재현되지 않는다 — 호출자가 있어야 발현하므로 기존 테스트 20/20 도 못 잡았다.
+`%||%` <- function(a, b) if (is.null(a) || length(a) == 0) b else a
 
 # 루트 해석 — r-portability 금칙 4 정합: CLAUDE_PROJECT_DIR 우선.
 # ★존재 검사가 아니라 **정체성 검사**를 한다(dir.exists 만으로는 워크트리처럼

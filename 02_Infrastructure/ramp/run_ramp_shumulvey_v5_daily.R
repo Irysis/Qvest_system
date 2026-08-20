@@ -18,6 +18,8 @@ FEATSET<-Sys.getenv("SMV_FEATSET","f15")
 ARMS<-strsplit(Sys.getenv("SMV_ARMS","M0,D1"),",")[[1]]
 LAMM<-as.numeric(strsplit(Sys.getenv("SMV_LAMMULT","1,2"),",")[[1]])
 SHIFT<-as.integer(Sys.getenv("SMV_SHIFT","2"))   # D1 회계 시프트: 2=T+2(정본) / 3=lag1 스트레스 / 0=동월성 고의 재현(strict A/B 문서화용 — 헤드라인 금지)
+PSEED<-Sys.getenv("SMV_PLACEBO_SEED","")          # 설정 시 뷰 월-블록 셔플 placebo (상태·Σ·c 기계 불변, 뷰 타이밍만 파괴)
+TE_FILTER<-Sys.getenv("SMV_TE","")                # 예: "3" 또는 "3,4" — 지정 시 해당 TE 타깃만 실행
 KEY<-Sys.getenv("SMV_KEY",FEATSET)
 PG<-sprintf(".cache/_smv_v5_prog_%s.txt",KEY); cat("start\n",file=PG); pg<-function(...)cat(sprintf(...),file=PG,append=TRUE)
 
@@ -114,6 +116,8 @@ if(is.null(REF)){
 ## s_daily[t,f]: t일 종가 기준 결정 상태. refit일 ei = cur(스무더 마지막 상태 = 온라인과 동일점).
 ## 블록 (ei+1)..next_ei: 동결 th/wj/mu/sg로 C 선계산 → 각 일 prefix DP 마지막 상태. 결측피처일 = locf.
 online_states<-function(lm_mult){
+  scache<-sprintf(".cache/_smv_v5_states_%s_%s_lm%g.rds",FEATSET,gsub("[^A-Za-z0-9]","_",basename(IDXFILE)),lm_mult)
+  if(file.exists(scache)){ z<-readRDS(scache); if(identical(z$idx_max,max(R$Date))){pg("  states cache hit lm=%g\n",lm_mult); return(z$S)} }
   S<-matrix(NA_integer_,NS,length(FACN)); colnames(S)<-FACN
   lam_o<-50*lm_mult
   for(fi in seq_along(FACN)){ f<-FACN[fi]; X0<-as.matrix(feats[[f]]); rl<-REF[[f]]
@@ -135,6 +139,7 @@ online_states<-function(lm_mult){
     }
     pg("  online %s lam_mult=%g done\n",f,lm_mult)
   }
+  saveRDS(list(S=S,idx_max=max(R$Date)),scache)
   S
 }
 
@@ -159,6 +164,16 @@ te_ex<-function(w,Sig) sqrt(max(as.numeric(t(w-w_ew)%*%Sig%*%(w-w_ew)),0))
 view_me<-matrix(NA_real_,NM,6); colnames(view_me)<-FACN
 for(fi in seq_along(FACN)){ rl<-REF[[FACN[fi]]]
   for(mi in seq_len(NM)){ rf<-rl[[mi]]; if(is.null(rf))next; view_me[mi,fi]<-rf$m_ann[rf$cur] } }
+
+## ---- PLACEBO (뷰 월-블록 셔플): 유효 월 집합 내 순열 — 기계(Σ/c/QP/회계) 불변, 뷰 타이밍만 파괴 ----
+PERM<-NULL
+if(nzchar(PSEED)){
+  set.seed(as.integer(PSEED))
+  validm<-which(apply(view_me,1,function(r)all(is.finite(r))))
+  PERM<-rep(NA_integer_,NM); PERM[validm]<-sample(validm)
+  view_me[validm,]<-view_me[PERM[validm],,drop=FALSE]
+  pg("PLACEBO seed=%s (perm over %d months)\n",PSEED,length(validm))
+}
 
 ## ==== STAGE 4: c 캘리브 (각 refit일 ex-ante TE 이분탐색 — 인과) ====
 TE_T<-c(0.01,0.02,0.03,0.04)
@@ -266,12 +281,4 @@ if("D1" %in% ARMS){
   }
 }
 
-RES<-rbindlist(RESULTS)
-out_csv<-RES[,!"series"]
-fwrite(out_csv, sprintf("outputs/ramp/smv_v5_results_%s.csv",KEY))
-saveRDS(list(RES=RES, idxfile=IDXFILE, featset=FEATSET, prereg="outputs/ramp/smv_v5_prereg_20260820.json",
-             cmat=cmat, view_me=view_me, meix=meix, medates=medates),
-        sprintf(".cache/_smv_v5_%s.rds",KEY))
-cat("== v5 results (",KEY,") ==\n")
-print(out_csv[order(arm,lam_mult,te,cost_bps)], digits=3, nrows=50)
-cat("V5_DONE\n")
+RES<-rbindlist(RESU

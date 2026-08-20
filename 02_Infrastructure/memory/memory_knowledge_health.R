@@ -732,16 +732,10 @@ if (length(missing_np) > 0) {
 #   SKIP(파일 부재/파싱 실패)은 조용히 통과시키지 않고 사유를 인쇄한다.
 kif_path <- file.path(PROJ_ROOT, "02_Infrastructure", "ops", "knowledge_index_freshness.R")
 if (file.exists(kif_path)) {
-  # [임시 진단] 실제 바인딩된 %||% 를 찍는다
-  cat("  [kif op] health %||%: ", paste(deparse(get("%||%")), collapse=" "), "
-", sep="")
-  local({
-    source(kif_path, local = TRUE)
-    cat("  [kif op] 검사기 스코프 %||%: ", paste(deparse(get("%||%")), collapse=" "), "
-", sep="")
-    cat("  [kif op] exists 결과: ", exists("%||%"), "
-", sep="")
-  })
+  kif <- tryCatch({
+    local({ source(kif_path, local = TRUE); check_knowledge_index_freshness(root = PROJ_ROOT) })
+  }, error = function(e) list(status = "SKIP", reason = "checker_error",
+                              detail = conditionMessage(e)))
   kst <- as.character(kif$status %||% "SKIP")[1]
   if (identical(kst, "STALE")) {
     add_warn("WARN_10_knowledge_index_stale",
