@@ -39,7 +39,10 @@ getarg <- function(flag, default = NULL) {
   i <- which(args == flag)
   if (length(i) == 1L && length(args) >= i + 1L) args[i + 1L] else default
 }
-ROOT <- Sys.getenv("QM_ROOT", Sys.getenv("CLAUDE_PROJECT_DIR", getwd()))
+# 금칙④(r-portability): resolver 우선순위는 CLAUDE_PROJECT_DIR 먼저. R 에서는
+#   ~/.Renviron 이 QM_ROOT 를 고정해 export 로 못 덮으므로, QM_ROOT 를 앞에 두면
+#   워크트리 세션이 자기 트리가 아니라 main 을 가리킨다(2026-08-20 래칫 검거).
+ROOT <- Sys.getenv("CLAUDE_PROJECT_DIR", Sys.getenv("QM_ROOT", getwd()))
 ROOT <- gsub("\\\\", "/", ROOT)
 
 BM_PATH  <- getarg("--path", file.path(ROOT, ".cache", "benchmark.parquet"))

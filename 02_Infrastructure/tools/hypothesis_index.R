@@ -331,10 +331,41 @@ FAMILY_PATTERNS <- list(
   d
 }
 
+# ★[초안] 마커 판정 = **승인 여부(status)** 기반 (2026-08-20 수리, 폐쇄루프 감사 수리대상 ③)
+#   구결함: 마커가 `statement_refined` 존재 여부(= *정제* 여부)로 결정됐다. 그런데 DIST 카드
+#   lifecycle 은 `pending_5axis → proposed → distilled` 이고 **`proposed` 는 정제문을 갖지만
+#   아직 도훈 승인 전**이라 주입 스트림이 승인 지식으로 소비하면 안 되는 상태다(INV-6 안전속성).
+#   ⇒ 미승인 카드가 승인 카드와 title 문자열상 **구분 없이** 서빙됐다.
+#   실측(2026-08-20, distilled_knowledge.json 146건): status != "distilled" 인데 마커 없이
+#   렌더되던 카드 **13건** = proposed 10 + expired 3. 예) DIST-AR-026(proposed) 의 title 형식이
+#   DIST-AR-001(distilled) 과 동일 — lookup_hypothesis 실경로 출력으로 확인.
+#   ⚠ 없는 정보를 새로 만드는 수리가 아니다: `.hi_row`(P2)가 이미 매 행에 `distilled_status`
+#     컬럼을 방출한다. 상태는 **행 메타에는 있고 title 문자열에만 없었다** — title 판정을
+#     그 정본 축으로 **교체**하는 것.
+#   보수 원칙: 미지/결측 status 는 **승인으로 취급하지 않는다**(모르면 초안).
+HI_DRAFT_MARKERS <- c(
+  distilled            = "",              # 도훈 승인 완료 = 마커 없음
+  proposed             = "[미승인 초안]", # 정제문 있으나 승인 전
+  pending_5axis        = "[초안]",
+  quarantined_evidence = "[증거 격리]",
+  expired              = "[만료]"
+)
+# 위 5종이 2026-08-20 정본 전수(146건) status 집합과 정확히 일치(distilled 15 / proposed 10 /
+# pending_5axis 89 / quarantined_evidence 6 / expired 26, 결측 0). 신규 status 가 생기면
+# 여기에 등재하기 전까지는 폴백이 "[초안]"으로 보수 처리한다(조용한 승인 승격 차단).
+.hi_draft_marker <- function(status) {
+  s <- .hi_join(status)                 # NULL/list/길이-N 전부 스칼라 문자열로 정규화
+  if (!nzchar(s)) return("[초안]")      # 결측 → 보수적 폴백 (승인 취급 금지)
+  m <- unname(HI_DRAFT_MARKERS[s])      # 미등재 name → NA (에러 아님)
+  if (length(m) != 1 || is.na(m)) return("[초안]")   # 미지 status → 보수적 폴백
+  m
+}
+
 .hi_parse_distilled <- function(e) {
   stmt  <- e$statement_refined %||% e$statement_draft %||% ""
-  refined <- !is.null(e$statement_refined) && nzchar(e$statement_refined %||% "")
-  title <- paste0(e$dist_id %||% "", ": ", if (refined) stmt else paste0("[초안] ", stmt))
+  marker <- .hi_draft_marker(e$status)
+  title <- paste0(e$dist_id %||% "", ": ",
+                  if (nzchar(marker)) paste0(marker, " ", stmt) else stmt)
   text  <- .hi_lc(c(e$family %||% "", stmt, paste(unlist(e$supporting_l_codes), collapse = " ")))
   pol   <- e$polarity %||% "unknown"
   verdict <- switch(pol, negative = "DISTILLED_NEG", conditional = "DISTILLED_COND",
@@ -390,7 +421,12 @@ FAMILY_PATTERNS <- list(
   list(
     strategy_id = did,
     hypothesis_signature = .hi_signature(fam, .hi_slug(stmt), "unknown", "distilled"),
-    title = paste0(did, ": ", substr(stmt, 1, 60)),
+    # (2026-08-20 수리대상③ 동반) 폴백 경로에도 승인-여부 마커 적용. 구코드는 이 경로에서
+    #   마커를 **아예 안 붙여** 파싱 실패한 proposed 카드가 승인 카드처럼 서빙됐다.
+    title = local({
+      mk <- .hi_draft_marker(e$status)
+      paste0(did, ": ", if (nzchar(mk)) paste0(mk, " ") else "", substr(stmt, 1, 60))
+    }),
     verdict = verdict,
     grade = NA_character_,
     key_metrics = list(),
