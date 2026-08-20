@@ -1,6 +1,6 @@
 # 04_Research INDEX
 
-> 자동 생성 2026-08-16 17:00 — 큐레이션 원본: `06_Registry/index_descriptions.json` (role/status/category 수동 보완처) · 재생성: `Rscript 02_Infrastructure/tools/build_artifact_index.R` (daily_refresh 말미 자동). 본 파일 직접 수정 금지 — 재생성 시 덮어씀.
+> 자동 생성 2026-08-20 21:15 — 큐레이션 원본: `06_Registry/index_descriptions.json` (role/status/category 수동 보완처) · 재생성: `Rscript 02_Infrastructure/tools/build_artifact_index.R` (daily_refresh 말미 자동). 본 파일 직접 수정 금지 — 재생성 시 덮어씀.
 
 <details><summary><b>strategy-legacy</b> (3)</summary>
 
@@ -17,7 +17,7 @@
 | 항목 | 정체 | status | 최근 | 크기 |
 |---|---|---|---|---|
 | `decision_framework/` | bearish forecast v1~v3(예측 국면) + cross_section_distribution(DPL 피처 parquet) + smart_beta_regime·factor_untapped — 부팅·모닝브리핑·DPL 감사가 소비하는 활성 존 (409MB, 대부분 cross_section outputs 382MB) | active | 2026-08-12 | 412.6MB |
-| `regime_comparison/` | KTRI/MSM 국면엔진 비교·검증·브리핑 발송 스크립트 — 일일 스케줄러(daily_refresh·모닝브리핑 ktri_rebuild)가 소비 중 | active | 2026-08-16 | 1.3MB |
+| `regime_comparison/` | KTRI/MSM 국면엔진 비교·검증·브리핑 발송 스크립트 — 일일 스케줄러(daily_refresh·모닝브리핑 ktri_rebuild)가 소비 중 | active | 2026-08-20 | 1.3MB |
 
 </details>
 
@@ -87,7 +87,7 @@
 |---|---|---|---|---|
 | `01_reports/architecture_audit_20260703.md + architecture_audit_20260703_data/` | 07-03 아키텍처 전면 감사(71 agents·1,107 tool calls, 종합 4.5/10 — '자동 강제 계층 침묵 사망' 진단) 보고서 + file:line 증거 데이터 | report | 2026-07-03 | 43KB |
 | `pg2_forensics/` | PG2 법의학 패키지 — B0 비용모델 flat-bug, B1 STR_1715 4-family 분해, B2 governor overlap, realized_ym offset 검증 (11MB) | report | 2026-06-11 | 10.0MB |
-| `01_reports/audits/` | batch_434 codegen 카탈로그 라벨 오염 감사(06-13) — 감사 스크립트+패치 플랜+NAV 클러스터 분석 | report | 2026-06-13 | 367KB |
+| `01_reports/audits/` | batch_434 codegen 카탈로그 라벨 오염 감사(06-13) — 감사 스크립트+패치 플랜+NAV 클러스터 분석 | report | 2026-08-20 | 482KB |
 
 </details>
 
@@ -158,7 +158,7 @@
 
 | 항목 | 정체 | status | 최근 | 크기 |
 |---|---|---|---|---|
-| `01_reports/` | [재편 2026-07-04] 감사·검토·제안·로드맵 보고서와 그 증거 데이터 카테고리 (실행코드 참조 0 확인분 수용) | active | 2026-08-16 | 2.0MB |
+| `01_reports/` | [재편 2026-07-04] 감사·검토·제안·로드맵 보고서와 그 증거 데이터 카테고리 (실행코드 참조 0 확인분 수용) | active | 2026-08-20 | 2.1MB |
 
 </details>
 
