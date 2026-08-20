@@ -35,6 +35,19 @@ _py() {
 PY="$(_py)"
 
 #──────────────────────────────────────────────────────────────────────────────
+# --- 러너 FINAL 총계 추출 (2026-08-20 분리) ---------------------------------
+#   테스트가 **실제 코드**를 태울 수 있도록 함수로 뺀다(파싱 로직을 검사 쪽에 복제하면
+#   정본과 갈린다 - 이 저장소의 반복 실패 계통). 검사: 08_Tests/ops/test_suite_totals_anchor.sh
+st_pick_hooks_final() {
+  local raw="${1:-}" out
+  # (1) 러너 현행 계약 - skipped 구간을 **정확히** 요구. 개별 테스트의 구-형식 줄을 배제한다.
+  out=$(printf '%s' "$raw" | grep -oE 'FINAL: [0-9]+ pass / [0-9]+ fail / [0-9]+ skipped / [0-9]+ total' | tail -1)
+  # (2) 폴백 - 러너가 구 형식으로 되돌아간 경우. 역시 tail(맨 끝 = 러너 총계).
+  [ -z "$out" ] && out=$(printf '%s' "$raw" | grep -oE 'FINAL: [0-9]+ pass / [0-9]+ fail / [0-9]+ total' | tail -1)
+  printf '%s' "$out"
+}
+
+
 collect() {
   mkdir -p "$DIR/.cache"
   local hooks regime contract continuity
@@ -58,10 +71,7 @@ collect() {
   #             (2) 없으면 구 형식 폴백, 역시 tail -1 (첫 줄이 아니라 마지막 줄)
   #   ★head -1 로 되돌리지 말 것. 검사: 08_Tests/ops/test_suite_totals_anchor.sh
   _hooks_raw=$(cd "$DIR" && CLAUDE_PROJECT_DIR="$DIR" bash 08_Tests/hooks/run_all_hooks.sh 2>/dev/null)
-  hooks_out=$(printf '%s' "$_hooks_raw" | grep -oE 'FINAL: [0-9]+ pass / [0-9]+ fail / [0-9]+ skipped / [0-9]+ total' | tail -1)
-  if [ -z "$hooks_out" ]; then
-    hooks_out=$(printf '%s' "$_hooks_raw" | grep -oE 'FINAL: [0-9]+ pass / [0-9]+ fail / [0-9]+ total' | tail -1)
-  fi
+  hooks_out=$(st_pick_hooks_final "$_hooks_raw")
   unset _hooks_raw
   hooks=$(printf '%s' "$hooks_out" | grep -oE '[0-9]+ total' | grep -oE '[0-9]+')
   hooks_fail=$(printf '%s' "$hooks_out" | grep -oE '[0-9]+ fail' | grep -oE '[0-9]+')
@@ -221,6 +231,8 @@ print("기준선 갱신:", {k: v for k, v in l.items() if k not in ("note", "col
 PYEOF
 }
 
+# 라이브러리 모드: QVEST_ST_LIB=1 로 source 하면 디스패처를 돌리지 않는다(테스트용).
+if [ "${QVEST_ST_LIB:-0}" = "1" ]; then return 0 2>/dev/null || exit 0; fi
 case "$MODE" in
   --collect)  collect ;;
   --baseline) promote ;;

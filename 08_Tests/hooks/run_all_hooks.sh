@@ -374,6 +374,14 @@ SUITES=(
   #     benchmark 와 갈렸는데, (a)(b) 만으로는 08-18(-0.2806)이 문턱 0.30 을 간발로
   #     밑돌아 **undetermined** 로 남아 수리가 막혔다.
   "08_Tests/data/test_parity_direction_axes.R"
+  # 2026-08-20 추가: 배터리 총계 추출 앵커 (계측 감시기 자신의 계측을 지킨다).
+  #   실사고 당일 — 러너 총계 1563 -> 기록 7. 러너가 죽은 게 아니라 **파서**가 틀렸다:
+  #   러너 총계는 `N pass / N fail / N skipped / N total`, 개별 테스트 일부는 skipped 없는
+  #   같은 모양을 찍는데, 08-03 수리가 skipped 를 선택적으로 만든 뒤 head -1 이
+  #   **먼저 나온 테스트**를 집었다(4891행의 7). fail=0 이라 초록으로 보였다.
+  #   ★검사는 정본 함수(st_pick_hooks_final)를 직접 태운다 — 파싱을 복제하면 갈린다.
+  #   ★X1 돌연변이 축: head -1 로 되돌리면 7 을 집는 것을 실증(검사 효력 증명).
+  "08_Tests/ops/test_suite_totals_anchor.sh"
   # 2026-08-09 추가: RAWDATA `Size` 스케일 정합 + writer 추적성.
   #   원 결함 = naver_data_collector.R:88 이 시가총액 단위를 억원 대신 백만원으로 오해해
   #   `* 1e6` 적용 → **정확히 100배 축소**된 Size 를 2026-07~08 에 43,013행(시장 전체

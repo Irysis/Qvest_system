@@ -788,8 +788,7 @@ if (file.exists(flags_p) && file.exists(dist_p)) {
                      lag_txt, format(d_mt, "%m-%d %H:%M"), format(f_mt, "%m-%d %H:%M")))
   } else {
     ok_txt <- if (-lag_h < 1) sprintf("%.0f분", -lag_h * 60) else sprintf("%.1fh", -lag_h)
-    cat(sprintf("  주입 사본 신선도: OK (사본이 정본보다 %s 최신)
-", ok_txt))
+    cat(sprintf("  주입 사본 신선도: OK (사본이 정본보다 %s 최신)\n", ok_txt))
   }
 } else {
   cat("  주입 사본 신선도: 대상 파일 부재 — 건너뜀\n")
