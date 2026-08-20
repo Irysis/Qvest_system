@@ -69,7 +69,7 @@ if (!exists("%||%")) {
 }
 
 .kif_read_json <- function(path) {
-  if (!file.exists(path)) stop("MUTANT M3: 입력 부재 시 죽음 — ", path)
+  if (!file.exists(path)) return(list(ok = FALSE, why = "missing", data = NULL))
   d <- tryCatch(fromJSON(path, simplifyVector = FALSE), error = function(e) e)
   if (inherits(d, "error")) return(list(ok = FALSE, why = paste0("parse_error: ", conditionMessage(d)), data = NULL))
   list(ok = TRUE, why = "", data = d)

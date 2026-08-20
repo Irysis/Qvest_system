@@ -567,8 +567,16 @@ if (file.exists(settings_path)) {
   rows[!grepl("^\\|[[:space:]:|-]+\\|[[:space:]]*$", rows)]
 }
 
+# sha256 은 digest → openssl 순으로 시도. 둘 다 없으면 NULL (→ 호출자가 mtime 폴백).
 .mf_table_sha <- function(rows) {
-  digest::digest(charToRaw(paste(rows, collapse = "\n")), algo = "sha256", serialize = FALSE)
+  blob <- charToRaw(paste(rows, collapse = "\n"))
+  if (requireNamespace("digest", quietly = TRUE)) {
+    return(digest::digest(blob, algo = "sha256", serialize = FALSE))
+  }
+  if (requireNamespace("openssl", quietly = TRUE)) {
+    return(as.character(openssl::sha256(blob)))
+  }
+  NULL
 }
 
 .mf_snapshot_path <- function(proj_root) {
@@ -614,6 +622,12 @@ if (file.exists(settings_path)) {
                 reason = "표 본문 추출 0행 (지도 형식 변경 의심)"))
   }
   sha <- .mf_table_sha(rows)
+  if (is.null(sha)) {
+    lag_h <- mtime_lag()
+    return(list(basis = "mtime", stale = isTRUE(is.finite(lag_h) && lag_h > .MF_THRESH_H),
+                lag_h = lag_h, table_sha = NA_character_, n_rows = length(rows),
+                reason = "sha256 해시 구현 부재 (digest/openssl 미설치)"))
+  }
   obs <- .mf_observed_at(proj_root, sha, length(rows))
   if (is.null(obs)) {
     lag_h <- mtime_lag()
