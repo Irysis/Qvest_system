@@ -438,7 +438,15 @@ list_proposed <- function(root = .dist_root()) {
 
 # ── /cleaner 수동 정제: statement_refined 작성 → status=distilled (수동 경로 retain) ──
 # 자동 경로(draft_proposed→approve_proposed)와 별개. /cleaner 세션 수동 활성화 직행.
+#' @param frontier (2026-08-20 추가) 프론티어 목록 교체. NULL 이면 기존 유지.
+#'   ★필요했던 이유: stale 판정이 **frontier 에** 있는데 구 시그니처는 statement/retry 만
+#'   갱신해 재정제로 고칠 수가 없었다. 실사고 — status=distilled(즉 주입 중) 카드 4장이
+#'   DPL(06-26 settled-negative·재제안 금지) · DPL_FEATURE(v8.3 07-10 발급중단) ·
+#'   공매도 데이터게이트(도훈 08-09 폐쇄) · insider(3-프레임 삼각-null 실측 negative)를
+#'   frontier 에서 '미검증 레버'로 광고했고 그 문장이 매 spawn 주입면으로 나갔다.
+#'   draft_proposed 가 이미 frontier 를 받으므로 계약 일관성 측면에서도 맞다.
 refine_distilled <- function(dist_id, statement_refined, retry_condition = NULL,
+                             frontier = NULL,
                              refined_by = "cleaner_session", root = .dist_root()) {
   stopifnot(nzchar(statement_refined))
   if (grepl("\\[.*초안.*\\]|확정 필요", statement_refined))
@@ -449,6 +457,7 @@ refine_distilled <- function(dist_id, statement_refined, retry_condition = NULL,
   .dist_block_quarantined(d)
   d$statement_refined <- statement_refined
   if (!is.null(retry_condition)) d$retry_condition <- retry_condition
+  if (!is.null(frontier)) d$frontier <- frontier
   d$status <- "distilled"
   d$refined_at <- format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z")
   d$refined_by <- refined_by
