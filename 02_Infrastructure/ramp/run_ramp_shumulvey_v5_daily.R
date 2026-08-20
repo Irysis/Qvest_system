@@ -100,7 +100,7 @@ if(file.exists(refit_cache)){ z<-readRDS(refit_cache)
 if(is.null(REF)){
   REF<-list()
   for(f in FACN){ X0<-as.matrix(feats[[f]]); a<-ACT[[f]]
-    rl<-vector("list",NM)
+    rl<-vector("list",NM); cur<-list(lam=50,k2=9.5); last_tune<--999L
     for(mi in seq_len(NM)){ md<-medates[mi]; ei<-meix[mi]
       lo_i<-which(R$Date>=max(R$Date[1], md-MAXY*365))[1]
       tr_i<-lo_i:ei
@@ -111,12 +111,26 @@ if(is.null(REF)){
       Xok<-Xtr[ok,,drop=FALSE]; aok<-atr[ok]
       mu<-colMeans(Xok); sg<-apply(Xok,2,sd); sg[!is.finite(sg)|sg<1e-9]<-1
       Xs<-sweep(sweep(Xok,2,mu,"-"),2,sg,"/")
-      fit<-tryCatch(sparse_jm(Xs,lam=50,kappa=sqrt(9.5)),error=function(e)NULL); if(is.null(fit)) next
+      if(TUNE=="roll" && (mi-last_tune)>=6L){   # 인과 재선택: 결정 시점 ei 이전 데이터만 (trailing 6y)
+        vlo<-which(R$Date>=max(R$Date[1], md-6*365))[1]; vi<-vlo:ei
+        Xv<-X0[vi,,drop=FALSE]; av<-a[vi]
+        vok<-which(apply(Xv,1,function(r)all(is.finite(r))) & is.finite(av))
+        if(length(vok)>=6*PER*0.8){
+          muv<-colMeans(Xv[vok,,drop=FALSE]); sgv<-apply(Xv[vok,,drop=FALSE],2,sd); sgv[!is.finite(sgv)|sgv<1e-9]<-1
+          Xvs<-sweep(sweep(Xv[vok,,drop=FALSE],2,muv,"-"),2,sgv,"/"); avk<-av[vok]
+          best<-list(sh=-Inf,lam=cur$lam,k2=cur$k2)
+          for(g in 1:nrow(GRID9)){ fitg<-tryCatch(sparse_jm(Xvs,lam=GRID9$lam[g],kappa=sqrt(GRID9$k2[g])),error=function(e)NULL)
+            if(is.null(fitg))next; sh<-ls_sh_t1(fitg$s,avk)
+            if(is.finite(sh)&&sh>best$sh)best<-list(sh=sh,lam=GRID9$lam[g],k2=GRID9$k2[g]) }
+          cur<-list(lam=best$lam,k2=best$k2); last_tune<-mi } }
+      lam_use<-if(TUNE=="roll")cur$lam else 50; kap2_use<-if(TUNE=="roll")cur$k2 else 9.5
+      fit<-tryCatch(sparse_jm(Xs,lam=lam_use,kappa=sqrt(kap2_use)),error=function(e)NULL); if(is.null(fit)) next
       s<-fit$s
       m_ann<-sapply(1:2,function(k){v<-mean(aok[s==k])*PER; if(!is.finite(v))v<-0; max(min(v,0.05),-0.05)})
-      rl[[mi]]<-list(th=fit$th, wj=fit$w, mu=mu, sg=sg, cur=s[length(s)], m_ann=m_ann, win_lo=lo_i)
+      rl[[mi]]<-list(th=fit$th, wj=fit$w, mu=mu, sg=sg, cur=s[length(s)], m_ann=m_ann, win_lo=lo_i,
+                     lam=lam_use, k2=kap2_use)
     }
-    REF[[f]]<-rl; pg("  refit done %s (n=%d)\n",f,sum(!sapply(rl,is.null)))
+    REF[[f]]<-rl; pg("  refit done %s (n=%d, tune=%s)\n",f,sum(!sapply(rl,is.null)),TUNE)
   }
   saveRDS(list(REF=REF,idx_max=max(R$Date),nm=NM),refit_cache)
 } else pg("refit cache hit\n")
@@ -125,12 +139,12 @@ if(is.null(REF)){
 ## s_daily[t,f]: t일 종가 기준 결정 상태. refit일 ei = cur(스무더 마지막 상태 = 온라인과 동일점).
 ## 블록 (ei+1)..next_ei: 동결 th/wj/mu/sg로 C 선계산 → 각 일 prefix DP 마지막 상태. 결측피처일 = locf.
 online_states<-function(lm_mult){
-  scache<-sprintf(".cache/_smv_v5_states_%s_%s_lm%g.rds",FEATSET,gsub("[^A-Za-z0-9]","_",basename(IDXFILE)),lm_mult)
+  scache<-sprintf(".cache/_smv_v5_states_%s_%s_%s_lm%g.rds",FEATSET,TUNE,gsub("[^A-Za-z0-9]","_",basename(IDXFILE)),lm_mult)
   if(file.exists(scache)){ z<-readRDS(scache); if(identical(z$idx_max,max(R$Date))){pg("  states cache hit lm=%g\n",lm_mult); return(z$S)} }
   S<-matrix(NA_integer_,NS,length(FACN)); colnames(S)<-FACN
-  lam_o<-50*lm_mult
   for(fi in seq_along(FACN)){ f<-FACN[fi]; X0<-as.matrix(feats[[f]]); rl<-REF[[f]]
     for(mi in seq_len(NM)){ rf<-rl[[mi]]; if(is.null(rf)) next
+      lam_o<-(if(is.null(rf$lam))50 else rf$lam)*lm_mult
       ei<-meix[mi]; nx<-if(mi<NM) meix[mi+1] else NS
       S[ei,fi]<-rf$cur
       if(ei+1>nx) next
@@ -215,7 +229,7 @@ metrics_row<-function(net_d, dlt_d, lab, lm_mult, te, bps, first_t){
   pr<-pr[mids]; mk<-mk[mids]; ewm_<-ewm_[mids]
   actM<-pr-mk; actE<-pr-ewm_
   nav<-cumprod(1+ifelse(is.finite(net_d[sel]),net_d[sel],0)); mdd<-min(nav/cummax(nav)-1)
-  data.table(arm=lab, featset=FEATSET, lam_mult=lm_mult, te=te, cost_bps=bps, acct_shift=SHIFT,
+  data.table(arm=lab, featset=FEATSET, tune=TUNE, lam_mult=lm_mult, te=te, cost_bps=bps, acct_shift=SHIFT,
     placebo_seed=ifelse(nzchar(PSEED),as.integer(PSEED),NA_integer_), n_mo=length(pr),
     IR_vsMkt=IRf(actM), IR_vsEW=IRf(actE), pt_capwt=nwt(actM), abs_SR=IRf(pr),
     abs_CAGR=prod(1+pr)^(12/length(pr))-1, abs_MDD=mdd, TO_ann=mean(dlt_d[sel],na.rm=TRUE)*PER,
@@ -247,7 +261,7 @@ if("M0" %in% ARMS){
     for(bps in c(5,15)){ pr<-if(bps==5)pr5 else pr15
       actM<-pr-mk; actE<-pr-ewv
       nav<-cumprod(1+pr); mdd<-min(nav/cummax(nav)-1)
-      RESULTS[[length(RESULTS)+1]]<-data.table(arm="M0",featset=FEATSET,lam_mult=NA_real_,te=TE_T[k]*100,cost_bps=bps,acct_shift=NA_integer_,
+      RESULTS[[length(RESULTS)+1]]<-data.table(arm="M0",featset=FEATSET,tune=TUNE,lam_mult=NA_real_,te=TE_T[k]*100,cost_bps=bps,acct_shift=NA_integer_,
         placebo_seed=ifelse(nzchar(PSEED),as.integer(PSEED),NA_integer_),
         n_mo=length(pr), IR_vsMkt=IRf(actM), IR_vsEW=IRf(actE), pt_capwt=nwt(actM), abs_SR=IRf(pr),
         abs_CAGR=prod(1+pr)^(12/length(pr))-1, abs_MDD=mdd, TO_ann=mean(tov)*12,
