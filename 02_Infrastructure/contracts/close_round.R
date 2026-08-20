@@ -7,11 +7,9 @@
 #   깔끔한 경로 = close_round() 호출. next_probe≥2 · 소비면(consumer_surfaces) · frontier ·
 #   (negative면) 부활 조건(live_trigger)을 *인자로 강제*해야만 종료 기록이 발행된다.
 #   → 계속을 '생산'하지 않으면 함수가 stop()으로 거부(단어만 지우고 멈추기 봉쇄).
-#   발행되는 마커(.cache/last_round_closure.json + .cache/round_closure_by_session/<sid>.json)를
-#   Stop 게이트(continuity_gate.py)가 읽어 자동 통과 → 종료가 '계약 충족'과 물리적으로 묶인다.
-#   Q-Lead는 이 함수의 반환 요약에서 그대로 보고(구조화 필드 = 서술의 원천).
-#   ★마커는 **누가 닫았는지**(session_id)를 함께 신고한다 — 게이트가 자기 세션과 대조하지
-#     않으면 병렬 세션의 종료가 남의 턴을 열어준다(2026-08-16 실측 누수, 아래 정체 절).
+#   발행되는 마커(.cache/last_round_closure.json)를 Stop 게이트(continuity_gate.py)가 읽어
+#   자동 통과 → 종료가 '계약 충족'과 물리적으로 묶인다. Q-Lead는 이 함수의 반환 요약에서
+#   그대로 보고(구조화 필드 = 서술의 원천).
 #
 # 정합: answer-principles 연속성 3호(next_probe≥2)·4호(소비처 전개)·INV-7(부활 조건).
 #   판정 자체는 막지 않는다 — negative·천장·config-scoped는 정당(AX-000). 막는 건 '계속 결측'뿐.
@@ -29,26 +27,6 @@ suppressWarnings(suppressMessages({
   if (dir.exists(cand)) return(cand)
   getwd()
 }
-
-# ── 발행자 정체 (2026-08-16 신설 — 교차-세션 누수 수리) ───────────────────────
-#  왜: 마커는 프로젝트 루트 단일 파일이고 main 의 `.cache` 는 `/c/qm_cache` 심볼릭 링크라
-#      **모든 워크트리 세션이 같은 파일**을 쓴다. 구 게이트는 mtime 만 봐서 병렬 세션의
-#      라운드 종료가 내 턴의 연속성 계약을 충족시켰다(2026-08-16 실측 재현).
-#  ⇒ 발행 시점에 **누가 닫았는지를 신고**한다. 게이트는 그것을 자기 세션과 대조한다
-#     (탐지가 아니라 선언 — `baseline` 필드와 같은 설계).
-#  ★세션별 파일을 함께 쓴다: 공유 파일은 마지막 1건만 담아 병렬 세션이 내 마커를
-#    **덮어쓰므로**, 정체 검사만 추가하면 내가 정당히 닫은 턴이 차단되는 역방향 회귀가 난다.
-.cr_session_id <- function() {
-  for (k in c("CLAUDE_CODE_SESSION_ID", "CLAUDE_SESSION_ID")) {
-    v <- trimws(Sys.getenv(k, ""))
-    if (nzchar(v)) return(v)
-  }
-  ""
-}
-
-.cr_sanitize_sid <- function(sid) substr(gsub("[^A-Za-z0-9._-]", "_", sid), 1L, 120L)
-
-.CR_SESSION_MARKER_DIR <- "round_closure_by_session"
 
 .CR_VERDICT_TYPES <- c(
   "config_scoped_negative",       # 이 config가 측정틀에서 미달 (재료/구성 등 경로-scoped)
@@ -141,19 +119,55 @@ close_round <- function(round_id,
             "`baseline=` 로 기준선을 밝힐 것(예: \"PG2 score_eff\", \"무밴드 top-25\"). ",
             "Δ 의 부호는 base 에 조건부다(FQ-170 순열 통제 4/4).")
 
+  # ── frontier_update 선언↔실기록 대조 (2026-08-16 P0#3, L1 — FQ-167/168 계보) ──
+  #   왜: frontier_update 는 서술 문자열일 뿐 이 함수는 큐를 쓰지 않는다 — 병렬 세션
+  #   충돌로 등재가 조용히 생략되면 close_round 서술이 거짓이 된다(2026-08-09 실사고,
+  #   큐 consume_rule ③ "선언에서 파생 금지"의 근원). 발행 시점에 서술이 언급한 FQ-id 의
+  #   큐 실재를 대조해 구조 필드로 기록한다. 경고 레벨 — 비차단(판정 자체는 막지 않는다).
+  fq_ids <- character(0); fq_missing <- character(0); fq_verified <- NA
+  if (has_frontier) {
+    blob <- paste(frontier_update, collapse = " ")
+    # perl=TRUE — TRE 색인 위 regmatches 금칙(r-portability ⑥) 회피.
+    # [0-9]+ (상한 없음) — {1,4} 상한은 긴 id 를 절단 추출해 "쓴 id ≠ 대조한 id" 를
+    #   만든다 (위반 주입 테스트 T3b 가 실측 검출, 2026-08-16).
+    m <- gregexpr("FQ-[0-9]+", blob, perl = TRUE)
+    fq_ids <- unique(unlist(regmatches(blob, m)))
+    fq_ids <- fq_ids[nzchar(fq_ids)]
+    if (length(fq_ids)) {
+      qp <- file.path(.cr_root(), "06_Registry", "alpha_frontier_queue.json")
+      if (file.exists(qp)) {
+        qtxt <- paste(readLines(qp, warn = FALSE, encoding = "UTF-8"), collapse = "\n")
+        pres <- vapply(fq_ids, function(id)
+          grepl(paste0("\"", id, "\""), qtxt, fixed = TRUE), logical(1))
+        fq_missing <- fq_ids[!pres]
+        fq_verified <- length(fq_missing) == 0L
+        if (!fq_verified)
+          message("[close_round] ⚠ frontier 선언↔실기록 불일치 — 큐에 없는 FQ-id: ",
+                  paste(fq_missing, collapse = ", "),
+                  " (FQ-167/168 계보: frontier_update 는 실제 기록 결과에서 파생시킬 것. ",
+                  "큐 기록 후 재확인 — 비차단 경고)")
+      } else {
+        message("[close_round] frontier 대조 불가 — alpha_frontier_queue.json 부재")
+      }
+    }
+    # FQ-id 미언급 서술(예: '항목 status 갱신')은 대조 불가(NA) — 억지 판정 금지
+  }
+
   # ── 종료 기록 발행 ────────────────────────────────────────────────────────
   now <- format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z")
-  sid <- .cr_session_id()
   rec <- list(
     schema = "round_closure_v1",
     round_id = round_id,
-    session_id = sid,   # ★발행자 정체 — 게이트가 자기 세션과 대조(빈 문자열 = 귀속 불가 = 미인정)
-    root = .cr_root(),
     verdict_type = verdict_type,
     mechanism_diagnosis = mechanism_diagnosis,
     next_probes = np,
     consumer_surfaces = cs,
     frontier_update = if (has_frontier) frontier_update else NULL,
+    # P0#3 (2026-08-16): 선언↔실기록 대조 결과 — TRUE=전 id 큐 실재 / FALSE=부재 id 있음 /
+    #   NA=대조 불가(FQ-id 미언급 또는 큐 파일 부재). 감사가 구조적 질문이 되게 한다.
+    frontier_ids = if (length(fq_ids)) fq_ids else NULL,
+    frontier_update_verified = fq_verified,
+    frontier_ids_missing = if (length(fq_missing)) fq_missing else NULL,
     live_trigger = lt,
     layer = layer,
     evidence_refs = as.character(evidence_refs),
@@ -166,18 +180,8 @@ close_round <- function(round_id,
   if (isTRUE(write_marker)) {
     cache_dir <- file.path(.cr_root(), ".cache")
     if (!dir.exists(cache_dir)) dir.create(cache_dir, recursive = TRUE, showWarnings = FALSE)
-    payload <- jsonlite::toJSON(rec, auto_unbox = TRUE, pretty = TRUE)
     marker <- file.path(cache_dir, "last_round_closure.json")
-    writeLines(payload, marker, useBytes = TRUE)
-    # ★세션별 마커 — 병렬 세션이 공유 파일을 덮어써도 내 종료 기록은 남는다.
-    #   세션 불명(sid="")이면 쓰지 않는다: 귀속 불가한 파일은 게이트가 어차피 인정하지 않고,
-    #   "_.json" 같은 공용 이름으로 쓰면 그 자체가 새 공유 마커가 된다(고치려던 결함의 재생).
-    if (nzchar(sid)) {
-      sess_dir <- file.path(cache_dir, .CR_SESSION_MARKER_DIR)
-      if (!dir.exists(sess_dir)) dir.create(sess_dir, recursive = TRUE, showWarnings = FALSE)
-      writeLines(payload, file.path(sess_dir, paste0(.cr_sanitize_sid(sid), ".json")),
-                 useBytes = TRUE)
-    }
+    writeLines(jsonlite::toJSON(rec, auto_unbox = TRUE, pretty = TRUE), marker, useBytes = TRUE)
     # 감사 원장 append (jsonl) — 종료 이력 정직 전수
     ledger <- file.path(cache_dir, "round_closures.jsonl")
     cat(jsonlite::toJSON(rec, auto_unbox = TRUE), "\n", file = ledger, append = TRUE, sep = "")
@@ -193,6 +197,12 @@ close_round <- function(round_id,
     "next_probe:\n", paste(probe_lines, collapse = "\n"), "\n",
     sprintf("소비면: %s\n", cons_line),
     if (has_frontier) sprintf("frontier: %s\n", frontier_update) else "",
+    if (has_frontier && length(fq_ids)) sprintf("frontier 대조: %s\n",
+      if (isTRUE(fq_verified)) sprintf("큐 실재 확인 (%s)", paste(fq_ids, collapse = ", "))
+      else if (identical(fq_verified, FALSE))
+        sprintf("★불일치 — 큐 부재 id: %s (선언≠실기록, 비차단 경고)",
+                paste(fq_missing, collapse = ", "))
+      else "대조 불가 (큐 파일 부재)") else "",
     sprintf("부활 조건: %s\n", lt_line),
     if (!is.null(layer)) sprintf("병목 계층: %s\n", layer) else "",
     if (!is.null(fw_note)) paste0(fw_note, "\n") else "",
@@ -200,16 +210,9 @@ close_round <- function(round_id,
     ##   `write_marker=FALSE`(검사·드라이런)에서도 "Stop 게이트 자동 통과" 로 찍혀,
     ##   **일어나지 않은 일을 사실로 보고**했다 — 오늘 반복된 '빈 결과 = 합격' 계통.
     ##   (FQ-127 F1 검사를 쓰다가 그 출력에서 발견.)
-    ## ★2026-08-16: 같은 원칙을 정체 축으로 확장 — session_id 가 없으면 마커는 발행돼도
-    ##   게이트가 인정하지 않는다(귀속 불가 = 미인정). 그런데도 "자동 통과" 를 주장하면
-    ##   위 08-10 정정과 **같은 계통의 거짓 보고**가 된다.
-    if (isTRUE(write_marker)) {
-      if (nzchar(sid))
-        sprintf("마커 발행 → Stop 게이트 자동 통과 (%s · session %s)\n", now, substr(sid, 1L, 8L))
-      else
-        sprintf(paste0("★마커 발행되었으나 **session_id 미확인**(CLAUDE_CODE_SESSION_ID 부재) — ",
-                       "게이트가 귀속 불가로 미인정, Stop 게이트 통과 아님 (%s)\n"), now)
-    } else
+    if (isTRUE(write_marker))
+      sprintf("마커 발행 → Stop 게이트 자동 통과 (%s)\n", now)
+    else
       sprintf("★마커 **미발행**(write_marker=FALSE) — Stop 게이트 통과 아님 (%s)\n", now),
     if (!bl_declared) "★baseline 미선언 — 비교·개선 주장이 있으면 `baseline=` 을 채울 것\n" else
       sprintf("기준선: %s\n", paste(bl, collapse = " · "))
