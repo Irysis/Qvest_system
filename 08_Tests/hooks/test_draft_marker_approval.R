@@ -268,7 +268,7 @@ for (e in dk$entries) {
   p  <- .hi_parse_distilled(e)
   did <- as.character(e$dist_id %||% "")
   body <- title_body(p$title, did)
-  mk <- .hi_draft_marker(e$status)
+  mk <- expected_marker(e$status)   # 구현이 아니라 테스트-측 oracle
   body <- if (nzchar(mk)) sub(paste0("^\\Q", mk, "\\E "), "", body, perl = TRUE) else body
   n_tot <- n_tot + 1L
   if (identical(body, .hi_join(stmt_of(e))) || identical(body, as.character(stmt_of(e)))) n_body_ok <- n_body_ok + 1L
