@@ -532,6 +532,100 @@ if (file.exists(settings_path)) {
   if (is.null(ca) || is.na(ts)) file.info(f)$mtime else ts
 }
 
+# ── map_freshness_v1 (2026-08-20): 대리지표(mtime) → 표 본문 내용 대조 ────────────────
+# 왜: 구 W8/W3 은 layer_bottleneck_map.md 의 **mtime** 을 최신 L-code 시각과 비교했다.
+#   mtime 은 append 만으로 갱신되므로, 지도를 touch 하거나 헤더 `**갱신**:` 줄을 한 줄
+#   덧붙이기만 해도 두 감시기가 모두 초록이 됐다. 실측(git 이력에서 표 본문 sha 추적):
+#     · 표 본문 sha 660f1ce393  2026-08-09 12:49 → 08-17 16:48  = 8일 동안 바이트 동일,
+#       그 사이 이 파일을 건드린 커밋 20건 (mtime 은 계속 최신)
+#     · 직전 정체 174f763b12   2026-07-19 13:44 → 08-02 20:32  = 14일 / 16커밋
+#   ⇒ 신선도의 정의를 "파일이 만져졌는가" 에서 "판정이 담긴 표 본문이 바뀌었는가" 로 교체.
+#
+# 규약(두 구현이 반드시 동일해야 하는 4요소):
+#   ① 해시 대상 = 지도 파일에서 `|` 로 시작하는 줄 중 구분선(`|---|---|`)을 제외한 전부.
+#      → 계층 표 9행 + 계층 표 헤더 + 재료 표 3행 + 재료 표 헤더 = 실측 14행.
+#      → **제외**: 제목/목적 문단, `**갱신**: vNN` 버전 체인, `> ` 인용 갱신 이력 블록,
+#        부기 문단, "갱신 규약"/"갭 귀속 결론" 절. 전부 append 로 증식하는 표면이라
+#        포함하면 대리지표 성질이 그대로 재발한다.
+#   ② 해시 = sha256(paste(rows, collapse="\n") 의 UTF-8 바이트). R digest 와 python
+#      hashlib 이 동일 값을 내는 것을 실측 확인(dcc8992e7f… , 16130 bytes).
+#   ③ 스냅샷 = .cache/layer_bottleneck_map_content.json {schema, table_sha, n_rows, observed_at}.
+#      observed_at = 그 table_sha 를 **처음 관측한 시각**(= 내용이 바뀐 시각의 상한).
+#      스냅샷 부재 시 최초 1회는 생성만 하고 경보하지 않는다(초기화 오탐 방지 — 이때
+#      observed_at=now 이므로 lag_h<=0 이 되어 자연히 무경보).
+#   ④ 임계 = 24h (구 W8 과 동일). W3 은 여기에 자기 발화 범위(최근 6h 내 L-code 적립)만 곱한다.
+# 폴백(회귀 없음): 표 추출 0행 / 스냅샷 read·write 불가 → basis="mtime" 으로 **구 판정 그대로**
+#   수행하고 폴백 사실을 경고로 남긴다. 조용히 죽거나 무조건 통과시키지 않는다.
+.MF_SCHEMA   <- "map_freshness_v1"
+.MF_THRESH_H <- 24
+
+.mf_table_rows <- function(map_path) {
+  ln <- tryCatch(readLines(map_path, warn = FALSE, encoding = "UTF-8"),
+                 error = function(e) character(0))
+  ln <- sub("[\r\n]+$", "", ln)
+  rows <- ln[startsWith(ln, "|")]
+  rows[!grepl("^\\|[[:space:]:|-]+\\|[[:space:]]*$", rows)]
+}
+
+.mf_table_sha <- function(rows) {
+  digest::digest(charToRaw(paste(rows, collapse = "\n")), algo = "sha256", serialize = FALSE)
+}
+
+.mf_snapshot_path <- function(proj_root) {
+  file.path(proj_root, ".cache", "layer_bottleneck_map_content.json")
+}
+
+# 스냅샷을 현재 표 해시와 대조/갱신하고 observed_at(초, epoch)을 돌려준다.
+# 실패 시 NULL (→ 호출자가 mtime 폴백).
+.mf_observed_at <- function(proj_root, table_sha, n_rows, now_s = as.numeric(Sys.time())) {
+  snap_p <- .mf_snapshot_path(proj_root)
+  prev <- tryCatch(jsonlite::fromJSON(snap_p, simplifyVector = TRUE),
+                   error = function(e) NULL, warning = function(w) NULL)
+  ok_prev <- !is.null(prev) && identical(as.character(prev$schema %||% ""), .MF_SCHEMA) &&
+             is.character(prev$table_sha %||% NULL) && is.finite(suppressWarnings(as.numeric(prev$observed_at %||% NA)))
+  if (ok_prev && identical(as.character(prev$table_sha), table_sha)) {
+    return(as.numeric(prev$observed_at))
+  }
+  # 최초 생성 또는 내용 변경 → 지금을 관측 시각으로 기록(원자적 쓰기).
+  written <- tryCatch({
+    dir.create(dirname(snap_p), showWarnings = FALSE, recursive = TRUE)
+    tmp <- paste0(snap_p, ".tmp", Sys.getpid())
+    jsonlite::write_json(list(schema = .MF_SCHEMA, table_sha = table_sha,
+                              n_rows = as.integer(n_rows), observed_at = now_s,
+                              observed_at_iso = format(as.POSIXct(now_s, origin = "1970-01-01"),
+                                                       "%Y-%m-%dT%H:%M:%S")),
+                         tmp, auto_unbox = TRUE)
+    file.rename(tmp, snap_p)
+  }, error = function(e) FALSE)
+  if (!isTRUE(written)) return(NULL)
+  now_s
+}
+
+# 정본 판정. 반환: list(basis, stale, lag_h, table_sha, n_rows, reason)
+.mf_judge <- function(proj_root, map_path, newest_lc_time) {
+  newest_s <- as.numeric(newest_lc_time)
+  mtime_lag <- function() as.numeric(difftime(as.POSIXct(newest_s, origin = "1970-01-01"),
+                                              file.info(map_path)$mtime, units = "hours"))
+  rows <- .mf_table_rows(map_path)
+  if (length(rows) == 0) {
+    lag_h <- mtime_lag()
+    return(list(basis = "mtime", stale = isTRUE(is.finite(lag_h) && lag_h > .MF_THRESH_H),
+                lag_h = lag_h, table_sha = NA_character_, n_rows = 0L,
+                reason = "표 본문 추출 0행 (지도 형식 변경 의심)"))
+  }
+  sha <- .mf_table_sha(rows)
+  obs <- .mf_observed_at(proj_root, sha, length(rows))
+  if (is.null(obs)) {
+    lag_h <- mtime_lag()
+    return(list(basis = "mtime", stale = isTRUE(is.finite(lag_h) && lag_h > .MF_THRESH_H),
+                lag_h = lag_h, table_sha = sha, n_rows = length(rows),
+                reason = "스냅샷 read/write 불가 (.cache/layer_bottleneck_map_content.json)"))
+  }
+  lag_h <- (newest_s - obs) / 3600
+  list(basis = "content", stale = isTRUE(is.finite(lag_h) && lag_h > .MF_THRESH_H),
+       lag_h = lag_h, table_sha = sha, n_rows = length(rows), reason = NA_character_)
+}
+
 cat("[W8] layer_bottleneck_map freshness vs newest L-code\n")
 lbm_path <- file.path(PROJ_ROOT, "06_Registry/layer_bottleneck_map.md")
 # (2026-07-26 MKH-05 수리) W8/W9 는 루트 stage_artifacts 만 glob 했으나 W1(:280-283)과

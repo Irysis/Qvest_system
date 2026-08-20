@@ -63,8 +63,11 @@ def classify(ids):
         return "SAME_IDEA_RERUN"
     if marked:
         return "FALLBACK_SUBSTITUTION"
-    # 무마커 + 이종 가설: overlay/게이트 차이 선언이 결과에 반영 안 된 경우 vs 동일 신호 이명
+    # 무마커 + 이종 가설: overlay/게이트 차이 선언이 결과에 반영 안 된 경우 vs 동일 신호 이명.
+    # "excluded/제외" 는 overlay 부재를 **선언**한 라벨이라 동일-NAV 가 거짓이 아니다 → 이명.
     joined = " | ".join(sorted(stems))
+    if re.search(r"excluded|제외", joined):
+        return "BASE_ALIAS"
     if re.search(r"BRK|MRS|overlay|Overlay|Gate", joined):
         return "OVERLAY_NOOP"
     return "BASE_ALIAS"
