@@ -969,6 +969,22 @@ SUITES=(
   #     closure 파일 0건, 종료 기록 468건 전부 main. L1 이 복구를, L2 가 "공유 루트를 훑어도
   #     남의 마커는 여전히 차단" 을 확인한다(루트 확장이 누수를 되열지 않는지).
   "08_Tests/hooks/test_continuity_marker_identity.py"
+  # 2026-08-17 추가: C1 '판정 산출물' 판별(turn_verdict_artifacts)의 정체 검사.
+  #   원 결함 = marker_fresh 와 **같은 뿌리**의 두 번째 누수. 종료 기록 2종을 mtime 만 보고
+  #   "이번 턴에 판정을 냈다" 고 판정했는데, 그 파일들은 프로젝트 루트 단일 파일이고 main 의
+  #   `.cache` 는 `/c/qm_cache` 심볼릭 링크라 **병렬 세션의 라운드 종료가 내 턴을 판정 턴으로
+  #   만들었다** → 과거 판정 어휘를 인용만 한 운영/브리핑 턴이 차단(FP).
+  #   ★이 축이 marker 수리에서 범위 밖이었던 건 방향이 반대라서다(우회가 아니라 과차단).
+  #    그런데 그 전제를 실측이 뒤집었다 — 같은 남의 종료가 va=True 로 탐지를 살리는 **동시에**
+  #    구 marker_fresh 를 True 로 만들어 계약을 충족시켜 통과시켰다. **두 누수가 서로를 가렸고**,
+  #    marker 축만 고치면 가림막이 걷혀 FP 가 무장된다(1,282턴 재판정: 차단 276→302, 그중 5건).
+  #   ★기존 continuity 배터리(02_Infrastructure/tests/test_continuity_gate.py)는 이 표면을
+  #    **구조적으로 못 본다**: `verdict_artifact_override` 로 축을 절연해 함수 본문이 한 번도
+  #    실행되지 않는다(31/31 초록이 결함을 못 본 이유). 옳은 격리가 만든 무커버 표면.
+  #   ★I 축 돌연변이 = mtime-only 복원 시 B 가 차단으로 뒤집힘(통과가 어디서 오는지 실증).
+  #   ★K0 양성 대조 = 초판 E2E 가 케이스 사전 없는 샌드박스에서 fail-open `{}` 을 뱉어
+  #    '통과' 축이 게이트를 돌리지도 않고 초록이었다. 차단 능력을 먼저 보인 뒤 통과를 주장한다.
+  "08_Tests/hooks/test_continuity_verdict_artifact_identity.py"
 )
 
 # (2026-08-02) .py 분기 추가 — 종전엔 확장자 무관 `bash` 로 던져 파이썬 suite 가
