@@ -57,29 +57,32 @@ def extract_paths(path, root_var, follow_alias=True):
     src = io.open(path, encoding="utf-8", errors="replace").read()
     tree = ast.parse(src)
     roots = {root_var: []}
+    out = set()
 
-    if follow_alias:
-        # 고정점까지 반복 — 2단 체인(t = d["a"]; u = t["b"]) 대응
-        for _ in range(3):
-            for node in ast.walk(tree):
-                if isinstance(node, ast.Assign) and len(node.targets) == 1 \
-                        and isinstance(node.targets[0], ast.Name):
-                    tgt = node.targets[0].id
-                    r = _chain_of(node.value, roots)
+    # ★순서 인지 1패스(2026-08-20): ast.walk 는 순서를 보장하지 않아
+    #   "재할당 이전의 정당한 접근"까지 무효화되는 과잉 교정이 났다(8경로 -> 1경로).
+    #   소스 순서대로 훑으면서 할당은 그 시점부터 반영한다.
+    def visit(node):
+        for child in ast.iter_child_nodes(node):
+            if isinstance(child, ast.Assign) and len(child.targets) == 1                     and isinstance(child.targets[0], ast.Name):
+                # 우변 먼저 채점(할당 이전 상태로)
+                r = _chain_of(child.value, roots)
+                if r and r[1]:
+                    out.add("$".join([root_var] + roots[r[0]] + r[1]))
+                tgt = child.targets[0].id
+                if follow_alias:
                     if r and r[1]:
                         roots[tgt] = roots[r[0]] + r[1]
                     elif tgt != root_var and tgt in roots:
-                        # 재할당 무효화: 별칭이 정본 체인이 아닌 것으로 다시 할당되면
-                        # 별칭 자격 박탈. deployed_holdings_check.py:85 의
-                        # `t = pq.read_table(...)` 가 $Date 오탐을 냈던 결함.
-                        del roots[tgt]
+                        del roots[tgt]          # 재할당 무효화
+                continue
+            if isinstance(child, (ast.Subscript, ast.Call)):
+                r = _chain_of(child, roots)
+                if r and r[1]:
+                    out.add("$".join([root_var] + roots[r[0]] + r[1]))
+            visit(child)
 
-    out = set()
-    for node in ast.walk(tree):
-        if isinstance(node, (ast.Subscript, ast.Call)):
-            r = _chain_of(node, roots)
-            if r and r[1]:
-                out.add("$".join([root_var] + roots[r[0]] + r[1]))
+    visit(tree)
     return sorted(out)
 
 
