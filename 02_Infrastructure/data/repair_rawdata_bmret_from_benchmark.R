@@ -63,6 +63,17 @@ if (nrow(target) > 0L && file.exists(PAR_R)) {
   par <- try(benchmark_source_parity(), silent = TRUE)
   if (!inherits(par, "try-error") && is.data.frame(par$repair_directions)) {
     rd <- as.data.table(par$repair_directions)
+    # (2026-08-20) 빈 판정표 방어 — 이 스크립트의 target 은 **경계일(첫 공통일)을 포함**하지만
+    #   판정기는 그 날을 판정 기반에서 뺀다(비교 불가점). 따라서 데이터가 **정상일 때**
+    #   target=1(1990-01-05) ∧ dirs=0행 이 되고, 컬럼조차 없는 data.table() 에
+    #   rd[contaminated == ...] 를 걸어 "Object 'contaminated' not found" 로 죽었다.
+    #   ★즉 정상 상태에서 정확히 실패하는 버그였다(2026-08-20 실측 rc=1).
+    #   판정된 오염일이 0건이면 "RAWDATA 가 오염 측인 날짜 없음" = 고칠 것 없음이 맞다.
+    if (nrow(rd) == 0L || !("contaminated" %in% names(rd))) {
+      cat("[repair] 판정표 0행 — RAWDATA 가 오염 측인 날짜 없음(경계일만 남음). 정정 대상 없음.
+")
+      quit(status = 0L)
+    }
     allow <- rd[contaminated == "RAWDATA::BM_Ret"]$Date
     dropped <- target[!(Date %in% allow)]
     if (nrow(dropped)) {
