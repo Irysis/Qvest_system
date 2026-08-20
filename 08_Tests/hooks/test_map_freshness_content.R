@@ -357,6 +357,53 @@ if (length(lc_all) == 0) {
 }
 
 ################################################################################
+cat("\n[K] L-code 열거 규약 — 3-glob + /superseded/ 제외 (열거 드리프트 검거)\n")
+## ★왜 [I] 만으로 부족한가: [I] 은 실제 원장에서 두 구현의 **최댓값**만 비교한다. 실제
+##   원장의 최신 파일이 마침 첫 glob 에 있으면, python 쪽 glob 을 1개로 좁혀도 최댓값이
+##   그대로라 검사가 초록이다 — 이 검사 작성 중 돌연변이 M5 가 실제로 그렇게 빠져나갔다
+##   (47/47 통과). 그래서 **최신 파일을 3번째 glob 에 두고**, 그보다 더 새로운 파일을
+##   /superseded/ 에 둬서 두 규약이 각각 없으면 답이 달라지도록 판을 짠다.
+mk_lc <- function(path, age_h) {
+  dir.create(dirname(path), recursive = TRUE, showWarnings = FALSE)
+  ts <- as.POSIXct(NOW - age_h * 3600, origin = "1970-01-01")
+  write_json(list(l_code = paste0("L-TEST-", basename(path)),
+                  created_at = format(ts, "%Y-%m-%dT%H:%M:%S")), path, auto_unbox = TRUE)
+  Sys.setFileTime(path, ts)
+  invisible(as.numeric(ts))
+}
+t_g1 <- mk_lc(LC, 5)                                                            # glob1
+t_g2 <- mk_lc(file.path(SBX, "stage_artifacts", "l_code_root.json"), 3)         # glob2
+t_g3 <- mk_lc(file.path(SBX, "04_Research", "strategies", "STR_TEST",
+                        "stage_artifacts", "l_code_strategy.json"), 0.5)        # glob3 = 최신(정당)
+t_ss <- mk_lc(file.path(SBX, "stage_artifacts", "l_code", "superseded",
+                        "l_code_old.json"), 0.1)                                # 더 새롭지만 제외 대상
+chk("K0_precheck_files", file.exists(LC) &&
+      file.exists(file.path(SBX, "stage_artifacts", "l_code_root.json")) &&
+      file.exists(file.path(SBX, "04_Research/strategies/STR_TEST/stage_artifacts/l_code_strategy.json")) &&
+      file.exists(file.path(SBX, "stage_artifacts/l_code/superseded/l_code_old.json")) &&
+      t_ss > t_g3 && t_g3 > t_g2 && t_g2 > t_g1,
+    sprintf("★조작 선행검증: 4개 파일이 실제로 놓였고 시각 순서 glob1<glob2<glob3<superseded (%.1f<%.1f<%.1f<%.1f)",
+            t_g1, t_g2, t_g3, t_ss))
+py_newest_sbx <- file.path(SBX, "probe_newest_sbx.py")
+writeLines(c(
+  "import sys, importlib.util as u",
+  sprintf("src=open(r'%s','r',encoding='utf-8').read().split('msgs = []')[0]", PYF),
+  "ns={'__name__':'hb'}",
+  "exec(compile(src,'hb','exec'), ns)",
+  "print('%.3f' % ns['mf_newest_lcode'](sys.argv[1]))"
+), py_newest_sbx)
+pk <- suppressWarnings(system2(QPY, c(shQuote(py_newest_sbx), shQuote(SBX)), stdout = TRUE, stderr = TRUE))
+pkv <- suppressWarnings(as.numeric(tail(pk, 1)))
+chk("K1_third_glob_counted", !is.na(pkv) && abs(pkv - t_g3) < 2,
+    sprintf("최신 L-code 가 3번째 glob(04_Research/strategies/*/stage_artifacts/)에 있어도 잡힌다 — 반환 %s",
+            if (is.na(pkv)) paste(pk, collapse = " ") else format(as.POSIXct(pkv, origin = "1970-01-01"), "%H:%M:%S")))
+chk("K2_superseded_excluded", !is.na(pkv) && abs(pkv - t_ss) > 2,
+    "/superseded/ 아래의 더 새로운 기록은 열거에서 제외된다 (필터가 사라지면 여기서 뒤집힘)")
+unlink(file.path(SBX, "stage_artifacts", "l_code_root.json"), force = TRUE)
+unlink(file.path(SBX, "04_Research"), recursive = TRUE, force = TRUE)
+unlink(file.path(SBX, "stage_artifacts", "l_code", "superseded"), recursive = TRUE, force = TRUE)
+
+################################################################################
 cat("\n[J] 돌연변이 — 검사 사망 통제 (판정이 정말 내용에서 오는가)\n")
 ## 표 본문이 아니라 파일 전체를 해시하는 '잘못된 구현' 을 만들어, 그것이 위반 주입 B(헤더
 ## append)에서 **초록으로 뒤집히는지** 본다. 뒤집히면 [F] 의 PASS 는 대상 선택에서 온 것이다.
