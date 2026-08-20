@@ -13,6 +13,11 @@
 # 판정 규칙 (파일시스템 + SUITES 에서 계산 — 기대값 하드코딩 없음):
 #   테스트 파일이 "커버됨" = ① SUITES 에 직접 등재됐거나
 #                            ② 같은 디렉터리에 **SUITES 에 등재된 집계 러너**(run_*.R)가 있다
+#   ★제외 1종: `08_Tests/lib/` — 공용 헬퍼 디렉터리다. 2026-08-20 실측에서
+#     lib/test_prereq.R 이 미편입으로 잡혔는데, 이 파일은 tp_require/tp_summary_json 을
+#     **정의만** 하고 최상위 실행 코드가 없으며 다른 테스트 4곳이 source 한다(테스트가
+#     아니라 라이브러리). ⚠제외는 디렉터리 단위라 lib/ 에 진짜 스위트를 두면 놓친다 —
+#     lib/ 는 헬퍼 전용이라는 규약을 지킬 것(위반 주입 V6 가 이 경계를 지킨다).
 #   ★②의 가정: 등재된 집계 러너는 자기 디렉터리의 test_*.R 을 자동 탐색한다.
 #     2026-08-16 실측 기준 참이다 — regime/run_all.R 은 list.files(pattern="^test_.*\\.R$"),
 #     contract_regression/run_contract_regression.R 도 같은 날 자동 탐색으로 전환했다.
@@ -99,7 +104,7 @@ else
         #   (r-portability 계통, 2026-08-16 실측). 쉘 파라미터 확장으로 자른다.
         _rel="${f#"$PROJECT"/}"
         UNCOVERED="$UNCOVERED  ${_rel}\n"
-      done < <(find "$TESTS_DIR" -type f \( -name 'test_*.R' -o -name 'test_*.sh' \) -not -path '*/_archive*/*' 2>/dev/null | sort)
+      done < <(find "$TESTS_DIR" -type f \( -name 'test_*.R' -o -name 'test_*.sh' \) -not -path '*/_archive*/*' -not -path '*/lib/*' 2>/dev/null | sort)
 
       n_unc=$(printf '%b' "$UNCOVERED" | grep -c . || true)
       if [ "$n_files" -eq 0 ]; then

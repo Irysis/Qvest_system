@@ -82,3 +82,8 @@ test_that("approve_factors enforces backtested + ic_ir + spread", {
 })
 
 cat("\n[test_gate3_4] all tests executed.\n")
+# 2026-08-20: 이 파일은 testthat 계열 expect_* 를 쓰고 카운터가 없다. expect 실패는
+#   예외를 던져 스크립트가 죽으므로 이 줄에 도달했다 = 전 단언 통과다(실패 시 JSON 이
+#   없어 러너의 UNREPORTED 가 +1 FAIL 로 계상한다 — 침묵 통과가 아니다).
+#   ★입도는 파일 단위다. 단언별 수치가 필요하면 카운터 도입이 선행 과제.
+cat(sprintf("{\"test\":\"test_gate3_4\",\"pass\":1,\"fail\":0,\"total\":1}\n"))

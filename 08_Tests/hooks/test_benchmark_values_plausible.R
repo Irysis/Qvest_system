@@ -127,4 +127,7 @@ if (fp > 0L) print(head(rep[seam_truth == 0 & fired == 1], 10))
 cat("------------------------------------------------------------------------------\n")
 cat(sprintf("  %d/%d PASS\n", npass, npass + length(fails)))
 if (length(fails)) cat("  \u2605실패:", paste(fails, collapse = ", "), "\n")
+# 2026-08-20: 배터리 요약. fail 은 카운터가 아니라 fails 벡터 길이다.
+cat(sprintf("{\"test\":\"test_benchmark_values_plausible\",\"pass\":%d,\"fail\":%d,\"total\":%d}
+", npass, length(fails), npass + length(fails)))
 invisible(if (length(fails)) quit(status = 1L))

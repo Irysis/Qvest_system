@@ -78,6 +78,21 @@ else
   echo "$OUT" | grep -q "FAIL  E2" && ok "V2b 미등재 집계 러너는 커버 아님" || bad "V2b" "다른 사유"
 fi
 
+# ── V6. lib/ 제외 경계: 헬퍼는 무시하되 그 옆 진짜 테스트는 잡아야 한다 ──────
+#   제외를 디렉터리 단위로 두면 "제외가 진짜 결함을 가린다"는 위험이 생긴다.
+#   그래서 양쪽을 함께 단언한다 — lib/ 안은 무시(PASS), lib/ 밖은 검거(FAIL).
+mk_clean; mkdir -p "$FX/tests/lib"; : > "$FX/tests/lib/test_helper.sh"
+if run_chk; then ok "V6a lib/ 헬퍼는 미편입으로 세지 않음"; else
+  bad "V6a lib/ 헬퍼 제외" "오탐: $(echo "$OUT" | grep FAIL | head -1)"; fi
+
+mk_clean; mkdir -p "$FX/tests/lib"; : > "$FX/tests/lib/test_helper.sh"
+: > "$FX/tests/zone/test_real.sh"
+if run_chk; then
+  bad "V6b lib/ 밖 미등재는 여전히 검거" "제외가 진짜 결함까지 가림"
+else
+  echo "$OUT" | grep -q "test_real.sh" && ok "V6b lib/ 밖 미등재는 여전히 검거" \
+    || bad "V6b" "E2 는 떴으나 test_real.sh 미지목"; fi
+
 # ── V3. SUITES 선언 부재 = UNKNOWN FAIL (fail-open 금지) ─────────────────────
 mk_clean; printf '#!/usr/bin/env bash\necho no suites here\n' > "$FX/runner.sh"
 if run_chk; then bad "V3 SUITES 부재 = FAIL" "통과됨(fail-open)"; else

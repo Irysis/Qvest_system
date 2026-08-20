@@ -927,6 +927,13 @@ SUITES=(
   "08_Tests/hooks/test_hypothesis_precheck_gate.sh"
   "08_Tests/hooks/test_inject_usage_ranking.sh"
   "08_Tests/hooks/test_weight_bound_basis.sh"
+  # ── 2026-08-20 추가: 잔여 3건 — 편입 드리프트 0 달성 ──────────────────────
+  #   test_gate3_4 는 testthat 계열이라 카운터가 없다 → 파일 단위 입도(완주=통과,
+  #   실패는 예외로 죽어 러너 UNREPORTED 가 +1 FAIL 로 잡는다). 단언별 수치가
+  #   필요하면 카운터 도입이 선행 과제.
+  "08_Tests/hooks/test_benchmark_values_plausible.R"
+  "08_Tests/hooks/test_blunt_anchor_failclosed.R"
+  "08_Tests/ramp/test_gate3_4.R"
 )
 
 # (2026-08-02) .py 분기 추가 — 종전엔 확장자 무관 `bash` 로 던져 파이썬 suite 가

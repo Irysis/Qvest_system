@@ -118,11 +118,30 @@ for _c in "$BASE/.venv_qvest_ml/Scripts/python.exe" "$BASE/.venv_qvest_ml/bin/py
           "${QVEST_PY:-}" "/c/Users/99922/AppData/Local/Programs/Python/Python312/python.exe"; do
   [ -n "$_c" ] && [ -x "$_c" ] && QVENV_PY="$_c" && break
 done
+_bm_rc=0
 if [ -n "$QVENV_PY" ]; then
-  ( cd "$INFRA" && "$QVENV_PY" data/naver_benchmark_update.py --start_date "$(date -d '10 days ago' +%Y-%m-%d)" ) \
-    || echo "  benchmark chart-API update skipped (기존 cache 유지)"
+  ( cd "$INFRA" && "$QVENV_PY" data/naver_benchmark_update.py --start_date "$(date -d '10 days ago' +%Y-%m-%d)" )     || _bm_rc=$?
+  if [ "$_bm_rc" -ne 0 ]; then
+    echo "  benchmark chart-API update FAILED rc=$_bm_rc (기존 cache 유지)"
+  fi
 else
-  echo "  python 미발견 — benchmark chart-API update skipped (기존 cache 유지)"
+  _bm_rc=127
+  echo "  python 미발견 - benchmark chart-API update skipped (기존 cache 유지)"
+fi
+
+# --- BMG-01 거래일 지평선 게이트 (2026-08-20 신설) ---------------------------
+#   위 갱신기는 .cache/benchmark.parquet 의 **유일한 writer** 이고(그 스크립트 L64 가
+#   스스로 "저장 단일점"이라 선언), trading_calendar.R 은 RAWDATA 자기참조의 순환오염을
+#   끊으려고 **그 파일만을** 거래일 권위로 삼는다(L45/L137).
+#   ★그래서 이 스텝의 실패를 삼키면 결손이 **사라진다**: 캘린더가 얼고 -> Naver 는
+#   "already >= target", KRX 는 "gap 0 days" 를 **정직하게** 보고하며 리프레시는
+#   "실패 0" 으로 마감한다. 실측 2026-08-14~20: 거래일 3일(08-18/19/20)이 비었는데
+#   6일 내내 매일 "성공"으로 끝났다 - fail-soft 가 지평선을 삼킨 것.
+#   게이트는 A축(갱신기 rc)과 B축(파일 정체)을 따로 본다.
+#   검사: 08_Tests/data/test_benchmark_currency_gate.R (위반 주입 11/11, 실사고 재현 포함)
+if ! "$RSCRIPT" --no-save "$INFRA/data/benchmark_currency_gate.R" --updater-rc "$_bm_rc"; then
+  DR_FAILED+=("benchmark_currency(rc=$_bm_rc)")
+  echo "!! [1pre] ★거래일 지평선 이상 - 하류 gap 판정이 무의미해진다 (위 [bm-gate] 사유 참조)"
 fi
 
 # ──────────────────────────────────────────────────────────────────────────────

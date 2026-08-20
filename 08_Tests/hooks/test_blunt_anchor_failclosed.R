@@ -108,6 +108,10 @@ main <- function() {
 
   res <- rbindlist(results)
   cat(sprintf("\n[결과] %d/%d PASS\n", sum(res$verdict == "PASS"), nrow(res)))
+  # 2026-08-20: 배터리 요약. 카운터가 아니라 res 데이터프레임의 verdict 열이 원천이라
+  #   요약 cat 과 **같은 식**을 쓴다(별도 집계를 만들면 두 수가 갈릴 수 있다).
+  cat(sprintf("{\"test\":\"test_blunt_anchor_failclosed\",\"pass\":%d,\"fail\":%d,\"total\":%d}\n",
+              sum(res$verdict == "PASS"), sum(res$verdict != "PASS"), nrow(res)))
   print(res)
   if (any(res$verdict == "FAIL")) return(1L)
   cat("[OK] 차단 실효 확인 — 위반 주입 시 발화, 정상 시 미발화, 정리 무손상\n")
