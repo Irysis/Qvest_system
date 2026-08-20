@@ -779,14 +779,17 @@ if (file.exists(flags_p) && file.exists(dist_p)) {
   f_mt <- file.info(flags_p)$mtime; d_mt <- file.info(dist_p)$mtime
   lag_h <- as.numeric(difftime(d_mt, f_mt, units = "hours"))
   if (is.finite(lag_h) && lag_h > 0) {
+    lag_txt <- if (lag_h < 1) sprintf("%.0f분", lag_h * 60) else sprintf("%.1fh", lag_h)
     add_warn("WARN_11_revival_flags_stale",
-             sprintf(paste0("주입 사본이 정본보다 %.1fh 뒤처짐 — DIST frontier 수정이 주입면에 ",
+             sprintf(paste0("주입 사본이 정본보다 %s 뒤처짐 — DIST frontier 수정이 주입면에 ",
                             "미반영일 수 있음 (정본 %s > 사본 %s). ",
                             "복구: Rscript -e 'source(\"02_Infrastructure/ops/failure_revival_monitor.R\"); ",
                             "revival_monitor_run(write_flags=TRUE)'"),
-                     lag_h, format(d_mt, "%m-%d %H:%M"), format(f_mt, "%m-%d %H:%M")))
+                     lag_txt, format(d_mt, "%m-%d %H:%M"), format(f_mt, "%m-%d %H:%M")))
   } else {
-    cat(sprintf("  주입 사본 신선도: OK (사본이 정본보다 %.1fh 최신)\n", -lag_h))
+    ok_txt <- if (-lag_h < 1) sprintf("%.0f분", -lag_h * 60) else sprintf("%.1fh", -lag_h)
+    cat(sprintf("  주입 사본 신선도: OK (사본이 정본보다 %s 최신)
+", ok_txt))
   }
 } else {
   cat("  주입 사본 신선도: 대상 파일 부재 — 건너뜀\n")

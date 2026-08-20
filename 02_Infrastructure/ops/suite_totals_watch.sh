@@ -47,8 +47,22 @@ collect() {
   #   매치해 **hooks=null** 이 됐다(실측 08-03 09:43 스냅샷). 러너 쪽 계약 변경이
   #   하류 파서를 조용히 깨뜨린 자리 — 다만 이 도구의 "수치 없음은 정상이 아니다" 가드가
   #   null 을 경보로 올려 침묵하지는 않았다. 양쪽 형식을 모두 받는다.
-  hooks_out=$(cd "$DIR" && CLAUDE_PROJECT_DIR="$DIR" bash 08_Tests/hooks/run_all_hooks.sh 2>/dev/null \
-          | grep -oE 'FINAL: [0-9]+ pass / [0-9]+ fail /( [0-9]+ skipped /)? [0-9]+ total' | head -1)
+  # (2026-08-20) ★위 08-03 수리가 오늘의 버그를 만들었다 — skipped 를 선택적으로 만들어
+  #   양쪽 형식을 받게 하자, **개별 테스트가 찍는 같은 모양의 줄**까지 매치되기 시작했다.
+  #   러너 총계(run_all_hooks.sh:1148)는 항상 skipped 구간을 포함하고 항상 **맨 끝**에 나오는데,
+  #   구판은 head -1 로 **먼저 나온 아무 테스트의 총계**를 집었다.
+  #   실측 2026-08-20: 매치 3줄이 전부 개별 테스트(4891행 "FINAL: 7 pass / 0 fail / 7 total",
+  #   4933행 29, 4981행 12) — head -1 이 7 을 집어 hooks=7 로 기록됐다(직전 정상값 1563).
+  #   fail 0 이라 초록으로 보였다 = 계측 사망이 '실패'가 아니라 '총계 감소'로 오는 그 자리.
+  #   2단 앵커: (1) 러너 현행 계약(skipped 포함)을 **정확히** 요구하고 tail -1
+  #             (2) 없으면 구 형식 폴백, 역시 tail -1 (첫 줄이 아니라 마지막 줄)
+  #   ★head -1 로 되돌리지 말 것. 검사: 08_Tests/ops/test_suite_totals_anchor.sh
+  _hooks_raw=$(cd "$DIR" && CLAUDE_PROJECT_DIR="$DIR" bash 08_Tests/hooks/run_all_hooks.sh 2>/dev/null)
+  hooks_out=$(printf '%s' "$_hooks_raw" | grep -oE 'FINAL: [0-9]+ pass / [0-9]+ fail / [0-9]+ skipped / [0-9]+ total' | tail -1)
+  if [ -z "$hooks_out" ]; then
+    hooks_out=$(printf '%s' "$_hooks_raw" | grep -oE 'FINAL: [0-9]+ pass / [0-9]+ fail / [0-9]+ total' | tail -1)
+  fi
+  unset _hooks_raw
   hooks=$(printf '%s' "$hooks_out" | grep -oE '[0-9]+ total' | grep -oE '[0-9]+')
   hooks_fail=$(printf '%s' "$hooks_out" | grep -oE '[0-9]+ fail' | grep -oE '[0-9]+')
   regime_out=$(cd "$DIR" && CLAUDE_PROJECT_DIR="$DIR" Rscript 08_Tests/regime/run_all.R 2>/dev/null)
