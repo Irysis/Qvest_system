@@ -185,7 +185,6 @@ agg_m<-function(x){ dtx<-data.table(ym=ym,x=x); dtx[,prod(1+ifelse(is.finite(x),
 metrics_row<-function(net_d, dlt_d, lab, lm_mult, te, bps, first_t){
   sel<-first_t:NS
   pr<-agg_m(replace(net_d,seq_len(first_t-1),NA)); mk<-agg_m(replace(mkt_d,seq_len(first_t-1),NA)); ewm_<-agg_m(replace(ew_d,seq_len(first_t-1),NA))
-  okm<-which(is.finite(pr)&pr!=0 | seq_along(pr)>=which.max(is.finite(pr)))
   ## 유효 월 = first_t 이후 완전월만: 첫 부분월 제거
   fm<-ym[first_t]; mids<-which(unique(ym)>fm)
   pr<-pr[mids]; mk<-mk[mids]; ewm_<-ewm_[mids]
@@ -216,7 +215,8 @@ if("M0" %in% ARMS){
       gross<-sum(wt*ri); dlt<-sum(abs(wt-wprev)); tov[q]<-dlt
       pr5[q]<-gross-5e-4*dlt; pr15[q]<-gross-15e-4*dlt
       wd<-wt*(1+ri); wprev<-wd/sum(wd)
-      ewv[q]<-sum(wE2*ri); wd2<-wE2*(1+ri); wE2<-wd2/sum(wd2); if(q%%3==0)wE2<-rep(1/7,7) }
+      ewv[q]<-sum(wE2*ri); wd2<-wE2*(1+ri); wE2<-wd2/sum(wd2)
+      if(as.integer(format(mon$medate[rng[i]],"%m")) %% 3 == 0) wE2<-rep(1/7,7) }   # 달력 분기말 리셋 — D1 일별 EW와 동일 규약
     mk<-mr[ii,1]
     for(bps in c(5,15)){ pr<-if(bps==5)pr5 else pr15
       actM<-pr-mk; actE<-pr-ewv
