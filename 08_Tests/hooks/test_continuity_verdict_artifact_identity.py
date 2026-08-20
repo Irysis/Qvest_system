@@ -393,6 +393,8 @@ def main():
 
     print("\n" + "=" * 64)
     total = PASS + FAIL
+    # 2026-08-20: 배터리 요약 계약 (UNREPORTED 해소). 실패 분기 전에 찍어 둘 다 커버.
+    print('{"test":"continuity_verdict_artifact_identity","pass":%d,"fail":%d,"total":%d}' % (PASS, FAIL, total))
     if FAIL:
         print("BATTERY: %d/%d pass, %d skipped — FAILURES: %s" % (PASS, total, SKIP, _FAILED))
         sys.exit(1)

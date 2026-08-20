@@ -107,4 +107,6 @@ ok("같은 파일의 정적 키는 잡음") if "d$max_names" in pd_ else ng("정
 import shutil  # noqa: E402
 shutil.rmtree(FX, ignore_errors=True)
 print("\n== 결과: %d PASS / %d FAIL ==" % (PASS[0], FAIL[0]))
+# 2026-08-20: 배터리는 마지막 유효 JSON 줄만 읽는다 (UNREPORTED 해소).
+print('{"test":"sot_access_paths_py","pass":%d,"fail":%d,"total":%d}' % (PASS[0], FAIL[0], PASS[0] + FAIL[0]))
 sys.exit(1 if FAIL[0] else 0)

@@ -296,5 +296,9 @@ if (file.exists(HI_INDEX_PATH)) {
 } else cat("      인덱스 파일 부재 — skip\n")
 
 cat(sprintf("\n=== 결과: PASS %d / FAIL %d ===\n", PASS, FAIL))
+# 2026-08-20: 배터리는 마지막 유효 JSON 줄만 읽는다 — 이 줄이 없어 UNREPORTED(=1 fail)로
+#   계상됐다(내부는 전건 통과). 계약 결측이지 결함이 아님.
+cat(sprintf("{\"test\":\"draft_marker_approval\",\"pass\":%d,\"fail\":%d,\"total\":%d}
+", PASS, FAIL, PASS + FAIL))
 if (FAIL > 0) { cat("실패 항목: ", paste(FAILED, collapse = ", "), "\n"); quit(status = 1) }
 quit(status = 0)

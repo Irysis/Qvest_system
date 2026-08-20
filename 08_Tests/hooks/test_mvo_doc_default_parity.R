@@ -75,4 +75,8 @@ if (!length(i)) {
 unlink(TMP, recursive = TRUE)
 
 cat(sprintf("\n== 결과: %d PASS / %d FAIL ==\n", PASS, FAIL))
+# 2026-08-20: 배터리는 마지막 유효 JSON 줄만 읽는다 — 이 줄이 없어 UNREPORTED(=1 fail)로
+#   계상됐다(내부는 전건 통과). 계약 결측이지 결함이 아님.
+cat(sprintf("{\"test\":\"mvo_doc_default_parity\",\"pass\":%d,\"fail\":%d,\"total\":%d}
+", PASS, FAIL, PASS + FAIL))
 if (FAIL > 0L) quit(status = 1L)
