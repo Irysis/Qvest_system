@@ -80,10 +80,11 @@ if (identical(swapped_line, orig)) {
   cm2 <- cm; cm2[i_lv] <- swapped_line
   writeLines(cm2, file.path(TMP, "CLAUDE.md"), useBytes = TRUE)
   d3 <- suppressWarnings(gv_apply_constitution_order(root = TMP))
-if (isTRUE(d3$screen_tier_recovery$priority < d3$asymmetry_distribution_target$priority))
-  ok("정본에서 순서를 바꾸니 파생 순위도 바뀜 (하드코딩 아님)") else
-  ng(sprintf("정본 변경 미전파 — 어딘가 아직 박제 (screen=%s asym=%s)",
-             d3$screen_tier_recovery$priority, d3$asymmetry_distribution_target$priority))
+  if (isTRUE(d3$screen_tier_recovery$priority < d3$asymmetry_distribution_target$priority))
+    ok("정본에서 순서를 바꾸니 파생 순위도 바뀜 (하드코딩 아님)") else
+    ng(sprintf("정본 변경 미전파 — 어딘가 아직 박제 (screen=%s asym=%s)",
+               d3$screen_tier_recovery$priority, d3$asymmetry_distribution_target$priority))
+}
 unlink(TMP, recursive = TRUE)
 
 cat(sprintf("\n== 결과: %d PASS / %d FAIL ==\n", PASS, FAIL))
