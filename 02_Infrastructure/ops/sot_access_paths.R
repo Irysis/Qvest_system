@@ -23,6 +23,12 @@
 #   - **R 전용**. python 로더는 미커버(ast 모듈로 동형 구현 가능하나 미구현).
 #   - 뿌리 변수명을 알아야 한다. 로드 지점을 사람이 지정한다.
 #   - 동적 접근(`d[[key]]` 에서 key 가 변수)은 NA 로 버려진다 — 과소 추출 방향(안전).
+#   - ★**별칭 맹점**: `ts <- defaults$tier_soft_deployment` 처럼 중간 변수를 거친 뒤
+#     `ts$max_names` 로 재접근하는 경로는 **추적 못 한다**(뿌리 심볼이 root_var 가 아니다).
+#     2026-08-20 실측: worktask_manager.R 은 별칭 할당 8건이 전부 **리프 값**을 담고
+#     이후 `$` 재접근 0건이라 맹점이 물지 않았다(15경로 결과 온전). 타 파일은 미확인.
+#   - python 로더는 이 맹점이 **실제로 물다** — deployed_holdings_check.py 는
+#     `t = d["tier_soft_deployment"]` 후 `t.get(...)` 형태라, 확장 시 별칭 추적이 선행되어야 한다.
 #==============================================================================
 
 #' 파일에서 root_var 에 뿌리를 둔 `$` / `[[` 접근 체인을 전부 추출
@@ -30,9 +36,14 @@
 #' @param file      R 소스 경로
 #' @param root_var  정본이 담긴 변수명 (예 "defaults")
 #' @return character: "defaults$a$b" 형태 정규화 경로 (정렬·중복 제거)
-extract_paths <- function(file, root_var) {
+extract_paths <- function(file, root_var, follow_alias = TRUE) {
   ex <- parse(file, keep.source = FALSE)
   out <- character(0)
+  # ★별칭 추적(2026-08-20 추가): `ts <- defaults$a` 처럼 중간 변수로 받은 뒤
+  #   `ts$b` 로 재접근하는 경로를 잎지 않기 위해 root 집합을 확장한다.
+  #   roots[[var]] = 그 변수가 가리키는 정본 상대 접두(character vector).
+  #   보수적: 단순 할당(`v <- <체인>`)만 따른다. 재할당되면 마지막 것으로 덮어쓴다.
+  roots <- list(); roots[[root_var]] <- character(0)
   walk <- function(e) {
     if (is.call(e)) {
       op <- as.character(e[[1]])[1]
@@ -44,8 +55,11 @@ extract_paths <- function(file, root_var) {
           key <- if (is.character(k)) k else if (is.symbol(k)) as.character(k) else NA_character_
           chain <- c(key, chain); cur <- cur[[2]]
         }
-        if (is.symbol(cur) && identical(as.character(cur), root_var) && !any(is.na(chain)))
-          out <<- c(out, paste(c(root_var, chain), collapse = "$"))
+        if (is.symbol(cur) && !any(is.na(chain))) {
+          rv <- as.character(cur)
+          if (!is.null(roots[[rv]]))
+            out <<- c(out, paste(c(root_var, roots[[rv]], chain), collapse = "$"))
+        }
       }
       for (i in seq_along(e)) if (!is.null(e[[i]])) try(walk(e[[i]]), silent = TRUE)
     } else if (is.pairlist(e) || is.expression(e)) {
