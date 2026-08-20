@@ -17,6 +17,7 @@ IDXFILE<-Sys.getenv("SMV_IDXFILE","outputs/ramp/shumulvey_index_returns_202608.p
 FEATSET<-Sys.getenv("SMV_FEATSET","f15")
 ARMS<-strsplit(Sys.getenv("SMV_ARMS","M0,D1"),",")[[1]]
 LAMM<-as.numeric(strsplit(Sys.getenv("SMV_LAMMULT","1,2"),",")[[1]])
+SHIFT<-as.integer(Sys.getenv("SMV_SHIFT","2"))   # D1 회계 시프트: 2=T+2(정본) / 3=lag1 스트레스 / 0=동월성 고의 재현(strict A/B 문서화용 — 헤드라인 금지)
 KEY<-Sys.getenv("SMV_KEY",FEATSET)
 PG<-sprintf(".cache/_smv_v5_prog_%s.txt",KEY); cat("start\n",file=PG); pg<-function(...)cat(sprintf(...),file=PG,append=TRUE)
 
@@ -189,7 +190,7 @@ metrics_row<-function(net_d, dlt_d, lab, lm_mult, te, bps, first_t){
   pr<-pr[mids]; mk<-mk[mids]; ewm_<-ewm_[mids]
   actM<-pr-mk; actE<-pr-ewm_
   nav<-cumprod(1+ifelse(is.finite(net_d[sel]),net_d[sel],0)); mdd<-min(nav/cummax(nav)-1)
-  data.table(arm=lab, featset=FEATSET, lam_mult=lm_mult, te=te, cost_bps=bps, n_mo=length(pr),
+  data.table(arm=lab, featset=FEATSET, lam_mult=lm_mult, te=te, cost_bps=bps, acct_shift=SHIFT, n_mo=length(pr),
     IR_vsMkt=IRf(actM), IR_vsEW=IRf(actE), pt_capwt=nwt(actM), abs_SR=IRf(pr),
     abs_CAGR=prod(1+pr)^(12/length(pr))-1, abs_MDD=mdd, TO_ann=mean(dlt_d[sel],na.rm=TRUE)*PER,
     series=list(list(pr=pr,actM=actM,actE=actE,months=unique(ym)[mids])))
@@ -220,7 +221,7 @@ if("M0" %in% ARMS){
     for(bps in c(5,15)){ pr<-if(bps==5)pr5 else pr15
       actM<-pr-mk; actE<-pr-ewv
       nav<-cumprod(1+pr); mdd<-min(nav/cummax(nav)-1)
-      RESULTS[[length(RESULTS)+1]]<-data.table(arm="M0",featset=FEATSET,lam_mult=NA_real_,te=TE_T[k]*100,cost_bps=bps,
+      RESULTS[[length(RESULTS)+1]]<-data.table(arm="M0",featset=FEATSET,lam_mult=NA_real_,te=TE_T[k]*100,cost_bps=bps,acct_shift=NA_integer_,
         n_mo=length(pr), IR_vsMkt=IRf(actM), IR_vsEW=IRf(actE), pt_capwt=nwt(actM), abs_SR=IRf(pr),
         abs_CAGR=prod(1+pr)^(12/length(pr))-1, abs_MDD=mdd, TO_ann=mean(tov)*12,
         series=list(list(pr=pr,actM=actM,actE=actE,months=as.character(mon$medate[rng[ii]])))) }
@@ -248,10 +249,10 @@ if("D1" %in% ARMS){
       ## T+2 회계
       dec_ok<-which(apply(Wd,1,function(r)all(is.finite(r))))
       if(length(dec_ok)<200){pg("D1 te=%g insufficient\n",TE_T[k]);next}
-      first_t<-dec_ok[1]+2
+      first_t<-dec_ok[1]+max(SHIFT,1)
       net5<-rep(NA_real_,NS); net15<-rep(NA_real_,NS); dltv<-rep(NA_real_,NS)
       wheld<-rep(1/7,7)
-      for(t in first_t:NS){ tgt<-Wd[t-2,]
+      for(t in first_t:NS){ tgt<-if(SHIFT==0) Wd[t,] else Wd[t-SHIFT,]
         if(any(!is.finite(tgt))) tgt<-wheld
         ri<-RmatAll[t,]
         dlt<-sum(abs(tgt-wheld)); dltv[t]<-dlt
