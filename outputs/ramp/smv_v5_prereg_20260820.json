@@ -1,0 +1,63 @@
+{
+  "prereg_id": "smv_v5_prereg_20260820",
+  "created_at": "2026-08-20",
+  "created_before_any_result": true,
+  "fq_id": "FQ-239",
+  "mandate": "도훈 2026-08-20 — 자본졸업을 목표로 지속 강화 (승인 계획: ~/.claude/plans/shu-yu-mulvey-rippling-nautilus.md)",
+  "baseline_correction": {
+    "defect": "run_ramp_shumulvey.R bt() 동월 적용(월말-결정 비중 × 같은 달 수익, ~1개월 look-ahead) + calib_c 전기간 TE 캘리브(2차)",
+    "correction": "월간 = t월말 결정 비중 → t+1월 수익 적용(M0). 일별(v5) = s_T 산출(T종가) → T+1종가 체결 → T+2 수익 귀속. c 캘리브는 refit 시점 trailing 실현 TE 인과 갱신",
+    "rule": "P0-2 보정판이 전 계열 기준선. 보정 전 수치는 헤드라인 보고 금지"
+  },
+  "grid": {
+    "te_targets": [0.01, 0.02, 0.03, 0.04],
+    "lambda_mult": [1, 2],
+    "cost_bps_oneway": [5, 15],
+    "n_cells": 16,
+    "reporting_rule": "16셀 전수 보고 — 사후 셀 선택 금지 (sweep-부풀림 ~2.4배 실측 전례)"
+  },
+  "headline_cells_prespecified": {
+    "paper_comparison": {"te": 0.03, "lambda_mult": 1, "cost_bps": 5},
+    "qvest_canonical": {"te": 0.03, "lambda_mult": 1, "cost_bps": 15}
+  },
+  "ladder_one_dof_per_arm": [
+    {"arm": "M0", "spec": "월간 케이던스 + T+1 보정 회계 + f15 + fixed lambda=50/kappa2=9.5 — 보정 기준선"},
+    {"arm": "D1", "spec": "일별 온라인 필터(동결 centroid+mu/sigma, lookback 상태열 DP 재최적화, 마지막 상태) + T+2 회계. 나머지 M0 동일 — 케이던스 단독 A/B"},
+    {"arm": "D2", "spec": "D1 + f17 (rate3y_d21 + term_d21)"},
+    {"arm": "D2v", "spec": "D2에서 vix21 -> US VIX logdiff ewm21 (t-1 lag 의무) — 강건성 진단 전용, 채택 경쟁 아님"},
+    {"arm": "D3", "spec": "D2 + 완전 인과적 rolling re-tune (RETUNE 6mo / VALY 6y / 단일팩터 L-S 평가 T+2 lag + 5bps, 검증창 상태 = 온라인 필터 상태)"}
+  ],
+  "feature_sets": {
+    "f15": "기존 build_feat 15종 (ewma/rsi/pctK 각 8·21·63, macd 8-21·21-63, logdd21, beta21, mkt21, vix21=실현변동성 프록시)",
+    "f17": "f15 + rate3y_d21 = ewm(diff(KR_Gov3Y),21) + term_d21 = ewm(diff(KR_Gov10Y-KR_Gov3Y),21) — ECOS 817Y002, 거래일 그리드 locf<=5영업일",
+    "f17_usvix": "f17에서 vix21 -> fred_macro_wide::VIX logdiff ewm21, t-1 lag"
+  },
+  "fixed_hyperparams": {
+    "lambda": 50, "kappa_sq": 9.5, "miny": 8, "maxy": 12,
+    "refit": "monthly", "sigma_halflife_days": 126, "delta": 2.5,
+    "view_cap_ann": 0.05, "ew_benchmark_rebal": "quarterly", "missing_day_state": "locf"
+  },
+  "judgment_rules": {
+    "selection_type": "chain — 팔 간 argmax 최종안 선택 금지, 각 팔 = 사전등록 자유도 1개 + 기전 진단 1줄",
+    "gates_before_headline": ["assert_overlay_pit(신호 T < 적용 T+2 전수)", "lag1_stress(T+3 팔 완만 감쇠 확인)", "strict_pit_ab(동월 적용판 대비 인플레율 문서화)", "placebo_30seed(view 시간 셔플)"],
+    "d1_adoption_rule": "15bps net에서 M0 대비 IR 비열등(>= -0.05) AND 위기월 국면 진입 리드 개선, 또는 IR/PORT_t 개선",
+    "oos_protocol": "build_bt_result -> essence_score(oos_stat_version=v2) 경유만 — 인라인 자체합성 금지",
+    "oos_branches": {
+      "ge_0.70": "HARD 3종(PORT_t 2.95 / oos 0.7 / calmar 0.64) 동시 재판정 -> P3 배포 형태 + book-marginal",
+      "band_0.50_0.70": "보강증거 2/3 (trailing PORT_t>0 / placebo p<0.05 / book-marginal dSR>0 AND |cor|<0.30) -> 조건부 진행",
+      "lt_0.50": "레버 교체 재라운드 (config-scoped, 종결 아님) — 레버 풀: KR-특이 시장환경 피처 축(문헌 근거 선존) / refit 주기·훈련창 구조 / sleeve-배분층 형태 oos 재측정 / 부활신호 대기 축 명시"
+    },
+    "live_trigger_b": "oos_retention >= 0.5 재산출 시 DIST-RAMP-014 (b) 발화 — L-code(dist_id 참조) + register_ramp_result 신규 id RAMP_SHUMULVEY_DAILY_202608 + cleaner 경유 카드 재판정 적립 + 도훈 보고"
+  },
+  "deployment_gate": "P3 sleeve-배분층 변환(ⓐ overlay 슬리브별 차등 노출 확장 / ⓑ FR Track2 regime_ir 입력 교체 — book_optimize 래퍼 개조 금지) + book-marginal dIR >= 0.05 (net_active_recon_v1, incumbent = 05_Production 현행 코드 파생) + governor 수동(도훈 confirm)",
+  "index_rebuild": {
+    "rebal_cap": "2026-07-31 — 마지막 완결 월말. factor_db_202608은 진행월이라 소비 금지",
+    "new_files_only": ["outputs/ramp/shumulvey_index_returns_r202608.parquet", "outputs/ramp/shumulvey_index_returns_202608.parquet"],
+    "overlap_check": "구파일 겹침 구간 일수익 상관 >= 0.999, 미달 시 원인 지수·월 목록화"
+  },
+  "pin_tag": "smv_r2_20260820 — 판정 시작 시 신규 지수 parquet 2종 + ecos_bond_rates + benchmark + fred_macro_wide pin, 판정 소비 read_pinned() 경유",
+  "reproduction_tolerances": {
+    "p0_1_frozen_input": {"abs_d_pt": 0.1, "abs_d_ir": 0.05},
+    "p0_4_same_window_after_rebuild": {"abs_d_pt": 0.3, "abs_d_ir": 0.1}
+  }
+}

@@ -66,7 +66,13 @@ od_dir <- file.path(.root, "06_Registry/overlay_ab_results")
 if (dir.exists(od_dir)) {
   vb <- drain_verdict_batch(result_dir = od_dir, write = FALSE)
   vs <- vb[startsWith(candidate_id, "STR_AS_")]
-  chk("T2a 07-10 배치 STR_AS_* = 16건", nrow(vs) == 16L)
+  # 2026-08-20 정정: 구판은 `== 16L` 로 개수를 박제했다. 그런데 overlay_ab_results 는
+  #   새 A/B 결과가 계속 쌓이는 디렉터리라 개수 증가가 정상이다(실측 16 -> 21, 전건 INFERIOR).
+  #   이 양성 대조가 지켜야 하는 건 "증가 금지"가 아니라 **과거 배치의 소실 금지**다 —
+  #   판정 자체의 재현은 T2b(전건 INFERIOR)/T2c(best_t<0)가 이미 지킨다.
+  #   ⇒ 하한(>=16)으로 바꾸고 실측치를 라벨에 실어 증가가 보이게 한다.
+  chk(sprintf("T2a 07-10 배치 STR_AS_* >= 16건 (소실 금지 — 실측 %d)", nrow(vs)),
+      nrow(vs) >= 16L)
   chk("T2b 전건 INFERIOR (세션 수기 판정 재현)", nrow(vs) > 0 && all(vs$verdict == "INFERIOR"))
   chk("T2c 최대 best_t가 음수 (L-code '최대 관측 paired NW-t = -1.199' 정합)",
       nrow(vs) > 0 && max(vs$best_t, na.rm = TRUE) < 0)
