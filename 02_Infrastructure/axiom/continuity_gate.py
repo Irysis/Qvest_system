@@ -25,6 +25,13 @@ continuity_gate.py — 포기 원천차단 게이트의 판정기 (Continuity Fi
 마커 정체(2026-08-16): 종료 마커는 **내 세션이 이번 턴에** 쓴 것만 인정한다. mtime 단독
   판정은 병렬 워크트리 세션(공유 `.cache`)의 라운드 종료로 내 턴이 열리는 누수였다 —
   marker_fresh() 위 주석 참조.
+판정 산출물 정체(2026-08-17): 같은 뿌리의 **두 번째** 누수. C1 운영-턴 판별
+  (turn_verdict_artifacts)도 같은 공유 종료 기록을 mtime 만 보고 '이번 턴에 판정을 냈다'
+  고 읽어, 남의 라운드 종료가 내 브리핑 턴을 판정 턴으로 만들었다(방향은 반대 — 우회가
+  아니라 과차단). 두 누수는 서로를 가리고 있었다: 같은 남의 종료가 va 를 살리는 동시에
+  구 marker_fresh 를 충족시켜 통과시켰으므로, marker 축만 고치면 FP 가 무장된다.
+  ★fail 방향은 축마다 반대로 둔다 — 마커는 fail-closed(잘못 인정 = 우회), 판정 산출물은
+  fail-open(잘못 무시 = 재현율 손실). _closure_evidence() 주석 참조.
 """
 import json
 import os
@@ -173,23 +180,128 @@ def _ops_progress(tail, cases):
     return [t for t in cases.get("ops_context_terms", []) if t and t in tail]
 
 
-def turn_verdict_artifacts(root, user_ts):
+_LEDGER_TAIL_BYTES = 65536
+
+
+def _ledger_tail_records(p, limit_bytes=_LEDGER_TAIL_BYTES):
+    """append-only 종료 원장의 **꼬리만** 파싱(1.9MB 전량 판독 회피 — 훅은 매 턴 돈다).
+
+    반환 = 레코드 리스트, 판독 실패 = None(귀속 불가로 취급). 창을 넘어 잘린 선두 행은
+    버린다(부분 JSON 이 파싱 실패로 조용히 섞이지 않도록)."""
+    try:
+        size = os.path.getsize(p)
+        with open(p, "rb") as f:
+            if size > limit_bytes:
+                f.seek(size - limit_bytes)
+                f.readline()                      # 잘린 선두 행 폐기
+            raw = f.read()
+    except Exception:
+        return None
+    out = []
+    for ln in raw.decode("utf-8", "replace").splitlines():
+        ln = ln.strip()
+        if not ln:
+            continue
+        try:
+            out.append(json.loads(ln))
+        except Exception:
+            pass
+    return out
+
+
+def _closure_evidence(root, ref, session_id):
+    """종료 기록(close_round 산출물)에서 **이 세션이 이번 턴에 낸 것**만 증거로 센다.
+
+    ★2026-08-17 수리 — `marker_fresh`(08-16) 와 같은 뿌리의 두 번째 누수. 종료 기록 3종은 전부
+      프로젝트 루트 단일 파일이고 main 의 `.cache` 는 `/c/qm_cache` 심볼릭 링크(머신 공유)
+      라, **병렬 세션이 아무 라운드나 닫으면 mtime 이 내 턴 창 안으로 들어온다**. 구판은
+      mtime 만 보고 "이번 턴에 판정을 냈다" 고 판정했다 — 남의 종료가 내 턴을 '판정 생산
+      턴' 으로 만들었다.
+
+    ★이 방향은 우회가 아니라 **과차단(FP)** 이라 marker_fresh 수리에서 의도적으로 범위
+      밖이었다(va=True 면 탐지가 유지돼 *더* 막힌다). 그런데 그 판단의 전제가 marker 수리로
+      깨졌다: 같은 남의 종료가 va=True 로 탐지를 살리는 **동시에** 구 marker_fresh 를
+      True 로 만들어 계약을 충족시켜 통과시켰다 — **두 누수가 서로를 가렸다**. marker 축만
+      고치면 가림막이 걷혀 FP 가 무장된다(실측: 전 transcript 1,282 턴에서 marker 수리 후
+      차단 302 → 그중 5건이 남의 종료만으로 막히는 턴, 전부 main 루트).
+
+    ★fail-toward-recall 유지 — 이 함수의 선언 자세를 바꾸지 않는다. **귀속할 수 없으면
+      증거로 센다**(세션 불명 · session_id 필드 없는 구판 기록 · 판독 실패). marker_fresh
+      가 fail-*closed* 인 것과 방향이 반대인 이유는 결과가 반대이기 때문이다 — 마커를 잘못
+      인정하면 **우회**(포기가 통과), 종료 기록을 잘못 무시하면 **재현율 손실**(진짜 판정
+      턴이 안 막힘). 각 축은 자기 실패의 값싼 쪽으로 넘어진다.
+
+    반환 (evidence:list[str], dropped:list[str]) — dropped 는 남의 것이라 제외한 기록(진단용).
+    """
+    sid = (session_id or "").strip()
+    ev, dropped = [], []
+    for rt in _marker_roots(root):
+        cache = os.path.join(rt, ".cache")
+        # ① 세션별 마커 — 이름 자체가 귀속이라 가장 강한 증거
+        if sid:
+            p = os.path.join(cache, SESSION_MARKER_DIR, _sanitize_sid(sid) + ".json")
+            exists, mt, _rid, msid = _read_marker(p)
+            if exists and mt is not None and mt >= ref and (msid is None or msid == sid):
+                ev.append(SESSION_MARKER_DIR + "/<self>.json")
+        # ② 공유 단일 마커 — 발행자 신고 필드로 대조
+        p = os.path.join(cache, "last_round_closure.json")
+        exists, mt, rid, msid = _read_marker(p)
+        if exists and mt is not None and mt >= ref:
+            if not sid or msid is None:
+                ev.append("last_round_closure.json:unattributed")  # 귀속 불가 → 재현율 보존
+            elif msid == sid:
+                ev.append("last_round_closure.json")
+            else:
+                dropped.append("last_round_closure.json:%s" % (rid or "?"))
+        # ③ append-only 원장 — mtime 은 '누군가 append' 만 말한다. 꼬리를 읽어 귀속한다.
+        p = os.path.join(cache, "round_closures.jsonl")
+        try:
+            fresh = os.path.isfile(p) and os.path.getmtime(p) >= ref
+        except Exception:
+            fresh = False
+        if fresh:
+            recs = _ledger_tail_records(p)
+            if recs is None or not sid:
+                ev.append("round_closures.jsonl:unreadable_or_unknown_session")
+            else:
+                win = [r for r in recs
+                       if (_ts_to_epoch(r.get("closed_at")) or 0) >= ref]
+                if not win:
+                    # mtime 은 갱신됐는데 창 안 레코드가 안 잡힘(꼬리 밖·시각 형식 불명) —
+                    # 귀속 불가이므로 센다.
+                    ev.append("round_closures.jsonl:unattributed")
+                elif any((r.get("session_id") or "").strip() == sid for r in win):
+                    ev.append("round_closures.jsonl")
+                elif any(not (r.get("session_id") or "").strip() for r in win):
+                    ev.append("round_closures.jsonl:unattributed")  # 구판 기록(신고 필드 없음)
+                else:
+                    dropped.append("round_closures.jsonl:%s"
+                                   % (win[-1].get("round_id") or "?"))
+    return ev, dropped
+
+
+def turn_verdict_artifacts(root, user_ts, session_id=None):
     """C1 운영-턴 판별: 이번 턴(user_ts 이후)에 신규 '판정 산출물'이 실재하는가.
-    판정 산출물 = stage_artifacts/l_code/** 신규 파일 · .cache/round_closures.jsonl append
-    (close_round 원장) · qepm/mailbox/**/verdict.json 신규 write.
+    판정 산출물 = close_round 종료 기록(.cache/{round_closure_by_session/<sid>.json,
+    last_round_closure.json, round_closures.jsonl}) · stage_artifacts/l_code/** 신규 파일 ·
+    qepm/mailbox/**/verdict.json 신규 write.
     부재 = 이 턴은 판정 생산 턴이 아님(보고/브리핑/운영) → verdict_close(간접 NEG-토큰
     신호)를 차단 근거에서 제외. 명시 종결어휘(category backstop)는 이 판별과 무관하게 유효.
-    user_ts 불명·스캔 오류 = 판별 불가 → True(기존 재현율 보존, fail-toward-recall)."""
+    user_ts 불명·스캔 오류 = 판별 불가 → True(기존 재현율 보존, fail-toward-recall).
+
+    ★종료 기록에만 정체 대조를 건다(`_closure_evidence`) — 그쪽만 발행자를 신고한다.
+      `stage_artifacts/l_code/**` · `qepm/mailbox/**/verdict.json` 은 정체 필드가 없어
+      mtime 판정을 유지한다. **정체를 확인할 수 없는 것에 정체 검사를 흉내내지 않는다**
+      (존재 검사로 정체 검사를 대체하는 것과 같은 종류의 거짓 확신이 된다).
+      단 이 둘은 워크트리마다 자기 사본이 있어 공유 누수 표면이 아니다."""
     ref = _ts_to_epoch(user_ts)
     if ref is None:
         return True, ["user_ts_unknown"]
     ref -= 2
     ev = []
     try:
-        for f in (os.path.join(root, ".cache", "round_closures.jsonl"),
-                  os.path.join(root, ".cache", "last_round_closure.json")):
-            if os.path.isfile(f) and os.path.getmtime(f) >= ref:
-                ev.append(os.path.basename(f))
+        cev, dropped = _closure_evidence(root, ref, session_id)
+        ev.extend(cev)
         for pat in (os.path.join(root, "stage_artifacts", "l_code", "**", "*.json"),
                     os.path.join(root, "qepm", "mailbox", "**", "verdict.json")):
             for f in glob.glob(pat, recursive=True):
@@ -198,6 +310,9 @@ def turn_verdict_artifacts(root, user_ts):
                     break
     except Exception:
         return True, ["scan_error"]
+    if not ev and dropped:
+        ev_note = ["foreign_closure_ignored:" + d for d in dropped[:2]]
+        return False, ev_note      # 남의 종료만 있었음 — 이 턴은 판정 생산 턴이 아니다
     return (len(ev) > 0), ev
 
 
@@ -527,13 +642,18 @@ def judge_text(text, tool_inputs, cases, root, user_ts=None, marker_override=Non
     #    명시 종결어휘(has_finality)·대기-마감(has_waiting)은 이 판별과 무관하게 유효(재현율 불변).
     if cl["verdict_close"]:
         if verdict_artifact_override is None:
-            va, va_ev = turn_verdict_artifacts(root, user_ts)
+            va, va_ev = turn_verdict_artifacts(root, user_ts, session_id)
         else:
             va, va_ev = bool(verdict_artifact_override), ["override"]
         diag["verdict_artifacts"] = {"produced": va, "evidence": va_ev[:5]}
         if not va:
             cl["verdict_close"] = False
-            cl["verdict_close_suppressed"] = "no_new_verdict_artifact"
+            # 별도 라벨 — 이 수리가 실제로 얼마나 발화하는지 `--review`/passes 카운터로
+            # 계속 측정 가능하게(사후에 transcript 를 다시 파헤치지 않도록).
+            cl["verdict_close_suppressed"] = (
+                "foreign_closure_only"
+                if any(str(e).startswith("foreign_closure_ignored") for e in va_ev)
+                else "no_new_verdict_artifact")
         elif cl["ops_progress"] and not cl["has_finality"]:
             # ── C2 in-progress 예외(케이스 파일 '진행 중 리서치 실재 시 허용' 일반화의 코드화):
             #    진행/운영 마커 실재 ∧ 종결어휘(backstop) 부재 → NEG-토큰 서술은 상태보고.
