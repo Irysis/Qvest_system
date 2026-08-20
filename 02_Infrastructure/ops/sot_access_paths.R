@@ -44,6 +44,33 @@ extract_paths <- function(file, root_var, follow_alias = TRUE) {
   #   roots[[var]] = 그 변수가 가리키는 정본 상대 접두(character vector).
   #   보수적: 단순 할당(`v <- <체인>`)만 따른다. 재할당되면 마지막 것으로 덮어쓴다.
   roots <- list(); roots[[root_var]] <- character(0)
+  # 할당 수집 패스 — walk 전에 먼저 돌아 roots 를 채운다.
+  #   순회를 반복해 고정점까지 — `a <- defaults$x; b <- a$y` 같은 2단 체인을 위해.
+  chain_of <- function(e) {
+    ch <- character(0); cur <- e
+    while (is.call(cur) && as.character(cur[[1]])[1] %in% c("$", "[[")) {
+      k <- cur[[3]]
+      key <- if (is.character(k)) k else if (is.symbol(k)) as.character(k) else NA_character_
+      ch <- c(key, ch); cur <- cur[[2]]
+    }
+    if (!is.symbol(cur) || any(is.na(ch))) return(NULL)
+    list(root = as.character(cur), chain = ch)
+  }
+  collect <- function(e) {
+    if (is.call(e)) {
+      op <- as.character(e[[1]])[1]
+      if (op %in% c("<-", "=", "<<-") && length(e) == 3 && is.symbol(e[[2]])) {
+        lhs <- as.character(e[[2]]); r <- chain_of(e[[3]])
+        if (!is.null(r) && length(r$chain) > 0 && !is.null(roots[[r$root]]))
+          roots[[lhs]] <<- c(roots[[r$root]], r$chain)
+      }
+      for (i in seq_along(e)) if (!is.null(e[[i]])) try(collect(e[[i]]), silent = TRUE)
+    } else if (is.pairlist(e) || is.expression(e)) {
+      for (i in seq_along(e)) try(collect(e[[i]]), silent = TRUE)
+    }
+  }
+  if (isTRUE(follow_alias)) for (pass in 1:3) for (i in seq_along(ex)) collect(ex[[i]])
+
   walk <- function(e) {
     if (is.call(e)) {
       op <- as.character(e[[1]])[1]
