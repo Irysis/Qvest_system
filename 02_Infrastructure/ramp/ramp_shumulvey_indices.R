@@ -44,7 +44,7 @@ pg("rawdata loaded rows=%d\n",nrow(rd))
 ## 2) 월말 거래일 (rebalance dates)
 alld<-sort(unique(rd$Date)); ym<-format(alld,"%Y-%m")
 rebal<-alld[!duplicated(ym,fromLast=TRUE)]      # 각 월 마지막 거래일
-rebal<-rebal[rebal>=as.Date(SMV_REBAL0) & rebal<=as.Date("2026-05-31")]
+rebal<-rebal[rebal>=as.Date(SMV_REBAL0) & rebal<=as.Date(Sys.getenv("SMV_REBAL_END","2026-05-31"))]  # 기본값 = 구 하드코딩 보존(동작 불변). FQ-239 P0: 완결 월말만 지정할 것(진행월 factor_db 소비 금지)
 pg("rebal dates=%d (%s ~ %s)\n",length(rebal),as.character(min(rebal)),as.character(max(rebal)))
 
 ## 3) 각 월말: load_month_factors → universe∩covered, 인덱스별 held set (top-tercile cap-w)

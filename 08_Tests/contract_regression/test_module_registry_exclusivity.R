@@ -91,9 +91,18 @@ AUTH <- list(metric_type = "backtested", contract_pass = TRUE, frozen = TRUE,
 reg_proxy <- function(id) register_module(mk_sim(), id, grade = "B", origin_mode = "alpha_search",
                                           catalog_path = CATP, quarantine_path = QUAP,
                                           metric_type = "proxy")
-reg_auth  <- function(id, grade = "C") do.call(register_module,
-  c(list(sim_result = mk_sim(), strategy_id = id, grade = grade, origin_mode = "alpha_search",
-         catalog_path = CATP, quarantine_path = QUAP), AUTH))
+# 2026-08-20: 구판은 AUTH 의 module_hash="hash_t" 를 **모든 id 에 그대로** 넘겼다.
+#   같은 날 20:37 register_module.R 이 "동일-산출물 이명 차단" 가드를 얻으면서
+#   (batch_434 오염 재발 방지 — 바이트 동일 sim 을 다른 가설명으로 등재하던 사고)
+#   서로 다른 strategy_id 가 같은 해시로 들어오는 이 픽스처가 통째로 차단됐다.
+#   ★env 로 가드를 끄지 않는다 — 그러면 이 테스트 전 구간에서 가드가 무력해진다.
+#   픽스처가 현실을 잘못 모형화한 것이므로(다른 모듈은 다른 해시를 갖는다) 픽스처를 고친다.
+reg_auth  <- function(id, grade = "C") {
+  auth <- AUTH; auth$module_hash <- paste0("hash_", id)
+  do.call(register_module,
+    c(list(sim_result = mk_sim(), strategy_id = id, grade = grade, origin_mode = "alpha_search",
+           catalog_path = CATP, quarantine_path = QUAP), auth))
+}
 
 sink_quiet <- function(expr) { tc <- textConnection(NULL, "w"); sink(tc)
   on.exit({ sink(); close(tc) }, add = TRUE); force(expr) }

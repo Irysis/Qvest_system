@@ -63,3 +63,20 @@
 - **argmax 제거(ensemble)시 pt 7.7→3.0 붕괴** → "조건부졸업"은 9그리드argmax+8셀선택 **sweep 다중검정 부풀림(~2.4배)**.
 
 **★최종 정정 판정**: Shu-Mulvey는 **RAMP 최강 regime 접근**(비-sweep pt 3.5–4.8가 Cascade 2.85·full-cycle 2.37 능가, placebo 실재타이밍)이나 **oos~0.25 decay-cap = screen-tier, 졸업 아님.** 더 튜닝 = p-hacking(§1.3/AX-002). **교훈: 화려한 CV/튜닝 수치는 grid-ensemble(argmax제거)로 de-bias 검증 필수.** L-code `RAMP_SHUMULVEY_V2_20260619`·`RAMP_SHUMULVEY_V3_DEBIAS_20260619`.
+
+## 7. ★★정정 (2026-08-20, FQ-239 P0-2) — 동월 적용 look-ahead 확정, 본 보고서 수치 전면 재기준선화
+
+**결함**: `bt()`(:179-199)가 월말 mi 종가 데이터로 산출한 비중 `W[m]`을 **같은 달 수익 `ret[m]`**에 곱한다(동월 적용 = ~1개월 look-ahead). `_verify/_v2/_v3/_v4/_contract`의 `port()` 전 계열 동일. 같은 파일 Stage 2B L/S 진단(:127-128)은 `(ei+1):nx` 익월 적용 — 파일 내 불일치로 의도가 아닌 버그. 부수: `calib_c`(:172-176) 전기간 평균 TE 캘리브 = 2차 look-ahead.
+
+**shift A/B 실측** (`run_ramp_shumulvey_p02_shift_ab.R`, 동일 상태·뷰·c 재사용, 공통윈도 2014-04~ 147mo, 5bps):
+
+| TE | pt_capwt 동월(§2) | **pt_capwt 익월(보정)** | IR_vsEW 동월 | **보정** | paired NW-t |
+|---|---|---|---|---|---|
+| 1% | 2.12 | **0.73** | 1.15 | **0.17** | +5.71 |
+| 2% | 2.71 | **0.82** | 1.20 | **0.20** | +5.75 |
+| 3% | 3.46 | **0.98** | 1.24 | **0.24** | +5.47 |
+| 4% | 3.86 | **1.13** | 1.21 | **0.28** | +5.07 |
+
+**판정**: §2·§3·§6의 헤드라인(TE3 pt 3.50·IR_vsEW 1.30, v3 7.2~7.7, oos 0.31~0.54)은 전부 동월 회계 위 수치 — **무효/재기준선화**. §3 placebo p=0.000·정적틸트/타이밍 분해도 결함-공유 프레임(placebo도 동월 적용으로 측정)이라 보정 프레임 재검증 대상. §4 "HARD 2/3 최초 통과" 철회. 기존 검증 4종(placebo/분해/oos/subperiod)이 이 결함류를 판별하지 못함을 재확인 — **shift/lag A/B만 판별**(BearProb 실사고 동형, `overlay_pit_guard.R` 규약 재입증).
+
+**계속 (config-scoped, 종결 아님)**: 보정 월간(M0)은 신호를 한 달 묵혀 쓰는 회계이고 논문 원 프로토콜은 일별 T+2 적용 — 동월(불법 신선도)↔익월(1개월 낡음) 갭이 일별 적용(합법 신선도)이 회수할 공간의 상계. next_probe = ①v5 일별 온라인 필터 + T+2 (FQ-239 P1) ②피처 완전화 f17 ③완전 인과 rolling re-tune으로 oos 재산출(DIST-RAMP-014 live_trigger b). 원장 정정: `ramp_registry.json::RAMP_SHUMULVEY_BL_20260619.correction_20260820`. L-code `RAMP_SHUMULVEY_P02_TIMING_CORRECTION_20260820`.

@@ -175,6 +175,47 @@ close_round <- function(round_id,
     # FQ-id 미언급 서술(예: '항목 status 갱신')은 대조 불가(NA) — 억지 판정 금지
   }
 
+  # ── ⑨ 되먹임 배선 (2026-08-20) ────────────────────────────────────────────
+  #   실측 진단: 라운드 종료가 큐로 흘러가지 않아, 세션이 매번 손으로 결과 키를 만들어 붙였다.
+  #   그 결과 alpha_frontier_queue 의 결과성 필드가 **62종**으로 흩어졌고
+  #   그중 47종이 보유 1건이다(np2b_result_20260809 · verdict_20260713 · build_result_20260725 …).
+  #   날짜·프로브 번호가 **필드 이름에 박혀** 있어 "이 FQ 의 결과가 무엇인가"를 기계가 물을 수 없다.
+  #   ★결함은 '슬롯 부재'가 아니라 '자동 기입 부재'였다 — 필드는 전건 채워져 있었다.
+  #   ⇒ 계약이 이미 강제하는 값(verdict_type · next_probes · round_id)을 **고정 키**로 기입한다.
+  #     신규분부터 기계 독독 가능해지며, 기존 62종은 건드리지 않는다(소급 정규화는 값 손실 위험).
+  #   비차단: 큐 쓰기 실패가 라운드 종료를 막지 않는다(기록은 마커가 정본, 큐는 파생 소비면).
+  fq_written <- character(0); fq_write_err <- NULL
+  if (length(fq_ids)) {
+    fq_write_err <- tryCatch({
+      io <- file.path(.cr_root(), "02_Infrastructure", "ops", "frontier_queue_io.R")
+      if (file.exists(io)) {
+        local({
+          source(io, local = TRUE)
+          for (fid in fq_ids) {
+            ok1 <- tryCatch({
+              fq_update_entry(fid, function(e) {
+                if (is.null(e)) return(NULL)   # 미등재 id 는 생성하지 않는다(create=FALSE 기본)
+                e$last_round      <- round_id
+                e$last_verdict    <- verdict_type
+                e$last_closed_at  <- format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z")
+                e$last_next_probe <- as.character(np)
+                e
+              }, reason = sprintf("close_round %s (%s)", round_id, verdict_type))
+              TRUE
+            }, error = function(e) FALSE)
+            if (isTRUE(ok1)) fq_written <<- c(fq_written, fid)
+          }
+        })
+      }
+      NULL
+    }, error = function(e) conditionMessage(e))
+    if (length(fq_written))
+      message("[close_round] 큐 되먹임 기입: ", paste(fq_written, collapse = ", "),
+              " (고정 키 last_round/last_verdict/last_next_probe)")
+    if (!is.null(fq_write_err))
+      message("[close_round] 큐 되먹임 실패(비차단): ", fq_write_err)
+  }
+
   # ── 종료 기록 발행 ────────────────────────────────────────────────────────
   now <- format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z")
   sid <- .cr_session_id()
@@ -184,6 +225,10 @@ close_round <- function(round_id,
     session_id = sid,   # ★발행자 정체 — 게이트가 자기 세션과 대조(빈 문자열 = 귀속 불가 = 미인정)
     root = .cr_root(),
     verdict_type = verdict_type,
+    # ⑨ 되먹임 실적 — 어느 FQ 에 실제로 기입됐는가(선언이 아니라 결과).
+    #   fq_ids 는 '언급', fq_feedback_written 은 '기입 성공' — 둘을 구분해야
+    #   "선언은 했는데 큐엔 안 갔다"가 사후에 보인다.
+    fq_feedback_written = fq_written,
     mechanism_diagnosis = mechanism_diagnosis,
     next_probes = np,
     consumer_surfaces = cs,

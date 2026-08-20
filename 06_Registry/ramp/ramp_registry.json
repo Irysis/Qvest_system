@@ -38,6 +38,7 @@
     "RAMP_SHUMULVEY_BL_20260619": {
       "ramp_id": "RAMP_SHUMULVEY_BL_20260619",
       "alias": "RAMP_02",
+      "correction_20260820": "★★철회(SAME-MONTH LOOK-AHEAD, 2026-08-20 P0-2 shift-test 확정, FQ-239): bt()/port() 전 계열(run_ramp_shumulvey.R:179-199 및 _verify/_v2/_v3/_v4/_contract)이 월말-결정 비중 W[m]을 같은 달 수익 ret[m]에 곱하는 동월 적용(~1개월 look-ahead). 같은 파일 Stage 2B L/S 진단(:127-128)은 익월 적용이라 파일 내 불일치=버그. 동일 상태·뷰·c 재사용 + 타이밍만 교체한 paired 재측정(base config MINY=8, 공통윈도 2014-04~ 147mo): pt_capwt 2.12~3.86(동월) → 0.73~1.13(익월 보정), IR_vsEW 1.15~1.24 → 0.17~0.28, paired NW-t(동월−익월) +5.07~+5.75. 본 essence(pt 7.72/oos 0.54/calmar 0.92, v3 ext_m5_roll)는 동일 결함 회계+argmax 위 수치 — '조건부 PASS(연구레벨)' 판정 무효, 보정 회계 재실측(v5 일별 T+2 라운드) 전까지 SUSPENDED. placebo p<0.001·정적틸트/타이밍 분해도 결함-공유 프레임이라 재검증 대상. 기존 검증(placebo/oos/분해)이 이 결함류를 판별 못하는 검정이었음(BearProb 실사고 동형 — shift A/B만 판별). 증거: outputs/ramp/smv_p02_shift_ab_20260820.csv · 02_Infrastructure/ramp/run_ramp_shumulvey_p02_shift_ab.R · L-code RAMP_SHUMULVEY_P02_TIMING_CORRECTION_20260820.",
       "stock_count_compliance": "VIOLATED + 변환 FAIL. 7/21-인덱스 배분(기저 수백종목 ≫ 25). 25종목 변환 실측(2026-06-19, BL 인덱스비중→횡단면 종목스코어 top-25, 4접근 univ{all,index}×weight{ew,cap} 병렬): 전부 음수 PORT_t(idx_ew -0.64·idx_cap -1.02·all_cap -1.13·all_ew -3.13). 유니버스제한+cap-weight가 -3.13→-0.64 개선하나 양수 불가. ★엣지가 인덱스배분 레벨 한정 — 25종목서 소멸. 배포 불가(non-deployable). 인덱스 pt 8.91/7.72는 idealized 확정. L-code RAMP_SHUMULVEY_25STOCK_FAIL_20260619.",
       "grade": "A",
       "metric_type": "backtested",

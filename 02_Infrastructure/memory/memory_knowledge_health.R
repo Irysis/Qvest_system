@@ -722,6 +722,36 @@ if (length(missing_np) > 0) {
               n_recent_neg))
 }
 
+# ─── WARN_10: knowledge_index 신선도 (2026-08-20 배선) ───────────
+#   배경: 검사기(02_Infrastructure/ops/knowledge_index_freshness.R)는 2026-08-20 에
+#   신설됐고 돌연변이 6종에서 검출력이 실증됐는데, **부르는 운영 소비자가 0** 이었다
+#   (git grep 히트 = 자기 파일 + 자기 테스트 2곳뿐). 계기를 만들어놓고 설치하지 않은 상태 =
+#   원래 결함(knowledge_index 낙후를 아무 데도 못 잡는다)이 운영에서 그대로였다.
+#   ★이것이 오늘 감사가 지목한 '표준은 있는데 소비자가 0' 계통 그 자체다 — 수리하며 하나 더 만든 셈.
+#   판정은 mtime 이 아니라 **카운트 대조**(corpus n_lcodes ↔ index counts.lcode_corpus).
+#   SKIP(파일 부재/파싱 실패)은 조용히 통과시키지 않고 사유를 인쇄한다.
+kif_path <- file.path(root, "02_Infrastructure", "ops", "knowledge_index_freshness.R")
+if (file.exists(kif_path)) {
+  kif <- tryCatch({
+    local({ source(kif_path, local = TRUE); check_knowledge_index_freshness(root = root) })
+  }, error = function(e) list(status = "SKIP", reason = "checker_error",
+                              detail = conditionMessage(e)))
+  kst <- as.character(kif$status %||% "SKIP")[1]
+  if (identical(kst, "STALE")) {
+    add_warn("WARN_10_knowledge_index_stale",
+             sprintf("knowledge_index 낙후 — %s (검사: ops/knowledge_index_freshness.R · 복구: Rscript 02_Infrastructure/ops/build_knowledge_index.R)",
+                     paste(c(kif$reason, kif$detail), collapse = " ")))
+  } else if (identical(kst, "SKIP")) {
+    cat(sprintf("  knowledge_index 신선도: SKIP — %s %s\n",
+                kif$reason %||% "", kif$detail %||% ""))
+  } else {
+    cat(sprintf("  knowledge_index 신선도: OK — %s\n",
+                paste(c(kif$reason, kif$detail), collapse = " ")))
+  }
+} else {
+  cat("  knowledge_index 신선도: 검사기 부재 (ops/knowledge_index_freshness.R) — 건너뜀\n")
+}
+
 # ─── Summary ─────────────────────────────────────────────────────
 cat("\n=== SUMMARY ===\n")
 cat(sprintf("Hard fails: %d\n", length(hard_fails)))
