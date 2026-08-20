@@ -563,7 +563,7 @@ if (file.exists(settings_path)) {
   ln <- tryCatch(readLines(map_path, warn = FALSE, encoding = "UTF-8"),
                  error = function(e) character(0))
   ln <- sub("[\r\n]+$", "", ln)
-  rows <- ln  # MUT-M3: 표 본문이 아니라 파일 전체를 해시
+  rows <- ln[startsWith(ln, "|")]
   rows[!grepl("^\\|[[:space:]:|-]+\\|[[:space:]]*$", rows)]
 }
 
