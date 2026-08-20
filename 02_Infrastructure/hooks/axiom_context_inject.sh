@@ -201,7 +201,9 @@ try:
         #   상단 axis의 'DPL은 settled — 레버 아님'과 자기모순 주입. 첫 non-settled 세그먼트 선택,
         #   전 세그먼트 settled면 재검토 문구로 대체. 예산(380자·절단 우선순위·dist_min 바닥) 불변.
         import re as _re_rv
-        _settled_rv = _re_rv.compile(r'DPL|regime.?conditional|ML.?sizing|uncertainty.?sizing', _re_rv.I)
+        # (2026-08-17) settled lane 패턴도 CLAUDE.md 정본 파생(_SETTLED_PAT) — 하드코딩 제거.
+        #   파생 실패 시 _SETTLED_FALLBACK(구 하드코딩) 그대로라 회귀 없음.
+        _settled_rv = _re_rv.compile(_SETTLED_PAT, _re_rv.I)
         _rl = []
         for x in _fired[:3]:
             _segs = [s.strip() for s in str(x.get('frontier') or '').split('|') if s.strip()]
