@@ -74,8 +74,17 @@ suppressMessages(source(CR))
 ##   `.cache` 는 main 루트의 **심볼릭 링크**라 worktree 엔 없다 ⇒ 없는 경로를 보고 '변화 없음' =
 ##   **공허한 PASS**(오늘 반복된 '빈 결과 = 합격'). D2 가드가 그걸 잡아 이 수리가 나왔다.
 cr_root <- tryCatch(.cr_root(), error = function(e) .root)
+## 2026-08-16: 세션별 마커가 **세 번째 쓰기 경로**로 추가됐다(교차-세션 누수 수리).
+##   경로는 계약 자신의 헬퍼로 만든다 — 여기서 경로를 다시 조립하면 소비처가 정본을
+##   복제하는 그 계통(감사 §5 #1)이 된다. 세션 불명이면 계약도 안 쓰므로 감시도 없다.
+.sess_marker <- tryCatch({
+  sid <- .cr_session_id()
+  if (nzchar(sid)) file.path(cr_root, ".cache", .CR_SESSION_MARKER_DIR,
+                             paste0(.cr_sanitize_sid(sid), ".json")) else character(0)
+}, error = function(e) character(0))
 watch <- c(file.path(cr_root, ".cache/last_round_closure.json"),
-           file.path(cr_root, ".cache/round_closures.jsonl"))
+           file.path(cr_root, ".cache/round_closures.jsonl"),
+           .sess_marker)
 cat(sprintf("  감시 경로 루트: %s\n", cr_root))
 r5 <- assert_no_side_effects(
   suppressMessages(close_round(

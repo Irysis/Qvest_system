@@ -363,6 +363,17 @@ SUITES=(
   #   결손이 정상 데이터로 위장된다(월 누적 -17.70% vs 정본 -23.63%, 5.93%p).
   #   07-25 date32 writer 불일치(조인 silent all-NA·7일 방치·감지장치 0)와 같은 계통.
   "08_Tests/data/test_benchmark_source_parity.R"
+  # 2026-08-20 추가: 정합 감시기의 **방향 판정 축** 위반 주입 (증거축 (c) 동반 신설).
+  #   이 판정기가 틀리면 수리기가 **정상 소스를 오염값으로 덮어쓴다** — 경보는 맞는데
+  #   처방이 거꾸로인 상태(08-08 주석의 실사고). 그래서 축 자체를 시험한다.
+  #   ★박제하는 불변식 = **축 순서**: (c) close_reproducible 은 "benchmark 의 BM_Ret 이
+  #     자기 BM_Close 로 재현되는가"를 보는데, benchmark 가 스케일 단절로 오염된 경우
+  #     close 에도 같은 단절이 있어 **재현은 된다** → (c) 단독이면 "RAWDATA 오염"으로
+  #     뒤집힌다. (a) value_plausibility 가 먼저여야 막힌다(T4b/T4c).
+  #   축 도입 계기: 2026-08-20 KRX 백필이 08-18/19 의 BM_Ret 을 자체계산으로 써서
+  #     benchmark 와 갈렸는데, (a)(b) 만으로는 08-18(-0.2806)이 문턱 0.30 을 간발로
+  #     밑돌아 **undetermined** 로 남아 수리가 막혔다.
+  "08_Tests/data/test_parity_direction_axes.R"
   # 2026-08-09 추가: RAWDATA `Size` 스케일 정합 + writer 추적성.
   #   원 결함 = naver_data_collector.R:88 이 시가총액 단위를 억원 대신 백만원으로 오해해
   #   `* 1e6` 적용 → **정확히 100배 축소**된 Size 를 2026-07~08 에 43,013행(시장 전체
@@ -934,6 +945,30 @@ SUITES=(
   "08_Tests/hooks/test_benchmark_values_plausible.R"
   "08_Tests/hooks/test_blunt_anchor_failclosed.R"
   "08_Tests/ramp/test_gate3_4.R"
+  # 2026-08-16 추가: 연속성 마커의 **정체 검사** 차단 실효 (교차-세션 누수).
+  #   원 결함 = `marker_fresh` 가 `.cache/last_round_closure.json` 의 **mtime 만** 봤다.
+  #   그 파일은 루트 단일 파일이고(main 의 `.cache` 는 `/c/qm_cache` 심볼릭 링크 = 머신 공유)
+  #   훅이 `DIR=${CLAUDE_PROJECT_DIR:-${QM_ROOT:-$PWD}}` 로 서는데 CLAUDE_PROJECT_DIR 이
+  #   Bash/훅 환경에 없어 **모든 워크트리 세션이 main 의 같은 마커**를 읽고 쓴다 ⇒ 병렬
+  #   세션이 내 프롬프트 이후 아무 라운드나 닫으면 **남이 생산한 계속으로 내 턴이 통과**.
+  #   실측(실훅 경로·user_ts 존재): 같은 종결 텍스트가 user_ts=07:25Z→PASS
+  #   (marker_round_id=INFRA-WT-PURGE-20260816-P2, 이 세션 것 아님) / 07:35Z→BLOCK.
+  #   갈린 것은 서술이 아니라 **남의 mtime** — 방화벽의 핵심 속성("계속을 *생산*해야 한다")이
+  #   병렬 세션 수만큼 무력화된다.
+  #   ★기존 continuity 배터리는 이 결함을 **구조적으로 못 본다**: 판정 root 를 빈 임시
+  #     디렉토리로 격리하고 포장도로는 `marker_override=True` 로 주입해 marker_fresh 의
+  #     본문이 한 번도 실행되지 않았다(무커버 축). 그래서 별도 suite 다.
+  #   ★수리가 정체 검사 **단독**이면 역방향 회귀가 난다 — 병렬 세션이 공유 파일을 덮어써
+  #     내가 정당히 닫은 턴이 차단된다. 그래서 세션별 마커를 함께 발행하고 F 축이 그걸 잰다.
+  #   ★I 축(돌연변이) = 구 mtime-only 복원 시 B 가 PASS 로 뒤집히는지. B 의 BLOCK 이
+  #     정체 검사에서 온 것임을 매 실행 실증(오탐 제거와 검사 사망은 겉보기가 같다).
+  #   ★L 축(루트 갈림) = 수리 중 나온 **반대 방향 동반 결함**. close_round 는 Bash 툴
+  #     (CLAUDE_PROJECT_DIR 부재)에서 QM_ROOT=main 에 쓰는데 훅은 CLAUDE_PROJECT_DIR 이
+  #     설정돼 **워크트리 루트**에서 읽는다 ⇒ 워크트리 세션은 제 마커를 원리적으로 못 찾는다
+  #     (포장도로 사망 = 상시 오차단). 실측: 워크트리 .cache 에 게이트 산출물은 있는데
+  #     closure 파일 0건, 종료 기록 468건 전부 main. L1 이 복구를, L2 가 "공유 루트를 훑어도
+  #     남의 마커는 여전히 차단" 을 확인한다(루트 확장이 누수를 되열지 않는지).
+  "08_Tests/hooks/test_continuity_marker_identity.py"
 )
 
 # (2026-08-02) .py 분기 추가 — 종전엔 확장자 무관 `bash` 로 던져 파이썬 suite 가

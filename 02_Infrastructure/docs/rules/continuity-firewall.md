@@ -46,6 +46,17 @@
 - **강제 검증(미충족=stop)**: verdict_type ∈ 6-enum(종결어휘 대신 구조화) · mechanism ≥20자 · **next_probes ≥2** · consumer_surfaces 또는 frontier ≥1 · **negative면 live_trigger 필수**.
 - 통과 시 `.cache/last_round_closure.json` 마커 발행(→ L2 게이트 자동 통과) + `.cache/round_closures.jsonl` 감사 + **사람용 요약 반환**(Q-Lead가 이걸로 보고 → 구조화 필드 = 서술의 원천, "make the right thing the only expressible thing").
 
+#### ★마커 정체 계약 (2026-08-16 수리 — 교차-세션 누수)
+- **결함**: 구 `marker_fresh` 는 마커의 **mtime 만** 봤다. 그 파일은 루트 단일 파일이고(main 의 `.cache` 는 `/c/qm_cache` **심볼릭 링크** = 머신 공유), settings.json 이 `DIR=${CLAUDE_PROJECT_DIR:-${QM_ROOT:-$PWD}}` 로 훅을 세우는데 **Bash/훅 환경에 `CLAUDE_PROJECT_DIR` 이 없어** 모든 워크트리 세션이 main 의 같은 마커를 읽고 쓴다. ⇒ 병렬 세션이 내 프롬프트 이후 아무 라운드나 닫으면 mtime 이 내 턴 안으로 들어와 **남이 생산한 계속으로 내 턴이 통과**했다. docstring 은 *"이번 턴에 쓴 마커"* 라 선언했고 `round_id` 를 읽기까지 했으나 **검증에 쓰지 않았다** — 존재/신선도 검사로 정체 검사를 대체한 계통(감사 §5 5번째 동류).
+- **실측 재현**(2026-08-16, **실제 훅 경로 · user_ts 존재**): 같은 종결 텍스트가 `user_ts=07:25Z` → **PASS**(`marker_round_id=INFRA-WT-PURGE-20260816-P2`, 이 세션이 만든 라운드 아님) / `user_ts=07:35Z` → **BLOCK**. 갈린 것은 서술이 아니라 **남의 mtime**.
+- **계약**: ① `close_round()` 가 마커·원장에 `session_id`(발행자 신고)를 쓴다 ② 게이트가 **자기 세션 id** 와 대조한다 — 훅 경로의 권위 출처는 **transcript 파일명**(`<CLAUDE_CODE_SESSION_ID>.jsonl`, 실측 확인), env 는 폴백 ③ 세션별 마커 `.cache/round_closure_by_session/<session_id>.json` 을 함께 발행한다 ④ 게이트는 자기 루트 + **공유 루트**(`QM_ROOT`/`CLAUDE_PROJECT_DIR`)를 함께 훑는다.
+- **③이 왜 필수인가**: ①②만 넣으면 **역방향 회귀**가 난다 — 공유 파일은 마지막 1건만 담으므로 병렬 세션이 내 마커를 덮어쓰면 내가 **정당히 닫은 턴이 차단**된다. 세션별 파일이 포장도로를 보존한다.
+- **④가 왜 필수인가 — ★쓰는 쪽과 읽는 쪽의 루트가 갈려 있었다 (2026-08-16 동반 발견)**: `close_round()` 는 **Bash 툴**에서 도는데 그 환경엔 `CLAUDE_PROJECT_DIR` 이 **없어** `QM_ROOT`(=main)의 `.cache` 에 쓰고, **Stop 훅**에는 `CLAUDE_PROJECT_DIR` 이 **설정돼** 게이트는 **워크트리 루트**의 `.cache` 를 읽는다. ⇒ 워크트리 세션에서는 정당하게 닫은 마커가 **원리적으로 게이트에 안 보인다**(포장도로 사망 = 상시 오차단 원천).
+  - 실측 근거: 워크트리 `.cache` 에 게이트가 쓴 `continuity_blocks.jsonl`·`continuity_gate_counters` 는 **존재**하는데 closure 파일은 **0건**이고, 종료 기록 **468건 전부**가 main 의 `.cache`(→ `/c/qm_cache` 심볼릭 링크)에 있다. 즉 reader-root=워크트리 · writer-root=main 이 같은 시각에 공존한다.
+  - **정체 검사가 있으므로 공유 루트를 훑어도 안전하다** — 남의 마커는 `foreign_session` 으로 떨어진다. *정체 없이 공유하면 누수, 정체가 있으면 공유 디렉토리는 그냥 공용 보관소다.* (검사 L2 가 이 안전성을 확인 — 루트 확장이 누수를 되열지 않는지.)
+- **fail-closed**: 정체 확인 불가(세션 불명 · `session_id` 필드 없는 구판 마커 · 불일치)면 마커를 인정하지 않는다. 인라인 경로(next_probe≥2 + 부활조건)는 무영향이라 정당한 종료는 계속 통과한다. 차단 사유는 `contract.marker_why` ∈ {`own`,`foreign_session`,`unattributed`,`stale`,`no_marker`,`unknown_session`} 로 진단 가능하게 남는다.
+- **검사**: `08_Tests/hooks/test_continuity_marker_identity.py` (배터리 등재, **31/31**) — 위반 주입 양방향(A 자기 마커 PASS · B 남의 마커 BLOCK · C 마커 없음 BLOCK) + D 구판 마커 · E stale · **F 덮어쓰기 회귀** · G fail-closed · H 인라인 무영향 · **I 돌연변이**(구 mtime-only 복원 시 B 가 PASS 로 뒤집힘 = B 의 차단이 정체 검사에서 온다는 실증) · **L 루트 갈림**(L1 다른 루트의 내 마커 발견 / L2 그래도 남의 것은 차단) · J 실훅 E2E 양방향 · K R 계약 도달.
+
 ### L4 — 자가발전 (§0.1 원리 3·4·5)
 - 게이트가 **신어(backstop 사전 밖·verdict_close로만 잡힌)** 차단 시 `_capture_pending`이 `.cache/continuity_pending_cases.json`에 후보 자동 포착.
 - 주간 `weekly_cleaner_sweep.R` step [3.7]가 `continuity_gate.py --review`를 호출해 pending을 `cleaner_pending.json` 다이제스트에 실음 → **/cleaner 세션이 category/why/reframe 정제 후 `--append-case`로 승격**.
@@ -80,6 +91,7 @@
 
 - **테스트**: `"$QVEST_PY" 02_Infrastructure/tests/test_continuity_gate.py` — **31/31 배터리**(2026-07-25 실측 현행화. 구 "12/12"는 케이스 확장 전 수치) — 역대 우회어 BLOCK·정당종료 PASS·신어 anti-whack-a-mole·paved-path·ADV 우회 10종·회귀 재현(RP) 케이스. bare `python`은 이 환경에서 Store 스텁이라 실행되지 않는다([[reference-python3-windows-stub-use-qvest-py]]).
   - **★배터리는 판정용 root를 임시 디렉토리로 격리한다** (2026-07-25 수리). 종전엔 `judge_text(root=<실제 저장소>)` 라 `marker_fresh()` 가 운영 마커 `.cache/last_round_closure.json` 을 조회했고, **마커가 fresh 인 동안 차단 케이스 22건이 전부 통과**했다(실측: 마커 존재 시 9/31 · 마커 격리 시 31/31). 게이트가 아니라 배터리가 오염된 것으로, 정상 운영 중 배터리를 돌리면 *"차단 능력이 있다"는 거짓 확신*을 준다 — 가드의 가드가 오염되는 계열이라 더 위험하다. 원칙: **테스트 결과가 운영 상태에 의존해선 안 된다.** 마커가 필요한 케이스는 `marker_override` 로 명시 주입(P6가 그 경로를 검증).
+  - **⚠그 격리의 대가 (2026-08-16 발견)**: root 를 비우고 포장도로를 `marker_override=True` 로 주입한 결과, **`marker_fresh()` 본문이 이 배터리에서 한 번도 실행되지 않는다** — 교차-세션 정체 누수가 31/31 초록 아래에서 잠복한 이유다. 격리는 옳지만 그것만으로는 마커 경로가 **무커버**가 된다. ⇒ 마커 자체를 재는 축은 별도 suite 로 분리: `08_Tests/hooks/test_continuity_marker_identity.py`(케이스마다 새 임시 root 에 마커를 **정체·mtime 지정으로 심어** 실행하므로 운영 상태 비의존 원칙은 유지).
 - **stats/review**: `continuity_gate.py --stats` / `--review` (pending 신어 후보).
 - **수동 케이스 추가**: `continuity_gate.py --append-case <category> <caught_text> <why> <reframed_to>` (도훈이 새 우회 적발 시 즉시).
 - **LLM 토글**: `QVEST_CONTINUITY_LLM=1` + `ANTHROPIC_API_KEY` (§0.1 semantic-primary 완전체. 기본 OFF).
