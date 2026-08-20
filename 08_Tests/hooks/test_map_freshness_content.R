@@ -171,6 +171,11 @@ writeLines(c(
   "rows=[EOL.sub('',x) for x in lines]",
   "rows=[x for x in rows if x.startswith('|')]",
   "rows=[x for x in rows if not SEP.match(x)]",
+  # ★공백 정규화(2026-08-20) — 훅 본문 mf_table_rows 와 문자 그대로 일치.
+  #   ⚠이 프로브는 **재타이핑 사본** — 위 주석이 예고한 드리프트가 실제로 발생해 B1 이 깨졌다.
+  "rows=[re.sub(r'[ \\t\\u00a0]+',' ',x) for x in rows]",
+  "rows=[re.sub(r' *\\| *','|',x) for x in rows]",
+  "rows=[x.strip() for x in rows]",
   "print(len(rows)); print(hashlib.sha256('\\n'.join(rows).encode('utf-8')).hexdigest())"
 ), py_probe)
 py_out <- suppressWarnings(system2(QPY, c(shQuote(py_probe), shQuote(MAP)), stdout = TRUE, stderr = TRUE))

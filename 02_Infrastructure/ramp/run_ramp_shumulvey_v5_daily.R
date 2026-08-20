@@ -20,6 +20,7 @@ LAMM<-as.numeric(strsplit(Sys.getenv("SMV_LAMMULT","1,2"),",")[[1]])
 SHIFT<-as.integer(Sys.getenv("SMV_SHIFT","2"))   # D1 회계 시프트: 2=T+2(정본) / 3=lag1 스트레스 / 0=동월성 고의 재현(strict A/B 문서화용 — 헤드라인 금지)
 PSEED<-Sys.getenv("SMV_PLACEBO_SEED","")          # 설정 시 뷰 월-블록 셔플 placebo (상태·Σ·c 기계 불변, 뷰 타이밍만 파괴)
 TE_FILTER<-Sys.getenv("SMV_TE","")                # 예: "3" 또는 "3,4" — 지정 시 해당 TE 타깃만 실행
+TUNE<-Sys.getenv("SMV_TUNE","fixed")              # fixed=λ50/κ²9.5 | roll=인과 rolling re-tune (P1c: 6mo마다 trailing 6y 검증 L/S(T+1적용+5bps) argmax — IS-only 인과, 논문 §3.2)
 KEY<-Sys.getenv("SMV_KEY",FEATSET)
 PG<-sprintf(".cache/_smv_v5_prog_%s.txt",KEY); cat("start\n",file=PG); pg<-function(...)cat(sprintf(...),file=PG,append=TRUE)
 
@@ -82,9 +83,17 @@ if(FEATSET %in% c("f17","f17_usvix")){
 }
 feats<-lapply(FACN,function(f)build_feat_v2(ACT[[f]],R$Market,FEATSET,extras)); names(feats)<-FACN
 
-## ==== STAGE 1: 월간 refit (λ=50/κ²=9.5 고정 — prereg) + 산출 보존 ====
+## ==== STAGE 1: 월간 refit (fixed: λ=50/κ²=9.5 — prereg | roll: 인과 재선택) + 산출 보존 ====
 MINY<-8; MAXY<-12; PER<-252
-refit_cache<-sprintf(".cache/_smv_v5_refit_%s_%s.rds",FEATSET,gsub("[^A-Za-z0-9]","_",basename(IDXFILE)))
+GRID9<-expand.grid(lam=c(20,50,100),k2=c(6,9.5,14))   # v3 grid 승계 (사전등록 v3 프로토콜)
+ls_sh_t1<-function(s,aok){ n<-length(s); if(n<100)return(-9)   # 검증 L/S: T+1 적용 + 5bps (v3 same-day 결함 수리)
+  vr<-sapply(1:2,function(k){v<-mean(aok[s==k])*PER; if(!is.finite(v))0 else max(min(v,0.05),-0.05)})
+  pos<-pmax(pmin(vr[s]/0.05,1),-1)
+  cost<-5e-4*abs(c(0,diff(pos)))
+  net<-pos[1:(n-1)]*aok[2:n]-cost[1:(n-1)]
+  net<-net[is.finite(net)]; if(length(net)<100||sd(net)<1e-9)return(-9)
+  mean(net)/sd(net)*sqrt(PER) }
+refit_cache<-sprintf(".cache/_smv_v5_refit_%s_%s_%s.rds",FEATSET,TUNE,gsub("[^A-Za-z0-9]","_",basename(IDXFILE)))
 REF<-NULL
 if(file.exists(refit_cache)){ z<-readRDS(refit_cache)
   if(identical(z$idx_max,max(R$Date)) && identical(z$nm,NM)) REF<-z$REF }
