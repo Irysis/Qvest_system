@@ -4,6 +4,7 @@
 suppressPackageStartupMessages({library(data.table); library(arrow); library(xts)})
 QM<-"C:/Users/99922/OneDrive/Quant_Module_Moltbot"; setwd(QM)
 source("02_Infrastructure/contracts/backtest_result_contract.R")
+source("02_Infrastructure/contracts/audit_bt_result.R")
 source("02_Infrastructure/contracts/essence_score.R")
 
 KEY<-Sys.getenv("SMV_KEY","f15")
