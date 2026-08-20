@@ -91,6 +91,31 @@ if (nleak == 0L) ok(sprintf("OFF 에서는 전부 미검출 (OFF=%d) - ON/OFF �
   ng(sprintf("OFF 인데 %d건 검출 - 대조 무효(원래 잡히던 것)", nleak))
 unlink(FX, recursive = TRUE)
 
+cat("== [F] 재할당 무효화 (2026-08-20 추가) ==
+")
+# ★python 판에서 실결함으로 적발된 축을 R 에도 고정한다.
+#   deployed_holdings_check.py:85 `t = pq.read_table(...)` 가 별칭 t 를 덮어쓰는데
+#   추출기가 계속 정본 별칭으로 봐서 $Date 를 허위 추출했다. R 판도 같은 결함이었다.
+#   ⚠수리 직후 반대 방향도 재야 한다 — 무효화를 넣자 과잉 교정으로 정당 접근까지 죽었다.
+RX <- file.path(ROOT, ".cache", "_test_realias")
+unlink(RX, recursive = TRUE); dir.create(RX, recursive = TRUE, showWarnings = FALSE)
+rf <- file.path(RX, "fx.R")
+writeLines(c(
+  'defaults <- fromJSON("x.json")',
+  'ts <- defaults$tier_soft_deployment',
+  'a <- ts$max_names',
+  'ts <- read.csv("other.csv")',
+  'b <- ts$SomeColumn'), rf, useBytes = TRUE)
+if (file.exists(rf)) ok("[선행검증] 재할당 픽스처 생성") else ng("[선행검증] 픽스처 실패")
+pr <- extract_paths(rf, "defaults")
+if (!("defaults$tier_soft_deployment$SomeColumn" %in% pr))
+  ok("재할당 후 접근이 오탐으로 안 들어감") else
+  ng("재할당 무효화 미작동 - 다른 값의 필드가 정본 경로로 잡힘")
+if ("defaults$tier_soft_deployment$max_names" %in% pr)
+  ok("재할당 *이전* 정당 접근은 보존 (과잉 교정 아님)") else
+  ng("과잉 교정 - 재할당 이전 접근까지 죽었다")
+unlink(RX, recursive = TRUE)
+
 cat("== [D] 소비면 산출 스모크 ==
 ")
 r <- sot_unconsumed(SOT, list(c(SRC, "defaults")))
