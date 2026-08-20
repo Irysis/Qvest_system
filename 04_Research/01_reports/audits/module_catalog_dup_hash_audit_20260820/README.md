@@ -117,6 +117,20 @@ cd /c/Users/99922/OneDrive/Quant_Module_Moltbot && Rscript -e 'source("04_Resear
 적용 후속 의무: `build_module_performance.R` 재실행 + standalone_track_queue 재빌드.
 추가 결정: v8.4 SOT "동일 3짝" 절의 기전 서술 정정 여부 (위 함의 절).
 
+## 적용 이력 (2026-08-20 도훈 confirm — `--apply --defr-nonrep`)
+
+- catalog: 주석 167 + 비대표 de-FR 100 (fr_eligible 199→99). 백업 = `module_catalog.json.bak_dup_audit_20260820_205802`.
+- `build_module_performance.R` 재빌드: **210 → 111 모듈**.
+- `standalone_track_queue.R` 재빌드: 중복행 0 · 역추적 불가 0 · 미처분 1(본 오염과 무관한 기존 항목).
+- **재빌드 검증이 3번째 결함을 검거**: de-FR 된 비대표 3건(160537/021015/044603)이
+  `04_Research/grade_a_catalog.json` 의 **6월 proxy-A 라벨**로 allowlist 재진입 — legacy 이관
+  예외가 catalog 권위(fr_eligible·backtested 재판정)를 우회하는 구조. 수리 =
+  `build_module_performance.R` legacy 루프에 "catalog 에 행이 있는 id 는 legacy 경로 제외"
+  가드(register_module 08-02 상호배타 계약과 동일 원칙). 수리 후 잔존 0 실측.
+- 검사: `test_register_module.R` 15/15 · `test_r_portability.R` 22/22.
+- 참고: FQ-100 쌍(08-09)은 **apply 이전부터** 양쪽 fr_eligible=False 였음(퇴행 아님). 단
+  flag=False 인데 eligibility_reason="FR_ELIGIBLE" 인 기존 모순 2행 잔존 — 후속 위생 항목.
+
 ## 교훈 (메모리 카드 동시 적립)
 
 - **바이트 동일 산출물의 이명 등재는 원장 계층이 아니라 실행 계층에서 태어난다** — 측정
