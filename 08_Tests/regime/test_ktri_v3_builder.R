@@ -160,5 +160,8 @@ if (!is.null(.orig_cache)) CACHE_DIR <- .orig_cache
 cat(sprintf("\n── test_ktri_v3_builder: %d passed, %d failed ──\n\n",
             pass_count, fail_count))
 
+# 2026-08-20: 배터리는 마지막 유효 JSON 줄만 읽는다 — 이 줄이 없어 미편입 상태였다.
+cat(sprintf("{\"test\":\"test_ktri_v3_builder\",\"pass\":%d,\"fail\":%d,\"total\":%d}
+", pass_count, fail_count, pass_count + fail_count))
 if (fail_count > 0) stop(sprintf("test_ktri_v3_builder: %d failures", fail_count))
 invisible(list(pass = pass_count, fail = fail_count))

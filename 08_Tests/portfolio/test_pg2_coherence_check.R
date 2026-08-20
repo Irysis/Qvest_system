@@ -133,4 +133,7 @@ if (length(cs)) {
 }
 
 cat(sprintf("\nFINAL: passed=%d failed=%d\n", PASS, FAIL))
+# 2026-08-20: 배터리는 마지막 유효 JSON 줄만 읽는다 — 이 줄이 없어 미편입 상태였다.
+cat(sprintf("{\"test\":\"test_pg2_coherence_check\",\"pass\":%d,\"fail\":%d,\"total\":%d}
+", PASS, FAIL, PASS + FAIL))
 quit(status = if (FAIL > 0) 1 else 0)

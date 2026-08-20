@@ -72,4 +72,7 @@ main <- function() {
 }
 
 .rc <- main()
+# 2026-08-20: 배터리는 마지막 유효 JSON 줄만 읽는다 — 이 줄이 없어 미편입 상태였다.
+cat(sprintf("{\"test\":\"test_c15_load_path_scan\",\"pass\":%d,\"fail\":%d,\"total\":%d}
+", pass, fail, pass + fail))
 if (!interactive()) quit(status = .rc)

@@ -169,5 +169,8 @@ if (!is.null(.real_tg_api)) .TG_API <<- .real_tg_api
 cat(sprintf("\n── test_briefing_partial: %d passed, %d failed ──\n\n",
             pass_count, fail_count))
 
+# 2026-08-20: 배터리는 마지막 유효 JSON 줄만 읽는다 — 이 줄이 없어 미편입 상태였다.
+cat(sprintf("{\"test\":\"test_briefing_partial\",\"pass\":%d,\"fail\":%d,\"total\":%d}
+", pass_count, fail_count, pass_count + fail_count))
 if (fail_count > 0) stop(sprintf("test_briefing_partial: %d failures", fail_count))
 invisible(list(pass = pass_count, fail = fail_count))

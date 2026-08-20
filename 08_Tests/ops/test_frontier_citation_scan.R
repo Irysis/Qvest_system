@@ -106,4 +106,7 @@ if (flagged(rF, "FQ-A")) ok("원장에서 지우니 발화 (검출력 실증)") 
   bad("돌연변이 미검출", "원장에 없는데도 통과 — 검사가 원장을 실제로 안 봄")
 
 cat(sprintf("\nFINAL: PASS=%d FAIL=%d\n", PASS, FAIL))
+# 2026-08-20: 배터리는 마지막 유효 JSON 줄만 읽는다 — 이 줄이 없어 미편입 상태였다.
+cat(sprintf("{\"test\":\"test_frontier_citation_scan\",\"pass\":%d,\"fail\":%d,\"total\":%d}
+", PASS, FAIL, PASS + FAIL))
 quit(status = if (FAIL > 0) 1 else 0)

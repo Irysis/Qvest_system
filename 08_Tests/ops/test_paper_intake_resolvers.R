@@ -74,4 +74,7 @@ chk("system python", is_store_stub("C:/Program Files/Python312/python.exe"),  FA
 chk("빈 문자열",     is_store_stub(""), FALSE)
 
 cat(sprintf("\nRESULT: %d PASS / %d FAIL\n", pass, fail))
+# 2026-08-20: 배터리는 마지막 유효 JSON 줄만 읽는다 — 이 줄이 없어 미편입 상태였다.
+cat(sprintf("{\"test\":\"test_paper_intake_resolvers\",\"pass\":%d,\"fail\":%d,\"total\":%d}
+", pass, fail, pass + fail))
 if (fail > 0L) quit(status = 1L)

@@ -282,6 +282,9 @@ cat(sprintf("PASS: %d\n", pass_count))
 cat(sprintf("FAIL: %d\n", fail_count))
 cat("Ended:", format(Sys.time()), "\n\n")
 
+# 2026-08-20: 배터리는 마지막 유효 JSON 줄만 읽는다 — 이 줄이 없어 미편입 상태였다.
+cat(sprintf("{\"test\":\"test_mvo_turnover_penalty\",\"pass\":%d,\"fail\":%d,\"total\":%d}
+", pass_count, fail_count, pass_count + fail_count))
 if (fail_count > 0) {
   cat("[OVERALL] FAIL\n")
   quit(save = "no", status = 1)

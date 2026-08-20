@@ -588,4 +588,7 @@ write_json(
 )
 cat(sprintf("Results: %s\n", out_json))
 
+# 2026-08-20: 배터리는 마지막 유효 JSON 줄만 읽는다 — 이 줄이 없어 미편입 상태였다.
+cat(sprintf("{\"test\":\"test_wt_lifecycle_e2e\",\"pass\":%d,\"fail\":%d,\"total\":%d}
+", PASS_COUNT, FAIL_COUNT, PASS_COUNT + FAIL_COUNT))
 if (FAIL_COUNT > 0) quit(status = 1)
