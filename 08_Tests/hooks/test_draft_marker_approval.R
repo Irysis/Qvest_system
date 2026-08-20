@@ -96,15 +96,21 @@ stopifnot(!is.null(dk$entries), length(dk$entries) > 0)
 sts <- vapply(dk$entries, function(e) as.character(e$status %||% "<MISSING>"), character(1))
 tab <- table(sts)
 cat("      실측 분포: ", paste(sprintf("%s=%d", names(tab), as.integer(tab)), collapse = " / "), "\n", sep = "")
-known <- names(HI_DRAFT_MARKERS)
-unknown_sts <- setdiff(names(tab), c(known, "<MISSING>"))
-ok("0a 매핑 미등재 status 없음", length(unknown_sts) == 0,
-   if (length(unknown_sts)) paste("미등재:", paste(unknown_sts, collapse = ",")) else
-     paste("등재", length(known), "종이 정본", length(tab), "종을 전부 덮음"))
-ok("0b 승인 status 는 정확히 'distilled' 1종", identical(unname(HI_DRAFT_MARKERS[["distilled"]]), ""),
-   "distilled 만 마커 없음")
-ok("0c 그 외 4종은 전부 비어있지 않은 마커",
-   all(nzchar(unname(HI_DRAFT_MARKERS[setdiff(known, "distilled")]))))
+if (exists("HI_DRAFT_MARKERS")) {
+  known <- names(HI_DRAFT_MARKERS)
+  unknown_sts <- setdiff(names(tab), c(known, "<MISSING>"))
+  ok("0a 매핑 미등재 status 없음", length(unknown_sts) == 0,
+     if (length(unknown_sts)) paste("미등재:", paste(unknown_sts, collapse = ",")) else
+       paste("등재", length(known), "종이 정본", length(tab), "종을 전부 덮음"))
+  ok("0b 승인 status 는 정확히 'distilled' 1종", identical(unname(HI_DRAFT_MARKERS[["distilled"]]), ""),
+     "distilled 만 마커 없음")
+  ok("0c 그 외 4종은 전부 비어있지 않은 마커",
+     all(nzchar(unname(HI_DRAFT_MARKERS[setdiff(known, "distilled")]))))
+} else {
+  ok("0a 매핑 미등재 status 없음", FALSE, "HI_DRAFT_MARKERS 미정의 (pre-fix 소스)")
+  ok("0b 승인 status 는 정확히 'distilled' 1종", FALSE, "HI_DRAFT_MARKERS 미정의")
+  ok("0c 그 외 4종은 전부 비어있지 않은 마커", FALSE, "HI_DRAFT_MARKERS 미정의")
+}
 
 # ---------------------------------------------------------------------
 # ★조작 선행검증: 픽스처 빌더가 실제로 의도한 status 를 심는지 먼저 증명
