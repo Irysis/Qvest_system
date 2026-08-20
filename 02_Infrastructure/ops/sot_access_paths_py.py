@@ -64,9 +64,15 @@ def extract_paths(path, root_var, follow_alias=True):
             for node in ast.walk(tree):
                 if isinstance(node, ast.Assign) and len(node.targets) == 1 \
                         and isinstance(node.targets[0], ast.Name):
+                    tgt = node.targets[0].id
                     r = _chain_of(node.value, roots)
                     if r and r[1]:
-                        roots[node.targets[0].id] = roots[r[0]] + r[1]
+                        roots[tgt] = roots[r[0]] + r[1]
+                    elif tgt != root_var and tgt in roots:
+                        # 재할당 무효화: 별칭이 정본 체인이 아닌 것으로 다시 할당되면
+                        # 별칭 자격 박탈. deployed_holdings_check.py:85 의
+                        # `t = pq.read_table(...)` 가 $Date 오탐을 냈던 결함.
+                        del roots[tgt]
 
     out = set()
     for node in ast.walk(tree):

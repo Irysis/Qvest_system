@@ -61,8 +61,15 @@ extract_paths <- function(file, root_var, follow_alias = TRUE) {
       op <- as.character(e[[1]])[1]
       if (op %in% c("<-", "=", "<<-") && length(e) == 3 && is.symbol(e[[2]])) {
         lhs <- as.character(e[[2]]); r <- chain_of(e[[3]])
-        if (!is.null(r) && length(r$chain) > 0 && !is.null(roots[[r$root]]))
+        if (!is.null(r) && length(r$chain) > 0 && !is.null(roots[[r$root]])) {
           roots[[lhs]] <<- c(roots[[r$root]], r$chain)
+        } else if (!identical(lhs, root_var) && !is.null(roots[[lhs]])) {
+          # ★재할당 무효화(2026-08-20): 별칭 변수가 **정본 체인이 아닌 것**으로
+          #   다시 할당되면 별칭 자격을 박탈한다. 이걸 안 하면 `t <- read.csv(...)` 후의
+          #   `t$SomeColumn` 이 정본 경로로 잡힌다(python 판 실측에서 적발 —
+          #   deployed_holdings_check.py:85 `t = pq.read_table(...)` 가 $Date 오탐을 냈다).
+          roots[[lhs]] <<- NULL
+        }
       }
       for (i in seq_along(e)) if (!is.null(e[[i]])) try(collect(e[[i]]), silent = TRUE)
     } else if (is.pairlist(e) || is.expression(e)) {
