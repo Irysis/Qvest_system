@@ -145,8 +145,10 @@ Qvest 시스템 전체 구동. bootstrap.sh 실행 → 플러그인 리로드 �
 
 ## Production Constraints
 
+<!-- FRONTIER_AXES_START — 기계 앵커(2026-08-17). axiom_context_inject.sh 가 이 구간을 런타임 파싱해 에이전트 주입면의 '봉투 안 레버 프론티어' 줄을 만든다. 캐시 없음 = 이 줄을 고치면 다음 spawn 부터 즉시 반영. 마커 삭제/이동 시 훅은 하드코딩 폴백으로 떨어지고(회귀 없음) 08_Tests/hooks/test_frontier_axes_derive.sh 가 FAIL 한다. -->
 > **★이것은 배포 현실이 정의한 문제의 고정 축이다 — 최적화로 없앨 변수가 아니다.** AX-000 따름정리: 이 봉투 *안에서* 풀어라; 제약 완화(>25종·short 허용·유동성 하향 등)를 레버로 제시하는 것은 게임을 이기는 게 아니라 바꾸는 것이다(실패지식 제약 방화벽 — `02_Infrastructure/docs/rules/axiom-engine.md` INV-7). 조건-안 레버만 프론티어 — 현행(**2026-08-13 v8.4 갱신**): ① **비대칭 표적**(분포-표적 학습 · 일별 축 정보 회수 · 수리통계 구조 추정 — 주력) ② screen-tier 재고 회수(overlay 큐) ③ EW-대비/cap-tier 재분류 ④ overlay 잔여·잔차sleeve(조건부)·multi-sleeve·composite. **DPL(06-26)·regime-conditional 교차결합(07-05)·ML/uncertainty sizing(07-05 2세션)은 settled-negative 실측 — 레버 아님**(부활신호 발화 시에만 재검토, INV-7).
 ⚠**①이 과거 ML 실패의 부활이 아님을 구분할 것**: 죽은 것은 ML 을 **결합기·사이징·평균 예측기**로 쓴 경로(126건 실측)이고, ①은 **표적 자체를 분포로 바꾸는** 미측정 축이다. 표적이 "다음 달 평균 수익률"인 ML 라운드는 **금지**(대조군으로만 등장) — SOT §6 금지 4종.
+<!-- FRONTIER_AXES_END -->
 
 | 제약 | 값 |
 |---|---|

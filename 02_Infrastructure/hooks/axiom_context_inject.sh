@@ -84,7 +84,12 @@ REVIVAL_FLAGS="$DIR/.cache/failure_revival_flags.json"
 #   생산자 = 02_Infrastructure/ops/build_distilled_usage.py → .cache/distilled_usage.json
 #   ★파일 부재/파싱실패 시 기존 refined_at 정렬로 폴백(회귀 없음).
 DIST_USAGE="$DIR/.cache/distilled_usage.json"
-ESC=$(printf '%s' "$HEADER" | CB="$CACHE_BODY" TF="$TRUTHS_FILE" DI="$DIST_INDEX" DU="$DIST_USAGE" RV="$REVIVAL_FLAGS" "$QVEST_PY_BIN" -c "
+# (2026-08-17 폐쇄루프 감사 Rank2 수리) 프론티어 목록 = CLAUDE.md 정본 런타임 파생.
+#   하드코딩(M7 07-10)이 v8.4 재편(08-13) 이후 38일간 낙후돼 매 spawn 마다 도훈이 08-09 에
+#   닫은 lane 을 ①순위 레버로 광고했다(주입문 v8.4 키워드 5종 실측 0건). 캐시를 두면 그
+#   캐시가 다시 낡으므로 캐시 없이 매 호출 CLAUDE.md 를 읽는다.
+CLAUDE_MD="$DIR/CLAUDE.md"
+ESC=$(printf '%s' "$HEADER" | CB="$CACHE_BODY" TF="$TRUTHS_FILE" DI="$DIST_INDEX" DU="$DIST_USAGE" RV="$REVIVAL_FLAGS" CM="$CLAUDE_MD" "$QVEST_PY_BIN" -c "
 import json, os, sys
 def rd(p):
     try:
