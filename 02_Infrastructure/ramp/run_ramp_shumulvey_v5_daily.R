@@ -200,7 +200,8 @@ if(nzchar(PSEED)){
 
 ## ==== STAGE 4: c 캘리브 (각 refit일 ex-ante TE 이분탐색 — 인과) ====
 TE_T<-c(0.01,0.02,0.03,0.04)
-if(nzchar(TE_FILTER)) TE_T<-TE_T[c(0.01,0.02,0.03,0.04)*100 %in% as.numeric(strsplit(TE_FILTER,",")[[1]])]
+if(nzchar(TE_FILTER)) TE_T<-TE_T[round(TE_T*100) %in% round(as.numeric(strsplit(TE_FILTER,",")[[1]]))]
+stopifnot(length(TE_T)>=1)
 cmat<-matrix(NA_real_,NM,length(TE_T))
 for(mi in seq_len(NM)){ ei<-meix[mi]; if(!is.finite(SIG[1,1,ei]))next
   vv<-view_me[mi,]; if(any(!is.finite(vv)))next

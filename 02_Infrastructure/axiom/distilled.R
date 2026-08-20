@@ -465,6 +465,31 @@ refine_distilled <- function(dist_id, statement_refined, retry_condition = NULL,
   cat(sprintf("[distilled] %s refined → status=distilled\n", dist_id))
   rebuild_distilled_index(root, verbose = FALSE)
   update_strategic_truths_distilled_block(root)
+  # ── 파생 사본 3면 중 마지막: revival flags (2026-08-20 배선) ────────────────
+  #   ★실사고: 카드 4장의 stale frontier 를 고쳤는데 **주입면에는 그대로 나갔다**.
+  #   경로가 하나 더 있었다 — .cache/failure_revival_flags.json 이 프론티어 *사본*을 들고
+  #   있고 axiom_context_inject 의 '부활 발화' 블록이 그걸 주입한다. 그 파일은 모닝
+  #   파이프라인(morning_briefing.sh:99 → axiom_approval_queue.R)이 갱신하는데,
+  #   morning_run.sh:195 가 **주말엔 morning_briefing 을 skip** 하므로 카드 수정과 주입
+  #   반영 사이에 최대 3~4일 지연이 생긴다(08-13 사본이 08-20 까지 주입된 실사례).
+  #   ⇒ 정본을 고치는 이 자리에서 파생도 같이 갱신해 지연을 원천 제거한다.
+  #   비용 실측 0.82초(fired 7) — 동기 호출로 충분히 가볍다.
+  #   fail-soft: 실패해도 정제 자체는 성립한다(정본은 이미 기록됨).
+  tryCatch({
+    mon <- file.path(root, "02_Infrastructure", "ops", "failure_revival_monitor.R")
+    if (file.exists(mon)) {
+      local({
+        old <- getOption("rev_no_autorun", FALSE)
+        options(rev_no_autorun = TRUE); on.exit(options(rev_no_autorun = old), add = TRUE)
+        suppressMessages(source(mon, local = TRUE))
+        if (exists("revival_monitor_run", mode = "function"))
+          revival_monitor_run(write_flags = TRUE, verbose = FALSE)
+      })
+      cat("[distilled] revival flags 재생성 — 주입면 사본 동기화\n")
+    }
+  }, error = function(e)
+    message("[distilled] revival flags 갱신 실패(비차단): ", conditionMessage(e),
+            " — 다음 평일 모닝까지 주입면에 구 사본이 남을 수 있음"))
   invisible(d)
 }
 
