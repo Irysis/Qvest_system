@@ -856,6 +856,14 @@ SUITES=(
   #   ★temp root 는 native Windows 경로 필수 — MSYS 형(/tmp)을 쓰면 훅의 native python glob 이
   #    0건 매치 → CACHE_BODY regen 실패 → '{}' 조기종료라 **수리 실패로 오독**된다(초판 5 FAIL 의 정체).
   "08_Tests/hooks/test_frontier_axes_derive.sh"
+  # 2026-08-17 추가: Step 0 조준기(gap_vector_steering) priority 의 CLAUDE.md 정본 파생.
+  #   같은 낙후가 조준면에도 있었다 — v8.4(08-13)가 비-return 을 주력 해제했는데 표는
+  #   priority 1L '주력' 을 38일 유지해 sleeve_needs → Gap-Directed Step 0 가 폐쇄 lane 을
+  #   1순위로 겨눴다. [A]정본 순서 반영 [B]미열거 open 자동 강등 [C]마커 부재 시 정적 유지+경고
+  #   [D]정본 순서 변경 전파 [E]closed 불변.
+  #   ★[D]는 **조작 선행검증**을 먼저 한다 — 초판이 bold(**) 마커를 뺀 패턴으로 치환에 실패해
+  #    "치환 실패"를 "전파 실패(박제)"로 오귀속했다. 음성 대조는 자기 조작의 유효성을 먼저 증명해야 한다.
+  "08_Tests/hooks/test_gvs_constitution_order.R"
   # ── 2026-08-20 추가: contract_regression 15건 (측정 권위 계약의 회귀 보호) ──
   #   이 15건은 essence_score(Grade 산정 권위) · hurdle_gate(게이트 2계층) ·
   #   canonical_screen_bt(실측 진입점) · register_module(모듈 계약 floor) ·
