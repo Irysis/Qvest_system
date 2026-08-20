@@ -252,8 +252,15 @@ if("D1" %in% ARMS){
     ## 일별 뷰: v[t,f] = refit[gmi[t]]$m_ann[S[t,f]]
     V<-matrix(NA_real_,NS,6)
     for(fi in seq_along(FACN)){ rl<-REF[[FACN[fi]]]
-      for(t in seq_len(NS)){ mi<-gmi[t]; if(mi<1)next; rf<-rl[[mi]]; if(is.null(rf))next
-        st<-S[t,fi]; if(is.na(st))next; V[t,fi]<-rf$m_ann[st] } }
+      for(t in seq_len(NS)){ mi<-gmi[t]; if(mi<1)next; rf<-rl[[mi]]; if(is.na(S[t,fi])||is.null(rf))next
+        V[t,fi]<-rf$m_ann[S[t,fi]] } }
+    if(!is.null(PERM)){  # placebo: 일별 뷰를 월-블록 단위로 순열 재배치 (타이밍 파괴, 분포 보존)
+      Vp<-V
+      for(mi in seq_len(NM)){ pm<-PERM[mi]; if(is.na(pm))next
+        rows_dst<-which(gmi==mi); rows_src<-which(gmi==pm)
+        if(!length(rows_dst)||!length(rows_src))next
+        Vp[rows_dst,]<-V[rows_src[rep_len(seq_along(rows_src),length(rows_dst))],,drop=FALSE] }
+      V<-Vp }
     for(k in seq_along(TE_T)){
       Wd<-matrix(NA_real_,NS,7)
       for(t in seq_len(NS)){ mi<-gmi[t]; if(mi<1)next
@@ -281,4 +288,12 @@ if("D1" %in% ARMS){
   }
 }
 
-RES<-rbindlist(RESU
+RES<-rbindlist(RESULTS)
+out_csv<-RES[,!"series"]
+fwrite(out_csv, sprintf("outputs/ramp/smv_v5_results_%s.csv",KEY))
+saveRDS(list(RES=RES, idxfile=IDXFILE, featset=FEATSET, prereg="outputs/ramp/smv_v5_prereg_20260820.json",
+             cmat=cmat, view_me=view_me, meix=meix, medates=medates),
+        sprintf(".cache/_smv_v5_%s.rds",KEY))
+cat("== v5 results (",KEY,") ==\n")
+print(out_csv[order(arm,lam_mult,te,cost_bps)], digits=3, nrows=50)
+cat("V5_DONE\n")
