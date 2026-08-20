@@ -84,7 +84,7 @@ import os, sys, glob, time, json, re, hashlib
 
 root = sys.argv[1]
 MF_SCHEMA = "map_freshness_v1"
-MF_THRESH_H = 24.0
+MF_THRESH_H = 240.0  # MUT-M2
 MF_RECENT_S = 6 * 3600          # W3 고유 발화 범위(판정 기준 아님)
 
 _SEP_RE = re.compile(r'^\|[\s:|-]+\|\s*$')
