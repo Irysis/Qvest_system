@@ -105,12 +105,53 @@ if truths and '<!-- DISTILLED_START' in truths:
     _, _, post = rest.partition('<!-- DISTILLED_END -->')
     truths = (pre.rstrip() + post).strip()
 # (E+F 2026-07-04) 고정 제약 7종 = 불가침 문제-축 블록. 제약 완화는 레버 아님(AX-000).
-# (M7 2026-07-10) 프론티어 목록 실측 갱신 — DPL·regime-conditional 교차결합·ML/uncertainty
-#   sizing은 settled-negative(06-26/07-05)라 제거. 현행 실제 프론티어 3축으로 교체.
+# (2026-08-17 Rank2 수리) 프론티어 줄 = CLAUDE.md FRONTIER_AXES 마커 구간 런타임 파생.
+#   구 동작: 07-10 문장 하드코딩 → v8.4(08-13) 재편이 반영 안 돼 폐쇄 lane 을 ①순위로 광고.
+#   신 동작: 마커 구간을 매 호출 파싱(캐시 없음 = 원리적으로 낡을 수 없음).
+#   ★마커 부재/파싱 실패/파일 부재 시 _FRONTIER_FALLBACK 으로 폴백 — 회귀 없음.
+import re as _re_fa
+_FRONTIER_FALLBACK = '  조건-안 레버 프론티어(폴백 — CLAUDE.md FRONTIER_AXES 마커 미발견): 정본 확인 필요. DPL·regime-conditional 교차결합·ML sizing은 settled-negative — 레버 아님.'
+_SETTLED_FALLBACK = r'DPL|regime.?conditional|ML.?sizing|uncertainty.?sizing'
+def _fa_strip(s):
+    for a in ('**', '\`', '★', '⚠'):
+        s = s.replace(a, '')
+    return ' '.join(s.split())
+def _fa_derive():
+    raw = rd(os.environ.get('CM', ''))
+    if not raw or 'FRONTIER_AXES_START' not in raw or 'FRONTIER_AXES_END' not in raw:
+        return _FRONTIER_FALLBACK, _SETTLED_FALLBACK
+    seg = raw.split('FRONTIER_AXES_START', 1)[1].split('FRONTIER_AXES_END', 1)[0]
+    lever, carve = '', ''
+    for ln in seg.splitlines():
+        t = ln.lstrip('>').strip()
+        if '조건-안 레버만 프론티어' in t and not lever:
+            lever = _fa_strip(t.split('조건-안 레버만 프론티어', 1)[1]).lstrip('-').strip()
+        elif '부활이 아님을 구분' in t and not carve:
+            carve = _fa_strip(t)
+    if not lever:
+        return _FRONTIER_FALLBACK, _SETTLED_FALLBACK
+    out = '  조건-안 레버 프론티어(CLAUDE.md 정본 파생): ' + lever[:300]
+    if carve:
+        out = out + chr(10) + '  ' + carve[:200]
+    # settled lane 토큰도 같은 정본 문장에서 파생 (revival 세그먼트 skip 용, 아래 _settled_rv)
+    pat = _SETTLED_FALLBACK
+    if 'settled-negative' in lever:
+        head = lever.split('settled-negative', 1)[0]
+        head = _re_fa.split(r'[①②③④⑤]', head)[-1]
+        toks = []
+        for p in head.split(chr(183)):
+            p = p.split('(')[0].strip()
+            p = _re_fa.sub(r'[은는이가]\$', '', p).strip()
+            if 2 <= len(p) <= 30:
+                toks.append(_re_fa.escape(p))
+        if toks:
+            pat = '|'.join(toks)
+    return out, pat
+_fa_line, _SETTLED_PAT = _fa_derive()
 axis = ('[문제의 고정 축 — 변수 아님, 이 안에서 풀 것]' + chr(10) +
         '  long-only(w>=0)·<=25종·K200∪KQ150·15bps(v2.4 delta)·[0,0.20]·Σw=1 + PIT C1~C15.' + chr(10) +
         '  이건 배포 현실이 정의한 문제의 고정 축이다. \"long-only라서/25종이라서 실패\"식 제약-귀속 금지.' + chr(10) +
-        '  봉투 안 레버 프론티어(07-10 실측): ①비-return 원천(DART exec-insider 역사·계약금액 magnitude — document.xml 파서 계열) ②screen-tier 재고 회수(overlay 큐) ③EW-대비/cap-tier 재분류(기각 후보 벤치-아티팩트 재진단). DPL·regime-conditional 교차결합·ML sizing은 settled-negative — 레버 아님.' + chr(10) +
+        _fa_line + chr(10) +
         '  [판정 어휘 규약 — 도훈 mandate 07-13] negative 판정 = \"config-scoped negative + 프론티어 표시\"로만. \"소진/폐쇄/dead-end\" 종결 어휘 금지. negative여도 기전 진단에서 next_probe >=2 도출 = 보고 완성 요건 (실패 = 다음 가설의 생성기).')
 # ②Distilled negative/conditional top-K (K=5, 정제 완료분만 — INV-6)
 #   (E+F 2026-07-04) '이건 실패' 톤 → '탐색됨 + 봉투 안 프론티어' 지도-프레임 톤.
