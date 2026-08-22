@@ -1064,6 +1064,9 @@ SUITES=(
   "08_Tests/ops/test_research_queue_lanes.py"
   # 완주 알림 — 1급 축은 알림기 내부가 아니라 **호출 배선**이다(만들고 안 부르면 조용하다).
   "08_Tests/ops/test_run_completion_notify.sh"
+  # 2026-08-22: 편입 검사기가 .py 를 탐색하지 않아 **08-09 신설분이 2주간 배터리 밖**이었다.
+  #   (배터리는 .py 를 실행할 수 있는데 검사기의 분모에만 없었다 — 능력이 아니라 시야의 결손.)
+  "08_Tests/hooks/test_benchmark_scale_seam.py"
 )
 
 # (2026-08-02) .py 분기 추가 — 종전엔 확장자 무관 `bash` 로 던져 파이썬 suite 가

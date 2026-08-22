@@ -22,6 +22,23 @@ import traceback
 from pathlib import Path
 
 import numpy as np
+# ── (2026-08-22) 인터프리터 자기해결 — 배터리는 pandas 없는 python 으로 돈다.
+#   실측: run_all_hooks 의 QVEST_PY_BIN = 시스템 Python312 (pandas 부재),
+#   venv .venv_qvest_ml 에만 pandas 2.3.3 이 있다. 이 검사는 등재 대상 .py 중
+#   **유일하게** pandas 를 쓰므로, 배터리 정책을 바꾸는 대신 자기 의존을 스스로 해결한다.
+#   ★없으면 SKIP 하지 않는다 — SKIP 은 "검사가 통과했다" 와 겉보기가 같고,
+#   그게 오늘 하루 반복 확인된 무음 사망의 형태다.
+try:
+    import pandas as _pd_probe  # noqa: F401
+except ImportError:
+    import os as _os, subprocess as _sp, sys as _sys
+    _root = _os.path.dirname(_os.path.dirname(_os.path.dirname(_os.path.abspath(__file__))))
+    _venv = _os.path.join(_root, ".venv_qvest_ml", "Scripts", "python.exe")
+    if _os.path.exists(_venv) and _os.environ.get("_SEAM_REEXEC") != "1":
+        _env = dict(_os.environ, _SEAM_REEXEC="1")
+        _sys.exit(_sp.call([_venv, _os.path.abspath(__file__)] + _sys.argv[1:], env=_env))
+    raise
+
 import pandas as pd
 
 ROOT = Path(__file__).resolve().parents[2]

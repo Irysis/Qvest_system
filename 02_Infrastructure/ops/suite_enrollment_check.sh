@@ -104,7 +104,7 @@ else
         #   (r-portability 계통, 2026-08-16 실측). 쉘 파라미터 확장으로 자른다.
         _rel="${f#"$PROJECT"/}"
         UNCOVERED="$UNCOVERED  ${_rel}\n"
-      done < <(find "$TESTS_DIR" -type f \( -name 'test_*.R' -o -name 'test_*.sh' \) -not -path '*/_archive*/*' -not -path '*/lib/*' 2>/dev/null | sort)
+      done < <(find "$TESTS_DIR" -type f \( -name 'test_*.R' -o -name 'test_*.sh' -o -name 'test_*.py' \) -not -path '*/_archive*/*' -not -path '*/lib/*' 2>/dev/null | sort)
 
       n_unc=$(printf '%b' "$UNCOVERED" | grep -c . || true)
       if [ "$n_files" -eq 0 ]; then
