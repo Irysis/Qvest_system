@@ -20,6 +20,9 @@
 사용:
   python research_effect_signature.py <root>            # 지문 1줄 출력
   python research_effect_signature.py <root> --compare <before>   # 같으면 SAME, 다르면 CHANGED
+  python research_effect_signature.py <root> --scope WT-A,WT-B [--compare <before>]
+      # scope 를 주면 그 WT 들만 본다 = "내가 겨눈 것이 움직였나"(귀속용).
+      # 전역과 scoped 는 **다른 물음**이므로 둘 다 재고 용도를 나눠 쓴다.
 """
 import hashlib
 import io
@@ -42,11 +45,17 @@ def _n(path, key="modules"):
     return len(v)
 
 
-def signature(root):
+def signature(root, scope=None):
     """런의 효과가 닿는 표면만 모아 지문을 만든다.
 
     ★파일 mtime 은 쓰지 않는다 — 병렬 세션이나 무관한 재작성으로도 바뀌어
       '변화' 를 과잉 탐지한다. **내용에서 파생된 수치**만 쓴다.
+
+    scope: WT id 목록(list). 주면 그 WT 들만 본다 = "내가 겨눈 것이 움직였나".
+      안 주면 전역 = "무언가 움직였나". 두 물음은 다르고, 답도 달라야 한다
+      (2026-08-22 오귀속 사고 — 전역 지문으로 남의 세션 진척을 내 성과로 읽었다).
+      ★scope 를 주면 원장 축(catalog/quarantine/method)은 **빼지 않는다** — 그 축은
+      WT 로 귀속되지 않지만 이 런의 정당한 산출일 수 있고, 빼면 반대로 놓친다.
     """
     parts = []
     parts.append("catalog=%d" % _n(os.path.join(root, "06_Registry", "module_catalog.json")))
@@ -65,7 +74,10 @@ def signature(root):
 
     # WT 의 phase 집합 + 산출물 개수 — dossier/promotion 레인의 효과가 여기 있다
     wt = []
+    _want = set(scope or [])
     for d in sorted(glob.glob(os.path.join(root, "qepm", "mailbox", "worktask", "WT-*"))):
+        if _want and os.path.basename(d) not in _want:
+            continue
         try:
             with io.open(os.path.join(d, "status.json"), encoding="utf-8") as fh:
                 st = json.load(fh)
@@ -87,7 +99,13 @@ def main(argv):
         sys.stderr.write("usage: research_effect_signature.py <root> [--compare <sig>]\n")
         return 2
     root = argv[0]
-    sig = signature(root)
+    scope = None
+    if "--scope" in argv:
+        raw = argv[argv.index("--scope") + 1]
+        scope = [x for x in raw.replace(" ", "").split(",") if x and x != "?"]
+        if not scope:          # "?" 뿐이면 범위 미상 — 전역으로 되돌린다(조용히 빈 범위 금지)
+            scope = None
+    sig = signature(root, scope)
     if "--compare" in argv:
         before = argv[argv.index("--compare") + 1]
         print("SAME" if before == sig else "CHANGED")

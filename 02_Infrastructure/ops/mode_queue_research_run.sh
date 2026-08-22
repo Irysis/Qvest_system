@@ -131,6 +131,7 @@ log "토큰 지문: ${_tokfp} (값 아님 · sha256 앞12자) — 401 시 이 �
 #   ⇒ 무엇을 겨눴는지 먼저 남긴다(귀속은 사후에 복원할 수 없다).
 _CAND=$("$PYBIN" "$BASE/02_Infrastructure/ops/_queue_top_ids.py" "$QJSON" 3 2>/dev/null || echo "?")
 log "디스패치 후보(큐 상위3): ${_CAND:-?} — 사후 귀속용. 에이전트가 실제로 고른 것은 MODEQ_DONE 이 정본"
+_EFFECT_BEFORE_SCOPED=$("$PYBIN" "$BASE/02_Infrastructure/ops/research_effect_signature.py" "$BASE" --scope "${_CAND:-?}" 2>/dev/null || true)
 
 # ★이번 런의 산출만 센다 — 로그는 당일 append-only 라 누적분을 이번 것으로 읽으면
 #   zero_progress 가드가 통째로 무력해진다(2026-08-22 실측: risk 런이 MODEQ_DONE 을
@@ -215,8 +216,21 @@ fi
 if [ -z "${_EFFECT_CMP:-}" ] && [ -n "${_EFFECT_BEFORE:-}" ]; then
   _EFFECT_CMP=$("$PYBIN" "$BASE/02_Infrastructure/ops/research_effect_signature.py" "$BASE" --compare "${_EFFECT_BEFORE}" 2>/dev/null || true)
 fi
+# 귀속 지문 — 디스패치 후보로 범위를 좁혀 "**내가 겨눈 것**이 움직였나" 를 따로 묻는다.
+#   전역 지문은 병렬 세션의 진척도 CHANGED 로 읽는다(2026-08-22 오귀속 사고).
+#   ★역할 분리: 전역=경보 판정(보수적) / 귀속=텔레그램 문구(정확).
+_EFFECT_SCOPED=""
+_ATTRIB_NOTE=""
+if [ -n "${_EFFECT_BEFORE_SCOPED:-}" ]; then
+  _EFFECT_SCOPED=$("$PYBIN" "$BASE/02_Infrastructure/ops/research_effect_signature.py" "$BASE" --scope "${_CAND:-?}" --compare "${_EFFECT_BEFORE_SCOPED}" 2>/dev/null || true)
+fi
+# 불일치는 감추지 않는다 — 이 상태를 진척으로도 무진척으로도 접으면 안 된다.
+if [ "${_EFFECT_CMP:-}" = "CHANGED" ] && [ "${_EFFECT_SCOPED:-}" = "SAME" ]; then
+  _ATTRIB_NOTE="원장은 움직였으나 이 런이 겨눈 대상(${_CAND:-?})은 그대로입니다 — 같은 시각 다른 세션의 작업일 수 있어 이 런의 성과로 단정하지 않습니다."
+  log "귀속 불일치: 전역 CHANGED · 대상 SAME — 남의 진척일 수 있음(문구에 명시)"
+fi
 _RS="$BASE/02_Infrastructure/ops/research_run_notify.R"
 if [ -f "$_RS" ] && [ "${QVEST_RUN_NOTIFY:-1}" = "1" ]; then
-  QM_ROOT="$BASE" Rscript --no-save "$_RS" "${QVEST_MODE_QUEUE_LANE:-all}" "$N" "${_n_done:-0}" "${_EFFECT_CMP:-}" "$rc" >> "$LOG" 2>&1 || log "완주 알림 실패(비치명)"
+  QM_ROOT="$BASE" Rscript --no-save "$_RS" "${QVEST_MODE_QUEUE_LANE:-all}" "$N" "${_n_done:-0}" "${_EFFECT_SCOPED:-${_EFFECT_CMP:-}}" "$rc" "${_ATTRIB_NOTE:-}" >> "$LOG" 2>&1 || log "완주 알림 실패(비치명)"
 fi
 exit 0
