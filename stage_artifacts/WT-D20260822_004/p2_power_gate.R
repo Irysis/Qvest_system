@@ -34,10 +34,10 @@ POW <- rbindlist(lapply(TRT, function(a) {
   data.table(arm=a, sd_monthly_own=sd_own, sd_band_contract=SPREAD_SD_MONTHLY_25EW,
              sd_ratio_own_vs_band=sd_own/SPREAD_SD_MONTHLY_25EW,
              nw_inflation_measured=nw_meas, se_nw_monthly=se_nw,
-             mde_own_annual_pct=re_own$required_annual_pct, mde_band_annual_pct=re_band$required_annual_pct,
-             implied_t_own=re_own$required_annual_pct/100/12/se_nw,
-             implied_t_band=re_band$required_annual_pct/100/12/se_nw,
-             material_over_mde_own=MATERIAL/re_own$required_annual_pct)
+             mde_own_annual_pct=re_own$required_annual*100, mde_band_annual_pct=re_band$required_annual*100,
+             implied_t_own=re_own$required_monthly/se_nw,
+             implied_t_band=re_band$required_monthly/se_nw,
+             material_over_mde_own=MATERIAL/(re_own$required_annual*100))
 }))
 print(POW[, .(arm, sd_monthly_own=round(sd_monthly_own,5), sd_ratio=round(sd_ratio_own_vs_band,3),
               nw=round(nw_inflation_measured,3), mde_own=round(mde_own_annual_pct,3),
