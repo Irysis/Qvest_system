@@ -852,12 +852,17 @@
     "metric_type": "canonical_screen",
     "alpha_inheritance_cor": 0.92815665563665,
     "alpha_inheritance_cor_rank": 0.932345945777424,
-    "alpha_inheritance_note": "실측 0.9282 (rank 0.9323) — wt_type=discovery role card 문턱(< 0.95) 충족. 다만 값이 문턱에 근접한 것은 설계상 필연이다: 전 처치 arm 이 u=0 에서 C0 로 정확히 환원되도록 만들어 수준 틸트를 0 으로 두고 순수 상태-조절 성분만 차이가 나게 했기 때문이다(그래야 paired 차가 상태 효과와 동일). 즉 본 라운드의 산출은 신규 알파 원천이 아니라 기존 결합 마디의 조절이며, 그 사실을 redundancy_cluster_id 로도 신고했다. 판정이 powered null 이라 admission 경로 미진입 — certificate 미발급이 정상 동작."
+    "alpha_inheritance_note": "실측 0.9282 (rank 0.9323) — wt_type=discovery role card 문턱(< 0.95) 충족. 다만 값이 문턱에 근접한 것은 설계상 필연이다: 전 처치 arm 이 u=0 에서 C0 로 정확히 환원되도록 만들어 수준 틸트를 0 으로 두고 순수 상태-조절 성분만 차이가 나게 했기 때문이다(그래야 paired 차가 상태 효과와 동일). 즉 본 라운드의 산출은 신규 알파 원천이 아니라 기존 결합 마디의 조절이며, 그 사실을 redundancy_cluster_id 로도 신고했다. 판정이 powered null 이라 admission 경로 미진입 — certificate 미발급이 정상 동작.",
+    "transport_gate_label": "UNRESOLVED_UNDERPOWERED",
+    "transport_gate_mde_pct_of_headroom": {
+      "axis1": 28.4,
+      "axis2": 29.5
+    }
   },
   "alpha_discovery_count": 1,
   "selection_objective": "canonical_port_t",
   "challenge_flags": [
-    "CF-01 [HIGH] R1 수송 게이트 발화 — 완전예지 여유폭(연 +13.69%p)이 관측 가능 상태축 2종 어디에도 유의 종속 아님(t +0.876 / +0.384). 본 마디에서 상태 조건부 선택은 원리적 지렛대가 아니다.",
+    "CF-01 [HIGH] R1 수송 게이트 = UNRESOLVED_UNDERPOWERED (초판 'MECHANISM_NOT_TRANSPORTED' 는 자기 적대검증에서 ACCEPT 정정). 관측 기울기 +2.27 / +1.04 %p/yr per 1sd, MDE(t=1.5) 3.88 / 4.04 = 여유폭 평균의 28.4% / 29.5%. ⇒ 그 크기 이상의 상태-여유폭 결합은 배제되나 약한 결합은 판정 불가.",
     "CF-02 [HIGH] co-primary 2종 전부 POWERED_NULL_NO_MATERIAL_EFFECT. 여유폭 회수율 -8.01% / +1.94% — 실질 0. 자본 경로 미진입.",
     "CF-03 [HIGH] 순열 귀무분포(40 draws/축) 기준 관측 t 백분위 62.5 / 90.0 (one-sided p 0.375 / 0.100) — 어느 축도 무작위 상태를 5% 수준에서 이기지 못함. 규칙-형태 자체가 셔플 하에서 평균 -1.06 t 의 비용을 만든다.",
     "CF-04 [MEDIUM] T1 형태(확신 첨예화)는 완전예지 상태로도 t 0.350 — 전도성 미확립. T1_AGREE 의 null 은 상태 부재 증거로 쓸 수 없다(FQ-244 LEAK1 미통과와 같은 계통).",
@@ -866,9 +871,15 @@
     "CF-07 [MEDIUM] F2 사전 예약 라벨 — T1_AGREE(Jaccard 0.9231)·T3_BEAR(0.9231)는 매개 미이동 문턱 초과. 두 arm 의 null 은 기전 반증 증거 아님(봉인 전 고정).",
     "CF-08 [LOW] STORED_SCORE(선별 궤적·z 패널) production_parity_verified = FALSE — incumbent base 소비 자격 없음. 본 라운드는 자본 주장을 하지 않아 연구용 소비만 성립.",
     "CF-09 [LOW] C0 자체 회전율 11.55/yr 로 Research Philosophy P6 권고(TO ≤ 11.0/yr) 상회 — 승계 하네스 속성. 처치는 +0.07~+1.06/yr 추가.",
-    "CF-10 [LOW] F3(agent 실재)는 통과 — 고분산 월 개인 순매수 집중 상승 cor +0.272(t +1.776). 기전의 주체는 실재하며 실패는 '상태 → 어느 팩터를 신뢰할지' 전이에서 발생. 소비면 ④⑤(위험/monitoring)로 미측정 잔존."
+    "CF-10 [LOW] F3(agent 실재)는 통과 — 고분산 월 개인 순매수 집중 상승 cor +0.272(t +1.776). 기전의 주체는 실재하며 실패는 '상태 → 어느 팩터를 신뢰할지' 전이에서 발생. 소비면 ④⑤(위험/monitoring)로 미측정 잔존.",
+    "CF-11 [HIGH] F1 방향 매개 = UNRESOLVED_UNDERPOWERED — 관측 slope 가 MDE 의 0.72 배(유효 월 103). '방향 축 기각' 으로 쓸 수 없다.",
+    "CF-12 [MEDIUM] 전도성 상한 25.2% 는 하한 추정치 — 오라클 상태의 크기를 최적화하지 않았다(표준화·clip 형태만). '소프트 틸트는 1/4 만 나른다' 가 아니라 '이 형태의 소프트 틸트는 최소 1/4 을 나르고 그 형태로는 벽 미달' 이 정확한 서술.",
+    "CF-13 [MEDIUM] 순열 40 draws 는 해상도가 거칠다(1/40 = 0.025 단위). 축2 one-sided p 0.100 은 4/40 이며 0.05 를 확정 배제하지 못한다.",
+    "CF-14 [MEDIUM] g_k 계열 방향 매핑은 재량 선언이다 — 기전 자구에서 도출하고 봉인 전 고정했으나 다른 매핑도 방어 가능하며 매핑 민감도는 스윕하지 않았다(스윕 시 sweep 재분류 + DSR HARD 발동).",
+    "CF-15 [MEDIUM] arm 규칙 형태(중심성 틸트 · 계열 방향)는 FQ-244 결과를 본 뒤 내가 고른 것이다. 봉인 전 고정이라 사후 선택은 아니나 형태 공간을 열거하지 않았다 — 전도성 실측이 그 형태의 상한을 재준 것이 완화이지 해소는 아니다.",
+    "CF-16 [LOW] F3 집중도 정의(월별 |Individual| 순매수의 HHI)는 사전등록이 'HHI 또는 상위 십분위 몫' 으로 열어둔 둘 중 하나다. t +1.776 은 문턱 1.5 를 근소 초과하며 정의 다중성 보정은 하지 않았다(상위 십분위 몫은 cor +0.191 로 동방향·약함)."
   ],
-  "round_verdict": "CONFIG_SCOPED_NEGATIVE__STATE_AXIS_DOES_NOT_INDEX_FACTOR_HEADROOM",
+  "round_verdict": "CONFIG_SCOPED_NEGATIVE__SOFT_TILT_STATE_SELECTION_NO_MATERIAL_RECOVERY",
   "validation_ref": "stage_artifacts/WT-D20260822_006/alpha_validation.json",
   "prereg_ref": "stage_artifacts/WT-D20260822_006/PREREG.json"
 }

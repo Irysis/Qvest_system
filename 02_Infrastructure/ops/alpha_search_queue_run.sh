@@ -151,6 +151,10 @@ _tokfp="none"
 command -v sched_token_fingerprint >/dev/null 2>&1 && _tokfp="$(sched_token_fingerprint 2>/dev/null || echo none)"
 log "토큰 지문: ${_tokfp} (값 아님 · sha256 앞12자) — 401 시 이 줄로 만료/배관 구분"
 
+# 효과 지문(전) — 에이전트 자기보고가 빠져도 원장 변화로 진척을 판정한다(2026-08-22 오경보 수리).
+_EFFECT_SIG="$BASE/02_Infrastructure/ops/research_effect_signature.py"
+_EFFECT_BEFORE=""
+[ -f "$_EFFECT_SIG" ] && _EFFECT_BEFORE=$("$PYBIN" "$_EFFECT_SIG" "$BASE" 2>/dev/null || true)
 timeout 3000 "$CLAUDE_BIN" -p "$PROMPT_TEXT" \
   --dangerously-skip-permissions >> "$LOG" 2>&1
 rc=$?
@@ -187,5 +191,16 @@ if [ "$rc" -ne 0 ]; then
     scheduler_alert "alpha_queue" "$reason" \
       "claude -p exit=$rc (pending=$N MAX_ALPHA=$MAXA) | ${_ann:-로그 확인 필요}"
   fi
+fi
+_EFFECT_CMP=""
+if [ -n "${_EFFECT_BEFORE:-}" ]; then
+  _EFFECT_CMP=$("$PYBIN" "$_EFFECT_SIG" "$BASE" --compare "${_EFFECT_BEFORE}" 2>/dev/null || true)
+fi
+# --- (2026-08-22 도훈 지시 "완주할 때마다") 완주 알림 — tg_agent_brief() 단일 진입점 경유.
+#   구조: 지금까지 텔레그램은 **실패**(scheduler_alert)에만 나갔다. 무인이 무엇을 해냈는지는
+#   도훈에게 도달하지 않았다 — 오늘 반복 확인된 "기록은 되는데 읽는 쪽이 없다" 의 텔레그램 판본.
+_RS="$BASE/02_Infrastructure/ops/research_run_notify.R"
+if [ -f "$_RS" ] && [ "${QVEST_RUN_NOTIFY:-1}" = "1" ]; then
+  QM_ROOT="$BASE" Rscript --no-save "$_RS" "alpha_search" "$N" "0" "${_EFFECT_CMP:-}" "$rc" >> "$LOG" 2>&1 || log "완주 알림 실패(비치명)"
 fi
 exit 0

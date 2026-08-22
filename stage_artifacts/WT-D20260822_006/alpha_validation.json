@@ -156,8 +156,44 @@
     },
     "threshold": "|t| >= 1.5 (둘 중 하나)",
     "passed": false,
-    "verdict": "MECHANISM_NOT_TRANSPORTED — 완전예지 여유폭이 두 상태축 어디에도 무관",
-    "interpretation": "★성과 판정 전에 답이 나왔다 — 완전예지 여유폭(연 +13.69%p) 이 두 관측 가능 상태축 어디에도 유의하게 종속되지 않는다 (disagreement t +0.876 · dispersion t +0.384). 즉 여유폭이 실재한다는 것과 그것이 상태로 지목 가능하다는 것은 다른 명제이고, 본 라운드가 후자를 기각했다."
+    "verdict": "UNRESOLVED_UNDERPOWERED — 1sd 상태 변화가 여유폭의 28% 이상을 움직이는 결합은 배제되나, 그보다 약한 결합은 이 설계로 판정 불가",
+    "interpretation": "★성과 판정 전에 답이 나왔다 — 완전예지 여유폭(연 +13.69%p) 이 두 관측 가능 상태축 어디에도 유의하게 종속되지 않는다 (disagreement t +0.876 · dispersion t +0.384). 즉 여유폭이 실재한다는 것과 그것이 상태로 지목 가능하다는 것은 다른 명제이고, 본 라운드가 후자를 기각했다.",
+    "gate_power_measured": {
+      "headroom_series": {
+        "mean_annual_pct": 13.6929981793759,
+        "sd_monthly": 0.0341378026029931
+      },
+      "per_axis": [
+        {
+          "axis": "AGREE",
+          "slope_annual_pct_per_1sd": 2.2672638013598,
+          "se": 0.0021572177460402,
+          "t_nw3": 0.87584413052476,
+          "mde_t15_annual_pct_per_1sd": 3.88299194287237,
+          "mde_as_pct_of_headroom": 28.3574998842901
+        },
+        {
+          "axis": "DISP",
+          "slope_annual_pct_per_1sd": 1.03466356717298,
+          "se": 0.00224589382923881,
+          "t_nw3": 0.383909349625421,
+          "mde_t15_annual_pct_per_1sd": 4.04260889262986,
+          "mde_as_pct_of_headroom": 29.5231828681519
+        },
+        {
+          "axis": "BEAR",
+          "slope_annual_pct_per_1sd": -4.17661700310091,
+          "se": 0.00257034876213396,
+          "t_nw3": -1.3541019104198,
+          "mde_t15_annual_pct_per_1sd": 4.62662777184114,
+          "mde_as_pct_of_headroom": 33.7882742057884
+        }
+      ],
+      "note": "★자기 적대검증이 적발한 결손의 수리 — 초판은 R1 을 MECHANISM_NOT_TRANSPORTED 로 라벨했으나 게이트 자체의 검정력을 재지 않았다. 실측 MDE 는 여유폭 평균의 28.4%(축1) / 29.5%(축2) / 33.8%(강등축)다."
+    },
+    "label": "UNRESOLVED_UNDERPOWERED",
+    "excluded_region": "|slope| >= 3.88 %p/yr per 1sd (축1) / 4.04 (축2) — 이 크기 이상의 상태-여유폭 결합은 95% 배제",
+    "practical_consequence": "★단 실무 결론은 여전히 powered 다 — 전도성 실측(오라클 상태조차 여유폭의 25.2% 만 통과)과 결합하면, R1 의 미검출 구간(결합 < 28%)에 실재하는 결합이 있더라도 이 소프트-틸트 마디를 통과해 MATERIAL 8.22%p/yr 에 도달할 수 없다. 즉 '상태-여유폭 결합의 부재' 는 미결이고, '이 마디에서 상태 조건부 선택이 물질적 회수를 낸다' 는 기각이다 — 두 명제를 분리해 라벨한다."
   },
   "primary": [
     {
@@ -271,7 +307,8 @@
       "t_nw3": 0.349907301742429,
       "port_t": 1.02492442457027,
       "note": "확신-첨예화(T1) 형태는 완전예지 상태로도 t 0.350 — 전도성 미확립. ⇒ T1_AGREE 의 null 은 상태 부재 증거로 쓰지 않는다(전도성 부재 라벨). FQ-244 LEAK1 미통과와 같은 계통."
-    }
+    },
+    "ceiling_finding_caveat": "★상한 25.2% 는 **하한 추정치**다 — 오라클 상태의 *크기*를 최적화하지 않고 표준화·clip 형태로만 넣었기 때문이다. 매월 최적 틸트 강도를 예지로 고르면 더 높아질 수 있다. 따라서 '소프트 틸트는 여유폭의 1/4 만 나른다' 가 아니라 '표준화-clip 형태의 소프트 틸트는 최소 1/4 을 나르며 그 형태로는 벽에 못 미친다' 가 정확한 서술이다."
   },
   "permutation_null": {
     "design": "상태 계열을 월 순서로 무작위 치환해 같은 규칙을 재실행(각 축 40회, canonical_screen_bt 실경로). 단일 셔플 대조의 운을 배제한다.",
@@ -310,7 +347,7 @@
       "threshold": "t >= +1.5",
       "passed": false,
       "n": 103,
-      "verdict": "방향 축 기각 — 상태가 '신뢰할 계열' 을 지목하지 못함",
+      "verdict": "UNRESOLVED_UNDERPOWERED — 유효 월 103(2군 IC 가 동시 정의되는 달)이라 방향 축의 존부를 가릴 검정력 없음",
       "cluster_power_declaration": {
         "target_rho": 0.4,
         "n_clusters": 13,
@@ -319,7 +356,18 @@
         "required_clusters": 25,
         "verdict": "NO_GO_CLUSTER_BINDS"
       },
-      "design_substitution": "★계약(cluster_power.R)이 계열-간 이질성 설계를 착수 금지시켰다(군집 13 < 필요 25, 관측 수를 늘려도 안 풀림). 지시대로 군집-내부에서 닫히는 월-단위 2군 IC 차 설계로 교체했다. 이것은 사후 변명이 아니라 봉인 전 기록이다."
+      "design_substitution": "★계약(cluster_power.R)이 계열-간 이질성 설계를 착수 금지시켰다(군집 13 < 필요 25, 관측 수를 늘려도 안 풀림). 지시대로 군집-내부에서 닫히는 월-단위 2군 IC 차 설계로 교체했다. 이것은 사후 변명이 아니라 봉인 전 기록이다.",
+      "gate_power_measured": {
+        "n": 103,
+        "D_sd": 0.11927,
+        "slope": 0.0126969756957357,
+        "se": 0.0117592196680556,
+        "t_nw3": 1.07974645037268,
+        "mde_t15": 0.0176388295020834,
+        "obs_over_mde": 0.719830966915121,
+        "note": "관측 기울기가 MDE 의 0.72 배 — 검출 문턱 미만이므로 '방향 축 기각' 이 아니라 '판정 불가'."
+      },
+      "label": "UNRESOLVED_UNDERPOWERED"
     },
     "F2_mediator_movement": [
       {
@@ -487,9 +535,9 @@
         "port_t_EW": 2.08780589903552,
         "ir_IKS200": 0.228086080526059,
         "turnover": 11.5482352941176,
-        "paired_t_parent": null,
-        "paired_t_iks": null,
-        "basis_delta_t": null
+        "paired_t_parent": {},
+        "paired_t_iks": {},
+        "basis_delta_t": {}
       },
       {
         "arm": "T2_AGREE",
@@ -589,7 +637,7 @@
         "arm": "C0",
         "port_t_liq": 0.704,
         "n_liq": 221,
-        "paired_t_liq": null
+        "paired_t_liq": {}
       },
       {
         "arm": "T2_AGREE",
@@ -890,9 +938,9 @@
     ],
     "note": "처치 arm 의 active 계열이 C0 와 0.930~0.977 상관 — u=0 환원 설계의 직접 귀결(수준 틸트 0, 순수 상태-조절 성분만 차이). 신규 알파 원천이 아니라 기존 마디의 조절이므로 redundancy_cluster_id 는 C0 와 동일 클러스터."
   },
-  "verdict": "STATE_CONDITIONAL_SELECTION_POWERED_NULL_WITH_TRANSPORT_FAILURE",
-  "verdict_detail": "성과-무관 횡단면 상태 2축(팩터 간 순위 불일치 · 수익 횡단면 분산) 조건부 팩터 선택은 C0 대비 개선 없음 — co-primary 2종 모두 POWERED_NULL_NO_MATERIAL_EFFECT(T2_AGREE -1.10%p/yr t -0.829 CI95 상단 +1.50 · T3_DISP +0.27%p/yr t +0.251 상단 +2.34, MATERIAL 8.22 배제). ★그런데 이 라운드의 실질 산출은 성과 null 이 아니라 **성과 이전에 나온 두 개의 분리 판정**이다: (1) R1 수송 게이트 — 완전예지 여유폭(연 +13.69%p)이 관측 가능 상태축에 무관(t +0.876 / +0.384) ⇒ 여유폭의 실재와 지목 가능성은 다른 명제다. (2) 전도성 확립 — 완전예지 상태를 넣으면 같은 규칙이 t 2.01~2.47 을 낸다 ⇒ null 은 규칙 무력이 아니라 상태 정보 부재다. 그리고 (3) 기전의 agent 는 실재한다(F3 고분산월 개인 순매수 집중 상승 t +1.78) — 죽은 고리는 agent 도 규칙도 아닌 '상태 → 어느 팩터를 신뢰할지' 의 전이다(F1 t 1.08, 순열 p 0.279). 부수 확립(신규·이 라운드가 처음 잰 것): 완전예지 상태조차 **소프트 가중** 형태로는 여유폭의 25.2% 만 회수하고 PORT_t 1.70~1.82 로 벽 미달 — ORACLE_K 의 4.647 은 **이산 하드 선택**의 상한이며 소프트 틸트 족의 상한은 그보다 훨씬 낮다. 이는 후속 설계 공간을 좁힌다.",
-  "round_verdict": "CONFIG_SCOPED_NEGATIVE__STATE_AXIS_DOES_NOT_INDEX_FACTOR_HEADROOM",
+  "verdict": "MATERIAL_RECOVERY_POWERED_NULL__STATE_HEADROOM_COUPLING_UNRESOLVED",
+  "verdict_detail": "성과-무관 횡단면 상태 2축(팩터 간 순위 불일치 · 수익 횡단면 분산) 조건부 팩터 선택은 C0 대비 개선 없음 — co-primary 2종 모두 POWERED_NULL_NO_MATERIAL_EFFECT(T2_AGREE -1.10%p/yr t -0.829 CI95 상단 +1.50 · T3_DISP +0.27%p/yr t +0.251 상단 +2.34, MATERIAL 8.22 배제, MDE 여유 3.0~4.3배). 순열 귀무분포(40 draws/축)에서도 관측 t 가 62.5 / 90.0 백분위로 무작위 상태를 5% 수준에서 이기지 못한다. ★분리 판정 3건이 성과보다 먼저·서로 다른 방향으로 나왔다: (1) 전도성 PASS — 완전예지 상태를 넣으면 같은 규칙이 t 2.01~2.47 ⇒ null 은 규칙 무력이 아니다. (2) F3 PASS — 고분산 월 개인 순매수 집중 상승(cor +0.272, t +1.776) ⇒ 기전의 agent 는 실재한다. (3) R1·F1 은 UNRESOLVED(미결) — 게이트 검정력 실측 결과 R1 MDE 가 여유폭의 28~30%, F1 관측이 MDE 의 0.72배라     '상태-여유폭 결합 부재' 를 주장할 자격이 없다. 초판이 이를 '기각' 으로 쓴 것은 자기 적대검증에서 ACCEPT 정정했다. ★그래서 두 명제를 분리한다 — 기각(powered): 이 마디의 소프트-틸트 상태 조건부 선택은 물질적 여유폭 회수를 내지 못한다. 미결(underpowered): 상태와 여유폭 사이에 약한 결합이 있는지는 판정 불가. 단 전도성 25.2%(하한)와 결합하면 그 약한 결합이 실재하더라도 이 형태로는 MATERIAL 에 도달 불가하므로 실무 결론은 바뀌지 않는다. 부수 확립(신규): ORACLE_K 4.647 은 **이산 하드 선택**의 상한이고, 표준화-clip **소프트 틸트** 족은 여유폭의 최소 1/4 만 나르며 PORT_t 1.70~1.82 로 벽 미달.",
+  "round_verdict": "CONFIG_SCOPED_NEGATIVE__SOFT_TILT_STATE_SELECTION_NO_MATERIAL_RECOVERY",
   "next_probe": [
     {
       "id": "NP1",
