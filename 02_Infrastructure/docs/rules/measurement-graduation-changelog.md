@@ -14,3 +14,24 @@
 - 2026-06-10 (도훈 mandate): §3 DSR 적용경계 정정 — "n_trials>1 = sweep" 휴리스틱 폐기, **selection operator 기준**(sweep = 열거집합 argmax/threshold-pick / chain = 가설주도 순차개선 → 게이트 면제 + 진단산출만). chain 자격요건 ①진단사유 기록 ②IS-only 변형선택 ③holdout 1회. 구현: `essence_score.R` selection_type 파라미터 + `discovery_graduation_gate.sh` HARD 2 sweep-한정(비-sweep advisory 강등).
 - 2026-05-31 (도훈 mandate): §3 게이트 재설계. DSR≥0.5 "무조건 HARD" 폐기 → **다중검정 스타일(n_trials>1)에서만 HARD**(DSR은 multiple-testing 개념, 1논문/1알파엔 부적용·PORT_t 2.95와 중복). 단일전략 과적합 게이트 = **oos_retention≥0.7**(DSR 대체) + 위험조정 게이트 **calmar≥0.64**(=16%/25%). Grade 권위 = `essence_score.R`(hurdle_gate 18-component proxy 강등). Dual-Mode SOT §3.5 정합.
 - 2026-05-29 v8.x: 신규. WS1 real-computation + WS2 graduation severity 재설계 + WS3 book-marginal admission. E2E(FLOW forge 2.35) 입증.
+
+
+## 2026-08-22 — 개정 2건 (도훈 승인 "규범개정 2건 가보자")
+
+**출처**: DFA_RegimeSignals 아크 R29~R45. 제안서 `04_Research/proposals/measurement_graduation_amendment_20260822.md`.
+
+### ① §2 — β-통제 α 병기 의무
+PORT_t = `mean(r − r_bm)` 이므로 `α + (β−1)·E[r_bm]` 를 섞어 본다. 롱온리 β>1 팔에서 알파를 과대 표시.
+실측: T3 clean 에서 활성 수익 +2.55%/yr 중 **β 기여 +1.32%/yr(52%)**, PORT_t +1.065 vs t(α) +0.560.
+위반 주입 재현: 순수 레버리지(β=1.4, α=0)에서 t(α) 비유의 · PORT_t 양수.
+**판정 규칙 불변** — 알파 존재 *주장*만 t(α) 근거로 제한.
+
+### ② §3 — 제약형 롱온리의 무신호 대조 통과 의무
+종목수 상한이 걸린 롱온리는 그 형태 자체가 대형주 노출을 담는다.
+실측: 게이트 0 준수 유일 생존팔(T3)이 무신호 대조(시총 상위 25종 cap-w)와 차이 +0.06%/yr NW-t 0.028
+(2026 제외 시 −0.38%/yr NW-t −0.163, 부호 반전). 무신호 대조의 IR·PORT_t 가 더 높았다.
+`INDISTINGUISHABLE_FROM_NO_SIGNAL` → screen-tier 등재 불가. **자본 tier HARD 3종 불변**.
+
+**배선**: `02_Infrastructure/contracts/no_signal_control.R` 신설 · `08_Tests/contracts/test_no_signal_control.R` 13/13(위반주입 3방향 + β 오염 분리) · `08_Tests/hooks/run_all_hooks.sh` SUITES 편입.
+
+**반영 파급**: 두 조항 모두 *신규 서술·신규 등재* 요건이라 기존 원장 소급 재판정 불요. 단 제약형 롱온리 모듈이 screen-tier 라벨을 보유한 경우 재확인 권고.
