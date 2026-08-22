@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "sot": "02_Infrastructure/docs/qvest_v8_3_alpha_discovery_sot.md §4",
-  "updated": "2026-08-22",
+  "updated": "20260822",
   "consume_rule": "새 발굴 리서치 착수 전: hypothesis_index lookup → 본 큐 확인 → owner/status 갱신. 완료 시 result_ref(L-code/보고서) 기입. dohoon_decision 항목은 세션 임의 착수 금지. ★세션 간 배정 규약(도훈 지시 2026-08-09): ①착수 전 owner 필드 확인 — 'CLAIMED' 면 착수 금지, 'UNCLAIMED' 면 자기 세션으로 CLAIMED 갱신 후 시작 ②신규 ID 는 **하드코딩 금지** — 원장 최대 번호+1 을 계산해 배정하고, 기록 후 **재읽기로 존재 확인** (2026-08-09 실사고: FQ-167/168 등재가 병렬 세션 선점과 충돌해 조용히 생략됐고 close_round 서술이 거짓이 됨 → FQ-169/170 재배정) ③close_round 의 frontier_update 는 **실제 기록 결과에서 파생**시킬 것(선언에서 파생 금지).",
   "entries": [
     {
@@ -3125,7 +3125,7 @@
         "excess_cagr_vs_bm_pp": 14.13,
         "ic": 0.0234,
         "pos_rate": 0.565,
-        "oos_retention": null,
+        "oos_retention": {},
         "is_sr": -0.015,
         "oos_note": "IS SR -0.015 → OOS 분할 불가. 신호 전반적 약세 but 최근 3Y AlphaTrend 개선 중(ratio 2.16)",
         "coverage_start": "2015 (DART 데이터 한계, 11년)",
@@ -4846,7 +4846,7 @@
       "wall_check": "상한 13.67/25 는 EW 합성 프로브(diagnostic)이지 PORT_t 가 아니다 — 판정 후보가 정해지면 canonical_screen_bt 로 재측정할 것. 또한 소비자별 dedup=TRUE 전환은 리서치 결과를 바꾸므로 도훈 confirm 대상.",
       "status": "frontier_open",
       "owner": "UNCLAIMED",
-      "blocked_by": null,
+      "blocked_by": {},
       "source_ref": "실측 stage_artifacts/infra/factor_dedup_wiring_20260809/d8_impact_scenarios.csv; 배선 02_Infrastructure/factor_db/factor_db_connector.R(load_month_factors/ compute_rolling_ic_all/group_factors_by_family 의 dedup 인자), 02_Infrastructure/factor_db/factor_dup_scan.R::collapse_alias_rows(); 검사 08_Tests/factor_db/test_factor_dedup_consumption.R",
       "created": "2026-08-09"
     },
@@ -5152,7 +5152,8 @@
       "entry_gate": "arm A 재현이 관문: SOT §8-1 이 요구하는 SR ~0.49 대역을 수정 프레임에서 못 세우면 비교 기준선이 없으므로 arm B/C 미착수. ⚠구 프레임 arm A(PORT_t 26.89 · Hit_Ratio 1.000)는 앵커 규약 오류 산물로 무효 — 인용 금지.",
       "verification_fingerprint": "수정 프레임 확인 (2026-08-13 재검증 3/3 일치): M04_Mom_1 평균 IC +0.0170 · |평균IC|>0.10 = 0종 · 최대 |평균IC| 0.0509 (V14_EBIT_EV). 패널 81,963행 · 320팩터 · 258월.",
       "result_ref": "r31_d03_fixedframe_result.json (D03 기전 전제 재확립: rank-IC +0.0462 t 3.95 / 평균 스프레드 -2.71%/yr t -0.55 / 중앙값 +15.60%/yr t +3.33) · r32_general_fixedframe_result.json (★320종 전반 성질: 부호 갈림 123/320=38.4%, 비대칭 102 vs 21 / '중앙값 유의∧평균 비유의' 99종 중 46종 평균 음수 / **cor(왜도기울기, 중앙값-평균 gap) = -0.728** = 기전 직접 측정 / 준-단조 분위 프로파일 **0종**) · r33_profile_fixedframe_result.json (혹형 확정 정점 Q2 · 259개월 · R31 과 독립경로 0.3%p 일치) · armA_result.json (REPRODUCED — total net SR 0.6039 / active IR 0.1963 / PORT_t 0.63 p 0.53 / CAGR 13.84% / MDD 64.04% / 회전 16.74. ★대조군이므로 자본 자격 주장 아님. 사전등록 PREREG_armA_20260813.md)",
-      "entry_prereq_env": "★해소 (2026-08-13, 도훈 지시 '노트북 환경이라 없을거야, 깔아줘'). 감사 시점 결손 3종 xgboost/optuna/properscoring 을 .venv_qvest_ml 에 설치 완료 — xgboost 3.4.0 · optuna 4.9.0 · properscoring 0.1. import 뿐 아니라 실동작 1회씩 확인(xgboost fit · CRPS · optuna 12-trial). ⇒ arm A 를 참조 기준선(XGBoost 다음달 수익 직접 예측 SR 0.493)으로 **충실 재현 가능**, arm C 의 CRPS 채점·HPO 도 가용. 실행기 = .venv_qvest_ml/Scripts/python.exe. ⚠잔여 환경 사실: torch 는 2.12.1+cpu(CUDA 아님) — GPU 전제 라운드는 이 머신에서 재현 불가."
+      "entry_prereq_env": "★해소 (2026-08-13, 도훈 지시 '노트북 환경이라 없을거야, 깔아줘'). 감사 시점 결손 3종 xgboost/optuna/properscoring 을 .venv_qvest_ml 에 설치 완료 — xgboost 3.4.0 · optuna 4.9.0 · properscoring 0.1. import 뿐 아니라 실동작 1회씩 확인(xgboost fit · CRPS · optuna 12-trial). ⇒ arm A 를 참조 기준선(XGBoost 다음달 수익 직접 예측 SR 0.493)으로 **충실 재현 가능**, arm C 의 CRPS 채점·HPO 도 가용. 실행기 = .venv_qvest_ml/Scripts/python.exe. ⚠잔여 환경 사실: torch 는 2.12.1+cpu(CUDA 아님) — GPU 전제 라운드는 이 머신에서 재현 불가.",
+      "revival_condition_1_status": "미충족 (2026-08-22, WT-D20260822_002). '평균-정합 선별 통계량 재서열에서 전이 양성' 관문을 사전등록으로 시험했고 co-primary 2건 모두 t < +2.0 (Pearson -0.2533 · 평균스프레드 +1.5706). 관문은 열리지 않았다 — 분포-표적 자본화 경로는 INV-7 대로 닫힌 상태 유지. 부활조건 ②(rank 1-25 역-소비 사전등록)는 미착수로 잔존."
     },
     {
       "id": "FQ-234",
@@ -5243,12 +5244,24 @@
       "ev_rationale": "R3 실측: 창 21->252일로 추정을 12배 안정화(rho1 0.017->0.889)해도 |IC| 불변(상승 2/5), 그런데 불일치 비율은 60%->100% 로 단조 증가하고 평균기울기는 커진다. R1 실측: factor DB 320종 중 68종(21.2%)이 정렬 불일치, cor(왜도기울기, 평균기울기) +0.599.",
       "wall_check": "IC->PORT_t 전이 벽 — 이 항목은 벽의 **기전 하나를 통계량 불일치로 특정**한다.",
       "data_gate": "없음 — 기존 패널. 신규 팩터는 factor DB 미적재(stage_artifacts 보존).",
-      "owner": "CLAIMED - Q-Lead session d2e06481 2026-08-22 13:0x (**stale claim 회수 + 다음 단계 착수**). 회수 근거: 구 owner 세션(2026-08-13)과 기전 국소화 수행 세션(WT-D20260821_002, 08-22 01:03 ALPHA_DONE) 모두 종료. 국소화는 완료됐고 **그 다음인 '평균-정합 선별 통계량 재서열 사전등록 라운드' 는 산출물 0건으로 미착수**. 착수 사유 = 오늘 두 라운드(FQ-236 Lane D · FQ-241 probe1)가 독립적으로 같은 마디(신호는 있는데 소비 형태로 전이 안 됨)를 가리켰고, 이 항목이 그 마디를 직접 공략한다. ★또한 FQ-233 이 분포-표적 자본화에 건 부활조건 ① 그 자체다. 구 owner: CLAIMED — Q-Lead session 2026-08-13. 도훈 '알파창출 각이 보여?' 에 대한 Q-Lead 권고로 착수. 구 상태 INVALID_frame_error 는 해소 — R32 가 수정 프레임 근거를 공급했다.",
-      "status": "CLAIMED_20260822__rerank_round_launching",
+      "owner": "CLAIMED - Q-Lead session d2e06481 2026-08-22 13:0x (**stale claim 회수 + 다음 단계 착수**). 회수 근거: 구 owner 세션(2026-08-13)과 기전 국소화 수행 세션(WT-D20260821_002, 08-22 01:03 ALPHA_DONE) 모두 종료. 국소화는 완료됐고 **그 다음인 '평균-정합 선별 통계량 재서열 사전등록 라운드' 는 산출물 0건으로 미착수**. 착수 사유 = 오늘 두 라운드(FQ-236 Lane D · FQ-241 probe1)가 독립적으로 같은 마디(신호는 있는데 소비 형태로 전이 안 됨)를 가리켰고, 이 항목이 그 마디를 직접 공략한다. ★또한 FQ-233 이 분포-표적 자본화에 건 부활조건 ① 그 자체다. 구 owner: CLAIMED — Q-Lead session 2026-08-13. 도훈 '알파창출 각이 보여?' 에 대한 Q-Lead 권고로 착수. 구 상태 INVALID_frame_error 는 해소 — R32 가 수정 프레임 근거를 공급했다. -> 2026-08-22 라운드 종료(WT-D20260822_002, alpha-research). 소유권 반납.",
+      "status": "round_closed__selection_stat_not_a_lever__underpowered_scoped",
       "next_action": "★WT-D20260821_002 가 기전을 국소화(2026-08-22): 선별-소비 불일치의 정체 = rank-IC(Spearman)의 순위-표적 구조 편애 — armB Harvey-t 3.35 인데 평균 스프레드 t 1.05(회수 불가), Pearson 재서열 시 역전. + WT-001 8-arm Spearman -0.21 · armB→C 5-arm -0.40. 다음 = '평균-정합 선별 통계량'(Pearson IC / 평균 스프레드 t 기반) 재서열 사전등록 라운드 — 기존 인용(armB 정확 역순 n=4)은 갱신 의무. (구 next_action 승계: [★★★무효 2026-08-13 R30] 이 항목의 R5~R28 근거는 **측정 프레임 오류**로 무효다. build_monthly_forward_returns 앵커가 'sig_date 이하 최종거래일' 이라 팩터를 월초 1일로 넘기면 월초가 거래일인 달에 앵커가 그날 자신이 되어 forward 가 그 달 수익이 된다. factor DB sig_date T 는 T월 말 관측이므로 팩터가 채점 대상 월을 봤다. 수정 = 팩터 Date +1개월. 검증 지문: M04_Mom_1 평균 IC -0.9423 -> +0.0170 · |평균IC|)",
       "source_refs": "stage_artifacts/fq233_probe0_20260813/alpha_r2r3_result.json",
       "evidence_20260813": "★근거 3중(전부 수정 프레임): (1) R32 320종 전수 — 평균/중앙값 스프레드 부호 갈림 123/320(38.4%)이고 **비대칭**(중앙값+/평균- 102 vs 반대 21, 무작위면 반반) · '중앙값 유의 ∧ 평균 비유의' 99종 중 46종은 평균 음수 · 기전 cor(왜도기울기, 중앙값-평균 gap) = **-0.728** · **준-단조 분위 프로파일 0종**. (2) armB 실현-포트 사례 — 표적 교체로 rank-IC 4배(+0.0074→+0.0299) 개선했는데 실현 SR 은 0.6039→0.5140 로 낮아짐(paired NW3 t -1.2473). 순위 개선이 top-N 평균 소비로 전이되지 않음. (3) 4 arm 서열 역순 관찰(q10 .0438/0.437 · q50 .0299/0.514 · 평균 .0074/0.604 · q90 -.0281/0.606) — ⚠n=4·비독립·전 arm PORT_t |t|<1.4 이므로 관찰이지 검정 아님. ⇒ 가설: 현 파이프라인은 rank-IC(순위/중앙값 근사)로 고르고 top-N 평균(꼬리 지배)으로 소비한다 = **체계적으로 어긋난 방향으로 고른다**.",
-      "why_highest_priority": "재료를 바꾸지 않고 **고르는 법만** 바꾼다 — 새 데이터·새 가설 불요. 실패해도 '선별 통계량은 병목이 아니다' 라는 큰 정보가 남고, 그때는 재료(일별 축 FQ-234·비-return)로 라우팅이 명확해진다. 오늘 실측된 벽(재료-불변)에 대한 유일한 비-재료 가설."
+      "why_highest_priority": "재료를 바꾸지 않고 **고르는 법만** 바꾼다 — 새 데이터·새 가설 불요. 실패해도 '선별 통계량은 병목이 아니다' 라는 큰 정보가 남고, 그때는 재료(일별 축 FQ-234·비-return)로 라우팅이 명확해진다. 오늘 실측된 벽(재료-불변)에 대한 유일한 비-재료 가설.",
+      "last_round": "FQ237_RERANK_20260822",
+      "last_verdict": "UNDERPOWERED_UNRESOLVED (co-primary 2/2) — 큰 레버는 배제, 작은 레버는 미결",
+      "last_closed_at": "2026-08-22T14:11:26+0900",
+      "last_next_probe": [
+        "NP1 청정창(2015-07~, 133개월) 단독 사전등록 재판정 — (A)(B) 둘 다 청정창에서 음수 방향이라 '오염창 의존' 을 직접 시험할 수 있다. ★착수 전 133개월 MDE 를 먼저 잴 것(221개월에서 4.76~7.67%p 였으므로 더 넓어진다).",
+        "NP2 병목이 한 마디 뒤로 이동 — 선별이 아니라 **결합 규칙** 교체. 근거: 평균-정합 선별이 합성 스코어의 Pearson IC 를 실제로 올렸는데(0.02201 t 3.18 -> 0.02536 t 3.77) top-25 전이는 오히려 하락(PORT_t 0.947 -> 0.680). ★ML 결합기 금지(v8.4 §6) — 폐형식 결합만.",
+        "NP3 미검 교차 = '평균-정합 선별 x 브레드스 확대 소비' — WT-D20260821_002 는 소비만 바꿨고 본 라운드는 선별만 바꿨다.",
+        "NP4 축소(shrinkage) 추정량 재서열 — (A) 점추정이 음수라 '정밀 코너' 서사와 어긋난다. 단일 사전등록값, 격자 금지.",
+        "NP5 인프라 — canonical_screen_bt benchmark_id 하드코딩 제거 + schema<->ast_verify escape 계약 위치 통일(ALB-005 계통)."
+      ],
+      "measured_facts_20260822": "[WT-D20260822_002 alpha-research 실측, metric_type=canonical_screen, n=221 홀딩월(2008-03~2026-07), 320팩터 풀, K=5, W=36, top-25 EW, 15bps] (A) SEL_PEARSON - SEL_RANK paired NW3 t = -0.2533 (연 -0.603%p, 95% CI [-5.27, +4.07], MDE 4.764%p). (B) SEL_MEANDEPTH - SEL_RANK t = +1.5706 (연 +6.027%p, CI [-1.49, +13.55], MDE 7.674%p) — WT-D20260813_005 값 정확 복원(Δ 4e-6). 절대 cap-w PORT_t: 대조 0.9474 / Pearson 0.6803 / meandepth 1.7775 (승계 재현 4/4, 최대 Δ 2.4e-5). ★1급 결과 = 개입은 표적 통계량을 실제로 개선했으나 전이는 안 됐다: 합성 스코어 Pearson IC 대조 0.02201(t 3.18) -> Pearson 선별 0.02536(t 3.77) 인데 PORT_t 는 0.947 -> 0.680. ⇒ IC->PORT_t 전이 벽은 '어느 IC 를 쓰느냐' 에 있지 않다(병목이 결합·소비 마디로 이동). 반증 축1 미발화(rank vs Pearson 선별 서열 rho 중앙 0.7675 · top-5 Jaccard 중앙 0.25 — 집합은 진짜로 갈린다). 반증 축2 예측부호(+)로 성립(gap ~ 왜도 b +0.0040 t_NW3 +6.29 / +0.0039 t +7.07) — 단 추정기 2종이 collinear +0.951(승계 주장 -0.011 과 불일치, 증거 1개로 세야 함). 위반주입(1개월 누출) t +3.5731 = 검출력 실증 · PIT 스트레스 LAG1 t +0.2800 · 음성대조 meddepth t -1.6211. ★★(B) 의 이득은 KQ150 소급 투영 창에 집중: 2010-02~2015-06 t +3.50(연 +29.06%p) vs 2015-07~ t -0.53(연 -1.87%p). era 교락과 분리 불가 -> 라벨 universe_backfill_inherited. |d| 상위 5개월 제외 시 t 1.5706 -> 0.7631. 3-basis: PORT_t IKS200 / parent cap-w / EW-유니버스 = 대조 0.947/1.491/2.088 · Pearson 0.680/1.106/1.915 · meandepth 1.777/2.176/2.973. 벤치 연복리 IKS200 8.947% vs parent 7.812%. ★paired 판정은 basis 불변(Δt ~ 1e-17) — 판정이 벤치 논쟁과 독립. R1 유동성 2e8 적용판: 탈락 1.9%, paired (A) t -0.073 · (B) t +1.681 (결론 불변).",
+      "result_ref": "qepm/mailbox/worktask/WT-D20260822_002/{alpha_package.json, challenge_note.md} + stage_artifacts/WT-D20260822_002/{PREREG.json, alpha_validation.json, alpha_scores.parquet}"
     },
     {
       "id": "FQ-238",
@@ -5292,7 +5305,7 @@
       "paper_title": "Lower spectrum of financial correlation matrices",
       "route": "overlay_regime",
       "status": "PENDING",
-      "owner": null,
+      "owner": {},
       "priority": "medium",
       "added_date": "20260821",
       "impl_note": "60d 롤링 k=10 클러스터 상관행렬 m-minus(고유값 < 람다_min=(1-sqrt(k/T))^2 개수) 레짐 오버레이. m-minus 상승 = 시장 동기화 강화 = 수익분포 왼쪽 이동(지수 레벨). 논문 제안 소비면: 시장 동기화 상태 예측 -> 방어 레짐 신호 후보. KR K=10 클러스터(n_stocks~350, T=60 일이면 n>T 문제 해소 목적). track_A: m-minus 시계열 -> 오버레이 스케일링(m-minus 높으면 방어 포지션 축소). factor-rotation RCMA 후보. 착수 전 C11(FRED 시차 정합성) 불필요 -- KR 주가 내부 계산.",
@@ -5305,7 +5318,7 @@
         "2608.09641",
         "alpha_search_queue_done.json record min_eigenvalue_loading_60d_TrackB"
       ],
-      "result_ref": null
+      "result_ref": {}
     },
     {
       "id": "FQ-241",
