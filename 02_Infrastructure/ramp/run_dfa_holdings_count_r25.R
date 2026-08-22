@@ -19,6 +19,8 @@ setorder(mon,medate); NM<-nrow(mon); NF<-length(fac)
 S<-matrix(NA_real_,NM,NF)
 for(fi in 1:NF) for(m in 12:NM) S[m,fi]<-prod(1+mon[[fac[fi]]][(m-11):m])/prod(1+mon$Market[(m-11):m])-1
 sel_months<-seq(13,NM,by=3)
+.NS<-as.integer(Sys.getenv("R25_NSAMPLE","0"))
+if(.NS>0) sel_months<-sel_months[round(seq(1,length(sel_months),length.out=.NS))]  # 표본 모드
 ## 2) rawdata 유니버스 (월말)
 rd<-as.data.table(read_parquet(".cache/rawdata.parquet",col_select=c("Date","Ticker","Size","K200","KQ150")))
 rd[,Date:=as.Date(Date)]; rd<-rd[is.finite(Size)&Size>0]
