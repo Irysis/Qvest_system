@@ -5378,6 +5378,23 @@
    "next_action": "①**비-ML 결합 규칙 소수를 사전등록**해 paired 비교(가중 z 평균 · rank 평균 · 분위-정렬 결합 등). ★sweep 금지 — argmax 선택 시 DSR ≥0.5 HARD. ②검정력 계약 직접 측정(승계 기본값 금지, FQ-237 자기적발 승계: arm 자신의 diff sd 를 넣으면 MDE 가 t 검정 재진술로 퇴화 — implied_t_threshold 를 **사전 산출**해 확인) ③basis 3종 병기(FQ-237 실측: paired 판정은 basis 불변 Δt≈1e-17 이나 수준값은 갈린다) ④유니버스 창 처리 — 2015-11 이전은 universe_exit_unrecorded_pre201512 상속, 청정창 병기 ⑤★완주 설계 4필드(terminal_form=alpha_vector · alpha_bridge · transition_gates · consumption_gate_precheck) 필수 ⑥비-ML 로 개선되면 **ML 결합기 라운드는 불요**하고, 미달일 때만 헌법 재진입 순서 ②로 이동.",
    "adjacent": "FQ-059(soft-membership / cost-optimized top-N — 이산 절단 마디, UNCLAIMED·ready_material_gated). FQ-237 이 material 을 공급했으므로 gate 해제 후보. 본 항목(결합)과 자유도 분리할 것.",
    "source_refs": "FQ-237 close_round(FQ-237_rerank_mean_aligned_selection_WT-D20260822_002_20260822) · CLAUDE.md 2026-08-22 결합기 축 재분류 · memory project-batch434-alias-contamination-and-unapplied-audit-20260820"
+  },
+  {
+   "id": "FQ-245",
+   "lane": "Lane_D_macro_conditional",
+   "title": "방향성 일치 국면 조건부 macro-beta momentum (Lane D 착수)",
+   "hypothesis": "3개 macro delta20(Term_Spread/VIX/KRW_USD)이 모두 같은 부호(aligned macro regime)일 때만 고 macro-beta 종목 long 적용. 무조건부(arXiv 2608.12283 AS-20260822)에서 IC=-0.0025(pos_rate 49.6%) · PORT_t=-1.265 — aligned 국면 조건부화로 IC pos_rate≥55% 및 PORT_t 개선 가설. 근거: COVID alpha +9.47% · Euro_Debt alpha +8.97%(회복 aligned 국면) vs GFC -6.52% · Rate_Hike -14.85%(악화 aligned 국면) — 방향 부호가 국면 정렬과 일치.",
+   "ev_rationale": "Lane D = v8.4 주력 레인 ② '매크로 상태 조건부 비대칭'. 무조건부 실측(AS-20260822)이 기전 진단을 확립 — 신호가 macro direction에 종속적이고 unconditional long에서 상쇄된다는 것을 PORT_t=-1.265 + IC≈0 + stress 패턴으로 실증. aligned macro 국면 필터가 alpha/null 구분자가 될 가능성이 실측 기반으로 성립. FRED 적재 중(lag 1d, 5일 정체 주의 — 착수 전 4확인: C11 시차 불균질 7~73일·macro_regime 월말스탬프 look-ahead·flow 패널 43일 정체·fred_macro_wide 파생 5일 정체). precomputed parquet(.cache/macro_beta_scores.parquet) 재사용 가능(delta20 이미 PIT 준수).",
+   "wall_check": "무조건부 벽 통과(AS-20260822 실측). 조건부화 후 PORT_t 전이 여부가 핵심 관문. aligned 국면 빈도가 ~30-40% 예상(3변수 동부호 조건)이면 월평균 샘플 312×0.3~0.4=93~125건으로 충분.",
+   "data_gate": "PASS — .cache/macro_beta_scores.parquet(260 month-ends) + fred_macro_wide(lag 1d 이미 적재). 신규 수집 불요.",
+   "owner": "UNCLAIMED",
+   "status": "queued",
+   "next_action": "착수 전 4확인(macro 레짐 월중 look-ahead · fred_macro_wide 파생 5일 정체 · C11 시차 불균질 · flow 패널 43일 정체) → aligned 국면 필터 설계(3변수 부호 일치) → macro_beta_mom_engine_v4.R(파라미터: min_aligned=2 또는 3) → run_alpha_search() 실행 → 대조군(NP1 vs 무조건부) 병행 보고.",
+   "prerequisite": "없음 — 독립 라운드(Lane D 주변부 측정)",
+   "revival_note": "NP2(분포-표적 Lane A×Lane D 상호작용)는 본 FQ-245 독립 라운드 완료 후 사전등록",
+   "source_refs": "arXiv 2608.12283 · AS-20260822 실행(STR_AS_20260822_143237_8580 QUARANTINE) · stage_artifacts/paper_recharge/auto_verify_macro_beta_mom_20260822.json",
+   "created_at": "2026-08-22",
+   "created_by": "AS-20260822 close_round NP1"
   }
  ],
  "parked_rounds": [
