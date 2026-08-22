@@ -1,0 +1,605 @@
+{
+  "date": "20260822",
+  "schema_version": "alpha_search_route_v2",
+  "generated_at": "2026-08-22T00:00:00+0900",
+  "today": "20260822",
+  "backlog_dates": "none",
+  "autorun": 0,
+  "source_A_arxiv_count": 33,
+  "source_B_curated_unprocessed": 15,
+  "counts_by_route": {
+    "alpha": 11,
+    "optimizer": 6,
+    "risk": 8,
+    "skip": 18,
+    "regime": 5
+  },
+  "n_factor_candidates": 7,
+  "n_factor_candidates_testable": 1,
+  "n_factor_candidates_uncertain": 4,
+  "n_factor_candidates_infeasible": 2,
+  "alpha_search_queue": [
+    {
+      "rank": 1,
+      "arxiv_id": "2608.12283",
+      "factor_name": "macro_beta_momentum",
+      "confidence": 0.72,
+      "status": "queued",
+      "autorun_eligible": false,
+      "note": "AUTORUN=0. Highest priority testable factor. Dynamic combination of macro_beta*recent_macro_return not in existing MA01-MA07 DB."
+    }
+  ],
+  "papers": [
+    {
+      "title": "Large Language Model-Driven Small-Capitalization Trading",
+      "id": "2608.12283",
+      "source": "arxiv",
+      "route": "alpha",
+      "kr_feasible": true,
+      "factor_candidate": {
+        "name": "macro_beta_momentum",
+        "def": "Cross-sectional ranking of stocks by sum(beta_i_macro * r_i_macro_recent) where beta_i_macro = rolling 60d OLS loading of stock on macro factor i (FRED: GDP proxy, CPI, yield_curve, risk_sentiment), r_i_macro_recent = 20d return of that macro factor.",
+        "novel": true,
+        "closest_existing": [
+          "MA01_GDP_Sensitivity",
+          "MA02_CPI_Sensitivity",
+          "MA03_Rate_Sensitivity",
+          "MA04_YieldCurve_Sensitivity"
+        ],
+        "novelty_note": "MA01-MA07 are static sensitivities; dynamic product sensitivity*recent_return not in DB",
+        "kr_feasible": true,
+        "pit_notes": "FRED lags 7-73d; use only fast-updating series (lag<30d) for 40d horizon signal. C11 compliant.",
+        "verdict": "testable",
+        "confidence": 0.72,
+        "priority": 1
+      },
+      "reason": "Macro beta momentum: stocks ranked by their loading on recently-moved macro factors. 40d horizon, Sharpe 2.33 in US. FRED data available, MA01-MA07 are closest but dynamic product is novel."
+    },
+    {
+      "title": "Dependence-Informed Sparse Neural Architecture for Stock Return Prediction",
+      "id": "2608.14323",
+      "source": "arxiv",
+      "route": "alpha",
+      "kr_feasible": true,
+      "factor_candidate": {
+        "name": "mfcf_hnn_composite",
+        "def": "HNN composite using MFCF-filtered clique structure of firm characteristics. Architecture maps clique structure to sparse NN.",
+        "novel": true,
+        "closest_existing": [],
+        "novelty_note": "Architecture method for compositing characteristics via dependence structure",
+        "kr_feasible": true,
+        "pit_notes": "PIT maintained if characteristics constructed PIT",
+        "verdict": "uncertain",
+        "confidence": 0.45,
+        "priority": 3,
+        "uncertain_reason": "Architecture method not a direct standalone factor. Requires MFCF implementation + HNN training on our 373-factor DB."
+      },
+      "reason": "Novel sparse NN architecture using estimated dependence structure among firm characteristics. Matches 3-hidden-layer benchmark with 80x fewer params. Relevant to Lane A."
+    },
+    {
+      "title": "Buy the Rumor, Sell the News: When Is News Priced In?",
+      "id": "2608.14014",
+      "source": "arxiv",
+      "route": "alpha",
+      "kr_feasible": false,
+      "factor_candidate": {
+        "name": "fundamental_news_drift",
+        "def": "Post-event drift signal from LLM-classified fundamental news (earnings/dividends/guidance/analyst actions) with 17-category taxonomy.",
+        "novel": true,
+        "closest_existing": [
+          "SE02_Consensus_Revision",
+          "C13_Revision_Breadth_3m"
+        ],
+        "novelty_note": "Channel-type distinction (fundamental vs soft story) is novel. SE02 captures partial overlap.",
+        "kr_feasible": false,
+        "verdict": "infeasible",
+        "confidence": 0.0,
+        "infeasible_reason": "Requires KR news corpus with LLM event tagging. Not in current infrastructure."
+      },
+      "reason": "Fundamental news underreacts (PEAD-analog); soft story overreacts. KR infeasible: requires Korean news corpus with LLM event tagging."
+    },
+    {
+      "title": "Disclosed Human-Capital Disruption and Firm-Specific Risk",
+      "id": "2608.14859",
+      "source": "arxiv",
+      "route": "alpha",
+      "kr_feasible": false,
+      "factor_candidate": {
+        "name": "human_capital_disruption_ec",
+        "def": "Per-stock annual score of disclosed human-capital disruption from earnings call transcripts using contextual LLM coding.",
+        "novel": true,
+        "closest_existing": [],
+        "novelty_note": "Novel alt-text signal from earnings call transcripts",
+        "kr_feasible": false,
+        "verdict": "infeasible",
+        "confidence": 0.0,
+        "infeasible_reason": "Requires KR earnings call transcripts. Not in current infrastructure."
+      },
+      "reason": "LLM-coded earnings call measure predicts firm risk (idiosyncratic vol + CEO exit). Infeasible for KR."
+    },
+    {
+      "title": "The Price of Permission: Classification Uncertainty in Constrained Capital Markets",
+      "id": "2608.12634",
+      "source": "arxiv",
+      "route": "alpha",
+      "kr_feasible": true,
+      "factor_candidate": {
+        "name": "shariah_classification_change",
+        "def": "Event dummy for inclusion in official Shariah/ESG-compliant list. Malaysia: +1.76pp over [0,10] trading days. KR analog: KRX SRI / MSCI ESG inclusion events.",
+        "novel": true,
+        "closest_existing": [
+          "INV01_Foreign_NetBuy_20d"
+        ],
+        "novelty_note": "Index-inclusion event study for constrained-ownership screening",
+        "kr_feasible": true,
+        "pit_notes": "Event dates from KRX/MSCI announcements. DART data available.",
+        "verdict": "uncertain",
+        "confidence": 0.38,
+        "priority": 4,
+        "uncertain_reason": "Paper is Malaysia-specific. KR ESG analog untested. Limited sample."
+      },
+      "reason": "Shariah inclusion +1.76pp in Malaysia. KR analog = ESG/SRI index inclusion events. Uncertain KR transferability."
+    },
+    {
+      "title": "Dynamic Portfolio Optimization under CVaR Constraints",
+      "id": "2608.20179",
+      "source": "arxiv",
+      "route": "optimizer",
+      "kr_feasible": true,
+      "factor_candidate": null,
+      "shrinkage_builtin": "no",
+      "statistic_order": "tail_quantile",
+      "screen_priority": "⭐⭐⭐ 후순위",
+      "reason": "Continuous-time dynamic CVaR-constrained optimization. Elegant theory but discretization hard. No shrinkage + tail_quantile = 후순위"
+    },
+    {
+      "title": "Entropic Value-at-Risk portfolio optimization for tempered stable Levy processes",
+      "id": "2608.18022",
+      "source": "arxiv",
+      "route": "optimizer",
+      "kr_feasible": true,
+      "factor_candidate": null,
+      "shrinkage_builtin": "weak",
+      "statistic_order": "tail_quantile",
+      "screen_priority": "⭐⭐ 후순위",
+      "reason": "EVaR with tempered stable distributions. Higher Sharpe than CVaR benchmark. weak shrinkage + tail_quantile = 후순위"
+    },
+    {
+      "title": "Self-Consistent Adjoint Policy Iteration for Constrained Dynamic Portfolio Choice",
+      "id": "2608.17808",
+      "source": "arxiv",
+      "route": "optimizer",
+      "kr_feasible": true,
+      "factor_candidate": null,
+      "shrinkage_builtin": "no",
+      "statistic_order": "<=2nd",
+      "screen_priority": "⭐",
+      "reason": "Simulation-based policy iteration for constrained portfolio. CRRA + convex constraints. 50-asset validated. No shrinkage + 2nd-order = ⭐"
+    },
+    {
+      "title": "Scalable Pontryagin-Guided Adjoint Control for Constrained Dynamic Portfolio Choice",
+      "id": "2608.15667",
+      "source": "arxiv",
+      "route": "optimizer",
+      "kr_feasible": true,
+      "factor_candidate": null,
+      "shrinkage_builtin": "no",
+      "statistic_order": "<=2nd",
+      "screen_priority": "⭐",
+      "reason": "Scales adjoint optimization to 100 assets. Our 25-stock universe well within scope. No shrinkage + 2nd-order = ⭐"
+    },
+    {
+      "title": "The Reconfiguration Premium",
+      "id": "2608.20020",
+      "source": "arxiv",
+      "route": "risk",
+      "kr_feasible": true,
+      "factor_candidate": null,
+      "reason": "Rate of change in cross-sectional co-movement structure (principal angles). Priced in VRP (t=5.40). Relevant to crowding monitor."
+    },
+    {
+      "title": "The Markets Conditioning Representation: Equilibrium Crowding and Convention Multiplicity",
+      "id": "2608.18299",
+      "source": "arxiv",
+      "route": "risk",
+      "kr_feasible": true,
+      "factor_candidate": null,
+      "reason": "Representation crowding (driver-space overlap) separate from position crowding. Empirical crowding signature. Relevant to CR05_Short_Pressure_Proxy crowding model."
+    },
+    {
+      "title": "A generic nonparametric value-at-risk estimator for high dimensions",
+      "id": "2608.17481",
+      "source": "arxiv",
+      "route": "risk",
+      "kr_feasible": true,
+      "factor_candidate": null,
+      "shrinkage_builtin": "no",
+      "statistic_order": "tail_quantile",
+      "screen_priority": "후순위",
+      "reason": "Nonparametric VaR+CVaR for arbitrary dimensions. 500 portfolios x 49 futures test. Risk measurement reference."
+    },
+    {
+      "title": "Rough Volatility Across Assets",
+      "id": "2608.16749",
+      "source": "arxiv",
+      "route": "risk",
+      "kr_feasible": true,
+      "factor_candidate": null,
+      "shrinkage_builtin": "no",
+      "statistic_order": "higher",
+      "screen_priority": "⭐",
+      "reason": "Hurst H across 3926 US equities (H_median=0.13). Rough vol universal. KR: incorporate roughness correction in realized variance estimator. no shrinkage + higher-order = ⭐"
+    },
+    {
+      "title": "Is the medium the message? Social disclosure channels and firm risk",
+      "id": "2608.15212",
+      "source": "arxiv",
+      "route": "risk",
+      "kr_feasible": true,
+      "factor_candidate": {
+        "name": "first_sec_social_disclosure",
+        "def": "Binary: first-time DART social disclosure vs continuous. First-time -> higher idiosyncratic vol; continuous -> lower.",
+        "novel": true,
+        "closest_existing": [],
+        "novelty_note": "Channel-specific social disclosure novelty. Not in factor DB.",
+        "kr_feasible": true,
+        "pit_notes": "DART filing dates known in advance.",
+        "verdict": "uncertain",
+        "confidence": 0.35,
+        "uncertain_reason": "Predicts vol not return direction. Requires NLP classification of DART filings."
+      },
+      "reason": "First-time SEC social disclosure -> increased idiosyncratic risk. Relevant to risk model as vol predictor."
+    },
+    {
+      "title": "Regime-Gated Residual Mixture-of-Experts for Cross-Sectional Volatility Forecasting",
+      "id": "2608.12251",
+      "source": "arxiv",
+      "route": "risk",
+      "kr_feasible": true,
+      "factor_candidate": {
+        "name": "regime_gated_vol_forecast",
+        "def": "Per-stock 5-day realized vol forecast using RG-ResMoE: base MLP + regime-gated expert corrections. Hard routing empirically better than soft.",
+        "novel": true,
+        "closest_existing": [
+          "D03_RealVol",
+          "D34_RealVol_21d",
+          "RE02_Vol_Regime_Pctile"
+        ],
+        "novelty_note": "Regime-gated MoE architecture for vol forecasting",
+        "kr_feasible": true,
+        "pit_notes": "Walk-forward. 5-day horizon.",
+        "verdict": "uncertain",
+        "confidence": 0.42,
+        "uncertain_reason": "Predicts volatility not returns. Useful as risk model component."
+      },
+      "shrinkage_builtin": "no",
+      "statistic_order": "<=2nd",
+      "screen_priority": "⭐",
+      "reason": "Regime-gated MoE for 5-day realized vol. Outperforms capacity-matched MLP. no + 2nd-order = ⭐"
+    },
+    {
+      "title": "Calibration-Induced Degeneracy in LLM Financial Forecasting",
+      "id": "2608.20304",
+      "source": "arxiv",
+      "route": "skip",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "LLM calibration for market VaR. Not cross-sectional."
+    },
+    {
+      "title": "Deep-MKV-TS: McKean-Vlasov Control for Financial Time Series Generation",
+      "id": "2608.19394",
+      "source": "arxiv",
+      "route": "skip",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "Synthetic scenario generation. Not cross-sectional."
+    },
+    {
+      "title": "Concentrated Liquidity Provision: a Reinforcement Learning Perspective",
+      "id": "2608.19389",
+      "source": "arxiv",
+      "route": "skip",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "DeFi/AMM liquidity provision. Out of scope."
+    },
+    {
+      "title": "When to Sell an Asset? A Distribution Builder Approach",
+      "id": "2608.18783",
+      "source": "arxiv",
+      "route": "skip",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "Single-asset optimal stopping. Not cross-sectional."
+    },
+    {
+      "title": "Communicating Credit Risk with Large Language Models",
+      "id": "2608.17715",
+      "source": "arxiv",
+      "route": "skip",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "Credit model explainability. Not equity."
+    },
+    {
+      "title": "Conservation of Short-term Flows: Signed Optimal Transport",
+      "id": "2608.17363",
+      "source": "arxiv",
+      "route": "skip",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "Pure theory. No empirical equity application."
+    },
+    {
+      "title": "zLend: On-Chain Credit Underwriting Framework",
+      "id": "2608.16856",
+      "source": "arxiv",
+      "route": "skip",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "DeFi credit. Out of scope."
+    },
+    {
+      "title": "When ratios fall: Dynamic approach to contingent convertibles",
+      "id": "2608.16842",
+      "source": "arxiv",
+      "route": "skip",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "CoCo bond pricing. Not equity cross-section."
+    },
+    {
+      "title": "Self-Supervised Auxiliary Task Discovery for Stable RL in Stock Trading",
+      "id": "2608.15841",
+      "source": "arxiv",
+      "route": "skip",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "RL on index-level (DJI/FTSE). Not KR monthly factor."
+    },
+    {
+      "title": "Behavioral Participating Insurance: Optimal Investment under Probability Distortion",
+      "id": "2608.15743",
+      "source": "arxiv",
+      "route": "skip",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "Insurance contract optimization. Not equity."
+    },
+    {
+      "title": "Detecting Money Laundering in Rwandan Mobile Money",
+      "id": "2608.15447",
+      "source": "arxiv",
+      "route": "skip",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "AML for mobile money. Not equity."
+    },
+    {
+      "title": "Dynamic Physical Hedging amid Jump Losses",
+      "id": "2608.13745",
+      "source": "arxiv",
+      "route": "skip",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "Catastrophe insurance hedging. Not equity cross-section."
+    },
+    {
+      "title": "Joint Lyapunov Certificates for AI Governance",
+      "id": "2608.09087",
+      "source": "arxiv",
+      "route": "skip",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "AI governance framework. Not applicable."
+    },
+    {
+      "title": "AI Governance for Institutional Readiness in Finance",
+      "id": "2608.02311",
+      "source": "arxiv",
+      "route": "skip",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "AI governance regulatory compliance. Not investment signal."
+    },
+    {
+      "title": "Forcing and duality-corrected contracts for volatility control",
+      "id": "2607.27039",
+      "source": "arxiv",
+      "route": "skip",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "Principal-agent theory. Pure theory."
+    },
+    {
+      "title": "OpenMarket: Polymarket-Binance Dataset",
+      "id": "2607.26245",
+      "source": "arxiv",
+      "route": "skip",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "Crypto prediction market. Out of scope."
+    },
+    {
+      "title": "Quantum Transformer BSDE Solver",
+      "id": "2607.25162",
+      "source": "arxiv",
+      "route": "skip",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "Quantum computing for PDE. No near-term application."
+    },
+    {
+      "title": "Optimal Trading of Microstructure Mean Reversion",
+      "id": "2608.00885",
+      "source": "arxiv",
+      "route": "skip",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "HFT intraday (seconds). Not monthly cross-sectional."
+    },
+    {
+      "title": "Trend-Following",
+      "id": "curated:MAN_AHL_trend_following_whats_not_to_like.pdf",
+      "source": "curated:Man AHL",
+      "route": "regime",
+      "kr_feasible": true,
+      "content_fetch_status": "skipped_no_jina_quota",
+      "factor_candidate": null,
+      "reason": "추세추종 총정리. Crisis alpha / managed futures context."
+    },
+    {
+      "title": "ML in Quant Investing",
+      "id": "curated:ACADIAN_machine_learning_in_quant_investing.pdf",
+      "source": "curated:Acadian",
+      "route": "alpha",
+      "kr_feasible": true,
+      "content_fetch_status": "skipped_no_jina_quota",
+      "factor_candidate": null,
+      "reason": "ML in quant process; alpha feature discipline."
+    },
+    {
+      "title": "Guide to Factor Investing",
+      "id": "curated:ROBECO_guide_to_factor_investing_global.pdf",
+      "source": "curated:Robeco",
+      "route": "alpha",
+      "kr_feasible": true,
+      "content_fetch_status": "skipped_no_jina_quota",
+      "factor_candidate": null,
+      "reason": "Broad factor investing guide. V/M/Q/LV factors."
+    },
+    {
+      "title": "Convexity of Trend Following",
+      "id": "curated:CFM_convexity_of_trend_following.pdf",
+      "source": "curated:CFM",
+      "route": "regime",
+      "kr_feasible": true,
+      "content_fetch_status": "skipped_no_jina_quota",
+      "factor_candidate": null,
+      "reason": "Trend-following convexity. Crisis alpha."
+    },
+    {
+      "title": "Defensive Equity Without Implicit Bets",
+      "id": "curated:SCIBETA_defensive_equity_without_implicit_bets.pdf",
+      "source": "curated:Scientific Beta",
+      "route": "alpha",
+      "kr_feasible": true,
+      "content_fetch_status": "skipped_no_jina_quota",
+      "factor_candidate": null,
+      "reason": "Defensive equity without unwanted factor bets. Relevant to AX-001."
+    },
+    {
+      "title": "Smoother Path Multi-Factor Smart Beta",
+      "id": "curated:RA_smoother_path_multifactor_smart_beta.pdf",
+      "source": "curated:Research Affiliates",
+      "route": "optimizer",
+      "kr_feasible": true,
+      "content_fetch_status": "skipped_no_jina_quota",
+      "factor_candidate": null,
+      "reason": "Multi-factor blend diversification.",
+      "shrinkage_builtin": "yes",
+      "statistic_order": "<=2nd",
+      "screen_priority": "⭐⭐",
+      "screen_note": "Diversification = implicit regularization (shrinkage_builtin=yes). 2nd order. ⭐⭐"
+    },
+    {
+      "title": "Timing Smart Beta",
+      "id": "curated:RA_timing_smart_beta.pdf",
+      "source": "curated:Research Affiliates",
+      "route": "regime",
+      "kr_feasible": true,
+      "content_fetch_status": "skipped_no_jina_quota",
+      "factor_candidate": null,
+      "reason": "Relative valuation for factor timing. Supports regime-conditional factor weighting."
+    },
+    {
+      "title": "Ignored Risks of Factor Investing",
+      "id": "curated:RA_ignored_risks_factor_investing.pdf",
+      "source": "curated:Research Affiliates",
+      "route": "risk",
+      "kr_feasible": true,
+      "content_fetch_status": "skipped_no_jina_quota",
+      "factor_candidate": null,
+      "reason": "Factor crash and hidden tail risks. Risk-research reference.",
+      "shrinkage_builtin": "no",
+      "statistic_order": "tail_quantile",
+      "screen_priority": "후순위",
+      "screen_note": "Diagnostic reference framework."
+    },
+    {
+      "title": "Cost and Capacity Smart Beta",
+      "id": "curated:RA_cost_capacity_smart_beta.pdf",
+      "source": "curated:Research Affiliates",
+      "route": "optimizer",
+      "kr_feasible": true,
+      "content_fetch_status": "skipped_no_jina_quota",
+      "factor_candidate": null,
+      "reason": "Capacity and cost constraints for factor portfolios.",
+      "shrinkage_builtin": "yes",
+      "statistic_order": "<=2nd",
+      "screen_priority": "⭐⭐",
+      "screen_note": "Capacity-adjusted weighting = implicit regularization. 2nd order. ⭐⭐"
+    },
+    {
+      "title": "Systematic Equity Primer",
+      "id": "curated:GMO_systematic_equity_product_primer.pdf",
+      "source": "curated:GMO",
+      "route": "alpha",
+      "kr_feasible": true,
+      "content_fetch_status": "skipped_no_jina_quota",
+      "factor_candidate": null,
+      "reason": "Systematic equity model (V/M/Q). Implementation methodology."
+    },
+    {
+      "title": "Beyond the Factor: Value Investing",
+      "id": "curated:GMO_beyond_the_factor_value_investing.pdf",
+      "source": "curated:GMO",
+      "route": "alpha",
+      "kr_feasible": true,
+      "content_fetch_status": "skipped_no_jina_quota",
+      "factor_candidate": null,
+      "reason": "Deep-dive value approach combining quant and fundamental."
+    },
+    {
+      "title": "No Silver Bullets in Investing",
+      "id": "curated:GMO_no_silver_bullets_in_investing.pdf",
+      "source": "curated:GMO",
+      "route": "risk",
+      "kr_feasible": true,
+      "content_fetch_status": "skipped_no_jina_quota",
+      "factor_candidate": null,
+      "reason": "Risk premia framing and implementation caution."
+    },
+    {
+      "title": "Market Insights Vol4 No2",
+      "id": "curated:DESHAW_market_insights_vol4_no2_20121026.pdf",
+      "source": "curated:D.E. Shaw",
+      "route": "alpha",
+      "kr_feasible": true,
+      "content_fetch_status": "skipped_no_jina_quota",
+      "factor_candidate": null,
+      "reason": "Market instability and stock-specific alpha context."
+    },
+    {
+      "title": "UCITS Funds Prospectus 2025",
+      "id": "curated:WINTON_ucits_funds_icav_prospectus_2025.pdf",
+      "source": "curated:Winton",
+      "route": "regime",
+      "kr_feasible": true,
+      "content_fetch_status": "skipped_no_jina_quota",
+      "factor_candidate": null,
+      "reason": "Systematic strategy taxonomy (trend/carry/relative value)."
+    },
+    {
+      "title": "Managed Futures Trend Fund Prospectus 2025",
+      "id": "curated:WINTON_managed_futures_trend_fund_prospectus_2025.pdf",
+      "source": "curated:Winton",
+      "route": "regime",
+      "kr_feasible": true,
+      "content_fetch_status": "skipped_no_jina_quota",
+      "factor_candidate": null,
+      "reason": "Managed futures trend process and constraints."
+    }
+  ]
+}
