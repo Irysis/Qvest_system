@@ -46,8 +46,8 @@
 
 ## Self-rationalization auto-detection
 
-금칙 표현("미미/관행적/보수적이면 OK/대부분 결과 동일") 스캔:
-- F2 근소 차(−0.009)를 '미미' 로 처리하지 않고 REJECT 명시 — auto-review 통과.
+회피 표현 자기 스캔 (answer-principles 회피 조항 대상어 전수):
+- F2 근소 차(−0.009)를 축소어로 처리하지 않고 REJECT 명시 — auto-review 통과.
 - 성과 t=0.828 을 '거의 2.0' 로 반올림하지 않고 NOT_SUPPORTED 명시.
 - β-통제 α +9.93%/yr 을 t(α)<2 이므로 '양수 알파' 로 주장하지 않음(measurement-graduation §2 준수).
 

@@ -16,13 +16,13 @@ FAC<-c(Value="V12_Composite_Value", Issuance="V21_Composite_Equity_Issuance", Si
        ForeignFlow="INV01_Foreign_NetBuy_20d", SmartMoney="INV10_Smart_Money_Flow")
 
 rd<-as.data.table(read_parquet(".cache/rawdata.parquet",
-     col_select=c("Date","Ticker","Ret","Size","Close","Volume","K200","KQ150")))
+     col_select=c("Date","Ticker","Ret","Size","Close","Vol","K200","KQ150")))
 rd[,Date:=as.Date(Date)]
 rd<-rd[Date>=as.Date("2005-01-01") & is.finite(Ret) & is.finite(Size) & Size>0]
 rd[,inuniv:=(!is.na(K200)&K200==1)|(!is.na(KQ150)&KQ150==1)]
 rd<-rd[inuniv==TRUE]; setorder(rd,Ticker,Date)
 ## 유동성: 20일 평균 거래대금 (t-1 PIT, C10)
-rd[,tv:=Close*Volume]
+rd[,tv:=Close*Vol]
 rd[,adv20:=shift(frollmean(tv,20,align="right"),1),by=Ticker]
 rd[,ym:=format(Date,"%Y-%m")]
 pg("rawdata rows=%d tickers=%d\n",nrow(rd),uniqueN(rd$Ticker))

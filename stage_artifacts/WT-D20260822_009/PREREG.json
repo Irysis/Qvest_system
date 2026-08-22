@@ -1,0 +1,109 @@
+{
+  "task_id": "WT-D20260822_009",
+  "title": "저-absorb 배제 유니버스 필터 — 분포 재료의 자본 경로 1호",
+  "registered_at": "2026-08-22 (00_precheck.json 산출 직후 / 어떤 처치-대조 성과수치도 산출하지 않은 상태에서 고정)",
+  "selection_type": "preregistered_single_primary",
+  "n_trials": 1,
+  "dsr_applicability": "sweep 아님(단일 primary 1회 측정, X 사전 단일 고정). measurement-graduation §3 selection_type=chain/single → DSR 게이트 부적용. X 10%/30% · late-window · EW-basis 는 전부 사전등록 비바인딩 진단이며 판정/선택에 사용 절대 금지.",
+
+  "lineage": {
+    "evidence": "FQ-234 Lane B(WT-D20260813_006) → NP2(WT-D20260822_003). absorb = -corr_win(Individual_d, Ret_d), 3개월 창 {m-2,m-1,m}, 신호일 d0(시장 월말 거래일) 당일 관측 제외. 높은 absorb = 개인이 하락일 순매수(흡수) / 낮은 absorb = 개인이 상승일 순매수(추종).",
+    "measured_fact": "NP2 q5-q1 의 tail_dn_prob_diff(좌측 꼬리 실현확률 차) 가 측정 18/18 셀 전부 음수(|t| 1.72~4.42), 최강 통제(rank-transform + win_vol·log_size 직교화 x 2 disjoint 창)에서 살아남는 유일한 축. mean_spread 는 전 사양 |t| <= 1.03.",
+    "prior_art": "WT-D20260802_014/016 (L-AR-20260802_204801, grade B) 복권형(MAX5_63 상위 10%) 배제-필터. 동일 base·동일 하네스. 그 라운드 next_probe #4 = '타 base 이식 — 이 base 특유가 아닌지 확인'. 본 라운드는 동일 base 에 다른 재료의 배제필터를 놓아 배제-소비면 자체의 일반성을 시험한다(재료 교차 대조)."
+  },
+
+  "consumption_gate_precheck": {
+    "blocked_thing": "FQ-233 부활조건이 차단하는 것 = 분포 통계량으로 종목을 골라(선별) 그 랭킹에 자본을 태우는 것. measurement-graduation §1 이 차단하는 것 = 분포 통계량으로 PORT_t/oos_retention/calmar 를 대체·근사하는 주장.",
+    "this_round_consumption_form": "배제(exclusion) — 분포 재료는 후보집합에서 빼는 이진 게이트로만 쓰이고, 남은 후보의 서열은 전적으로 base 스코어링(production_parity_verified score_eff)이 결정한다. 분포 점수는 어떤 종목도 위로 올리지 않는다.",
+    "verdict_metric": "판정 수치는 평균 basis 포트폴리오 수치(ΔIR = IR_filtered - IR_base, weighted_screen net 15bps) + paired NW lag-3 t. 분포 통계량(tail_dn_prob_diff 등)은 본 라운드에서 판정에 일절 등장하지 않는다 — 재료의 출처일 뿐이다.",
+    "why_different": "① 선별은 분포 신호를 서열로 번역해야 하고 그 전이가 FQ-233 에서 실패했다. 배제는 서열 번역을 요구하지 않는다(L-AR-20260802_204801 ③ 실측: 같은 재료 MAX5 가 랭킹 팩터로는 canonical PORT_t -1.616 인데 배제필터로는 산다 — '누구를 위로 올리나' 와 '누구를 빼나' 는 다른 문제). ② 자본 자격 판정이 분포 축이 아니라 평균 basis PORT_t/ΔIR 로 이뤄지므로 §1 대체·근사 금지에 저촉되지 않는다. ③ 본 라운드가 실패해도 그 실패는 '분포 재료 무용' 이 아니라 '이 base·이 문턱에서 배제 소비면 미달' 로만 귀속된다."
+  },
+
+  "primary": {
+    "name": "absorb 하위 20%(=NP2 q_lo 분위) 배제-필터, X 단일 고정",
+    "X_fixed": 0.20,
+    "X_rationale": "성과가 아니라 측정 대상의 동일성으로 고정한다. NP2 가 tail_dn_prob_diff 를 측정한 객체는 canonical_distribution_screen(n_quantiles=5L, q_lo=1L) 의 하위 분위 = 하위 20% 다. 배제 집합을 그 측정 집합과 다르게 잡으면 증거가 전이되지 않는다. X=10%/30% 는 사전등록 진단 병기이며 판정·선택 사용 금지.",
+    "filter_rule": "각 d0: (1) liq 필터 통과 후보집합을 먼저 확정 → (2) 그 집합 내에서 absorb 유한값의 횡단면 20% 분위(type=7) thr 산출 → (3) absorb <= thr 인 종목을 top-25 선별 전에 배제. absorb 결측 종목은 배제 불가(유지) — 커버리지 실측 97.8%(00_precheck.json).",
+    "order_fixed": "유동성 필터 → 배제. 근거: 문턱은 실제 투자가능 후보집합 위에서 정의되어야 하며(비투자가능 종목이 분위 문턱을 밀면 배제 집합이 오염), 선행 라운드 WT-014 와 동일 순서라야 ΔIR 이 직접 비교 가능하다."
+  },
+
+  "scoring_fixed": {
+    "panel": "05_Production/2.Factor_Model/2-1.STR_1715_AR_on_M4_R05_overlay_PG2/02_holdings_universe/alpha_scores_str1715_268m_cleanT1.parquet, 컬럼 score_eff",
+    "authority": "§7b — vintage_verified == 'production_parity_verified' 라벨 하드 게이트(코드가 stopifnot 으로 강제). meta: production_code_direct spearman 0.975~0.997, icRecon max_absdiff 0.",
+    "why_this_scoring": "배제의 효과만 분리하려면 스코어링이 고정되어야 하고, 동시에 book-marginal(§4) 이 성립하려면 base 가 incumbent 여야 한다. 두 요건을 동시에 만족하는 유일한 선택. 또한 선행 배제-필터 라운드와 동일 base 이므로 ΔIR 이 재료 간 직접 비교 가능.",
+    "harness": "plumbing_fq044 parity2 경로 verbatim: CLEAN Date(홀딩월 1일 라벨) - 1 → ym → d0 매핑, score_eff, SIZE merge, liq adv>=2e8(t-1), top-25 by score_eff, cap_norm(Size) 0.20 cap, weighted_screen_bt 15bps one-way.",
+    "base_anchor_STOP": "무필터 전 268월 PORT_t 가 3.0583 +- 0.01 로 재현되지 않으면 즉시 STOP — 하네스 오염, 측정 무효."
+  },
+
+  "window": {
+    "primary": "paired 공통 268월 (d0 2003-12-30 .. 2026-03-31). absorb ∩ base d0 = 268/268 격자 정합 실측.",
+    "caveat_label": "universe_exit_unrecorded_pre201512 — 268월 중 144월이 2015-11 이전. 편향 방향 = 하방/중립(생존자 편향 아님).",
+    "why_not_late_only_as_primary": "청정창 단독을 primary 로 두면 판정이 원리적으로 미결이 된다. 실측 검정력(00_precheck): late n=124 에서 MDE(80%) = 4.82%p/yr 인데 기측정 양성(WT-014 복권필터)의 실효크기는 1.99%p/yr — late 창에서 implied t 1.16. 즉 청정창은 알려진 양성조차 검출 못 한다. 따라서 primary = 전 창 + 라벨 병기, late 창은 사전등록 비바인딩 분해."
+  },
+
+  "power_precheck": {
+    "measured_sd_monthly_delta_active": 0.015949,
+    "sd_source": "WT-D20260802_014 paired_series$d_active 실측 (동일 base·동일 하네스·동일 섭동유형 = 유니버스 배제필터). 계약 기본값 미사용.",
+    "n_primary": 268,
+    "mde80_monthly": 0.002729,
+    "mde80_annual_pp": 3.2748,
+    "n_late": 124,
+    "mde80_late_annual_pp": 4.8158,
+    "nw_deflation_factor": 0.94,
+    "reachability_statement": "이 창의 도달가능 상한: 기측정 양성(WT-014, ΔIR +0.1692 = 게이트의 3.4배)의 월평균 Δactive 는 0.00166(1.99%p/yr) 로 80% 검정력 MDE 3.27%p/yr 보다 작다 — 실측 NW t 는 1.565 에 그쳤다. 이 축에서 t>=2 는 실효크기가 기측정 최고 양성의 1.7배 이상일 때만 가능하다. 따라서 t<1.70 인 결과는 효과없음이 아니라 미결(underpowered) 로만 라벨한다.",
+    "implied_t_at_gate": "ΔIR = +0.05(§4 문턱)에 대응하는 월평균 Δactive 약 0.00049 → iid implied t 약 0.50, NW 보정 후 약 0.47. 즉 ΔIR>=0.05 게이트는 이 창에서 통계적 유의성 게이트가 아니다 — 크기 게이트다. 두 축을 섞어 인용하지 않는다."
+  },
+
+  "decision_criteria": {
+    "i_primary_binding": "ΔIR = IR_filtered - IR_base >= +0.05 (weighted_screen basis, net 15bps, paired 공통월). basis 라벨 = screen-IR(cap-w) — book recon NAV IR(net_active_recon_v1) 아님.",
+    "ii_effectiveness_validity": "발동률 = 필터가 top-25 구성을 실제로 바꾼 월 비율 + base top-25 내 배제대상 평균 종목수. 발동 0 = honest null(base 가 이미 저-absorb 를 안 뽑음) → 가설 기각 아닌 비적용 판정.",
+    "iii_liq_tension": "배제 후 후보 < 25종 월 존재 여부. 존재 시 그 월은 양 arm 모두에서 제거(paired 무결성) 후 재측정하고 개수 보고. 5% 초과 시 primary 판정 무효. (사전 census 실측: X=20% 에서 월 최소 잔여 115종 — 발생 0 예상)",
+    "label_map": {
+      "CONFIRMED": "ΔIR >= +0.05 AND paired NW t >= +1.70 (= 기측정 최고 양성이 이 n 에서 내는 implied t)",
+      "DIRECTIONAL_UNDERPOWERED": "ΔIR >= +0.05 AND 0 < paired NW t < +1.70 — 크기 게이트 통과, 검출 축은 미결",
+      "NULL_UNDERPOWERED": "abs(ΔIR) < 0.05 AND abs(월평균 Δactive) < MDE80(0.00273) — 이 창은 3.27%p/yr 미만 효과를 배제하지 못한다 → 미결, '효과없음' 라벨 금지",
+      "NULL_POWERED": "abs(ΔIR) < 0.05 AND abs(월평균 Δactive) >= MDE80 이면서 부호가 가설과 반대 — 이 크기대는 배제됨",
+      "ADVERSE": "ΔIR < 0 AND paired NW t <= -1.70"
+    }
+  },
+
+  "transition_gates_prefixed": {
+    "alpha_discovery_count_ge_1": "factor_specs >= 1 (absorb 배제 게이트 = SPECIAL_OP escape 리프 1건) — 형식 요건.",
+    "screen_pass": "hurdle_gate.R verdict$screening$screen_pass == TRUE 를 filtered arm 실측 위에서 산출. no-PIT AND [SR>=0.7 AND CAGR>=12%] 또는 [score>=40 AND SR>=0.5].",
+    "falsification_firings": "아래 falsification 2종 중 primary(F1) 가 발화(=기전 기각)하면 0건 조건 미충족.",
+    "rule": "3종 전부 충족 시에만 risk-research 전이 요청. 하나라도 미충족이면 전이 요청 없이 negative 보고 — 협상 없음."
+  },
+
+  "falsification_side_observation": {
+    "primary_F1": "기전이 참(저-absorb = 개인 추종매수가 좌측꼬리 위험을 예고)이면, 배제군(저-absorb)의 홀딩월 개인 순매수 강도(Individual / (adv x 거래일수))가 잔여 후보 대비 높아야 한다(추종 수요 지속). NW lag-3 t <= 0 이면 기전 서사 기각.",
+    "secondary_F2": "배제군의 신호월 직후 3개월 기관·외국인 순매수(fwd_inst_3m_n / fwd_foreign_3m_n, absorb_panel 기존 컬럼)가 잔여 후보 대비 낮아야 한다(스마트머니 회피). NW t >= 0 이면 F2 발화.",
+    "independence": "두 관측 모두 성과 동어반복이 아니며 판정(criteria i~iii)과 독립. 둘 다 사전 고정 — 사후 선택 없음."
+  },
+
+  "preregistered_robustness_non_selective": {
+    "lag1_stress": "absorb 를 1개월 지연(d0-1월 값)한 필터판 — 붕괴 시 동월 누출 의심. 동월 look-ahead 는 placebo·OOS·DSR·subperiod 를 전부 통과하므로 lag1 + strict-PIT A/B 만이 판별한다.",
+    "strict_pit_ab": "assert_overlay_pit(d0, 홀딩월 1일) HARD 268/268 + 위반 주입(컷오프를 홀딩월 말로) 0/268 통과 = 검사기 생존 — 00_precheck.json 실측 완료.",
+    "dual_basis_ew": "canonical_screen_bt top-25 EW 판(무필터 vs 필터) + diag_ew_universe 병기. metric_type=canonical_screen. 판정은 cap-w primary.",
+    "basis_3": "cap-w screen-IR(primary) / EW screen-IR / EW-유니버스 벤치 대비 — 3종 병기, 인용 시 basis 라벨 의무.",
+    "x_sensitivity_diagnostic_only": [0.1, 0.3],
+    "window_split_diagnostic_only": ["pre-2015-12 (144m)", "2015-12~ (124m)"],
+    "ax001_regime_decomposition": "unified_regime_signal 홀딩월 매핑(hold_ym = d0월+1) 국면별 Δactive 분해 — AX-001 v2 조건부 평가 축."
+  },
+
+  "pit_declaration": {
+    "C5": "absorb 창 = {m-2,m-1,m} 이며 d0 당일 관측 차감(strict Date < d0). 홀딩월 = m+1, 컷오프 = 홀딩월 1일. assert_overlay_pit 268/268 PASS + 위반 주입 FIRED(00_precheck).",
+    "C10": "liq = screen_inputs.rds liqf (t-1 20d ADV) — parity 하네스와 동일.",
+    "C1": "배제 문턱은 당월 횡단면만 사용(시계열 전체 통계 미사용).",
+    "C14_C15": "Factor DB 직접 load 없음 — base 는 production_parity_verified 저장 패널, absorb 는 Lane B 동결 패널. 신규 팩터 계산 없음.",
+    "ret_firewall": "저장 Ret 만 사용(재계산 금지)."
+  },
+
+  "prohibitions_selfbinding": [
+    "공분산·target weights·최적화 산출 금지 (risk/optimizer 소관). cap_norm(Size) 는 base 하네스의 고정 규격이지 weight 결정 행위가 아니다.",
+    "proxy 손계산·자체합성(prod(1+r)/cumprod) 금지 — 전 수치 contract 경유.",
+    "성과를 보고 X·창·스코어링을 바꾸지 않는다. 바꾸면 sweep 재분류 + DSR HARD 적용.",
+    "canonical/weighted screen 수치로 graduation PASS 선언 금지 — 자본 판정 권위는 forge + essence_score + discovery_graduation_gate."
+  ],
+
+  "capital_claim": "없음. 본 라운드 산출 = 배제-소비면 특성화 실측 + 전이 판정. admission 은 governor + 도훈 수동."
+}

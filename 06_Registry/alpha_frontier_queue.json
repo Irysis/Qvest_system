@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "sot": "02_Infrastructure/docs/qvest_v8_3_alpha_discovery_sot.md §4",
-  "updated": "20260822",
+  "updated": "2026-08-22",
   "consume_rule": "새 발굴 리서치 착수 전: hypothesis_index lookup → 본 큐 확인 → owner/status 갱신. 완료 시 result_ref(L-code/보고서) 기입. dohoon_decision 항목은 세션 임의 착수 금지. ★세션 간 배정 규약(도훈 지시 2026-08-09): ①착수 전 owner 필드 확인 — 'CLAIMED' 면 착수 금지, 'UNCLAIMED' 면 자기 세션으로 CLAIMED 갱신 후 시작 ②신규 ID 는 **하드코딩 금지** — 원장 최대 번호+1 을 계산해 배정하고, 기록 후 **재읽기로 존재 확인** (2026-08-09 실사고: FQ-167/168 등재가 병렬 세션 선점과 충돌해 조용히 생략됐고 close_round 서술이 거짓이 됨 → FQ-169/170 재배정) ③close_round 의 frontier_update 는 **실제 기록 결과에서 파생**시킬 것(선언에서 파생 금지).",
   "entries": [
     {
@@ -5436,6 +5436,19 @@
       "status": "CLAIMED_20260822__state_conditional_selection_launching",
       "next_action": "★**조건변수는 성과가 아니어야 한다** — trailing 성과 기반 선택/가중은 **두 번 죽었다**(RAMP R10 W-factor paired −0.16 · FQ-121 IS 최강 V01 +2.634 → OOS −0.389 부호 반전). 후보 = 국면(bear_prob 연속) · 크라우딩 · 횡단면 분산 tercile. ①연속 상태변수 의무(이분화 시 에피소드 붕괴 — FQ-239 R8 이 235개월 중 3회 발화로 실증) ②사전등록·비-sweep(argmax 선택 시 DSR ≥0.5 HARD) ③검정력 직접 측정 + implied_t 사전 산출(자기-diff sd 바 퇴화 점검) ④지속 회귀변수 t 보정은 **대상 지속성을 먼저 재고** 판정 ⑤완주 설계 4필드 ⑥Lane D(FQ-236)와 차별 — 그쪽은 매크로 조건부 **분포 형태**를 쟀고(기각-부호) 이쪽은 조건부 **팩터 선택**이다. 표적이 다르다.",
       "source_refs": "FQ-244 close_round(FQ-244_combination_node_nonML_WT-D20260822_004_20260822) · FQ-237 close · FQ-239 handoff_smv_20260820"
+    },
+    {
+      "id": "FQ-247",
+      "lane": "overlay_construction",
+      "title": "★MFRO — 멀티팩터 로테이션 오버레이: 팩터 모멘텀을 종목-비중 재틸트로 소비",
+      "hypothesis": "팩터 로테이션 신호(무국면 trailing 12M active, top-quintile)는 팩터 지수 공간에서 실재한다(DFA F1 clean pt +1.301 IR +0.439, placebo p=0.033, clean IC-t +2.761). 그러나 현 소비 형태는 그 신호를 프리미엄이 죽은 EW 팩터 바스켓(clean -1.04%/yr)에 100% 태우고, 25종 사영에서 알파가 아니라 베타만 남는다(R39/R41). ⇒ 신호를 **종목 선택이 아니라 종목 비중**으로 내려 태우면(base 25종 고정, 승리팩터 z 로 재틸트) Gate 0 이 구성상 충족되면서 살아있는 종목-알파 위에 로테이션을 얹을 수 있다.",
+      "ev_rationale": "Axiom PULL 결과 닫힌 축 4개를 전부 회피한다: 노출 스칼라 아님(Σw=1 불변) · 슬리브 배분 아님(book n_admitted=1) · cap-tilt 아님(FQ-156, 시총이 아니라 승리팩터 노출) · standalone 팩터 바스켓 아님. 미측정 표면이며 배포 형태 게이트를 구성상 통과한다.",
+      "next_action": "사전등록 outputs/ramp/mfro_v1_prereg_20260822.json 대로 5팔 측정 (C0 base / C1 무신호대조 / B 순수오버레이=헤드라인 / A 선택+비중 / P oracle 상한). ★조작 확인을 사전등록에 포함(B vs C0 비중 L1 중앙 >= 0.10) — R54 교훈. book-marginal 은 산출하지 않음(알파 패널 07-14 오염 라벨, §7b — FQ-044 선행 필요).",
+      "owner": "Q-Lead (R55, 2026-08-22 착수 — 도훈 직접 지시 '멀티팩터 로테이션 오버레이 전략 만들어봐')",
+      "status": "CLAIMED_20260822__measuring",
+      "registered_at": "2026-08-22",
+      "source_refs": "outputs/ramp/mfro_v1_prereg_20260822.json | 02_Infrastructure/ramp/build_mfro_panel.R | 02_Infrastructure/ramp/run_mfro_r55.R | FQ-242(단일슬리브 정정) | FQ-156 | FQ-058 | R54 §55",
+      "revival_condition": "본 라운드가 negative 여도 부활 축 2개: (a) base 를 21팩터 등가중이 아닌 다른 구성으로 교체했을 때 (b) FQ-044 clean 패널 완성 후 실제 book 위에서의 book-marginal 측정."
     }
   ],
   "parked_rounds": [

@@ -1,0 +1,124 @@
+{
+  "wt_id": "WT-D20260822_009",
+  "designed_by": "alpha-hypothesis",
+  "model_tier": "fable",
+  "designed_at": "2026-08-22",
+  "spec_version": "ast_v1.1_hypothesis_stage",
+  "prechecks": {
+    "hypothesis_index_hits": [
+      {
+        "query": "exclusion filter universe",
+        "hit": "WT-D20260802_014_016_LOTTERY_EXCLUSION_FILTER (L-AR-20260802_204801, PASS/grade B, universe_exclusion_filter_x_overlay)"
+      },
+      {
+        "query": "individual investor flow tail risk (5어 AND 0건 → 단일어 폴백 'risk')",
+        "hit": "직접 선행 없음 — 폴백 결과는 risk_sigma/crash_protection 계열로 본 가설과 재료·소비형태 상이. WT-D20260802_020_MAX5_CRASH_INCIDENCE 는 MAX5 재료의 crash 축 특성화로 인접."
+      },
+      {
+        "query": "absorb individual flow (3어 AND 0건 → 단일어 폴백 'flow')",
+        "hit": "WT-D20260813_006 (absorb 피처 설계 직계, in-flight 인덱싱 확인 — 병렬 중복실행 없음: 그 WT 는 본 세션이 회수한 계보) + WT-D20260718_002_insider_sell_exclusion (배제 필터 음성 대조, FALSIFIED/F)"
+      }
+    ],
+    "frontier_queue_refs": [
+      "FQ-234 (Lane B): owner = CLAIMED Q-Lead session d2e06481 2026-08-22 — 본 세션 계보. last_round = NP2 (WT-D20260822_003, screen_tier_routed, DISTRIBUTION_TARGET 발급). next_probe NP2-P2 가 본 라운드를 명시 지시: '좌측 꼬리 축을 소비 형태로 번역 — 유니버스 필터(저-absorb 배제)로 옮겨 canonical_screen_bt 로 평균 basis 수치를 실제 산출'.",
+      "FQ-233 (Lane A): status = arc_settled__powered_null_breadth_scoped. 부활조건 ① 재서열 양성 = WT-D20260822_002 실측 미충족 확인, ② rank 역-소비 사전등록 = 미착수. 본 라운드와의 관계는 consumption_gate_precheck 에 명시.",
+      "dohoon_decision 항목 아님 — request.json hypothesis_source = user_defined (도훈 지시 2026-08-22 '이제 알파 좀 만들어보자' 하에 Q-Lead 가 생성한 WT). 세션 임의 착수 아님."
+    ],
+    "owner": "Q-Lead session d2e06481 (FQ-234 claim 보유 세션) → alpha-hypothesis 위임 구간"
+  },
+  "candidates": [
+    {
+      "title": "C1 — 저-absorb 배제 유니버스 필터 (선택)",
+      "family": "flow_behavioral_exclusion",
+      "mechanism_sketch": "개인 추격 매수(상승일 순매수)가 가격을 지지하는 종목은 그 지지가 철수될 때 좌측 꼬리를 실현 — 해당 종목군을 모집단에서 배제해 평균 basis 포트 수치를 개선.",
+      "why_selected": "FQ-234 NP2 실측이 직접 지지(tail_dn_prob_diff 18/18 셀 음수, 최강 통제 생존 유일 축) + measurement-graduation §3 가 명문화한 유일 합법 자본 경로 + LOTTERY 선례가 배제-형태의 전이-벽 우회를 실측(PORT_t 2.879→3.620). 재료·경로·규범 3박자가 맞는 유일 후보."
+    },
+    {
+      "title": "C2 — absorb 를 하방 리스크 예산/공분산 입력으로 (risk-research 면)",
+      "family": "flow_behavioral_risk_input",
+      "mechanism_sketch": "동일 기전을 알파가 아닌 위험모델 입력(꼬리위험 프록시)으로 소비 — FQ-236 소비면 판정 ④ FREE 면.",
+      "why_not_selected": "본 WT 의 판정 수치(평균 basis PORT_t)와 소관이 다름 — risk-research 소관이라 alpha 라운드 표적이 될 수 없음. NP2-P2 의 대안 반쪽으로 보관, risk-research 단계에서 별도 소비 가능(challenge_flags 승계)."
+    },
+    {
+      "title": "C3 — 저-absorb × 고-MAX5 결합 배제 (2축 joint filter)",
+      "family": "flow_behavioral_exclusion_joint",
+      "mechanism_sketch": "복권 수요(MAX5)와 추격 수요(low absorb)를 결합해 배제 정밀도를 높임.",
+      "why_not_selected": "자유도 2배 + MAX5 필터(기실측 PASS)와의 중복도가 미측정 상태에서 결합부터 하면 absorb 의 한계 기여가 영구히 식별 불가. 단일축 실측 + 중복 측정이 선행되어야 함 — 중복률·한계 기여 측정을 alpha-research 의무로 승계."
+    },
+    {
+      "title": "C4 — 좌측 꼬리확률 급변 monitoring tripwire",
+      "family": "flow_behavioral_monitoring",
+      "mechanism_sketch": "absorb 급락(지지 철수 개시)을 보유 종목 조기 경보로 소비 — 자본 무관 진단 면.",
+      "why_not_selected": "자본 후보 생산이라는 본 WT 의 목적과 불일치(FQ-236 판정 ⑤ FREE 면이나 알파 라운드 아님). NP2-P4 가 이미 FQ 등재 대상으로 지목 — 그쪽 경로로 보관."
+    }
+  ],
+  "selected": {
+    "hypothesis_title": "저-absorb 배제 유니버스 필터 — 분포 재료의 자본 경로 1호",
+    "hypothesis_description": "absorb = -corr_win(Individual_d, Ret_d) (3개월 창 {m-2,m-1,m}, 신호일 d0 = 시장 월말 거래일, strict Date < d0, 홀딩월 = month(d0)+1 — WT-D20260813_006 정의 그대로 승계, 재정의 금지). 저-absorb 종목(개인이 상승일에 순매수 = 추격 수요가 가격 지지) 은 다음 달 좌측 꼬리 실현 확률이 체계적으로 높다 (FQ-234 NP2 실측: tail_dn_prob_diff 측정 18/18 셀 전부 음수, |t| 1.72~4.42, rank-transform + win_vol·log_size 직교화 + disjoint 2창에서 생존한 유일 축). 본 가설: 저-absorb 하위 X% 종목군을 선정 모집단에서 배제하면, 종목 선별·가중을 담당하는 기존 평균-basis 경로의 forge-authoritative 포트폴리오 수치(PORT_t·oos_retention·calmar)가 배제 없는 base 대비 개선된다. 판정은 전적으로 평균 basis 실측 — 분포 통계량은 판정에 등장하지 않는다.",
+    "mechanism": {
+      "agent": "KR 개인투자자 순매수 군집의 '상승일 추격 매수' 행태. 저-absorb 종목 = 월내 개인 순매수가 상승일에 집중되는 종목(corr(Individual_d, Ret_d) > 0) — 가격이 펀더멘털 보유자가 아니라 주의(attention)-주도 개인 수요에 의해 지지되고 있으며, 그 수요의 반대편에서 외국인·기관이 분산 매도 중인 종목. 대조: 고-absorb 종목은 개인이 하락일에 순매수(유동성 공급/역추세)해 하방 지지가 실재.",
+      "friction": "① KR 공매도 제약 (개인 수요로 지지된 가격의 하방 정보를 숏 포지션이 선반영할 수 없음 — Miller 1977 과대평가 지속 구조, WT-D20260718_002 에서 같은 프레임 실측 전례) ② flow 정보의 소비 마찰: 투자자별 수급은 T+1 공시이나 종목×월내 일별 공분산 구조(absorb)로 가공해 쓰는 소비자가 구조적으로 소수 — 수준(level) 소비가 지배적이라 공분산 축 정보가 가격에 흡수되지 않음 ③ 롱온리 지배 시장에서 '빠질 종목' 정보는 보유 회피로만 실현 가능한데 지수·quasi-index 자금은 배제를 실행하지 않음.",
+      "path": "★배제 경로 (선별 아님): top-N long-only EW/최적화 포트에서 좌측 꼬리 실현(월간 대형 음수 수익)은 ① 산술평균 활성수익을 직접 깎고(PORT_t 분자) ② 활성수익 분산을 키우며(PORT_t 분모) ③ MDD 를 통해 calmar 를 훼손한다 — 꼬리 사건 하나가 HARD 3종 수치를 동시에 때린다. 좌측 꼬리 확률이 체계적으로 높은 저-absorb 종목군을 모집단에서 빼면 선정 25종의 꼬리 사건 빈도가 낮아지고, 대체 편입 종목은 base 알파 랭킹의 차순위라 알파 손실은 랭킹 여백만큼만 발생 — 순효과는 평균 basis 수치의 개선으로 나타난다. 이 형태의 전이는 실측 선례가 있다: WT-D20260802_014(MAX5 배제)에서 동일 재료가 랭킹 팩터로는 PORT_t -1.616(사망)인데 배제 필터로는 2.879→3.620 + MDD -11.4pp + 회전 불변 — '누구를 위로 올리나'와 '누구를 빼나'는 다른 문제이며 배제는 top-25 전이-벽 기전을 우회한다. 반대 방향 음성 대조도 실측돼 있다: WT-D20260718_002(insider 순매도 배제)는 배제집합의 forward 하방이 실재하지 않아 배제가 base 를 훼손했다(1.171→0.771) — 배제의 손익은 '배제집합의 forward 좌측 꼬리가 실재하는가'에 걸려 있고, absorb 는 그 전제가 18/18 셀로 실측된 상태에서 진입한다는 점이 결정적 차이."
+    },
+    "falsification": {
+      "observable": "기전('개인 추격 수요가 지지하는 가격 → 스마트머니는 반대편 → 지지 철수 시 꼬리 실현')이 참이면 성과 외에 관측되어야 할 것 2건: (F1) 저-absorb 하위군(배제 대상)의 후속 3개월 외국인·기관 순매수(fwd_foreign_3m·fwd_inst_3m — A6 리프 Foreign/Institutional 의 m+1..m+3 합/Size, absorb 패널에 기산출)는 유니버스 중앙값 대비 낮거나 음수여야 한다(스마트머니가 개인 수요에 물량을 넘기며 이탈 지속). (F2) 저-absorb 종목의 좌측 꼬리 실현월에는 하락일 개인 순매수(A6 리프 Individual × rawdata 일별 Ret 부호 조건)가 고-absorb 종목의 꼬리월 대비 약해야 한다(지지 부재가 꼬리의 실현 경로).",
+      "field_dictionary_refs": [
+        "A6_investor_flow_stock_daily:Foreign",
+        "A6_investor_flow_stock_daily:Institutional",
+        "A6_investor_flow_stock_daily:Individual",
+        "rawdata:Ret",
+        "rawdata:Size"
+      ],
+      "reject_if": "(F1 기각조건) 저-absorb 하위군의 fwd_foreign_3m + fwd_inst_3m 이 유니버스 중앙값 대비 유의하게 높으면(NW-t >= +2.0, 스마트머니가 오히려 매집) '지지 철수' 기전 기각 — 꼬리 확률 격차가 유지되더라도 그 원천은 본 기전이 아니므로 배제 필터의 국면 경계·붕괴 조건 예측력이 근거를 잃는다. (F2 기각조건) 꼬리 실현월의 하락일 개인 순매수 강도가 저-absorb 군에서 고-absorb 군과 구별 불가하면(개인 지지가 있는데도 꼬리 실현) 기각. 두 관측 모두 flow 방향 관측이지 포트폴리오 성과가 아니다 — 성과 동어반복 아님."
+    },
+    "regime_scope": {
+      "holds_in": [
+        "neutral",
+        "expansion"
+      ],
+      "weakens_or_reverses_in": [
+        "crisis",
+        "post_crisis_sharp_recovery"
+      ],
+      "boundary_rationale": "경계는 기전에서 도출: 배제의 편익은 '종목 고유(idiosyncratic) 좌측 꼬리'가 횡단면에서 판별적으로 실현될 때 발생한다. ① crisis 에서는 시장 전반 청산이 지배해(상관 → 1) 꼬리가 시스템 성분화 — absorb 의 횡단면 판별 대상 자체가 축소되고, 배제 후 대체 편입 종목도 같이 하락해 편익이 희석된다. 또한 유동성 청산 국면에는 고-absorb(개인 하락일 순매수) 종목조차 지지가 소진될 수 있어 스프레드의 부호 자체가 불안정해진다. ② post-crisis 급반등에서는 개인 추격 수요 종목(저-absorb·고베타 성향)이 가장 세게 반등하는 경향이 있어 배제가 반등 참여를 깎아 역효과 가능 — 같은 개인-수요 기전의 배제 필터인 LOTTERY 선례가 CRISIS 축 역효과 잔존(t -1.59)을 실측한 것과 동형 예측. ③ neutral/expansion 에서는 추격 수요가 축적될 시간이 있고(신호 형성) 꼬리가 고유 사건으로 실현되므로(판별력 유지) 기전이 성립한다. 주의: NP2 는 2창(2000-2015/2015-2026) 부호 일치만 실측했고 국면 조건부 분해는 미측정 — 이 경계는 기전의 예측이지 데이터 관찰의 사후 서술이 아니며, alpha-research 가 국면 분해로 이 예측 자체를 시험할 수 있다(예측이 빗나가면 기전 재검토 신호)."
+    }
+  },
+  "consumption_gate_precheck": {
+    "blocked_definition": "FQ-233 이 닫은 것 (부활조건 2관문 밖 재제안 금지, INV-7): '분포-표적 학습 점수(조건부 분위·왜도·꼬리확률 예측치)를 써서 종목을 고르거나(선별·랭킹) 크기를 정해(사이징) 자본을 태우는 경로'. 부활조건 ① 평균-정합 선별 통계량 재서열 양성 = WT-D20260822_002 실측 미충족(co-primary 2건 t < +2.0), ② rank 1-25 역-소비 사전등록 유의 = 미착수. 추가로 measurement-graduation §3 (2026-08-22 신설): 분포 통계량(중앙값 스프레드·왜도·분위 프로파일)으로 자본 tier HARD 3종을 대체·근사하는 주장 = §1 위반.",
+    "this_round_consumption_form": "모집단 배제 (universe pre-filter). absorb 는 '선정 자격이 있는 종목 집합'을 줄이는 데만 개입한다. 배제 후 남은 모집단에서 누구를 위로 올리고(랭킹) 얼마를 태울지(weight)는 기존 평균-basis 알파 경로와 optimizer 가 그대로 수행하며, absorb 점수는 랭킹·weight 어디에도 등장하지 않는다. 분포-표적 학습도 없다 — absorb 는 관측 피처(월내 공분산의 부호 함수)이지 분위·왜도를 예측하도록 학습된 점수가 아니다.",
+    "verdict_metric": "forge-authoritative 평균 basis 수치만: portfolio_alpha_t_nw_lag3 (HARD >= 2.95) + oos_retention (>= 0.7) + calmar (>= 0.64) + beta-통제 t(alpha) 병기(2026-08-22 신설 의무) + base 대비 paired 개선(book-marginal 관례 ΔIR). 분포 통계량은 판정 수치에 등장하지 않는다. iteration 선택은 canonical_screen_bt 실측 IS-only.",
+    "why_different": "4중 근거: ① 규범 문면 — measurement-graduation §3 신설 절이 '분포 재료가 자본으로 가는 유일한 경로 = 소비 형태를 바꿔 평균 basis 포트폴리오 수치를 실제로 산출한 뒤 그 수치로 판정'을 명문화(도훈 승인)했고 본 라운드가 문자 그대로 그 형태다. ② 큐 계보 — FQ-234 NP2-P2 next_probe 가 '유니버스 필터(저-absorb 배제)로 옮겨 canonical_screen_bt 로 평균 basis 수치를 실제 산출'을 명시 지시했다(본 세션 owner claim 하). ③ 재료 계보 — FQ-233 이 규율하는 대상은 Lane A 의 분포-표적 *학습*(pinball/왜도 예측 ML)의 자본화이고, 본 재료는 Lane B 관측 피처로 표적 교체·학습이 없다. ④ 실측 선례 — '랭킹(선별)과 배제는 다른 문제'라는 구분 자체가 실측돼 있다(WT-D20260802_014: MAX5 랭킹 PORT_t -1.616 vs 배제 필터 +3.620). ★잔여 긴장 1건 정직 표기: FQ-236 Lane D 소비면 판정문 ②는 '유니버스 필터 = BLOCKED (분포 기준 배제 = 선별의 다른 형태)'라 적었다. 그 판정의 맥락은 Lane D 매크로 상태 집계량을 평균 basis 실측 없이 소비면에 태우는 경우였고, 본 라운드는 배제 편익 주장 자체를 평균 basis 실측으로만 세우므로 §3 경로에 부합한다고 판단한다 — 단 이 구분이 도전받을 수 있음을 challenge_note 에 기록했고, 그 도전이 성립하더라도 본 라운드의 자본 주장이 분포 통계량에 의존하는 지점은 없다(판정 수치가 전부 평균 basis). 최종 소비면 충돌 판정 권위는 Q-Lead/judge."
+  },
+  "prior_art": [
+    {
+      "id": "WT-D20260802_014_016_LOTTERY_EXCLUSION_FILTER",
+      "verdict": "PASS / grade B (L-AR-20260802_204801) — 가장 가까운 선행",
+      "differentiation": "동일 소비 형태(유니버스 배제 필터), 상이 재료: MAX5 는 가격 파생(복권 선호 프록시), absorb 는 flow 파생(월내 개인 순매수 × 일별 수익 공분산). 단 기전 겹침 위험 실재 — LOTTERY 의 기전 지지 관측이 '배제군을 개인이 홀딩월에 유의하게 더 순매수(NW t +3.90)'로, 두 필터 모두 개인 수요 축을 짚는다. 저-absorb 배제집합과 MAX5 상위 10% 집합의 중복률 + MAX5 필터 조건부 한계 기여(둘 다 적용 시 absorb 의 증분 ΔPORT_t) 측정을 alpha-research 의무로 승계한다 — 중복이 크면 본 라운드는 lottery 필터의 재포장이고 정직 판정은 '증분 없음'이다. 승계 caveat 2건: lag1 스트레스에서 LOTTERY 편익 소멸(리밸 지연 불허) — absorb 도 lag1 의무. 배제 비율 X 민감(10% +0.169 / 20% +0.007) — X 는 사전등록 후 변경 금지."
+    },
+    {
+      "id": "WT-D20260718_002_insider_sell_exclusion",
+      "verdict": "FALSIFIED / grade F (L-AR-20260718_215751) — 배제 필터의 음성 대조",
+      "differentiation": "배제는 공짜가 아니다 — 배제집합의 forward 하방이 실재하지 않으면 base 를 훼손한다(PORT_t 1.171→0.771, 21/21 셀 음성). 본 라운드의 진입 전제가 다르다: insider net-sell 은 forward-underperformance 신호 부재가 3중 확인된 재료였고, absorb 좌측 꼬리는 최강 통제 + disjoint 2창에서 18/18 셀 실측된 재료다. 이 선례는 본 라운드의 실패 모드 예언이기도 하다 — 꼬리 확률 격차가 평균 basis 개선으로 전이되지 않으면 같은 모양으로 죽는다."
+    },
+    {
+      "id": "WT-D20260813_006 + WT-D20260822_003 (FQ-234 NP2)",
+      "verdict": "직계 계보 (재료 생산 라운드)",
+      "differentiation": "813_006 = absorb 피처 설계·빌드(가설설계만 완료된 stale 라운드를 본 세션이 회수), 822_003 = distribution_target_screen 계약으로 스크리닝 실측(DISTRIBUTION_TARGET 라우팅, capital_eligible=false 명시). 본 라운드 = 그 라우팅 라벨의 첫 자본-경로 소비. 재측정 없이 승계하되, 판정 수치는 전부 새로 산출한다(스크리닝 수치로 자본 주장 금지)."
+    }
+  ],
+  "challenge_flags": [
+    "[C2 보관] absorb 의 risk-input 소비(하방 리스크 예산)는 FQ-236 소비면 판정 ④ FREE — risk-research 가 별도 검토 가능 (본 라운드와 독립).",
+    "[MAX5 중복 의무측정] 저-absorb 배제집합 vs MAX5 상위 10% 집합 중복률 + MAX5-조건부 한계 기여 측정 없이는 본 필터의 증분 주장 불가 — alpha-research Step 4 의무.",
+    "[lag1 의무] LOTTERY 선례에서 lag1 시 편익 소멸 — absorb 배제도 lag1 스트레스 + strict-PIT A/B + assert_overlay_pit 의무 (C5 동형. absorb 는 strict Date < d0 로 빌드됐으나 배제 적용 시점 재검증 필요).",
+    "[X 사전등록] 배제 비율(하위 X%)은 착수 전 사전등록, 성과 보고 변경 금지. X sweep 을 하면 selection_type=sweep + DSR HARD.",
+    "[국면 분해 미측정] regime_scope 는 기전의 예측 — NP2 는 국면 조건부 분해를 하지 않았다. 예측이 빗나가면 기전 재검토.",
+    "[창-도달가능성 병기] 같은 재료의 평균 축 양성 대조가 131개월 창에서 statistic 1.674 상한 — 판정 창 설계 시 2.95 도달 가능 창인지 양성 대조 병기 의무(measurement-graduation 2026-08-22 신설). 전기간(259m급) 창 사용이 자연 해법.",
+    "[무신호 대조] 종목수 상한 롱온리이므로 no_signal_gate() 통과 의무(2026-08-22 신설) — base 와 필터판 모두.",
+    "[Lane D 판정문 긴장] consumption_gate_precheck why_different 잔여 긴장 참조 — 최종 권위는 Q-Lead/judge."
+  ],
+  "verdict": "designed",
+  "handoff": {
+    "to": "alpha-research",
+    "next_steps": "Step 1~7 + ⑤ AST 구성. 승계 원칙: mechanism/falsification/regime_scope 재작성 금지(결함 발견 시 challenge_note + 재설계 요청). 필수 실행 순서 권고: (1) absorb 패널 승계 검수(WT-D20260813_006 산출물, fwd_* 컬럼은 반증 관측 전용 — 피처로 소비 시 직접 look-ahead) (2) 배제 비율 X 사전등록 (3) base 선정(현행 평균-basis 경로) + canonical_screen_bt paired 실측(IS-only) (4) MAX5 중복률·한계 기여 측정 (5) 반증 관측 F1/F2 실측 (6) lag1/strict-PIT/no_signal_gate (7) 게이트 통과 시 risk→optimizer→forge→judge 완주. 판정 수치 = forge-authoritative PORT_t + oos_retention + calmar + t(alpha) 병기."
+  }
+}
