@@ -1,0 +1,54 @@
+{
+  "prereg_id": "mfro_v2_20260822",
+  "created_at": "2026-08-22",
+  "created_before_any_result": true,
+  "round": "R56",
+  "title": "MFRO 표적-정합 신호 — 로테이션 신호의 표적을 '지수 active' 에서 '꼬리25종 active' 로 교체",
+  "chain_parent": "mfro_v1_20260822 (R55)",
+  "selection_type": "chain",
+  "iteration_reason_mechanism": "R55 전이 진단 실측: 지수 active 와 꼬리25종 active 의 월내 횡단면 순위상관이 +0.262 뿐이고(NW-t 13.0, 양수월 84.1%), clean 창 수준 갭이 -9.1%/yr 다. 즉 로테이션 신호가 예측하는 양(지수)과 전략이 소비하는 양(꼬리)이 다르다. 표적을 일치시키는 것이 자유도 1개짜리 직접 수리다.",
+
+  "change_from_parent": {
+    "single_degree_of_freedom": "로테이션 신호의 표적만 교체. 구성(base 21팩터 composite 상위25 · .tilt lambda=1.5 · cap 0.20 · 15bps · 분기 아님 월간 · dec_lag=1)은 R55 와 **완전 동일**.",
+    "old_signal": "S[d,j] = 팩터지수 j 의 trailing 12M active (지수 공간)",
+    "new_signal": "TS[d,j] = 팩터 j 의 **꼬리25종 포트폴리오** trailing 12M active (전략이 실제로 타는 공간)",
+    "pit": "TA[m,j] 는 월 m 의 z 로 만든 top-25 tilt 포트가 월 m+1 에 버는 active. 결정월 d 에서 가용한 것은 TA[1..d-1] (TA[d-1] 은 월 d 에 실현되어 월말에 알 수 있다). trailing 창 = TA[(d-12):(d-1), j]. 미래 미사용."
+  },
+
+  "arms_prespecified": {
+    "C0_base": "R55 와 동일 — 로테이션 미사용 (paired 기준)",
+    "C1_no_signal": "R55 와 동일 — 시총 상위 25 cap-w",
+    "B1_idx_signal": "R55 의 B — 지수 active trailing (구 신호, 대조군)",
+    "B2_tail_signal": "★신규 헤드라인 — 꼬리 active trailing (표적-정합 신호), 비중만 재틸트",
+    "A2_tail_signal_sel": "축 분해 — 표적-정합 신호로 선택+비중",
+    "P_tail_oracle": "★상한(R55c 에서 산출) — 꼬리 active 완전예지. 회수율 분모.",
+    "headline_cell": "B2_tail_signal - C0, clean(2015-07~), k=5, 15bps, dec_lag=1"
+  },
+
+  "manipulation_check_prespecified": {
+    "statistic": "B2 vs C0 월별 비중 L1 거리 중앙값",
+    "threshold": ">= 0.10 (R55 와 동일). 미달 시 판정은 '미결(처치 미전달)'.",
+    "secondary": "★신규 — 무작위 5팩터 재틸트 200회 순열 대비 B2 의 위치. 순열 분포 안이면 '로테이션 신호' 가 아니라 '재틸트 자체' 의 효과이며 그렇게 라벨한다. (R55 적대검증 manipulation 렌즈가 제기한 약점을 선반영)"
+  },
+
+  "judgment": {
+    "primary": "B2 - C0 대응표본 NW lag-3 t, clean 창",
+    "secondary_decisive": "★회수율 = mean(B2 active) / mean(P_tail_oracle active), clean. R55 의 비중만 회수율 -28.2% 대비 개선되는가가 이 라운드의 실질 질문.",
+    "pass_rule": "①조작확인 통과 AND ②B2-C0 NW-t >= +1.96 AND ③B2 - C1 무신호 대조 우위 AND ④회수율이 R55 의 -28.2% 보다 개선",
+    "fail_rule": "조작확인 통과 상태에서 ②~④ 미충족이면 '표적 정합만으로는 부족' — 이 경우 병목은 신호 표적이 아니라 **꼬리 페널티 자체**(-9.1%/yr)이며 2순위 probe(구성 변경)로 이동한다. 조작확인 미통과면 '미결'.",
+    "all_cells_reported": "arm x {full,clean} x k{3,5,10} x cost{5,15,25} 전수. 헤드라인 사전지정."
+  },
+
+  "expected_failure_mode": [
+    "★결과 전 선언: B2 가 B1 보다는 낫지만 C1(무신호)은 여전히 못 이긴다고 예상한다. 근거 — 전이 손실은 (a)신호 표적 불일치와 (b)꼬리 자체의 -9.1%/yr 페널티 두 겹인데, 표적 정합은 (a)만 고친다. (b)는 구성 문제이므로 남는다.",
+    "★B2 가 B1 과 차이가 없으면: 꼬리 active 의 trailing 이 지수 active 의 trailing 과 거의 같은 정보라는 뜻(둘 다 팩터 프리미엄의 저주파 성분). 그 경우 표적 정합 축은 닫히고 병목은 전적으로 페널티 쪽이다.",
+    "★B2 가 C1 을 이기면: 예상 밖이며 그 경우 즉시 graduation 계약 측정(canonical_screen_bt + essence_score)으로 승격 판정."
+  ],
+
+  "binding_constraints": [
+    "성과 서술은 본 라운드 실행 산출값만. metric_type=canonical_screen.",
+    "book_state 쓰기·governor admit 금지. 05_Production 읽기만.",
+    "R55 의 fwd_ret 정렬 수리(명시 ym+1 키 조인) 적용된 패널만 사용.",
+    "R55 적대 검증(wf_9ac58124-3e4)이 상한 과대를 확정하면 회수율 기준(판정 ④)은 무효가 되며 재작성한다."
+  ]
+}
