@@ -46,7 +46,21 @@ PKG <- list(
   hypothesis = list(
     statement = HYP$selected$hypothesis_description,
     mechanism = HYP$selected$mechanism,
-    falsification = HYP$selected$falsification$reject_if,
+    ## ★형식 변환만: 승계 문면(observable/reject_if)은 **원문 그대로** 보존하고,
+    ##   schema/ast_spec_gate 가 요구하는 객체배열 + field_dictionary group_id 지목으로 재표현.
+    ##   내용(관측 대상·기각 조건·문턱·부호) 무변경 — Charter §8 No Silent Override.
+    falsification = list(
+      list(id = "F1", fields = list("A6_investor_flow_stock_daily"),
+           expectation = "저-absorb 하위군(배제 대상)의 후속 3개월 외국인+기관 순매수(A6 Foreign/Institutional 의 m+1..m+3 합 / Size)가 동월 유니버스 중앙값 대비 낮거나 음수",
+           reject_if = "유니버스 중앙값 대비 유의하게 높으면(NW lag-3 t >= +2.0, 스마트머니가 오히려 매집) 지지-철수 기전 기각",
+           measured = list(mean_spread = V$falsification$F1$mean_spread, nw_t = V$falsification$F1$nw_t,
+                           n_months = V$falsification$F1$n_months, fired = V$falsification$F1$fired)),
+      list(id = "F2", fields = list("A6_investor_flow_stock_daily", "A1_RAWDATA_OHLCVS_daily"),
+           expectation = "좌측 꼬리 실현월(Ret_1m <= -20%)의 하락일(A1 Ret<0) 개인 순매수 강도(A6 Individual / 하락일 거래대금)가 저-absorb 군에서 고-absorb 군보다 약함",
+           reject_if = "저-absorb 군이 고-absorb 군과 구별 불가하면(NW t >= 0) 기각",
+           measured = list(mean_spread = V$falsification$F2$mean_spread, nw_t = V$falsification$F2$nw_t,
+                           n_months = V$falsification$F2$n_months, fired = V$falsification$F2$fired))),
+    falsification_source_text = HYP$selected$falsification,
     regime_scope = HYP$selected$regime_scope),
   inherited_from = list(file = "qepm/mailbox/worktask/WT-D20260822_009/alpha_hypothesis.json",
     designer = "alpha-hypothesis (model: fable)",
