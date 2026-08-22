@@ -93,15 +93,15 @@ JEOF
   QVEST_RUN_NOTIFY_DRYRUN=1 QVEST_NOTIFY_ROOT="$_FIX2" Rscript --no-save "$NOTIFY" alpha 5 0 SAME 0 "" 0 > "$_T3" 2>&1
   grep -q "적립 없음" "$_T3" && ok "L-code 0건 → '적립 없음' 명시" \
     || ng "포장" "산출 없는 런을 성과처럼 알린다"
-  grep -q "적립된 지식이 없습니다" "$_T3" && ok "헤더도 없음을 말한다" || ng "헤더 포장" "$(grep -m1 gsub "$_T3")"
+  grep -q "적립된 지식 없음" "$_T3" && ok "헤더도 없음을 말한다" || ng "헤더 포장" "$(grep -m1 gsub "$_T3")"
   rm -rf "$_FIX2" "$_T3"
 
   echo "== 중단 축: rc!=0 을 구분하는가 =="
   _FIX3=$(mktemp -d); mkdir -p "$_FIX3/stage_artifacts/l_code"
   _T4=$(mktemp)
   QVEST_RUN_NOTIFY_DRYRUN=1 QVEST_NOTIFY_ROOT="$_FIX3" Rscript --no-save "$NOTIFY" alpha 5 0 CHANGED 124 "" 0 > "$_T4" 2>&1
-  grep -q "중간에 멈췄습니다" "$_T4" && ok "rc=124 → 중단 표기" || ng "중단 표기" "timeout 을 정상으로 알린다"
-  grep -q "그때까지 산출은 남음" "$_T4" && ok "중단+진척 → 산출 잔존 명시" || ng "잔존 표기" "다시 돌릴지 판단 불가"
+  grep -q "중단 —" "$_T4" && ok "rc=124 → 중단 표기" || ng "중단 표기" "timeout 을 정상으로 알린다"
+  grep -q "중단 시점까지의 산출은 보존됨" "$_T4" && ok "중단+진척 → 산출 잔존 명시" || ng "잔존 표기" "다시 돌릴지 판단 불가"
   rm -rf "$_FIX3" "$_T4"
   echo "== 미등록 레인 대조: 모르는 레인도 죽지 않고 그대로 쓰는가 =="
   OUT=$(QVEST_RUN_NOTIFY_DRYRUN=1 QM_ROOT="$ROOT" Rscript --no-save "$NOTIFY" \
