@@ -241,7 +241,7 @@
         "clean_ir": 0.439,
         "clean_calmar": 0.447,
         "clean_port_t": 1.301,
-        "book_marginal_dIR": -0.0242,
+        "book_marginal_dIR": 0.0017,
         "placebo": {
           "n_seeds": 30,
           "p": 0.033,
@@ -251,7 +251,10 @@
         },
         "arms": "R17 종목집중도 q67/q80/q90 = clean IR 0.379/0.326/0.168 (negative) | R19 breadth 노출스케일링 = 사전등록 3조건 전부 미달 기각(paired NW-t -3.002) | R20 팩터 top-quintile k=5 = 3조건 충족 채택(paired NW-t +2.396/+1.552)",
         "decay_decomposition": "타이밍 초과분 평균 era-안정(+3.70 -> +3.57 %/yr) vs EW 팩터바스켓 프리미엄 부호반전(+3.11 -> -1.04 %/yr). 상관 상승 기여는 분산비 -7% 로 부차적. 신호 예측력 clean 잔존(풀링 rank-IC 0.086, IC-t +2.761)",
-        "graduation": "FAIL 3/4 — PORT_t 2.882<2.95(갭 -2.3%) · calmar 0.298<0.64(갭 -53%) · book-marginal -0.0242<0.05. oos_retention 0.852 PASS(구 v5 0.163 에서 회복). 구속 게이트가 oos -> calmar(배포 형태)로 이동. calmar 0.64 는 MDD 46.8%->21.7% 요구, PG2 정본 오버레이 최대 개선 -8.3%p 로 미도달 => 공략 계층 = sleeve-배분층 변환(P3)"
+        "graduation": "FAIL 3/4 — PORT_t 2.882<2.95(갭 -2.3%) · calmar 0.298<0.64(갭 -53%) · book-marginal -0.0242<0.05. oos_retention 0.852 PASS(구 v5 0.163 에서 회복). 구속 게이트가 oos -> calmar(배포 형태)로 이동. calmar 0.64 는 MDD 46.8%->21.7% 요구, PG2 정본 오버레이 최대 개선 -8.3%p 로 미도달 => 공략 계층 = sleeve-배분층 변환(P3)",
+        "book_marginal_dIR_prior_misaligned_20260822": -0.0242,
+        "book_marginal_correction_note": "★2026-08-22 정정 — 구 기록 -0.0242 는 production 계약 산출물의 익월-초 앵커(date = 각 월 첫 거래일)를 액면 그대로 라벨로 받아 PG2 실현 t-1 과 DFA 실현 t 를 짝지은 1개월 병합 오정렬 산물이다. 검거 지표 = cor(book벤치, parent) 가 k=0 에서 0.1313, k=-1 에서 0.9363 (두 KR 주식 벤치 상관이 0.13 일 수 없다). 정정 후: IR_s(book벤치) 0.1501 -> 0.3900, rho 0.2510 -> 0.2120, 해석 문턱 rho*IR_b 0.3805 -> 0.3207 (충족), ΔIR max -0.0242 -> +0.0017 (w=0.075). 게이트 판정은 불변 FAIL 이나 부호가 반대다. R16b 의 -0.0275 도 같은 결함이며 정정값 -0.0019. ★당시 '양성 대조 통과'로 적은 R16b 재현 일치는 두 코드가 같은 결함을 공유해 성립한 것이라 정확성을 증명하지 못한다. 검증 = run_dfa_bookmarginal_r26_alignfix.R (독립 재현). 상세 보고서 §31.",
+        "deployment_form_constraint": "★2026-08-22 실측 추가 — 최종 편입 종목수 중앙 275종(제약 25, 79/79=100% 위반), 단일종목 최대비중 최대 48.7%(제약 0.20, 29% 위반), 실효 종목수(1/HHI) 중앙 34.8. 상위 25종 누적비중 61.0% 라 절단 시 39% 소실. ⇒ 본 원장의 성과 수치는 screening tier 신호 품질 지표이며 자본 tier 판정의 대상 객체가 아니다. 보고서 §30."
       },
       "ccs": null,
       "module_pool_n": null,
