@@ -1,0 +1,26 @@
+{
+  "prereg_id": "dfa_v16_20260822",
+  "round": "R19",
+  "strategy": "DFA_RegimeSignals",
+  "registered_at": "2026-08-22",
+  "registered_before_results": true,
+  "selection_type": "chain",
+  "chain_rationale": "R18 기전 분해 실측이 지목한 단일 구조 결함을 고친다. R18 (a): 무-타이밍 EW 팩터 바스켓 active 가 pre(2006-01~2015-06) +3.11%/yr(IR 1.155, NW-t 4.161) → clean(2015-07~2026-07) -1.04%/yr(IR -0.275) 로 부호 반전. R18b: 타이밍 초과분 mean 은 era-안정(+3.70 → +3.57 %/yr) 이고 placebo p=0.033. ⇒ 전략의 손실 지점은 타이밍 신호가 아니라 '팩터 바스켓 프리미엄을 100% 강제 보유하는 배분 규칙'. 현행 규칙은 21팩터 중 1개라도 trailing active>0 이면 팩터에 100% 배분하고, Market 비중은 전 팩터가 음수일 때만 1이 된다(전 표본에서 사실상 미발화).",
+  "single_degree_of_freedom": "Market(무-틸트) 비중을 신호 breadth 에 비례시킨다. w_market = 1 - n_pos/NF, 잔여 (n_pos/NF) 를 양의 신호 팩터에 기존과 동일한 s/sum(s) 비율로 배분. k 등 추가 조절 파라미터 없음(파라미터-프리, 스윕 아님).",
+  "arms": {
+    "E0_control": "현행 규칙 (n_pos>=1 이면 팩터에 100%)",
+    "E1_breadth": "w_market = 1 - n_pos/NF"
+  },
+  "headline_cell_predesignated": "E1_breadth, cost=15bps, dec_lag=1(정본 m-1), freq=3(분기), ncoh=3(중첩 코호트), 인덱스=broad-21 q67, 벤치=parent(EW 유니버스 지수) — 도훈 지시 '코스피200으로 변경 금지' 준수. K200 IR 은 참고 병기만.",
+  "windows_reported": ["full(2007-03~2026-07)", "clean(2015-07~2026-07)"],
+  "all_cells_reported": true,
+  "cells": "arms{E0,E1} x cost{5,15,25bps} x dec_lag{0,1,2,3} 전수 보고",
+  "decision_rule": {
+    "adopt_E1_if": "① paired NW-t(E1-E0) > 0 ∧ ② clean 창 IR(E1) > IR(E0) ∧ ③ full 창 PORT_t(E1) 가 PORT_t(E0) 대비 -0.10 이내 (열위 아님)",
+    "reject_if": "위 3조건 중 하나라도 미충족 → E0 유지, E1 은 config-scoped negative 로 기록",
+    "graduation_gates_unchanged": "PORT_t>=2.95 HARD / oos_retention>=0.7 HARD(밴드 0.5~0.7 보강증거 2/3) / calmar>=0.64 HARD / book-marginal dIR>=0.05. 본 라운드는 이 문턱을 변경하지 않는다."
+  },
+  "pit_gates_required": ["shift 사다리(dec_lag 0/1/2/3) 단조 감쇠 확인", "placebo 30-seed 블록셔플 p<0.05", "진행월(2026-08) 제외 — 완결 월만 집계"],
+  "prohibited": ["사후 셀 선택(argmax)", "문턱 완화", "롱숏 변환", "벤치 교체", "k 파라미터 그리드 탐색"],
+  "known_limitation": "인덱스 유니버스는 2015-06 이전 KQ150 퇴출 미기록(universe_exit_unrecorded_pre201512). clean 창이 그 영향 밖의 구간이며 판정은 clean 을 1급으로 읽는다."
+}
