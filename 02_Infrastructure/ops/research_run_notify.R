@@ -75,6 +75,22 @@ has_insight <- length(lcodes) > 0 || length(verdicts) > 0
   if (nchar(t) < lo) t <- paste0(t, strrep(" ", lo - nchar(t)))
   t
 }
+# ★긴 서술은 **문장 단위로 쪼개 bullet** 으로 보낸다 — text 섹션은 220자,
+#   bullet 항목은 80자 계약이다(tg_agent_brief). 자르는 게 아니라 나눈다.
+.to_bullets <- function(x, per = 74L, maxn = 6L) {
+  t <- gsub("[[:space:]]+", " ", trimws(as.character(x %||% "")))
+  if (!nzchar(t)) return(character(0))
+  parts <- unlist(strsplit(t, "(?<=[.!?])[[:space:]]+", perl = TRUE))
+  out <- character(0)
+  for (q in parts) {
+    while (nchar(q) > per) { out <- c(out, substr(q, 1, per)); q <- substr(q, per + 1, nchar(q)) }
+    if (nzchar(trimws(q))) out <- c(out, trimws(q))
+  }
+  if (length(out) > maxn) out <- c(out[seq_len(maxn - 1L)],
+        sprintf("(이하 %d줄 생략 — 전문은 stage_artifacts/l_code/)", length(out) - maxn + 1L))
+  out
+}
+
 head_line <- if (length(lcodes) > 0) {
   .clip(sprintf("[%s] %s", lcodes[[1]]$family %||% "?", lcodes[[1]]$lesson %||% lane_ko))
 } else if (length(verdicts) > 0) {
@@ -102,22 +118,26 @@ for (v in verdicts[seq_len(min(2L, length(verdicts)))]) {
                                 100 * as.numeric(v$alpha_ann %||% 0))
   secs[[length(secs) + 1]] <- list(type = "kv", emoji = "\U00002696", heading = "판정", kv = kv)
   if (nzchar(v$fail_note %||% ""))
-    secs[[length(secs) + 1]] <- list(type = "text", emoji = "\U0001F6D1",
-                                     heading = "막힌 지점", body = substr(v$fail_note, 1, 320))
+    secs[[length(secs) + 1]] <- list(type = "bullet", emoji = "\U0001F6D1",
+                                     heading = "막힌 지점", items = .to_bullets(v$fail_note, maxn = 4L))
 }
 
 # ── ② 배운 것 (이 알림의 본체) --------------------------------------------
 for (x in lcodes[seq_len(min(2L, length(lcodes)))]) {
-  secs[[length(secs) + 1]] <- list(type = "text", emoji = "\U0001F4A1",
-    heading = sprintf("배운 것 — %s [%s · grade %s]",
-                      x$id %||% "?", x$family %||% "?", x$grade %||% "?"),
-    body = x$lesson %||% "(lesson_text 없음)")
-  if (nzchar(x$mechanism %||% ""))
-    secs[[length(secs) + 1]] <- list(type = "text", emoji = "\U0001F9E9",
-                                     heading = "기전", body = x$mechanism)
-  if (nzchar(x$falsify %||% ""))
-    secs[[length(secs) + 1]] <- list(type = "text", emoji = "\U0001F50E",
-                                     heading = "반증 시도", body = x$falsify)
+  bl <- .to_bullets(x$lesson %||% "(lesson_text 없음)")
+  if (length(bl))
+    secs[[length(secs) + 1]] <- list(type = "bullet", emoji = "\U0001F4A1",
+      heading = sprintf("배운 것 — %s [%s · grade %s]",
+                        x$id %||% "?", x$family %||% "?", x$grade %||% "?"),
+      items = bl)
+  bm <- .to_bullets(x$mechanism, maxn = 4L)
+  if (length(bm))
+    secs[[length(secs) + 1]] <- list(type = "bullet", emoji = "\U0001F9E9",
+                                     heading = "기전", items = bm)
+  bf <- .to_bullets(x$falsify, maxn = 3L)
+  if (length(bf))
+    secs[[length(secs) + 1]] <- list(type = "bullet", emoji = "\U0001F50E",
+                                     heading = "반증 시도", items = bf)
 }
 if (length(lcodes) > 2)
   secs[[length(secs) + 1]] <- list(type = "text", emoji = "\U00002795", heading = "그 외",
@@ -146,6 +166,10 @@ secs[[length(secs) + 1]] <- list(type = "kv", emoji = "\U0001F4CB", heading = "�
 res <- tryCatch(
   tg_agent_brief(
     agent = "Q-Lead",
+    # relaxed: L-code 원문에는 전문 용어·식별자가 그대로 들어 있다(MDE·ratio·WT-…).
+    #   그것을 지우면 인사이트가 사라진다 — 페이퍼 브리핑 선례와 같은 성격이라 가드를 면제하고,
+    #   대신 decode_jargon 을 켜 **자동 용어 풀이**로 비전공자 가독을 지킨다(SKILL v7 §5.5).
+    relaxed = TRUE, decode_jargon = TRUE, decode_mode = "inline_first",
     title = if (has_insight) sprintf("리서치 적립 — %s", lane_ko)
             else sprintf("무인 런 — %s (적립 없음)", lane_ko),
     dry_run = identical(Sys.getenv("QVEST_RUN_NOTIFY_DRYRUN"), "1"),
