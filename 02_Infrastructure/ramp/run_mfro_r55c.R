@@ -12,6 +12,16 @@ UB<-0.20;LAMBDA<-1.5;N_TARGET<-25L;LIQ<-2e8
   for(i in seq_len(mi)){s<-sum(w);if(abs(s-ts)<1e-8)break;if(s==0)break;w<-w*(ts/s);w[w>ub]<-ub;w[w<lb]<-lb};w}
 .tilt<-function(a,lam=LAMBDA,lb=0,ub=UB){if(!length(a))return(numeric(0))
   z<-(a-mean(a))/pmax(sd(a),1e-10);w<-pmax(0,1/length(a)+lam*z/length(a));if(sum(w)>0)w<-w/sum(w);.norm(w,lb,ub)}
+.NA_HITS<-new.env();.NA_HITS$n<-0L;.NA_HITS$tot<-0L
+zmean<-function(D,cols){if(!length(cols))return(rep(NA_real_,nrow(D)))
+  v<-rowMeans(as.matrix(D[,cols,with=FALSE]),na.rm=TRUE); v[!is.finite(v)]<-NA_real_
+  v}
+## ★승자 팩터가 전부 결측인 종목 = 로테이션 정보 없음. 조용히 0 으로 메우면 "중립"이 아니라
+##   "평균 이하"가 된다(z 평균이 0 이 아니므로). 가용 종목의 횡단면 평균으로 중립화하고 **센다**.
+neutralize<-function(v){ bad<-!is.finite(v)
+  .NA_HITS$n<-.NA_HITS$n+sum(bad); .NA_HITS$tot<-.NA_HITS$tot+length(v)
+  if(all(bad)) return(rep(0,length(v)))
+  v[bad]<-mean(v[!bad]); v }
 P<-as.data.table(read_parquet("outputs/ramp/mfro_panel.parquet"))
 FK<-c("Value","Issuance","Size","Momentum","ResidMom","Reversal","Quality","GPA","EarnStab",
       "Growth","Investment","LowVol","LowBeta","TailRisk","Liquidity","Accrual","Consensus",
@@ -29,21 +39,11 @@ TA<-matrix(NA_real_,NM,NF);dimnames(TA)<-list(YM,FK)
 for(m in seq_len(NM)){ D<-P[ym==YM[m]]; if(nrow(D)<N_TARGET)next
   fr0<-D$fwd_ret; fr0[!is.finite(fr0)]<-0
   for(j in 1:NF){ z<-D[[FK[j]]]; if(sum(is.finite(z))<N_TARGET)next
-    z2<-z;z2[!is.finite(z2)]<--Inf;o<-order(-z2);idx<-o[seq_len(N_TARGET)];w<-.tilt(z[idx][order(NULL)] |> (\(q) neutralize(z[idx]))())
+    z2<-z;z2[!is.finite(z2)]<--Inf;o<-order(-z2);idx<-o[seq_len(N_TARGET)];w<-.tilt(neutralize(z[idx]))
     TA[m,j]<-sum(w*fr0[idx])-bmf[m] } }
 S<-matrix(NA_real_,nrow(mi),NF);dimnames(S)<-list(mi$ym,FK)
 for(j in 1:NF) for(m in 12:nrow(mi)) S[m,j]<-prod(1+mi[[FK[j]]][(m-11):m])/prod(1+mi$Market[(m-11):m])-1
 
-.NA_HITS<-new.env();.NA_HITS$n<-0L;.NA_HITS$tot<-0L
-zmean<-function(D,cols){if(!length(cols))return(rep(NA_real_,nrow(D)))
-  v<-rowMeans(as.matrix(D[,cols,with=FALSE]),na.rm=TRUE); v[!is.finite(v)]<-NA_real_
-  v}
-## ★승자 팩터가 전부 결측인 종목 = 로테이션 정보 없음. 조용히 0 으로 메우면 "중립"이 아니라
-##   "평균 이하"가 된다(z 평균이 0 이 아니므로). 가용 종목의 횡단면 평균으로 중립화하고 **센다**.
-neutralize<-function(v){ bad<-!is.finite(v)
-  .NA_HITS$n<-.NA_HITS$n+sum(bad); .NA_HITS$tot<-.NA_HITS$tot+length(v)
-  if(all(bad)) return(rep(0,length(v)))
-  v[bad]<-mean(v[!bad]); v }
 ## sel: "trailing"(실현) / "idx_oracle"(지수 예지) / "tail_oracle"(★결과 예지 = 진짜 상한)
 pick<-function(m,k,sel){
   if(sel=="trailing"){r<-match(YM[m-1],rownames(S));if(is.na(r))return(character(0));s<-S[r,]}
