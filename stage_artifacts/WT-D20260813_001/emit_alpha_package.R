@@ -28,7 +28,7 @@ confidence_vector <- setNames(as.list(round(top$conf, 4)), top$Ticker)
 ## ── AST: q90 = MODEL_SCORE escape 리프 (walk-forward pinball τ=0.9) ──────────────
 ## training_leaves = 대표 registry 팩터(324종 전체의 예시 리프 — 각각 registry rule 검증 통과분).
 ##   전 324종 열거는 비실용이며 판이 load_month_factors 경유이므로 대표 리프로 계약 충족.
-train_leaves <- lapply(c("V01_BM","Q07_GPA","M06_Mom_12_1","D01_IdioVol","C01_SUE","L02_Turnover",
+train_leaves <- lapply(c("V01_BM","Q01_GPA","M01_Mom_12_1","D01_IdioVol","C01_SUE","L02_Turnover",
                          "AC01_Total_Accruals_CF","V08_PSR"),
                        function(f) list(leaf = "REGISTRY", factor = f))
 
