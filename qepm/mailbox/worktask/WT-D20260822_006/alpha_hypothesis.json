@@ -1,0 +1,142 @@
+{
+  "wt_id": "WT-D20260822_006",
+  "designed_by": "alpha-hypothesis",
+  "model_tier": "fable",
+  "designed_at": "2026-08-22",
+  "fq_ref": "FQ-246",
+  "prechecks": {
+    "hypothesis_index_hits": [
+      "L-AR-20260802_204803 (WT-D20260802_015 REGIME_CONDITIONAL_ROTATION, grade F) — 최인접 선행 negative. 이산 국면 라벨 조건부 *배분* 로테이션",
+      "L-RAMP-20260713_084821 (RAMP R10) — trailing-t 비례 가중 paired -0.16, 성과 기반 조건변수 사망 1",
+      "WT-D20260803_004 (FQ-121) — IS 최강 V01 +2.634 -> OOS -0.389 부호 반전, 성과 기반 조건변수 사망 2",
+      "L-AR-20260820_FQ236_LANED_PRECHECK — bear_prob 유효창 149개월(2014-03-31~) 실측 + sd 실측 규약",
+      "WT-D20260822_001 (FQ-236 Lane D) — IN_PROGRESS, 표적 = 조건부 분포 형태 (본 라운드와 표적 상이)",
+      "L-RAMP-20260619_141402 (per-group jump) — 팩터-국면 엔진 pt 0.62, decay-as-bear 오분류 기전",
+      "L-RAMP-20260619_144257 계열 (Shu-Mulvey 충실구현~FINAL) — 인덱스 배분 pt 7.72 실재하나 25종목 종목선택 전이 전 셀 음수 (L-RAMP-20260619_173504)",
+      "DFA 아크 2026-08-20/21 (project-shumulvey-v5-samemonth-defect-rebaseline) — 동월 look-ahead 정정 후 국면 배분층 기각: 무국면 FM-TS 가 DFA 전 지표 상회(paired -1.18), 단 위기 구간 3배 우위 3중 확인"
+    ],
+    "frontier_queue_refs": [
+      "FQ-246 (본 라운드) — status CLAIMED_20260822__state_conditional_selection_launching, dohoon_decision 아님",
+      "FQ-244 close — ORACLE_K 여유폭 실측 원천 (WT-D20260822_004)",
+      "FQ-237 close — 선별 통계량 교체 배제 (연 4.07%p 이상 95% 배제)",
+      "FQ-239 handoff_smv_20260820 — smv_factor_regime_daily PIT 규약 (T+2 effective, 홀딩월 시작 2거래일 전 컷오프, locf, 진행월 소비 금지, 연속변수 의무)"
+    ],
+    "owner": "Q-Lead session d2e06481 (frontier queue 표기 확인) — 본 설계는 그 CLAIMED 라운드의 가설설계 구간",
+    "discovery_seed": "부재 (mailbox 실측: governance_log/request/status 만) — request.json hypothesis_title 기고정이므로 Step 0 조건부 실행 요건상 발굴이 아닌 설계 구조화 수행",
+    "hypothesis_title_injection": "불필요 — request.json 에 이미 고정 (재정의 금지 준수)"
+  },
+  "measured_anchors": {
+    "note": "본 설계가 딛는 실측 (전부 stage_artifacts/WT-D20260822_004/alpha_validation.json, metric_type=canonical_screen)",
+    "C0_port_t_IKS200": 0.94741072,
+    "ORACLE_K_port_t_IKS200": 4.64699909,
+    "ORACLE_K_paired_annual_pct": 13.69299818,
+    "ORACLE_K_paired_t": 4.28970507,
+    "headroom_reading": "매월 선별 K=5 중 실현 차월 rank-IC 최대 팩터를 고르는 완전예지가 벽 2.95 를 넘는다 — {K 중 고르기} 마디에 여유폭 실재. 결합 규칙(C1/C2 powered null, MDE 2.20~3.83 < MATERIAL 8.22)과 선별 통계량(FQ-237)으로는 회수 불가 실측",
+    "C3_negative_control": "max-z 극단 증폭은 t -2.077 유의 악화 — 마디가 죽지 않았고(개입에 반응) 함수형 방향에만 여유가 없음",
+    "slot_encroachment_R1a": "C0 top-25 의 중앙 64%(16/25)가 solo-advocate 편입 — 팩터 간 불일치가 만드는 슬롯 배분 왜곡이 본 풀에 실재",
+    "kurtosis_R5": "선별 K=5 팩터 간 횡단면 초과첨도 IQR 중앙 6.94 — 팩터 간 이질이 대규모로 실재",
+    "jaccard_lesson": "C1 은 매월 9/25 교체(Jaccard 0.47)하고도 무반응 = 강한 null / C2 는 3종 교체(0.79) = 약한 null — 멤버십 이동 없는 null 은 기전 반증으로 읽을 수 없다 (본 설계의 반증 요건에 승계)"
+  },
+  "candidates": [
+    {
+      "id": "CAND-A",
+      "title": "성과-무관 횡단면 상태 2축(팩터 순위 불일치 + 수익 횡단면 분산) 조건부 팩터 선택",
+      "family": "cross_sectional_state_conditional_selection",
+      "condition_variables": [
+        "팩터 간 횡단면 순위 일치도: 당월 선별 K=5 팩터의 z 횡단면 pairwise Spearman rank-corr 평균(연속, 당월 z 만으로 계산 — 수익·성과 무개입, PIT 자명)",
+        "종목 수익 횡단면 분산: t-1 종가까지의 유니버스 월간 수익 횡단면 sd(연속, RAWDATA Ret — 시장 상태이지 팩터 성과가 아님)"
+      ],
+      "effective_window_months": 221,
+      "mechanism_sketch": "불일치는 '고르는 것의 가치'(잠식 규모)를, 분산은 '오류 생성 주체의 활동 강도'를 관측한다 — 둘 다 성과 이력이 아닌 동시대 횡단면 관측",
+      "selected": true
+    },
+    {
+      "id": "CAND-B",
+      "title": "팩터-국면 연속 bear_prob 조건부 선택 (smv_factor_regime_daily)",
+      "family": "factor_regime_bear_prob",
+      "condition_variables": ["smv bear_prob 6종 (연속, FQ-239 PIT 규약: effective T+2, 홀딩월 시작 2거래일 전 컷오프, locf, 진행월 금지)"],
+      "effective_window_months": 149,
+      "why_not_selected": "★주 조건변수 자격 미달 — bear_prob 은 팩터 수익 시계열에서 추정된 잠재 상태라 '성과-무관 상태변수' 가 아니다(성과-파생). 같은 레버가 이 저장소에서 3회 측정됨: ① L-RAMP-20260619_141402 per-group jump pt 0.62 (decay 를 bear 로 오분류 down-weight — KR 팩터는 순환이 아닌 2017+ 일방 감쇠) ② L-RAMP-20260619_144257 충실구현 oos_retention 0.31 FAIL (2017+ cohort decay; 단 placebo 로 타이밍 실재는 확인 — 전면 기각은 과일반화라는 자기정정 병기) ③ DFA 아크 08-20/21 동월결함 정정 후 국면 배분층 기각(무국면 FM-TS 가 전 지표 상회). decay-as-bear 오분류 기전이 '선택' 자유도에서 재발하지 않는다는 논증을 본 설계는 제시하지 못한다 — 못 하면 강등이 정직하다. + 유효창 149개월로 CAND-A 대비 72개월 손실.",
+      "disposition": "보조/대조 arm 으로 강등 채택 — CAND-A 상태축과의 증분 정보 대조(위기-조건부 3배 우위 실측의 소비면 시험). 주 판정에 미사용."
+    },
+    {
+      "id": "CAND-C",
+      "title": "크라우딩 조건부 선택 (팩터 top-분위 종목에 대한 투자자 flow 집중)",
+      "family": "crowding",
+      "condition_variables": ["팩터별 top-분위 종목의 기관/외인 순매수 집중도 (A6_investor_flow_stock_daily 가공)"],
+      "effective_window_months": 221,
+      "why_not_selected": "A6 실측(ast_field_map_v0): investor_wide 는 수동 export 비정기 갱신 — 실측 스테일 ~22일(Date_max 2026-07-01 vs RAWDATA 07-23). 월말 관측 의존 상태변수로 쓰면 최신월 결측이 상시 위험이고, export-시점 기준 PIT 규약이 미확립. 크라우딩 축 자체는 유효한 미측정 방향이므로 폐기가 아니라 후순위 — 본 라운드에서는 반증의 부수 관측(사후 분석, 스테일 민감도 낮음)으로만 소비.",
+      "disposition": "반증 축 F3 (agent 활동 부수 관측) 으로 소비 + 차기 라운드 후보 보존"
+    },
+    {
+      "id": "CAND-D",
+      "title": "매크로 상태 조건부 선택 (FRED/금리)",
+      "family": "macro_state",
+      "condition_variables": ["FRED/ECOS 매크로 연속 상태"],
+      "effective_window_months": 149,
+      "why_not_selected": "FQ-236 Lane D 인접 — 그쪽은 매크로 조건부 *분포 형태* 를 쟀고 기각-부호로 닫혔으며(표적은 다르나 조건변수 축이 같음), L-AR-20260820_FQ236_LANED_PRECHECK 이 이 축의 검정력 문제를 실측 확정(유효창 149개월 + FRED 창 확장 필수 + 그 순간 C11 계열별 시차 최대 ~73일 부활). 조건변수 교체만으로 검정력 구조가 나빠지는 선택.",
+      "disposition": "미채택 — Lane D 본 라운드(WT-D20260822_001 IN_PROGRESS) 결과 대기"
+    },
+    {
+      "id": "EXCLUDED-trailing-performance",
+      "title": "trailing 성과 기반 선택 (후보 자격 없음 — 기록만)",
+      "family": "trailing_performance",
+      "why_not_selected": "후보 아님 — 두 번 측정 negative: RAMP R10 trailing-t 비례 가중 paired -0.16 (trailing 팩터성과는 forward 팩터성과를 못 예측) + FQ-121 IS 게이트 부호 반전 (+2.634 -> -0.389, 자격 반감기 < 운용 주기). request.json 이 명시 금지. INV-7: 부활신호 발화 전 재도전 아님."
+    }
+  ],
+  "selected": {
+    "hypothesis_title": "상태 조건부 팩터 선택 — ORACLE_K 여유폭 회수 시도",
+    "hypothesis_description": "FQ-244 실측: 매월 선별 K=5 를 등가중 결합하는 현행 마디(C0 PORT_t 0.947)와 완전예지 단일 선택 상한(ORACLE_K 4.647, paired t 4.29) 사이의 여유폭은 결합 함수형(C1/C2 powered null)과 선별 통계량(FQ-237 배제)으로는 회수되지 않았다. 본 가설: 그 여유폭의 일부는 성과 이력이 아닌 **동시대 횡단면 상태 2축** — (i) 선별 K=5 팩터 간 z 횡단면 순위 불일치(선택의 조건부 가치), (ii) 유니버스 수익 횡단면 분산(오류 생성 활동 강도) — 에 조건부인 팩터 선택으로 회수 가능하다. 조건변수에 성과(trailing IC/수익/t)는 일절 쓰지 않는다.",
+    "statement": "팩터 간 순위 불일치가 큰 달은 등가중 합의가 top-25 슬롯을 solo-advocate 로 배분해(실측 중앙 64%) 정보 팩터를 희석하는 달이므로 '하나를 고르는 것'의 가치가 그 달에 존재하고, 수익 횡단면 분산이 큰 달은 개인·레버리지 주체의 오류 생성이 활성화되어 역추세·유동성공급 계열 팩터의 순위가, 저분산 달은 완만한 펀더멘털 계열의 순위가 차월 정보를 갖는다. 즉 두 연속 상태변수가 성과 관측 없이 '선택이 유효한 달'과 '신뢰할 팩터 계열'을 함께 지목한다.",
+    "mechanism": {
+      "agent": "① 오류 생성 주체 = KR 개인 순매수 군집(신용융자 레버리지 계정 포함) — 고분산·스트레스 구간에서 추격매수와 강제청산으로 가격을 펀더멘털에서 이탈시킨다. ② 합의 소진 주체 = 다신호 스크리닝을 쓰는 국내 기관·퀀트 자금 — 모든 팩터가 동시에 지목하는 '합의 종목'에 선행 유입해 그 종목들의 잔여 초과수익을 선소진한다(합의 편입의 기대수익이 낮은 이유).",
+      "friction": "KR 공매도 제약(과대평가 방향 정정 불가) + 유동성 하한(2e8) + top-25 long-only 슬롯 희소성. 슬롯이 희소자원이라 팩터 간 불일치 월의 등가중 결합은 solo-advocate 편입(FQ-244 R1a 중앙 64% 실측)으로 슬롯을 배분하는데, 이 배분 왜곡은 차익거래로 지워지는 종류가 아니다 — 왜곡의 소재가 시장가격이 아니라 포트폴리오 구성 규칙 자체이기 때문이다. 오류 쪽 마찰(공매도 제약)은 개인·레버리지가 만든 이탈의 복원을 1개월 내로 지연시켜 월간 리밸 주기에서 회수 가능한 형태로 남긴다.",
+      "path": "월말 시점 t-1 종가까지 관측되는 상태 2축(불일치 = 당월 z 횡단면만의 함수, 분산 = 당월까지 실현 수익의 횡단면 sd)으로 차월 멤버십을 기울인다 — 불일치 축이 '이번 달은 등가중 합의 대신 소수 팩터를 신뢰할 달'을, 분산 축이 '어느 계열(고분산: 역추세·유동성공급 / 저분산: 펀더멘털)의 순위를 신뢰할지'를 지목 → 월초 편입, 1개월 보유 중 개인·레버리지 발 이탈의 복원(고분산 국면)과 펀더멘털 정보의 점진 반영(저분산 국면)이 net active 로 실현된다."
+    },
+    "falsification": {
+      "observable": "기전이 참이면 성과(PORT_t) 이전에 세 개의 부수 관측이 성립해야 한다. F1 조건부 매개: 상태변수(월말 t 관측)와 팩터별 차월 rank-IC 의 관계가 팩터 계열 간 이질적이어야 한다 — 연속 교호작용(상태 x 계열)의 기울기 차. FDB-B7_ic_history_monthly(Usable_Date <= 판정시점, C14)로 사후 검증. F2 처치 실효: 상태 조건부 선택이 top-25 멤버십을 실제로 움직여야 한다 — C0 대비 월별 Jaccard 중앙값이 C2 형(0.79, 3종 교체)에 머물면 그 arm 의 null 은 기전 반증이 아니라 처치 무력으로 라벨한다(FQ-244 C1/C2 비대칭 교훈 승계). 멤버십은 FDB-B6/레지스트리 z 패널 + A1_RAWDATA_OHLCVS_daily(Ret) 에서 파생. F3 agent 실재: 고분산 상태 월에 개인(Individual) 순매수의 횡단면 집중이 실제로 상승해야 한다 — A6_investor_flow_stock_daily 로 상태-동행 관계 검증(사후 분석, 스테일 ~22일은 월간 집계라 비구속).",
+      "field_dictionary_refs": [
+        "FDB-B7_ic_history_monthly (팩터별 월간 rank-IC + Usable_Date — F1 매개)",
+        "FDB-B6_fdb_daily_store / FDB-B1~B5 registry ptr (팩터 z 횡단면 — 상태변수 '불일치' 원천 + F2 멤버십 파생)",
+        "A1_RAWDATA_OHLCVS_daily (Ret — 상태변수 '횡단면 분산' 원천 + F2 멤버십 파생)",
+        "A6_investor_flow_stock_daily (Individual 순매수 — F3 agent 활동)",
+        "E6_sjm_bearprob (보조 대조 arm 참조용 — 주 판정 미사용)"
+      ],
+      "reject_if": "① F1 기각: 상태 x 계열 연속 교호작용에서 계열 간 기울기 동질성이 기각되지 않으면(방향 제공 기전 부재) 가설의 '신뢰할 계열 지목' 축을 기각한다 — 이 경우 불일치 축 단독(선택 강도만 조절)으로 축소 재설계하거나 economic_void 재분류. ② F3 기각: 개인 순매수 집중이 분산 상태와 무상관이면 agent 서술을 기각한다 — 통계적 조건부 관계만 남으므로 기전 강등. ③ 해석 제한: F2 의 멤버십 이동(Jaccard 중앙값이 C0 대비 유의 이동) 없이 나온 성과 null 은 기전 반증으로 읽지 않는다 — '매개 이동 없는 null 은 처치 무력' (FQ-244 C2 실측 교훈). ④ 성과 동어반복 금지 준수: 처치 arm 의 PORT_t 자체는 어떤 반증 조건에도 등장하지 않는다 — F1 의 rank-IC 는 처치 성과가 아니라 기전의 매개변수(상태가 어느 팩터의 순위 정보를 활성화하나)다.",
+      "window_asymmetry_note": "★설계 필수 반영 — 성과-무관 상태 2축은 FQ-244 창 전체 221개월(2008-03~2026-07)을 쓴다. 보조 arm 의 smv bear_prob 은 실효 유효창 149개월(2014-03-31~, L-AR-20260820_FQ236_LANED_PRECHECK 실측: NA 40% 는 warm-up, 첫 유효일 이후 결측 0.0%)뿐이다. 두 arm 의 검정력이 다르므로 paired 대조는 공통창이 아니라 각자 창에서 각자 MDE 를 직접 측정해 별도 라벨해야 하며(검정력 직접 측정 + implied_t 사전 산출, FQ-244 PREREG 규약 승계), 공통창 강제로 221개월 축을 149개월로 자르는 설계는 금지."
+    },
+    "regime_scope": {
+      "holds_in": [
+        "고분산 구간 (유니버스 수익 횡단면 분산 상위 연속 구간 — 오류 생성 주체 활성 + 팩터 불일치 확대가 동시 발생)",
+        "위기-회복 국면 (강제청산 이탈의 복원 구간 — DFA 아크의 위기-조건부 3배 우위 3중 확인과 방향 정합)"
+      ],
+      "weakens_or_reverses_in": [
+        "저분산 정상장 (오류 생성률과 팩터 불일치가 함께 위축 — 처치와 등가중 대조가 수렴, 효과 없음이 기전 자체의 예측)",
+        "대형주 협소 주도 구간 (post-2017 형 mega-cap 주도 — cap-w 벤치 대비 팩터 순위 정보 전반이 감쇠해 '어느 팩터를 고르나'의 이득 자체가 축소; FQ-244 post2017 축 실측과 정합)"
+      ],
+      "boundary_rationale": "기전이 두 양의 곱으로 작동한다: (오류 생성률: 개인·레버리지 활동, 분산이 관측) x (슬롯 배분 왜곡 규모: 팩터 불일치가 관측). 저분산 정상장은 두 인자가 함께 0 에 접근하므로 조건부 선택과 등가중이 수렴한다 — 즉 가설은 자신이 약한 국면을 스스로 지정하며 보편타당을 주장하지 않는다. 위기 정점에서는 유동성 청산이 순위 정보를 일시 압도할 수 있어 실현은 회복 국면으로 이연될 수 있다(FQ-244 승계 기전과 동일 구조). 경계는 전부 메커니즘의 두 인자에서 도출했고, DFA 위기-우위 실측은 도출 근거가 아니라 정합성 확인으로만 인용한다."
+    },
+    "differentiation_ledger": {
+      "note": "조회절 의무 — 선행 negative 5계통 각각에 대해 '왜 그 실패 기전이 본 설계에 적용되지 않는가'",
+      "vs_L-AR-20260802_204803_WT015": "WT-015 는 (a) 이산 라벨(CRISIS/CAUTION/NEUTRAL)이 실현 하락과 무관(recall 0.10, WT-017 이 라벨 우연 확정)했고 (b) 자유도가 *배분*(고정 5팩터 위 weight 로테이션)이라 '섞음'을 전제했으며 (c) 튜닝 성과 입력이 악화를 얹었다. 본 설계는 (a') 이산화 자체를 금지하고(연속 상태 의무 — FQ-239 R8 이 이진화+월말샘플링의 에피소드 붕괴를 235개월 중 3회 발화로 실증) 라벨-실현 무관성 문제를 연속 교호작용 검정(F1)으로 대체, (b') 자유도가 *선택*(멤버십: 어느 팩터의 순위를 신뢰하나)이라 섞음을 전제하지 않고, (c') 성과 입력이 0 이다. ★유리한 방증: WT-015 의 결정 실측 '단일 최강이 모든 조합을 지배'(C3 2.050 > 로테이션 0.904 > EW 정적 0.338)는 ORACLE_K 구조(월별 단일 팩터 선택 상한 4.647)와 정합한다 — 세 라운드(WT-004/009/015)가 정합하게 '섞지 말고 골라라' 방향을 가리켰고, 본 라운드는 그 방향의 첫 직접 시험이다. 배분 로테이션의 실패는 선택 가설의 반증이 아니라 오히려 그 여유폭이 배분 축에 없음을 보인 것이다.",
+      "vs_L-RAMP-20260713_084821_R10": "R10 의 조건변수는 trailing 팩터 t(성과)였고 자유도는 비례 가중이었다. 실패 기전 = trailing 성과가 forward 성과를 예측하지 못함(KR decay 구조에서 오히려 역행). 본 설계의 조건변수는 성과의 시계열 이력이 아니라 동시대 횡단면 관측(당월 z 의 순위 구조, 당월까지 실현 수익의 산포)이다 — '과거에 벌었던 팩터' 를 고르는 것이 아니라 '이번 달 시장 상태가 활성화하는 오류 유형' 을 고른다. decay 를 쫓는 축이 설계상 부재하다.",
+      "vs_FQ-121": "FQ-121 의 실패 기전 = IS 성과 자격의 반감기가 운용 주기보다 짧음(부호 반전). 성과 추정치는 표본 창이 필요해 필연적으로 과거를 본다. 본 설계의 상태변수는 추정 창이 없는 당월 관측이므로 반감기 문제의 축 자체가 다르다 — 상태의 자격은 '과거 성과의 지속' 이 아니라 '기전(오류 생성·슬롯 왜곡)과의 동시대 연결' 이고, 그 연결이 F1/F3 의 검정 대상이다.",
+      "vs_FQ-236_LaneD": "Lane D 는 매크로 상태가 수익 *분포의 형태*(분위 프로파일·왜도)를 조건화하는지를 쟀고 기각-부호로 닫혔다. 본 라운드의 표적은 분포 형태가 아니라 *팩터 선택*(멤버십) — 조건변수도 매크로가 아닌 횡단면 상태다. 다만 Lane D precheck 의 방법 교훈은 전부 승계한다: 유효창은 광고가 아니라 표적 열의 첫 유효일로 실측, sd 는 계약 기본값이 아니라 결과량에서 직접 역산(역산 sd 는 NW 포함이므로 nw_inflation=1), 미결(underpowered)과 종결(powered null)의 라벨 구분.",
+      "vs_bear_prob_3rounds": "(보충 조회 5번째 항목 — alpha-research 검거) bear_prob 은 팩터 수익에서 추정된 잠재 상태 = 성과-파생이며, per-group jump pt 0.62(decay-as-bear 오분류) · 충실구현 oos 0.31 FAIL · DFA 아크 국면 배분층 기각(무국면 FM-TS 지배)의 3회 실측을 가진다. 본 설계는 이를 주 조건변수에서 강등하고 보조/대조 arm 으로만 채택한다(CAND-B disposition). 강등의 기전 논거: decay-as-bear 오분류는 '최근 팩터성과 저조 -> bear 판정' 경로에서 발생하는데 bear_prob 의 입력이 팩터 수익인 한 이 경로는 선택 자유도에서도 원리적으로 재발 가능하다 — 재발하지 않는다는 논증을 우리는 갖고 있지 않으므로 주 판정에서 배제하는 것이 정직하다. 단 위기-조건부 3배 우위(3중 확인)는 소비면이 남아 있으므로 대조 arm 으로 그 증분을 측정한다."
+    }
+  },
+  "challenge_flags": [
+    "CAND-B (bear_prob) 강등 채택 — 보조/대조 arm 전용, 주 판정 금지, 유효창 149개월 별도 MDE",
+    "CAND-C (크라우딩) 후순위 보존 — 본 라운드 반증 F3 로만 소비, A6 수동 export 스테일 ~22일 실측",
+    "CAND-D (매크로 상태) 미채택 — Lane D(WT-D20260822_001) 결과 대기",
+    "★핵심 미검 축의 정직 표기: '상태가 신뢰할 팩터 계열을 지목한다'(방향 축)는 이 저장소에 선행 실측이 없다 — 그것이 본 라운드의 존재 이유이며, F1 이 성과 측정 전에 이 축을 직접 검정하도록 설계했다. F1 기각 시 불일치 축 단독(선택 강도 조절)으로 축소하거나 economic_void 재분류",
+    "계열(family) 분류의 자유도 경고: F1 의 '계열 간 기울기 이질' 검정에서 계열 정의는 factor_registry 선언 계열(15종)을 쓸 것 — 이름 접두 유추 금지(2026-08-10 실측: 휴리스틱 19 vs 선언 15 로 판정 반전). 군집 단위 검정력은 cluster_power.R 로 착수 전 산출",
+    "이산화 금지 재확인 — 상태 tercile/이진 발화 설계 금지(FQ-239 R8), holds_in 구간의 사후 이산 선택도 금지: 국면 판정은 연속 교호작용으로만",
+    "FQ-244 PREREG 자구 양식 승계 대상: mean-blind 봉인 순서, 검정력 직접 측정 + implied_t 퇴화 점검, MATERIAL 8.22%p 정의, basis 3원 병기, selection_type 판정"
+  ],
+  "verdict": "designed",
+  "handoff": {
+    "to": "alpha-research",
+    "next_steps": "Step 1~7 + AST v1.1 ⑤ 구성. 승계 규칙: mechanism/falsification/regime_scope 재작성 금지(Charter 원칙 8) — 결함 발견 시 challenge_note 기록 + 재설계 요청. 설계 메모: ① 조건변수 원천 = 당월 z 횡단면(불일치) + A1 Ret(분산) — smv 패널은 보조 arm 에서만, FQ-239 PIT 규약(T+2/컷오프/locf/진행월 금지/연속 의무) 자구 준수 ② 창 비대칭(221 vs 149) — 공통창 강제 금지, arm 별 MDE 직접 측정 ③ F2 Jaccard 를 측정 산출물에 의무 포함(멤버십 무이동 null 의 해석 제한) ④ argmax 선택 구조 도입 시 sweep 재분류 + DSR 0.5 HARD 발동 인지 ⑤ F1 계열 정의 = factor_registry 선언 계열, cluster_power.R 착수 전 호출"
+  }
+}

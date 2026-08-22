@@ -1,0 +1,5 @@
+setwd("C:/Users/99922/OneDrive/Quant_Module_Moltbot")
+x <- readRDS("stage_artifacts/WT-D20260822_004/p4_verdict.rds")
+cat("names:", paste(names(x), collapse=", "), "\n")
+if (!is.null(x$act)) cat("act arms:", paste(names(x$act), collapse=", "), "\n")
+if (!is.null(x$SCA)) cat("SCA arms:", paste(names(x$SCA), collapse=", "), "\n")
