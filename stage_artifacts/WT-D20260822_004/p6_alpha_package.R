@@ -67,7 +67,9 @@ pkg <- list(
   factors = factors,
   combination_rule = "z_score_aligned_equal_weight",
   combination_rule_note = "★대조군(C0) 의 enum. 처치 C1 = 'rank_average'(enum 기존재), C2 = z_score_aligned_equal_weight 의 winsorized 입력 변형(enum 밖 — 규칙 자체는 factors[].ast 의 CLIP 노드로 명시), C3 = 음성 대조(enum 밖, 채택 후보 아님). 본 라운드 판정은 **어느 처치도 대조를 개선하지 못했다** 이므로 파이프라인 결합 규칙은 C0 로 불변 유지된다.",
-  verdict = "designed",
+  verdict = "NON_ML_COMBINATION_POWERED_NULL",
+  verdict_detail = "비-ML 결합 규칙 2종(C1 rank 평균 · C2 winsor-z 평균)이 C0 대비 IC→PORT_t 전이를 개선하지 못함 — 둘 다 POWERED_NULL_NO_MATERIAL_EFFECT(CI95 상단 +3.01 / +1.49 %p/yr 로 MATERIAL 8.22 배제). 음성 대조 C3(max-z)는 예측대로 유의 악화(t -2.08, EFFECT_NEGATIVE). 기전 귀속: M1 slot 잠식은 실재(R1a 16/25)하나 잠식→손실 링크가 본 풀에 부재(R1b 미수송 + R3 부호역전 t +0.25). 손실 원천은 결합 규칙이 아니라 이산 top-N 소비 마디(FQ-059) 또는 팩터 선택(ORACLE_K 여유폭 4.647 이 선택에 있음). 헌법 재진입 순서 ①(비-ML 먼저) 충족 → ② ML 결합기 자격 발생(별도 사전등록·비-sweep 필요, 단 선택 마디 우선 권고). ★verdict 필드는 라운드 판정이다 — 승계 hypothesis 의 verdict='designed'(hypothesis.inherited_from 에 별도 기록)와 혼동 금지(2026-08-22 alpha-research 자기수정: 초판 p6 가 이 필드에 hypothesis 상태 'designed' 를 전사한 결함을 정정).",
+  hypothesis_stage_verdict = "designed (alpha-hypothesis 승계 상태 — 라운드 판정 아님)",
   self_pit_check = list(performed = TRUE, leaves_checked = list(
     list(leaf = "SPECIAL_OP (walk-forward 선별 + 결합)",
          availability_rule = "선별 창이 홀딩 anchor 미만 실현 통계만 소비(rows (i-36)..(i-1)) · 결합은 홀딩월 당월 z. 코드 수준 강제 + vintage 이동 통제 arm(LEAK1 +1M / LAG1 -1M)으로 창 의미 실증.",

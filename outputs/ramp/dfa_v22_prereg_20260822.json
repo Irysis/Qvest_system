@@ -1,0 +1,52 @@
+{
+  "prereg_id": "dfa_v22_20260822",
+  "round": "R36",
+  "strategy": "DFA_RegimeSignals",
+  "registered_at": "2026-08-22",
+  "registered_before_results": true,
+  "selection_type": "chain",
+  "base": "R29/R35 의 T3 (목표 비중 상위 25종 복제 + 단일비중 상한 0.20). 게이트 0 을 100% 준수하는 유일한 안정 팔이며 oos_retention 2.226 PASS.",
+
+  "chain_rationale": "R35 가 게이트 0 준수팔 중 T1 을 죽이고(clean IR -0.476, oos -0.641) T3 만 남겼다. T3 는 제약 100% 준수 + oos PASS 이나 calmar 0.2164(full)/0.4051(clean)로 문턱 0.64 에 미달한다. 한편 R32 가 지수팔에서 노출축 단독(직전 3개월 시장 누적수익<0 -> 전액 현금)이 calmar 0.2996 -> 0.5331 을 준다는 것을 실측했다. 그 축을 **게이트 0 을 지키는 팔 위에서** 시험하는 것이 배포 가능성과 성과를 한 팔에서 만나게 하는 유일한 남은 경로다. R32 의 상호작용 팔(freq=1·K=1)은 지수공간 집중이 최대라 게이트 0 을 악화시키므로 본 라운드는 **구성축을 건드리지 않고 노출축만** 시험한다(단일 자유도 유지).",
+
+  "single_degree_of_freedom": "T3 에 노출 규칙 적용 여부. 규칙은 R32 와 동일한 무파라미터 PIT-청정 형태: 결정시점 d=m-1 까지의 직전 3개월 시장 누적수익 < 0 이면 적용월 m 노출 0(전액 현금, rf=0%), 아니면 1. 종목 선택·비중·리밸·비용 전부 T3 값 고정. 새 파라미터 없음.",
+
+  "arms": {
+    "H0_control": "T3 그대로",
+    "H1_T3_cash_HEADLINE": "T3 + 3M 시장 현금규칙"
+  },
+  "diagnostic_only_cells": {
+    "H2_T1_cash": "T1 + 같은 규칙 (T1 은 R35 에서 이미 기각됐으므로 참고용)",
+    "H3_T0_cash": "T0 + 같은 규칙 (제약 미준수 팔, 노출축 효과의 크기 대조용)",
+    "binding_constraint": "진단 전용. 값과 무관하게 헤드라인 승격 금지 — 채택 판정은 H1 에만 건다."
+  },
+
+  "headline_cell_predesignated": "H1_T3_cash, 15bps(노출 변경 |Δe| 에도 과금), 벤치=parent. full·clean 양 창 보고. 도훈 지시 'KOSPI200 전환 금지' 준수.",
+
+  "decision_rule": {
+    "adopt_H1_if": "① calmar(H1) > calmar(H0) (full·clean 양 창) ∧ ② oos_retention(H1) >= 0.70 유지 ∧ ③ PORT_t(H1) >= PORT_t(H0) - 0.30 (노출 축소는 active t 를 구조적으로 희석하므로 허용 폭을 넓게 잡되 붕괴는 불허) ∧ ④ 게이트 0 준수 100% 유지",
+    "reject_if": "하나라도 미충족 → H0(T3) 유지, H1 은 config-scoped negative 기록",
+    "mandatory_falsification": {
+      "lag_stress": "cash_lag +1M 에서 calmar 개선이 소멸하면 **기각**. R32 의 지수팔 상호작용 팔이 이 조건에서 0.6361 -> 0.3288 로 붕괴했고 무오버레이보다도 낮아졌다 — 적시성 의존이 극단적인 팔은 실거래에서 재현되지 않는다.",
+      "constant_exposure_control": "같은 평균노출을 **상수로** 적용한 팔을 반드시 병기한다. 타이밍 규칙이 상수 축소를 유의하게 넘지 못하면 '타이밍' 이 아니라 단순 디리스킹이므로 기각.",
+      "clean_window": "clean 창에서 개선이 없으면 기각(full 창 개선은 GFC 구간 집중일 수 있다)."
+    },
+    "graduation_gates_unchanged": "PORT_t>=2.95 / oos_retention>=0.7 / calmar>=0.64 / book-marginal>=0.05 — 불변. 본 라운드가 전부 통과할 것으로 기대하지 않으며, 목표는 게이트 0 을 지킨 채 calmar 를 얼마나 올릴 수 있는지 실측하는 것이다."
+  },
+
+  "expected_failure_mode": "T3 는 목표 비중 상위 25종 복제라 메가캡 편중이고 사실상 시장에 가깝다(R29 실측: 상위 25종이 목표의 61%, 메가캡 편중). 시장에 가까운 포트폴리오에 시장 타이밍을 얹으면 개선이 크게 나타날 수 있으나 그것은 **알파가 아니라 베타 타이밍**이다. 그 경우 PORT_t(액티브 기준)는 오히려 떨어지고 상수-노출 대조와의 차이도 작을 것이다 — 그러면 조건 ③ 또는 상수 대조에서 기각된다. 반대로 타이밍이 액티브 성분과도 상호작용하면 PORT_t 희석이 작을 것이다.",
+
+  "pit_gates_required": [
+    "현금 신호는 결정시점 d=m-1 까지의 정보만 사용",
+    "노출 변경 |Δe| 에 15bps 과금",
+    "lag 사다리 0/1/2/3 전수 보고",
+    "진행월 제외 · H0 를 동일 창에서 재측정"
+  ],
+  "prohibited": [
+    "사후 셀 선택(argmax) — 헤드라인 H1 고정",
+    "진단셀 H2/H3 의 헤드라인 승격",
+    "구성축(freq·K) 동시 변경 — 단일 자유도 유지",
+    "문턱 완화", "롱숏", "벤치 교체",
+    "lag 스트레스 결과를 보고 규칙 창(3M)을 조정하는 것"
+  ]
+}
