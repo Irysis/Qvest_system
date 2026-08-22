@@ -1,0 +1,216 @@
+{
+  "task_id": "WT-D20260813_001",
+  "as_of_date": "2026-08-22",
+  "agent": "risk_research_v1.1",
+  "generated_at": "2026-08-22T20:42:54+0900",
+  "sig_date": "2026-07-31",
+  "evaluation_windows": {
+    "estimation": {
+      "basis": "pairwise_complete_60m_window",
+      "n_months": 60,
+      "window_end": "2026-07"
+    },
+    "beta": {
+      "full_n": 439,
+      "recent_n": 36
+    }
+  },
+  "subset_scope": {
+    "n_tickers": 25,
+    "method": "alpha_vector_all"
+  },
+  "exposure_matrix_ref": "NA",
+  "factor_covariance_ref": "NA",
+  "specific_risk_ref": "NA",
+  "security_covariance_ref": "stage_artifacts/WT-D20260813_001/covariance.parquet",
+  "covariance_matrix_ref": "stage_artifacts/WT-D20260813_001/covariance.parquet",
+  "regime_correlation_ref": "stage_artifacts/WT-D20260813_001/regime_correlation.parquet",
+  "risk_summary": {
+    "top_common_risks": [
+      "CommonFactor/Market (4% via PC1)",
+      "Sector_Semiconductor (57%)",
+      "Style_LowVol_tilt (vol pct 0.14 from alpha_pkg)"
+    ],
+    "crowding_flags": [
+      "Sector concentration: 반도체=57% of book (sector_HHI=0.370, n_eff_sectors=2.7)",
+      "14 of 25 names are 반도체 (semiconductor)"
+    ],
+    "crowding_score_per_factor": {
+      "status": "data_unavailable: Check that is.data.table(DT) == TRUE. Otherwise, :=, `:=`(...) and let(...) are defined for use in j, once only and in particular ways. Note that namespace-qualification like data.table::`:=`(...) is not supported. See help(\":=\")."
+    },
+    "liquidity_flags": [],
+    "concentration": {
+      "sector_hhi": 0.3697,
+      "name_hhi": 0.0407,
+      "n_eff_names": 24.57,
+      "sector_weights": {
+        "반도체": 0.5739,
+        "IT하드웨어": 0.1553,
+        "IT가전": 0.0781,
+        "건강관리": 0.0729,
+        "비철,목재등": 0.0428,
+        "건설,건축관련": 0.0408,
+        "화학": 0.0363
+      }
+    },
+    "stress_tests": {
+      "gfc_2008": {
+        "value": -0.4956,
+        "coverage": 0.597,
+        "label": "UNRELIABLE_coverage<85%"
+      },
+      "eudebt_2011": {
+        "value": -0.0616,
+        "coverage": 0.688,
+        "label": "UNRELIABLE_coverage<85%"
+      },
+      "china_2015": {
+        "value": -0.1397,
+        "coverage": 0.746,
+        "label": "UNRELIABLE_coverage<85%"
+      },
+      "covid_2020": 0.0943,
+      "rate_2022": -0.3471,
+      "market_down_5": -0.0565
+    },
+    "regime_correlation": {
+      "avg_corr_all": 0,
+      "avg_corr_bm_up": 0.1979,
+      "avg_corr_bm_down": 0.3634
+    },
+    "cap_tier_decomposition": {
+      "basis": "cap_w_and_ew_uni",
+      "note": "alpha_vector is near-EW (max w=0.164); book is a small/mid-cap semiconductor sleeve. tier alpha_share not independently re-estimated (risk scope) — MEGA presence low: only A000660(SK하이닉스) is mega-cap.",
+      "tiers": [
+        {
+          "tier": "MEGA",
+          "active_risk_share": "data_unavailable",
+          "note": "A000660 only"
+        },
+        {
+          "tier": "MID_SMALL",
+          "active_risk_share": "dominant",
+          "note": "23 of 25 are mid/small-cap semis & IT"
+        }
+      ],
+      "dual_basis_divergence_flag": true
+    }
+  },
+  "diagnostics": {
+    "port_vol_monthly_pct": 5.0193,
+    "port_vol_annual_pct": 17.3873,
+    "condition_number": 1,
+    "condition_number_before_shrinkage": 2423894237833219,
+    "shrinkage_used": true,
+    "shrinkage_method": "ledoit_wolf",
+    "estimation_basis": "pairwise_complete_60m_window",
+    "n_months_used": 60,
+    "p_tickers": 25,
+    "factor_n": 1,
+    "pc1_variance_share": 0.04,
+    "common_variance_share": 0.04,
+    "specific_variance_share": 0.96,
+    "beta_full": 1.1297,
+    "beta_recent36": 1.0572,
+    "tdc_pairs_gt_0_6": 37,
+    "tdc_top10": [
+      {
+        "a": "A000660",
+        "b": "A095610",
+        "tdc": 1
+      },
+      {
+        "a": "A319660",
+        "b": "A089030",
+        "tdc": 1
+      },
+      {
+        "a": "A402340",
+        "b": "A000660",
+        "tdc": 0.75
+      },
+      {
+        "a": "A402340",
+        "b": "A036930",
+        "tdc": 0.75
+      },
+      {
+        "a": "A402340",
+        "b": "A095610",
+        "tdc": 0.75
+      },
+      {
+        "a": "A000660",
+        "b": "A131290",
+        "tdc": 0.75
+      },
+      {
+        "a": "A000660",
+        "b": "A080220",
+        "tdc": 0.75
+      },
+      {
+        "a": "A000660",
+        "b": "A240810",
+        "tdc": 0.75
+      },
+      {
+        "a": "A000660",
+        "b": "A095340",
+        "tdc": 0.75
+      },
+      {
+        "a": "A000660",
+        "b": "A420770",
+        "tdc": 0.75
+      }
+    ],
+    "high_corr_pairs_gt_0_8": 0,
+    "psd_verified": true,
+    "min_eigenvalue": 0.0619,
+    "style_analysis": {
+      "status": "data_unavailable",
+      "reason": "cannot open the connection"
+    },
+    "ticker_n": 25
+  },
+  "selection_objective": "condition_number",
+  "method_shopping_log": {
+    "risk_agent": {
+      "candidates_tried": 3,
+      "method_log": [
+        {
+          "name": "sample",
+          "condition": 2423894237833219,
+          "min_eig": -0.04231,
+          "psd": false,
+          "degenerate": false,
+          "selected": false
+        },
+        {
+          "name": "ledoit_wolf",
+          "condition": 1,
+          "min_eig": 0.0619,
+          "psd": true,
+          "degenerate": false,
+          "selected": true
+        },
+        {
+          "name": "lw_nls",
+          "condition": "NA",
+          "min_eig": "NA",
+          "psd": false,
+          "degenerate": false,
+          "selected": false
+        }
+      ],
+      "selection_objective": "condition_number"
+    }
+  },
+  "challenge_flags": [
+    "RF-R1 HIGH: single sector (반도체) active exposure 57% > 40% — book is a concentrated semiconductor bet, not diversified.",
+    "RF-R3 MEDIUM: crowding flags present (see crowding_flags)."
+  ],
+  "metric_type": "risk_diagnostic",
+  "scope_note": "Risk diagnostic only. No alpha modification, no weights. research_verdict upstream = NOT_SUPPORTED (config-scoped negative); this Σ analysis is independent structural information for the record."
+}

@@ -1037,6 +1037,22 @@ if [ -f "$SAS_SH" ]; then
   [ -z "$SCHED_ALERT_STATUS" ] && SCHED_ALERT_STATUS="SchedAlerts: UNREPORTED — 상태라인 실패 (bash $SAS_SH 로 사유 확인)"
 fi
 
+# ── 무음 사망 런 (2026-08-22 신설) ─────────────────────────────────────────
+#   ★SchedAlerts 와 **다른 것**을 본다: 저쪽은 러너가 *남긴* 경보이고, 이쪽은
+#   러너가 *남기지 못한* 실패다. 런이 start 후 종료 기록 없이 증발하면 경보도
+#   완주 알림도 없고 락은 trap 이 정상 해제해 다음 런이 아무 이상을 못 느낀다.
+#   실사고 2026-08-22 18:30 modeq — WT 를 9일 만에 ALPHA_DONE 으로 올린 뒤 증발.
+#   전수 스캔 결과 108 런 중 8건(alpha_queue 4 · recheck 2 · modeq 1 · router 1).
+ORPHAN_STATUS=""
+ORPHAN_PY="$PROJECT/02_Infrastructure/ops/orphan_run_scan.py"
+if [ -f "$ORPHAN_PY" ]; then
+  _opy="${QVEST_PY:-}"
+  [ -x "$_opy" ] || _opy="$PROJECT/.venv_qvest_ml/Scripts/python.exe"
+  [ -x "$_opy" ] || _opy="$(command -v python3 2>/dev/null || echo python)"
+  ORPHAN_STATUS=$("$_opy" "$ORPHAN_PY" "$PROJECT" --days 30 --status-line 2>/dev/null | grep -m1 "OrphanRuns:" || true)
+  [ -z "$ORPHAN_STATUS" ] && ORPHAN_STATUS="OrphanRuns: UNREPORTED — 스캔 실패 (직접 실행해 사유 확인)"
+fi
+
 SMOKE_STATUS=""
 SMOKE_SCRIPT="$PROJECT/02_Infrastructure/ops/boot_status_smoke.py"
 if [ -f "$SMOKE_SCRIPT" ] && python3 -c 'import sys' >/dev/null 2>&1; then
@@ -1142,6 +1158,7 @@ fi
 [ -n "$MODEQ_STATUS" ] && echo "$MODEQ_STATUS"
 [ -n "$FACTOR_EVIDENCE_STATUS" ] && echo "$FACTOR_EVIDENCE_STATUS"
 [ -n "$SCHED_ALERT_STATUS" ] && echo "$SCHED_ALERT_STATUS"
+[ -n "$ORPHAN_STATUS" ] && echo "$ORPHAN_STATUS"
 [ -n "$SMOKE_STATUS" ] && echo "$SMOKE_STATUS"
 command -v free >/dev/null 2>&1 && free -m | awk '/Mem:/ {printf "RAM:        %.0f%%\n", $3/$2*100}' || true
 # (Remote tmux rc 라인 제거 v8.0 — inbound listener 폐지)

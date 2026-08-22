@@ -100,10 +100,12 @@ try_method <- function(m) {
   list(name=m, condition=cn, min_eig=min(ev), psd=psd, ok=TRUE, cov=cm, deg=!is.null(attr(out,"lw_degenerate")))
 }
 cands <- lapply(c("sample","ledoit_wolf","lw_nls"), try_method)
+safe_sig <- function(x) if (is.null(x) || length(x)==0 || !is.numeric(x)) NA_real_ else signif(x,4)
+safe_rnd <- function(x) if (is.null(x) || length(x)==0 || !is.numeric(x)) NA_real_ else round(x,2)
 for (c in cands) {
   method_log[[length(method_log)+1]] <- list(
-    name=c$name, condition=round(c$condition,2),
-    min_eig=signif(c$min_eig,4), psd=c$psd, degenerate=isTRUE(c$deg), selected=FALSE)
+    name=c$name, condition=safe_rnd(c$condition),
+    min_eig=safe_sig(c$min_eig), psd=isTRUE(c$psd), degenerate=isTRUE(c$deg), selected=FALSE)
 }
 
 # Selection rule: prefer PSD + condition < 500; among those minimize |condition| but
