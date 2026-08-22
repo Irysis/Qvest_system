@@ -25,7 +25,7 @@ gl$events <- c(gl$events, list(
   list(timestamp = NOW, agent = "alpha-research", action = "SELF_ADVERSARIAL_DONE",
        summary = "challenge_note.md — concern 11건 (ACCEPT 6 / PARTIAL 4 / REBUTTAL 1). HIGH 2 (<5) 자동 escalate 미발화. Q-Lead 보고 4건: alpha-hypothesis 재설계 요청 2 · FQ-241 census 항목 추가 1 · 인프라 2(CF6 benchmark_id 하드코딩 · CF7 schema↔ast_verify escape 계약 위치 불일치) · 사전등록 템플릿 개선 제안 1."),
   list(timestamp = NOW, agent = "alpha-research", action = "NO_TRANSITION",
-       summary = "transition_gates cond4(co-primary SUPPORTED >=1) 미충족 — risk-research 전이 요청하지 않는다. cond1 충족(alpha_scores 217,286행) · cond3 충족(반증 발화 0)."))
+       summary = "transition_gates cond4(co-primary SUPPORTED >=1) 미충족 — risk-research 전이 요청하지 않는다. cond1 충족(alpha_scores 217,286행) · cond3 충족(반증 발화 0).")))
 write_json(gl, file.path(MBX, "governance_log.json"), pretty = TRUE, auto_unbox = TRUE)
 cat(sprintf("  events %d\n", length(gl$events)))
 
