@@ -5,33 +5,65 @@
     {
       "type": "op",
       "op": "CS_WINSORIZE",
-      "params": { "lower": 0.01, "upper": 0.99 },
+      "params": {
+        "lower": 0.01,
+        "upper": 0.99
+      },
       "args": [
         {
           "type": "op",
           "op": "MUL",
           "args": [
-            { "type": "const", "value": -1 },
+            {
+              "type": "const",
+              "value": -1
+            },
             {
               "type": "op",
               "op": "TS_CORR",
-              "params": { "window": 63, "unit": "d", "min_obs": 40 },
+              "params": {
+                "window": 63,
+                "unit": "d",
+                "min_obs": 40
+              },
               "args": [
                 {
-                  "type": "leaf",
-                  "leaf": "FIELD",
-                  "group_id": "A6_investor_flow_stock_daily",
-                  "field": "Individual",
-                  "avail_offset_days": 1,
-                  "note": "일간 개인 순매수대금 KRW. Date < sig_date strict (compute_investor.R 규약 = T+1 정산 lag)"
+                  "type": "op",
+                  "op": "TS_LAG",
+                  "params": {
+                    "k": 1,
+                    "unit": "d"
+                  },
+                  "args": [
+                    {
+                      "type": "leaf",
+                      "leaf": "FIELD",
+                      "group_id": "A6_investor_flow_stock_daily",
+                      "field": "Individual",
+                      "avail_offset_days": 1,
+                      "note": "일간 개인 순매수대금 KRW. Date < sig_date strict (compute_investor.R 규약 = T+1 정산 lag)"
+                    }
+                  ],
+                  "note": "창에서 신호일 d0 당일 관측 제외 — A6 strict_t1 규약(compute_investor.R inv[Date < sig_d]) 의 AST 선언"
                 },
                 {
-                  "type": "leaf",
-                  "leaf": "FIELD",
-                  "group_id": "A1_RAWDATA_OHLCVS_daily",
-                  "field": "Ret",
-                  "avail_offset_days": 0,
-                  "note": "stored 일간 수익률. Close 재계산 금지(A1 pit_hazards) 준수 — 저장값 사용."
+                  "type": "op",
+                  "op": "TS_LAG",
+                  "params": {
+                    "k": 1,
+                    "unit": "d"
+                  },
+                  "args": [
+                    {
+                      "type": "leaf",
+                      "leaf": "FIELD",
+                      "group_id": "A1_RAWDATA_OHLCVS_daily",
+                      "field": "Ret",
+                      "avail_offset_days": 0,
+                      "note": "stored 일간 수익률. Close 재계산 금지(A1 pit_hazards) 준수 — 저장값 사용."
+                    }
+                  ],
+                  "note": "동일 창 정렬 — 수익측도 d0 당일 제외(충분통계 차감으로 구현)"
                 }
               ]
             }
