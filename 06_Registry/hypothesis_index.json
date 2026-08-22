@@ -1,13 +1,13 @@
 {
   "schema_version": "hypothesis_index_v1",
-  "generated_at": "2026-08-22T16:47:04+0900",
+  "generated_at": "2026-08-22T17:31:30+0900",
   "note": "AS-03 duplicate-hypothesis prevention index. signature = family|signal_group|universe|structure. Rebuild: Rscript 02_Infrastructure/tools/hypothesis_index.R build",
   "coverage": {
     "alpha_search_manifest": 478,
     "alpha_search_hurdle_fallback": 114,
     "alpha_search_skipped_empty": 46,
     "alpha_search_parse_fail": 0,
-    "lcode_indexed": 521,
+    "lcode_indexed": 522,
     "lcode_skipped": 0,
     "lcode_supplement_indexed": 0,
     "lcode_supplement_skipped_dup": 0,
@@ -28,7 +28,7 @@
     "overlay_drain_skipped": 0,
     "overlay_drain_parse_fail": 0
   },
-  "n_entries": 1278,
+  "n_entries": 1279,
   "entries": [
     {
       "strategy_id": "STR_AS_20260602_164125",
@@ -14825,6 +14825,20 @@
       "date": "2026-08-22"
     },
     {
+      "strategy_id": "DFA_RegimeSignals_ARC_CLOSE_R35_R45",
+      "hypothesis_signature": "factor_timing_allocation|regime_overlay|unknown|overlay_regime",
+      "title": "L-RAMP-20260822_173112: DFA_RegimeSignals_ARC_CLOSE_R35_R45",
+      "verdict": "FAIL",
+      "grade": "F",
+      "key_metrics": {
+        "portfolio_alpha_t": 2.434,
+        "oos_retention": 0.899
+      },
+      "source_paths": "stage_artifacts\\l_code\\ramp\\l_code_DFA_RegimeSignals_ARC_CLOSE_R35_R45.json",
+      "source_types": "lcode_corpus",
+      "date": "2026-08-22"
+    },
+    {
       "strategy_id": "INV_HEDGE_PHASE1_1B",
       "hypothesis_signature": "value|regime_overlay|unknown|hedge_overlay",
       "title": "L-RR-20260704_114303: INV_HEDGE_PHASE1_1B",
@@ -16836,16 +16850,16 @@
     },
     {
       "strategy_id": "DIST-RAMP-014",
-      "hypothesis_signature": "value|value+regime_overlay+ml|unknown|distilled",
-      "title": "DIST-RAMP-014: [미승인 초안] 지수-비중 최적화 계열(Black-Litterman / Shu-Mulvey)을 KR 배포 형태인 top-25 횡단면으로 변환하면 엣지가 남지 않는다 — 손실 지점은 신호 부재가 아니라 변환이다. 4접근{univ all|index × weighting} 전수 변환에서 배포 가능 구성 0. 같은 라인에서 국면엔진 결합도 역효과였다: Cascade 단독 PORT_t 2.85 대비 순진 앙상블 2.61 · 트레일링IR 가중 앙상블 2.65 · 다축 경제분업 2.71 로 셋 다 미달하며, 원인은 엔진 간 redundancy 다 (트레일링 IR 0.195~0.203 으로 사실상 동일 → 결합이 최강 엔진을 희석). 이 라인은 방법론 경고 2건을 함께 남겼다: (1) 앞서 보고된 'oos_retention 0.52 조건부 졸업'은 sweep 부풀림 아티팩트였고 (2) grid-ensemble PORT_t 3.0 은 de-bias 가 아니라 과매끈 config(λ=100)를 섞은 나쁜 구성의 평균이었다 — 유효 검증은 완전 인과적 rolling re-tune(매 시점 과거 데이터만) 뿐이다. 전제 실측: factor_db 316 전수에서 standalone PORT_t>1 은 0/316 이고, 직교성은 gross 가 아니라 active(−BM) basis 에 존재한다(core↔def 0.45).",
+      "hypothesis_signature": "value|momentum+beta+volatility|unknown|distilled",
+      "title": "DIST-RAMP-014: 지수-비중 최적화 계열(Black-Litterman / 팩터 모멘텀 배분)을 KR 배포 형태인 top-25 횡단면으로 변환하면 엣지가 남지 않는다 — 손실 지점은 신호 부재가 아니라 변환이다. ★2026-08-22 기전 정밀화(DFA 아크 R29~R45, 구성 6회·노출 4회 전수 측정): 변환에서 **살아남는 것은 알파가 아니라 베타다**. 세 변환 계열의 시장상관과 OOS 성과 순위가 완전히 일치한다 (T1 팩터별5종 0.683 → clean IR -0.476 / M2 중간형태 0.831 → -0.182 / T3 비중상위25 0.941 → +0.305; cor(시장상관, clean IR) = +0.974, n=3 이므로 방향 확인용). 기전 = 이 신호의 알파는 **절대 크기가 작다**. 지수배분팔의 PORT_t 2.802 는 활성 수익이 커서가 아니라 활성 vol 이 0.081 로 극히 작아서 나온다(작지만 일관된 초과수익 / 아주 작은 활성위험 = 큰 t). 제약(<=25종)은 활성위험을 지도록 **강제**하는데(T1 활성 vol 0.199 = 2.5배) 그 순간 알파가 특이위험에 파묻힌다. ⇒ 06-19 의 4접근 전패(-0.64 ~ -3.13)부터 T3 의 '생존'(시장상관 0.961 = 알파를 안 지므로)까지가 이 구조 하나로 설명된다. ★단서 2건: (1) 시장 근접은 **필요조건이지 충분조건이 아니다** — 추적오차 최소화팔(TE_MIN)이 M2 보다 시장에 가까운데 (0.867 > 0.831) 성과는 더 나쁘다(-0.482 < -0.182). 두 번째 기전 = 선택이 in-sample 최적화면 무너진다. (2) T3 마저 **무신호 대조군(유니버스 시총 상위 25종 cap-w, 팩터 신호 미사용)과 구별되지 않는다** — clean 차이 +0.06%/yr NW-t 0.028(2026 포함) / -0.38%/yr NW-t -0.163(2026 제외), 상관 0.958~0.960. 오히려 무신호 대조의 IR(+0.437)과 PORT_t(+1.418)가 T3(+0.305, +1.065)보다 높다. ★정량화된 부활 조건: 필요 신호품질 = 현재 rank-IC 의 **4.18배**(0.107 → 0.447; 분포보존 rank 열화 사다리 ρ 격자 9 x 25 draw, calmar 0.64 교차 IC). 같은 신호를 다르게 쓰는 범주 전체의 잔여는 갭의 **4.3%** 뿐이다. ★부수 실측 2건: (a) 지수 빌더가 매월 top-tercile 재구성 비용을 부과하지 않았다(팩터별 월 회전율 200배 격차, 선택 5팩터 가중 연 0.890% = 초과수익의 15.9%). 수리 후 PORT_t 2.882 → 2.434. (b) clean 창 수치는 2026 7개월(표본 5.3%, 일별 vol 0.658 = 역사 중앙 3.93배)에 의존한다 — 제외 시 비용수리 지수팔 PORT_t 가 **-0.001** 로 초과수익이 소멸. 유의 알파 팔은 양 판본 모두 0건.",
       "verdict": "DISTILLED_COND",
       "grade": null,
       "key_metrics": [],
       "retry_policy": null,
-      "distilled_status": "proposed",
+      "distilled_status": "distilled",
       "source_paths": "06_Registry/distilled_knowledge.json",
       "source_types": "distilled_knowledge",
-      "date": "2026-07-18"
+      "date": "2026-08-22"
     },
     {
       "strategy_id": "DIST-RAMP-017",
