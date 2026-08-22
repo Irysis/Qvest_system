@@ -38,10 +38,12 @@ for(m in sel_months){ d<-m-1; if(d<12) next
   for(pi in seq_along(pos)){ nmf<-fac[pos[pi]]; sub<-fm[Factor_Name==FAC[nmf]]
     if(nrow(sub)<15) next
     thr<-quantile(sub$Z_Score_Aligned,0.6667,na.rm=TRUE); sel<-sub[Z_Score_Aligned>=thr]
-    sets[[nmf]]<-data.table(Ticker=sel$Ticker,Size=sel$Size, wfac=s[pos[pi]]/sum(s[pos])) }
+    sets[[nmf]]<-data.table(fkey=nmf, Ticker=sel$Ticker, Size=sel$Size,
+                            wfac=s[pos[pi]]/sum(s[pos])) }
   if(!length(sets)) next
   A<-rbindlist(sets)
-  A[,w_in:=Size/sum(Size),by=.(wfac)]          # 팩터지수 내 cap-weight
+  A[,w_in:=Size/sum(Size),by=fkey]             # 팩터지수 내 cap-weight (★팩터명으로 그룹 — wfac 값 그룹핑은 동값 병합 버그)
+  stopifnot(abs(A[,sum(w_in),by=fkey]$V1-1)<1e-9)   # 각 팩터 내 비중합 1 확인
   A[,w:=wfac*w_in]
   agg<-A[,.(w=sum(w)),by=Ticker][order(-w)]
   agg[,w:=w/sum(w)]
