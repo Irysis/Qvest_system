@@ -141,7 +141,7 @@ for (v in verdicts[seq_len(min(2L, length(verdicts)))]) {
                                 100 * as.numeric(v$alpha_ann %||% 0))
   secs[[length(secs) + 1]] <- list(type = "kv", emoji = "\U00002696", heading = "판정", kv = kv)
   if (nzchar(v$fail_note %||% ""))
-    secs <- .add(secs, .sec("🛑", "막힌 지점", .to_bullets(v$fail_note, maxn = 4L))))
+    secs <- .add(secs, .sec("🛑", "막힌 지점", .to_bullets(v$fail_note, maxn = 4L)))
 }
 
 # ── ② 배운 것 (이 알림의 본체) --------------------------------------------
