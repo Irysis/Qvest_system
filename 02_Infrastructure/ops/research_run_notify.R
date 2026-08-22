@@ -67,16 +67,24 @@ stopped     <- !is.na(rc) && rc != 0
 has_insight <- length(lcodes) > 0 || length(verdicts) > 0
 
 # ── 헤더: 있으면 **발견**을 앞세운다. 완주 사실은 헤더가 아니다 -------------
+# ★summary 는 [20,100]자 계약(tg_format_summary). 헤드라인은 **한 줄 결론**만 담고
+#   전문은 아래 '배운 것' 본문이 나른다 — 잘라서 버리는 게 아니라 위치를 나눈다.
+.clip <- function(x, lo = 20L, hi = 96L) {
+  t <- gsub("\s+", " ", trimws(as.character(x %||% "")))
+  if (nchar(t) > hi) t <- paste0(substr(t, 1, hi - 1), "…")
+  if (nchar(t) < lo) t <- paste0(t, strrep(" ", lo - nchar(t)))
+  t
+}
 head_line <- if (length(lcodes) > 0) {
-  substr(lcodes[[1]]$lesson %||% lane_ko, 1, 150)
+  .clip(sprintf("[%s] %s", lcodes[[1]]$family %||% "?", lcodes[[1]]$lesson %||% lane_ko))
 } else if (length(verdicts) > 0) {
   v <- verdicts[[1]]
-  sprintf("%s %s — %s", v$wt, v$verdict %||% "", substr(v$fail_note %||% "", 1, 90))
+  .clip(sprintf("%s %s — %s", v$wt, v$verdict %||% "", v$fail_note %||% ""))
 } else if (stopped) {
-  sprintf("%s 가 중간에 멈췄습니다%s", lane_ko,
-          if (progressed) " (그때까지 산출은 남음)" else " (남은 산출 없음)")
+  .clip(sprintf("%s 가 중간에 멈췄습니다%s", lane_ko,
+          if (progressed) " (그때까지 산출은 남음)" else " (남은 산출 없음)"))
 } else {
-  sprintf("%s 를 돌렸으나 **적립된 지식이 없습니다**", lane_ko)
+  .clip(sprintf("%s 를 돌렸으나 적립된 지식이 없습니다", lane_ko))
 }
 
 secs <- list(list(type = "summary", emoji = "\U0001F52C", body = head_line))
