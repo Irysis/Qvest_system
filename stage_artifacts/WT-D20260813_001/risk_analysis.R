@@ -326,13 +326,18 @@ cat(sprintf("[risk] liquidity below-threshold names: %d\n", length(liq_flags)))
 
 # ================= CROWDING (per-factor) =================
 # single alpha factor = target_form/q90. Build exposure from confidence_vector.
+# crowding needs full-universe snapshot (market-wide vol/size shares) — load recent full snapshot.
 crowd <- list(status="computed")
 tryCatch({
   source(file.path("02_Infrastructure","factor_db","crowding_score_per_factor.R"))
-  RAW <- as.data.frame(rd)  # subset RAWDATA (25 names) — crowding uses top-N of universe; limited scope note
+  # full-universe daily snapshot around sig_date (last 5 trading days, all tickers) for market totals
+  snap <- as.data.table(dplyr::collect(dplyr::select(
+    dplyr::filter(ds, Date >= as.Date("2026-07-01") & Date <= SIG_DATE),
+    Date, Ticker, Close, Vol, Size)))
+  snap[, Date := as.Date(Date)]
   fe <- data.table(Ticker=tickers, factor_name="target_form_q90",
                    exposure=as.numeric(unlist(apkg$confidence_vector[tickers])))
-  cs <- crowding_score_per_factor(fe, sig_date=SIG_DATE, RAWDATA=RAW, top_n=min(20L, N))
+  cs <- crowding_score_per_factor(fe, sig_date=SIG_DATE, RAWDATA=snap, top_n=min(20L, N))
   crowd$per_factor <- as.data.table(cs)
 }, error=function(e){ crowd$status <<- paste("data_unavailable:", conditionMessage(e)) })
 

@@ -5444,13 +5444,15 @@
       "title": "★MFRO — 멀티팩터 로테이션 오버레이: 팩터 모멘텀을 종목-비중 재틸트로 소비",
       "hypothesis": "팩터 로테이션 신호(무국면 trailing 12M active, top-quintile)는 팩터 지수 공간에서 실재한다(DFA F1 clean pt +1.301 IR +0.439, placebo p=0.033, clean IC-t +2.761). 그러나 현 소비 형태는 그 신호를 프리미엄이 죽은 EW 팩터 바스켓(clean -1.04%/yr)에 100% 태우고, 25종 사영에서 알파가 아니라 베타만 남는다(R39/R41). ⇒ 신호를 **종목 선택이 아니라 종목 비중**으로 내려 태우면(base 25종 고정, 승리팩터 z 로 재틸트) Gate 0 이 구성상 충족되면서 살아있는 종목-알파 위에 로테이션을 얹을 수 있다.",
       "ev_rationale": "Axiom PULL 결과 닫힌 축 4개를 전부 회피한다: 노출 스칼라 아님(Σw=1 불변) · 슬리브 배분 아님(book n_admitted=1) · cap-tilt 아님(FQ-156, 시총이 아니라 승리팩터 노출) · standalone 팩터 바스켓 아님. 미측정 표면이며 배포 형태 게이트를 구성상 통과한다.",
-      "next_action": "R60 재발행(prereg mfro_v5)이 판별력 있는 조작 확인 + 정합 귀무 아래에서 라벨을 발급했다: 조작확인 PASS(위반주입 0.000000) · permB clean p=0.005(백분위 99.5%) · D1-C1 clean t +0.675. ★신호는 실재하고 크기가 미달이다. 다음 = ①k 격자 평탄화 선행 후 크기 재판정 ②HARD 3종 최초 산출(canonical_screen_bt+essence_score) ③full 창 KQ150 오염 47% 측정 ④DFA 지수 원천 감사(비용 토큰 0건). 적대검증 wf_9ac58124-3e4 결함 5종 전부 수리 완료.",
+      "next_action": "①꼬리 월 조건의 사전 관측 가능성 시험(단 국면 축은 2회 기각 전례 — 다른 조건변수) ②검정력 역산으로 '미결(검정력)' vs '효과 크기 부족' 구분 ③calmar 범주 상한 ④적대검증 미검 2건(full 창 KQ150 오염 47% · 지수 원천 비용 토큰 0건).",
       "owner": "Q-Lead (R55, 2026-08-22 착수 — 도훈 직접 지시 '멀티팩터 로테이션 오버레이 전략 만들어봐')",
-      "status": "LABELED_20260822__SIGNAL_REAL_BUT_INSUFFICIENT",
+      "status": "LABELED_20260822__SIGNAL_REAL_RIGHT_TAIL_DEPENDENT__CAPITAL_GATES_0of3",
       "registered_at": "2026-08-22",
       "source_refs": "outputs/ramp/mfro_v1_prereg_20260822.json | 02_Infrastructure/ramp/build_mfro_panel.R | 02_Infrastructure/ramp/run_mfro_r55.R | FQ-242(단일슬리브 정정) | FQ-156 | FQ-058 | R54 §55",
       "revival_condition": "본 라운드가 negative 여도 부활 축 2개: (a) base 를 21팩터 등가중이 아닌 다른 구성으로 교체했을 때 (b) FQ-044 clean 패널 완성 후 실제 book 위에서의 book-marginal 측정.",
-      "adversarial_verification": "wf_9ac58124-3e4 (7 agent, 115만 토큰): 6 주장 중 5 반증. PIT 만 생존. 결함 5종 수리 후 재발행 = R60."
+      "adversarial_verification": "wf_9ac58124-3e4 (7 agent, 115만 토큰): 6 주장 중 5 반증. PIT 만 생존. 결함 5종 수리 후 재발행 = R60.",
+      "measured_capital_gates": "R61 계약 측정(이 아크 최초): D1 clean PORT_t +1.242(문턱 42%) · calmar 0.456(71%) · MDD -0.337 · net_IR 0.330. oos_retention 3.086 은 분모 붕괴(IS 활성SR 0.152 vs OOS 0.469)라 통과로 쓰지 않음. HARD 3종 실질 0/3. 배포 형태(25종·cap0.20)는 구성상 충족.",
+      "measured_shape": "R62: 랭킹 고유 기여(D1-AP)는 era-견고(최근 뺄수록 t 1.671->2.235)하나 **우측 꼬리 의존** — 부트스트랩 P(<=0)=0.016 vs 중앙값 -0.0123 · 양수월 49.2% · 상위3 제거 시 67% 소실. 부호 스크린 기여 0(견고, P(<=0)=0.466). 총 기여(vs 무신호) 미확립(P(<=0)=0.158)."
     }
   ],
   "parked_rounds": [

@@ -1,0 +1,115 @@
+=== DIAGNOSTICS ===
+vol_a=53.94% cond=434.3(before 3.82e+15) shrink=TRUE/lw_nls n=25 p=25
+PC1=0.304 PC1_long=0.351 k=1 common=0.304 specific=0.696
+beta_full=1.130 recent36=1.057 psd=TRUE min_eig=0.0015
+TDC>0.6=23 hicorr>0.8=1 tdc_basis=long_window_84m_x_22_names
+
+=== STYLE ===
+List of 12
+ $ status            : chr "computed"
+ $ z_column          : chr "Z_Score_Aligned"
+ $ panel_asof        : list()
+ $ note              : chr "Z_Score_Aligned (C13-compliant, PIT via load_month_factors). Selected 25 names' style tilt vs universe."
+ $ Value_BM          :List of 4
+  ..$ factor  : chr "V01_BM"
+  ..$ mean_z  : num -0.86
+  ..$ median_z: num -0.921
+  ..$ n       : int 25
+ $ Quality_GPA       :List of 4
+  ..$ factor  : chr "Q01_GPA"
+  ..$ mean_z  : num 0.603
+  ..$ median_z: num 0.672
+  ..$ n       : int 23
+ $ Momentum_12_1     :List of 4
+  ..$ factor  : chr "M01_Mom_12_1"
+  ..$ mean_z  : num 2.57
+  ..$ median_z: num 3.77
+  ..$ n       : int 25
+ $ Defense_IdioVol   :List of 4
+  ..$ factor  : chr "D01_IdioVol"
+  ..$ mean_z  : num 0.061
+  ..$ median_z: num 0.06
+  ..$ n       : int 25
+ $ Liquidity_Turnover:List of 4
+  ..$ factor  : chr "L02_Turnover"
+  ..$ mean_z  : num -0.725
+  ..$ median_z: num -0.265
+  ..$ n       : int 25
+ $ Earnings_SUE      :List of 4
+  ..$ factor  : chr "C01_SUE"
+  ..$ mean_z  : num 0.749
+  ..$ median_z: num 0.544
+  ..$ n       : int 17
+ $ Accruals          :List of 4
+  ..$ factor  : chr "AC01_Total_Accruals_CF"
+  ..$ mean_z  : num 0.443
+  ..$ median_z: num 0.423
+  ..$ n       : int 24
+ $ Value_PSR         :List of 4
+  ..$ factor  : chr "V08_PSR"
+  ..$ mean_z  : num -1.05
+  ..$ median_z: num -0.47
+  ..$ n       : int 24
+
+=== CROWDING per_factor ===
+      factor_name crowding_score   hhi_top vol_concentration
+1 target_form_q90      0.3830503 0.6650236        0.03417284
+  passive_overlap_proxy demand_elasticity_proxy n_universe n_top
+1                   0.7                       0       2770    20
+
+=== STRESS ===
+List of 6
+ $ gfc_2008     :List of 3
+  ..$ value   : num -0.496
+  ..$ coverage: num 0.597
+  ..$ label   : chr "UNRELIABLE_coverage<85%"
+ $ eudebt_2011  :List of 3
+  ..$ value   : num -0.0616
+  ..$ coverage: num 0.688
+  ..$ label   : chr "UNRELIABLE_coverage<85%"
+ $ china_2015   :List of 3
+  ..$ value   : num -0.14
+  ..$ coverage: num 0.746
+  ..$ label   : chr "UNRELIABLE_coverage<85%"
+ $ covid_2020   : num 0.0943
+ $ rate_2022    : num -0.347
+ $ market_down_5: num -0.0565
+
+=== CONCENTRATION ===
+       반도체    IT하드웨어        IT가전      건강관리   비철,목재등 
+       0.5739        0.1553        0.0781        0.0729        0.0428 
+건설,건축관련          화학 
+       0.0408        0.0363 
+sector_hhi=0.370 name_hhi=0.0407 n_eff=24.6
+
+=== CHALLENGE FLAGS ===
+- RF-R1 HIGH: single sector (반도체) active exposure 57% > 40% — book is a concentrated semiconductor bet, not diversified. 
+- RF-R3 MEDIUM: crowding flags present (see crowding_flags). 
+
+=== CROWDING FLAGS ===
+- Sector concentration: 반도체=57% of book (sector_HHI=0.370, n_eff_sectors=2.7) 
+- 14 of 25 names are 반도체 (semiconductor) 
+
+=== TOP COMMON ===
+- CommonFactor/Market (30% via PC1) 
+- Sector_Semiconductor (57%) 
+- Style_LowVol_tilt (vol pct 0.14 from alpha_pkg) 
+
+=== TDC top ===
+         a       b   tdc
+1  A319660 A095610 0.846
+2  A000660 A095610 0.769
+3  A000660 A319660 0.692
+4  A080220 A095610 0.692
+5  A319660 A240810 0.692
+6  A000660 A080220 0.615
+7  A000660 A009150 0.615
+8  A036930 A084370 0.615
+9  A131290 A031980 0.615
+10 A080220 A095340 0.615
+
+=== METHOD LOG ===
+         name    condition    min_eig  psd degenerate collapsed selected
+1      sample 3.822112e+15 -2.929e-19 TRUE      FALSE     FALSE    FALSE
+2 ledoit_wolf 1.000000e+00  9.691e-02 TRUE       TRUE      TRUE    FALSE
+3      lw_nls 4.343400e+02  1.543e-03 TRUE      FALSE     FALSE     TRUE
