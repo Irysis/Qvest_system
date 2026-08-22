@@ -1,0 +1,46 @@
+{
+  "prereg_id": "dfa_v21_20260822",
+  "round": "R34",
+  "strategy": "DFA_RegimeSignals",
+  "registered_at": "2026-08-22",
+  "registered_before_results": true,
+  "selection_type": "chain",
+  "base": "R33 비용 수리판 (지수 내부 회전 비용 부과, 신호도 비용 차감 지수에서 재산출)",
+  "chain_rationale": "R31 이 지수 내부 회전율을 실측하니 팩터별로 200배 이상 벌어진다(Reversal 1.566 vs EarnStab 0.007) 그리고 고회전 상위 3종이 전부 흐름·반전 계열(20일 수급 신호)이라 회전율이 팩터 정체성에 붙어 있고 지속적이다. 현행 신호(trailing 12M net active)는 **이미 실현된** 비용만 반영한다 — 즉 고회전 팩터가 과거에 낸 비용은 차감되지만 '앞으로도 계속 비쌀 것' 이라는 정보는 쓰지 않는다. 회전율이 지속적이라면 그 예측 정보가 남아 있다.",
+  "single_degree_of_freedom": "선택 신호에 **예상 미래 비용** 항 추가: s_net_fwd(f) = trailing12M_net_active(f) - 12 * trailing12M_mean_turnover(f) * 15bps. 가중 방식(s 비례)·선택 폭(top-quintile k=5)·리밸(분기)·코호트(3)·지연(m-1)·비용(15bps) 전부 R33 값 고정. 새 파라미터 없음 — 창(12M)과 요율(15bps)은 기존 값 재사용.",
+  "arms": {
+    "G0_control": "R33 수리판 그대로 (신호 = trailing 12M net active)",
+    "G1_costaware_HEADLINE": "신호에 예상 미래 비용 차감 항 추가"
+  },
+  "diagnostic_only_cells": {
+    "G2_exclude_top3_turnover": "고회전 3종(Reversal·SmartMoney·ForeignFlow) 제외한 18팩터 집합",
+    "binding_constraint": "진단 전용. G2 는 **사후 관측(R31 결과를 보고 고른 3종)** 이므로 어떤 값이 나와도 헤드라인 승격 금지. 만약 G2 를 정식 시험하려면 IS-only 로 제외 대상을 정하는 별도 사전등록이 필요하다."
+  },
+  "headline_cell_predesignated": "G1_costaware, 15bps, dec_lag=1, freq=3, ncoh=3, k=5, 벤치=parent. 도훈 지시 'KOSPI200 전환 금지' 준수.",
+  "windows_reported": [
+    "full(2007-03~2026-07)",
+    "clean(2015-07~2026-07)"
+  ],
+  "all_cells_reported": true,
+  "cells": "arm{G0,G1,G2} x cost{5,15,25bps} x dec_lag{0,1,2,3} 전수 보고",
+  "decision_rule": {
+    "adopt_G1_if": "① paired NW-t(G1-G0) > 0 ∧ ② clean 창 IR(G1) > IR(G0) ∧ ③ full 창 PORT_t(G1) >= PORT_t(G0) - 0.10",
+    "reject_if": "하나라도 미충족 → G0 유지, G1 은 config-scoped negative 기록",
+    "graduation_gates_unchanged": "PORT_t>=2.95 / oos_retention>=0.7 / calmar>=0.64 / book-marginal>=0.05 — 불변. 본 라운드가 이를 달성할 것으로 기대하지 않는다."
+  },
+  "expected_failure_mode": "회전율 정보가 이미 net active 에 흡수돼 있다면 추가 차감은 **이중 계상**이 되어 고회전 팩터를 과도하게 벌하고 그 팩터가 실제로 강할 때 놓친다 ⇒ clean IR 하락으로 조건 ②에서 기각. 반대로 회전율의 지속성이 실재하면 예상 비용 항이 선택을 개선한다. ★어느 쪽이든 정보다 — 이 라운드는 '실현 비용 vs 예상 비용' 중 어느 것이 선택에 유효한지를 가른다.",
+  "pit_gates_required": [
+    "trailing turnover 는 결정시점(m-1)까지만 사용",
+    "shift 사다리 dec_lag 0/1/2/3 단조 감쇠 확인",
+    "채택 시 placebo 30-seed p<0.05",
+    "진행월 2026-08 제외 · G0 를 동일 창에서 재측정"
+  ],
+  "prohibited": [
+    "사후 셀 선택(argmax) — 헤드라인 G1 고정",
+    "진단셀 G2 의 헤드라인 승격(사후 관측)",
+    "문턱 완화",
+    "롱숏",
+    "벤치 교체",
+    "제약 위반 상태의 수치를 배포 가능 수치로 인용"
+  ]
+}
