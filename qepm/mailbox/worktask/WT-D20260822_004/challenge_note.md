@@ -113,3 +113,25 @@ C1 은 매월 25종 중 **9종을 갈아치운다**. 포트폴리오의 36%를 �
 2. `mechanism.path` 의 "합의-편입 종목이 전이-양성 평균 신호와 정합" — solo 편입이 consensus 편입보다 **오히려 연 +1.48%p 더 벌었다**(t +0.25, 무차별).
 
 기전의 **구조 전제**(R1a solo-advocate 64% · R5 첨도 이질 IQR 6.94)는 참이고 **손실 전제**만 거짓이다. 자구는 그대로 두고 재설계 요청만 발행한다 — 요청 내용은 NP4(FQ-116 설계 원칙 P1~P4 의 유효 풀 범위 확정).
+
+---
+
+## 6. ★병렬 세션 산출물 발견 — 정합/불일치 보고 (2026-08-22 16:30, alpha-research)
+
+본 라운드 산출 도중 **내가 쓰지 않은 파일**이 같은 WT 메일박스에 나타났다. 되돌리지 않고 대조 결과만 기록한다(과거 사례: 이명 복제·정본 변형).
+
+| 파일 | 작성 | 상태 |
+|---|---|---|
+| `challenge_note_alpha.md` (13,336B, 16:21) | 내 세션 아님 | 내용 유효 — 본 note 와 **상보적**(A1 문턱 종속성 · A2 오라클 과대평가 축을 별도로 다룸). 보존 권고. |
+| `qepm/.../alpha_validation.json` (24,003B, 16:28) | 내 세션 아님 | ★**같은 이름의 분기 사본**. 내 정본은 `stage_artifacts/WT-D20260822_004/alpha_validation.json` (26,031B). 두 파일 내용이 다르다. |
+| `status.json` phase=ALPHA_DONE (16:30) | 내 세션 아님 | 판정·next_probe 라벨이 내 산출과 일치. 충돌 없음. |
+| `stage_artifacts/.../p6_alpha_package.R` | 내 실행 **후** 수정됨 | `verdict` 필드에 라운드 판정을 넣는 변경. 의도는 옳으나 schema ast_v1.1 조건부 enum 위반이라 **P9 에서 `verdict=designed` + `round_verdict` 분리로 재수리**했다. |
+
+### 불일치 2건 (하류가 오독하지 않도록 명시)
+
+1. **`verdict` 필드 의미 충돌** — 메일박스 `alpha_validation.json` 사본은 `verdict = "NON_ML_COMBINATION_POWERED_NULL"` 이고 `round_verdict` 가 없다. `alpha_package.json` 정본은 `verdict = "designed"`(AST 설계 판정, schema enum) + `round_verdict = "NON_ML_COMBINATION_POWERED_NULL"`(라운드 성과 판정)로 **두 개념을 분리**했다. 판정을 읽을 때는 `round_verdict` 를 볼 것.
+2. **`challenge_note_alpha.md` A1 의 수치 오기** — "ORACLE_K node headroom PORT_t 4.29 (paired t +4.29)" 는 **두 값을 뒤섞었다**. 실측은 **PORT_t 4.6470** / **paired t 4.2897** 로 서로 다른 양이다(`p4_verdict.rds$BAS` · `$PRI`). 그 절의 논증(창-도달가능성이 MATERIAL 문턱과 독립적으로 성립)은 정정 후에도 유지된다 — 4.647 이 벽 2.95 를 넘는다는 사실이 근거이므로 방향 불변.
+
+### 처분
+
+파일 삭제·되돌림 없음. Q-Lead 에게 **정본 지정**을 요청한다 — 권고: `alpha_package.json`(메일박스) + `alpha_validation.json`(**stage_artifacts** 판)을 정본으로 하고, 메일박스의 `alpha_validation.json` 사본은 stage 판으로 동기화하거나 이름을 달리할 것. 같은 이름 두 사본이 서로 다른 내용을 담은 채 남는 상태가 가장 나쁘다.
