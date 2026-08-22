@@ -44,6 +44,9 @@ fi
 # 사람 조치가 필요한(자동복구 안 되는) 건을 따로 센다 — 이 축이 없으면 경보가
 # '학습된 무시'가 된다(전부 같은 무게로 보이면 아무것도 안 보인다).
 HUMAN=0; HUMAN_LIST=""; OLDEST_D=""; DETAIL=""
+# 2026-08-22: unknown/partial 을 따로 센다 — 구판은 `no` 만 세고 나머지를 전부
+#   "자동복구 대상" 으로 접었다. 실측 18건 중 yes 는 **0건**이었는데도 그렇게 표시됐다.
+UNK=0; UNK_LIST=""; PART=0; AUTO_YES=0
 NOW=$(date +%s)
 for f in "${FILES[@]}"; do
   comp=$(grep -m1 '^component=' "$f" 2>/dev/null | cut -d= -f2)
@@ -53,24 +56,42 @@ for f in "${FILES[@]}"; do
   auto="unknown"
   command -v sched_failure_autorecovers >/dev/null 2>&1 && \
     auto=$(sched_failure_autorecovers "$reason" 2>/dev/null || echo unknown)
-  if [ "$auto" = "no" ]; then
-    HUMAN=$((HUMAN+1))
-    case "$HUMAN_LIST" in *"${comp}/${reason}"*) : ;; *) HUMAN_LIST="${HUMAN_LIST:+$HUMAN_LIST · }${comp}/${reason}" ;; esac
-  fi
+  case "$auto" in
+    no)
+      HUMAN=$((HUMAN+1))
+      case "$HUMAN_LIST" in *"${comp}/${reason}"*) : ;; *) HUMAN_LIST="${HUMAN_LIST:+$HUMAN_LIST · }${comp}/${reason}" ;; esac
+      ;;
+    yes)     AUTO_YES=$((AUTO_YES+1)) ;;
+    partial) PART=$((PART+1)) ;;
+    *)
+      # ★unknown = "자동복구된다" 가 아니라 **모른다**. 접지 않는다.
+      UNK=$((UNK+1))
+      case "$UNK_LIST" in *"${comp}/${reason}"*) : ;; *) UNK_LIST="${UNK_LIST:+$UNK_LIST · }${comp}/${reason}" ;; esac
+      ;;
+  esac
   [ -z "$OLDEST_D" ] && OLDEST_D=$age
   [ "$age" -gt "$OLDEST_D" ] && OLDEST_D=$age
   DETAIL="${DETAIL}  ${comp} | ${reason} | ${age}d | 자동복구=${auto} | $(basename "$f")"$'\n'
 done
 
 if [ "$MODE" = "--status-line" ]; then
-  if [ "$HUMAN" -gt 0 ]; then
-    echo "SchedAlerts: ★미해소 ${N}건 — 그중 ${HUMAN}건은 **사람 조치 필요**(${HUMAN_LIST}) · 최고령 ${OLDEST_D}d"
-  else
+  # ★분류를 접지 않는다 — 각각 세어 각각 적는다.
+  #   "전부 자동복구 대상" 은 **정말 전부 yes 일 때만** 쓴다(2026-08-22 실사고).
+  SEG=""
+  [ "$HUMAN" -gt 0 ] && SEG="${SEG:+$SEG · }★사람 조치 ${HUMAN}건(${HUMAN_LIST})"
+  [ "$UNK"   -gt 0 ] && SEG="${SEG:+$SEG · }판정불가 ${UNK}건(${UNK_LIST})"
+  [ "$PART"  -gt 0 ] && SEG="${SEG:+$SEG · }부분복구 ${PART}건"
+  [ "$AUTO_YES" -gt 0 ] && SEG="${SEG:+$SEG · }자동복구 ${AUTO_YES}건"
+  if [ -z "$SEG" ]; then
+    echo "SchedAlerts: 미해소 ${N}건 · 최고령 ${OLDEST_D}d"
+  elif [ "$AUTO_YES" -eq "$N" ]; then
     echo "SchedAlerts: 미해소 ${N}건 (전부 자동복구 대상) · 최고령 ${OLDEST_D}d"
+  else
+    echo "SchedAlerts: ★미해소 ${N}건 — ${SEG} · 최고령 ${OLDEST_D}d"
   fi
   exit 0
 fi
 
-echo "미해소 경보 ${N}건 (사람 조치 필요 ${HUMAN}건) — $ADIR"
+echo "미해소 경보 ${N}건 (사람조치 ${HUMAN} · 판정불가 ${UNK} · 부분복구 ${PART} · 자동복구 ${AUTO_YES}) — $ADIR"
 printf '%s' "$DETAIL"
 echo "해소: 해당 러너가 성공하면 sched_mark_resolved 가 _resolved/ 로 옮깁니다(삭제 아님)."
