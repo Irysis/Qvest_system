@@ -166,7 +166,7 @@
   "pit_plan": {
     "c5_overlay_timing": "국면 라벨·score 공히 월말 시그널(홀딩월 시작 전 데이터만): delta20 = shift(1)−shift(21) (t-1 까지만), 집행 t+1 첫 거래일. 측정 단계에서 assert_overlay_pit(used_cutoff=시그널 월말, holding_start=익월 첫 거래일) HARD 통과 의무",
     "c11_series_lags": "3계열 전부 일별 시장가격(T10Y2Y·VIXCLS·KRW/USD, 발표시차 <=1d) — shift(1) 로 충족. Frequency=='d' 필터를 코드로 강제(느린 월간 거시계열 혼입 차단). FQ-236 precheck 시차 실측 승계, 재측정 안 함",
-    "macro_regime_hazard": "macro_regime.parquet(월말스탬프, 진행월 hazard) 미소비 — fred_macro.parquet 일별 직접. 원천 Date = observation date(publication 아님)이나 3계열이 일별 시장가라 shift(1) 이 보수적 근사",
+    "macro_regime_hazard": "macro_regime.parquet(월말스탬프, 진행월 hazard) 미소비 — fred_macro.parquet 일별 직접. 원천 Date = observation date(publication 아님)이나 3계열이 일별 시장가라 shift(1) 은 지연을 추가하는 방향의 근사(look-ahead 반대 방향)",
     "kq150_backfill": "2015-07 이전 KQ150 멤버십은 지수제공자 백필(2026-08-22 실측 카드) — 전기간 판정에 청정창 r1 병기, 판정규칙은 FQ-241 사전고정 승계",
     "unconditional_run_pit": "기저 신호의 PIT 는 AS-20260822 lookahead_detector CLEAN — 조건부화가 추가하는 유일한 새 데이터는 동일 delta20 의 부호이므로 새 look-ahead 표면 없음"
   },
