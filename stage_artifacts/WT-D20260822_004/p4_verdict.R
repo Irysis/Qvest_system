@@ -67,7 +67,7 @@ pairedstat <- function(x, y, lab) { d <- x - y; t <- .nw_t_mean(d, lag = 3L)
              ci95_lo = ann - 1.96*se_a, ci95_hi = ann + 1.96*se_a) }
 
 cat("\n=== 2) 사전등록 primary — paired (arm - C0), NW lag-3, n=", n, " ===\n", sep = "")
-PRI <- rbindlist(lapply(c("C1","C2","C3","LEAK1","LAG1","ORACLE"),
+PRI <- rbindlist(lapply(c("C1","C2","C3","LEAK1","LAG1","ORACLE","ORACLE_K"),
                         function(a) pairedstat(act[[a]]$act, c0, a)))
 PRI[, label := fifelse(t_nw3 >= 2, "EFFECT_POSITIVE",
               fifelse(t_nw3 <= -2, "EFFECT_NEGATIVE",
@@ -129,8 +129,9 @@ ADV <- rbindlist(lapply(c("C0","C1","C2","C3"), function(a) {
   j <- merge(SCA[[a]], fwd, by = c("Date","Ticker"))
   ic <- j[, .(ric = if (.N >= 30 && sd(score) > 0) cor(rank(score), rank(fwd)) else NA_real_,
               pic = if (.N >= 30 && sd(score) > 0) cor(score, fwd) else NA_real_,
-              mono = if (.N >= 50) { q <- cut(frank(score), 10, labels = FALSE)
-                                     cor(1:10, tapply(fwd, q, mean), method = "spearman") } else NA_real_),
+              mono = if (.N >= 50) { q <- ceiling(10 * frank(score, ties.method="first") / .N)
+                                     mm <- tapply(fwd, q, mean)
+                                     if (length(mm) < 3L) NA_real_ else cor(as.integer(names(mm)), as.numeric(mm), method = "spearman") } else NA_real_),
            by = Date]
   data.table(arm = a, rank_ic = mean(ic$ric, na.rm = TRUE), rank_ic_sd = sd(ic$ric, na.rm = TRUE),
     icir_monthly = mean(ic$ric, na.rm = TRUE)/sd(ic$ric, na.rm = TRUE),
