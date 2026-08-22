@@ -1,3 +1,10 @@
+> ★★**Q-Lead 정정 표시 (2026-08-22 16:3x, session d2e06481)** — 본 문서의 `ORACLE_K` 수치가 **뒤섞였다**.
+> 본문 전반이 `ORACLE_K` 의 **PORT_t 를 4.29 로 표기**하나, 실측은 **PORT_t = 4.64699909** 이고 **4.28970507 은 paired t** 다
+> (`alpha_validation.json::ORACLE_K_node_headroom` 양 사본에서 동일 확인). 한 값을 두 자리에 쓴 것이다.
+> ★**논증 방향은 정정 후 오히려 강해진다** — 주장은 'ORACLE_K > 2.95 이므로 null 이 창 탓이 아니다' 인데 4.647 > 4.29 > 2.95 이므로 여유가 더 크다.
+> ⇒ 결론 불변, 수치만 정정. 정본 자가적대검증 노트 = 같은 디렉터리 `challenge_note.md`(16:31), 정본 검증 산출물 = `stage_artifacts/WT-D20260822_004/alpha_validation.json`(29키, mailbox 26키의 상위집합).
+> ⚠본 파일의 작성 주체가 확정되지 않았다(라운드 수행 에이전트는 자기 산출이 아니라고 보고). 삭제·되돌림 없이 표시만 남긴다.
+
 # Self-Adversarial Challenge — WT-D20260822_004 alpha-research (FQ-244 결합 규칙 마디)
 
 finalize 직전 자가 적대검증 (v8.2 — Codex Round 대체, Opus 5-native adversarial reasoning).
