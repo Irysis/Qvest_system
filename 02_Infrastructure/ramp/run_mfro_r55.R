@@ -35,6 +35,7 @@ FA<-matrix(NA_real_,NI,NF); dimnames(FA)<-list(mi$ym,FK)
 for(j in 1:NF) FA[1:(NI-1),j]<-(mi[[FK[j]]][-1]-mi$Market[-1])
 
 winners<-function(ym_dec,k=5L,oracle=FALSE){
+  if(length(ym_dec)!=1L||is.na(ym_dec))return(character(0))
   r<-match(ym_dec,rownames(S)); if(is.na(r))return(character(0))
   s<-if(oracle) FA[r,] else S[r,]
   pos<-which(is.finite(s)&s>0); if(!length(pos))return(character(0))
@@ -99,7 +100,7 @@ l1<-sapply(seq_len(NM),function(m){x<-res$B$wl[[m]];y<-res$C0$wl[[m]]
   if(is.null(x)||is.null(y))return(NA_real_); k<-union(names(x),names(y))
   a<-setNames(rep(0,length(k)),k);b<-a;a[names(x)]<-x;b[names(y)]<-y;sum(abs(a-b))})
 medL1<-median(l1,na.rm=TRUE)
-wt<-sapply(2:NM,function(m){w1<-winners(YM[m-1]);w0<-winners(YM[m-2]);if(!length(w1)||!length(w0))return(NA_real_)
+wt<-sapply(3:NM,function(m){w1<-winners(YM[m-1]);w0<-winners(YM[m-2]);if(!length(w1)||!length(w0))return(NA_real_)
   1-length(intersect(w1,w0))/length(union(w1,w0))})
 cat(sprintf("  B vs C0 월별 비중 L1 거리: 중앙 %.4f (범위 %.4f~%.4f)\n",medL1,min(l1,na.rm=TRUE),max(l1,na.rm=TRUE)))
 cat(sprintf("  승리팩터 집합 월별 교체율: 중앙 %.3f (0 이면 정적 선택)\n",median(wt,na.rm=TRUE)))
