@@ -14,7 +14,48 @@
       "friction": "① KR 공매도 제약 (개인 수요로 지지된 가격의 하방 정보를 숏 포지션이 선반영할 수 없음 — Miller 1977 과대평가 지속 구조, WT-D20260718_002 에서 같은 프레임 실측 전례) ② flow 정보의 소비 마찰: 투자자별 수급은 T+1 공시이나 종목×월내 일별 공분산 구조(absorb)로 가공해 쓰는 소비자가 구조적으로 소수 — 수준(level) 소비가 지배적이라 공분산 축 정보가 가격에 흡수되지 않음 ③ 롱온리 지배 시장에서 '빠질 종목' 정보는 보유 회피로만 실현 가능한데 지수·quasi-index 자금은 배제를 실행하지 않음.",
       "path": "★배제 경로 (선별 아님): top-N long-only EW/최적화 포트에서 좌측 꼬리 실현(월간 대형 음수 수익)은 ① 산술평균 활성수익을 직접 깎고(PORT_t 분자) ② 활성수익 분산을 키우며(PORT_t 분모) ③ MDD 를 통해 calmar 를 훼손한다 — 꼬리 사건 하나가 HARD 3종 수치를 동시에 때린다. 좌측 꼬리 확률이 체계적으로 높은 저-absorb 종목군을 모집단에서 빼면 선정 25종의 꼬리 사건 빈도가 낮아지고, 대체 편입 종목은 base 알파 랭킹의 차순위라 알파 손실은 랭킹 여백만큼만 발생 — 순효과는 평균 basis 수치의 개선으로 나타난다. 이 형태의 전이는 실측 선례가 있다: WT-D20260802_014(MAX5 배제)에서 동일 재료가 랭킹 팩터로는 PORT_t -1.616(사망)인데 배제 필터로는 2.879→3.620 + MDD -11.4pp + 회전 불변 — '누구를 위로 올리나'와 '누구를 빼나'는 다른 문제이며 배제는 top-25 전이-벽 기전을 우회한다. 반대 방향 음성 대조도 실측돼 있다: WT-D20260718_002(insider 순매도 배제)는 배제집합의 forward 하방이 실재하지 않아 배제가 base 를 훼손했다(1.171→0.771) — 배제의 손익은 '배제집합의 forward 좌측 꼬리가 실재하는가'에 걸려 있고, absorb 는 그 전제가 18/18 셀로 실측된 상태에서 진입한다는 점이 결정적 차이."
     },
-    "falsification": "(F1 기각조건) 저-absorb 하위군의 fwd_foreign_3m + fwd_inst_3m 이 유니버스 중앙값 대비 유의하게 높으면(NW-t >= +2.0, 스마트머니가 오히려 매집) '지지 철수' 기전 기각 — 꼬리 확률 격차가 유지되더라도 그 원천은 본 기전이 아니므로 배제 필터의 국면 경계·붕괴 조건 예측력이 근거를 잃는다. (F2 기각조건) 꼬리 실현월의 하락일 개인 순매수 강도가 저-absorb 군에서 고-absorb 군과 구별 불가하면(개인 지지가 있는데도 꼬리 실현) 기각. 두 관측 모두 flow 방향 관측이지 포트폴리오 성과가 아니다 — 성과 동어반복 아님.",
+    "falsification": [
+      {
+        "id": "F1",
+        "fields": [
+          "A6_investor_flow_stock_daily"
+        ],
+        "expectation": "저-absorb 하위군(배제 대상)의 후속 3개월 외국인+기관 순매수(A6 Foreign/Institutional 의 m+1..m+3 합 / Size)가 동월 유니버스 중앙값 대비 낮거나 음수",
+        "reject_if": "유니버스 중앙값 대비 유의하게 높으면(NW lag-3 t >= +2.0, 스마트머니가 오히려 매집) 지지-철수 기전 기각",
+        "measured": {
+          "mean_spread": 0.000533167587016396,
+          "nw_t": 1.20843402106869,
+          "n_months": 268,
+          "fired": false
+        }
+      },
+      {
+        "id": "F2",
+        "fields": [
+          "A6_investor_flow_stock_daily",
+          "A1_RAWDATA_OHLCVS_daily"
+        ],
+        "expectation": "좌측 꼬리 실현월(Ret_1m <= -20%)의 하락일(A1 Ret<0) 개인 순매수 강도(A6 Individual / 하락일 거래대금)가 저-absorb 군에서 고-absorb 군보다 약함",
+        "reject_if": "저-absorb 군이 고-absorb 군과 구별 불가하면(NW t >= 0) 기각",
+        "measured": {
+          "mean_spread": -0.114191317182449,
+          "nw_t": -8.93375933044921,
+          "n_months": 42,
+          "fired": false
+        }
+      }
+    ],
+    "falsification_source_text": {
+      "observable": "기전('개인 추격 수요가 지지하는 가격 → 스마트머니는 반대편 → 지지 철수 시 꼬리 실현')이 참이면 성과 외에 관측되어야 할 것 2건: (F1) 저-absorb 하위군(배제 대상)의 후속 3개월 외국인·기관 순매수(fwd_foreign_3m·fwd_inst_3m — A6 리프 Foreign/Institutional 의 m+1..m+3 합/Size, absorb 패널에 기산출)는 유니버스 중앙값 대비 낮거나 음수여야 한다(스마트머니가 개인 수요에 물량을 넘기며 이탈 지속). (F2) 저-absorb 종목의 좌측 꼬리 실현월에는 하락일 개인 순매수(A6 리프 Individual × rawdata 일별 Ret 부호 조건)가 고-absorb 종목의 꼬리월 대비 약해야 한다(지지 부재가 꼬리의 실현 경로).",
+      "field_dictionary_refs": [
+        "A6_investor_flow_stock_daily:Foreign",
+        "A6_investor_flow_stock_daily:Institutional",
+        "A6_investor_flow_stock_daily:Individual",
+        "rawdata:Ret",
+        "rawdata:Size"
+      ],
+      "reject_if": "(F1 기각조건) 저-absorb 하위군의 fwd_foreign_3m + fwd_inst_3m 이 유니버스 중앙값 대비 유의하게 높으면(NW-t >= +2.0, 스마트머니가 오히려 매집) '지지 철수' 기전 기각 — 꼬리 확률 격차가 유지되더라도 그 원천은 본 기전이 아니므로 배제 필터의 국면 경계·붕괴 조건 예측력이 근거를 잃는다. (F2 기각조건) 꼬리 실현월의 하락일 개인 순매수 강도가 저-absorb 군에서 고-absorb 군과 구별 불가하면(개인 지지가 있는데도 꼬리 실현) 기각. 두 관측 모두 flow 방향 관측이지 포트폴리오 성과가 아니다 — 성과 동어반복 아님."
+    },
     "regime_scope": {
       "holds_in": [
         "neutral",
@@ -814,5 +855,5 @@
       "flag": "alpha_vector 는 캘리브레이션된 기대초과수익이 아니라 base score_eff 의 횡단면 z 다(alpha_vector_units 참조). 전이하지 않으므로 수익-스케일 매핑을 산출하지 않았다."
     }
   ],
-  "generated_at": "2026-08-22 19:37:20"
+  "generated_at": "2026-08-22 19:43:10"
 }
