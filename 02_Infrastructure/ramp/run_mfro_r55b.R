@@ -54,7 +54,7 @@ for(n in names(AR)) for(w in c("full","clean")){r<-AR[[n]];s<-E[[w]]&is.finite(r
 cat("\n[★짝 맞춘 대응표본 — oracle 이 realized 를 이기는가]\n")
 for(f in c("B","A")) for(w in c("full","clean")){
   x<-AR[[paste0(f,"_oracle")]]$pr; y<-AR[[paste0(f,"_realized")]]$pr
-  s<-E[[w]]&is.finite(x)&is.finite(y); d<-(x-y)[s]
+  s<-E[[w]]&is.finite(x)&is.finite(y)&is.finite(bmf); d<-(x-y)[s]   ## 필터 비대칭 수리
   cat(sprintf("  %s_oracle - %s_realized  %-5s mean=%+.4f%%/월 NW-t=%+.3f  %s\n",f,f,w,100*mean(d),nwt(d),
     ifelse(mean(d)>0,"(정상: 완전예지 우위)","★역전: 완전예지가 더 나쁨")))}
 

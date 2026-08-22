@@ -115,7 +115,8 @@ for(w in c("full","clean")){obs<-act(AR$B2_tail_signal,w);pv<-mean(PERM[w,]>=obs
     ifelse(pv<0.05,"★순열 밖 = 신호 기여","순열 안 = 재틸트 자체와 구별 불가")))}
 
 cat("\n[대응표본 — 사전지정 판정]\n")
-pr2<-function(x,y,w){s<-E[[w]]&is.finite(AR[[x]]$pr)&is.finite(AR[[y]]$pr)
+## ★필터 비대칭 수리(적대검증 결함④) — 부분월(bmf=NA)이 대응표본에만 들어가던 경로
+pr2<-function(x,y,w){s<-E[[w]]&is.finite(AR[[x]]$pr)&is.finite(AR[[y]]$pr)&is.finite(bmf)
   d<-(AR[[x]]$pr-AR[[y]]$pr)[s]
   cat(sprintf("  %-32s %-5s mean=%+.4f%%/월 NW-t=%+.3f\n",paste0(x," - ",y),w,100*mean(d),nwt(d)))}
 for(w in c("full","clean")){pr2("B2_tail_signal","C0_base",w);pr2("B2_tail_signal","B1_idx_signal",w)

@@ -83,7 +83,9 @@ for(w in c("full","clean")){obs<-mean(act(AR$D1_rotation_tilt,w));pv<-mean(PERM[
     ifelse(pv<0.05,"★순열 밖 = 로테이션 기여","순열 안 = 재틸트 자체와 구별 불가")))}
 
 cat("\n[대응표본 — 사전지정 판정]\n")
-pr2<-function(x,y,w){s<-E[[w]]&is.finite(AR[[x]]$pr)&is.finite(AR[[y]]$pr)
+## ★필터 비대칭 수리(적대검증 결함④) — 실측: 이 결함으로 R58 헤드라인이 +0.2043(n=133)로 보고됐고
+##   수리 후 +0.1925(n=132). 두 구현 비트 동일 대조로 확정(불일치 0).
+pr2<-function(x,y,w){s<-E[[w]]&is.finite(AR[[x]]$pr)&is.finite(AR[[y]]$pr)&is.finite(bmf)
   d<-(AR[[x]]$pr-AR[[y]]$pr)[s];cat(sprintf("  %-42s %-5s mean=%+.4f%%/월 NW-t=%+.3f\n",
     paste0(x," - ",y),w,100*mean(d),nwt(d)))}
 for(w in c("full","clean")){pr2("D1_rotation_tilt","C1_capw_no_signal",w)

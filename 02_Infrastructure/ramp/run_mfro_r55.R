@@ -108,7 +108,10 @@ cat(sprintf("  ⇒ 처치 전달 판정: %s\n", ifelse(medL1>=0.10,"★통과 �
     "미통과 — 어떤 결과든 '미결(처치 미전달)' 이며 '효과없음' 으로 쓸 수 없다")))
 
 cat("\n[대응표본 — 사전지정 판정]\n")
-pair<-function(x,y,w){ s<-E[[w]]&is.finite(res[[x]]$pr)&is.finite(res[[y]]$pr)
+## ★필터 비대칭 수리(적대검증 wf_9ac58124-3e4 결함④): rep1() 은 is.finite(bmf) 를 거는데
+##   pair() 는 안 걸어 마지막 부분월(bmf=NA)이 대응표본에만 들어갔다 -> n 133 vs 132.
+##   그 1관측이 헤드라인 평균의 8.2%(+6.15%) 였다.
+pair<-function(x,y,w){ s<-E[[w]]&is.finite(res[[x]]$pr)&is.finite(res[[y]]$pr)&is.finite(bmf)
   d<-(res[[x]]$pr-res[[y]]$pr)[s]
   cat(sprintf("  %-26s %-5s n=%3d mean=%+.4f%%/월 NW-t=%+.3f\n",paste0(LBL[x]," - ",y),w,sum(s),100*mean(d),nwt(d))) }
 for(w in c("full","clean")){ pair("B","C0",w); pair("A","C0",w); pair("B","C1",w); pair("P","C0",w) }
