@@ -1,0 +1,703 @@
+{
+  "metric_type": "distribution_screen",
+  "metric_type_note": "분위 조건부 **분포 형상** 실측(월별 횡단면 → NW lag-3 t). 성과 수치 아님 — 이 계약은 PORT_t/SR/IR/calmar/MDD 를 산출하지 않는다.",
+  "contract_version": "distribution_target_screen_v1.0",
+  "capital_eligible": false,
+  "capital_note": "분포-공간 증거는 자본 tier 에 어떤 자격도 주지 않는다 (.claude/rules/measurement-graduation.md §3, 2026-08-22). graduation HARD 3종은 forge-authoritative 포트폴리오 수치로만 판정한다. 본 객체에는 해당 필드가 **존재하지 않으며**, 주입 시 dt_assert_no_capital_fields() 가 stop 한다.",
+  "run_id": "NP2_rolltail_rank",
+  "spec_id": "FQ234_absorb_w3_corr",
+  "prereg_ref": "stage_artifacts/WT-D20260822_003/PREREG_NP2.json",
+  "generated_at": "2026-08-22 14:22:52",
+  "quantile_spec": {
+    "n_quantiles": 5,
+    "q_hi": 5,
+    "q_lo": 1,
+    "quantile_probs": [0.1, 0.9],
+    "min_obs_per_date": 25,
+    "prespecified": true,
+    "note": "분위는 사전지정 인자다 — 결과를 보고 고르는 경로가 없다."
+  },
+  "tail_spec": {
+    "mode": "rolling",
+    "fixed_up": null,
+    "fixed_dn": null,
+    "rolling_window": 36,
+    "rolling_prob": 0.9,
+    "rolling_skip": 1,
+    "min_history_months": 12,
+    "fullsample_rejected": true
+  },
+  "control_spec": {
+    "cols": ["win_vol", "log_size"],
+    "method": "per_date_cross_section_ols",
+    "transform": "rank",
+    "transform_note": "raw = 통제 변수 원값의 월별 z (Lane B 재현 규약, 기본) / rank = 월별 횡단면 순위 z (단조 종속 전부 제거). ★선형 직교화는 **비선형** 종속을 못 걷어낸다 — 합성 픽스처 score=-log(vol) 는 raw 에서 SURVIVES(오통과)이고 rank 에서 DIES_UNDER_CONTROL 이다(실측). 'vol 로 통제했다'는 진술은 이 필드 없이는 강도가 미정이다.",
+    "applied": true,
+    "n_axes": 2,
+    "n_rows_before": 86297,
+    "n_rows_after": 86297,
+    "winsorize_probs": [0.01, 0.99],
+    "winsorize_scope": "regression_lhs_only",
+    "note": "월별 횡단면 OLS 직교화(2축) — pooled 회귀 경로 없음(C1). winsorize=[0.01,0.99] (회귀 좌변 전용, 버킷팅 미적용)"
+  },
+  "liquidity": {
+    "applied": true,
+    "liq_min": 200000000,
+    "n_dropped": 0,
+    "liq_ruler": "adv20_t1"
+  },
+  "sanity": {
+    "ret1m_excluded": 0
+  },
+  "pit": {
+    "c1_rolling_only": true,
+    "quantile_bucketing": "per_date_cross_section_rank",
+    "excess_return": "per_date_cross_section_demean",
+    "orthogonalization_scope": "per_date_cross_section",
+    "winsorize_scope": "per_date_cross_section (직교화 회귀 좌변 전용 — 버킷팅 미적용)",
+    "tail_threshold_scope": "trailing_36m_pooled_skip1",
+    "fullsample_statistic_used": false,
+    "diag_pooled_fields": "windows$*$*$shape_profile (decision_binding=FALSE)",
+    "note": "판정 통계는 전부 월별 횡단면 시계열의 NW-t 집계 — full-sample 추정 없음."
+  },
+  "windows": {
+    "early": {
+      "window": ["2000-01-01", "2015-12-01"],
+      "n_months_raw": 189,
+      "tail_threshold_na_months": 13,
+      "raw": {
+        "available": true,
+        "n_months": 189,
+        "n_obs": 43112,
+        "axes": {
+          "median_spread": {
+            "mean": 0.00941424867784282,
+            "nw_t": 2.35355441163865,
+            "n_months": 189
+          },
+          "mean_spread": {
+            "mean": -0.00260359986453143,
+            "nw_t": -0.571599178631506,
+            "n_months": 189
+          },
+          "skew_spread": {
+            "mean": -0.446821913071373,
+            "nw_t": -5.14346306489077,
+            "n_months": 189
+          },
+          "skew_slope": {
+            "mean": -0.106525637035936,
+            "nw_t": -5.31731964423796,
+            "n_months": 189
+          },
+          "tail_up_prob_diff": {
+            "mean": -0.0510152084492507,
+            "nw_t": -5.4067866283758,
+            "n_months": 176
+          },
+          "tail_dn_prob_diff": {
+            "mean": -0.0353250381051229,
+            "nw_t": -4.59432196015723,
+            "n_months": 176
+          },
+          "qspread_p10": {
+            "mean": 0.023767077025351,
+            "nw_t": 6.6251234614324,
+            "n_months": 189
+          },
+          "qspread_p90": {
+            "mean": -0.0393591593691575,
+            "nw_t": -4.15091103415069,
+            "n_months": 189
+          }
+        },
+        "shape_profile": {
+          "metric_type": "distribution_screen_diag",
+          "decision_binding": false,
+          "full_window_pooled": true,
+          "note": "창 전체 풀링 서술표 — 판정 비바인딩. 판정 통계는 axes(월별 시계열 NW-t)만.",
+          "table": [
+            {
+              "quantile": 1,
+              "n": 8691,
+              "mean": 0.004874463945769,
+              "median": -0.0164591767890043,
+              "p10": -0.143351173545219,
+              "p90": 0.169888898550865,
+              "sd": 0.153736189803757,
+              "skew": 2.22740010947206
+            },
+            {
+              "quantile": 2,
+              "n": 8588,
+              "mean": 0.000630799007104533,
+              "median": -0.0126004887617827,
+              "p10": -0.132483818714045,
+              "p90": 0.147535135505174,
+              "sd": 0.124163874572581,
+              "skew": 1.23801153764071
+            },
+            {
+              "quantile": 3,
+              "n": 8590,
+              "mean": 0.000411103178701773,
+              "median": -0.0115499304616148,
+              "p10": -0.128856225278617,
+              "p90": 0.13741816646217,
+              "sd": 0.12035611077492,
+              "skew": 1.2660406154232
+            },
+            {
+              "quantile": 4,
+              "n": 8588,
+              "mean": -0.00395456105607001,
+              "median": -0.0109210202067946,
+              "p10": -0.124405913820248,
+              "p90": 0.123138919996773,
+              "sd": 0.108039420206189,
+              "skew": 1.0408821561435
+            },
+            {
+              "quantile": 5,
+              "n": 8655,
+              "mean": -0.00200472258592849,
+              "median": -0.00840411066208593,
+              "p10": -0.119150132956613,
+              "p90": 0.121953550722233,
+              "sd": 0.102627472469173,
+              "skew": 0.741099302497426
+            }
+          ]
+        }
+      },
+      "orthogonalized": {
+        "available": true,
+        "n_months": 189,
+        "n_obs": 43112,
+        "axes": {
+          "median_spread": {
+            "mean": 0.0065676759212171,
+            "nw_t": 2.86694531745289,
+            "n_months": 189
+          },
+          "mean_spread": {
+            "mean": 0.00203064656557231,
+            "nw_t": 0.78806387947083,
+            "n_months": 189
+          },
+          "skew_spread": {
+            "mean": -0.2253781851643,
+            "nw_t": -2.62245926729477,
+            "n_months": 189
+          },
+          "skew_slope": {
+            "mean": -0.0553251597159019,
+            "nw_t": -2.68051610224394,
+            "n_months": 189
+          },
+          "tail_up_prob_diff": {
+            "mean": -0.00935061407123474,
+            "nw_t": -1.59446168998925,
+            "n_months": 176
+          },
+          "tail_dn_prob_diff": {
+            "mean": -0.0145167597110034,
+            "nw_t": -2.63250431325815,
+            "n_months": 176
+          },
+          "qspread_p10": {
+            "mean": 0.00898676648089235,
+            "nw_t": 3.52612866601374,
+            "n_months": 189
+          },
+          "qspread_p90": {
+            "mean": -0.00802124125971169,
+            "nw_t": -1.3907068431433,
+            "n_months": 189
+          }
+        },
+        "shape_profile": {
+          "metric_type": "distribution_screen_diag",
+          "decision_binding": false,
+          "full_window_pooled": true,
+          "note": "창 전체 풀링 서술표 — 판정 비바인딩. 판정 통계는 axes(월별 시계열 NW-t)만.",
+          "table": [
+            {
+              "quantile": 1,
+              "n": 8691,
+              "mean": 0.000806030333437696,
+              "median": -0.0169403791284423,
+              "p10": -0.140099261396,
+              "p90": 0.154030828642961,
+              "sd": 0.144029876940531,
+              "skew": 2.15498570692011
+            },
+            {
+              "quantile": 2,
+              "n": 8588,
+              "mean": -0.000264657843764672,
+              "median": -0.0125059930892846,
+              "p10": -0.124149409623988,
+              "p90": 0.135068321378598,
+              "sd": 0.119795169708499,
+              "skew": 1.5857186757247
+            },
+            {
+              "quantile": 3,
+              "n": 8590,
+              "mean": -0.00206073454420283,
+              "median": -0.0113831837641334,
+              "p10": -0.125386690436119,
+              "p90": 0.127988642390027,
+              "sd": 0.115044745825868,
+              "skew": 1.26460435834289
+            },
+            {
+              "quantile": 4,
+              "n": 8588,
+              "mean": 6.74935492139379e-05,
+              "median": -0.00793629678073635,
+              "p10": -0.125637483986921,
+              "p90": 0.131699116200776,
+              "sd": 0.114346968588146,
+              "skew": 1.34663657682261
+            },
+            {
+              "quantile": 5,
+              "n": 8655,
+              "mean": 0.0014315132372498,
+              "median": -0.0102660868433176,
+              "p10": -0.130924029955787,
+              "p90": 0.144229323756816,
+              "sd": 0.119909104876996,
+              "skew": 1.08116840071449
+            }
+          ]
+        }
+      }
+    },
+    "late": {
+      "window": ["2015-12-01", "2026-06-01"],
+      "n_months_raw": 126,
+      "tail_threshold_na_months": 13,
+      "raw": {
+        "available": true,
+        "n_months": 126,
+        "n_obs": 42441,
+        "axes": {
+          "median_spread": {
+            "mean": 0.0123379455791915,
+            "nw_t": 4.42377364709903,
+            "n_months": 126
+          },
+          "mean_spread": {
+            "mean": 0.00230074160527666,
+            "nw_t": 0.612756382101241,
+            "n_months": 126
+          },
+          "skew_spread": {
+            "mean": -0.734933103249594,
+            "nw_t": -5.17401124827077,
+            "n_months": 126
+          },
+          "skew_slope": {
+            "mean": -0.168234084159903,
+            "nw_t": -5.31406867246556,
+            "n_months": 126
+          },
+          "tail_up_prob_diff": {
+            "mean": -0.0240906891235523,
+            "nw_t": -2.93690418845268,
+            "n_months": 113
+          },
+          "tail_dn_prob_diff": {
+            "mean": -0.0514630965254482,
+            "nw_t": -6.26264491938934,
+            "n_months": 113
+          },
+          "qspread_p10": {
+            "mean": 0.0220125684484492,
+            "nw_t": 5.94202132686699,
+            "n_months": 126
+          },
+          "qspread_p90": {
+            "mean": -0.0233705393127085,
+            "nw_t": -3.05553626680361,
+            "n_months": 126
+          }
+        },
+        "shape_profile": {
+          "metric_type": "distribution_screen_diag",
+          "decision_binding": false,
+          "full_window_pooled": true,
+          "note": "창 전체 풀링 서술표 — 판정 비바인딩. 판정 통계는 axes(월별 시계열 NW-t)만.",
+          "table": [
+            {
+              "quantile": 1,
+              "n": 8543,
+              "mean": -0.00253773209656959,
+              "median": -0.0229861784610873,
+              "p10": -0.137827825620224,
+              "p90": 0.144269157040214,
+              "sd": 0.155503926075944,
+              "skew": 3.27266704761846
+            },
+            {
+              "quantile": 2,
+              "n": 8456,
+              "mean": -0.00195243314806759,
+              "median": -0.0166053358853574,
+              "p10": -0.125447628130992,
+              "p90": 0.131291451361451,
+              "sd": 0.124161895439595,
+              "skew": 1.95002255671597
+            },
+            {
+              "quantile": 3,
+              "n": 8468,
+              "mean": 0.00367338031959126,
+              "median": -0.0101165249470549,
+              "p10": -0.115206212733952,
+              "p90": 0.126982892361368,
+              "sd": 0.121223026037398,
+              "skew": 2.36149712547073
+            },
+            {
+              "quantile": 4,
+              "n": 8456,
+              "mean": 0.00102016413402602,
+              "median": -0.0097717886795606,
+              "p10": -0.113879397569838,
+              "p90": 0.121484404053323,
+              "sd": 0.11054756849303,
+              "skew": 2.07628721655274
+            },
+            {
+              "quantile": 5,
+              "n": 8518,
+              "mean": -0.000181154315868659,
+              "median": -0.00982139915874126,
+              "p10": -0.113942347837701,
+              "p90": 0.12152880734347,
+              "sd": 0.107283250834652,
+              "skew": 1.29835237289072
+            }
+          ]
+        }
+      },
+      "orthogonalized": {
+        "available": true,
+        "n_months": 126,
+        "n_obs": 42441,
+        "axes": {
+          "median_spread": {
+            "mean": 0.00359947356223085,
+            "nw_t": 1.90589439766395,
+            "n_months": 126
+          },
+          "mean_spread": {
+            "mean": 0.00119857403944089,
+            "nw_t": 0.491106476805192,
+            "n_months": 126
+          },
+          "skew_spread": {
+            "mean": -0.458212688921448,
+            "nw_t": -3.27685922792389,
+            "n_months": 126
+          },
+          "skew_slope": {
+            "mean": -0.0746974787248492,
+            "nw_t": -2.19227219537813,
+            "n_months": 126
+          },
+          "tail_up_prob_diff": {
+            "mean": 0.00223417211758354,
+            "nw_t": 0.391396325821906,
+            "n_months": 113
+          },
+          "tail_dn_prob_diff": {
+            "mean": -0.0101696379963821,
+            "nw_t": -1.8746201433857,
+            "n_months": 113
+          },
+          "qspread_p10": {
+            "mean": 0.00708325700696581,
+            "nw_t": 2.66293587230407,
+            "n_months": 126
+          },
+          "qspread_p90": {
+            "mean": -0.000255617657344785,
+            "nw_t": -0.0449466318355682,
+            "n_months": 126
+          }
+        },
+        "shape_profile": {
+          "metric_type": "distribution_screen_diag",
+          "decision_binding": false,
+          "full_window_pooled": true,
+          "note": "창 전체 풀링 서술표 — 판정 비바인딩. 판정 통계는 axes(월별 시계열 NW-t)만.",
+          "table": [
+            {
+              "quantile": 1,
+              "n": 8543,
+              "mean": -0.00132298033337801,
+              "median": -0.0194928373132392,
+              "p10": -0.131057785353554,
+              "p90": 0.138690064680563,
+              "sd": 0.145937915950861,
+              "skew": 2.93030582006583
+            },
+            {
+              "quantile": 2,
+              "n": 8456,
+              "mean": -0.00179454120754207,
+              "median": -0.0120749845925461,
+              "p10": -0.115344281464552,
+              "p90": 0.116054012682071,
+              "sd": 0.114047701038355,
+              "skew": 2.71101677684253
+            },
+            {
+              "quantile": 3,
+              "n": 8468,
+              "mean": 0.000515652570944166,
+              "median": -0.0117038836660744,
+              "p10": -0.113923500564359,
+              "p90": 0.119146156124234,
+              "sd": 0.115389935119422,
+              "skew": 2.4253272642781
+            },
+            {
+              "quantile": 4,
+              "n": 8456,
+              "mean": 0.00274224466294324,
+              "median": -0.0109086459196769,
+              "p10": -0.120546747855335,
+              "p90": 0.131329153839613,
+              "sd": 0.123470083620435,
+              "skew": 2.54231066867884
+            },
+            {
+              "quantile": 5,
+              "n": 8518,
+              "mean": -0.000126567903449063,
+              "median": -0.0139150598897833,
+              "p10": -0.125530673110584,
+              "p90": 0.137141737325467,
+              "sd": 0.12318905179495,
+              "skew": 1.58786808058698
+            }
+          ]
+        }
+      }
+    }
+  },
+  "survival": {
+    "metric_type": "distribution_screen",
+    "t_min_survive": 2,
+    "control_cols": ["win_vol", "log_size"],
+    "control_axes_n": 2,
+    "control_axes_min_required": 2,
+    "control_applied": true,
+    "control_note": "월별 횡단면 OLS 직교화(2축) — pooled 회귀 경로 없음(C1). winsorize=[0.01,0.99] (회귀 좌변 전용, 버킷팅 미적용)",
+    "per_window": {
+      "early": {
+        "tested": true,
+        "axes": {
+          "median_spread": {
+            "raw_nw_t": 2.35355441163865,
+            "orth_nw_t": 2.86694531745289,
+            "sign_kept": true,
+            "magnitude_ok": true,
+            "survives": true,
+            "attenuation": 1.21813428373504
+          },
+          "skew_spread": {
+            "raw_nw_t": -5.14346306489077,
+            "orth_nw_t": -2.62245926729477,
+            "sign_kept": true,
+            "magnitude_ok": true,
+            "survives": true,
+            "attenuation": 0.509862564231413
+          },
+          "skew_slope": {
+            "raw_nw_t": -5.31731964423796,
+            "orth_nw_t": -2.68051610224394,
+            "sign_kept": true,
+            "magnitude_ok": true,
+            "survives": true,
+            "attenuation": 0.50411039425637
+          },
+          "tail_up_prob_diff": {
+            "raw_nw_t": -5.4067866283758,
+            "orth_nw_t": -1.59446168998925,
+            "sign_kept": true,
+            "magnitude_ok": false,
+            "survives": false,
+            "attenuation": 0.294900057942222
+          },
+          "tail_dn_prob_diff": {
+            "raw_nw_t": -4.59432196015723,
+            "orth_nw_t": -2.63250431325815,
+            "sign_kept": true,
+            "magnitude_ok": true,
+            "survives": true,
+            "attenuation": 0.572990821298048
+          },
+          "qspread_p10": {
+            "raw_nw_t": 6.6251234614324,
+            "orth_nw_t": 3.52612866601374,
+            "sign_kept": true,
+            "magnitude_ok": true,
+            "survives": true,
+            "attenuation": 0.532235917796974
+          },
+          "qspread_p90": {
+            "raw_nw_t": -4.15091103415069,
+            "orth_nw_t": -1.3907068431433,
+            "sign_kept": true,
+            "magnitude_ok": false,
+            "survives": false,
+            "attenuation": 0.335036533354142
+          }
+        },
+        "survived_axes": ["median_spread", "skew_spread", "skew_slope", "tail_dn_prob_diff", "qspread_p10"],
+        "n_survived": 5
+      },
+      "late": {
+        "tested": true,
+        "axes": {
+          "median_spread": {
+            "raw_nw_t": 4.42377364709903,
+            "orth_nw_t": 1.90589439766395,
+            "sign_kept": true,
+            "magnitude_ok": false,
+            "survives": false,
+            "attenuation": 0.430829999386107
+          },
+          "skew_spread": {
+            "raw_nw_t": -5.17401124827077,
+            "orth_nw_t": -3.27685922792389,
+            "sign_kept": true,
+            "magnitude_ok": true,
+            "survives": true,
+            "attenuation": 0.633330518757388
+          },
+          "skew_slope": {
+            "raw_nw_t": -5.31406867246556,
+            "orth_nw_t": -2.19227219537813,
+            "sign_kept": true,
+            "magnitude_ok": true,
+            "survives": true,
+            "attenuation": 0.4125411865182
+          },
+          "tail_up_prob_diff": {
+            "raw_nw_t": -2.93690418845268,
+            "orth_nw_t": 0.391396325821906,
+            "sign_kept": false,
+            "magnitude_ok": false,
+            "survives": false,
+            "attenuation": -0.133268333151894
+          },
+          "tail_dn_prob_diff": {
+            "raw_nw_t": -6.26264491938934,
+            "orth_nw_t": -1.8746201433857,
+            "sign_kept": true,
+            "magnitude_ok": false,
+            "survives": false,
+            "attenuation": 0.299333615032495
+          },
+          "qspread_p10": {
+            "raw_nw_t": 5.94202132686699,
+            "orth_nw_t": 2.66293587230407,
+            "sign_kept": true,
+            "magnitude_ok": true,
+            "survives": true,
+            "attenuation": 0.448153200033723
+          },
+          "qspread_p90": {
+            "raw_nw_t": -3.05553626680361,
+            "orth_nw_t": -0.0449466318355682,
+            "sign_kept": true,
+            "magnitude_ok": false,
+            "survives": false,
+            "attenuation": 0.014709899641475
+          }
+        },
+        "survived_axes": ["skew_spread", "skew_slope", "qspread_p10"],
+        "n_survived": 3
+      }
+    },
+    "n_windows_tested": 2,
+    "survived_axes_any_window": ["median_spread", "skew_spread", "skew_slope", "tail_dn_prob_diff", "qspread_p10"],
+    "survived_axes_all_windows": ["skew_spread", "skew_slope", "qspread_p10"],
+    "survived_scope_note": "verdict 는 **any-window** 기준(헌법 요건② 원문). all-windows 는 더 엄한 관점으로 병기 — 창을 늘릴수록 any 는 우연히 충족되므로 소비자는 둘을 함께 읽을 것.",
+    "verdict": "SURVIVES"
+  },
+  "window_independence": {
+    "n_windows": 2,
+    "pairs": [
+      {
+        "a": "early",
+        "b": "late",
+        "disjoint": true
+      }
+    ],
+    "has_disjoint_pair": true,
+    "verdict": "DISJOINT_PAIR_PRESENT",
+    "note": "'독립 창 2개'의 최소 기계 조건 = **서로 겹치지 않음**. 포함관계(예: 전체창 ⊃ 청정창)는 독립이 아니다 — 같은 표본을 두 번 세는 것."
+  },
+  "sign_agreement": {
+    "verdict": "AGREES",
+    "agreed_axes": ["median_spread", "skew_spread", "skew_slope", "tail_dn_prob_diff", "qspread_p10", "qspread_p90"],
+    "per_axis": {
+      "early|late::median_spread": {
+        "axis": "median_spread",
+        "t_a": 2.86694531745289,
+        "t_b": 1.90589439766395,
+        "agree": true
+      },
+      "early|late::skew_spread": {
+        "axis": "skew_spread",
+        "t_a": -2.62245926729477,
+        "t_b": -3.27685922792389,
+        "agree": true
+      },
+      "early|late::skew_slope": {
+        "axis": "skew_slope",
+        "t_a": -2.68051610224394,
+        "t_b": -2.19227219537813,
+        "agree": true
+      },
+      "early|late::tail_up_prob_diff": {
+        "axis": "tail_up_prob_diff",
+        "t_a": -1.59446168998925,
+        "t_b": 0.391396325821906,
+        "agree": false
+      },
+      "early|late::tail_dn_prob_diff": {
+        "axis": "tail_dn_prob_diff",
+        "t_a": -2.63250431325815,
+        "t_b": -1.8746201433857,
+        "agree": true
+      },
+      "early|late::qspread_p10": {
+        "axis": "qspread_p10",
+        "t_a": 3.52612866601374,
+        "t_b": 2.66293587230407,
+        "agree": true
+      },
+      "early|late::qspread_p90": {
+        "axis": "qspread_p90",
+        "t_a": -1.3907068431433,
+        "t_b": -0.0449466318355682,
+        "agree": true
+      }
+    },
+    "note": "직교화 축 기준(raw 아님) — 요건②를 통과한 신호가 요건③도 만족하는지 물어야 한다."
+  },
+  "distribution_axes": ["median_spread", "skew_spread", "skew_slope", "tail_up_prob_diff", "tail_dn_prob_diff", "qspread_p10", "qspread_p90"],
+  "mean_space_control_axis": "mean_spread",
+  "monthly_series_dropped": true,
+  "emitted_at": "2026-08-22 14:22:53"
+}

@@ -95,6 +95,38 @@ run_alpha_search <- function(strategy_name,
   # 로컬 안전 %||% — 외부 source가 전역을 취약버전으로 덮어도 영향 없게 함수 스코프에 고정
   `%||%` <- function(a, b) if (is.null(a) || length(a) == 0L || (length(a) == 1L && is.na(a))) b else a
 
+  # ── (2026-08-22) 단계별 소요 계측 — 도훈 지시 "문제 없이 완성".
+  #   왜: 무인 alpha 레인이 timeout 3000s 를 만성 초과하는데(42일 중 7일 exit=124),
+  #   단계별 소요가 로그에 없어 **상한을 올릴지 작업량을 쪼갤지** 근거로 못 갈랐다.
+  #   ★상한 상향은 증상 은폐다 — 어디서 먹는지 먼저 안다.
+  #   에이전트 사고시간과 R 실측시간을 가르는 것이 1차 목적이므로 총소요도 함께 남긴다.
+  .AS_T0 <- Sys.time(); .AS_TPREV <- .AS_T0; .AS_STAGES <- list()
+  .as_stage <- function(nm) {
+    now <- Sys.time()
+    dt <- as.numeric(difftime(now, .AS_TPREV, units = "secs"))
+    .AS_STAGES[[nm]] <<- round(dt, 2); .AS_TPREV <<- now
+    cat(sprintf("[as-timing] %-28s %7.2fs (누적 %7.2fs)
+", nm, dt,
+                as.numeric(difftime(now, .AS_T0, units = "secs"))))
+    invisible(NULL)
+  }
+  .as_timing_flush <- function(status = "ok") {
+    tot <- as.numeric(difftime(Sys.time(), .AS_T0, units = "secs"))
+    rec <- list(ts = format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z"),
+                strategy = strategy_name, status = status,
+                total_secs = round(tot, 2), stages = .AS_STAGES)
+    out <- file.path(PROJECT_ROOT, ".cache", "alpha_search_timing.jsonl")
+    tryCatch({
+      dir.create(dirname(out), showWarnings = FALSE, recursive = TRUE)
+      cat(jsonlite::toJSON(rec, auto_unbox = TRUE), "
+", file = out, append = TRUE, sep = "")
+    }, error = function(e) NULL)
+    cat(sprintf("[as-timing] TOTAL %.2fs (status=%s) -> %s
+", tot, status, out))
+    invisible(tot)
+  }
+  on.exit(.as_timing_flush("exit"), add = TRUE)   # 함수 프레임이므로 발화한다(r-portability 금칙② 해당 없음)
+
   stopifnot(file.exists(factor_engine_path))
   # run_id: 초단위 타임스탬프 + PID로 고유화. 병렬 실행 시 같은 초 충돌 방지
   #   (충돌 시 OUT_DIR 덮어쓰기 + tg lock scope 충돌로 메인 brief BLOCKED — 2026-06-05 도훈 발견).
@@ -106,6 +138,7 @@ run_alpha_search <- function(strategy_name,
   cat(sprintf("\n=== [AlphaSearch] %s (%s) ===\n", strategy_name, strategy_id))
   cat(sprintf("    idea: %s\n", strategy_idea))
 
+  .as_stage("00_setup")
   # ---- 1. Data ----
   res <- load_rawdata(use_cache = TRUE)
   RAWDATA <- res$RAWDATA; BM_DT <- res$BM_DT; rm(res); gc(verbose = FALSE)
@@ -118,6 +151,7 @@ run_alpha_search <- function(strategy_name,
   RAWDATA[, AvgTV20 := frollmean(TradingValue, 20L, align = "right"), by = Ticker]
   RAWDATA[, LiqPass := !is.na(AvgTV20) & AvgTV20 >= LIQ]
 
+  .as_stage("sec1_done")
   # ---- 2. Factor engine -> FACTORS (Date, Ticker, Score) ----
   # Run the factor engine in a child environment. Some memory-hardened engines
   # intentionally rm(RAWDATA) from their local env after deriving FACTORS; the
@@ -163,6 +197,7 @@ run_alpha_search <- function(strategy_name,
   cat(sprintf("[AlphaSearch] FACTORS: %d rows | %d signal dates | %d tickers\n",
               nrow(FACTORS), uniqueN(FACTORS$Date), uniqueN(FACTORS$Ticker)))
 
+  .as_stage("sec2_done")
   # ---- 3. PIT 준수 검증 (필수) ----
   pit <- detect_lookahead(factor_engine_path)
   pit_clean <- isTRUE(pit$clean)
@@ -186,6 +221,7 @@ run_alpha_search <- function(strategy_name,
     cat("     통과했는지 별도 보증하세요 (python-policy.md 언어무관 의무, Cycle 50 교훈).\n")
   }
 
+  .as_stage("sec3_done")
   # ---- 4. Backtest (기존 풀백테스트 재사용) ----
   sim_buffer_zone <- buffer_zone
   if (is.null(sim_buffer_zone) && isTRUE(use_default_buffer)) {
@@ -222,6 +258,7 @@ run_alpha_search <- function(strategy_name,
     risk_controls = risk_controls
   )
 
+  .as_stage("sec4_done")
   # ---- 4b. 후보 보존(register_module) — 계약 미충족분은 quarantine ----
   #   v8.1 hardening: PIT-clean 백테는 연구 후보로 보존하되, FR canonical pool은
   #   authoritative 재측정(contract_pass+backtested+frozen+hash) 성공분만 허용한다.
@@ -238,6 +275,7 @@ run_alpha_search <- function(strategy_name,
     assign("%||%", `%||%`, envir = globalenv())   # register_module source 후 전역 %||% 복원
   }, error = function(e) cat("[AlphaSearch] register_module 생략:", conditionMessage(e), "\n"))
 
+  .as_stage("sec4b_done")
   # ---- 5. Charts: equity_curve.png + annual_returns.png (vs BM) ----
   #   차트 생성이 실패(예 그래픽 디바이스 이슈)해도 register/측정/등재는 이미 완료 — 전체 run 중단 방지.
   tryCatch(
@@ -247,6 +285,7 @@ run_alpha_search <- function(strategy_name,
   annual_png <- file.path(OUT_DIR, "annual_returns.png")
   charts <- Filter(file.exists, c(equity_png, annual_png))
 
+  .as_stage("sec5_done")
   # ---- 6. 점수·등급 = 기존 스코어링 체계(run_hurdle_gate) 재사용 ----
   #   허들 게이트는 PG 편입 *권고*에만 영향 — 측정·등재·직교성 분석은 등급무관 진행(v8.1 헌법).
   #   허들 예외 시에도 grade="F"로 안전 강등하고 진행(register/factor_analysis 보존).
@@ -289,6 +328,7 @@ run_alpha_search <- function(strategy_name,
   }
   f_grade_reasons <- .alpha_failure_reasons(grade, hg, fmt_hits, m, excess_cagr, auth = NULL)
 
+  .as_stage("sec6_done")
   # ---- 6c. 후보 quarantine grade 갱신 ----
   #   허들 등급 산출 후에도 계약 실측 전이면 FR pool이 아니라 quarantine만 갱신된다.
   if (isTRUE(pit_clean)) tryCatch({
@@ -304,6 +344,7 @@ run_alpha_search <- function(strategy_name,
     assign("%||%", `%||%`, envir = globalenv())   # register_module source 후 전역 %||% 복원
   }, error = function(e) cat("[AlphaSearch] register_module(grade 갱신) 생략:", conditionMessage(e), "\n"))
 
+  .as_stage("sec6c_done")
   # ---- 6b. 팩터 회귀 분석 (FF3/FF5/Carhart 알파 + Fama-MacBeth) — 등급무관 진행(직교성 핵심 지표) ----
   if (isTRUE(factor_analysis) && exists("run_analysis")) {
     tryCatch({
@@ -316,6 +357,7 @@ run_alpha_search <- function(strategy_name,
   #   run_analysis가 생성한 보고서의 "Failure Mode Diagnosis" 빈 체크박스를 6a-2 판정으로 채움.
   .patch_fmt_checklist(OUT_DIR, fmt_hits)
 
+  .as_stage("sec6b_done")
   # ---- 6d. ★ 권위측정 사다리: hurdle B 이상 또는 screening_pass → 계약 실측 재측정 (자동) ----
   #   v8.1 트랙C(measurement-graduation §1~§3): proxy(run_hurdle_gate) 등급이 B 이상이거나,
   #   MDD/turnover 같은 구조 사유로 C/F가 됐어도 screen_pass면 authoritative 재측정.
@@ -367,6 +409,7 @@ run_alpha_search <- function(strategy_name,
     bt_contract = bt_contract
   )
 
+  .as_stage("sec6d_done")
   # ---- 6d+. Layer 1 개선-여지 평가 자동 첨부 (2026-08-16 L1 자동 스폰 — 도훈 승인) ----
   #   screen_pass 라벨 보유 런은 같은 런 안에서 improvement_potential 을 실측해 레지스트리에
   #   적재한다 (권위측정 사다리와 같은 자리 — 라벨이 후속 측정을 자동 트리거하는 기존 전례).
@@ -381,6 +424,7 @@ run_alpha_search <- function(strategy_name,
     cat(sprintf("[AlphaSearch][WARN] improvement_potential 평가 실패 (비치명): %s\n",
                 conditionMessage(e))))
 
+  .as_stage("sec6d_done_2")
   # ---- 6e. FR-eligible 승격: 권위측정 OK일 때만 canonical module_catalog로 등록 ----
   if (!is.null(auth) && identical(auth$status, "OK")) tryCatch({
     if (!exists("register_module", mode = "function"))
@@ -409,6 +453,7 @@ run_alpha_search <- function(strategy_name,
     assign("%||%", `%||%`, envir = globalenv())
   }, error = function(e) cat("[AlphaSearch] FR-eligible register_module 생략:", conditionMessage(e), "\n"))
 
+  .as_stage("sec6e_done")
   # ---- 7. Telegram: 2차트 + 전략아이디어 + 성과요약(스코어링 지표) ----
   if (isTRUE(send_telegram)) {
     .with_alpha_search_tg_lock(strategy_id, {
@@ -441,6 +486,7 @@ run_alpha_search <- function(strategy_name,
     })
   }
 
+  .as_stage("sec7_done")
   # ---- 8. L-code 적립 (PASS + 의미있는 실패만, 모드별 디렉터리) ----
   l_code_path <- NULL
   if (pass || notable) {
@@ -450,6 +496,7 @@ run_alpha_search <- function(strategy_name,
     .run_axiom_pipeline()   # harvester + cluster (자가발전)
   }
 
+  .as_stage("sec8_done")
   # ---- 9. Grade A → STR 등록 + PG 편입 "권고"(book_state는 수동) ----
   if (pass) {
     .register_strategy_best_effort(strategy_id, strategy_name, strategy_idea, grade, m)
@@ -1449,6 +1496,7 @@ run_alpha_search <- function(strategy_name,
   py <- Sys.getenv("QVEST_PY", unset = Sys.which("python3"))
   if (!nzchar(py)) {
     cat("[AlphaSearch] WARN: python 부재 — Axiom 파이프라인 SKIP (QVEST_PY 환경변수 설정 필요)\n")
+  .as_stage("sec9_done")
     return(invisible(FALSE))
   }
   rc1 <- tryCatch(system2(py, c(shQuote(hv), "--project-dir", shQuote(PROJECT_ROOT)),

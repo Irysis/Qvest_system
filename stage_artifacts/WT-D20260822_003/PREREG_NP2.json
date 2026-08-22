@@ -1,0 +1,162 @@
+{
+  "wt_id": "WT-D20260822_003",
+  "fq_ref": "FQ-234 NP2 — DISTRIBUTION_TARGET 라우트 첫 소비",
+  "registered_at": "2026-08-22",
+  "registered_by": "alpha-research",
+  "registration_order_note": "본 파일은 canonical_distribution_screen() 을 **한 번도 호출하기 전** 에 고정한다. 아래 §2 창 분할점 · §3 통제 변환 결정규칙 · §4 실행 행렬 · §5 판정 규약은 측정 산출을 보고 바꾸지 않는다. 결정규칙(§3)의 입력은 결과량(forward return)을 전혀 쓰지 않는 종속성 진단이며, 그 실행 결과는 별도 파일 PREREG_NP2_transform_decision.json 에 봉인한 뒤 측정한다.",
+
+  "material_inherited": {
+    "scores_panel": "stage_artifacts/WT-D20260813_006/alpha_scores.parquet (86,297행 / 315개월)",
+    "returns_panel": "stage_artifacts/WT-D20260813_006/fwd.rds :: returns_dt",
+    "liquidity_panel": "stage_artifacts/WT-D20260813_006/fwd.rds :: liq_dt (liq_ruler=adv20_t1)",
+    "lane_b_prereg": "stage_artifacts/WT-D20260813_006/PREREG.json",
+    "lane_b_validation": "stage_artifacts/WT-D20260813_006/alpha_validation.json",
+    "hypothesis_inheritance": "Lane B 의 mechanism/falsification/regime_scope 를 그대로 승계한다. 재작성 없음 (Charter 원칙 8). 신규 재료를 만들지 않는다."
+  },
+
+  "contamination_disclosure": {
+    "severity": "MATERIAL — 본 사전등록은 **완전 블라인드가 아니다**. 이 사실을 숨기면 사전등록이 형식만 남는다.",
+    "what_existed": "stage_artifacts/WT-D20260813_006/distribution_screen_fq234_disjoint.json (mtime 2026-08-22 14:02:42, run_id=FQ234_raw). 본 WT 의 request.json(14:09) 보다 **먼저** 존재했다.",
+    "what_it_did": {
+      "windows": {"early": ["2000-01-01", "2015-07-01"], "late": ["2015-07-01", "2026-06-01"]},
+      "control_transform": "raw (단일)",
+      "route_gate_eligible": true,
+      "gate_detail_seen": "R1/R2/R3 전부 pass. R2 survived_axes(any) = [median_spread, skew_spread, skew_slope, tail_dn_prob_diff, qspread_p10]. all-windows = [skew_spread, tail_dn_prob_diff]. R3 agreed = [median_spread, skew_spread, skew_slope, tail_dn_prob_diff]."
+    },
+    "what_i_read_verbatim": {
+      "early_raw_nw_t": {"median_spread": 2.2893, "mean_spread": -0.6183, "skew_spread": -4.8823, "skew_slope": -5.0637, "tail_up_prob_diff": -5.1462, "tail_dn_prob_diff": -7.9567, "qspread_p10": 6.3921, "qspread_p90": -4.0970},
+      "late_raw_nw_t": {"median_spread": 4.5574, "mean_spread": 0.6952, "skew_spread": -5.4785, "skew_slope": -5.6125, "tail_up_prob_diff": -4.6549, "tail_dn_prob_diff": -5.5360, "qspread_p10": 6.2555, "qspread_p90": -3.1472},
+      "early_orth_nw_t": {"median_spread": 3.0241, "mean_spread": 1.0176, "skew_spread": -2.5601, "skew_slope": -2.6309, "tail_up_prob_diff": -1.4588, "tail_dn_prob_diff": -4.2330, "qspread_p10": 2.6246, "qspread_p90": -0.5486},
+      "late_orth_nw_t": {"median_spread": 1.9667, "mean_spread": 0.7091, "skew_spread": -2.1917, "skew_slope": -1.6911, "tail_up_prob_diff": 0.7408, "tail_dn_prob_diff": -2.1471, "qspread_p10": -0.0992, "qspread_p90": 1.2757}
+    },
+    "consequence_for_this_round": [
+      "① 2015-07-01 분할의 raw 결과는 **이미 관측됐다**. 내가 고르는 어떤 분할점도 그 관측과 무관할 수 없다(인접 분할은 표본의 대부분을 공유한다).",
+      "② 따라서 본 라운드는 '블라인드 사전등록' 을 주장하지 않는다. 주장하는 것은 **분할점을 결과가 아니라 유니버스 구성 사실로 정당화했고, 그 정당화가 관측 전에 문서로 고정됐다** 는 것뿐이다.",
+      "③ raw 변환의 2창 결과는 **재현(reproduction)** 으로만 소비한다. 신규 증거로 계상하지 않는다.",
+      "④ rank 변환 × 비중첩 2창 조합은 **미관측**이다. 본 라운드의 신규 증거는 여기서만 나온다."
+    ],
+    "what_would_have_been_wrong": "본 라운드가 2015-07-01 을 그대로 재사용하고 '독립 창 요건 충족' 을 신규 발견처럼 보고하는 것. 그것은 이미 본 결과를 사전등록으로 세탁하는 것이다."
+  },
+
+  "windows": {
+    "decision": "primary 판정창 = 비중첩 2창, 분할점 **2015-12-01**.",
+    "split_point": "2015-12-01",
+    "primary_windows": {
+      "early": ["2000-01-01", "2015-12-01"],
+      "late": ["2015-12-01", "2026-06-01"]
+    },
+    "expected_months": {"early": 189, "late": 126, "total": 315},
+    "rationale_data_property_only": [
+      "본 라운드가 승계한 규약 1: KQ150 은 2015-11 이전 구간에서 **편입만 기록하고 퇴출을 기록하지 않는다**(`universe_exit_unrecorded_pre201512`). 즉 유니버스 **구성 규칙 자체가 2015-12 에 바뀐다** — 첫 정기변경에서 비로소 퇴출 16종이 기록된다.",
+      "분할점을 여기 두면 각 창이 **유니버스 구성 방식 내부적으로 동질**해진다. early = 퇴출 미기록 명부, late = 퇴출 기록 명부. 창 간 차이를 '신호가 변했나' 로 읽을 때 유니버스 구성 차이가 창 **안**에 섞여 있지 않다.",
+      "편향 방향은 하방/중립이다(2015-12 퇴출 16종 직전 3년 누적 중앙값 −12.8% vs 잔존 139종 +69.5%) — 생존자 편향이 아니다. 따라서 early 창을 '상방 오염' 으로 서술하지 않는다.",
+      "표본 균형: 189 / 126 개월. 어느 쪽도 100개월 미만이 아니어서 NW lag-3 t 집계가 한쪽 창에서만 붕괴하지 않는다."
+    ],
+    "why_not_2015_07_01": "2015-07 은 KOSDAQ150 **지수 산출 개시**(그 이전은 소급투영) 시점으로 Lane B 가 clean 창 경계로 쓴 값이다. 데이터 성질 근거가 없는 것은 아니나, ①본 라운드의 승계 규약이 명시적으로 지목하는 경계는 2015-12(퇴출 기록 개시)이고 ②2015-07 분할의 결과는 §contamination_disclosure 대로 **이미 관측됐다**. 관측된 분할을 재사용하면 정당화가 사후 합리화와 구분되지 않는다.",
+    "why_not_more_windows_for_the_gate": "계약의 R3 는 `sign_agreement$agreed_axes` 를 **쌍(pair) 단위 OR** 로 집계한다 — 창을 3개로 늘리면 3쌍 중 1쌍만 부호가 맞아도 '일치' 로 계상된다. 판정창을 2창으로 고정하면 쌍이 정확히 1개라 그 느슨함이 원천적으로 없다. 3창은 §4 에서 **진단 전용(비바인딩)** 으로만 실행한다.",
+    "diagnostic_windows_3way_non_binding": {
+      "w1_k200_only": ["2000-01-01", "2010-02-01"],
+      "w2_kq150_backfilled": ["2010-02-01", "2015-12-01"],
+      "w3_kq150_recorded": ["2015-12-01", "2026-06-01"],
+      "rationale": "Lane B PREREG 실측: KQ150 플래그는 2010-02 부터 존재하고 2010-02~2015-11 은 소급투영이다. 즉 early 창은 내부적으로 2계층이다. 이 3분할은 그 이질성을 드러내기 위한 것이며, **라우트 발급 판정에 쓰지 않는다**(§5)."
+    }
+  },
+
+  "control_transform_decision_rule": {
+    "decision_is_rule_not_value": "정본 변환을 지금 값으로 못 박지 않고 **규칙**으로 못 박는다. 규칙의 입력은 forward return 을 전혀 쓰지 않는 종속성 진단이므로, 성과를 보고 고르는 경로가 없다.",
+    "rule": "score(=absorb) 와 각 통제축(win_vol, log_size) 의 **월별 횡단면** Pearson r 과 Spearman rho 를 산출하고 그 절대값의 월별 중앙값을 비교한다. 두 통제축 중 **어느 하나라도** median|rho| >= median|r| * 1.10 이면 종속이 단조-비선형이라 판정하고 **primary = rank**. 둘 다 미달이면 **primary = raw**.",
+    "why_this_rule": [
+      "선형(raw) OLS 직교화는 통제축에 대한 **비선형** 종속을 못 걷어낸다. 계약 자체가 합성 픽스처(score = -log(vol))로 그것을 실증했다 — raw 에서 SURVIVES(오통과), rank 에서 DIES_UNDER_CONTROL.",
+      "종속이 단조이지만 비선형이면 rank 변환이 그 종속을 전부 제거한다. 단조성/비선형성의 신호가 바로 'Spearman 이 Pearson 보다 크다' 이다.",
+      "Lane B 가 precheck 에서 기록한 적재량은 애초에 **Spearman**(vs log_size +0.597 / vs win_vol -0.299)이다. 즉 이 재료에서 문서화된 종속 자체가 순위 기반인데 통제는 선형으로 했다 — 규칙은 그 불일치를 측정으로 해소한다.",
+      "방향 무관성: 규칙은 '어느 변환이 t 를 키우나' 를 묻지 않고 '어느 변환이 종속을 더 제거하나' 만 묻는다. rank 는 raw 보다 **항상 더 강한 통제**이므로, rank 를 정본으로 뽑는 선택은 생존을 쉽게 만드는 방향이 아니라 어렵게 만드는 방향이다."
+    ],
+    "threshold_10pct_rationale": "1.10 은 표본잡음(315개월 × 월별 수백 종목에서 r 과 rho 의 차이는 소수점 둘째자리에서 흔들린다)을 넘어서는 최소 마진으로 사전 지정한다. 사후 조정 금지.",
+    "both_transforms_reported_regardless": "규칙이 무엇을 뽑든 raw·rank **양쪽 다 산출·보고**한다. 정본 지정은 '어느 쪽을 판정에 쓰나' 이지 '어느 쪽을 숨기나' 가 아니다."
+  },
+
+  "run_matrix": {
+    "R1_PRIMARY_GATE": {
+      "windows": "primary_windows (2창, 2015-12-01)",
+      "control_transform": "§3 규칙이 지정한 값",
+      "binding": true,
+      "note": "dt_route_eligible() 은 **이 산출물 하나에만** 건다."
+    },
+    "R2_COMPANION": {
+      "windows": "primary_windows",
+      "control_transform": "§3 이 지정하지 않은 나머지 값",
+      "binding": false,
+      "note": "변환 규약이 값을 바꾸는 폭을 기록하기 위함. 게이트에 대입 금지."
+    },
+    "R3_DIAG_3WAY": {
+      "windows": "diagnostic_windows_3way_non_binding",
+      "control_transform": "raw 와 rank 둘 다",
+      "binding": false,
+      "note": "early 창 내부 이질성(K200-only vs KQ150 소급투영) 노출용. survived_axes_all_windows 를 더 엄한 관점으로 읽는다."
+    },
+    "R4_DIAG_ROLLING_TAIL": {
+      "windows": "primary_windows",
+      "control_transform": "§3 정본",
+      "tail_threshold_mode": "rolling (window 36, prob 0.90, skip 1)",
+      "binding": false,
+      "note": "고정 문턱 ±0.20 의 임의성 스트레스. 꼬리 축 결론이 문턱 규약에 종속되는지 확인."
+    },
+    "substitution_prohibited": "R2/R3/R4 중 어느 것도 R1 을 대체할 수 없다. R1 이 발급 실패하면 실패로 보고한다 — 통과하는 구성을 찾아 대입하는 것은 사후 자유도다."
+  },
+
+  "fixed_measurement_spec": {
+    "score_column": "absorb_raw (Lane B 원 피처)",
+    "orientation": "Q5 = 높은 absorb, Q1 = 낮은 absorb.",
+    "orientation_note": "사전등록 알파 방향은 z(-absorb)(낮은 흡수 선호 = Q1). 분포 축은 방향을 뒤집어도 |NW-t| 가 불변이고 부호만 라벨이 바뀐다 — 요건②(|t| >= 2.0)와 요건③(두 창 부호 **일치**)은 둘 다 방향 불변이다. 따라서 이 선택은 게이트를 움직이지 않으며, Lane B 기록(raw_long 3.993 / orth_long 3.551)과 직접 대조 가능한 방향을 택했다. C13 부호 반전 주장 아님 — 원 피처를 그대로 쓴다.",
+    "n_quantiles": 5,
+    "q_hi": 5,
+    "q_lo": 1,
+    "quantile_probs": [0.10, 0.90],
+    "quantile_probs_note": "0.50 을 넣지 않는다 — qspread_p50 은 median_spread 와 동일 통계량이라 생존 축 집계에서 같은 증거가 두 번 세어진다(계약이 경고하는 항목).",
+    "tail_threshold_mode": "fixed",
+    "tail_fixed_up": 0.20,
+    "tail_fixed_dn": -0.20,
+    "tail_mode_rationale": "Lane B 형상표(up20/dn20)가 쓴 것과 동일한 사전지정 상수. 재현 가능성 + PIT 최안전(결과를 보고 문턱을 정하는 경로 없음).",
+    "control_cols": ["win_vol", "log_size"],
+    "control_axes_n": 2,
+    "winsorize_probs": [0.01, 0.99],
+    "winsorize_note": "계약 규약상 **직교화 회귀 좌변 전용**(버킷팅 미적용). Lane B 직교화 값 3.551 재현 설정.",
+    "liquidity": "fwd$liq_dt, liq_min = 2e8 (Production Constraints 고정 축). n_dropped 를 산출물에 기록한다.",
+    "nw_lag": 3,
+    "t_min_survive": 2.0,
+    "t_min_survive_source": ".claude/rules/measurement-graduation.md §3 요건② 정밀화 — screening tier 관례 |NW-t| >= 2.0"
+  },
+
+  "mean_space_evidence_R1": {
+    "source": "stage_artifacts/WT-D20260813_006/alpha_validation.json (Lane B, 승계 — 재산출 없음)",
+    "label": "NEGATIVE_POWERED",
+    "basis_window": "long (315개월) — primary/diagnostic 두 분할을 모두 덮는 전기간. 요건①은 '이 재료의 평균 공간이 null 인가' 를 묻는 것이므로 전기간이 옳은 기준이다.",
+    "positive_control_design": "semi-oracle PC1 — forward 수익 순위 + 잡음, 실현 rank-IC 를 0.04 로 이분탐색 보정",
+    "positive_control_statistic": 1.674,
+    "null_band_q05": -1.019,
+    "null_band_q95": 0.486,
+    "null_band_design": "AR(1)-정합 placebo (rho 0.8315, 200 draw) — 지속 회귀변수에서 |t|=2.0 이 5% 검정이 아님을 보정",
+    "observed_statistic": -0.318,
+    "secondary_clean_window_for_record": {"positive_control_statistic": -0.697, "null_band_q05": -2.682, "null_band_q95": -1.066, "observed_statistic": -2.185},
+    "ceiling_disclosure": "★같은 양성 대조가 드러낸 창-도달가능성: 이 창은 IC 0.04 급 진짜 평균 신호를 PORT_t 1.674 로만 검출한다 ⇒ 2.95 는 이 창에서 원리적으로 도달 불가. 따라서 Lane B 의 자본 등급 라벨은 'INCONCLUSIVE_UNDERPOWERED'(미결)이고, '효과없음'(NEGATIVE_POWERED)은 **평균 공간 효과 검출** 축에만 붙는다. 두 라벨을 섞지 않는다."
+  },
+
+  "judgment_protocol": {
+    "gate": "dt_route_eligible(R1 산출, mean_space_evidence) — 요건 3종 전부 pass 여야 DISTRIBUTION_TARGET 발급.",
+    "reporting_obligation": [
+      "survived_axes_any_window 와 survived_axes_all_windows 를 **둘 다** 보고한다(헌법 요건② 정밀화).",
+      "control_transform 을 산출물에 기록한다 — '통제했다' 는 진술은 변환 규약 없이 강도가 미정이다.",
+      "raw 재현치와 rank 신규치를 나란히 놓고, 어느 축이 변환에 종속인지 명시한다."
+    ],
+    "capital_prohibition": "본 라운드는 PORT_t / oos_retention / calmar / SR / IR / MDD 를 **산출하지 않는다**. 분포 통계량으로 그것들을 대체·근사하는 서술을 하지 않는다(measurement-graduation §1·§3). 계약의 dt_assert_no_capital_fields() 가 물리적으로 차단하며, 우회 시도를 하지 않는다.",
+    "lane_b_correction_criterion": "Lane B 는 '꼬리확률 축 = vol 대리로 소멸' 로 기록했다(orth_long tail_up_prob_diff -0.917). 정정 여부는 **정본 변환에서 |t| >= 2.0 이고 두 창 부호가 일치하는가** 로만 판정한다. 한 창에서만 살아나면 '정정' 이 아니라 '창 종속' 으로 라벨한다."
+  },
+
+  "prohibitions_self_imposed": [
+    "측정 후 창 분할점 변경 금지.",
+    "측정 후 정본 변환 변경 금지(§3 규칙 산출이 봉인한 값만).",
+    "R1 실패 시 R2/R3/R4 를 게이트에 대입 금지.",
+    "quantile_probs / tail 문턱 / t_min_survive 사후 조정 금지.",
+    "자본 tier 수치 산출·근사·주장 금지."
+  ]
+}

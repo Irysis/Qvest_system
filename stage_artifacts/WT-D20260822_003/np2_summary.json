@@ -1,0 +1,465 @@
+{
+  "wt_id": "WT-D20260822_003",
+  "fq_ref": "FQ-234 NP2",
+  "metric_type": "distribution_screen",
+  "capital_eligible": false,
+  "capital_note": "screening tier. PORT_t/oos_retention/calmar 는 산출도 근사도 하지 않았다.",
+  "contract_version": "distribution_target_screen_v1.0",
+  "prereg": {
+    "spec": "PREREG_NP2.json",
+    "transform_decision": "PREREG_NP2_transform_decision.json",
+    "primary_transform": "rank",
+    "companion_transform": "raw"
+  },
+  "liquidity_dropped": 0,
+  "R1_primary_binding": {
+    "tag": "R1_PRIMARY(binding)",
+    "transform": "rank",
+    "tail_mode": "fixed",
+    "windows": {
+      "early": {
+        "window": ["2000-01-01", "2015-12-01"],
+        "n_months": 189,
+        "raw": {
+          "median_spread": 2.35355441163865,
+          "mean_spread": -0.571599178631506,
+          "skew_spread": -5.14346306489077,
+          "skew_slope": -5.31731964423796,
+          "tail_up_prob_diff": -5.16771139149523,
+          "tail_dn_prob_diff": -8.16493670440918,
+          "qspread_p10": 6.6251234614324,
+          "qspread_p90": -4.15091103415069
+        },
+        "orthogonalized": {
+          "median_spread": 2.86694531745289,
+          "mean_spread": 0.78806387947083,
+          "skew_spread": -2.62245926729477,
+          "skew_slope": -2.68051610224394,
+          "tail_up_prob_diff": -2.26228936532701,
+          "tail_dn_prob_diff": -4.32286447104087,
+          "qspread_p10": 3.52612866601374,
+          "qspread_p90": -1.3907068431433
+        }
+      },
+      "late": {
+        "window": ["2015-12-01", "2026-06-01"],
+        "n_months": 126,
+        "raw": {
+          "median_spread": 4.42377364709903,
+          "mean_spread": 0.612756382101241,
+          "skew_spread": -5.17401124827077,
+          "skew_slope": -5.31406867246556,
+          "tail_up_prob_diff": -4.60469927761822,
+          "tail_dn_prob_diff": -5.33124662274752,
+          "qspread_p10": 5.94202132686699,
+          "qspread_p90": -3.05553626680361
+        },
+        "orthogonalized": {
+          "median_spread": 1.90589439766395,
+          "mean_spread": 0.491106476805192,
+          "skew_spread": -3.27685922792389,
+          "skew_slope": -2.19227219537813,
+          "tail_up_prob_diff": -0.830031788549219,
+          "tail_dn_prob_diff": -3.10040972422411,
+          "qspread_p10": 2.66293587230407,
+          "qspread_p90": -0.0449466318355682
+        }
+      }
+    },
+    "survived_any": ["median_spread", "skew_spread", "skew_slope", "tail_up_prob_diff", "tail_dn_prob_diff", "qspread_p10"],
+    "survived_all": ["skew_spread", "skew_slope", "tail_dn_prob_diff", "qspread_p10"],
+    "survival_verdict": "SURVIVES",
+    "window_independence": "DISJOINT_PAIR_PRESENT",
+    "sign_agreement": "AGREES",
+    "agreed_axes": ["median_spread", "skew_spread", "skew_slope", "tail_up_prob_diff", "tail_dn_prob_diff", "qspread_p10", "qspread_p90"]
+  },
+  "R2_companion": {
+    "tag": "R2_COMPANION(non-binding)",
+    "transform": "raw",
+    "tail_mode": "fixed",
+    "windows": {
+      "early": {
+        "window": ["2000-01-01", "2015-12-01"],
+        "n_months": 189,
+        "raw": {
+          "median_spread": 2.35355441163865,
+          "mean_spread": -0.571599178631506,
+          "skew_spread": -5.14346306489077,
+          "skew_slope": -5.31731964423796,
+          "tail_up_prob_diff": -5.16771139149523,
+          "tail_dn_prob_diff": -8.16493670440918,
+          "qspread_p10": 6.6251234614324,
+          "qspread_p90": -4.15091103415069
+        },
+        "orthogonalized": {
+          "median_spread": 3.00857310468459,
+          "mean_spread": 1.02620519537599,
+          "skew_spread": -2.82258099383704,
+          "skew_slope": -2.90171366301179,
+          "tail_up_prob_diff": -1.41931866808394,
+          "tail_dn_prob_diff": -4.42367928293608,
+          "qspread_p10": 2.68220942290314,
+          "qspread_p90": -0.529232288136195
+        }
+      },
+      "late": {
+        "window": ["2015-12-01", "2026-06-01"],
+        "n_months": 126,
+        "raw": {
+          "median_spread": 4.42377364709903,
+          "mean_spread": 0.612756382101241,
+          "skew_spread": -5.17401124827077,
+          "skew_slope": -5.31406867246556,
+          "tail_up_prob_diff": -4.60469927761822,
+          "tail_dn_prob_diff": -5.33124662274752,
+          "qspread_p10": 5.94202132686699,
+          "qspread_p90": -3.05553626680361
+        },
+        "orthogonalized": {
+          "median_spread": 1.98852489034132,
+          "mean_spread": 0.693399564824413,
+          "skew_spread": -1.92216127039978,
+          "skew_slope": -1.40689106740557,
+          "tail_up_prob_diff": 0.68130596082865,
+          "tail_dn_prob_diff": -1.87678673904463,
+          "qspread_p10": -0.194553563716761,
+          "qspread_p90": 1.24845972150357
+        }
+      }
+    },
+    "survived_any": ["median_spread", "skew_spread", "skew_slope", "tail_dn_prob_diff", "qspread_p10"],
+    "survived_all": [],
+    "survival_verdict": "SURVIVES",
+    "window_independence": "DISJOINT_PAIR_PRESENT",
+    "sign_agreement": "AGREES",
+    "agreed_axes": ["median_spread", "skew_spread", "skew_slope", "tail_dn_prob_diff"]
+  },
+  "R3_diag3_primary": {
+    "tag": "R3_DIAG3_primary(non-binding)",
+    "transform": "rank",
+    "tail_mode": "fixed",
+    "windows": {
+      "w1_k200_only": {
+        "window": ["2000-01-01", "2010-02-01"],
+        "n_months": 119,
+        "raw": {
+          "median_spread": 3.13809575326487,
+          "mean_spread": 1.48973461896697,
+          "skew_spread": -2.05825522166102,
+          "skew_slope": -2.11577290790003,
+          "tail_up_prob_diff": -1.97838082156444,
+          "tail_dn_prob_diff": -5.97081454482095,
+          "qspread_p10": 4.76753228637466,
+          "qspread_p90": -1.12777926388201
+        },
+        "orthogonalized": {
+          "median_spread": 2.5935590933193,
+          "mean_spread": 1.77670939683297,
+          "skew_spread": 0.479707295623074,
+          "skew_slope": 0.961493335722156,
+          "tail_up_prob_diff": -0.844520937458578,
+          "tail_dn_prob_diff": -3.86037051923116,
+          "qspread_p10": 2.86091948532339,
+          "qspread_p90": -0.248291200870907
+        }
+      },
+      "w2_kq150_backfilled": {
+        "window": ["2010-02-01", "2015-12-01"],
+        "n_months": 70,
+        "raw": {
+          "median_spread": -0.362279301273353,
+          "mean_spread": -3.3261078332956,
+          "skew_spread": -7.4359169247148,
+          "skew_slope": -8.10136046433927,
+          "tail_up_prob_diff": -9.57918203945036,
+          "tail_dn_prob_diff": -5.81692705649078,
+          "qspread_p10": 4.78312328212057,
+          "qspread_p90": -7.46445733290684
+        },
+        "orthogonalized": {
+          "median_spread": 1.30988099038503,
+          "mean_spread": -0.721441132212494,
+          "skew_spread": -5.17155069463082,
+          "skew_slope": -5.28122062275825,
+          "tail_up_prob_diff": -2.89635221616497,
+          "tail_dn_prob_diff": -2.08047863322,
+          "qspread_p10": 2.10105816409145,
+          "qspread_p90": -2.11241579968116
+        }
+      },
+      "w3_kq150_recorded": {
+        "window": ["2015-12-01", "2026-06-01"],
+        "n_months": 126,
+        "raw": {
+          "median_spread": 4.42377364709903,
+          "mean_spread": 0.612756382101241,
+          "skew_spread": -5.17401124827077,
+          "skew_slope": -5.31406867246556,
+          "tail_up_prob_diff": -4.60469927761822,
+          "tail_dn_prob_diff": -5.33124662274752,
+          "qspread_p10": 5.94202132686699,
+          "qspread_p90": -3.05553626680361
+        },
+        "orthogonalized": {
+          "median_spread": 1.90589439766395,
+          "mean_spread": 0.491106476805192,
+          "skew_spread": -3.27685922792389,
+          "skew_slope": -2.19227219537813,
+          "tail_up_prob_diff": -0.830031788549219,
+          "tail_dn_prob_diff": -3.10040972422411,
+          "qspread_p10": 2.66293587230407,
+          "qspread_p90": -0.0449466318355682
+        }
+      }
+    },
+    "survived_any": ["median_spread", "tail_dn_prob_diff", "qspread_p10", "skew_spread", "skew_slope", "tail_up_prob_diff", "qspread_p90"],
+    "survived_all": ["tail_dn_prob_diff", "qspread_p10"],
+    "survival_verdict": "SURVIVES",
+    "window_independence": "DISJOINT_PAIR_PRESENT",
+    "sign_agreement": "AGREES",
+    "agreed_axes": ["median_spread", "tail_up_prob_diff", "tail_dn_prob_diff", "qspread_p10", "qspread_p90", "skew_spread", "skew_slope"]
+  },
+  "R3_diag3_companion": {
+    "tag": "R3_DIAG3_companion(non-binding)",
+    "transform": "raw",
+    "tail_mode": "fixed",
+    "windows": {
+      "w1_k200_only": {
+        "window": ["2000-01-01", "2010-02-01"],
+        "n_months": 119,
+        "raw": {
+          "median_spread": 3.13809575326487,
+          "mean_spread": 1.48973461896697,
+          "skew_spread": -2.05825522166102,
+          "skew_slope": -2.11577290790003,
+          "tail_up_prob_diff": -1.97838082156444,
+          "tail_dn_prob_diff": -5.97081454482095,
+          "qspread_p10": 4.76753228637466,
+          "qspread_p90": -1.12777926388201
+        },
+        "orthogonalized": {
+          "median_spread": 2.63846828068472,
+          "mean_spread": 2.01386376022105,
+          "skew_spread": 0.112997147648496,
+          "skew_slope": 0.506761447366565,
+          "tail_up_prob_diff": -0.039488076138064,
+          "tail_dn_prob_diff": -4.31825497486574,
+          "qspread_p10": 2.4308845383695,
+          "qspread_p90": 0.465129119566044
+        }
+      },
+      "w2_kq150_backfilled": {
+        "window": ["2010-02-01", "2015-12-01"],
+        "n_months": 70,
+        "raw": {
+          "median_spread": -0.362279301273353,
+          "mean_spread": -3.3261078332956,
+          "skew_spread": -7.4359169247148,
+          "skew_slope": -8.10136046433927,
+          "tail_up_prob_diff": -9.57918203945036,
+          "tail_dn_prob_diff": -5.81692705649078,
+          "qspread_p10": 4.78312328212057,
+          "qspread_p90": -7.46445733290684
+        },
+        "orthogonalized": {
+          "median_spread": 1.47790921368308,
+          "mean_spread": -0.803961239540176,
+          "skew_spread": -4.7101209693214,
+          "skew_slope": -5.21094517743684,
+          "tail_up_prob_diff": -2.77497414515298,
+          "tail_dn_prob_diff": -1.71524854110708,
+          "qspread_p10": 1.22701711875938,
+          "qspread_p90": -1.75321097557972
+        }
+      },
+      "w3_kq150_recorded": {
+        "window": ["2015-12-01", "2026-06-01"],
+        "n_months": 126,
+        "raw": {
+          "median_spread": 4.42377364709903,
+          "mean_spread": 0.612756382101241,
+          "skew_spread": -5.17401124827077,
+          "skew_slope": -5.31406867246556,
+          "tail_up_prob_diff": -4.60469927761822,
+          "tail_dn_prob_diff": -5.33124662274752,
+          "qspread_p10": 5.94202132686699,
+          "qspread_p90": -3.05553626680361
+        },
+        "orthogonalized": {
+          "median_spread": 1.98852489034132,
+          "mean_spread": 0.693399564824413,
+          "skew_spread": -1.92216127039978,
+          "skew_slope": -1.40689106740557,
+          "tail_up_prob_diff": 0.68130596082865,
+          "tail_dn_prob_diff": -1.87678673904463,
+          "qspread_p10": -0.194553563716761,
+          "qspread_p90": 1.24845972150357
+        }
+      }
+    },
+    "survived_any": ["median_spread", "tail_dn_prob_diff", "qspread_p10", "skew_spread", "skew_slope", "tail_up_prob_diff"],
+    "survived_all": [],
+    "survival_verdict": "SURVIVES",
+    "window_independence": "DISJOINT_PAIR_PRESENT",
+    "sign_agreement": "AGREES",
+    "agreed_axes": ["median_spread", "tail_up_prob_diff", "tail_dn_prob_diff", "qspread_p10", "qspread_p90", "skew_spread", "skew_slope"]
+  },
+  "R4_rolltail": {
+    "tag": "R4_ROLLING_TAIL(non-binding)",
+    "transform": "rank",
+    "tail_mode": "rolling",
+    "windows": {
+      "early": {
+        "window": ["2000-01-01", "2015-12-01"],
+        "n_months": 189,
+        "raw": {
+          "median_spread": 2.35355441163865,
+          "mean_spread": -0.571599178631506,
+          "skew_spread": -5.14346306489077,
+          "skew_slope": -5.31731964423796,
+          "tail_up_prob_diff": -5.4067866283758,
+          "tail_dn_prob_diff": -4.59432196015723,
+          "qspread_p10": 6.6251234614324,
+          "qspread_p90": -4.15091103415069
+        },
+        "orthogonalized": {
+          "median_spread": 2.86694531745289,
+          "mean_spread": 0.78806387947083,
+          "skew_spread": -2.62245926729477,
+          "skew_slope": -2.68051610224394,
+          "tail_up_prob_diff": -1.59446168998925,
+          "tail_dn_prob_diff": -2.63250431325815,
+          "qspread_p10": 3.52612866601374,
+          "qspread_p90": -1.3907068431433
+        }
+      },
+      "late": {
+        "window": ["2015-12-01", "2026-06-01"],
+        "n_months": 126,
+        "raw": {
+          "median_spread": 4.42377364709903,
+          "mean_spread": 0.612756382101241,
+          "skew_spread": -5.17401124827077,
+          "skew_slope": -5.31406867246556,
+          "tail_up_prob_diff": -2.93690418845268,
+          "tail_dn_prob_diff": -6.26264491938934,
+          "qspread_p10": 5.94202132686699,
+          "qspread_p90": -3.05553626680361
+        },
+        "orthogonalized": {
+          "median_spread": 1.90589439766395,
+          "mean_spread": 0.491106476805192,
+          "skew_spread": -3.27685922792389,
+          "skew_slope": -2.19227219537813,
+          "tail_up_prob_diff": 0.391396325821906,
+          "tail_dn_prob_diff": -1.8746201433857,
+          "qspread_p10": 2.66293587230407,
+          "qspread_p90": -0.0449466318355682
+        }
+      }
+    },
+    "survived_any": ["median_spread", "skew_spread", "skew_slope", "tail_dn_prob_diff", "qspread_p10"],
+    "survived_all": ["skew_spread", "skew_slope", "qspread_p10"],
+    "survival_verdict": "SURVIVES",
+    "window_independence": "DISJOINT_PAIR_PRESENT",
+    "sign_agreement": "AGREES",
+    "agreed_axes": ["median_spread", "skew_spread", "skew_slope", "tail_dn_prob_diff", "qspread_p10", "qspread_p90"]
+  },
+  "route_gate_primary": {
+    "eligible": true,
+    "route": "DISTRIBUTION_TARGET",
+    "gate_version": "distribution_target_screen_v1.0",
+    "spec_id": "FQ234_absorb_w3_corr",
+    "capital_eligible": false,
+    "capital_note": "라우트 발급은 screening tier 라벨일 뿐 — 자본 자격이 아니다.",
+    "requirements": {
+      "r1_mean_space_powered_null": {
+        "pass": true,
+        "detail": {
+          "supplied": true,
+          "label": "NEGATIVE_POWERED",
+          "label_ok": true,
+          "positive_control_statistic": 1.674,
+          "null_band": [-1.019, 0.486],
+          "positive_control_detected_measured": true,
+          "positive_control_detected_declared": true,
+          "declaration_matches_measurement": true,
+          "observed_statistic": -0.318,
+          "observed_inside_null_band_measured": true,
+          "design": "semi-oracle PC1 (realized rank-IC 0.0413) vs AR(1)-matched placebo band (rho 0.8315, 200 draw)"
+        }
+      },
+      "r2_orthogonal_survival": {
+        "pass": true,
+        "detail": {
+          "verdict": "SURVIVES",
+          "control_cols": ["win_vol", "log_size"],
+          "control_axes_n": 2,
+          "t_min_survive": 2,
+          "survived_axes": ["median_spread", "skew_spread", "skew_slope", "tail_up_prob_diff", "tail_dn_prob_diff", "qspread_p10"]
+        }
+      },
+      "r3_two_window_sign_agree": {
+        "pass": true,
+        "detail": {
+          "window_verdict": "DISJOINT_PAIR_PRESENT",
+          "has_disjoint_pair": true,
+          "sign_verdict": "AGREES",
+          "agreed_axes": ["median_spread", "skew_spread", "skew_slope", "tail_up_prob_diff", "tail_dn_prob_diff", "qspread_p10", "qspread_p90"],
+          "axes_surviving_and_agreeing": ["median_spread", "skew_spread", "skew_slope", "tail_up_prob_diff", "tail_dn_prob_diff", "qspread_p10"]
+        }
+      }
+    },
+    "reasons": [],
+    "evaluated_at": "2026-08-22 14:22:44"
+  },
+  "route_gate_companion_non_binding": {
+    "eligible": true,
+    "route": "DISTRIBUTION_TARGET",
+    "gate_version": "distribution_target_screen_v1.0",
+    "spec_id": "FQ234_absorb_w3_corr",
+    "capital_eligible": false,
+    "capital_note": "라우트 발급은 screening tier 라벨일 뿐 — 자본 자격이 아니다.",
+    "requirements": {
+      "r1_mean_space_powered_null": {
+        "pass": true,
+        "detail": {
+          "supplied": true,
+          "label": "NEGATIVE_POWERED",
+          "label_ok": true,
+          "positive_control_statistic": 1.674,
+          "null_band": [-1.019, 0.486],
+          "positive_control_detected_measured": true,
+          "positive_control_detected_declared": true,
+          "declaration_matches_measurement": true,
+          "observed_statistic": -0.318,
+          "observed_inside_null_band_measured": true,
+          "design": "semi-oracle PC1 (realized rank-IC 0.0413) vs AR(1)-matched placebo band (rho 0.8315, 200 draw)"
+        }
+      },
+      "r2_orthogonal_survival": {
+        "pass": true,
+        "detail": {
+          "verdict": "SURVIVES",
+          "control_cols": ["win_vol", "log_size"],
+          "control_axes_n": 2,
+          "t_min_survive": 2,
+          "survived_axes": ["median_spread", "skew_spread", "skew_slope", "tail_dn_prob_diff", "qspread_p10"]
+        }
+      },
+      "r3_two_window_sign_agree": {
+        "pass": true,
+        "detail": {
+          "window_verdict": "DISJOINT_PAIR_PRESENT",
+          "has_disjoint_pair": true,
+          "sign_verdict": "AGREES",
+          "agreed_axes": ["median_spread", "skew_spread", "skew_slope", "tail_dn_prob_diff"],
+          "axes_surviving_and_agreeing": ["median_spread", "skew_spread", "skew_slope", "tail_dn_prob_diff"]
+        }
+      }
+    },
+    "reasons": [],
+    "evaluated_at": "2026-08-22 14:22:46"
+  },
+  "generated_at": "2026-08-22 14:22:53"
+}

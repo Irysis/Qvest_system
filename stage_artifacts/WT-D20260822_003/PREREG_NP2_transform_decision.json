@@ -1,0 +1,53 @@
+{
+  "wt_id": "WT-D20260822_003",
+  "role": "PREREG_NP2 §control_transform_decision_rule 집행 — 결과량 미사용",
+  "prereg_ref": "stage_artifacts/WT-D20260822_003/PREREG_NP2.json",
+  "generated_at": "2026-08-22 14:21:43",
+  "census": {
+    "n_rows": 86297,
+    "n_months": 315,
+    "n_tickers": 927,
+    "date_min": "2000-03-31",
+    "date_max": "2026-05-29",
+    "na_absorb_raw": 0,
+    "na_win_vol": 0,
+    "na_log_size": 0,
+    "columns": ["Date", "Ticker", "alpha_score", "alpha_score_neu", "absorb_raw", "win_vol", "log_size", "metric_type", "spec_id", "direction_note"]
+  },
+  "liquidity_census": {
+    "liq_min": 200000000,
+    "n_rows_before": 86297,
+    "n_adv_missing": 744,
+    "n_below_threshold": 0,
+    "n_rows_after": 86297,
+    "rule": "is.na(adv) | adv >= liq_min (계약 canonical_distribution_screen 내부 규칙과 동일)"
+  },
+  "dependence": {
+    "n_months_evaluated": 315,
+    "win_vol": {
+      "median_abs_pearson": 0.25983510837383,
+      "median_abs_spearman": 0.160457864370607,
+      "ratio_spearman_over_pearson": 0.61753727344556
+    },
+    "log_size": {
+      "median_abs_pearson": 0.500472509942625,
+      "median_abs_spearman": 0.571694469557826,
+      "ratio_spearman_over_pearson": 1.14230943398543
+    },
+    "note": "월별 횡단면 상관의 |값| 중앙값. Spearman 이 Pearson 보다 크면 종속이 단조이되 선형이 아니라는 신호 — 선형 OLS 직교화는 그만큼 덜 걷어낸다."
+  },
+  "explained_variance_aux": {
+    "median_r2_linear_controls": 0.280538521996396,
+    "median_r2_rank_controls": 0.276029568196656,
+    "note": "보조 기록 — 사전등록 규칙의 입력이 아니다. rank 통제가 더 많은 분산을 설명하면 raw 잔차에 통제 성분이 남는다는 뜻."
+  },
+  "rule_application": {
+    "rule": "어느 하나라도 median|rho| >= median|r| * 1.10 이면 primary=rank, 아니면 primary=raw",
+    "threshold": 1.1,
+    "triggered_win_vol": false,
+    "triggered_log_size": true,
+    "primary_transform": "rank",
+    "companion_transform": "raw",
+    "sealed_note": "본 값은 canonical_distribution_screen() 호출 **전** 에 확정됐다. 측정 후 변경 금지(PREREG_NP2 §prohibitions_self_imposed)."
+  }
+}
