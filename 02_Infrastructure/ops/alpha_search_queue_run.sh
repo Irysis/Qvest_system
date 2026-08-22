@@ -201,6 +201,6 @@ fi
 #   도훈에게 도달하지 않았다 — 오늘 반복 확인된 "기록은 되는데 읽는 쪽이 없다" 의 텔레그램 판본.
 _RS="$BASE/02_Infrastructure/ops/research_run_notify.R"
 if [ -f "$_RS" ] && [ "${QVEST_RUN_NOTIFY:-1}" = "1" ]; then
-  QM_ROOT="$BASE" Rscript --no-save "$_RS" "alpha_search" "$N" "0" "${_EFFECT_CMP:-}" "$rc" >> "$LOG" 2>&1 || log "완주 알림 실패(비치명)"
+  QM_ROOT="$BASE" Rscript --no-save "$_RS" "alpha_search" "$UNDEFINED_VAR" "0" "${_EFFECT_CMP:-}" "$rc" >> "$LOG" 2>&1 || log "완주 알림 실패(비치명)"
 fi
 exit 0
