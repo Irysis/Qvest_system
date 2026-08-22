@@ -1101,6 +1101,9 @@ SUITES=(
   # 스테이지 상한 + recharge 정체 경보 — 실측 51분 점유가 그날 파이프라인을 통째로 먹었다.
   #   ★1급 축은 "정상 소요를 자르지 않는가"(도훈의 리서치 런 상한 제거 지시와 다른 층).
   "08_Tests/ops/test_stage_timeout_and_recharge_stall.sh"
+  # curated 결손이 arXiv 축까지 죽이던 결합 해소 + git 추적. 08-15/16/17 3일 연속 crash 전례.
+  #   ★1급 축은 "죽지 않는가" 가 아니라 "조용히 넘기지도 않는가".
+  "08_Tests/ops/test_curated_sources_isolation.sh"
 )
 
 # (2026-08-02) .py 분기 추가 — 종전엔 확장자 무관 `bash` 로 던져 파이썬 suite 가

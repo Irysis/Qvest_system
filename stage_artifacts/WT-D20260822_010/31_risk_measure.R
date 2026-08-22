@@ -95,7 +95,6 @@ fit_scale <- function(dt_idx, key) {
 res <- vector("list", length(dts))
 for (i in seq_along(dts)) {
   ko <- fit_scale(i, "grp"); if (is.null(ko)) next
-  kv <- fit_scale(i, "vq");  # PC2 positive control (vol quintile) — 아래에서 vq 정의 후 재실행
   cur <- P[Date == dts[i]]
   cur <- merge(cur, ko, by = "grp", all.x = TRUE)
   cur[!is.finite(k), k := 1]

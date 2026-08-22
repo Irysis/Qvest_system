@@ -1,0 +1,84 @@
+{
+  "R1_gate_recomputed": {
+    "accounting": "level_normalized_relative_gap",
+    "realized": {
+      "level": 0.03132290812788,
+      "gap": 0.01219601302668,
+      "rel_gap": 0.3893640072273,
+      "rate_lo": 0.04200063350763,
+      "rate_hi": 0.02980462048094,
+      "ratio_lo_hi": 1.409198735964
+    },
+    "model_M0": {
+      "level": 0.04102260973349,
+      "gap": 0.01582475477716,
+      "rel_gap": 0.3857569004013,
+      "rate_lo": 0.05451094880419,
+      "rate_hi": 0.03868619402703,
+      "ratio_lo_hi": 1.409054319639
+    },
+    "absorbed_share_by_vol_scaling": 0.990735900702,
+    "surviving_share": 0.009264099298039,
+    "effect_5pct_units": 0.0001803553413018,
+    "mde80": 0.005832454901825,
+    "ratio": 0.0309227151067,
+    "threshold": 0.1,
+    "pass": false,
+    "v2_script_naive_diff_accounting": -0.005792472614074,
+    "why_corrected": "차분 회계는 M0 의 수준 과대예측(1.33x)을 격차 공제에 흘려 부호를 뒤집는다. 두 회계의 답이 MDE 보다 크게 갈리므로 회계 선택이 판정을 지배 — 수준-불변 회계를 채택하고 양쪽을 다 기록한다.",
+    "detectable_floor": {
+      "mde_as_share_of_raw_relgap": 0.2995888060305,
+      "reading": "MDE80 이 raw 판별력의 이 비율에 해당한다 — 이보다 큰 잔존은 배제 가능, 이보다 작은 잔존은 미결."
+    }
+  },
+  "vol_shape": {
+    "by_orth_quintile": {
+      "qs": ["1", "2", "3", "4", "5"],
+      "sd0": [0.138192758292, 0.119217981789, 0.1167538756297, 0.1202034009232, 0.1278884192186],
+      "win_vol": [0.02920440051159, 0.02456436923333, 0.02479865338653, 0.02625823033213, 0.02878356494278]
+    },
+    "sd0_lo_vs_hi": {
+      "lo": 0.1388936904314,
+      "hi": 0.1203451065096,
+      "ratio": 1.154128277083
+    },
+    "winvol_lo_vs_hi": {
+      "lo": 0.02948004574592,
+      "hi": 0.02580898051174
+    },
+    "spearman_full_range": -0.04219977555652,
+    "interpretation_note": "직교화는 win_vol(창 내 **일별** 수익 sd, 단기)에 대한 **선형(랭크)** 회귀다. 위험모델의 특이위험은 장기(60개월 월별) 변동성이며 서로 다른 양이다. 전 구간 선형상관이 0에 가까워도 **하위 20% 절단**은 잔차의 비선형 구조를 상속할 수 있다 — 분위별 형태로 확인."
+  },
+  "R3": {
+    "metric": "name-level QLIKE, M0 vs M0+score_orth 군별 스케일(확장창 PIT)",
+    "n_months": 217,
+    "mean_improvement": 0.008210364135578,
+    "nw_t": 0.6117382372284,
+    "mde80": 0.02997614889989,
+    "gate_ratio_prelaunch": 0.6698743002889,
+    "mean_L0": -3.116338979983,
+    "mean_L1": -3.124549344119
+  },
+  "PC2_positive_control": {
+    "axis": "win_vol quintile",
+    "n_months": 217,
+    "mean_improvement": 0.01107724011233,
+    "nw_t": 0.8350898103817,
+    "mde80": 0.02955736447352,
+    "fired": false
+  },
+  "R2_gate": {
+    "pass": false,
+    "ratio": 0.0169690283479,
+    "effect": 0.0008443704030674,
+    "mde80": 0.04975950217986,
+    "reading": "crowding proxy 의 기전-함의 beta 0.00084 는 MDE80 0.04976 의 1.7% — 268개월로는 원리적으로 검출 불가. 회귀를 돌리지 않는다.",
+    "book_tilt": {
+      "mean": 0.1745298518403,
+      "sd": 0.1273070663817,
+      "range": [0, 0.6084134567041]
+    }
+  },
+  "metric_type": "estimation_quality__canonical_inputs",
+  "labels": []
+}

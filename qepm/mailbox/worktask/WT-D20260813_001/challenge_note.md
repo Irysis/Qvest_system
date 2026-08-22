@@ -112,3 +112,36 @@
 
 ## 결론 (Risk)
 25m 공통이력 상한 하에서 Σ 추정은 건전 — LW-NLS 는 p≈n 정답, PSD·well-conditioned, thin-sample·축소감쇠 둘 다 공개. 지배 구조위험은 **섹터 집중(반도체 57%, RF-R1 HIGH)** 이지 통계 공통인자(PC1 0.30~0.35)가 아니다. 포트 실제 위험성격(고모멘텀·비싼성장·53.9% vol·β 1.13)이 alpha 층 저변동 프레이밍과 괴리 — surface(override 아님). 상단 research_verdict=NOT_SUPPORTED 는 본 분석과 무관하며, Σ 패키지는 기록용 독립 구조정보다.
+
+---
+
+# Self-Adversarial Challenge — Optimizer (Opus 4.8 native adversarial, finalize 직전)
+
+**작성**: optimizer-research. AX-008 3-source 중 1. **대상**: `optimization_package.json` (method=EW_top25_semicap50).
+**역할경계**: alpha_vector·Σ read-only. 아래는 *weights 결정*에 대한 자가 적대검증.
+
+## 자가제기 약점 (≥3, 자율분류: ACCEPT / PARTIAL / REBUTTAL)
+
+**C1 — "약한 알파(NOT_SUPPORTED)인데 최적화를 돌린 것 자체가 낭비/overfitting 아닌가?"** → **REBUTTAL**
+- 근거 3축: ① 학술 — DeMiguel-Garlappi-Uppal 2009: 약한/불확실 μ̂ 에서 1/N 이 표본최적화를 OOS 로 이긴다. 정확히 이 경우(rank-IC -0.028·paired t 0.828)라 최적화의 *결론*이 "EW 로 남아라"인 것이 이론 정합. ② L-code/measurement — §6 "직교 ≠ 수익"·Cycle 2 교훈(broad alpha 에서 MVO/HRP/ERC 집중이 net SR 을 오히려 낮춤) 실측 재현: MVO snapshot vol 52.6→57.4%·semi 56→67%. ③ 정량 — sizing 5종 전수 비교 후 EW 선택. 최적화는 "복잡한 비중을 만들기 위해"가 아니라 "sizing 이 edge 가 아님을 실측 배제하기 위해" 돌렸다. **결과가 baseline 이어도 그 baseline 은 5-method 비교로 방어된 결정이다.**
+
+**C2 — "score-tilt 이 full-period net SR 을 0.604→0.651 로 올렸는데 왜 안 쓰나? 개선을 버리는 것 아닌가?"** → **ACCEPT (기각)**
+- IS/OOS split 실측: Tilt−EW delta = full +0.046 이지만 **IS −0.16 / OOS +0.18 (부호반전)**. 한 반쪽에서 EW 보다 나쁘다 = full-period 개선이 안정 구조가 아니라 후반부 우연. + full-strength tilt turnover 12.56 > 11.0 cap (도훈 mandate) → silent relaxation 금지로 애초 DISQUALIFY. turnover-feasible blend(θ≤0.19)도 개선 미미(+0.021 SR)·비robust. **높은 full-period 수치를 고르는 것 = method shopping = 우회. 정직 라벨로 기각.**
+
+**C3 — "반도체 집중(RF-R1 57%)을 sector cap 으로 실제 해소했나?"** → **PARTIAL**
+- 현 book: 64% natural EW → 50% cap 적용(해소 O). 그러나 ① historical 로는 2/199 dates 만 binding(mean 7.2%) = 대부분 기간 무효 ② **MDD 67% 를 전혀 못 낮춤**(cap 전후 동일 0.6701). 인정: sector cap 은 *현 regime book 의 tail-risk 표면*만 완화하고 *성과/MDD* 는 못 건드린다. 단 이는 cap 무용이 아니라 **MDD 원인이 sector 가 아니라 market beta(0.78)·구조 drawdown(2018/2022)임을 실증** — 보완: 이 사실을 concentration_flags 에 명시하고, MDD 개선은 표적/alpha 층 과제로 귀속(optimizer 경계 밖).
+
+**C4 — "HRP/ERC/MVO 를 스케줄에 안 돌린 것은 비교 회피 아닌가?"** → **REBUTTAL**
+- risk agent 는 현재 25명 **snapshot Σ** 만 제공(walk-forward date별 Σ 미제공). date별 top-25 는 상이하므로 스케줄 HRP/ERC/MVO 는 date별 Σ 재추정이 필요한데, **그것을 optimizer 가 만들면 Σ 재정의 = 역할경계 침범(Hook block)**. ⇒ 이 3종은 snapshot 진단으로만 기록하고 스케줄은 Σ-불요 scheme(EW/tilt/invvol)으로 정직 비교. 회피가 아니라 경계 준수.
+
+## 강제 escalate trigger 점검
+- Hard Constraint 위반(max_names>25 / max_w>0.20 / Σw≠1 / turnover>11.0)? → **NONE** (25·0.0455·1.0·10.62). tilt/invvol 은 cap 위반이라 애초 disqualify.
+- RF-O9 single-snapshot? → **NO** — weights.csv 199 unique dates·density 1.0 (walk-forward 시계열 schedule).
+- HIGH ≥ 5 / AX hard FAIL ≥ 3? → No. infeasibility silent override? → No (infeasibility_report=null, feasible).
+- **escalate 불요.**
+
+## turnover round-trip 검증 (×12 annualization 금지 재확인)
+- ann_turnover = mean(per-rebalance Σ|Δw|) × 12 (월간 리밸 12회/yr). per-rebalance turnover = 종목별 |w_t − w_{t-1}| 합(round-trip 아님·one-way delta). EW 선택 10.62/yr ≤ 11.0 cap. tilt full 12.56/yr = cap 초과 → disqualify. **×12 는 월간→연간 빈도 환산이지 round-trip 이중계상 아님**(Iter 3 위반 회피 확인).
+
+## 결론 (Optimizer)
+5-method 비교 후 **EW top-25 + 반도체 50% cap** 채택. sizing 은 이 약한 알파에서 edge 가 아님을 실측(DeMiguel-Garlappi-Uppal 정합·IS/OOS 부호반전·turnover cap 방화벽). selection(top-25)=edge. sector cap = costless safeguard(2/199 binding·MDD 불변). walkforward net SR 0.605·PORT_t 0.927·MDD 67%·Calmar 0.230 = **graduation HARD 3종 전부 미충족·자본 자격 아님**. upstream research_verdict=NOT_SUPPORTED 정합. weights 는 forge 백테스트/judge 심사용 진단(production_grade=FALSE, forge 재측정 필요). alpha_vector·Σ 재해석 없음.
