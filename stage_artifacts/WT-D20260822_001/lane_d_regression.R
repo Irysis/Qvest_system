@@ -114,7 +114,12 @@ laned_run <- function(y_tag, y_var, s_series, win_start, win_end,
 
   # ── 식별력 집중도: 회귀 leverage 가 몇 개 달에 몰려 있나 (에피소드 붕괴 진단) ──
   lev <- (d$s - mean(d$s))^2
-  conc <- list(top1_share  = max(lev) / sum(lev),
+  # D_G (rev2 advisory): C_top = 상위 3분위 S 달의 |b·(S−S̄)| 기여 비중. ④경계 참이면 > 1/3
+  thr_ter <- stats::quantile(d$s, 2/3)
+  contrib <- abs(d$s - mean(d$s))
+  c_top <- sum(contrib[d$s >= thr_ter]) / sum(contrib)
+  conc <- list(D_G_C_top_upper_tercile = c_top, D_G_baseline_uniform = 1/3,
+               top1_share  = max(lev) / sum(lev),
                top5_share  = sum(sort(lev, decreasing = TRUE)[1:min(5, length(lev))]) / sum(lev),
                top10pct_share = sum(sort(lev, decreasing = TRUE)[1:max(1, floor(0.1 * length(lev)))]) / sum(lev),
                effective_months_kish = (sum(lev)^2) / sum(lev^2))
