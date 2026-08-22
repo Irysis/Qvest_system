@@ -126,6 +126,18 @@ data.table::setattr(liq_dt, "liq_ruler_source", fwd$liq_ruler_source)
 LG("liq_ruler =", fwd$liq_ruler, " source =", fwd$liq_ruler_source)
 LG("returns_dt rows =", nrow(returns_dt), " bench_dt rows =", nrow(bench_dt))
 
+# ── ★유니버스 선-제한 (WT-009 CF-03 오염 차단) ────────────────────────────────
+#   macro_beta_scores 는 DB 전체 3462 종목. returns_dt 는 builder 가 K200|KQ150 멤버십으로
+#   이미 제한한 tradeable 유니버스. top-25 선별이 유니버스 밖 종목으로 채워지지 않도록
+#   score 를 (Date,Ticker) 로 returns_dt 에 inner-join 해 선-제한한다.
+univ_keys <- unique(returns_dt[, .(Date, Ticker)])
+mb_before <- nrow(mb)
+mb <- merge(mb, univ_keys, by = c("Date", "Ticker"))   # inner join = 유니버스 교집합
+LG(sprintf("유니버스 선-제한: score rows %d → %d (K200∪KQ150 교집합)", mb_before, nrow(mb)))
+nd_univ <- mb[, .N, by = Date]
+LG(sprintf("유니버스-제한 후 names/date quantiles: %s",
+           paste(round(quantile(nd_univ$N, c(0,.25,.5,.75,1))), collapse=",")))
+
 # -----------------------------------------------------------------------------
 # STEP 3c — power_recheck_at_measurement: 정렬 월 부분표본 active sd
 #   기저 sd 는 무조건부 전표본. 여기선 정렬 월의 실제 sd 를 무조건부-런 방식과 동형으로 재측정하기
@@ -375,7 +387,8 @@ s2_res <- tryCatch({
     out
   }
   reg2[, z1 := z_roll(d20_ts)][, z2 := z_roll(d20_vix)][, z3 := z_roll(d20_krw)]
-  reg2[, Ct := (abs(z1 + z2 + z3)) / (abs(z1) + abs(z2) + abs(z3))]
+  reg2[, denom := abs(z1) + abs(z2) + abs(z3)]
+  reg2[, Ct := fifelse(is.finite(denom) & denom > 0, abs(z1 + z2 + z3) / denom, NA_real_)]
   # 방향 일치 소비 활성수익 = 전 sig_date 의 active (pr_all$active), 정렬이면 부호 내장 score 소비.
   # 진단: active(정렬월만) ~ Ct 회귀 기울기
   m2 <- merge(pr_all[, .(Date, active)], reg2[aligned == TRUE, .(Date, Ct)], by = "Date")
