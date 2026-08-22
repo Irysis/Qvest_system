@@ -1,0 +1,28 @@
+{
+  "prereg_id": "dfa_v19_20260822",
+  "round": "R23",
+  "strategy": "DFA_RegimeSignals",
+  "registered_at": "2026-08-22",
+  "registered_before_results": true,
+  "selection_type": "chain",
+  "chain_rationale": "R19 가 '노출 스케일링 축 폐쇄'를 선언한 논거는 IR 불변성이었으나, 구속 게이트는 calmar 다. IR 불변은 calmar 에 대해 아무 말도 하지 않는다 — 시변 노출이 낙폭 구간에서만 줄면 MDD 가 CAGR 보다 더 많이 줄어 calmar 는 올라간다. 또한 R19 의 breadth 는 평균 Market 비중 0.467 로 상시 절반을 빼는 규칙이었지 위기 조건부가 아니었다. ⇒ R19 의 폐쇄는 과잉 일반화였을 수 있으며, 본 라운드가 그것을 실측으로 판정한다. 방금 산술 실측(2026-08-22): 유니버스 21개 팩터지수 MDD 는 -0.344(Quality, 최선) ~ -0.555 로 방어 자산 부재이나, 사후최고선택 상한이 calmar 7.577 / MDD -0.123 이라 0.64 는 창-원리적 불가가 아니다. 낙폭은 GFC 단일 사건에 집중(최대낙폭 2009-02, 2010-01~ 시작 시 MDD -0.310 로 창 무관 안정).",
+  "single_degree_of_freedom": "R20 채택팔(F1, top-quintile k=5)에 PG2 정본 국면 오버레이(apply_regime_overlay.R, 파라미터 기본값 수정 금지)를 적용할지 여부. 전략 내부 파라미터는 일절 불변.",
+  "arms": {
+    "H0_control": "R20 채택팔 F1, 오버레이 없음",
+    "H1_pg2overlay_HEADLINE": "F1 + PG2 정본 국면 오버레이 (regime_daily_v2 MRS 기반)"
+  },
+  "headline_cell_predesignated": "H1, cost=15bps, 벤치=parent. full 창(2007-03~2026-07)과 clean 창(2015-07~) 둘 다 보고.",
+  "decision_rule": {
+    "primary_question": "calmar 가 문턱 0.64 에 유의미하게 접근하는가",
+    "adopt_H1_if": "① calmar(H1) > calmar(H0) ∧ ② PORT_t(H1) >= PORT_t(H0) - 0.30 (액티브 희석 허용 폭 — 오버레이는 노출을 줄이므로 active t 하락이 구조적) ∧ ③ PIT 게이트 3종 통과",
+    "record_regardless": "채택 여부와 무관하게 calmar 가 0.64 에 얼마나 접근하는지를 기록한다. 이것이 '노출 축이 calmar 레버인가'의 답이다.",
+    "graduation_gates_unchanged": "PORT_t>=2.95 / oos_retention>=0.7 / calmar>=0.64 / book-marginal dIR>=0.05 — 불변"
+  },
+  "pit_gates_required": [
+    "국면 신호가 홀딩기간 시작 전 정보만 사용 — assert_overlay_pit 또는 등가 확인",
+    "lag1 스트레스: 국면 신호 shift(1) 적용판이 붕괴하지 않을 것 (붕괴 시 동월 누출 의심)",
+    "진행월 제외 · 대조군 H0 를 동일 창에서 재측정"
+  ],
+  "expected_failure_mode": "오버레이는 노출을 줄이므로 CAGR 도 함께 줄어든다. MDD 감축률이 CAGR 감축률을 넘지 못하면 calmar 는 개선되지 않는다. 특히 이 국면 신호는 STR_1715 의 낙폭 프로파일에 맞춰 캘리브됐고 DFA 의 낙폭 시점과 어긋날 수 있다(R15 선행 실측에서 MDD 개선 -8.3%p 에 그침). 그 경우 판정은 '노출 축은 calmar 레버가 맞으나 이 신호로는 부족' 이며, 축 폐쇄가 아니라 신호 교체 과제로 라우팅한다.",
+  "prohibited": ["오버레이 파라미터 튜닝(정본 기본값 고정)", "사후 창 선택", "문턱 완화", "롱숏", "벤치 교체"]
+}
