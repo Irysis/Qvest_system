@@ -32,3 +32,40 @@ answer-principles 회피표현 목록 전 항목에 대해 본문 검사 — 해
 
 ## 결론
 verdict = **designed** 유지. 가장 약한 가정 = W2(국면 경계 사후성) — F3 독립 관측으로 반증 가능하게 설계했으므로 finalize 진행.
+
+---
+
+# Challenge Note — WT-D20260822_005 · alpha-research 구간 (v8.2 Self-Adversarial) — APPENDED
+
+- **작성**: alpha-research (model: opus), 2026-08-22, finalize 직전
+- **범위**: 실측 산출 축 (①ablation 성분귀속 / ②dual-basis / ③KQ150 / ④redundancy / ⑤regime / ⑥창-도달가능성 / PIT)
+- **승계 규약 준수**: mechanism/falsification/regime_scope 재작성 안 함 — 게이트 스키마 재포장만. 결함 미발견(재설계 요청 없음).
+
+## 실측 요약 (measure 결과, metric_type=canonical_screen_diag, tier=screen_diagnostic)
+- **IS(2005~2018) ablation**: A(M08+Q01) 2.193 → **B(M08+Q01+C03) 2.841** → H(+M01) 2.983(redundant). G(Q01 단독) 1.154. F4 반증조건 PASS(유지축 조합 IS PORT_t > 2.0 — 성분귀속 IS 확정).
+- **선택 B 다중창(cap-w IKS200)**: IS 2.841 / **OOS(2019~) −1.285** / full(259m) 0.866 / clean(2015-07~) −1.643.
+- **oos_retention(canonical, 2019 split) = −0.666 → HARD FAIL(<0.5 무조건)**.
+- **④ redundancy**: M08~M01 xsec cor **0.813**(H의 +M01 = 잉여, 배제 정당). M08~M07 0.225 / M08~Q01 0.008(직교).
+- **② dual-basis**: EW-universe diag도 OOS 0.146 / clean −0.095 / post2017_t 0.18 → post-2017 감쇠는 cap-w 아티팩트 아님(진짜 cohort decay). OVERLAY_CANDIDATE 재분류 근거 부재.
+- **⑥ 창-도달가능성 상한**: perfect-foresight top-25 = **31.01** → 이 창에서 2.95 원리적 도달 가능 ⇒ 실패는 '창 짧음'이 아니라 '신호 약함'(효과없음 아니라 decay).
+- **⑤ regime arm(advisory)**: RISK_ON active +10.9%/yr(SR 0.61) vs RISK_OFF −2.3%/yr(SR −0.11) — 승계 regime_scope 실측 정합.
+
+## 자가 제기 약점 3건 + 분류
+
+### AW1. C17 dead → C03 대체가 silent override 아닌가 — **REBUTTAL + 정직 라벨**
+C17_OP_Revision 은 전기간 커버리지 0(dead — registry 등록됐으나 미배출, 74개월 표본 전부 0). 대체 = C03_EPS_Chg_3m(3m EPS revision, 2005~ live). 기전 intent(이익수정/컨센서스 실현 경로, F2)를 보존하는 최근접 live emitter이며, 대체 사실·근거를 본 노트·alpha_package factors 층에 명시 기록. 특정 dead ID를 live 동류로 교체한 것은 데이터 게이트 대응이지 가설 재해석 아님(Charter §8 정합 — 승계 mechanism 불변). ⚠ 단 C03이 C17과 동일 통계량이 아니므로 "C17 arm 그 자체"는 미측정으로 남는다(정직 라벨).
+
+### AW2. B가 IS 우수인데 OOS 붕괴 = IS-선택 아티팩트 아닌가 — **ACCEPT (이것이 핵심 판정)**
+B는 IS-only 선택 라운드의 승자이고 OOS(−1.285)·clean(−1.643)에서 부호 반전. oos_retention −0.666은 HARD FAIL. **이것은 결함이 아니라 판정 결과다** — chain 자격 ②(IS-only 선택)를 지켰기에 OOS가 순정 검증으로 남았고, 그 검증이 자본 부적격을 확정했다. W5(alpha-hypothesis)가 예고한 이중성 중 (b)cohort-wide post-2017 decay(FMT-07)가 주원인임이 dual-basis로 확인 — 6→3 정제로 회복 안 됨. 성분귀속(F4)은 IS에서 참이나, 그 참인 귀속이 자본 자격을 주지 않는다(measurement-graduation §3: HARD는 forge-authoritative, screening은 라벨일 뿐).
+
+### AW3. regime arm이 CRISIS 방어를 입증했다고 과대해석 위험 — **PARTIAL**
+RISK_ON/RISK_OFF median split은 Macro_Risk_Score 기준 근사이며 E3의 정식 RISK_ON/CRISIS 4-라벨이 아니다. RISK_OFF active 음수는 승계 regime_scope와 방향 정합이나, 이는 advisory diag이고 OOS 붕괴를 구제하지 못한다. "국면 조건부화하면 자본 자격"이라는 결론으로 비약 금지 — 외부 overlay는 OVERLAY_INFERIOR 실측(2026-08-17). 국면 소비는 next_probe로 이관(FR 모드).
+
+## 합리화 어휘 자가검사
+answer-principles 회피표현 목록 전 항목 본문 검사 — "미미/관행/보수적이면/대부분 동일" 등 부재 확인. 모든 추론(성분귀속 IS-한정, regime 근사)에 "IS-only/advisory/미측정" 명시 라벨. self-rationalization auto-detection: 해당 어휘 미사용.
+
+## Q-Lead escalate trigger 점검
+HIGH severity concern < 5, AX axiom hard FAIL 없음, PIT C1(lockbox·lookahead) 위반 없음(macro regime Date<=sig_date 진행중월 배제 확인) → 자동 escalate 미발화. 단 oos_retention HARD FAIL은 자본 tier 부적격이므로 governor 미진행(정상 — screening tier 라운드).
+
+## 결론
+verdict = **measured → config_scoped_negative_capital_tier + IS_driver_attribution_confirmed**. 가장 약한 가정 = AW2(수용, 판정 그 자체). Self-Adversarial 통과 — finalize 진행. next_probe ≥ 2 (alpha_package).

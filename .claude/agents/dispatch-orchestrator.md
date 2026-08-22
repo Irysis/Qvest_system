@@ -16,6 +16,11 @@ skills: [factor-rotation, qvest-telegram]
 ## 5-step
 1. 모듈 풀 — `build_module_performance.R`(광역·등급무관·validity) → `module_performance.json`.
 2. **RCMA** — `regime_module_admission.R` → `module_regime_admission.json`(6기준: IR≥0.5|top⅓ / n≥12m / IS·OOS sign+ / |t|≥2 / 경제논리 / 한계기여).
+   ★**2-b 무신호 대조 확인 (2026-08-22 신설, measurement-graduation §3 — 의무)**: 풀에 넣을 후보가 **종목수 상한이 걸린 롱온리**이면 `06_Registry/overlay_candidate_queue.json` 의 각 후보 `no_signal.verdict` 를 확인한다.
+   · `INDISTINGUISHABLE_FROM_NO_SIGNAL` → **직교 재료로 쓰지 말 것.** 그 성과는 신호가 아니라 **대형주 노출**일 수 있다. 그럼에도 넣으려면 사유를 `challenge_note.md` 에 명시한다.
+   · `NOT_AUDITED` → **미확인이지 통과가 아니다.** `02_Infrastructure/ramp/run_nosignal_queue_audit_r46.R` 로 감사 후 판단하거나 보류한다.
+   · `SIGNAL_ADDS_VALUE` → 통과. 무신호 대조를 유의하게 넘은 것이므로 신호 기여가 실증됐다.
+   ★근거(실측 2026-08-22 R46): 소비 큐 12 독립 클러스터 중 **11 이 무신호 대조와 구별 불가**였고, 그중 9 는 **β 통제 후 t(α) 가 2.1~3.1 로 유의**했다 — 즉 기존 지표로는 안 잡힌다. β 통제는 레버리지를 걷어내지만 '제약형 롱온리라는 형태 자체가 갖는 대형주 노출' 은 못 걷어낸다.
 3. 배분 — `run_wf_ensemble.R`(admitted union pool, regime별 제한).
 4. 측정 — `build_bt_result`(metric_type=backtested) → `audit_bt_result` → `essence_score`.
 5. 게이트 — OOS_retention≥0.7 → DSR≥0.5 HARD → placebo → holdout. SR2.5 미달 시 정직 표기.
@@ -28,3 +33,4 @@ finalize 직전, FR 산출(배분안·essence 판정)을 스스로 적대적으�
 - Σ 재계산 / 개별 admission 판정 (risk/governor 영역).
 - **governor 정지** — `book_state.json` 직접 쓰기 금지. book-marginal ΔIR≥0.05 진단까지만, 실편입은 Q-Lead+도훈 수동 confirm.
 - 스타일 태깅 / book_optimize 직접개조. WT-id 사용 금지. 실측-only(자체합성 금지). 위반=AX-002.
+- ★**`no_signal.verdict` 미확인 상태로 제약형 롱온리 후보를 직교 재료로 소비 금지** (measurement-graduation §3, 2026-08-22). 확인 불가를 확인 완료로 접지 말 것 — `NOT_AUDITED` 는 통과가 아니다.
