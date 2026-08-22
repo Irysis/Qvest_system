@@ -61,8 +61,8 @@ cat("[PIT] strict:", r_strict, "\n[PIT] injected:", r_naive, "\n")
 WIN <- list(
   clean  = list(lo = as.Date("2015-07-01"), hi = as.Date("2026-06-01"),
                 note = "KQ150 소급투영 회피 청정창"),
-  long   = list(lo = as.Date("2004-12-01"), hi = as.Date("2026-06-01"),
-                note = "전창 — 2010-02~2015-06 KQ150 생존자편향 병기 필요, 2010-02 이전은 K200-only")
+  long   = list(lo = as.Date("2000-01-01"), hi = as.Date("2026-06-01"),
+                note = "전창(flow 지평) — 2010-02~2015-06 KQ150 생존자편향 병기 필요, 2010-02 이전은 K200-only")
 )
 for (nm in names(WIN)) {
   s <- sig[sig >= WIN[[nm]]$lo & sig < WIN[[nm]]$hi]

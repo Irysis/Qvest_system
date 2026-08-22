@@ -1,9 +1,9 @@
 {
   "liq_ruler": "adv20_t1",
   "liq_ruler_source": "injected_adv20",
-  "sig_dates_used": ["2004-12-30", "2026-05-29", "258"],
+  "sig_dates_used": ["2000-03-31", "2026-05-29", "315"],
   "pit_assert_strict": "PASS",
-  "pit_assert_violation_injected": "BLOCKED: [overlay_pit_guard] ★LOOK-AHEAD 차단: absorb_naive_injected 신호 컷오프가 홀딩월 시작 이후 258/258행. 예: cutoff=2005-01-31 > holding_start=2005-01-01. 오버레이 신호는 홀딩월 시작 전 데이터만 사용",
+  "pit_assert_violation_injected": "BLOCKED: [overlay_pit_guard] ★LOOK-AHEAD 차단: absorb_naive_injected 신호 컷오프가 홀딩월 시작 이후 315/315행. 예: cutoff=2000-04-28 > holding_start=2000-04-01. 오버레이 신호는 홀딩월 시작 전 데이터만 사용",
   "window_clean": {
     "n_months": 131,
     "from": "2015-07-31",
@@ -11,14 +11,14 @@
     "note": "KQ150 소급투영 회피 청정창"
   },
   "window_long": {
-    "n_months": 258,
-    "from": "2004-12-30",
+    "n_months": 315,
+    "from": "2000-03-31",
     "to": "2026-05-29",
-    "note": "전창 — 2010-02~2015-06 KQ150 생존자편향 병기 필요, 2010-02 이전은 K200-only"
+    "note": "전창(flow 지평) — 2010-02~2015-06 KQ150 생존자편향 병기 필요, 2010-02 이전은 K200-only"
   },
   "eff_universe_median": {
     "clean": 345,
-    "long": 329
+    "long": 323
   },
   "cost_precompute": {
     "absorb_clean": {
@@ -27,9 +27,9 @@
       "cost_annual": 0.014743
     },
     "absorb_long": {
-      "traded_mean": 0.800623,
-      "turnover_annual": 9.607471,
-      "cost_annual": 0.014411
+      "traded_mean": 0.817325,
+      "turnover_annual": 9.807898,
+      "cost_annual": 0.014712
     },
     "absorb_1m_clean": {
       "traded_mean": 1.580923,
@@ -37,9 +37,9 @@
       "cost_annual": 0.028457
     },
     "absorb_1m_long": {
-      "traded_mean": 1.512529,
-      "turnover_annual": 18.15035,
-      "cost_annual": 0.027226
+      "traded_mean": 1.510828,
+      "turnover_annual": 18.129936,
+      "cost_annual": 0.027195
     },
     "absorb_share_clean": {
       "traded_mean": 0.816,
@@ -47,23 +47,23 @@
       "cost_annual": 0.014688
     },
     "absorb_share_long": {
-      "traded_mean": 0.802179,
-      "turnover_annual": 9.626148,
-      "cost_annual": 0.014439
+      "traded_mean": 0.819873,
+      "turnover_annual": 9.838471,
+      "cost_annual": 0.014758
     }
   },
   "rank_autocorr": {
     "absorb": {
-      "rho": 0.832068,
-      "n": 77039
+      "rho": 0.8315,
+      "n": 87402
     },
     "absorb_1m": {
-      "rho": 0.409439,
-      "n": 77951
+      "rho": 0.408868,
+      "n": 88477
     },
     "absorb_share": {
-      "rho": 0.82758,
-      "n": 77039
+      "rho": 0.823934,
+      "n": 87402
     }
   },
   "power": {
@@ -79,31 +79,31 @@
       "nw_inflation_source": "assumed_default"
     },
     "long": {
-      "measured_sd_monthly_random25_active": 0.043974,
-      "measured_sd_band": [0.040815, 0.046628],
+      "measured_sd_monthly_random25_active": 0.045296,
+      "measured_sd_band": [0.04292, 0.047744],
       "contract_default_sd": 0.0394,
-      "ratio_measured_over_default": 1.116103,
-      "n_months": 258,
-      "required_annual_t2": 0.082132,
-      "required_annual_t295": 0.121145,
+      "ratio_measured_over_default": 1.149657,
+      "n_months": 315,
+      "required_annual_t2": 0.076565,
+      "required_annual_t295": 0.112933,
       "nw_inflation_used": 1.25,
       "nw_inflation_source": "assumed_default"
     }
   },
   "F3_hidden_clone": {
-    "mean_pearson": -0.121841,
-    "mean_spearman": -0.123336,
-    "max_abs_spearman": 0.411925,
+    "mean_pearson": -0.132292,
+    "mean_spearman": -0.146628,
+    "max_abs_spearman": 0.505332,
     "frac_months_abs_ge_0.8": 0,
     "threshold": 0.8,
     "verdict": "PASS"
   },
   "feature_corr_pooled_spearman": {
-    "absorb": [1, 0.92, 0.734, 0.861, -0.246, 0.544],
-    "absorb_resid": [0.92, 1, 0.677, 0.8, -0.128, 0.521],
-    "absorb_1m": [0.734, 0.677, 1, 0.672, -0.168, 0.461],
-    "absorb_share": [0.861, 0.8, 0.672, 1, -0.203, 0.522],
-    "win_vol": [-0.246, -0.128, -0.168, -0.203, 1, -0.154],
-    "log_size": [0.544, 0.521, 0.461, 0.522, -0.154, 1]
+    "absorb": [1, 0.93, 0.762, 0.878, -0.299, 0.597],
+    "absorb_resid": [0.93, 1, 0.71, 0.822, -0.198, 0.574],
+    "absorb_1m": [0.762, 0.71, 1, 0.706, -0.226, 0.517],
+    "absorb_share": [0.878, 0.822, 0.706, 1, -0.253, 0.572],
+    "win_vol": [-0.299, -0.198, -0.226, -0.253, 1, -0.198],
+    "log_size": [0.597, 0.574, 0.517, 0.572, -0.198, 1]
   }
 }
