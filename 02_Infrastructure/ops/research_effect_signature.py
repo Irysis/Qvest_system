@@ -1,0 +1,100 @@
+# -*- coding: utf-8 -*-
+"""research_effect_signature.py — 무인 런의 **효과**를 원장에서 직접 읽는다 (2026-08-22 신설).
+
+왜 있나 (실사고 2026-08-22 16:31):
+  qepm_dossier 첫 런이 WT-D20260822_004 를 SPEC_APPROVED → ALPHA_DONE 으로 전이시키고
+  alpha_package.json · alpha_validation.json · artifact_lineage.json 을 만들었다.
+  **일은 다 했는데** stdout 에 `MODEQ_DONE` 을 안 냈고, 그래서 러너의 zero_progress 가드가
+  "아무것도 처리되지 않음" 으로 경보했다 — 실질 오경보다.
+
+★기전: 그 가드는 **에이전트의 자기보고**(stdout 한 줄)만 봤다. 오늘 하루 내내 확인된 교훈은
+  그 반대다 — **원장이 진실이고 자기보고는 보조다**. 자기보고가 빠지는 건 흔하고(프롬프트를
+  지켜도 형식을 놓친다), 그때마다 오경보가 나면 경보가 '학습된 무시'가 된다.
+
+⇒ 이 모듈은 런 전후로 원장 상태를 지문화해 **효과가 있었는지**를 독립적으로 판정한다.
+  판정 조합:
+    · 마커 있음            → 진척 (자기보고 + 효과 무관하게 신뢰)
+    · 마커 없음 ∧ 지문 변화 → 진척 (자기보고 누락 — 경보 아님, 로그로만 남긴다)
+    · 마커 없음 ∧ 지문 동일 → **진짜 무진척** → zero_progress 경보
+
+사용:
+  python research_effect_signature.py <root>            # 지문 1줄 출력
+  python research_effect_signature.py <root> --compare <before>   # 같으면 SAME, 다르면 CHANGED
+"""
+import hashlib
+import io
+import json
+import glob
+import os
+import sys
+
+
+def _n(path, key="modules"):
+    """원장 항목 수 — 부재/손상은 -1(구분 가능한 값). 0 과 섞지 않는다."""
+    try:
+        with io.open(path, encoding="utf-8") as fh:
+            d = json.load(fh)
+    except Exception:
+        return -1
+    v = d.get(key)
+    if v is None:
+        return -1
+    return len(v)
+
+
+def signature(root):
+    """런의 효과가 닿는 표면만 모아 지문을 만든다.
+
+    ★파일 mtime 은 쓰지 않는다 — 병렬 세션이나 무관한 재작성으로도 바뀌어
+      '변화' 를 과잉 탐지한다. **내용에서 파생된 수치**만 쓴다.
+    """
+    parts = []
+    parts.append("catalog=%d" % _n(os.path.join(root, "06_Registry", "module_catalog.json")))
+    parts.append("quarantine=%d" % _n(os.path.join(root, "06_Registry", "module_quarantine.json")))
+    parts.append("methods=%d" % _n(os.path.join(root, "06_Registry", "method_registry.json"),
+                                   "methods"))
+    # method_registry 의 측정 기입 수 — 등재 없이 측정만 채우는 레인이 있다
+    try:
+        with io.open(os.path.join(root, "06_Registry", "method_registry.json"),
+                     encoding="utf-8") as fh:
+            ms = json.load(fh).get("methods") or []
+        parts.append("measured=%d" % sum(
+            1 for m in ms if str((m or {}).get("measurement_status") or "").strip()))
+    except Exception:
+        parts.append("measured=-1")
+
+    # WT 의 phase 집합 + 산출물 개수 — dossier/promotion 레인의 효과가 여기 있다
+    wt = []
+    for d in sorted(glob.glob(os.path.join(root, "qepm", "mailbox", "worktask", "WT-*"))):
+        try:
+            with io.open(os.path.join(d, "status.json"), encoding="utf-8") as fh:
+                st = json.load(fh)
+            ph = str(st.get("current_phase") or st.get("phase") or "")
+        except Exception:
+            ph = "?"
+        try:
+            nf = len(os.listdir(d))
+        except Exception:
+            nf = -1
+        wt.append("%s:%s:%d" % (os.path.basename(d), ph, nf))
+    parts.append("wt=%d" % len(wt))
+    parts.append("wthash=%s" % hashlib.sha256("|".join(wt).encode("utf-8")).hexdigest()[:16])
+    return ";".join(parts)
+
+
+def main(argv):
+    if not argv:
+        sys.stderr.write("usage: research_effect_signature.py <root> [--compare <sig>]\n")
+        return 2
+    root = argv[0]
+    sig = signature(root)
+    if "--compare" in argv:
+        before = argv[argv.index("--compare") + 1]
+        print("SAME" if before == sig else "CHANGED")
+        return 0
+    print(sig)
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main(sys.argv[1:]))
