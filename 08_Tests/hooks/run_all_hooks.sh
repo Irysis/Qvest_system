@@ -1091,6 +1091,8 @@ SUITES=(
   # 무인 판정 게이트의 계층(ADOPT/SCREEN_TIER/QUARANTINE)·입력계약 2갈래·권위 서명.
   #   구판 대조 실증: 같은 검사가 구판에서 FAIL 10건.
   "08_Tests/ops/test_auto_alpha_gate_tiers.sh"
+  # 무음 사망 탐지 — 정체 경보(살아 매달림)와 다른 축(죽어 증발). 실사고 18:30 검거.
+  "08_Tests/ops/test_orphan_run_scan.py"
 )
 
 # (2026-08-02) .py 분기 추가 — 종전엔 확장자 무관 `bash` 로 던져 파이썬 suite 가
