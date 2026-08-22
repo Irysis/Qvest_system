@@ -322,7 +322,33 @@ shift 사다리 5.147→**3.232**→2.714(완만·클린) · placebo p=0.000(rea
 
 **함의 — 판정 그릇을 바꿔야 한다**: A5E는 단독 전략 graduation(PORT_t 기준)을 노리는데 오버레이가 주는 것은 절대 위험 개선이다. 두 지표가 반대 방향이므로, 오버레이의 가치는 **book-레벨 book-marginal ΔIR**에서만 정당하게 평가된다(§10 기전 진단과 동일 결론, 이번엔 정본 오버레이로 재확인). 다음 라운드는 A5E±오버레이를 현 PG2 book에 sleeve로 얹었을 때의 ΔIR 측정이다.
 
-## 20. R16 — book-marginal ΔIR (§4 자본 게이트) + ★incumbent base 재현 불가 발견
+## 20. R16/R16b — book-marginal ΔIR (§4 자본 게이트) ★★도훈 정정으로 결과 반전 + 벤치 basis 발견
+
+> **초판 무효 (R16)**: 제가 구 폴더 `2-1.STR_1715_AR_on_M4_R05_overlay_PG2`를 base로 써서 ΔIR을 **+0.0194(양수)**로 보고했다. 도훈 지적("AE 버전이 최신")으로 정본을 다시 추적하니 book_weights `STR_1715_on_M4g**AE**_R05_noLayer4_PG2`가 가리키는 계보는 `2-4`(운용 실행 코드·holdings만)이고 **백테 계약 산출물은 `2-3.STR_1715_on_M4_R05_noLayer4_PG2/04_backtest_results/`**다. 그 정본에서 `net_active_IR_arith = 1.4160`이 **정확 재현**됐다(=`book_state` 선언값과 일치). ⇒ §20-1의 "incumbent 재현 불가" 진단은 **내 base 오지정이 원인이었고 철회**한다. 아래는 정본 base 재측정(R16b)이다.
+
+### 20-0. R16b 정본 재측정 — ΔIR 전부 음수 (FAIL)
+| w | A5E ΔIR | A5E+오버레이 ΔIR |
+|---|---|---|
+| 0.05 | **−0.0275** | −0.0282 |
+| 0.10 | −0.0664 | −0.0672 |
+| 0.20 | −0.1796 | −0.1790 |
+| 0.30 (진단) | −0.3347 | −0.3317 |
+
+동일창(232개월) PG2 IR **1.5158**, A5E IR **0.1125**, 상관 0.258. **판정 FAIL** — 초판의 양수는 base 오지정 산물.
+
+### 20-0b. ★그 과정에서 드러난 것 — 벤치 basis에서 알파가 소멸한다
+| 기준 | A5E IR |
+|---|---|
+| 자체 parent (K200∪KQ150 cap-w) | **0.7543** |
+| **KOSPI200 (book·자본 게이트 계약 벤치)** | **0.1125** |
+| parent vs KOSPI200 (유니버스 효과) | −0.0450 (연율 **−1.33%p**) |
+
+**이 아크 전체의 판정 수치(pt 2.894 등)는 자체 parent 대비였다.** book과 자본 게이트가 쓰는 KOSPI200 기준으로 바꾸면 IR이 0.754 → 0.113으로 무너진다. 기전 둘: ①parent 자체가 KOSPI200 대비 연 −1.33%p 열위라 평균이 깎이고 ②parent−KOSPI200 괴리가 추적오차에 더해져 분모가 커진다. 메모리의 "유니버스 효과 PG2 소멸" 계통이 그대로 재현됐다. ⇒ **자본 경로를 노린다면 KOSPI200 기준 재측정이 선결**이며, 그 기준에서 A5E는 현재 훨씬 멀다.
+
+---
+
+### (이하 R16 초판 기록 — base 오지정으로 무효, 방법론 참고용 보존)
+## 20-legacy. R16 초판 — book-marginal ΔIR + incumbent 재현 불가 진단(철회됨)
 
 ### 20-1. ★인프라 발견: book_state 선언 incumbent IR이 production에서 재현되지 않는다
 규약 §7b(“incumbent base 권위 = `05_Production` 현행 코드 파생”)대로 PG2 정본을 추적: `05_Production/2.Factor_Model/2-1.STR_1715_AR_on_M4_R05_overlay_PG2/04_backtest_results/bt_result_layer5_R05.rds`. 변형 7종 중 **`ret_L5_V5`가 정본**으로 식별됨(MDD −0.2329가 `book_state`의 기록값 0.2329와 정확 일치).
