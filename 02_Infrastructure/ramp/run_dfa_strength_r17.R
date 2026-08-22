@@ -48,6 +48,7 @@ K<-data.table(ym=format(as.Date(bmK$date),"%Y-%m"), k200=bmK$benchmark_ret)
 rep_arm<-function(r,lab,win="full"){
   k<-which(is.finite(r$pr)); ymv<-mon$ym[k]
   if(win=="ex2026") { sel<-substr(ymv,1,4)<"2026"; k<-k[sel]; ymv<-ymv[sel] }
+  if(win=="clean")  { sel<-ymv>="2015-07"; k<-k[sel]; ymv<-ymv[sel] }   # universe exit recording starts 2015-12
   p<-r$pr[k]; par<-mon$Market[k]; kk<-K$k200[match(ymv,K$ym)]
   nav<-cumprod(1+p); mdd<-min(nav/cummax(nav)-1); n<-length(p)
   cagr<-prod(1+p)^(12/n)-1
@@ -56,7 +57,7 @@ rep_arm<-function(r,lab,win="full"){
   invisible(list(pr=p,par=par,k200=kk,d=mon$medate[k])) }
 cat("=== R17 [",TAG,"] 이중 벤치 평가 ===\n",sep="")
 r0<-run_ens(S); r3<-run_ens(S,cw=CW)
-for(w in c("full","ex2026")){ rep_arm(r0,"D0_base",w); rep_arm(r3,"D3_corrweight",w) }
+for(w in c("full","clean")){ rep_arm(r0,"D0_base",w); rep_arm(r3,"D3_corrweight",w) }
 k<-is.finite(r0$pr)&is.finite(r3$pr)
 cat(sprintf("\n[paired] D3 - D0 : NW-t = %+.3f\n", nwt((r3$pr-r0$pr)[k])))
 saveRDS(list(r0=r0,r3=r3,mon=mon,K=K,tag=TAG),sprintf(".cache/_dfa_r17_%s.rds",TAG))

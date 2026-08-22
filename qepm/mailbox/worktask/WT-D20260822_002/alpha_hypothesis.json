@@ -1,0 +1,136 @@
+{
+  "wt_id": "WT-D20260822_002",
+  "designed_by": "alpha-hypothesis",
+  "model_tier": "fable",
+  "designed_at": "2026-08-22",
+  "spec_version": "ast_v1.1_hypothesis_stage",
+  "round_question_fixed": "선별 목적함수를 rank-IC(Spearman)에서 평균-정합 통계량으로 바꾸면 top-N 전이(PORT_t·평균 basis)가 개선되는가. 대조군 = 현행 rank-IC 선별 / 처치 = (a) Pearson IC (b) 평균 스프레드 t. paired 판정: 같은 팩터 풀·같은 창·같은 구성 규칙에서 선별 통계량만 교체. (호출자 mandate — 재정의 금지, 본 설계는 이 질문 안에서만 자유도를 행사한다)",
+
+  "prior_lookup": {
+    "queries_run": [
+      "Rscript 02_Infrastructure/tools/hypothesis_index.R lookup rank-IC Pearson → 2어 AND 0건, 단일어 폴백 'pearson' 도 0건 (Pearson IC 를 선별 목적함수로 쓴 선행 라운드 부재 확인)",
+      "Rscript 02_Infrastructure/tools/hypothesis_index.R lookup FQ-237 → 2건: WT-D20260822_002(본 건, in-flight) + WT-D20260813_005(in-flight 표기이나 실측 완료 산출물 보유 — 아래 상세)",
+      "Rscript 02_Infrastructure/tools/hypothesis_index.R lookup selection objective → L-AR-20260813_WT005 (verdict MARGINAL, grade C, family measurement_form)",
+      "Rscript 02_Infrastructure/tools/hypothesis_index.R lookup 선별 통계량 → 본 WT 만 (신규 키워드 축 중복 없음)",
+      "06_Registry/knowledge_index.json (lcode_corpus 513건) 정규식 조회 pearson|선별 통계|selection_objective|OBJ_MEAN|재서열 → L-AR-20260813_WT005 1건 + 무관 1건(L-WT_D20260803_008 overlay_regime)"
+    ],
+    "critical_finding": "★호출자 승계문서에 없던 선행 실측 1건을 조회절이 검거했다: WT-D20260813_005 (L-AR-20260813_WT005) 가 2026-08-13 에 '선별 목적함수 rank-IC → 분위 평균 스프레드 NW-t 교체' 를 이미 측정했다. 2단 라운드: 1차(깊이 20%) paired NW3 t +0.4930 NOT_SUPPORTED → 자기 적발(깊이 불일치: 선별 Q5 20% vs 소비 top-25 7.3%) → 2차(깊이 7.27% 정합) paired t +1.5706 · cap-w PORT_t 0.99→1.78 · IR 0.27→0.49 (점추정 3.2배 이동, 문턱 미달). 최종 라벨 = 기각 아닌 조건부 보류. 검정력 실증: 1개월 누출 주입 arm 이 같은 통계·같은 n=221 에서 t 4.16/4.03 — null 은 장치 무능 아님. revival_condition = '재개는 새 재료 또는 새 사전등록으로만. 깊이·K·W 격자 스윕과 문턱 사후조정 금지(INV-7)'.",
+    "consequence_for_this_round": "처치 (b) 평균 스프레드 t 는 신규 축이 아니라 WT-D20260813_005 2차의 재개다 — 본 설계는 (b) 를 '복제 브리지 arm'(조건부 보류 t 1.57 의 새-사전등록 재판정, revival_condition 이 허용한 유일 경로의 이행)으로 자리매김하고, 신규 정보 하중은 처치 (a) Pearson IC 에 둔다. (a) 는 조회절 확인 결과 선별 목적함수로 측정된 적이 없고, WT-D20260821_002 국소화 실측이 그 차별 기전(정합+정밀)을 공급한다. 이 재배치가 없으면 본 라운드는 조건부-보류 건의 무사전등록 재탕이 될 뻔했다."
+  },
+
+  "prechecks": {
+    "hypothesis_index_hits": [
+      "L-AR-20260813_WT005 / WT-D20260813_005 (MARGINAL, grade C) — 처치 (b) 의 직접 선행. 조건부 보류(t +1.57, 깊이-정합 후). 승계 의무 5건: ①깊이·K·W 격자 금지 — 2차 확정 구성(깊이 7.27%·K=5·EW 결합) 단일값 고정 ②master_panel_FIXED.rds 원천 재현 불가 실측(지문 팩터 cor 0.3372) — 원천-충실 패널(load_month_factors 경유)만 사용 ③이득 전반부 집중(sp3 2020+ cap-w 음수, 상위 5개월 제거 시 t 0.76) — subperiod·상위월 민감도 병기 의무 ④국면 분해(non-crisis +2.15 / crisis −2.77, 깊이-정합 시 crisis 손실 소멸 +0.21)는 advisory — 본 라운드에서도 판정 축 승격 금지 ⑤paired 설계는 basis 불변 실측(cap-w t 1.5706 vs EW-유니버스 1.5709) — basis 논쟁과 판정 독립.",
+      "WT-D20260821_002 (alpha_package: transition_wall_localization, n=198, NW lag-3) — 본 라운드의 기전 원천. armA(평균 표적) Spearman IC 0.0074(t 0.83) vs Pearson 0.0214(t 2.14) = 정보가 순위가 아니라 크기에 있다; armB(q50) 는 정반대(Spearman t 3.35 / 평균 스프레드 t 1.05 — 중앙값 스프레드만 벌었다). rank-IC 서열(C>B>A)과 평균-정합 서열(C>A>B)이 B·A 에서 뒤집힌다. 라벨 POWERED_NULL_BREADTH_SCOPED + critical_caveat: rank-IC 만 봤으면 거짓 SUPPORTED. 재인용만 하며 재측정하지 않는다.",
+      "RAMP_R6_PORTT_BORUTA_20260711 + R4/R5 — 선별 라벨 지배 사실: realized-PORT_t 정렬 선별만 양성(paired NW-t +3.01) vs relevance/rank-기질 선별 3규율 10-trial 전멸. '선별 기질이 순위-관련성이면 실패' 방향이 본 가설과 정합 — 단 그쪽은 라벨(표적) 축, 본 건은 통계량(목적함수) 축으로 측정 대상이 다르다.",
+      "DIST-GEN-013 (measurement_form, fq237/lane_a 태그) — 08-21 설계가 이미 재포장 아님을 판정(supporting L-code 의 실증 기반이 검정력 재라벨로 재분류 + retry_policy 가 차별점 명시 시 진행 허용). 본 라운드의 차별점 = 선별 층 개입 + 신규 통계량 (a) — 승계.",
+      "WT-D20260802_003 (realized-PORT_t 정렬 조합가중) — 교차 해석 의무 승계: 본 건과 그쪽의 양성/음성 조합이 드라이버를 '통계량 정합' vs '실현 경로·성과지속' 으로 분리한다."
+    ],
+    "frontier_queue_refs": [
+      "FQ-237 status=CLAIMED_20260822__rerank_round_launching, owner = Q-Lead session d2e06481 (2026-08-22, stale claim 회수 절차 완료 기록 있음) — 본 WT 가 그 착수 실행이다. next_action 의 '기존 인용(armB 정확 역순 n=4) 갱신 의무' 승계.",
+      "FQ-233 status=arc_settled__powered_null_breadth_scoped — 부활조건 ① '평균-정합 선별 통계량 재서열(FQ-237 기전판)에서 전이 양성 시' = 본 라운드 양성 시 발화하는 관문. 자본화 경로는 이 관문 밖 재제안 금지(INV-7) — 본 설계는 관문 그 자체이지 우회가 아니다.",
+      "dohoon_decision 게이트 항목 아님 — FQ-237 은 세션 CLAIMED 항목."
+    ],
+    "owner": "FQ-237 CLAIMED — Q-Lead session d2e06481 (2026-08-22). 본 WT-D20260822_002 는 그 점유 하 실행 라운드."
+  },
+
+  "candidates": [
+    {
+      "title": "C1 — 평균-정합 선별 통계량 paired 치환: (a) Pearson IC [신규] + (b) 평균 스프레드 NW-t [복제 브리지]",
+      "family": "selection_objective/mean_aligned_rerank",
+      "mechanism_summary": "선별 통계량 공간을 2축(정합 × 추정정밀)으로 분해: rank-IC = 비정합·정밀(전 단면, 순위), 평균 스프레드 t = 정합·비정밀(양끝 분위 표본만, 고분산), Pearson IC = 정합·정밀(전 단면, 선형). WT005 조건부 보류(t 1.57)의 후보 기전 하나가 '정합 이득이 선별 추정 잡음에 잠식' 이므로, 미측정 코너(정합+정밀)가 신규 정보 하중을 진다.",
+      "why_not_selected": "선택안 그 자체 (라운드 질문이 처치 2종을 고정)."
+    },
+    {
+      "title": "C2 — 국면-조건부 선별 (crisis 에서 rank-IC 유지 / non-crisis 에서 평균-정합)",
+      "family": "selection_objective/regime_conditional",
+      "mechanism_summary": "WT005 advisory 국면 분해(non-crisis paired +2.15 / crisis −2.77)가 방향을 이미 보였다 — 평균-정합의 이득이 국면 조건부일 가능성.",
+      "why_not_selected": "라운드 질문 고정(재정의 금지) 밖 + WT005 사전등록이 국면축을 '판정 축 아님' 으로 라벨해 primary 승격은 사후선택이 된다. 별도 사전등록 라운드로만 적법 — challenge_flags 에 보관하고 본 라운드는 무조건부 치환만 판정."
+    },
+    {
+      "title": "C3 — 결합 가중을 realized-PORT_t 정렬로 교체",
+      "family": "combination_weight/realized_aligned",
+      "mechanism_summary": "RAMP R6 계열 — 선별이 아니라 결합층 개입.",
+      "why_not_selected": "층이 다르다(선별 vs 결합). WT-D20260802_003 이 교차 라운드로 존재 — 자유도 충돌 회피. 교차 해석 의무만 승계."
+    },
+    {
+      "title": "C4 — top-25 소비 구간 국소 재판정 (per-swap 대칭차 추정)",
+      "family": "measurement_form/local_detection",
+      "mechanism_summary": "WT-D20260821_002 next_probe NP1 — 브레드스 프레임이 덮지 못한 rank 1~25 국소 구간의 별도 검출 설계.",
+      "why_not_selected": "검출 층 라운드이지 선별 층 라운드가 아니다. NP1 은 별도 큐 항목으로 남는다."
+    },
+    {
+      "title": "C5 — 순위+크기 하이브리드 통계량 (winsorized Pearson 등)",
+      "family": "selection_objective/hybrid",
+      "mechanism_summary": "armC 가 Spearman·Pearson 양쪽에서 강한 유일 arm 이었다 — 두 정보의 결합 통계량이 다음 후보라는 신호.",
+      "why_not_selected": "사전지정 2종 밖 — 처치를 늘리는 순간 enumerate-and-pick 구조가 되어 sweep 재분류 + DSR≥0.5 HARD. (a)(b) 판정 후 조건부로만 (challenge_flags 보관)."
+    }
+  ],
+
+  "selected": {
+    "hypothesis_title": "FQ-237 재서열: 평균-정합 선별 통계량이 top-N 전이를 개선하는가",
+    "hypothesis_description": "현 파이프라인은 팩터를 trailing Spearman rank-IC 로 고르고 long-only top-N 평균으로 소비한다. WT-D20260821_002 국소화가 이 불일치의 정체를 실측했다: 평균-표적 스코어의 정보는 순위가 아니라 크기에 있고(armA Spearman t 0.83 vs Pearson t 2.14), 순위-표적 스코어는 정확히 반대다(armB Spearman t 3.35 vs 평균 스프레드 t 1.05) — 두 서열이 B·A 에서 뒤집힌다. 따라서 선별 통계량을 소비함수(평균)와 같은 함수형으로 교체하면 같은 팩터 풀·같은 창·같은 구성에서 top-N 평균-basis 실현 전이가 개선된다. 처치 2종 사전지정: (a) Pearson IC — 정합+정밀 코너, 선별 목적함수로 미측정(조회절 확인), 본 라운드의 신규 정보 하중 (b) 평균 스프레드 NW-t — WT-D20260813_005 조건부 보류(깊이-정합 t +1.57)의 새-사전등록 재판정(복제 브리지). co-primary 2건 각자 독립 라벨, 챔피언 선발 없음. 양성이면 FQ-233 부활조건 ① 이 발화한다.",
+    "mechanism": {
+      "agent": "① (알파 층 — 승계, 재측정 안 함) KR 개인투자자의 복권성 수요 군집 — 양의 횡단면 왜도 종목을 과대 매수해 평균 수익을 중앙값 아래로 끌어내린다. 실측 사슬(수정 프레임): R32 부호 갈림 123/320 비대칭 102 vs 21 · cor(왜도기울기, 중앙값−평균 gap) −0.728(원천-충실 패널 재확인 −0.6755) · R33 혹형 분위 프로파일. 이 구조가 '크기에만 실리는 정보'(armA 형)와 '순위에만 실리는 정보'(armB 형)를 동시에 만든다. ② (선별 층 — 본 라운드의 판정 대상) 선별자는 시장이 아니라 QEPM 리서치 파이프라인 자신이다 — 구체 실명: trailing Spearman rank-IC 선별 컨벤션. 제도화 지점 3곳: factor DB IC 원장(FDB-B7_ic_history_monthly)이 rank-IC 를 정본으로 저장 / request.json graduation_criteria.min_rank_ic=0.04 필드 / alpha_research_init Step 4-B advisory 배터리의 Rank IC 1행. 이 컨벤션이 크기-정보 팩터(armA 형)를 체계적으로 저평가하고 순위-전용 팩터(armB 형)를 과대평가한다.",
+      "friction": "① (알파 층) KR 공매도 제약 — 과대가격 종목의 하방 차익거래 불가로 비대칭 미스프라이싱이 잔존한다. ★C11 승계 caveat: 같은 마찰이 회수 경로도 제약한다(armC−armA 격차가 short 다리에 더 실린 실측 +1.527%p vs long +0.914%p). 본 라운드가 표적이 아니라 선별 층에 개입하는 이유가 이것이다 — 선별 교체는 long 다리에서 회수 가능한 크기-정보 팩터를 편입시키는 개입이며, 회수 불가 다리의 우위를 요구하지 않는다. ② (선별 층 — 왜 자동 교정되지 않는가) 3중: (i) 귀속 불가시성 — 선별 통계량의 기여는 단독 관측되지 않는다. 포트 성과에는 신호·선별·결합·비용이 혼입되어 paired 통제 실험 없이는 선별 층 귀속이 분리되지 않으므로, 어긋난 목적함수를 교정할 피드백 채널이 파이프라인에 없다(이 라운드가 그 채널을 처음 여는 실험이다 — WT005 가 1회 열었고 조건부 보류로 남았다). (ii) 제도화 비용 — rank-IC 는 IC 원장·게이트 필드·Harvey-t 문헌 절차에 박혀 있어 교체가 코드·게이트 정의 변경을 요구한다. (iii) 강건성 편향 — Spearman 의 이상치 둔감성이 안전한 기본값으로 보이지만, 소비함수가 평균(꼬리 지배)이면 그 둔감성은 곧 크기-정보 폐기다. 폐기 비용이 어느 장부에도 계상되지 않아 교정 압력이 생기지 않는다.",
+      "path": "매 월간 리밸 시점 t 에 trailing 창(t−1 까지, PIT)에서 팩터별 선별 통계량을 재산출 → top-K 팩터 선별 → 고정 결합(z-align EW) → top-N 종목 소비. 통계량을 평균-정합으로 바꾸면 선별 집합의 조성이 바뀐다 — 크기-정보 팩터가 들어오고 순위-전용 팩터가 나간다(집합 분기 채널의 실재는 WT005 실측 Jaccard 중앙 0.111~0.25 가 선행 증거). 조성 차는 선별 발효 익월부터 보유 편입 집합의 차이로 나타나고, 그 차이가 top-N 평균-basis 월간 active 수익 차로 실현되어 paired NW lag-3 t 로 계측된다. 즉 α̂ 로의 귀결 = '같은 재료에서 다른 부분집합을 드는 것'이며 시점은 익월 리밸, 형태는 편입 집합의 체계적 이동이다. (a) Pearson 의 추가 경로: 전 단면·선형 추정이라 양끝 분위 표본만 쓰는 스프레드-t 대비 월별 추정 분산이 낮다 — 정합 이득이 선별 잡음에 잠식됐다는 WT005 보류의 후보 기전을 직접 겨냥한다. 이 경로 서술의 검증 가능한 함의: (a) 의 선별 집합 월간 자기-회전율이 (b) 보다 낮아야 한다(추정 잡음이 작으면 선별이 안정적) — 진단 병기 대상."
+    },
+    "falsification": {
+      "observable": "성과 동어반복이 아닌 부수 관측 2축 — 축 1 은 성과와 무관하게 기전이 참이면 관측되어야 할 것. [축 1 — 선별 분기 (기전의 필요조건, 성과 무관)] trailing 창에서 산출한 320종 팩터의 월별 선별 서열: rank-IC 서열 vs Pearson-IC 서열의 순위상관 중앙값이 0.90 이상이거나 top-K 선별 집합 Jaccard 중앙값이 0.8 이상이면 → 두 통계량이 사실상 같은 선별을 낳으므로 '통계량 불일치가 선별을 오도한다' 기전 자체가 기각된다(처치는 대조군의 재표집에 불과해진다). 이 축은 집합의 항등성 관측이지 수익 관측이 아니다. WT005 는 (b) 계열에서 Jaccard 0.111 을 실측했으나 (a) Pearson 의 분기는 미측정 — 진짜 검사다. [축 2 — 크기-정보의 비대칭 기원 (알파 층 귀속)] 팩터별 (Pearson IC − Spearman IC) 격차의 절대크기와 횡단면 비대칭의 연속 상호작용. ★C4 재설계 요청 수용 — 왜도 추정기 2종은 무상관(cor −0.011 실측)이므로 한 축이 아니라 두 축으로 분리 사전정의한다: (2a) 월간 횡단면 왜도(월간 수익 단면, A1 파생) (2b) 일간파생 월내 횡단면 왜도(A1 일간 수익 파생). 예측 방향: 비대칭이 큰 구간·팩터에서 |격차| 확대(크기-정보는 비대칭 꼬리에 실린다 — R32 cor −0.728/−0.6755 의 선행 실측과 같은 방향). 두 축 모두 연속 상호작용 |t| < 2.0 이면 격차의 비대칭-기원이 기각되고, 크기-정보의 원천은 별도 재귀속 라운드로 분리한다(primary 가 유의해도 기전 서사는 철회). ★C4 ③ 수용 — primary 비유의 시 이 축이 판정할 수 있는 것의 사전 규정: 축 2 는 '기전 전제의 성립 여부' 만 판정하며 primary 라벨에 바인딩하지 않는다.",
+      "field_dictionary_refs": [
+        "FDB-B7_ic_history_monthly (rank-IC 정본 원장 — 대조군 통계량의 제도화 실체)",
+        "FDB-B1_registry_fundamental_quarterly + FDB-B2_registry_rawdata_price_daily (팩터 값 원천 — load_month_factors 경유, 선별 통계량 trailing 재산출 입력)",
+        "A1_RAWDATA_OHLCVS_daily (월간·일간 수익 → 횡단면 왜도 2축 및 Pearson/Spearman IC 산출)",
+        "A4_benchmark_kospi200 (BM_Ret — active 계열 구성)"
+      ],
+      "reject_if": "축 1: 서열 순위상관 중앙값 ≥ 0.90 또는 top-K Jaccard 중앙값 ≥ 0.8 → 선별-오도 기전 기각, 처치 (a) 는 판정 불능(집합 비분기) 으로 라벨하고 통계량 축의 다음 후보 탐색으로 라우팅. 축 2: (2a)(2b) 두 축 모두 연속 상호작용 |t| < 2.0 → 비대칭-기원 기각 + 크기-정보 원천 재귀속 라운드 분리(성과 판정과 독립으로 발화). 두 축 모두 성과 문턱(PORT_t·paired t)의 동어반복이 아니다.",
+      "tautology_note": "축 1 은 통계량 정의에서 유도되지 않는다 — 두 통계량이 이론상 다르다는 것과 이 재료에서 실제로 다른 집합을 고른다는 것은 별개 명제다(대칭·조밀 단면에서는 정의가 달라도 집합이 수렴한다). 축 2 는 격차의 존재가 아니라 격차의 원천을 판정한다 — 격차 존재는 정의상 가능하나 그것이 왜도 축과 공변하는지는 경험 명제다(WT005 note_on_tautology 프로토콜 계승)."
+    },
+    "regime_scope": {
+      "holds_in": [
+        "횡단면 수익 분포 비대칭 상위 연속 구간 — 추정기 2축 각각(월간CS 왜도 / 일간파생 월내 왜도, C4 분리 정의 승계). 이분 라벨 금지, 연속 상호작용으로 검정(Lane D precheck 실측: 연속 설계 검정력 우위 — 2분할 MDE 18.6% vs 연속 13.15%)",
+        "선별 서열 분기 구간 — 월별 rank-IC 서열 vs Pearson 서열 순위상관이 낮은 연속 구간(통계량 교체가 실제로 다른 집합을 만드는 조건 구간, 반증 축 1 과 같은 관측을 공유)"
+      ],
+      "weakens_or_reverses_in": [
+        "횡단면 분포 대칭·조밀 연속 구간 — Spearman 과 Pearson 이 수렴(순위 정보 = 선형 정보)하여 선별 집합이 항등에 접근, 교체 효과가 구성상 0 으로 수축 (약화 측)",
+        "crisis 국면 — 크기-정보의 원천이 정보에서 강제 청산으로 반전되어 평균-정합 선별이 청산-꼬리를 크기 신호로 오독한다 (반전 측). 선행 실측 방향 일치: WT005 advisory crisis paired −2.77 · crisis_alpha OBJ_MEAN −0.0154 vs OBJ_RANK +0.0058 (깊이-정합 구성에서는 손실 소멸 +0.21 — 반전 폭 자체가 구성 의존). 본 라운드에서도 국면축은 판정 축이 아니다(사후선택 방지, WT005 라벨 승계) — 진단 병기만"
+      ],
+      "boundary_rationale": "경계가 메커니즘에서 도출된다: 효과의 존재 조건은 '순위-정보와 크기-정보의 분리' 이고, 그 분리는 횡단면 분포의 비대칭에서만 발생한다 — 대칭 단면에서는 Spearman·Pearson 서열이 수렴해 두 통계량이 같은 집합을 고르므로 효과가 필연적으로 소멸한다(수학적 도출이지 데이터 관찰이 아님). crisis 반전은 채널 소멸이 아니라 크기 채널의 정보 부호 반전이므로 약화가 아닌 반전 측에 둔다 — 이 구분(소멸 vs 반전)은 관측 가능한 별개 예측이다. 보편타당 주장이 아님: 대칭·조밀 구간과 crisis 에서 효과가 죽는다는 것이 설계의 사전 예측이다. ★C4 교훈 승계 — 선행 라운드에서 왜도 상호작용의 부호가 설계 예측과 반대로 실측된 전력이 있으므로, 본 설계는 부호 예측을 반증 축 2 에 걸되 '예측 반대 부호 실측 시 AXIS2_SIGN_CONTRARY 라벨 + 기전 서사 철회(판정 비바인딩)' 를 사전 규정한다.",
+      "window_caveats": "★유니버스 오염 승계(오늘 확립 규약): KQ150 멤버십 플래그가 2010-02~2015-06 구간에서 소급 투영이다(퇴출 0 · 2011-06 멤버 138/138 이 2015-07 잔존 vs 실제 61.3%). K200 은 정상. 본 라운드 측정창(WT005 승계 시 221개월, 2008~)이 이 구간을 포함하므로: ①subperiod 병기에서 2015-07 전/후 분해 의무 ②KQ150 오염 구간의 결과 기여가 지배적이면(상위월 민감도와 교차) 라벨에 UNIVERSE_CAVEAT 부기. ★지속 회귀변수 caveat 판정(무비판 이식 금지 규약): paired 월별 diff 계열은 선행 실측 AR(1) 중앙값 0.003 급 — Lane D 의 φ 0.95~0.99 placebo 팽창 caveat 해당 없음. 단 반증 축 2 의 조건변수(월간CS 왜도·일간파생 왜도)는 자기상관 미실측이므로 alpha-research 가 착수 시 AR(1) 실측 후 φ > 0.9 이면 블록 부트스트랩/placebo 보강을 그 회귀에만 적용한다(대상별 판정, 일괄 이식 아님)."
+    },
+    "design_frame": {
+      "arms": [
+        {"id": "SEL_RANK", "role": "control", "spec": "trailing Spearman rank-IC top-K 선별 — WT-D20260813_005 OBJ_RANK 구성 자구 승계"},
+        {"id": "SEL_PEARSON", "role": "treatment_a_novel", "spec": "trailing Pearson IC top-K 선별 — 같은 창·같은 K·같은 결합·같은 깊이, 통계량만 교체. 본 라운드의 신규 정보 하중"},
+        {"id": "SEL_MEANSPREAD_T", "role": "treatment_b_replication_bridge", "spec": "trailing top-분위 평균 활성 스프레드 NW-t top-K 선별 — WT005 2차(깊이-정합) 구성 자구 승계. 조건부 보류 t +1.57 의 새-사전등록 재판정"}
+      ],
+      "fixed_inheritance": "깊이 = 소비-정합 7.27%(WT005 2차 확정값) · K = 5 · 결합 = z-align EW · top-25 EW 소비 · 15bps · 원천-충실 패널(load_month_factors 경유 — master_panel_FIXED.rds 사용 금지, WT005 재현성 결함 실측) · 플레이스홀더 월 절단(anchor ≤ 2026-07-01, fwd=정확히 0 인 2026-09 월 및 부분실현 2026-08 월 배제 — NP4 승계). 깊이·K·W 는 단일값 고정 — 격자 산출 즉시 INV-7 위반(WT005 revival_condition 명문).",
+      "paired_comparisons": "co-primary 2건, 각자 독립 라벨(argmax·챔피언 선발 없음): (A) SEL_PEARSON vs SEL_RANK (B) SEL_MEANSPREAD_T vs SEL_RANK. 각각 paired 월별 active 차이 NW lag-3 t, 양측 문턱 ±2.0. 1급 축 = paired active NW3 t + canonical PORT_t(자본 축) 병기, basis 명시(active SR=IR ≠ total SR — WT005 함정 승계).",
+      "entry_gate": "착수 관문(mean-blind, 순서 강제): ①arm 별 diff 계열 구성 → sd·nw 실측 → required_effect_size.R(series= 인자로 nw 실측, assumed_default 낙하 금지) → MDE 기록 ②검정력 브리지 — WT005 가 같은 통계·n=221 에서 누출 주입 t 4.16 으로 문턱 크기 효과 탐지력을 실증했으므로 재주입은 불요하되, 본 라운드 실측 MDE 가 WT005 대역과 정합하는지 대조 기록 ③MDE 가 사전등록 관심 효과(연 3.0%p)를 초과하면 해당 비교는 UNDERPOWERED 로 사전 라벨하고 t 해석을 봉인. paired t 를 먼저 보고 구성을 바꾸는 순간 sweep 재분류.",
+      "label_transition_rules": [
+        "SUPPORTED_SELECTION_STAT: 관문 통과 비교에서 t ≥ +2.0 → 선별 통계량 정합이 top-N 전이 레버로 확립. ★FQ-233 부활조건 ① 발화 — Lane A 자본화 관문 개방을 FQ 큐에 기록. 소비면 7종 체크리스트 순회 의무(선별 라벨·게이트 필드 교체 후보 포함).",
+        "INFERIOR: t ≤ −2.0 → 해당 통계량 열등(정보성 negative). crisis 반전 기전과의 정합 여부 진단 병기.",
+        "NOT_SUPPORTED_POWERED: |t| < 2.0 ∧ MDE ≤ 연 3.0%p — (A) 에서 나오면 '정합+정밀 코너도 레버 아님' = 통계량 축 일반으로 정보 승격, 재료 축(FQ-234 일별) 라우팅 강화 + 국면-조건부 선별(C2) 별도 사전등록만 잔존 축으로 표시. (B) 에서 나오면 WT005 조건부 보류의 라벨 확정(새-사전등록 재판정 완료). 부활 조건 병기 의무(INV-7): 새 재료(일별 축) 위 재적용 / 국면-조건부 사전등록 양성 시.",
+        "AXIS1_NO_DIVERGENCE: 반증 축 1 발화(집합 비분기) → 해당 비교 판정 불능 라벨 — null 이 아니라 검정 무의미(처치가 대조군과 같은 집합). 통계량 쌍 자체를 교체 대상으로 기록."
+      ],
+      "prereg_stance": "chain 권고 — 자격요건 3항 논증: ①iteration 변경사유 = 본 라운드는 WT005 2차의 문서화된 기전 진단(깊이 불일치 → 깊이-정합)을 잇는 다음 iteration 이며, 이번 변경사유는 '통계량 공간의 미측정 코너(정합+정밀) + 국소화 실측(Spearman/Pearson 서열 역전)' — 본 문서가 그 1줄 진단을 기록한다(WT005: 깊이 정합 / 본 건: 추정 정밀 정합). ②IS-only: 처치 2종·co-primary 2건·문턱 ±2.0·깊이·K·결합 전부 측정 전 고정, 변형 선택 자체가 없다(argmax 없음). 통계량 변형(winsorized Pearson·순위-크기 하이브리드) 추가 금지 — 추가하는 순간 enumerate-and-pick = sweep 재분류 + DSR ≥ 0.5 HARD. ③holdout: 본 라운드는 선별 층 실험이지 자본 후보 산출이 아니다 — holdout 미소비(봉인 유지), OOS 반복조회 없음. HPO 부재: 선별 통계량은 폐형식·자유 파라미터 0(FQ-233 의 sweep 기본값 사유였던 'LightGBM HPO 수반' 이 본 라운드에는 구조적으로 부재 — 학습 0회, 저장/재산출 통계량만). DSR 수치는 진단 산출·기록. ★sweep 재분류 트리거 사전 명문: 성과를 보고 깊이·K·창·통계량 정의·비교쌍을 바꾸는 모든 행위."
+    }
+  },
+
+  "challenge_flags": [
+    "★조회절 검거 사항의 설계 반영(재탕 방지): 처치 (b) 는 신규가 아니라 WT-D20260813_005 조건부 보류의 재판정이다 — 본 설계가 (b) 를 복제 브리지로 강등하고 신규 하중을 (a) 에 재배치했다. (b) 가 이번에도 |t|<2 면 그 라벨은 확정으로 전환되고, (b) 만 양성이며 (a) 가 null 이면 '정합' 이 아니라 '스프레드-t 특유 성질(예: 꼬리 가중)' 이 드라이버라는 재귀속 신호다 — 두 처치의 불일치 자체가 정보를 생산하도록 배치했다.",
+    "대안 보관: C2 국면-조건부 선별(crisis 반전 실측 방향 — 별도 사전등록만 적법) · C5 하이브리드 통계량(armC 가 양쪽-강함의 존재 증명 — (a)(b) 판정 후 조건부).",
+    "★기전 일반화 한계: Spearman/Pearson 서열 역전의 실측은 ML 스코어 3-arm(n=3, lane_a 패널)에서 나왔고 본 라운드는 factor DB 320종 선별에 일반화한다 — arm 수준 실측이 팩터 수준에서 재현된다는 보장은 없다. 반증 축 1(선별 분기)이 이 일반화의 관문이다 — 분기가 없으면 기전 기각이 판정보다 먼저 발화한다.",
+    "★상위월 민감도 승계: WT005 에서 이득이 전반부·소수 월에 집중(상위 5개월 제거 시 t 1.57→0.76, sp3 cap-w 음수)했다 — 본 라운드도 상위월 제거 민감도·subperiod(2015-07 전/후 포함)·dual-basis 병기 의무. (a) 양성이 소수 월 의존이면 라벨에 CONCENTRATION_CAVEAT 부기.",
+    "선별 집합 자기-회전율 진단(기전 path 의 검증 가능 함의): (a) 의 선별 안정성이 (b) 보다 높지 않으면 '정밀 이득' 서사 약화 — 진단 병기, 판정 비바인딩.",
+    "설계자는 실측하지 않는다(firewall) — 본 문서의 모든 수치는 선행 라운드 실측의 재인용이며 신규 측정치가 없다. MDE·nw·AR(1)·분기 관측 전부 alpha-research 착수 실측 사항."
+  ],
+
+  "verdict": "designed",
+
+  "handoff": {
+    "to": "alpha-research",
+    "next_steps": "Step 1~7 + ⑤ AST 구성. 착수 0항: ①원천-충실 패널 확인(load_month_factors 경유 — master_panel_FIXED.rds 금지, WT005 결함 실측) + 플레이스홀더 월 절단 ②entry_gate 순서 강제(sd/nw/MDE 먼저 — required_effect_size.R series= 실측, paired t 나중, 로그 타임스탬프로 순서 입증) ③반증 축 1(선별 분기) 을 primary 산출 전에 관측·기록 ④조건변수 AR(1) 실측 후 지속성 보강 여부 판정(축 2 회귀 한정) ⑤판정 후 FQ-237 status 갱신 + FQ-233 부활조건 ① 발화 여부 기록 + WT-D20260813_005 라벨 전환(브리지 결과 반영) + WT-D20260802_003 교차 해석 의무 ⑥완주 설계 의무(호출자 mandate): terminal_form=alpha_vector · alpha_bridge · transition_gates · consumption_gate_precheck 를 사전등록(PREREG)에 포함 ⑦⑤AST 구성 시 선별 통계량 trailing 산출은 SPECIAL_OP escape 리프 + op_code_path + walk_forward=true (WT005 전례), 저장 스코어 재사용 시 STORED_SCORE + provenance 3필드 — FIELD 리프 위장 금지(§4-1) ⑧subperiod·상위월 민감도·dual-basis·MDD·회전율 병기(WT005 규약 승계).",
+    "boundary_reminder": "본 설계의 mechanism/falsification/regime_scope 재작성 금지(Charter 원칙 8) — 결함 발견 시 challenge_note 기록 + 재설계 요청."
+  }
+}
