@@ -29,13 +29,14 @@
 | lane | 스폰 | 산출 |
 |---|---|---|
 | `qepm_dossier` | WT 의 **다음 단계 에이전트 1개**만 | `status.json.current_phase` 전이 |
+| `paper_promotion` | `wt_create` → `alpha-hypothesis` → `alpha-research` | 새 WT + `alpha_package.json` |
 | `method_measure` | 해당 어댑터를 **실측** | `method_registry` 의 그 method 에 `measurement_status`·`measured` 기입 |
 | `alpha` | `alpha-hypothesis`(fable) → `alpha-research`(opus) | `alpha_hypothesis.json` → alpha 스펙 |
 | `optimizer` | `optimizer-research` | 가중/사이징 어댑터 스펙 |
 | `risk` | `risk-research` | Σ·tail·crowding 어댑터 스펙 |
 | `regime` | `risk-research` | 국면 입력신호 평가 (regime 전담 에이전트 없음) |
 
-**목록은 이미 `qepm_dossier` → `method_measure` → `alpha` → opt/risk → regime 순으로 정렬돼 있다.**
+**목록은 이미 `qepm_dossier` → `paper_promotion` → `method_measure` → `alpha` → opt/risk → regime 순으로 정렬돼 있다.**
 위에서부터 **MAX_ITEMS 건**만 처리한다(상한 초과 금지). 순서를 바꾸지 말 것 — 이미 등재된 것을
 끝내는 편이 새로 쌓는 것보다 값이 크다는 판단이 정렬에 박혀 있다.
 
@@ -64,6 +65,34 @@ FORGE_DONE 15 · OPTIMIZER_DONE 5 · RISK_DONE 5)인데 **JUDGE 도달은 12건*
    억지 진행 금지 — 결손 위에 쌓은 판정은 판정이 아니다.
 5. **`governor` 는 절대 스폰하지 않는다.** 이 레인은 judge 까지다. 자본 편입은 도훈 수동이며
    `book_state.json` 쓰기는 이 런의 어떤 경로에서도 금지다(AX-002 동급).
+
+### lane=paper_promotion (경량 → QEPM 승격)
+
+**왜 있나**: 라우터는 `screen_priority`·`verdict`·`grade` 로 가치를 판정하는데, 그 판정이
+QEPM 으로 올라가는 코드가 **없었다**(무인 러너 4종 `wt_create` 0건 · 프롬프트 3종 WorkTask
+언급 0건 · grade B 3건 승격 0건, 2026-08-22 실측). 이 레인이 그 게이트다.
+
+**기준**: `grade ∈ {A, B}` ∧ 오염 라벨 없음 ∧ 아직 WT 가 그 `strategy_id` 를 참조하지 않음.
+`fr_eligible` 은 국면배합(FR) 소비 자격이지 정식 라운드 값어치의 척도가 아니므로 기준이 아니다.
+
+항목 필드: `strategy_id · grade · title · sim_result_path · bt_result_path · registered_at`
+
+1. **승격은 등급 복사가 아니다.** 경량 산출은 `sim_result.rds` 이고 QEPM 은 `alpha_package.json`
+   이라 형식이 다르다. 반드시 다음 순서로 **다시 만든다**:
+   - `wt_create(hypothesis_title=<전략 아이디어 한 줄>, theme=<계열>, wt_type="discovery",
+     discovery_of=<strategy_id>)` → WT id 발급 (`02_Infrastructure/worktask/worktask_manager.R`)
+   - `alpha-hypothesis`(fable) 스폰 → ①메커니즘 ②가설 ③반증 조건 ④국면 경계 → `alpha_hypothesis.json`
+   - `alpha-research`(opus) 스폰 → 가설 **승계**(재작성 금지) → ⑤AST + factor specs + ICIR
+     → `alpha_package.json`
+2. **경량 결과를 근거로 쓰되 재사용하지 않는다.** `sim_result`/`bt_result` 는 "왜 이걸 승격했나"
+   의 근거로 인용하고, QEPM 의 α̂ 는 alpha-research 가 새로 만든다. 경량 수치를 QEPM 산출로
+   옮겨 적으면 측정 계보가 끊긴다.
+3. 착수 전 `hypothesis_index` lookup + `06_Registry/alpha_frontier_queue.json` 확인 의무.
+   이미 같은 기전이 라운드로 돈 적 있으면 그 사실을 적고 **건너뛴다**(중복 라운드 금지).
+4. WT 생성 후 `status.json.current_phase` 를 `ALPHA_DONE` 으로 두면 다음 런의 `qepm_dossier`
+   레인이 risk → optimizer → forge → judge 로 **이어받는다**. 여기서 risk 를 직접 부르지 않는다
+   — 한 런은 한 단계만 진행한다.
+5. 승격 불가면(전략 산출물 결손·가설 재구성 불가) 이유를 `MODEQ_DONE` 줄에 남기고 넘어간다.
 
 ### lane=method_measure (측정 백로그 — 최우선)
 

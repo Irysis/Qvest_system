@@ -123,10 +123,10 @@ fi
 echo "== 계약 검사: 프롬프트가 자본 경로를 명시 금지하는가 =="
 PF="$REAL_ROOT/02_Infrastructure/ops/mode_queue_research_prompt.md"
 miss=""
-for k in "governor" "book_state" "canonical_screen_diag" "PIT C1~C15" "MODEQ_DONE" "alpha-hypothesis" "alpha-research" "method_measure" "canonical_screen_bt" "qepm_dossier" "next_agent" "governor" ; do
+for k in "governor" "book_state" "canonical_screen_diag" "PIT C1~C15" "MODEQ_DONE" "alpha-hypothesis" "alpha-research" "method_measure" "canonical_screen_bt" "qepm_dossier" "next_agent" "governor" "paper_promotion" "wt_create" "discovery_of" ; do
   grep -q "$k" "$PF" 2>/dev/null || miss="$miss $k"
 done
-[ -z "$miss" ] && ok "프롬프트 하드가드+레인 11축 명시" || ng "프롬프트 가드" "누락:$miss"
+[ -z "$miss" ] && ok "프롬프트 하드가드+레인 14축 명시" || ng "프롬프트 가드" "누락:$miss"
 
 echo "== t_summary: PASS=$PASS FAIL=$FAIL =="
 [ "$FAIL" -eq 0 ] || exit 1

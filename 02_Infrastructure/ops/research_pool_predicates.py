@@ -590,6 +590,81 @@ def qepm_dossier_pending(root, max_age_days=None):
     return out
 
 
+# ── 승격 게이트: 경량 레인 → QEPM (2026-08-22 도훈 "문제 없이 완성시켜줘") ────
+#   실측 결함: 라우터가 screen_priority·verdict·grade 로 가치를 판정하는데 그 판정이
+#   QEPM 으로 올라가는 코드가 **없었다** — 무인 러너 4종 wt_create 0건 ·
+#   프롬프트 3종 WorkTask 언급 0건 · grade B 3건 승격 0건.
+#
+#   ★기준 = grade ∈ {A, B}. fr_eligible(99건)은 **국면배합(FR) 소비 자격**이지
+#     "정식 라운드를 태울 값어치" 의 척도가 아니다 — 축이 다르다. 게다가 99건을
+#     forge/judge 에 태우면 비용이 감당 범위를 넘는다(라운드당 수십 분).
+#   ★승격은 등급 복사가 아니다: 경량은 sim_result.rds, QEPM 은 alpha_package.json 이라
+#     wt_create → alpha-hypothesis → alpha-research 로 **다시 만들어야** 한다.
+#     그래서 이 술어는 "대상 후보" 만 내고, 생성은 프롬프트가 한다.
+
+MODULE_CATALOG_REL = ("06_Registry", "module_catalog.json")
+_PROMOTE_GRADES = {"A", "B"}
+
+
+def _wt_referenced_strategy_ids(root):
+    """WT request.json 이 언급하는 strategy_id 집합 — 중복 승격 방지.
+
+    ★파일 존재가 아니라 **참조**로 판정한다. WT 는 id 규칙이 달라(WT-D…) 전략 id 를
+      경로로 역추적할 수 없다 — 이름 매칭이 유일한 연결이다
+      ([[feedback-pinning-field-names-breaks-on-extension]] 의 반대 사례).
+    """
+    out = set()
+    wt_root = os.path.join(root, *WT_ROOT_REL)
+    for d in glob.glob(os.path.join(wt_root, "WT-*")):
+        rq = os.path.join(d, "request.json")
+        if not os.path.exists(rq):
+            continue
+        try:
+            with open(rq, encoding="utf-8", errors="replace") as fh:
+                blob = fh.read()
+        except Exception:
+            continue
+        for m in re.finditer(r"STR_[A-Za-z0-9_]+", blob):
+            out.add(m.group(0))
+    return out
+
+
+def promotion_pending(root, grades=None):
+    """QEPM 승격 대상 — grade 통과 · 오염 없음 · 아직 WT 미생성."""
+    want = set(grades or _PROMOTE_GRADES)
+    obj = _load_ledger(os.path.join(root, *MODULE_CATALOG_REL))
+    if not isinstance(obj, dict):
+        return []
+    mods = obj.get("modules")
+    mods = list(mods.values()) if isinstance(mods, dict) else (mods or [])
+    already = _wt_referenced_strategy_ids(root)
+    out = []
+    for m in mods:
+        if not isinstance(m, dict):
+            continue
+        sid = str(m.get("strategy_id") or "")
+        if not sid or str(m.get("grade") or "").strip().upper() not in want:
+            continue
+        # ★오염 라벨이 붙은 건 승격 금지 — 등급 자체를 신뢰할 수 없다.
+        if m.get("grade_contaminated") or m.get("label_contaminated") or m.get("contamination"):
+            continue
+        if sid in already:
+            continue          # 이미 WT 가 이 전략을 참조 = 승격 완료/진행 중
+        meta = m.get("meta") or {}
+        out.append({"paper_id": sid, "strategy_id": sid, "lane": "paper_promotion",
+                    "grade": m.get("grade"),
+                    "title": str(meta.get("strategy_idea") or sid)[:120],
+                    "sim_result_path": m.get("sim_result_path"),
+                    "bt_result_path": m.get("bt_result_path"),
+                    "registered_at": str(m.get("registered_at") or "")[:10],
+                    "fr_eligible": m.get("fr_eligible"),
+                    "screen_priority": "", "shrinkage_builtin": "", "statistic_order": "",
+                    "reason": "grade %s · 경량 검증 통과했으나 QEPM WT 미생성" % m.get("grade"),
+                    "first_seen": "module_catalog.json"})
+    out.sort(key=lambda r: (r.get("grade") or "Z", r.get("registered_at") or ""), reverse=False)
+    return out
+
+
 def research_queue_pending(stage, root, lanes=None):
     """무인 배분 대상 전체 = mode_queue(opt/risk/regime) + alpha-research + 측정 백로그.
 
@@ -598,7 +673,8 @@ def research_queue_pending(stage, root, lanes=None):
     items = (mode_queue_pending(stage, root)
              + alpha_research_pending(stage)
              + method_measure_pending(root)
-             + qepm_dossier_pending(root, max_age_days=90))
+             + qepm_dossier_pending(root, max_age_days=90)
+             + promotion_pending(root))
     # lanes: 특정 레인만 뽑는 **표적 소비**. 정렬상 앞 레인이 상한을 다 먹어 뒤 레인이
     #   영영 안 도는 문제를 푼다(2026-08-22 실측: method_measure 12건이 risk/opt/regime 을 막음).
     #   ★필터는 선택이지 기본이 아니다 — 기본 경로의 정렬 계약(측정 백로그 우선)은 그대로 둔다.
@@ -609,8 +685,10 @@ def research_queue_pending(stage, root, lanes=None):
     # (등재만 쌓여 원장이 12일 멈춘 것이 이 배선의 발단이다).
     # ★qepm_dossier 가 1순위 — 이미 알파까지 간 라운드를 판정까지 잇는 편이
     #   새 논문을 또 쌓는 것보다 값이 크다(판정 전 103건 vs 판정 도달 12건).
-    _LANE_ORDER = {"qepm_dossier": 0, "method_measure": 1, "alpha": 2,
-                   "optimizer": 3, "risk": 3, "regime": 4}
+    # paper_promotion 이 qepm_dossier 다음 — 이미 알파까지 간 것을 판정까지 잇는 게 먼저고,
+    #   그 다음이 "검증 통과했는데 정식 라운드를 못 받은 것" 을 올리는 일이다.
+    _LANE_ORDER = {"qepm_dossier": 0, "paper_promotion": 1, "method_measure": 2,
+                   "alpha": 3, "optimizer": 4, "risk": 4, "regime": 5}
     items.sort(key=lambda r: (_LANE_ORDER.get(r.get("lane"), 9),
                               _PRIO_RANK.get(str(r.get("screen_priority", "")).strip(),
                                              _PRIO_DEFAULT),
