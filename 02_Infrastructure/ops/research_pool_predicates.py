@@ -499,6 +499,68 @@ def method_measure_pending(root):
     return out
 
 
+# ── QEPM 계속 레인 (2026-08-22 도훈 지시 "QEPM 모드 실행까지 이어지는 파이프라인") ──
+#   실측 결함: 무인 러너 4종 어디에도 WT 생성/진행이 없고(전수 0건), 프롬프트 3종도
+#   WorkTask 를 언급하지 않는다. 그래서 파이프라인이 **알파에서 끊긴다**.
+#   ★그런데 재료는 이미 쌓여 있다 — alpha_package.json 보유 WT 220건 중
+#     ALPHA_DONE 78 · FORGE_DONE 15 · OPTIMIZER_DONE 5 · RISK_DONE 5 = **판정 전 103건**,
+#     JUDGE 도달은 12건뿐. dossier 워크플로(Risk→Optimizer→Forge→Judge)의 전제인
+#     "alpha_package 가 WT mailbox 에 있을 것" 은 충족돼 있는데 **개시하는 것이 없었다.**
+#   ⇒ 이 레인이 그 칸을 채운다. 자본(governor/book_state)은 여전히 사람 손이다.
+
+WT_ROOT_REL = ("qepm", "mailbox", "worktask")
+
+# 판정 전 = 다음 단계로 진행할 수 있는 상태. 종결/중단 표식은 제외한다.
+_QEPM_ADVANCEABLE = {"ALPHA_DONE", "RISK_DONE", "OPTIMIZER_DONE", "FORGE_DONE"}
+_QEPM_TERMINAL = {"TERMINATED", "ABORTED", "COMPLETED", "JUDGE_DONE", "JUDGE_FAILED",
+                  "ALPHA_DONE_NEGATIVE", "SPEC_APPROVED"}
+# ★SPEC_APPROVED 를 제외하는 이유: 스펙만 승인된 상태라 alpha_package 가 있어도
+#   그 WT 는 아직 alpha 단계 소관이다(다음 단계 주체가 risk 가 아니다).
+
+_QEPM_NEXT = {"ALPHA_DONE": "risk-research", "RISK_DONE": "optimizer-research",
+              "OPTIMIZER_DONE": "forge", "FORGE_DONE": "judge"}
+
+
+def qepm_dossier_pending(root, max_age_days=None):
+    """판정 전 단계에서 멈춘 WT — 다음 에이전트를 붙이면 진행되는 것만.
+
+    ★phase 키가 두 세대다: 신 `current_phase` · 구 `phase`. 한쪽만 보면 174건이
+      '(없음)' 으로 떨어진다(2026-08-22 내 초판이 정확히 그렇게 오계수했다).
+    """
+    import datetime
+    wt_root = os.path.join(root, *WT_ROOT_REL)
+    if not os.path.isdir(wt_root):
+        return []
+    out = []
+    for d in sorted(glob.glob(os.path.join(wt_root, "WT-*"))):
+        ap = os.path.join(d, "alpha_package.json")
+        if not os.path.exists(ap):
+            continue
+        st = _load_json(os.path.join(d, "status.json")) or {}
+        ph = str(st.get("current_phase") or st.get("phase") or "").strip().upper()
+        if ph in _QEPM_TERMINAL or ph not in _QEPM_ADVANCEABLE:
+            continue
+        upd = str(st.get("updated_at") or st.get("started_at") or "")[:10]
+        if max_age_days and upd:
+            try:
+                age = (datetime.date.today() - datetime.date.fromisoformat(upd)).days
+                if age > max_age_days:
+                    continue
+            except Exception:
+                pass
+        out.append({"paper_id": os.path.basename(d), "wt_id": os.path.basename(d),
+                    "lane": "qepm_dossier", "phase": ph,
+                    "next_agent": _QEPM_NEXT.get(ph, "?"),
+                    "title": str(st.get("framing_anchor") or st.get("alpha_verdict") or os.path.basename(d))[:90],
+                    "updated_at": upd,
+                    "screen_priority": "", "shrinkage_builtin": "", "statistic_order": "",
+                    "reason": "alpha_package 보유·판정 전 — 다음 단계(%s) 미개시" % _QEPM_NEXT.get(ph, "?"),
+                    "first_seen": "status.json"})
+    # 최근 것 우선 — 오래된 legacy 보다 살아있는 라운드를 먼저 잇는다
+    out.sort(key=lambda r: (r.get("updated_at") or ""), reverse=True)
+    return out
+
+
 def research_queue_pending(stage, root, lanes=None):
     """무인 배분 대상 전체 = mode_queue(opt/risk/regime) + alpha-research + 측정 백로그.
 
@@ -506,7 +568,8 @@ def research_queue_pending(stage, root, lanes=None):
     """
     items = (mode_queue_pending(stage, root)
              + alpha_research_pending(stage)
-             + method_measure_pending(root))
+             + method_measure_pending(root)
+             + qepm_dossier_pending(root, max_age_days=90))
     # lanes: 특정 레인만 뽑는 **표적 소비**. 정렬상 앞 레인이 상한을 다 먹어 뒤 레인이
     #   영영 안 도는 문제를 푼다(2026-08-22 실측: method_measure 12건이 risk/opt/regime 을 막음).
     #   ★필터는 선택이지 기본이 아니다 — 기본 경로의 정렬 계약(측정 백로그 우선)은 그대로 둔다.
@@ -515,7 +578,10 @@ def research_queue_pending(stage, root, lanes=None):
         items = [x for x in items if x.get("lane") in _want]
     # 측정 백로그를 먼저 — 이미 등재된 것을 끝내는 편이 새로 쌓는 것보다 값이 크다
     # (등재만 쌓여 원장이 12일 멈춘 것이 이 배선의 발단이다).
-    _LANE_ORDER = {"method_measure": 0, "alpha": 1, "optimizer": 2, "risk": 2, "regime": 3}
+    # ★qepm_dossier 가 1순위 — 이미 알파까지 간 라운드를 판정까지 잇는 편이
+    #   새 논문을 또 쌓는 것보다 값이 크다(판정 전 103건 vs 판정 도달 12건).
+    _LANE_ORDER = {"qepm_dossier": 0, "method_measure": 1, "alpha": 2,
+                   "optimizer": 3, "risk": 3, "regime": 4}
     items.sort(key=lambda r: (_LANE_ORDER.get(r.get("lane"), 9),
                               _PRIO_RANK.get(str(r.get("screen_priority", "")).strip(),
                                              _PRIO_DEFAULT),
