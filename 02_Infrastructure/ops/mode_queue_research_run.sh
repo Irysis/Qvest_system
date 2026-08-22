@@ -187,6 +187,12 @@ fi
 # --- (2026-08-22 도훈 지시 "완주할 때마다") 완주 알림 — tg_agent_brief() 단일 진입점 경유.
 #   ★위치가 계약이다: 모든 rc 갱신(폴백 포함)이 끝난 뒤에 한 번만. 앞에 두면 폴백이
 #   성공해도 "멈췄습니다" 가 먼저 나간 채로 남는다.
+# 효과 측정은 rc 와 무관해야 한다 — 이 레인의 지배적 실패는 timeout 이고,
+# 죽기 전까지 남긴 산출이 있는지가 "다시 돌려야 하나" 를 가르는 신호다.
+# (분기 안의 동일 측정은 zero_progress 경보 판정용으로 그대로 둔다.)
+if [ -z "${_EFFECT_CMP:-}" ] && [ -n "${_EFFECT_BEFORE:-}" ]; then
+  _EFFECT_CMP=$("$PYBIN" "$BASE/02_Infrastructure/ops/research_effect_signature.py" "$BASE" --compare "${_EFFECT_BEFORE}" 2>/dev/null || true)
+fi
 _RS="$BASE/02_Infrastructure/ops/research_run_notify.R"
 if [ -f "$_RS" ] && [ "${QVEST_RUN_NOTIFY:-1}" = "1" ]; then
   QM_ROOT="$BASE" Rscript --no-save "$_RS" "${QVEST_MODE_QUEUE_LANE:-all}" "$N" "${_n_done:-0}" "${_EFFECT_CMP:-}" "$rc" >> "$LOG" 2>&1 || log "완주 알림 실패(비치명)"

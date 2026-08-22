@@ -49,10 +49,17 @@ lane_ko <- if (lane %in% names(.lane_map)) .lane_map[[lane]] else lane
 
 # ── 진척 판정: 마커(자기보고) 아니면 원장 지문. 오늘 오경보 사고의 수리 결과를 그대로 쓴다.
 progressed <- (!is.na(ndone) && ndone > 0) || identical(effect, "CHANGED")
-head_line <- if (isTRUE(progressed)) {
+stopped    <- !is.na(rc) && rc != 0
+
+# ★rc × 효과 4갈래 (2026-08-22 18:13 실사고). 구판은 rc!=0 이면 무조건 "멈췄습니다" 였고
+#   효과는 "미측정" 이었다 — 그런데 그 런은 18개 파일을 남기고 죽었다.
+#   이 레인의 **지배적** 상태가 "중단됐지만 산출은 남음" 이라 그 칸이 제일 중요하다.
+head_line <- if (stopped && isTRUE(progressed)) {
+  sprintf("%s 가 시간 상한에 걸려 중단됐습니다. 다만 그때까지의 산출은 남아 있습니다.", lane_ko)
+} else if (stopped) {
+  sprintf("%s 가 중간에 멈췄고 남은 산출이 없습니다. 큐는 그대로 보존됩니다.", lane_ko)
+} else if (isTRUE(progressed)) {
   sprintf("%s 한 건이 끝났습니다. 다음 단계로 넘어갔습니다.", lane_ko)
-} else if (!is.na(rc) && rc != 0) {
-  sprintf("%s 가 중간에 멈췄습니다. 큐는 그대로 보존됩니다.", lane_ko)
 } else {
   sprintf("%s 를 돌렸는데 바뀐 것이 없습니다. 확인이 필요합니다.", lane_ko)
 }
@@ -65,8 +72,16 @@ how <- if (!is.na(ndone) && ndone > 0) {
   "완료 표시도 원장 변화도 없었습니다"
 }
 
-result_ko <- if (isTRUE(progressed)) "다음 단계로 넘어갈 재료가 생겼습니다" else "이번 회차 산출이 없습니다"
-mean_ko   <- if (isTRUE(progressed)) {
+result_ko <- if (stopped && isTRUE(progressed)) {
+  "중간 산출이 남아 다음 회차가 이어받을 수 있습니다"
+} else if (isTRUE(progressed)) {
+  "다음 단계로 넘어갈 재료가 생겼습니다"
+} else {
+  "이번 회차 산출이 없습니다"
+}
+mean_ko <- if (stopped && isTRUE(progressed)) {
+  "버려진 시간이 아닙니다 — 같은 항목을 다시 돌리면 남은 산출 위에서 이어집니다"
+} else if (isTRUE(progressed)) {
   "실제 자본은 움직이지 않습니다 — 자본 편입은 도훈님 수동 승인입니다"
 } else {
   "실제 자본과는 무관합니다. 다음 회차에 같은 항목을 다시 시도합니다"
@@ -85,7 +100,7 @@ secs <- list(
          "레인"   = lane_ko,
          "대기"   = if (is.na(pending)) "미상" else sprintf("%d건", pending),
          "이번처리" = if (is.na(ndone)) "미상" else sprintf("%d건", ndone),
-         "원장변화" = if (identical(effect, "CHANGED")) "있음" else if (identical(effect, "SAME")) "없음" else "미측정",
+         "원장변화" = if (identical(effect, "CHANGED")) "있음" else if (identical(effect, "SAME")) "없음" else "미측정(비교 기준 없음)",
          "종료코드" = if (is.na(rc)) "미상" else as.character(rc)))
 )
 

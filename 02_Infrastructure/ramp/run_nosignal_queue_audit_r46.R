@@ -15,8 +15,19 @@ extract <- function(p) {
   if (is.null(p) || !nzchar(p) || !file.exists(p)) return(NULL)
   bt <- tryCatch(readRDS(p), error = function(e) NULL); if (is.null(bt)) return(NULL)
   pr <- bt$period_returns; br <- bt$benchmark_returns
-  if (is.null(pr) || is.null(br)) return(NULL)
-  pr <- as.data.table(pr); br <- as.data.table(br)
+  if (is.null(pr)) return(NULL)
+  pr <- as.data.table(pr)
+  ## ★2026-08-22 어댑터 확장: 10-component 계약이 아닌 산출물은 벤치를 **period_returns 안에**
+  ##   싣는다(실측: LH_D2_loser_augment 의 forge_result 는 benchmark_returns=NULL 이고
+  ##   period_returns 에 date/ret_net/benchmark_ret 3열). 뻣뻣한 추출기가 그걸 NOT_AUDITED 로
+  ##   버리고 있었다 — 형식 분화는 결측이 아니라 **어댑터 갭**이다.
+  if (is.null(br) && any(c("benchmark_ret","bm_ret") %in% names(pr))) {
+    bcn <- intersect(c("benchmark_ret","bm_ret"), names(pr))[1]
+    dcn <- intersect(c("date","Date"), names(pr))[1]
+    if (!is.na(bcn) && !is.na(dcn)) br <- pr[, c(dcn, bcn), with = FALSE]
+  }
+  if (is.null(br)) return(NULL)
+  br <- as.data.table(br)
   rc <- intersect(c("ret_net","ret","return"), names(pr))[1]
   bc <- intersect(c("benchmark_ret","bm_ret","ret"), names(br))[1]
   dc1 <- intersect(c("date","Date"), names(pr))[1]; dc2 <- intersect(c("date","Date"), names(br))[1]
