@@ -1084,6 +1084,10 @@ SUITES=(
   # 2026-08-22: 편입 검사기가 .py 를 탐색하지 않아 **08-09 신설분이 2주간 배터리 밖**이었다.
   #   (배터리는 .py 를 실행할 수 있는데 검사기의 분모에만 없었다 — 능력이 아니라 시야의 결손.)
   "08_Tests/hooks/test_benchmark_scale_seam.py"
+  # 2026-08-22 논문 라우터 감사 후속 — 상태라인 정직성 + 정체 경보(내 timeout 제거 회귀).
+  "08_Tests/ops/test_scheduler_status_line_honesty.sh"
+  "08_Tests/ops/test_stall_lock_alert.sh"
+  "08_Tests/ops/test_orchestrator_stage_gate.sh"
 )
 
 # (2026-08-02) .py 분기 추가 — 종전엔 확장자 무관 `bash` 로 던져 파이썬 suite 가

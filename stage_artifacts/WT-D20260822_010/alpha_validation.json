@@ -1,0 +1,418 @@
+{
+  "wt_id": "WT-D20260822_010",
+  "fq_ref": "FQ-234 NP2 → WT-009 NP2 (규모-중립 배제)",
+  "generated_at": "2026-08-22 20:16:56",
+  "prereg": {
+    "gate": "stage_artifacts/WT-D20260822_010/PREREG_GATE.json",
+    "measurement": "stage_artifacts/WT-D20260822_010/PREREG.json"
+  },
+  "differentiation_vs_prior": {
+    "wt009": "배제집합 = raw absorb 하위 20% — size 노출과 뒤섞인 축",
+    "wt010": "배제집합 = vol·size 직교화 잔차(score_orth) 하위 20% — FQ-234 NP2 가 이미 측정한 객체",
+    "not_a_sweep": "X 는 0.20 동일 고정. 바뀐 것은 문턱이 아니라 배제집합을 정의하는 객체다.",
+    "hypothesis_index_lookup": {
+      "queried": ["absorb", "tail exclusion→exclusion", "size neutral→neutral", "universe filter exclusion"],
+      "prior_art": ["WT-D20260802_014_016_LOTTERY_EXCLUSION_FILTER (양성 대조로 재측정)", "WT-D20260718_002_insider_sell_exclusion", "WT-D20260714_001 top25_capw_exclusion", "WT-D20260822_009 (직전 라운드, 본 라운드의 대조군)"],
+      "novel_combination": "직교화 잔차 공간 배제 = 인덱스 기준 미측정 조합"
+    }
+  },
+  "precheck_gate": {
+    "sd_monthly": 0.015948597895229,
+    "n_months": 268,
+    "mde80_monthly": 0.00272934822469967,
+    "mde80_annual_pp": 3.2752178696396,
+    "tail_event_magnitude_P1": 0.2,
+    "tail_event_magnitude_P2_empirical": 0.28460678081785,
+    "P1_monthly": 0.00028097655102881,
+    "P1_annual_pp": 0.337171861234572,
+    "P2_monthly": 0.00039983915836806,
+    "P2_annual_pp": 0.479806990041672,
+    "ratio": 0.146496205485856,
+    "threshold": 0.1,
+    "pass": true,
+    "wt009_ratio": 0.0378180398837564,
+    "formula": "PREREG_GATE.json gate_arithmetic — max(P1,P2)/MDE80"
+  },
+  "object_identity": {
+    "n_matched": 86297,
+    "n_both_finite": 86297,
+    "max_abs_diff": 0,
+    "pearson": 1,
+    "note": "WT-009 는 absorb_panel$absorb, NP2 는 alpha_scores$absorb_raw 를 소비했다. 같은 원천인지 실측 확인."
+  },
+  "orth_axis": {
+    "n_rows": 86297,
+    "n_months": 315,
+    "transform": "rank",
+    "winsorize_probs": [0.01, 0.99],
+    "controls": ["win_vol", "log_size"],
+    "contract": "distribution_target_screen.R::.dts_orthogonalize_by_date",
+    "regression_sample": "NP2 표본(liq 2e8 통과 absorb 패널) — NP2 verbatim",
+    "cor_with_raw_pooled": 0.732481836515837
+  },
+  "base_anchor": {
+    "port_t": 3.05833912319022,
+    "ir": 0.663067646859504,
+    "n_months": 268,
+    "target": 3.0583,
+    "pass": true
+  },
+  "census": {
+    "mean_cand": 291.809701492537,
+    "coverage": 0.977993734415958,
+    "mean_excluded": 57.4962686567164,
+    "mean_left": 234.313432835821,
+    "min_left": 115,
+    "months_left_lt25": 0,
+    "n_months": 268
+  },
+  "exposure_neutrality": {
+    "all_excl_srank": 0.436548674309802,
+    "all_keep_srank": 0.518073250912779,
+    "size_gap": -0.0815245766029775,
+    "size_nw_t": -19.5445143983465,
+    "vol_gap": 0.0597352879667346,
+    "vol_nw_t": 14.7046486064845,
+    "residual_share_vs_raw": 0.323233825548555,
+    "top25_excl_srank": 0.513853878524343,
+    "top25_keep_srank": 0.555261798363227,
+    "top25_excl_meanw": 0.0362308290419832,
+    "top25_keep_meanw": 0.0408996117039748,
+    "substitution_weight_ratio": 1.14411228648307,
+    "wt009": {
+      "all_excl_srank": 0.29958445470238,
+      "all_keep_srank": 0.551799941323013,
+      "all_gap": -0.252215486620633,
+      "all_gap_nw_t": -26.6,
+      "top25_excl_meanw": 0.017831025267214,
+      "top25_keep_meanw": 0.0447634152417682
+    },
+    "verdict": "중립화 성립(문턱 기준) — size gap 0.2522 → 0.0815(67.7% 제거), 치환 비중합 비율 2.296배 → 1.144배. 단 NW t 는 여전히 유의(-19.5)라 '완전 중립'이 아니라 '문턱-충족 중립'."
+  },
+  "primary": {
+    "basis": "cap-w top25 cap_norm weighted_screen 15bps (사전등록 고정)",
+    "base": {
+      "port_t": 3.05833912319022,
+      "ir": 0.663067646859504,
+      "net_sr": 0.663067646859504,
+      "abs_net_sr": 0.768206924475233,
+      "abs_cagr": 0.18254251815466,
+      "turnover_annual": 13.65671104681,
+      "n_months": 268,
+      "metric_type": "weighted_screen"
+    },
+    "filtered": {
+      "port_t": 2.51514602980347,
+      "ir": 0.573137112406261,
+      "net_sr": 0.573137112406261,
+      "abs_net_sr": 0.721353512585718,
+      "abs_cagr": 0.168946176334159,
+      "turnover_annual": 13.9046597167608,
+      "n_months": 268,
+      "metric_type": "weighted_screen"
+    },
+    "paired": {
+      "delta_ir": -0.0899305344532431,
+      "paired_nw_t": -0.884785715067843,
+      "mean_d_active": -0.000940160175745618,
+      "sd_d_active": 0.0202280940341029,
+      "annual_pp": -1.12819221089474,
+      "n": 268,
+      "basis": "screen-IR (cap-w top25 cap_norm, net 15bps) — book recon NAV IR 아님",
+      "wt009_raw_reference": {
+        "delta_ir": -0.115272463602773,
+        "port_t_filt": 2.43476408223255,
+        "annual_pp": -1.72618615026589
+      }
+    },
+    "delta_ir": -0.0899305344532431,
+    "gate": 0.05,
+    "pass": false
+  },
+  "paired_ci": {
+    "mean_monthly": -0.000940160175745618,
+    "annual_pp": -1.12819221089474,
+    "nw_se": 0.00106258516580314,
+    "nw_t": -0.884785715067844,
+    "ci95_monthly": [-0.00302282710071978, 0.00114250674922854],
+    "ci95_annual_pp": [-3.62739252086374, 1.37100809907425],
+    "n": 268,
+    "mechanism_implied_P1_monthly": 0.00028097655102881,
+    "mechanism_implied_P2_monthly": 0.00039983915836806,
+    "mechanism_implied_inside_ci": true,
+    "zero_inside_ci": true,
+    "mde80_monthly": 0.00272934822469967,
+    "mde80_annual_pp": 3.2752178696396
+  },
+  "basis_comparison": {
+    "cap_w": {
+      "delta_ir": -0.0899305344532431,
+      "port_t_base": 3.05833912319022,
+      "port_t_filt": 2.51514602980347,
+      "binding": true
+    },
+    "ew_top25": {
+      "delta_ir": -0.0105134836403754,
+      "port_t_base": 3.47819313393253,
+      "port_t_filt": 3.38131852429683,
+      "binding": false
+    },
+    "ew_universe_bench": {
+      "base_t": 4.20649284989998,
+      "filt_t": 3.89939593657563
+    },
+    "note": "판정 basis 는 cap-w 고정. EW 도 이번엔 같은 부호(-0.0105)라 WT-009 처럼 갈리지 않았다."
+  },
+  "positive_control": {
+    "delta_ir": 0.164172178623249,
+    "paired_nw_t": 1.56552055710279,
+    "mean_d_active": 0.00158581369060753,
+    "annual_pp": 1.90297642872904,
+    "n": 268,
+    "port_t_pc": 3.80239443710596,
+    "port_t_base": 3.05833912319022,
+    "wt009_reference": {
+      "delta_ir": 0.164172178623249,
+      "port_t_pc": 3.80239443710596
+    },
+    "detected": true,
+    "design": "동일 base·동일 하네스·동일 268월 창에서 기측정 양성(WT-014 MAX5 상위10% 배제) 재측정 = 검사기 전도성 확인"
+  },
+  "falsification": {
+    "N1": {
+      "id": "N1_exposure_neutrality",
+      "threshold": 0.126,
+      "size_gap": -0.0815245766029775,
+      "size_abs": 0.0815245766029775,
+      "size_nw_t": -19.5445143983465,
+      "size_n_months": 268,
+      "vol_gap": 0.0597352879667346,
+      "vol_abs": 0.0597352879667346,
+      "vol_nw_t": 14.7046486064845,
+      "vol_n_months": 268,
+      "wt009_raw_size_gap": -0.252215486620633,
+      "residual_share_vs_raw_size": 0.323233825548555,
+      "fired": false,
+      "reading": "전제 성립 — 노출 이동이 문턱 아래로 제거됐다. 단 NW t 는 여전히 유의하므로 '완전 중립'이 아니라 '문턱-충족 중립'으로만 서술한다."
+    },
+    "N2": {
+      "id": "N2_downday_individual_support_residual",
+      "mean_spread": -0.0938869582061101,
+      "nw_t": -14.5919631319889,
+      "n_months": 64,
+      "label": "지지(유의 음수)",
+      "fired": false,
+      "wt009_raw": {
+        "mean_spread": -0.114191317182449,
+        "nw_t": -8.93375933044921,
+        "n_months": 42
+      }
+    },
+    "N3": {
+      "id": "N3_smart_money_followthrough",
+      "mean_spread": 0.000508934503155471,
+      "nw_t": 1.45540342215816,
+      "n_months": 268,
+      "reject_threshold": 2,
+      "fired": false,
+      "wt009_raw": {
+        "mean_spread": 0.000533167587016396,
+        "nw_t": 1.20843402106869
+      }
+    },
+    "fired_count": 0
+  },
+  "transition_wall": {
+    "table": [
+      {
+        "excluded": false,
+        "n": 5409,
+        "tail_rate": 0.0268071732298022,
+        "mean_ret": 0.0201710083491832,
+        "q10": -0.124753457554032,
+        "mean_w": 0.0408996117039748
+      },
+      {
+        "excluded": true,
+        "n": 1291,
+        "tail_rate": 0.034856700232378,
+        "mean_ret": 0.0193266379461158,
+        "q10": -0.137223974763407,
+        "mean_w": 0.0362308290419832
+      }
+    ],
+    "mean_spread_monthly": -0.00282658935406261,
+    "nw_t": -0.67484382962608,
+    "n_months": 267,
+    "wt009_raw": {
+      "mean_spread_monthly": -0.0018314385933408,
+      "nw_t": -0.449970728504493
+    },
+    "reading": "음수 = 배제대상이 top-25 안에서 덜 벌었다(기전 정합). 양수 = 횡단면 우위가 고-score 조건부로 소멸/역전(전이-벽)."
+  },
+  "exposure_removal_accounting": {
+    "delta_ir_raw_axis": -0.115272463602773,
+    "delta_ir_orth_axis": -0.0899305344532431,
+    "recovered": 0.0253419291495299,
+    "deficit_vs_gate_raw": 0.165272463602773,
+    "recovery_share_of_deficit": 0.153334249378883,
+    "exposure_removed_share": 0.676766174451445,
+    "weight_ratio_raw": 2.29625,
+    "weight_ratio_orth": 1.14411228648307,
+    "reading": "노출 이동의 67.7% 를 제거했는데 ΔIR 결손은 15.3% 만 회복됐다 — 결손의 대부분은 노출 이동이 아니라 다른 원천이다."
+  },
+  "pnl_decomposition": {
+    "removed": {
+      "names": 4.81716417910448,
+      "weight_sum": 0.174529851840299,
+      "mean_ret": 0.0193266379461158,
+      "tail_rate": 0.034856700232378,
+      "wcontrib": 0.0028060057936676,
+      "srank": 0.534820204160593
+    },
+    "added": {
+      "names": 4.81716417910448,
+      "weight_sum": 0.199681747848557,
+      "mean_ret": 0.0186356746798412,
+      "tail_rate": 0.0317583268783888,
+      "wcontrib": 0.00217676276404756,
+      "srank": 0.570736483735738
+    },
+    "gross_swap_monthly": -0.00062924302962004,
+    "tail_rate_gain_pp": 0.30983733539892,
+    "mean_ret_loss_pp": -0.0690963266274602,
+    "turnover_delta_annual": 0.247948669950816,
+    "cost_delta_monthly_15bps": -3.0993583743852e-05,
+    "measured_d_active_monthly": -0.000940160175745618,
+    "reading": "배제는 예측대로 꼬리를 줄였다(제거군 꼬리율 3.486% → 추가군 3.176%, 0.31%p 개선). 그런데 대체 편입은 base 랭킹 26위 이하라 평균수익이 -0.069%p 낮다 — 랭킹 여백 손실이 꼬리 회피 편익을 넘는다. 이것이 배제-소비 형태의 구조적 비용이다."
+  },
+  "mechanism_consistency": {
+    "cross_sectional_tail": {
+      "excluded": 0.0447790252449867,
+      "kept_top": 0.0330975403984684,
+      "verdict": "기전 정합 (NP2 재현)"
+    },
+    "conditional_on_top25_tail": {
+      "excluded": 0.034856700232378,
+      "kept": 0.0268071732298022,
+      "verdict": "기전 정합 — 고-score 조건부에서도 배제군 꼬리율이 높다"
+    },
+    "conditional_on_top25_mean": {
+      "monthly_spread": -0.00282658935406261,
+      "nw_t": -0.67484382962608,
+      "verdict": "기전 정합 방향(배제군이 덜 벌었다) — 단 유의 미달"
+    },
+    "falsification_fired": 0,
+    "exposure_neutrality": {
+      "size_abs": 0.0815245766029775,
+      "vol_abs": 0.0597352879667346,
+      "threshold": 0.126,
+      "fired": false
+    },
+    "paradox": "기전 진단 4축(횡단면 꼬리 · 조건부 꼬리 · 조건부 평균 · 하락일 개인지지)이 전부 정합이고 반증 3건 전부 미발화인데 ΔIR 은 -0.0899 다. 모순이 아니다 — 기전의 참·거짓과 **그 기전을 배제 형태로 소비했을 때의 손익**이 다른 문제이기 때문이다. 배제는 꼬리를 줄이지만 랭킹 여백을 강제로 소비한다."
+  },
+  "label": {
+    "effect_detection_axis": "미결(underpowered) — 기전-함의 크기가 CI 안에 있어 그 크기의 효과를 배제할 수 없다",
+    "capital_gate_axis": "FAIL — ΔIR 게이트는 점추정 게이트이고 점추정이 -0.0899 로 반대 부호다. 유의성과 무관하게 미충족.",
+    "masked_check": "가려짐 아님 — 양성 대조가 동일 창·하네스에서 ΔIR +0.1642 를 냈으므로 하네스가 눈이 먼 상태가 아니다.",
+    "note": "두 축은 처분이 다르다: 검출 축은 '미결', 자본 축은 '기각'. 미결을 자본 통과로 읽지 않는다."
+  },
+  "window_reachability": {
+    "positive_control_delta_ir": 0.164172178623249,
+    "positive_control_paired_t": 1.56552055710279,
+    "positive_control_annual_pp": 1.90297642872904,
+    "reading": "동일 창에서 MAX5 배제는 ΔIR +0.1642 (연 1.903%p) 를 냈다 — 즉 이 창은 게이트급 ΔIR 을 **낼 수 있다**. 따라서 본 null 은 창의 무능이 아니다. 다만 양성 대조의 paired NW t 도 1.566 로 2 미만이다 — 이 하네스의 전도성은 ΔIR 점추정 수준이지 유의성 수준이 아니다(정직 표기)."
+  },
+  "robustness": {
+    "lag1": {
+      "delta_ir": -0.0966312437489251,
+      "paired_t": -1.01883952400929,
+      "port_t": 2.50468217166043,
+      "note": "붕괴 시 동월 누출 의심. fast-decay 신호는 lag1 에서 정상적으로도 소멸 — strict-PIT A/B(assert_overlay_pit 268/268 + 위반주입 0/268)와 병행 해석."
+    },
+    "x_sensitivity_diagnostic": {
+      "X10": {
+        "delta_ir": -0.0500023840674282,
+        "paired_t": -0.623701225618004,
+        "port_t": 2.75363653047983,
+        "turnover_annual": 13.5900583668458
+      },
+      "X30": {
+        "delta_ir": -0.0655988675690555,
+        "paired_t": -0.380849230724444,
+        "port_t": 2.61204041976118,
+        "turnover_annual": 14.1708920722519
+      }
+    },
+    "window_split": {
+      "pre201512": {
+        "n": 144,
+        "mean_d_active": -0.00106716662256771,
+        "annual_pp": -1.28059994708126,
+        "paired_t": -0.73594923481166
+      },
+      "post201512": {
+        "n": 124,
+        "mean_d_active": -0.000792668818145765,
+        "annual_pp": -0.951202581774919,
+        "paired_t": -0.506380873109252
+      }
+    },
+    "regime": [
+      {
+        "Category": "RISK_ON",
+        "n": 208,
+        "mean_d": -0.00141309251844185,
+        "t_nw": -1.11826976116659
+      },
+      {
+        "Category": "CRISIS",
+        "n": 15,
+        "mean_d": -0.00436849533888154,
+        "t_nw": -1.32992478210174
+      },
+      {
+        "Category": "NEUTRAL",
+        "n": 32,
+        "mean_d": 0.00254620945505151,
+        "t_nw": 0.585193292477408
+      },
+      {
+        "Category": "CAUTION",
+        "n": 13,
+        "mean_d": 0.00200069571212727,
+        "t_nw": 0.309921561620193
+      }
+    ],
+    "mdd": {
+      "base": 0.558738976563759,
+      "filtered": 0.567695789100202,
+      "delta_pp": -0.89568125364422,
+      "calmar_base": 0.326704464537798,
+      "calmar_filtered": 0.297599840580003,
+      "caveat": "월간 수익 기반 MDD — 일별 NAV 기반 forge MDD 와 다름(월간은 낙폭 과소추정). metric_type=weighted_screen.",
+      "wt009": {
+        "calmar_base": 0.326704464537798,
+        "calmar_filtered": 0.291214446683798
+      }
+    },
+    "x_note": "X=0.10/0.30 은 진단 병기 — 판정 사용 금지(사전등록). 세 값 전부 음수 ΔIR 이라 문턱 선택이 결과를 만든 것이 아님을 보인다."
+  },
+  "advisory_ic": {
+    "rank_ic_postfilter": 0.0457240173406067,
+    "icir": 0.411954189143354,
+    "rank_ic_nw_t": 6.94638956937493,
+    "rank_ic_prefilter": 0.0484140059968223,
+    "n_months": 268,
+    "note": "배제 후 유니버스 위 base score_eff 의 IC — absorb 자체의 IC 가 아니다(absorb 는 랭킹에 등장하지 않음). advisory."
+  },
+  "pit": {
+    "assert_pass": 268,
+    "assert_n": 268,
+    "injection_pass": 0,
+    "detector_alive": true
+  },
+  "metric_type": "weighted_screen (primary) + canonical_screen (dual-basis diag)",
+  "capital_eligible": false,
+  "capital_note": "screening tier. HARD 3종(PORT_t/oos_retention/calmar)은 forge-authoritative 산출이며 본 라운드는 전이하지 않았다."
+}

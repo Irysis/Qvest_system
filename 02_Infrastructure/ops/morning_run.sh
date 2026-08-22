@@ -42,8 +42,26 @@ stage_result() {   # $1=표시명 $2=exit코드 $3=경보 컴포넌트명
   if [ -n "$comp" ]; then
     mark=$(ls -1t "$BASE/.cache/scheduler_alerts/${comp}_"*"_$(date +%Y%m%d).alert" 2>/dev/null | head -1)
   fi
+  # ★오케스트레이터 게이트 (2026-08-22 감사 지적): 구판은 마커가 **있는지 보고만** 했다.
+  #   그래서 스테이지가 자기 경보를 안 내면 실패가 `exit=1` 한 줄로 흘러갔다 —
+  #   실측 `paper_recharge exit=1` 7회 / ★경보발행 0회(그 러너의 경보 커버리지가 1/5).
+  #   오케스트레이터는 exit 코드를 알고 있다. 스테이지가 기억하는지에 의존하지 않는다.
+  if [ -z "$mark" ] && [ -n "$comp" ] && [ "${rc:-0}" != "0" ]; then
+    local adir="$BASE/.cache/scheduler_alerts"; mkdir -p "$adir" 2>/dev/null
+    local m2="$adir/${comp}_stage_exit_${rc}_$(date +%Y%m%d).alert"
+    if [ ! -f "$m2" ]; then
+      {
+        echo "ts=$(date -Iseconds)"
+        echo "component=$comp"
+        echo "reason=stage_exit_${rc}"
+        echo "detail=오케스트레이터(morning_run) 관측 — 스테이지 '$name' 이 exit=$rc 로 끝났는데 자기 경보를 남기지 않았습니다. 해당 러너의 경보 커버리지 결손일 수 있습니다. 확인: 그 러너의 당일 로그."
+        echo "log=${LOG:-.cache/scheduler_logs/morning_run.log}"
+      } > "$m2"
+      mark="$m2"; reason="stage_exit_${rc}"
+    fi
+  fi
   if [ -n "$mark" ]; then
-    reason=$(grep -oE '^reason=.*' "$mark" 2>/dev/null | cut -d= -f2-)
+    [ -z "$reason" ] && reason=$(grep -oE '^reason=.*' "$mark" 2>/dev/null | cut -d= -f2-)
     echo "      $name exit=$rc  ★경보발행: ${reason:-unknown} (exit 0 이어도 실질 실패 — fail-soft)"
   else
     echo "      $name exit=$rc"

@@ -1,0 +1,79 @@
+{
+  "paired_ci": {
+    "mean_monthly": -0.000940160175745618,
+    "annual_pp": -1.12819221089474,
+    "nw_se": 0.00106258516580314,
+    "nw_t": -0.884785715067844,
+    "ci95_monthly": [-0.00302282710071978, 0.00114250674922854],
+    "ci95_annual_pp": [-3.62739252086374, 1.37100809907425],
+    "n": 268,
+    "mechanism_implied_P1_monthly": 0.00028097655102881,
+    "mechanism_implied_P2_monthly": 0.00039983915836806,
+    "mechanism_implied_inside_ci": true,
+    "zero_inside_ci": true,
+    "mde80_monthly": 0.00272934822469967,
+    "mde80_annual_pp": 3.2752178696396
+  },
+  "label": {
+    "effect_detection_axis": "미결(underpowered) — 기전-함의 크기가 CI 안에 있어 그 크기의 효과를 배제할 수 없다",
+    "capital_gate_axis": "FAIL — ΔIR 게이트는 점추정 게이트이고 점추정이 -0.0899 로 반대 부호다. 유의성과 무관하게 미충족.",
+    "masked_check": "가려짐 아님 — 양성 대조가 동일 창·하네스에서 ΔIR +0.1642 를 냈으므로 하네스가 눈이 먼 상태가 아니다.",
+    "note": "두 축은 처분이 다르다: 검출 축은 '미결', 자본 축은 '기각'. 미결을 자본 통과로 읽지 않는다."
+  },
+  "window_reachability": {
+    "positive_control_delta_ir": 0.164172178623249,
+    "positive_control_paired_t": 1.56552055710279,
+    "positive_control_annual_pp": 1.90297642872904,
+    "reading": "동일 창에서 MAX5 배제는 ΔIR +0.1642 (연 1.903%p) 를 냈다 — 즉 이 창은 게이트급 ΔIR 을 **낼 수 있다**. 따라서 본 null 은 창의 무능이 아니다. 다만 양성 대조의 paired NW t 도 1.566 로 2 미만이다 — 이 하네스의 전도성은 ΔIR 점추정 수준이지 유의성 수준이 아니다(정직 표기)."
+  },
+  "pnl_decomposition": {
+    "removed": {
+      "names": 4.81716417910448,
+      "weight_sum": 0.174529851840299,
+      "mean_ret": 0.0193266379461158,
+      "tail_rate": 0.034856700232378,
+      "wcontrib": 0.0028060057936676,
+      "srank": 0.534820204160593
+    },
+    "added": {
+      "names": 4.81716417910448,
+      "weight_sum": 0.199681747848557,
+      "mean_ret": 0.0186356746798412,
+      "tail_rate": 0.0317583268783888,
+      "wcontrib": 0.00217676276404756,
+      "srank": 0.570736483735738
+    },
+    "gross_swap_monthly": -0.00062924302962004,
+    "tail_rate_gain_pp": 0.30983733539892,
+    "mean_ret_loss_pp": -0.0690963266274602,
+    "turnover_delta_annual": 0.247948669950816,
+    "cost_delta_monthly_15bps": -3.0993583743852e-05,
+    "measured_d_active_monthly": -0.000940160175745618,
+    "reading": "배제는 예측대로 꼬리를 줄였다(제거군 꼬리율 3.486% → 추가군 3.176%, 0.31%p 개선). 그런데 대체 편입은 base 랭킹 26위 이하라 평균수익이 -0.069%p 낮다 — 랭킹 여백 손실이 꼬리 회피 편익을 넘는다. 이것이 배제-소비 형태의 구조적 비용이다."
+  },
+  "mechanism_consistency": {
+    "cross_sectional_tail": {
+      "excluded": 0.0447790252449867,
+      "kept_top": 0.0330975403984684,
+      "verdict": "기전 정합 (NP2 재현)"
+    },
+    "conditional_on_top25_tail": {
+      "excluded": 0.034856700232378,
+      "kept": 0.0268071732298022,
+      "verdict": "기전 정합 — 고-score 조건부에서도 배제군 꼬리율이 높다"
+    },
+    "conditional_on_top25_mean": {
+      "monthly_spread": -0.00282658935406261,
+      "nw_t": -0.67484382962608,
+      "verdict": "기전 정합 방향(배제군이 덜 벌었다) — 단 유의 미달"
+    },
+    "falsification_fired": 0,
+    "exposure_neutrality": {
+      "size_abs": 0.0815245766029775,
+      "vol_abs": 0.0597352879667346,
+      "threshold": 0.126,
+      "fired": false
+    },
+    "paradox": "기전 진단 4축(횡단면 꼬리 · 조건부 꼬리 · 조건부 평균 · 하락일 개인지지)이 전부 정합이고 반증 3건 전부 미발화인데 ΔIR 은 -0.0899 다. 모순이 아니다 — 기전의 참·거짓과 **그 기전을 배제 형태로 소비했을 때의 손익**이 다른 문제이기 때문이다. 배제는 꼬리를 줄이지만 랭킹 여백을 강제로 소비한다."
+  }
+}
