@@ -3,7 +3,7 @@
 ## PIT: load_month_factors() 경유(C13/14/15). 월말 sd 의 z → 익월(sd+1M) 수익에 적용(dec_lag=1).
 suppressPackageStartupMessages({library(data.table);library(arrow)})
 setwd(Sys.getenv("QM_ROOT","C:/Users/99922/OneDrive/Quant_Module_Moltbot"))
-source("02_Infrastructure/factor_db/factor_db_interface.R")
+source("02_Infrastructure/factor_db/factor_db_connector.R")
 pg<-function(...)cat(sprintf(...))
 
 FAC<-c(Value="V12_Composite_Value", Issuance="V21_Composite_Equity_Issuance", Size="S01_Size",
