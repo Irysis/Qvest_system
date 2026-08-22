@@ -2,12 +2,12 @@
   "task_id": "WT-D20260813_001",
   "as_of_date": "2026-08-22",
   "agent": "risk_research_v1.1",
-  "generated_at": "2026-08-22T20:42:54+0900",
+  "generated_at": "2026-08-22T20:47:32+0900",
   "sig_date": "2026-07-31",
   "evaluation_windows": {
     "estimation": {
-      "basis": "pairwise_complete_60m_window",
-      "n_months": 60,
+      "basis": "common_history_complete_case_25m",
+      "n_months": 25,
       "window_end": "2026-07"
     },
     "beta": {
@@ -27,7 +27,7 @@
   "regime_correlation_ref": "stage_artifacts/WT-D20260813_001/regime_correlation.parquet",
   "risk_summary": {
     "top_common_risks": [
-      "CommonFactor/Market (4% via PC1)",
+      "CommonFactor/Market (30% via PC1)",
       "Sector_Semiconductor (57%)",
       "Style_LowVol_tilt (vol pct 0.14 from alpha_pkg)"
     ],
@@ -74,9 +74,9 @@
       "market_down_5": -0.0565
     },
     "regime_correlation": {
-      "avg_corr_all": 0,
-      "avg_corr_bm_up": 0.1979,
-      "avg_corr_bm_down": 0.3634
+      "avg_corr_all": 0.2918,
+      "avg_corr_bm_up": 0.188,
+      "avg_corr_bm_down": 0.2556
     },
     "cap_tier_decomposition": {
       "basis": "cap_w_and_ew_uni",
@@ -97,77 +97,81 @@
     }
   },
   "diagnostics": {
-    "port_vol_monthly_pct": 5.0193,
-    "port_vol_annual_pct": 17.3873,
-    "condition_number": 1,
-    "condition_number_before_shrinkage": 2423894237833219,
+    "port_vol_monthly_pct": 15.5706,
+    "port_vol_annual_pct": 53.9381,
+    "condition_number": 434.34,
+    "condition_number_before_shrinkage": 3822112413271793,
     "shrinkage_used": true,
-    "shrinkage_method": "ledoit_wolf",
-    "estimation_basis": "pairwise_complete_60m_window",
-    "n_months_used": 60,
+    "shrinkage_method": "lw_nls",
+    "estimation_basis": "common_history_complete_case_25m",
+    "n_months_used": 25,
     "p_tickers": 25,
     "factor_n": 1,
-    "pc1_variance_share": 0.04,
-    "common_variance_share": 0.04,
-    "specific_variance_share": 0.96,
+    "pc1_variance_share": 0.304,
+    "pc1_variance_share_long_window": 0.3509,
+    "pc1_note": "pc1_variance_share from LW-NLS shrunk Σ (attenuated, conservative). *_long_window = raw corr eigen on full-history names over long window (structural read).",
+    "common_variance_share": 0.304,
+    "specific_variance_share": 0.696,
     "beta_full": 1.1297,
     "beta_recent36": 1.0572,
-    "tdc_pairs_gt_0_6": 37,
+    "beta_note": "beta_full/recent = static-alpha-weight portfolio vs KOSPI200 over available months (not walk-forward strategy series). alpha_pkg beta_to_bm=0.781 is the strategy's realized 198m active-series beta; the two differ because this snapshot uses fixed current-name weights over their full price history.",
+    "tdc_basis": "long_window_84m_x_22_names",
+    "tdc_pairs_gt_0_6": 23,
     "tdc_top10": [
+      {
+        "a": "A319660",
+        "b": "A095610",
+        "tdc": 0.846
+      },
       {
         "a": "A000660",
         "b": "A095610",
-        "tdc": 1
+        "tdc": 0.769
+      },
+      {
+        "a": "A000660",
+        "b": "A319660",
+        "tdc": 0.692
+      },
+      {
+        "a": "A080220",
+        "b": "A095610",
+        "tdc": 0.692
       },
       {
         "a": "A319660",
-        "b": "A089030",
-        "tdc": 1
-      },
-      {
-        "a": "A402340",
-        "b": "A000660",
-        "tdc": 0.75
-      },
-      {
-        "a": "A402340",
-        "b": "A036930",
-        "tdc": 0.75
-      },
-      {
-        "a": "A402340",
-        "b": "A095610",
-        "tdc": 0.75
-      },
-      {
-        "a": "A000660",
-        "b": "A131290",
-        "tdc": 0.75
+        "b": "A240810",
+        "tdc": 0.692
       },
       {
         "a": "A000660",
         "b": "A080220",
-        "tdc": 0.75
+        "tdc": 0.615
       },
       {
         "a": "A000660",
-        "b": "A240810",
-        "tdc": 0.75
+        "b": "A009150",
+        "tdc": 0.615
       },
       {
-        "a": "A000660",
+        "a": "A036930",
+        "b": "A084370",
+        "tdc": 0.615
+      },
+      {
+        "a": "A131290",
+        "b": "A031980",
+        "tdc": 0.615
+      },
+      {
+        "a": "A080220",
         "b": "A095340",
-        "tdc": 0.75
-      },
-      {
-        "a": "A000660",
-        "b": "A420770",
-        "tdc": 0.75
+        "tdc": 0.615
       }
     ],
-    "high_corr_pairs_gt_0_8": 0,
+    "high_corr_pairs_gt_0_8": 1,
     "psd_verified": true,
-    "min_eigenvalue": 0.0619,
+    "min_eigenvalue": 0.001543,
     "style_analysis": {
       "status": "data_unavailable",
       "reason": "cannot open the connection"
@@ -181,27 +185,30 @@
       "method_log": [
         {
           "name": "sample",
-          "condition": 2423894237833219,
-          "min_eig": -0.04231,
-          "psd": false,
+          "condition": 3822112413271793,
+          "min_eig": -2.929e-19,
+          "psd": true,
           "degenerate": false,
+          "collapsed": false,
           "selected": false
         },
         {
           "name": "ledoit_wolf",
           "condition": 1,
-          "min_eig": 0.0619,
+          "min_eig": 0.09691,
           "psd": true,
-          "degenerate": false,
-          "selected": true
+          "degenerate": true,
+          "collapsed": true,
+          "selected": false
         },
         {
           "name": "lw_nls",
-          "condition": "NA",
-          "min_eig": "NA",
-          "psd": false,
+          "condition": 434.34,
+          "min_eig": 0.001543,
+          "psd": true,
           "degenerate": false,
-          "selected": false
+          "collapsed": false,
+          "selected": true
         }
       ],
       "selection_objective": "condition_number"

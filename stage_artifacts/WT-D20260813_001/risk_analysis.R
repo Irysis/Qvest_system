@@ -133,13 +133,27 @@ Corr <- Sigma / outer(sds, sds); diag(Corr) <- 1
 
 # ================= FACTOR (BF) DECOMPOSITION via PCA =================
 # Σ = BΩB' + D : use PCA on correlation of common-history returns to get statistical factors.
-# Common-history submatrix for eigen (need full-rank returns).
 cc <- complete.cases(retmat_full)
-if (sum(cc) >= (N)) {
-  Rc <- retmat_full[cc, , drop=FALSE]
-} else {
-  # not enough for full PCA on 25 names; use pairwise corr eigen of Sigma
-  Rc <- NULL
+Rc <- if (sum(cc) >= N) retmat_full[cc, , drop=FALSE] else NULL
+
+# ---- Longer-window structural matrix (full-history names only) for robust TDC/regime/PC1 ----
+# Excludes the 3 short-history names (A295310 2024-07, A420770 2023-05, A402340 2021-12)
+# capping common history; uses long common window on the remaining >=full-history names.
+full_hist_ym <- 84L
+mw_long <- dcast(mret[ym %in% tail(allmonths, full_hist_ym)], ym ~ Ticker, value.var = "mret")
+setorder(mw_long, ym)
+retlong <- as.matrix(mw_long[, ..tickers]); rownames(retlong) <- mw_long$ym
+long_tickers <- tickers[colSums(!is.na(retlong)) >= (full_hist_ym - 3L)]
+Rc_long <- retlong[, long_tickers, drop=FALSE]
+Rc_long <- Rc_long[complete.cases(Rc_long), , drop=FALSE]
+cat(sprintf("[risk] long-window structural matrix: %d months x %d full-history names\n",
+            nrow(Rc_long), ncol(Rc_long)))
+# secondary PC1 on long window (robustness read vs shrunk Σ)
+pc1_share_long <- NA_real_
+if (nrow(Rc_long) >= 30 && ncol(Rc_long) >= 5) {
+  Cl <- cor(Rc_long)
+  egl <- eigen(Cl, symmetric=TRUE)$values
+  pc1_share_long <- egl[1]/sum(egl)
 }
 # Variance share via eigendecomposition of the correlation matrix (systematic vs specific proxy)
 eg <- eigen(Corr, symmetric = TRUE)
@@ -191,17 +205,18 @@ cat("[risk] sector weights:\n"); print(sec_agg)
 cat(sprintf("[risk] sector_HHI=%.3f  name_HHI=%.4f  n_eff_names=%.2f\n", sector_hhi, name_hhi, n_eff_names))
 
 # ================= TAIL DEPENDENCE (empirical lower-tail) =================
-# empirical lower TDC on common-history returns; flag pairs > 0.6
+# empirical lower TDC on LONG-window full-history names (robust); flag pairs > 0.6
 tdc_pairs <- data.table()
-if (!is.null(Rc) && nrow(Rc) >= 20) {
-  qn <- 0.15
-  for (i in 1:(N-1)) for (j in (i+1):N) {
-    xi <- Rc[,i]; xj <- Rc[,j]
+tdc_basis <- sprintf("long_window_%dm_x_%d_names", nrow(Rc_long), ncol(Rc_long))
+if (nrow(Rc_long) >= 24 && ncol(Rc_long) >= 3) {
+  Lt <- colnames(Rc_long); nL <- length(Lt); qn <- 0.15
+  for (i in 1:(nL-1)) for (j in (i+1):nL) {
+    xi <- Rc_long[,i]; xj <- Rc_long[,j]
     thi <- quantile(xi, qn, na.rm=TRUE); thj <- quantile(xj, qn, na.rm=TRUE)
     below_j <- xj <= thj
-    if (sum(below_j) >= 3) {
+    if (sum(below_j) >= 4) {
       tdc <- mean(xi[below_j] <= thi)
-      tdc_pairs <- rbind(tdc_pairs, data.table(a=tickers[i], b=tickers[j], tdc=tdc))
+      tdc_pairs <- rbind(tdc_pairs, data.table(a=Lt[i], b=Lt[j], tdc=round(tdc,3)))
     }
   }
   setorder(tdc_pairs, -tdc)
@@ -244,21 +259,21 @@ cat("[risk] stress results:\n"); print(stress_res)
 cat(sprintf("[risk] market_down_5 (beta*-5%%)=%.4f\n", market_down_5))
 
 # ================= REGIME CORRELATION =================
-# split window by BM sign (up/down months) as crude regime; avg pairwise corr shift
-if (!is.null(Rc) && nrow(Rc) >= 24) {
-  ym_rc <- rownames(retmat_full)[complete.cases(retmat_full)]
-  bm_rc <- bmm[match(ym_rc, ym), bm]
-  up <- !is.na(bm_rc) & bm_rc >= 0
-  avg_offdiag <- function(M){ d <- M[upper.tri(M)]; mean(d, na.rm=TRUE) }
-  cor_up  <- if (sum(up)>=6)  avg_offdiag(cor(Rc[up,,drop=FALSE])) else NA
-  cor_dn  <- if (sum(!up)>=6) avg_offdiag(cor(Rc[!up,,drop=FALSE])) else NA
-  cor_all <- avg_offdiag(Corr)
+# split LONG-window by BM sign (up/down months); avg pairwise corr shift among full-history names
+avg_offdiag <- function(M){ d <- M[upper.tri(M)]; mean(d, na.rm=TRUE) }
+if (nrow(Rc_long) >= 24 && ncol(Rc_long) >= 3) {
+  ym_rl <- rownames(Rc_long)
+  bm_rl <- bmm[match(ym_rl, ym), bm]
+  up <- !is.na(bm_rl) & bm_rl >= 0
+  cor_up  <- if (sum(up)>=6)  avg_offdiag(cor(Rc_long[up,,drop=FALSE])) else NA
+  cor_dn  <- if (sum(!up)>=6) avg_offdiag(cor(Rc_long[!up,,drop=FALSE])) else NA
+  cor_all <- avg_offdiag(cor(Rc_long))
   regime_cor <- data.table(regime=c("all","bm_up","bm_down"),
-                            avg_pairwise_corr=c(cor_all, cor_up, cor_dn),
-                            n_months=c(nrow(Rc), sum(up), sum(!up)))
+                            avg_pairwise_corr=round(c(cor_all, cor_up, cor_dn),4),
+                            n_months=c(nrow(Rc_long), sum(up), sum(!up)))
 } else {
   cor_all <- mean(Corr[upper.tri(Corr)])
-  regime_cor <- data.table(regime="all", avg_pairwise_corr=cor_all, n_months=n_used)
+  regime_cor <- data.table(regime="all", avg_pairwise_corr=round(cor_all,4), n_months=n_used)
 }
 cat("[risk] regime correlation:\n"); print(regime_cor)
 write_parquet(regime_cor, file.path(STAGE, "regime_correlation.parquet"))
@@ -404,10 +419,14 @@ diagnostics <- list(
   p_tickers = N,
   factor_n = k_factors,
   pc1_variance_share = round(pc1_share,4),
+  pc1_variance_share_long_window = round(pc1_share_long,4),
+  pc1_note = "pc1_variance_share from LW-NLS shrunk Σ (attenuated, conservative). *_long_window = raw corr eigen on full-history names over long window (structural read).",
   common_variance_share = round(common_var_share,4),
   specific_variance_share = round(specific_var_share,4),
   beta_full = round(as.numeric(beta_full),4),
   beta_recent36 = round(as.numeric(beta_recent),4),
+  beta_note = "beta_full/recent = static-alpha-weight portfolio vs KOSPI200 over available months (not walk-forward strategy series). alpha_pkg beta_to_bm=0.781 is the strategy's realized 198m active-series beta; the two differ because this snapshot uses fixed current-name weights over their full price history.",
+  tdc_basis = tdc_basis,
   tdc_pairs_gt_0_6 = n_tdc_high,
   tdc_top10 = if(nrow(tdc_top)>0) tdc_top else list(status="data_unavailable"),
   high_corr_pairs_gt_0_8 = hi_corr_pairs,
