@@ -17,8 +17,9 @@ panh <- pan[anchor %in% A4$anchors & is.finite(fwd_ret_1m)]
 p0 <- readRDS(file.path(W002,"p0_returns.rds")); bench_parent <- as.data.table(p0$bench)[, .(Date, BM_Ret)]
 
 Zl <- lapply(seq_along(months), function(m) {
+  fsm <- A4$sel_rank[[months[m]]]
   d <- panh[anchor == as.Date(months[m])]
-  list(Z = as.matrix(d[, ..(A4$sel_rank[[months[m]]])]), tick = as.character(d$Ticker)) })
+  list(Z = as.matrix(d[, ..fsm]), tick = as.character(d$Ticker)) })
 build_from_W <- function(W) rbindlist(lapply(seq_along(months), function(m) {
   Z <- Zl[[m]]$Z; w <- W[m, ]
   Wm <- matrix(w, nrow=nrow(Z), ncol=K, byrow=TRUE); Wm[!is.finite(Z)] <- 0

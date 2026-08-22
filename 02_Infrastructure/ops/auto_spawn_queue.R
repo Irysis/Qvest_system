@@ -123,10 +123,21 @@ build_auto_spawn_queue <- function(root = .asq_root(), write = TRUE) {
   for (cd in (ov$candidates %||% list())) {
     if (identical(cd$status %||% "", "measured")) next
     ipb <- ip_of(cd$id %||% "")
+    ## ★2026-08-22: 무신호 대조 verdict 를 payload 에 실어 **스폰된 세션이 즉시 보게** 한다
+    ##   (measurement-graduation §3). 우선순위 로직은 바꾸지 않는다 — 정보만 전달한다.
+    ##   INDISTINGUISHABLE = 그 성과가 신호가 아니라 대형주 노출일 수 있음 → 사이클 배분 판단에 쓸 것.
+    ns <- cd$no_signal %||% list()
+    nsv <- ns$verdict %||% "NOT_AUDITED"
     add("overlay_drain", cd$id %||% "?",
         list(strategy_name = cd$strategy_name %||% "",
              action = "Rscript 02_Infrastructure/regime/overlay_candidate_drain.R <candidate_id> (기계 실측 — dv_v1 판정 동반)",
-             improvement_potential = ipb))
+             improvement_potential = ipb,
+             no_signal_verdict = nsv,
+             no_signal_note = if (identical(nsv, "INDISTINGUISHABLE_FROM_NO_SIGNAL"))
+               "★무신호 대조와 구별 불가 — 대형주 노출일 수 있음. 사이클 투입 전 EV 재평가 권고(§3)"
+             else if (identical(nsv, "NOT_AUDITED"))
+               "무신호 대조 미확인(통과 아님) — run_nosignal_queue_audit_r46.R 로 감사 후 판단 가능"
+             else "무신호 대조 통과 — 신호 기여 실증됨"))
   }
 
   # ② FR_RCMA 재정의 소비 (D2, 도훈 2026-08-16)
@@ -164,6 +175,26 @@ build_auto_spawn_queue <- function(root = .asq_root(), write = TRUE) {
   for (eid in names(prev_ents)) {
     st <- prev_ents[[eid]]$status %||% "pending"
     if (st %in% c("in_progress", "done") ) ents[[eid]] <- prev_ents[[eid]]
+  }
+  ## ★2026-08-22: 이월 엔트리도 무신호 대조 verdict 로 **재보강**한다.
+  ##   실측 갭: 신규 엔트리에만 붙이면 이미 done/in_progress 로 이월된 건이 영구히 정보 없이 남는다
+  ##   (배선 당일 확인 — overlay_drain 5건 전부 이월분이라 verdict=None 이었다).
+  ##   ★부분 배선을 완전 배선으로 착각하지 않기 위한 보정. 우선순위 로직은 여전히 안 바꾼다(정보만).
+  {
+    ovc <- (ov$candidates %||% list())
+    ns_by_id <- setNames(lapply(ovc, function(x) x$no_signal %||% list()),
+                         vapply(ovc, function(x) x$id %||% "", character(1)))
+    for (eid in names(ents)) {
+      if (!identical(ents[[eid]]$kind, "overlay_drain")) next
+      cid <- ents[[eid]]$candidate_id %||% ""
+      nsv <- (ns_by_id[[cid]] %||% list())$verdict %||% "NOT_AUDITED"
+      ents[[eid]]$no_signal_verdict <- nsv
+      ents[[eid]]$no_signal_note <- if (identical(nsv, "INDISTINGUISHABLE_FROM_NO_SIGNAL"))
+          "★무신호 대조와 구별 불가 — 대형주 노출일 수 있음. 사이클 투입 전 EV 재평가 권고(§3)"
+        else if (identical(nsv, "NOT_AUDITED"))
+          "무신호 대조 미확인(통과 아님) — run_nosignal_queue_audit_r46.R 로 감사 후 판단 가능"
+        else "무신호 대조 통과 — 신호 기여 실증됨"
+    }
   }
   by_kind <- split(names(ents), vapply(ents, function(e) e$kind, character(1)))
   for (k in names(by_kind)) {

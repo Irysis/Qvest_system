@@ -1,0 +1,192 @@
+{
+  "task_id": "WT-D20260822_007",
+  "round_id": "FQ-246_NP1_discrete_hard_selection_ceiling_WT-D20260822_007_20260822",
+  "fq_ref": "FQ-246 NP1",
+  "sealed_by": "alpha-research",
+  "sealed_at": "2026-08-22T18:05+0900",
+  "seal_order_declaration": {
+    "principle": "Part A 와 Part B 를 **둘 다** 본 파일에서 동시에 사전등록한다. Part A 결과를 보고 Part B 설계를 바꾸지 않는다(지시 명문).",
+    "file_timestamp_order": [
+      "1. p0_lookup.R / p1_probe.R / p1b_form.R — 조회절 + 승계 구조 확인 + 가중 기하(수익률 미사용)",
+      "2. p1c_parity.R / p1c_parity.rds — 하네스 패리티(공표 수치 2건 재현). ★새 arm 아님 — FQ-244 가 이미 공표한 C0 0.947410715814893 · ORACLE_K 4.64699909 의 재현이며, 실패 시 본 라운드 자체가 성립 불가라 봉인 전에 수행했음을 명시 공개한다.",
+      "3. PREREG.json (본 파일) — 이 시점 이후 어떤 신규 arm 도 측정되지 않았다",
+      "4. p2_partA.rds (Part A) → 5. p3_partB.rds (Part B) → 6. alpha_validation.json / alpha_package.json"
+    ],
+    "pre_seal_disclosure": "봉인 전 관측된 수치 = (a) 패리티 4건(전부 공표값 재현, Δ ≤ 5e-9) (b) 가중 집중도 기하 N_eff(수익률 무관: C0 5.000 · FQ246_ORACLE_T2 3.910050 · FQ246_ORACLE_T3 4.343690 · softmax λ 사다리) (c) 월별 실현 rank-IC 행렬의 요약통계(1105/1105 finite, 월내 best-worst 스프레드 평균 0.16993). 신규 arm 의 성과는 하나도 관측되지 않았다."
+  },
+  "hypothesis_ref": {
+    "path": "qepm/mailbox/worktask/WT-D20260822_007/alpha_hypothesis.json",
+    "designed_by": "alpha-hypothesis (model: fable)",
+    "verdict": "designed",
+    "inheritance_rule": "mechanism / falsification / regime_scope 는 자구 승계 — alpha-research 재작성 금지(Charter 원칙 8). 본 PREREG 는 그 반증 스키마(FA/FB/FC/FD)를 측정 절차로 번역할 뿐 내용을 바꾸지 않는다.",
+    "alpha_research_addition_disclosed": "hypothesis 지시의 co-primary 는 B1(꼬리 판별력)·B2(solo-advocate 상충도) 2종이다. alpha-research 가 **추가**한 축 = B4 순위 지속성(stability, 비용 채널). 이는 co-primary 재지정이 아니라 secondary 신설이며 그 자격으로만 판정한다."
+  },
+  "lookup_clause": {
+    "performed": true,
+    "tool": "02_Infrastructure/tools/hypothesis_index.R :: lookup_hypothesis()",
+    "keywords": ["argmax", "oracle", "ceiling", "headroom", "sparsity", "concentration", "single_factor", "factor+selection", "form+loss", "softmax", "top_n"],
+    "hits_relevant": [
+      "WT-D20260822_006 (FQ-246, IN_PROGRESS) — 본 라운드의 직접 부모. 소프트 틸트 족만 측정.",
+      "DIST-RAMP-013 (DISTILLED_COND) — ★가장 가까운 선행: RAMP 에서 국면 정보는 soft membership 으로 소비할 때 성과가 올랐고 하드 스위치는 그렇지 않았다. 본 라운드는 **반대 방향의 주장**을 시험한다(팩터-선택 면에서는 하드가 상한을 가진다). 소비 대상이 다르다(국면 배분 vs 팩터 선택)는 것이 차별점이며, 만약 Part A 가 단조 증가를 보이면 두 결과는 '소비면에 따라 형태의 최적 집중도가 다르다' 로 공존한다.",
+      "WT-D20260822_002 (FQ-237) / WT-D20260822_004 (FQ-244) — 선별 통계량·결합 규칙 마디 배제 실측(승계).",
+      "R4CAPTILT_PAIRED_CEILING — paired 상한 진단 어휘의 선례."
+    ],
+    "differentiator": "선행 어디에도 '정보를 고정한 채 가중 집중도만 변주해 회수율 곡선을 잰' 라운드가 없다. FQ-246 은 정보(1차원 상태)와 형태(soft)를 동시에 바꿔 두 손실이 교락돼 있었다."
+  },
+  "inherited_measured_anchors": {
+    "note": "재계산 금지 · 자구 승계. 본 하네스에서 재현 확인됨(p1c_parity).",
+    "C0_uniform_port_t_IKS200": 0.947410715814893,
+    "ORACLE_K_port_t_IKS200": 4.64699909,
+    "ORACLE_K_paired_annual_pct": 13.6929981793759,
+    "ORACLE_K_paired_t_nw3": 4.28970507043012,
+    "FQ246_oracle_soft_T2_port_t": 1.69937575,
+    "FQ246_oracle_soft_T3_port_t": 1.82208106,
+    "FQ246_oracle_soft_paired_annual_pct": 3.44980940419697,
+    "FQ246_recovery_ratio": 0.251209,
+    "MATERIAL_annual_pct": 8.2227973063616,
+    "quantity_naming_discipline": "★승계 규약 11 — 비슷한 크기의 다른 양 혼동 금지. 'ORACLE_K PORT_t 4.647'(단위: portfolio-alpha t, NW lag-3) 와 'ORACLE_K paired t 4.290'(단위: 월별 paired diff 의 t) 은 다른 양이다. 'FQ-246 회수 25.12%'(단위: 여유폭 비율) 와 'T3_DISP 연 0.2657%p'(단위: %p/yr) 도 다른 양이다. 본 파일과 모든 산출물은 인용 시 단위+양의 이름을 병기한다."
+  },
+  "capital_eligibility": {
+    "part_A": {
+      "capital_eligible": false,
+      "metric_type": "canonical_screen_diag_oracle",
+      "reason": "오라클(실현 차월 rank-IC)은 구성상 look-ahead 다. Part A 전 수치는 '무엇이 가능한가' 의 눈금이며 '무엇을 벌었나' 가 아니다. 이 수치로 자본·졸업을 주장하면 AX-002 위반.",
+      "terminal_form": "diagnostic_ceiling",
+      "alpha_vector_emitted": false
+    },
+    "part_B": {
+      "capital_eligible": true,
+      "metric_type": "canonical_screen",
+      "reason": "오라클 미사용 · 당월 z 횡단면만으로 계산되는 성과-비파생 기준. 단 canonical 은 스크리닝 실측이며 graduation HARD 3종(PORT_t 2.95 · oos_retention 0.7 · calmar 0.64)은 forge-authoritative 값에만 적용된다 — 본 라운드는 졸업 선언을 하지 않는다."
+    }
+  },
+  "part_A": {
+    "question": "FQ-246 이 남긴 여유폭 3/4 의 미회수분이 **순수 형태 손실**인가, 아니면 **정보 차원 손실**(1차원 상태 스칼라 vs K차원 IC 벡터)인가.",
+    "design": "정보를 K차원 오라클 IC 벡터로 **고정**하고 가중 형태만 교체한다. 같은 선별 궤적(sel_rank K=5) · 같은 패널 · 같은 top-25 EW · 같은 15bps · 같은 벤치.",
+    "common_axis": {
+      "name": "n_eff",
+      "definition": "유효 팩터 수 = 1/sum(w_k^2), 월별 계산 후 평균. 균등 = 5.0, one-hot = 1.0.",
+      "why": "★소프트 틸트와 하드 선택을 같은 좌표계에 놓는 유일한 척도. FQ-246 arm 을 이 축 위에 올려야 '형태' 와 '정보' 가 갈린다."
+    },
+    "arms_fixed": {
+      "oracle_information_fixed_form_varies": [
+        "O_softmax_lam{0.25,0.5,0.75,1.0,1.5,2.0,3.0,5.0,8.0,12.0} — w ∝ exp(λ·z(IC_realized)) (z = 월내 K개 IC 의 표준화)",
+        "O_softmax_lamMATCH_T2 — λ 를 **가중 기하만으로** 역산해 평균 n_eff = 3.910050 (FQ-246 ORACLE_T2 좌표) 에 맞춘 arm",
+        "O_softmax_lamMATCH_T3 — 동일 방식, 평균 n_eff = 4.343690 (FQ-246 ORACLE_T3 좌표)",
+        "O_fq246_form_clip — FQ-246 의 **정확한 함수형**(exp · ±2 clip · 정규화)에 K차원 오라클 IC 를 주입",
+        "O_top{1,2,3,4}_EW — 실현 IC 상위 J 개 하드 EW (J=1 = ORACLE_K 재현, J=5 ≡ C0)"
+      ],
+      "champion_selection": "없음. 사다리 전 arm 을 독립 라벨로 전부 보고한다 → sweep 미해당, DSR 게이트 비발동. ★argmax 로 '최적 λ' 를 뽑는 순간 sweep 재분류 + DSR 0.5 HARD 발동임을 여기에 명시한다.",
+      "lambda_grid_fixation": "λ 격자와 MATCH λ 는 **수익률을 보지 않고** 가중 기하(n_eff)만으로 고정했다."
+    },
+    "form_cost_null": {
+      "design": "같은 형태 · 정보 제거 — 월별 IC 벡터를 **월내에서 무작위 치환**해 같은 가중 형태를 재실행. NPERM = 60, 형태 4종(top1 · top2 · softmax λ=1.0 · softmax λ_MATCH_T2).",
+      "why": "★승계 규약 4 — FQ-246 실측: 규칙-형태 자체가 셔플 상태에서 평균 paired t ≈ −1.0 의 비용을 만든다. 하드 선택은 평균화(분산 보험)를 잃으므로 정보 없이도 C0 대비 손실이 예상된다. 이 분포 없이는 arm−C0 가 '정보 가치' 로 오독된다."
+    },
+    "decomposition_preregistered": {
+      "identity": "paired(arm − C0) = [form_cost(n_eff)] + [info_value(n_eff)]",
+      "form_cost": "mean over 60 perms of paired(perm_arm − C0) — 정보 없는 같은 집중도의 기대 손익",
+      "info_value": "paired(oracle_arm − C0) − form_cost(n_eff)"
+    },
+    "primary_decision_rule": {
+      "statistic": "r(form) = paired_annual_pct(arm − C0) / 13.6929981793759  [단위: 여유폭 비율]",
+      "decisive_contrast": "같은 n_eff 에서 { K차원 오라클 IC 정보 } vs { FQ-246 1차원 오라클 상태 }. paired 검정은 두 arm 의 active 계열 직접 차(NW lag-3).",
+      "labels": [
+        "PURE_FORM_LOSS — O_softmax_lamMATCH_T2 의 회수율이 FQ-246 ORACLE_T2 회수율(25.12%)과 15 퍼센트포인트 이내로 일치하고 두 arm 의 paired diff 가 |t| < 2 → 미회수 3/4 은 순수 형태(집중도) 손실. 즉 그 집중도에서는 완전한 K차원 정보도 더 못 나른다.",
+        "INFORMATION_DIMENSION_LOSS — 오라클 IC arm 의 회수율이 FQ-246 회수율을 25 퍼센트포인트 이상 초과하고 paired t ≥ 2 → 미회수분의 상당분은 형태가 아니라 **정보 차원**. FQ-246 의 1차원 상태가 K차원 IC 를 대신하지 못했다는 뜻이며, 형태를 그대로 두고 정보를 넓히는 경로가 살아난다.",
+        "MIXED — 위 둘 사이(15~25 퍼센트포인트 초과 또는 부호·유의 혼재). 두 손실의 상대 크기를 점추정으로 병기하고 MDE 대비 위치를 명시.",
+        "UNRESOLVED_UNDERPOWERED — 대조의 MDE 가 판정 문턱(15 퍼센트포인트 = 여유폭의 2.054 %p/yr)보다 커서 위 셋을 가릴 수 없는 경우. ★FQ-246 이 초판 '기각' 을 MDE 0.72배 근거로 철회한 선례를 따라, 검정력 미달 시 '효과없음' 라벨을 쓰지 않는다."
+      ],
+      "monotonicity_check_FA": "승계 반증 FA — 오라클 정보 고정 사다리에서 n_eff 감소(집중 증가)에 따라 회수율이 **단조 증가**해야 한다. 비단조(중간 봉우리 후 하락)면 '평균화 = 희석' 형태 손실 기전 기각 → 격차를 정보 차원 손실로 재귀속. 판정: Spearman(n_eff, recovery) ≤ −0.7 이면 단조 지지."
+    }
+  },
+  "part_B": {
+    "question": "오라클 없이 **성과-비파생** 관측 기준의 하드 선택(argmax)이 여유폭을 회수하는가.",
+    "conditioning_variable_discipline": "★승계 규약 1 — 조건/선택 변수에 성과를 쓰지 않는다. trailing 팩터 성과 기반 선택은 RAMP R10(paired −0.16)·FQ-121(IS +2.634 → OOS −0.389)이 두 번 죽였다. 전 co-primary 기준은 **당월 z 횡단면만의 함수**이며 차월 수익·과거 수익 어느 것도 입력이 아니다. 성과-파생 축(sel_rank 위치)은 대조 arm 으로만 등장한다.",
+    "criteria_fixed": {
+      "B3_BREADTH (hypothesis B1 꼬리 판별력)": "당월 팩터 z 횡단면의 상위 꼬리 질량 = (top-25 평균 z − 횡단면 평균 z)/횡단면 sd. 기전: top-25 절단 소비면은 평균 판별력이 아니라 꼬리 판별력을 소비한다.",
+      "B5_MARGIN (hypothesis B1 두 번째 표현)": "소비 경계 판별 마진 = (z_(25) − z_(30))/횡단면 sd. 같은 기전의 더 국소적 표현. B3 와 **고정 쌍**으로 둘 다 보고(챔피언 선발 없음).",
+      "B1_INDEP (hypothesis B2 solo-advocate 상충도)": "타 K−1 팩터와의 평균 횡단면 순위상관(centrality)의 **최소** 팩터 채택. 기전: 평균화가 파괴하는 것이 정확히 상충 팩터의 순위 정보다.",
+      "B4_STABLE (alpha-research 추가 secondary)": "anchor m 과 anchor m−1 의 횡단면 순위상관 **최대** 팩터 채택(둘 다 ≤ m, PIT-safe). 기전: 소비면이 월간 이산 리밸런싱 + 15bps 이므로 순위가 안정한 신호는 gross 우위를 net 으로 더 많이 전달한다(비용 채널)."
+    },
+    "arms_fixed": {
+      "co_primary": ["B3a_BREADTH_MAX_top1", "B5a_MARGIN_MAX_top1", "B1a_INDEP_MIN_top1"],
+      "secondary": ["B4a_STABLE_MAX_top1"],
+      "intermediate_form": ["B3a_BREADTH_MAX_top2", "B5a_MARGIN_MAX_top2", "B1a_INDEP_MIN_top2", "B4a_STABLE_MAX_top2"],
+      "negative_controls": ["B3b_BREADTH_MIN_top1", "B5b_MARGIN_MIN_top1", "B1b_INDEP_MAX_top1", "B4b_STABLE_MIN_top1"],
+      "performance_derived_control": ["B0_SELRANK1_top1 — sel_rank 위치 1 채택. 사전 예측: 무자료 회수(RAMP R10 + FQ-121 posterior). 대조 전용."],
+      "champion_selection": "없음 — 고정 격자 전 arm 을 독립 라벨로 보고. argmax 챔피언 선발 시 sweep 재분류 + DSR HARD 발동임을 명시."
+    },
+    "reference_distribution": {
+      "primary_reference": "★arm − C0 가 아니라 **arm vs 무작위 하드 픽 귀무분포 백분위**. FQ-246 이 확립한 규약(arm-vs-C0 는 규칙-형태 비용을 포함하므로 정보량의 정직한 척도가 아니다)의 직접 승계.",
+      "null": "Part A 의 form_cost_null (top1 · top2, NPERM 60) — 같은 형태 · 정보 없음.",
+      "secondary_reference": "arm − C0 paired (NW lag-3) 도 병기."
+    },
+    "transport_gate_first": {
+      "principle": "★승계 규약 3 — 성과 판정 전에 기준이 정보를 아는지 먼저 묻는다. 하드 one-hot **형태**의 전도성은 Part A 의 O_top1_EW(=ORACLE_K 4.647)로 이미 확립되므로, Part B 의 미확립 가능성은 형태가 아니라 **기준**에 있다.",
+      "FC_hitrate": "승계 반증 FC — 기준의 argmax 팩터가 실현 차월 rank-IC 1위와 일치하는 월 비율 > 1/K = 0.2 (이항 검정, 단측). 우연 수준이면 Part B 성과와 무관하게 '성과 없는 식별' 축이 먼저 죽는다.",
+      "rank_corr_supplement": "월별 Spearman(기준 서열, 실현 IC 서열)의 평균과 NW lag-3 t. |t| ≥ 1.5 = 전이 확립(FQ-246 R1 게이트 문턱 승계). MDE 병기 의무.",
+      "gate_power_obligation": "게이트 자체의 MDE 를 측정한다 — FQ-246 이 초판에서 게이트 검정력을 재지 않아 자기 적대검증에 적발된 결손의 재발 방지."
+    },
+    "mediator_gate_FB": {
+      "statistic": "하드 arm 의 월별 top-25 멤버십 Jaccard(vs C0) 중앙값",
+      "threshold": "≤ 0.79 이면 처치 실효. ≥ 0.90 이면 **처치 무력** 라벨 — 그 arm 의 null 은 기전 반증으로 읽지 않는다.",
+      "why": "FQ-244 C1 이 매월 9/25 종목을 교체(Jaccard 0.47)하고도 무반응이었던 것과, FQ-246 T1_AGREE/T3_BEAR 가 매개를 아예 안 움직인 것(0.9231)은 다른 사건이다. 두 실패를 라벨로 구분한다."
+    },
+    "power_declaration": {
+      "principle": "★승계 규약 4 — 계약 기본 sd 사용 금지. FQ-246 실측에서 계약 기본값 0.0394 는 본 대조 척도의 0.27~0.49배로 **다른 양**이었다.",
+      "MATERIAL_annual_pct": 8.2227973063616,
+      "MATERIAL_derivation": "C0 월평균 net active 0.003242 · NW3 SE 0.003422 · t 0.9474 → (2.95·SE − mean)·12·100 (FQ-246 승계, 같은 C0)",
+      "bar_source": "★자기-diff sd 바는 implied_t_own = 2.0 으로 퇴화하므로 판정 문턱으로 쓰지 않는다. 독립 바 = **순열 arm 분포의 sd**(처치 없음) → MDE95 = 1.96 × sd(null). 이 값을 산출 즉시 기록하고 MATERIAL 과 비교해 '탐지 가능 여부' 를 먼저 선언한다.",
+      "prior_expectation_from_hypothesis": "하드 선택 diff sd 는 소프트 arm(0.011~0.019)의 2~3배로 예상 → MDE(own, t=2) ≈ 연 6.4%p, MATERIAL 8.22 대비 margin 약 1.3배(소프트 라운드의 3.0~4.3배보다 얇다). ★이는 설계 단계 산술 파생이며 실측 아님 — arm 별 실측 후에만 powered 라벨 부여."
+    },
+    "persistence_discipline": "★승계 규약 5 — 지속성은 대상별로 따로 잰다. FQ-246 실측: paired diff AR1 −0.0045(NW 팽창 없음) vs 회귀변수 u AR1 0.44~0.62. 하드 arm 의 paired diff 는 소프트 arm 과 계열이 다르므로 **재측정**하며 무비판 이식하지 않는다. 전 arm 의 diff AR1 을 기록한다.",
+    "labels": [
+      "EFFECT_POSITIVE — paired t ≥ +2 AND 순열 백분위 ≥ 0.95",
+      "EFFECT_NEGATIVE — paired t ≤ −2",
+      "POWERED_NULL_NO_MATERIAL_EFFECT — ci95_hi < MATERIAL(8.2228 %p/yr) 이고 게이트 검정력 확보",
+      "UNRESOLVED_UNDERPOWERED — 위 어디에도 해당 없음 · MDE 대비 관측 위치 명시",
+      "TREATMENT_INERT — FB Jaccard ≥ 0.90 (처치가 매개를 안 움직임 — null 을 기전 반증으로 쓰지 않음)",
+      "CRITERION_UNINFORMATIVE — FC 게이트 미통과 + 게이트 검정력 확보 (기준이 무지 — 하드 선택 형태의 판결 아님)"
+    ]
+  },
+  "completion_design_4fields": {
+    "part_A": {
+      "terminal_form": "diagnostic_ceiling",
+      "alpha_bridge": "없음 — Part A 는 α̂ 를 산출하지 않는다(오라클 = look-ahead). 소비면은 '다음 라운드 설계 입력' 뿐이다.",
+      "transition_gates": "해당 없음(자본 경로 진입 불가)",
+      "consumption_gate_precheck": "해당 없음"
+    },
+    "part_B": {
+      "terminal_form": "alpha_vector",
+      "alpha_bridge": "월별 argmax 채택 팩터의 z 를 그대로 score 로 사용 → alpha_scores.parquet(long, arm 컬럼 포함) → 표준 top-25 EW long-only. 승격 시 risk-research 가 Σ 를, optimizer-research 가 weights 를 담당(본 에이전트 금지 영역).",
+      "transition_gates": "① FC 전이 게이트 통과 ② FB 매개 이동 확인 ③ 순열 백분위 ≥ 0.95 ④ canonical PORT_t 개선 ⑤ 이후 forge 실측에서 graduation HARD 3종(PORT_t 2.95 · oos_retention 0.7 · calmar 0.64). 본 라운드는 ①~④ 까지만 판정한다.",
+      "consumption_gate_precheck": "선별 궤적·유니버스·top-25·15bps·벤치 전부 C0 승계 → 소비 계약 변경 없음. 회전율 증분을 기록하고 Research Philosophy P6(TO ≤ 11.0/yr) 대비 위치를 병기(C0 자체가 이미 11.55/yr 로 상회 — 승계된 하네스 속성이며 본 라운드가 만든 초과가 아님).",
+      "emission_rule": "★사전 지정 — alpha_scores.parquet 은 **전 Part B arm + C0 를 long 포맷으로 전량** 담고, alpha_vector 는 사전등록 co-primary 중 **B3a_BREADTH_MAX_top1** (hypothesis 지시가 첫 번째로 명명한 기준) 의 최종월 값으로 고정한다. 성과를 보고 고르지 않는다."
+    }
+  },
+  "window_reachability": {
+    "obligation": "PORT_t 2.95 미달 보고 시 그 창의 도달 가능 상한 병기(mandate)",
+    "ORACLE_K_port_t": 4.64699909,
+    "verdict": "★본 창에서 이 마디는 PORT_t 4.647 까지 도달 가능하다(하드 선택 족 상한). 따라서 본 라운드의 어떤 null 도 '창이 좁아서' 로 설명할 수 없다 — 승계 규약 8."
+  },
+  "basis_obligation": {
+    "three_way": ["primary = IKS200 (.cache/benchmark.parquet)", "parent cap-w (WT-D20260822_002 p0_returns.rds bench)", "EW-universe (canonical_screen_bt diag_dual_basis)"],
+    "benchmark_id_caveat": "★canonical_screen_bt 는 benchmark_id 를 'KOSPI200_total_return' 으로 **하드코딩**한다. 실제 넘긴 계열은 위와 같으며 라벨과 불일치한다 — 전 산출물에 이 caveat 를 병기한다."
+  },
+  "prohibitions_acknowledged": [
+    "오라클 수치로 자본·졸업 주장 금지 (AX-002)",
+    "공분산 추정 / weight 결정 / 사전 최적화 금지 (역할 경계)",
+    "ML 사이징 · ML selection 금지 (v8.4 SOT §6 금지 4종)",
+    "sweep 의 DSR 회피 금지 — 챔피언 선발 없음을 설계로 보장하고, 선발이 발생하면 sweep 재분류 + DSR 0.5 HARD 자진 발동",
+    "graduation HARD 3종은 forge-authoritative 값에만 적용",
+    "Production Constraints 는 고정 축 — 완화를 레버로 제시하지 않는다"
+  ],
+  "n_trials_declaration": {
+    "part_A_arms": 17,
+    "part_B_arms": 14,
+    "permutation_runs": 240,
+    "selection_type": "preregistered_grid_no_champion",
+    "dsr_gate": "비발동 (sweep 미해당). DSR 수치는 진단용으로 산출·기록."
+  }
+}
