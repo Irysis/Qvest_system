@@ -130,6 +130,46 @@ try:
     ok("공백만 있는 값은 미기입으로 처리") if "M_EMPTY" in mm2 \
         else ng("공백 처리", "공백을 기입으로 읽으면 영영 측정 안 됨")
 
+    print("== D. 승격 게이트: grade 통과분만 올리는가 ==")
+    # ★2026-08-22 실측 결함: 라우터가 가치를 판정해도 QEPM 으로 올라가는 코드가 0 이었다
+    #   (러너 4종 wt_create 0건 · grade B 3건 승격 0건). 이 게이트가 그 칸이다.
+    def cat(root, mods):
+        d = os.path.join(root, "06_Registry"); os.makedirs(d, exist_ok=True)
+        with io.open(os.path.join(d, "module_catalog.json"), "w", encoding="utf-8") as fh:
+            json.dump({"modules": mods}, fh, ensure_ascii=False)
+
+    cat(tmp, [
+        {"strategy_id": "STR_AS_B1", "grade": "B", "meta": {"strategy_idea": "b one"}},
+        {"strategy_id": "STR_AS_A1", "grade": "A", "meta": {"strategy_idea": "a one"}},
+        {"strategy_id": "STR_AS_C1", "grade": "C", "meta": {"strategy_idea": "c one"}},
+        {"strategy_id": "STR_AS_F1", "grade": "F", "meta": {"strategy_idea": "f one"}},
+    ])
+    got = {x["strategy_id"] for x in R.promotion_pending(tmp)}
+    ok("grade A·B 만 승격 대상 (%d건)" % len(got)) if got == {"STR_AS_B1", "STR_AS_A1"}         else ng("등급 필터", "got=%s" % got)
+
+    print("== D2 위반 주입: 오염 라벨이 붙은 등급을 신뢰하지 않는가 ==")
+    cat(tmp, [
+        {"strategy_id": "STR_AS_B2", "grade": "B", "grade_contaminated": True, "meta": {}},
+        {"strategy_id": "STR_AS_B3", "grade": "B", "label_contaminated": True, "meta": {}},
+        {"strategy_id": "STR_AS_B4", "grade": "B", "meta": {}},
+    ])
+    got = {x["strategy_id"] for x in R.promotion_pending(tmp)}
+    ok("오염 라벨 2건 제외 → 청정 1건만") if got == {"STR_AS_B4"}         else ng("오염 제외", "got=%s — 등급 자체를 신뢰할 수 없는 건을 승격")
+
+    print("== D3 위반 주입: 이미 WT 가 참조하는 전략을 중복 승격하지 않는가 ==")
+    wt = os.path.join(tmp, "qepm", "mailbox", "worktask", "WT-D20990101_001")
+    os.makedirs(wt, exist_ok=True)
+    with io.open(os.path.join(wt, "request.json"), "w", encoding="utf-8") as fh:
+        json.dump({"discovery_of": "STR_AS_B4", "note": "already promoted"}, fh)
+    got = {x["strategy_id"] for x in R.promotion_pending(tmp)}
+    ok("WT 참조분 제외 → 승격 0건") if not got         else ng("중복 승격 방지", "got=%s — 같은 전략으로 WT 를 또 만든다" % got)
+
+    print("== D4 양성 대조: 참조가 사라지면 다시 대상이 되는가 (과잉 배제 방지) ==")
+    with io.open(os.path.join(wt, "request.json"), "w", encoding="utf-8") as fh:
+        json.dump({"note": "unrelated"}, fh)
+    got = {x["strategy_id"] for x in R.promotion_pending(tmp)}
+    ok("참조 없음 → 재대상화") if got == {"STR_AS_B4"}         else ng("과잉 배제", "got=%s" % got)
+
     print("== C 정렬 계약: 측정 백로그가 신규 적재보다 앞에 오는가 ==")
     registry(tmp, [{"method_id": "M_NEED", "paper_id": "2601.10001",
                     "verdict": "implemented"}])

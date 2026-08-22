@@ -1,0 +1,124 @@
+{
+  "wt_id": "WT-D20260822_003",
+  "role": "self-adversarial (non-binding)",
+  "generated_at": "2026-08-22 14:25:15",
+  "A1_raw_plus_rank_4axis": {
+    "orth_nw_t": {
+      "early": {
+        "median_spread": 2.57338925147036,
+        "skew_spread": -2.23023750768415,
+        "skew_slope": -2.04665967409964,
+        "tail_up_prob_diff": -1.28519979268957,
+        "tail_dn_prob_diff": -3.32898710470771,
+        "qspread_p10": 2.46795793658144,
+        "qspread_p90": -0.553886212364755
+      },
+      "late": {
+        "median_spread": 1.23633699384191,
+        "skew_spread": -0.388198032468032,
+        "skew_slope": 0.0200751286077212,
+        "tail_up_prob_diff": -0.422957608737478,
+        "tail_dn_prob_diff": -2.21788740943355,
+        "qspread_p10": 0.843380121647898,
+        "qspread_p90": 0.115705815687868
+      }
+    },
+    "survived_any": ["median_spread", "skew_spread", "skew_slope", "tail_dn_prob_diff", "qspread_p10"],
+    "survived_all": "tail_dn_prob_diff",
+    "verdict": "SURVIVES",
+    "sign_agreement": "AGREES",
+    "control_cols": ["win_vol", "log_size", "win_vol_rk", "log_size_rk"],
+    "transform": "raw"
+  },
+  "A2_permutation_placebo": {
+    "orth_nw_t": {
+      "early": {
+        "median_spread": -0.115849989565196,
+        "skew_spread": 0.0270456033723507,
+        "skew_slope": 0.667189633450405,
+        "tail_up_prob_diff": 0.22895084408655,
+        "tail_dn_prob_diff": -0.383575296683219,
+        "qspread_p10": -0.11830053826428,
+        "qspread_p90": 0.618063325682737
+      },
+      "late": {
+        "median_spread": -0.917952331070647,
+        "skew_spread": 0.24696055917844,
+        "skew_slope": -0.260721231193949,
+        "tail_up_prob_diff": 1.68121879341536,
+        "tail_dn_prob_diff": 0.946042753140056,
+        "qspread_p10": -0.215924388844912,
+        "qspread_p90": 1.1745782849661
+      }
+    },
+    "survived_any": [],
+    "survived_all": [],
+    "verdict": "DIES_UNDER_CONTROL",
+    "sign_agreement": "AGREES",
+    "control_cols": ["win_vol", "log_size"],
+    "transform": "rank"
+  },
+  "A3_coverage": {
+    "n_rows": 86297,
+    "n_lag_skew_finite": 77244,
+    "n_lag_sd_finite": 77244,
+    "note": "결측행은 계약이 직교화에서 제외한다(control_spec$n_rows_after 로 기록됨). 결측을 0 으로 위장하지 않는다."
+  },
+  "A3_add_lagged_skew_vol": {
+    "orth_nw_t": {
+      "early": {
+        "median_spread": 2.38973915013798,
+        "skew_spread": -3.17125107724892,
+        "skew_slope": -2.50138859059567,
+        "tail_up_prob_diff": -1.53567024888227,
+        "tail_dn_prob_diff": -3.92635864961723,
+        "qspread_p10": 2.82507900223496,
+        "qspread_p90": -1.17397249399677
+      },
+      "late": {
+        "median_spread": 3.10830359087443,
+        "skew_spread": -3.06807968975163,
+        "skew_slope": -2.29331980494783,
+        "tail_up_prob_diff": -0.245466502543888,
+        "tail_dn_prob_diff": -2.81937259575997,
+        "qspread_p10": 2.05725265775982,
+        "qspread_p90": 0.293511179732854
+      }
+    },
+    "survived_any": ["median_spread", "skew_spread", "skew_slope", "tail_dn_prob_diff", "qspread_p10"],
+    "survived_all": ["median_spread", "skew_spread", "skew_slope", "tail_dn_prob_diff", "qspread_p10"],
+    "verdict": "SURVIVES",
+    "sign_agreement": "AGREES",
+    "control_cols": ["win_vol", "log_size", "lag_skew12", "lag_sd12"],
+    "transform": "rank"
+  },
+  "A4_seen_split_20150701_rank": {
+    "orth_nw_t": {
+      "early": {
+        "median_spread": 2.85461947205404,
+        "skew_spread": -2.3534670163143,
+        "skew_slope": -2.46471061513665,
+        "tail_up_prob_diff": -2.22333419121117,
+        "tail_dn_prob_diff": -4.13015894049998,
+        "qspread_p10": 3.36117375445068,
+        "qspread_p90": -1.34774662123966
+      },
+      "late": {
+        "median_spread": 1.93048499438503,
+        "skew_spread": -3.56390856484306,
+        "skew_slope": -2.40407053574785,
+        "tail_up_prob_diff": -0.910591550370286,
+        "tail_dn_prob_diff": -3.34805795922264,
+        "qspread_p10": 2.91224891267162,
+        "qspread_p90": -0.119905292430017
+      }
+    },
+    "survived_any": ["median_spread", "skew_spread", "skew_slope", "tail_up_prob_diff", "tail_dn_prob_diff", "qspread_p10"],
+    "survived_all": ["skew_spread", "skew_slope", "tail_dn_prob_diff", "qspread_p10"],
+    "verdict": "SURVIVES",
+    "sign_agreement": "AGREES",
+    "control_cols": ["win_vol", "log_size"],
+    "transform": "rank"
+  },
+  "A4_note": "이 분할의 raw 결과는 본 라운드 착수 전에 이미 관측됐다(PREREG_NP2 §contamination_disclosure). 신규 증거 아님 — 분할점 민감도 대조로만 읽는다."
+}
