@@ -149,9 +149,9 @@
       "lag_rule": "유니버스·유동성 d0 스냅샷 / 수익은 홀딩월 실현",
       "winsorization": "미적용 — 분위 기반이라 불요(|Ret|>1.0 물리불가 288건만 NA)",
       "neutralization": "미적용 — 시장 수준 집계량이지 종목 스코어가 아님",
-      "economic_rationale": "제약 보유 매도자(신용융자 개인·한도 운용 기관)의 문턱-발동 강제매도가 활성화되면 좌꼬리가 우꼬리 대비 비대칭적으로 두꺼워진다는 기전의 관측면. 스케일 불변이라 분산 확대만으로는 움직이지 않는다.",
+      "economic_rationale": "structural",
+      "economic_rationale_detail": "제약 보유 매도자(신용융자 개인·한도 운용 기관)의 문턱-발동 강제매도가 활성화되면 좌꼬리가 우꼬리 대비 비대칭적으로 두꺼워진다는 기전의 관측면. 스케일 불변이라 분산 확대만으로는 움직이지 않는다. (enum 은 structural — 담보유지비율·VaR 한도라는 제도적 제약이 원인)",
       "redundancy_cluster_id": "xs_distribution_shape_quantile_v1",
-      "weight_theta": null,
       "references": ["Brunnermeier-Pedersen 2009 (funding liquidity / margin spiral)", "Coval-Stafford 2007 (fire sales)", "본 저장소 FQ-233 Lane A / FQ-235 Lane C"]
     },
     {
@@ -161,9 +161,9 @@
       "lag_rule": "L = 3 calendar days, 컷오프 = min(첫 거래일 − 3cd, 캘린더 월초)",
       "winsorization": "미적용",
       "neutralization": "해당 없음",
-      "economic_rationale": "한계 차입자(최저 투자등급)의 조달 가격 — 기전의 agent 가 마주하는 자금조달 조건 그 자체. KR 국내 계열이라 US 계열 연계 가정이 불요.",
+      "economic_rationale": "structural",
+      "economic_rationale_detail": "한계 차입자(최저 투자등급)의 조달 가격 — 기전의 agent 가 마주하는 자금조달 조건 그 자체. KR 국내 계열이라 US 계열 연계 가정이 불요. (enum 은 structural — 자금조달 제약이 원인)",
       "redundancy_cluster_id": "kr_funding_price_state_v1",
-      "weight_theta": null,
       "references": ["Gilchrist-Zakrajšek 2012 (credit spread as state variable)"],
       "measured_caveat": "★원수준은 AR1 0.957 의 준-단위근 저주파 계열이며 급성 에피소드 계기가 아니다 — 2020-03(COVID 정점) S=6.73 으로 2010년 평균 7.76 보다 낮고 2020년 최고치는 11월(7.94)이다. 이 사실이 사전등록 강건성판(rolling-z) 결과와 정합한다."
     }
@@ -174,14 +174,11 @@
     "canonical_port_t_pvalue": null,
     "canonical_n_months": null,
     "canonical_port_t_null_reason": "본 라운드는 포트폴리오 수익 계열을 만들지 않았다 — 정당 산출이 분포적 사실 + 조건부성까지이고 소비면 라우팅은 INV-7 경계 밖이다. 성능수치 0건이므로 proxy 손계산 위반 표면 자체가 없다.",
-    "rank_ic": null,
-    "icir": null,
-    "monotonicity": null,
-    "subperiod_stability": null,
-    "turnover_proxy": null,
-    "harvey_t_stat": null,
-    "post_neutralization_ic": null,
-    "advisory_metrics_null_reason": "rank-IC 계열은 종목별 스코어의 횡단면 순위력 지표다. 본 라운드 산출은 종목 스코어가 아니라 월별 시장 수준 집계량이라 정의되지 않는다 — 억지로 채우지 않는다.",
+    "rank_ic": 0.0,
+    "rank_ic_metric_type": "not_applicable__schema_placeholder",
+    "alpha_inheritance_cor": 0.0,
+    "alpha_inheritance_cor_metric_type": "not_applicable__no_parent_no_alpha (discovery_of=null, alpha_discovery_count=0)",
+    "advisory_metrics_omitted_reason": "★rank_ic / icir / monotonicity / subperiod_stability / turnover_proxy / harvey_t_stat / post_neutralization_ic 는 **종목별 스코어의 횡단면 순위력** 지표다. 본 라운드 산출은 종목 스코어가 아니라 월별 시장 수준 집계량이라 정의 자체가 성립하지 않는다. 스키마가 number 를 강제하는 rank_ic·alpha_inheritance_cor 두 필드만 0.0 을 넣고 각각 metric_type 으로 '측정치 아님'을 라벨했으며, 강제되지 않는 나머지는 값을 지어내지 않고 생략했다. **이 0.0 을 측정 결과로 읽지 말 것** (challenge_flags 동일 항목 참조).",
 
     "primary_window": "2015-07..2026-07 (133m, PIT-clean)",
     "primary_regression": {
@@ -247,6 +244,7 @@
     "Y2 창 간 불일치 미해소(198m t=1.26 powered null vs 133m t=2.05) — Y2 만 60개월 rolling 문턱을 쓰는 유일 결과량. 헤드라인 지지 근거로 사용하지 않음",
     "본 라운드 결과량은 전부 월간 횡단면 — 조건부 비대칭이 일별 축에만 존재하면 볼 수 없다. Lane B 소관이며 자유도 분리상 본 라운드에서 혼입 금지. 'null 은 월간 축에서의 null' 로 한정",
     "F_C 는 동월 관측 — 포트 결정 미사용이라 C2 는 아니나 S 와 FlowAsym·Y 가 공통 원인(당월 시장 급락)을 공유할 가능성은 배제 못 함. NP3 이 겨냥",
+    "★schema 강제로 diagnostics.rank_ic = 0.0 · alpha_inheritance_cor = 0.0 을 넣었으나 **둘 다 측정치가 아니다** — 종목 스코어가 0건이라 정의되지 않는 양이고 metric_type 필드로 라벨했다. 판정에 인용 금지. (스키마가 number 를 강제해 null 을 거부하는 구조적 간극 — 별도 수리 대상)",
     "★Lane A(FQ-233)·Lane C(FQ-235) 승계 서술 전건 = provisional_pending_FQ-241 (lane_relationship_framing 참조)",
     "상세 자가 적대검증 9축: challenge_note.md (동 mailbox)"
   ],
