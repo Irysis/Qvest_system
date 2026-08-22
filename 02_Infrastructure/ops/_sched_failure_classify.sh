@@ -27,7 +27,7 @@ sched_classify_failure() {
   #   ∴ 마지막 실행 구간(가장 최근 시작 마커 이후)만 본다. 마커가 없으면 짧은 꼬리로 제한.
   local tail_txt=""
   if [ -n "$log" ] && [ -f "$log" ]; then
-    tail_txt=$(awk '/\[(alpha_queue|router|recheck)\] (start|trigger)/{buf=""} {buf=buf $0 ORS} END{printf "%s", buf}' "$log" 2>/dev/null)
+    tail_txt=$(awk '/\[(alpha_queue|router|recheck|modeq|paper-recharge)\] (start|trigger)/{buf=""} {buf=buf $0 ORS} END{printf "%s", buf}' "$log" 2>/dev/null)
     [ -z "$tail_txt" ] && tail_txt=$(tail -n 15 "$log" 2>/dev/null)
   fi
 
@@ -36,6 +36,12 @@ sched_classify_failure() {
     echo "auth_expired"; return 0
   fi
   # ② 구독 한도 — 월 리셋으로 자동 해소 (외생 변수, 아키텍처 게이트 아님)
+  # ①b (2026-08-22) 세션 한도 — 시간 경과로 **자동 리셋**된다. auth_expired 로 읽으면
+  #   "재로그인하세요" 라는 정반대 조치를 안내하게 된다(07-25 이 파일이 만들어진 이유와 동형).
+  #   실측 문구: "You've hit your session limit · resets 3:30pm (Asia/Seoul)"
+  if printf '%s' "$tail_txt" | grep -qiE "session limit|hit your .*limit.*resets"; then
+    echo "session_limit"; return 0
+  fi
   if printf '%s' "$tail_txt" | grep -qiE "spend limit|usage limit|credit balance"; then
     echo "spend_limit"; return 0
   fi
@@ -62,7 +68,7 @@ sched_classify_failure() {
 # ── 자동복구 여부 (경보 톤을 가르는 축)
 sched_failure_autorecovers() {
   case "${1:-}" in
-    spend_limit|rate_limit) echo "yes" ;;
+    spend_limit|rate_limit|session_limit) echo "yes" ;;
     auth_expired)           echo "no"  ;;
     # ★partial: 큐 pending 은 보존돼 차기 런이 재시도하지만, kill 시점에 **이미 끝난 항목의
     #   원장 append·텔레그램은 유실**된다(실행됐는데 pending 으로 남는 상태). 완전 자동복구가
