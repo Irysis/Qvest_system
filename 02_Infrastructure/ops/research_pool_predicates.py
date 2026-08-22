@@ -552,11 +552,35 @@ def qepm_dossier_pending(root, max_age_days=None):
         return []
     out = []
     for d in sorted(glob.glob(os.path.join(wt_root, "WT-*"))):
-        ap = os.path.join(d, "alpha_package.json")
-        if not os.path.exists(ap):
-            continue
+        has_pkg = os.path.exists(os.path.join(d, "alpha_package.json"))
+        has_hyp = os.path.exists(os.path.join(d, "alpha_hypothesis.json"))
         st = _load_json(os.path.join(d, "status.json")) or {}
         ph = str(st.get("current_phase") or st.get("phase") or "").strip().upper()
+
+        # ★(2026-08-22 수리) **중단된 승격**을 고아로 남기지 않는다.
+        #   실사고: paper_promotion 이 wt_create → alpha-hypothesis 까지 하고 세션 한도로 끊기면
+        #   그 WT 는 alpha_hypothesis.json 만 남는다. 그러면
+        #     · qepm_dossier 는 alpha_package 를 요구해 제외
+        #     · paper_promotion 은 "이미 WT 가 참조" 로 제외
+        #   → **어느 레인에도 안 잡히는 고아**가 된다. 실측 3건(08-13 건은 9일 방치).
+        #   세션 한도·타임아웃마다 재발할 구조이므로 여기서 흡수한다: 다음은 alpha-research.
+        if has_hyp and not has_pkg:
+            if ph in ("TERMINATED", "ABORTED", "COMPLETED"):
+                continue
+            upd0 = str(st.get("updated_at") or st.get("started_at") or "")[:10]
+            out.append({"paper_id": os.path.basename(d), "wt_id": os.path.basename(d),
+                        "lane": "qepm_dossier", "phase": ph or "HYPOTHESIS_ONLY",
+                        "next_agent": "alpha-research",
+                        "title": str(st.get("framing_anchor")
+                                     or os.path.basename(d))[:90],
+                        "updated_at": upd0,
+                        "screen_priority": "", "shrinkage_builtin": "", "statistic_order": "",
+                        "reason": "alpha_hypothesis 만 있고 alpha_package 부재 — 승격이 중간에 끊긴 WT",
+                        "first_seen": "status.json"})
+            continue
+
+        if not has_pkg:
+            continue
         if ph in _QEPM_TERMINAL or ph not in _QEPM_ADVANCEABLE:
             continue
         if _qepm_next_done(d, ph):
@@ -689,10 +713,24 @@ def research_queue_pending(stage, root, lanes=None):
     #   그 다음이 "검증 통과했는데 정식 라운드를 못 받은 것" 을 올리는 일이다.
     _LANE_ORDER = {"qepm_dossier": 0, "paper_promotion": 1, "method_measure": 2,
                    "alpha": 3, "optimizer": 4, "risk": 4, "regime": 5}
-    items.sort(key=lambda r: (_LANE_ORDER.get(r.get("lane"), 9),
-                              _PRIO_RANK.get(str(r.get("screen_priority", "")).strip(),
-                                             _PRIO_DEFAULT),
-                              str(r.get("paper_id"))))
+
+    def _rank(r):
+        lane = r.get("lane")
+        # ★qepm_dossier 안에서는 **최신 우선**이다. 기본 정렬(paper_id 오름차순)을 그대로 쓰면
+        #   4월 legacy 가 선두를 먹고 방금 끊긴 라운드가 뒤로 밀린다 — 이어붙이기의 취지에 반한다.
+        #   중단된 승격(HYPOTHESIS_ONLY/SPEC_APPROVED)은 그중에서도 최우선: 방금 만든 WT 를
+        #   미완으로 두면 다음 런이 또 새 WT 를 만들어 고아가 늘어난다.
+        if lane == "qepm_dossier":
+            stalled = 0 if str(r.get("phase", "")).upper() in ("SPEC_APPROVED", "HYPOTHESIS_ONLY") else 1
+            # updated_at 내림차순 = 문자열 역순 키
+            inv = "".join(chr(255 - ord(c)) if ord(c) < 255 else c
+                          for c in str(r.get("updated_at") or ""))
+            return (_LANE_ORDER[lane], stalled, inv, str(r.get("paper_id")))
+        return (_LANE_ORDER.get(lane, 9),
+                _PRIO_RANK.get(str(r.get("screen_priority", "")).strip(), _PRIO_DEFAULT),
+                "", str(r.get("paper_id")))
+
+    items.sort(key=_rank)
     return items
 
 

@@ -130,6 +130,50 @@ try:
     ok("공백만 있는 값은 미기입으로 처리") if "M_EMPTY" in mm2 \
         else ng("공백 처리", "공백을 기입으로 읽으면 영영 측정 안 됨")
 
+    print("== E. 중단된 승격이 고아가 되지 않는가 ==")
+    # ★2026-08-22 실사고: paper_promotion 이 wt_create → alpha-hypothesis 까지 하고 세션 한도로
+    #   끊기면 alpha_hypothesis.json 만 남는다. 그러면 qepm_dossier(패키지 요구)도
+    #   paper_promotion(이미 WT 참조)도 제외해 **어느 레인에도 안 잡히는 고아**가 된다.
+    #   실측 3건(08-13 건은 9일 방치). 세션 한도·타임아웃마다 재발할 구조라 흡수가 필수다.
+    def mkwt(root, name, files, phase, upd=""):
+        d = os.path.join(root, "qepm", "mailbox", "worktask", name)
+        os.makedirs(d, exist_ok=True)
+        for f in files:
+            io.open(os.path.join(d, f), "w", encoding="utf-8").write("{}")
+        with io.open(os.path.join(d, "status.json"), "w", encoding="utf-8") as fh:
+            json.dump({"current_phase": phase, "updated_at": upd}, fh)
+        return d
+
+    tmp2 = tempfile.mkdtemp()
+    try:
+        mkwt(tmp2, "WT-D20260822_900", ["alpha_hypothesis.json"], "SPEC_APPROVED", "2026-08-22")
+        got = {x["wt_id"]: x for x in R.qepm_dossier_pending(tmp2)}
+        if "WT-D20260822_900" in got and got["WT-D20260822_900"]["next_agent"] == "alpha-research":
+            ok("가설만 있는 WT 흡수 → next=alpha-research")
+        else:
+            ng("고아 흡수", "got=%s" % list(got))
+
+        print("== E2 위반 주입: 종결된 WT 는 흡수하지 않는가 ==")
+        mkwt(tmp2, "WT-D20260822_901", ["alpha_hypothesis.json"], "ABORTED", "2026-08-22")
+        got = {x["wt_id"] for x in R.qepm_dossier_pending(tmp2)}
+        ok("ABORTED 제외") if "WT-D20260822_901" not in got             else ng("종결 제외", "중단·폐기된 WT 를 되살린다")
+
+        print("== E3 정렬: 중단된 최신 승격이 legacy 보다 앞서는가 ==")
+        mkwt(tmp2, "WT-D20260401_001", ["alpha_hypothesis.json", "alpha_package.json"],
+             "ALPHA_DONE", "2026-04-01")
+        os.makedirs(os.path.join(tmp2, "06_Registry"), exist_ok=True)
+        io.open(os.path.join(tmp2, "06_Registry", "module_catalog.json"),
+                "w", encoding="utf-8").write('{"modules": []}')
+        st2 = os.path.join(tmp2, "stage"); os.makedirs(st2, exist_ok=True)
+        q = R.research_queue_pending(st2, tmp2)
+        dq = [x["wt_id"] for x in q if x["lane"] == "qepm_dossier"]
+        if dq and dq[0] == "WT-D20260822_900":
+            ok("중단 승격이 선두 (legacy 4월 건보다 앞)")
+        else:
+            ng("정렬", "선두=%s — 방금 끊긴 라운드가 뒤로 밀린다" % (dq[:2] or "없음"))
+    finally:
+        shutil.rmtree(tmp2, ignore_errors=True)
+
     print("== D. 승격 게이트: grade 통과분만 올리는가 ==")
     # ★2026-08-22 실측 결함: 라우터가 가치를 판정해도 QEPM 으로 올라가는 코드가 0 이었다
     #   (러너 4종 wt_create 0건 · grade B 3건 승격 0건). 이 게이트가 그 칸이다.
