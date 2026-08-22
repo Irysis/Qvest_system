@@ -1098,6 +1098,9 @@ SUITES=(
   "08_Tests/ops/test_paper_id_norm.py"
   # 좌초 회수 3축 — 1급 축은 회수가 아니라 **기본 동작 불변**(env 미지정 시 종전과 동일).
   "08_Tests/ops/test_router_backfill_paths.sh"
+  # 스테이지 상한 + recharge 정체 경보 — 실측 51분 점유가 그날 파이프라인을 통째로 먹었다.
+  #   ★1급 축은 "정상 소요를 자르지 않는가"(도훈의 리서치 런 상한 제거 지시와 다른 층).
+  "08_Tests/ops/test_stage_timeout_and_recharge_stall.sh"
 )
 
 # (2026-08-02) .py 분기 추가 — 종전엔 확장자 무관 `bash` 로 던져 파이썬 suite 가

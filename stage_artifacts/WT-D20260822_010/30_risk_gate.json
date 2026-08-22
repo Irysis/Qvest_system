@@ -1,0 +1,112 @@
+{
+  "script_version": "v2",
+  "fixes": ["adaptive_rolling_window_min18", "PIT_expanding_empirical_calibration"],
+  "predictor_side": {
+    "spearman_orth_vs_logsd0_mean": -0.04219977555652,
+    "spearman_orth_vs_logsd0_nw_t": -2.516869007744,
+    "spearman_orth_vs_winvol_mean": 0.1031805381881,
+    "mean_sd0_lo": 0.1388936904314,
+    "mean_sd0_hi": 0.1203451065096,
+    "n_months": 236
+  },
+  "m0_already_fills": {
+    "predicted_level": 0.04175090381541,
+    "predicted_tail_prob_lo": 0.05451094880419,
+    "predicted_tail_prob_hi": 0.03868619402703,
+    "predicted_gap": 0.01582475477716,
+    "predicted_gap_nw_t": 14.989367667821
+  },
+  "sample_alignment": {
+    "published_gap_268m": 0.01168148484652,
+    "published_level_268m": 0.03418552007264,
+    "risk_panel_gap": 0.01219601302668,
+    "risk_panel_level": 0.03132290812788,
+    "ratio": 1.044046470712,
+    "note": "선행 결과의 표본 정렬(기술통계 재표현). 처치 M1 은 추정하지 않았다. 두 표본의 raw 격차가 크게 다르면 '비슷한 크기의 다른 양' 혼동 위험 — 명시 대조."
+  },
+  "book_tilt": {
+    "mean_w_lo": 0.1745298518403,
+    "sd_w_lo": 0.1273070663817,
+    "min_w_lo": 0,
+    "max_w_lo": 0.6084134567041,
+    "universe_lo_share": 0.1939119742733,
+    "n_months": 268
+  },
+  "gate": {
+    "R1": {
+      "id": "R1",
+      "effect": -0.005792472614074,
+      "mde80": 0.005832454901825,
+      "ratio": 0.9931448612251,
+      "threshold": 0.1,
+      "pass": true,
+      "sign": -1,
+      "unit": "월별 위반율 격차(5% VaR)",
+      "note": "raw 격차에서 M0 가 이미 예측하는 격차를 공제한 증분"
+    },
+    "R1b": {
+      "id": "R1b",
+      "effect": 3.373381900841e-06,
+      "mde80": 6.653381708815e-06,
+      "ratio": 0.5070176413254,
+      "threshold": 0.1,
+      "pass": true,
+      "sign": 1,
+      "unit": "월평균 pinball 손실 차",
+      "note": "proper score 2차항"
+    },
+    "R1c": {
+      "id": "R1c",
+      "effect": 3.979894608349e-07,
+      "mde80": 2.229644170565e-05,
+      "ratio": 0.01784990924063,
+      "threshold": 0.1,
+      "pass": false,
+      "sign": 1,
+      "unit": "월평균 포트 pinball 손실 차",
+      "note": "25종 집계 희석 + 틸트 변동"
+    },
+    "R2": {
+      "id": "R2",
+      "effect": 0.0008443704030674,
+      "mde80": 0.04975950217986,
+      "ratio": 0.0169690283479,
+      "threshold": 0.1,
+      "pass": false,
+      "sign": 1,
+      "unit": "회귀계수 beta",
+      "note": "crowding 이 후속 active 수익을 예측하는 크기"
+    },
+    "R3": {
+      "id": "R3",
+      "effect": 0.001945842753199,
+      "mde80": 0.002904787886862,
+      "ratio": 0.6698743002889,
+      "threshold": 0.1,
+      "pass": true,
+      "sign": 1,
+      "unit": "월평균 QLIKE 차",
+      "note": "순수-스케일 대안가설이 함의하는 상한"
+    },
+    "summary": {
+      "pass_ids": ["R1", "R1b", "R3"],
+      "fail_ids": ["R1c", "R2"]
+    }
+  },
+  "inputs": {
+    "align_gap": 0.01219601302668,
+    "align_level": 0.03132290812788,
+    "incr_gap": -0.003628741750478,
+    "scale_to_5pct": 1.596275792652,
+    "sd_pool": 0.1326750314834,
+    "f_q05": 0.7773553111105,
+    "p_lo_share": 0.1939119742733,
+    "delta_lo": -0.00600657478867,
+    "delta_hi": 0.001444937449407,
+    "n_months": 236,
+    "n_rows": 63436,
+    "sd_port": 0.0757645417868,
+    "sd_active": 0.037010742969
+  },
+  "metric_type": "estimation_quality__gate_arithmetic"
+}

@@ -158,8 +158,25 @@ stage_result() {   # $1=표시명 $2=exit코드 $3=경보 컴포넌트명
 
   echo "[0/3] paper_recharge_daily.sh (논문풀 first-run 보강)"
   if [ "${QVEST_PAPER_RECHARGE_SKIP:-0}" != "1" ] && [ -f "$BASE/02_Infrastructure/ops/paper_recharge_daily.sh" ]; then
-    bash "$BASE/02_Infrastructure/ops/paper_recharge_daily.sh" >> /tmp/qm_paper_recharge_morning.log 2>&1
-    stage_result "paper_recharge" "$?" "paper_recharge"
+    # ★스테이지 상한 (2026-08-22 실측): 08-22 10:36 런의 [0/3] 이 **51분 점유**했고
+    #   morning_run 은 반환을 기다리다 멈췄다 — 그날 파이프라인 통과 0회, 10:39 cron 도
+    #   "생존 중" 으로 종료. 실 무인 미완주 6건 중 4건이 이 지점이다.
+    #   ★리서치 런의 시간제한(도훈 지시로 제거)과 **다른 층**이다: 거긴 일하는 런을
+    #   자르는 문제였고, 여기는 아무 일도 안 하며 줄을 막는 문제다.
+    #   상한에 걸려도 체인은 **다음 스테이지로 진행**한다(죽이지 않는다).
+    #   QVEST_STAGE_TIMEOUT_MIN=0 이면 무제한(종전 동작).
+    _stm="${QVEST_STAGE_TIMEOUT_MIN:-20}"
+    if [ "$_stm" != "0" ] && command -v timeout >/dev/null 2>&1; then
+      timeout "${_stm}m" bash "$BASE/02_Infrastructure/ops/paper_recharge_daily.sh" >> /tmp/qm_paper_recharge_morning.log 2>&1
+      _prc=$?
+      if [ "$_prc" -eq 124 ]; then
+        echo "      ★[0/3] 스테이지 상한 ${_stm}분 초과 — 다음 스테이지로 진행(체인 보존)"
+      fi
+    else
+      bash "$BASE/02_Infrastructure/ops/paper_recharge_daily.sh" >> /tmp/qm_paper_recharge_morning.log 2>&1
+      _prc=$?
+    fi
+    stage_result "paper_recharge" "$_prc" "paper_recharge"
   else
     echo "      paper_recharge skip (disabled or missing)"
   fi

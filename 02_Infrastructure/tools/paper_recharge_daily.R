@@ -81,6 +81,26 @@ if (!dir.create(lock_dir, showWarnings = FALSE) && !force) {
   alive <- .owner_alive()
   if (isTRUE(alive)) {
     log_line("[paper-recharge] another run is active (pid alive, age %.0fs) — skip", age)
+    # ★정체 경보 (2026-08-22 실측): 살아 있어도 **오래** 매달리면 그날 파이프라인이
+    #   통째로 막힌다. 08-22 실측 — 10:36 런이 51분(3085s) 점유했고 morning_run 은
+    #   [0/3] 에서 반환을 기다리다 멈췄으며 10:39 cron 도 "생존 중" 으로 종료했다.
+    #   ★죽이지 않는다(동시 실행 방지가 락의 존재 이유) — **보이게만** 한다.
+    stall_min <- suppressWarnings(as.numeric(Sys.getenv("QVEST_STALL_ALERT_MIN", "45")))
+    if (!is.finite(stall_min)) stall_min <- 45
+    if (is.finite(age) && age >= stall_min * 60) {
+      log_line("[paper-recharge] ★정체: 홀더가 %.0f분째 점유 (문턱 %.0f분) — 경보 발행", age / 60, stall_min)
+      tryCatch({
+        adir <- file.path(PROJECT_ROOT, ".cache", "scheduler_alerts")
+        dir.create(adir, recursive = TRUE, showWarnings = FALSE)
+        writeLines(c(sprintf("ts=%s", format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z")),
+                     "component=paper_recharge", "reason=stalled_lock",
+                     sprintf(paste0("detail=락 홀더가 %.0f분째 점유 중입니다(살아 있음). ",
+                                    "그 사이 morning_run 은 [0/3] 에서 반환을 기다려 그날 파이프라인이 ",
+                                    "막힙니다. 확인: 그 PID 를 종료하면 락이 풀리고 차기 트리거가 재개합니다."),
+                             age / 60)),
+                   file.path(adir, sprintf("paper_recharge_stalled_lock_%s.alert", format(Sys.Date(), "%Y%m%d"))))
+      }, error = function(e) NULL)
+    }
     quit(status = 0)   # ← 진짜로 돌고 있다. 남의 잠금은 해제하지 않는다.
   }
   if (identical(alive, FALSE)) {
