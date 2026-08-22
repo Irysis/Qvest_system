@@ -1,0 +1,192 @@
+{
+  "wt_id": "WT-D20260822_006",
+  "round_id": "FQ-246_state_conditional_factor_selection_WT-D20260822_006_20260822",
+  "fq_ref": "FQ-246",
+  "sealed_at": "2026-08-22",
+  "sealed_by": "alpha-research",
+  "entry_gate_order_enforced": {
+    "rule": "본 사전등록은 P0(재료)·P1b(상태변수)·P1c(계열매핑)·P2(arm 구성 + 검정력 관문) 실행 후, 처치 arm 의 paired 평균·t 를 읽기 전에 봉인됐다. P2 는 MEAN-BLIND 로 작성돼 처치 평균·t 를 출력하지 않는다. 봉인 전 출력된 것 = 대조군 C0 parity(공표값 재현 Δ=-1.069e-13) · 분산 특성(sd/nw/MDE) · 매개 이동(Jaccard) · 계열 g_k 분포 · cluster_power 선언.",
+    "precedent": "FQ-244 (WT-D20260822_004) · FQ-237 (WT-D20260822_002) mean-blind gate 자구 승계",
+    "artifacts_before_seal": ["p0_probe.R", "p1b_state.R", "p1c2.R", "p2_arms.R", "p0_probe.rds", "p1b_state.rds", "p1c_family.rds", "p2_arms.rds"]
+  },
+
+  "hypothesis_inheritance": {
+    "source": "qepm/mailbox/worktask/WT-D20260822_006/alpha_hypothesis.json (alpha-hypothesis, model_tier=fable, verdict=designed)",
+    "rule": "Charter 원칙 8 No Silent Override — mechanism / falsification / regime_scope 자구 승계. alpha-research 는 재작성하지 않고 ⑤AST 구성 + 수치 문턱만 고정한다.",
+    "statement_short": "성과-무관 횡단면 상태 2축(① K=5 팩터 z 횡단면 순위 불일치 = 선택의 조건부 가치 ② 유니버스 수익 횡단면 분산(t-1) = 오류 생성 활동 강도)이 성과 관측 없이 '선택이 유효한 달'과 '신뢰할 팩터 계열'을 지목한다.",
+    "no_performance_in_conditioning": "조건변수에 trailing IC / 수익 / t 통계를 일절 쓰지 않는다. 축1 은 당월 z 횡단면만의 함수(C0 와 동일 vintage), 축2 는 t-1 까지 실현된 횡단면 산포다."
+  },
+
+  "differentiation_ledger_ref": "alpha_hypothesis.json#/selected/differentiation_ledger — 선행 negative 5계통(WT-015 국면 배분 로테이션 · RAMP R10 trailing-t 가중 · FQ-121 IS 자격 게이트 · FQ-236 Lane D · bear_prob 3라운드) 각각에 대한 비적용 논증. alpha-research 추가 조회 대조: WT-D20260803_005(자격 = 팩터 라벨 아닌 era 라벨, era 는 사전 관측 불가) / WT-D20260803_007(era-robust minimax 선택 paired t +1.21·+1.30 미달) — 본 라운드는 '사전 관측 불가한 era' 대신 **당월 관측 가능한 횡단면 상태**를 대리물로 시험한다는 점에서 그 두 라운드가 남긴 미측정 마디에 정확히 대응한다.",
+
+  "design": {
+    "type": "paired_arm_contrast_single_node_state_modulated",
+    "moving_degree_of_freedom": "상태 조건부 팩터 가중/선택만. 선별 궤적·z 패널·top-N·비용·유니버스·벤치·동점처리 전부 FQ-244 자구 고정(재실행 아님, 파일 승계).",
+    "sealed_degrees_of_freedom": [
+      "선별 = FQ-237 SEL_RANK 궤적 자구 재사용 (221개월 · K=5 · 320 팩터 풀 · 선별 이력 103종)",
+      "결합 함수형(rank/winsor/max) = FQ-244 소관, 본 라운드 미개봉",
+      "top-N 절단·hysteresis = FQ-059 소관, 미개봉",
+      "ML 결합기·ML 사이징 = v8.4 §6 금지 4종, 본 라운드 금지"
+    ],
+    "fixed_constants": {
+      "K": 5, "TOPN": 25, "COST_BPS_ONEWAY": 15, "MIN_WARM": 36, "UCLIP": 2.0, "SEED": 20260822,
+      "n_months": 221, "window": "2008-03 ~ 2026-07",
+      "state_standardization": "확장창(expanding) 평균·sd 로 표준화 후 [-2, +2] clip. warm-up 36개월은 u=0 → 그 구간 arm ≡ C0 (환원 정확).",
+      "reduction_property": "전 처치 arm 은 u=0 에서 정확히 C0 로 환원된다 — 수준 틸트가 0 이므로 paired 차는 순수 상태-조절 성분이다."
+    },
+    "g_k_family_direction_map": {
+      "source": "02_Infrastructure/factor_db/factor_registry.json 의 선언 `category` (이름 접두 유추 금지). 선별 이력 103종 전건 매칭.",
+      "rule": "기전 자구가 명명한 계열만 부호를 받고, 기전이 언급하지 않은 계열은 0(중립).",
+      "g_plus_1_liquidity_provision": ["liquidity", "crowding", "investor_flow"],
+      "g_minus_1_fundamental": ["value", "quality", "growth", "accrual", "consensus", "leverage"],
+      "g_zero_unnamed_by_mechanism": ["defense", "risk", "momentum", "regime", "technical", "size"],
+      "counts_in_selected_pool": {"+1": 25, "0": 18, "-1": 60}
+    },
+    "sweep_count": 0,
+    "n_trials_this_round": 4,
+    "selection_type": "preregistered_arms_no_champion",
+    "selection_type_rationale": "처치 arm 4종(T2_AGREE / T3_DISP / T1_AGREE / T4_BOTH)이 측정 전 고정되고 argmax/threshold-pick 으로 최종안을 고르는 단계가 없다(각 arm 독립 라벨). measurement-graduation §3 의 sweep 정의 미해당 ⇒ DSR 0.5 HARD 비발동. DSR 수치는 진단용으로 산출·기록한다. ★argmax 로 챔피언을 뽑는 순간 sweep 재분류 + DSR HARD 발동임을 사전 인지.",
+    "selection_objective": "canonical_port_t"
+  },
+
+  "arms": {
+    "C0": {"role": "control", "rule": "rowMeans(z, na.rm) — FQ-244 C0 자구 동일", "parity_target": 0.94741072, "parity_measured": 0.947410715815, "parity_delta": -1.069e-13},
+    "T2_AGREE": {"role": "co_primary_axis1_selection_strength", "rule": "팩터 가중 w_k ∝ exp(u_agree_t · c̃_k). c̃_k = 당월 K=5 내 중심성(다른 K-1 과의 평균 Spearman)을 월내 표준화. u>0(불일치 확대) → 중심 팩터 쪽으로 멤버십 기울임.", "state_axis": "disagreement (당월 z 횡단면만)", "n_active_months": 183},
+    "T3_DISP": {"role": "co_primary_axis2_family_direction", "rule": "팩터 가중 w_k ∝ exp(u_disp_t · g_k). g_k = 사전고정 계열 방향. u>0(고분산) → 유동성공급 계열 가중, u<0(저분산) → 펀더멘털 계열 가중.", "state_axis": "cross-sectional return dispersion (t-1 실현분)", "n_active_months": 153},
+    "T1_AGREE": {"role": "secondary_axis1_alt_form", "rule": "score = zc(C0) + p_t·(zc(maxZ) − zc(C0)), p_t = plogis(u_agree)−0.5 ∈ (−0.5, 0.5). 멤버십이 아니라 확신 첨예화로 같은 축을 구현.", "n_active_months": 154},
+    "T4_BOTH": {"role": "secondary_two_axis_product", "rule": "w_k ∝ exp(u_agree_t·c̃_k + u_disp_t·g_k). 기전의 곱-구조(오류생성률 × 슬롯왜곡규모) 직접 구현.", "n_active_months": 184},
+    "T3_BEAR": {"role": "demoted_contrast_performance_derived_axis", "rule": "T3 규칙에 u_bear(smv bear_prob 6 스타일 평균, FQ-239 PIT 규약: effective_date < 홀딩월 첫날, locf, 연속) 대입.", "note": "★주 판정 대상 아님 — bear_prob 은 팩터 수익에서 추정된 잠재 상태(성과-파생)라 alpha_hypothesis 가 주축에서 강등했다. 실효창 147개월. 선행 3라운드(RAMP per-group jump 0.62 · Shu-Mulvey oos 0.31 FAIL · DFA 아크 배분층 기각) 대비 증분만 기록.", "n_active_months": 133},
+    "N1_SHUF_A": {"role": "negative_control_state_shuffle_axis1", "rule": "T2 규칙에 u_agree 를 월 순서로 무작위 치환(seed 20260822)한 계열 대입. 규칙 형태가 만드는 기계적 효과를 분리."},
+    "N2_SHUF_D": {"role": "negative_control_state_shuffle_axis2", "rule": "T3 규칙에 u_disp 치환(seed 20260823) 대입."},
+    "T2_LAG1": {"role": "pit_stress_state_lag1", "rule": "T2 규칙에 u_agree 를 1개월 지연시켜 대입. 상태가 동시대 정보라면 지연 시 약화돼야 한다."},
+    "missing_handling": "전 arm 동일 — 관측 팩터만 사용(가중평균 분모에서 결측 팩터 제외), 종목별 사용팩터 1 이상 요구. C0 와 동일.",
+    "tie_handling": "scores_dt 를 (Date, Ticker) 오름차순 정렬 후 canonical_screen_bt 전달 — setorder(Date,-score) 안정정렬이 Ticker 오름차순 결정적 파단 (FQ-244 자구)."
+  },
+
+  "power_precheck_measured": {
+    "principle": "검정력은 선언 상수가 아니라 직접 측정. 계약 선언 sd 0.0394 는 무작위 top-25 EW 쌍의 sd 이고 본 대조는 선별·결합을 공유하는 상태-조절 대조라 척도가 다르다(실측 0.27~0.49 배).",
+    "n_months": 221,
+    "sd_source": "각 arm 의 월간 net active diff 계열에서 직접 측정 (mean-blind)",
+    "nw_source": "nw_inflation_measured() 계열 실측 (0.771 ~ 1.112) — 가정 상수 1.25 미사용",
+    "measured": [
+      {"arm": "T2_AGREE", "n_active_months": 183, "sd_monthly_own": 0.016591, "sd_ratio_vs_contract": 0.4211, "nw_inflation_measured": 0.9885, "mde_own_annual_pct": 2.6476, "mde_band_annual_pct": 7.951, "implied_t_own": 2.0, "implied_t_band": 6.0062, "material_over_mde_own": 3.1057},
+      {"arm": "T3_DISP", "n_active_months": 153, "sd_monthly_own": 0.017003, "sd_ratio_vs_contract": 0.4315, "nw_inflation_measured": 0.7708, "mde_own_annual_pct": 2.1158, "mde_band_annual_pct": 7.951, "implied_t_own": 2.0, "implied_t_band": 7.516, "material_over_mde_own": 3.8864},
+      {"arm": "T1_AGREE", "n_active_months": 154, "sd_monthly_own": 0.010654, "sd_ratio_vs_contract": 0.2704, "nw_inflation_measured": 1.1117, "mde_own_annual_pct": 1.9121, "mde_band_annual_pct": 7.951, "implied_t_own": 2.0, "implied_t_band": 8.3163, "material_over_mde_own": 4.3003},
+      {"arm": "T4_BOTH", "n_active_months": 184, "sd_monthly_own": 0.019371, "sd_ratio_vs_contract": 0.4917, "nw_inflation_measured": 0.8776, "mde_own_annual_pct": 2.7446, "mde_band_annual_pct": 7.951, "implied_t_own": 2.0, "material_over_mde_own": 2.9961},
+      {"arm": "T3_BEAR", "n_active_months": 133, "sd_monthly_own": 0.014773, "sd_ratio_vs_contract": 0.375, "nw_inflation_measured": 0.9977, "mde_own_annual_pct": 2.3796, "mde_band_annual_pct": 7.951, "implied_t_own": 2.0, "material_over_mde_own": 3.4555}
+    ],
+    "degeneracy_check": {
+      "finding": "implied_t_own = 2.000 (전 arm, 소수 4자리) — 자기-diff sd 로 만든 바는 t 검정의 단위 번역이지 독립 바가 아니다(FQ-237/FQ-244 자기적발 규약대로 사전등록 시점에 산출·확인).",
+      "consequence": "MDE(own) 은 판정 문턱으로 쓰지 않고 효과 크기 단위(연 %p)로만 해석한다. 독립 바 = implied_t_band (6.01 ~ 8.32)."
+    },
+    "window_asymmetry_handling": {
+      "rule": "alpha_hypothesis falsification.window_asymmetry_note 준수 — 공통창 강제 금지. 전 arm 을 221개월 축 위에서 측정하되, 상태가 정의되지 않는 달은 u=0 이라 diff 가 정확히 0 이므로 t 통계가 유효 표본(n_active_months) 기준과 동치가 된다(mean·sd 가 같은 비율로 축소 → t 불변). 그래서 축1(183~184m)과 축2 보조 bear(133m)의 검정력 차이는 sd/MDE 표에 그대로 드러난다.",
+      "measured_active_months": {"T2_AGREE": 183, "T3_DISP": 153, "T1_AGREE": 154, "T4_BOTH": 184, "T3_BEAR": 133}
+    },
+    "material_effect_definition": {
+      "value_annual_pct": 8.2228,
+      "derivation": "C0 월평균 net active 0.003242 · NW3 SE 0.003422 · t 0.9474 에서 PORT_t 를 2.95 로 올리는 데 필요한 월평균 증분을 연환산: (2.95*SE − mean)*12*100. FQ-244 와 동일 C0 이므로 값이 일치한다.",
+      "powered_verdict": "MDE(own) 1.91~2.98 %p/yr 는 MATERIAL 8.2228 %p/yr 보다 작다 ⇒ 본 설계는 물질적 효과를 검출할 수 있다(margin 2.996~4.300 배). null 이 나오면 검정력 부족이 아니라 효과없음(powered null)으로 라벨할 자격이 있다."
+    },
+    "target_persistence_measured": {
+      "rule": "지속 회귀변수 t 보정은 대상 지속성을 먼저 재고 판정 (무비판 이식 금지)",
+      "paired_diff_AR1_T2_AGREE": -0.0045,
+      "regressor_AR1": {"u_agree": 0.6213, "u_disp": 0.4376, "u_bear": 0.5377, "u_shuffled": 0.0750},
+      "decision": "paired 성과 차 계열은 자기상관이 사실상 0 이라 NW 팽창이 발생하지 않는다(실측 nw 0.771~1.112). 그럼에도 NW lag-3 을 병기해 FQ-244 자구와 비교 가능성을 유지한다. 반면 **R1/F1 의 회귀변수(u)는 AR1 0.44~0.62 로 지속적**이므로 그 축의 기울기 t 는 NW lag-3 이 필수다 — 두 축에 같은 처방을 무비판 적용하지 않았다."
+    }
+  },
+
+  "primary_decision_rule": {
+    "statistic": "paired 월간 net active 차 (arm − C0) 의 Newey-West lag-3 t (.nw_t_mean), n=221",
+    "coprimary_arms": ["T2_AGREE", "T3_DISP"],
+    "secondary_arms": ["T1_AGREE", "T4_BOTH"],
+    "champion_selection": "없음 — 각 arm 독립 라벨",
+    "labels": {
+      "EFFECT_POSITIVE": "t >= +2.0",
+      "EFFECT_NEGATIVE": "t <= -2.0",
+      "POWERED_NULL_NO_MATERIAL_EFFECT": "|t| < 2.0 이고 CI95 상단(연 %p) < 8.2228 — 이 설계가 물질적 효과를 검출할 수 있었는데 못 했다 = 효과없음",
+      "UNDERPOWERED_UNRESOLVED": "|t| < 2.0 이고 CI95 상단 >= 8.2228 = 미결",
+      "MASKED": "다른 축이 동시에 반대 방향으로 움직여 본 축 효과를 상쇄한 정황이 controls 에서 확인될 때 (08-17 masked 라벨 규약 — 보류가 아니라 즉시 수리 대상)"
+    },
+    "basis": "primary = cap-w IKS200 (.cache/benchmark.parquet). basis 3종 병기 의무: IKS200 / parent(K200∪KQ150 cap-w, WT-D20260822_002 p0_returns.rds$bench) / EW-유니버스(canonical_screen_bt diag_ew_universe). ★canonical_screen_bt 는 benchmark_id 를 'KOSPI200_total_return' 으로 하드코딩하므로 실제 넘긴 계열을 별도 기록한다.",
+    "graduation_boundary": "본 라운드 수치는 전부 metric_type=canonical_screen(스크리닝 실측). graduation HARD 3종(PORT_t 2.95 · oos_retention 0.7 · calmar 0.64)은 forge-authoritative 값에만 적용 — 본 단계 canonical 수치로 졸업 주장 금지."
+  },
+
+  "falsification_thresholds": {
+    "R1_transport_gate": {
+      "when": "성과 판정 전 STOP 게이트",
+      "definition": "ORACLE_K 여유폭 계열(월별 active_ORACLE_K − active_C0, FQ-244 p4_verdict.rds 승계)을 표준화 상태변수에 회귀한 기울기의 NW lag-3 t. 축1(disagreement)·축2(dispersion) 각각.",
+      "threshold": "|t| >= 1.5 이면 수송 확인. 두 축 모두 |t| < 1.5 이면 라벨 MECHANISM_NOT_TRANSPORTED — 완전예지 여유폭 자체가 이 상태축들에 무관하므로, 어떤 구현 규칙도 이 축으로는 여유폭을 회수할 수 없다(성과 arm 은 그래도 측정·보고하되 기전 주장은 철회).",
+      "rationale": "FQ-244 는 여유폭이 4.647 로 실재함을 보였을 뿐 그것이 관측 가능한 상태와 연결돼 있는지는 재지 않았다. 이 게이트가 그 미측정 연결을 성과 이전에 판정한다."
+    },
+    "F1_state_family_mediator": {
+      "declared_design_change": "★cluster_power.R 사전 선언 결과 계열-간 이질성 설계는 착수 불가 — 선별 이력 103종의 선언 계열 수 13, 임계 |rho| 0.553, 필요 군집 25 ⇒ verdict NO_GO_CLUSTER_BINDS(관측 1,105 개를 늘려도 안 풀린다). 계약 지시대로 **군집-내부에서 닫히는 형태**로 교체한다.",
+      "replacement_design": "사전 선언된 2군(g=+1 유동성공급 25종 / g=−1 펀더멘털 60종)의 월별 평균 forward rank-IC 차 계열 D_t = IC_pos_t − IC_neg_t (n=221, 단위 = 월)를 표준화 u_disp 에 회귀. 독립 반복은 월이지 계열이 아니다(base-내부 시계열 설계).",
+      "threshold": "기울기 NW lag-3 t >= +1.5 이면 방향 축('상태가 신뢰할 계열을 지목') 성립. |t| < 1.5 이면 방향 축 기각 → 축2(T3_DISP/T4_BOTH)의 성과 null 은 기전 반증으로 읽고, 축1 단독(선택 강도만)으로 축소 재설계 권고.",
+      "permutation_control": "u_disp 월 순서 무작위 치환 1,000회의 |t| 분포로 경험적 p 병기 (seed 20260824)."
+    },
+    "F2_mediator_movement": {
+      "definition": "arm 별 top-25 멤버십의 월별 Jaccard(C0 대비) 중앙값.",
+      "threshold": "중앙값 <= 0.90 이면 처치 실효. > 0.90 이면 라벨 NO_MEDIATOR_MOVEMENT — 그 arm 의 성과 null 은 기전 반증이 아니라 처치 무력(FQ-244 C1/C2 비대칭 교훈 승계).",
+      "measured_before_seal": {"T2_AGREE": 0.7241, "T3_DISP": 0.8519, "T1_AGREE": 0.9231, "T4_BOTH": 0.6129, "T3_BEAR": 0.9231, "N1_SHUF_A": 0.7241, "N2_SHUF_D": 0.8519, "T2_LAG1": 0.7241},
+      "pre_seal_note": "★봉인 전 실측 — T1_AGREE(0.9231)와 T3_BEAR(0.9231)는 이미 문턱 초과다. 두 arm 의 null 은 사전에 NO_MEDIATOR_MOVEMENT 로 예약 라벨되며 기전 반증 증거로 쓰지 않는다. 이 사전 고정이 사후 변명을 차단한다."
+    },
+    "F3_agent_reality": {
+      "definition": "고분산 상태 월에 개인(Individual) 순매수의 횡단면 집중(HHI 또는 상위 십분위 몫)이 상승하는가 — .cache/investor_stock/investor_wide.parquet (A6) 월간 집계 대 u_disp 의 NW lag-3 상관.",
+      "threshold": "t >= +1.5 이면 mechanism.agent 서술 지지. 무상관이면 agent 서술 기각 → 통계적 조건부 관계만 남으므로 기전 강등(가설 전체를 죽이지는 않음).",
+      "data_availability_caveat": "패널 부재·스테일 시 정직하게 미측정으로 기록하고 기전 강등 대신 '미검' 라벨. 임의 대체 지표 금지."
+    },
+    "R4_negative_control_direction": {
+      "threshold": "N1_SHUF_A / N2_SHUF_D 의 paired |t| < 2.0 이어야 한다. 셔플 상태가 유의 효과를 내면 규칙 형태 자체가 기계적 효과를 만드는 것이므로 처치 결과 해석 무효 → 라벨 RULE_ARTIFACT."
+    },
+    "R5_pit_stress": {
+      "threshold": "T2_LAG1 이 T2_AGREE 보다 약화되면 상태의 동시대성이 정보를 실어나른다는 증거. 반대로 LAG1 이 더 강하면 상태 축의 타이밍 해석을 철회한다."
+    }
+  },
+
+  "controls": {
+    "positive_control_rule_reachability": {
+      "ORACLE_STATE_T1": "u 를 완전예지 상태(당월 실현 rank-IC(maxZ) − rank-IC(C0) 를 표준화·clip)로 교체해 T1 규칙에 투입. 통과 조건 paired t >= +2.0. 이 규칙 형태가 '좋은 상태'를 성과로 변환할 수 있음을 실증한다.",
+      "basis_of_choice": "★Lane D 절차 결함(그럴듯해서 고른 양성 대조가 죽음) 회피 — 예지 계열은 추측이 아니라 구성상 양성이며, **같은 하네스·같은 창에서 FQ-244 가 ORACLE_K 를 paired t 4.290 으로 이미 검출**했다(기측정 양성). ⚠FQ-244 의 LEAK1(입력 z vintage 이동) 은 t 0.667 로 **미통과**했으므로 그 계열은 양성 대조로 재사용하지 않는다."
+    },
+    "negative_control": ["N1_SHUF_A", "N2_SHUF_D"],
+    "pit_stress": "T2_LAG1",
+    "window_reachability_citation": "FQ-244 기측정 — ORACLE_K paired t 4.290 · PORT_t(IKS200) 4.64699909 > 벽 2.95 / ORACLE_FWD PORT_t 31.45062294. PORT_t 2.95 미달 보고 시 병기 의무를 이 값으로 충족하며, null 을 '창이 좁아서' 로 설명하는 것은 사전에 봉쇄돼 있다.",
+    "robustness": [
+      "R_LIQ: 유동성 2e8 필터 적용 재측정",
+      "R_SUB: 2015-07 전/후 분할 — 진단 병기만, 국면 주장 승격 금지 (era 교락 + universe_exit_unrecorded_pre201512, 편향 하방/중립)",
+      "R_TOP5: 상위 5개월 제외 시 점추정 잔존율"
+    ]
+  },
+
+  "recording_obligations": [
+    "metric_type 전 수치 라벨 (canonical_screen / canonical_screen_diag)",
+    "rank-IC 계열 t 와 portfolio-alpha t 명시 구분 (Cycle 2 교훈)",
+    "graduation HARD 3종은 forge-authoritative 값에만 — 본 단계 canonical 수치로 졸업 주장 금지",
+    "미결(underpowered) / 효과없음(powered null) / 가려짐(masked) 3분할 라벨",
+    "DSR 진단 산출(게이트 아님) + n_trials 기록",
+    "ORACLE_K 4.64699909 를 여유폭 회수율 분모로 명시 — '여유폭의 일부라도 회수됐는가' 를 정량 보고",
+    "basis 3종 병기 + benchmark_id 하드코딩 caveat"
+  ],
+
+  "completion_design_four_fields": {
+    "terminal_form": "alpha_vector — 종목별 기대초과수익 점수(월간, top-25 EW long-only 소비). alpha_scores.parquet(Date, Ticker, score, arm) + alpha_vector_live.parquet(최신 sig_date 단면).",
+    "alpha_bridge": "채택 시 combination_rule = 'z_score_aligned_weighted_sum'(팩터 가중이 상태 조절되는 형태)로 alpha_package.json 발행 → risk-research 가 factor_specs 로 Σ 구성 → optimizer-research 가 weights → forge build_bt_result 가 authoritative PORT_t/oos/calmar 산출. 본 라운드는 canonical_screen 까지만.",
+    "transition_gates": {
+      "to_dossier_pipeline": "co-primary 중 1개 이상 EFFECT_POSITIVE(paired t >= +2.0) AND 해당 arm 의 canonical PORT_t(IKS200) >= 2.0 AND N1/N2 셔플 대조 |t| < 2.0 AND F2 Jaccard <= 0.90",
+      "to_screen_tier": "paired t in [1.0, 2.0) 이고 canonical PORT_t(EW-유니버스) >= 2.0 — overlay/FR 소비면 라우팅 검토",
+      "to_frontier_negative": "powered null 또는 EFFECT_NEGATIVE — next_probe >= 2 + 부활조건 등재, 자본 경로 미진입"
+    },
+    "consumption_gate_precheck": "채택 시 소비면 = ① 팩터 랭킹(본 라운드 표적) ② 유니버스 필터(해당없음) ③ 오버레이/국면 입력(상태 계열을 overlay 신호로 재사용 시 C5 홀딩월-시작-전 컷오프 재검증 필요) ④ 위험모델(dispersion 축은 risk-research 의 crowding 진단과 중복 가능 — 경계 확인) ⑤ monitoring 신호(상태 극단월 tripwire) ⑥ 선별 라벨 ⑦ 타 모드 이식(RAMP 팩터군 배분). ★본 라운드에서 실제로 배관되는 것은 ①뿐이며 ③④⑤는 FQ 등재 대상."
+  },
+
+  "prohibitions_acknowledged": [
+    "공분산·weight·최적화 미수행 (risk/optimizer 소관)",
+    "ML 사이징/selection 미사용 (v8.4 §6 금지 4종)",
+    "표적이 '다음 달 평균 수익률'인 ML 라운드 아님 — 본 라운드는 폐형식 규칙만",
+    "Production Constraints 는 고정 축 — 완화를 레버로 제시하지 않음",
+    "조건변수에 trailing 성과 미사용 (RAMP R10 · FQ-121 재탕 회피)"
+  ],
+
+  "verdict_pending": true
+}
