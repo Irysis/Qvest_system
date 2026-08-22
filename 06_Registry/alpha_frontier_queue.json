@@ -1276,7 +1276,13 @@
    "last_round": "FQ-244_combination_node_nonML_WT-D20260822_004_20260822",
    "last_verdict": "config_scoped_negative",
    "last_closed_at": "2026-08-22T16:38:45+0900",
-   "last_next_probe": ["NP1 ★상태 조건부 팩터 선택 — ORACLE_K 여유폭(4.647 vs 실제 0.95)의 **유일한 미측정 도달 경로**. 국면·크라우딩·분산 tercile 조건부로 K 를 고른다. ★trailing 성과 기반 선택은 두 번 죽었으므로(RAMP R10 · FQ-121) 조건변수는 성과가 아니어야 한다. v8.4 Lane D 축과 직결.", "NP2 이산 top-N 절단(FQ-059, UNCLAIMED·ready_material_gated) — R3 가 손실 원천을 사전등록 문턱으로 이 마디에 귀속시켰다. 본 라운드가 material 을 공급했으므로 gate 해제 후보.", "NP3 C2 용량-반응 — clip 상수 c 를 한 칸 더 움직여 매개 이동을 확인. C1(9/25 교체)과 C2(3/25 교체)의 증거력 비대칭을 해소한다.", "NP4 solo-advocate 64% 가 FQ-116 풀에서는 손실이고 본 풀에서는 아닌 이유 — 설계원칙 P1~P4 의 유효 범위 확정(alpha-hypothesis 재설계 요청 대상).", "NP5 WT-004 동시 편집 사건 — 병렬 세션이 내 WT mailbox 에 파일을 썼고 그중 하나에 수치 오류가 들어갔다. WT 소유권 경계를 기계로 표시할 수 있는지(소유 세션 마커·쓰기 시 경고) 검토."]
+   "last_next_probe": [
+    "NP1 ★상태 조건부 팩터 선택 — ORACLE_K 여유폭(4.647 vs 실제 0.95)의 **유일한 미측정 도달 경로**. 국면·크라우딩·분산 tercile 조건부로 K 를 고른다. ★trailing 성과 기반 선택은 두 번 죽었으므로(RAMP R10 · FQ-121) 조건변수는 성과가 아니어야 한다. v8.4 Lane D 축과 직결.",
+    "NP2 이산 top-N 절단(FQ-059, UNCLAIMED·ready_material_gated) — R3 가 손실 원천을 사전등록 문턱으로 이 마디에 귀속시켰다. 본 라운드가 material 을 공급했으므로 gate 해제 후보.",
+    "NP3 C2 용량-반응 — clip 상수 c 를 한 칸 더 움직여 매개 이동을 확인. C1(9/25 교체)과 C2(3/25 교체)의 증거력 비대칭을 해소한다.",
+    "NP4 solo-advocate 64% 가 FQ-116 풀에서는 손실이고 본 풀에서는 아닌 이유 — 설계원칙 P1~P4 의 유효 범위 확정(alpha-hypothesis 재설계 요청 대상).",
+    "NP5 WT-004 동시 편집 사건 — 병렬 세션이 내 WT mailbox 에 파일을 썼고 그중 하나에 수치 오류가 들어갔다. WT 소유권 경계를 기계로 표시할 수 있는지(소유 세션 마커·쓰기 시 경고) 검토."
+   ]
   },
   {
    "id": "FQ-060",
@@ -5416,6 +5422,19 @@
    "source_refs": "arXiv 2608.12283 · AS-20260822 실행(STR_AS_20260822_143237_8580 QUARANTINE) · stage_artifacts/paper_recharge/auto_verify_macro_beta_mom_20260822.json",
    "created_at": "2026-08-22",
    "created_by": "AS-20260822 close_round NP1"
+  },
+  {
+   "id": "FQ-246",
+   "lane": "consumption_node_selection",
+   "title": "★★★상태 조건부 팩터 선택 — ORACLE_K 여유폭(4.647 vs 실제 0.947)에 이르는 유일한 미측정 경로",
+   "hypothesis": "결합 마디의 여유폭은 결합 **규칙**이 아니라 팩터 **선택**(어느 K 를 언제 쓰나)에 있다. 그 선택을 **성과가 아닌 상태변수**(국면·크라우딩·횡단면 분산)에 조건부로 하면 여유폭의 일부를 회수할 수 있는가.",
+   "ev_rationale": "FQ-244(2026-08-22) 실측 — 완전예지 {K 중 고르기} 상한 **ORACLE_K PORT_t 4.64699909**(Q-Lead 가 alpha_validation.json 에서 직접 확인)가 **벽 2.95 를 넘는다**. 실제 arm 은 C0 0.94741072 / C1 0.88 / C2 0.81 ⇒ 그 간극이 미소진 여유폭이고, C1(매월 9/25 종목 교체·Jaccard 0.47)이 무반응 powered null 이라 **결합 규칙으로는 회수 불가**가 실측됐다. 동시에 오늘 FQ-237 이 **선별 통계량 교체도 배제**(연 4.07%p 이상 95% 배제)했다. ⇒ 남은 미측정 경로는 **상태 조건부 선택** 하나다.",
+   "wall_check": "IC→PORT_t 전이 벽의 마지막 미측정 마디. 창-도달가능성은 **이미 확보**(ORACleK 4.647 > 2.95) — null 이 나와도 '창이 좁아서' 로 도피 불가.",
+   "data_gate": "없음 — FQ-244 alpha_scores.parquet(289,704행·221개월·4arm) + FQ-239 handoff smv_factor_regime_daily.parquet(bear_prob 6종+breadth, PIT 규약 확립) 재사용.",
+   "owner": "CLAIMED - Q-Lead session d2e06481 2026-08-22 16:4x. FQ-244 close 직후 착수(그 라운드가 지목한 1순위 next_probe).",
+   "status": "CLAIMED_20260822__state_conditional_selection_launching",
+   "next_action": "★**조건변수는 성과가 아니어야 한다** — trailing 성과 기반 선택/가중은 **두 번 죽었다**(RAMP R10 W-factor paired −0.16 · FQ-121 IS 최강 V01 +2.634 → OOS −0.389 부호 반전). 후보 = 국면(bear_prob 연속) · 크라우딩 · 횡단면 분산 tercile. ①연속 상태변수 의무(이분화 시 에피소드 붕괴 — FQ-239 R8 이 235개월 중 3회 발화로 실증) ②사전등록·비-sweep(argmax 선택 시 DSR ≥0.5 HARD) ③검정력 직접 측정 + implied_t 사전 산출(자기-diff sd 바 퇴화 점검) ④지속 회귀변수 t 보정은 **대상 지속성을 먼저 재고** 판정 ⑤완주 설계 4필드 ⑥Lane D(FQ-236)와 차별 — 그쪽은 매크로 조건부 **분포 형태**를 쟀고(기각-부호) 이쪽은 조건부 **팩터 선택**이다. 표적이 다르다.",
+   "source_refs": "FQ-244 close_round(FQ-244_combination_node_nonML_WT-D20260822_004_20260822) · FQ-237 close · FQ-239 handoff_smv_20260820"
   }
  ],
  "parked_rounds": [
