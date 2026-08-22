@@ -70,6 +70,24 @@ stage_result() {   # $1=표시명 $2=exit코드 $3=경보 컴포넌트명
   #   무한 재시도 방지: 하루 MAX_RETRY 회까지만 (기본 3).
   MORNING_MAX_RETRY="${MORNING_MAX_RETRY:-3}"
   if ! ( set -o noclobber; echo "$$ @ $(date) trigger=$TRIGGER" > "$LOCK" ) 2>/dev/null; then
+    # ── (2026-08-22 수리) ".done 없음 = 중도 사망" 은 **직전 런이 실제로 죽었을 때만** 참이다.
+    #   실사고 2026-08-21: 07:06:27 런이 paper_router(최대 50분) 안에서 살아 있는데
+    #   07:10:02 cron 이 .done 부재를 사망으로 읽고 재시도해 라우터를 **2개** 띄웠다
+    #   (PID 35460 @07:07:49 · 9824 @07:11:27). 둘이 같은 route JSON 을 덮어써 07:19 판
+    #   (22,901B · schema route_v2 · autorun 2편 · factor_candidates 4종)이 07:31 판
+    #   (16,419B)으로 사라졌고, 07:58 에 3번째 인스턴스까지 떴다.
+    #   ★생존 판정에 필요한 PID 는 락 파일 **첫 필드에 이미 적혀 있었다** — 쓰고도 안 읽었다.
+    #   존재 검사(.done 유무)로 정체 검사(그 런이 살아있나)를 대체한 전형적 자리.
+    _lpid=$(awk '{print $1; exit}' "$LOCK" 2>/dev/null)
+    case "${_lpid:-}" in
+      ''|*[!0-9]*) : ;;   # PID 를 못 읽으면 구판 경로로 (보수적 — 재시도 허용)
+      *)
+        if kill -0 "$_lpid" 2>/dev/null; then
+          echo "직전 실행(PID=$_lpid) 생존 중 — 재시도하지 않고 종료 (동시 실행 금지, 2026-08-21 실사고)"
+          exit 0
+        fi
+        ;;
+    esac
     _retry_reason=""
     [ ! -f "${LOCK}.done" ] && _retry_reason="직전 실행 미완주(.done 없음 — 중도 사망)"
     _alert_reason=""
@@ -151,6 +169,33 @@ stage_result() {   # $1=표시명 $2=exit코드 $3=경보 컴포넌트명
     stage_result "alpha_queue" "$?" "alpha_queue"
   else
     echo "      alpha_queue skip (QVEST_ALPHA_QUEUE_ENABLE!=1 or missing)"
+  fi
+
+  # -- [0.57/3] mode_queue 리서치 배분 (2026-08-21 도훈 결정 "무인 개시까지", 배선 08-22)
+  #   끊긴 칸이었다: paper_router 가 opt/risk/regime 큐를 쌓는데 소비자가 세션 수동뿐이라
+  #   12일간 method_registry 등재 0건(누적 고유 93편 vs 원장 16건). alpha 레인은 [0.56] 이
+  #   이미 무인이므로 **같은 수준**으로 맞춘다. governor/book_state 도달 경로 없음(러너 하드가드).
+  #   ★무인 ON 은 여기(무인 체인)에만 스코프한다 — 시스템 환경변수로 켜면 수동 실행까지
+  #     따라 켜져서 사람이 의도하지 않은 라운드가 돈다.
+  echo "[0.57/3] mode_queue_research_run.sh (opt/risk/regime 큐 → risk/optimizer-research 스폰 → method_registry)"
+  if [ -f "$BASE/02_Infrastructure/ops/mode_queue_research_run.sh" ]; then
+    ( export QVEST_MODE_QUEUE_ENABLE="${QVEST_MODE_QUEUE_ENABLE:-1}"
+      bash "$BASE/02_Infrastructure/ops/mode_queue_research_run.sh" ) >> /tmp/qm_mode_queue.log 2>&1
+    stage_result "mode_queue" "$?" "mode_queue"
+  else
+    echo "      mode_queue skip (러너 부재)"
+  fi
+
+  # -- [0.58/3] 팩터 근거 환류 (2026-08-22, 도훈 지시 "팩터DB 환류 부재도 같이 처리")
+  #   .cache/conditional_ic_matrix.csv(327 팩터 실측)가 factor_registry 로 돌아오지 않아
+  #   evidence_tier 보유 0/373 이었다. 사이드카로 비파괴 환류하고 원천이 더 새로우면 재빌드.
+  #   ★무인 체인은 bootstrap 을 거치지 않는다 — 부트 표면에만 걸면 무인 경로에서 영영 안 돈다.
+  echo "[0.58/3] build_factor_evidence.py (IC 실측 → 팩터 근거 사이드카, 원천 갱신 시에만)"
+  if [ -f "$BASE/02_Infrastructure/factor_db/build_factor_evidence.py" ] && [ -n "${QVEST_PY:-}" ]; then
+    QM_ROOT="$BASE" "$QVEST_PY" "$BASE/02_Infrastructure/factor_db/build_factor_evidence.py" --if-stale >> /tmp/qm_factor_evidence.log 2>&1
+    stage_result "factor_evidence" "$?" ""
+  else
+    echo "      factor_evidence skip (빌더 부재 또는 QVEST_PY 미설정)"
   fi
 
   echo "[0.6/3] paper_research_dispatch.R (라우터 큐 → 리서치 액션: optimizer Σ-A/B 자동 + risk/regime flag, 도훈 mandate 2026-06-18)"

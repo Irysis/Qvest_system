@@ -998,6 +998,45 @@ if [ -f "$ASQ_R" ]; then
   [ -z "$AUTO_SPAWN_STATUS" ] && AUTO_SPAWN_STATUS="AutoSpawn: UNREPORTED — 상태라인 실패 (Rscript $ASQ_R --status-line 로 사유 확인)"
 fi
 
+# ── 팩터 근거 환류 (2026-08-21 신설, 도훈 지시 "팩터DB 환류 부재도 같이 처리")
+#    실측 결함: factor_registry 373 팩터 중 evidence_tier 보유 **0건** 인데
+#    .cache/conditional_ic_matrix.csv 에는 327 팩터 IC 실측이 앉아 있었다 —
+#    측정이 원장으로 돌아오지 않는 환류 단절. 사이드카(06_Registry/factor_evidence.json)로
+#    비파괴 환류하고, **원천(IC 행렬)이 더 새로우면 자동 재빌드**한다(파생물 무음 낙후 방지).
+FACTOR_EVIDENCE_STATUS=""
+FEV_PY="$PROJECT/02_Infrastructure/factor_db/build_factor_evidence.py"
+if [ -f "$FEV_PY" ] && [ -n "${QVEST_PY:-}" ]; then
+  ( cd "$PROJECT" && QM_ROOT="$PROJECT" "$QVEST_PY" "$FEV_PY" --if-stale >/dev/null 2>&1 ) || true
+  FACTOR_EVIDENCE_STATUS=$(cd "$PROJECT" && QM_ROOT="$PROJECT" "$QVEST_PY" "$FEV_PY" --status-line 2>/dev/null | tr -d '' | grep -m1 'FactorEvidence:' || true)
+  [ -z "$FACTOR_EVIDENCE_STATUS" ] && FACTOR_EVIDENCE_STATUS="FactorEvidence: UNREPORTED — 상태라인 실패 ($FEV_PY --status-line 로 사유 확인)"
+fi
+
+# ── mode_queue 리서치 배분 대기 (2026-08-21 신설, 도훈 결정 "무인 개시까지")
+#    opt/risk/regime 레인은 12일간 등재 0건이었다(누적 고유 93편 vs registry 16건).
+#    러너 = mode_queue_research_run.sh (kill switch QVEST_MODE_QUEUE_ENABLE).
+MODEQ_STATUS=""
+MODEQ_PRED="$PROJECT/02_Infrastructure/ops/research_pool_predicates.py"
+if [ -f "$MODEQ_PRED" ] && [ -n "${QVEST_PY:-}" ]; then
+  _mq=$(cd "$PROJECT" && "$QVEST_PY" "$MODEQ_PRED" research-queue-pending "$PROJECT/stage_artifacts/paper_recharge" "$PROJECT" 2>/dev/null | tr -d '' | tail -1)
+  case "$_mq" in
+    ''|*[!0-9]*) MODEQ_STATUS="ModeQResearch: UNREPORTED — pending 계측 실패(출력='$_mq'). ★0 으로 읽지 말 것" ;;
+    *) _sw=$( [ "${QVEST_MODE_QUEUE_ENABLE:-0}" = "1" ] && echo "무인 ON" || echo "무인 OFF(QVEST_MODE_QUEUE_ENABLE=1 로 개시)" )
+       MODEQ_STATUS="ResearchQueue: 미소비 ${_mq}건 (alpha-research/opt/risk/regime + 측정 백로그) · $_sw" ;;
+  esac
+fi
+
+# ── 무인 러너 경보 마커 표면화 (2026-08-22 신설)
+#   실측 결함: 러너들은 .cache/scheduler_alerts/ 에 마커를 남기는데 **읽는 소비자가 없었다**
+#   (bootstrap 의 scheduler_alerts 참조 0건, 마커를 만지는 8파일이 전부 writer).
+#   미해소 16건이 쌓여 있었고 그중 하나가 그날 무인 레인 전체를 세운 auth_expired 였다.
+#   ★기록되는데 도달하지 않는 것 = 침묵 실패. 소비면을 여기서 연다.
+SCHED_ALERT_STATUS=""
+SAS_SH="$PROJECT/02_Infrastructure/ops/scheduler_alert_status.sh"
+if [ -f "$SAS_SH" ]; then
+  SCHED_ALERT_STATUS=$(cd "$PROJECT" && bash "$SAS_SH" --status-line 2>/dev/null | tr -d '' | grep -m1 'SchedAlerts:' || true)
+  [ -z "$SCHED_ALERT_STATUS" ] && SCHED_ALERT_STATUS="SchedAlerts: UNREPORTED — 상태라인 실패 (bash $SAS_SH 로 사유 확인)"
+fi
+
 SMOKE_STATUS=""
 SMOKE_SCRIPT="$PROJECT/02_Infrastructure/ops/boot_status_smoke.py"
 if [ -f "$SMOKE_SCRIPT" ] && python3 -c 'import sys' >/dev/null 2>&1; then
@@ -1100,6 +1139,9 @@ else
 fi
 # 8k 표면 (2026-08-16 L1): 스폰 큐 pending 노출 — 세션 소비 유도
 [ -n "$AUTO_SPAWN_STATUS" ] && echo "$AUTO_SPAWN_STATUS"
+[ -n "$MODEQ_STATUS" ] && echo "$MODEQ_STATUS"
+[ -n "$FACTOR_EVIDENCE_STATUS" ] && echo "$FACTOR_EVIDENCE_STATUS"
+[ -n "$SCHED_ALERT_STATUS" ] && echo "$SCHED_ALERT_STATUS"
 [ -n "$SMOKE_STATUS" ] && echo "$SMOKE_STATUS"
 command -v free >/dev/null 2>&1 && free -m | awk '/Mem:/ {printf "RAM:        %.0f%%\n", $3/$2*100}' || true
 # (Remote tmux rc 라인 제거 v8.0 — inbound listener 폐지)

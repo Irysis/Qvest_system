@@ -1,0 +1,40 @@
+{
+  "prereg_id": "smv_v7_prereg_20260821",
+  "created_at": "2026-08-21",
+  "created_before_any_result": true,
+  "fq_id": "FQ-239",
+  "round": 3,
+  "mandate": "도훈 2026-08-21 '자동 사이클 진행해' — Q-Lead 권고 순서(위기-정렬 감사 → MINY5 재측정) 자동 실행",
+  "r3a_crisis_alignment_audit": {
+    "type": "진단 라운드 (전략 주장 없음 — 트리거 설계의 선행 감사)",
+    "question": "어떤 ex-ante 신호가 '실현 위기월'과 정렬되는가 — T4/T5가 3중 확인한 위기-조건부 가치를 소비 가능하게 만드는 관문",
+    "realized_crisis_def": ["시장 월수익 하위 10% (1차 — 에피소드 수 확보)", "하위 5% (2차 병기)"],
+    "candidates_prespecified": [
+      {"id": "mkt_jm", "src": "regime_jump_daily::Bear_Prob 월말값"},
+      {"id": "smv_breadth", "src": "smv_factor_regime_daily bear_prob 6종 평균 월말값 (SMV 창 한정)"},
+      {"id": "realized_vol", "src": "시장 일수익 EWM(hl21) 변동성 월말값"},
+      {"id": "dd_depth", "src": "시장 NAV 고점대비 낙폭 심도 월말값"},
+      {"id": "credit_spread", "src": "KR_CorpBBB − KR_Gov3Y 레벨 월말값 (ECOS)"},
+      {"id": "credit_d21", "src": "동 스프레드 diff EWM21 월말값"}
+    ],
+    "frames": ["predictive: 신호 m−1 월말 → 위기 m (소비 가능 프레임)", "detective: 신호 m → 위기 m (사후 확인용 병기 — 소비 불가 라벨)"],
+    "windows": ["market_full: 2006-02~2026-07 (지수 parquet 전 구간)", "smv: 2014-04~ (breadth 가용 구간)"],
+    "metrics_prespecified": ["AUC (연속 — 문턱 자유도 없음)", "precision@k (k = 위기월 수)", "block bootstrap 90퍼센트 CI (block=12, B=2000)"],
+    "judgment": "정렬 = predictive AUC의 CI 하한 > 0.5. 정렬 후보 존재 시 next = 그 신호로 T4 재측정(별도 사전등록). 전무 시 = 'ex-ante 위기 예측 불가(이 후보 집합)' 정직 기록 — 위기-조건부 가치는 detective 소비(모니터링·귀속)로만 라우팅",
+    "power_note": "위기 에피소드 하위10% ≈ 25(market_full)/15(smv) — 소표본. CI 정직 보고, 단정 금지 (FQ-236 에피소드-수 경고 준수)"
+  },
+  "r3b_miny5_extension": {
+    "axis": "훈련 최소창 MINY 8y→5y (1 dof — 논문 프로토콜 이탈 명기. 근거: 훈련 정보량 확대·GFC 포함 학습, 6월 v2 선례는 결함 회계 위라 진위 미확정)",
+    "cells": "M0 × tune=roll × TE{1..4} × cost{5,15} = 8셀 전수보고 (일별 D1은 R1에서 config-scoped negative — 재측정 안 함)",
+    "window_rule": "MINY5는 첫 refit이 앞당겨져 평가창이 길어짐 — 판정은 ①공통창(2014-04~, MINY8과 월 일치) paired 비교 1차 + ②전체창 별도 보고 (창 아티팩트 방지, window-matched 원칙)",
+    "adoption": "공통창 15bps에서 {calmar 개선 AND pt 비열등(>=-0.1)} 또는 {pt 개선 AND MDD 비악화} + 헤드라인 TE3 essence_score 채점",
+    "headline": "TE3 (사전지정 유지)"
+  },
+  "amendment_2_after_r3a_before_r3c": {
+    "added_at": "2026-08-21 (R3-A 실측 후, R3-C 측정 전)",
+    "trigger_basis_measured": "R3-A: mkt_jm Bear_Prob의 극단-위기(하위 5%) predictive AUC 0.761(market_full, CI [0.654,0.858])·0.760(smv_window, CI [0.617,0.906]) — 두 창 정렬 통과. 하위 10%는 경계. smv_breadth는 무정렬",
+    "r3c_spec": "T4 재측정 (H1-q95): crisis[t] = Bear_Prob[t] > expanding 95분위(월말 갱신, 최소 60개월 이력, 해당 월말까지 이력만 — 인과). 분위수 0.95 단일 사전지정(위기 정의 하위 5%와 대칭 — 문턱 스캔 금지). 나머지 H1 스펙 동일(평시 M0-roll 월간 / 위기일만 D1, T+2)",
+    "adoption": "동일 규칙 — 15bps에서 {calmar 개선 AND pt 비열등} 또는 {pt 개선 AND MDD 비악화} vs M0-roll 기준선"
+  },
+  "pin_tag": "smv_r2_20260820 (입력 불변 — 동일 pin)"
+}

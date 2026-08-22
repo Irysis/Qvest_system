@@ -1,0 +1,125 @@
+{
+  "schema_version": "alpha_search_strategy_manifest_v1",
+  "created_at": "2026-08-21T07:41:42+0900",
+  "mode": "alpha_search",
+  "strategy_id": "STR_AS_20260821_073113_9048",
+  "strategy_name": "DFA_RegimeSignals_StockCast",
+  "strategy_idea": "동적 팩터 배분—국면 스위칭 신호 (논문명 기반 전략명, 도훈 2026-08-21 개명. 원논문 'Dynamic Factor Allocation Leveraging Regime-Switching Signals', Shu & Mulvey, JPM 51(3) 2025 / arXiv:2410.14841) BL 팩터 비중의 종목 전파: 팩터별 Sparse Jump Model 국면 → Black-Litterman 팩터 비중(보정 회계 M0-roll TE3, FQ-239 v5) → Score_i = Σ_f w_f·Z_f,i (V12/S01/M09/Q08/D03/GR07). 차별점(INV-7): 6월 stock25 음수는 동월-결함 상태 위 실측 — 본 런은 보정 상태·신규 vintage·하네스 공식 채점. 구명 SHUMULVEY 계열 승계",
+  "factor_engine_path": "02_Infrastructure/alpha_search/fe_dfa_regimesignals_bl.R",
+  "execution": {
+    "universe": "K200_KQ150",
+    "universe_n": 350,
+    "n_holdings": 25,
+    "weight_method": "equal",
+    "commission": 0.0015,
+    "risk_controls": {
+      "vol_target": null,
+      "vol_lookback": 60,
+      "dd_brake": null,
+      "buffer_zone": {
+        "keep_n": 50,
+        "entry_n": 25
+      },
+      "use_default_buffer": true,
+      "cov_method": "sample"
+    },
+    "bt_result_path": "stage_artifacts/alpha_search/20260821_073113_9048/bt_result.rds"
+  },
+  "pit": {
+    "code_scan": "detect_lookahead",
+    "status": "CLEAN",
+    "factor_engine_path": "02_Infrastructure/alpha_search/fe_dfa_regimesignals_bl.R",
+    "note": "AlphaSearch stops before backtest when detect_lookahead reports violations."
+  },
+  "backtest_contract": {
+    "status": "OK",
+    "run_id": "ASBT_20260821_073113_9048",
+    "metric_type": "backtested",
+    "bt_result_path": "stage_artifacts/alpha_search/20260821_073113_9048/bt_result.rds",
+    "output_dir": "stage_artifacts/alpha_search/20260821_073113_9048",
+    "integrity_status": "WARNING",
+    "audit_pass": 17,
+    "audit_fail": 0,
+    "audit_warn": 1,
+    "validation_errors": [],
+    "return_series": {
+      "status": "OK",
+      "source": "bt_result.period_returns",
+      "csv_path": "stage_artifacts/alpha_search/20260821_073113_9048/03_period_returns.csv",
+      "date_col": "date",
+      "ret_col": "ret_net",
+      "n_obs": 3036,
+      "start_date": "2014-04-03",
+      "end_date": "2026-08-20",
+      "post2008_obs": 3036,
+      "frequency": "daily"
+    },
+    "note": "standard Backtest Result Contract saved for every AlphaSearch run; grade/admission remains separate"
+  },
+  "verdict": {
+    "grade": "F",
+    "score": 22.8,
+    "hurdle_pass": false,
+    "hard_fail": true,
+    "fail_reasons": [
+      "Structural drawdown (45%+ episodes>=15): MDD 64.0%, 45%+ episodes=15/15, max_underwater=58/252"
+    ],
+    "f_grade_reasons": [
+      "게이트 사유: Structural drawdown (45%+ episodes>=15): MDD 64.0%, 45%+ episodes=15/15, max_underwater=58/252",
+      "FMT-01 Structural MDD: MDD 64.0% > 45% — 선택 종목군의 위기 동반급락(구조적 꼬리위험)",
+      "FMT-02 Factor Degeneration: IR -0.31 < -0.1 & 초과CAGR -6.5%p < 0 — KR에서 팩터 방향 역작동 의심",
+      "FMT-07 Publication Decay: 활성SR pre-2017 0.82 -> post-2017 -0.64 — 논문발표 후 알파 소진 패턴",
+      "알파 부재: 정보비율 -0.31로 벤치 대비 기여가 음수/미약"
+    ],
+    "screening": {
+      "screen_pass": false,
+      "screen_route": "NONE",
+      "drawdown_tail_review": false,
+      "note": "탐색 게이트 — 자본/졸업 게이트 아님 (graduation HARD 불변). PIT만 절대."
+    }
+  },
+  "metrics": {
+    "CAGR": 6.05,
+    "AnnVol": 21.51,
+    "Sharpe": 0.281,
+    "Sharpe_m": 0.371,
+    "IR": -0.314,
+    "MDD": 63.96,
+    "Calmar": 0.095,
+    "Turnover_Ann": 377.7,
+    "Top10_Conc": 50,
+    "Rolling3Y_Pos": 51.4,
+    "BM_Corr": 0.575,
+    "ES99_d": 5.21,
+    "ES99_m": 19.43,
+    "GradeA_Corr": null,
+    "Rolling6M_Hit": 49.6,
+    "Worst6M_Ret": -31.52,
+    "MaxConsecNegAlpha": 7,
+    "Rolling12M_Hit": 48.1
+  },
+  "excess_cagr_pct": -6.55,
+  "fmt": [
+    {
+      "code": "FMT-01",
+      "label": "Structural MDD",
+      "reason": "MDD 64.0% > 45% — 선택 종목군의 위기 동반급락(구조적 꼬리위험)"
+    },
+    {
+      "code": "FMT-02",
+      "label": "Factor Degeneration",
+      "reason": "IR -0.31 < -0.1 & 초과CAGR -6.5%p < 0 — KR에서 팩터 방향 역작동 의심"
+    },
+    {
+      "code": "FMT-07",
+      "label": "Publication Decay",
+      "reason": "활성SR pre-2017 0.82 -> post-2017 -0.64 — 논문발표 후 알파 소진 패턴"
+    },
+    {
+      "code": "FMT-08",
+      "label": "Regime Overfit",
+      "reason": "국면 게이팅 구성 + 초과CAGR -6.5%p < 0 — 회복랠리 상실로 CAGR 훼손 의심"
+    }
+  ],
+  "authoritative": null
+}

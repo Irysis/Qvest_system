@@ -1,0 +1,38 @@
+{
+  "prereg_id": "dfa_v8_prereg_20260821",
+  "created_at": "2026-08-21",
+  "created_before_any_result": true,
+  "fq_id": "FQ-239",
+  "round": "R5 (broad 팩터지수 확장)",
+  "strategy": "DFA_RegimeSignals",
+  "mandate": "도훈 2026-08-21 'factor DB에서 새로운 팩터지수를 도입해도 되고' — 논문의 6-스타일 제약을 풀어 factor DB 계열로 자산 유니버스 확장",
+  "baseline": {
+    "cell": "M0-roll f15 TE3 (paper6, 7지수)",
+    "pt_5bps": 1.033, "pt_15bps": 0.631, "oos_5bps": 0.163, "calmar_5bps": 0.394,
+    "common_window_note": "R5 판정은 공통창(양 팔 유효월 교집합) paired 대조 1차 — window-matched 의무"
+  },
+  "expansion_spec": {
+    "index_set": "broad = Market + 21팩터 (Value·Issuance·Size·Momentum·ResidMom·Reversal·Quality·GPA·EarnStab·Growth·Investment·LowVol·LowBeta·TailRisk·Liquidity·Accrual·Consensus·SUE·Crowding·ForeignFlow·SmartMoney) — 빌더 SMV_FACSET=broad, 신규 vintage rebal cap 2026-07-31",
+    "construction": "동일 규약 (월리밸 cap-weighted top-tercile tilt, 일별 VW, active = factor − market)",
+    "engine": "N-일반화 (7 하드코딩 제거: FACN/P/w_ew/solveMVO/SIG/metrics) — 수치 변경 없음을 paper6 회귀 재현으로 확인 후 broad 실행",
+    "regression_guard": "N-일반화 엔진으로 paper6(f15_roll TE3)를 재실행해 기존 pt 1.033과 |Δ|<=0.01 일치 확인 — 불일치 시 broad 측정 금지"
+  },
+  "arms_prespecified": [
+    {"id": "B_all21", "spec": "broad 전량 22지수, M0-roll, TE{1..4} x cost{5,15}"},
+    {"id": "B_family", "spec": "계열 대표 축소 — factor_registry economic_family 기준 그룹당 1 대표. ★대표 선정 규칙 확정(측정 전, 2026-08-21): 원 규칙 '커버리지 최장'은 21종 전부 cov=100%로 판별 불가 → **family별 factor_id 알파벳 첫 항목**(성과·상관 무관 결정 규칙)으로 대체. 확정 12지수 = Accrual(AC18) · Crowding(CR07) · ForeignFlow(INV01) · GPA(Q01) · Growth(GR07) · Liquidity(L45) · LowBeta(D02) · ResidMom(M08) · Size(S01) · SUE(C01) · TailRisk(R05) · Value(V12) → Market 포함 13지수. family 12종: accrual/consensus/crowding/defense/growth/investor_flow/liquidity/momentum/quality/risk/size/value"},
+    {"id": "P6_base", "spec": "기존 paper6 7지수 (대조 기준선)"}
+  ],
+  "known_risks_prereg": {
+    "covariance": "22x22 EWMA(hl126) = 253 파라미터. 유효표본 대비 과소 — 조건수·역행렬 안정성 진단 의무(BL의 PΣP'+Ω/τ는 21x21 역행렬). 불안정 시 shrinkage 필요 여부를 진단으로 기록(단 신규 자유도 추가는 사전등록 없이 금지)",
+    "view_redundancy": "동일 축 중복(Momentum/ResidMom, Quality/GPA/EarnStab, LowVol/LowBeta/TailRisk 등) → BL posterior 왜곡 가능. active 상관 실측 병기 의무",
+    "multiple_testing": "뷰 6→21, 셀 수 증가. selection_type=chain 유지 근거 = 사전등록 팔 3종·argmax 금지·전 셀 보고. sweep 재분류 여부는 워크플로우 진단 결과를 반영해 측정 전 확정",
+    "cache_pollution": "refit/states 캐시 키에 팩터셋 구분 필요 — paper6 캐시가 broad 런에 재사용되면 무효. 키 분리 확인 의무"
+  },
+  "judgment": {
+    "adoption": "공통창 15bps에서 {pt 개선 AND MDD 비악화} 또는 {calmar 개선 AND pt 비열등(>=-0.1)}. 헤드라인 TE3 essence_score 계약 채점 필수",
+    "headline": "TE3 (사전지정 유지)",
+    "gates": "assert_overlay_pit + shift 사다리(수리 완료 — H1 무커버 표면 2026-08-21 수리) + placebo 30-seed",
+    "honesty": "22지수 배분은 25종목 배포 제약과 무관한 연구-레벨 측정임을 라벨 명기(RAMP_02 선례). 배포 형태 주장 금지"
+  },
+  "pin_tag": "smv_r2_20260820 + 신규 broad parquet 추가 pin 예정"
+}

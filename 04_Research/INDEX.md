@@ -1,6 +1,6 @@
 # 04_Research INDEX
 
-> 자동 생성 2026-08-20 21:15 — 큐레이션 원본: `06_Registry/index_descriptions.json` (role/status/category 수동 보완처) · 재생성: `Rscript 02_Infrastructure/tools/build_artifact_index.R` (daily_refresh 말미 자동). 본 파일 직접 수정 금지 — 재생성 시 덮어씀.
+> 자동 생성 2026-08-22 10:54 — 큐레이션 원본: `06_Registry/index_descriptions.json` (role/status/category 수동 보완처) · 재생성: `Rscript 02_Infrastructure/tools/build_artifact_index.R` (daily_refresh 말미 자동). 본 파일 직접 수정 금지 — 재생성 시 덮어씀.
 
 <details><summary><b>strategy-legacy</b> (3)</summary>
 
@@ -16,8 +16,8 @@
 
 | 항목 | 정체 | status | 최근 | 크기 |
 |---|---|---|---|---|
-| `decision_framework/` | bearish forecast v1~v3(예측 국면) + cross_section_distribution(DPL 피처 parquet) + smart_beta_regime·factor_untapped — 부팅·모닝브리핑·DPL 감사가 소비하는 활성 존 (409MB, 대부분 cross_section outputs 382MB) | active | 2026-08-12 | 412.6MB |
-| `regime_comparison/` | KTRI/MSM 국면엔진 비교·검증·브리핑 발송 스크립트 — 일일 스케줄러(daily_refresh·모닝브리핑 ktri_rebuild)가 소비 중 | active | 2026-08-20 | 1.3MB |
+| `decision_framework/` | bearish forecast v1~v3(예측 국면) + cross_section_distribution(DPL 피처 parquet) + smart_beta_regime·factor_untapped — 부팅·모닝브리핑·DPL 감사가 소비하는 활성 존 (409MB, 대부분 cross_section outputs 382MB) | active | 2026-08-20 | 413.0MB |
+| `regime_comparison/` | KTRI/MSM 국면엔진 비교·검증·브리핑 발송 스크립트 — 일일 스케줄러(daily_refresh·모닝브리핑 ktri_rebuild)가 소비 중 | active | 2026-08-22 | 1.3MB |
 
 </details>
 
@@ -33,7 +33,7 @@
 
 | 항목 | 정체 | status | 최근 | 크기 |
 |---|---|---|---|---|
-| `ramp/` | RAMP 모드 Gate3~6 실행 스크립트(run_ramp_gate*.R) + reports(Shu-Mulvey 충실복제·순수팩터 추출 보고 등) — /ramp 모드 활성 산출 존 | active | 2026-07-13 | 286KB |
+| `ramp/` | RAMP 모드 Gate3~6 실행 스크립트(run_ramp_gate*.R) + reports(Shu-Mulvey 충실복제·순수팩터 추출 보고 등) — /ramp 모드 활성 산출 존 | active | 2026-08-22 | 316KB |
 | `regime/` | RAMP용 국면엔진 33개 인벤토리 + bakeoff 실측(06-19) — [[project-ramp-regime-engines]]의 원 데이터 | report | 2026-06-19 | 44KB |
 
 </details>
@@ -158,7 +158,7 @@
 
 | 항목 | 정체 | status | 최근 | 크기 |
 |---|---|---|---|---|
-| `01_reports/` | [재편 2026-07-04] 감사·검토·제안·로드맵 보고서와 그 증거 데이터 카테고리 (실행코드 참조 0 확인분 수용) | active | 2026-08-20 | 2.1MB |
+| `01_reports/` | [재편 2026-07-04] 감사·검토·제안·로드맵 보고서와 그 증거 데이터 카테고리 (실행코드 참조 0 확인분 수용) | active | 2026-08-21 | 2.1MB |
 
 </details>
 
@@ -195,7 +195,7 @@
 
 | 항목 | 정체 | 카테고리 | 최근 | 크기 |
 |---|---|---|---|---|
-| `regime_analysis/` | 구 국면 시각화 png(KTRI 9quad·3layer·MRS daily) + threshold 튜닝 스크립트(v5x 시대) | dead | 2026-08-12 | 644KB |
+| `regime_analysis/` | 구 국면 시각화 png(KTRI 9quad·3layer·MRS daily) + threshold 튜닝 스크립트(v5x 시대) | dead | 2026-08-20 | 642KB |
 
 ## stale 큐레이션 키 (13) — 디스크 부재, index_descriptions.json에서 제거 권장
 

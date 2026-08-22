@@ -323,10 +323,206 @@ def mode_queue_unresolved(obj):
     return [k for k in obj.keys() if k not in known]
 
 
+
+# ── mode 큐 소비 (optimizer/risk/regime → method_registry) ────────────────────
+#   신설 2026-08-21 (도훈 결정: opt/risk/regime 레인 무인 개시).
+#   ★소비자 쪽에 다시 적지 말 것 — 이 모듈의 존재 이유가 08-02 3연발 재분기다.
+#     소비자 = mode_queue_research_run.sh. 배선 단언 = 08_Tests/ops/test_mode_queue_pending.py.
+#
+#   실측 근거(2026-08-21): mode_queue 20파일 고유 93편 vs method_registry 16건,
+#   전건 added 2026-08-08~09 → 그 뒤 12일 등재 0. 유입은 계속인데 소비가 멈춘 상태.
+
+MODE_REGISTRY_REL = ("06_Registry", "method_registry.json")
+
+# screen_priority = 라우터가 채우는 3축 중 서열축(실측 표기 3종).
+#   ★문자열 비교로 정렬하지 않는다 — 코드포인트 순서면 "후순위"가 "⭐⭐"보다 앞선다.
+_PRIO_RANK = {"⭐⭐⭐": 0, "⭐⭐": 1, "⭐": 2, "후순위": 4}
+_PRIO_DEFAULT = 3          # 미표기는 ⭐와 후순위 사이 — 모르는 것을 버리지 않는다
+
+
+def method_registry_ids(root):
+    """등재 완료 논문 id 집합 — **감산항이므로 _load_ledger**.
+
+    부재는 None(정상: 아직 아무것도 등재 안 함) → 빈 집합.
+    존재하는데 파싱 실패면 예외. 여기서 빈 집합으로 내려앉히면 이미 등재·판정난
+    논문을 무인 런이 재처리한다(alpha 쪽 2026-08-09 실사고와 같은 부호 뒤집힘).
+    """
+    obj = _load_ledger(os.path.join(root, *MODE_REGISTRY_REL))
+    if obj is None:
+        return set()
+    out = set()
+    for m in (obj.get("methods") or []):
+        v = pid_of(m, "method_registry")
+        if v:
+            out.add(v)
+    return out
+
+
+def mode_queue_pending(stage, root):
+    """미소비 mode_queue 항목 — 전 날짜 합집합에서 등재분을 뺀다.
+
+    ★날짜별이 아니라 **합집합**인 이유: 같은 논문이 여러 날 큐에 재등장한다
+      (실측 연인원 181 vs 고유 93). 날짜별로 세면 같은 건을 반복 처리한다.
+    ★route 는 항목이 아니라 큐의 **레인 키**에 있다 — mode_queue_routes 로만 읽는다
+      (queue{} 중첩 미해석이 08-02 에 14편을 통째로 드롭시킨 자리다).
+    """
+    done = method_registry_ids(root)          # 손상 시 LedgerUnreadable 전파
+    seen = {}
+    for fn in sorted(glob.glob(os.path.join(stage, "mode_queue_*.json"))):
+        obj = _load_json(fn)                  # 원천은 fail-soft (보수 방향)
+        if not isinstance(obj, dict):
+            continue
+        routes = mode_queue_routes(obj)
+        for lane in MODE_ROUTES:
+            for it in routes[lane]:
+                if not isinstance(it, dict):
+                    continue
+                k = pid_of(it, "mode_queue:%s" % os.path.basename(fn))
+                if not k or k in done or is_resolved(it):
+                    continue
+                if k not in seen:
+                    seen[k] = {"paper_id": k, "lane": lane,
+                               "title": it.get("title") or display_name(it),
+                               "screen_priority": it.get("screen_priority") or "",
+                               "shrinkage_builtin": it.get("shrinkage_builtin") or "",
+                               "statistic_order": it.get("statistic_order") or "",
+                               "reason": it.get("reason") or "",
+                               "first_seen": os.path.basename(fn)}
+    items = list(seen.values())
+    items.sort(key=lambda r: (_PRIO_RANK.get(str(r["screen_priority"]).strip(),
+                                             _PRIO_DEFAULT),
+                              r["paper_id"]))
+    return items
+
+
+# ── alpha-research 레인 (2026-08-22 도훈 결정 "route=alpha 항목을 alpha-research 로") ──
+#   ★이중 소비 방지가 이 함수의 핵심 계약이다.
+#     기존 무인 alpha 레인(alpha_search_queue_run.sh)은 alpha_pending() = **is_testable** 인
+#     것만 가져간다(라우터가 구체 팩터를 뽑아낸 건). 그러니 이 레인은 그 여집합만 가진다:
+#     **route=alpha ∧ NOT is_testable** = 기전은 있는데 팩터가 아직 없는 논문 = QEPM 코어가
+#     (alpha-hypothesis → alpha-research) 설계해야 하는 대상.
+#   구성상 서로소이므로 두 레인이 같은 논문을 두 번 태우지 않는다.
+
+def alpha_research_done_ids(stage):
+    """alpha-research 레인 소비 원장 — **감산항이므로 _load_ledger**(손상 시 예외)."""
+    d = _load_ledger(os.path.join(stage, "alpha_research_queue_done.json"))
+    if not isinstance(d, dict):
+        return set()
+    done = {nid(x) for x in (d.get("processed") or []) if nid(x)}
+    for r in (d.get("records") or []):
+        if isinstance(r, dict):
+            v = pid_of(r, "alpha_research_done.records")
+            if v:
+                done.add(v)
+    return done
+
+
+def alpha_research_pending(stage):
+    """QEPM 코어(alpha-hypothesis→alpha-research)가 받을 논문.
+
+    ★2026-08-22 자가 정정: 초판은 "alpha-search 여집합(= NOT is_testable)" 으로 잡았는데
+      **품질 순서가 뒤집혔다**. `is_testable()` 의 폴백이 `route==alpha ∧ kr_feasible` 만으로도
+      참이라, 여집합에는 **kr_feasible=False(라우터가 KR 불가로 본 것)** 와 **명시 기각 verdict**
+      만 남는다 — 가장 안 유망한 것을 가장 비싼 에이전트에 보내는 배선이 된다.
+
+    정정된 정의 = **route=alpha ∧ kr_feasible ∧ factor_candidate 부재**.
+      = "KR 에서 될 것 같은데 아직 팩터가 없다" = 정확히 가설 설계가 필요한 것.
+      팩터가 이미 있는 건(`factor_candidate.verdict=testable`)은 바로 백테할 수 있으므로
+      경량 레인(alpha-search)이 맞다 — 그건 건드리지 않는다.
+
+    ★중복 소비 해소 = **선점(first-claim-wins)**: 이 레인의 소비 기록을 alpha 레인과
+      **같은 원장**(`alpha_search_queue_done.json`)에도 남기면 `alpha_pending()` 이 그것을
+      감산하므로, alpha-search 가 같은 논문을 다시 태우지 않는다.
+      (alpha-search 술어를 고치지 않는 이유: 도는 레인을 흔들지 않는다.)
+    """
+    done = alpha_research_done_ids(stage) | alpha_done_ids(stage)
+    out = {}
+    for f in sorted(glob.glob(os.path.join(stage, "alpha_search_route_*.json"))):
+        r = _load_json(f)
+        if not isinstance(r, dict):
+            continue
+        for o in (r.get("papers") or []):
+            if not isinstance(o, dict) or o.get("route") != "alpha":
+                continue
+            if not o.get("kr_feasible"):
+                continue                      # 라우터가 KR 불가로 본 건은 대상 아님
+            fc = o.get("factor_candidate")
+            if isinstance(fc, dict) and fc:
+                continue                      # 팩터가 이미 있음 → 경량 레인(alpha-search)
+            k = pid_of(o, os.path.basename(f))
+            if not k or k in done or is_resolved(o):
+                continue
+            out.setdefault(k, {"paper_id": k, "lane": "alpha",
+                               "title": o.get("title") or display_name(o),
+                               "kr_feasible": True,
+                               "screen_priority": o.get("screen_priority") or "",
+                               "shrinkage_builtin": "", "statistic_order": "",
+                               "reason": o.get("reason") or "",
+                               "first_seen": os.path.basename(f)})
+    return list(out.values())
+
+
+# ── 등재→측정 칸 (2026-08-22 도훈 결정) ──────────────────────────────────────
+#   실측 결함: method_registry 16건 중 measurement_status 기입은 **1건**뿐이었다.
+#   큐→등재만 배선하면 어댑터만 쌓이고 원장이 다시 멈춘다 — 등재는 리서치의 끝이 아니다.
+#   ★blocked_by_capability 는 대상에서 뺀다: 구현 자체가 막힌 건을 측정하라고 큐에 올리면
+#     매 런 실패하며 토큰만 태운다(사유가 해소되면 verdict 가 바뀌고 자동 재편입된다).
+_MEASURE_EXCLUDE_VERDICT = {"blocked_by_capability"}
+
+
+def method_measure_pending(root):
+    """실측이 남은 등재 method — measurement_status 가 비어 있는 건."""
+    obj = _load_ledger(os.path.join(root, *MODE_REGISTRY_REL))
+    if not isinstance(obj, dict):
+        return []
+    out = []
+    for m in (obj.get("methods") or []):
+        if not isinstance(m, dict):
+            continue
+        if str(m.get("verdict") or "").strip() in _MEASURE_EXCLUDE_VERDICT:
+            continue
+        ms = str(m.get("measurement_status") or "").strip()
+        if ms:
+            continue
+        mid = str(m.get("method_id") or m.get("id") or "").strip()
+        if not mid:
+            continue
+        out.append({"paper_id": pid_of(m, "method_registry") or mid,
+                    "method_id": mid, "lane": "method_measure",
+                    "title": m.get("paper_title") or mid,
+                    "route": m.get("route"), "adapter_kind": m.get("adapter_kind"),
+                    "entrypoint": m.get("entrypoint"),
+                    "screen_priority": "", "shrinkage_builtin": "",
+                    "statistic_order": "",
+                    "reason": "어댑터는 등재됐으나 measurement_status 미기입 — 실측 미완",
+                    "first_seen": "method_registry.json"})
+    return out
+
+
+def research_queue_pending(stage, root):
+    """무인 배분 대상 전체 = mode_queue(opt/risk/regime) + alpha-research + 측정 백로그.
+
+    ★lane 은 소비자(프롬프트)가 어느 에이전트를 스폰할지 고르는 유일 키다.
+    """
+    items = (mode_queue_pending(stage, root)
+             + alpha_research_pending(stage)
+             + method_measure_pending(root))
+    # 측정 백로그를 먼저 — 이미 등재된 것을 끝내는 편이 새로 쌓는 것보다 값이 크다
+    # (등재만 쌓여 원장이 12일 멈춘 것이 이 배선의 발단이다).
+    _LANE_ORDER = {"method_measure": 0, "alpha": 1, "optimizer": 2, "risk": 2, "regime": 3}
+    items.sort(key=lambda r: (_LANE_ORDER.get(r.get("lane"), 9),
+                              _PRIO_RANK.get(str(r.get("screen_priority", "")).strip(),
+                                             _PRIO_DEFAULT),
+                              str(r.get("paper_id"))))
+    return items
+
+
 # ── CLI ───────────────────────────────────────────────────────────────────────
 _USAGE = ("usage: research_pool_predicates.py alpha-pending <stage_dir>\n"
           "       research_pool_predicates.py recheck-build <stage_dir> <out_json> [<today>]\n"
-          "       research_pool_predicates.py mode-routes   <mode_queue_json>\n")
+          "       research_pool_predicates.py mode-routes   <mode_queue_json>\n"
+          "       research_pool_predicates.py mode-queue-pending <stage_dir> <root> [--json <out>]\n"
+          "       research_pool_predicates.py research-queue-pending <stage_dir> <root> [--json <out>]\n")
 
 
 def main(argv):
@@ -376,6 +572,39 @@ def main(argv):
         r = mode_queue_routes(obj)
         print(json.dumps({k: len(r[k]) for k in MODE_ROUTES},
                          ensure_ascii=False, sort_keys=True))
+        return 0
+    if cmd == "research-queue-pending":
+        # 무인 배분 정본 진입점 (alpha-research + opt/risk/regime + 측정 백로그).
+        if len(argv) < 3:
+            sys.stderr.write(_USAGE)
+            return 2
+        try:
+            items = research_queue_pending(argv[1], argv[2])
+        except LedgerUnreadable as e:
+            sys.stderr.write("LEDGER_UNREADABLE %s\n" % e)
+            return 3
+        if "--json" in argv:
+            with open(argv[argv.index("--json") + 1], "w", encoding="utf-8") as fh:
+                json.dump({"n": len(items), "items": items}, fh,
+                          ensure_ascii=False, indent=2)
+        print(len(items))
+        return 0
+    if cmd == "mode-queue-pending":
+        # ★원장 손상은 숫자를 내지 않는다 — 소비자(.sh)가 비숫자를 잡아 경보 후 중단한다.
+        #   여기서 0 을 내면 "대기 없음" 정상 skip 으로 위장된다(alpha 쪽 실사고 동형).
+        if len(argv) < 3:
+            sys.stderr.write(_USAGE)
+            return 2
+        try:
+            items = mode_queue_pending(argv[1], argv[2])
+        except LedgerUnreadable as e:
+            sys.stderr.write("LEDGER_UNREADABLE %s\n" % e)
+            return 3
+        if "--json" in argv:
+            with open(argv[argv.index("--json") + 1], "w", encoding="utf-8") as fh:
+                json.dump({"n": len(items), "items": items}, fh,
+                          ensure_ascii=False, indent=2)
+        print(len(items))
         return 0
     sys.stderr.write("unknown command: %s\n%s" % (cmd, _USAGE))
     return 2

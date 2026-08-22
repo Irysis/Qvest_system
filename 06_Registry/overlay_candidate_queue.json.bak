@@ -1,10 +1,10 @@
 {
   "schema_version": "overlay_candidate_queue_v1",
-  "generated_at": "2026-08-17T16:42:34+0900",
+  "generated_at": "2026-08-21T07:25:38+0900",
   "producer_ref": "hurdle_gate.R verdict$screening$screen_route (measurement-graduation §3 screening tier)",
   "consumer_ref": "02_Infrastructure/ops/auto_regime_overlay_ab.R + 02_Infrastructure/regime/overlay_candidate_ab_lh.R",
   "note": "screening tier 라벨 — 자본/졸업 게이트 아님. overlay A/B 실측(clean-timing +1 lag 스트레스 의무) 후 status=measured.",
-  "n_candidates": 22,
+  "n_candidates": 23,
   "candidates": [
     {
       "id": "STR_AS_20260612_135316_470429",
@@ -5047,6 +5047,29 @@
       "status": "measured"
     },
     {
+      "id": "STR_AS_E2EHARNESS_20260820",
+      "source": "alpha_search_manifest",
+      "source_path": "stage_artifacts/alpha_search/E2EHARNESS_20260820/strategy_manifest.json",
+      "strategy_name": "E2E 하네스 리허설 합성런 (측정값 무의미 — 배관 검증용)",
+      "screen_route": "OVERLAY_CANDIDATE|FR_RCMA",
+      "label_time": "2026-08-20",
+      "grade": "C",
+      "essence_grade": null,
+      "metric_type": "backtested",
+      "bt_result_path": "stage_artifacts/alpha_search/E2EHARNESS_20260820/bt_result.rds",
+      "signal_summary": {
+        "sharpe": null,
+        "cagr_pct": null,
+        "mdd_pct": null,
+        "ir": null,
+        "calmar": null,
+        "turnover_ann_pct": null,
+        "bm_corr": null,
+        "fmt_codes": ""
+      },
+      "status": "queued"
+    },
+    {
       "id": "LH_D2_loser_augment",
       "source": "manual_memory_20260703",
       "source_path": "04_Research/factor_rotation/smartbeta_allstock/D2_forge_result.rds",
@@ -5362,12 +5385,299 @@
       "metric_type": "registry_record",
       "bt_result_path": "stage_artifacts/alpha_search/20260709_074129_30048/bt_result.rds",
       "disposition_note": "HARD 3종 전패 (registry_record: PORT_t 2.584<2.95 · oos_retention -0.052<0.5 무조건FAIL · calmar 0.346<0.64) — 신호 실재, overlay 결합 미측정 축 재라우팅 (/improve-drain R1)",
-      "status": "measured",
-      "ab_result_ref": {
-        "result_path": "06_Registry/overlay_ab_results/STR_AS_20260709_074129_30048.json",
+      "ab_result": {
+        "candidate_id": "STR_AS_20260709_074129_30048",
         "measured_at": "2026-08-17T16:45:05+0900",
-        "harness": "02_Infrastructure/regime/overlay_candidate_drain.R (overlay_candidate_ab_lh 규약 generic화)"
-      }
+        "metric_type": "backtested_monthly_agg",
+        "tier": "screen_diagnostic",
+        "harness": "02_Infrastructure/regime/overlay_candidate_drain.R (overlay_candidate_ab_lh 규약 generic화)",
+        "adapter": "bt_result_rds",
+        "cost_bps_oneway": 15,
+        "overlay_cost_model": "*_cost = 월별 |Δexposure|×15bps one-way 추가 차감 (cost_model v2.4 delta-based, PG2 recovery-override 규약). 첫 월 Δ=0(fill=첫 exposure).",
+        "pit_guard": {
+          "assert_overlay_pit": "PASS(HARD)",
+          "strict_exposure_identical": true,
+          "strict_ab_inflation": 0,
+          "strict_ab_lookahead_suspected": false,
+          "strict_ab_message": "[overlay_pit_guard] uni_cat abs_SR (current vs strict-PIT): current=0.8230 strict=0.8230 인플레=0.0% → clean"
+        },
+        "note": "screen-tier A/B — 자본게이트 아님. 판정은 paired 증분 NW-t(비율 비교 금지). unified_regime_signal walk-forward 미보증 → lag1 스트레스 의무.",
+        "scenarios": [
+          {
+            "scenario": "bare",
+            "n_months": 258,
+            "abs_SR": 0.845408,
+            "abs_CAGR": 0.205393,
+            "abs_MDD": -0.531679,
+            "IR": 0.536636,
+            "PORT_t": 2.389204,
+            "active_SR": 0.536636,
+            "oos_ret_v2": -0.059923,
+            "calmar": 0.38631,
+            "avg_exposure": 1,
+            "cost_applied": false,
+            "avg_abs_dexp_m": 0,
+            "ov_cost_ann_bps": 0
+          },
+          {
+            "scenario": "uni_cat",
+            "n_months": 258,
+            "abs_SR": 0.823018,
+            "abs_CAGR": 0.180847,
+            "abs_MDD": -0.461748,
+            "IR": 0.422726,
+            "PORT_t": 2.015589,
+            "active_SR": 0.422726,
+            "oos_ret_v2": -0.144902,
+            "calmar": 0.391657,
+            "avg_exposure": 0.95,
+            "cost_applied": false,
+            "avg_abs_dexp_m": 0.032558,
+            "ov_cost_ann_bps": 5.860465
+          },
+          {
+            "scenario": "uni_cat_cost",
+            "n_months": 258,
+            "abs_SR": 0.820733,
+            "abs_CAGR": 0.180174,
+            "abs_MDD": -0.463792,
+            "IR": 0.419473,
+            "PORT_t": 1.999434,
+            "active_SR": 0.419473,
+            "oos_ret_v2": -0.150652,
+            "calmar": 0.388479,
+            "avg_exposure": 0.95,
+            "cost_applied": true,
+            "avg_abs_dexp_m": 0.032558,
+            "ov_cost_ann_bps": 5.860465
+          },
+          {
+            "scenario": "uni_cat_lag1",
+            "n_months": 258,
+            "abs_SR": 0.76404,
+            "abs_CAGR": 0.165536,
+            "abs_MDD": -0.517641,
+            "IR": 0.34665,
+            "PORT_t": 1.623451,
+            "active_SR": 0.34665,
+            "oos_ret_v2": -0.293282,
+            "calmar": 0.319789,
+            "avg_exposure": 0.952326,
+            "cost_applied": false,
+            "avg_abs_dexp_m": 0.032558,
+            "ov_cost_ann_bps": 5.860465
+          },
+          {
+            "scenario": "uni_cat_lag1_cost",
+            "n_months": 258,
+            "abs_SR": 0.761814,
+            "abs_CAGR": 0.164879,
+            "abs_MDD": -0.519183,
+            "IR": 0.343457,
+            "PORT_t": 1.607615,
+            "active_SR": 0.343457,
+            "oos_ret_v2": -0.299726,
+            "calmar": 0.317574,
+            "avg_exposure": 0.952326,
+            "cost_applied": true,
+            "avg_abs_dexp_m": 0.032558,
+            "ov_cost_ann_bps": 5.860465
+          },
+          {
+            "scenario": "voltgt",
+            "n_months": 258,
+            "abs_SR": 0.736766,
+            "abs_CAGR": 0.146353,
+            "abs_MDD": -0.497453,
+            "IR": 0.23945,
+            "PORT_t": 1.119293,
+            "active_SR": 0.23945,
+            "oos_ret_v2": -0.522705,
+            "calmar": 0.294205,
+            "avg_exposure": 0.81921,
+            "cost_applied": false,
+            "avg_abs_dexp_m": 0.036954,
+            "ov_cost_ann_bps": 6.651751
+          },
+          {
+            "scenario": "voltgt_cost",
+            "n_months": 258,
+            "abs_SR": 0.733705,
+            "abs_CAGR": 0.145596,
+            "abs_MDD": -0.498294,
+            "IR": 0.23573,
+            "PORT_t": 1.101752,
+            "active_SR": 0.23573,
+            "oos_ret_v2": -0.531553,
+            "calmar": 0.292189,
+            "avg_exposure": 0.81921,
+            "cost_applied": true,
+            "avg_abs_dexp_m": 0.036954,
+            "ov_cost_ann_bps": 6.651751
+          },
+          {
+            "scenario": "voltgt_lag1",
+            "n_months": 258,
+            "abs_SR": 0.753053,
+            "abs_CAGR": 0.150365,
+            "abs_MDD": -0.492079,
+            "IR": 0.262667,
+            "PORT_t": 1.236976,
+            "active_SR": 0.262667,
+            "oos_ret_v2": -0.449251,
+            "calmar": 0.30557,
+            "avg_exposure": 0.820816,
+            "cost_applied": false,
+            "avg_abs_dexp_m": 0.03655,
+            "ov_cost_ann_bps": 6.579061
+          },
+          {
+            "scenario": "voltgt_lag1_cost",
+            "n_months": 258,
+            "abs_SR": 0.750087,
+            "abs_CAGR": 0.149617,
+            "abs_MDD": -0.492621,
+            "IR": 0.258944,
+            "PORT_t": 1.219321,
+            "active_SR": 0.258944,
+            "oos_ret_v2": -0.45757,
+            "calmar": 0.303717,
+            "avg_exposure": 0.820816,
+            "cost_applied": true,
+            "avg_abs_dexp_m": 0.03655,
+            "ov_cost_ann_bps": 6.579061
+          }
+        ],
+        "paired_nw": [
+          {
+            "scenario": "uni_cat",
+            "n": 258,
+            "paired_nw_t_lag3": -1.515943,
+            "mean_d_monthly": -0.002306,
+            "dSR": -0.02239,
+            "dMDD": 0.069931,
+            "d_PORT_t": -0.373615
+          },
+          {
+            "scenario": "uni_cat_cost",
+            "n": 258,
+            "paired_nw_t_lag3": -1.543723,
+            "mean_d_monthly": -0.002355,
+            "dSR": -0.024675,
+            "dMDD": 0.067887,
+            "d_PORT_t": -0.38977
+          },
+          {
+            "scenario": "uni_cat_lag1",
+            "n": 258,
+            "paired_nw_t_lag3": -2.10701,
+            "mean_d_monthly": -0.00329,
+            "dSR": -0.081368,
+            "dMDD": 0.014038,
+            "d_PORT_t": -0.765753
+          },
+          {
+            "scenario": "uni_cat_lag1_cost",
+            "n": 258,
+            "paired_nw_t_lag3": -2.129116,
+            "mean_d_monthly": -0.003339,
+            "dSR": -0.083593,
+            "dMDD": 0.012496,
+            "d_PORT_t": -0.781589
+          },
+          {
+            "scenario": "voltgt",
+            "n": 258,
+            "paired_nw_t_lag3": -3.050925,
+            "mean_d_monthly": -0.005092,
+            "dSR": -0.108641,
+            "dMDD": 0.034226,
+            "d_PORT_t": -1.269911
+          },
+          {
+            "scenario": "voltgt_cost",
+            "n": 258,
+            "paired_nw_t_lag3": -3.08331,
+            "mean_d_monthly": -0.005148,
+            "dSR": -0.111703,
+            "dMDD": 0.033385,
+            "d_PORT_t": -1.287452
+          },
+          {
+            "scenario": "voltgt_lag1",
+            "n": 258,
+            "paired_nw_t_lag3": -2.98384,
+            "mean_d_monthly": -0.004794,
+            "dSR": -0.092354,
+            "dMDD": 0.0396,
+            "d_PORT_t": -1.152229
+          },
+          {
+            "scenario": "voltgt_lag1_cost",
+            "n": 258,
+            "paired_nw_t_lag3": -3.016289,
+            "mean_d_monthly": -0.004848,
+            "dSR": -0.095321,
+            "dMDD": 0.039058,
+            "d_PORT_t": -1.169883
+          }
+        ],
+        "crisis_conditional": [
+          {
+            "crisis": false,
+            "n": 230,
+            "bare_mean": 0.016611,
+            "uni_mean": 0.016611
+          },
+          {
+            "crisis": true,
+            "n": 28,
+            "bare_mean": 0.034666,
+            "uni_mean": 0.013413
+          }
+        ],
+        "lag1_stress": {
+          "uni_cat": {
+            "mdd_improve_base": -0.069931,
+            "mdd_improve_lag1": -0.014038,
+            "dSR_base": -0.02239,
+            "dSR_lag1": -0.081368
+          },
+          "voltgt": {
+            "mdd_improve_base": -0.034226,
+            "mdd_improve_lag1": -0.0396,
+            "dSR_base": -0.108641,
+            "dSR_lag1": -0.092354
+          },
+          "uni_cat_cost": {
+            "mdd_improve_base": -0.067887,
+            "mdd_improve_lag1": -0.012496,
+            "dSR_base": -0.024675,
+            "dSR_lag1": -0.083593
+          },
+          "voltgt_cost": {
+            "mdd_improve_base": -0.033385,
+            "mdd_improve_lag1": -0.039058,
+            "dSR_base": -0.111703,
+            "dSR_lag1": -0.095321
+          }
+        },
+        "verdict": {
+          "rule_version": "dv_v1",
+          "basis": "screen_diagnostic — 자본게이트 판정 아님 (HARD 3종/governor 불변)",
+          "verdict": "INFERIOR",
+          "best_scenario": "uni_cat",
+          "best_paired_nw_t_lag3": -1.515943,
+          "lag1_scenario": "uni_cat_lag1",
+          "lag1_paired_t": -2.10701,
+          "n_selection": 8,
+          "null_max_t": 2.0393,
+          "reason": "best paired NW-t -1.516 <= 0 — bare 대비 개선 없음",
+          "judged_at": "2026-08-17T16:45:05+0900",
+          "judged_by": "drain_main"
+        }
+      },
+      "status": "measured"
     },
     {
       "id": "STR_AS_20260612_154914_1055315",
@@ -5381,12 +5691,299 @@
       "metric_type": "registry_record",
       "bt_result_path": "stage_artifacts/alpha_search/20260612_154914_1055315/bt_result.rds",
       "disposition_note": "HARD 3종 전패 (registry_record: PORT_t 2.523<2.95 · oos_retention -0.191<0.5 무조건FAIL · calmar 0.362<0.64) — 신호 실재, overlay 결합 미측정 축 재라우팅 (/improve-drain R1)",
-      "status": "measured",
-      "ab_result_ref": {
-        "result_path": "06_Registry/overlay_ab_results/STR_AS_20260612_154914_1055315.json",
+      "ab_result": {
+        "candidate_id": "STR_AS_20260612_154914_1055315",
         "measured_at": "2026-08-17T16:45:17+0900",
-        "harness": "02_Infrastructure/regime/overlay_candidate_drain.R (overlay_candidate_ab_lh 규약 generic화)"
-      }
+        "metric_type": "backtested_monthly_agg",
+        "tier": "screen_diagnostic",
+        "harness": "02_Infrastructure/regime/overlay_candidate_drain.R (overlay_candidate_ab_lh 규약 generic화)",
+        "adapter": "bt_result_rds",
+        "cost_bps_oneway": 15,
+        "overlay_cost_model": "*_cost = 월별 |Δexposure|×15bps one-way 추가 차감 (cost_model v2.4 delta-based, PG2 recovery-override 규약). 첫 월 Δ=0(fill=첫 exposure).",
+        "pit_guard": {
+          "assert_overlay_pit": "PASS(HARD)",
+          "strict_exposure_identical": true,
+          "strict_ab_inflation": 0,
+          "strict_ab_lookahead_suspected": false,
+          "strict_ab_message": "[overlay_pit_guard] uni_cat abs_SR (current vs strict-PIT): current=0.8890 strict=0.8890 인플레=0.0% → clean"
+        },
+        "note": "screen-tier A/B — 자본게이트 아님. 판정은 paired 증분 NW-t(비율 비교 금지). unified_regime_signal walk-forward 미보증 → lag1 스트레스 의무.",
+        "scenarios": [
+          {
+            "scenario": "bare",
+            "n_months": 257,
+            "abs_SR": 0.86992,
+            "abs_CAGR": 0.191028,
+            "abs_MDD": -0.449091,
+            "IR": 0.501334,
+            "PORT_t": 2.091616,
+            "active_SR": 0.501334,
+            "oos_ret_v2": -0.195042,
+            "calmar": 0.425365,
+            "avg_exposure": 1,
+            "cost_applied": false,
+            "avg_abs_dexp_m": 0,
+            "ov_cost_ann_bps": 0
+          },
+          {
+            "scenario": "uni_cat",
+            "n_months": 257,
+            "abs_SR": 0.888981,
+            "abs_CAGR": 0.181728,
+            "abs_MDD": -0.408215,
+            "IR": 0.406998,
+            "PORT_t": 1.739412,
+            "active_SR": 0.406998,
+            "oos_ret_v2": -0.331905,
+            "calmar": 0.445178,
+            "avg_exposure": 0.95214,
+            "cost_applied": false,
+            "avg_abs_dexp_m": 0.032685,
+            "ov_cost_ann_bps": 5.883268
+          },
+          {
+            "scenario": "uni_cat_cost",
+            "n_months": 257,
+            "abs_SR": 0.886359,
+            "abs_CAGR": 0.181046,
+            "abs_MDD": -0.409625,
+            "IR": 0.403401,
+            "PORT_t": 1.722147,
+            "active_SR": 0.403401,
+            "oos_ret_v2": -0.338259,
+            "calmar": 0.44198,
+            "avg_exposure": 0.95214,
+            "cost_applied": true,
+            "avg_abs_dexp_m": 0.032685,
+            "ov_cost_ann_bps": 5.883268
+          },
+          {
+            "scenario": "uni_cat_lag1",
+            "n_months": 257,
+            "abs_SR": 0.830728,
+            "abs_CAGR": 0.169383,
+            "abs_MDD": -0.41712,
+            "IR": 0.34361,
+            "PORT_t": 1.365962,
+            "active_SR": 0.34361,
+            "oos_ret_v2": -0.467683,
+            "calmar": 0.406077,
+            "avg_exposure": 0.954475,
+            "cost_applied": false,
+            "avg_abs_dexp_m": 0.032685,
+            "ov_cost_ann_bps": 5.883268
+          },
+          {
+            "scenario": "uni_cat_lag1_cost",
+            "n_months": 257,
+            "abs_SR": 0.828318,
+            "abs_CAGR": 0.168721,
+            "abs_MDD": -0.418465,
+            "IR": 0.33991,
+            "PORT_t": 1.349911,
+            "active_SR": 0.33991,
+            "oos_ret_v2": -0.473852,
+            "calmar": 0.40319,
+            "avg_exposure": 0.954475,
+            "cost_applied": true,
+            "avg_abs_dexp_m": 0.032685,
+            "ov_cost_ann_bps": 5.883268
+          },
+          {
+            "scenario": "voltgt",
+            "n_months": 257,
+            "abs_SR": 0.9107,
+            "abs_CAGR": 0.178149,
+            "abs_MDD": -0.378355,
+            "IR": 0.383717,
+            "PORT_t": 1.583057,
+            "active_SR": 0.383717,
+            "oos_ret_v2": -0.412517,
+            "calmar": 0.47085,
+            "avg_exposure": 0.887014,
+            "cost_applied": false,
+            "avg_abs_dexp_m": 0.028872,
+            "ov_cost_ann_bps": 5.196932
+          },
+          {
+            "scenario": "voltgt_cost",
+            "n_months": 257,
+            "abs_SR": 0.908207,
+            "abs_CAGR": 0.177547,
+            "abs_MDD": -0.378561,
+            "IR": 0.380399,
+            "PORT_t": 1.569068,
+            "active_SR": 0.380399,
+            "oos_ret_v2": -0.417431,
+            "calmar": 0.469005,
+            "avg_exposure": 0.887014,
+            "cost_applied": true,
+            "avg_abs_dexp_m": 0.028872,
+            "ov_cost_ann_bps": 5.196932
+          },
+          {
+            "scenario": "voltgt_lag1",
+            "n_months": 257,
+            "abs_SR": 0.929951,
+            "abs_CAGR": 0.185076,
+            "abs_MDD": -0.378498,
+            "IR": 0.427499,
+            "PORT_t": 1.771608,
+            "active_SR": 0.427499,
+            "oos_ret_v2": -0.354226,
+            "calmar": 0.488974,
+            "avg_exposure": 0.889113,
+            "cost_applied": false,
+            "avg_abs_dexp_m": 0.028809,
+            "ov_cost_ann_bps": 5.185533
+          },
+          {
+            "scenario": "voltgt_lag1_cost",
+            "n_months": 257,
+            "abs_SR": 0.927419,
+            "abs_CAGR": 0.184468,
+            "abs_MDD": -0.378705,
+            "IR": 0.424185,
+            "PORT_t": 1.757348,
+            "active_SR": 0.424185,
+            "oos_ret_v2": -0.359097,
+            "calmar": 0.487103,
+            "avg_exposure": 0.889113,
+            "cost_applied": true,
+            "avg_abs_dexp_m": 0.028809,
+            "ov_cost_ann_bps": 5.185533
+          }
+        ],
+        "paired_nw": [
+          {
+            "scenario": "uni_cat",
+            "n": 257,
+            "paired_nw_t_lag3": -1.256793,
+            "mean_d_monthly": -0.00101,
+            "dSR": 0.019061,
+            "dMDD": 0.040877,
+            "d_PORT_t": -0.352205
+          },
+          {
+            "scenario": "uni_cat_cost",
+            "n": 257,
+            "paired_nw_t_lag3": -1.30967,
+            "mean_d_monthly": -0.001059,
+            "dSR": 0.016439,
+            "dMDD": 0.039467,
+            "d_PORT_t": -0.369469
+          },
+          {
+            "scenario": "uni_cat_lag1",
+            "n": 257,
+            "paired_nw_t_lag3": -1.841274,
+            "mean_d_monthly": -0.001816,
+            "dSR": -0.039192,
+            "dMDD": 0.031971,
+            "d_PORT_t": -0.725654
+          },
+          {
+            "scenario": "uni_cat_lag1_cost",
+            "n": 257,
+            "paired_nw_t_lag3": -1.874785,
+            "mean_d_monthly": -0.001865,
+            "dSR": -0.041602,
+            "dMDD": 0.030626,
+            "d_PORT_t": -0.741705
+          },
+          {
+            "scenario": "voltgt",
+            "n": 257,
+            "paired_nw_t_lag3": -1.746341,
+            "mean_d_monthly": -0.001462,
+            "dSR": 0.04078,
+            "dMDD": 0.070736,
+            "d_PORT_t": -0.508559
+          },
+          {
+            "scenario": "voltgt_cost",
+            "n": 257,
+            "paired_nw_t_lag3": -1.794771,
+            "mean_d_monthly": -0.001506,
+            "dSR": 0.038287,
+            "dMDD": 0.07053,
+            "d_PORT_t": -0.522548
+          },
+          {
+            "scenario": "voltgt_lag1",
+            "n": 257,
+            "paired_nw_t_lag3": -1.193079,
+            "mean_d_monthly": -0.000922,
+            "dSR": 0.060031,
+            "dMDD": 0.070593,
+            "d_PORT_t": -0.320008
+          },
+          {
+            "scenario": "voltgt_lag1_cost",
+            "n": 257,
+            "paired_nw_t_lag3": -1.248025,
+            "mean_d_monthly": -0.000965,
+            "dSR": 0.057499,
+            "dMDD": 0.070387,
+            "d_PORT_t": -0.334269
+          }
+        ],
+        "crisis_conditional": [
+          {
+            "crisis": false,
+            "n": 230,
+            "bare_mean": 0.017245,
+            "uni_mean": 0.017245
+          },
+          {
+            "crisis": true,
+            "n": 27,
+            "bare_mean": 0.013913,
+            "uni_mean": 0.004301
+          }
+        ],
+        "lag1_stress": {
+          "uni_cat": {
+            "mdd_improve_base": -0.040877,
+            "mdd_improve_lag1": -0.031971,
+            "dSR_base": 0.019061,
+            "dSR_lag1": -0.039192
+          },
+          "voltgt": {
+            "mdd_improve_base": -0.070736,
+            "mdd_improve_lag1": -0.070593,
+            "dSR_base": 0.04078,
+            "dSR_lag1": 0.060031
+          },
+          "uni_cat_cost": {
+            "mdd_improve_base": -0.039467,
+            "mdd_improve_lag1": -0.030626,
+            "dSR_base": 0.016439,
+            "dSR_lag1": -0.041602
+          },
+          "voltgt_cost": {
+            "mdd_improve_base": -0.07053,
+            "mdd_improve_lag1": -0.070387,
+            "dSR_base": 0.038287,
+            "dSR_lag1": 0.057499
+          }
+        },
+        "verdict": {
+          "rule_version": "dv_v1",
+          "basis": "screen_diagnostic — 자본게이트 판정 아님 (HARD 3종/governor 불변)",
+          "verdict": "INFERIOR",
+          "best_scenario": "voltgt_lag1",
+          "best_paired_nw_t_lag3": -1.193079,
+          "lag1_scenario": "voltgt_lag1",
+          "lag1_paired_t": -1.193079,
+          "n_selection": 8,
+          "null_max_t": 2.0393,
+          "reason": "best paired NW-t -1.193 <= 0 — bare 대비 개선 없음",
+          "judged_at": "2026-08-17T16:45:17+0900",
+          "judged_by": "drain_main"
+        }
+      },
+      "status": "measured"
     },
     {
       "id": "STR_AS_20260612_161342_1312338",
@@ -5400,12 +5997,299 @@
       "metric_type": "registry_record",
       "bt_result_path": "stage_artifacts/alpha_search/20260612_161342_1312338/bt_result.rds",
       "disposition_note": "HARD 3종 전패 (registry_record: PORT_t 2.353<2.95 · oos_retention -0.128<0.5 무조건FAIL · calmar 0.313<0.64) — 신호 실재, overlay 결합 미측정 축 재라우팅 (/improve-drain R1)",
-      "status": "measured",
-      "ab_result_ref": {
-        "result_path": "06_Registry/overlay_ab_results/STR_AS_20260612_161342_1312338.json",
+      "ab_result": {
+        "candidate_id": "STR_AS_20260612_161342_1312338",
         "measured_at": "2026-08-17T16:45:30+0900",
-        "harness": "02_Infrastructure/regime/overlay_candidate_drain.R (overlay_candidate_ab_lh 규약 generic화)"
-      }
+        "metric_type": "backtested_monthly_agg",
+        "tier": "screen_diagnostic",
+        "harness": "02_Infrastructure/regime/overlay_candidate_drain.R (overlay_candidate_ab_lh 규약 generic화)",
+        "adapter": "bt_result_rds",
+        "cost_bps_oneway": 15,
+        "overlay_cost_model": "*_cost = 월별 |Δexposure|×15bps one-way 추가 차감 (cost_model v2.4 delta-based, PG2 recovery-override 규약). 첫 월 Δ=0(fill=첫 exposure).",
+        "pit_guard": {
+          "assert_overlay_pit": "PASS(HARD)",
+          "strict_exposure_identical": true,
+          "strict_ab_inflation": 0,
+          "strict_ab_lookahead_suspected": false,
+          "strict_ab_message": "[overlay_pit_guard] uni_cat abs_SR (current vs strict-PIT): current=0.7854 strict=0.7854 인플레=0.0% → clean"
+        },
+        "note": "screen-tier A/B — 자본게이트 아님. 판정은 paired 증분 NW-t(비율 비교 금지). unified_regime_signal walk-forward 미보증 → lag1 스트레스 의무.",
+        "scenarios": [
+          {
+            "scenario": "bare",
+            "n_months": 257,
+            "abs_SR": 0.78644,
+            "abs_CAGR": 0.168973,
+            "abs_MDD": -0.460217,
+            "IR": 0.472846,
+            "PORT_t": 2.111289,
+            "active_SR": 0.472846,
+            "oos_ret_v2": -0.174811,
+            "calmar": 0.36716,
+            "avg_exposure": 1,
+            "cost_applied": false,
+            "avg_abs_dexp_m": 0,
+            "ov_cost_ann_bps": 0
+          },
+          {
+            "scenario": "uni_cat",
+            "n_months": 257,
+            "abs_SR": 0.785377,
+            "abs_CAGR": 0.152737,
+            "abs_MDD": -0.406381,
+            "IR": 0.295518,
+            "PORT_t": 1.305355,
+            "active_SR": 0.295518,
+            "oos_ret_v2": -0.354031,
+            "calmar": 0.375848,
+            "avg_exposure": 0.95214,
+            "cost_applied": false,
+            "avg_abs_dexp_m": 0.032685,
+            "ov_cost_ann_bps": 5.883268
+          },
+          {
+            "scenario": "uni_cat_cost",
+            "n_months": 257,
+            "abs_SR": 0.7827,
+            "abs_CAGR": 0.152071,
+            "abs_MDD": -0.406381,
+            "IR": 0.29127,
+            "PORT_t": 1.285174,
+            "active_SR": 0.29127,
+            "oos_ret_v2": -0.3632,
+            "calmar": 0.374209,
+            "avg_exposure": 0.95214,
+            "cost_applied": true,
+            "avg_abs_dexp_m": 0.032685,
+            "ov_cost_ann_bps": 5.883268
+          },
+          {
+            "scenario": "uni_cat_lag1",
+            "n_months": 257,
+            "abs_SR": 0.715231,
+            "abs_CAGR": 0.138678,
+            "abs_MDD": -0.447067,
+            "IR": 0.211484,
+            "PORT_t": 0.883081,
+            "active_SR": 0.211484,
+            "oos_ret_v2": -0.590146,
+            "calmar": 0.310194,
+            "avg_exposure": 0.954475,
+            "cost_applied": false,
+            "avg_abs_dexp_m": 0.032685,
+            "ov_cost_ann_bps": 5.883268
+          },
+          {
+            "scenario": "uni_cat_lag1_cost",
+            "n_months": 257,
+            "abs_SR": 0.712801,
+            "abs_CAGR": 0.138035,
+            "abs_MDD": -0.448345,
+            "IR": 0.207253,
+            "PORT_t": 0.864453,
+            "active_SR": 0.207253,
+            "oos_ret_v2": -0.599538,
+            "calmar": 0.307876,
+            "avg_exposure": 0.954475,
+            "cost_applied": true,
+            "avg_abs_dexp_m": 0.032685,
+            "ov_cost_ann_bps": 5.883268
+          },
+          {
+            "scenario": "voltgt",
+            "n_months": 257,
+            "abs_SR": 0.756631,
+            "abs_CAGR": 0.142412,
+            "abs_MDD": -0.410572,
+            "IR": 0.223704,
+            "PORT_t": 0.961396,
+            "active_SR": 0.223704,
+            "oos_ret_v2": -0.585413,
+            "calmar": 0.346861,
+            "avg_exposure": 0.89657,
+            "cost_applied": false,
+            "avg_abs_dexp_m": 0.028311,
+            "ov_cost_ann_bps": 5.095899
+          },
+          {
+            "scenario": "voltgt_cost",
+            "n_months": 257,
+            "abs_SR": 0.754179,
+            "abs_CAGR": 0.141838,
+            "abs_MDD": -0.411031,
+            "IR": 0.219976,
+            "PORT_t": 0.945199,
+            "active_SR": 0.219976,
+            "oos_ret_v2": -0.593138,
+            "calmar": 0.345079,
+            "avg_exposure": 0.89657,
+            "cost_applied": true,
+            "avg_abs_dexp_m": 0.028311,
+            "ov_cost_ann_bps": 5.095899
+          },
+          {
+            "scenario": "voltgt_lag1",
+            "n_months": 257,
+            "abs_SR": 0.776744,
+            "abs_CAGR": 0.148513,
+            "abs_MDD": -0.405284,
+            "IR": 0.270126,
+            "PORT_t": 1.173754,
+            "active_SR": 0.270126,
+            "oos_ret_v2": -0.51624,
+            "calmar": 0.366443,
+            "avg_exposure": 0.898791,
+            "cost_applied": false,
+            "avg_abs_dexp_m": 0.028297,
+            "ov_cost_ann_bps": 5.093514
+          },
+          {
+            "scenario": "voltgt_lag1_cost",
+            "n_months": 257,
+            "abs_SR": 0.774256,
+            "abs_CAGR": 0.147933,
+            "abs_MDD": -0.405744,
+            "IR": 0.266346,
+            "PORT_t": 1.157002,
+            "active_SR": 0.266346,
+            "oos_ret_v2": -0.523772,
+            "calmar": 0.364597,
+            "avg_exposure": 0.898791,
+            "cost_applied": true,
+            "avg_abs_dexp_m": 0.028297,
+            "ov_cost_ann_bps": 5.093514
+          }
+        ],
+        "paired_nw": [
+          {
+            "scenario": "uni_cat",
+            "n": 257,
+            "paired_nw_t_lag3": -1.735595,
+            "mean_d_monthly": -0.00164,
+            "dSR": -0.001063,
+            "dMDD": 0.053835,
+            "d_PORT_t": -0.805933
+          },
+          {
+            "scenario": "uni_cat_cost",
+            "n": 257,
+            "paired_nw_t_lag3": -1.777897,
+            "mean_d_monthly": -0.001689,
+            "dSR": -0.003739,
+            "dMDD": 0.053835,
+            "d_PORT_t": -0.826115
+          },
+          {
+            "scenario": "uni_cat_lag1",
+            "n": 257,
+            "paired_nw_t_lag3": -2.211979,
+            "mean_d_monthly": -0.002539,
+            "dSR": -0.071208,
+            "dMDD": 0.01315,
+            "d_PORT_t": -1.228208
+          },
+          {
+            "scenario": "uni_cat_lag1_cost",
+            "n": 257,
+            "paired_nw_t_lag3": -2.238239,
+            "mean_d_monthly": -0.002588,
+            "dSR": -0.073639,
+            "dMDD": 0.011871,
+            "d_PORT_t": -1.246836
+          },
+          {
+            "scenario": "voltgt",
+            "n": 257,
+            "paired_nw_t_lag3": -2.603744,
+            "mean_d_monthly": -0.00249,
+            "dSR": -0.029808,
+            "dMDD": 0.049645,
+            "d_PORT_t": -1.149893
+          },
+          {
+            "scenario": "voltgt_cost",
+            "n": 257,
+            "paired_nw_t_lag3": -2.645151,
+            "mean_d_monthly": -0.002532,
+            "dSR": -0.03226,
+            "dMDD": 0.049185,
+            "d_PORT_t": -1.16609
+          },
+          {
+            "scenario": "voltgt_lag1",
+            "n": 257,
+            "paired_nw_t_lag3": -2.257073,
+            "mean_d_monthly": -0.002008,
+            "dSR": -0.009696,
+            "dMDD": 0.054933,
+            "d_PORT_t": -0.937535
+          },
+          {
+            "scenario": "voltgt_lag1_cost",
+            "n": 257,
+            "paired_nw_t_lag3": -2.303095,
+            "mean_d_monthly": -0.00205,
+            "dSR": -0.012184,
+            "dMDD": 0.054472,
+            "d_PORT_t": -0.954287
+          }
+        ],
+        "crisis_conditional": [
+          {
+            "crisis": false,
+            "n": 230,
+            "bare_mean": 0.014422,
+            "uni_mean": 0.014422
+          },
+          {
+            "crisis": true,
+            "n": 27,
+            "bare_mean": 0.023375,
+            "uni_mean": 0.007765
+          }
+        ],
+        "lag1_stress": {
+          "uni_cat": {
+            "mdd_improve_base": -0.053835,
+            "mdd_improve_lag1": -0.01315,
+            "dSR_base": -0.001063,
+            "dSR_lag1": -0.071208
+          },
+          "voltgt": {
+            "mdd_improve_base": -0.049645,
+            "mdd_improve_lag1": -0.054933,
+            "dSR_base": -0.029808,
+            "dSR_lag1": -0.009696
+          },
+          "uni_cat_cost": {
+            "mdd_improve_base": -0.053835,
+            "mdd_improve_lag1": -0.011871,
+            "dSR_base": -0.003739,
+            "dSR_lag1": -0.073639
+          },
+          "voltgt_cost": {
+            "mdd_improve_base": -0.049185,
+            "mdd_improve_lag1": -0.054472,
+            "dSR_base": -0.03226,
+            "dSR_lag1": -0.012184
+          }
+        },
+        "verdict": {
+          "rule_version": "dv_v1",
+          "basis": "screen_diagnostic — 자본게이트 판정 아님 (HARD 3종/governor 불변)",
+          "verdict": "INFERIOR",
+          "best_scenario": "uni_cat",
+          "best_paired_nw_t_lag3": -1.735595,
+          "lag1_scenario": "uni_cat_lag1",
+          "lag1_paired_t": -2.211979,
+          "n_selection": 8,
+          "null_max_t": 2.0393,
+          "reason": "best paired NW-t -1.736 <= 0 — bare 대비 개선 없음",
+          "judged_at": "2026-08-17T16:45:30+0900",
+          "judged_by": "drain_main"
+        }
+      },
+      "status": "measured"
     },
     {
       "id": "STR_AS_20260612_143809_686286",
@@ -5419,12 +6303,299 @@
       "metric_type": "registry_record",
       "bt_result_path": "stage_artifacts/alpha_search/20260612_143809_686286/bt_result.rds",
       "disposition_note": "HARD 3종 전패 (registry_record: PORT_t 2.229<2.95 · oos_retention 0.082<0.5 무조건FAIL · calmar 0.308<0.64) — 신호 실재, overlay 결합 미측정 축 재라우팅 (/improve-drain R1)",
-      "status": "measured",
-      "ab_result_ref": {
-        "result_path": "06_Registry/overlay_ab_results/STR_AS_20260612_143809_686286.json",
+      "ab_result": {
+        "candidate_id": "STR_AS_20260612_143809_686286",
         "measured_at": "2026-08-17T16:45:43+0900",
-        "harness": "02_Infrastructure/regime/overlay_candidate_drain.R (overlay_candidate_ab_lh 규약 generic화)"
-      }
+        "metric_type": "backtested_monthly_agg",
+        "tier": "screen_diagnostic",
+        "harness": "02_Infrastructure/regime/overlay_candidate_drain.R (overlay_candidate_ab_lh 규약 generic화)",
+        "adapter": "bt_result_rds",
+        "cost_bps_oneway": 15,
+        "overlay_cost_model": "*_cost = 월별 |Δexposure|×15bps one-way 추가 차감 (cost_model v2.4 delta-based, PG2 recovery-override 규약). 첫 월 Δ=0(fill=첫 exposure).",
+        "pit_guard": {
+          "assert_overlay_pit": "PASS(HARD)",
+          "strict_exposure_identical": true,
+          "strict_ab_inflation": 0,
+          "strict_ab_lookahead_suspected": false,
+          "strict_ab_message": "[overlay_pit_guard] uni_cat abs_SR (current vs strict-PIT): current=0.7744 strict=0.7744 인플레=0.0% → clean"
+        },
+        "note": "screen-tier A/B — 자본게이트 아님. 판정은 paired 증분 NW-t(비율 비교 금지). unified_regime_signal walk-forward 미보증 → lag1 스트레스 의무.",
+        "scenarios": [
+          {
+            "scenario": "bare",
+            "n_months": 257,
+            "abs_SR": 0.785463,
+            "abs_CAGR": 0.181889,
+            "abs_MDD": -0.507452,
+            "IR": 0.437607,
+            "PORT_t": 1.872536,
+            "active_SR": 0.437607,
+            "oos_ret_v2": 0.024913,
+            "calmar": 0.358436,
+            "avg_exposure": 1,
+            "cost_applied": false,
+            "avg_abs_dexp_m": 0,
+            "ov_cost_ann_bps": 0
+          },
+          {
+            "scenario": "uni_cat",
+            "n_months": 257,
+            "abs_SR": 0.774384,
+            "abs_CAGR": 0.16404,
+            "abs_MDD": -0.457521,
+            "IR": 0.321918,
+            "PORT_t": 1.458778,
+            "active_SR": 0.321918,
+            "oos_ret_v2": -0.032918,
+            "calmar": 0.358542,
+            "avg_exposure": 0.95214,
+            "cost_applied": false,
+            "avg_abs_dexp_m": 0.032685,
+            "ov_cost_ann_bps": 5.883268
+          },
+          {
+            "scenario": "uni_cat_cost",
+            "n_months": 257,
+            "abs_SR": 0.771982,
+            "abs_CAGR": 0.16337,
+            "abs_MDD": -0.45931,
+            "IR": 0.318562,
+            "PORT_t": 1.44221,
+            "active_SR": 0.318562,
+            "oos_ret_v2": -0.037279,
+            "calmar": 0.355686,
+            "avg_exposure": 0.95214,
+            "cost_applied": true,
+            "avg_abs_dexp_m": 0.032685,
+            "ov_cost_ann_bps": 5.883268
+          },
+          {
+            "scenario": "uni_cat_lag1",
+            "n_months": 257,
+            "abs_SR": 0.71512,
+            "abs_CAGR": 0.150145,
+            "abs_MDD": -0.485736,
+            "IR": 0.257668,
+            "PORT_t": 1.086032,
+            "active_SR": 0.257668,
+            "oos_ret_v2": -0.221284,
+            "calmar": 0.309109,
+            "avg_exposure": 0.954475,
+            "cost_applied": false,
+            "avg_abs_dexp_m": 0.032685,
+            "ov_cost_ann_bps": 5.883268
+          },
+          {
+            "scenario": "uni_cat_lag1_cost",
+            "n_months": 257,
+            "abs_SR": 0.712808,
+            "abs_CAGR": 0.149491,
+            "abs_MDD": -0.487146,
+            "IR": 0.254199,
+            "PORT_t": 1.07055,
+            "active_SR": 0.254199,
+            "oos_ret_v2": -0.228555,
+            "calmar": 0.306871,
+            "avg_exposure": 0.954475,
+            "cost_applied": true,
+            "avg_abs_dexp_m": 0.032685,
+            "ov_cost_ann_bps": 5.883268
+          },
+          {
+            "scenario": "voltgt",
+            "n_months": 257,
+            "abs_SR": 0.752273,
+            "abs_CAGR": 0.147543,
+            "abs_MDD": -0.430666,
+            "IR": 0.227928,
+            "PORT_t": 0.994185,
+            "active_SR": 0.227928,
+            "oos_ret_v2": -0.350283,
+            "calmar": 0.342591,
+            "avg_exposure": 0.825207,
+            "cost_applied": false,
+            "avg_abs_dexp_m": 0.036035,
+            "ov_cost_ann_bps": 6.486281
+          },
+          {
+            "scenario": "voltgt_cost",
+            "n_months": 257,
+            "abs_SR": 0.749233,
+            "abs_CAGR": 0.146805,
+            "abs_MDD": -0.431287,
+            "IR": 0.224002,
+            "PORT_t": 0.97695,
+            "active_SR": 0.224002,
+            "oos_ret_v2": -0.358677,
+            "calmar": 0.340388,
+            "avg_exposure": 0.825207,
+            "cost_applied": true,
+            "avg_abs_dexp_m": 0.036035,
+            "ov_cost_ann_bps": 6.486281
+          },
+          {
+            "scenario": "voltgt_lag1",
+            "n_months": 257,
+            "abs_SR": 0.777189,
+            "abs_CAGR": 0.154591,
+            "abs_MDD": -0.409703,
+            "IR": 0.26589,
+            "PORT_t": 1.17027,
+            "active_SR": 0.26589,
+            "oos_ret_v2": -0.255548,
+            "calmar": 0.377324,
+            "avg_exposure": 0.827086,
+            "cost_applied": false,
+            "avg_abs_dexp_m": 0.035715,
+            "ov_cost_ann_bps": 6.428663
+          },
+          {
+            "scenario": "voltgt_lag1_cost",
+            "n_months": 257,
+            "abs_SR": 0.774247,
+            "abs_CAGR": 0.153859,
+            "abs_MDD": -0.410398,
+            "IR": 0.262045,
+            "PORT_t": 1.153142,
+            "active_SR": 0.262045,
+            "oos_ret_v2": -0.262998,
+            "calmar": 0.374901,
+            "avg_exposure": 0.827086,
+            "cost_applied": true,
+            "avg_abs_dexp_m": 0.035715,
+            "ov_cost_ann_bps": 6.428663
+          }
+        ],
+        "paired_nw": [
+          {
+            "scenario": "uni_cat",
+            "n": 257,
+            "paired_nw_t_lag3": -1.481024,
+            "mean_d_monthly": -0.001788,
+            "dSR": -0.011079,
+            "dMDD": 0.049931,
+            "d_PORT_t": -0.413758
+          },
+          {
+            "scenario": "uni_cat_cost",
+            "n": 257,
+            "paired_nw_t_lag3": -1.516487,
+            "mean_d_monthly": -0.001837,
+            "dSR": -0.013481,
+            "dMDD": 0.048142,
+            "d_PORT_t": -0.430326
+          },
+          {
+            "scenario": "uni_cat_lag1",
+            "n": 257,
+            "paired_nw_t_lag3": -2.056714,
+            "mean_d_monthly": -0.002677,
+            "dSR": -0.070343,
+            "dMDD": 0.021716,
+            "d_PORT_t": -0.786504
+          },
+          {
+            "scenario": "uni_cat_lag1_cost",
+            "n": 257,
+            "paired_nw_t_lag3": -2.082809,
+            "mean_d_monthly": -0.002726,
+            "dSR": -0.072655,
+            "dMDD": 0.020306,
+            "d_PORT_t": -0.801986
+          },
+          {
+            "scenario": "voltgt",
+            "n": 257,
+            "paired_nw_t_lag3": -2.574616,
+            "mean_d_monthly": -0.003317,
+            "dSR": -0.03319,
+            "dMDD": 0.076786,
+            "d_PORT_t": -0.878351
+          },
+          {
+            "scenario": "voltgt_cost",
+            "n": 257,
+            "paired_nw_t_lag3": -2.615747,
+            "mean_d_monthly": -0.003371,
+            "dSR": -0.03623,
+            "dMDD": 0.076165,
+            "d_PORT_t": -0.895586
+          },
+          {
+            "scenario": "voltgt_lag1",
+            "n": 257,
+            "paired_nw_t_lag3": -2.219497,
+            "mean_d_monthly": -0.002782,
+            "dSR": -0.008274,
+            "dMDD": 0.097749,
+            "d_PORT_t": -0.702266
+          },
+          {
+            "scenario": "voltgt_lag1_cost",
+            "n": 257,
+            "paired_nw_t_lag3": -2.261199,
+            "mean_d_monthly": -0.002835,
+            "dSR": -0.011216,
+            "dMDD": 0.097054,
+            "d_PORT_t": -0.719394
+          }
+        ],
+        "crisis_conditional": [
+          {
+            "crisis": false,
+            "n": 230,
+            "bare_mean": 0.015485,
+            "uni_mean": 0.015485
+          },
+          {
+            "crisis": true,
+            "n": 27,
+            "bare_mean": 0.027783,
+            "uni_mean": 0.010761
+          }
+        ],
+        "lag1_stress": {
+          "uni_cat": {
+            "mdd_improve_base": -0.049931,
+            "mdd_improve_lag1": -0.021716,
+            "dSR_base": -0.011079,
+            "dSR_lag1": -0.070343
+          },
+          "voltgt": {
+            "mdd_improve_base": -0.076786,
+            "mdd_improve_lag1": -0.097749,
+            "dSR_base": -0.03319,
+            "dSR_lag1": -0.008274
+          },
+          "uni_cat_cost": {
+            "mdd_improve_base": -0.048142,
+            "mdd_improve_lag1": -0.020306,
+            "dSR_base": -0.013481,
+            "dSR_lag1": -0.072655
+          },
+          "voltgt_cost": {
+            "mdd_improve_base": -0.076165,
+            "mdd_improve_lag1": -0.097054,
+            "dSR_base": -0.03623,
+            "dSR_lag1": -0.011216
+          }
+        },
+        "verdict": {
+          "rule_version": "dv_v1",
+          "basis": "screen_diagnostic — 자본게이트 판정 아님 (HARD 3종/governor 불변)",
+          "verdict": "INFERIOR",
+          "best_scenario": "uni_cat",
+          "best_paired_nw_t_lag3": -1.481024,
+          "lag1_scenario": "uni_cat_lag1",
+          "lag1_paired_t": -2.056714,
+          "n_selection": 8,
+          "null_max_t": 2.0393,
+          "reason": "best paired NW-t -1.481 <= 0 — bare 대비 개선 없음",
+          "judged_at": "2026-08-17T16:45:43+0900",
+          "judged_by": "drain_main"
+        }
+      },
+      "status": "measured"
     },
     {
       "id": "STR_AS_20260612_132740_321995",
@@ -5438,7 +6609,299 @@
       "metric_type": "registry_record",
       "bt_result_path": "stage_artifacts/alpha_search/20260612_132740_321995/bt_result.rds",
       "disposition_note": "HARD 3종 전패 (registry_record: PORT_t 2.215<2.95 · oos_retention -0.400<0.5 무조건FAIL · calmar 0.318<0.64) — 신호 실재, overlay 결합 미측정 축 재라우팅 (/improve-drain R1)",
-      "status": "queued"
+      "ab_result": {
+        "candidate_id": "STR_AS_20260612_132740_321995",
+        "measured_at": "2026-08-17T16:45:56+0900",
+        "metric_type": "backtested_monthly_agg",
+        "tier": "screen_diagnostic",
+        "harness": "02_Infrastructure/regime/overlay_candidate_drain.R (overlay_candidate_ab_lh 규약 generic화)",
+        "adapter": "bt_result_rds",
+        "cost_bps_oneway": 15,
+        "overlay_cost_model": "*_cost = 월별 |Δexposure|×15bps one-way 추가 차감 (cost_model v2.4 delta-based, PG2 recovery-override 규약). 첫 월 Δ=0(fill=첫 exposure).",
+        "pit_guard": {
+          "assert_overlay_pit": "PASS(HARD)",
+          "strict_exposure_identical": true,
+          "strict_ab_inflation": 0,
+          "strict_ab_lookahead_suspected": false,
+          "strict_ab_message": "[overlay_pit_guard] uni_cat abs_SR (current vs strict-PIT): current=0.8043 strict=0.8043 인플레=0.0% → clean"
+        },
+        "note": "screen-tier A/B — 자본게이트 아님. 판정은 paired 증분 NW-t(비율 비교 금지). unified_regime_signal walk-forward 미보증 → lag1 스트레스 의무.",
+        "scenarios": [
+          {
+            "scenario": "bare",
+            "n_months": 257,
+            "abs_SR": 0.801533,
+            "abs_CAGR": 0.16784,
+            "abs_MDD": -0.428775,
+            "IR": 0.408427,
+            "PORT_t": 1.622644,
+            "active_SR": 0.408427,
+            "oos_ret_v2": -0.414736,
+            "calmar": 0.391441,
+            "avg_exposure": 1,
+            "cost_applied": false,
+            "avg_abs_dexp_m": 0,
+            "ov_cost_ann_bps": 0
+          },
+          {
+            "scenario": "uni_cat",
+            "n_months": 257,
+            "abs_SR": 0.80435,
+            "abs_CAGR": 0.153257,
+            "abs_MDD": -0.348254,
+            "IR": 0.264992,
+            "PORT_t": 1.090673,
+            "active_SR": 0.264992,
+            "oos_ret_v2": -0.546549,
+            "calmar": 0.440072,
+            "avg_exposure": 0.95214,
+            "cost_applied": false,
+            "avg_abs_dexp_m": 0.032685,
+            "ov_cost_ann_bps": 5.883268
+          },
+          {
+            "scenario": "uni_cat_cost",
+            "n_months": 257,
+            "abs_SR": 0.801433,
+            "abs_CAGR": 0.152581,
+            "abs_MDD": -0.350392,
+            "IR": 0.261028,
+            "PORT_t": 1.072789,
+            "active_SR": 0.261028,
+            "oos_ret_v2": -0.554057,
+            "calmar": 0.435459,
+            "avg_exposure": 0.95214,
+            "cost_applied": true,
+            "avg_abs_dexp_m": 0.032685,
+            "ov_cost_ann_bps": 5.883268
+          },
+          {
+            "scenario": "uni_cat_lag1",
+            "n_months": 257,
+            "abs_SR": 0.72787,
+            "abs_CAGR": 0.140041,
+            "abs_MDD": -0.413474,
+            "IR": 0.197785,
+            "PORT_t": 0.755627,
+            "active_SR": 0.197785,
+            "oos_ret_v2": -0.682089,
+            "calmar": 0.338693,
+            "avg_exposure": 0.954475,
+            "cost_applied": false,
+            "avg_abs_dexp_m": 0.032685,
+            "ov_cost_ann_bps": 5.883268
+          },
+          {
+            "scenario": "uni_cat_lag1_cost",
+            "n_months": 257,
+            "abs_SR": 0.725214,
+            "abs_CAGR": 0.139385,
+            "abs_MDD": -0.415351,
+            "IR": 0.193844,
+            "PORT_t": 0.739841,
+            "active_SR": 0.193844,
+            "oos_ret_v2": -0.689847,
+            "calmar": 0.335584,
+            "avg_exposure": 0.954475,
+            "cost_applied": true,
+            "avg_abs_dexp_m": 0.032685,
+            "ov_cost_ann_bps": 5.883268
+          },
+          {
+            "scenario": "voltgt",
+            "n_months": 257,
+            "abs_SR": 0.753679,
+            "abs_CAGR": 0.140672,
+            "abs_MDD": -0.380376,
+            "IR": 0.197191,
+            "PORT_t": 0.785977,
+            "active_SR": 0.197191,
+            "oos_ret_v2": -0.745987,
+            "calmar": 0.369822,
+            "avg_exposure": 0.883915,
+            "cost_applied": false,
+            "avg_abs_dexp_m": 0.027548,
+            "ov_cost_ann_bps": 4.958643
+          },
+          {
+            "scenario": "voltgt_cost",
+            "n_months": 257,
+            "abs_SR": 0.751259,
+            "abs_CAGR": 0.140113,
+            "abs_MDD": -0.381235,
+            "IR": 0.193829,
+            "PORT_t": 0.772428,
+            "active_SR": 0.193829,
+            "oos_ret_v2": -0.753206,
+            "calmar": 0.367524,
+            "avg_exposure": 0.883915,
+            "cost_applied": true,
+            "avg_abs_dexp_m": 0.027548,
+            "ov_cost_ann_bps": 4.958643
+          },
+          {
+            "scenario": "voltgt_lag1",
+            "n_months": 257,
+            "abs_SR": 0.785401,
+            "abs_CAGR": 0.149109,
+            "abs_MDD": -0.363609,
+            "IR": 0.253423,
+            "PORT_t": 1.02433,
+            "active_SR": 0.253423,
+            "oos_ret_v2": -0.637422,
+            "calmar": 0.410081,
+            "avg_exposure": 0.885564,
+            "cost_applied": false,
+            "avg_abs_dexp_m": 0.027542,
+            "ov_cost_ann_bps": 4.957473
+          },
+          {
+            "scenario": "voltgt_lag1_cost",
+            "n_months": 257,
+            "abs_SR": 0.783001,
+            "abs_CAGR": 0.148547,
+            "abs_MDD": -0.364222,
+            "IR": 0.249996,
+            "PORT_t": 1.0103,
+            "active_SR": 0.249996,
+            "oos_ret_v2": -0.644478,
+            "calmar": 0.407847,
+            "avg_exposure": 0.885564,
+            "cost_applied": true,
+            "avg_abs_dexp_m": 0.027542,
+            "ov_cost_ann_bps": 4.957473
+          }
+        ],
+        "paired_nw": [
+          {
+            "scenario": "uni_cat",
+            "n": 257,
+            "paired_nw_t_lag3": -1.364295,
+            "mean_d_monthly": -0.001494,
+            "dSR": 0.002817,
+            "dMDD": 0.080521,
+            "d_PORT_t": -0.531971
+          },
+          {
+            "scenario": "uni_cat_cost",
+            "n": 257,
+            "paired_nw_t_lag3": -1.405088,
+            "mean_d_monthly": -0.001544,
+            "dSR": -0.0001,
+            "dMDD": 0.078383,
+            "d_PORT_t": -0.549855
+          },
+          {
+            "scenario": "uni_cat_lag1",
+            "n": 257,
+            "paired_nw_t_lag3": -2.07336,
+            "mean_d_monthly": -0.002277,
+            "dSR": -0.073663,
+            "dMDD": 0.015301,
+            "d_PORT_t": -0.867017
+          },
+          {
+            "scenario": "uni_cat_lag1_cost",
+            "n": 257,
+            "paired_nw_t_lag3": -2.105828,
+            "mean_d_monthly": -0.002326,
+            "dSR": -0.076319,
+            "dMDD": 0.013425,
+            "d_PORT_t": -0.882803
+          },
+          {
+            "scenario": "voltgt",
+            "n": 257,
+            "paired_nw_t_lag3": -2.581072,
+            "mean_d_monthly": -0.002422,
+            "dSR": -0.047854,
+            "dMDD": 0.048399,
+            "d_PORT_t": -0.836667
+          },
+          {
+            "scenario": "voltgt_cost",
+            "n": 257,
+            "paired_nw_t_lag3": -2.623355,
+            "mean_d_monthly": -0.002463,
+            "dSR": -0.050274,
+            "dMDD": 0.04754,
+            "d_PORT_t": -0.850216
+          },
+          {
+            "scenario": "voltgt_lag1",
+            "n": 257,
+            "paired_nw_t_lag3": -2.007693,
+            "mean_d_monthly": -0.001783,
+            "dSR": -0.016132,
+            "dMDD": 0.065167,
+            "d_PORT_t": -0.598314
+          },
+          {
+            "scenario": "voltgt_lag1_cost",
+            "n": 257,
+            "paired_nw_t_lag3": -2.053637,
+            "mean_d_monthly": -0.001824,
+            "dSR": -0.018532,
+            "dMDD": 0.064553,
+            "d_PORT_t": -0.612344
+          }
+        ],
+        "crisis_conditional": [
+          {
+            "crisis": false,
+            "n": 230,
+            "bare_mean": 0.014508,
+            "uni_mean": 0.014508
+          },
+          {
+            "crisis": true,
+            "n": 27,
+            "bare_mean": 0.020784,
+            "uni_mean": 0.006558
+          }
+        ],
+        "lag1_stress": {
+          "uni_cat": {
+            "mdd_improve_base": -0.080521,
+            "mdd_improve_lag1": -0.015301,
+            "dSR_base": 0.002817,
+            "dSR_lag1": -0.073663
+          },
+          "voltgt": {
+            "mdd_improve_base": -0.048399,
+            "mdd_improve_lag1": -0.065167,
+            "dSR_base": -0.047854,
+            "dSR_lag1": -0.016132
+          },
+          "uni_cat_cost": {
+            "mdd_improve_base": -0.078383,
+            "mdd_improve_lag1": -0.013425,
+            "dSR_base": -0.0001,
+            "dSR_lag1": -0.076319
+          },
+          "voltgt_cost": {
+            "mdd_improve_base": -0.04754,
+            "mdd_improve_lag1": -0.064553,
+            "dSR_base": -0.050274,
+            "dSR_lag1": -0.018532
+          }
+        },
+        "verdict": {
+          "rule_version": "dv_v1",
+          "basis": "screen_diagnostic — 자본게이트 판정 아님 (HARD 3종/governor 불변)",
+          "verdict": "INFERIOR",
+          "best_scenario": "uni_cat",
+          "best_paired_nw_t_lag3": -1.364295,
+          "lag1_scenario": "uni_cat_lag1",
+          "lag1_paired_t": -2.07336,
+          "n_selection": 8,
+          "null_max_t": 2.0393,
+          "reason": "best paired NW-t -1.364 <= 0 — bare 대비 개선 없음",
+          "judged_at": "2026-08-17T16:45:56+0900",
+          "judged_by": "drain_main"
+        }
+      },
+      "status": "measured"
     }
   ]
 }

@@ -1,0 +1,21 @@
+{
+  "l_code": "L-QPM-20260822_005809",
+  "strategy_id": "WT-D20260821_001_laneC_linear_control",
+  "grade": "C",
+  "core_reference": "stage_artifacts/WT-D20260821_001/laneC_result.json",
+  "lesson_text": "Lane C 선형 분위회귀 음성 대조 — 판정 PARTIAL(음성 대조 미확립). P1: ML vs 선형 3쌍 paired 전부 UNDERPOWERED(MDE 6.05~9.68%p vs 관측 -1.45~+6.00%p — armC 부록의 9.25%p 예측 재현, 외부 기준 sd 축 교차확인으로 sd-선택 산물 아님 확정). 확정 가능 서술 = '연 6.0~9.7%p 이상의 용량 효과 부재'. P2 FAIL: 표적 서열이 모델 계열을 건너 전이 안 됨(rho -0.50) — 표적-소비 기하 가설에 직접 불리. F3 PASS: 왜도-gap 연결(R32 cor -0.728)이 선형 계열에서도 재현(|d rho| 0.09) = GBM 산물 아닌 데이터 성질 — 기하 가설을 지지하는 유일한 등록-통과 관측. F1 은 등록 기준 FAIL 이나 공유 설계행렬 K_m 이 선형 arm 간 유사성을 강제한 교란 실측(ML-내부 대비 시 부호 역전 t +7.08) — 판정 미번복(사후 기준선 선택 거부), NP1 재등록 이관. ★공유 K_m 규약은 F1-류 중첩 비교에 재발하므로 재등록 전 보류. ★부수: 8-arm rank-IC-SR Spearman -0.21, L_q50 harvey-t +3.49 인데 PORT_t -0.14 — rank-IC 로 골랐으면 정확히 거꾸로(FQ-237 보강). ★무결성: 라운드 중 벤치 vintage 이동을 tolerance 완화 없이 ret_net 비트-동일 축으로 처리, 합성 패딩월(2026-09, 347종 Ret=0) 검거, 유혹 4건 명시 거부.",
+  "tags": ["LINEAR_NEGATIVE_CONTROL", "UNDERPOWERED_LABEL", "TARGET_GEOMETRY", "SHARED_DESIGN_CONFOUND", "RANK_IC_INVERSION", "LANE_C", "PREREG_DISCIPLINE"],
+  "created_at": "2026-08-22",
+  "research_mode": "qepm",
+  "created_by": "emit:qlead_wt001_collect",
+  "metric_type": "canonical_screen",
+  "lcode_schema_version": 2,
+  "screen_verdict": "PARTIAL_NEGATIVE_CONTROL_NOT_ESTABLISHED",
+  "p1_mean_t": -0.272,
+  "p1_q50_t": -0.48,
+  "p1_q90_t": 1.586,
+  "p2_spearman": -0.5,
+  "f3_rho_gap": 0.0901,
+  "mde_annual_range": "6.05~9.68%p",
+  "next_probe": "①NP1 F1 기준선 재등록(ML-내부 vs T, 공유 K_m 교란 제거 설계) ②NP2 선별-이전 축(스코어-수준)으로 해상도 회복 — WT-002 가 정확히 이 축 실측 중 ③NP3 q90 단독 고검정력 사전등록(관측 +6.00%p 가 MDE 7.56 에 근접 — 표본 확장/분산 축소로 도달 가능성) ④NP4 분산 결과량(L_mean 의 우위가 평균 아닌 분산·MDD 축이라는 관측)"
+}

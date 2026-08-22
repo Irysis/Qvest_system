@@ -1,0 +1,27 @@
+{
+  "prereg_id": "dfa_v12_prereg_20260822",
+  "created_at": "2026-08-22",
+  "created_before_any_result": true,
+  "fq_id": "FQ-239",
+  "round": "R13 — 후속·인접 문헌 반영 발전 라운드 (도훈 2026-08-22)",
+  "base": "A5E = broad-21 팩터 모멘텀, 연속가중(w ∝ act12+), 3-코호트 중첩 앙상블(위상 아티팩트 제거), 월말 결정→익월, 15bps. 실측 pt 2.894 / oos 0.706 / calmar 0.284 / MDD 0.453 / TO 2.45",
+  "literature_mapping": {
+    "B1": "Gupta-Kelly (RFS 2019) 'Factor Momentum Everywhere' + Ehsani-Linnainmaa (JF 2022) — §8-6이 인용한 A5E의 직계 계보. 표준 설계는 단일 12M이 아니라 다중 지평(1/3/6/12M) 신호의 결합. 우리는 12M 단일이며 6M·24M 단독은 열위였으나 결합은 미검",
+    "B2": "Gupta-Kelly 표준 — 신호를 팩터 변동성으로 표준화(risk-adjusted momentum). 변동성 큰 팩터가 크기 가중에서 과대대표되는 편향 제거",
+    "B3": "Bosancic-Nie-Mulvey (JFDS 2024) 대조군 — 절대수익 기반(액티브 아님). §7 지도가 'S1(액티브 전환)이 무엇과의 결별인지 보여주는 대조군'으로 지정. FM 문헌의 time-series momentum도 절대수익 기반이 표준",
+    "B4": "Shu-Yu-Mulvey (2024a) 익스포저 축소 기법을 **A5E 자체 신호**로 이식. R8/R9는 DFA의 mkt_jm 신호로 실패했으나 §8-1이 요구한 것은 '동일 국면 신호로 익스포저만 조절'이며, A5E의 국면 등가물은 모멘텀 breadth(양수 팩터 비율)다 — 미검 축"
+  },
+  "arms_prespecified": [
+    {"id": "A5E_base", "spec": "기준선 (변경 없음)", "dof": 0},
+    {"id": "B1_multihorizon", "spec": "다중 지평 결합: 각 팩터 f에 대해 h∈{1,3,6,12}개월 active 수익을 각각 해당 지평의 횡단면 표준편차로 표준화한 뒤 단순평균 → 그 값이 >0인 팩터에 값 비례 가중. 지평 집합·가중은 문헌 표준(등가중)으로 고정 — 사후 조정 금지", "dof": 1},
+    {"id": "B2_volscaled", "spec": "변동성 표준화: w_f ∝ act12_f / vol_f (vol = 결정 시점까지 trailing 12M 월별 active 수익 표준편차, 인과). 양수 필터는 동일", "dof": 1},
+    {"id": "B3_absolute", "spec": "절대 모멘텀 대조군: 신호를 active(팩터−시장)가 아니라 팩터 절대수익 trailing 12M > 0 로 교체. 가중은 동일(연속 비례). Bosancic 대조 + TS momentum 표준", "dof": 1},
+    {"id": "B4_breadth_exposure", "spec": "자체 신호 익스포저: breadth = (양수 모멘텀 팩터 수)/21 (결정 시점). exposure = 0.70 + 0.30×breadth (breadth 0→0.70, 1→1.00). 잔여 현금. 계수 0.30은 R8/R9와 동일 재사용(자유도 0), 신호원만 교체", "dof": 1}
+  ],
+  "adoption": "15bps에서 {pt 개선 AND MDD 비악화} 또는 {calmar 개선 AND pt 비열등(>=-0.1)} vs A5E_base. paired NW-t 병기. 전 셀 보고, argmax 금지",
+  "mandatory_gates_for_adopted": "채택 셀은 즉시 배터리(shift 사다리·placebo 30-seed·시대분해·비용 민감도) + essence 계약 채점 + 위상 앙상블 유지 확인",
+  "headline": "A5E_base 대비 각 축 단독. 조합 금지(자유도 분리)",
+  "n_trials_cumulative": 63,
+  "selection_type": "chain",
+  "pin_tag": "smv_r2_20260820 연장"
+}

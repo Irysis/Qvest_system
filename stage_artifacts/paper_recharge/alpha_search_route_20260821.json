@@ -1,0 +1,401 @@
+{
+  "date": "20260821",
+  "schema_version": "mode_queue_v1",
+  "counts_by_route": {
+    "alpha": 7,
+    "optimizer": 4,
+    "risk": 6,
+    "regime": 1,
+    "skip": 15
+  },
+  "n_factor_candidates": 2,
+  "testable_factors": [
+    {
+      "title": "Rough Volatility Across Assets",
+      "factor": "VOL_HURST",
+      "route": "risk"
+    },
+    {
+      "title": "The Science and Practice of Trend-Following Systems",
+      "factor": "ARFIMA_TSMOM",
+      "route": "alpha"
+    }
+  ],
+  "papers": [
+    {
+      "title": "When to Sell an Asset? - A Distribution Builder Approach",
+      "id": "2608.18783",
+      "source": "arxiv",
+      "route": "optimizer",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "자산 매도 최적 타이밍 - 분포 빌더(목표 수익분포 직접 지정) 기반. alpha-fixed 가중배분 A/B 테스트 대상."
+    },
+    {
+      "title": "The Market's Conditioning Representation: Equilibrium, Crowding, and Convention Multiplicity",
+      "id": "2608.18299",
+      "source": "arxiv",
+      "route": "risk",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "표현 선택이 가격 크라우딩 프리미엄 결정 - 위험모델 크라우딩 정의 확장 이론."
+    },
+    {
+      "title": "Entropic Value-at-Risk portfolio optimization for tempered stable Levy processes",
+      "id": "2608.18022",
+      "source": "arxiv",
+      "route": "risk",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "EVaR 기반 포트 최적화 - 비정규 tempered stable 분포 꼬리 모델링."
+    },
+    {
+      "title": "Self-Consistent Adjoint Policy Iteration for Constrained Dynamic Portfolio Choice",
+      "id": "2608.17808",
+      "source": "arxiv",
+      "route": "optimizer",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "연속시간 제약 포트 선택을 자기일관 adjoint 반복법으로 풀음 - RL 기반 동적 비중 결정."
+    },
+    {
+      "title": "Communicating Credit Risk with Large Language Models",
+      "id": "2608.17715",
+      "source": "arxiv",
+      "route": "skip",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "신용리스크 설명가능성 - KR 주식 횡단면 투자 범위 외."
+    },
+    {
+      "title": "A generic nonparametric value-at-risk estimator for high dimensions",
+      "id": "2608.17481",
+      "source": "arxiv",
+      "route": "risk",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "고차원 비모수 VaR+CVaR 추정기 - 내장 차원축소로 공분산 추정 개선."
+    },
+    {
+      "title": "Conservation of Short-term Flows: Signed Optimal Transport",
+      "id": "2608.17363",
+      "source": "arxiv",
+      "route": "risk",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "서명 최적수송 이론 프레임 - 자금흐름 보존법칙 기반 리스크 정량화."
+    },
+    {
+      "title": "zLend: A Dual-Scope Cash-Flow Reconstruction Framework for On-Chain Credit Underwriting",
+      "id": "2608.16856",
+      "source": "arxiv",
+      "route": "skip",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "블록체인 온체인 신용 - 암호화폐/DeFi, KR 주식 범위 외."
+    },
+    {
+      "title": "When ratios fall: A dynamic approach to contingent convertibles",
+      "id": "2608.16842",
+      "source": "arxiv",
+      "route": "skip",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "CoCo 채권 가격결정 - 채권/파생상품, KR 주식 범위 외."
+    },
+    {
+      "title": "Rough Volatility Across Assets",
+      "id": "2608.16749",
+      "source": "arxiv",
+      "route": "risk",
+      "kr_feasible": true,
+      "factor_candidate": {
+        "name": "VOL_HURST",
+        "def": "일별 실현변동성(일간 로그수익률 제곱)의 rolling 252일 Hurst 지수(R/S 분석 또는 DFA). 횡단면 단면에서 H 낮은(rough) vs 높은(persistent) 종목의 수익률 차이 검증. 부호: 실증 의존(low-H premium 가설).",
+        "novel": true,
+        "kr_feasible": true,
+        "verdict": "testable",
+        "confidence": 0.8
+      },
+      "reason": "3926개 미국 주식 Hurst 지수 실증 - 개별주식 변동성 거칠기 계량화. route=risk이나 testable 팩터 내장."
+    },
+    {
+      "title": "Self-Supervised Auxiliary Task Discovery for Stable Reinforcement Learning in Stock Trading",
+      "id": "2608.15841",
+      "source": "arxiv",
+      "route": "alpha",
+      "kr_feasible": false,
+      "factor_candidate": {
+        "name": null,
+        "def": null,
+        "novel": null,
+        "kr_feasible": false,
+        "verdict": "infeasible",
+        "confidence": 0.0,
+        "note": "RL 정책 내부학습 - 단순 팩터 추출 불가. 전체 RL 파이프라인 필요"
+      },
+      "reason": "RL 기반 주식 매매 - SATD로 안정적 정책 학습. 횡단면 종목 선택 RL 전략."
+    },
+    {
+      "title": "Behavioral Participating Insurance: Optimal Investment under Probability Distortion and Aspiration Constraints",
+      "id": "2608.15743",
+      "source": "arxiv",
+      "route": "skip",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "보험계약자 최적투자 - 보험계리, KR 주식 범위 외."
+    },
+    {
+      "title": "Scalable Pontryagin-Guided Adjoint-to-Control Recovery for Constrained Dynamic Portfolio Choice",
+      "id": "2608.15667",
+      "source": "arxiv",
+      "route": "optimizer",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "Paper 4의 확장판 - Pontryagin 원리 기반 제약 포트 choice의 scalable 구현."
+    },
+    {
+      "title": "Detecting Money Laundering in Rwandan Mobile Money: A Machine Learning Framework",
+      "id": "2608.15447",
+      "source": "arxiv",
+      "route": "skip",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "르완다 모바일머니 AML - 신흥국 fintech, KR 주식 범위 외."
+    },
+    {
+      "title": "Is the medium the message? Social disclosure channels and firm risk",
+      "id": "2608.15212",
+      "source": "arxiv",
+      "route": "alpha",
+      "kr_feasible": true,
+      "factor_candidate": {
+        "name": "DART_DISCL_CHANNEL",
+        "def": "DART 공시의 최초 vs 계속 공시 여부 + 공시 채널 분류(의무/자율). 전년도 동기 대비 채널 전환이 다음달 특이리스크 예측. KR: DART 공시 분류코드 경유.",
+        "novel": true,
+        "kr_feasible": true,
+        "verdict": "uncertain",
+        "confidence": 0.55,
+        "note": "DART 공시분류코드로 채널 구분 가능 여부 미확인 - infra 확인 필요"
+      },
+      "reason": "공시 채널(SEC/지속가능보고서/재무제표) 선택이 특이적 리스크와 연계 - 공시 채널 팩터화 가능."
+    },
+    {
+      "title": "Disclosed Human-Capital Disruption and Firm-Specific Risk",
+      "id": "2608.14859",
+      "source": "arxiv",
+      "route": "alpha",
+      "kr_feasible": false,
+      "factor_candidate": {
+        "name": null,
+        "def": null,
+        "novel": null,
+        "kr_feasible": false,
+        "verdict": "infeasible",
+        "confidence": 0.0,
+        "note": "한국어 실적발표 컨퍼런스콜 NLP 인프라 부재 - alt-data"
+      },
+      "reason": "실적발표 컨퍼런스콜 텍스트 -> 인적자본 혼란 측정 -> 특이리스크 예측."
+    },
+    {
+      "title": "Dependence-Informed Sparse Neural Architecture for Stock Return Prediction",
+      "id": "2608.14323",
+      "source": "arxiv",
+      "route": "alpha",
+      "kr_feasible": true,
+      "factor_candidate": {
+        "name": "MFCF_CLUSTER_SIGNAL",
+        "def": "MFCF로 팩터 클러스터 구조 추정 후 클러스터별 합성신호 생성. KR 팩터DB로 의존구조 추정 가능.",
+        "novel": true,
+        "kr_feasible": true,
+        "verdict": "uncertain",
+        "confidence": 0.5,
+        "note": "전체 MFCF+HNN 훈련 필요 - 단순 팩터 추출 어려움"
+      },
+      "reason": "MFCF로 팩터 간 의존구조 추정 -> HNN 아키텍처 생성 - 횡단면 수익률 예측."
+    },
+    {
+      "title": "Buy the Rumor, Sell the News: When Is News Priced In?",
+      "id": "2608.14014",
+      "source": "arxiv",
+      "route": "alpha",
+      "kr_feasible": true,
+      "factor_candidate": {
+        "name": "DART_PREDISCL_DRIFT",
+        "def": "DART 공시일 기준 -5~-1일 누적수익률(사전드리프트) vs +1~+5일 수익률(사후반전) 비율. 사전드리프트 높은 종목 = 정보누출 프록시 -> 사후 저수익 예측.",
+        "novel": true,
+        "kr_feasible": true,
+        "verdict": "uncertain",
+        "confidence": 0.6,
+        "note": "DART 공시 날짜로 구현 가능하나 intraday 공시 시간 불명 시 same-day PIT 리스크(C2/C3)"
+      },
+      "reason": "뉴스 발표 전후 가격 반영 비율 실증 - 공시-수익률 타이밍 팩터."
+    },
+    {
+      "title": "Dynamic Physical Hedging amid Jump Losses, Reconstruction-Price Uncertainty, Population Interactions",
+      "id": "2608.13745",
+      "source": "arxiv",
+      "route": "skip",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "보험사 재해손실 헤지 - 보험계리/파생, KR 주식 범위 외."
+    },
+    {
+      "title": "Fee Implied Volatility on Uniswap v3: A DEX Native Proxy and Its Limits",
+      "id": "2608.13340",
+      "source": "arxiv",
+      "route": "skip",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "Uniswap v3 수수료 기반 내재변동성 - 암호화폐/DeFi, KR 주식 범위 외."
+    },
+    {
+      "title": "LOB-ID: Evaluating Synthetic Market Data by Inception Distances",
+      "id": "2608.13082",
+      "source": "arxiv",
+      "route": "skip",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "LOB 합성 시장데이터 평가 - HFT/마이크로구조, KR 주식 범위 외."
+    },
+    {
+      "title": "Physical Extinction and Long-Run Pricing under Time-Varying Beliefs",
+      "id": "2608.12777",
+      "source": "arxiv",
+      "route": "skip",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "시변 신념 채권 장기수익 이론 - 채권이론, KR 주식 범위 외."
+    },
+    {
+      "title": "The Price of Permission: Classification Uncertainty in Constrained Capital Markets",
+      "id": "2608.12634",
+      "source": "arxiv",
+      "route": "alpha",
+      "kr_feasible": false,
+      "factor_candidate": {
+        "name": "ESG_CLASS_UNCERTAINTY",
+        "def": "다중 ESG 평가기관 간 등급 불일치도를 투자자 기반 변동성 프록시로 사용.",
+        "novel": true,
+        "kr_feasible": false,
+        "verdict": "infeasible",
+        "confidence": 0.0,
+        "note": "다중 ESG 공급사 데이터 미보유"
+      },
+      "reason": "샤리아 분류 불확실성이 투자자 기반 변동 -> 수익률 예측 - 분류불확실성 팩터화."
+    },
+    {
+      "title": "Large Language Model-Driven Small-Capitalization Trading",
+      "id": "2608.12283",
+      "source": "arxiv",
+      "route": "optimizer",
+      "kr_feasible": true,
+      "factor_candidate": {
+        "name": "UNCERTAINTY_COV_ADJUST",
+        "def": "모델 예측 불확실성을 공분산 보정에 활용하는 구조. LLM 없이 앙상블 분산으로 불확실성 추정 가능.",
+        "novel": true,
+        "kr_feasible": true,
+        "verdict": "uncertain",
+        "confidence": 0.55,
+        "note": "신호 측은 LLM 의존(infeasible); 공분산 보정 구조만 추출하면 optimizer 소스"
+      },
+      "reason": "LLM 불확실성 분해(aleatoric+epistemic)를 공분산 행렬에 직접 주입 - 불확실성 인식 공분산 구성."
+    },
+    {
+      "title": "Regime-Gated Residual Mixture-of-Experts for Cross-Sectional Volatility Forecasting",
+      "id": "2608.12251",
+      "source": "arxiv",
+      "route": "risk",
+      "kr_feasible": true,
+      "factor_candidate": {
+        "name": "REGIME_RVOL_RESIDUAL",
+        "def": "국면 조건부 예측 모델의 횡단면 잔차(예측 초과 실현 변동성). 잔차 낮은 종목 = 리스크 과대평가 -> alpha 기회.",
+        "novel": true,
+        "kr_feasible": true,
+        "verdict": "uncertain",
+        "confidence": 0.45,
+        "note": "전체 MoE 시스템 구현 필요"
+      },
+      "reason": "국면조건부 잔차 MoE로 횡단면 5일 실현변동성 예측(1027개 미국 주식) - 리스크 모델 개선."
+    },
+    {
+      "title": "AI-Driven Multiscenario Interest Rate Forecasting",
+      "id": "2608.12424",
+      "source": "arxiv",
+      "route": "regime",
+      "kr_feasible": true,
+      "factor_candidate": null,
+      "reason": "다시나리오 금리 예측(계량모형+AI) - 매크로 레짐 입력신호(금리 국면 예측) 소스."
+    },
+    {
+      "title": "Joint Lyapunov Certificates for K-Agent Generative AI Governance",
+      "id": "2608.09087",
+      "source": "arxiv",
+      "route": "skip",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "다중 AI 에이전트 거버넌스 안정성 수학 이론 - 투자 팩터 범위 외."
+    },
+    {
+      "title": "AI Governance for Institutional Readiness in Finance",
+      "id": "2608.02311",
+      "source": "arxiv",
+      "route": "skip",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "금융기관 AI 거버넌스 실무 프레임워크 - 규제/컴플라이언스, 투자 팩터 범위 외."
+    },
+    {
+      "title": "Optimal Trading of Microstructure Mean Reversion",
+      "id": "2608.00885",
+      "source": "arxiv",
+      "route": "skip",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "초단기 중간가 평균회귀 최적매매 - HFT/마이크로구조 intraday, KR 주식 범위 외."
+    },
+    {
+      "title": "Forcing and duality-corrected contracts for volatility control",
+      "id": "2607.27039",
+      "source": "arxiv",
+      "route": "skip",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "주인-대리인 볼동성 제어 계약 최적 인센티브(2BSDE) - 계약이론/제어, 투자 팩터 범위 외."
+    },
+    {
+      "title": "OpenMarket: A Synchronized Polymarket-Binance Dataset",
+      "id": "2607.26245",
+      "source": "arxiv",
+      "route": "skip",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "Polymarket-Binance 동기화 데이터셋(BTC HFT) - 암호화폐/예측시장, KR 주식 범위 외."
+    },
+    {
+      "title": "Quantum Transformer BSDE Solver via Multi-Layer Fully-Connected Variational Quantum Circuits",
+      "id": "2607.25162",
+      "source": "arxiv",
+      "route": "skip",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "양자 변환기 기반 고차원 PDE 풀이 - 양자컴퓨팅 이론, 실용 투자 범위 외."
+    },
+    {
+      "title": "The Science and Practice of Trend-Following Systems",
+      "id": "2607.19497",
+      "source": "arxiv",
+      "route": "alpha",
+      "kr_feasible": true,
+      "factor_candidate": {
+        "name": "ARFIMA_TSMOM",
+        "def": "월별 변동성 표준화 수익률(r_t/sigma_t)의 rolling 자기상관 구조 기반 모멘텀. 구현: (1) 종목별 12개월 변동성 표준화 월간 수익률 (2) 분산비 VR(K)=Var(K-period)/(K*Var(1-period)) 추정 (3) VR>1 종목에 12-1 MOM 적용, VR<=1 종목 제외 또는 반전. 해석: VR>1=양의 자기상관=추세 적합=모멘텀 신호 유효.",
+        "novel": true,
+        "kr_feasible": true,
+        "verdict": "testable",
+        "confidence": 0.72
+      },
+      "reason": "추세추종 3분류 통합이론 - ARFIMA 자기상관 구조 기반 변동성 표준화 모멘텀 신호."
+    }
+  ]
+}

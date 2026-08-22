@@ -1,0 +1,53 @@
+{
+  "date": "20260821",
+  "n_input": 5,
+  "promoted": [],
+  "confirmed_infeasible": [
+    {
+      "paper_id": "2608.15212",
+      "factor_name": "DART_DISCL_CHANNEL",
+      "title": "Is the medium the message? Social disclosure channels and firm risk",
+      "verdict": "infeasible",
+      "reason": "design_mismatch_risk_not_alpha + alt_data_nlp. (1) 논문 대상 = S&P 1,500(미국). KR 대응경로 DART 공시채널(지속가능보고서·사업보고서·수시공시)을 사회적 이슈(인적자본·제품책임·이해관계자 참여)로 분류하려면 한국어 NLP 파이프라인 필수 — 당사 factor_db·DART 인프라 미보유. (2) 논문 종속변수 = 비체계적 위험(idiosyncratic risk ΔRVOL), 수익 예측(alpha) 아님. 레지스트리 373개 전수에 disclosure/esg/social/channel 키워드 히트 0건 = 신규 데이터 필요. (3) 최초 공시 → 위험 증가, 지속 공시 → 위험 감소 패턴은 장기 리스크 모델 입력 가능성은 있으나 월간 long-only alpha 방향성 미정립. revival_condition: DART ESG NLP 파이프라인 구축 시.",
+      "in_our_inventory": false,
+      "closest_existing": "없음(ESG/disclosure 계열 팩터 전무)"
+    },
+    {
+      "paper_id": "2608.14323",
+      "factor_name": "MFCF_CLUSTER_SIGNAL",
+      "title": "Dependence-Informed Sparse Neural Architecture for Stock Return Prediction",
+      "verdict": "infeasible",
+      "reason": "architecture_not_factor + settled_negative_ml_aggregator. (1) 논문 기여 = 94개 팩터 간 의존구조를 Maximally Filtered Clique Forest(MFCF)로 추정 → 클리크 구조를 Homological Neural Network(HNN) 아키텍처에 매핑. 신호 자체가 HNN 출력(기존 팩터 선형조합 이상) — 독립 신규 팩터 아님. (2) 우리 DB의 기존 팩터들(V01~V20, Q01~Q08 등 373개)이 HNN 입력. MFCF '클러스터 신호'를 별도 팩터로 추출하면 결합기(ML aggregator) 구조 → settled-negative(126 실측 중 MDD≤25% 충족 0/84). (3) 미국 1987~2016 데이터, KR 94 특성 확보 가능성 미검증. (4) 아키텍처 선택 논문이므로 standalone 팩터 사용은 batch_434 날조 가이드라인 해당. revival_condition: KR 팩터 의존구조 MFCF 분석 후 도출된 개별 노드(팩터) 선택이 독립 alpha 가설로 정립될 경우.",
+      "in_our_inventory": false,
+      "closest_existing": "D58_Vol_Asymmetry(cluster 키워드 우연 히트 — 메커니즘 무관)"
+    },
+    {
+      "paper_id": "2608.14014",
+      "factor_name": "DART_PREDISCL_DRIFT",
+      "title": "Buy the Rumor, Sell the News: When Is News Priced In?",
+      "verdict": "infeasible",
+      "reason": "redundant_implementable_subset + alt_data_for_distinguishing_element. 논문 핵심 발견 3개 레이어 분해: (A) 공시 전 선행 드리프트(루머 효과) — 공시일 기준 20일 전부터 뉴스 방향으로 누적수익률이 집중, 공시일까지 2.8배 이후 감소. 이 신호 구성에는 비공식 정보 유통 시점(SNS·뉴스 소셜 타임스탬프) 필요 — KR 인프라 부재. (B) 하드뉴스(실적·배당·가이던스) PEAD: 공시 후 수주간 방향 지속. 이 성분은 C01_SUE·C04_ESBR·C05_ESCR·C18_Earnings_CAR_3d·C19_Composite_Earnings 등 대규모 earnings-catalyst 패밀리에서 이미 커버. (C) 소프트뉴스(제품출시·인사·매크로 논평) 역전: 이벤트 유형 분류에 LLM 17-태그 분류기 필수 — KR 한국어 뉴스 코퍼스 미보유. 구현 가능한 서브셋(B)은 기존 팩터와 redundant. 구별 요소(A·C)는 alt-data 의존. next_probe: DART 이벤트 유형별(영업보고서 vs 수시공시 vs 정기공시) 공시 후 수익 드리프트 기간 차이 → FQ 신설 후보.",
+      "in_our_inventory": false,
+      "closest_existing": "C01_SUE, C04_ESBR, C05_ESCR, C18_Earnings_CAR_3d, C19_Composite_Earnings(PEAD 계열 커버)"
+    },
+    {
+      "paper_id": "2608.12283",
+      "factor_name": "UNCERTAINTY_COV_ADJUST",
+      "title": "Large Language Model-Driven Small-Capitalization Trading: Integrating Financial News Sentiment, Macroeconomic Indicators, and Technical Signals",
+      "verdict": "infeasible",
+      "reason": "pipeline_paper_not_factor + llm_inference_required + optimizer_methodology. (1) 논문 핵심 기여 = LLM 뉴스 감성 → 불확실성 분해(aleatorics/epistemic) → 공분산 행렬 직접 조정. 이는 alpha 신호가 아니라 포트폴리오 최적화(risk model) 방법론. (2) 신호 생성 전 단계에서 한국어 금융뉴스 LLM 실시간 추론 필수. (3) Russell 2000 소형주 전용 + 매크로 지표 3종 결합 — KR 이식 검증 전무. (4) SE01_Volatility_Uncertainty(consensus 분산)는 애널리스트 의견 분산 기반으로 완전 별개. (5) 순수 alpha trigger(매크로 미설명 이상 수익) 개념은 흥미하나 LLM 인프라 없이는 신호 추출 불가. revival_condition: KR 뉴스 LLM 감성 파이프라인 확보 후 불확실성 분해(conformal prediction 등) 별도 WT.",
+      "in_our_inventory": false,
+      "closest_existing": "SE01_Volatility_Uncertainty(개념 인접, 메커니즘 완전 상이)"
+    }
+  ],
+  "redundant": [],
+  "still_uncertain": [
+    {
+      "paper_id": "2608.12251",
+      "factor_name": "REGIME_RVOL_RESIDUAL",
+      "title": "Regime-Gated Residual Mixture-of-Experts for Cross-Sectional Volatility Forecasting",
+      "verdict": "still_uncertain",
+      "reason": "vol_forecasting_not_return_prediction + full_text_inaccessible. (1) 논문 목표 = 5일 RVol 예측 정확도(MSE/MAE) — 횡단면 수익 예측력 전무(IC·alpha·t-stat 언급 없음). RG-ResMoE 구조: base predictor(stock features → vol 예측) + gating network(regime 상태 → expert routing → residual correction). (2) 레지스트리 대조: D01_IdioVol(시장 잔차 vol), RE02_Vol_Regime_Pctile(레짐 내 백분위), D34~D40(RVol 변형 다수) — REGIME_RVOL_RESIDUAL = D03_RealVol − 레짐조건부 기대치 는 신규. (3) 단순화 버전 구현 가능성: D34_RealVol_21d + RE12_VIX_Regime_3State로 레짐별 rolling 중앙값 기대치 산출 → 잔차 팩터 구성 가능. (4) 미결 사항: ①HTML 전문 접근불가(Jina/MCP 402) → 정확한 입력 피처셋 미확인 ②레짐조건부 vol 잔차의 횡단면 수익 예측력 증거 없음 ③alpha 방향 불명(vol 잔차 고 → 위험 과소평가 premium? or 분산 평균회귀?) (5) 필요한 다음 단계: KR RAWDATA로 D34_RealVol_21d − (RE12 3상태 레짐별 rolling 중앙값) 잔차 계산 후 월간 IC + canonical_screen_bt 실측."
+    }
+  ]
+}

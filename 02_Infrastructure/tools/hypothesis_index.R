@@ -1160,16 +1160,23 @@ HI_QUERY_ALIAS <- list(
 #     기본. 전체 빌드 실측 ~2s. 재빌드 실패 시 기존 인덱스로 폴백 + 경고 — lookup은 항상 응답).
 # --------------------------------------------------------------------
 lookup_hypothesis <- function(keywords, index_path = HI_INDEX_PATH,
-                              max_rows = 30L, auto_rebuild = TRUE) {
+                              max_rows = 30L, auto_rebuild = TRUE,
+                              root = QM_ROOT) {
+  # ★root 이음매 (2026-08-22 신설): 인라인 재빌드/stale 검사가 index_path 와 무관하게
+  #   QM_ROOT 원천을 훑던 구조를 끊는다. 이것이 없으면 샌드박스 index_path 를 줘도
+  #   원천은 **생산 트리**를 읽어, 검사가 생산 원장을 만져야만 성립했다
+  #   (2026-08-22 감사 HLT-1: test_hypothesis_index_paper_lane T5 가 실
+  #    06_Registry/method_registry.json 을 변조 → 같은 배터리 후속 3 스위트가 그 가짜
+  #    method 를 실물로 소비). 라이브러리가 자기 루트를 인자로 소유해야 격리가 가능하다.
   if (!file.exists(index_path)) {
     stop("hypothesis_index.json not found — run build_hypothesis_index() first: ", index_path)
   }
-  stale <- .hi_stale_check(index_path, warn = !auto_rebuild)   # M6: 자동 재빌드 경로선 경고 억제
+  stale <- .hi_stale_check(index_path, root = root, warn = !auto_rebuild)   # M6: 자동 재빌드 경로선 경고 억제
   if (auto_rebuild && length(stale)) {
     message(sprintf("[hypothesis_index] stale 감지(%s) → 인라인 자동 재빌드",
                     paste(stale, collapse = ", ")))
     ok <- tryCatch({
-      build_hypothesis_index(out_path = index_path, verbose = FALSE)
+      build_hypothesis_index(root = root, out_path = index_path, verbose = FALSE)
       TRUE
     }, error = function(e) {
       message("[hypothesis_index][경고] 인라인 재빌드 실패 — 기존(stale) 인덱스로 진행: ",
@@ -1184,7 +1191,7 @@ lookup_hypothesis <- function(keywords, index_path = HI_INDEX_PATH,
     message("[hypothesis_index][경고] 인덱스 파싱 실패(손상 추정): ", conditionMessage(e),
             " → 강제 재빌드")
     ok <- tryCatch({
-      build_hypothesis_index(out_path = index_path, verbose = FALSE)
+      build_hypothesis_index(root = root, out_path = index_path, verbose = FALSE)
       TRUE
     }, error = function(e2) {
       message("[hypothesis_index][오류] 강제 재빌드 실패: ", conditionMessage(e2))

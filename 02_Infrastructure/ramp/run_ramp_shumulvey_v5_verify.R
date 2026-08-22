@@ -10,7 +10,11 @@ source("02_Infrastructure/validation/overlay_pit_guard.R")
 KEY<-Sys.getenv("SMV_KEY","f15")
 NPL<-as.integer(Sys.getenv("SMV_PLACEBO_N","30"))
 SKIP<-nzchar(Sys.getenv("SMV_SKIP_SUBRUNS",""))
-Z<-readRDS(sprintf(".cache/_smv_v5_%s.rds",KEY)); RES<-Z$RES
+.dfa_rds<-function(key){p<-sprintf(".cache/_dfa_v5_%s.rds",key); if(file.exists(p))p else sprintf(".cache/_smv_v5_%s.rds",key)}  # 개명 후 신규=dfa, 역사=smv fallback
+TESTARM<-Sys.getenv("SMV_TESTARM","D1")            # 검증 대상 팔 (D1 기본 | H1 = 조건부 케이던스)
+EXTRA_ENV<-Sys.getenv("SMV_EXTRA_ENV","")          # 하위실행 추가 env, "K=V;K2=V2" 형식 (예: SMV_H1_MODE=q95)
+.extra<-if(nzchar(EXTRA_ENV)){ kv<-strsplit(strsplit(EXTRA_ENV,";")[[1]],"="); setNames(lapply(kv,`[`,2),vapply(kv,`[`,"",1)) } else list()
+Z<-readRDS(.dfa_rds(KEY)); RES<-Z$RES
 nwt<-function(x){x<-x[is.finite(x)];if(length(x)<12)return(NA);m<-lm(x~1);as.numeric(coeftest(m,vcov=sandwich::NeweyWest(m,lag=3,prewhite=F))[1,3])}
 IRf<-function(x){x<-x[is.finite(x)];if(length(x)<6)return(NA);mean(x)/sd(x)*sqrt(12)}
 
@@ -18,6 +22,7 @@ hd<-function(a_,l_,t_,b_){ i<-RES$arm==a_ & RES$te==t_ & RES$cost_bps==b_ &
     (if(is.na(l_)) is.na(RES$lam_mult) else (!is.na(RES$lam_mult) & RES$lam_mult==l_))
   RES[which(i)][1] }
 run_engine<-function(kv){  # kv = named list of SMV_* values → 임시 .R 파일 경유 (Windows 인용 함정 회피 — shQuote는 자식에 리터럴 따옴표 전달로 즉사했음)
+  kv<-utils::modifyList(kv, .extra)
   tf<-tempfile(fileext=".R")
   writeLines(c(sprintf('Sys.setenv(%s="%s")',names(kv),unlist(kv)),
                'source("02_Infrastructure/ramp/run_ramp_shumulvey_v5_daily.R")'), tf)
@@ -34,7 +39,7 @@ suppressPackageStartupMessages(library(arrow))
 R<-as.data.table(read_parquet(Z$idxfile)); R[,Date:=as.Date(Date)]; setorder(R,Date); R<-R[is.finite(Market)]
 d<-R$Date; n<-length(d)
 ## D1: 결정일 T = d[t-2], 적용일 = d[t]
-assert_overlay_pit(d[1:(n-2)], d[3:n], label="v5_D1_T+2")
+assert_overlay_pit(d[1:(n-2)], d[3:n], label=sprintf("v5_%s_T+2",TESTARM))
 ## M0: 결정 = 월말 medates[mi], 적용 = 익월 첫 거래일
 me<-Z$medates; ym_all<-format(d,"%Y-%m"); firsts<-d[!duplicated(ym_all)]
 mfirst<-firsts[match(format(as.Date(paste0(substr(format(me,"%Y-%m"),1,7),"-01"))+32,"%Y-%m"),format(firsts,"%Y-%m"))]
@@ -45,7 +50,7 @@ cat("[게이트①] assert_overlay_pit PASS (D1 T+2 전수, M0 익월 전수)\n"
 ## ---- M0 ↔ D1 paired (헤드라인 셀: TE3, lm=1, 5/15bps) ----
 pair_tbl<-list()
 for(bps in c(5,15)){
-  m0<-hd("M0",NA,3,bps); d1<-hd("D1",1,3,bps)
+  m0<-hd("M0",NA,3,bps); d1<-hd(TESTARM,1,3,bps)
   if(!nrow(m0)||!nrow(d1)||is.null(m0$series[[1]])||is.null(d1$series[[1]])) next
   s0<-m0$series[[1]]; s1<-d1$series[[1]]
   mm<-intersect(substr(s0$months,1,7), s1$months)
@@ -66,14 +71,14 @@ PAIR<-rbindlist(pair_tbl); cat("\n[M0 vs D1 — 헤드라인 TE3]\n"); print(PAI
 fs<-RES$featset[1]
 if(!SKIP){
   for(sh in c(3,0)){
-    run_engine(list(SMV_IDXFILE=Z$idxfile, SMV_FEATSET=fs, SMV_ARMS="D1", SMV_LAMMULT="1",
+    run_engine(list(SMV_IDXFILE=Z$idxfile, SMV_FEATSET=fs, SMV_ARMS=TESTARM, SMV_LAMMULT="1",
                     SMV_TE="3", SMV_SHIFT=as.character(sh), SMV_KEY=sprintf("%s_sh%d",KEY,sh)))
   }
 }
 sh_rows<-list()
-for(sh in c(3,0)){ f<-sprintf(".cache/_smv_v5_%s_sh%d.rds",KEY,sh)
-  if(file.exists(f)){ r<-readRDS(f)$RES; r<-r[arm=="D1"&te==3]; sh_rows[[length(sh_rows)+1]]<-r[,!"series"] } }
-base_row<-RES[arm=="D1"&(!is.na(lam_mult)&lam_mult==1)&te==3,!"series"]
+for(sh in c(3,0)){ f<-.dfa_rds(sprintf("%s_sh%d",KEY,sh))
+  if(file.exists(f)){ r<-readRDS(f)$RES; r<-r[arm==TESTARM&te==3]; sh_rows[[length(sh_rows)+1]]<-r[,!"series"] } }
+base_row<-RES[arm==TESTARM&(!is.na(lam_mult)&lam_mult==1)&te==3,!"series"]
 SH<-rbindlist(c(list(base_row),sh_rows),fill=TRUE)
 cat("\n[게이트②③ — shift 사다리: 0(동월성 재현)/2(정본)/3(lag1)]\n"); print(SH[order(acct_shift)],digits=3)
 for(bps in c(5,15)){
@@ -88,20 +93,20 @@ for(bps in c(5,15)){
 ## ---- 게이트 ④: placebo (뷰 월-블록 셔플, 헤드라인 D1 TE3 lm1) ----
 if(!SKIP){
   for(sd in seq_len(NPL)){
-    f<-sprintf(".cache/_smv_v5_%s_p%d.rds",KEY,sd); if(file.exists(f))next
-    run_engine(list(SMV_IDXFILE=Z$idxfile, SMV_FEATSET=fs, SMV_ARMS="M0,D1", SMV_LAMMULT="1",
+    f<-.dfa_rds(sprintf("%s_p%d",KEY,sd)); if(file.exists(f))next
+    run_engine(list(SMV_IDXFILE=Z$idxfile, SMV_FEATSET=fs, SMV_ARMS=paste0("M0,",TESTARM), SMV_LAMMULT="1",
                     SMV_TE="3", SMV_PLACEBO_SEED=as.character(sd), SMV_KEY=sprintf("%s_p%d",KEY,sd)))
     cat(sprintf("  placebo %d/%d done\n",sd,NPL))
   }
 }
 pl<-list()
-for(sd in seq_len(NPL)){ f<-sprintf(".cache/_smv_v5_%s_p%d.rds",KEY,sd)
+for(sd in seq_len(NPL)){ f<-.dfa_rds(sprintf("%s_p%d",KEY,sd))
   if(file.exists(f)){ r<-readRDS(f)$RES; r<-r[te==3]; pl[[length(pl)+1]]<-r[,!"series"] } }
 if(length(pl)){
   PL<-rbindlist(pl,fill=TRUE)
-  for(armx in c("M0","D1")) for(bps in c(5,15)){
+  for(armx in c("M0",TESTARM)) for(bps in c(5,15)){
     real<-if(armx=="M0") RES[arm=="M0"&te==3&cost_bps==bps]$IR_vsEW
-          else RES[arm=="D1"&(!is.na(lam_mult)&lam_mult==1)&te==3&cost_bps==bps]$IR_vsEW
+          else RES[arm==TESTARM&(!is.na(lam_mult)&lam_mult==1)&te==3&cost_bps==bps]$IR_vsEW
     ps<-PL[arm==armx&cost_bps==bps]$IR_vsEW
     if(length(ps)&&length(real))cat(sprintf("[게이트④ placebo %s %dbps] real IR_vsEW=%.3f | placebo mean=%.3f sd=%.3f | p(placebo>=real)=%.3f (n=%d)\n",
         armx,bps,real,mean(ps,na.rm=TRUE),sd(ps,na.rm=TRUE),mean(ps>=real,na.rm=TRUE),length(ps)))

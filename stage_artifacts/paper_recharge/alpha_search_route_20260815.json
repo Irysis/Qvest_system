@@ -1,0 +1,359 @@
+{
+  "date": "20260815",
+  "schema_version": "route_v2",
+  "generated_at": "2026-08-22",
+  "source_files": [
+    "mcp_discovery_20260815.json"
+  ],
+  "generated_by": "Q-Lead session 2026-08-22 — 헤드리스 claude 인증 만료(401)로 무인 라우터 불가, 7일 창 이탈 직전 수동 배수",
+  "counts_by_route": {
+    "skip": 18,
+    "risk": 3,
+    "alpha": 4,
+    "optimizer": 2,
+    "regime": 2
+  },
+  "n_factor_candidates": 0,
+  "factor_candidates_summary": [],
+  "autorun_selected": [],
+  "papers": [
+    {
+      "title": "Fee Implied Volatility on Uniswap v3: A DEX Native Proxy and Its Limits",
+      "id": "arxiv:2608.13340",
+      "source": "arxiv",
+      "route": "skip",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "Uniswap v3 수수료 기반 내재변동성 - 암호화폐/DeFi, KR 주식 범위 외.",
+      "carried_from_prior_route": true
+    },
+    {
+      "title": "LOB-ID: Evaluating Synthetic Market Data by Inception Distances",
+      "id": "arxiv:2608.13082",
+      "source": "arxiv",
+      "route": "skip",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "LOB 합성 시장데이터 평가 - HFT/마이크로구조, KR 주식 범위 외.",
+      "carried_from_prior_route": true
+    },
+    {
+      "title": "Simulating Stress Laws under Extremal Dependence: Characterizing What Generative Models Must Preserve",
+      "id": "arxiv:2608.13056",
+      "source": "arxiv",
+      "published": "2026-08-13T10:21:07Z",
+      "route": "risk",
+      "kr_feasible": true,
+      "factor_candidate": null,
+      "reason": "다변량 heavy-tail 극단 의존 하 스트레스 시나리오 — tail/stress 모듈 후보. 현 Σ 진단의 극단영역 보강축",
+      "classified_by": "qlead_session_20260822"
+    },
+    {
+      "title": "Physical Extinction and Long-Run Pricing under Time-Varying Beliefs",
+      "id": "arxiv:2608.12777",
+      "source": "arxiv",
+      "route": "skip",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "시변 신념 채권 장기수익 이론 - 채권이론, KR 주식 범위 외.",
+      "carried_from_prior_route": true
+    },
+    {
+      "title": "The Price of Permission: Classification Uncertainty in Constrained Capital Markets",
+      "id": "arxiv:2608.12634",
+      "source": "arxiv",
+      "route": "alpha",
+      "kr_feasible": false,
+      "factor_candidate": {
+        "name": "ESG_CLASS_UNCERTAINTY",
+        "def": "다중 ESG 평가기관 간 등급 불일치도를 투자자 기반 변동성 프록시로 사용.",
+        "novel": true,
+        "kr_feasible": false,
+        "verdict": "infeasible",
+        "confidence": 0.0,
+        "note": "다중 ESG 공급사 데이터 미보유"
+      },
+      "reason": "샤리아 분류 불확실성이 투자자 기반 변동 -> 수익률 예측 - 분류불확실성 팩터화.",
+      "carried_from_prior_route": true
+    },
+    {
+      "title": "What Makes a Peer? Valuation-Anchored Similarity in Private Markets",
+      "id": "arxiv:2608.12594",
+      "source": "arxiv",
+      "published": "2026-08-12T21:06:51Z",
+      "route": "alpha",
+      "kr_feasible": true,
+      "factor_candidate": null,
+      "reason": "밸류에이션-앵커 peer 유사도. KR 상장주 업종-중립/peer-relative 밸류 신호로 직접 이전 가능 — 기존 '업종-중립 순이익률' 계열과 인접",
+      "classified_by": "qlead_session_20260822"
+    },
+    {
+      "title": "DYSANOS Generative Dynamic Smooth Arbitrage-free Non-parametric Option Surfaces",
+      "id": "arxiv:2608.12587",
+      "source": "arxiv",
+      "published": "2026-08-12T21:01:33Z",
+      "route": "skip",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "옵션 표면 생성모델 — 동일 사유(개별주 옵션 부재)",
+      "classified_by": "qlead_session_20260822"
+    },
+    {
+      "title": "Beyond the Skew-Stickiness Ratio: Transport Geometry of Spot-Driven Variance Surface Dynamics",
+      "id": "arxiv:2608.12493",
+      "source": "arxiv",
+      "published": "2026-08-12T18:16:58Z",
+      "route": "skip",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "내재변동성 표면 동역학. KR 개별주 옵션 시장 부재로 소비면 없음",
+      "classified_by": "qlead_session_20260822"
+    },
+    {
+      "title": "Large Language Model-Driven Small-Capitalization Trading",
+      "id": "arxiv:2608.12283",
+      "source": "arxiv",
+      "route": "optimizer",
+      "kr_feasible": true,
+      "factor_candidate": {
+        "name": "UNCERTAINTY_COV_ADJUST",
+        "def": "모델 예측 불확실성을 공분산 보정에 활용하는 구조. LLM 없이 앙상블 분산으로 불확실성 추정 가능.",
+        "novel": true,
+        "kr_feasible": true,
+        "verdict": "uncertain",
+        "confidence": 0.55,
+        "note": "신호 측은 LLM 의존(infeasible); 공분산 보정 구조만 추출하면 optimizer 소스"
+      },
+      "reason": "LLM 불확실성 분해(aleatoric+epistemic)를 공분산 행렬에 직접 주입 - 불확실성 인식 공분산 구성.",
+      "carried_from_prior_route": true
+    },
+    {
+      "title": "Calibration Bets on the Past: Post-Training Quantization for Financial Time-Series Forecasting",
+      "id": "arxiv:2608.12259",
+      "source": "arxiv",
+      "published": "2026-08-12T17:02:06Z",
+      "route": "skip",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "배포용 양자화(추론 비용) — 알파·위험 어느 축도 아님",
+      "classified_by": "qlead_session_20260822"
+    },
+    {
+      "title": "Regime-Gated Residual Mixture-of-Experts for Cross-Sectional Volatility Forecasting",
+      "id": "arxiv:2608.12251",
+      "source": "arxiv",
+      "route": "risk",
+      "kr_feasible": true,
+      "factor_candidate": {
+        "name": "REGIME_RVOL_RESIDUAL",
+        "def": "국면 조건부 예측 모델의 횡단면 잔차(예측 초과 실현 변동성). 잔차 낮은 종목 = 리스크 과대평가 -> alpha 기회.",
+        "novel": true,
+        "kr_feasible": true,
+        "verdict": "uncertain",
+        "confidence": 0.45,
+        "note": "전체 MoE 시스템 구현 필요"
+      },
+      "reason": "국면조건부 잔차 MoE로 횡단면 5일 실현변동성 예측(1027개 미국 주식) - 리스크 모델 개선.",
+      "carried_from_prior_route": true
+    },
+    {
+      "title": "Sectoral inter-dependencies drive the loss of structural balance in signed financial networks",
+      "id": "arxiv:2608.12023",
+      "source": "arxiv",
+      "published": "2026-08-12T12:59:54Z",
+      "route": "risk",
+      "kr_feasible": true,
+      "factor_candidate": null,
+      "reason": "부호그래프 구조균형으로 섹터 상호의존 붕괴를 포착 — crowding/공동위험 진단 축. KR 섹터 수익률로 구성 가능",
+      "classified_by": "qlead_session_20260822"
+    },
+    {
+      "title": "AI-Driven Multiscenario Interest Rate Forecasting",
+      "id": "arxiv:2608.12424",
+      "source": "arxiv",
+      "route": "regime",
+      "kr_feasible": true,
+      "factor_candidate": null,
+      "reason": "다시나리오 금리 예측(계량모형+AI) - 매크로 레짐 입력신호(금리 국면 예측) 소스.",
+      "carried_from_prior_route": true
+    },
+    {
+      "title": "Does a Structural Model Add Anything to the Closing Price? Calibrated forecasting, incremental information, and match leverage in the Italian Serie A",
+      "id": "arxiv:2608.11505",
+      "source": "arxiv",
+      "published": "2026-08-11T23:40:06Z",
+      "route": "skip",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "원 도메인이 축구 베팅. '시장가 대비 증분정보' 프레임은 이전 가능하나 KR 주식 대응 설계가 논문에 없음",
+      "classified_by": "qlead_session_20260822"
+    },
+    {
+      "title": "Governing Agentic AI in FinTech",
+      "id": "arxiv:2608.11344",
+      "source": "arxiv",
+      "published": "2026-08-11T18:52:09Z",
+      "route": "skip",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "AI 거버넌스 논설 — 횡단면 신호·위험모델·국면 어느 소비면에도 대응물 없음",
+      "classified_by": "qlead_session_20260822"
+    },
+    {
+      "title": "Long-Horizon Forecasting of Complete Financial Statements with Forma",
+      "id": "arxiv:2608.11327",
+      "source": "arxiv",
+      "published": "2026-08-11T18:21:19Z",
+      "route": "alpha",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "재무제표 장기예측→DCF 밸류. KR FUND 로 표적은 이전 가능하나 방법이 전용 대형모델 학습이라 현 환경(torch+cpu)에서 재현 불가 — 표적만 차용 시 재설계 필요",
+      "classified_by": "qlead_session_20260822"
+    },
+    {
+      "title": "Optimal Pricing and Hedging of SOFR Derivatives",
+      "id": "arxiv:2608.10711",
+      "source": "arxiv",
+      "route": "skip",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "SOFR 금리파생상품 가격결정·헤징 이론. KR 주식 횡단면 무관.",
+      "carried_from_prior_route": true
+    },
+    {
+      "title": "Objective-oriented quantitative investment: A specification-driven framework for automated synthesis of trading strategy pipelines",
+      "id": "arxiv:2608.10410",
+      "source": "arxiv",
+      "route": "optimizer",
+      "kr_feasible": true,
+      "shrinkage_builtin": "no",
+      "statistic_order": "<=2nd",
+      "screen_priority": "⭐",
+      "factor_candidate": null,
+      "reason": "전략 파이프라인을 명세(spec) 기반으로 합성하는 OOQI 프레임워크. 'pure stock-selection alpha / turnover·capacity budget' 등 측정가능 절(clause) 조합으로 전략 어셈블리 평가. optimizer-research가 α̂ 고정 A/B로 명세 만족률(satisfaction rate)을 비교하는 방식으로 소비 가능. 단 shrinkage 내장 없음 → ⭐ 조건부 우선.",
+      "carried_from_prior_route": true
+    },
+    {
+      "title": "Beyond Cash Flows: A Multi-Agent AI Framework for Valuing Clinical-Stage, Cross-Border Biotechnology",
+      "id": "arxiv:2608.10175",
+      "source": "arxiv",
+      "route": "skip",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "임상단계 바이오텍 LLM 멀티에이전트 가치평가 아키텍처. 크로스마켓·대체데이터 의존, KR 횡단면 팩터 없음.",
+      "carried_from_prior_route": true
+    },
+    {
+      "title": "Joint Lyapunov Certificates for K-Agent Generative AI Governance",
+      "id": "arxiv:2608.09087",
+      "source": "arxiv",
+      "route": "skip",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "생성AI 시스템 거버넌스 수학 프레임워크. 주식시장 무관.",
+      "carried_from_prior_route": true
+    },
+    {
+      "title": "Hybrid Neural-Classical Correction for Frozen Time Series Foundation Models: A Comprehensive Ablation Study on High-Frequency Stock Prediction",
+      "id": "arxiv:2608.08825",
+      "source": "arxiv",
+      "route": "skip",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "TimesFM+RF로 S&P500 개장시간(intraday) 수익 예측. 고빈도·US 시장. KR 월간 리밸 불가.",
+      "carried_from_prior_route": true
+    },
+    {
+      "title": "Retained hidden excess generates memory in price-limited markets",
+      "id": "arxiv:2608.08625",
+      "source": "arxiv",
+      "route": "alpha",
+      "kr_feasible": true,
+      "factor_candidate": {
+        "name": "circuit_hit_upper_ratio_21d",
+        "def": "최근 21 거래일(월말 PIT) 동안 Close_t >= prevClose_{t-1} × upper_limit_pct 를 만족하는 날의 비율. KR 상한가 = 2015-06-15 이전 ×1.15, 이후 ×1.30. 방향=higher_better(상한가 빈도가 높은 종목 = 잠재 숨은 잉여(retained excess)가 크며 다음 기간 수익 계속성 예측). 신호 부재(ratio=0) 대다수 → 오직 RAWDATA(Date/Ticker/Close) 필요. PIT lag: prevClose=t-1 lag. 장기계열 note: 2005~2015 구간 limit=1.15.",
+        "novel": true,
+        "kr_feasible": true,
+        "verdict": "testable",
+        "confidence": 0.72,
+        "sparsity_note": "KOSPI200 대형주는 월 21일 중 상한가 0회가 다수 → 신호 희소. KOSDAQ150 포함 시 더 분포. 희소 신호 검증: IC 대신 top-1분위(상한가 경험 종목) vs 0분위(미경험) 비교로 검증 보완 권장."
+      },
+      "reason": "가격제한(일일 서킷브레이커) 시장에서 상한가 마감 후 다음날 동일 부호 수익이 지속됨을 이론+실증으로 확인. KR은 ±30%(2015+) 일일가격제한이 있으며 본 논문의 기전이 직접 적용 가능. 팩터 DB에 circuit/상한가 관련 신호 없음(노벨 확인). AUTORUN 1번 슬롯.",
+      "carried_from_prior_route": true
+    },
+    {
+      "title": "AI Governance for Institutional Readiness in Finance",
+      "id": "arxiv:2608.02311",
+      "source": "arxiv",
+      "route": "skip",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "AI 거버넌스 프레임워크(4계층). crowding 모델·regret-covariance 통계는 감시 도구지 alpha 신호 아님. 운용 정책 논문.",
+      "carried_from_prior_route": true
+    },
+    {
+      "title": "Optimal Trading of Microstructure Mean Reversion",
+      "id": "arxiv:2608.00885",
+      "source": "arxiv",
+      "route": "skip",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "초단기(초) 마이크로스트럭처 mean-reversion HFT. intraday tick 데이터 필요. KR 조건 부적합.",
+      "carried_from_prior_route": true
+    },
+    {
+      "title": "Forcing and duality-corrected contracts for volatility control",
+      "id": "arxiv:2607.27039",
+      "source": "arxiv",
+      "route": "skip",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "연속시간 주인-대리인 문제 수학 이론. 종목 신호 없음.",
+      "carried_from_prior_route": true
+    },
+    {
+      "title": "OpenMarket: A Synchronized Polymarket-Binance Dataset for High-Frequency Prediction-Market Research",
+      "id": "arxiv:2607.26245",
+      "source": "arxiv",
+      "route": "skip",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "암호화폐 예측시장 데이터셋. KR 주식 범위 밖.",
+      "carried_from_prior_route": true
+    },
+    {
+      "title": "Quantum Transformer BSDE Solver via Multi-Layer Fully-Connected Variational Quantum Circuits",
+      "id": "arxiv:2607.25162",
+      "source": "arxiv",
+      "route": "skip",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "양자 컴퓨팅(VQC). 현재 인프라 불가.",
+      "carried_from_prior_route": true
+    },
+    {
+      "title": "The Science and Practice of Trend-Following Systems",
+      "id": "arxiv:2607.19497",
+      "source": "arxiv",
+      "route": "regime",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "trend-following systems taxonomy (European/American/TSMOM); long-only TF/overlay reference",
+      "carried_from_prior_route": true
+    },
+    {
+      "title": "Dead Reckoning: Counting Your Customers Who Never Say Goodbye",
+      "id": "arxiv:2607.18623",
+      "source": "arxiv",
+      "route": "skip",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "non-contractual customer-count (CLV) estimation; non-equity",
+      "carried_from_prior_route": true
+    }
+  ],
+  "curated_new": 0,
+  "curated_note": "세션 배수 — curated 미대상",
+  "metric_type": "classification_only",
+  "capital_claim": false
+}

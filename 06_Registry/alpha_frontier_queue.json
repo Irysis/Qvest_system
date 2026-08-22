@@ -1,7 +1,7 @@
 {
  "schema_version": "1.0",
  "sot": "02_Infrastructure/docs/qvest_v8_3_alpha_discovery_sot.md §4",
- "updated": "2026-08-13",
+ "updated": "20260822",
  "consume_rule": "새 발굴 리서치 착수 전: hypothesis_index lookup → 본 큐 확인 → owner/status 갱신. 완료 시 result_ref(L-code/보고서) 기입. dohoon_decision 항목은 세션 임의 착수 금지. ★세션 간 배정 규약(도훈 지시 2026-08-09): ①착수 전 owner 필드 확인 — 'CLAIMED' 면 착수 금지, 'UNCLAIMED' 면 자기 세션으로 CLAIMED 갱신 후 시작 ②신규 ID 는 **하드코딩 금지** — 원장 최대 번호+1 을 계산해 배정하고, 기록 후 **재읽기로 존재 확인** (2026-08-09 실사고: FQ-167/168 등재가 병렬 세션 선점과 충돌해 조용히 생략됐고 close_round 서술이 거짓이 됨 → FQ-169/170 재배정) ③close_round 의 frontier_update 는 **실제 기록 결과에서 파생**시킬 것(선언에서 파생 금지).",
  "entries": [
   {
@@ -23,8 +23,11 @@
    ],
    "last_round": "P0TEST_R2",
    "last_verdict": "config_scoped_negative",
-   "last_closed_at": "2026-08-20T22:23:25+0900",
-   "last_next_probe": ["probe A", "probe B"]
+   "last_closed_at": "2026-08-22T11:26:44+0900",
+   "last_next_probe": [
+    "probe A",
+    "probe B"
+   ]
   },
   {
    "id": "FQ-002",
@@ -5141,9 +5144,9 @@
    "ev_rationale": "D03 Q5-Q1 평균 스프레드 연 -5.10%(NW t -1.07) vs 중앙값 +12.01%(t +2.57) — **부호가 반대**. 분위별 횡단면 왜도 Q1 +0.96 -> Q5 +0.69. rank-IC(순위·이상치 둔감)와 PORT_t(평균·꼬리 지배)의 불일치가 비대칭의 지문. 평균 기반 선형 측정이 놓치는 구조가 실측으로 존재한다.",
    "wall_check": "IC->PORT_t 전이 벽. 단 이 lane 은 벽 자체를 재서술한다 — PORT_t 가 평균량이므로 '분위 표적이 PORT_t 로 전이되는가' 가 1급 질문.",
    "data_gate": "없음 — factor DB + RAWDATA 기존 보유. venv qvest_ml(LightGBM pinball / quantile regression).",
-   "owner": "CLAIMED — Q-Lead session 2026-08-13 (/qvest 부팅 세션). arm A 대조군 재측정부터 담당. 선행 세션의 착수 0항(수정 프레임 확립)을 승계하며 패널은 재구축하지 않는다 (stage_artifacts/fq233_probe0_20260813/master_panel_FIXED.rds).",
-   "status": "armA_reproduced_gate_passed__armBC_open",
-   "next_action": "★arm A 관문 통과(total net SR 0.6039 ∈ 밴드[0.30,0.70], 참조 0.493 · 198개월). 다음 = arm B(LightGBM pinball q10/q50/q90, primary=q50) · arm C(왜도·꼬리초과확률, CRPS). ★사전등록 필수 2항: ①basis 명시(arm A 가 active/total 혼동으로 판정 뒤집힐 뻔) ②하이퍼파라미터 탐색 시 selection_type=sweep + DSR>=0.5 HARD (arm A 의 chain 선언 승계 불가).",
+   "owner": "CLAIMED — Q-Lead session 2026-08-13 (/qvest 부팅 세션). arm A 대조군 재측정부터 담당. 선행 세션의 착수 0항(수정 프레임 확립)을 승계하며 패널은 재구축하지 않는다 (stage_artifacts/fq233_probe0_20260813/master_panel_FIXED.rds). → 2026-08-20 세션 8a45d0cf 승계: arm B 완료를 status 에 반영(원장 지연 정정)하고 arm C 착수 (PREREG_armC_20260820.md 발행·측정 전 고정. 인접 경계: WT-D20260813_001 q90 점예측과 분리). → 2026-08-21 arm C 수집·검정력 재라벨 완료 (세션 8a45d0cf).",
+   "status": "arc_settled__powered_null_breadth_scoped",
+   "next_action": "Lane A 아크 수렴(WT-D20260821_002): 표적 형태 교체(분위·꼬리확률)는 전 브레드스 스코어-수준 MDE 1.2%p 에서 POWERED_NULL, top-25 구간은 음수 방향(-0.71/-0.90%p). 기전 = 표적-지표-소비 함수 불일치(중앙값 스프레드는 벌고 평균 스프레드는 못 범). 부활 조건: ①평균-정합 선별 통계량 재서열(FQ-237 기전판)에서 전이 양성 시 ②rank 1-25 역-소비(하위 배제) 사전등록 라운드에서 유의 시. 자본화 경로는 이 두 관문 밖에서 재제안 금지(INV-7).",
    "source_refs": "02_Infrastructure/docs/qvest_v8_4_asymmetry_ml_sot.md",
    "prereg_stance": "착수 전 사전등록 입장 (SOT §8 '착수 전 필수 확인' 2항 = sweep/chain 확정). **기본값 = sweep + DSR>=0.5 HARD 적용**. 근거: SOT §7-4 가 'ML HPO·모델 grid 는 selection_type=sweep' 을 명시하고, arm B(LightGBM pinball q10/q50/q90)·arm C 는 하이퍼파라미터 선택을 수반한다. chain 으로 주장하려면 자격요건 3항(iteration 변경사유 기록 · 선택은 IS-only · holdout 최종 1회)을 전부 충족해야 하며, '파라미터 수가 적다'는 chain 근거가 아니다 — 판별 기준은 '이 값 바꿔가며 백테를 돌려봤나'다. 완화(=chain 재분류)는 도훈 승인 사항으로 남긴다.",
    "entry_gate": "arm A 재현이 관문: SOT §8-1 이 요구하는 SR ~0.49 대역을 수정 프레임에서 못 세우면 비교 기준선이 없으므로 arm B/C 미착수. ⚠구 프레임 arm A(PORT_t 26.89 · Hit_Ratio 1.000)는 앵커 규약 오류 산물로 무효 — 인용 금지.",
@@ -5175,9 +5178,9 @@
    "ev_rationale": "과거 126건이 죽은 자리 중 하나가 '결합기로서의 ML' 인데 그 라운드들은 정통 통계 대조군이 없어 무엇이 기여했는지 분해가 안 됐다. 대조군을 먼저 세우면 Lane A 판정의 해석력이 올라간다.",
    "wall_check": "IC->PORT_t 전이 벽 (동일).",
    "data_gate": "없음 — 기존 패널. R(quantreg/evir) 또는 venv qvest_ml.",
-   "owner": "UNCLAIMED — v8.4 재편(도훈 2026-08-13)으로 신설. 착수 전 owner 잠금 의무.",
-   "status": "frontier_open",
-   "next_action": "①Lane A 와 **동일 프레임**(같은 유니버스·기간·비용·평가자)으로 돌린다 — 프레임이 다르면 대비가 무효 ②EVT 는 표본이 꼬리로 갈수록 얇아지므로 유효표본(에피소드 수)을 먼저 센다 ③copula 꼬리의존은 쌍 수가 늘면 다중검정 — 사전등록 쌍 집합 고정 ④결과가 ML 과 갈리면 **어느 가정이 갈랐는지**까지 보고(성능 비교만으로 끝내지 말 것).",
+   "owner": "CLAIMED — Q-Lead session 8a45d0cf 2026-08-21 (도훈 지시: QEPM 모드 가동). QEPM 풀파이프라인 WT 로 착수 — alpha-hypothesis(fable) 가설설계부터. → 2026-08-22 round1 수집 완료 (세션 8a45d0cf).",
+   "status": "round1_done__negative_control_not_established",
+   "next_action": "WT-D20260821_001 완료(PARTIAL): P1 3쌍 UNDERPOWERED(확정 = 연 6.0~9.7%p+ 용량 효과 부재) · P2 FAIL(표적 서열 비전이 rho -0.50) · F3 PASS(왜도-gap 데이터 성질). next: NP1 F1 재등록 (공유 K_m 교란 제거) · NP3 q90 단독 고검정력 · EVT/copula 는 검정력 계약 선통과 시(C2 부활 신호 미발화). 해상도 축은 WT-D20260821_002 가 병렬 실측 중 — 그 판정과 교차 후 lane 재과녁.",
    "source_refs": "02_Infrastructure/docs/qvest_v8_4_asymmetry_ml_sot.md"
   },
   {
@@ -5188,11 +5191,26 @@
    "ev_rationale": "도훈 지시 2026-08-13 '매크로 데이터도 적극 활용해줘' + '이미 적재하고 있을텐데'. 실측 확인: 적재는 돌고 있다 — 2026-08-13 07:04~07:07 갱신, macro_fred/ecos_bond_rates/ecos_krw_usd/regime_daily_v2/unified_regime_signal_daily 전부 lag 1d. **신규 수집 불요, 소비 배관만 붙이면 된다.**",
    "wall_check": "IC->PORT_t 전이 벽 + 국면-조건부 검정력(분할이 유효표본을 에피소드 수로 붕괴시킴).",
    "data_gate": "없음(적재 중, 전 패널 FRESH). ★2026-08-13 자기정정 — 초판이 낸 '정체 4건' 중 2건은 오진: cache_registry.json 선언과 cache_freshness_latest.json(08-13 07:07) 을 읽으니 fred_macro_wide 는 lag_basis=content+trading_days 로 lag_used 4 <= max 4 FRESH, flow_features_daily 는 weekly/tier3/max_lag 90 계약에 lag_used 43 FRESH. ★기전 = 계약이 선언한 basis 가 아니라 내 calendar-day basis 로 재고 차이를 결함으로 읽음. 규약: 패널 신선도는 cache_registry 선언(schedule/max_lag_days/lag_basis)과 감사 lag_used 로 판정한다. [유효 잔존 2건] ①계열별 시차 불균질 23계열 lag 중앙 12d 범위 7~73d ②macro_regime 마지막 행이 진행 중인 달의 부분 관측(월말스탬프 320/320 이라 look-ahead 는 아니나 월중 조회 시 동월 look-ahead + 미확정 vintage). ★감사 사각 확인: freshness 는 data_lag=-18 을 lag_used=0 으로 clamp 해 FRESH 판정 = 미래-날짜 스탬프를 잡는 검사가 없다. [신규 2건] ③RAWDATA::value / benchmark::value VALUE_FAIL CRITICAL 은 **오탐 확정** — cap-weighted 재구성(t-1 Size 가중)으로 2026-07-31 저장 BM +0.1998 vs 재구성 +0.1843, 49거래일 cor 0.9989 · |gap| 중앙 0.0029 · |gap|>0.02 인 날 0/49. 저장 벤치는 구성종목과 정합하며 결함 아님. 검사기 쪽 문제 = 고정 문턱 |BM_Ret|>0.15 가 분포 이동 국면에서 실제 값을 결함으로 신고 ④2026년 벤치 일간 sd 0.0444 = 역사 0.0170 의 2.6배, 역사 |수익| 상위 8 중 4건이 2026년.",
-   "owner": "UNCLAIMED — v8.4 재편 도훈 추가 지시(2026-08-13)로 신설. 착수 전 owner 잠금 의무.",
-   "status": "frontier_open",
+   "owner": "CLAIMED - Q-Lead session d2e06481 2026-08-22 (/qvest + 도훈 지시 'QEPM 모드 가동'). QEPM 6-agent 풀파이프라인으로 착수 — alpha-hypothesis(fable) 가설설계부터. precheck_20260820 6항 승계(재측정 불요), 설계 = A2 연속회귀 + FRED 창 확장. 구 owner: UNCLAIMED — v8.4 재편 도훈 추가 지시(2026-08-13)로 신설. 착수 전 owner 잠금 의무.",
+   "status": "CLAIMED_20260822__qepm_wt_launching",
    "next_action": "★착수 0항(정정판): ①계열별 발표시차(C11) — 하나의 매크로 벡터로 묶으면 가장 느린 계열(73d)이 지배한다. 계열별로 다루거나 느린 계열 기준 지연 ②월말-스탬프 매크로는 홀딩월 시작 전 컷오프로 재매핑 + **진행 중인 월(마지막 행) 소비 금지** ③★**시대-분해 병기 의무** — 2026 변동성이 역사 2.6배라 최근 구간이 판정을 지배할 수 있다. 전기간 단일 수치로 결론 내지 말 것 ④★**연속 상태변수로 쓸 것** — 이분 라벨화는 (a)label_eligibility 관문(현재 p 단독·n-구동, 도훈 결정 대기) (b)유효표본을 개월수가 아니라 에피소드 수로 붕괴, 두 함정을 동시에 부른다 ⑤분할 전에 required_effect_size.R 검정력 ⑥Lane A 와 자유도 분리(조건변수 추가와 표적 교체를 같은 라운드에 섞지 말 것) ⑦판정 = canonical PORT_t(cap-w 1급, EW-uni 진단 병기).",
    "source_refs": "02_Infrastructure/docs/qvest_v8_4_asymmetry_ml_sot.md Lane D",
-   "handoff_smv_20260820": "[FQ-239 P2ⓑ 핸드오프 — 조건변수 후보 신규 공급] outputs/ramp/smv_factor_regime_daily.parquet (6팩터 × 5,087일, 2006~2026-08). 후보 = bear_prob 6종(연속, 상대근접도 c_bull/(c_bear+c_bull) — 자유도 0) + breadth(=6종 평균). PIT 규약: Date=T는 T종가 산출 신호 → effective_date(T+2)부터만 소비, 월간 프레임 컷오프 = 홀딩월 시작 2거래일 전, 결측일 locf, 진행월 소비 금지. C11 발표시차 없음(내생 계산 — 입력은 KR 종가뿐, US VIX 변형 미사용). ★연속변수 사용 의무(이분화 금지 — 본 next_action ④ 정합). 착수 전 required_effect_size.R 검정력 + 시대분해 병기 + Lane A 자유도 분리(⑥) 유지. 원 신호의 단독 배분 성과는 자본 게이트 전패(FQ-239 §6~8 — 단 위기월 조건부 반응성 실측 존재)이므로 '알파'가 아니라 조건변수로만 소비할 것."
+   "handoff_smv_20260820": "[FQ-239 P2ⓑ 핸드오프 — 조건변수 후보 신규 공급] outputs/ramp/smv_factor_regime_daily.parquet (6팩터 × 5,087일, 2006~2026-08). 후보 = bear_prob 6종(연속, 상대근접도 c_bull/(c_bear+c_bull) — 자유도 0) + breadth(=6종 평균). PIT 규약: Date=T는 T종가 산출 신호 → effective_date(T+2)부터만 소비, 월간 프레임 컷오프 = 홀딩월 시작 2거래일 전, 결측일 locf, 진행월 소비 금지. C11 발표시차 없음(내생 계산 — 입력은 KR 종가뿐, US VIX 변형 미사용). ★연속변수 사용 의무(이분화 금지 — 본 next_action ④ 정합). 착수 전 required_effect_size.R 검정력 + 시대분해 병기 + Lane A 자유도 분리(⑥) 유지. 원 신호의 단독 배분 성과는 자본 게이트 전패(FQ-239 §6~8 — 단 위기월 조건부 반응성 실측 존재)이므로 '알파'가 아니라 조건변수로만 소비할 것.",
+   "precheck_20260820": "[착수 0항 사전검증 — 2026-08-20 세션 실측. owner 미변경(선점 충돌 회피), 판정 필드만 추가]\n①계열별 발표시차(C11): 매크로 패널 실측 lag 1~51일(unified_regime_signal_daily 1d · ecos_krw_usd 1d · ecos_bond_rates 1d · fred_macro_wide 2d · regime_daily_v2 2d · flow_features_daily 51d). 하나의 벡터로 묶으면 가장 느린 계열이 지배. ★ctx_providers.R 이 '이 provider 는 계열별 시차를 대신 적용해주지 않는다'를 명시 — 느린 거시계열(CPI·고용·산업생산 ~73d) 사용 시 **어댑터가 직접** 시차를 넣어야 한다.\n②진행월 컷오프: **이미 배선됨**. ctx_providers.R 이 macro_regime.parquet(월말 스탬프) 사용을 금지하고 일별 fred_macro_wide 를 날짜로 자른다. 실측 확인 — macro_regime max(Date)=2026-08-31 로 오늘(08-20)보다 11일 미래(월말 스탬프 정상 동작). 결함이 아니라 소비 규약 사안이고 provider 가 지키고 있다.\n③시대-분해: 병기하되 **판정 축으로 쓰지 말 것**. 조건변수 유효창이 149개월뿐이라 분할(②)과 시대분해를 겹치면 셀이 남지 않는다.\n④연속 상태변수: bear_prob 연속 [0.006, 0.991] sd 0.329 — 적합. 검정력 실측이 같은 결론을 지지.\n⑤★검정력(required_effect_size.R 실측 — 이번 사전검증의 핵심): 조건변수 smv_factor_regime_daily 의 유효창은 선언된 2006~ 이 아니라 **2014-03-31~2026-08-20** 이다 (NA 12,288/30,522 = 40%는 구멍이 아니라 warm-up — 첫 유효일 이후 결측 0%). 6팩터 전부 동일 3,039일 ≈ **149개월**. 그리고 결과량(분위 스프레드)의 월 sd 를 R31 실측에서 역산하니 **0.0669**(Q5-Q1 평균) / 0.0627(중앙값)로 계약 기본값 SPREAD_SD_MONTHLY_25EW=0.0394 의 **1.6~1.7배**이고 선언 밴드 [0.0330,0.0448] **밖**이다 (기전: 기본값은 top-25 EW 바스켓 쌍 차이, 이쪽은 5분위 양 끝 차이 — 다른 양). ★역산치는 NW 보정을 이미 포함하므로 계약 호출 시 nw_inflation=1 로 넘겨야 **이중 계상**이 안 된다. 실제 sd 기준 최소검출크기(연환산, t 문턱 2.0): **A 연속회귀 149m = 13.15%** · B 2분할 = 18.60% · C 상호작용 = 27.58% · **A2 연속회귀 + FRED 창 320m = 8.98%**. ⇒ 판정: B·C 는 착수 대상 아님(이 저장소에서 관측된 적 없는 크기). A 도 149개월에서는 13.15% 라 빠듯하므로 **FRED 창 확장이 선택이 아니라 사실상 필수**이고, 그 순간 ①(계열별 시차)이 다시 살아나 설계의 핵심 과제가 된다. 참고 대조 — PG2 baseline 269m 창의 기본값 기준 7.21%.\n⑥자유도 분리(Lane A): 설계 단계 사항, 미착수.\n⚠잔여 불확실성: 역산 sd 는 R31 의 D03_RealVol **단일 팩터** 기준이다. 다른 팩터·다른 분위 정의를 쓰면 달라지므로 사전등록 시 **해당 결과량 계열로 직접 재는 것**이 정칙이고, 위 수치는 차수 판단용이다.\n⇒ 다음 세션 인계: 이 6항은 재측정 불요. 착수 시 owner 잠금 후 설계 A(+FRED 창) 로 사전등록하고, 느린 계열 사용 시 어댑터 시차를 명시하라.",
+   "precheck_verdict": "design_A_continuous_regression_with_fred_window_extension",
+   "precheck_power_required_annual": {
+    "A_continuous_149m": 0.1315,
+    "B_split_149m": 0.186,
+    "C_interaction_149m": 0.2758,
+    "A2_continuous_320m": 0.0898,
+    "sd_monthly_used": 0.0669,
+    "sd_default": 0.0394,
+    "note": "실제 결과량 sd 역산 · nw_inflation=1(이중계상 방지)"
+   },
+   "last_round": "SESS_d2e06481_20260822_unattended_credential_root_and_parallel_boundary",
+   "last_verdict": "capability_established",
+   "last_closed_at": "2026-08-22T11:34:25+0900",
+   "last_next_probe": ["P1 지문 배선: 러너 4종이 claude 호출 직전 sched_token_fingerprint() 를 로그에 남기도록 배선하고, 위반 주입(토큰 unset / 위조 토큰)으로 지문이 실제로 갈리는지 실증. 판정 기준 = 사고 재현 시 '만료' 와 '배관' 이 로그만으로 구분되는가.", "P2 명령치환-export 계통 전수: 저장소의 X=$(f) 패턴 중 f 가 환경변수를 export 하는 자리를 전수 스캔. 오늘 수리는 4 러너 한정이고 같은 형태가 다른 곳에 남아 있는지는 미측정. 검출 즉시 양방향 위반 주입 검사기 편입.", "P3 자격 원천 이중화 측정: 현재 무인 레인을 지탱하는 것은 User scope env 토큰 하나뿐이고 ~/.claude/.credentials.json 은 2026-07-12 자로 단독 401 이다. 파일 자격의 만료 상태를 상시 감지해 경보로 올리는 배선을 만들고, env 토큰 부재 시나리오를 주입해 fail-closed 인지 확인.", "P4 후보 정체성 분리: candidate_id 를 파일명이 아니라 내용 기반 안정 id(mode+family+verdict+supporting L-code 정렬 집합 해시)로 교체하고 52 건 소급 매핑. 매핑 불가분은 provenance_lost 로 정직 라벨. dangling 수 래칫 검사기 + 호출자 배선까지 포함(검사기를 만들고 부르지 않으면 결함이 그대로 남는 08-20 선례)."]
   },
   {
    "id": "FQ-237",
@@ -5204,7 +5222,7 @@
    "data_gate": "없음 — 기존 패널. 신규 팩터는 factor DB 미적재(stage_artifacts 보존).",
    "owner": "CLAIMED — Q-Lead session 2026-08-13. 도훈 '알파창출 각이 보여?' 에 대한 Q-Lead 권고로 착수. 구 상태 INVALID_frame_error 는 해소 — R32 가 수정 프레임 근거를 공급했다.",
    "status": "CLAIMED_20260813__evidence_thickened_launching",
-   "next_action": "[★★★무효 2026-08-13 R30] 이 항목의 R5~R28 근거는 **측정 프레임 오류**로 무효다. build_monthly_forward_returns 앵커가 'sig_date 이하 최종거래일' 이라 팩터를 월초 1일로 넘기면 월초가 거래일인 달에 앵커가 그날 자신이 되어 forward 가 그 달 수익이 된다. factor DB sig_date T 는 T월 말 관측이므로 팩터가 채점 대상 월을 봤다. 수정 = 팩터 Date +1개월. 검증 지문: M04_Mom_1 평균 IC -0.9423 -> +0.0170 · |평균IC|>0.10 팩터 46종 -> 0종 · 최대 0.9423 -> 0.0509. ★수정 프레임 재측정: 정렬 라벨 통과군 내부 차이 +2.884%p -> **-0.1731%p (비겹침 t -0.41)** = 무작위와 구분 불가. => 정렬(alignment) 아크 전체 무효, 제안서 철회 완료. ★살아남음: 게이트 3종 결정력(oos +0.1293 **1위** · calmar +0.1151 · PORT_t +0.0930, 귀무 -0.0019) — 단 **순위 역전**이라 구 프레임의 'oos 가 가장 약하다'(R7/R8)도 무효. rank-IC 는 11종 중 최하위(-0.0163)로 R3/R5 진단 유지. HARD 통과율 13.80% -> 2.07%(월 4.5개). 산출물: r30_reframe_result.json 이 **유효 정본**, 나머지 26종은 INVALID_FRAME_ERROR 표기 부착됨. 재사용: master_panel_FIXED.rds. 상세 = 메모리 project-anchor-convention-invalidated-20-rounds-20260813. [다음] ①수정 프레임 arm A 기준선 재측정(ML QEPM 착수 관문) ②게이트 순위 역전 함의로 R9 재측정 ③INV07 24.65 · R21 lag 해석 재확인 ④정렬 라벨은 새 증거 없이 재제안 금지. \n\n--- 무효 이전 기록(보존) ---\n[제안서 2026-08-13] 04_Research/01_reports/proposal_alignment_selection_label_20260813.md 작성. ★도훈 결정 2문항: Q1 정렬 라벨을 screen_route 에 부착할 것인가(판정 무변경, 배선 1곳) Q2 관문 4번째 축 확장 논의를 할 것인가(증분 R^2 0.1277->0.1428 로 작음, 과거 판정 소급 재분류 수반). ★R19 basis 전환 완료 — KOSPI200 벤치서 spearman 0.9943 유지, 수준만 -0.301 이동 => 이제 자본 문턱과 같은 basis 로 서술 가능. 문턱 2.95 통과 유니버스 5 -> KOSPI200 3. ★R20/R21: INV07 PORT_t 24.65 는 **미판정** — 커버리지 결함 기각(259개월·월중앙 343종목), lag 스트레스는 **판별력 없음**(대조군 3종 동일 붕괴, 단기신호라 신선도만 파괴). ★대조군이 오보를 막았다 — 없었으면 'PIT 위반' 오보. chip task_547b3df7 로 빌더 감사 분리. ⚠INV07 이 오염으로 판명되면 36 표본 최상단이 빠지므로 R14/R19 상관 재확인 필요. [다음] ①도훈 결정 대기(적용 없음) ②다른 유니버스·지평 재현 ③전수 316 으로 대리↔계약 확장 ④단기신호군용 PIT 판별 도구 설계(lag 스트레스 무력 구간) ⑤R4 배관 오염. \n\n--- 이전 라운드 기록(보존) ---\n[R12/R13 2026-08-13] 정렬일치를 **선별 라벨**로: 게이트 통과군 내부에서 라벨 상위군이 하위군 대비 +2.15%p(상위20%). ★부호 반전 — 무조건부(R5/R10)는 음(-0.19)인데 통과군 내부는 양 (Simpson 계열 조건부). 기전 = 통과했는데 IC·평균기울기 부호가 어긋나면 '불안정한 통과'. ★R13 문턱 검증: 상위 10/20/30/50% 전부 부호 유지 + 엄격할수록 증가(3.071>2.152>1.608>1.377), **실제 HARD(2.95/0.7/0.64) 통과군 13.80%서 +2.884%**(비겹침 t 13.055), 무작위 -0.088. 부수: 개별 통과율 20.7/49.6/19.6 vs 전건 13.80 = 독립가정 7배 -> R9 '3중=1중' 재확인. ⚠t 절대값 인용 금지(12m 겹침) · 게이트값이 팩터 대리포트 동형이지 forge 실포트 아님. [다음] ①★forge 실포트 재현(마지막 미검 축) ②기전 확증(불일치 통과 팩터의 게이트값 시계열 분산) ③screen_route 보조라벨 최소변경안 설계(승인 전 적용 없음) ④누적 다중검정 보정. 산출물 r12_selection_label_result.json · r13_threshold_result.json \n\n--- 이전 라운드 기록(보존) ---\n[R11 2026-08-13] 다중검정 보정 **통과**. 팩터 블록 순열 B=300(11 후보 동일 배정 — 지속성·후보간상관 온존). 관측 최대증분 0.01510(E_align) vs 귀무 최대 0.00853 · p95 0.00498 => **p < 0.0033**(300 중 0건), 1.77배. ★초판 2결함 자가검거: argmax 라벨 하드코딩(실제는 E_icir) · R10 은 순위화인데 R11 초판은 raw (E_icir 분모 0 근처 폭발, raw -0.802~4.938 → 증분 0.03744 허위). 순위화로 프레임 일치시켜 복귀. ⚠p 표기는 'p<0.0033'(B=300 해상도) — 'p=0.0000' 금지. 증분 절대크기 작음(R^2 0.1277→0.1428). [다음] ①★E_align 을 **선별 라벨**로 쓰는 경로 실측(게이트 확장은 도훈 결정, 선별 활용은 세션 범위) ②forge 실포트 게이트 상관 재측정 ③E_align 기전 해석(미탐색 방향 표시 vs 측정 잡음 표시) ④R^2 나머지 86% ⑤R4 배관 오염.",
+   "next_action": "★WT-D20260821_002 가 기전을 국소화(2026-08-22): 선별-소비 불일치의 정체 = rank-IC(Spearman)의 순위-표적 구조 편애 — armB Harvey-t 3.35 인데 평균 스프레드 t 1.05(회수 불가), Pearson 재서열 시 역전. + WT-001 8-arm Spearman -0.21 · armB→C 5-arm -0.40. 다음 = '평균-정합 선별 통계량'(Pearson IC / 평균 스프레드 t 기반) 재서열 사전등록 라운드 — 기존 인용(armB 정확 역순 n=4)은 갱신 의무. (구 next_action 승계: [★★★무효 2026-08-13 R30] 이 항목의 R5~R28 근거는 **측정 프레임 오류**로 무효다. build_monthly_forward_returns 앵커가 'sig_date 이하 최종거래일' 이라 팩터를 월초 1일로 넘기면 월초가 거래일인 달에 앵커가 그날 자신이 되어 forward 가 그 달 수익이 된다. factor DB sig_date T 는 T월 말 관측이므로 팩터가 채점 대상 월을 봤다. 수정 = 팩터 Date +1개월. 검증 지문: M04_Mom_1 평균 IC -0.9423 -> +0.0170 · |평균IC|)",
    "source_refs": "stage_artifacts/fq233_probe0_20260813/alpha_r2r3_result.json",
    "evidence_20260813": "★근거 3중(전부 수정 프레임): (1) R32 320종 전수 — 평균/중앙값 스프레드 부호 갈림 123/320(38.4%)이고 **비대칭**(중앙값+/평균- 102 vs 반대 21, 무작위면 반반) · '중앙값 유의 ∧ 평균 비유의' 99종 중 46종은 평균 음수 · 기전 cor(왜도기울기, 중앙값-평균 gap) = **-0.728** · **준-단조 분위 프로파일 0종**. (2) armB 실현-포트 사례 — 표적 교체로 rank-IC 4배(+0.0074→+0.0299) 개선했는데 실현 SR 은 0.6039→0.5140 로 낮아짐(paired NW3 t -1.2473). 순위 개선이 top-N 평균 소비로 전이되지 않음. (3) 4 arm 서열 역순 관찰(q10 .0438/0.437 · q50 .0299/0.514 · 평균 .0074/0.604 · q90 -.0281/0.606) — ⚠n=4·비독립·전 arm PORT_t |t|<1.4 이므로 관찰이지 검정 아님. ⇒ 가설: 현 파이프라인은 rank-IC(순위/중앙값 근사)로 고르고 top-N 평균(꼬리 지배)으로 소비한다 = **체계적으로 어긋난 방향으로 고른다**.",
    "why_highest_priority": "재료를 바꾸지 않고 **고르는 법만** 바꾼다 — 새 데이터·새 가설 불요. 실패해도 '선별 통계량은 병목이 아니다' 라는 큰 정보가 남고, 그때는 재료(일별 축 FQ-234·비-return)로 라우팅이 명확해진다. 오늘 실측된 벽(재료-불변)에 대한 유일한 비-재료 가설."
@@ -5225,7 +5243,7 @@
   {
    "id": "FQ-239",
    "lane": "regime_allocation",
-   "title": "★Shu-Mulvey KR v5 — 동월-적용 결함 보정 재기준선 + 일별 온라인 필터 + 인과 re-tune (자본 졸업 루프, 도훈 mandate 2026-08-20)",
+   "title": "★DFA_RegimeSignals(동적 팩터 배분—국면 스위칭 신호, 구 Shu-Mulvey) KR v5 — 동월-적용 결함 보정 재기준선 + 일별 온라인 필터 + 인과 re-tune (자본 졸업 루프, 도훈 mandate 2026-08-20 / 논문명 개명 08-21)",
    "hypothesis": "기존 KR 복제(RAMP_SHUMULVEY_BL_20260619)의 월간 백테 회계는 월말-결정 비중을 같은 달 수익에 곱하는 동월 적용(~1개월 look-ahead)이라 헤드라인·oos 전부 재기준선화 대상이다. 보정 회계 위에서 ①논문 원 프로토콜인 일별 온라인 필터(월간 케이던스에선 smoother 마지막상태와 동일 no-op이었던 미탐색 축) ②시장환경 피처 완전화(ECOS 3Y·10Y−3Y 복원, 15→17종) ③완전 인과적 rolling re-tune으로 oos_retention의 진짜 값을 재산출하면 graduation HARD 재판정이 가능하고, 배포 형태는 sleeve-배분층 변환(DIST-RAMP-014 frontier 1)으로 공략한다.",
    "ev_rationale": "①2026-08-20 코드 직접 검증 — run_ramp_shumulvey.R bt() :179-199가 W[rng[i]](월말 mi 결정 비중)를 mon[rng[i]](같은 달 수익)에 곱함. _verify/_v2/_v3/_v4/_contract port() 전 계열 동일. 같은 파일 Stage 2B(:127-128)는 (ei+1):nx 익월 적용이라 파일 내 불일치 = 버그 판단. calib_c(:172-176) 전기간 TE 캘리브 = 2차 look-ahead. 기존 placebo/oos/분해는 이 결함류를 판별 못하는 검정(BearProb 실사고 동형 — overlay_pit_guard 헤더 명문). ②DIST-RAMP-014 frontier ③(인과적 rolling re-tune 이식) + live_trigger (b)(oos_retention ≥ 0.5 재산출 시 재판정, expiry 2027-02-09). ③도훈 mandate 2026-08-20 '자본졸업을 목표로 지속 강화해나가보자' + 승인 계획 — ev_map D7(RAMP chain) 죽은 계급의 도훈 confirm 요건 충족. ★D7이 인용하는 Shu-Mulvey 7.65~7.72 자체가 동월 회계+sweep 위 수치라 D7 근거도 보정 재실측 대상.",
    "wall_check": "oos_retention decay-cap(원장 기록 0.31~0.54, 2회 실측)이 병목이나 전부 결함 회계 위 측정 — 보정 재실측이 벽의 진짜 높이를 처음 잰다. 배포 형태 벽(25종 직접 변환 4접근 전수 음수)은 sleeve-배분층 변환으로 공략(breadth 의존 우회). IC→PORT_t 전이 벽과는 층이 다름(배분층 전략).",
@@ -5234,15 +5252,37 @@
    "status": "MEASURED_20260820_screen_tier_routed__p2_in_progress",
    "next_action": "[라운드 1 수집 완료 2026-08-20 — P0~P1c·게이트 4종·계약 채점 전부 실행] 실측: 동월 결함 확정(6월 헤드라인 철회, 원장 정정) · 일별 온라인 필터 전 16셀 음수 기각(위기월만 우위) · f17 금리 무기여 · M0-roll TE3 = PORT_t 1.033/oos 0.163/calmar 0.394 HARD 3종 전패(essence_score v2) · placebo p=0.033(신호 실재) → screen_tier_routed. 원장 RAMP_SHUMULVEY_V5_20260820(grade C) · 보고서 shumulvey_v5_20260820.md · L-code 2건. [진행 중] P2ⓐ book overlay A/B(export 완료: smv_factor_regime_daily.parquet, breadth→exposure 사전등록 자유도 0, method_registry exposure adapter 배선이 다음 실행 단계) · P2ⓑ Lane D 핸드오프 적재 완료(FQ-236.handoff_smv_20260820). [대기 레버] 주간/이벤트-트리거 케이던스(사전등록 필요) · P3 sleeve-배분층(PORT_t 벽 완화 시). 부활: 인과 re-tune oos ≥0.5 재산출 시 DIST-RAMP-014 (b) 재판정(현 0.163). 계획 정본 = ~/.claude/plans/shu-yu-mulvey-rippling-nautilus.md",
    "source_refs": "04_Research/ramp/reports/shumulvey_faithful_replication_20260619.md | qepm/memory/axioms/distilled/DIST-RAMP-014.json | 06_Registry/ramp/ramp_registry.json::RAMP_SHUMULVEY_BL_20260619 | 02_Infrastructure/ramp/run_ramp_shumulvey.R | arXiv:2410.14841",
-   "last_round": "FQ-239_smv_v5_20260820",
-   "last_verdict": "screen_tier_routed",
-   "last_closed_at": "2026-08-20T22:13:11+0900",
+   "last_round": "SESS_d2e06481_20260822_unattended_credential_root_and_parallel_boundary",
+   "last_verdict": "capability_established",
+   "last_closed_at": "2026-08-22T11:34:24+0900",
    "last_next_probe": [
-    "P2ⓐ book overlay A/B — breadth=mean(bear_prob 6종) → exposure=1−0.30·breadth (사전등록 자유도 0, method_registry exposure adapter 경유, book_L5 대비 ΔIR)",
-    "P2ⓑ Lane D 조건변수 실측 — FQ-236 핸드오프 적재 완료, bear_prob 조건부 비대칭(연속변수 의무)",
-    "주간/이벤트-트리거 케이던스 — 일별(음수)·월간(약양성) 사이 미측정 축: 위기월 반응성만 취하는 조건부 리밸런싱",
-    "P3 sleeve-배분층 변환(DIST-RAMP-014 frontier 1) — PORT_t 벽 완화 신호 발생 시"
+    "P1 지문 배선: 러너 4종이 claude 호출 직전 sched_token_fingerprint() 를 로그에 남기도록 배선하고, 위반 주입(토큰 unset / 위조 토큰)으로 지문이 실제로 갈리는지 실증. 판정 기준 = 사고 재현 시 '만료' 와 '배관' 이 로그만으로 구분되는가.",
+    "P2 명령치환-export 계통 전수: 저장소의 X=$(f) 패턴 중 f 가 환경변수를 export 하는 자리를 전수 스캔. 오늘 수리는 4 러너 한정이고 같은 형태가 다른 곳에 남아 있는지는 미측정. 검출 즉시 양방향 위반 주입 검사기 편입.",
+    "P3 자격 원천 이중화 측정: 현재 무인 레인을 지탱하는 것은 User scope env 토큰 하나뿐이고 ~/.claude/.credentials.json 은 2026-07-12 자로 단독 401 이다. 파일 자격의 만료 상태를 상시 감지해 경보로 올리는 배선을 만들고, env 토큰 부재 시나리오를 주입해 fail-closed 인지 확인.",
+    "P4 후보 정체성 분리: candidate_id 를 파일명이 아니라 내용 기반 안정 id(mode+family+verdict+supporting L-code 정렬 집합 해시)로 교체하고 52 건 소급 매핑. 매핑 불가분은 provenance_lost 로 정직 라벨. dangling 수 래칫 검사기 + 호출자 배선까지 포함(검사기를 만들고 부르지 않으면 결함이 그대로 남는 08-20 선례)."
    ]
+  },
+  {
+   "id": "FQ-240",
+   "title": "m-minus 하단 스펙트럼 레짐 오버레이 (Lower Spectrum Market Synchronization)",
+   "paper_id": "2608.09641",
+   "paper_title": "Lower spectrum of financial correlation matrices",
+   "route": "overlay_regime",
+   "status": "PENDING",
+   "owner": null,
+   "priority": "medium",
+   "added_date": "20260821",
+   "impl_note": "60d 롤링 k=10 클러스터 상관행렬 m-minus(고유값 < 람다_min=(1-sqrt(k/T))^2 개수) 레짐 오버레이. m-minus 상승 = 시장 동기화 강화 = 수익분포 왼쪽 이동(지수 레벨). 논문 제안 소비면: 시장 동기화 상태 예측 -> 방어 레짐 신호 후보. KR K=10 클러스터(n_stocks~350, T=60 일이면 n>T 문제 해소 목적). track_A: m-minus 시계열 -> 오버레이 스케일링(m-minus 높으면 방어 포지션 축소). factor-rotation RCMA 후보. 착수 전 C11(FRED 시차 정합성) 불필요 -- KR 주가 내부 계산.",
+   "data_requirements": [
+    "RAWDATA 일별 수익률 60d 롤링 상관행렬",
+    "k=10 클러스터 분류(k-means or 섹터)"
+   ],
+   "source": "AS-20260821 큐소비자 Track A 라우팅",
+   "related": [
+    "2608.09641",
+    "alpha_search_queue_done.json record min_eigenvalue_loading_60d_TrackB"
+   ],
+   "result_ref": null
   }
  ],
  "parked_rounds": [

@@ -1,0 +1,29 @@
+{
+  "prereg_id": "dfa_v13_prereg_20260822",
+  "created_at": "2026-08-22",
+  "created_before_any_result": true,
+  "fq_id": "FQ-239",
+  "round": "R14 — A5E 25종목 배포 변환 (감사 사양 8-7b, 남은 유일 공략축 + 유일 실자본 경로)",
+  "why_this_axis": "R13에서 신호 개선축 4종(다중지평·변동성표준화·절대모멘텀·breadth 익스포저)이 전부 채택 미달했고, 익스포저 층은 신호원 3종으로 3라운드 확정 기각. PORT_t 갭 0.056은 신호축으로, calmar 갭 0.356은 노출축으로 닫히지 않음이 실측 확정. 남은 것은 배포 형태 변환뿐이며 종목 레벨은 MDD 구조가 지수 배분과 다르므로 calmar 재판정 기회이자 도훈 Production Constraints 하 유일한 실자본 경로.",
+  "base": "A5E = broad-21 팩터 모멘텀, 연속가중(w_f 비례), 3-코호트 중첩 앙상블, 월말 결정→익월, 15bps. 실측 pt 2.894 / oos 0.706 / calmar 0.284 / MDD 0.453",
+  "transform_spec": {
+    "score": "Score_i,t = sum_f w_f,t x Z_f,i,t — w_f = A5E 팩터 가중(결정 시점), Z = load_month_factors(sig_date=t) Z_Score_Aligned (C13/C14/C15 준수)",
+    "factor_map": "broad-21 index name -> factor_db id (ramp_shumulvey_indices.R FAC 벡터 그대로): Value=V12_Composite_Value, Issuance=V21_Composite_Equity_Issuance, Size=S01_Size, Momentum=M09_Composite_Mom, ResidMom=M08_Residual_Mom, Reversal=M11_ST_Reversal, Quality=Q08_Composite_Quality, GPA=Q01_GPA, EarnStab=Q07_Earnings_Stability, Growth=GR07_Composite_Growth, Investment=IN06_Investment_to_Assets, LowVol=D03_RealVol, LowBeta=D02_Beta, TailRisk=R05_Tail_Risk, Liquidity=L45_Composite_Liquidity, Accrual=AC18_Accrual_Quality, Consensus=C19_Composite_Earnings, SUE=C01_SUE, Crowding=CR07_Momentum_Crowding, ForeignFlow=INV01_Foreign_NetBuy_20d, SmartMoney=INV10_Smart_Money_Flow",
+    "cohort_handling": "3-코호트 앙상블 유지 — 각 코호트가 자기 결정월의 w_f로 종목 스코어를 만들고 top-25 EW 보유, 전체 = 3코호트 자본 1/3씩. 위상 아티팩트 제거 원칙 승계",
+    "portfolio": "top-25 EW long-only, 유동성 필터(LiqPass), 15bps delta 비용. Production Constraints 준수",
+    "missing": "Z 결측 팩터는 해당 월 스코어에서 제외(가중 재정규화), 커버 팩터 수 기록"
+  },
+  "arms_prespecified": [
+    {"id": "S1_direct", "spec": "위 명세 그대로 (자유도: 변환 방식 1)", "dof": 1},
+    {"id": "S2_harness", "spec": "동일 스코어를 알파서칭 하네스(run_alpha_search)로 공식 채점 — 등급·screen_route·개선여지 자동 평가. DFA 종목 변환(Grade F 22.8)과 동일 채점 체계로 직접 비교", "dof": 0}
+  ],
+  "judgment": {
+    "primary": "S1: essence_score 계약 채점 — pt/oos/calmar 3종. 지수 배분(A5E)과 비교해 calmar가 개선되는가가 1급 질문",
+    "reference_failure": "DFA 종목 변환 실측: Grade F, pt 미달, MDD 64.0, IC 0.020, OOS retention -0.03. A5E 변환이 이를 유의하게 상회하지 못하면 DIST-RAMP-014의 '변환 손실' 기전이 팩터 모멘텀에도 적용됨을 확정",
+    "adoption": "자본 경로 후보 = HARD 3종 중 2종 이상 통과 + 하네스 screen_pass. 미달 시 변환 손실 기전 확정 기록",
+    "honesty": "지수 배분과 종목 배분은 다른 전략이다 — pt 비교는 참고, 각자 게이트로 판정"
+  },
+  "n_trials_cumulative": 65,
+  "selection_type": "chain",
+  "pin_tag": "smv_r2_20260820 연장"
+}

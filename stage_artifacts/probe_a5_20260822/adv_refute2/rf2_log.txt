@@ -1,0 +1,56 @@
+[config.R] PROJECT_ROOT: C:/Users/99922/OneDrive/Quant_Module_Moltbot
+[backtest_result_contract.R] Loaded — Backtest Result Contract v1.0
+  Functions: build_bt_result() / validate_bt_result()
+  10 components: manifest, strategy_spec, nav, period_returns, holdings, benchmark_returns, metrics, benchmark_compare, rolling_metrics, drawdowns, audit
+[weighted_screen_bt.R] Loaded — weighted_screen_bt() (임의 가중 contract-grade A/B primitive)
+[ramp_io.R] Loaded — ramp_write_parquet/ramp_write_json (§2.4 meta enforced)
+[backtest_result_contract.R] Loaded — Backtest Result Contract v1.0
+  Functions: build_bt_result() / validate_bt_result()
+  10 components: manifest, strategy_spec, nav, period_returns, holdings, benchmark_returns, metrics, benchmark_compare, rolling_metrics, drawdowns, audit
+[canonical_screen_bt.R] Loaded — canonical_screen_bt() (v8.x WS1 real-computation helper)
+[factor_validation.R] Loaded — build_monthly_forward_returns / build_adv20_t1 / validate_factor / approve_factors
+[build_monthly_forward_returns] [FQ-232] 유동성 자 복원: liq_ruler='adv20_t1' (source=injected_adv20) · 앵커 덮개 100.0% (382123행)
+[MZ] 180개월 사전계산
+
+===== (a) 손실 분해: 지수레벨 → T-IDX =====
+                                          step     n PORT_t active_ann     IR
+                                        <char> <int>  <num>      <num>  <num>
+1:  0. 지수레벨 A5 (net 15bps, 지수-간 회전만)   180  2.725      4.982     NA
+2: 1. pi 전량, cap없음, liq없음, 0bps (패리티)   180  2.915      5.270 0.8023
+3:            2. + 15bps (실제 종목 회전 과금)   180  2.529      4.601 0.6990
+4:                 3. + 유동성 필터 adv20>=2e8   180  2.544      4.611 0.7012
+5:                        4. + 0.20 weight cap   180  2.293      3.285 0.6166
+6:             5. + top-25 절단 (= 보고 T-IDX)   180  1.208      2.032 0.2944
+      TO  note
+   <num> <num>
+1: 2.301    NA
+2: 4.460    NA
+3: 4.460    NA
+4: 4.523    NA
+5: 4.450    NA
+6: 5.624    NA
+
+===== (b) 미계상 비용 =====
+지수레벨 TO=2.30/yr | pi전량(무cap·무liq) TO=4.46/yr | pi전량(cap+liq) TO=4.45/yr
+  미계상 비용 = (4.46 - 2.30) x 15bps = 0.324%p/yr  [보고값 0.32]
+
+===== (c) PIT 스트레스: w_f 시점 이동 (lag=+1 은 의도적 미래참조) =====
+   lag_wf              form PORT_t active_ann     IR
+    <int>            <char>  <num>      <num>  <num>
+1:     -1 Z합성xcap-w top25  1.102      4.656 0.2713
+2:      0 Z합성xcap-w top25  1.826      8.188 0.4623
+3:      1 Z합성xcap-w top25  3.028     13.172 0.7457
+[c2] Z 1개월 지연(stale) Z합성xcap-w: PORT_t=+1.341 active=+6.61%p/yr (정본 +1.826)
+
+===== (d) w_f 셔플 널 =====
+관측: Z합성xcap-w paired NW-t = +1.426 | active +8.19%p/yr
+널 분포(B=100): paired-t 중앙 -0.662 | p95 +0.452 | max +0.695 | P(널 >= 관측) = 0.000
+             active 중앙 -1.97 | p95 +2.66 | max +4.68 | P(널 >= 관측 8.19) = 0.000
+             PORT_t 중앙 -0.371 | p95 +0.630 | P(널 >= 1.826) = 0.000
+
+===== (e) 유동성 =====
+ZA 종목-월 62704 | adv 결측(무조건 통과) 8 (0.01%) | adv<2e8 탈락 724
+
+RF2_DONE
+Warning message:
+package 'arrow' was built under R version 4.5.3 

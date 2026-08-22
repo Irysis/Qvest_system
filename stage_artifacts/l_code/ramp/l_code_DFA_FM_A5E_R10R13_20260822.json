@@ -1,0 +1,23 @@
+{
+  "l_code": "L-RAMP-20260822_040000",
+  "strategy_id": "DFA_FM_A5E_R10R13_20260822",
+  "grade": "B",
+  "core_reference": "A5E (broad-21 factor momentum, continuous weight, 3-cohort overlapping quarterly) = PORT_t 2.894 (gate gap 0.056, arc-closest) + oos_retention 0.706 PASS + calmar 0.284 FAIL. Phase-dependency caught and removed: quarterly offset 0/1/2 gave 3.232/2.208/2.981 — the gate pass was a phase artifact; the ensemble is the honest estimate. Literature axes (multi-horizon, vol-scaled, absolute momentum, breadth exposure) ALL failed adoption. Exposure layer rejected across 3 signal sources. Active-return basis empirically required: absolute momentum collapses oos to -0.097.",
+  "lesson_text": "FQ-239 R10~R13 (도훈 '모멘텀 후속 연구' + '문헌 반영 발전 라운드'). prereg dfa_v11/v12 + 측정-전 amendment. [R10 C1 후속 5축] A5 분기리밸이 pt 3.232·oos 0.704로 HARD 2종 동시 통과(아크 최초), rank가중·6M·24M창은 전부 열위(paired −1.5~−2.5). [★R11 위상 아티팩트 검거] 배터리는 전부 clean(사다리 5.147→3.232→2.714 완만·placebo p=0.000·시대 4구간 전부 양수·40bps에서도 2.821·손익분기 TO 34.65 vs 실제 2.35)이었으나 **분기 시작월 offset 0/1/2 → pt 3.232/2.208/2.981** = 게이트 통과가 위상 선택 의존. 위상 검사를 안 했으면 3.232로 통과 선언했을 사안. [R12 A5E 정본] 3-코호트 중첩 앙상블(Jegadeesh-Titman overlapping portfolios 표준, 신규 자유도 0)로 아티팩트 제거 → **pt 2.894(갭 0.056)·oos 0.706 PASS·calmar 0.284 FAIL·DSR 0.788**. 배터리 재통과(사다리 5.093→2.894→2.711·placebo p=0.000·시대 4구간 양수·40bps 2.484). [R13 문헌 4축 전부 기각] B1 다중지평(Gupta-Kelly/Ehsani-Linnainmaa): pt 2.919·oos 0.796 개선이나 MDD 0.467 악화로 규칙 미달. B2 변동성표준화: paired −1.98. **B3 절대모멘텀(Bosancic 대조): oos 0.706→−0.097 붕괴 = 액티브수익 기반이 옳다는 KR 실증(S1 원칙)**. **B4 breadth 익스포저: pt 1.482 — 익스포저 층 3라운드(mkt_jm 이진/연속, 자체 breadth) 전부 실패로 calmar 공략축에서 제거 확정**. ⇒ A5E는 국소 최적이며 신호 개선축으로 갭 0.056이 닫히지 않는다. 남은 유일 축 = 25종목 배포 변환(§8-7b, 종목 레벨 MDD 구조 상이 + 유일 실자본 경로). ★메타: 단순한 규칙(튜닝 파라미터 0)이 감사 표면 자체를 줄였다 — DFA가 받은 감사 FAIL·WARN(검증 신분·½계수·λ스케일·10-restart)이 A5E에는 구조적으로 존재 불가.",
+  "tags": "RAMP,factor_momentum,phase_artifact,overlapping_portfolio,literature_replication,exposure_rejected",
+  "created_at": "2026-08-22",
+  "research_mode": "ramp",
+  "created_by": "emit:ramp",
+  "metric_type": "backtested",
+  "construction_type": "chain",
+  "mechanism_hypothesis": "KR 팩터 프리미엄의 시계열 지속성은 12M 액티브 모멘텀 축에 견고하게 실재하며 문헌 정교화(다중지평·위험조정)로 추가 개선되지 않는다. 남은 벽(낙폭)은 신호가 아니라 완전투자 구조의 문제이고, 노출 스케일링으로는 알파 희석 없이 풀 수 없다 — 배포 형태 변경만 남았다.",
+  "fq_ref": "FQ-239",
+  "a5e_headline_15bps": {"pt": 2.894, "oos_retention": 0.706, "oos_splits": [0.378,0.706,0.778], "calmar": 0.284, "MDD": 0.453, "SR": 0.609, "IR": 0.694, "TO": 2.45, "DSR": 0.788, "n_mo": 234, "gate_gap_pt": 0.056},
+  "phase_artifact": {"offset0": 3.232, "offset1": 2.208, "offset2": 2.981, "mean": 2.807, "resolution": "3-cohort overlapping ensemble"},
+  "r13_rejections": {"B1_multihorizon": {"pt": 2.919, "oos": 0.796, "MDD": 0.467, "paired": -0.599},
+    "B2_volscaled": {"pt": 2.769, "paired": -1.976}, "B3_absolute": {"pt": 2.750, "oos": -0.097},
+    "B4_breadth_exposure": {"pt": 1.482, "paired": -2.847}},
+  "evidence": "outputs/ramp/dfa_c1_followup_r10_20260822.csv | outputs/ramp/dfa_lit_dev_r13_20260822.csv | outputs/ramp/dfa_exposure_r9_20260822.csv | .cache/_dfa_a5e_r12.rds | 04_Research/ramp/reports/shumulvey_v5_20260820.md 16~17 | 04_Research/ramp/reports/dfa_design_validity_matrix_20260822.md",
+  "family": "momentum",
+  "family_source": "factor momentum"
+}

@@ -1,0 +1,25 @@
+{
+  "l_code": "L-AS-20260821-IndexInclusion",
+  "strategy_id": "IndexInclusionDrift_KR",
+  "grade": "SKIP",
+  "verdict": "SKIP_PRIOR_VALIDATED_FAIL",
+  "research_mode": "alpha_search",
+  "created_at": "2026-08-21",
+  "created_by": "emit:alpha_search",
+  "metric_type": "prior_backtested",
+  "source_paper": "arxiv:2608.12634 (Price of Permission: Classification Uncertainty in Constrained Capital Markets, Qadi-Sharma-Medda 2026)",
+  "prior_experiment": "C29_INDEX_INCLUSION_FRONTRUN_WT-D20260621_011 (L-AR-20260621_220827)",
+  "prior_grade": "F",
+  "prior_port_t": -0.885,
+  "prior_verdict": "VALIDATED_HARD_FAIL",
+  "ev_class": "D4 event/occurrence형 비-return-파생",
+  "ev_budget": 0,
+  "lesson_text": "[SKIP — 선행 VALIDATED_HARD_FAIL 재확인] KR IndexInclusionDrift: arxiv:2608.12634 (말레이시아 Shariah 편입 +1.76pp/10d, p=0.008)을 KR KOSPI200/KQ150 편입 신호로 치환하는 가설을 검토했으나 착수 불가 판정. ★차별점 없음: 동일 메커니즘(지수 편입 수요충격→가격 드리프트)에 대해 C29 VALIDATED_HARD_FAIL (PORT_t=-0.885, grade=F, 2026-06-21)이 존재. ★논문 자체 제한: (1) 말레이시아 Shariah = 종교적 투자자 구조(Shariah 준수 펀드가 편입 시 의무매수) — KR KOSPI200/KQ150 리밸에는 이 메커니즘 부재. (2) 저자 스스로 'clean causal demand shock 미확인', 'pre-event 20일 검정 reject'. (3) US DJIM/S&P 방법론 변경(2023-09) = 'no robust matched repricing'. ★구조 차이: KR 지수 편입은 반기 1회 공시 후 2~4주 뒤 효력 — 시장이 선반영 후 평균회귀(C29: age0/1/2 각각 -0.91/-1.40/-1.46%/월). ★EV map D4 class: occurrence-형 소진(index-inclusion -0.885, buyback -1.18, rev-forecast screen-tier). ★INV-7: 부활 조건 미충족 — announcement-date 데이터 미취득 시 frontrun window 직접 검증 불가.",
+  "structural_reason_kr_inapplicability": "Shariah 편입 = 종교적 의무매수(투자자 기반 이분) vs KR 지수 = 자금 추종형 패시브로 arbitraged. 두 메커니즘은 근본적으로 다름.",
+  "tags": ["INDEX_INCLUSION", "OCCURRENCE_EVENT", "VALIDATED_HARD_FAIL_PRIOR", "KR_LONGONLY", "SKIP_EV_BUDGET_ZERO", "D4_CLASS", "PAPER_MECHANISM_INAPPLICABLE_KR"],
+  "next_probe": [
+    "next_probe_1: 같은 논문의 '분류 불확실성(classification uncertainty)' 개념을 KR 지수 편입 직전 명단 경계(경계 근접 종목이 편입/탈락 불확실)에 적용 — 단, KR QuantiWise 기준점수 경계 데이터 없어 데이터 가용성 선확인 필요",
+    "next_probe_2: D4 class 내 유일 미검 경로 = magnitude-형(FQ-002, 계약금액/시총 규모) — 이벤트 occurrence 아닌 규모 연속변수로 신호 구성. FQ-002 데이터 게이트(pre2019 파싱 95.7% 실패) 해소 시 착수 가능"
+  ],
+  "revival_conditions": "announcement-date 데이터(QuantiWise KR 지수 구성 변경 공시일 필드) 확보 시 frontrun window 검증 가능 — 단 C29 lesson 기준 frontrun 조차 aribtraged away 2015+ 실측으로 부활 우선순위 낮음"
+}

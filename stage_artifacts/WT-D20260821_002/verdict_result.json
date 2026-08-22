@@ -1,0 +1,292 @@
+{
+  "wt_id": "WT-D20260821_002",
+  "round_id": "FQ233_FRAME_20260821",
+  "step": "verdict",
+  "prereg": "PREREG_WT002_20260821.md",
+  "gate_lock": "gate_lock.json",
+  "started_at": "2026-08-21T08:22:54.761+0900",
+  "finished_at": "2026-08-21T08:25:04.804+0900",
+  "metric_type": "canonical_screen_frame",
+  "selection_type": "chain",
+  "binding_frame": "F3L",
+  "binding_rule": "사다리 F1>F2>F3L 의 최상위 통과 프레임. F1·F2 는 co-primary 양쪽 모두 MDE > 3.0%p 로 FRAME_REJECTED_UNDERPOWERED — 이 두 프레임의 평균·t 는 산출하지 않는다.",
+  "coprimary": {
+    "c_vs_a": {
+      "pair": "c_vs_a",
+      "arm": "armC",
+      "frame": "F3L",
+      "n_months": 198,
+      "mean_diff_monthly": 0.00041595244892,
+      "mean_diff_annual_pct": 0.49914293871,
+      "diff_sd_monthly": 0.0072661443637,
+      "nw3_t": 0.81981158457,
+      "threshold": 2,
+      "mde_annual_pct": 1.217701599,
+      "nw_inflation_measured": 0.98255802611,
+      "effect_over_mde": 0.40990579229,
+      "label": "POWERED_NULL_BREADTH_SCOPED"
+    },
+    "b_vs_a": {
+      "pair": "b_vs_a",
+      "arm": "armB",
+      "frame": "F3L",
+      "n_months": 198,
+      "mean_diff_monthly": -0.00056287111098,
+      "mean_diff_annual_pct": -0.67544533318,
+      "diff_sd_monthly": 0.0079414100161,
+      "nw3_t": -1.0592966455,
+      "threshold": 2,
+      "mde_annual_pct": 1.275271353,
+      "nw_inflation_measured": 0.94151303736,
+      "effect_over_mde": 0.52964832276,
+      "label": "POWERED_NULL_BREADTH_SCOPED"
+    }
+  },
+  "axis1": {
+    "rule": "LADDER 프레임 diff sd 가 F0 의 50% 이하로 감소하지 않으면 검출-기전 기각",
+    "min_sd_ratio_vs_F0_c_vs_a": 0.167496,
+    "min_sd_ratio_vs_F0_b_vs_a": 0.150098,
+    "verdict": "AXIS1_NOT_REJECTED",
+    "note": "sd 감소 83~85% — 이산 편입 경계가 diff 분산의 지배적 원천이라는 검출-기전은 기각되지 않았다. FRAME_PATH_INVALID 미발화."
+  },
+  "axis2_skew_interaction": {
+    "c_vs_a": {
+      "source": "monthly_cross_sectional_skew_of_Ret_1m (frd — R31/R32/R33 정의 승계)",
+      "n": 198,
+      "skew_mean": 1.6319595912,
+      "skew_sd": 1.495257517,
+      "slope": -0.00078641464667,
+      "se_nw3": 0.00039886825164,
+      "t_nw3": -1.9716150469,
+      "p_nw3": 0.050060559467,
+      "slope_ctrl_disp": -0.00044619890833,
+      "t_ctrl_disp": -1.113373364,
+      "disp_slope": -0.033698684595,
+      "disp_t": -1.9314276239,
+      "effect_per_1sd_skew_annual_pct": -1.4110708943,
+      "daily_variant": {
+        "source": "mean within-month DAILY cross-sectional skew (.cache/RAWDATA.parquet — A1 자구)",
+        "n": 198,
+        "skew_mean": 1.620978388,
+        "skew_sd": 1.904298756,
+        "slope": -0.00062311962315,
+        "t_nw3": -4.249263187,
+        "p_nw3": 3.3140177758e-05,
+        "effect_per_1sd_skew_annual_pct": -1.4239271079
+      }
+    },
+    "b_vs_a": {
+      "source": "monthly_cross_sectional_skew_of_Ret_1m (frd — R31/R32/R33 정의 승계)",
+      "n": 198,
+      "skew_mean": 1.6319595912,
+      "skew_sd": 1.495257517,
+      "slope": -0.0016537390753,
+      "se_nw3": 0.00039674004781,
+      "t_nw3": -4.1683189898,
+      "p_nw3": 4.6021313571e-05,
+      "slope_ctrl_disp": -0.0012267177116,
+      "t_ctrl_disp": -2.3758502733,
+      "disp_slope": -0.042296862338,
+      "disp_t": -1.2246678413,
+      "effect_per_1sd_skew_annual_pct": -2.9673189402,
+      "daily_variant": {
+        "source": "mean within-month DAILY cross-sectional skew (.cache/RAWDATA.parquet — A1 자구)",
+        "n": 198,
+        "skew_mean": 1.620978388,
+        "skew_sd": 1.904298756,
+        "slope": 8.8195945245e-05,
+        "t_nw3": 0.2234118439,
+        "p_nw3": 0.82344766551,
+        "effect_per_1sd_skew_annual_pct": 0.20154171458
+      }
+    }
+  },
+  "secondary_rank_slope": {
+    "c_vs_a": [
+      {
+        "bucket": "rA_001_025",
+        "mean_monthly": -0.00058577556554,
+        "annual_pct": -0.70293067865,
+        "sd_monthly": 0.0048727782486,
+        "t_nw3": -1.6948273569,
+        "n": 199,
+        "share_of_total_diff": -1.4082753138
+      },
+      {
+        "bucket": "rA_026_050",
+        "mean_monthly": -0.00026794639488,
+        "annual_pct": -0.32153567385,
+        "sd_monthly": 0.0029812180648,
+        "t_nw3": -1.2508093787,
+        "n": 199,
+        "share_of_total_diff": -0.64417554355
+      },
+      {
+        "bucket": "rA_051_100",
+        "mean_monthly": -0.00042635694094,
+        "annual_pct": -0.51162832913,
+        "sd_monthly": 0.004112470854,
+        "t_nw3": -1.8044159232,
+        "n": 199,
+        "share_of_total_diff": -1.0250136573
+      },
+      {
+        "bucket": "rA_101_200",
+        "mean_monthly": 0.00029730535705,
+        "annual_pct": 0.35676642846,
+        "sd_monthly": 0.0034518135315,
+        "t_nw3": 1.2484213156,
+        "n": 199,
+        "share_of_total_diff": 0.71475803981
+      },
+      {
+        "bucket": "rA_201_plus",
+        "mean_monthly": 0.0012850969345,
+        "annual_pct": 1.5421163214,
+        "sd_monthly": 0.0096974417633,
+        "t_nw3": 1.9740175124,
+        "n": 199,
+        "share_of_total_diff": 3.0895284734
+      }
+    ],
+    "b_vs_a": [
+      {
+        "bucket": "rA_001_025",
+        "mean_monthly": -0.00074708064002,
+        "annual_pct": -0.89649676803,
+        "sd_monthly": 0.0051909659387,
+        "t_nw3": -1.8647066288,
+        "n": 199,
+        "share_of_total_diff": 1.3272676914
+      },
+      {
+        "bucket": "rA_026_050",
+        "mean_monthly": -0.00042878716706,
+        "annual_pct": -0.51454460047,
+        "sd_monthly": 0.0027561905448,
+        "t_nw3": -2.2015082195,
+        "n": 199,
+        "share_of_total_diff": 0.76178570669
+      },
+      {
+        "bucket": "rA_051_100",
+        "mean_monthly": -0.00029725107699,
+        "annual_pct": -0.35670129239,
+        "sd_monthly": 0.0032108386999,
+        "t_nw3": -1.5801110319,
+        "n": 199,
+        "share_of_total_diff": 0.52809794497
+      },
+      {
+        "bucket": "rA_101_200",
+        "mean_monthly": -1.5081971875e-05,
+        "annual_pct": -0.01809836625,
+        "sd_monthly": 0.0029126841068,
+        "t_nw3": -0.080393437414,
+        "n": 199,
+        "share_of_total_diff": 0.026794716554
+      },
+      {
+        "bucket": "rA_201_plus",
+        "mean_monthly": 0.00091133701933,
+        "annual_pct": 1.0936044232,
+        "sd_monthly": 0.0073692596752,
+        "t_nw3": 1.83511462,
+        "n": 199,
+        "share_of_total_diff": -1.6190865041
+      }
+    ]
+  },
+  "frame_metrics_binding": [
+    {
+      "frame": "F3L",
+      "arm": "armA",
+      "total_sr": 0.57247114356,
+      "port_t": -0.30531518609,
+      "port_t_p": 0.76012611095,
+      "active_ir": -0.084267132374,
+      "net_sr_active": -0.084267132374,
+      "cagr": 0.097854890931,
+      "mdd": 0.45877782014,
+      "calmar": 0.21329472925,
+      "turnover_annual": 6.2468134539,
+      "avg_n_names": 343.9748743719,
+      "eff_n_names": 257.6056095722
+    },
+    {
+      "frame": "F3L",
+      "arm": "armB",
+      "total_sr": 0.57179656032,
+      "port_t": -0.46049761772,
+      "port_t_p": 0.64515908106,
+      "active_ir": -0.12377940143,
+      "net_sr_active": -0.12377940143,
+      "cagr": 0.092881115956,
+      "mdd": 0.46315818595,
+      "calmar": 0.200538647,
+      "turnover_annual": 6.1126173408,
+      "avg_n_names": 343.9748743719,
+      "eff_n_names": 257.6056095722
+    },
+    {
+      "frame": "F3L",
+      "arm": "armC",
+      "total_sr": 0.62417915835,
+      "port_t": -0.20006259015,
+      "port_t_p": 0.84143163058,
+      "active_ir": -0.054929318874,
+      "net_sr_active": -0.054929318874,
+      "cagr": 0.1050385103,
+      "mdd": 0.4422781898,
+      "calmar": 0.23749421229,
+      "turnover_annual": 5.3398630183,
+      "avg_n_names": 343.9748743719,
+      "eff_n_names": 257.6056095722
+    }
+  ],
+  "frame_metrics_F0": [
+    {
+      "frame": "F0",
+      "arm": "armA",
+      "total_sr": 0.60393390481,
+      "port_t": 0.62489841602,
+      "mdd": 0.64038432496,
+      "calmar": 0.21617840398,
+      "turnover_annual": 16.7372864322
+    },
+    {
+      "frame": "F0",
+      "arm": "armB",
+      "total_sr": 0.51398222764,
+      "port_t": -0.40899311682,
+      "mdd": 0.55869389453,
+      "calmar": 0.15924148625,
+      "turnover_annual": 19.1011055276
+    },
+    {
+      "frame": "F0",
+      "arm": "armC",
+      "total_sr": 0.72242751114,
+      "port_t": 0.85360816889,
+      "mdd": 0.51586394276,
+      "calmar": 0.29974650399,
+      "turnover_annual": 17.4174874372
+    }
+  ],
+  "dsr_diag_n_trials_1": {
+    "armA": 0.36232663744,
+    "armB": 0.30031732609,
+    "armC": 0.41003539922
+  },
+  "f3_longshort_diagnostic": {
+    "status": "diagnostic_only_not_binding",
+    "reason": "설계 원안 F3(센터드-랭크 Σ|w|=1)는 음의 가중 포함 = 롱숏. 도훈 mandate 2026-06-11 '롱숏 불허 — 검증 단계 포함 전면 long-only, L/S 수치는 판정 근거 사용 금지'. 같은 mandate 의 사상 규칙에 따라 long-only 사상판 F3L 로 사다리 3순위를 대체(PREREG §7).",
+    "gate_only": {
+      "pair": ["b_vs_a", "c_vs_a"],
+      "diff_sd_monthly": [0.015835396367, 0.014489622828],
+      "nw_inflation": [0.94146555145, 0.98247213455],
+      "mde_annual": [0.025427989222, 0.024280407363]
+    },
+    "note": "F3 의 paired t 는 산출하지 않았다 — 판정 바인딩 금지 대상의 판정량을 만들면 그 자체가 유혹 표면이 된다(armC 사전등록 §3 규율 승계)."
+  }
+}

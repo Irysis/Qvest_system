@@ -1,0 +1,22 @@
+{
+  "prereg_id": "dfa_v10_prereg_20260822",
+  "created_at": "2026-08-22",
+  "created_before_any_result": true,
+  "fq_id": "FQ-239",
+  "round": "R9 — 익스포저 트리거 재설계 (가이드 8-1, R8 기전 수리축)",
+  "rationale": "R8에서 crisis=mkt_jm 월말 Bear_Prob>expanding-q95 이진 트리거가 235개월 중 3회만 발화 — 일별 25.7% 발화가 월말 스냅샷+이진화로 붕괴(FQ-236 경고 재현). 죽은 것은 익스포저 레버가 아니라 트리거 샘플링. 구속 게이트는 calmar(MDD 0.46). 본 라운드는 트리거의 3개 재설계축을 사전등록 측정.",
+  "base_arms": ["v0 (12M active>0 EW paper6)", "C1 (연속가중 x broad-21 — R7 최선, pt 2.79/calmar 0.285)"],
+  "exposure_arms_prespecified": [
+    {"id": "E1_within_max", "spec": "월내 최대 트리거: crisis = (결정월 d 내 일별 Bear_Prob 최대) > expanding-q95(일별, 인과). 이진 exposure 0.70/1.00. 월말이 놓친 월중 위기 포착", "dof": 1},
+    {"id": "E2_cont_endpctile", "spec": "연속 스케일: exposure = 1 - 0.30*rank, rank = 월말 Bear_Prob의 인과 expanding 백분위(0~1). 이진화 제거", "dof": 1},
+    {"id": "E3_cont_within_mean", "spec": "월내 평균 연속: exposure = 1 - 0.30*rank(월내 평균 Bear_Prob의 인과 백분위). 두 수리 결합", "dof": 1}
+  ],
+  "exposure_only_baseline": "Market x exposure (각 트리거) — 8-1 순서 요건: 익스포저 층 단독 기여 분리",
+  "coef": "0.30 = 기존 CAUTION 노출 재사용(자유도 0 — R8과 동일). 트리거 정의만 자유도",
+  "accounting": "결정월 d=m-1 트리거 → m월 적용, 비용 += bps*|delta_exposure|, 잔여 현금 수익 0",
+  "adoption": "15bps에서 {calmar 개선 AND pt 비열등(>=-0.1)} vs 동일 base 무익스포저. 4.3 단서: 의도적 익스포저 결합이므로 MDD 10%p 문턱 N/A — 결합 사실+단독 기여 별도 기록",
+  "judgment": "채택 셀은 규칙 충족만. argmax 금지, 전 셀 보고. 헤드라인 = C1 base, 15bps",
+  "n_trials_cumulative": 50,
+  "selection_type": "chain",
+  "pin_tag": "smv_r2_20260820 연장"
+}

@@ -1,0 +1,47 @@
+{
+  "l_code": "L-AS-20260821_074219_6672",
+  "strategy_id": "STR_AS_20260821_074219_6672",
+  "grade": "F",
+  "core_reference": "분산비(VR(3)>1)로 추세 구간을 식별해 12-1 모멘텀 신호를 조건부 적용. VR<=1 종목은 신호 제거.",
+  "lesson_text": "ARFIMA_TSMOM: 등급 F, 연복리 15.5% (벤치마크 대비 +4.5%p), 샤프 0.55. 명확한 실패 패턴 — 역방향 가설 탐색 후보.",
+  "tags": ["ALPHA_SEARCH", "FAST_VALIDATION", "VALIDATED_HARD_FAIL"],
+  "created_at": "2026-08-21",
+  "research_mode": "alpha_search",
+  "created_by": "AlphaSearch",
+  "metric_type": "proxy",
+  "construction_type": "momentum",
+  "lcode_schema_version": 2,
+  "cagr_pct": 15.52,
+  "sharpe": 0.551,
+  "mdd_pct": 64.26,
+  "excess_cagr": 4.5,
+  "mechanism_hypothesis": "가설 '분산비(VR(3)>1)로 추세 구간을 식별해 12-1 모멘텀 신호를 조건부 적용. VR<=1 종목은 신호 제거.' — 검증 결과 지배 요인: FMT-01(MDD 64.3% > 45% — 선택 종목군의 위기 동반급락(구조적 꼬리위험)); FMT-04(MDD 64.3% > 35% & BM상관 0.75 >= 0.7 — 위기국면 동조 낙폭(국면필터 부재)); FMT-07(활성SR pre-2017 0.73 -> post-2017 -0.34 — 논문발표 후 알파 소진 패턴)",
+  "data_supported_conclusion": "측정치(proxy — run_hurdle_gate): CAGR 15.5% (BM 대비 +4.5%p), 샤프 0.55, MDD -64.3%, IR 0.24, 회전율 연 230%, OOS retention 0.57.",
+  "next_probe": "MDD 축 탈락(64.3%) — 신호력 보존 시 OVERLAY_CANDIDATE 라우트(국면/DD overlay는 S5/QEPM 단계) 또는 저변동 결합 재검증.",
+  "fmt_codes": [
+    "FMT-01",
+    "FMT-04",
+    "FMT-07"
+  ],
+  "oos_retention": 0.566,
+  "falsification_attempts": [
+    {
+      "test": "PIT 정적스캔(detect_lookahead)",
+      "result": "survived",
+      "effect_retained": 1,
+      "detail": "CLEAN — 위반 시 백테 중단 정책으로 emit 시점 통과 보장"
+    },
+    {
+      "test": "IS65/OOS35 활성SR retention (hurdle D062, proxy) — 과적합 반증 시도",
+      "result": "survived",
+      "effect_retained": 0.566,
+      "detail": "retention 0.57 (measurement-graduation §3 하한 0.5 기준)"
+    },
+    {
+      "test": "서브기간 분해(pre/post-2017)",
+      "result": "falsified",
+      "effect_retained": "NA",
+      "detail": "후반부 알파 붕괴: 활성SR pre-2017 0.73 -> post-2017 -0.34 — 논문발표 후 알파 소진 패턴"
+    }
+  ]
+}

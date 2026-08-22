@@ -1,0 +1,44 @@
+[config.R] PROJECT_ROOT: C:/Users/99922/OneDrive/Quant_Module_Moltbot
+[factor_db_connector] Loaded. Functions: load_month_factors(), load_daily_factors(),
+  compute_rolling_ic_all(), group_factors_by_family(), align_factor_direction()
+  de-dup: 위 3종 모두 dedup=FALSE 기본(무변경). 선별/랭킹/Ω 추정이면 dedup=TRUE.
+[backtest_result_contract.R] Loaded — Backtest Result Contract v1.0
+  Functions: build_bt_result() / validate_bt_result()
+  10 components: manifest, strategy_spec, nav, period_returns, holdings, benchmark_returns, metrics, benchmark_compare, rolling_metrics, drawdowns, audit
+[weighted_screen_bt.R] Loaded — weighted_screen_bt() (임의 가중 contract-grade A/B primitive)
+[ramp_io.R] Loaded — ramp_write_parquet/ramp_write_json (§2.4 meta enforced)
+[backtest_result_contract.R] Loaded — Backtest Result Contract v1.0
+  Functions: build_bt_result() / validate_bt_result()
+  10 components: manifest, strategy_spec, nav, period_returns, holdings, benchmark_returns, metrics, benchmark_compare, rolling_metrics, drawdowns, audit
+[canonical_screen_bt.R] Loaded — canonical_screen_bt() (v8.x WS1 real-computation helper)
+[factor_validation.R] Loaded — build_monthly_forward_returns / build_adv20_t1 / validate_factor / approve_factors
+[build_monthly_forward_returns] [FQ-232] 유동성 자 복원: liq_ruler='adv20_t1' (source=injected_adv20) · 앵커 덮개 100.0% (382123행)
+
+== 프로브 5단 배포 후보 (2011-08~2026-07, 180개월, 25종목 long-only, 0.20 cap, 15bps, adv20>=2e8) ==
+                arm     n PORT_t     IR active_ann netSR    TO t_pre2017
+             <char> <int>  <num>  <num>      <num> <num> <num>     <num>
+1:  D1_Zcap_monthly   180 1.8265 0.4623      8.188 0.629 11.42      1.76
+2:  D2_Zcap_quarter   180 1.7153 0.4618      8.402 0.641  5.99      1.92
+3: D3_Zcap_buffer40   180 1.5294 0.4106      7.057 0.585  8.00      1.62
+4:  D4_Zew_buffer40   180 1.0248 0.2911      5.098 0.629  6.43      2.66
+5: X1_ctrl_Zcap_buf   180 0.0703 0.0186      0.373 0.569  8.64      1.32
+   t_post2017 n_names
+        <num>   <num>
+1:      0.797    25.0
+2:      0.436    24.6
+3:      0.429    25.0
+4:     -1.549    25.0
+5:     -0.787    25.0
+
+[기준] 지수레벨 A5: PORT_t=+2.725 IR=+0.754 active=+4.96%p/yr TO=2.30(지수-간만 과금)
+[paired NW-t] D3_Zcap_buffer40 − X1(w_f=1/21 대조군) = +1.155 (Δ +6.68%p/yr)
+
+[비용 민감도 — D3]
+   5bps: PORT_t=+1.709 active=+7.86%p/yr
+  15bps: PORT_t=+1.529 active=+7.06%p/yr
+  25bps: PORT_t=+1.351 active=+6.26%p/yr
+  40bps: PORT_t=+1.085 active=+5.06%p/yr
+
+PROBE_A5_DEPLOY_DONE
+Warning message:
+package 'arrow' was built under R version 4.5.3 

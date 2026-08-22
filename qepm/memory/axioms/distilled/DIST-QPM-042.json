@@ -1,0 +1,90 @@
+{
+  "schema_version": "distilled_v1",
+  "dist_id": "DIST-QPM-042",
+  "cluster_key": "86034e8c582b",
+  "candidate_id": "CAND_20260820_qepm_legacy_infra_process_conditional_L-142_L-148_L-161A",
+  "status": "expired",
+  "statement_refined": null,
+  "retry_condition": null,
+  "refined_at": null,
+  "refined_by": null,
+  "promoted_to_axiom": null,
+  "created_at": "2026-08-20T22:41:55+00:00",
+  "updated_at": "2026-08-20T23:10:49+00:00",
+  "research_mode": "qepm_legacy",
+  "metric_type": "estimated",
+  "type": "methodological",
+  "polarity": "conditional",
+  "statement_draft": "[방법론 조건부 규칙 초안] family=infra_process, tags=CATALOG_INTEGRITY,duplicate_factor,AX-000_honest, supporting=12건 L-code. (promote.R 5축 검증에서 범위·메커니즘·OOS 확정 필요)",
+  "supporting_l_codes": [
+    "L-142",
+    "L-148",
+    "L-161A",
+    "L-162A",
+    "L-167",
+    "L-612",
+    "L-722",
+    "L-731",
+    "L-QPM-20260607-001",
+    "L-QPM-20260718_101841",
+    "L-QPM-20260820_PROXY_CHECKER_INSTALL",
+    "L-QPM-20260821_R11_RETRY_PREVENTION_DIAGNOSIS"
+  ],
+  "scope_draft": {
+    "market": "KR",
+    "factor_family": "infra_process",
+    "regime": null,
+    "construction_types": null
+  },
+  "evidence_draft": {
+    "independent_l_codes": 12,
+    "independent_strategies": 9,
+    "strategies": [
+      "WT-D20260606_001+002",
+      "CLEANER_DISTILL_CLAIM_PROTOCOL",
+      "AXIOM_LOOP_R11_RETRY_PREVENTION_20260821",
+      "STR_1506_ownership_concentration",
+      "STR_1506_ownership_concentration_DD620",
+      "NOJUDGE_SWEEP_V2_20260417",
+      "PROXY_CHECKER_INSTALL_20260820",
+      "NO_JUDGE_SWEEP_20260417",
+      "CODEX_CRITIC_INFRA"
+    ],
+    "effect_direction_consistency": null,
+    "note": "evidence_draft — promote.R 5축 검증에서 hurdle_result/grade_a_catalog 교차검증으로 확정",
+    "n_eff_signatures": 5,
+    "independent_constructions": 4,
+    "constructions": [
+      "infra_checker",
+      "single_factor_long_only",
+      "structural_limit",
+      "value"
+    ],
+    "metric_types": [
+      "backtested",
+      "estimated",
+      "unavailable"
+    ]
+  },
+  "falsification_draft": {
+    "attempts": [
+      "F1 설치 여부 — git grep 참조 census 로 자기파일+자기테스트뿐임을 확인(2곳). 배선 후 재측정. F2 호출자 오염 — deparse(get(\"%||%\")) 로 실제 바인딩을 런타임에 찍어 소스 39행 정의와 다름을 확정. 가설 4개(연산자 텍스트 동일 · ts 필드 길이 · 이름 충돌 · 직접 평가)가 전부 기각된 뒤 얻은 결론. F3 언어 간 정합 — R/python sha 를 나란히 산출해 527837f1428c 동치 확인. F4 우회 차단 양방향 — B1/B3 는 sha 불변(차단), 수치 1자·표 행 추가는 sha 변경(검출) = 과잉 교정 아님. F5 위반 주입(설치 실효) — index 3건 제거 시 'count_mismatch(corpus=494, index=491); missing_in_index=3' 발화, 복구 시 OK 회귀. F6 회귀 — 배터리 9종 182 PASS / 0 FAIL, memory health Hard fails 0.",
+      "F1 로직 사망 가설 — hurdle_gate.R 분기를 직접 읽어 5단 점수 체계가 온전함을 확인(기각). F2 입력 결측 가설 — 산출물 400건 전수에서 max_corr='NA'/independence='unknown'/bonus_base=0 확인(성립). F3 원천 존재 여부 — s3_orthogonality*.json 고유 8건 전부 legacy STR_*/H_* 명명, 최근 라운드 산출 0건. F4 대체 지표 가용성 — 최근 544건 표본에서 delta_ir 132 vs 상관 축 5종 전부 0건 ⇒ 선택지 A 불가(기각). F5 워크트리 부풀림 통제 — 142건이 사본 포함임을 디렉터리 분포로 확인 후 고유 8건으로 교정. F6 경로 어긋남 가설 — 루트 stage_artifacts 에 파일이 있어 경로 문제로 보였으나, 파일명이 전부 legacy 라 '경로'가 아니라 '시대' 문제로 재판정."
+    ],
+    "note": "L-code 기록 반증 시도 실값 집계"
+  },
+  "mechanism_draft": {
+    "economic_explanation": "검사기가 요구하는 입력과 파이프라인이 생산하는 산출물은 서로 다른 시대에 설계될 수 있다. hurdle_gate 의 novelty 축은 legacy 전략(STR_*) 시대에 s3_orthogonality 산출을 전제로 만들어졌는데, 현행 라운드(FQ-*/WT-*)는 그 산출을 만들지 않고 대신 delta_ir 계열을 남긴다. 그 결과 검사기는 문법적으로 살아 있으면서 의미적으로 한 번도 발화하지 않는다 — 그리고 NA 가드가 조용히 skip 하므로 '검사가 돌았는데 벌점이 0' 과 '검사가 도달하지 못함' 이 산출물에서 구별되지 않는다. (멤버 가설 3건 — promote.R에서 일치성 재검증)",
+    "mechanism_type": "unknown",
+    "causal_plausibility": null
+  },
+  "oos_validation_draft": {
+    "oos_months": null,
+    "oos_effect_vs_is": null,
+    "note": "promote.R r4_regime_payoff / essence_score 경유 확정"
+  },
+  "cluster_members_count": 12,
+  "expired_at": "2026-08-22",
+  "superseded_by": "DIST-QPM-043",
+  "expire_reason": "superseded_by=DIST-QPM-043 — 같은 클러스터(family/polarity/type/mode 동일)의 supporting L-code 진부분집합. 지식 손실 0 검증 통과(구 카드 L-code 전량이 DIST-QPM-043에 포함). 엔진 자동 회수 2026-08-22 (cluster_extractor.supersede_subsumed — 재등재 시 자동 supersede)."
+}

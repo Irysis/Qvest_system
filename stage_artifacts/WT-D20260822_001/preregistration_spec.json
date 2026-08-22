@@ -1,0 +1,68 @@
+{
+  "wt_id": "WT-D20260822_001",
+  "fq_ref": "FQ-236",
+  "emitted_by": "alpha-research",
+  "emitted_at": "2026-08-22",
+  "order_note": "본 파일은 결과량 계산·회귀 측정을 실행하기 **전**에 기록한다. 아래 파라미터는 착수 후 변경 금지(사전등록 #5·#7 승계). 자유 파라미터는 전부 여기에 열거되며 sweep 없음(selection_type=single).",
+  "inherited_from": "qepm/mailbox/worktask/WT-D20260822_001/alpha_hypothesis.json (verdict=designed) — mechanism/falsification/regime_scope 승계, 재작성 없음",
+
+  "universe_construction": {
+    "membership_source": ".cache/RAWDATA.parquet :: K200, KQ150 (일별 플래그)",
+    "rule": "홀딩월 m 의 유니버스 = 결정일 d0(= m 의 첫 거래일 직전 거래일)에 K200>0 또는 KQ150>0 인 종목",
+    "pit_note": "멤버십·유동성·거래정지 판정 전부 d0 (홀딩월 시작 전) 정보로만 — C5/C10",
+    "exclusions_at_d0": ["AdminStock == 1 (관리종목)", "TradingHalt == 1 (거래정지)"],
+    "liquidity_filter": {
+      "measure": "adv20 = 직전 20 거래일 (Close x Vol) 평균, d0 종점",
+      "threshold_krw": 200000000,
+      "threshold_basis": "CLAUDE.md Production Constraints (LIQ_THRESHOLD = 2e8). ★request.json 의 liquidity_min_won_20d_avg = 5e7 과 불일치 — 헌법 2e8 을 PRIMARY 로 고정하고 불일치는 challenge_note 에 결함 기록. 5e7 판은 커버리지 진단으로만 병기(판정축 아님)."
+    },
+    "min_cross_section_n": 50,
+    "min_daily_obs_in_month": "해당 월 거래일 수의 60% 이상 (부분거래·상장폐지 월 왜곡 방지)"
+  },
+
+  "return_construction": {
+    "Ret_1m": "종목별 월내 일간 Ret 복리 = prod(1+Ret)-1. ★단일 자산의 시간축 집계이며 포트폴리오 합성이 아니다(backtest-contract 자체합성 금지 조항은 포트 수익률 구성 대상 — 저장소 선례 insider_safe_live_track.R:25 동일 규약).",
+    "sanity_firewall": "|Ret| > 1.0 (물리 불가) 인 일간 관측은 NA 처리 — rawdata_sanitize.R::ret_sanity_firewall HARD 축 중 물리불가 조항만 적용. 결과량이 분위 기반이라 극단 오염에 구조적으로 둔감함을 병기."
+  },
+
+  "outcomes": {
+    "Y1a_shape": "A_t = [(q90-q50)-(q50-q10)] / (q90-q10)  — 무차원 형태",
+    "Y1b_magnitude": "M_t = (q90-q50)-(q50-q10)  — 수익 단위(월)",
+    "Y2_tail_excess": "T_t = mean(r > q90_roll) - mean(r < q10_roll), q_roll = 직전 60개월 풀링 횡단면 분위 (C1 rolling only, full-sample 금지)",
+    "quantile_type": "표본 분위 type-7 (numpy 기본 linear = R type 7)",
+    "moment_policy": "3·4차 적률 미사용"
+  },
+
+  "conditioning_variable": {
+    "status": "★inherited PRIMARY (HY_Spread) 는 데이터 원천 제약으로 사용 불가 — challenge_note 참조. 재설계 요청 절차 경유 후 확정.",
+    "pit_rule_template": "S_t- = max{Date <= (홀딩월 첫 거래일 - L calendar days)} 관측값. L 은 계열별 발표시차 테이블에서 주입(어댑터가 직접 주입, ctx_providers 대행 없음 — C11).",
+    "transform": "원수준 PRIMARY + 직전 120개월 rolling median/MAD z 강건성 1판 (rolling only, C1). 그 외 변형 금지."
+  },
+
+  "regression_spec": {
+    "form": "Y_t = a + b * S_{t-} + e_t",
+    "se": "Newey-West lag-3",
+    "t_threshold": 2.0,
+    "n_specs": "PRIMARY 1 + corroboration 1 + 사전고정 강건성 1판. argmax 선택 없음 → selection_type = single, DSR 은 진단 산출만(게이트 아님)"
+  },
+
+  "decision_grid_F_A": {
+    "성립": "t(b) <= -2.0 AND 예측부호 AND F_D placebo 95분위 초과",
+    "기각-부호": "t(b) >= +2.0",
+    "효과없음(powered null)": "95% CI (연환산 효과 단위) 가 (-req, +req) 에 완전 포함",
+    "미결(underpowered)": "그 외",
+    "req_definition": "req = required_effect(n, t=2.0, sd_monthly = 해당 결과량 계열 sd, nw_inflation = 계열 실측) $ required_annual. ★승계 sd 0.0669 는 차수 판단용이며 판정에 쓰지 않는다(직접 재산출값 사용, nw 는 계약 기본 = 계열 실측)."
+  },
+  "decision_grid_F_B": "b(Y1b) 유의 AND b(Y1a) 효과없음 => '분산 스케일링 전용' 기각",
+  "decision_grid_F_C": "corr(S_t-, FlowAsym_t) NW t >= +2.0 채널 지지 / <= -2.0 채널 기각 / 그 외 미결(advisory)",
+  "decision_grid_F_D": "AR(1)-matched 200 draw placebo. |b_obs| < placebo 95분위 => 성립 선언 불가(미결 강등). 양성 대조 1건 보존 의무.",
+  "decision_grid_F_E": "leave-2026-out 재추정 부호 반전 시 판정 상한 = 미결_recent_dominated",
+
+  "prohibited": [
+    "이분 라벨화 (연속 상태변수 의무)",
+    "표적 교체(분포-표적 학습기) 혼입 — Lane A 자유도 분리",
+    "공분산/weight/최적화 (risk·optimizer 소관)",
+    "제약 완화 레버 제시 (AX-000 따름정리·INV-7)",
+    "추가 계열·변형 스캔 (sweep 금지)"
+  ]
+}

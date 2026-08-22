@@ -1,0 +1,44 @@
+{
+  "prereg_id": "smv_v6_prereg_20260821",
+  "created_at": "2026-08-21",
+  "created_before_any_result": true,
+  "fq_id": "FQ-239",
+  "round": 2,
+  "mandate": "도훈 2026-08-21 — '성과 개선을 위해 각각의 요소들을 튜닝: 피처 교체 / 오버레이 신규 계층 / 기설계 하네스 적용'",
+  "baseline": {
+    "cell": "M0-roll f15 TE3 (라운드 1 헤드라인)",
+    "port_t_5bps": 1.033, "port_t_15bps": 0.631,
+    "oos_retention_5bps": 0.163, "calmar_5bps": 0.394, "mdd": 0.322,
+    "source": ".cache/_smv_v5_measure_f15_roll.rds (essence_score v2)"
+  },
+  "axes_one_dof_each": [
+    {"axis": "T1_overlay", "spec": "BL 포트 위 시장-국면 오버레이 계층(논문 §4 자기제안 확장 + 시스템 입증 β 레버): exposure_m = 1 − 0.30·signal_m (계수 0.30 = 기존 CAUTION 노출 0.70 재사용, 신규 자유도 0), 잔여는 현금(수익 0). 월말 신호 → 익월 적용(C5). 신호원 2종 사전등록: (a) smv_breadth = mean(bear_prob 6종, smv_factor_regime_daily.parquet 월말값) (b) mkt_jm = regime_jump_daily.parquet Bear_Prob 월말값(기존 시장 단일축 JM, PIT 보증). 비용 = 기존 net 수익 × exposure − bps×|Δexposure| (보수 근사 — 기존 거래비용을 exposure로 축소하지 않음, 셀이 게이트 접근 시 엔진 내 정밀 재측정)",
+     "mechanism": "국면 신호의 가치가 위기월에 집중(라운드 1 실측 +0.57 vs +0.18 %/mo)되므로 상시 배분이 아니라 노출 스케일로 소비하는 것이 정합 그릇. MDD·calmar 직격.",
+     "gates": "assert_overlay_pit + 신호 lag1 스트레스 + 판정은 essence_score 경유"},
+    {"axis": "T2_features_kr", "spec": "f17k = f15 + credit_d21(= ewm(diff(KR_CorpBBB − KR_Gov3Y), 21), ECOS 당일 고시 — T 적법·lag1 스트레스 의무) + fx_d21(= ewm(diff(log(KRW_USD)), 21), fred_macro_wide, ★t−1 lag 의무). 논문 US 시장환경 피처가 KR 무기여였으므로 KR-특이 축으로 대체 검증.",
+     "mechanism": "KR 팩터 사이클(특히 value/growth 로테이션·방어 국면)은 외국인 자금 흐름–환율 연동과 신용 사이클에 조건부라는 문헌·시스템 선행 근거(FRED/DRV Combined 국면 축에 신용·환율 기포함).",
+     "cells": "f17k × tune=roll × M0 × TE{1..4} × cost{5,15} 전수보고 — f15-roll 동일 셀 대조"},
+    {"axis": "T3_combo", "spec": "조합 1셀 사전지정(성과 무관): T2 f17k-roll × T1(a) smv_breadth 오버레이 × TE3. 사후 조합 선택 금지.",
+     "mechanism": "피처 개선과 노출 스케일은 독립 층 — 가산성 확인용 단일 셀."}
+  ],
+  "headline_prespecified": {
+    "primary": "T1(a) smv_breadth 오버레이 on f15-roll M0 TE3 15bps",
+    "secondary": "T2 f17k-roll M0 TE3 15bps",
+    "note": "15bps = Qvest 정본 비용. 5bps는 논문 대조 병기."
+  },
+  "judgment_rules": {
+    "selection_type": "chain — 축별 기전 사전등록, argmax 최종안 선택 금지, 전 셀 보고",
+    "adoption": "채택 = 15bps에서 baseline 대비 {calmar 개선 AND PORT_t 비열등(≥−0.1)} 또는 {PORT_t 개선 AND MDD 비악화}. 미달 = config-scoped 기록 후 다음 축",
+    "oos_protocol": "essence_score(v2, chain) 경유만",
+    "pit": "오버레이 신호 월말→익월(C5), fx t−1, credit lag1 스트레스, assert_overlay_pit 전수"
+  },
+  "amendment_1_before_measurement": {
+    "added_at": "2026-08-21 (T1·T2 실측 후, T4 측정 전 — 신규 축 사전등록)",
+    "axis": "T4_crisis_conditional_cadence",
+    "spec": "하이브리드 회계 H1: 평시 = M0 월간 비중(월말 결정→익월, 일별 드리프트) / 위기 = mkt_jm Bear_Prob(t−2 종가) > 0.80 인 날만 D1 일별 비중(w_dec[t−2])으로 교체. 문턱 0.80 단일 사전등록(그리드 금지). 비용 = 일별 Σ|Δw| × bps.",
+    "mechanism": "라운드 1 실측 — D1은 전 기간 열위이나 위기월(시장 하위 5%)에선 M0의 3배 우위(+0.57 vs +0.18 %/mo). 일별 반응성의 가치가 위기에 국한되므로 위기에만 켠다. T1 오버레이 기각의 기전(랠리 참여 손실)도 회피 — 노출은 항상 1, 바뀌는 건 리밸런싱 케이던스뿐.",
+    "adoption": "동일 규칙 — 15bps에서 {calmar 개선 AND PORT_t 비열등} 또는 {PORT_t 개선 AND MDD 비악화}"
+  },
+  "n_cells_total": "T1: 2신호원×4TE×2cost=16 + T2: 4TE×2cost=8 + T3: 1×2cost=2 + T4: 4TE×2cost=8 = 34셀 전수보고",
+  "pin_tag": "smv_r2_20260820 (동일 pin 연장 — 입력 불변)"
+}

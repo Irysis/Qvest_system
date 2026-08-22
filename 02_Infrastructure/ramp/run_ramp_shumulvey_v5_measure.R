@@ -8,7 +8,8 @@ source("02_Infrastructure/contracts/audit_bt_result.R")
 source("02_Infrastructure/contracts/essence_score.R")
 
 KEY<-Sys.getenv("SMV_KEY","f15")
-Z<-readRDS(sprintf(".cache/_smv_v5_%s.rds",KEY)); RES<-Z$RES
+.dfa_rds<-function(key){p<-sprintf(".cache/_dfa_v5_%s.rds",key); if(file.exists(p))p else sprintf(".cache/_smv_v5_%s.rds",key)}
+Z<-readRDS(.dfa_rds(KEY)); RES<-Z$RES
 
 ## 월간 시장 수익 (동일 parquet)
 R<-as.data.table(read_parquet(Z$idxfile)); R[,Date:=as.Date(Date)]; setorder(R,Date); R<-R[is.finite(Market)]

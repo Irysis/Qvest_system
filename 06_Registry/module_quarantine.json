@@ -1514,19 +1514,22 @@
     "STR_AS_20260813_071419_38300": {
       "strategy_id": "STR_AS_20260813_071419_38300",
       "grade": "F",
-      "role": null,
+      "role": {},
       "origin_mode": "alpha_search",
       "sim_result_path": "stage_artifacts/module_quarantine/STR_AS_20260813_071419_38300/sim_result.rds",
       "n_days": 5307,
-      "date_range": ["2005-02-03", "2026-08-11"],
+      "date_range": [
+        "2005-02-03",
+        "2026-08-11"
+      ],
       "registered_at": "2026-08-13T07:20:06+09:00",
       "metric_type": "proxy",
       "fr_eligible": false,
       "frozen": false,
-      "source_contract_id": null,
+      "source_contract_id": {},
       "module_hash": "56c6535a51036843acc09b6959c59337",
-      "build_version": null,
-      "cost_model_version": null,
+      "build_version": {},
+      "cost_model_version": {},
       "bt_result_path": "stage_artifacts/alpha_search/20260813_071419_38300/bt_result.rds",
       "contract": {
         "policy": "v8.1_fr_input_floor",
@@ -1536,15 +1539,184 @@
       "meta": {
         "strategy_idea": "가격제한(서킷브레이커) 시장에서 상한가 마감 후 잠재 초과수익 이월 효과: 최근 21거래일 상한가 근접 경험 비율이 높을수록 다음 달 양수 수익 예측 (Das 2026 arXiv:2608.08625)",
         "score": 41.6,
-        "f_grade_reasons": ["게이트 사유: Structural drawdown (55%+ episodes>=6): MDD 64.4%, 45%+ episodes=3/15, max_underwater=117/252", "FMT-01 Structural MDD: MDD 64.4% > 45% — 선택 종목군의 위기 동반급락(구조적 꼬리위험)", "FMT-04 Regime Blindness: MDD 64.4% > 35% & BM상관 0.79 >= 0.7 — 위기국면 동조 낙폭(국면필터 부재)"],
-        "fmt_codes": ["FMT-01", "FMT-04"],
+        "f_grade_reasons": [
+          "게이트 사유: Structural drawdown (55%+ episodes>=6): MDD 64.4%, 45%+ episodes=3/15, max_underwater=117/252",
+          "FMT-01 Structural MDD: MDD 64.4% > 45% — 선택 종목군의 위기 동반급락(구조적 꼬리위험)",
+          "FMT-04 Regime Blindness: MDD 64.4% > 35% & BM상관 0.79 >= 0.7 — 위기국면 동조 낙폭(국면필터 부재)"
+        ],
+        "fmt_codes": [
+          "FMT-01",
+          "FMT-04"
+        ],
         "bt_result_path": "stage_artifacts/alpha_search/20260813_071419_38300/bt_result.rds",
+        "bt_contract_status": "OK"
+      }
+    },
+    "STR_AS_20260821_073113_9048": {
+      "strategy_id": "STR_AS_20260821_073113_9048",
+      "grade": "F",
+      "role": {},
+      "origin_mode": "alpha_search",
+      "sim_result_path": "stage_artifacts/module_quarantine/STR_AS_20260821_073113_9048/sim_result.rds",
+      "n_days": 3036,
+      "date_range": [
+        "2014-04-03",
+        "2026-08-20"
+      ],
+      "registered_at": "2026-08-21T07:40:36+09:00",
+      "metric_type": "proxy",
+      "fr_eligible": false,
+      "frozen": false,
+      "source_contract_id": {},
+      "module_hash": "9e686c34d9bf3b1c4173d6ba52c23b0f",
+      "build_version": {},
+      "cost_model_version": {},
+      "bt_result_path": "stage_artifacts/alpha_search/20260821_073113_9048/bt_result.rds",
+      "contract": {
+        "policy": "v8.1_fr_input_floor",
+        "contract_pass": false,
+        "eligibility_reason": "metric_type != backtested; contract_pass != TRUE; frozen != TRUE; source_contract_id missing; build_version missing; cost_model_version missing"
+      },
+      "meta": {
+        "strategy_idea": "동적 팩터 배분—국면 스위칭 신호 (논문명 기반 전략명, 도훈 2026-08-21 개명. 원논문 'Dynamic Factor Allocation Leveraging Regime-Switching Signals', Shu & Mulvey, JPM 51(3) 2025 / arXiv:2410.14841) BL 팩터 비중의 종목 전파: 팩터별 Sparse Jump Model 국면 → Black-Litterman 팩터 비중(보정 회계 M0-roll TE3, FQ-239 v5) → Score_i = Σ_f w_f·Z_f,i (V12/S01/M09/Q08/D03/GR07). 차별점(INV-7): 6월 stock25 음수는 동월-결함 상태 위 실측 — 본 런은 보정 상태·신규 vintage·하네스 공식 채점. 구명 SHUMULVEY 계열 승계",
+        "score": 22.8,
+        "f_grade_reasons": [
+          "게이트 사유: Structural drawdown (45%+ episodes>=15): MDD 64.0%, 45%+ episodes=15/15, max_underwater=58/252",
+          "FMT-01 Structural MDD: MDD 64.0% > 45% — 선택 종목군의 위기 동반급락(구조적 꼬리위험)",
+          "FMT-02 Factor Degeneration: IR -0.31 < -0.1 & 초과CAGR -6.5%p < 0 — KR에서 팩터 방향 역작동 의심",
+          "FMT-07 Publication Decay: 활성SR pre-2017 0.82 -> post-2017 -0.64 — 논문발표 후 알파 소진 패턴",
+          "알파 부재: 정보비율 -0.31로 벤치 대비 기여가 음수/미약"
+        ],
+        "fmt_codes": [
+          "FMT-01",
+          "FMT-02",
+          "FMT-07",
+          "FMT-08"
+        ],
+        "bt_result_path": "stage_artifacts/alpha_search/20260821_073113_9048/bt_result.rds",
+        "bt_contract_status": "OK"
+      }
+    },
+    "STR_AS_20260821_074219_6672": {
+      "strategy_id": "STR_AS_20260821_074219_6672",
+      "grade": "F",
+      "role": {},
+      "origin_mode": "alpha_search",
+      "sim_result_path": "stage_artifacts/module_quarantine/STR_AS_20260821_074219_6672/sim_result.rds",
+      "n_days": 5313,
+      "date_range": [
+        "2005-02-03",
+        "2026-08-20"
+      ],
+      "registered_at": "2026-08-21T07:49:57+09:00",
+      "metric_type": "proxy",
+      "fr_eligible": false,
+      "frozen": false,
+      "source_contract_id": {},
+      "module_hash": "2fbc56b8b7fec0f80fcf534df7e78605",
+      "build_version": {},
+      "cost_model_version": {},
+      "bt_result_path": "stage_artifacts/alpha_search/20260821_074219_6672/bt_result.rds",
+      "contract": {
+        "policy": "v8.1_fr_input_floor",
+        "contract_pass": false,
+        "eligibility_reason": "metric_type != backtested; contract_pass != TRUE; frozen != TRUE; source_contract_id missing; build_version missing; cost_model_version missing"
+      },
+      "meta": {
+        "strategy_idea": "분산비(VR(3)>1)로 추세 구간을 식별해 12-1 모멘텀 신호를 조건부 적용. VR<=1 종목은 신호 제거.",
+        "score": 37.6,
+        "f_grade_reasons": [
+          "게이트 사유: Structural drawdown (55%+ episodes>=6): MDD 64.3%, 45%+ episodes=4/15, max_underwater=115/252",
+          "FMT-01 Structural MDD: MDD 64.3% > 45% — 선택 종목군의 위기 동반급락(구조적 꼬리위험)",
+          "FMT-04 Regime Blindness: MDD 64.3% > 35% & BM상관 0.75 >= 0.7 — 위기국면 동조 낙폭(국면필터 부재)",
+          "FMT-07 Publication Decay: 활성SR pre-2017 0.73 -> post-2017 -0.34 — 논문발표 후 알파 소진 패턴"
+        ],
+        "fmt_codes": [
+          "FMT-01",
+          "FMT-04",
+          "FMT-07"
+        ],
+        "bt_result_path": "stage_artifacts/alpha_search/20260821_074219_6672/bt_result.rds",
+        "bt_contract_status": "OK"
+      }
+    },
+    "STR_AS_20260821_074008_16680": {
+      "strategy_id": "STR_AS_20260821_074008_16680",
+      "grade": "F",
+      "role": {},
+      "origin_mode": "alpha_search",
+      "sim_result_path": "stage_artifacts/module_quarantine/STR_AS_20260821_074008_16680/sim_result.rds",
+      "n_days": 3077,
+      "date_range": [
+        "2014-02-05",
+        "2026-08-20"
+      ],
+      "registered_at": "2026-08-21T07:53:22+09:00",
+      "metric_type": "proxy",
+      "fr_eligible": false,
+      "frozen": false,
+      "source_contract_id": {},
+      "module_hash": "1264e4ab8b0416035ffa624c4c1a3630",
+      "build_version": {},
+      "cost_model_version": {},
+      "bt_result_path": "stage_artifacts/alpha_search/20260821_074008_16680/bt_result.rds",
+      "contract": {
+        "policy": "v8.1_fr_input_floor",
+        "contract_pass": false,
+        "eligibility_reason": "metric_type != backtested; contract_pass != TRUE; frozen != TRUE; source_contract_id missing; build_version missing; cost_model_version missing"
+      },
+      "meta": {
+        "strategy_idea": "매크로 지표(신용스프레드, 환율, VIX, 산업생산 등) 변화에 beta가 높은 종목이 지표 변화 후 후행 반응하는 현상. signal=sum(beta_im * delta_macro_m_lag2). Lane D 매크로 조건부 비대칭 알파.",
+        "score": 6.2,
+        "f_grade_reasons": [
+          "게이트 사유: Structural drawdown (45%+ episodes>=15, 55%+ episodes>=6, 45%+ days>=25%): MDD 63.8%, 45%+ episodes=49/15, max_underwater=234/252",
+          "FMT-01 Structural MDD: MDD 63.8% > 45% — 선택 종목군의 위기 동반급락(구조적 꼬리위험)",
+          "FMT-02 Factor Degeneration: IR -0.57 < -0.1 & 초과CAGR -11.8%p < 0 — KR에서 팩터 방향 역작동 의심",
+          "알파 부재: 정보비율 -0.57로 벤치 대비 기여가 음수/미약",
+          "초과수익 부족: 벤치 대비 -11.8%p"
+        ],
+        "fmt_codes": [
+          "FMT-01",
+          "FMT-02"
+        ],
+        "bt_result_path": "stage_artifacts/alpha_search/20260821_074008_16680/bt_result.rds",
+        "bt_contract_status": "OK"
+      }
+    },
+    "STR_AS_20260821_075357_19336": {
+      "strategy_id": "STR_AS_20260821_075357_19336",
+      "grade": "F",
+      "role": null,
+      "origin_mode": "alpha_search",
+      "sim_result_path": "stage_artifacts/module_quarantine/STR_AS_20260821_075357_19336/sim_result.rds",
+      "n_days": 3077,
+      "date_range": ["2014-02-05", "2026-08-20"],
+      "registered_at": "2026-08-21T08:09:21+09:00",
+      "metric_type": "proxy",
+      "fr_eligible": false,
+      "frozen": false,
+      "source_contract_id": null,
+      "module_hash": "1264e4ab8b0416035ffa624c4c1a3630",
+      "build_version": null,
+      "cost_model_version": null,
+      "bt_result_path": "stage_artifacts/alpha_search/20260821_075357_19336/bt_result.rds",
+      "contract": {
+        "policy": "v8.1_fr_input_floor",
+        "contract_pass": false,
+        "eligibility_reason": "metric_type != backtested; contract_pass != TRUE; frozen != TRUE; source_contract_id missing; build_version missing; cost_model_version missing"
+      },
+      "meta": {
+        "strategy_idea": "매크로 지표(신용스프레드, 환율, VIX, 산업생산 등) 변화에 beta가 높은 종목이 지표 변화 후 후행 반응하는 현상. signal=sum(beta_im * delta_macro_m_lag2). Lane D 매크로 조건부 비대칭 알파.",
+        "score": 6.2,
+        "f_grade_reasons": ["게이트 사유: Structural drawdown (45%+ episodes>=15, 55%+ episodes>=6, 45%+ days>=25%): MDD 63.8%, 45%+ episodes=49/15, max_underwater=234/252", "FMT-01 Structural MDD: MDD 63.8% > 45% — 선택 종목군의 위기 동반급락(구조적 꼬리위험)", "FMT-02 Factor Degeneration: IR -0.57 < -0.1 & 초과CAGR -11.8%p < 0 — KR에서 팩터 방향 역작동 의심", "알파 부재: 정보비율 -0.57로 벤치 대비 기여가 음수/미약", "초과수익 부족: 벤치 대비 -11.8%p"],
+        "fmt_codes": ["FMT-01", "FMT-02"],
+        "bt_result_path": "stage_artifacts/alpha_search/20260821_075357_19336/bt_result.rds",
         "bt_contract_status": "OK"
       }
     }
   },
-  "last_updated": "2026-08-13T07:20:06+09:00",
-  "n_modules": 39,
+  "last_updated": "2026-08-21T08:09:21+09:00",
+  "n_modules": 43,
   "superseded": {
     "STR_AS_20260613_094148_265194": {
       "strategy_id": "STR_AS_20260613_094148_265194",

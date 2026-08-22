@@ -1,0 +1,78 @@
+{
+  "schema_version": "v54_ax_p0_mode",
+  "candidate_id": "CAND_20260822_ramp_momentum_conditional_L-RAMP-20260619_132312_L-RAMP-20260619_141402_L-RAMP-20260620_103109",
+  "research_mode": "ramp",
+  "metric_type": "backtested",
+  "type": "empirical",
+  "polarity": "conditional",
+  "statement_draft": "[실증 조건부 규칙 초안] family=momentum, tags=R,A,M, supporting=10건 L-code. (promote.R 5축 검증에서 범위·메커니즘·OOS 확정 필요)",
+  "supporting_l_codes": [
+    "L-RAMP-20260619_132312",
+    "L-RAMP-20260619_141402",
+    "L-RAMP-20260620_103109",
+    "L-RAMP-20260620_104415",
+    "L-RAMP-20260620_161507",
+    "L-RAMP-20260620_184509",
+    "L-RAMP-20260620_184815",
+    "L-RAMP-20260620_185554",
+    "L-RAMP-20260713_211037",
+    "L-RAMP-20260822_020000"
+  ],
+  "scope_draft": {
+    "market": "KR",
+    "factor_family": "momentum",
+    "regime": null,
+    "construction_types": null
+  },
+  "evidence_draft": {
+    "independent_l_codes": 10,
+    "independent_strategies": 10,
+    "strategies": [
+      "RAMP_8COMP_EXHAUSTIVE_20260620",
+      "RAMP_REGIME_BLEND_20260620",
+      "RAMP_MOMENTUM_CENTRIC_20260620",
+      "RAMP_REGIME_BAKEOFF_20260619",
+      "RAMP_03_MOMCONS_IC_20260620",
+      "DFA_FM_DEV_R7R8_20260822",
+      "RAMP_03C_BOOKMOM_CAPW_20260620",
+      "RAMP_BOOK_LOOKAHEAD_CORRECTION_20260620",
+      "RAMP_PERGROUP_JUMP_20260619",
+      "RAMP_03C_RERUN_20260713"
+    ],
+    "effect_direction_consistency": null,
+    "note": "evidence_draft — promote.R 5축 검증에서 hurdle_result/grade_a_catalog 교차검증으로 확정",
+    "n_eff_signatures": 2,
+    "independent_constructions": 2,
+    "constructions": [
+      "chain",
+      "composite"
+    ],
+    "metric_types": [
+      "backtested"
+    ]
+  },
+  "falsification_draft": {
+    "attempts": [
+      {
+        "test": "graduation HARD 3종 재현 (canonical weighted_screen_bt + essence_score oos v2, dual-basis)",
+        "result": "falsified",
+        "effect_retained": 0.22,
+        "detail": "IKS200 authoritative HARD 0/3(pt 2.65<2.95·oos 0.22<0.7·calmar 0.42<0.64). proxy 1/3(pt 2.98만). 원 1.19/0.89 재현 불가."
+      }
+    ],
+    "note": "L-code 기록 반증 시도 실값 집계"
+  },
+  "mechanism_draft": {
+    "economic_explanation": "cap-weight가 원 기록서 OOS레버로 주장됐으나, 교정 데이터 재현서 mega-cap closet-indexing으로 active PORT_t를 희석 — 기전 반전. 바인딩 벽은 가중이 아니라 cohort-wide 2017+ decay(oos_retention). (멤버 가설 2건 — promote.R에서 일치성 재검증)",
+    "mechanism_type": "information",
+    "causal_plausibility": null
+  },
+  "oos_validation_draft": {
+    "oos_months": null,
+    "oos_effect_vs_is": 0.22,
+    "note": "L-code oos_retention 실값 1건 median (IS65/OOS35 활성SR retention) — oos_months 실값 무 → None 유지 — promote.R essence_score 경유 재확정"
+  },
+  "cluster_members_count": 10,
+  "status": "pending_5axis",
+  "created_at": "2026-08-22T01:45:31+00:00"
+}

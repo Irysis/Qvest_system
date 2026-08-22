@@ -1,0 +1,151 @@
+{
+  "wt_id": "WT-D20260821_001",
+  "designed_by": "alpha-hypothesis",
+  "model_tier": "fable",
+  "designed_at": "2026-08-21",
+  "prechecks": {
+    "hypothesis_index_hits": [
+      {
+        "strategy_id": "STR_AS_20260613_081217_254169",
+        "title": "Quantile Regression Forest — 수익률 분포 예측 → CVaR 최소화 종목 선정",
+        "verdict": "MARGINAL (C, SR 0.470)",
+        "relation": "재포장 아님 — 분포 예측을 하방 리스크(CVaR) 최소화로 소비했고 학습기는 forest(ML). 본 WT 는 선형(비-ML) 추정기를 Lane A 와 동일 소비(top-25 EW)에 놓는 대조군 축 — 소비 형태·학습기·목적이 전부 다름."
+      },
+      {
+        "strategy_id": "STR_AS_20260612_131514_237951",
+        "title": "Tail Quantile Risk",
+        "verdict": "FAIL (F)",
+        "relation": "재포장 아님 — 하방 꼬리를 리스크로 소비한 crash_protection 축. settled-negative 재포장 여부 검사: 본 WT 는 하방 꼬리 리스크 소비를 하지 않음."
+      },
+      {
+        "strategy_id": "STR_AS_20260613_094117_264951",
+        "title": "Copula 기반 팩터 결합 — 꼬리 의존성 반영 비선형 결합",
+        "verdict": "MARGINAL (C, SR 0.690)",
+        "relation": "인접 — copula 를 팩터 *결합기*로 소비(v8.4 가 결합기-ML 을 죽은 자리로 실측한 것과 같은 층). 본 WT 후보 C3(copula 꼬리의존)은 결합기가 아니라 횡단면 신호 축으로 구분되나, 이 선행이 있어 C3 를 primary 로 세우지 않고 사전등록 쌍 고정 조건부 보관."
+      },
+      {
+        "strategy_id": "STR_AS_20260613_023030_219464",
+        "title": "Winsorized Mean Ensemble — 극단 score ±2σ clip 후 평균",
+        "verdict": "PASS (B, SR 0.493)",
+        "relation": "인접 — 로버스트 적률을 score 결합 평균법으로 소비. 본 WT 후보 C4(로버스트 표적)와 층이 다름(결합 vs 예측 표적). C4 는 WT-D20260813_001 challenge_flags 의 절사평균 음성대조 권고와도 중복되어 primary 제외."
+      },
+      {
+        "strategy_id": "STR_AS_20260806_203146_53272 / STR_AS_20260804_084258_53496 / STR_AS_20260613_062356_241100",
+        "title": "Markov_PredVolRank / Vol_Rank_Markov_Persistence / HMM 2-state 국면",
+        "verdict": "MARGINAL C (0.180) / MARGINAL C (0.209) / FAIL F",
+        "relation": "후보 C5(상태전환 모수) 선행 — 단독 신호로 반복 약세 실측. C5 를 primary 로 세우지 않는 근거."
+      },
+      {
+        "strategy_id": "WT-D20260813_001",
+        "title": "상방 분위(q90) 표적 학습 (SPEC_APPROVED, in-flight)",
+        "verdict": "IN_PROGRESS",
+        "relation": "병렬 중복 아님 — 같은 프레임의 *ML* q90 표적 정면 검증 라운드. 본 WT 는 그 ML 계열 전체의 음성 대조(선형 대응물)로 상보적. 본 WT 산출(선형 q90 arm)이 그 라운드의 해석에 직접 공급됨."
+      },
+      {
+        "strategy_id": "WT-D20260813_002 / WT-D20260809_002",
+        "title": "국면 꼬리특성 예측→현금배분 / 국면 라벨 꼬리 표적 오버레이",
+        "verdict": "IN_PROGRESS",
+        "relation": "인접하나 다른 층 — 오버레이/배분 축. 본 WT 는 횡단면 예측 표적 축. C5 보류 사유에 반영(인접 충돌 회피)."
+      }
+    ],
+    "frontier_queue_refs": [
+      {
+        "id": "FQ-235",
+        "status": "CLAIMED_20260821__qepm_wt_designing",
+        "owner": "CLAIMED — Q-Lead session 8a45d0cf 2026-08-21 (본 WT). dohoon_decision 잠금 없음.",
+        "relation": "본 WT = FQ-235 본체. next_action 4항(동일 프레임 / EVT 검정력 선계약 / copula 쌍 사전등록 / 가정 분해 보고)을 설계 제약으로 전부 수용."
+      },
+      {
+        "id": "FQ-233",
+        "status": "armAB_done__armC_running_20260820",
+        "owner": "CLAIMED — Q-Lead (Lane A)",
+        "relation": "대조 기준선 공급원. arm A(평균-표적 XGBoost) total net SR 0.6039·PORT_t 0.63·198개월 REPRODUCED / arm B(q50 LightGBM) NOT_SUPPORTED(paired NW3 t −1.25) + 4-arm rank-IC↔total SR 정확 역서열 관찰(n=4 비독립 caution) / arm C 측정 중. 본 WT 는 arm C 결과를 기다리지 않음 — 대조는 확정된 arm A/B(+q90 secondary 기록치)와 수행."
+      },
+      {
+        "id": "FQ-237",
+        "status": "수정 프레임 재측정 대기",
+        "owner": "UNCLAIMED",
+        "relation": "선별 통계량 축(rank-IC→분위 스프레드) — 본 WT 의 F1(선택 집합 관측)이 근거를 공급하되 착수하지 않음."
+      }
+    ],
+    "owner": "WT-D20260821_001 (FQ-235 본체 라운드, QEPM 풀파이프라인)"
+  },
+  "candidates": [
+    {
+      "title": "C1 (선택) — 선형 조건부 분위회귀 2×3 대응 분해: Lane A 성과 구조의 결정 요인이 학습기 용량인가 표적-소비 기하인가",
+      "family": "statistical_structure/linear_quantile_regression_negative_control",
+      "mechanism_summary": "월간 횡단면의 조건부 신호는 약하고 확산적(검증 지문: 320팩터 최대 |평균IC| 0.0509)이라 추정기 용량은 신호가 아니라 분산을 산다 — 성과를 가르는 것은 '조건부 분포의 어느 범함수를 표적으로 삼았는가'(표적-소비 기하)라는 가설. 동일 프레임에서 학습기만 GBM→선형으로 바꾼 paired 대비가 이를 직접 분리한다.",
+      "why_not_selected": null
+    },
+    {
+      "title": "C2 — EVT/GPD 조건부 꼬리지수 (횡단면 신호 또는 conditioning)",
+      "family": "statistical_structure/evt_gpd_tail_index",
+      "mechanism_summary": "상방 꼬리 두께의 종목별 조건부 추정이 점프 후보 식별의 직접 통계량이라는 가설.",
+      "why_not_selected": "FQ-235 next_action ② — EVT 유효표본은 꼬리 에피소드 수로 붕괴한다. 착수 전 검정력 계약(02_Infrastructure/contracts/required_effect_size.R + cluster_power.R) 통과가 선행 관문인데 본 설계 시점에 미계산. F2(꼬리 비선형) 위배 시 부활 1순위로 보관 — 부활 시에도 검정력 계약 선통과 의무."
+    },
+    {
+      "title": "C3 — copula 꼬리의존 (개별주-시장 상/하방 꼬리의존 λ 의 횡단면 신호화)",
+      "family": "statistical_structure/copula_tail_dependence",
+      "mechanism_summary": "시장 상승 꼬리에의 조건부 동행(상방 λ_U)이 낮으면서 자체 상방 꼬리가 두꺼운 종목 = 고유 점프 후보라는 가설.",
+      "why_not_selected": "FQ-235 next_action ③ — 쌍 집합을 보고 고르면 sweep(다중검정). 사전등록 쌍 고정(개별주×시장지수 단일 쌍 구조로 한정) 없이는 착수 불가 + 선행 copula 결합기 MARGINAL C 인접. 본 라운드는 1가설 최소 단위 유지 — next_probe 보관."
+    },
+    {
+      "title": "C4 — 로버스트 적률 표적 (윈저화 평균·MAD 표준화 표적)",
+      "family": "statistical_structure/robust_moments_target",
+      "mechanism_summary": "표적의 꼬리 잡음을 깎으면 추정 분산이 줄어 약신호 환경에서 유리하다는 가설 — 단 기전상 '꼬리를 깎은 표적'은 v8.4 비대칭 기조(꼬리가 수익원)와 반대 방향의 대조군 성격.",
+      "why_not_selected": "WT-D20260813_001 challenge_flags 의 절사평균 음성대조 권고와 중복 인접 — 그 라운드의 대조 arm 으로 소비되는 것이 자리에 맞음. 선행 Winsorized ensemble PASS B 는 결합 평균법(다른 층)."
+    },
+    {
+      "title": "C5 — 상태전환 모수 (MSM/HMM 조건부 모수의 횡단면 소비)",
+      "family": "statistical_structure/regime_switching_parameters",
+      "mechanism_summary": "국면 조건부로 피처-수익 map 의 모수가 전환한다는 가설.",
+      "why_not_selected": "Markov 계열 단독 선행 3건 전부 MARGINAL C 이하 + WT-D20260813_002(국면 꼬리특성) in-flight 와 인접 충돌. 국면 축은 본 설계의 ④(연속 상태변수 상호작용 검사)에 흡수 — 별도 primary 불요."
+    }
+  ],
+  "selected": {
+    "hypothesis_title": "선형 분위회귀 음성 대조 — Lane A 성과 구조의 결정 요인은 학습기 용량이 아니라 표적-소비 기하다",
+    "hypothesis_description": "KR K200∪KQ150 월간 횡단면에서 Lane A(FQ-233) 4-arm 이 보인 성과 구조 — total net SR 서열 q90 0.6061 ≈ mean 0.6039 > q50 0.5140 > q10 0.4371, 그리고 rank-IC 가 그 정확한 역서열(q10 0.0438 > q50 0.0299 > mean 0.0074) — 는 GBM 이라는 학습기의 용량(비선형·상호작용 포착)이 만든 것이 아니라, '조건부 분포의 어느 범함수를 표적으로 추정해 top-25 EW *평균* 소비에 넘겼는가'(표적-소비 기하)가 만든 것이다. 근거 기전: 월간 횡단면의 조건부 신호는 약하고 확산적(수정 프레임 지문: 320팩터 최대 |평균IC| 0.0509·|평균IC|>0.10 = 0종)이어서 추정기 용량 증가는 체계 성분이 아니라 잡음을 학습하며, 표적 범함수의 선택만이 소비 형태(EW 평균 = 꼬리가 지배하는 평균량)와의 정합/부정합을 결정한다. 검증 설계: Lane A 와 완전 동일 프레임(stage_artifacts/fq233_probe0_20260813/lane_a_feature_panel.parquet, dedup 324피처, 확장창 워크포워드 burn-in 60m, top-25 EW, 15bps, canonical_screen_bt 평가자, 198개월 대조 구간)에서 학습기만 정통 선형 추정기로 교체한 3-arm — L-mean(선형 최소제곱 계열), L-q50(선형 분위회귀 τ=0.5), L-q90(선형 분위회귀 τ=0.9) — 을 사전 고정 파라미터로 1회 측정하고, ML 대응 arm(arm A mean / arm B q50 / arm B secondary q90 기록치)과 paired 대비한다. 예측 P1(primary, 용량 효과 부재): 동일-표적 세 쌍 전부에서 paired 월간 net 수익 차분의 NW lag-3 |t| < 2.0. 예측 P2(secondary, 표적 서열 재현): 선형 3-arm 의 total SR 서열이 ML 계열 서열(mean ≥ q90 기록치 대역 > q50)과 concordant. 판정 라벨 규율: P1 의 null 은 검정력 뒷받침(required_effect_size.R 로 paired 대비 최소검출효과 산출·보고) 시에만 '효과 없음(powered null, 음성 대조 확립)'으로 종결하고, 미달 시 '미결(underpowered)'로 라벨한다 — 두 처분은 다르다. 어느 쌍에서든 ML−linear paired NW3 t ≥ +2.0 이면 가설 기각(용량 효과 실재)이며, 이 역시 1급 정보 — 그 경우 어느 가정이 갈랐는지 분해(FQ-235 next_action ④)가 의무: (a) 상호작용/비선형 — GBM 점수를 선형 점수에 횡단면 회귀한 잔차가 top-25 선택을 바꾸는 비중 (b) 꼬리 비선형 — 갈림이 q90 쌍에 국한되는지(국한 시 C2 EVT 부활 신호) (c) 국면 조건부 — 갈림 월이 E5_msm_crisis_prob 연속값과 상호작용하는지(이분 라벨 분할 금지 — 에피소드 붕괴). 반대 방향(linear−ML t ≥ +2.0)이면 GBM 과적합의 실측 증거로 기록한다. 본 라운드는 자본 후보 생성 라운드가 아니라 Lane A 판정의 해석력을 세우는 대조군 확립 라운드다 — 어느 arm 도 argmax 선택으로 자본 트랙에 올리지 않는다.",
+    "support_criterion": "지지 = [P1: 동일-표적 3쌍(mean/q50/q90) 전부 paired NW lag-3 |t| < 2.0, 단 required_effect_size.R 최소검출효과 보고로 powered-null 자격 충족] ∧ [P2: 선형 3-arm total SR 서열이 ML 서열과 concordant]. basis 명시 의무 = paired 차분은 월간 total net return(arm B paired_vs_armA 컨벤션 승계), 병기 기록 = canonical PORT_t(NW lag-3)·active IR·MDD·turnover (arm A 의 total vs active 축 함정 승계 — 사전 못박기). 지지 시 처분 = '음성 대조 확립: Lane A 의 기여는 표적 선택으로 귀속, ML-이라서-좋다 주장 차단' 을 FQ-233/237 판정면에 공급. P1 기각 시 처분 = 용량 효과의 위치(어느 표적 쌍·어느 국면)를 가정 분해 (a)(b)(c) 로 특정해 보고 — 성능 비교만으로 종료 금지(FQ-235 next_action ④). P1 미결(underpowered) 시 = 종결 선언 금지, 검정력 부족분을 명시하고 next_probe 로 창 연장/대비 재설계를 도출. 이 성과 기준은 가설 지지 판정용이며 ③의 기전 반증(F1~F3)과 별개 축이다.",
+    "mechanism": {
+      "agent": "두 층. [경제 층 — 수익원, WT-D20260813_001 승계] ① KR 개인투자자: 복권형 수요를 salient 특성(고변동성·최근 급등·테마)에만 지불해 관측 가능 skew 프록시는 과대가격, 다변량 조건부로만 식별되는 비-salient 상방 후보는 방치. ② 국내 기관투자자: TE·유동성·집중도 mandate 로 고-idio-vol 점프 후보의 분산 바스켓을 구조적으로 못 담음. [방법론 층 — 본 WT 의 검증 대상] 이 비대칭 정보가 월간 횡단면 피처에 담기는 형태는 약하고 확산적·저차원(최대 |평균IC| 0.0509)이어서, 그것을 회수하는 추정기의 용량이 아니라 '어느 분포 범함수를 표적으로 삼아 EW 평균 소비에 넘기는가'가 회수량을 결정한다.",
+      "friction": "[경제 층] ① 개별주식옵션 유동성 부재로 skew 의 파생 가격화 채널 폐쇄 ② 점프는 종목 단위 저확률·분산적이라 집중 베팅 불가 — 분산 보유(top-N EW)로만 수확 가능한데 기관은 mandate 로 그 바스켓을 못 담고 개인은 salient 쪽으로만 몰림 ③ 공매도 제약이 복권주 과대가격 청산을 차단. [방법론 층] 신호대잡음이 낮은 환경에서 고용량 학습기는 체계 성분을 다 회수한 뒤 잡음을 학습한다 — 용량이 추가 알파를 만들 마찰-여지 자체가 월간 해상도에는 얇다는 것이 본 가설의 마찰 서술이며, 이것이 틀렸다면(용량 효과 실재) P1 이 기각된다.",
+      "path": "월간 리밸 top-25 EW 가 조건부 상방 후보를 1M 보유 → 소수 종목의 상방 점프 실현을 EW 평균이 흡수(R33 프로파일: 평균-중앙값 대규모 괴리가 이 형태의 직접 관측). 본 WT 의 경로 주장: 이 수확 경로에 도달하는 데 필요한 것은 표적 범함수의 정합(무엇을 예측해 순위를 매기는가)이지 학습기 용량이 아니므로, 선형 추정기가 같은 표적에서 같은 경로로 같은 수확을 한다 — paired 등가가 그 경로 주장의 실측 형태다."
+    },
+    "falsification": {
+      "observable": "성과(SR/PORT_t)와 독립적인 부수 관측 3축: (F1) 선택 집합의 군집 구조 — top-25 선택 집합의 Jaccard 중첩이 '동일-표적 교차-모델' 쌍(L-q90 vs ML-q90 등 3쌍)에서 '동일-모델 교차-표적' 쌍(L-mean vs L-q90 등)보다 체계적으로 높아야 한다. 표적-소비 기하가 결정 요인이라면 선택 집합은 모델 축이 아니라 표적 축으로 군집해야 하며, 이는 보유 명세와 가격 패널만으로 계산되는 비-성과 관측이다. (F2) 꼬리 식별 등가 — 동일-표적 쌍(특히 q90 쌍)에서 보유월 tail-hit rate(보유 종목이 월별 횡단면 q90 실현 수익을 초과하는 빈도, 일별 가격 패널에서 직접 계산)가 등가(paired |t| < 2.0)여야 한다. ML 이 꼬리 식별에서만 우위면 '꼬리 국소 비선형' 가정이 지목된다. (F3) 왜도-연결의 모델 불변성 — 실현 횡단면 왜도가 높은 달에 mean-표적 대비 q50-표적의 성과 gap 이 커지는 연결(R32: cor(왜도기울기, 중앙값-평균 gap) = −0.728 의 포트 수준 대응)이 선형 계열에서도 같은 부호·유사 크기로 관측되어야 한다 — 이 연결은 데이터의 성질이지 학습기의 성질이 아니라는 것이 기하 가설의 함의다. [조건부 관문 — FQ-235 next_action ② 명문화] F2 위배로 C2(EVT) 부활 시, 착수 전 required_effect_size.R + cluster_power.R 검정력 계약 통과가 명시적 선행 관문이다(꼬리 에피소드 수가 유효표본 — 관측 월 수가 아님).",
+      "field_dictionary_refs": [
+        "A1_RAWDATA_OHLCVS_daily",
+        "FDB-B2_registry_rawdata_price_daily",
+        "A4_benchmark_kospi200",
+        "A9_liquidity_avgtv20_convention",
+        "E5_msm_crisis_prob"
+      ],
+      "reject_if": "핵심 기각 규칙: P1 성립(성과 등가)인데 F1 위배(동일-표적 교차-모델 중첩이 동일-모델 교차-표적 중첩보다 높지 않음)이면 — '다른 종목을 사서 같은 성과' — 표적-소비 기하 결정론을 기각한다. 성과 등가가 기하의 산물이 아니라 약신호 퇴화 축 위의 우연이라는 뜻이며, 이 경우 '미해명 등가'로 라벨하고 선택 집합 수준 재진단을 next_probe 로 도출한다. F2 위배(ML 의 꼬리 적중 우위)는 꼬리 국소 비선형 가정의 실재 — 기하 가설을 부분 기각하고 C2(EVT) 부활 신호로 기록한다(부활 시 검정력 계약 선통과 의무). F3 위배(왜도-연결이 선형 계열에서 소실)는 그 연결이 데이터 성질이 아니라 GBM 특유 산물이라는 뜻 — 기하 가설의 함의 하나를 기각하고 R32 기전 해석의 재진단을 요구한다. ★성과 동어반복 아님: F1~F3 은 전부 보유 명세·실현 수익 분포·선택 집합의 관측이며 PORT_t/SR 문턱이 아니다. '성과는 등가인데 기전 관측이 죽는' 경우와 '성과가 갈리는데 기전 관측은 등가인' 경우를 성과 지표와 독립적으로 분리한다."
+    },
+    "regime_scope": {
+      "holds_in": [
+        "neutral",
+        "recovery"
+      ],
+      "weakens_or_reverses_in": [
+        "crisis"
+      ],
+      "boundary_rationale": "경계는 방법론 층 기전에서 도출된다. ① neutral/recovery 성립: 점프가 종목 고유 정보(실적·공시·수급)로 구동되는 국면에서는 피처-수익 map 이 약신호·확산·근사 선형 — 용량 효과가 잡음에 지배되어 선형 등가(P1)가 성립할 영역. ② crisis 약화: 유동성 청산·마진콜·손절 연쇄는 피처-수익 map 에 임계(threshold) 구조를 만든다 — 비선형이 국소적으로 실재하는 국면이므로 용량 효과가 있다면 위기월에 집중될 것. 따라서 P1 기각 시 가정 분해 (c)가 이 경계의 직접 검사다. ③ 측정 처방(확립 처방 승계): 국면 이분 라벨 분할은 유효표본을 에피소드 수로 붕괴시킨다 — 검사는 E5_msm_crisis_prob 연속값과 paired 차분의 상호작용(연속 회귀)으로 수행하고, E7_unified_regime_3layer 라벨은 서술 어휘로만 사용한다. ④ 한계 정직 명시: 경제 층의 overheat(개인 복권수요 과열) 경계는 WT-D20260813_001 이 소유한 축이라 본 WT 의 경계 주장에 넣지 않는다 — 본 WT 의 경계는 '선형 등가가 어디서 깨지는가'이지 '비대칭 프리미엄이 어디서 죽는가'가 아니다."
+    }
+  },
+  "challenge_flags": [
+    "[축① 사후 서술 — 본 WT 최대 취약점] 2×3 설계는 Lane A arm A/B 결과(서열·역서열 관찰)를 본 뒤 세워졌다. P2(서열 concordance)는 관찰된 서열의 재현 검사이지 신규 예측이 아니다 — 통제: P1(용량 효과 부재)을 primary 로 두고 P2 는 secondary 로 격하, 문턱(NW3 |t| 2.0)·쌍 집합(mean/q50/q90 3쌍)·파라미터 전부 측정 전 사전 고정, 측정 후 변경 금지. PARTIAL — 사후성 자체는 제거 불능이며 정직 신고로만 통제.",
+    "[축② 성과 동어반복 위장 검사] P1/P2 는 성과 지표 기반이므로 '가설 지지' 판정용으로 격리하고, 기전 반증은 F1~F3(선택 집합 군집·tail-hit 등가·왜도-연결 불변성) 비-성과 관측이 전담한다. F1 의 '중첩 비교' 문턱은 alpha-research 사전등록에서 수치로 1회 고정할 것(중첩 통계량을 보고 문턱을 고르면 사후선택). REBUTTAL(구조 분리 완료) + 잔여: 문턱 사전 고정 의무를 handoff 에 명시.",
+    "[축③ 국면 경계의 사후 데이터 오염 위험] 'crisis 에서 용량 효과 집중' 은 메커니즘(임계 비선형) 도출이지만, arm B 관찰(q90 MDD 67%)을 이미 본 상태의 설계다 — 통제: 경계 검사를 E5 연속 상호작용으로 사전 지정하고 이분 분할 금지, 결과 무관 보고 의무. PARTIAL.",
+    "[축④ settled-negative 재포장 검사] hypothesis_index 대조 결과 quantile/copula/markov/winsor 선행 6건은 전부 다른 소비 층(CVaR 리스크·결합기·오버레이·score 평균법)이고, v8.4 금지 4종과의 정합: 본 WT 의 L-mean arm 은 '평균-표적'이지만 ML 이 아닌 선형 대조군이며 금지 조항 자체가 '대조군으로만 등장'을 명시 허용한다. ML 결합기·사이징 아님. ACCEPT(재포장 아님) — 단 C3 copula 는 선행 결합기 MARGINAL 과 혼동되지 않도록 부활 시 소비 형태를 신호 축으로 명시할 것.",
+    "[6-arm 다중성] 본 라운드는 argmax 선택을 하지 않는 대조군 확립 라운드라 chain 으로 사전등록하되, 어느 arm 이든 이후 자본 트랙으로 승격 제안되는 순간 selection_type=sweep 재선언 + DSR≥0.5 HARD 부착 의무. 6-arm 관측 이력은 method_shopping_log 에 전수 기재(Lane A 선행 4-arm 이력 포함 맥락 승계).",
+    "[선형 추정기의 정칙화 자유도 — 용량 효과와의 혼동 위험] 324피처 선형 추정은 공선성으로 분산이 폭발할 수 있고, 그러면 성과 차이가 '용량'이 아니라 '정칙화 부재'의 산물이 되어 P1 해석이 오염된다. 처방: alpha-research 는 사전등록에서 (i) dedup 324 그대로 + 최소 정칙화 1개 고정값(탐색 금지) 또는 (ii) 무정칙 + 조건수 기록 중 하나를 1회 선택·고정하고, 어떤 λ 탐색이든 발생 시 sweep 재선언. 선형 q50/q90 은 quantreg 계열 표준 구현만(자체 합성 금지 정합).",
+    "[대조 기준선의 비독립성] ML 쪽 수치는 재실행이 아니라 기록치(armA/armB result.json) 대조가 기본이다 — 같은 패널·같은 평가자라 paired 차분은 유효하나, ML arm 재현 실패(환경 차이) 시 대조 전체가 흔들린다. arm A 는 REPRODUCED 라벨이 이미 있으므로 기록치 사용을 기본으로 하되, paired 차분 계산에 필요한 월별 수익 시계열이 기록에 없으면 arm 재실행이 아니라 저장 점수(armA_scores.parquet 등)로부터 동일 평가자 재측정으로 복원할 것(모델 재학습 금지 — 점수 고정).",
+    "[대안 보관] C2 EVT(검정력 계약 선통과 조건부, F2 위배 시 부활 1순위) · C3 copula(쌍 사전등록 조건부) · C4 로버스트 표적(WT-D20260813_001 대조 arm 자리) · C5 상태전환(인접 in-flight 충돌 회피). 지지로 닫히면 next_probe = FQ-237(선별 통계량 축)에 F1 산출 공급 + Lane A arm C 판정면에 대조군 제공."
+  ],
+  "verdict": "designed",
+  "handoff": {
+    "to": "alpha-research",
+    "next_steps": "Step 1~7 + ⑤ AST 구성. 승계 사항: ① 본 hypothesis(mechanism/falsification/regime_scope) 재작성 금지 — 결함 발견 시 challenge_note.md 기록 + 재설계 요청(Charter 원칙 8). ② 프레임 발명 금지 — lane_a_feature_panel.parquet(dedup 324, manifest 의 drop 목록 그대로)·확장창 burn-in 60m·top-25 EW·15bps·canonical_screen_bt·198개월 대조 구간 승계. ③ 3-arm(L-mean/L-q50/L-q90) 파라미터 사전등록 1회 고정 — 정칙화 선택 포함, 어떤 탐색이든 sweep 재선언 + DSR HARD. 선형 분위회귀는 표준 구현(quantreg 등)만. ④ 측정 설계에 F1~F3 필수 포함 + F1 중첩 비교 문턱 사전 수치 고정 + P1 의 powered-null 자격 판정용 required_effect_size.R 최소검출효과 산출·보고. ⑤ 선형 점수도 escape 리프 MODEL_SCORE(학습창 종점 ≤ t_d−1 + 학습 리프 목록) 경유 — 저장 패널을 FIELD 리프로 위장 금지. ⑥ basis 사전 못박기 — paired 는 월간 total net, 병기 = canonical PORT_t·active IR·MDD·turnover. ⑦ 국면 검사는 E5_msm_crisis_prob 연속 상호작용만(이분 분할 금지). ⑧ EVT/copula arm 임의 추가 금지 — C2 는 검정력 계약 통과 후, C3 는 쌍 사전등록 후에만(본 라운드 범위 밖). ⑨ method_shopping_log 에 Lane A 4-arm + 본 3-arm 관측 이력 기재. ⑩ 어느 결과든 config-scoped 로 닫고 방향(family) 판결 확대 금지(INV-7) — 기각 시 가정 분해 (a)(b)(c) 보고 없이 종료 금지."
+  }
+}

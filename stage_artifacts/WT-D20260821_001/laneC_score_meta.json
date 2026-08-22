@@ -1,0 +1,50 @@
+{
+  "round_id": "WT_D20260821_001_LANEC",
+  "prereg": "PREREG_WT_D20260821_001.md",
+  "arms": {
+    "L_mean": ".lm.fit OLS",
+    "L_q50": "quantreg::rq.fit tau=0.50 method=fn",
+    "L_q90": "quantreg::rq.fit tau=0.90 method=fn"
+  },
+  "regularization": "none (사전등록 §2.1 선택지 ii) — 정확 alias 만 랭크-노출 QR 로 제거, 벌점 없음",
+  "qr_tol": 1e-08,
+  "burn_in_months": 60,
+  "n_features_input": 324,
+  "dropped_alias": ["V19_Debt_to_Market", "M25_Earnings_Mom_Streak", "M29_Mom_5d", "C10_SUE_Persistence", "C13_Revision_Breadth_3m", "R12_Idiosyncratic_Risk", "CR04_Ownership_Concentration"],
+  "conditioning": {
+    "n_kept_median": 309,
+    "n_kept_min": 306,
+    "n_kept_max": 309,
+    "cond_A_median": 86503.64650888,
+    "cond_A_max": 269331.69077201,
+    "n_months_with_warning": 39,
+    "n_months": 199,
+    "note": "cond_A = sqrt(cond(A'A)) 실측 (A = 절편 + 유지열, 학습창 표준화 후). 사전등록 §2.1 기록 의무"
+  },
+  "n_pred_months": 199,
+  "n_scores": 68451,
+  "diag": {
+    "s_mean": {
+      "rank_ic_mean": 0.0164051,
+      "icir": 0.13923565,
+      "n_months": 198
+    },
+    "s_q50": {
+      "rank_ic_mean": 0.03257919,
+      "icir": 0.24787933,
+      "n_months": 198
+    },
+    "s_q90": {
+      "rank_ic_mean": -0.02310696,
+      "icir": -0.13735113,
+      "n_months": 198
+    }
+  },
+  "ast_leaf": {
+    "class": "MODEL_SCORE",
+    "train_window_end": "sig_date < 예측월 (확장창, 학습창 종점 ≤ t_d−1)",
+    "train_leaves": "lane_a_feature_panel.parquet 324피처 (load_month_factors + Z_Score_Aligned, 팩터 Date +1개월 앵커)",
+    "note": "저장 패널을 FIELD 리프로 위장하지 않음 — 학습 산출 스코어임을 명시"
+  },
+  "note": "스코어 산출까지만. 성과·판정은 canonical_screen_bt 경유(python-policy §4 동치 규약)."
+}

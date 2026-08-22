@@ -1,0 +1,139 @@
+{
+  "wt_id": "WT-D20260822_001",
+  "fq_ref": "FQ-236",
+  "designed_by": "alpha-hypothesis",
+  "model_tier": "fable",
+  "designed_at": "2026-08-22",
+  "spec_version": "ast_v1.1_stage_1_to_4",
+  "revision_of": "alpha_hypothesis.json (2026-08-22 초판, verdict=designed — 감사 기록으로 보존, 본 파일이 현행)",
+
+  "prechecks": {
+    "inherited_from_rev1": "초판 prechecks 전건 승계 — hypothesis_index 조회 7축(매크로 7히트 전건 타이밍층 FAIL/SCREEN_TIER · 조건부 비대칭 1히트 배분층 · 왜도 0 · 분위 3히트 상이층 · bear_prob 0 · 신용스프레드 0 · 꼬리 6히트 배분/오버레이층) + frontier 큐 확인(FQ-236 owner CLAIMED d2e06481) + differentiation 서술. 재조회 불요 근거: 재지정 축 '신용스프레드' 는 초판에서 이미 조회됨(hits 0, by alpha-hypothesis 2026-08-22) — settled-negative 재포장 아님이 초판 시점에 확인된 축이다.",
+    "hypothesis_index_hits": [
+      {"query": "신용스프레드", "by": "alpha-hypothesis 2026-08-22 (rev1 조회 승계)", "hits": 0, "summary": "no prior attempt matched — KR 신용스프레드를 조건변수로 소비한 선행 라운드 없음"}
+    ],
+    "frontier_queue_refs": ["FQ-236 (owner CLAIMED d2e06481, 승계)", "FQ-239 handoff_smv_20260820 (corroboration 공급, 승계)", "FQ-233 arc_settled__powered_null_breadth_scoped (신규 반영 — 부활조건 2건이 본 라운드 소비 경계)", "FQ-235 round1 PARTIAL (신규 반영)"],
+    "owner": "Q-Lead session d2e06481 — QEPM 풀파이프라인, alpha-hypothesis 가설설계 구간 (rev2 = alpha-research 재설계 요청 응답)"
+  },
+
+  "revision_reason": {
+    "trigger": "alpha-research 재설계 요청 (Charter 원칙 8 No Silent Override) — 착수 0항(preregistration_items #1·#2) 실측 결과 초판 conditioning_variable_spec.S_primary_320m 실행 불가 확정.",
+    "measured_facts_cited": [
+      "(1) HY_Spread/BBB_Spread 원천 절단: FRED API series metadata 실측 — BAMLH0A0HYM2·BAMLC0A4CBBB observation_start=2023-08-22, 롤링 ~3년 창(월 36개). 캐시 결함 아닌 원천 제약. PRIMARY 사용 불가.",
+      "(2) 유니버스 소급 census (stage_artifacts/WT-D20260822_001/universe_membership_census.csv): KQ150>0 최초 2010-01-29 → UNION 소급 상한 2010-02 (198m). KQ150 실시간 산출 개시 2015-07 — 2010-02~2015-06 멤버십은 지수제공자 백필. K200 단독 342m (1998-02~) 가용하나 mandate 유니버스 아님. ⇒ 320m 전제는 어느 조합으로도 불성립 — 초판의 PRIMARY 창 320m 철회.",
+      "(3) Gate 1 결과량 sd 실측 (stage_artifacts/WT-D20260822_001/gate1_required_effect.csv): Y1b sd 0.03682(UNION 198m)·0.04067(UNION 133m)·0.04660(K200 342m) — 승계 역산치 0.0669 의 1/1.82. 필요효과 UNION 198m = 연 7.553% (< 초판 320m 전제 8.98%). 창 축소에도 검정력 개선."
+    ],
+    "framing_updates_inherited": [
+      "Lane A (FQ-233) 수렴 = arc_settled__powered_null_breadth_scoped: 무조건부 분포-표적 교체가 전 브레드스 POWERED NULL. 본 Lane D 는 그 무조건부 null 의 '조건부 next probe' 로 자리매김 — 무조건부로 죽은 명제를 상태 조건부로 되살릴 수 있는가가 본 라운드의 위치.",
+      "Lane C (FQ-235) round1 PARTIAL (P1 UNDERPOWERED · P2 FAIL rho -0.50) — 무조건부 용량·전이 선행 실측 승계 불변.",
+      "★INV-7 소비 경계 (FQ-233 부활조건 2건 존중): 본 라운드가 b<0 을 유의하게 확립해도 자본화 경로 제안 금지 — 정당 산출 = 분포적 사실 + 조건부성 확립까지. 소비면 7종 순회는 '설계 목록화'까지만, 착수는 FQ-233 부활조건과의 충돌 여부를 Q-Lead 가 별도 판정."
+    ]
+  },
+
+  "conditioning_variable_spec": {
+    "S_primary": {
+      "series": "KR_CreditSpread_BBB3Y = KR_CorpBBB - KR_Gov3Y (.cache/ecos_bond_rates.parquet, ECOS 일별 — 유효 2001-01-02 ~ 2026-08-21, KR_CorpBBB n=6433 · KR_Gov3Y n=6349 실측 census 확인)",
+      "selection_criteria_applied": "초판 사전고정 기준 2개 그대로 적용한 단일 지정 (스캔·argmax 없음, prereg #7 준수): ①기전 정합 = 자금조달 조건의 '가격' — 회사채 BBB- 수익률의 국고3Y 대비 스프레드는 한계 차입자(최저 투자등급)의 자금조달 가격 그 자체이며, KR 국내 계열이므로 초판 challenge_note 추가약점 6(HY_Spread 는 US 계열 — KR 경색 정합은 가정)이 소멸한다 ②발표시차 — ECOS 일별 금리는 익영업일 공표로 가장 빠른 시차 계급, 느린 월간 계열(73d) 지배 문제 원천 회피.",
+      "why_BBB_not_AA": "기전의 agent 가 '자금조달 조건이 악화되면 팔아야 하는 제약 보유자'이므로 상태변수는 한계 차입자의 조달 가격이어야 한다 — BBB- 가 그 계급이고 AA- 는 우량 계급이다. AA 는 사용하지 않는다(교체·스캔 금지 — BBB 품질 결함 발견 시 조용한 교체가 아니라 재설계 요청 경로).",
+      "transform": "원수준(%p 스프레드) — 자유 파라미터 0. 강건성 판(사전고정 1개, 초판 승계): 직전 120개월 rolling median/MAD z (rolling only, C1).",
+      "publication_lag_L": {
+        "value_calendar_days": 3,
+        "rationale": "ECOS 일별 금리는 익영업일 공표 — 최악 경로(금요일 관측 → 월요일 게시) = 달력일 3일이 상한. 근거 1줄: 관측일 t 의 값은 t+1 영업일에 공표되므로 달력일 3일 격리면 주말 포함 전 케이스를 덮는다.",
+        "adapter_rule": "S_t- = max{Date <= (홀딩월 첫 거래일 - 3 calendar days)} 의 관측값. L 은 어댑터 인자로 명시 주입(소비 코드 하드코딩 금지) — ctx_providers 가 계열별 시차를 대신 적용하지 않는다는 초판 명시 승계 (C11).",
+        "format_note": "ecos_bond_rates.parquet 은 long 포맷(Date/Value/Series) — 어댑터에서 Series 필터 후 pivot, wide 컬럼명 가정 금지 (2026-08-22 설계 시점 스키마 실측)."
+      },
+      "pit_c5": "컷오프 = 홀딩월 시작 전 strictly. assert_overlay_pit() HARD + lag1 스트레스 + strict-PIT A/B 의무 — 초판 승계 불변."
+    },
+    "S_corroboration_149m": {
+      "unchanged": true,
+      "note": "breadth = bear_prob 6종 평균 (FQ-239 handoff) — 초판 스펙 전체 승계 (effective_date T+2 · 홀딩월 시작 2거래일 전 · locf · 진행월 금지 · STORED_SCORE escape_contract 의무). 역할 재확인: KR 내생 corroboration 축. S_primary 가 KR 계열로 바뀌면서 '글로벌 vs 국내' 분해 기능은 소멸하고 '가격 신호(스프레드) vs 수량·내생 신호(breadth)' 분해로 의미가 이동 — 부호 일치가 corroboration, 불일치 시 가격/수량 채널 분해가 next_probe.",
+      "window_note": "corroboration 창 = breadth 유효창 2014-04~2026-07 (149m, 필요효과 13.15% 승계) — PRIMARY 창과 별개."
+    },
+    "explicitly_not_used": "HY_Spread/BBB_Spread(원천 3년 절단 — 본 revision 사유) · KR_CorpAA(단일 지정 원칙) · macro_regime 월말스탬프 패널 · FRED 월간발표 73d 계열 · 이분 국면 라벨 · flow_features_daily(Lane B 소관). 초판 배제 목록에 HY 계열이 '배제 사유 = 원천 절단'으로 이동."
+  },
+
+  "window_decision": {
+    "primary": {
+      "designation": "① UNION 198m (2010-02 ~ 2026-07, 홀딩월 기준) — 조건부 확정",
+      "rationale": "mandate 유니버스(K200∪KQ150) 정합 + 세 선택지 중 최저 필요효과(7.553%, PG2 대조 7.21% 근접). 초판 320m 은 철회. 창을 122개월 잃고도 sd 실측 교정으로 검정력이 개선됐다는 Gate 1 실측이 이 선택을 지탱한다.",
+      "condition_backfill_gate": {
+        "rule": "2010-02~2015-06 KQ150 멤버십은 지수제공자 백필 — 착수 전 생존편향 census 1건 의무 (C6): 백필 구간 KQ150 멤버 중 이후 상장폐지(RAWDATA 가격 계열이 2026-07 이전 종결) 비율 share_backfill 을, 동일 길이 비교 구간(2015-07~2020-12) 멤버의 동일 정의 비율 share_clean 과 대조. share_backfill >= 0.5 x share_clean 이면 백필이 폐지 종목을 실질 포함(PIT 재구성 정합) → 198m PRIMARY 유지. 미달이면 생존편향 확정 → PRIMARY 는 ② 133m 으로 자동 강등 + req 를 실측 sd 로 재산출(차수 10.465%).",
+        "threshold_status": "0.5 배수는 사전고정 휴리스틱(부분 생존편향의 완전 검출기 아님 — challenge_note rev2 약점 2). 보완 = 아래 F_F 부호 일치 상한이 백필 구간 단독 견인을 이중으로 막는다.",
+        "why_not_unconditional_133m": "제1목표(PIT) 우선이나, 백필 = 자동 오염이 아니라 '검증 필요' — 폐지 종목 포함이 실측 확인되면 소비 가능. 확인 없이 65개월을 버리는 것도, 확인 없이 쓰는 것도 둘 다 임의라 census 를 관문으로 세운다."
+      },
+      "validity_cap_F_F": "leave-backfill-out 재추정 (2015-07~2026-07, 133m): sign(b_133) != sign(b_198) 이거나 유의성이 백필 구간(2010-02~2015-06) 단독 견인이면 판정 상한 = '미결_backfill_suspect' (성립 선언 불가). F_E leave-2026-out 규칙과 동형의 부호 규칙 — 판정 그리드 구조 변경이 아니라 창 결정에 딸린 타당성 상한."
+    },
+    "diagnostics": [
+      {
+        "window": "② UNION 133m (2015-07 ~ 2026-07)",
+        "role": "PIT 최청정 창 — F_F 재추정 창을 겸한다. 항상 병기 산출. PRIMARY 가 backfill_gate 미달로 강등되면 이것이 PRIMARY 로 승격 (필요효과 10.465%)."
+      },
+      {
+        "window": "③ K200 단독 — 유효창 2001-02 ~ 2026-07 (~306m)",
+        "role": "진단 전용 — mandate 유니버스 아님, 성립 주장 근거 사용 금지. 가치 = 2008 자금경색(기전의 KR 최대 에피소드)이 UNION 창 밖에만 존재 — 부호 일치 시 기전 corroboration, null 이어도 기각 근거 아님(유니버스 상이).",
+        "window_correction": "★342m 이 아니라 ~306m — K200 은 1998-02 부터지만 S(KR 스프레드)가 2001-01 시작이므로 회귀 유효창은 max(1998-02, 2001-01+L) 부터. alpha-research 의 Gate 1 K200 행(342m, req 7.511%)은 결과량 단독 창 — 회귀 창으로는 n~306 으로 재산출 필요 (진단축이라 advisory)."
+      }
+    ]
+  },
+
+  "effect_size_anchor": {
+    "designation": "표준화 기울기 앵커: |b|·sd(S)/sd(Y) >= 0.25 — 'S 1-sd 이동이 Y 를 0.25·sd(Y) 이상 이동'. 세 결과량(Y1a/Y1b/Y2) 공통 적용 (무차원 — Y1a·Y2 의 '연환산 불가' 문제를 동시에 해소).",
+    "native_reference": "Y1b 기준 native 환산(참고치, 판정은 배수 고정·수치는 판정 시점 실측 sd 로 산출): 0.25 x 0.03682 ≈ 월 0.0092 (연환산 ≈ 11.0%, UNION 198m sd 기준). 133m 이면 0.25 x 0.04067 ≈ 월 0.0102 (연 ≈ 12.2%).",
+    "rationale": [
+      "①경제적 근거(설계 판단 — 라벨: 판단이지 실측 아님): 기전의 소비 경로는 꼬리 지배(FQ-237)를 경유해 top-25 선별·오버레이로 전이되는데, 월 ~0.9%p 급의 분위 밴드 이동이 15bps 비용·소비면 번역 손실을 넘어설 수 있는 차수의 하한이다. 그 미만의 참효과는 통계적으로 실재해도 소비면 전진 우선순위가 없다.",
+      "②비퇴화 보장(재설계 요청의 결함 지적 해소): 앵커 연환산(≈11.0%) > t-기반 필요효과(198m 7.553% · 133m 10.465% · K200 7.511%) — 세 창 전부에서 앵커가 구속. req ≈ 2·SE 이므로 앵커 > req 이면 95% CI 반폭(≈1.96·SE) < 앵커가 자동 성립 → 'powered null' 이 도달 가능한 동시에 t-재진술로 퇴화하지 않는다.",
+      "③0.25 배수 자체는 외삽 불가한 판단값 — challenge_note rev2 약점 3 에 정직 기록. alpha-research 는 승계 규칙(t-기반 req) 판정을 병기 산출할 것 (양쪽 병기 = 재설계 요청문의 계획 그대로)."
+    ],
+    "grid_semantics": {
+      "powered_null": "표준화 효과의 95% CI 가 (-0.25, +0.25) 안에 완전히 포함 → '효과 없음' (F_A 그리드의 req 자리를 이 앵커가 대체 — 그리드 구조·t 문턱 자체는 불변).",
+      "new_label_sub_anchor": "t(b) <= -2.0 ∧ 예측부호 ∧ placebo 통과인데 |표준화 효과| < 0.25 → '성립_소효과(sub-anchor)': 통계적 확립 + 경제 앵커 미달. 처분 = 분포적 사실로 기록·frontier 보존하되 소비면 설계 전진 없음. (그리드 재작성이 아니라 앵커 지정이 요구하는 최소 라벨 추가 — 이 구간은 앵커 없이는 정의 자체가 불가했던 영역.)",
+      "미결_vs_효과없음": "초판 구분 승계 — CI 가 ±앵커 경계에 걸치면 미결(underpowered), 완전 포함이면 효과없음(powered null). 처분 상이 (효과없음 = frontier 정리 / 미결 = 부활조건 보존)."
+    }
+  },
+
+  "diagnostic_axis_added_D_G": {
+    "name": "연속화 상시-축소(알파 희석) 진단 — advisory, 판정축 아님",
+    "trigger": "RAMP 세션 실측 승계 (이진화 에피소드 붕괴 3회 재현 · 연속화는 발화 보존 대신 상시 축소 위험) — 재설계 요청의 추가 진단 요구.",
+    "rule": "적합 후 기여 집중도 산출: C_top = Σ_{t ∈ top-tercile(S)} |b·(S_t - S̄)| / Σ_t |b·(S_t - S̄)|. ④경계(문턱-발동 기전 = 중상위 구간 집중)가 참이면 C_top 이 1/3 을 유의하게 초과해야 정합. C_top ≈ 1/3 (균등 분산)이면 '연속 소비 시 상시 축소로 흐를 위험' 라벨을 소비면 설계에 전달 — 조건부성이 실재해도 소비 형태가 오버레이 상시 스케일링이면 알파 희석이 예상되는 형태라는 경고. 판정 권한 없음(advisory) — 초판 ④의 '경계 형태는 기술 진단으로만 병기' 서술과 동형이며 검정력 미달인 문턱 검정을 우회 도입하는 것이 아니다."
+  },
+
+  "power_contract_update": {
+    "supersedes": "초판 power_contract (sd_monthly_inherited 0.0669 역산치·320m 전제) — Gate 1 실측으로 대체",
+    "sd_monthly_measured": {"Y1b_UNION_198m": 0.03682, "Y1b_UNION_133m": 0.04067, "Y1b_K200_342m": 0.04660, "Y1a_UNION_198m": 0.11541, "Y2_UNION_198m": 0.17527},
+    "required_effect": {"UNION_198m_Y1b_annual": 0.07553, "UNION_133m_Y1b_annual": 0.10465, "K200_342m_Y1b_annual": 0.07511, "Y1a_198m_dimensionless": 0.01925, "Y2_198m_prob_units": 0.02411},
+    "nw_note": "nw 실측 0.968~1.242 (gate1_required_effect.csv) — 직접측정 sd 이므로 계약 기본 NW 처리 (초판의 'nw_inflation=1 은 역산 승계 시에만' 규칙은 소멸 대상 없음 — 역산치 자체를 폐기)",
+    "binding_check": "앵커(표준화 0.25)가 세 창 전부에서 t-기반 req 를 상회 — effect_size_anchor.rationale ② 참조"
+  },
+
+  "preregistration_deltas": [
+    "#2 대체: '320m 소급 검증' → 'backfill 생존편향 census (share_backfill vs 0.5 x share_clean, 정의·문턱 위 window_decision 에 고정)' — 착수 전 완료, 결과가 PRIMARY 창을 기계 결정",
+    "#3 대체: 'HY_Spread 7d' → 'KR_CreditSpread_BBB3Y = KR_CorpBBB - KR_Gov3Y, L = 3 calendar days, long 포맷 pivot, 어댑터 인자 주입' (C11)",
+    "#11 신설: 효과크기 앵커 = 표준화 0.25 고정 (착수 후 변경 금지) + t-기반 req 판정 병기 의무",
+    "#12 신설: F_F leave-backfill-out 부호 규칙 + 진단 창 ②③ 병기 (③은 성립 근거 사용 금지 라벨)",
+    "#13 신설: D_G 집중도 진단 (advisory) — C_top 정의 위 고정",
+    "나머지 #1·#4~#10 초판 그대로 (#1 은 이미 alpha-research 가 Gate 1 로 완료 — 본 파일이 그 실측을 승계 반영)"
+  ],
+
+  "unchanged_declaration": {
+    "mechanism": "무변경 — agent(신용융자 개인 + 위험한도 기관) / friction(공매도 제약 + 문턱-발동 되먹임 + 교정자본 제약) / path(경색 상태 → 강제매도 활성화 확률 → 좌꼬리 비대) 전문 그대로. path 의 상태변수 서술('신용스프레드 수준·bear_prob')은 이미 일반명사라 재지정과 정합 — KR 스프레드가 오히려 기전 정합을 강화(US 연계 가정 소멸).",
+    "falsification": "F_A~F_E 판정 규칙 구조·t 문턱(±2.0)·placebo 프로토콜(AR(1)-matched 200 draw + 양성 대조 1건)·F_B/F_C/F_E 전문 무변경. 변경은 F_A 의 req 자리에 앵커 대입(요청 항목 4)과 sub-anchor 라벨 추가뿐 — 위 grid_semantics 에 한정.",
+    "regime_scope": "의미 무변경 + 토큰 치환 1건 명시 선언(조용한 치환 아님): holds_in[0] 의 'HY_Spread 가 직전 120m rolling median 위' → 'KR_CreditSpread_BBB3Y 가 직전 120m rolling median 위'. 경계 내용(경색 중상위 단조 / 극단 클라이맥스 퇴화 / 완화 상태 부호 반전 허용)과 boundary_rationale·universality_disclaimer 전문 그대로.",
+    "prohibited_axes": "초판 전문 승계 (ML 결합기/사이징/평균-표적/sweep 회피 전부 해당 없음 — selection_type=single 불변. 스프레드 구성(BBB-Gov3Y)은 고정 정의 1개이지 계열 탐색이 아님)"
+  },
+
+  "challenge_flags": [
+    "초판 challenge_flags 전건 승계 + rev2 추가분은 challenge_note_hypothesis.md rev2 절 참조",
+    "rev2 신규: BBB 민평 수익률은 호가·평가 기반 — 스트레스 월에 평활·지연 가능(스파이크 과소 → b 를 null 방향으로 감쇠시키는 보수 편향, 거짓 양성 방향 아님)",
+    "rev2 신규: backfill gate 0.5 배수는 휴리스틱 — F_F 부호 상한이 이중 방어",
+    "rev2 신규: 앵커 0.25 는 판단값 — t-기반 req 병기로 감사 가능성 확보",
+    "★INV-7: 성립하더라도 자본화 경로 제안 금지 (FQ-233 부활조건 2건 존중) — 본 라운드 정당 산출 = 분포적 사실 + 조건부성"
+  ],
+
+  "verdict": "designed",
+
+  "handoff": {
+    "to": "alpha-research",
+    "next_steps": "backfill 생존편향 census (prereg #2 신판) → PRIMARY 창 기계 확정 → 회귀 측정 착수 (F_A~F_F + D_G + 진단 창 ②③ 병기). 초판 open_design_questions 중 sd 재산출·소급 실측 2건은 완료 — STORED_SCORE escape_contract / F_C 유효창 / 소비면 목록화(착수는 INV-7 경계 별도 판정) / Lane A 자유도 분리는 잔존.",
+    "resolution_of_request": "재설계 요청 4건 전부 응답: ①S_primary = KR_CreditSpread_BBB3Y (단일 지정) ②L = 3 calendar days ③PRIMARY = UNION 198m 조건부 (backfill gate, 강등 시 133m; ②는 상시 병기·③K200 은 진단 전용 ~306m 교정) ④앵커 = 표준화 0.25 (+ sub-anchor 라벨 + t-req 병기 의무)"
+  }
+}

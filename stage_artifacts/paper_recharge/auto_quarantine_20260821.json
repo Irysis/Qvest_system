@@ -1,0 +1,75 @@
+{
+  "date": "20260821",
+  "schema_note": "auto_quarantine - alpha-search 큐소비자 L5 QUARANTINE 판정 기록",
+  "entries": [
+    {
+      "paper_id": "2607.19497",
+      "paper_title": "The Science and Practice of Trend-Following Systems",
+      "factor_id": "ARFIMA_TSMOM",
+      "factor_name": "VR 조건부 모멘텀",
+      "strategy_id": "STR_AS_20260821_074219_6672",
+      "gate_decision": "QUARANTINE",
+      "gate_failed_layers": "L3_robustness,L4_fidelity",
+      "port_t": 1.21,
+      "oos_retention": 0.57,
+      "calmar": 0.242,
+      "mdd": 64.26,
+      "grade": "F",
+      "score": 37.6,
+      "quarantine_reason": "PORT_t=1.21 << 2.95 HARD. OOS=0.57 < 0.70 FAIL. Calmar=0.242 << 0.64 HARD. MDD 64.26% 구조적 낙폭. 원논문(선물/FX 시계열 추세추종) KR 횡단면 이식 불일치. 동 논문 4번째 신호 전소.",
+      "failure_mechanism": "VR>1 필터가 KR 횡단면 대부분 종목 통과 -> 순수 12-1 MOM과 사실상 동등. MOM 크래시 보호 불능.",
+      "next_probe": [
+        "VR 임계값 강화: VR>1.3 또는 >1.5",
+        "VR 신호 -> 추세/평균회귀 오버레이 이식"
+      ],
+      "l_code": "L-AS-ARFIMA_TSMOM-20260821_075344",
+      "session": "AS-20260821",
+      "run_by": "router session 074219"
+    },
+    {
+      "paper_id": "2608.16749",
+      "paper_title": "Rough Volatility Across Assets",
+      "factor_id": "VOL_HURST",
+      "factor_name": "Rough Volatility Hurst 팩터",
+      "strategy_id": null,
+      "gate_decision": "QUARANTINE",
+      "gate_failed_layers": "batch_434_methodology_only",
+      "port_t": null,
+      "oos_retention": null,
+      "calmar": null,
+      "mdd": null,
+      "grade": null,
+      "score": null,
+      "quarantine_reason": "batch_434: 순수 측정 방법론 논문(q-fin.MF). 개별 종목 크로스섹션 수익 예측 신호 미제안. KR Hurst 계열 3연속 실패(port_t=0.978/1.21/1.65). 코드생성 없이 quarantine+skip.",
+      "failure_mechanism": "논문 미제안 신호 날조 금지(batch_434). 측정 방법론 논문.",
+      "next_probe": [],
+      "l_code": null,
+      "session": "AS-20260821",
+      "run_by": "queue consumer batch_434 직접 판정"
+    },
+    {
+      "paper_id": "2608.09641",
+      "paper_title": "Lower spectrum of financial correlation matrices",
+      "factor_id": "min_eigenvalue_loading_60d_TrackB",
+      "factor_name": "m-minus 하단 스펙트럼 TrackB 크로스섹션",
+      "strategy_id": null,
+      "gate_decision": "QUARANTINE",
+      "gate_failed_layers": "batch_434_regime_indicator_not_alpha",
+      "port_t": null,
+      "oos_retention": null,
+      "calmar": null,
+      "mdd": null,
+      "grade": null,
+      "score": null,
+      "quarantine_reason": "batch_434: 논문 m-minus는 시장 레벨 동기화 지표. 개별 종목 횡단면 수익 예측 미제안. Track A(m-minus regime overlay) -> FQ-240 등재. Track B 크로스섹션은 논문 미제안.",
+      "failure_mechanism": "논문 예측 설정 = 미래 synchronization(지수 레벨). 개별주식 return 예측 아님. Track B 논문 미제안 -> batch_434.",
+      "next_probe": [
+        "Track A: m-minus regime overlay -> FQ-240 (factor-rotation RCMA 후보)"
+      ],
+      "fq_registered": "FQ-240",
+      "l_code": null,
+      "session": "AS-20260821",
+      "run_by": "queue consumer batch_434 직접 판정"
+    }
+  ]
+}

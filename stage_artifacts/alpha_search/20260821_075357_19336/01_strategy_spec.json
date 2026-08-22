@@ -1,0 +1,21 @@
+{
+  "run_id": "ASBT_20260821_075357_19336",
+  "strategy_id": "STR_AS_20260821_075357_19336",
+  "strategy_name": "MacroLeadLag_PureBeta",
+  "strategy_family": "alpha_search",
+  "signal_description": "매크로 지표(신용스프레드, 환율, VIX, 산업생산 등) 변화에 beta가 높은 종목이 지표 변화 후 후행 반응하는 현상. signal=sum(beta_im * delta_macro_m_lag2). Lane D 매크로 조건부 비대칭 알파.",
+  "universe_rule": "K200_KQ150 + 20d avg trading value >= 2e8 KRW (t-1 PIT)",
+  "rebalance_frequency": "monthly",
+  "signal_date_rule": "month_end_signal",
+  "execution_date_rule": "t_plus_1_first_trading_day",
+  "weighting_method": "equal",
+  "max_position_weight": 0.2,
+  "max_leverage": 1,
+  "cash_rule": "fully_invested_after_floor_shares",
+  "cost_model": "v2.4_delta_15bps",
+  "missing_data_rule": "exclude_na_scores",
+  "risk_controls": "buffer_zone(keep_n=50, entry_n=25)",
+  "lookahead_prevention": "detect_lookahead static scan CLEAN (PIT C1-C15)",
+  "survivorship_bias_control": "RAWDATA PIT membership / time-varying universe filters",
+  "factor_engine_path": "stage_artifacts/paper_recharge/factor_engine_MacroLeadLag.R"
+}

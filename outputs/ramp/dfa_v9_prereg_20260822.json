@@ -1,0 +1,33 @@
+{
+  "prereg_id": "dfa_v9_prereg_20260822",
+  "created_at": "2026-08-22",
+  "created_before_any_result": true,
+  "fq_id": "FQ-239",
+  "round": "R7 — 팩터 모멘텀 정식 검증 + 발전 (도훈 2026-08-22 '발전 가이드대로 팩터 모멘텀에서 발전시켜봐')",
+  "guide_mapping": "감사 사양 §8: 8-4(하드 라벨→연속) → F1 · 문헌 표준(Jegadeesh-Titman 12-1, factor momentum 문헌 관행) → F2 · 8-7+도훈 broad 지시 → F4 · 8-6(증분 게이트: 변형은 v0 대비로만 채택) · 8-1(손익분기 — G1 기수행 통과) · 8-5(MPC는 회전율 문제 시만 — 미해당)",
+  "arms_prespecified": [
+    {"id": "v0", "spec": "FM-TS 확인 라운드(사후 발견 규칙의 정식 검증): 월말 m−1 trailing 12M active > 0 팩터 EW, 없으면 Market 100%. paper6 6팩터. G2 게이트에 쓴 규칙 그대로 — 변경 금지", "dof": 0},
+    {"id": "F1_continuous", "spec": "이진 → 연속: w_f = act12+_f / Σ act12+ (양수 모멘텀 크기 비례, 스케일·캡 없음), 없으면 Market", "dof": 1, "guide": "8-4"},
+    {"id": "F2_12_1", "spec": "v0 규칙 + 신호창 12-1 (직전 1개월 제외 11개월 — 단기 역전 오염 제거, 문헌 표준)", "dof": 1},
+    {"id": "F4_broad", "spec": "v0 규칙 그대로, 풀만 broad 21팩터 (dfa_index_returns_broad_202608.parquet)", "dof": 1, "guide": "8-7 + 도훈 broad 지시"},
+    {"id": "C1_combo", "spec": "F1 연속 가중 × F4 broad 풀 — 조합 1셀 사전지정 (사후 조합 선택 금지)", "dof": 0}
+  ],
+  "accounting": "월말 m−1 결정 → m월 적용(보정 회계), 비용 = bps × Σ|Δw| (5bps 논문 대조 / 15bps Qvest 정본)",
+  "windows": "1차 판정 = 전체 가용(신호 성립 후 ~2007-02 → 2026-07) — FM은 훈련 불요라 SJM 창 제약 없음. 시대분해(pre/post-2017) 병기 + DFA 공통 149개월 창 참고 병기",
+  "judgment": {
+    "v0_confirm": "게이트 배터리 전부 clean(구조 PIT + shift 사다리[동월 고의/정본 m−1/lag1 m−2] + placebo 30-seed 월블록 셔플) + essence_score 계약 채점 → HARD 3종 대조",
+    "adoption_of_variants": "15bps에서 v0 대비 {pt 개선 AND MDD 비악화} 또는 {calmar 개선 AND pt 비열등(>=-0.1)} + paired NW-t 보고. argmax 금지 — 전 셀 보고, 채택은 규칙 충족 셀만",
+    "headline": "v0 15bps (확인 대상) + C1 15bps (사전지정 조합)",
+    "n_trials_cumulative": 44,
+    "selection_type": "chain — 규칙 고정, 튜닝 파라미터 없음"
+  },
+  "honesty": "v0는 G2 게이트에서 사후 발견된 규칙 — 본 라운드가 그 정식 검증(같은 데이터라 완전 OOS 아님을 라벨 명기, oos_retention·시대분해·placebo가 1차 방어). 22/13지수 배분은 25종목 배포와 무관한 연구-레벨 측정(RAMP_02 선례 라벨)",
+  "amendment_1_r8_exposure_before_measurement": {
+    "added_at": "2026-08-22 (R7 실측 후, R8 측정 전 — 가이드 8-1 순서: 익스포저 층)",
+    "rationale_measured": "R7에서 구속 게이트가 calmar(MDD 0.44~0.51)로 이동 — 8-1이 지정한 익스포저 층의 자리. 트리거는 R3-A 정렬 실측 보유(mkt_jm 극단-위기 AUC 0.761/0.760 두 창)",
+    "spec": "exposure_m = 0.70 if crisis(m−1 월말) else 1.00. crisis = mkt_jm Bear_Prob > expanding 95분위(인과 월말 갱신, R3-C 정의 그대로 — 자유도 0 재사용). 계수 0.70 = 기존 CAUTION 노출 재사용(자유도 0). 잔여 현금(수익 0). 비용 += bps×|Δexposure|. 근사 회계 r = exp×pr_net − bps×|Δexp| (기존 거래비용 미축소 — 보수, 게이트 접근 시 정밀 재측정)",
+    "arms": "익스포저-단독 기준선(Market×EXP — 8-1 순서 요건) + v0×EXP + F4×EXP + C1×EXP, 5/15bps",
+    "adoption": "15bps에서 {calmar 개선 AND pt 비열등(>=−0.1)} vs 동일 팔 무익스포저. §4.3 단서 준수: 익스포저 층 의도적 결합이므로 MDD 개선 문턱 10%p는 N/A — 결합 사실·단독 기여 별도 기록"
+  },
+  "pin_tag": "smv_r2_20260820 연장 + dfa_index_returns_broad_202608.parquet"
+}

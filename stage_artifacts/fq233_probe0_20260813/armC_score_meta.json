@@ -1,0 +1,76 @@
+{
+ "round_id": "FQ233_ARMC_20260820",
+ "prereg": "PREREG_armC_20260820.md",
+ "primary_score": "p_up - p_dn",
+ "label": {
+  "y_up": "1[y > q90_cs(month)]",
+  "y_dn": "1[y < q10_cs(month)]"
+ },
+ "label_pos_rate": {
+  "y_up": 0.10013326192818801,
+  "y_dn": 0.10014571631399997
+ },
+ "n_features": 324,
+ "dropped_alias": [
+  "V19_Debt_to_Market",
+  "M25_Earnings_Mom_Streak",
+  "M29_Mom_5d",
+  "C10_SUE_Persistence",
+  "C13_Revision_Breadth_3m",
+  "R12_Idiosyncratic_Risk",
+  "CR04_Ownership_Concentration"
+ ],
+ "params": {
+  "objective": "binary",
+  "n_estimators": 300,
+  "learning_rate": 0.05,
+  "num_leaves": 15,
+  "min_child_samples": 50,
+  "subsample": 0.8,
+  "subsample_freq": 1,
+  "colsample_bytree": 0.8,
+  "reg_lambda": 1.0,
+  "random_state": 0,
+  "n_jobs": -1,
+  "verbose": -1
+ },
+ "burn_in_months": 60,
+ "n_pred_months": 199,
+ "n_scores": 68451,
+ "diag": {
+  "score": {
+   "rank_ic_mean": 0.03313685889955692,
+   "icir": 0.27861815233391585,
+   "n_months": 198
+  },
+  "p_up": {
+   "rank_ic_mean": -0.024519668470547745,
+   "icir": -0.1438892318704561,
+   "n_months": 198
+  },
+  "p_dn": {
+   "rank_ic_mean": -0.045429853414830405,
+   "icir": -0.2513631043526948,
+   "n_months": 198
+  }
+ },
+ "secondary": {
+  "bowley": {
+   "status": "derived_from_armB_no_retrain",
+   "source": "armB_scores.parquet (종목-월 단위 q10/q50/q90 보존됨)",
+   "formula": "(q90+q10-2*q50)/(q90-q10)",
+   "n_rows": 68451,
+   "rank_ic_mean": -0.011459697552247622,
+   "icir": -0.11839391540255634,
+   "n_months": 198,
+   "note": "진단 rank-IC 만 기록 — 사전등록 §3 이 재학습·primary 교체를 금지."
+  },
+  "crps_diag": {
+   "crps_ensemble_3point": 0.07519492965506101,
+   "mean_pinball_3q": 0.031955061374169834,
+   "n_rows": 68451,
+   "caveat": "★3개 분위만으로 만든 **3점 앙상블 근사** CRPS — 연속 분포 CRPS 가 아니다. arm 간 비교가 아니라 arm B 예측의 채점 진단."
+  }
+ },
+ "note": "스코어까지만. 성과·판정은 R 경유."
+}

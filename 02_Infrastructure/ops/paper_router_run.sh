@@ -89,6 +89,26 @@ RS
 if [ "${QVEST_PAPER_ROUTER_ENABLE:-0}" != "1" ]; then
   log "disabled (QVEST_PAPER_ROUTER_ENABLE!=1) — skip"; exit 0
 fi
+# -- (2026-08-21 수리) 자체 상호배제 -- 호출자를 믿지 않는다 -----------------
+#   실사고 2026-08-21: morning_run 재시도가 **살아있는** 직전 런을 ".done 없음 = 중도 사망"
+#   으로 오판해 라우터를 2개 띄웠다(PID 35460 @07:07:49 · 9824 @07:11:27). 둘이 같은
+#   route JSON 을 덮어써, 07:19 판(22,901B · schema route_v2 · autorun 2편 ·
+#   factor_candidates 4종)이 07:31 판(16,419B · autorun/factor_candidates 소실)으로 사라졌고
+#   20260820/20260821 두 파일이 date 필드만 다른 복제가 됐다(route 배정 불일치 0편).
+#   ★morning_run 쪽 수리와 **별개로** 여기서도 막는다 -- 호출자가 하나라는 보장이 없다.
+RLOCK="$BASE/.cache/paper_router.lock"
+if ! mkdir "$RLOCK" 2>/dev/null; then
+  _rp=$(cat "$RLOCK/pid" 2>/dev/null)
+  if [ -n "${_rp:-}" ] && kill -0 "$_rp" 2>/dev/null; then
+    log "다른 인스턴스 실행 중(PID=$_rp) — skip (동시 라우팅 금지)"; exit 0
+  fi
+  log "stale lock 회수 (PID=${_rp:-?} 생존 안 함)"
+  rm -rf "$RLOCK"
+  mkdir "$RLOCK" 2>/dev/null || { log "락 획득 실패 — skip"; exit 0; }
+fi
+echo "$$" > "$RLOCK/pid"
+trap 'rm -rf "$RLOCK"' EXIT
+
 DISC="$BASE/stage_artifacts/paper_recharge/mcp_discovery_${TODAY}.json"
 STAMP="$BASE/stage_artifacts/paper_recharge/paper_recharge_${TODAY}.done"
 DL=$(grep -oE 'downloaded=[0-9]+' "$STAMP" 2>/dev/null | head -1 | cut -d= -f2)
@@ -107,18 +127,39 @@ fi
 #   없는 날짜를 스캔. 실패일(예: 07-08 spend-limit exit=1, 17편) 다운로드분의 영구 좌초 방지.
 #   discovery JSON이 없는 날짜는 라우팅 소스 자체가 없어 제외(로그만).
 BACKLOG_DATES=""
-for i in 1 2 3 4 5 6 7; do
+# -- (2026-08-21 수리) 백로그 판정축을 .done 스탬프에서 **discovery 존재**로 옮긴다 --
+#   구판 결함: `[ -f "$BST" ] || continue` + `downloaded>0`. 그런데 백로그를 만드는 실패
+#   모드(런 중도 사망)가 **바로 .done 을 못 남기는 모드**다 -- 검사기가 자기 발화 조건에
+#   눈이 멀어 있었다. 실측 2026-08-21: 08-15/16/17 은 discovery 29편씩 있는데 .done 부재라
+#   **로그 한 줄 없이** 탈락했고, 12편이 어떤 route JSON 에도 없다. 7일 창 이탈(08-22/23/24)
+#   시 무경보 영구 좌초 -- 만료 경보는 BACKLOG_DATES 에 든 날짜만 검사하기 때문이다.
+#   ★뿌리 = 2026-08-02 수리의 **비대칭 적용**. 그때 "downloaded 는 '라우팅할 재료가 있나'가
+#     아니다" 라고 선언하고 고친 건 아래 당일 축뿐이고 이 백로그 축은 그대로였다.
+#     이제 두 축이 같은 기준을 쓴다: **discovery 있고 route 없음 = 미소비**.
+BACKLOG_MAX="${QVEST_PAPER_ROUTER_BACKLOG_MAX:-3}"
+_bl_n=0
+# ★오래된 날짜부터 훑는다 — 상한(BACKLOG_MAX)이 걸릴 때 **만료 임박분을 먼저 살리기** 위해서다.
+#   오름차순(1..7)이면 최신부터 채워 7일 창을 곧 이탈할 가장 오래된 날짜가 잘려나간다
+#   (2026-08-22 자가 적발 — 패치 당일 발견).
+for i in 7 6 5 4 3 2 1; do
   D=$(date -d "-${i} day" +%Y%m%d 2>/dev/null) || continue
+  RJ_D="$BASE/stage_artifacts/paper_recharge/alpha_search_route_${D}.json"
+  [ -f "$RJ_D" ] && continue
+  DISC_D="$BASE/stage_artifacts/paper_recharge/mcp_discovery_${D}.json"
+  [ -f "$DISC_D" ] || continue
   BST="$BASE/stage_artifacts/paper_recharge/paper_recharge_${D}.done"
-  [ -f "$BST" ] || continue
-  bdl=$(grep -oE 'downloaded=[0-9]+' "$BST" 2>/dev/null | head -1 | cut -d= -f2); bdl="${bdl:-0}"
-  [ "$bdl" -gt 0 ] || continue
-  [ -f "$BASE/stage_artifacts/paper_recharge/alpha_search_route_${D}.json" ] && continue
-  if [ ! -f "$BASE/stage_artifacts/paper_recharge/mcp_discovery_${D}.json" ]; then
-    log "backlog $D: downloaded=$bdl 이나 discovery JSON 없음 — 라우팅 불가, 제외"; continue
+  bdl=0; _stamp=N
+  if [ -f "$BST" ]; then
+    _stamp=Y
+    bdl=$(grep -oE 'downloaded=[0-9]+' "$BST" 2>/dev/null | head -1 | cut -d= -f2); bdl="${bdl:-0}"
+  fi
+  if [ "$_bl_n" -ge "$BACKLOG_MAX" ]; then
+    log "backlog 상한 도달($BACKLOG_MAX) — $D 이번 런 보류(차기 재합류). 프롬프트 비대화 방지"
+    continue
   fi
   BACKLOG_DATES="${BACKLOG_DATES:+$BACKLOG_DATES,}$D"
-  log "backlog 포착: $D (downloaded=$bdl, route JSON 없음) — 이번 라우팅에 합류"
+  _bl_n=$((_bl_n + 1))
+  log "backlog 포착: $D (downloaded=$bdl · stamp=$_stamp · discovery 존재 · route 없음) — 합류"
 done
 
 # 당일 discovery 게이트 (v3: 백로그가 있으면 당일 discovery 없어도 백로그만으로 진행)
@@ -181,6 +222,26 @@ if command -v sched_check_credentials >/dev/null 2>&1; then
     ;;
   esac
 fi
+# -- (2026-08-22 수리) 자격 토큰을 **현재 셸에서** 확보한다 ------------------
+#   실사고: 위 사전점검을 `CRED_ST=$(sched_check_credentials)` 로 부르는데 명령치환은
+#   **서브셸**이라 그 안에서 일어난 CLAUDE_CODE_OAUTH_TOKEN export 가 부모로 오지 않는다.
+#   결과 = 판정은 "ok" 인데 부모 셸 토큰은 unset -> claude 가 만료된 파일 자격으로 떨어져 401.
+#   "사전점검은 통과했는데 실제 호출이 401" 이라는 관측이 정확히 이 자리였다
+#   (2026-08-21 paper_router · 2026-08-22 mode_queue 재현. A/B 실증: env 토큰 있으면 OK,
+#    없으면 파일 자격이 만료돼 401).
+#   ★Task Scheduler 처럼 프로세스 env 에 User-scope 변수가 이미 실려 오는 컨텍스트에서는
+#     증상이 안 난다 — 그래서 오래 잠복했다. Git Bash 등 env 가 빈 컨텍스트에서만 터진다.
+#   ★토큰 값은 절대 로그로 내지 않는다.
+command -v sched_resolve_oauth_token >/dev/null 2>&1 && sched_resolve_oauth_token >/dev/null 2>&1 || true
+# ── (2026-08-22) 토큰 **지문** 한 줄 로깅 — 값이 아니라 sha256 앞 12자.
+#   왜: 오늘 401 사고에서 "토큰이 만료된 것"인지 "배관이 토큰을 못 실은 것"인지
+#   사후 구분이 **원리적으로 불가능**했다(두 세션이 그 구분에 시간을 썼다).
+#   지문이 남으면 즉시 갈린다: 지문 없음 = 배관 실패 / 지문 있는데 401 = 진짜 만료.
+#   ★sched_token_fingerprint 는 정의만 되고 호출자가 0건이었다 — 만들어두고 안 쓴 계기.
+_tokfp="none"
+command -v sched_token_fingerprint >/dev/null 2>&1 && _tokfp="$(sched_token_fingerprint 2>/dev/null || echo none)"
+log "토큰 지문: ${_tokfp} (값 아님 · sha256 앞12자) — 401 시 이 줄로 만료/배관 구분"
+
 timeout 3000 "$CLAUDE_BIN" -p "$PROMPT_TEXT" \
   --dangerously-skip-permissions >> "$LOG" 2>&1
 rc=$?

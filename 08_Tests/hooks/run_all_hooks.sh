@@ -1030,11 +1030,11 @@ SUITES=(
   #   ★K0 양성 대조 = 초판 E2E 가 케이스 사전 없는 샌드박스에서 fail-open `{}` 을 뱉어
   #    '통과' 축이 게이트를 돌리지도 않고 초록이었다. 차단 능력을 먼저 보인 뒤 통과를 주장한다.
   "08_Tests/hooks/test_continuity_verdict_artifact_identity.py"
-  # 2026-08-16~20 L1 자동 스폰 아크 (도훈 승인) — 충돌 해소 시 재등재 (2026-08-20:
-  #   elegant-rhodes 신판 러너가 main 의 이 2건 등재를 모른 채 병합돼 전파일 충돌 →
-  #   신판 채택 + 여기 재등재. P0 루프닫기 주입 25종 + Layer1~3 주입 19종.)
-  "08_Tests/hooks/test_p0_loop_closure.R"
-  "08_Tests/hooks/test_auto_spawn_layers.R"
+  # 2026-08-16~20 L1 자동 스폰 아크 (도훈 승인): test_p0_loop_closure.R ·
+  #   test_auto_spawn_layers.R 은 **위 :875/:880 에 이미 등재**돼 있다. 2026-08-20 병합
+  #   충돌 해소 때 여기 한 벌이 더 붙어 141 suite 를 143 회 돌렸고 FINAL 합계에 44 pass 가
+  #   이중계상됐다(2026-08-22 감사 HLT-5). 편입 검사기는 고유화 후 세므로 원리적으로
+  #   이 중복을 못 본다 ⇒ 중복 행 제거로 정정.
 )
 
 # (2026-08-02) .py 분기 추가 — 종전엔 확장자 무관 `bash` 로 던져 파이썬 suite 가
@@ -1062,6 +1062,65 @@ TOTAL_PASS=0
 TOTAL_FAIL=0
 TESTS_JSON=""
 UNREPORTED=()
+
+# ★생산 원장 격리 가드 (2026-08-22 신설 — 감사 HLT-1/HLT-2)
+#   검사가 생산 조회면을 변조하면 **같은 배터리의 후속 스위트가 그 가짜를 실물로 소비한다**
+#   (실측: test_hypothesis_index_paper_lane 이 주입한 ZZ_PROBE_PAPER_LANE 를
+#    risk_lane_verdict · nearest_arm_axis · Σ 어댑터 3 스위트가 등재 항목으로 읽었다).
+#   더 나쁜 건 크래시 시 오염이 잔존해 **다음 회차의 시작 상태**가 되는 것 — 그러면
+#   자기청소 검사가 '내가 안 지웠다'가 아니라 '이미 더러웠다'로 참양성 FAIL 을 내는데
+#   겉보기는 flake 와 같다. ⇒ 스위트마다 보호 집합 지문을 재고, 바뀌면 이름과 함께 계상한다.
+#   ★대상은 알파 라운드가 실제로 조회하는 면 + ②Distilled 카드(provenance 오염 포함).
+# ★정책 2단 (2026-08-22 개정 — 병렬 세션 claude/nifty-lalande-ad9186 의 실측 반영)
+#   (a) **md5 만으론 눈이 먼다**: 백업→변형→**완전 복원**은 바이트가 같아 내용 검사가 전부
+#       초록인데 중간 상태는 이미 노출됐다 — 그게 실제 사고 경로였다. 실측: auto-commit 이
+#       주입 상태를 blob 으로 캡처한 커밋이 **8건**(method_registry 5 + hypothesis_index 3,
+#       최초 2026-08-16 16:30). ⇒ **쓰기 자체를 보는 축(mtime)** 을 지문에 포함한다.
+#   (b) **정본마다 정당한 변경 빈도가 다르다**: method_registry 는 등재 이벤트에만 바뀌지만
+#       hypothesis_index/knowledge_index/distilled_knowledge 는 **남의 세션 lookup·emit·
+#       refine 이 상시 재빌드**한다(실측: 한 감사 세션 안에서 3회 값이 달라졌고, 배터리에서
+#       test_revival_flags_sync 가 카드는 복원하고도 파생 인덱스 generated_at 만으로 걸렸다).
+#       후자에 바이트 동치를 걸면 남의 정당한 작업에 빨개진다 ⇒ STRICT / ADVISORY 로 가른다.
+REGISTRY_GUARD_STRICT=(     # 저빈도 정본 — 변하면 실패로 계상
+  "06_Registry/method_registry.json"
+  "06_Registry/alpha_frontier_queue.json"
+)
+REGISTRY_GUARD_ADVISORY=(   # 파생 조회면 — 병렬 세션이 정당하게 갱신, 보고만
+  "06_Registry/hypothesis_index.json"
+  "06_Registry/knowledge_index.json"
+  "06_Registry/distilled_knowledge.json"
+)
+REGISTRY_DIRTY=()           # 실패 계상 대상
+REGISTRY_ADVISORY=()        # 보고만
+_fp_one() {                 # md5 + mtime 둘 다 (복원-성공 쓰기까지 검출)
+  local f="$1"
+  [[ -f "$PROJ_DIR/$f" ]] || { printf '%s ABSENT ABSENT\n' "$f"; return 0; }
+  printf '%s %s %s\n' "$f" \
+    "$(md5sum "$PROJ_DIR/$f" 2>/dev/null | cut -d' ' -f1)" \
+    "$(date -r "$PROJ_DIR/$f" +%s 2>/dev/null || echo 0)" 
+}
+_reg_fp_strict() {
+  local f
+  for f in "${REGISTRY_GUARD_STRICT[@]}"; do _fp_one "$f"; done
+  # ②Distilled 카드 = provenance 오염 표면. 재정제/추출 외엔 안 바뀌므로 STRICT.
+  if [[ -d "$PROJ_DIR/qepm/memory/axioms/distilled" ]]; then
+    printf 'qepm/memory/axioms/distilled/ %s -\n' \
+      "$(find "$PROJ_DIR/qepm/memory/axioms/distilled" -name '*.json' -type f \
+           -exec md5sum {} + 2>/dev/null | sort | md5sum | cut -d' ' -f1)" 
+  fi
+  return 0
+}
+_reg_fp_adv() {
+  local f
+  for f in "${REGISTRY_GUARD_ADVISORY[@]}"; do _fp_one "$f"; done
+  return 0
+}
+# 변경된 **파일명**만 뽑는다. 양쪽(`<`·`>`) 을 다 집는다 — `>` 만 보면 **삭제**가 지문
+#   불일치는 만들되 목록이 비어 계상이 0 이 되는 fail-open 이 된다(초판 가드가 실제로 그랬다).
+_reg_diff_names() {
+  diff <(printf '%s\n' "$1") <(printf '%s\n' "$2") \
+    | sed -n 's/^[<>] //p' | cut -d' ' -f1 | sort -u
+}
 # [fix 2026-07-25] 구현은 요약을 `tail -1`로 집었는데, 마지막 줄이 경고·stderr
 # 인터리브로 밀리면 그 suite 전체가 UNREPORTED(=1 fail)로 계상되고 통과 건수가
 # 통째로 사라진다 — 실측 1/7 빈도로 27/0/27 ↔ 17/1/18 (드롭분 = seq_gate 10건).
@@ -1083,12 +1142,24 @@ print(pick)
 }
 
 for test_script in "${SUITES[@]}"; do
+  _rg0="$(_reg_fp_strict)"; _ra0="$(_reg_fp_adv)"
   if [[ "$test_script" == *.R ]]; then
     OUT=$(Rscript "$PROJ_DIR/$test_script" 2>&1 | _last_summary_json)
   elif [[ "$test_script" == *.py ]]; then
     OUT=$("$QVEST_PY_BIN" "$PROJ_DIR/$test_script" 2>&1 | _last_summary_json)
   else
     OUT=$(bash "$PROJ_DIR/$test_script" 2>&1 | _last_summary_json)
+  fi
+  _rg1="$(_reg_fp_strict)"; _ra1="$(_reg_fp_adv)"
+  if [[ "$_rg0" != "$_rg1" ]]; then
+    while IFS= read -r _dl; do
+      [[ -n "$_dl" ]] && REGISTRY_DIRTY+=("$(basename "$test_script") :: $_dl")
+    done < <(_reg_diff_names "$_rg0" "$_rg1")
+  fi
+  if [[ "$_ra0" != "$_ra1" ]]; then
+    while IFS= read -r _dl; do
+      [[ -n "$_dl" ]] && REGISTRY_ADVISORY+=("$(basename "$test_script") :: $_dl")
+    done < <(_reg_diff_names "$_ra0" "$_ra1")
   fi
   if echo "$OUT" | "$QVEST_PY_BIN" -c 'import json,sys; d=json.loads(sys.stdin.read()); exit(0 if "test" in d else 1)' 2>/dev/null; then
     PASS=$(echo "$OUT" | "$QVEST_PY_BIN" -c 'import json,sys; print(json.load(sys.stdin).get("pass",0))')
@@ -1144,6 +1215,10 @@ cat > "$RESULTS_FILE" <<EOF
   "total_skipped": $TOTAL_SKIP,
   "total": $((TOTAL_PASS + TOTAL_FAIL)),
   "status": "$(if [[ $TOTAL_FAIL -eq 0 ]]; then echo PASS; else echo FAIL; fi)",
+  "registry_dirty": [$(_j=""; for _l in ${REGISTRY_DIRTY[@]+"${REGISTRY_DIRTY[@]}"}; do
+                 _e="${_l//\/\\}"; _e="${_e//\"/\\\"}"
+                 if [[ -n "$_j" ]]; then _j+=","; fi; _j+="\"$_e\""
+               done; printf '%s' "$_j")],
   "skips": [$(_j=""; for _l in ${SKIP_LINES[@]+"${SKIP_LINES[@]}"}; do
                  _e="${_l//\\/\\\\}"; _e="${_e//\"/\\\"}"
                  if [[ -n "$_j" ]]; then _j+=","; fi; _j+="\"$_e\""
@@ -1152,8 +1227,25 @@ cat > "$RESULTS_FILE" <<EOF
 }
 EOF
 
+# 격리 위반은 **실패로 계상**한다 — 보고만 하면 무시되고, 무시된 오염은 다음 회차의
+#   시작 상태가 된다(HLT-2 실측). 정당한 예외가 생기면 그때 명시 allowlist 를 만든다.
+if (( ${#REGISTRY_DIRTY[@]} > 0 )); then
+  TOTAL_FAIL=$((TOTAL_FAIL + ${#REGISTRY_DIRTY[@]}))
+fi
+
 echo ""
 echo "════════════════════════════════════════"
+if (( ${#REGISTRY_DIRTY[@]} > 0 )); then
+  echo "⚠ REGISTRY DIRTY ${#REGISTRY_DIRTY[@]}건 — 검사가 저빈도 정본을 변조했다(격리 계약 위반):"
+  for _l in "${REGISTRY_DIRTY[@]}"; do echo "    $_l"; done
+  echo "────────────────────────────────────────"
+fi
+if (( ${#REGISTRY_ADVISORY[@]} > 0 )); then
+  echo "ⓘ REGISTRY ADVISORY ${#REGISTRY_ADVISORY[@]}건 — 파생 조회면 변화(병렬 세션의 정당한"
+  echo "   재빌드일 수 있어 실패로 계상하지 않는다. 탐침·가짜 항목이 보이면 그때가 위반):"
+  for _l in "${REGISTRY_ADVISORY[@]}"; do echo "    $_l"; done
+  echo "────────────────────────────────────────"
+fi
 # 건너뛴 축은 FINAL 위에 **먼저** 나열한다 — 숫자만 남으면 다음 사람은 그 숫자가
 # 무엇의 부재인지 알 수 없고, 알 수 없는 항목은 무시된다.
 if (( TOTAL_SKIP > 0 )); then

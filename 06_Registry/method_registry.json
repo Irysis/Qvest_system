@@ -805,7 +805,14 @@
         "fixture": "rm_fixture(n_assets=8, n_obs=260, seed=20260813)",
         "scope_note": "계약 준수 검증이지 성과 검증이 아니다. 성과는 dispatch Σ-A/B 가 잰다."
       },
-      "screen_axes": null,
+      "measurement_status": "config-scoped negative — standalone ΔIR 대 bare -0.311(1.154 vs 1.465) · 대 book_L5 -0.279 · 대 HurstTrendOverlay(짝) -0.291. stacked ΔIR 대 book_L5 -0.367(1.066 vs 1.433). MDD 개선: standalone -0.101(−0.407→−0.306), stacked -0.013(−0.233→−0.220). ★핵심 기전: MLE 정확도가 KR 우상향 시장에서 역효과 — R/S 편의(88.5% 추세 판정, 평균노출 0.966)는 full 노출에 수렴해 bare(IR 1.465)와 거의 동일하지만, CompLik(36.2% 추세 판정 = 98/271개월, 평균노출 0.8085)은 비추세 국면에 올바르게 디리스크하는데 그 디리스크가 오히려 IR을 크게 손상시킨다. '더 잘 잰 H → 더 나은 IR' 가설이 이 측정틀에서 반증됨. MDD 개선(0.101)은 실재하나 IR 손실(-0.311) 대가가 크다. next_probe: (1) AX-001 crisis-conditional — MDD -0.101 개선이 CRISIS 라벨 월에 집중되는지 확인(method_registry CompLikFGnOverlay 조건부 평가 미실시). (2) 소비면 전환: overlay 레벨 H 신호보다 종목별 횡단면 H 기반 모멘텀 필터(선별 레벨)에서 재검토. ★2026-08-22 Q-Lead 검산 정정: 산문의 \"40.8% 추세 판정\"은 어댑터 실측 출력(추세월 98 = 36.2%)과 불일치해 교정. 구조화 필드(measured)의 수치는 전 항목 재현 확인.",
+      "screen_axes": {
+        "shrinkage_builtin": "weak",
+        "statistic_order": "higher",
+        "screen_priority": "⭐",
+        "rationale": "합성우도는 p차원 연속창 평균으로 약한 축소 내장. 통계 차수는 fGn 자기공분산(Hurst 지수, 2차 초과). screen_axes 예측(⭐)은 IR 기여를 맞히지 못함 — 추정기 정확도 개선이 IR 개선으로 전환되지 않는다는 것이 이 arm의 기여.",
+        "assigned": "2026-08-22"
+      },
       "selection_type": "chain",
       "free_params": {
         "p_subvector": "15 — 원문 §5.1 이 변동성 계열에 쓴 값 그대로",
@@ -813,7 +820,39 @@
         "inherited": "WIN=252/H_THRESHOLD=0.5/EXP 1.00·0.70/MIN_OBS=64 — HurstTrendOverlay 에서 상속(짝 비교 전제)",
         "h_bounds": "[0.05,0.95] — 경계 특이 회피 수치가드, 성과로 고른 값 아님"
       },
-      "measured": false,
+      "measured": {
+        "source_csv": "06_Registry/book_carrier/h2_regime_overlay_ab.csv",
+        "carrier": "carrier_STR_1715_on_M4gAE_R05_noLayer4_PG2.parquet",
+        "n_months": 271,
+        "basis": "현 PG2 캐리어(carrier_meta.json 경유). 기준선 = bare(노출 1.00). 대조군 = book_L5(현 북 오버레이, IR=1.433). 짝 = HurstTrendOverlay(R/S 추정기, IR=1.445).",
+        "standalone": {
+          "IR": 1.154,
+          "PORT_t": 5.108,
+          "abs_SR": 1.418,
+          "abs_CAGR": 0.335,
+          "abs_MDD": -0.306,
+          "avg_exposure": 0.808,
+          "delta_ir_vs_bare": -0.311,
+          "delta_ir_vs_book_L5": -0.279,
+          "delta_ir_vs_hurst_trend_overlay": -0.291,
+          "delta_mdd_vs_bare": 0.101
+        },
+        "stacked_x_book": {
+          "IR": 1.066,
+          "PORT_t": 4.929,
+          "abs_SR": 1.631,
+          "abs_CAGR": 0.343,
+          "abs_MDD": -0.22,
+          "avg_exposure": 0.738,
+          "delta_ir_vs_book_L5": -0.367,
+          "delta_mdd_vs_book_L5": 0.013
+        },
+        "verdict_measured": "config-scoped negative. MLE 정확도 개선이 IR 개선으로 전환되지 않는 반증 결과.",
+        "source_measured_at": "2026-08-13",
+        "recorded_at": "2026-08-22",
+        "reproduced_at": "2026-08-22",
+        "reproduction_note": "2026-08-22 Q-Lead 가 auto_regime_overlay_ab.R 을 QVEST_REGIME_AB_NORUN=1 로 재실행(8.5초, 동일 캐리어·271개월). bare/book_L5/CompLikFGnOverlay/_x_book 전 지표 차이 ±0.0000 = 완전 재현. 산출 = stage_artifacts/modeq_verify_20260822/h2_regime_overlay_ab_REMEASURE_20260822.csv"
+      },
       "similar_to": []
     }
   ],

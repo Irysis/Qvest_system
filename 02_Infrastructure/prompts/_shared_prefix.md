@@ -202,7 +202,7 @@ v2 대기 (Risk/Optimizer용):
 [Distilled 탐색지도 — 가설 착수 전 대조. 판결이 아니라 방향(프론티어) 표시다.]
 [선정 = 실사용 빈도순(소비면 파일 수), 동률 시 최신 정제순. 생산자 = build_distilled_usage.py]
   - DIST-QPM-003 [탐색됨→프론티어(INV-7 조건-안 차별점 시 진행)· 인용 19] KR quality_profitability 단독/단순-composite long-only는 estimated 성과 기준 반복 실패 — supporting 4전략 모두 OOS에서 alpha 소멸(profitability fortress OOS retention 0.24·recent-3Y SR 0.135, growth-st
-  - DIST-RAMP-006 [조건부· 인용 14] KR 시장에서 value/국면-조건부 팩터배분은 배포 envelope(25종 long-only)에서 실현 PORT_t 천장이 ~2.85로, 모든 regime 변형(AR+MSM 2.73·Cascade 2.85·Shu-Mulvey 그룹 0.83)이 이 이하다 — 이는 국면엔진 한계가 아니라 알파 자체 한계(2017+ coho
+  - DIST-RAMP-006 [조건부· 인용 16] KR 시장에서 value/국면-조건부 팩터배분은 배포 조건(25종 long-only)에서 실현 PORT_t 천장이 ~2.85로, 모든 regime 변형(AR+MSM 2.73·Cascade 2.85·Shu-Mulvey 그룹 0.83)이 이 이하다 — 이는 국면엔진 한계가 아니라 알파 자체 한계(2017+ cohort dec
   - DIST-QPM-006 [조건부· 인용 12] KR value/quality 팩터의 single-signal long-only 구현은 실패 — EP 단독(L-132: V02 CAGR -1.71%/SR -0.265, turnover 3.3%로 rebalancing alpha 부재, 저PER 가치함정)과 sector-neutral accrual(L-135: OOS ret
   - DIST-QPM-005 [탐색됨→프론티어(INV-7 조건-안 차별점 시 진행)· 인용 6] KR 개인투자자 순매수 contrarian(역발상) 단일팩터 long-only 신호는 알파 부재 (L-131/STR_1674 estimated: SR 0.157·MDD 65.6%·IR -0.283). 미국 retail-contrarian(Barber 2009) 효과가 한국의 높은 개인 비중(30%+)·약한 정보비대칭으로 
   - DIST-AR-001 [탐색됨→프론티어(INV-7 조건-안 차별점 시 진행)· 인용 6] KR defense-family Q07+Accounting-Beta(D29) composite 30종목 long-only standalone은 자본 sleeve로 부적합 — 낙폭방어 자체는 양호(MDD 11.94%)하나 정상장 opportunity-cost drag로 CAGR 2.93%가 최소 기회비용(무위험2%+인플레3

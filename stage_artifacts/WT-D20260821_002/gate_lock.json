@@ -1,0 +1,39 @@
+{
+  "wt_id": "WT-D20260821_002",
+  "round_id": "FQ233_FRAME_20260821",
+  "locked_at": "2026-08-21T08:22:00+0900",
+  "locked_by": "alpha-research",
+  "basis": "gate_result.json (mean-blind, finished_at 2026-08-21T08:20:25.115+0900)",
+  "declaration": "본 잠금은 gate.R 산출물(sd·nw·MDE)만을 근거로 한다. 이 시점까지 어떤 프레임에서도 paired diff 의 평균·t 를 산출하지 않았다 — gate.R 소스에 해당 연산이 존재하지 않고, arm 별 성과량도 metrics=FALSE 로 우회했다.",
+  "mde_bar_annual": 0.03,
+  "ladder_prefixed": ["F1", "F2", "F3L"],
+  "gate_outcome": {
+    "F1": {"mde_annual_c_vs_a": 0.06228, "mde_annual_b_vs_a": 0.08850, "pass": false},
+    "F2": {"mde_annual_c_vs_a": 0.03724, "mde_annual_b_vs_a": 0.05015, "pass": false},
+    "F3L": {"mde_annual_c_vs_a": 0.01218, "mde_annual_b_vs_a": 0.01275, "pass": true}
+  },
+  "binding_frame": "F3L",
+  "binding_rule_applied": "사다리 F1>F2>F3L 의 최상위 통과 프레임. F1·F2 는 co-primary 양쪽 모두 MDE > 3.0%p 로 FRAME_REJECTED_UNDERPOWERED — 이 두 프레임의 평균·t 는 산출하지 않는다.",
+  "axis1_falsification": {
+    "rule": "LADDER 프레임 diff sd 가 F0 의 50% 이하로 감소하지 않으면 검출-기전 기각",
+    "min_sd_ratio_vs_F0_c_vs_a": 0.167496,
+    "min_sd_ratio_vs_F0_b_vs_a": 0.150098,
+    "verdict": "AXIS1_NOT_REJECTED",
+    "note": "sd 감소 83~85% — 이산 편입 경계가 diff 분산의 지배적 원천이라는 검출-기전은 기각되지 않았다. FRAME_PATH_INVALID 미발화."
+  },
+  "positive_control": {
+    "F0_c_vs_a_diff_sd_recomputed": 0.043381,
+    "armC_addendum_recorded_sd": 0.043381,
+    "match": true,
+    "note": "Step0 의 ret_net bit-parity(198/198, max abs diff 0)와 정합 — 본 세션 프레임 배관이 선행 라운드와 동일 계열을 재현한다는 양성 대조."
+  },
+  "nw_inflation_correction": {
+    "addendum_used": 1.25,
+    "addendum_source": "assumed_default_series_unmeasurable",
+    "measured_range_this_round": [0.9415, 1.1182],
+    "F0_c_vs_a_measured": 1.0135,
+    "effect": "F0 c_vs_a MDE 가 9.249%p(가정) → 7.499%p(실측)로 약 19% 하향. 관문을 넓히는 방향이라 보수성 문제 없음(설계 challenge_flags 예측과 일치).",
+    "note": "required_effect(series=) 경유 실측 — assumed_default 낙하 없음(nw_inflation_source='measured' 전건)."
+  },
+  "next_step": "verdict.R — F3L 에서만 co-primary 2건 paired NW3 t 산출."
+}

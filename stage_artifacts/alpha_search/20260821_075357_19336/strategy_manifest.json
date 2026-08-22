@@ -1,0 +1,115 @@
+{
+  "schema_version": "alpha_search_strategy_manifest_v1",
+  "created_at": "2026-08-21T08:10:39+0900",
+  "mode": "alpha_search",
+  "strategy_id": "STR_AS_20260821_075357_19336",
+  "strategy_name": "MacroLeadLag_PureBeta",
+  "strategy_idea": "매크로 지표(신용스프레드, 환율, VIX, 산업생산 등) 변화에 beta가 높은 종목이 지표 변화 후 후행 반응하는 현상. signal=sum(beta_im * delta_macro_m_lag2). Lane D 매크로 조건부 비대칭 알파.",
+  "factor_engine_path": "stage_artifacts/paper_recharge/factor_engine_MacroLeadLag.R",
+  "execution": {
+    "universe": "K200_KQ150",
+    "universe_n": 350,
+    "n_holdings": 25,
+    "weight_method": "equal",
+    "commission": 0.0015,
+    "risk_controls": {
+      "vol_target": null,
+      "vol_lookback": 60,
+      "dd_brake": null,
+      "buffer_zone": {
+        "keep_n": 50,
+        "entry_n": 25
+      },
+      "use_default_buffer": true,
+      "cov_method": "sample"
+    },
+    "bt_result_path": "stage_artifacts/alpha_search/20260821_075357_19336/bt_result.rds"
+  },
+  "pit": {
+    "code_scan": "detect_lookahead",
+    "status": "CLEAN",
+    "factor_engine_path": "stage_artifacts/paper_recharge/factor_engine_MacroLeadLag.R",
+    "note": "AlphaSearch stops before backtest when detect_lookahead reports violations."
+  },
+  "backtest_contract": {
+    "status": "OK",
+    "run_id": "ASBT_20260821_075357_19336",
+    "metric_type": "backtested",
+    "bt_result_path": "stage_artifacts/alpha_search/20260821_075357_19336/bt_result.rds",
+    "output_dir": "stage_artifacts/alpha_search/20260821_075357_19336",
+    "integrity_status": "WARNING",
+    "audit_pass": 17,
+    "audit_fail": 0,
+    "audit_warn": 1,
+    "validation_errors": [],
+    "return_series": {
+      "status": "OK",
+      "source": "bt_result.period_returns",
+      "csv_path": "stage_artifacts/alpha_search/20260821_075357_19336/03_period_returns.csv",
+      "date_col": "date",
+      "ret_col": "ret_net",
+      "n_obs": 3077,
+      "start_date": "2014-02-05",
+      "end_date": "2026-08-20",
+      "post2008_obs": 3077,
+      "frequency": "daily"
+    },
+    "note": "standard Backtest Result Contract saved for every AlphaSearch run; grade/admission remains separate"
+  },
+  "verdict": {
+    "grade": "F",
+    "score": 6.2,
+    "hurdle_pass": false,
+    "hard_fail": true,
+    "fail_reasons": [
+      "Structural drawdown (45%+ episodes>=15, 55%+ episodes>=6, 45%+ days>=25%): MDD 63.8%, 45%+ episodes=49/15, max_underwater=234/252"
+    ],
+    "f_grade_reasons": [
+      "게이트 사유: Structural drawdown (45%+ episodes>=15, 55%+ episodes>=6, 45%+ days>=25%): MDD 63.8%, 45%+ episodes=49/15, max_underwater=234/252",
+      "FMT-01 Structural MDD: MDD 63.8% > 45% — 선택 종목군의 위기 동반급락(구조적 꼬리위험)",
+      "FMT-02 Factor Degeneration: IR -0.57 < -0.1 & 초과CAGR -11.8%p < 0 — KR에서 팩터 방향 역작동 의심",
+      "알파 부재: 정보비율 -0.57로 벤치 대비 기여가 음수/미약",
+      "초과수익 부족: 벤치 대비 -11.8%p"
+    ],
+    "screening": {
+      "screen_pass": false,
+      "screen_route": "NONE",
+      "drawdown_tail_review": false,
+      "note": "탐색 게이트 — 자본/졸업 게이트 아님 (graduation HARD 불변). PIT만 절대."
+    }
+  },
+  "metrics": {
+    "CAGR": 1.19,
+    "AnnVol": 27.48,
+    "Sharpe": 0.043,
+    "Sharpe_m": 0.184,
+    "IR": -0.57,
+    "MDD": 63.83,
+    "Calmar": 0.019,
+    "Turnover_Ann": 762.6,
+    "Top10_Conc": 50,
+    "Rolling3Y_Pos": 40.5,
+    "BM_Corr": 0.682,
+    "ES99_d": 6.67,
+    "ES99_m": 24.43,
+    "GradeA_Corr": null,
+    "Rolling6M_Hit": 51.1,
+    "Worst6M_Ret": -30.96,
+    "MaxConsecNegAlpha": 7,
+    "Rolling12M_Hit": 44.4
+  },
+  "excess_cagr_pct": -11.76,
+  "fmt": [
+    {
+      "code": "FMT-01",
+      "label": "Structural MDD",
+      "reason": "MDD 63.8% > 45% — 선택 종목군의 위기 동반급락(구조적 꼬리위험)"
+    },
+    {
+      "code": "FMT-02",
+      "label": "Factor Degeneration",
+      "reason": "IR -0.57 < -0.1 & 초과CAGR -11.8%p < 0 — KR에서 팩터 방향 역작동 의심"
+    }
+  ],
+  "authoritative": null
+}

@@ -1,0 +1,73 @@
+{
+  "wt_id": "WT-D20260822_001",
+  "fq_ref": "FQ-236",
+  "artifact": "차단 관문 2건 실측 결과 + 착수 가부",
+  "measured_by": "alpha-research",
+  "measured_at": "2026-08-22",
+  "metric_type": "measured_direct",
+  "metric_type_note": "본 아티팩트의 수치는 포트폴리오 성능수치가 아니라 횡단면 분포 통계·표본크기 census 다. canonical_screen/backtested 라벨은 성능수치 전용이므로 여기 해당 없음 — 성능수치는 본 라운드에서 산출하지 않는다(alpha_package.diagnostics.canonical_port_t_nw_lag3 = null, 사유 challenge_flags).",
+
+  "gate_2_universe_retro_coverage": {
+    "question": "승계 설계의 PRIMARY 창 320m(2000-02~2026-07)이 K200∪KQ150 유니버스에서 실제로 성립하는가",
+    "source": ".cache/RAWDATA.parquet :: K200 / KQ150 일별 플래그 전수 (census 파일 universe_membership_census.csv, 343 행)",
+    "findings": {
+      "kq150_first_flag_date": "2010-01-29",
+      "kq150_before_2010": "전 구간 0 — KOSDAQ150 플래그 부재",
+      "k200_first_flag_date": "1990-01-31",
+      "k200_pit_credibility": "1990~1994 는 연도간 Jaccard = 1.000 (고정 리스트 블록, 시변 없음 → PIT 신뢰 불가). 1995 부터 Jaccard 0.707~0.948 로 시변 확인 ⇒ K200 은 1995~ PIT 신뢰 가능",
+      "kosdaq150_realtime_start": "2015-07 (KRX 실시간 산출 개시. 기준일 2010-01-04 로 소급 재구성 ⇒ 2010-02~2015-06 멤버십은 지수제공자 백필)",
+      "union_names_avg": {"2010": 317.7, "2012": 340.8, "2015": 349.5, "2020": 350.0, "2025": 350.0},
+      "union_eligible_avg_liq2e8": {"2010": 289.8, "2015": 342.9, "2020": 348.9, "2025": 348.8}
+    },
+    "verdict": "★320m 전제 기각. 어느 조합으로도 성립하지 않는다.",
+    "usable_windows": [
+      {"tag": "UNION_mandated_backfilled", "period": "2010-02..2026-07", "n_months": 198,
+       "caveat": "2010-02~2015-06 (65개월) 은 KOSDAQ150 지수 소급 재구성 구간 — 소급 look-ahead 우려. mandate 유니버스 정의는 충족"},
+      {"tag": "UNION_realtime_only", "period": "2015-07..2026-07", "n_months": 133,
+       "caveat": "백필 우려 원천 제거. PIT 최청정이나 표본 최소"},
+      {"tag": "K200_only_extension", "period": "1998-02..2026-07", "n_months": 342,
+       "caveat": "★mandate 유니버스 아님(KOSDAQ150 미포함 = 다른 유니버스의 다른 양). 길이 확장 진단축으로만 소비 — 판정축 금지"}
+    ]
+  },
+
+  "gate_1_outcome_sd_and_required_effect": {
+    "question": "결과량 3계열(Y1a/Y1b/Y2)의 sd 를 직접 재산출해 필요효과 req 를 갱신",
+    "contract": "02_Infrastructure/contracts/required_effect_size.R :: required_effect(series=...) — nw_inflation 을 계열에서 실측(계약 기본 처리). 승계 sd 0.0669 는 판정에 사용하지 않음(차수 대조로만 병기, 그 경우에만 nw_inflation=1)",
+    "results": [
+      {"window": "UNION_mandated_backfilled", "outcome": "Y1a", "n": 198, "sd_monthly": 0.11541, "ar1": 0.232, "nw_measured": 1.173, "required_native": 0.01925, "required_in_sd_units": 0.167, "annualization": "불가(무차원 형태지수) — ×12 해석 금지"},
+      {"window": "UNION_mandated_backfilled", "outcome": "Y1b", "n": 198, "sd_monthly": 0.03682, "ar1": 0.246, "nw_measured": 1.203, "required_monthly": 0.00629, "required_annual_pct": 7.553, "annualization": "가능(수익 단위)"},
+      {"window": "UNION_mandated_backfilled", "outcome": "Y2", "n": 198, "sd_monthly": 0.17527, "ar1": -0.048, "nw_measured": 0.968, "required_native": 0.02411, "required_in_sd_units": 0.138, "annualization": "불가(확률 단위) — 2.41%p 꼬리확률 불균형"},
+      {"window": "UNION_realtime_only", "outcome": "Y1a", "n": 133, "sd_monthly": 0.12564, "nw_measured": 1.220, "required_native": 0.02658},
+      {"window": "UNION_realtime_only", "outcome": "Y1b", "n": 133, "sd_monthly": 0.04067, "nw_measured": 1.237, "required_annual_pct": 10.465},
+      {"window": "UNION_realtime_only", "outcome": "Y2", "n": 133, "sd_monthly": 0.19721, "nw_measured": 0.981, "required_native": 0.03355},
+      {"window": "K200_only_extension", "outcome": "Y1a", "n": 342, "sd_monthly": 0.12642, "nw_measured": 1.145, "required_native": 0.01566},
+      {"window": "K200_only_extension", "outcome": "Y1b", "n": 342, "sd_monthly": 0.04660, "nw_measured": 1.242, "required_annual_pct": 7.511},
+      {"window": "K200_only_extension", "outcome": "Y2", "n": 318, "sd_monthly": 0.18359, "nw_measured": 1.037, "required_native": 0.02136}
+    ],
+    "inherited_sd_contrast": {
+      "sd_inherited": 0.0669,
+      "note": "Y1b 실측 sd 0.03682 의 1.82배 — 승계 문서가 '차수 판단용'이라 명시한 것이 옳았다",
+      "req_annual_pct_with_inherited_sd_nw1": {"n_320": 8.976, "n_342": 8.682, "n_198": 11.411, "n_133": 13.922}
+    },
+    "verdict": "★창을 122개월 잃고도 Y1b 필요효과는 개선된다 — 198m 에서 7.553% < 승계 320m 값 8.976%. 결과량 자체의 sd 가 대리 sd 보다 훨씬 작기 때문.",
+    "defect_flag_bar_restates_t": {
+      "issue": "결과량 자기 계열 sd 로 req 를 만들면 required_effect_size.R 이 경고하는 `bar_restates_t` 퇴화에 빠진다 — req ≈ 2·nw·SE 이므로 F_A 의 '효과없음(powered null)' 조건 CI ⊂ (−req,+req) 가 사실상 |t| < 0.45 를 요구하게 된다(nw=1.203 기준).",
+      "handling": "승계 규칙을 조용히 고쳐 쓰지 않는다. ①승계 규칙 그대로의 판정 ②외부 앵커 기반 판정 을 **둘 다** 산출·병기하고, 앵커는 alpha-hypothesis 재설계가 지정한다(미지정 시 승계 규칙만 + 퇴화 라벨).",
+      "contract_reference": "required_effect_size.R :: verdict_with_power 의 restates_t 분기 주석"
+    }
+  },
+
+  "gate_0_blocking_defect_conditioning_variable": {
+    "question": "승계 PRIMARY 조건변수 HY_Spread 가 대상 창에서 가용한가",
+    "finding": "★불가 — 캐시 결함이 아니라 원천 절단. FRED series metadata API 실측: BAMLH0A0HYM2 observation_start = 2023-08-22, BAMLC0A4CBBB = 2023-08-22. observation_start=1996-12-01 질의 count=0. 로컬 .cache/fred_macro_wide.parquet 도 동일(HY_Spread 2023-08-21~2026-08-19, n=787 = 36개월).",
+    "action": "Charter 원칙 8 No Silent Override — 다른 계열로 조용히 교체하지 않고 alpha-hypothesis 에 재설계 동기 요청 발행(2026-08-22). 요청 내용: S_primary 재지정 · 발표시차 L · PRIMARY 창 재확정 · 효과크기 외부 앵커.",
+    "candidate_census_provided": "S_panel_monthly.csv (9 후보 계열, 전부 연속·PIT 정렬 완료). ★선택은 alpha-hypothesis 소관 — alpha-research 는 결과를 보고 고르지 않는다(sweep 금지)."
+  },
+
+  "launch_decision": {
+    "outcome_side": "PASS — 결과량 3계열 실측 완료, 필요효과 갱신 완료, 착수 가능",
+    "window_side": "PASS(수정) — 320m 철회, 198m/133m/342m 3창 확정",
+    "conditioning_side": "BLOCKED — PRIMARY 계열 부재. 재설계 수신 후 착수",
+    "overall": "조건부 착수 — 결과량·창 관문은 통과했고, 조건변수 관문만 재설계 대기. 검정력 미달 설계를 밀지 않으며, 계열 임의 교체도 하지 않는다."
+  }
+}

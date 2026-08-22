@@ -1,0 +1,22 @@
+{
+  "l_code": "L-RAMP-20260821_103000",
+  "strategy_id": "DFA_AUDIT_DESIGNGATES_20260821",
+  "grade": "B",
+  "core_reference": "Independent audit (spec dfa_sjm_audit_spec_v1) verdict: FIX-NEEDED, BLOCK 0 — P5 future-perturbation bit-identical at 2 anchors proves the same-month defect removal. FAIL 2 = roll re-tune validation identity (smoothed in-sample states + self-fit window vs own prereg 'online-filter states + T+2'). Design gate G2: no-regime factor momentum beats the whole SJM+BL machine (pt 1.883 vs 0.631 at 15bps, lower turnover) — regime allocation layer rejected per spec §8-6. G1 breakeven turnover passes (headroom positive all cells).",
+  "lesson_text": "FQ-239 감사·설계게이트 아크 (도훈 감사 사양 발행 2026-08-21). [독립성] v5 작성자 Q-Lead는 §0 규칙상 감사 배제 — 사양 원문 보존(02_Infrastructure/docs/dfa_sjm_audit_spec_v1.md) 후 독립 에이전트 수행, outcome-blind·증거 3종·합성 프로브 규율 준수. [감사 판정 = 수정 필요, BLOCK 0] ①P5 미래교란 2시점 비트-동일 = 6월 동월-결함 제거의 제3자 확정(음성대조 유효, 단일일 교란 반응이 자기 회계 사양 정확 충족). P2/P10/P8/P7/M5 통과. ②FAIL C8+C1: roll re-tune 검증 L/S가 검증창 자체 적합 + 인샘플 smoothed 상태 + 사후 상태평균 — 자기 prereg(온라인 필터+T+2)와 코드(smoothed+T+1) 상충. 인과성은 유지되나 과소평활 λ 선택 편향. ★prereg-코드 상충을 작성자 본인은 못 봤고 독립 감사가 잡음 — 자기검증은 자기 오류를 못 잡는다의 재실증. ③WARN: 목적함수 ½ 부재 = λ 스케일 2×(분기점 12.10 = 앵커 6.05×2, grid {20,50,100}=논문단위 {10,25,50}) + 단일 초기값 국소최적 실증(λ∈(8.89,12.10)) — 사양 기본 10-restart 미구현. [설계 게이트 실측] G1(§8-1): gross active 0.014~0.0204/yr, 15bps drag 후 0.0035~0.0125 잔존, 손익분기 TO 9.3~13.6 vs 실제 3.2~8.4 = 전 셀 headroom 양수 — 이식 1차 관문은 비용이 아님. ★G2(§8-6): 사전규칙 FM-TS(trailing 12M active>0 팩터 EW, 무국면)가 공통 149개월에서 pt 2.183/1.883(5/15bps)·IR 0.60/0.52·TO 4.43으로 DFA(1.033/0.631·IR 0.28/0.17·TO 6.56)를 전 지표 상회, paired NW-t −1.06/−1.18 방향 일관 ⇒ 사양 판정문 그대로 국면층 기각(EW만 이기는 것은 통과 아님). 학습된 국면 = 팩터 모멘텀의 비싼 근사임이 KR 확정. [처분] C8/C1 수리는 국면층 부활의 전제조건으로 대기(수리 후에도 FM 게이트 통과 필요). 현행 EV = FM-TS 정식 사전등록 라운드(사후 발견이므로 별도 라운드 의무) + 국면 신호 소비면(Lane D 조건변수·위기경보) 유지.",
+  "tags": "RAMP,audit,independence,design_gate,factor_momentum,no_regime_benchmark",
+  "created_at": "2026-08-21",
+  "research_mode": "ramp",
+  "created_by": "emit:ramp",
+  "metric_type": "backtested",
+  "construction_type": "chain",
+  "mechanism_hypothesis": "국면 기계의 정보 원천이 가격 모멘텀 피처에 지배되는 한, 그 기계는 모멘텀 배분의 근사가 되고 추가 층(SJM·BL·TE 캘리브)은 비용만 얹는다. 국면층의 독립 가치는 모멘텀이 못 보는 축(위기 비선형)에서만 성립 — 이미 소비면으로 라우팅된 그 축이 맞는 그릇.",
+  "dist_ref": "DIST-RAMP-014",
+  "fq_ref": "FQ-239",
+  "audit": {"verdict": "수정필요", "block": 0, "fail": 2, "warn": 7, "pass_static": "27/37", "probes_pass": 9, "report": "stage_artifacts/audit_dfa_20260821/AUDIT_REPORT.md"},
+  "g1_breakeven": {"gross_act_range": [0.014, 0.0204], "net15_range": [0.0035, 0.0125], "breakeven_to_range": [9.31, 13.59], "actual_to_range": [3.17, 8.44]},
+  "g2_benchmarks_15bps": {"fm_ts_pt": 1.883, "fm_ts_ir": 0.522, "fm_to": 4.43, "dfa_pt": 0.631, "dfa_ir": 0.173, "dfa_to": 6.56, "ew_pt": 0.617, "paired_nwt_dfa_minus_fm": -1.18},
+  "evidence": "outputs/ramp/dfa_design_gate_g1_breakeven_20260821.csv | outputs/ramp/dfa_design_gate_g2_benchmarks_20260821.csv | stage_artifacts/audit_dfa_20260821/AUDIT_REPORT.md | 04_Research/ramp/reports/shumulvey_v5_20260820.md §13~14",
+  "family": "low_vol",
+  "family_source": "DFA_RegimeSignals 계열 승계"
+}

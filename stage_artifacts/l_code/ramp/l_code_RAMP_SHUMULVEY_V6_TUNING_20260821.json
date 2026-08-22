@@ -1,0 +1,22 @@
+{
+  "l_code": "L-RAMP-20260821_073500",
+  "strategy_id": "RAMP_SHUMULVEY_V6_TUNING_20260821",
+  "grade": "F",
+  "core_reference": "Element-wise tuning of faithful KR Shu-Mulvey (4 preregistered axes: overlay layer, KR macro features, combo, crisis-conditional cadence) ALL fail adoption vs M0-roll baseline. 3 mechanisms identified: overlay-vs-capw-active structural conflict; market-env features consistently dilutive (3 variants); ex-ante crisis trigger fires 25.7% of days = vol detector not crisis detector.",
+  "lesson_text": "FQ-239 라운드 2 (도훈 지시 2026-08-21 '피처·오버레이·하네스 튜닝'). prereg smv_v6_prereg_20260821 (34셀 전수, argmax 금지, T4는 측정-전 수정등록). 기준선 M0-roll f15 TE3 pt 1.03(5bps)/0.63(15bps). [T1 오버레이 기각] exposure=1−0.30·signal(자유도 0), 신호 breadth·mkt_jm: MDD 0.322→0.275, SR 0.650→0.657로 절대위험은 개선되나 PORT_t +1.03→−0.14~−0.61 붕괴, oos −0.95~−3.7. 기전 = cap-w active 채점에서 노출<1은 상승월 음의 active — KR 2024~26 랠리가 표본 후반 지배. 완전투자 배분 전략의 단독 graduation 그릇에서 노출-스케일 오버레이는 구조적으로 불리(book-레벨 위험예산과는 별개 질문). lag1≈본선(누출 없음)·PIT 전수 PASS. [T2 KR 피처 기각] f17k=f15+신용스프레드(CorpBBB−Gov3Y)+환율(t−1): pt 반토막(TE3 0.51, TE2 0.77 vs 1.23). f17(미 금리)와 합쳐 시장환경 피처 3변형 일관 역기여 — 희소 가중(κ² 고정) 희석 + 팩터-무관 flip 유입. ★SJM은 팩터-고유 가격 피처(f15)가 최선 — 견고 실측. [T3 조합 기각] −0.48 (성분 기각의 합). [T4 하이브리드 케이던스 기각] 평시 월간/Bear_Prob>0.80일만 일별(T+2): pt 0.55·MDD −0.44 악화. ★기전 = mkt_jm Bear_Prob>0.80이 전체 25.7%(1,308/5,087일) 발화 — '위기'가 아니라 '고변동' 감지기라 2025~26 고변동 랠리에서 오발화, 정확히 일별이 약한 구간에서 일별로 전환. 라운드 1의 위기월 3배 우위는 실현-최악월 기준이었고 ex-ante 트리거가 미정렬 ⇒ '위기 정의의 정렬 감사'(트리거 후보 × 실현-최악월 정렬률)가 트리거 설계보다 선행해야 할 신규 특정 병목. [종합] 요소 튜닝으로 pt 1.0~1.2 천장이 닫히지 않음(config-scoped). 남은 단일축 = MINY=5 훈련창 확장의 보정-회계 재측정(6월 v2 효과는 결함 회계 위 — 진위 미확정). 중심 이동 = Lane D 조건변수 소비 + 위기-정렬 감사.",
+  "tags": "RAMP,regime,overlay,features,cadence,preregistered,negative",
+  "created_at": "2026-08-21",
+  "research_mode": "ramp",
+  "created_by": "emit:ramp",
+  "metric_type": "backtested",
+  "construction_type": "chain",
+  "mechanism_hypothesis": "국면 신호의 잔여 가치는 (a) 단독 배분·오버레이 그릇이 아니라 조건변수 그릇(Lane D), (b) 위기 정의가 실현-정렬된 트리거를 얻은 뒤의 조건부 케이던스에 있다.",
+  "dist_ref": "DIST-RAMP-014",
+  "fq_ref": "FQ-239",
+  "baseline_te3": {"pt_5bps": 1.033, "pt_15bps": 0.631},
+  "axis_results_te3_5bps": {"t1_overlay_breadth": -0.139, "t1_overlay_mktjm": -0.305, "t2_f17k": 0.514, "t3_combo": -0.479, "t4_hybrid": 0.55},
+  "crisis_trigger_fire_rate": 0.257,
+  "evidence": "outputs/ramp/smv_v6_prereg_20260821.json | outputs/ramp/smv_v6_overlay_f15_roll_20260821.csv | outputs/ramp/smv_v6_overlay_f17k_roll_20260821.csv | outputs/ramp/smv_v5_results_f17k_roll.csv | outputs/ramp/smv_v5_results_f15_roll_h1.csv | 04_Research/ramp/reports/shumulvey_v5_20260820.md §10",
+  "family": "low_vol",
+  "family_source": "RAMP_SHUMULVEY 계열 승계"
+}

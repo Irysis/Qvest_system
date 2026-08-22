@@ -36,10 +36,31 @@ HLTH <- file.path(ROOT, "02_Infrastructure", "memory", "memory_knowledge_health.
 DIST <- file.path(ROOT, "02_Infrastructure", "axiom", "distilled.R")
 
 # 원상 복구용 백업 — 이 검사는 실파일을 건드리므로 반드시 되돌린다.
-BK <- file.path(ROOT, ".cache", "_test_frf_sync_backup.json")
+# ★2026-08-22 수리 (감사 HLT-4/HLT-3): 구판은 (a) 최상위 on.exit 를 썼는데 그건
+#   r-portability 금칙② — **함수 프레임이 없어 조용히 no-op** 이라 복구가 dead code 였고
+#   (물증: .cache/_test_frf_sync_backup.json 이 회차마다 잔존), (b) 백업 대상이 사본(FL)
+#   뿐이라 이 검사가 refine_distilled 로 덮어쓴 **실카드의 provenance**(refined_by/at)가
+#   ②Distilled 계층에 그대로 박혔다(실측: DIST-AR-001.refined_by="test_revival_flags_sync").
+#   ⇒ 대체는 규칙 정본이 지정한 reg.finalizer(globalenv(), onexit=TRUE) 이고,
+#     백업 범위를 사본 + **대상 카드 파일**로 넓힌 뒤 파생 인덱스를 재생성해 정합을 되돌린다.
+BK      <- file.path(ROOT, ".cache", "_test_frf_sync_backup.json")
+CARD_BK <- file.path(ROOT, ".cache", "_test_frf_card_backup.json")
+CARD_OF <- function(id) file.path(ROOT, "qepm", "memory", "axioms", "distilled",
+                                  paste0(id, ".json"))
+.card_path <- NA_character_          # [A] 축이 대상 확정 시 채운다
 if (file.exists(FL)) file.copy(FL, BK, overwrite = TRUE)
-restore <- function() if (file.exists(BK)) file.copy(BK, FL, overwrite = TRUE)
-on.exit({ restore(); unlink(BK) }, add = TRUE)
+restore <- function() {
+  if (file.exists(BK)) file.copy(BK, FL, overwrite = TRUE)
+  # 카드 provenance 원복 + 파생 인덱스 재생성(인덱스는 카드에서 결정적으로 재빌드된다)
+  if (!is.na(.card_path) && file.exists(CARD_BK)) {
+    file.copy(CARD_BK, .card_path, overwrite = TRUE)
+    try(suppressWarnings(suppressMessages(env$rebuild_distilled_index(verbose = FALSE))),
+        silent = TRUE)
+  }
+}
+invisible(reg.finalizer(globalenv(),
+                        function(e) { restore(); unlink(c(BK, CARD_BK)) },
+                        onexit = TRUE))
 
 fr_of <- function(id) {
   f <- tryCatch(fromJSON(FL, simplifyVector = FALSE), error = function(e) NULL)
@@ -75,6 +96,8 @@ if (is.null(target)) {
   ng("[선행검증] 발화 중인 distilled 카드 없음 — 이 축 판정 불가")
 } else {
   ok(sprintf("[선행검증] 대상 카드 %s (발화 중)", target$dist_id))
+  .card_path <- CARD_OF(target$dist_id)          # 복구 범위에 실카드 편입
+  if (file.exists(.card_path)) file.copy(.card_path, CARD_BK, overwrite = TRUE)
   f <- fromJSON(FL, simplifyVector = FALSE)
   for (k in seq_along(f$fired))
     if (identical(f$fired[[k]]$dist_id, target$dist_id))

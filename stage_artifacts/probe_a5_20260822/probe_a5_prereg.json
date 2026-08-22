@@ -1,0 +1,151 @@
+{
+  "prereg_id": "dfa_a5_stock25_prereg_20260822",
+  "status": "DRAFT — 사전등록 후보 명세 (본 세션 프로브는 탐색 측정이며 이 명세의 채택 판정이 아님)",
+  "created_at": "2026-08-22",
+  "fq_id": "FQ-239",
+  "supersedes_arm": "dfa_v11_prereg_20260822 :: A6_stock25 (구 명세 = Score_i = Σ_f w_f·Z_f,i → top-25 EW 단일 형태). 본 명세는 그 A6 을 '변환 3형태 × 가중 2형태' 로 분해하고 대조군 2종을 필수화한다.",
+  "motivation": "DIST-RAMP-014 '손실 지점은 신호 부재가 아니라 변환' 의 재도전(INV-7). 차별점 = 배분 규칙이 SJM+BL(국면 최적화)이 아니라 A5(양수 12M active 모멘텀 비례)이며, 지수 자체가 명시적 종목 보유(상위 1/3 cap-w)를 갖는다 → **지수 비중을 종목 스코어로 접지 않고 내재 보유비중으로 전개하는 경로**가 처음으로 가능하다. DIST-RAMP-014 frontier 1번 항목('지수-비중 정보를 종목 선택이 아니라 배분 층에 태우는 변환')의 직접 실행.",
+
+  "layer_1_index_allocation": {
+    "dof": 0,
+    "note": "A5 원판 그대로. 재유도·재튜닝 금지.",
+    "source": "outputs/ramp/dfa_index_returns_broad_202608.parquet (Market + broad-21)",
+    "signal": "S_f(m) = Π_{k=m-11..m}(1+r_f,k) / Π(1+r_mkt,k) − 1  (trailing 12M active, 월간 복리)",
+    "weights": "결정월 m*: pos = {f : S_f > 0}. pos≠∅ → w_f = S_f/Σ_pos S ; w_Market = 0. pos=∅ → w_Market = 1",
+    "cadence": "3개월마다 결정, 사이 2개월은 실현수익 드리프트(w ← w(1+r)/Σ)",
+    "phase": "전 표본(mon 시작 2006-01, start_m=13) 에서 돌린 위상 offset=0 을 **상속**한다. 측정창 안에서 위상을 재유도하면 신규 자유도 — 금지",
+    "phase_risk_open": "dfa_v11 amendment_1 실측: offset 0/1/2 → pt 3.232/2.208/2.981. A5E(3-코호트 중첩 앙상블)가 지수레벨에서 게이트를 넘으면 **종목 층도 A5E 비중으로 재산출** 의무(위상 아티팩트 전파 차단)",
+    "pit": "m−1 월말까지의 지수 수익만 사용 → m 월 적용. shift 사다리(동월/정본/lag1)로 검증 완료(R11)"
+  },
+
+  "layer_2_stock_translation": {
+    "sig_date": "d0 = 보유월 직전 월말 거래일 (rawdata 거래일 그리드)",
+    "Z": "load_month_factors(d0, factor_names = FAC21)$Z_Score_Aligned — C13(NEGATE 금지)/C14(Usable_Date≤sig_date)/C15(parquet 직접 load 금지) 준수. 반환 attr factor_db_asof_date 를 산출물에 기록(라벨 합성 금지)",
+    "FAC21": "ramp_shumulvey_indices.R 의 SMV_FACSET=broad 벡터와 **동일 문자열**. 재타이핑 사본 금지 — 값 드리프트 시 지수와 종목층이 서로 다른 팩터를 보게 됨",
+    "universe": "U(d0) = {K200=1 ∨ KQ150=1} ∧ Size>0 (rawdata d0 행) ∩ factor_db 커버리지. ★유니버스 선-제한은 호출자 책임(WT-009 CF-03 비유니버스 오염 재발방지)",
+    "liquidity": "adv20_t1(d0) ≥ 2e8 (build_adv20_t1, 당일 미포함). liq_ruler 라벨 기록 의무(FQ-181/232)",
+    "index_membership": "H_f(d0) = {i ∈ U : Z_f,i ≥ quantile(Z_f|U, 2/3)} — ramp_shumulvey_indices.R 의 지수 구성 규칙 그대로(상위 1/3). dof = 0"
+  },
+
+  "arms_prespecified": [
+    {
+      "id": "T-EW",
+      "label": "Z-합성 × 동일가중 (구 A6 = DFA 국면판이 실패한 형태)",
+      "score": "Score_i = Σ_f w_f · Z_f,i",
+      "weighting": "top-25 EW",
+      "role": "legacy 대조 — 이 형태가 다시 음수면 DIST-RAMP-014 의 4번째 독립 실증",
+      "dof": 0
+    },
+    {
+      "id": "T-MEM",
+      "label": "멤버십 × 동일가중",
+      "score": "Score_i = Σ_f (w_f / |H_f|) · 1{i ∈ H_f}",
+      "weighting": "top-25 EW",
+      "role": "지수-충실 선택 + breadth 보존 가중. Z 연속값 대신 지수 편입 사실만 전파",
+      "dof": 1
+    },
+    {
+      "id": "T-IDX",
+      "label": "★주 후보 — 내재 보유비중 전개",
+      "score": "π_i = Σ_f w_f · cap_i·1{i∈H_f} / Σ_{j∈H_f} cap_j   (= A5 포트폴리오의 실제 종목 비중)",
+      "weighting": "top-25 by π, w_i = cap-clip(π, 0.20) 정규화 (반복 비례 재분배, Σw=1)",
+      "role": "지수 비중을 **스코어로 접지 않고** 보유비중으로 그대로 전개한 뒤 25종목으로 절단. DIST-RAMP-014 frontier ①의 직접 구현",
+      "primary_reason": "성과가 아니라 **충실도**로 주 후보를 지정한다 — 절단 전 π 는 A5 지수 포트폴리오와 정의상 동일. 사후 argmax 지정 금지",
+      "dof": 1
+    },
+    {
+      "id": "T-IDX-Q",
+      "label": "T-IDX 분기 동결(선택을 분기 결정월에만 갱신)",
+      "role": "회전율 축소 변형. ⚠충실도는 낮다 — A5 의 하위 지수는 **매월** 리밸런싱되므로 월간 재선택이 원판이고 분기 동결은 이탈",
+      "dof": 1
+    }
+  ],
+
+  "controls_mandatory": [
+    {
+      "id": "E1_capw_passive",
+      "spec": "신호 0. 유니버스 시총 top-25, w = cap-clip(cap, 0.20). ★cap-비례 가중 팔의 양수가 mega-cap 틸트인지 분리",
+      "gate_role": "T-IDX 는 E1 을 paired NW-t > 0 으로 이겨야 한다"
+    },
+    {
+      "id": "E3_piEW_ctrl",
+      "spec": "T-IDX 와 **완전히 동일**하되 w_f = 1/21 고정(팩터 모멘텀 배분 제거)",
+      "gate_role": "★핵심 관문. A5 의 배분 신호가 종목 층에서 살아있는지의 유일한 직접 시험. paired NW-t(T-IDX − E3) > 0 이 채택 필요조건"
+    },
+    {
+      "id": "windowmatched_index_A5",
+      "spec": "같은 창의 지수레벨 A5 active. 변환 보존율 = stock_active / index_active 를 창-정합으로 보고",
+      "gate_role": "전 기간 헤드라인(pt 3.232)과 창 값을 섞어 인용하는 것 금지"
+    }
+  ],
+
+  "measurement": {
+    "contracts": "EW 팔 = canonical_screen_bt(top_n=25, cost_bps_oneway=15, liq_min=2e8) · 가중 팔 = weighted_screen_bt(cost_bps_oneway=15, 유동성 선-필터 호출자 책임). 졸업 판정은 build_bt_result → essence_score(전 기간)",
+    "benchmark": "build_monthly_forward_returns 의 cap-w 유니버스 forward return (권위). EW-유니버스 basis 는 **진단 병기**(v8.3 dual-basis, 비바인딩)",
+    "cost": "15bps × Σ|Δw| (delta-based, v2.4_kr_retail_15bps)",
+    "metric_type": "canonical_screen (screening) / backtested (forge 경유 시)",
+    "gates": "HARD 3종 = PORT_t ≥ 2.95 · oos_retention ≥ 0.7 · calmar ≥ 0.64. selection_type = chain (규칙 고정, 사후 argmax 없음). n_trials_cumulative 는 dfa_v11 의 56 에서 승계 누적"
+  },
+
+  "degrees_of_freedom_declared": [
+    {"axis": "가중 전파 방식", "options": ["Z-합성(T-EW)", "멤버십(T-MEM)", "내재비중(T-IDX)"], "resolution": "3팔 전부 사전등록·전 셀 보고. 주 후보는 충실도 논거로 사전 지정(T-IDX)"},
+    {"axis": "포트폴리오 가중", "options": ["EW", "π-비례 + 0.20 cap"], "resolution": "둘 다 보고. ★EW 는 하네스 관행이지 헌법 요건이 아니다 — Production Constraints 는 weights ∈ [0, 0.20] ∧ Σw=1 만 요구"},
+    {"axis": "cap 재분배 알고리즘", "options": ["반복 비례 재분배"], "resolution": "고정 선언(반복 200회 상한, 수렴)"},
+    {"axis": "결측 Z 처리", "options": ["팩터 제외(커버리지 질량 hit 추적)", "0 대입"], "resolution": "**팩터 제외**로 고정. 0 대입은 스코어를 0 쪽으로 수축시켜 커버리지 얇은 종목에 체계적 편향(구 fe_dfa_regimesignals_bl.R 이 0 대입). 적격 조건 v1 = hit>0(1개 이상 팩터 커버). 변형 'hit ≥ 0.5·Σw_f' 는 미측정 — 별도 자유도로 등록"},
+    {"axis": "분기 정렬(위상)", "options": ["전 표본 offset 0 상속"], "resolution": "상속 고정. 창 내 재유도 금지. A5E 확정 시 A5E 비중으로 교체"},
+    {"axis": "선택 갱신 주기", "options": ["월간(원판 충실)", "분기 동결"], "resolution": "월간이 주. 하위 지수가 월간 리밸런싱이므로"},
+    {"axis": "Market-fallback 월 처리", "options": ["직전 포트 유지(회전율 0)", "cap-w top-25"], "resolution": "직전 포트 유지로 고정. ★실측: 236개월 A5 전 구간에서 발화 0회 — 현재 구속력 없는 자유도이나 선언은 필요"}
+  ],
+
+  "adoption_rule": "T-IDX 채택 필요조건 3종 동시 충족: (1) paired NW-t(T-IDX − E3_piEW_ctrl) > 0 (2) paired NW-t(T-IDX − E1_capw_passive) > 0 (3) 창-정합 지수레벨 A5 대비 active 보존율 > 0. 자본 졸업은 별도 — HARD 3종. argmax 금지: 전 팔·전 창 보고 의무",
+  "honesty": "본 명세 이전에 동일 구조의 **탐색 프로브**를 2021-08~2026-07(60개월) + 2011-08~2026-07(180개월)에서 이미 돌렸다(stage_artifacts/probe_a5_20260822/). 따라서 이 명세의 정식 측정은 **완전 OOS 아님** — 같은 데이터 위 재측정이며, 프로브 결과가 팔 구성에 영향을 주었다(특히 T-IDX 를 주 후보로 올린 것은 충실도 논거이나, 프로브에서 유일한 양수 팔이었다는 사실을 알고 쓴다). n_trials 누적·신규구간 봉인 holdout 등재 의무",
+  "pin_tag": "smv_r2_20260820 연장 + dfa_index_returns_broad_202608.parquet + factor_db 현행 vintage",
+
+  "amendment_1_post_probe": {
+    "added_at": "2026-08-22 — ★프로브 실측 **후** 추가. 위 본문은 실측 전 작성분이며 수정하지 않았다(사후 재서술 금지). 아래는 실측이 본문의 주 후보 지정을 뒤집었다는 기록.",
+    "measured_window": "2011-08 ~ 2026-07 (180개월), top-25 long-only, 0.20 cap, 15bps, adv20>=2e8, cap-w 유니버스 벤치",
+    "positive_control_passed": {
+      "test": "pi 전량 보유(무절단·무cap·0bps) vs 지수레벨 A5 gross",
+      "result": "cor = 1.0000, 연율 차 −0.06%p (n=180)",
+      "meaning": "내재비중 전개는 A5 포트폴리오를 **정의대로 재현**한다 — 이후의 손실은 구현오류가 아니라 절단/가중이다. 해석 前 관문 통과"
+    },
+    "primary_arm_overturned": {
+      "prespecified_primary": "T-IDX (내재비중 pi)",
+      "measured": "T-IDX active +2.03%p/yr (PORT_t 1.21) vs 대조군 E3(w_f=1/21) +2.05%p/yr (PORT_t 1.65). paired NW-t = −0.017",
+      "verdict": "T-IDX 는 **필수 대조 관문 (1) 을 통과하지 못했다** — pi 형태에서 A5 배분신호는 종목 층에 도달하지 않는다. 기전: pi^A5 vs pi^EW 횡단면 Pearson 0.947 (Spearman 0.663, top-25 Jaccard 0.562) — cap 가중이 pi 를 지배해 w_f 차이가 종목 순위에서 상쇄된다",
+      "surviving_form": "Z-합성 선택 × cap-비례 가중. paired NW-t vs 동일형태 대조군 = +1.426 (Δ +7.32%p/yr). EW 가중판도 +1.229 (Δ +4.07%p/yr) 로 통과"
+    },
+    "deploy_candidate_measured": {
+      "form": "Score_i = Σ_f w_f·Z_f,i → 상위 25 → w_i = cap-clip(cap_i, 0.20), 선택은 **분기 결정월에만 갱신**",
+      "PORT_t": 1.715, "IR": 0.462, "active_ann_pct": 8.40, "net_SR": 0.641, "turnover_ann": 5.99,
+      "t_pre2017": 1.92, "t_post2017": 0.436,
+      "vs_monthly_reselection": "월간 재선택 PORT_t 1.827 / TO 11.42 — 분기 동결이 회전율을 47% 줄이고 t 손실 0.11",
+      "buffer_band_rejected": "hold-if-in-top-40 완충 = PORT_t 1.529 / TO 8.00 — 분기 동결보다 열위. **자유도 추가 불요**(사전등록에서 제외 권고)",
+      "cost_sensitivity_PORT_t": {"5bps": 1.709, "15bps": 1.529, "25bps": 1.351, "40bps": 1.085, "note": "완충판 기준"}
+    },
+    "gate_status": "HARD PORT_t 2.95 **미달** (최선 1.83). 지수레벨 창-정합 기준자 2.725 대비 보존율 약 63~67%(t 기준). 자본 졸업 후보 아님 — 소비면/구조 진단 자산",
+    "undeclared_dof_found": {
+      "axis": "score>0 선-필터 (상위 25 선택 전에 음수 스코어를 버릴 것인가)",
+      "measured": "필터 O: PORT_t 1.899 / active 8.79%p / 평균 보유 24.52종목 · 필터 X: PORT_t 1.826 / active 8.19%p / 25.00종목",
+      "binding_months": "180개월 중 11개월만 양수 스코어 < 25 (중앙 136개)",
+      "resolution": "**필터 X(음수도 top-25 에 포함, 항상 25종목)** 로 고정 선언. 필터 O 는 종목수를 조용히 줄여 집중도를 바꾸는데 그 사실이 스펙에 안 보인다"
+    },
+    "cost_accounting_gap_found": {
+      "finding": "지수레벨 A5 의 회전율 2.30/yr 은 **지수 간 비중 변화만** 과금한다. 실제 종목 포트폴리오는 하위 지수의 월간 tercile 재구성 때문에 전량 보유(무절단) 상태에서도 4.45/yr 을 돈다",
+      "impact": "≈ 2.15/yr × 15bps ≈ 0.32%p/yr 의 미계상 비용. 지수레벨 A5 의 net 수치는 배포 비용을 그만큼 과소계상하고 있다",
+      "action": "지수레벨 A5 를 배포 후보로 인용할 때 이 라벨을 병기할 것"
+    },
+    "breadth_ladder_measured": {
+      "note": "pi 가중·0.20 cap·15bps. topN → (pi 질량, PORT_t, active%p/yr)",
+      "all_333": [0.992, 2.29, 3.29], "top_200": [0.933, 2.29, 3.30], "top_100": [0.799, 2.22, 3.08],
+      "top_50": [0.669, 1.93, 2.67], "top_25": [0.547, 1.21, 2.03],
+      "reading": "절단은 100종목까지 거의 무해하고 **50 아래에서 급격히 무너진다**. 25종목 제약은 pi 질량의 45%를 버린다"
+    },
+    "next_probes": [
+      "① 지수-비중을 종목 선택이 아니라 **sleeve 배분 층**에 태우는 형태 (21 지수를 K개 sleeve 로 묶고 각 sleeve 안에서 top-n, sleeve 배분 = w_f 집계). breadth 사다리가 '50 아래에서 붕괴'를 지목하므로 25종목을 5 sleeve × 5종목으로 쪼개는 것이 절단 손실을 줄이는지 직접 시험 — DIST-RAMP-014 frontier ① 의 남은 절반",
+      "② post-2017 감쇠 귀속: Z-합성 형태의 t_pre2017 1.9 vs t_post2017 0.4 가 (a) 팩터 코호트 감쇠인지 (b) cap-tier 국소화인지 — dual-basis(EW-유니버스) 와 cap-tier 분해로 분리. 지수레벨 A5 는 post-2017 을 생존했으므로(전 기간 pt_post17 1.36) **감쇠가 변환에서만 발생**한다면 그것이 남은 최대 레버",
+      "③ A5E(3-코호트 중첩 앙상블) 비중으로 종목 층 재산출 — 위상 아티팩트가 변환 후에도 살아있는지"
+    ],
+    "revival_condition_INV7": "본 라운드의 negative 는 **경로-scoped**다: (a) 25종목 제약 하에서 (b) 단일-스코어 pooling 변환으로 (c) 2011-08~2026-07 창에서. 부활 신호 = next_probes ① sleeve 층 변환이 top-50 급 breadth 보존을 25종목 안에서 재현하거나, ② 감쇠가 변환-국소로 판정될 때"
+  }
+}

@@ -22,7 +22,7 @@ PSEED<-Sys.getenv("SMV_PLACEBO_SEED","")          # 설정 시 뷰 월-블록 �
 TE_FILTER<-Sys.getenv("SMV_TE","")                # 예: "3" 또는 "3,4" — 지정 시 해당 TE 타깃만 실행
 TUNE<-Sys.getenv("SMV_TUNE","fixed")              # fixed=λ50/κ²9.5 | roll=인과 rolling re-tune (P1c: 6mo마다 trailing 6y 검증 L/S(T+1적용+5bps) argmax — IS-only 인과, 논문 §3.2)
 KEY<-Sys.getenv("SMV_KEY",FEATSET)
-PG<-sprintf(".cache/_smv_v5_prog_%s.txt",KEY); cat("start\n",file=PG); pg<-function(...)cat(sprintf(...),file=PG,append=TRUE)
+PG<-sprintf(".cache/_dfa_v5_prog_%s.txt",KEY); cat("start\n",file=PG); pg<-function(...)cat(sprintf(...),file=PG,append=TRUE)   # 전략명 개명(DFA_RegimeSignals) — 신규 산출 접두 dfa_v5 (도훈 2026-08-21)
 
 IRf<-function(x){x<-x[is.finite(x)];if(length(x)<6)return(NA);mean(x)/sd(x)*sqrt(12)}
 nwt<-function(x){x<-x[is.finite(x)];if(length(x)<12)return(NA);m<-lm(x~1);as.numeric(coeftest(m,vcov=sandwich::NeweyWest(m,lag=3,prewhite=F))[1,3])}
@@ -63,7 +63,16 @@ sparse_jm<-function(X,lam=50,kappa=sqrt(9.5),outer=8,inner=10){
 ## ==== LOAD ====
 R<-as.data.table(read_parquet(IDXFILE))
 R[,Date:=as.Date(Date)]; setorder(R,Date)
-FACN<-c("Value","Size","Momentum","Quality","LowVol","Growth"); IDX<-c("Market",FACN)
+## 자산 유니버스 (prereg dfa_v8 R5: N-일반화 — paper6 7지수 기본, broad 22지수 확장 가능)
+##   FACSET=paper6 → 논문 6스타일 / broad → parquet의 Market 외 전 열 / 명시 목록도 허용(쉼표 구분)
+.FACSET<-Sys.getenv("SMV_FACSET_ARM","paper6")
+.paper6<-c("Value","Size","Momentum","Quality","LowVol","Growth")
+FACN<-if(.FACSET=="paper6"){ .paper6
+      } else if(.FACSET=="broad"){ setdiff(names(R),c("Date","ym","as_of_date","source_version","Market"))
+      } else { strsplit(.FACSET,",")[[1]] }
+FACN<-intersect(FACN, names(R))
+IDX<-c("Market",FACN); NA_<-length(IDX); NF<-length(FACN)   # NA_ = 자산 수, NF = 팩터(뷰) 수
+stopifnot(NF>=2)
 for(cn in IDX) R[[cn]][!is.finite(R[[cn]])]<-NA
 R<-R[is.finite(Market)]
 NS<-nrow(R)
@@ -77,14 +86,16 @@ pg("loaded %s rows=%d months=%d featset=%s\n",IDXFILE,NS,NM,FEATSET)
 
 ## extras (f17 계열)
 extras<-NULL
-if(FEATSET %in% c("f17","f17_usvix")){
-  rt<-smv_load_rates(R$Date); extras<-list(rate3y=rt$rate3y, rate10y=rt$rate10y)
+if(FEATSET %in% c("f17","f17_usvix","f17k")){
+  rt<-smv_load_rates(R$Date); extras<-list(rate3y=rt$rate3y, rate10y=rt$rate10y, corpbbb=rt$corpbbb)
   if(FEATSET=="f17_usvix") extras$usvix_lag<-smv_load_usvix(R$Date)
+  if(FEATSET=="f17k") extras$fx_lag<-smv_load_fx(R$Date)
 }
 feats<-lapply(FACN,function(f)build_feat_v2(ACT[[f]],R$Market,FEATSET,extras)); names(feats)<-FACN
 
 ## ==== STAGE 1: 월간 refit (fixed: λ=50/κ²=9.5 — prereg | roll: 인과 재선택) + 산출 보존 ====
-MINY<-8; MAXY<-12; PER<-252
+MINY<-as.integer(Sys.getenv("SMV_MINY","8")); MAXY<-12; PER<-252   # prereg v7 R3-B: MINY 단일축 (기본 8 = 논문 프로토콜)
+.mtag<-if(MINY!=8L) sprintf("_m%d",MINY) else ""
 GRID9<-expand.grid(lam=c(20,50,100),k2=c(6,9.5,14))   # v3 grid 승계 (사전등록 v3 프로토콜)
 ls_sh_t1<-function(s,aok){ n<-length(s); if(n<100)return(-9)   # 검증 L/S: T+1 적용 + 5bps (v3 same-day 결함 수리)
   vr<-sapply(1:2,function(k){v<-mean(aok[s==k])*PER; if(!is.finite(v))0 else max(min(v,0.05),-0.05)})
@@ -93,7 +104,9 @@ ls_sh_t1<-function(s,aok){ n<-length(s); if(n<100)return(-9)   # 검증 L/S: T+1
   net<-pos[1:(n-1)]*aok[2:n]-cost[1:(n-1)]
   net<-net[is.finite(net)]; if(length(net)<100||sd(net)<1e-9)return(-9)
   mean(net)/sd(net)*sqrt(PER) }
-refit_cache<-sprintf(".cache/_smv_v5_refit_%s_%s_%s.rds",FEATSET,TUNE,gsub("[^A-Za-z0-9]","_",basename(IDXFILE)))
+## ★캐시 키에 팩터셋 지문 포함 (R5 N-일반화 — paper6 캐시가 broad 런에 재사용되면 무효 산출)
+.fsig<-sprintf("_n%d_%s",NF,paste0(substr(FACN,1,3),collapse=""))   # ★절단 제거(2026-08-21): substr(...,1,12)는 앞 4팩터만 봐 LOO 팔 21개 중 17개가 동일 지문 — 전체 접두 연결로 교체
+refit_cache<-sprintf(".cache/_dfa_v5_refit_%s_%s_%s%s%s.rds",FEATSET,TUNE,gsub("[^A-Za-z0-9]","_",basename(IDXFILE)),.mtag,.fsig)
 REF<-NULL
 if(file.exists(refit_cache)){ z<-readRDS(refit_cache)
   if(identical(z$idx_max,max(R$Date)) && identical(z$nm,NM)) REF<-z$REF }
@@ -139,7 +152,7 @@ if(is.null(REF)){
 ## s_daily[t,f]: t일 종가 기준 결정 상태. refit일 ei = cur(스무더 마지막 상태 = 온라인과 동일점).
 ## 블록 (ei+1)..next_ei: 동결 th/wj/mu/sg로 C 선계산 → 각 일 prefix DP 마지막 상태. 결측피처일 = locf.
 online_states<-function(lm_mult){
-  scache<-sprintf(".cache/_smv_v5_states_%s_%s_%s_lm%g.rds",FEATSET,TUNE,gsub("[^A-Za-z0-9]","_",basename(IDXFILE)),lm_mult)
+  scache<-sprintf(".cache/_dfa_v5_states_%s_%s_%s%s%s_lm%g.rds",FEATSET,TUNE,gsub("[^A-Za-z0-9]","_",basename(IDXFILE)),.mtag,.fsig,lm_mult)
   if(file.exists(scache)){ z<-readRDS(scache); if(identical(z$idx_max,max(R$Date))){pg("  states cache hit lm=%g\n",lm_mult); return(z$S)} }
   S<-matrix(NA_integer_,NS,length(FACN)); colnames(S)<-FACN
   for(fi in seq_along(FACN)){ f<-FACN[fi]; X0<-as.matrix(feats[[f]]); rl<-REF[[f]]
@@ -167,15 +180,15 @@ online_states<-function(lm_mult){
 }
 
 ## ==== STAGE 3: 일별 Σ (EWM 126d, annualized 스냅샷) ====
-delta<-2.5; w_ew<-rep(1/7,7)
+delta<-2.5; w_ew<-rep(1/NA_,NA_)
 RmatAll<-as.matrix(R[,..IDX]); RmatAll[!is.finite(RmatAll)]<-0
 a126<-1-exp(log(0.5)/126)
-SIG<-array(NA_real_,c(7,7,NS)); Sacc<-matrix(0,7,7)
+SIG<-array(NA_real_,c(NA_,NA_,NS)); Sacc<-matrix(0,NA_,NA_)
 for(t in 1:NS){ x<-RmatAll[t,]; Sacc<-a126*tcrossprod(x)+(1-a126)*Sacc; if(t>=130) SIG[,,t]<-Sacc*PER }
 pg("sigma daily done\n")
 
-P<-matrix(0,6,7); for(j in 1:6)P[j,1+j]<-1; P[,1]<- -1
-solveMVO<-function(muv,Sig){ D<-delta*Sig; D<-D+diag(1e-6,7); A<-cbind(rep(1,7),diag(7));b0<-c(1,rep(0,7))
+P<-matrix(0,NF,NA_); for(j in 1:NF)P[j,1+j]<-1; P[,1]<- -1
+solveMVO<-function(muv,Sig){ D<-delta*Sig; D<-D+diag(1e-6,NA_); A<-cbind(rep(1,NA_),diag(NA_));b0<-c(1,rep(0,NA_))
   r<-tryCatch(solve.QP(D,muv,A,b0,meq=1),error=function(e)NULL); if(is.null(r))return(w_ew); pmax(r$solution,0)/sum(pmax(r$solution,0)) }
 bl_w<-function(Sig,vv,cc){ pri<-delta*as.numeric(Sig%*%w_ew)
   M<-P%*%Sig%*%t(P); Om<-cc*diag(diag(M))
@@ -184,7 +197,7 @@ bl_w<-function(Sig,vv,cc){ pri<-delta*as.numeric(Sig%*%w_ew)
 te_ex<-function(w,Sig) sqrt(max(as.numeric(t(w-w_ew)%*%Sig%*%(w-w_ew)),0))
 
 ## refit별 뷰(월말 cur 기준) — c 캘리브·M0 공용
-view_me<-matrix(NA_real_,NM,6); colnames(view_me)<-FACN
+view_me<-matrix(NA_real_,NM,NF); colnames(view_me)<-FACN
 for(fi in seq_along(FACN)){ rl<-REF[[FACN[fi]]]
   for(mi in seq_len(NM)){ rf<-rl[[mi]]; if(is.null(rf))next; view_me[mi,fi]<-rf$m_ann[rf$cur] } }
 
@@ -217,8 +230,8 @@ gmi<-findInterval(seq_len(NS), meix)   # 0 = refit 이전
 
 ## ==== 공통: EW 일별 벤치 (분기말 리셋) ====
 qend<-meix[which(as.integer(format(medates,"%m")) %% 3 == 0)]
-ew_d<-numeric(NS); wE<-rep(1/7,7)
-for(t in 1:NS){ ri<-RmatAll[t,]; ew_d[t]<-sum(wE*ri); wd<-wE*(1+ri); wE<-wd/sum(wd); if(t %in% qend) wE<-rep(1/7,7) }
+ew_d<-numeric(NS); wE<-rep(1/NA_,NA_)
+for(t in 1:NS){ ri<-RmatAll[t,]; ew_d[t]<-sum(wE*ri); wd<-wE*(1+ri); wE<-wd/sum(wd); if(t %in% qend) wE<-rep(1/NA_,NA_) }
 mkt_d<-RmatAll[,1]
 
 agg_m<-function(x){ dtx<-data.table(ym=ym,x=x); dtx[,prod(1+ifelse(is.finite(x),x,0))-1,by=ym]$V1 }
@@ -230,7 +243,7 @@ metrics_row<-function(net_d, dlt_d, lab, lm_mult, te, bps, first_t){
   pr<-pr[mids]; mk<-mk[mids]; ewm_<-ewm_[mids]
   actM<-pr-mk; actE<-pr-ewm_
   nav<-cumprod(1+ifelse(is.finite(net_d[sel]),net_d[sel],0)); mdd<-min(nav/cummax(nav)-1)
-  data.table(arm=lab, featset=FEATSET, tune=TUNE, lam_mult=lm_mult, te=te, cost_bps=bps, acct_shift=SHIFT,
+  data.table(arm=lab, featset=FEATSET, facset=.FACSET, n_assets=NA_, tune=TUNE, lam_mult=lm_mult, te=te, cost_bps=bps, acct_shift=SHIFT,
     placebo_seed=ifelse(nzchar(PSEED),as.integer(PSEED),NA_integer_), n_mo=length(pr),
     IR_vsMkt=IRf(actM), IR_vsEW=IRf(actE), pt_capwt=nwt(actM), abs_SR=IRf(pr),
     abs_CAGR=prod(1+pr)^(12/length(pr))-1, abs_MDD=mdd, TO_ann=mean(dlt_d[sel],na.rm=TRUE)*PER,
@@ -243,24 +256,24 @@ RESULTS<-list()
 if("M0" %in% ARMS){
   keepm<-which(is.finite(cmat[,1]))
   for(k in seq_along(TE_T)){
-    Wm<-matrix(NA_real_,NM,7)
+    Wm<-matrix(NA_real_,NM,NA_)
     for(mi in keepm){ Wm[mi,]<-bl_w(SIG[,,meix[mi]],view_me[mi,],cmat[mi,k]) }
     k0<-keepm[1]; rng<-k0:NM
     mr<-as.matrix(mon[rng,..IDX]); Wr<-Wm[rng,,drop=FALSE]
     for(i in 2:nrow(Wr))if(any(!is.finite(Wr[i,])))Wr[i,]<-Wr[i-1,]
-    Wr[!is.finite(Wr)]<-1/7
-    ii<-2:nrow(mr); wprev<-rep(1/7,7)
+    Wr[!is.finite(Wr)]<-1/NA_
+    ii<-2:nrow(mr); wprev<-rep(1/NA_,NA_)
     pr5<-numeric(length(ii)); pr15<-numeric(length(ii)); tov<-numeric(length(ii))
-    ewv<-numeric(length(ii)); wE2<-rep(1/7,7)
+    ewv<-numeric(length(ii)); wE2<-rep(1/NA_,NA_)
     for(q in seq_along(ii)){ i<-ii[q]; wt<-Wr[i-1,]; ri<-mr[i,]
       gross<-sum(wt*ri); dlt<-sum(abs(wt-wprev)); tov[q]<-dlt
       pr5[q]<-gross-5e-4*dlt; pr15[q]<-gross-15e-4*dlt
       wd<-wt*(1+ri); wprev<-wd/sum(wd)
       ewv[q]<-sum(wE2*ri); wd2<-wE2*(1+ri); wE2<-wd2/sum(wd2)
-      if(as.integer(format(mon$medate[rng[i]],"%m")) %% 3 == 0) wE2<-rep(1/7,7) }   # 달력 분기말 리셋 — D1 일별 EW와 동일 규약
+      if(as.integer(format(mon$medate[rng[i]],"%m")) %% 3 == 0) wE2<-rep(1/NA_,NA_) }   # 달력 분기말 리셋 — D1 일별 EW와 동일 규약
     mk<-mr[ii,1]
     ## 일별 회계 (계약 측정용 build_bt_result 입력): 적용월 동안 결정 비중 보유·드리프트, 월 첫 거래일 리밸 비용
-    net5d<-rep(NA_real_,NS); net15d<-rep(NA_real_,NS); wheldD<-rep(1/7,7)
+    net5d<-rep(NA_real_,NS); net15d<-rep(NA_real_,NS); wheldD<-rep(1/NA_,NA_)
     for(q in seq_along(ii)){ i<-ii[q]; wtD<-Wr[i-1,]
       mrows<-which(ym==mon$ym[rng[i]]); if(!length(mrows))next
       dltD<-sum(abs(wtD-wheldD))
@@ -272,7 +285,7 @@ if("M0" %in% ARMS){
     for(bps in c(5,15)){ pr<-if(bps==5)pr5 else pr15
       actM<-pr-mk; actE<-pr-ewv
       nav<-cumprod(1+pr); mdd<-min(nav/cummax(nav)-1)
-      RESULTS[[length(RESULTS)+1]]<-data.table(arm="M0",featset=FEATSET,tune=TUNE,lam_mult=NA_real_,te=TE_T[k]*100,cost_bps=bps,acct_shift=NA_integer_,
+      RESULTS[[length(RESULTS)+1]]<-data.table(arm="M0",featset=FEATSET,facset=.FACSET,n_assets=NA_,tune=TUNE,lam_mult=NA_real_,te=TE_T[k]*100,cost_bps=bps,acct_shift=NA_integer_,
         placebo_seed=ifelse(nzchar(PSEED),as.integer(PSEED),NA_integer_),
         n_mo=length(pr), IR_vsMkt=IRf(actM), IR_vsEW=IRf(actE), pt_capwt=nwt(actM), abs_SR=IRf(pr),
         abs_CAGR=prod(1+pr)^(12/length(pr))-1, abs_MDD=mdd, TO_ann=mean(tov)*12,
@@ -288,7 +301,7 @@ if("D1" %in% ARMS){
     S<-online_states(lm)
     saveRDS(S,sprintf(".cache/_smv_v5_states_%s_lm%g.rds",KEY,lm))
     ## 일별 뷰: v[t,f] = refit[gmi[t]]$m_ann[S[t,f]]
-    V<-matrix(NA_real_,NS,6)
+    V<-matrix(NA_real_,NS,NF)
     for(fi in seq_along(FACN)){ rl<-REF[[FACN[fi]]]
       for(t in seq_len(NS)){ mi<-gmi[t]; if(mi<1)next; rf<-rl[[mi]]; if(is.na(S[t,fi])||is.null(rf))next
         V[t,fi]<-rf$m_ann[S[t,fi]] } }
@@ -300,7 +313,7 @@ if("D1" %in% ARMS){
         Vp[rows_dst,]<-V[rows_src[rep_len(seq_along(rows_src),length(rows_dst))],,drop=FALSE] }
       V<-Vp }
     for(k in seq_along(TE_T)){
-      Wd<-matrix(NA_real_,NS,7)
+      Wd<-matrix(NA_real_,NS,NA_)
       for(t in seq_len(NS)){ mi<-gmi[t]; if(mi<1)next
         cc<-cmat[mi,k]; if(!is.finite(cc))next
         vv<-V[t,]; if(any(!is.finite(vv)))next
@@ -311,7 +324,7 @@ if("D1" %in% ARMS){
       if(length(dec_ok)<200){pg("D1 te=%g insufficient\n",TE_T[k]);next}
       first_t<-dec_ok[1]+max(SHIFT,1)
       net5<-rep(NA_real_,NS); net15<-rep(NA_real_,NS); dltv<-rep(NA_real_,NS)
-      wheld<-rep(1/7,7)
+      wheld<-rep(1/NA_,NA_)
       for(t in first_t:NS){ tgt<-if(SHIFT==0) Wd[t,] else Wd[t-SHIFT,]
         if(any(!is.finite(tgt))) tgt<-wheld
         ri<-RmatAll[t,]
@@ -326,12 +339,74 @@ if("D1" %in% ARMS){
   }
 }
 
+## ==== ARM H1: 위기-조건부 케이던스 (prereg smv_v6 amendment_1 — 문턱 0.80 단일 사전등록) ====
+## 평시 = M0 월간 경로(월말 결정→익월, 일별 드리프트) / crisis[t-2](mkt_jm Bear_Prob>0.80)인 날만 D1 일별 비중.
+## 기전: D1은 전기간 열위이나 위기월 3배 우위(라운드 1) — 반응성을 위기에만 켠다. 노출은 항상 1(오버레이 기각 기전 회피).
+if("H1" %in% ARMS){
+  jmS<-tryCatch({j<-as.data.table(arrow::read_parquet(".cache/regime_jump_daily.parquet",col_select=c("Date","Bear_Prob"))); j[,Date:=as.Date(Date)]; setkey(j,Date); j},error=function(e)NULL)
+  if(!is.null(jmS)){
+    g<-data.table(Date=R$Date); setkey(g,Date)
+    bpv<-jmS[g,roll=7]$Bear_Prob
+    H1MODE<-Sys.getenv("SMV_H1_MODE","thr080")   # thr080 = 고정 0.80 (v6 T4) | q95 = expanding 95분위 (v7 R3-C, 인과 월말 갱신)
+    if(H1MODE=="q95"){
+      jall<-jmS[is.finite(Bear_Prob)]           # 1990~ 전 이력 (인과: 각 월말까지 이력의 분위)
+      me_all<-R$Date[meix]
+      thr_m<-rep(NA_real_,length(me_all))
+      for(mi2 in seq_along(me_all)){ h<-jall[Date<=me_all[mi2]]$Bear_Prob
+        if(length(h)>=60*21) thr_m[mi2]<-quantile(h,0.95,na.rm=TRUE) }
+      thr_d<-thr_m[pmax(findInterval(seq_len(NS), meix),1)]   # 일 t에는 직전 월말 갱신 문턱
+      thr_d[findInterval(seq_len(NS),meix)<1]<-NA
+      crisis<-is.finite(bpv)&is.finite(thr_d)&bpv>thr_d
+    } else crisis<-is.finite(bpv)&bpv>0.80
+    lm<-LAMM[1]; S<-online_states(lm)
+    V<-matrix(NA_real_,NS,NF)
+    for(fi in seq_along(FACN)){ rl<-REF[[FACN[fi]]]
+      for(t in seq_len(NS)){ mi<-gmi[t]; if(mi<1)next; rf<-rl[[mi]]; if(is.na(S[t,fi])||is.null(rf))next
+        V[t,fi]<-rf$m_ann[S[t,fi]] } }
+    monk<-match(ym, mon$ym)
+    for(k in seq_along(TE_T)){
+      Wm<-matrix(NA_real_,NM,NA_)
+      for(mi in which(is.finite(cmat[,k]))) Wm[mi,]<-bl_w(SIG[,,meix[mi]],view_me[mi,],cmat[mi,k])
+      for(i in 2:NM) if(any(!is.finite(Wm[i,]))) Wm[i,]<-Wm[i-1,]
+      Wd<-matrix(NA_real_,NS,NA_)
+      for(t in seq_len(NS)){ mi<-gmi[t]; if(mi<1)next
+        cc<-cmat[mi,k]; if(!is.finite(cc))next
+        vv<-V[t,]; if(any(!is.finite(vv)))next
+        if(!is.finite(SIG[1,1,t]))next
+        Wd[t,]<-bl_w(SIG[,,t],vv,cc) }
+      dec_ok<-which(apply(Wd,1,function(r)all(is.finite(r))))
+      if(length(dec_ok)<200){pg("H1 te=%g insufficient\n",TE_T[k]);next}
+      first_t<-dec_ok[1]+2
+      net5<-rep(NA_real_,NS); net15<-rep(NA_real_,NS); dltv<-rep(NA_real_,NS)
+      wheld<-rep(1/NA_,NA_); wmpath<-rep(1/NA_,NA_); cur_k<-NA_integer_
+      for(t in first_t:NS){
+        kk<-monk[t]
+        if(!identical(kk,cur_k)){ mi_dec<-kk-1
+          if(mi_dec>=1 && all(is.finite(Wm[mi_dec,]))) wmpath<-Wm[mi_dec,]
+          cur_k<-kk }
+        ## ★SHIFT 배선 (2026-08-21 수리): 구판은 t-2 하드코딩이라 shift 사다리(게이트②③)가 H1에서
+        ##   T+0/T+2/T+3 전부 동일값을 냈다 = 검사가 이 팔을 재지 못하는 무커버 표면이었다.
+        sh<-max(SHIFT,0L); si<-t-sh
+        tgt<-if(si>=1 && isTRUE(crisis[si]) && all(is.finite(Wd[si,]))) Wd[si,] else wmpath
+        ri<-RmatAll[t,]
+        dlt<-sum(abs(tgt-wheld)); dltv[t]<-dlt
+        g2<-sum(tgt*ri)
+        net5[t]<-g2-5e-4*dlt; net15[t]<-g2-15e-4*dlt
+        wd<-tgt*(1+ri); wheld<-wd/sum(wd)
+        wmd<-wmpath*(1+ri); wmpath<-wmd/sum(wmd) }
+      for(bps in c(5,15)){ nd<-if(bps==5)net5 else net15
+        RESULTS[[length(RESULTS)+1]]<-metrics_row(nd,dltv,"H1",lm,TE_T[k]*100,bps,first_t) }
+      pg("H1 te=%g done (crisis days=%d/%d)\n",TE_T[k],sum(crisis,na.rm=TRUE),NS)
+    }
+  } else pg("H1 skipped — regime_jump_daily 부재\n")
+}
+
 RES<-rbindlist(RESULTS)
 out_csv<-RES[,!"series"]
-fwrite(out_csv, sprintf("outputs/ramp/smv_v5_results_%s.csv",KEY))
+fwrite(out_csv, sprintf("outputs/ramp/dfa_v5_results_%s.csv",KEY))
 saveRDS(list(RES=RES, idxfile=IDXFILE, featset=FEATSET, prereg="outputs/ramp/smv_v5_prereg_20260820.json",
              cmat=cmat, view_me=view_me, meix=meix, medates=medates),
-        sprintf(".cache/_smv_v5_%s.rds",KEY))
+        sprintf(".cache/_dfa_v5_%s.rds",KEY))
 cat("== v5 results (",KEY,") ==\n")
 print(out_csv[order(arm,lam_mult,te,cost_bps)], digits=3, nrows=50)
 cat("V5_DONE\n")

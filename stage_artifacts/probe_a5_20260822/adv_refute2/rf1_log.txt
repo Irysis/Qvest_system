@@ -1,0 +1,93 @@
+[config.R] PROJECT_ROOT: C:/Users/99922/OneDrive/Quant_Module_Moltbot
+[backtest_result_contract.R] Loaded — Backtest Result Contract v1.0
+  Functions: build_bt_result() / validate_bt_result()
+  10 components: manifest, strategy_spec, nav, period_returns, holdings, benchmark_returns, metrics, benchmark_compare, rolling_metrics, drawdowns, audit
+[weighted_screen_bt.R] Loaded — weighted_screen_bt() (임의 가중 contract-grade A/B primitive)
+[ramp_io.R] Loaded — ramp_write_parquet/ramp_write_json (§2.4 meta enforced)
+[backtest_result_contract.R] Loaded — Backtest Result Contract v1.0
+  Functions: build_bt_result() / validate_bt_result()
+  10 components: manifest, strategy_spec, nav, period_returns, holdings, benchmark_returns, metrics, benchmark_compare, rolling_metrics, drawdowns, audit
+[canonical_screen_bt.R] Loaded — canonical_screen_bt() (v8.x WS1 real-computation helper)
+[factor_validation.R] Loaded — build_monthly_forward_returns / build_adv20_t1 / validate_factor / approve_factors
+[parquet] Date 2006-01-02 ~ 2026-08-20 | cols=Market,Value,Issuance,Size,Momentum,ResidMom,Reversal,Quality,GPA,EarnStab,Growth,Investment,LowVol,LowBeta,TailRisk,Liquidity,Accrual,Consensus,SUE,Crowding,ForeignFlow,SmartMoney,as_of_date,source_version
+[parquet] as_of_date uniq: 2026-08-20
+[parquet] source_version uniq: shumulvey_v1_factordb_composite
+[A5idx] NM=248 | Market-fallback 개월(w_Mkt>0)=0 | 마지막 달 일수=13 (2026-08)
+[build_monthly_forward_returns] [FQ-232] 유동성 자 복원: liq_ruler='adv20_t1' (source=injected_adv20) · 앵커 덮개 100.0% (382123행)
+[data] DEC=180 | ZP=180 | RET=62698행 | BEN=180월
+
+===== V1. 벤치마크 불일치 =====
+n=180 | 지수 Market 연평균 +10.07% | 계약 BM(cap-w) 연평균 +10.05% | EW-유니버스 +7.62%
+  BM − Market = -0.020%p/yr | cor(BM,Market)=1.0000 | NW-t(BM−Market)=-0.809
+  [원보고] 지수레벨 A5 active(vs Market): PORT_t=+2.725  active=+4.96%p/yr  IR=+0.754  TO=2.30
+  [동일벤치] 지수레벨 A5 active(vs 계약 BM): PORT_t=+2.725  active=+4.98%p/yr  IR=+0.756
+  [동일벤치+실비용] A5 gross − 계약BM − (종목회전 4.45/yr×15bps): active=+4.66%p/yr
+
+===== V2. 결측 Z 처리 (선언='팩터 제외' vs 구현) =====
+유니버스-월 관측 62704 | 커버리지 질량 frac 분위: p01=0.708 p05=0.889 p10=0.967 p25=1.000 중앙=1.000 평균=0.984
+frac<1.0 인 관측 비율 = 13.0% | frac<0.9 = 5.7% | frac<0.5 = 0.3%
+월 평균 유니버스 348.4 | 월 평균 '전 팩터 커버' 종목수 303.2
+
+===== V3. score>0 선-필터 구속 =====
+A5-Z합성: 양수 스코어 <25 인 개월 = 11 / 180 (중앙 양수개수 136)
+EW대조(w=1/21): 양수 <25 인 개월 = 0 / 180 (중앙 173)
+
+===== V4. 팔 재측정 (독립 재계산) =====
+                arm     n  PORT_t       IR active_ann  netSR     TO n_names
+             <char> <int>   <num>    <num>      <num>  <num>  <num>   <num>
+ 1: E1_capw_passive   180  0.7536  0.18404     0.9192 0.4370  1.191   25.00
+ 2:   E2_B1sel_capw   180  1.8988  0.49069     8.7884 0.6461 11.480   24.52
+ 3:    E3_piEW_ctrl   180  1.6526  0.44978     2.0548 0.5049  3.620   25.00
+ 4:          B3w_A5   180  1.2075  0.29439     2.0321 0.4727  5.624   25.00
+ 5:           B3_EW   180 -1.1809 -0.30162    -2.5358 0.3418  5.224   25.00
+ 6:           B1_EW   180  1.1129  0.30420     5.5483 0.6529  9.904   24.52
+ 7:           C0_EW   180  0.2422  0.06739     1.3499 0.6076 10.899   25.00
+ 8:     ZA_EW_filtX   180  1.0959  0.29718     5.4168 0.6486  9.768   25.00
+ 9:     ZE_EW_filtX   180  0.2422  0.06739     1.3499 0.6076 10.899   25.00
+10:    ZA_CAP_filtX   180  1.8265  0.46231     8.1885 0.6286 11.416   25.00
+11:    ZE_CAP_filtX   180  0.1748  0.04374     0.8693 0.5699 12.962   25.00
+12:    ZAn_EW_filtX   180  0.8764  0.24052     4.4132 0.6021  9.800   25.00
+13:    ZEn_EW_filtX   180  0.2438  0.06795     1.3645 0.6105 10.989   25.00
+14:   ZAn_CAP_filtX   180  1.8355  0.46266     8.1903 0.6305 11.451   25.00
+15:   ZEn_CAP_filtX   180  0.1534  0.03843     0.7670 0.5659 13.055   25.00
+     t_pre17 t_post17
+       <num>    <num>
+ 1: -0.02079   0.8822
+ 2:  1.86646   0.7820
+ 3:  1.09375   1.3349
+ 4:  0.63939   1.0275
+ 5: -0.41733  -1.1939
+ 6:  2.85581  -1.4388
+ 7:  2.50436  -1.3386
+ 8:  2.83827  -1.4286
+ 9:  2.50436  -1.3386
+10:  1.76129   0.7971
+11:  1.45362  -0.8229
+12:  2.75820  -1.6735
+13:  2.47459  -1.2797
+14:  1.80215   0.7646
+15:  1.35576  -0.7612
+
+===== V5. paired NW-t (A5 w_f − 1/21) =====
+                   form A5_act ctrl_act paired_t delta_ann
+                 <char>  <num>    <num>    <num>     <num>
+1:     Z합성×EW(0대입)  5.417   1.3499  1.22931   4.06682
+2:    Z합성×cap(0대입)  8.188   0.8693  1.42626   7.31921
+3:  Z합성×EW(팩터제외)  4.413   1.3645  0.88923   3.04864
+4: Z합성×cap(팩터제외)  8.190   0.7670  1.42503   7.42329
+5:           내재비중pi  2.032   2.0548 -0.01684  -0.02271
+
+===== V6. breadth 사다리 재현 =====
+    topN pi_mass n_names PORT_t     IR active_ann    TO
+   <int>   <num>   <num>  <num>  <num>      <num> <num>
+1:    25  0.5474    25.0  1.208 0.2944      2.032 5.624
+2:    50  0.6693    50.0  1.933 0.4357      2.672 5.460
+3:   100  0.7994   100.0  2.215 0.5330      3.077 5.331
+4:   200  0.9330   200.0  2.294 0.6038      3.296 4.881
+5:    NA  0.9923   333.5  2.293 0.6166      3.285 4.450
+
+[패리티 재현] n=180 cor=1.0000 | ann차 -0.057%p | 종목 gross +15.32%/yr vs 지수 gross +15.37%/yr
+
+RF1_DONE
+Warning message:
+package 'arrow' was built under R version 4.5.3 

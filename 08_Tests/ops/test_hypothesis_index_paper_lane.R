@@ -50,47 +50,71 @@ chk("T3 필수 9필드 결손 없음", length(miss) == 0L,
 chk("T3b source_types 가 paper_lane 으로 식별된다",
     all(vapply(s$pl, function(e) "paper_lane" %in% unlist(e$source_types), logical(1))))
 
+# ── T4/T5 ★격리 루트 (2026-08-22 감사 HLT-1/HLT-2 재작성)
+#   구판은 T4a 가 **생산 hypothesis_index 를 재빌드**하고 T4b 가 **생산 method_registry 의
+#   mtime 을 밀었다 되돌렸고**, T5 는 거기에 **가짜 method 를 직접 주입**했다.
+#   그 창에서 같은 배터리의 후속 3 스위트(risk_lane_verdict·nearest_arm_axis·Σ 어댑터)가
+#   그 가짜 method 를 **실물 등재 항목으로 소비**했고, 크래시 시 오염이 잔존해
+#   **다음 회차 배터리의 시작 상태**가 됐다(그래서 구 T5b 가 loop1·loop2 양쪽에서
+#   참양성 FAIL 을 냈다 — flake 가 아니었다).
+#   검사하는 명제("원천 목록에 method_registry 가 있는가" / "등재가 재빌드로 조회에
+#   노출되는가")는 **루트 무관**이므로 임시 루트에서 물으면 같은 것을 재고
+#   생산 부작용이 사라진다. 빌더의 원천 7종은 전부 file.exists/dir.exists 가드라
+#   method_registry 사본 하나로 빌드가 성립한다.
+mrp <- "06_Registry/method_registry.json"
+prod_fp0     <- tools::md5sum(mrp)[[1]]
+prod_idx_fp0 <- tools::md5sum(HI_INDEX_PATH)[[1]]
+
+sbx <- file.path(tempdir(), sprintf("hi_paper_lane_%s_%d", Sys.getpid(), sample.int(1e6, 1)))
+dir.create(file.path(sbx, "06_Registry"), recursive = TRUE, showWarnings = FALSE)
+sbx_mrp <- file.path(sbx, "06_Registry", "method_registry.json")
+sbx_idx <- file.path(sbx, "06_Registry", "hypothesis_index.json")
+file.copy(mrp, sbx_mrp, overwrite = TRUE)
+
 # ── T4 ★stale 원천에 논문 레인이 포함된다 (행동 검사 — 소스 문자열 아님)
-#     소스를 grep 하면 정당한 리팩터에 거짓 FAIL 이 난다(오늘 3회 실측). 발화를 본다.
-idx <- HI_INDEX_PATH
-# ★T4a 는 **먼저 인덱스를 최신화한 뒤** 물어야 한다 (2026-08-13 수리).
-#   초판은 그냥 물었는데, 디스패치가 A/B CSV 를 재생성한 직후에 돌면 인덱스가 **정말로**
-#   뒤처져 있어서 stale 이 뜬다 — 그건 오탐이 아니라 정탐이다. 그 상태로 FAIL 을 내면
-#   "검출기 고장"과 "인덱스가 legitimately stale"을 구분하지 못하고, 배터리가 디스패치
-#   직후에만 간헐적으로 빨개진다(실측: 단독 10/1 → 재실행 11/11 × 3).
-#   ⇒ 최신화 후에도 stale 이 뜨면 그때가 진짜 오탐이다.
-invisible(suppressMessages(build_hypothesis_index(verbose = FALSE)))
-s0 <- .hi_stale_check(idx, warn = FALSE)
+#     소스를 grep 하면 정당한 리팩터에 거짓 FAIL 이 난다(3회 실측). 발화를 본다.
+#   ★T4a 는 **먼저 인덱스를 최신화한 뒤** 물어야 한다: 그냥 물으면 인덱스가 정말로
+#   뒤처져 있을 때 stale 이 뜼는데 그건 오탐이 아니라 정탐이라, "검출기 고장"과
+#   "legitimately stale" 을 구분하지 못해 배터리가 간헐적으로 빨개진다.
+invisible(suppressMessages(build_hypothesis_index(root = sbx, out_path = sbx_idx,
+                                                  verbose = FALSE)))
+s0 <- .hi_stale_check(sbx_idx, root = sbx, warn = FALSE)
 chk("T4a 재빌드 직후에는 stale 없음(오탐 아님을 그때 판정)", length(s0) == 0L,
     if (length(s0)) paste(s0, collapse=", ") else "")
-mrp <- "06_Registry/method_registry.json"
-mt0 <- file.info(mrp)$mtime
-Sys.setFileTime(mrp, Sys.time() + 5)
-s1 <- .hi_stale_check(idx, warn = FALSE)
+Sys.setFileTime(sbx_mrp, Sys.time() + 5)
+s1 <- .hi_stale_check(sbx_idx, root = sbx, warn = FALSE)
 chk("T4b ★method_registry 갱신이 stale 로 검출된다", any(grepl("method_registry", s1)),
     sprintf("→ %s", paste(s1, collapse=", ")))
-Sys.setFileTime(mrp, mt0)
 
 # ── T5 ★검출 → 자동 재빌드 → 조회 노출까지 이어지는가 (검출만 되고 반영 안 되면 무의미)
-orig <- readLines(mrp, warn = FALSE)
-ok5 <- FALSE
+ok5 <- FALSE; ok5_err <- ""
 tryCatch({
-  m2 <- fromJSON(mrp, simplifyVector = FALSE)
+  m2 <- fromJSON(sbx_mrp, simplifyVector = FALSE)
   m2$methods <- c(m2$methods, list(list(
     method_id = "ZZ_PROBE_PAPER_LANE", paper_id = "arxiv:9999.99999",
     paper_title = "probe", route = "risk", adapter_kind = "sigma",
     adapter = "02_Infrastructure/methods/adapters/proper_score_gas.R",
     mechanism = "probe", kr_mapping = "probe", verdict = "implemented",
     selection_type = "chain", registered_at = "2026-08-13")))
-  write(toJSON(m2, auto_unbox = TRUE, pretty = TRUE, null = "null"), mrp)
-  Sys.setFileTime(mrp, Sys.time() + 5)
-  invisible(suppressMessages(lookup_hypothesis("probe")))
-  ok5 <- any(vapply(pl_of()$pl, function(e) identical(e$strategy_id, "PL_ZZ_PROBE_PAPER_LANE"), logical(1)))
-}, error = function(e) cat("   (T5 예외:", conditionMessage(e), ")\n"))
-writeLines(orig, mrp)
-invisible(suppressMessages(build_hypothesis_index(verbose = FALSE)))
-chk("T5 ★신규 등재가 자동 재빌드로 조회에 노출된다", ok5)
-chk("T5b 원상복구 확인(주입 항목 제거됨)",
+  write(toJSON(m2, auto_unbox = TRUE, pretty = TRUE, null = "null"), sbx_mrp)
+  Sys.setFileTime(sbx_mrp, Sys.time() + 5)
+  invisible(suppressMessages(lookup_hypothesis("probe", index_path = sbx_idx, root = sbx)))
+  sj <- fromJSON(sbx_idx, simplifyVector = FALSE)
+  ok5 <- any(vapply(sj$entries,
+                    function(e) identical(e$strategy_id, "PL_ZZ_PROBE_PAPER_LANE"), logical(1)))
+}, error = function(e) { ok5_err <<- conditionMessage(e); cat("   (T5 예외:", ok5_err, ")
+") })
+unlink(sbx, recursive = TRUE, force = TRUE)
+
+chk("T5 ★신규 등재가 자동 재빌드로 조회에 노출된다", ok5, ok5_err)
+# ★T5b/c/d 재정의: 구판은 '내가 오염시킨 걸 내가 지웬나'(오염을 전제한 질문)를
+#   물었다. 이젠 **애초에 생산 원장을 만지지 않았나** — 격리 계약 자체가 검사 대상이다.
+chk("T5b ★격리 계약: 생산 method_registry 가 이 검사로 변하지 않는다",
+    identical(prod_fp0, tools::md5sum(mrp)[[1]]), sprintf("md5 %s", substr(prod_fp0, 1, 12)))
+chk("T5c ★격리 계약: 생산 hypothesis_index 가 이 검사로 변하지 않는다",
+    identical(prod_idx_fp0, tools::md5sum(HI_INDEX_PATH)[[1]]),
+    sprintf("md5 %s", substr(prod_idx_fp0, 1, 12)))
+chk("T5d ★프로브가 생산 조회면에 새지 않는다",
     !any(vapply(pl_of()$pl, function(e) grepl("ZZ_PROBE", e$strategy_id), logical(1))))
 
 # ── T6 측정 자동 조인 + 교란 경고가 수치와 **같은 자리에** 있다

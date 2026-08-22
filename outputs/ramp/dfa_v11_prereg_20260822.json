@@ -1,0 +1,100 @@
+{
+  "prereg_id": "dfa_v11_prereg_20260822",
+  "created_at": "2026-08-22",
+  "created_before_any_result": true,
+  "fq_id": "FQ-239",
+  "round": "R10 — C1 후속 연구 (도훈 2026-08-22 '모멘텀으로 t값 2.95 근접했던 리서치의 후속 연구')",
+  "target": "C1 = 연속가중 x broad-21 팩터 모멘텀. 현 실측(15bps, 235mo): pt 2.792 / oos_ret 0.674(밴드) / calmar 0.285 / MDD 0.460",
+  "gap_analysis_prior": {
+    "PORT_t": "2.792 vs 2.95 — 갭 0.158 (최근접)",
+    "oos_retention": "0.674 vs 0.7 — 밴드 [0.5,0.7) 조건부 PASS 경로 유효",
+    "calmar": "0.285 vs 0.64 — 최대 갭. R8/R9 익스포저 2라운드로 공략 실패(집중도-강도 트레이드오프 구조적). 남은 공략축 = 배포 형태 변환(종목 레벨은 MDD 구조가 다름)"
+  },
+  "arms_prespecified": [
+    {
+      "id": "A1_band_evidence",
+      "spec": "oos 밴드 보강증거 3종 산출 — (i) trailing subwindow PORT_t>0 (마지막 1/3) (ii) placebo p<0.05 (R7 기산출 0.000 재확인) (iii) book-marginal dSR>0 AND |cor|<0.30 vs 현 book. 2/3 충족 시 measurement-graduation 규약상 조건부 PASS",
+      "dof": 0,
+      "type": "판정 절차"
+    },
+    {
+      "id": "A2_rank_weight",
+      "spec": "가중 함수 변형: w_f 비례 -> rank 기반 (양수 모멘텀 팩터를 크기 순위로 정렬 후 rank/sum(rank)). 극단값 민감도 완화 가설",
+      "dof": 1
+    },
+    {
+      "id": "A3_window_6m",
+      "spec": "신호창 12M -> 6M (동일 규칙, 창만)",
+      "dof": 1
+    },
+    {
+      "id": "A4_window_24m",
+      "spec": "신호창 12M -> 24M (동일 규칙, 창만)",
+      "dof": 1
+    },
+    {
+      "id": "A5_quarterly",
+      "spec": "리밸 주기 월간 -> 분기(3개월마다 결정, 사이 드리프트). 회전율/비용 축소 가설",
+      "dof": 1
+    },
+    {
+      "id": "A6_stock25",
+      "spec": "25종목 배포 변환: C1 팩터 가중 w_f -> 종목 스코어 Score_i = sum_f w_f * Z_f,i (factor DB Z_Score_Aligned, load_month_factors PIT) -> top-25 EW long-only 15bps. 알파서칭 하네스(run_alpha_search) 공식 채점. ★도훈 Production Constraints 정합 = 유일한 실자본 경로",
+      "dof": 1
+    }
+  ],
+  "adoption": "A2~A5: 15bps에서 {pt 개선 AND MDD 비악화} 또는 {calmar 개선 AND pt 비열등(>=-0.1)} vs C1 기준선. paired NW-t 병기. argmax 금지 — 전 셀 보고, 규칙 충족 셀만 채택. A6: 하네스 grade + screen_route 라벨로 판정(별도 채점 체계)",
+  "headline": "C1 기준선 15bps 대비 각 축 단독 비교. 조합은 본 라운드 금지(자유도 분리)",
+  "n_trials_cumulative": 56,
+  "selection_type": "chain",
+  "honesty": "C1 자체가 G2 사후 발견 규칙의 정식화 — 본 라운드 변형들은 같은 데이터 위 추가 자유도이므로 각 축 채택 시 n_trials 누적 기록 + 신규구간 봉인 holdout 등재 의무",
+  "pin_tag": "smv_r2_20260820 연장",
+  "amendment_1_phase_ensemble": {
+    "added_at": "2026-08-22 (R11 배터리 실측 후, 앙상블 측정 전)",
+    "trigger_measured": "A5 분기 리밸의 위상 민감도 실측: 시작월 offset 0/1/2 -> pt 3.232 / 2.208 / 2.981 (15bps). 3위상 단순평균 2.807 < 게이트 2.95. 즉 offset=0의 게이트 통과는 위상 선택에 의존 = 아티팩트 위험.",
+    "spec": "A5E = 3-코호트 중첩 앙상블(Jegadeesh-Titman 1993 overlapping portfolios 표준): 매월 자본의 1/3을 해당 코호트가 재결정(각 코호트는 3개월 홀딩), 전체 포트 = 3코호트 가중평균. 위상 자유도 제거 — 신규 파라미터 없음(코호트 수 3 = 분기 주기에서 결정론적으로 도출).",
+    "rationale": "자유도 추가가 아니라 위상 아티팩트 제거. 학술 표준 기법이며 사후 최적화 여지 없음(3위상 전부 사용).",
+    "judgment": "A5E가 게이트를 넘으면 그것이 정본 후보. 못 넘으면 A5의 게이트 통과는 위상 아티팩트로 판정하고 기록(채택 철회).",
+    "additional_gates": "A5E에도 동일 배터리(shift 사다리·placebo 30-seed·시대분해·비용 민감도) 적용"
+  },
+  "r11_battery_measured": {
+    "shift_ladder_15bps": {
+      "same_month": 5.147,
+      "canonical_m1": 3.232,
+      "lag1_m2": 2.714
+    },
+    "placebo_30seed": {
+      "real_IR": 0.756,
+      "placebo_mean": 0.21,
+      "placebo_sd": 0.251,
+      "p": 0.0,
+      "note": "셔플 평균이 0이 아니라 +0.21 — broad-21 풀 자체의 팩터 프리미엄 드리프트. real은 그 대비 약 2.2 sigma"
+    },
+    "era_decomposition_pt": {
+      "2007-2011": 1.934,
+      "2012-2016": 2.792,
+      "2017-2021": 0.517,
+      "2022-2026": 1.286,
+      "note": "4구간 전부 양수"
+    },
+    "breakeven": {
+      "gross_active": 0.052,
+      "TO": 2.35,
+      "net15": 0.0485,
+      "breakeven_TO": 34.65,
+      "headroom": 32.3
+    },
+    "cost_sensitivity_pt": {
+      "5bps": 3.397,
+      "15bps": 3.232,
+      "25bps": 3.067,
+      "40bps": 2.821
+    },
+    "phase_sensitivity_pt": {
+      "offset0": 3.232,
+      "offset1": 2.208,
+      "offset2": 2.981,
+      "mean": 2.807
+    }
+  }
+}
