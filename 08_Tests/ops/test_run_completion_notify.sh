@@ -102,5 +102,37 @@ else
   echo "  SKIP  Rscript 없음 — 배선 축만 검사"
 fi
 
+echo "== 실행 축: 알림 블록이 러너와 같은 셸 옵션에서 **완주**하는가 =="
+# ★존재·위치 검사만으로는 부족하다 — 러너는 `set -uo pipefail` 로 돌고,
+#   미설정 변수 하나면 런이 할 일을 다 한 **뒤** 마지막 줄에서 죽는다.
+#   그 죽음은 알림 실패로 보이지 않고 **러너 실패**로 보여 오진을 부른다.
+EXTRACT="$ROOT/08_Tests/ops/lib/_extract_notify_block.py"
+for f in $RUNNERS; do
+  if [ ! -f "$EXTRACT" ]; then ng "$f 블록 추출" "추출기 부재"; continue; fi
+  blk=$("${QVEST_PY:-python}" "$EXTRACT" "$ROOT/02_Infrastructure/ops/$f" 2>/dev/null)
+  if [ -z "$blk" ]; then ng "$f 블록 추출" "알림 블록을 못 찾음"; continue; fi
+  out=$(bash -c "set -uo pipefail
+BASE='$ROOT'; LOG=/dev/null; rc=0; N=7; _n_done=1; _EFFECT_CMP=CHANGED
+_EFFECT_BEFORE=''; _EFFECT_SIG='$ROOT/02_Infrastructure/ops/research_effect_signature.py'
+_ROUTE_DIR='$ROOT/stage_artifacts/paper_recharge'; _ROUTE_BEFORE=0
+BACKLOG_DATES=''; QVEST_MODE_QUEUE_LANE=alpha; PYBIN='${QVEST_PY:-python}'
+log(){ :; }; export QVEST_RUN_NOTIFY_DRYRUN=1
+$blk
+echo __BLOCK_OK__" 2>&1)
+  if echo "$out" | grep -q "__BLOCK_OK__"; then ok "$f — 알림 블록이 set -u 아래 완주"
+  else ng "$f 블록 실행" "미설정 변수 등으로 중단: $(echo "$out" | tail -1)"; fi
+done
+
+echo "== 발화 축: 블록 완주 != 알림 발화 (|| log 가 실패를 삼킨다) =="
+# 비치명 처리는 옳지만, 그 때문에 알림기가 죽어도 러너는 초록이다.
+# 러너가 실제로 넘기는 인자 패턴으로 알림기가 끝까지 도는지 따로 확인한다.
+if command -v Rscript >/dev/null 2>&1; then
+  _T=$(mktemp)
+  QVEST_RUN_NOTIFY_DRYRUN=1 QM_ROOT="$ROOT" Rscript --no-save "$NOTIFY" alpha_search 7 1 CHANGED 0 > "$_T" 2>&1
+  if grep -q "notify. lane=alpha_search" "$_T"; then ok "러너 인자 패턴으로 알림기 발화"
+  else ng "발화" "블록은 완주해도 알림기가 안 돈다: $(tail -1 "$_T")"; fi
+  rm -f "$_T"
+fi
+
 echo "== t_summary: PASS=$PASS FAIL=$FAIL =="
 [ "$FAIL" -eq 0 ] || exit 1

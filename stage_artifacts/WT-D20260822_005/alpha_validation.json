@@ -1,0 +1,54 @@
+{
+  "task_id": "WT-D20260822_005",
+  "produced_by": "alpha-research",
+  "as_of_date": "2026-08-22",
+  "sig_date": "2026-07-31",
+  "metric_type": "canonical_screen_diag",
+  "tier": "screen_diagnostic",
+  "selected_combo": "B_M08_Q01_C03 (z_score_aligned_equal_weight)",
+
+  "gate_summary": {
+    "F4_driver_attribution_IS": {"value": 2.841, "threshold": 2.0, "verdict": "PASS", "note": "성분귀속 IS 확정"},
+    "portfolio_alpha_t_nw_full": {"value": 0.866, "hard_threshold": 2.95, "verdict": "FAIL", "severity": "hard(screening-diag, forge 재확인 시 authoritative)"},
+    "oos_retention_capw": {"value": -0.666, "hard_threshold": 0.7, "unconditional_fail_below": 0.5, "verdict": "FAIL", "severity": "hard"},
+    "turnover_annual": {"value": 6.41, "mandate_cap": 11.0, "verdict": "PASS"},
+    "window_reachability_ceiling_pf_port_t": 31.01,
+    "reachability_note": "완전예지 top-25 = 31.01 -> 2.95 원리적 도달 가능. 미달 = 신호 decay(효과 저하), NOT 창 짧음(미결). 라벨=config_scoped_negative_capital."
+  },
+
+  "universe_comparison": {
+    "note": "KR_top342 (K200∪KQ150 제한, 실측 univ 200->350). v2(KR_TOP500_FREEFLOAT) 비교는 미착수 — ICIR attenuation 진단 라운드 아님(본 라운드는 IS PORT_t 2.841로 신호 실재, universe 한계 의심 상황 아님). v2 mandate 미발화.",
+    "cap_w_basis": "IKS200 KOSPI200_total_return",
+    "ew_universe_diag_full_port_t": 1.829,
+    "dual_basis_verdict": "post-2017 decay = cohort-wide (cap-w 아티팩트 아님, EW-diag도 붕괴)"
+  },
+
+  "kq150_sensitivity": {
+    "full_2005_2026_port_t": 0.866,
+    "clean_2015_07_plus_port_t": -1.643,
+    "verdict": "clean이 negative 강화 -> KQ150 백필 오염이 결과 부풀림 방향 아님(FQ-241 판정규칙 준수)"
+  },
+
+  "redundancy": {
+    "m08_m01_xsec_cor": 0.813,
+    "m08_m07_xsec_cor": 0.225,
+    "m08_q01_xsec_cor": 0.008,
+    "action": "H(M08+M01+Q01) 배제 (M08 subset M01 이중계상)"
+  },
+
+  "data_gate_notes": [
+    "C17_OP_Revision 전기간 커버리지 0 (dead, registry 등록 but 미배출) -> C03_EPS_Chg_3m 대체 (live 2005~, intent 보존). C17 arm 그 자체는 미측정.",
+    "consensus factor known_discrepancy (T-1 선언 vs 코드 same-day) -> AST TS_LAG(1d)로 PIT-엄격 판정 통과"
+  ],
+
+  "overall_verdict": "CONFIG_SCOPED_NEGATIVE_CAPITAL_TIER + IS_DRIVER_ATTRIBUTION_CONFIRMED",
+  "capital_eligibility": false,
+  "consumption_route": "FR 모드 국면 배합(NP2) — 자본 standalone 부적격",
+  "artifacts": {
+    "alpha_scores": "stage_artifacts/WT-D20260822_005/alpha_scores.parquet",
+    "alpha_vector": "stage_artifacts/WT-D20260822_005/alpha_vector.json",
+    "alpha_package": "qepm/mailbox/worktask/WT-D20260822_005/alpha_package.json",
+    "ablation_is": "qepm/mailbox/worktask/WT-D20260822_005/scratch/ablation_is.json",
+    "confirm": "qepm/mailbox/worktask/WT-D20260822_005/scratch/confirm.json"
+  }
+}
