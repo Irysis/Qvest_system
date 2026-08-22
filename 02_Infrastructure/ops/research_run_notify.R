@@ -32,7 +32,10 @@ extra  <- if (length(args) >= 6) args[6] else ""
 `%||%` <- function(a, b) if (is.null(a) || length(a) == 0L || (length(a) == 1L && is.na(a))) b else a
 
 # ── 레인별 평문 이름 — 비전공자 가독(원칙 8-①). 코드 라벨만 쓰지 않는다.
-lane_ko <- c(
+# ★`[[` 는 미등록 이름에 **에러**를 던진다(%||% 로는 못 막는다 — 값이 아니라 예외).
+#   레인은 앞으로 늘어난다(optimizer·regime 다음에 무엇이 올지 모른다). 새 레인을 추가한
+#   날 알림이 통째로 죽는 구조를 만들지 않는다 — 모르면 코드 그대로 쓴다.
+.lane_map <- c(
   qepm_dossier    = "정식 라운드 이어붙이기",
   paper_promotion = "논문 승격(경량 → 정식)",
   method_measure  = "등재된 방법 실측",
@@ -41,7 +44,8 @@ lane_ko <- c(
   risk            = "위험모델 방법 검토",
   regime          = "국면 신호 검토",
   all             = "리서치 큐 전체"
-)[[lane]] %||% lane
+)
+lane_ko <- if (lane %in% names(.lane_map)) .lane_map[[lane]] else lane
 
 # ── 진척 판정: 마커(자기보고) 아니면 원장 지문. 오늘 오경보 사고의 수리 결과를 그대로 쓴다.
 progressed <- (!is.na(ndone) && ndone > 0) || identical(effect, "CHANGED")
