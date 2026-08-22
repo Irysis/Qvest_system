@@ -70,21 +70,36 @@ PKG <- list(
   factors = list(
     list(factor_id = "F1_base_score_on_absorbFiltered_universe",
          ast = list(op = "WHERE", args = list(
-           list(leaf = "STORED_SCORE", escape_contract = list(
+           list(leaf = "STORED_SCORE",
+             ## ast_verify.py 는 계약 필드를 **노드 레벨**(provenance/contract)에서 읽고,
+             ## schema 는 escape_contract 하위를 요구한다 — 두 계층을 동시에 만족시키기 위해 병기.
+             provenance = list(
+               store_build_hash = "alpha_scores_str1715_268m_cleanT1 / meta built_at 2026-07-14 17:57:33 / parity screen_cap_w_top25.port_t_nw_lag3 = 3.0583391232",
+               generator_code_path = "05_Production/2.Factor_Model/2-3.STR_1715_on_M4_R05_noLayer4_PG2/01_reproducible_code/_recompute_alpha_asof.R (R28 verbatim port; clean 패널은 plumbing_fq044 p1 산출)",
+               generated_at = "2026-07-14 17:57:33",
+               production_parity_verified = TRUE),
+             production_parity_verified = TRUE,
+             escape_contract = list(
              escape_type = "STORED_SCORE",
              provenance = list(
                store_build_hash = "alpha_scores_str1715_268m_cleanT1 / meta built_at 2026-07-14 17:57:33 / parity screen_cap_w_top25.port_t_nw_lag3 = 3.0583391232",
                generator_code_path = "05_Production/2.Factor_Model/2-3.STR_1715_on_M4_R05_noLayer4_PG2/01_reproducible_code/_recompute_alpha_asof.R (R28 verbatim port; clean 패널은 plumbing_fq044 p1 산출)",
                generated_at = "2026-07-14 17:57:33"),
              production_parity_verified = TRUE)),
-           list(leaf = "SPECIAL_OP", escape_contract = list(
+           list(leaf = "SPECIAL_OP",
+             op_code_path = "stage_artifacts/WT-D20260822_009/10_measure.R::mk_filter (absorb 하위 20% 배제 마스크; absorb 원천 = stage_artifacts/WT-D20260813_006/01_build_features.py)",
+             walk_forward = TRUE,
+             escape_contract = list(
              escape_type = "SPECIAL_OP",
              op_code_path = "stage_artifacts/WT-D20260822_009/10_measure.R::mk_filter (absorb 하위 20% 배제 마스크; absorb 원천 = stage_artifacts/WT-D20260813_006/01_build_features.py)",
              walk_forward = TRUE)))),
          role = "core_signal", restatement_exposure = 0L),
     list(factor_id = "F2_absorb_exclusion_gate",
          ast = list(op = "CS_RANK", args = list(
-           list(leaf = "SPECIAL_OP", escape_contract = list(
+           list(leaf = "SPECIAL_OP",
+             op_code_path = "stage_artifacts/WT-D20260813_006/01_build_features.py (absorb = -corr_win(Individual_d, Ret_d), 3개월 창, d0 당일 차감)",
+             walk_forward = TRUE,
+             escape_contract = list(
              escape_type = "SPECIAL_OP",
              op_code_path = "stage_artifacts/WT-D20260813_006/01_build_features.py (absorb = -corr_win(Individual_d, Ret_d), 3개월 창, d0 당일 차감)",
              walk_forward = TRUE)))),
