@@ -127,3 +127,21 @@
 - PIT C1(lockbox·lookahead) 위반 → **미해당** (assert 268/268 PASS + 주입 검사기 생존)
 
 ⇒ **자동 escalate 미발동.** 단 CF-01/CF-02 는 다음 라운드 설계를 구속하는 항목이므로 Q-Lead 인지 대상으로 표시한다.
+
+---
+
+## C9 [LOW] — 승계분 형식 변환 고지 (No Silent Override)
+
+`alpha_hypothesis.json` 의 `falsification` 은 `{observable, field_dictionary_refs, reject_if}` **객체 1건** 형태였다. 그러나 정본 두 계층은 **객체 배열**을 요구한다:
+- `schema.json::ast_hypothesis.falsification` = `{"type":"array","minItems":1}`, 각 원소가 `field/fields/group_id/factor` 중 하나로 필드 지목
+- `ast_spec_gate.sh` ① = 같은 형상 (미충족 시 **block**)
+
+또한 승계분의 `field_dictionary_refs` 는 `A6_investor_flow_stock_daily:Foreign` 처럼 `group_id:field` 표기였는데, 게이트의 field_dictionary 는 **group_id 단위**(`ast_field_map_v0.json` domains[].leaf_groups[].group_id 58종 ∪ factor_registry 373 팩터명)라 `:field` 접미가 붙으면 사전 밖으로 판정된다.
+
+**처리**: 관측 대상·기각 조건·문턱·부호를 **한 글자도 바꾸지 않고** 배열 2원소(F1/F2)로 재표현하고, 필드 지목을 `A6_investor_flow_stock_daily` / `A1_RAWDATA_OHLCVS_daily` 로 정규화했다. 승계 원문은 `hypothesis.falsification_source_text` 에 **그대로 보존**했다(감사 대조 가능).
+
+**게이트 결과**: `ast_spec_gate.sh` v1.1 hard lane **통과**, verdict = `WARN_RESTATEMENT` (STORED_SCORE 리프가 ast_field_map 미등재 → 보수적 restatement 표시. `factors[0].restatement_exposure = 1` 로 정직 기록하고 `vintage_available=true` 를 주장하지 않았다).
+
+**부수 관측 2건 (수리 아님, 기록)**:
+1. `alpha-hypothesis` 에이전트가 정본 배열 형식을 못 맞추는 것은 재발 가능하다 — 그 에이전트 프롬프트/스키마 예시에 배열 형상과 group_id 입도를 명시할 여지.
+2. `ast_verify.py` 는 escape 계약을 **노드 레벨**(`provenance` / `contract` / `op_code_path`)에서 읽고 `schema.json` 은 `escape_contract` **하위**를 요구한다. 두 계층을 동시에 만족시키려면 같은 값을 두 곳에 병기해야 한다(본 패키지가 그렇게 했다). ALB-001 이 provenance 위치 방언을 이중 수용한 것과 같은 계통의 잔여 분열이며, 지금은 병기로 우회 가능하나 계약 표면 정리 대상이다.
