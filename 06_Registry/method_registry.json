@@ -854,6 +854,39 @@
         "reproduction_note": "2026-08-22 Q-Lead 가 auto_regime_overlay_ab.R 을 QVEST_REGIME_AB_NORUN=1 로 재실행(8.5초, 동일 캐리어·271개월). bare/book_L5/CompLikFGnOverlay/_x_book 전 지표 차이 ±0.0000 = 완전 재현. 산출 = stage_artifacts/modeq_verify_20260822/h2_regime_overlay_ab_REMEASURE_20260822.csv"
       },
       "similar_to": []
+    },
+    {
+      "method_id": "LowerSpectrumSyncMMinus",
+      "route": "risk",
+      "adapter_kind": "blocked",
+      "paper_id": "2608.09641",
+      "paper_title": "Lower spectrum of financial correlation matrices: a new perspective on market synchronization",
+      "routed_on": "2026-08-22",
+      "mechanism": "m- = count of correlation-matrix eigenvalues below the lower Marchenko-Pastur bound lambda_min=(1-sqrt(lambda))^2, lambda=n/w, on a rolling window. Rising m- means the correlation matrix approaches lower rank (effective diversification collapse); empirically monotone with future 1-day return std and 1% VaR, so it is a market-wide turbulence / tail early-warning SCALAR, not a covariance object.",
+      "kr_mapping": "Computation is PIT-clean and feasible on RAWDATA daily returns (9,005 days >> w=1000). BUT m- is neither Sigma nor a preference vector: it collapses the full spectrum to one integer. Cannot satisfy sigma_estimate(ctx)->matrix (would degenerate to sample-cov fallback) nor method_weights(ctx)->vector. Its real payload is a systemic turbulence/regime scalar over the WHOLE cross-section. At our max-25 held universe the MP asymptotics (n,T->inf) are too weak; the paper uses n=10 clustered baskets or n=199/377, i.e. full market cross-section. method_registry Sigma-A/B dispatch has no overlay/regime adapter_kind.",
+      "entrypoint": "N/A",
+      "verdict": "blocked_by_capability",
+      "blocker": "Paper delivers a scalar market-synchronization/tail early-warning indicator, not a covariance estimator (sigma) nor a portfolio preference vector (weight). No overlay/regime adapter_kind exists in the risk method_registry dispatch (Sigma-A/B arms only). Forcing into sigma_estimate would fabricate a matrix from a scalar (contract + non-degeneracy violation).",
+      "similar_to": [],
+      "free_params": {
+        "w": "rolling window length (paper OOS best: 1000)",
+        "lambda_exog": "MP ratio override; paper OOS best uses exogenous lambda=0.01 (vs endogenous n/w)",
+        "delta": "EWMA decay for effective-window shortening (paper OOS best: 0.7, ~20-day effective)"
+      },
+      "selection_type": "chain",
+      "dsr_applicable": false,
+      "dsr_note": "단일 method, sweep 아님",
+      "added": "2026-08-22",
+      "screen_axes": {
+        "screen_priority": "2star",
+        "shrinkage_builtin": "weak",
+        "statistic_order": "<=2nd"
+      },
+      "measured": null,
+      "next_probe": [
+        "REVIVAL: if/when the risk registry adds an overlay/regime adapter_kind (emit a C5-timed systemic scalar consumed by factor-rotation regime-engine or an optimizer risk-budget/de-risk trigger), re-route m- there. Compute m- on the FULL K200+KQ150 cross-section (~350 names), NOT the 25-name held set, to keep MP asymptotics valid; use w=1000, lambda=0.01, delta=0.7 per paper OOS config, PIT via Date < first-day-of-holding-month.",
+        "SCREEN-TIER PROBE (no dispatch needed): validate KR predictive content of m- as a tail-risk early-warning — regress future 1-month KOSPI/KOSDAQ realized vol and 1% VaR on lagged m-; evaluate against std/VaR (not mean return), consistent with paper claim that m- predicts dispersion/turbulence (both tails). If it predicts KR turbulence, it becomes a candidate crowding/absorption-style risk diagnostic input."
+      ]
     }
   ],
   "cross_method_synthesis": {

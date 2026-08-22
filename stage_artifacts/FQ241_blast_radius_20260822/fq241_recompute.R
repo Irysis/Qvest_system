@@ -22,13 +22,12 @@ cat(sprintf("  행 %d · 팩터 %d · 월 %d (%s~%s) · K200 행비중 %.1f%%\n"
             nrow(base), length(facs), uniqueN(base$ym), min(base$ym), max(base$ym), 100*mean(base$inK200)))
 
 ## ── arm 정의 (행 마스크) ────────────────────────────────────────────────────
-ARMS <- list(
-  A_orig     = quote(rep(TRUE, .N_)),          # 전기간 K200∪KQ150 (원 창)
-  A_early134 = quote(ym <= "201603"),          # ★길이-정합 통제(오염창 포함, 134개월)
-  B_clean    = quote(ym >= "201507"),          # 청정창 (KQ150 실시간 산출 개시 이후)
-  C_k200     = quote(inK200)                   # K200 단독 (진단 통제 — 결론 근거로 쓰지 않음)
+mask <- list(
+  A_orig     = rep(TRUE, nrow(base)),          # 전기간 K200∪KQ150 (원 창)
+  A_early134 = base$ym <= "201603",            # ★길이-정합 통제(오염창 포함, 134개월)
+  B_clean    = base$ym >= "201507",            # 청정창 (KQ150 실시간 산출 개시 이후)
+  C_k200     = base$inK200                     # K200 단독 (진단 통제 — 결론 근거로 쓰지 않음)
 )
-mask <- lapply(ARMS, function(e) { .N_ <- nrow(base); eval(e, base, parent.frame()) })
 for (nm in names(mask)) cat(sprintf("  arm %-11s 행 %7d · 월 %3d\n", nm, sum(mask[[nm]]),
                                     uniqueN(base$ym[mask[[nm]]])))
 
@@ -49,9 +48,13 @@ for (i in seq(1, length(facs), by = CH)) {
     if (!nrow(Dl)) next
     Dl[, nq := .N, by = .(fac, ym)]; Dl <- Dl[nq >= 50]
     if (!nrow(Dl)) next
-    Dl[, q := as.integer(as.character(cut(frank(z, ties.method="average"),
-        breaks = quantile(frank(z, ties.method="average"), probs=seq(0,1,.2), na.rm=TRUE),
-        include.lowest = TRUE, labels = 1:5))), by = .(fac, ym)]
+    ## 5분위 = 순위 등분. ★r33_profile_stage2.R 은 quantile(frank(...)) 을 썼는데
+    ##   z 가 심하게 동점인 팩터-월에서 breaks 비유일로 즉사한다(본 라운드에서 실제로 밟음).
+    ##   순위축 등분(seq(0,.N,length.out=6))은 동점에 강건하고, 순위가 서로 다를 때
+    ##   quantile 경로와 배정이 동일하다(N=345 대조: 양쪽 다 1분위 69종).
+    Dl[, q := as.integer(cut(frank(z, ties.method="average"),
+        breaks = seq(0, .N, length.out = 6), labels = 1:5,
+        include.lowest = TRUE)), by = .(fac, ym)]
     pm <- Dl[, .(mean_r = mean(y), med_r = median(y), sk = skew(y)), by = .(fac, ym, q)]
     acc[[length(acc)+1L]] <- pm[, arm := nm][]
     rm(D, Dl, pm)

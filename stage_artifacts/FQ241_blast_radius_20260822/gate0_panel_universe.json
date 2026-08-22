@@ -1,0 +1,68 @@
+{
+  "schema": "fq241_gate0_v1",
+  "round_id": "FQ241_blast_radius_probe1_20260822",
+  "measured_at": "2026-08-22",
+  "metric_type": "measured_direct",
+  "question": "master_panel_FIXED.rds (Lane A / FQ-233 R31·R32 근거 패널) 의 유니버스 정의가 K200∪KQ150 멤버십을 실제로 소비하는가",
+  "verdict": "YES__UNIVERSE_IS_K200_UNION_KQ150__ENTERS_VIA_CANONICAL_FORWARD_RETURN_BUILDER",
+
+  "evidence_chain": [
+    {
+      "step": 1,
+      "finding": "master_panel_FIXED.rds 의 생성 스크립트는 저장소에 없다 (선행 세션 미보존). 두 파일이 그 사실을 명시: build_lane_a_panel.R:6 · r33_profile.R:3 (\"선행 세션이 master_panel_FIXED.rds 를 만든 스크립트를 남기지 않아 재산출 경로를 처음부터 다시 써야 했다\"). ⇒ 파일명·문서 서술로 추정 불가, 실측 필요.",
+      "how_resolved": "패널 객체 실측 + 독립 재구축 경로의 소스 판독"
+    },
+    {
+      "step": 2,
+      "finding": "패널은 종목 축이 없다 — data.table 81,963행 × 12열 = (Date, fac, m_ic, m_spread, m_top, m_mono, m_medspread, m_skewslope, m_fm, m_align, m_xsd, m_spread_vw). 320팩터 × 258개월 집계본. 유니버스를 행에서 직접 읽을 수 없다.",
+      "n_months": 258, "n_factors": 320, "date_range": "2005-02-01 ~ 2026-07-01"
+    },
+    {
+      "step": 3,
+      "finding": "R33 이 남긴 독립 재구축 경로(r33_profile.R + r33_profile_stage2.R)가 정본 대체물이다. R31(FIXED 패널 집계)과 R33(원천 재구축)이 D03_RealVol 에서 0.3%p 안쪽 일치 — 두 경로가 같은 유니버스를 본다는 뜻. 출처 = r33_profile_fixedframe_result.json::cross_check_vs_R31 (mean_spread R31 -2.71 vs R33 -2.36 · median_spread 15.60 vs 15.42 · skew_slope -0.315 vs -0.302)."
+    },
+    {
+      "step": 4,
+      "finding": "★유니버스는 명시 필터가 아니라 **정본 forward-return 빌더 안에 하드 배선**돼 있다.",
+      "file": "02_Infrastructure/ramp/factor_validation.R",
+      "lines": "220-222",
+      "code": "m <- merge(c0[, .(Ticker, Close0 = Close, K200, KQ150, Vol0 = Vol, Size0 = Size)], c1[, .(Ticker, Close1 = Close)], by = \"Ticker\")  /  m <- m[(K200 == TRUE | KQ150 == TRUE) & !is.na(Close0) & Close0 > 0 & !is.na(Close1)]",
+      "reading": "build_monthly_forward_returns() 가 rawdata(.cache/RAWDATA.parquet)의 K200 / KQ150 **플래그 컬럼**으로 횡단면을 자른다. FQ-241 이 결함을 실측한 바로 그 컬럼이다."
+    },
+    {
+      "step": 5,
+      "finding": "실측 확인 — r33_inputs.rds 의 forward-return 테이블(frd, 정본 빌더 산출)은 81,072행 / 259개월 / 월중앙 349종목이고, 그 행의 **99.6%** 가 (sig월 기준) K200∪KQ150 멤버다. 2005년 초기 월은 정확히 200종 = 그 시기 KQ150 이 데이터에 없기 때문(FQ-241 실측 ⑤와 정합).",
+      "frd_rows": 81072, "frd_months": 259, "median_names_per_month": 349,
+      "inside_union_prev_ym_pct": 99.6, "inside_union_same_ym_pct": 98.4
+    },
+    {
+      "step": 6,
+      "finding": "★따라서 r33_profile_stage2.R:31-40 의 **명시 유니버스 필터는 거의 무작동(no-op)** 이다 — 필터 전 월중앙 346종 → 필터 후 343종(약 1%만 제거). 유니버스는 이미 빌더에서 걸려 있었다. ⇒ '명시 필터가 없으면 안전' 이라는 추론은 이 저장소에서 성립하지 않는다.",
+      "median_names_before_filter": 346, "median_names_after_filter": 343
+    },
+    {
+      "step": 7,
+      "finding": "Lane A 세 arm 의 공용 피처 패널(lane_a_feature_panel.parquet, build_lane_a_panel.R 산출)도 같은 frd 를 표적으로 쓰고(build_lane_a_panel.R:70 `inp <- readRDS(r33_inputs.rds)`), 추가로 명시 유니버스 필터까지 건다. 80,293행 · 259개월 · 331팩터 · 월중앙 345종목.",
+      "panel_rows": 80293, "panel_months": 259, "panel_factors": 331
+    }
+  ],
+
+  "kq150_exposure_in_lane_a_panel": {
+    "metric_type": "measured_direct",
+    "note": "factor DB 원천 커버리지(월 1,500~2,550종) 중 유니버스 조인 후 남는 것이 월중앙 ~345종. 아래는 factor DB 커버리지 대비 KQ150-전용 비중(D03 기준 월별 census).",
+    "pre2010_2005_01_2009_12": {"months": 60, "kq150_only_median": 0, "note": "★KQ150 플래그가 데이터에 없다 — 이 60개월의 'K200∪KQ150' 은 사실상 K200 단독(FQ-241 실측 ⑤ 재현)"},
+    "backfill_2010_02_2015_06": {"months": 66, "kq150_only_median": 142, "share_of_universe_pct_approx": 41.5},
+    "clean_2015_07_plus": {"months": 134, "kq150_only_median": 150, "share_of_universe_pct_approx": 43.5}
+  },
+
+  "decision": {
+    "gate0": "PASS_TO_MAIN_MEASUREMENT",
+    "reason": "Lane A 패널은 K200∪KQ150 을 실제로 소비하며 2015-07 이전 125개월을 포함한다. 그중 66개월(2010-02~2015-06)이 KQ150 백필 구간이고 그 구간 유니버스의 약 41%가 KQ150 이다. ⇒ 파급 '없음' 으로 종결할 수 없다. 본 측정 진행."
+  },
+
+  "blast_radius_widened": {
+    "finding": "★관문 0 의 부수 산출 — 파급 표면이 FQ-241 초판 서술보다 넓다.",
+    "detail": "FQ-241 은 후보를 'universe=K200∪KQ150 를 쓴 라운드' 로 적었으나, 실측된 진입점은 **build_monthly_forward_returns() 자체**다(factor_validation.R:222). 이 함수를 쓴 모든 라운드는 유니버스를 명시 선언하지 않았더라도 K200∪KQ150 을 소비한다. canonical_screen_bt 계열도 같은 빌더를 경유하는지 별도 확인 필요(본 라운드 범위 밖 — next_probe).",
+    "labeling_gap": "2005-01~2009-12 의 'K200∪KQ150' 은 K200 단독인데 어느 산출물도 그렇게 라벨하지 않았다. 유니버스가 기간에 따라 조용히 바뀐다."
+  }
+}
