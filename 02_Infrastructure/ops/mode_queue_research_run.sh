@@ -141,7 +141,23 @@ log "디스패치 후보(큐 상위3): ${_CAND:-?} — 사후 귀속용. 에이�
 #   원장이 진실이고 자기보고는 보조다 — 런 전후 지문을 떠서 효과를 독립 판정한다.
 _EFFECT_BEFORE=$("$PYBIN" "$BASE/02_Infrastructure/ops/research_effect_signature.py" "$BASE" 2>/dev/null)
 _log_lines_before=$(wc -l < "$LOG" 2>/dev/null || echo 0)
-timeout 3000 "$CLAUDE_BIN" -p "$PROMPT_TEXT" --dangerously-skip-permissions >> "$LOG" 2>&1
+# --- 무인 런 시간제한 (도훈 지시 2026-08-22 "시간제한 없애") ---------------
+#   기본 = 제한 없음. QVEST_RUN_TIMEOUT=<초> 를 주면 그만큼 적용한다.
+#   근거: 2026-08-22 18:13 실측 — 런이 WT-005 를 ALPHA_DONE 으로 올리고 alpha_package
+#   (15KB)·certificate·validation 을 18:10 에 다 냈는데 18:13 에 상한이 죽였다.
+#   상한이 자른 것은 폭주가 아니라 **끝난 일의 뒷정리**였고, 그 결과 자기보고와
+#   원장 append 가 유실됐다(rc=124 로만 남음).
+#   ★무한 정지 방지의 실질은 timeout 이 아니라 **자기 락**이다 — 락은 PID 를 적고
+#   kill -0 로 생존을 확인하므로 죽은 런의 락은 다음 런이 회수한다.
+_run_claude(){
+  if [ -n "${QVEST_RUN_TIMEOUT:-}" ] && [ "${QVEST_RUN_TIMEOUT}" != "0" ]; then
+    timeout "${QVEST_RUN_TIMEOUT}" "$@"
+  else
+    "$@"
+  fi
+}
+
+_run_claude "$CLAUDE_BIN" -p "$PROMPT_TEXT" --dangerously-skip-permissions >> "$LOG" 2>&1
 rc=$?
 log "claude -p exit=$rc"
 
@@ -177,7 +193,7 @@ if [ "$rc" -ne 0 ]; then
   # spend_limit 폴백 (도훈 07-14 정책 / 07-24 승인 C8) — 한도는 외생변수이지 게이트가 아니다.
   if [ "$reason" = "spend_limit" ]; then
     log "spend_limit 감지 — --model opus 폴백 재시도"
-    timeout 3000 "$CLAUDE_BIN" -p "$PROMPT_TEXT" --model opus \
+    _run_claude "$CLAUDE_BIN" -p "$PROMPT_TEXT" --model opus \
       --dangerously-skip-permissions >> "$LOG" 2>&1
     rc=$?; log "fallback(opus) exit=$rc"
     [ "$rc" -ne 0 ] && reason="spend_limit_fallback_exit_${rc}"

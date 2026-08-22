@@ -147,5 +147,32 @@ if command -v Rscript >/dev/null 2>&1; then
   rm -f "$_T"
 fi
 
+echo "== 귀속 축: 런이 무엇을 겨눴는지 로그에 남는가 =="
+# ★2026-08-22 18:13 실사고: 런은 WT-D20260822_005 를 SPEC_APPROVED → ALPHA_DONE 으로
+#   올리고 alpha_package(15KB)·certificate·validation 까지 냈다(성공). 그런데 로그에
+#   WT id 가 한 줄도 없어서, 같은 시각 **병렬 세션**이 만지던 WT-007 의 산출을 이 런의
+#   것으로 오귀속했고 텔레그램으로 틀린 사실이 나갔다.
+#   ★기전: 원장 지문은 **전역**이다 — 저장소에 동시 세션이 있으면 남의 진척도 CHANGED 다.
+#   08-16 연속성 마커 사고("남의 mtime 이 내 턴의 계약을 충족")와 같은 계통.
+#   전역 지문은 "무언가 바뀌었다" 는 답해도 "내가 바꿨다" 는 답하지 못한다.
+#   ⇒ 디스패치 **전에** 대상을 남긴다. 귀속은 사후에 복원되지 않는다.
+MQ="$OPS/mode_queue_research_run.sh"
+if grep -q "_queue_top_ids.py" "$MQ" && grep -q "디스패치 후보" "$MQ"; then
+  ok "mode_queue — 디스패치 대상 기록 존재"
+else
+  ng "디스패치 기록" "런이 무엇을 겨눴는지 남지 않아 성공/실패를 남의 산출로 오귀속한다"
+fi
+HELP="$OPS/_queue_top_ids.py"
+if [ -f "$HELP" ] && command -v "${QVEST_PY:-python}" >/dev/null 2>&1; then
+  _TQ=$(mktemp)
+  printf '{"items":[{"wt_id":"WT-A"},{"wt_id":"WT-B"},{"id":"X-1"},{"wt_id":"WT-D"}]}' > "$_TQ"
+  got=$("${QVEST_PY:-python}" "$HELP" "$_TQ" 3 2>/dev/null)
+  [ "$got" = "WT-A,WT-B,X-1" ] && ok "상위 N 추출 정확 (wt_id 우선, id 폴백)" || ng "추출" "got=$got"
+  printf 'not json' > "$_TQ"
+  got=$("${QVEST_PY:-python}" "$HELP" "$_TQ" 3 2>/dev/null)
+  [ "$got" = "?" ] && ok "손상 큐 → ? (조용히 빈 문자열로 접지 않음)" || ng "손상 큐" "got=$got"
+  rm -f "$_TQ"
+fi
+
 echo "== t_summary: PASS=$PASS FAIL=$FAIL =="
 [ "$FAIL" -eq 0 ] || exit 1
