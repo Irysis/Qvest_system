@@ -223,6 +223,53 @@
       "generated_at": null,
       "source_version": null,
       "capital_state": "pending_manual"
+    },
+    "RAMP_DFA_REGIMESIGNALS_R20_20260822": {
+      "ramp_id": "RAMP_DFA_REGIMESIGNALS_R20_20260822",
+      "grade": "C",
+      "metric_type": "backtested",
+      "essence": {
+        "port_t_capwt": 2.882,
+        "oos_retention": 0.852,
+        "oos_retention_splits": "{55%:0.513(2017-10), 65%:0.852(2019-09), 75%:0.972(2021-08)} — 분할점에 단조, 통과는 짧고 최근인 OOS 창이 견인. 단 F1 이 세 분할 전부에서 F0(0.401/0.725/0.834) 상회",
+        "calmar": 0.298,
+        "mdd": 0.468,
+        "net_ir": 0.728,
+        "net_sharpe": 0.63,
+        "cagr": 0.139,
+        "dsr": 0.999,
+        "clean_ir": 0.439,
+        "clean_calmar": 0.447,
+        "clean_port_t": 1.301,
+        "book_marginal_dIR": -0.0242,
+        "placebo": {
+          "n_seeds": 30,
+          "p": 0.033,
+          "real_ir": 0.728,
+          "placebo_mean": 0.131,
+          "placebo_sd": 0.219
+        },
+        "arms": "R17 종목집중도 q67/q80/q90 = clean IR 0.379/0.326/0.168 (negative) | R19 breadth 노출스케일링 = 사전등록 3조건 전부 미달 기각(paired NW-t -3.002) | R20 팩터 top-quintile k=5 = 3조건 충족 채택(paired NW-t +2.396/+1.552)",
+        "decay_decomposition": "타이밍 초과분 평균 era-안정(+3.70 -> +3.57 %/yr) vs EW 팩터바스켓 프리미엄 부호반전(+3.11 -> -1.04 %/yr). 상관 상승 기여는 분산비 -7% 로 부차적. 신호 예측력 clean 잔존(풀링 rank-IC 0.086, IC-t +2.761)",
+        "graduation": "FAIL 3/4 — PORT_t 2.882<2.95(갭 -2.3%) · calmar 0.298<0.64(갭 -53%) · book-marginal -0.0242<0.05. oos_retention 0.852 PASS(구 v5 0.163 에서 회복). 구속 게이트가 oos -> calmar(배포 형태)로 이동. calmar 0.64 는 MDD 46.8%->21.7% 요구, PG2 정본 오버레이 최대 개선 -8.3%p 로 미도달 => 공략 계층 = sleeve-배분층 변환(P3)"
+      },
+      "ccs": null,
+      "module_pool_n": null,
+      "factor_groups": null,
+      "mcode_specs": {
+        "construction": "broad-21 KR 스타일지수(cap-w 상위 33% tilt) → 팩터별 trailing-12M active 신호 → 분기 리밸 3-코호트 중첩 앙상블 → 팩터 top-quintile(k=5) 선택 → s 비례 가중 long-only Σw=1",
+        "rebalance": "quarterly (결정 m-1 → 적용 m), 3-코호트 중첩(위상 아티팩트 제거)",
+        "cost": "15bps one-way delta (5/25bps 민감도 전수 보고)",
+        "indices_data": "outputs/ramp/dfa_index_returns_broad_202608.parquet",
+        "test_period": "2007-03 ~ 2026-07 (233mo full) / 2015-07 ~ 2026-07 (133mo clean)"
+      },
+      "allocation_policy": "long-only Σw=1, 분기 리밸, s 비례 가중, 팩터 top-k=5, 벤치=parent(K200∪KQ150 cap-w) 단일 정본 — 도훈 지시 'KOSPI200 전환 금지'",
+      "regime_engine_version": "dfa_r20: 무-국면 팩터 모멘텀(선행 라운드에서 SJM 국면층이 열위 확정) + 팩터 선택 폭 top-quintile. run_dfa_topk_r20.R",
+      "n_trials": 2,
+      "as_of_date": "2026-07-31",
+      "generated_at": null,
+      "source_version": null,
+      "capital_state": "pending_manual"
     }
   }
 }

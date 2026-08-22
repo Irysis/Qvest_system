@@ -1,0 +1,30 @@
+{
+  "prereg_id": "dfa_v18_20260822",
+  "round": "R22",
+  "strategy": "DFA_RegimeSignals",
+  "registered_at": "2026-08-22",
+  "registered_before_results": true,
+  "selection_type": "chain",
+  "chain_rationale": "R21 의 2x2 반사실이 다음 팔을 지목했다. 타이밍 초과분 vol 상승(pre 0.0426 -> clean 0.0571, x1.341 — 실현 계열로는 0.0518 -> 0.0906)의 분해: (A) 공분산 효과 단독 x1.132 · (B) 이탈벡터 효과 단독 x0.845(신호 회전만으로는 오히려 감소) · 교차 잔여 x1.401. 직접 관측도 정합 — 팩터 개별 active vol 평균 0.0930 -> 0.1188(+27.7%)로 팩터 공간 자체가 확대됐고, 이탈 노름은 0.2954 -> 0.3216(+8.9%)로 소폭. ⇒ 회전 억제(히스테리시스)는 표적이 아니다(B가 이미 음의 기여). 남는 해석은 큰 교차항 = '신호가 지금 변동성이 커진 방향으로 기운다'이며, 그에 대한 직접 대응은 이탈을 위험으로 정규화하는 것이다. R17 D3(상관 반영 가중)는 이 대응의 약한 판본이었고 방향은 양이나 유의하지 않았다(NW-t +0.997/+1.069/+0.855) — 상관만 보고 변동성 축을 안 봤기 때문.",
+  "single_degree_of_freedom": "팩터별 가중을 결정시점까지의 trailing 36M active 변동성의 역수로 스케일한다. w_j ∝ s_j / sigma_j (sigma_j = trailing 36M active sd, 인과). 선택 규칙(top-quintile k=5)·리밸 주기·코호트·비용·지연 전부 R20 채택값 고정.",
+  "arms": {
+    "G0_control": "R20 채택팔 F1 (top-quintile k=5, w ∝ s)",
+    "G1_risknorm_HEADLINE": "F1 + 역변동성 스케일 (w ∝ s/sigma, sigma = trailing 36M active sd)"
+  },
+  "diagnostic_only_cells": {
+    "G2_corr_and_risk": "D3 상관가중 + 역변동성 동시 적용",
+    "binding_constraint": "곡선/상호작용 진단 전용. 값과 무관하게 헤드라인 승격 금지 — 채택 판정은 G1 에만 건다."
+  },
+  "headline_cell_predesignated": "G1_risknorm, cost=15bps, dec_lag=1, freq=3, ncoh=3, k=5, 인덱스=broad-21 q67, 벤치=parent. 도훈 지시 'KOSPI200 전환 금지' 준수.",
+  "windows_reported": ["full(2007-03~2026-07)", "clean(2015-07~2026-07)"],
+  "all_cells_reported": true,
+  "cells": "arm{G0,G1,G2} x cost{5,15,25bps} x dec_lag{0,1,2,3} 전수 보고",
+  "decision_rule": {
+    "adopt_G1_if": "① paired NW-t(G1-G0) > 0 ∧ ② clean 창 IR(G1) > IR(G0) ∧ ③ full 창 PORT_t(G1) >= PORT_t(G0) - 0.10",
+    "reject_if": "하나라도 미충족 → G0(R20 채택팔) 유지, G1 은 config-scoped negative 기록",
+    "graduation_gates_unchanged": "PORT_t>=2.95 / oos_retention>=0.7 / calmar>=0.64 / book-marginal dIR>=0.05 — 본 라운드 불변"
+  },
+  "pit_gates_required": ["sigma 는 결정시점 d=m-1 까지의 trailing 36M 만 사용(인과)", "shift 사다리 dec_lag 0/1/2/3 단조 감쇠", "채택 시 placebo 30-seed p<0.05", "진행월 2026-08 제외"],
+  "prohibited": ["사후 셀 선택(argmax)", "진단셀 G2 의 헤드라인 승격", "lookback 36M 의 그리드 탐색(36M = 기존 상관가중 D3 와 동일 창으로 고정, 탐색 아님)", "문턱 완화", "롱숏", "벤치 교체"],
+  "expected_failure_mode": "역변동성 스케일은 노출 크기를 바꾸지 않고(합=1 정규화) 구성비만 바꾸므로 IR-불변 함정(R19)에는 걸리지 않는다. 다만 저변동 팩터로 쏠려 선택 규칙(top-quintile)의 신호 강도 정보를 희석할 수 있다 — 그 경우 clean IR 이 떨어지고 조건 ②에서 기각된다."
+}

@@ -1,0 +1,54 @@
+{
+  "schema_version": "distribution_target_queue_v1",
+  "generated_at": "2026-08-22 14:02:46",
+  "status": "OK",
+  "status_reason": null,
+  "route": "DISTRIBUTION_TARGET",
+  "producer_ref": "02_Infrastructure/hurdle_gate.R verdict$screening$screen_route (+ verdict$screening$distribution_target) — 판정 권위는 02_Infrastructure/contracts/distribution_target_screen.R::dt_route_eligible()",
+  "consumer_ref": "본 파일(02_Infrastructure/portfolio/distribution_target_queue.R). 다음 라운드 설계 입력: 요건 미충족 사유(unmet_reasons)가 곧 next_probe 다.",
+  "capital_boundary": "★이 큐의 어떤 항목도 자본 자격을 갖지 않는다 (.claude/rules/measurement-graduation.md §3). graduation HARD 3종은 forge-authoritative 포트폴리오 수치로만 판정한다. 자본 주장을 달고 들어온 항목은 quarantined 로 격리된다.",
+  "counts": {
+    "emitted": 1,
+    "labeled": 0,
+    "eligible": 1,
+    "quarantined": 0,
+    "queued": 1
+  },
+  "inputs": {
+    "stage_artifacts_dir": {
+      "path": "stage_artifacts",
+      "exists": true
+    },
+    "contract": {
+      "path": "02_Infrastructure/contracts/distribution_target_screen.R",
+      "exists": true
+    },
+    "issuer": {
+      "path": "02_Infrastructure/hurdle_gate.R",
+      "exists": true
+    }
+  },
+  "rows": [
+    {
+      "source": "contract_emit",
+      "src_path": "stage_artifacts/WT-D20260813_006/distribution_screen_fq234_disjoint.json",
+      "spec_id": "FQ234_absorb_w3_corr",
+      "run_id": "FQ234_raw",
+      "contract_version": "distribution_target_screen_v1.0",
+      "prereg_ref": "stage_artifacts/WT-D20260813_006/PREREG.json",
+      "capital_eligible_declared": false,
+      "capital_audit_clean": true,
+      "route_eligible": true,
+      "route": "DISTRIBUTION_TARGET",
+      "r1": true,
+      "r2": true,
+      "r3": true,
+      "survival_verdict": "SURVIVES",
+      "survived_axes": ["median_spread", "skew_spread", "skew_slope", "tail_dn_prob_diff", "qspread_p10"],
+      "window_independence": "DISJOINT_PAIR_PRESENT",
+      "unmet_reasons": null,
+      "emitted_at": "2026-08-22 14:02:44"
+    }
+  ],
+  "quarantined": []
+}

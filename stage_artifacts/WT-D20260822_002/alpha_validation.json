@@ -1,0 +1,153 @@
+{
+  "task_id": "WT-D20260822_002",
+  "round_id": "FQ237_RERANK_20260822",
+  "prereg": "stage_artifacts/WT-D20260822_002/PREREG.json",
+  "metric_type": "canonical_screen",
+  "metric_type_note": "canonical_screen_bt 실측(top-25 EW long-only · 15bps). forge-authoritative 아님 — graduation HARD 판정 근거로 쓸 수 없다.",
+  "n_holding_months": 221,
+  "n_factor_pool": 320,
+  "K": 5,
+  "W": 36,
+  "top_n": 25,
+  "reproduction_check": {
+    "passed": 4,
+    "total": 4,
+    "detail": {
+      "SEL_RANK_port_t": 0.94741072,
+      "SEL_RANK_prereg": 0.94741,
+      "SEL_MEANDEPTH_port_t": 1.77748315,
+      "SEL_MEANDEPTH_prereg": 1.77748,
+      "coprimary_B_t": 1.57062356,
+      "coprimary_B_prereg": 1.57062
+    }
+  },
+  "arms": {
+    "arm": ["SEL_RANK", "SEL_PEARSON", "SEL_MEANDEPTH", "NEG_MEDDEPTH", "INJ_LOOKAHEAD_PEARSON", "LAG1_PEARSON"],
+    "cagr": [0.1322, 0.1262, 0.1929, 0.0785, 0.244, 0.1412],
+    "total_sr": [0.5579, 0.5412, 0.7326, 0.3441, 1.0139, 0.6076],
+    "mdd": [0.44464349, 0.50560832, 0.56690781, 0.63686846, 0.45181642, 0.44667702],
+    "calmar": [0.29731685, 0.24960032, 0.34026697, 0.12325936, 0.54004234, 0.31611207],
+    "active_ir": [0.1433, 0.0674, 0.3972, -0.1601, 0.662, 0.1454],
+    "active_cagr": [0.0244, 0.0128, 0.0811, -0.0299, 0.1222, 0.0269],
+    "port_t_capw": [0.94741072, 0.68033605, 1.77748315, -0.23528693, 2.9028351, 0.99927098],
+    "turnover": [11.54823529, 12.12162896, 11.57864253, 11.800181, 12.24325792, 12.2041629]
+  },
+  "power_gate": {
+    "contrast": ["SEL_PEARSON - SEL_RANK", "SEL_MEANDEPTH - SEL_RANK", "NEG_MEDDEPTH - SEL_RANK", "INJ_LOOKAHEAD_PEARSON - SEL_RANK", "LAG1_PEARSON - SEL_RANK"],
+    "n": [221, 221, 221, 221, 221],
+    "sd_monthly": [0.03473205, 0.04312979, 0.03561266, 0.03599734, 0.03510381],
+    "nw_inflation": [0.84959632, 1.10217774, 1.09055295, 0.92498906, 0.87122998],
+    "nw_source": ["measured", "measured", "measured", "measured", "measured"],
+    "mde_annual_pct": [4.76385091, 7.67439423, 6.26998227, 5.37554027, 4.9374442]
+  },
+  "ci": {
+    "contrast": ["A", "B"],
+    "ann_pct": [-0.60340656, 6.02679219],
+    "se_ann_pct": [2.38192545, 3.83719712],
+    "ci95_lo": [-5.27198044, -1.49411416],
+    "ci95_hi": [4.06516733, 13.54769854],
+    "mde_ann_pct": [4.76385091, 7.67439423]
+  },
+  "coprimary": {
+    "A": {
+      "contrast": "SEL_PEARSON - SEL_RANK",
+      "n": 221,
+      "mean_monthly": -0.00050284,
+      "annual_pct": -0.60340656,
+      "t_nw3": -0.25332722,
+      "t_active_nw3": -0.25332722,
+      "label": "UNDERPOWERED_UNRESOLVED",
+      "mde_annual_pct": 4.76385091,
+      "implied_t_threshold": 2
+    },
+    "B": {
+      "contrast": "SEL_MEANDEPTH - SEL_RANK",
+      "n": 221,
+      "mean_monthly": 0.00502233,
+      "annual_pct": 6.02679219,
+      "t_nw3": 1.57062356,
+      "t_active_nw3": 1.57062356,
+      "label": "UNDERPOWERED_UNRESOLVED",
+      "mde_annual_pct": 7.67439423,
+      "implied_t_threshold": 2
+    }
+  },
+  "aux_arms": {
+    "negative_control_meddepth_t": -1.62112816,
+    "violation_injection_lookahead_t": 3.57306931,
+    "pit_stress_lag1_t": 0.27997187
+  },
+  "falsification_axis1": {
+    "rho_rank_pearson_median": 0.76749099,
+    "rho_rank_meandepth_median": 0.43717895,
+    "jaccard_rank_pearson_median": 0.25,
+    "jaccard_rank_meandepth_median": 0,
+    "reject_threshold": {
+      "rho": 0.9,
+      "jaccard": 0.8
+    },
+    "fired": false
+  },
+  "falsification_axis2": {
+    "n": 257,
+    "cor_estimators": 0.95089135,
+    "a": {
+      "b": 0.00402633,
+      "t_iid": 9.20532243,
+      "t_nw": 6.28982891,
+      "p_nw": 1.37327883e-09
+    },
+    "b": {
+      "b": 0.00389641,
+      "t_iid": 8.98032605,
+      "t_nw": 7.06979517,
+      "p_nw": 1.48474467e-11
+    },
+    "ar1": {
+      "skew_m": 0.07934115,
+      "skew_d": 0.09922308,
+      "gap": 0.07849677
+    }
+  },
+  "basis_three_way": {
+    "arm": ["SEL_RANK", "SEL_PEARSON", "SEL_MEANDEPTH"],
+    "port_t_IKS200": [0.94741072, 0.68033605, 1.77748315],
+    "port_t_parent_capw": [1.49096254, 1.10649792, 2.17598246],
+    "port_t_EW_universe": [2.0878059, 1.91545217, 2.97335491],
+    "ir_IKS200": [0.22808608, 0.17295025, 0.48594499],
+    "ir_parent": [0.36564393, 0.27207882, 0.60772149]
+  },
+  "robustness": {
+    "R1_liquidity": {
+      "arm": ["SEL_RANK", "SEL_PEARSON", "SEL_MEANDEPTH"],
+      "n": [221, 221, 221],
+      "port_t": [0.70399594, 0.55412048, 1.71365811],
+      "ir": [0.16604302, 0.13924599, 0.47204548],
+      "dropped_pct": [1.8846823, 1.89335874, 1.89926707]
+    }
+  },
+  "advisory_battery": {
+    "arm": ["SEL_RANK", "SEL_PEARSON", "SEL_MEANDEPTH"],
+    "n_months": [221, 221, 221],
+    "rank_ic": [0.0373043, 0.03148721, 0.0237631],
+    "rank_ic_sd": [0.10077533, 0.10473269, 0.12234527],
+    "icir_monthly": [0.37017291, 0.3006436, 0.19422983],
+    "icir_ann": [1.28231656, 1.04145998, 0.67283186],
+    "harvey_t_rank_ic_nw3": [5.30189415, 4.021402, 2.43654554],
+    "pearson_ic": [0.0220124, 0.02535758, 0.02881805],
+    "pearson_t_nw3": [3.18445835, 3.77303589, 3.07088048],
+    "monotonicity": [0.12727273, 0.13939394, 0.16363636],
+    "subperiod_stability": [1, 1, 1],
+    "ic_p1": [0.03860368, 0.02957003, 0.02578623],
+    "ic_p2": [0.01515984, 0.02123117, 0.02007973],
+    "ic_p3": [0.05633522, 0.04253326, 0.02532745]
+  },
+  "dsr_diagnostic": {
+    "arm": ["SEL_RANK", "SEL_PEARSON", "SEL_MEANDEPTH"],
+    "active_sr_ann": [0.1433, 0.0674, 0.3972],
+    "dsr_trials1": [0.73016484, 0.61354181, 0.95497616],
+    "dsr_trials3": [0.40550306, 0.2863221, 0.80098116]
+  },
+  "selection_type": "chain",
+  "sweep_count": 0
+}

@@ -1,0 +1,168 @@
+{
+  "wt_id": "WT-D20260822_002",
+  "fq_ref": "FQ-237",
+  "round_id": "FQ237_RERANK_20260822",
+  "registered_at": "2026-08-22T14:05:00+0900",
+  "registered_by": "alpha-research",
+  "registration_order_note": "★본 파일은 어떤 arm 수익·paired t 도 산출하기 전에 봉인한다. 등록 시점까지 실행된 것은 데이터-무결성 사전점검뿐이다(p0_probe.R 앵커 프레임 대조 · p0b_frame_verify.R 위반주입/패널충실도 · p1_pearson_stats.R 원자료+마스크 동일성). 이 셋은 전부 성과량이 아니며 arm 구성·비교쌍·문턱에 영향을 주지 않는다. P2(측정)·P3(판정)은 본 파일 이후에만 실행한다 — 타임스탬프로 순서 입증.",
+
+  "design_inherited_from": {
+    "hypothesis": "qepm/mailbox/worktask/WT-D20260822_002/alpha_hypothesis.json (alpha-hypothesis, model_tier=fable, verdict=designed). mechanism/falsification/regime_scope 는 자구 승계 — 재작성 금지(Charter 원칙 8).",
+    "localization": "qepm/mailbox/worktask/WT-D20260821_002/alpha_package.json :: transition_wall_localization (n=198, NW lag-3) — 재측정하지 않고 인용만 한다.",
+    "harness_verbatim": "stage_artifacts/WT-D20260813_005/{s1_factor_month_stats.rds, depth_aligned/d1_depth_stats.rds, depth_aligned/d2_walkforward_depth.R}. 대조군 통계량 ic(Spearman)·처치(b) 통계량 meandepth(top-25) 는 **재계산하지 않고 RDS 자구 승계** — 재현 보장.",
+    "panel": "stage_artifacts/fq233_probe0_20260813/lane_a_feature_panel.parquet (원천-충실 확인 자산). ★master_panel_FIXED.rds 사용 금지 — WT005 실측(27종 표본에서 8/27 만 cor>=0.99, 지문 팩터 M04_Mom_1 은 cor 0.3372)."
+  },
+
+  "question_fixed": "선별 목적함수를 rank-IC(Spearman)에서 평균-정합 통계량으로 바꾸면 top-N 전이(PORT_t·평균 basis)가 개선되는가.",
+
+  "arms_prefixed": [
+    {"id": "SEL_RANK", "role": "control", "statistic": "trailing NW3 t of monthly Spearman IC (S1$FS$ic)", "source": "inherited_verbatim"},
+    {"id": "SEL_PEARSON", "role": "treatment_a_novel", "statistic": "trailing NW3 t of monthly Pearson IC (p1_pearson_stats.rds$PS$ic_pe)", "source": "computed_this_round_same_mask"},
+    {"id": "SEL_MEANDEPTH", "role": "treatment_b_replication_bridge", "statistic": "trailing NW3 t of monthly (mean fwd | top-25 by z) - (mean fwd | all valid) (D1$DS$meandepth)", "source": "inherited_verbatim"},
+    {"id": "NEG_MEDDEPTH", "role": "negative_control_inherited", "statistic": "trailing NW3 t of top-25 median spread (D1$DS$meddepth)", "binding": false},
+    {"id": "INJ_LOOKAHEAD_PEARSON", "role": "violation_injection_positive_control", "statistic": "SEL_PEARSON with trailing window shifted to INCLUDE the holding month itself (1-month leak)", "binding": false},
+    {"id": "LAG1_PEARSON", "role": "pit_stress", "statistic": "SEL_PEARSON with window pushed one month further back (T-2)", "binding": false}
+  ],
+  "arms_addition_prohibited": "통계량 변형(winsorized Pearson·순위-크기 하이브리드·다른 깊이·다른 K/W) 추가 금지. 추가하는 순간 enumerate-and-pick = sweep 재분류 + DSR >= 0.5 HARD (alpha_hypothesis prereg_stance 자구). ic_pe_w1 은 이미 산출됐으나 **arm 이 아니라 진단**이며 어떤 판정에도 바인딩하지 않는다.",
+
+  "fixed_constants": {
+    "K": 5,
+    "W": 36,
+    "top_n": 25,
+    "cost_bps_oneway": 15,
+    "MIN_OBS_for_selection_t": 30,
+    "combination_rule": "z_score_aligned_equal_weight (선별 K개 Z_Score_Aligned 의 종목별 단순평균)",
+    "depth_for_meanspread": "top-25 (= top_n, 소비-정합. WT005 2차 확정값 7.27% 중앙)",
+    "last_complete_holding_month": "2026-07-01",
+    "n_factor_pool": 320,
+    "n_anchors": 257,
+    "n_holding_months_expected": 221,
+    "sweep_count": 0,
+    "note": "전부 승계 고정값. 격자 산출 즉시 INV-7 위반(WT005 revival_condition 명문)."
+  },
+
+  "coprimary": [
+    {"id": "A", "contrast": "SEL_PEARSON - SEL_RANK", "series": "월별 net active 수익 차 (d_t = ret_net_A - ret_net_C, 동월 정렬)", "test": "paired NW lag-3 t, 양측", "threshold": 2.0, "novel": true},
+    {"id": "B", "contrast": "SEL_MEANDEPTH - SEL_RANK", "series": "동일", "test": "동일", "threshold": 2.0, "novel": false, "note": "WT-D20260813_005 조건부 보류(t +1.5706)의 새-사전등록 재판정. 재현 검문 = 이 값이 소수 4자리로 복원되어야 한다."}
+  ],
+  "argmax_none": "챔피언 선발 없음 — 두 비교가 각자 독립 라벨을 받는다.",
+
+  "reproduction_checkpoints_prefixed": {
+    "SEL_RANK.canonical_port_t_nw_lag3": 0.94741,
+    "SEL_RANK.net_active_sr_ir": 0.22811,
+    "SEL_MEANDEPTH.canonical_port_t_nw_lag3": 1.77748,
+    "SEL_MEANDEPTH.net_active_sr_ir": 0.48594,
+    "coprimary_B.paired_nw3_t": 1.57062,
+    "n_holding_months": 221,
+    "tolerance": 5e-4,
+    "action_if_mismatch": "★불일치 시 즉시 중단하고 원인 규명 — 승계가 성립하지 않으면 (b) 는 재판정이 아니라 다른 실험이다. 수치를 맞추려 구성을 조정하는 것은 금지."
+  },
+
+  "entry_gate_order_enforced": {
+    "step1": "arm 별 월별 net 수익 계열 구성 → co-primary diff 계열 d 구성",
+    "step2": "sd(d) 실측 + nw_inflation_measured(d) 실측 + required_effect(n=221, t_threshold=2.0, sd_monthly=sd(d), design='full', series=d) → MDE 기록. ★series= 인자 필수 — assumed_default(1.25) 낙하 금지.",
+    "step3": "MDE > 연 3.0%p 이면 해당 비교를 UNDERPOWERED 로 사전 라벨하고 t 해석 봉인",
+    "step4": "MDE 통과 비교에서만 paired NW3 t 산출 → 라벨",
+    "violation": "paired t 를 먼저 보고 구성(깊이·K·W·통계량·비교쌍)을 바꾸는 모든 행위 = sweep 재분류"
+  },
+
+  "labels_prefixed": {
+    "SUPPORTED_SELECTION_STAT": "t >= +2.0 ∧ MDE <= 3.0%p — 선별 통계량 정합이 top-N 전이 레버. ★FQ-233 부활조건 ① 발화 기록(자본화 주장 아님 — 관문 개방 사실만).",
+    "INFERIOR_POWERED": "t <= -2.0 ∧ MDE <= 3.0%p — 해당 통계량 열등(정보성 negative). crisis 반전 기전 정합 진단 병기.",
+    "NOT_SUPPORTED_POWERED": "|t| < 2.0 ∧ MDE <= 3.0%p — 효과 없음(미결 아님). (A)에서 나오면 '정합+정밀 코너도 레버 아님' → 재료 축 라우팅 강화. (B)에서 나오면 WT005 조건부 보류 라벨 확정. 부활 조건 병기 의무(INV-7).",
+    "UNDERPOWERED_UNRESOLVED": "|t| < 2.0 ∧ MDE > 3.0%p — 미결. ★'효과 없음'과 구분해 기록.",
+    "AXIS1_NO_DIVERGENCE": "반증 축 1 발화 시 해당 비교는 판정 불능(null 아님) — 처치가 대조군과 사실상 같은 집합.",
+    "AXIS2_SIGN_CONTRARY": "반증 축 2 상호작용 부호가 설계 예측과 반대면 기전 서사 철회(판정 비바인딩)."
+  },
+
+  "falsification_axes_prefixed": {
+    "axis1_selection_divergence": {
+      "measure": "홀딩월별로 320팩터의 선별 통계량 서열 2종(rank-IC t vs Pearson-IC t)의 Spearman 순위상관 + top-K(=5) 선별집합 Jaccard",
+      "reject_if": "순위상관 중앙값 >= 0.90 OR Jaccard 중앙값 >= 0.8",
+      "independence": "성과 무관 — 집합의 항등성 관측이지 수익 관측이 아니다",
+      "also_measured_for_b": "SEL_MEANDEPTH vs SEL_RANK 도 같은 축으로 병기(WT005 Jaccard 0.111~0.25 대조)"
+    },
+    "axis2_asymmetry_attribution": {
+      "measure": "월별 gap_t = mean_f |ic_pe(f,t) - ic_sp(f,t)| 를 횡단면 비대칭에 회귀. NW lag-3 t.",
+      "estimators_split": ["2a: 월간 횡단면 왜도 (fwd_ret_1m 의 그 달 횡단면 왜도)", "2b: 일간파생 월내 횡단면 왜도 (RAWDATA 일간수익 복리합성 월수익의 횡단면 왜도)"],
+      "predicted_sign": "양(+) — 비대칭이 클수록 크기-정보와 순위-정보의 분리가 커진다",
+      "reject_if": "2a·2b 두 축 모두 |t| < 2.0 → 비대칭-기원 기각 + 재귀속 라운드 분리(판정 비바인딩)",
+      "persistence_rule": "조건변수(2a·2b)의 AR(1)을 실측한 뒤 phi > 0.9 인 축에만 블록 부트스트랩 보강. ★일괄 이식 금지 — paired diff 계열은 선행 실측 AR(1) 0.003급이라 Lane D 의 phi 0.95~0.99 caveat 해당 없음."
+    }
+  },
+
+  "power_positive_control": {
+    "arm": "INJ_LOOKAHEAD_PEARSON",
+    "basis": "★기측정 양성에서 선택(오늘 확립 규약) — WT005 가 같은 통계 계열·같은 n=221 에서 1개월 누출 주입 arm 을 t 4.16/4.03 으로 검출했다. 본 라운드는 신규 통계량(Pearson)에서 그 검출력이 유지되는지만 확인한다.",
+    "expected": "paired t(INJ - SEL_RANK) 가 문턱 2.0 을 크게 초과",
+    "action_if_fail": "검출 장치 무능 — primary null 해석 봉인하고 장치 결함으로 보고"
+  },
+
+  "basis_reporting": {
+    "primary_basis": "cap-w 벤치 = .cache/benchmark.parquet (Date, BM_Close, BM_Ret) 일별 → apply.monthly(Return.cumulative) → ym 키 조인. ★canonical_screen_bt 가 이 계열에 붙이는 라벨은 하드코딩 'KOSPI200_total_return' 이므로, 본 라운드는 그 라벨을 **호출자가 무엇을 넘겼는지로** 재확인해 기록한다.",
+    "secondary_basis": "EW-유니버스 (canonical_screen_bt diag_dual_basis=TRUE 의 diag_ew_universe)",
+    "third_basis_recorded": "build_monthly_forward_returns() 가 산출하는 bench_dt = **K200∪KQ150 유니버스 시총가중 forward return**(자체 parent). ★같은 함수의 라벨이 'KOSPI200_total_return' 으로 하드코딩되는 지점이 있으므로 혼동 금지 — 본 라운드는 이 계열을 primary 로 쓰지 않고 basis 비교 진단으로만 기록한다(FQ-241 실측: 같은 전략 IR 이 parent 대비 0.754 vs KOSPI200 대비 0.113).",
+    "paired_invariance_expected": "WT005 실측 — paired 설계는 벤치가 차분에서 상쇄돼 basis 에 거의 불변(1.5706 cap-w vs 1.5709 EW). 본 라운드도 두 basis 병기해 이 성질을 재확인한다."
+  },
+
+  "robustness_prefixed_nonbinding": [
+    {"id": "R1_liquidity", "spec": "primary 와 동일하되 canonical_screen_bt 에 liq_dt(adv20_t1) + liq_min=2e8 적용", "rationale": "승계 harness 는 유동성 필터를 적용하지 않았다(WT005 d2 실측 — liq_dt 미전달). Production Constraints 는 20일 평균 거래대금 >= 2e8 이므로 배포-정합 판을 병기한다. ★binding 아님 — 승계 재현 가능성이 primary 의 자격 요건이기 때문. 두 판의 라벨이 갈리면 그 사실을 정직 보고한다.", "binding": false},
+    {"id": "R2_subperiod", "spec": "2015-07 전/후 분해 (KQ150 소급 투영 구간 격리)", "binding": false},
+    {"id": "R3_top_month_sensitivity", "spec": "상위 5개월 제외 재산출", "binding": false}
+  ],
+
+  "selection_type": {
+    "declared": "chain",
+    "basis": "①iteration 변경사유 = WT005 2차(깊이-정합)의 다음 iteration — 이번 변경축은 '추정 정밀 정합'(Pearson: 전 단면·선형 추정 vs 스프레드-t: 양끝 분위 표본). 기전 진단 1줄 = alpha_hypothesis.mechanism.path 말미에 기록됨. ②IS-only: 처치 2종·비교쌍·문턱·K·W·깊이 전부 측정 전 고정, argmax 없음. ③holdout 미소비(선별층 실험, 자본 후보 산출 아님). HPO 구조적 부재 — 선별 통계량은 폐형식, 자유 파라미터 0, 학습 0회.",
+    "dsr_treatment": "DSR HARD 부적용. 수치는 진단 산출·기록.",
+    "sweep_reclassification_trigger": "성과를 보고 깊이·K·창·통계량 정의·비교쌍을 바꾸는 모든 행위"
+  },
+
+  "terminal_form": {
+    "declared": "alpha_vector",
+    "rationale": "재서열된 선별은 종목 점수를 낳는다 — 각 홀딩월의 선별 K=5 팩터 Z_Score_Aligned 종목별 평균이 곧 (Date, Ticker, score) 종목수준 패널이며, 실제로 canonical_screen_bt 의 입력이 그것이다. Lane D(FQ-236)가 결과량을 횡단면 집계량의 조건부성으로 잡아 alpha_vector={} 로 끝난 것과 구조가 다르다.",
+    "artifact_on_success": "stage_artifacts/WT-D20260822_002/alpha_scores.parquet (Date, Ticker, alpha_score) + qepm/mailbox/worktask/WT-D20260822_002/alpha_package.json",
+    "artifact_on_null": "같은 패널을 발행하되 alpha_package.verdict 에 null 라벨 — 다음 라운드가 같은 다리(선별 배관·PIT 창 규약·검정력 기준)를 재사용한다."
+  },
+
+  "alpha_bridge": {
+    "step1_direction": "팩터 방향은 Z_Score_Aligned 가 이미 정렬(C13). 부호 재정의·NEGATE/FLIP 금지.",
+    "step2_selection": "홀딩월 i 의 선별 = anchor < anchors[i] 인 실현 통계만 소비하는 trailing 창 rows (i-W)..(i-1) 에서 arm 통계량의 NW3 t 상위 K=5 팩터. 유효 관측 < MIN_OBS(30) 인 팩터는 후보 제외(NA — 0 대입 금지).",
+    "step3_combine": "score_it = mean_k z_aligned(i, k, t) over 선별 K개 중 **관측 가능한 것만**. ★사전고정 등가중 — ML 결합기 금지(v8.4 §6). 전 K개 결측이면 그 종목은 제외(0 대입 금지).",
+    "step4_liquidity": "primary = 승계 재현을 위해 미적용(WT005 자구). R1 에서 adv20_t1 >= 2e8 적용판 병기.",
+    "step5_missing": "score 비유한 종목 제외. 결손을 중립 점수로 내려앉히지 않는다.",
+    "step6_winsorize_z": "z_aligned 는 연결자 단계에서 이미 표준화·정렬된 값 — 추가 winsorize/재z 를 하지 않는다(승계 자구 유지). 이 선택 자체를 기록한다.",
+    "output_contract": "alpha_scores.parquet = (Date = 홀딩월 anchor, Ticker, alpha_score, arm). metric_type='canonical_screen'."
+  },
+
+  "transition_gates": {
+    "alpha_to_risk": {
+      "cond1": "alpha_discovery_count >= 1 (alpha_scores.parquet 비어있지 않고 종목수준 점수 실재)",
+      "cond2": "screening 통과 — hurdle_gate.R screen_pass = no-PIT ∧ ([net_SR>=0.7 ∧ CAGR>=12%] 또는 [score>=40 ∧ net_SR>=0.5])",
+      "cond3": "반증 축 1·2 발화 0건",
+      "cond4": "co-primary 최소 1건이 SUPPORTED_SELECTION_STAT",
+      "decision_rule": "cond1~4 전부 충족 시에만 risk-research 전이 요청. 하나라도 미충족이면 전이 요청 없이 null/negative 보고 + screen_route 라우팅 검토."
+    },
+    "capital_gate_boundary": "★screening 통과는 자본 자격이 아니다. graduation HARD 3종(PORT_t 2.95 · oos_retention 0.7 · calmar 0.64)은 forge-authoritative 값에만 적용되며 본 단계 canonical_screen 수치로 졸업을 주장하지 않는다."
+  },
+
+  "consumption_gate_precheck": {
+    "fq233_revival_condition_1": "★본 라운드는 FQ-233 Lane A 가 분포-표적 자본화에 건 부활조건 ①('평균-정합 선별 통계량 재서열에서 전이 양성 시') 그 자체다. 양성 판정 시 **관문이 열렸다는 사실만** 보고하고 자본 경로 진입은 주장하지 않는다 — 자본화 판정은 Q-Lead·도훈 소관.",
+    "v84_prohibited_4_check": "①ML 결합기 미사용(사전고정 등가중) ②ML 사이징/selection 미사용(선별은 폐형식 통계량 t-순위, 학습 0회) ③본 라운드는 표적 교체 라운드가 아니라 **선별 통계량** 라운드 — 금지 ③(표적=다음달 평균수익률인 ML 라운드)에 해당 없음(ML 자체 미사용) ④sweep 아님(chain) → DSR 회피 해당 없음.",
+    "inv7_check": "WT-D20260813_005 revival_condition = '재개는 새 재료 또는 새 사전등록으로만. 깊이·K·W 격자 스윕과 문턱 사후조정 금지' — 본 파일이 그 새-사전등록이며 격자 0, 문턱 사전고정으로 충족.",
+    "production_constraints": "종목수 top-25 · long-only · 15bps · KOSPI200∪KOSDAQ150 준수. weight/공분산/최적화 산출 0(역할 경계)."
+  },
+
+  "window_caveats_inherited": {
+    "kq150_backfill": "KQ150 멤버십이 2010-02~2015-06 소급 투영(퇴출 0 · 2011-06 멤버 138/138 이 2015-07 잔존 vs 실측 61.3%). K200 정상. 측정창 2008-03~2026-07 이 이 구간을 포함 ⇒ R2 로 2015-07 전/후 분해 의무 + 오염구간 기여가 지배적이면 UNIVERSE_CAVEAT 부기.",
+    "anchor_convention": "팩터 sig_date T = T월 말 관측 ⇒ 패널 anchor 는 T+1개월 스탬프. ★지문 재검 결과는 p0b_frame_verify 산출을 따른다(구 광고 지문 +0.0170 은 원천에서 재현되지 않음 — 본 라운드 실측 보고 대상).",
+    "placeholder_months": "anchor <= 2026-07-01 절단(2026-08 부분실현 · 2026-09 fwd 정확히 0 배제) — 승계."
+  },
+
+  "not_claimed": [
+    "자본 자격 — graduation HARD 3종 판정을 하지 않는다",
+    "forge-authoritative 수치 — 본 라운드 metric_type = canonical_screen",
+    "target_weights / 공분산 / 사전 최적화 — 산출 0",
+    "FQ-233 Lane A 판정 번복 — 본 라운드는 그 부활조건의 관문 시험이지 재판정이 아니다"
+  ]
+}

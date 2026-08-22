@@ -289,6 +289,11 @@ run_hurdle_gate <- function(sim_result,
                              ff5_result = NULL,
                              role_label = NULL,
                              hypothesis_signature = NULL,
+                             # [2026-08-22 신설] 분포-표적 라우트 증거.
+                             #   list(dist_result = canonical_distribution_screen() 반환,
+                             #        mean_space_evidence = list(label, positive_control, observed))
+                             #   NULL(기본) = 기존 동작 완전 불변 — 순수 additive.
+                             distribution_evidence = NULL,
                              strict_mode = as.logical(Sys.getenv("QVEST_STRICT_MODE", "TRUE"))) {
 
   turnover_hard_fail_pct <- 1100
@@ -1644,10 +1649,58 @@ run_hurdle_gate <- function(sim_result,
     (sharpe >= 0.7 && ann_ret >= 0.12) ||
     (total_score >= 40 && sharpe >= 0.5)
   )
+
+  # ── DISTRIBUTION_TARGET 발급 판정 (2026-08-22 신설, measurement-graduation §3) ──
+  #  ★이 라우트는 **screen_pass 와 독립**이다. 그게 설계의 핵심이다:
+  #    screen_pass 는 SR/CAGR = **평균 공간** 지표로 판정한다. 분포-표적 재료는
+  #    정의상 평균 공간에서 null 이므로(요건①) screen_pass 를 통과할 수 없다.
+  #    screen_pass 안에 종속시키면 이 라우트는 자기 동기 사례에서 **발급 0** 이 된다
+  #    (FQ-234 Lane B: own_sharpe 0.1735 → screen_pass FAIL, 그런데 직교화 후
+  #     중앙값 스프레드 NW-t 3.551). 라벨을 만들고 도달 못 하게 두는 것이
+  #    이 저장소가 반복해 온 "소비자 0" 결함이다.
+  #  단 PIT 위반은 계층 무관 절대 기각(AX-002) — 아래에서 .pit_violated 로 막는다.
+  #  발급 요건 3종의 판정 권위 = 계약 dt_route_eligible() 단일 출처(사본 금지).
+  #  계약 미로드 시 **미발급**(fail-closed) + 진단 기록 — 침묵하지 않는다.
+  .dist_gate <- NULL
+  if (!is.null(distribution_evidence)) {
+    if (.pit_violated) {
+      diagnostics <- c(diagnostics, list(list(
+        code = "D091",
+        msg = "[DISTRIBUTION_TARGET] PIT 위반 — 계층 무관 절대 기각(AX-002). 분포 증거 미평가.")))
+    } else {
+      .dist_gate <- tryCatch({
+        if (!exists("dt_route_eligible", mode = "function")) {
+          .cands <- c(Sys.getenv("CLAUDE_PROJECT_DIR", unset = ""),
+                      Sys.getenv("QM_ROOT", unset = ""), getwd())
+          for (.c0 in .cands) {
+            if (!nzchar(.c0)) next
+            .c0 <- gsub("\\\\", "/", .c0)
+            .f0 <- file.path(.c0, "02_Infrastructure", "contracts", "distribution_target_screen.R")
+            if (file.exists(.f0)) { source(.f0); break }
+          }
+        }
+        if (!exists("dt_route_eligible", mode = "function"))
+          stop("distribution_target_screen.R 미발견 — 계약 미로드")
+        dt_route_eligible(distribution_evidence$dist_result,
+                          distribution_evidence$mean_space_evidence)
+      }, error = function(e) list(eligible = FALSE, route = "NONE",
+                                  reasons = paste0("계약 평가 실패: ", conditionMessage(e))))
+      if (!isTRUE(.dist_gate$eligible)) {
+        diagnostics <- c(diagnostics, list(list(
+          code = "D091",
+          msg = sprintf("[DISTRIBUTION_TARGET] 미발급 — 요건 미충족: %s",
+                        paste(.dist_gate$reasons, collapse = " | ")))))
+      }
+    }
+  }
+  .dist_ok <- isTRUE(.dist_gate$eligible) && !.pit_violated
+
   screen_route <- if (!screen_pass) {
-    "NONE"
+    # 평균 공간 미달이어도 분포 요건 3종을 전부 통과하면 발급된다(위 주석 참조)
+    if (.dist_ok) "DISTRIBUTION_TARGET" else "NONE"
   } else if (grade %in% c("A", "A_NOVEL", "A_DEF", "B", "B_DEF")) {
-    "STANDALONE_TRACK"  # 기존 등급 경로가 이미 소화
+    # 기존 등급 경로가 이미 소화. 분포 요건까지 통과했으면 병기(둘은 배타 아님).
+    if (.dist_ok) "STANDALONE_TRACK|DISTRIBUTION_TARGET" else "STANDALONE_TRACK"
   } else {
     .routes <- character(0)
     if (mdd > 0.45 || isTRUE(dd_profile$tail_review)) .routes <- c(.routes, "OVERLAY_CANDIDATE")  # MDD가 죽인 신호 — overlay/regime 결합 후보
@@ -1664,6 +1717,7 @@ run_hurdle_gate <- function(sim_result,
       #   FR/RCMA 는 라벨을 직접 읽지 않는다 — module_catalog(fr_eligible)가 그쪽 입력.
       .routes <- c(.routes, "FR_RCMA")
     }
+    if (.dist_ok) .routes <- c(.routes, "DISTRIBUTION_TARGET")
     paste(unique(.routes), collapse = "|")
   }
   if (screen_pass && grade %in% c("C", "F")) {
@@ -1685,6 +1739,22 @@ run_hurdle_gate <- function(sim_result,
       screen_pass  = screen_pass,
       screen_route = screen_route,
       drawdown_tail_review = isTRUE(dd_profile$tail_review),
+      # [2026-08-22] 분포 라우트 판정 근거를 **산출물에 남긴다** — 미발급 사유가
+      #   보이지 않으면 소비자가 "증거를 안 냈다"와 "요건 미달"을 구분할 수 없다.
+      distribution_target = if (is.null(distribution_evidence)) {
+        list(evaluated = FALSE, route_issued = FALSE,
+             note = "distribution_evidence 미제출 — 평가 안 함(결함 아님)")
+      } else {
+        list(evaluated = TRUE,
+             route_issued = isTRUE(.dist_ok),
+             eligible = isTRUE(.dist_gate$eligible),
+             pit_blocked = isTRUE(.pit_violated),
+             gate_version = .dist_gate$gate_version,
+             requirements = .dist_gate$requirements,
+             reasons = .dist_gate$reasons,
+             capital_eligible = FALSE,
+             note = "screening tier 라벨 — 자본 자격 아님 (measurement-graduation §3).")
+      },
       note = "탐색 게이트 — 자본/졸업 게이트 아님 (graduation HARD 불변). PIT만 절대."
     ),
     # ax001 은 의도적으로 앞쪽에 둔다 — 훅의 content preview(1500자) 안에 들어와야

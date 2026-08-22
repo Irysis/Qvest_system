@@ -764,6 +764,15 @@ SUITES=(
   #   ★E1 양성 대조는 문턱을 90분위로 올린다. 1e15 로 올리면 선정이 0행이 되어 무관축(E3)이
   #     잴 대상을 잃는다 — 그건 "제약 준수"가 아니라 대상 0 이다(SKIP 이지 PASS 아님).
   "08_Tests/contracts/test_liquidity_ruler_restore.R"
+  # 2026-08-22 추가: 분포-표적 측정 계약(distribution_target_screen.R) + 라우트 발급
+  #   (hurdle_gate DISTRIBUTION_TARGET) + 소비 배관(distribution_target_queue.R) 3층.
+  #   ★이 라우트가 존재하는 이유 자체가 "신호는 분포에 있는데 소비면이 평균을 읽는다"이고,
+  #    그래서 발급 조건이 **screen_pass 와 독립**이다(H2). 평균 지표에 종속시키는 회귀가
+  #    들어오면 라우트가 자기 동기 사례에서 발급 0 이 되는데 그건 조용하다 — H2 가 그 자리.
+  #   ★E 절(자본 필드 주입 차단)은 헌법 §3 "분포 통계로 HARD 3종 대체 금지"의 기계 집행이다.
+  #   ★B4/B5 = 선형 통제의 한계: score=-log(vol) 가 **선형 통제를 통과**한다(오통과).
+  #    "vol 로 통제했다"는 진술이 강도를 보증하지 않음을 양방향으로 못박는다.
+  "08_Tests/contracts/test_distribution_target_screen.R"
 
   # (2026-08-13) ctx 특성 확장 계약 — 어댑터 ctx 에 characteristics 접근자를 붙여
   #   특성 기반 방법(CD-DFM 계열)을 열었다. ★확장은 선언만으로 살지 않는다 —

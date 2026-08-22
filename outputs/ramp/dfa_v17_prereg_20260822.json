@@ -1,0 +1,30 @@
+{
+  "prereg_id": "dfa_v17_20260822",
+  "round": "R20",
+  "strategy": "DFA_RegimeSignals",
+  "registered_at": "2026-08-22",
+  "registered_before_results": true,
+  "selection_type": "chain",
+  "chain_rationale": "R19 에서 노출-스케일링(breadth) 이 기각됐다(paired NW-t -3.002, clean IR 0.308<0.379, calmar 0.410->0.366). 기각 사유가 기전을 좁힌다: 노출 스칼라 s 를 곱하면 active 의 평균과 변동성이 같은 비율로 변해 IR 이 수학적으로 불변이므로, 배분 규칙의 '크기' 축은 원리적으로 레버가 아니다. R18 분해가 남긴 유일한 구조 축 = '수익의 구성비' — 죽은 프리미엄(EW 바스켓 clean -1.04%/yr)의 지분을 줄이고 살아있는 타이밍 성분(+3.57%/yr, placebo p=0.033)의 지분을 늘리는 것. 현행 E0 는 trailing active>0 인 팩터 전부에 s 비례 배분이라 신호가 약한 팩터까지 포함해 바스켓 평균에 수렴한다.",
+  "single_degree_of_freedom": "팩터 선택 폭(선택되는 팩터 개수)만 변경. 가중 방식(s 비례)·리밸 주기(분기)·코호트(3)·비용·지연 전부 불변.",
+  "arms": {
+    "F0_control": "현행: s>0 인 전 팩터 (평균 선택수 ~NF/2)",
+    "F1_topquintile_HEADLINE": "s 상위 5분위 = top-k, k=ceil(21/5)=5. Qvest 표준 분위 관례이며 탐색으로 고른 값이 아님."
+  },
+  "diagnostic_only_cells": {
+    "F_k3": "k=3", "F_k10": "k=10",
+    "binding_constraint": "곡선 형태 진단 전용. 값이 어떻게 나오든 헤드라인으로 승격 금지 — 채택 판정은 F1(k=5) 에만 건다. (R17 집중도 곡선과 동일 규율)"
+  },
+  "headline_cell_predesignated": "F1_topquintile(k=5), cost=15bps, dec_lag=1, freq=3, ncoh=3, 인덱스=broad-21 q67, 벤치=parent. 도훈 지시 '코스피200으로 변경 금지' 준수.",
+  "windows_reported": ["full(2007-03~2026-07)", "clean(2015-07~2026-07)"],
+  "all_cells_reported": true,
+  "cells": "arm{F0,F1,k3,k10} x cost{5,15,25bps} x dec_lag{0,1,2,3} 전수 보고",
+  "decision_rule": {
+    "adopt_F1_if": "① paired NW-t(F1-F0) > 0 ∧ ② clean 창 IR(F1) > IR(F0) ∧ ③ full 창 PORT_t(F1) >= PORT_t(F0) - 0.10",
+    "reject_if": "하나라도 미충족 → F0 유지, F1 은 config-scoped negative 기록",
+    "graduation_gates_unchanged": "PORT_t>=2.95 / oos_retention>=0.7 / calmar>=0.64 / book-marginal dIR>=0.05 — 본 라운드 불변"
+  },
+  "pit_gates_required": ["shift 사다리 dec_lag 0/1/2/3 단조 감쇠", "placebo 30-seed p<0.05 (채택 시)", "진행월 2026-08 제외"],
+  "prohibited": ["사후 셀 선택(argmax)", "진단 셀(k3/k10)의 헤드라인 승격", "문턱 완화", "롱숏", "벤치 교체"],
+  "prior": "R17 은 '종목 수준' 집중(top33/20/10%)이 레버가 아님을 실측(clean IR 0.379->0.326->0.168 단조 하락). 본 라운드는 '팩터 수준' 선택 폭으로 축이 다르며, 전자의 negative 가 후자를 예단하지 않는다."
+}

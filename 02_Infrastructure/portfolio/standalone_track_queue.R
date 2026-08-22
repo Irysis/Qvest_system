@@ -66,6 +66,11 @@ ST_ROUTE_CONSUMERS <- list(
     "FR_RCMA = 'register_module 유도 라벨'. catalog 부재 → register_module_induce /",
     "등재+fr_eligible → fr_disposition_suggest. 구 '소비자 0 — RCMA 측 판독 코드 없음'은",
     "라벨 의미 재정의로 해소 — RCMA 는 라벨이 아니라 module_catalog(fr_eligible)를 소비한다)")),
+  DISTRIBUTION_TARGET = list(consumer = TRUE, ref = paste(
+    "02_Infrastructure/portfolio/distribution_target_queue.R (2026-08-22 신설 —",
+    "계약 02_Infrastructure/contracts/distribution_target_screen.R 와 **같은 세션에** 배선.",
+    "평균 공간 powered-null + 분포 축 통제 생존 + 독립 창 2개 부호 일치 3요건 충족분만 발급;",
+    "판정 권위는 dt_route_eligible() 단일 출처)")),
   TURNOVER_REVIEW   = list(consumer = FALSE, ref = "소비자 0 — 설계상 기록 전용(hurdle_gate.R:1590 주석). 발급 실적 0건"),
   DPL_FEATURE       = list(consumer = FALSE, ref = "v8.3 발급 중단(measurement-graduation §5). 구 manifest 호환 문자열만 잔존")
 )
