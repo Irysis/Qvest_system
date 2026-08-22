@@ -79,7 +79,7 @@ cat(sprintf("  FQ-237 status=%s · next_probe %d건 · FQ-233 revival1 기록=%s
 cat("\n=== 4) L-code 적립 ===\n")
 source("02_Infrastructure/axiom/lcode_emit.R")
 res <- emit_lcode(
-  mode = "qepm", strategy_id = "FQ237_RERANK_WT-D20260822_002", grade = "C",
+  mode = "alpha_research", strategy_id = "FQ237_RERANK_WT-D20260822_002", grade = "C",
   metric_type = "canonical_screen", construction_type = "selection_objective_replacement",
   family = "measurement_form", selection_type = "chain", record_type = "paired_experiment",
   lesson_text = paste0(
