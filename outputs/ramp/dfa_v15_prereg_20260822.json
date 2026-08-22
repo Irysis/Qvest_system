@@ -1,0 +1,29 @@
+{
+  "prereg_id": "dfa_v15_prereg_20260822",
+  "created_at": "2026-08-22",
+  "created_before_any_result": true,
+  "fq_id": "FQ-239",
+  "round": "R17 — 전략 자체 강화 (도훈 2026-08-22 '전략 자체를 좀 더 강화해봐')",
+  "diagnosis_driving_design": "R13에서 신호 변형 4축(다중지평·변동성표준화·절대모멘텀·breadth), R8/R9/R13/R15에서 익스포저 4라운드, R14에서 25종목 변환이 모두 실패. 남은 미탐색은 **배분 위층이 아니라 자산 자체(팩터 지수)의 구성**이다. 실측 근거: 현 지수는 top-tercile(상위 33%) cap-w tilt인데 논문의 MSCI 지수들은 훨씬 집중돼 있다(Enhanced Value 150/601=25%, Momentum 125/601=21%, Quality 125/601=21%, Min Vol 170/601=28%). 즉 우리 팩터 노출이 논문 대비 희석돼 있고, 이는 논문 충실도 결함이자 신호 강도 손실이다.",
+  "base": "A5E(broad-21, 연속가중, 3-코호트 앙상블, 월말→익월, 15bps). parent 기준 pt 2.894/IR 0.754 · KOSPI200 기준 IR 0.113 · 안정창(2026 제외) pt 2.732/oos 0.065",
+  "arms_prespecified": [
+    {"id": "D0_base", "spec": "현행 top-tercile(0.6667) — 기준선", "dof": 0},
+    {"id": "D1_q80", "spec": "지수 집중도 상위 20%(quantile 0.80) — 논문 MSCI 수준(21~28%)에 정합. 지수 전면 재빌드 후 A5E 동일 규칙 적용", "dof": 1},
+    {"id": "D2_q90", "spec": "지수 집중도 상위 10%(quantile 0.90) — 집중도 곡선의 기울기 확인용", "dof": 1},
+    {"id": "D3_corrweight", "spec": "팩터 가중에 상관구조 반영: w_f ∝ act12_f / (1 + mean|corr(f, others)|), 상관은 결정 시점까지 trailing 36M active 상관(인과). 중복 팩터 과대대표 완화", "dof": 1}
+  ],
+  "evaluation_dual_basis": "★R16b 발견 반영 — 모든 팔을 **두 벤치로 동시 보고**: (a) 자체 parent(연구 레벨) (b) KOSPI200(자본 게이트 정본). 채택 판정은 (a) 기준으로 하되 (b)를 반드시 병기하고, (b)에서 개선이 없으면 자본 경로 함의 없음을 명시",
+  "judgment": {
+    "adoption": "parent 기준 15bps에서 {pt 개선 AND MDD 비악화} 또는 {calmar 개선 AND pt 비열등(>=-0.1)} vs D0. 전 셀 보고, argmax 금지",
+    "window": "전체창 + 안정창(2026 제외) 양쪽 필수 — §18 정정 규약",
+    "gates_if_adopted": "shift 사다리 + placebo 30-seed + 구간절단 + essence 계약 채점"
+  },
+  "known_risks": {
+    "concentration_tradeoff": "집중도↑ = 팩터 노출↑ + 특이위험↑ + 회전율↑. MDD 악화 가능 — calmar 축에서 역효과 위험",
+    "capacity": "상위 10%는 종목 수가 줄어 유동성·용량 제약 심화. 연구 레벨 측정이며 배포 함의는 별도",
+    "rebuild_cost": "지수 전면 재빌드 2회(각 ~20분). 캐시 키에 집중도 지문 포함 필요"
+  },
+  "n_trials_cumulative": 72,
+  "selection_type": "chain",
+  "pin_tag": "smv_r2_20260820 연장"
+}
