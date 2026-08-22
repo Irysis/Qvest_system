@@ -1093,6 +1093,9 @@ SUITES=(
   "08_Tests/ops/test_auto_alpha_gate_tiers.sh"
   # 무음 사망 탐지 — 정체 경보(살아 매달림)와 다른 축(죽어 증발). 실사고 18:30 검거.
   "08_Tests/ops/test_orphan_run_scan.py"
+  # 논문 id 정규화 정본 — 같은 대상 수치가 셋이던 문제(좌초 154/62/61)의 수리.
+  #   1급 축은 과잉 정규화 방지(내부 id 훼손) + 소비자 존재.
+  "08_Tests/ops/test_paper_id_norm.py"
 )
 
 # (2026-08-02) .py 분기 추가 — 종전엔 확장자 무관 `bash` 로 던져 파이썬 suite 가

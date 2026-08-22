@@ -36,6 +36,23 @@
 import os
 import re
 import sys
+# ── 논문 id 정규화 정본 (2026-08-22). 같은 대상에 수치가 셋이던 문제의 수리 —
+#   좌초 154/62/61 · 재발견 27/10 이 전부 정규화 규약 차이였다.
+#   ★폴백 유지: 정본을 못 불러와도 러너가 죽지 않는다(종전 동작).
+try:
+    from paper_id_norm import norm_id as _norm_paper_id
+except Exception:  # pragma: no cover
+    try:
+        import os as _os, sys as _sys
+        _sys.path.insert(0, _os.path.dirname(_os.path.abspath(__file__)))
+        from paper_id_norm import norm_id as _norm_paper_id
+    except Exception:
+        def _norm_paper_id(x):
+            """폴백 — 정본 부재 시 최소 정규화(접두만).""" 
+            import re as _re
+            if not x:
+                return ""
+            return _re.sub(r"^(?:arxiv\s*:)", "", str(x).strip(), flags=_re.I)
 import glob
 import json
 

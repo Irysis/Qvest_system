@@ -9,7 +9,20 @@ PC <- fromJSON(file.path(OUT, "00_precheck.json"))
 DG <- fromJSON(file.path(OUT, "11_diag.json"))
 FX <- fromJSON(file.path(OUT, "12_falsify.json"))
 GC <- fromJSON(file.path(OUT, "13_gatecheck.json"))
-HY <- fromJSON(file.path(MB, "alpha_hypothesis.json"))
+HY <- fromJSON(file.path(MB, "alpha_hypothesis.json"), simplifyVector = FALSE)
+HYP <- HY$hypothesis
+## ★field_dictionary 정합 — ast_spec_gate.sh 는 falsification fields 를 **group_id 단위**로 대조한다
+##   (사전 = factor_registry 373 + ast_field_map_v0 group_id 58). 승계 아티팩트는 group_id:field 형태를
+##   썼고(WT-009/010 관례) 그대로 두면 게이트가 block 한다. alpha_hypothesis.json 은 **수정하지 않고**,
+##   본 패키지에서만 사전 단위로 정규화하고 원문을 fields_verbatim 에 무손실 보존한다(No Silent Override).
+HYP$falsification <- lapply(HYP$falsification, function(f) {
+  raw <- as.character(unlist(f$fields))
+  f$fields_verbatim <- I(raw)
+  f$fields <- I(unique(sub(":.*$", "", raw)))
+  f$field_normalization_note <- "fields = ast_field_map_v0 group_id 단위(ast_spec_gate 사전 단위). 승계 원문(group_id:field)은 fields_verbatim 에 보존 — alpha_hypothesis.json 원본 무수정."
+  f })
+HYP$regime_scope$holds_in <- I(as.character(unlist(HYP$regime_scope$holds_in)))
+HYP$regime_scope$weakens_or_reverses_in <- I(as.character(unlist(HYP$regime_scope$weakens_or_reverses_in)))
 PG <- fromJSON(file.path(OUT, "PREREG_GATE.json"))
 
 ## ── alpha_validation.json ──────────────────────────────────────────────────
@@ -104,7 +117,7 @@ AP <- list(
   forecast_horizon = "1M",
   spec_version = "ast_v1.1",
   pit = list(sig_date = "2026-03-31", decision_ts = "2026-03-31"),
-  hypothesis = HY$hypothesis,
+  hypothesis = HYP,
   hypothesis_source = list(file = "qepm/mailbox/worktask/WT-D20260822_011/alpha_hypothesis.json",
     designed_by = "alpha-hypothesis", inherited_verbatim = TRUE,
     note = "mechanism / falsification / regime_scope 재작성 없음(Charter 원칙 8). N4 는 alpha-hypothesis 가 신설한 축이며 본 에이전트가 실측만 수행했다."),
@@ -116,7 +129,7 @@ AP <- list(
     action = "처치 백테스트 미실행 · 중단 보고 (request.json 명문 + PREREG_GATE)"),
   factors = list(list(
     factor_id = "F1_epsilon_tiebreak_on_base_score",
-    ast = list(op = "SUBTRACT", args = list(
+    ast = list(op = "SUB", args = list(
       list(leaf = "STORED_SCORE",
         provenance = list(
           store_build_hash = "alpha_scores_str1715_268m_cleanT1 / anchor screen_cap_w_top25 port_t_nw_lag3 = 3.05833912319022 (본 라운드 재현 STOP 통과)",
@@ -129,10 +142,10 @@ AP <- list(
             generator_code_path = "05_Production/2.Factor_Model/2-3.STR_1715_on_M4_R05_noLayer4_PG2/01_reproducible_code/_recompute_alpha_asof.R",
             generated_at = "2026-07-14 17:57:33", production_parity_verified = TRUE),
           production_parity_verified = TRUE)),
-      list(op = "MULTIPLY", args = list(
+      list(op = "MUL", args = list(
         PC$gate$eps,
         list(op = "WHERE", args = list(
-          list(op = "CS_RANK_PCT", args = list(list(leaf = "SPECIAL_OP",
+          list(op = "CS_RANK", args = list(list(leaf = "SPECIAL_OP",
             op_code_path = "stage_artifacts/WT-D20260822_010/00_precheck.R (score_orth = z(resid(lm(winsor(absorb_raw) ~ z(rank(win_vol)) + z(rank(log_size))))) by Date, 계약 distribution_target_screen.R::.dts_orthogonalize_by_date) — absorb_raw 원천 = stage_artifacts/WT-D20260813_006/01_build_features.py (absorb = -corr_win(Individual_d, Ret_d), 3개월 창, d0 당일 차감). 본 라운드는 해당 산출물을 verbatim 승계(md5 대조)했고 재구현하지 않았다.",
             walk_forward = TRUE,
             escape_contract = list(escape_type = "SPECIAL_OP",
@@ -171,9 +184,9 @@ AP <- list(
       "Harvey, Liu & Zhu 2016 (다중검정 hurdle — 관문 문턱의 근거)",
       "Bailey & Lopez de Prado (DSR — 관측 후 게이트 재정의 금지)"))),
   diagnostics = list(
-    canonical_port_t_nw_lag3 = NULL,
+    canonical_port_t_nw_lag3 = NA_real_,
     canonical_port_t_note = "null = **미산출**. 착수 전 관문 FAIL 로 처치 백테스트를 실행하지 않았다 — 사유는 challenge_flags 및 alpha_validation.json$gate 참조. base anchor(cap-w weighted_screen) 3.05833912319022 는 재현 검증용이며 처치 수치가 아니다.",
-    canonical_n_months = NULL,
+    canonical_n_months = NA_integer_,
     weighted_screen_port_t_base = PC$base_anchor$port_t,
     rank_ic = DG$base_advisory$rank_ic,
     rank_ic_note = "base score_eff 의 IC (처치 아님). advisory — measurement-graduation §3.",

@@ -59,3 +59,56 @@
 
 ## 결론
 성과 축은 config-scoped negative(paired t 0.828 < 2.0)로 정직하게 닫는다. 기전 축은 F1 강발화·trim5 음성대조·저변동 틸트로 지지된다 — 병목은 표적이 아니라 **소비 마디(top-N 선별→평균)**. next_probe: expectile(C2)·FQ-237 선별 통계량·소비 형태 교체. 방향(target-form family) 판결로 확대 금지(INV-7).
+
+---
+---
+
+# Self-Adversarial Challenge — Risk Research (append)
+
+**작성**: risk_research_v1.1 (session-native adversarial, v8.2 — 외부 Codex Round 대체). AX-008 3-source 중 1.
+**대상**: `risk_package.json` (Σ = LW-NLS, cond 434 · tail/stress/crowding/style 진단).
+**전제**: 상단 절은 alpha-research 의 자체 적대검증(alpha_package 대상). 본 절은 risk 산출물 대상 — 별개 검증면.
+
+측정 요약 (구조화 산출물에서만):
+- Σ: **LW-NLS** (Ledoit-Wolf 2020 analytical NLS), cond=434 (< 500 PASS), PSD min-eig +0.0015, n=25m·p=25 (p/n=1.00)
+- 포트 연변동성 **53.9%**, β_full 1.13 (recent36 1.06; alpha_pkg active-series β 0.781)
+- 공통(PC1) 분산 share = 0.304 (shrunk-Σ) / 0.351 (long-window raw) → 30~35% 범위
+- 섹터 집중 **반도체 57%** (sector_HHI 0.370, n_eff_sectors 2.7, 25종 중 14종이 반도체)
+- crowding_score 0.383 (< 0.75 alert 미만) · hhi_top 0.665 · passive_overlap 0.70
+- 스트레스 신뢰가능: **Rate-2022 −34.7%** (cov 92%), COVID-2020 +9.4% (cov 86.5%); GFC/EuDebt/China2015 = UNRELIABLE(cov <85%)
+- 스타일: Momentum_12_1 z **+2.57**(median +3.77) · Value_BM −0.86 · Value_PSR −1.05 · Defense_IdioVol **+0.06(중립)** · Quality_GPA +0.60
+
+## 자기 비평 (devil's advocate) — ≥3건
+
+### RC-1. [n=25 표본이 p=25 와 같다 — 완전계급 Σ 가 rank-deficiency 경계] 분류: PARTIAL
+- 인정: A295310(2024-07 상장)이 공통 이력을 25m 로 상한. 60/84/120/160/200m 창 전수에서 complete-case=25 실측 — 창 확장으로 해소 불가.
+- 통제: sample(cond 3.8e15 특이)·linear-LW(μI 붕괴, cond=1.0 — 코드가 경고하는 p≈n 퇴화) 둘 다 로그와 함께 기각. **LW-NLS**(p≈n 설계, full-rank PSD)만 채택. 구조 진단(TDC/regime/2차 PC1)은 **84m×22 full-history 명** 별도 창으로 회피.
+- 정직 라벨: `estimation_basis=common_history_complete_case_25m`, `n_months_used=25` 원문 보고. 이 Σ 는 진단급 — 대각/조건수/집중도엔 적합, 세밀 off-diagonal 정밀도엔 부적합(optimizer 는 off-diag 를 정규화된 값으로 소비 권고). **REBUTTAL 아님** — 25m 가 충분하다 주장 안 함.
+
+### RC-2. [LW-NLS 축소가 PC1 share 를 과소평가 — 체계위험 은폐 가능] 분류: REBUTTAL + 공개
+- 방향은 타당(축소는 고유값을 bulk 로 당김). 그러나 이미 **양 basis 병기**: shrunk 0.304 / long-window raw **0.351**. 단일 낙관치 아닌 30~35% 범위로 보고(`pc1_note` 명시). 둘 다 40% 미만 → RF-R1 헤드라인은 PC1 이 아니라 **섹터(57%)** 에서 정당하게 나옴.
+- 3축: (학술) NLS 축소는 문서화된 성질이지 버그 아님 (L-code) FQ-057 이 LW-NLS 를 p≈n 정본 등재 (정량) 0.304 vs 0.351 = 공개된 축소폭.
+
+### RC-3. [스트레스 커버리지 <85% 구간의 손실 수치가 유의한가] 분류: ACCEPT (라벨링)
+- GFC −49.6%(cov 59.7%)·EuDebt(68.8%)·China2015(74.6%) = 부분상장 아티팩트. 스타일가이드가 hard-fail 금지한 영역.
+- 처리: 세 구간 `{value,coverage,label:"UNRELIABLE_coverage<85%"}` 객체로만 emit(맨 숫자 금지). 신뢰 스칼라 = COVID·Rate-2022 뿐. UNRELIABLE 구간은 어떤 challenge flag 도 구동 안 함.
+
+### RC-4. [alpha_pkg 는 "저변동 틸트" 주장, 내 스타일 읽기는 위험축에서 반대] 분류: ACCEPT (surface, override 아님)
+- alpha 는 vol_percentile_selected=0.139("저변동"). 내 factor-DB 읽기: Defense_IdioVol z **+0.06(중립)** · Momentum_12_1 **+2.57**(극단 고모멘텀) · Value 음(비싼 성장) · 실현 연변동 **53.9%** · β 1.13. ⇒ 저변동 포트 아님.
+- No-Silent-Override 준수: alpha_vector·vol_percentile 미수정, challenge_flags 로 surface 만. 화해(둘 다 참): 0.139 는 *선택시점 후보풀 내 횡단면 순위*, 내 읽기는 *결과 25종 절대 실현위험* — 다른 양. 단 optimizer 에 중요하므로 기록.
+
+### RC-5. [β 1.13(여기) vs 0.781(alpha_pkg) — 45% 괴리 = 내 추정 오류?] 분류: REBUTTAL
+- 다른 추정량. 0.781 = 전략 198m active-series β(월 리밸·시변 보유). 내 값 = 현재 25종 **정적** 가중을 그 가용 이력에 회귀. 고정 고모멘텀 반도체 바스켓을 2019~2026 정적 보유하면 리밸 전략보다 β 높음이 기계적. `beta_note` 기록, 단일값으로 화해 안 함(다른 질문).
+
+## 자기합리화 자동탐지 (의무)
+회피표현 목록(영향미미·관행적허용·보수적판단·대략·유사 부류)을 근거로 사용했는가 → 없음. 25m 한계는 "thin, diagnostic-grade" 로 명시(연화 안 함), 스트레스 신뢰는 hard {reliable/UNRELIABLE} 라벨.
+
+## Q-Lead escalate trigger 점검
+- HIGH severity ≥ 5? → No (RF-R1 1건)
+- AX axiom hard FAIL ≥ 3? → No
+- PIT hard 위반? → No (Σ 는 sig_date 이하 월만; 스타일 Z_Score_Aligned C13/C15; 스트레스 역사구간)
+- **Σ PD violation? → NONE** (min-eig +0.0015, cond 434 < 500) → 강제 escalate 미발화
+- **escalate 불요.** RF-R1(섹터 57%) + 저변동-주장 괴리(RC-4)는 challenge_flags 로 surface(block 아님).
+
+## 결론 (Risk)
+25m 공통이력 상한 하에서 Σ 추정은 건전 — LW-NLS 는 p≈n 정답, PSD·well-conditioned, thin-sample·축소감쇠 둘 다 공개. 지배 구조위험은 **섹터 집중(반도체 57%, RF-R1 HIGH)** 이지 통계 공통인자(PC1 0.30~0.35)가 아니다. 포트 실제 위험성격(고모멘텀·비싼성장·53.9% vol·β 1.13)이 alpha 층 저변동 프레이밍과 괴리 — surface(override 아님). 상단 research_verdict=NOT_SUPPORTED 는 본 분석과 무관하며, Σ 패키지는 기록용 독립 구조정보다.

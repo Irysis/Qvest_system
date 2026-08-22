@@ -85,6 +85,9 @@ sector_hhi=0.370 name_hhi=0.0407 n_eff=24.6
 === CHALLENGE FLAGS ===
 - RF-R1 HIGH: single sector (반도체) active exposure 57% > 40% — book is a concentrated semiconductor bet, not diversified. 
 - RF-R3 MEDIUM: crowding flags present (see crowding_flags). 
+- STYLE-DIVERGENCE MEDIUM: book is NOT low-vol on the risk axis — Defense_IdioVol z=0.06 (neutral), Momentum_12_1 z=2.57 (extreme high-mom), realized annual vol=54%, beta=1.13. alpha_pkg 'low-vol tilt' (vol_pct 0.14) is a within-pool selection rank, not portfolio risk. Surfaced for optimizer. 
+- THIN-SAMPLE NOTE: Σ full-rank common-history capped at n=25m (p=25, p/n=1.0) by short-listed name A295310 (2024-07). LW-NLS chosen (cond=434, PSD); off-diagonals are regularized/diagnostic-grade — treat precision accordingly. 
+- REGIME MEDIUM: avg pairwise corr rises in down markets (0.26 down vs 0.19 up) — diversification weakens exactly in drawdowns (consistent with 57% sector concentration). 
 
 === CROWDING FLAGS ===
 - Sector concentration: 반도체=57% of book (sector_HHI=0.370, n_eff_sectors=2.7) 
@@ -93,7 +96,7 @@ sector_hhi=0.370 name_hhi=0.0407 n_eff=24.6
 === TOP COMMON ===
 - CommonFactor/Market (30% via PC1) 
 - Sector_Semiconductor (57%) 
-- Style_LowVol_tilt (vol pct 0.14 from alpha_pkg) 
+- Style_HighMomentum_ExpensiveGrowth (Mom z~2.6, Value z<0; NOT low-vol on risk axis) 
 
 === TDC top ===
          a       b   tdc

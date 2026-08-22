@@ -17,31 +17,39 @@
     "falsification": [
       {
         "id": "N1_exposure_neutrality",
-        "fields": "A1_RAWDATA_OHLCVS_daily:Size",
+        "fields": ["A1_RAWDATA_OHLCVS_daily"],
         "expectation": "직교화 표식이 '노출을 제거했다'는 전제의 검증 — 표식군과 비표식군의 월별 횡단면 size 백분위 평균 격차가 raw 축 실측 격차 0.2522 의 절반 미만. WT-010 실측 미발화 선례: size_abs 0.0815245766029775 / vol_abs 0.0597352879667346. tie-break 판에서는 동일 관측을 '실제 교체된 쌍' 집합에도 병기 산출할 것(표식 전체가 아니라 교체 실현분의 노출 이동이 실질 노출 채널이므로).",
         "reject_if": "|mean_srank(표식군) − mean_srank(비표식군)| ≥ 0.126 (전 패널 평균, 방향은 표식군이 낮은 쪽) → 식별 전제 반증, 성과 측정과 무관하게 설계 실패 보고. win_vol 백분위에도 동일 문턱 대칭 적용.",
-        "threshold_provenance": "WT-010 승계 — 0.126 = raw 격차 0.2522 의 1/2. 재량 변경 없음."
+        "threshold_provenance": "WT-010 승계 — 0.126 = raw 격차 0.2522 의 1/2. 재량 변경 없음.",
+        "fields_verbatim": ["A1_RAWDATA_OHLCVS_daily:Size"],
+        "field_normalization_note": "fields = ast_field_map_v0 group_id 단위(ast_spec_gate 사전 단위). 승계 원문(group_id:field)은 fields_verbatim 에 보존 — alpha_hypothesis.json 원본 무수정."
       },
       {
         "id": "N2_downday_individual_support_residual",
-        "fields": ["A6_investor_flow_stock_daily:Individual", "A1_RAWDATA_OHLCVS_daily:Ret", "A1_RAWDATA_OHLCVS_daily:Close", "A1_RAWDATA_OHLCVS_daily:Vol"],
+        "fields": ["A6_investor_flow_stock_daily", "A1_RAWDATA_OHLCVS_daily"],
         "expectation": "기전('지지 부재가 꼬리의 실현 경로')의 잔차 성분 실재 — 좌측 꼬리 실현월(Ret_1m ≤ −20%)의 하락일 개인 순매수/(하락일 거래대금) 스프레드(표식군 − 비표식군)가 유의 음수. WT-010 실측 = −0.0938869582061101, NW t −14.5919631319889, n=64 (지지).",
         "reject_if": "n_months ≥ 30 조건에서 NW-t ≥ 0 → 기전 기각. −2.0 < NW-t < 0 → '기각 아님·지지 유의하지 않음(미결)' 3분할 라벨 유지.",
-        "threshold_provenance": "WT-010 승계 — 부호 기준 0 은 기전 방향 예측 직접 도출, 유의 문턱 |t| 2.0 은 F1/F2 관례. 재량 변경 없음."
+        "threshold_provenance": "WT-010 승계 — 부호 기준 0 은 기전 방향 예측 직접 도출, 유의 문턱 |t| 2.0 은 F1/F2 관례. 재량 변경 없음.",
+        "fields_verbatim": ["A6_investor_flow_stock_daily:Individual", "A1_RAWDATA_OHLCVS_daily:Ret", "A1_RAWDATA_OHLCVS_daily:Close", "A1_RAWDATA_OHLCVS_daily:Vol"],
+        "field_normalization_note": "fields = ast_field_map_v0 group_id 단위(ast_spec_gate 사전 단위). 승계 원문(group_id:field)은 fields_verbatim 에 보존 — alpha_hypothesis.json 원본 무수정."
       },
       {
         "id": "N3_smart_money_followthrough",
-        "fields": ["A6_investor_flow_stock_daily:Foreign", "A6_investor_flow_stock_daily:Institutional", "A1_RAWDATA_OHLCVS_daily:Size"],
+        "fields": ["A6_investor_flow_stock_daily", "A1_RAWDATA_OHLCVS_daily"],
         "expectation": "'스마트머니가 개인 수요 반대편에서 이탈' 기전이면 표식군의 후속 3M 외국인+기관 순매수/Size 는 동월 유니버스 중앙값 대비 낮거나 음수. WT-010 실측 = +0.000508934503155471, NW t 1.45540342215816, n=268 — 미발화(미결) 상태로 승계.",
         "reject_if": "NW-t ≥ +2.0 (스마트머니가 유의하게 매집) → '지지 철수' 기전 기각 — 국면 경계 예측력이 근거를 잃는다.",
-        "threshold_provenance": "WT-010/WT-009 F1 reject_threshold=2 그대로 승계. 재량 변경 없음."
+        "threshold_provenance": "WT-010/WT-009 F1 reject_threshold=2 그대로 승계. 재량 변경 없음.",
+        "fields_verbatim": ["A6_investor_flow_stock_daily:Foreign", "A6_investor_flow_stock_daily:Institutional", "A1_RAWDATA_OHLCVS_daily:Size"],
+        "field_normalization_note": "fields = ast_field_map_v0 group_id 단위(ast_spec_gate 사전 단위). 승계 원문(group_id:field)은 fields_verbatim 에 보존 — alpha_hypothesis.json 원본 무수정."
       },
       {
         "id": "N4_near_tie_tail_discrimination (신설 — 본 라운드 특유)",
-        "fields": ["A6_investor_flow_stock_daily:Individual", "A1_RAWDATA_OHLCVS_daily:Ret", "A1_RAWDATA_OHLCVS_daily:Vol", "A1_RAWDATA_OHLCVS_daily:Size"],
+        "fields": ["A6_investor_flow_stock_daily", "A1_RAWDATA_OHLCVS_daily"],
         "expectation": "tie-break 이 작동하는 바로 그 자리에서 기전 격차가 실재해야 한다: 사전 고정된 ε 에 대해, top-25 경계 근방의 ε-근접쌍(표식 재직자 vs score_eff 차 ε 이내 비표식 도전자)에서 표식 측의 다음 달 좌측 꼬리 실현빈도(Ret_1m ≤ −20%, WT-010 꼬리 정의 동일)가 비표식 측보다 높아야 한다. 사전 크기 참조 = WT-010 top-25 조건부 무조건(비근접 한정 없는) 격차 +0.805%p (3.486% vs 2.681%). ★근접쌍 조건화는 score 를 사실상 통제한 대조이므로, 격차가 소멸하면 '꼬리 판별력은 score 여백의 재포장이었다'는 뜻 — 교체의 기대 편익이 없다. ★역할 구분 명문: '실현 여백 손실이 ε 상한 안에 들어왔는가'는 설계 작동 진단(diagnostic)이지 반증이 아니다 — 그것은 선정 규칙의 산술적 성질 확인이고, N4 는 그 규칙이 소비하는 기전 격차의 실재 여부라는 부수 관측이다.",
         "reject_if": "n_months ≥ 30 조건에서 근접쌍 월별 꼬리빈도 스프레드(표식 − 비표식)의 NW-t ≤ 0 (부호 소멸/역전) → 기전의 tie-break 소비 가능성 기각 — ε 을 어떻게 잡아도 교체의 기대 편익이 없으므로 성과 측정과 무관하게 보고 후 중단. 0 < NW-t < +2.0 → '미결(검출 부족)' 라벨 — 기각과 미결 구분 유지, 근접쌍 표본이 작아 미결 개연성 높음을 사전 인지.",
-        "threshold_provenance": "부호 기준(0)은 기전 방향 예측 직접 도출(신설 축이라 선행 실측 문턱 부재 — 상대 문턱 아닌 부호 기준으로 사전 고정). 유의 문턱 |t| 2.0 은 N2/N3 관례 승계. n≥30 최소 표본은 N2 관례 승계."
+        "threshold_provenance": "부호 기준(0)은 기전 방향 예측 직접 도출(신설 축이라 선행 실측 문턱 부재 — 상대 문턱 아닌 부호 기준으로 사전 고정). 유의 문턱 |t| 2.0 은 N2/N3 관례 승계. n≥30 최소 표본은 N2 관례 승계.",
+        "fields_verbatim": ["A6_investor_flow_stock_daily:Individual", "A1_RAWDATA_OHLCVS_daily:Ret", "A1_RAWDATA_OHLCVS_daily:Vol", "A1_RAWDATA_OHLCVS_daily:Size"],
+        "field_normalization_note": "fields = ast_field_map_v0 group_id 단위(ast_spec_gate 사전 단위). 승계 원문(group_id:field)은 fields_verbatim 에 보존 — alpha_hypothesis.json 원본 무수정."
       }
     ],
     "regime_scope": {
@@ -70,7 +78,7 @@
     {
       "factor_id": "F1_epsilon_tiebreak_on_base_score",
       "ast": {
-        "op": "SUBTRACT",
+        "op": "SUB",
         "args": [
           {
             "leaf": "STORED_SCORE",
@@ -93,14 +101,14 @@
             }
           },
           {
-            "op": "MULTIPLY",
+            "op": "MUL",
             "args": [
               0.23052149958407,
               {
                 "op": "WHERE",
                 "args": [
                   {
-                    "op": "CS_RANK_PCT",
+                    "op": "CS_RANK",
                     "args": [
                       {
                         "leaf": "SPECIAL_OP",
@@ -168,9 +176,9 @@
     }
   ],
   "diagnostics": {
-    "canonical_port_t_nw_lag3": {},
+    "canonical_port_t_nw_lag3": null,
     "canonical_port_t_note": "null = **미산출**. 착수 전 관문 FAIL 로 처치 백테스트를 실행하지 않았다 — 사유는 challenge_flags 및 alpha_validation.json$gate 참조. base anchor(cap-w weighted_screen) 3.05833912319022 는 재현 검증용이며 처치 수치가 아니다.",
-    "canonical_n_months": {},
+    "canonical_n_months": null,
     "weighted_screen_port_t_base": 3.05833912319022,
     "rank_ic": 0.0484140059968223,
     "rank_ic_note": "base score_eff 의 IC (처치 아님). advisory — measurement-graduation §3.",
@@ -210,5 +218,5 @@
     "[LOW] basis 3종 병기 / lag1 / strict-PIT A/B 는 처치 측정이 있어야 산출된다 — 관문 중단으로 미산출(부재 사유 명시). PIT 정적 검사는 수행: assert 268/268 PASS · 위반 주입 0/268.",
     "[전도성 상한] 이 창·이 소비 형태에서 양성 대조조차 paired NW t 1.566 — 유의성 수준 판정은 원리적으로 불가하며 ΔIR 점추정 게이트만 유효(모든 판정 서술에 병기)."
   ],
-  "generated_at": "2026-08-22T20:53:47+0900"
+  "generated_at": "2026-08-22T20:56:50+0900"
 }

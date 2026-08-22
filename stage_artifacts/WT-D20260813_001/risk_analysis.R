@@ -353,7 +353,8 @@ write_parquet(cov_out, file.path(STAGE, "covariance.parquet"))
 top_common <- list()
 top_common[[1]] <- sprintf("CommonFactor/Market (%.0f%% via PC1)", pc1_share*100)
 top_common[[2]] <- sprintf("Sector_Semiconductor (%.0f%%)", sec_agg[Sector=="반도체", wsum]*100)
-top_common[[3]] <- sprintf("Style_LowVol_tilt (vol pct %.2f from alpha_pkg)", apkg$diagnostics$vol_percentile_selected)
+top_common[[3]] <- sprintf("Style_HighMomentum_ExpensiveGrowth (Mom z~%.1f, Value z<0; NOT low-vol on risk axis)",
+                           tryCatch(style_summary$Momentum_12_1$mean_z, error=function(e) NA))
 
 crowding_flags <- c()
 if (sector_hhi > 0.3) crowding_flags <- c(crowding_flags,
@@ -381,6 +382,19 @@ if (!is.na(market_down_5) && market_down_5 < -0.08) challenge_flags <- c(challen
 hi_corr_pairs <- sum(Corr[upper.tri(Corr)] > 0.8)
 if (hi_corr_pairs >= 2) challenge_flags <- c(challenge_flags,
   sprintf("RF-R5 MEDIUM: %d security pairs with corr > 0.8.", hi_corr_pairs))
+# Risk-agent surfaced concerns (No-Silent-Override; not alpha modification)
+mom_z <- tryCatch(style_summary$Momentum_12_1$mean_z, error=function(e) NA)
+idv_z <- tryCatch(style_summary$Defense_IdioVol$mean_z, error=function(e) NA)
+if (isTRUE(style_ok)) challenge_flags <- c(challenge_flags,
+  sprintf("STYLE-DIVERGENCE MEDIUM: book is NOT low-vol on the risk axis — Defense_IdioVol z=%.2f (neutral), Momentum_12_1 z=%.2f (extreme high-mom), realized annual vol=%.0f%%, beta=%.2f. alpha_pkg 'low-vol tilt' (vol_pct 0.14) is a within-pool selection rank, not portfolio risk. Surfaced for optimizer.",
+          idv_z, mom_z, port_vol_a*100, beta_full))
+challenge_flags <- c(challenge_flags,
+  sprintf("THIN-SAMPLE NOTE: Σ full-rank common-history capped at n=%dm (p=%d, p/n=1.0) by short-listed name A295310 (2024-07). LW-NLS chosen (cond=%.0f, PSD); off-diagonals are regularized/diagnostic-grade — treat precision accordingly.",
+          n_used, N, cond_after))
+if (as.numeric(regime_cor[regime=="bm_down", avg_pairwise_corr]) > as.numeric(regime_cor[regime=="bm_up", avg_pairwise_corr]))
+  challenge_flags <- c(challenge_flags,
+    sprintf("REGIME MEDIUM: avg pairwise corr rises in down markets (%.2f down vs %.2f up) — diversification weakens exactly in drawdowns (consistent with 57%% sector concentration).",
+            as.numeric(regime_cor[regime=="bm_down", avg_pairwise_corr]), as.numeric(regime_cor[regime=="bm_up", avg_pairwise_corr])))
 
 liquidity_flags <- if (length(liq_flags)>0) as.character(liq_flags) else character(0)
 
