@@ -857,7 +857,22 @@
     "transport_gate_mde_pct_of_headroom": {
       "axis1": 28.4,
       "axis2": 29.5
-    }
+    },
+    "net_sr_after_cost": 0.2322256772955,
+    "net_sr_control_C0": 0.228086080526059,
+    "net_sr_note": "net-of-cost 활성 SR (delta-based 15bps 차감 후, cost_model_version v2.4_kr_retail_15bps). gross 단독 보고 없음 — 본 라운드 전 수치가 net 이다.",
+    "alpha_annualized_net": 0.0741673446825939,
+    "ax001_v2_ratio": {
+      "bad_over_normal": -2.4083,
+      "crisis_alpha_annual_pct": -1.991,
+      "normal_alpha_annual_pct": 0.8267,
+      "crisis_t_nw3": -0.9711,
+      "bad_months": 44,
+      "normal_months": 177,
+      "note": "방어형 팩터 라운드가 아니므로 AX-001 v2 는 판정 축이 아니라 조건부 기록 의무 이행용. 실측은 승계 regime_scope 의 holds_in('위기-회복')과 반대 방향이나 |t| < 2 라 국면 주장으로 승격하지 않는다(CF-06)."
+    },
+    "cor_vs_admitted_incumbent": null,
+    "cor_vs_admitted_note": "★미산출 — style 계약의 'cor vs 기존 admitted < 0.95' 는 book incumbent alpha 계열과의 상관을 뜻하는데, 그 비교의 base 권위는 05_Production 현행 코드 실산출(measurement-graduation §7b)이고 본 라운드는 round_verdict = CONFIG_SCOPED_NEGATIVE 로 admission 을 주장하지 않아 incumbent 소집 사유가 없다. 대신 본 마디의 직접 부모(FQ-244 C0)와의 상관을 alpha_inheritance_cor 0.9282 로 실측·신고했다. 자본 경로 진입 시에는 이 필드를 production 실산출로 채워야 하며, 지금 비운 것은 누락이 아니라 미소집이다."
   },
   "alpha_discovery_count": 1,
   "selection_objective": "canonical_port_t",
@@ -877,7 +892,8 @@
     "CF-13 [MEDIUM] 순열 40 draws 는 해상도가 거칠다(1/40 = 0.025 단위). 축2 one-sided p 0.100 은 4/40 이며 0.05 를 확정 배제하지 못한다.",
     "CF-14 [MEDIUM] g_k 계열 방향 매핑은 재량 선언이다 — 기전 자구에서 도출하고 봉인 전 고정했으나 다른 매핑도 방어 가능하며 매핑 민감도는 스윕하지 않았다(스윕 시 sweep 재분류 + DSR HARD 발동).",
     "CF-15 [MEDIUM] arm 규칙 형태(중심성 틸트 · 계열 방향)는 FQ-244 결과를 본 뒤 내가 고른 것이다. 봉인 전 고정이라 사후 선택은 아니나 형태 공간을 열거하지 않았다 — 전도성 실측이 그 형태의 상한을 재준 것이 완화이지 해소는 아니다.",
-    "CF-16 [LOW] F3 집중도 정의(월별 |Individual| 순매수의 HHI)는 사전등록이 'HHI 또는 상위 십분위 몫' 으로 열어둔 둘 중 하나다. t +1.776 은 문턱 1.5 를 근소 초과하며 정의 다중성 보정은 하지 않았다(상위 십분위 몫은 cor +0.191 로 동방향·약함)."
+    "CF-16 [LOW] F3 집중도 정의(월별 |Individual| 순매수의 HHI)는 사전등록이 'HHI 또는 상위 십분위 몫' 으로 열어둔 둘 중 하나다. t +1.776 은 문턱 1.5 를 근소 초과하며 정의 다중성 보정은 하지 않았다(상위 십분위 몫은 cor +0.191 로 동방향·약함).",
+    "CF-17 [LOW] style 계약의 'cor vs 기존 admitted(<0.95)' 는 미산출 — incumbent base 권위가 05_Production 실산출이고 본 라운드는 admission 미주장이라 소집 사유 부재. 부모 마디(FQ-244 C0) 대비 상관 0.9282 로 대체 신고. 자본 경로 진입 시 필수 산출 항목."
   ],
   "round_verdict": "CONFIG_SCOPED_NEGATIVE__SOFT_TILT_STATE_SELECTION_NO_MATERIAL_RECOVERY",
   "validation_ref": "stage_artifacts/WT-D20260822_006/alpha_validation.json",

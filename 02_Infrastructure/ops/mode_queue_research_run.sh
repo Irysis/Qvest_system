@@ -162,13 +162,6 @@ if [ "$rc" -eq 0 ]; then
     [ -n "${_mv:-}" ] && log "해소: 미해소 마커 ${_mv}건 아카이브"
   fi
 fi
-  # ── (2026-08-22 도훈 지시 "완주할 때마다") 완주 알림 — tg_agent_brief() 단일 진입점 경유.
-  #   지금까지 텔레그램은 실패에만 나갔다. 무인이 무엇을 해냈는지는 도달하지 않았다.
-  _RS="$BASE/02_Infrastructure/ops/research_run_notify.R"
-  if [ -f "$_RS" ]; then
-    QM_ROOT="$BASE" Rscript --no-save "$_RS" "${QVEST_MODE_QUEUE_LANE:-all}" "$N" "${_n_done:-0}" "${_EFFECT_CMP:-}" "$rc" >> "$LOG" 2>&1 || log "완주 알림 실패(비치명)"
-  fi
-
 if [ "$rc" -ne 0 ]; then
   if command -v sched_classify_failure >/dev/null 2>&1; then
     reason=$(sched_classify_failure "$rc" "$LOG")
@@ -190,5 +183,12 @@ if [ "$rc" -ne 0 ]; then
     scheduler_alert "mode_queue" "$reason" \
       "claude -p exit=$rc (pending=$N MAX_ITEMS=$MAXI) | ${_ann:-로그 확인 필요}"
   fi
+fi
+# --- (2026-08-22 도훈 지시 "완주할 때마다") 완주 알림 — tg_agent_brief() 단일 진입점 경유.
+#   ★위치가 계약이다: 모든 rc 갱신(폴백 포함)이 끝난 뒤에 한 번만. 앞에 두면 폴백이
+#   성공해도 "멈췄습니다" 가 먼저 나간 채로 남는다.
+_RS="$BASE/02_Infrastructure/ops/research_run_notify.R"
+if [ -f "$_RS" ] && [ "${QVEST_RUN_NOTIFY:-1}" = "1" ]; then
+  QM_ROOT="$BASE" Rscript --no-save "$_RS" "${QVEST_MODE_QUEUE_LANE:-all}" "$N" "${_n_done:-0}" "${_EFFECT_CMP:-}" "$rc" >> "$LOG" 2>&1 || log "완주 알림 실패(비치명)"
 fi
 exit 0

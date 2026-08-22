@@ -96,8 +96,10 @@ secs[[length(secs) + 1]] <- list(
     "판정·수치는 원장에서 확인합니다 (method_registry · module_catalog · WT status)",
     "자본 편입(governor)은 이 경로가 건드리지 않습니다 — 수동 승인 유지"))
 
+dry <- identical(Sys.getenv("QVEST_RUN_NOTIFY_DRYRUN"), "1")
 res <- tryCatch(
   tg_agent_brief(
+    dry_run = dry,
     agent = "Q-Lead",
     title = sprintf("무인 리서치 완주 — %s", lane_ko),
     lock_scope = sprintf("research_run_%s_%s", lane, format(Sys.time(), "%Y%m%d_%H%M")),
