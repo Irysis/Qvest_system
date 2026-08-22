@@ -1,0 +1,50 @@
+{
+  "prereg_id": "dfa_v23_20260822",
+  "round": "R37",
+  "strategy": "DFA_RegimeSignals",
+  "registered_at": "2026-08-22",
+  "registered_before_results": true,
+  "selection_type": "chain",
+  "base": "R29/R35 의 T3 (게이트 0 을 100% 준수하는 유일한 안정 팔). 응답 규칙·종목 선택·비중·리밸·비용 전부 고정.",
+
+  "chain_rationale": "R36 이 노출축의 구조를 확정했다 — calmar 는 오르나 PORT_t 를 그 이상 깎고, 이득이 적시성에 전량 의존한다(+1M 에서 H0 이하로 붕괴). 같은 붕괴가 R32(지수팔)에서도 재현됐으므로 이는 base 가 아니라 **신호의 성질**이다. 3M 시장 모멘텀은 초단기 신호라 한 달이면 정보가 소멸한다. 따라서 남은 질문은 '노출축이 쓸모없나' 가 아니라 **'+1M 에서 살아남는 노출 신호가 존재하나'** 다. R24 가 IS-only 로 13종 신호를 랭킹했으나 그때 기준은 **성과(calmar 개선)** 였고 **지속성은 재지 않았다**.",
+
+  "single_degree_of_freedom": "노출 트리거 신호원 1종. 응답 규칙(발화 시 전액 현금, rf=0%)·발화 문턱(인과 확장분위 80th, burn-in 252일 등가)·base(T3)·비용(15bps, |Δe| 포함) 전부 고정.",
+
+  "selection_protocol_IS_only": {
+    "window": "IS = 2007-03 ~ 2015-06 (T3 월 그리드 기준). OOS(2015-07~)는 선정 단계에서 조회하지 않는다.",
+    "criterion": "★성과 수준이 아니라 **적시성 지속률** = calmar(lag+1M) / calmar(lag+0M), IS 창에서 산출.",
+    "eligibility_floor": "지속률만으로 고르면 '양 lag 에서 똑같이 아무것도 안 하는' 신호가 1위가 된다. 따라서 자격 요건을 먼저 건다: IS lag0 calmar 가 IS base(T3 무오버레이) 대비 개선일 것. 이 요건을 통과한 신호들 중에서만 지속률 최대를 고른다.",
+    "tie_break": "지속률 동률 시 IS lag0 calmar 가 높은 쪽.",
+    "why_this_criterion": "R36/R32 가 기각된 이유가 지속성이었으므로 그것을 직접 선정 기준으로 삼는다. 성과로 고르면 R24 와 같은 답(가장 공격적인 신호)이 나오고 같은 이유로 다시 기각된다."
+  },
+
+  "arms": {
+    "S0_control": "T3 무오버레이",
+    "S_selected_HEADLINE": "IS-only 프로토콜이 선정한 신호 1종 + 고정 응답 규칙"
+  },
+  "all_cells_reported": true,
+  "cells": "후보 신호 전수(13종 + 3M 시장 모멘텀)의 IS 지속률·IS lag0 calmar 를 전수 보고. 선정 후 그 1종만 full·clean 창에서 측정.",
+
+  "decision_rule": {
+    "adopt_if": "① full·clean 양 창 calmar > S0 ∧ ② oos_retention >= 0.70 ∧ ③ PORT_t >= PORT_t(S0) - 0.30 ∧ ④ 게이트 0 준수 100% 유지 ∧ ⑤ **lag +1M 에서 calmar 가 S0 를 상회**(R36 이 실패한 바로 그 조건)",
+    "reject_if": "하나라도 미충족 → S0 유지, config-scoped negative 기록",
+    "no_selection_case": "자격 요건(IS lag0 개선)을 통과하는 신호가 0개면 '이 응답 규칙에서 노출축을 살릴 신호가 후보군에 없다' 로 종결하고, 응답 깊이 축(다음 라운드)으로 넘어간다. 이 경우도 정보다.",
+    "graduation_gates_unchanged": "PORT_t>=2.95 / oos>=0.7 / calmar>=0.64 / book-marginal>=0.05 — 불변. 본 라운드가 전부 통과할 것으로 기대하지 않는다."
+  },
+
+  "expected_failure_mode": "위기 신호는 본질적으로 급성이라 지속성과 유효성이 상충할 가능성이 크다 — 빨리 반응하는 신호일수록 빨리 낡는다. 그 경우 자격 요건을 통과하는 신호는 전부 낮은 지속률을 갖고, 지속률이 높은 신호는 애초에 발화가 둔해 IS lag0 개선이 없다. 그러면 no_selection_case 로 종결되며, 그것이 '노출축은 적시성 없이는 작동하지 않는다' 는 구조 판정을 완성한다.",
+
+  "pit_gates_required": [
+    "모든 신호를 결정시점 이전 정보로만 사용(전일 lag + 인과 확장분위)",
+    "IS 선정 단계에서 OOS 미조회 — 선정 후 1회만 조회",
+    "lag 사다리 0/1/2/3 전수 보고",
+    "진행월 제외 · S0 를 동일 창에서 재측정"
+  ],
+  "prohibited": [
+    "성과 수준으로 신호 선정(그것이 R24 이고 R36 에서 기각됐다)",
+    "선정 후 응답 규칙·문턱 조정",
+    "OOS 를 보고 신호 재선정",
+    "문턱 완화", "롱숏", "벤치 교체"
+  ]
+}

@@ -10,9 +10,33 @@
   "wt_type": "discovery",
   "prereg": "stage_artifacts/WT-D20260822_004/PREREG.json (측정 전 봉인 · entry_gate_order_enforced)",
   "pit": {
+    "sig_date": "2026-06-30",
+    "decision_ts": "2026-07-01",
+    "note": "팩터 sig_date T = T월 말 관측 -> 패널 anchor 는 T+1개월 스탬프. 발행 alpha_vector 의 홀딩월 anchor = 2026-07-01 이므로 그 결정에 쓰인 최종 관측은 2026-06-30. 선별 통계량은 anchor < 홀딩 anchor 인 실현 통계만 소비(rows (i-36)..(i-1)); 결합은 홀딩월 당월 z.",
     "rules": "C1~C15 적용. 결합은 홀딩월 당월 z, 선별은 anchor < 홀딩 anchor 실현 통계만.",
     "C13": "부호반전 없음 — 전 arm 이 Z_Score_Aligned 입력을 단조·대칭 변환만 한다(rank/clip/max).",
-    "C15": "factor DB 직접 load 아님 — 승계 패널 lane_a_feature_panel.parquet(load_month_factors 산출물)."
+    "C15": "factor DB 직접 load 아님 — 승계 패널 lane_a_feature_panel.parquet(load_month_factors 산출물).",
+    "anchor_frame_verification_inherited": {
+      "source": "WT-D20260822_002 (FQ-237) alpha_package.pit.anchor_frame_verification",
+      "transport_basis": "★동일 패널 파일을 소비한다 — stage_artifacts/fq233_probe0_20260813/lane_a_feature_panel.parquet. 프레임 검증은 패널의 성질이므로 파일 동일성으로 승계된다(재측정 불요, 사본 아님).",
+      "documented_defect_signature": -0.9423,
+      "broken_frame_ic": -0.94230033,
+      "fixed_frame_ic": 0.0053261,
+      "n_factors_over_abs_0_10_fixed": 0,
+      "verdict": "위반 주입이 문서화된 지문을 재현했고 정상 프레임은 0/13 — 앵커 검사에 검출력이 있고 본 프레임은 정상."
+    },
+    "panel_fidelity_inherited": {
+      "source": "WT-D20260822_002 alpha_package.pit.panel_fidelity",
+      "n_ge_0_99": 13,
+      "n_total": 13,
+      "median_cor": 0.99637849,
+      "min_cor": 0.9933122
+    },
+    "this_round_pit_stress": {
+      "LAG1": "결합 입력 z 를 t-1 월 z 로 교체: PORT_t 0.9474 -> 0.3501 (부호·구조 유지, 붕괴 없음) = 동월 누출 징후 부재",
+      "LEAK1": "결합 입력 z 를 t+1 월 z 로 교체(위반 주입): PORT_t 0.9474 -> 1.1825, paired +1.00%p/yr (t +0.667)",
+      "vintage_monotonicity": "LAG1 -2.44 / C0 0 / LEAK1 +1.00 %p/yr — 정보 신선도 축이 예측 방향으로 단조. 단 |t| 둘 다 2 미만이라 이 스트레스의 판별력은 제한적임을 명시(FQ-237 과 같은 한계)."
+    }
   },
   "hypothesis": {
     "inherited_from": "qepm/mailbox/worktask/WT-D20260822_004/alpha_hypothesis.json (alpha-hypothesis, model_tier=fable, verdict=designed)",
@@ -23,7 +47,95 @@
       "friction": "3중. ① top-25 이산 절단 + long-only + Σw=1 이 slot 을 희소 자원으로 만들어, slot 배분이 결합 스코어의 극단 순서에만 걸린다 — 비유계 척도에서는 한 팩터의 꼬리 관측 하나가 K-1 개 팩터의 합의를 기각할 수 있다(FQ-116 실측: EW5 top-25 ∩ 단일최강 4.4/25, 월 20.6 slot 교체). ② KR 공매도 제약(no_short_legal_kr)으로 음(-) 정보는 slot 회수로만 표현되므로 오편입 slot 의 기회비용이 비대칭 — 오편입을 만드는 결합 결함이 곧바로 PORT_t 손실이 된다. ③ 팩터 간 횡단면 z 분포의 꼬리 두께가 이질(왜도·첨도 상이)이라 raw-z 평균은 사실상 '꼬리가 두꺼운 팩터에 대한 은닉 과가중'인데, 이 과가중은 팩터의 전이 품질과 무관하게 분포 형태가 결정한다 — 차익거래 주체(우리 포함)가 이를 지우지 못했던 이유는 결합기 결함이 성과 헤드라인(PORT_t)에 뭉뚱그려져 관측돼 왔기 때문(FQ-237 이 처음으로 선별 마디를 배제해 이 마디를 노출).",
       "path": "결합을 유계-영향력 규칙으로 교체 → 월간 리밸 시점의 top-25 편입 명단이 단독-극단 종목에서 다팩터-합의 종목으로 이동(매개변수: 단독-advocate 편입 비율 하락) → 합의-편입 종목은 전이-양성 평균 신호와 정합(FQ-116 P2: 양-전이 성분끼리의 결합은 약가산적 +1.06%/yr) → 같은 하네스에서 cap-w net PORT_t 개선. 신호→가격 반영 경로는 성분 팩터의 몫이고, 본 마디는 신호→보유(portfolio membership) 전이만 이동시킨다. 반영 주기 = 월간 리밸 즉시."
     },
-    "falsification": "성과 외 부수 관측 4단 (FQ-116 advocate 분해 도구 재사용). [전제 P0 — transport check, 성과 측정 전 수행] 현행 C0(raw-z EW, 본 하네스 SEL_RANK K=5 풀)에서 단독-advocate 편입(편입 종목의 argmax-z 팩터 z-gap 기준 귀속)이 실재하는가 — FQ-116 은 다른 팩터 풀(WT-009 5종)에서 쟀으므로 본 풀 재현이 기전의 수송 전제다. [매개 M — 성과 무관] 처치 arm 별 단독-advocate 편입 비율과 advocate 의 팩터별 귀속 분포. [연결 L] IN-vs-OUT 종목군의 fwd_ret_1m 격차(NW t). [전제 F3] 팩터 간 횡단면 z 초과첨도의 이질성(friction ③ 의 직접 관측).",
+    "falsification": [
+      {
+        "id": "R1a_transport",
+        "field_ref": [
+          "FDB-B6_fdb_daily_store",
+          "FDB-B7_ic_history_monthly"
+        ],
+        "observable": "C0 top-25 편입 종목 중 solo-advocate 편입 비율 (advocate = argmax_k z_ik, leave-advocate-out 재랭킹 시 top-25 밖으로 밀리는 종목). 성과 무관.",
+        "threshold": "월별 중앙 >= 0.20 미달 시 기전 미수송 STOP",
+        "measured": 0.64,
+        "fired": false,
+        "verdict": "수송 확인 — 25 slot 중 중앙 16 개가 solo-advocate 편입"
+      },
+      {
+        "id": "R1b_transfer_negative_concentration",
+        "field_ref": [
+          "FDB-B6_fdb_daily_store",
+          "A1_RAWDATA_OHLCVS_daily"
+        ],
+        "observable": "solo-advocate 종목의 advocate 팩터 standalone canonical PORT_t 중앙값 vs 선별 풀 전체(103종) 중앙값",
+        "threshold": "solo 중앙 < 풀 중앙",
+        "measured": {
+          "solo": -0.2797,
+          "pool": -0.3476,
+          "neg_share_solo": 0.72,
+          "neg_share_consensus": 0.751
+        },
+        "fired": true,
+        "verdict": "★미성립 — solo advocate 가 오히려 덜 전이-음성. FQ-116 귀속 미수송."
+      },
+      {
+        "id": "R2_mediator_movement",
+        "field_ref": [
+          "FDB-B6_fdb_daily_store"
+        ],
+        "observable": "처치 arm 의 월별 solo-advocate 편입 비율 (C0 대비 비)",
+        "threshold": "처치 <= 0.8 x C0",
+        "measured": {
+          "C1": 0.688,
+          "C2": 0.938,
+          "C3": 1.312
+        },
+        "fired": false,
+        "verdict": "C1 통과 · C2 미통과(NO_MEDIATOR_MOVEMENT) · C3 증폭(설계 의도)"
+      },
+      {
+        "id": "R3_linkage",
+        "field_ref": [
+          "A1_RAWDATA_OHLCVS_daily",
+          "FDB-B2_registry_rawdata_price_daily"
+        ],
+        "observable": "C0 에서 solo-advocate 편입 종목의 월평균 fwd_ret_1m 마이너스 consensus 편입 종목 월평균 (NW lag-3 t)",
+        "threshold": "t <= -1.5 (FQ-116 대응 실측 -2.01)",
+        "measured": {
+          "annual_pct": 1.483,
+          "t_nw3": 0.2461,
+          "n_months": 216
+        },
+        "fired": true,
+        "verdict": "★연결 절단 — solo 가 오히려 연 +1.48%p 더 벌었다(무차별). 손실 원천을 이산 top-N 절단 마디(FQ-059)로 귀속 이전."
+      },
+      {
+        "id": "R5_kurtosis_heterogeneity",
+        "field_ref": [
+          "FDB-B6_fdb_daily_store"
+        ],
+        "observable": "월별 선별 K=5 팩터의 횡단면 z 초과첨도 IQR",
+        "threshold": "중앙 >= 1.0",
+        "measured": {
+          "iqr_median": 6.9357,
+          "min_exkurt_median": -0.21,
+          "max_exkurt_median": 21.163
+        },
+        "fired": false,
+        "verdict": "friction 3 전제 성립 — 꼬리 두께 이질 대규모 실재(단 손실로 연결되지 않음)"
+      },
+      {
+        "id": "R_regime_boundary_diagnostic",
+        "field_ref": [
+          "E3_macro_regime_monthly",
+          "E5_msm_crisis_prob"
+        ],
+        "observable": "승계 regime_scope 의 국면 경계(고분산 tercile · crisis) 조건부 처치 효과",
+        "threshold": "본 라운드 미측정 — primary 가 powered null 이라 국면 분해의 검정력이 없다",
+        "measured": {},
+        "fired": {},
+        "verdict": "미측정 명시 (침묵 아님). R_SUB 2015-07 달력 분할은 era 교락으로 국면 주장 미승격."
+      }
+    ],
     "falsification_inherited_verbatim": {
       "observable": "성과 외 부수 관측 4단 (FQ-116 advocate 분해 도구 재사용). [전제 P0 — transport check, 성과 측정 전 수행] 현행 C0(raw-z EW, 본 하네스 SEL_RANK K=5 풀)에서 단독-advocate 편입(편입 종목의 argmax-z 팩터 z-gap 기준 귀속)이 실재하는가 — FQ-116 은 다른 팩터 풀(WT-009 5종)에서 쟀으므로 본 풀 재현이 기전의 수송 전제다. [매개 M — 성과 무관] 처치 arm 별 단독-advocate 편입 비율과 advocate 의 팩터별 귀속 분포. [연결 L] IN-vs-OUT 종목군의 fwd_ret_1m 격차(NW t). [전제 F3] 팩터 간 횡단면 z 초과첨도의 이질성(friction ③ 의 직접 관측).",
       "field_dictionary_refs": [
@@ -47,7 +159,8 @@
         "위기 급락월 (E5 crisis_prob 상위 구간의 drawdown 월): 단일 방어축(저변동·quality) 극단 z 가 진짜 조건부 정보일 수 있어(방어 flight) 유계화가 방어 정보를 절단 — 역전 가능. AX-001 조건부 평가 축과 정합: 처치 arm 의 crisis 월 조건부 성과를 별도 기록할 것"
       ],
       "boundary_rationale": "경계는 기전에서 도출: 처치 효과 = f(극단 z 발생 빈도 × 극단의 전이-음성 정도). 첫 항은 횡단면 분산에 단조라 고분산 국면에서 효과가 크고 저분산에서 0 으로 수렴하며, 둘째 항은 급락월에 부호가 뒤집힐 수 있다(극단이 전이-양성인 유일한 상황 = 방어 flight). ⚠승계 caveat: FQ-237 실측이 2015-07 이전/이후로 갈렸으나 이는 era 교락 + KQ150 퇴출 미기록(universe_exit_unrecorded_pre201512, 편향 하방/중립)과 분리 불가 — 달력 분할을 국면 주장으로 승격하지 않는다. alpha-research 는 2015-07 창 분할을 '진단 병기' 로만 수행하고 국면 판정은 위 기전-도출 경계(분산 tercile·crisis 라벨)로 할 것."
-    }
+    },
+    "falsification_format_note": "★게이트 스키마(객체배열 + field_dictionary 내 field_ref)로 형식만 재포장했다. 승계 원문 서술은 hypothesis.falsification_inherited_verbatim 에 자구 그대로 보존 — 내용 재작성 아님(Charter par.8 No Silent Override)."
   },
   "factors": [
     {
@@ -65,13 +178,23 @@
               "walk_forward": true,
               "statistic": "선별 K=5 팩터의 Z_Score_Aligned 종목별 단순평균 (rowMeans, na.rm)",
               "window_rule": "홀딩월 i 의 선별은 anchor < anchors[i] 인 실현 통계만 소비 (rows (i-36)..(i-1)). MIN_OBS=30 미만 팩터 후보 제외(NA — 0 대입 금지). 결합은 홀딩월 당월 z 만 소비(vintage 이동판 LEAK1/LAG1 은 통제 arm 전용)."
-            }
+            },
+            "op_code_path": "stage_artifacts/WT-D20260822_004/p1_build_power.R::COMB+build_scores (선별 궤적 승계 = stage_artifacts/WT-D20260822_002/p2_arms_and_gate.R::sel_t+pick, 통계 원자료 = stage_artifacts/WT-D20260813_005/s1_factor_month_stats.rds)",
+            "walk_forward": true,
+            "statistic": "선별 K=5 팩터의 Z_Score_Aligned 종목별 단순평균 (rowMeans, na.rm)",
+            "window_rule": "홀딩월 i 의 선별은 anchor < anchors[i] 인 실현 통계만 소비 (rows (i-36)..(i-1)). MIN_OBS=30 미만 팩터 후보 제외(NA — 0 대입 금지). 결합은 홀딩월 당월 z 만 소비(vintage 이동판 LEAK1/LAG1 은 통제 arm 전용)."
           }
         ]
       },
       "ast_note": "★AST 는 walk-forward 선별을 정적 리프로 환원할 수 없다 — 선별 집합이 매월 바뀌므로 SPECIAL_OP escape 리프 + escape_contract 로 정직 산출(§4-1 FIELD 리프 위장 금지). 결합 연산자 자체는 𝒪 안에 있다(CS_RANK / CLIP / CS_ZSCORE).",
       "combination_within_factor": "rowMeans(z) — 현행 z_score_aligned_equal_weight. 성분 영향력 비유계.",
-      "selected_leaves_last_holding_month_202607": ["AC22_Accrual_Volatility", "XF_LL02_NetDebt", "D43_Skewness", "L11_Kyle_Lambda", "C08_Coverage"],
+      "selected_leaves_last_holding_month_202607": [
+        "AC22_Accrual_Volatility",
+        "XF_LL02_NetDebt",
+        "D43_Skewness",
+        "L11_Kyle_Lambda",
+        "C08_Coverage"
+      ],
       "economic_rationale": "현행 파이프라인 결합 규칙의 재현 대조군. FQ-237 공표 PORT_t 0.94741072 를 Δ -4.19e-09 로 재현.",
       "redundancy_cluster_id": "FQ244_COMBINATION_RULE",
       "redundancy_note": "4 arm 은 의도된 동일-클러스터 대조군 — 재료(320팩터)·창(W=36)·K(5)·선별 궤적·top-N(25)·비용(15bps)이 전부 동일하고 **결합 규칙만** 다르다. 신규 팩터 주장 없음(Factor Zoo 축소 원칙 ① validation > discovery).",
@@ -95,7 +218,11 @@
                   "walk_forward": true,
                   "statistic": "선별 K=5 팩터 각각의 횡단면 백분위 rank((r-0.5)/n_obs) 후 등가중 평균",
                   "window_rule": "홀딩월 i 의 선별은 anchor < anchors[i] 인 실현 통계만 소비 (rows (i-36)..(i-1)). MIN_OBS=30 미만 팩터 후보 제외(NA — 0 대입 금지). 결합은 홀딩월 당월 z 만 소비(vintage 이동판 LEAK1/LAG1 은 통제 arm 전용)."
-                }
+                },
+                "op_code_path": "stage_artifacts/WT-D20260822_004/p1_build_power.R::COMB+build_scores (선별 궤적 승계 = stage_artifacts/WT-D20260822_002/p2_arms_and_gate.R::sel_t+pick, 통계 원자료 = stage_artifacts/WT-D20260813_005/s1_factor_month_stats.rds)",
+                "walk_forward": true,
+                "statistic": "선별 K=5 팩터 각각의 횡단면 백분위 rank((r-0.5)/n_obs) 후 등가중 평균",
+                "window_rule": "홀딩월 i 의 선별은 anchor < anchors[i] 인 실현 통계만 소비 (rows (i-36)..(i-1)). MIN_OBS=30 미만 팩터 후보 제외(NA — 0 대입 금지). 결합은 홀딩월 당월 z 만 소비(vintage 이동판 LEAK1/LAG1 은 통제 arm 전용)."
               }
             ]
           }
@@ -103,7 +230,13 @@
       },
       "ast_note": "★AST 는 walk-forward 선별을 정적 리프로 환원할 수 없다 — 선별 집합이 매월 바뀌므로 SPECIAL_OP escape 리프 + escape_contract 로 정직 산출(§4-1 FIELD 리프 위장 금지). 결합 연산자 자체는 𝒪 안에 있다(CS_RANK / CLIP / CS_ZSCORE).",
       "combination_within_factor": "rowMeans(pctrank(z)) — 기여 [0,1] 완전 유계, uniform marginal.",
-      "selected_leaves_last_holding_month_202607": ["AC22_Accrual_Volatility", "XF_LL02_NetDebt", "D43_Skewness", "L11_Kyle_Lambda", "C08_Coverage"],
+      "selected_leaves_last_holding_month_202607": [
+        "AC22_Accrual_Volatility",
+        "XF_LL02_NetDebt",
+        "D43_Skewness",
+        "L11_Kyle_Lambda",
+        "C08_Coverage"
+      ],
       "economic_rationale": "승계 기전(alpha_hypothesis): 성분 영향력 유계화의 극한점. 단독 극단 z 의 slot 배분권을 기계적으로 제거해 편입이 다팩터 합의를 요구하게 만든다. 크기 정보는 전량 소거 — C2 와의 대비가 '유계화 vs 크기소거' 를 분리.",
       "redundancy_cluster_id": "FQ244_COMBINATION_RULE",
       "redundancy_note": "4 arm 은 의도된 동일-클러스터 대조군 — 재료(320팩터)·창(W=36)·K(5)·선별 궤적·top-N(25)·비용(15bps)이 전부 동일하고 **결합 규칙만** 다르다. 신규 팩터 주장 없음(Factor Zoo 축소 원칙 ① validation > discovery).",
@@ -117,7 +250,7 @@
         "op": "CS_ZSCORE",
         "args": [
           {
-            "op": "CLIP",
+            "op": "CS_WINSORIZE",
             "args": [
               {
                 "leaf": "SPECIAL_OP",
@@ -127,17 +260,28 @@
                   "walk_forward": true,
                   "statistic": "선별 K=5 팩터의 Z_Score_Aligned",
                   "window_rule": "홀딩월 i 의 선별은 anchor < anchors[i] 인 실현 통계만 소비 (rows (i-36)..(i-1)). MIN_OBS=30 미만 팩터 후보 제외(NA — 0 대입 금지). 결합은 홀딩월 당월 z 만 소비(vintage 이동판 LEAK1/LAG1 은 통제 arm 전용)."
-                }
-              },
-              -2,
-              2
-            ]
+                },
+                "op_code_path": "stage_artifacts/WT-D20260822_004/p1_build_power.R::COMB+build_scores (선별 궤적 승계 = stage_artifacts/WT-D20260822_002/p2_arms_and_gate.R::sel_t+pick, 통계 원자료 = stage_artifacts/WT-D20260813_005/s1_factor_month_stats.rds)",
+                "walk_forward": true,
+                "statistic": "선별 K=5 팩터의 Z_Score_Aligned",
+                "window_rule": "홀딩월 i 의 선별은 anchor < anchors[i] 인 실현 통계만 소비 (rows (i-36)..(i-1)). MIN_OBS=30 미만 팩터 후보 제외(NA — 0 대입 금지). 결합은 홀딩월 당월 z 만 소비(vintage 이동판 LEAK1/LAG1 은 통제 arm 전용)."
+              }
+            ],
+            "limit": 2,
+            "limit_units": "cross_sectional_z",
+            "limit_note": "c=2.0 단일 사전고정(grid 아님). CLIP(x,-2,2) 와 동치이며 스칼라 경계를 args 가 아닌 노드 속성으로 둔다 — ast_verify 는 args 원소를 노드로 요구한다."
           }
         ]
       },
       "ast_note": "★AST 는 walk-forward 선별을 정적 리프로 환원할 수 없다 — 선별 집합이 매월 바뀌므로 SPECIAL_OP escape 리프 + escape_contract 로 정직 산출(§4-1 FIELD 리프 위장 금지). 결합 연산자 자체는 𝒪 안에 있다(CS_RANK / CLIP / CS_ZSCORE).",
       "combination_within_factor": "rowMeans(clip(z, ±2.0)) — c=2.0 단일 사전고정(grid 아님).",
-      "selected_leaves_last_holding_month_202607": ["AC22_Accrual_Volatility", "XF_LL02_NetDebt", "D43_Skewness", "L11_Kyle_Lambda", "C08_Coverage"],
+      "selected_leaves_last_holding_month_202607": [
+        "AC22_Accrual_Volatility",
+        "XF_LL02_NetDebt",
+        "D43_Skewness",
+        "L11_Kyle_Lambda",
+        "C08_Coverage"
+      ],
       "economic_rationale": "승계 기전: 꼬리만 유계화하고 band 내 크기 정보 보존. 예측 gradient = 단독-advocate 억제 C1 ≥ C2 > C0.",
       "redundancy_cluster_id": "FQ244_COMBINATION_RULE",
       "redundancy_note": "4 arm 은 의도된 동일-클러스터 대조군 — 재료(320팩터)·창(W=36)·K(5)·선별 궤적·top-N(25)·비용(15bps)이 전부 동일하고 **결합 규칙만** 다르다. 신규 팩터 주장 없음(Factor Zoo 축소 원칙 ① validation > discovery).",
@@ -158,13 +302,23 @@
               "walk_forward": true,
               "statistic": "선별 K=5 팩터의 Z_Score_Aligned 종목별 최대값 (max_k z_k)",
               "window_rule": "홀딩월 i 의 선별은 anchor < anchors[i] 인 실현 통계만 소비 (rows (i-36)..(i-1)). MIN_OBS=30 미만 팩터 후보 제외(NA — 0 대입 금지). 결합은 홀딩월 당월 z 만 소비(vintage 이동판 LEAK1/LAG1 은 통제 arm 전용)."
-            }
+            },
+            "op_code_path": "stage_artifacts/WT-D20260822_004/p1_build_power.R::COMB+build_scores (선별 궤적 승계 = stage_artifacts/WT-D20260822_002/p2_arms_and_gate.R::sel_t+pick, 통계 원자료 = stage_artifacts/WT-D20260813_005/s1_factor_month_stats.rds)",
+            "walk_forward": true,
+            "statistic": "선별 K=5 팩터의 Z_Score_Aligned 종목별 최대값 (max_k z_k)",
+            "window_rule": "홀딩월 i 의 선별은 anchor < anchors[i] 인 실현 통계만 소비 (rows (i-36)..(i-1)). MIN_OBS=30 미만 팩터 후보 제외(NA — 0 대입 금지). 결합은 홀딩월 당월 z 만 소비(vintage 이동판 LEAK1/LAG1 은 통제 arm 전용)."
           }
         ]
       },
       "ast_note": "★AST 는 walk-forward 선별을 정적 리프로 환원할 수 없다 — 선별 집합이 매월 바뀌므로 SPECIAL_OP escape 리프 + escape_contract 로 정직 산출(§4-1 FIELD 리프 위장 금지). 결합 연산자 자체는 𝒪 안에 있다(CS_RANK / CLIP / CS_ZSCORE).",
       "combination_within_factor": "max_k(z) — 극단 증폭 결합. ★채택 후보 아님.",
-      "selected_leaves_last_holding_month_202607": ["AC22_Accrual_Volatility", "XF_LL02_NetDebt", "D43_Skewness", "L11_Kyle_Lambda", "C08_Coverage"],
+      "selected_leaves_last_holding_month_202607": [
+        "AC22_Accrual_Volatility",
+        "XF_LL02_NetDebt",
+        "D43_Skewness",
+        "L11_Kyle_Lambda",
+        "C08_Coverage"
+      ],
       "economic_rationale": "판별 arm: 본 기전 참이면 C3 < C0, FQ-116 M2(평균화 뭉갬) 참이면 C3 > C0.",
       "redundancy_cluster_id": "FQ244_COMBINATION_RULE",
       "redundancy_note": "4 arm 은 의도된 동일-클러스터 대조군 — 재료(320팩터)·창(W=36)·K(5)·선별 궤적·top-N(25)·비용(15bps)이 전부 동일하고 **결합 규칙만** 다르다. 신규 팩터 주장 없음(Factor Zoo 축소 원칙 ① validation > discovery).",
@@ -173,7 +327,7 @@
   ],
   "combination_rule": "z_score_aligned_equal_weight",
   "combination_rule_note": "★대조군(C0) 의 enum. 처치 C1 = 'rank_average'(enum 기존재), C2 = z_score_aligned_equal_weight 의 winsorized 입력 변형(enum 밖 — 규칙 자체는 factors[].ast 의 CLIP 노드로 명시), C3 = 음성 대조(enum 밖, 채택 후보 아님). 본 라운드 판정은 **어느 처치도 대조를 개선하지 못했다** 이므로 파이프라인 결합 규칙은 C0 로 불변 유지된다.",
-  "verdict": "NON_ML_COMBINATION_POWERED_NULL",
+  "verdict": "designed",
   "verdict_detail": "비-ML 결합 규칙 2종(C1 rank 평균 · C2 winsor-z 평균)이 C0 대비 IC→PORT_t 전이를 개선하지 못함 — 둘 다 POWERED_NULL_NO_MATERIAL_EFFECT(CI95 상단 +3.01 / +1.49 %p/yr 로 MATERIAL 8.22 배제). 음성 대조 C3(max-z)는 예측대로 유의 악화(t -2.08, EFFECT_NEGATIVE). 기전 귀속: M1 slot 잠식은 실재(R1a 16/25)하나 잠식→손실 링크가 본 풀에 부재(R1b 미수송 + R3 부호역전 t +0.25). 손실 원천은 결합 규칙이 아니라 이산 top-N 소비 마디(FQ-059) 또는 팩터 선택(ORACLE_K 여유폭 4.647 이 선택에 있음). 헌법 재진입 순서 ①(비-ML 먼저) 충족 → ② ML 결합기 자격 발생(별도 사전등록·비-sweep 필요, 단 선택 마디 우선 권고). ★verdict 필드는 라운드 판정이다 — 승계 hypothesis 의 verdict='designed'(hypothesis.inherited_from 에 별도 기록)와 혼동 금지(2026-08-22 alpha-research 자기수정: 초판 p6 가 이 필드에 hypothesis 상태 'designed' 를 전사한 결함을 정정).",
   "hypothesis_stage_verdict": "designed (alpha-hypothesis 승계 상태 — 라운드 판정 아님)",
   "self_pit_check": {
@@ -921,7 +1075,10 @@
         "n": 221,
         "annual_pct": -0.41237777,
         "t_nw3": -0.23590945,
-        "ci95_annual_pct": [-3.83852464, 3.01376911],
+        "ci95_annual_pct": [
+          -3.83852464,
+          3.01376911
+        ],
         "mde_annual_pct": 3.496,
         "label": "POWERED_NULL_NO_MATERIAL_EFFECT",
         "strength": "★강한 null — C1 은 매개변수를 실제로 움직였다(solo-advocate 비율 0.688배, 스코어 rank cor 0.911). 처치가 무력해서 나온 null 이 아니다."
@@ -931,7 +1088,10 @@
         "n": 221,
         "annual_pct": -0.66709326,
         "t_nw3": -0.60692884,
-        "ci95_annual_pct": [-2.82138667, 1.48720015],
+        "ci95_annual_pct": [
+          -2.82138667,
+          1.48720015
+        ],
         "mde_annual_pct": 2.198,
         "label": "POWERED_NULL_NO_MATERIAL_EFFECT",
         "strength": "★약한 null — C2 는 매개변수를 유의하게 못 움직였다(0.938배 = R2 NO_MEDIATOR_MOVEMENT, rank cor 0.992). 이 null 은 기전 반증 증거로 약하다. 두 arm 의 null 을 같은 무게로 읽지 말 것."
@@ -951,10 +1111,46 @@
       "verdict": "★병기 완료 — 이 창에서 결합 마디는 PORT_t 4.647 까지 도달 가능(ORACLE_K, 벽 2.95 초과)하고 paired 여유폭 +13.69%p/yr(t 4.29)로 MATERIAL 8.22 를 넘는다. ⇒ C1/C2 의 null 은 창이 좁아서가 아니다. '효과없음' 라벨 자격 성립."
     },
     "basis_three_way": {
-      "arm": ["C0", "C1", "C2", "C3", "LEAK1", "LAG1", "ORACLE", "ORACLE_K"],
-      "port_t_IKS200": [0.94741072, 0.87537808, 0.80525271, -0.02308463, 1.18254468, 0.35005729, 31.45062294, 4.64699909],
-      "port_t_parent_capw": [1.49096254, 1.41615144, 1.34746376, 0.40029117, 1.78320487, 0.78753629, 31.42640361, 5.72106102],
-      "port_t_EW_universe": [2.0878059, 1.89911869, 1.82992782, 0.71451586, 2.53531656, 1.22591079, 29.79056213, 5.8789227],
+      "arm": [
+        "C0",
+        "C1",
+        "C2",
+        "C3",
+        "LEAK1",
+        "LAG1",
+        "ORACLE",
+        "ORACLE_K"
+      ],
+      "port_t_IKS200": [
+        0.94741072,
+        0.87537808,
+        0.80525271,
+        -0.02308463,
+        1.18254468,
+        0.35005729,
+        31.45062294,
+        4.64699909
+      ],
+      "port_t_parent_capw": [
+        1.49096254,
+        1.41615144,
+        1.34746376,
+        0.40029117,
+        1.78320487,
+        0.78753629,
+        31.42640361,
+        5.72106102
+      ],
+      "port_t_EW_universe": [
+        2.0878059,
+        1.89911869,
+        1.82992782,
+        0.71451586,
+        2.53531656,
+        1.22591079,
+        29.79056213,
+        5.8789227
+      ],
       "paired_delta_t": {
         "C1": -5.551e-17,
         "C2": -1.11e-16,
@@ -1118,7 +1314,30 @@
     "scores": "stage_artifacts/WT-D20260822_004/alpha_scores.parquet",
     "live_vector": "stage_artifacts/WT-D20260822_004/alpha_vector_live.parquet",
     "validation": "stage_artifacts/WT-D20260822_004/alpha_validation.json",
-    "scripts": ["p0_probe.R", "p1_build_power.R", "p2_power_gate.R", "p3_transport.R", "p4_verdict.R", "p5_emit.R", "p6_alpha_package.R"],
+    "scripts": [
+      "p0_probe.R",
+      "p1_build_power.R",
+      "p2_power_gate.R",
+      "p3_transport.R",
+      "p4_verdict.R",
+      "p5_emit.R",
+      "p6_alpha_package.R"
+    ],
     "challenge_note": "qepm/mailbox/worktask/WT-D20260822_004/challenge_note.md"
+  },
+  "verdict_note": "★AST v1.1 설계 판정 필드 (schema 조건부 enum: designed|economic_void|blocked_by_capability). 팩터 식이 연산자 집합 안에서 표현됐고 escape 계약이 충족됐다는 뜻이다. **라운드 성과 판정이 아니다** — 그것은 round_verdict 필드.",
+  "round_verdict": "NON_ML_COMBINATION_POWERED_NULL",
+  "round_verdict_detail": "비-ML 결합 규칙 2종(C1 rank 평균 · C2 winsor-z 평균)이 C0 대비 IC→PORT_t 전이를 개선하지 못했다 — 둘 다 POWERED_NULL_NO_MATERIAL_EFFECT (CI95 상단 +3.01 / +1.49 %p/yr 로 MATERIAL 8.2228 배제). 음성 대조 C3(max-z)는 사전등록 R4 예측대로 유의 악화(t -2.08). 기전 귀속: M1 slot 잠식은 실재(R1a 16/25 slot)하나 잠식→손실 링크가 본 풀에 부재(R1b 미수송 + R3 부호 역전 t +0.25). ★증거력 비대칭 — C1 은 매월 9/25 종목을 교체하고도 무반응(강한 null), C2 는 3/25 교체에 그쳐(clip 이 셀의 3.4%만 건드림) 약한 null.",
+  "ml_reentry_judgment": {
+    "question": "비-ML 로 개선되지 않았다 — ML 결합기 재진입이 필요한가",
+    "constitutional_step": "헌법 재진입 순서 ① (비-ML 사전등록 비교) 충족 ⇒ 형식상 ② ML 결합기 자격 발생",
+    "recommendation": "★자격은 생겼으나 결합 마디에서의 ML 재진입은 권고하지 않는다 — 우선순위는 팩터 **선택** 마디다.",
+    "evidence": {
+      "node_headroom": "ORACLE_K PORT_t 4.647 (paired +13.69%p/yr, t 4.29) — 매월 K=5 중 옳은 하나를 고르면 벽 2.95 를 넘는다. 즉 정보는 '어느 팩터를 언제 쓰느냐' 에 있다.",
+      "combination_form_is_inert": "그 정보는 결합 **함수형** 으로는 회수되지 않는다 — C1 이 포트폴리오의 36%를 바꾸고도 -0.41%p/yr(t -0.24). 마디가 죽은 게 아니라(C3 가 t -2.08 로 반응) 구성적 방향의 여유가 함수형에 없다.",
+      "performance_based_route_already_negative": "그 정보를 trailing 성과로 예측하는 경로는 두 번 측정 negative — RAMP R10 W-factor(paired -0.16, factor momentum timing NULL) + FQ-121(IS 최강 V01 +2.634 → OOS -0.389, 자격 반감기 < 운용 주기).",
+      "conclusion": "trailing-성과 피처 기반 ML 결합기는 이미 두 번 죽은 경로의 재탕이 된다. 미측정 축은 **상태 조건부**(국면·크라우딩·횡단면 분산 tercile) 팩터 선택이며 이는 v8.4 Lane D 와 직결된다 — next_probe NP2."
+    },
+    "forbidden_here": "본 라운드에서 ML 결합기 미사용 (헌법 재진입 순서 ① 준수). 향후 ② 진입 시 사전등록·비-sweep 의무."
   }
 }
