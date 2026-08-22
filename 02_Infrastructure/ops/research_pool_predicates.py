@@ -499,7 +499,7 @@ def method_measure_pending(root):
     return out
 
 
-def research_queue_pending(stage, root):
+def research_queue_pending(stage, root, lanes=None):
     """무인 배분 대상 전체 = mode_queue(opt/risk/regime) + alpha-research + 측정 백로그.
 
     ★lane 은 소비자(프롬프트)가 어느 에이전트를 스폰할지 고르는 유일 키다.
@@ -507,6 +507,12 @@ def research_queue_pending(stage, root):
     items = (mode_queue_pending(stage, root)
              + alpha_research_pending(stage)
              + method_measure_pending(root))
+    # lanes: 특정 레인만 뽑는 **표적 소비**. 정렬상 앞 레인이 상한을 다 먹어 뒤 레인이
+    #   영영 안 도는 문제를 푼다(2026-08-22 실측: method_measure 12건이 risk/opt/regime 을 막음).
+    #   ★필터는 선택이지 기본이 아니다 — 기본 경로의 정렬 계약(측정 백로그 우선)은 그대로 둔다.
+    if lanes:
+        _want = set(lanes)
+        items = [x for x in items if x.get("lane") in _want]
     # 측정 백로그를 먼저 — 이미 등재된 것을 끝내는 편이 새로 쌓는 것보다 값이 크다
     # (등재만 쌓여 원장이 12일 멈춘 것이 이 배선의 발단이다).
     _LANE_ORDER = {"method_measure": 0, "alpha": 1, "optimizer": 2, "risk": 2, "regime": 3}
@@ -522,7 +528,7 @@ _USAGE = ("usage: research_pool_predicates.py alpha-pending <stage_dir>\n"
           "       research_pool_predicates.py recheck-build <stage_dir> <out_json> [<today>]\n"
           "       research_pool_predicates.py mode-routes   <mode_queue_json>\n"
           "       research_pool_predicates.py mode-queue-pending <stage_dir> <root> [--json <out>]\n"
-          "       research_pool_predicates.py research-queue-pending <stage_dir> <root> [--json <out>]\n")
+          "       research_pool_predicates.py research-queue-pending <stage_dir> <root> [--lane a,b] [--json <out>]\n")
 
 
 def main(argv):
@@ -578,8 +584,11 @@ def main(argv):
         if len(argv) < 3:
             sys.stderr.write(_USAGE)
             return 2
+        _lanes = None
+        if "--lane" in argv:
+            _lanes = [x for x in argv[argv.index("--lane") + 1].split(",") if x]
         try:
-            items = research_queue_pending(argv[1], argv[2])
+            items = research_queue_pending(argv[1], argv[2], lanes=_lanes)
         except LedgerUnreadable as e:
             sys.stderr.write("LEDGER_UNREADABLE %s\n" % e)
             return 3

@@ -59,8 +59,11 @@ trap 'rm -rf "$MLOCK"' EXIT
 PYBIN="${QVEST_PY:-python}"
 PRED="$BASE/02_Infrastructure/ops/research_pool_predicates.py"
 QJSON="$BASE/.cache/research_queue_pending.json"
-N=$("$PYBIN" "$PRED" research-queue-pending \
-      "$BASE/stage_artifacts/paper_recharge" "$BASE" --json "$QJSON" 2>>"$LOG")
+# 레인 지정 소비(선택) — 기본은 전 레인. 정렬상 앞 레인이 상한을 다 먹어 뒤 레인이
+#   영영 안 도는 것을 표적 소비로 푼다(2026-08-22: method_measure 12건이 risk/opt/regime 을 막았다).
+_LANE_ARG=""
+[ -n "${QVEST_MODE_QUEUE_LANE:-}" ] && _LANE_ARG="--lane ${QVEST_MODE_QUEUE_LANE}"
+N=$("$PYBIN" "$PRED" research-queue-pending "$BASE/stage_artifacts/paper_recharge" "$BASE" $_LANE_ARG --json "$QJSON" 2>>"$LOG")
 # ★계측 사망을 0 으로 삼키지 않는다 — 숫자가 아니면 skip 이 아니라 경보 후 중단.
 #   (alpha 레인 실사고: bare python3 가 Windows Store 스텁으로 해석돼 빈 출력을 냈고,
 #    구판이 그것을 0 으로 삼켜 "대기 없음" 정상 skip 으로 위장됐다. 참값은 3이었다.)
@@ -86,7 +89,7 @@ CLAUDE_BIN="$(command -v claude || echo /c/Users/99922/AppData/Roaming/npm/claud
 PF="$BASE/02_Infrastructure/ops/mode_queue_research_prompt.md"
 [ -f "$PF" ] || { log "prompt 없음 — skip"; exit 0; }
 
-log "start mode_queue research (pending=$N, MAX_ITEMS=$MAXI)"
+log "start mode_queue research (pending=$N, MAX_ITEMS=$MAXI, LANE=${QVEST_MODE_QUEUE_LANE:-all})"
 PROMPT_TEXT="$(printf 'TODAY=%s  MAX_ITEMS=%s  QUEUE=%s\n\n%s\n' \
   "$TODAY" "$MAXI" ".cache/research_queue_pending.json" "$(cat "$PF")")"
 
