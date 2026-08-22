@@ -1,0 +1,247 @@
+{
+  "task_id": "WT-D20260822_005",
+  "round_id": "WT-D20260822_005_alpha_research_R1",
+  "as_of_date": "2026-08-22",
+  "sig_date": "2026-07-31",
+  "spec_version": "ast_v1.1",
+  "produced_by": "alpha-research",
+  "model_tier": "opus",
+  "wt_type": "discovery",
+  "discovery_of": "STR_AS_20260612_154914_1055315",
+  "strategy_id": "WT-D20260822_005_M08_Q01_C03",
+  "metric_type": "canonical_screen_diag",
+  "tier": "screen_diagnostic",
+
+  "pit": {
+    "sig_date": "2026-07-31",
+    "decision_ts": "2026-07-31",
+    "anchor_frame": "signal_anchor (off=0): score at sig_date(월말 거래일), Ret_1m = t→t+1 forward 실현수익",
+    "holding_start": "2026-08-01",
+    "factor_load": "load_month_factors() 경유 (C15 준수). Z_Score_Aligned, direction = IC-inferred expanding window(PIT-safe, 36m burn-in)",
+    "return_build": "build_monthly_forward_returns (Close→forward, K200∪KQ150 제한, R44 sanity firewall)",
+    "benchmark": "IKS200 KOSPI200_total_return (BM_Close forward, .cache/benchmark.parquet) — cap-w HARD basis (measurement-graduation §6/§7)",
+    "liquidity": "adv20_t1 (20d avg 거래대금 t-1, liq_min=2e8) — liq_ruler='adv20_t1' 실측 라벨",
+    "self_pit_check": {
+      "C1_rolling_window": "PASS — expanding IC direction, no full-sample stat",
+      "C4_fundamental_lag": "PASS — Q01 quarterly+45d;annual_3/31, C03 T-1+consensus_disc (TS_LAG 1d)",
+      "C5_overlay_timing": "PASS — regime arm은 Date<=sig_date 만 사용, macro_regime 진행중월(2026-08 행) 배제 확인",
+      "C10_liquidity_t1": "PASS — adv20_t1",
+      "C14_ic_usable_date": "PASS — align_factor_direction sig_date 기준 expanding",
+      "C15_factor_db_connector": "PASS — load_month_factors() 경유",
+      "lookahead_detector": "PASS — sig_date 2026-07-31, factor_db_asof 2026-07-31 일치, C03 consensus TS_LAG 1d로 avail<=t_d"
+    }
+  },
+
+  "hypothesis": {
+    "inherited_from": "qepm/mailbox/worktask/WT-D20260822_005/alpha_hypothesis.json (alpha-hypothesis, model:fable)",
+    "title": "KR 확장국면 개인 과소반응 수확 복합 — 잔차/산업 모멘텀 × 수익성 quality 정제 3축 (비-ML 결합, 국면 경계 명시)",
+    "no_silent_override": "mechanism/falsification/regime_scope 원문 승계 (재작성 안 함). C17→C03 대체는 데이터 게이트 대응(challenge_note AW1 기록)이지 가설 재해석 아님.",
+    "mechanism": {
+      "agent": "KR 개인투자자(종목-수준 주의 편중·산업-수준 정보 미처리) + 커버리지 공백 종목 애널리스트 지연 — 산업/잔차 뉴스 과소반응 주체. 수익성 축 주체 = 실적 발표 전 이익 지속성 과소평가 수요층",
+      "friction": "① 공매도 제약(고품질·모멘텀 상위 상대 저평가의 느린 해소) ② 유동성 하한(기관 재정거래 용량 제한) ③ 산업-수준 정보의 종목 전파 지연(개인 주도 lead-lag)",
+      "path": "월말 신호 → 익월 1~3M (i) 산업/잔차 모멘텀 지속분 가격 반영 (ii) 수익성 프리미엄 = 분기 실적·이익수정(C03/C17 intent) 경유 실현. RISK_ON 트렌드 지속 전제 — 위기 유동성 청산이 신호 압도 시 경로 단절"
+    },
+    "falsification": [
+      {"id": "F1", "field": "A6_investor_flow_stock_daily", "condition": "개인 거래비중 상위군에서 모멘텀 신호 횡단면 예측력이 하위군 대비 유의 강함 — 부재/역방향이면 개인-마찰 귀속 기각", "measured": false, "status": "next_probe NP1 이관"},
+      {"id": "F2", "field": "FDB-B3_registry_consensus_daily", "condition": "Q01_GPA 상위 분위 후속 1~2분기 이익수정 breadth가 하위 분위 대비 유의 양(+) — 부재이면 quality 실적-경유 경로 기각", "measured": "partial", "status": "C03_EPS_Chg_3m 대체로 부분 대리 (IS +0.65 t 기여) — breadth 직접측정은 NP1"},
+      {"id": "F3", "field": "A1_RAWDATA_OHLCVS_daily", "condition": "CRISIS→회복 전환 월 저품질·고베타 junk-rally가 모멘텀 상위군 상회 패턴 부재인데 위기 active 음수면 momentum-crash 귀속 기각 (E3_macro_regime_monthly 전환월 기준)", "measured": false, "status": "next_probe NP1 이관"},
+      {"id": "F4", "field": "M08_Residual_Mom", "condition": "정제 3축 복합의 IS canonical PORT_t < 2.0 시 성분귀속 기각 (단독 무효, F1~F3 병용)", "measured": true, "result": "B(M08+Q01+C03) IS PORT_t 2.841 >= 2.0 → F4 PASS (성분귀속 IS 확정)"}
+    ],
+    "falsification_note": "F1~F3 = field_dictionary 리프 기반 부수관측(기전 반증 본체) — 본 라운드 미측정/부분, NP1 이관. F4 = 성분귀속 반증(성능 아님) IS PASS. AST v1.1 성과 동어반복 금지 정합: 반증 본체는 A6/FDB-B3/A1 관측에 위치.",
+    "regime_scope": {
+      "holds_in": ["RISK_ON"],
+      "weakens_or_reverses_in": ["CRISIS", "NEUTRAL/CAUTION 횡보", "위기 직후 반등 초입(momentum crash)"],
+      "boundary_rationale": "모멘텀 지속·수익성 실현 경로 모두 위험선호 하 트렌드 연장 + 실적 정보의 질서 있는 가격 반영을 전제. 위기에는 유동성 청산이 정보 신호를 압도, long-only+공매도 제약이 역전에 정면 노출. 회복 초입 junk 스냅백이 모멘텀·quality 순위 역전. (승계 원문 — 재작성 안 함)",
+      "measured_regime_arm_advisory": "RISK_ON active +10.9%/yr (SR 0.61) vs RISK_OFF −2.3%/yr (SR −0.11) — Macro_Risk_Score median split 근사, 승계 regime_scope 방향 정합. advisory."
+    }
+  },
+
+  "combination_rule": "z_score_aligned_equal_weight (적합 계수 0). score = ADD(aligned-Z M08, aligned-Z Q01, aligned-Z C03) / 3 = rowMeans(available aligned-Z). FQ-237 NP2(결합규칙 비교)는 본 라운드 미착수 — z_score_aligned 고정.",
+
+  "factors": [
+    {
+      "factor_id": "M08_Residual_Mom",
+      "role": "primary_momentum (1순위)",
+      "direction": "+",
+      "economic_rationale": "시장/베타 성분 제거 종목-고유 지속 — friction 정보 전파 지연 최직접 표현",
+      "redundancy_cluster_id": "MOM_RESID",
+      "redundancy_note": "M08~M01 xsec cor 0.813 = M01의 잔차형, 동시투입 금지",
+      "ast": {
+        "op": "CS_ZSCORE",
+        "children": [{"leaf": "REGISTRY", "factor": "M08_Residual_Mom"}]
+      }
+    },
+    {
+      "factor_id": "Q01_GPA",
+      "role": "quality",
+      "direction": "+",
+      "economic_rationale": "수익성 프리미엄 — 실적 경유 실현. 단독 long-only는 DIST-QPM-003 실패(실측 IS 1.154), 복합 내에서만",
+      "redundancy_cluster_id": "QUALITY",
+      "redundancy_note": "M08~Q01 cor 0.008 = 직교",
+      "ast": {
+        "op": "CS_ZSCORE",
+        "children": [{"leaf": "REGISTRY", "factor": "Q01_GPA"}]
+      }
+    },
+    {
+      "factor_id": "C03_EPS_Chg_3m",
+      "role": "consensus_revision (C17 대체)",
+      "direction": "+",
+      "economic_rationale": "3m EPS revision — 이익수정 실현 경로(F2 관측변수). C17_OP_Revision 대체(C17 전기간 커버리지 0 = dead)",
+      "redundancy_cluster_id": "CONSENSUS_REVISION",
+      "substitution_note": "C17_OP_Revision(dead, registry 등록됐으나 미배출) → C03_EPS_Chg_3m(live 2005~). 데이터 게이트 대응, challenge_note AW1. intent 보존 최근접 live emitter. C17 arm 그 자체는 미측정으로 남음(정직).",
+      "pit_lag_note": "consensus factor known_discrepancy(T-1 선언 vs 코드 same-day) → ast_verify 보수 +1d avail. TS_LAG(1d) 적용해 PIT-엄격 판정 통과 (t-1 값 사용 = 연결기 PIT-safe 경계와 정합).",
+      "ast": {
+        "op": "CS_ZSCORE",
+        "children": [
+          {"op": "TS_LAG", "k": 1, "unit": "d", "children": [{"leaf": "REGISTRY", "factor": "C03_EPS_Chg_3m"}]}
+        ]
+      }
+    }
+  ],
+
+  "composite_ast": {
+    "op": "DIV",
+    "children": [
+      {"op": "ADD", "children": [
+        {"op": "CS_ZSCORE", "children": [{"leaf": "REGISTRY", "factor": "M08_Residual_Mom"}]},
+        {"op": "CS_ZSCORE", "children": [{"leaf": "REGISTRY", "factor": "Q01_GPA"}]},
+        {"op": "CS_ZSCORE", "children": [{"op": "TS_LAG", "k": 1, "unit": "d", "children": [{"leaf": "REGISTRY", "factor": "C03_EPS_Chg_3m"}]}]}
+      ]},
+      {"type": "const", "value": 3}
+    ]
+  },
+
+  "ablation_is_only": {
+    "window": "2005-01~2018-12 (169m), IS-only 선택 (chain 자격: OOS 미조회)",
+    "metric_type": "canonical_screen_diag",
+    "results": {
+      "A_M08_Q01": {"port_t": 2.193, "net_ir": 0.591, "turnover_ann": 4.79, "note": "모멘텀+수익성 2축 baseline"},
+      "B_M08_Q01_C03": {"port_t": 2.841, "net_ir": 0.799, "turnover_ann": 5.97, "note": "선택 — C03 revision arm이 A 대비 +0.65 t 기여"},
+      "C_M07_Q01": {"port_t": 1.762, "net_ir": 0.408, "note": "산업모멘텀 대체 — M08보다 약함"},
+      "D_M01_Q01": {"port_t": 2.476, "net_ir": 0.657, "note": "표준 모멘텀 앵커"},
+      "E_M08_M07_Q01": {"port_t": 2.312, "net_ir": 0.556, "note": "M08+M07 동시 — 증분 미미, TO 상승"},
+      "F_M08_only": {"port_t": 2.489, "net_ir": 0.623, "turnover_ann": 8.26, "note": "M08 단독 강함이나 TO 826% 高"},
+      "G_Q01_only": {"port_t": 1.154, "net_ir": 0.327, "note": "품질 단독 약함 (DIST-QPM-003 정합)"},
+      "H_M08_M01_Q01": {"port_t": 2.983, "net_ir": 0.775, "note": "최고 IS이나 M08~M01 cor 0.813 = redundant, 배제"}
+    },
+    "iteration_mechanism_log": [
+      "A->B: C03 revision 축 추가 사유 = F2 실적-경유 경로의 신호화 (IS +0.65 t 확인)",
+      "H 배제 사유 = redundancy 실측 M08~M01 cor 0.813 (M08이 M01 잔차형, 이중계상)",
+      "C 배제 사유 = M07 산업모멘텀이 M08 잔차모멘텀보다 IS 약함(1.762<2.841)",
+      "선택 = B (3축 hypothesis form, M08 1순위 + Q01 + C03 revision)"
+    ],
+    "method_shopping_log_count": 8,
+    "method_shopping_log_limit": 5,
+    "method_shopping_note": "8 combos > 상한 5. selection_type=chain (성분절제, IS-only 선택, OOS 미조회) — DSR 게이트 부적용 조건이나, ablation이 사전등록 grid 성격에 인접 -> 진단용 DSR 병기 권고(NP4). 상한 초과는 정직 기록."
+  },
+
+  "redundancy": {
+    "m08_m01_xsec_cor": 0.813,
+    "m08_m07_xsec_cor": 0.225,
+    "m08_q01_xsec_cor": 0.008,
+    "verdict": "M08 subset M01 (cor 0.813, 동시투입 multicollinearity 확정 -> H 배제). M08~Q01 직교(0.008), M08~M07 약상관(0.225)"
+  },
+
+  "screen_result": {
+    "metric_type": "canonical_screen_diag",
+    "tier": "screen_diagnostic",
+    "authority_note": "HARD 3종(PORT_t 2.95/oos_retention 0.7/calmar 0.64)은 forge-authoritative 값에만 적용. 본 수치는 screening diag — graduation PASS 주장 아님.",
+    "selected_B_multi_window": {
+      "IS_2005_2018": {"port_t": 2.841, "net_ir": 0.799, "net_sr": 0.799, "alpha_ann": 0.148, "turnover_ann": 5.97, "n_months": 169, "ew_diag_port_t": 2.340, "oos_approx": 0.97},
+      "OOS_2019_2026": {"port_t": -1.285, "net_ir": -0.533, "net_sr": -0.533, "alpha_ann": -0.016, "turnover_ann": 7.31, "n_months": 90, "ew_diag_port_t": 0.146, "post2017_t": 0.146},
+      "FULL_2005_2026": {"port_t": 0.866, "net_ir": 0.213, "net_sr": 0.213, "alpha_ann": 0.094, "turnover_ann": 6.41, "n_months": 259, "ew_diag_port_t": 1.829, "post2017_t": 0.185},
+      "CLEAN_2015_07_plus": {"port_t": -1.643, "net_ir": -0.541, "net_sr": -0.541, "alpha_ann": -0.038, "turnover_ann": 7.10, "n_months": 132, "ew_diag_port_t": -0.095}
+    },
+    "oos_retention_capw": -0.666,
+    "oos_retention_verdict": "HARD FAIL (< 0.5 무조건). IS->OOS(2019 split) active-SR ratio. 부호 반전.",
+    "hard_gate_status_screening_note": "full PORT_t 0.866 << 2.95 (cap-w). OOS/clean 음수. 자본 tier 부적격 — 단 이 판정은 forge 재확인 시에만 authoritative.",
+    "window_reachability_ceiling": {
+      "perfect_foresight_top25_port_t": 31.01,
+      "perfect_foresight_alpha_ann": 3.079,
+      "interpretation": "measurement-graduation 3(2026-08-22): 이 259m 창에서 완전예지 top-25는 PORT_t 31.01 도달 -> 2.95는 원리적 도달 가능. B의 미달은 '창이 짧음(미결)'이 아니라 '신호 약함/decay(효과 저하)'. 라벨 = config-scoped negative(capital), NOT 미결."
+    },
+    "ic_vs_portfolio_alpha_note": "canonical_screen_bt는 portfolio-alpha t(NW lag-3) 산출 — HARD 판별은 portfolio-alpha t 권위(qvest-alpha-style Cycle 2 교훈 정합)."
+  },
+
+  "dual_basis_check": {
+    "purpose": "FMT-07 post-2017 active SR −0.18이 cap-w 벤치 아티팩트인지 확인 (v8.3 M2)",
+    "cap_w_basis": "IKS200 (판정 권위)",
+    "ew_universe_diag": {
+      "IS_ew_port_t": 2.340,
+      "OOS_ew_port_t": 0.146,
+      "FULL_ew_port_t": 1.829,
+      "CLEAN_ew_port_t": -0.095,
+      "post2017_ew_t": 0.185
+    },
+    "verdict": "post-2017 감쇠는 EW-universe basis에서도 소멸(OOS 0.146, clean −0.095, post2017_t 0.18) -> cap-w mega-cap 아티팩트 아님, 진짜 cohort decay. screen_route=OVERLAY_CANDIDATE 재분류 근거 부재.",
+    "channel_note": "IS EW 2.34가 cap-w 2.84보다 낮아(se 확대 아님) 오히려 아티팩트 반증 방향 — basis_channels se-배율 오독 회피 정합."
+  },
+
+  "kq150_sensitivity": {
+    "purpose": "pre-2015-07 KQ150 = 퇴출 미기록 누적 명부 오염 (2026-08-22 실측). FQ-241 판정규칙 준수.",
+    "full_2005_2026_port_t": 0.866,
+    "clean_2015_07_plus_port_t": -1.643,
+    "verdict": "clean window(오염 제거)가 full보다 WORSE(−1.643 < 0.866). KQ150 백필 오염이 결과를 부풀리는 방향 아님 — alpha가 2005~2018 IS에 살고 2015+ 소멸. 오염이 판정을 유리하게 조작하지 않았음(제거 시 더 나빠짐).",
+    "fq241_compliance": "판정규칙(오염 존재 시 clean 병기) 준수 — clean이 negative를 강화 -> 오염 아티팩트 리스크 없음."
+  },
+
+  "alpha_vector": {
+    "sig_date": "2026-07-31",
+    "factor_db_asof": "2026-07-31",
+    "n_universe": 347,
+    "n_scored": 347,
+    "top_n": 25,
+    "combination": "EW mean of aligned-Z {M08_Residual_Mom, Q01_GPA, C03_EPS_Chg_3m}",
+    "artifact": "stage_artifacts/WT-D20260822_005/alpha_scores.parquet (347종 전체) + alpha_vector.json (top-25)",
+    "top10_preview": [
+      {"rank": 1, "Ticker": "A131290", "score": 1.702, "confidence": 0.85},
+      {"rank": 2, "Ticker": "A006280", "score": 1.611, "confidence": 0.81},
+      {"rank": 3, "Ticker": "A006400", "score": 1.497, "confidence": 0.75},
+      {"rank": 4, "Ticker": "A004170", "score": 1.475, "confidence": 0.74},
+      {"rank": 5, "Ticker": "A319660", "score": 1.466, "confidence": 0.73},
+      {"rank": 6, "Ticker": "A034730", "score": 1.426, "confidence": 0.71},
+      {"rank": 7, "Ticker": "A402340", "score": 1.372, "confidence": 0.46},
+      {"rank": 8, "Ticker": "A051900", "score": 1.370, "confidence": 0.68},
+      {"rank": 9, "Ticker": "A078930", "score": 1.352, "confidence": 0.68},
+      {"rank": 10, "Ticker": "A383220", "score": 1.325, "confidence": 0.66}
+    ]
+  },
+  "confidence_vector": {
+    "definition": "min(1, n_fac/3) x min(1, |score|/2) — 팩터 커버리지 x 신호강도 (advisory)",
+    "note": "자본 tier 부적격이므로 optimizer 소비 비권장 — screening diag 참고용. 전략 수준 confidence는 OOS 붕괴로 낮음."
+  },
+
+  "verdict": "measured -> CONFIG_SCOPED_NEGATIVE_CAPITAL_TIER + IS_DRIVER_ATTRIBUTION_CONFIRMED",
+  "verdict_detail": {
+    "F4_driver_attribution": "PASS (IS) — 유지축 {M08+Q01+C03} IS PORT_t 2.841 > 2.0. 형제-대조 추론(모멘텀+수익성 드라이버) IS 확정.",
+    "capital_tier": "FAIL — oos_retention −0.666 (HARD, <0.5 무조건) + full PORT_t 0.866 << 2.95 + clean/OOS 음수. forge 재확인 대상이나 screening diag가 자본 부적격 강하게 지목.",
+    "not_a_dead_direction": "AX-000/INV-7 — config-scoped(2005~ K200∪KQ150 top-25 EW 15bps cap-w). 구조판결 아님. 창-도달가능성 상한 31.01 = 신호 자체는 창이 지지, 실패는 post-2017 decay.",
+    "dual_basis": "decay가 cap-w 아티팩트 아님 확인 (EW-diag도 붕괴) -> 벤치 교정으로 구제 불가.",
+    "regime_scope_confirmed": "RISK_ON active +10.9%/yr vs RISK_OFF −2.3%/yr — 승계 경계 실측 정합 (advisory)."
+  },
+
+  "self_pit_check": {
+    "lockbox_scope": "alpha-research 정규 리서치 — SIGNAL_CUTOFF 적용 대상. sig_date 2026-07-31 lockbox 준수.",
+    "role_boundary": "Sigma/weight 미산출 (risk/optimizer 경계 준수). canonical_screen_bt는 top-N EW screening — 최적화 weight 아님.",
+    "real_computation": "canonical_screen_bt() 경유 실측 (build_benchmark_compare NW lag-3). prod(1+r)/cumprod 자체합성 없음.",
+    "metric_type_labeled": "canonical_screen_diag / screen_diagnostic 전면 라벨. graduation PASS 미주장."
+  },
+
+  "consumer_checklist_7": {
+    "1_factor_ranking": "alpha_scores.parquet score/rank — screening diag 참고용 (자본 부적격 라벨 동반)",
+    "2_universe_filter": "K200∪KQ150 + adv20_t1 2e8 준수 (미측정 축 아님)",
+    "3_overlay_regime_input": "regime arm RISK_ON/RISK_OFF 실측 — FR 모드 국면 배합 입력 후보 (NP2). 외부 overlay는 OVERLAY_INFERIOR 실측(2026-08-17).",
+    "4_risk_beta_budget": "MDD <=25% 경로 alpha 층 미해결 -> risk-research 이관 (역할 경계). beta 약 0.8 장기(source 실측).",
+    "5_monitoring_signal": "post-2017 decay = cohort-wide 신호 (FMT-07) — monitoring decay alert 후보",
+    "6_screen_label": "screen_route 후보 = 없음(OVERLAY_CANDIDATE 부적격 — dual-basis decay 확인). TURNOVER_REVIEW 무관(TO 6.4 < 11 cap). DISTRIBUTION_TARGET 요건 미충족(평균공간 powered-null 아님 — IS 신호 실재) -> C4 분포-표적은 조건부 대기.",
+    "7_cross_mode": "타 모드 이식 = FR(국면 배합) 후보만, 자본 standalone 아님"
+  },
+
+  "next_probe": [
+    "NP1: F1/F2/F3 부수관측 미측정 3계열 실측 — 개인 거래비중(A6_investor_flow) x 모멘텀 예측력 분할(F1), GPA 상위 후속 이익수정 breadth(FDB-B3, F2), 회복전환월 junk-rally 패턴(A1/E3, F3). IS 성분귀속은 확정됐으나 기전 부수관측 미측정 — 기전 참/거짓 최종 판정에 필요.",
+    "NP2: 국면 조건부 소비를 alpha standalone이 아닌 FR 모드(factor-rotation)로 이식 — regime arm 실측(RISK_ON +10.9%/yr vs RISK_OFF −2.3%/yr)이 국면 배합 입력 자격. RCMA specialist 자격(방어형/공격형 국면조건부). OVERLAY_INFERIOR(2026-08-17) 제약 인지.",
+    "NP3: C4 분포-표적 재해석 대기 조건 갱신 — 본 라운드 평균공간 IS 신호 실재(2.841)이므로 DISTRIBUTION_TARGET 요건 powered-null 미충족. 단 OOS는 평균공간 붕괴 -> OOS 창에서 분포공간(조건부 분위/왜도) 신호 잔존 여부 미측정. v8.4 Lane A 착수 시 이 재료의 OOS 분포-축 검토(평균 붕괴 and 분포 잔존이면 DISTRIBUTION_TARGET 요건 재검).",
+    "NP4: ablation method_shopping 8 > 상한 5 — DSR 진단 병기. B의 IS 2.841에 대한 DSR 산출로 IS 선택 아티팩트 정도 정량화 권고."
+  ]
+}
