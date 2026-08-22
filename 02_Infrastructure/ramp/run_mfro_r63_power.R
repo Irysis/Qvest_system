@@ -62,7 +62,8 @@ cat(sprintf("  현 창(132) 검정력 = %.3f\n",p132))
 lab<-if(p132<0.5) "★미결(검정력 부족) — 이 창에서는 이 크기를 확립할 수 없다" else
      if(p132<0.8) "경계 — 검정력 %.0f%%, 관측 미달이 효과 부재를 뜻하지 않는다" else
      "★효과 크기 부족 — 검정력이 충분한데 미달"
-cat(sprintf("  ⇒ %s\n",sprintf(lab,100*p132)))
+cat(sprintf("  ⇒ %s
+", if(grepl("%%",lab,fixed=TRUE)) sprintf(lab,100*p132) else lab))
 cat(sprintf("  검정력 0.80 도달 n ≈ "))
 nn<-132L; while(nn<1200L && pw(nn,200)<0.80) nn<-nn+60L
 cat(sprintf("%d 개월 (%.1f년)\n",nn,nn/12))

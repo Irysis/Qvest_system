@@ -217,6 +217,8 @@ AP <- list(
     "[LOW] 설계공간 상한 격자의 dtail 이 작은 epsilon 구간에서 불안정(-0.029 ~ +0.006). sup 0.0522 를 정밀 수치로 인용하지 말 것 — 안정 구간 상한은 0.042.",
     "[LOW] sd_gate 가 재정규화 채널 제외 — 대형 epsilon 점에서 census sd 0.0214 vs WT-010 실측 0.0202(+5.9%, MDE80 을 키우는 방향). 소규모 교체 구간의 잔여 불확실성은 미검증으로 표기.",
     "[LOW] basis 3종 병기 / lag1 / strict-PIT A/B 는 처치 측정이 있어야 산출된다 — 관문 중단으로 미산출(부재 사유 명시). PIT 정적 검사는 수행: assert 268/268 PASS · 위반 주입 0/268.",
+    "[하네스 결함 a — BLOCK 급] ast_spec_gate.sh 의 falsification fields 대조 단위는 ast_field_map_v0 group_id 인데, 승계 아티팩트 관례(WT-009/010/011)는 group_id:field 를 쓴다 — 정상 아티팩트가 block 된다. 본 패키지는 fields 를 사전 단위로 정규화하고 원문을 fields_verbatim 에 보존(alpha_hypothesis.json 무수정). 3라운드 동안 미발각 이유 = alpha_package 를 R write_json() 이 쓰므로 PreToolUse[Write] 훅이 그 경로를 못 본다.",
+    "[하네스 결함 b — advisory] schema.json ast_node.args 는 스칼라 number 를 명시 허용하는데 게이트 ③ in-process ast_verify 는 같은 스칼라에 노드 형상 오류를 낸다(실측 0.23052149958407 / 0.2, verdict=FAIL_CONTRACT). hard 차단 대상은 FAIL_LOOKAHEAD 뿐이라 비차단이며 본 라운드 lookahead 판정은 깨끗. ALB-006 과 같은 계통·반대 방향의 계약 표면 분열 — 하네스 소관, Q-Lead 이관.",
     "[전도성 상한] 이 창·이 소비 형태에서 양성 대조조차 paired NW t 1.566 — 유의성 수준 판정은 원리적으로 불가하며 ΔIR 점추정 게이트만 유효(모든 판정 서술에 병기)."),
   generated_at = format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z")
 )

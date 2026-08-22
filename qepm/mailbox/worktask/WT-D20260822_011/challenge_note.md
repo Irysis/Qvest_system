@@ -140,3 +140,39 @@ v1.2 Charter §10 은 > 0.95 이면 **wt_type 재분류 권고** 대상으로 �
 - AX axiom hard FAIL 0건. PIT C1 위반 0건 (assert 268/268 PASS · 위반 주입 0/268).
 - ⇒ Q-Lead 자동 escalate **불요**. 단 C1(ε 앵커 규칙 폐기 권고)과 C5(wt_type 재분류)는
   보고에 명시 이관.
+
+---
+
+## C8 — ACCEPT (하네스 결함 2건, 본 라운드가 게이트를 실제로 돌려서 발견)
+
+`ast_spec_gate.sh` 를 alpha_package.json 실내용으로 직접 실행했다(훅은 R `write_json()` 경로에는
+발화하지 않으므로 — axioms.md 가 문서화한 "생산자가 1차 방어선, 훅은 수기 작성분 2차선" 구조).
+**돌려보니 block 이 났고**, 그 과정에서 계약 표면 분열 2건이 드러났다.
+
+### (a) falsification `fields` 의 단위 분열 — BLOCK 급
+
+- 게이트 사전: `factor_registry.json` 373 팩터명 ∪ `ast_field_map_v0.json` **group_id 58** (예: `A1_RAWDATA_OHLCVS_daily`).
+- 승계 아티팩트(WT-009 → 010 → 011 관례)는 `A1_RAWDATA_OHLCVS_daily:Size` 처럼 **group_id:field** 를 쓴다.
+  `:field` 형태는 AST **leaf** 의 문서화된 표기("group_id 또는 group_id:field")인데, 게이트의
+  falsification 검사는 사전과 **정확 일치**만 인정한다 ⇒ 정상 아티팩트가 block.
+- **처리**: `alpha_hypothesis.json` 은 **수정하지 않았다**(Charter 원칙 8). 본 패키지에서만
+  `fields` 를 사전 단위로 정규화하고 원문을 `fields_verbatim` 에 무손실 보존 +
+  `field_normalization_note` 명시. 정규화 후 게이트 **통과**(block → pass 로 전환 확인 = 게이트가
+  살아 있고 내 수정이 그 축을 정확히 겨눴다는 양방향 증거).
+- **왜 3라운드 동안 안 보였나**: WT-009/010 의 alpha_package 는 R `write_json()` 이 썼고
+  PreToolUse[Write] 훅은 그 경로를 보지 못한다. 즉 이 게이트는 **이 계열 산출물에 한 번도 발화한 적이 없다**.
+
+### (b) `ast_node.args` 스칼라 허용 여부 분열 — advisory 급
+
+- `schema.json#/definitions/ast_node` 는 args 원소로 `{"type":"number"}` 를 **명시 허용**한다
+  (윈도우 길이·클립 경계 등).
+- 그런데 게이트 ③의 in-process `ast_verify` 는 같은 스칼라에 "노드 형상 오류(비 dict)" 를 낸다
+  (본 라운드 실측: `0.23052149958407`, `0.2` 두 건, verdict=FAIL_CONTRACT).
+- 게이트의 hard 차단 대상은 `FAIL_LOOKAHEAD` 뿐이라 **비차단**이며 본 라운드의 lookahead 판정은
+  깨끗하다. 그러나 스키마와 검증기가 같은 대상을 반대로 판정한다 — `ALB-006` 계열(게이트가 스키마
+  미정의 키를 요구)과 **같은 계통, 반대 방향**의 분열이다.
+- **처리**: 수정 범위 밖(하네스 소관). Q-Lead 이관 + 태스크 분리.
+
+**자기 비평의 자기 비평**: 이 두 건은 "게이트가 통과했다"로 넘어갔으면 안 보였다 —
+**게이트를 실제로 돌리고, block 을 받고, 고친 뒤 pass 로 바뀌는지 다시 확인**해서 나왔다.
+`feedback-verify-both-directions-always` 규약이 산출물이 아니라 **하네스**에서 값을 냈다.
