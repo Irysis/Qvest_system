@@ -48,7 +48,12 @@ for(i in seq_along(rebal)){ sd<-rebal[i]; ymi<-format(sd,"%Y-%m")
   f<-f[Factor_Name %in% unname(FAC),.(Ticker,Factor_Name,Z=Z_Score_Aligned)]
   inv<-setNames(names(FAC),unname(FAC)); f[,fk:=inv[Factor_Name]]
   W<-dcast(f,Ticker~fk,value.var="Z",fun.aggregate=function(x)mean(x,na.rm=TRUE))
+  ## ★열 이름 충돌 방지 (2026-08-22): uni 의 Size(시총)와 팩터 S01_Size 가 같은 이름이라
+  ##   merge 가 Size.x/Size.y 로 갈랐다 — 팩터 열이 조용히 사라지는 계통. 병합 전에 개명한다.
+  setnames(uni,"Size","mktcap")
   M<-merge(uni,W,by="Ticker")
+  if(any(grepl("\.(x|y)$",names(M)))) stop("[build_mfro_panel] 병합 후 열이름 충돌: ",
+    paste(grep("\.(x|y)$",names(M),value=TRUE),collapse=","))
   M<-merge(M,mret[ym==ymi,.(Ticker,fwd_ret,fwd_ym)],by="Ticker",all.x=TRUE)
   M[,`:=`(ym=ymi,rebal=sd)]
   rows[[i]]<-M
