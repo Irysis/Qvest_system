@@ -19,12 +19,12 @@ write_parquet(alpha_panel, file.path(OUT, "alpha_scores.parquet"))
 cat(sprintf("alpha_scores.parquet 저장 — %d행 · %d개월\n", nrow(alpha_panel), uniqueN(alpha_panel$Date)))
 
 ## ── advisory 진단: rank-IC / ICIR / monotonicity(decile) / subperiod / Harvey-t / DSR ──
-inp <- readRDS(file.path(SRC, "r33_inputs.rds"))
-returns_dt <- as.data.table(inp$frd)[, .(Date = as.Date(Date), Ticker = as.character(Ticker),
-                                          Ret_1m = as.numeric(Ret_1m))]
-## rank-IC by sig_date (score → forward return의 spearman) — score sig_date 축과 return 축 정렬
-scj <- merge(sc[, .(sig_date = as.Date(sig_date), Ticker, score)],
-             returns_dt[, .(sig_date = Date, Ticker, Ret_1m)], by = c("sig_date","Ticker"))
+## rank-IC 는 python diag(-0.0281)와 동일 축: 패널 sig_date+Ticker 의 fwd_ret_1m 에 조인
+pan <- as.data.table(read_parquet(file.path(SRC, "lane_a_feature_panel.parquet")))
+pan[, sig_date := as.Date(sig_date)]
+scj <- merge(sc[, .(sig_date = as.Date(sig_date), Ticker = as.character(Ticker), score)],
+             pan[, .(sig_date, Ticker = as.character(Ticker), Ret_1m = fwd_ret_1m)],
+             by = c("sig_date","Ticker"))
 ic_m <- scj[is.finite(Ret_1m) & is.finite(score),
             .(ic = suppressWarnings(cor(score, Ret_1m, method = "spearman"))), by = sig_date][is.finite(ic)]
 rank_ic <- mean(ic_m$ic); ic_sd <- sd(ic_m$ic); icir <- rank_ic/ic_sd
