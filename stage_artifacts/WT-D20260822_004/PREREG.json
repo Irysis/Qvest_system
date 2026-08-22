@@ -1,0 +1,105 @@
+{
+  "wt_id": "WT-D20260822_004",
+  "round_id": "FQ-244_nonml_combination_rule_WT-D20260822_004_20260822",
+  "fq_ref": "FQ-244",
+  "sealed_at": "2026-08-22",
+  "sealed_by": "alpha-research",
+  "entry_gate_order_enforced": {
+    "rule": "본 사전등록은 P1(arm 구성·백테)·P2(검정력 관문) 실행 후, 처치 arm 의 paired 평균·t 를 읽기 전에 봉인됐다. P1/P2 스크립트는 처치 평균·t 를 출력하지 않도록 작성됐다(MEAN-BLIND). 출력된 것 = 대조군 C0 parity(공표값 재현) · 분산 특성(sd/nw/MDE) · MATERIAL 정의값.",
+    "precedent": "FQ-237 (WT-D20260822_002) P2 mean-blind gate 자구 승계",
+    "artifacts_before_seal": ["p0_probe.R", "p1_build_power.R", "p2_power_gate.R", "p0_probe.rds", "p1_arms.rds", "p2_power.rds"]
+  },
+  "hypothesis_inheritance": {
+    "source": "qepm/mailbox/worktask/WT-D20260822_004/alpha_hypothesis.json (alpha-hypothesis, model_tier=fable, verdict=designed)",
+    "rule": "Charter 원칙 8 No Silent Override — mechanism / falsification / regime_scope 자구 승계. alpha-research 는 재작성하지 않고 수치 문턱만 고정한다.",
+    "statement_short": "성분 영향력 유계화가 M1 slot 잠식을 억제해 IC→PORT_t 전이를 개선한다."
+  },
+  "design": {
+    "type": "paired_arm_contrast_single_node",
+    "moving_degree_of_freedom": "결합 규칙만 (combination rule). 선별·창·top-N·비용·유니버스 전부 고정.",
+    "sealed_degrees_of_freedom": [
+      "선별 = FQ-237 SEL_RANK 궤적 자구 재사용 (재실행 아님, 파일 승계)",
+      "top-N 절단·hysteresis·soft-membership = FQ-059 소관, 본 라운드 미개봉",
+      "ML 결합기 = 헌법 재진입 순서 1 준수로 본 라운드 금지"
+    ],
+    "fixed_constants": {"K": 5, "W": 36, "TOPN": 25, "COST_BPS_ONEWAY": 15, "CLIP": 2.0, "MIN_OBS": 30, "n_months": 221, "window": "2008-03 ~ 2026-07"},
+    "sweep_count": 0,
+    "n_trials_this_round": 3,
+    "selection_type": "preregistered_arms_no_champion",
+    "selection_type_rationale": "arm 3종이 측정 전 고정되고 argmax/threshold-pick 으로 최종안을 고르는 단계가 없다(각 arm 독립 라벨, 챔피언 선발 없음) ⇒ measurement-graduation 3절의 sweep 정의 미해당 ⇒ DSR 0.5 HARD 비발동. DSR 수치는 진단용으로 산출·기록한다.",
+    "selection_objective": "canonical_port_t"
+  },
+  "arms": {
+    "C0_zscore_ew": {"role": "control", "rule": "rowMeans(z, na.rm) — 현행 z_score_aligned_equal_weight", "published_port_t_capw": 0.94741072},
+    "C1_rank_avg": {"role": "treatment", "rule": "성분별 횡단면 백분위 rank((r-0.5)/n_obs) 의 등가중 평균. 기여 구간 [0,1] 완전 유계, uniform marginal.", "combination_rule_enum": "rank_average"},
+    "C2_winsor_z_ew": {"role": "treatment", "rule": "pmax(pmin(z, 2.0), -2.0) 의 등가중 평균. c=2.0 단일 사전고정 — grid 아님(c 탐색은 별도 사전등록).", "combination_rule_enum": "z_score_aligned_equal_weight (winsorized 입력 변형)"},
+    "C3_max_z_negctl": {"role": "negative_control_discriminating", "rule": "종목별 max_k(z_k). 채택 후보 아님.", "discriminates": "본 기전 참이면 C3 < C0 (잠식 극대화) / M2(평균화 뭉갬, FQ-116 기각) 참이면 C3 > C0"},
+    "missing_handling": "전 arm 동일 — 관측 팩터만 사용(na.rm), 종목별 사용팩터 1 이상 요구. 실측 평균 사용팩터 4.86/5.",
+    "tie_handling": "scores_dt 를 (Date, Ticker) 오름차순 정렬 후 canonical_screen_bt 에 전달 — setorder(Date,-score) 안정정렬이 Ticker 오름차순으로 결정적 파단."
+  },
+  "power_precheck_measured": {
+    "principle": "검정력은 선언 상수가 아니라 직접 측정. 계약 선언 sd 0.0394 는 무작위 top-25 EW 쌍의 sd 이고, 본 대조는 선별을 공유하는 결합-규칙 대조라 척도가 다르다(실측 0.316~0.626 배).",
+    "n_months": 221,
+    "sd_source": "각 arm 의 월간 net active diff 계열에서 직접 측정 (mean-blind)",
+    "measured": [
+      {"arm": "C1_rank_avg", "sd_monthly_own": 0.02162, "sd_ratio_vs_contract_band": 0.549, "nw_inflation_measured": 1.001, "mde_own_annual_pct": 3.496, "mde_band_annual_pct": 6.370, "implied_t_own": 2.000, "implied_t_band": 3.644, "material_over_mde_own": 2.35},
+      {"arm": "C2_winsor_z_ew", "sd_monthly_own": 0.01246, "sd_ratio_vs_contract_band": 0.316, "nw_inflation_measured": 1.093, "mde_own_annual_pct": 2.198, "mde_band_annual_pct": 6.954, "implied_t_own": 2.000, "implied_t_band": 6.327, "material_over_mde_own": 3.74},
+      {"arm": "C3_max_z_negctl", "sd_monthly_own": 0.02465, "sd_ratio_vs_contract_band": 0.626, "nw_inflation_measured": 0.962, "mde_own_annual_pct": 3.828, "mde_band_annual_pct": 6.120, "implied_t_own": 2.000, "implied_t_band": 3.197, "material_over_mde_own": 2.15}
+    ],
+    "degeneracy_check": {
+      "finding": "implied_t_own = 2.000 (3 arm 전부, 소수 4자리) — 자기-diff sd 로 만든 바는 t 검정의 단위 번역이지 독립 바가 아니다(FQ-237 자기적발 승계 규약대로 사전등록 시점에 산출·확인).",
+      "consequence": "MDE(own) 은 판정 문턱으로 쓰지 않고 효과 크기 단위(연 %p)로만 해석한다. 독립 바 = implied_t_band (3.20 ~ 6.33).",
+      "nw_note": "nw_inflation 은 계열에서 실측 (0.962 ~ 1.093) — 가정 상수 1.25 미사용. 월간 횡단면 스프레드 계열에서 1.25 가 과대하다는 2026-08-09 실측(중앙 0.986)과 정합."
+    },
+    "material_effect_definition": {
+      "value_annual_pct": 8.2228,
+      "derivation": "C0 의 월평균 net active 0.003240 · NW3 SE 0.003420 · t 0.9474 에서, PORT_t 를 2.95 로 올리는 데 필요한 월평균 증분을 연환산: (2.95*SE - mean)*12*100.",
+      "meaning": "결합 규칙 마디 하나로 벽(PORT_t 2.95)을 넘기려면 이만큼의 연 active 개선이 필요하다.",
+      "powered_verdict": "MDE(own) 2.20~3.83 %p/yr 는 MATERIAL 8.22 %p/yr 보다 작다 ⇒ 본 설계는 물질적 효과를 검출할 수 있다(margin 2.15~3.74배). null 이 나오면 검정력 부족이 아니라 효과없음(powered null)으로 라벨할 자격이 있다."
+    }
+  },
+  "primary_decision_rule": {
+    "statistic": "paired 월간 net active 차 (arm - C0) 의 Newey-West lag-3 t (.nw_t_mean), n=221",
+    "coprimary_arms": ["C1_rank_avg", "C2_winsor_z_ew"],
+    "champion_selection": "없음 — 각 arm 독립 라벨",
+    "labels": {
+      "EFFECT_POSITIVE": "t >= +2.0",
+      "EFFECT_NEGATIVE": "t <= -2.0",
+      "POWERED_NULL_NO_MATERIAL_EFFECT": "|t| < 2.0 이고 CI95 상단(연 %p) < 8.2228 — 이 설계가 물질적 효과를 검출할 수 있었는데 못 했다 = 효과없음",
+      "UNDERPOWERED_UNRESOLVED": "|t| < 2.0 이고 CI95 상단 >= 8.2228 = 미결",
+      "MASKED": "다른 축이 동시에 반대 방향으로 움직여 본 축 효과를 상쇄한 정황이 controls 에서 확인될 때"
+    },
+    "basis": "primary = cap-w IKS200 (.cache/benchmark.parquet). basis 3종 병기 의무: IKS200 / parent(K200 union KQ150 cap-w) / EW-유니버스. canonical_screen_bt 는 benchmark_id 를 KOSPI200_total_return 으로 하드코딩하므로 실제 넘긴 계열을 별도 기록한다."
+  },
+  "falsification_thresholds": {
+    "R1_transport_check": {
+      "when": "성과 판정 전 STOP 게이트",
+      "definition": "advocate = 선별 K=5 중 argmax_k z_ik (FQ-116 귀속 규칙 자구 재사용, 새 정의 발명 금지). solo-advocate pick = C0 top-25 편입 종목 중, advocate 팩터를 뺀 나머지 K-1 평균으로 재랭킹하면 top-25 밖으로 밀리는 종목 (leave-advocate-out).",
+      "R1a_threshold": "월별 solo-advocate 편입 비율의 중앙값 >= 0.20 (25 slot 중 5 이상). 미달 시 STOP + 라벨 MECHANISM_NOT_TRANSPORTED (본 팩터 풀에 M1 부재).",
+      "R1b_threshold": "solo-advocate 종목의 advocate 팩터 standalone canonical PORT_t 중앙값 < 선별 풀 전체 팩터 standalone PORT_t 중앙값. 미달 시 STOP 아님 — 유계화는 성립하나 전이-음성 집중은 미확인으로 기전 강등 기록.",
+      "rationale": "FQ-116 은 다른 팩터 풀(WT-009 5종 고정)에서 쟀다. 본 하네스는 매월 재선별하는 331 대상 K=5 풀이므로 수송이 전제이지 기정사실이 아니다."
+    },
+    "R2_mediator_movement": {"threshold": "처치 arm 의 월별 solo-advocate 편입 비율 중앙값 <= 0.8 배 C0 값. 미달 시 라벨 NO_MEDIATOR_MOVEMENT (처치가 매개변수를 못 움직임) — 성과 null 을 기전 반증으로 읽을 수 없다."},
+    "R3_linkage": {"definition": "C0 에서 solo-advocate 편입 종목의 월평균 fwd_ret_1m 마이너스 consensus 편입 종목의 월평균 fwd_ret_1m, NW lag-3 t.", "threshold": "t <= -1.5 이면 잠식→손실 연결 성립 (FQ-116 대응 실측 -2.01). t > -1.5 이면 연결 절단 — 손실 원천을 이산 top-N 절단 마디(FQ-059)로 귀속 이전하고 기록."},
+    "R4_direction_negative_control": {"threshold": "C3(max-z) paired 연 %p < 0 이면 방향 정합. C3 가 C0 보다 유의(t >= +2.0) 개선되면 본 기전 기각 + M2 재부상 신호 → FQ-116 M2 판정 재심 요청."},
+    "R5_kurtosis_heterogeneity": {"definition": "월별로 선별 K=5 팩터의 횡단면 z 초과첨도를 산출, 그 IQR 의 중앙값.", "threshold": "1.0 이상이면 friction 3 전제(꼬리 두께 이질) 성립. 미달 시 friction 3 강등 (R1~R4 와 독립, 기전 전체를 죽이지 않음)."}
+  },
+  "controls": {
+    "positive_control_window_reachability": {
+      "C0_LEAK1": "결합 입력 z 를 t+1 월 z 로 교체한 1개월 누출판 — 같은 노드에서 이 하네스·이 창이 개선을 검출할 수 있음을 실증. 통과 조건 paired t >= +2.0.",
+      "ORACLE_FWD": "월내 실현 fwd_ret_1m 상위 25 종목 (완전 예지) — 도달 불가 상한이지만 창-도달가능성 상한의 정직한 눈금. PORT_t 2.95 미달 보고 시 병기 의무를 이 값으로 충족.",
+      "basis_of_choice": "기측정 양성에서 선택 — WT-D20260813_005 / FQ-237 이 같은 하네스·같은 n=221 에서 1개월 누출 주입을 t 3.57~4.16 으로 검출."
+    },
+    "negative_control": "C3_max_z_negctl (판별 arm 겸용)",
+    "pit_stress": "LAG1 — 결합 입력 z 를 t-1 월 z 로 교체한 지연판. 붕괴하면 동월 누출 의심.",
+    "robustness": ["R_LIQ: 유동성 2e8 필터 적용 재측정", "R_SUB: 2015-07 전/후 분할 — 진단 병기만, 국면 주장 승격 금지 (era 교락 + universe_exit_unrecorded_pre201512, 편향 하방/중립)", "R_TOP5: 상위 5개월 제외 시 점추정 잔존율"]
+  },
+  "recording_obligations": [
+    "metric_type 전 수치 라벨 (canonical_screen / canonical_screen_diag)",
+    "rank-IC 계열 t 와 portfolio-alpha t 명시 구분 (Cycle 2 교훈)",
+    "graduation HARD 3종은 forge-authoritative 값에만 — 본 단계 canonical 수치로 졸업 주장 금지",
+    "미결(underpowered) / 효과없음(powered null) / 가려짐(masked) 3분할 라벨",
+    "DSR 진단 산출(게이트 아님) + n_trials 기록"
+  ],
+  "verdict_pending": true
+}
