@@ -70,7 +70,7 @@ has_insight <- length(lcodes) > 0 || length(verdicts) > 0
 # ★summary 는 [20,100]자 계약(tg_format_summary). 헤드라인은 **한 줄 결론**만 담고
 #   전문은 아래 '배운 것' 본문이 나른다 — 잘라서 버리는 게 아니라 위치를 나눈다.
 .clip <- function(x, lo = 20L, hi = 96L) {
-  t <- gsub("\s+", " ", trimws(as.character(x %||% "")))
+  t <- gsub("[[:space:]]+", " ", trimws(as.character(x %||% "")))
   if (nchar(t) > hi) t <- paste0(substr(t, 1, hi - 1), "…")
   if (nchar(t) < lo) t <- paste0(t, strrep(" ", lo - nchar(t)))
   t
