@@ -242,6 +242,9 @@ _tokfp="none"
 command -v sched_token_fingerprint >/dev/null 2>&1 && _tokfp="$(sched_token_fingerprint 2>/dev/null || echo none)"
 log "토큰 지문: ${_tokfp} (값 아님 · sha256 앞12자) — 401 시 이 줄로 만료/배관 구분"
 
+# route 산출 수(전) — 라우터의 효과는 원장이 아니라 route JSON 이다.
+_ROUTE_DIR="$BASE/stage_artifacts/paper_recharge"
+_ROUTE_BEFORE=$(ls -1 "$_ROUTE_DIR"/alpha_search_route_*.json 2>/dev/null | wc -l | tr -d " ")
 timeout 3000 "$CLAUDE_BIN" -p "$PROMPT_TEXT" \
   --dangerously-skip-permissions >> "$LOG" 2>&1
 rc=$?
@@ -328,5 +331,16 @@ if [ "$rc" -eq 0 ] && [ -n "$BACKLOG_DATES" ]; then
   if [ -n "$EXPIRING" ]; then
     scheduler_alert "paper_router" "backlog_expiring" "claude exit=0 이나 route JSON 미생성 백로그가 7일 창 만료 임박: $EXPIRING — 창 이탈 시 무경보 영구 좌초, 수동 라우팅 또는 창 내 재처리 필요"
   fi
+fi
+# --- (2026-08-22 도훈 지시 "완주할 때마다") 완주 알림 — tg_agent_brief() 단일 진입점 경유.
+_ROUTE_AFTER=$(ls -1 "$_ROUTE_DIR"/alpha_search_route_*.json 2>/dev/null | wc -l | tr -d " ")
+_ROUTE_DELTA=$(( ${_ROUTE_AFTER:-0} - ${_ROUTE_BEFORE:-0} ))
+_EFFECT_CMP="SAME"
+[ "${_ROUTE_DELTA:-0}" -gt 0 ] && _EFFECT_CMP="CHANGED"
+_BL_N=0
+[ -n "${BACKLOG_DATES:-}" ] && _BL_N=$(printf "%s" "$BACKLOG_DATES" | tr "," "\n" | grep -c .)
+_RS="$BASE/02_Infrastructure/ops/research_run_notify.R"
+if [ -f "$_RS" ] && [ "${QVEST_RUN_NOTIFY:-1}" = "1" ]; then
+  QM_ROOT="$BASE" Rscript --no-save "$_RS" "paper_router" "${_BL_N:-0}" "${_ROUTE_DELTA:-0}" "$_EFFECT_CMP" "$rc" >> "$LOG" 2>&1 || log "완주 알림 실패(비치명)"
 fi
 exit 0
