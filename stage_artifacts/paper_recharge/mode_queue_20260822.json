@@ -1,0 +1,218 @@
+{
+  "date": "20260822",
+  "schema_version": "mode_queue_v1",
+  "generated_at": "2026-08-22T00:00:00+0900",
+  "optimizer": [
+    {
+      "rank": 1,
+      "source_id": "curated:RA_smoother_path_multifactor_smart_beta.pdf",
+      "provider": "Research Affiliates",
+      "title": "A Smoother Path to Outperformance with Multi-Factor Smart Beta",
+      "route": "optimizer",
+      "shrinkage_builtin": "yes",
+      "statistic_order": "<=2nd",
+      "screen_priority": "⭐⭐",
+      "screen_note": "Diversification-based blending = implicit regularization. 2nd-order (mean-variance correlation). Top priority: directly addresses our multi-sleeve combination problem.",
+      "kr_feasible": true,
+      "priority_basis": "yes AND <=2nd -> ⭐⭐"
+    },
+    {
+      "rank": 2,
+      "source_id": "curated:RA_cost_capacity_smart_beta.pdf",
+      "provider": "Research Affiliates",
+      "title": "Cost and Capacity: Comparing Smart Beta Strategies",
+      "route": "optimizer",
+      "shrinkage_builtin": "yes",
+      "statistic_order": "<=2nd",
+      "screen_priority": "⭐⭐",
+      "screen_note": "Capacity-adjusted weighting = implicit regularization. Cost-aware 2nd-order optimization. Directly supports our 15bps turnover constraint framework.",
+      "kr_feasible": true,
+      "priority_basis": "yes AND <=2nd -> ⭐⭐"
+    },
+    {
+      "rank": 3,
+      "source_id": "2608.17808",
+      "provider": "arxiv",
+      "title": "Self-Consistent Adjoint Policy Iteration for Constrained Dynamic Portfolio Choice",
+      "route": "optimizer",
+      "shrinkage_builtin": "no",
+      "statistic_order": "<=2nd",
+      "screen_priority": "⭐",
+      "screen_note": "Simulation-based constrained optimization via HJB/adjoint. 50-asset validated, CRRA + convex constraints. Applicable to our 25-stock long-only problem. No shrinkage but avoids tail estimation.",
+      "kr_feasible": true,
+      "priority_basis": "no AND <=2nd -> ⭐"
+    },
+    {
+      "rank": 4,
+      "source_id": "2608.15667",
+      "provider": "arxiv",
+      "title": "Scalable Pontryagin-Guided Adjoint Control for Constrained Dynamic Portfolio Choice",
+      "route": "optimizer",
+      "shrinkage_builtin": "no",
+      "statistic_order": "<=2nd",
+      "screen_priority": "⭐",
+      "screen_note": "Scales adjoint optimization to 100 assets (nRMSE<8.5e-3). Companion to 2608.17808. 25-stock universe well within scope. Pair both for comprehensive review.",
+      "kr_feasible": true,
+      "priority_basis": "no AND <=2nd -> ⭐"
+    },
+    {
+      "rank": 5,
+      "source_id": "2608.18022",
+      "provider": "arxiv",
+      "title": "Entropic Value-at-Risk Portfolio Optimization for Tempered Stable Levy Processes",
+      "route": "optimizer",
+      "shrinkage_builtin": "weak",
+      "statistic_order": "tail_quantile",
+      "screen_priority": "후순위",
+      "screen_note": "EVaR tighter than CVaR. Parametric CGF structure gives weak shrinkage. Tail-quantile statistic. Higher Sharpe than CVaR benchmark (rolling US ETF 2000-2026). 후순위 due to tail estimation.",
+      "kr_feasible": true,
+      "priority_basis": "weak AND tail_quantile -> 후순위"
+    },
+    {
+      "rank": 6,
+      "source_id": "2608.20179",
+      "provider": "arxiv",
+      "title": "Dynamic Portfolio Optimization under CVaR Constraints",
+      "route": "optimizer",
+      "shrinkage_builtin": "no",
+      "statistic_order": "tail_quantile",
+      "screen_priority": "후순위",
+      "screen_note": "Continuous-time CVaR constraint. Elegant HJB formulation. No shrinkage + tail statistic. Discretization for monthly rebalance is non-trivial. Theoretical reference.",
+      "kr_feasible": true,
+      "priority_basis": "no AND tail_quantile -> 후순위"
+    }
+  ],
+  "risk": [
+    {
+      "rank": 1,
+      "source_id": "2608.20020",
+      "provider": "arxiv",
+      "title": "The Reconfiguration Premium: Co-movement Structure as an Unspanned Dimension of the VRP",
+      "route": "risk",
+      "relevance": "Measures rate-of-change in cross-sectional co-movement structure (principal angles between eigenspaces of consecutive correlation matrices). Priced in aggregate VRP (t=5.40). Implication: incorporate correlation stability metric in risk model update frequency and crowding monitor.",
+      "kr_feasible": true
+    },
+    {
+      "rank": 2,
+      "source_id": "2608.18299",
+      "provider": "arxiv",
+      "title": "The Markets Conditioning Representation: Crowding and Convention Multiplicity",
+      "route": "risk",
+      "relevance": "Formalizes representation crowding (driver-space overlap among strategies) vs. position crowding. Empirical driver-specific crowding signature. Directly enhances our crowding risk model (CR05_Short_Pressure_Proxy, CR04_Institutional_Overlap).",
+      "kr_feasible": true
+    },
+    {
+      "rank": 3,
+      "source_id": "2608.12251",
+      "provider": "arxiv",
+      "title": "Regime-Gated Residual Mixture-of-Experts for Cross-Sectional Volatility Forecasting",
+      "route": "risk",
+      "shrinkage_builtin": "no",
+      "statistic_order": "<=2nd",
+      "screen_priority": "⭐",
+      "relevance": "RG-ResMoE for 5-day realized vol forecasting. Regime-gated hard routing outperforms soft routing and capacity-matched MLP. US + Japan validation. Enhances our D-family (D03/D34) realized vol estimates. No shrinkage + 2nd-order = ⭐",
+      "kr_feasible": true
+    },
+    {
+      "rank": 4,
+      "source_id": "2608.16749",
+      "provider": "arxiv",
+      "title": "Rough Volatility Across Assets",
+      "route": "risk",
+      "shrinkage_builtin": "no",
+      "statistic_order": "higher",
+      "screen_priority": "⭐",
+      "relevance": "Hurst H~0.13 across 3926 US equities. Rough vol universal. KR: incorporate roughness correction in realized variance estimator for risk model. Fractional moment = higher-order = ⭐",
+      "kr_feasible": true
+    },
+    {
+      "rank": 5,
+      "source_id": "2608.17481",
+      "provider": "arxiv",
+      "title": "A Generic Nonparametric Value-at-Risk Estimator for High Dimensions",
+      "route": "risk",
+      "shrinkage_builtin": "no",
+      "statistic_order": "tail_quantile",
+      "screen_priority": "후순위",
+      "relevance": "Nonparametric VaR+CVaR algorithm for arbitrary dimensions. 500 portfolios x 49 futures test. Risk measurement reference. No shrinkage + tail = 후순위 for optimizer coupling.",
+      "kr_feasible": true
+    },
+    {
+      "rank": 6,
+      "source_id": "2608.15212",
+      "provider": "arxiv",
+      "title": "Social Disclosure Channels and Firm Risk",
+      "route": "risk",
+      "relevance": "First-time DART social disclosure -> increased idiosyncratic vol. Continuous sustainability reporting -> lower vol. Potential idiosyncratic risk predictor if DART NLP pipeline built.",
+      "kr_feasible": true
+    },
+    {
+      "rank": 7,
+      "source_id": "curated:RA_ignored_risks_factor_investing.pdf",
+      "provider": "Research Affiliates",
+      "title": "Ignored Risks of Factor Investing",
+      "route": "risk",
+      "shrinkage_builtin": "no",
+      "statistic_order": "tail_quantile",
+      "screen_priority": "후순위",
+      "relevance": "Factor crash risk and hidden tail risks in factor portfolios. Direct input for risk-research tail stress diagnostics. Reference framework for momentum crash / value trap risks.",
+      "kr_feasible": true
+    },
+    {
+      "rank": 8,
+      "source_id": "curated:GMO_no_silver_bullets_in_investing.pdf",
+      "provider": "GMO",
+      "title": "No Silver Bullets in Investing",
+      "route": "risk",
+      "relevance": "Risk premia framing and implementation caution. Factor premia persistence and decay context. Background reading for risk model validation.",
+      "kr_feasible": true
+    }
+  ],
+  "regime": [
+    {
+      "rank": 1,
+      "source_id": "curated:MAN_AHL_trend_following_whats_not_to_like.pdf",
+      "provider": "Man AHL",
+      "title": "Trend-Following: What Is Not to Like?",
+      "route": "regime",
+      "relevance": "Comprehensive trend-following analysis including crisis alpha properties. Reference for overlay regime signal construction.",
+      "kr_feasible": true
+    },
+    {
+      "rank": 2,
+      "source_id": "curated:CFM_convexity_of_trend_following.pdf",
+      "provider": "CFM",
+      "title": "The Convexity of Trend Following",
+      "route": "regime",
+      "relevance": "Analyzes the convex (option-like) payoff of trend strategies in tail events. Supports crisis alpha overlay design.",
+      "kr_feasible": true
+    },
+    {
+      "rank": 3,
+      "source_id": "curated:RA_timing_smart_beta.pdf",
+      "provider": "Research Affiliates",
+      "title": "Timing Smart Beta Strategies",
+      "route": "regime",
+      "relevance": "Relative valuation approach to factor timing. Buy when cheap, sell when expensive. Supports regime-conditional factor allocation (RCMA) design.",
+      "kr_feasible": true
+    },
+    {
+      "rank": 4,
+      "source_id": "curated:WINTON_ucits_funds_icav_prospectus_2025.pdf",
+      "provider": "Winton",
+      "title": "Winton UCITS Funds ICAV Prospectus 2025",
+      "route": "regime",
+      "relevance": "Winton systematic strategy taxonomy across trend, carry, relative value. Implementation constraints and risk management reference.",
+      "kr_feasible": true
+    },
+    {
+      "rank": 5,
+      "source_id": "curated:WINTON_managed_futures_trend_fund_prospectus_2025.pdf",
+      "provider": "Winton",
+      "title": "Winton Managed Futures Trend Fund Prospectus 2025",
+      "route": "regime",
+      "relevance": "Managed futures trend process and implementation constraints. Reference for crisis alpha overlay mechanics.",
+      "kr_feasible": true
+    }
+  ]
+}
