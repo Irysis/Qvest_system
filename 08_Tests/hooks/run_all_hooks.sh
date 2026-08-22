@@ -1104,6 +1104,9 @@ SUITES=(
   # curated 결손이 arXiv 축까지 죽이던 결합 해소 + git 추적. 08-15/16/17 3일 연속 crash 전례.
   #   ★1급 축은 "죽지 않는가" 가 아니라 "조용히 넘기지도 않는가".
   "08_Tests/ops/test_curated_sources_isolation.sh"
+  # β-통제 α 계약 (measurement-graduation.md §2). ★1급 축은 **양방향** —
+  #   β>1 과대(α=0 인데 PORT_t 유의) · β<1 과소(진짜 α 를 버릴 위험). 합성 대조로 둘 다 실증.
+  "08_Tests/contracts/test_beta_controlled_alpha.R"
 )
 
 # (2026-08-02) .py 분기 추가 — 종전엔 확장자 무관 `bash` 로 던져 파이썬 suite 가
