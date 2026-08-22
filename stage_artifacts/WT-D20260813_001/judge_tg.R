@@ -11,31 +11,30 @@ res <- tg_agent_brief(
          body = paste0(
            "Grade F (essence_score 독립 재실행 = 권위) / JUDGE_FAILED. 자본 자격 없음 — governor 미인계.\n",
            "graduation HARD 3종 전패: PORT_t 0.837(<2.95) / OOS retention -0.855(<0.7) / Calmar 0.212(<0.64).")),
-    list(emoji = "🚦", heading = "게이트 요약", type = "bullet",
-         items = c(
-           "Gate A(PIT) PASS · B(격리) PASS · D(crowding) PASS · E(종목집중) PASS",
-           "Gate C(알파 허들) FAIL · F(drift/OOS) FAIL · 17(무신호 대조) FAIL · 18(구조 drawdown) FAIL",
-           "Gate 16(DSR) NA — selection_type=chain(파라미터 사전고정) 면제",
-           "PIT C1~C15 전수 PASS (오버레이 없어 C5/C8/C9 NA)")),
+    list(emoji = "🚦", heading = "게이트 요약", type = "text",
+         body = paste0(
+           "통과: Gate A(미래참조 검증)·B(테스트 격리)·D(쏠림)·E(종목 집중도).\n",
+           "탈락: Gate C(알파 허들)·F(성과 유지율)·17(무신호 대조)·18(구조적 낙폭).\n",
+           "면제: Gate 16(DSR) — 순차개선 chain(파라미터 사전고정)이라 부적용.\n",
+           "PIT 15항목 전수 통과 (오버레이 없어 C5/C8/C9 해당없음).")),
     list(emoji = "📊", heading = "핵심 수치", type = "kv",
-         pairs = list(
+         kv = list(
            "Sharpe" = "0.578", "CAGR" = "14.2%", "MDD" = "66.9%",
            "회전율" = "10.61/yr (cap 11.0 이내)",
-           "β-통제 t(α)" = "1.207 (|t|<2, 알파 존재 주장 불가)",
-           "no_signal_gate" = "INDISTINGUISHABLE (무신호 대조와 구별 불가, diff NW-t 0.97)")),
+           "베타-통제 t(α)" = "1.207 (|t|<2, 알파 존재 주장 불가)",
+           "무신호 대조 판정" = "구별 불가 (INDISTINGUISHABLE, 초과수익 차 NW-t 0.97)")),
     list(emoji = "💡", heading = "쉬운 설명", type = "text",
          body = paste0(
-           "이 전략은 '앞으로 크게 오를 소수 종목(상방 꼬리)을 맞히는 예측기'를 만들어 25종목을 담았습니다. ",
-           "예측기가 실제로 상방 급등 종목을 잘 골라내긴 했습니다(F1 tail-hit 검정 t=+4.6, 매우 강함). ",
-           "그런데 25종목을 똑같이 나눠 담는 '평균 방식'이 그 소수 종목의 대박을 희석시켜 포트폴리오 성과로 이어지지 못했습니다. ",
-           "게다가 벤치 초과성과가 '시총 큰 종목·반도체 57% 노출 효과'와 통계적으로 구별되지 않아 ",
-           "'신호가 돈을 벌었다'고 인정할 수 없었습니다. 결론: 표적(무엇을 예측하나)은 옳으나 소비 방식(어떻게 담나)이 벽입니다.")),
-    list(emoji = "🔭", heading = "다음 프로브", type = "bullet",
-         items = c(
-           "① expectile(τ=0.9) 표적 별도 사전등록 (소비 정합 이론상 더 직접)",
-           "② 소비 마디 교체 — 분위-표적 측정 계약(canonical_screen_bt 분포-표적 소비면) 신설이 리서치 선행",
-           "③ FQ-237 결합 규칙 폐형식 교체 (선별 아닌 결합·이산 top-N 소비 마디가 벽으로 실측)",
-           "screen_route=DISTRIBUTION_TARGET. config-scoped negative — target-form family 판결 아님(INV-7)")),
+           "예측기는 앞으로 급등할 소수 종목을 실제로 잘 골라냈습니다(꼬리 적중 검정 t=+4.6). ",
+           "하지만 25종목을 똑같이 나눠 담는 평균 방식이 그 소수의 대박을 희석시켜 성과로 이어지지 못했습니다. ",
+           "게다가 초과성과가 시총 큰 종목·반도체 노출과 구별되지 않아 신호의 기여를 인정할 수 없었습니다. ",
+           "표적은 옳으나 담는 방식이 벽입니다.")),
+    list(emoji = "🔭", heading = "다음 프로브", type = "text",
+         body = paste0(
+           "① expectile(τ=0.9) 표적 별도 사전등록.\n",
+           "② 소비 마디 교체 — 분위-표적 측정 계약 신설이 리서치보다 선행.\n",
+           "③ 결합 규칙 폐형식 교체 — 벽은 결합·이산 top-N 소비 마디로 실측.\n",
+           "라우팅 = DISTRIBUTION_TARGET. 이 config 한정 negative(family 판결 아님).")),
     list(emoji = "✅", heading = "검증", type = "text",
          body = paste0(
            "AX-008 Verification Triangulation 2/3 PASS (forge + self-adversarial). PIT C1 위반 없음. ",
