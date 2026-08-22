@@ -1,0 +1,117 @@
+{
+  "wt_id": "WT-D20260813_006",
+  "fq_ref": "FQ-234 (Lane B)",
+  "validated_at": "2026-08-22",
+  "spec_id": "FQ234_absorb_w3_corr",
+  "metric_type_all": "canonical_screen",
+  "authority_note": "본 파일의 어떤 수치도 forge-authoritative 아니다. graduation HARD 3종(PORT_t 2.95 / oos_retention 0.7 / calmar 0.64)에 대한 통과 주장 없음.",
+
+  "prereg_locked_before_performance": "stage_artifacts/WT-D20260813_006/PREREG.json",
+
+  "gate_table": {
+    "pit_c1_c15": {"verdict": "PASS", "evidence": "assert_overlay_pit 315/315 + 위반주입 BLOCKED 315/315 + lag1 무붕괴 + ast_verify PASS(leaf 2/op 6/lookahead 0)"},
+    "turnover_ceiling_11": {"verdict": "PASS", "measured": 9.81, "note": "absorb_1m 판본은 18.13 으로 위반 → 사전 계산 단계에서 primary 자격 박탈"},
+    "liquidity_2e8": {"verdict": "PASS", "ruler": "adv20_t1 (injected_adv20)"},
+    "max_names_25": {"verdict": "PASS"},
+    "long_only": {"verdict": "PASS"},
+    "portfolio_alpha_t_nw_2.95": {"verdict": "FAIL", "measured": {"long": -0.318, "clean": -2.185},
+      "severity_note": "HARD 이나 forge-authoritative 값이 아니므로 졸업 판정이 아니라 screening 기록. 이 문턱은 본 창에서 IC 0.04 급 진짜 신호로도 도달 불가함이 양성 대조로 실증됨(PC1 1.674)."},
+    "screen_pass": {"verdict": "FAIL", "own_sharpe": {"long": 0.1735, "clean": -0.1263}, "own_cagr": {"long": 0.0546, "clean": -0.0355},
+      "basis": "basis-free (PerformanceAnalytics table.AnnualizedReturns)"},
+    "rank_ic_advisory_0.04": {"verdict": "N/A_WRONG_SIGN", "measured": {"long": -0.0315, "clean": -0.0450},
+      "note": "사전등록 방향 기준으로 음수. 부호 반전 주장 금지(C13)."},
+    "icir_advisory_0.2": {"verdict": "N/A_WRONG_SIGN", "measured": {"long": -0.239, "clean": -0.411}},
+    "harvey_t_advisory_3.0": {"verdict": "N/A_WRONG_SIGN", "measured": {"long": -4.243, "clean": -4.704},
+      "note": "★|t| 는 문턱을 넘지만 부호가 사전등록 방향과 반대이고, 같은 신호의 PORT_t 는 -0.318 이다 — rank-IC 계열이 advisory 로 강등된 이유(IC→PORT_t 전이 벽)의 교과서적 사례."},
+    "dsr": {"verdict": "NOT_APPLICABLE", "selection_type": "chain", "n_trials_cumulative": 1,
+      "note": "sweep 아님 — measurement-graduation §3 상 게이트 부적용. 문턱 근처 후보 부재로 진단값도 미산출."},
+    "oos_retention": {"verdict": "NOT_CLAIMED", "note": "forge-authoritative 값에만 적용되는 게이트. 본 단계 미산출."},
+    "calmar": {"verdict": "NOT_CLAIMED", "note": "동상. 참고로 basis-free own: long CAGR 5.46% / MDD 63.28% → 0.086, clean 음수."}
+  },
+
+  "control_battery": {
+    "placebo_ar1_matched_rho_0.8315": {
+      "n_draw": 200,
+      "long": {"null_median": -0.207, "null_q05": -1.019, "null_q95": 0.486, "observed": -0.318, "p_two_sided": 0.51, "verdict": "INSIDE_NULL_BAND"},
+      "clean": {"null_median": -1.833, "null_q05": -2.682, "null_q95": -1.066, "observed": -2.185, "p_two_sided": 0.225, "verdict": "INSIDE_NULL_BAND"},
+      "role": "승계 규약 2 이행 — 지속 회귀변수(rho 0.83)에서 |t|=2.0 은 5% 검정이 아니다. ★clean 창의 -2.185 를 '유의한 역부호 알파'로 오독하는 것을 이 밴드가 막았다."
+    },
+    "positive_control_PC1": {
+      "design": "반-오라클: forward 수익 순위 + 잡음, 실현 rank-IC 를 0.04(저장소 advisory 하한)로 이분탐색 보정",
+      "long": {"realized_rank_ic": 0.0413, "port_t": 1.674, "alpha_ann": 0.0722, "verdict": "DETECTED (placebo q95 0.486 초과)"},
+      "clean": {"realized_rank_ic": 0.0389, "port_t": -0.697, "alpha_ann": 0.0113, "verdict": "DETECTED (placebo q95 -1.066 초과)"},
+      "role": "승계 규약 3 이행 — '조작이 먹는다'를 먼저 증명. 동시에 검정력 상한을 드러냄: 이 창은 IC 0.04 급 평균 알파를 t≈1.7 로만 검출한다."
+    },
+    "positive_control_PC2_lookahead": {
+      "design": "absorb_naive = 창 {m-1,m,m+1} = 홀딩월 데이터 포함 (고의 위반 주입)",
+      "long": {"contaminated_port_t": 2.649, "strict_port_t": -0.318, "inflation_x": 9.33},
+      "clean": {"contaminated_port_t": 1.481, "strict_port_t": -2.185, "inflation_x": 1.68},
+      "role": "★strict-PIT A/B 의 판별력 실증. 오염판이 315개월에서 PORT_t 2.649 를 낸다 — 나이브 구성이었다면 '발견 근접'으로 보고됐을 값."
+    },
+    "reversal_control": {"absorb_vs_past3m_spearman": {"long": 0.0387, "clean": 0.0476},
+      "rank_fmb_with_past3m": {"long_nw_t": 5.328, "clean_nw_t": 4.603}, "verdict": "NOT_A_REVERSAL_REPACKAGING"},
+    "vol_proxy_control": {
+      "median_spread_t": {"raw_long": 3.993, "orthogonalized_long": 3.551, "raw_clean": 4.557, "orthogonalized_clean": 1.967},
+      "uptail_prob_diff_t": {"raw_long": -6.673, "orthogonalized_long": -0.917, "raw_clean": -4.655, "orthogonalized_clean": 0.741},
+      "verdict": "PARTIAL — 중앙값·왜도 축 생존 / 꼬리확률 축 소멸(vol 대리)",
+      "role": "MAX L-code 판례(t -5.42 → 0.14) 동형 검사. 가장 화려한 열(꼬리확률 2.04배)이 통제 후 가장 먼저 죽었다."
+    },
+    "hidden_clone_control_F3": {"mean_spearman_vs_monthly_indiv_level": -0.1466, "threshold": 0.8, "verdict": "PASS"},
+    "within_vol_tercile_shape": {
+      "note": "vol 3분위 **내부**에서도 absorb 분위별 중앙값·상방꼬리 서열이 단조 유지(T1 up20 3.50%→1.58% · T2 5.55%→3.24% · T3 8.55%→5.44%). 선형 직교화 결과(꼬리 소멸)와 방향이 갈린다 — 선형 직교화가 더 보수적인 검사이므로 **직교화 결과를 정본**으로 채택했고, 이 불일치를 은폐하지 않고 기록한다."
+    }
+  },
+
+  "power": {
+    "measured_sd_source": "동일 유니버스·창 무작위 top-25 EW 바스켓의 월 active 수익 sd — 직접 측정",
+    "long": {"n_months": 315, "sd_monthly": 0.045296, "contract_default": 0.0394, "ratio": 1.150,
+             "nw_inflation_measured": 1.068, "nw_inflation_contract_assumed": 1.25,
+             "required_annual_net_active_t2.0": 0.0654, "required_annual_net_active_t2.95": 0.0965,
+             "observed_alpha_annualized": -0.00658},
+    "clean": {"n_months": 131, "sd_monthly": 0.048478, "contract_default": 0.0394, "ratio": 1.230,
+              "nw_inflation_measured": 1.135,
+              "required_annual_net_active_t2.0": 0.1154, "required_annual_net_active_t2.95": 0.1702,
+              "observed_alpha_annualized": -0.11654},
+    "label": {
+      "mean_space_effect_detection": "NEGATIVE_POWERED — 효과없음(검정력 부족 아님). 근거: PC1 이 IC 0.04 급 진짜 신호를 PORT_t 1.674 로 검출했고 관측치는 -0.318 로 귀무 밴드 내부.",
+      "capital_grade_2.95": "INCONCLUSIVE_UNDERPOWERED — 이 창은 IC 0.04 급으로 2.95 에 도달할 수 없다. 어느 쪽으로도 자본 판정 불가.",
+      "distributional_space": "POSITIVE (median/skew) · NEGATIVE (tail probability)"
+    },
+    "contract_default_would_have_understated": "계약 기본 sd(0.0394)를 그대로 썼다면 필요효과가 long 13%·clean 19% 과소평가. Lane D 에서 기본값이 1.82배 틀린 전례의 재확인 — 결과량을 직접 재는 규약이 다시 값을 바꿨다."
+  },
+
+  "universe_comparison": {
+    "run": false,
+    "universe_used": "KR_top342-equivalent (KOSPI200 ∪ KOSDAQ150, RAWDATA K200/KQ150 플래그) · 유동성 2e8 · cost 15bps",
+    "l227_mandate_applicability": "L-227 은 'ICIR attenuation 진단이 universe-restricted 일 때' v2(KR_TOP500_FREEFLOAT) 비교를 요구한다. 본 라운드의 구속 진단은 유니버스 제한이 아니라 **평균 공간 vs 분포 공간의 갈림**이며, 유니버스를 넓혀도 평균 공간의 null 은 같은 이유로 유지될 것으로 보인다(단 이는 추정이지 측정이 아니다).",
+    "why_not_run": "①사전등록이 유니버스를 고정했고 성과를 본 뒤 유니버스 축을 추가하면 사후 자유도가 된다 ②cost_model_version 이 v2 권고(20bps)와 불일치하게 되어 mandate_compliance 를 별도로 맞춰야 한다 ③대신 **두 창(long/clean) × 두 basis(cap-w 유니버스 / KOSPI200) × cap-tier 3분해**를 실행해 재분류 여지를 덮었다.",
+    "recorded_as_next_probe": "본 재료가 분포-표적 계약 위에서 부활하면(NP1) 그때 KR_TOP500_FREEFLOAT 비교를 사전등록에 포함할 것. cap-tier 실측(OTHER 98.29%)상 유니버스 확장은 신호 국소화를 더 키울 가능성이 커서 판정에 유의미한 축이다."
+  },
+
+  "dual_basis": {
+    "basis_A": {"label": "K200∪KQ150 cap-w 유니버스 proxy", "long_port_t": -0.318, "clean_port_t": -2.185},
+    "basis_B": {"label": "KOSPI200 (IKS200) 지수", "long_port_t": -0.470, "clean_port_t": -2.254},
+    "corr": 0.9942, "universe_minus_k200_annual": {"long": -0.0092, "clean": -0.0301},
+    "bases_disagree_on_gate": false,
+    "ew_universe_diag": {"long_port_t_ew": -0.863, "dominant_channel": "se_shrink"},
+    "cap_tier": {"MEGA": 0.0033, "MID": 0.0138, "OTHER": 0.9829},
+    "infra_defect_found": "canonical_screen_bt 가 benchmark_id 를 'KOSPI200_total_return' 으로 하드코딩하나 실제 계열은 유니버스 cap-w proxy — 라벨 오기. 본 라운드는 실계열 기준으로 라벨을 정정해 보고했다."
+  },
+
+  "coverage_census": {
+    "investor_wide": {"rows": 10432883, "range": "2000-01-04~2026-07-24", "months_observed": 319, "months_theoretical": 319, "gap": 0,
+      "declared_vs_measured": "★설계·큐가 선언한 종료일 2026-07-01 과 실측 2026-07-24 가 다르다(파일 07-25 갱신). 선언을 그대로 쓰지 않고 재측정했다."},
+    "rawdata": {"rows": 14083329, "range": "1990-01-05~2026-08-21", "trading_days": 9012},
+    "join_rate_within_covered_window": 0.9954,
+    "axis_defect": "flow 거래일 1건(2024-12-30)이 RAWDATA 에 부재 — 실제 KRX 거래일인데 가격 패널에 통째로 없다(12-27 다음이 2025-01-02). investor_wide 에는 2,409종목 존재. 6,545 공통 거래일 중 0.015%. 인프라 결함으로 별도 기록.",
+    "self_correction": "★census 초판이 has_flow(NaN 포함)에 pandas .mean() 을 걸어 NaN-skip 로 **항상 1.0 만 낼 수 있는** 무의미 지표였다. fillna(0) 교정 후 실측 0.9954. '검사가 통과했다'가 '측정했다'를 뜻하지 않은 사례."
+  },
+
+  "reproduce": {
+    "order": ["00_census.py", "01_build_features.py", "02_fwd.R", "03_precheck.R", "PREREG.json 고정",
+              "04_measure.R", "05_controls.R", "06_basis.R", "07_mdd_check.R", "08_rankspace.R",
+              "09_adversarial.R", "10_shape_control.R", "11_emit.R"],
+    "seed": 20260822,
+    "runtime_env": {"R": "4.5.2", "python": ".venv_qvest_ml (3.12.10)", "arrow": "R arrow (4.5.3 빌드 경고 — 값 영향 없음)"}
+  }
+}
