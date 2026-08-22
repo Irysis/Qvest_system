@@ -19,7 +19,10 @@
 set -uo pipefail
 source "$(dirname "${BASH_SOURCE[0]:-$0}")/resolve_project.sh" 2>/dev/null || true
 BASE="${BASE:-${PROJECT:-$PWD}}"
-ADIR="$BASE/.cache/scheduler_alerts"
+# ★테스트 이음매: resolve_project.sh:89 이 BASE 를 무조건 덮어써(BASE="$PROJECT")
+#   env 로 루트를 갈아끼우는 격리가 **구조적으로 불가능**하다. 그래서 대상 디렉터리만
+#   명시 인자로 연다(편입 검사기의 QVEST_SEC_* 선례와 동일). 미지정 시 동작 불변.
+ADIR="${QVEST_ALERT_DIR:-$BASE/.cache/scheduler_alerts}"
 
 # 자동복구 여부 판정은 분류기 정본에 위임한다 — 여기에 표를 다시 적지 않는다
 # (같은 표를 소비자마다 재구현한 것이 2026-08-02 3연발 결함의 기전이었다).

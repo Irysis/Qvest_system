@@ -30,38 +30,19 @@ ADIR="$FIX/.cache/scheduler_alerts"; mkdir -p "$ADIR"
 mk(){ # mk <파일명> <component> <reason>
   printf 'ts=2026-08-22T00:00:00+09:00\ncomponent=%s\nreason=%s\ndetail=fixture\n' "$2" "$3" > "$ADIR/$1.alert"
 }
-run(){ QVEST_ALERT_DIR="$ADIR" bash "$SCRIPT" --status-line 2>/dev/null; }
+# ★격리는 env 루트가 아니라 **명시 인자**로 한다 — resolve_project.sh:89 가
+#   BASE="$PROJECT" 로 무조건 덮어써 루트 주입이 구조적으로 불가능하다(실측).
+#   구판 테스트는 그걸 모르고 CLAUDE_PROJECT_DIR 을 넘겨 **실 저장소를 검사하면서 초록**이었다.
+probe(){ QVEST_ALERT_DIR="$ADIR" bash "$SCRIPT" --status-line 2>/dev/null; }
 
-# 스크립트가 디렉터리를 어떻게 잡는지 확인 — env 미지원이면 cwd 기반으로 실행
-probe(){ (cd "$FIX" && CLAUDE_PROJECT_DIR="$FIX" QM_ROOT="$FIX" bash "$SCRIPT" --status-line 2>/dev/null); }
-OUT="$(probe)"
-if ! echo "$OUT" | grep -q "SchedAlerts"; then
-  echo "  SKIP  픽스처 경로 주입 불가 (스크립트가 고정 경로 사용) — 실 저장소 축만 검사"
-  echo "== 실 저장소 축: 'yes 아닌 것' 을 '자동복구' 로 적지 않는가 =="
-  REAL="$(bash "$SCRIPT" --status-line 2>/dev/null)"
-  # 실제 분류를 독립 산출해 대조한다
-  source "$ROOT/02_Infrastructure/ops/_sched_failure_classify.sh" 2>/dev/null
-  ny=0; nn=0
-  for f in "$ROOT"/.cache/scheduler_alerts/*.alert; do
-    [ -f "$f" ] || continue
-    r=$(grep -m1 '^reason=' "$f" | cut -d= -f2-)
-    a=$(sched_failure_autorecovers "$r" 2>/dev/null || echo unknown)
-    [ "$a" = "yes" ] && ny=$((ny+1)) || nn=$((nn+1))
-  done
-  echo "  실측: yes=$ny · yes아님=$nn"
-  if [ "$nn" -gt 0 ] && echo "$REAL" | grep -q "전부 자동복구 대상"; then
-    ng "요약이 분류를 접음" "yes 아닌 것이 ${nn}건인데 '전부 자동복구 대상' 이라 적는다"
-  else
-    ok "yes 아닌 건이 있으면 '전부 자동복구' 라 적지 않는다"
-  fi
-  if [ "$nn" -gt 0 ]; then
-    echo "$REAL" | grep -qE "판정불가|사람 조치|부분복구" \
-      && ok "yes 아닌 분류가 요약에 이름으로 노출된다" \
-      || ng "노출" "분류가 요약에서 사라진다: $REAL"
-  fi
-  echo "== t_summary: PASS=$PASS FAIL=$FAIL =="
-  [ "$FAIL" -eq 0 ] || exit 1
-  exit 0
+# 이음매가 실제로 격리하는지 먼저 증명한다 — 이게 없으면 아래 축들이 무엇을 쟀는지 모른다.
+rm -f "$ADIR"/*.alert; mk seam alpha_queue spend_limit
+SEAM_OUT="$(probe)"
+if echo "$SEAM_OUT" | grep -q "미해소 1건"; then
+  ok "격리 실증 — 픽스처 1건만 보인다(실 저장소 미접촉)"
+else
+  ng "격리 실패" "픽스처를 안 보고 있다: $SEAM_OUT — 이 상태의 통과는 전부 무효"
+  echo "== t_summary: PASS=$PASS FAIL=$FAIL =="; exit 1
 fi
 
 echo "== 위반 주입 1: unknown 만 있을 때 '전부 자동복구' 라 하지 않는가 (실사고 재현) =="

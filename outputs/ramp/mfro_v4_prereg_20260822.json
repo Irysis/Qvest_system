@@ -1,0 +1,48 @@
+{
+  "prereg_id": "mfro_v4_20260822",
+  "created_at": "2026-08-22",
+  "created_before_any_result": true,
+  "round": "R59",
+  "title": "MFRO 신호 안정화 — 판정지표를 성과가 아니라 lag 격자 평탄도로 둔다",
+  "chain_parent": "mfro_v3_20260822 (R58)",
+  "selection_type": "chain",
+
+  "iteration_reason_mechanism": "R58 취약성 진단 실측: lag 사다리가 스파이크(lag0 +0.169 · lag1 +0.330 · lag2 -0.006 · lag3 -0.207 · lag6 -0.497)인데 인접 lag 의 신호는 거의 동일하다(cor(S[m],S[m-1]) 중앙 0.9398 · 승자 top5 겹침 4.00/5). 승자 4/5 가 같은 두 설정의 수익차가 clean +0.3590%/월 NW-t +2.859 로 유의하다 — 11/12 창을 공유하는 신호로는 설명 불가이므로 표본 잡음이다. ⇒ 병목이 '신호 강도' 가 아니라 '신호 안정성' 으로 이동했다.",
+
+  "why_flatness_is_the_target": "성과를 표적으로 삼으면 잡음이 만든 봉우리를 다시 고르게 된다(사전등록으로 사후선택은 막았지만 크기는 여전히 못 믿는다). 격자가 평탄해진 뒤에야 크기를 논할 수 있다. 따라서 본 라운드의 1급 판정지표는 **평탄도**이고 성과는 부수 조건(수준이 무너지지 않을 것)으로만 쓴다.",
+
+  "fixed_from_parent": "우주 = 시총 상위 25(R58 D1 형태) · 가중 .tilt(lambda=1.5) · cap 0.20 · 25종 · 15bps · k=5 고정. 신호 구성만 교체.",
+
+  "arms_prespecified": {
+    "V0_baseline": "현행 — S[d] = 팩터지수 trailing 12M active (R58 D1 과 동일)",
+    "V1_rank_smooth": "평활 — S[d], S[d-1], S[d-2] 의 **순위**를 평균해 승자 선정 (수준이 아니라 순위 공간에서 평활)",
+    "V2_lag_ensemble": "다중 lag 앙상블 — lag0/1/2 각각의 비중 벡터를 산출해 **평균** (DFA 3-cohort 기법의 lag 축 적용)",
+    "V3_hysteresis": "히스테리시스 — 승자 집합에 진입은 순위 top5, 이탈은 top8 밖으로 밀릴 때만 (교체 마찰 도입)",
+    "V4_long_window": "장기 창 — trailing 12M -> 24M (느린 신호 = 구조적으로 안정)",
+    "headline_metric_cell": "clean 창, k=5, 15bps"
+  },
+
+  "judgment": {
+    "primary_metric": "flat_sd = sd(clean IR at dec_lag in {0,1,2,3}) — 낮을수록 평탄",
+    "primary_metric_2": "t_adj = paired NW-t of (lag1 - lag2) — 인접 lag 이 유의하게 다르면 잡음",
+    "level_guard": "mean_IR = mean(clean IR at dec_lag in {0,1,2,3}) — 평탄해지되 수준이 무너지면 무의미",
+    "pass_rule": "①flat_sd 가 V0 대비 30% 이상 감소 AND ②|t_adj| < 1.96 AND ③mean_IR 이 V0 의 mean_IR 이상",
+    "fail_rule": "①~③ 미충족이면 그 안정화 축은 닫힌다. 전부 실패하면 '현 신호는 이 우주에서 안정화 불가' 이며 다음은 신호 자체를 교체하는 축(FQ-247 부활조건 (a))으로 이동.",
+    "no_performance_headline": "★본 라운드는 성과 헤드라인을 만들지 않는다. 어떤 팔도 '개선' 으로 보고하지 않으며 평탄도만 판정한다. 통과한 팔이 생기면 **그 다음 라운드에서** 사전등록 후 크기를 잰다.",
+    "all_cells_reported": "arm x dec_lag{0,1,2,3} x cost{5,15,25} 전수."
+  },
+
+  "expected_failure_mode": [
+    "★결과 전 선언: V2(다중 lag 앙상블)는 **기계적으로** 평탄해진다 — lag0/1/2 를 평균하면 lag 민감도가 정의상 줄기 때문이다. 따라서 V2 의 flat_sd 감소는 증거로 세기 약하고, 판정은 ③(수준 유지)에 달려 있다. 이 점을 결과 전에 못박는다.",
+    "★V1(순위 평활)·V4(장기 창)는 진짜 시험이다 — 신호를 느리게 만들면 잡음은 줄지만 정보도 준다. 둘 다 flat_sd 는 줄고 mean_IR 도 줄 것으로 예상한다(③ 실패).",
+    "★V3(히스테리시스)가 가장 유망하다고 본다 — 순위 잡음에 의한 불필요한 교체만 걸러내고 정보는 보존하기 때문. 다만 R31/R38 계열에서 히스테리시스가 여러 번 실패했으므로 기대는 낮게 잡는다.",
+    "★전부 실패할 가능성이 가장 높다고 본다. 그 경우 결론은 '이 신호는 이 우주에서 안정화되지 않는다' 이고, 그것 자체가 FQ-247 의 부활조건 (a) 를 소진시켜 신호 교체 축으로 넘긴다."
+  ],
+
+  "binding_constraints": [
+    "성과 서술은 본 라운드 실행 산출값만. metric_type=canonical_screen.",
+    "★성과 개선 주장 금지 — 평탄도 판정 라운드다.",
+    "book_state 쓰기·governor admit 금지. 05_Production 읽기만.",
+    "적대검증 wf_9ac58124-3e4 결과가 R55 판정을 바꾸면 본 사전등록도 재검토."
+  ]
+}
