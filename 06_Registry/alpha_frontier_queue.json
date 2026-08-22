@@ -5207,17 +5207,10 @@
     "sd_default": 0.0394,
     "note": "실제 결과량 sd 역산 · nw_inflation=1(이중계상 방지)"
    },
-   "last_round": "FQ-236_LaneD_macro_conditional_asymmetry_WT-D20260822_001",
-   "last_verdict": "config_scoped_negative",
-   "last_closed_at": "2026-08-22T12:12:42+0900",
-   "last_next_probe": [
-    "NP1 가격 축 vs 수량 축 분해 — S_credit 과 S_breadth 를 상호 직교화한 잔차로 Y1a/Y2 재회귀. 본 라운드의 유일한 결정적 이상(같은 경색인데 부호 반대)을 직접 검정. n·sd 불변이라 req 10.465% 그대로 적용 가능.",
-    "NP2 급성 에피소드 조건화 — S 를 원수준이 아니라 Delta3M 으로(사전고정 1개). 근거 = AR1 0.957 및 2020-03 미상위 실측. 원수준이 저주파 체제라면 급성 축은 미측정 상태다.",
-    "NP3 기전-전이 단절의 3단 경로 측정 — S -> FlowAsym(생존 확인됨) -> Y 의 2단 회귀·부분상관. 단절 지점이 두 번째 다리인지 확인.",
-    "NP4 KQ150 PIT 명부 복원 census (FQ-241 next_action 1/4) — 파급 범위 조사.",
-    "NP5 지속 회귀변수용 검정 프로토콜 상설화 — phi 0.95~0.99 구간에서 t 문턱을 placebo 밴드로 대체하는 계약(persistent_regressor_power.R 제안). 본 라운드에서 t=2.0 기준이 5% 검정이 아님이 실측됐다.",
-    "NP6 Lane A 분포 형태 수치의 청정창(2015-07~) 단독 재산출 — FQ-241 blast radius 1순위. 판정 규칙은 FQ-241 사전고정분 인용(유지 시 robust_to_universe_defect, 뒤집히면 판정 철회)."
-   ],
+   "last_round": "FQ-241_blast_radius_probe1_LaneA_clean_window_20260822",
+   "last_verdict": "incumbent_confirmed",
+   "last_closed_at": "2026-08-22T12:47:24+0900",
+   "last_next_probe": ["NP1 ★재현성 결함 수리 — master_panel_FIXED.rds 의 생성 스크립트가 저장소에 없어 **지금 누구도 r32 의 cor -0.728 을 재현할 수 없다**(재산출 -0.616, 0.112 이동). 원인 4종 실측(빌더 부재 · 팩터집합 320 vs 325 · quantile(frank(z)) 가 z 동점에서 breaks not unique 로 즉사 · m_align 용도 복원 불가). 유니버스 결함과 **별개 축**이며 하중이 더 크다 — 판정 근거 패널이 이 상태로 인용되고 있다.", "NP2 파급 census 를 검증된 키로 수행 — 검색 키 = build_monthly_forward_returns() **실호출**(주석·문자열 제외). Q-Lead 1차 전수에서 run_ramp_* 계열 다수 + decay_fit 2건 확인. RAMP 레인 라운드들이 2015-07 이전 창을 쓴 경우 KQ150 백필을 상속한다.", "NP3 순수 오염창 단독 arm(2010-02~2015-06, 65m) — 유의성 문턱을 쓰지 않는 지표 ①②③⑤ 는 이 창에서 측정 가능. era 교락을 줄이는 유일한 직접 통제(평균-스프레드 축은 MDE 연 11.8% 로 불가).", "NP4 B_clean 시작점 민감도 — KQ150 최초 1->0 전환이 2016-01 이므로 청정창을 2016-01~ 로 밀어 재산출(현 B_clean 은 잔여 6개월 포함).", "NP5 |t| 문턱 지표를 창 비교에 쓸 때 MDE 병기 계약화 — 지표 ④가 n-민감이라 창 길이만으로 개수가 움직인다.", "NP6 2005-01~2009-12 의 'K200∪KQ150' 이 실질 K200 단독임을 유니버스 헬퍼가 경고로 노출"],
    "measured_20260822_rev2": "[착수 0항 관문 2건 실측 — 초판 승계 전제 2개가 뒤집혔다. WT-D20260822_001]\n①★PRIMARY 창 320m 전제 철회: FRED BAMLH0A0HYM2·BAMLC0A4CBBB 의 observation_start=2023-08-22 (롤링 ~3년 창) — 캐시 결함이 아니라 원천 제약이라 HY/BBB 스프레드는 PRIMARY 로 사용 불가. 유니버스 소급 census(stage_artifacts/WT-D20260822_001/universe_membership_census.csv): KQ150>0 최초 2010-01-29 ⇒ K200∪KQ150 소급 상한 2010-02 = 198m. K200 단독 342m 은 mandate 유니버스 아님. 320m 은 어느 조합으로도 불성립.\n②★검정력은 오히려 개선(창 122개월 손실에도): 승계 sd 0.0669 는 D03_RealVol 단일팩터 Q5-Q1 역산이라 결과량 Y1b((q90-q50)-(q50-q10))와 애초에 다른 양이었다. 실측 sd(gate1_required_effect.csv) = 0.03682(UNION 198m) / 0.04067(UNION 133m) / 0.04660(K200 342m) = 승계치의 1/1.82. 필요효과 UNION 198m 연 7.553% (초판 전제 8.98% 대비 개선, PG2 269m 대조 7.21% 근접). 133m 10.465% · K200 7.511%. Y1a 무차원 0.01925 · Y2 확률단위 0.02411. nw 실측 0.968~1.242(직접측정 sd 이므로 계약 기본 NW).\n③조건변수 재지정: S_primary = KR_CreditSpread_BBB3Y (KR_CorpBBB - KR_Gov3Y, .cache/ecos_bond_rates.parquet, 일별 2001-01-02~, n=6433/6349). 초판 사전고정 선택기준 2개(기전 정합=한계 차입자의 조달 가격 / 짧은 발표시차) 그대로 적용한 단일 지정 — 스캔·argmax 없음. 발표시차 L=3 달력일(익영업일 공표, 주말 포함 상한), 원수준·자유파라미터 0. 부수 효과: 초판 challenge 약점6(HY=US 계열이라 KR 경색 정합이 가정)이 국내 계열 채택으로 소멸. AA- 는 사용 금지(단일 지정 원칙 — 품질 결함 발견 시 조용한 교체가 아니라 재설계 요청 경로).\n④창 결정: PRIMARY = UNION 198m 조건부. 2010-02~2015-06 은 KQ150 실시간 산출(2015-07) 이전이라 지수제공자 백필 ⇒ backfill gate(C6 생존편향 census: 백필구간 멤버의 이후 상장폐지 비율 >= 0.5 x 청정구간 비율) 미달 시 PRIMARY 자동 강등 → 133m(req 10.465%). 별도로 leave-backfill-out(133m) 재추정에서 부호 불일치 또는 백필구간 단독 견인이면 판정 상한 = 미결_backfill_suspect(성립 선언 불가). ★2008 자금경색(기전의 KR 최대 에피소드)은 198m 창 밖 — K200 단독 ~306m(S 시작 2001-01 제약)을 진단축으로만 병기, 성립 근거 사용 금지.\n⑤경제 앵커 신설: 표준화 기울기 |b|*sd(S)/sd(Y) >= 0.25 (Y1b native 환산 월 0.0092 ~ 연 11.0%). 세 창 전부에서 앵커 > t-기반 req 이므로 '효과 없음' 판정이 t-재진술로 퇴화하지 않는다. 라벨 1건 추가(성립_소효과 = 통계 확립 + 앵커 미달 → 분포적 사실로 기록하되 소비면 전진 없음). Q-Lead 판정: 측정 0건 상태 + 정식 재설계 요청 경로이므로 절차 유효. 측정 착수 후 그리드 변경은 불가.",
    "qlead_adjudication_20260822": "Q-Lead(session d2e06481) 판정 3건: (1) rev2 그리드 라벨 추가 승인(절차 유효, 착수 후 변경 금지) (2) 앵커 비퇴화 성질 확인 — 앵커 연 11.0% > req 7.553/10.465/7.511% 세 창 전부 (3) ★소비면 = 목록화까지만. FQ-233(Lane A)이 분포-표적 자본화에 부활조건 2건을 걸어둔 상태이므로 본 라운드가 b<0 을 확립해도 자본 경로 제안은 INV-7 위반. 정당 산출 = 분포적 사실 + 조건부성 확립까지.",
    "lane_position_20260822": "Lane A(FQ-233) 가 무조건부 분포-표적 교체를 전 브레드스 POWERED NULL(MDE 1.2%p)로 수렴시켰고, Lane C(FQ-235) round1 은 P1 UNDERPOWERED · P2 표적서열 비전이(rho -0.50). Lane D 의 위치 = 그 무조건부 null 의 **조건부 next probe** — 무조건부로 죽은 명제가 상태 조건부로는 살아있는가. null 로 끝나도 '분포 비대칭은 매크로 상태에도 조건부가 아니다' 라는 더 강한 사실이 남는 구조.",
@@ -5267,7 +5260,12 @@
    "last_round": "FQ-239_r16b_bookmarginal_corrected_20260822",
    "last_verdict": "config_scoped_negative",
    "last_closed_at": "2026-08-22T12:28:10+0900",
-   "last_next_probe": ["KOSPI200 기준 전면 재측정 — A5E 및 아크 주요 팔을 book·자본게이트 계약 벤치(KOSPI200)로 재채점. 자본 경로를 논하려면 이 기준이 정본이며, parent 기준 수치는 연구-레벨 라벨로 분리 표기해야 함", "유니버스 효과 분해 — parent(K200UKQ150 cap-w) vs KOSPI200 의 연 -1.33%p 열위가 A5E 알파를 얼마나 잠식하는지 기간별 분해. KQ150 성분 기여를 분리하면 'A5E 알파가 유니버스 선택 효과인가 신호 효과인가'가 판별됨", "감쇠 기전 분해(R14 이월) — 안정창 oos 0.065 원인 3가설", "2026 구간 데이터 정오 확인(R14 이월)"]
+   "last_next_probe": [
+    "KOSPI200 기준 전면 재측정 — A5E 및 아크 주요 팔을 book·자본게이트 계약 벤치(KOSPI200)로 재채점. 자본 경로를 논하려면 이 기준이 정본이며, parent 기준 수치는 연구-레벨 라벨로 분리 표기해야 함",
+    "유니버스 효과 분해 — parent(K200UKQ150 cap-w) vs KOSPI200 의 연 -1.33%p 열위가 A5E 알파를 얼마나 잠식하는지 기간별 분해. KQ150 성분 기여를 분리하면 'A5E 알파가 유니버스 선택 효과인가 신호 효과인가'가 판별됨",
+    "감쇠 기전 분해(R14 이월) — 안정창 oos 0.065 원인 3가설",
+    "2026 구간 데이터 정오 확인(R14 이월)"
+   ]
   },
   {
    "id": "FQ-240",
@@ -5303,16 +5301,16 @@
    "status": "CLAIMED_20260822__blast_radius_probe1_launching",
    "next_action": "①파급 census: universe=K200∪KQ150 · 시작 2015-07 이전인 라운드를 원장에서 열거(hypothesis_index + backtest_registry). ②재측정 우선순위 = FQ-233 Lane A 분포 형태 수치(위 blast_radius 참조) — 2015-07~ 청정 구간 단독 재산출과 전기간 대조. ★판정 규칙 사전고정: 부호·결론이 유지되면 'robust_to_universe_defect' 라벨, 뒤집히면 해당 라운드 판정 철회. ③대체 관문 3종을 유니버스 소비 지점에 배선 + 위반 주입 양방향. ④정직 라벨: 2005~2009 구간 'K200∪KQ150' 은 K200 단독임을 유니버스 헬퍼가 경고로 노출.",
    "source_refs": "stage_artifacts/WT-D20260822_001/{backfill_pit_attribution.json,window_downgrade_decision.json,backfill_turnover_advisory.json,backfill_survivorship_census.json}",
-   "last_round": "FQ-236_LaneD_macro_conditional_asymmetry_WT-D20260822_001",
-   "last_verdict": "config_scoped_negative",
-   "last_closed_at": "2026-08-22T12:12:43+0900",
+   "last_round": "FQ-241_blast_radius_probe1_LaneA_clean_window_20260822",
+   "last_verdict": "incumbent_confirmed",
+   "last_closed_at": "2026-08-22T12:47:22+0900",
    "last_next_probe": [
-    "NP1 가격 축 vs 수량 축 분해 — S_credit 과 S_breadth 를 상호 직교화한 잔차로 Y1a/Y2 재회귀. 본 라운드의 유일한 결정적 이상(같은 경색인데 부호 반대)을 직접 검정. n·sd 불변이라 req 10.465% 그대로 적용 가능.",
-    "NP2 급성 에피소드 조건화 — S 를 원수준이 아니라 Delta3M 으로(사전고정 1개). 근거 = AR1 0.957 및 2020-03 미상위 실측. 원수준이 저주파 체제라면 급성 축은 미측정 상태다.",
-    "NP3 기전-전이 단절의 3단 경로 측정 — S -> FlowAsym(생존 확인됨) -> Y 의 2단 회귀·부분상관. 단절 지점이 두 번째 다리인지 확인.",
-    "NP4 KQ150 PIT 명부 복원 census (FQ-241 next_action 1/4) — 파급 범위 조사.",
-    "NP5 지속 회귀변수용 검정 프로토콜 상설화 — phi 0.95~0.99 구간에서 t 문턱을 placebo 밴드로 대체하는 계약(persistent_regressor_power.R 제안). 본 라운드에서 t=2.0 기준이 5% 검정이 아님이 실측됐다.",
-    "NP6 Lane A 분포 형태 수치의 청정창(2015-07~) 단독 재산출 — FQ-241 blast radius 1순위. 판정 규칙은 FQ-241 사전고정분 인용(유지 시 robust_to_universe_defect, 뒤집히면 판정 철회)."
+    "NP1 ★재현성 결함 수리 — master_panel_FIXED.rds 의 생성 스크립트가 저장소에 없어 **지금 누구도 r32 의 cor -0.728 을 재현할 수 없다**(재산출 -0.616, 0.112 이동). 원인 4종 실측(빌더 부재 · 팩터집합 320 vs 325 · quantile(frank(z)) 가 z 동점에서 breaks not unique 로 즉사 · m_align 용도 복원 불가). 유니버스 결함과 **별개 축**이며 하중이 더 크다 — 판정 근거 패널이 이 상태로 인용되고 있다.",
+    "NP2 파급 census 를 검증된 키로 수행 — 검색 키 = build_monthly_forward_returns() **실호출**(주석·문자열 제외). Q-Lead 1차 전수에서 run_ramp_* 계열 다수 + decay_fit 2건 확인. RAMP 레인 라운드들이 2015-07 이전 창을 쓴 경우 KQ150 백필을 상속한다.",
+    "NP3 순수 오염창 단독 arm(2010-02~2015-06, 65m) — 유의성 문턱을 쓰지 않는 지표 ①②③⑤ 는 이 창에서 측정 가능. era 교락을 줄이는 유일한 직접 통제(평균-스프레드 축은 MDE 연 11.8% 로 불가).",
+    "NP4 B_clean 시작점 민감도 — KQ150 최초 1->0 전환이 2016-01 이므로 청정창을 2016-01~ 로 밀어 재산출(현 B_clean 은 잔여 6개월 포함).",
+    "NP5 |t| 문턱 지표를 창 비교에 쓸 때 MDE 병기 계약화 — 지표 ④가 n-민감이라 창 길이만으로 개수가 움직인다.",
+    "NP6 2005-01~2009-12 의 'K200∪KQ150' 이 실질 K200 단독임을 유니버스 헬퍼가 경고로 노출"
    ]
   }
  ],
