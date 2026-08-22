@@ -1,0 +1,174 @@
+{
+  "wt_id": "WT-D20260822_004",
+  "designed_by": "alpha-hypothesis",
+  "model_tier": "fable",
+  "designed_at": "2026-08-22",
+  "fq_ref": "FQ-244",
+  "theme": "consumption_node_combination_rule",
+
+  "prechecks": {
+    "hypothesis_index_hits": [
+      {
+        "query_by": "Q-Lead (승계)",
+        "keywords": ["combination_rule(0건)", "결합", "composite", "weighting", "equal_weight", "top-N", "FQ116", "rank_average(0건)", "aggregation(0건)"],
+        "decisive_hits": ["L-AR-20260802_214000 (FQ-116 COMPOSITE_MECHANISM)", "L-RAMP-20260713_084821 (RAMP_R10_WEIGHTING)"]
+      },
+      {
+        "query_by": "alpha-hypothesis (본 세션 추가 조회)",
+        "keywords": ["winsor", "bounded", "advocate(0건)"],
+        "decisive_hits": [
+          {
+            "id": "STR_AS_20260613_004517_207731",
+            "title": "[진단] 앙상블 평균법 비교 — 산술/기하/조화/중앙값/Trimmed/Winsorized 6종",
+            "verdict": "FAIL grade F (sharpe 0.52 / ir -0.313, 2026-06-13, alpha_search_manifest)",
+            "differentiation": "재탕 아님 — 3중 분리. (a) 층이 다르다: 그 라운드는 ml_complexity 레인에서 **전략 스코어들**의 앙상블 평균법을 비교했고, 본 라운드는 QEPM 하네스에서 **팩터 z 결합**(SEL_RANK K=5) 규칙을 교체한다. (b) 측정 규격이 다르다: equal30·alpha-search 경량 채점(canonical PORT_t 부재) vs canonical top-25 cap-w PORT_t paired. (c) 그 코호트(2026-06-13 ml_complexity 원장)는 batch_434 이명 복제 감사(2026-08-20)로 '결합 규칙 미실행' 이 실측된 집단이라 증거 자격 자체가 INV-7 비유효 여지 — 단 004517 개별 건의 이명 여부는 미확인(정직 표기). FQ-244 큐 항목 ev_rationale 이 이 재분류를 명시."
+          },
+          {
+            "id": "STR_AS_20260613_050417_234027",
+            "title": "Bounded Multi-Factor Tilt Architecture (SCREEN_TIER B)",
+            "differentiation": "비중 tilt 제한(optimizer 층) — 결합 스코어 입력 척도 축 아님. 무관."
+          }
+        ]
+      },
+      {
+        "query_by": "alpha-hypothesis (frontier queue 전문 판독)",
+        "decisive_hits": [
+          {
+            "id": "FQ-121",
+            "status": "config_scoped_negative_frontier_open (2026-08-03, WT-D20260803_004)",
+            "verdict_digest": "성분 자격을 IS canonical PORT_t>0 으로 게이트해도 OOS 148m 에서 유효성 NOT_ESTABLISHED — 지배 기전 = 성분 자격의 시계열 비정상성(IS 최강 V01 +2.634 → OOS -0.389 반전, 부호 안정 2/5). WT-021 의 'POS2 회복 126%' 는 in-sample 선별 산물로 확정.",
+            "design_consequence": "★본 설계가 '성과-기반 성분 선별/가중' 축을 전면 배제하는 두 번째 근거(첫째는 RAMP R10 W-factor). 처치 arm 전부가 성과-맹목(performance-blind)·팩터-대칭이어야 한다."
+          },
+          {
+            "id": "FQ-122",
+            "status": "measured_20260808_partial",
+            "verdict_digest": "전이-음성 팩터의 비-slot 소비 — (a) 타이브레이커 측정 전 기각 (b) 제외필터 D03 소비 불가·Q01 미확립(시기 편중). 본 라운드와 자유도 겹침 없음(그쪽은 slot 밖 소비, 본 건은 slot 배분 규칙)."
+          },
+          {
+            "id": "FQ-059",
+            "status": "ready_material_gated (soft-membership/top-N 절단 축)",
+            "design_consequence": "top-N 절단·hysteresis 자유도는 FQ-059 소관 — 본 라운드에서 건드리지 않음(자유도 분리, request 명시)."
+          }
+        ]
+      }
+    ],
+    "frontier_queue_refs": ["FQ-244 (본 건, CLAIMED_20260822__nonml_combination_launching)", "FQ-237 (round_closed — 병목 이전 실측 공급자)", "FQ-116 (measured — 기전 공급자)", "FQ-121", "FQ-122", "FQ-059"],
+    "owner": "Q-Lead session d2e06481 (FQ-244 큐 owner 표기 확인) / 설계 = alpha-hypothesis 본 산출물",
+    "dohoon_decision_gate": "FQ-244 는 dohoon_decision 항목 아님 — 세션 착수 적법 (큐 owner 필드로 확인)",
+    "request_json_title_injection": "불요 — request.json 에 hypothesis_title 기재 확인 (FQ-244: 결합 규칙 마디)"
+  },
+
+  "candidates": [
+    {
+      "title": "C-A. 유계-영향력 결합 (bounded-influence combination): rank 평균 / winsorized-z 평균",
+      "family": "consumption_node/combination_rule (비-ML, 성과-맹목)",
+      "mechanism_sketch": "raw-z EW 는 성분별 영향력이 비유계라 한 팩터의 횡단면 극단 z 하나가 top-25 편입을 단독 결정(M1 slot 잠식, FQ-116 실측: gap -8.27%/yr 의 75% 가 전이-음성 팩터 advocate 귀속). 성분 기여를 유계화하면 편입이 다팩터 합의를 요구하게 되어 전이-양성 신호와 정합.",
+      "why_selected": "FQ-116 이 재지 않은 유일한 결합-규칙 축 — M1 기전에서 직접 도출되는 예측(유계 결합은 단독-advocate 편입 억제)이 있고, 선행 negative 3건(W-factor·FQ-121·M2)과 자유도가 전부 직교. Q-Lead 관찰(입력 척도 축)을 검토 후 채택 — 사유는 challenge_note ①."
+    },
+    {
+      "title": "C-B. 팩터 성과-비례 가중 결합",
+      "family": "combination_rule/performance_weighted",
+      "mechanism_sketch": "잘 맞아온 팩터에 더 큰 가중.",
+      "why_not_selected": "이중 사망 — (i) RAMP R10 W-factor: 팩터 trailing-t 비례 가중 paired -0.16 악화 ('trailing 팩터성과는 forward 팩터성과를 못 예측') (ii) FQ-121: 성과-자격의 시계열 비정상성이 지배 기전으로 확정(IS→OOS 부호 반전). 재탕 금지."
+    },
+    {
+      "title": "C-C. IS-자격 게이트 조합 (성분별 IS PORT_t>0 만 결합)",
+      "family": "combination_rule/component_gating",
+      "mechanism_sketch": "전이-양성 성분끼리만 결합(FQ-116 P1/P2 원칙의 운용판).",
+      "why_not_selected": "FQ-121 이 정확히 이 설계를 측정해 config-scoped negative (게이트 유효성 NOT_ESTABLISHED, 자격 반감기 < 운용 주기). 부활 조건(FQ-131 자격 지속성 실측 등) 미발화."
+    },
+    {
+      "title": "C-D. 합의-투표 결합 (consensus vote: 팩터별 상위 분위 소속 개수를 스코어로)",
+      "family": "consumption_node/combination_rule (비-ML)",
+      "mechanism_sketch": "K 팩터 중 상위 quartile 에 넣는 팩터 수 = 스코어. 기여가 {0,1} 로 유계 + 합의 명시적.",
+      "why_not_selected": "기전 예측이 C-A(rank 평균)와 동일(유계·합의)한데 이산화로 동점이 다발해 top-25 절단이 불안정(타이브레이커 자유도 재도입) — 판별력 추가 없이 다중성만 추가. C-A 실패 시 next_probe 로 보관 (challenge_flags)."
+    },
+    {
+      "title": "C-E. 분위-정렬(quantile/copula-matched) 결합",
+      "family": "consumption_node/combination_rule",
+      "mechanism_sketch": "각 팩터 z 를 공통 목표 분포로 사상 후 평균.",
+      "why_not_selected": "목표 분포=uniform 이면 rank 평균과 단조 동치 — 별도 arm 은 다중성 낭비. 비-uniform 목표 분포는 분포 선택이라는 새 자유도(sweep 위험)를 연다. C-A 에 흡수."
+    }
+  ],
+
+  "selected": {
+    "hypothesis_title": "FQ-244: 결합 규칙 마디 — 성분 영향력 유계화가 M1 slot 잠식을 억제해 IC→PORT_t 전이를 개선한다",
+    "hypothesis_description": "IC→PORT_t 전이 벽의 결합-규칙 마디 가설: 현행 z-align 단순평균(raw-z EW)은 성분별 영향력이 비유계라, 한 팩터의 횡단면 극단 z 관측치가 단독으로(K-1 개 팩터의 합의를 기각하고) top-25 slot 을 점유한다. FQ-116 실측이 이 잠식(M1)을 합성-단일 gap -8.27%/yr 의 75% 로 귀속했고, 잠식의 주범이 전이-음성·IC-양성 팩터(D03_EWMA 류: rank-IC t +3.71 / PORT_t -1.73)의 극단값임을 확정했다. 성분 기여를 유계화하는 결합(rank 평균: 기여∈[0,1] / winsorized-z EW: 기여∈[-c,c])으로 교체하면 단독-advocate 편입이 기계적으로 억제되고 편입이 다팩터 합의를 요구하게 되어, 같은 팩터 풀·같은 선별(SEL_RANK)·같은 top-N 에서 cap-w PORT_t 가 개선된다. 이것은 M2('평균화가 정보를 뭉갠다' — FQ-116 이 기각)와 다른 주장이다: 문제는 평균이 아니라 평균의 **입력 척도**가 단독 극단값에 slot 배분권을 주는 것이며, max-z 음성 대조 arm 이 두 주장을 판별한다(M2 참이면 max-z 가 EW 를 이겨야, 본 기전 참이면 max-z 가 EW 보다 악화).",
+    "mechanism": {
+      "agent": "전이-음성·IC-양성 팩터(실명 실측례: D03_EWMA·Q01_EB·V06_EB — FQ-116 advocate 귀속)의 횡단면 극단 z 관측치, 그리고 그 극단을 생성하는 단일-속성 쇼크 종목군(공시·급등락·저유동 구간에서 한 축의 신호만 극단화된 종목). 이들의 정보는 순위(중앙) 예측력은 실재하나 평균(꼬리) 전이가 없음이 실측됐다. 잠식을 허용하는 직접 행위자는 현행 결합기 자신 — raw-z EW 가 이 극단값에 비유계 slot 배분권을 부여한다.",
+      "friction": "3중. ① top-25 이산 절단 + long-only + Σw=1 이 slot 을 희소 자원으로 만들어, slot 배분이 결합 스코어의 극단 순서에만 걸린다 — 비유계 척도에서는 한 팩터의 꼬리 관측 하나가 K-1 개 팩터의 합의를 기각할 수 있다(FQ-116 실측: EW5 top-25 ∩ 단일최강 4.4/25, 월 20.6 slot 교체). ② KR 공매도 제약(no_short_legal_kr)으로 음(-) 정보는 slot 회수로만 표현되므로 오편입 slot 의 기회비용이 비대칭 — 오편입을 만드는 결합 결함이 곧바로 PORT_t 손실이 된다. ③ 팩터 간 횡단면 z 분포의 꼬리 두께가 이질(왜도·첨도 상이)이라 raw-z 평균은 사실상 '꼬리가 두꺼운 팩터에 대한 은닉 과가중'인데, 이 과가중은 팩터의 전이 품질과 무관하게 분포 형태가 결정한다 — 차익거래 주체(우리 포함)가 이를 지우지 못했던 이유는 결합기 결함이 성과 헤드라인(PORT_t)에 뭉뚱그려져 관측돼 왔기 때문(FQ-237 이 처음으로 선별 마디를 배제해 이 마디를 노출).",
+      "path": "결합을 유계-영향력 규칙으로 교체 → 월간 리밸 시점의 top-25 편입 명단이 단독-극단 종목에서 다팩터-합의 종목으로 이동(매개변수: 단독-advocate 편입 비율 하락) → 합의-편입 종목은 전이-양성 평균 신호와 정합(FQ-116 P2: 양-전이 성분끼리의 결합은 약가산적 +1.06%/yr) → 같은 하네스에서 cap-w net PORT_t 개선. 신호→가격 반영 경로는 성분 팩터의 몫이고, 본 마디는 신호→보유(portfolio membership) 전이만 이동시킨다. 반영 주기 = 월간 리밸 즉시."
+    },
+    "falsification": {
+      "observable": "성과 외 부수 관측 4단 (FQ-116 advocate 분해 도구 재사용). [전제 P0 — transport check, 성과 측정 전 수행] 현행 C0(raw-z EW, 본 하네스 SEL_RANK K=5 풀)에서 단독-advocate 편입(편입 종목의 argmax-z 팩터 z-gap 기준 귀속)이 실재하는가 — FQ-116 은 다른 팩터 풀(WT-009 5종)에서 쟀으므로 본 풀 재현이 기전의 수송 전제다. [매개 M — 성과 무관] 처치 arm 별 단독-advocate 편입 비율과 advocate 의 팩터별 귀속 분포. [연결 L] IN-vs-OUT 종목군의 fwd_ret_1m 격차(NW t). [전제 F3] 팩터 간 횡단면 z 초과첨도의 이질성(friction ③ 의 직접 관측).",
+      "field_dictionary_refs": [
+        "FDB-B6_fdb_daily_store (팩터 z 원천 — lane_a_feature_panel 331 z 컬럼의 정본)",
+        "FDB-B1_registry_fundamental_quarterly",
+        "FDB-B2_registry_rawdata_price_daily",
+        "A1_RAWDATA_OHLCVS_daily (Ret → fwd_ret_1m / 횡단면 분산)",
+        "E3_macro_regime_monthly",
+        "E5_msm_crisis_prob"
+      ],
+      "reject_if": "다음 중 어느 하나면 기전 기각 (성과 문턱 동어반복 아님 — 각각 별도 사전등록 문턱은 alpha-research 가 preregistration 에서 수치 고정): (R1) P0 실패 — C0 에서 단독-advocate 편입 비율이 무시 가능 수준이거나 advocate 귀속이 전이-음성 팩터에 집중되지 않으면, M1 기전이 본 팩터 풀에 부재 → 성과 측정 진행 전 STOP + '기전 미수송' 라벨. (R2) 처치 무력 — C1/C2 가 C0 대비 단독-advocate 편입 비율을 사전등록 문턱 이상 낮추지 못하면 처치가 매개변수를 못 움직인 것 → 기각. (R3) 연결 절단 — advocate 편입 비율은 낮아졌는데 IN-vs-OUT fwd_ret_1m 격차(C0 실측 대응치: FQ-116 NW t -2.01)가 처치 arm 에서 축소되지 않으면 '잠식→손실' 연결 기각 → 손실 원천은 이산 top-N 절단 마디(FQ-059 소관)로 귀속 이전. (R4) 방향 역전 — 음성 대조 C3(max-z) 가 C0 보다 개선되면 본 기전 기각 + M2(평균화 뭉갬) 재부상 신호 → FQ-116 M2 판정 재심 요청. (R5) F3 — 팩터 간 z 초과첨도가 사실상 동질이면 friction ③ 전제 기각(단, R1~R4 와 독립적으로 기전 전체를 죽이지는 않음 — 강등만).",
+      "power_note": "반증·판정 문턱의 검정력은 직접 측정 의무 (FQ-237 자기적발 승계): implied_t_threshold 를 사전등록 시점에 산출하고, sd_monthly 에 arm 자신의 diff sd 를 넣는 퇴화(MDE/se ≡ 2.000 = t 검정 재진술) 금지. 판정 라벨은 미결(underpowered)/효과없음(powered null)/가려짐(masked) 3분할. PORT_t 2.95 미달 보고 시 창-도달가능 상한의 양성 대조 병기 의무 — 양성 대조는 기측정 양성에서 선정(권고: WT-D20260813_005 누출 주입 t 4.16/4.03, FQ-237 이 쓴 것과 동일)."
+    },
+    "regime_scope": {
+      "holds_in": [
+        "고분산 국면 — 횡단면 월수익 분산 상위 tercile (A1 Ret 파생): 극단 z 발생 빈도가 높아 slot 잠식이 빈발, 처치(유계화)가 실질 구속",
+        "위기-회복/신용스트레스 완화 국면 (E3_macro_regime_monthly·E5_msm_crisis_prob 라벨): 단일-속성 쇼크 종목(급반등 저품질 등)의 극단 z 가 다발하는 구간 — 잠식 주범의 서식지"
+      ],
+      "weakens_or_reverses_in": [
+        "저분산 정온 국면 (횡단면 분산 하위 tercile): z 분포가 정규 근사로 수렴해 rank ≈ 선형 z — 처치와 대조가 수학적으로 수렴, 효과 0 으로 약화 (역전 아님)",
+        "위기 급락월 (E5 crisis_prob 상위 구간의 drawdown 월): 단일 방어축(저변동·quality) 극단 z 가 진짜 조건부 정보일 수 있어(방어 flight) 유계화가 방어 정보를 절단 — 역전 가능. AX-001 조건부 평가 축과 정합: 처치 arm 의 crisis 월 조건부 성과를 별도 기록할 것"
+      ],
+      "boundary_rationale": "경계는 기전에서 도출: 처치 효과 = f(극단 z 발생 빈도 × 극단의 전이-음성 정도). 첫 항은 횡단면 분산에 단조라 고분산 국면에서 효과가 크고 저분산에서 0 으로 수렴하며, 둘째 항은 급락월에 부호가 뒤집힐 수 있다(극단이 전이-양성인 유일한 상황 = 방어 flight). ⚠승계 caveat: FQ-237 실측이 2015-07 이전/이후로 갈렸으나 이는 era 교락 + KQ150 퇴출 미기록(universe_exit_unrecorded_pre201512, 편향 하방/중립)과 분리 불가 — 달력 분할을 국면 주장으로 승격하지 않는다. alpha-research 는 2015-07 창 분할을 '진단 병기' 로만 수행하고 국면 판정은 위 기전-도출 경계(분산 tercile·crisis 라벨)로 할 것."
+    }
+  },
+
+  "treatment_spec": {
+    "note": "설계 구속용 사전고정 — ⑤AST·구현은 alpha-research 소관. 개수 고정: 처치 2 + 음성 대조 1 + 대조 1. 측정 후 arm 추가 금지.",
+    "control": "C0 = z_score_aligned_equal_weight (현행, FQ-237 대조 실측 cap-w PORT_t 0.947 / parent 1.491 / EW-uni 2.088)",
+    "arms": [
+      {
+        "id": "C1_rank_average",
+        "rule": "성분별 횡단면 rank(pct) 의 등가중 평균 — 기여 ∈ [0,1] 완전 유계, uniform marginal. combination_rule enum 'rank_average' 기존재.",
+        "mechanism_derivation": "유계화의 극한점 — 단독-advocate 편입을 최대 억제. 단 크기 정보 전량 소거(C2 와의 대비가 '유계화 vs 크기소거' 를 분리)."
+      },
+      {
+        "id": "C2_winsorized_z_ew",
+        "rule": "z 를 ±2.0 에서 clip 후 등가중 평균. c=2.0 단일 사전고정 (grid 아님 — c 탐색은 sweep 이 되므로 본 라운드 금지, 채택 시 별도 사전등록).",
+        "mechanism_derivation": "꼬리만 유계화하고 band 내 크기 정보 보존 — C1 과의 gradient 예측: 단독-advocate 편입 억제 C1 ≥ C2 > C0. C1·C2 가 같이 개선되면 기전 = 유계화, C2 만 개선되면 크기 정보가 유효(순수 rank 과잉)."
+      },
+      {
+        "id": "C3_max_z_negative_control",
+        "rule": "종목별 max_k(z_k) — 극단 증폭 결합. ★채택 후보 아님(음성 대조 전용).",
+        "mechanism_derivation": "판별 arm: 본 기전 참이면 C3 < C0 (잠식 극대화), M2(평균화 뭉갬) 참이면 C3 > C0 (평균 제거가 이득). FQ-116 M2 기각의 독립 재확인 겸용."
+      }
+    ],
+    "paired_protocol": "같은 팩터 풀(331 → SEL_RANK K=5)·같은 창(W=36)·같은 top-N(25)·같은 비용(15bps)·같은 홀딩월(221개, 2008~) 에서 결합 규칙만 교체. selection_type = preregistered_arms_no_champion (챔피언 선발 없음, arm 별 독립 co-primary 라벨 — FQ-237 방식) → argmax 부재로 sweep-DSR HARD 비발동. 단 DSR 수치는 진단 산출·기록.",
+    "implementation_cautions": [
+      "rank 평균의 결측 처리: 팩터별 커버리지 이질(MIN_OBS=30) — 관측된 팩터만 평균 + 종목별 최소 관측 팩터 수 기준을 사전 명시(결측이 사실상의 가중 변화가 되는 누수 차단)",
+      "동점(tie) 처리 규칙 사전 명시 — 특히 C1 에서 top-25 경계 동점",
+      "advocate 귀속 규칙은 FQ-116 도구 정의 그대로 재사용(귀속규칙 강건성 59~78% 실측 범위 인지) — 새 귀속 정의 발명 금지",
+      "승계 재료: stage_artifacts/fq233_probe0_20260813/lane_a_feature_panel.parquet + stage_artifacts/WT-D20260813_005/s1_factor_month_stats.rds + stage_artifacts/WT-D20260822_002/p2_arms_and_gate.R — 신규 생성 불요"
+    ]
+  },
+
+  "challenge_flags": [
+    "[대안 보관] C-D 합의-투표 결합 — C1/C2 가 R2(처치 무력)로 죽으면 이산-합의 축의 next_probe 후보",
+    "[대안 보관] C-E 분위-정렬 결합 — rank 평균과 단조 동치라 흡수, 비-uniform 목표분포 판은 새 자유도라 미개봉",
+    "[수송 위험] FQ-116 기전은 WT-009 5팩터 풀 실측 — 본 하네스(331→SEL_RANK K=5, 매월 재선별) 수송은 미확인. P0 transport check 가 성과 측정보다 먼저다 (R1). SEL_RANK 가 매월 다른 5종을 고르므로 advocate 구성도 월별 변동 — 귀속 집계는 월별 수행 후 통합",
+    "[처치 설계 한계] c=2.0 단일점 — 유계화 강도의 용량-반응은 본 라운드에서 미측정(의도적 sweep 회피). C2 채택 시 c 민감도는 별도 사전등록 라운드",
+    "[선행 caveat] STR_AS_20260613_004517(앙상블 평균법 6종, F) 는 층·규격이 다르고 코호트 실행-신뢰 훼손(batch_434) — 다만 '평균법 교체 무익' 방향의 약한 사전 신호로 정직 인지",
+    "[국면 caveat] 2015-07 창 분할은 era 교락·KQ150 퇴출 미기록과 분리 불가 — 진단 병기만, 국면 판정은 기전-도출 경계로",
+    "[검정력] implied_t_threshold 사전 산출 + 퇴화 점검(sd_monthly 에 arm 자신 diff sd 금지) + 3분할 라벨 + 창-도달가능 상한 양성 대조(WT-D20260813_005 누출 주입 t 4.16/4.03 권고) — alpha-research preregistration 의무"
+  ],
+
+  "verdict": "designed",
+
+  "handoff": {
+    "to": "alpha-research",
+    "next_steps": "Step 1~7 + ⑤ AST 구성. 승계분(mechanism/falsification/regime_scope) 재작성 금지 — 결함 발견 시 challenge_note 기록 + 재설계 요청 (Charter 원칙 8). preregistration 에서 R1~R5 의 수치 문턱과 implied_t_threshold 를 고정한 뒤 P0 transport check 부터. ML 결합기 본 라운드 금지(헌법 재진입 순서 ① — 비-ML 미달 실측 후에만 ②). top-N 절단 자유도 봉인(FQ-059 소관).",
+    "combination_rule_enum_note": "C1 은 기존 enum rank_average. C2/C3 는 enum 밖 — alpha_package 의 combination_rule 표현은 alpha-research 판단(z_score_aligned_weighted_sum 변형 선언 또는 blocked_by_capability 경로), 설계는 규칙 자체만 구속"
+  }
+}
