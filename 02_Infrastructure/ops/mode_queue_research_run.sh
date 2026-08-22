@@ -125,6 +125,12 @@ command -v sched_resolve_oauth_token >/dev/null 2>&1 && sched_resolve_oauth_toke
 _tokfp="none"
 command -v sched_token_fingerprint >/dev/null 2>&1 && _tokfp="$(sched_token_fingerprint 2>/dev/null || echo none)"
 log "토큰 지문: ${_tokfp} (값 아님 · sha256 앞12자) — 401 시 이 줄로 만료/배관 구분"
+# 디스패치 대상 기록 — 2026-08-22 실사고: 런이 성공(WT-005 ALPHA_DONE)했는데
+#   로그에 WT id 가 한 줄도 없어, 같은 시각 병렬 세션이 만진 다른 WT 의 산출을
+#   이 런의 것으로 오귀속했다. 원장 지문은 **전역**이라 남의 진척도 CHANGED 로 읽는다.
+#   ⇒ 무엇을 겨눴는지 먼저 남긴다(귀속은 사후에 복원할 수 없다).
+_CAND=$("$PYBIN" -c "import json,io,sys;d=json.load(io.open(sys.argv[1],encoding=chr(117)+chr(116)+chr(102)+chr(45)+chr(56)));it=d if isinstance(d,list) else (d.get(chr(105)+chr(116)+chr(101)+chr(109)+chr(115)) or []);print(chr(44).join(str((x.get(chr(119)+chr(116)+chr(95)+chr(105)+chr(100)) or x.get(chr(105)+chr(100)) or chr(63))) for x in it[:3]))" "$QUEUE_JSON" 2>/dev/null || echo "?")
+log "디스패치 후보(큐 상위3): ${_CAND:-?} — 사후 귀속용. 에이전트가 실제로 고른 것은 MODEQ_DONE 이 정본"
 
 # ★이번 런의 산출만 센다 — 로그는 당일 append-only 라 누적분을 이번 것으로 읽으면
 #   zero_progress 가드가 통째로 무력해진다(2026-08-22 실측: risk 런이 MODEQ_DONE 을
