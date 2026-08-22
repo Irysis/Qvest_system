@@ -1,0 +1,53 @@
+{
+  "prereg_id": "mfro_v9_20260822",
+  "created_at": "2026-08-22",
+  "created_before_any_result": true,
+  "round": "R68",
+  "title": "cross-cap 정보 전이의 직접 시험 — 신호 공간만 바꾸고 보유는 고정한다",
+  "chain_parent": "mfro_v8_20260822 (R67)",
+  "selection_type": "chain",
+
+  "iteration_reason_mechanism": "R67 실측: 랭킹 기여가 K200∪KQ150 지수 공간에서는 +0.1848%/월(t +1.495, permB p 0.015)인데 K200 전용에서는 -0.0960(t -0.799, p 0.327)로 부호 반전하고, 지수 구성 종목 수를 맞춰도(115종) -0.2414 로 악화된다. ⇒ 종목 수가 아니라 KQ150 종목 자체가 정보원이다. 잠정 기전 = **cross-cap 정보 전이**(소형주 공간의 팩터 승자 → 대형주 포트 틸트). 본 라운드는 그 기전을 **직접** 시험한다.",
+
+  "design": {
+    "held_fixed": "보유는 완전 고정 — 시총 상위 25(K200∪KQ150 유니버스, adv20>=2e8), .tilt(lambda=1.5), cap 0.20, 15bps, dec_lag=1, k=5, clean 창(2015-07~).",
+    "varied": "★신호를 만드는 **지수 공간만** 바꾼다. 보유 종목·가중 규칙·비용·창은 전부 동일하다.",
+    "spaces": {
+      "SP_both": "K200 ∪ KQ150 (현행 REF)",
+      "SP_k200": "K200 전용 (R67 A 재현)",
+      "SP_kq150": "★KQ150 전용 — 본 라운드의 결정적 셀",
+      "SP_kq150_matched": "KQ150 전용이되 분위를 조정해 지수 구성 종목 수를 SP_both 와 맞춤 (종목 수 교란 배제)"
+    }
+  },
+
+  "competing_hypotheses_prespecified": {
+    "H1_cross_cap_transfer": "소형주 공간의 팩터 승자가 대형주 수익을 예측한다 ⇒ 예상 순서 **SP_kq150 >= SP_both > SP_k200**",
+    "H2_diversity": "공간이 넓을수록(종목이 많을수록) 신호가 안정된다 ⇒ 예상 **SP_both > SP_kq150 및 SP_k200 각각**",
+    "H3_kq_additive": "KQ150 은 잡음 감소에만 기여한다 ⇒ 예상 **SP_both > SP_kq150 > SP_k200**",
+    "discriminating_power": "세 가설이 서로 다른 순서를 예측하므로 관측 순서가 가설을 가른다. ★이 순서를 결과 전에 고정한다."
+  },
+
+  "judgment": {
+    "primary": "각 공간의 랭킹 고유 기여(D1-AP) clean 평균·NW-t·permB 우측 p",
+    "decisive": "SP_kq150 vs SP_both 의 대응표본 차이 부호와 t",
+    "h1_confirmed": "SP_kq150 의 기여가 SP_both 이상이고 permB p<0.05 이면 H1(cross-cap 전이) 확정",
+    "h2_confirmed": "SP_both 가 두 단일 공간 각각보다 크면 H2(다양성)",
+    "h3_confirmed": "SP_both > SP_kq150 > SP_k200 순서면 H3",
+    "none_of_above": "위 어느 순서도 아니면 기전 미확정으로 라벨하고 대안 가설을 도출한다",
+    "all_cells_reported": "4공간 x {평균, t, permB p, 지수 구성 종목수} 전수."
+  },
+
+  "expected_failure_mode": [
+    "★결과 전 선언: H3(KQ150 이 잡음 감소에만 기여, SP_both 최고)가 나올 것으로 예상한다(45%). H1 은 35%, H2 는 10%, 미확정 10%.",
+    "★근거 — R67 은 'KQ150 을 빼면 사라진다' 를 보였을 뿐 'KQ150 만으로 된다' 를 보인 게 아니다. 두 진술은 다르다. 결합이 필요할 수 있다.",
+    "★H1 이 확정되면 함의가 크다: 신호원을 더 넓은 소형주 공간(지수 미편입 2,265종)으로 확장하는 경로가 열린다.",
+    "★SP_kq150 이 SP_k200 과 비슷하게 나쁘면(둘 다 음수) 정보는 **결합에만** 있고, 그것은 '두 공간의 상대 비교' 가 신호라는 뜻이다 — 그 경우 완전히 다른 해석이 필요하다."
+  ],
+
+  "binding_constraints": [
+    "성과 서술은 본 라운드 실행 산출값만. metric_type=canonical_screen.",
+    "★보유는 어떤 셀에서도 바뀌지 않는다 — 신호 공간만 varied.",
+    "argmax 채택 금지. 본 라운드는 기전 판별이며 어떤 공간도 채택하지 않는다.",
+    "book_state 쓰기·governor admit 금지. 05_Production 읽기만."
+  ]
+}
