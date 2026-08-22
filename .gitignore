@@ -81,6 +81,12 @@ codex_*_raw_output.txt
 
 # HYG-02 (2026-07-03) — backtest registry는 *.csv ignore 예외 (계약 SOT, 추적 필수)
 !qepm/registry/backtest_registry.csv
+# (2026-08-22) paper_recharge_sources.csv 도 *.csv ignore 예외 — **런타임 하드 의존**이다.
+#   paper_recharge_daily.R:439 가 이 파일이 없으면 stop() 으로 죽는데, discovery 기록은
+#   그보다 앞(:326/:393)이라 실패 시 항상 "산출은 있고 완주는 없는" 상태가 된다.
+#   실측: 08-15/16/17 세 날 연속으로 이 사유로 crash(원문 "sources.csv is empty or missing"),
+#   discovery 29편씩이 3일간 미소비. 이 머신에만 존재해 신규 클론은 같은 방식으로 죽는다.
+!02_Infrastructure/config/paper_recharge_sources.csv
 
 # HYG-08 (2026-07-03) — 루트 쓰레기 격리소 (rm 대신 이동 보존, 추적 제외)
 .trash_*/

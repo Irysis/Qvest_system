@@ -35,7 +35,7 @@ evalm <- function(mode){
  for(sd_ in dts){scd<-scores[sig_date==sd_][order(-score)][1:TOP_N];hd<-md[sig_date==sd_]$Date[1]
   rr<-returns_dt[Date==hd & Ticker%in%scd$Ticker];if(nrow(rr)<TOP_N*0.8)next
   tk<-scd$Ticker;n<-length(tk)
-  hym<-format(hd,"%Y%m"); secmap<-sec_m[ym==hym & Ticker%in%tk]
+  hym<-format(hd,"%Y%m"); secmap<-sec_m[ym<=hym & Ticker%in%tk][, .(Sector=Sector[.N]), by=Ticker]
   semflag<-setNames(rep(FALSE,n),tk); sv<-setNames(secmap$Sector,secmap$Ticker)[tk]; semflag[which(sv=="반도체")]<-TRUE
   if(mode=="EW") w<-setNames(rep(1/n,n),tk) else w<-semi_cap_w(tk,semflag,0.50)
   cm<-intersect(names(w),rr$Ticker);w<-w[cm];w<-w/sum(w);rv<-setNames(rr$Ret_1m,rr$Ticker)[cm];g<-sum(w*rv)

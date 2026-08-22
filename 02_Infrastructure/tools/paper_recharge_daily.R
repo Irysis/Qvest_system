@@ -456,7 +456,29 @@ mcp_candidate_sources <- function(mcp_out) {
 
 source_path <- file.path(PROJECT_ROOT, "02_Infrastructure", "config", "paper_recharge_sources.csv")
 curated_sources <- read_sources(source_path)
-if (nrow(curated_sources) == 0L) stop("paper_recharge_sources.csv is empty or missing")
+# ★2026-08-22 수리: 구판은 여기서 stop() 으로 즉사했다. 두 가지가 잘못이었다 —
+#   ① **관심사 결합**: curated(정적 PDF, 실측 15/15 소진으로 사실상 idle)의 파일 하나가
+#      arXiv MCP 축까지 죽였다. 두 축은 독립 원천이다.
+#   ② **무마커 사망**: 08-15/16/17 세 날 연속 crash 했는데 경보가 0건이었다.
+#      게다가 MCP discovery 는 이미 기록된 뒤라 "산출은 있고 완주는 없는" 상태가
+#      구조적으로 보장됐다(라우터는 .done 을 보므로 3일간 29편씩 미소비).
+#   ⇒ 그 축만 skip 하고 **경보를 남긴다**. arXiv 축은 계속 돈다.
+if (nrow(curated_sources) == 0L) {
+  log_line("[paper-recharge] ★curated sources 비었음/부재 — curated 축만 skip, arXiv MCP 축은 계속 진행")
+  tryCatch({
+    adir <- file.path(PROJECT_ROOT, ".cache", "scheduler_alerts")
+    dir.create(adir, recursive = TRUE, showWarnings = FALSE)
+    writeLines(c(sprintf("ts=%s", format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z")),
+                 "component=paper_recharge", "reason=curated_sources_missing",
+                 sprintf(paste0("detail=%s 가 비었거나 없습니다. curated(정적 PDF) 축만 건너뛰고 ",
+                                "arXiv MCP 축은 진행합니다. 구판은 여기서 즉사해 3일 연속 수집이 ",
+                                "좌초했습니다(08-15/16/17). 이 파일은 런타임 하드 의존이며 ",
+                                "2026-08-22 부터 git 추적 대상입니다."), source_path)),
+               file.path(adir, sprintf("paper_recharge_curated_sources_missing_%s.alert",
+                                       format(Sys.Date(), "%Y%m%d"))))
+  }, error = function(e) NULL)
+  curated_sources <- curated_sources[0, , drop = FALSE]
+}
 
 # ── curated(기관/헤지펀드/저명저자) 링크 건강도 — 매 실행 점검 (도훈 mandate 2026-06-18) ──
 # arxiv/MCP 논문은 매번 fresh fetch + 영구 skip-list로 처리되므로 대상 아님. 이미 받은 PDF도
