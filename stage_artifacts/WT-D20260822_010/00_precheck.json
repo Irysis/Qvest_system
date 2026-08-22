@@ -1,0 +1,123 @@
+{
+  "object_identity": {
+    "n_matched": 86297,
+    "n_both_finite": 86297,
+    "max_abs_diff": 0,
+    "pearson": 1,
+    "note": "WT-009 는 absorb_panel$absorb, NP2 는 alpha_scores$absorb_raw 를 소비했다. 같은 원천인지 실측 확인."
+  },
+  "orth_axis": {
+    "n_rows": 86297,
+    "n_months": 315,
+    "transform": "rank",
+    "winsorize_probs": [0.01, 0.99],
+    "controls": ["win_vol", "log_size"],
+    "contract": "distribution_target_screen.R::.dts_orthogonalize_by_date",
+    "regression_sample": "NP2 표본(liq 2e8 통과 absorb 패널) — NP2 verbatim",
+    "cor_with_raw_pooled": 0.732481836515837
+  },
+  "base_anchor": {
+    "port_t": 3.05833912319022,
+    "ir": 0.663067646859504,
+    "n_months": 268,
+    "target": 3.0583,
+    "pass": true
+  },
+  "grid": {
+    "common_months": 268,
+    "base_months": 268,
+    "orth_months": 315,
+    "common_start": "2003-12-30",
+    "common_end": "2026-03-31"
+  },
+  "census": {
+    "mean_cand": 291.809701492537,
+    "coverage": 0.977993734415958,
+    "mean_excluded": 57.4962686567164,
+    "mean_left": 234.313432835821,
+    "min_left": 115,
+    "months_left_lt25": 0,
+    "n_months": 268
+  },
+  "exposure_neutrality": {
+    "all_excl_srank": 0.436548674309802,
+    "all_keep_srank": 0.518073250912779,
+    "all_gap": -0.0815245766029775,
+    "all_gap_nw_t": -19.5445143983465,
+    "n_months": 268,
+    "top25_excl_srank": 0.513853878524343,
+    "top25_keep_srank": 0.555261798363227,
+    "top25_excl_meanw": 0.0362308290419832,
+    "top25_keep_meanw": 0.0408996117039748,
+    "wt009": {
+      "all_excl_srank": 0.29958445470238,
+      "all_keep_srank": 0.551799941323013,
+      "all_gap": -0.252215486620633,
+      "all_gap_nw_t": -26.6,
+      "top25_excl_meanw": 0.017831025267214,
+      "top25_keep_meanw": 0.0447634152417682
+    },
+    "gap_residual_share": 0.323233825548555
+  },
+  "tail_realization": {
+    "lo": 0.0447790252449867,
+    "hi": 0.0330975403984684,
+    "all": 0.0341855200726426,
+    "n_lo": 15409,
+    "n_hi": 15409,
+    "wt009_raw": {
+      "lo": 0.0505548705302096,
+      "hi": 0.0223275134679042
+    },
+    "note": "부호는 lo > hi 여야 NP2 정합(저-흡수 = 하방꼬리 多)."
+  },
+  "conditional_on_top25": {
+    "table": [
+      {
+        "excluded": false,
+        "n": 5409,
+        "tail_rate": 0.0268071732298022,
+        "mean_ret": 0.0201710083491832,
+        "mean_w": 0.0408996117039746
+      },
+      {
+        "excluded": true,
+        "n": 1291,
+        "tail_rate": 0.034856700232378,
+        "mean_ret": 0.0193266379461158,
+        "mean_w": 0.0362308290419832
+      }
+    ],
+    "tail_gap": 0.00804952700257582,
+    "n_excluded_per_month": 4.81716417910448,
+    "mean_weight_excluded": 0.0362308290419832,
+    "wt009": {
+      "tail_gap": 0.00654685,
+      "n_excluded_per_month": 4.42164179104478,
+      "mean_weight_excluded": 0.017831025267214
+    }
+  },
+  "gate": {
+    "sd_monthly": 0.015948597895229,
+    "n_months": 268,
+    "mde80_monthly": 0.00272934822469967,
+    "mde80_annual_pp": 3.2752178696396,
+    "tail_event_magnitude_P1": 0.2,
+    "tail_event_magnitude_P2_empirical": 0.28460678081785,
+    "P1_monthly": 0.00028097655102881,
+    "P1_annual_pp": 0.337171861234572,
+    "P2_monthly": 0.00039983915836806,
+    "P2_annual_pp": 0.479806990041672,
+    "ratio": 0.146496205485856,
+    "threshold": 0.1,
+    "pass": true,
+    "wt009_ratio": 0.0378180398837564,
+    "formula": "PREREG_GATE.json gate_arithmetic — max(P1,P2)/MDE80"
+  },
+  "pit": {
+    "assert_pass": 268,
+    "assert_n": 268,
+    "injection_pass": 0,
+    "detector_alive": true
+  }
+}
