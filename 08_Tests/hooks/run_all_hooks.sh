@@ -1096,6 +1096,8 @@ SUITES=(
   # 논문 id 정규화 정본 — 같은 대상 수치가 셋이던 문제(좌초 154/62/61)의 수리.
   #   1급 축은 과잉 정규화 방지(내부 id 훼손) + 소비자 존재.
   "08_Tests/ops/test_paper_id_norm.py"
+  # 좌초 회수 3축 — 1급 축은 회수가 아니라 **기본 동작 불변**(env 미지정 시 종전과 동일).
+  "08_Tests/ops/test_router_backfill_paths.sh"
 )
 
 # (2026-08-02) .py 분기 추가 — 종전엔 확장자 무관 `bash` 로 던져 파이썬 suite 가
