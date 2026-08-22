@@ -1088,6 +1088,9 @@ SUITES=(
   "08_Tests/ops/test_scheduler_status_line_honesty.sh"
   "08_Tests/ops/test_stall_lock_alert.sh"
   "08_Tests/ops/test_orchestrator_stage_gate.sh"
+  # 무인 판정 게이트의 계층(ADOPT/SCREEN_TIER/QUARANTINE)·입력계약 2갈래·권위 서명.
+  #   구판 대조 실증: 같은 검사가 구판에서 FAIL 10건.
+  "08_Tests/ops/test_auto_alpha_gate_tiers.sh"
 )
 
 # (2026-08-02) .py 분기 추가 — 종전엔 확장자 무관 `bash` 로 던져 파이썬 suite 가

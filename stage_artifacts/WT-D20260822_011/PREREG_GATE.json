@@ -1,0 +1,86 @@
+{
+  "task_id": "WT-D20260822_011",
+  "sealed_at": "2026-08-22",
+  "sealed_before": "00_precheck.R 최초 실행 이전. 본 파일 봉인 후 수정 금지(overwrite 거부 — 수정이 필요하면 새 파일 + 사유 기록).",
+  "purpose": "여백-보존 소비 형태(epsilon tie-break)의 **착수 전 관문**. WT-D20260822_009/010 이 남긴 NP4 규약의 3판. 본 관문을 통과하지 못하면 처치 백테스트를 실행하지 않고 산술과 함께 중단 보고한다.",
+
+  "design": {
+    "name": "epsilon_tiebreak_margin_preserving",
+    "rule": "저-orth 표식 종목에 score 단위 페널티 epsilon 을 부여한 뒤 sc_adj = sc - epsilon*1{low_orth} 로 top-25 재선정(cap_norm(Size) 가중). 배제가 아니라 후순위화이므로, 밀려난 종목과 대체 편입 종목의 score 격차가 구조적으로 epsilon 이하로 갇힌다.",
+    "low_orth_definition": "score_orth <= per-date 20% 분위 (X = 0.20 고정 — WT-009/010 과 동일, 재선택 아님). score_orth = NP2 계약 직교화축(distribution_target_screen.R::.dts_orthogonalize_by_date, 통제 win_vol+log_size, rank 변환, winsor[0.01,0.99] 회귀좌변 전용).",
+    "base": "05_Production/.../alpha_scores_str1715_268m_cleanT1.parquet score_eff (vintage_verified = production_parity_verified, 헌법 §7b) → top-25 cap_norm(Size), 268월, liq 2e8, 15bps.",
+    "object_inheritance": "WT-D20260822_010/00_precheck_objects.rds (SMx/Wb/S/ORTH/common_d0/RT) 를 verbatim 로드한다 — 직교화 축·배제 표식·base 를 재구현하지 않는다(재발명 시 NP2·WT-010 실측과의 정합이 끊긴다).",
+    "margin_structural_property": "displaced 종목과 inserted 종목의 실현 score 격차 <= epsilon (설계상 상한). 관문 이후 본측정 시 이 상한이 실제로 지켜졌는지 1급 진단으로 검증한다."
+  },
+
+  "anchor_stop": {
+    "quantity": "weighted_screen_bt(Wb)$portfolio_alpha_t_nw_lag3",
+    "target": 3.05833912319022,
+    "tolerance": 0.01,
+    "action_if_fail": "STOP — 측정 무효. base 경로가 WT-010 과 다른 것이므로 이후 수치 전부 비교 불가."
+  },
+
+  "epsilon_selection": {
+    "principle": "epsilon 은 **하나만** 사전 고정한다. 복수 epsilon 을 시험하고 성과가 좋은 것을 고르면 sweep 이며 DSR >= 0.5 HARD 가 부착된다. 선택 근거는 성과가 아니라 **구조** — 여백 손실 상한을 기전-함의 편익의 사전 고정 비율 f 이하로 묶는 산술로 epsilon 을 *도출*한다.",
+    "f": 0.3333333333333333,
+    "f_rationale": "여백 손실 상한을 기전 편익의 1/3 로 묶는다 = 순 함의가 편익의 2/3 이상으로 보장된다. f 는 설계 선언이지 탐색 대상이 아니다.",
+    "delta_tail_ref": 0.0030983733539892,
+    "delta_tail_ref_provenance": "WT-D20260822_010/12_decomp.json pnl_decomposition — removed tail_rate 0.034856700232378 - added tail_rate 0.0317583268783888. ★배제군 vs **잔류군** 격차(0.00804952700257582)가 아니라 배제군 vs **대체편입군** 격차를 쓴다. 교체의 손익은 대체편입군과의 대비로 발생하므로 후자가 옳은 대비항이다(WT-010 관문이 전자를 써서 편익을 2.6배 낙관한 것을 정정 — 두 값 모두 병기 보고).",
+    "M_ref": 0.28460678081785,
+    "M_ref_provenance": "WT-D20260822_010/00_precheck.json gate.tail_event_magnitude_P2_empirical — base top-25 내 꼬리사건 평균수익 - 비꼬리 평균수익의 절대값.",
+    "beta_hat": "base 패널에서 측정: 월별 횡단면 OLS slope of Ret_1m ~ score_eff, 표본 = 해당 월 score_eff 상위 40종(교체가 일어나는 근방), 월별 slope 의 단순평균. 처치와 무관한 base-only 구조량.",
+    "formula": "epsilon = f * delta_tail_ref * M_ref / beta_hat",
+    "units": "score_eff 단위"
+  },
+
+  "gate_arithmetic": {
+    "notation": "월 t 에서 displaced = base top-25 중 tie-break 로 밀려난 종목, inserted = 대신 들어온 종목. w = base cap_norm 가중.",
+    "W_disp": "mean_t( sum_{i in displaced_t} w_i ) — 교환 명목(월평균 비중합)",
+    "dtail_repl": "tail_rate(displaced pooled) - tail_rate(inserted pooled), tail = Ret_1m <= -0.20",
+    "benefit_monthly": "W_disp * dtail_repl * M_ref",
+    "margin_loss_upper_monthly": "W_disp * beta_hat * epsilon   (설계상 상한 — 실현 평균 score 격차로도 병기 산출)",
+    "cost_monthly": "15e-4 * (turnover_monthly_tiebreak - turnover_monthly_base), turnover_t = sum|w_t - w_{t-1}| (weighted_screen_bt 규약 동일)",
+    "net_implied_monthly": "benefit - margin_loss_upper - cost",
+    "sd_gate": "sd_t( sum_{inserted} w*Ret_1m - sum_{displaced} w*Ret_1m ) — Delta_active 의 월별 산포 추정(nuisance parameter). ★이 계열의 **평균은 게이트 판정에 사용하지 않는다**(평균은 기전-함의에서만 온다). WT-009 상수(0.015948597895229)를 물려쓰지 않는 이유 = tie-break 는 교체 규모가 작아 산포가 다른 양이다(08-20 '비슷한 크기의 다른 양 혼동 금지').",
+    "mde80_monthly": "(qnorm(0.975) + qnorm(0.80)) * sd_gate / sqrt(n_months)",
+    "ratio": "net_implied_monthly / mde80_monthly",
+    "threshold": 0.1,
+    "pass_rule": "ratio >= 0.10 이면 측정 진행. 미만이면 **측정하지 않고** 산술과 함께 중단 보고."
+  },
+
+  "feasibility_bound": {
+    "why": "epsilon 이 유일한 설계 레버이므로, 사전 고정한 하나의 epsilon 이 관문에 걸렸을 때 '다른 epsilon 이면 통과했을까'가 남는다. 그 질문은 **성과 탐색이 아니라 설계공간의 상한 문제**로 답한다.",
+    "definition": "census 전용 epsilon 격자 위에서 ceiling_ratio(e) = [W_disp(e) * dtail_repl(e) * M_ref] / mde80(e) — 여백 손실 0, 비용 0 의 낙관 상한.",
+    "grid": "e = c(0.01,0.02,0.05,0.10,0.15,0.20,0.30,0.50,0.75,1.00,1.50,2.00,5.00) * sd(score_eff pooled). e -> 대형값은 완전 배제(WT-010 구성)로 수렴한다.",
+    "not_a_sweep": "격자 위에서 **백테스트를 실행하지 않는다**(weighted_screen_bt 호출 0회). 각 점은 랭킹 census 산술일 뿐이며, 어떤 점도 후보 구성으로 승계되지 않는다. 관문 통과 시 진행하는 구성은 사전 고정 epsilon 단 하나다.",
+    "stop_rule": "sup_e ceiling_ratio(e) < 0.10 이면 **어떤 epsilon 도 관문을 통과할 수 없다** — 라운드를 측정하지 않고 중단한다(필요조건 불충족)."
+  },
+
+  "falsification_inherited": {
+    "source": "qepm/mailbox/worktask/WT-D20260822_010/alpha_hypothesis.json$hypothesis$falsification — 문턱 재량 변경 금지",
+    "N1_exposure_neutrality": {"threshold": 0.126, "axes": ["size srank", "win_vol srank"], "scope_change": "배제집합 -> **displaced 집합**(실제 교체가 일어난 종목)으로 재스코프. 표식집합(low_orth)의 값은 WT-010 과 동일하므로 병기."},
+    "N2_downday_individual_support": {"reject_if": "n_months >= 30 에서 NW-t >= 0", "label_split": ["기각", "미결", "지지"]},
+    "N3_smart_money_followthrough": {"reject_if": "NW-t >= +2.0"}
+  },
+
+  "basis": {
+    "judgment": "cap-w 고정 (screen-IR, top25 cap_norm, net 15bps)",
+    "diagnostic_only": ["EW top-25", "EW-유니버스 벤치"],
+    "note": "EW 부호가 갈려도 판정 불변."
+  },
+
+  "verdict_gates": {
+    "transition": "alpha_discovery_count >= 1 AND screen_pass AND falsification_fired == 0 AND delta_ir >= +0.05",
+    "delta_ir_gate": 0.05,
+    "no_negotiation": "미충족 시 협상 없이 negative (WT-009/010 선례)."
+  },
+
+  "conductivity_ceiling": {
+    "positive_control": "WT-014 MAX5 상위10% 배제 — 동일 base/창/하네스에서 delta_ir +0.164172178623249, PORT_t 3.80239443710596, paired NW t 1.56552055710279",
+    "statement": "양성 대조조차 paired NW t 가 1.566 (< 2) 이다. ⇒ 이 창·이 소비 형태에서 **유의성 수준 판정은 원리적으로 불가**하며 ΔIR 점추정 게이트만 유효하다. 모든 판정 서술에 이 상한을 병기한다."
+  },
+
+  "pit": {
+    "required": ["assert_overlay_pit 전월 통과", "위반 주입 0/N 통과(검출기 생존 확인)", "lag1 스트레스(본측정 진행 시)", "strict-PIT A/B(본측정 진행 시)"]
+  }
+}

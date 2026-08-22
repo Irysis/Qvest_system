@@ -1,0 +1,69 @@
+{
+  "prereg_id": "mfro_v5_20260822",
+  "created_at": "2026-08-22",
+  "created_before_any_result": true,
+  "round": "R60",
+  "title": "MFRO 재발행 — 판별력 있는 조작 확인 + 정합 상한 아래에서 라벨을 처음으로 발급한다",
+  "chain_parent": "mfro_v3_20260822 (R58)",
+  "selection_type": "chain",
+
+  "why_this_round_exists": "적대검증 wf_9ac58124-3e4 (7 agent · 115만 토큰)이 R55 주장 6건 중 5건을 반증했고, 그 결함들이 R56/R58 에 상속됨을 내가 실측 확인했다. 검증 종합의 결론: '판별력 있는 조작 확인과 정합 상한 아래에서 다시 재기 전까지 B·A 모두 **미측정** 상태이며, 두 재측정이 완료되고 그때도 paired NW-t < 1.96 이면 그 시점에 효과없음 라벨 발급이 처음으로 가능해진다.' 본 라운드가 그 재측정이다.",
+
+  "defects_repaired_before_this_round": [
+    "①조작 확인 검출력 0 — L1 >= 0.10 은 로테이션을 완전히 제거해도 2000/2000 통과. 부분집합 크기 k 의 단조함수였다. ⇒ **한계 전달 L1**(종목·z 고정, 승자집합만 t-1 vs t-2)로 교체. 실측 검출력 확인: 승자 무변화 79개월에서 정확히 0.000000, 상수-승자 주입 시 발화.",
+    "②순열 귀무가 틀렸다 — '전체 21 중 무작위 5'(permA)는 부호 스크린 효과를 신호 기여로 오귀속한다. ⇒ **양(+) 풀 내 무작위 k**(permB)를 1급 귀무로 승격. 실측: 양(+) 팩터 중앙 11 · 최소 6 · <=5 인 달 0.0% ⇒ 퇴화 귀무 아님.",
+    "③상한이 부분매핑 — TA[m,j](팩터 j 자신의 top-25 active)를 base-25 재틸트 팔의 표적으로 썼다(rho 0.344). ⇒ **그 팔 자신의 실현 active** 를 표적으로 하고, 보고는 argmax 수준이 아니라 **무작위-선택 귀무 분포 대비 백분위**로 한다.",
+    "④필터 비대칭 — pair() 가 is.finite(bmf) 를 안 걸어 부분월 1건이 대응표본에만 포함(n 133 vs 132). 실측 영향: R58 헤드라인 +0.2043 -> +0.1925(두 구현 비트 동일 대조로 확정). 4개 파일 수리 완료.",
+    "⑤패널 재현 불가 — 커밋 빌더가 디스크 패널을 못 만들었다(fwd_ret 528행). 빌더를 수리(미필터 mret + 명시 ym+1 조인)하고 재빌드 후 **78,743행 x 28열 비트 동일** 확인. 부수로 내가 넣은 열충돌 가드 자체가 잘못된 이스케이프(\\.)로 깨져 있었고 한 번도 실행된 적이 없었다 — 수리 + 위반 주입 확인."
+  ],
+
+  "design": {
+    "universe": "유니버스 시총 상위 25 (R58 D1 형태 — 적대검증 후에도 생존한 유일 후보)",
+    "signal": "DFA 21 팩터지수 trailing 12M active, 양(+) 중 상위 k",
+    "fixed": ".tilt(lambda=1.5) · cap 0.20 · 25종 · long-only · Σw=1 · 15bps · dec_lag=1 · k=5 (전부 R58 과 동일, 사전지정)",
+    "windows": "full(2005-12~) / clean(2015-07~) — 2015-07 은 R55 사전등록 값이며 종합자가 사후 창 선택을 기각했으므로 불변"
+  },
+
+  "arms_prespecified": {
+    "C1_no_signal": "시총 상위 25 cap-w — 무신호 대조. ★계약 no_signal_control.R::no_signal_gate() 를 실제로 호출한다(R55 는 인라인 재구현했다).",
+    "D0_all21_tilt": "21팩터 등가중 z 로 재틸트 — '틸트 자체' 대조",
+    "AP_allpos_tilt": "그 달 양(+) 팩터 **전체**로 재틸트 — 부호 스크린 단독 성분",
+    "D1_rotation_top5": "★헤드라인 — 양(+) 중 상위 5 로 재틸트",
+    "permA_null": "무작위 5/21 · 200회 — 참고 귀무",
+    "permB_null": "★1급 귀무 — 그 달 양(+) 풀 내 무작위 5 · 200회"
+  },
+
+  "manipulation_check_prespecified": {
+    "statistic": "한계 전달 L1 = D1(dec_lag=1) 과 D1(dec_lag=2) 의 월별 비중 L1 중앙값 (종목·z 동일, 승자집합만 다름)",
+    "threshold": "중앙 >= 0.05 이고, 승자 무변화 달에서 정확히 0 이며, 상수-승자 주입에서 0 이 되어야 통과",
+    "why_this_one": "이 통계량은 승자집합이 안 바뀌면 정의상 0 이고 바뀌면 양수다 — 즉 로테이션 처치 그 자체를 잰다. 구 통계량(총 L1)은 '5부분집합 vs 21평균' 의 정적 재틸트를 재고 있었다(총 변동의 66%가 그것)."
+  },
+
+  "judgment": {
+    "primary": "D1 - C1 대응표본 NW lag-3 t, clean 창 (필터 통일 n 적용)",
+    "decisive_null": "D1 vs permB 우측 p",
+    "ceiling_report": "D1 의 실현 active 가 무작위-선택 귀무 분포에서 차지하는 백분위 (argmax 수준 보고 금지 — 기준선에 따라 부호가 바뀌는 회수율도 보고 금지)",
+    "beta_control": "β-통제 α 와 t(α) 병기 의무 (measurement-graduation §2)",
+    "label_rules": {
+      "PASS": "조작확인 통과 AND permB p<0.05 AND D1-C1 NW-t >= 1.96 AND no_signal_gate() 가 SIGNAL_ADDS_VALUE",
+      "SIGNAL_REAL_BUT_INSUFFICIENT": "조작확인 통과 AND permB p<0.05 AND D1-C1 NW-t < 1.96 — 신호는 실재하나 무신호 대조 대비 미달. screen-tier 등재 불가(§3)이나 **'효과없음' 이 아니다**. 다음은 크기 축.",
+      "POWERED_NULL": "★조작확인 통과 AND permB p>=0.05 — 이 경우에만 '효과없음' 을 처음으로 발급할 수 있다.",
+      "UNDETERMINED": "조작확인 미통과 — 어떤 결과든 '미결'."
+    },
+    "all_cells_reported": "arm x {full,clean} x k{3,5,10} x cost{5,15,25} 전수. 헤드라인 사전지정."
+  },
+
+  "expected_failure_mode": [
+    "★결과 전 선언: SIGNAL_REAL_BUT_INSUFFICIENT 가 나올 것으로 예상한다. 근거 — R58 정정 재측정에서 permB p=0.005(clean)로 신호는 귀무 밖이었으나 D1-C1 은 t +0.675 로 문턱의 34% 였다. 두 수치가 함께 재현되면 그 라벨이다.",
+    "★POWERED_NULL 이 나오면(permB p>=0.05) R58 정정 재측정과 모순이므로 어느 쪽이 틀렸는지 먼저 규명한다 — 라벨을 발급하기 전에.",
+    "★PASS 가 나오면 즉시 계약 측정(canonical_screen_bt + essence_score)으로 승격하고 HARD 3종을 산출한다. 현재 어느 라운드도 PORT_t·oos_retention·calmar 를 산출한 적이 없다.",
+    "★조작 확인이 미통과하면 그것 자체가 결함이다 — R58 실측에서 중앙 0.2829 였으므로 재현되지 않으면 구현 차이를 먼저 찾는다."
+  ],
+
+  "binding_constraints": [
+    "성과 서술은 본 라운드 실행 산출값만. metric_type=canonical_screen.",
+    "회수율 보고 금지(기준선 따라 부호 반전). 상한은 백분위로만.",
+    "book_state 쓰기·governor admit 금지. 05_Production 읽기만.",
+    "패널은 재현성 복구판(커밋 빌더 == 디스크, 비트 동일 확인)만 사용."
+  ]
+}
