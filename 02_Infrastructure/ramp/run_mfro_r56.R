@@ -45,6 +45,11 @@ for(j in 1:NF)for(m in 12:nrow(mi))S[m,j]<-prod(1+mi[[FK[j]]][(m-11):m])/prod(1+
 TS<-matrix(NA_real_,NM,NF);dimnames(TS)<-list(YM,FK)
 for(j in 1:NF)for(d in 14:NM){v<-TA[(d-12):(d-1),j];v<-v[is.finite(v)]
   if(length(v)>=6) TS[d,j]<-sum(v)}
+## TS2 = 덜 낡은 변형. 결정시점(월 m 말)에는 TA[m-1] 까지 알 수 있다. TS 는 TA[m-2] 까지만 써서
+## 한 달 보수적이었다 — 그 보수성이 손해인지 진단용으로 병기한다.
+TS2<-matrix(NA_real_,NM,NF);dimnames(TS2)<-list(YM,FK)
+for(j in 1:NF)for(mm in 14:NM){v<-TA[(mm-12):(mm-1),j];v<-v[is.finite(v)]
+  if(length(v)>=6) TS2[mm,j]<-sum(v)}
 cat(sprintf("[신호] 지수 trailing 가용월 %d · 꼬리 trailing 가용월 %d\n",
   sum(rowSums(is.finite(S))>0),sum(rowSums(is.finite(TS))>0)))
 ## PIT 위반 주입 대조: TA[d] 를 포함시키면 값이 달라져야 한다(달라지지 않으면 창 계산이 무의미)
@@ -53,10 +58,14 @@ pit_ok<-!isTRUE(all.equal(TS[d0,1],sum(TA[(d0-12):d0,1][is.finite(TA[(d0-12):d0,
 cat(sprintf("[PIT 대조] TS[d] 에 TA[d] 가 섞이지 않았다: %s\n",pit_ok))
 stopifnot(pit_ok)
 
-pickf<-function(d,k,src){
+## ★버그 수리(자가 검거): oracle 은 **수익월**을 예지해야 한다. TA[m] = 월 m 형성 포트가 월 m+1 에 버는 active
+##   = 이 라운드가 버는 바로 그 달. 구판은 TA[d]=TA[m-1](이미 실현)을 써서 oracle 이 아니라 1개월 후행 신호였다.
+##   ⇒ 회수율 분모가 틀렸었다. src="oracle" 만 m 을 쓰고 나머지는 d 를 쓴다.
+pickf<-function(d,k,src,m=NA_integer_){
   s<-if(src=="idx"){r<-match(YM[d],rownames(S));if(is.na(r))return(character(0));S[r,]}
      else if(src=="tail") TS[d,]
-     else TA[d,]
+     else if(src=="tail_fresh") {stopifnot(!is.na(m)); TS2[m,]}   # 월 m 말 기준 최신(TA[m-1] 까지). PIT-safe
+     else {stopifnot(!is.na(m)); TA[m,]}
   pos<-which(is.finite(s)&s>0);if(!length(pos))return(character(0))
   FK[pos[order(s[pos],decreasing=TRUE)][seq_len(min(k,length(pos)))]]}
 
@@ -64,7 +73,7 @@ run<-function(mode,src,k=5L,bps=15,dec_lag=1L,seed=NA){
   pr<-rep(NA_real_,NM);tov<-rep(NA_real_,NM);wl<-vector("list",NM);wprev<-NULL
   for(m in 2:NM){d<-m-dec_lag;if(d<1)next
     D<-P[ym==YM[m]];if(nrow(D)<N_TARGET)next
-    wk<-if(!is.na(seed)){set.seed(seed*1000L+m);sample(FK,k)} else pickf(d,k,src)
+    wk<-if(!is.na(seed)){set.seed(seed*1000L+m);sample(FK,k)} else pickf(d,k,src,m)
     if(!length(wk))wk<-FK
     bs<-zmean(D,FK);bs[!is.finite(bs)]<--Inf
     if(mode=="weight_only"){o<-order(-bs);idx<-o[seq_len(N_TARGET)];w<-.tilt(neutralize(zmean(D,wk)[idx]))}
@@ -83,7 +92,8 @@ run<-function(mode,src,k=5L,bps=15,dec_lag=1L,seed=NA){
 cat("\n=== R56 표적-정합 신호 (prereg mfro_v2) ===\n[헤드라인: B2_tail_signal - C0_base, clean, k=5, 15bps]\n\n")
 AR<-list(C0_base=run("base","idx"), C1_no_signal=run("capw","idx"),
          B1_idx_signal=run("weight_only","idx"), B2_tail_signal=run("weight_only","tail"),
-         A2_tail_sel=run("sel_weight","tail"), P_tail_oracle=run("weight_only","oracle"))
+         A2_tail_sel=run("sel_weight","tail"), B3_tail_fresh=run("weight_only","tail_fresh"),
+         P_tail_oracle=run("weight_only","oracle"))
 for(n in names(AR))for(w in c("full","clean")){r<-AR[[n]];s<-E[[w]]&is.finite(r$pr)&is.finite(bmf)
   p<-r$pr[s];ac<-p-bmf[s];nav<-cumprod(1+p);mdd<-min(nav/cummax(nav)-1);cg<-prod(1+p)^(12/length(p))-1
   cat(sprintf("  %-16s [%-5s] n=%3d | pt=%+.3f IR=%+.3f | CAGR=%+.1f%% MDD=%.3f calmar=%.3f | TO=%.1f\n",
