@@ -1,0 +1,73 @@
+{
+  "wt_id": "WT-D20260822_010",
+  "role": "착수 전 관문(NP4 규약) 사전등록 — 관문 수치 산출 **전** 에 봉인. 측정 후 변경 금지.",
+  "sealed_at_note": "본 파일은 00_precheck.R 실행 전에 기록됐다. 관문 판정식·상수·중단 규칙을 전부 여기서 고정한다.",
+  "why": "WT-D20260822_009 는 기전-함의 크기 산술을 측정 후에 했고, 그 결과 기전 100% 전환 시 함의가 MDE80 의 1/26 이라 애초에 검출 불가능한 설계였음이 사후에 드러났다. 그 결손의 항구 수리로 본 라운드는 산술을 먼저 한다.",
+  "objects_consumed": {
+    "exclusion_axis": {
+      "source": "stage_artifacts/WT-D20260822_003 (FQ-234 NP2) 가 이미 측정한 직교화 축",
+      "definition": "월별 횡단면 OLS 잔차의 z — lm(winsorize(absorb_raw, [0.01,0.99]) ~ z(rank(win_vol)) + z(rank(log_size))), by=Date",
+      "contract": "02_Infrastructure/contracts/distribution_target_screen.R :: .dts_orthogonalize_by_date / .dts_z_by_date / .dts_wins_by_date (계약 함수 호출 — 재구현 금지)",
+      "transform": "rank (PREREG_NP2_transform_decision.json 의 sealed primary)",
+      "prior_measured": {"tail_dn_prob_diff_nw_t_early": -4.323, "tail_dn_prob_diff_nw_t_late": -3.1,
+                          "source_file": "stage_artifacts/WT-D20260822_003/distribution_screen_np2_primary.json"},
+      "not_a_post_hoc_sweep": "문턱 X 를 바꾼 것이 아니라 배제집합을 **다른 객체**로 정의한 것이다. X 관례는 WT-009 와 동일하게 고정한다."
+    },
+    "cut_convention": {"n_quantiles": 5, "q_lo": 1, "X": 0.20,
+      "rule": "월별 base 후보집합 내 score_orth 의 20% 분위 이하 = 배제 (WT-009 mk_filter 와 동일 관례)",
+      "diagnostic_variant": "NP2 표본 내 분위로 자른 경우도 병기(비바인딩)"},
+    "base": {"panel": "05_Production/.../alpha_scores_str1715_268m_cleanT1.parquet", "score": "score_eff",
+      "harness": "top-25 cap_norm(Size) weighted_screen_bt 15bps",
+      "anchor_stop": {"metric": "portfolio_alpha_t_nw_lag3", "target": 3.0583, "tol": 0.01,
+        "action_if_fail": "측정 무효 — 즉시 중단"}}
+  },
+  "gate_arithmetic": {
+    "measured_sd_monthly": 0.015948597895229,
+    "measured_sd_source": "stage_artifacts/WT_D20260802_014/wt014_eval_results.rds$paired_series — 동일 base·동일 하네스·동일 섭동유형(유니버스 배제필터)의 월별 paired Δactive 실측 sd. 계약 기본값 미사용.",
+    "mde80_formula": "MDE80_monthly = (qnorm(0.975)+qnorm(0.80)) * sd / sqrt(n) = 2.801585 * sd / sqrt(n); annual_pp = 1200 * monthly",
+    "n_source": "본 라운드 paired 공통월 (측정 시점에 확정)",
+    "P1_primary": {
+      "form": "delta_tail_rate_cond_top25 * n_excluded_in_top25 * mean_weight_excluded * 0.20",
+      "constants": {"tail_event_magnitude": 0.20},
+      "rationale": "WT-009 13_attrib.json mechanism_effect_size_arithmetic 과 **동일 함수형·동일 상수** — 비교 가능성 보존"
+    },
+    "P2_sensitivity": {
+      "form": "delta_tail_rate_cond_top25 * n_excluded_in_top25 * mean_weight_excluded * M",
+      "M_definition": "M = | E[Ret_1m | Ret_1m <= -0.20] - E[Ret_1m | Ret_1m > -0.20] |, base top-25 보유종목 표본에서 실측 (자유 선택 아님 — 완전히 규정된 경험량)",
+      "rationale": "상수 0.20 은 꼬리 문턱이지 꼬리 발생 시 실제 손실차가 아니다. 과소평가를 보정한 상한."
+    },
+    "decision_rule": {
+      "quantity": "ratio = max(P1_annual_pp, P2_annual_pp) / MDE80_annual_pp",
+      "threshold": 0.10,
+      "if_below": "측정하지 않는다. 산술과 함께 보고하고 중단(라운드 종료 — negative 보고).",
+      "if_at_or_above": "본 측정(paired base vs filtered) 진행",
+      "why_max_not_primary": "관문의 목적은 '검출 불가능한 설계를 측정하지 않는 것' 이다. 중단은 관대한 상한조차 미달일 때에만 정당하다 — STOP 쪽으로 보수적."
+    },
+    "prohibited": [
+      "관문 미달 후 통과할 때까지 채널/상수를 바꿔 재계산",
+      "관문 통과 후 P1/P2 정의 수정",
+      "본 산술을 자본 tier 수치(PORT_t/oos_retention/calmar)로 라벨"
+    ]
+  },
+  "exposure_neutrality_diagnostic": {
+    "role": "1급 진단 — 본 라운드의 존재 이유가 노출 이동 제거이므로 중립화 성립 여부가 판정의 전제다",
+    "quantities": ["전 후보 배제군 vs 잔류군 size 백분위 평균차(월별 → NW t)",
+                   "base top-25 내 배제/잔류 size 백분위 · 평균 비중",
+                   "제거 비중합 vs 추가 비중합"],
+    "wt009_reference": {"all_excl_srank": 0.29958445470238, "all_keep_srank": 0.551799941323013,
+      "gap": 0.252215486620633, "nw_t": -26.6,
+      "removed_weight_sum": 0.0788424064986886, "added_weight_sum": 0.181040837075161, "ratio": 2.296},
+    "reading_rule": "중립화가 안 됐으면 그 사실이 결과다 — 결과를 숨기거나 축을 다시 고르지 않는다."
+  },
+  "pit": {
+    "required": ["assert_overlay_pit HARD 전월 PASS", "위반 주입 0 통과(검사기 생존)",
+                 "C1 월별 횡단면만(직교화 pooled 회귀 경로 없음)", "C10 유동성 t-1", "C14/C15 승계"],
+    "lag1_stress": "본 측정 진행 시 의무"
+  },
+  "verdict_gates_if_measured": {
+    "transition": ["alpha_discovery_count >= 1", "screen_pass", "반증 발화 0", "delta_ir >= +0.05"],
+    "basis": "cap-w 고정 — EW 에서 부호가 갈려도 뒤집지 않는다(WT-009 실측: cap-w -0.1153 vs EW +0.0246)",
+    "negotiation": "하나라도 미충족이면 협상 없이 negative"
+  },
+  "generated_at_utc_note": "파일 생성 시각은 파일시스템 mtime 으로 감사 가능"
+}
