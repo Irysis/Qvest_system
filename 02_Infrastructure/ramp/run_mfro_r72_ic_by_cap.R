@@ -53,10 +53,12 @@ cat(sprintf("  ⇒ ①%s\n",ifelse(mv[3]>mv[1],"확인 — 소형 IC 가 대형�
 
 ## ── ② 신호: 우주를 맞춘 IC ──
 mkIC<-function(topN){M<-matrix(NA_real_,NM,NF);dimnames(M)<-list(YM,FK)
-  for(m in seq_len(NM)){D<-P[ym==YM[m]];ok<-is.finite(D$mktcap);if(sum(ok)<topN)next
-    ii<-order(-D$mktcap)[seq_len(topN)];fr<-D$fwd_ret[ii]
+  for(m in seq_len(NM)){D<-P[ym==YM[m]];ok<-is.finite(D$mktcap)
+    ## ★수리: topN 이 유니버스보다 크면 skip 이 아니라 **전체 사용**(구판은 n=0 을 만들었다)
+    nn<-min(topN,sum(ok)); if(nn<20L) next
+    ii<-order(-D$mktcap)[seq_len(nn)];fr<-D$fwd_ret[ii]
     for(j in 1:NF){z<-D[[FK[j]]][ii];o<-is.finite(z)&is.finite(fr)
-      if(sum(o)>=max(15L,topN%/%2L)) M[m,j]<-cor(rank(z[o]),rank(fr[o]))}}
+      if(sum(o)>=max(15L,nn%/%2L)) M[m,j]<-cor(rank(z[o]),rank(fr[o]))}}
   M}
 mkS<-function(kind,topN=NA){S<-matrix(NA_real_,NM,NF);dimnames(S)<-list(YM,FK);ri<-match(YM,mi$ym)
   if(kind=="S0"){for(j in 1:NF)for(d in 13:NM){r<-ri[d];if(is.na(r)||r<12)next
