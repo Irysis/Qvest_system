@@ -68,6 +68,10 @@ u = u[(u["Date"] >= common_lo) & (u["Date"] <= common_hi)]
 inv_key = inv[["Date", "Ticker"]].copy()
 inv_key["has_flow"] = 1
 m = u.merge(inv_key, on=["Date", "Ticker"], how="left")
+# ★자기정정 2026-08-22: 초판이 has_flow(NaN 포함)에 .mean() 을 걸어 pandas NaN-skip 로
+#   **항상 1.0** 만 낼 수 있는 무의미 지표였다(측정 불능 — 통과가 측정을 뜻하지 않은 사례).
+#   fillna(0) 교정 후 실측: 창 내 결손 7,656행 / 1.68M = 0.46%.
+m["has_flow"] = m["has_flow"].fillna(0)
 m["yr"] = m["Date"].dt.year
 cov = m.groupby("yr")["has_flow"].agg(["mean", "size"])
 OUT["universe_flow_coverage_by_year"] = {int(k): [round(float(v[0]), 4), int(v[1])]

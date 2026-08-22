@@ -126,6 +126,10 @@ _tokfp="none"
 command -v sched_token_fingerprint >/dev/null 2>&1 && _tokfp="$(sched_token_fingerprint 2>/dev/null || echo none)"
 log "토큰 지문: ${_tokfp} (값 아님 · sha256 앞12자) — 401 시 이 줄로 만료/배관 구분"
 
+# ★이번 런의 산출만 센다 — 로그는 당일 append-only 라 누적분을 이번 것으로 읽으면
+#   zero_progress 가드가 통째로 무력해진다(2026-08-22 실측: risk 런이 MODEQ_DONE 을
+#   내지 않았는데 11:20 런의 옛 줄이 남아 "1건" 으로 보고됐다).
+_log_lines_before=$(wc -l < "$LOG" 2>/dev/null || echo 0)
 timeout 3000 "$CLAUDE_BIN" -p "$PROMPT_TEXT" --dangerously-skip-permissions >> "$LOG" 2>&1
 rc=$?
 log "claude -p exit=$rc"
@@ -133,7 +137,11 @@ log "claude -p exit=$rc"
 if [ "$rc" -eq 0 ]; then
   # ★exit 0 은 "돌았다" 이지 "했다" 가 아니다 — 실제 처리 건수를 함께 찍고,
   #   0 건이면 경보한다. 하위 러너 fail-soft 가 성공으로 읽히는 구조를 여기서 끊는다.
-  _n_done=$(grep -c '^MODEQ_DONE ' "$LOG" 2>/dev/null || echo 0)
+  # ★`grep -c ... || echo 0` 은 쓰지 않는다: grep 은 0건일 때 "0" 을 **출력하고 exit 1**
+  #   이라 `|| echo 0` 이 한 줄 더 붙어 _n_done="0 0" 이 되고 -eq 비교가 깨진다.
+  #   (원판에 있던 결함 — 2026-08-22 증분 카운터 수리 중 발견)
+  _n_done=$(tail -n "+$(( ${_log_lines_before:-0} + 1 ))" "$LOG" 2>/dev/null | grep -c "^MODEQ_DONE ")
+  case "${_n_done:-}" in ""|*[!0-9]*) _n_done=0 ;; esac
   log "처리 결과: MODEQ_DONE ${_n_done}건 (pending 이었던 $N 건 중, 상한 $MAXI)"
   if [ "${_n_done:-0}" -eq 0 ]; then
     scheduler_alert "mode_queue" "zero_progress" \

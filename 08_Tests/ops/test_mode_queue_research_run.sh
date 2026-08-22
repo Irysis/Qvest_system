@@ -105,13 +105,28 @@ mkdir -p "$FIX/.cache/mode_queue_research.lock"; echo "999999" > "$FIX/.cache/mo
 grep -q "stale lock 회수" "$LOGF" 2>/dev/null \
   && ok "죽은 PID 락 회수 후 진행" || ng "stale lock 회수" "$(tail -1 "$LOGF" 2>/dev/null)"
 
+echo "== 진척 계수: 누적 로그를 이번 런 산출로 오독하지 않는가 =="
+# ★2026-08-22 실측 결함: `grep -c` 로 **당일 로그 전체**를 세서 11:20 런의 옛 MODEQ_DONE 을
+#   12:33 risk 런의 산출로 읽었다 → zero_progress 가드가 통째로 무력.
+#   추가로 `grep -c ... || echo 0` 은 0건일 때 "0" 출력 + exit 1 이라 값이 "0 0" 이 된다.
+if grep -q '_log_lines_before' "$REAL_ROOT/02_Infrastructure/ops/mode_queue_research_run.sh" 2>/dev/null    && grep -q 'tail -n "+\$(( \${_log_lines_before' "$REAL_ROOT/02_Infrastructure/ops/mode_queue_research_run.sh" 2>/dev/null; then
+  ok "증분 계수 배선(런 시작 시점 스냅샷 → 그 이후만 계수)"
+else
+  ng "증분 계수" "누적 grep -c 로 되돌아감 — 옛 산출이 이번 런으로 읽힌다"
+fi
+if grep -qE 'grep -c "\^MODEQ_DONE " *\|\| *echo' "$REAL_ROOT/02_Infrastructure/ops/mode_queue_research_run.sh" 2>/dev/null; then
+  ng "grep -c 이중출력" "`|| echo 0` 패턴 잔존 — 0건일 때 _n_done=\"0 0\" 이 되어 -eq 가 깨진다"
+else
+  ok "grep -c 0건-exit1 이중출력 패턴 없음"
+fi
+
 echo "== 계약 검사: 프롬프트가 자본 경로를 명시 금지하는가 =="
 PF="$REAL_ROOT/02_Infrastructure/ops/mode_queue_research_prompt.md"
 miss=""
-for k in "governor" "book_state" "canonical_screen_diag" "PIT C1~C15" "MODEQ_DONE" "alpha-hypothesis" "alpha-research" "method_measure" "canonical_screen_bt"; do
+for k in "governor" "book_state" "canonical_screen_diag" "PIT C1~C15" "MODEQ_DONE" "alpha-hypothesis" "alpha-research" "method_measure" "canonical_screen_bt" "qepm_dossier" "next_agent" "governor" ; do
   grep -q "$k" "$PF" 2>/dev/null || miss="$miss $k"
 done
-[ -z "$miss" ] && ok "프롬프트 하드가드+레인 9축 명시" || ng "프롬프트 가드" "누락:$miss"
+[ -z "$miss" ] && ok "프롬프트 하드가드+레인 11축 명시" || ng "프롬프트 가드" "누락:$miss"
 
 echo "== t_summary: PASS=$PASS FAIL=$FAIL =="
 [ "$FAIL" -eq 0 ] || exit 1

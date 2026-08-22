@@ -520,6 +520,25 @@ _QEPM_TERMINAL = {"TERMINATED", "ABORTED", "COMPLETED", "JUDGE_DONE", "JUDGE_FAI
 _QEPM_NEXT = {"ALPHA_DONE": "risk-research", "RISK_DONE": "optimizer-research",
               "OPTIMIZER_DONE": "forge", "FORGE_DONE": "judge"}
 
+# ★phase 필드는 낡을 수 있다 — **산출물이 진실이다**.
+#   실측 2026-08-22: WT-D20260424_006 은 phase=FORGE_DONE 인데 judge_verdict.json 이 이미 있다.
+#   phase 만 믿으면 이미 판정난 WT 에 judge 를 또 붙인다(중복 소비·판정 오염).
+#   ⇒ 각 단계의 **다음 산출물이 이미 있으면 그 WT 는 대상이 아니다**.
+_QEPM_NEXT_ARTIFACT = {
+    "ALPHA_DONE": ("risk_package.json",),
+    "RISK_DONE": ("optimization_package.json", "optimizer_package.json"),
+    "OPTIMIZER_DONE": ("forge_package.json", "backtest_result"),
+    "FORGE_DONE": ("judge_verdict.json", "judge_package.json"),
+}
+
+
+def _qepm_next_done(wt_dir, phase):
+    """다음 단계 산출물이 이미 있는가 (파일 또는 디렉터리)."""
+    for nm in _QEPM_NEXT_ARTIFACT.get(phase, ()):
+        if os.path.exists(os.path.join(wt_dir, nm)):
+            return True
+    return False
+
 
 def qepm_dossier_pending(root, max_age_days=None):
     """판정 전 단계에서 멈춘 WT — 다음 에이전트를 붙이면 진행되는 것만.
@@ -540,7 +559,17 @@ def qepm_dossier_pending(root, max_age_days=None):
         ph = str(st.get("current_phase") or st.get("phase") or "").strip().upper()
         if ph in _QEPM_TERMINAL or ph not in _QEPM_ADVANCEABLE:
             continue
-        upd = str(st.get("updated_at") or st.get("started_at") or "")[:10]
+        if _qepm_next_done(d, ph):
+            continue          # 다음 산출물이 이미 있다 = phase 가 낡은 것
+        upd = str(st.get("updated_at") or st.get("started_at")
+                   or st.get("alpha_draft_completed_at") or "")[:10]
+        if not upd:
+            # status.json 이 시각을 안 담는 세대 — 파일 mtime 으로 대체(정렬용, 판정용 아님)
+            try:
+                import datetime as _dt
+                upd = _dt.date.fromtimestamp(os.path.getmtime(os.path.join(d, "status.json"))).isoformat()
+            except Exception:
+                upd = ""
         if max_age_days and upd:
             try:
                 age = (datetime.date.today() - datetime.date.fromisoformat(upd)).days

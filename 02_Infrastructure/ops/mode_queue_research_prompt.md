@@ -28,15 +28,42 @@
 
 | lane | 스폰 | 산출 |
 |---|---|---|
+| `qepm_dossier` | WT 의 **다음 단계 에이전트 1개**만 | `status.json.current_phase` 전이 |
 | `method_measure` | 해당 어댑터를 **실측** | `method_registry` 의 그 method 에 `measurement_status`·`measured` 기입 |
 | `alpha` | `alpha-hypothesis`(fable) → `alpha-research`(opus) | `alpha_hypothesis.json` → alpha 스펙 |
 | `optimizer` | `optimizer-research` | 가중/사이징 어댑터 스펙 |
 | `risk` | `risk-research` | Σ·tail·crowding 어댑터 스펙 |
 | `regime` | `risk-research` | 국면 입력신호 평가 (regime 전담 에이전트 없음) |
 
-**목록은 이미 `method_measure` → `alpha` → opt/risk → regime 순으로 정렬돼 있다.**
+**목록은 이미 `qepm_dossier` → `method_measure` → `alpha` → opt/risk → regime 순으로 정렬돼 있다.**
 위에서부터 **MAX_ITEMS 건**만 처리한다(상한 초과 금지). 순서를 바꾸지 말 것 — 이미 등재된 것을
 끝내는 편이 새로 쌓는 것보다 값이 크다는 판단이 정렬에 박혀 있다.
+
+### lane=qepm_dossier (QEPM 계속 — 최우선)
+
+**왜 1순위인가**: 이미 알파까지 간 라운드를 판정까지 잇는 편이 새 논문을 또 쌓는 것보다 값이 크다.
+실측 2026-08-22 — `alpha_package.json` 보유 WT 220건 중 **판정 전 103건**(ALPHA_DONE 78 ·
+FORGE_DONE 15 · OPTIMIZER_DONE 5 · RISK_DONE 5)인데 **JUDGE 도달은 12건**뿐이다.
+무인 러너 4종에 WT 진행 코드가 **0건**이라 알파 다음이 통째로 비어 있었다.
+
+항목 필드: `wt_id · phase · next_agent`
+
+1. **`next_agent` 하나만 스폰한다.** 한 런에서 여러 단계를 몰아 돌리지 않는다 —
+   각 단계는 앞 단계 산출물을 읽는 계약이고, 중간 실패가 뒤 단계에 섞이면 판정이 오염된다.
+   - `ALPHA_DONE` → `risk-research` (Σ + tail + stress + crowding + style)
+   - `RISK_DONE` → `optimizer-research` (weights 결정)
+   - `OPTIMIZER_DONE` → `forge` (run_all.R + backtest 통합, **실측 권위**)
+   - `FORGE_DONE` → `judge` (Gate 0~18 + PIT 검증)
+2. **역할 경계 절대 준수** (CLAUDE.md Multi-Agent 표):
+   `risk-research` 는 alpha 수정 금지 · `optimizer-research` 는 alpha/risk 재해석 금지 ·
+   `forge` 는 pure function(target_weights/cov 수정 금지) · `judge` 는 설계/구현 금지.
+3. 단계 완료 후 그 WT 의 `status.json` 의 `current_phase` 를 다음 값으로 갱신한다
+   (`RISK_DONE` / `OPTIMIZER_DONE` / `FORGE_DONE` / `JUDGE_DONE` 또는 `JUDGE_FAILED`).
+   ★갱신하지 않으면 다음 런이 같은 단계를 또 돌린다 — 술어가 이 필드로 판정한다.
+4. 진행 불가면(산출물 결손·계약 미충족) `status.json.blocker` 에 사유를 적고 넘어간다.
+   억지 진행 금지 — 결손 위에 쌓은 판정은 판정이 아니다.
+5. **`governor` 는 절대 스폰하지 않는다.** 이 레인은 judge 까지다. 자본 편입은 도훈 수동이며
+   `book_state.json` 쓰기는 이 런의 어떤 경로에서도 금지다(AX-002 동급).
 
 ### lane=method_measure (측정 백로그 — 최우선)
 
