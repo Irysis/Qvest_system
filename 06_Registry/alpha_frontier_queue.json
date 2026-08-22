@@ -5162,8 +5162,8 @@
    "ev_rationale": "factor DB 331 전수는 book-marginal 통과 0 으로 소진됐고 선언 계열 15종이 구속 해상도다 — 증분은 factor DB 가 아니라 **일별 원천 패널**에 있다. 이 표면은 미소비.",
    "wall_check": "IC->PORT_t 전이 벽 + 회전율(일별 피처는 회전을 올릴 수 있음 — 비용 채널 사전 상한 계산 의무).",
    "data_gate": "없음 — RAWDATA(1990-01-05~2026-08-11) + flow_features_daily(2000-01-04~2026-07-01) 보유. ⚠flow 패널 종료일이 RAWDATA 보다 앞선다(커버리지 확인 후 창 명시).",
-   "owner": "CLAIMED — Q-Lead session 2026-08-13 저녁. 선별 축(FQ-237) 조건부 보류 후 주력 이동. WT-D20260813_006 로 착수.",
-   "status": "CLAIMED_20260813__designing",
+   "owner": "CLAIMED - Q-Lead session d2e06481 2026-08-22 12:25 (**stale claim 회수**). 회수 근거 실측: 구 owner 세션(2026-08-13 저녁)이 9일간 무진척 — WT-D20260813_006 에 alpha_hypothesis.json(08-13 21:52) + challenge_note_hypothesis.md(21:54) 만 존재하고 **alpha_package·측정 산출물 0건**, 해당 세션은 현재 미실행(peer 목록 부재). 설계는 승계하고 재작성하지 않으며 **측정 구간만 이어받는다**. 착수 계기 = FQ-236 Lane D 가 2026-08-22 '월간 축 한정 null' 로 닫히며 일별 축 질문을 명시 인계(challenge B6). 구 owner: CLAIMED — Q-Lead session 2026-08-13 저녁. 선별 축(FQ-237) 조건부 보류 후 주력 이동. WT-D20260813_006 로 착수.",
+   "status": "CLAIMED_20260822__measurement_resumed_from_stale_design",
    "next_action": "①★PIT 최우선 — 월내 피처는 홀딩월 **시작 전**까지만(C5 오버레이 타이밍 규약 동형). assert_overlay_pit() HARD + lag1 스트레스 + strict-PIT A/B 의무. 동월 look-ahead 는 placebo/OOS/DSR/subperiod 를 다 통과하므로 이 3종만이 판별한다 ②커버리지 실측 먼저 — flow 패널 2026-07-01 종료 · 창 개수와 내부 gap 을 이론 개월수와 대조(창 오귀속 전례 3건) ③비용 채널 상한 사전 계산 — 회전 증가분이 알파를 먹으면 레버 아님(M26 선례: 1:1 교환) ④Lane A 와 교차 시 자유도 분리 — 피처 교체와 표적 교체를 같은 라운드에 섞지 말 것.",
    "source_refs": "02_Infrastructure/docs/qvest_v8_4_asymmetry_ml_sot.md",
    "precheck_20260813": "[precheck 2026-08-13 · 착수 0항 ② 커버리지 실측 — owner 미변경(잠금 아님)] flow_features_daily.parquet: 9,362,399행 · 22컬럼 · 2000-01-04~2026-07-01 · 고유 319개월 · **내부 결측 0 · 이론=실측=319** (창 오귀속 위험 없음). 최근 ~1.5개월 공백(패널 7/1 종료). ★★발견 1 — 이 패널엔 **미래 라벨이 피처와 같은 표에 섞여 있다**: `fwd_inst_foreign_netbuy_21d` · `fwd_flow_top20`(0/1). 이름이 아니라 **값으로 확인**: cor(fwd(t), inst+foreign_20d(t+21)) = **+0.789** vs 동시점 −0.115 · t−21 +0.103 (표본 A950210 405행, row_group 8). 즉 진짜 t+21 정보다. 컬럼을 넓게 잡는 방식(수치형 전부 등)으로 피처를 뽑으면 **직접 look-ahead** 이고, 이건 FQ-234 자신이 적은 대로 placebo/OOS/DSR/subperiod 를 전부 통과한다. ⇒ 피처 선택은 **allowlist 로 명시 열거**(fwd_* 배제를 blocklist 로 걸면 새 fwd 컬럼 추가 시 뚫린다). ★★발견 2 — 이 패널은 Lane B 가 원하는 재료가 **아니다**: 컬럼이 이미 5d/20d/60d 롤링으로 접혀 있어 '월간으로 접기 전 분포 구조'(월내 왜도·첨도·점프빈도·상방/하방 분리 실현변동성·월내 최대낙폭)는 여기 없다. 그 재료는 RAWDATA 일별 가격에서 새로 계산해야 한다 — 착수 설계에서 소스를 flow 패널로 잡으면 가설과 데이터가 어긋난다.",
@@ -5264,14 +5264,14 @@
    "status": "MEASURED_20260820_screen_tier_routed__p2_in_progress",
    "next_action": "[라운드 1 수집 완료 2026-08-20 — P0~P1c·게이트 4종·계약 채점 전부 실행] 실측: 동월 결함 확정(6월 헤드라인 철회, 원장 정정) · 일별 온라인 필터 전 16셀 음수 기각(위기월만 우위) · f17 금리 무기여 · M0-roll TE3 = PORT_t 1.033/oos 0.163/calmar 0.394 HARD 3종 전패(essence_score v2) · placebo p=0.033(신호 실재) → screen_tier_routed. 원장 RAMP_SHUMULVEY_V5_20260820(grade C) · 보고서 shumulvey_v5_20260820.md · L-code 2건. [진행 중] P2ⓐ book overlay A/B(export 완료: smv_factor_regime_daily.parquet, breadth→exposure 사전등록 자유도 0, method_registry exposure adapter 배선이 다음 실행 단계) · P2ⓑ Lane D 핸드오프 적재 완료(FQ-236.handoff_smv_20260820). [대기 레버] 주간/이벤트-트리거 케이던스(사전등록 필요) · P3 sleeve-배분층(PORT_t 벽 완화 시). 부활: 인과 re-tune oos ≥0.5 재산출 시 DIST-RAMP-014 (b) 재판정(현 0.163). 계획 정본 = ~/.claude/plans/shu-yu-mulvey-rippling-nautilus.md",
    "source_refs": "04_Research/ramp/reports/shumulvey_faithful_replication_20260619.md | qepm/memory/axioms/distilled/DIST-RAMP-014.json | 06_Registry/ramp/ramp_registry.json::RAMP_SHUMULVEY_BL_20260619 | 02_Infrastructure/ramp/run_ramp_shumulvey.R | arXiv:2410.14841",
-   "last_round": "FQ-239_r15_pg2overlay_20260822",
+   "last_round": "FQ-239_r16_bookmarginal_20260822",
    "last_verdict": "screen_tier_routed",
-   "last_closed_at": "2026-08-22T11:52:27+0900",
+   "last_closed_at": "2026-08-22T12:22:16+0900",
    "last_next_probe": [
-    "book-marginal dIR 측정 — A5E와 A5E×PG2오버레이를 현 PG2 book에 sleeve로 얹었을 때의 dIR(net_active_recon_v1, incumbent base=05_Production 현행 코드 파생). 오버레이의 가치가 정당하게 평가되는 유일한 그릇이며, dIR>=0.05면 자본 경로 + A5E 밴드 보강증거 3번째 축도 동시 충족",
-    "감쇠 기전 분해 — 안정창 oos 0.065의 원인(프리미엄 축소/상관 상승/신호 예측력 감쇠) 3가설 분해. R14에서 특정한 후반부 감쇠(전반 IR 1.043 vs 후반 0.486)가 진짜 벽이므로 처방 이전에 귀속 필요",
-    "2026 구간 데이터 정오 확인 — 원천 rawdata BM_Ret 변동성 0.703(역사 3배)의 외부 대조. 손상이면 재빌드 후 전 라운드 재측정, 정상이면 극단구간 취급 규약 사전등록",
-    "오버레이 강도 축 (조건부) — 현 CRISIS 50%는 PG2 정본값. book-marginal에서 방향이 확인되면 강도(예: 위기 노출 0.3/0.7)를 사전등록 grid로 측정. 단 book 그릇에서 방향 확인이 선결"
+    "incumbent base 재현 태스크 — book_state 1.416 의 provenance 복원 또는 실측 재설정. 자본 게이트 ΔIR>=0.05 판정이 이 값에 걸려 있으므로 A5E 뿐 아니라 모든 향후 admission 이 영향받음. governor/도훈 결정 영역이며 별도 태스크 분리 권고",
+    "직교성 소비 경로 재설계 — A5E 가치가 직교성(0.113)에 있다면 sleeve IR 을 키우는 대신 **직교성을 더 크게 쓰는 구성**을 물어야 함: (a)w 상향의 book 재구성 의미 (b)A5E 를 FR Track2 모듈로 등재해 국면조건부 dispatch 에서 소비 (c)다중 sleeve 스택에서의 위치",
+    "감쇠 기전 분해(R14 이월) — 안정창 oos 0.065 의 원인 3가설(프리미엄 축소/상관 상승/신호 예측력 감쇠) 분해. sleeve IR 0.475 를 올릴 유일한 근거 기반 경로",
+    "2026 구간 데이터 정오 확인(R14 이월) — 원천 BM_Ret 변동성 0.703 외부 대조"
    ]
   },
   {
