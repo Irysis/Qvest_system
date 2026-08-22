@@ -17,6 +17,8 @@ cat("  saved\n")
 
 cat("\n=== 2) governance_log.json ===\n")
 gl <- fromJSON(file.path(MBX, "governance_log.json"), simplifyVector = FALSE)
+## 멱등: 본 스크립트가 앞서 넣은 alpha-research 이벤트를 제거한 뒤 다시 넣는다(재실행 중복 방지)
+gl$events <- Filter(function(e) !identical(e$agent, "alpha-research"), gl$events)
 gl$events <- c(gl$events, list(
   list(timestamp = NOW, agent = "alpha-research", action = "PREREG_SEALED",
        summary = "stage_artifacts/WT-D20260822_002/PREREG.json 봉인 — arm 6종·co-primary 2건·K=5/W=36/top-25/15bps 고정·selection_type=chain·sweep 0. 완주 설계 4필드(terminal_form/alpha_bridge/transition_gates/consumption_gate_precheck) 포함."),
@@ -81,7 +83,7 @@ source("02_Infrastructure/axiom/lcode_emit.R")
 res <- emit_lcode(
   mode = "alpha_research", strategy_id = "FQ237_RERANK_WT-D20260822_002", grade = "C",
   metric_type = "canonical_screen", construction_type = "selection_objective_replacement",
-  family = "measurement_form", selection_type = "chain", record_type = "paired_experiment",
+  family = "measurement_form", selection_type = "chain", record_type = "performance",
   lesson_text = paste0(
     "선별 목적함수를 rank-IC(Spearman)에서 평균-정합 통계량으로 바꿔도 long-only top-25 실현 전이는 개선되지 않는다. ",
     "n=221 홀딩월·320팩터 풀·K=5·W=36·15bps 에서 paired NW3 t = -0.2533(Pearson IC 선별, 연 -0.603%p) / +1.5706(top-25 평균 스프레드 t 선별, 연 +6.027%p), ",
