@@ -489,3 +489,40 @@ screen 만 봤으면 **버렸을 건**이다.
 
 ⇒ 남은 처리량 후보: **레인 병렬화**(분리 비용 실측 7.7%) · **적체 우선순위 재배열**.
 둘 다 조기탈락과 달리 **정보를 버리지 않는다**.
+
+### ⑩ 부수: `SCREEN_TIER` 소급 대상 실측 (2026-08-22 밤)
+
+오늘 `auto_alpha_gate.R` 에 신설한 `SCREEN_TIER`(신호 실재 ∧ 구조 사유 탈락 → 소비면 라우팅)의
+**소급 적용 대상**을 격리 원장에서 실측했다. 도구 = `02_Infrastructure/ops/screen_tier_candidates.R`.
+
+**분모: `06_Registry/module_quarantine.json::modules` 45건 전수.**
+`meta.f_grade_reasons` 로 분류:
+
+| 분류 | 건수 |
+|---|---|
+| **구조 사유 단독**(drawdown/mdd/turnover만, 신호 사유 없음) | **23** |
+| 구조 + 신호 혼합 | 8 |
+| 구조 사유 없음 | 14 |
+
+사유가 한 계통이다 — `FMT-01 Structural MDD: MDD 62.2% > 45% — 선택 종목군의 위기 동반급락`.
+이것이 measurement-graduation §3 이 지목한 구조 모순의 **정량**이다
+("alpha-search 탈락 66/66이 MDD>45% 단일 사유 — overlay 가 시스템 입증 MDD 레버인데
+모듈 단계에서 선기각").
+
+★**단 자격은 미측정이다.** `SCREEN_TIER` 조건은 `structural ∧ signal_alive` 인데
+`oos_retention` 이 **원장 1/45 · bt_result 0/28** 로 조회 불가 ⇒ `essence_score.R` 재실행 필요.
+**후보 부재가 아니라 미측정**이다.
+
+★**PORT_t 는 bt_result 에서 읽힌다**(28건 전수) — 자격 판정에 직접 쓰이진 않지만
+신호 생존 가능성의 **상한**을 준다: 양수 **9/28**(최대 1.209) · 음수 19(최소 −3.776) ·
+MDD 전부 55~87%. **어느 것도 2.95 근처가 아니다.**
+⇒ 재판정 비용은 **PORT_t 양수 9건**부터 쓰는 것이 합리적(1.209 · 0.893 · 0.618 · 0.495 상위).
+
+★**자격 확인된 1건**: `STR_AS_20260808_075822_21700`(= FQ110B, 오늘 오전 감사에서
+"4층 PASS 인데 QUARANTINE" 으로 적발한 건). PORT_t 0.411 · MDD 62.7% ·
+**oos_retention 1.267**(judge 판정문 확인) ⇒ `structural ∧ signal_alive` 충족.
+⇒ **오늘 만든 SCREEN_TIER 경로의 첫 실제 소비 대상**이며, 이 1건으로 경로 실효를 시험할 수 있다.
+
+⇒ 프론티어: ① 9건 essence_score 재실행 → SCREEN_TIER 자격 확정
+② 자격분을 overlay/FR 소비면에 실제로 라우팅해 **소비자가 그 라벨을 읽는지** 확인
+(부활조건: 발급만 되고 소비자가 없으면 오늘 네 번 겪은 '만들고 안 부르는' 의 다섯 번째다).

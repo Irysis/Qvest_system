@@ -72,15 +72,25 @@ univ<-unique(returns_dt[,.(Date,Ticker)]); mb<-merge(mb,univ,by=c("Date","Ticker
 cs_all<-canonical_screen_bt(mb[!is.na(score),.(Date,Ticker,score)],returns_dt,bench_dt,top_n=25L,
   cost_bps_oneway=15,liq_dt=liq_dt,liq_min=2e8,run_id="s2_uncond",strategy_id="S2U",diag_dual_basis=FALSE)
 pr<-as.data.table(cs_all$period_returns); pr[,active:=ret_net-benchmark_ret]; pr[,Date:=as.Date(date)]
-m2<-merge(pr[,.(Date,active)],reg[aligned==TRUE & is.finite(Ct),.(Date,Ct)],by="Date")
-L(sprintf("S2 merge rows=%d (active finite=%d, Ct finite=%d)", nrow(m2), sum(is.finite(m2$active)), sum(is.finite(m2$Ct))))
-m2<-m2[is.finite(active)&is.finite(Ct)]
-if(nrow(m2)>=12){
-  fit<-lm(active~Ct,data=m2); sl<-coef(fit)[["Ct"]]
-  L(sprintf("S2 slope(active~Ct)=%.5f  sign=%s  (양수=정합강도 단조 → 기전 형태 지지)",
-            sl, if(sl>0)"positive"else"negative"))
-  res$s2_concordance<-list(n=nrow(m2),slope=sl,sign=if(sl>0)"positive"else"negative")
-} else { L("S2: n<12"); res$s2_concordance<-list(n=nrow(m2),slope=NA_real_) }
+# ★S2 degeneracy: aligned(3/3 동부호) 월에서는 정의상 |Σz|=Σ|z| → Ct≡1 (상수).
+#   aligned-only 회귀는 Ct 분산이 0 이라 기울기 NA (설계 실현상 무정보).
+#   진단 목적(정합강도 단조성)을 살리려면 전표본(aligned+mixed, Ct∈[1/3,1])에서 회귀한다.
+ct_aligned_range <- range(reg[aligned==TRUE & is.finite(Ct), Ct])
+L(sprintf("Ct in aligned months: range [%.4f, %.4f] (3/3 동부호 → 정의상 1.0 상수 → aligned-only 회귀 무정보)",
+          ct_aligned_range[1], ct_aligned_range[2]))
+m2f<-merge(pr[,.(Date,active)],reg[is.finite(Ct),.(Date,Ct,aligned)],by="Date")
+m2f<-m2f[is.finite(active)&is.finite(Ct)]
+L(sprintf("S2 full-sample rows=%d, Ct range [%.4f, %.4f]", nrow(m2f), min(m2f$Ct), max(m2f$Ct)))
+if(nrow(m2f)>=12 && sd(m2f$Ct)>0){
+  fit<-lm(active~Ct,data=m2f); sl<-coef(fit)[["Ct"]]
+  tval<-summary(fit)$coefficients["Ct","t value"]
+  L(sprintf("S2 full-sample slope(active~Ct)=%.5f (t=%.3f)  sign=%s",
+            sl, tval, if(sl>0)"positive"else"negative"))
+  L("  해석: 양수=정합강도 클수록 활성수익 高(기전 형태 지지) / 음수=역.")
+  res$s2_concordance<-list(n=nrow(m2f),slope=sl,t=tval,
+    sign=if(is.finite(sl)&&sl>0)"positive"else"negative",
+    note="full-sample (aligned Ct≡1 상수라 aligned-only 무정보). Ct∈[1/3,1] 전표본 회귀.")
+} else { L("S2: 유효 표본/분산 부족"); res$s2_concordance<-list(n=nrow(m2f),slope=NA_real_,note="degenerate") }
 
 res$E1_primary$verdict_with_power_external_sd <- vw_ext$verdict
 res$E1_primary$verdict_note_external_sd <- vw_ext$note
