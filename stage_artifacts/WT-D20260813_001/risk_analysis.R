@@ -16,6 +16,7 @@ SIG_DATE <- as.Date("2026-07-31")
 STAGE <- file.path("stage_artifacts", WT)
 dir.create(STAGE, showWarnings = FALSE, recursive = TRUE)
 
+suppressWarnings(suppressMessages(source(file.path("02_Infrastructure", "config.R"))))
 source(file.path("02_Infrastructure", "portfolio", "hrp_core.R"))
 
 # ---- alpha_vector (weights) ----
@@ -283,30 +284,31 @@ write_parquet(regime_cor, file.path(STAGE, "regime_correlation.parquet"))
 style_ok <- FALSE
 style_summary <- list(status="data_unavailable", reason="load_month_factors not invoked")
 tryCatch({
-  suppressWarnings(suppressMessages(source(file.path("02_Infrastructure","factor_db","load_month_factors.R"))))
-  # sig month
-  smon <- format(SIG_DATE, "%Y-%m")
-  lf <- load_month_factors(month = smon)
-  if (!is.null(lf)) {
-    lfd <- as.data.table(lf)
-    if ("Ticker" %in% names(lfd)) {
-      # style representative factors (from training leaves)
-      style_map <- list(Value="V01_BM", Quality="Q01_GPA", Momentum="M01_Mom_12_1",
-                        Defense="D01_IdioVol", Liquidity="L02_Turnover",
-                        Earnings="C01_SUE", Accruals="AC01_Total_Accruals_CF", Value2="V08_PSR")
-      sub <- lfd[Ticker %in% tickers]
-      st <- list()
-      for (s in names(style_map)) {
-        col <- style_map[[s]]
-        if (col %in% names(sub)) {
-          vals <- sub[[col]]
-          st[[s]] <- list(factor=col, mean_z=round(mean(vals,na.rm=TRUE),3),
-                          median_z=round(median(vals,na.rm=TRUE),3),
-                          n=sum(!is.na(vals)))
-        }
+  suppressWarnings(suppressMessages(source(file.path("02_Infrastructure","factor_db","factor_db_connector.R"))))
+  style_map <- list(Value_BM="V01_BM", Quality_GPA="Q01_GPA", Momentum_12_1="M01_Mom_12_1",
+                    Defense_IdioVol="D01_IdioVol", Liquidity_Turnover="L02_Turnover",
+                    Earnings_SUE="C01_SUE", Accruals="AC01_Total_Accruals_CF", Value_PSR="V08_PSR")
+  fnames <- unlist(style_map, use.names=FALSE)
+  lf <- load_month_factors(sig_date = SIG_DATE, factor_names = fnames)   # long format
+  lfd <- as.data.table(lf)
+  zcol <- intersect(c("Z_Score_Aligned","Z_Score"), names(lfd))[1]
+  if (nrow(lfd) > 0 && !is.na(zcol) && all(c("Ticker","Factor_Name") %in% names(lfd))) {
+    sub <- lfd[Ticker %in% tickers]
+    asof <- as.character(attr(lf,"asof_date"))
+    st <- list()
+    for (s in names(style_map)) {
+      col <- style_map[[s]]
+      vals <- sub[Factor_Name==col][[zcol]]
+      if (length(vals) > 0) {
+        st[[s]] <- list(factor=col, mean_z=round(mean(vals,na.rm=TRUE),3),
+                        median_z=round(median(vals,na.rm=TRUE),3), n=sum(!is.na(vals)))
+      } else {
+        st[[s]] <- list(factor=col, status="data_unavailable")
       }
-      if (length(st)>0){ style_summary <- st; style_ok <- TRUE }
     }
+    style_summary <- c(list(status="computed", z_column=zcol, panel_asof=asof,
+                            note="Z_Score_Aligned (C13-compliant, PIT via load_month_factors). Selected 25 names' style tilt vs universe."), st)
+    style_ok <- TRUE
   }
 }, error=function(e){ style_summary <<- list(status="data_unavailable", reason=conditionMessage(e)) })
 cat("[risk] style_ok=", style_ok, "\n")
