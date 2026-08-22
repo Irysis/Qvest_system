@@ -1,0 +1,596 @@
+{
+  "Y2_133m": {
+    "label": "Y2_133m",
+    "spec": {
+      "y_tag": "union_liq2e8",
+      "y_var": "Y2",
+      "s_series": "KR_CredSpread_BBB",
+      "transform": "level",
+      "window": "2015-07-01..2026-07-01",
+      "n": 133,
+      "lag_days": 3,
+      "nw_lag": 3
+    },
+    "fit": {
+      "b": 0.06855975,
+      "se_nw": 0.0333965,
+      "t_nw": 2.05290216,
+      "p_nw": 0.04207273,
+      "r2": 0.02553344,
+      "sd_S": 0.45964618,
+      "sd_Y": 0.19721422,
+      "resid_sd": 0.19468016,
+      "effect_per_1sd_S": 0.03151323,
+      "effect_ci95": [0.0014261, 0.06160035],
+      "effect_in_sdY_units": 0.15979186
+    },
+    "power": {
+      "required_native": 0.03355496,
+      "required_in_sdY": 0.17014474,
+      "required_annual_pct_if_return_units": 40.26595602,
+      "nw_inflation": 0.98110245,
+      "nw_source": "measured",
+      "verdict_with_power": "PASS",
+      "note": "문턱 통과",
+      "implied_t_threshold": 2.18590923,
+      "bar_restates_t": true
+    },
+    "F_D_placebo": {
+      "phi_ar1": 0.95027268,
+      "n_draw": 200,
+      "abs_t_obs": 2.05290216,
+      "abs_t_p95": 1.82848957,
+      "abs_eff_obs": 0.03151323,
+      "abs_eff_p95": 0.02880884,
+      "passes": true,
+      "positive_control": {
+        "target": "xs_sd (횡단면 산포)",
+        "b": 0.00554788,
+        "t_nw": 0.84025631,
+        "r2": 0.00569432,
+        "alive": false
+      }
+    },
+    "pit_stress": {
+      "lag1": {
+        "b": 0.04775463,
+        "t_nw": 1.55114613,
+        "n": 132
+      },
+      "contaminated_end_of_month": {
+        "b": 0.04598056,
+        "t_nw": 1.17577752,
+        "n": 133
+      }
+    },
+    "F_E_leave2026out": {
+      "b": 0.07184401,
+      "t_nw": 2.1991828,
+      "n": 126,
+      "sign_flip": false
+    },
+    "era_decomposition_advisory": [
+      {
+        "period": "2015-07..2019-02",
+        "b": 0.0573535,
+        "t": 1.02924176,
+        "n": 44
+      },
+      {
+        "period": "2019-03..2022-10",
+        "b": 0.16975474,
+        "t": 3.33656915,
+        "n": 44
+      },
+      {
+        "period": "2022-11..2026-07",
+        "b": 0.00455198,
+        "t": 0.08397362,
+        "n": 45
+      }
+    ],
+    "identification_concentration": {
+      "D_G_C_top_upper_tercile": 0.46154154,
+      "D_G_baseline_uniform": 0.33333333,
+      "top1_share": 0.03614754,
+      "top5_share": 0.16819209,
+      "top10pct_share": 0.36936082,
+      "effective_months_kish": 59.25391954
+    }
+  },
+  "ROBUST_rollz_133m": {
+    "label": "ROBUST_rollz_133m",
+    "spec": {
+      "y_tag": "union_liq2e8",
+      "y_var": "Y1b",
+      "s_series": "KR_CredSpread_BBB",
+      "transform": "rollz120",
+      "window": "2015-07-01..2026-07-01",
+      "n": 133,
+      "lag_days": 3,
+      "nw_lag": 3
+    },
+    "fit": {
+      "b": 0.00280189,
+      "se_nw": 0.00444849,
+      "t_nw": 0.62985072,
+      "p_nw": 0.52988929,
+      "r2": 0.00511157,
+      "sd_S": 1.03770518,
+      "sd_Y": 0.0406675,
+      "resid_sd": 0.04056343,
+      "effect_per_1sd_S": 0.00290753,
+      "effect_ci95": [-0.00614027, 0.01195533],
+      "effect_in_sdY_units": 0.07149523
+    },
+    "power": {
+      "required_native": 0.00872075,
+      "required_in_sdY": 0.21444032,
+      "required_annual_pct_if_return_units": 10.46490284,
+      "nw_inflation": 1.23652322,
+      "nw_source": "measured",
+      "verdict_with_power": "INCONCLUSIVE_UNDERPOWERED",
+      "note": "실측 효과 0.0029/월(연 3.49%)가 문턱 도달 필요치 0.0087/월(연 10.46%) 미만 — 효과 부재가 아니라 검정력 부족",
+      "implied_t_threshold": 1.88915247,
+      "bar_restates_t": false
+    },
+    "F_D_placebo": {
+      "phi_ar1": 0.96872483,
+      "n_draw": 200,
+      "abs_t_obs": 0.62985072,
+      "abs_t_p95": 3.26360748,
+      "abs_eff_obs": 0.00290753,
+      "abs_eff_p95": 0.012359,
+      "passes": false,
+      "positive_control": {
+        "target": "xs_sd (횡단면 산포)",
+        "b": -0.00228033,
+        "t_nw": -0.62740196,
+        "r2": 0.00490324,
+        "alive": false
+      }
+    },
+    "pit_stress": {
+      "lag1": {
+        "b": 0.00245695,
+        "t_nw": 0.55605549,
+        "n": 132
+      },
+      "contaminated_end_of_month": {
+        "b": 0.0129941,
+        "t_nw": 1.49343237,
+        "n": 133
+      }
+    },
+    "F_E_leave2026out": {
+      "b": 0.00456441,
+      "t_nw": 1.0497155,
+      "n": 126,
+      "sign_flip": false
+    },
+    "era_decomposition_advisory": [
+      {
+        "period": "2015-07..2019-02",
+        "b": 0.0183295,
+        "t": 2.47104407,
+        "n": 44
+      },
+      {
+        "period": "2019-03..2022-10",
+        "b": 0.01313992,
+        "t": 2.49613474,
+        "n": 44
+      },
+      {
+        "period": "2022-11..2026-07",
+        "b": -0.00570331,
+        "t": -0.74171236,
+        "n": 45
+      }
+    ],
+    "identification_concentration": {
+      "D_G_C_top_upper_tercile": 0.46856414,
+      "D_G_baseline_uniform": 0.33333333,
+      "top1_share": 0.04436706,
+      "top5_share": 0.20786456,
+      "top10pct_share": 0.45706633,
+      "effective_months_kish": 43.52960891
+    }
+  },
+  "ROBUSTa_rollz_133m": {
+    "label": "ROBUSTa_rollz_133m",
+    "spec": {
+      "y_tag": "union_liq2e8",
+      "y_var": "Y1a",
+      "s_series": "KR_CredSpread_BBB",
+      "transform": "rollz120",
+      "window": "2015-07-01..2026-07-01",
+      "n": 133,
+      "lag_days": 3,
+      "nw_lag": 3
+    },
+    "fit": {
+      "b": 0.01784685,
+      "se_nw": 0.01248673,
+      "t_nw": 1.42926582,
+      "p_nw": 0.15530818,
+      "r2": 0.02172654,
+      "sd_S": 1.03770518,
+      "sd_Y": 0.12564359,
+      "resid_sd": 0.1242712,
+      "effect_per_1sd_S": 0.01851977,
+      "effect_ci95": [-0.00687701, 0.04391656],
+      "effect_in_sdY_units": 0.14739926
+    },
+    "power": {
+      "required_native": 0.02657821,
+      "required_in_sdY": 0.21153654,
+      "required_annual_pct_if_return_units": 31.89385423,
+      "nw_inflation": 1.21977922,
+      "nw_source": "measured",
+      "verdict_with_power": "INCONCLUSIVE_BAR_RESTATES_T",
+      "note": "바가 arm 자신의 se 기준 t=2.05 에 해당 — 문턱 2.00 의 재진술이라 NEGATIVE_POWERED 가 도달 불가하다. 이 라벨은 '|t| < 2.00' 이상의 정보를 담지 않는다. 검정력을 실제로 논하려면 sd_monthly 에 **외부 기준 계열**(배포 노이즈 등)을 넣어라.",
+      "implied_t_threshold": 2.05117689,
+      "bar_restates_t": true
+    },
+    "F_D_placebo": {
+      "phi_ar1": 0.96872483,
+      "n_draw": 200,
+      "abs_t_obs": 1.42926582,
+      "abs_t_p95": 2.77986031,
+      "abs_eff_obs": 0.01851977,
+      "abs_eff_p95": 0.03155243,
+      "passes": false,
+      "positive_control": {
+        "target": "xs_sd (횡단면 산포)",
+        "b": -0.00228033,
+        "t_nw": -0.62740196,
+        "r2": 0.00490324,
+        "alive": false
+      }
+    },
+    "pit_stress": {
+      "lag1": {
+        "b": 0.01864322,
+        "t_nw": 1.49238859,
+        "n": 132
+      },
+      "contaminated_end_of_month": {
+        "b": 0.0479104,
+        "t_nw": 1.7481271,
+        "n": 133
+      }
+    },
+    "F_E_leave2026out": {
+      "b": 0.01953955,
+      "t_nw": 1.52957239,
+      "n": 126,
+      "sign_flip": false
+    },
+    "era_decomposition_advisory": [
+      {
+        "period": "2015-07..2019-02",
+        "b": 0.08172385,
+        "t": 2.54365897,
+        "n": 44
+      },
+      {
+        "period": "2019-03..2022-10",
+        "b": 0.03926281,
+        "t": 1.99477885,
+        "n": 44
+      },
+      {
+        "period": "2022-11..2026-07",
+        "b": -0.01138,
+        "t": -0.4823856,
+        "n": 45
+      }
+    ],
+    "identification_concentration": {
+      "D_G_C_top_upper_tercile": 0.46856414,
+      "D_G_baseline_uniform": 0.33333333,
+      "top1_share": 0.04436706,
+      "top5_share": 0.20786456,
+      "top10pct_share": 0.45706633,
+      "effective_months_kish": 43.52960891
+    }
+  },
+  "CORROB_Y1b_133m": {
+    "label": "CORROB_Y1b_133m",
+    "spec": {
+      "y_tag": "union_liq2e8",
+      "y_var": "Y1b",
+      "s_series": "breadth_bear_prob",
+      "transform": "level",
+      "window": "2015-07-01..2026-07-01",
+      "n": 133,
+      "lag_days": 0,
+      "nw_lag": 3
+    },
+    "fit": {
+      "b": -0.02765488,
+      "se_nw": 0.0342637,
+      "t_nw": -0.80711873,
+      "p_nw": 0.42106109,
+      "r2": 0.00629711,
+      "sd_S": 0.11669346,
+      "sd_Y": 0.0406675,
+      "resid_sd": 0.04053926,
+      "effect_per_1sd_S": -0.00322714,
+      "effect_ci95": [-0.01106391, 0.00460962],
+      "effect_in_sdY_units": -0.07935435
+    },
+    "power": {
+      "required_native": 0.00872075,
+      "required_in_sdY": 0.21444032,
+      "required_annual_pct_if_return_units": 10.46490284,
+      "nw_inflation": 1.23652322,
+      "nw_source": "measured",
+      "verdict_with_power": "INCONCLUSIVE_BAR_RESTATES_T",
+      "note": "바가 arm 자신의 se 기준 t=2.18 에 해당 — 문턱 2.00 의 재진술이라 NEGATIVE_POWERED 가 도달 불가하다. 이 라벨은 '|t| < 2.00' 이상의 정보를 담지 않는다. 검정력을 실제로 논하려면 sd_monthly 에 **외부 기준 계열**(배포 노이즈 등)을 넣어라.",
+      "implied_t_threshold": 2.18108773,
+      "bar_restates_t": true
+    },
+    "F_D_placebo": {
+      "phi_ar1": 0.49248993,
+      "n_draw": 200,
+      "abs_t_obs": 0.80711873,
+      "abs_t_p95": 1.98623746,
+      "abs_eff_obs": 0.00322714,
+      "abs_eff_p95": 0.00710964,
+      "passes": false,
+      "positive_control": {
+        "target": "xs_sd (횡단면 산포)",
+        "b": -0.02545071,
+        "t_nw": -0.86881238,
+        "r2": 0.00772385,
+        "alive": false
+      }
+    },
+    "pit_stress": {
+      "lag1": {
+        "b": -0.03819628,
+        "t_nw": -1.1970211,
+        "n": 132
+      },
+      "contaminated_end_of_month": {
+        "b": 0.04591378,
+        "t_nw": 1.6340784,
+        "n": 133
+      }
+    },
+    "F_E_leave2026out": {
+      "b": -0.00195312,
+      "t_nw": -0.07423349,
+      "n": 126,
+      "sign_flip": false
+    },
+    "era_decomposition_advisory": [
+      {
+        "period": "2015-07..2019-02",
+        "b": -0.00720753,
+        "t": -0.26993248,
+        "n": 44
+      },
+      {
+        "period": "2019-03..2022-10",
+        "b": 0.03150097,
+        "t": 0.59511903,
+        "n": 44
+      },
+      {
+        "period": "2022-11..2026-07",
+        "b": -0.050413,
+        "t": -0.93916666,
+        "n": 45
+      }
+    ],
+    "identification_concentration": {
+      "D_G_C_top_upper_tercile": 0.47327826,
+      "D_G_baseline_uniform": 0.33333333,
+      "top1_share": 0.06256426,
+      "top5_share": 0.20090706,
+      "top10pct_share": 0.39732897,
+      "effective_months_kish": 49.86524053
+    }
+  },
+  "CORROB_Y1a_133m": {
+    "label": "CORROB_Y1a_133m",
+    "spec": {
+      "y_tag": "union_liq2e8",
+      "y_var": "Y1a",
+      "s_series": "breadth_bear_prob",
+      "transform": "level",
+      "window": "2015-07-01..2026-07-01",
+      "n": 133,
+      "lag_days": 0,
+      "nw_lag": 3
+    },
+    "fit": {
+      "b": -0.05433102,
+      "se_nw": 0.09474602,
+      "t_nw": -0.57343855,
+      "p_nw": 0.56733092,
+      "r2": 0.00254629,
+      "sd_S": 0.11669346,
+      "sd_Y": 0.12564359,
+      "resid_sd": 0.12548353,
+      "effect_per_1sd_S": -0.00634007,
+      "effect_ci95": [-0.02801031, 0.01533016],
+      "effect_in_sdY_units": -0.05046078
+    },
+    "power": {
+      "required_native": 0.02657821,
+      "required_in_sdY": 0.21153654,
+      "required_annual_pct_if_return_units": 31.89385423,
+      "nw_inflation": 1.21977922,
+      "nw_source": "measured",
+      "verdict_with_power": "INCONCLUSIVE_BAR_RESTATES_T",
+      "note": "바가 arm 자신의 se 기준 t=2.40 에 해당 — 문턱 2.00 의 재진술이라 NEGATIVE_POWERED 가 도달 불가하다. 이 라벨은 '|t| < 2.00' 이상의 정보를 담지 않는다. 검정력을 실제로 논하려면 sd_monthly 에 **외부 기준 계열**(배포 노이즈 등)을 넣어라.",
+      "implied_t_threshold": 2.4039105,
+      "bar_restates_t": true
+    },
+    "F_D_placebo": {
+      "phi_ar1": 0.49248993,
+      "n_draw": 200,
+      "abs_t_obs": 0.57343855,
+      "abs_t_p95": 2.09609771,
+      "abs_eff_obs": 0.00634007,
+      "abs_eff_p95": 0.0235002,
+      "passes": false,
+      "positive_control": {
+        "target": "xs_sd (횡단면 산포)",
+        "b": -0.02545071,
+        "t_nw": -0.86881238,
+        "r2": 0.00772385,
+        "alive": false
+      }
+    },
+    "pit_stress": {
+      "lag1": {
+        "b": -0.08142433,
+        "t_nw": -0.89950672,
+        "n": 132
+      },
+      "contaminated_end_of_month": {
+        "b": 0.18882834,
+        "t_nw": 2.12789692,
+        "n": 133
+      }
+    },
+    "F_E_leave2026out": {
+      "b": -0.0239492,
+      "t_nw": -0.25337677,
+      "n": 126,
+      "sign_flip": false
+    },
+    "era_decomposition_advisory": [
+      {
+        "period": "2015-07..2019-02",
+        "b": -0.07058836,
+        "t": -0.57960188,
+        "n": 44
+      },
+      {
+        "period": "2019-03..2022-10",
+        "b": 0.08347767,
+        "t": 0.38217369,
+        "n": 44
+      },
+      {
+        "period": "2022-11..2026-07",
+        "b": -0.05437344,
+        "t": -0.48163964,
+        "n": 45
+      }
+    ],
+    "identification_concentration": {
+      "D_G_C_top_upper_tercile": 0.47327826,
+      "D_G_baseline_uniform": 0.33333333,
+      "top1_share": 0.06256426,
+      "top5_share": 0.20090706,
+      "top10pct_share": 0.39732897,
+      "effective_months_kish": 49.86524053
+    }
+  },
+  "CORROB_Y2_133m": {
+    "label": "CORROB_Y2_133m",
+    "spec": {
+      "y_tag": "union_liq2e8",
+      "y_var": "Y2",
+      "s_series": "breadth_bear_prob",
+      "transform": "level",
+      "window": "2015-07-01..2026-07-01",
+      "n": 133,
+      "lag_days": 0,
+      "nw_lag": 3
+    },
+    "fit": {
+      "b": -0.1059141,
+      "se_nw": 0.15956267,
+      "t_nw": -0.66377742,
+      "p_nw": 0.5079993,
+      "r2": 0.00392757,
+      "sd_S": 0.11669346,
+      "sd_Y": 0.19721422,
+      "resid_sd": 0.19682656,
+      "effect_per_1sd_S": -0.01235948,
+      "effect_ci95": [-0.04885452, 0.02413556],
+      "effect_in_sdY_units": -0.06267034
+    },
+    "power": {
+      "required_native": 0.03355496,
+      "required_in_sdY": 0.17014474,
+      "required_annual_pct_if_return_units": 40.26595602,
+      "nw_inflation": 0.98110245,
+      "nw_source": "measured",
+      "verdict_with_power": "INCONCLUSIVE_UNDERPOWERED",
+      "note": "실측 효과 -0.0124/월(연 -14.83%)가 문턱 도달 필요치 0.0336/월(연 40.27%) 미만 — 효과 부재가 아니라 검정력 부족",
+      "implied_t_threshold": 1.80210033,
+      "bar_restates_t": false
+    },
+    "F_D_placebo": {
+      "phi_ar1": 0.49248993,
+      "n_draw": 200,
+      "abs_t_obs": 0.66377742,
+      "abs_t_p95": 2.03207437,
+      "abs_eff_obs": 0.01235948,
+      "abs_eff_p95": 0.03124449,
+      "passes": false,
+      "positive_control": {
+        "target": "xs_sd (횡단면 산포)",
+        "b": -0.02545071,
+        "t_nw": -0.86881238,
+        "r2": 0.00772385,
+        "alive": false
+      }
+    },
+    "pit_stress": {
+      "lag1": {
+        "b": -0.02282868,
+        "t_nw": -0.14691054,
+        "n": 132
+      },
+      "contaminated_end_of_month": {
+        "b": 0.16731867,
+        "t_nw": 1.46766519,
+        "n": 133
+      }
+    },
+    "F_E_leave2026out": {
+      "b": -0.03047765,
+      "t_nw": -0.20576824,
+      "n": 126,
+      "sign_flip": false
+    },
+    "era_decomposition_advisory": [
+      {
+        "period": "2015-07..2019-02",
+        "b": -0.16287566,
+        "t": -0.95377712,
+        "n": 44
+      },
+      {
+        "period": "2019-03..2022-10",
+        "b": 0.14577146,
+        "t": 0.39530912,
+        "n": 44
+      },
+      {
+        "period": "2022-11..2026-07",
+        "b": -0.20171915,
+        "t": -0.93481115,
+        "n": 45
+      }
+    ],
+    "identification_concentration": {
+      "D_G_C_top_upper_tercile": 0.47327826,
+      "D_G_baseline_uniform": 0.33333333,
+      "top1_share": 0.06256426,
+      "top5_share": 0.20090706,
+      "top10pct_share": 0.39732897,
+      "effective_months_kish": 49.86524053
+    }
+  }
+}

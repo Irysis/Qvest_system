@@ -1,0 +1,30 @@
+{
+  "prereg_id": "dfa_v14_prereg_20260822",
+  "created_at": "2026-08-22",
+  "created_before_any_result": true,
+  "fq_id": "FQ-239",
+  "round": "R15 — PG2 정본 리스크 오버레이를 A5E에 적용 (도훈 제안 2026-08-22)",
+  "why_different_from_R8_R9_R13": "이전 익스포저 3라운드는 **내가 정의한 트리거**(mkt_jm Bear_Prob 이진/연속, 자체 breadth)였고 전부 실패했다. 실패 기전 = 발화율 25.7%의 고변동 감지기라 상시 축소로 알파를 희석. 본 라운드는 **시스템이 이미 검증하고 자본을 투입한 PG2 정본 오버레이**(apply_regime_overlay.R, 3-Layer)를 그대로 적용한다 — 신규 트리거 설계가 아니라 검증된 레버의 이식. 실측 차이: MRS>=60(CRISIS) 발화 **1.02%** · MRS>=30(CAUTION) 13.74% vs 내 트리거 25.7%. sparse 하다는 것이 R8/R9 실패 기전의 정확한 반대편.",
+  "base": "A5E = broad-21 팩터 모멘텀, 연속가중, 3-코호트 중첩 앙상블, 월말 결정→익월, 15bps. ★판정 기준선은 §18 정정 반영: 안정창(2026 제외) pt 2.732 / oos 0.065 / calmar 0.214, 전체창 pt 2.894 / oos 0.706 / calmar 0.284",
+  "overlay_spec": {
+    "engine": "02_Infrastructure/regime/apply_regime_overlay.R::apply_regime_overlay() — 정본 구현, 수정 금지",
+    "params": "기본값 그대로: crisis_threshold=list(mrs=60, axes=5, consec=3), caution_threshold=30 (★신규 자유도 0 — 파라미터 튜닝 금지)",
+    "regime_input": ".cache/regime_daily_v2.parquet (MRS 이미 t-1 lagged — 함수 주석대로 추가 shift 금지)",
+    "daily_reconstruction": "A5E 월간 비중을 해당 월 일별로 유지·드리프트시켜 일별 포트 수익 생성(각 코호트 독립, 3코호트 평균). 월말 결정→익월 적용 회계 유지",
+    "inv_dt": "NULL (인버스 ETF 미보유) — CRISIS 레이어의 인버스 성분은 0 처리"
+  },
+  "arms_prespecified": [
+    {"id": "A5E_daily_base", "spec": "일별 재구성 A5E, 오버레이 없음 — 재구성 자체의 검증(월간판과 월 집계 일치 확인)", "dof": 0},
+    {"id": "A5E_x_PG2overlay", "spec": "위에 apply_regime_overlay 기본 파라미터 적용", "dof": 1},
+    {"id": "MKT_x_PG2overlay", "spec": "익스포저-단독 기준선(감사 사양 8-1 순서 요건): 시장지수에 동일 오버레이만 적용", "dof": 0}
+  ],
+  "judgment": {
+    "adoption": "15bps에서 {calmar 개선 AND pt 비열등(>=-0.1)} 또는 {pt 개선 AND MDD 비악화} vs A5E_daily_base. ★전체창·안정창(2026 제외) 양쪽 보고 의무 — §18 정정 규약",
+    "sanity_gate": "A5E_daily_base의 월 집계가 기존 월간 A5E와 pt 차이 |Δ|<=0.15 여야 재구성 유효. 초과 시 오버레이 측정 무효",
+    "gates_if_adopted": "shift 사다리 + placebo + 구간절단 민감도(2026 제외 필수) + essence 계약 채점",
+    "honesty": "§4.3 단서 적용: 익스포저 층 의도적 결합이므로 MDD 개선 10%p 문턱은 N/A. 단 결합 사실·오버레이 단독 기여를 별도 기록"
+  },
+  "n_trials_cumulative": 68,
+  "selection_type": "chain",
+  "pin_tag": "smv_r2_20260820 연장"
+}

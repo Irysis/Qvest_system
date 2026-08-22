@@ -1,0 +1,44 @@
+{
+  "wt_id": "WT-D20260822_001",
+  "fq_ref": "FQ-236",
+  "decided_by": "alpha-research",
+  "decided_at": "2026-08-22",
+  "metric_type": "measured_direct",
+  "title": "PRIMARY 창 강등 — 사전등록 대체 경로 집행 (rev2 window_decision.condition_backfill_gate)",
+
+  "why_the_preregistered_gate_did_not_bind": {
+    "gate_as_written": "share_backfill(결국 상장폐지 비율) >= 0.5 x share_clean → 198m 유지",
+    "gate_result": "0.1067 >= 0.0473 → PASS",
+    "defect": "★이 통계는 '결국 죽은 종목이 명부에 남아 있나'(생존편향의 한 형태)를 재고, '시점 t 의 명부가 t 시점 정보로 결정된 명부인가'(멤버십 재구성 = C6 look-ahead)를 재지 않는다. 백필 명부의 16건은 전부 2015-07 **이후** 폐지라 관문을 통과시킨다. ⇒ 관문은 통과했으나 그 통과가 보증하려던 성질은 보증되지 않았다.",
+    "repeat_pattern": "\"검사가 통과했다는 사실이 그 축을 실제로 쟀다는 뜻이 아니다\" — 본 저장소 반복 계통. challenge_note 기록 대상."
+  },
+
+  "direct_pit_test": {
+    "artifact": "backfill_pit_attribution.json",
+    "attribution": {
+      "question": "KQ150 백필 구간 exits=0 이 (a)원천 성질 (b)내 패널 구성 결함 (c)실제 무퇴출 중 무엇인가",
+      "control": "동일 코드·동일 패널에서 K200 은 같은 창(2010-02~2015-06)에 entries=89 / exits=74. KQ150 만 entries=22 / exits=0",
+      "verdict": "(a) 원천 데이터 성질 — 패널 구성 결함((b)) 배제됨"
+    },
+    "evidence": [
+      "백필 구간 편입 22건 전부(22/22)가 '해당 월 신규 상장' — 명부가 늘어난 것이 아니라 고정 150 명부가 상장과 함께 채워진 것",
+      "전 구간 단조 포함(명부가 한 번도 줄지 않음) = TRUE",
+      "★2011-06 멤버 138종 중 138종(100.0%)이 2015-07(실시간 산출 개시월)에도 멤버 — 실제 지수의 3년 잔존율 대조: 2015-07 멤버 150종 중 2018-06 잔존 92종(61.3%)",
+      "KQ150 플래그의 최초 1→0 전환은 2016-01 (실시간 개시 후 첫 정기변경)"
+    ],
+    "verdict": "★PIT FAIL — 2010-02~2015-06 KQ150 멤버십은 2015-07 시점 구성종목 명부를 소급 투영한 것이다. 시점 t 의 유니버스가 t 이후 정보로 결정된 C6(생존/구성 look-ahead)."
+  },
+
+  "decision": {
+    "primary_window": "UNION 133m (2015-07 ~ 2026-07)",
+    "required_effect_replaced": {"Y1b_annual_pct": 10.465, "Y1a_native": 0.02658, "Y2_native": 0.03355},
+    "anchor_unchanged": "표준화 0.25 (rev2 effect_size_anchor) — 창 변경과 무관하게 고정",
+    "198m_status": "진단 병기 전용 — 성립 근거 사용 금지. 두 창 대조가 곧 F_F(leave-backfill-out) 재추정",
+    "authority": "rev2 window_decision.condition_backfill_gate 가 이미 정의한 자동 강등 경로 — 그리드 변경 아님. 제1목표(PIT)가 사전등록 휴리스틱보다 우선."
+  },
+
+  "gate_replacement_proposal": {
+    "for_future_rounds": "백필 판정 통계를 교체할 것: ①월별 퇴출 건수(회전율) 대조 — 대상 구간 exits/yr 가 실시간 구간 exits/yr 의 0.5배 미만이면 FAIL ②단조 포함 검사 — 명부가 한 번도 줄지 않으면 즉시 FAIL ③k년 잔존율 대조 — 대상 구간 시작 명부의 실시간-개시 시점 잔존율이 실시간 구간의 동기간 잔존율을 유의하게 상회하면 FAIL. 셋 다 본 라운드에서 결함을 검거했다(0/yr · TRUE · 100% vs 61.3%).",
+    "note": "제안이지 등재가 아님 — 인프라 반영은 별도 태스크"
+  }
+}
