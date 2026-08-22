@@ -20,6 +20,8 @@ rd<-as.data.table(read_parquet(".cache/rawdata.parquet",
 rd[,Date:=as.Date(Date)]
 rd<-rd[Date>=as.Date("2005-01-01") & is.finite(Ret) & is.finite(Size) & Size>0]
 rd[,inuniv:=(!is.na(K200)&K200==1)|(!is.na(KQ150)&KQ150==1)]
+rd_all<-copy(rd)          # ★유니버스 필터 전 사본 — 익월 수익 계산용(이탈 종목 보존)
+rd_all[,ym:=format(Date,"%Y-%m")]   # 사본은 ym 을 자체 보유해야 한다(원본의 후속 열 추가를 안 받음)
 rd<-rd[inuniv==TRUE]; setorder(rd,Ticker,Date)
 ## 유동성: 20일 평균 거래대금 (t-1 PIT, C10)
 rd[,tv:=Close*Vol]
@@ -33,11 +35,16 @@ rebal<-alld[!duplicated(ymv,fromLast=TRUE)]
 rebal<-rebal[rebal>=as.Date("2005-12-01") & rebal<=as.Date("2026-07-31")]
 pg("rebal n=%d (%s ~ %s)\n",length(rebal),as.character(min(rebal)),as.character(max(rebal)))
 
-## 월간 종목 수익 (익월 적용용)
-mret<-rd[,.(mret=prod(1+Ret)-1, Size_eom=last(Size)),by=.(Ticker,ym)]
+## 월간 종목 수익 (익월 적용용) — ★2건 수리 (적대검증 wf_9ac58124-3e4 결함⑤)
+##  (a) **유니버스 미필터 rawdata** 로 계산한다. 월 m 에 K200/KQ150 이었다가 월 m+1 에 이탈해도
+##      그 달 수익은 실제로 벌린다(월중 강제 매도 없음). 필터 후 계산하면 이탈 종목의 익월 수익이
+##      사라져 생존 방향으로 낙관 편향된다. ⇒ rd 가 아니라 rd_all 을 쓴다.
+##  (b) 위치 기반 shift 가 아니라 **명시 ym+1 키 조인**. 티커별 월 시퀀스에 구멍 644개가 있어
+##      shift(type="lead") 는 구멍에서 m+2 이후를 m+1 로 붙였다(528행 0.671%, 최대 39.5pp).
+.nextym<-function(y){a<-as.integer(substr(y,1,4));mm<-as.integer(substr(y,6,7))
+  m2<-mm+1L;a2<-a+(m2>12L);m2<-ifelse(m2>12L,1L,m2);sprintf("%04d-%02d",a2,m2)}
+mret<-rd_all[,.(mret=prod(1+Ret)-1),by=.(Ticker,ym)]
 setorder(mret,Ticker,ym)
-mret[,fwd_ret:=shift(mret,1,type="lead"),by=Ticker]      # 익월 수익 = 결정월 z 의 표적
-mret[,fwd_ym:=shift(ym,1,type="lead"),by=Ticker]
 
 rows<-vector("list",length(rebal))
 for(i in seq_along(rebal)){ sd<-rebal[i]; ymi<-format(sd,"%Y-%m")
@@ -52,9 +59,11 @@ for(i in seq_along(rebal)){ sd<-rebal[i]; ymi<-format(sd,"%Y-%m")
   ##   merge 가 Size.x/Size.y 로 갈랐다 — 팩터 열이 조용히 사라지는 계통. 병합 전에 개명한다.
   setnames(uni,"Size","mktcap")
   M<-merge(uni,W,by="Ticker")
-  if(any(grepl("\.(x|y)$",names(M)))) stop("[build_mfro_panel] 병합 후 열이름 충돌: ",
-    paste(grep("\.(x|y)$",names(M),value=TRUE),collapse=","))
-  M<-merge(M,mret[ym==ymi,.(Ticker,fwd_ret,fwd_ym)],by="Ticker",all.x=TRUE)
+  if(any(grepl("[.](x|y)$",names(M)))) stop("[build_mfro_panel] 병합 후 열이름 충돌: ",
+    paste(grep("[.](x|y)$",names(M),value=TRUE),collapse=","))
+  fy<-.nextym(ymi)
+  M<-merge(M,mret[ym==fy,.(Ticker,fwd_ret=mret)],by="Ticker",all.x=TRUE)
+  M[,fwd_ym:=fy]
   M[,`:=`(ym=ymi,rebal=sd)]
   rows[[i]]<-M
   if(i%%24==0) pg("  %d/%d %s (n=%d)\n",i,length(rebal),ymi,nrow(M))
