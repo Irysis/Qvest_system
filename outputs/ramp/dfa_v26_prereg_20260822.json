@@ -1,0 +1,60 @@
+{
+  "prereg_id": "dfa_v26_20260822",
+  "created_at": "2026-08-22",
+  "created_before_any_result": true,
+  "round": "R54",
+  "title": "FR(factor-rotation) 배분 규칙을 DFA 21 팩터지수 풀에 적용 — 국면조건부 배분이 무국면 팩터 모멘텀을 이기는가",
+  "origin": "도훈 제안 '저 팩터풀로 팩터로테이션모드 가동해볼까' (2026-08-22). 경량 대조 A — 모듈 등재(며칠) 전에 배분 규칙만 순수함수로 직접 시험한다.",
+
+  "question": "같은 21 팩터지수 풀·같은 창·같은 비용에서, FR Track2 의 국면조건부 배분 규칙(risk-parity 앵커 + 국면조건부 실현IR shrink 블렌드)이 채택팔 F1(무국면 12M 모멘텀 top-quintile s비례)을 이기는가?",
+
+  "why_not_already_answered": "§8-6 은 논문의 학습된 국면(SJM+BL, 일별 온라인 필터)이 무국면 모멘텀에 진다고 확정했다. FR 규칙은 그와 다른 배분기다 — (a) 국면이 학습이 아니라 외부 published 라벨 (b) risk-parity 앵커로 shrink (c) 표본수 기반 IR shrink(k0=36) (d) softmax 온도 τ + cap 0.25. 이 아크는 국면을 '노출 오버레이'(R23/R32/R36/R37)로만 썼고 '배분 규칙'으로는 안 썼다.",
+
+  "data": {
+    "pool": "outputs/ramp/dfa_index_returns_broad_202608.parquet — broad-21 팩터지수 + Market",
+    "regime": ".cache/unified_regime_signal_daily.parquet::Category (RISK_ON/CRISIS/NEUTRAL/CAUTION/RISK_OFF)",
+    "regime_note": "RISK_OFF 는 전체 10,820일 중 21일뿐 → 실질 4범주. 표본 희소 범주는 k0=36 shrink 가 흡수한다(FR 규칙 내장)."
+  },
+
+  "arms_prespecified": {
+    "F1_base": "채택팔 — s=trailing 12M active, pos=s>0 중 상위 5, w ∝ s. pos 공집합이면 Market 100%.",
+    "A1_FR_top5": "선택은 F1 과 동일(top-5), 비중만 compute_regime_module_weights 로 교체. ★자유도 1개 = 가중 규칙 단독.",
+    "A2_FR_full": "21 지수 전부에 compute_regime_module_weights 적용(Market 자산 없음). ★FR 모드의 실제 형태 = 헤드라인 사전지정.",
+    "headline_cell": "A2_FR_full vs F1_base, clean 창(2015-07~), 15bps, dec_lag=1"
+  },
+
+  "accounting": {
+    "cost": "15bps 양 레이어(지수 내부 재구성 + 배분층) — R33 수리 회계 승계",
+    "rebalance": "분기(freq=3) · 3-cohort 중첩 앙상블(R12) · dec_lag=1",
+    "IS_only": "regime_ir / vols / n_regime 은 결정월 d 까지의 데이터로만 산출(expanding). 국면 라벨은 월 d 의 마지막 관측일 값 → 월 d+1 적용.",
+    "pit_equivalence": "F1 의 S[d,] 과 동일 컨벤션 — 두 팔이 같은 정보집합을 본다."
+  },
+
+  "windows": {
+    "full": "2007-01 ~ 2026-07",
+    "clean": "2015-07 ~ 2026-07 (KQ150 백필 투영 회피 — project-kq150-membership-backfill-projection-20260822)"
+  },
+
+  "judgment": {
+    "primary": "대응표본(paired) 월수익 차 A2−F1 의 NW lag-3 t. clean 창 사전지정.",
+    "pass_rule": "paired NW-t >= +1.96 이면 '국면조건부 배분이 이긴다' → B단계(21 지수 register_module + 정식 FR 모드) 착수 근거.",
+    "fail_rule": "paired NW-t <= 0 또는 |t| < 1.96 이면 §8-6 판정이 다른 배분 규칙에서도 재현 — 국면층 기각의 두 번째 독립 확인.",
+    "all_cells_reported": "F1/A1/A2 × {full, clean} × {5,15,25bps} × dec_lag{0,1,2,3} 전수 보고. 사후 셀 선택 금지.",
+    "selection_type": "chain (사전지정 헤드라인 1셀 · argmax 금지)"
+  },
+
+  "expected_failure_mode": [
+    "★결과 전 선언: A2 가 F1 에 진다고 예상한다. 근거 3가지 — (a) FR 규칙은 risk-parity 앵커 + cap 0.25 로 21 지수에 분산되므로 top-5 집중이 주는 신호 노출을 희석한다. R31 에서 '집중은 축이 다르면 부호가 반대'였고 팩터 집중은 개선 방향이었다. (b) k0=36 shrink 는 국면별 표본이 적을 때 IR 을 0 으로 보내 사실상 risk-parity 로 붕괴한다 — 국면 4범주 × 확장창이면 초기 수십 개월은 거의 rp 다. (c) R38 이 IS 창 위기 에피소드가 3개뿐이라고 실측했다 — 국면조건부 IR 추정의 표본이 원리적으로 얇다.",
+    "★이 예상이 빗나가면(A2 승) 그것이 더 큰 정보다: 국면층이 '노출'이 아니라 '배분'에서는 산다는 뜻이고, B단계 등재가 정당화된다.",
+    "★A1(가중만 교체) 이 F1 을 이기고 A2 가 지면 → 원인은 국면이 아니라 **선택 폭**이다(21 vs 5). 이 경우 국면 기여는 미분리."
+  ],
+
+  "binding_constraints": [
+    "배포 형태는 두 팔 모두 위반(중앙 275종) — 본 라운드는 배분 규칙 비교이지 졸업 주장이 아니다. HARD 3종 판정 금지.",
+    "성과 서술은 이 라운드 실행 산출값만. metric_type=canonical_screen(대조 측정).",
+    "무신호 대조(no_signal_control)는 screening tier 알파 존재 주장에만 의무 — 본 라운드는 팔 간 paired 비교라 미적용. 단 A2 가 이기면 B단계에서 의무."
+  ],
+
+  "consumer_if_pass": "21 지수 register_module() 등재 → RCMA → run_wf_ensemble 정식 FR Track2",
+  "consumer_if_fail": "국면층 기각 2차 확인 → layer_bottleneck_map 국면 계층 행 갱신 → DFA 아크 종료 상태 유지"
+}

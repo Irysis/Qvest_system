@@ -1,0 +1,93 @@
+{
+  "task_id": "WT-D20260822_008",
+  "fq_ref": "FQ-246 NP2",
+  "round_id": "FQ-246_NP2_consumption_matched_selection_target_WT-D20260822_008_20260822",
+  "sealed_at": "2026-08-22T18:43:24+0900",
+  "terminal_form": "diagnostic_criterion_validity",
+  "capital_eligible": false,
+  "capital_note": "★정답지(top-25 실현수익)는 구성상 사후 정보(look-ahead)다. 본 라운드는 '그 정답지를 맞히는 기준이 존재하는가' 만 묻는다. 어떤 산출로도 자본·성과를 주장하지 않는다(주장 시 AX-002). α̂ 미방출 · alpha_vector 미방출 · canonical_screen_bt 성과 arm 미측정.",
+  "design": {
+    "principle": "기준·K·창을 전부 고정하고 **정답지만** 교체하는 paired 대조",
+    "criteria_source": "stage_artifacts/WT-D20260822_007/p3_partB.rds::CRIT (221x5x4) — 재계산 아님, 비트-동일 승계",
+    "criteria": ["breadth(top-25 꼬리질량)", "margin(top-25 경계마진)", "centrality(팩터-간 상충도)", "stability(순위지속성)"],
+    "directions": 8,
+    "control_arms": ["selrank1(성과-파생, WT-007 승계)", "lag1_winner(전월 실현 승자 — 지속성 대조, 본 라운드 신규)", "ORACLE 자기-정답지(양성 대조·전도성)", "무작위 픽(음성 대조)"],
+    "key_control": "rank-IC argmax (icm) — WT-007 재현, 패리티 확인 완료",
+    "key_treatment": "top-25 실현수익 argmax (ret_by_factor) — 소비면 정합",
+    "window": "221개월 (2008-03-01 ~ 2026-07-01)",
+    "K": 5,
+    "top_n": 25
+  },
+  "measured_design_inputs": {
+    "n_months": 221,
+    "K": 5,
+    "chance_hit": 0.2,
+    "key_agreement_rate": 0.4886877828054,
+    "n_discordant_months": 113,
+    "cross_key_mean_rho": 0.3465700857979,
+    "note": "이 3값은 정답지 **구조**이지 가설의 결과가 아니다 — 기준×정답지 통계량은 봉인 후 산출."
+  },
+  "MDE_precomputed": {
+    "marginal_hit_binom_1s5pct": 0.2443438914027,
+    "marginal_hit_excess_pp": 4.434389140271,
+    "top2_hit_binom_1s5pct": 0.4524886877828,
+    "top2_chance": 0.4,
+    "rho_iid_analytic_95": 0.06592193381164,
+    "rho_null_sd_K5": 0.5,
+    "paired_dhit_sd_null": 0.03042124219723,
+    "paired_dhit_mde_1s": 0.05004294341445,
+    "paired_dhit_mde_2s": 0.05962563470658,
+    "paired_dhit_sim_sd": 0.0307012575095,
+    "paired_dhit_sim_q95": 0.04977375565611,
+    "sim_n": 20000,
+    "note": "paired MDE 는 정답지 일치율 a 에서 정확 산출 — 일치 월은 Δ 에 구조적 0 을 기여하므로 유효 표본 = 불일치 월"
+  },
+  "power_transfer": {
+    "claim": "IC 정답지 게이트는 소비면 신호에 대해 **구조적으로 둔감**하다 — 그 둔감함을 사전에 정량화한다",
+    "h_IC_intercept_if_uninformative_about_IC": 0.1278280542986,
+    "slope_dh_IC_per_dh_RET": 0.3608597285068,
+    "h_RET_needed_to_trip_IC_gate": 0.3228840125392,
+    "h_RET_needed_to_trip_RET_gate": 0.2443438914027,
+    "interpretation": "IC 정답지로는 h_RET >= 0.3229 여야 게이트가 발화하는데, RET 정답지로는 h_RET >= 0.2443 면 발화한다. 즉 WT-007 의 9/9 null 은 h_RET ∈ [0.2443, 0.3229) 구간의 신호를 **볼 수 없었다**. 이 구간의 존재가 본 라운드의 존재 이유이며, 본 라운드가 null 이면 그 구간도 함께 배제된다."
+  },
+  "primary_statistics": {
+    "P1": "hit_RET — 기준 argmax 팩터 == ret_by_factor argmax 인 월 비율. 단측 이항 vs p0=0.2",
+    "P2": "rho_RET — 월별 Spearman(기준값, ret_by_factor) across K, MIN 방향은 부호 반전. 평균의 NW3 t"
+  },
+  "secondary_statistics": {
+    "S1": "hit2_RET — 기준 argmax 팩터가 ret 순위 top-2 에 드는 비율. 우연 0.4 (검정력 축)",
+    "S2": "SELVAL_ann_pct — mean_m(ret_by_factor[m, 선택] - mean_k ret_by_factor[m,k])*12*100, NW3 t (연속 축, 적중률보다 고검정력)",
+    "S3": "IC 공간 대칭 통계량 (paired 좌표 정합용)"
+  },
+  "paired_statistics": {
+    "D1": "Δhit = hit_RET - hit_IC (기준별). McNemar 정규근사 + 위 시뮬 귀무분포",
+    "D2": "Δrho 계열 = rho_RET(m) - rho_IC(m) 의 평균, NW3 t"
+  },
+  "gates": {
+    "transport_pass_raw": "hit_p_binom < 0.05 OR |rho_t_nw3| >= 1.5 (WT-007 규칙 승계 — 대조 동형성 보존)",
+    "transport_pass_adjusted": "Bonferroni over 8 방향: hit_p_binom < 0.00625 OR |rho_t_nw3| >= 2.734",
+    "multiplicity_rule": "raw·adjusted 양쪽 보고. **헤드라인 판정은 adjusted 기준**(WT-007 은 8방향 보정을 하지 않았음 — 본 라운드에서 보강)",
+    "paired_pass": "|Δhit| >= 0.0596 (양측 5%, 시뮬 귀무) 또는 Δrho NW3 |t| >= 1.96",
+    "threshold_freeze": "★문턱 사후 완화 금지. 미달 시 완화가 아니라 미결/효과없음 라벨로 강등한다(WT-007 선례)"
+  },
+  "labels": {
+    "TRANSPORT_ESTABLISHED": "게이트 통과 — 기준이 소비면 정답지를 안다",
+    "POWERED_NULL_CRITERION_UNINFORMATIVE": "미통과 ∧ |rho|+MDE95 < 0.15 ∧ hit 관측이 MDE 밖 — 효과 없음(미결 아님)",
+    "UNRESOLVED_UNDERPOWERED": "미통과 ∧ 관측이 MDE 안 — 미결",
+    "KEY_SWAP_MATERIAL": "Δ 게이트 통과 — 정답지 교체가 기준의 정보량을 유의하게 바꿈",
+    "KEY_SWAP_NULL": "Δ 게이트 미통과 — 정답지 교체가 기준의 정보량을 바꾸지 않음"
+  },
+  "conductivity_requirement": "측정 전 **전도성 먼저**: 게이트에 (i) 자기-정답지 오라클 기준(hit=1.0 기대) (ii) 잡음 주입 오라클 사다리 3단 (iii) 균등 무작위(hit≈0.2 기대) 를 통과시켜, 게이트가 존재하는 정보를 실제로 검출하는지 실증한 뒤에만 본 기준 결과에 판정 자격을 부여한다.",
+  "prohibitions": ["정답지로 자본·성과 주장(AX-002)", "공분산·weight·최적화", "ML 사이징/selection", "sweep 의 DSR 회피 — 챔피언 argmax 선발 금지(전 방향 독립 라벨 유지)", "graduation 주장", "문턱 사후 완화", "Production Constraints 를 레버로 제시"],
+  "inherited_anchors_with_units": {
+    "ORACLE_K_IC_port_t": 4.646999095,
+    "ORACLE_K_RET_port_t": 8.8381268503,
+    "ORACLE_K_RET_paired_ann_pct": 31.492557813,
+    "oracle_ret_over_ic_multiple": 2.2999022859,
+    "WT007_hit_range": [0.1719457, 0.23076923],
+    "WT007_max_abs_rho": 0.0413,
+    "WT007_binom_MDE": 0.2443,
+    "WT007_rho_MDE95_mean": 0.073679157357,
+    "collision_warning": "★규율 6 — 'SELSPACE_headroom_ann_pct 35.661751 %p/yr'(선택공간 내부, 본 라운드 신규) 와 'ORACLE_K_RET paired 31.492558 %p/yr'(C0 결합 대비 포트 net active) 는 **다른 양**이다. 인용 시 이름과 경로를 함께 적을 것."
+  }
+}
