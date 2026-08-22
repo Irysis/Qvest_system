@@ -129,6 +129,11 @@ log "토큰 지문: ${_tokfp} (값 아님 · sha256 앞12자) — 401 시 이 �
 # ★이번 런의 산출만 센다 — 로그는 당일 append-only 라 누적분을 이번 것으로 읽으면
 #   zero_progress 가드가 통째로 무력해진다(2026-08-22 실측: risk 런이 MODEQ_DONE 을
 #   내지 않았는데 11:20 런의 옛 줄이 남아 "1건" 으로 보고됐다).
+# ★진척 판정을 **에이전트 자기보고에만** 걸지 않는다. 실사고 2026-08-22 16:31:
+#   qepm_dossier 런이 WT 를 SPEC_APPROVED→ALPHA_DONE 으로 전이시키고 alpha_package 까지
+#   만들었는데 MODEQ_DONE 을 안 내서 zero_progress 오경보가 났다.
+#   원장이 진실이고 자기보고는 보조다 — 런 전후 지문을 떠서 효과를 독립 판정한다.
+_EFFECT_BEFORE=$("$PYBIN" "$BASE/02_Infrastructure/ops/research_effect_signature.py" "$BASE" 2>/dev/null)
 _log_lines_before=$(wc -l < "$LOG" 2>/dev/null || echo 0)
 timeout 3000 "$CLAUDE_BIN" -p "$PROMPT_TEXT" --dangerously-skip-permissions >> "$LOG" 2>&1
 rc=$?
@@ -144,8 +149,13 @@ if [ "$rc" -eq 0 ]; then
   case "${_n_done:-}" in ""|*[!0-9]*) _n_done=0 ;; esac
   log "처리 결과: MODEQ_DONE ${_n_done}건 (pending 이었던 $N 건 중, 상한 $MAXI)"
   if [ "${_n_done:-0}" -eq 0 ]; then
-    scheduler_alert "mode_queue" "zero_progress" \
-      "claude exit=0 이나 MODEQ_DONE 0건 — pending=$N 인데 아무것도 처리되지 않음"
+    # 마커가 없더라도 원장이 바뀌었으면 진척이다 — 자기보고 누락은 경보 사유가 아니다.
+    _EFFECT_CMP=$("$PYBIN" "$BASE/02_Infrastructure/ops/research_effect_signature.py" "$BASE" --compare "${_EFFECT_BEFORE:-}" 2>/dev/null)
+    if [ "$_EFFECT_CMP" = "CHANGED" ]; then
+      log "MODEQ_DONE 0건이나 원장 지문 변화 감지 — 진척으로 판정(에이전트 자기보고 누락)"
+    else
+      scheduler_alert "mode_queue" "zero_progress" "claude exit=0 · MODEQ_DONE 0건 · 원장 지문 무변화 — pending=$N 인데 실제 효과 없음"
+    fi
   fi
   if command -v sched_mark_resolved >/dev/null 2>&1; then
     _mv=$(sched_mark_resolved "mode_queue" "$BASE/.cache/scheduler_alerts")
