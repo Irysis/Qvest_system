@@ -1,0 +1,173 @@
+{
+  "wt_id": "WT-D20260822_007",
+  "designed_by": "alpha-hypothesis",
+  "model_tier": "fable",
+  "designed_at": "2026-08-22",
+  "fq_ref": "FQ-246 (NP1)",
+  "prechecks": {
+    "hypothesis_index_hits": [
+      "lookup 'hard selection argmax softmax one-hot' → 0건 (단일어 폴백 포함) — 하드 선택/one-hot/softmax 사다리 축은 이 저장소 미측정. 본 라운드가 첫 측정",
+      "WT-D20260822_006 (FQ-246, ALPHA_DONE) — 직계 선행: 소프트 틸트 상태 조건부 선택 CONFIG_SCOPED_NEGATIVE, conduit 실측이 본 라운드의 존재 이유(오라클 상태 소프트 틸트 = 여유폭 25.1% 회수)",
+      "WT-D20260822_004 (FQ-244, ALPHA_DONE) — ORACLE_K 상한 원천(하드 one-hot 완전예지 PORT_t 4.64699909) + 비-ML 결합 규칙 powered null",
+      "L-RAMP-20260713_084821 (RAMP R10) — trailing-t 비례 가중 paired t -0.16: 성과-파생 선택 사망 1 (본 설계가 배제하는 축)",
+      "WT-D20260803_004 (FQ-121) — IS 최강 V01 +2.634 → OOS -0.389 부호 반전: 성과-파생 선택 사망 2 (동일 배제)",
+      "L-AR-20260802_204803 (WT-D20260802_015 REGIME_CONDITIONAL_ROTATION grade F) — 이산 국면 라벨 조건부 배분 negative: 본 설계의 '연속 상태변수 의무' 및 '이산화는 선택 형태이지 상태 이분화가 아님' 구분의 근거",
+      "DIST-QPM-023/034 (distilled) — 국면 오버레이 계열 조건부 negative: 본 라운드는 오버레이가 아니라 팩터-간 결합 형태 축이므로 비중복",
+      "FQ-116 M3 (커버리지 이질 tercile |t| 0.88 기각) — 다른 풀(고정 5종)에서의 기각. 본 풀(매월 재선별 K=5)에는 미적용 — Part B 후보 기준에서 커버리지를 후순위로 내리는 근거로만 소비"
+    ],
+    "frontier_queue_refs": [
+      "FQ-246 — status CLAIMED_20260822__state_conditional_selection_launching, owner Q-Lead session d2e06481. dohoon_decision 아님. 본 WT 는 그 라운드의 next_probe NP1 승계",
+      "FQ-244 close — ORACLE_K 여유폭 실측 원천 + '헌법 재진입 순서 ①(비-ML 먼저)' 규약",
+      "FQ-059 (인접, UNCLAIMED) — soft-membership/cost-optimized top-N 이산 절단 마디: 본 라운드와 자유도 분리 유지 (여기서는 top-N 절단 규칙을 건드리지 않고 팩터-간 가중 형태만 움직인다)"
+    ],
+    "owner": "Q-Lead session d2e06481 (frontier queue CLAIMED 표기 확인) — 본 설계는 그 라운드의 가설설계 구간",
+    "discovery_seed": "부재 (mailbox 실측: request/status/governance_log 만)",
+    "hypothesis_title_injection": "불필요 — request.json 에 'FQ-246 NP1: 이산 하드 선택 상한 — 형태 손실 3/4의 분리' 기고정 (재정의 금지 준수)"
+  },
+  "measured_anchors": {
+    "note": "설계가 딛는 승계 실측 (재계산 금지 대상). 출처: stage_artifacts/WT-D20260822_006/alpha_validation.json + WT-D20260822_004/alpha_validation.json, 전부 metric_type=canonical_screen. 단위·양 이름 병기 (승계 규약 9).",
+    "ORACLE_K_port_t_IKS200": 4.64699909,
+    "ORACLE_K_paired_annual_pct": 13.6929981793759,
+    "ORACLE_K_paired_t": 4.28970507043012,
+    "ORACLE_K_definition": "매월 선별 K=5 팩터 중 실현 차월 rank-IC 최대 팩터 하나를 하드 채택(one-hot argmax) — {K 중 고르기} 족 상한이자 하드 one-hot 형태의 전도성 승계 사실",
+    "C0_port_t_IKS200": 0.947410715814893,
+    "C0_definition": "선별 K=5 z-점수 균등 평균 (uniform)",
+    "FQ246_soft_tilt_oracle_paired_annual_pct": 3.44980940419697,
+    "FQ246_soft_tilt_oracle_paired_t_range": "2.014 (T2형) / 2.466 (T3형)",
+    "FQ246_soft_tilt_oracle_port_t_range": "1.69937575 / 1.82208106",
+    "FQ246_recovery_share": "3.44980940419697 / 13.6929981793759 = 25.1% (하한 추정치 — 틸트 강도 미최적화 caveat 승계)",
+    "FQ246_rule_form_cost": "순열 귀무(셔플 상태 40 draws/축) 평균 paired t ≈ -1.06 / -1.02 — 규칙-형태 자체가 비용을 만든다 (승계 규약 4의 근거)",
+    "FQ246_unresolved_confound": "소프트 틸트 arm 은 형태(diffuse 가중)만 다른 게 아니라 정보 차원도 다르다(1차원 상태 스칼라 vs K차원 IC 벡터) — 25.1% 격차가 형태 손실인지 정보 차원 손실인지 미분리. 본 라운드의 존재 이유",
+    "FQ244_R1a_slot_encroachment": "C0 top-25 의 중앙 64%(16/25)가 solo-advocate 편입 — 균등 평균이 만드는 슬롯 배분 왜곡 실재",
+    "FQ244_R5_kurtosis": "선별 K=5 팩터 간 횡단면 초과첨도 IQR 중앙 6.94 — 팩터 꼬리-판별력 이질 대규모 실재 (Part B 기준 B1 의 존재 근거)",
+    "FQ246_ax001_advisory": "T3_DISP 위기 alpha 연 -1.99%p vs 정상 +0.83%p (위기 t -0.971, 비유의·advisory) — 승계 regime_scope 의 '위기-회복 holds_in' 이 실측과 반대 방향이었다는 교훈 (본 설계 regime_scope 재도출의 입력)",
+    "MATERIAL_annual_pct": 8.2227973063616,
+    "MATERIAL_definition": "C0 를 PORT_t 2.95 로 올리는 데 필요한 연 net active 증분 (FQ-244/246 공통 앵커)",
+    "window": "221개월 (2008-03 ~ 2026-07, FQ-244 alpha_scores.parquet 승계 창)"
+  },
+  "candidates": [
+    {
+      "id": "CAND-A",
+      "title": "형태-사다리 분해(Part A, 오라클 정보 고정) + 비-성과 팩터 속성 argmax 하드 선택(Part B)",
+      "family": "combination_form_ladder_hard_selection",
+      "mechanism_sketch": "횡단면 z 균등 평균은 팩터-간 상충을 상쇄시켜 상충 팩터의 순위 정보를 희석한다(저역 필터). ORACLE_K(하드 one-hot)와 소프트 틸트의 격차 3/4 이 이 희석(형태 손실)인지 정보 차원 손실인지 — 정보를 K차원 오라클 IC 벡터로 고정하고 형태만 사다리로 교체해 분리한다. 실현 경로는 비-성과 팩터 속성(꼬리 판별력·solo-advocate 상충도)이 '어느 팩터의 순위를 통째로 신뢰할지'를 지목한다는 주장",
+      "selected": true
+    },
+    {
+      "id": "CAND-B",
+      "title": "top-m 하드 사다리만 (오라클-IC-벡터 소프트 arm 없이)",
+      "family": "combination_form_ladder_only",
+      "why_not_selected": "결정 arm 부재 — FQ-246 이 남긴 confound(형태 vs 정보 차원)는 'FQ-246 의 정확한 함수형(exp·clip·정규화)에 K차원 오라클 IC 를 먹인 arm' 없이는 갈리지 않는다. 그 arm 이 ≈25% 를 재현하면 격차 3/4 은 순수 형태 손실, 훨씬 높으면 정보 차원 손실이 상당분. 사다리만으로는 이 이분이 관측 불가",
+      "disposition": "CAND-A 의 Part A 에 사다리로 흡수"
+    },
+    {
+      "id": "CAND-C",
+      "title": "커버리지/유효 종목수 기준 하드 선택 (FQ-246 NP2 구조 축의 하드-형태판)",
+      "family": "coverage_breadth_selection",
+      "why_not_selected": "FQ-116 M3 가 커버리지 이질을 tercile |t| 0.88 로 기각한 선례가 있다(다른 풀이라 config-scoped 이나 사전 확률 하향). 또한 커버리지는 '어느 팩터가 옳은가' 가 아니라 '어느 팩터가 정의되는가' 의 축이라 본 라운드 기전(순위 정보 보존)과의 정합이 약하다. Part B 부수 기록 축으로 강등 (독립 판정 arm 아님)",
+      "disposition": "Part B 의 진단 병기 축으로만 (판정 미사용)"
+    },
+    {
+      "id": "CAND-D",
+      "title": "ML-학습 선택 정책 (팩터 속성 → 채택 확률 학습)",
+      "family": "ml_selection_policy",
+      "why_not_selected": "헌법 재진입 순서 ①(비-ML 먼저, FQ-244 규약) — 비-ML 하드 선택이 미측정인 상태에서 ML 은 순서 위반. 또한 표적이 '다음 달 평균 수익률' 인 ML 라운드는 v8.4 금지 4종(대조군으로만). 비-ML Part B 가 미달로 닫히고 Part A 가 형태 손실을 확정하면 그때 재진입 순서 ②로 이동",
+      "disposition": "미채택 — 조건부 후속 (Part A/B 판정 후)"
+    },
+    {
+      "id": "EXCLUDED-trailing-performance",
+      "title": "trailing 성과 기반 하드 선택 (후보 자격 없음 — 기록만)",
+      "family": "trailing_performance",
+      "why_not_selected": "두 번 측정 negative: RAMP R10 trailing-t 비례 가중 paired t -0.16 + FQ-121 IS +2.634 → OOS -0.389 부호 반전. bear_prob 도 성과-파생이라 FQ-246 이 강등했고 여유폭 회귀 t -1.354 로 부호 반대 실측. 승계 규약 1이 명시 금지. INV-7: 부활신호 발화 전 재도전 아님. 단 Part B 에서 '성과-파생 기준 argmax' 1 arm 을 **대조 arm**(비교 기준선)으로만 두는 것은 규약이 허용하는 소비",
+      "disposition": "대조 arm 으로만"
+    }
+  ],
+  "selected": {
+    "hypothesis_title": "FQ-246 NP1: 이산 하드 선택 상한 — 형태 손실 3/4의 분리",
+    "hypothesis_description": "FQ-246 실측: 완전예지 상태(1차원 스칼라)를 소프트 틸트(exp·clip·정규화)로 흘리면 ORACLE_K 여유폭 13.6929981793759 %p/yr 의 25.1%(3.44980940419697 %p/yr)만 회수되고 PORT_t 1.70~1.82 로 벽 2.95 미달. ORACLE_K(하드 one-hot) 4.64699909 와의 격차 3/4 은 (a) 형태 손실(diffuse 가중이 팩터-간 상충을 상쇄시켜 옳은 팩터의 순위 정보를 희석) 과 (b) 정보 차원 손실(1차원 스칼라 vs K차원 IC 벡터) 이 미분리로 겹쳐 있다. Part A: 정보를 K차원 오라클 IC 벡터로 고정하고 형태만 교체하는 사다리(one-hot / top-2·top-3 하드 EW / softmax(λ) / FQ-246 정확 함수형)로 이 confound 를 분리한다 — 오라클 arm 전부 진단 눈금이며 자본 주장 불가. Part B: 오라클 없이 성과-비파생 관측 기준(꼬리 판별력·solo-advocate 상충도)의 argmax 하드 선택이 회수를 내는가 — 본 라운드에서 α̂ 를 낼 수 있는 유일한 축.",
+    "statement": "top-25 절단 소비면에서 균등 평균(C0)은 팩터-간 순위 상충을 상쇄시키는 저역 필터이므로, 옳은 팩터의 꼬리 순위 정보는 상충 월에 평균화 단계에서 소멸한다(형태 손실). 따라서 (i) 정보를 고정한 채 가중 집중도를 올리면(사다리 softmax λ↑ → one-hot) 여유폭 회수가 단조 증가해야 하고, (ii) 옳은 팩터를 지목하는 데 성과 이력이 필요 없다면 — 당월 z 횡단면만으로 계산되는 팩터 속성(top-25 경계 꼬리 판별력, 타 팩터와의 순위 상충도)이 실현 차월 rank-IC 순위와 우연(1/K) 이상으로 일치한다면 — 하드 argmax 선택이 평균화가 파괴하는 정보의 일부를 성과 관측 없이 회수한다.",
+    "mechanism": {
+      "agent": "① 합의-평균 소비 주체 = 다신호 스크리닝을 쓰는 국내 기관·퀀트 자금 — 위원회 거버넌스와 단일-신호 베팅의 커리어 리스크 때문에 결합을 균등/분산 가중으로 고정하고, 그 결과 팩터-상충 월에 상충 팩터의 순위 정보를 집단적으로 버린다(정보-전달 구조 층위의 오류 주체). ② 오류 생성 주체 = KR 개인 순매수 군집(신용융자 레버리지 포함) — FQ-246 F3 실측(고분산 월 개인 순매수 HHI 상승, cor +0.272 · 표준화곱 NW3 t +1.776)으로 실재 확인된 승계 사실. 이들이 만드는 가격 이탈이 특정 팩터(역추세·유동성공급 계열)의 꼬리에 집중될 때, 그 팩터의 z 횡단면은 살찐 꼬리(고첨도)를 갖는다 — Part B 기준 B1 이 관측하는 것",
+      "friction": "① 정보-구조 마찰: 횡단면 z 균등 평균은 K개 순위의 선형 축약이라 팩터-간 상충 성분을 대수적으로 상쇄한다 — 이 손실은 시장가격이 아니라 결합 규칙 내부에서 발생하므로 차익거래가 지울 수 있는 종류가 아니고, 규칙을 바꾸는 것만이 회수 수단이다(FQ-244 R1a: 그 결과가 solo-advocate 슬롯 잠식 중앙 64%). ② 채택 마찰: 기관이 하드 선택으로 못 옮겨가는 이유 — 사전 식별 기준의 부재(FQ-246 실측: 시계열 상태 축은 여유폭과 유의 결합 없음)와 단일-신호 집중의 거버넌스 비용. ③ 시장 마찰: KR 공매도 제약 + 유동성 하한 2e8 이 개인 발 과대평가 이탈의 정정을 1개월 보유 창 안에 남긴다(승계)",
+      "path": "월말 t-1 종가까지의 당월 z 횡단면만으로 팩터별 속성(top-25 경계 꼬리 판별 마진 · 타 팩터와의 평균 순위 상충도)을 계산 → argmax 로 단일 팩터 하드 채택(또는 사다리 위 고집중 가중) → 그 팩터의 순위가 top-25 멤버십을 통째로 지배 → 차월 1개월 보유에서 그 팩터 꼬리에 실린 이탈-복원/정보 반영이 net active 로 실현. 회수량은 가중 집중도(유효 팩터 수 1/Σw²)의 함수로 사다리를 따라 관측된다 — Part A 가 이 곡선을 오라클 정보로, Part B 가 실현 가능 기준으로 잰다"
+    },
+    "falsification": {
+      "observable": "기전이 참이면 처치 arm 성과(PORT_t) 이전에 네 부수 관측이 성립해야 한다. FA(집중도-회수 단조성, Part A 매개 곡선): 정보를 오라클 IC 벡터로 고정한 사다리에서 가중 집중도(유효 팩터 수 1/Σw², w=팩터 가중)와 여유폭 회수율 사이 단조 증가 관계 — 형태 손실 서술의 직접 지문. 결정점: FQ-246 정확 함수형 arm 이 ≈25% 를 재현하면 격차 3/4=형태 손실, 훨씬 높으면 정보 차원 손실. FB(처치 실효 매개): 하드 선택 arm 의 top-25 멤버십이 C0 대비 실제로 움직여야 한다 — 월별 Jaccard 중앙값이 FQ-246 무력 arm 수준(0.92)에 머물면 그 arm 의 null 은 기전 반증이 아니라 처치 무력으로 라벨(FQ-244/246 매개-이동 교훈 승계). FC(기준-정보 일치, Part B 핵심 매개): 비-성과 속성 기준(B1 꼬리 판별력·B2 상충도)의 팩터 순위가 실현 차월 rank-IC 순위와 일치하는 비율이 우연 수준 1/K=0.2 를 유의 초과해야 한다 — FDB-B7 로 사후 검증(C14 Usable_Date 준수). 이것이 기각되면 Part B 성과와 무관하게 '성과 없는 식별 가능' 축이 죽는다. FD(agent 부수): 채택 팩터가 역추세·유동성공급 계열인 달에 개인 순매수 횡단면 집중(HHI)이 동행 상승해야 한다(FQ-246 F3 의 조건부 재판 — 사후 분석)",
+      "field_dictionary_refs": [
+        "FDB-B6_fdb_daily_store / FDB-B1~B5 registry ptr (팩터 z 횡단면 — 가중 집중도·꼬리 판별 마진·상충도·Jaccard 파생 원천: FA/FB/FC 입력)",
+        "FDB-B7_ic_history_monthly (팩터별 실현 월간 rank-IC + Usable_Date — FC 기준-정보 일치의 정답지, C14)",
+        "A1_RAWDATA_OHLCVS_daily (Ret/Close — 멤버십·회수율 파생 + 횡단면 분산 상태)",
+        "A6_investor_flow_stock_daily (Individual 순매수 — FD agent 동행)",
+        "A9_liquidity_avgtv20_convention (유동성 필터 규약 — 처치가 유동성 하한을 건드리지 않는지 확인)"
+      ],
+      "falsification_gate_schema": [
+        {
+          "group_id": "FDB-B6_fdb_daily_store",
+          "expectation": "FA: 오라클-정보 고정 사다리에서 유효 팩터 수 1/Σw²(z 패널에서 파생한 가중)가 낮아질수록(집중↑) 여유폭 회수율이 단조 증가 — 단조성 위배(중간 집중에서 봉우리 후 하락 등 비단조)면 '형태 손실=희석' 서술 기각. FB: 하드 arm 월별 top-25 Jaccard(vs C0) 중앙값 ≤ 0.79 (FQ-244 C2 약처치 수준 미만으로 실제 이동) — 0.92 수준이면 처치 무력 라벨"
+        },
+        {
+          "group_id": "FDB-B7_ic_history_monthly",
+          "expectation": "FC: 비-성과 기준(B1/B2) argmax 가 지목한 팩터가 실현 차월 rank-IC 1위와 일치하는 월 비율 > 1/K = 0.2 (이항 유의). Usable_Date <= 판정시점(C14). 우연 수준이면 '성과 없는 식별' 축 기각 — 이 경우 Part A 형태 결론만 남고 Part B 는 economic-void 방향"
+        },
+        {
+          "group_id": "A1_RAWDATA_OHLCVS_daily",
+          "expectation": "FB 보조: 하드 선택 arm 의 월간 종목 교체 수가 C0 대비 유의 증가(멤버십이 실제로 채택 팩터를 따라감) — Ret 로 파생한 회수율 분모(여유폭)는 승계값 13.6929981793759 %p/yr 고정"
+        },
+        {
+          "group_id": "A6_investor_flow_stock_daily",
+          "expectation": "FD: 채택 팩터 계열이 역추세·유동성공급인 월의 개인 순매수 HHI 가 그 외 월보다 높음(동행, 사후 분석) — 무관계면 agent ② 서술 강등(기전은 정보-구조 축만으로 잔존)"
+        }
+      ],
+      "reject_if": "① FA 비단조(오라클 정보 고정에서 집중도-회수 단조성 붕괴) → '평균화=희석' 형태 손실 기전 기각, 격차 3/4 은 정보 차원 손실로 재귀속. ② FC 우연 수준(기준-정보 일치 ≤ 1/K) → Part B 의 '성과 없는 식별 가능' 축 기각 — Part B arm 의 성과 null 을 기다릴 필요 없이 기전이 먼저 죽는다. ③ FB 무이동(Jaccard 중앙값 ≥ 0.9) 인 arm 의 성과 null 은 기전 반증으로 읽지 않는다(처치 무력 라벨). ④ 성과 동어반복 금지 준수: 처치 arm 의 PORT_t 는 어떤 반증 조건에도 등장하지 않는다 — FA 의 회수율 곡선은 오라클 진단 arm(자본 주장 불가)의 매개 곡선이고, FC 의 rank-IC 는 처치 성과가 아니라 기준이 정보를 식별하는지의 매개변수다",
+      "power_discipline": "미결/효과없음 분리 의무(승계 규약 5): 각 arm 의 diff sd 를 직접 측정하고 implied_t 를 사전 산출(자기-diff sd 바 퇴화 점검, FQ-244 규약). 설계 단계 산술 파생(실측 아님, 재측정 의무): ORACLE_K paired 계열에서 sd_monthly ≈ 0.0395 (13.6929981793759/12/4.28970507043012×√221) — 하드 선택 diff sd 는 소프트 arm(0.011~0.019)의 2~3배로 예상되어 MDE(own, t=2) ≈ 연 6.4%p. MATERIAL 8.2227973063616 %p/yr 대비 margin 약 1.3배로 소프트 라운드(3.0~4.3배)보다 얇다 — powered 라벨은 arm 별 실측 후에만 부여하고, 미달 시 UNRESOLVED_UNDERPOWERED 와 POWERED_NULL 을 관측-vs-MDE 위치로 구분 표기"
+    },
+    "regime_scope": {
+      "holds_in": [
+        "팩터-간 순위 상충 상위 구간의 정상~저스트레스 월 (연속 상태 — 상충이 클수록 평균화가 파괴하는 정보가 크므로 하드 선택의 회수 대상이 존재; 상태변수는 당월 z 횡단면만의 함수로 PIT 자명, 이분화 금지)"
+      ],
+      "weakens_or_reverses_in": [
+        "위기/청산 월 (벤치 월수익 하위 20%) — 공통 청산 성분이 횡단면을 지배해 모든 팩터 순위의 차월 정보가 동시 소멸하는 반면, 단일-팩터 집중의 분산 보험 상실 비용은 그대로 남는다: 회수 대상은 줄고 형태 비용은 유지되므로 순효과 악화",
+        "팩터 합의(저상충) 월 — 모든 팩터가 같은 순위를 주면 고르기와 평균이 구성상 수렴해 여유폭 자체가 소멸하고, 하드 선택은 잔여 특이 위험 집중 비용만 남긴다"
+      ],
+      "boundary_rationale": "경계는 기전에서 도출된다: 하드 선택의 가치 = 평균화가 파괴하는 정보량 = f(팩터-간 상충), 하드 선택의 비용 = 집중(유효 팩터 수 1) = 특이 위험 노출로 상시 존재. 가치가 0 으로 접히는 두 극한 — 상충이 없어 파괴할 정보가 없는 합의 월, 공통 청산이 모든 순위 정보를 죽이는 위기 월 — 에서 비용만 남아 약화/반전한다. FQ-246 실측 교훈 반영: 승계했던 '위기-회복 holds_in' 은 실측(T3_DISP 위기 연 -1.99%p vs 정상 +0.83%p, advisory)과 반대 방향이었다 — 본 경계는 그 실측을 원천이 아니라 정합성 확인으로만 인용하며, 도출 자체는 집중-비용 논리에서 나온다(위기 월 특이 위험 급등 시 단일-순위 노출이 가장 비싸다). 검증은 ax001_v2 조건부 축(advisory)으로 병기하되 국면 주장 승격 금지"
+    },
+    "design_directives_for_alpha_research": {
+      "part_A_diagnostic": {
+        "role": "진단 전용 — 오라클 arm 전부 구성상 look-ahead 이므로 자본 주장 불가, FQ-244 ORACLE 라벨 규약(preregistered_diagnostic_scale_not_judged) 승계. 챔피언 선발 없음(사다리 전 arm 독립 라벨) → sweep 미해당, DSR 비발동 — 단 argmax 로 '최적 λ' 를 뽑는 순간 sweep 재분류임을 사전등록에 명시",
+        "arms": [
+          "A0 one-hot argmax (= ORACLE_K 재현 앵커 — 4.64699909 비트-동치 재현으로 하네스 정합 확인, control_parity 역할)",
+          "A1 top-2 하드 EW / A2 top-3 하드 EW (실현 차월 rank-IC 상위 m)",
+          "A3 softmax(λ) 사다리: w_k ∝ exp(λ·IC_k_realized), λ 3~4점 사전 고정 (유효 팩터 수 1/Σw² 가 5→1 을 근사 등간 커버하도록 λ 를 IC 스케일에서 역산 — 측정 전 고정, 성과 무관)",
+          "A4 결정 arm: FQ-246 의 정확한 함수형(exp·clip·정규화, p4_conduit.rds 코드 경로 재사용)에 K차원 오라클 IC 벡터 주입 — ≈25% 재현이면 형태 손실 확정, 대폭 상회면 정보 차원 손실 상당분"
+        ],
+        "mediator": "arm 별 유효 팩터 수 1/Σw² 기록 → FA 단조성 곡선의 x축"
+      },
+      "part_B_realizable": {
+        "role": "α̂ 주장 가능한 유일 축. 비-성과 속성 기준의 argmax 하드 선택",
+        "co_primary_criteria": [
+          "B1 꼬리 판별력: 당월 각 팩터 z 횡단면의 top-25 경계 판별 마진(예: 25위-30위 z-gap 또는 상위 꼬리 질량) 최대 팩터 채택 — 근거: top-25 절단 소비면에서는 평균 판별력이 아니라 꼬리 판별력이 멤버십을 결정(FQ-244 R5 첨도 IQR 6.94 이질 실재). 당월 z 만의 함수, 성과 무개입",
+          "B2 solo-advocate 상충도: 타 K-1 팩터와의 평균 횡단면 순위상관 최소 팩터 채택 — 근거: 평균화가 파괴하는 것은 정확히 상충 팩터의 순위 정보이므로, 그 팩터가 정보를 가질 때 하드 채택만이 보존(FQ-244 R1a 의 역이용). 당월 z 만의 함수"
+        ],
+        "controls": [
+          "무작위 단일-팩터 픽 순열 귀무분포 (승계 규약 4 — 하드 형태 자체의 비용[평균화 상실] 기준선. arm 판정은 vs C0 가 아니라 vs 이 분포 백분위 병기)",
+          "성과-파생 기준 argmax 1 arm (trailing rank-IC 최대 — 대조 전용, EXCLUDED 축의 규약상 허용 소비)",
+          "반-기준 음성 대조 (B1 최소 팩터 채택 — 기전이 맞으면 무작위 픽 이하)"
+        ],
+        "sequencing": "전도성 먼저(승계 규약 3): 하드 one-hot 형태의 전도성은 A0(=ORACLE_K)로 승계 확립 — Part B null 의 해석 자격은 A0 재현 + FB 매개 이동 확인 후에만. FC(기준-정보 일치)가 우연 수준이면 Part B 성과 판정 전에 기전 기각 가능",
+        "state_variable_note": "승계 규약 2(연속 상태변수 의무)는 국면/상태 축에 적용 — 본 라운드의 이산성은 '선택 형태'(가중 벡터의 이산성)이지 상태변수 이분화가 아니므로 저촉 없음. regime_scope 검증용 상충 상태는 연속으로 유지"
+      },
+      "inheritance": "본 파일의 mechanism/falsification/regime_scope 는 자구 승계(재작성 금지, Charter par.8). 결함 발견 시 challenge_note.md 기록 + 재설계 요청"
+    }
+  },
+  "challenge_flags": [
+    "CAND-B/C/D 대안 보관 — top-m 사다리 단독(결정 arm 부재로 미채택), 커버리지 기준(FQ-116 선례로 진단 강등), ML 선택 정책(재진입 순서 ② 조건부 대기)",
+    "Part B MDE margin 얇음 — 하드 선택 diff sd 예상 2~3배로 MATERIAL 대비 margin ≈1.3배(설계 산술, 재측정 의무). null 시 POWERED_NULL 자격이 소프트 라운드보다 어렵다 — arm 별 실측 필수",
+    "FA 회수율 곡선은 오라클 진단 arm 의 수익 파생량 — 순수 비-성과 관측(FB/FC/FD)과 구분해 '진단 매개 곡선' 으로만 소비 (자세한 논증 challenge_note_hypothesis.md §2)",
+    "regime_scope 위기 경계의 도출은 집중-비용 논리이나 FQ-246 사후 실측과의 정합 인용이 섞여 있다 — ax001_v2 advisory 병기로만 검증, 국면 주장 승격 금지 (challenge_note §3)"
+  ],
+  "verdict": "designed",
+  "handoff": {
+    "to": "alpha-research",
+    "next_steps": "Step 1~7 + ⑤ AST 구성. PREREG 봉인(mean-blind) → Part A 사다리 + Part B co-primary 실측(canonical_screen_bt, IS-only 선택) → FA/FB/FC/FD 반증 축 → arm 별 검정력 직접 측정 + implied_t 사전 산출 → basis 3종 병기 → 완주 설계 4필드. 오라클 arm 은 alpha_package 의 α̂ 로 내보내지 말 것(진단 전용) — α̂ 후보는 Part B arm 만"
+  }
+}

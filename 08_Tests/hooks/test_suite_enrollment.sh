@@ -108,6 +108,27 @@ mk_clean; rm -f "$FX/runner.sh"
 if run_chk; then bad "V5 러너 부재 = FAIL" "통과됨(fail-open)"; else
   echo "$OUT" | grep -q "E0 UNKNOWN" && ok "V5 러너 부재 = UNKNOWN FAIL" || bad "V5" "다른 사유"; fi
 
+# --- V7. **실 트리** 편입 드리프트 (2026-08-22 신설) --------------------------
+#   ★왜 필요한가: V1~V6 은 전부 픽스처 주입이다("실 트리 무접촉"). 즉 이 배터리는
+#   검사기가 **작동하는지**만 증명하고 저장소를 **겨누지는 않았다**. 그래서 2026-08-22
+#   에 신설 검사 10건이 미등재로 방치되는 동안 이 suite 는 9/9 초록이었다.
+#   knowledge_index_freshness(검출력 17/17 · 소비자 0)와 같은 계통 —
+#   **만드는 일과 겨누는 일은 별개 사건이다**.
+#   ⚠이 축은 검사를 새로 쓰고 등재를 잊으면 배터리를 붉힌다. 그게 의도다 —
+#   붉은 배터리는 보이고 조용한 드리프트는 안 보인다.
+REAL_CHK="$_SELF_DIR/../../02_Infrastructure/ops/suite_enrollment_check.sh"
+if [ -x "$REAL_CHK" ] || [ -f "$REAL_CHK" ]; then
+  R_OUT=$(bash "$REAL_CHK" 2>&1); R_RC=$?
+  if [ "$R_RC" -eq 0 ]; then
+    ok "V7 실 트리 편입 드리프트 0건"
+  else
+    bad "V7 실 트리 편입 드리프트" "$(echo "$R_OUT" | grep -E "FAIL|미등재" | head -5 | tr "
+" " ")"
+  fi
+else
+  bad "V7 실 트리" "검사기 부재 — 드리프트를 아무도 보지 않는다"
+fi
+
 echo ""
 echo "PASS=$PASS FAIL=$FAIL"
 echo "{\"test\":\"suite_enrollment_guard\",\"pass\":$PASS,\"fail\":$FAIL,\"total\":$((PASS+FAIL))}"
