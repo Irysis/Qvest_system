@@ -75,9 +75,37 @@
   },
 
   "falsification_side_observation": {
-    "primary_F1": "기전이 참(저-absorb = 개인 추종매수가 좌측꼬리 위험을 예고)이면, 배제군(저-absorb)의 홀딩월 개인 순매수 강도(Individual / (adv x 거래일수))가 잔여 후보 대비 높아야 한다(추종 수요 지속). NW lag-3 t <= 0 이면 기전 서사 기각.",
-    "secondary_F2": "배제군의 신호월 직후 3개월 기관·외국인 순매수(fwd_inst_3m_n / fwd_foreign_3m_n, absorb_panel 기존 컬럼)가 잔여 후보 대비 낮아야 한다(스마트머니 회피). NW t >= 0 이면 F2 발화.",
-    "independence": "두 관측 모두 성과 동어반복이 아니며 판정(criteria i~iii)과 독립. 둘 다 사전 고정 — 사후 선택 없음."
+    "inheritance_note": "★ alpha_hypothesis.json (alpha-hypothesis, model fable) 의 falsification 절을 그대로 승계한다. 재작성·재해석 금지(Charter 원칙 8). 아래는 그 문면의 측정 구현 사양이며 기각 조건·부호·문턱을 바꾸지 않는다.",
+    "F1_inherited": {
+      "observable": "저-absorb 하위군(배제 대상)의 후속 3개월 외국인·기관 순매수(fwd_foreign_3m + fwd_inst_3m — A6 리프 Foreign/Institutional 의 m+1..m+3 합/Size, absorb 패널 기산출)는 유니버스 중앙값 대비 낮거나 음수여야 한다.",
+      "reject_if": "저-absorb 하위군의 fwd_foreign_3m + fwd_inst_3m 이 유니버스 중앙값 대비 유의하게 높으면(NW-t >= +2.0) 기전 기각.",
+      "implementation": "월별 스프레드 = mean(fwd_foreign_3m_n + fwd_inst_3m_n | excluded) - median(동월 전 후보) → 월시계열의 NW lag-3 t. t >= +2.0 이면 F1 발화."
+    },
+    "F2_inherited": {
+      "observable": "저-absorb 종목의 좌측 꼬리 실현월에는 하락일 개인 순매수가 고-absorb 종목의 꼬리월 대비 약해야 한다.",
+      "reject_if": "꼬리 실현월의 하락일 개인 순매수 강도가 저-absorb 군에서 고-absorb 군과 구별 불가하면 기각.",
+      "implementation": "꼬리 실현 = 홀딩월 Ret_1m <= -0.20 (NP2 tail_fixed_dn 동일 문턱). 각 꼬리 실현 종목-월에 대해 홀딩월 하락일(일별 Ret<0) 개인 순매수 합 / (ADV x 하락일수) 산출 → 저-absorb 분위(하위 20%) vs 고-absorb 분위(상위 20%) 월별 차 → NW lag-3 t. '저 < 고' 예측이므로 t >= 0 (구별 불가 또는 역방향) 이면 F2 발화."
+    },
+    "gate_rule": "transition_gates 의 '반증 발화 0건' 은 F1·F2 **둘 다 미발화** 를 의미한다. 하나라도 발화하면 전이 요청 금지.",
+    "independence": "두 관측 모두 flow 방향 관측이지 포트폴리오 성과가 아니다 — 성과 동어반복 아님. 판정(criteria i~iii)과 독립. 측정 전 고정."
+  },
+
+  "amendments": [
+    {
+      "at": "2026-08-22 (측정 착수 전)",
+      "what": "falsification_side_observation 절을 alpha_hypothesis.json 승계분으로 교체",
+      "why": "본 절은 alpha-hypothesis 위임 구간(③반증 조건) 소관이다. 초판은 hypothesis 산출 대기 중 alpha-research 가 임시 기술한 것이며, 승계분 도착 즉시 그것으로 대체하는 것이 정본 규약(재작성 금지). 성과수치는 이 시점까지 일절 산출되지 않았다 — 00_precheck.json(구조 census + 검정력)만 존재."
+    },
+    {
+      "at": "2026-08-22 (측정 착수 전)",
+      "what": "prior-art 중복 측정 의무 2건 추가 (overlap_with_max5, marginal_over_max5)",
+      "why": "alpha_hypothesis.json prior_art 가 alpha-research 에 승계한 의무. 기전 겹침 위험(LOTTERY 기전 지지 = 개인 순매수 t +3.90)이 실재하므로, 본 필터가 선행 필터의 재발견인지 독립 기여인지 측정 없이는 구분 불가."
+    }
+  ],
+
+  "prior_art_overlap_obligation": {
+    "overlap_with_max5": "월별 배제집합 교집합 비율 = |absorb배제 ∩ MAX5배제| / |absorb배제| 및 반대 방향. 비바인딩 진단이나 해석에 필수.",
+    "marginal_over_max5": "MAX5 필터를 이미 적용한 arm 위에 absorb 필터를 추가로 얹은 arm 을 측정(2단 배제) → ΔIR_marginal = IR(MAX5+absorb) - IR(MAX5). 사전 고정 비바인딩 진단(primary 판정은 단독 absorb 필터 vs 무필터)."
   },
 
   "preregistered_robustness_non_selective": {
