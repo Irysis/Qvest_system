@@ -49,18 +49,64 @@ if (file.exists(stamp) && !force) {
 lock_dir <- file.path(stage_root, "daily.lock")
 # LOCK_OWNED = "이 프로세스가 잠금을 취득했는가". 남의 잠금을 해제하면 안 되므로 구분한다.
 LOCK_OWNED <- FALSE
+# ── (2026-08-22 수리) 잠금 판정을 **나이**에서 **소유자 생존**으로 옮긴다 ──────────
+#   구판 결함: 경합 시 `age < 3600` 이면 "돌고 있다"로 보고 quit(0). 그런데 소유 프로세스가
+#   하드킬되면 reg.finalizer 가 안 돌아 잠금이 남고, 그 뒤 **최대 1시간 동안 모든 재실행이
+#   조용히 skip** 된다 — 게다가 exit 0 이라 호출자(morning_run)는 성공으로 읽는다.
+#   실측 2026-08-22: 10:38 런이 죽은 뒤 11:40 재실행이 age 2923s 로 skip, rc=0 인데 산출 0건.
+#   ★같은 뿌리가 이 저장소에 셋이다 — morning_run 의 ".done 부재 = 사망"(살아있는 런을 죽었다
+#     판정) · git 의 index.lock(28.5h stale 을 진행중으로) · 여기(나이로 생존을 대신).
+#     전부 **존재/나이 검사로 정체 검사를 대체**했다. 정체는 PID 로만 판정된다.
+#   ps::ps_handle 은 생성시각까지 잡으므로 **PID 재사용**에도 안전하다.
+.lock_pid_file <- file.path(lock_dir, "pid")
+.owner_alive <- function() {
+  # TRUE = 소유자 살아있음 / FALSE = 죽음 / NA = 판정 불가(구판 락 등)
+  if (!file.exists(.lock_pid_file)) return(NA)
+  pid <- suppressWarnings(as.integer(readLines(.lock_pid_file, warn = FALSE)[1]))
+  if (is.na(pid)) return(NA)
+  if (!requireNamespace("ps", quietly = TRUE)) return(NA)
+  h <- tryCatch(ps::ps_handle(pid), error = function(e) NULL)
+  if (is.null(h)) return(FALSE)
+  isTRUE(tryCatch(ps::ps_is_running(h), error = function(e) FALSE))
+}
+.claim_lock <- function() {
+  unlink(lock_dir, recursive = TRUE, force = TRUE)
+  dir.create(lock_dir, showWarnings = FALSE)
+  writeLines(as.character(Sys.getpid()), .lock_pid_file)
+  TRUE
+}
 if (!dir.create(lock_dir, showWarnings = FALSE) && !force) {
   info <- suppressWarnings(file.info(lock_dir))
   age <- if (nrow(info) == 1L) as.numeric(difftime(Sys.time(), info$mtime, units = "secs")) else Inf
-  if (is.finite(age) && age < 3600) {
-    log_line("[paper-recharge] another run is active (age %.0fs)", age)
-    quit(status = 0)   # ← 남의 잠금이므로 해제하지 않는다
+  alive <- .owner_alive()
+  if (isTRUE(alive)) {
+    log_line("[paper-recharge] another run is active (pid alive, age %.0fs) — skip", age)
+    quit(status = 0)   # ← 진짜로 돌고 있다. 남의 잠금은 해제하지 않는다.
   }
-  unlink(lock_dir, recursive = TRUE, force = TRUE)
-  dir.create(lock_dir, showWarnings = FALSE)
-  LOCK_OWNED <- TRUE
+  if (identical(alive, FALSE)) {
+    # 소유자가 죽었다 = 나이와 무관하게 즉시 회수. 이게 1시간 무음 skip 을 없앤다.
+    log_line("[paper-recharge] stale lock 회수: 소유 pid 미생존 (age %.0fs)", age)
+    LOCK_OWNED <- .claim_lock()
+  } else if (is.finite(age) && age < 3600) {
+    # PID 를 못 읽는 구판 잠금 — 판정 불가이므로 보수적으로 기존 나이 규칙을 따르되,
+    # **조용히 넘어가지 않는다**: 마커를 남겨 부팅 표면(scheduler_alert_status.sh)에 뜨게 한다.
+    log_line("[paper-recharge] lock 소유자 판정 불가(pid 파일 없음) — 나이 규칙 적용, age %.0fs 로 skip", age)
+    tryCatch({
+      adir <- file.path(PROJECT_ROOT, ".cache", "scheduler_alerts")
+      dir.create(adir, recursive = TRUE, showWarnings = FALSE)
+      writeLines(c(sprintf("ts=%s", format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z")),
+                   "component=paper_recharge", "reason=lock_owner_unknown",
+                   sprintf("detail=daily.lock 에 pid 파일이 없어 생존 판정 불가 — age %.0fs 로 skip. 수집이 건너뛰어졌다.", age)),
+                 file.path(adir, sprintf("paper_recharge_lock_owner_unknown_%s.alert", format(Sys.Date(), "%Y%m%d"))))
+    }, error = function(e) NULL)
+    quit(status = 0)
+  } else {
+    log_line("[paper-recharge] lock 나이 초과(%.0fs) — 회수", age)
+    LOCK_OWNED <- .claim_lock()
+  }
 } else {
   LOCK_OWNED <- TRUE
+  writeLines(as.character(Sys.getpid()), .lock_pid_file)
 }
 
 # [2026-07-25] 종전엔 여기가 최상위 `on.exit(unlink(lock_dir, ...))` 였다 —
