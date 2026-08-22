@@ -1,0 +1,190 @@
+{
+  "wt_id": "WT-D20260822_001",
+  "fq_ref": "FQ-236",
+  "lane": "Lane D — 매크로 상태 조건부 횡단면 비대칭",
+  "produced_by": "alpha-research",
+  "produced_at": "2026-08-22",
+  "selection_type": "single",
+  "n_specs_declared": "PRIMARY 1 + 사전고정 강건성 1판 + corroboration 1 + 진단창 병기. argmax 선택 없음 → DSR 게이트 부적용(진단 산출도 해당 없음 — 본 라운드는 포트폴리오 수익 계열을 만들지 않는다)",
+
+  "metric_type_declaration": {
+    "label": "measured_direct",
+    "meaning": "본 라운드 수치는 전부 횡단면 분포 통계와 그 시계열 회귀다. 포트폴리오 성능수치(PORT_t/SR/IR)는 **산출하지 않았다** — canonical_screen/backtested 라벨 대상 수치 0건. proxy 손계산 금지 조항 위반 없음(성능수치 자체가 없음).",
+    "canonical_port_t_nw_lag3": null,
+    "canonical_port_t_null_reason": "본 라운드의 정당 산출은 분포적 사실 + 조건부성까지이며, 소비면(선별 라벨/오버레이/유니버스 필터) 설계와 PORT_t 판정은 INV-7 경계(FQ-233 부활조건 2건) 밖이라 착수하지 않았다. 판정 근거로 PORT_t 를 쓰지 않았으므로 미산출이 게이트 우회가 아니다."
+  },
+
+  "blocking_gates": {
+    "gate_1_outcome_sd": "PASS — gate_results.json / gate1_required_effect.csv",
+    "gate_2_universe_retro": "FAIL(320m 전제) → 창 재확정. gate_results.json",
+    "gate_0_conditioning_series": "FAIL(HY_Spread 원천 절단) → alpha-hypothesis rev2 재설계 수신 후 해소",
+    "gate_3_backfill_pit": "FAIL — window_downgrade_decision.json / backfill_pit_attribution.json. PRIMARY 창 198m → 133m 자동 강등 집행"
+  },
+
+  "final_spec": {
+    "outcome_Y1a": "A_t = [(q90-q50)-(q50-q10)]/(q90-q10)  (형태, 무차원)",
+    "outcome_Y1b": "M_t = (q90-q50)-(q50-q10)  (크기, 월 수익 단위)",
+    "outcome_Y2": "T_t = P(r>q90_roll) - P(r<q10_roll), 문턱 = 직전 60개월 풀링 (C1)",
+    "conditioning_S_primary": "KR_CreditSpread_BBB3Y = KR_CorpBBB - KR_Gov3Y (ECOS 일별), L = 3 calendar days, 컷오프 = min(홀딩월 첫 거래일 - 3cd, 홀딩월 캘린더 첫날)",
+    "conditioning_S_corroboration": "breadth = bear_prob 6종 평균 (smv_factor_regime_daily, effective_date T+2)",
+    "universe": "K200 ∪ KQ150, 결정일 d0 = 홀딩월 첫 거래일 직전 거래일. AdminStock/TradingHalt 제외, adv20 >= 2e8",
+    "primary_window": "2015-07 ~ 2026-07 (133m, PIT-clean)",
+    "regression": "Y_t = a + b·S_t- + e_t, NW lag-3, 예측 b < 0",
+    "anchor": "|b|·sd(S)/sd(Y) >= 0.25 (표준화)",
+    "required_effect_t_based_133m": {"Y1a": 0.02658, "Y1b_annual_pct": 10.465, "Y2": 0.03355}
+  },
+
+  "PRIMARY_results_133m": [
+    {"outcome": "Y1a", "n": 133, "b": 0.057342, "se_nw": 0.026423, "t_nw": 2.170,
+     "effect_per_1sd_S": 0.02636, "effect_std": 0.210, "ci95_std": [0.020, 0.399],
+     "placebo_abs_t_p95": 2.58, "placebo_pass": false, "phi_ar1_S": 0.950,
+     "grid_label": "기각-부호", "qualifier": "예측과 반대 부호로 t>=2.0 이나 AR(1)-matched 지속성 밴드(2.58) 미돌파 — 반대 방향의 확립 아님"},
+    {"outcome": "Y1b", "n": 133, "b": 0.014397, "se_nw": 0.008455, "t_nw": 1.703,
+     "effect_per_1sd_S": 0.00662, "effect_std": 0.163, "ci95_std": [-0.025, 0.350],
+     "placebo_abs_t_p95": 3.03, "placebo_pass": false,
+     "grid_label": "미결(underpowered)", "qualifier": "표준화 CI 가 ±0.25 앵커 경계에 걸침"},
+    {"outcome": "Y2", "n": 133, "b": 0.068560, "se_nw": 0.033395, "t_nw": 2.053,
+     "effect_per_1sd_S": 0.02244, "effect_std": 0.160, "ci95_std": [0.007, 0.312],
+     "placebo_abs_t_p95": 1.83, "placebo_pass": true,
+     "grid_label": "기각-부호", "qualifier": "Y2 는 비지속(AR1 -0.05)이라 placebo 밴드가 좁고 실측이 이를 돌파 — 세 결과량 중 유일하게 지속성 보정 후에도 반대 부호가 남는 축"}
+  ],
+
+  "preregistered_robustness_rollz120_133m": [
+    {"outcome": "Y1b", "t_nw": 0.630, "effect_std": 0.071, "ci95_std": [-0.151, 0.294], "grid_label": "미결(underpowered)"},
+    {"outcome": "Y1a", "t_nw": 1.429, "effect_std": 0.147, "ci95_std": [-0.055, 0.350], "grid_label": "미결(underpowered)"}
+  ],
+  "robustness_interpretation": "★사전등록 강건성 1판(직전 120개월 rolling median/MAD z)에서 원수준의 반대-부호 유의성이 소멸한다(Y1a 2.17→1.43 · Y1b 1.70→0.63). 원수준 S 는 AR1 0.957 의 준-단위근 추세 계열이며(하단 trend_diagnostic), 반대-부호 결과의 상당분이 저주파 동조로 귀속된다.",
+
+  "corroboration_breadth_133m": [
+    {"outcome": "Y1a", "n": 133, "b": -0.054331, "t_nw": -0.573, "effect_std": -0.050, "ci95_std": [-0.223, 0.122], "grid_label": "효과없음(powered null)"},
+    {"outcome": "Y1b", "n": 133, "b": -0.027655, "t_nw": -0.807, "effect_std": -0.079, "ci95_std": [-0.272, 0.113], "grid_label": "미결(underpowered)", "note": "CI 하단 -0.272 가 앵커 -0.25 를 근소 초과"},
+    {"outcome": "Y2", "n": 133, "b": -0.105914, "t_nw": -0.664, "effect_std": -0.063, "ci95_std": [-0.248, 0.122], "grid_label": "효과없음(powered null)"}
+  ],
+  "corroboration_interpretation": "★두 조건변수 축의 부호가 갈린다: 가격 신호(KR 신용스프레드) = + / 수량·내생 신호(breadth) = −. breadth 는 AR1 0.53 으로 지속성이 낮아 식별이 깨끗한 축인데, 거기서는 **예측 부호(음수)이나 앵커 기준 powered null**(Y1a·Y2). 즉 예측 방향의 효과는 '검출 못 한 것'이 아니라 '앵커 크기로는 없다'.",
+
+  "diagnostic_windows": {
+    "UNION_198m_backfill_contaminated": [
+      {"outcome": "Y1b", "t_nw": 2.093, "effect_std": 0.145, "placebo_p95": 2.84, "placebo_pass": false, "grid_label": "기각-부호"},
+      {"outcome": "Y1a", "t_nw": 2.537, "effect_std": 0.177, "placebo_p95": 2.45, "placebo_pass": true, "grid_label": "기각-부호"},
+      {"outcome": "Y2", "t_nw": 1.263, "effect_std": 0.080, "ci95_std": [-0.044, 0.204], "grid_label": "효과없음(powered null)"}
+    ],
+    "backfill_segment_only_65m": [{"outcome": "Y1b", "t_nw": 1.356, "effect_std": 0.147, "grid_label": "미결(underpowered)"}],
+    "K200_only_306m_diagnostic": [
+      {"outcome": "Y1b", "n": 306, "t_nw": 1.283, "effect_std": 0.088, "ci95_std": [-0.046, 0.222], "grid_label": "효과없음(powered null)"},
+      {"outcome": "Y1a", "n": 306, "t_nw": 2.009, "effect_std": 0.124, "placebo_p95": 2.11, "placebo_pass": false, "grid_label": "기각-부호"}
+    ],
+    "K200_note": "★mandate 유니버스 아님 — 성립/기각 근거 사용 금지(rev2 명시). 가치 = 2008 자금경색(S 최대 9.81, 2009-03)이 UNION 창 밖에만 존재. 부호는 UNION 과 동일(양수)."
+  },
+
+  "F_F_leave_backfill_out": {
+    "rule": "sign(b_133) != sign(b_198) 또는 유의성이 백필 구간 단독 견인이면 판정 상한 = 미결_backfill_suspect",
+    "measured": "부호 반전 없음(Y1a·Y1b·Y2 전부 양수 유지). 백필 구간 단독(65m) Y1b t=1.36 로 견인 아님. Y2 는 오히려 clean 창에서 강해짐(1.26→2.05)",
+    "verdict": "F_F 통과 — 백필-단독 견인 아님. 단 창 자체는 PIT 사유로 강등됨(별개 축)"
+  },
+
+  "F_B_shape_vs_scale": {
+    "rule": "b(Y1b) 유의 ∧ b(Y1a) 효과없음 ⇒ '분산 스케일링 전용' 기각",
+    "measured": "역방향 — Y1a(형태) 가 Y1b(크기)보다 크게 움직인다(표준화 0.210 vs 0.163). 추가로 산포 채널 직접 검사: xs_sd ~ S 는 t=1.07(198m) / 0.84(133m) 로 null",
+    "verdict": "분산 스케일링 설명(GARCH 대칭 확폭) 배제 — 관측된 이동은 산포가 아니라 형태 축. 단 그 형태 이동의 부호가 예측과 반대다."
+  },
+
+  "F_C_mechanism_flow": {
+    "definition": "FlowAsym_t = corr_XS( 개인 순매수대금 / adv20 , 당월 수익률 ), Spearman. 기전 예측 corr(S, FlowAsym) > 0",
+    "baseline": {"mean": -0.5401, "min": -0.7196, "max": -0.0444, "reading": "평시 KR 개인 = 강한 역추세 매수(음의 월내 상관) — 기전 서술의 전제가 데이터에서 확인됨"},
+    "results": [
+      {"S": "KR_CreditSpread_BBB3Y", "window": "2015-07..2026-06", "n": 132, "b": 0.05865, "t_nw": 2.98, "r2": 0.075, "verdict": "채널 지지"},
+      {"S": "KR_CreditSpread_BBB3Y", "window": "2010-02..2026-06", "n": 197, "b": 0.03908, "t_nw": 3.08, "r2": 0.057, "verdict": "채널 지지"},
+      {"S": "KR_CreditSpread_BBB3Y", "window": "2001-02..2026-06", "n": 305, "b": 0.00340, "t_nw": 0.66, "r2": 0.002, "verdict": "채널 미결(advisory)"},
+      {"S": "breadth_bear_prob", "window": "2015-07..2026-06", "n": 132, "b": -0.03202, "t_nw": -0.42, "r2": 0.001, "verdict": "채널 미결(advisory)"}
+    ],
+    "interpretation": "★기전의 flow 지문은 신용스프레드 축에서 지지된다(경색 상태에서 개인 순매수의 역추세성이 약해진다 = 강제 매도 방향). 그러나 그 flow 이동이 **횡단면 수익 분포의 예측 방향 비대칭으로 전이되지 않는다** — Lane A 가 확립한 '표적-지표-소비 함수 불일치' 계통이 조건변수 층에서 재현된 형태.",
+    "coverage_caveat": "investor_wide 종단 2026-07-24 → 2026-07 부분월 제외. C2 아님(포트 결정에 미사용, 사후 기전 검증 — 승계 설계 명시 선언)"
+  },
+
+  "F_D_placebo": {
+    "protocol": "AR(1)-matched 무작위 조건변수 200 draw, 각 draw 로 동일 회귀 → |t| 95분위",
+    "key_finding": "★지속 회귀변수에서 NW lag-3 t 문턱 2.0 은 과소하다 — S(AR1 0.950~0.988)에서 placebo |t| p95 = 2.45~3.26. 사전등록 t=±2.0 그리드가 지속성을 보정하지 않으므로 placebo 밴드가 실질 게이트다. Y2(AR1 -0.05)는 밴드가 1.83 로 좁아 유일하게 돌파.",
+    "positive_control_selfcorrection": {
+      "declared": "xs_sd ~ S (경색↑ ⇒ 횡단면 산포↑, 변동성 군집)",
+      "result": "t=1.07(198m) / 0.84(133m) — 죽음",
+      "verdict": "★내가 고른 양성 대조가 '과거 실측에서 확인된 관계'가 아니었다(사전 검증 없이 그럴듯해서 골랐다). 승계 규약이 요구한 것은 기측정 양성이므로 이는 내 절차 결함이다 — challenge_note 기록.",
+      "replacement_battery_measured": [
+        {"relation": "xs_sd_t ~ xs_sd_{t-1}", "t_nw": 5.11, "r2": 0.213, "alive": true},
+        {"relation": "Y1b_t ~ Y1b_{t-1}", "t_nw": 3.96, "r2": 0.062, "alive": true},
+        {"relation": "xs_mean_t ~ VIX_{t-}", "t_nw": 2.73, "r2": 0.037, "alive": true},
+        {"relation": "xs_sd_t ~ VIX_{t-}", "t_nw": 1.97, "r2": 0.031, "alive": "marginal"}
+      ],
+      "frame_verdict": "측정 프레임은 실재 관계를 잡는다(t 5.11 / 3.96 / 2.73). ⇒ xs_sd ~ KR스프레드 null 은 프레임 결함이 아니라 경제적 사실이고, 본 라운드의 null·미결 판정들도 프레임 사망으로 설명되지 않는다."
+    }
+  },
+
+  "F_E_leave_2026_out": {
+    "measured": "전 스펙에서 부호 반전 없음 (Y1a 133m 2.17→2.19 · Y1b 198m 2.09→2.04 · Y2 198m 1.26→1.40 등)",
+    "verdict": "미결_recent_dominated 조건 미발동"
+  },
+
+  "D_G_continuous_dilution_diagnostic": {
+    "definition": "C_top = Σ_{t ∈ top-tercile(S)} |b·(S_t - S̄)| / Σ_t |b·(S_t - S̄)|. 균등 기준 1/3",
+    "measured": {"133m": 0.462, "198m": 0.465, "rollz120_133m": 0.469, "K200_306m": 0.419, "backfill_65m": 0.498},
+    "kish_effective_months": {"133m": 59.3, "198m": 79.8, "K200_306m": 98.1},
+    "verdict": "★C_top 0.42~0.50 ≫ 0.333 — 연속 조건화의 식별력은 S 상위 3분위에 집중돼 있다. ④경계(문턱-발동 = 중상위 집중)와 정합이며, RAMP 세션이 경고한 '연속화 = 상시 축소' 형태는 **아니다**. 다만 Kish 유효개월이 실개월의 45%(133m) 수준이라 실효 표본은 명목보다 작고, 이것이 Y1b 미결의 구조적 이유 중 하나다.",
+    "authority": "advisory — 판정 권한 없음"
+  },
+
+  "pit_stress": {
+    "assert_overlay_pit": "전 스펙 HARD 통과 (컷오프 = min(첫 거래일 - L, 캘린더 월초) ≤ 홀딩월 캘린더 시작)",
+    "lag1_stress": "base 대비 붕괴 없음 (예: Y1a 133m 2.17 → lag1 2.33 · Y1b 198m 2.09 → 2.13). 동월 누출 징후 없음",
+    "contaminated_ab": "홀딩월 '말' 정보를 쓴 오염판이 base 보다 **낮거나 비슷** (Y1a 133m 2.17 vs 1.75 · Y1b 198m 2.09 vs 1.90) — 인플레 없음. strict-PIT 쪽이 이미 정본",
+    "nw_lag_sensitivity": {"lag3": 2.093, "lag6": 2.031, "lag12": 1.989, "lag18": 1.967, "note": "Y1b~S 198m. NW lag 선택이 결과를 만들지 않는다 — 문제는 lag 가 아니라 지속 회귀변수의 유한표본 t 분포(placebo 가 정량화)"}
+  },
+
+  "trend_diagnostic_of_S": {
+    "ar1_level": 0.957,
+    "finding": "★KR_CorpBBB−Gov3Y **원수준**은 급성 자금경색의 계기가 아니다: 2020-03(COVID 정점) S=6.73 으로 2010년 평균 7.76 보다 낮고, 2020년 내 최고치는 3월이 아니라 11월(7.94)이다. 연도 평균은 2007 3.20 → 2009 8.83 → 2013 6.15 → 2020 7.51 로 2008 이후 영구 재가격의 저주파 성분이 지배한다.",
+    "consequence": "원수준 조건화는 상당부분 '체제 수준' 조건화이고 '에피소드' 조건화가 아니다. 사전등록 강건성판(120m rolling z)이 그 성분을 제거하자 반대-부호 유의성이 소멸한 것과 정합.",
+    "note": "이는 사후 서사가 아니라 사전등록된 강건성판 1개와 placebo 1개가 각각 독립적으로 같은 결론을 준 것이다."
+  },
+
+  "power_cross_lane_comparison": {
+    "lane_D_primary_bar": {"t_based_req_Y1b_annual_pct": 10.465, "anchor_std": 0.25, "anchor_Y1b_annual_pct_equiv": 12.2},
+    "lane_A_bar": "MDE 1.2%p (스코어 수준 스프레드) — POWERED NULL",
+    "lane_C_bar": "연 6.0~9.7%p 미검출 (UNDERPOWERED)",
+    "reading": "★Lane D 의 바가 셋 중 가장 거칠다(10.5~12.2% vs Lane C 6.0~9.7% vs Lane A 1.2%p). ⇒ Lane D 의 '미결' 은 Lane C 와 **같은 벽이 아니라 더 앞쪽 벽**이다(표본 133m + Kish 유효 59.3 + 결과량 잡음). 반면 breadth 축의 Y1a·Y2 는 앵커 기준 **powered null** 이므로 그 축에서는 '검출 실패'가 아니라 '앵커 크기 효과 부재'다. 두 라벨을 섞지 말 것."
+  },
+
+  "round_verdict": {
+    "headline": "기각-부호 (예측 방향의 조건부성 기각) — 단, 반대 방향도 확립되지 않음",
+    "grid_application": "사전등록 F_A 그리드를 PRIMARY 창(133m)에 그대로 적용: Y1a t=+2.17 → 기각-부호 · Y2 t=+2.05 → 기각-부호 · Y1b t=+1.70 → 미결. 예측 부호(b<0)를 지지하는 스펙 0건(전 창·전 결과량).",
+    "qualified_reading": [
+      "①예측 기각은 확정적이다 — 신용스프레드 축의 점추정이 전 창·전 결과량에서 예측과 반대 부호이고, breadth 축은 예측 부호이나 앵커 기준 powered null 이다. 어느 경로로도 '경색 ⇒ 좌꼬리 비대'는 지지되지 않는다.",
+      "②반대 방향(경색 ⇒ 우측 비대)의 확립은 아니다 — Y1a·Y1b 는 지속성 밴드 미돌파, 사전등록 강건성판(rolling-z)에서 소멸. Y2 만 밴드를 돌파하나 198m 창에서는 powered null 이라 창 간 불일치.",
+      "③기전 자체(강제 매도 flow 지문)는 지지된다(F_C t=+2.98/+3.08). 죽은 것은 기전이 아니라 **기전 → 분포 비대칭 전이**다."
+    ],
+    "disposition": "예측 방향 = frontier 정리(효과 부재로 처분) / 반대 방향 = 미결(부활조건 보존) / 기전-전이 단절 = 신규 사실로 적립",
+    "inv7_boundary": "★b<0 미성립이므로 자본화 논의 자체가 발생하지 않으나, 규약대로 명시한다 — 본 라운드는 소비면 라우팅·PORT_t 후보 제안을 하지 않는다(FQ-233 부활조건 2건 존중)."
+  },
+
+  "next_probe": [
+    {"id": "NP1", "title": "가격 축 vs 수량 축 분해 — 부호가 갈린 지점을 직접 물음",
+     "design": "동일 창(133m)에서 S_credit 과 S_breadth 를 **직교화**(breadth 를 credit 에 회귀한 잔차, 그 역도)한 뒤 각 잔차로 Y1a/Y2 회귀. 두 축이 서로 다른 것을 재고 있다는 가설을 부호 분리로 검정. 검정력: 동일 n·sd 이므로 req 불변(앵커 0.25).",
+     "why_now": "본 라운드가 만든 유일한 결정적 이상 — 같은 '경색' 이라는데 부호가 반대다. 둘 중 하나는 경색을 재고 있지 않다."},
+    {"id": "NP2", "title": "급성 에피소드 조건화 — 수준이 아니라 변화·가속으로",
+     "design": "S 를 원수준이 아니라 **Δ3M 스프레드**(사전고정 1개, 스캔 없음)로 재정의. 근거는 본 라운드 실측: 원수준은 AR1 0.957 저주파 체제 변수이고 2020-03 이 상위에 들지 않는다 — 기전(문턱-발동 반대매매)은 수준이 아니라 급변에 붙는다. 창 133m, 앵커 0.25 동일.",
+     "why_now": "사전등록 강건성판이 이미 '수준 성분 제거 시 효과 소멸'을 보여줬다. 다음 질문은 '그러면 변화 성분에는 있는가'이고, 그건 이번 라운드가 묻지 않았다."},
+    {"id": "NP3", "title": "F_C 전이 단절의 직접 측정 — flow 이동이 어디서 소멸하나",
+     "design": "FlowAsym 을 매개변수로 두고 S → FlowAsym → Y 의 경로를 3단으로 측정(각 단 NW t). 1단(S→Flow) 은 t=+2.98 로 살아있음이 확인됐으므로 2단(Flow→Y)과 부분상관을 잰다. Lane A 의 '표적-지표-소비 함수 불일치'(cor(왜도기울기, 중앙값−평균 gap) = −0.728)와 같은 계통인지 대조.",
+     "why_now": "기전은 살아있는데 귀결이 없다는 것이 본 라운드의 최대 정보다. 어디서 끊기는지는 아직 측정되지 않았다."},
+    {"id": "NP4", "title": "유니버스 소급 배관 — KQ150 PIT 명부 복원 가능성",
+     "design": "KRX 정기변경 공시(2015-07 이전 소급 불가 확인 포함)로 2010~2015 KOSDAQ150 시점 명부가 복원 가능한지 census. 불가 확정 시 '이 저장소의 UNION 유니버스는 2015-07 이전 존재하지 않는다'를 인프라 사실로 고정 등재 — 이후 모든 라운드의 창 상한이 된다.",
+     "why_now": "본 라운드가 122개월을 잃은 이유가 이것이고, 같은 벽이 Lane B·D 후속과 RAMP 에도 그대로 선다. 한 번 확정하면 재측정이 사라진다."},
+    {"id": "NP5", "title": "지속 회귀변수용 검정 프로토콜 상설화",
+     "design": "AR(1)-matched placebo 밴드를 조건변수 회귀의 **기본 게이트**로 승격(본 라운드 실측: φ 0.95~0.99 에서 |t| p95 = 2.45~3.26, 즉 t=2.0 문턱은 5%가 아니라 ~15~25% 오류율). required_effect_size.R 의 자매로 `persistent_regressor_power.R` 제안.",
+     "why_now": "이 결함은 Lane D 고유가 아니라 매크로·국면 조건화 라운드 전부에 걸린다. 본 라운드가 수치를 이미 생산했다."}
+  ],
+
+  "handoff_blockers_for_risk_research": [
+    "★alpha_vector 0건 — risk-research 로 넘길 α̂ 가 없다. 본 라운드는 조건부 분포 사실 라운드였고 예측 방향이 기각됐으므로 Σ 추정 대상이 존재하지 않는다.",
+    "따라서 표준 QEPM 전이(risk → optimizer → forge)는 성립하지 않는다. 다음 단계는 risk-research 스폰이 아니라 next_probe 중 하나(NP1/NP2 권장)의 재라운드 또는 FQ-236 큐 처분이다.",
+    "만약 Q-Lead 가 그래도 risk 단계를 태우려면 필요한 것: (a) 어떤 종목별 스코어를 Σ 의 대상으로 삼을지 정의 — 본 라운드에는 없음 (b) INV-7 경계(FQ-233 부활조건) 통과 여부 사전 판정 — 미통과 상태."
+  ]
+}
