@@ -34,9 +34,9 @@ res <- tg_agent_brief(
                    "국면: 하락장에서 종목 상관 상승(0.26 대 0.19) — 낙폭 시 분산 효과 약화",
                    "얇은 표본: 공통 이력 25개월 대 종목 25개 — 비대각 정밀도는 진단 수준으로만 신뢰")),
     list(type = "bullet", emoji = "➡️", heading = "다음",
-         items = c("Optimizer 에게 Σ(covariance.parquet)·꼬리·집중 진단 인계",
-                   "상위 research_verdict = NOT_SUPPORTED (config-scoped) — 본 Σ 는 기록용 독립 구조정보",
-                   "governor/자본 게이트 대상 아님"))
+         items = c("Optimizer 에게 공분산행렬·꼬리위험·집중도 진단 인계",
+                   "상위 연구 판정은 미지지(성과 문턱 미달) — 본 공분산 분석은 기록용 독립 구조 정보",
+                   "자본 배정 게이트 대상 아님 (거버넌스 정지)"))
   ),
   as_of = "2026-08-22"
 )
