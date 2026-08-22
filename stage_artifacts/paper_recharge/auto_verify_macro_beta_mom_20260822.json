@@ -1,0 +1,132 @@
+{
+  "paper_id": "2608.12283",
+  "paper_title": "Macro-Beta Momentum: Dynamic Macro Factor Sensitivity x 20d Macro Change",
+  "factor_name": "macro_beta_momentum",
+  "strategy_id": "STR_AS_20260822_143237_8580",
+  "run_timestamp": "2026-08-22 14:32:37",
+  "engine_version": "v3_precomputed_parquet",
+  "signal_definition": "Score_i,t = sum_j [ beta_ij,60d * delta_m_j,20d ] | j in {Term_Spread, VIX, KRW_USD}",
+  "pit_compliance": "CLEAN",
+  "pit_notes": [
+    "C11: delta20 = fred.shift(1) - fred.shift(21) — lag-1 FRED only",
+    "C1: rolling 60d OLS window uses only D-1 past data",
+    "C2: month-end lookup uses Date <= rd_ts (strictly past)",
+    "lookahead_detector: CLEAN (run_alpha_search PIT check PASS)"
+  ],
+
+  "L1_signal_validity": {
+    "verdict": "FAIL",
+    "ic_mean": -0.0025,
+    "icir": -0.022,
+    "ic_pos_rate": 49.6,
+    "fmb_lambda": -0.00021,
+    "fmb_nw_t": -0.27,
+    "signal_dates": 257,
+    "universe_avg_monthly": 312,
+    "notes": "IC=-0.0025, pos_rate=49.6% — 무신호(무조건부). FMB NW-t=-0.27 비유의. 크로스섹션 pricing 없음."
+  },
+
+  "L2_factor_authenticity": {
+    "verdict": "PASS",
+    "implementation_faithful": true,
+    "batch_434_check": "PASS — Python script compute_macro_beta_v2.py가 논문 기술 신호(rolling 60d OLS beta x 20d macro delta) 충실 구현",
+    "parquet_rows": 507076,
+    "parquet_dates": 260,
+    "parquet_tickers": 3462,
+    "after_universe_filter_rows": 78304,
+    "after_universe_filter_dates": 257,
+    "after_universe_filter_tickers": 837
+  },
+
+  "L3_robustness": {
+    "verdict": "FAIL",
+    "port_t_nw_lag3": -1.265,
+    "port_t_threshold": 2.95,
+    "port_t_pvalue": 0.206,
+    "alpha_annualized_pct": -3.68,
+    "ir": -0.369,
+    "oos_retention": 0.378,
+    "oos_retention_threshold": 0.70,
+    "oos_is_sr": 0.168,
+    "oos_oos_sr": 0.063,
+    "calmar": 0.05,
+    "calmar_threshold": 0.64,
+    "mdd": 70.23,
+    "cagr": 3.53,
+    "sharpe": 0.125,
+    "ann_vol": 28.14,
+    "turnover_ann": 833.6,
+    "capm_beta": 0.840,
+    "hard_fail": true,
+    "hard_fail_reason": "MDD 70.23% (45%+ episodes=18 vs hard limit 15, max_underwater=997d vs 252d limit)",
+    "graduation_gate_status": {
+      "port_t": "FAIL (-1.265 vs 2.95)",
+      "oos_retention": "FAIL (0.378 vs 0.70)",
+      "calmar": "FAIL (0.050 vs 0.64)"
+    }
+  },
+
+  "L4_fidelity": {
+    "verdict": "PASS",
+    "stress_periods": {
+      "GFC_2008": {"strat_ret_pct": -43.01, "bm_ret_pct": -36.48, "alpha_pct": -6.52, "outperform": false},
+      "Euro_Debt_2011": {"strat_ret_pct": -4.51, "bm_ret_pct": -13.48, "alpha_pct": 8.97, "outperform": true},
+      "China_Shock_2015": {"strat_ret_pct": -15.5, "bm_ret_pct": -9.89, "alpha_pct": -5.6, "outperform": false},
+      "US_China_Trade_2018": {"strat_ret_pct": -33.07, "bm_ret_pct": -16.26, "alpha_pct": -16.8, "outperform": false},
+      "COVID_2020": {"strat_ret_pct": 4.81, "bm_ret_pct": -4.66, "alpha_pct": 9.47, "outperform": true},
+      "Rate_Hike_2022": {"strat_ret_pct": -41.0, "bm_ret_pct": -26.15, "alpha_pct": -14.85, "outperform": false}
+    },
+    "stress_outperform_rate": "2/6 (COVID + Euro_Debt)",
+    "pattern_diagnosis": "회복국면(COVID/EuDebt) outperform / 악화국면(GFC/Rate_Hike) underperform — 방향 레짐 종속 패턴 명확"
+  },
+
+  "L5_gate_decision": {
+    "verdict": "QUARANTINE",
+    "register_module_output": "QUARANTINE STR_AS_20260822_143237_8580 (grade=F · origin=alpha_search)",
+    "grade": "F",
+    "score": 3,
+    "screen_pass": false,
+    "screen_route": "NONE",
+    "telegram_sent": true,
+    "telegram_bytes": 2588,
+    "l_code_filed": "l_code_STR_AS_20260822_143237_8580"
+  },
+
+  "mechanism_diagnosis": {
+    "primary": "무조건부 macro-beta momentum: E[Score_i,t] = Σ_j [beta_ij * E[Δm_j]] ≈ 0 — 매크로 방향이 매월 반전해 장기 기댓값 상쇄. long-only 포트에서 고 macro-beta 종목은 매크로 방향에 따라 대칭적 수익을 내므로 unconditional long alpha≈0.",
+    "stress_interpretation": "COVID(+9.47%) + Euro_Debt(+8.97%): 매크로 회복 국면에서 고 macro-beta 종목 outperform. GFC(-6.52%) + Rate_Hike(-14.85%): 매크로 악화 국면에서 고 macro-beta 종목 underperform. 패턴이 의미하는 것 = 신호는 macro direction에 정보가 있고, 그 direction이 long-only에서 상쇄된다.",
+    "structural_failure": "MDD 70.23%: 매크로 악화 구간(GFC·US_China_Trade·Rate_Hike)에서 고 macro-beta 종목의 동조 하락 — beta≈0.84인데 개별 조정장에서 하락폭이 배가됨. max_underwater 997일 = 구조적 낙폭.",
+    "lane_d_implication": "이 실측이 Lane D 착수 실측 근거: 방향이 매크로 레짐에 종속적이므로 레짐 조건부 소비가 자연스러운 다음 단계."
+  },
+
+  "next_probes": [
+    {
+      "id": "NP1",
+      "fq_candidate": "FQ-243",
+      "title": "방향성 일치 국면 조건부 macro-beta momentum (Lane D)",
+      "design": "3개 macro delta20(Term_Spread/VIX/KRW_USD)이 같은 부호(모두 양수 또는 모두 음수)일 때만 신호 적용. 이하 분류: aligned_up(모두 +) → 고 macro-beta long / aligned_down(모두 -) → 저 macro-beta(역방향) or 현금 / mixed → 포지션 없음.",
+      "expected_mechanism": "aligned macro movement에서만 beta x delta 신호가 실현 — COVID/EuDebt는 multi-factor aligned 국면에 해당할 가능성이 높고 이 조건에서 2건 모두 양성 alpha(+9.47%/+8.97%). 국면 조건부화로 IC pos_rate 49.6%→60%+ 가설.",
+      "pit_note": "delta20=fred.shift(1)−fred.shift(21) 유지. 국면 변수도 동일 lag 구조.",
+      "lane": "Lane D (매크로 상태 조건부 비대칭)",
+      "priority": 1
+    },
+    {
+      "id": "NP2",
+      "fq_candidate": "상호작용 예비 (Lane A x Lane D)",
+      "title": "beta 수준 → 수익 분포 왜도/꼬리초과확률 예측 (분포-표적 전환)",
+      "design": "표적을 '다음 달 평균 수익률'에서 '분포 왜도' 또는 '상위 꼬리초과확률'로 변경. beta_ij,t를 분포 비대칭 예측자로 사용. FQ-233/241(Lane A)와 FQ-243(Lane D NP1)의 양 주변부 측정 완료 후 사전등록(v8.4 상호작용 예외 §신설 적용).",
+      "prerequisite": "NP1(FQ-243) 독립 라운드 완료 + Lane A(FQ-233/241) 완료 — 두 주변부 round_id 인용 의무",
+      "lane": "Lane A x Lane D 상호작용",
+      "priority": 2
+    }
+  ],
+
+  "metadata": {
+    "run_duration_sec": 487.82,
+    "engine": "macro_beta_mom_engine_v3.R (parquet 경유)",
+    "python_precompute": "compute_macro_beta_v2.py",
+    "parquet_path": ".cache/macro_beta_scores.parquet",
+    "run_date": "2026-08-22",
+    "session": "AS-20260822"
+  }
+}
