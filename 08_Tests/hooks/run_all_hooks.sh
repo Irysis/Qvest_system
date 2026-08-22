@@ -177,6 +177,12 @@ SUITES=(
   #   규약 = (A)기지사례 범위 검증 (B)작으면 전수·기지사례 강제포함 (C)0건에 신뢰상한 병기.
   #   검사기는 "강제포함 없으면 20중 18 놓침" 대조로 도구 필요성 자체를 실증한다.
   "08_Tests/contracts/test_census_helper.R"
+  # 2026-08-22 추가(DFA R54): FR 배분 규칙 표현력 진단. compute_regime_module_weights 는
+  #   *비중*(합=1)에 softmax(tau=0.6)를 걸어서 모듈 수 n 이 커지면 score 가 1/n 근처로 몰려
+  #   출력이 rp 앵커로 수렴한다 — n=21 실측 retention 0.0796(신호 92% 압축), 정적 EW 와
+  #   대응표본 구분 불가(NW-t +0.225). 그런데 산출물은 계속 "국면조건부 비중" 으로 라벨된다
+  #   = 침묵 실패. 검사기는 양방향(퇴화 발화 / 표현 미발화) + 문턱 돌연변이로 게이트를 실증한다.
+  "08_Tests/contracts/test_fr_weight_expressiveness.R"
   # 2026-07-26 추가(T3): IC 월-프론티어 감시(ic_frontier_check) 위반 주입 테스트.
   #   감시기는 07-26 신설되며 ic_max_date_override 를 "주입용"으로 노출해 놓고도 케이스가
   #   0건이었다 — 4트랙 중 유일하게 상설 검사가 없던 갭. 검사 없는 가드는 무력화돼도

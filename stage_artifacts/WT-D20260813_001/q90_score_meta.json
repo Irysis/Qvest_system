@@ -1,0 +1,62 @@
+{
+ "round_id": "WT-D20260813_001_Q90",
+ "prereg": "PREREG_q90_20260822.md",
+ "primary_score": "q90_pinball_lgbm",
+ "negative_control": "trim5_xgb",
+ "n_features": 324,
+ "dropped_alias": [
+  "V19_Debt_to_Market",
+  "M25_Earnings_Mom_Streak",
+  "M29_Mom_5d",
+  "C10_SUE_Persistence",
+  "C13_Revision_Breadth_3m",
+  "R12_Idiosyncratic_Risk",
+  "CR04_Ownership_Concentration"
+ ],
+ "lgb_params": {
+  "objective": "quantile",
+  "n_estimators": 300,
+  "learning_rate": 0.05,
+  "num_leaves": 15,
+  "min_child_samples": 50,
+  "subsample": 0.8,
+  "subsample_freq": 1,
+  "colsample_bytree": 0.8,
+  "reg_lambda": 1.0,
+  "random_state": 0,
+  "n_jobs": -1,
+  "verbose": -1
+ },
+ "xgb_params": {
+  "n_estimators": 300,
+  "max_depth": 4,
+  "learning_rate": 0.05,
+  "subsample": 0.8,
+  "colsample_bytree": 0.8,
+  "min_child_weight": 10,
+  "reg_lambda": 1.0,
+  "random_state": 0,
+  "n_jobs": -1,
+  "tree_method": "hist"
+ },
+ "q90_alpha": 0.9,
+ "trim_frac": 0.05,
+ "burn_in_months": 60,
+ "n_pred_months_q90": 199,
+ "n_scores_q90": 68451,
+ "diag": {
+  "q90": {
+   "rank_ic_mean": -0.028093077422187255,
+   "icir": -0.15392980249374846,
+   "n_months": 198
+  },
+  "trim5": {
+   "rank_ic_mean": 0.01494588244865462,
+   "icir": 0.12479885346375505,
+   "n_months": 198
+  }
+ },
+ "armB_q90_parity_cor": 1.0,
+ "armB_q90_parity_maxdiff": 0.0,
+ "note": "스코어 산출까지만. 성과·판정은 R canonical_screen_bt 경유(python-policy §4)."
+}
