@@ -1,0 +1,71 @@
+{
+  "prereg_id": "mfro_v1_20260822",
+  "created_at": "2026-08-22",
+  "created_before_any_result": true,
+  "round": "R55",
+  "strategy_name": "MFRO — Multi-Factor Rotation Overlay",
+  "origin": "도훈 지시 2026-08-22: '이 세션의 교훈을 바탕으로(Axiom엔진 활용) 멀티팩터 로테이션 오버레이 전략 만들어봐'",
+
+  "axiom_engine_pull": {
+    "queried": ["hypothesis_index lookup: overlay / rotation / tilt", "alpha_frontier_queue entries=250 (overlay·tilt·rotation 관련 100)", "DIST-AR-051 / DIST-RAMP-006 / DIST-FR-001", "book_state (governor mailbox)"],
+    "binding_facts_returned": [
+      "book n_admitted=1 · 단일 슬리브 100% (STR_1715_on_M4gAE_R05_noLayer4_PG2) ⇒ 슬리브-간 배분 오버레이는 구조적 불가 (FQ-242 당일 정정)",
+      "노출 스케일링 축 = IR-불변으로 원리적으로 닫힘 (R19, 신호원 5종 전패)",
+      "cap-tilt 의 composite 이식 = config_scoped_negative (FQ-156)",
+      "구조적 MDD 인지 구성(Min-CDaR/CVaR-LP) = config_scoped_negative (FQ-058)",
+      "DFA 타이밍 초과분은 실재·era-안정(+3.57%/yr · placebo p=0.033 · clean IC-t +2.761)이나 프리미엄이 죽은 기초자산(EW 팩터 바스켓 clean -1.04%/yr)에 100% 태워져 있다 (FQ-242 기전 진단)",
+      "집중 > 확산: 팩터 축에서 top-quintile 채택(R31), 21종 확산은 유의 손실(R54 A4 clean t -2.072 / full t -2.821)",
+      "국면조건부 배분·노출 양 축 기각 (R23/R32/R36/R37 + R54) ⇒ 로테이션은 무국면(unconditional)이어야 한다"
+    ],
+    "why_this_design_is_not_a_renaming_of_a_closed_axis": "노출 스칼라가 아니다(Σw=1 불변, 재분배만) · 슬리브 배분이 아니다(슬리브 1개, 내부 재가중) · cap-tilt 가 아니다(시총이 아니라 승리 팩터 노출로 틸트) · standalone 팩터 바스켓이 아니다(종목 선택 base 위의 오버레이)."
+  },
+
+  "design": {
+    "base": "Gate 0 구성상 충족 — K200∪KQ150 · 유동성 adv20>=2e8(t-1) · 21팩터 등가중 composite z 상위 25종 · production 가중규칙 .tilt(lambda=1.5) · cap [0,0.20] · Σw=1 · long-only · 15bps",
+    "rotation_signal": "DFA 21 팩터지수의 trailing 12M active(=지수-Market) — outputs/ramp/dfa_index_returns_broad_202608.parquet. 무국면(unconditional). dec_lag=1.",
+    "winner_set": "active>0 중 상위 5 (top-quintile, k=5) — R20/R31/R54 집중 교훈 승계. 사후 선택 아님(사전고정).",
+    "overlay_forms": {
+      "B_weight_only": "★순수 오버레이 — base 25종 보유 그대로 두고 비중만 승리팩터 z 로 재틸트. 헤드라인.",
+      "A_selection_and_weight": "승리팩터 composite 로 종목 선택까지 교체 — 합성 형태(오버레이 아님, 축 분해용)"
+    },
+    "base_authority_note": "★book-marginal 은 본 라운드에서 산출하지 않는다 — production forward 가 읽는 알파 패널이 2026-07-14 동월-vintage 오염 라벨 계통이고, measurement-graduation §7b 가 clean 재빌드 + production_parity_verified 후에만 base 소비를 허용한다(FQ-044 별건). 본 라운드는 연구 계층 메커니즘 측정이다."
+  },
+
+  "arms_prespecified": {
+    "C0_base_no_rotation": "★무신호 대조 ① — 21팩터 등가중 composite, 로테이션 미사용. paired 비교의 기준.",
+    "C1_no_signal_control": "★무신호 대조 ② — 유니버스 시총 상위 25, 시총가중. 02_Infrastructure/contracts/no_signal_control.R 계약 경유(2026-08-22 §3 신설 의무).",
+    "B_weight_only_rotation": "헤드라인 — C0 와 동일 25종, 비중만 승리팩터 z 재틸트",
+    "A_selection_and_weight": "축 분해 — 승리팩터 composite 로 선택+비중",
+    "P_oracle_ceiling": "★양성 대조(도달 상한) — 로테이션 신호를 익월 실현 active 로 교체(완전예지). measurement-graduation §3 창-도달가능성 병기 의무. 판정 대상 아님."
+  },
+
+  "manipulation_check_prespecified": {
+    "why": "★R54 교훈 — 사전등록 fail_rule 에 조작 확인이 없어 '처치 미전달' 셀을 '기각' 으로 쓸 뻔했다. 이번엔 결과 전에 박아 넣는다.",
+    "statistic": "B 와 C0 의 월별 비중 벡터 L1 거리 중앙값 (동일 종목집합이므로 순수 재가중 크기)",
+    "threshold": "중앙 L1 >= 0.10 이어야 '처치 전달' 로 인정. 미만이면 어떤 결과가 나오든 판정은 '미결(처치 미전달)' 이며 '효과없음' 으로 쓸 수 없다.",
+    "secondary": "승리팩터 집합의 월별 교체율(turnover of winner set) — 0 이면 로테이션이 아니라 정적 선택이다."
+  },
+
+  "judgment": {
+    "primary": "B - C0 의 대응표본 월수익 차, NW lag-3 t. clean 창(2015-07~) 사전지정.",
+    "pass_rule": "①조작 확인 통과(L1>=0.10) AND ②paired NW-t >= +1.96 AND ③C1 무신호 대조 대비 SIGNAL_ADDS_VALUE",
+    "fail_rule": "조작 확인 통과 상태에서 paired NW-t < +1.96 이면 '효과없음(powered null)' — 단 P_oracle 상한을 병기해 '창이 짧아 도달 불가' 와 구분한다. 조작 확인 미통과면 '미결'.",
+    "all_cells_reported": "arm x {full, clean} x cost{5,15,25bps} x dec_lag{1,2} x k{3,5,10} 전수. 헤드라인은 k=5·15bps·dec_lag1·clean 사전지정. 사후 셀 선택 금지.",
+    "selection_type": "chain",
+    "gates_not_claimed": "HARD 3종(PORT_t/oos/calmar)은 본 라운드 판정 대상이 아니다 — 메커니즘 라운드다. B 가 통과하면 그때 계약 경유 graduation 측정."
+  },
+
+  "expected_failure_mode": [
+    "★결과 전 선언: B 가 C0 를 유의하게 이기지 못한다고 예상한다. 근거 — (a) 21팩터 composite base 는 이미 모든 팩터를 담고 있어 승리 5개로 재틸트해도 노출 변화가 작을 수 있다(조작 확인이 이걸 잡는다) (b) 팩터 모멘텀의 정보는 '어느 팩터가 이기나' 인데 종목 단위로 내려오면 팩터 간 종목 중첩 때문에 희석된다 (c) R54 에서 팩터 지수 공간의 로테이션 자체는 살아있었으나(F1 clean pt +1.301) 그건 지수 바스켓이었고 25종 사영은 R39/R41 에서 알파가 아니라 베타만 남겼다.",
+    "★A 가 B 보다 크게 이기면: 정보가 비중이 아니라 선택에 있다 — 그건 오버레이가 아니라 새 base 이고, 별도 라운드로 분리해야 한다.",
+    "★B 가 이기고 P_oracle 과의 갭이 작으면: 신호가 이미 상한 근처 — 로테이션 신호 개선 여지가 없다는 뜻.",
+    "★조작 확인 미통과(L1<0.10)가 가장 가능성 높은 단일 결과라고 본다."
+  ],
+
+  "binding_constraints": [
+    "성과 서술은 본 라운드 실행 산출값만. metric_type=canonical_screen.",
+    "book_state 쓰기·governor admit 금지(자본 게이트, 도훈 수동).",
+    "05_Production 은 읽기만. 가중 규칙 .tilt(lambda=1.5, cap 0.20, N=20->25)는 production 정의를 그대로 인용하되 종목수는 Production Constraints 상한 25 사용(사전고정).",
+    "PIT: 월말 sd 의 z -> 익월 수익(dec_lag=1). 유동성은 t-1 adv20(C10). factor 는 load_month_factors 경유(C15)."
+  ]
+}
