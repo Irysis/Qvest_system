@@ -161,6 +161,11 @@ SUITES=(
   "08_Tests/hooks/test_cert_rules.R"
   "08_Tests/hooks/test_r_portability.R"
   "08_Tests/factor_db/test_ic_completion_guard.R"
+  # 2026-08-22 추가(DFA R42): 무신호 대조군 계약. 제약형 롱온리 전략이 "제약을 지키며 벤치를
+  #   이겼다" 는 것만으로 신호 기여를 증명하지 못한다 — 롱온리 top-N cap-w 는 그 자체로
+  #   대형주 노출을 담는다. 실측(R41): 게이트0 준수 생존팔이 무신호 대조와 구별 불가
+  #   (clean 차이 +0.46%/yr NW-t 0.201). 검사기는 위반 주입 3방향 + beta 오염 분리 포함.
+  "08_Tests/contracts/test_no_signal_control.R"
   # 2026-07-26 추가(T3): IC 월-프론티어 감시(ic_frontier_check) 위반 주입 테스트.
   #   감시기는 07-26 신설되며 ic_max_date_override 를 "주입용"으로 노출해 놓고도 케이스가
   #   0건이었다 — 4트랙 중 유일하게 상설 검사가 없던 갭. 검사 없는 가드는 무력화돼도
