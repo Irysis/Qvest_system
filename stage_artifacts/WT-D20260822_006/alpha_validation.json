@@ -1,0 +1,922 @@
+{
+  "task_id": "WT-D20260822_006",
+  "round_id": "FQ-246_state_conditional_factor_selection_WT-D20260822_006_20260822",
+  "fq_ref": "FQ-246",
+  "produced_by": "alpha-research",
+  "produced_at": "2026-08-22T17:24:37+0900",
+  "metric_type": "canonical_screen",
+  "metric_type_note": "전 수치 = canonical_screen_bt() 표준 top-25 EW long-only 실측(15bps, contract build_benchmark_compare 경유). admission binding 아님 — graduation HARD 3종(PORT_t 2.95 · oos_retention 0.7 · calmar 0.64)은 forge-authoritative 값에만 적용된다. 본 라운드 canonical 수치로 졸업 주장 금지.",
+  "prereg_ref": "stage_artifacts/WT-D20260822_006/PREREG.json (mean-blind 봉인, sealed_at 2026-08-22)",
+  "hypothesis_ref": "qepm/mailbox/worktask/WT-D20260822_006/alpha_hypothesis.json (alpha-hypothesis, verdict=designed) — mechanism/falsification/regime_scope 자구 승계, 재작성 없음",
+  "control_parity": {
+    "C0_port_t_measured": 0.947410715814893,
+    "C0_port_t_published_FQ244": 0.94741072,
+    "delta": -1.06914477271403e-13,
+    "verdict": "대조군 비트-동치 재현 — 선별 궤적·패널·top-N·비용·벤치 전부 FQ-244 자구 승계 확인"
+  },
+  "power_precheck": {
+    "principle": "검정력은 선언 상수가 아니라 직접 측정. 계약 기본 sd 0.0394 는 무작위 top-25 EW 쌍 척도이고 본 대조는 선별·결합을 공유하는 상태-조절 대조라 다른 양이다(실측 0.27~0.49 배).",
+    "MATERIAL_annual_pct": 8.2227973063616,
+    "MATERIAL_derivation": "C0 월평균 net active 0.003242 · NW3 SE 0.003422 · t 0.9474 → (2.95*SE − mean)*12*100",
+    "measured": [
+      {
+        "arm": "T2_AGREE",
+        "n": 221,
+        "n_active_months": 183,
+        "sd_monthly_own": 0.016591,
+        "sd_ratio_vs_contract": 0.4211,
+        "nw_inflation_measured": 0.9885,
+        "mde_own_annual_pct": 2.6476,
+        "mde_band_annual_pct": 7.951,
+        "implied_t_own": 2,
+        "implied_t_band": 6.0062,
+        "material_over_mde_own": 3.1057
+      },
+      {
+        "arm": "T3_DISP",
+        "n": 221,
+        "n_active_months": 153,
+        "sd_monthly_own": 0.017003,
+        "sd_ratio_vs_contract": 0.4315,
+        "nw_inflation_measured": 0.7708,
+        "mde_own_annual_pct": 2.1158,
+        "mde_band_annual_pct": 7.951,
+        "implied_t_own": 2,
+        "implied_t_band": 7.516,
+        "material_over_mde_own": 3.8864
+      },
+      {
+        "arm": "T1_AGREE",
+        "n": 221,
+        "n_active_months": 154,
+        "sd_monthly_own": 0.010654,
+        "sd_ratio_vs_contract": 0.2704,
+        "nw_inflation_measured": 1.1117,
+        "mde_own_annual_pct": 1.9121,
+        "mde_band_annual_pct": 7.951,
+        "implied_t_own": 2,
+        "implied_t_band": 8.3163,
+        "material_over_mde_own": 4.3003
+      },
+      {
+        "arm": "T4_BOTH",
+        "n": 221,
+        "n_active_months": 184,
+        "sd_monthly_own": 0.019371,
+        "sd_ratio_vs_contract": 0.4917,
+        "nw_inflation_measured": 0.8776,
+        "mde_own_annual_pct": 2.7446,
+        "mde_band_annual_pct": 7.951,
+        "implied_t_own": 2,
+        "implied_t_band": 5.7939,
+        "material_over_mde_own": 2.996
+      },
+      {
+        "arm": "T3_BEAR",
+        "n": 221,
+        "n_active_months": 133,
+        "sd_monthly_own": 0.014773,
+        "sd_ratio_vs_contract": 0.375,
+        "nw_inflation_measured": 0.9977,
+        "mde_own_annual_pct": 2.3796,
+        "mde_band_annual_pct": 7.951,
+        "implied_t_own": 2,
+        "implied_t_band": 6.6826,
+        "material_over_mde_own": 3.4555
+      },
+      {
+        "arm": "N1_SHUF_A",
+        "n": 221,
+        "n_active_months": 202,
+        "sd_monthly_own": 0.018193,
+        "sd_ratio_vs_contract": 0.4617,
+        "nw_inflation_measured": 1.0029,
+        "mde_own_annual_pct": 2.9456,
+        "mde_band_annual_pct": 7.951,
+        "implied_t_own": 2,
+        "implied_t_band": 5.3985,
+        "material_over_mde_own": 2.7915
+      },
+      {
+        "arm": "N2_SHUF_D",
+        "n": 221,
+        "n_active_months": 165,
+        "sd_monthly_own": 0.013612,
+        "sd_ratio_vs_contract": 0.3455,
+        "nw_inflation_measured": 1.0579,
+        "mde_own_annual_pct": 2.3248,
+        "mde_band_annual_pct": 7.951,
+        "implied_t_own": 2,
+        "implied_t_band": 6.8403,
+        "material_over_mde_own": 3.5371
+      },
+      {
+        "arm": "T2_LAG1",
+        "n": 221,
+        "n_active_months": 183,
+        "sd_monthly_own": 0.017712,
+        "sd_ratio_vs_contract": 0.4496,
+        "nw_inflation_measured": 1.0436,
+        "mde_own_annual_pct": 2.9843,
+        "mde_band_annual_pct": 7.951,
+        "implied_t_own": 2,
+        "implied_t_band": 5.3286,
+        "material_over_mde_own": 2.7554
+      }
+    ],
+    "degeneracy_check": {
+      "implied_t_own_all_arms": 2,
+      "note": "자기-diff sd 로 만든 바는 t 검정의 단위 번역 — 판정 문턱으로 쓰지 않고 효과크기 단위로만 해석. 독립 바 = implied_t_band 6.01~8.32.",
+      "preregistered": true
+    },
+    "nw_note": "nw_inflation 계열 실측 0.771~1.112 (가정 상수 1.25 미사용). paired diff AR1 = -0.0045 이라 NW 팽창이 애초에 발생하지 않는다.",
+    "target_persistence": {
+      "paired_diff_AR1": -0.0045,
+      "regressor_AR1": {
+        "u_agree": 0.6213,
+        "u_disp": 0.4376,
+        "u_bear": 0.5377
+      },
+      "decision": "★대상 지속성을 먼저 재고 판정 — 성과 차 계열은 무자기상관이라 NW 보정 실질 무영향이나 병기, 반면 R1/F1 회귀변수(u)는 AR1 0.44~0.62 로 지속적이라 그 축의 기울기 t 는 NW lag-3 필수. 두 축에 같은 처방을 무비판 이식하지 않았다."
+    }
+  },
+  "transport_gate_R1": {
+    "headroom_mean_annual_pct": 13.6929981793759,
+    "axis1": {
+      "slope": 0.00188938650113316,
+      "t": 0.87584413052476
+    },
+    "axis2": {
+      "slope": 0.000862219639310817,
+      "t": 0.383909349625421
+    },
+    "bear_axis": {
+      "slope": -0.00348051416925076,
+      "t": -1.3541019104198
+    },
+    "threshold": "|t| >= 1.5 (둘 중 하나)",
+    "passed": false,
+    "verdict": "MECHANISM_NOT_TRANSPORTED — 완전예지 여유폭이 두 상태축 어디에도 무관",
+    "interpretation": "★성과 판정 전에 답이 나왔다 — 완전예지 여유폭(연 +13.69%p) 이 두 관측 가능 상태축 어디에도 유의하게 종속되지 않는다 (disagreement t +0.876 · dispersion t +0.384). 즉 여유폭이 실재한다는 것과 그것이 상태로 지목 가능하다는 것은 다른 명제이고, 본 라운드가 후자를 기각했다."
+  },
+  "primary": [
+    {
+      "contrast": "T2_AGREE",
+      "n": 221,
+      "ann_pct": -1.09711408157163,
+      "t_nw3": -0.8287575933705,
+      "ci95_lo": -3.69177338494536,
+      "ci95_hi": 1.4975452218021,
+      "role": "co_primary_axis1",
+      "label": "POWERED_NULL_NO_MATERIAL_EFFECT"
+    },
+    {
+      "contrast": "T3_DISP",
+      "n": 221,
+      "ann_pct": 0.265721870259323,
+      "t_nw3": 0.251182882964603,
+      "ci95_lo": -1.80772700317234,
+      "ci95_hi": 2.33917074369098,
+      "role": "co_primary_axis2",
+      "label": "POWERED_NULL_NO_MATERIAL_EFFECT"
+    },
+    {
+      "contrast": "T1_AGREE",
+      "n": 221,
+      "ann_pct": -1.2634253832356,
+      "t_nw3": -1.32147375203432,
+      "ci95_lo": -3.13732847614959,
+      "ci95_hi": 0.610477709678392,
+      "role": "secondary_axis1_alt",
+      "label": "POWERED_NULL_NO_MATERIAL_EFFECT"
+    },
+    {
+      "contrast": "T4_BOTH",
+      "n": 221,
+      "ann_pct": -1.1639044450411,
+      "t_nw3": -0.848138609231514,
+      "ci95_lo": -3.85362129963349,
+      "ci95_hi": 1.52581240955129,
+      "role": "secondary_two_axis",
+      "label": "POWERED_NULL_NO_MATERIAL_EFFECT"
+    },
+    {
+      "contrast": "T3_BEAR",
+      "n": 221,
+      "ann_pct": -0.550174972839788,
+      "t_nw3": -0.462406334782291,
+      "ci95_lo": -2.88219957036976,
+      "ci95_hi": 1.78184962469019,
+      "role": "demoted_contrast_perf_derived",
+      "label": "POWERED_NULL_NO_MATERIAL_EFFECT"
+    },
+    {
+      "contrast": "N1_SHUF_A",
+      "n": 221,
+      "ann_pct": -3.65466290146758,
+      "t_nw3": -2.48142213492095,
+      "ci95_lo": -6.54137015940241,
+      "ci95_hi": -0.767955643532752,
+      "role": "negative_control_shuffle_a",
+      "label": "EFFECT_NEGATIVE"
+    },
+    {
+      "contrast": "N2_SHUF_D",
+      "n": 221,
+      "ann_pct": 0.976111591826426,
+      "t_nw3": 0.839754716402397,
+      "ci95_lo": -1.30214738381359,
+      "ci95_hi": 3.25437056746644,
+      "role": "negative_control_shuffle_d",
+      "label": "POWERED_NULL_NO_MATERIAL_EFFECT"
+    },
+    {
+      "contrast": "T2_LAG1",
+      "n": 221,
+      "ann_pct": -2.4914321469331,
+      "t_nw3": -1.66970609486489,
+      "ci95_lo": -5.4160229015617,
+      "ci95_hi": 0.433158607695495,
+      "role": "pit_stress_state_lag1",
+      "label": "POWERED_NULL_NO_MATERIAL_EFFECT"
+    }
+  ],
+  "primary_note": "co-primary = T2_AGREE(축1 선택 강도) · T3_DISP(축2 계열 방향). argmax 챔피언 선발 없음 → sweep 미해당, DSR 게이트 비발동.",
+  "conduit_test": {
+    "purpose": "null 이 '상태 부재' 인가 '규칙 형태가 상태를 성과로 못 옮김' 인가를 가른다 (FQ-244 LEAK1 양성대조 실패가 남긴 교훈의 일반화)",
+    "measured": [
+      {
+        "contrast": "ORACLE_STATE_T2_form",
+        "ann_pct": 3.44980940419697,
+        "t_nw3": 2.0142529866906,
+        "ci95_lo": 0.092919044890436,
+        "ci95_hi": 6.80669976350351,
+        "port_t": 1.69937575047067,
+        "conduit_pass": true
+      },
+      {
+        "contrast": "ORACLE_STATE_T3_form",
+        "ann_pct": 3.38847610378105,
+        "t_nw3": 2.4655974884625,
+        "ci95_lo": 0.69484375118147,
+        "ci95_hi": 6.08210845638062,
+        "port_t": 1.82208105708992,
+        "conduit_pass": true
+      }
+    ],
+    "verdict": "★두 가중-형 규칙 모두 전도성 확립 — 완전예지 상태를 넣으면 T2형 paired +3.45%p/yr(t 2.014) · T3형 +3.39%p/yr(t 2.466). ⇒ T2_AGREE/T3_DISP 의 null 은 전도성 부재가 아니라 **상태 정보 부재** 다.",
+    "ceiling_finding": "★부수 확립(신규) — 완전예지 상태조차 이 가중-형 규칙을 통과하면 여유폭의 3.45/13.69 = **25.2%** 만 회수되고 PORT_t 는 1.70~1.82 로 벽 2.95 에 미달한다. ORACLE_K(월별 단일 팩터 **하드 선택**)와 오라클-상태 **소프트 틸트** 사이의 격차가 여유폭의 약 3/4 다. 즉 이 마디의 여유폭은 '소프트 가중' 형태로는 원리적으로 대부분 접근 불가하며, 접근하려면 이산 하드 선택이 필요하다.",
+    "T1_form_conduit_failed": {
+      "arm": "ORACLE_STATE_T1",
+      "t_nw3": 0.349907301742429,
+      "port_t": 1.02492442457027,
+      "note": "확신-첨예화(T1) 형태는 완전예지 상태로도 t 0.350 — 전도성 미확립. ⇒ T1_AGREE 의 null 은 상태 부재 증거로 쓰지 않는다(전도성 부재 라벨). FQ-244 LEAK1 미통과와 같은 계통."
+    }
+  },
+  "permutation_null": {
+    "design": "상태 계열을 월 순서로 무작위 치환해 같은 규칙을 재실행(각 축 40회, canonical_screen_bt 실경로). 단일 셔플 대조의 운을 배제한다.",
+    "measured": [
+      {
+        "axis": "axis1_disagreement(T2)",
+        "observed_t": -0.8287575933705,
+        "n_perm": 40,
+        "perm_mean_t": -1.06123161089418,
+        "perm_sd_t": 0.949459671468761,
+        "perm_q05": -2.25965381944536,
+        "perm_q95": 0.266269592822576,
+        "pct_of_perm_below_obs": 0.625,
+        "p_one_sided_greater": 0.375
+      },
+      {
+        "axis": "axis2_dispersion(T3)",
+        "observed_t": 0.251182882964603,
+        "n_perm": 40,
+        "perm_mean_t": -1.01591203451643,
+        "perm_sd_t": 0.857379471831862,
+        "perm_q05": -2.1914260913846,
+        "perm_q95": 0.320687582528861,
+        "pct_of_perm_below_obs": 0.9,
+        "p_one_sided_greater": 0.1
+      }
+    ],
+    "verdict": "★규칙-형태 자체가 비용을 만든다 — 셔플 상태의 paired t 평균 -1.06(축1) / -1.02(축2). 관측 t 는 축1 62.5 백분위(one-sided p 0.375) · 축2 90.0 백분위(p 0.100) ⇒ 어느 축도 5% 수준에서 무작위 상태를 이기지 못한다. 사전등록 R4 가 발화시킨 N1_SHUF_A 단일 draw(t -2.481)는 셔플 분포 하위 5% 근방의 불운한 draw 였고, 규칙-형태 비용의 정본은 분포 평균 -1.06 이다.",
+    "consequence": "arm-vs-C0 비교는 규칙-형태 비용을 포함한다. 상태 정보량의 정직한 척도는 arm-vs-셔플분포 백분위이며 그 값이 위와 같다."
+  },
+  "falsification_measured": {
+    "F1_direction_mediator": {
+      "slope": 0.0126969756957357,
+      "t_nw3": 1.07974645037268,
+      "perm_p": 0.279,
+      "threshold": "t >= +1.5",
+      "passed": false,
+      "n": 103,
+      "verdict": "방향 축 기각 — 상태가 '신뢰할 계열' 을 지목하지 못함",
+      "cluster_power_declaration": {
+        "target_rho": 0.4,
+        "n_clusters": 13,
+        "n_obs": 1105,
+        "critical_rho_at_clusters": 0.5529427,
+        "required_clusters": 25,
+        "verdict": "NO_GO_CLUSTER_BINDS"
+      },
+      "design_substitution": "★계약(cluster_power.R)이 계열-간 이질성 설계를 착수 금지시켰다(군집 13 < 필요 25, 관측 수를 늘려도 안 풀림). 지시대로 군집-내부에서 닫히는 월-단위 2군 IC 차 설계로 교체했다. 이것은 사후 변명이 아니라 봉인 전 기록이다."
+    },
+    "F2_mediator_movement": [
+      {
+        "arm": "T2_AGREE",
+        "jaccard_median": 0.7241,
+        "moved_median": 6.9,
+        "cor_absU_displacement": 0.8012,
+        "mediator_pass": true
+      },
+      {
+        "arm": "T3_DISP",
+        "jaccard_median": 0.8519,
+        "moved_median": 3.7,
+        "cor_absU_displacement": 0.6444,
+        "mediator_pass": true
+      },
+      {
+        "arm": "T1_AGREE",
+        "jaccard_median": 0.9231,
+        "moved_median": 1.92,
+        "cor_absU_displacement": 0.665,
+        "mediator_pass": false
+      },
+      {
+        "arm": "T4_BOTH",
+        "jaccard_median": 0.6129,
+        "moved_median": 9.68,
+        "cor_absU_displacement": 0.6832,
+        "mediator_pass": true
+      },
+      {
+        "arm": "T3_BEAR",
+        "jaccard_median": 0.9231,
+        "moved_median": 1.92,
+        "cor_absU_displacement": 0.7272,
+        "mediator_pass": false
+      },
+      {
+        "arm": "N1_SHUF_A",
+        "jaccard_median": 0.7241,
+        "moved_median": 6.9,
+        "cor_absU_displacement": 0.7998,
+        "mediator_pass": true
+      },
+      {
+        "arm": "N2_SHUF_D",
+        "jaccard_median": 0.8519,
+        "moved_median": 3.7,
+        "cor_absU_displacement": 0.6124,
+        "mediator_pass": true
+      },
+      {
+        "arm": "T2_LAG1",
+        "jaccard_median": 0.7241,
+        "moved_median": 6.9,
+        "cor_absU_displacement": 0.7799,
+        "mediator_pass": true
+      }
+    ],
+    "F2_note": "★봉인 전 사전 고정 — T1_AGREE(0.9231)·T3_BEAR(0.9231)는 문턱 0.90 초과라 NO_MEDIATOR_MOVEMENT 예약 라벨. 두 arm 의 null 은 기전 반증 증거로 쓰지 않는다. co-primary 2종은 모두 매개를 움직였다(0.724 / 0.852 = 월 6.9 / 3.7 종목 교체).",
+    "F3_agent_reality": {
+      "n": 221,
+      "cor_hhi": 0.272189147247898,
+      "t_nw3": 1.77626980543283,
+      "cor_top10": 0.190879956036404,
+      "threshold": "t >= +1.5",
+      "passed": true,
+      "verdict": "agent 서술 지지 — 고분산 월에 개인 순매수 집중 상승"
+    },
+    "F3_note": "★기전의 agent 는 실재한다 — 고분산 월에 개인 순매수 횡단면 집중(HHI)이 상승(cor +0.272, 표준화곱 NW3 t +1.776 ≥ 1.5). 상위 십분위 몫도 동방향(cor +0.191). 죽은 것은 agent 서술이 아니라 그 상태에서 '어느 팩터를 신뢰할지' 로의 전이다.",
+    "coherence": "★반증 축이 성과보다 먼저, 그리고 서로 다른 방향으로 답을 줬다: F3(agent 실재)와 conduit(규칙 전도성)는 통과했고 R1(여유폭-상태 연결)과 F1(계열 방향 지목)은 기각됐다. 성과 null 은 이 조합이 예측하는 바와 정확히 정합한다 — 사후 해석이 아니다."
+  },
+  "negative_control": {
+    "single_draw": [
+      {
+        "contrast": "N1_SHUF_A",
+        "n": 221,
+        "ann_pct": -3.65466290146758,
+        "t_nw3": -2.48142213492095,
+        "ci95_lo": -6.54137015940241,
+        "ci95_hi": -0.767955643532752,
+        "role": "negative_control_shuffle_a",
+        "label": "EFFECT_NEGATIVE"
+      },
+      {
+        "contrast": "N2_SHUF_D",
+        "n": 221,
+        "ann_pct": 0.976111591826426,
+        "t_nw3": 0.839754716402397,
+        "ci95_lo": -1.30214738381359,
+        "ci95_hi": 3.25437056746644,
+        "role": "negative_control_shuffle_d",
+        "label": "POWERED_NULL_NO_MATERIAL_EFFECT"
+      }
+    ],
+    "resolved_by": "permutation_null (40 draws/축) — 단일 draw 의 EFFECT_NEGATIVE 는 분포 하단 draw 로 확인. RULE_ARTIFACT 는 '규칙이 노이즈 하에서 평균 -1 t 의 비용을 만든다' 는 형태로 성립하며, 처치 해석을 무효화하지는 않는다(처치와 셔플을 같은 분포 위에서 비교했으므로)."
+  },
+  "window_reachability": {
+    "obligation": "PORT_t 2.95 미달 보고 시 그 창의 도달 가능 상한 병기 (mandate)",
+    "ORACLE_K": {
+      "port_t_IKS200": 4.64699909,
+      "paired_annual_pct": 13.6929981793759,
+      "paired_t": 4.28970507043012,
+      "note": "FQ-244 기측정 재현 — {K 중 고르기} 족 상한. 4.647 > 2.95."
+    },
+    "ORACLE_FWD": {
+      "port_t_IKS200": 31.45062294,
+      "paired_annual_pct": 319.387117887101,
+      "paired_t": 30.0160605842921
+    },
+    "verdict": "창-도달가능성 확보 — 본 창에서 이 마디는 PORT_t 4.647 까지 도달 가능하다. 따라서 본 라운드의 null 을 '창이 좁아서' 로 설명할 수 없다."
+  },
+  "headroom_recovery": {
+    "denominator_annual_pct": 13.6929981793759,
+    "measured": [
+      {
+        "arm": "T2_AGREE",
+        "ann_pct": -1.09711408157163,
+        "recovery_share_of_headroom": -0.0801222688559238
+      },
+      {
+        "arm": "T3_DISP",
+        "ann_pct": 0.265721870259323,
+        "recovery_share_of_headroom": 0.0194056748404121
+      },
+      {
+        "arm": "T1_AGREE",
+        "ann_pct": -1.2634253832356,
+        "recovery_share_of_headroom": -0.0922679873819415
+      },
+      {
+        "arm": "T4_BOTH",
+        "ann_pct": -1.1639044450411,
+        "recovery_share_of_headroom": -0.0849999707729566
+      },
+      {
+        "arm": "T3_BEAR",
+        "ann_pct": -0.550174972839788,
+        "recovery_share_of_headroom": -0.0401792920463869
+      },
+      {
+        "arm": "N1_SHUF_A",
+        "ann_pct": -3.65466290146758,
+        "recovery_share_of_headroom": -0.266900123230292
+      },
+      {
+        "arm": "N2_SHUF_D",
+        "ann_pct": 0.976111591826426,
+        "recovery_share_of_headroom": 0.071285453999156
+      },
+      {
+        "arm": "T2_LAG1",
+        "ann_pct": -2.4914321469331,
+        "recovery_share_of_headroom": -0.181949352091907
+      }
+    ],
+    "verdict": "여유폭 회수 실질 0 — 최선 arm T3_DISP 가 +0.27%p/yr(회수율 1.94%)이고 t 0.251, 셔플 분포 90 백분위(p 0.100). 축1 arm 들은 음수 회수(-8.0 ~ -9.2%). ⇒ '여유폭의 일부라도 회수됐는가' 에 대한 답은 **아니오** 다."
+  },
+  "basis_three_way": {
+    "measured": [
+      {
+        "arm": "C0",
+        "port_t_IKS200": 0.947410715814893,
+        "port_t_parent": 1.49096254133793,
+        "port_t_EW": 2.08780589903552,
+        "ir_IKS200": 0.228086080526059,
+        "turnover": 11.5482352941176,
+        "paired_t_parent": null,
+        "paired_t_iks": null,
+        "basis_delta_t": null
+      },
+      {
+        "arm": "T2_AGREE",
+        "port_t_IKS200": 0.661117773791563,
+        "port_t_parent": 1.13336518406769,
+        "port_t_EW": 1.54276444256098,
+        "ir_IKS200": 0.160478847997249,
+        "turnover": 11.7350226244344,
+        "paired_t_parent": -0.828757593370501,
+        "paired_t_iks": -0.8287575933705,
+        "basis_delta_t": -1.11022302462516e-16
+      },
+      {
+        "arm": "T3_DISP",
+        "port_t_IKS200": 0.984273516827633,
+        "port_t_parent": 1.55554172776309,
+        "port_t_EW": 2.41475625139466,
+        "ir_IKS200": 0.2322256772955,
+        "turnover": 12.4170135746606,
+        "paired_t_parent": 0.251182882964603,
+        "paired_t_iks": 0.251182882964603,
+        "basis_delta_t": 5.55111512312578e-17
+      },
+      {
+        "arm": "T1_AGREE",
+        "port_t_IKS200": 0.641201067764772,
+        "port_t_parent": 1.13012613937342,
+        "port_t_EW": 1.5969090820575,
+        "ir_IKS200": 0.153296651099469,
+        "turnover": 11.6177375565611,
+        "paired_t_parent": -1.32147375203432,
+        "paired_t_iks": -1.32147375203432,
+        "basis_delta_t": -2.22044604925031e-16
+      },
+      {
+        "arm": "T4_BOTH",
+        "port_t_IKS200": 0.633993369407741,
+        "port_t_parent": 1.10844326866199,
+        "port_t_EW": 1.61675688865235,
+        "ir_IKS200": 0.149661486847737,
+        "turnover": 12.6038009049774,
+        "paired_t_parent": -0.848138609231514,
+        "paired_t_iks": -0.848138609231514,
+        "basis_delta_t": 1.11022302462516e-16
+      },
+      {
+        "arm": "T3_BEAR",
+        "port_t_IKS200": 0.815240293413928,
+        "port_t_parent": 1.35288765800573,
+        "port_t_EW": 1.92177473122942,
+        "ir_IKS200": 0.191131809819017,
+        "turnover": 12.1433484162896,
+        "paired_t_parent": -0.462406334782291,
+        "paired_t_iks": -0.462406334782291,
+        "basis_delta_t": 0
+      },
+      {
+        "arm": "N1_SHUF_A",
+        "port_t_IKS200": 0.0606655453225139,
+        "port_t_parent": 0.4763831022994,
+        "port_t_EW": 0.821388609335797,
+        "ir_IKS200": 0.0139138846997996,
+        "turnover": 13.2988235294118,
+        "paired_t_parent": -2.48142213492095,
+        "paired_t_iks": -2.48142213492095,
+        "basis_delta_t": -4.44089209850063e-16
+      },
+      {
+        "arm": "N2_SHUF_D",
+        "port_t_IKS200": 1.18221974366819,
+        "port_t_parent": 1.77901864664869,
+        "port_t_EW": 2.4846996399855,
+        "ir_IKS200": 0.281979243584464,
+        "turnover": 13.1989140271493,
+        "paired_t_parent": 0.839754716402397,
+        "paired_t_iks": 0.839754716402397,
+        "basis_delta_t": 2.22044604925031e-16
+      },
+      {
+        "arm": "T2_LAG1",
+        "port_t_IKS200": 0.339253258843424,
+        "port_t_parent": 0.773002791671413,
+        "port_t_EW": 1.13359582928992,
+        "ir_IKS200": 0.0801382394260368,
+        "turnover": 12.5994570135747,
+        "paired_t_parent": -1.66970609486489,
+        "paired_t_iks": -1.66970609486489,
+        "basis_delta_t": -2.22044604925031e-16
+      }
+    ],
+    "invariance_note": "paired 판정은 basis 불변 (Δt ~ 1e-16). 수준값은 basis 에 크게 종속(C0 0.947 / 1.491 / 2.088).",
+    "benchmark_label_caveat": "★canonical_screen_bt 는 benchmark_id 를 'KOSPI200_total_return' 으로 하드코딩한다. 실제 넘긴 계열 = primary: .cache/benchmark.parquet(IKS200) / parent: stage_artifacts/WT-D20260822_002/p0_returns.rds$bench(K200∪KQ150 cap-w) / EW-유니버스: canonical_screen_bt 내부 diag_ew_universe."
+  },
+  "robustness": {
+    "liquidity_2e8": [
+      {
+        "arm": "C0",
+        "port_t_liq": 0.704,
+        "n_liq": 221,
+        "paired_t_liq": null
+      },
+      {
+        "arm": "T2_AGREE",
+        "port_t_liq": 0.4959,
+        "n_liq": 221,
+        "paired_t_liq": -0.599
+      },
+      {
+        "arm": "T3_DISP",
+        "port_t_liq": 0.7341,
+        "n_liq": 221,
+        "paired_t_liq": 0.2156
+      },
+      {
+        "arm": "T1_AGREE",
+        "port_t_liq": 0.246,
+        "n_liq": 221,
+        "paired_t_liq": -1.9612
+      },
+      {
+        "arm": "T4_BOTH",
+        "port_t_liq": 0.3732,
+        "n_liq": 221,
+        "paired_t_liq": -0.9071
+      },
+      {
+        "arm": "T3_BEAR",
+        "port_t_liq": 0.582,
+        "n_liq": 221,
+        "paired_t_liq": -0.3912
+      },
+      {
+        "arm": "N1_SHUF_A",
+        "port_t_liq": 0.0208,
+        "n_liq": 221,
+        "paired_t_liq": -2.0777
+      },
+      {
+        "arm": "N2_SHUF_D",
+        "port_t_liq": 0.8692,
+        "n_liq": 221,
+        "paired_t_liq": 0.5975
+      },
+      {
+        "arm": "T2_LAG1",
+        "port_t_liq": 0.1757,
+        "n_liq": 221,
+        "paired_t_liq": -1.4102
+      }
+    ],
+    "subperiod": [
+      {
+        "arm": "T2_AGREE",
+        "pre_t": -0.9501,
+        "post_t": -0.2079,
+        "pre_n": 88,
+        "post_n": 133
+      },
+      {
+        "arm": "T3_DISP",
+        "pre_t": -0.0486,
+        "post_t": 0.3101,
+        "pre_n": 88,
+        "post_n": 133
+      },
+      {
+        "arm": "T1_AGREE",
+        "pre_t": -1.1507,
+        "post_t": -0.8044,
+        "pre_n": 88,
+        "post_n": 133
+      },
+      {
+        "arm": "T4_BOTH",
+        "pre_t": -1.1326,
+        "post_t": -0.1516,
+        "pre_n": 88,
+        "post_n": 133
+      }
+    ],
+    "subperiod_note": "★진단 병기만 — era 교락 + universe_exit_unrecorded_pre201512(편입만 기록·퇴출 미기록, 편향 하방/중립). 국면 주장 승격 금지.",
+    "top5_exclusion": [
+      {
+        "arm": "T2_AGREE",
+        "full_ann": -1.0971,
+        "ex5_ann": -2.3048
+      },
+      {
+        "arm": "T3_DISP",
+        "full_ann": 0.2657,
+        "ex5_ann": -1.7048
+      },
+      {
+        "arm": "T1_AGREE",
+        "full_ann": -1.2634,
+        "ex5_ann": -1.9936
+      },
+      {
+        "arm": "T4_BOTH",
+        "full_ann": -1.1639,
+        "ex5_ann": -3.1523
+      }
+    ],
+    "top5_note": "상위 5개월 제외 시 전 arm 이 더 음수 — 관측된 소폭 양수(T3_DISP)는 소수 월 의존."
+  },
+  "advisory_battery": [
+    {
+      "arm": "C0",
+      "rank_ic": 0.0373,
+      "icir": 0.3702,
+      "ic_t_nw3": 5.3019,
+      "monotonicity": 0.8182,
+      "subperiod_stability": 1,
+      "turnover": 11.55,
+      "port_t": 0.9474
+    },
+    {
+      "arm": "T2_AGREE",
+      "rank_ic": 0.03483,
+      "icir": 0.3277,
+      "ic_t_nw3": 4.6523,
+      "monotonicity": 0.8545,
+      "subperiod_stability": 1,
+      "turnover": 11.74,
+      "port_t": 0.6611
+    },
+    {
+      "arm": "T3_DISP",
+      "rank_ic": 0.03616,
+      "icir": 0.3676,
+      "ic_t_nw3": 5.5888,
+      "monotonicity": 0.7939,
+      "subperiod_stability": 1,
+      "turnover": 12.42,
+      "port_t": 0.9843
+    },
+    {
+      "arm": "T1_AGREE",
+      "rank_ic": 0.03696,
+      "icir": 0.3673,
+      "ic_t_nw3": 5.2147,
+      "monotonicity": 0.8303,
+      "subperiod_stability": 1,
+      "turnover": 11.62,
+      "port_t": 0.6412
+    },
+    {
+      "arm": "T4_BOTH",
+      "rank_ic": 0.03481,
+      "icir": 0.3392,
+      "ic_t_nw3": 5.0693,
+      "monotonicity": 0.7818,
+      "subperiod_stability": 1,
+      "turnover": 12.6,
+      "port_t": 0.634
+    },
+    {
+      "arm": "T3_BEAR",
+      "rank_ic": 0.03613,
+      "icir": 0.3508,
+      "ic_t_nw3": 4.9333,
+      "monotonicity": 0.8667,
+      "subperiod_stability": 1,
+      "turnover": 12.14,
+      "port_t": 0.8152
+    },
+    {
+      "arm": "N1_SHUF_A",
+      "rank_ic": 0.03209,
+      "icir": 0.3072,
+      "ic_t_nw3": 4.4255,
+      "monotonicity": 0.8061,
+      "subperiod_stability": 1,
+      "turnover": 13.3,
+      "port_t": 0.0607
+    },
+    {
+      "arm": "N2_SHUF_D",
+      "rank_ic": 0.03601,
+      "icir": 0.3612,
+      "ic_t_nw3": 5.1414,
+      "monotonicity": 0.7818,
+      "subperiod_stability": 1,
+      "turnover": 13.2,
+      "port_t": 1.1822
+    },
+    {
+      "arm": "T2_LAG1",
+      "rank_ic": 0.03656,
+      "icir": 0.3457,
+      "ic_t_nw3": 4.9096,
+      "monotonicity": 0.8545,
+      "subperiod_stability": 1,
+      "turnover": 12.6,
+      "port_t": 0.3393
+    }
+  ],
+  "advisory_note": "★rank-IC 계열은 advisory (measurement-graduation §3). ic_t_nw3 4.43~5.59 로 전 arm 이 강한데 portfolio-alpha t 는 0.06~1.18 — IC→PORT_t 전이 벽의 교과서적 재현이며 Cycle 2 교훈(두 t 는 다른 양) 그대로다.",
+  "cost_awareness": {
+    "cost_model_version": "v2.4_kr_retail_15bps",
+    "turnover_annual": [
+      {
+        "arm": "T2_AGREE",
+        "cor_active_vs_C0": 0.9446,
+        "turnover_annual": 11.735,
+        "turnover_vs_C0": 0.187
+      },
+      {
+        "arm": "T3_DISP",
+        "cor_active_vs_C0": 0.9443,
+        "turnover_annual": 12.417,
+        "turnover_vs_C0": 0.869
+      },
+      {
+        "arm": "T1_AGREE",
+        "cor_active_vs_C0": 0.9767,
+        "turnover_annual": 11.618,
+        "turnover_vs_C0": 0.07
+      },
+      {
+        "arm": "T4_BOTH",
+        "cor_active_vs_C0": 0.9297,
+        "turnover_annual": 12.604,
+        "turnover_vs_C0": 1.056
+      }
+    ],
+    "note": "전 수치는 delta-based 15bps 차감 후 net. 회전율 증분 +0.07 ~ +1.06/yr. ★C0 자체 회전율 11.55/yr 로 Research Philosophy P6 권고(TO ≤ 11.0/yr)를 이미 상회 — 본 라운드가 만든 초과가 아니라 승계된 하네스 속성이며, 처치는 그것을 더 늘린다(자본 경로 진입 시 제약)."
+  },
+  "ax001_v2": {
+    "measured": [
+      {
+        "arm": "T2_AGREE",
+        "crisis_alpha_ann": 0.2305,
+        "normal_alpha_ann": -1.4271,
+        "bad_over_normal_ic_ratio": -0.1615,
+        "crisis_t": 0.1004
+      },
+      {
+        "arm": "T3_DISP",
+        "crisis_alpha_ann": -1.991,
+        "normal_alpha_ann": 0.8267,
+        "bad_over_normal_ic_ratio": -2.4083,
+        "crisis_t": -0.9711
+      },
+      {
+        "arm": "T1_AGREE",
+        "crisis_alpha_ann": -3.1863,
+        "normal_alpha_ann": -0.7854,
+        "bad_over_normal_ic_ratio": 4.0567,
+        "crisis_t": -1.6706
+      },
+      {
+        "arm": "T4_BOTH",
+        "crisis_alpha_ann": -1.6261,
+        "normal_alpha_ann": -1.049,
+        "bad_over_normal_ic_ratio": 1.5501,
+        "crisis_t": -0.5398
+      }
+    ],
+    "bad_months": 44,
+    "normal_months": 177,
+    "bad_definition": "벤치 월수익 하위 20%",
+    "note": "★가설의 regime_scope 는 holds_in 에 '위기-회복' 을 넣었는데 실측은 반대 방향이다 — T3_DISP 위기 alpha -1.99%p vs 정상 +0.83%p(위기 t -0.971). 유의하지 않으므로 국면 주장으로 승격하지 않되, 승계한 regime_scope 의 이 항목은 실측 미지지로 기록한다(재작성 아님)."
+  },
+  "dsr_diagnostic": {
+    "value": 0.786798610916871,
+    "n_trials": 4,
+    "selection_type": "preregistered_arms_no_champion",
+    "gate_status": "비발동 — sweep 형 selection(열거 trial 에서 argmax/threshold-pick) 미해당. 수치는 진단용 기록.",
+    "note": "★argmax 로 챔피언을 뽑는 순간 sweep 재분류 + DSR 0.5 HARD 발동임을 사전등록에 명시했고, 본 라운드는 각 arm 독립 라벨을 유지했다."
+  },
+  "redundancy": {
+    "cor_active_vs_C0": [
+      {
+        "arm": "T2_AGREE",
+        "cor_active_vs_C0": 0.9446,
+        "turnover_annual": 11.735,
+        "turnover_vs_C0": 0.187
+      },
+      {
+        "arm": "T3_DISP",
+        "cor_active_vs_C0": 0.9443,
+        "turnover_annual": 12.417,
+        "turnover_vs_C0": 0.869
+      },
+      {
+        "arm": "T1_AGREE",
+        "cor_active_vs_C0": 0.9767,
+        "turnover_annual": 11.618,
+        "turnover_vs_C0": 0.07
+      },
+      {
+        "arm": "T4_BOTH",
+        "cor_active_vs_C0": 0.9297,
+        "turnover_annual": 12.604,
+        "turnover_vs_C0": 1.056
+      }
+    ],
+    "note": "처치 arm 의 active 계열이 C0 와 0.930~0.977 상관 — u=0 환원 설계의 직접 귀결(수준 틸트 0, 순수 상태-조절 성분만 차이). 신규 알파 원천이 아니라 기존 마디의 조절이므로 redundancy_cluster_id 는 C0 와 동일 클러스터."
+  },
+  "verdict": "STATE_CONDITIONAL_SELECTION_POWERED_NULL_WITH_TRANSPORT_FAILURE",
+  "verdict_detail": "성과-무관 횡단면 상태 2축(팩터 간 순위 불일치 · 수익 횡단면 분산) 조건부 팩터 선택은 C0 대비 개선 없음 — co-primary 2종 모두 POWERED_NULL_NO_MATERIAL_EFFECT(T2_AGREE -1.10%p/yr t -0.829 CI95 상단 +1.50 · T3_DISP +0.27%p/yr t +0.251 상단 +2.34, MATERIAL 8.22 배제). ★그런데 이 라운드의 실질 산출은 성과 null 이 아니라 **성과 이전에 나온 두 개의 분리 판정**이다: (1) R1 수송 게이트 — 완전예지 여유폭(연 +13.69%p)이 관측 가능 상태축에 무관(t +0.876 / +0.384) ⇒ 여유폭의 실재와 지목 가능성은 다른 명제다. (2) 전도성 확립 — 완전예지 상태를 넣으면 같은 규칙이 t 2.01~2.47 을 낸다 ⇒ null 은 규칙 무력이 아니라 상태 정보 부재다. 그리고 (3) 기전의 agent 는 실재한다(F3 고분산월 개인 순매수 집중 상승 t +1.78) — 죽은 고리는 agent 도 규칙도 아닌 '상태 → 어느 팩터를 신뢰할지' 의 전이다(F1 t 1.08, 순열 p 0.279). 부수 확립(신규·이 라운드가 처음 잰 것): 완전예지 상태조차 **소프트 가중** 형태로는 여유폭의 25.2% 만 회수하고 PORT_t 1.70~1.82 로 벽 미달 — ORACLE_K 의 4.647 은 **이산 하드 선택**의 상한이며 소프트 틸트 족의 상한은 그보다 훨씬 낮다. 이는 후속 설계 공간을 좁힌다.",
+  "round_verdict": "CONFIG_SCOPED_NEGATIVE__STATE_AXIS_DOES_NOT_INDEX_FACTOR_HEADROOM",
+  "next_probe": [
+    {
+      "id": "NP1",
+      "title": "이산 하드 선택 형태의 상한 재측정 (소프트 틸트 상한 3.45%p 의 형태 의존성)",
+      "rationale": "본 라운드 신규 실측 — 오라클 상태를 소프트 가중으로 흘리면 여유폭의 25.2% 만 나온다. ORACLE_K(하드 단일 선택)와의 격차 3/4 가 순수 형태 손실인지, 아니면 '하드 선택은 오라클 정보의 다른 부분을 쓴다' 인지 미분리. 오라클 상태 + argmax 하드 선택 arm 을 사전등록해 형태-손실을 정량 분리한다(오라클 arm 은 판정 대상 아닌 상한 눈금이므로 sweep 아님).",
+      "consumes": "본 라운드 p4_conduit.rds + FQ-244 p4_verdict.rds"
+    },
+    {
+      "id": "NP2",
+      "title": "상태 아닌 **구조** 축 — 팩터별 유효 종목수·커버리지 이질이 슬롯 배분을 지배하는가",
+      "rationale": "R1 이 시간축 상태를 기각했으므로 남은 축은 팩터-횡단면 구조다. FQ-116 이 M3(커버리지 이질)를 tercile |t| 0.88 로 기각했으나 그것은 다른 팩터 풀(고정 5종)이었고, 본 풀(매월 재선별 K=5, 선별 이력 103종·13 계열)에서는 미측정. F2 에서 처치가 월 3.7~9.7 종목을 실제로 움직였다는 사실은 슬롯 배분이 여전히 살아있는 레버임을 뜻한다.",
+      "consumes": "본 라운드 alpha_scores.parquet + p1c_family.rds"
+    },
+    {
+      "id": "NP3",
+      "title": "F3 양성의 독립 소비면 — 개인 순매수 집중을 팩터 선택이 아니라 **위험/모니터링 축**으로",
+      "rationale": "F3 는 통과했는데 팩터 선택으로의 전이만 실패했다(소비면 7종 체크리스트 ④⑤). 고분산×개인집중 월은 risk-research 의 crowding 진단과 monitoring tripwire 후보이며, 알파 선택면이 아닌 곳에서 소비 가능성이 미측정으로 남는다.",
+      "consumes": ".cache/investor_stock/investor_wide.parquet + 본 라운드 p4_conduit.rds$conc"
+    }
+  ],
+  "revival_conditions": {
+    "state_axis_revival": "새 상태 후보가 ORACLE_K 여유폭 회귀에서 |t| ≥ 1.5 (R1 게이트)를 통과하면 본 축은 즉시 재개. 본 라운드는 축 2종(+강등 1종)만 기각했지 '상태 조건부 선택' 족을 기각하지 않았다(INV-7 config-scoped).",
+    "soft_tilt_ceiling_revival": "소프트 틸트 상한 3.45%p 는 본 규칙 2종(중심성·계열방향)에서 잰 값이다. 다른 가중 함수형이 오라클 상태로 더 높은 상한을 내면 형태-손실 진단은 갱신된다.",
+    "bear_prob_revival": "bear_prob 축은 성과-파생이라 사전에 강등했고 실측도 여유폭 회귀 t -1.354(부호 반대). DFA 아크의 위기-조건부 3배 우위는 여전히 소비면 후보이나 팩터 선택면에서는 재개 신호 없음."
+  },
+  "falsification_format_note": "반증 조건에 처치 arm 의 PORT_t 는 등장하지 않는다(성과 동어반복 금지 준수). F1 의 rank-IC 는 처치 성과가 아니라 기전의 매개변수다."
+}

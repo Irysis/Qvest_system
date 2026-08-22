@@ -1,10 +1,10 @@
 {
   "schema_version": "distilled_knowledge_v1",
-  "generated_at": "2026-08-22T05:40:45+00:00",
+  "generated_at": "2026-08-22T17:24:52+0900",
   "note": "Axiom 엔진 ②Distilled 계층 통합 인덱스. lifecycle: pending_5axis→[자동초안+적대검증]→proposed→[도훈 배치승인]→distilled→promoted|expired. INV-6(2026-07-04 재정의: 무인 활성화 금지): 주입/truths 소비는 status=distilled만 — proposed·pending_5axis 초안 텍스트 주입 금지(안전속성 보존).",
   "n_entries": 162,
-  "n_distilled": 15,
-  "n_proposed": 10,
+  "n_distilled": 16,
+  "n_proposed": 9,
   "entries": [
     {
       "dist_id": "DIST-AR-001",
@@ -7009,16 +7009,17 @@
       "type": "methodological",
       "polarity": "conditional",
       "metric_type": "estimated",
-      "status": "proposed",
-      "statement_refined": "지수-비중 최적화 계열(Black-Litterman / Shu-Mulvey)을 KR 배포 형태인 top-25 횡단면으로 변환하면 엣지가 남지 않는다 — 손실 지점은 신호 부재가 아니라 변환이다. 4접근{univ all|index × weighting} 전수 변환에서 배포 가능 구성 0. 같은 라인에서 국면엔진 결합도 역효과였다: Cascade 단독 PORT_t 2.85 대비 순진 앙상블 2.61 · 트레일링IR 가중 앙상블 2.65 · 다축 경제분업 2.71 로 셋 다 미달하며, 원인은 엔진 간 redundancy 다 (트레일링 IR 0.195~0.203 으로 사실상 동일 → 결합이 최강 엔진을 희석). 이 라인은 방법론 경고 2건을 함께 남겼다: (1) 앞서 보고된 'oos_retention 0.52 조건부 졸업'은 sweep 부풀림 아티팩트였고 (2) grid-ensemble PORT_t 3.0 은 de-bias 가 아니라 과매끈 config(λ=100)를 섞은 나쁜 구성의 평균이었다 — 유효 검증은 완전 인과적 rolling re-tune(매 시점 과거 데이터만) 뿐이다. 전제 실측: factor_db 316 전수에서 standalone PORT_t>1 은 0/316 이고, 직교성은 gross 가 아니라 active(−BM) basis 에 존재한다(core↔def 0.45).",
+      "status": "distilled",
+      "statement_refined": "지수-비중 최적화 계열(Black-Litterman / 팩터 모멘텀 배분)을 KR 배포 형태인 top-25 횡단면으로 변환하면 엣지가 남지 않는다 — 손실 지점은 신호 부재가 아니라 변환이다. ★2026-08-22 기전 정밀화(DFA 아크 R29~R45, 구성 6회·노출 4회 전수 측정): 변환에서 **살아남는 것은 알파가 아니라 베타다**. 세 변환 계열의 시장상관과 OOS 성과 순위가 완전히 일치한다 (T1 팩터별5종 0.683 → clean IR -0.476 / M2 중간형태 0.831 → -0.182 / T3 비중상위25 0.941 → +0.305; cor(시장상관, clean IR) = +0.974, n=3 이므로 방향 확인용). 기전 = 이 신호의 알파는 **절대 크기가 작다**. 지수배분팔의 PORT_t 2.802 는 활성 수익이 커서가 아니라 활성 vol 이 0.081 로 극히 작아서 나온다(작지만 일관된 초과수익 / 아주 작은 활성위험 = 큰 t). 제약(<=25종)은 활성위험을 지도록 **강제**하는데(T1 활성 vol 0.199 = 2.5배) 그 순간 알파가 특이위험에 파묻힌다. ⇒ 06-19 의 4접근 전패(-0.64 ~ -3.13)부터 T3 의 '생존'(시장상관 0.961 = 알파를 안 지므로)까지가 이 구조 하나로 설명된다. ★단서 2건: (1) 시장 근접은 **필요조건이지 충분조건이 아니다** — 추적오차 최소화팔(TE_MIN)이 M2 보다 시장에 가까운데 (0.867 > 0.831) 성과는 더 나쁘다(-0.482 < -0.182). 두 번째 기전 = 선택이 in-sample 최적화면 무너진다. (2) T3 마저 **무신호 대조군(유니버스 시총 상위 25종 cap-w, 팩터 신호 미사용)과 구별되지 않는다** — clean 차이 +0.06%/yr NW-t 0.028(2026 포함) / -0.38%/yr NW-t -0.163(2026 제외), 상관 0.958~0.960. 오히려 무신호 대조의 IR(+0.437)과 PORT_t(+1.418)가 T3(+0.305, +1.065)보다 높다. ★정량화된 부활 조건: 필요 신호품질 = 현재 rank-IC 의 **4.18배**(0.107 → 0.447; 분포보존 rank 열화 사다리 ρ 격자 9 x 25 draw, calmar 0.64 교차 IC). 같은 신호를 다르게 쓰는 범주 전체의 잔여는 갭의 **4.3%** 뿐이다. ★부수 실측 2건: (a) 지수 빌더가 매월 top-tercile 재구성 비용을 부과하지 않았다(팩터별 월 회전율 200배 격차, 선택 5팩터 가중 연 0.890% = 초과수익의 15.9%). 수리 후 PORT_t 2.882 → 2.434. (b) clean 창 수치는 2026 7개월(표본 5.3%, 일별 vol 0.658 = 역사 중앙 3.93배)에 의존한다 — 제외 시 비용수리 지수팔 PORT_t 가 **-0.001** 로 초과수익이 소멸. 유의 알파 팔은 양 판본 모두 0건.",
       "statement_draft": "[방법론 조건부 규칙 초안] family=value, tags=R,A,M, supporting=31건 L-code. (promote.R 5축 검증에서 범위·메커니즘·OOS 확정 필요)",
-      "retry_condition": "재도전은 변환 손실을 직접 겨냥할 때만 의미가 있다: (1) 지수-비중이 담은 정보를 top-25 안에서 보존하는 구성(예: 비중 정보를 종목 선택이 아니라 sleeve 배분에 사용) (2) 엔진 redundancy 해소 — 트레일링 IR 상관이 낮은 신규 국면 축을 먼저 확보한 뒤 결합 (3) 인과적 rolling re-tune 프로토콜을 다른 계열에 이식해 sweep 부풀림 없는 oos 를 재산출.",
+      "retry_condition": "재도전은 다음 중 하나가 성립할 때만 의미가 있다: (1) ★신호 강도 — rank-IC 가 현재(0.107)의 4.18배 수준에 근접할 것. 그 이하에서는 제약(<=25종)이 강제하는 활성위험을 알파가 감당하지 못한다는 것이 구성 6회 전수 측정으로 확인됐다. (2) 팩터 프리미엄 복귀 — 무-타이밍 EW 팩터 바스켓 active 가 trailing 36M 기준 양(+)으로 복귀할 것 (pre-2015 +3.11%/yr → clean -1.04%/yr 부호 반전이 현 구속의 절반을 만든다). (3) 신규 신호원이 **무신호 대조군을 유의하게 이길 것** — no_signal_gate(02_Infrastructure/contracts/no_signal_control.R, 2026-08-22 신설·배터리 편입)를 통과해야 신호 기여가 인정된다. 제약형 롱온리는 그 형태 자체가 대형주 노출을 담으므로 '벤치를 이겼다' 만으로는 증명되지 않는다. (4) 배포 형태가 바뀌어(다중 슬리브 book 등) 활성위험 요구가 달라질 것 — 도훈 자본 결정 사안이며 본 카드가 유도할 항목이 아니다. ★미검으로 남은 축 2개: 추적오차 최소화의 **비중 동시 최적화** 판(본 아크는 고정 비중 greedy 만 측정) · 노출 응답 **깊이** 축(4회 전부 0/1 이진이었다).",
       "adversarial_verdict": "REVISED — (a)과장: 'PORT_t 3.0 달성' 류 수치를 본문에서 제거하고 그것이 나쁜 config 평균이었다는 자기정정을 명시. (b)근거: supporting 31건 실측(backtested 23 / canonical_screen 7 / unavailable 1). (c)AX-000: 구조적 한계 단정 없음 — 변환 손실이라는 기전 귀속 + 미검 경로 3종 명시. (d)제약 방화벽(semantic): 실패를 종목수·long-only 에 귀속하지 않고 **방법의 breadth 의존성**으로 귀속. 제약 완화를 레버로 제시하지 않았고 레버는 전부 조건-안. (e)프론티어: 미탐색 인접 3종 + live_trigger 2종 + expiry 기재.",
       "expiry": "2027-02-09",
       "frontier": [
-        "지수-비중 정보를 종목 선택이 아니라 sleeve 배분 층에 태우는 변환 (breadth 의존을 우회)",
-        "트레일링 IR 상관이 낮은 신규 국면 축 확보 후 결합 — redundancy 가 해소된 상태에서만 앙상블 재시도",
-        "인과적 rolling re-tune 프로토콜의 타 계열 이식 (sweep 부풀림 없는 oos 재산출 표준)"
+        "신호 강도 축 — 새 신호원을 이 아크의 3개 자산(측정 하네스 · no_signal_control 계약 · 필요 배수 4.18)으로 평가",
+        "추적오차 최소화의 비중 동시 최적화(cardinality-constrained QP) — 고정 비중 greedy 는 선택 과적합으로 기각됨",
+        "노출 응답 깊이 축(부분 축소) — 지금까지 4회 전부 이진 노출이라 PORT_t 희석이 과도했다",
+        "지수 구성단계 버킷 내 가중 교체(cap-w → EW) — 자산집합의 낙폭 기하 자체를 바꾸는 미검 축"
       ],
       "live_trigger": [
         {
@@ -7088,7 +7089,7 @@
       "cluster_key": "c4308a214e2b",
       "promoted_to_axiom": null,
       "created_at": "2026-07-18T00:23:16+00:00",
-      "refined_at": null,
+      "refined_at": "2026-08-22T17:24:51+0900",
       "drafted_at": "2026-08-09T15:11:33+0900",
       "approved_at": null,
       "source_file": "DIST-RAMP-014.json"
