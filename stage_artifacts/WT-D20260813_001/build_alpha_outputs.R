@@ -101,7 +101,6 @@ av <- list(
   verdict = verdict$verdict_overall,
   verdict_detail = list(perf = verdict$verdict_perf, F1 = fals$F1_tail_hit$verdict,
     F2 = fals$F2_contrib_concentration$verdict, F3 = fals$F3_skew_link$verdict))
-)
 write_json(av, file.path(OUT, "alpha_validation.json"), auto_unbox = TRUE, pretty = TRUE, digits = 8, na = "null")
 cat("alpha_validation.json 저장 완료\n")
 saveRDS(list(rank_ic=rank_ic, icir=icir, harvey_t=harvey_t, monotonicity=monotonicity,
