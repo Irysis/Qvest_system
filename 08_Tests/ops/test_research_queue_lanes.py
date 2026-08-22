@@ -170,7 +170,7 @@ try:
     got = {x["strategy_id"] for x in R.promotion_pending(tmp)}
     ok("참조 없음 → 재대상화") if got == {"STR_AS_B4"}         else ng("과잉 배제", "got=%s" % got)
 
-    print("== C 정렬 계약: 측정 백로그가 신규 적재보다 앞에 오는가 ==")
+    print("== C 정렬 계약: 이어붙이기가 새로 쌓기보다 앞에 오는가 ==")
     registry(tmp, [{"method_id": "M_NEED", "paper_id": "2601.10001",
                     "verdict": "implemented"}])
     os.makedirs(os.path.join(stage), exist_ok=True)
@@ -181,10 +181,16 @@ try:
             "risk": [], "regime": []}, fh, ensure_ascii=False)
     q = R.research_queue_pending(stage, tmp)
     lanes = [x["lane"] for x in q]
-    if lanes and lanes[0] == "method_measure":
-        ok("정렬 1순위 = method_measure (등재만 쌓이는 재발 방지)")
+    # 계약: 진행 중인 것을 잇는 레인(qepm_dossier · paper_promotion)이
+    #   새로 쌓는 레인(method_measure · alpha · opt/risk/regime)보다 항상 앞.
+    _ADVANCE = ("qepm_dossier", "paper_promotion")
+    _ACCUM = ("method_measure", "alpha", "optimizer", "risk", "regime")
+    first_accum = next((i for i, l in enumerate(lanes) if l in _ACCUM), len(lanes))
+    last_adv = max((i for i, l in enumerate(lanes) if l in _ADVANCE), default=-1)
+    if last_adv < first_accum:
+        ok("이어붙이기 레인이 전부 앞선다 (선두=%s)" % (lanes[0] if lanes else "-"))
     else:
-        ng("정렬 계약", "lanes=%s" % lanes[:4])
+        ng("정렬 계약", "lanes=%s — 새로 쌓기가 이어붙이기를 앞질렀다" % lanes[:5])
 finally:
     shutil.rmtree(tmp, ignore_errors=True)
 
