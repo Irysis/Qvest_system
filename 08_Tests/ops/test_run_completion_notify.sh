@@ -193,5 +193,29 @@ out=$(QVEST_RUN_TIMEOUT=1 bash -c "$(cat "$_RC_SH" | sed "s/_run_claude echo RAN
 echo "$out" | grep -q "rc=124" && ok "env 지정 시 실제로 상한이 걸린다(위반 주입)" || ng "상한 실효" "got=$out"
 rm -f "$_RC_SH"
 
+echo "== 창 축: 런 시작 시각을 알림기에 넘기는가 (남의 산출 귀속 방지) =="
+# v2 알림기는 since 로 인사이트 수집 창을 자른다. 러너가 안 넘기면 기본 4시간 창이 쓰여
+#   런이 30분이어도 직전 3.5시간의 남의 산출까지 자기 것으로 보고한다.
+#   오늘 여섯 번 겪은 "범위를 안 정하고 센다" 의 알림 판본 — 배선 당일 실제로 빠져 있었다.
+for f in $RUNNERS; do
+  p="$OPS/$f"
+  a=$(grep -n "_NOTIFY_SINCE=" "$p" | head -1 | cut -d: -f1)
+  # 함수 **정의**(_run_claude(){ ) 가 아니라 **호출**을 잡는다 — 정의가 앞서므로
+  #   그대로 쓰면 순서 판정이 뒤집힌다(도입 당일 실제로 오탐).
+  b=$(grep -nE "_run_claude .*-p " "$p" | head -1 | cut -d: -f1)
+  c=$(grep -n "research_run_notify" "$p" | head -1 | cut -d: -f1)
+  if [ -z "$a" ]; then
+    ng "$f 창 미전달" "since 미기록 — 기본 4시간 창이 남의 산출을 삼킨다"
+    continue
+  fi
+  if grep -q "_NOTIFY_SINCE:-" "$p"; then ok "$f — since 를 알림기에 전달"
+  else ng "$f 인자 누락" "기록만 하고 안 넘긴다"; fi
+  if [ -n "$b" ] && [ -n "$c" ] && [ "$a" -lt "$b" ] && [ "$b" -lt "$c" ]; then
+    ok "$f — 기록 < claude < 알림 순서"
+  else
+    ng "$f 순서" "claude 뒤에 찍으면 그 런의 산출이 창 밖으로 나간다 (a=$a b=$b c=$c)"
+  fi
+done
+
 echo "== t_summary: PASS=$PASS FAIL=$FAIL =="
 [ "$FAIL" -eq 0 ] || exit 1
