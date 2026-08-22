@@ -1,0 +1,41 @@
+{
+  "prereg_id": "mfro_v7_20260822",
+  "created_at": "2026-08-22",
+  "created_before_any_result": true,
+  "round": "R65",
+  "title": "신호 원천 감사 — 무비용 지수가 고회전 팩터를 유리하게 만들어 '랭킹 기여'를 만든 것인가",
+  "chain_parent": "mfro_v5_20260822 (R60)",
+  "selection_type": "chain",
+
+  "why_this_round_exists": "적대검증 wf_9ac58124-3e4 이 미검 표면으로 지목: 'DFA 21 지수 빌더에 비용 토큰 0건 — 무비용 지수의 12M trailing active 는 고회전 팩터를 체계적으로 유리하게 만든다. 승자 선택이 회전율로 편향됐는지 미측정.' 내가 소스로 확인: ramp_shumulvey_indices.R 에 bps/cost/turnover 토큰 **0건**이고 일별 수익은 `sum(Size_lag*Ret)/sum(Size_lag)` 순수 VW gross 다. 월별 top-tercile 재구성이 무과금이다. ⇒ **R60 이 확립한 유일한 양성 결과(랭킹 기여, permB clean p=0.005)가 이 편향의 산물일 수 있다.** 토대 검증이 개선보다 먼저다.",
+
+  "mechanism_hypothesis": "팩터 j 의 지수는 매월 상위 33% 를 재구성한다. z 가 빠르게 변하는 팩터(예: Reversal, ForeignFlow, SmartMoney 같은 단기 신호)는 멤버십 회전이 크고, 무과금이면 그 회전 비용이 수익에서 빠지지 않는다. trailing 12M active 가 그만큼 부풀고, 상위 5 선정이 고회전 팩터로 쏠린다. 그런데 그 팩터들의 z 로 종목을 재틸트하면 실제 포트폴리오는 비용을 낸다 — 즉 **신호는 무비용 세계에서 뽑고 소비는 유비용 세계에서 한다**.",
+
+  "design": {
+    "step1": "패널(mfro_panel.parquet)에서 지수 멤버십을 재구성 — 각 ym·팩터별 z 상위 33.33%(SMV_TOPQ=0.6667 동일), mktcap 가중. ★패널은 유동성 미필터 상태로 저장돼 있어 지수 유니버스와 동일하다.",
+    "step2": "월별 회전율 산출 — 직전월 비중을 그 달 수익으로 drift 시킨 뒤 신규 비중과의 L1. 팩터별 연 회전율 보고.",
+    "step3": "비용 부과 지수 수익 = gross − bps × turnover (재구성 다음 달에 과금). bps ∈ {0(현행), 15, 30}.",
+    "step4": "비용 부과 지수로 trailing 12M active(S) 재구축 → 승자 재선정 → 랭킹 고유 기여(D1−AP) 재측정."
+  },
+
+  "judgment": {
+    "primary": "비용 부과(15bps) 지수로 재구축한 신호의 랭킹 고유 기여 clean NW-t 와 permB 우측 p",
+    "diagnostic_1": "팩터별 회전율과 trailing active 의 Spearman 상관 — 양수이고 크면 편향 기전 확인",
+    "diagnostic_2": "승자 선정 빈도와 회전율의 상관 — 고회전 팩터가 실제로 더 자주 뽑히는가",
+    "pass_rule": "비용 부과 후에도 permB p<0.05 이고 NW-t 가 무비용 대비 30% 이내 감소면 **랭킹 기여는 비용 아티팩트가 아니다**(R60 결과 유지).",
+    "fail_rule": "비용 부과 후 permB p>=0.05 이거나 NW-t 가 30% 초과 감소하면 **R60 의 랭킹 기여는 무비용 편향의 산물**이며, FQ-247 라벨과 이 아크의 유일한 양성 결과를 철회해야 한다.",
+    "all_cells_reported": "bps {0,15,30} × 진단 2종 전수."
+  },
+
+  "expected_failure_mode": [
+    "★결과 전 선언: 랭킹 기여가 **살아남을 것**으로 예상한다(60:40). 근거 — (a) 상위 33% 재구성은 z 분포의 꼬리가 아니라 3분의 1 경계라 회전이 극단적이지 않을 것 (b) 비용은 모든 팩터에 걸리므로 **랭킹**(상대 순위)에는 부분적으로만 영향 (c) D1−AP 는 같은 우주·같은 비용의 두 팔 차이라 지수 비용은 신호 선정에만 들어간다.",
+    "★그러나 진단 1·2 에서 회전율↔active 상관이 크게 나오면 기전은 실재하는 것이고, 그 경우 살아남더라도 **크기는 과대추정**이었다는 뜻이다.",
+    "★기여가 소멸하면 이 아크의 유일한 양성 결과가 사라진다. 그것은 나쁜 소식이지만 **알아야 할 소식**이고, 8라운드를 그 위에 쌓은 뒤 발견하는 것보다 지금이 낫다."
+  ],
+
+  "binding_constraints": [
+    "성과 서술은 본 라운드 실행 산출값만. metric_type=canonical_screen.",
+    "지수 빌더(ramp_shumulvey_indices.R)를 수정하지 않는다 — 본 라운드는 감사이며, 수정이 필요하면 별도 라운드에서 사전등록.",
+    "book_state 쓰기·governor admit 금지. 05_Production 읽기만."
+  ]
+}

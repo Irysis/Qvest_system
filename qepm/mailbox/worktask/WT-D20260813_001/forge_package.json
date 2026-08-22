@@ -1,0 +1,61 @@
+{
+  "task_id": "WT-D20260813_001",
+  "forge_authoritative": true,
+  "metric_type": "backtested",
+  "measurement_basis_primary": "forge_realized_share_based",
+  "portfolio_alpha_t_nw_lag3": 0.8366,
+  "portfolio_alpha_t_beta_adj": 1.2066,
+  "beta_controlled_alpha_ann": 0.0869,
+  "beta_to_bm": 0.8141,
+  "oos_retention": -0.855,
+  "oos_retention_splits": [-0.486, -0.855, -0.927],
+  "calmar": 0.2122,
+  "ann_sr": 0.5781,
+  "ann_cagr": 0.142,
+  "ann_mdd": 0.6694,
+  "annualized_turnover_oneway": 5.3007,
+  "n_months": 198,
+  "sr_realized_share_based": 0.5781,
+  "graduation_verdict": {
+    "port_t_hard": "FAIL",
+    "oos_retention_hard": "FAIL",
+    "calmar_hard": "FAIL",
+    "overall": "FAIL",
+    "thresholds": {
+      "port_t": 2.95,
+      "oos_retention": 0.7,
+      "calmar": 0.64
+    }
+  },
+  "no_signal_gate_result": "INDISTINGUISHABLE_FROM_NO_SIGNAL",
+  "no_signal_gate_detail": {
+    "diff_ann": 0.0729,
+    "diff_nw_t": 0.9718,
+    "corr": 0.5979,
+    "strategy_t_alpha": 1.2011,
+    "strategy_port_t": 0.8376,
+    "control_t_alpha": -0.9591,
+    "control_port_t": -0.8592
+  },
+  "no_signal_gate_note": null,
+  "cost_model_version": "v2.4_kr_retail_15bps",
+  "schedule": {
+    "source": "stage_artifacts/WT-D20260813_001/weights.csv (as-is)",
+    "n_holding_months": 198,
+    "period": "2010-03-02 ~ 2026-08-03",
+    "fidelity": "weights.csv holding_month schedule consumed as-is; no alpha_scores re-selection"
+  },
+  "hash_audit": {
+    "alpha_hash_start": "17d1faff2075df930bbce7c42234e283",
+    "risk_hash_start": "0ba255f0536d955fbbc2d39c562b367b",
+    "opt_hash_start": "137a570fd250066b9c4a36decd93bc44",
+    "alpha_hash_end": "17d1faff2075df930bbce7c42234e283",
+    "risk_hash_end": "0ba255f0536d955fbbc2d39c562b367b",
+    "opt_hash_end": "137a570fd250066b9c4a36decd93bc44",
+    "integrity_pass": true
+  },
+  "upstream_verdict": "NOT_SUPPORTED (alpha research_verdict; paired NW3 t=+0.828)",
+  "scope_note": "forge re-measurement of q90 pinball weights.csv schedule. graduation HARD 3종 통과 주장 아님 — 실측 정직 보고. PORT_t 는 alpha+(beta-1)*E[bm] 를 섞으므로 알파 판정은 beta-controlled t(alpha) 로.",
+  "generated_at": "2026-08-22T21:55:06+09:00",
+  "bt_result_path": "stage_artifacts/WT-D20260813_001/bt_result.rds"
+}

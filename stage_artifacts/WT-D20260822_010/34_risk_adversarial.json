@@ -1,0 +1,67 @@
+{
+  "SC1_noise_artifact": {
+    "by_quintile": [
+      {
+        "qs": "1",
+        "n": 12597,
+        "mean_n_win": 60.370405652139,
+        "sd_absorb": 0.2687582122114,
+        "mean_abs_absorb": 0.3095324817178,
+        "mean_sd0": 0.138397967374
+      },
+      {
+        "qs": "2",
+        "n": 12681,
+        "mean_n_win": 60.456273164577,
+        "sd_absorb": 0.1713285827032,
+        "mean_abs_absorb": 0.5717104943072,
+        "mean_sd0": 0.118255210469
+      },
+      {
+        "qs": "3",
+        "n": 12696,
+        "mean_n_win": 60.506458727158,
+        "sd_absorb": 0.1460355420097,
+        "mean_abs_absorb": 0.6633903629775,
+        "mean_sd0": 0.11540417127
+      },
+      {
+        "qs": "4",
+        "n": 12681,
+        "mean_n_win": 60.478511158426,
+        "sd_absorb": 0.1303027957083,
+        "mean_abs_absorb": 0.7051400395188,
+        "mean_sd0": 0.1194121109407
+      },
+      {
+        "qs": "5",
+        "n": 12781,
+        "mean_n_win": 59.231473511229,
+        "sd_absorb": 0.1084873701299,
+        "mean_abs_absorb": 0.7400719031631,
+        "mean_sd0": 0.1283114350296
+      }
+    ],
+    "obs_count_flat": true,
+    "obs_count_range": [59.231473511229, 60.506458727158],
+    "sd_absorb_Q1_over_Q5": 2.477322585012,
+    "verdict": "PARTIAL — '관측수 부족' 버전은 기각(n_win 전 분위 ~60 평평). '고변동→absorb 추정분산 확대' 버전은 지지(Q1 sd 2.48배, 관측수 동일). 단 Q5 의 높은 sd0 은 이 설명으로 안 됨(부분 설명).",
+    "implication_risk_layer": "처분 불변 — 기전이 (a)대리든 (b)잡음-선택이든 위험모델 한계기여는 없음.",
+    "implication_alpha_layer": "권한 밖 — NP2 직교화 후 t -4.32 의 일부가 잡음-선택 아티팩트일 가능성. 판정하지 않고 next_probe NP5 등재."
+  },
+  "SC3_detection_floor": {
+    "mde_as_share_of_raw_relgap": 0.2995888060305,
+    "surviving_point_measure": 0.009264099298039,
+    "surviving_point_controls_thr20": 0.02219136890558,
+    "corrected_label": "잔존 >= 30% 는 효과없음(powered null) / 잔존 < 30% 는 미결(underpowered)",
+    "verdict": "ACCEPT — 단독 '효과없음' 표기 철회, 하한 병기 문면으로 교체"
+  },
+  "SC2_tail_persistence_tautology": {
+    "winsorized_sd_ratio_lo_hi": 1.151462998798,
+    "raw_sd0_ratio_lo_hi": 1.154128277083,
+    "n": 63436,
+    "verdict": "REBUTTAL — 과거 -20% 이하를 winsorize 해 꼬리사건 정보를 제거해도 vol 비가 1.1515 로 원본 1.1541 과 사실상 동일. 두 군의 변동성 격차는 평시 변동성에서 온다."
+  },
+  "note": "challenge_note_risk.md 와 1:1 대응. SC-4(관문 MDE 10.3배 과소) / SC-5(관문 내 결과 사용) / SC-6(FQ-058 차별점) 은 서술 항목이라 본 JSON 에 수치 없음.",
+  "metric_type": "estimation_quality__adversarial"
+}

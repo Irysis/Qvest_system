@@ -1,0 +1,19 @@
+{
+  "l_code": "L-AR-20260822_215840_02",
+  "strategy_id": "WT-D20260822_010_gate",
+  "grade": "C",
+  "core_reference": "WT-D20260822_010 risk_package.json / stage_artifacts/30_risk_gate.json / 02_Infrastructure/contracts/required_effect_size.R",
+  "lesson_text": "순열 기반 MDE 는 추정기 자체의 추정오차 분산을 누락한다. 실측 — 사전 순열 MDE80 0.00290 vs 실현 0.02998(10.3배 과소). 원인: 순열 귀무가 배정만 무작위화하고 처치 크기를 고정하므로 처치효과 추정기의 표집분산이 귀무분포에 들어가지 않는다. 결과: 착수 관문 ratio 가 0.672 로 계산돼 통과했으나 실제는 0.065 로 착수 자격 미달이었다(관문이 통과시키면 안 될 라운드를 통과시켰다). 수리 = 이중 재표집(배정 무작위화 + 추정기 재표집). 소급 = 순열 MDE 로 관문을 통과한 기존 라운드 점검. ★부수 규율 — '자유면(자본 게이트 없음)' 과 '검출 가능면(검정력 있음)' 은 다른 축이다. risk 층은 자본 게이트가 없어 자유면이었으나 관문 ratio 가 alpha 층(0.1465)보다 한 자릿수 낮았다(0.0158~0.0649). 소비면 체크리스트 순회 시 게이트 유무와 검정력을 같은 축으로 읽지 말 것.",
+  "tags": ["mde", "permutation", "power", "gate", "precheck", "transferable"],
+  "created_at": "2026-08-22",
+  "research_mode": "alpha_research",
+  "created_by": "emit:alpha_research",
+  "metric_type": "estimated",
+  "construction_type": "diagnostic_no_capital",
+  "mechanism_hypothesis": "순열 검정의 귀무분포는 라벨 교환 하의 통계량 분포이지 추정기 분산을 포함한 효과크기 분포가 아니다. MDE 는 후자를 필요로 한다.",
+  "lcode_schema_version": 2,
+  "falsification_attempts": "실현 MDE 를 실측 재표집으로 재산출해 사전값과 직접 대조(10.3배). 관문 5축 전건 재판정으로 방향 확인(0.0158~0.0649 전부 미달).",
+  "selection_type": "single",
+  "record_type": "process",
+  "family": "methodology_power"
+}

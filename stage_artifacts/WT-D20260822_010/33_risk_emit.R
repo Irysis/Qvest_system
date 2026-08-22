@@ -1,5 +1,5 @@
 ## WT-D20260822_010 — risk_package 발행 (진단 모드, optimizer 전이 없음)
-suppressPackageStartupMessages({ library(data.table); library(arrow); library(jsonlite) })
+suppressPackageStartupMessages({ library(data.table); library(arrow); library(jsonlite); library(dplyr) })
 ROOT <- Sys.getenv("QM_ROOT", "C:/Users/99922/OneDrive/Quant_Module_Moltbot"); setwd(ROOT)
 OUT <- file.path(ROOT, "stage_artifacts/WT-D20260822_010")
 MBX <- file.path(ROOT, "qepm/mailbox/worktask/WT-D20260822_010")
@@ -144,7 +144,20 @@ pkg <- list(
     grounds = "본 산출은 (a) 자본 배분(weight/book)에 도달하지 않고 (b) forge-authoritative 성과 수치를 생산하지 않으며 (c) 판정 지표가 전부 추정품질 enum(R4 P3) 안에 있다. Q-Lead 2026-08-22 소비면 7종 판정의 ④항 자유면 승계.",
     capital_claim = "없음 — graduation 주장 금지 준수"),
 
-  next_probe = CJ$next_probe,
+  next_probe = list(
+    list(id = "NP1", title = "공동위험(상관) 채널 — 본 라운드가 만진 것은 **자기 분산·자기 꼬리**뿐이다",
+         statement = "score_orth 가 종목 **간** 공동움직임(상관·꼬리의존 TDC)을 예측하는지는 미측정이다. 흡수 판정은 own-vol 채널에 한정된다. 일별 RAWDATA 로 저-orth 군의 군집 내 평균상관·하방 TDC 가 고-orth 군과 다른지 측정.",
+         gate_required = "착수 전 관문 필수 — 상관은 묶이는 단위가 관측이 아니라 **군집**이므로 cluster_power.R 경유(measurement-graduation 참조계약).",
+         why_not_now = "일별 패널 로드 + 군집 검정력 계약이 별도 사이클. 본 라운드 관문 산술 대상 아님."),
+    list(id = "NP2", title = "관문 MDE 규약 수리 — 이중 재표집",
+         statement = "순열 귀무가 추정기의 추정오차를 누락해 MDE 를 10.3배 과소평가했다(R3). 관문 계약에 '귀무 데이터에 추정기 재적합' 단계를 추가하고, 기존 관문 통과 판정 중 순열-기반 MDE 를 쓴 건이 있는지 소급 점검.",
+         scope = "인프라 — 본 라운드 밖 태스크로 분리 권고."),
+    list(id = "NP3", title = "절단면-정합 중립성 검사(cut-aligned neutrality)",
+         statement = "직교화 축을 분위 절단으로 소비할 때, 선형 랭크 직교화는 절단면을 중립화하지 못한다(U자 잔차). 소비 형태와 같은 절단면에서 통제변수의 **곱셈 스케일 비**를 재는 검사를 계약화하고, 기존 '직교화' 라벨 산출물에 소급 적용.",
+         evidence = "sd0 분위별 U자(Q1 .1382 / Q3 .1168 / Q5 .1279), 하위20% 절단 sd0 비 1.154, 흡수 97.8%."),
+    list(id = "NP4", title = "일별 축에서의 재시험 — 월간으로 접기 전",
+         statement = "본 라운드의 검출력 한계는 전부 **월간 빈도**에서 왔다(QLIKE 양성대조 미발화, R2 원리적 불가). 같은 축을 일별 하방 위험(일별 semivol·일별 VaR 위반)으로 재면 관측이 ~21배가 되어 관문이 열릴 수 있다. v8.4 Lane B(일별 축 정보 회수)와 직결.",
+         gate_required = "일별 자기상관 때문에 유효 표본은 21배가 아니다 — 착수 전 유효 n 산정 필수.")),
   metric_type = "estimation_quality",
   emitted_at = format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z"))
 

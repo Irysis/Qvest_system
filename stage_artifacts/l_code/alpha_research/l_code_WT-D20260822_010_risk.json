@@ -1,0 +1,19 @@
+{
+  "l_code": "L-AR-20260822_215840",
+  "strategy_id": "WT-D20260822_010_risk",
+  "grade": "C",
+  "core_reference": "WT-D20260822_010 stage_artifacts/31_risk_measure.json + 31_risk_measure_objects.rds(QSm) / 00_precheck.R:66 (CTL=rank 통제)",
+  "lesson_text": "절단면-정합 중립성: 랭크-선형 직교화는 조건부 평균만 제거하고 조건부 분산은 손대지 않으므로, 소비 형태가 분위 절단이면 통제축이 절단면에서 되살아난다. ★결정적 실측 — 직교화 대상이었던 통제축 win_vol 자신이 직교화 점수 분위에 U자다: Q1 0.029204 / Q2 0.024564 / Q3 0.024799 / Q4 0.026258 / Q5 0.028784, 양끝-대-중앙 비 1.1889. 전 구간 Spearman 은 -0.042 로 사실상 0 이라 '직교화 성공' 으로 읽히지만 그것은 평균 축의 성공일 뿐이다. 하위 20% 절단집합에서 위험모델 특이위험 sd0 이 1.154배가 되고 그 스케일 차로 대상 판별력의 97.8% 가 설명된다. ★도훈 반론이 기전을 정정했다 — 초판은 '통제축(3개월 일별 sd)과 위험모델 축(60개월 월별 sd)이 다른 양' 을 병렬 원인으로 들었으나 ①통제가 rank(win_vol) 이라 sqrt(21) 류 스케일링은 정의상 랭크 불변이고 ②실측에서 sd0 의 U비 1.1836 이 win_vol 의 1.1889 보다 크지 않다(축 차이로 설명될 여분 미검출, 5점 프로파일 점추정). ⇒ 원인은 horizon 차이가 아니라 직교화 형태다. 적용: '직교화했다' 는 주장은 전 구간 상관이 아니라 실제로 잘리는 절단면 위에서 통제축 자신의 분위 프로파일로 재검증할 것. 문턱도 소비자가 쓰는 축(곱셈 스케일)에 걸 것 — 백분위 격차는 0.0597 로 미발화하는데 같은 집합의 스케일은 1.154배였다. alpha/risk/optimizer 전 층 이식.",
+  "tags": ["neutrality", "orthogonalization", "truncation", "conditional_variance", "control_variable", "transferable"],
+  "created_at": "2026-08-22",
+  "research_mode": "alpha_research",
+  "created_by": "emit:alpha_research",
+  "metric_type": "estimated",
+  "construction_type": "diagnostic_no_capital",
+  "mechanism_hypothesis": "선형(랭크 포함) 직교화는 조건부 1차 적률만 제거한다. 조건부 2차 적률(분산)의 U자 구조는 잔차에 남고, 분위 절단은 극단을 취하므로 그 구조를 그대로 상속한다.",
+  "lcode_schema_version": 2,
+  "falsification_attempts": "위반 주입 2종 정상 붕괴(상수 vol -> 흡수 0.0%, 날짜내 셔플 vol -> 1.6%). 동어반복 반박: 과거 -20% 이하 winsorize 로 꼬리사건 정보 제거해도 vol 비 1.1515 vs 원본 1.1541. 문턱 강건성 -15/-20/-25/-30% = 92.4/97.8/80.8/107.2%. horizon 가설 반증: 통제축 자신의 U비(1.1889)가 위험모델 축(1.1836) 이상 -> horizon 차이로 설명될 여분 미검출.",
+  "selection_type": "single",
+  "record_type": "process",
+  "family": "methodology_neutrality"
+}
