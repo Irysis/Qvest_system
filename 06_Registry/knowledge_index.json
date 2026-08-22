@@ -1,11 +1,11 @@
 {
   "schema_version": "knowledge_index_v1",
-  "generated_at": "2026-08-22T10:46:28+0900",
+  "generated_at": "2026-08-22T22:53:18+0900",
   "principle": "안정 ID = provenance 앵커(불변). 순번(ordinal) = 현재 활성 집합 위치(파생 뷰). 증류/강등 시 활성 뷰에서 자동 제외 → 1..N 연속 유지. blast radius 0.",
   "counts": {
     "active_law": 4,
-    "active_distilled": 15,
-    "lcode_corpus": 513,
+    "active_distilled": 16,
+    "lcode_corpus": 528,
     "archived": 4
   },
   "active_law": [
@@ -88,7 +88,7 @@
       "id": "DIST-AS-008",
       "polarity": "conditional",
       "gist": "KR alpha-search fast-validation 후보군(momentum 중심 + value/quality/defense/ML 혼재, 134 L-code, VALIDATED…",
-      "n_sup": 183,
+      "n_sup": 185,
       "mode": "alpha_search"
     },
     {
@@ -153,6 +153,14 @@
       "polarity": "conditional",
       "gist": "KR 시장에서 value/국면-조건부 팩터배분은 배포 조건(25종 long-only)에서 실현 PORT_t 천장이 ~2.85로, 모든 regime 변형(AR+MSM 2.73·Cas…",
       "n_sup": 9,
+      "mode": "ramp"
+    },
+    {
+      "ordinal": 16,
+      "id": "DIST-RAMP-014",
+      "polarity": "conditional",
+      "gist": "지수-비중 최적화 계열(Black-Litterman / 팩터 모멘텀 배분)을 KR 배포 형태인 top-25 횡단면으로 변환하면 엣지가 남지 않는다 — 손실 지점은 신호 부재가 아니…",
+      "n_sup": 31,
       "mode": "ramp"
     }
   ],
@@ -888,6 +896,51 @@
     },
     {
       "ordinal": 82,
+      "id": "L-AR-20260822_141149",
+      "mode": "alpha_research",
+      "family": "measurement_form",
+      "grade": "C",
+      "gist": "선별 목적함수를 rank-IC(Spearman)에서 평균-정합 통계량으로 바꿔도 long-only top-25 실현 전이는 개선되지 않는다. n=221 홀딩월·3…",
+      "source_file": "stage_artifacts\\l_code\\alpha_research\\l_code_FQ237_RERANK_WT-D20260822_002.json"
+    },
+    {
+      "ordinal": 83,
+      "id": "L-AR-20260822_193000",
+      "mode": "alpha_research",
+      "family": "ml_complexity",
+      "grade": "C",
+      "gist": "q90 LightGBM pinball 표적을 독립 사전등록(PREREG_q90_20260822.md)으로 정면 시험 — config-scoped negative …",
+      "source_file": "stage_artifacts\\l_code\\alpha_research\\l_code_AR_q90_consumption_bottleneck_20260822.json"
+    },
+    {
+      "ordinal": 84,
+      "id": "L-AR-20260822_215840",
+      "mode": "alpha_research",
+      "family": "methodology_neutrality",
+      "grade": "C",
+      "gist": "절단면-정합 중립성: 랭크-선형 직교화는 조건부 평균만 제거하고 조건부 분산은 손대지 않으므로, 소비 형태가 분위 절단이면 통제축이 절단면에서 되살아난다. ★결정…",
+      "source_file": "stage_artifacts\\l_code\\alpha_research\\l_code_WT-D20260822_010_risk.json"
+    },
+    {
+      "ordinal": 85,
+      "id": "L-AR-20260822_215840_02",
+      "mode": "alpha_research",
+      "family": "methodology_power",
+      "grade": "C",
+      "gist": "순열 기반 MDE 는 추정기 자체의 추정오차 분산을 누락한다. 실측 — 사전 순열 MDE80 0.00290 vs 실현 0.02998(10.3배 과소). 원인: 순…",
+      "source_file": "stage_artifacts\\l_code\\alpha_research\\l_code_WT-D20260822_010_gate.json"
+    },
+    {
+      "ordinal": 86,
+      "id": "L-AR-20260822_223107",
+      "mode": "alpha_research",
+      "family": "methodology_power",
+      "grade": "C",
+      "gist": "착수 관문의 ratio(=기전-함의 효과 / MDE80)는 **검정력으로 읽어야 한다**. 정확한 항등: MDE80 의 t_threshold = z(0.80)+z…",
+      "source_file": "stage_artifacts\\l_code\\alpha_research\\l_code_WT-D20260822_012_gate_calibration.json"
+    },
+    {
+      "ordinal": 87,
       "id": "L-WT_D20260803_008_FQ125_CONTRACT_REGIME_CONDITIONAL",
       "mode": "alpha_research",
       "family": "overlay_regime",
@@ -896,7 +949,7 @@
       "source_file": "stage_artifacts\\l_code\\alpha_research\\l_code_WT_D20260803_008_FQ125_CONTRACT_REGIME_CONDITIONAL.json"
     },
     {
-      "ordinal": 83,
+      "ordinal": 88,
       "id": "L-WT20260803_005",
       "mode": "alpha_research",
       "family": "infra_process",
@@ -905,7 +958,7 @@
       "source_file": "stage_artifacts\\l_code\\alpha_research\\l_code_WT_D20260803_005_eligibility_is_regime.json"
     },
     {
-      "ordinal": 84,
+      "ordinal": 89,
       "id": "L-WT20260803_006",
       "mode": "alpha_research",
       "family": "overlay_regime",
@@ -914,7 +967,7 @@
       "source_file": "stage_artifacts\\l_code\\alpha_research\\l_code_WT_D20260803_006_era_nowcast_infeasible.json"
     },
     {
-      "ordinal": 85,
+      "ordinal": 90,
       "id": "L-WT20260803_007",
       "mode": "alpha_research",
       "family": "?",
@@ -923,7 +976,7 @@
       "source_file": "stage_artifacts\\l_code\\alpha_research\\l_code_WT_D20260803_007_era_robust_zero_increment.json"
     },
     {
-      "ordinal": 86,
+      "ordinal": 91,
       "id": "L-AR-20260804_FQ004_P1",
       "mode": "alpha_search",
       "family": "?",
@@ -932,7 +985,7 @@
       "source_file": "stage_artifacts\\l_code\\alpha_search\\l_code_FQ004_material_filter_20260804.json"
     },
     {
-      "ordinal": 87,
+      "ordinal": 92,
       "id": "L-AS-20260602_165334",
       "mode": "alpha_search",
       "family": "momentum",
@@ -941,7 +994,7 @@
       "source_file": "stage_artifacts\\l_code\\alpha_search\\l_code_STR_AS_20260602_165334.json"
     },
     {
-      "ordinal": 88,
+      "ordinal": 93,
       "id": "L-AS-20260602_171933",
       "mode": "alpha_search",
       "family": "momentum",
@@ -950,7 +1003,7 @@
       "source_file": "stage_artifacts\\l_code\\alpha_search\\l_code_STR_AS_20260602_171933.json"
     },
     {
-      "ordinal": 89,
+      "ordinal": 94,
       "id": "L-AS-20260604_135520",
       "mode": "alpha_search",
       "family": "momentum",
@@ -959,7 +1012,7 @@
       "source_file": "stage_artifacts\\l_code\\alpha_search\\l_code_STR_AS_20260604_135520.json"
     },
     {
-      "ordinal": 90,
+      "ordinal": 95,
       "id": "L-AS-20260604_153955",
       "mode": "alpha_search",
       "family": "momentum",
@@ -968,7 +1021,7 @@
       "source_file": "stage_artifacts\\l_code\\alpha_search\\l_code_STR_AS_20260604_153955.json"
     },
     {
-      "ordinal": 91,
+      "ordinal": 96,
       "id": "L-AS-20260604_164339",
       "mode": "alpha_search",
       "family": "momentum",
@@ -977,7 +1030,7 @@
       "source_file": "stage_artifacts\\l_code\\alpha_search\\l_code_STR_AS_20260604_164339.json"
     },
     {
-      "ordinal": 92,
+      "ordinal": 97,
       "id": "L-AS-20260604_200126",
       "mode": "alpha_search",
       "family": "momentum",
@@ -986,7 +1039,7 @@
       "source_file": "stage_artifacts\\l_code\\alpha_search\\l_code_STR_AS_20260604_200126.json"
     },
     {
-      "ordinal": 93,
+      "ordinal": 98,
       "id": "L-AS-20260604_202542",
       "mode": "alpha_search",
       "family": "momentum",
@@ -995,7 +1048,7 @@
       "source_file": "stage_artifacts\\l_code\\alpha_search\\l_code_STR_AS_20260604_202542.json"
     },
     {
-      "ordinal": 94,
+      "ordinal": 99,
       "id": "L-AS-20260604_211425",
       "mode": "alpha_search",
       "family": "momentum",
@@ -1004,7 +1057,7 @@
       "source_file": "stage_artifacts\\l_code\\alpha_search\\l_code_STR_AS_20260604_211425.json"
     },
     {
-      "ordinal": 95,
+      "ordinal": 100,
       "id": "L-AS-20260604_220336",
       "mode": "alpha_search",
       "family": "momentum",
@@ -1013,7 +1066,7 @@
       "source_file": "stage_artifacts\\l_code\\alpha_search\\l_code_STR_AS_20260604_220336.json"
     },
     {
-      "ordinal": 96,
+      "ordinal": 101,
       "id": "L-AS-20260604_234824",
       "mode": "alpha_search",
       "family": "momentum",
@@ -1022,7 +1075,7 @@
       "source_file": "stage_artifacts\\l_code\\alpha_search\\l_code_STR_AS_20260604_234824.json"
     },
     {
-      "ordinal": 97,
+      "ordinal": 102,
       "id": "L-AS-20260605_001521",
       "mode": "alpha_search",
       "family": "momentum",
@@ -1031,7 +1084,7 @@
       "source_file": "stage_artifacts\\l_code\\alpha_search\\l_code_STR_AS_20260605_001521.json"
     },
     {
-      "ordinal": 98,
+      "ordinal": 103,
       "id": "L-AS-20260605_001522",
       "mode": "alpha_search",
       "family": "momentum",
@@ -1040,7 +1093,7 @@
       "source_file": "stage_artifacts\\l_code\\alpha_search\\l_code_STR_AS_20260605_001522.json"
     },
     {
-      "ordinal": 99,
+      "ordinal": 104,
       "id": "L-AS-20260605_004121",
       "mode": "alpha_search",
       "family": "momentum",
@@ -1049,7 +1102,7 @@
       "source_file": "stage_artifacts\\l_code\\alpha_search\\l_code_STR_AS_20260605_004121.json"
     },
     {
-      "ordinal": 100,
+      "ordinal": 105,
       "id": "L-AS-20260605_010829",
       "mode": "alpha_search",
       "family": "momentum",
@@ -1058,7 +1111,7 @@
       "source_file": "stage_artifacts\\l_code\\alpha_search\\l_code_STR_AS_20260605_010829.json"
     },
     {
-      "ordinal": 101,
+      "ordinal": 106,
       "id": "L-AS-20260605_013414",
       "mode": "alpha_search",
       "family": "momentum",
@@ -1067,7 +1120,7 @@
       "source_file": "stage_artifacts\\l_code\\alpha_search\\l_code_STR_AS_20260605_013414.json"
     },
     {
-      "ordinal": 102,
+      "ordinal": 107,
       "id": "L-AS-20260605_020048",
       "mode": "alpha_search",
       "family": "momentum",
@@ -1076,7 +1129,7 @@
       "source_file": "stage_artifacts\\l_code\\alpha_search\\l_code_STR_AS_20260605_020048.json"
     },
     {
-      "ordinal": 103,
+      "ordinal": 108,
       "id": "L-AS-20260605_022642",
       "mode": "alpha_search",
       "family": "momentum",
@@ -1085,7 +1138,7 @@
       "source_file": "stage_artifacts\\l_code\\alpha_search\\l_code_STR_AS_20260605_022642.json"
     },
     {
-      "ordinal": 104,
+      "ordinal": 109,
       "id": "L-AS-20260605_025257",
       "mode": "alpha_search",
       "family": "momentum",
@@ -1094,7 +1147,7 @@
       "source_file": "stage_artifacts\\l_code\\alpha_search\\l_code_STR_AS_20260605_025257.json"
     },
     {
-      "ordinal": 105,
+      "ordinal": 110,
       "id": "L-AS-20260605_034153",
       "mode": "alpha_search",
       "family": "ml_complexity",
@@ -1103,7 +1156,7 @@
       "source_file": "stage_artifacts\\l_code\\alpha_search\\l_code_STR_AS_20260605_034153.json"
     },
     {
-      "ordinal": 106,
+      "ordinal": 111,
       "id": "L-AS-20260605_095531_37468",
       "mode": "alpha_search",
       "family": "momentum",
@@ -1112,7 +1165,7 @@
       "source_file": "stage_artifacts\\l_code\\alpha_search\\l_code_STR_AS_20260605_095531_37468.json"
     },
     {
-      "ordinal": 107,
+      "ordinal": 112,
       "id": "L-AS-20260605_135743_30748",
       "mode": "alpha_search",
       "family": "momentum",
@@ -1121,7 +1174,7 @@
       "source_file": "stage_artifacts\\l_code\\alpha_search\\l_code_STR_AS_20260605_135743_30748.json"
     },
     {
-      "ordinal": 108,
+      "ordinal": 113,
       "id": "L-AS-20260605_185153_35464",
       "mode": "alpha_search",
       "family": "momentum",
@@ -1130,7 +1183,7 @@
       "source_file": "stage_artifacts\\l_code\\alpha_search\\l_code_STR_AS_20260605_185153_35464.json"
     },
     {
-      "ordinal": 109,
+      "ordinal": 114,
       "id": "L-AS-20260605_191921_7088",
       "mode": "alpha_search",
       "family": "momentum",
@@ -1139,7 +1192,7 @@
       "source_file": "stage_artifacts\\l_code\\alpha_search\\l_code_STR_AS_20260605_191921_7088.json"
     },
     {
-      "ordinal": 110,
+      "ordinal": 115,
       "id": "L-AS-20260605_200252_11056",
       "mode": "alpha_search",
       "family": "low_vol",
@@ -1148,7 +1201,7 @@
       "source_file": "stage_artifacts\\l_code\\alpha_search\\l_code_STR_AS_20260605_200252_11056.json"
     },
     {
-      "ordinal": 111,
+      "ordinal": 116,
       "id": "L-AS-20260605_202226_37668",
       "mode": "alpha_search",
       "family": "value",
@@ -1157,7 +1210,7 @@
       "source_file": "stage_artifacts\\l_code\\alpha_search\\l_code_STR_AS_20260605_202226_37668.json"
     },
     {
-      "ordinal": 112,
+      "ordinal": 117,
       "id": "L-AS-20260605_203918_32780",
       "mode": "alpha_search",
       "family": "momentum",
@@ -1166,7 +1219,7 @@
       "source_file": "stage_artifacts\\l_code\\alpha_search\\l_code_STR_AS_20260605_203918_32780.json"
     },
     {
-      "ordinal": 113,
+      "ordinal": 118,
       "id": "L-AS-20260605_221011_31932",
       "mode": "alpha_search",
       "family": "momentum",
@@ -1175,7 +1228,7 @@
       "source_file": "stage_artifacts\\l_code\\alpha_search\\l_code_STR_AS_20260605_221011_31932.json"
     },
     {
-      "ordinal": 114,
+      "ordinal": 119,
       "id": "L-AS-20260605_223652_38700",
       "mode": "alpha_search",
       "family": "momentum",
@@ -1184,7 +1237,7 @@
       "source_file": "stage_artifacts\\l_code\\alpha_search\\l_code_STR_AS_20260605_223652_38700.json"
     },
     {
-      "ordinal": 115,
+      "ordinal": 120,
       "id": "L-AS-20260606_190756_6848",
       "mode": "alpha_search",
       "family": "quality_earnings",
@@ -1193,7 +1246,7 @@
       "source_file": "stage_artifacts\\l_code\\alpha_search\\l_code_STR_AS_20260606_190756_6848.json"
     },
     {
-      "ordinal": 116,
+      "ordinal": 121,
       "id": "L-AS-20260606_192427_38104",
       "mode": "alpha_search",
       "family": "momentum",
@@ -1202,7 +1255,7 @@
       "source_file": "stage_artifacts\\l_code\\alpha_search\\l_code_STR_AS_20260606_192427_38104.json"
     },
     {
-      "ordinal": 117,
+      "ordinal": 122,
       "id": "L-AS-20260606_193820_7804",
       "mode": "alpha_search",
       "family": "momentum",
@@ -1211,7 +1264,7 @@
       "source_file": "stage_artifacts\\l_code\\alpha_search\\l_code_STR_AS_20260606_193820_7804.json"
     },
     {
-      "ordinal": 118,
+      "ordinal": 123,
       "id": "L-AS-20260606_204027_36304",
       "mode": "alpha_search",
       "family": "low_vol",
@@ -1220,7 +1273,7 @@
       "source_file": "stage_artifacts\\l_code\\alpha_search\\l_code_STR_AS_20260606_204027_36304.json"
     },
     {
-      "ordinal": 119,
+      "ordinal": 124,
       "id": "L-AS-20260606_204916_40216",
       "mode": "alpha_search",
       "family": "momentum",
@@ -1229,7 +1282,7 @@
       "source_file": "stage_artifacts\\l_code\\alpha_search\\l_code_STR_AS_20260606_204916_40216.json"
     },
     {
-      "ordinal": 120,
+      "ordinal": 125,
       "id": "L-AS-20260606_205938_35016",
       "mode": "alpha_search",
       "family": "?",
@@ -1238,7 +1291,7 @@
       "source_file": "stage_artifacts\\l_code\\alpha_search\\l_code_STR_AS_20260606_205938_35016.json"
     },
     {
-      "ordinal": 121,
+      "ordinal": 126,
       "id": "L-AS-20260606_211717_4644",
       "mode": "alpha_search",
       "family": "momentum",
@@ -1247,7 +1300,7 @@
       "source_file": "stage_artifacts\\l_code\\alpha_search\\l_code_STR_AS_20260606_211717_4644.json"
     },
     {
-      "ordinal": 122,
+      "ordinal": 127,
       "id": "L-AS-20260606_213438_42004",
       "mode": "alpha_search",
       "family": "momentum",
@@ -1256,7 +1309,7 @@
       "source_file": "stage_artifacts\\l_code\\alpha_search\\l_code_STR_AS_20260606_213438_42004.json"
     },
     {
-      "ordinal": 123,
+      "ordinal": 128,
       "id": "L-AS-20260606_214808_10352",
       "mode": "alpha_search",
       "family": "momentum",
@@ -1265,7 +1318,7 @@
       "source_file": "stage_artifacts\\l_code\\alpha_search\\l_code_STR_AS_20260606_214808_10352.json"
     },
     {
-      "ordinal": 124,
+      "ordinal": 129,
       "id": "L-AS-20260606_232717_11136",
       "mode": "alpha_search",
       "family": "momentum",
@@ -1274,7 +1327,7 @@
       "source_file": "stage_artifacts\\l_code\\alpha_search\\l_code_STR_AS_20260606_232717_11136.json"
     },
     {
-      "ordinal": 125,
+      "ordinal": 130,
       "id": "L-AS-20260606_233737_11136",
       "mode": "alpha_search",
       "family": "momentum",
@@ -1283,7 +1336,7 @@
       "source_file": "stage_artifacts\\l_code\\alpha_search\\l_code_STR_AS_20260606_233737_11136.json"
     },
     {
-      "ordinal": 126,
+      "ordinal": 131,
       "id": "L-AS-20260606_235146_41744",
       "mode": "alpha_search",
       "family": "momentum",
@@ -1292,7 +1345,7 @@
       "source_file": "stage_artifacts\\l_code\\alpha_search\\l_code_STR_AS_20260606_235146_41744.json"
     },
     {
-      "ordinal": 127,
+      "ordinal": 132,
       "id": "L-AS-20260607_000154_41744",
       "mode": "alpha_search",
       "family": "momentum",
@@ -1301,7 +1354,7 @@
       "source_file": "stage_artifacts\\l_code\\alpha_search\\l_code_STR_AS_20260607_000154_41744.json"
     },
     {
-      "ordinal": 128,
+      "ordinal": 133,
       "id": "L-AS-20260607_190615_28336",
       "mode": "alpha_search",
       "family": "momentum",
@@ -1310,7 +1363,7 @@
       "source_file": "stage_artifacts\\l_code\\alpha_search\\l_code_STR_AS_20260607_190615_28336.json"
     },
     {
-      "ordinal": 129,
+      "ordinal": 134,
       "id": "L-AS-20260607_195244_29592",
       "mode": "alpha_search",
       "family": "momentum",
@@ -1319,7 +1372,7 @@
       "source_file": "stage_artifacts\\l_code\\alpha_search\\l_code_STR_AS_20260607_195244_29592.json"
     },
     {
-      "ordinal": 130,
+      "ordinal": 135,
       "id": "L-AS-20260607_200929_34784",
       "mode": "alpha_search",
       "family": "momentum",
@@ -1328,7 +1381,7 @@
       "source_file": "stage_artifacts\\l_code\\alpha_search\\l_code_STR_AS_20260607_200929_34784.json"
     },
     {
-      "ordinal": 131,
+      "ordinal": 136,
       "id": "L-AS-20260607_232810_8588",
       "mode": "alpha_search",
       "family": "momentum",
@@ -1337,7 +1390,7 @@
       "source_file": "stage_artifacts\\l_code\\alpha_search\\l_code_STR_AS_20260607_232810_8588.json"
     },
     {
-      "ordinal": 132,
+      "ordinal": 137,
       "id": "L-AS-20260610_213712_20276",
       "mode": "alpha_search",
       "family": "momentum",
@@ -1346,7 +1399,7 @@
       "source_file": "stage_artifacts\\l_code\\alpha_search\\l_code_STR_AS_20260610_213712_20276.json"
     },
     {
-      "ordinal": 133,
+      "ordinal": 138,
       "id": "L-AS-20260611_160000_47308",
       "mode": "alpha_search",
       "family": "momentum",
@@ -1355,7 +1408,7 @@
       "source_file": "stage_artifacts\\l_code\\alpha_search\\l_code_STR_AS_20260611_160000_47308.json"
     },
     {
-      "ordinal": 134,
+      "ordinal": 139,
       "id": "L-AS-20260612_081755_52184",
       "mode": "alpha_search",
       "family": "earnings_event",
@@ -1364,7 +1417,7 @@
       "source_file": "stage_artifacts\\l_code\\alpha_search\\l_code_STR_AS_20260612_081755_52184.json"
     },
     {
-      "ordinal": 135,
+      "ordinal": 140,
       "id": "L-AS-20260612_120444_18344",
       "mode": "alpha_search",
       "family": "quality_profitability",
@@ -1373,7 +1426,7 @@
       "source_file": "stage_artifacts\\l_code\\alpha_search\\l_code_STR_AS_20260612_120444_18344.json"
     },
     {
-      "ordinal": 136,
+      "ordinal": 141,
       "id": "L-AS-20260612_130540_180351",
       "mode": "alpha_search",
       "family": "momentum",
@@ -1382,7 +1435,7 @@
       "source_file": "stage_artifacts\\l_code\\alpha_search\\l_code_STR_AS_20260612_130540_180351.json"
     },
     {
-      "ordinal": 137,
+      "ordinal": 142,
       "id": "L-AS-20260612_130540_180352",
       "mode": "alpha_search",
       "family": "behavioral",
@@ -1391,7 +1444,7 @@
       "source_file": "stage_artifacts\\l_code\\alpha_search\\l_code_STR_AS_20260612_130540_180352.json"
     },
     {
-      "ordinal": 138,
+      "ordinal": 143,
       "id": "L-AS-20260612_131514_237951",
       "mode": "alpha_search",
       "family": "momentum",
@@ -1400,7 +1453,7 @@
       "source_file": "stage_artifacts\\l_code\\alpha_search\\l_code_STR_AS_20260612_131514_237951.json"
     },
     {
-      "ordinal": 139,
+      "ordinal": 144,
       "id": "L-AS-20260612_131514_237952",
       "mode": "alpha_search",
       "family": "liquidity",
@@ -1409,7 +1462,7 @@
       "source_file": "stage_artifacts\\l_code\\alpha_search\\l_code_STR_AS_20260612_131514_237952.json"
     },
     {
-      "ordinal": 140,
+      "ordinal": 145,
       "id": "L-AS-20260612_131514_237953",
       "mode": "alpha_search",
       "family": "behavioral",
@@ -1418,7 +1471,7 @@
       "source_file": "stage_artifacts\\l_code\\alpha_search\\l_code_STR_AS_20260612_131514_237953.json"
     },
     {
-      "ordinal": 141,
+      "ordinal": 146,
       "id": "L-AS-20260612_132740_321992",
       "mode": "alpha_search",
       "family": "momentum",
@@ -1427,7 +1480,7 @@
       "source_file": "stage_artifacts\\l_code\\alpha_search\\l_code_STR_AS_20260612_132740_321992.json"
     },
     {
-      "ordinal": 142,
+      "ordinal": 147,
       "id": "L-AS-20260612_132740_321993",
       "mode": "alpha_search",
       "family": "momentum",
@@ -1436,7 +1489,7 @@
       "source_file": "stage_artifacts\\l_code\\alpha_search\\l_code_STR_AS_20260612_132740_321993.json"
     },
     {
-      "ordinal": 143,
+      "ordinal": 148,
       "id": "L-AS-20260612_132740_321995",
       "mode": "alpha_search",
       "family": "quality_earnings",
@@ -1445,7 +1498,7 @@
       "source_file": "stage_artifacts\\l_code\\alpha_search\\l_code_STR_AS_20260612_132740_321995.json"
     },
     {
-      "ordinal": 144,
+      "ordinal": 149,
       "id": "L-AS-20260612_134025_400588",
       "mode": "alpha_search",
       "family": "momentum",
@@ -1454,7 +1507,7 @@
       "source_file": "stage_artifacts\\l_code\\alpha_search\\l_code_STR_AS_20260612_134025_400588.json"
     },
     {
-      "ordinal": 145,
+      "ordinal": 150,
       "id": "L-AS-20260612_134025_400589",
       "mode": "alpha_search",
       "family": "value",
@@ -1463,7 +1516,7 @@
       "source_file": "stage_artifacts\\l_code\\alpha_search\\l_code_STR_AS_20260612_134025_400589.json"
     },
     {
-      "ordinal": 146,
+      "ordinal": 151,
       "id": "L-AS-20260612_134025_400590",
       "mode": "alpha_search",
       "family": "value",
@@ -1472,7 +1525,7 @@
       "source_file": "stage_artifacts\\l_code\\alpha_search\\l_code_STR_AS_20260612_134025_400590.json"
     },
     {
-      "ordinal": 147,
+      "ordinal": 152,
       "id": "L-AS-20260612_135316_470428",
       "mode": "alpha_search",
       "family": "momentum",
@@ -1481,7 +1534,7 @@
       "source_file": "stage_artifacts\\l_code\\alpha_search\\l_code_STR_AS_20260612_135316_470428.json"
     },
     {
-      "ordinal": 148,
+      "ordinal": 153,
       "id": "L-AS-20260612_135316_470429",
       "mode": "alpha_search",
       "family": "momentum",
@@ -1490,7 +1543,7 @@
       "source_file": "stage_artifacts\\l_code\\alpha_search\\l_code_STR_AS_20260612_135316_470429.json"
     },
     {
-      "ordinal": 149,
+      "ordinal": 154,
       "id": "L-AS-20260612_141157_518402",
       "mode": "alpha_search",
       "family": "consensus",
@@ -1499,7 +1552,7 @@
       "source_file": "stage_artifacts\\l_code\\alpha_search\\l_code_STR_AS_20260612_141157_518402.json"
     },
     {
-      "ordinal": 150,
+      "ordinal": 155,
       "id": "L-AS-20260612_141157_518403",
       "mode": "alpha_search",
       "family": "behavioral",
@@ -1508,7 +1561,7 @@
       "source_file": "stage_artifacts\\l_code\\alpha_search\\l_code_STR_AS_20260612_141157_518403.json"
     },
     {
-      "ordinal": 151,
+      "ordinal": 156,
       "id": "L-AS-20260612_141158_518401",
       "mode": "alpha_search",
       "family": "quality_profitability",
@@ -1517,7 +1570,7 @@
       "source_file": "stage_artifacts\\l_code\\alpha_search\\l_code_STR_AS_20260612_141158_518401.json"
     },
     {
-      "ordinal": 152,
+      "ordinal": 157,
       "id": "L-AS-20260612_142522_602097",
       "mode": "alpha_search",
       "family": "earnings_event",
@@ -1526,7 +1579,7 @@
       "source_file": "stage_artifacts\\l_code\\alpha_search\\l_code_STR_AS_20260612_142522_602097.json"
     },
     {
-      "ordinal": 153,
+      "ordinal": 158,
       "id": "L-AS-20260612_142522_602100",
       "mode": "alpha_search",
       "family": "momentum",
@@ -1535,7 +1588,7 @@
       "source_file": "stage_artifacts\\l_code\\alpha_search\\l_code_STR_AS_20260612_142522_602100.json"
     },
     {
-      "ordinal": 154,
+      "ordinal": 159,
       "id": "L-AS-20260612_142524_602098",
       "mode": "alpha_search",
       "family": "value",
@@ -1544,7 +1597,7 @@
       "source_file": "stage_artifacts\\l_code\\alpha_search\\l_code_STR_AS_20260612_142524_602098.json"
     },
     {
-      "ordinal": 155,
+      "ordinal": 160,
       "id": "L-AS-20260612_143809_686286",
       "mode": "alpha_search",
       "family": "consensus_analyst",
@@ -1553,7 +1606,7 @@
       "source_file": "stage_artifacts\\l_code\\alpha_search\\l_code_STR_AS_20260612_143809_686286.json"
     },
     {
-      "ordinal": 156,
+      "ordinal": 161,
       "id": "L-AS-20260612_143809_686289",
       "mode": "alpha_search",
       "family": "value",
@@ -1562,7 +1615,7 @@
       "source_file": "stage_artifacts\\l_code\\alpha_search\\l_code_STR_AS_20260612_143809_686289.json"
     },
     {
-      "ordinal": 157,
+      "ordinal": 162,
       "id": "L-AS-20260612_143810_686287",
       "mode": "alpha_search",
       "family": "momentum",
@@ -1571,7 +1624,7 @@
       "source_file": "stage_artifacts\\l_code\\alpha_search\\l_code_STR_AS_20260612_143810_686287.json"
     },
     {
-      "ordinal": 158,
+      "ordinal": 163,
       "id": "L-AS-20260612_145116_771104",
       "mode": "alpha_search",
       "family": "momentum",
@@ -1580,7 +1633,7 @@
       "source_file": "stage_artifacts\\l_code\\alpha_search\\l_code_STR_AS_20260612_145116_771104.json"
     },
     {
-      "ordinal": 159,
+      "ordinal": 164,
       "id": "L-AS-20260612_145116_771105",
       "mode": "alpha_search",
       "family": "momentum",
@@ -1589,7 +1642,7 @@
       "source_file": "stage_artifacts\\l_code\\alpha_search\\l_code_STR_AS_20260612_145116_771105.json"
     },
     {
-      "ordinal": 160,
+      "ordinal": 165,
       "id": "L-AS-20260612_145116_771108",
       "mode": "alpha_search",
       "family": "momentum",
@@ -1598,7 +1651,7 @@
       "source_file": "stage_artifacts\\l_code\\alpha_search\\l_code_STR_AS_20260612_145116_771108.json"
     },
     {
-      "ordinal": 161,
+      "ordinal": 166,
       "id": "L-AS-20260612_150302_822929",
       "mode": "alpha_search",
       "family": "defense",
@@ -1607,7 +1660,7 @@
       "source_file": "stage_artifacts\\l_code\\alpha_search\\l_code_STR_AS_20260612_150302_822929.json"
     },
     {
-      "ordinal": 162,
+      "ordinal": 167,
       "id": "L-AS-20260612_150302_822930",
       "mode": "alpha_search",
       "family": "low_vol",
@@ -1616,7 +1669,7 @@
       "source_file": "stage_artifacts\\l_code\\alpha_search\\l_code_STR_AS_20260612_150302_822930.json"
     },
     {
-      "ordinal": 163,
+      "ordinal": 168,
       "id": "L-AS-20260612_152740_882632",
       "mode": "alpha_search",
       "family": "ml_complexity",
@@ -1625,7 +1678,7 @@
       "source_file": "stage_artifacts\\l_code\\alpha_search\\l_code_STR_AS_20260612_152740_882632.json"
     },
     {
-      "ordinal": 164,
+      "ordinal": 169,
       "id": "L-AS-20260612_152740_882633",
       "mode": "alpha_search",
       "family": "unknown",
@@ -1634,7 +1687,7 @@
       "source_file": "stage_artifacts\\l_code\\alpha_search\\l_code_STR_AS_20260612_152740_882633.json"
     },
     {
-      "ordinal": 165,
+      "ordinal": 170,
       "id": "L-AS-20260612_152741_882637",
       "mode": "alpha_search",
       "family": "quality_earnings",
@@ -1643,7 +1696,7 @@
       "source_file": "stage_artifacts\\l_code\\alpha_search\\l_code_STR_AS_20260612_152741_882637.json"
     },
     {
-      "ordinal": 166,
+      "ordinal": 171,
       "id": "L-AS-20260612_154048_969566",
       "mode": "alpha_search",
       "family": "quality_earnings",
@@ -1652,7 +1705,7 @@
       "source_file": "stage_artifacts\\l_code\\alpha_search\\l_code_STR_AS_20260612_154048_969566.json"
     },
     {
-      "ordinal": 167,
+      "ordinal": 172,
       "id": "L-AS-20260612_154048_969567",
       "mode": "alpha_search",
       "family": "quality_earnings",
@@ -1661,7 +1714,7 @@
       "source_file": "stage_artifacts\\l_code\\alpha_search\\l_code_STR_AS_20260612_154048_969567.json"
     },
     {
-      "ordinal": 168,
+      "ordinal": 173,
       "id": "L-AS-20260612_154048_969568",
       "mode": "alpha_search",
       "family": "quality_earnings",
@@ -1670,7 +1723,7 @@
       "source_file": "stage_artifacts\\l_code\\alpha_search\\l_code_STR_AS_20260612_154048_969568.json"
     },
     {
-      "ordinal": 169,
+      "ordinal": 174,
       "id": "L-AS-20260612_154914_1055313",
       "mode": "alpha_search",
       "family": "unknown",
@@ -1679,7 +1732,7 @@
       "source_file": "stage_artifacts\\l_code\\alpha_search\\l_code_STR_AS_20260612_154914_1055313.json"
     },
     {
-      "ordinal": 170,
+      "ordinal": 175,
       "id": "L-AS-20260612_154914_1055314",
       "mode": "alpha_search",
       "family": "momentum",
@@ -1688,7 +1741,7 @@
       "source_file": "stage_artifacts\\l_code\\alpha_search\\l_code_STR_AS_20260612_154914_1055314.json"
     },
     {
-      "ordinal": 171,
+      "ordinal": 176,
       "id": "L-AS-20260612_154914_1055315",
       "mode": "alpha_search",
       "family": "defense",
@@ -1697,7 +1750,7 @@
       "source_file": "stage_artifacts\\l_code\\alpha_search\\l_code_STR_AS_20260612_154914_1055315.json"
     },
     {
-      "ordinal": 172,
+      "ordinal": 177,
       "id": "L-AS-20260612_155703_1141022",
       "mode": "alpha_search",
       "family": "defense",
@@ -1706,7 +1759,7 @@
       "source_file": "stage_artifacts\\l_code\\alpha_search\\l_code_STR_AS_20260612_155703_1141022.json"
     },
     {
-      "ordinal": 173,
+      "ordinal": 178,
       "id": "L-AS-20260612_155703_1141025",
       "mode": "alpha_search",
       "family": "defense",
@@ -1715,7 +1768,7 @@
       "source_file": "stage_artifacts\\l_code\\alpha_search\\l_code_STR_AS_20260612_155703_1141025.json"
     },
     {
-      "ordinal": 174,
+      "ordinal": 179,
       "id": "L-AS-20260612_155704_1141023",
       "mode": "alpha_search",
       "family": "unknown",
@@ -1724,7 +1777,7 @@
       "source_file": "stage_artifacts\\l_code\\alpha_search\\l_code_STR_AS_20260612_155704_1141023.json"
     },
     {
-      "ordinal": 175,
+      "ordinal": 180,
       "id": "L-AS-20260612_160536_1226360",
       "mode": "alpha_search",
       "family": "unknown",
@@ -1733,7 +1786,7 @@
       "source_file": "stage_artifacts\\l_code\\alpha_search\\l_code_STR_AS_20260612_160536_1226360.json"
     },
     {
-      "ordinal": 176,
+      "ordinal": 181,
       "id": "L-AS-20260612_160536_1226364",
       "mode": "alpha_search",
       "family": "unknown",
@@ -1742,7 +1795,7 @@
       "source_file": "stage_artifacts\\l_code\\alpha_search\\l_code_STR_AS_20260612_160536_1226364.json"
     },
     {
-      "ordinal": 177,
+      "ordinal": 182,
       "id": "L-AS-20260612_160537_1226361",
       "mode": "alpha_search",
       "family": "defense",
@@ -1751,7 +1804,7 @@
       "source_file": "stage_artifacts\\l_code\\alpha_search\\l_code_STR_AS_20260612_160537_1226361.json"
     },
     {
-      "ordinal": 178,
+      "ordinal": 183,
       "id": "L-AS-20260612_161342_1312335",
       "mode": "alpha_search",
       "family": "defense",
@@ -1760,7 +1813,7 @@
       "source_file": "stage_artifacts\\l_code\\alpha_search\\l_code_STR_AS_20260612_161342_1312335.json"
     },
     {
-      "ordinal": 179,
+      "ordinal": 184,
       "id": "L-AS-20260612_161342_1312336",
       "mode": "alpha_search",
       "family": "unknown",
@@ -1769,7 +1822,7 @@
       "source_file": "stage_artifacts\\l_code\\alpha_search\\l_code_STR_AS_20260612_161342_1312336.json"
     },
     {
-      "ordinal": 180,
+      "ordinal": 185,
       "id": "L-AS-20260612_161342_1312338",
       "mode": "alpha_search",
       "family": "earnings_event",
@@ -1778,7 +1831,7 @@
       "source_file": "stage_artifacts\\l_code\\alpha_search\\l_code_STR_AS_20260612_161342_1312338.json"
     },
     {
-      "ordinal": 181,
+      "ordinal": 186,
       "id": "L-AS-20260612_162147_1397892",
       "mode": "alpha_search",
       "family": "defense",
@@ -1787,7 +1840,7 @@
       "source_file": "stage_artifacts\\l_code\\alpha_search\\l_code_STR_AS_20260612_162147_1397892.json"
     },
     {
-      "ordinal": 182,
+      "ordinal": 187,
       "id": "L-AS-20260612_211643_179212",
       "mode": "alpha_search",
       "family": "behavioral",
@@ -1796,7 +1849,7 @@
       "source_file": "stage_artifacts\\l_code\\alpha_search\\l_code_STR_AS_20260612_211643_179212.json"
     },
     {
-      "ordinal": 183,
+      "ordinal": 188,
       "id": "L-AS-20260612_230355_193469",
       "mode": "alpha_search",
       "family": "overlay_regime",
@@ -1805,7 +1858,7 @@
       "source_file": "stage_artifacts\\l_code\\alpha_search\\l_code_STR_AS_20260612_230355_193469.json"
     },
     {
-      "ordinal": 184,
+      "ordinal": 189,
       "id": "L-AS-20260612_230800_193887",
       "mode": "alpha_search",
       "family": "value",
@@ -1814,7 +1867,7 @@
       "source_file": "stage_artifacts\\l_code\\alpha_search\\l_code_STR_AS_20260612_230800_193887.json"
     },
     {
-      "ordinal": 185,
+      "ordinal": 190,
       "id": "L-AS-20260612_232550_195679",
       "mode": "alpha_search",
       "family": "ml_complexity",
@@ -1823,7 +1876,7 @@
       "source_file": "stage_artifacts\\l_code\\alpha_search\\l_code_STR_AS_20260612_232550_195679.json"
     },
     {
-      "ordinal": 186,
+      "ordinal": 191,
       "id": "L-AS-20260613_001418_202635",
       "mode": "alpha_search",
       "family": "momentum",
@@ -1832,7 +1885,7 @@
       "source_file": "stage_artifacts\\l_code\\alpha_search\\l_code_STR_AS_20260613_001418_202635.json"
     },
     {
-      "ordinal": 187,
+      "ordinal": 192,
       "id": "L-AS-20260613_004036_207056",
       "mode": "alpha_search",
       "family": "ml_complexity",
@@ -1841,7 +1894,7 @@
       "source_file": "stage_artifacts\\l_code\\alpha_search\\l_code_STR_AS_20260613_004036_207056.json"
     },
     {
-      "ordinal": 188,
+      "ordinal": 193,
       "id": "L-AS-20260613_005241_208860",
       "mode": "alpha_search",
       "family": "ml_complexity",
@@ -1850,7 +1903,7 @@
       "source_file": "stage_artifacts\\l_code\\alpha_search\\l_code_STR_AS_20260613_005241_208860.json"
     },
     {
-      "ordinal": 189,
+      "ordinal": 194,
       "id": "L-AS-20260613_014236_214202",
       "mode": "alpha_search",
       "family": "ml_complexity",
@@ -1859,7 +1912,7 @@
       "source_file": "stage_artifacts\\l_code\\alpha_search\\l_code_STR_AS_20260613_014236_214202.json"
     },
     {
-      "ordinal": 190,
+      "ordinal": 195,
       "id": "L-AS-20260613_032347_225224",
       "mode": "alpha_search",
       "family": "value",
@@ -1868,7 +1921,7 @@
       "source_file": "stage_artifacts\\l_code\\alpha_search\\l_code_STR_AS_20260613_032347_225224.json"
     },
     {
-      "ordinal": 191,
+      "ordinal": 196,
       "id": "L-AS-20260613_033110_226258",
       "mode": "alpha_search",
       "family": "ml_complexity",
@@ -1877,7 +1930,7 @@
       "source_file": "stage_artifacts\\l_code\\alpha_search\\l_code_STR_AS_20260613_033110_226258.json"
     },
     {
-      "ordinal": 192,
+      "ordinal": 197,
       "id": "L-AS-20260613_035041_227953",
       "mode": "alpha_search",
       "family": "value",
@@ -1886,7 +1939,7 @@
       "source_file": "stage_artifacts\\l_code\\alpha_search\\l_code_STR_AS_20260613_035041_227953.json"
     },
     {
-      "ordinal": 193,
+      "ordinal": 198,
       "id": "L-AS-20260613_043037_231184",
       "mode": "alpha_search",
       "family": "momentum",
@@ -1895,7 +1948,7 @@
       "source_file": "stage_artifacts\\l_code\\alpha_search\\l_code_STR_AS_20260613_043037_231184.json"
     },
     {
-      "ordinal": 194,
+      "ordinal": 199,
       "id": "L-AS-20260613_043834_231835",
       "mode": "alpha_search",
       "family": "value",
@@ -1904,7 +1957,7 @@
       "source_file": "stage_artifacts\\l_code\\alpha_search\\l_code_STR_AS_20260613_043834_231835.json"
     },
     {
-      "ordinal": 195,
+      "ordinal": 200,
       "id": "L-AS-20260613_051524_234917",
       "mode": "alpha_search",
       "family": "ml_complexity",
@@ -1913,7 +1966,7 @@
       "source_file": "stage_artifacts\\l_code\\alpha_search\\l_code_STR_AS_20260613_051524_234917.json"
     },
     {
-      "ordinal": 196,
+      "ordinal": 201,
       "id": "L-AS-20260613_070916_246297",
       "mode": "alpha_search",
       "family": "momentum",
@@ -1922,7 +1975,7 @@
       "source_file": "stage_artifacts\\l_code\\alpha_search\\l_code_STR_AS_20260613_070916_246297.json"
     },
     {
-      "ordinal": 197,
+      "ordinal": 202,
       "id": "L-AS-20260613_074936_250687",
       "mode": "alpha_search",
       "family": "quality_profitability",
@@ -1931,7 +1984,7 @@
       "source_file": "stage_artifacts\\l_code\\alpha_search\\l_code_STR_AS_20260613_074936_250687.json"
     },
     {
-      "ordinal": 198,
+      "ordinal": 203,
       "id": "L-AS-20260613_081217_254169",
       "mode": "alpha_search",
       "family": "ml_complexity",
@@ -1940,7 +1993,7 @@
       "source_file": "stage_artifacts\\l_code\\alpha_search\\l_code_STR_AS_20260613_081217_254169.json"
     },
     {
-      "ordinal": 199,
+      "ordinal": 204,
       "id": "L-AS-20260613_081402_254436",
       "mode": "alpha_search",
       "family": "momentum",
@@ -1949,7 +2002,7 @@
       "source_file": "stage_artifacts\\l_code\\alpha_search\\l_code_STR_AS_20260613_081402_254436.json"
     },
     {
-      "ordinal": 200,
+      "ordinal": 205,
       "id": "L-AS-20260613_083759_257656",
       "mode": "alpha_search",
       "family": "value",
@@ -1958,7 +2011,7 @@
       "source_file": "stage_artifacts\\l_code\\alpha_search\\l_code_STR_AS_20260613_083759_257656.json"
     },
     {
-      "ordinal": 201,
+      "ordinal": 206,
       "id": "L-AS-20260613_084729_258856",
       "mode": "alpha_search",
       "family": "quality_profitability",
@@ -1967,7 +2020,7 @@
       "source_file": "stage_artifacts\\l_code\\alpha_search\\l_code_STR_AS_20260613_084729_258856.json"
     },
     {
-      "ordinal": 202,
+      "ordinal": 207,
       "id": "L-AS-20260613_085319_259274",
       "mode": "alpha_search",
       "family": "momentum",
@@ -1976,7 +2029,7 @@
       "source_file": "stage_artifacts\\l_code\\alpha_search\\l_code_STR_AS_20260613_085319_259274.json"
     },
     {
-      "ordinal": 203,
+      "ordinal": 208,
       "id": "L-AS-20260613_090137_260293",
       "mode": "alpha_search",
       "family": "momentum",
@@ -1985,7 +2038,7 @@
       "source_file": "stage_artifacts\\l_code\\alpha_search\\l_code_STR_AS_20260613_090137_260293.json"
     },
     {
-      "ordinal": 204,
+      "ordinal": 209,
       "id": "L-AS-20260613_093451_264195",
       "mode": "alpha_search",
       "family": "quality_earnings",
@@ -1994,7 +2047,7 @@
       "source_file": "stage_artifacts\\l_code\\alpha_search\\l_code_STR_AS_20260613_093451_264195.json"
     },
     {
-      "ordinal": 205,
+      "ordinal": 210,
       "id": "L-AS-20260613_094756_265807",
       "mode": "alpha_search",
       "family": "ml_complexity",
@@ -2003,7 +2056,7 @@
       "source_file": "stage_artifacts\\l_code\\alpha_search\\l_code_STR_AS_20260613_094756_265807.json"
     },
     {
-      "ordinal": 206,
+      "ordinal": 211,
       "id": "L-AS-20260702_PG2W2",
       "mode": "alpha_search",
       "family": "earnings_event",
@@ -2012,7 +2065,7 @@
       "source_file": "stage_artifacts\\l_code\\alpha_search\\l_code_STR_AS_PG2W2_20260702.json"
     },
     {
-      "ordinal": 207,
+      "ordinal": 212,
       "id": "L-AS-20260709_071605_5780",
       "mode": "alpha_search",
       "family": "quality_profitability",
@@ -2021,7 +2074,7 @@
       "source_file": "stage_artifacts\\l_code\\alpha_search\\l_code_STR_AS_20260709_071605_5780.json"
     },
     {
-      "ordinal": 208,
+      "ordinal": 213,
       "id": "L-AS-20260709_072310_46904",
       "mode": "alpha_search",
       "family": "quality_profitability",
@@ -2030,7 +2083,7 @@
       "source_file": "stage_artifacts\\l_code\\alpha_search\\l_code_STR_AS_20260709_072310_46904.json"
     },
     {
-      "ordinal": 209,
+      "ordinal": 214,
       "id": "L-AS-20260709_072937_7372",
       "mode": "alpha_search",
       "family": "momentum",
@@ -2039,7 +2092,7 @@
       "source_file": "stage_artifacts\\l_code\\alpha_search\\l_code_STR_AS_20260709_072937_7372.json"
     },
     {
-      "ordinal": 210,
+      "ordinal": 215,
       "id": "L-AS-20260709_073532_32808",
       "mode": "alpha_search",
       "family": "momentum",
@@ -2048,7 +2101,7 @@
       "source_file": "stage_artifacts\\l_code\\alpha_search\\l_code_STR_AS_20260709_073532_32808.json"
     },
     {
-      "ordinal": 211,
+      "ordinal": 216,
       "id": "L-AS-20260709_074129_30048",
       "mode": "alpha_search",
       "family": "value",
@@ -2057,7 +2110,7 @@
       "source_file": "stage_artifacts\\l_code\\alpha_search\\l_code_STR_AS_20260709_074129_30048.json"
     },
     {
-      "ordinal": 212,
+      "ordinal": 217,
       "id": "L-AS-20260726_174643_26276",
       "mode": "alpha_search",
       "family": "momentum",
@@ -2066,7 +2119,7 @@
       "source_file": "stage_artifacts\\l_code\\alpha_search\\l_code_STR_AS_20260726_174643_26276.json"
     },
     {
-      "ordinal": 213,
+      "ordinal": 218,
       "id": "L-AS-20260726_174804_23216",
       "mode": "alpha_search",
       "family": "?",
@@ -2075,7 +2128,7 @@
       "source_file": "stage_artifacts\\l_code\\alpha_search\\l_code_STR_AS_20260726_174804_23216.json"
     },
     {
-      "ordinal": 214,
+      "ordinal": 219,
       "id": "L-AS-20260727_202754_49064",
       "mode": "alpha_search",
       "family": "momentum",
@@ -2084,7 +2137,7 @@
       "source_file": "stage_artifacts\\l_code\\alpha_search\\l_code_STR_AS_20260727_202754_49064.json"
     },
     {
-      "ordinal": 215,
+      "ordinal": 220,
       "id": "L-AS-20260727_202818_45232",
       "mode": "alpha_search",
       "family": "momentum",
@@ -2093,7 +2146,7 @@
       "source_file": "stage_artifacts\\l_code\\alpha_search\\l_code_STR_AS_20260727_202818_45232.json"
     },
     {
-      "ordinal": 216,
+      "ordinal": 221,
       "id": "L-AS-20260727_204043_17032",
       "mode": "alpha_search",
       "family": "momentum",
@@ -2102,7 +2155,7 @@
       "source_file": "stage_artifacts\\l_code\\alpha_search\\l_code_STR_AS_20260727_204043_17032.json"
     },
     {
-      "ordinal": 217,
+      "ordinal": 222,
       "id": "L-AS-20260802_021210_1868",
       "mode": "alpha_search",
       "family": "momentum",
@@ -2111,7 +2164,7 @@
       "source_file": "stage_artifacts\\l_code\\alpha_search\\l_code_STR_AS_20260802_021210_1868.json"
     },
     {
-      "ordinal": 218,
+      "ordinal": 223,
       "id": "L-AS-20260802_021901_32432",
       "mode": "alpha_search",
       "family": "momentum",
@@ -2120,7 +2173,7 @@
       "source_file": "stage_artifacts\\l_code\\alpha_search\\l_code_STR_AS_20260802_021901_32432.json"
     },
     {
-      "ordinal": 219,
+      "ordinal": 224,
       "id": "L-AS-20260802_025436",
       "mode": "alpha_search",
       "family": "technical_price",
@@ -2129,7 +2182,7 @@
       "source_file": "stage_artifacts\\l_code\\alpha_search\\l_code_AS_ROUND_20260802_DUALBASIS.json"
     },
     {
-      "ordinal": 220,
+      "ordinal": 225,
       "id": "L-AS-20260802_072220_10368",
       "mode": "alpha_search",
       "family": "momentum",
@@ -2138,7 +2191,7 @@
       "source_file": "stage_artifacts\\l_code\\alpha_search\\l_code_STR_AS_20260802_072220_10368.json"
     },
     {
-      "ordinal": 221,
+      "ordinal": 226,
       "id": "L-AS-20260802_072242_49024",
       "mode": "alpha_search",
       "family": "momentum",
@@ -2147,7 +2200,7 @@
       "source_file": "stage_artifacts\\l_code\\alpha_search\\l_code_STR_AS_20260802_072242_49024.json"
     },
     {
-      "ordinal": 222,
+      "ordinal": 227,
       "id": "L-AS-20260802_074951_39404",
       "mode": "alpha_search",
       "family": "momentum",
@@ -2156,7 +2209,7 @@
       "source_file": "stage_artifacts\\l_code\\alpha_search\\l_code_STR_AS_20260802_074951_39404.json"
     },
     {
-      "ordinal": 223,
+      "ordinal": 228,
       "id": "L-AS-20260802_115851_45708",
       "mode": "alpha_search",
       "family": "?",
@@ -2165,7 +2218,7 @@
       "source_file": "stage_artifacts\\l_code\\alpha_search\\l_code_STR_AS_20260802_115851_45708.json"
     },
     {
-      "ordinal": 224,
+      "ordinal": 229,
       "id": "L-AS-20260802_212903_53060",
       "mode": "alpha_search",
       "family": "?",
@@ -2174,7 +2227,7 @@
       "source_file": "stage_artifacts\\l_code\\alpha_search\\l_code_STR_AS_20260802_212903_53060.json"
     },
     {
-      "ordinal": 225,
+      "ordinal": 230,
       "id": "L-AS-20260802_213152_53060",
       "mode": "alpha_search",
       "family": "low_vol",
@@ -2183,7 +2236,7 @@
       "source_file": "stage_artifacts\\l_code\\alpha_search\\l_code_STR_AS_20260802_213152_53060.json"
     },
     {
-      "ordinal": 226,
+      "ordinal": 231,
       "id": "L-AS-20260802_213430_53060",
       "mode": "alpha_search",
       "family": "?",
@@ -2192,7 +2245,7 @@
       "source_file": "stage_artifacts\\l_code\\alpha_search\\l_code_STR_AS_20260802_213430_53060.json"
     },
     {
-      "ordinal": 227,
+      "ordinal": 232,
       "id": "L-AS-20260803_073501_21908",
       "mode": "alpha_search",
       "family": "low_vol",
@@ -2201,7 +2254,7 @@
       "source_file": "stage_artifacts\\l_code\\alpha_search\\l_code_STR_AS_20260803_073501_21908.json"
     },
     {
-      "ordinal": 228,
+      "ordinal": 233,
       "id": "L-AS-20260803_074855_28188",
       "mode": "alpha_search",
       "family": "low_vol",
@@ -2210,7 +2263,7 @@
       "source_file": "stage_artifacts\\l_code\\alpha_search\\l_code_STR_AS_20260803_074855_28188.json"
     },
     {
-      "ordinal": 229,
+      "ordinal": 234,
       "id": "L-AS-20260804_073543_45444",
       "mode": "alpha_search",
       "family": "momentum",
@@ -2219,7 +2272,7 @@
       "source_file": "stage_artifacts\\l_code\\alpha_search\\l_code_STR_AS_20260804_073543_45444.json"
     },
     {
-      "ordinal": 230,
+      "ordinal": 235,
       "id": "L-AS-20260804_074545_39272",
       "mode": "alpha_search",
       "family": "momentum",
@@ -2228,7 +2281,7 @@
       "source_file": "stage_artifacts\\l_code\\alpha_search\\l_code_STR_AS_20260804_074545_39272.json"
     },
     {
-      "ordinal": 231,
+      "ordinal": 236,
       "id": "L-AS-20260804_075423_18032",
       "mode": "alpha_search",
       "family": "momentum",
@@ -2237,7 +2290,7 @@
       "source_file": "stage_artifacts\\l_code\\alpha_search\\l_code_STR_AS_20260804_075423_18032.json"
     },
     {
-      "ordinal": 232,
+      "ordinal": 237,
       "id": "L-AS-20260804_081020_30248",
       "mode": "alpha_search",
       "family": "?",
@@ -2246,7 +2299,7 @@
       "source_file": "stage_artifacts\\l_code\\alpha_search\\l_code_STR_AS_20260804_081020_30248.json"
     },
     {
-      "ordinal": 233,
+      "ordinal": 238,
       "id": "L-AS-20260804_084258_53496",
       "mode": "alpha_search",
       "family": "?",
@@ -2255,7 +2308,7 @@
       "source_file": "stage_artifacts\\l_code\\alpha_search\\l_code_STR_AS_20260804_084258_53496.json"
     },
     {
-      "ordinal": 234,
+      "ordinal": 239,
       "id": "L-AS-20260806_203146_48376",
       "mode": "alpha_search",
       "family": "?",
@@ -2264,7 +2317,7 @@
       "source_file": "stage_artifacts\\l_code\\alpha_search\\l_code_STR_AS_20260806_203146_48376.json"
     },
     {
-      "ordinal": 235,
+      "ordinal": 240,
       "id": "L-AS-20260806_203146_53272",
       "mode": "alpha_search",
       "family": "?",
@@ -2273,7 +2326,7 @@
       "source_file": "stage_artifacts\\l_code\\alpha_search\\l_code_STR_AS_20260806_203146_53272.json"
     },
     {
-      "ordinal": 236,
+      "ordinal": 241,
       "id": "L-AS-20260806_203507_48376",
       "mode": "alpha_search",
       "family": "momentum",
@@ -2282,7 +2335,7 @@
       "source_file": "stage_artifacts\\l_code\\alpha_search\\l_code_STR_AS_20260806_203507_48376.json"
     },
     {
-      "ordinal": 237,
+      "ordinal": 242,
       "id": "L-AS-20260808-FQ110",
       "mode": "alpha_search",
       "family": "momentum",
@@ -2291,7 +2344,7 @@
       "source_file": "stage_artifacts\\l_code\\alpha_search\\l_code_FQ110_JumpShare_20260808.json"
     },
     {
-      "ordinal": 238,
+      "ordinal": 243,
       "id": "L-AS-20260808-Hurst",
       "mode": "alpha_search",
       "family": "momentum",
@@ -2300,7 +2353,7 @@
       "source_file": "stage_artifacts\\l_code\\alpha_search\\l_code_SpectralPersistence_Hurst_20260808.json"
     },
     {
-      "ordinal": 239,
+      "ordinal": 244,
       "id": "L-AS-20260808_001913_13752",
       "mode": "alpha_search",
       "family": "momentum",
@@ -2309,7 +2362,7 @@
       "source_file": "stage_artifacts\\l_code\\alpha_search\\l_code_STR_AS_20260808_001913_13752.json"
     },
     {
-      "ordinal": 240,
+      "ordinal": 245,
       "id": "L-AS-20260808_004643_8680",
       "mode": "alpha_search",
       "family": "momentum",
@@ -2318,7 +2371,7 @@
       "source_file": "stage_artifacts\\l_code\\alpha_search\\l_code_STR_AS_20260808_004643_8680.json"
     },
     {
-      "ordinal": 241,
+      "ordinal": 246,
       "id": "L-AS-20260808_075508_53064",
       "mode": "alpha_search",
       "family": "momentum",
@@ -2327,7 +2380,7 @@
       "source_file": "stage_artifacts\\l_code\\alpha_search\\l_code_STR_AS_20260808_075508_53064.json"
     },
     {
-      "ordinal": 242,
+      "ordinal": 247,
       "id": "L-AS-20260808_075822_21700",
       "mode": "alpha_search",
       "family": "momentum",
@@ -2336,7 +2389,7 @@
       "source_file": "stage_artifacts\\l_code\\alpha_search\\l_code_STR_AS_20260808_075822_21700.json"
     },
     {
-      "ordinal": 243,
+      "ordinal": 248,
       "id": "L-AS-20260808_082947_11528",
       "mode": "alpha_search",
       "family": "momentum",
@@ -2345,7 +2398,7 @@
       "source_file": "stage_artifacts\\l_code\\alpha_search\\l_code_STR_AS_20260808_082947_11528.json"
     },
     {
-      "ordinal": 244,
+      "ordinal": 249,
       "id": "L-AS-20260809_123327_46908",
       "mode": "alpha_search",
       "family": "momentum",
@@ -2354,7 +2407,7 @@
       "source_file": "stage_artifacts\\l_code\\alpha_search\\l_code_STR_AS_20260809_123327_46908.json"
     },
     {
-      "ordinal": 245,
+      "ordinal": 250,
       "id": "L-AS-20260809_125231_31080",
       "mode": "alpha_search",
       "family": "?",
@@ -2363,7 +2416,7 @@
       "source_file": "stage_artifacts\\l_code\\alpha_search\\l_code_STR_AS_20260809_125231_31080.json"
     },
     {
-      "ordinal": 246,
+      "ordinal": 251,
       "id": "L-AS-20260809_131451_21880",
       "mode": "alpha_search",
       "family": "?",
@@ -2372,7 +2425,7 @@
       "source_file": "stage_artifacts\\l_code\\alpha_search\\l_code_STR_AS_20260809_131451_21880.json"
     },
     {
-      "ordinal": 247,
+      "ordinal": 252,
       "id": "L-AS-20260809_141324_57032",
       "mode": "alpha_search",
       "family": "momentum",
@@ -2381,7 +2434,7 @@
       "source_file": "stage_artifacts\\l_code\\alpha_search\\l_code_STR_AS_20260809_141324_57032.json"
     },
     {
-      "ordinal": 248,
+      "ordinal": 253,
       "id": "L-AS-20260809_142224_57032",
       "mode": "alpha_search",
       "family": "?",
@@ -2390,7 +2443,7 @@
       "source_file": "stage_artifacts\\l_code\\alpha_search\\l_code_STR_AS_20260809_142224_57032.json"
     },
     {
-      "ordinal": 249,
+      "ordinal": 254,
       "id": "L-AS-20260809_143328_35280",
       "mode": "alpha_search",
       "family": "momentum",
@@ -2399,7 +2452,7 @@
       "source_file": "stage_artifacts\\l_code\\alpha_search\\l_code_STR_AS_20260809_143328_35280.json"
     },
     {
-      "ordinal": 250,
+      "ordinal": 255,
       "id": "L-AS-20260813_071419_38300",
       "mode": "alpha_search",
       "family": "momentum",
@@ -2408,7 +2461,7 @@
       "source_file": "stage_artifacts\\l_code\\alpha_search\\l_code_STR_AS_20260813_071419_38300.json"
     },
     {
-      "ordinal": 251,
+      "ordinal": 256,
       "id": "L-AS-20260821-IndexInclusion",
       "mode": "alpha_search",
       "family": "behavioral",
@@ -2417,7 +2470,7 @@
       "source_file": "stage_artifacts\\l_code\\alpha_search\\l_code_AS_IndexInclusionDrift_KR_20260821.json"
     },
     {
-      "ordinal": 252,
+      "ordinal": 257,
       "id": "L-AS-20260821_073113_9048",
       "mode": "alpha_search",
       "family": "momentum",
@@ -2426,7 +2479,7 @@
       "source_file": "stage_artifacts\\l_code\\alpha_search\\l_code_STR_AS_20260821_073113_9048.json"
     },
     {
-      "ordinal": 253,
+      "ordinal": 258,
       "id": "L-AS-20260821_074008_16680",
       "mode": "alpha_search",
       "family": "momentum",
@@ -2435,7 +2488,7 @@
       "source_file": "stage_artifacts\\l_code\\alpha_search\\l_code_STR_AS_20260821_074008_16680.json"
     },
     {
-      "ordinal": 254,
+      "ordinal": 259,
       "id": "L-AS-20260821_074219_6672",
       "mode": "alpha_search",
       "family": "momentum",
@@ -2444,7 +2497,7 @@
       "source_file": "stage_artifacts\\l_code\\alpha_search\\l_code_STR_AS_20260821_074219_6672.json"
     },
     {
-      "ordinal": 255,
+      "ordinal": 260,
       "id": "L-AS-20260821_075357_19336",
       "mode": "alpha_search",
       "family": "momentum",
@@ -2453,7 +2506,25 @@
       "source_file": "stage_artifacts\\l_code\\alpha_search\\l_code_STR_AS_20260821_075357_19336.json"
     },
     {
-      "ordinal": 256,
+      "ordinal": 261,
+      "id": "L-AS-20260822_112737_19220",
+      "mode": "alpha_search",
+      "family": "momentum",
+      "grade": "F",
+      "gist": "DFA_FM_A5E_Stock25: 등급 F, 연복리 11.3% (벤치마크 대비 +1.8%p), 샤프 0.46. 명확한 실패 패턴 — 역방향 가설 탐색 후보.",
+      "source_file": "stage_artifacts\\l_code\\alpha_search\\l_code_STR_AS_20260822_112737_19220.json"
+    },
+    {
+      "ordinal": 262,
+      "id": "L-AS-20260822_143237_8580",
+      "mode": "alpha_search",
+      "family": "momentum",
+      "grade": "F",
+      "gist": "MacroBetaMom_v3_precomputed: 등급 F, 연복리 3.5% (벤치마크 대비 -7.6%p), 샤프 0.12. 명확한 실패 패턴 — 역방향 가설 …",
+      "source_file": "stage_artifacts\\l_code\\alpha_search\\l_code_STR_AS_20260822_143237_8580.json"
+    },
+    {
+      "ordinal": 263,
       "id": "L-AS-ARFIMA_TSMOM-20260821_075344",
       "mode": "alpha_search",
       "family": "momentum",
@@ -2462,7 +2533,7 @@
       "source_file": "stage_artifacts\\l_code\\alpha_search\\l_code_ARFIMA_TSMOM_AS_20260821_075344.json"
     },
     {
-      "ordinal": 257,
+      "ordinal": 264,
       "id": "L-AS-B434-DISTILL-001",
       "mode": "alpha_search",
       "family": "?",
@@ -2471,7 +2542,7 @@
       "source_file": "stage_artifacts\\l_code\\alpha_search\\l_code_STR_AS_B434_DISTILL_001.json"
     },
     {
-      "ordinal": 258,
+      "ordinal": 265,
       "id": "L-AS-B434-DISTILL-002",
       "mode": "alpha_search",
       "family": "quality_earnings",
@@ -2480,7 +2551,7 @@
       "source_file": "stage_artifacts\\l_code\\alpha_search\\l_code_STR_AS_B434_DISTILL_002.json"
     },
     {
-      "ordinal": 259,
+      "ordinal": 266,
       "id": "L-AS-B434-DISTILL-003",
       "mode": "alpha_search",
       "family": "?",
@@ -2489,7 +2560,7 @@
       "source_file": "stage_artifacts\\l_code\\alpha_search\\l_code_STR_AS_B434_DISTILL_003.json"
     },
     {
-      "ordinal": 260,
+      "ordinal": 267,
       "id": "L-AS-B434-DISTILL-004",
       "mode": "alpha_search",
       "family": "quality_earnings",
@@ -2498,7 +2569,7 @@
       "source_file": "stage_artifacts\\l_code\\alpha_search\\l_code_STR_AS_B434_DISTILL_004.json"
     },
     {
-      "ordinal": 261,
+      "ordinal": 268,
       "id": "L-AS-B434-DISTILL-005",
       "mode": "alpha_search",
       "family": "?",
@@ -2507,7 +2578,7 @@
       "source_file": "stage_artifacts\\l_code\\alpha_search\\l_code_STR_AS_B434_DISTILL_005.json"
     },
     {
-      "ordinal": 262,
+      "ordinal": 269,
       "id": "L-AS-B434-DISTILL-006",
       "mode": "alpha_search",
       "family": "ml_complexity",
@@ -2516,7 +2587,7 @@
       "source_file": "stage_artifacts\\l_code\\alpha_search\\l_code_STR_AS_B434_DISTILL_006.json"
     },
     {
-      "ordinal": 263,
+      "ordinal": 270,
       "id": "L-AS-B434-DISTILL-008",
       "mode": "alpha_search",
       "family": "momentum",
@@ -2525,7 +2596,7 @@
       "source_file": "stage_artifacts\\l_code\\alpha_search\\l_code_STR_AS_B434_DISTILL_008.json"
     },
     {
-      "ordinal": 264,
+      "ordinal": 271,
       "id": "L-AS-B434-DISTILL-023",
       "mode": "alpha_search",
       "family": "?",
@@ -2534,7 +2605,7 @@
       "source_file": "stage_artifacts\\l_code\\alpha_search\\l_code_STR_AS_B434_DISTILL_023.json"
     },
     {
-      "ordinal": 265,
+      "ordinal": 272,
       "id": "L-AS-BSC_20260611_153021",
       "mode": "alpha_search",
       "family": "momentum",
@@ -2543,7 +2614,7 @@
       "source_file": "stage_artifacts\\l_code\\alpha_search\\l_code_STR_AS_BSC_20260611_153021_38500.json"
     },
     {
-      "ordinal": 266,
+      "ordinal": 273,
       "id": "L-AS-COVD_20260612_091316_3244",
       "mode": "alpha_search",
       "family": "momentum",
@@ -2552,7 +2623,7 @@
       "source_file": "stage_artifacts\\l_code\\alpha_search\\l_code_STR_AS_COVD_20260612_091316_3244.json"
     },
     {
-      "ordinal": 267,
+      "ordinal": 274,
       "id": "L-AS-DM_20260612_080422",
       "mode": "alpha_search",
       "family": "momentum",
@@ -2561,7 +2632,7 @@
       "source_file": "stage_artifacts\\l_code\\alpha_search\\l_code_STR_AS_DM_20260612_080422_49088.json"
     },
     {
-      "ordinal": 268,
+      "ordinal": 275,
       "id": "L-AS-HZZINV_20260612_093336_28036",
       "mode": "alpha_search",
       "family": "momentum",
@@ -2570,7 +2641,7 @@
       "source_file": "stage_artifacts\\l_code\\alpha_search\\l_code_STR_AS_HZZINV_20260612_093336_28036.json"
     },
     {
-      "ordinal": 269,
+      "ordinal": 276,
       "id": "L-AS-TE_20260612_085242_38060",
       "mode": "alpha_search",
       "family": "momentum",
@@ -2579,7 +2650,7 @@
       "source_file": "stage_artifacts\\l_code\\alpha_search\\l_code_STR_AS_TE_20260612_085242_38060.json"
     },
     {
-      "ordinal": 270,
+      "ordinal": 277,
       "id": "L-AS-VM_20260607_222413",
       "mode": "alpha_search",
       "family": "overlay_regime",
@@ -2588,7 +2659,7 @@
       "source_file": "stage_artifacts\\l_code\\alpha_search\\l_code_STR_VM_20260607_222413_33548.json"
     },
     {
-      "ordinal": 271,
+      "ordinal": 278,
       "id": "L-AR-20260718_103500",
       "mode": "ar",
       "family": "?",
@@ -2597,7 +2668,7 @@
       "source_file": "stage_artifacts\\l_code\\ar\\l_code_FQ055_decay_fit_20260718.json"
     },
     {
-      "ordinal": 272,
+      "ordinal": 279,
       "id": "L-FR-20260809_143948",
       "mode": "factor_rotation",
       "family": "module_allocation_scrap_pool",
@@ -2606,7 +2677,7 @@
       "source_file": "stage_artifacts\\l_code\\factor_rotation\\l_code_FR_002.json"
     },
     {
-      "ordinal": 273,
+      "ordinal": 280,
       "id": "L-1435",
       "mode": "judge_gate",
       "family": "defense",
@@ -2615,7 +2686,7 @@
       "source_file": "04_Research\\strategies\\STR_1435_5sleeve_dd620_repair\\stage_artifacts\\l_code_STR_1435.json"
     },
     {
-      "ordinal": 274,
+      "ordinal": 281,
       "id": "L-1456",
       "mode": "judge_gate",
       "family": "consensus",
@@ -2624,7 +2695,7 @@
       "source_file": "04_Research\\strategies\\STR_1456_defense_consensus_quality\\stage_artifacts\\l_code_STR_1456.json"
     },
     {
-      "ordinal": 275,
+      "ordinal": 282,
       "id": "L-146",
       "mode": "judge_gate",
       "family": "defense",
@@ -2633,7 +2704,7 @@
       "source_file": "stage_artifacts\\l_code_L146_overlay_driven_mdd_not_core_alpha.json"
     },
     {
-      "ordinal": 276,
+      "ordinal": 283,
       "id": "L-1465",
       "mode": "judge_gate",
       "family": "consensus",
@@ -2642,7 +2713,7 @@
       "source_file": "04_Research\\strategies\\STR_1465_vwap_spread_construction\\stage_artifacts\\l_code_STR_1465.json"
     },
     {
-      "ordinal": 277,
+      "ordinal": 284,
       "id": "L-147",
       "mode": "judge_gate",
       "family": "quality",
@@ -2651,7 +2722,7 @@
       "source_file": "stage_artifacts\\l_code_L147_s5_mutation_retroactive_tracker_insufficient.json"
     },
     {
-      "ordinal": 278,
+      "ordinal": 285,
       "id": "L-1486",
       "mode": "judge_gate",
       "family": "defense",
@@ -2660,7 +2731,7 @@
       "source_file": "04_Research\\strategies\\STR_1486_rogers_satchell_vol\\stage_artifacts\\l_code_STR_1486.json"
     },
     {
-      "ordinal": 279,
+      "ordinal": 286,
       "id": "L-149",
       "mode": "judge_gate",
       "family": "infra_process",
@@ -2669,7 +2740,7 @@
       "source_file": "stage_artifacts\\l_code_STR_1439_v3_pass2.json"
     },
     {
-      "ordinal": 280,
+      "ordinal": 287,
       "id": "L-150",
       "mode": "judge_gate",
       "family": "infra_process",
@@ -2678,7 +2749,7 @@
       "source_file": "stage_artifacts\\l_code_STR_1435_v3_pass2.json"
     },
     {
-      "ordinal": 281,
+      "ordinal": 288,
       "id": "L-151",
       "mode": "judge_gate",
       "family": "infra_process",
@@ -2687,7 +2758,7 @@
       "source_file": "stage_artifacts\\l_code_STR_1060_v3_pass2.json"
     },
     {
-      "ordinal": 282,
+      "ordinal": 289,
       "id": "L-152",
       "mode": "judge_gate",
       "family": "infra_process",
@@ -2696,7 +2767,7 @@
       "source_file": "stage_artifacts\\l_code_sweep_v3_tier3_v3_pass2.json"
     },
     {
-      "ordinal": 283,
+      "ordinal": 290,
       "id": "L-154",
       "mode": "judge_gate",
       "family": "infra_process",
@@ -2705,7 +2776,7 @@
       "source_file": "stage_artifacts\\l_code_sweep_v3_tier2_v3_pass2.json"
     },
     {
-      "ordinal": 284,
+      "ordinal": 291,
       "id": "L-155",
       "mode": "judge_gate",
       "family": "infra_process",
@@ -2714,7 +2785,7 @@
       "source_file": "stage_artifacts\\l_code_STR_1679v2_rehearing.json"
     },
     {
-      "ordinal": 285,
+      "ordinal": 292,
       "id": "L-156",
       "mode": "judge_gate",
       "family": "value",
@@ -2723,7 +2794,7 @@
       "source_file": "stage_artifacts\\l_code_L156_tdc_gate_v3_0.json"
     },
     {
-      "ordinal": 286,
+      "ordinal": 293,
       "id": "L-159",
       "mode": "judge_gate",
       "family": "momentum",
@@ -2732,7 +2803,7 @@
       "source_file": "stage_artifacts\\l_code_L159_residualization_dilution.json"
     },
     {
-      "ordinal": 287,
+      "ordinal": 294,
       "id": "L-743",
       "mode": "judge_gate",
       "family": "technical_price",
@@ -2741,7 +2812,7 @@
       "source_file": "04_Research\\strategies\\STR_1562_vol_price_divergence\\stage_artifacts\\l_code_STR_1562.json"
     },
     {
-      "ordinal": 288,
+      "ordinal": 295,
       "id": "L-780",
       "mode": "judge_gate",
       "family": "gross_profitability",
@@ -2750,7 +2821,7 @@
       "source_file": "04_Research\\strategies\\STR_1560_gross_margin_quality\\stage_artifacts\\l_code_STR_1560.json"
     },
     {
-      "ordinal": 289,
+      "ordinal": 296,
       "id": "L-789",
       "mode": "judge_gate",
       "family": "consensus_flow",
@@ -2759,7 +2830,7 @@
       "source_file": "04_Research\\strategies\\STR_1563_oc_epschg_c9c11fix\\stage_artifacts\\l_code_STR_1563.json"
     },
     {
-      "ordinal": 290,
+      "ordinal": 297,
       "id": "L-JG-20260705_123317",
       "mode": "judge_gate",
       "family": "ml_complexity",
@@ -2768,7 +2839,7 @@
       "source_file": "stage_artifacts\\l_code\\judge_gate\\l_code_WT-D20260705_001.json"
     },
     {
-      "ordinal": 291,
+      "ordinal": 298,
       "id": "L-JG-20260705_200604",
       "mode": "judge_gate",
       "family": "ml_complexity",
@@ -2777,7 +2848,7 @@
       "source_file": "stage_artifacts\\l_code\\judge_gate\\l_code_WT-D20260705_004.json"
     },
     {
-      "ordinal": 292,
+      "ordinal": 299,
       "id": "L-JG-20260705_201906",
       "mode": "judge_gate",
       "family": "ml_complexity",
@@ -2786,7 +2857,7 @@
       "source_file": "stage_artifacts\\l_code\\judge_gate\\l_code_WT-D20260705_009.json"
     },
     {
-      "ordinal": 293,
+      "ordinal": 300,
       "id": "L-JG-20260706_102102",
       "mode": "judge_gate",
       "family": "size",
@@ -2795,7 +2866,7 @@
       "source_file": "stage_artifacts\\l_code\\judge_gate\\l_code_WT-D20260706_MIDCAP.json"
     },
     {
-      "ordinal": 294,
+      "ordinal": 301,
       "id": "L-JG-20260714_214259",
       "mode": "judge_gate",
       "family": "value",
@@ -2804,7 +2875,16 @@
       "source_file": "stage_artifacts\\l_code\\judge_gate\\l_code_WT-D20260714_006.json"
     },
     {
-      "ordinal": 295,
+      "ordinal": 302,
+      "id": "L-JG-20260822_220935",
+      "mode": "judge_gate",
+      "family": "ml_complexity",
+      "grade": "F",
+      "gist": "q90 상방-분위(pinball τ=0.9 LightGBM, 324 registry 피처) 표적을 arm A(평균 표적) 대비 독립 사전등록·paired 판정. …",
+      "source_file": "stage_artifacts\\l_code\\judge_gate\\l_code_WT-D20260813_001.json"
+    },
+    {
+      "ordinal": 303,
       "id": "L-MF-20260803_FQ108",
       "mode": "method_frontier",
       "family": "defense",
@@ -2813,7 +2893,7 @@
       "source_file": "stage_artifacts\\l_code\\method_frontier\\l_code_FQ108_TAILVOL_RISK_AXIS.json"
     },
     {
-      "ordinal": 296,
+      "ordinal": 304,
       "id": "L-MF-20260808_BREADTH_DOMINATES_TIER_BETA",
       "mode": "method_frontier",
       "family": "?",
@@ -2822,7 +2902,7 @@
       "source_file": "stage_artifacts\\l_code\\method_frontier\\l_code_BREADTH_DOMINATES_TIER_BETA.json"
     },
     {
-      "ordinal": 297,
+      "ordinal": 305,
       "id": "L-MF-20260808_DUALBASIS_IS_BENCH_NOT_EXPOSURE",
       "mode": "method_frontier",
       "family": "infra_process",
@@ -2831,7 +2911,7 @@
       "source_file": "stage_artifacts\\l_code\\method_frontier\\l_code_DUALBASIS_IS_BENCH_NOT_EXPOSURE.json"
     },
     {
-      "ordinal": 298,
+      "ordinal": 306,
       "id": "L-MF-20260808_FQ087",
       "mode": "method_frontier",
       "family": "infra_process",
@@ -2840,7 +2920,7 @@
       "source_file": "stage_artifacts\\l_code\\method_frontier\\l_code_FQ087_VOLRANK_PREDICTABILITY.json"
     },
     {
-      "ordinal": 299,
+      "ordinal": 307,
       "id": "L-MF-20260808_HANDICAP_AND_SIZE_ARE_ONE_AXIS",
       "mode": "method_frontier",
       "family": "overlay_regime",
@@ -2849,7 +2929,7 @@
       "source_file": "stage_artifacts\\l_code\\method_frontier\\l_code_HANDICAP_AND_SIZE_ARE_ONE_AXIS.json"
     },
     {
-      "ordinal": 300,
+      "ordinal": 308,
       "id": "L-MF-20260808_SHRINK_DIAL_IS_IDENTITY_ON_INCREMENT",
       "mode": "method_frontier",
       "family": "infra_process",
@@ -2858,7 +2938,7 @@
       "source_file": "stage_artifacts\\l_code\\method_frontier\\l_code_SHRINK_DIAL_IS_IDENTITY_ON_INCREMENT.json"
     },
     {
-      "ordinal": 301,
+      "ordinal": 309,
       "id": "L-MF-20260808_SOURCE_AWARE_TTM_UNWIRED",
       "mode": "method_frontier",
       "family": "infra_process",
@@ -2867,7 +2947,7 @@
       "source_file": "stage_artifacts\\l_code\\method_frontier\\l_code_SOURCE_AWARE_TTM_UNWIRED.json"
     },
     {
-      "ordinal": 302,
+      "ordinal": 310,
       "id": "L-MF-20260808_WALL_IS_WINDOW_DEPENDENT",
       "mode": "method_frontier",
       "family": "overlay_regime",
@@ -2876,7 +2956,7 @@
       "source_file": "stage_artifacts\\l_code\\method_frontier\\l_code_WALL_IS_WINDOW_DEPENDENT.json"
     },
     {
-      "ordinal": 303,
+      "ordinal": 311,
       "id": "L-MF-20260808_WORD_BOUNDARY_SILENT_FALSE",
       "mode": "method_frontier",
       "family": "infra_process",
@@ -2885,7 +2965,7 @@
       "source_file": "stage_artifacts\\l_code\\method_frontier\\l_code_WORD_BOUNDARY_SILENT_FALSE.json"
     },
     {
-      "ordinal": 304,
+      "ordinal": 312,
       "id": "L-MF-20260809_BASE_DELTA_IR_NOT_INFORMATION",
       "mode": "method_frontier",
       "family": "infra_process",
@@ -2894,7 +2974,7 @@
       "source_file": "stage_artifacts\\l_code\\method_frontier\\l_code_BASE_DELTA_IR_NOT_INFORMATION.json"
     },
     {
-      "ordinal": 305,
+      "ordinal": 313,
       "id": "L-MF-20260809_COUNT_RULE_UNINFORMATIVE_MAGNITUDE_DECIDES",
       "mode": "method_frontier",
       "family": "quality_profitability",
@@ -2903,7 +2983,7 @@
       "source_file": "stage_artifacts\\l_code\\method_frontier\\l_code_COUNT_RULE_UNINFORMATIVE_MAGNITUDE_DECIDES.json"
     },
     {
-      "ordinal": 306,
+      "ordinal": 314,
       "id": "L-MF-20260809_WALKING_SEAM_DATE_PINNED_REPAIR",
       "mode": "method_frontier",
       "family": "?",
@@ -2912,7 +2992,7 @@
       "source_file": "stage_artifacts\\l_code\\method_frontier\\l_code_WALKING_SEAM_DATE_PINNED_REPAIR.json"
     },
     {
-      "ordinal": 307,
+      "ordinal": 315,
       "id": "L-OVL-20260706_095844",
       "mode": "overlay_research",
       "family": "overlay_regime",
@@ -2921,7 +3001,7 @@
       "source_file": "stage_artifacts\\l_code\\overlay_research\\l_code_OVL_defgate_term_R1.json"
     },
     {
-      "ordinal": 308,
+      "ordinal": 316,
       "id": "L-OVL-20260706_095844_02",
       "mode": "overlay_research",
       "family": "overlay_regime",
@@ -2930,7 +3010,7 @@
       "source_file": "stage_artifacts\\l_code\\overlay_research\\l_code_OVL_defgate_vol_R1.json"
     },
     {
-      "ordinal": 309,
+      "ordinal": 317,
       "id": "L-OVL-20260706_095844_03",
       "mode": "overlay_research",
       "family": "overlay_regime",
@@ -2939,7 +3019,7 @@
       "source_file": "stage_artifacts\\l_code\\overlay_research\\l_code_OVL_defgate_macro_R1.json"
     },
     {
-      "ordinal": 310,
+      "ordinal": 318,
       "id": "L-OVL-20260706_095845",
       "mode": "overlay_research",
       "family": "overlay_regime",
@@ -2948,7 +3028,7 @@
       "source_file": "stage_artifacts\\l_code\\overlay_research\\l_code_OVL_defgate_fx_lab_R1.json"
     },
     {
-      "ordinal": 311,
+      "ordinal": 319,
       "id": "L-OVL-20260706_095845_02",
       "mode": "overlay_research",
       "family": "overlay_regime",
@@ -2957,7 +3037,7 @@
       "source_file": "stage_artifacts\\l_code\\overlay_research\\l_code_OVL_defgate_maxis_R1.json"
     },
     {
-      "ordinal": 312,
+      "ordinal": 320,
       "id": "L-OVL-20260706_100250",
       "mode": "overlay_research",
       "family": "overlay_regime",
@@ -2966,7 +3046,7 @@
       "source_file": "stage_artifacts\\l_code\\overlay_research\\l_code_OVL_bull_override_R2.json"
     },
     {
-      "ordinal": 313,
+      "ordinal": 321,
       "id": "L-OVL-20260706_100250_02",
       "mode": "overlay_research",
       "family": "overlay_regime",
@@ -2975,7 +3055,7 @@
       "source_file": "stage_artifacts\\l_code\\overlay_research\\l_code_OVL_2signal_conj_R2.json"
     },
     {
-      "ordinal": 314,
+      "ordinal": 322,
       "id": "L-OVL-20260706_101456",
       "mode": "overlay_research",
       "family": "overlay_regime",
@@ -2984,7 +3064,7 @@
       "source_file": "stage_artifacts\\l_code\\overlay_research\\l_code_OVL_book_voltarget_R3.json"
     },
     {
-      "ordinal": 315,
+      "ordinal": 323,
       "id": "L-OVL-20260706_101456_02",
       "mode": "overlay_research",
       "family": "overlay_regime",
@@ -2993,7 +3073,7 @@
       "source_file": "stage_artifacts\\l_code\\overlay_research\\l_code_OVL_conj3_regime_R3.json"
     },
     {
-      "ordinal": 316,
+      "ordinal": 324,
       "id": "L-OVL-20260710_153559",
       "mode": "overlay_research",
       "family": "overlay_regime",
@@ -3002,7 +3082,7 @@
       "source_file": "stage_artifacts\\l_code\\overlay_research\\l_code_OVERLAY_QUEUE_DRAIN_20260710.json"
     },
     {
-      "ordinal": 317,
+      "ordinal": 325,
       "id": "L-OVL-20260817_165326",
       "mode": "overlay_research",
       "family": "infra_process",
@@ -3011,7 +3091,7 @@
       "source_file": "stage_artifacts\\l_code\\overlay_research\\l_code_ovl_20260817_165326.json"
     },
     {
-      "ordinal": 318,
+      "ordinal": 326,
       "id": "L-130",
       "mode": "qepm_legacy",
       "family": "quality_earnings",
@@ -3020,7 +3100,7 @@
       "source_file": "stage_artifacts\\l_code_STR_1652_DFA_on_VDplus.json"
     },
     {
-      "ordinal": 319,
+      "ordinal": 327,
       "id": "L-131",
       "mode": "qepm_legacy",
       "family": "behavioral",
@@ -3029,7 +3109,7 @@
       "source_file": "stage_artifacts\\l_code_STR_1674.json"
     },
     {
-      "ordinal": 320,
+      "ordinal": 328,
       "id": "L-132",
       "mode": "qepm_legacy",
       "family": "value",
@@ -3038,7 +3118,7 @@
       "source_file": "stage_artifacts\\l_code_STR_1663.json"
     },
     {
-      "ordinal": 321,
+      "ordinal": 329,
       "id": "L-133",
       "mode": "qepm_legacy",
       "family": "quality_profitability",
@@ -3047,7 +3127,7 @@
       "source_file": "stage_artifacts\\l_code_STR_1657.json"
     },
     {
-      "ordinal": 322,
+      "ordinal": 330,
       "id": "L-134",
       "mode": "qepm_legacy",
       "family": "quality_profitability",
@@ -3056,7 +3136,7 @@
       "source_file": "stage_artifacts\\l_code_STR_1655.json"
     },
     {
-      "ordinal": 323,
+      "ordinal": 331,
       "id": "L-135",
       "mode": "qepm_legacy",
       "family": "value",
@@ -3065,7 +3145,7 @@
       "source_file": "stage_artifacts\\l_code_STR_1654.json"
     },
     {
-      "ordinal": 324,
+      "ordinal": 332,
       "id": "L-136",
       "mode": "qepm_legacy",
       "family": "defense",
@@ -3074,7 +3154,7 @@
       "source_file": "stage_artifacts\\l_code_STR_1662.json"
     },
     {
-      "ordinal": 325,
+      "ordinal": 333,
       "id": "L-137",
       "mode": "qepm_legacy",
       "family": "quality_earnings",
@@ -3083,7 +3163,7 @@
       "source_file": "stage_artifacts\\l_code_STR_1636.json"
     },
     {
-      "ordinal": 326,
+      "ordinal": 334,
       "id": "L-138",
       "mode": "qepm_legacy",
       "family": "quality_earnings",
@@ -3092,7 +3172,7 @@
       "source_file": "stage_artifacts\\l_code_STR_1635.json"
     },
     {
-      "ordinal": 327,
+      "ordinal": 335,
       "id": "L-139",
       "mode": "qepm_legacy",
       "family": "quality_profitability",
@@ -3101,7 +3181,7 @@
       "source_file": "stage_artifacts\\l_code_STR_1626.json"
     },
     {
-      "ordinal": 328,
+      "ordinal": 336,
       "id": "L-140",
       "mode": "qepm_legacy",
       "family": "quality_profitability",
@@ -3110,7 +3190,7 @@
       "source_file": "stage_artifacts\\l_code_STR_1642.json"
     },
     {
-      "ordinal": 329,
+      "ordinal": 337,
       "id": "L-141",
       "mode": "qepm_legacy",
       "family": "quality_earnings",
@@ -3119,7 +3199,7 @@
       "source_file": "stage_artifacts\\l_code_AXIOM_ENRICH_20260417.json"
     },
     {
-      "ordinal": 330,
+      "ordinal": 338,
       "id": "L-142",
       "mode": "qepm_legacy",
       "family": "infra_process",
@@ -3128,7 +3208,7 @@
       "source_file": "stage_artifacts\\l_code_NO_JUDGE_SWEEP_20260417.json"
     },
     {
-      "ordinal": 331,
+      "ordinal": 339,
       "id": "L-1469",
       "mode": "qepm_legacy",
       "family": "consensus",
@@ -3137,7 +3217,7 @@
       "source_file": "04_Research\\strategies\\STR_1469_cons4f_5sleeve\\stage_artifacts\\l_code_STR_1469.json"
     },
     {
-      "ordinal": 332,
+      "ordinal": 340,
       "id": "L-1469-b",
       "mode": "qepm_legacy",
       "family": "consensus",
@@ -3146,7 +3226,7 @@
       "source_file": "04_Research\\strategies\\STR_1469_cons4f_5sleeve\\stage_artifacts\\l_code_STR_1469_s6_review.json"
     },
     {
-      "ordinal": 333,
+      "ordinal": 341,
       "id": "L-148",
       "mode": "qepm_legacy",
       "family": "infra_process",
@@ -3155,7 +3235,7 @@
       "source_file": "stage_artifacts\\l_code_NOJUDGE_SWEEP_V2_20260417.json"
     },
     {
-      "ordinal": 334,
+      "ordinal": 342,
       "id": "L-1549",
       "mode": "qepm_legacy",
       "family": "consensus",
@@ -3164,7 +3244,7 @@
       "source_file": "04_Research\\strategies\\STR_1549_defense_core_alpha\\stage_artifacts\\l_code_STR_1549.json"
     },
     {
-      "ordinal": 335,
+      "ordinal": 343,
       "id": "L-1550",
       "mode": "qepm_legacy",
       "family": "consensus",
@@ -3173,7 +3253,7 @@
       "source_file": "04_Research\\strategies\\STR_1550_consensus_core_alpha\\stage_artifacts\\l_code_STR_1550.json"
     },
     {
-      "ordinal": 336,
+      "ordinal": 344,
       "id": "L-1551",
       "mode": "qepm_legacy",
       "family": "defense",
@@ -3182,7 +3262,7 @@
       "source_file": "04_Research\\strategies\\STR_1551_defense_idiovol_sleeve\\stage_artifacts\\l_code_STR_1551.json"
     },
     {
-      "ordinal": 337,
+      "ordinal": 345,
       "id": "L-1555",
       "mode": "qepm_legacy",
       "family": "consensus",
@@ -3191,7 +3271,7 @@
       "source_file": "04_Research\\strategies\\STR_1555_score_blend_3factor\\stage_artifacts\\l_code_STR_1555.json"
     },
     {
-      "ordinal": 338,
+      "ordinal": 346,
       "id": "L-1555-b",
       "mode": "qepm_legacy",
       "family": "ml_complexity",
@@ -3200,7 +3280,7 @@
       "source_file": "04_Research\\strategies\\STR_1555_score_blend_3factor\\stage_artifacts\\l_code_STR_1555_final.json"
     },
     {
-      "ordinal": 339,
+      "ordinal": 347,
       "id": "L-1555-c",
       "mode": "qepm_legacy",
       "family": "defense",
@@ -3209,7 +3289,7 @@
       "source_file": "04_Research\\strategies\\STR_1555_score_blend_3factor\\stage_artifacts\\l_code_STR_1555_dd_6_20.json"
     },
     {
-      "ordinal": 340,
+      "ordinal": 348,
       "id": "L-1570",
       "mode": "qepm_legacy",
       "family": "consensus",
@@ -3218,7 +3298,7 @@
       "source_file": "04_Research\\strategies\\STR_1570_c19_l22_d01_dd_regime\\stage_artifacts\\l_code_STR_1570.json"
     },
     {
-      "ordinal": 341,
+      "ordinal": 349,
       "id": "L-1571",
       "mode": "qepm_legacy",
       "family": "behavioral",
@@ -3227,7 +3307,7 @@
       "source_file": "04_Research\\strategies\\STR_1571_c19_v14_d01_l22_dd_regime\\stage_artifacts\\l_code_STR_1571.json"
     },
     {
-      "ordinal": 342,
+      "ordinal": 350,
       "id": "L-1576",
       "mode": "qepm_legacy",
       "family": "quality_earnings",
@@ -3236,7 +3316,7 @@
       "source_file": "04_Research\\strategies\\STR_1576_cf_accrual_quality\\stage_artifacts\\l_code_STR_1576.json"
     },
     {
-      "ordinal": 343,
+      "ordinal": 351,
       "id": "L-1577",
       "mode": "qepm_legacy",
       "family": "quality",
@@ -3245,7 +3325,7 @@
       "source_file": "04_Research\\strategies\\STR_1577_earnings_growth_alpha\\stage_artifacts\\l_code_STR_1577.json"
     },
     {
-      "ordinal": 344,
+      "ordinal": 352,
       "id": "L-1578",
       "mode": "qepm_legacy",
       "family": "defense",
@@ -3254,7 +3334,7 @@
       "source_file": "04_Research\\strategies\\STR_1578_kurtosis_defense\\stage_artifacts\\l_code_STR_1578.json"
     },
     {
-      "ordinal": 345,
+      "ordinal": 353,
       "id": "L-1579",
       "mode": "qepm_legacy",
       "family": "quality_earnings",
@@ -3263,7 +3343,7 @@
       "source_file": "04_Research\\strategies\\STR_1579_earnings_stability_quality\\stage_artifacts\\l_code_STR_1579.json"
     },
     {
-      "ordinal": 346,
+      "ordinal": 354,
       "id": "L-1580",
       "mode": "qepm_legacy",
       "family": "behavioral",
@@ -3272,7 +3352,7 @@
       "source_file": "04_Research\\strategies\\STR_1580_vol_price_divergence\\stage_artifacts\\l_code_STR_1580.json"
     },
     {
-      "ordinal": 347,
+      "ordinal": 355,
       "id": "L-1581",
       "mode": "qepm_legacy",
       "family": "overlay_regime",
@@ -3281,7 +3361,7 @@
       "source_file": "04_Research\\strategies\\STR_1581_book_leverage_risk\\stage_artifacts\\l_code_STR_1581.json"
     },
     {
-      "ordinal": 348,
+      "ordinal": 356,
       "id": "L-160",
       "mode": "qepm_legacy",
       "family": "signal_portfolio_translation_failure",
@@ -3290,7 +3370,7 @@
       "source_file": "stage_artifacts\\l_code_L_160_STR_1683.json"
     },
     {
-      "ordinal": 349,
+      "ordinal": 357,
       "id": "L-1608",
       "mode": "qepm_legacy",
       "family": "momentum",
@@ -3299,7 +3379,7 @@
       "source_file": "04_Research\\strategies\\STR_1608_tracking_error_diversifier\\stage_artifacts\\l_code_STR_1608.json"
     },
     {
-      "ordinal": 350,
+      "ordinal": 358,
       "id": "L-1609",
       "mode": "qepm_legacy",
       "family": "flow_supply",
@@ -3308,7 +3388,7 @@
       "source_file": "04_Research\\strategies\\STR_1609_vwap_spread_diversifier\\stage_artifacts\\l_code_STR_1609.json"
     },
     {
-      "ordinal": 351,
+      "ordinal": 359,
       "id": "L-160A",
       "mode": "qepm_legacy",
       "family": "behavioral",
@@ -3317,7 +3397,7 @@
       "source_file": "stage_artifacts\\l_code_L160_algebraic_identity_verification.json"
     },
     {
-      "ordinal": 352,
+      "ordinal": 360,
       "id": "L-161",
       "mode": "qepm_legacy",
       "family": "momentum",
@@ -3326,7 +3406,7 @@
       "source_file": "stage_artifacts\\l_code_STR_1684.json"
     },
     {
-      "ordinal": 353,
+      "ordinal": 361,
       "id": "L-161A",
       "mode": "qepm_legacy",
       "family": "infra_process",
@@ -3335,7 +3415,7 @@
       "source_file": "stage_artifacts\\l_code_L161_codex_infra_redundancy.json"
     },
     {
-      "ordinal": 354,
+      "ordinal": 362,
       "id": "L-162",
       "mode": "qepm_legacy",
       "family": "momentum",
@@ -3344,7 +3424,7 @@
       "source_file": "stage_artifacts\\l_code_L162_linear_composite_dominance.json"
     },
     {
-      "ordinal": 355,
+      "ordinal": 363,
       "id": "L-1621",
       "mode": "qepm_legacy",
       "family": "quality_earnings",
@@ -3353,7 +3433,7 @@
       "source_file": "04_Research\\strategies\\STR_1621_regime_conditional_allweather\\stage_artifacts\\l_code_STR_1621.json"
     },
     {
-      "ordinal": 356,
+      "ordinal": 364,
       "id": "L-1622",
       "mode": "qepm_legacy",
       "family": "quality_profitability",
@@ -3362,7 +3442,7 @@
       "source_file": "04_Research\\strategies\\STR_1622_ic_weighted_statistical_blend\\stage_artifacts\\l_code_STR_1622.json"
     },
     {
-      "ordinal": 357,
+      "ordinal": 365,
       "id": "L-1623",
       "mode": "qepm_legacy",
       "family": "defense",
@@ -3371,7 +3451,7 @@
       "source_file": "04_Research\\strategies\\STR_1571_bayesian_bl_c11fix\\stage_artifacts\\L_code_STR_1571.json"
     },
     {
-      "ordinal": 358,
+      "ordinal": 366,
       "id": "L-1624",
       "mode": "qepm_legacy",
       "family": "defense",
@@ -3380,7 +3460,7 @@
       "source_file": "04_Research\\strategies\\STR_1614_roic_skewness_defense\\stage_artifacts\\l_code_STR_1614.json"
     },
     {
-      "ordinal": 359,
+      "ordinal": 367,
       "id": "L-1625",
       "mode": "qepm_legacy",
       "family": "quality_earnings",
@@ -3389,7 +3469,7 @@
       "source_file": "04_Research\\strategies\\STR_1615_accrual_vol_cashconv\\stage_artifacts\\l_code_STR_1615.json"
     },
     {
-      "ordinal": 360,
+      "ordinal": 368,
       "id": "L-162A",
       "mode": "qepm_legacy",
       "family": "infra_process",
@@ -3398,7 +3478,7 @@
       "source_file": "stage_artifacts\\l_code_STR_1684_infra_L_162.json"
     },
     {
-      "ordinal": 361,
+      "ordinal": 369,
       "id": "L-163",
       "mode": "qepm_legacy",
       "family": "quality_earnings",
@@ -3407,7 +3487,7 @@
       "source_file": "stage_artifacts\\l_code_L_163_poison_pill_threshold.json"
     },
     {
-      "ordinal": 362,
+      "ordinal": 370,
       "id": "L-165",
       "mode": "qepm_legacy",
       "family": "signal_portfolio_translation_failure",
@@ -3416,7 +3496,7 @@
       "source_file": "stage_artifacts\\l_code_STR_1685.json"
     },
     {
-      "ordinal": 363,
+      "ordinal": 371,
       "id": "L-166",
       "mode": "qepm_legacy",
       "family": "signal_portfolio_translation_failure",
@@ -3425,7 +3505,7 @@
       "source_file": "stage_artifacts\\l_code_L_166_ANTI_pattern_STR_1687.json"
     },
     {
-      "ordinal": 364,
+      "ordinal": 372,
       "id": "L-167",
       "mode": "qepm_legacy",
       "family": "infra_process",
@@ -3434,7 +3514,7 @@
       "source_file": "stage_artifacts\\l_code_L_167_forge_self_check_insufficient.json"
     },
     {
-      "ordinal": 365,
+      "ordinal": 373,
       "id": "L-1682",
       "mode": "qepm_legacy",
       "family": "defense",
@@ -3443,7 +3523,7 @@
       "source_file": "stage_artifacts\\l_code_STR_1682.json"
     },
     {
-      "ordinal": 366,
+      "ordinal": 374,
       "id": "L-170",
       "mode": "qepm_legacy",
       "family": "industry_momentum_residualized_core_secondary_fail",
@@ -3452,7 +3532,7 @@
       "source_file": "04_Research\\strategies\\STR_1692_industry_mom_rsi_residual\\stage_artifacts\\l_code_STR_1692.json"
     },
     {
-      "ordinal": 367,
+      "ordinal": 375,
       "id": "L-572",
       "mode": "qepm_legacy",
       "family": "quality_earnings",
@@ -3461,7 +3541,7 @@
       "source_file": "04_Research\\strategies\\STR_1332_bayesian_garp\\stage_artifacts\\l_code_STR_1332.json"
     },
     {
-      "ordinal": 368,
+      "ordinal": 376,
       "id": "L-578",
       "mode": "qepm_legacy",
       "family": "liquidity",
@@ -3470,7 +3550,7 @@
       "source_file": "04_Research\\strategies\\STR_1501_turnover_liquidity\\stage_artifacts\\l_code_STR_1501.json"
     },
     {
-      "ordinal": 369,
+      "ordinal": 377,
       "id": "L-579",
       "mode": "qepm_legacy",
       "family": "?",
@@ -3479,7 +3559,7 @@
       "source_file": "04_Research\\strategies\\STR_1500_var95_tail_risk\\stage_artifacts\\l_code_STR_1500.json"
     },
     {
-      "ordinal": 370,
+      "ordinal": 378,
       "id": "L-590",
       "mode": "qepm_legacy",
       "family": "defense",
@@ -3488,7 +3568,7 @@
       "source_file": "04_Research\\strategies\\STR_1566_c19_l22_blend\\stage_artifacts\\l_code.json"
     },
     {
-      "ordinal": 371,
+      "ordinal": 379,
       "id": "L-591",
       "mode": "qepm_legacy",
       "family": "consensus",
@@ -3497,7 +3577,7 @@
       "source_file": "04_Research\\strategies\\STR_1558_ret_autocorr_diversifier\\stage_artifacts\\l_code_STR_1558.json"
     },
     {
-      "ordinal": 372,
+      "ordinal": 380,
       "id": "L-601",
       "mode": "qepm_legacy",
       "family": "quality_earnings",
@@ -3506,7 +3586,7 @@
       "source_file": "04_Research\\strategies\\STR_1423_volvol_quality\\stage_artifacts\\l_code_STR_1423_s5_m2.json"
     },
     {
-      "ordinal": 373,
+      "ordinal": 381,
       "id": "L-602",
       "mode": "qepm_legacy",
       "family": "quality_earnings",
@@ -3515,7 +3595,7 @@
       "source_file": "04_Research\\strategies\\STR_1423_volvol_quality\\stage_artifacts\\l_code_STR_1423_s5_m3.json"
     },
     {
-      "ordinal": 374,
+      "ordinal": 382,
       "id": "L-603",
       "mode": "qepm_legacy",
       "family": "consensus",
@@ -3524,7 +3604,7 @@
       "source_file": "04_Research\\strategies\\STR_1425_adaptive_ic_rotation\\stage_artifacts\\l_code_STR_1425_s5.json"
     },
     {
-      "ordinal": 375,
+      "ordinal": 383,
       "id": "L-604",
       "mode": "qepm_legacy",
       "family": "quality_earnings",
@@ -3533,7 +3613,7 @@
       "source_file": "04_Research\\strategies\\STR_1423_volvol_quality\\stage_artifacts\\l_code_STR_1423_s5_m1.json"
     },
     {
-      "ordinal": 376,
+      "ordinal": 384,
       "id": "L-605",
       "mode": "qepm_legacy",
       "family": "overlay_regime",
@@ -3542,7 +3622,7 @@
       "source_file": "04_Research\\strategies\\STR_1425_adaptive_ic_rotation\\stage_artifacts\\l_code_STR_1425_s5_m2.json"
     },
     {
-      "ordinal": 377,
+      "ordinal": 385,
       "id": "L-606",
       "mode": "qepm_legacy",
       "family": "overlay_regime",
@@ -3551,7 +3631,7 @@
       "source_file": "04_Research\\strategies\\STR_1425_adaptive_ic_rotation\\stage_artifacts\\l_code_STR_1425_s5_m3.json"
     },
     {
-      "ordinal": 378,
+      "ordinal": 386,
       "id": "L-607",
       "mode": "qepm_legacy",
       "family": "behavioral",
@@ -3560,7 +3640,7 @@
       "source_file": "04_Research\\strategies\\STR_1424_tailrisk_flow\\stage_artifacts\\l_code_STR_1424_s5_m2.json"
     },
     {
-      "ordinal": 379,
+      "ordinal": 387,
       "id": "L-609",
       "mode": "qepm_legacy",
       "family": "quality_earnings",
@@ -3569,7 +3649,7 @@
       "source_file": "04_Research\\strategies\\STR_1423_volvol_quality\\stage_artifacts\\l_code_STR_1423_s5.json"
     },
     {
-      "ordinal": 380,
+      "ordinal": 388,
       "id": "L-610",
       "mode": "qepm_legacy",
       "family": "overlay_regime",
@@ -3578,7 +3658,7 @@
       "source_file": "04_Research\\strategies\\STR_1425_adaptive_ic_rotation\\stage_artifacts\\l_code_STR_1425_s5_m1.json"
     },
     {
-      "ordinal": 381,
+      "ordinal": 389,
       "id": "L-611",
       "mode": "qepm_legacy",
       "family": "quality_earnings",
@@ -3587,7 +3667,7 @@
       "source_file": "04_Research\\strategies\\STR_1457_indmom_quality_gate\\stage_artifacts\\l_code_STR_1457_s5_dd722.json"
     },
     {
-      "ordinal": 382,
+      "ordinal": 390,
       "id": "L-612",
       "mode": "qepm_legacy",
       "family": "infra_process",
@@ -3596,7 +3676,7 @@
       "source_file": "04_Research\\strategies\\STR_1506_ownership_concentration\\stage_artifacts\\l_code_STR_1506.json"
     },
     {
-      "ordinal": 383,
+      "ordinal": 391,
       "id": "L-613",
       "mode": "qepm_legacy",
       "family": "overlay_regime",
@@ -3605,7 +3685,7 @@
       "source_file": "04_Research\\strategies\\STR_1471_cokurt_crowddiv\\stage_artifacts\\l_code_STR_1471_s5_dd722.json"
     },
     {
-      "ordinal": 384,
+      "ordinal": 392,
       "id": "L-614",
       "mode": "qepm_legacy",
       "family": "quality_earnings",
@@ -3614,7 +3694,7 @@
       "source_file": "04_Research\\strategies\\STR_1470_skew_stability_surprise\\stage_artifacts\\l_code_STR_1470_s5_dd722.json"
     },
     {
-      "ordinal": 385,
+      "ordinal": 393,
       "id": "L-615",
       "mode": "qepm_legacy",
       "family": "?",
@@ -3623,7 +3703,7 @@
       "source_file": "04_Research\\strategies\\STR_1502_cvar95_expected_shortfall\\stage_artifacts\\l_code_STR_1502.json"
     },
     {
-      "ordinal": 386,
+      "ordinal": 394,
       "id": "L-616",
       "mode": "qepm_legacy",
       "family": "dividend",
@@ -3632,7 +3712,7 @@
       "source_file": "04_Research\\strategies\\STR_1511_liquid_income\\stage_artifacts\\l_code_STR_1511.json"
     },
     {
-      "ordinal": 387,
+      "ordinal": 395,
       "id": "L-617",
       "mode": "qepm_legacy",
       "family": "quality_earnings",
@@ -3641,7 +3721,7 @@
       "source_file": "04_Research\\strategies\\STR_1457_indmom_quality_gate\\stage_artifacts\\l_code_STR_1457_s5_m2.json"
     },
     {
-      "ordinal": 388,
+      "ordinal": 396,
       "id": "L-620",
       "mode": "qepm_legacy",
       "family": "momentum",
@@ -3650,7 +3730,7 @@
       "source_file": "04_Research\\strategies\\STR_1510_contrarian_replacement_value\\stage_artifacts\\l_code_STR_1510.json"
     },
     {
-      "ordinal": 389,
+      "ordinal": 397,
       "id": "L-621",
       "mode": "qepm_legacy",
       "family": "quality_earnings",
@@ -3659,7 +3739,7 @@
       "source_file": "04_Research\\strategies\\STR_1509_safe_forward_value\\stage_artifacts\\l_code_STR_1509.json"
     },
     {
-      "ordinal": 390,
+      "ordinal": 398,
       "id": "L-622",
       "mode": "qepm_legacy",
       "family": "defense",
@@ -3668,7 +3748,7 @@
       "source_file": "04_Research\\strategies\\STR_1422_crowding_defense\\stage_artifacts\\l_code_STR_1422_s5_m2.json"
     },
     {
-      "ordinal": 391,
+      "ordinal": 399,
       "id": "L-623",
       "mode": "qepm_legacy",
       "family": "behavioral",
@@ -3677,7 +3757,7 @@
       "source_file": "04_Research\\strategies\\STR_1422_flow_reversal\\stage_artifacts\\l_code_STR_1422_flow_s5_m2.json"
     },
     {
-      "ordinal": 392,
+      "ordinal": 400,
       "id": "L-627",
       "mode": "qepm_legacy",
       "family": "low_vol",
@@ -3686,7 +3766,7 @@
       "source_file": "04_Research\\strategies\\STR_1333_value_earnings_synergy\\stage_artifacts\\l_code_STR_1333_B1.json"
     },
     {
-      "ordinal": 393,
+      "ordinal": 401,
       "id": "L-628",
       "mode": "qepm_legacy",
       "family": "overlay_regime",
@@ -3695,7 +3775,7 @@
       "source_file": "04_Research\\strategies\\STR_1333_value_earnings_synergy\\stage_artifacts\\l_code_STR_1333_A1.json"
     },
     {
-      "ordinal": 394,
+      "ordinal": 402,
       "id": "L-629",
       "mode": "qepm_legacy",
       "family": "overlay_regime",
@@ -3704,7 +3784,7 @@
       "source_file": "04_Research\\strategies\\STR_1333_value_earnings_synergy\\stage_artifacts\\l_code_STR_1333_B2.json"
     },
     {
-      "ordinal": 395,
+      "ordinal": 403,
       "id": "L-630",
       "mode": "qepm_legacy",
       "family": "overlay_regime",
@@ -3713,7 +3793,7 @@
       "source_file": "04_Research\\strategies\\STR_1333_value_earnings_synergy\\stage_artifacts\\l_code_STR_1333_C1.json"
     },
     {
-      "ordinal": 396,
+      "ordinal": 404,
       "id": "L-631",
       "mode": "qepm_legacy",
       "family": "defense",
@@ -3722,7 +3802,7 @@
       "source_file": "04_Research\\strategies\\STR_1422_crowding_defense\\stage_artifacts\\l_code_STR_1422_s5.json"
     },
     {
-      "ordinal": 397,
+      "ordinal": 405,
       "id": "L-632",
       "mode": "qepm_legacy",
       "family": "defense",
@@ -3731,7 +3811,7 @@
       "source_file": "04_Research\\strategies\\STR_1422_crowding_defense\\stage_artifacts\\l_code_STR_1422_s5_m1.json"
     },
     {
-      "ordinal": 398,
+      "ordinal": 406,
       "id": "L-633",
       "mode": "qepm_legacy",
       "family": "defense",
@@ -3740,7 +3820,7 @@
       "source_file": "04_Research\\strategies\\STR_1422_crowding_defense\\stage_artifacts\\l_code_STR_1422_s5_m3.json"
     },
     {
-      "ordinal": 399,
+      "ordinal": 407,
       "id": "L-634",
       "mode": "qepm_legacy",
       "family": "INV01_FlowReversal",
@@ -3749,7 +3829,7 @@
       "source_file": "04_Research\\strategies\\STR_1422_flow_reversal\\stage_artifacts\\l_code_STR_1422_flow_s5_m1.json"
     },
     {
-      "ordinal": 400,
+      "ordinal": 408,
       "id": "L-635",
       "mode": "qepm_legacy",
       "family": "INV01_FlowReversal",
@@ -3758,7 +3838,7 @@
       "source_file": "04_Research\\strategies\\STR_1422_flow_reversal\\stage_artifacts\\l_code_STR_1422_flow_s5_m3.json"
     },
     {
-      "ordinal": 401,
+      "ordinal": 409,
       "id": "L-643",
       "mode": "qepm_legacy",
       "family": "defense",
@@ -3767,7 +3847,7 @@
       "source_file": "04_Research\\strategies\\STR_791_orthogonal\\stage_artifacts\\l_code_STR_791.json"
     },
     {
-      "ordinal": 402,
+      "ordinal": 410,
       "id": "L-646",
       "mode": "qepm_legacy",
       "family": "defense",
@@ -3776,7 +3856,7 @@
       "source_file": "04_Research\\strategies\\STR_798_adaptive_vt\\stage_artifacts\\l_code_STR_798.json"
     },
     {
-      "ordinal": 403,
+      "ordinal": 411,
       "id": "L-647",
       "mode": "qepm_legacy",
       "family": "momentum",
@@ -3785,7 +3865,7 @@
       "source_file": "04_Research\\strategies\\STR_887_foreign_flow_alpha\\stage_artifacts\\l_code_STR_887.json"
     },
     {
-      "ordinal": 404,
+      "ordinal": 412,
       "id": "L-650",
       "mode": "qepm_legacy",
       "family": "momentum",
@@ -3794,7 +3874,7 @@
       "source_file": "04_Research\\strategies\\STR_794_softmrs_qualgate\\stage_artifacts\\l_code_STR_794.json"
     },
     {
-      "ordinal": 405,
+      "ordinal": 413,
       "id": "L-718",
       "mode": "qepm_legacy",
       "family": "overlay_regime",
@@ -3803,7 +3883,7 @@
       "source_file": "04_Research\\strategies\\STR_1527_m25_streak_dd\\stage_artifacts\\l_code_STR_1527_dd1025.json"
     },
     {
-      "ordinal": 406,
+      "ordinal": 414,
       "id": "L-719",
       "mode": "qepm_legacy",
       "family": "quality",
@@ -3812,7 +3892,7 @@
       "source_file": "04_Research\\strategies\\STR_1527_m25_streak_dd\\stage_artifacts\\l_code_STR_1527_dd1535.json"
     },
     {
-      "ordinal": 407,
+      "ordinal": 415,
       "id": "L-720",
       "mode": "qepm_legacy",
       "family": "quality",
@@ -3821,7 +3901,7 @@
       "source_file": "04_Research\\strategies\\STR_1528_roic_sustainable_growth\\stage_artifacts\\l_code_STR_1528.json"
     },
     {
-      "ordinal": 408,
+      "ordinal": 416,
       "id": "L-721",
       "mode": "qepm_legacy",
       "family": "momentum",
@@ -3830,7 +3910,7 @@
       "source_file": "04_Research\\strategies\\STR_1502_cvar95_expected_shortfall\\stage_artifacts\\l_code_STR_1502_dd620.json"
     },
     {
-      "ordinal": 409,
+      "ordinal": 417,
       "id": "L-722",
       "mode": "qepm_legacy",
       "family": "infra_process",
@@ -3839,7 +3919,7 @@
       "source_file": "04_Research\\strategies\\STR_1506_ownership_concentration\\stage_artifacts\\l_code_STR_1506_dd620.json"
     },
     {
-      "ordinal": 410,
+      "ordinal": 418,
       "id": "L-723",
       "mode": "qepm_legacy",
       "family": "behavioral",
@@ -3848,7 +3928,7 @@
       "source_file": "04_Research\\strategies\\STR_887_foreign_flow_alpha\\stage_artifacts\\l_code_STR_887_v71.json"
     },
     {
-      "ordinal": 411,
+      "ordinal": 419,
       "id": "L-731",
       "mode": "qepm_legacy",
       "family": "infra_process",
@@ -3857,7 +3937,7 @@
       "source_file": "04_Research\\strategies\\STR_887_foreign_flow_alpha\\stage_artifacts\\l_code_STR_887_v71_fixed.json"
     },
     {
-      "ordinal": 412,
+      "ordinal": 420,
       "id": "L-750",
       "mode": "qepm_legacy",
       "family": "ml_complexity",
@@ -3866,7 +3946,7 @@
       "source_file": "04_Research\\strategies\\STR_1439_1047_to_fix\\stage_artifacts\\l_code_STR_1439.json"
     },
     {
-      "ordinal": 413,
+      "ordinal": 421,
       "id": "L-761",
       "mode": "qepm_legacy",
       "family": "oc_eps_chg",
@@ -3875,7 +3955,7 @@
       "source_file": "04_Research\\strategies\\STR_943_oc_eps_chg\\stage_artifacts\\l_code.json"
     },
     {
-      "ordinal": 414,
+      "ordinal": 422,
       "id": "L-767",
       "mode": "qepm_legacy",
       "family": "consensus",
@@ -3884,7 +3964,7 @@
       "source_file": "04_Research\\strategies\\STR_1549_defense_core_alpha\\stage_artifacts\\l_code_L767.json"
     },
     {
-      "ordinal": 415,
+      "ordinal": 423,
       "id": "L-768",
       "mode": "qepm_legacy",
       "family": "defense_idiovol",
@@ -3893,7 +3973,7 @@
       "source_file": "04_Research\\strategies\\STR_1551_defense_idiovol_sleeve\\stage_artifacts\\l_code.json"
     },
     {
-      "ordinal": 416,
+      "ordinal": 424,
       "id": "L-795",
       "mode": "qepm_legacy",
       "family": "defense",
@@ -3902,7 +3982,7 @@
       "source_file": "04_Research\\strategies\\STR_1562_gerber_dcc_hrp_c11fix\\stage_artifacts\\l_code.json"
     },
     {
-      "ordinal": 417,
+      "ordinal": 425,
       "id": "L-799",
       "mode": "qepm_legacy",
       "family": "technical_price",
@@ -3911,7 +3991,7 @@
       "source_file": "04_Research\\strategies\\STR_1562_vol_price_divergence\\stage_artifacts\\l_code.json"
     },
     {
-      "ordinal": 418,
+      "ordinal": 426,
       "id": "L-802",
       "mode": "qepm_legacy",
       "family": "defense",
@@ -3920,7 +4000,7 @@
       "source_file": "04_Research\\strategies\\STR_1567_c19_l22_dd_regime\\stage_artifacts\\l_code_L802.json"
     },
     {
-      "ordinal": 419,
+      "ordinal": 427,
       "id": "L-812",
       "mode": "qepm_legacy",
       "family": "defense",
@@ -3929,7 +4009,7 @@
       "source_file": "04_Research\\strategies\\STR_1570_c19_l22_d01_dd_regime\\stage_artifacts\\l_code.json"
     },
     {
-      "ordinal": 420,
+      "ordinal": 428,
       "id": "L-813",
       "mode": "qepm_legacy",
       "family": "defense",
@@ -3938,7 +4018,7 @@
       "source_file": "04_Research\\strategies\\STR_1571_c19_v14_d01_l22_dd_regime\\stage_artifacts\\l_code.json"
     },
     {
-      "ordinal": 421,
+      "ordinal": 429,
       "id": "L-814",
       "mode": "qepm_legacy",
       "family": "consensus",
@@ -3947,7 +4027,7 @@
       "source_file": "04_Research\\strategies\\STR_1572_c19_l22_dd1228\\stage_artifacts\\l_code.json"
     },
     {
-      "ordinal": 422,
+      "ordinal": 430,
       "id": "L-QPM-20260606-001",
       "mode": "qepm_legacy",
       "family": "momentum",
@@ -3956,7 +4036,7 @@
       "source_file": "stage_artifacts\\l_code\\qepm\\l_code_WT_D20260606_001.json"
     },
     {
-      "ordinal": 423,
+      "ordinal": 431,
       "id": "L-QPM-20260607-001",
       "mode": "qepm_legacy",
       "family": "infra_process",
@@ -3965,7 +4045,7 @@
       "source_file": "stage_artifacts\\l_code\\qepm\\l_code_SR25_ceiling.json"
     },
     {
-      "ordinal": 424,
+      "ordinal": 432,
       "id": "L-QPM-20260704_114303",
       "mode": "qepm_legacy",
       "family": "ml_complexity",
@@ -3974,7 +4054,7 @@
       "source_file": "stage_artifacts\\l_code\\qepm_legacy\\l_code_ML_BASELINE_S57_2026_04.json"
     },
     {
-      "ordinal": 425,
+      "ordinal": 433,
       "id": "L-QPM-20260705_102041",
       "mode": "qepm_legacy",
       "family": "overlay_regime",
@@ -3983,7 +4063,7 @@
       "source_file": "stage_artifacts\\l_code\\qepm_legacy\\l_code_WT-AXENGINE-E2E_frontier_b_regimecond.json"
     },
     {
-      "ordinal": 426,
+      "ordinal": 434,
       "id": "L-QPM-20260705_105130",
       "mode": "qepm_legacy",
       "family": "defense",
@@ -3992,7 +4072,7 @@
       "source_file": "stage_artifacts\\l_code\\qepm_legacy\\l_code_axeng_crossfamily_regimecond_composite.json"
     },
     {
-      "ordinal": 427,
+      "ordinal": 435,
       "id": "L-QPM-20260705_110752",
       "mode": "qepm_legacy",
       "family": "quality_earnings",
@@ -4001,7 +4081,7 @@
       "source_file": "stage_artifacts\\l_code\\qepm_legacy\\l_code_frontier_a_quality_Q07_multisleeve.json"
     },
     {
-      "ordinal": 428,
+      "ordinal": 436,
       "id": "L-QPM-20260705_180719",
       "mode": "qepm_legacy",
       "family": "quality",
@@ -4010,7 +4090,7 @@
       "source_file": "stage_artifacts\\l_code\\qepm_legacy\\l_code_WT-D20260705_002_srgap_orthogonal_sleeve.json"
     },
     {
-      "ordinal": 429,
+      "ordinal": 437,
       "id": "L-QPM-20260705_192441",
       "mode": "qepm_legacy",
       "family": "unknown",
@@ -4019,7 +4099,7 @@
       "source_file": "stage_artifacts\\l_code\\qepm_legacy\\l_code_WT-D20260705_008_conjunctive_intersection.json"
     },
     {
-      "ordinal": 430,
+      "ordinal": 438,
       "id": "L-QPM-20260706_081232",
       "mode": "qepm_legacy",
       "family": "size",
@@ -4028,7 +4108,7 @@
       "source_file": "stage_artifacts\\l_code\\qepm_legacy\\l_code_WT-P20260706_001_megacap_anchor_forge.json"
     },
     {
-      "ordinal": 431,
+      "ordinal": 439,
       "id": "L-QPM-20260706_083113",
       "mode": "qepm_legacy",
       "family": "overlay_regime",
@@ -4037,7 +4117,7 @@
       "source_file": "stage_artifacts\\l_code\\qepm_legacy\\l_code_STR_MEGACAP_ANCHOR_CAPRELAX_20260706.json"
     },
     {
-      "ordinal": 432,
+      "ordinal": 440,
       "id": "L-QPM-20260706_095231",
       "mode": "qepm_legacy",
       "family": "flow_supply",
@@ -4046,7 +4126,7 @@
       "source_file": "stage_artifacts\\l_code\\qepm_legacy\\l_code_WT-D20260706_009_net_share_issuance.json"
     },
     {
-      "ordinal": 433,
+      "ordinal": 441,
       "id": "L-QPM-20260706_102132",
       "mode": "qepm_legacy",
       "family": "value",
@@ -4055,7 +4135,7 @@
       "source_file": "stage_artifacts\\l_code\\qepm_legacy\\l_code_WT-D20260706_013_intangible_adjusted_value.json"
     },
     {
-      "ordinal": 434,
+      "ordinal": 442,
       "id": "L-QPM-20260718_101841",
       "mode": "qepm_legacy",
       "family": "infra_process",
@@ -4064,7 +4144,7 @@
       "source_file": "stage_artifacts\\l_code\\qepm_legacy\\l_code_CLEANER_DISTILL_CLAIM_PROTOCOL.json"
     },
     {
-      "ordinal": 435,
+      "ordinal": 443,
       "id": "L-QPM-20260718_190624",
       "mode": "qepm_legacy",
       "family": "risk_sigma_method",
@@ -4073,7 +4153,7 @@
       "source_file": "stage_artifacts\\l_code\\qepm_legacy\\l_code_FQ057_METHOD_FRONTIER_SIGMA_ARC.json"
     },
     {
-      "ordinal": 436,
+      "ordinal": 444,
       "id": "L-QPM-20260718_201043",
       "mode": "qepm_legacy",
       "family": "drawdown_aware_construction",
@@ -4082,7 +4162,7 @@
       "source_file": "stage_artifacts\\l_code\\qepm_legacy\\l_code_FQ058_DRAWDOWN_AWARE_CONSTRUCTION.json"
     },
     {
-      "ordinal": 437,
+      "ordinal": 445,
       "id": "L-QPM-20260820_PROXY_CHECKER_INSTALL",
       "mode": "qepm_legacy",
       "family": "infra_process",
@@ -4091,7 +4171,7 @@
       "source_file": "stage_artifacts\\l_code\\qepm_legacy\\l_code_PROXY_CHECKER_INSTALL_20260820.json"
     },
     {
-      "ordinal": 438,
+      "ordinal": 446,
       "id": "L-QPM-20260821_R11_RETRY_PREVENTION_DIAGNOSIS",
       "mode": "qepm_legacy",
       "family": "infra_process",
@@ -4100,7 +4180,7 @@
       "source_file": "stage_artifacts\\l_code\\qepm_legacy\\l_code_AXIOM_LOOP_R11_RETRY_PREVENTION_20260821.json"
     },
     {
-      "ordinal": 439,
+      "ordinal": 447,
       "id": "L-QPM-20260822_005809",
       "mode": "qepm_legacy",
       "family": "ml_complexity",
@@ -4109,7 +4189,7 @@
       "source_file": "stage_artifacts\\l_code\\qepm\\l_code_lqpm20260822_005809.json"
     },
     {
-      "ordinal": 440,
+      "ordinal": 448,
       "id": "L-QPM-20260822_010303",
       "mode": "qepm_legacy",
       "family": "?",
@@ -4118,7 +4198,7 @@
       "source_file": "stage_artifacts\\l_code\\qepm\\l_code_lqpm20260822_010303.json"
     },
     {
-      "ordinal": 441,
+      "ordinal": 449,
       "id": "L-QPM-20260822_AXIOM_AUDIT_TEST_ISOLATION",
       "mode": "qepm_legacy",
       "family": "infra_process",
@@ -4127,7 +4207,7 @@
       "source_file": "stage_artifacts\\l_code\\qepm_legacy\\l_code_AXIOM_ENGINE_DESIGN_AUDIT_20260822.json"
     },
     {
-      "ordinal": 442,
+      "ordinal": 450,
       "id": "L-AR-20260809_214500",
       "mode": "QPM",
       "family": "momentum",
@@ -4136,7 +4216,7 @@
       "source_file": "stage_artifacts\\l_code\\alpha_research\\l_code_AR_fq198_consensus_unlock_zero_materials_20260809.json"
     },
     {
-      "ordinal": 443,
+      "ordinal": 451,
       "id": "L-AR-20260813_R31R33",
       "mode": "QPM",
       "family": "measurement_form",
@@ -4145,7 +4225,7 @@
       "source_file": "stage_artifacts\\l_code\\alpha_research\\l_code_AR_fq233_r31r33_target_form_premise_20260813.json"
     },
     {
-      "ordinal": 444,
+      "ordinal": 452,
       "id": "L-AR-20260813_WT002",
       "mode": "QPM",
       "family": "overlay_regime",
@@ -4154,7 +4234,7 @@
       "source_file": "stage_artifacts\\l_code\\alpha_research\\l_code_AR_wt002_regime_tail_target_20260813.json"
     },
     {
-      "ordinal": 445,
+      "ordinal": 453,
       "id": "L-AR-20260813_WT003",
       "mode": "QPM",
       "family": "overlay_regime",
@@ -4163,7 +4243,7 @@
       "source_file": "stage_artifacts\\l_code\\alpha_research\\l_code_AR_wt003_voltarget_surface_20260813.json"
     },
     {
-      "ordinal": 446,
+      "ordinal": 454,
       "id": "L-AR-20260813_WT005",
       "mode": "QPM",
       "family": "measurement_form",
@@ -4172,7 +4252,7 @@
       "source_file": "stage_artifacts\\l_code\\alpha_research\\l_code_AR_wt005_selection_objective_fq237_20260813.json"
     },
     {
-      "ordinal": 447,
+      "ordinal": 455,
       "id": "L-RAMP-20260618_131316",
       "mode": "ramp",
       "family": "overlay_regime",
@@ -4181,7 +4261,7 @@
       "source_file": "stage_artifacts\\l_code\\ramp\\l_code_RAMP_REGIME_NAIVE_FAIL_20260618.json"
     },
     {
-      "ordinal": 448,
+      "ordinal": 456,
       "id": "L-RAMP-20260618_131316B",
       "mode": "ramp",
       "family": "infra_process",
@@ -4190,7 +4270,7 @@
       "source_file": "stage_artifacts\\l_code\\ramp\\l_code_RAMP_FULLSWEEP_20260618.json"
     },
     {
-      "ordinal": 449,
+      "ordinal": 457,
       "id": "L-RAMP-20260618_131316C",
       "mode": "ramp",
       "family": "infra_process",
@@ -4199,7 +4279,7 @@
       "source_file": "stage_artifacts\\l_code\\ramp\\l_code_RAMP_M0_COMBINE_20260618.json"
     },
     {
-      "ordinal": 450,
+      "ordinal": 458,
       "id": "L-RAMP-20260618_131800",
       "mode": "ramp",
       "family": "infra_process",
@@ -4208,7 +4288,7 @@
       "source_file": "stage_artifacts\\l_code\\ramp\\l_code_RAMP_GATE6_BEST_20260618.json"
     },
     {
-      "ordinal": 451,
+      "ordinal": 459,
       "id": "L-RAMP-20260618_134000",
       "mode": "ramp",
       "family": "value",
@@ -4217,7 +4297,7 @@
       "source_file": "stage_artifacts\\l_code\\ramp\\l_code_RAMP_OVERLAY_BULLWINDOW_20260618.json"
     },
     {
-      "ordinal": 452,
+      "ordinal": 460,
       "id": "L-RAMP-20260618_140528",
       "mode": "ramp",
       "family": "?",
@@ -4226,7 +4306,7 @@
       "source_file": "stage_artifacts\\l_code\\ramp\\l_code_RAMP_ROUND1_20260618.json"
     },
     {
-      "ordinal": 453,
+      "ordinal": 461,
       "id": "L-RAMP-20260618_142650",
       "mode": "ramp",
       "family": "overlay_regime",
@@ -4235,7 +4315,7 @@
       "source_file": "stage_artifacts\\l_code\\ramp\\l_code_RAMP_SIGNIFICANT_EWUNI_20260618.json"
     },
     {
-      "ordinal": 454,
+      "ordinal": 462,
       "id": "L-RAMP-20260618_175207",
       "mode": "ramp",
       "family": "infra_process",
@@ -4244,7 +4324,7 @@
       "source_file": "stage_artifacts\\l_code\\ramp\\l_code_RAMP_GRADUATION_20260618.json"
     },
     {
-      "ordinal": 455,
+      "ordinal": 463,
       "id": "L-RAMP-20260619_070753",
       "mode": "ramp",
       "family": "overlay_regime",
@@ -4253,7 +4333,7 @@
       "source_file": "stage_artifacts\\l_code\\ramp\\l_code_RAMP_GATE6_8_INVESTOR_20260619.json"
     },
     {
-      "ordinal": 456,
+      "ordinal": 464,
       "id": "L-RAMP-20260619_081702",
       "mode": "ramp",
       "family": "overlay_regime",
@@ -4262,7 +4342,7 @@
       "source_file": "stage_artifacts\\l_code\\ramp\\l_code_RAMP_AUG_ICW316_20260619.json"
     },
     {
-      "ordinal": 457,
+      "ordinal": 465,
       "id": "L-RAMP-20260619_103729",
       "mode": "ramp",
       "family": "overlay_regime",
@@ -4271,7 +4351,7 @@
       "source_file": "stage_artifacts\\l_code\\ramp\\l_code_RAMP_AR_WIRING_20260619.json"
     },
     {
-      "ordinal": 458,
+      "ordinal": 466,
       "id": "L-RAMP-20260619_105903",
       "mode": "ramp",
       "family": "?",
@@ -4280,7 +4360,7 @@
       "source_file": "stage_artifacts\\l_code\\ramp\\l_code_RAMP_SELFDEV_ARMSM_Q_20260619.json"
     },
     {
-      "ordinal": 459,
+      "ordinal": 467,
       "id": "L-RAMP-20260619_132312",
       "mode": "ramp",
       "family": "momentum",
@@ -4289,7 +4369,7 @@
       "source_file": "stage_artifacts\\l_code\\ramp\\l_code_RAMP_REGIME_BAKEOFF_20260619.json"
     },
     {
-      "ordinal": 460,
+      "ordinal": 468,
       "id": "L-RAMP-20260619_135237",
       "mode": "ramp",
       "family": "overlay_regime",
@@ -4298,7 +4378,7 @@
       "source_file": "stage_artifacts\\l_code\\ramp\\l_code_RAMP_TIMING_RELAX_20260619.json"
     },
     {
-      "ordinal": 461,
+      "ordinal": 469,
       "id": "L-RAMP-20260619_140656",
       "mode": "ramp",
       "family": "ml_complexity",
@@ -4307,7 +4387,7 @@
       "source_file": "stage_artifacts\\l_code\\ramp\\l_code_RAMP_REGIME_STRENGTHEN_20260619.json"
     },
     {
-      "ordinal": 462,
+      "ordinal": 470,
       "id": "L-RAMP-20260619_141402",
       "mode": "ramp",
       "family": "momentum",
@@ -4316,7 +4396,7 @@
       "source_file": "stage_artifacts\\l_code\\ramp\\l_code_RAMP_PERGROUP_JUMP_20260619.json"
     },
     {
-      "ordinal": 463,
+      "ordinal": 471,
       "id": "L-RAMP-20260619_144257",
       "mode": "ramp",
       "family": "low_vol",
@@ -4325,7 +4405,7 @@
       "source_file": "stage_artifacts\\l_code\\ramp\\l_code_RAMP_SHUMULVEY_20260619.json"
     },
     {
-      "ordinal": 464,
+      "ordinal": 472,
       "id": "L-RAMP-20260619_150531",
       "mode": "ramp",
       "family": "overlay_regime",
@@ -4334,7 +4414,7 @@
       "source_file": "stage_artifacts\\l_code\\ramp\\l_code_RAMP_SHUMULVEY_V2_20260619.json"
     },
     {
-      "ordinal": 465,
+      "ordinal": 473,
       "id": "L-RAMP-20260619_151835",
       "mode": "ramp",
       "family": "overlay_regime",
@@ -4343,7 +4423,7 @@
       "source_file": "stage_artifacts\\l_code\\ramp\\l_code_RAMP_SHUMULVEY_V3_DEBIAS_20260619.json"
     },
     {
-      "ordinal": 466,
+      "ordinal": 474,
       "id": "L-RAMP-20260619_152736",
       "mode": "ramp",
       "family": "ml_complexity",
@@ -4352,7 +4432,7 @@
       "source_file": "stage_artifacts\\l_code\\ramp\\l_code_RAMP_SHUMULVEY_FINAL_20260619.json"
     },
     {
-      "ordinal": 467,
+      "ordinal": 475,
       "id": "L-RAMP-20260619_173504",
       "mode": "ramp",
       "family": "overlay_regime",
@@ -4361,7 +4441,7 @@
       "source_file": "stage_artifacts\\l_code\\ramp\\l_code_RAMP_SHUMULVEY_25STOCK_FAIL_20260619.json"
     },
     {
-      "ordinal": 468,
+      "ordinal": 476,
       "id": "L-RAMP-20260619_180008",
       "mode": "ramp",
       "family": "ml_complexity",
@@ -4370,7 +4450,7 @@
       "source_file": "stage_artifacts\\l_code\\ramp\\l_code_RAMP01_ENHANCE_DIR12_20260619.json"
     },
     {
-      "ordinal": 469,
+      "ordinal": 477,
       "id": "L-RAMP-20260619_193015",
       "mode": "ramp",
       "family": "overlay_regime",
@@ -4379,7 +4459,7 @@
       "source_file": "stage_artifacts\\l_code\\ramp\\l_code_RAMP02_BREAKTHROUGH_SEARCH_20260619.json"
     },
     {
-      "ordinal": 470,
+      "ordinal": 478,
       "id": "L-RAMP-20260620_103109",
       "mode": "ramp",
       "family": "momentum",
@@ -4388,7 +4468,7 @@
       "source_file": "stage_artifacts\\l_code\\ramp\\l_code_RAMP_MOMENTUM_CENTRIC_20260620.json"
     },
     {
-      "ordinal": 471,
+      "ordinal": 479,
       "id": "L-RAMP-20260620_104415",
       "mode": "ramp",
       "family": "momentum",
@@ -4397,7 +4477,7 @@
       "source_file": "stage_artifacts\\l_code\\ramp\\l_code_RAMP_REGIME_BLEND_20260620.json"
     },
     {
-      "ordinal": 472,
+      "ordinal": 480,
       "id": "L-RAMP-20260620_132802",
       "mode": "ramp",
       "family": "overlay_regime",
@@ -4406,7 +4486,7 @@
       "source_file": "stage_artifacts\\l_code\\ramp\\l_code_RAMP_REGIME_BLEND_V2_20260620.json"
     },
     {
-      "ordinal": 473,
+      "ordinal": 481,
       "id": "L-RAMP-20260620_161507",
       "mode": "ramp",
       "family": "momentum",
@@ -4415,7 +4495,7 @@
       "source_file": "stage_artifacts\\l_code\\ramp\\l_code_RAMP_03_MOMCONS_IC_20260620.json"
     },
     {
-      "ordinal": 474,
+      "ordinal": 482,
       "id": "L-RAMP-20260620_171915",
       "mode": "ramp",
       "family": "overlay_regime",
@@ -4424,7 +4504,7 @@
       "source_file": "stage_artifacts\\l_code\\ramp\\l_code_RAMP_03B_BOOK_ABSORB_20260620.json"
     },
     {
-      "ordinal": 475,
+      "ordinal": 483,
       "id": "L-RAMP-20260620_184509",
       "mode": "ramp",
       "family": "momentum",
@@ -4433,7 +4513,7 @@
       "source_file": "stage_artifacts\\l_code\\ramp\\l_code_RAMP_BOOK_LOOKAHEAD_CORRECTION_20260620.json"
     },
     {
-      "ordinal": 476,
+      "ordinal": 484,
       "id": "L-RAMP-20260620_184815",
       "mode": "ramp",
       "family": "momentum",
@@ -4442,7 +4522,7 @@
       "source_file": "stage_artifacts\\l_code\\ramp\\l_code_RAMP_03C_BOOKMOM_CAPW_20260620.json"
     },
     {
-      "ordinal": 477,
+      "ordinal": 485,
       "id": "L-RAMP-20260620_185554",
       "mode": "ramp",
       "family": "momentum",
@@ -4451,7 +4531,7 @@
       "source_file": "stage_artifacts\\l_code\\ramp\\l_code_RAMP_8COMP_EXHAUSTIVE_20260620.json"
     },
     {
-      "ordinal": 478,
+      "ordinal": 486,
       "id": "L-RAMP-20260705_184828",
       "mode": "ramp",
       "family": "overlay_regime",
@@ -4460,7 +4540,7 @@
       "source_file": "stage_artifacts\\l_code\\ramp\\l_code_RAMP_R1_SLEEVE_STACK_20260705.json"
     },
     {
-      "ordinal": 479,
+      "ordinal": 487,
       "id": "L-RAMP-20260705_191446",
       "mode": "ramp",
       "family": "infra_process",
@@ -4469,7 +4549,7 @@
       "source_file": "stage_artifacts\\l_code\\ramp\\l_code_RAMP_R2_TOPN_20260705.json"
     },
     {
-      "ordinal": 480,
+      "ordinal": 488,
       "id": "L-RAMP-20260705_191446_02",
       "mode": "ramp",
       "family": "ml_complexity",
@@ -4478,7 +4558,7 @@
       "source_file": "stage_artifacts\\l_code\\ramp\\l_code_RAMP_R2_ML_20260705.json"
     },
     {
-      "ordinal": 481,
+      "ordinal": 489,
       "id": "L-RAMP-20260711_152314",
       "mode": "ramp",
       "family": "value",
@@ -4487,7 +4567,7 @@
       "source_file": "stage_artifacts\\l_code\\ramp\\l_code_RAMP_R3_SLEEVE_ADDITION_20260711.json"
     },
     {
-      "ordinal": 482,
+      "ordinal": 490,
       "id": "L-RAMP-20260711_181539",
       "mode": "ramp",
       "family": "ml_complexity",
@@ -4496,7 +4576,7 @@
       "source_file": "stage_artifacts\\l_code\\ramp\\l_code_RAMP_R4_BORUTA_20260711.json"
     },
     {
-      "ordinal": 483,
+      "ordinal": 491,
       "id": "L-RAMP-20260711_184155",
       "mode": "ramp",
       "family": "ml_complexity",
@@ -4505,7 +4585,7 @@
       "source_file": "stage_artifacts\\l_code\\ramp\\l_code_RAMP_R5_selection_family_closure.json"
     },
     {
-      "ordinal": 484,
+      "ordinal": 492,
       "id": "L-RAMP-20260711_200226",
       "mode": "ramp",
       "family": "?",
@@ -4514,7 +4594,7 @@
       "source_file": "stage_artifacts\\l_code\\ramp\\l_code_RAMP_R6_PORTT_BORUTA_20260711.json"
     },
     {
-      "ordinal": 485,
+      "ordinal": 493,
       "id": "L-RAMP-20260712_161537",
       "mode": "ramp",
       "family": "infra_process",
@@ -4523,7 +4603,7 @@
       "source_file": "stage_artifacts\\l_code\\ramp\\l_code_RAMP_R7_EWBASIS_20260712.json"
     },
     {
-      "ordinal": 486,
+      "ordinal": 494,
       "id": "L-RAMP-20260712_175852",
       "mode": "ramp",
       "family": "infra_process",
@@ -4532,7 +4612,7 @@
       "source_file": "stage_artifacts\\l_code\\ramp\\l_code_RAMP_R8_BAND_ESCALATION_20260712.json"
     },
     {
-      "ordinal": 487,
+      "ordinal": 495,
       "id": "L-RAMP-20260713_084821",
       "mode": "ramp",
       "family": "infra_process",
@@ -4541,7 +4621,7 @@
       "source_file": "stage_artifacts\\l_code\\ramp\\l_code_RAMP_R10_WEIGHTING_20260713.json"
     },
     {
-      "ordinal": 488,
+      "ordinal": 496,
       "id": "L-RAMP-20260713_093129",
       "mode": "ramp",
       "family": "?",
@@ -4550,7 +4630,7 @@
       "source_file": "stage_artifacts\\l_code\\ramp\\l_code_RAMP_R11_PPURE_DEV_20260713.json"
     },
     {
-      "ordinal": 489,
+      "ordinal": 497,
       "id": "L-RAMP-20260713_100638",
       "mode": "ramp",
       "family": "?",
@@ -4559,7 +4639,7 @@
       "source_file": "stage_artifacts\\l_code\\ramp\\l_code_RAMP_R12_ASYM_20260713.json"
     },
     {
-      "ordinal": 490,
+      "ordinal": 498,
       "id": "L-RAMP-20260713_102944",
       "mode": "ramp",
       "family": "?",
@@ -4568,7 +4648,7 @@
       "source_file": "stage_artifacts\\l_code\\ramp\\l_code_RAMP_R13_DECAY_20260713.json"
     },
     {
-      "ordinal": 491,
+      "ordinal": 499,
       "id": "L-RAMP-20260713_110343",
       "mode": "ramp",
       "family": "?",
@@ -4577,7 +4657,7 @@
       "source_file": "stage_artifacts\\l_code\\ramp\\l_code_RAMP_R14_exitcomb.json"
     },
     {
-      "ordinal": 492,
+      "ordinal": 500,
       "id": "L-RAMP-20260713_112544",
       "mode": "ramp",
       "family": "?",
@@ -4586,7 +4666,7 @@
       "source_file": "stage_artifacts\\l_code\\ramp\\l_code_RAMP_R15_fill_20260713.json"
     },
     {
-      "ordinal": 493,
+      "ordinal": 501,
       "id": "L-RAMP-20260713_211037",
       "mode": "ramp",
       "family": "momentum",
@@ -4595,7 +4675,7 @@
       "source_file": "stage_artifacts\\l_code\\ramp\\l_code_RAMP_03C_RERUN_20260713.json"
     },
     {
-      "ordinal": 494,
+      "ordinal": 502,
       "id": "L-RAMP-20260713_213904",
       "mode": "ramp",
       "family": "infra_process",
@@ -4604,7 +4684,7 @@
       "source_file": "stage_artifacts\\l_code\\ramp\\l_code_RAMP_03C_DELTAIR_DIAG_20260713.json"
     },
     {
-      "ordinal": 495,
+      "ordinal": 503,
       "id": "L-RAMP-20260715_004100",
       "mode": "ramp",
       "family": "flow_supply",
@@ -4613,7 +4693,7 @@
       "source_file": "stage_artifacts\\l_code\\ramp\\l_code_RAMP_R9_insider_selection_20260715.json"
     },
     {
-      "ordinal": 496,
+      "ordinal": 504,
       "id": "L-RAMP-20260715_015734",
       "mode": "ramp",
       "family": "flow_supply",
@@ -4622,7 +4702,7 @@
       "source_file": "stage_artifacts\\l_code\\ramp\\l_code_R33_insider_consumption_faces.json"
     },
     {
-      "ordinal": 497,
+      "ordinal": 505,
       "id": "L-RAMP-20260715_022534",
       "mode": "ramp",
       "family": "low_vol",
@@ -4631,7 +4711,7 @@
       "source_file": "stage_artifacts\\l_code\\ramp\\l_code_R34_insider_derisk_tripwire_wiring.json"
     },
     {
-      "ordinal": 498,
+      "ordinal": 506,
       "id": "L-RAMP-20260715_040901",
       "mode": "ramp",
       "family": "overlay_regime",
@@ -4640,7 +4720,7 @@
       "source_file": "stage_artifacts\\l_code\\ramp\\l_code_R38_insider_safe_exit_timing_symmetry.json"
     },
     {
-      "ordinal": 499,
+      "ordinal": 507,
       "id": "L-RAMP-20260715_043643",
       "mode": "ramp",
       "family": "flow_supply",
@@ -4649,7 +4729,7 @@
       "source_file": "stage_artifacts\\l_code\\ramp\\l_code_R39_insider_safe_fading_state_transition_wiring.json"
     },
     {
-      "ordinal": 500,
+      "ordinal": 508,
       "id": "L-RAMP-20260715_053646",
       "mode": "ramp",
       "family": "flow_supply",
@@ -4658,7 +4738,7 @@
       "source_file": "stage_artifacts\\l_code\\ramp\\l_code_R41_insider_safe_fading_horizon_bounded_wiring.json"
     },
     {
-      "ordinal": 501,
+      "ordinal": 509,
       "id": "L-RAMP-20260715_055418",
       "mode": "ramp",
       "family": "flow_supply",
@@ -4667,7 +4747,7 @@
       "source_file": "stage_artifacts\\l_code\\ramp\\l_code_R42_insider_safe_live_track_wiring.json"
     },
     {
-      "ordinal": 502,
+      "ordinal": 510,
       "id": "L-RAMP-20260715_070019",
       "mode": "ramp",
       "family": "infra_process",
@@ -4676,7 +4756,7 @@
       "source_file": "stage_artifacts\\l_code\\ramp\\l_code_R44_ret_sanity_firewall_wiring.json"
     },
     {
-      "ordinal": 503,
+      "ordinal": 511,
       "id": "L-RAMP-20260715_072549",
       "mode": "ramp",
       "family": "infra_process",
@@ -4685,7 +4765,7 @@
       "source_file": "stage_artifacts\\l_code\\ramp\\l_code_R45_stored_ret_vs_recompute_rootcause.json"
     },
     {
-      "ordinal": 504,
+      "ordinal": 512,
       "id": "L-RAMP-20260715_075509",
       "mode": "ramp",
       "family": "infra_process",
@@ -4694,7 +4774,7 @@
       "source_file": "stage_artifacts\\l_code\\ramp\\l_code_R46_firewall_dategap_refine_close_tripwire.json"
     },
     {
-      "ordinal": 505,
+      "ordinal": 513,
       "id": "L-RAMP-20260717_195731",
       "mode": "ramp",
       "family": "infra_process",
@@ -4703,7 +4783,7 @@
       "source_file": "stage_artifacts\\l_code\\ramp\\l_code_R47_krx_backfill_close_holes_parity_recovered.json"
     },
     {
-      "ordinal": 506,
+      "ordinal": 514,
       "id": "L-RAMP-20260802_204804",
       "mode": "ramp",
       "family": "flow_supply",
@@ -4712,7 +4792,7 @@
       "source_file": "stage_artifacts\\l_code\\ramp\\l_code_WT-D20260802_012_tripwire_structural_silence.json"
     },
     {
-      "ordinal": 507,
+      "ordinal": 515,
       "id": "L-RAMP-20260820_212848",
       "mode": "ramp",
       "family": "low_vol",
@@ -4721,7 +4801,7 @@
       "source_file": "stage_artifacts\\l_code\\ramp\\l_code_RAMP_SHUMULVEY_P02_TIMING_CORRECTION_20260820.json"
     },
     {
-      "ordinal": 508,
+      "ordinal": 516,
       "id": "L-RAMP-20260820_221500",
       "mode": "ramp",
       "family": "low_vol",
@@ -4730,7 +4810,7 @@
       "source_file": "stage_artifacts\\l_code\\ramp\\l_code_RAMP_SHUMULVEY_V5_20260820.json"
     },
     {
-      "ordinal": 509,
+      "ordinal": 517,
       "id": "L-RAMP-20260821_073500",
       "mode": "ramp",
       "family": "low_vol",
@@ -4739,7 +4819,7 @@
       "source_file": "stage_artifacts\\l_code\\ramp\\l_code_RAMP_SHUMULVEY_V6_TUNING_20260821.json"
     },
     {
-      "ordinal": 510,
+      "ordinal": 518,
       "id": "L-RAMP-20260821_080500",
       "mode": "ramp",
       "family": "low_vol",
@@ -4748,7 +4828,7 @@
       "source_file": "stage_artifacts\\l_code\\ramp\\l_code_DFA_REGIMESIGNALS_V7_20260821.json"
     },
     {
-      "ordinal": 511,
+      "ordinal": 519,
       "id": "L-RAMP-20260821_103000",
       "mode": "ramp",
       "family": "low_vol",
@@ -4757,7 +4837,7 @@
       "source_file": "stage_artifacts\\l_code\\ramp\\l_code_DFA_AUDIT_DESIGNGATES_20260821.json"
     },
     {
-      "ordinal": 512,
+      "ordinal": 520,
       "id": "L-RAMP-20260822_020000",
       "mode": "ramp",
       "family": "momentum",
@@ -4766,7 +4846,70 @@
       "source_file": "stage_artifacts\\l_code\\ramp\\l_code_DFA_FM_DEV_R7R8_20260822.json"
     },
     {
-      "ordinal": 513,
+      "ordinal": 521,
+      "id": "L-RAMP-20260822_040000",
+      "mode": "ramp",
+      "family": "momentum",
+      "grade": "B",
+      "gist": "FQ-239 R10~R13 (도훈 '모멘텀 후속 연구' + '문헌 반영 발전 라운드'). prereg dfa_v11/v12 + 측정-전 amendment. [R1…",
+      "source_file": "stage_artifacts\\l_code\\ramp\\l_code_DFA_FM_A5E_R10R13_20260822.json"
+    },
+    {
+      "ordinal": 522,
+      "id": "L-RAMP-20260822_120000",
+      "mode": "ramp",
+      "family": "momentum",
+      "grade": "F",
+      "gist": "FQ-239 R14 + 독립 적대검증(6-agent 워크플로우) 결과 §15~17 핵심 주장 2건 철회. [철회 1 — oos] A5E oos 0.706 통과는 …",
+      "source_file": "stage_artifacts\\l_code\\ramp\\l_code_DFA_FM_A5E_CORRECTION_20260822.json"
+    },
+    {
+      "ordinal": 523,
+      "id": "L-RAMP-20260822_134500",
+      "mode": "ramp",
+      "family": "factor_timing_allocation",
+      "grade": "F",
+      "gist": "DFA_RegimeSignals R18~R20: 감쇠 기전 분해가 구속 게이트를 신호층에서 배포 형태층으로 옮겼다. R18 3분해(broad-21, 완결월 247…",
+      "source_file": "stage_artifacts\\l_code\\ramp\\l_code_DFA_RegimeSignals_R20_F1k5.json"
+    },
+    {
+      "ordinal": 524,
+      "id": "L-RAMP-20260822_140701",
+      "mode": "ramp",
+      "family": "factor_timing_allocation",
+      "grade": "F",
+      "gist": "DFA_RegimeSignals R21~R22: 변동성 상승의 귀속이 두 개의 가중-규칙 축을 사전에 배제했고, 남은 하나를 측정해 기각했다. R21 2x2 반사…",
+      "source_file": "stage_artifacts\\l_code\\ramp\\l_code_DFA_RegimeSignals_R22_risknorm.json"
+    },
+    {
+      "ordinal": 525,
+      "id": "L-RAMP-20260822_144529",
+      "mode": "ramp",
+      "family": "factor_timing_allocation",
+      "grade": "F",
+      "gist": "DFA_RegimeSignals R23~R25: 게이트 계층 순서가 틀렸음이 드러났고, 동시에 이전 라운드의 축 폐쇄 선언 하나가 철회됐다. [R23 — 노출 축…",
+      "source_file": "stage_artifacts\\l_code\\ramp\\l_code_DFA_RegimeSignals_R25_deployment_form.json"
+    },
+    {
+      "ordinal": 526,
+      "id": "L-RAMP-20260822_173112",
+      "mode": "ramp",
+      "family": "factor_timing_allocation",
+      "grade": "F",
+      "gist": "DFA_RegimeSignals 아크 측정 종료(R35~R45). 구성 축 6회 · 노출 축 4회 · 신호 선택 1회 전수 측정 후 판정 3건이 확정됐다. [판정…",
+      "source_file": "stage_artifacts\\l_code\\ramp\\l_code_DFA_RegimeSignals_ARC_CLOSE_R35_R45.json"
+    },
+    {
+      "ordinal": 527,
+      "id": "L-RAMP-20260822_184930",
+      "mode": "ramp",
+      "family": "factor_timing_allocation",
+      "grade": "F",
+      "gist": "FR Track2 배분 규칙(compute_regime_module_weights)은 모듈 수가 많으면 정적 risk-parity 로 붕괴한다. 21 팩터지수 적…",
+      "source_file": "stage_artifacts\\l_code\\ramp\\l_code_DFA_R54_fr_allocation_rule.json"
+    },
+    {
+      "ordinal": 528,
       "id": "L-RR-20260704_114303",
       "mode": "regime_research",
       "family": "value",
