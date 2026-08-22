@@ -1661,3 +1661,39 @@ R43/R44 가 2026 을 유효 데이터이나 극단 이상치(일별 vol 0.658 = 
 
 ★**의미**: 규범 개정이 **발효 당일 실제로 무언가를 잡았다.** 조항이 없었다면 이 11개 클러스터는
 "β 통제 후에도 t(α) 2~3" 이라는 근거로 screen-tier 에 남아 FR/RAMP 에 직교 재료로 공급됐을 것이다.
+
+
+## 53. R51 — 어댑터 갭 수리: **게이트가 통과 후보를 잘못 버릴 뻔했다**
+
+R46 이 남긴 미판정 2건을 진단했다. 두 원인이 **완전히 다르다**:
+
+| 후보 | 원인 | 처분 |
+|---|---|---|
+| `STR_AS_20260612_135316_470429` (Modified Amihud Liquidity) | `bt_result_path` 자체가 **NULL** — 산출물 미등록 | 정당한 `NOT_AUDITED`(판정할 계열 없음) |
+| **`LH_D2_loser_augment`** | 파일은 실재하나 **10-component 계약이 아님** — flat forge result 라 `benchmark_returns=NULL` 이고 벤치가 **`period_returns` 안에**(`date/ret_net/benchmark_ret` 3열) | **어댑터 갭** — 수리 후 판정 |
+
+### 어댑터 확장 후 — 그 건이 통과했다
+
+`LH_D2_loser_augment`: n=275 · 차이 **+22.99%/yr** · **NW-t 3.248** · t(α) 3.667 · β 0.915 → **SIGNAL_ADDS_VALUE**
+
+**내가 만든 게이트가 통과 후보를 `NOT_AUDITED` 로 버릴 뻔했다.** 형식 분화는 결측이 아니라 어댑터 갭이며, 그것을 "판정 불가" 로 넘겼으면 NW-t 3.248 을 못 봤다.
+
+### 갱신 집계
+
+| 단위 | INDISTINGUISHABLE | SIGNAL_ADDS_VALUE | NOT_AUDITED |
+|---|---|---|---|
+| 행 | 19 | **2** | 1 |
+| **독립 클러스터** | **11** | **2** | — |
+
+통과 2건 = Chen-Welch RD-to-Market(NW-t +2.182) · **LH_D2 loser-augment(NW-t +3.248)**.
+**t(α) 유의인데 대조 미통과 클러스터는 9개로 불변** — 핵심 발견은 그대로다.
+
+### 전파 확인 (배선이 실제로 도달하는가)
+
+큐 재빌드 → `SIGNAL_ADDS_VALUE 2 · INDISTINGUISHABLE 19 · NOT_AUDITED 1`, LH_D2 가 `SIGNAL_ADDS_VALUE`(NW-t 3.248)로 반영.
+스폰 큐 재빌드 → `SIGNAL_ADDS_VALUE 1 · INDISTINGUISHABLE 4`(이월 5건 재보강 유지). 배선 검사기 **18/18** 유지.
+
+### ★교훈 — 게이트를 만들면 그 게이트의 **거짓 탈락**도 재야 한다
+
+오늘 반복 확인한 "0 은 결론이 아니다" 가 **내가 만든 도구에서** 재현됐다. `NOT_AUDITED 2건` 을 "판정 불가" 로 넘기는 순간 통과 후보 하나가 조용히 사라진다.
+⇒ **`NOT_AUDITED` 는 매번 원인을 분해해야 한다** — 산출물 부재(정당)인지 어댑터 갭(수리 대상)인지는 열어봐야만 갈린다. 이를 위해 `no_signal_gate` 사용 시 `NOT_AUDITED` 건은 **원인 라벨을 붙여 보고**하는 것을 규약으로 삼는다.

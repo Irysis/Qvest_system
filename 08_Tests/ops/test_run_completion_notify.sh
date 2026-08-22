@@ -78,11 +78,24 @@ if command -v Rscript >/dev/null 2>&1; then
   echo "$OUT" | grep -q "바뀐 것이 없습니다" && ok "무진척 → 확인 필요 문구" \
     || ng "무진척 판정" "아무 일도 없었는데 완주로 알린다"
 
-  echo "== 위반 주입 3: rc!=0 은 중단으로 알리는가 =="
-  OUT=$(QVEST_RUN_NOTIFY_DRYRUN=1 QM_ROOT="$ROOT" Rscript --no-save "$NOTIFY" \
-        method_measure 11 0 SAME 124 2>/dev/null)
-  echo "$OUT" | grep -q "중간에 멈췄습니다" && ok "rc=124 → 중단 문구" \
-    || ng "실패 문구" "timeout 을 정상 완주로 알린다"
+  echo "== 위반 주입 3: rc x 효과 4갈래를 정확히 가르는가 =="
+  # ★2026-08-22 18:13 실사고: 구판은 rc!=0 이면 무조건 "멈췄습니다" + 효과 "미측정" 이었다.
+  #   그런데 그 런은 WT-007 에 18개 파일(alpha_scores.parquet · alpha_vector_live.parquet ·
+  #   p4_verdict · p5_adversarial)을 남기고 50분 벽에 죽었다. 이 레인의 **지배적** 실패가
+  #   timeout 이므로 "중단됐지만 산출 잔존" 칸이 제일 중요한데 구판엔 그 칸이 없었다.
+  #   ★"측정 안 함" 과 "효과 없음" 을 같은 자리에 놓으면 다시 돌릴지 판단할 수 없다.
+  OUT=$(QVEST_RUN_NOTIFY_DRYRUN=1 QM_ROOT="$ROOT" Rscript --no-save "$NOTIFY" method_measure 11 0 SAME 124 2>/dev/null)
+  echo "$OUT" | grep -q "남은 산출이 없습니다" && ok "rc=124 + SAME → 중단+무산출" || ng "중단/무산출 문구" "timeout 을 정상 완주로 알린다"
+  OUT=$(QVEST_RUN_NOTIFY_DRYRUN=1 QM_ROOT="$ROOT" Rscript --no-save "$NOTIFY" method_measure 11 0 CHANGED 124 2>/dev/null)
+  echo "$OUT" | grep -q "산출은 남아 있습니다" && ok "rc=124 + CHANGED → 중단+산출잔존" || ng "중단/산출잔존 문구" "타임아웃 런의 산출을 버린 것처럼 알린다"
+  echo "$OUT" | grep -q "이어받을 수 있습니다" && ok "이어받기 안내 포함" || ng "이어받기 안내" "다시 돌려도 되는지 알 수 없다"
+  echo "== 계약 축: 효과 측정이 rc 분기 밖에 있는가 (러너) =="
+  # 측정이 rc==0 분기 안에 갇히면 timeout 런은 영원히 "미측정" 이다 — 18:13 의 기전.
+  if grep -q 'if \[ -z "${_EFFECT_CMP:-}" \]' "$OPS/mode_queue_research_run.sh"; then
+    ok "mode_queue — rc 무관 효과 측정 존재"
+  else
+    ng "rc 무관 측정" "효과가 rc==0 분기 안에만 있어 timeout 런은 미측정으로 남는다"
+  fi
 
   echo "== 가독 축: 비전공자 3장치 중 '쉬운 설명' 섹션이 있는가 (원칙 8-②) =="
   OUT=$(QVEST_RUN_NOTIFY_DRYRUN=1 QM_ROOT="$ROOT" Rscript --no-save "$NOTIFY" \
