@@ -148,34 +148,11 @@ BACKLOG_DATES=""
 #   ★뿌리 = 2026-08-02 수리의 **비대칭 적용**. 그때 "downloaded 는 '라우팅할 재료가 있나'가
 #     아니다" 라고 선언하고 고친 건 아래 당일 축뿐이고 이 백로그 축은 그대로였다.
 #     이제 두 축이 같은 기준을 쓴다: **discovery 있고 route 없음 = 미소비**.
-BACKLOG_MAX="${QVEST_PAPER_ROUTER_BACKLOG_MAX:-3}"   # 2026-08-22 외부화 — 좌초 18일치 회수 시 상향(기본 3 불변)
+BACKLOG_MAX="${QVEST_PAPER_ROUTER_BACKLOG_MAX:-3}"
 _bl_n=0
 # ★오래된 날짜부터 훑는다 — 상한(BACKLOG_MAX)이 걸릴 때 **만료 임박분을 먼저 살리기** 위해서다.
 #   오름차순(1..7)이면 최신부터 채워 7일 창을 곧 이탈할 가장 오래된 날짜가 잘려나간다
 #   (2026-08-22 자가 적발 — 패치 당일 발견).
-# ── 명시 날짜 백필 경로 (2026-08-22 신설) ─────────────────────────────────
-#   왜: 좌초 18일이 **전부 7일 창 밖**(age 34~71일)이라 창 기반 스캔으로는
-#   원리적으로 도달 불가다. 창을 71일로 늘리면 매 런이 그만큼 스캔하는 **일상 비용**이
-#   되므로, 일회성 회수는 일회성 경로로 한다.
-#   사용: QVEST_PAPER_ROUTER_DATES=20260612,20260613,... (discovery 존재 ∧ route 없음만 합류)
-if [ -n "${QVEST_PAPER_ROUTER_DATES:-}" ]; then
-  IFS="," read -ra _exp_arr <<< "$QVEST_PAPER_ROUTER_DATES"
-  for D in "${_exp_arr[@]}"; do
-    D=$(printf "%s" "$D" | tr -d " ")
-    case "$D" in ""|*[!0-9]*) log "명시 백필: 날짜 형식 아님 무시 ($D)"; continue ;; esac
-    if [ -f "$BASE/stage_artifacts/paper_recharge/alpha_search_route_${D}.json" ]; then
-      log "명시 백필: $D 는 route 이미 존재 — 제외"; continue
-    fi
-    if [ ! -f "$BASE/stage_artifacts/paper_recharge/mcp_discovery_${D}.json" ]; then
-      log "명시 백필: $D discovery 부재 — 라우팅 소스 없음, 제외"; continue
-    fi
-    case ",$BACKLOG_DATES," in *",$D,"*) continue ;; esac
-    BACKLOG_DATES="${BACKLOG_DATES:+$BACKLOG_DATES,}$D"
-    _bl_n=$((_bl_n + 1))
-    log "명시 백필 합류: $D (창 무관 · discovery 존재 · route 없음)"
-  done
-fi
-
 for i in 7 6 5 4 3 2 1; do
   D=$(date -d "-${i} day" +%Y%m%d 2>/dev/null) || continue
   RJ_D="$BASE/stage_artifacts/paper_recharge/alpha_search_route_${D}.json"
@@ -202,14 +179,7 @@ if [ ! -f "$DISC" ]; then
   if [ -n "$BACKLOG_DATES" ]; then
     log "no discovery JSON for $TODAY — 백로그만으로 진행 (BACKLOG_DATES=$BACKLOG_DATES)"
   else
-    if [ "${QVEST_PAPER_ROUTER_FORCE:-0}" = "1" ]; then
-      # ★2026-08-22: FORCE 가 이 게이트 **뒤**(18줄 아래)에서 처음 검사돼,
-      #   FORCE 가 필요한 유일한 상황(당일 discovery 없음 ∧ 백로그 없음)에 도달하지
-      #   못했다. 게다가 아래 skip 로그가 "FORCE=1 로 강제" 라고 안내까지 했다.
-      log "no discovery JSON for $TODAY and no backlog — 그러나 FORCE=1, 진행"
-    else
     log "no discovery JSON for $TODAY and no backlog — skip"; exit 0
-    fi
   fi
 fi
 
