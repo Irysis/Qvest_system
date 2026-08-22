@@ -66,38 +66,32 @@ cat("[risk] 60m window coverage per ticker:\n"); print(cov_per)
 retmat_full <- as.matrix(mw[, ..tickers])
 rownames(retmat_full) <- mw$ym
 
-# Common-history window (rows with no NA) — for well-conditioned est
+# ---- Estimation matrix: complete-case (full-rank required for LW-NLS analytical) ----
+# Binding constraint: A295310 first month 2024-07 caps common history to ~25m.
+# n_common (=25) is thin; p=25 -> p≈n. Sample singular, linear-LW degenerates to muI.
+# LW-NLS (analytical nonlinear, Ledoit-Wolf 2020) is designed for p≈n and gives full-rank PSD.
 complete_rows <- complete.cases(retmat_full)
 n_common <- sum(complete_rows)
-cat(sprintf("[risk] complete-case months in 60m window: %d\n", n_common))
-
-# Decision: if common window >= 24, use it (n>p=25 requires >=26 for sample; use LW if borderline)
-# Given short-history names (A295310 from 2024-07), n_common likely < 25 -> must use pairwise + LW shrinkage.
-use_common <- n_common >= 30
-if (use_common) {
-  retmat <- retmat_full[complete_rows, , drop = FALSE]
-  est_basis <- sprintf("common_history_%dm", n_common)
-} else {
-  # pairwise: keep full window, NA handled inside estimators (pairwise.complete.obs)
-  retmat <- retmat_full
-  est_basis <- sprintf("pairwise_complete_%dm_window", nrow(retmat_full))
-}
+retmat <- retmat_full[complete_rows, , drop = FALSE]   # feed CLEAN matrix (no NA) to estimators
+est_basis <- sprintf("common_history_complete_case_%dm", n_common)
 n_used <- nrow(retmat)
-cat(sprintf("[risk] estimation basis=%s, n_used=%d, p=%d\n", est_basis, n_used, N))
+cat(sprintf("[risk] estimation basis=%s, n_used=%d, p=%d (p/n=%.2f)\n", est_basis, n_used, N, N/n_used))
 
 # ================= METHOD SHOPPING (estimation-quality selection) =================
-# candidates: sample, ledoit_wolf, lw_nls. Select on condition_number (R4 selection_objective).
+# candidates: sample, ledoit_wolf(linear), lw_nls(analytical NLS). Select on condition_number.
 method_log <- list()
 try_method <- function(m) {
-  out <- tryCatch(.get_cor_cov(retmat, cov_method = m), error = function(e) NULL)
+  out <- tryCatch(suppressWarnings(.get_cor_cov(retmat, cov_method = m)), error = function(e) NULL)
   if (is.null(out)) return(list(name=m, condition=NA, psd=NA, ok=FALSE))
   cm <- out$cov
-  # symmetrize + PSD check via eigen
   cm <- (cm + t(cm))/2
   ev <- eigen(cm, symmetric = TRUE, only.values = TRUE)$values
   cn <- max(ev)/max(min(ev), .Machine$double.eps)
   psd <- min(ev) > -1e-8
-  list(name=m, condition=cn, min_eig=min(ev), psd=psd, ok=TRUE, cov=cm, deg=!is.null(attr(out,"lw_degenerate")))
+  # detect linear-LW muI collapse: cond ~ 1 with p≈n means correlation structure destroyed
+  collapsed <- (m=="ledoit_wolf" && cn < 1.5)
+  list(name=m, condition=cn, min_eig=min(ev), psd=psd, ok=TRUE, cov=cm,
+       deg=!is.null(attr(out,"lw_degenerate")) || collapsed, collapsed=collapsed)
 }
 cands <- lapply(c("sample","ledoit_wolf","lw_nls"), try_method)
 safe_sig <- function(x) if (is.null(x) || length(x)==0 || !is.numeric(x)) NA_real_ else signif(x,4)
@@ -105,23 +99,19 @@ safe_rnd <- function(x) if (is.null(x) || length(x)==0 || !is.numeric(x)) NA_rea
 for (c in cands) {
   method_log[[length(method_log)+1]] <- list(
     name=c$name, condition=safe_rnd(c$condition),
-    min_eig=safe_sig(c$min_eig), psd=isTRUE(c$psd), degenerate=isTRUE(c$deg), selected=FALSE)
+    min_eig=safe_sig(c$min_eig), psd=isTRUE(c$psd),
+    degenerate=isTRUE(c$deg), collapsed=isTRUE(c$collapsed), selected=FALSE)
 }
 
-# Selection rule: prefer PSD + condition < 500; among those minimize |condition| but
-# reject sample if n<=p (singular). For p=25 with pairwise n<p sample is rank-deficient.
-valid <- Filter(function(c) c$ok && isTRUE(c$psd) && is.finite(c$condition), cands)
-# drop degenerate LW (p>n guard) — not applicable here (p<n) but keep rule
-valid <- Filter(function(c) !isTRUE(c$deg), valid)
-# if sample is singular (cond huge) it will lose. Choose min condition among valid.
+# Selection: valid = PSD, finite cond, NOT degenerate/collapsed, cond < 500 (evaluation criterion).
+valid <- Filter(function(c) c$ok && isTRUE(c$psd) && is.finite(c$condition) &&
+                            !isTRUE(c$deg) && c$condition < 500, cands)
+if (length(valid) == 0) stop("[risk] no valid Σ estimator (all degenerate/ill-conditioned) — Rule 2 STOP")
+# among valid prefer LOWER condition that still PRESERVES structure (reject collapse handled above)
 sel <- valid[[ which.min(sapply(valid, function(c) c$condition)) ]]
-# But if sample cond < 500 and n comfortably > p, prefer sample (unbiased). Enforce shrinkage if cond>=200.
 sample_c <- Filter(function(c) c$name=="sample", cands)[[1]]
-if (n_used > (N + 20) && isTRUE(sample_c$psd) && is.finite(sample_c$condition) && sample_c$condition < 200) {
-  sel <- sample_c
-}
 method_log[[ which(sapply(method_log, function(x) x$name)==sel$name) ]]$selected <- TRUE
-cat(sprintf("[risk] SELECTED cov_method=%s cond=%.2f (basis: estimation-quality/condition_number)\n",
+cat(sprintf("[risk] SELECTED cov_method=%s cond=%.2f (estimation-quality/condition_number; sample & linear-LW rejected: p≈n)\n",
             sel$name, sel$condition))
 
 Sigma <- sel$cov                                  # monthly cov matrix (security-level)

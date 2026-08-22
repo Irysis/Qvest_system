@@ -1,0 +1,72 @@
+{
+  "base_advisory": {
+    "rank_ic": 0.0484140059968223,
+    "rank_ic_sd": 0.10752451252934,
+    "icir": 0.450260176567753,
+    "ic_n_months": 268,
+    "ic_nw_t": 7.68966048688739,
+    "metric_type": "advisory_diagnostic",
+    "scope": "base score_eff (처치 아님)",
+    "note": "measurement-graduation §3 — rank-IC 계열은 advisory. 판정 권위 아님."
+  },
+  "inheritance": {
+    "pearson_sc_adj_vs_sc": 0.993025431202223,
+    "spearman_sc_adj_vs_sc": 0.990066651154997,
+    "epsilon_in_sd_units": 0.298658812336202,
+    "flagged_share": 0.197033437759734,
+    "note": "tie-break 는 base score 에 표식 종목만 -epsilon 하는 규칙이므로 alpha 상속도가 1 에 가깝다. wt_type=discovery 인데 상속도 > 0.95 이면 재분류 권고 대상(v1.2 Charter §10) — 본 라운드는 '새 알파'가 아니라 **같은 알파의 소비 형태 변경**임을 수치가 확인한다."
+  },
+  "incidental_swap_census": {
+    "raw_mean_monthly": 0.00111467160386416,
+    "raw_annual_pp": 1.337605924637,
+    "raw_nw_t": 1.3668883476052,
+    "raw_sd": 0.0142580593556261,
+    "matched_mean_monthly": 0.00084887507771218,
+    "matched_annual_pp": 1.01865009325462,
+    "matched_nw_t": 1.18882883917188,
+    "matched_sd": 0.011998877826646,
+    "n_months": 236,
+    "weight_asymmetry": 1.32321712659454,
+    "mean_ret_displaced": 0.00907034061065122,
+    "mean_ret_inserted": 0.0229888914401305,
+    "tail_displaced": 0.0336134453781513,
+    "tail_inserted": 0.0315126050420168,
+    "mechanism_implied_monthly": 3.36663794811732e-05,
+    "ratio_observed_to_mechanism": 25.2143263039878,
+    "metric_type": "census_not_backtest",
+    "label": "판정 아님 · 기전 귀속 불가 · 노이즈와 미분리. 근거 3: (1) 명목-일치 관측치가 기전-함의의 25배 — 사전등록 꼬리 기전이 산출할 수 있는 크기가 아니다(꼬리 격차 0.00210 가 설명하는 몫은 그 중 4.0%). (2) NW t = 1.19 — 이 창의 전도성 상한(양성 대조 paired t 1.566)에 비춰 유의성 판정 불가 구간. (3) raw 판은 양 다리 명목이 1.32배 비대칭이라 교체효과가 아니라 대형주 순노출 증가를 일부 포함한다(WT-009 2.30배 / WT-010 1.14배와 같은 계통의 아티팩트)."
+  },
+  "score_slope_profile": {
+    "table": [
+      {
+        "rank_lo": 1,
+        "rank_hi": 25,
+        "beta": 0.00910254537216578,
+        "nw_t": 1.93480149249222,
+        "n": 268
+      },
+      {
+        "rank_lo": 20,
+        "rank_hi": 40,
+        "beta": -0.0434370484206178,
+        "nw_t": -2.41616863341821,
+        "n": 268
+      },
+      {
+        "rank_lo": 1,
+        "rank_hi": 40,
+        "beta": 0.00129248177959423,
+        "nw_t": 0.338293473094389,
+        "n": 268
+      },
+      {
+        "rank_lo": 1,
+        "rank_hi": 100,
+        "beta": 0.00878751237958352,
+        "nw_t": 4.20979700980926,
+        "n": 268
+      }
+    ],
+    "reading": "여백(랭킹 근방)에서 score_eff -> Ret_1m 기울기가 유의한가. 유의하지 않으면 '여백 손실'은 작지만 동시에 '여백을 지켜서 얻을 것'도 작다 — epsilon 레버의 양날."
+  }
+}
