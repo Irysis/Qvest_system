@@ -44,8 +44,8 @@ echo "== 배선 축 3: 조기 skip 경로에서는 부르지 않는가 (스팸 �
 # 라우터는 하루 여러 번 돌고 대개 skip 한다. skip 마다 알림이 가면 '학습된 무시'가 된다.
 for f in $RUNNERS; do
   nt=$(grep -n 'research_run_notify' "$OPS/$f" | head -1 | cut -d: -f1)
-  # claude 호출 줄보다 뒤에 있어야 = 실제로 일한 런만 알린다
-  cl=$(grep -n 'timeout 3000' "$OPS/$f" | head -1 | cut -d: -f1)
+  # claude 호출 줄보다 뒤에 있어야 = 실제로 일한 런만 알린다 (2026-08-22 시간제한 제거로 앵커가 timeout 3000 -> _run_claude 로 이동)
+  cl=$(grep -n '_run_claude "$CLAUDE_BIN"' "$OPS/$f" | head -1 | cut -d: -f1)
   if [ -n "$nt" ] && [ -n "$cl" ] && [ "$nt" -gt "$cl" ]; then ok "$f — claude 실행 뒤에만 발송"
   else ng "$f skip 경로" "일하지 않은 런도 알린다(nt=$nt cl=$cl)"; fi
 done
@@ -173,6 +173,29 @@ if [ -f "$HELP" ] && command -v "${QVEST_PY:-python}" >/dev/null 2>&1; then
   [ "$got" = "?" ] && ok "손상 큐 → ? (조용히 빈 문자열로 접지 않음)" || ng "손상 큐" "got=$got"
   rm -f "$_TQ"
 fi
+
+echo "== 시간제한 축: 기본이 무제한이고 env 로만 켜지는가 (도훈 지시 2026-08-22) =="
+# ★근거: 18:13 실측에서 상한이 자른 것은 폭주가 아니라 **끝난 일의 뒷정리**였다.
+#   런은 18:10 에 WT-005 를 ALPHA_DONE 으로 올리고 alpha_package(15KB)까지 냈는데
+#   18:13 에 죽어 MODEQ_DONE 자기보고와 원장 append 를 잃었다.
+#   되돌리기는 코드 수정이 아니라 QVEST_RUN_TIMEOUT 환경변수여야 한다.
+for f in $RUNNERS factor_deep_recheck_run.sh; do
+  [ -f "$OPS/$f" ] || continue
+  if grep -q 'timeout 3000 "\$CLAUDE_BIN"' "$OPS/$f"; then
+    ng "$f 시간제한" "하드코딩 timeout 3000 잔존 — 끝난 일의 뒷정리를 계속 자른다"
+  else ok "$f — 하드코딩 상한 없음"; fi
+  if grep -q "QVEST_RUN_TIMEOUT" "$OPS/$f"; then ok "$f — env 로 상한 복원 가능"
+  else ng "$f 상한 복원" "필요할 때 켤 수단이 없다(코드 수정만 남는다)"; fi
+done
+# 실동작: 기본은 감싸지 않고, 값을 주면 감싼다
+_RC_SH=$(mktemp)
+sed -n "/^_run_claude(){/,/^}/p" "$OPS/mode_queue_research_run.sh" > "$_RC_SH"
+echo '_run_claude echo RAN' >> "$_RC_SH"
+out=$(bash "$_RC_SH" 2>&1); [ "$out" = "RAN" ] && ok "기본 = 제한 없이 실행" || ng "기본 동작" "got=$out"
+out=$(QVEST_RUN_TIMEOUT=5 bash "$_RC_SH" 2>&1); [ "$out" = "RAN" ] && ok "env 지정 시에도 정상 실행" || ng "env 경로" "got=$out"
+out=$(QVEST_RUN_TIMEOUT=1 bash -c "$(cat "$_RC_SH" | sed "s/_run_claude echo RAN/_run_claude sleep 4; echo rc=\$?/")" 2>&1)
+echo "$out" | grep -q "rc=124" && ok "env 지정 시 실제로 상한이 걸린다(위반 주입)" || ng "상한 실효" "got=$out"
+rm -f "$_RC_SH"
 
 echo "== t_summary: PASS=$PASS FAIL=$FAIL =="
 [ "$FAIL" -eq 0 ] || exit 1
