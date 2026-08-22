@@ -103,16 +103,13 @@ JEOF
   grep -q "중간에 멈췄습니다" "$_T4" && ok "rc=124 → 중단 표기" || ng "중단 표기" "timeout 을 정상으로 알린다"
   grep -q "그때까지 산출은 남음" "$_T4" && ok "중단+진척 → 산출 잔존 명시" || ng "잔존 표기" "다시 돌릴지 판단 불가"
   rm -rf "$_FIX3" "$_T4"
-fi
-
   echo "== 미등록 레인 대조: 모르는 레인도 죽지 않고 그대로 쓰는가 =="
   OUT=$(QVEST_RUN_NOTIFY_DRYRUN=1 QM_ROOT="$ROOT" Rscript --no-save "$NOTIFY" \
         brand_new_lane 3 1 CHANGED 0 2>/dev/null)
   echo "$OUT" | grep -q "brand_new_lane" && ok "미등록 레인 fallback 동작" \
     || ng "미등록 레인" "새 레인을 추가하면 알림이 죽는다"
-else
-  echo "  SKIP  Rscript 없음 — 배선 축만 검사"
 fi
+
 
 echo "== 실행 축: 알림 블록이 러너와 같은 셸 옵션에서 **완주**하는가 =="
 # ★존재·위치 검사만으로는 부족하다 — 러너는 `set -uo pipefail` 로 돌고,
