@@ -58,53 +58,52 @@ if grep -Eq '(^|[^_a-zA-Z])tg_send[a-z_]*\(' "$NOTIFY"; then
 else ok "tg_send* 직접 호출 없음"
 fi
 
-echo "== 양성 대조: 진척 있음 → '끝났습니다' 로 알리는가 =="
+echo "== ★인사이트 축: L-code 를 실제로 나르는가 (v2 핵심) =="
+# ★도훈 지적(2026-08-22): "리서치에서 얻을 수 있는 인사이트는 없고, 그저 완료했다는 얘기만
+#   장황하게 온다." v1 은 런 상태만 날랐다 — 완주 사실은 그 자체로 정보가 아니다.
+#   v2 는 L-code 의 lesson_text·mechanism_hypothesis·falsification_attempts 를 나른다.
 if command -v Rscript >/dev/null 2>&1; then
-  OUT=$(QVEST_RUN_NOTIFY_DRYRUN=1 QM_ROOT="$ROOT" Rscript --no-save "$NOTIFY" \
-        qepm_dossier 68 1 CHANGED 0 2>/dev/null)
-  echo "$OUT" | grep -q "끝났습니다" && ok "진척 → 완주 문구" || ng "진척 문구" "got=$(echo "$OUT" | head -3)"
+  _FIX=$(mktemp -d)
+  mkdir -p "$_FIX/stage_artifacts/l_code/alpha_research"
+  cat > "$_FIX/stage_artifacts/l_code/alpha_research/l_code_TEST_probe.json" <<'JEOF'
+{"l_code":"L-TEST-0001","strategy_id":"WT-TEST","family":"methodology_power",
+ "grade":"C","research_mode":"alpha_research","metric_type":"estimated",
+ "lesson_text":"순열 기반 최소검출효과는 추정기 자체의 추정오차 분산을 누락한다. 실측 사전 0.00290 대 실현 0.02998 로 10.3배 과소.",
+ "mechanism_hypothesis":"순열 귀무분포는 라벨 교환 하의 통계량 분포이지 추정기 분산을 포함한 효과크기 분포가 아니다.",
+ "falsification_attempts":"실현 값을 실측 재표집으로 재산출해 사전값과 직접 대조했다."}
+JEOF
+  _T2=$(mktemp)
+  QVEST_RUN_NOTIFY_DRYRUN=1 QM_ROOT="$_FIX" Rscript --no-save "$NOTIFY" alpha 5 1 CHANGED 0 "" 0 > "$_T2" 2>&1
+  grep -q "배운 것" "$_T2" && ok "L-code lesson 이 본문에 실린다" \
+    || ng "인사이트 부재" "완주 사실만 나른다 — v1 회귀: $(tail -2 "$_T2" | tr '\n' ' ')"
+  grep -q "추정오차 분산을 누락" "$_T2" && ok "lesson 원문이 실제로 전달된다" \
+    || ng "lesson 유실" "제목만 있고 내용이 없다"
+  grep -q "기전" "$_T2" && ok "기전(mechanism)이 별도 섹션으로" || ng "기전 누락" "왜 그런지가 빠진다"
+  grep -q "반증 시도" "$_T2" && ok "반증 시도가 전달된다" || ng "반증 누락" "어떻게 확인했나가 빠진다"
+  grep -q "런 상태" "$_T2" && ok "런 상태는 꼬리 블록으로 접힘" || ng "런 상태" "위치 계약 위반"
+  # 헤더가 발견이어야 한다 — 완주 문구가 헤더면 v1 회귀
+  grep -qE "^.{0,4}<b>Q-Lead" "$_T2" && ok "제목 렌더" || true
+  grep -q "한 건이 끝났습니다" "$_T2" && ng "v1 회귀" "헤더가 여전히 완주 문구다" \
+    || ok "헤더가 완주 문구가 아님"
+  rm -rf "$_FIX" "$_T2"
 
-  echo "== 위반 주입 1: 마커 0 인데 원장이 바뀌면 진척으로 읽는가 (오경보 방지) =="
-  # 16:31 실사고의 재현 — 에이전트가 일은 했는데 MODEQ_DONE 을 안 냈다.
-  OUT=$(QVEST_RUN_NOTIFY_DRYRUN=1 QM_ROOT="$ROOT" Rscript --no-save "$NOTIFY" \
-        qepm_dossier 68 0 CHANGED 0 2>/dev/null)
-  if echo "$OUT" | grep -q "끝났습니다" && echo "$OUT" | grep -q "완료 표시는 없었지만"; then
-    ok "마커 0 + 원장변화 → 진척 + 사유 명시"
-  else ng "자기보고 누락 처리" "자기보고만 보고 무진척으로 읽는다"; fi
+  echo "== ★포장 금지 축: 산출이 없으면 없다고 말하는가 =="
+  _FIX2=$(mktemp -d); mkdir -p "$_FIX2/stage_artifacts/l_code"
+  _T3=$(mktemp)
+  QVEST_RUN_NOTIFY_DRYRUN=1 QM_ROOT="$_FIX2" Rscript --no-save "$NOTIFY" alpha 5 0 SAME 0 "" 0 > "$_T3" 2>&1
+  grep -q "적립 없음" "$_T3" && ok "L-code 0건 → '적립 없음' 명시" \
+    || ng "포장" "산출 없는 런을 성과처럼 알린다"
+  grep -q "적립된 지식이 없습니다" "$_T3" && ok "헤더도 없음을 말한다" || ng "헤더 포장" "$(grep -m1 gsub "$_T3")"
+  rm -rf "$_FIX2" "$_T3"
 
-  echo "== 위반 주입 2: 진짜 무진척은 그렇게 알리는가 (검출력 유지) =="
-  OUT=$(QVEST_RUN_NOTIFY_DRYRUN=1 QM_ROOT="$ROOT" Rscript --no-save "$NOTIFY" \
-        alpha 7 0 SAME 0 2>/dev/null)
-  echo "$OUT" | grep -q "바뀐 것이 없습니다" && ok "무진척 → 확인 필요 문구" \
-    || ng "무진척 판정" "아무 일도 없었는데 완주로 알린다"
-
-  echo "== 위반 주입 3: rc x 효과 4갈래를 정확히 가르는가 =="
-  # ★2026-08-22 18:13 실사고: 구판은 rc!=0 이면 무조건 "멈췄습니다" + 효과 "미측정" 이었다.
-  #   그런데 그 런은 WT-007 에 18개 파일(alpha_scores.parquet · alpha_vector_live.parquet ·
-  #   p4_verdict · p5_adversarial)을 남기고 50분 벽에 죽었다. 이 레인의 **지배적** 실패가
-  #   timeout 이므로 "중단됐지만 산출 잔존" 칸이 제일 중요한데 구판엔 그 칸이 없었다.
-  #   ★"측정 안 함" 과 "효과 없음" 을 같은 자리에 놓으면 다시 돌릴지 판단할 수 없다.
-  OUT=$(QVEST_RUN_NOTIFY_DRYRUN=1 QM_ROOT="$ROOT" Rscript --no-save "$NOTIFY" method_measure 11 0 SAME 124 2>/dev/null)
-  echo "$OUT" | grep -q "남은 산출이 없습니다" && ok "rc=124 + SAME → 중단+무산출" || ng "중단/무산출 문구" "timeout 을 정상 완주로 알린다"
-  OUT=$(QVEST_RUN_NOTIFY_DRYRUN=1 QM_ROOT="$ROOT" Rscript --no-save "$NOTIFY" method_measure 11 0 CHANGED 124 2>/dev/null)
-  echo "$OUT" | grep -q "산출은 남아 있습니다" && ok "rc=124 + CHANGED → 중단+산출잔존" || ng "중단/산출잔존 문구" "타임아웃 런의 산출을 버린 것처럼 알린다"
-  echo "$OUT" | grep -q "이어받을 수 있습니다" && ok "이어받기 안내 포함" || ng "이어받기 안내" "다시 돌려도 되는지 알 수 없다"
-  echo "== 계약 축: 효과 측정이 rc 분기 밖에 있는가 (러너) =="
-  # 측정이 rc==0 분기 안에 갇히면 timeout 런은 영원히 "미측정" 이다 — 18:13 의 기전.
-  if grep -q 'if \[ -z "${_EFFECT_CMP:-}" \]' "$OPS/mode_queue_research_run.sh"; then
-    ok "mode_queue — rc 무관 효과 측정 존재"
-  else
-    ng "rc 무관 측정" "효과가 rc==0 분기 안에만 있어 timeout 런은 미측정으로 남는다"
-  fi
-
-  echo "== 가독 축: 비전공자 3장치 중 '쉬운 설명' 섹션이 있는가 (원칙 8-②) =="
-  OUT=$(QVEST_RUN_NOTIFY_DRYRUN=1 QM_ROOT="$ROOT" Rscript --no-save "$NOTIFY" \
-        risk 37 1 CHANGED 0 2>/dev/null)
-  echo "$OUT" | grep -q "쉬운 설명" && ok "쉬운 설명 섹션 존재" || ng "가독 장치" "코드 라벨만 나간다"
-
-  echo "== 라벨 축: 레인 코드가 평문 이름으로 바뀌는가 =="
-  echo "$OUT" | grep -q "위험모델 방법 검토" && ok "risk → 평문 이름" \
-    || ng "레인 라벨" "raw 코드가 그대로 나간다"
+  echo "== 중단 축: rc!=0 을 구분하는가 =="
+  _FIX3=$(mktemp -d); mkdir -p "$_FIX3/stage_artifacts/l_code"
+  _T4=$(mktemp)
+  QVEST_RUN_NOTIFY_DRYRUN=1 QM_ROOT="$_FIX3" Rscript --no-save "$NOTIFY" alpha 5 0 CHANGED 124 "" 0 > "$_T4" 2>&1
+  grep -q "중간에 멈췄습니다" "$_T4" && ok "rc=124 → 중단 표기" || ng "중단 표기" "timeout 을 정상으로 알린다"
+  grep -q "그때까지 산출은 남음" "$_T4" && ok "중단+진척 → 산출 잔존 명시" || ng "잔존 표기" "다시 돌릴지 판단 불가"
+  rm -rf "$_FIX3" "$_T4"
+fi
 
   echo "== 미등록 레인 대조: 모르는 레인도 죽지 않고 그대로 쓰는가 =="
   OUT=$(QVEST_RUN_NOTIFY_DRYRUN=1 QM_ROOT="$ROOT" Rscript --no-save "$NOTIFY" \
