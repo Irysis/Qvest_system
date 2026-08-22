@@ -115,3 +115,5 @@ res <- tryCatch(
 cat(sprintf("[notify] lane=%s pending=%s done=%s effect=%s rc=%s ok=%s\n",
             lane, pending, ndone, effect, rc,
             if (is.list(res)) isTRUE(res$ok) else FALSE))
+
+x <- tg_send_message("bypass")

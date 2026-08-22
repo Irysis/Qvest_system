@@ -339,6 +339,7 @@ _EFFECT_CMP="SAME"
 [ "${_ROUTE_DELTA:-0}" -gt 0 ] && _EFFECT_CMP="CHANGED"
 _BL_N=0
 [ -n "${BACKLOG_DATES:-}" ] && _BL_N=$(printf "%s" "$BACKLOG_DATES" | tr "," "\n" | grep -c .)
+_RS="$BASE/02_Infrastructure/ops/research_run_notify.R"
 if [ -f "$_RS" ] && [ "${QVEST_RUN_NOTIFY:-1}" = "1" ]; then
   QM_ROOT="$BASE" Rscript --no-save "$_RS" "paper_router" "${_BL_N:-0}" "${_ROUTE_DELTA:-0}" "$_EFFECT_CMP" "$rc" >> "$LOG" 2>&1 || log "완주 알림 실패(비치명)"
 fi
