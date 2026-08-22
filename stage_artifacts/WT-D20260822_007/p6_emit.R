@@ -20,9 +20,8 @@ r1 <- function(x, n=6) if (is.numeric(x)) round(x, n) else x
 sce <- P3$SCB[[EMIT]]; s <- merge(sce, fwddt, by=c("Date","Ticker"))
 dec <- s[, { ok <- is.finite(score) & is.finite(fwd)
   if (sum(ok) < 50L) .(d=NA_integer_, r=NA_real_) else {
-    q <- cut(rank(score[ok]), breaks=quantile(rank(score[ok]), probs=seq(0,1,.1)),
-             include.lowest=TRUE, labels=FALSE)
-    .(d=q, r=fwd[ok]) } }, by=Date]
+    rk <- frank(score[ok], ties.method="first"); nn <- length(rk)
+    .(d = pmin(10L, as.integer(ceiling(rk/nn*10))), r = fwd[ok]) } }, by=Date]
 dm <- dec[is.finite(d), .(mr=mean(r)), by=d][order(d)]
 mono <- cor(dm$d, dm$mr, method="spearman")
 icser <- s[, { ok <- is.finite(score) & is.finite(fwd)
