@@ -16,10 +16,10 @@ OUT = os.path.join(ROOT, "stage_artifacts", "WT-D20260822_001")
 
 # ── 계열별 발표시차 테이블 (calendar days). 근거를 값 옆에 같이 둔다. ──────────────
 LAG_TABLE = {
-    "KR_CredSpread_BBB": (2, "ECOS 일별 시장금리(회사채BBB-·국고3년) — 당일 장마감 후 공표, T+1 영업일 가용. 보수적 2일"),
-    "KR_CredSpread_AA":  (2, "동일 (회사채AA-·국고3년)"),
-    "KR_TermSpread":     (2, "ECOS 국고10년-3년"),
-    "KR_Call_CD_Spread": (2, "ECOS CD91-콜1D (단기 자금시장 경색). CD91 은 2005-08~"),
+    "KR_CredSpread_BBB": (3, "rev2 지정: ECOS 일별 금리 익영업일 공표, 최악 경로(금 관측→월 게시)=달력 3일"),
+    "KR_CredSpread_AA":  (3, "동일 (회사채AA-·국고3년)"),
+    "KR_TermSpread":     (3, "ECOS 국고10년-3년"),
+    "KR_Call_CD_Spread": (3, "ECOS CD91-콜1D (단기 자금시장 경색). CD91 은 2005-08~"),
     "StL_Fin_Stress":    (7, "FRED STLFSI4 주간 — 목요일 공표, 직전 금요일 종료 주 기준 ⇒ 최대 7일"),
     "Chi_Fin_Cond":      (7, "FRED NFCI 주간 — 수요일 공표, 직전 금요일 종료 주 기준 ⇒ 최대 7일"),
     "VIX":               (1, "일별 종가, 익일 가용"),
@@ -68,8 +68,10 @@ for name, s in series.items():
     L, why = LAG_TABLE[name]
     s = s.sort_index()
     for _, r in cen.iterrows():
-        # cutoff = 홀딩월 캘린더 첫날(overlay_pit_guard clean 컷오프) - 계열 발표시차 L.
-        cut = r['ym_d'] - pd.Timedelta(days=L)
+        # cutoff = min(홀딩월 첫 거래일 - L, 홀딩월 캘린더 첫날).
+        #   rev2 지정 규칙(first_td - L) 을 따르되 assert_overlay_pit HARD(캘린더 월초 이전) 를
+        #   동시 만족하도록 **더 보수적인 쪽**을 취한다(느슨화 아님 — 문서화된 강화).
+        cut = min(r['first_td'] - pd.Timedelta(days=L), r['ym_d'])
         if name == "breadth_bear_prob":
             cut = r['ym_d'] - pd.Timedelta(days=1)   # effective_date(T+2) 자체 보유
         sub = s.loc[:cut]
