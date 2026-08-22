@@ -1,0 +1,163 @@
+{
+  "wt_id": "WT-D20260822_005",
+  "designed_by": "alpha-hypothesis",
+  "model_tier": "fable",
+  "hypothesis_version": "v1.0",
+  "as_of_date": "2026-08-22",
+  "discovery_of": "STR_AS_20260612_154914_1055315",
+
+  "prechecks": {
+    "hypothesis_index_hits": [
+      "WT-D20260822_005 (self, wt_inflight — 병렬 중복실행 없음 확인)",
+      "STR_AS_20260612_154914_1055315 (source, grade B[essence]/A[proxy], PORT_t 2.523 screen, SCREEN_TIER)",
+      "STR_AS_20260612_154914_1055314 — sibling 'Quality-value 5-factor' FAIL F, port_t 0.597 (value+quality 축 단독 실패 실측)",
+      "STR_AS_20260612_154914_1055313 — sibling 'Defense + EPS revision' B, port_t 0.539 (defense+consensus 축 단독 미달 실측)",
+      "OVL_STR_AS_20260612_154914_1055315 — overlay drain OVERLAY_INFERIOR (2026-08-17, config-scoped): 외부 regime overlay 레버는 이 전략에서 실측 열위",
+      "DIST-QPM-003 / DIST-QPM-006 — single-signal quality/value long-only 실패 (EXCLUSION = multi-axis composite → 본 가설은 exclusion lane, 재포장 아님)",
+      "DIST-AR-003 (AX-007) — single_sleeve_long_only_top20 signal→portfolio 전이 단절, 예외에 multi-sleeve/ML sizing"
+    ],
+    "frontier_queue_refs": [
+      "FQ-237 (v8.4 헌법 2026-08-22): 병목 = 결합·이산 top-N 소비 마디. 재진입 순서 강제 ① 비-ML 결합 규칙 사전등록 비교 먼저 — 본 WT는 비-ML 결합 정제 라운드로 이 순서와 정합",
+      "FQ-241 — KQ150 멤버십 백필 결함 판정규칙 사전고정 (universe 오염 민감도 참조)",
+      "dohoon_decision 항목 (FQ-009 등) 미접촉 — 본 WT는 Q-Lead 발행 paper_promotion, 세션 임의 착수 아님"
+    ],
+    "owner": "Q-Lead (WT-D20260822_005 paper_promotion, auto_spawn standalone_review 계보)"
+  },
+
+  "alpha_search_context": {
+    "source_strategy_id": "STR_AS_20260612_154914_1055315",
+    "port_t_screen": 2.523,
+    "oos_retention_screen": -0.191,
+    "mdd_screen": 0.541,
+    "calmar_screen": 0.362,
+    "turnover_ann_pct": 264,
+    "bm_corr": 0.795,
+    "holdings_avg": 30,
+    "key_strength": "episode-window stress outperform 4/4 (GFC/EuDebt/COVID/Rate2022, 누적 alpha +6~+20.6%p), rolling 3Y SR>0 87.5%",
+    "key_strength_caveat": "★episode-window 누적 우위와 월간 국면 active는 상반 — improvement_potential ip_20260817 canonical_screen_diag(257m) 실측: RISK_ON(200m) active IR +0.958/t +3.91 vs CRISIS(14m) IR -0.879/mean_ann -30.9%/yr, NEUTRAL -0.32, CAUTION -0.17. episode TRUE 4/4는 회복월(RISK_ON 라벨) 포함 창의 산술 + beta<1 낙폭 완충이지 위기월 active 방어가 아니다. 'defense 요소의 국면 조건부 기여' 서술은 월간 해상도에서 불지지.",
+    "fmt_codes": ["FMT-01 structural MDD 54.1%", "FMT-04 regime blindness (BM corr 0.80)", "FMT-07 publication decay — active SR pre-2017 +1.10 → post-2017 -0.18"],
+    "provenance_gap": "원 run의 정확한 FACTOR_NAMES 미기록 (fe_factor_combo.R은 env 주입, manifest/spec/sim_result 어디에도 6개 팩터 id 미보존) — QEPM 재구성은 복제가 아니라 factor DB 명시 매핑으로 신규 설계"
+  },
+
+  "candidates": [
+    {
+      "id": "C1",
+      "title": "확장국면 개인 과소반응 수확 — 모멘텀(잔차/산업)×수익성 정제 3축 복합",
+      "family": "momentum+quality composite (non-ML combination)",
+      "mechanism_1line": "개인 주도 거래 + 공매도 제약이 산업/잔차 수준 정보의 가격 반영을 지연 → 위험선호 국면에서 1~3개월 지속, 수익성 프리미엄은 실적 발표 경유 실현",
+      "why_selected": "형제 대조 실측이 모멘텀 축 관여를 지목 (모멘텀 부재 형제 2건 port_t 0.539/0.597 vs 포함 복합 2.523) + FQ-237 비-ML 결합 우선 순서 정합 + DIST-QPM-003/006 exclusion lane"
+    },
+    {
+      "id": "C2",
+      "title": "원 6축 유지 + 국면-조건부 노출 스케일링",
+      "family": "regime_overlay",
+      "why_not_selected": "이 전략의 overlay drain 실측 OVERLAY_INFERIOR (2026-08-17, config-scoped) + DFA R21 국면 배분층 기각(무국면 모멘텀이 전 지표 상회) — 외부 overlay 재탕은 실측 근거로 배제. 국면 반영은 alpha 층 내부의 신호-경계 명시로 한정"
+    },
+    {
+      "id": "C3",
+      "title": "value+quality 축 부활 (5-factor 계열 재정제)",
+      "family": "value",
+      "why_not_selected": "sibling 1055314 실측 FAIL F (port_t 0.597) + DIST-QPM-006 + factor DB value 계열 book-marginal 통과 0 — 동일 config 재포장 위험"
+    },
+    {
+      "id": "C4",
+      "title": "복합 score의 분포-표적 재해석 (하방분위/왜도 소비)",
+      "family": "distribution_target (v8.4 Lane A)",
+      "why_not_selected": "DISTRIBUTION_TARGET 라우팅 요건 ①(평균 공간 powered-null 실증)이 성립 안 함 — 이 재료는 평균 공간에서 신호 실재(PORT_t 2.523). 대안 보관: 정제판이 평균 공간에서 효과없음(powered null)으로 종결되면 그때 요건 충족 검토"
+    },
+    {
+      "id": "C5",
+      "title": "defense 축 단독 강화 (BAB/저변동 확대 복합)",
+      "family": "defense",
+      "why_not_selected": "DIST-AR-001 (defense 계열 config-scoped 실패) + 본 복합의 CRISIS 월간 active 실측 음수(-0.879 IR) = equal30 내 defense 축이 위기 보호를 전달하지 못했다는 실측 — 축 확대의 사전 근거 부재. AX-001 v2 조건부 평가 대상"
+    }
+  ],
+
+  "selected": {
+    "hypothesis_title": "KR 확장국면 개인 과소반응 수확 복합 — 잔차/산업 모멘텀 × 수익성 quality 정제 3축 (비-ML 결합, 국면 경계 명시)",
+    "hypothesis_statement": "원 6요소 동일가중 복합(STR_AS_...1055315)의 실질 알파 드라이버는 모멘텀 축(가격/산업/잔차)과 수익성 quality의 결합이며, value·consensus·defense 축은 신호 희석 또는 IS-선택 노이즈 흡수분이다. 근거: 모멘텀 축이 빠진 두 형제 run이 각각 port_t 0.539(defense+EPS revision)·0.597(value+quality 5f)로 실패한 반면 모멘텀 포함 복합만 2.523. QEPM 정제판 = {잔차모멘텀 M08(또는 산업모멘텀 M07) + 수익성 Q01_GPA + [진단용 arm: 이익수정 C17]} 3축 이하, cross-sectional Z 동일가중(적합 계수 0개 — 계수-과적합 자유도 원천 제거), 월간 리밸런스. 예측: (a) 정제 3축 복합 top-N EW의 IS(train+validation) canonical PORT_t ≥ 2.0 유지 — 원 복합의 신호가 제거 축이 아닌 유지 축에 있다면 6→3 축소에도 screen 신호 보존, (b) RISK_ON 월 active 양(+) 유지 (원 복합 실측 앵커 +13.1%/yr), (c) CRISIS 월 active는 양(+)을 주장하지 않음 — 경계 밖으로 명시 선언 (원 복합 실측 -30.9%/yr 노출을 국면 경계로 정직 반영). 6→3 정제의 기대효익은 성과 부풀림이 아니라 oos_retention 회복 경로: 제거 축이 IS-선택 노이즈였다면 정제판의 OOS 감쇠는 원판(-0.191)보다 완화되어야 한다.",
+    "mechanism": {
+      "agent": "KR 개인투자자 (KOSDAQ 거래대금 다수 점유, 종목-수준 주의 편중·산업-수준 정보 미처리) + 커버리지 공백 종목의 애널리스트 지연 — 산업/잔차 수준 뉴스가 구성 종목 가격에 즉시 반영되지 않는 과소반응의 주체. 수익성 축의 주체 = 실적 발표 전까지 고수익성 기업의 이익 지속성을 과소평가하는 동일 개인 수요층",
+      "friction": "① KR 공매도 제약 — 과대평가 정정 차익거래 불가로 저품질·고베타 종목의 상대 과대가격이 지속, long-only 관점에서 고품질·모멘텀 상위의 상대 저평가가 천천히만 해소 ② 유동성 하한(20d 거래대금) — 기관의 신속 재정거래 용량 제한 ③ 산업-수준 정보의 종목 전파 지연 (개인 주도 시장에서 industry momentum lead-lag)",
+      "path": "월말 신호 → 익월 1~3개월에 걸쳐 (i) 산업/잔차 모멘텀 지속분이 개인 후속 매수·기관 편입으로 가격 반영, (ii) 수익성 프리미엄은 분기 실적 발표·이익수정(컨센서스 상향)을 경유해 실현. 반영 시점이 위험선호(RISK_ON) 국면의 트렌드 지속을 전제 — 위기 국면에서는 유동성 청산 플로우가 신호를 압도하고 경로가 끊긴다"
+    },
+    "falsification": {
+      "observable": "기전이 참이면 성과 외에 관측되어야 할 부수 신호 3계열 + 정량 screen 하한 1건",
+      "field_dictionary_refs": [
+        "A6_investor_flow_stock_daily (개인/기관 순매수)",
+        "FDB-B3_registry_consensus_daily + C-CONSENSUS-QW (이익수정/컨센서스)",
+        "A1_RAWDATA_OHLCVS_daily / FDB-B2_registry_rawdata_price_daily (실현 베타/수익률)",
+        "E3_macro_regime_monthly (국면 라벨)"
+      ],
+      "conditions": [
+        "F1 [개인-마찰 채널]: 모멘텀 지속이 개인 주도 마찰에서 나온다면, 개인 거래 비중(A6 flow 리프로 산출)이 높은 종목군에서 모멘텀 신호의 횡단면 예측력이 낮은 군 대비 유의하게 강해야 한다. 개인-비중 상/하위 분할에서 예측력 차이가 0 또는 역방향이면 마찰 귀속 기각 → 모멘텀 축의 기전을 재설계 (신호 자체는 남아도 이 가설의 설명은 죽는다)",
+        "F2 [수익성 실적-경유 경로]: Q01_GPA 상위 분위 종목의 후속 1~2분기 이익수정 breadth(FDB-B3/C-CONSENSUS-QW 리프)가 하위 분위 대비 유의 양(+)이 아니면 quality 축의 실적-실현 경로 기각 → quality 축 제거 또는 경로 재서술",
+        "F3 [모멘텀 크래시 귀속]: CRISIS→회복 전환 월(E3 라벨 전환 시점)에 저품질(저 GPA)·고베타(A1 실현 베타) 종목군의 반등이 모멘텀 상위군을 상회하는 junk-rally 패턴이 관측되지 않는데도 복합의 위기 active가 음(-)이면, 위기 손실의 '모멘텀 크래시' 귀속이 틀린 것 — 국면 경계 도출 논리 재설계",
+        "F4 [정량 screen 하한 — 단독으로는 무효, F1~F3와 병용]: 정제 3축 복합의 IS canonical PORT_t < 2.0 (canonical_screen_bt 실측, IS-only 선택)이면 '드라이버가 유지 축에 있다'는 성분 귀속 주장 기각 — 이 경우 형제 대조에서 추론한 귀속이 selection 아티팩트였다는 뜻"
+      ]
+    },
+    "regime_scope": {
+      "holds_in": [
+        "RISK_ON (위험선호·확장 국면 — E3_macro_regime_monthly 라벨 기준. 원 복합 실측 앵커: 200/257개월, active IR +0.958, t +3.91)"
+      ],
+      "weakens_or_reverses_in": [
+        "CRISIS (유동성 청산 국면 — 원 복합 실측 active IR -0.879, mean_ann -30.9%/yr. 역전을 실측으로 확인한 경계)",
+        "NEUTRAL/CAUTION 횡보 (트렌드 부재 → 모멘텀 지속 경로 미작동 — 원 복합 실측 IR -0.32/-0.17)",
+        "위기 직후 반등 초입 (momentum crash — 공매도 제약으로 눌려 있던 고베타·저품질 종목의 스냅백이 모멘텀·quality를 동시 역전)"
+      ],
+      "boundary_rationale": "경계는 기전에서 도출된다: 모멘텀 지속·수익성 실현 경로 모두 (i) 위험선호 하의 트렌드 연장과 (ii) 실적 정보의 질서 있는 가격 반영을 전제한다. 위기에는 유동성 청산이 정보 신호를 압도하고(레버리지 해소 매도는 신호 무차별), long-only + 공매도 제약 구조가 이 역전에 정면 노출된다(헤지 수단 부재). 회복 초입에는 short-constraint로 과대 낙폭이 쌓인 junk가 가장 세게 반등해 모멘텀·quality 순위를 역전시킨다. 이 도출은 원 복합의 국면별 실측(ip_20260817)과 정합 — 단, 실측을 본 후의 서술이라는 사후성 리스크는 challenge_note에 명시. QEPM 설계 반영: alpha 층은 국면-조건부 신호 감쇠를 명시 arm으로 허용하되(허용된 방법론), 외부 overlay 재탕은 금지(OVERLAY_INFERIOR 실측). MDD ≤25% 달성 경로는 alpha 층 단독으로 미해결 — risk/optimizer 층 이관을 정직 선언."
+    }
+  },
+
+  "hypothesis_statement": "(top-level mirror — selected.hypothesis_statement 참조)",
+  "mechanism": "(top-level mirror — selected.mechanism 참조)",
+  "falsification_conditions": [
+    "(mirror) F1 개인-마찰 채널: 개인 거래비중 상위군에서 모멘텀 예측력 우위 부재 시 기각 (A6_investor_flow_stock_daily)",
+    "(mirror) F2 실적-경유 경로: GPA 상위의 후속 이익수정 breadth 우위 부재 시 기각 (FDB-B3/C-CONSENSUS-QW)",
+    "(mirror) F3 모멘텀 크래시 귀속: 회복 전환 월 junk-rally 패턴 부재 + 위기 active 음수 동시 관측 시 경계 논리 기각 (A1/E3)",
+    "(mirror) F4 정량: 정제 3축 IS canonical PORT_t < 2.0 시 성분 귀속 기각"
+  ],
+  "regime_bounds": {
+    "active_regimes": ["RISK_ON"],
+    "inactive_regimes": ["CRISIS", "NEUTRAL", "CAUTION", "post-crisis junk rally 초입"]
+  },
+
+  "factor_candidates": [
+    {"factor_name": "Residual Momentum", "factor_id": "M08_Residual_Mom", "registry": "confirmed (02_Infrastructure/factor_db/factor_registry.json, category=momentum)", "direction": "+", "rationale": "시장/베타 성분 제거된 종목-고유 지속 — friction ③(정보 전파 지연)의 가장 직접적 표현. KR 데이터 한계 reference상 1995~ 가용"},
+    {"factor_name": "Industry Momentum", "factor_id": "M07_IndMom", "registry": "confirmed", "direction": "+", "rationale": "산업-수준 정보의 종목 전파 지연 (개인 주도 lead-lag). M08과 택1 또는 병용 — ablation은 alpha-research 소관"},
+    {"factor_name": "Price Momentum 12-1", "factor_id": "M01_Mom_12_1", "registry": "confirmed", "direction": "+", "rationale": "표준 앵커 축 — M07/M08 대비 증분 진단용 (M08이 M01 잔차형이므로 동시 투입 시 중복 주의, redundancy_cluster 확인 의무)"},
+    {"factor_name": "Gross Profitability", "factor_id": "Q01_GPA", "registry": "confirmed (category=quality)", "direction": "+", "rationale": "수익성 프리미엄 — 실적 발표 경유 실현 경로. 단독 long-only는 DIST-QPM-003 실패 계열이므로 반드시 복합 내에서만"},
+    {"factor_name": "OP Revision (이익수정)", "factor_id": "C17_OP_Revision", "registry": "confirmed (category=consensus)", "direction": "+", "rationale": "진단용 arm — F2 반증 조건의 관측 변수이자, consensus 축 잔존 가치의 최소 시험. 본선 포함 여부는 ablation 실측으로"}
+  ],
+
+  "challenge_flags": [
+    "성분 귀속의 한계: 형제 대조(1055313/1055314)는 성분·명수가 다른 비통제 비교 — 모멘텀 축 귀속은 추론이지 실측 아님. ablation(F4)이 선결",
+    "국면 경계의 사후성: RISK_ON/CRISIS 경계 서술은 ip_20260817 실측 열람 후 작성 — 기전 도출이 우선이나 사후 관찰 오염 리스크 명시 (challenge_note §3)",
+    "oos_retention -0.191의 원인 이중성: equal-weight엔 적합 계수가 없다 — 과적합은 계수가 아니라 (a) ladder 형제 중 IS-성과 생존 선택 + (b) cohort-wide post-2017 decay (FMT-07). (b)라면 3축 정제로도 회복 안 됨 — dual-basis(EW-유니버스) 재판정이 선결 (v8.3 실측: post-2017 감쇠 상당분 = mega-cap 벤치 아티팩트)",
+    "KQ150 멤버십 백필 결함 (2026-08-22 실측): pre-2015-07 KQ150 반쪽은 퇴출 미기록 누적 명부 — universe=K200∪KQ150 ∧ 2005~ 전기간 측정은 오염 존재(크기 미측정). clean window(2015-07~) 민감도 병기 의무, FQ-241 사전고정 판정규칙 참조",
+    "factor DB 331 전수 book-marginal 통과 0 실측 — 개별 팩터가 아니라 '결합'이 가설의 존재 이유. FQ-237이 병목을 결합·이산 top-N 소비 마디로 실측 지목 — 본 라운드는 비-ML 결합 사전등록 비교 순서(v8.4 재진입 순서 ①)와 정합하나, 같은 이유로 결합 규칙 선택 자체가 새 자유도임을 인지 (사전등록 의무)",
+    "turnover 264%/yr — 모멘텀 축 유지 시 비용 구조 상속. cost-aware(net 15bps) 실측 필수, cost proxy 대비 기대 alpha ratio < 2면 STOP (failure rule)",
+    "대안 후보 C2~C5 보관 — 특히 C4(분포-표적)는 정제판이 평균 공간 powered-null로 종결될 경우의 후속 경로"
+  ],
+
+  "open_questions_for_alpha_research": [
+    "① 성분 절제(ablation) 실측: {M08|M07|M01} × {Q01} × {±C17} 조합을 canonical_screen_bt IS-only로 비교 — 형제-대조 추론의 실측 확정. method_shopping_log 상한 5 준수, iteration별 mechanism 진단 1줄 기록(chain 자격요건 ①)",
+    "② dual-basis 재판정: FMT-07 post-2017 active SR -0.18이 cap-w 벤치 아티팩트인지 diag_ew_universe로 확인 — EW-대비 생존 시 screen_route 재분류 부기 (v8.3 M2)",
+    "③ KQ150 백필 민감도: 전기간 vs clean window(2015-07~) 병기 — FQ-241 판정규칙",
+    "④ M08 vs M01 redundancy: M08이 M01 잔차형 — 동시 투입 시 multicollinearity, redundancy_cluster_id 기록 의무",
+    "⑤ 국면-조건부 신호 감쇠 arm의 alpha-층 표현: regime-conditional alpha는 허용 방법론이나 E3 macro_regime 월말스탬프의 동월 look-ahead 함정(진행 중인 달 행) 주의 — v8.4 SOT Lane D 4확인 사항",
+    "⑥ MDD ≤25% 경로: alpha 층 미해결로 정직 이관 — overlay drain INFERIOR(config-scoped) 실측 인용, risk/optimizer 층에서 β 예산·구성 규율로 접근. 창-도달가능성 병기 의무(measurement-graduation 2026-08-22): PORT_t 2.95 미달 보고 시 해당 창의 양성 대조 상한 함께 보고"
+  ],
+
+  "next_probe": [
+    "NP1: alpha-research가 본 가설 승계 → ⑤ AST 구성 + Step 1~7 (ablation + canonical screen + dual-basis)",
+    "NP2: 비-ML 결합 규칙 사전등록 비교 — equal_weight vs rank_average vs z_score_aligned_weighted_sum (FQ-237 NP1 순서 정합, 결합 마디 자유도의 사전등록 통제)",
+    "NP3: 정제판이 평균 공간 powered-null 종결 시 → C4 분포-표적 재해석 (DISTRIBUTION_TARGET 요건 3종 검토, v8.4 Lane A)"
+  ],
+
+  "verdict": "designed",
+  "handoff": {
+    "to": "alpha-research",
+    "next_steps": "Step 1~7 + ⑤ AST 구성. 승계분(mechanism/falsification/regime_scope) 재작성 금지 — 결함 발견 시 challenge_note 기록 + 재설계 요청 (Charter 원칙 8). economic_void 아님 — 진행 가능."
+  }
+}

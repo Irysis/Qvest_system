@@ -18,7 +18,8 @@
     "2607.06502",
     "2608.08625",
     "2608.16749",
-    "2608.09641"
+    "2608.09641",
+    "2608.12283"
   ],
   "records": [
     {
@@ -948,8 +949,64 @@
         "Track A: m-minus를 레짐 오버레이로 소비 — factor-rotation RCMA 후보 (FQ-240)"
       ],
       "session_note": "AS-20260821 큐소비자. Track B batch_434. Track A FQ-240 등재."
+    },
+    {
+      "paper_id": "2608.12283",
+      "paper_title": "Macro-Beta Momentum: Dynamic Macro Factor Sensitivity × 20d Macro Change",
+      "factor_id": "macro_beta_momentum",
+      "factor_name": "Score_i,t = Σ_j [beta_ij,60d × Δm_j,20d] (Term_Spread/VIX/KRW_USD)",
+      "strategy_id": "STR_AS_20260822_143237_8580",
+      "gate_decision": "QUARANTINE",
+      "gate_failed_layers": "L3_structural_drawdown",
+      "port_t": -1.265,
+      "oos_retention": 0.378,
+      "calmar": 0.05,
+      "mdd": 70.23,
+      "sharpe": 0.125,
+      "cagr": 3.53,
+      "ir": -0.369,
+      "ic_mean": -0.0025,
+      "icir": -0.022,
+      "ic_pos_rate": 49.6,
+      "fmb_nw_t": -0.27,
+      "grade": "F",
+      "score": 3,
+      "hard_fail": true,
+      "hard_fail_reason": "Structural drawdown: MDD 70.23%, 45%+ episodes=18/15, max_underwater=997/252d",
+      "processed_date": "20260822",
+      "verify_path": "stage_artifacts/paper_recharge/auto_verify_macro_beta_mom_20260822.json",
+      "bt_result_dir": "stage_artifacts/alpha_search/20260822_143237_8580",
+      "quarantine_reason": "PORT_t=-1.265 << 2.95 HARD(음수). OOS retention=0.378 < 0.70 FAIL. Calmar=0.050 << 0.64 HARD. MDD 70.23%(구조적 hard fail: 45%+ episodes=18/15, max_underwater=997d). IC=-0.0025(pos_rate 49.6%)로 무신호. FMB NW-t=-0.27 — 크로스섹션 프리미엄 없음. 고회전율 833%/yr. CAGR 3.53%.",
+      "stress_periods": {
+        "GFC": {"alpha_pct": -6.52, "outperform": false},
+        "Euro_Debt": {"alpha_pct": 8.97, "outperform": true},
+        "COVID": {"alpha_pct": 9.47, "outperform": true},
+        "Rate_Hike": {"alpha_pct": -14.85, "outperform": false},
+        "China_Shock": {"alpha_pct": -5.6, "outperform": false},
+        "US_China_Trade": {"alpha_pct": -16.8, "outperform": false}
+      },
+      "mechanism_diagnosis": "Score_i,t = Σ_j [beta_ij,60d × Δm_j,20d] — 무조건부 사용 시 E[Score]≈0: 매크로 방향이 매월 반전하므로 장기 기댓값이 상쇄. 고 macro-beta 종목이 매크로 회복기(COVID/EuDebt)에는 outperform, 매크로 악화기(GFC/Rate_Hike)에는 underperform — 방향성은 매크로 레짐에 종속적이고 레짐 신호 없이 long-only로 소비하면 alpha=0. IC≈0(49.6% pos_rate) 실증. PIT CLEAN — compute_macro_beta_v2.py: delta20 = fred.shift(1)−fred.shift(21), rolling 60d window 모두 PIT 준수.",
+      "consumer_surfaces_checked": [
+        "1팩터랭킹: QUARANTINE (IC≈0, PORT_t=-1.265 음수, FMB t=-0.27 비유의)",
+        "2유니버스필터: 미측정 — 고 macro-beta 종목 제거 유니버스 필터 소비면 → FQ 미등재",
+        "3오버레이: ★핵심 소비면 — 매크로 방향성 일치 국면 조건부 신호 → Lane D 직접 연결 (FQ-243 등재)",
+        "4위험모델: Beta_to_BM=0.840(BM 추종), macro sensitivity 구조 = 위험모델 exposure 참고",
+        "5monitoring: 미설정",
+        "6선별라벨: macro-beta 수준 = 방어/공격 종목 선별 라벨로 활용 가능",
+        "7타모드이식: Lane D 매크로 상태 조건부 비대칭 (v8.4 주력 레인 ②) — 이 실측이 직접 Lane D 착수 근거"
+      ],
+      "next_probe": [
+        "NP1 (FQ-243): 방향성 조건부 적용 — 3개 매크로 변수(Term_Spread/VIX/KRW_USD) delta20가 모두 같은 부호일 때만 신호 적용(aligned macro regime). Lane D 착수. 선행 근거: COVID/EuDebt(회복 국면) alpha +8.97%/+9.47% vs GFC/Rate_Hike(악화 국면) alpha -6.52%/-14.85% — 부호 정렬 국면 조건이 성립할 수 있음을 시사",
+        "NP2 (상호작용 예비): beta 수준으로 수익 분포 왜도/꼬리초과확률 예측 — 평균이 아닌 분포 표적으로 전환(Lane A + Lane D 상호작용). 요건: NP1 독립 라운드 측정 완료 후 사전등록"
+      ],
+      "pit_status": "CLEAN",
+      "pit_note": "compute_macro_beta_v2.py: delta20=fred.shift(1)−fred.shift(21) C11 준수. rolling 60d beta는 D-1까지만 사용. 월말 조회 시 Date<=rd_ts 조건. lookahead_detector CLEAN 확인.",
+      "precomputed_parquet": ".cache/macro_beta_scores.parquet (507,076 rows · 260 month-ends · 3,462 tickers, Python C11 PIT 준수)",
+      "notable": true,
+      "l_code": "l_code_STR_AS_20260822_143237_8580",
+      "session_note": "AS-20260822 큐소비자 런 — alpha_search_route_20260822.json 유일 testable candidate. Python pre-computed parquet v3 engine(compute_macro_beta_v2.py) 경유. Telegram 자동 발송 완료. 무조건부 macro-beta momentum KR 비성립 확인. Lane D 착수 근거 생성."
     }
   ],
   "schema_note": "processed = list of paper_id strings (set-like, paper 단위 dedup). records = 전체 시도 감사 로그(동일 paper에서 여러 factor 추출 시 factor_id로 구분). last_updated 갱신 의무.",
-  "last_updated": "20260821"
+  "last_updated": "20260822"
 }
