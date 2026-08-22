@@ -37,7 +37,17 @@ build_from <- function(fn, shift = 0L) rbindlist(lapply(seq_along(months), funct
 SCA <- lapply(CF, function(f) build_from(f, 0L))
 SCA$LEAK1  <- build_from(CF$C0, +1L)
 SCA$LAG1   <- build_from(CF$C0, -1L)
-SCA$ORACLE <- fwd[, .(Date, Ticker, score = fwd)]
+## ORACLE = 창-도달가능성 상한. ★홀딩월 221개로 정렬 (fwd 는 257개월 — 미정렬 시 paired 재활용 오류)
+SCA$ORACLE <- fwd[Date %in% as.Date(months), .(Date, Ticker, score = fwd)]
+## ORACLE_K = ★사후 진단(사전등록 arm 아님, 판정 대상 아님) — 결합 마디 자체의 여유폭 상한.
+##   매월 선별 K=5 중 **실현** 차월 rank-IC 가 최대인 팩터 하나를 완전예지로 채택.
+##   {K 개 중 고르기} 족(族)의 상한이므로, 이 값이 낮으면 어떤 결합기(ML 포함)도 이 마디에서 못 넘긴다.
+SCA$ORACLE_K <- rbindlist(lapply(seq_along(months), function(m) {
+  nm <- months[m]; fs <- sel_rank[[nm]]; d <- panh[anchor == as.Date(nm)]
+  ic <- vapply(fs, function(f) { v <- d[[f]]; ok <- is.finite(v) & is.finite(d$fwd_ret_1m)
+    if (sum(ok) < 30L) return(-Inf); cor(rank(v[ok]), rank(d$fwd_ret_1m[ok])) }, 0)
+  best <- fs[which.max(ic)]
+  data.table(Date = as.Date(nm), Ticker = as.character(d$Ticker), score = d[[best]])[is.finite(score)] }))
 
 run <- function(s, bench, id, liq = NULL) { s <- copy(s); setorder(s, Date, Ticker)
   canonical_screen_bt(s[, .(Date, Ticker, score)], returns_dt, bench, top_n = TOPN,
