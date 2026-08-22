@@ -111,11 +111,38 @@ if (is.null(mvo_r)) {
 }
 results[["MVO"]] <- setNames(as.numeric(mvo_r$w), tks)
 
-## 3) HRP (risk-parity, cov only)
+## 3) HRP (Lopez de Prado 2016) — implemented directly from Sigma
+hrp_from_cov <- function(S) {
+  n <- ncol(S)
+  cor_m <- cov2cor(S)
+  dist_m <- sqrt(pmax((1 - cor_m) / 2, 0))
+  hc <- hclust(as.dist(dist_m), method = "single")
+  sort_ix <- hc$order
+  get_ivp <- function(idx) { iv <- 1 / diag(S)[idx]; iv / sum(iv) }
+  cluster_var <- function(idx) {
+    w <- get_ivp(idx); as.numeric(t(w) %*% S[idx, idx, drop=FALSE] %*% w)
+  }
+  w <- rep(1, n); names(w) <- colnames(S)
+  clusters <- list(sort_ix)
+  while (length(clusters) > 0) {
+    new_clusters <- list()
+    for (cl in clusters) {
+      if (length(cl) <= 1) next
+      half <- floor(length(cl) / 2)
+      c1 <- cl[1:half]; c2 <- cl[(half+1):length(cl)]
+      v1 <- cluster_var(c1); v2 <- cluster_var(c2)
+      alpha <- 1 - v1 / (v1 + v2)
+      w[c1] <- w[c1] * alpha
+      w[c2] <- w[c2] * (1 - alpha)
+      new_clusters <- c(new_clusters, list(c1), list(c2))
+    }
+    clusters <- new_clusters
+  }
+  w / sum(w)
+}
 hrp_w <- tryCatch({
-  hw <- hrp_weights(cov = Sigma, bounds = bounds, max_names = 25L)
-  w <- if (is.list(hw) && !is.null(hw$weights)) hw$weights else hw
-  w <- w[tks]; w[is.na(w)] <- 0; w / sum(w)
+  w <- hrp_from_cov(Sigma); w <- w[tks]
+  w <- pmin(w, 0.20); w / sum(w)
 }, error = function(e) { logf("  HRP err: ", conditionMessage(e)); NULL })
 if (!is.null(hrp_w)) results[["HRP"]] <- setNames(as.numeric(hrp_w), tks)
 
@@ -195,5 +222,5 @@ fwrite(comp, file.path(SA, "method_comparison_snapshot.csv"))
 saveRDS(list(results = results, sec_map = sec_map, is_semi = is_semi, liq = liq,
              mu = mu, conf = conf_vec, Sigma = Sigma),
         file.path(SA, "opt_snapshot.rds"))
-writeLines(out_log, file.path(SA, "optimize_log.txt"))
+writeLines(as.character(unlist(out_log)), file.path(SA, "optimize_log.txt"))
 logf("\nSnapshot phase done.")
