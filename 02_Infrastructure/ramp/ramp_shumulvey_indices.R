@@ -56,7 +56,8 @@ for(i in seq_along(rebal)){ sd<-rebal[i]
   fm<-merge(f,uni,by="Ticker")    # universe ∩ covered, Size 부여
   for(nm in names(FAC)){ sub<-fm[Factor_Name==FAC[nm]]
     if(nrow(sub)<15){next}
-    thr<-quantile(sub$Z_Score_Aligned, 2/3, na.rm=TRUE)   # 상위 1/3
+    .qcut<-as.numeric(Sys.getenv("SMV_TOPQ","0.6667"))   # 집중도 파라미터화(R17): 기본 2/3=상위33%(구 동작 불변), 0.80=상위20%, 0.90=상위10%
+    thr<-quantile(sub$Z_Score_Aligned, .qcut, na.rm=TRUE)
     sel<-sub[Z_Score_Aligned>=thr]
     held[[nm]]<-rbind(held[[nm]], data.table(rebal=sd, Ticker=sel$Ticker))
   }

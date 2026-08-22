@@ -24,7 +24,7 @@ import pandas as pd
 sys.stdout.reconfigure(encoding="utf-8")
 ROOT = r"C:/Users/99922/OneDrive/Quant_Module_Moltbot"
 OUTDIR = f"{ROOT}/stage_artifacts/WT-D20260813_006"
-START = "2004-08-01"          # 2005-01 첫 신호를 위한 warm-up
+START = "2000-01-01"          # flow 지평 시작 — 설계 선언 ~318개월 정합
 LOG = {}
 
 print("[1] load RAWDATA", flush=True)
@@ -213,7 +213,7 @@ out = mp[["Date", "Ticker", "ym", "absorb", "absorb_resid", "absorb_1m", "absorb
           "absorb_share", "win_vol", "n_win", "indiv_level", "log_size",
           "fwd_foreign_3m_n", "fwd_inst_3m_n", "Size"]].copy()
 out["ym"] = out["ym"].astype(str)
-out = out[out["Date"] >= "2004-12-01"]
+out = out[out["Date"] >= "2000-03-01"]
 
 LOG["panel_rows"] = int(len(out))
 LOG["panel_date_min"] = str(out["Date"].min().date())
