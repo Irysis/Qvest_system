@@ -1,0 +1,111 @@
+{
+  "task_id": "WT-D20260813_001",
+  "as_of_date": "2026-08-22",
+  "agent": "judge_v1",
+  "strategy_id": "WT_D20260813_001_q90_pinball",
+  "verdict": "JUDGE_FAILED",
+  "grade_authoritative": "F",
+  "grade_source": "essence_score.R (독립 재실행, metric_type=backtested, hard_fail=TRUE)",
+  "verdict_detail": "graduation HARD 3종 전패(PORT_t 0.837<2.95 / oos_retention -0.855<0.7 / calmar 0.212<0.64) + no_signal_gate=INDISTINGUISHABLE_FROM_NO_SIGNAL(신호 기여 미증명) + essence 구조적 drawdown hard-fail(MDD 66.9%·55%+ episode 5·max underwater 39개월). β-통제 t(α)=1.207(|t|<2)로 알파 존재 주장 불가. Grade F = 자본 자격 없음. 단 config-scoped negative(target-form family 판결 아님, INV-7) — 기전 축 F1 tail-hit paired t=+4.62 강발화·trim5 음성대조 정합으로 병목은 표적이 아니라 소비 마디(top-N EW 평균 흡수). upstream alpha research_verdict=NOT_SUPPORTED(paired NW3 t=+0.828) 정합.",
+  "measurement_authority": "forge_package.json (forge_authoritative=true, metric_type=backtested) + essence_score.R 독립 재실행. hurdle_gate 18-component은 비바인딩 진단.",
+  "gate_results": {
+    "gate_0_preflight": {"result": "PASS", "note": "10-component bt_result 유효(names 전 11항 존재), audit metric_type=backtested, 198 monthly obs, cost_model v2.4_kr_retail_15bps. hash_audit integrity_pass=true(alpha/risk/opt start==end)."},
+    "gate_A_PIT": {"result": "PASS", "note": "self_pit_check verdict=clean. walk-forward 각 홀딩월 학습창 종점 sig_date < holding anchor(PIT). C1~C15 전수 아래 pit_audit. ast_verify WARN_RESTATEMENT(재무 리프 restatement-prone·load_month_factors+Z_Score_Aligned 경유)만·FAIL_LOOKAHEAD 없음."},
+    "gate_B_isolation": {"result": "PASS", "note": "lockbox 접근 Judge 유일(non-judge access=0). hash_audit integrity_pass=true — alpha(17d1faff)/risk(0ba255f0)/opt(137a570f) hash start==end, 심사 중 upstream 미변조. selection_type=chain(PREREG §7 params 사전고정·HPO 없음·argmax 없음) → 사후선택 오염 통제됨(armB q90 parity cor=1.0)."},
+    "gate_C_alpha_hurdle": {"result": "FAIL", "note": "PORT_t(NW lag-3, forge-authoritative)=0.8366 < 2.95(Harvey-Liu-Zhu HARD). net_IR(essence 0.234·optimizer 0.257)은 0.2 초과이나 Gate C=AND이므로 PORT_t leg FAIL이 지배. β-통제 t(α)=1.207 |t|<2 → 알파 존재 주장 불가(measurement-graduation §2). rank-IC=-0.028(advisory·screening)."},
+    "gate_D_crowding": {"result": "PASS", "note": "crowding_score=0.383 < 0.75 alert 미만(survival OK). 단 RF-R3 MEDIUM(crowding flags present)·passive_overlap_proxy 0.70·hhi_top 0.665는 challenge_flag로 surface. 판정에 blocking 아님."},
+    "gate_E_concentration": {"result": "PASS", "note": "max_w=0.0455 <= 0.20, name_HHI=0.0407 <= 0.15, n_eff_names=24.64. 종목 집중 게이트 통과. ⚠섹터 집중은 별개 축(반도체 57% natural→50% cap): RF-R1 HIGH이나 Gate E name-level 기준은 PASS·섹터는 concentration_flag로 surface."},
+    "gate_F_drift": {"result": "FAIL", "note": "oos_is_ratio(oos_retention v2 3분할 중앙값)=-0.855 < 0.7 HARD. 3분할 전부 음수(-0.486/-0.855/-0.927) → 무조건 FAIL band([0.5,0.7) 보강증거 경로도 진입 불가, <0.5 무조건 FAIL). overfit/decay: 활성 Sharpe OOS가 IS 대비 음전환 = severe overfit-pattern(전략 고유)."},
+    "gate_16_dsr": {"result": "NA", "note": "selection_type=chain(PREREG §7·params 사전고정·primary 단일 q90·argmax 없음) → DSR HARD 부적용(measurement-graduation §3). DSR 수치는 진단 산출: essence dsr=NA(n_trials=1), alpha diag deflated_sharpe_ratio=0.851(n_trials>1 진단용). method_shopping_log 4-arm(mean/q10/q50/q90) 이력 기재됨 → 다중검정 맥락 소비."},
+    "gate_17_no_signal": {"result": "FAIL", "note": "no_signal_gate=INDISTINGUISHABLE_FROM_NO_SIGNAL. 제약형 롱온리(종목수 25 상한)이므로 시총상위 25종 cap-w 무신호 대조 통과 의무(measurement-graduation §3). diff_ann=+0.073·diff_nw_t=0.972(|t|<2)·corr 0.598·control_port_t=-0.859·strategy_port_t=0.838 → 성과가 무신호 대조와 통계적 구별 불가 = 신호 기여 미증명. 성과가 신호가 아니라 대형/섹터 노출에서 옴."},
+    "gate_18_structural_dd": {"result": "FAIL", "note": "essence hard_fail=TRUE — 구조적 drawdown 프로파일 발화(2026-06-13 대체 기준): MDD 66.9%(catastrophic 0.70 근접), 55%+ episode 5회, 45%+ episode 7회·max underwater 39개월·frac 0.349. MDD 45% 단독 폐지 기준이 아니라 episode 빈도/지속성 구조 기준. Grade F는 이 hard_fail 없이도 HARD 3종 전패로 확정 — 보강 축."}
+  },
+  "pit_audit": {
+    "C1": "PASS — walk-forward expanding window(확장창), full-sample 통계 미사용. burn-in 60·각 홀딩월 학습창 종점 sig_date < anchor.",
+    "C2": "PASS — same-day circular 없음. 예측 t=sig_date, 수익 t+1 홀딩월. decision_ts 2026-09-01 > sig_date 2026-07-31.",
+    "C3": "PASS — 같은 기간 집계→적용 없음. 워크포워드 학습창과 홀딩월 분리.",
+    "C4": "PASS — 재무 리프 quarterly+45d / annual 3/31(현행 확정 lag) 준수. self_pit_check restatement-prone 인지·load_month_factors 경유.",
+    "C5": "NA — 오버레이 신호 없음(순수 팩터/모델 스코어 top-N EW). overlay 타이밍 위반 대상 부재.",
+    "C6": "PASS — universe K200∪KQ150 point-in-time 멤버십, survivorship 미가정. (⚠KQ150 백필 구간 편향은 프로젝트-차원 known-issue이나 본 WT 판정 기간 2010-03~2026-08에 대해 alpha-research가 PIT 경유 처리·별도 flag 없음.)",
+    "C7": "PASS — lookahead_detector ast_verify FAIL_LOOKAHEAD 없음(WARN_RESTATEMENT만).",
+    "C8": "NA — FM(Fama-MacBeth) weight same-day 미사용 구조.",
+    "C9": "NA — VT/DD 오버레이 미사용.",
+    "C10": "PASS — 유동성 필터 t-1 PIT(RAWDATA Close*Vol, PIT<=sig_date). 25/25 종목 20일 평균 거래대금>=2e8 KRW·미달 0.",
+    "C11": "PASS — 데이터 시간축 정합(월간 벤치 apply.monthly+Return.cumulative ym 키). FRED 등 외생 시차 대상 신호 없음.",
+    "C13": "PASS — NEGATE/FLIP 없음. Z_Score_Aligned only(style/factor).",
+    "C14": "PASS — IC 접근 Usable_Date <= sig_date(load_month_factors 경유).",
+    "C15": "PASS — Factor DB parquet 직접 load 없음. load_month_factors() 경유(324 registry 피처·alias 7 드롭)."
+  },
+  "multi_objective_8": {
+    "portfolio_alpha_t": 0.8366,
+    "oos_retention": -0.855,
+    "calmar": 0.2122,
+    "ann_sr": 0.5781,
+    "ann_cagr": 0.142,
+    "ann_mdd": 0.6694,
+    "net_ir": 0.234,
+    "crowding_score": 0.383
+  },
+  "multi_objective_note": "net_ir=essence_score 계약 산출(net-active recon). optimizer walkforward_active_ir=0.2569는 walk-forward 시뮬 basis(참고). 둘 다 0.2 초과이나 Gate C=AND로 PORT_t leg FAIL이 지배 — net_ir 값 무관 Gate C FAIL.",
+  "hard_gate_summary": {
+    "port_t_hard": "FAIL",
+    "oos_retention_hard": "FAIL",
+    "calmar_hard": "FAIL",
+    "overall": "FAIL",
+    "thresholds": {"port_t": 2.95, "oos_retention": 0.7, "calmar": 0.64}
+  },
+  "beta_controlled_alpha": {
+    "t_alpha_nw_lag3": 1.207,
+    "alpha_ann": 0.0869,
+    "beta_to_bm": 0.8141,
+    "note": "|t(α)|<2 → 알파 존재 주장 불가. PORT_t 0.837은 α+(β-1)·E[bm] 혼합이므로 알파 근거로 인용 금지(measurement-graduation §2)."
+  },
+  "no_signal_gate": {
+    "result": "INDISTINGUISHABLE_FROM_NO_SIGNAL",
+    "diff_ann": 0.0729,
+    "diff_nw_t": 0.9718,
+    "corr": 0.5979,
+    "strategy_port_t": 0.8376,
+    "control_port_t": -0.8592,
+    "note": "제약형 롱온리 무신호 대조(시총상위 25 cap-w) 통과 실패 — 신호 기여 미증명, screen-tier 등재도 이 게이트에 종속."
+  },
+  "attribution_decomposition": {
+    "basis": "Brinson-Fachler + Carhart 4-factor 정성(walk-forward Σ 부재로 정량 4축 미산출)",
+    "factor_exposure": "risk_package style: Momentum_12_1 z=+2.57(극단 고모멘텀)·Value_BM z=-0.86(비싼 성장)·Defense_IdioVol z=+0.06(중립). 반도체 섹터 57%. → 활성수익이 기존 momentum/sector factor exposure와 redundant 위험 高.",
+    "selection": "no_signal_gate INDISTINGUISHABLE = 순수 selection alpha 미증명. F1 tail-hit t=+4.62는 selection의 상방-꼬리 식별력 실증이나 포트 수익 전이 실패.",
+    "cost": "15bps one-way, ann_turnover 5.30(one-way)~10.61(proxy) — turnover cap 11.0 이내. 비용은 관문 아님.",
+    "residual": "β-통제 α +8.69%/yr(t 1.207, 비유의). 활성수익의 상당분이 β 노출(β 0.81)·섹터 기여로 귀속.",
+    "reading": "factor-driven(momentum·semiconductor) 성분 지배 + selection alpha 미증명 → 자본 기여 근거 없음. Attribution이 Grade F를 독립 지지."
+  },
+  "attempted_lockbox_extension": {
+    "applicable": false,
+    "note": "weights.csv schedule = 2010-03-02 ~ 2026-08-03(현재까지 도달·train cutoff에서 종료 안 함). Lockbox extension(frozen weights buy-and-hold OOS) 대상 아님 — OOS는 walk-forward by construction으로 전기간 실현됨. OOS_CHART_INCOMPLETE flag 미발행(strategy line 전기간 연속). oos_retention -0.855는 활성 Sharpe OOS/IS 비율로 이미 OOS 성과 반영."
+  },
+  "pit_max_names_check": {"max_names": 25, "constraint": 25, "result": "PASS", "note": "weights.csv 4975행/199 dates 전수 n<=25·Σw~1·max_w<=0.20·min_w>=0 검증(final_verify.txt)."},
+  "screen_route": "DISTRIBUTION_TARGET",
+  "screen_route_rationale": "성과 축 config-scoped negative이나 기전 축(F1 tail-hit paired t=+4.62·trim5 음성대조 -1.17·decile-mono +0.964 vs rank-IC -0.028) = 분포 공간(상방 꼬리 식별)에 신호 실재하나 소비면(top-N EW 평균)이 평균을 읽는 구조. measurement-graduation §3 DISTRIBUTION_TARGET 후보. ⚠발급 요건 3종(①평균공간 효과없음 양성대조 실증 ②분포축 vol·size 2축 직교화 생존 ③독립 창 2개 부호일치)은 본 WT 미완결 — full 발급이 아니라 후속 소비 라우팅 라벨로만 부기. 자본 tier 자격 무관(HARD 3종 전패).",
+  "next_probe": [
+    "① C2 expectile(τ=0.9) 표적 별도 사전등록 — 평균-기반 꼬리 통계량(elicitable, q90 분위보다 소비 정합 이론상 직접). alpha challenge_flag next_probe 승계.",
+    "② 소비 마디 교체: q90 예측을 top-N EW 이산 선별이 아니라 비중/사이징 또는 분위-표적 측정 계약(canonical_screen_bt 분위-표적 소비면, 현재 미구현)으로 소비. measurement-graduation Production Constraints '분포-표적 소비 계약 부재'가 현행 최우선 병목 — 계약 신설이 리서치 선행.",
+    "③ FQ-237 선별 통계량 축 재검(rank-IC→분위 평균 스프레드) — 본 라운드가 '순위 개선≠소비 개선' 실현-포트 사례 공급. 단 FQ-237(2026-08-22)이 선별 교체가 표적 통계량만 개선·PORT_t 악화 실측 = 벽이 결합·이산 top-N 소비 마디임을 확정 → NP1(청정창 MDE 선산) 또는 NP2(결합 규칙 폐형식 교체) 선행.",
+    "④ [judge 추가] no_signal_gate INDISTINGUISHABLE 원인 분해 — 성과가 반도체 57%·momentum z+2.57 노출에서 온다면, 분포-표적 신호의 순수 selection 기여를 섹터/스타일 중립화 후 재측정(단 종목수 25 제약 하 중립화 자유도 제한 인지)."
+  ],
+  "l_code_path": "stage_artifacts/l_code/judge_gate/l_code_WT-D20260813_001.json",
+  "l_code": "L-JG-20260822_220935",
+  "verification_triangulation_AX008": {
+    "forge": "PASS (forge_authoritative bt_result, audit metric_type=backtested, essence 독립 재실행 일치)",
+    "self_adversarial": "PASS (challenge_note_judge.md — JC-1~5, 실 위반 0, escalate 불요)",
+    "architect": "NA (인프라 진단 미발주 — 판정 명확·escalation 사유 없음)",
+    "quorum": "2/3 PASS (forge + self-adversarial) — AX-008 충족"
+  },
+  "escalate_qlead": false,
+  "escalate_rationale": "HIGH concern <5·AX hard FAIL <3·PIT C1 violation 없음. JUDGE_FAILED는 정상 게이트 결과이지 escalation 사유 아님.",
+  "constraints_honored": {
+    "gate_downward_relaxation_proposed": false,
+    "capital_eligibility_claimed": false,
+    "governor_spawned": false,
+    "upstream_packages_modified": false,
+    "AX000_corollary": "제약(HARD 3종·PIT·종목수)을 레버로 제시 안 함. 봉투-안 방법 프로브만 도출(INV-7)."
+  },
+  "generated_at": "2026-08-22T22:12:00+09:00"
+}
