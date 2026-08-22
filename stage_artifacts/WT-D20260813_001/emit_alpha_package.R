@@ -44,7 +44,7 @@ q90_ast <- list(
 
 escape_contract <- list(
   escape_type = "MODEL_SCORE",
-  train_window_end = "2026-07-31",
+  train_window_end = "2026-08-31",
   training_leaf_refs = c("V01_BM","Q07_GPA","M06_Mom_12_1","D01_IdioVol","C01_SUE","L02_Turnover",
                          "AC01_Total_Accruals_CF","V08_PSR",
                          "...+316종 (lane_a_feature_panel 324피처 전량, load_month_factors 경유·Z_Score_Aligned)"),
