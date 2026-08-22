@@ -1,0 +1,188 @@
+{
+  "benchmark_identity": {
+    "pipeline_bench_construction": "build_monthly_forward_returns: weighted.mean(Ret_1m, w=Size at d0) over K200 UNION KQ150 members = **유니버스 cap-w proxy**",
+    "canonical_label_in_code": "canonical_screen_bt 가 benchmark_returns_tbl$benchmark_id 를 'KOSPI200_total_return' 으로 **하드코딩** — 실제 계열과 불일치(라벨 오기). 본 보고는 실계열 기준으로 라벨을 정정해 쓴다.",
+    "k200_source": ".cache/benchmark.parquet BM_Close (config.R DEFAULT_BM_CODE=IKS200) 월말 레벨 비",
+    "n_months": 315,
+    "corr_pipeline_vs_k200": 0.994211,
+    "mean_diff_monthly": -0.00077,
+    "mean_diff_annual": -0.009239,
+    "identical_series": false,
+    "annual_long": {
+      "universe_capw_annual": 0.117471,
+      "k200_annual": 0.126711,
+      "gap_annual_universe_minus_k200": -0.009239,
+      "n": 315
+    },
+    "annual_clean": {
+      "universe_capw_annual": 0.16105,
+      "k200_annual": 0.191197,
+      "gap_annual_universe_minus_k200": -0.030147,
+      "n": 131
+    }
+  },
+  "dual_basis": {
+    "primary__long": {
+      "basis_A_universe_capw": {
+        "benchmark_label": "K200_UNION_KQ150_capweighted_universe_proxy (파이프라인 기본)",
+        "port_t": -0.318002,
+        "IR": -0.067699,
+        "active_sharpe_net_sr_field": -0.067699,
+        "alpha_ann": -0.006581,
+        "mean_active_net": -0.001272,
+        "n_months": 315
+      },
+      "basis_B_kospi200": {
+        "benchmark_label": "KOSPI200 (IKS200) 지수 월간수익",
+        "port_t": -0.469774,
+        "IR": -0.10172,
+        "active_sharpe_net_sr_field": -0.10172,
+        "alpha_ann": -0.003691,
+        "mean_active_net": -0.002042,
+        "n_months": 315
+      },
+      "basis_free_own": {
+        "own_cagr": 0.0546,
+        "own_vol": 0.3145,
+        "own_sharpe": 0.1735,
+        "max_dd": 0.632836,
+        "basis_free": true,
+        "source": "PerformanceAnalytics::table.AnnualizedReturns / maxDrawdown (표준함수)"
+      },
+      "turnover_annual": 9.814857,
+      "note": "★canonical_screen_bt 의 net_sr 필드는 **active(초과) Sharpe = IR** 이지 전략 자체 Sharpe 가 아니다. screening 게이트의 SR 은 basis_free_own$own_sharpe 로 판정한다."
+    },
+    "primary__clean": {
+      "basis_A_universe_capw": {
+        "benchmark_label": "K200_UNION_KQ150_capweighted_universe_proxy (파이프라인 기본)",
+        "port_t": -2.185049,
+        "IR": -0.70577,
+        "active_sharpe_net_sr_field": -0.70577,
+        "alpha_ann": -0.116543,
+        "mean_active_net": -0.013232,
+        "n_months": 131
+      },
+      "basis_B_kospi200": {
+        "benchmark_label": "KOSPI200 (IKS200) 지수 월간수익",
+        "port_t": -2.254374,
+        "IR": -0.747911,
+        "active_sharpe_net_sr_field": -0.747911,
+        "alpha_ann": -0.114432,
+        "mean_active_net": -0.015744,
+        "n_months": 131
+      },
+      "basis_free_own": {
+        "own_cagr": -0.0355,
+        "own_vol": 0.2811,
+        "own_sharpe": -0.1263,
+        "max_dd": 0.632836,
+        "basis_free": true,
+        "source": "PerformanceAnalytics::table.AnnualizedReturns / maxDrawdown (표준함수)"
+      },
+      "turnover_annual": 9.845496,
+      "note": "★canonical_screen_bt 의 net_sr 필드는 **active(초과) Sharpe = IR** 이지 전략 자체 Sharpe 가 아니다. screening 게이트의 SR 은 basis_free_own$own_sharpe 로 판정한다."
+    },
+    "reverse_POSTHOC__long": {
+      "basis_A_universe_capw": {
+        "benchmark_label": "K200_UNION_KQ150_capweighted_universe_proxy (파이프라인 기본)",
+        "port_t": -0.130677,
+        "IR": -0.02794,
+        "active_sharpe_net_sr_field": -0.02794,
+        "alpha_ann": 0.022873,
+        "mean_active_net": -0.000276,
+        "n_months": 315
+      },
+      "basis_B_kospi200": {
+        "benchmark_label": "KOSPI200 (IKS200) 지수 월간수익",
+        "port_t": -0.41335,
+        "IR": -0.093067,
+        "active_sharpe_net_sr_field": -0.093067,
+        "alpha_ann": 0.022554,
+        "mean_active_net": -0.001046,
+        "n_months": 315
+      },
+      "basis_free_own": {
+        "own_cagr": 0.0957,
+        "own_vol": 0.2129,
+        "own_sharpe": 0.4493,
+        "max_dd": 0.472268,
+        "basis_free": true,
+        "source": "PerformanceAnalytics::table.AnnualizedReturns / maxDrawdown (표준함수)"
+      },
+      "turnover_annual": 10.049524,
+      "note": "★canonical_screen_bt 의 net_sr 필드는 **active(초과) Sharpe = IR** 이지 전략 자체 Sharpe 가 아니다. screening 게이트의 SR 은 basis_free_own$own_sharpe 로 판정한다."
+    },
+    "reverse_POSTHOC__clean": {
+      "basis_A_universe_capw": {
+        "benchmark_label": "K200_UNION_KQ150_capweighted_universe_proxy (파이프라인 기본)",
+        "port_t": -1.788662,
+        "IR": -0.596761,
+        "active_sharpe_net_sr_field": -0.596761,
+        "alpha_ann": -0.028531,
+        "mean_active_net": -0.007272,
+        "n_months": 131
+      },
+      "basis_B_kospi200": {
+        "benchmark_label": "KOSPI200 (IKS200) 지수 월간수익",
+        "port_t": -1.933153,
+        "IR": -0.684062,
+        "active_sharpe_net_sr_field": -0.684062,
+        "alpha_ann": -0.033039,
+        "mean_active_net": -0.009784,
+        "n_months": 131
+      },
+      "basis_free_own": {
+        "own_cagr": 0.0568,
+        "own_vol": 0.1938,
+        "own_sharpe": 0.2929,
+        "max_dd": 0.343402,
+        "basis_free": true,
+        "source": "PerformanceAnalytics::table.AnnualizedReturns / maxDrawdown (표준함수)"
+      },
+      "turnover_annual": 11.465038,
+      "note": "★canonical_screen_bt 의 net_sr 필드는 **active(초과) Sharpe = IR** 이지 전략 자체 Sharpe 가 아니다. screening 게이트의 SR 은 basis_free_own$own_sharpe 로 판정한다."
+    }
+  },
+  "screen_gate_dual": {
+    "primary__long": {
+      "own_sharpe": 0.1735,
+      "own_cagr": 0.0546,
+      "own_mdd": 0.632836,
+      "branch1_sr07_cagr12": false,
+      "port_t_universe_capw": -0.318002,
+      "port_t_kospi200": -0.469774,
+      "bases_disagree_on_sign": false,
+      "note": "branch1 = [own SR>=0.7 AND own CAGR>=12%] (basis-free). branch2(score>=40)는 hurdle_gate 18-component 소관 — 본 단계 미산출."
+    },
+    "primary__clean": {
+      "own_sharpe": -0.1263,
+      "own_cagr": -0.0355,
+      "own_mdd": 0.632836,
+      "branch1_sr07_cagr12": false,
+      "port_t_universe_capw": -2.185049,
+      "port_t_kospi200": -2.254374,
+      "bases_disagree_on_sign": false,
+      "note": "branch1 = [own SR>=0.7 AND own CAGR>=12%] (basis-free). branch2(score>=40)는 hurdle_gate 18-component 소관 — 본 단계 미산출."
+    },
+    "reverse_POSTHOC__long": {
+      "own_sharpe": 0.4493,
+      "own_cagr": 0.0957,
+      "own_mdd": 0.472268,
+      "branch1_sr07_cagr12": false,
+      "port_t_universe_capw": -0.130677,
+      "port_t_kospi200": -0.41335,
+      "bases_disagree_on_sign": false,
+      "note": "branch1 = [own SR>=0.7 AND own CAGR>=12%] (basis-free). branch2(score>=40)는 hurdle_gate 18-component 소관 — 본 단계 미산출."
+    },
+    "reverse_POSTHOC__clean": {
+      "own_sharpe": 0.2929,
+      "own_cagr": 0.0568,
+      "own_mdd": 0.343402,
+      "branch1_sr07_cagr12": false,
+      "port_t_universe_capw": -1.788662,
+      "port_t_kospi200": -1.933153,
+      "bases_disagree_on_sign": false,
+      "note": "branch1 = [own SR>=0.7 AND own CAGR>=12%] (basis-free). branch2(score>=40)는 hurdle_gate 18-component 소관 — 본 단계 미산출."
+    }
+  }
+}
