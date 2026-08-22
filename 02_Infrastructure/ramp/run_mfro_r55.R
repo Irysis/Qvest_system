@@ -55,8 +55,8 @@ run_arm<-function(arm,k=5L,bps=15,dec_lag=1L){
     if(arm %in% c("B","A","P") && !length(wk)) wk<-FK          # 승자 없으면 전체(폴백 사전고정)
     base_s<-zmean(D,FK)
     if(arm=="C1"){                                            # 무신호: 시총 상위 25 · 시총가중
-      o<-order(-D$Size); idx<-o[seq_len(N_TARGET)]
-      w<-D$Size[idx]/sum(D$Size[idx]); w<-.norm(w)
+      o<-order(-D$mktcap); idx<-o[seq_len(N_TARGET)]
+      w<-D$mktcap[idx]/sum(D$mktcap[idx]); w<-.norm(w)
     } else if(arm=="C0"){
       o<-order(-base_s); idx<-o[seq_len(N_TARGET)]; w<-.tilt(base_s[idx])
     } else if(arm=="B"){                                      # ★순수 오버레이: C0 와 동일 25종, 비중만 재틸트
