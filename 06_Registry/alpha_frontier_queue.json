@@ -2044,7 +2044,7 @@
       "wall_check": "PIT C5 오버레이 타이밍. OVERLAY_CANDIDATE 라우팅 — standalone 자본 graduation 불가. BearProb overlay 현 측정과의 cap-w 충돌 주의(FQ-091 연동).",
       "data_gate": "없음 — BearProb 기존 인프라 + 가격 데이터",
       "owner": "Q-Lead (AUTORUN 20260802 next_probe)",
-      "status": "dohoon_confirm_required",
+      "status": "cell_split_confirmed__gate0_required_before_launch",
       "gate_block": "★2026-08-02 3단 게이트 차단 — research_ev_map.json D2 '시장타이밍/오버레이 초월(M4xR05 대비)' 직격. D2 = overlay_regime x overlay 10건 전부 F + momentum overlay proxy 2건 F, 특히 'BearProb 다층곱셈 = 동월 look-ahead 아티팩트 FALSIFIED', era='n/a(구조 판정)'. AUTORUN next_probe 자동등재가 EV-지도 교차확인을 거치지 않아 큐(frontier_open)와 지도(dead)가 반대로 답한 사례. alpha-search SKILL 3단 게이트상 도훈 confirm 없이 착수 금지.",
       "next_action": "★착수 전 도훈 confirm 필요. 차별점 논거: 'M4xR05 초월 오버레이'(D2가 죽인 질문)와 '신호 1건의 MDD 구제'(FQ-095의 실제 질문)가 같은 셀인지 판정 — 다르면 EV-지도에 셀 분할 등재, 같으면 dead 재라벨. confirm 시: 기존 BearProb overlay A/B 프레임(overlay_pit_guard 경유) 재사용 + lag1 스트레스 + strict-PIT A/B 필수(C5 — BearProb는 동월 look-ahead 전과가 있어 이 3종이 통과 못하면 그 자리에서 기각).",
       "source_refs": [
@@ -2052,7 +2052,8 @@
         "signal_strength: FMB Score t=2.50* (analysis_fmb_summary.csv, STR_AS_20260802_072220_10368)",
         "related: FQ-091 저주파 spectral mass × 국면 overlay (공통 테마)",
         "arxiv: 2607.19497 (Science and Practice of Trend-Following)"
-      ]
+      ],
+      "qlead_cell_adjudication_20260822": "[Q-Lead 판정 — session d2e06481, 2026-08-22. next_action 이 요구한 '같은 셀인지' 판정을 수행한다. **답 = 셀은 다르나 착수 자격 미달.**]\n★**(1) 셀은 다르다 — 게이트가 다르기 때문**: D2 가 죽인 질문은 '오버레이가 **현행 M4xR05 를 초월하는가**'(게이트 = book-marginal / incumbent 대비 SR)이고, FQ-095 의 질문은 '오버레이가 **standalone 신호 1건의 MDD 를 screen-tier 진입 가능한 수준으로 구제하는가**'(게이트 = 그 신호 자신의 MDD·screen_route)다. 전자는 book 층, 후자는 모듈 층이며 **같은 처치가 다른 게이트에 대해 평가된다**. 2026-08-22 확립 규율: 축을 닫을 땐 **어느 게이트에 대해 닫는지 명시**해야 하고, D2 는 book 게이트에 대해 닫혔다 ⇒ 모듈 게이트를 자동으로 닫지 않는다. **dead 재라벨은 부당하다.**\n★★**(2) 그런데 도구 자체에 실측 전과가 있다 — 이것이 결정적**: FQ-095 의 레버는 BearProb 오버레이인데, `.claude/rules/pit.md` 의 C5 조항(오버레이 신호 타이밍)이 **BearProb 오버레이의 동월 look-ahead 실사고로 신설된 조항**이다. 정정 후 실측 = **Calmar 2.50 -> 1.83 · SR 2.10 -> 1.84 로 개선 전량 소멸**. 그리고 D2 증거에도 'BearProb 다층곱셈 = 동월 look-ahead 아티팩트 FALSIFIED'(era='n/a(구조 판정)')가 들어 있다. ⇒ **FQ-095 가 기대하는 MDD 레버의 크기가, PIT 정정 후 실측에서 대부분 사라진 양이다.** (정직 표기: 그 실측은 **특정 구성**에서의 소멸이지 모든 BearProb 구성에 대한 증명이 아니다 — 강한 사전 확률이지 구조 판결이 아니다.)\n⇒ ★**처분 = 셀 분할 등재하되 Gate 0(착수 크기산술) 선행**. 도훈 confirm 이 아니라 **계산으로 답할 문제**로 전환한다:\n  · 분자 = **PIT-clean BearProb** 이 실제로 내는 MDD 개선폭(정정 후 실측 기준. 구 정정 전 수치 인용 금지)\n  · 분모 = MDD 55.4% -> screen-tier 진입에 필요한 개선폭 + 그 창의 MDE80\n  · ratio < 0.15 이면 **측정 없이 중단**(검정력 <5%). 0.15~0.70 이면 '미결이 최빈' 명시 + 미결 시 남길 것 기재. 규약 = `.claude/rules/measurement-graduation.md` '착수 크기산술 관문' 절.\n★**착수 순서 정정**: 현행 next_action 은 lag1 스트레스·strict-PIT A/B 를 **라운드 내부 검사**로 두는데, 그러면 도구가 불청정할 때 라운드 하나를 소비한다. 이 3종은 **선행 관문**으로 올려야 한다 — 그리고 그 검사는 FQ-095 와 무관하게 독립적 가치가 있다(현행 book 이 오버레이를 쓰므로 BearProb 계열의 PIT 상태는 그 자체가 측정 신뢰 항목).\n★불변: FMB Score t=2.50* 의 횡단면 신호력 실측은 이 판정과 무관하게 유효하다. 죽은 것은 신호가 아니라 **이 구제 경로의 착수 자격**이다."
     },
     {
       "id": "FQ-096",
