@@ -1729,19 +1729,22 @@
     "STR_AS_20260822_112737_19220": {
       "strategy_id": "STR_AS_20260822_112737_19220",
       "grade": "F",
-      "role": null,
+      "role": {},
       "origin_mode": "alpha_search",
       "sim_result_path": "stage_artifacts/module_quarantine/STR_AS_20260822_112737_19220/sim_result.rds",
       "n_days": 4756,
-      "date_range": ["2007-05-04", "2026-08-21"],
+      "date_range": [
+        "2007-05-04",
+        "2026-08-21"
+      ],
       "registered_at": "2026-08-22T11:37:11+09:00",
       "metric_type": "proxy",
       "fr_eligible": false,
       "frozen": false,
-      "source_contract_id": null,
+      "source_contract_id": {},
       "module_hash": "eebceb00701a6d00b25f8ef2c344f10d",
-      "build_version": null,
-      "cost_model_version": null,
+      "build_version": {},
+      "cost_model_version": {},
       "bt_result_path": "stage_artifacts/alpha_search/20260822_112737_19220/bt_result.rds",
       "contract": {
         "policy": "v8.1_fr_input_floor",
@@ -1751,15 +1754,56 @@
       "meta": {
         "strategy_idea": "무국면 팩터 모멘텀(A5E)의 종목 전파: broad-21 팩터 중 trailing 12M active>0 인 팩터에 크기비례 가중(3-코호트 중첩 앙상블, 분기 홀딩) -> Score_i = sum_f w_f x Z_f,i -> top-25 EW. 감사 사양 8-7b(뷰->롱온리 종목 틸트 번역) 실측. 지수배분 A5E 실측 pt 2.894/oos 0.706/calmar 0.284 대비 종목 레벨 MDD 구조 차이가 calmar 게이트를 여는지가 1급 질문. 대조군 = DFA 국면판 종목 변환(Grade F 22.8)",
         "score": 24.9,
-        "f_grade_reasons": ["게이트 사유: Structural drawdown (45%+ episodes>=15): MDD 59.8%, 45%+ episodes=20/15, max_underwater=33/252", "FMT-01 Structural MDD: MDD 59.8% > 45% — 선택 종목군의 위기 동반급락(구조적 꼬리위험)", "FMT-03 Ensemble Dilution: 앙상블/블렌드 구성 + grade F — 결합 시 강점 희석 의심 (키워드 기반 heuristic)", "FMT-04 Regime Blindness: MDD 59.8% > 35% & BM상관 0.70 >= 0.7 — 위기국면 동조 낙폭(국면필터 부재)"],
-        "fmt_codes": ["FMT-01", "FMT-03", "FMT-04", "FMT-07"],
+        "f_grade_reasons": [
+          "게이트 사유: Structural drawdown (45%+ episodes>=15): MDD 59.8%, 45%+ episodes=20/15, max_underwater=33/252",
+          "FMT-01 Structural MDD: MDD 59.8% > 45% — 선택 종목군의 위기 동반급락(구조적 꼬리위험)",
+          "FMT-03 Ensemble Dilution: 앙상블/블렌드 구성 + grade F — 결합 시 강점 희석 의심 (키워드 기반 heuristic)",
+          "FMT-04 Regime Blindness: MDD 59.8% > 35% & BM상관 0.70 >= 0.7 — 위기국면 동조 낙폭(국면필터 부재)"
+        ],
+        "fmt_codes": [
+          "FMT-01",
+          "FMT-03",
+          "FMT-04",
+          "FMT-07"
+        ],
         "bt_result_path": "stage_artifacts/alpha_search/20260822_112737_19220/bt_result.rds",
+        "bt_contract_status": "OK"
+      }
+    },
+    "STR_AS_20260822_143237_8580": {
+      "strategy_id": "STR_AS_20260822_143237_8580",
+      "grade": "F",
+      "role": null,
+      "origin_mode": "alpha_search",
+      "sim_result_path": "stage_artifacts/module_quarantine/STR_AS_20260822_143237_8580/sim_result.rds",
+      "n_days": 5314,
+      "date_range": ["2005-02-03", "2026-08-21"],
+      "registered_at": "2026-08-22T14:38:49+09:00",
+      "metric_type": "proxy",
+      "fr_eligible": false,
+      "frozen": false,
+      "source_contract_id": null,
+      "module_hash": "042c21032079ab62b3529b2ae48dc83b",
+      "build_version": null,
+      "cost_model_version": null,
+      "bt_result_path": "stage_artifacts/alpha_search/20260822_143237_8580/bt_result.rds",
+      "contract": {
+        "policy": "v8.1_fr_input_floor",
+        "contract_pass": false,
+        "eligibility_reason": "metric_type != backtested; contract_pass != TRUE; frozen != TRUE; source_contract_id missing; build_version missing; cost_model_version missing"
+      },
+      "meta": {
+        "strategy_idea": "arXiv 2608.12283 macro-beta momentum KR: rolling 60d OLS beta(Term_Spread/VIX/KRW_USD) x 20d macro change 합산. Python pre-computed .cache/macro_beta_scores.parquet 경유(260 month-ends). MA01-MA07 DB 정적 sensitivity 와 달리 동적(beta x delta_20d) 신호.",
+        "score": 3,
+        "f_grade_reasons": ["게이트 사유: Structural drawdown (MDD>=70%, 45%+ episodes>=15, 55%+ episodes>=6, 45%+ days>=25%, max_underwater>=252d): MDD 70.2%, 45%+ episodes=18/15, max_underwater=997/252", "FMT-01 Structural MDD: MDD 70.2% > 45% — 선택 종목군의 위기 동반급락(구조적 꼬리위험)", "FMT-02 Factor Degeneration: IR -0.37 < -0.1 & 초과CAGR -7.6%p < 0 — KR에서 팩터 방향 역작동 의심", "알파 부재: 정보비율 -0.37로 벤치 대비 기여가 음수/미약", "초과수익 부족: 벤치 대비 -7.6%p"],
+        "fmt_codes": ["FMT-01", "FMT-02"],
+        "bt_result_path": "stage_artifacts/alpha_search/20260822_143237_8580/bt_result.rds",
         "bt_contract_status": "OK"
       }
     }
   },
-  "last_updated": "2026-08-22T11:37:11+09:00",
-  "n_modules": 44,
+  "last_updated": "2026-08-22T14:38:49+09:00",
+  "n_modules": 45,
   "superseded": {
     "STR_AS_20260613_094148_265194": {
       "strategy_id": "STR_AS_20260613_094148_265194",

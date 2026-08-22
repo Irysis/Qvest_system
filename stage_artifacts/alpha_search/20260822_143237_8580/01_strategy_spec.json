@@ -1,0 +1,21 @@
+{
+  "run_id": "ASBT_20260822_143237_8580",
+  "strategy_id": "STR_AS_20260822_143237_8580",
+  "strategy_name": "MacroBetaMom_v3_precomputed",
+  "strategy_family": "alpha_search",
+  "signal_description": "arXiv 2608.12283 macro-beta momentum KR: rolling 60d OLS beta(Term_Spread/VIX/KRW_USD) x 20d macro change 합산. Python pre-computed .cache/macro_beta_scores.parquet 경유(260 month-ends). MA01-MA07 DB 정적 sensitivity 와 달리 동적(beta x delta_20d) 신호.",
+  "universe_rule": "K200_KQ150 + 20d avg trading value >= 2e8 KRW (t-1 PIT)",
+  "rebalance_frequency": "monthly",
+  "signal_date_rule": "month_end_signal",
+  "execution_date_rule": "t_plus_1_first_trading_day",
+  "weighting_method": "equal",
+  "max_position_weight": 0.2,
+  "max_leverage": 1,
+  "cash_rule": "fully_invested_after_floor_shares",
+  "cost_model": "v2.4_delta_15bps",
+  "missing_data_rule": "exclude_na_scores",
+  "risk_controls": "buffer_zone(keep_n=50, entry_n=25)",
+  "lookahead_prevention": "detect_lookahead static scan CLEAN (PIT C1-C15)",
+  "survivorship_bias_control": "RAWDATA PIT membership / time-varying universe filters",
+  "factor_engine_path": "stage_artifacts/paper_recharge/macro_beta_mom_engine_v3.R"
+}
