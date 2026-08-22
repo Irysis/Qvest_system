@@ -12,7 +12,7 @@ cat("[fwd] load RAWDATA daily\n")
 RAW <- as.data.table(read_parquet(file.path(ROOT, ".cache/RAWDATA.parquet"),
         col_select = c("Date","Ticker","K200","KQ150","Close","Vol","Size")))
 RAW[, Date := as.Date(Date)]
-RAW <- RAW[Date >= as.Date("2004-08-01")]
+RAW <- RAW[Date >= as.Date("2000-01-01")]
 RAW[, K200 := !is.na(K200) & K200 > 0]
 RAW[, KQ150 := !is.na(KQ150) & KQ150 > 0]
 RAW <- RAW[K200 | KQ150]
