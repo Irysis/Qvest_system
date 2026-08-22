@@ -1,0 +1,201 @@
+{
+  "wt_id": "WT-D20260822_003",
+  "fq_ref": "FQ-234 NP2 — DISTRIBUTION_TARGET 라우트 첫 소비",
+  "validated_at": "2026-08-22",
+  "spec_id": "FQ234_absorb_w3_corr",
+  "round_type": "re-adjudication (재판정) — 신규 알파 설계 아님",
+
+  "metric_type_all": "distribution_screen",
+  "capital_eligible": false,
+  "authority_note": "본 파일의 어떤 수치도 forge-authoritative 가 아니며 자본 tier 수치가 **아예 산출되지 않았다**. PORT_t / oos_retention / calmar / SR / IR / MDD 를 대체·근사하는 주장 없음 (.claude/rules/measurement-graduation.md §1·§3). 계약 `dt_assert_no_capital_fields()` 를 산출·게이트·요약·적대검증 4지점에서 통과.",
+
+  "prereg": {
+    "spec": "stage_artifacts/WT-D20260822_003/PREREG_NP2.json",
+    "transform_decision": "stage_artifacts/WT-D20260822_003/PREREG_NP2_transform_decision.json",
+    "order_evidence": "PREREG_NP2.json 은 canonical_distribution_screen() 최초 호출 전에 고정. 변환 결정은 결과량(forward return) 미사용 진단으로만 산출한 뒤 봉인.",
+    "blindness_claim": "NONE — 본 사전등록은 블라인드가 아니다. 사유·관측 내역은 PREREG_NP2 §contamination_disclosure 및 challenge_note C5 참조."
+  },
+
+  "material": {
+    "scores": "stage_artifacts/WT-D20260813_006/alpha_scores.parquet (86,297행 / 315개월 / 2000-03-31~2026-05-29)",
+    "score_column": "absorb_raw (Q5 = 높은 absorb)",
+    "controls": "win_vol, log_size (동일 파일)",
+    "returns": "stage_artifacts/WT-D20260813_006/fwd.rds :: returns_dt",
+    "na_census": {"absorb_raw": 0, "win_vol": 0, "log_size": 0},
+    "liquidity": {"liq_min": 200000000, "n_dropped": 0, "note": "패널이 이미 유동성 제한 상태 — 계약 필터가 0행을 떨궜다. Lane B 기록과 직접 대조 가능."},
+    "duplication_avoided": "본 WT 로 alpha_scores.parquet 를 **복제하지 않았다**. 동일 바이트 패널을 새 WT id 로 재발행하면 이명 복제(2026-08-20 batch_434 계통)를 재생산한다. 포인터 = stage_artifacts/WT-D20260822_003/alpha_scores_ref.json"
+  },
+
+  "window_design": {
+    "split_point": "2015-12-01",
+    "primary_windows": {"early": ["2000-01-01", "2015-12-01"], "late": ["2015-12-01", "2026-06-01"]},
+    "n_months": {"early": 189, "late": 126},
+    "disjoint": true,
+    "rationale": "승계 규약 1 — KQ150 은 2015-11 이전 편입만 기록하고 퇴출을 기록하지 않는다(universe_exit_unrecorded_pre201512). 유니버스 구성 규칙이 바뀌는 지점에서 잘라 각 창을 구성 방식 내부 동질로 만든다. 편향 방향은 하방/중립이므로 early 창을 상방 오염으로 서술하지 않는다.",
+    "why_not_3_windows_for_gate": "계약 R3 의 sign_agreement 는 쌍 단위 OR 집계 — 3창이면 3쌍 중 1쌍만 맞아도 일치로 계상된다. 판정창을 2창으로 고정하면 쌍이 정확히 1개."
+  },
+
+  "control_transform": {
+    "primary": "rank",
+    "companion": "raw",
+    "decision_rule": "월별 횡단면 |Spearman| 중앙값 >= |Pearson| 중앙값 × 1.10 인 통제축이 하나라도 있으면 rank",
+    "measured": {
+      "win_vol": {"median_abs_pearson": 0.259835, "median_abs_spearman": 0.160458, "ratio": 0.617537, "triggered": false},
+      "log_size": {"median_abs_pearson": 0.500473, "median_abs_spearman": 0.571694, "ratio": 1.142309, "triggered": true}
+    },
+    "aux_explained_variance": {"median_r2_linear_controls": 0.280539, "median_r2_rank_controls": 0.276030},
+    "self_correction": "★사전등록이 적은 정당화('rank 가 항상 더 강한 통제')는 위 실측에 반증됐다 — win_vol 은 Pearson 이 1.62배 크고 선형 통제의 R² 가 근소하게 높다. 두 통제축의 변환 선호가 반대다. 규칙 자체는 log_size 축에서 정상 발화했으나 **일률적 우열 주장은 철회**한다(challenge_note C1)."
+  },
+
+  "route_gate": {
+    "gate": "dt_route_eligible(R1_PRIMARY, mean_space_evidence)",
+    "eligible": true,
+    "route": "DISTRIBUTION_TARGET",
+    "requirement_1_mean_space_powered_null": {
+      "pass": true,
+      "label": "NEGATIVE_POWERED",
+      "positive_control_statistic": 1.674,
+      "null_band": [-1.019, 0.486],
+      "observed_statistic": -0.318,
+      "detected_declared_equals_measured": true,
+      "design": "semi-oracle PC1 (realized rank-IC 0.0413) vs AR(1)-matched placebo (rho 0.8315, 200 draw)",
+      "source": "Lane B alpha_validation.json 승계 — 재산출 없음",
+      "ceiling_disclosure": "같은 양성 대조가 창-도달가능성 상한을 드러낸다: IC 0.04 급 진짜 평균 신호가 이 창에서 1.674 에 그친다 ⇒ 2.95 는 원리적으로 도달 불가. 평균 '효과없음' 라벨은 효과 **검출** 축에만 붙고, 자본 등급 축은 '미결(INCONCLUSIVE_UNDERPOWERED)' 이다. 두 라벨을 섞지 않는다."
+    },
+    "requirement_2_orthogonal_survival": {
+      "pass": true,
+      "verdict": "SURVIVES",
+      "control_cols": ["win_vol", "log_size"],
+      "control_axes_n": 2,
+      "t_min_survive": 2.0,
+      "survived_axes_any_window": ["median_spread", "skew_spread", "skew_slope", "tail_up_prob_diff", "tail_dn_prob_diff", "qspread_p10"],
+      "survived_axes_all_windows": ["skew_spread", "skew_slope", "tail_dn_prob_diff", "qspread_p10"]
+    },
+    "requirement_3_two_window_sign_agree": {
+      "pass": true,
+      "window_verdict": "DISJOINT_PAIR_PRESENT",
+      "sign_verdict": "AGREES",
+      "axes_surviving_and_agreeing": ["median_spread", "skew_spread", "skew_slope", "tail_up_prob_diff", "tail_dn_prob_diff", "qspread_p10"]
+    }
+  },
+
+  "R1_primary_binding_orth_nw_t": {
+    "transform": "rank", "tail_threshold": "fixed +-0.20",
+    "early_189m": {"median_spread": 2.867, "mean_spread": 0.788, "skew_spread": -2.622, "skew_slope": -2.681, "tail_up_prob_diff": -2.262, "tail_dn_prob_diff": -4.323, "qspread_p10": 3.526, "qspread_p90": -1.391},
+    "late_126m": {"median_spread": 1.906, "mean_spread": 0.491, "skew_spread": -3.277, "skew_slope": -2.192, "tail_up_prob_diff": -0.830, "tail_dn_prob_diff": -3.100, "qspread_p10": 2.663, "qspread_p90": -0.045}
+  },
+  "R1_primary_binding_raw_nw_t": {
+    "early_189m": {"median_spread": 2.354, "mean_spread": -0.572, "skew_spread": -5.143, "skew_slope": -5.317, "tail_up_prob_diff": -5.168, "tail_dn_prob_diff": -8.165, "qspread_p10": 6.625, "qspread_p90": -4.151},
+    "late_126m": {"median_spread": 4.424, "mean_spread": 0.613, "skew_spread": -5.174, "skew_slope": -5.314, "tail_up_prob_diff": -4.605, "tail_dn_prob_diff": -5.331, "qspread_p10": 5.942, "qspread_p90": -3.056},
+    "note": "직교화 전 값. 판정 근거 아님 — 요건②는 직교화 후 값으로만 판정한다."
+  },
+
+  "strength_grading": {
+    "purpose": "★생존 축 목록은 통제 사양에 종속된다. 사양 없이 '6개 축 생존' 을 인용하면 과대평가다.",
+    "rows": [
+      {"spec": "R1 PRIMARY (bind) — rank 2축, 고정문턱", "survived_all_windows": ["skew_spread", "skew_slope", "tail_dn_prob_diff", "qspread_p10"], "n_all": 4, "binding": true},
+      {"spec": "R2 COMPANION — raw 2축, 고정문턱", "survived_all_windows": [], "n_all": 0, "binding": false, "note": "any-window 5축이나 두 창 동시 생존 0 — Lane B 재현 규약이 가장 약하다"},
+      {"spec": "A3 ADVERSARIAL — rank 4축(+과거12M 왜도·변동성)", "survived_all_windows": ["median_spread", "skew_spread", "skew_slope", "tail_dn_prob_diff", "qspread_p10"], "n_all": 5, "binding": false, "note": "통제를 늘렸는데 강해진다 — MAX/복권수요 재포장 가설과 부호 불일치"},
+      {"spec": "A1 ADVERSARIAL — raw+rank 동시 4축 (최강 통제)", "survived_all_windows": ["tail_dn_prob_diff"], "n_all": 1, "binding": false, "note": "★후반 창 붕괴(median 1.24 / skew_spread -0.39 / skew_slope 0.02 / qspread_p10 0.84). 게이트는 못 바꾸나 해석 강도는 낮춘다"},
+      {"spec": "R4 STRESS — rank 2축, rolling 문턱(36m/p90/skip1)", "survived_all_windows": ["skew_spread", "skew_slope", "qspread_p10"], "n_all": 3, "binding": false, "note": "꼬리확률 축이 문턱 규약에 종속(tail_dn late -1.875)"}
+    ],
+    "invariant_core": {
+      "axis": "tail_dn_prob_diff",
+      "claim": "측정한 **모든** 창 x 통제사양 조합에서 부호가 음수로 일치. |NW-t| 범위 1.72~4.42.",
+      "cells_counted": 18,
+      "cell_definition": "R1(2) + R2(2) + A1(2) + A3(2) + R4(2) + A4(2) + 3창진단 rank(3) + 3창진단 raw(3)",
+      "caveat": "부호 일치는 18/18 이나 |t| >= 2.0 은 사양에 따라 후반 창에서 미달(R2 -1.877 / R4 -1.875). '부호 불변' 과 '문턱 통과 불변' 은 다른 주장이다."
+    },
+    "second_core": {
+      "axis": "qspread_p10",
+      "claim": "3창 진단 전 시대(+2.86 / +2.10 / +2.66)와 R1·A3·R4 에서 두 창 생존. 문턱 규약 무관(분위 기반).",
+      "fails_in": "A1(late 0.84) · R2(late -0.195, 부호도 반전)"
+    }
+  },
+
+  "era_heterogeneity_3way_diag": {
+    "binding": false,
+    "windows": {"w1_k200_only": "2000-01~2010-01 (119m)", "w2_kq150_backfilled": "2010-02~2015-11 (70m)", "w3_kq150_recorded": "2015-12~2026-05 (126m)"},
+    "orth_nw_t_rank": {
+      "median_spread": [2.594, 1.310, 1.906],
+      "skew_spread": [0.480, -5.172, -3.277],
+      "skew_slope": [0.961, -5.281, -2.192],
+      "tail_up_prob_diff": [-0.845, -2.896, -0.830],
+      "tail_dn_prob_diff": [-3.860, -2.080, -3.100],
+      "qspread_p10": [2.861, 2.101, 2.663],
+      "qspread_p90": [-0.248, -2.112, -0.045]
+    },
+    "finding": "★왜도 축(skew_spread/skew_slope)은 2000~2010 에 **존재하지 않는다**(부호도 반대). 2창 pooled early 의 -2.62/-2.68 은 70개월짜리 w2 가 끌고 있고 w2 는 편입-only 기록 구간이다. 좌측 축(tail_dn_prob_diff / qspread_p10)만 세 시대 전부에서 같은 부호로 생존.",
+    "consequence": "왜도 축은 '2010년 이후 국한' 으로 라벨한다. 결론의 주축은 좌측 꼬리 축."
+  },
+
+  "lane_b_record_correction": {
+    "lane_b_statement": "alpha_validation.json(WT-D20260813_006) control_battery.vol_proxy_control.verdict = 'PARTIAL — 중앙값·왜도 축 생존 / **꼬리확률 축 소멸(vol 대리)**' (근거로 제시된 실측은 uptail_prob_diff orth_long -0.917 단 하나)",
+    "correction_1_overgeneralization": {
+      "verdict": "CORRECT_REQUIRED",
+      "finding": "그 판정은 **상방** 꼬리 하나로 '꼬리확률 축' 전체를 말했다. **하방** 꼬리 축(tail_dn_prob_diff)은 그 검사에서 측정되지 않았고, 본 라운드에서 18/18 셀 부호 일치 · 최강 통제(A1)에서 두 창 생존하는 **유일한 축**이다.",
+      "action": "'꼬리확률 축 소멸' 을 '상방 꼬리확률 축 미확립' 으로 좁혀야 한다."
+    },
+    "correction_2_uptail_itself": {
+      "verdict": "LANE_B_VERDICT_STANDS_MECHANISM_REFINED",
+      "finding": "상방 꼬리 축은 살아나지 **않는다**. rank 통제에서 early -2.262 로 문턱을 넘지만 late 는 -0.830 이며, A1 -0.42/-1.29 · A3 -1.54/-0.25 · R4 -1.59/+0.39 로 어떤 사양에서도 두 창 동시 생존이 없다. 사전등록 정정 기준('정본 변환에서 |t|>=2.0 이고 두 창 부호 일치')을 **미충족** ⇒ 라벨은 '정정' 이 아니라 **창 종속**.",
+      "mechanism_refinement": "다만 'vol 대리라서 죽었다' 는 기전 귀속은 부분적으로만 맞다 — 선형(raw) 통제 -1.419 vs 순위(rank) 통제 -2.262 로 **통제 변환이 값을 1.6배 움직인다**. 죽은 원인의 일부는 vol 이 아니라 **직교화 사양**이다."
+    },
+    "correction_3_untested_axis": {
+      "verdict": "NEW_AXIS_NOT_IN_LANE_B",
+      "finding": "qspread_p10(하위 10% 분위 스프레드)은 Lane B 의 통제 배터리에 없던 축이다. rank 통제 두 창 생존(3.526 / 2.663) + 3시대 전부 생존 + 문턱 규약 무관."
+    },
+    "summary": "Lane B 기록은 **부분 정정 대상**이다 — 범주적 일반화(‘꼬리확률 축’)는 틀렸고, 상방 꼬리에 대한 결론 자체는 유지되며, 하방 축은 애초에 측정되지 않았다."
+  },
+
+  "adversarial_controls": {
+    "A2_permutation_placebo": {"design": "Date 내 score 셔플, rank 2축 통제, 동일 2창", "survived_any": [], "verdict": "DIES_UNDER_CONTROL", "max_abs_t": 1.68, "role": "차단 실효 — 계약 배관이 없는 신호를 만들어내지 않는다"},
+    "A3_lagged_skew_vol": {"design": "통제에 과거 12M 실현 왜도·변동성 추가 (PIT: t 이전 12개 관측만)", "survived_all_windows": ["median_spread", "skew_spread", "skew_slope", "tail_dn_prob_diff", "qspread_p10"], "role": "MAX/복권수요 재포장 반박 — 통제를 늘렸는데 강해진다", "known_looseness": "위치 인덱스 12개 관측 = 결측월 시 12개월 초과 가능. 전방 미사용이므로 PIT 결함 아님. 사전등록화 시 달력 정렬 필요."},
+    "A4_seen_split_20150701": {"design": "착수 전 이미 관측된 분할을 rank 통제로 재측정", "survived_all_windows": ["skew_spread", "skew_slope", "tail_dn_prob_diff", "qspread_p10"], "role": "분할 민감도 대조 — R1 과 동일 4축. ⇒ 분할점 변경은 정당화를 개선했지 독립성을 사지 못했다(challenge_note C5)"}
+  },
+
+  "mean_space_self_check": {
+    "axis": "mean_spread (계약이 분포 축에서 제외하는 평균 공간 대조축)",
+    "R1": {"early": 0.788, "late": 0.491},
+    "R2_raw": {"early": 1.026, "late": 0.693},
+    "verdict": "전 사양 |t| <= 1.03 — Lane B 의 평균-공간 null 이 분포 계약 **내부에서도** 재현된다. 요건① 승계가 외부 파일 신뢰에만 기대지 않는다."
+  },
+
+  "distributional_signature": {
+    "shape": "높은 absorb 분위(Q5)는 낮은 분위(Q1) 대비 ① 중앙값이 높고 ② 좌측 꼬리(ex < -0.20) 확률이 낮고 ③ 하위 10% 분위가 높고 ④ 우측 왜도가 낮은데 ⑤ **평균은 같다**.",
+    "reading": "평균 보존 하에서 우측 꼬리 질량이 몸통·좌측 보호로 재배치된 형태. 소비면이 평균만 읽으면 정확히 0 이 보인다.",
+    "caution": "이는 **형상 서술**이며 수익 주장이 아니다. 이 형상을 자본 수치로 번역하려면 소비 형태를 바꿔 평균 basis 포트폴리오 수치를 실제로 산출해야 한다(measurement-graduation §3)."
+  },
+
+  "pit": {
+    "c1_rolling_only": true,
+    "quantile_bucketing": "per_date_cross_section_rank",
+    "excess_return": "per_date_cross_section_demean",
+    "orthogonalization_scope": "per_date_cross_section",
+    "tail_threshold_scope": "prespecified_constant (R1~R3) / trailing_36m_pooled_skip1 (R4)",
+    "fullsample_statistic_used": false,
+    "inherited_pit_evidence": "Lane B: assert_overlay_pit 315/315 + 위반주입 BLOCKED 315/315 + lag1 무붕괴 + ast_verify PASS. 본 라운드는 동일 패널을 재사용하며 신규 피처 계산 없음.",
+    "new_computation_this_round": "A3 의 lag_skew12 / lag_sd12 만 신규 — 전부 t 이전 실현 Ret_1m 로 구성(전방 미사용)."
+  },
+
+  "reproduce": {
+    "order": ["PREREG_NP2.json 고정", "20_transform_decision.R", "PREREG_NP2_transform_decision.json 봉인", "21_measure.R", "22_adversarial.R"],
+    "seed": 20260822,
+    "contract": "02_Infrastructure/contracts/distribution_target_screen.R (distribution_target_screen_v1.0)",
+    "artifacts": ["distribution_screen_np2_primary.json", "distribution_screen_np2_companion.json", "distribution_screen_np2_diag3_primary.json", "distribution_screen_np2_diag3_companion.json", "distribution_screen_np2_rolltail.json", "np2_summary.json", "np2_adversarial.json"]
+  },
+
+  "next_probe": [
+    {"id": "NP2-P1", "statement": "왜도·형상 통제를 **사전등록된 정본 통제**로 승격해 재판정한다 — 현재 A3(과거 12M 왜도·변동성)는 비바인딩 적대검증이고, 사전등록 통제는 vol·size 2축뿐이다. 동시에 raw+rank 동시 4축(A1)을 정본 후보로 함께 등록해 '가장 엄한 통제' 를 사후 발견이 아니라 설계로 만든다.", "why": "C1·C2 가 드러낸 설계 공백 — 내가 사전등록한 통제가 가장 엄한 통제가 아니었다.", "cost": "재측정 1회 (본 라운드 배관 재사용)"},
+    {"id": "NP2-P2", "statement": "좌측 꼬리 축(tail_dn_prob_diff / qspread_p10)을 **소비 형태**로 번역해 평균 basis 수치를 실제로 산출한다 — 예: 좌측 꼬리 확률이 낮은 분위를 유니버스 필터(소비면 ②)나 하방 리스크 예산 입력(소비면 ④)으로 쓰고 canonical_screen_bt 로 재측정. 분포 통계로 자본을 주장하지 않고 **형태를 바꿔 평균 공간에서 다시 묻는** 유일한 합법 경로다.", "why": "measurement-graduation §3 — 분포 재료가 자본으로 가는 유일한 경로.", "cost": "canonical_screen_bt 1~2회"},
+    {"id": "NP2-P3", "statement": "왜도 축의 2010년 경계를 기전으로 설명하거나 아티팩트로 기각한다 — 3창 진단이 w1(2000~2010) 에서 skew_spread +0.48 / skew_slope +0.96 로 **부호가 반대**다. KQ150 부재(K200-only 유니버스)가 원인인지, 개인 flow 미시구조 변화(HTS/MTS 보급·2010년대 개인 비중 변화)인지 분리 측정.", "why": "C3 — 현재 왜도 축은 70개월이 끌고 있다.", "cost": "유니버스 하위표본 대조 1회"},
+    {"id": "NP2-P4", "statement": "본 재료의 소비면 7종 순회 중 미측정 면을 FQ 등재한다 — ①팩터 랭킹(평균 표적: 이미 null) ②유니버스 필터(NP2-P2) ③오버레이/국면 입력 ④위험모델·하방 예산(NP2-P2) ⑤monitoring 신호(좌측 꼬리 확률 급변 = 조기 경보) ⑥선별 라벨(DISTRIBUTION_TARGET 발급 = 본 라운드) ⑦타 모드 이식(RAMP sleeve 형상 필터). ⑤·⑦ 미측정.", "why": "answer-principles 리서치 연속성 4호 — 능력 확립 시 소비면 명시 순회 의무.", "cost": "등재만"},
+    {"id": "NP2-P5", "statement": "계약 API 공백 보고 — `control_transform` 이 `match.arg` 단일값이라 raw·rank 를 **동시에** 넣으려면 호출자가 control_dt 에 순위 열을 손으로 만들어야 한다(본 라운드 A1 이 그렇게 했다). 이는 통제 강도가 호출자 관례에 숨는 경로다. 계약 확장은 architect 소관이므로 임의 확장하지 않고 사실만 보고한다.", "why": "계약이 기록을 강제하는 설계인데 가장 엄한 통제만 기록 밖에 있다.", "cost": "보고"}
+  ],
+
+  "revival_conditions": {
+    "if_np2_p1_kills_all": "raw+rank 4축 정본화에서 두 창 생존 축이 tail_dn_prob_diff 하나로 줄면, DISTRIBUTION_TARGET 발급은 유지되나 소비 우선순위를 좌측 꼬리 단일 축으로 좁힌다(라우트 철회 아님 — 요건 3종은 사전등록 사양으로 판정된다).",
+    "if_np2_p2_null": "소비 형태 번역에서도 평균 basis 가 null 이면, 본 재료는 '분포에 형상이 있으나 소비 가능한 형태로 번역되지 않는다' 로 라벨하고 monitoring 신호(소비면 ⑤)로 라우팅 후보를 남긴다.",
+    "reopen_signal": "①`control_transform` 을 다축 동시 지원으로 계약이 확장될 때 ②KQ150 이전 시대 유니버스 재구성(퇴출 명부 복원)이 가능해질 때 ③좌측 꼬리 형상을 직접 표적하는 소비면(하방 예산·유니버스 필터)이 배관될 때"
+  }
+}
