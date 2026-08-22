@@ -184,6 +184,47 @@ attach_ab_results <- function(cands) {
   cands
 }
 
+# ── 무신호 대조 감사 결과 부착 (2026-08-22 신설, measurement-graduation §3) ────
+#   ★배선 이유: 감사 산출(CSV)만 있고 **읽는 쪽이 없으면** 라벨이 그대로 소비된다.
+#   이 저장소가 반복해 당한 계통("기록은 되는데 소비자가 0")을 예방하려고 큐 빌더에 붙인다 —
+#   큐에 붙으면 drain / improvement_potential / auto_spawn 등 **모든 소비자가 함께 본다**.
+#   ★미감사를 '통과'로 취급하지 않는다: 감사 기록이 없으면 NOT_AUDITED 를 명시한다
+#   (확인 불가를 확인 완료로 접지 않는다).
+NOSIG_AUDIT_GLOB <- "06_Registry/no_signal_queue_audit_r*_*.csv"
+attach_no_signal_audit <- function(cands, root = ".") {
+  fs <- Sys.glob(file.path(root, NOSIG_AUDIT_GLOB))
+  fs <- fs[!grepl("_clusters_", fs)]
+  if (!length(fs)) {
+    for (i in seq_along(cands)) cands[[i]]$no_signal <- list(verdict = "NOT_AUDITED",
+      note = "무신호 대조 감사 산출 부재 — measurement-graduation §3 미확인 상태")
+    return(cands)
+  }
+  f <- fs[which.max(file.mtime(fs))]
+  A <- tryCatch(data.table::fread(f, encoding = "UTF-8"), error = function(e) NULL)
+  if (is.null(A) || !nrow(A) || !("id" %in% names(A))) {
+    for (i in seq_along(cands)) cands[[i]]$no_signal <- list(verdict = "NOT_AUDITED",
+      note = paste0("감사 파일 파싱 실패: ", basename(f)))
+    return(cands)
+  }
+  for (i in seq_along(cands)) {
+    r <- A[id == cands[[i]]$id]
+    if (nrow(r) >= 1) {
+      cands[[i]]$no_signal <- list(
+        verdict     = as.character(r$verdict[1]),
+        diff_ann    = as.numeric(r$diff_ann[1]),
+        diff_nw_t   = as.numeric(r$diff_nw_t[1]),
+        t_alpha     = as.numeric(r$t_alpha[1]),
+        beta        = as.numeric(r$beta[1]),
+        audited_by  = basename(f),
+        rule_ref    = "measurement-graduation.md §3 무신호 대조 통과 의무 (2026-08-22)")
+    } else {
+      cands[[i]]$no_signal <- list(verdict = "NOT_AUDITED",
+        note = paste0("감사 산출에 id 부재(", basename(f), ") — 계열 추출 실패 등"))
+    }
+  }
+  cands
+}
+
 # ── main ─────────────────────────────────────────────────────────────────────
 build_overlay_candidate_queue <- function(write = TRUE) {
   cands <- c(collect_manifests(), collect_module_registries(), collect_manual(),
@@ -192,12 +233,19 @@ build_overlay_candidate_queue <- function(write = TRUE) {
   ids <- vapply(cands, function(x) x$id, "")
   cands <- cands[!duplicated(ids)]
   cands <- attach_ab_results(cands)
+  cands <- attach_no_signal_audit(cands)   # ★2026-08-22 §3 배선
   queue <- list(
     schema_version = "overlay_candidate_queue_v1",
     generated_at   = format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z"),
     producer_ref   = "hurdle_gate.R verdict$screening$screen_route (measurement-graduation §3 screening tier)",
-    consumer_ref   = "02_Infrastructure/ops/auto_regime_overlay_ab.R + 02_Infrastructure/regime/overlay_candidate_ab_lh.R",
-    note           = "screening tier 라벨 — 자본/졸업 게이트 아님. overlay A/B 실측(clean-timing +1 lag 스트레스 의무) 후 status=measured.",
+    consumer_ref   = paste0("02_Infrastructure/ops/auto_regime_overlay_ab.R + ",
+                            "02_Infrastructure/regime/overlay_candidate_ab_lh.R + ",
+                            "02_Infrastructure/portfolio/module_dispatcher.R(FR Track2 풀 구성 시 no_signal 확인)"),
+    note           = paste0("screening tier 라벨 — 자본/졸업 게이트 아님. ",
+                            "overlay A/B 실측(clean-timing +1 lag 스트레스 의무) 후 status=measured. ",
+                            "★2026-08-22 추가: 각 후보에 no_signal 필드(measurement-graduation §3 무신호 대조 게이트) 부착. ",
+                            "verdict=INDISTINGUISHABLE_FROM_NO_SIGNAL 이면 그 성과는 신호가 아니라 대형주 노출일 수 있으므로 ",
+                            "소비자(FR Track2 등)는 직교 재료로 쓰기 전에 확인할 것. NOT_AUDITED 는 미확인이지 통과가 아니다."),
     n_candidates   = length(cands),
     candidates     = cands
   )

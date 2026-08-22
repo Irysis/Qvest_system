@@ -1049,6 +1049,21 @@ SUITES=(
   #   충돌 해소 때 여기 한 벌이 더 붙어 141 suite 를 143 회 돌렸고 FINAL 합계에 44 pass 가
   #   이중계상됐다(2026-08-22 감사 HLT-5). 편입 검사기는 고유화 후 세므로 원리적으로
   #   이 중복을 못 본다 ⇒ 중복 행 제거로 정정.
+  # ── 2026-08-22 무인 리서치 배선 아크 (도훈 지시: "리서치까지 이어지는 배선이 제일 중요").
+  #   10건 전부 이 세션 신설이고, 등재 전까지 **배터리가 한 번도 안 돌렸다** — 08-20 카드가
+  #   기록한 "편입 드리프트 40건" 과 같은 계통이 즉시 재발한 것(검사기를 만드는 일과 배터리에
+  #   거는 일은 별개 사건이다). 여기 등재로 회귀 방어에 편입한다.
+  "08_Tests/ops/test_paper_router_backlog_axis.sh"
+  "08_Tests/ops/test_mode_queue_research_run.sh"
+  "08_Tests/ops/test_morning_run_live_pid_guard.sh"
+  "08_Tests/ops/test_scheduler_alert_surface.sh"
+  "08_Tests/ops/test_credential_scope_wiring.sh"
+  "08_Tests/ops/test_failure_classify_window.sh"
+  "08_Tests/ops/test_effect_signature_progress.sh"
+  "08_Tests/ops/test_factor_evidence_backfill.py"
+  "08_Tests/ops/test_research_queue_lanes.py"
+  # 완주 알림 — 1급 축은 알림기 내부가 아니라 **호출 배선**이다(만들고 안 부르면 조용하다).
+  "08_Tests/ops/test_run_completion_notify.sh"
 )
 
 # (2026-08-02) .py 분기 추가 — 종전엔 확장자 무관 `bash` 로 던져 파이썬 suite 가

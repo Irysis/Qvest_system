@@ -1,9 +1,9 @@
 {
   "schema_version": "overlay_candidate_queue_v1",
-  "generated_at": "2026-08-21T07:27:01+0900",
+  "generated_at": "2026-08-22T17:50:52+0900",
   "producer_ref": "hurdle_gate.R verdict$screening$screen_route (measurement-graduation §3 screening tier)",
-  "consumer_ref": "02_Infrastructure/ops/auto_regime_overlay_ab.R + 02_Infrastructure/regime/overlay_candidate_ab_lh.R",
-  "note": "screening tier 라벨 — 자본/졸업 게이트 아님. overlay A/B 실측(clean-timing +1 lag 스트레스 의무) 후 status=measured.",
+  "consumer_ref": "02_Infrastructure/ops/auto_regime_overlay_ab.R + 02_Infrastructure/regime/overlay_candidate_ab_lh.R + 02_Infrastructure/portfolio/module_dispatcher.R(FR Track2 풀 구성 시 no_signal 확인)",
+  "note": "screening tier 라벨 — 자본/졸업 게이트 아님. overlay A/B 실측(clean-timing +1 lag 스트레스 의무) 후 status=measured. ★2026-08-22 추가: 각 후보에 no_signal 필드(measurement-graduation §3 무신호 대조 게이트) 부착. verdict=INDISTINGUISHABLE_FROM_NO_SIGNAL 이면 그 성과는 신호가 아니라 대형주 노출일 수 있으므로 소비자(FR Track2 등)는 직교 재료로 쓰기 전에 확인할 것. NOT_AUDITED 는 미확인이지 통과가 아니다.",
   "n_candidates": 22,
   "candidates": [
     {
@@ -319,7 +319,11 @@
           "judged_by": "drain_verdict_batch"
         }
       },
-      "status": "measured"
+      "status": "measured",
+      "no_signal": {
+        "verdict": "NOT_AUDITED",
+        "note": "감사 산출에 id 부재(no_signal_queue_audit_r46_20260822.csv) — 계열 추출 실패 등"
+      }
     },
     {
       "id": "STR_AS_20260612_215755_185820",
@@ -634,7 +638,16 @@
           "judged_by": "drain_verdict_batch"
         }
       },
-      "status": "measured"
+      "status": "measured",
+      "no_signal": {
+        "verdict": "INDISTINGUISHABLE_FROM_NO_SIGNAL",
+        "diff_ann": 0.00905193959069439,
+        "diff_nw_t": 0.194571281686067,
+        "t_alpha": 2.21467730929539,
+        "beta": 0.575476940892263,
+        "audited_by": "no_signal_queue_audit_r46_20260822.csv",
+        "rule_ref": "measurement-graduation.md §3 무신호 대조 통과 의무 (2026-08-22)"
+      }
     },
     {
       "id": "STR_AS_20260612_223235_190150",
@@ -949,7 +962,16 @@
           "judged_by": "drain_verdict_batch"
         }
       },
-      "status": "measured"
+      "status": "measured",
+      "no_signal": {
+        "verdict": "INDISTINGUISHABLE_FROM_NO_SIGNAL",
+        "diff_ann": 0.00905193959069439,
+        "diff_nw_t": 0.194571281686067,
+        "t_alpha": 2.21467730929539,
+        "beta": 0.575476940892263,
+        "audited_by": "no_signal_queue_audit_r46_20260822.csv",
+        "rule_ref": "measurement-graduation.md §3 무신호 대조 통과 의무 (2026-08-22)"
+      }
     },
     {
       "id": "STR_AS_20260612_223955_191026",
@@ -1264,7 +1286,16 @@
           "judged_by": "drain_verdict_batch"
         }
       },
-      "status": "measured"
+      "status": "measured",
+      "no_signal": {
+        "verdict": "INDISTINGUISHABLE_FROM_NO_SIGNAL",
+        "diff_ann": 0.0607867783261105,
+        "diff_nw_t": 1.14794194309293,
+        "t_alpha": 1.51713663067182,
+        "beta": 0.991782090831669,
+        "audited_by": "no_signal_queue_audit_r46_20260822.csv",
+        "rule_ref": "measurement-graduation.md §3 무신호 대조 통과 의무 (2026-08-22)"
+      }
     },
     {
       "id": "STR_AS_20260612_230402_193550",
@@ -1579,7 +1610,16 @@
           "judged_by": "drain_verdict_batch"
         }
       },
-      "status": "measured"
+      "status": "measured",
+      "no_signal": {
+        "verdict": "INDISTINGUISHABLE_FROM_NO_SIGNAL",
+        "diff_ann": 0.0255050353434837,
+        "diff_nw_t": 0.513361266562465,
+        "t_alpha": 2.17226708337847,
+        "beta": 0.635389769743952,
+        "audited_by": "no_signal_queue_audit_r46_20260822.csv",
+        "rule_ref": "measurement-graduation.md §3 무신호 대조 통과 의무 (2026-08-22)"
+      }
     },
     {
       "id": "STR_AS_20260612_234339_197601",
@@ -1894,7 +1934,16 @@
           "judged_by": "drain_verdict_batch"
         }
       },
-      "status": "measured"
+      "status": "measured",
+      "no_signal": {
+        "verdict": "INDISTINGUISHABLE_FROM_NO_SIGNAL",
+        "diff_ann": 0.00905193959069439,
+        "diff_nw_t": 0.194571281686067,
+        "t_alpha": 2.21467730929539,
+        "beta": 0.575476940892263,
+        "audited_by": "no_signal_queue_audit_r46_20260822.csv",
+        "rule_ref": "measurement-graduation.md §3 무신호 대조 통과 의무 (2026-08-22)"
+      }
     },
     {
       "id": "STR_AS_20260612_235535_199705",
@@ -2209,7 +2258,16 @@
           "judged_by": "drain_verdict_batch"
         }
       },
-      "status": "measured"
+      "status": "measured",
+      "no_signal": {
+        "verdict": "INDISTINGUISHABLE_FROM_NO_SIGNAL",
+        "diff_ann": 0.00905193959069439,
+        "diff_nw_t": 0.194571281686067,
+        "t_alpha": 2.21467730929539,
+        "beta": 0.575476940892263,
+        "audited_by": "no_signal_queue_audit_r46_20260822.csv",
+        "rule_ref": "measurement-graduation.md §3 무신호 대조 통과 의무 (2026-08-22)"
+      }
     },
     {
       "id": "STR_AS_20260613_022234_218565",
@@ -2524,7 +2582,16 @@
           "judged_by": "drain_verdict_batch"
         }
       },
-      "status": "measured"
+      "status": "measured",
+      "no_signal": {
+        "verdict": "INDISTINGUISHABLE_FROM_NO_SIGNAL",
+        "diff_ann": 0.0512710895191946,
+        "diff_nw_t": 0.984078107452729,
+        "t_alpha": 2.14754728588257,
+        "beta": 0.812022084500909,
+        "audited_by": "no_signal_queue_audit_r46_20260822.csv",
+        "rule_ref": "measurement-graduation.md §3 무신호 대조 통과 의무 (2026-08-22)"
+      }
     },
     {
       "id": "STR_AS_20260613_035400_228160",
@@ -2839,7 +2906,16 @@
           "judged_by": "drain_verdict_batch"
         }
       },
-      "status": "measured"
+      "status": "measured",
+      "no_signal": {
+        "verdict": "INDISTINGUISHABLE_FROM_NO_SIGNAL",
+        "diff_ann": 0.0267798623963382,
+        "diff_nw_t": 0.545204782619001,
+        "t_alpha": 2.22469781590262,
+        "beta": 0.631238855053237,
+        "audited_by": "no_signal_queue_audit_r46_20260822.csv",
+        "rule_ref": "measurement-graduation.md §3 무신호 대조 통과 의무 (2026-08-22)"
+      }
     },
     {
       "id": "STR_AS_20260613_052123_235418",
@@ -3154,7 +3230,16 @@
           "judged_by": "drain_verdict_batch"
         }
       },
-      "status": "measured"
+      "status": "measured",
+      "no_signal": {
+        "verdict": "INDISTINGUISHABLE_FROM_NO_SIGNAL",
+        "diff_ann": 0.0267798623963382,
+        "diff_nw_t": 0.545204782619001,
+        "t_alpha": 2.22469781590262,
+        "beta": 0.631238855053237,
+        "audited_by": "no_signal_queue_audit_r46_20260822.csv",
+        "rule_ref": "measurement-graduation.md §3 무신호 대조 통과 의무 (2026-08-22)"
+      }
     },
     {
       "id": "STR_AS_20260613_053006_236236",
@@ -3469,7 +3554,16 @@
           "judged_by": "drain_verdict_batch"
         }
       },
-      "status": "measured"
+      "status": "measured",
+      "no_signal": {
+        "verdict": "INDISTINGUISHABLE_FROM_NO_SIGNAL",
+        "diff_ann": 0.0512710895191946,
+        "diff_nw_t": 0.984078107452729,
+        "t_alpha": 2.14754728588257,
+        "beta": 0.812022084500909,
+        "audited_by": "no_signal_queue_audit_r46_20260822.csv",
+        "rule_ref": "measurement-graduation.md §3 무신호 대조 통과 의무 (2026-08-22)"
+      }
     },
     {
       "id": "STR_AS_20260613_065049_244546",
@@ -3784,7 +3878,16 @@
           "judged_by": "drain_verdict_batch"
         }
       },
-      "status": "measured"
+      "status": "measured",
+      "no_signal": {
+        "verdict": "INDISTINGUISHABLE_FROM_NO_SIGNAL",
+        "diff_ann": 0.0258136311446505,
+        "diff_nw_t": 0.52565038963684,
+        "t_alpha": 2.1990683222488,
+        "beta": 0.629656797574369,
+        "audited_by": "no_signal_queue_audit_r46_20260822.csv",
+        "rule_ref": "measurement-graduation.md §3 무신호 대조 통과 의무 (2026-08-22)"
+      }
     },
     {
       "id": "STR_AS_20260613_072815_248245",
@@ -4099,7 +4202,16 @@
           "judged_by": "drain_verdict_batch"
         }
       },
-      "status": "measured"
+      "status": "measured",
+      "no_signal": {
+        "verdict": "INDISTINGUISHABLE_FROM_NO_SIGNAL",
+        "diff_ann": 0.0267798623963382,
+        "diff_nw_t": 0.545204782619001,
+        "t_alpha": 2.22469781590262,
+        "beta": 0.631238855053237,
+        "audited_by": "no_signal_queue_audit_r46_20260822.csv",
+        "rule_ref": "measurement-graduation.md §3 무신호 대조 통과 의무 (2026-08-22)"
+      }
     },
     {
       "id": "STR_AS_20260613_075608_251961",
@@ -4414,7 +4526,16 @@
           "judged_by": "drain_verdict_batch"
         }
       },
-      "status": "measured"
+      "status": "measured",
+      "no_signal": {
+        "verdict": "INDISTINGUISHABLE_FROM_NO_SIGNAL",
+        "diff_ann": 0.0364817596373125,
+        "diff_nw_t": 0.916857258222702,
+        "t_alpha": 1.55230151347953,
+        "beta": 0.960990834757545,
+        "audited_by": "no_signal_queue_audit_r46_20260822.csv",
+        "rule_ref": "measurement-graduation.md §3 무신호 대조 통과 의무 (2026-08-22)"
+      }
     },
     {
       "id": "STR_AS_20260613_082650_256258",
@@ -4729,7 +4850,16 @@
           "judged_by": "drain_verdict_batch"
         }
       },
-      "status": "measured"
+      "status": "measured",
+      "no_signal": {
+        "verdict": "INDISTINGUISHABLE_FROM_NO_SIGNAL",
+        "diff_ann": 0.0364817596373125,
+        "diff_nw_t": 0.916857258222702,
+        "t_alpha": 1.55230151347953,
+        "beta": 0.960990834757545,
+        "audited_by": "no_signal_queue_audit_r46_20260822.csv",
+        "rule_ref": "measurement-graduation.md §3 무신호 대조 통과 의무 (2026-08-22)"
+      }
     },
     {
       "id": "STR_AS_20260613_090132_260187",
@@ -5044,7 +5174,16 @@
           "judged_by": "drain_verdict_batch"
         }
       },
-      "status": "measured"
+      "status": "measured",
+      "no_signal": {
+        "verdict": "INDISTINGUISHABLE_FROM_NO_SIGNAL",
+        "diff_ann": 0.0512710895191946,
+        "diff_nw_t": 0.984078107452729,
+        "t_alpha": 2.14754728588257,
+        "beta": 0.812022084500909,
+        "audited_by": "no_signal_queue_audit_r46_20260822.csv",
+        "rule_ref": "measurement-graduation.md §3 무신호 대조 통과 의무 (2026-08-22)"
+      }
     },
     {
       "id": "LH_D2_loser_augment",
@@ -5348,7 +5487,11 @@
           "judged_by": "drain_verdict_batch"
         }
       },
-      "status": "measured"
+      "status": "measured",
+      "no_signal": {
+        "verdict": "NOT_AUDITED",
+        "note": "감사 산출에 id 부재(no_signal_queue_audit_r46_20260822.csv) — 계열 추출 실패 등"
+      }
     },
     {
       "id": "STR_AS_20260709_074129_30048",
@@ -5654,7 +5797,16 @@
           "judged_by": "drain_main"
         }
       },
-      "status": "measured"
+      "status": "measured",
+      "no_signal": {
+        "verdict": "SIGNAL_ADDS_VALUE",
+        "diff_ann": 0.107835945672039,
+        "diff_nw_t": 2.18176558174543,
+        "t_alpha": 3.00480946307473,
+        "beta": 0.824247460953338,
+        "audited_by": "no_signal_queue_audit_r46_20260822.csv",
+        "rule_ref": "measurement-graduation.md §3 무신호 대조 통과 의무 (2026-08-22)"
+      }
     },
     {
       "id": "STR_AS_20260612_154914_1055315",
@@ -5960,7 +6112,16 @@
           "judged_by": "drain_main"
         }
       },
-      "status": "measured"
+      "status": "measured",
+      "no_signal": {
+        "verdict": "INDISTINGUISHABLE_FROM_NO_SIGNAL",
+        "diff_ann": 0.0761179222493784,
+        "diff_nw_t": 1.56791570641397,
+        "t_alpha": 3.11048388719173,
+        "beta": 0.79544430567265,
+        "audited_by": "no_signal_queue_audit_r46_20260822.csv",
+        "rule_ref": "measurement-graduation.md §3 무신호 대조 통과 의무 (2026-08-22)"
+      }
     },
     {
       "id": "STR_AS_20260612_161342_1312338",
@@ -6266,7 +6427,16 @@
           "judged_by": "drain_main"
         }
       },
-      "status": "measured"
+      "status": "measured",
+      "no_signal": {
+        "verdict": "INDISTINGUISHABLE_FROM_NO_SIGNAL",
+        "diff_ann": 0.0593862004702365,
+        "diff_nw_t": 1.49838027294356,
+        "t_alpha": 2.77815793965558,
+        "beta": 0.891546689893266,
+        "audited_by": "no_signal_queue_audit_r46_20260822.csv",
+        "rule_ref": "measurement-graduation.md §3 무신호 대조 통과 의무 (2026-08-22)"
+      }
     },
     {
       "id": "STR_AS_20260612_143809_686286",
@@ -6572,7 +6742,16 @@
           "judged_by": "drain_main"
         }
       },
-      "status": "measured"
+      "status": "measured",
+      "no_signal": {
+        "verdict": "INDISTINGUISHABLE_FROM_NO_SIGNAL",
+        "diff_ann": 0.0767057307316695,
+        "diff_nw_t": 1.50188956576639,
+        "t_alpha": 2.68620819945243,
+        "beta": 0.848208316587277,
+        "audited_by": "no_signal_queue_audit_r46_20260822.csv",
+        "rule_ref": "measurement-graduation.md §3 무신호 대조 통과 의무 (2026-08-22)"
+      }
     },
     {
       "id": "STR_AS_20260612_132740_321995",
@@ -6878,7 +7057,16 @@
           "judged_by": "drain_main"
         }
       },
-      "status": "measured"
+      "status": "measured",
+      "no_signal": {
+        "verdict": "INDISTINGUISHABLE_FROM_NO_SIGNAL",
+        "diff_ann": 0.0522831870173219,
+        "diff_nw_t": 1.13882592052755,
+        "t_alpha": 2.53859454449204,
+        "beta": 0.807601562640297,
+        "audited_by": "no_signal_queue_audit_r46_20260822.csv",
+        "rule_ref": "measurement-graduation.md §3 무신호 대조 통과 의무 (2026-08-22)"
+      }
     }
   ]
 }
