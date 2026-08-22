@@ -1,0 +1,117 @@
+{
+  "wt_id": "WT-D20260813_006",
+  "fq_ref": "FQ-234 (Lane B — 일별 축 정보 회수)",
+  "registered_at": "2026-08-22",
+  "registered_by": "alpha-research (측정 구간 승계)",
+  "design_inherited_from": "qepm/mailbox/worktask/WT-D20260813_006/alpha_hypothesis.json (alpha-hypothesis, fable, 2026-08-13) — 후보 C1. mechanism/falsification/regime_scope 승계·재작성 없음.",
+  "registration_order_note": "본 파일은 03_precheck.R 실행 후·04_measure.R(성과 측정) 실행 **전** 에 고정됐다. 착수 0항(PIT/커버리지/비용/검정력)과 F3 는 성과와 무관한 사전 검사이므로 등록 전에 실행했고 그 실측치를 아래 precheck_measured 에 봉인한다.",
+
+  "primary_spec": {
+    "feature": "absorb = -corr_win(Individual_netbuy_KRW_d, Ret_d)",
+    "window": "직전 3개월 버킷 {m-2,m-1,m}, 신호일 d0 당일 관측 제외 (strict Date < d0)",
+    "min_obs": 40,
+    "score_for_long_only": "z_cs(-absorb) — 흡수 강도가 낮은 종목을 상위로",
+    "predicted_sign": "FMB(fwd_ret ~ absorb) 기울기 < 0 (흡수 강도 높을수록 후속 저수익)",
+    "top_n": 25,
+    "cost_bps_oneway": 15,
+    "liq_min_won": 200000000,
+    "liq_ruler": "adv20_t1 (injected_adv20 — 헌법 자)",
+    "judgment_authority": "canonical_screen_bt cap-w portfolio_alpha_t_nw_lag3 (metric_type=canonical_screen). rank-IC 계열은 advisory.",
+    "selection_type": "chain (1가설 1스펙 순차 — sweep 아님. DSR 은 진단 산출, 게이트 아님)"
+  },
+
+  "secondary_spec_preregistered": {
+    "id": "absorb_neu",
+    "definition": "월별 횡단면 OLS: absorb ~ z(win_vol) + z(log_size) 의 잔차를 z 정규화 후 부호 반전",
+    "rationale": "precheck 실측 absorb vs log_size spearman +0.597 — 크기 적재가 크다. F2(vol·size 통제)와 동일 통제를 alpha_vector 형태로도 미리 등록해 사후 선택 자유도를 없앤다."
+  },
+
+  "diagnostic_only_not_judgment": [
+    "absorb_1m (1개월 창) — 사전 계산 회전율 18.1~19.0/yr 로 Implementation Discipline TO<=11.0 **위반**. primary 자격 없음(진단 전용).",
+    "absorb_share (하락일-상승일 배치 비중차, 설계 산문 정의)",
+    "absorb_resid (시장수익 차감)",
+    "absorb_naive — ★고의 위반 주입(홀딩월 포함). 성과 주장 금지, PIT 판별력 실증 전용."
+  ],
+
+  "windows": {
+    "long": {"n_months": 315, "from": "2000-03-31", "to": "2026-05-29",
+             "role": "primary 판정창 (설계 c_wall_statistic 이 선언한 flow 지평 ~318개월 정합)",
+             "caveat": "2010-02 이전은 KQ150 플래그 부재 = K200-only · 2010-02~2015-06 KQ150 은 소급투영(FQ-241) → 생존자 명부. 판정에 병기 의무."},
+    "clean": {"n_months": 131, "from": "2015-07-31", "to": "2026-05-29",
+              "role": "생존자편향 면역 확인창 — long 과 부호·크기 정합 여부를 병기"}
+  },
+
+  "precheck_measured": {
+    "pit_assert_strict": "PASS",
+    "pit_violation_injection": "BLOCKED 315/315 — 검사기 판별력 실증됨",
+    "turnover_annual_primary": {"long": 9.808, "clean": 9.829, "ceiling": 11.0, "verdict": "PASS"},
+    "cost_drag_annual_primary": {"long": 0.01471, "clean": 0.01474},
+    "rank_autocorr_lag1_spearman": 0.8315,
+    "F3_hidden_clone": {"mean_spearman_vs_monthly_indiv_level": -0.1466, "max_abs": 0.5053, "threshold": 0.8, "verdict": "PASS"},
+    "feature_loadings_pooled_spearman": {"vs_log_size": 0.597, "vs_win_vol": -0.299},
+    "power_contract": {
+      "sd_source": "동일 유니버스·창에서 무작위 top-25 EW 바스켓의 월 active 수익 sd (외부 잡음 기준 — arm 자신의 sd 아님)",
+      "long": {"sd_monthly": 0.045296, "ratio_vs_contract_default": 1.1497,
+               "required_annual_net_active_t2": 0.07657, "required_annual_net_active_t2.95": 0.11293},
+      "clean": {"sd_monthly": 0.048478, "ratio_vs_contract_default": 1.2304,
+                "required_annual_net_active_t2": 0.12707, "required_annual_net_active_t2.95": 0.18742},
+      "nw_inflation": "1.25 가정치 사용(계약 기본). 계약 자신의 경고대로 월간 횡단면 스프레드에서는 과대 가능 — 측정 후 실계열로 재산출해 병기한다."
+    }
+  },
+
+  "placebo_band_preregistered": {
+    "design": "AR(1)-정합 무작위 신호 — 종목별 z_t = rho*z_{t-1} + sqrt(1-rho^2)*eps, rho = 0.8315 (absorb 의 실측 랭크 자기상관). 200 draw.",
+    "rationale": "승계 규약 2 — 지속 회귀변수에서 |t|=2.0 은 5% 검정이 아니다(phi 0.95~0.99 에서 placebo |t| p95 2.45~3.26 실측). 본 신호도 rho 0.83 로 지속적이므로 판정 문턱을 절대값이 아니라 이 밴드로 잡는다.",
+    "statistic": "canonical_screen_bt portfolio_alpha_t_nw_lag3",
+    "reject_null_if": "관측 PORT_t 가 placebo 분포의 상위 5% 밖"
+  },
+
+  "positive_control_preregistered": {
+    "why": "승계 규약 3 — 음성 대조가 결론 자격을 가지려면 '조작이 먹는다'를 먼저 증명해야 한다.",
+    "PC1_semi_oracle": "forward 수익 순위에 잡음을 섞어 실현 rank-IC 를 0.04(저장소 advisory 하한)로 맞춘 신호. 같은 파이프라인에서 PORT_t 가 placebo 밴드를 넘는지 확인 → '이 창에서 KR-전형 강도의 알파는 검출된다'의 실증.",
+    "PC2_lookahead": "absorb_naive — 오염 신호가 strict 대비 성과 인플레를 내는지. strict-PIT A/B 의 판별력 실증(성과 주장 아님)."
+  },
+
+  "falsification_inherited": {
+    "F1": "흡수 상위분위 종목의 후속 1~3개월 **외국인(1차)/기관(보조) 순매수**가 하위분위 대비 유의하게 낮지 않으면 기전 기각 (성과 무관·비성과 관측)",
+    "F2": "월별 횡단면 FMB 에 vol·size 통제 투입 시 absorb 계수 |NW-t| < 2 이면 독립 재료 기각",
+    "F3": "absorb 와 월간 개인 flow level 의 횡단면 |cor| >= 0.8 이면 재포장 기각 — **사전 실행 결과 PASS(-0.147)**",
+    "reject_if": "F1 무유의 OR F2 |t|<2 OR F3 |cor|>=0.8 중 하나라도 발화 시 '일별 축의 정보 우위 미확립' 기록 + 계열 확대 금지(INV-7)"
+  },
+
+  "terminal_form": {
+    "declared": "alpha_vector",
+    "rationale": "월내 flow×수익 결합은 **종목별**로 계산된다 — 이미 (Date, Ticker, absorb) 종목 수준 패널로 실재하며(실측 89,534 유효 관측 / 315 월), 횡단면 z 정규화만으로 alpha_vector 가 된다. Lane D(FQ-236) 가 결과량을 횡단면 집계량의 조건부성으로 잡아 alpha_vector={} 로 끝난 것과 구조가 다르다.",
+    "artifact_on_success": "stage_artifacts/WT-D20260813_006/alpha_scores.parquet (Date, Ticker, alpha_score) + alpha_package.json",
+    "artifact_on_null": "같은 패널을 발행하되 alpha_package.verdict=negative — 다음 라운드가 같은 다리(패널·PIT 배관·검정력 기준)를 재사용한다."
+  },
+
+  "alpha_bridge": {
+    "step1_direction": "predicted_sign 에 따라 raw = -absorb (흡수 강도가 낮을수록 선호). 방향은 설계 승계이며 데이터를 보고 뒤집지 않는다.",
+    "step2_winsorize": "월별 횡단면에서 raw 를 [q01, q99] 로 절단",
+    "step3_z": "z_it = (raw_it - mean_t(raw)) / sd_t(raw), 유동성필터(adv20_t1 >= 2e8) 통과 종목만 모집단",
+    "step4_neutralize_optional": "secondary_spec 일 때만: 월별 횡단면 OLS raw ~ z(win_vol) + z(log_size) 잔차를 z 화",
+    "step5_missing": "absorb 결측(창 관측 < 40일) 종목은 **제외**한다. 0 대입 금지(결손이 중립 점수로 내려앉는 것을 막는다).",
+    "step6_combine": "복수 피처 결합 시 **사전 고정 등가중 평균 of z** 만 허용. ★ML 결합기 금지(v8.4 §6 금지 4종). 본 라운드 primary 는 단일 피처이므로 결합 미사용.",
+    "output_contract": "alpha_scores.parquet = (Date=signal month-end, Ticker, alpha_score=z, metric_type='canonical_screen'). risk-research 가 Σ 추정에 쓰는 종목 집합 = 각 Date 의 상위 25종목 ∪ 전체 스코어 패널."
+  },
+
+  "transition_gates": {
+    "alpha_to_risk": {
+      "cond1": "alpha_discovery_count >= 1 (= alpha_scores.parquet 가 비어있지 않고 종목 수준 점수 실재)",
+      "cond2": "screening 통과 — hurdle_gate.R screen_pass = no-PIT ∧ ([net_SR>=0.7 ∧ CAGR>=12%] 또는 [score>=40 ∧ net_SR>=0.5])",
+      "cond3": "F1·F2·F3 반증 3종 중 발화 0건",
+      "decision_rule": "cond1~3 전부 충족 시에만 risk-research 로 전이 요청. 하나라도 미충족이면 전이 요청 없이 negative 보고 + screen_route 라우팅 검토."
+    },
+    "capital_gate_boundary": "★screening 통과는 자본 자격이 아니다. graduation HARD 3종(PORT_t 2.95 · oos_retention 0.7 · calmar 0.64)은 **forge-authoritative** 값에만 적용되며 본 단계 canonical_screen 수치로 졸업을 주장하지 않는다."
+  },
+
+  "consumption_gate_precheck": {
+    "inv7_check": "본 라운드는 **피처 축**(feature replacement)이지 표적 축(target replacement)이 아니다. FQ-233 Lane A 가 분포-표적 교체의 자본화에 건 부활조건 2건은 본 라운드의 관문이 **아니다** — 판정 시점에 오적용으로 차단되지 않도록 명시 기록.",
+    "v84_prohibited_4_check": "①ML 결합기 미사용 ②ML 사이징/selection 미사용 ③표적 = 다음 달 평균 수익률(=평균 표적)이나 본 라운드는 **표적 교체 라운드가 아니라 피처 라운드**이므로 금지 4종 ③(표적이 평균인 ML 라운드)에 해당하지 않는다 — ML 자체를 쓰지 않는다 ④sweep 아님(chain) → DSR 회피 해당 없음.",
+    "settled_negative_adjacency": "DIST-QPM-005(개인 flow level) 는 F3 로 기계 검사 — 사전 PASS. AX_MAX(vol·size 대리) 는 F2 로 기계 검사.",
+    "route_if_screen_pass_but_capital_fail": "screen_route = OVERLAY_CANDIDATE / FR_RCMA / TURNOVER_REVIEW 중 실측 사유에 따라. cap-tier 국소화(CH5 상속 리스크) 확인 후 결정."
+  },
+
+  "dof_separation": "FQ-233 Lane A(표적 교체) · FQ-237(선별 통계량 교체) 와 섞지 않음. 본 라운드 자유도 = 피처 1개(absorb) + 사전등록 통제판본 1개."
+}
