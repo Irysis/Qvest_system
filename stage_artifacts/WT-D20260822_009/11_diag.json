@@ -1,0 +1,81 @@
+{
+  "F1": {
+    "spec": "저-absorb 배제군의 후속 3M 외국인+기관 순매수/Size − 동월 유니버스 중앙값",
+    "mean_spread": 0.000533167587016396,
+    "nw_t": 1.20843402106869,
+    "n_months": 268,
+    "reject_threshold": 2,
+    "fired": false,
+    "reading": "기전 기각 아님, 지지도 유의하지 않음(미결)"
+  },
+  "tail_realization": {
+    "lo": 0.0505548705302096,
+    "hi": 0.0223275134679042,
+    "all": 0.0341855200726426,
+    "n_lo": 15409,
+    "n_hi": 15407,
+    "note": "NP2 tail_dn_prob_diff 의 배제-소비 유니버스(liq 통과 base 후보) 내 재현 확인용. 부호는 lo > hi 여야 NP2 정합."
+  },
+  "F2": {
+    "spec": "꼬리 실현월(Ret_1m<=-20%) 하락일 개인 순매수/(하락일 거래대금) : 저-absorb − 고-absorb",
+    "mean_spread": -0.114191317182449,
+    "nw_t": -8.93375933044921,
+    "n_months": 42,
+    "fired": false,
+    "reading": "기전 지지 방향"
+  },
+  "conditional_on_top25": {
+    "table": [
+      {
+        "excluded": false,
+        "n": 5513,
+        "tail_rate": 0.0272084164701614,
+        "mean_ret": 0.0199531546505808,
+        "q10": -0.123873859542472
+      },
+      {
+        "excluded": true,
+        "n": 1185,
+        "tail_rate": 0.0337552742616034,
+        "mean_ret": 0.0202646330327567,
+        "q10": -0.140780028664653
+      }
+    ],
+    "mean_spread_monthly": -0.0018314385933408,
+    "nw_t": -0.449970728504493,
+    "n_months": 266,
+    "reading": "양수 = 배제대상이 top-25 안에서 오히려 더 벌었다 = NP2 횡단면 우위가 고-score 조건부로 소멸/역전(전이-벽)."
+  },
+  "size_bias": {
+    "all_excl_srank": 0.29958445470238,
+    "all_keep_srank": 0.551799941323013,
+    "top25_excl_srank": 0.363043589868719,
+    "top25_keep_srank": 0.586870311972292,
+    "top25_excl_meanw": 0.017831025267214,
+    "top25_keep_meanw": 0.0447634152417682,
+    "reading": "배제대상이 top-25 안에서 **큰 비중**을 차지하면 cap-w basis 에서 손실이 증폭된다 — EW basis 와 갈리는 기전 후보."
+  },
+  "mdd": {
+    "base": 0.558738976563759,
+    "filtered": 0.558004736221545,
+    "delta_pp": 0.0734240342214587,
+    "calmar_base": 0.326704464537798,
+    "calmar_filtered": 0.291214446683798,
+    "caveat": "월간 수익 기반 MDD — 일별 NAV 기반 forge MDD 와 다름(월간은 낙폭 과소추정). metric_type=weighted_screen."
+  },
+  "overlap_with_max5": {
+    "mean_n_absorb": 57.4962686567164,
+    "mean_n_max5": 28.8134328358209,
+    "mean_n_both": 13.9850746268657,
+    "share_of_absorb_in_max5": 0.243234473359725,
+    "share_of_max5_in_absorb": 0.485366485366485
+  },
+  "marginal_over_max5": {
+    "ir_max5_only": 0.827239825482753,
+    "port_t_max5_only": 3.80239443710596,
+    "ir_max5_plus_absorb": 0.649845385856272,
+    "port_t_max5_plus_absorb": 3.07890469538693,
+    "delta_ir_marginal": -0.17739443962648,
+    "note": "MAX5-only 는 본 라운드 하네스/창(268m)에서의 재측정 — WT-014 원 수치(256m 공통월)와 창이 달라 직접 비교 금지."
+  }
+}
