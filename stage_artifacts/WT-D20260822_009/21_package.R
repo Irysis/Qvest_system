@@ -93,7 +93,8 @@ PKG <- list(
              escape_type = "SPECIAL_OP",
              op_code_path = "stage_artifacts/WT-D20260822_009/10_measure.R::mk_filter (absorb 하위 20% 배제 마스크; absorb 원천 = stage_artifacts/WT-D20260813_006/01_build_features.py)",
              walk_forward = TRUE)))),
-         role = "core_signal", restatement_exposure = 0L),
+         role = "core_signal", restatement_exposure = 1L,
+         restatement_note = "ast_verify 가 STORED_SCORE 리프를 ast_field_map 미등재로 판정해 보수적으로 restatement 표시(WARN_RESTATEMENT, 통과+플래그). 저장 패널 자체는 2026-07-14 동결 아티팩트이나 그 상류 factor_db 의 vintage 보장을 본 라운드가 증명하지 못했으므로 '확인 불가'를 '확인 완료'로 내려앉히지 않는다."),
     list(factor_id = "F2_absorb_exclusion_gate",
          ast = list(op = "CS_RANK", args = list(
            list(leaf = "SPECIAL_OP",
