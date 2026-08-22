@@ -170,6 +170,10 @@ _run_claude(){
   fi
 }
 
+# 알림 창 기준점 — 이 시각 **이후** 산출만 이 런의 것으로 본다.
+#   안 넘기면 기본 4시간 창이 쓰여 직전 3.5시간의 남의 산출까지 자기 것으로 보고한다
+#   (오늘 여섯 번 겪은 "범위를 안 정하고 센다" 의 알림 판본).
+_NOTIFY_SINCE=$(date +%s)
 _run_claude "$CLAUDE_BIN" -p "$PROMPT_TEXT" --dangerously-skip-permissions >> "$LOG" 2>&1
 rc=$?
 log "claude -p exit=$rc"
@@ -243,6 +247,6 @@ if [ "${_EFFECT_CMP:-}" = "CHANGED" ] && [ "${_EFFECT_SCOPED:-}" = "SAME" ]; the
 fi
 _RS="$BASE/02_Infrastructure/ops/research_run_notify.R"
 if [ -f "$_RS" ] && [ "${QVEST_RUN_NOTIFY:-1}" = "1" ]; then
-  QM_ROOT="$BASE" Rscript --no-save "$_RS" "${QVEST_MODE_QUEUE_LANE:-all}" "$N" "${_n_done:-0}" "${_EFFECT_SCOPED:-${_EFFECT_CMP:-}}" "$rc" "${_ATTRIB_NOTE:-}" >> "$LOG" 2>&1 || log "완주 알림 실패(비치명)"
+  QM_ROOT="$BASE" Rscript --no-save "$_RS" "${QVEST_MODE_QUEUE_LANE:-all}" "$N" "${_n_done:-0}" "${_EFFECT_SCOPED:-${_EFFECT_CMP:-}}" "$rc" "${_ATTRIB_NOTE:-}" "${_NOTIFY_SINCE:-}" >> "$LOG" 2>&1 || log "완주 알림 실패(비치명)"
 fi
 exit 0

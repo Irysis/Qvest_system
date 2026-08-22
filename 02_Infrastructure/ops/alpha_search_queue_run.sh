@@ -171,6 +171,10 @@ _run_claude(){
   fi
 }
 
+# 알림 창 기준점 — 이 시각 **이후** 산출만 이 런의 것으로 본다.
+#   안 넘기면 기본 4시간 창이 쓰여 직전 3.5시간의 남의 산출까지 자기 것으로 보고한다
+#   (오늘 여섯 번 겪은 "범위를 안 정하고 센다" 의 알림 판본).
+_NOTIFY_SINCE=$(date +%s)
 _run_claude "$CLAUDE_BIN" -p "$PROMPT_TEXT" \
   --dangerously-skip-permissions >> "$LOG" 2>&1
 rc=$?
@@ -217,6 +221,6 @@ fi
 #   도훈에게 도달하지 않았다 — 오늘 반복 확인된 "기록은 되는데 읽는 쪽이 없다" 의 텔레그램 판본.
 _RS="$BASE/02_Infrastructure/ops/research_run_notify.R"
 if [ -f "$_RS" ] && [ "${QVEST_RUN_NOTIFY:-1}" = "1" ]; then
-  QM_ROOT="$BASE" Rscript --no-save "$_RS" "alpha_search" "$N" "0" "${_EFFECT_CMP:-}" "$rc" >> "$LOG" 2>&1 || log "완주 알림 실패(비치명)"
+  QM_ROOT="$BASE" Rscript --no-save "$_RS" "alpha_search" "$N" "0" "${_EFFECT_CMP:-}" "$rc" "" "${_NOTIFY_SINCE:-}" >> "$LOG" 2>&1 || log "완주 알림 실패(비치명)"
 fi
 exit 0
