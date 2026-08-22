@@ -42,11 +42,14 @@ since  <- if (length(args) >= 7) suppressWarnings(as.numeric(args[7])) else NA_r
 # since 미지정 시 보수적으로 4시간 창 — 넓히면 남의 산출을 내 것으로 읽는다.
 if (!is.finite(since)) since <- as.numeric(Sys.time()) - 4 * 3600
 
+# ★레인명은 QEPM 파이프라인의 정식 단계·모드 명칭을 쓴다.
+#   구어체 축약("이어붙이기" 등) 금지 — 정확도만 낮추고 가독은 안 오른다(도훈 지시 2026-08-22).
+#   비전공자 가독은 본문 용어를 풀어 쓰는 게 아니라 **자동 용어 풀이 footer**가 담당한다(SKILL v7 §5.5).
 .lane_map <- c(
-  qepm_dossier = "정식 라운드", paper_promotion = "논문 승격",
-  method_measure = "방법 실측",  alpha = "알파 가설",
-  optimizer = "비중 방법",       risk = "위험모델",
-  regime = "국면 신호",          all = "리서치 큐")
+  qepm_dossier = "QEPM dossier 승계", paper_promotion = "논문 승격",
+  method_measure = "방법론 실측",    alpha = "알파 리서치",
+  optimizer = "옵티마이저 리서치",   risk = "리스크 리서치",
+  regime = "국면 신호 리서치",       all = "리서치 큐")
 lane_ko <- if (lane %in% names(.lane_map)) .lane_map[[lane]] else lane
 
 # ── 산출물에서 **알아낸 것**을 뽑는다 ---------------------------------------
@@ -97,10 +100,10 @@ head_line <- if (length(lcodes) > 0) {
   v <- verdicts[[1]]
   .clip(sprintf("%s %s — %s", v$wt, v$verdict %||% "", v$fail_note %||% ""))
 } else if (stopped) {
-  .clip(sprintf("%s 가 중간에 멈췄습니다%s", lane_ko,
-          if (progressed) " (그때까지 산출은 남음)" else " (남은 산출 없음)"))
+  .clip(sprintf("%s 중단 — %s", lane_ko,
+          if (progressed) "중단 시점까지의 산출은 보존됨" else "산출 없음"))
 } else {
-  .clip(sprintf("%s 를 돌렸으나 적립된 지식이 없습니다", lane_ko))
+  .clip(sprintf("%s 실행 — 적립된 지식 없음", lane_ko))
 }
 
 secs <- list(list(type = "summary", emoji = "\U0001F52C", body = head_line))
@@ -124,7 +127,7 @@ for (v in verdicts[seq_len(min(2L, length(verdicts)))]) {
 
 # ── ② 배운 것 (이 알림의 본체) --------------------------------------------
 for (x in lcodes[seq_len(min(2L, length(lcodes)))]) {
-  bl <- .to_bullets(x$lesson %||% "(lesson_text 없음)")
+  bl <- .to_bullets(x$lesson %||% "(lesson_text 미기입)")
   if (length(bl))
     secs[[length(secs) + 1]] <- list(type = "bullet", emoji = "\U0001F4A1",
       heading = sprintf("배운 것 — %s [%s · grade %s]",
@@ -145,11 +148,11 @@ if (length(lcodes) > 2)
 
 # ── ③ 산출이 없으면 그렇다고 말한다 ----------------------------------------
 if (!has_insight) {
-  why <- if (stopped) "런이 중단돼 적립 단계에 도달하지 못했습니다"
-         else if (progressed) "원장은 바뀌었으나 L-code·판정 산출은 없습니다(중간 단계 전이일 수 있습니다)"
-         else "이번 회차 산출이 없습니다"
+  why <- if (stopped) "런 중단으로 지식 적립 단계에 미도달"
+         else if (progressed) "원장 변화는 있으나 L-code·판정 산출 없음 — 중간 단계 전이로 추정"
+         else "이번 회차 산출 없음"
   secs[[length(secs) + 1]] <- list(type = "bullet", emoji = "\U000026A0", heading = "적립 없음",
-    items = c(why, "이 알림은 '완주' 가 아니라 '무엇을 알아냈나' 를 나릅니다 — 없으면 없다고 적습니다"))
+    items = c(why, "본 알림의 대상은 완주 사실이 아니라 적립된 지식 — 부재 시 부재로 보고"))
 }
 
 if (nzchar(extra))
