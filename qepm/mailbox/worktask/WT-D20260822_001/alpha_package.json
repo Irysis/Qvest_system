@@ -1,0 +1,256 @@
+{
+  "task_id": "WT-D20260822_001",
+  "as_of_date": "2026-08-22",
+  "forecast_horizon": "1M",
+  "spec_version": "ast_v1.1",
+
+  "pit": {
+    "sig_date": "2026-07-01",
+    "decision_ts": "2026-07-01",
+    "note": "판정 대상 마지막 홀딩월 = 2026-07. 진행월(2026-08) 전건 제외. 조건변수 컷오프 = min(홀딩월 첫 거래일 − L, 홀딩월 캘린더 첫날), assert_overlay_pit() HARD 통과."
+  },
+
+  "hypothesis": {
+    "statement": "KR 횡단면 월간 수익분포의 비대칭(분위 기반 형태·꼬리초과 균형)은 상시 일정하지 않고, 홀딩월 시작 전에 관측된 연속 자금경색 상태변수에 조건부로 좌측으로 이동한다. 매크로는 알파·배분 타이밍이 아니라 분포 형태의 조건변수다.",
+    "mechanism": {
+      "agent": "레버리지 보유 주체 2종 실명: ①신용융자 개인(KR 신용거래융자 잔고 보유 계좌 — 담보유지비율 140% 하회 시 반대매매가 규정상 강제) ②위험한도 운용 기관(VaR/한도 규정으로 스트레스 시 익스포저 축소가 내규상 강제되는 국내 기관·외국인 프라임브로커 연계 계정). 두 주체 모두 자금조달 조건이 악화되면 '가격과 무관하게' 팔아야 하는 제약 보유자다.",
+      "friction": "차익거래가 이 왜곡을 못 지우는 이유 3중: ①KR 공매도 제약 — 상태 조건부로 두꺼워지는 좌꼬리에서 수익을 얻으려면 하락 종목을 공매도해야 하는데 법적으로 차단(long-only 우주는 회피만 가능, 교정 불가) ②반대매매는 문턱-발동형(담보비율)이라 가격 하락이 추가 매도를 기계적으로 유발하는 양의 되먹임 — 유동성 공급자가 받아내기엔 상태 악화기에 그들 자신의 자금조달도 조여진다(margin spiral) ③25종·유동성 하한 제약의 대형 운용자는 꼬리 종목군(소형·비유동)에 교정 자본을 대규모로 투입할 수 없다.",
+      "path": "신호→가격 경로: 홀딩월 시작 전 관측된 자금경색 상태(신용스프레드 수준·bear_prob)가 높을수록, 그 홀딩월 중 문턱-발동 강제매도가 활성화될 확률이 높고, 매도는 레버리지·비유동 종목에 집중되므로 횡단면 분포의 좌꼬리가 우꼬리 대비 비대칭적으로 두꺼워진다(중앙값은 상대적으로 덜 움직임). long-only top-N 포트의 실현 평균은 꼬리가 지배하므로, 상태 조건부 형태 이동이 확립되면 소비면에서 PORT_t 로 전이 가능한 예측 정보가 된다 — 단 소비면 설계·PORT_t 판정은 본 라운드가 아니라 이후 단계."
+    },
+    "falsification": [
+      {"fields": ["A1_RAWDATA_OHLCVS_daily", "E2_ecos_kr_rates"],
+       "id": "F_A", "rule": "PRIMARY 회귀 Y ~ S 의 NW lag-3 t 와 표준화 효과 CI 로 4분할: (성립) t<=-2.0 그리고 예측부호 그리고 placebo 95분위 초과 / (기각-부호) t>=+2.0 / (효과없음, powered null) 표준화 CI 가 (-0.25,+0.25) 에 완전 포함 / (미결) 그 외. '미결'과 '효과없음'은 처분이 다르다."},
+      {"fields": ["A1_RAWDATA_OHLCVS_daily"],
+       "id": "F_B", "rule": "b(Y1b) 유의인데 b(Y1a) 효과없음이면 '분산 스케일링 전용' 기각 — 상태 조건부인 것이 형태가 아니라 산포라는 뜻이며 GARCH 대칭 확폭 경쟁설명을 분리한다."},
+      {"fields": ["A6_investor_flow_stock_daily", "A1_RAWDATA_OHLCVS_daily"],
+       "id": "F_C", "rule": "기전 부수관측 FlowAsym_t = corr_XS(개인 순매수/ADV20, 당월 수익). 기전 예측 corr(S, FlowAsym) > 0 (평시 역추세 매수 → 경색 시 반대매매 강제로 순추세 방향 이동). NW t>=+2.0 채널 지지 / <=-2.0 채널 기각 / 그 외 미결. 동월 관측이나 포트 결정에 미사용하는 사후 기전 검증이라 C2 순환참조 아님."},
+      {"fields": ["E2_ecos_kr_rates"],
+       "id": "F_D", "rule": "지속성 회귀변수의 가짜 유의 방어 — S 와 1차 자기상관을 맞춘 AR(1) 무작위 조건변수 200 draw 의 |t| 95분위를 실측이 넘지 못하면 '성립' 선언 불가(미결 강등). 양성 대조 보존 의무."},
+      {"fields": ["A1_RAWDATA_OHLCVS_daily"],
+       "id": "F_E", "rule": "leave-2026-out 재추정에서 부호가 뒤집히면 판정 상한 = 미결_recent_dominated."},
+      {"fields": ["A1_RAWDATA_OHLCVS_daily"],
+       "id": "F_F", "rule": "leave-backfill-out(2015-07~) 재추정에서 부호가 갈리거나 유의성이 백필 구간 단독 견인이면 판정 상한 = 미결_backfill_suspect."}
+    ],
+    "regime_scope": {
+      "holds_in": [
+        "자금경색 중상위 연속 구간 — KR_CreditSpread_BBB3Y 가 직전 120m rolling median 위이고 확대 중인 상태(문턱-발동 반대매매가 활성화될 확률이 높은 구간)",
+        "breadth(bear_prob 평균) 상승 구간 — KR 내생 신호가 같은 상태를 가리키는 달"
+      ],
+      "weakens_or_reverses_in": [
+        "극단 청산 클라이맥스 — 무차별 동반 하락은 횡단면 '차별화' 자체를 붕괴시킨다(KR 실측 PC1=시장이 분산 0.76 지배). 좌꼬리가 아니라 분포 전체가 이동해 비대칭 신호가 소멸/약화될 수 있음",
+        "완화·저스트레스 상태 — 강제 매도자가 부재하고 지배 주체가 개인 복권수요로 교체되어 우꼬리가 두꺼워지는 방향 — 부호가 반전될 수 있는 경계"
+      ],
+      "boundary_rationale": "경계는 기전에서 도출된다: ①반대매매는 담보비율 문턱-발동형이라 상태변수의 중상위 구간에서 비선형으로 활성화 — 전 구간 선형 보편성은 기전이 주장하지 않는다 ②극단 상태에서는 강제 매도가 종목 선별적이 아니라 전면적이 되어 횡단면 형태 신호가 퇴화 ③완화 상태의 지배 flow 주체 교체(강제 매도자→복권 수요자)는 부호 반전까지 허용. 문턱·상호작용 검정은 검정력 미달(B 18.60%·C 27.58%)로 본 라운드 판정축이 아니며, 경계 형태는 기술 진단(D_G)으로만 병기.",
+      "universality_disclaimer": "모든 국면 성립을 주장하지 않는다 — 성립 구간과 반전 허용 구간이 위처럼 기전에서 갈린다."
+    },
+    "inheritance_declaration": "mechanism / falsification 규칙 구조 / regime_scope 는 alpha_hypothesis.json(초판) + alpha_hypothesis_rev2.json 승계분을 재작성 없이 옮겨 담았다. schema 가 falsification 을 객체배열로 요구하므로 F_A~F_F 를 원문 그대로 배열 원소로 전사했다(내용 무변경, 형식 전사). regime_scope holds_in[0] 의 계열 토큰은 rev2 가 명시 선언한 치환(HY_Spread → KR_CreditSpread_BBB3Y)을 반영."
+  },
+
+  "factors": [
+    {
+      "factor_id": "Y1a_xs_asymmetry_shape",
+      "role": "outcome_shape_primary_truth",
+      "restatement_exposure": 0,
+      "ast": {"leaf": "SPECIAL_OP", "escape_contract": {"escape_type": "SPECIAL_OP",
+        "op_code_path": "stage_artifacts/WT-D20260822_001/build_outcome_panel.py::build_series — A_t = [(q90-q50)-(q50-q10)]/(q90-q10), 횡단면 표본분위 type-7",
+        "walk_forward": true}},
+      "note": "★𝒪 에 횡단면 분위 연산자가 없어 지수 전체를 SPECIAL_OP escape 리프 1개로 접었다(우회 구현 아님 — 스펙이 정한 escape 경로). 원천 리프 = A1_RAWDATA_OHLCVS_daily::Ret(홀딩월 실현 월간수익) + 유니버스 결정 리프 A1::K200/KQ150/AdminStock/TradingHalt + A9_liquidity_avgtv20_convention(adv20 2e8, d0 스냅샷). walk_forward=true — 전표본 통계 미사용, 당월 횡단면 집계만."
+    },
+    {
+      "factor_id": "Y1b_xs_asymmetry_magnitude",
+      "role": "outcome_magnitude",
+      "restatement_exposure": 0,
+      "ast": {"op": "SUB", "args": [
+        {"leaf": "SPECIAL_OP", "escape_contract": {"escape_type": "SPECIAL_OP",
+          "op_code_path": "stage_artifacts/WT-D20260822_001/build_outcome_panel.py::build_series — (q90-q50)",
+          "walk_forward": true}},
+        {"leaf": "SPECIAL_OP", "escape_contract": {"escape_type": "SPECIAL_OP",
+          "op_code_path": "stage_artifacts/WT-D20260822_001/build_outcome_panel.py::build_series — (q50-q10)",
+          "walk_forward": true}}]},
+      "note": "수익 단위 — 검정력 계약(required_effect_size.R)의 연환산 축과 단위가 이어지는 계열."
+    },
+    {
+      "factor_id": "Y2_tail_excess_balance",
+      "role": "outcome_tail_secondary",
+      "restatement_exposure": 0,
+      "ast": {"leaf": "SPECIAL_OP", "escape_contract": {"escape_type": "SPECIAL_OP",
+        "op_code_path": "stage_artifacts/WT-D20260822_001/build_outcome_panel.py::build_series — P(r>q90_roll)-P(r<q10_roll), 문턱 = 직전 60개월 풀링 횡단면",
+        "walk_forward": true}},
+      "note": "C1 준수 — 문턱은 rolling 풀링만, full-sample 분위 금지. walk_forward=true 가 그 규약의 선언."
+    },
+    {
+      "factor_id": "S_KR_CreditSpread_BBB3Y",
+      "role": "conditioning_state_primary",
+      "restatement_exposure": 0,
+      "ast": {"op": "AS_OF", "args": [
+        {"op": "SUB", "args": [
+          {"leaf": "E2_ecos_kr_rates:KR_CorpBBB"},
+          {"leaf": "E2_ecos_kr_rates:KR_Gov3Y"}]},
+        3]},
+      "note": "★C11 발표시차를 AS_OF 속성으로 끌어올렸다 — ctx_providers 는 계열별 시차를 대행하지 않으므로 어댑터가 L=3 calendar days 를 인자로 주입한다(소비 코드 하드코딩 금지). 실컷오프는 min(홀딩월 첫 거래일 − 3cd, 홀딩월 캘린더 첫날)로 지정보다 보수적. E2 는 무개정 시장금리라 restatement_prone=false. 강건성 1판 = 직전 120개월 rolling median/MAD z(rolling only, C1)."
+    },
+    {
+      "factor_id": "S_breadth_bear_prob",
+      "role": "conditioning_state_corroboration",
+      "restatement_exposure": 0,
+      "ast": {"op": "AS_OF", "args": [
+        {"leaf": "STORED_SCORE", "escape_contract": {
+          "escape_type": "STORED_SCORE",
+          "provenance": {
+            "store_build_hash": "md5:ba4617e0a87a526dfec4ab63a6c70ac2 (outputs/ramp/smv_factor_regime_daily.parquet, model_version=smv_v5_f15_fixed_20260820, source_version=ramp_v1.0_gate3_4)",
+            "generator_code_path": "02_Infrastructure/ramp/export_smv_factor_regime.R",
+            "generated_at": "2026-08-20T22:07:37+0900"
+          },
+          "production_parity_verified": false
+        }},
+        1]},
+      "note": "★저장 파생 패널이라 FIELD 위장 금지 — STORED_SCORE escape_contract 로 표현(rev2 open question 해소). 패널이 effective_date(T+2)를 자체 보유하므로 추가 시차 주입은 1일(홀딩월 캘린더 첫날 이전 보장분)만. production_parity_verified=false 를 정직 선언 — production 코드 실산출과의 parity 를 검증하지 않았으므로 incumbent base 소비 불가이며, 본 라운드는 base 가 아니라 corroboration 조건변수로만 소비했다(measurement-graduation §7b 정합). bear_prob 유효 시작 2014-04(이전은 warm-up 결측)."
+    },
+    {
+      "factor_id": "FlowAsym_mechanism_observable",
+      "role": "mechanism_side_observation_F_C",
+      "restatement_exposure": 0,
+      "ast": {"leaf": "SPECIAL_OP", "escape_contract": {"escape_type": "SPECIAL_OP",
+        "op_code_path": "stage_artifacts/WT-D20260822_001/build_FC_flow.py — corr_XS Spearman(A6_investor_flow_stock_daily::Individual / A9 adv20 , A1::Ret 월간)",
+        "walk_forward": true}},
+      "note": "성과 지표가 아니라 기전의 부수 관측. 포트 결정 미사용 — 사후 검증 전용."
+    }
+  ],
+
+  "combination_rule": "single_factor",
+  "combination_rule_caveat": "enum 에 '시장 수준 조건변수 회귀'에 해당하는 항목이 없다. 본 라운드는 종목별 스코어를 결합하지 않고 월별 시계열 회귀 1개를 적합했으므로 결합 자유도 0 이라는 뜻에서 single_factor 를 택했다 — 실제 구조와 enum 의 간극을 여기 명시한다.",
+
+  "verdict": "designed",
+
+  "self_pit_check": {
+    "performed": true,
+    "leaves_checked": [
+      {"leaf": "A1_RAWDATA_OHLCVS_daily", "availability_rule": "fixed: 일배치 00:03 KST. 홀딩월 수익은 실현치이고, 유니버스·유동성·거래정지 판정은 전부 d0(홀딩월 첫 거래일 직전 거래일) 스냅샷", "restatement_prone": true, "note": "수정주가 재작성 노출. 결과량이 분위 기반이라 극단 오염(|Ret|>1.0 288건, NA 처리)에 구조적으로 둔감"},
+      {"leaf": "E2_ecos_kr_rates:KR_CorpBBB", "availability_rule": "fixed: 관측일 익영업일 공표 — L=3 calendar days 주입(최악 경로 금요일 관측→월요일 게시)", "restatement_prone": false},
+      {"leaf": "E2_ecos_kr_rates:KR_Gov3Y", "availability_rule": "fixed: 동일", "restatement_prone": false},
+      {"leaf": "A6_investor_flow_stock_daily", "availability_rule": "manual_export: 정기 배치 없음(QuantiWise 수동 export). 실측 종단 2026-07-24 → F_C 유효창 상한 2026-06", "restatement_prone": false, "note": "F_C 전용. 포트 결정 미사용"},
+      {"leaf": "A9_liquidity_avgtv20_convention", "availability_rule": "fixed: A1 종속. adv20 = 직전 20 거래일 Close×Vol 평균, d0 종점(C10)", "restatement_prone": true},
+      {"leaf": "STORED_SCORE(smv_factor_regime_daily)", "availability_rule": "manual: effective_date(T+2) 자체 보유. production_parity 미검증", "restatement_prone": false}
+    ],
+    "verdict": "clean",
+    "verdict_basis": "①assert_overlay_pit() HARD 를 전 스펙에서 통과 ②lag1 스트레스에서 base 대비 붕괴 없음(동월 누출 징후 부재) ③오염판(홀딩월 말 정보) A/B 에서 인플레 없음 — 오염판 t 가 base 이하 ④진행월 2026-08 전건 제외. ★단 데이터 계층에서 별개의 C6 위반을 검거했다(KQ150 2015-07 이전 소급 투영) — 판정 창을 133m 로 강등해 판정에서 배제했으므로 본 산출물은 clean 이나, 동일 패널을 쓰는 다른 라운드에는 남아 있다(FQ-241)."
+  },
+
+  "alpha_vector": {},
+  "confidence_vector": {},
+  "alpha_discovery_count": 0,
+  "signal_matrix_ref": "stage_artifacts/WT-D20260822_001/lane_d_panel.parquet",
+
+  "factor_specs": [
+    {
+      "factor_family": "Cross-sectional distribution shape (non-alpha construct)",
+      "proxy": "Y1a = [(q90-q50)-(q50-q10)]/(q90-q10)",
+      "formula": "월별 K200∪KQ150 적격 종목 월간수익 횡단면 표본분위(type-7)",
+      "lag_rule": "유니버스·유동성 d0 스냅샷 / 수익은 홀딩월 실현",
+      "winsorization": "미적용 — 분위 기반이라 불요(|Ret|>1.0 물리불가 288건만 NA)",
+      "neutralization": "미적용 — 시장 수준 집계량이지 종목 스코어가 아님",
+      "economic_rationale": "제약 보유 매도자(신용융자 개인·한도 운용 기관)의 문턱-발동 강제매도가 활성화되면 좌꼬리가 우꼬리 대비 비대칭적으로 두꺼워진다는 기전의 관측면. 스케일 불변이라 분산 확대만으로는 움직이지 않는다.",
+      "redundancy_cluster_id": "xs_distribution_shape_quantile_v1",
+      "weight_theta": null,
+      "references": ["Brunnermeier-Pedersen 2009 (funding liquidity / margin spiral)", "Coval-Stafford 2007 (fire sales)", "본 저장소 FQ-233 Lane A / FQ-235 Lane C"]
+    },
+    {
+      "factor_family": "Funding condition state (conditioning variable, not alpha)",
+      "proxy": "KR_CreditSpread_BBB3Y = KR_CorpBBB − KR_Gov3Y",
+      "formula": "ECOS 일별 시장금리 차, 원수준 %p",
+      "lag_rule": "L = 3 calendar days, 컷오프 = min(첫 거래일 − 3cd, 캘린더 월초)",
+      "winsorization": "미적용",
+      "neutralization": "해당 없음",
+      "economic_rationale": "한계 차입자(최저 투자등급)의 조달 가격 — 기전의 agent 가 마주하는 자금조달 조건 그 자체. KR 국내 계열이라 US 계열 연계 가정이 불요.",
+      "redundancy_cluster_id": "kr_funding_price_state_v1",
+      "weight_theta": null,
+      "references": ["Gilchrist-Zakrajšek 2012 (credit spread as state variable)"],
+      "measured_caveat": "★원수준은 AR1 0.957 의 준-단위근 저주파 계열이며 급성 에피소드 계기가 아니다 — 2020-03(COVID 정점) S=6.73 으로 2010년 평균 7.76 보다 낮고 2020년 최고치는 11월(7.94)이다. 이 사실이 사전등록 강건성판(rolling-z) 결과와 정합한다."
+    }
+  ],
+
+  "diagnostics": {
+    "canonical_port_t_nw_lag3": null,
+    "canonical_port_t_pvalue": null,
+    "canonical_n_months": null,
+    "canonical_port_t_null_reason": "본 라운드는 포트폴리오 수익 계열을 만들지 않았다 — 정당 산출이 분포적 사실 + 조건부성까지이고 소비면 라우팅은 INV-7 경계 밖이다. 성능수치 0건이므로 proxy 손계산 위반 표면 자체가 없다.",
+    "rank_ic": null,
+    "icir": null,
+    "monotonicity": null,
+    "subperiod_stability": null,
+    "turnover_proxy": null,
+    "harvey_t_stat": null,
+    "post_neutralization_ic": null,
+    "advisory_metrics_null_reason": "rank-IC 계열은 종목별 스코어의 횡단면 순위력 지표다. 본 라운드 산출은 종목 스코어가 아니라 월별 시장 수준 집계량이라 정의되지 않는다 — 억지로 채우지 않는다.",
+
+    "primary_window": "2015-07..2026-07 (133m, PIT-clean)",
+    "primary_regression": {
+      "Y1a": {"b": 0.057342, "se_nw": 0.026423, "t_nw": 2.170, "effect_std": 0.210, "ci95_std": [0.020, 0.399], "placebo_abs_t_p95": 2.58, "placebo_pass": false, "grid_label": "기각-부호"},
+      "Y1b": {"b": 0.014397, "se_nw": 0.008455, "t_nw": 1.703, "effect_std": 0.163, "ci95_std": [-0.025, 0.350], "placebo_abs_t_p95": 3.03, "placebo_pass": false, "grid_label": "미결(underpowered)"},
+      "Y2":  {"b": 0.068560, "se_nw": 0.033395, "t_nw": 2.053, "effect_std": 0.160, "ci95_std": [0.007, 0.312], "placebo_abs_t_p95": 1.83, "placebo_pass": true, "grid_label": "기각-부호"}
+    },
+    "preregistered_robustness_rollz120": {"Y1a_t_nw": 1.429, "Y1b_t_nw": 0.630, "reading": "원수준의 반대-부호 유의성이 추세 성분 제거 시 소멸"},
+    "corroboration_breadth_133m": {"Y1a_t_nw": -0.573, "Y1b_t_nw": -0.807, "Y2_t_nw": -0.664, "grid": "Y1a·Y2 = 효과없음(powered null) / Y1b = 미결", "reading": "예측 부호(음수)이나 앵커 기준으로 효과 부재"},
+    "F_C_mechanism": {"t_nw_level_133m": 2.98, "t_nw_level_198m": 3.08, "t_nw_rollz_133m": 2.40, "t_nw_rollz_198m": 3.27, "flowasym_time_trend_t": -0.04, "flowasym_ar1": 0.33, "verdict": "채널 지지 — 결과량 축을 죽인 검사(추세 제거·지속성)를 통과"},
+    "D_G_C_top": {"133m": 0.462, "uniform_baseline": 0.333, "kish_effective_months": 59.3, "verdict": "식별력이 S 상위 3분위에 집중 — 연속화가 상시 축소로 흐른 형태는 아님(advisory)"},
+    "power": {"required_effect_t_based_Y1b_annual_pct_133m": 10.465, "anchor_std": 0.25, "sd_monthly_measured": {"Y1a": 0.12564, "Y1b": 0.04067, "Y2": 0.19721}, "nw_inflation_measured": {"Y1a": 1.220, "Y1b": 1.237, "Y2": 0.981}},
+    "metric_type": "measured_direct",
+    "evidence_dir": "stage_artifacts/WT-D20260822_001/",
+    "full_results": "stage_artifacts/WT-D20260822_001/alpha_validation.json"
+  },
+
+  "round_verdict": {
+    "label": "기각-부호",
+    "headline": "예측 방향(경색↑ ⇒ 좌꼬리 비대, b<0)의 조건부성 기각 — 단 반대 방향도 확립되지 않음",
+    "support_for_predicted_sign": "0건 (전 창·전 결과량·두 조건변수 축)",
+    "disposition": {
+      "예측_방향": "frontier 정리 — breadth 축에서 앵커 기준 powered null(Y1a·Y2)",
+      "반대_방향": "미결 — 지속성 밴드 미돌파 + 사전등록 강건성판에서 소멸 + Y2 만 창 간 불일치로 잔존",
+      "기전_전이_단절": "신규 사실로 적립 — F_C 는 지지(t=+2.98~3.27, 추세 제거 후에도)인데 분포 귀결이 없다"
+    },
+    "inv7_boundary": "★b<0 미성립이라 자본화 논의가 발생하지 않으나 규약대로 명시한다: 본 라운드는 소비면 라우팅·PORT_t 졸업 후보 제안을 하지 않는다. FQ-233 이 분포-표적 교체의 자본화 경로에 건 부활조건 2건(①평균-정합 선별 통계량 재서열 전이 양성 ②rank 1-25 역-소비 사전등록 라운드 유의) 밖에서의 재제안 금지를 존중한다."
+  },
+
+  "lane_relationship_framing": {
+    "lane_A_FQ233": {
+      "cited": "무조건부 분포-표적 교체가 전 브레드스 스코어 수준 MDE 1.2%p 에서 POWERED NULL. 기전 = 표적-지표-소비 함수 불일치(cor(왜도기울기, 중앙값−평균 gap) = −0.728, 준-단조 분위 프로파일 0/320종).",
+      "status": "provisional_pending_FQ-241",
+      "why_provisional": "★Lane A 측정 창이 259개월이고 그중 2015-07 이전 구간은 본 라운드가 검거한 KQ150 소급 투영(FQ-241)에 걸린다. Lane A 가 잰 것이 하필 횡단면 분포의 형태라 왜곡이 정확히 그 차원에 들어간다. 재검 대상 = 준-단조 프로파일 0/320 · cor −0.728 · POWERED NULL 판정 자체. 인용을 지우지 않는다 — 지금 아는 최선이되 검증 대기 상태라는 것이 정확한 서술이다.",
+      "consequence_for_this_round": "'확립된 무조건부 null 의 조건부 next probe' 라는 자리매김은 잠정이다. 본 라운드의 판정 라벨·앵커·req 에는 영향이 없다 — 그리드는 자기 창에서 자기 데이터로 닫힌다."
+    },
+    "lane_C_FQ235": {"cited": "round1 PARTIAL — P1 3쌍 UNDERPOWERED(연 6.0~9.7%p 용량 효과 미검출) · P2 FAIL(표적 서열 비전이 rho −0.50)", "status": "provisional_pending_FQ-241", "note": "동일 유니버스 사용분에 한해 같은 파급 후보"},
+    "this_round_strength": "★본 라운드의 PRIMARY 창 133m(2015-07~)은 KQ150 실시간 산출 개시 이후 구간이라 FQ-241 결함에서 자유롭다. 백필 관문이 PIT 사유로 창을 깎은 경계와 오염 구간의 경계가 같은 2015-07 이다 — 사후 합리화가 아니라 두 사유가 같은 날짜를 공유한다는 사실이며, 198m 병기가 왜 성립 근거가 될 수 없는지도 이 한 문장으로 설명된다.",
+    "power_comparison": "Lane D 바 10.465%(t-기반)~12.2%(앵커 환산) > Lane C 6.0~9.7% > Lane A 1.2%p. ⇒ Lane D 의 '미결'은 Lane C 와 같은 벽이 아니라 더 앞쪽(거친) 벽이다. 반면 breadth 축의 powered null 은 '검출 실패'가 아니라 '앵커 크기 효과 부재'다 — 두 라벨을 섞지 않는다."
+  },
+
+  "challenge_flags": [
+    "승계 PRIMARY 조건변수 HY_Spread 가 FRED 원천에서 2023-08-22 부터만 제공(ICE BofA 계열 절단) — 임의 교체 없이 alpha-hypothesis 재설계 요청 → rev2 수신 후 착수",
+    "승계 PRIMARY 창 320m 전제 거짓 — KQ150 최초 플래그 2010-01-29. 320m 철회",
+    "★데이터 계층 C6 검거: KQ150 2010-02~2015-06 멤버십은 2015-07 명부의 소급 투영(exits 0 · 단조포함 TRUE · 2011-06 멤버 138/138 이 2015-07 잔존 vs 실시간 3년 잔존율 61.3% · 동일 코드에서 K200 은 exits 74). 사전등록 대체 경로대로 PRIMARY 133m 강등 집행. FQ-241 등재",
+    "★사전등록 backfill 관문(share_delisted_eventually)이 재려던 축을 재지 못했다 — 검출력 없는 통계였다. 대체 3종 제안(퇴출 회전율·단조포함·k년 잔존율), window_downgrade_decision.json",
+    "F_A powered-null 밴드가 결과량 자기 sd 기준으로는 t-검정 재진술로 퇴화(bar_restates_t=TRUE, implied_t=2.08) — rev2 외부 앵커(표준화 0.25)로 해소하고 t-기반 req 를 병기",
+    "★내가 선언한 양성 대조(xs_sd ~ S)가 죽었다(t=1.07/0.84) — 기측정 양성이 아니라 그럴듯해서 고른 것이었고 이는 내 절차 결함이다. 대체 배터리 실측으로 프레임 생존 확인(xs_sd 지속성 t=5.11 · Y1b 지속성 t=3.96 · xs_mean~VIX t=2.73). 대체 배터리는 사후 구성임을 명시",
+    "★지속 회귀변수에서 NW lag-3 t=2.0 문턱이 5% 검정이 아니다 — φ 0.95~0.99 에서 placebo |t| p95 2.45~3.26. NW lag 3→18 변경으로는 안 바뀜(t 1.97~2.09). 매크로·국면 조건화 라운드 전반에 걸리는 결함 → NP5",
+    "request.json liquidity_min_won_20d_avg = 5e7 이 헌법 Production Constraints 2e8 과 불일치 — PRIMARY 는 2e8 고정, 5e7 은 커버리지 진단으로만. WT 생성 측 수리 대상",
+    "rev2 컷오프 지정(첫 거래일 − 3cd)을 min(…, 캘린더 월초)로 강화 구현 — assert_overlay_pit HARD 를 만족시키기 위함이며 지정보다 항상 이르다(느슨화 아님). 문서화된 이탈",
+    "★계약 표면 분열 발견: schema.json ast_node.op enum 은 DIV_GUARD 를, 02_Infrastructure/ast/operator_library.json 정본은 DIV 를 갖는다 — 스키마를 따르면 ast_spec_gate 가 block(본 라운드에서 실제 차단됨). ALB-005/006 과 같은 계통. 본 산출물은 나눗셈을 SPECIAL_OP 로 접어 회피했고 정본 정합은 별도 수리 대상",
+    "𝒪 에 횡단면 분위 연산자(CS_QUANTILE) 부재 — SPECIAL_OP escape 로 표현. blocked_by_capability 가 아니므로 ast_operator_backlog 임의 등재는 하지 않았다(선제 확장 금지). 𝒪 확장 후보로만 기록",
+    "combination_rule enum 에 '시장 수준 조건변수 회귀'가 없어 single_factor 로 표기 — 실제 구조와 enum 의 간극 명시",
+    "alpha_scores.parquet 미발행 — 종목별 스코어 0건이라 빈 파일 발행이 오히려 오도. 근거 패널은 lane_d_panel.parquet(342행 × 19열)으로 발행",
+    "wt_type=discovery 이나 alpha_discovery_count=0 → alpha_discovery_certificate 미발급. 예측 방향이 기각됐으므로 인증 대상 알파가 없는 것이 정상 산출",
+    "Y2 창 간 불일치 미해소(198m t=1.26 powered null vs 133m t=2.05) — Y2 만 60개월 rolling 문턱을 쓰는 유일 결과량. 헤드라인 지지 근거로 사용하지 않음",
+    "본 라운드 결과량은 전부 월간 횡단면 — 조건부 비대칭이 일별 축에만 존재하면 볼 수 없다. Lane B 소관이며 자유도 분리상 본 라운드에서 혼입 금지. 'null 은 월간 축에서의 null' 로 한정",
+    "F_C 는 동월 관측 — 포트 결정 미사용이라 C2 는 아니나 S 와 FlowAsym·Y 가 공통 원인(당월 시장 급락)을 공유할 가능성은 배제 못 함. NP3 이 겨냥",
+    "★Lane A(FQ-233)·Lane C(FQ-235) 승계 서술 전건 = provisional_pending_FQ-241 (lane_relationship_framing 참조)",
+    "상세 자가 적대검증 9축: challenge_note.md (동 mailbox)"
+  ],
+
+  "next_probe": [
+    "NP1 가격 축 vs 수량 축 분해 — S_credit 과 S_breadth 를 상호 직교화한 잔차로 Y1a/Y2 재회귀. 본 라운드가 만든 유일한 결정적 이상(같은 '경색'인데 부호가 반대)을 직접 검정",
+    "NP2 급성 에피소드 조건화 — S 를 원수준이 아니라 Δ3M 스프레드(사전고정 1개)로 재정의. 근거 = 원수준이 AR1 0.957 저주파이고 2020-03 이 상위에 없다는 실측",
+    "NP3 F_C 전이 단절의 3단 경로 측정 — S→FlowAsym(t=+2.98 생존 확인)→Y 의 2단과 부분상관. Lane A 의 표적-지표-소비 함수 불일치와 같은 계통인지 대조",
+    "NP4 KQ150 PIT 명부 복원 가능성 census — 불가 확정 시 '이 저장소의 UNION 유니버스는 2015-07 이전 부재'를 인프라 사실로 고정(FQ-241 next_action ①④)",
+    "NP5 지속 회귀변수용 검정 프로토콜 상설화 — AR(1)-matched placebo 밴드를 조건변수 회귀 기본 게이트로. required_effect_size.R 의 자매 persistent_regressor_power.R 제안",
+    "NP6 ★Lane A 분포 형태 수치의 청정창(2015-07~) 단독 재산출 — FQ-241 blast radius 1순위. 판정 규칙은 FQ-241 에 사전고정된 것을 그대로 인용: 부호·결론 유지 시 'robust_to_universe_defect' 라벨, 뒤집히면 해당 라운드 판정 철회. 대상 수치 = 준-단조 분위 프로파일 0/320 · cor(왜도기울기, 중앙값−평균 gap) −0.728 · POWERED NULL(MDE 1.2%p)"
+  ]
+}
