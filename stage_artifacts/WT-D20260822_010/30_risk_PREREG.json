@@ -1,0 +1,101 @@
+{
+  "task_id": "WT-D20260822_010",
+  "layer": "risk-research",
+  "sealed_at": "2026-08-22T21:05:00+0900",
+  "sealed_before": "어떤 처치(augmented) 리스크모델도 추정하기 전. 본 파일은 30_risk_gate.R 실행 전에 봉인한다.",
+  "question": "absorb 직교화 tail 축(score_orth)이 위험모델을 개선하는가 — tail/stress · crowding · Sigma 세 층 각각.",
+  "prior_boundary": {
+    "FQ-058": {
+      "status": "config_scoped_negative_20260718",
+      "what_it_tested": "목적함수 교체(MinCDaR/MinCVaR/MinVar vs MVO/EW) = drawdown-aware WEIGHTING. 5-arm 197리밸 walk-forward.",
+      "why_this_round_differs": "FQ-058 은 Sigma 와 수익 입력을 고정한 채 **최적화 목적함수**를 바꿨다. 본 라운드는 목적함수를 건드리지 않고 **위험 추정 입력(name-level tail 예측 · 특이위험 D · crowding 진단)** 의 정확도를 묻는다. 판정 지표도 다르다 — FQ-058 은 structural DD/calmar/PORT_t(성과-축), 본 라운드는 조건부 캘리브레이션 오차·proper score(추정품질-축). ★risk_research_init v1.2 R4 규약이 risk 층 selection_objective 를 estimation-quality enum 으로 강제하므로 성과-축 지표는 애초 사용 불가.",
+      "shared_wall_acknowledged": "FQ-058 이 확립한 '롱온리 momentum crash = systematic 동반급락이라 ex-ante 종목식별 불가' 는 momentum 재료 한정 판정이다. 본 재료(absorb 직교화)는 momentum 이 아니고 종목-특이 좌측꼬리를 표적하며 NP2 가 disjoint 2창에서 판별력을 실측했다 — 다만 '종목-특이 꼬리 재료 등장' 은 FQ-058 이 명시한 부활 조건이므로 본 라운드는 그 조건의 시험이기도 하다."
+    },
+    "FQ-060": "crash-aware SELECTION(WT-D20260718_001) + P1 crash-aware TIMING OVERLAY 둘 다 config-scoped negative. 본 라운드는 selection 도 overlay 도 아니다(위험 추정 입력).",
+    "FQ-057_NP4": "Sigma 품질은 위험-축 레버이지 평균-축 레버가 아님(paired NULL). 본 라운드는 이 posterior 를 승계하여 **성과 개선을 주장하지 않는다** — 자본 주장 금지.",
+    "consumption_surface_ruling": "Q-Lead 2026-08-22 소비면 7종 판정에서 ④위험모델·베타예산 = 자유면. FQ-233 의 분포-표적 자본화 차단 대상이 아니다 — 본 라운드의 산출은 자본 배분(weight/book)에 직접 도달하지 않고 추정 품질 진단에만 머물기 때문이다."
+  },
+  "metrics": [
+    {
+      "id": "R1",
+      "layer": "tail_stress",
+      "role": "primary",
+      "name": "조건부 캘리브레이션 오차(Conditional Calibration Error, CCE) — 기저 위험모델의 5% VaR 이 score_orth 축에서 체계적으로 어긋나는가",
+      "definition": "기저 모델 M0 가 각 종목-월에 5% VaR q0(i,t) 를 낸다. 실현 위반 지시자 b(i,t)=1{Ret_1m(i,t) <= q0(i,t)}. 월별 횡단면에서 score_orth 하위 20% 군(lo)과 나머지(hi)의 위반율 차 d_breach(t)=rate_lo(t)-rate_hi(t). CCE 통계량 = mean(d_breach) 와 NW(lag3) t. 캘리브레이션이 완전하면 0.",
+      "improvement_definition": "M0 의 CCE 가 0 에서 유의하게 벗어나면 = 기저 모델이 이 축에서 mis-calibrated = score_orth 를 넣으면 그만큼 개선 가능. 개선폭 상한 = |mean(d_breach)| (군별 스케일 보정으로 원리상 전부 제거 가능).",
+      "direction_predicted": "d_breach > 0 (lo 가 더 자주 위반 = M0 이 lo 의 꼬리를 과소예측)",
+      "n": 268,
+      "test": "paired NW t (lag 3), 사전등록 유의 문턱 |t| >= 2.0",
+      "why_first_order": "proper scoring rule(pinball/log-loss)의 개선은 예측오차의 **2차**라 구조적으로 미소하다(아래 R1b). 캘리브레이션 오차는 **1차**이며 위험모델 검증의 표준 진단이다."
+    },
+    {
+      "id": "R1b",
+      "layer": "tail_stress",
+      "role": "secondary",
+      "name": "proper score 개선 — name-level pinball loss (tau=0.05)",
+      "definition": "L(q;r) = (tau - 1{r<q})(r - q). M0 대비 M1(=M0 + score_orth 군별 스케일, 확장창 PIT 추정)의 월별 평균 손실 차. 개선 = mean(L0 - L1) > 0.",
+      "second_order_arithmetic": "기저가 전체로 캘리브레이션돼 있으면 군별 최적 분위로 옮겨서 얻는 이득은 dL = 0.5 * f(q) * sum_g p_g * delta_g^2 로 2차. 이 값이 MDE 대비 어디에 서는지를 착수 전에 계산한다.",
+      "n": 268,
+      "test": "paired NW t (lag 3)"
+    },
+    {
+      "id": "R1c",
+      "layer": "tail_stress",
+      "role": "secondary",
+      "name": "포트폴리오-수준 5% VaR 예측 개선 (top-25 cap-w book)",
+      "definition": "base book 월별 수익에 대한 포트폴리오 VaR 예측의 pinball loss. M0 vs M1.",
+      "prior": "구조적 미소 예상 — 개별 종목 꼬리 이질성이 25종 집계에서 희석되고, 책의 축-틸트가 시간에 따라 거의 변하지 않으면 M1 이 M0 에 상수만 더한다. 착수 전 산술로 확인한다."
+    },
+    {
+      "id": "R2",
+      "layer": "crowding",
+      "role": "primary",
+      "name": "crowding 한계 기여 — 기존 Absorption Ratio 대비",
+      "definition": "book-수준 crowding proxy C_orth(t) = base top-25 의 score_orth 저분위 비중합(하락일 개인지지 부재 노출). 종속변수 = 다음 1개월 book active 수익. 회귀: r_active(t+1) ~ AR(t) + C_orth(t). 한계 기여 = C_orth 계수의 NW t 와 delta adjusted R2.",
+      "n": 268,
+      "test": "NW t (lag 3), 사전등록 문턱 |t| >= 2.0",
+      "note": "Acadian 2026 crowding 검증 관례(=crowding 이 후속 낙폭/반전을 예측하는가)를 KR long-only book 에 사상. crowding_score_per_factor() 는 별도로 의무 산출."
+    },
+    {
+      "id": "R3",
+      "layer": "sigma",
+      "role": "primary",
+      "name": "분산-축 한계 기여 — score_orth 가 특이분산 D 예측을 개선하는가",
+      "definition": "QLIKE 손실 = log(sigma2_hat) + r^2/sigma2_hat, name-level 월별. M0(rolling 특이변동성) vs M1(+score_orth 군별 스케일). 개선 = mean(QLIKE0 - QLIKE1) > 0.",
+      "structural_prior": "NULL 예상 — score_orth 는 win_vol 랭크에 직교화되어 구성상 변동성 축과 무상관이다. 즉 Sigma(2차 적률·대칭)는 이 축이 나르는 **비대칭(좌측꼬리) 정보의 그릇이 아니다**. 이 예상이 맞으면 '효과없음'(검출력 있는 null)으로 라벨하고, 검출력이 없으면 '미결'로 라벨한다.",
+      "n": 268,
+      "test": "paired NW t (lag 3)"
+    }
+  ],
+  "positive_controls": {
+    "PC1_tail": "win_vol 하위/상위 분위로 같은 CCE 통계량을 계산 — 변동성 축은 위험모델이 이미 쓰는 축이므로, 기저 M0 가 vol 로 **정규화되기 전** 원시 수익에 대해서는 큰 CCE 가 나와야 한다(하네스 전도성 증명). 발화하지 않으면 하네스가 눈이 먼 것.",
+    "PC2_sigma": "win_vol 을 M1 의 보조축으로 넣었을 때 QLIKE 가 개선되어야 한다(분산-축은 vol 이 지배). 개선되지 않으면 R3 의 null 은 하네스 무능이며 '미결'.",
+    "rule": "양성 대조가 발화하지 않으면 해당 층의 null 은 '미결(underpowered)' 로만 라벨하고 '효과없음' 으로 쓰지 않는다."
+  },
+  "gate_arithmetic": {
+    "formula": "ratio = (기전-함의 개선폭, 지표 단위) / MDE80(같은 지표 단위);  MDE80 = 2.802 * sd_monthly / sqrt(n_months)",
+    "stop_rule": "ratio < 0.10 이면 해당 지표는 **측정하지 않고** 산술과 함께 보고 후 중단한다.",
+    "comparison_term_discipline": "★WT-010 소급 정정 승계 — 편익 대비항은 '뺀 것 vs 남은 것' 이 아니라 '뺀 것 vs 그 자리를 채우는 것' 이다. risk 층 번역: 개선폭은 '저-orth 군의 실현 꼬리 vs 고-orth 군의 실현 꼬리'(raw 판별력)가 아니라 '저-orth 군의 실현 꼬리 vs **기저 위험모델이 그 종목들에 이미 예측하고 있는 꼬리**'(증분)다. 기저가 이미 채우고 있는 몫을 편익으로 세지 않는다.",
+    "noise_source": "MDE 의 sd 는 **순열(permutation)** 로 얻는다 — 날짜 내 score_orth 라벨을 섞어 귀무 하 월별 지표 계열을 만들고 그 sd 를 쓴다. 참효과를 보지 않고 잡음 규모만 얻는 경로.",
+    "seed": 20260822
+  },
+  "pit": {
+    "C1": "모든 기저 모수(rolling sd · 군별 스케일 · AR)는 rolling/expanding 창만. 확장창은 t 시점까지의 데이터만.",
+    "C5": "score_orth 는 d0(결정일) 시점 값, 결과는 d0 이후 1개월 forward 수익(fwd_ret 계약). 홀딩월 시작 전 정보만.",
+    "C10": "유동성 필터는 alpha 층이 이미 적용한 liqf(adv 2e8, t-1) 를 verbatim 승계.",
+    "C11": "외부 매크로 미사용.",
+    "C14": "Factor DB IC 미접근.",
+    "C15": "Factor DB parquet 직접 로드 없음 — alpha 층 산출물과 screen_inputs 계약만 소비."
+  },
+  "prohibitions_ack": {
+    "no_alpha_edit": "alpha_vector/score 수정 없음. score_orth 는 alpha 층이 이미 발행한 객체를 read-only 소비.",
+    "no_weights": "비중 제안 없음. base top-25 cap-w 는 **기존 book 의 형태**로만 등장하며 새 비중을 만들지 않는다.",
+    "no_capital_claim": "graduation/자본 주장 없음. forge-authoritative 수치 미생산."
+  },
+  "labels": {
+    "미결(underpowered)": "효과 부재를 배제할 수 없음 — 기전-함의 크기가 CI 안",
+    "효과없음(powered null)": "양성 대조 발화 + 기전-함의 크기가 CI 밖 → 그 크기의 효과는 없음",
+    "가려짐(masked)": "다른 결함이 탐지를 무력화 — 즉시 수리 대상",
+    "지지": "사전등록 방향으로 유의"
+  }
+}
