@@ -5191,8 +5191,8 @@
    "ev_rationale": "도훈 지시 2026-08-13 '매크로 데이터도 적극 활용해줘' + '이미 적재하고 있을텐데'. 실측 확인: 적재는 돌고 있다 — 2026-08-13 07:04~07:07 갱신, macro_fred/ecos_bond_rates/ecos_krw_usd/regime_daily_v2/unified_regime_signal_daily 전부 lag 1d. **신규 수집 불요, 소비 배관만 붙이면 된다.**",
    "wall_check": "IC->PORT_t 전이 벽 + 국면-조건부 검정력(분할이 유효표본을 에피소드 수로 붕괴시킴).",
    "data_gate": "없음(적재 중, 전 패널 FRESH). ★2026-08-13 자기정정 — 초판이 낸 '정체 4건' 중 2건은 오진: cache_registry.json 선언과 cache_freshness_latest.json(08-13 07:07) 을 읽으니 fred_macro_wide 는 lag_basis=content+trading_days 로 lag_used 4 <= max 4 FRESH, flow_features_daily 는 weekly/tier3/max_lag 90 계약에 lag_used 43 FRESH. ★기전 = 계약이 선언한 basis 가 아니라 내 calendar-day basis 로 재고 차이를 결함으로 읽음. 규약: 패널 신선도는 cache_registry 선언(schedule/max_lag_days/lag_basis)과 감사 lag_used 로 판정한다. [유효 잔존 2건] ①계열별 시차 불균질 23계열 lag 중앙 12d 범위 7~73d ②macro_regime 마지막 행이 진행 중인 달의 부분 관측(월말스탬프 320/320 이라 look-ahead 는 아니나 월중 조회 시 동월 look-ahead + 미확정 vintage). ★감사 사각 확인: freshness 는 data_lag=-18 을 lag_used=0 으로 clamp 해 FRESH 판정 = 미래-날짜 스탬프를 잡는 검사가 없다. [신규 2건] ③RAWDATA::value / benchmark::value VALUE_FAIL CRITICAL 은 **오탐 확정** — cap-weighted 재구성(t-1 Size 가중)으로 2026-07-31 저장 BM +0.1998 vs 재구성 +0.1843, 49거래일 cor 0.9989 · |gap| 중앙 0.0029 · |gap|>0.02 인 날 0/49. 저장 벤치는 구성종목과 정합하며 결함 아님. 검사기 쪽 문제 = 고정 문턱 |BM_Ret|>0.15 가 분포 이동 국면에서 실제 값을 결함으로 신고 ④2026년 벤치 일간 sd 0.0444 = 역사 0.0170 의 2.6배, 역사 |수익| 상위 8 중 4건이 2026년.",
-   "owner": "CLAIMED - Q-Lead session d2e06481 2026-08-22 (/qvest + 도훈 지시 'QEPM 모드 가동'). QEPM 6-agent 풀파이프라인으로 착수 — alpha-hypothesis(fable) 가설설계부터. precheck_20260820 6항 승계(재측정 불요), 설계 = A2 연속회귀 + FRED 창 확장. 구 owner: UNCLAIMED — v8.4 재편 도훈 추가 지시(2026-08-13)로 신설. 착수 전 owner 잠금 의무.",
-   "status": "MEASURING_20260822__rev2_spec_gates_cleared",
+   "owner": "RELEASED(round1 완료) - Q-Lead session d2e06481 2026-08-22 (/qvest + 도훈 지시 'QEPM 모드 가동'). QEPM 6-agent 풀파이프라인으로 착수 — alpha-hypothesis(fable) 가설설계부터. precheck_20260820 6항 승계(재측정 불요), 설계 = A2 연속회귀 + FRED 창 확장. 구 owner: UNCLAIMED — v8.4 재편 도훈 추가 지시(2026-08-13)로 신설. 착수 전 owner 잠금 의무. → 2026-08-22 12:12 round1 close_round 발행, owner 해제. NP1~NP6 은 미착수(다음 세션 착수 가능, 착수 전 재잠금).",
+   "status": "ROUND1_DONE_20260822__config_scoped_negative_sign_rejected__mechanism_transfer_break",
    "next_action": "★착수 0항(정정판): ①계열별 발표시차(C11) — 하나의 매크로 벡터로 묶으면 가장 느린 계열(73d)이 지배한다. 계열별로 다루거나 느린 계열 기준 지연 ②월말-스탬프 매크로는 홀딩월 시작 전 컷오프로 재매핑 + **진행 중인 월(마지막 행) 소비 금지** ③★**시대-분해 병기 의무** — 2026 변동성이 역사 2.6배라 최근 구간이 판정을 지배할 수 있다. 전기간 단일 수치로 결론 내지 말 것 ④★**연속 상태변수로 쓸 것** — 이분 라벨화는 (a)label_eligibility 관문(현재 p 단독·n-구동, 도훈 결정 대기) (b)유효표본을 개월수가 아니라 에피소드 수로 붕괴, 두 함정을 동시에 부른다 ⑤분할 전에 required_effect_size.R 검정력 ⑥Lane A 와 자유도 분리(조건변수 추가와 표적 교체를 같은 라운드에 섞지 말 것) ⑦판정 = canonical PORT_t(cap-w 1급, EW-uni 진단 병기).",
    "source_refs": "02_Infrastructure/docs/qvest_v8_4_asymmetry_ml_sot.md Lane D",
    "handoff_smv_20260820": "[FQ-239 P2ⓑ 핸드오프 — 조건변수 후보 신규 공급] outputs/ramp/smv_factor_regime_daily.parquet (6팩터 × 5,087일, 2006~2026-08). 후보 = bear_prob 6종(연속, 상대근접도 c_bull/(c_bear+c_bull) — 자유도 0) + breadth(=6종 평균). PIT 규약: Date=T는 T종가 산출 신호 → effective_date(T+2)부터만 소비, 월간 프레임 컷오프 = 홀딩월 시작 2거래일 전, 결측일 locf, 진행월 소비 금지. C11 발표시차 없음(내생 계산 — 입력은 KR 종가뿐, US VIX 변형 미사용). ★연속변수 사용 의무(이분화 금지 — 본 next_action ④ 정합). 착수 전 required_effect_size.R 검정력 + 시대분해 병기 + Lane A 자유도 분리(⑥) 유지. 원 신호의 단독 배분 성과는 자본 게이트 전패(FQ-239 §6~8 — 단 위기월 조건부 반응성 실측 존재)이므로 '알파'가 아니라 조건변수로만 소비할 것.",
@@ -5310,7 +5310,14 @@
    "last_round": "FQ-236_LaneD_macro_conditional_asymmetry_WT-D20260822_001",
    "last_verdict": "config_scoped_negative",
    "last_closed_at": "2026-08-22T12:12:43+0900",
-   "last_next_probe": ["NP1 가격 축 vs 수량 축 분해 — S_credit 과 S_breadth 를 상호 직교화한 잔차로 Y1a/Y2 재회귀. 본 라운드의 유일한 결정적 이상(같은 경색인데 부호 반대)을 직접 검정. n·sd 불변이라 req 10.465% 그대로 적용 가능.", "NP2 급성 에피소드 조건화 — S 를 원수준이 아니라 Delta3M 으로(사전고정 1개). 근거 = AR1 0.957 및 2020-03 미상위 실측. 원수준이 저주파 체제라면 급성 축은 미측정 상태다.", "NP3 기전-전이 단절의 3단 경로 측정 — S -> FlowAsym(생존 확인됨) -> Y 의 2단 회귀·부분상관. 단절 지점이 두 번째 다리인지 확인.", "NP4 KQ150 PIT 명부 복원 census (FQ-241 next_action 1/4) — 파급 범위 조사.", "NP5 지속 회귀변수용 검정 프로토콜 상설화 — phi 0.95~0.99 구간에서 t 문턱을 placebo 밴드로 대체하는 계약(persistent_regressor_power.R 제안). 본 라운드에서 t=2.0 기준이 5% 검정이 아님이 실측됐다.", "NP6 Lane A 분포 형태 수치의 청정창(2015-07~) 단독 재산출 — FQ-241 blast radius 1순위. 판정 규칙은 FQ-241 사전고정분 인용(유지 시 robust_to_universe_defect, 뒤집히면 판정 철회)."]
+   "last_next_probe": [
+    "NP1 가격 축 vs 수량 축 분해 — S_credit 과 S_breadth 를 상호 직교화한 잔차로 Y1a/Y2 재회귀. 본 라운드의 유일한 결정적 이상(같은 경색인데 부호 반대)을 직접 검정. n·sd 불변이라 req 10.465% 그대로 적용 가능.",
+    "NP2 급성 에피소드 조건화 — S 를 원수준이 아니라 Delta3M 으로(사전고정 1개). 근거 = AR1 0.957 및 2020-03 미상위 실측. 원수준이 저주파 체제라면 급성 축은 미측정 상태다.",
+    "NP3 기전-전이 단절의 3단 경로 측정 — S -> FlowAsym(생존 확인됨) -> Y 의 2단 회귀·부분상관. 단절 지점이 두 번째 다리인지 확인.",
+    "NP4 KQ150 PIT 명부 복원 census (FQ-241 next_action 1/4) — 파급 범위 조사.",
+    "NP5 지속 회귀변수용 검정 프로토콜 상설화 — phi 0.95~0.99 구간에서 t 문턱을 placebo 밴드로 대체하는 계약(persistent_regressor_power.R 제안). 본 라운드에서 t=2.0 기준이 5% 검정이 아님이 실측됐다.",
+    "NP6 Lane A 분포 형태 수치의 청정창(2015-07~) 단독 재산출 — FQ-241 blast radius 1순위. 판정 규칙은 FQ-241 사전고정분 인용(유지 시 robust_to_universe_defect, 뒤집히면 판정 철회)."
+   ]
   }
  ],
  "parked_rounds": [
