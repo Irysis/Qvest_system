@@ -1,0 +1,5 @@
+suppressMessages({library(arrow); library(data.table)})
+ds <- open_dataset(".cache/RAWDATA.parquet")
+sink("stage_artifacts/WT-D20260813_001/rawcols.txt")
+cat("COLS:", paste(names(ds), collapse=" | "), "\n")
+sink()
