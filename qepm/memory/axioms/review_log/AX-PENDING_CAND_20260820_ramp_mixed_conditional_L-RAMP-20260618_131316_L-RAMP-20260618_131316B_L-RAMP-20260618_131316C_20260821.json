@@ -1,0 +1,51 @@
+{
+  "candidate_id": "CAND_20260820_ramp_mixed_conditional_L-RAMP-20260618_131316_L-RAMP-20260618_131316B_L-RAMP-20260618_131316C",
+  "mode": "ramp",
+  "weighted_score": 0.88,
+  "threshold": 0.8,
+  "all_hurdles_pass": false,
+  "failing_hurdles": ["independence", "falsification", "external"],
+  "axes": {
+    "independence": {
+      "score": 1,
+      "hurdle_pass": false,
+      "n_constructions": 13,
+      "direction_consistency": 0.545,
+      "direction_consistency_definition": "within_condition_axis (2026-07-04 재정의 — 주간 리포트 도훈 confirm 대상)",
+      "reason": "13 distinct constructions (min 2), direction_consistency=0.55 [within-condition-axis]"
+    },
+    "rigor": {
+      "score": 1,
+      "hurdle_pass": true,
+      "n_backtested": 33,
+      "reason": "positive port_t n=15[mode_local] n_backtested=33"
+    },
+    "falsification": {
+      "score": 1,
+      "hurdle_pass": false,
+      "n_attempts": 20,
+      "n_unstructured": 4,
+      "n_result_nonstandard": 2,
+      "n_retained_nonnumeric": 0,
+      "reason": "active attempts=20 (unstructured=4, nonstd_result=2, retained_nonnum=0) none_falsified=FALSE retained_ok=TRUE [문자열 기록 — 구조체 전환 권장]"
+    },
+    "external": {
+      "score": 0.6,
+      "hurdle_pass": false,
+      "n_oos_retention_real": 16,
+      "oos_retention_median": 0.002,
+      "oos_retention_source": "corpus",
+      "oos_months": 39.5,
+      "oos_months_bonus": true,
+      "reason": "oos_retention real n=16/46 (src=corpus) median=0.002 (min 0.50) | months=39.5 bonus=TRUE"
+    },
+    "mechanism": {
+      "score": 0.7,
+      "hurdle_pass": true,
+      "mechanism_type": "structural",
+      "reason": "expl=present type=structural"
+    }
+  },
+  "logged_at": "2026-08-21 07:58:10",
+  "note": "INV-4: 5축 min-hurdle 동시 충족 필요. 실패 축 보강 후 재시도. (same-day dedup: 최신본 overwrite)"
+}
