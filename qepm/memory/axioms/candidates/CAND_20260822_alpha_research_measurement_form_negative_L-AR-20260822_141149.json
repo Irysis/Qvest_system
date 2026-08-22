@@ -1,0 +1,83 @@
+{
+  "schema_version": "v54_ax_p0_mode",
+  "candidate_id": "CAND_20260822_alpha_research_measurement_form_negative_L-AR-20260822_141149",
+  "research_mode": "alpha_research",
+  "metric_type": "estimated",
+  "type": "empirical",
+  "polarity": "negative",
+  "statement_draft": "[실증 실패 규칙 초안] family=measurement_form, tags=FQ-237,FQ-233-revival-1,selection_objective, supporting=1건 L-code. (promote.R 5축 검증에서 범위·메커니즘·OOS 확정 필요)",
+  "supporting_l_codes": [
+    "L-AR-20260822_141149"
+  ],
+  "scope_draft": {
+    "market": "KR",
+    "factor_family": "measurement_form",
+    "regime": null,
+    "construction_types": null
+  },
+  "evidence_draft": {
+    "independent_l_codes": 1,
+    "independent_strategies": 1,
+    "strategies": [
+      "FQ237_RERANK_WT-D20260822_002"
+    ],
+    "effect_direction_consistency": null,
+    "note": "evidence_draft — promote.R 5축 검증에서 hurdle_result/grade_a_catalog 교차검증으로 확정",
+    "n_eff_signatures": 1,
+    "independent_constructions": 1,
+    "constructions": [
+      "selection_objective_replacement"
+    ],
+    "metric_types": [
+      "canonical_screen"
+    ]
+  },
+  "falsification_draft": {
+    "attempts": [
+      {
+        "test": "반증 축1 — rank-IC 서열 vs Pearson 서열이 사실상 같은 집합을 고르는가(rho>=0.90 or Jaccard>=0.80)",
+        "result": "survived",
+        "effect_retained": "rho 중앙 0.7675 · Jaccard 중앙 0.2500 — 미발화(집합 분기 확인)"
+      },
+      {
+        "test": "반증 축2 — (Pearson-Spearman) 격차가 횡단면 왜도와 무관한가(|t|<2.0 이면 비대칭-기원 기각)",
+        "result": "survived",
+        "effect_retained": "b +0.0040 t_NW3 +6.29 (월간CS) / +0.0039 t +7.07 (일간파생) — 예측 부호로 성립"
+      },
+      {
+        "test": "위반 주입 — 선별 창에 홀딩월 자신을 넣으면 검출되는가(검출력 양성 대조)",
+        "result": "survived",
+        "effect_retained": "paired t +3.5731 (문턱 2.0 초과) — 장치 정상"
+      },
+      {
+        "test": "PIT 스트레스 — 창을 한 칸 더 물리면 붕괴하는가(동월 누출 징후)",
+        "result": "survived",
+        "effect_retained": "LAG1 t +0.2800, base 대비 붕괴 없음"
+      },
+      {
+        "test": "앵커 프레임 위반 주입 — 팩터를 자기 달 월초로 스탬프하면 지문이 발화하는가",
+        "result": "survived",
+        "effect_retained": "M04_Mom_1 -0.9423 재현(문서화 지문과 소수 4자리 일치) · 정상 프레임 0/13"
+      },
+      {
+        "test": "유동성 하한 2e8 적용 시 결론이 뒤집히는가",
+        "result": "survived",
+        "effect_retained": "탈락 1.9% · paired (A) -0.073 / (B) +1.681 — 불변"
+      }
+    ],
+    "note": "L-code 기록 반증 시도 실값 집계"
+  },
+  "mechanism_draft": {
+    "economic_explanation": "선별층 기전 = 파이프라인이 trailing Spearman rank-IC 로 고르고 top-N 평균으로 소비하는 함수형 불일치. 본 라운드가 그 불일치를 직접 제거(소비함수와 같은 함수족으로 선별)했으나 전이 미개선 ⇒ 기전은 실재하나(격차-왜도 상호작용 t>6) 그것이 top-N 전이의 구속 마디는 아니다.",
+    "mechanism_type": "unknown",
+    "causal_plausibility": null
+  },
+  "oos_validation_draft": {
+    "oos_months": 221.0,
+    "oos_effect_vs_is": null,
+    "note": "promote.R r4_regime_payoff / essence_score 경유 확정"
+  },
+  "cluster_members_count": 1,
+  "status": "pending_5axis",
+  "created_at": "2026-08-22T05:40:40+00:00"
+}

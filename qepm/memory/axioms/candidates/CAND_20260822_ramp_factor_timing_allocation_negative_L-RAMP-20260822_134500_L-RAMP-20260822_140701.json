@@ -1,0 +1,57 @@
+{
+  "schema_version": "v54_ax_p0_mode",
+  "candidate_id": "CAND_20260822_ramp_factor_timing_allocation_negative_L-RAMP-20260822_134500_L-RAMP-20260822_140701",
+  "research_mode": "ramp",
+  "metric_type": "backtested",
+  "type": "empirical",
+  "polarity": "negative",
+  "statement_draft": "[실증 실패 규칙 초안] family=factor_timing_allocation, tags=DFA,factor_momentum,regime, supporting=2건 L-code. (promote.R 5축 검증에서 범위·메커니즘·OOS 확정 필요)",
+  "supporting_l_codes": [
+    "L-RAMP-20260822_134500",
+    "L-RAMP-20260822_140701"
+  ],
+  "scope_draft": {
+    "market": "KR",
+    "factor_family": "factor_timing_allocation",
+    "regime": null,
+    "construction_types": null
+  },
+  "evidence_draft": {
+    "independent_l_codes": 2,
+    "independent_strategies": 2,
+    "strategies": [
+      "DFA_RegimeSignals_R20_F1k5",
+      "DFA_RegimeSignals_R22_risknorm"
+    ],
+    "effect_direction_consistency": null,
+    "note": "evidence_draft — promote.R 5축 검증에서 hurdle_result/grade_a_catalog 교차검증으로 확정",
+    "n_eff_signatures": 1,
+    "independent_constructions": 1,
+    "constructions": [
+      "overlay_regime"
+    ],
+    "metric_types": [
+      "backtested"
+    ]
+  },
+  "falsification_draft": {
+    "attempts": [
+      "① placebo 30-seed 월블록 셔플 p=0.033(채택팔) ② shift 사다리 dec_lag 0/1/2/3 단조 감쇠(동월 누출 배제) ③ 진행월(2026-08) 제외 완결월만 집계 ④ 비용 5/15/25bps 전수 보고에서 순위 불변 ⑤ 대응표본 NW lag-3 ⑥ 사전등록 진단셀(k=3, k=10) 헤드라인 승격 금지 구속 준수 ⑦ book-marginal F0 팔이 R16b 기록 -0.0275 를 정확 재현(배관 양성 대조) ⑧ 인덱스 집중도 파라미터 실효를 방향까지 확인(active vol 0.1017/0.1382/0.1805 단조 증가, Market 지수 0.2293 3판본 불변=음성 대조).",
+      "① 2x2 반사실로 두 축을 교차 대입해 각 단독 효과 분리(순서 의존까지 보고) ② 사전등록 expected_failure_mode 를 결과 산출 전에 기록해 사후 합리화 차단 ③ 비용 3수준 x 지연 4수준 전수 보고에서 순위 불변 확인 ④ 진단셀 G2 헤드라인 승격 금지 구속 준수 ⑤ 대조군 G0 를 동일 창(n=209)에서 재측정해 창 효과 제거 ⑥ 창 축소가 만든 calmar 개선(0.300->0.562)을 개선으로 보고하지 않고 함정으로 명시 ⑦ book 구조 주장을 계획서 문구가 아니라 book_state.json 실측으로 확인."
+    ],
+    "note": "L-code 기록 반증 시도 실값 집계"
+  },
+  "mechanism_draft": {
+    "economic_explanation": "KR 팩터에서 신호 강도(trailing active)와 위험(active vol)이 같은 방향으로 결합돼 있어 위험 정규화가 신호를 함께 깎는다. 그리고 타이밍 초과분 vol 상승은 전략의 회전이 만든 것이 아니라 팩터 공간의 외생적 확대다 — 따라서 가중 규칙 층에서 되돌릴 대상이 아니다. 배포 형태 층에서는 book 이 단일 슬리브라 '배분층 변환'이라는 표현이 가리킬 실체가 없다. (멤버 가설 2건 — promote.R에서 일치성 재검증)",
+    "mechanism_type": "structural",
+    "causal_plausibility": null
+  },
+  "oos_validation_draft": {
+    "oos_months": 233.0,
+    "oos_effect_vs_is": 0.852,
+    "note": "L-code oos_retention 실값 1건 median (IS65/OOS35 활성SR retention) + oos_months 실값 1건 median — promote.R essence_score 경유 재확정"
+  },
+  "cluster_members_count": 2,
+  "status": "pending_5axis",
+  "created_at": "2026-08-22T05:40:41+00:00"
+}
