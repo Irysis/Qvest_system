@@ -1,0 +1,192 @@
+{
+  "gate_precondition": {
+    "ratio": 0.146496205485856,
+    "threshold": 0.1,
+    "pass": true
+  },
+  "base": {
+    "port_t": 3.05833912319022,
+    "ir": 0.663067646859504,
+    "net_sr": 0.663067646859504,
+    "abs_net_sr": 0.768206924475233,
+    "abs_cagr": 0.18254251815466,
+    "turnover_annual": 13.65671104681,
+    "n_months": 268,
+    "metric_type": "weighted_screen"
+  },
+  "filtered": {
+    "port_t": 2.51514602980347,
+    "ir": 0.573137112406261,
+    "net_sr": 0.573137112406261,
+    "abs_net_sr": 0.721353512585718,
+    "abs_cagr": 0.168946176334159,
+    "turnover_annual": 13.9046597167608,
+    "n_months": 268,
+    "metric_type": "weighted_screen"
+  },
+  "paired": {
+    "delta_ir": -0.0899305344532431,
+    "paired_nw_t": -0.884785715067843,
+    "mean_d_active": -0.000940160175745618,
+    "sd_d_active": 0.0202280940341029,
+    "annual_pp": -1.12819221089474,
+    "n": 268,
+    "basis": "screen-IR (cap-w top25 cap_norm, net 15bps) — book recon NAV IR 아님",
+    "wt009_raw_reference": {
+      "delta_ir": -0.115272463602773,
+      "port_t_filt": 2.43476408223255,
+      "annual_pp": -1.72618615026589
+    }
+  },
+  "effectiveness": {
+    "fire_share": 0.996268656716418,
+    "months_fired": 267,
+    "months": 268,
+    "mean_swap": 4.81716417910448,
+    "mean_cut_in_base_top25": 4.81716417910448,
+    "max_cut": 11,
+    "honest_null_non_applicable": false
+  },
+  "lag1": {
+    "delta_ir": -0.0966312437489251,
+    "paired_t": -1.01883952400929,
+    "port_t": 2.50468217166043,
+    "note": "붕괴 시 동월 누출 의심. fast-decay 신호는 lag1 에서 정상적으로도 소멸 — strict-PIT A/B(assert_overlay_pit 268/268 + 위반주입 0/268)와 병행 해석."
+  },
+  "xdiag": {
+    "X10": {
+      "delta_ir": -0.0500023840674282,
+      "paired_t": -0.623701225618004,
+      "port_t": 2.75363653047983,
+      "turnover_annual": 13.5900583668458
+    },
+    "X30": {
+      "delta_ir": -0.0655988675690555,
+      "paired_t": -0.380849230724444,
+      "port_t": 2.61204041976118,
+      "turnover_annual": 14.1708920722519
+    }
+  },
+  "window_split": {
+    "pre201512": {
+      "n": 144,
+      "mean_d_active": -0.00106716662256771,
+      "annual_pp": -1.28059994708126,
+      "paired_t": -0.73594923481166
+    },
+    "post201512": {
+      "n": 124,
+      "mean_d_active": -0.000792668818145765,
+      "annual_pp": -0.951202581774919,
+      "paired_t": -0.506380873109252
+    }
+  },
+  "ew": {
+    "base": {
+      "port_t": 3.47819313393253,
+      "ir": 0.778587560902604
+    },
+    "filtered": {
+      "port_t": 3.38131852429683,
+      "ir": 0.768074077262229
+    },
+    "delta_ir": -0.0105134836403754,
+    "ew_universe_bench": {
+      "base_t": 4.20649284989998,
+      "filt_t": 3.89939593657563
+    },
+    "metric_type": "canonical_screen",
+    "binding": false,
+    "note": "판정 basis 는 cap-w 고정(PREREG). EW 는 병기 진단 — 부호가 갈려도 판정 불변."
+  },
+  "mdd": {
+    "base": 0.558738976563759,
+    "filtered": 0.567695789100202,
+    "delta_pp": -0.89568125364422,
+    "calmar_base": 0.326704464537798,
+    "calmar_filtered": 0.297599840580003,
+    "caveat": "월간 수익 기반 MDD — 일별 NAV 기반 forge MDD 와 다름(월간은 낙폭 과소추정). metric_type=weighted_screen.",
+    "wt009": {
+      "calmar_base": 0.326704464537798,
+      "calmar_filtered": 0.291214446683798
+    }
+  },
+  "regime_tab": [
+    {
+      "Category": "RISK_ON",
+      "n": 208,
+      "mean_d": -0.00141309251844185,
+      "t_nw": -1.11826976116659
+    },
+    {
+      "Category": "CRISIS",
+      "n": 15,
+      "mean_d": -0.00436849533888154,
+      "t_nw": -1.32992478210174
+    },
+    {
+      "Category": "NEUTRAL",
+      "n": 32,
+      "mean_d": 0.00254620945505151,
+      "t_nw": 0.585193292477408
+    },
+    {
+      "Category": "CAUTION",
+      "n": 13,
+      "mean_d": 0.00200069571212727,
+      "t_nw": 0.309921561620193
+    }
+  ],
+  "substitution": {
+    "mean_removed_names": 4.81716417910448,
+    "removed_weight_sum": 0.174529851840299,
+    "mean_added_names": 4.81716417910448,
+    "added_weight_sum": 0.199681747848557,
+    "weight_sum_ratio": 1.14411228648307,
+    "removed_srank": 0.534820204160593,
+    "added_srank": 0.570736483735738,
+    "removed_mean_ret": 0.0193266379461158,
+    "added_mean_ret": 0.0186356746798412,
+    "added_minus_removed": -0.000690963266274599,
+    "removed_tail_rate": 0.034856700232378,
+    "added_tail_rate": 0.0317583268783888,
+    "removed_wcontrib": 0.0028060057936676,
+    "added_wcontrib": 0.00217676276404756,
+    "removed_mean_w": 0.0362308290419832,
+    "added_mean_w": 0.0414521366564006,
+    "wt009": {
+      "removed_weight_sum": 0.0788424064986886,
+      "added_weight_sum": 0.181040837075161,
+      "ratio": 2.29625
+    }
+  },
+  "poscontrol": {
+    "delta_ir": 0.164172178623249,
+    "paired_nw_t": 1.56552055710279,
+    "mean_d_active": 0.00158581369060753,
+    "annual_pp": 1.90297642872904,
+    "n": 268,
+    "port_t_pc": 3.80239443710596,
+    "port_t_base": 3.05833912319022,
+    "wt009_reference": {
+      "delta_ir": 0.164172178623249,
+      "port_t_pc": 3.80239443710596
+    },
+    "detected": true,
+    "design": "동일 base·동일 하네스·동일 268월 창에서 기측정 양성(WT-014 MAX5 상위10% 배제) 재측정 = 검사기 전도성 확인"
+  },
+  "screening": {
+    "clause1_pass_filtered": true,
+    "clause1_pass_base": true,
+    "abs_net_sr_filtered": 0.721353512585718,
+    "abs_cagr_filtered": 0.168946176334159,
+    "caveat": "run_hurdle_gate() 는 일별 sim_result 를 요구(forge 산출물). 여기서는 screen_pass 1절(SR>=0.7 AND ann_ret>=0.12)만 계약 산출치로 평가 — TRUE = 충족의 충분조건, FALSE = 미결(2절 미평가)."
+  },
+  "verdict_inputs": {
+    "delta_ir": -0.0899305344532431,
+    "delta_ir_gate": 0.05,
+    "delta_ir_pass": false,
+    "basis": "cap-w (고정)",
+    "ew_delta_ir_nonbinding": -0.0105134836403754
+  }
+}

@@ -46,6 +46,18 @@ MLOCK="$BASE/.cache/mode_queue_research.lock"
 if ! mkdir "$MLOCK" 2>/dev/null; then
   _mp=$(cat "$MLOCK/pid" 2>/dev/null)
   if [ -n "${_mp:-}" ] && kill -0 "$_mp" 2>/dev/null; then
+    # ★정체 감지 (2026-08-22) — timeout 제거로 '행 1건 = 무기한' 이 열렸다.
+    #   '일하는 중' 과 '매달림' 은 벽시계가 아니라 **진척**으로 갈린다: 로그가 자라면 일하는 중.
+    #   홀더를 죽이지는 않는다(동시 실행 방지가 락의 존재 이유). **보이게만** 한다.
+    _stall_min="${QVEST_STALL_ALERT_MIN:-45}"
+    if [ -f "$LOG" ]; then
+      _lm=$(stat -c %Y "$LOG" 2>/dev/null || echo 0)
+      _age_min=$(( ( $(date +%s) - _lm ) / 60 ))
+      if [ "$_age_min" -ge "$_stall_min" ]; then
+        scheduler_alert "mode_queue" "stalled_lock" "홀더 PID=${_mp:-?} 가 살아 있으나 로그가 ${_age_min}분째 정체 — 매달림 의심. timeout 제거(2026-08-22 도훈 지시) 이후 벽시계 상한이 없으므로 사람이 판단해야 합니다. 확인: 그 PID 를 종료하면 락이 풀리고 차기 트리거가 재개합니다."
+        log "★정체 경보: 홀더 PID=${_mp:-?} 로그 ${_age_min}분 무변화 (문턱 ${_stall_min}분)"
+      fi
+    fi
     log "다른 인스턴스 실행 중(PID=$_mp) — skip"; exit 0
   fi
   log "stale lock 회수 (PID=${_mp:-?} 생존 안 함)"

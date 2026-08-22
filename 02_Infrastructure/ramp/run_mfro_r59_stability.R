@@ -58,7 +58,9 @@ runw<-function(arm,dec_lag=1L,bps=15){
     D<-P[ym==YM[m]];if(nrow(D)<50L)next
     oc<-order(-D$mktcap);idx<-oc[seq_len(N_TARGET)];tk<-D$Ticker[idx]
     if(arm=="V2"){
-      ws<-lapply(0:2,function(g){d<-m-1L-g;wk<-pick(d,"V0");if(!length(wk))wk<-FK
+      ## ★수리: 구판은 lag 를 0:2 로 하드코딩해 dec_lag 를 무시했다 -> flat_sd 가 정의상 0 이 되고
+      ##   그것을 '안정' 으로 읽을 뻔했다(처치 미전달). 앙상블 창 전체를 dec_lag 만큼 민다.
+      ws<-lapply(0:2,function(g){d<-m-dec_lag-g;wk<-pick(d,"V0");if(!length(wk))wk<-FK
         .tilt(neut(zmean(D,wk)[idx]))})
       w<-Reduce(`+`,ws)/length(ws); w<-.norm(w/sum(w))
     } else {
