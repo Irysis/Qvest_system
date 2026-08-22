@@ -23,9 +23,14 @@
 #   Rscript research_run_notify.R <lane> <pending> <n_done> <effect> <rc> [<extra>] [<since_epoch>]
 
 suppressWarnings(suppressMessages({
-  root <- Sys.getenv("QM_ROOT", Sys.getenv("CLAUDE_PROJECT_DIR", getwd()))
-  setwd(root)
-  source(file.path(root, "02_Infrastructure", "telegram", "telegram_notify.R"))
+  # 루트 해석: QVEST_NOTIFY_ROOT 를 **먼저** 본다.
+  #   ~/.Renviron 이 QM_ROOT 를 pin 해 셸 export 를 R 시작 시점에 덮으므로
+  #   env 루트로는 격리가 원리적으로 불가능하다(2026-08-16 카드 · 오늘 재확인).
+  #   전용 변수는 Renviron 에 없으므로 통과한다 — 검사가 쓰는 유일한 이음매.
+  root <- Sys.getenv("QVEST_NOTIFY_ROOT", "")
+  if (!nzchar(root)) root <- Sys.getenv("QM_ROOT", Sys.getenv("CLAUDE_PROJECT_DIR", getwd()))
+  setwd(Sys.getenv("QM_ROOT", getwd()))
+  source(file.path(Sys.getenv("QM_ROOT", getwd()), "02_Infrastructure", "telegram", "telegram_notify.R"))
   library(jsonlite)
 }))
 
@@ -53,12 +58,15 @@ if (!is.finite(since)) since <- as.numeric(Sys.time()) - 4 * 3600
 lane_ko <- if (lane %in% names(.lane_map)) .lane_map[[lane]] else lane
 
 # ── 산출물에서 **알아낸 것**을 뽑는다 ---------------------------------------
+# ★코드는 정본 저장소에서, **데이터는 root 에서** 읽는다 — 둘을 섞으면
+#   픽스처 검사가 스크립트를 못 찾아 조용히 0건이 된다.
+code_root <- Sys.getenv("QM_ROOT", Sys.getenv("CLAUDE_PROJECT_DIR", getwd()))
 py <- Sys.getenv("QVEST_PY", "")
-if (!nzchar(py) || !file.exists(py)) py <- file.path(root, ".venv_qvest_ml", "Scripts", "python.exe")
+if (!nzchar(py) || !file.exists(py)) py <- file.path(code_root, ".venv_qvest_ml", "Scripts", "python.exe")
 if (!file.exists(py)) py <- "python"
 ins <- tryCatch({
   out <- suppressWarnings(system2(py,
-    c(file.path(root, "02_Infrastructure", "ops", "research_insight_extract.py"),
+    c(file.path(code_root, "02_Infrastructure", "ops", "research_insight_extract.py"),
       root, format(since, scientific = FALSE)), stdout = TRUE, stderr = FALSE))
   if (length(out)) fromJSON(paste(out, collapse = ""), simplifyVector = FALSE) else NULL
 }, error = function(e) NULL)
@@ -94,6 +102,18 @@ has_insight <- length(lcodes) > 0 || length(verdicts) > 0
   out
 }
 
+# ★섹션 타입은 항목 수가 정한다 — bullet 은 **2개 이상** 요구, 1개면 text 여야 한다
+#   (tg_agent_brief 계약). 짧은 서술이 1문장으로 나오는 경우가 실제로 있다.
+.sec <- function(emoji, heading, items) {
+  items <- items[nzchar(items)]
+  if (length(items) == 0L) return(NULL)
+  if (length(items) == 1L)
+    return(list(type = "text", emoji = emoji, heading = heading,
+                body = substr(items[1], 1, 210)))
+  list(type = "bullet", emoji = emoji, heading = heading, items = items)
+}
+.add <- function(lst, x) if (is.null(x)) lst else c(lst, list(x))
+
 head_line <- if (length(lcodes) > 0) {
   .clip(sprintf("[%s] %s", lcodes[[1]]$family %||% "?", lcodes[[1]]$lesson %||% lane_ko))
 } else if (length(verdicts) > 0) {
@@ -121,26 +141,16 @@ for (v in verdicts[seq_len(min(2L, length(verdicts)))]) {
                                 100 * as.numeric(v$alpha_ann %||% 0))
   secs[[length(secs) + 1]] <- list(type = "kv", emoji = "\U00002696", heading = "판정", kv = kv)
   if (nzchar(v$fail_note %||% ""))
-    secs[[length(secs) + 1]] <- list(type = "bullet", emoji = "\U0001F6D1",
-                                     heading = "막힌 지점", items = .to_bullets(v$fail_note, maxn = 4L))
+    secs <- .add(secs, .sec("🛑", "막힌 지점", .to_bullets(v$fail_note, maxn = 4L))))
 }
 
 # ── ② 배운 것 (이 알림의 본체) --------------------------------------------
 for (x in lcodes[seq_len(min(2L, length(lcodes)))]) {
-  bl <- .to_bullets(x$lesson %||% "(lesson_text 미기입)")
-  if (length(bl))
-    secs[[length(secs) + 1]] <- list(type = "bullet", emoji = "\U0001F4A1",
-      heading = sprintf("배운 것 — %s [%s · grade %s]",
-                        x$id %||% "?", x$family %||% "?", x$grade %||% "?"),
-      items = bl)
-  bm <- .to_bullets(x$mechanism, maxn = 4L)
-  if (length(bm))
-    secs[[length(secs) + 1]] <- list(type = "bullet", emoji = "\U0001F9E9",
-                                     heading = "기전", items = bm)
-  bf <- .to_bullets(x$falsify, maxn = 3L)
-  if (length(bf))
-    secs[[length(secs) + 1]] <- list(type = "bullet", emoji = "\U0001F50E",
-                                     heading = "반증 시도", items = bf)
+  secs <- .add(secs, .sec("💡",
+    sprintf("배운 것 — %s [%s · grade %s]", x$id %||% "?", x$family %||% "?", x$grade %||% "?"),
+    .to_bullets(x$lesson %||% "(lesson_text 미기입)")))
+  secs <- .add(secs, .sec("🧩", "기전", .to_bullets(x$mechanism, maxn = 4L)))
+  secs <- .add(secs, .sec("🔎", "반증 시도", .to_bullets(x$falsify, maxn = 3L)))
 }
 if (length(lcodes) > 2)
   secs[[length(secs) + 1]] <- list(type = "text", emoji = "\U00002795", heading = "그 외",

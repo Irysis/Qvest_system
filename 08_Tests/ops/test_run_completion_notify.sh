@@ -73,7 +73,7 @@ if command -v Rscript >/dev/null 2>&1; then
  "falsification_attempts":"실현 값을 실측 재표집으로 재산출해 사전값과 직접 대조했다."}
 JEOF
   _T2=$(mktemp)
-  QVEST_RUN_NOTIFY_DRYRUN=1 QM_ROOT="$_FIX" Rscript --no-save "$NOTIFY" alpha 5 1 CHANGED 0 "" 0 > "$_T2" 2>&1
+  QVEST_RUN_NOTIFY_DRYRUN=1 QVEST_NOTIFY_ROOT="$_FIX" Rscript --no-save "$NOTIFY" alpha 5 1 CHANGED 0 "" 0 > "$_T2" 2>&1
   grep -q "배운 것" "$_T2" && ok "L-code lesson 이 본문에 실린다" \
     || ng "인사이트 부재" "완주 사실만 나른다 — v1 회귀: $(tail -2 "$_T2" | tr '\n' ' ')"
   grep -q "추정오차 분산을 누락" "$_T2" && ok "lesson 원문이 실제로 전달된다" \
@@ -90,7 +90,7 @@ JEOF
   echo "== ★포장 금지 축: 산출이 없으면 없다고 말하는가 =="
   _FIX2=$(mktemp -d); mkdir -p "$_FIX2/stage_artifacts/l_code"
   _T3=$(mktemp)
-  QVEST_RUN_NOTIFY_DRYRUN=1 QM_ROOT="$_FIX2" Rscript --no-save "$NOTIFY" alpha 5 0 SAME 0 "" 0 > "$_T3" 2>&1
+  QVEST_RUN_NOTIFY_DRYRUN=1 QVEST_NOTIFY_ROOT="$_FIX2" Rscript --no-save "$NOTIFY" alpha 5 0 SAME 0 "" 0 > "$_T3" 2>&1
   grep -q "적립 없음" "$_T3" && ok "L-code 0건 → '적립 없음' 명시" \
     || ng "포장" "산출 없는 런을 성과처럼 알린다"
   grep -q "적립된 지식이 없습니다" "$_T3" && ok "헤더도 없음을 말한다" || ng "헤더 포장" "$(grep -m1 gsub "$_T3")"
@@ -99,7 +99,7 @@ JEOF
   echo "== 중단 축: rc!=0 을 구분하는가 =="
   _FIX3=$(mktemp -d); mkdir -p "$_FIX3/stage_artifacts/l_code"
   _T4=$(mktemp)
-  QVEST_RUN_NOTIFY_DRYRUN=1 QM_ROOT="$_FIX3" Rscript --no-save "$NOTIFY" alpha 5 0 CHANGED 124 "" 0 > "$_T4" 2>&1
+  QVEST_RUN_NOTIFY_DRYRUN=1 QVEST_NOTIFY_ROOT="$_FIX3" Rscript --no-save "$NOTIFY" alpha 5 0 CHANGED 124 "" 0 > "$_T4" 2>&1
   grep -q "중간에 멈췄습니다" "$_T4" && ok "rc=124 → 중단 표기" || ng "중단 표기" "timeout 을 정상으로 알린다"
   grep -q "그때까지 산출은 남음" "$_T4" && ok "중단+진척 → 산출 잔존 명시" || ng "잔존 표기" "다시 돌릴지 판단 불가"
   rm -rf "$_FIX3" "$_T4"
