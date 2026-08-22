@@ -31,13 +31,17 @@ tokstate(){ if [ -n "${CLAUDE_CODE_OAUTH_TOKEN:-}" ]; then echo "SET"; else echo
 
 RUNNERS="alpha_search_queue_run factor_deep_recheck_run mode_queue_research_run paper_router_run"
 
+# ★2026-08-22: claude 호출 형태가 `timeout 3000 "$CLAUDE_BIN"` →
+#   `_run_claude "$CLAUDE_BIN"` 로 바뀌었다(도훈 "시간제한 없애").
+#   배선은 멀쩡한데 이 검사의 앵커가 낡아 4러너 전부 "앵커 없음" 으로 떨어졌다 —
+#   **대상을 고치면서 검사를 같이 안 고친** 전형. 두 형태를 모두 인정한다.
 echo "== C. 배선 순서 단언: source < 수리줄 < claude 호출 인가 =="
 # ★오늘 실제로 깨진 축. 수리줄이 source 앞이면 command -v 가 거짓 → || true 로 무력화된다.
 for f in $RUNNERS; do
   p="$ROOT/02_Infrastructure/ops/$f.sh"
   if [ ! -f "$p" ]; then ng "$f 존재" "파일 없음"; continue; fi
   fix=$(grep -n '^command -v sched_resolve_oauth_token' "$p" | head -1 | cut -d: -f1)
-  cal=$(grep -n 'timeout 3000 "\$CLAUDE_BIN" -p "\$PROMPT_TEXT"' "$p" | head -1 | cut -d: -f1)
+  cal=$(grep -nE '(timeout 3000|_run_claude) "\$CLAUDE_BIN" -p "\$PROMPT_TEXT"' "$p" | head -1 | cut -d: -f1)
   if [ -z "$fix" ]; then ng "$f 수리줄" "부재 — 서브셸 스코프 결함 미수리"; continue; fi
   if [ -z "$cal" ]; then ng "$f claude 호출" "앵커 없음"; continue; fi
   # 수리줄보다 앞에 있는 source 중 가장 마지막
@@ -57,7 +61,7 @@ nofp=""
 for f in $RUNNERS; do
   p="$ROOT/02_Infrastructure/ops/$f.sh"
   fp=$(grep -n 'sched_token_fingerprint' "$p" | head -1 | cut -d: -f1)
-  cal=$(grep -n 'timeout 3000 "\$CLAUDE_BIN" -p "\$PROMPT_TEXT"' "$p" | head -1 | cut -d: -f1)
+  cal=$(grep -nE '(timeout 3000|_run_claude) "\$CLAUDE_BIN" -p "\$PROMPT_TEXT"' "$p" | head -1 | cut -d: -f1)
   if [ -z "$fp" ] || [ -z "$cal" ] || [ "$fp" -ge "$cal" ]; then nofp="$nofp $f"; fi
 done
 [ -z "$nofp" ] && ok "4개 러너 모두 claude 호출 **전에** 지문 로깅"   || ng "지문 배선" "해당:$nofp — 다음 401 도 원인 구분 불가"

@@ -1,0 +1,164 @@
+{
+ "artifact": "gate0_flow_falsification_power",
+ "wt_id": "WT-D20260822_012",
+ "fq_id": "FQ-245",
+ "lens": "C — 기전 반증의 검정력",
+ "produced_at": "2026-08-22",
+ "produced_by": "adversarial review (렌즈 C)",
+ "scope_discipline": {
+  "measured": "flow(외국인 순매수) 축의 라벨빈도·산포·귀무중심·양성대조만",
+  "not_measured": "score 기반 top-25 의 flow 스프레드(= F-flow 검정통계량 자체)·모든 수익 성과",
+  "why_not_contamination": "F-flow 의 표적은 활성수익이고 flow 는 field_dictionary 상 별도 필드(A6/F2)다. 여기서 산출한 것은 (a) 무작위/특성 선별 하의 산포와 귀무 중심 (b) score 와 무관한 선별변수(선행월 flow·Size)의 효과크기뿐이며, 사전등록 표적의 arm 성과는 어느 것도 개봉하지 않았다.",
+  "score_usage": "macro_beta_scores.parquet 는 (Date,Ticker) 가용성 마스크로만 사용, Score 값 미사용"
+ },
+ "data_provenance": {
+  "universe": ".cache/RAWDATA.parquet — month-end, LiqPass(20d AvgTV>=2e8) & (K200|KQ150) & score-available",
+  "universe_parity": "260 signal dates, avg 305.0 tickers/month (무조건부 런 auto_verify: 257 dates / 312 per month — 창 정합 차이)",
+  "flow": ".cache/investor_stock/investor_wide.parquet Foreign, 월합 / Size(시그널 월말)",
+  "regime": ".cache/fred_macro.parquet Frequency=='d', delta20=shift(1)-shift(21), tie=정렬파괴",
+  "regime_parity": "aligned_up 32 / aligned_down 42 / mixed 186 — gate0_power_arithmetic.json 정확 재현",
+  "nw_t": "backtest_result_contract.R::.nw_t_mean 동일 공식(Bartlett lag-3, 분모 n) 이식",
+  "mde_formula": "required_effect_size.R::required_effect — t_thr*sd*nw/sqrt(n) (gate0 E1_both_MDE80 재현 확인)"
+ },
+ "coverage": {
+  "aligned_months_available_for_flow_test": 74,
+  "aligned_months_lost_to_flow_panel_lag": 0,
+  "dropped_signal_dates": [
+   "2026-06-30",
+   "2026-07-31",
+   "2026-08-20"
+  ],
+  "dropped_all_mixed": true,
+  "note": "investor_wide 최종일 2026-07-24 → 마지막 3 시그널월의 홀딩월이 미완. 전부 mixed 라 정렬 74 는 무손실"
+ },
+ "mde_flow_by_statistic_form": [
+  {
+   "form": "as-designed: top-25 mean vs universe MEDIAN",
+   "sd": 0.0024499446672269854,
+   "nw": 1.0694624031741642,
+   "n": 74,
+   "mde_t2": 0.0006091663893469739,
+   "mde80": 0.0008533202781972409,
+   "d80": 0.3483018574305546
+  },
+  {
+   "form": "repair-1: top-25 mean vs universe MEAN",
+   "sd": 0.002204374706119586,
+   "nw": 0.9745886331174146,
+   "n": 74,
+   "mde_t2": 0.000499483212974175,
+   "mde80": 0.0006996760847342244,
+   "d80": 0.3174034263738587
+  },
+  {
+   "form": "repair-1b: top-50 mean vs universe MEAN",
+   "sd": 0.0015281148991234351,
+   "nw": 0.972832099404151,
+   "n": 74,
+   "mde_t2": 0.0003456272994327471,
+   "mde80": 0.00048415472104539205,
+   "d80": 0.31683135955491
+  },
+  {
+   "form": "repair-2: cross-sectional rank-IC (full breadth)",
+   "sd": 0.05970559768648995,
+   "nw": 0.9771245293216075,
+   "n": 74,
+   "mde_t2": 0.013563728928221115,
+   "mde80": 0.019000071482652137,
+   "d80": 0.3182293154893152
+  }
+ ],
+ "null_centering_defect": {
+  "as_designed_baseline": "유니버스 중앙값(median)",
+  "E_NW_t_under_H0_median_baseline": -0.5871648247378939,
+  "P_t_gt_0_median_baseline": 0.2375,
+  "E_NW_t_under_H0_mean_baseline": 0.00773886935504452,
+  "P_t_gt_0_mean_baseline": 0.5175,
+  "mechanism": "E[무작위 25 의 평균] = 유니버스 평균이지 중앙값이 아니다. 횡단면 (평균-중앙값) 월중앙 = -0.000060 이라 상수 음(-) offset 이 통계량에 박힌다",
+  "consequence": "reject_if 'NW-t <= 0' 는 순수 귀무에서 기전을 71~76%% 기각한다 — 대칭 검정이 아니다",
+  "repair": "기준선을 유니버스 mean 으로 교체 (E[NW-t|H0] = +0.008, P(t>0)=0.517)"
+ },
+ "style_tilt_confound": {
+  "smallcap25_vs_universe_mean": {
+   "mean": -0.0008574535461369063,
+   "sd": 0.003289409623173833,
+   "nw_t": -2.0142485580087635,
+   "d": -0.26067095447649974
+  },
+  "note": "기전 0 인 순수 소형주 틸트만으로 NW-t=-2.014 — F-flow 기각과 '선별이 소형으로 기울었다' 가 구분되지 않는다. size/유동성 중립화 또는 특성-매칭 대조 필요"
+ },
+ "positive_control": {
+  "exists_in_prereg": false,
+  "built_here": {
+   "PC_A_prior_month_flow_top25_mean_baseline": {
+    "n": 74,
+    "mean": 0.004154962959840918,
+    "sd": 0.004051517811093284,
+    "nw_t": 7.397943290923572,
+    "d": 1.0255324432893755
+   },
+   "PC_A_rank_IC_form": {
+    "nw_t": 16.558872870334717,
+    "mean_IC": 0.23158566869287495
+   },
+   "PC_B_size_top25_mean_baseline": {
+    "n": 74,
+    "mean": -0.0002516301181769239,
+    "sd": 0.0024454873285618185,
+    "nw_t": -0.7597081309343674,
+    "d": -0.10289569495537178
+   },
+   "PC_B_rank_IC_form": {
+    "nw_t": 0.9912376891787661,
+    "mean_IC": 0.017984692978876483
+   }
+  },
+  "null_control_random_variable_rank_IC": {
+   "t_mean": -0.02547485490294938,
+   "p_gt0": 0.505,
+   "sd": 0.06015209455079511,
+   "mde80": 0.01959029714200093
+  },
+  "reading": "동일 74개월·동일 유니버스·동일 정규화에서 실재 flow 스프레드는 NW-t +7.40(top-25) / +16.56(rank-IC) 로 검출된다 ⇒ 하네스는 눈멀지 않았다. 단 그 효과(d=1.03)는 flow 지속성이라 특성-틸트의 상한이 아니라 천장이다"
+ },
+ "power_comparison": {
+  "return_E1": {
+   "n": 74,
+   "sd_monthly": 0.061621,
+   "nw": 1.011327,
+   "MDE80_annual": 0.243552,
+   "d80": 0.3294,
+   "implied_effect_d": 0.1812,
+   "expected_t": 1.5413,
+   "power_at_t2": 0.3232
+  },
+  "flow_as_designed_top25_median": {
+   "n": 74,
+   "d80": 0.3483018574305546,
+   "power_at_size_strength_effect_d0.103": 0.1377,
+   "power_at_smallcap_strength_effect_d0.261": 0.6193
+  },
+  "flow_repaired_rank_IC": {
+   "n": 74,
+   "d80": 0.3182293154893152,
+   "MDE80_mean_IC": 0.019000071482652137,
+   "power_at_size_strength_effect_IC0.0180": 0.7436
+  },
+  "verdict": "표준화 MDE(d80)는 네 형식 모두 0.317~0.348 로 n=74 가 고정한다 — 형식은 바를 못 낮춘다. 형식이 바꾸는 것은 실현 효과크기다(같은 flow 효과에서 실현 d: top-25 1.026 → rank-IC 2.408, 2.35배). 그 결과 특성-강도 효과에서 검정력이 0.14(설계대로) vs 0.74(rank-IC) 로 갈린다"
+ },
+ "two_by_two_disposition_gap": {
+  "defined_in_prereg": [
+   "수익 O / flow O → 성립",
+   "수익 O / flow X → 기전 불명 강등(성립 선언 불가)"
+  ],
+  "undefined_in_prereg": [
+   "수익 X / flow O → 처분 미정의"
+  ],
+  "why_it_matters": "이 셀이 '미결(검정력)' 과 '기전 1단계 성립·가격 전이 부재' 를 가른다. 후자면 처분은 재실행이 아니라 소비 형태 교체다(FQ-237 NO_TRANSITION 계보와 동형). 정의 없이 들어가면 사후 재량이 된다"
+ },
+ "gate0_asymmetry": {
+  "finding": "gate0_power_arithmetic.json 은 PRIMARY(E1 수익) 축에만 크기 산술을 적용했다. 반증 축(F-flow)에는 기전-함의 효과크기도 MDE 도 없다",
+  "note": "qlead_prelaunch_note ① 이 '항구수리' 로 지목한 WT-009 결손(ratio 1/26)이 판정 축에는 적용되고 반증 축에는 미적용"
+ }
+}
