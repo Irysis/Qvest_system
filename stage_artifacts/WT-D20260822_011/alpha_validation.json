@@ -1,0 +1,567 @@
+{
+  "task_id": "WT-D20260822_011",
+  "generated_at": "2026-08-22T20:53:47+0900",
+  "round_outcome": "PRE_MEASUREMENT_GATE_FAIL — 처치(tie-break) 백테스트 미실행",
+  "measurement_executed": {
+    "treatment_backtest": false,
+    "weighted_screen_bt_calls": "1회 (base anchor 재현 STOP 검증 전용)",
+    "rationale": "request.json 명문 + PREREG_GATE.gate_arithmetic.pass_rule — 순 함의/MDE80 < 1/10 이면 측정하지 않고 산술과 함께 중단."
+  },
+  "prereg": {
+    "file": "stage_artifacts/WT-D20260822_011/PREREG_GATE.json",
+    "sealed_before_run": true,
+    "epsilon_single_fixed": true,
+    "selection_type": "chain",
+    "dsr_gate_applicable": false,
+    "dsr_rationale": "sweep 아님 — epsilon 을 1개만 사전 고정했고, 설계공간 상한 격자는 백테스트 0회·구성 승계 0건의 필요조건 검사다(measurement-graduation §3 selection_type=chain)."
+  },
+  "base_anchor": {
+    "port_t": 3.05833912319022,
+    "ir": 0.663067646859504,
+    "n_months": 268,
+    "target": 3.05833912319022,
+    "pass": true
+  },
+  "base_reproduction": {
+    "n_base": 6700,
+    "n_matched": 6700,
+    "max_abs_w_diff": 0
+  },
+  "object_inheritance": {
+    "source": "stage_artifacts/WT-D20260822_010/00_precheck_objects.rds",
+    "md5": "848ed00404f97b5878d4e3a88b835b3d",
+    "smx_rows": 78205,
+    "months": 268,
+    "low_orth_per_month": 57.4962686567164,
+    "note": "WT-010 verbatim — 직교화축/표식/base 재구현 없음"
+  },
+  "epsilon": {
+    "beta_hat": 0.00127510603514457,
+    "beta_n_months": 268,
+    "beta_nw_t": 0.333295140991293,
+    "sd_score_eff_pooled": 0.771855676317935,
+    "f": 0.333333333333333,
+    "delta_tail_ref": 0.0030983733539892,
+    "M_ref": 0.28460678081785,
+    "epsilon": 0.23052149958407,
+    "epsilon_in_sd_units": 0.298658812336202,
+    "formula": "epsilon = f * delta_tail_ref * M_ref / beta_hat",
+    "provenance": "구조 도출 — 성과로 고르지 않았다. 단일 값, sweep 아님."
+  },
+  "design_property": {
+    "margin_bound_verified": true,
+    "margin_bound_max_observed": 0.230441903208323,
+    "epsilon": 0.23052149958407,
+    "realized_margin_mean": 0.111947855273034,
+    "reading": "★설계는 작동했다 — 밀려난 종목과 편입 종목의 score_eff 최대 격차 0.230442 < epsilon 0.230521 가 전 월에서 성립. 실현 평균 격차 0.111948. 즉 '여백 손실이 구조적으로 epsilon 에 갇힌다'는 설계 주장은 검증됐다. 실패한 것은 그 다음 — 여백을 지키면 기전 함의도 함께 줄어든다는 상충이다."
+  },
+  "gate": {
+    "fixed_epsilon": {
+      "eps": 0.23052149958407,
+      "n_swap_pm": 1.77611940298507,
+      "W_disp": 0.0563064470459496,
+      "W_ins": 0.0745056550688889,
+      "mean_w_disp": 0.0317019491771313,
+      "mean_w_ins": 0.0419485620976097,
+      "tail_disp": 0.0336134453781513,
+      "tail_ins": 0.0315126050420168,
+      "dtail_repl": 0.00210084033613445,
+      "mean_ret_disp": 0.00907034061065122,
+      "mean_ret_ins": 0.0229888914401305,
+      "margin_bound_max": 0.230441903208323,
+      "margin_bound_ok": true,
+      "realized_margin_mean": 0.111947855273034,
+      "months_fired": 236,
+      "fire_share": 0.880597014925373,
+      "sd_gate": 0.0142580593556261,
+      "mde80": 0.00260020898189463,
+      "n_gate_months": 236,
+      "turnover_monthly": 1.13399364154062,
+      "turnover_delta_annual": -0.0487873483225583,
+      "cost_monthly": -6.09841854031978e-06,
+      "benefit_monthly": 3.36663794811732e-05,
+      "margin_loss_upper_monthly": 1.65506807467479e-05,
+      "net_implied_monthly": 2.32141172747451e-05,
+      "ratio": 0.00892778904941332,
+      "ceiling_ratio": 0.0129475667977434,
+      "threshold": 0.1,
+      "pass": false
+    },
+    "threshold": 0.1,
+    "feasibility_bound": {
+      "table": [
+        {
+          "eps": 0.00771855676317935,
+          "eps_sd": 0.01,
+          "n_swap_pm": 0.0559701492537313,
+          "W_disp": 0.00199341290797916,
+          "dtail": 0,
+          "sd_gate": 0.00871420057539024,
+          "mde80": 0.00630355809394109,
+          "benefit": 0,
+          "mloss": 1.9619126605868e-08,
+          "net": -8.72992669116451e-07,
+          "ratio": -0.000138492047841292,
+          "ceiling_ratio": 0,
+          "margin_ok": true
+        },
+        {
+          "eps": 0.0154371135263587,
+          "eps_sd": 0.02,
+          "n_swap_pm": 0.126865671641791,
+          "W_disp": 0.00358328761481613,
+          "dtail": -0.0294117647058824,
+          "sd_gate": 0.00682777436023128,
+          "mde80": 0.00332986040839202,
+          "benefit": -2.99949397881556e-05,
+          "mloss": 7.05332779765979e-08,
+          "net": -2.96535237840345e-05,
+          "ratio": -0.00890533540364056,
+          "ceiling_ratio": -0.00900786703026993,
+          "margin_ok": true
+        },
+        {
+          "eps": 0.0385927838158968,
+          "eps_sd": 0.05,
+          "n_swap_pm": 0.305970149253731,
+          "W_disp": 0.00845741559039665,
+          "dtail": -0.024390243902439,
+          "sd_gate": 0.0112489627030182,
+          "mde80": 0.00366353592192339,
+          "benefit": -5.87082396395484e-05,
+          "mloss": 4.1618850405319e-07,
+          "net": -4.6965662250776e-05,
+          "ratio": -0.0128197629971972,
+          "ceiling_ratio": -0.0160250208789344,
+          "margin_ok": true
+        },
+        {
+          "eps": 0.0771855676317935,
+          "eps_sd": 0.1,
+          "n_swap_pm": 0.626865671641791,
+          "W_disp": 0.016556931497433,
+          "dtail": 0.00595238095238095,
+          "sd_gate": 0.0104929755231758,
+          "mde80": 0.00247567106491234,
+          "benefit": 2.80488986530123e-05,
+          "mloss": 1.6295296070001e-06,
+          "net": 4.16590598653454e-05,
+          "ratio": 0.0168273808486833,
+          "ceiling_ratio": 0.0113298164083868,
+          "margin_ok": true
+        },
+        {
+          "eps": 0.11577835144769,
+          "eps_sd": 0.15,
+          "n_swap_pm": 0.955223880597015,
+          "W_disp": 0.02620652004802,
+          "dtail": 0,
+          "sd_gate": 0.0110926223878742,
+          "mde80": 0.00227256996773434,
+          "benefit": 0,
+          "mloss": 3.86886002892303e-06,
+          "net": 1.83487105390681e-05,
+          "ratio": 0.00807399147202539,
+          "ceiling_ratio": 0,
+          "margin_ok": true
+        },
+        {
+          "eps": 0.154371135263587,
+          "eps_sd": 0.2,
+          "n_swap_pm": 1.21641791044776,
+          "W_disp": 0.035064852882367,
+          "dtail": -0.00613496932515338,
+          "sd_gate": 0.0127323623147723,
+          "mde80": 0.0024733248349196,
+          "benefit": -6.12251220779264e-05,
+          "mloss": 6.90215043116881e-06,
+          "net": -5.2976336063983e-05,
+          "ratio": -0.0214190773957538,
+          "ceiling_ratio": -0.0247541775400951,
+          "margin_ok": true
+        },
+        {
+          "eps": 0.23155670289538,
+          "eps_sd": 0.3,
+          "n_swap_pm": 1.77611940298507,
+          "W_disp": 0.0563064470459496,
+          "dtail": 0.00210084033613445,
+          "sd_gate": 0.0142580593556261,
+          "mde80": 0.00260020898189463,
+          "benefit": 3.36663794811732e-05,
+          "mloss": 1.66250049184386e-05,
+          "net": 2.31397931030544e-05,
+          "ratio": 0.00889920512704086,
+          "ceiling_ratio": 0.0129475667977434,
+          "margin_ok": true
+        },
+        {
+          "eps": 0.385927838158967,
+          "eps_sd": 0.5,
+          "n_swap_pm": 2.56716417910448,
+          "W_disp": 0.0828577506409593,
+          "dtail": 0.00436046511627907,
+          "sd_gate": 0.0152175903664308,
+          "mde80": 0.00266458601411818,
+          "benefit": 0.000102827954981388,
+          "mloss": 4.077420923672e-05,
+          "net": 5.40953729040819e-05,
+          "ratio": 0.0203016050588948,
+          "ceiling_ratio": 0.0385905932240726,
+          "margin_ok": true
+        },
+        {
+          "eps": 0.578891757238451,
+          "eps_sd": 0.75,
+          "n_swap_pm": 3.36940298507463,
+          "W_disp": 0.112882375492418,
+          "dtail": 0.00221483942414175,
+          "sd_gate": 0.0180997954059745,
+          "mde80": 0.00312679658404417,
+          "benefit": 7.11563444074614e-05,
+          "mloss": 8.33239418496338e-05,
+          "net": -2.33875051736648e-05,
+          "ratio": -0.00747970152360076,
+          "ceiling_ratio": 0.0227569470846193,
+          "margin_ok": true
+        },
+        {
+          "eps": 0.771855676317935,
+          "eps_sd": 1,
+          "n_swap_pm": 3.95149253731343,
+          "W_disp": 0.135928738517326,
+          "dtail": 0.000944287063267234,
+          "sd_gate": 0.019468505695036,
+          "mde80": 0.0033505300615592,
+          "benefit": 3.65309166100543e-05,
+          "mloss": 0.000133780769637477,
+          "net": -0.000103726211200054,
+          "ratio": -0.030958149694017,
+          "ceiling_ratio": 0.0109030260701659,
+          "margin_ok": true
+        },
+        {
+          "eps": 1.1577835144769,
+          "eps_sd": 1.5,
+          "n_swap_pm": 4.54477611940298,
+          "W_disp": 0.160375516575628,
+          "dtail": 0.00410509031198686,
+          "sd_gate": 0.0209458031173035,
+          "mde80": 0.00359124656519979,
+          "benefit": 0.000187372575921959,
+          "mloss": 0.000236761853370994,
+          "net": -7.75171040055344e-05,
+          "ratio": -0.0215850130583339,
+          "ceiling_ratio": 0.0521748012897954,
+          "margin_ok": true
+        },
+        {
+          "eps": 1.54371135263587,
+          "eps_sd": 2,
+          "n_swap_pm": 4.76119402985075,
+          "W_disp": 0.171239789814976,
+          "dtail": 0.00313479623824451,
+          "sd_gate": 0.0212031635225399,
+          "mde80": 0.00363537209555772,
+          "benefit": 0.000152777446166663,
+          "mloss": 0.000337067659479342,
+          "net": -0.000221991141514502,
+          "ratio": -0.0610642145231203,
+          "ceiling_ratio": 0.0420252568790278,
+          "margin_ok": true
+        },
+        {
+          "eps": 3.85927838158967,
+          "eps_sd": 5,
+          "n_swap_pm": 4.81716417910448,
+          "W_disp": 0.174529851840299,
+          "dtail": 0.00309837335398916,
+          "sd_gate": 0.0214068664139017,
+          "mde80": 0.00367029781813935,
+          "benefit": 0.000153903576417921,
+          "mloss": 0.000858859508246448,
+          "net": -0.000735949515572379,
+          "ratio": -0.200514931495523,
+          "ceiling_ratio": 0.041932176636266,
+          "margin_ok": true
+        }
+      ],
+      "sup_ceiling_ratio": 0.0521748012897954,
+      "threshold": 0.1,
+      "any_epsilon_feasible": false,
+      "backtests_run_on_grid": 0,
+      "note": "격자 위에서 **백테스트를 실행하지 않는다**(weighted_screen_bt 호출 0회). 각 점은 랭킹 census 산술일 뿐이며, 어떤 점도 후보 구성으로 승계되지 않는다. 관문 통과 시 진행하는 구성은 사전 고정 epsilon 단 하나다."
+    },
+    "conductivity_check": {
+      "positive_control": {
+        "tag": "poscontrol_MAX5_top10pct_exclusion",
+        "n_swap_pm": 3.1865671641791,
+        "W_disp": 0.0781790306118117,
+        "tail_disp": 0.0608899297423888,
+        "tail_ins": 0.0234192037470726,
+        "dtail": 0.0374707259953162,
+        "benefit_monthly": 0.00083373422875458,
+        "sd_gate": 0.0164112656741847,
+        "n_months": 245,
+        "mde80": 0.00293739851675641,
+        "ceiling_ratio": 0.283834224058648,
+        "realized_raw_monthly": 0.00270044860369109,
+        "realized_raw_nw_t": 2.42715327497951,
+        "realized_matched_monthly": 0.00141356799810797,
+        "realized_matched_nw_t": 1.62694340568668,
+        "realized_annual_pp": 3.24053832442931,
+        "known_delta_ir": 0.164172178623249,
+        "known_paired_nw_t": 1.56552055710279,
+        "known_annual_pp": 1.90297642872904,
+        "source": "WT-D20260822_010/10_measure.json poscontrol (동일 base·창·하네스 실측)"
+      },
+      "negative_control": {
+        "tag": "negcontrol_random10pct",
+        "n_swap_pm": 2.62313432835821,
+        "W_disp": 0.0983003707346323,
+        "tail_disp": 0.0184921763869132,
+        "tail_ins": 0.0227596017069701,
+        "dtail": -0.0042674253200569,
+        "benefit_monthly": -0.000119389553632937,
+        "sd_gate": 0.0221838814756157,
+        "n_months": 257,
+        "mde80": 0.00387681263175822,
+        "ceiling_ratio": -0.0307958018540584,
+        "realized_raw_monthly": -0.00080944746293297,
+        "realized_raw_nw_t": -0.666116827494144,
+        "realized_matched_monthly": -0.000208887015549575,
+        "realized_matched_nw_t": -0.21674564562395,
+        "realized_annual_pp": -0.971336955519564
+      },
+      "this_round": {
+        "fixed_epsilon_ratio": 0.00892778904941332,
+        "fixed_epsilon_ceiling": 0.0129475667977434,
+        "design_space_sup_ceiling": 0.0521748012897954
+      },
+      "verdict": {
+        "gate_conductive": true,
+        "reading": "관문은 전도성이 있다 — 동일 산술로 기측정 양성(MAX5, ΔIR +0.1642)에 ratio 0.2838 를 부여해 통과시킨다. 따라서 본 라운드의 FAIL(사전고정 0.0089 / 설계공간 상한 0.0522)은 관문의 무능이 아니라 설계의 크기다."
+      }
+    },
+    "verdict": "FAIL — 사전 고정 epsilon ratio 0.0089 · 설계공간 상한(어떤 epsilon 이든) 0.04~0.05 대 < 0.10"
+  },
+  "falsification": {
+    "falsification_source": "qepm/mailbox/worktask/WT-D20260822_011/alpha_hypothesis.json$hypothesis$falsification",
+    "N4": {
+      "id": "N4_near_tie_tail_discrimination",
+      "epsilon": 0.23052149958407,
+      "pairs_per_month": 2.01694915254237,
+      "n_months": 236,
+      "tail_flagged_pooled": 0.0336134453781513,
+      "tail_challenger_pooled": 0.0315126050420168,
+      "pooled_gap": 0.00210084033613445,
+      "monthly_spread_mean": 0.00247175141242938,
+      "monthly_spread_nw_t": 0.210659492432309,
+      "reject_rule": "n_months >= 30 에서 NW-t <= 0 → 기각",
+      "wt010_unconditional_reference": 0.00804952700257582,
+      "fired": false,
+      "label": "미결(검출 부족)"
+    },
+    "N1": {
+      "scope": "displaced(표식 밀림) vs inserted(비표식 편입) — 실현 교체쌍",
+      "threshold": 0.126,
+      "size": {
+        "gap": -0.0771956722171371,
+        "abs": 0.0771956722171371,
+        "nw_t": -3.53872829276878,
+        "n": 234,
+        "lvl_d": 0.46718672233921,
+        "lvl_i": 0.544382394556347
+      },
+      "vol": {
+        "gap": 0.0889022669180079,
+        "abs": 0.0889022669180079,
+        "nw_t": 3.58954351768356,
+        "n": 234,
+        "lvl_d": 0.586576606179659,
+        "lvl_i": 0.497674339261651
+      },
+      "fired": false,
+      "wt010_flagged_set": {
+        "size_abs": 0.0815245766029775,
+        "vol_abs": 0.0597352879667346,
+        "fired": false
+      },
+      "note": "표식집합(low_orth) 자체는 WT-010 과 bit-동일(SMx verbatim 승계, md5 대조) — 표식-스코프 값은 WT-010 실측 그대로 유효. 본 표는 교체 실현쌍 재스코프."
+    },
+    "N2": {
+      "id": "N2_downday_individual_support_residual",
+      "inherited_from": "WT-D20260822_010/11_falsify.json",
+      "mean_spread": -0.0938869582061101,
+      "nw_t": -14.5919631319889,
+      "n_months": 64,
+      "label": "지지(유의 음수)",
+      "fired": false,
+      "inheritance_validity": "표식집합(score_orth 하위 20%) 은 SMx verbatim 승계로 WT-010 과 bit-동일하고, N2 는 표식집합의 성질이지 소비 형태(배제 vs tie-break)의 함수가 아니다 — 재측정이 같은 값을 낼 수밖에 없는 관측이므로 승계가 정본."
+    },
+    "N3": {
+      "id": "N3_smart_money_followthrough",
+      "inherited_from": "WT-D20260822_010/11_falsify.json",
+      "mean_spread": 0.000508934503155471,
+      "nw_t": 1.45540342215816,
+      "n_months": 268,
+      "reject_threshold": 2,
+      "label": "미결",
+      "fired": false,
+      "inheritance_validity": "표식집합(score_orth 하위 20%) 은 SMx verbatim 승계로 WT-010 과 bit-동일하고, N2 는 표식집합의 성질이지 소비 형태(배제 vs tie-break)의 함수가 아니다 — 재측정이 같은 값을 낼 수밖에 없는 관측이므로 승계가 정본."
+    },
+    "fired_count": 0
+  },
+  "diagnostics": {
+    "base_advisory": {
+      "rank_ic": 0.0484140059968223,
+      "rank_ic_sd": 0.10752451252934,
+      "icir": 0.450260176567753,
+      "ic_n_months": 268,
+      "ic_nw_t": 7.68966048688739,
+      "metric_type": "advisory_diagnostic",
+      "scope": "base score_eff (처치 아님)",
+      "note": "measurement-graduation §3 — rank-IC 계열은 advisory. 판정 권위 아님."
+    },
+    "inheritance": {
+      "pearson_sc_adj_vs_sc": 0.993025431202223,
+      "spearman_sc_adj_vs_sc": 0.990066651154997,
+      "epsilon_in_sd_units": 0.298658812336202,
+      "flagged_share": 0.197033437759734,
+      "note": "tie-break 는 base score 에 표식 종목만 -epsilon 하는 규칙이므로 alpha 상속도가 1 에 가깝다. wt_type=discovery 인데 상속도 > 0.95 이면 재분류 권고 대상(v1.2 Charter §10) — 본 라운드는 '새 알파'가 아니라 **같은 알파의 소비 형태 변경**임을 수치가 확인한다."
+    },
+    "incidental_swap_census": {
+      "raw_mean_monthly": 0.00111467160386416,
+      "raw_annual_pp": 1.337605924637,
+      "raw_nw_t": 1.3668883476052,
+      "raw_sd": 0.0142580593556261,
+      "matched_mean_monthly": 0.00084887507771218,
+      "matched_annual_pp": 1.01865009325462,
+      "matched_nw_t": 1.18882883917188,
+      "matched_sd": 0.011998877826646,
+      "n_months": 236,
+      "weight_asymmetry": 1.32321712659454,
+      "mean_ret_displaced": 0.00907034061065122,
+      "mean_ret_inserted": 0.0229888914401305,
+      "tail_displaced": 0.0336134453781513,
+      "tail_inserted": 0.0315126050420168,
+      "mechanism_implied_monthly": 3.36663794811732e-05,
+      "ratio_observed_to_mechanism": 25.2143263039878,
+      "metric_type": "census_not_backtest",
+      "label": "판정 아님 · 기전 귀속 불가 · 노이즈와 미분리. 근거 3: (1) 명목-일치 관측치가 기전-함의의 25배 — 사전등록 꼬리 기전이 산출할 수 있는 크기가 아니다(꼬리 격차 0.00210 가 설명하는 몫은 그 중 4.0%). (2) NW t = 1.19 — 이 창의 전도성 상한(양성 대조 paired t 1.566)에 비춰 유의성 판정 불가 구간. (3) raw 판은 양 다리 명목이 1.32배 비대칭이라 교체효과가 아니라 대형주 순노출 증가를 일부 포함한다(WT-009 2.30배 / WT-010 1.14배와 같은 계통의 아티팩트)."
+    },
+    "score_slope_profile": {
+      "table": [
+        {
+          "rank_lo": 1,
+          "rank_hi": 25,
+          "beta": 0.00910254537216578,
+          "nw_t": 1.93480149249222,
+          "n": 268
+        },
+        {
+          "rank_lo": 20,
+          "rank_hi": 40,
+          "beta": -0.0434370484206178,
+          "nw_t": -2.41616863341821,
+          "n": 268
+        },
+        {
+          "rank_lo": 1,
+          "rank_hi": 40,
+          "beta": 0.00129248177959423,
+          "nw_t": 0.338293473094389,
+          "n": 268
+        },
+        {
+          "rank_lo": 1,
+          "rank_hi": 100,
+          "beta": 0.00878751237958352,
+          "nw_t": 4.20979700980926,
+          "n": 268
+        }
+      ],
+      "reading": "여백(랭킹 근방)에서 score_eff -> Ret_1m 기울기가 유의한가. 유의하지 않으면 '여백 손실'은 작지만 동시에 '여백을 지켜서 얻을 것'도 작다 — epsilon 레버의 양날."
+    }
+  },
+  "wt010_gate_recheck": {
+    "wt010_reported_ratio": 0.146496205485856,
+    "wt010_dtail_used": 0.00804952700257582,
+    "wt010_dtail_vs_replacement": 0.0030983733539892,
+    "wt010_sd_used": 0.015948597895229,
+    "wt010_sd_realized_d_active": 0.0202280940341029,
+    "corrected_ratio": 0.0444587561446528,
+    "reading": "WT-010 관문은 편익을 '배제군 vs 잔류군' 격차로, 산포를 WT-009 상수로 계산했다. 대비항을 '배제군 vs 대체편입군'으로 정정하고 산포를 실현치로 바꾸면 관문 값이 문턱 아래로 내려간다 — 즉 그 라운드는 통과하지 말았어야 했다. 두 정정 모두 측정 전에 계산 가능했다(대체편입군은 랭킹으로 결정되는 결정론적 집합)."
+  },
+  "pit": {
+    "assert_pass": 268,
+    "assert_n": 268,
+    "injection_pass": 0,
+    "detector_alive": true
+  },
+  "labels": {
+    "detection_axis": "미결(underpowered) 이 아니라 **크기 부족** — 기전-함의가 이 창의 MDE80 의 1/11(사전 고정 epsilon) ~ 1/19(설계공간 상한)이라 어떤 검정으로도 이 소비 형태에서 기전을 분리할 수 없다.",
+    "capital_gate_axis": "미충족 — 측정하지 않았으므로 ΔIR 점추정 자체가 없다. transition_gates 미충족(협상 없음).",
+    "masked_check": "가려짐 아님 — 동일 산술이 기측정 양성(MAX5, ΔIR +0.1642)에 ratio 0.2838 을, 무작위 음성 대조에 -0.0308 을 부여한다(13_gatecheck.json). 관문은 눈멀지 않았다.",
+    "conductivity_ceiling": "양성 대조조차 paired NW t 가 1.566 (< 2) 이다. ⇒ 이 창·이 소비 형태에서 **유의성 수준 판정은 원리적으로 불가**하며 ΔIR 점추정 게이트만 유효하다. 모든 판정 서술에 이 상한을 병기한다."
+  },
+  "key_findings": [
+    {
+      "id": "K1",
+      "title": "설계는 작동했으나 편익과 손실이 같은 축에 실려 있다",
+      "detail": "여백 손실은 실제로 epsilon 에 갇혔다(상한 검증 전 월 통과). 그런데 근접쌍 조건화 시 꼬리 격차가 pooled 0.00805 -> 0.00210 으로 줄고 월별 스프레드 NW t = +0.211(미결)이다 — 여백을 지우면 기전 격차도 같이 지워진다. epsilon 은 편익과 손실을 **분리하는 레버가 아니라 둘을 동시에 조절하는 레버**였다."
+    },
+    {
+      "id": "K2",
+      "title": "top-25 경계에서 base score 는 국소 단조가 아니다",
+      "detail": "월별 횡단면 slope of Ret_1m ~ score_eff: 랭크 1-25 +0.009103 (NW t +1.93) / **랭크 20-40 -0.043437 (NW t -2.42)** / 1-100 +0.008788 (t +4.21). 경계 대역에서 기울기가 음수·유의다 — '랭킹 여백에 지킬 알파가 있다'는 WT-010 의 손실 귀속 서술이 그 대역에서는 성립하지 않는다. advisory 진단(대역 4개 조회, 다중비교 미보정)."
+    },
+    {
+      "id": "K3",
+      "title": "WT-010 관문은 편익 대비항을 잘못 잡아 통과했다",
+      "detail": "대비항을 '배제군 vs 잔류군'(0.00805)에서 '배제군 vs 대체편입군'(0.00310)으로, 산포를 WT-009 상수(0.01595)에서 실현치(0.02023)로 정정하면 0.1465 -> 0.0445 로 문턱 아래다. 두 정정 모두 측정 전 계산 가능했다(대체편입군 = 랭킹으로 결정되는 결정론적 집합)."
+    },
+    {
+      "id": "K4",
+      "title": "부수 census 관측은 판정이 아니다",
+      "detail": "판정 아님 · 기전 귀속 불가 · 노이즈와 미분리. 근거 3: (1) 명목-일치 관측치가 기전-함의의 25배 — 사전등록 꼬리 기전이 산출할 수 있는 크기가 아니다(꼬리 격차 0.00210 가 설명하는 몫은 그 중 4.0%). (2) NW t = 1.19 — 이 창의 전도성 상한(양성 대조 paired t 1.566)에 비춰 유의성 판정 불가 구간. (3) raw 판은 양 다리 명목이 1.32배 비대칭이라 교체효과가 아니라 대형주 순노출 증가를 일부 포함한다(WT-009 2.30배 / WT-010 1.14배와 같은 계통의 아티팩트)."
+    }
+  ],
+  "next_probe": [
+    {
+      "id": "NP1",
+      "priority": 1,
+      "title": "관문 편익항 표준화 — 대비항은 '대체편입군', 산포는 교체 census 실측",
+      "detail": "WT-009(1/26 사후 발견) · WT-010(0.1465 통과 후 실측 역방향) · WT-011(0.0089) 세 라운드가 같은 관문을 세 가지 다른 방식으로 계산했다. gate_of() 를 계약 함수로 승격해 (a)대체편입군 대비 (b)census sd (c)양성/음성 대조 동반을 강제하면, '배제/후순위' 계열 소비 형태는 착수 전에 백테 0회로 걸러진다. 본 라운드가 이미 3구성(tie-break/MAX5/random)에서 작동 실증.",
+      "consumption_surface": "QEPM alpha 착수 관문 · 02_Infrastructure/contracts/"
+    },
+    {
+      "id": "NP2",
+      "priority": 2,
+      "title": "top-25 경계 국소 비단조(K2)의 소비 형태 — cut point 자체를 묻는다",
+      "detail": "랭크 20-40 slope -0.0434 (t -2.42) 가 재현되면, 소비 형태는 '표식 종목을 미는 것'이 아니라 '경계를 어디에 둘 것인가'다(top-25 hard 는 고정 축이므로 완화 대상 아님 — 대신 25종 안에서 랭크 20-25 를 다른 후보로 바꾸는 규칙). 사전등록 필요: 다중비교 보정된 대역 profile + 명목-일치 교체 설계 + 자체 검정력.",
+      "consumption_surface": "팩터 랭킹 · 선별 라벨"
+    },
+    {
+      "id": "NP3",
+      "priority": 3,
+      "title": "직교화 표식의 risk-input 소비 (WT-009 C2 보관분)",
+      "detail": "3라운드(009 raw 배제 / 010 직교 배제 / 011 tie-break)가 전부 **선정 규칙** 면에서 소비했고 전부 관문 또는 게이트에 걸렸다. 남은 미측정 소비면 = risk 입력(공분산·꼬리 예산). 표식의 N2 지지(하락일 개인지지 NW t -14.59)는 강한데 선정 면 전이가 안 되는 패턴은 '랭킹이 아니라 위험 예산으로 쓰라'는 신호일 수 있다. ★역할 경계: 이 라운드는 risk-research 소관이며 alpha 가 수행하지 않는다.",
+      "consumption_surface": "위험모델 · beta 예산"
+    },
+    {
+      "id": "NP4",
+      "priority": 4,
+      "title": "명목-일치(weight-matched) 교체 설계의 사전등록",
+      "detail": "009(2.30배) -> 010(1.14배) -> 011(1.32배) 로 교체 양 다리의 명목 비대칭이 세 라운드 모두 남았다. cap_norm(Size) 가 편입 종목에 더 큰 비중을 주기 때문이다. 비대칭을 제거한 설계(동일 명목 교체)가 있어야 '교체효과'와 '순노출 이동'이 분리된다. ★비중 조작은 optimizer 소관 — alpha 는 요구사항만 이관.",
+      "consumption_surface": "optimizer 인터페이스"
+    }
+  ],
+  "revival_conditions": [
+    "관문 편익항이 NP1 로 표준화되고, 그 표준 하에서 어떤 소비 형태가 ratio >= 0.10 을 내면 그 형태로 재개",
+    "N4(근접쌍 꼬리 판별력)가 다른 창 또는 다른 표식 정의에서 NW-t >= +2.0 로 지지되면 tie-break 재시험",
+    "top-25 경계 국소 slope(K2)가 다중비교 보정 후에도 음수 유의면 NP2 로 재개",
+    "표식의 risk-input 소비(NP3)에서 양성이 나오면 선정-면 소비를 다시 묻는다"
+  ],
+  "scope_note": "config-scoped negative — 이 판정은 (표식 = NP2 직교화 하위 20%) x (소비 = epsilon tie-break) x (base = STR_1715 cleanT1 cap-w top-25) x (창 268월) 구성에 한정된다. 기전 자체의 판결이 아니다(N2 지지 NW t -14.59 유지, 반증 4축 발화 0)."
+}

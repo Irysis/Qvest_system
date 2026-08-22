@@ -1,0 +1,214 @@
+{
+  "task_id": "WT-D20260822_011",
+  "as_of_date": "2026-08-22",
+  "forecast_horizon": "1M",
+  "spec_version": "ast_v1.1",
+  "pit": {
+    "sig_date": "2026-03-31",
+    "decision_ts": "2026-03-31"
+  },
+  "hypothesis": {
+    "statement": "NP2 직교화 공간의 저-absorb 잔차 표식 종목군은 규모·변동성 노출과 독립적으로 다음 달 좌측 꼬리 실현 확률이 체계적으로 높다는 기전은 WT-010 에서 CONFIRMED 다(반증 3건 미발화, 진단 4축 정합, top-25 조건부 꼬리율 3.486% vs 2.681%, 하락일 개인지지 NW t −14.59). 그런데 그 기전을 '배제'로 소비하면 대체 편입이 base 랭킹 26위 이하로 강제되어 랭킹 여백을 무제한 소비한다 — 실측: 꼬리율 개선 +0.310%p 대가로 평균수익 −0.0690963266274602 %p/월 + 회전 +24.8%p, ΔIR −0.0899305344532431. size 노출은 원인이 아님이 실측됐다(노출 67.7% 제거에 ΔIR 결손 15.3% 만 회복). 본 가설: 같은 표식을 **ε tie-break**(표식 종목 score_eff 에 ε 페널티 후 top-25 재선정)로 소비하면, 밀려난 표식 종목과 새로 든 비표식 종목의 score_eff 격차가 구조적으로 ε 이하로 갇혀 여백 손실에 상한이 생기고, 꼬리 회피 편익의 순 함의가 손실 상한을 넘는 ε 영역이 존재한다면 base 대비 forge-authoritative 수치가 개선된다. ★핵심 상충(설계의 본질): ε 이 작으면 여백 손실 상한이 작지만 교체 건수가 줄어 기전-함의 크기도 함께 준다 — ε 이 유일한 설계 레버이며, ε 고정 후 순 함의 산술 관문(NP4)을 통과하지 못하면 측정 없이 중단이 정직 산출이다. 판정은 전적으로 평균 basis 실측(ΔIR 점추정 게이트)이며 분포 통계량은 판정에 등장하지 않는다.",
+    "mechanism": {
+      "agent": "KR 개인투자자 순매수 군집의 '상승일 추격 매수' 행태. 저-absorb 종목 = 월내 개인 순매수가 상승일에 집중되는 종목(corr(Individual_d, Ret_d) > 0) — 가격이 펀더멘털 보유자가 아니라 주의(attention)-주도 개인 수요에 의해 지지되는 종목. 주체 주장은 잔차 성분에서 성립해야 하며 WT-010 이 그것을 실측 확인했다: 직교화 표식군의 하락일 개인 순매수 지지 스프레드 −0.0938869582061101 (NW t −14.5919631319889, n=64) — raw 판(−0.114, t −8.93)보다 유의도가 오히려 높다. 즉 행태 주체는 규모 성분의 허상이 아니라 잔차에 실재한다. [WT-010 승계 — 실질 변경 없음]",
+      "friction": "① KR 공매도 제약 — 개인 수요로 지지된 가격의 하방 정보를 숏 포지션이 선반영할 수 없음 (Miller 1977 구조). ② flow 공분산-축 소비 마찰 — 투자자별 수급은 공시되나 종목×월내 일별 공분산 구조(absorb)로 가공해 쓰는 소비자가 구조적으로 소수. ③ 롱온리 지배 시장에서 '빠질 종목' 정보는 보유 회피로만 실현 가능한데 지수·quasi-index 자금은 배제를 실행하지 않음. ④ 잔차 성분의 소비 마찰 — 기관 위험모델은 size·vol 을 표준 팩터로 통제하므로 raw absorb 류 신호는 '소형주 효과의 재포장'으로 기각되고, size·vol 을 걷어낸 뒤 남는 flow-공분산 잔차는 표준 팩터 어휘 밖이라 위험모델·스크린 어느 쪽에도 소비 채널이 없다. [WT-010 승계 — 실질 변경 없음]",
+      "path": "★소비 형태 교체 경로 (기전 불변·전달함수 수정): WT-010 완전분해가 손실원을 단일 특정했다 — 배제는 예측대로 꼬리를 줄였으나(제거군 꼬리율 3.486% → 대체군 3.176%, +0.310%p) 대체 편입이 base 랭킹 26위 이하로 강제되어 평균수익 −0.0690963266274602 %p/월 + 회전 +24.8%p 를 치렀고(가중기여 차 −0.000629/월 ≈ 실측 −0.000940/월, 같은 크기·부호), size 노출 이동은 원인이 아니었다(직교화가 노출의 67.7% 를 제거했는데 ΔIR 결손은 15.3% 만 회복 — 결손의 대부분은 노출이 아니라 여백 소비). 즉 기전의 참·거짓과 그 기전을 어떤 형태로 소비하느냐의 손익은 다른 문제이며, 남은 자유도는 표식이 아니라 **전달함수**다. ε tie-break 의 구조 논변: 표식 종목 score_eff 에 ε 페널티를 가하고 top-25 를 재선정하면, 표식 재직자(incumbent)는 비표식 도전자의 score_eff 가 자기 점수의 ε 이내에 있을 때에만 교체된다 — 따라서 교체쌍의 score_eff 격차는 **구성상 ε 이하**다. 배제형이 26위 이하를 강제로 끌어올리는 일이 원천적으로 없다: 여백 손실은 설계 파라미터로 상한이 잡히고, 남는 것은 근접쌍 내부의 꼬리 확률 격차(WT-010 top-25 조건부 실측 +0.805%p)가 그 상한을 넘느냐는 산술 문제다. ★상충의 명시(레버의 양날): ε→0 이면 여백 손실→0 이나 교체 건수→0 이라 기전-함의도→0 이고, ε→∞ 이면 배제형으로 수렴해 WT-010 의 실측 손실을 재생산한다 — ε 은 유일한 설계 레버이고 그 선택 근거는 성과가 아니라 구조여야 한다(challenge_flags ②). 정직 표기 3건: (a) ε 상한은 score_eff 단위다 — 수익 단위 손실 상한으로의 번역은 랭킹 여백의 국소 score→return 기울기를 경유하며 그 기울기는 미측정이다(상한 논변은 구조적이지만 '순 개선'을 보장하지 않는다). (b) FQ237 선례 — 선별층의 식별된 불일치를 직접 고쳐 표적 통계량을 개선했는데 전이는 오히려 악화했다(IC t 3.18→3.77, PORT_t 0.947→0.680). 여백 상한은 필요조건이지 충분조건이 아니다. (c) 편익 측도 함께 준다 — tie-break 의 교체 건수는 배제형(4.82종목/월)의 부분집합이므로 순 함의 산술(NP4)을 ε 고정 후 재산출해야 하며, WT-010 관문비 0.1465 에서 하락 방향이라 관문 미달 개연성이 실재한다. 미달 시 측정 없이 중단이 정직 산출이다."
+    },
+    "falsification": [
+      {
+        "id": "N1_exposure_neutrality",
+        "fields": "A1_RAWDATA_OHLCVS_daily:Size",
+        "expectation": "직교화 표식이 '노출을 제거했다'는 전제의 검증 — 표식군과 비표식군의 월별 횡단면 size 백분위 평균 격차가 raw 축 실측 격차 0.2522 의 절반 미만. WT-010 실측 미발화 선례: size_abs 0.0815245766029775 / vol_abs 0.0597352879667346. tie-break 판에서는 동일 관측을 '실제 교체된 쌍' 집합에도 병기 산출할 것(표식 전체가 아니라 교체 실현분의 노출 이동이 실질 노출 채널이므로).",
+        "reject_if": "|mean_srank(표식군) − mean_srank(비표식군)| ≥ 0.126 (전 패널 평균, 방향은 표식군이 낮은 쪽) → 식별 전제 반증, 성과 측정과 무관하게 설계 실패 보고. win_vol 백분위에도 동일 문턱 대칭 적용.",
+        "threshold_provenance": "WT-010 승계 — 0.126 = raw 격차 0.2522 의 1/2. 재량 변경 없음."
+      },
+      {
+        "id": "N2_downday_individual_support_residual",
+        "fields": ["A6_investor_flow_stock_daily:Individual", "A1_RAWDATA_OHLCVS_daily:Ret", "A1_RAWDATA_OHLCVS_daily:Close", "A1_RAWDATA_OHLCVS_daily:Vol"],
+        "expectation": "기전('지지 부재가 꼬리의 실현 경로')의 잔차 성분 실재 — 좌측 꼬리 실현월(Ret_1m ≤ −20%)의 하락일 개인 순매수/(하락일 거래대금) 스프레드(표식군 − 비표식군)가 유의 음수. WT-010 실측 = −0.0938869582061101, NW t −14.5919631319889, n=64 (지지).",
+        "reject_if": "n_months ≥ 30 조건에서 NW-t ≥ 0 → 기전 기각. −2.0 < NW-t < 0 → '기각 아님·지지 유의하지 않음(미결)' 3분할 라벨 유지.",
+        "threshold_provenance": "WT-010 승계 — 부호 기준 0 은 기전 방향 예측 직접 도출, 유의 문턱 |t| 2.0 은 F1/F2 관례. 재량 변경 없음."
+      },
+      {
+        "id": "N3_smart_money_followthrough",
+        "fields": ["A6_investor_flow_stock_daily:Foreign", "A6_investor_flow_stock_daily:Institutional", "A1_RAWDATA_OHLCVS_daily:Size"],
+        "expectation": "'스마트머니가 개인 수요 반대편에서 이탈' 기전이면 표식군의 후속 3M 외국인+기관 순매수/Size 는 동월 유니버스 중앙값 대비 낮거나 음수. WT-010 실측 = +0.000508934503155471, NW t 1.45540342215816, n=268 — 미발화(미결) 상태로 승계.",
+        "reject_if": "NW-t ≥ +2.0 (스마트머니가 유의하게 매집) → '지지 철수' 기전 기각 — 국면 경계 예측력이 근거를 잃는다.",
+        "threshold_provenance": "WT-010/WT-009 F1 reject_threshold=2 그대로 승계. 재량 변경 없음."
+      },
+      {
+        "id": "N4_near_tie_tail_discrimination (신설 — 본 라운드 특유)",
+        "fields": ["A6_investor_flow_stock_daily:Individual", "A1_RAWDATA_OHLCVS_daily:Ret", "A1_RAWDATA_OHLCVS_daily:Vol", "A1_RAWDATA_OHLCVS_daily:Size"],
+        "expectation": "tie-break 이 작동하는 바로 그 자리에서 기전 격차가 실재해야 한다: 사전 고정된 ε 에 대해, top-25 경계 근방의 ε-근접쌍(표식 재직자 vs score_eff 차 ε 이내 비표식 도전자)에서 표식 측의 다음 달 좌측 꼬리 실현빈도(Ret_1m ≤ −20%, WT-010 꼬리 정의 동일)가 비표식 측보다 높아야 한다. 사전 크기 참조 = WT-010 top-25 조건부 무조건(비근접 한정 없는) 격차 +0.805%p (3.486% vs 2.681%). ★근접쌍 조건화는 score 를 사실상 통제한 대조이므로, 격차가 소멸하면 '꼬리 판별력은 score 여백의 재포장이었다'는 뜻 — 교체의 기대 편익이 없다. ★역할 구분 명문: '실현 여백 손실이 ε 상한 안에 들어왔는가'는 설계 작동 진단(diagnostic)이지 반증이 아니다 — 그것은 선정 규칙의 산술적 성질 확인이고, N4 는 그 규칙이 소비하는 기전 격차의 실재 여부라는 부수 관측이다.",
+        "reject_if": "n_months ≥ 30 조건에서 근접쌍 월별 꼬리빈도 스프레드(표식 − 비표식)의 NW-t ≤ 0 (부호 소멸/역전) → 기전의 tie-break 소비 가능성 기각 — ε 을 어떻게 잡아도 교체의 기대 편익이 없으므로 성과 측정과 무관하게 보고 후 중단. 0 < NW-t < +2.0 → '미결(검출 부족)' 라벨 — 기각과 미결 구분 유지, 근접쌍 표본이 작아 미결 개연성 높음을 사전 인지.",
+        "threshold_provenance": "부호 기준(0)은 기전 방향 예측 직접 도출(신설 축이라 선행 실측 문턱 부재 — 상대 문턱 아닌 부호 기준으로 사전 고정). 유의 문턱 |t| 2.0 은 N2/N3 관례 승계. n≥30 최소 표본은 N2 관례 승계."
+      }
+    ],
+    "regime_scope": {
+      "holds_in": ["neutral", "expansion"],
+      "weakens_or_reverses_in": ["crisis", "post_crisis_sharp_recovery"],
+      "boundary_rationale": "경계는 기전에서 도출 (WT-010 라벨 승계): 교체의 편익은 종목 고유 좌측 꼬리가 횡단면에서 판별적으로 실현될 때 발생한다. ① crisis — 시장 전반 청산이 지배해(상관→1) 꼬리가 시스템 성분화하면 근접쌍 내부의 꼬리 격차 자체가 압축되어 교체의 기대 편익이 소멸한다 — 이 논리는 배제형과 동일하게 성립한다. ② post_crisis_sharp_recovery — 추격 수요 종목의 반등 참여를 교체가 깎는다. ③ neutral/expansion — 추격 수요 축적 + 꼬리의 고유 사건 실현으로 기전 성립. ★tie-break 형태가 경계에 주는 구조 차이 (본 라운드 신규 예측): 배제형은 약국면 손실도 무제한이었으나(WT-010 실측 CRISIS mean_d −0.00436849533888154/월, RISK_ON −0.00141309251844185/월), tie-break 은 월별 희생이 ε-근접쌍 교체분으로 상한이 잡히므로 **약국면 손실 크기도 함께 압축**되어야 한다 — CRISIS 월 손실이 WT-010 배제형 대비 압축되지 않으면 여백-상한 논변 자체를 재검토할 신호다(형태 교체의 검증 가능한 예측). 반면 강국면 편익도 같은 상한에 갇히므로 국면 간 진폭이 전체적으로 눌린 프로파일이 예측된다. ★사후 관찰 아님 명시: WT-010 regime_tab(NEUTRAL +0.00254620945505151 등)은 배제형의 실측이고 국면 라벨 자체는 WT-009 에서 기전으로부터 사전 도출된 것을 승계한다 — 본 서술은 그 예측의 tie-break 형태 번역이며, alpha-research 가 국면 분해로 이 예측을 시험할 수 있다. 보편타당 주장 아님: 이 가설은 위 두 약국면에서 편익이 약화·역전됨을 스스로 예측한다."
+    }
+  },
+  "hypothesis_source": {
+    "file": "qepm/mailbox/worktask/WT-D20260822_011/alpha_hypothesis.json",
+    "designed_by": "alpha-hypothesis",
+    "inherited_verbatim": true,
+    "note": "mechanism / falsification / regime_scope 재작성 없음(Charter 원칙 8). N4 는 alpha-hypothesis 가 신설한 축이며 본 에이전트가 실측만 수행했다."
+  },
+  "inherited_from": "WT-D20260822_010 (기전 CONFIRMED · 배제 소비형태 ΔIR -0.0899) → 소비 형태만 교체",
+  "consumption_gate_precheck": {
+    "executed": true,
+    "passed": false,
+    "fixed_epsilon_ratio": 0.00892778904941332,
+    "design_space_sup_ceiling": 0.0521748012897954,
+    "threshold": 0.1,
+    "conductivity_verified": true,
+    "action": "처치 백테스트 미실행 · 중단 보고 (request.json 명문 + PREREG_GATE)"
+  },
+  "factors": [
+    {
+      "factor_id": "F1_epsilon_tiebreak_on_base_score",
+      "ast": {
+        "op": "SUBTRACT",
+        "args": [
+          {
+            "leaf": "STORED_SCORE",
+            "provenance": {
+              "store_build_hash": "alpha_scores_str1715_268m_cleanT1 / anchor screen_cap_w_top25 port_t_nw_lag3 = 3.05833912319022 (본 라운드 재현 STOP 통과)",
+              "generator_code_path": "05_Production/2.Factor_Model/2-3.STR_1715_on_M4_R05_noLayer4_PG2/01_reproducible_code/_recompute_alpha_asof.R",
+              "generated_at": "2026-07-14 17:57:33",
+              "production_parity_verified": true
+            },
+            "production_parity_verified": true,
+            "escape_contract": {
+              "escape_type": "STORED_SCORE",
+              "provenance": {
+                "store_build_hash": "alpha_scores_str1715_268m_cleanT1 / anchor 3.05833912319022",
+                "generator_code_path": "05_Production/2.Factor_Model/2-3.STR_1715_on_M4_R05_noLayer4_PG2/01_reproducible_code/_recompute_alpha_asof.R",
+                "generated_at": "2026-07-14 17:57:33",
+                "production_parity_verified": true
+              },
+              "production_parity_verified": true
+            }
+          },
+          {
+            "op": "MULTIPLY",
+            "args": [
+              0.23052149958407,
+              {
+                "op": "WHERE",
+                "args": [
+                  {
+                    "op": "CS_RANK_PCT",
+                    "args": [
+                      {
+                        "leaf": "SPECIAL_OP",
+                        "op_code_path": "stage_artifacts/WT-D20260822_010/00_precheck.R (score_orth = z(resid(lm(winsor(absorb_raw) ~ z(rank(win_vol)) + z(rank(log_size))))) by Date, 계약 distribution_target_screen.R::.dts_orthogonalize_by_date) — absorb_raw 원천 = stage_artifacts/WT-D20260813_006/01_build_features.py (absorb = -corr_win(Individual_d, Ret_d), 3개월 창, d0 당일 차감). 본 라운드는 해당 산출물을 verbatim 승계(md5 대조)했고 재구현하지 않았다.",
+                        "walk_forward": true,
+                        "escape_contract": {
+                          "escape_type": "SPECIAL_OP",
+                          "op_code_path": "stage_artifacts/WT-D20260822_010/00_precheck.R + 02_Infrastructure/contracts/distribution_target_screen.R::.dts_orthogonalize_by_date",
+                          "walk_forward": true
+                        }
+                      }
+                    ]
+                  },
+                  0.2
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "role": "core_signal",
+      "restatement_exposure": 1,
+      "restatement_note": "STORED_SCORE 리프가 ast_field_map 미등재 → 보수 표시(WARN_RESTATEMENT). 상류 factor_db vintage 를 본 라운드가 증명하지 않았으므로 '확인 불가'를 '확인 완료'로 내려앉히지 않는다(WT-010 승계)."
+    }
+  ],
+  "combination_rule": "single_factor",
+  "verdict": "designed",
+  "ast_expressiveness_note": "epsilon tie-break 은 𝒪 안에서 표현된다 — 저장 base score 에서 (epsilon x 표식 지시자)를 빼는 산술. blocked_by_capability 아님. 𝒪 확장 요구 없음.",
+  "self_pit_check": {
+    "performed": true,
+    "leaves_checked": [
+      {
+        "leaf": "STORED_SCORE:alpha_scores_str1715_268m_cleanT1.score_eff",
+        "availability_rule": "fixed: production 컨벤션 label = T-1 산출 · label월 보유. §7b production_parity_verified stopifnot + anchor PORT_t 3.05833912319022 재현 STOP 통과(실측 일치).",
+        "restatement_prone": false
+      },
+      {
+        "leaf": "SPECIAL_OP:orth_absorb_3m",
+        "availability_rule": "fixed: 일별 investor_wide(T+1 정산) + RAWDATA 를 창 {m-2,m-1,m} 집계, 신호일 d0 당일 관측 차감(strict Date < d0). 직교화는 동월 횡단면만(pooled/full-sample 회귀 경로 없음 — 계약이 물리 차단). 홀딩월 = m+1, 컷오프 = 홀딩월 1일. assert_overlay_pit 268/268 PASS + 위반 주입 0/268(검사기 생존 확인).",
+        "restatement_prone": false
+      }
+    ],
+    "verdict": "clean",
+    "notes": "저장 파생 패널을 FIELD 리프로 위장하지 않았다(§4-1). epsilon 은 상수(자유 파라미터 1개)이며 수익 정보로 조율되지 않았다 — 도출식 입력은 WT-010 기측정치와 base 패널 기울기뿐."
+  },
+  "alpha_vector": {},
+  "alpha_vector_note": "빈 객체 = 본 라운드는 착수 전 관문에서 중단해 배포용 alpha 를 산출하지 않았다. 값을 채우면 '측정하지 않은 알파'를 산출한 것처럼 보이므로 비운다(fail-closed).",
+  "confidence_vector": {},
+  "signal_matrix_ref": "stage_artifacts/WT-D20260822_011/00_precheck_objects.rds (SEL/Wb/EPS — 처치 스코어 패널 미발행)",
+  "factor_specs": [
+    {
+      "factor_family": "Flow_Behavioral_Orthogonalized",
+      "proxy": "epsilon tie-break on low-orth absorb flag (X=0.20, epsilon = 0.23052149958407 score_eff units)",
+      "formula": "sc_adj = score_eff - epsilon * 1{CS_RANK_PCT(orth_absorb_3m) <= 0.20} ; top-25 by sc_adj, cap_norm(Size)",
+      "lag_rule": "signal from months {m-2,m-1,m} with strict Date < d0; holding month m+1 (assert_overlay_pit 268/268)",
+      "winsorization": "회귀 좌변 [0.01,0.99] (NP2 계약 verbatim)",
+      "neutralization": "win_vol + log_size (월별 횡단면 rank-OLS 잔차, NP2 계약)",
+      "economic_rationale": "behavioral",
+      "weight_theta": 1,
+      "references": [
+        "Miller 1977 (공매도 제약 하 의견 분산)",
+        "Harvey, Liu & Zhu 2016 (다중검정 hurdle — 관문 문턱의 근거)",
+        "Bailey & Lopez de Prado (DSR — 관측 후 게이트 재정의 금지)"
+      ]
+    }
+  ],
+  "diagnostics": {
+    "canonical_port_t_nw_lag3": {},
+    "canonical_port_t_note": "null = **미산출**. 착수 전 관문 FAIL 로 처치 백테스트를 실행하지 않았다 — 사유는 challenge_flags 및 alpha_validation.json$gate 참조. base anchor(cap-w weighted_screen) 3.05833912319022 는 재현 검증용이며 처치 수치가 아니다.",
+    "canonical_n_months": {},
+    "weighted_screen_port_t_base": 3.05833912319022,
+    "rank_ic": 0.0484140059968223,
+    "rank_ic_note": "base score_eff 의 IC (처치 아님). advisory — measurement-graduation §3.",
+    "icir": 0.450260176567753,
+    "rank_ic_t": 7.68966048688739,
+    "alpha_inheritance_cor": 0.993025431202223,
+    "alpha_inheritance_note": "Pearson 0.993025 / Spearman 0.990067 > 0.95 → v1.2 Charter §10 wt_type 재분류 권고 대상. 본 라운드는 신규 alpha 가 아니라 동일 alpha 의 소비 형태 변경이며 alpha_discovery_certificate 미발급이 정상.",
+    "turnover_proxy": -0.0487873483225583,
+    "turnover_note": "census 산술(traded_t = sum|w_t - w_{t-1}|, weighted_screen_bt 규약 동일). tie-break 은 회전을 오히려 -4.9%p/yr 줄인다 — 완전 배제(+24.8%p)와 반대 방향."
+  },
+  "alpha_discovery_count": 0,
+  "alpha_discovery_count_note": "0 = 착수 전 관문 FAIL 로 alpha 미산출. wt_type=discovery 이나 certificate 미발급이 정상 동작(passive deny).",
+  "selection_objective": "canonical_port_t",
+  "selection_objective_note": "선택 권위는 canonical/weighted PORT_t 이나 본 라운드는 후보 선택 자체를 하지 않았다(관문 중단). epsilon 은 성과가 아니라 구조 산술로 도출한 단일 사전 고정값.",
+  "n_trials": 1,
+  "selection_type": "chain",
+  "method_shopping_log": {
+    "candidates_tried": 1,
+    "method_log": [
+      {
+        "name": "epsilon_tiebreak(eps=0.23052149958407, X=0.20)",
+        "gate_ratio": 0.00892778904941332,
+        "selected": false,
+        "note": "관문 FAIL — 백테스트 미실행"
+      }
+    ]
+  },
+  "verdict_summary": "PRE_MEASUREMENT_GATE_FAIL — 사전 고정 epsilon ratio 0.0089, 설계공간 상한(어떤 epsilon 이든) 0.0522 < 문턱 0.10. 관문 전도성 검증됨(양성 대조 0.2838 / 음성 대조 -0.0308). transition_gates 미충족 — 협상 없이 config-scoped negative.",
+  "challenge_flags": [
+    "[HIGH] epsilon 도출식 결함(C1) — beta_hat 을 랭크 1-40 에서 쟀는데 교체 대역(20-40) 실측 기울기는 -0.043437 (NW t -2.42) 로 음수·유의. 교체 대역에서 쟀다면 epsilon 이 음수가 되어 식이 정의되지 않는다. 기울기 역수 앵커 규칙 폐기 권고. 결론 영향 없음(설계공간 상한이 epsilon 무관).",
+    "[HIGH] top-25 경계 국소 비단조(K2) — 랭크 20-40 slope 음수 유의. WT-010 의 '랭킹 여백 강제 소비' 손실 귀속이 그 대역에서는 성립하지 않는다. advisory(대역 4개 조회, 다중비교 미보정) — NP2 로 사전등록 후 재확인 필요.",
+    "[MEDIUM] WT-010 관문 재검(K3) — 편익 대비항/산포 정정 시 0.1465 -> 0.0445 로 문턱 아래. 그 라운드는 통과하지 말았어야 했다. 두 정정 모두 측정 전 계산 가능.",
+    "[MEDIUM] 부수 census 관측 — 명목일치 연 +1.019%p (NW t +1.19). 기전-함의의 25.2배라 기전 귀속 불가 · 양성 대조는 같은 census 에서 t +2.43 · 명목 비대칭 1.32배 미제거. 판정 아님, NP4 로 이관.",
+    "[MEDIUM] alpha_inheritance_cor 0.993 > 0.95 — wt_type 재분류 권고(governance_log reclassify_proposal 기록).",
+    "[LOW] 설계공간 상한 격자의 dtail 이 작은 epsilon 구간에서 불안정(-0.029 ~ +0.006). sup 0.0522 를 정밀 수치로 인용하지 말 것 — 안정 구간 상한은 0.042.",
+    "[LOW] sd_gate 가 재정규화 채널 제외 — 대형 epsilon 점에서 census sd 0.0214 vs WT-010 실측 0.0202(+5.9%, MDE80 을 키우는 방향). 소규모 교체 구간의 잔여 불확실성은 미검증으로 표기.",
+    "[LOW] basis 3종 병기 / lag1 / strict-PIT A/B 는 처치 측정이 있어야 산출된다 — 관문 중단으로 미산출(부재 사유 명시). PIT 정적 검사는 수행: assert 268/268 PASS · 위반 주입 0/268.",
+    "[전도성 상한] 이 창·이 소비 형태에서 양성 대조조차 paired NW t 1.566 — 유의성 수준 판정은 원리적으로 불가하며 ΔIR 점추정 게이트만 유효(모든 판정 서술에 병기)."
+  ],
+  "generated_at": "2026-08-22T20:53:47+0900"
+}
