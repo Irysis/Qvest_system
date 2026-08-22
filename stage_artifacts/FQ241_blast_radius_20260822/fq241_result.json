@@ -1,0 +1,209 @@
+{
+  "schema": "fq241_blast_radius_v1",
+  "round_id": "FQ241_blast_radius_probe1_20260822",
+  "fq": "FQ-241",
+  "measured_at": "2026-08-22",
+  "agent": "alpha-research",
+  "metric_type": "panel_statistic",
+  "scope": "FQ-233 Lane A 분포 형태 수치 5+1종의 유니버스-오염 재검. 성과수치(PORT_t/SR/IR/calmar/MDD) 산출·인용 0건.",
+
+  "gate0": {
+    "verdict": "PASS__PANEL_DOES_CONSUME_K200_UNION_KQ150",
+    "evidence_file": "02_Infrastructure/ramp/factor_validation.R",
+    "evidence_lines": "220-222",
+    "detail": "유니버스는 명시 필터가 아니라 정본 forward-return 빌더 build_monthly_forward_returns() 안에 하드 배선. m <- m[(K200 == TRUE | KQ150 == TRUE) & ...]. RAWDATA.parquet 의 K200/KQ150 플래그 = FQ-241 이 결함을 실측한 바로 그 컬럼.",
+    "full_record": "stage_artifacts/FQ241_blast_radius_20260822/gate0_panel_universe.json"
+  },
+
+  "reproduction_status": {
+    "label": "PARTIAL__INDEPENDENT_RECONSTRUCTION_NOT_BIT_EXACT",
+    "why": "master_panel_FIXED.rds 의 생성 스크립트가 저장소에 없다(build_lane_a_panel.R:6 · r33_profile.R:3 이 명시). A_orig 는 재현이 아니라 독립 재구축이다.",
+    "table": [
+      {"metric": "sign_div_n", "r32_published": 123, "A_orig_recomputed": 127},
+      {"metric": "sign_div_pct", "r32_published": 38.4, "A_orig_recomputed": 39.1},
+      {"metric": "medPos_meanNeg", "r32_published": 102, "A_orig_recomputed": 102, "note": "정확 일치"},
+      {"metric": "meanPos_medNeg", "r32_published": 21, "A_orig_recomputed": 25},
+      {"metric": "cor_skewslope_gap", "r32_published": -0.728, "A_orig_recomputed": -0.616, "note": "최대 괴리 0.112"},
+      {"metric": "mono_ge_0.8", "r32_published": 0, "A_orig_recomputed": 0, "note": "정확 일치"},
+      {"metric": "m_mono_median", "r32_published": 0.5029, "A_orig_recomputed": 0.5019},
+      {"metric": "medsig_meannot_n", "r32_published": 99, "A_orig_recomputed": 95},
+      {"metric": "medsig_meannot_pct", "r32_published": 30.9, "A_orig_recomputed": 29.2},
+      {"metric": "of_which_mean_neg", "r32_published": 46, "A_orig_recomputed": 44},
+      {"metric": "gap_pos_n", "r32_published": 233, "A_orig_recomputed": 242},
+      {"metric": "gap_pos_pct", "r32_published": 72.8, "A_orig_recomputed": 74.5},
+      {"metric": "gap_median_ann_pct", "r32_published": 2.97, "A_orig_recomputed": 2.34}
+    ],
+    "identified_causes": [
+      "①빌더 스크립트 부재 → 독립 경로 재구축",
+      "②팩터 집합 320(r32) vs 325(본 라운드 공통집합; 패널 원본 331종에서 arm별 월수>=60 교집합)",
+      "③5분위 배정 규칙 교체 — 원본 quantile(frank(z)) 는 z 동점이 심한 팩터-월에서 breaks-not-unique 로 즉사(331종 전수에서 실제 발생). 순위축 등분으로 대체, 전 arm 동일 적용",
+      "④master_panel 의 m_align(월별 0/1) 용도 복원 불가 — 본 경로는 Z_Score_Aligned 만 사용(C13)"
+    ],
+    "consequence": "모든 arm 대조는 동일 코드 내 상대 비교로만 읽어야 한다. B_clean 이 원 라운드 대비 어떻다가 아니라 내 코드의 A_orig 대비 어떻다."
+  },
+
+  "arms": {
+    "A_orig": {"def": "전기간 K200∪KQ150 (원 창)", "months": 259, "start": "200501", "end": "202607", "role": "기준"},
+    "A_early134": {"def": "길이-정합 통제 — 2016-03 이전 (오염창 포함)", "months": 135, "start": "200501", "end": "201603", "role": "창 길이 효과 배제용"},
+    "B_clean": {"def": "청정창 — 2015-07~ (KQ150 실시간 산출 개시 이후)", "months": 133, "start": "201507", "end": "202607", "role": "사전고정 판정 arm"},
+    "C_k200": {"def": "K200 단독 (진단 통제 — mandate 유니버스 아님)", "months": 259, "start": "200501", "end": "202607", "role": "진단만. 결론 근거로 사용 금지"},
+    "arm_overlap": "독립 표본 아님 — A_orig 는 (A_early134 ∪ B_clean) 을 포함하고 C_k200 은 A_orig 의 부분집합. arm 간 차이의 유의성 검정은 하지 않았다.",
+    "n_factors_common": 325,
+    "unmeasured_arm": "순수 오염창 단독(2010-02~2015-06, 65개월) — MDE 가 |t|=2 기준 연 11.8%로 폭발해 대조 불성립. next_probe."
+  },
+
+  "results_5plus1": [
+    {
+      "id": 1,
+      "metric": "sign_divergence (부호 갈림)",
+      "r32_published": {"n": 123, "pct": 38.4, "medPos_meanNeg": 102, "meanPos_medNeg": 21},
+      "arms": {
+        "A_orig": {"n": 127, "pct": 39.1, "medPos_meanNeg": 102, "meanPos_medNeg": 25, "asym_ratio": 4.08, "binom_p": 3.12e-12},
+        "A_early134": {"n": 105, "pct": 32.5, "medPos_meanNeg": 88, "meanPos_medNeg": 17, "asym_ratio": 5.18, "binom_p": 9.95e-13},
+        "B_clean": {"n": 72, "pct": 22.2, "medPos_meanNeg": 56, "meanPos_medNeg": 16, "asym_ratio": 3.50, "binom_p": 2.40e-06},
+        "C_k200": {"n": 100, "pct": 30.8, "medPos_meanNeg": 69, "meanPos_medNeg": 31, "asym_ratio": 2.23, "binom_p": 1.83e-04}
+      },
+      "power_label": "n-invariant — 이 지표는 유의성 문턱을 쓰지 않는다(부호만 본다). 창 길이에 기계적으로 민감하지 않음.",
+      "label": "robust_to_universe_defect__magnitude_partially_affected",
+      "reading": "결론(비대칭 존재, 중앙값+/평균- 쪽 쏠림)은 4 arm 전부 유지, 이항검정 전부 p<1e-3. 크기는 39.1%→22.2%(-16.9%p)로 실질 이동. 단 길이-정합 통제 A_early134 가 32.5% 로 중간이므로 감소를 오염에 귀속할 수 없다(era 교락)."
+    },
+    {
+      "id": 2,
+      "metric": "cor(skewslope, gap) — 기전 직접 측정",
+      "r32_published": -0.728,
+      "arms": {
+        "A_orig": {"cor": -0.616, "ci95": [-0.735, -0.467]},
+        "A_early134": {"cor": -0.796, "ci95": [-0.830, -0.757]},
+        "B_clean": {"cor": -0.546, "ci95": [-0.653, -0.416]},
+        "C_k200": {"cor": -0.673, "ci95": [-0.723, -0.617]}
+      },
+      "ci_method": "팩터-부트스트랩 2000회 (seed 20260822)",
+      "power_label": "powered — 4 arm 전부 95% CI 가 0 에서 멀다",
+      "label": "robust_to_universe_defect",
+      "reading": "기전 주장(Q1 왜도가 Q5 보다 클수록 평균이 중앙값 아래로 끌린다)은 청정창에서 유지된다. A_orig CI 와 B_clean CI 가 크게 겹친다(-0.735~-0.467 vs -0.653~-0.416) = 두 값이 구별되지 않는다."
+    },
+    {
+      "id": 3,
+      "metric": "monotonicity — 준-단조(m_mono>=0.8) 팩터 수",
+      "r32_published": {"n_over_0.8": 0, "m_mono_median": 0.5029},
+      "arms": {
+        "A_orig": {"n_over_0.8": 0, "m_mono_median": 0.5019},
+        "A_early134": {"n_over_0.8": 0, "m_mono_median": 0.5037},
+        "B_clean": {"n_over_0.8": 0, "m_mono_median": 0.5000},
+        "C_k200": {"n_over_0.8": 0, "m_mono_median": 0.5010}
+      },
+      "power_label": "powered — 0/325 는 표본 크기 문제가 아니다(어떤 창에서도 단 1종도 없다)",
+      "label": "robust_to_universe_defect",
+      "reading": "완전 불변. 선형/단조 가정이 광범위하게 깨진다는 Lane A 결론은 유니버스 결함과 무관하다. 중앙값도 0.500~0.504 로 무작위(0.5)와 구분 불가 — 4 arm 전부."
+    },
+    {
+      "id": 4,
+      "metric": "median_significant_mean_not (t_med>2 그리고 |t_mean|<2)",
+      "r32_published": {"n": 99, "pct": 30.9, "of_which_mean_negative": 46},
+      "arms": {
+        "A_orig": {"n": 95, "pct": 29.2, "of_which_mean_negative": 44, "n_tmed_over2": 111},
+        "A_early134": {"n": 16, "pct": 5.0, "of_which_mean_negative": 2, "n_tmed_over2": 36},
+        "B_clean": {"n": 100, "pct": 30.8, "of_which_mean_negative": 7, "n_tmed_over2": 113},
+        "C_k200": {"n": 53, "pct": 16.3, "of_which_mean_negative": 18, "n_tmed_over2": 70}
+      },
+      "power_label": "n-dependent — |t|>2 문턱이라 창 길이에 기계적으로 민감. era 귀속은 길이-정합 쌍(A_early134 135m vs B_clean 133m)에서만 허용.",
+      "label_total": "robust_to_universe_defect (개수 95→100, 29.2%→30.8%)",
+      "label_subclaim_mean_negative": "overturned__but_not_attributable_to_contamination__full_window_aggregation_artifact",
+      "reading": "두 층으로 갈린다. (a)전체 개수는 청정창에서 오히려 소폭 증가 — 유지. (b)그중 평균 음수 46 은 44→7 로 붕괴한다. 그러나 길이-정합 오염 arm(A_early134)은 2 다 — 어느 하위 창에서도 40대가 나오지 않는다. 즉 44 는 오염창의 성질이 아니라 259개월을 결합했을 때만 생기는 수치다. 오염 때문에 붕괴로 읽으면 인과 오귀속."
+    },
+    {
+      "id": 5,
+      "metric": "gap_positive_pct (gap = 중앙값스프레드 - 평균스프레드 > 0 비율)",
+      "r32_published": {"pct": 72.8, "n": 233, "gap_median_ann_pct": 2.97},
+      "arms": {
+        "A_orig": {"pct": 74.5, "n": 242, "binom_p": 3.52e-19, "gap_median_ann_pct": 2.34},
+        "A_early134": {"pct": 60.4, "n": 195, "binom_p": 2.29e-04, "gap_median_ann_pct": 1.34},
+        "B_clean": {"pct": 74.8, "n": 243, "binom_p": 1.19e-19, "gap_median_ann_pct": 3.42},
+        "C_k200": {"pct": 60.9, "n": 198, "binom_p": 9.73e-05, "gap_median_ann_pct": 0.96}
+      },
+      "power_label": "powered — 이항검정 4 arm 전부 p<1e-3",
+      "label": "robust_to_universe_defect",
+      "reading": "A_orig 74.5% vs B_clean 74.8% — 사실상 동일. gap 중앙값도 연 2.34% → 3.42% 로 같은 방향에서 커진다."
+    },
+    {
+      "id": "6 (r33)",
+      "metric": "D03_RealVol 5분위 프로파일 — 혹형 정점",
+      "r33_published": {"profile_ann_mean_pct": [10.536, 16.608, 12.693, 11.330, 8.172], "peak": "Q2", "q5_q1_mean_ann": -2.36, "q5_q1_med_ann": 15.42, "skewslope": -0.3017},
+      "arms": {
+        "A_orig": {"profile_ann_mean_pct": [10.645, 16.155, 13.026, 11.243, 8.198], "peak_q": 2, "q5_q1_mean_ann": -2.45, "t_mean": -0.533, "q5_q1_med_ann": 15.18, "t_med": 3.439, "skewslope": -0.3024, "q1_med_ann": -15.495, "q1_skew": 1.0281, "skew_monotone_decreasing": true},
+        "A_early134": {"profile_ann_mean_pct": [16.927, 20.919, 16.445, 14.912, 9.974], "peak_q": 2, "q5_q1_mean_ann": -6.95, "t_mean": -1.163, "q5_q1_med_ann": 9.17, "t_med": 1.603, "skewslope": -0.2867, "q1_med_ann": -7.064, "q1_skew": 0.8686, "skew_monotone_decreasing": true},
+        "B_clean": {"profile_ann_mean_pct": [3.714, 10.140, 8.622, 6.975, 6.093], "peak_q": 2, "q5_q1_mean_ann": 2.38, "t_mean": 0.367, "q5_q1_med_ann": 21.07, "t_med": 3.400, "skewslope": -0.3606, "q1_med_ann": -24.112, "q1_skew": 1.1966, "skew_monotone_decreasing": false},
+        "C_k200": {"profile_ann_mean_pct": [9.617, 11.263, 9.986, 11.171, 6.969], "peak_q": 2, "q5_q1_mean_ann": -2.65, "t_mean": -0.609, "q5_q1_med_ann": 7.47, "t_med": 1.767, "skewslope": -0.1403, "q1_med_ann": -7.233, "q1_skew": 0.6670, "skew_monotone_decreasing": false}
+      },
+      "label_shape": "robust_to_universe_defect__descriptive_shape_reproduced__within_arm_significance_untested",
+      "label_mean_spread_sign": "sign_flip_within_noise__claim_unchanged",
+      "label_mechanism": "robust_to_universe_defect__strengthened_in_clean_window",
+      "reading": [
+        "혹형 정점 Q2 = 4 arm 전부 재현. 단 Q2 vs Q3 차이의 유의성은 재지 않았다(서술적 재현).",
+        "평균 스프레드 -2.45 → +2.38 부호 뒤집힘은 잡음 내부다 — t -0.533 vs +0.367, 둘 다 0 과 구별 불가이고 MDE(연 6~8%)보다 작다. 원 라운드(R31)의 주장 자체가 평균 스프레드는 0 과 구별 불가였으므로 주장은 뒤집히지 않았다. 역전 라벨 부여하지 않음.",
+        "실제로 검정된 주장(중앙값 스프레드 유의 양수)은 청정창에서 강해진다: 연 +15.18%(t 3.44) → +21.07%(t 3.40).",
+        "기전 서술(Q1 은 중앙값 최악인데 평균이 떠받쳐지고 왜도 최고)도 청정창에서 강해진다: Q1 중앙값 -15.50%→-24.11%, Q1 왜도 1.028→1.197(양쪽 다 Q1 이 최고).",
+        "왜도 Q1→Q5 단조 감소는 B_clean 에서 깨진다(Q3 0.9102 < Q4 0.9511, 미세 역전) — partially_affected."
+      ]
+    }
+  ],
+
+  "power_diagnostics": {
+    "mde_definition": "|t|=2 기준 평균 스프레드 최소검출효과 = 2 * median(sd_spread) / sqrt(n_month), 연율화",
+    "by_arm": {
+      "A_orig": {"n_month": 259, "sd_spread_median": 0.03887, "mde_ann_pct": 5.80},
+      "A_early134": {"n_month": 135, "sd_spread_median": 0.03868, "mde_ann_pct": 7.99},
+      "B_clean": {"n_month": 133, "sd_spread_median": 0.03971, "mde_ann_pct": 8.26},
+      "C_k200": {"n_month": 259, "sd_spread_median": 0.03977, "mde_ann_pct": 5.93}
+    },
+    "reading": "청정창은 MDE 가 연 5.80% → 8.26% 로 42% 확대. 유의성 문턱을 쓰는 지표(#4, r33 t)는 이 축의 영향을 받고, 부호·상관·단조도 지표(#1·#2·#3·#5)는 받지 않는다."
+  },
+
+  "persistent_regressor_caveat": {
+    "question": "Lane D 실측(phi 0.95~0.99 에서 AR(1)-정합 placebo |t| p95 = 2.45~3.26)이 본 라운드의 |t|>2 기준에도 적용되는가",
+    "verdict": "NOT_APPLICABLE__MEASURED",
+    "metric_type": "measured_direct",
+    "evidence": {
+      "ar1_spread_median_by_arm": {"A_orig": 0.003, "A_early134": 0.021, "B_clean": -0.028, "C_k200": -0.009},
+      "ar1_spread_p95_by_arm": {"A_orig": 0.126, "A_early134": 0.199, "B_clean": 0.133, "C_k200": 0.095},
+      "ar1_spread_max_by_arm": {"A_orig": 0.226, "A_early134": 0.281, "B_clean": 0.208, "C_k200": 0.186},
+      "n_factors_ar1_over_0.5": 0,
+      "n_factors_ar1_over_0.9": 0
+    },
+    "structural_reason": "Lane D 의 회귀변수는 매크로 수준(level) 상태변수라 phi→1 이 자연스럽다. 본 라운드 대상은 겹치지 않는 1개월 구간의 횡단면 분위 스프레드라 설계상 지속성이 없다. NW lag-3 가 잔여 자기상관을 덮는다.",
+    "caveat": "단 이것은 |t|>2 가 창 길이에 따라 개수를 바꾸지 않는다는 뜻이 아니다 — 그 축은 power_diagnostics 참조."
+  },
+
+  "overall_verdict": {
+    "label": "LANE_A_DISTRIBUTION_SHAPE_CLAIMS_ROBUST_TO_UNIVERSE_DEFECT__ONE_SUBCLAIM_OVERTURNED",
+    "summary": "5+1 수치 중 ①②③⑤⑥(형태·기전) = robust_to_universe_defect. ④의 전체 개수 = robust, ④의 하위 주장 그중 평균 음수 46 = overturned(단 오염 귀속 불가 — 전기간 결합 산물). Lane A 의 표적 교체 논리 전제(평균은 꼬리에 속고 중앙값은 안 속는다)는 청정창에서 유지되고 일부는 강해진다.",
+    "does_not_authorize": "FQ-233 은 다른 세션 소유다. 본 라운드는 판정 근거만 제출하며 철회·유지 집행을 하지 않았다.",
+    "causal_disclaimer": "어떤 라벨도 caused_by_contamination 을 주장하지 않는다. B_clean 은 오염 부재 창이면서 동시에 다른 시장 국면이고, 본 라운드의 어떤 통제도 두 요인을 분리하지 못한다. 길이-정합 통제(A_early134)는 창이 짧아져서 생긴 변화만 배제한다."
+  },
+
+  "honest_labels": [
+    "유동성 필터(20일 평균 거래대금 >= 2e8) 미적용 — 패널 통계이지 배포 스크린이 아니다. canonical_screen_bt 경로 값과 직접 비교 금지(r33 과 동일 라벨).",
+    "중앙값 스프레드는 자본으로 전환되지 않는다 — long-only top-N 이 버는 것은 보유 종목의 평균이다. 이 값들을 graduation HARD(PORT_t 2.95)와 같은 문장에 놓지 말 것.",
+    "arm 은 독립 표본이 아니다 — arm 간 차이의 유의성은 검정하지 않았다.",
+    "C_k200 은 mandate 유니버스가 아니다(진단 통제). 결론 근거로 인용 금지.",
+    "B_clean 은 2015-07~2015-12 6개월을 포함하는데 KQ150 플래그 최초 1→0 전환은 2016-01 이다 — 시작점 민감도 미측정.",
+    "PIT: C1(rolling only — 전 통계가 월별 횡단면의 시계열 집계) · C6(본 라운드의 주제 자체) · C13(Z_Score_Aligned 만, NEGATE/FLIP 없음) · C14/C15(load_month_factors() 경유로 생성된 패널 소비) 준수."
+  ],
+
+  "assets": {
+    "gate0_record": "stage_artifacts/FQ241_blast_radius_20260822/gate0_panel_universe.json",
+    "scripts": ["fq241_recompute.R (stage1 — 분위통계)", "fq241_headline.R (stage2 — 5+1 헤드라인 + 재현확인)", "fq241_diagnostics.R (stage3 — 검정력·AR1·부트스트랩)"],
+    "tables": ["fq241_3arm_table.csv", "fq241_A_orig_reproduction_check.csv", "fq241_r33_profile_3arm.csv", "fq241_r33_shape_3arm.csv", "fq241_metric2_bootstrap.csv", "fq241_mde.csv"],
+    "intermediates": ["fq241_quintile_stats.rds (1,274,347행)", "fq241_factor_stats.rds", "fq241_diagnostics.rds"],
+    "challenge": "stage_artifacts/FQ241_blast_radius_20260822/challenge_note.md"
+  },
+
+  "next_probes": [
+    "NP1 파급 census 재정의 — FQ-241 은 후보를 universe=K200∪KQ150 선언 라운드로 적었으나 실측된 진입점은 build_monthly_forward_returns() 자체다(factor_validation.R:222). 유니버스를 선언하지 않은 라운드도 이 함수를 부르면 오염을 상속한다. census 의 검색 키를 유니버스 선언이 아니라 이 함수 호출로 바꿔 재열거. canonical_screen_bt 가 같은 빌더를 경유하는지 우선 확인.",
+    "NP2 B_clean 시작점 민감도 — KQ150 최초 1→0 전환이 2016-01 이므로 청정창을 2016-01~ 로 밀어 5+1 재산출. 본 라운드는 2015-07~ 만 쟀다(6개월 잔여 오염 미측정).",
+    "NP3 순수 오염창 단독 arm — 2010-02~2015-06(65개월)은 MDE 연 11.8% 로 폭발한다. 부호·상관·단조도 지표(#1·#2·#3·#5)는 유의성 문턱을 쓰지 않으므로 이 창에서도 측정 가능하다. era 교락을 줄이는 유일한 직접 통제.",
+    "NP4 master_panel_FIXED.rds 재현성 복구 — 지금은 누구도 r32 의 cor -0.728 을 재현할 수 없다(빌더 부재). 유니버스 결함과 별개의 재현성 결함이며, 판정 근거 패널이 이 상태로 인용되고 있다. 재구축 스크립트 저장 + 공표치 정정 여부 판단(FQ-233 소유 세션 소관).",
+    "NP5 지표4 의 창-길이 민감도 상설 처리 — |t| 문턱 지표를 창 비교에 쓸 때 MDE 병기를 계약화(power_diagnostics 필드). 본 라운드에서 A_early134=2 / A_orig=44 / B_clean=7 이라는 비단조가 실측됐고, 통제 arm 없이는 오귀속이 확정적이었다.",
+    "NP6 2005-01~2009-12 유니버스 라벨 결함 — 이 60개월의 K200∪KQ150 은 K200 단독인데 어느 산출물도 그렇게 라벨하지 않는다. 유니버스 헬퍼가 경고를 노출하도록 배선(FQ-241 next_action 4번)."
+  ]
+}
