@@ -178,7 +178,7 @@ def _load_ledger(path):
     if not os.path.exists(path):
         return None
     try:
-        with open(path, encoding="utf-8") as fh:
+        with open(path, encoding="utf-8-sig") as fh:
             return json.load(fh)
     except Exception as e:
         raise LedgerUnreadable("%s: %s" % (os.path.basename(path), e))
