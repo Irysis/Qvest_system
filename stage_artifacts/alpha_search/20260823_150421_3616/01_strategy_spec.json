@@ -1,0 +1,21 @@
+{
+  "run_id": "ASBT_20260823_150421_3616",
+  "strategy_id": "STR_AS_20260823_150421_3616",
+  "strategy_name": "AS_PeerValuation_Sim_2608_12594",
+  "strategy_family": "alpha_search",
+  "signal_description": "밸류에이션-앵커 peer 유사도(GBDT 리프 동시출현·트리 손실증분 가중, arXiv 2608.12594)로 구한 peer-내재 BM 대비 실제 저평가(y-ŷ) 상위 20 EW 월간 — KR 상장주 사상(Geertsema-Lu 잔차 구조)",
+  "universe_rule": "K200_KQ150 + 20d avg trading value >= 2e8 KRW (t-1 PIT)",
+  "rebalance_frequency": "monthly",
+  "signal_date_rule": "month_end_signal",
+  "execution_date_rule": "t_plus_1_first_trading_day",
+  "weighting_method": "equal",
+  "max_position_weight": 0.2,
+  "max_leverage": 1,
+  "cash_rule": "fully_invested_after_floor_shares",
+  "cost_model": "v2.4_delta_15bps",
+  "missing_data_rule": "exclude_na_scores",
+  "risk_controls": "buffer_zone(keep_n=40, entry_n=20)",
+  "lookahead_prevention": "detect_lookahead static scan CLEAN (PIT C1-C15)",
+  "survivorship_bias_control": "RAWDATA PIT membership / time-varying universe filters",
+  "factor_engine_path": "02_Infrastructure/alpha_search/fe_peer_valuation_sim.R"
+}

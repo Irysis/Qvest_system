@@ -11,10 +11,13 @@ export CLAUDE_PROJECT_DIR="$(cygpath -m "$PROJECT" 2>/dev/null || echo "$PROJECT
 export QM_ROOT="${QM_ROOT:-$CLAUDE_PROJECT_DIR}"
 export PYTHONUTF8=1
 PY="$PROJECT/.venv_qvest_ml/Scripts/python.exe"
-# alerts digest — 부재/24h 초과 시 1회만 갱신 (foreground, fail-soft, 수리 아님)
+# alerts digest — 부재/6h 초과 시 1회만 갱신 (foreground, fail-soft, 수리 아님)
+#   ★24h → 6h (2026-08-24 v9.2 S1e): 아침 09~10시 무인 사고가 저녁 부팅에 안 보이는
+#     창을 닫는다. 2026-08-23 에 무인 3단계가 동시에 죽었는데 그날 어떤 부팅도 그 사실을
+#     표면화하지 못한 이유가 이 24h 창이었다.
 DG="$PROJECT/.cache/alerts_digest.md"
 DG_AGE=$(( ( $(date +%s) - $(stat -c %Y "$DG" 2>/dev/null || echo 0) ) / 3600 ))
-if [ ! -f "$DG" ] || [ "$DG_AGE" -ge 24 ]; then
+if [ ! -f "$DG" ] || [ "$DG_AGE" -ge 6 ]; then
   bash "$PROJECT/02_Infrastructure/ops/alerts_digest_build.sh" >/dev/null 2>&1 || true
 fi
 PROJECT="$CLAUDE_PROJECT_DIR" PY="$CLAUDE_PROJECT_DIR/.venv_qvest_ml/Scripts/python.exe" "$PY" - <<'PYEOF' 2>/dev/null || printf 'Data: ?\nQueue: ?\nLast: ?\nBook: ?\nAlerts/Budget: ? (status 산출 실패 — venv python 확인)\n'
@@ -57,8 +60,15 @@ b=J("qepm/mailbox/governor/book_state.json") or {}
 ai=(b.get("admitted_ids") or ["?"])[0]; wv=(b.get("book_weights") or {}).get(ai)
 o.append("Book: %s %s (%s~) — book_state.json 정본(도훈만 씀)"%(ai,("%.0f%%"%(float(wv)*100)) if wv is not None else "?%",str(b.get("updated_at") or "?")[:10]))
 # ⑤ Alerts/Budget — digest 헤더 + v9 예산 4종
-_m=S(lambda: re.search(r"open=(\d+)\s+built=(\S+)",open(R(".cache","alerts_digest.md"),encoding="utf-8").readline()))
+_hd=S(lambda: open(R(".cache","alerts_digest.md"),encoding="utf-8").readline(),"") or ""
+_m=S(lambda: re.search(r"open=(\d+).*?built=(\S+?)\s*-->",_hd))
 op=_m.group(1) if _m else "?"; bt=HH(S(lambda: (dt.datetime.now()-dt.datetime.fromisoformat(_m.group(2))).total_seconds()/3600.0)) if _m else "?"
+# ★오늘자 무인 러너 경보 — 생산자(alerts_digest_build.sh) 헤더에서 **읽기만** 한다.
+#   R 실행 0 · 수리 0 규약 불변. 2026-08-23 에 무인 3단계가 동시 사망했는데 그날 어떤
+#   부팅도 그것을 말하지 않았다 — 5번째 줄의 내용만 바꿔 그 침묵을 닫는다.
+_t=S(lambda: re.search(r"today=(\d+)\s+comps=(\S*)",_hd))
+_tn=_t.group(1) if _t else "?"; _tc=(_t.group(2) if _t else "") or "none"
+today_txt=("★오늘 %s [%s]"%(_tn,_tc)) if _tn not in ("0","?") else ("오늘 %s"%_tn)
 BG=lambda v,l: "%s/%s %s"%("?" if v is None else v,l,"?" if v is None else ("✓" if v<=l else "✗"))
 def hasp(f):
     mm=re.match(r"---\s*\n(.*?)\n---",open(f,encoding="utf-8",errors="replace").read(2000),re.S)
@@ -72,7 +82,7 @@ def CTX():
         if j.get("type")=="assistant":
             u=(j.get("message") or {}).get("usage") or {}
             return sum(int(u.get(k) or 0) for k in ("input_tokens","cache_creation_input_tokens","cache_read_input_tokens"))
-o.append("Alerts/Budget: open %s · built %s | CLAUDE.md %s · rules %s · hooks %s · ctx %s"%(op,bt,BG(S(lambda: os.path.getsize(R("CLAUDE.md"))),8192),BG(rb,25600),BG(hk,12),BG(S(CTX),50000)))
+o.append("Alerts/Budget: open %s · %s · built %s | CLAUDE.md %s · rules %s · hooks %s · ctx %s"%(op,today_txt,bt,BG(S(lambda: os.path.getsize(R("CLAUDE.md"))),8192),BG(rb,25600),BG(hk,12),BG(S(CTX),50000)))
 print("\n".join(o))
 PYEOF
 mkdir -p "$PROJECT/.cache" 2>/dev/null || true

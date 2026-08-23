@@ -1,0 +1,121 @@
+{
+  "schema_version": "alpha_search_strategy_manifest_v1",
+  "created_at": "2026-08-23T16:15:27+0900",
+  "mode": "alpha_search",
+  "strategy_id": "STR_AS_20260823_160522_40540",
+  "strategy_name": "AS_TPER_SectorRelative_DaSchaumburg2011",
+  "strategy_idea": "Da-Schaumburg(2011) KR 복제: 목표주가 implied return(C06_TP_Gap)을 섹터 내 9분위로 순위화, 각 섹터 최상위 1/9 종목 전부 EW 월간(1M 보유) — 절대 TPER 은 무정보, 섹터 내 상대 순위만 정보",
+  "factor_engine_path": "02_Infrastructure/alpha_search/fe_tper_sector_relative.R",
+  "execution": {
+    "universe": "K200_KQ150",
+    "universe_n": 313,
+    "n_holdings": 20,
+    "weight_method": "equal",
+    "commission": 0.0015,
+    "risk_controls": {
+      "vol_target": null,
+      "vol_lookback": 60,
+      "dd_brake": null,
+      "buffer_zone": {
+        "keep_n": 40,
+        "entry_n": 20
+      },
+      "use_default_buffer": true,
+      "cov_method": "sample"
+    },
+    "bt_result_path": "stage_artifacts/alpha_search/20260823_160522_40540/bt_result.rds"
+  },
+  "pit": {
+    "code_scan": "detect_lookahead",
+    "status": "CLEAN",
+    "factor_engine_path": "02_Infrastructure/alpha_search/fe_tper_sector_relative.R",
+    "note": "AlphaSearch stops before backtest when detect_lookahead reports violations."
+  },
+  "backtest_contract": {
+    "status": "OK",
+    "run_id": "ASBT_20260823_160522_40540",
+    "metric_type": "backtested",
+    "bt_result_path": "stage_artifacts/alpha_search/20260823_160522_40540/bt_result.rds",
+    "output_dir": "stage_artifacts/alpha_search/20260823_160522_40540",
+    "integrity_status": "WARNING",
+    "audit_pass": 17,
+    "audit_fail": 0,
+    "audit_warn": 1,
+    "validation_errors": [],
+    "return_series": {
+      "status": "OK",
+      "source": "bt_result.period_returns",
+      "csv_path": "stage_artifacts/alpha_search/20260823_160522_40540/03_period_returns.csv",
+      "date_col": "date",
+      "ret_col": "ret_net",
+      "n_obs": 5314,
+      "start_date": "2005-02-03",
+      "end_date": "2026-08-21",
+      "post2008_obs": 4595,
+      "frequency": "daily"
+    },
+    "note": "standard Backtest Result Contract saved for every AlphaSearch run; grade/admission remains separate"
+  },
+  "verdict": {
+    "grade": "F",
+    "score": 5.5,
+    "hurdle_pass": false,
+    "hard_fail": false,
+    "fail_reasons": [],
+    "f_grade_reasons": [
+      "FMT-01 Structural MDD: MDD 61.3% > 45% — 선택 종목군의 위기 동반급락(구조적 꼬리위험)",
+      "FMT-04 Regime Blindness: MDD 61.3% > 35% & BM상관 0.73 >= 0.7 — 위기국면 동조 낙폭(국면필터 부재)",
+      "FMT-07 Publication Decay: 활성SR pre-2017 0.64 -> post-2017 -0.65 — 논문발표 후 알파 소진 패턴"
+    ],
+    "screening": {
+      "screen_pass": false,
+      "screen_route": "NONE",
+      "drawdown_tail_review": true,
+      "distribution_target": {
+        "evaluated": false,
+        "route_issued": false,
+        "note": "distribution_evidence 미제출 — 평가 안 함(결함 아님)"
+      },
+      "note": "탐색 게이트 — 자본/졸업 게이트 아님 (graduation HARD 불변). PIT만 절대."
+    }
+  },
+  "metrics": {
+    "CAGR": 11.47,
+    "AnnVol": 26.72,
+    "Sharpe": 0.429,
+    "Sharpe_m": 0.533,
+    "IR": 0.02,
+    "MDD": 61.26,
+    "Calmar": 0.187,
+    "Turnover_Ann": 454.6,
+    "Top10_Conc": 50,
+    "Rolling3Y_Pos": 78.1,
+    "BM_Corr": 0.733,
+    "ES99_d": 7.4,
+    "ES99_m": 23.74,
+    "GradeA_Corr": null,
+    "Rolling6M_Hit": 60.5,
+    "Worst6M_Ret": -57.51,
+    "MaxConsecNegAlpha": 6,
+    "Rolling12M_Hit": 62
+  },
+  "excess_cagr_pct": 0.38,
+  "fmt": [
+    {
+      "code": "FMT-01",
+      "label": "Structural MDD",
+      "reason": "MDD 61.3% > 45% — 선택 종목군의 위기 동반급락(구조적 꼬리위험)"
+    },
+    {
+      "code": "FMT-04",
+      "label": "Regime Blindness",
+      "reason": "MDD 61.3% > 35% & BM상관 0.73 >= 0.7 — 위기국면 동조 낙폭(국면필터 부재)"
+    },
+    {
+      "code": "FMT-07",
+      "label": "Publication Decay",
+      "reason": "활성SR pre-2017 0.64 -> post-2017 -0.65 — 논문발표 후 알파 소진 패턴"
+    }
+  ],
+  "authoritative": null
+}

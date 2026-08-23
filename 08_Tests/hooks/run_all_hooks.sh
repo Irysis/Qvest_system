@@ -804,6 +804,18 @@ SUITES=(
   #   불일치 규약(결측을 0 으로 채워 "신호 없음"으로 위장하지 않는다)이 여기서만 강제된다.
   #   ★L-484(4-sleeve return-blend 로 실보유 52~80종 → Judge A→B 강등)의 재발 방지선.
   "08_Tests/contracts/test_score_composite.R"
+  # 2026-08-24 v9.2-S2: 오버레이 bt_result 재구성 어댑터. ★T6 이 이 스위트의 존재 이유다 —
+  #   오버레이를 **하나도 안 걸고** 월간 재구성만 해도 MDD 가 0.5854→0.4947(−9.07pp) 내려간다
+  #   (월간 계열이 월중 저점을 못 본다). 판정 문턱 ΔMDD≤−0.03 을 basis 변경만으로 3배 넘기므로,
+  #   원판 daily 와 직접 비교하면 오버레이가 아무 일도 안 하고 통과한다. T6 이 그 차를 못박고
+  #   T7(metric_type enum 위반 주입 → Check 10 FAIL)이 라벨 우회를 막는다.
+  "08_Tests/contracts/test_overlay_bt_recon.R"
+  # 2026-08-24 v9.2-S3: 비중 방법론 카탈로그. ★핵심 불변식 (b) = 미지 `catalog:` id 가
+  #   **EW 폴백이 아니라 에러**여야 한다 — backtest_harness.R:1179 의 else 가 미등록 문자열을
+  #   조용히 EW 로 떨어뜨렸고(같은 사고가 method_registry.R:73-78 에 이미 기록), 오타 한 글자가
+  #   "새 방법론을 시험했다"는 거짓 기록을 만든다. (e) 는 형제 방출이 측정보다 **먼저** 기록되는지
+  #   (= 패자를 숨길 수 없는지)를 본다.
+  "08_Tests/contracts/test_weight_catalog.R"
 
   # (2026-08-13) ctx 특성 확장 계약 — 어댑터 ctx 에 characteristics 접근자를 붙여
   #   특성 기반 방법(CD-DFM 계열)을 열었다. ★확장은 선언만으로 살지 않는다 —

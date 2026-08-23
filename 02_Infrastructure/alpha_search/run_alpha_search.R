@@ -497,11 +497,17 @@ run_alpha_search <- function(strategy_name,
   )
 
   .as_stage("sec6d_done")
-  # ---- 6d+. Layer 1 개선-여지 평가 자동 첨부 (2026-08-16 L1 자동 스폰 — 도훈 승인) ---- [deep 전용]
-  #   screen_pass 라벨 보유 런은 같은 런 안에서 improvement_potential 을 실측해 레지스트리에
-  #   적재한다 (권위측정 사다리와 같은 자리 — 라벨이 후속 측정을 자동 트리거하는 기존 전례).
+  # ---- 6d+. Layer 1 개선-여지 평가 자동 첨부 (2026-08-16 L1 자동 스폰 — 도훈 승인) ----
+  #   ★v9.2 §8-S2 [7] 진입 재료 개방 (2026-08-24): 구 조건 `isTRUE(deep) && screen_pass` 는
+  #   **평가기가 요구하지 않는 입력**을 관문으로 삼고 있었다. improvement_potential_entry()
+  #   (regime/improvement_potential.R:113-118)가 실제로 요구하는 것은 `bt_result.rds` 하나뿐이고
+  #   deep·screen_pass 는 그 입력과 무관한 **하류 라벨**이다. 그 결과 2026-08-23 lean 17런에서
+  #   ip 산출이 0건이었고, 강화 사다리(reinforce_ladder.R)의 진입 재료가 통째로 비어 있었다.
+  #   ⇒ 조건을 "평가기의 실입력이 존재하는가"로 교체한다.
+  #   ★deep 조건은 6d(권위 재측정)·6e(register_module)에서는 그대로 둔다 — 그 둘은 실제로
+  #     deep 라운드의 비용/의미에 묶여 있다(여기만 입력-기준으로 되돌린다).
   #   비치명: 평가 실패는 정직 WARN — 본 러너 산출물은 불변.
-  if (isTRUE(deep) && isTRUE(screening$screen_pass)) tryCatch({
+  if (identical(bt_contract$status %||% "", "OK")) tryCatch({
     if (!exists("improvement_potential_for_run", mode = "function")) {
       Sys.setenv(QVEST_IP_NORUN = "1")
       source(file.path(PROJECT_ROOT, "02_Infrastructure", "regime", "improvement_potential.R"))

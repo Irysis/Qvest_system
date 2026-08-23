@@ -57,10 +57,40 @@ if co: it.append("- worktree | 동일 경로 충돌 %d건 (collisions)"%len(co))
 sec("worktrees — 좌초 수리 (06_Registry/stranded_repairs.json)",it)
 print("\n".join(o))
 PYEOF
+  # ── knowledge_index 신선도 — **검사만** (2026-08-24 v9.2 S1e)
+  #   ★--repair 를 부르지 않는다. 이 스크립트는 digest 생산자이고, 검사기가 정본을
+  #     재작성하면 자신이 신고할 증거를 지운다("계기는 대상을 바꾸지 않는다").
+  #     자가치유의 자리는 소비면(lookup 진입점)이지 스케줄 러너가 아니다 — 별건.
+  #   exit code 만 읽는다: 0=OK · 1=STALE · 2=SKIP. STALE 일 때만 1줄 남긴다.
+  echo "## knowledge — L-code 인덱스 신선도 (06_Registry/knowledge_index.json)"
+  KIF="$PROJECT/02_Infrastructure/ops/knowledge_index_freshness.R"
+  if [ -f "$KIF" ]; then
+    Rscript --no-save "$KIF" >/dev/null 2>&1
+    case $? in
+      1) echo "- knowledge | knowledge_index STALE — 복구: Rscript 02_Infrastructure/ops/knowledge_index_freshness.R --repair" ;;
+      *) echo "(없음)" ;;
+    esac
+  else
+    echo "(없음)"
+  fi
+  echo
 } > "$BODY" 2>/dev/null
 N=$(grep -c '^- ' "$BODY" 2>/dev/null || echo 0)
+# ── 오늘자 무인 러너 경보 집계 (2026-08-24 v9.2 S1e)
+#   왜 필요한가: 2026-08-23 에 무인 3단계(alpha_queue · mode_queue · paper_dispatch)가
+#   같은 원장 파손으로 동시에 죽었는데 **아무도 몰랐다**. 마커는 있었지만 읽는 면이 없었다.
+#   boot_lean.sh 5번째 줄이 이 헤더만 읽어 `★오늘 N [comps]` 로 표면화한다(R 실행 0 유지).
+TODAY_TAG=$(date '+%Y%m%d')
+ADIR="$PROJECT/.cache/scheduler_alerts"
+TODAY_N=$(ls "$ADIR"/*_"${TODAY_TAG}".alert 2>/dev/null | wc -l | tr -d ' ')
+# ★컴포넌트는 **마커 내용의 component= 필드**에서 읽는다 — 파일명 파싱 금지.
+#   파일명은 {comp}_{reason}_{date}.alert 인데 comp 와 reason 둘 다 밑줄을 포함해
+#   경계를 못 가른다(초판이 alpha_queue → 'alpha' 로 잘랐다).
+TODAY_COMPS=$(grep -h '^component=' "$ADIR"/*_"${TODAY_TAG}".alert 2>/dev/null \
+  | sed 's/^component=//' | sort -u | paste -sd, - 2>/dev/null)
 {
-  printf '<!-- open=%s built=%s -->\n' "$N" "$(date '+%Y-%m-%dT%H:%M')"
+  printf '<!-- open=%s today=%s comps=%s built=%s -->\n' \
+         "$N" "${TODAY_N:-0}" "${TODAY_COMPS:-none}" "$(date '+%Y-%m-%dT%H:%M')"
   echo "# Qvest 경보 digest (v9 lean — 읽는 쪽 1파일)"
   echo
   echo "> 생성 = ops/alerts_digest_build.sh (morning_run 완주 후 · boot_lean 24h 초과 시). **수리는 도훈 지시 시 태스크 분리** — 이 파일은 기록만 한다."

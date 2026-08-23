@@ -1,0 +1,1614 @@
+{
+  "_doc": "비중 결정 방법론 통합 색인 — **파생 파일**(손편집 금지). 재생성 = source('02_Infrastructure/portfolio/weight_catalog.R'); sync_catalog(). 엔트리는 리졸버만 적는다(구현 복사 금지). 정규형 = wrap_adapter(method_registry.R:55).",
+  "generator": "02_Infrastructure/portfolio/weight_catalog.R::sync_catalog",
+  "generated_at": "2026-08-24T02:36:55+0900",
+  "status_vocab": {
+    "retired": 0,
+    "blocked_inputs": 1,
+    "degraded_wiring": 1,
+    "unverified": 1,
+    "active": 2
+  },
+  "retraction_note": "G-5(2026-08-23 도훈): settled-negative 선언 철회. DPL·PPO_RL·Genetic 은 retired 로 박지 않는다 — 정상 등재하고 같은 게이트(verify_adapter · sweep/DSR · book-marginal ΔIR≥0.05 · PIT)를 건다.",
+  "counts": {
+    "generated": 9,
+    "lean_builtin": 23,
+    "paper_adapter": 6,
+    "qepm_registry": 14
+  },
+  "n_entries": 52,
+  "entries": [
+    {
+      "catalog_id": "lean:ivol",
+      "label": "ivol",
+      "origin": "lean_builtin",
+      "family": "risk_based",
+      "status": "active",
+      "notes": null,
+      "resolver": {
+        "kind": "lean_builtin",
+        "lean_name": "ivol",
+        "carrier_fn": "calc_ivol_weights",
+        "needs_score": false,
+        "cov_hook": false
+      },
+      "screen_axes": {
+        "shrinkage_builtin": null,
+        "statistic_order": null,
+        "screen_priority": null
+      },
+      "selection_type": "chain",
+      "trial_family_id": null,
+      "n_trials_family": 1,
+      "prior_measured": null,
+      "est_cost_min": 6,
+      "probe": {
+        "ok": true,
+        "max_abs_dev_from_ew": 0.02219181,
+        "reason": null,
+        "log": ""
+      }
+    },
+    {
+      "catalog_id": "lean:hrp",
+      "label": "hrp",
+      "origin": "lean_builtin",
+      "family": "risk_based",
+      "status": "active",
+      "notes": null,
+      "resolver": {
+        "kind": "lean_builtin",
+        "lean_name": "hrp",
+        "carrier_fn": "calc_hrp_weights",
+        "needs_score": false,
+        "cov_hook": true
+      },
+      "screen_axes": {
+        "shrinkage_builtin": null,
+        "statistic_order": null,
+        "screen_priority": null
+      },
+      "selection_type": "chain",
+      "trial_family_id": null,
+      "n_trials_family": 1,
+      "prior_measured": null,
+      "est_cost_min": 8,
+      "probe": {
+        "ok": true,
+        "max_abs_dev_from_ew": 0.09956614,
+        "reason": null,
+        "log": ""
+      }
+    },
+    {
+      "catalog_id": "lean:minvar",
+      "label": "minvar",
+      "origin": "lean_builtin",
+      "family": "risk_based",
+      "status": "active",
+      "notes": null,
+      "resolver": {
+        "kind": "lean_builtin",
+        "lean_name": "minvar",
+        "carrier_fn": "calc_minvar_weights",
+        "needs_score": false,
+        "cov_hook": false
+      },
+      "screen_axes": {
+        "shrinkage_builtin": null,
+        "statistic_order": null,
+        "screen_priority": null
+      },
+      "selection_type": "chain",
+      "trial_family_id": null,
+      "n_trials_family": 1,
+      "prior_measured": null,
+      "est_cost_min": 8,
+      "probe": {
+        "ok": true,
+        "max_abs_dev_from_ew": 0.04198906,
+        "reason": null,
+        "log": ""
+      }
+    },
+    {
+      "catalog_id": "lean:riskparity",
+      "label": "riskparity",
+      "origin": "lean_builtin",
+      "family": "risk_parity",
+      "status": "active",
+      "notes": null,
+      "resolver": {
+        "kind": "lean_builtin",
+        "lean_name": "riskparity",
+        "carrier_fn": "calc_riskparity_weights",
+        "needs_score": false,
+        "cov_hook": false
+      },
+      "screen_axes": {
+        "shrinkage_builtin": null,
+        "statistic_order": null,
+        "screen_priority": null
+      },
+      "selection_type": "chain",
+      "trial_family_id": null,
+      "n_trials_family": 1,
+      "prior_measured": null,
+      "est_cost_min": 8,
+      "probe": {
+        "ok": true,
+        "max_abs_dev_from_ew": 0.11266491,
+        "reason": null,
+        "log": ""
+      }
+    },
+    {
+      "catalog_id": "lean:score_tilt",
+      "label": "score_tilt",
+      "origin": "lean_builtin",
+      "family": "score_blend",
+      "status": "active",
+      "notes": null,
+      "resolver": {
+        "kind": "lean_builtin",
+        "lean_name": "score_tilt",
+        "carrier_fn": "calc_score_tilt_weights",
+        "needs_score": true,
+        "cov_hook": true
+      },
+      "screen_axes": {
+        "shrinkage_builtin": null,
+        "statistic_order": null,
+        "screen_priority": null
+      },
+      "selection_type": "chain",
+      "trial_family_id": null,
+      "n_trials_family": 1,
+      "prior_measured": null,
+      "est_cost_min": 8,
+      "probe": {
+        "ok": true,
+        "max_abs_dev_from_ew": 0.0703664,
+        "reason": null,
+        "log": ""
+      }
+    },
+    {
+      "catalog_id": "lean:score_pure",
+      "label": "score_pure",
+      "origin": "lean_builtin",
+      "family": "score_blend",
+      "status": "active",
+      "notes": null,
+      "resolver": {
+        "kind": "lean_builtin",
+        "lean_name": "score_pure",
+        "carrier_fn": "calc_score_pure_weights",
+        "needs_score": true,
+        "cov_hook": true
+      },
+      "screen_axes": {
+        "shrinkage_builtin": null,
+        "statistic_order": null,
+        "screen_priority": null
+      },
+      "selection_type": "chain",
+      "trial_family_id": null,
+      "n_trials_family": 1,
+      "prior_measured": null,
+      "est_cost_min": 8,
+      "probe": {
+        "ok": true,
+        "max_abs_dev_from_ew": 0.008,
+        "reason": null,
+        "log": ""
+      }
+    },
+    {
+      "catalog_id": "lean:rank_tilt",
+      "label": "rank_tilt",
+      "origin": "lean_builtin",
+      "family": "score_blend",
+      "status": "active",
+      "notes": null,
+      "resolver": {
+        "kind": "lean_builtin",
+        "lean_name": "rank_tilt",
+        "carrier_fn": "calc_rank_tilt_weights",
+        "needs_score": true,
+        "cov_hook": true
+      },
+      "screen_axes": {
+        "shrinkage_builtin": null,
+        "statistic_order": null,
+        "screen_priority": null
+      },
+      "selection_type": "chain",
+      "trial_family_id": null,
+      "n_trials_family": 1,
+      "prior_measured": null,
+      "est_cost_min": 8,
+      "probe": {
+        "ok": true,
+        "max_abs_dev_from_ew": 0.08097152,
+        "reason": null,
+        "log": ""
+      }
+    },
+    {
+      "catalog_id": "lean:softmax_tilt",
+      "label": "softmax_tilt",
+      "origin": "lean_builtin",
+      "family": "score_blend",
+      "status": "active",
+      "notes": null,
+      "resolver": {
+        "kind": "lean_builtin",
+        "lean_name": "softmax_tilt",
+        "carrier_fn": "calc_softmax_tilt_weights",
+        "needs_score": true,
+        "cov_hook": true
+      },
+      "screen_axes": {
+        "shrinkage_builtin": null,
+        "statistic_order": null,
+        "screen_priority": null
+      },
+      "selection_type": "chain",
+      "trial_family_id": null,
+      "n_trials_family": 1,
+      "prior_measured": null,
+      "est_cost_min": 8,
+      "probe": {
+        "ok": true,
+        "max_abs_dev_from_ew": 0.06746975,
+        "reason": null,
+        "log": ""
+      }
+    },
+    {
+      "catalog_id": "lean:winsor_tilt",
+      "label": "winsor_tilt",
+      "origin": "lean_builtin",
+      "family": "score_blend",
+      "status": "active",
+      "notes": null,
+      "resolver": {
+        "kind": "lean_builtin",
+        "lean_name": "winsor_tilt",
+        "carrier_fn": "calc_winsor_tilt_weights",
+        "needs_score": true,
+        "cov_hook": true
+      },
+      "screen_axes": {
+        "shrinkage_builtin": null,
+        "statistic_order": null,
+        "screen_priority": null
+      },
+      "selection_type": "chain",
+      "trial_family_id": null,
+      "n_trials_family": 1,
+      "prior_measured": null,
+      "est_cost_min": 8,
+      "probe": {
+        "ok": true,
+        "max_abs_dev_from_ew": 0.0703664,
+        "reason": null,
+        "log": ""
+      }
+    },
+    {
+      "catalog_id": "lean:nco_score_tilt",
+      "label": "nco_score_tilt",
+      "origin": "lean_builtin",
+      "family": "score_blend",
+      "status": "active",
+      "notes": null,
+      "resolver": {
+        "kind": "lean_builtin",
+        "lean_name": "nco_score_tilt",
+        "carrier_fn": "calc_nco_score_tilt_weights",
+        "needs_score": true,
+        "cov_hook": false
+      },
+      "screen_axes": {
+        "shrinkage_builtin": null,
+        "statistic_order": null,
+        "screen_priority": null
+      },
+      "selection_type": "chain",
+      "trial_family_id": null,
+      "n_trials_family": 1,
+      "prior_measured": null,
+      "est_cost_min": 10,
+      "probe": {
+        "ok": true,
+        "max_abs_dev_from_ew": 0.06576615,
+        "reason": null,
+        "log": ""
+      }
+    },
+    {
+      "catalog_id": "lean:entropy",
+      "label": "entropy",
+      "origin": "lean_builtin",
+      "family": "entropy",
+      "status": "active",
+      "notes": null,
+      "resolver": {
+        "kind": "lean_builtin",
+        "lean_name": "entropy",
+        "carrier_fn": "calc_entropy_weights",
+        "needs_score": true,
+        "cov_hook": false
+      },
+      "screen_axes": {
+        "shrinkage_builtin": null,
+        "statistic_order": null,
+        "screen_priority": null
+      },
+      "selection_type": "chain",
+      "trial_family_id": null,
+      "n_trials_family": 1,
+      "prior_measured": null,
+      "est_cost_min": 8,
+      "probe": {
+        "ok": true,
+        "max_abs_dev_from_ew": 0.00253266,
+        "reason": null,
+        "log": ""
+      }
+    },
+    {
+      "catalog_id": "lean:cvar",
+      "label": "cvar",
+      "origin": "lean_builtin",
+      "family": "tail_aware",
+      "status": "active",
+      "notes": null,
+      "resolver": {
+        "kind": "lean_builtin",
+        "lean_name": "cvar",
+        "carrier_fn": "calc_cvar_weights",
+        "needs_score": false,
+        "cov_hook": false
+      },
+      "screen_axes": {
+        "shrinkage_builtin": null,
+        "statistic_order": null,
+        "screen_priority": null
+      },
+      "selection_type": "chain",
+      "trial_family_id": null,
+      "n_trials_family": 1,
+      "prior_measured": null,
+      "est_cost_min": 10,
+      "probe": {
+        "ok": false,
+        "max_abs_dev_from_ew": 0,
+        "reason": "EW 퇴화 — 예외·폴백 없이 정확히 EW. 스케일-캡-정규화 순서 결함 의심(advanced_weights.R:30-35 .normalize 가 합-정규화 전에 pmin(w,max_w) 적용).",
+        "log": ""
+      }
+    },
+    {
+      "catalog_id": "lean:omega",
+      "label": "omega",
+      "origin": "lean_builtin",
+      "family": "tail_aware",
+      "status": "active",
+      "notes": null,
+      "resolver": {
+        "kind": "lean_builtin",
+        "lean_name": "omega",
+        "carrier_fn": "calc_omega_weights",
+        "needs_score": false,
+        "cov_hook": false
+      },
+      "screen_axes": {
+        "shrinkage_builtin": null,
+        "statistic_order": null,
+        "screen_priority": null
+      },
+      "selection_type": "chain",
+      "trial_family_id": null,
+      "n_trials_family": 1,
+      "prior_measured": null,
+      "est_cost_min": 10,
+      "probe": {
+        "ok": false,
+        "max_abs_dev_from_ew": 0,
+        "reason": "EW 퇴화 — 예외·폴백 없이 정확히 EW. 스케일-캡-정규화 순서 결함 의심(advanced_weights.R:30-35 .normalize 가 합-정규화 전에 pmin(w,max_w) 적용).",
+        "log": ""
+      }
+    },
+    {
+      "catalog_id": "lean:maxdiv",
+      "label": "maxdiv",
+      "origin": "lean_builtin",
+      "family": "entropy",
+      "status": "active",
+      "notes": null,
+      "resolver": {
+        "kind": "lean_builtin",
+        "lean_name": "maxdiv",
+        "carrier_fn": "calc_maxdiv_weights",
+        "needs_score": false,
+        "cov_hook": false
+      },
+      "screen_axes": {
+        "shrinkage_builtin": null,
+        "statistic_order": null,
+        "screen_priority": null
+      },
+      "selection_type": "chain",
+      "trial_family_id": null,
+      "n_trials_family": 1,
+      "prior_measured": null,
+      "est_cost_min": 8,
+      "probe": {
+        "ok": false,
+        "max_abs_dev_from_ew": 0,
+        "reason": "EW 퇴화 — 예외·폴백 없이 정확히 EW. 스케일-캡-정규화 순서 결함 의심(advanced_weights.R:30-35 .normalize 가 합-정규화 전에 pmin(w,max_w) 적용).",
+        "log": ""
+      }
+    },
+    {
+      "catalog_id": "lean:nco",
+      "label": "nco",
+      "origin": "lean_builtin",
+      "family": "risk_based",
+      "status": "active",
+      "notes": null,
+      "resolver": {
+        "kind": "lean_builtin",
+        "lean_name": "nco",
+        "carrier_fn": "calc_nco_weights",
+        "needs_score": false,
+        "cov_hook": false
+      },
+      "screen_axes": {
+        "shrinkage_builtin": null,
+        "statistic_order": null,
+        "screen_priority": null
+      },
+      "selection_type": "chain",
+      "trial_family_id": null,
+      "n_trials_family": 1,
+      "prior_measured": null,
+      "est_cost_min": 10,
+      "probe": {
+        "ok": true,
+        "max_abs_dev_from_ew": 0.08027352,
+        "reason": null,
+        "log": ""
+      }
+    },
+    {
+      "catalog_id": "lean:resampled",
+      "label": "resampled",
+      "origin": "lean_builtin",
+      "family": "classical",
+      "status": "active",
+      "notes": null,
+      "resolver": {
+        "kind": "lean_builtin",
+        "lean_name": "resampled",
+        "carrier_fn": "calc_resampled_weights",
+        "needs_score": false,
+        "cov_hook": false
+      },
+      "screen_axes": {
+        "shrinkage_builtin": null,
+        "statistic_order": null,
+        "screen_priority": null
+      },
+      "selection_type": "chain",
+      "trial_family_id": null,
+      "n_trials_family": 1,
+      "prior_measured": null,
+      "est_cost_min": 15,
+      "probe": {
+        "ok": true,
+        "max_abs_dev_from_ew": 0.10547821,
+        "reason": null,
+        "log": ""
+      }
+    },
+    {
+      "catalog_id": "lean:robust_mv",
+      "label": "robust_mv",
+      "origin": "lean_builtin",
+      "family": "classical",
+      "status": "active",
+      "notes": null,
+      "resolver": {
+        "kind": "lean_builtin",
+        "lean_name": "robust_mv",
+        "carrier_fn": "calc_robust_mv_weights",
+        "needs_score": false,
+        "cov_hook": false
+      },
+      "screen_axes": {
+        "shrinkage_builtin": null,
+        "statistic_order": null,
+        "screen_priority": null
+      },
+      "selection_type": "chain",
+      "trial_family_id": null,
+      "n_trials_family": 1,
+      "prior_measured": null,
+      "est_cost_min": 10,
+      "probe": {
+        "ok": false,
+        "max_abs_dev_from_ew": 0,
+        "reason": "EW 퇴화 — 예외·폴백 없이 정확히 EW. 스케일-캡-정규화 순서 결함 의심(advanced_weights.R:30-35 .normalize 가 합-정규화 전에 pmin(w,max_w) 적용).",
+        "log": ""
+      }
+    },
+    {
+      "catalog_id": "lean:factor_rp",
+      "label": "factor_rp",
+      "origin": "lean_builtin",
+      "family": "risk_parity",
+      "status": "active",
+      "notes": null,
+      "resolver": {
+        "kind": "lean_builtin",
+        "lean_name": "factor_rp",
+        "carrier_fn": "calc_factor_rp_weights",
+        "needs_score": false,
+        "cov_hook": false
+      },
+      "screen_axes": {
+        "shrinkage_builtin": null,
+        "statistic_order": null,
+        "screen_priority": null
+      },
+      "selection_type": "chain",
+      "trial_family_id": null,
+      "n_trials_family": 1,
+      "prior_measured": null,
+      "est_cost_min": 8,
+      "probe": {
+        "ok": false,
+        "max_abs_dev_from_ew": 0,
+        "reason": "EW 퇴화 — 예외·폴백 없이 정확히 EW. 스케일-캡-정규화 순서 결함 의심(advanced_weights.R:30-35 .normalize 가 합-정규화 전에 pmin(w,max_w) 적용).",
+        "log": ""
+      }
+    },
+    {
+      "catalog_id": "lean:kelly",
+      "label": "kelly",
+      "origin": "lean_builtin",
+      "family": "growth",
+      "status": "active",
+      "notes": null,
+      "resolver": {
+        "kind": "lean_builtin",
+        "lean_name": "kelly",
+        "carrier_fn": "calc_kelly_weights",
+        "needs_score": false,
+        "cov_hook": false
+      },
+      "screen_axes": {
+        "shrinkage_builtin": null,
+        "statistic_order": null,
+        "screen_priority": null
+      },
+      "selection_type": "chain",
+      "trial_family_id": null,
+      "n_trials_family": 1,
+      "prior_measured": null,
+      "est_cost_min": 8,
+      "probe": {
+        "ok": true,
+        "max_abs_dev_from_ew": 0.04,
+        "reason": null,
+        "log": ""
+      }
+    },
+    {
+      "catalog_id": "lean:higher_moment",
+      "label": "higher_moment",
+      "origin": "lean_builtin",
+      "family": "higher_moment",
+      "status": "active",
+      "notes": null,
+      "resolver": {
+        "kind": "lean_builtin",
+        "lean_name": "higher_moment",
+        "carrier_fn": "calc_higher_moment_weights",
+        "needs_score": false,
+        "cov_hook": false
+      },
+      "screen_axes": {
+        "shrinkage_builtin": null,
+        "statistic_order": null,
+        "screen_priority": null
+      },
+      "selection_type": "chain",
+      "trial_family_id": null,
+      "n_trials_family": 1,
+      "prior_measured": null,
+      "est_cost_min": 10,
+      "probe": {
+        "ok": false,
+        "max_abs_dev_from_ew": 0,
+        "reason": "EW 퇴화 — 예외·폴백 없이 정확히 EW. 스케일-캡-정규화 순서 결함 의심(advanced_weights.R:30-35 .normalize 가 합-정규화 전에 pmin(w,max_w) 적용).",
+        "log": ""
+      }
+    },
+    {
+      "catalog_id": "lean:regime_tilt",
+      "label": "regime_tilt",
+      "origin": "lean_builtin",
+      "family": "score_blend",
+      "status": "degraded_wiring",
+      "notes": "run_alpha_search 가 regime_dt/ic_history 를 전달하지 않아 국면-중립으로 조용히 퇴화(backtest_harness.R:1112,1148 mrs_val=0). 배선 복구 전에는 이름과 실제가 다르다.",
+      "resolver": {
+        "kind": "lean_builtin",
+        "lean_name": "regime_tilt",
+        "carrier_fn": "calc_regime_tilt_weights",
+        "needs_score": true,
+        "cov_hook": true
+      },
+      "screen_axes": {
+        "shrinkage_builtin": null,
+        "statistic_order": null,
+        "screen_priority": null
+      },
+      "selection_type": "chain",
+      "trial_family_id": null,
+      "n_trials_family": 1,
+      "prior_measured": null,
+      "est_cost_min": 8,
+      "probe": {
+        "ok": true,
+        "max_abs_dev_from_ew": 0.05986089,
+        "reason": null,
+        "log": ""
+      }
+    },
+    {
+      "catalog_id": "lean:regime_softmax",
+      "label": "regime_softmax",
+      "origin": "lean_builtin",
+      "family": "score_blend",
+      "status": "degraded_wiring",
+      "notes": "run_alpha_search 가 regime_dt/ic_history 를 전달하지 않아 국면-중립으로 조용히 퇴화(backtest_harness.R:1112,1148 mrs_val=0). 배선 복구 전에는 이름과 실제가 다르다.",
+      "resolver": {
+        "kind": "lean_builtin",
+        "lean_name": "regime_softmax",
+        "carrier_fn": "calc_regime_softmax_weights",
+        "needs_score": true,
+        "cov_hook": true
+      },
+      "screen_axes": {
+        "shrinkage_builtin": null,
+        "statistic_order": null,
+        "screen_priority": null
+      },
+      "selection_type": "chain",
+      "trial_family_id": null,
+      "n_trials_family": 1,
+      "prior_measured": null,
+      "est_cost_min": 8,
+      "probe": {
+        "ok": true,
+        "max_abs_dev_from_ew": 0.05625156,
+        "reason": null,
+        "log": ""
+      }
+    },
+    {
+      "catalog_id": "lean:ic_tilt",
+      "label": "ic_tilt",
+      "origin": "lean_builtin",
+      "family": "score_blend",
+      "status": "degraded_wiring",
+      "notes": "run_alpha_search 가 regime_dt/ic_history 를 전달하지 않아 국면-중립으로 조용히 퇴화(backtest_harness.R:1112,1148 mrs_val=0). 배선 복구 전에는 이름과 실제가 다르다.",
+      "resolver": {
+        "kind": "lean_builtin",
+        "lean_name": "ic_tilt",
+        "carrier_fn": "calc_ic_tilt_weights",
+        "needs_score": true,
+        "cov_hook": true
+      },
+      "screen_axes": {
+        "shrinkage_builtin": null,
+        "statistic_order": null,
+        "screen_priority": null
+      },
+      "selection_type": "chain",
+      "trial_family_id": null,
+      "n_trials_family": 1,
+      "prior_measured": null,
+      "est_cost_min": 8,
+      "probe": {
+        "ok": true,
+        "max_abs_dev_from_ew": 0.0703664,
+        "reason": null,
+        "log": ""
+      }
+    },
+    {
+      "catalog_id": "qepm:MVO",
+      "label": "MVO",
+      "origin": "qepm_registry",
+      "family": "classical",
+      "status": "active",
+      "notes": null,
+      "resolver": {
+        "kind": "qepm_registry",
+        "dispatch_name": "MVO",
+        "requires": ["alpha", "cov"],
+        "hyperparams": ["lambda", "phi"]
+      },
+      "screen_axes": {
+        "shrinkage_builtin": null,
+        "statistic_order": null,
+        "screen_priority": null
+      },
+      "selection_type": "chain",
+      "trial_family_id": null,
+      "n_trials_family": 1,
+      "prior_measured": null,
+      "est_cost_min": 10,
+      "probe": {
+        "ok": true,
+        "max_abs_dev_from_ew": 0.04,
+        "reason": null,
+        "log": ""
+      }
+    },
+    {
+      "catalog_id": "qepm:MVO_grid",
+      "label": "MVO_grid",
+      "origin": "qepm_registry",
+      "family": "classical",
+      "status": "active",
+      "notes": null,
+      "resolver": {
+        "kind": "qepm_registry",
+        "dispatch_name": "MVO_grid",
+        "requires": ["alpha", "cov"],
+        "hyperparams": ["lambda_grid", "phi_grid"]
+      },
+      "screen_axes": {
+        "shrinkage_builtin": null,
+        "statistic_order": null,
+        "screen_priority": null
+      },
+      "selection_type": "chain",
+      "trial_family_id": null,
+      "n_trials_family": 1,
+      "prior_measured": null,
+      "est_cost_min": 10,
+      "probe": {
+        "ok": false,
+        "max_abs_dev_from_ew": 0,
+        "reason": "EW 퇴화 — wrapper 폴백(로그 참조)",
+        "log": "[method:qepm:MVO_grid] 어댑터 실패 → EW 폴백: dispatch 가 weights 를 내지 않음"
+      }
+    },
+    {
+      "catalog_id": "qepm:HRP",
+      "label": "HRP",
+      "origin": "qepm_registry",
+      "family": "risk_parity",
+      "status": "active",
+      "notes": null,
+      "resolver": {
+        "kind": "qepm_registry",
+        "dispatch_name": "HRP",
+        "requires": "cov",
+        "hyperparams": ["linkage_method", "cov_method"]
+      },
+      "screen_axes": {
+        "shrinkage_builtin": null,
+        "statistic_order": null,
+        "screen_priority": null
+      },
+      "selection_type": "chain",
+      "trial_family_id": null,
+      "n_trials_family": 1,
+      "prior_measured": null,
+      "est_cost_min": 10,
+      "probe": {
+        "ok": false,
+        "max_abs_dev_from_ew": 0,
+        "reason": "EW 퇴화 — wrapper 폴백(로그 참조)",
+        "log": "[method:qepm:HRP] 어댑터 실패 → EW 폴백: dispatch infeasible: function_missing: hrp_weights"
+      }
+    },
+    {
+      "catalog_id": "qepm:ERC",
+      "label": "ERC",
+      "origin": "qepm_registry",
+      "family": "risk_parity",
+      "status": "active",
+      "notes": null,
+      "resolver": {
+        "kind": "qepm_registry",
+        "dispatch_name": "ERC",
+        "requires": "cov",
+        "hyperparams": []
+      },
+      "screen_axes": {
+        "shrinkage_builtin": null,
+        "statistic_order": null,
+        "screen_priority": null
+      },
+      "selection_type": "chain",
+      "trial_family_id": null,
+      "n_trials_family": 1,
+      "prior_measured": null,
+      "est_cost_min": 10,
+      "probe": {
+        "ok": false,
+        "max_abs_dev_from_ew": 0,
+        "reason": "EW 퇴화 — wrapper 폴백(로그 참조)",
+        "log": "[method:qepm:ERC] 어댑터 실패 → EW 폴백: dispatch infeasible: function_missing: erc_weights"
+      }
+    },
+    {
+      "catalog_id": "qepm:CVaR_LP",
+      "label": "CVaR_LP",
+      "origin": "qepm_registry",
+      "family": "tail_aware",
+      "status": "active",
+      "notes": null,
+      "resolver": {
+        "kind": "qepm_registry",
+        "dispatch_name": "CVaR_LP",
+        "requires": "returns",
+        "hyperparams": "alpha_level"
+      },
+      "screen_axes": {
+        "shrinkage_builtin": null,
+        "statistic_order": null,
+        "screen_priority": null
+      },
+      "selection_type": "chain",
+      "trial_family_id": null,
+      "n_trials_family": 1,
+      "prior_measured": null,
+      "est_cost_min": 10,
+      "probe": {
+        "ok": false,
+        "max_abs_dev_from_ew": 0,
+        "reason": "EW 퇴화 — wrapper 폴백(로그 참조)",
+        "log": "[method:qepm:CVaR_LP] 어댑터 실패 → EW 폴백: dispatch infeasible: unused arguments (returns = c(-0.00672829873292578, -0.00603437697225356, 0.0157038023800389, -0.00458387907118934, 0.0114933531525298, 0.00916125320024259, 0.00229392735727427, -0.00903598269292714, -0.0196376959151089, -0.0100656229093508, 0.00697672199923635, -0.00574527377324494, -0.00468493583475429, 0.0162225678758105, 0.00496443596405367, 0.00661427295926351, -0.0194567563818119, 0.00459775315017039, 0.0000614382655528839, -0.000925201255172083, -0.0000860830329345849, 0.000966101993065052, 0.00690637455219149,  | 0.00411461954084682, -0.00952665962982293, 0.00331481966733384, -0.0239292030806597, -0.010198778384804, -0.0179749242900486, -0.0128274657705956, -0.0181220696194029, 0.00911017922570154, 0.00512070655198649, -0.00148559025407447, 0.00562139553839394, 0.00769904548685083, 0.00131178465841075, 0.0110616417145249, 0.0114909116942942, -0.0151434617030666, 0.00625914831420419, -0.00575627045494787, -0.0177828014465144, 0.0000182984456964836, 0.00324490028287855, 0.00529119696404714, -0.00721564864397523,  | -0.00748943953111716, 0.00563782468679625, 0.00472099597306407, 0.00243977678893932, 0.00596107124621599, 0.00190091279972911, 0.00782772506792841, -0.0027259093276542, -0.00269341913687289, -0.0156999302695156, -0.00343593605473252, 0.00295970563811655, -0.00556563671226866, 0.00288808710209978, 0.00019482872883233, -0.0013551791317415, 0.00437660621641186, 0.00434932891293893, 0.0126554783721891, 0.00252585448574477, 0.0140436158214466, -0.0120065983329655, 0.0285779567272885, -0.0138747658901301, "
+      }
+    },
+    {
+      "catalog_id": "qepm:CDaR_LP",
+      "label": "CDaR_LP",
+      "origin": "qepm_registry",
+      "family": "tail_aware",
+      "status": "active",
+      "notes": null,
+      "resolver": {
+        "kind": "qepm_registry",
+        "dispatch_name": "CDaR_LP",
+        "requires": "returns",
+        "hyperparams": "alpha_level"
+      },
+      "screen_axes": {
+        "shrinkage_builtin": null,
+        "statistic_order": null,
+        "screen_priority": null
+      },
+      "selection_type": "chain",
+      "trial_family_id": null,
+      "n_trials_family": 1,
+      "prior_measured": null,
+      "est_cost_min": 10,
+      "probe": {
+        "ok": false,
+        "max_abs_dev_from_ew": 0,
+        "reason": "EW 퇴화 — wrapper 폴백(로그 참조)",
+        "log": "[method:qepm:CDaR_LP] 어댑터 실패 → EW 폴백: dispatch infeasible: unused arguments (returns = c(-0.00672829873292578, -0.00603437697225356, 0.0157038023800389, -0.00458387907118934, 0.0114933531525298, 0.00916125320024259, 0.00229392735727427, -0.00903598269292714, -0.0196376959151089, -0.0100656229093508, 0.00697672199923635, -0.00574527377324494, -0.00468493583475429, 0.0162225678758105, 0.00496443596405367, 0.00661427295926351, -0.0194567563818119, 0.00459775315017039, 0.0000614382655528839, -0.000925201255172083, -0.0000860830329345849, 0.000966101993065052, 0.00690637455219149,  | 0.00411461954084682, -0.00952665962982293, 0.00331481966733384, -0.0239292030806597, -0.010198778384804, -0.0179749242900486, -0.0128274657705956, -0.0181220696194029, 0.00911017922570154, 0.00512070655198649, -0.00148559025407447, 0.00562139553839394, 0.00769904548685083, 0.00131178465841075, 0.0110616417145249, 0.0114909116942942, -0.0151434617030666, 0.00625914831420419, -0.00575627045494787, -0.0177828014465144, 0.0000182984456964836, 0.00324490028287855, 0.00529119696404714, -0.00721564864397523,  | -0.00748943953111716, 0.00563782468679625, 0.00472099597306407, 0.00243977678893932, 0.00596107124621599, 0.00190091279972911, 0.00782772506792841, -0.0027259093276542, -0.00269341913687289, -0.0156999302695156, -0.00343593605473252, 0.00295970563811655, -0.00556563671226866, 0.00288808710209978, 0.00019482872883233, -0.0013551791317415, 0.00437660621641186, 0.00434932891293893, 0.0126554783721891, 0.00252585448574477, 0.0140436158214466, -0.0120065983329655, 0.0285779567272885, -0.0138747658901301, "
+      }
+    },
+    {
+      "catalog_id": "qepm:MaxDiv",
+      "label": "MaxDiv",
+      "origin": "qepm_registry",
+      "family": "entropy",
+      "status": "active",
+      "notes": null,
+      "resolver": {
+        "kind": "qepm_registry",
+        "dispatch_name": "MaxDiv",
+        "requires": "cov",
+        "hyperparams": []
+      },
+      "screen_axes": {
+        "shrinkage_builtin": null,
+        "statistic_order": null,
+        "screen_priority": null
+      },
+      "selection_type": "chain",
+      "trial_family_id": null,
+      "n_trials_family": 1,
+      "prior_measured": null,
+      "est_cost_min": 10,
+      "probe": {
+        "ok": false,
+        "max_abs_dev_from_ew": 0,
+        "reason": "EW 퇴화 — wrapper 폴백(로그 참조)",
+        "log": "[method:qepm:MaxDiv] 어댑터 실패 → EW 폴백: dispatch infeasible: unused arguments (cov_matrix = c(0.000118050308654925, -0.00000378182554867261, 0.00000197072716962131, -0.00000672920071981936, 0.0000176721152890908, -0.0000142266049671956, 0.0000104881670900327, -0.0000186119813046416, 0.0000154389011238477, 0.0000220854606960279, -0.0000161474454714798, 0.00000984406313416886, 0.000023813203530899, -0.0000141748037077949, -0.0000113076682241773, -0.0000135606094854352, 0.0000230712009518588, 0.0000266300319172577, -0.0000204905794327267, 0.00000781319445378862, -0.0000254776398088381,  | -0.0000155853342880591, 0.0000151675478468186, -0.0000169524505631985, -0.0000201448845054418, -0.00000378182554867261, 0.000152192259115316, -0.000000706565488488799, 0.0000122284695720436, -0.0000112310963228735, -0.0000203365131537111, -0.000000301705443689692, 0.0000282623825786786, -0.0000237069283473607, -0.0000218226337881474, -0.0000218019150531631, -0.0000202977516591277, -0.0000290657885779254, -0.00000967136183260204, 0.00000918591542690547, 0.0000149486262537853, -0.00000219110424197434,  | -0.00006876781415697, 0.000029205355281334, 0.0000124292265666527, 0.0000368528005355408, -0.0000122956239768506, -0.0000161055263948133, 0.0000260822381397244, -0.0000350686012233782, 0.00000197072716962131, -0.000000706565488488799, 0.000211444067776641, -0.00000319232686631653, 0.000000243966844890385, 0.0000189181169580484, 0.000017013618381129, -0.0000165041376351997, 0.00000342317490795434, -0.0000170678962396606, 0.00000654335688552928, 0.0000372227168692748, -0.0000000242412818442376, 0.0000117787610285944, "
+      }
+    },
+    {
+      "catalog_id": "qepm:EntropyPooling",
+      "label": "EntropyPooling",
+      "origin": "qepm_registry",
+      "family": "entropy",
+      "status": "blocked_inputs",
+      "notes": "ctx 로 유도 불가한 입력 요구: views",
+      "resolver": {
+        "kind": "qepm_registry",
+        "dispatch_name": "EntropyPooling",
+        "requires": ["returns", "views"],
+        "hyperparams": "confidence"
+      },
+      "screen_axes": {
+        "shrinkage_builtin": null,
+        "statistic_order": null,
+        "screen_priority": null
+      },
+      "selection_type": "chain",
+      "trial_family_id": null,
+      "n_trials_family": 1,
+      "prior_measured": null,
+      "est_cost_min": 10,
+      "probe": {
+        "ok": false,
+        "max_abs_dev_from_ew": 0,
+        "reason": "EW 퇴화 — wrapper 폴백(로그 참조)",
+        "log": "[method:qepm:EntropyPooling] 어댑터 실패 → EW 폴백: dispatch infeasible: function_missing: calc_entropy_pooling_weights"
+      }
+    },
+    {
+      "catalog_id": "qepm:BlackLitterman",
+      "label": "BlackLitterman",
+      "origin": "qepm_registry",
+      "family": "classical",
+      "status": "blocked_inputs",
+      "notes": "ctx 로 유도 불가한 입력 요구: prior_alpha, views",
+      "resolver": {
+        "kind": "qepm_registry",
+        "dispatch_name": "BlackLitterman",
+        "requires": ["prior_alpha", "views", "cov"],
+        "hyperparams": ["tau", "lambda"]
+      },
+      "screen_axes": {
+        "shrinkage_builtin": null,
+        "statistic_order": null,
+        "screen_priority": null
+      },
+      "selection_type": "chain",
+      "trial_family_id": null,
+      "n_trials_family": 1,
+      "prior_measured": null,
+      "est_cost_min": 10,
+      "probe": {
+        "ok": false,
+        "max_abs_dev_from_ew": 0,
+        "reason": "EW 퇴화 — wrapper 폴백(로그 참조)",
+        "log": "[method:qepm:BlackLitterman] 어댑터 실패 → EW 폴백: dispatch infeasible: function_missing: bl_weights"
+      }
+    },
+    {
+      "catalog_id": "qepm:Protection_ES",
+      "label": "Protection_ES",
+      "origin": "qepm_registry",
+      "family": "tail_aware",
+      "status": "active",
+      "notes": null,
+      "resolver": {
+        "kind": "qepm_registry",
+        "dispatch_name": "Protection_ES",
+        "requires": "returns",
+        "hyperparams": ["floor", "es_budget"]
+      },
+      "screen_axes": {
+        "shrinkage_builtin": null,
+        "statistic_order": null,
+        "screen_priority": null
+      },
+      "selection_type": "chain",
+      "trial_family_id": null,
+      "n_trials_family": 1,
+      "prior_measured": null,
+      "est_cost_min": 10,
+      "probe": {
+        "ok": false,
+        "max_abs_dev_from_ew": 0,
+        "reason": "EW 퇴화 — wrapper 폴백(로그 참조)",
+        "log": "[method:qepm:Protection_ES] 어댑터 실패 → EW 폴백: dispatch infeasible: function_missing: calc_protection_es_weights"
+      }
+    },
+    {
+      "catalog_id": "qepm:PPO_RL",
+      "label": "PPO_RL",
+      "origin": "qepm_registry",
+      "family": "reinforcement_learning",
+      "status": "active",
+      "notes": null,
+      "resolver": {
+        "kind": "qepm_registry",
+        "dispatch_name": "PPO_RL",
+        "requires": ["returns", "alpha", "cov"],
+        "hyperparams": ["n_episodes", "lr"]
+      },
+      "screen_axes": {
+        "shrinkage_builtin": null,
+        "statistic_order": null,
+        "screen_priority": null
+      },
+      "selection_type": "chain",
+      "trial_family_id": null,
+      "n_trials_family": 1,
+      "prior_measured": null,
+      "est_cost_min": 10,
+      "probe": {
+        "ok": false,
+        "max_abs_dev_from_ew": 0,
+        "reason": "EW 퇴화 — wrapper 폴백(로그 참조)",
+        "log": "[method:qepm:PPO_RL] 어댑터 실패 → EW 폴백: dispatch infeasible: function_missing: ppo_rl_weights"
+      }
+    },
+    {
+      "catalog_id": "qepm:Genetic",
+      "label": "Genetic",
+      "origin": "qepm_registry",
+      "family": "evolutionary",
+      "status": "active",
+      "notes": null,
+      "resolver": {
+        "kind": "qepm_registry",
+        "dispatch_name": "Genetic",
+        "requires": ["alpha", "cov", "returns"],
+        "hyperparams": ["pop_size", "n_generations"]
+      },
+      "screen_axes": {
+        "shrinkage_builtin": null,
+        "statistic_order": null,
+        "screen_priority": null
+      },
+      "selection_type": "chain",
+      "trial_family_id": null,
+      "n_trials_family": 1,
+      "prior_measured": null,
+      "est_cost_min": 10,
+      "probe": {
+        "ok": false,
+        "max_abs_dev_from_ew": 0,
+        "reason": "EW 퇴화 — wrapper 폴백(로그 참조)",
+        "log": "[method:qepm:Genetic] 어댑터 실패 → EW 폴백: dispatch infeasible: function_missing: genetic_weights"
+      }
+    },
+    {
+      "catalog_id": "qepm:Ensemble",
+      "label": "Ensemble",
+      "origin": "qepm_registry",
+      "family": "ensemble",
+      "status": "blocked_inputs",
+      "notes": "ctx 로 유도 불가한 입력 요구: method_list",
+      "resolver": {
+        "kind": "qepm_registry",
+        "dispatch_name": "Ensemble",
+        "requires": "method_list",
+        "hyperparams": ["method_list", "meta_lambda"]
+      },
+      "screen_axes": {
+        "shrinkage_builtin": null,
+        "statistic_order": null,
+        "screen_priority": null
+      },
+      "selection_type": "chain",
+      "trial_family_id": null,
+      "n_trials_family": 1,
+      "prior_measured": null,
+      "est_cost_min": 10,
+      "probe": {
+        "ok": false,
+        "max_abs_dev_from_ew": 0,
+        "reason": "EW 퇴화 — wrapper 폴백(로그 참조)",
+        "log": "[method:qepm:Ensemble] 어댑터 실패 → EW 폴백: dispatch infeasible: function_missing: ensemble_weights"
+      }
+    },
+    {
+      "catalog_id": "qepm:DPL",
+      "label": "DPL",
+      "origin": "qepm_registry",
+      "family": "deep_learning",
+      "status": "active",
+      "notes": null,
+      "resolver": {
+        "kind": "qepm_registry",
+        "dispatch_name": "DPL",
+        "requires": ["alpha", "cov", "returns"],
+        "hyperparams": ["lambda_risk", "gamma_turnover", "lr", "n_epochs", "lookback"]
+      },
+      "screen_axes": {
+        "shrinkage_builtin": null,
+        "statistic_order": null,
+        "screen_priority": null
+      },
+      "selection_type": "chain",
+      "trial_family_id": null,
+      "n_trials_family": 1,
+      "prior_measured": null,
+      "est_cost_min": 10,
+      "probe": {
+        "ok": false,
+        "max_abs_dev_from_ew": 0,
+        "reason": "EW 퇴화 — wrapper 폴백(로그 참조)",
+        "log": "[method:qepm:DPL] 어댑터 실패 → EW 폴백: dispatch infeasible: function_missing: dpl_weights_cvxpylayers"
+      }
+    },
+    {
+      "catalog_id": "paper:ConformalKelly",
+      "label": "ConformalKelly",
+      "origin": "paper_adapter",
+      "family": "optimizer",
+      "status": "active",
+      "notes": null,
+      "resolver": {
+        "kind": "adapter_file",
+        "adapter": "02_Infrastructure/methods/adapters/conformal_kelly.R",
+        "entrypoint": "method_weights",
+        "paper_id": "arxiv:2608.01494"
+      },
+      "screen_axes": {
+        "shrinkage_builtin": "no",
+        "statistic_order": "higher",
+        "screen_priority": "후순위"
+      },
+      "selection_type": "chain",
+      "trial_family_id": null,
+      "n_trials_family": 1,
+      "prior_measured": null,
+      "est_cost_min": 10,
+      "probe": {
+        "ok": true,
+        "max_abs_dev_from_ew": 0.09893548,
+        "reason": null,
+        "log": ""
+      }
+    },
+    {
+      "catalog_id": "paper:PathSignature",
+      "label": "PathSignature",
+      "origin": "paper_adapter",
+      "family": "optimizer",
+      "status": "blocked_inputs",
+      "notes": "verdict=blocked_by_capability (등재됐으나 implemented 아님)",
+      "resolver": {
+        "kind": "adapter_file",
+        "adapter": "",
+        "entrypoint": "method_weights",
+        "paper_id": "arxiv:2608.02355"
+      },
+      "screen_axes": {
+        "shrinkage_builtin": "no",
+        "statistic_order": "higher",
+        "screen_priority": "후순위"
+      },
+      "selection_type": "chain",
+      "trial_family_id": null,
+      "n_trials_family": 1,
+      "prior_measured": null,
+      "est_cost_min": 10,
+      "probe": {
+        "ok": false,
+        "max_abs_dev_from_ew": 0,
+        "reason": "EW 퇴화 — wrapper 폴백(로그 참조)",
+        "log": "[method:paper:PathSignature] 어댑터 실패 → EW 폴백: cannot open the connection"
+      }
+    },
+    {
+      "catalog_id": "paper:MFCCA",
+      "label": "MFCCA",
+      "origin": "paper_adapter",
+      "family": "optimizer",
+      "status": "blocked_inputs",
+      "notes": "verdict=blocked_by_capability (등재됐으나 implemented 아님)",
+      "resolver": {
+        "kind": "adapter_file",
+        "adapter": "",
+        "entrypoint": "method_weights",
+        "paper_id": "arxiv:2608.04987"
+      },
+      "screen_axes": {
+        "shrinkage_builtin": "no",
+        "statistic_order": "higher",
+        "screen_priority": "후순위"
+      },
+      "selection_type": "chain",
+      "trial_family_id": null,
+      "n_trials_family": 1,
+      "prior_measured": null,
+      "est_cost_min": 10,
+      "probe": {
+        "ok": false,
+        "max_abs_dev_from_ew": 0,
+        "reason": "EW 퇴화 — wrapper 폴백(로그 참조)",
+        "log": "[method:paper:MFCCA] 어댑터 실패 → EW 폴백: cannot open the connection"
+      }
+    },
+    {
+      "catalog_id": "paper:PreferenceRobustDistortion",
+      "label": "PreferenceRobustDistortion",
+      "origin": "paper_adapter",
+      "family": "risk",
+      "status": "active",
+      "notes": null,
+      "resolver": {
+        "kind": "adapter_file",
+        "adapter": "02_Infrastructure/methods/adapters/preference_robust_distortion.R",
+        "entrypoint": "method_weights",
+        "paper_id": "arxiv:2608.02854"
+      },
+      "screen_axes": {
+        "shrinkage_builtin": "no",
+        "statistic_order": "tail_quantile",
+        "screen_priority": "후순위"
+      },
+      "selection_type": "chain",
+      "trial_family_id": null,
+      "n_trials_family": 1,
+      "prior_measured": null,
+      "est_cost_min": 10,
+      "probe": {
+        "ok": true,
+        "max_abs_dev_from_ew": 0.12767511,
+        "reason": null,
+        "log": ""
+      }
+    },
+    {
+      "catalog_id": "paper:SchurDamping",
+      "label": "SchurDamping",
+      "origin": "paper_adapter",
+      "family": "optimizer",
+      "status": "active",
+      "notes": null,
+      "resolver": {
+        "kind": "adapter_file",
+        "adapter": "02_Infrastructure/methods/adapters/schur_damping.R",
+        "entrypoint": "method_weights",
+        "paper_id": "arxiv:2606.14798"
+      },
+      "screen_axes": {
+        "shrinkage_builtin": "yes",
+        "statistic_order": "<=2nd",
+        "screen_priority": "미정(2축만으로는 별 배정 불가 — 실측 교정 결과)"
+      },
+      "selection_type": "chain",
+      "trial_family_id": null,
+      "n_trials_family": 1,
+      "prior_measured": null,
+      "est_cost_min": 10,
+      "probe": {
+        "ok": true,
+        "max_abs_dev_from_ew": 0.0648838,
+        "reason": null,
+        "log": "[SchurDamping] p=25 · 블록 5 · n=260 · γ* 중앙 0.942 (범위 0.930~0.957)"
+      }
+    },
+    {
+      "catalog_id": "paper:TailConformalBand",
+      "label": "TailConformalBand",
+      "origin": "paper_adapter",
+      "family": "risk",
+      "status": "active",
+      "notes": null,
+      "resolver": {
+        "kind": "adapter_file",
+        "adapter": "02_Infrastructure/methods/adapters/tail_conformal_band.R",
+        "entrypoint": "method_weights",
+        "paper_id": "arxiv:2606.18199"
+      },
+      "screen_axes": {
+        "shrinkage_builtin": "weak",
+        "statistic_order": "tail_quantile",
+        "screen_priority": "미정 — ⚠statistic_order=tail_quantile 은 소급 표기 규칙상 '후순위' 계열(고차·꼬리 목적함수는 축소를 얹어도 회수 절반, cross_method_synthesis). 그럼에도 등재한 이유는 ConformalKelly 와 **방향만 다른 대조 쌍**을 만들어 '꼬리 목적함수가 실제로 손해인가'를 같은 프레임에서 재기 위함."
+      },
+      "selection_type": "chain",
+      "trial_family_id": null,
+      "n_trials_family": 1,
+      "prior_measured": null,
+      "est_cost_min": 10,
+      "probe": {
+        "ok": true,
+        "max_abs_dev_from_ew": 0.1116972,
+        "reason": null,
+        "log": "[TailConformalBand] p=25 · 하방폭 중앙 0.02860 · 최대/최소 4.88"
+      }
+    },
+    {
+      "catalog_id": "gen:lean_score_tilt__shr_gerber_rmt",
+      "label": "lean_score_tilt__shr_gerber_rmt",
+      "origin": "generated",
+      "family": "generated_shrinkage_lift",
+      "status": "active",
+      "notes": "parent=lean:score_tilt rule=shrinkage_lift emitted=2026-08-24T01:17:14+0900",
+      "resolver": {
+        "kind": "adapter_file",
+        "adapter": "02_Infrastructure/methods/adapters/gen/lean_score_tilt__shr_gerber_rmt.R",
+        "entrypoint": "method_weights",
+        "parent": "lean:score_tilt",
+        "rule": "shrinkage_lift"
+      },
+      "screen_axes": {
+        "shrinkage_builtin": null,
+        "statistic_order": null,
+        "screen_priority": null
+      },
+      "selection_type": "sweep_candidate_family",
+      "trial_family_id": "WVF_20260824011713_lean_score_tilt_shrinkage_lift",
+      "n_trials_family": 4,
+      "prior_measured": null,
+      "est_cost_min": 6,
+      "probe": {
+        "ok": true,
+        "max_abs_dev_from_ew": 0.0703664,
+        "reason": null,
+        "log": ""
+      }
+    },
+    {
+      "catalog_id": "gen:lean_score_tilt__shr_ledoit_wolf",
+      "label": "lean_score_tilt__shr_ledoit_wolf",
+      "origin": "generated",
+      "family": "generated_shrinkage_lift",
+      "status": "active",
+      "notes": "parent=lean:score_tilt rule=shrinkage_lift emitted=2026-08-24T01:17:14+0900",
+      "resolver": {
+        "kind": "adapter_file",
+        "adapter": "02_Infrastructure/methods/adapters/gen/lean_score_tilt__shr_ledoit_wolf.R",
+        "entrypoint": "method_weights",
+        "parent": "lean:score_tilt",
+        "rule": "shrinkage_lift"
+      },
+      "screen_axes": {
+        "shrinkage_builtin": null,
+        "statistic_order": null,
+        "screen_priority": null
+      },
+      "selection_type": "sweep_candidate_family",
+      "trial_family_id": "WVF_20260824011713_lean_score_tilt_shrinkage_lift",
+      "n_trials_family": 4,
+      "prior_measured": null,
+      "est_cost_min": 6,
+      "probe": {
+        "ok": true,
+        "max_abs_dev_from_ew": 0.01929219,
+        "reason": null,
+        "log": ""
+      }
+    },
+    {
+      "catalog_id": "gen:lean_score_tilt__shr_lw_nls",
+      "label": "lean_score_tilt__shr_lw_nls",
+      "origin": "generated",
+      "family": "generated_shrinkage_lift",
+      "status": "unverified",
+      "notes": "parent=lean:score_tilt rule=shrinkage_lift emitted=2026-08-24T01:17:14+0900",
+      "resolver": {
+        "kind": "adapter_file",
+        "adapter": "02_Infrastructure/methods/adapters/gen/lean_score_tilt__shr_lw_nls.R",
+        "entrypoint": "method_weights",
+        "parent": "lean:score_tilt",
+        "rule": "shrinkage_lift"
+      },
+      "screen_axes": {
+        "shrinkage_builtin": null,
+        "statistic_order": null,
+        "screen_priority": null
+      },
+      "selection_type": "sweep_candidate_family",
+      "trial_family_id": "WVF_20260824011713_lean_score_tilt_shrinkage_lift",
+      "n_trials_family": 4,
+      "prior_measured": null,
+      "est_cost_min": 6,
+      "probe": {
+        "ok": true,
+        "max_abs_dev_from_ew": 0.02910042,
+        "reason": null,
+        "log": ""
+      }
+    },
+    {
+      "catalog_id": "gen:lean_score_tilt__shr_sample",
+      "label": "lean_score_tilt__shr_sample",
+      "origin": "generated",
+      "family": "generated_shrinkage_lift",
+      "status": "active",
+      "notes": "parent=lean:score_tilt rule=shrinkage_lift emitted=2026-08-24T01:17:14+0900",
+      "resolver": {
+        "kind": "adapter_file",
+        "adapter": "02_Infrastructure/methods/adapters/gen/lean_score_tilt__shr_sample.R",
+        "entrypoint": "method_weights",
+        "parent": "lean:score_tilt",
+        "rule": "shrinkage_lift"
+      },
+      "screen_axes": {
+        "shrinkage_builtin": null,
+        "statistic_order": null,
+        "screen_priority": null
+      },
+      "selection_type": "sweep_candidate_family",
+      "trial_family_id": "WVF_20260824011713_lean_score_tilt_shrinkage_lift",
+      "n_trials_family": 4,
+      "prior_measured": null,
+      "est_cost_min": 6,
+      "probe": {
+        "ok": true,
+        "max_abs_dev_from_ew": 0.08540368,
+        "reason": null,
+        "log": ""
+      }
+    },
+    {
+      "catalog_id": "gen:qepm_MVO__shr_gerber_rmt",
+      "label": "qepm_MVO__shr_gerber_rmt",
+      "origin": "generated",
+      "family": "generated_shrinkage_lift",
+      "status": "unverified",
+      "notes": "parent=qepm:MVO rule=shrinkage_lift emitted=2026-08-24T01:17:14+0900",
+      "resolver": {
+        "kind": "adapter_file",
+        "adapter": "02_Infrastructure/methods/adapters/gen/qepm_MVO__shr_gerber_rmt.R",
+        "entrypoint": "method_weights",
+        "parent": "qepm:MVO",
+        "rule": "shrinkage_lift"
+      },
+      "screen_axes": {
+        "shrinkage_builtin": null,
+        "statistic_order": null,
+        "screen_priority": null
+      },
+      "selection_type": "sweep_candidate_family",
+      "trial_family_id": "WVF_20260824011714_qepm_MVO_shrinkage_lift",
+      "n_trials_family": 5,
+      "prior_measured": null,
+      "est_cost_min": 6,
+      "probe": {
+        "ok": true,
+        "max_abs_dev_from_ew": 0.04,
+        "reason": null,
+        "log": "[weight_method_registry.R] Loaded. |   14 methods registered: MVO, MVO_grid, HRP, ERC, CVaR_LP, CDaR_LP, MaxDiv, EntropyPooling, BlackLitterman, Protection_ES, PPO_RL, Genetic, Ensemble, DPL | Functions: list_methods(family=NULL), describe_method(name),"
+      }
+    },
+    {
+      "catalog_id": "gen:qepm_MVO__shr_ledoit_wolf",
+      "label": "qepm_MVO__shr_ledoit_wolf",
+      "origin": "generated",
+      "family": "generated_shrinkage_lift",
+      "status": "unverified",
+      "notes": "parent=qepm:MVO rule=shrinkage_lift emitted=2026-08-24T01:17:14+0900",
+      "resolver": {
+        "kind": "adapter_file",
+        "adapter": "02_Infrastructure/methods/adapters/gen/qepm_MVO__shr_ledoit_wolf.R",
+        "entrypoint": "method_weights",
+        "parent": "qepm:MVO",
+        "rule": "shrinkage_lift"
+      },
+      "screen_axes": {
+        "shrinkage_builtin": null,
+        "statistic_order": null,
+        "screen_priority": null
+      },
+      "selection_type": "sweep_candidate_family",
+      "trial_family_id": "WVF_20260824011714_qepm_MVO_shrinkage_lift",
+      "n_trials_family": 5,
+      "prior_measured": null,
+      "est_cost_min": 6,
+      "probe": {
+        "ok": true,
+        "max_abs_dev_from_ew": 0.04,
+        "reason": null,
+        "log": ""
+      }
+    },
+    {
+      "catalog_id": "gen:qepm_MVO__shr_lw_nls",
+      "label": "qepm_MVO__shr_lw_nls",
+      "origin": "generated",
+      "family": "generated_shrinkage_lift",
+      "status": "active",
+      "notes": "parent=qepm:MVO rule=shrinkage_lift emitted=2026-08-24T01:17:14+0900",
+      "resolver": {
+        "kind": "adapter_file",
+        "adapter": "02_Infrastructure/methods/adapters/gen/qepm_MVO__shr_lw_nls.R",
+        "entrypoint": "method_weights",
+        "parent": "qepm:MVO",
+        "rule": "shrinkage_lift"
+      },
+      "screen_axes": {
+        "shrinkage_builtin": null,
+        "statistic_order": null,
+        "screen_priority": null
+      },
+      "selection_type": "sweep_candidate_family",
+      "trial_family_id": "WVF_20260824011714_qepm_MVO_shrinkage_lift",
+      "n_trials_family": 5,
+      "prior_measured": null,
+      "est_cost_min": 6,
+      "probe": {
+        "ok": true,
+        "max_abs_dev_from_ew": 0.04,
+        "reason": null,
+        "log": ""
+      }
+    },
+    {
+      "catalog_id": "gen:qepm_MVO__shr_OGK",
+      "label": "qepm_MVO__shr_OGK",
+      "origin": "generated",
+      "family": "generated_shrinkage_lift",
+      "status": "unverified",
+      "notes": "parent=qepm:MVO rule=shrinkage_lift emitted=2026-08-24T01:17:14+0900",
+      "resolver": {
+        "kind": "adapter_file",
+        "adapter": "02_Infrastructure/methods/adapters/gen/qepm_MVO__shr_OGK.R",
+        "entrypoint": "method_weights",
+        "parent": "qepm:MVO",
+        "rule": "shrinkage_lift"
+      },
+      "screen_axes": {
+        "shrinkage_builtin": null,
+        "statistic_order": null,
+        "screen_priority": null
+      },
+      "selection_type": "sweep_candidate_family",
+      "trial_family_id": "WVF_20260824011714_qepm_MVO_shrinkage_lift",
+      "n_trials_family": 5,
+      "prior_measured": null,
+      "est_cost_min": 6,
+      "probe": {
+        "ok": false,
+        "max_abs_dev_from_ew": 0,
+        "reason": "EW 퇴화 — wrapper 폴백(로그 참조)",
+        "log": "[method:gen:qepm_MVO__shr_OGK] 어댑터 실패 → EW 폴백: gen_sigma: rrcov 패키지 부재 — compute_robust_cov 가 **표본공분산으로 조용히 낙하**한다. 그러면 OGK 형제가 sample 형제와 동일해지고 결과표엔 두 arm 으로 보인다."
+      }
+    },
+    {
+      "catalog_id": "gen:qepm_MVO__shr_sample",
+      "label": "qepm_MVO__shr_sample",
+      "origin": "generated",
+      "family": "generated_shrinkage_lift",
+      "status": "unverified",
+      "notes": "parent=qepm:MVO rule=shrinkage_lift emitted=2026-08-24T01:17:14+0900",
+      "resolver": {
+        "kind": "adapter_file",
+        "adapter": "02_Infrastructure/methods/adapters/gen/qepm_MVO__shr_sample.R",
+        "entrypoint": "method_weights",
+        "parent": "qepm:MVO",
+        "rule": "shrinkage_lift"
+      },
+      "screen_axes": {
+        "shrinkage_builtin": null,
+        "statistic_order": null,
+        "screen_priority": null
+      },
+      "selection_type": "sweep_candidate_family",
+      "trial_family_id": "WVF_20260824011714_qepm_MVO_shrinkage_lift",
+      "n_trials_family": 5,
+      "prior_measured": null,
+      "est_cost_min": 6,
+      "probe": {
+        "ok": true,
+        "max_abs_dev_from_ew": 0.04,
+        "reason": null,
+        "log": ""
+      }
+    }
+  ]
+}

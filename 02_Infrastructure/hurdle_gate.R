@@ -680,12 +680,16 @@ run_hurdle_gate <- function(sim_result,
   #   `n_hold_eff <- 25L` 캡이 이미 했고, 계약 검사는 audit_bt_result::holdings_cap 이 한다.
   #   여기서 또 탈락시키면 같은 사실이 세 곳에서 판정돼 "어느 층이 막았나"가 흐려진다.
   #   보고 3줄(lean-loop.md)이 이 값을 인용한다 — 위반이 조용히 지나가지 않게 하는 것이 목적.
+  ## ★2026-08-24 v9.2 S1b — 빈 벡터/전량 NA 의 max() 는 에러가 아니라 **경고 + -Inf** 라
+  ##   tryCatch(error=) 를 통과한다. n_max=-Inf 는 "종목수 위반 없음"으로 조용히 보고된다
+  ##   (D052 는 보고용 진단이므로 차단이 아니라 **판정 불가 표기**가 맞다).
+  .fin_or_na <- function(x) if (length(x) == 1L && is.finite(x)) as.numeric(x) else NA_real_
   n_max <- tryCatch({
     HL <- sim_result$HOLDINGS_LOG
     if (!is.null(HL) && nrow(HL) > 0 && all(c("Exec_Date", "Ticker") %in% names(HL))) {
-      max(as.data.table(HL)[, .(n = uniqueN(Ticker)), by = Exec_Date]$n)
+      .fin_or_na(suppressWarnings(max(as.data.table(HL)[, .(n = uniqueN(Ticker)), by = Exec_Date]$n)))
     } else if (nrow(PLOG) > 0 && "N_stocks" %in% names(PLOG)) {
-      max(PLOG$N_stocks, na.rm = TRUE)   # 대체 출처 — 리밸일별 실보유 수
+      .fin_or_na(suppressWarnings(max(PLOG$N_stocks, na.rm = TRUE)))   # 대체 출처 — 리밸일별 실보유 수
     } else NA_real_
   }, error = function(e) NA_real_)
   diagnostics <- c(diagnostics, list(list(

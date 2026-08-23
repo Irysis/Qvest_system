@@ -1,0 +1,120 @@
+{
+  "schema_version": "alpha_search_strategy_manifest_v1",
+  "created_at": "2026-08-23T22:23:50+0900",
+  "mode": "alpha_search",
+  "strategy_id": "STR_AS_20260823_215906_31240",
+  "strategy_name": "AS_RevisionInnovation_GleasonLee2003",
+  "strategy_idea": "Gleason & Lee(2003) KR 재구성: FY1 컨센서스 상향 리비전(C03 3M) 중 컨센서스-이탈형(추정치 분산 유지/증가 = high-innovation)만 후보 → 리비전 크기 상위 decile EW 월간 — 수렴형(herding) 리비전은 제외",
+  "factor_engine_path": "02_Infrastructure/alpha_search/fe_revision_innovation.R",
+  "execution": {
+    "universe": "K200_KQ150",
+    "universe_n": 315,
+    "n_holdings": 20,
+    "weight_method": "equal",
+    "commission": 0.0015,
+    "risk_controls": {
+      "vol_target": null,
+      "vol_lookback": 60,
+      "dd_brake": null,
+      "buffer_zone": {
+        "keep_n": 40,
+        "entry_n": 20
+      },
+      "use_default_buffer": true,
+      "cov_method": "sample"
+    },
+    "bt_result_path": "stage_artifacts/alpha_search/20260823_215906_31240/bt_result.rds"
+  },
+  "pit": {
+    "code_scan": "detect_lookahead",
+    "status": "CLEAN",
+    "factor_engine_path": "02_Infrastructure/alpha_search/fe_revision_innovation.R",
+    "note": "AlphaSearch stops before backtest when detect_lookahead reports violations."
+  },
+  "backtest_contract": {
+    "status": "OK",
+    "run_id": "ASBT_20260823_215906_31240",
+    "metric_type": "backtested",
+    "bt_result_path": "stage_artifacts/alpha_search/20260823_215906_31240/bt_result.rds",
+    "output_dir": "stage_artifacts/alpha_search/20260823_215906_31240",
+    "integrity_status": "WARNING",
+    "audit_pass": 18,
+    "audit_fail": 0,
+    "audit_warn": 1,
+    "validation_errors": [],
+    "return_series": {
+      "status": "OK",
+      "source": "bt_result.period_returns",
+      "csv_path": "stage_artifacts/alpha_search/20260823_215906_31240/03_period_returns.csv",
+      "date_col": "date",
+      "ret_col": "ret_net",
+      "n_obs": 5314,
+      "start_date": "2005-02-03",
+      "end_date": "2026-08-21",
+      "post2008_obs": 4595,
+      "frequency": "daily"
+    },
+    "note": "standard Backtest Result Contract saved for every AlphaSearch run; grade/admission remains separate"
+  },
+  "verdict": {
+    "grade": "B",
+    "score": 30.4,
+    "hurdle_pass": false,
+    "hard_fail": false,
+    "fail_reasons": [
+      "Structural drawdown (MDD>=70%): MDD 70.0%, 45%+ episodes=10/15, max_underwater=190/252"
+    ],
+    "f_grade_reasons": [],
+    "screening": {
+      "screen_pass": false,
+      "screen_route": "NONE",
+      "drawdown_tail_review": false,
+      "structural_dd": true,
+      "distribution_target": {
+        "evaluated": false,
+        "route_issued": false,
+        "note": "distribution_evidence 미제출 — 평가 안 함(결함 아님)"
+      },
+      "note": "탐색 게이트 — 자본/졸업 게이트 아님 (graduation HARD 불변). PIT만 절대."
+    }
+  },
+  "metrics": {
+    "CAGR": 13.62,
+    "AnnVol": 28.63,
+    "Sharpe": 0.476,
+    "Sharpe_m": 0.578,
+    "IR": 0.124,
+    "MDD": 70.05,
+    "Calmar": 0.194,
+    "Turnover_Ann": 605.3,
+    "Top10_Conc": 50,
+    "Rolling3Y_Pos": 76.7,
+    "BM_Corr": 0.712,
+    "ES99_d": 7.07,
+    "ES99_m": 24.81,
+    "GradeA_Corr": null,
+    "Rolling6M_Hit": 62.9,
+    "Worst6M_Ret": -57.44,
+    "MaxConsecNegAlpha": 6,
+    "Rolling12M_Hit": 66.1
+  },
+  "excess_cagr_pct": 2.53,
+  "fmt": [
+    {
+      "code": "FMT-01",
+      "label": "Structural MDD",
+      "reason": "MDD 70.0% > 45% — 선택 종목군의 위기 동반급락(구조적 꼬리위험)"
+    },
+    {
+      "code": "FMT-04",
+      "label": "Regime Blindness",
+      "reason": "MDD 70.0% > 35% & BM상관 0.71 >= 0.7 — 위기국면 동조 낙폭(국면필터 부재)"
+    },
+    {
+      "code": "FMT-07",
+      "label": "Publication Decay",
+      "reason": "활성SR pre-2017 0.61 -> post-2017 -0.44 — 논문발표 후 알파 소진 패턴"
+    }
+  ],
+  "authoritative": null
+}

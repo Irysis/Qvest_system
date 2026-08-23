@@ -1,0 +1,45 @@
+{
+  "l_code": "L-AS-20260824_012953_39376",
+  "strategy_id": "STR_AS_20260824_012953_39376",
+  "grade": "B",
+  "core_reference": "강화 사다리 ①칸 score-level composite (members: fe_amihud.R+fe_ptv_intermediate_top25.R). base=fe_amihud.R 국면 RISK_ON (IR 0.678, t 2.769).",
+  "lesson_text": "LADDER_INTERNAL/STR_AS_20260612_135316_470429/rung1_c_base_p3: 등급 B, 연복리 19.1% (벤치마크 대비 +8.1%p), 샤프 0.63, 최대낙폭 -58.8%. 사유: FMT-07 활성SR pre-2017 0.81 -> post-2017 -0.19 — 논문발표 후 알파 소진 패턴; FMT-01 MDD 58.8% > 45% — 선택 종목군의 위기 동반급락(구조적 꼬리위험); 논문 가정 대비: 미기재",
+  "tags": ["ALPHA_SEARCH", "FAST_VALIDATION", "VALIDATED_HARD_FAIL"],
+  "created_at": "2026-08-24",
+  "research_mode": "alpha_search",
+  "created_by": "AlphaSearch",
+  "metric_type": "proxy",
+  "construction_type": "overlay_regime",
+  "lcode_schema_version": 3,
+  "cagr_pct": 19.15,
+  "sharpe": 0.629,
+  "mdd_pct": 58.84,
+  "excess_cagr": 8.06,
+  "mechanism_hypothesis": "가설 '강화 사다리 ①칸 score-level composite (members: fe_amihud.R+fe_ptv_intermediate_top25.R). base=fe_amihud.R 국면 RISK_ON (IR 0.678, t 2.769)' — 검증 결과 지배 요인: FMT-07(활성SR pre-2017 0.81 -> post-2017 -0.19 — 논문발표 후 알파 소진 패턴); FMT-01(MDD 58.8% > 45% — 선택 종목군의 위기 동반급락(구조적 꼬리위험))",
+  "data_supported_conclusion": "측정치(proxy — run_hurdle_gate): CAGR 19.1% (BM 대비 +8.1%p), 샤프 0.63, MDD -58.8%, IR 0.36, 회전율 연 200%, OOS retention 0.50.",
+  "next_probes": [
+    "후반부 알파 붕괴 — 2017 전후 서브기간 분해 + 최근 5Y 한정 재검증으로 소멸 여부 확정.",
+    "최근 5Y 한정 재검증."
+  ],
+  "live_trigger": "hard_fail 축 해소 후 score>=25 회복 시",
+  "next_probe": "후반부 알파 붕괴 — 2017 전후 서브기간 분해 + 최근 5Y 한정 재검증으로 소멸 여부 확정. | 최근 5Y 한정 재검증.",
+  "fmt_codes": [
+    "FMT-01",
+    "FMT-07"
+  ],
+  "oos_retention": 0.502,
+  "falsification_attempts": [
+    {
+      "test": "IS65/OOS35 활성SR retention (hurdle D062, proxy) — 과적합 반증 시도",
+      "result": "survived",
+      "effect_retained": 0.502,
+      "detail": "retention 0.50 (measurement-graduation §3 하한 0.5 기준)"
+    },
+    {
+      "test": "서브기간 분해(pre/post-2017)",
+      "result": "falsified",
+      "effect_retained": "NA",
+      "detail": "후반부 알파 붕괴: 활성SR pre-2017 0.81 -> post-2017 -0.19 — 논문발표 후 알파 소진 패턴"
+    }
+  ]
+}

@@ -212,14 +212,30 @@ stage_result() {   # $1=표시명 $2=exit코드 $3=경보 컴포넌트명
   #   이미 무인이므로 **같은 수준**으로 맞춘다. governor/book_state 도달 경로 없음(러너 하드가드).
   #   ★무인 ON 은 여기(무인 체인)에만 스코프한다 — 시스템 환경변수로 켜면 수동 실행까지
   #     따라 켜져서 사람이 의도하지 않은 라운드가 돈다.
-  echo "[0.57/3] mode_queue_research_run.sh (opt/risk/regime 큐 → risk/optimizer-research 스폰 → method_registry)"
-  if [ -f "$BASE/02_Infrastructure/ops/mode_queue_research_run.sh" ]; then
-    ( export QVEST_MODE_QUEUE_ENABLE="${QVEST_MODE_QUEUE_ENABLE:-1}"
-      bash "$BASE/02_Infrastructure/ops/mode_queue_research_run.sh" ) >> /tmp/qm_mode_queue.log 2>&1
-    stage_result "mode_queue" "$?" "mode_queue"
-  else
-    echo "      mode_queue skip (러너 부재)"
-  fi
+  #   ★레인 로테이션 (2026-08-24 v9.2 S1d) — 기아 해소.
+  #     실측: pending 170 중 qepm_dossier 71 이 상한 2(러너 :93)를 **영구 점유**해
+  #     risk 39 · optimizer 32 · regime 15 = 86건이 순번을 못 받았다(정렬이 고정이라
+  #     상한을 6으로 올려도 6건 전부 qepm_dossier 가 먹는다 — 상향은 해가 아니다).
+  #     러너는 --lane 을 이미 받고 쉼표 다중도 되므로 **러너·프롬프트·술어 수정 0**으로 푼다.
+  #     러너 자체 뮤텍스가 두 호출을 직렬화한다. 롤백 = 이 블록을 구판 1회 호출로 되돌림.
+  #     ※ method_measure 는 S3 생성 어댑터의 **측정 레인**이라 qepm_dossier 와 같은 군에
+  #       두면 구조적으로 기아 — 1군 배치(그러지 않으면 새 방법론이 등재만 되고 영영 안 돈다).
+  #     ※ adapter_backlog(29) 도 같은 이유로 1군. S3 가 신설한 레인인데
+  #       adapter_registration_queue.json 은 **생산자만 있고 소비자 0** 이었다 — 어느 군에도
+  #       안 넣으면 레인만 새로 생기고 소비는 그대로 0 이라 배선한 의미가 없다.
+  #       (레인 합 검산: 71+39+32+29+15+11+2 = 199. 1군 97+29=126 · 2군 73.)
+  #     ※ 부수효과: research_run_notify.R 가 lane 을 arg1 로 받아 레인별 텔레그램이 자동 분화.
+  for _LANE_GROUP in "risk,optimizer,regime,method_measure,adapter_backlog" "qepm_dossier,paper_promotion"; do
+    echo "[0.57/3] mode_queue_research_run.sh --lane $_LANE_GROUP"
+    if [ -f "$BASE/02_Infrastructure/ops/mode_queue_research_run.sh" ]; then
+      ( export QVEST_MODE_QUEUE_ENABLE="${QVEST_MODE_QUEUE_ENABLE:-1}"
+        export QVEST_MODE_QUEUE_LANE="$_LANE_GROUP"
+        bash "$BASE/02_Infrastructure/ops/mode_queue_research_run.sh" ) >> /tmp/qm_mode_queue.log 2>&1
+      stage_result "mode_queue" "$?" "mode_queue"
+    else
+      echo "      mode_queue skip (러너 부재)"
+    fi
+  done
 
   # -- [0.58/3] 팩터 근거 환류 (2026-08-22, 도훈 지시 "팩터DB 환류 부재도 같이 처리")
   #   .cache/conditional_ic_matrix.csv(327 팩터 실측)가 factor_registry 로 돌아오지 않아
@@ -288,5 +304,30 @@ stage_result() {   # $1=표시명 $2=exit코드 $3=경보 컴포넌트명
 # (2026-07-26 probe① 도훈 승인) 완주 마커 — lock은 '시작'만 증명한다(once-per-day 선점).
 # 중도 사망 시 lock만 남아 부팅이 "실행됨"으로 오보하던 갭 → done 마커로 시작/완주 구분.
 date '+%H:%M:%S' > "${LOCK}.done" 2>/dev/null || true
+
+# ── (2026-08-24 v9.2 S1e) 무인 라인 건강 — **1일 1건 집계** 텔레그램 ─────────────
+#   2026-08-23: alpha_queue · mode_queue · paper_dispatch 3단계가 같은 원장 파손으로
+#   동시에 죽었는데 아무도 몰랐다. 마커는 남았지만 읽는 면이 없었다.
+#   ★스테이지별 N건이 아니라 **집계 1건**이다 — 같은 톤 반복은 학습된 무시를 만든다
+#     (sched_failure_annotate:318-320 이 이미 그 기전을 경고한다).
+#   ★sched_alert_should_send 가 QVEST_UNATTENDED=1 에서만 발송하므로 수동 실행 오경보 없음.
+{
+  . "$BASE/02_Infrastructure/ops/_sched_failure_classify.sh" 2>/dev/null || true
+  if command -v sched_alert_emit >/dev/null 2>&1; then
+    _ADIR="$BASE/.cache/scheduler_alerts"
+    _TT=$(date '+%Y%m%d')
+    _TN=$(ls "$_ADIR"/*_"${_TT}".alert 2>/dev/null | wc -l | tr -d ' ')
+    if [ "${_TN:-0}" -gt 0 ]; then
+      _TC=$(ls "$_ADIR"/*_"${_TT}".alert 2>/dev/null | sed "s#.*/##; s#_${_TT}\.alert\$##" \
+            | sort -u | paste -sd'; ' - 2>/dev/null)
+      # reason 에 날짜를 넣어 **하루 1건**으로 스로틀한다(sched_alert_emit 은 comp+reason 1일 1회).
+      sched_alert_emit "unattended_line" "daily_digest_${_TT}" \
+        "오늘 무인 라인에서 ${_TN}건의 경보가 발생했습니다. 구성요소: ${_TC:-?}. 상세 = .cache/alerts_digest.md (부팅 5번째 줄에도 표시). 개별 경보를 반복 발송하지 않고 하루 1건으로 집계합니다."
+    fi
+  fi
+} >> "$LOG" 2>&1
+
 # (v9 2026-08-23) 경보 digest 갱신 — 부팅에서 걷어낸 전수 점검의 소비면. 기록만(수리 아님).
+#   ★집계 텔레그램 **뒤**에 둔다: digest 는 오늘 마커를 세어 헤더에 today=N 을 쓰므로
+#     순서가 바뀌어도 값은 같지만, 발송 실패가 digest 갱신을 막지 않게 분리해 둔다.
 bash "$BASE/02_Infrastructure/ops/alerts_digest_build.sh" >/dev/null 2>&1 || true

@@ -1,0 +1,49 @@
+{
+  "prereg_id": "PREREG_20260824_score_tilt_invested_axis",
+  "registered_at": "2026-08-24",
+  "registered_by": "v9.2 S3 (weight catalog wiring)",
+  "status": "open",
+  "_doc": "★측정 전에 예측을 적어 둔다. 그래야 어느 쪽이 나와도 정보가 된다 — 사후에 어느 결과든 '예상대로'로 읽히는 것을 막는 유일한 장치다.",
+
+  "question": "score_tilt 팔이 bare 축에서 incumbent 를 이긴 것이 invested(오버레이 적용) 축에서도 유지되는가, 압축되는가, 사라지는가.",
+
+  "prior_measurement": {
+    "axis": "bare (오버레이 없음)",
+    "carrier": "구 캐리어 (carrier_STR_1715_AR_on_M4_R05_overlay_PG2.parquet, 2026-06-18 하드코딩분)",
+    "incumbent_IR": 1.6489,
+    "score_tilt_IR": 1.7905,
+    "delta_IR": 0.1416,
+    "note": "incumbent = strategy passthrough(rank-tilt λ=1.5 + TOphi φ=3)"
+  },
+
+  "gap_being_closed": "현 invested 축 배터리(06_Registry/book_carrier/h1b_sigma_ab_overlay.csv)에 score_tilt 팔이 **아예 없다**. bare 에서 이긴 팔이 invested 에서 측정된 적이 없다.",
+
+  "prediction": {
+    "primary": "압축(compressed) — ΔIR 이 0 < ΔIR < 0.1416 구간으로 줄지만 부호는 유지된다.",
+    "mechanism": "score_tilt 의 이득은 종목 선호 재배분에서 나오고, 오버레이는 **노출 수준(scalar)** 을 곱한다. 스칼라 곱은 활성수익의 스케일을 바꾸고 활성위험도 같이 바꾸므로 IR 은 1차적으로 불변이어야 한다 — 그러나 실측 선례는 그렇지 않다: [project-overlay-reverses-the-bases-preference-20260810] 이 오버레이-후 순위가 standalone 순위와 **다르다**는 것을 이미 확인했고, [project-regime-overlay-delta-ir-is-86pct-exposure-level-20260813] 은 오버레이 ΔIR 의 86%가 노출 수준이라고 재었다. 즉 오버레이가 공통 성분을 키우면 가중 규칙 간 격차는 **상대적으로 눌린다**.",
+    "quantitative": "ΔIR_invested ∈ [0.02, 0.12] 를 1급 예측으로 둔다.",
+    "alternative_outcomes": {
+      "maintained": "ΔIR ≥ 0.1416 — 오버레이가 score_tilt 의 이득을 상하지 않는다는 뜻. score_tilt 이득이 오버레이가 깎는 구간(위기)과 겹치지 않는다는 증거.",
+      "reversed": "ΔIR < 0 — bare 우위가 invested 에서 역전. 그러면 bare 축 단독 채점이 오버레이 book 에 대해 **오도적**이라는 뜻이고, 이는 08-10 카드의 재확인이자 배터리 축 선택 규약의 근거가 된다.",
+      "null": "|ΔIR| < 0.02 — 가중 규칙 차이가 오버레이 아래에서 소멸. '구속 축은 가중이 아니다'의 증거."
+    }
+  },
+
+  "measurement_plan": {
+    "runner": "02_Infrastructure/ops/auto_sigma_weighting_ab.R::run_sigma_ab(with_overlay = TRUE)",
+    "arm_injection": "02_Infrastructure/portfolio/weight_catalog.R::catalog_weight_arms() → extra_adapters (arm 이름 wcat_score_tilt)",
+    "carrier": "carrier_meta.json 파생 (하드코딩 금지 — 현 PG2 자동 추종)",
+    "baseline": "strategy passthrough (= incumbent) · EW",
+    "paired_axis": "같은 캐리어에서 bare 축도 함께 낸다 — 축 간 차이를 재려면 두 축이 같은 캐리어여야 한다(구 측정은 캐리어가 달랐다).",
+    "report_columns": ["method", "n_months", "IR", "PORT_t", "abs_SR", "abs_MDD", "turnover", "n_arms"]
+  },
+
+  "guards": [
+    "IR 단독 인용 금지 — PORT_t 병기(R5: 단일 271개월 창의 다중비교로 max-IR 이 구조적으로 상승한다).",
+    "arm 수(n_arms)를 결과와 함께 기록한다.",
+    "basis 표기 필수 — 캐리어 축은 monthly_recon 이다. daily_native 수치와 직접 비교 금지.",
+    "승자 교체는 비자동 — carrier_ym_max 가 다른 **연속 2회** 배터리에서 ΔIR ≥ 0.05 유지 시에만 challenger 로 표면화. 자본 편입은 도훈만."
+  ],
+
+  "falsification": "ΔIR_invested 가 예측 구간 [0.02, 0.12] 밖이면 1급 예측은 틀린 것으로 기록한다. 사후에 2급 지표로 갈아타지 않는다 [[feedback-preregistered-primary-fails-that-is-the-verdict]]."
+}

@@ -340,6 +340,11 @@ drain_run_candidate <- function(entry, cost_bps = 15) {
   crisis_tab <- cr[, .(n = .N, bare_mean = mean(r), uni_mean = mean(r * uni_e)), by = crisis]
 
   list(tab = tab, paired = paired, lag1_stress = lag1_stress, crisis = crisis_tab,
+       # ★v9.2 §8-S2 (2026-08-24): 시나리오별 월간 수익열을 함수 밖으로 낸다.
+       #   왜: 강화 사다리 ③칸이 오버레이 적용 계열을 **bt_result 로 재구성**(overlay_bt_recon)해
+       #   essence 로 재등급해야 하는데, 그 입력(prs[[scenario]])이 지금까지 함수 안에서 소멸했다.
+       #   측정은 불변 — 이미 계산된 객체를 반환에 노출할 뿐이다(신규 산출 0).
+       prs = prs,
        adapter = ad$adapter, pit = list(assert_pass = pit_assert_pass,
                                         strict_exposure_identical = strict_same,
                                         strict_ab = strict_ab))

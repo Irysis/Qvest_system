@@ -1,0 +1,28 @@
+{
+  "schema": "lean_carrier_v1",
+  "run_id": "20260823_171019_40176",
+  "source_run_dir": "stage_artifacts/alpha_search/20260823_171019_40176",
+  "parquet": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/06_Registry/lean_carrier/carrier_20260823_171019_40176.parquet",
+  "n_months": 258,
+  "n_rows": 6450,
+  "decision_first": "2005-02-01",
+  "eval_last": "2026-08-03",
+  "recipe": "extract_book_carrier.R:88-95 verbatim — ret_fwd = prod(1+Ret)-1 over (start_d, end_d]",
+  "basis": "monthly_recon",
+  "basis_warning": "★월간 복리 계열이다. 일별 NAV(daily_native) 와 직접 비교 금지 — exposure≡1 재구성만으로 MDD −9.07pp / Calmar +11.3% 가 난다(basis 착시).",
+  "strategy_id": "STR_AS_20260823_171019_40176",
+  "strategy_name": "AS_RevisionAgreement_FLZ2012_Top25",
+  "weighting_method": "equal",
+  "risk_controls": "buffer_zone(keep_n=50, entry_n=25)",
+  "cost_model": "v2.4_delta_15bps",
+  "validation": {
+    "status": "PASS",
+    "n": 258,
+    "cor": 0.999978,
+    "max_abs_diff": 0.00389,
+    "min_cor": 0.999,
+    "note": "recon = Σ w_strategy·ret_fwd (gross) vs 03_period_returns 창내 복리"
+  },
+  "generated_at": "2026-08-24T01:09:33+0900",
+  "generator": "02_Infrastructure/ops/lean_carrier_from_btresult.R"
+}

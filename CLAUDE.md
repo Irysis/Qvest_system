@@ -39,8 +39,9 @@
 ## Production Constraints
 
 <!-- FRONTIER_AXES_START — 기계 앵커. axiom_context_inject.sh · gap_vector_steering.R 이 이 구간을 런타임 파싱한다(캐시 없음 = 여기를 고치면 다음 spawn 부터 반영). -->
-> **★고정 축은 배포 현실이 정의한 문제의 정의다 — 최적화로 없앨 변수가 아니다.** AX-000 따름정리: 제약 완화(>25종·short·유동성 하향)를 레버로 제시하는 것은 게임을 이기는 게 아니라 바꾸는 것이다(INV-7). 조건-안 레버만 프론티어 — 현행(v9.0): ① **비대칭 표적**(분포-표적 학습 · 일별 축 정보 회수 · 수리통계 구조 추정 — 주력) ② screen-tier 재고 회수(overlay 큐) ③ EW-대비/cap-tier 재분류 ④ overlay 잔여·잔차 sleeve·multi-sleeve·composite. DPL(06-26)·regime-conditional 교차결합(07-05)·ML/uncertainty sizing(07-05 2세션)은 settled-negative — 레버 아님(부활신호 발화 시에만 재검토).
-⚠**①이 과거 ML 실패의 부활이 아님을 구분할 것**: 죽은 것은 ML 을 **결합기·사이징·평균 예측기**로 쓴 경로이고, ①은 표적 자체를 분포로 바꾸는 미측정 축이다.
+> **★고정 축은 배포 현실이 정의한 문제의 정의다 — 최적화로 없앨 변수가 아니다.** AX-000 따름정리: 제약 완화(>25종·short·유동성 하향)를 레버로 제시하는 것은 게임을 이기는 게 아니라 바꾸는 것이다(INV-7). 조건-안 레버만 프론티어 — 현행(v9.0): ① **비대칭 표적**(분포-표적 학습 · 일별 축 정보 회수 · 수리통계 구조 추정 — 주력) ② screen-tier 재고 회수(overlay 큐) ③ EW-대비/cap-tier 재분류 ④ overlay 잔여·잔차 sleeve·multi-sleeve·composite.
+> 과거 실측 negative 는 `Rscript 02_Infrastructure/tools/hypothesis_index.R lookup <kw>` 로 조회한다 — 사실 기록이지 금지 목록이 아니다. 재시도는 새 각도·새 통제·새 표적일 때 정당하다(AX-000). 철회되는 것은 금지이지 측정 규율이 아니다: 어떤 축이든 `verify_adapter`·sweep/DSR·book-marginal ΔIR≥0.05·PIT 를 통과해야 한다.
+⚠**①이 과거 ML 실패의 부활이 아님을 구분할 것**: 과거 negative 는 ML 을 **결합기·사이징·평균 예측기**로 쓴 구성에서 나왔고, ①은 표적을 분포로 바꾸는 미측정 축이다.
 <!-- FRONTIER_AXES_END -->
 
 | 제약 | 값 |

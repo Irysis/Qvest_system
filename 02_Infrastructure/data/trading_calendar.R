@@ -234,6 +234,13 @@ build_trading_calendar <- function(force = FALSE, verbose = TRUE) {
     # last_confirmed_trading_day()가 4월을 반환, 모든 가드가 무의미해짐)
     bm_max <- tryCatch(max(.extract_bm_dates(), na.rm = TRUE), error = function(e) as.Date(NA))
     cal_max <- suppressWarnings(max(as.Date(.CALENDAR$Date), na.rm = TRUE))
+    ## ★2026-08-24 v9.2 S1b — 빈 입력의 max() 는 에러가 아니라 **-Inf**(경고만)라
+    ##   is.na() 를 통과한다. Date 열이 사라진 스키마 파손이 '무조건 재빌드'로 위장되면
+    ##   원인이 안 보인다 — 유한성으로 갈라 명시 호명한다.
+    if (!is.finite(suppressWarnings(as.numeric(cal_max)))) {
+      cat("[calendar][WARN] 캐시 Date 판독 불가(빈 열/스키마 파손 의심) — 재빌드 유도\n")
+      cal_max <- as.Date("1900-01-01")   # NA 로 두면 아래 가드가 재빌드를 건너뛴다
+    }
     if (!is.na(bm_max) && !is.na(cal_max) && bm_max > cal_max) {
       cat(sprintf("[calendar] 캐시 stale (cal_max=%s < bm_max=%s) - 자동 재빌드\n", cal_max, bm_max))
       .CALENDAR <<- build_trading_calendar(force = TRUE, verbose = FALSE)

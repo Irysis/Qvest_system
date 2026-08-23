@@ -1,0 +1,48 @@
+{
+  "l_code": "L-AS-20260823_160522_40540",
+  "strategy_id": "STR_AS_20260823_160522_40540",
+  "grade": "F",
+  "core_reference": "Da-Schaumburg(2011) KR 복제: 목표주가 implied return(C06_TP_Gap)을 섹터 내 9분위로 순위화, 각 섹터 최상위 1/9 종목 전부 EW 월간(1M 보유) — 절대 TPER 은 무정보, 섹터 내 상대 순위만 정보",
+  "lesson_text": "AS_TPER_SectorRelative_DaSchaumburg2011: 등급 F, 연복리 11.5% (벤치마크 대비 +0.4%p), 샤프 0.43, 최대낙폭 -61.3%. 사유: FMT-01 MDD 61.3% > 45% — 선택 종목군의 위기 동반급락(구조적 꼬리위험); FMT-04 MDD 61.3% > 35% & BM상관 0.73 >= 0.7 — 위기국면 동조 낙폭(국면필터 부재); FMT-07 활성SR pre-2017 0.64 -> post-2017 -0.65 — 논문발표 후 알파 소진 패턴; 논문 가정 대비: TP 수집→형성일 5일 갭 미적용(월말 컨센서스 1값); 섹터 = KR 분류(GICS 2자리 대체)",
+  "tags": ["ALPHA_SEARCH", "FAST_VALIDATION", "VALIDATED_HARD_FAIL"],
+  "created_at": "2026-08-23",
+  "research_mode": "alpha_search",
+  "created_by": "AlphaSearch",
+  "metric_type": "proxy",
+  "construction_type": "value",
+  "lcode_schema_version": 3,
+  "cagr_pct": 11.47,
+  "sharpe": 0.429,
+  "mdd_pct": 61.26,
+  "excess_cagr": 0.38,
+  "mechanism_hypothesis": "가설 'Da-Schaumburg(2011) KR 복제: 목표주가 implied return(C06_TP_Gap)을 섹터 내 9분위로 순위화, 각 섹터 최상위 1/9 종목 전부 EW 월간(1M 보유) — ' — 검증 결과 지배 요인: FMT-01(MDD 61.3% > 45% — 선택 종목군의 위기 동반급락(구조적 꼬리위험)); FMT-04(MDD 61.3% > 35% & BM상관 0.73 >= 0.7 — 위기국면 동조 낙폭(국면필터 부재)); FMT-07(활성SR pre-2017 0.64 -> post-2017 -0.65 — 논문발표 후 알파 소진 패턴)",
+  "data_supported_conclusion": "측정치(proxy — run_hurdle_gate): CAGR 11.5% (BM 대비 +0.4%p), 샤프 0.43, MDD -61.3%, IR 0.02, 회전율 연 455%, OOS retention 0.23.",
+  "next_probes": [
+    "MDD 축 탈락(61.3%) — 신호력 보존 시 OVERLAY_CANDIDATE 라우트(국면/DD overlay는 S5/QEPM 단계) 또는 저변동 결합 재검증.",
+    "저변동 결합(lowvol sleeve) 재검증."
+  ],
+  "live_trigger": "MDD<45% 구성에서 IR>0 유지 시",
+  "next_probe": "MDD 축 탈락(61.3%) — 신호력 보존 시 OVERLAY_CANDIDATE 라우트(국면/DD overlay는 S5/QEPM 단계) 또는 저변동 결합 재검증. | 저변동 결합(lowvol sleeve) 재검증.",
+  "fmt_codes": [
+    "FMT-01",
+    "FMT-04",
+    "FMT-07"
+  ],
+  "oos_retention": 0.232,
+  "falsification_attempts": [
+    {
+      "test": "IS65/OOS35 활성SR retention (hurdle D062, proxy) — 과적합 반증 시도",
+      "result": "falsified",
+      "effect_retained": 0.232,
+      "detail": "retention 0.23 (measurement-graduation §3 하한 0.5 기준)"
+    },
+    {
+      "test": "서브기간 분해(pre/post-2017)",
+      "result": "falsified",
+      "effect_retained": "NA",
+      "detail": "후반부 알파 붕괴: 활성SR pre-2017 0.64 -> post-2017 -0.65 — 논문발표 후 알파 소진 패턴"
+    }
+  ],
+  "source_paper": "title:relativevaluationandanalysttargetpriceforecasts",
+  "paper_assumption_broken": "TP 수집→형성일 5일 갭 미적용(월말 컨센서스 1값); 섹터 = KR 분류(GICS 2자리 대체)"
+}

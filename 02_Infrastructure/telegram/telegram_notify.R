@@ -2291,8 +2291,15 @@ tg_regime_briefing <- function(regime_dt = NULL, ktri_daily = NULL) {
   ktri_date <- if (!is.null(ktri_daily) && nrow(ktri_daily) > 0) max(ktri_daily$Date) else NULL
 
   # 가장 최신 날짜 사용 (RAWDATA > KTRI > regime 월말)
-  ref_date <- max(c(raw_date, ktri_date), na.rm = TRUE)
-  if (is.na(ref_date) || length(ref_date) == 0) ref_date <- latest$Date
+  ## ★2026-08-24 v9.2 S1b — 여기는 tryCatch 조차 없었다. 두 원천이 모두 NULL 이면
+  ##   max(NULL, na.rm=TRUE) 가 **에러가 아니라 경고 + -Inf** 를 내고, 바로 아래
+  ##   `is.na(ref_date)` 가 FALSE 라 폴백이 발화하지 않는다 ⇒ -Inf 가 날짜로 하류에 간다.
+  ##   유한성으로 판정하면 원래 의도(regime 월말 폴백)가 실제로 작동한다.
+  .cand <- c(raw_date, ktri_date)
+  .cand <- .cand[!is.na(.cand)]
+  ref_date <- if (length(.cand)) suppressWarnings(max(.cand)) else NA
+  if (length(ref_date) != 1L || is.na(ref_date) ||
+      !is.finite(suppressWarnings(as.numeric(ref_date)))) ref_date <- latest$Date
 
   # ── Chart 1 (v2.3 2026-04-24): Daily Regime Score + Cash (12M) ──
   # unified_regime_signal_daily.parquet 기반 최근 12개월 일간 — 월간 24M block을 완전 대체

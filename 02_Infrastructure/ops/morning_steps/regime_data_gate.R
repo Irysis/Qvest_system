@@ -16,15 +16,26 @@ setwd(root)
 need <- .prev_bd(Sys.Date())
 cal <- tryCatch(as.Date(as.data.table(read_parquet(".cache/trading_calendar.parquet"))$Date),
                 error = function(e) as.Date(character(0)))
-if (length(cal) && max(cal, na.rm = TRUE) >= need && !(need %in% cal)) {
-  need <- max(cal[cal < need])
+## ★2026-08-24 v9.2 S1b — `max()` 가 빈 입력에서 내는 것은 에러가 아니라 **경고 + -Inf** 다.
+##   tryCatch(error=) 를 통과하고 is.na() 도 FALSE 라 하류로 흘러간다(형제 사고:
+##   paper_research_dispatch.R:83 이 as.Date("-Inf-01") 로 4일 연속 abort).
+##   ⇒ 여기서는 **유한성**으로 판정한다. 판독 실패는 '최신'이 아니라 '판정 불가'다.
+.fin_date <- function(x, fallback) {
+  x <- suppressWarnings(x)
+  if (length(x) != 1L || is.na(x) || !is.finite(as.numeric(x))) return(fallback)
+  as.Date(x, origin = "1970-01-01")
+}
+if (length(cal) && is.finite(as.numeric(suppressWarnings(max(cal, na.rm = TRUE)))) &&
+    max(cal, na.rm = TRUE) >= need && !(need %in% cal)) {
+  .prior <- cal[cal < need]
+  if (length(.prior)) need <- max(.prior)   # 빈 집합이면 need 유지(-Inf 로 내려앉지 않는다)
 }
 
-last_u <- tryCatch(max(as.Date(as.data.table(read_parquet(".cache/unified_regime_signal_daily.parquet"))$Date), na.rm = TRUE),
-                   error = function(e) as.Date("1900-01-01"))
+last_u <- .fin_date(tryCatch(max(as.Date(as.data.table(read_parquet(".cache/unified_regime_signal_daily.parquet"))$Date), na.rm = TRUE),
+                   error = function(e) as.Date("1900-01-01")), as.Date("1900-01-01"))
 v3p <- "04_Research/regime_comparison/output/ktri_v3_signals.csv"
-last_v <- tryCatch(max(as.Date(fread(v3p)$DATE), na.rm = TRUE),
-                   error = function(e) as.Date("1900-01-01"))
+last_v <- .fin_date(tryCatch(max(as.Date(fread(v3p)$DATE), na.rm = TRUE),
+                   error = function(e) as.Date("1900-01-01")), as.Date("1900-01-01"))
 
 if (last_u >= need && last_v >= need) {
   cat("OK\n")

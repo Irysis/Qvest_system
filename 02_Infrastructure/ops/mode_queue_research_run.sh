@@ -22,16 +22,30 @@ LOG="$BASE/.cache/scheduler_logs/mode_queue_research_${TODAY}.log"
 mkdir -p "$(dirname "$LOG")"
 log(){ echo "$(date -Iseconds) [modeq] $*" >> "$LOG"; }
 
-# 경보(alpha_search_queue_run.sh / paper_router_run.sh 와 동일 패턴, fail-soft):
-#   마커를 **먼저** 남긴다 — 텔레그램이 죽어도 사실은 남아야 한다.
+# ── 공용 헬퍼를 **여기서** 적재한다 (2026-08-24 v9.2 S1e).
+#    구판은 L124(claude 호출 직전)에서야 source 했다 — 그래서 그 위의 pending 계측 구간은
+#    sched_* 를 전혀 못 썼고, 계측 실패가 마커로만 남았다.
+source "$(dirname "${BASH_SOURCE[0]:-$0}")/_sched_failure_classify.sh" 2>/dev/null || true
+
+# 경보 (2026-08-24 v9.2 S1e — 공용 sched_alert_emit 로 교체).
+#   ★구판은 **마커만 쓰고 텔레그램 코드가 아예 없었다**. 2026-08-23 에 이 러너를 포함한
+#     무인 3단계가 동시에 죽었는데 아무도 몰랐던 자리가 정확히 여기다.
+#     sched_alert_emit 은 같은 마커를 남기고(1일 1회 스로틀 동일) 무인 선언
+#     (QVEST_UNATTENDED=1)이 있을 때만 텔레그램을 보낸다 — 수동 실행 오경보 없음.
+#   헬퍼 부재 시에는 구 거동(마커만)으로 폴백한다(fail-soft, 사실은 반드시 남긴다).
 scheduler_alert(){
   local comp="$1" reason="$2" detail="$3"
+  if command -v sched_alert_emit >/dev/null 2>&1; then
+    sched_alert_emit "$comp" "$reason" "$detail"
+    log "alert 발보: ${comp}/${reason} (sched_alert_emit)"
+    return 0
+  fi
   local adir="$BASE/.cache/scheduler_alerts"; mkdir -p "$adir"
   local marker="$adir/${comp}_${reason}_${TODAY}.alert"
   if [ -f "$marker" ]; then log "alert throttle: ${comp}/${reason} — skip"; return 0; fi
   { echo "ts=$(date -Iseconds)"; echo "component=$comp"; echo "reason=$reason"
     echo "detail=$detail"; echo "log=$LOG"; } > "$marker"
-  log "alert marker 기록: $marker"
+  log "alert marker 기록(폴백 — 공용 헬퍼 부재): $marker"
 }
 
 if [ "${QVEST_MODE_QUEUE_ENABLE:-0}" != "1" ]; then
@@ -75,17 +89,31 @@ QJSON="$BASE/.cache/research_queue_pending.json"
 #   영영 안 도는 것을 표적 소비로 푼다(2026-08-22: method_measure 12건이 risk/opt/regime 을 막았다).
 _LANE_ARG=""
 [ -n "${QVEST_MODE_QUEUE_LANE:-}" ] && _LANE_ARG="--lane ${QVEST_MODE_QUEUE_LANE}"
-N=$("$PYBIN" "$PRED" research-queue-pending "$BASE/stage_artifacts/paper_recharge" "$BASE" $_LANE_ARG --json "$QJSON" 2>>"$LOG")
+# ── 계측은 공용 헬퍼 경유 (2026-08-24 v9.2 S1c, _sched_failure_classify.sh).
+#    2026-08-23 10:09 에 이 러너와 alpha_search_queue_run.sh 가 **같은 원장 파손 1건**으로
+#    동시에 죽었다(LEDGER_UNREADABLE alpha_search_queue_done.json:1063). 사유가 둘 다
+#    'count_measurement_failed' 라 마커만 봐선 어느 파일인지 몰랐다 — 헬퍼가 파일명을 사유에 싣는다.
+#    ★사유별 재시도: 원장 파손 = 재시도 0회 즉시 반환 · 일시 실패만 10s/20s 백오프 2회.
+if command -v sched_measure_pending >/dev/null 2>&1; then
+  N=$(sched_measure_pending "$PYBIN" "$PRED" research-queue-pending \
+        "$BASE/stage_artifacts/paper_recharge" "$BASE" $_LANE_ARG --json "$QJSON" 2>>"$LOG")
+  _mrc=$?
+else
+  N=$("$PYBIN" "$PRED" research-queue-pending "$BASE/stage_artifacts/paper_recharge" "$BASE" $_LANE_ARG --json "$QJSON" 2>>"$LOG")
+  _mrc=$?
+  case "$N" in ''|*[!0-9]*) _mrc=1 ;; esac
+fi
 # ★계측 사망을 0 으로 삼키지 않는다 — 숫자가 아니면 skip 이 아니라 경보 후 중단.
 #   (alpha 레인 실사고: bare python3 가 Windows Store 스텁으로 해석돼 빈 출력을 냈고,
 #    구판이 그것을 0 으로 삼켜 "대기 없음" 정상 skip 으로 위장됐다. 참값은 3이었다.)
-case "$N" in
-  ''|*[!0-9]*)
-    log "pending 계측 실패 (출력='$N') — 0 으로 읽지 않고 중단"
-    scheduler_alert "mode_queue" "count_measurement_failed" \
-      "research_pool_predicates.py research-queue-pending 이 숫자를 내지 않음(출력='$N')"
-    exit 0 ;;
-esac
+if [ "${_mrc:-1}" -ne 0 ]; then
+  _mreason=$(sched_measure_reason 2>/dev/null || echo count_measurement_failed)
+  _mdetail=$(sched_measure_detail 2>/dev/null)
+  log "pending 계측 실패 (출력='$N', 사유=$_mreason) — 0 으로 읽지 않고 중단"
+  scheduler_alert "mode_queue" "$_mreason" \
+    "${_mdetail:-research_pool_predicates.py research-queue-pending 이 숫자를 내지 않음(출력='$N')}"
+  exit 0
+fi
 if [ "$N" -eq 0 ] && [ "${QVEST_MODE_QUEUE_FORCE:-0}" != "1" ]; then
   log "pending 0 — skip (FORCE=1 로 강제)"; exit 0
 fi

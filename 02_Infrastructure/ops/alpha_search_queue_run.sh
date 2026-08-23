@@ -93,12 +93,25 @@ command -v sched_resolve_python >/dev/null 2>&1 && PYBIN=$(sched_resolve_python 
 #   ★여기에 술어를 다시 적지 말 것 — 재분기가 이번 결함들의 원인이다.
 #     배선 단언: 08_Tests/ops/test_alpha_queue_pending.py 가 이 호출의 존재를 매 실행 확인한다.
 PRED="$BASE/02_Infrastructure/ops/research_pool_predicates.py"
-N=$("$PYBIN" "$PRED" alpha-pending "$SD")
+#     ★stderr 를 로그로 — 2026-08-23 사고에서 두 러너가 같은 원장 파손으로 죽었는데
+#       mode_queue 만 원인(LEDGER_UNREADABLE …:1063)을 알 수 있었던 이유가 이 리다이렉트다.
+# ── 계측은 공용 헬퍼 경유 (2026-08-24 v9.2 S1c, _sched_failure_classify.sh).
+#    사유별 재시도: 원장 파손은 재시도 0회(5초 뒤에도 깨져 있다) · 일시 실패만 10s/20s 2회.
+#    ★"0 으로 읽지 않고 중단"은 그대로다 — 헬퍼는 그 판정에 **파일명이 든 이름**을 붙일 뿐이다.
+if command -v sched_measure_pending >/dev/null 2>&1; then
+  N=$(sched_measure_pending "$PYBIN" "$PRED" alpha-pending "$SD" 2>>"$LOG")
+  _mrc=$?
+else
+  N=$("$PYBIN" "$PRED" alpha-pending "$SD" 2>>"$LOG"); _mrc=$?
+  sched_assert_count "$N" 2>/dev/null || _mrc=1
+fi
 # ★계측 사망을 0 으로 삼키지 않는다 — 숫자가 아니면 skip 이 아니라 경보 후 중단.
-if command -v sched_assert_count >/dev/null 2>&1 && ! sched_assert_count "$N"; then
-  log "★pending 산정 실패 (N='$N', PYBIN=$PYBIN) — 계측 사망. 0 으로 간주하지 않고 중단."
-  scheduler_alert "alpha_queue" "count_measurement_failed" \
-    "pending 산정이 비숫자('$N') 반환 — python 인터프리터 해석 실패 추정(PYBIN=$PYBIN). 큐가 조용히 skip 되는 것을 막기 위해 중단. PATH 에 python312 부재 또는 Windows Store 스텁 가능."
+if [ "${_mrc:-1}" -ne 0 ]; then
+  _mreason=$(sched_measure_reason 2>/dev/null || echo count_measurement_failed)
+  _mdetail=$(sched_measure_detail 2>/dev/null)
+  log "★pending 산정 실패 (N='$N', 사유=$_mreason, PYBIN=$PYBIN) — 계측 사망. 0 으로 간주하지 않고 중단."
+  scheduler_alert "alpha_queue" "$_mreason" \
+    "${_mdetail:-pending 산정이 비숫자('$N') 반환(PYBIN=$PYBIN). 큐가 조용히 skip 되는 것을 막기 위해 중단.}"
   exit 0
 fi
 N="${N:-0}"

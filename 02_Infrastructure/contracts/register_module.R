@@ -102,9 +102,32 @@ MODULE_QUARANTINE_PATH <- file.path(.RM_ROOT(), "06_Registry", "module_quarantin
   default
 }
 
+## ★★2026-08-24 v9.2 S1c — **원자 기록**(재발 방지 본체).
+##   구판은 `write_json(obj, path)` 로 정본을 직접 덮어썼다. 그 형태는 두 가지로 깨진다:
+##     ① 쓰는 도중 중단(크래시·종료·디스크) → 정본이 **반쪽 JSON** 으로 남는다
+##     ② 두 프로세스가 겹치면 서로의 출력에 끼어든다
+##   2026-08-23 사고가 정확히 그 결과였다: alpha_search_queue_done.json:1063 이 깨지자
+##   `_load_ledger` 로 그 파일을 읽는 **두 무인 러너가 같은 순간 함께 죽었다**.
+##   이 파일이 쓰는 module_catalog/quarantine 도 promotion_pending() 이 같은 경로로 읽는다
+##   — 여기가 깨지면 어제와 똑같이 두 러너가 동시 사망한다.
+##   ⇒ tmp(PID 부착) 기록 → file.rename 원자 교체. 소비자는 항상 완결된 파일만 본다.
+##     선례: ops/paper_id_norm.py::_atomic_write · ops/auto_spawn_queue.R:.asq_atomic_write
 .write_json_obj <- function(obj, path) {
   dir.create(dirname(path), recursive = TRUE, showWarnings = FALSE)
-  write_json(obj, path, auto_unbox = TRUE, pretty = TRUE, na = "null")
+  tmp <- sprintf("%s.tmp.%d", path, Sys.getpid())
+  ok <- FALSE
+  on.exit(if (!ok) unlink(tmp, force = TRUE), add = TRUE)
+  write_json(obj, tmp, auto_unbox = TRUE, pretty = TRUE, na = "null")
+  ## 교체 전 자체 판독 검증 — 깨진 것을 원자적으로 심는 일은 없어야 한다.
+  if (is.null(tryCatch(fromJSON(tmp, simplifyVector = FALSE), error = function(e) NULL))) {
+    stop(sprintf("[register_module] 원자 기록 중단 — tmp JSON 재판독 실패: %s", tmp))
+  }
+  if (!isTRUE(suppressWarnings(file.rename(tmp, path)))) {
+    ## Windows 는 대상이 열려 있으면 rename 이 실패한다. 조용히 덮어쓰지 않는다.
+    stop(sprintf("[register_module] 원자 교체 실패: %s -> %s (대상이 열려 있는지 확인)", tmp, path))
+  }
+  ok <- TRUE
+  invisible(path)
 }
 
 .contract_from_args <- function(meta, metric_type, contract_pass, frozen,

@@ -1,0 +1,45 @@
+{
+  "l_code": "L-AS-20260824_011116_17208",
+  "strategy_id": "STR_AS_20260824_011116_17208",
+  "grade": "B",
+  "core_reference": "강화 사다리 ②칸 비중 방법론 교체 (equal -> ivol). 신호 축 고정, 비중 축만 변경.",
+  "lesson_text": "LADDER_INTERNAL/STR_AS_20260612_135316_470429/rung2_ivol: 등급 B, 연복리 27.1% (벤치마크 대비 +16.0%p), 샤프 0.78, 최대낙폭 -71.4%. 사유: FMT-07 활성SR pre-2017 0.77 -> post-2017 0.09 — 논문발표 후 알파 소진 패턴; FMT-01 MDD 71.4% > 45% — 선택 종목군의 위기 동반급락(구조적 꼬리위험); 논문 가정 대비: 미기재",
+  "tags": ["ALPHA_SEARCH", "FAST_VALIDATION", "VALIDATED_HARD_FAIL"],
+  "created_at": "2026-08-24",
+  "research_mode": "alpha_search",
+  "created_by": "AlphaSearch",
+  "metric_type": "proxy",
+  "construction_type": "single_factor_long_only",
+  "lcode_schema_version": 3,
+  "cagr_pct": 27.11,
+  "sharpe": 0.775,
+  "mdd_pct": 71.38,
+  "excess_cagr": 16.02,
+  "mechanism_hypothesis": "가설 '강화 사다리 ②칸 비중 방법론 교체 (equal -> ivol). 신호 축 고정, 비중 축만 변경.' — 검증 결과 지배 요인: FMT-07(활성SR pre-2017 0.77 -> post-2017 0.09 — 논문발표 후 알파 소진 패턴); FMT-01(MDD 71.4% > 45% — 선택 종목군의 위기 동반급락(구조적 꼬리위험))",
+  "data_supported_conclusion": "측정치(proxy — run_hurdle_gate): CAGR 27.1% (BM 대비 +16.0%p), 샤프 0.78, MDD -71.4%, IR 0.46, 회전율 연 475%, OOS retention 0.58.",
+  "next_probes": [
+    "후반부 알파 붕괴 — 2017 전후 서브기간 분해 + 최근 5Y 한정 재검증으로 소멸 여부 확정.",
+    "최근 5Y 한정 재검증."
+  ],
+  "live_trigger": "hard_fail 축 해소 후 score>=25 회복 시",
+  "next_probe": "후반부 알파 붕괴 — 2017 전후 서브기간 분해 + 최근 5Y 한정 재검증으로 소멸 여부 확정. | 최근 5Y 한정 재검증.",
+  "fmt_codes": [
+    "FMT-01",
+    "FMT-07"
+  ],
+  "oos_retention": 0.581,
+  "falsification_attempts": [
+    {
+      "test": "IS65/OOS35 활성SR retention (hurdle D062, proxy) — 과적합 반증 시도",
+      "result": "survived",
+      "effect_retained": 0.581,
+      "detail": "retention 0.58 (measurement-graduation §3 하한 0.5 기준)"
+    },
+    {
+      "test": "서브기간 분해(pre/post-2017)",
+      "result": "falsified",
+      "effect_retained": "NA",
+      "detail": "후반부 알파 붕괴: 활성SR pre-2017 0.77 -> post-2017 0.09 — 논문발표 후 알파 소진 패턴"
+    }
+  ]
+}

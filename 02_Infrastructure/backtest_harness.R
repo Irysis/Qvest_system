@@ -730,6 +730,96 @@ calc_minvar_weights <- function(tickers, ret_dt, n_days = 120, max_w = 0.15) {
 
 
 #==============================================================================
+# QVEST_CATALOG_BRANCH_V1 — 카탈로그 arm 리졸버 (v9.2 S3-②, 2026-08-24)
+#
+# 왜 하네스에 있나: `weight_method` 분기는 이 파일의 소관이고, 카탈로그는 **색인**일 뿐이다.
+#   여기서 ctx 를 만들고 정규형(wrap_adapter)을 부르면 lean 축이 열린다.
+#
+# ★설계 전체의 최대 위험 지점이 바로 이 자리다 — 구판 else(:1179) 가 미등록 문자열을
+#   에러 없이 EW 로 떨어뜨렸다. 그래서 여기서 지키는 두 성질:
+#     ① **미지 catalog id 는 EW 가 아니라 에러다.** tryCatch 로 감싸지 않는다.
+#     ② 산출이 EW 와 구별되지 않으면 **호명**한다(엄격 모드에선 stop).
+#        "돌았는데 아무것도 안 한" 상태가 결과표에 수치로 찍히는 것을 막는 유일한 축이다.
+#==============================================================================
+.BH_CATALOG_ENV <- new.env(parent = emptyenv())
+
+.bh_catalog_env <- function() {
+  if (!is.null(.BH_CATALOG_ENV$wc)) return(.BH_CATALOG_ENV$wc)
+  root <- NULL
+  for (k in c("CLAUDE_PROJECT_DIR", "QM_ROOT")) {
+    v <- Sys.getenv(k, "")
+    if (nzchar(v) && file.exists(file.path(v, "02_Infrastructure/portfolio/weight_catalog.R"))) { root <- v; break }
+  }
+  if (is.null(root) && file.exists("02_Infrastructure/portfolio/weight_catalog.R")) root <- getwd()
+  if (is.null(root)) stop("[catalog] weight_catalog.R 를 찾지 못했다 — QM_ROOT/CLAUDE_PROJECT_DIR 확인")
+  e <- new.env(parent = globalenv())
+  assign(".WC_QUIET_LOAD", TRUE, envir = e)
+  sys.source(file.path(root, "02_Infrastructure/portfolio/weight_catalog.R"), envir = e)
+  .BH_CATALOG_ENV$wc <- e
+  e
+}
+
+#' catalog_id -> wrap_adapter 로 감싼 f(ctx)->w. **미지 id 는 stop.**
+.bh_catalog_adapter <- function(catalog_id) {
+  key <- paste0("fn::", catalog_id)
+  if (!is.null(.BH_CATALOG_ENV[[key]])) return(.BH_CATALOG_ENV[[key]])
+  e  <- .bh_catalog_env()
+  cg <- get(".wc_load_catalog", envir = e)()
+  es <- cg$entries
+  ids <- vapply(es, function(x) as.character(x$catalog_id), character(1))
+  i <- match(catalog_id, ids)
+  if (is.na(i))
+    stop(sprintf(paste0("[catalog] 미지 catalog id: '%s' — EW 로 낙하하지 않는다.\n",
+                        "  등재 %d건. sync_catalog() 로 재색인했는지, id 표기(origin:label)가 맞는지 확인할 것.\n",
+                        "  예: catalog:qepm:MVO · catalog:paper:SchurDamping · catalog:gen:<parent>__<rule>"),
+                 catalog_id, length(ids)))
+  fn <- get("as_ctx_adapter", envir = e)(es[[i]])
+  assign(key, fn, envir = .BH_CATALOG_ENV)
+  fn
+}
+
+.bh_catalog_weights <- function(weight_method, selected, ret_sub, month_factors,
+                                exec_date = NA, sig_date = NA, lookback = 252L) {
+  cid <- sub("^catalog:", "", weight_method)
+  fn  <- .bh_catalog_adapter(cid)                       # 미지 id 면 여기서 stop
+  n   <- length(selected)
+  R   <- .build_ret_matrix(selected, ret_sub, lookback)
+  if (is.null(R) || ncol(R) < 3L) {
+    cat(sprintf("[catalog:%s] 이력 부족(생존 종목 <3) → EW (%s)\n", cid, as.character(exec_date)))
+    return(rep(1 / n, n))
+  }
+  a  <- colnames(R)
+  S  <- stats::cov(R); dimnames(S) <- list(a, a)
+  mu <- tryCatch({
+    sc <- month_factors[Ticker %in% a, setNames(Score, Ticker)]
+    v <- suppressWarnings(as.numeric(sc[a])); v[!is.finite(v)] <- 0; setNames(v, a)
+  }, error = function(z) setNames(rep(0, length(a)), a))
+  ctx <- list(Sigma = S, R = R, mu = mu, assets = a, ub = 0.20,
+              lookback_days = lookback, decision_date = exec_date, eval_date = exec_date)
+  w_surv <- fn(ctx)                                     # wrap_adapter: long-only · cap · Σw=1
+
+  # ── EW 퇴화 호명 (조용한 통과 금지) ────────────────────────────────────────
+  ew_s <- rep(1 / length(a), length(a))
+  if (max(abs(as.numeric(w_surv) - ew_s)) < 1e-6) {
+    .m <- sprintf(paste0("[catalog:%s] ★산출이 EW 와 구별되지 않는다(%s). ",
+                         "어댑터가 폴백했거나 실질적으로 아무것도 하지 않았다 — ",
+                         "이 arm 의 수치를 '새 비중 규칙'으로 읽지 말 것."), cid, as.character(exec_date))
+    if (identical(Sys.getenv("QVEST_WEIGHT_STRICT", ""), "1")) stop(.m)
+    cat(.m, "\n")
+  }
+
+  # ── 생존 외 종목 채움: EW(1/N) + 생존분 (1-dropped) 스케일 (auto_sigma_weighting_ab .fill_dropped 규약)
+  w <- setNames(numeric(n), selected)
+  dropped <- setdiff(selected, a)
+  scale <- 1
+  if (length(dropped)) { w[dropped] <- 1 / n; scale <- 1 - sum(w[dropped]) }
+  w[a] <- as.numeric(w_surv[a]) * scale
+  if (sum(w) > 0) w <- w / sum(w)
+  as.numeric(w[selected])
+}
+
+
+#==============================================================================
 # 3-D. calc_riskparity_weights() — Risk Parity (Equal Risk Contribution)
 #==============================================================================
 
@@ -1176,7 +1266,24 @@ run_monthly_simulation <- function(RAWDATA,
       w <- calc_higher_moment_weights(selected, ret_sub)
     } else if (weight_method == "omega") {
       w <- calc_omega_weights(selected, ret_sub)
+    } else if (startsWith(weight_method, "catalog:")) {
+      # ══ QVEST_CATALOG_BRANCH_V1 — 카탈로그 arm (v9.2 S3-②, 2026-08-24) ═════════
+      #   weight_catalog.R 이 색인한 비-빌트인 비중 규칙(QEPM 14종 · 논문 어댑터 · 생성물)을
+      #   lean 축에서 부른다. 문자열 `catalog:<catalog_id>` → ctx 구성 → wrap_adapter 정규형.
+      #   ★이 분기가 **없으면** 같은 문자열이 아래 else 로 떨어져 조용히 EW 가 되고,
+      #     결과표에는 "새 방법론을 완주했다"고 찍힌다(method_registry.R:73-78 실사고 동형).
+      #   ★ctx 는 하네스가 이미 PIT 로 자른 재료로만 만든다 — ret_sub 는 `Date <= exec_date`,
+      #     month_factors 는 sig_date 패널이다. 어댑터가 ctx 밖을 읽으면 그건 어댑터 결함이다.
+      w <- .bh_catalog_weights(weight_method, selected, ret_sub, month_factors,
+                               exec_date = exec_date, sig_date = sig_date)
     } else {
+      # ★호명 폴백 — 구판은 미등록 문자열을 **에러 없이 EW** 로 떨어뜨렸다. 오타 한 글자가
+      #   "arm 을 돌렸는데 EW 와 동률" 이라는 거짓 기록을 만든다. 이름을 부르고, 엄격 모드에선 멈춘다.
+      .msg <- sprintf(paste0("[backtest_harness] ★미등록 weight_method='%s' — EW 폴백.\n",
+                             "  빌트인 23종도 `catalog:<id>` 도 아니다. 오타이거나 카탈로그 미동기화다",
+                             " (sync_catalog() 후 catalog:<id> 로 호명할 것)."), weight_method)
+      if (identical(Sys.getenv("QVEST_WEIGHT_STRICT", ""), "1")) stop(.msg)
+      warning(.msg, call. = FALSE); cat(.msg, "\n")
       w <- rep(1 / length(selected), length(selected))
     }
     # Guard: if advanced weighting returned wrong length, fallback to EW

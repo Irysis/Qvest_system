@@ -27,7 +27,11 @@
 # Usage:
 #   Rscript 02_Infrastructure/regime/improvement_potential.R --backlog      # overlay 큐 전수
 #   Rscript 02_Infrastructure/regime/improvement_potential.R --id=<cand_id>
+#   Rscript 02_Infrastructure/regime/improvement_potential.R --runs-since=2026-08-23   # alpha-search 런 소급 (v9.2)
+#   Rscript 02_Infrastructure/regime/improvement_potential.R --run-dir=<dir>[,<dir>...]
 #   (run_alpha_search.R 6d 직후 improvement_potential_for_run(OUT_DIR) 자동 호출 — 비치명)
+# ★소급 경로는 pin 1회 공유 + 레지스트리 1회 배치 기록이다(read-modify-write N회 회피).
+# ★entries 는 **id-keyed 객체**다(배열 아님) — 소비측 파이썬은 `d['entries'].values()` 로 순회할 것.
 #==============================================================================
 Sys.setenv(QVEST_DRAIN_NORUN = "1")
 
@@ -189,11 +193,69 @@ improvement_potential_for_run <- function(out_dir, root = IP_ROOT) {
   invisible(b)
 }
 
+# ── alpha-search 런 소급 평가 (v9.2 §8-S2 [7], 2026-08-24) ───────────────────
+#   왜: run_alpha_search 6d+ 의 구 게이트(deep && screen_pass)가 lean 라운드의 ip 산출을
+#   0건으로 봉했다. 게이트를 연 뒤에도 **이미 끝난 런**은 재평가 경로가 없으면 영원히 빈칸이다.
+#   ★비용 규율 2가지 — 이 함수의 존재 이유:
+#     ① pin 을 1회만 잡아 전 런이 공유한다(.ip_pin_uni 는 호출당 pin_cache 접근).
+#     ② 레지스트리 기록을 **1회 배치**로 한다. improvement_potential_write 는 read-modify-write
+#        전량 재작성이므로 런마다 부르면 N회 전체 재직렬화가 된다(16런 = 16회).
+#   run_dirs: stage_artifacts/alpha_search/<run_id> 디렉터리 벡터.
+improvement_potential_run_dirs <- function(run_dirs, root = IP_ROOT) {
+  run_dirs <- unique(run_dirs[nzchar(run_dirs)])
+  run_dirs <- run_dirs[file.exists(file.path(run_dirs, "strategy_manifest.json"))]
+  if (!length(run_dirs))
+    stop("[improvement_potential] 대상 런 0건 — strategy_manifest.json 을 가진 디렉터리 없음 (빈 결과 = 합격 아님)")
+  pin <- .ip_pin_uni()
+  blocks <- list(); n_ok <- 0L; n_na <- 0L
+  for (d in run_dirs) {
+    b <- tryCatch({
+      m <- fromJSON(file.path(d, "strategy_manifest.json"), simplifyVector = FALSE)
+      entry <- list(id = m$strategy_id %||% paste0("STR_AS_", basename(d)),
+                    source = "alpha_search_manifest",
+                    source_path = file.path(d, "strategy_manifest.json"),
+                    bt_result_path = (m$execution %||% list())$bt_result_path %||%
+                                     file.path(d, "bt_result.rds"))
+      improvement_potential_entry(entry, pin = pin)
+    }, error = function(err) {
+      list(id = paste0("STR_AS_", basename(d)), available = FALSE, tier = "screen_diagnostic",
+           reason = paste("평가 실패:", conditionMessage(err)),
+           computed_at = format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z"))
+    })
+    blocks[[length(blocks) + 1L]] <- b
+    if (isTRUE(b$available)) n_ok <- n_ok + 1L else n_na <- n_na + 1L
+  }
+  improvement_potential_write(blocks, root)          # ★1회 배치 기록
+  cat(sprintf("[improvement_potential] run-dirs %d건 — 평가 %d / 미지원·실패 %d → %s (pin_tag=%s)\n",
+              length(blocks), n_ok, n_na, IP_REGISTRY_REL, pin$tag))
+  invisible(blocks)
+}
+
+# run_id 접두(YYYYMMDD_HHMMSS_PID)로 날짜 필터. since = "YYYY-MM-DD" 또는 "YYYYMMDD".
+improvement_potential_runs_since <- function(since, root = IP_ROOT,
+                                             stage_root = file.path(root, "stage_artifacts/alpha_search")) {
+  since_key <- gsub("-", "", as.character(since)[1])
+  if (!grepl("^[0-9]{8}$", since_key)) stop("[improvement_potential] --runs-since 는 YYYY-MM-DD 형식")
+  dirs <- Sys.glob(file.path(stage_root, "*"))
+  dirs <- dirs[dir.exists(dirs)]
+  key <- substr(basename(dirs), 1L, 8L)
+  keep <- grepl("^[0-9]{8}$", key) & key >= since_key
+  improvement_potential_run_dirs(dirs[keep], root = root)
+}
+
 # ── CLI ──────────────────────────────────────────────────────────────────────
 if (sys.nframe() == 0L && Sys.getenv("QVEST_IP_NORUN") != "1") {
   args <- commandArgs(trailingOnly = TRUE)
   if ("--backlog" %in% args) {
     improvement_potential_backlog()
+  } else if (any(grepl("^--runs-since=", args))) {
+    since <- sub("^--runs-since=", "", grep("^--runs-since=", args, value = TRUE)[1])
+    improvement_potential_runs_since(since)
+  } else if (any(grepl("^--run-dir=", args))) {
+    dirs <- sub("^--run-dir=", "", grep("^--run-dir=", args, value = TRUE))
+    dirs <- unlist(strsplit(dirs, ",", fixed = TRUE))
+    dirs <- ifelse(grepl("^([A-Za-z]:)?[/\\\\]", dirs), dirs, file.path(IP_ROOT, dirs))
+    improvement_potential_run_dirs(dirs)
   } else if (any(grepl("^--id=", args))) {
     cid <- sub("^--id=", "", grep("^--id=", args, value = TRUE)[1])
     qp <- file.path(IP_ROOT, "06_Registry/overlay_candidate_queue.json")
@@ -204,6 +266,7 @@ if (sys.nframe() == 0L && Sys.getenv("QVEST_IP_NORUN") != "1") {
     improvement_potential_write(list(b))
     cat(toJSON(b, auto_unbox = TRUE, pretty = TRUE, na = "null"), "\n")
   } else if (length(args)) {
-    cat("usage: Rscript improvement_potential.R --backlog | --id=<candidate_id>\n")
+    cat(paste0("usage: Rscript improvement_potential.R --backlog | --id=<candidate_id>\n",
+               "                                       | --runs-since=YYYY-MM-DD | --run-dir=<dir>[,<dir>...]\n"))
   }
 }

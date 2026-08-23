@@ -2583,19 +2583,22 @@
     "STR_AS_20260823_173313_30892": {
       "strategy_id": "STR_AS_20260823_173313_30892",
       "grade": "B",
-      "role": null,
+      "role": {},
       "origin_mode": "alpha_search",
       "sim_result_path": "stage_artifacts/module_quarantine/STR_AS_20260823_173313_30892/sim_result.rds",
       "n_days": 5314,
-      "date_range": ["2005-02-03", "2026-08-21"],
+      "date_range": [
+        "2005-02-03",
+        "2026-08-21"
+      ],
       "registered_at": "2026-08-23T22:28:05+09:00",
       "metric_type": "proxy",
       "fr_eligible": false,
       "frozen": false,
-      "source_contract_id": null,
+      "source_contract_id": {},
       "module_hash": "55682ae5b1cecde99e22791c4021e2d4",
-      "build_version": null,
-      "cost_model_version": null,
+      "build_version": {},
+      "cost_model_version": {},
       "bt_result_path": "stage_artifacts/alpha_search/20260823_173313_30892/bt_result.rds",
       "contract": {
         "policy": "v8.1_fr_input_floor",
@@ -2607,7 +2610,11 @@
         "strategy_name": "AS_PTV_Intermediate12M_Top25",
         "score": 25.3,
         "f_grade_reasons": [],
-        "fmt_codes": ["FMT-01", "FMT-04", "FMT-07"],
+        "fmt_codes": [
+          "FMT-01",
+          "FMT-04",
+          "FMT-07"
+        ],
         "screen_route": "NONE",
         "screen_pass": false,
         "structural_dd": true,
@@ -2623,10 +2630,176 @@
         "backfill_ref": "02_Infrastructure/ops/backfill_lean_modules.R (v9.1 §7-S2c 소급 등재)",
         "labeled_at": "2026-08-23T17:37:56+0900"
       }
+    },
+    "STR_AS_20260824_011116_17208": {
+      "strategy_id": "STR_AS_20260824_011116_17208",
+      "grade": "B",
+      "role": {},
+      "origin_mode": "alpha_search",
+      "sim_result_path": "stage_artifacts/module_quarantine/STR_AS_20260824_011116_17208/sim_result.rds",
+      "n_days": 5314,
+      "date_range": [
+        "2005-02-03",
+        "2026-08-21"
+      ],
+      "registered_at": "2026-08-24T01:15:47+09:00",
+      "metric_type": "proxy",
+      "fr_eligible": false,
+      "frozen": false,
+      "source_contract_id": {},
+      "module_hash": "66ce565e07d4c6b30716b82b05c5faca",
+      "build_version": {},
+      "cost_model_version": {},
+      "bt_result_path": "stage_artifacts/reinforce_ladder/STR_AS_20260612_135316_470429/rung2_ivol/20260824_011116_17208/bt_result.rds",
+      "contract": {
+        "policy": "v8.1_fr_input_floor",
+        "contract_pass": false,
+        "eligibility_reason": "metric_type != backtested; contract_pass != TRUE; frozen != TRUE; source_contract_id missing; build_version missing; cost_model_version missing"
+      },
+      "meta": {
+        "strategy_idea": "강화 사다리 ②칸 비중 방법론 교체 (equal -> ivol). 신호 축 고정, 비중 축만 변경.",
+        "strategy_name": "LADDER_INTERNAL/STR_AS_20260612_135316_470429/rung2_ivol",
+        "score": 38.2,
+        "lean": true,
+        "grade_basis": "proxy_diagnostic",
+        "screen_route": "STANDALONE_TRACK|OVERLAY_CANDIDATE",
+        "screen_pass": true,
+        "structural_dd": true,
+        "f_grade_reasons": [],
+        "fmt_codes": [
+          "FMT-01",
+          "FMT-07"
+        ],
+        "bt_result_path": "stage_artifacts/reinforce_ladder/STR_AS_20260612_135316_470429/rung2_ivol/20260824_011116_17208/bt_result.rds",
+        "bt_contract_status": "OK"
+      }
+    },
+    "STR_AS_20260824_012953_39376": {
+      "strategy_id": "STR_AS_20260824_012953_39376",
+      "grade": "B",
+      "role": {},
+      "origin_mode": "alpha_search",
+      "sim_result_path": "stage_artifacts/module_quarantine/STR_AS_20260824_012953_39376/sim_result.rds",
+      "n_days": 5314,
+      "date_range": [
+        "2005-02-03",
+        "2026-08-21"
+      ],
+      "registered_at": "2026-08-24T01:35:45+09:00",
+      "metric_type": "proxy",
+      "fr_eligible": false,
+      "frozen": false,
+      "source_contract_id": {},
+      "module_hash": "55562d5ff5b4d8ad6f8298f94550aa87",
+      "build_version": {},
+      "cost_model_version": {},
+      "bt_result_path": "stage_artifacts/reinforce_ladder/STR_AS_20260612_135316_470429/rung1_c_base_p3/20260824_012953_39376/bt_result.rds",
+      "contract": {
+        "policy": "v8.1_fr_input_floor",
+        "contract_pass": false,
+        "eligibility_reason": "metric_type != backtested; contract_pass != TRUE; frozen != TRUE; source_contract_id missing; build_version missing; cost_model_version missing"
+      },
+      "meta": {
+        "strategy_idea": "강화 사다리 ①칸 score-level composite (members: fe_amihud.R+fe_ptv_intermediate_top25.R). base=fe_amihud.R 국면 RISK_ON (IR 0.678, t 2.769).",
+        "strategy_name": "LADDER_INTERNAL/STR_AS_20260612_135316_470429/rung1_c_base_p3",
+        "score": 27.8,
+        "lean": true,
+        "grade_basis": "proxy_diagnostic",
+        "screen_route": "NONE",
+        "screen_pass": false,
+        "structural_dd": false,
+        "f_grade_reasons": [],
+        "fmt_codes": [
+          "FMT-01",
+          "FMT-07"
+        ],
+        "bt_result_path": "stage_artifacts/reinforce_ladder/STR_AS_20260612_135316_470429/rung1_c_base_p3/20260824_012953_39376/bt_result.rds",
+        "bt_contract_status": "OK"
+      }
+    },
+    "STR_AS_20260824_014431_35552": {
+      "strategy_id": "STR_AS_20260824_014431_35552",
+      "grade": "B",
+      "role": {},
+      "origin_mode": "alpha_search",
+      "sim_result_path": "stage_artifacts/module_quarantine/STR_AS_20260824_014431_35552/sim_result.rds",
+      "n_days": 5314,
+      "date_range": [
+        "2005-02-03",
+        "2026-08-21"
+      ],
+      "registered_at": "2026-08-24T01:50:26+09:00",
+      "metric_type": "proxy",
+      "fr_eligible": false,
+      "frozen": false,
+      "source_contract_id": {},
+      "module_hash": "55562d5ff5b4d8ad6f8298f94550aa87",
+      "build_version": {},
+      "cost_model_version": {},
+      "bt_result_path": "stage_artifacts/reinforce_ladder/STR_AS_20260612_135316_470429/rung1_c_ptvintermediatetop25/20260824_014431_35552/bt_result.rds",
+      "contract": {
+        "policy": "v8.1_fr_input_floor",
+        "contract_pass": false,
+        "eligibility_reason": "metric_type != backtested; contract_pass != TRUE; frozen != TRUE; source_contract_id missing; build_version missing; cost_model_version missing"
+      },
+      "meta": {
+        "strategy_idea": "강화 사다리 ①칸 score-level composite (members: fe_amihud.R+fe_ptv_intermediate_top25.R). base=fe_amihud.R 국면 RISK_ON (IR 0.678, t 2.769).",
+        "strategy_name": "LADDER_INTERNAL/STR_AS_20260612_135316_470429/rung1_c_ptvintermediatetop25",
+        "score": 27.8,
+        "lean": true,
+        "grade_basis": "proxy_diagnostic",
+        "screen_route": "NONE",
+        "screen_pass": false,
+        "structural_dd": false,
+        "f_grade_reasons": [],
+        "fmt_codes": [
+          "FMT-01",
+          "FMT-07"
+        ],
+        "bt_result_path": "stage_artifacts/reinforce_ladder/STR_AS_20260612_135316_470429/rung1_c_ptvintermediatetop25/20260824_014431_35552/bt_result.rds",
+        "bt_contract_status": "OK"
+      }
+    },
+    "STR_AS_20260824_015039_37032": {
+      "strategy_id": "STR_AS_20260824_015039_37032",
+      "grade": "B",
+      "role": null,
+      "origin_mode": "alpha_search",
+      "sim_result_path": "stage_artifacts/module_quarantine/STR_AS_20260824_015039_37032/sim_result.rds",
+      "n_days": 5314,
+      "date_range": ["2005-02-03", "2026-08-21"],
+      "registered_at": "2026-08-24T01:56:35+09:00",
+      "metric_type": "proxy",
+      "fr_eligible": false,
+      "frozen": false,
+      "source_contract_id": null,
+      "module_hash": "b7c7eef6bee829276ad3a534b9a4a8d4",
+      "build_version": null,
+      "cost_model_version": null,
+      "bt_result_path": "stage_artifacts/reinforce_ladder/STR_AS_20260612_135316_470429/rung2_ivol_on_compamihudptvintermediatetop25/20260824_015039_37032/bt_result.rds",
+      "contract": {
+        "policy": "v8.1_fr_input_floor",
+        "contract_pass": false,
+        "eligibility_reason": "metric_type != backtested; contract_pass != TRUE; frozen != TRUE; source_contract_id missing; build_version missing; cost_model_version missing"
+      },
+      "meta": {
+        "strategy_idea": "강화 사다리 ②칸 비중 방법론 교체 (equal -> ivol). 신호 축 고정, 비중 축만 변경.",
+        "strategy_name": "LADDER_INTERNAL/STR_AS_20260612_135316_470429/rung2_ivol_on_compamihudptvintermediatetop25",
+        "score": 27.6,
+        "lean": true,
+        "grade_basis": "proxy_diagnostic",
+        "screen_route": "NONE",
+        "screen_pass": false,
+        "structural_dd": false,
+        "f_grade_reasons": [],
+        "fmt_codes": ["FMT-01", "FMT-07"],
+        "bt_result_path": "stage_artifacts/reinforce_ladder/STR_AS_20260612_135316_470429/rung2_ivol_on_compamihudptvintermediatetop25/20260824_015039_37032/bt_result.rds",
+        "bt_contract_status": "OK"
+      }
     }
   },
-  "last_updated": "2026-08-23T22:28:05+09:00",
-  "n_modules": 61,
+  "last_updated": "2026-08-24T01:56:35+09:00",
+  "n_modules": 65,
   "superseded": {
     "STR_AS_20260613_094148_265194": {
       "strategy_id": "STR_AS_20260613_094148_265194",

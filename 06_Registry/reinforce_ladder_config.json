@@ -1,0 +1,30 @@
+{
+  "schema_version": "reinforce_ladder_config_v1",
+  "_doc": "자동 강화 사다리 드라이버(02_Infrastructure/ops/reinforce_ladder.R) 설정 — v9.2 §8-S2. 낮은 등급이라도 국면별 IR 신호가 있으면 ①composite → ②비중 → ③오버레이 3칸을 자동으로 태운다. 이 파일이 kill switch(enabled=false 면 드라이버가 즉시 종료)이자 예산 정본이다. ★사다리 판정은 전부 screen/research 층이다 — 자본 게이트(HARD 3종 · book_state)는 이 파일과 무관하고 도훈 권한이다.",
+  "enabled": true,
+  "max_active": 1,
+  "target_grade": "B",
+  "per_attempt_secs": 2100,
+  "budget_secs_per_candidate": 14400,
+  "rung1_max_attempts": 3,
+  "rung2_max_arms": 4,
+  "strike_limit": 2,
+  "strike_blocks_rung3": false,
+  "out_root": "stage_artifacts/reinforce_ladder",
+  "composite_support_min_dates": 120,
+  "composite_support_min_median_names": 30,
+  "_field_doc": {
+    "enabled": "false 면 드라이버가 아무것도 하지 않고 종료(kill switch).",
+    "max_active": "한 번의 기동에서 사다리를 태울 후보 수 상한. --top 이 이 값을 넘을 수 없다. 실사 진입률 57%(ip 21건 중 13셀 자격) → 상한 없으면 즉시 백로그.",
+    "target_grade": "사다리 종료 목표 등급(essence 기준). 도달하면 그 후보는 조기 종료.",
+    "per_attempt_secs": "worker 자식 프로세스 1회 timeout(초). run_alpha_search 는 자체 timeout 이 없고 하네스에 10GB peak segfault 전례가 있어 반드시 자식으로 격리한다.",
+    "budget_secs_per_candidate": "후보 1건의 누적 작업 예산(초). ★재개 시 리셋하지 않는다 — 원장 spent_secs 가 세션을 넘어 누적된다.",
+    "rung1_max_attempts": "①칸 composite arm 최대 수(2·2·3 멤버).",
+    "rung2_max_arms": "②칸 비중 arm 최대 수. argmax 선택이므로 n_trials_cumulative 에 누적되고 selection_type='sweep' 로 DSR 게이트가 걸린다.",
+    "strike_limit": "연속 무이득 칸 수 상한(2-strike 조기 종료).",
+    "strike_blocks_rung3": "false(기본) = ①②가 죽어도 ③칸(오버레이)은 간다. ①신호·②비중·③노출은 다른 축이고 ③은 이 저장소가 유일하게 실증한 롱온리 β 레버다. 도훈 결정 H-d.",
+    "out_root": "★alpha_search 와 반드시 분리한다. overlay_candidate_queue.R:34 와 standalone_track_queue.R 이 stage_artifacts/alpha_search/* 를 glob 하므로, 분리하지 않으면 사다리 산출물이 스크린 큐에 등재돼 자기입력 루프가 된다.",
+    "composite_support_min_dates": "①칸 support pre-flight 합격선 — 결합 가능한 (Date) 수. 미달이면 백테를 돌리지 않고 SUPPORT_INSUFFICIENT 기각(sc_combine_scores 가 min_members 미달 시 stop 한다).",
+    "composite_support_min_median_names": "①칸 support pre-flight 합격선 — 날짜별 종목 수 중앙값."
+  }
+}

@@ -428,3 +428,102 @@ sched_credentials_guidance() {
     *)                echo "자격증명 상태 판별 불가 — 형식 변경 가능성." ;;
   esac
 }
+
+# ══════════════════════════════════════════════════════════════════════════════
+# pending 계측 공용 헬퍼 (2026-08-24 v9.2 S1c)
+#
+# 사건: 2026-08-23 10:09 에 alpha_search_queue_run.sh 와 mode_queue_research_run.sh 가
+#   **같은 순간 함께** 죽었다. 로그 1행이 답이었다:
+#     LEDGER_UNREADABLE alpha_search_queue_done.json: line 1063
+#   원장 파일 **하나**가 두 러너를 죽인 것이다(둘 다 alpha_done_ids() 경유).
+#   PATH·venv·인코딩 전부 아니었다. 그런데 alpha 쪽은 stderr 를 버려 원인을 알 수 없었고,
+#   mode_queue 쪽만 `2>>"$LOG"` 덕에 원인이 남았다.
+#
+# 이 헬퍼가 하는 일 (그리고 안 하는 일):
+#   · 술어는 **여기에 다시 적지 않는다** — research_pool_predicates.py 가 정본이다.
+#     호출자가 $PRED 경로와 인자를 그대로 넘기고, 헬퍼는 실행·판정·재시도만 한다.
+#     (08_Tests/ops/test_{alpha_queue,mode_queue}_pending.py 가 "술어 모듈 경유"를 매 실행 확인)
+#   · "0 으로 읽지 않고 중단"은 **옳은 설계이므로 유지**한다. 헬퍼는 그 판정을 이름 붙일 뿐이다.
+#
+# ★재시도를 사유별로 가른다:
+#   - LEDGER_UNREADABLE / JSON 파손 → 파일이 깨진 상태다. 5초 뒤에도 깨져 있다.
+#     ⇒ **재시도 0회**, 즉시 이름 붙여 반환. 무의미한 백오프로 사고를 늦추지 않는다.
+#   - 빈 출력·일시 실패 → 10s/20s 백오프 2회(인터프리터 기동 실패·일시적 잠금 등).
+#
+# 사용:
+#   N=$(sched_measure_pending "$PYBIN" "$PRED" alpha-pending "$SD")   # 성공 시 정수만 stdout
+#   rc=$? ; [ $rc -eq 0 ] || { reason=$(sched_measure_reason); ... }
+#   ※ stderr 는 호출자의 $LOG 로 흘려보낸다(헬퍼가 삼키지 않는다).
+# ══════════════════════════════════════════════════════════════════════════════
+# ★사유는 **파일**로 넘긴다 — 호출부가 `N=$(sched_measure_pending ...)` 형태라
+#   함수 본문이 서브셸에서 돌고, 셸 변수 할당은 부모로 전파되지 않는다.
+#   (초판이 정확히 이 함정에 빠졌다: 분류는 맞는데 사유가 항상 'unknown' 이었다.
+#    주입 검사가 잡았다 — 안 쟀으면 마커에 unknown 이 찍히는 걸 사고 때 알았을 것이다.)
+#   ※ bash 에서 `$$` 는 서브셸 안에서도 **부모 셸의 PID** 라 같은 파일을 가리킨다.
+sched_measure_statefile() {
+  printf '%s' "${SCHED_MEASURE_STATE:-${TMPDIR:-/tmp}/sched_measure_state.$$}"
+}
+sched_measure_reason()  {
+  local f; f=$(sched_measure_statefile)
+  [ -f "$f" ] && sed -n '1p' "$f" || printf 'unknown'
+}
+sched_measure_detail()  {
+  local f; f=$(sched_measure_statefile)
+  [ -f "$f" ] && sed -n '2,$p' "$f" | tr '\n' ' ' || printf ''
+}
+sched_measure_set_reason() {
+  printf '%s\n%s\n' "$1" "$2" > "$(sched_measure_statefile)" 2>/dev/null || true
+}
+
+# 출력에서 '즉시 실패(재시도 무의미)' 사유를 판별한다.
+#   ★파일명을 사유에 실어 **파일명만 보고 원인을 알게** 한다 — 어제는 사유가
+#     'count_measurement_failed' 뿐이라 어느 파일이 깨졌는지 마커만 봐선 몰랐다.
+sched_measure_hard_reason() {
+  local blob="$1" f=""
+  case "$blob" in
+    *LEDGER_UNREADABLE*)
+      f=$(printf '%s' "$blob" | sed -n 's/.*LEDGER_UNREADABLE[[:space:]]*\([^: ]*\).*/\1/p' | head -1)
+      printf 'ledger_unreadable_%s' "$(basename "${f:-unknown}")"; return 0 ;;
+    *JSONDecodeError*|*"Expecting value"*|*"Extra data"*)
+      f=$(printf '%s' "$blob" | sed -n "s/.*[\"']\([A-Za-z0-9_./-]*\.json\).*/\1/p" | head -1)
+      printf 'json_corrupt_%s' "$(basename "${f:-unknown}")"; return 0 ;;
+    *ModuleNotFoundError*|*ImportError*)
+      printf 'python_env_broken'; return 0 ;;
+  esac
+  return 1
+}
+
+sched_measure_pending() {
+  local pybin="$1"; shift
+  local attempt out rc blob hard
+  local errf
+  errf="${TMPDIR:-/tmp}/sched_measure_$$_$RANDOM.err"
+  rm -f "$(sched_measure_statefile)" 2>/dev/null
+  # ★술어는 **1회만** 실행한다 — 이 술어는 --json 산출물을 쓰는 부작용이 있어
+  #   stderr 를 따로 잡겠다고 두 번 돌리면 산출물이 두 번 쓰인다.
+  for attempt in 1 2 3; do
+    : > "$errf"
+    out=$("$pybin" "$@" 2>"$errf")
+    rc=$?
+    blob=$(tr '\n' ' ' < "$errf" 2>/dev/null)
+    cat "$errf" >&2 2>/dev/null    # 원문은 호출자 로그로 그대로 흘려보낸다(삼키지 않는다)
+    if [ $rc -eq 0 ] && sched_assert_count "$out"; then
+      rm -f "$errf"; printf '%s' "$out"; return 0
+    fi
+    # ── 즉시 실패 사유인가? 그러면 재시도하지 않는다.
+    if hard=$(sched_measure_hard_reason "$blob"); then
+      sched_measure_set_reason "$hard" \
+        "술어 모듈이 원장/입력 파손으로 계측 불가 — 재시도해도 같은 상태이므로 백오프 없이 즉시 중단합니다(시도 1/1). 원문: ${blob}"
+      rm -f "$errf"; return 1
+    fi
+    # ── 일시 실패로 본다: 10s → 20s 백오프
+    if [ "$attempt" -lt 3 ]; then
+      sleep $((attempt * 10))
+      continue
+    fi
+    sched_measure_set_reason "count_measurement_failed" \
+      "pending 산정이 3회 모두 비숫자('${out}') 반환. PYBIN=${pybin}. 원문: ${blob}"
+    rm -f "$errf"; return 1
+  done
+  rm -f "$errf"; return 1
+}

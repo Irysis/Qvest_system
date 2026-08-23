@@ -68,12 +68,37 @@ build_overlay_exposure <- function(layer5_csv =
        ref = L[, .(Date = as.Date(anchor_date), ret_L5 = as.numeric(get(paste0("ret_L5_", r05_variant))))])
 }
 
+# ── 캐리어 경로 = carrier_meta.json 파생 (2026-08-24 v9.2 S3, auto_sigma_weighting_ab.R:163 동형) ──
+#   구판은 `carrier_STR_1715_AR_on_M4_R05_overlay_PG2.parquet` 를 **하드코딩**했다(2026-06-18).
+#   같은 하드코딩이 Σ 배터리에서 구 PG2 를 7주간 기준선으로 쓰게 만든 원인이었고(도훈 적발),
+#   그쪽은 2026-08-08 에 meta 경유로 수리됐는데 **이 파일만 남았다** — 즉 두 배터리가
+#   서로 다른 캐리어를 보며 "같은 book" 이라고 말하고 있었다.
+#   meta.strategy 는 pg2_coherence_check C2 가 admitted_ids 와 대조하므로, 이 경유가 곧
+#   "현 PG2 자동 추종"이다.
+.carrier_from_meta <- function() {
+  mp <- "06_Registry/book_carrier/carrier_meta.json"
+  if (!file.exists(mp))
+    stop("[ab] carrier_meta.json 부재 — 캐리어 미빌드. extract_book_carrier_d3.R 선행.")
+  mt <- jsonlite::fromJSON(mp, simplifyVector = FALSE)
+  p <- as.character(mt$parquet %||% NA)
+  if (is.na(p) || !file.exists(p)) stop("[ab] carrier_meta$parquet 무효: ", p)
+  cat(sprintf("[ab] 캐리어(meta 경유) = %s [strategy=%s]\n", basename(p), mt$strategy %||% "?"))
+  p
+}
+
 #' faithful 캐리어로 가중 A/B 실행 (bare + optional with-overlay).
 #' @param carrier_path parquet (decision_date,eval_date,Ticker,score,weight_strategy,ret_fwd,selected)
+#'   기본값 = carrier_meta.json 파생(현 PG2 자동 추종). 하드코딩 금지.
 #' @param methods 가중법 이름 (WEIGHTERS 키)
 #' @param with_overlay TRUE면 현 book 실현 β_combined 노출 적용(=현 book과 동일 오버레이로 head-to-head)
-run_weighting_ab <- function(carrier_path =
-        "06_Registry/book_carrier/carrier_STR_1715_AR_on_M4_R05_overlay_PG2.parquet",
+#'
+#' ★score_tilt 팔은 **여기 없다 — Σ 배터리(run_sigma_ab)에 있다.**
+#'   이 파일의 보유패널 P 는 (decision_date, eval_date, Ticker, score, weight_strategy) 뿐이라
+#'   일별 수익을 안 나른다. calc_score_tilt_weights 는 HRP 혼합에 ret_dt 를 요구하므로
+#'   여기서는 원리적으로 못 태운다. run_sigma_ab 는 raw/ret_sub 를 이미 만들고 ctx 에 R 을
+#'   실어 주므로, 카탈로그 R1 carrier 리졸버(`catalog_weight_arms()` → `wcat_score_tilt`)로
+#'   그쪽에 합류시킨다. 사전등록 = 06_Registry/prereg/prereg_score_tilt_invested_axis.json
+run_weighting_ab <- function(carrier_path = .carrier_from_meta(),
         methods = c("EW", "score_prop", "rank_tilt", "strategy"), cost_bps = 15, with_overlay = FALSE) {
   car <- as.data.table(read_parquet(carrier_path))
   car <- car[selected == TRUE & !is.na(ret_fwd)]

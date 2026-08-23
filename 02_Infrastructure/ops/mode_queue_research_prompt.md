@@ -143,13 +143,64 @@ QEPM 으로 올라가는 코드가 **없었다**(무인 러너 4종 `wt_create` 
 ### lane=optimizer / risk / regime
 
 논문을 확인하고 해당 에이전트를 스폰해 **어댑터 스펙**을 만든다.
-`06_Registry/method_registry.json::methods` 에 append:
-`method_id · paper_id · paper_title · route · adapter_kind · entrypoint · free_params ·
-kr_mapping · screen_axes{screen_priority, shrinkage_builtin, statistic_order} ·
-verdict · measured · routed_on · added`
+
+> ★**원장에 직접 append 하지 않는다** (2026-08-24 v9.2 S3 개정).
+> 구 지시는 `06_Registry/method_registry.json::methods` 에 손으로 append 하라고 적혀 있었고,
+> 그러면 `verify_adapter` 를 **통째로 우회**한다. `verdict:"implemented"` 가 *통과 기록*이 아니라
+> *사람이 친 문자열*이 되는 경로가 정확히 여기였다.
+> 최악은 "로드는 되는데 아무 일도 안 하는" 어댑터다 — `wrap_adapter` 가 EW 로 내려앉히므로
+> 그 arm 은 **측정됨으로 집계되지만 실제로 잰 것은 EW** 다(실사고 기록: `method_registry.R:73-78`).
+> **코드는 0줄도 새로 만들지 않는다. 이미 있는 강제 경로를 켜는 일이다.**
+
+**절차 (3단계)**
+
+```r
+# ① 골격 생성 — 진입점 이름·NULL 처리·헤더 규약이 기본으로 깔린다
+source("02_Infrastructure/methods/new_adapter.R")
+new_adapter("<MethodId>", kind = "weight"|"sigma"|"exposure", paper_id = "arxiv:XXXX.XXXXX")
+#   진입점은 kind 가 정한다: weight→method_weights / sigma→sigma_estimate / exposure→exposure_schedule
+#   ctx 밖 데이터를 읽지 말 것(PIT 는 하네스가 ctx 로 보장한다).
+
+# ② TODO(원문) 칸을 채운다 — 기전·KR 사상·PIT 근거·free_params
+#    ★골격은 기전을 채우지 않는다. 비우면 register_method 가 거부한다(날조 방지).
+
+# ③ 등재 — 통과분만 implemented 로 기록되고, 실패도 사유와 함께 남는다
+source("02_Infrastructure/methods/register_method.R")
+register_method(method_id=…, paper_id=…, paper_title=…, route=…, adapter_kind=…,
+                adapter="02_Infrastructure/methods/adapters/<snake>.R",
+                mechanism=…, kr_mapping=…,          # 둘 다 필수(없으면 거부)
+                screen_axes=list(screen_priority=…, shrinkage_builtin=…, statistic_order=…),
+                selection_type="chain",              # 백테로 골랐으면 "sweep" (DSR 게이트)
+                free_params=list())
+```
+
+`register_method` 가 등재 시점에 어댑터를 **실제로 돌려 본다**: 결정성 · 비-EW(또는 비-표본공분산 /
+비-상수1) · 제약 · 기등재 arm 과의 구별성(`.nearest_arm`). 통과분만 `verdict="implemented"` 이고,
+거부는 `verdict="registration_failed"` + 사유로 남는다(**"시도했는데 안 됨"과 "아직 시도 안 함"을 구분**).
+
+등재되면 그 다음 dispatch 런에서 **자동으로** Σ-A/B arm 이 된다(추가 배선 불필요). weight kind 는
+`sync_catalog()` 이 `06_Registry/weight_catalog.json` 에 색인해 lean 축(`catalog:paper:<MethodId>`)에서도
+호명 가능해진다.
 
 구현 불가면 `verdict="blocked_by_capability"` + `blocker` 사유를 적고 넘어간다
 (선례 3건: StationaryAmbiguity / PathSignature / MFCCA). 억지 구현 금지.
+
+### lane=adapter_backlog
+
+`06_Registry/adapter_registration_queue.json::ranked` — **라우팅·2축 판정은 끝났는데 등재가 안 된**
+후보다(생산자 = `mode_queue_axis_audit.py --emit-queue`. 2026-08-24 실측 ranked 29 / meets_frontier 5).
+2026-08-24 이전까지 **소비자가 0** 이었다 — 큐를 만든 판단("측정 arm 수는 큐 길이가 아니라 **등재 수**에
+비례한다")은 옳았는데 등재로 가는 순번이 없었다.
+
+술어 = `research_pool_predicates.py::adapter_backlog_pending(root)`
+(정렬: `screen_priority` → `first_date` 오름차순. **unranked 47건은 넣지 않는다** — 정렬 불가를
+0 으로 위장하지 않는다).
+
+처리는 위 lane=optimizer/risk/regime 절차와 **동일**하다(`new_adapter()` → TODO 채움 →
+`register_method()`). 항목의 `route` 필드가 어느 에이전트를 스폰할지 알려 준다.
+`adapter_feasibility_20260813.json` 은 stale 이므로 구현가능성 판단에 쓰지 말고
+`list_ctx_providers()` 로 **현재** ctx 입력을 확인할 것(같은 날 `ctx_providers.R` 가
+`characteristics`·`macro` provider 를 추가했다).
 
 #### optimizer/risk 2축 — 사전 스크린 (2026-08-23 라우터에서 이관)
 

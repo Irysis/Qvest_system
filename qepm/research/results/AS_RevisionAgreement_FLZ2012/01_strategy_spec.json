@@ -1,0 +1,21 @@
+{
+  "run_id": "ASBT_20260823_161630_24400",
+  "strategy_id": "STR_AS_20260823_161630_24400",
+  "strategy_name": "AS_RevisionAgreement_FLZ2012",
+  "strategy_family": "alpha_search",
+  "signal_description": "Feldman-Livnat-Zhang(2012) KR 재구성: EPS 3M 리비전·리비전 폭(ESBR)·목표주가 모멘텀 3축 방향 일치(전부 z>0) 종목 전체 EW 월간 — 투자의견 축은 데이터 부재로 미복제",
+  "universe_rule": "K200_KQ150 + 20d avg trading value >= 2e8 KRW (t-1 PIT)",
+  "rebalance_frequency": "monthly",
+  "signal_date_rule": "month_end_signal",
+  "execution_date_rule": "t_plus_1_first_trading_day",
+  "weighting_method": "equal",
+  "max_position_weight": 0.2,
+  "max_leverage": 1,
+  "cash_rule": "fully_invested_after_floor_shares",
+  "cost_model": "v2.4_delta_15bps",
+  "missing_data_rule": "exclude_na_scores",
+  "risk_controls": "buffer_zone(keep_n=40, entry_n=20)",
+  "lookahead_prevention": "detect_lookahead static scan CLEAN (PIT C1-C15)",
+  "survivorship_bias_control": "RAWDATA PIT membership / time-varying universe filters",
+  "factor_engine_path": "02_Infrastructure/alpha_search/fe_revision_agreement.R"
+}

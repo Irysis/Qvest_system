@@ -42,6 +42,115 @@ if (is.null(.slotres)) cat(sprintf("[extend][WARN] admitted 해석 실패 — �
 LT  <- live_track_lane(BOOK_ID, root = ROOT, carry_from = PRIOR_BOOK_ID)
 OUT <- file.path(LT, "live_book_series.csv")
 
+## ============================================================================
+## ★겹친-실행 방어 2층 (2026-08-24 v9.2 S1a — 도훈 결정)
+##
+## 사건: live_book_series.csv 가 546줄로 발견됐다. 바이트 분해 결과
+##   [선두 8바이트 결손 640B 조각] + [정상 272줄 블록 86,336B] × 2, 오차 0.
+##   md5(3..274) == md5(275..546) 로 두 블록이 동일함을 확인.
+##   같은 형태가 상류 base 패널(period_returns_layer5.csv)에도 있었다 —
+##   'anchor_date' 헤더가 오프셋 0 / 69,632 / 139,264 / 208,896 에 정확히 68KiB
+##   간격으로 4개(= 정상본 4벌이 겹쳐 쌓임).
+## 기전: 아래 fwrite 는 append 가 아니다 ⇒ **겹친 실행이 필요조건**이다.
+##   단일 프로세스는 이 형태를 만들 수 없다.
+## 수리: 층1 = tmp+rename 원자화(부분 파일이 정본 경로에 존재하는 순간 자체를 없앤다)
+##       층2 = mkdir 뮤텍스(겹친 실행 자체를 막는다)
+##       층3 = 테스트 격리(08_Tests/hooks/test_blunt_anchor_failclosed.R)
+##   선례: 층1 = ops/paper_id_norm.py:_atomic_write · 층2 = ops/mode_queue_research_run.sh:45-67
+## ============================================================================
+
+## ── 층2: mkdir 원자 선점 뮤텍스 ─────────────────────────────────────────────
+##   ★호출자를 믿지 않는다 — 스케줄러·테스트·수동 실행이 각각 부르는 구조라
+##   "호출자가 하나뿐" 이라는 보장이 없다. 여기서 막는다.
+.EXTEND_LOCK <- file.path(ROOT, ".cache", "extend_nolayer4_series.lock")
+dir.create(dirname(.EXTEND_LOCK), recursive = TRUE, showWarnings = FALSE)
+
+## ★생존 판정은 **필드 파싱**으로 한다 — 정규식 금지.
+##   실측(R 4.5.2): sprintf("\\b%d\\b", pid) 의 \b 가 워드경계가 아니라 백스페이스로
+##   처리돼 grepl 이 살아있는 PID 에도 FALSE 를 냈다(perl=TRUE 도 동일). 그 결과
+##   뮤텍스가 **살아있는 홀더를 stale 로 오인해 매번 회수** = 락이 없는 것과 같았다.
+##   초판이 정확히 이 함정에 빠졌고, 3-동시 실행 검사에서 3개 모두 통과해 잡혔다.
+.pid_alive <- function(pid) {
+  pid <- suppressWarnings(as.integer(pid))
+  if (length(pid) != 1L || is.na(pid) || pid <= 0L) return(FALSE)
+  if (.Platform$OS.type == "windows") {
+    o <- tryCatch(suppressWarnings(system2("tasklist",
+           c("/FI", sprintf('"PID eq %d"', pid), "/NH", "/FO", "CSV"),
+           stdout = TRUE, stderr = NULL)),
+         error = function(e) character(0))
+    if (!length(o)) return(FALSE)
+    got <- vapply(strsplit(gsub('"', '', o, fixed = TRUE), ",", fixed = TRUE),
+                  function(f) length(f) >= 2L &&
+                              isTRUE(suppressWarnings(as.integer(f[2])) == pid),
+                  logical(1))
+    return(any(got))
+  }
+  isTRUE(tryCatch(system2("kill", c("-0", pid), stdout = FALSE, stderr = FALSE),
+                  error = function(e) 1L) == 0L)
+}
+
+.acquire_lock <- function() {
+  if (isTRUE(dir.create(.EXTEND_LOCK, showWarnings = FALSE))) return(TRUE)
+  holder <- tryCatch(readLines(file.path(.EXTEND_LOCK, "pid"), warn = FALSE)[1],
+                     error = function(e) NA_character_)
+  age_min <- tryCatch(as.numeric(difftime(Sys.time(),
+                        file.info(.EXTEND_LOCK)$mtime, units = "mins")),
+                      error = function(e) NA_real_)
+  if (is.na(age_min)) age_min <- 0
+  ## ★취득 창 TOCTOU: dir.create 와 pid 기록 사이에 경쟁자가 읽으면 holder 가 NA 다.
+  ##   그 순간을 stale 로 읽으면 방금 락을 잡은 프로세스를 밀어낸다 — 락이 무의미해진다.
+  ##   pid 미기록 ∧ 락이 아주 어리면(<0.5분) '취득 중' 으로 보고 양보한다.
+  if (is.na(holder) && age_min < 0.5) return(FALSE)
+  ## 홀더 생존 ∧ 나이 상한 미만 = 정상 점유. 그 외는 stale 회수.
+  ##   ★나이 상한을 둔 이유: 하드 크래시(PID 재사용 포함)로 락이 남으면
+  ##     생존 판정만으로는 레인이 영구히 막힌다.
+  stale_min <- suppressWarnings(as.numeric(Sys.getenv("QVEST_EXTEND_LOCK_STALE_MIN", "60")))
+  if (.pid_alive(holder) && age_min < stale_min) return(FALSE)
+  ## ★stale 회수도 원자적이어야 한다 — 안 그러면 회수 자체가 thundering herd 다.
+  ##   실측(초판): 대기자 3개가 같은 죽은 홀더를 동시에 보고 셋 다 unlink+dir.create 에
+  ##   성공해 **셋이 함께 실행**됐다. 뮤텍스가 있는데 없는 것과 같았다.
+  ##   rename 은 원자적이라 정확히 하나만 성공한다. 진 쪽은 이번 턴을 양보한다
+  ##   (다음 스케줄에 다시 온다 — 겹쳐 도는 것보다 한 턴 쉬는 쪽이 안전한 방향).
+  graveyard <- sprintf("%s.stale.%d", .EXTEND_LOCK, Sys.getpid())
+  if (!isTRUE(suppressWarnings(file.rename(.EXTEND_LOCK, graveyard)))) {
+    cat("[extend][LOCK] stale 회수 경쟁에서 밀림 — 이번 턴 양보 (skip)\n")
+    return(FALSE)
+  }
+  unlink(graveyard, recursive = TRUE, force = TRUE)
+  cat(sprintf("[extend][LOCK] stale lock 회수 (PID=%s, age=%.1f분)\n",
+              ifelse(is.na(holder), "?", holder), age_min))
+  isTRUE(dir.create(.EXTEND_LOCK, showWarnings = FALSE))
+}
+
+if (!.acquire_lock()) {
+  cat(sprintf("[extend][LOCK] 다른 인스턴스가 실행 중 — skip (lock=%s)\n",
+              sub(ROOT, "", .EXTEND_LOCK, fixed = TRUE)))
+  cat("[extend][LOCK] 겹친 실행이 live_book_series.csv 를 2벌 겹쳐 쓴 2026-08-23 사고의 재발 방지.\n")
+  quit(save = "no", status = 0)
+}
+writeLines(as.character(Sys.getpid()), file.path(.EXTEND_LOCK, "pid"))
+## 정상·오류 종료 모두에서 해제 (R 종료 시 finalizer 실행)
+.LOCK_ENV <- new.env()
+reg.finalizer(.LOCK_ENV,
+              function(e) unlink(.EXTEND_LOCK, recursive = TRUE, force = TRUE),
+              onexit = TRUE)
+
+## ── 층1: tmp + rename 원자 기록 ─────────────────────────────────────────────
+##   부분 기록이 **정본 경로에 존재하는 순간이 없다**. 뮤텍스가 어떤 이유로
+##   뚫려도(수동 rm, 다른 호스트) 소비자는 항상 완결된 파일만 본다.
+atomic_fwrite <- function(dt, path, ...) {
+  tmp <- sprintf("%s.tmp.%d", path, Sys.getpid())
+  ok <- FALSE
+  on.exit(if (!ok) unlink(tmp, force = TRUE), add = TRUE)
+  data.table::fwrite(dt, tmp, ...)
+  if (!isTRUE(suppressWarnings(file.rename(tmp, path)))) {
+    ## Windows 는 대상이 열려 있으면 rename 이 실패한다 — 조용히 덮어쓰지 말고 중단.
+    stop(sprintf("[extend] 원자 교체 실패: %s -> %s (대상이 열려 있는지 확인)", tmp, path))
+  }
+  ok <- TRUE
+  invisible(path)
+}
+
 cat("============================================================\n")
 cat("[extend_nolayer4_series] noLayer4 오버레이 시리즈 재계산 (단일 vintage)\n")
 cat("============================================================\n")
@@ -245,7 +354,7 @@ out[, metric_type := "backtested"]
 out[, generated := as.character(Sys.time())]
 out[, base_panel := sub(ROOT, "", base_path, fixed = TRUE)]
 
-fwrite(out, OUT)
+atomic_fwrite(out, OUT)   # ★층1 — 구판 fwrite(out, OUT) 직접 기록(2026-08-23 파손 원점)
 cat(sprintf("[4] 저장: %s  (%d개월, %s ~ %s)\n", sub(ROOT, "", OUT, fixed = TRUE),
             nrow(out), out$realized_ym[1], out$realized_ym[.N]))
 

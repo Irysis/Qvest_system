@@ -178,4 +178,10 @@ if (length(bts) >= 2L) {
 }
 
 cat(sprintf("== t_summary: PASS=%d FAIL=%d ==\n", PASS, FAIL))
+# ★러너(run_all_hooks.sh)는 **마지막 줄의 JSON**으로만 집계한다. t_summary 만 내면
+#   UNREPORTED 로 계상돼 "돌았는데 안 센" 상태가 된다(2026-08-23 배터리에서 실측 —
+#   미발행 27건이 fail 로 잡혔다). 요약 형식이 두 갈래로 갈려 있는 저장소이므로
+#   신규 suite 는 JSON 을 **마지막 줄**에 낸다.
+cat(sprintf('{"test":"score_composite","pass":%d,"fail":%d,"total":%d}\n',
+            PASS, FAIL, PASS + FAIL))
 if (FAIL > 0L) quit(save = "no", status = 1)

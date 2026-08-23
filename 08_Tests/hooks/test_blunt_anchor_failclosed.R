@@ -16,15 +16,91 @@ suppressPackageStartupMessages(library(data.table))
 
 `%||%` <- function(a, b) if (is.null(a)) b else a
 
+## ★★★2026-08-24 v9.2 S1a — 이 파일이 만든 **두 번째** 오염과 그 수리
+##   사건: live_book_series.csv 가 546줄로 발견됐다(정상 272줄 블록 2벌 + 640B 조각).
+##   이 파일이 최종 기록자였다 — 운영 원본을 직접 조작하고 생산자를 5회 돌리는데
+##   ① 백업 경로가 **고정**(`.testbak`)이라 두 실행이 겹치면 서로의 백업을 덮어쓰고
+##   ② 채점이 PANEL 만 봤다(:96-100) — **원장 원복은 재지 않았다**. 어제 사고가 정확히 그 사각.
+##   수리 3종: 백업에 PID 부착 · **원장 md5 채점 추가** · QM_ROOT 샌드박스(운영 원본 무접촉).
+##   ★샌드박스는 :6-7 설계축을 지킨다 — 조건 로직을 복제하지 않고 **실제 스크립트를 그대로**
+##     돌린다. 바뀌는 것은 스크립트가 읽는 ROOT 뿐이라 코드 경로는 동일하다.
+##     (`QVEST_TEST_NO_SANDBOX=1` 로 구 거동 = 운영 원본 직접 조작. 등가 확인용.)
+
+## 샌드박스에 필요한 최소 집합 — 생산자가 실제로 읽는 경로만.
+##   부족하면 스크립트가 명시적으로 실패하므로 조용한 오탐이 되지 않는다.
+.SANDBOX_FILES <- c(
+  "02_Infrastructure/monitoring/extend_nolayer4_series.R",
+  "02_Infrastructure/portfolio/resolve_admitted_slot.R",
+  "02_Infrastructure/contracts/panel_alignment_guard.R",
+  "qepm/mailbox/worktask/WT-H20260513_001/output/period_returns_layer5.csv",
+  "qepm/mailbox/worktask/WT-D20260702_002/output/bt_result_C_noL4_CLEAN_ann12.rds",
+  "qepm/mailbox/governor/book_state.json",
+  ".cache/indices.parquet")
+.SANDBOX_DIRS <- c("06_Registry/live_track", "05_Production/2.Factor_Model")
+
+.build_sandbox <- function(src, dst) {
+  unlink(dst, recursive = TRUE, force = TRUE)
+  dir.create(dst, recursive = TRUE, showWarnings = FALSE)
+  for (rel in .SANDBOX_FILES) {
+    s <- file.path(src, rel); if (!file.exists(s)) next
+    d <- file.path(dst, rel); dir.create(dirname(d), recursive = TRUE, showWarnings = FALSE)
+    file.copy(s, d, overwrite = TRUE)
+  }
+  for (rel in .SANDBOX_DIRS) {
+    s <- file.path(src, rel); if (!dir.exists(s)) next
+    d <- file.path(dst, rel); dir.create(dirname(d), recursive = TRUE, showWarnings = FALSE)
+    ## 05_Production 은 **읽기만** 한다(복사 = 읽기). 샌드박스 쪽만 쓰기 대상.
+    file.copy(s, dirname(d), recursive = TRUE, overwrite = TRUE)
+  }
+  dir.create(file.path(dst, ".cache"), recursive = TRUE, showWarnings = FALSE)
+  ## ★★샌드박스 전용 .Renviron — 이게 없으면 격리가 **조용히 무효**다.
+  ##   실측(2026-08-24): `QM_ROOT=<sandbox> Rscript ...` 로 자식을 띄워도 R 은 기동 시
+  ##   `~/.Renviron`(QM_ROOT=<운영루트>)을 읽어 **상속값을 덮어쓴다**. 그래서 격리했다고
+  ##   믿은 실행이 운영 원장을 계속 기록했다(md5 가 매 실행 바뀌는 것으로 적발).
+  ##   ⇒ 원본 .Renviron 을 그대로 복제하되 QM_ROOT 만 샌드박스로 바꾸고,
+  ##      자식에게 R_ENVIRON_USER 로 그 파일을 지정한다(다른 변수는 손실 없음).
+  ##   ※ R_ENVIRON_USER 는 .Renviron 처리 **이전**에 상속 환경에서 읽히므로 유효하다.
+  home_renv <- path.expand("~/.Renviron")
+  lines <- if (file.exists(home_renv)) readLines(home_renv, warn = FALSE) else character()
+  lines <- lines[!grepl("^\\s*QM_ROOT\\s*=", lines)]
+  writeLines(c(lines, paste0("QM_ROOT=", dst)), file.path(dst, ".Renviron"))
+  dst
+}
+
 main <- function() {
-  R  <- Sys.getenv("QM_ROOT", "C:/Users/99922/OneDrive/Quant_Module_Moltbot")
-  RS <- file.path(Sys.getenv("R_HOME", "C:/Program Files/R/R-4.5.2"), "bin/Rscript.exe")
+  SRC <- Sys.getenv("QM_ROOT", "C:/Users/99922/OneDrive/Quant_Module_Moltbot")
+  RS  <- file.path(Sys.getenv("R_HOME", "C:/Program Files/R/R-4.5.2"), "bin/Rscript.exe")
+  ISOLATE <- !identical(Sys.getenv("QVEST_TEST_NO_SANDBOX", "0"), "1")
+  SBOX <- file.path(SRC, ".cache", sprintf("_test_blunt_anchor_root_%d", Sys.getpid()))
+  R <- if (ISOLATE) .build_sandbox(SRC, SBOX) else SRC
+  cat(sprintf("[격리] %s (root=%s)\n",
+              if (ISOLATE) "샌드박스 — 운영 원본 무접촉" else "★OFF — 운영 원본 직접 조작",
+              sub(SRC, "<QM_ROOT>", R, fixed = TRUE)))
+  ## 자식 Rscript 가 샌드박스를 ROOT 로 읽게 한다.
+  ##   ★QM_ROOT 만 세우면 안 된다 — 자식 R 이 ~/.Renviron 으로 되돌린다(위 주석 참조).
+  ##     R_ENVIRON_USER 를 샌드박스 .Renviron 으로 돌려야 실제로 격리된다.
+  .old_qm  <- Sys.getenv("QM_ROOT", unset = NA_character_)
+  .old_env <- Sys.getenv("R_ENVIRON_USER", unset = NA_character_)
+  Sys.setenv(QM_ROOT = R)
+  if (ISOLATE) Sys.setenv(R_ENVIRON_USER = file.path(R, ".Renviron"))
+
   SCRIPT <- file.path(R, "02_Infrastructure/monitoring/extend_nolayer4_series.R")
   PANEL  <- file.path(R, "qepm/mailbox/worktask/WT-H20260513_001/output/period_returns_layer5.csv")
   LEDGER <- file.path(R, "06_Registry/live_track/STR_1715_on_M4gAE_R05_noLayer4_PG2/live_book_series.csv")
   stopifnot(file.exists(SCRIPT), file.exists(PANEL), file.exists(RS))
 
-  BK_P <- paste0(PANEL, ".testbak"); BK_L <- paste0(LEDGER, ".testbak")
+  ## ★격리 실효 자체를 잰다 — 격리했다고 **믿는** 것과 격리된 것은 다르다.
+  ##   운영 원본의 md5 를 실행 전후로 비교한다. ISOLATE=TRUE 인데 바뀌면 격리 사망이다.
+  OPER_LEDGER <- file.path(SRC,
+    "06_Registry/live_track/STR_1715_on_M4gAE_R05_noLayer4_PG2/live_book_series.csv")
+  OPER_PANEL  <- file.path(SRC,
+    "qepm/mailbox/worktask/WT-H20260513_001/output/period_returns_layer5.csv")
+  .oper_md5 <- function() unname(tools::md5sum(c(OPER_LEDGER, OPER_PANEL)))
+  oper_before <- .oper_md5()
+
+  ## ★백업 경로에 PID — 고정 경로는 겹친 실행이 서로의 백업을 덮어쓴다(어제 사고의 필요조건).
+  BK_P <- sprintf("%s.testbak.%d", PANEL, Sys.getpid())
+  BK_L <- sprintf("%s.testbak.%d", LEDGER, Sys.getpid())
   stopifnot(file.copy(PANEL, BK_P, overwrite = TRUE))
   had_ledger <- file.exists(LEDGER)
   if (had_ledger) stopifnot(file.copy(LEDGER, BK_L, overwrite = TRUE))
@@ -97,7 +173,25 @@ main <- function() {
     if (had_ledger && file.exists(BK_L)) file.copy(BK_L, LEDGER, overwrite = TRUE)
     st$restored_ok <- file.exists(BK_P) &&
       identical(unname(tools::md5sum(BK_P)), unname(tools::md5sum(PANEL)))
+    ## ★★원장 원복도 채점한다 — 2026-08-23 파손이 정확히 이 사각에서 나왔다.
+    ##   구판은 원장을 복사만 하고 **결과를 재지 않았다**: 5회 실행이 남긴 원장이
+    ##   어떤 모양이든 검사는 초록이었다. 안 재는 것은 안 지키는 것이다.
+    st$ledger_ok <- if (!had_ledger) NA else
+      (file.exists(BK_L) && file.exists(LEDGER) &&
+       identical(unname(tools::md5sum(BK_L)), unname(tools::md5sum(LEDGER))))
+    ## 원장 구조 단언(md5 가 같아도 애초에 깨진 상태로 들어왔을 수 있다)
+    st$ledger_shape <- tryCatch({
+      if (!file.exists(LEDGER)) NA else {
+        ln <- readLines(LEDGER, warn = FALSE)
+        hdr <- sum(startsWith(ln, "date,realized_ym"))
+        d <- data.table::fread(LEDGER)
+        hdr == 1L && !any(duplicated(d$date)) && nrow(d) == length(ln) - 1L
+      }
+    }, error = function(e) FALSE)
     unlink(c(BK_P, BK_L))
+    if (ISOLATE) unlink(SBOX, recursive = TRUE, force = TRUE)
+    if (is.na(.old_qm))  Sys.unsetenv("QM_ROOT") else Sys.setenv(QM_ROOT = .old_qm)
+    if (is.na(.old_env)) Sys.unsetenv("R_ENVIRON_USER") else Sys.setenv(R_ENVIRON_USER = .old_env)
   })
 
   ## ★원복 자체를 채점한다 — 초판은 여기서 걸렸을 결함이었다
@@ -105,6 +199,30 @@ main <- function() {
       expect = "복구", actual = if (isTRUE(st$restored_ok)) "복구" else "미복구",
       verdict = if (isTRUE(st$restored_ok)) "PASS" else "FAIL")
   cat(sprintf("  [%s] ⑥ 정리(원복) — 패널 바이트 원상복구\n", if (isTRUE(st$restored_ok)) "PASS" else "FAIL"))
+
+  .lo <- if (is.na(st$ledger_ok)) TRUE else isTRUE(st$ledger_ok)
+  results[[length(results) + 1L]] <- data.table(case = "⑦ 정리(원복) — 원장 md5 원상복구",
+      expect = "복구", actual = if (is.na(st$ledger_ok)) "원장부재(N/A)" else if (.lo) "복구" else "미복구",
+      verdict = if (.lo) "PASS" else "FAIL")
+  cat(sprintf("  [%s] ⑦ 정리(원복) — 원장 md5 원상복구%s\n", if (.lo) "PASS" else "FAIL",
+              if (is.na(st$ledger_ok)) " (원장 부재 — N/A)" else ""))
+
+  .ls <- if (is.na(st$ledger_shape)) TRUE else isTRUE(st$ledger_shape)
+  results[[length(results) + 1L]] <- data.table(case = "⑧ 원장 구조 — 헤더1 ∧ date중복0 ∧ 줄수정합",
+      expect = "정상", actual = if (.ls) "정상" else "파손", verdict = if (.ls) "PASS" else "FAIL")
+  cat(sprintf("  [%s] ⑧ 원장 구조 — 헤더1 ∧ date중복0 ∧ 줄수정합\n", if (.ls) "PASS" else "FAIL"))
+
+  ## ★⑨ 격리 실효 — 이 검사가 없으면 '격리했다'가 주장으로만 남는다.
+  ##   2026-08-24 실측: ~/.Renviron 이 자식의 QM_ROOT 를 되돌려 격리가 무효였는데
+  ##   ①⑥⑦⑧ 은 전부 PASS 였다. 즉 다른 항목으로는 격리 사망이 안 보인다.
+  .iso <- if (!ISOLATE) NA else identical(oper_before, .oper_md5())
+  .iso_ok <- if (is.na(.iso)) TRUE else isTRUE(.iso)
+  results[[length(results) + 1L]] <- data.table(case = "⑨ 격리 실효 — 운영 원본 md5 무변경",
+      expect = if (ISOLATE) "무변경" else "격리OFF(N/A)",
+      actual = if (is.na(.iso)) "격리OFF(N/A)" else if (.iso_ok) "무변경" else "★변경됨",
+      verdict = if (.iso_ok) "PASS" else "FAIL")
+  cat(sprintf("  [%s] ⑨ 격리 실효 — 운영 원본 md5 무변경%s\n", if (.iso_ok) "PASS" else "FAIL",
+              if (is.na(.iso)) " (QVEST_TEST_NO_SANDBOX=1 — N/A)" else ""))
 
   res <- rbindlist(results)
   cat(sprintf("\n[결과] %d/%d PASS\n", sum(res$verdict == "PASS"), nrow(res)))

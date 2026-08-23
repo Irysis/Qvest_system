@@ -77,12 +77,42 @@ coverage_check <- function(carrier_path, label = "battery") {
   if (is.na(carrier_path) || !file.exists(carrier_path) || is.na(bsp) || !file.exists(bsp)) {
     cat(sprintf("[dispatch:%s] ★커버리지 판정 불가 — 캐리어 또는 북 시계열 부재\n", label)); return(out)
   }
+  ## ★★2026-08-24 v9.2 S1b — `max(NULL)` 은 에러가 아니라 **경고와 함께 `-Inf`** 다.
+  ##   그래서 tryCatch(error=) 를 그냥 통과하고, `is.na(-Inf)` 도 FALSE 라 아래 가드도 통과한 뒤
+  ##   `as.Date("-Inf-01")` 에서 abort 했다 — 이 스크립트가 4일 연속 죽은 지점이 여기다.
+  ##   (원인 = 원장 live_book_series.csv 파손으로 realized_ym 열이 사라진 것. 열 부재가
+  ##    '판정 불가'가 아니라 '해석 불가능한 값'으로 흘러들어간 게 결함이다.)
+  ##   수리 = 형제 소비자 portfolio_governor.R:814,824 의 관용구 채택:
+  ##          **컬럼 존재 검사 + 이름 붙은 중단** → unverifiable 로 낙하(침묵 금지).
+  .ym_ok <- function(x) length(x) == 1L && !is.na(x) && grepl("^[0-9]{4}-[0-9]{2}$", x)
   cy <- tryCatch({
     d <- as.data.table(arrow::read_parquet(carrier_path, col_select = "eval_date"))
-    max(format(as.Date(d$eval_date), "%Y-%m")) }, error = function(e) NA_character_)
-  by <- tryCatch(max(fread(bsp)$realized_ym), error = function(e) NA_character_)
-  if (is.na(cy) || is.na(by)) return(out)
-  lag <- length(seq(as.Date(paste0(cy, "-01")), as.Date(paste0(by, "-01")), by = "month")) - 1L
+    if (!("eval_date" %in% names(d))) stop("carrier missing eval_date")
+    v <- format(as.Date(d$eval_date), "%Y-%m"); v <- v[!is.na(v)]
+    if (!length(v)) stop("carrier eval_date 전부 결측")
+    max(v) }, error = function(e) NA_character_)
+  by <- tryCatch({
+    s <- fread(bsp)
+    if (!("realized_ym" %in% names(s))) stop("live_book_series missing realized_ym")
+    v <- as.character(s$realized_ym); v <- v[!is.na(v) & nzchar(v)]
+    if (!length(v)) stop("live_book_series realized_ym 전부 결측")
+    max(v) }, error = function(e) NA_character_)
+  ## 형식 검사까지 통과해야 날짜 산술로 넘긴다 — "-Inf" 같은 값이 여기서 걸린다.
+  if (!.ym_ok(cy) || !.ym_ok(by)) {
+    cat(sprintf("[dispatch:%s] ★커버리지 판정 불가 — 월 키 판독 실패 (carrier=%s · book=%s)\n",
+                label, ifelse(is.na(cy), "NA", as.character(cy)),
+                ifelse(is.na(by), "NA", as.character(by))))
+    cat(sprintf("    → 원장/캐리어 재생성 필요: %s (원장) · extract_book_carrier.R (캐리어). 배터리는 unverifiable 로 계속한다.\n",
+                "02_Infrastructure/monitoring/extend_nolayer4_series.R"))
+    return(out)
+  }
+  ## ★lag 은 **월 산술**로 뺀다 — seq.Date 로 세면 안 된다.
+  ##   실측(2026-08-24): 원장이 파손으로 짧아져 book(2026-05) < carrier(2026-06) 가 되자
+  ##   `seq(cy, by, by="month")` 가 "wrong sign in 'by' argument" 로 **abort** 했다.
+  ##   즉 형식 검사를 통과해도 **순서**가 뒤집히면 죽는다 — 캐리어가 북보다 앞선 것은
+  ##   비정상이 아니라 그냥 lag<=0 이다(=current). 뺄셈은 부호를 자연히 다룬다.
+  .ym_int <- function(s) { p <- as.integer(strsplit(s, "-", fixed = TRUE)[[1]]); p[1] * 12L + p[2] }
+  lag <- .ym_int(by) - .ym_int(cy)
   out <- list(status = if (lag <= 0) "current" else "BEHIND",
               carrier_ym_max = cy, book_ym_max = by, lag_months = lag,
               note = if (lag > 0)
@@ -277,7 +307,15 @@ if (n_opt > 0 || n_risk > 0) {
     "02_Infrastructure/contracts/weighted_screen_bt.R",
     "02_Infrastructure/portfolio/hrp_core.R",
     "02_Infrastructure/portfolio/strategy_tilt_weights.R",
-    list.files("02_Infrastructure/methods/adapters", pattern = "\\.R$", full.names = TRUE)
+    list.files("02_Infrastructure/methods/adapters", pattern = "\\.R$", full.names = TRUE),
+    # ★(2026-08-24 v9.2 S3) **비중 카탈로그와 생성 어댑터도 입력이다.**
+    #   위 ConformalKelly 사고와 정확히 같은 형태: 새 방법론을 등재해도 신선도 게이트에
+    #   안 잡히면 배터리가 캐시를 재사용하며 **그 방법론을 한 번도 안 돈다**.
+    #   ⇒ 카탈로그(파생 파일)와 생성물 어댑터를 신선도 근거에 포함한다.
+    #   ※ 방어적: 아직 없는 경로여도 file.exists 필터가 걸러내므로 무해하다
+    #     (`.in_present` 가 부재를 명시 호명한다).
+    "06_Registry/weight_catalog.json",
+    list.files("02_Infrastructure/methods/adapters/gen", pattern = "\\.R$", full.names = TRUE)
   )
   .in_present <- sigma_ab_inputs[file.exists(sigma_ab_inputs)]
   fresh <- FALSE; .stale_why <- "결과 파일 없음"
@@ -316,6 +354,21 @@ if (n_opt > 0 || n_risk > 0) {
       .extra <- tryCatch(load_method_adapters(route = "optimizer"),
                          error = function(e) { cat(sprintf("[dispatch] method registry fail: %s\n",
                                                            conditionMessage(e))); list() })
+      # ★(2026-08-24 v9.2 S3) 비중 카탈로그 arm 합류 — 카탈로그 리졸버가 아직 없을 수 있으므로
+      #   **부재해도 동작해야 한다**(다른 레인이 신설 중). 있으면 합치고, 없으면 조용히 건너뛴다.
+      #   호명은 한다 — 침묵하면 "카탈로그를 돌렸다"는 착각이 생긴다.
+      if (exists("catalog_weight_arms", mode = "function")) {
+        .cat_arms <- tryCatch(catalog_weight_arms(),
+                              error = function(e) { cat(sprintf("[dispatch] weight catalog fail: %s\n",
+                                                                conditionMessage(e))); list() })
+        if (length(.cat_arms)) {
+          .extra <- c(.extra, .cat_arms)
+          cat(sprintf("[dispatch] 비중 카탈로그 arm %d종 합류 (총 extra_adapters %d)\n",
+                      length(.cat_arms), length(.extra)))
+        }
+      } else {
+        cat("[dispatch] 비중 카탈로그 미배선(catalog_weight_arms 부재) — method_registry arm 만 사용\n")
+      }
       # risk 레인: Σ 추정기 교체 A/B (`minvar@<est_id>`). 비중 규칙 고정 → 차이 = 추정기.
       .ests <- tryCatch(load_sigma_estimators(),
                         error = function(e) { cat(sprintf("[dispatch] sigma estimator load fail: %s\n",

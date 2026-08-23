@@ -611,6 +611,53 @@ def method_measure_pending(root):
     return out
 
 
+# ── 어댑터 등재 백로그 레인 (2026-08-24 v9.2 S3-④) ──────────────────────────
+#   실측 결함: 06_Registry/adapter_registration_queue.json 은 **생산자만 있고 소비자가 0** 이다.
+#     생산자 = 02_Infrastructure/ops/mode_queue_axis_audit.py --emit-queue
+#     소비자 = 없음. ranked 29 / meets_frontier 5 가 쌓인 채 아무도 안 읽는다.
+#   ★큐를 만든 쪽의 판단이 옳았다 — "측정 arm 수는 큐 길이가 아니라 **등재 수**에 비례한다".
+#     그런데 등재로 가는 순번이 없으면 그 판단이 실행되지 않는다. 이 레인이 그 칸이다.
+#   정렬 = screen_priority 우선(⭐⭐⭐→⭐⭐→⭐→미표기→후순위) → first_date 오름차순(오래된 것 먼저).
+#   ★unranked(축 미표기 47건)는 여기 넣지 않는다 — 정렬 불가를 0 으로 위장하지 않는다
+#     (그쪽은 라우터가 축을 채운 뒤에 ranked 로 올라온다).
+ADAPTER_QUEUE_REL = ("06_Registry", "adapter_registration_queue.json")
+
+
+def adapter_backlog_pending(root, registered=None):
+    """라우팅됐으나 method_registry 미등재인 어댑터 후보 — 등재 순번을 준다."""
+    obj = _load_ledger(os.path.join(root, *ADAPTER_QUEUE_REL))
+    if not isinstance(obj, dict):
+        return []
+    if registered is None:
+        registered = method_registry_ids(root)
+    out = []
+    for r in (obj.get("ranked") or []):
+        if not isinstance(r, dict):
+            continue
+        key = nid(r.get("paper_key") or r.get("paper_id") or "")
+        if not key or key in registered:
+            continue
+        out.append({
+            "paper_id": key,
+            "lane": "adapter_backlog",
+            "title": r.get("title") or key,
+            "route": r.get("lane"),
+            "adapter_kind": None,
+            "screen_priority": str(r.get("screen_priority") or ""),
+            "shrinkage_builtin": str(r.get("shrinkage_builtin") or ""),
+            "statistic_order": str(r.get("statistic_order") or ""),
+            "meets_frontier_criteria": bool(r.get("meets_frontier_criteria")),
+            "first_date": str(r.get("first_date") or ""),
+            "reason": "라우팅·2축 판정 완료 · method_registry 미등재 — new_adapter() → register_method() 대상",
+            "first_seen": "adapter_registration_queue.json",
+        })
+    # 우선순위 → 오래된 것 먼저. 문자열 비교로 정렬하지 않는다(코드포인트 순서면 후순위가 앞선다).
+    out.sort(key=lambda r: (_PRIO_RANK.get(r["screen_priority"].strip(), _PRIO_DEFAULT),
+                            r["first_date"] or "99999999",
+                            r["paper_id"]))
+    return out
+
+
 # ── QEPM 계속 레인 (2026-08-22 도훈 지시 "QEPM 모드 실행까지 이어지는 파이프라인") ──
 #   실측 결함: 무인 러너 4종 어디에도 WT 생성/진행이 없고(전수 0건), 프롬프트 3종도
 #   WorkTask 를 언급하지 않는다. 그래서 파이프라인이 **알파에서 끊긴다**.
@@ -809,6 +856,7 @@ def research_queue_pending(stage, root, lanes=None):
     items = (mode_queue_pending(stage, root)
              + alpha_research_pending(stage)
              + method_measure_pending(root)
+             + adapter_backlog_pending(root)
              + qepm_dossier_pending(root, max_age_days=90)
              + promotion_pending(root))
     # lanes: 특정 레인만 뽑는 **표적 소비**. 정렬상 앞 레인이 상한을 다 먹어 뒤 레인이
@@ -823,7 +871,11 @@ def research_queue_pending(stage, root, lanes=None):
     #   새 논문을 또 쌓는 것보다 값이 크다(판정 전 103건 vs 판정 도달 12건).
     # paper_promotion 이 qepm_dossier 다음 — 이미 알파까지 간 것을 판정까지 잇는 게 먼저고,
     #   그 다음이 "검증 통과했는데 정식 라운드를 못 받은 것" 을 올리는 일이다.
+    # adapter_backlog 은 method_measure 바로 뒤 — "이미 등재된 것을 끝내는 편이 먼저"라는
+    #   같은 논리의 다음 칸이다(등재 → 측정 순서를 뒤집지 않는다). 기존 서열을 흔들지 않으려
+    #   정수 사이 값을 쓴다. 실제 소비는 대개 `--lane adapter_backlog` 표적 호출이다.
     _LANE_ORDER = {"qepm_dossier": 0, "paper_promotion": 1, "method_measure": 2,
+                   "adapter_backlog": 2.5,
                    "alpha": 3, "optimizer": 4, "risk": 4, "regime": 5}
 
     def _rank(r):
