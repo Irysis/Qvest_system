@@ -8,12 +8,13 @@
 #   **"미지 id 가 EW 가 아니라 에러인가"** 다.
 #   [[feedback-verify-both-directions-always]] — 양성 대조 + 위반 주입 양방향.
 #
-# 불변식 5종:
+# 불변식 6종:
 #   (a) 모든 arm 이 fixture 에서 wrap_adapter 제약(long-only · Σw=1 · w≤ub)을 통과
 #   (b) 미지 `catalog:` id 가 **EW 폴백이 아니라 에러**
 #   (c) 측정 필드를 읽는 생성물을 admit_generated 가 거부
 #   (d) retired 엔트리가 weight_catalog_arms 에 안 뜸
 #   (e) 형제 방출이 **측정보다 먼저** 기록됨 (+ 생성기 시그니처에 ir/measured 부재)
+#   (f) `.normalize` 가 **합-정규화를 캡보다 먼저** 한다 (advanced_weights.R, 2026-08-24 수리)
 #
 # 실행: Rscript 08_Tests/contracts/test_weight_catalog.R
 suppressWarnings(suppressMessages({
@@ -196,6 +197,108 @@ if (!file.exists(GV)) cat("  SKIP  생성기 부재\n") else {
       ok(sprintf("실원장 방출 %d건 전부 emitted_at 보유", length(led))) else
       ng("실원장 방출에 emitted_at 없음")
   } else cat("  SKIP  실원장 방출 0건\n")
+}
+
+cat("== (f) ★.normalize — 캡을 합-정규화보다 먼저 걸면 신호가 EW 로 붕괴한다 ==\n")
+# 왜 여기 있나 (2026-08-24): advanced_weights.R::.normalize 가 `pmin(w, max_w)` 를 합-정규화
+#   **전에** 걸었다. calc_* 들은 정규화되지 않은 원 선호(1/vol · Σ⁻¹σ · Σ⁻¹1 …)를 넘기므로
+#   원 스케일이 max_w 를 넘으면 전 원소가 캡에 눌려 같아지고, 뒤이은 합-정규화가 그것을
+#   **정확히 EW** 로 만든다 — 예외도 경고도 없이 신호가 통째로 사라진다.
+#   실측: lean 빌트인 6종(cvar·maxdiv·robust_mv·factor_rp·omega·higher_moment)이 정확히 EW,
+#   kelly 는 부분 소멸(선택만 남고 사이징 전멸). 같은 병이 method_registry.R:73-78 과
+#   ops/auto_sigma_weighting_ab.R(2026-08-08)에서 이미 두 번 수리됐고 이 파일만 남아 있었다.
+# ★축의 급소는 "지금 EW 가 아니다"가 아니라 **"구판이면 EW 인가"** 다 — 돌연변이 통제가
+#   없으면 이 검사는 자명참으로 통과하고, 순서를 되돌려도 초록이 유지된다.
+AW <- file.path(ROOT, "02_Infrastructure", "portfolio", "advanced_weights.R")
+if (!file.exists(AW)) cat("  SKIP  advanced_weights.R 부재\n") else {
+  ae <- new.env(parent = globalenv())
+  .aw_ok <- tryCatch({
+    invisible(utils::capture.output(suppressWarnings(suppressMessages(sys.source(AW, envir = ae)))))
+    TRUE
+  }, error = function(e) { ng("advanced_weights 로드", conditionMessage(e)); FALSE })
+  if (.aw_ok) {
+    NA_ <- length(fx$assets); EWv <- rep(1 / NA_, NA_)
+    isEW <- function(v) { v <- as.numeric(v); length(v) == NA_ && max(abs(v - EWv)) < 1e-9 }
+    norm_new <- get(".normalize", envir = ae)
+    # 수리 전 자구 verbatim (돌연변이 통제 — 이 5줄이 곧 결함이다)
+    norm_old <- function(w, max_w = 0.15) {
+      w[is.na(w) | w < 0] <- 0
+      if (sum(w) < 1e-10) return(rep(1 / length(w), length(w)))
+      w <- pmin(w, max_w)
+      w / sum(w)
+    }
+
+    # ── f-1 위반 주입: 원 선호를 **전부 캡 위로** 밀어 넣는다 ──
+    raw <- seq(12, 48, length.out = NA_)     # 전 원소 > max_w(0.15) · 4배 스프레드
+    gn  <- as.numeric(norm_new(raw, 0.15))
+    if (!isEW(gn) && abs(sum(gn) - 1) < 1e-9 && all(gn >= 0) && max(gn) <= 0.15 + 1e-9)
+      ok("위반 주입(원 선호 전량 캡 초과) — EW 붕괴 없이 제약 안(Σw=1 · 0≤w≤max_w)") else
+      ng("★원 선호 전량 캡 초과에서 붕괴/제약 위반",
+         sprintf("isEW=%s sum=%.8f max=%.6f", isEW(gn), sum(gn), max(gn)))
+    # '붕괴 안 함'만으로는 부족하다 — 순위가 살아 있어야 신호가 산 것이다.
+    # ★**강**단조로 잰다. `!is.unsorted()` 는 균일 벡터에서도 참이라 결함판에서 조용히
+    #   초록을 낸다(실측: 구판 복원 시 이 줄만 PASS 로 남았다) — 자명참 축은 축이 아니다.
+    if (all(diff(gn) > 0)) ok("캡 초과분 재분배 후에도 원 선호의 **강**단조 순위 보존") else
+      ng("순위 붕괴(균일화 포함)", utils::head(round(gn, 6), 6))
+
+    # ── f-1b 캡이 **실제로 무는** 입력 — 재분배 경로 자체를 태운다 ──
+    #   f-1 의 raw 는 원 스케일만 크고 정규화하면 전부 캡 아래라 재분배가 안 돈다.
+    #   위임한 normalize_long_only 가 실제로 일하는지는 지배 원소가 있어야 드러난다.
+    raw2 <- c(rep(1, NA_ - 1L), 200)          # 정규화 시 최대 ≈0.893 ≫ 0.15
+    g2   <- as.numeric(norm_new(raw2, 0.15))
+    if (abs(sum(g2) - 1) < 1e-9 && max(g2) <= 0.15 + 1e-9 &&
+        abs(g2[NA_] - 0.15) < 1e-9 && which.max(g2) == NA_)
+      ok("지배 원소 재분배: 캡에 정확히 앉고 Σw=1 유지 · 최대 원소 정체 보존") else
+      ng("캡 재분배 실패", sprintf("sum=%.8f max=%.6f top=%.6f argmax=%d",
+                                   sum(g2), max(g2), g2[NA_], which.max(g2)))
+
+    # ── f-2 돌연변이 통제: 순서를 되돌리면 축이 실제로 뒤집히는가 ──
+    go <- as.numeric(norm_old(raw, 0.15))
+    if (isEW(go))
+      ok("돌연변이 통제: 구판(캡→정규화)은 같은 입력에서 **정확히 EW** — 축이 실제로 잰다") else
+      ng("★돌연변이 통제 실패 — 구판이 EW 를 안 낸다. 이 축은 아무것도 재고 있지 않다",
+         sprintf("dev=%.3e", max(abs(go - EWv))))
+
+    # ── f-3 실소비자 E2E: 6종이 fixture 에서 살아 있는가 / 구판이면 죽는가 ──
+    TGT <- c("calc_cvar_weights", "calc_maxdiv_weights", "calc_robust_mv_weights",
+             "calc_factor_rp_weights", "calc_omega_weights", "calc_higher_moment_weights")
+    rd <- .ctx_ret_dt(fx); tk <- fx$assets
+    runw <- function(fn) tryCatch(suppressWarnings(as.numeric(get(fn, envir = ae)(tk, rd))),
+                                  error = function(e) NULL)
+    dead <- character(0); brk <- character(0)
+    for (fn in TGT) {
+      v <- runw(fn)
+      if (is.null(v)) { brk <- c(brk, fn); next }
+      if (isEW(v) || max(v) > 0.15 + 1e-9 || abs(sum(v) - 1) > 1e-6) dead <- c(dead, fn)
+    }
+    if (!length(brk) && !length(dead))
+      ok(sprintf("실소비자 %d종 전부 fixture 에서 비-EW · 제약 안 (%s)",
+                 length(TGT), paste(sub("^calc_|_weights$", "", TGT), collapse = " · "))) else
+      ng("★실소비자가 EW/제약 위반", c(dead, sprintf("%s(예외)", brk)))
+    # 같은 6종을 구판 .normalize 로 재면 전부 EW 여야 한다(= 축이 이 경로를 실제로 지난다)
+    assign(".normalize", norm_old, envir = ae)
+    mut <- vapply(TGT, function(fn) { v <- runw(fn); !is.null(v) && isEW(v) }, logical(1))
+    assign(".normalize", norm_new, envir = ae)   # 복원
+    if (all(mut))
+      ok("돌연변이 통제(E2E): 구판이면 6종 전부 정확히 EW — 실사고의 재현") else
+      ng("돌연변이 통제(E2E) 부분 실패 — 이 경로를 안 지나는 함수가 있다",
+         names(mut)[!mut])
+
+    # ── f-4 정적: 정본을 재구현하지 않고 normalize_long_only 를 부르는가 ──
+    #   재구현하면 정본이 둘이 되고 둘이 갈린다(설계 규약 ①과 같은 사유).
+    aws <- readLines(AW, warn = FALSE)
+    nb  <- grep("^\\.normalize <- function", aws)
+    if (length(nb)) {
+      blk <- paste(aws[nb[1]:min(nb[1] + 12L, length(aws))], collapse = "\n")
+      if (grepl("normalize_long_only", blk, fixed = TRUE))
+        ok("캡 강제를 normalize_long_only(반복 재분배 정본)에 위임 — 재구현 아님") else
+        ng("★.normalize 가 캡을 자체 구현한다 — 정본이 둘이 된다")
+      if (grepl("w <- w / sum\\(w\\)", blk) &&
+          regexpr("sum\\(w\\)", blk) < regexpr("normalize_long_only", blk))
+        ok("자구 순서 확인: 합-정규화가 캡 위임보다 **앞줄**") else
+        ng("★자구 순서 — 합-정규화가 캡보다 뒤이거나 부재")
+    } else ng("정적 검사 — .normalize 정의 추출 실패")
+  }
 }
 
 .emit()

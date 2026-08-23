@@ -16,6 +16,47 @@ suppressPackageStartupMessages({
   library(data.table)
 })
 
+# ─── 의존: normalize_long_only (반복 재분배 **정본**) ─────────────────────────
+#   .normalize 의 캡 강제를 여기에 위임한다. 재구현하지 않는다 — 정본이 둘이 되면
+#   둘이 갈리고, 그 갈림은 "같은 이름의 규칙이 축마다 다른 것을 계산"으로 나타난다.
+#   경로 해석: **코드는 자기 트리에서** 찾는다(sibling). env 루트(QM_ROOT)는 ~/.Renviron 이
+#   main 으로 고정하므로 worktree 사본이 main 구판을 소싱하는 침묵 결함이 된다
+#   (r-portability ④-b / feedback-code-root-is-not-data-root). 후보마다 marker 로
+#   **정체성**을 검사하고(존재 검사 아님), 못 찾으면 조용히 내려앉지 않고 stop 한다.
+.ADV_DIR <- local({
+  ok <- function(d) is.character(d) && length(d) == 1L && !is.na(d) && nzchar(d) &&
+    file.exists(file.path(d, "strategy_tilt_weights.R"))
+  # ① self: source() 는 프레임에 ofile, sys.source() 는 file 을 남긴다. 중첩 source 시
+  #    ofile 이 바깥 스크립트를 가리키는 기지 트랩은 위 marker 검사가 걸러낸다
+  #    (sibling 이 없는 디렉터리는 기각되고 다음 tier 로 낙하).
+  cand <- NA_character_
+  for (.i in rev(seq_len(sys.nframe()))) {
+    fr <- sys.frame(.i)
+    for (.v in c("ofile", "file")) {
+      p <- tryCatch(get(.v, envir = fr, inherits = FALSE), error = function(e) NULL)
+      if (is.character(p) && length(p) == 1L && !is.na(p) && nzchar(p)) {
+        d <- tryCatch(dirname(p), error = function(e) NA_character_)
+        if (ok(d)) { cand <- d; break }
+      }
+    }
+    if (!is.na(cand)) break
+  }
+  if (!is.na(cand)) cand else {
+    # ② env·cwd 루트(데이터 루트 계열) — self 가 안 잡힐 때만.
+    hit <- NA_character_
+    for (r in c(Sys.getenv("CLAUDE_PROJECT_DIR", ""), Sys.getenv("QM_ROOT", ""), getwd())) {
+      if (!nzchar(r)) next
+      d <- file.path(gsub("\\\\", "/", r), "02_Infrastructure", "portfolio")
+      if (ok(d)) { hit <- d; break }
+    }
+    if (is.na(hit))
+      stop("[advanced_weights] strategy_tilt_weights.R 미발견 — normalize_long_only 없이 로드하지 않는다")
+    hit
+  }
+})
+if (!exists("normalize_long_only", mode = "function"))
+  source(file.path(.ADV_DIR, "strategy_tilt_weights.R"), local = environment())
+
 # ─── Helper: build return matrix ─────────────────────────────────────────────
 .adv_ret_matrix <- function(tickers, ret_dt, n_days = 120) {
   recent <- tail(sort(unique(ret_dt$Date)), n_days)
@@ -28,11 +69,31 @@ suppressPackageStartupMessages({
 }
 
 # ─── Helper: safe normalize ──────────────────────────────────────────────────
+# ★캡을 합-정규화보다 **먼저** 걸면 신호가 통째로 사라진다 (2026-08-24 수리).
+#   `calc_*` 들은 정규화되지 않은 **원 선호 벡터**를 넘긴다(factor_rp = 1/vol,
+#   maxdiv = Σ⁻¹σ, robust_mv = Σ⁻¹1, higher_moment = (1/vol)(1+λ·skew) …).
+#   원 스케일이 max_w(0.15)를 넘으면 `pmin(w, max_w)` 가 **전 원소를 같은 값으로**
+#   만들고, 뒤이은 합-정규화가 그것을 **정확히 EW** 로 만든다. 예외도 경고도 없다.
+#   실측(2026-08-24, weight_catalog.R::.wc_fixture 25종·260일):
+#     · 정확히 EW 6종 — factor_rp · maxdiv · cvar · omega · robust_mv · higher_moment
+#       (factor_rp 는 vol 이 3.4배 차이인데 산출이 0.04 균일 = 신호 완전 소멸)
+#     · 부분 소멸 1종 — kelly: 25종 중 13종이 캡에 걸려 **선택만 남고 사이징이 전멸**
+#       (13종 균등 1/13 + 12종 0). EW 와는 달라 보이므로 probe 의 EW-구별 축을 통과한다.
+#   ★같은 병의 **세 번째** 발생이다. 이미 두 번 같은 사유로 수리됐고 이 파일만 남았다:
+#     · methods/method_registry.R:73-78 (wrap_adapter) — minvar 빌트인이 정확히 1/25
+#     · ops/auto_sigma_weighting_ab.R::.minvar_w/.mvo_w (2026-08-08) — minvar/MVO 3종이
+#       "06-18 이래 EW 를 이름만 바꿔 재고 있었다"
+#   수리: **합-정규화를 먼저**, 캡은 normalize_long_only(초과분 반복 재분배)에 위임.
+#   순서를 되돌리면 세 지점이 동시에 되살아난다 — 08_Tests/contracts/test_weight_catalog.R
+#   의 위반 주입 축(원 선호를 전부 캡 위로 밀어 넣기)이 그 되돌림을 잡는다.
 .normalize <- function(w, max_w = 0.15) {
   w[is.na(w) | w < 0] <- 0
   if (sum(w) < 1e-10) return(rep(1/length(w), length(w)))
-  w <- pmin(w, max_w)
-  w / sum(w)
+  nm <- names(w)
+  w <- w / sum(w)                                    # ← 캡보다 **먼저**
+  out <- normalize_long_only(w, lb = 0, ub = max_w, target_sum = 1)
+  names(out) <- nm
+  out
 }
 
 #==============================================================================
