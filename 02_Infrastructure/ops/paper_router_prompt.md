@@ -30,10 +30,11 @@ route(`alpha`/`optimizer`/`risk`/`regime`/`skip`)를 정하고, route 와 **무�
 `alpha_search_route_${TODAY}.json` = `{date, counts_by_route, n_factor_candidates,`
 `papers:[{title, id, source, route, kr_feasible, factor_candidate:{name,def,novel,`
 `kr_feasible,verdict,confidence}|null, reason}]}`. curated → `curated_routed.json` append.
-- optimizer/risk/regime → `mode_queue_${TODAY}.json`, **정본 = 평면**
+- optimizer/risk/regime → `mode_queue_${TODAY}.json`, **정본 형태 = 평면**
   `{date, schema_version, generated_at, optimizer:[…], risk:[…], regime:[…]}` — 3키를
-  `queue{}` 안에 넣지 말 것(07-27 에 14편 조용히 드롭). 2축 기재 =
-  `mode_queue_research_prompt.md` 「optimizer/risk 2축」 절.
+  `queue{}` 안에 넣지 말 것(07-27 에 14편 조용히 드롭). `schema_version` 은 **형태 식별자**
+  (평면 = `paper_router_v2`)이지 생산자 이름이 아니다 — 형태가 바뀔 때만 값을 올린다.
+  2축 기재 = `mode_queue_research_prompt.md` 「optimizer/risk 2축」 절.
 
 ## 절대 가드 + 보고
 - **PIT C1~C15**. `run_alpha_search`·백테 **호출 금지**. 자본 admit/`book_state` 쓰기 금지.

@@ -32,7 +32,7 @@
 #                                                   — /cleaner 수동 정제 → status=distilled (retain)
 #   auto_map_negative(cluster_key)                  — (v9 2026-08-23, §6 D-f) promote.R 사다리를
 #     통과한 **negative** 클러스터의 DIST 카드를 무인으로 status=distilled 로 올린다
-#     (공리 아님 — INV-7 탐색지도). statement_refined = "[자동-탐색지도] " + statement_draft,
+#     (공리 아님 — INV-7 탐색지도). statement_refined = AUTO_MAP_PREFIX("자동-탐색지도 · ") + 초안 표지 제거 statement_draft,
 #     approved_by = "engine-auto(INV-7 map)". 사람 정제문·promoted·quarantined 는 무변경.
 #   expire_distilled(dist_id, reason)               — status=expired
 #   supersede_subsumed_distilled(dry_run=)          — 부분집합 구 카드 자동 supersede
@@ -452,7 +452,7 @@ list_proposed <- function(root = .dist_root()) {
 #' @param approved_by (2026-08-23 v9) 승인 주체 기록. NULL 이면 미기록.
 #' @param .allow_engine_map (2026-08-23 v9, §6 D-f) 엔진 자동 지도 전용 우회.
 #'   기본 FALSE = 종전 INV-6 초안-표식 금지 그대로. TRUE 는 `auto_map_negative()` 만 쓰며
-#'   문장이 `[자동-탐색지도] ` 로 시작할 것을 강제한다 — 라벨 없는 무인 활성화는 여전히 불가.
+#'   문장이 AUTO_MAP_PREFIX(`자동-탐색지도 · `) 로 시작할 것을 강제한다 — 라벨 없는 무인 활성화는 여전히 불가.
 refine_distilled <- function(dist_id, statement_refined, retry_condition = NULL,
                              frontier = NULL,
                              refined_by = "cleaner_session", root = .dist_root(),
@@ -516,8 +516,15 @@ refine_distilled <- function(dist_id, statement_refined, retry_condition = NULL,
 #   사람 승인(approve_proposed / approve_axiom) 게이트를 통과해야 한다.
 # ★멱등: 이미 지도된 카드(같은 문장·status=distilled)는 **건드리지 않는다**. 사람이 정제한
 #   카드(refined_by ≠ engine-auto)도 덮어쓰지 않는다 — 자동이 수동을 이기면 안 된다.
-AUTO_MAP_PREFIX  <- "[자동-탐색지도] "
+AUTO_MAP_PREFIX  <- "자동-탐색지도 · "   # v9: 대괄호 금지 — `.hi_parse_distilled` 마커 판정(^\[)과 충돌(test_draft_marker_approval 1c)
 AUTO_MAP_APPROVER <- "engine-auto(INV-7 map)"
+
+.strip_draft_tags <- function(s) {
+  # 초안 템플릿 표지 제거 — 내용(family/tags/supporting …)은 보존. 연속 공백 정리.
+  s <- gsub("\\[[^]]*초안[^]]*\\]", "", s, perl = TRUE)
+  s <- gsub("\\[초안\\]|\\(확정 필요\\)|확정 필요", "", s, perl = TRUE)
+  trimws(gsub("[ \t]{2,}", " ", s))
+}
 
 auto_map_negative <- function(cluster_key, root = .dist_root(), verbose = TRUE) {
   key <- as.character(cluster_key)[1]
@@ -537,6 +544,10 @@ auto_map_negative <- function(cluster_key, root = .dist_root(), verbose = TRUE) 
   if (!nzchar(draft) || identical(draft, "NA"))
     draft <- sprintf("negative 클러스터 %s (supporting L-code %d건) — statement_draft 결측",
                      key, length(hit$supporting_l_codes %||% list()))
+  # v9 2026-08-23: statement_draft 는 템플릿 초안 표지(`[실증 실패 규칙 초안]`·`[초안]`·`확정 필요`)를
+  #   문자 그대로 품는다. 탐색지도 카드는 status=distilled 로 서빙되므로 초안 표지가 남으면
+  #   `.hi_parse_distilled` 의 마커 판정(test_draft_marker_approval 1c)이 오탐한다 → 표지만 벗긴다.
+  draft <- .strip_draft_tags(draft)
   target <- paste0(AUTO_MAP_PREFIX, draft)
 
   if (cur %in% c("promoted", "expired", "quarantined_evidence")) {
