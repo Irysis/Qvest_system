@@ -20,7 +20,8 @@
     "2608.16749",
     "2608.09641",
     "2608.12283",
-    "2608.20020"
+    "2608.20020",
+    "2608.14323"
   ],
   "records": [
     {
@@ -1057,6 +1058,32 @@
         "7타모드이식: RAMP 팩터군 후보(분산 위험 프리미엄 proxy)"
       ],
       "session_note": "AS-20260823 AUTORUN 완료(라우터 v2 STEP 3). L1~L4 PASS, L3 OOS/calmar/MDD 전패. 텔레그램 발송 완료(에이전트 내부 tg_agent_brief). 2608.20020 첫 시도."
+    }
+  ],
+    {
+      "paper_id": "2608.14323",
+      "paper_title": "Dependence-Informed Sparse Neural Architecture for Stock Return Prediction (MFCF-HNN)",
+      "factor_id": "MFCF_HNN_excess_return",
+      "factor_name": "MFCF 특성 의존 구조 기반 HNN 초과수익 예측",
+      "strategy_id": null,
+      "gate_decision": "SKIP_PROHIBITED",
+      "gate_failed_layers": "v8.4_금지4종_③_평균표적ML",
+      "port_t": null,
+      "grade": null,
+      "processed_date": "20260823",
+      "verify_path": null,
+      "bt_result_dir": null,
+      "quarantine_reason": "v8.4 금지 4종 ③ 위반 — 예측 표적 = y^e_{i,t+1} = R_{i,t+1} - R^f_{t+1} (다음 달 초과수익, 평균 표적). 금지 4종: '표적이 \"다음 달 평균 수익률\"인 ML 라운드 = 대조군으로만 등장'. AUTORUN 금지. 코드 생성 없이 skip.",
+      "paper_summary": "MFCF(최대필터 클리크 포레스트)로 94개 firm characteristics 의존 구조 추정 → HNN(동형 신경망) 아키텍처 결정(연결이 MFCF 클리크 구조로 사전 고정) → 다음 달 초과수익 예측. US 주식 1987~2016. 완전연결망 대비 파라미터 1/80 + 크로스섹션 랭킹 개선.",
+      "skip_reason_detail": "batch_434 준수: 논문이 기술한 신호는 평균-표적 ML 예측기. CLAUDE.md v8.4 금지 4종 ③ = '표적이 다음 달 평균 수익률인 ML 라운드(대조군으로만)'. 구현 기술적으로 가능하나 헌법 금지.",
+      "re_route": "Lane A arm A 대조군 후보 — arm B(분포-표적 대조군) 설계 시 동일 HNN 아키텍처에 pinball/CRPS loss 로 표적 교체하면 헌법 적합. 상호작용 요건: FQ-233(arm A) + FQ-234(arm B) 독립 측정 완료 후 사전등록.",
+      "architecture_note": "MFCF K=2~5 클리크 크기 파라미터. 입력 = 94개 ranked firm characteristics. ReLU + LayerNorm. 모든 비입력층에서 readout. PyTorch CPU로 구현 가능(파라미터 수 소규모). KR 이식 시 factor_db 331종 → characteristic 변환 필요.",
+      "notable": true,
+      "next_probe": [
+        "Lane A arm A 대조군: FQ-233 독립 라운드 측정 완료 후 HNN(평균표적, arm A)을 대조군으로 사전등록. HNN 아키텍처 × KR factor_db 331종 특성으로 재구성.",
+        "분포-표적 이식(Lane A arm B): HNN 아키텍처 유지 + loss = q90 pinball → DISTRIBUTION_TARGET 소비 형태 교체. 상호작용 사전등록 조건: FQ-233/241(arm A) + FQ-234(arm B) 양 주변부 완료."
+      ],
+      "session_note": "AS-20260823 라우터 v2 STEP 3 — MAX_ALPHA=2 중 2번째 슬롯. 풀텍스트 다운로드 후 금지 4종 ③ 확인(평균 표적 ML). batch_434 + v8.4 금지 dual 확인. Lane A 대조군 재라우팅 기록."
     }
   ],
   "schema_note": "processed = list of paper_id strings (set-like, paper 단위 dedup). records = 전체 시도 감사 로그(동일 paper에서 여러 factor 추출 시 factor_id로 구분). last_updated 갱신 의무.",
