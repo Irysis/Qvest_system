@@ -207,7 +207,8 @@ def append_done_record(paper_id, gate_decision, strategy_id=None,
     obj['last_updated'] = str(processed_date)
 
     checked = _validate(obj)
-    _atomic_write(path, json.dumps(checked, ensure_ascii=False, indent=2) + '\n')
+    _atomic_write(path, json.dumps(checked, ensure_ascii=False, indent=2) + '\n',
+                  eol=_detect_eol(path))
     return rec
 
 
