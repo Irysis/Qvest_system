@@ -422,9 +422,23 @@ run_hurdle_gate <- function(sim_result,
   }
 
   # --- D004: Drawdown structure ---
+  # ── [2026-08-23 v9.1 / S2b, 도훈 결정 E-2] MDD 는 **탈락·차단 권한을 잃는다.**
+  #   왜: v9 lean 첫날 13라운드에서 FMT-01(MDD>45%)이 14/14 발화했다 — KR 25종 롱온리
+  #   배포 형태에서 MDD>45% 는 변수가 아니라 **상수**다. 상수를 탈락 사유로 쓰면 게이트가
+  #   판정을 그만두고 같은 답만 낸다. 그리고 `measurement-graduation.md:39` 가 이미 같은
+  #   진단을 적어 두었다 — "alpha-search 탈락 66/66 이 MDD>45% 단일 사유 · overlay 가
+  #   시스템 입증 MDD 레버인데 모듈 단계에서 선기각하는 구조 모순".
+  #   도훈 판단: MDD 는 **단일 전략 레벨에서 풀 문제가 아니라** 멀티팩터 결합·팩터
+  #   로테이션·리스크 오버레이 층에서 풀 문제다.
+  #   ⇒ 아래 분기는 그대로 돈다. `dd_structural` 이 참이면 fail_reasons 문자열도 D004
+  #     진단도 **그대로 적립**된다(auto_alpha_gate·lean_verify_build·L-code·텔레그램이 이
+  #     문장을 읽는다). 사라진 것은 `hard_fail <- TRUE` 한 줄뿐이다.
+  #   ★남는 것: D031 점수 축(감점) · D084/D085 · `verdict$screening$structural_dd` 노출 ·
+  #     OVERLAY_CANDIDATE 라우팅 · **자본 층 essence_score 의 독립 판정**(불변).
   dd_profile <- .drawdown_frequency_profile(strat_xts, bm_xts)
   mdd <- as.numeric(dd_profile$mdd)
-  if (is.finite(mdd) && mdd > 0.45 && isTRUE(dd_profile$structural_hard_fail)) {
+  dd_structural <- isTRUE(is.finite(mdd) && mdd > 0.45 && isTRUE(dd_profile$structural_hard_fail))
+  if (dd_structural) {
     dd_hard_causes <- character(0)
     if (isTRUE(dd_profile$catastrophic)) {
       dd_hard_causes <- c(dd_hard_causes,
@@ -448,7 +462,9 @@ run_hurdle_gate <- function(sim_result,
                           sprintf("max_underwater>=%dd", dd_profile$severe_max_hard_days))
     }
     if (!length(dd_hard_causes)) dd_hard_causes <- "threshold exceeded"
-    hard_fail <- TRUE
+    # ★2026-08-23 삭제: `hard_fail <- TRUE`. 리서치 층에서 MDD 는 탈락 사유가 아니다(E-2).
+    #   fail_reasons 는 그대로 남긴다 — 이 문장이 사라지면 하류 소비자 4곳이 "구조 사유"를
+    #   식별할 근거를 잃고, 결합 층으로 보낼 재료와 그냥 약한 신호가 같은 라벨이 된다.
     fail_reasons <- c(fail_reasons,
                        sprintf("Structural drawdown (%s): MDD %.1f%%, 45%%+ episodes=%d/%d, max_underwater=%d/%d",
                                paste(dd_hard_causes, collapse = ", "),
@@ -658,6 +674,31 @@ run_hurdle_gate <- function(sim_result,
     score = round(param_score, 1), max = 5,
     value = avg_holdings, code = "D051"
   )
+
+  # --- D052: 리밸일별 최대 보유종목수 (E-5, 2026-08-23 도훈 결정) ---
+  #   ★기록만 한다 — hard_fail 로 만들지 않는다. 물리적 강제는 backtest_harness 의
+  #   `n_hold_eff <- 25L` 캡이 이미 했고, 계약 검사는 audit_bt_result::holdings_cap 이 한다.
+  #   여기서 또 탈락시키면 같은 사실이 세 곳에서 판정돼 "어느 층이 막았나"가 흐려진다.
+  #   보고 3줄(lean-loop.md)이 이 값을 인용한다 — 위반이 조용히 지나가지 않게 하는 것이 목적.
+  n_max <- tryCatch({
+    HL <- sim_result$HOLDINGS_LOG
+    if (!is.null(HL) && nrow(HL) > 0 && all(c("Exec_Date", "Ticker") %in% names(HL))) {
+      max(as.data.table(HL)[, .(n = uniqueN(Ticker)), by = Exec_Date]$n)
+    } else if (nrow(PLOG) > 0 && "N_stocks" %in% names(PLOG)) {
+      max(PLOG$N_stocks, na.rm = TRUE)   # 대체 출처 — 리밸일별 실보유 수
+    } else NA_real_
+  }, error = function(e) NA_real_)
+  diagnostics <- c(diagnostics, list(list(
+    code  = "D052",
+    msg   = if (is.na(n_max)) {
+      "n_max: 측정 불가 (HOLDINGS_LOG·PORTFOLIO_LOG 부재) — 통과 아님, 미측정"
+    } else if (n_max > 25) {
+      sprintf("n_max %d종 > 25 — ★고정 축 위반(E-5). 판정은 audit_bt_result::holdings_cap 이 FAIL 로 낸다", as.integer(n_max))
+    } else {
+      sprintf("n_max %d종 <= 25 (고정 축 준수)", as.integer(n_max))
+    },
+    n_max = if (is.na(n_max)) NA_integer_ else as.integer(n_max)
+  )))
 
   # --- D042: Stress period performance (0-10 pts) ---
   # 벡터화: stress_periods_cpp()로 루프 제거 (Rcpp 또는 R fallback 자동 선택)
@@ -1152,6 +1193,16 @@ run_hurdle_gate <- function(sim_result,
 
   # --- D085: Stress Period Severity (8대 구간 MDD 기준) ---
   # 스트레스 기간 정보가 이미 계산되었으면 worst stress MDD 기반 패널티
+  # ★[2026-08-23 v9.1 / S2b] D084·D085 는 **유지**한다 — 감점이지 탈락이 아니고,
+  #   D085 는 전기간 MDD 가 아니라 **위기구간** MDD 라 AX-001 과 방향이 같다(방어형을
+  #   전기간 지표로 죽이지 말되 위기 구간 성적은 점수에 반영한다).
+  # ⚠★결함 기록(수리는 별건): 아래 `exists("stress_periods")` 는 이 함수 스코프에 정의된
+  #   적이 없는 이름을 찾으므로 **렉시컬 체인을 타고 전역/호출자까지 뒤진다**.
+  #   ① 실질적으로 항상 FALSE = 죽은 분기(D085 는 늘 "미계산" 문장만 낸다).
+  #   ② 그리고 전역에 우연히 같은 이름의 객체가 있으면 **호출자의 데이터로 점수가 바뀐다**
+  #      = 스코프 누출. `exists(..., inherits = FALSE)` + 명시적 인자 전달로 닫아야 한다.
+  #   지금 고치지 않는 이유: 고치면 D085 가 처음으로 발화하기 시작해 이 커밋의 등급
+  #   재분포 예측(F 5·B 8·B_DEF 1·C 1)이 오염된다. 별건 태스크로 분리한다.
   stress_penalty <- 0L
   if (exists("stress_periods") && is.data.table(stress_periods) && nrow(stress_periods) > 0) {
     worst_stress <- min(stress_periods$Strategy_MDD, na.rm = TRUE)
@@ -1347,8 +1398,14 @@ run_hurdle_gate <- function(sim_result,
   # F (Fail)        : 부적합
   # ==========================================================================
   max_axis <- max(unlist(axes))
-  mdd_b_ok <- isTRUE(is.finite(mdd) && mdd <= 0.50) || isTRUE(dd_profile$tail_review)
-  mdd_c_ok <- isTRUE(is.finite(mdd) && mdd <= 0.60) || isTRUE(dd_profile$tail_review)
+  # [2026-08-23 v9.1 / S2b] MDD 는 등급 사다리에서도 **차단 권한을 잃는다**(E-2).
+  #   심볼은 유지한다(diff 최소화 + 하류 grep 보존). 지금까지는 `tail_review` 덕에
+  #   대부분 잠들어 있었지만, hard_fail 이 사라지면 이 두 줄이 곧바로 binding 이 된다 —
+  #   실측: 20260823_154235_16628(score 30.4, MDD 70.05%, tail_review=FALSE)은
+  #   `mdd_b_ok` 를 열어야만 B 로 움직인다. 점수 축(D031 10점)은 그대로 남아 있으므로
+  #   낙폭이 큰 전략은 여전히 **총점에서** 대가를 치른다.
+  mdd_b_ok <- TRUE
+  mdd_c_ok <- TRUE
 
   # v2.1 grade (preserved for backward compat)
   grade_v21 <- if (!hard_fail && total_score_v21 >= 40 && ann_ret >= 0.16 && sharpe >= 0.8) {
@@ -1433,15 +1490,39 @@ run_hurdle_gate <- function(sim_result,
     if (axis_risk >= axis_return && axis_risk >= axis_divers) "defense" else "other"
   }
 
+  # ── [2026-08-23 v9.1 / S2b] Defense 분기의 MDD 문턱(0.35/0.45/0.55) → **위기 조건부 축**.
+  #   AX-001 정합: "방어형을 전기간 SR/CAGR/MDD 로 기각하지 말 것". 전기간 MDD 는 방어형의
+  #   판정 축이 아니다 — 방어형이 증명해야 하는 것은 **위기 구간에서 벤치를 이겼는가**와
+  #   **시장 노출이 낮은가**이고, 그 둘의 실측 대응물이 stress-8 outperf 율과 CAPM β 다.
+  #   심볼 대응: `.def_outperf_rate` = defense_metrics$stress_8_outperf_rate,
+  #             `.def_beta` = defense_metrics$capm_beta (defense_metrics 는 아래에서 조립되므로
+  #             여기서는 원천 심볼을 쓴다 — 같은 값이다).
+  #   ★검정력 바닥: 유효 위기 구간이 3개 미만이면 "방어를 실증했다"고 말할 수 없다.
+  #     그때는 방어 등급을 주지 않고 일반 사다리(C/F)로 떨어뜨린다 — 무측정을 통과로 읽지 않는다.
+  .def_axes_ok <- .def_n_stress >= 3L
+  # β 결측은 **차단하지 않는다**(측정 실패로 방어형을 죽이면 AX-001 위반) — 대신 기록한다.
+  #   ★defense 분기를 실제로 타는 런에만 찍는다 — 전 런에 찍으면 판별력 0 인 상수가 되고,
+  #     그게 정확히 FMT-01 이 14/14 발화해 축을 잃은 실패 형태다.
+  if (identical(.effective_role, "defense") && (!.def_axes_ok || is.na(.def_beta))) {
+    diagnostics <- c(diagnostics, list(list(
+      code = "D077",
+      msg  = sprintf(paste0("[DEFENSE] 조건부 축 결손 — 유효 위기구간 %d/8%s. ",
+                            "β 결측은 등급을 차단하지 않으나(AX-001) 판정이 축소 입력 위에서 나왔음을 기록한다."),
+                     .def_n_stress,
+                     if (is.na(.def_beta)) " · CAPM β 산출 불가(관측 60일 미만 또는 회귀 실패)" else "")
+    )))
+  }
+  .def_beta_ok <- function(th) is.na(.def_beta) || .def_beta <= th
+
   grade <- if (.effective_role == "defense") {
     # ── Defense 전용 분기 ──────────────────────────────────────────────────
     if (hard_fail) {
-      "F"       # Hard fail은 defense도 예외 없음
-    } else if (.def_outperf_rate >= (5/8) && mdd <= 0.35 && sharpe >= 0.5) {
-      "A_DEF"   # 강한 방어 — 5/8+ 아웃퍼폼, MDD <= 35%, SR >= 0.5
-    } else if (.def_outperf_rate >= (3/8) && mdd <= 0.45) {
-      "B_DEF"   # 보통 방어 — 3/8+ 아웃퍼폼, MDD <= 45%
-    } else if (mdd <= 0.55 && total_score >= 15 && max_axis >= 30) {
+      "F"       # Hard fail은 defense도 예외 없음 (단 MDD 는 더 이상 hard_fail 이 아니다)
+    } else if (.def_axes_ok && .def_outperf_rate >= (5/8) && sharpe >= 0.5 && .def_beta_ok(0.95)) {
+      "A_DEF"   # 강한 방어 — 위기 5/8+ 아웃퍼폼, SR >= 0.5, β <= 0.95
+    } else if (.def_axes_ok && .def_outperf_rate >= (3/8) && .def_beta_ok(1.05)) {
+      "B_DEF"   # 보통 방어 — 위기 3/8+ 아웃퍼폼, β <= 1.05
+    } else if (total_score >= 15 && max_axis >= 30) {
       "C"       # Ensemble-only (방어 미달이지만 일부 가치)
     } else {
       "F"
@@ -1698,24 +1779,37 @@ run_hurdle_gate <- function(sim_result,
   screen_route <- if (!screen_pass) {
     # 평균 공간 미달이어도 분포 요건 3종을 전부 통과하면 발급된다(위 주석 참조)
     if (.dist_ok) "DISTRIBUTION_TARGET" else "NONE"
-  } else if (grade %in% c("A", "A_NOVEL", "A_DEF", "B", "B_DEF")) {
-    # 기존 등급 경로가 이미 소화. 분포 요건까지 통과했으면 병기(둘은 배타 아님).
-    if (.dist_ok) "STANDALONE_TRACK|DISTRIBUTION_TARGET" else "STANDALONE_TRACK"
   } else {
+    # ── [2026-08-23 v9.1 / S2a] 배타 분기 → **누적 발급** ────────────────────
+    #   왜: 구판은 grade A/B 면 STANDALONE_TRACK 을 **단독** 발급했다. 그래서
+    #   리서치 층에서 MDD 의 탈락 권한을 없애 B 로 승격되는 순간, 그 전략이 갖고
+    #   있던 OVERLAY_CANDIDATE 라벨이 승격과 함께 사라진다(실측: 20260823_150421_3616,
+    #   MDD 69.8%, 오늘 유일한 OVERLAY_CANDIDATE). 라벨이 결합 층의 목적지인데
+    #   승격이 그 목적지를 지우는 구조였다.
+    #   ⇒ **등급과 라우팅을 분리한다.** 등급 = "단독 운용 자격이 있나",
+    #      라우팅 = "어느 소비면으로 흘러가나". 둘은 배타가 아니다.
+    #   ★`!screen_pass` 가지는 손대지 않는다 — test_distribution_target_screen.R 이
+    #     `identical()` 로 "NONE"/"DISTRIBUTION_TARGET" 을 단언한다.
     .routes <- character(0)
-    if (mdd > 0.45 || isTRUE(dd_profile$tail_review)) .routes <- c(.routes, "OVERLAY_CANDIDATE")  # MDD가 죽인 신호 — overlay/regime 결합 후보
-    if (ann_turnover > turnover_hard_fail_pct) {
-      # v8.3(2026-07-10): DPL_FEATURE 발급 중단 — DPL settled-negative(2026-06-26, 재제안 금지)
-      #   + 소비자 0(죽은 주소 라벨). 고회전 신호는 직접운용·모듈등록(비용 floor) 불가 —
-      #   신호력 실재 기록용 검토 라벨로만 보존. OVERLAY_CANDIDATE 오염 방지 위해 별도 라벨.
-      .routes <- c(.routes, "TURNOVER_REVIEW")
-    } else {
-      # v8.3(2026-07-10): FR_RCMA 무조건 첨부 폐지(판별력 0) — register_module 계약 floor
-      #   (cost floor: 회전율 hard-fail 이내 = 운용가능 비용구조) 충족 가능 케이스만 첨부.
-      # ★2026-08-16 D2 재정의(도훈): FR_RCMA = "register_module 유도 라벨" — 소비자는
-      #   auto_spawn_queue.R (catalog 부재 → 등재 유도 / 등재+fr_eligible → 처분 제안).
-      #   FR/RCMA 는 라벨을 직접 읽지 않는다 — module_catalog(fr_eligible)가 그쪽 입력.
-      .routes <- c(.routes, "FR_RCMA")
+    .graded <- grade %in% c("A", "A_NOVEL", "A_DEF", "B", "B_DEF")
+    if (.graded) .routes <- c(.routes, "STANDALONE_TRACK")
+    # MDD 축은 리서치 층의 탈락 사유가 아니라(E-2) 결합 층으로 보내는 **주소**다.
+    #   등급과 무관하게 병기한다 — 승격이 라벨을 지우지 않게 하는 것이 이 줄의 전부.
+    if (mdd > 0.45 || isTRUE(dd_profile$tail_review)) .routes <- c(.routes, "OVERLAY_CANDIDATE")
+    if (!.graded) {
+      if (ann_turnover > turnover_hard_fail_pct) {
+        # v8.3(2026-07-10): DPL_FEATURE 발급 중단 — DPL settled-negative(2026-06-26, 재제안 금지)
+        #   + 소비자 0(죽은 주소 라벨). 고회전 신호는 직접운용·모듈등록(비용 floor) 불가 —
+        #   신호력 실재 기록용 검토 라벨로만 보존. OVERLAY_CANDIDATE 오염 방지 위해 별도 라벨.
+        .routes <- c(.routes, "TURNOVER_REVIEW")
+      } else {
+        # v8.3(2026-07-10): FR_RCMA 무조건 첨부 폐지(판별력 0) — register_module 계약 floor
+        #   (cost floor: 회전율 hard-fail 이내 = 운용가능 비용구조) 충족 가능 케이스만 첨부.
+        # ★2026-08-16 D2 재정의(도훈): FR_RCMA = "register_module 유도 라벨" — 소비자는
+        #   auto_spawn_queue.R (catalog 부재 → 등재 유도 / 등재+fr_eligible → 처분 제안).
+        #   FR/RCMA 는 라벨을 직접 읽지 않는다 — module_catalog(fr_eligible)가 그쪽 입력.
+        .routes <- c(.routes, "FR_RCMA")
+      }
     }
     if (.dist_ok) .routes <- c(.routes, "DISTRIBUTION_TARGET")
     paste(unique(.routes), collapse = "|")
@@ -1739,6 +1833,12 @@ run_hurdle_gate <- function(sim_result,
       screen_pass  = screen_pass,
       screen_route = screen_route,
       drawdown_tail_review = isTRUE(dd_profile$tail_review),
+      # [2026-08-23 v9.1 / S2b] `hard_fail=FALSE` 인데 `fail_reasons` 에 "Structural drawdown"
+      #   이 남는 **새 상태**의 식별자. 이 플래그가 없으면 소비자는 "구조 낙폭이 있었다"와
+      #   "게이트가 막았다"를 구분할 수 없고, 그 구분이 곧 결합 층 재료 판별이다.
+      #   ★위치는 screen_route 앵커 블록 **뒤**여야 한다 — 두 격리-eval 검사기가
+      #     `screen_route <-` ~ `verdict <- list(` 구간을 잘라 실행하므로.
+      structural_dd = isTRUE(dd_structural),
       # [2026-08-22] 분포 라우트 판정 근거를 **산출물에 남긴다** — 미발급 사유가
       #   보이지 않으면 소비자가 "증거를 안 냈다"와 "요건 미달"을 구분할 수 없다.
       distribution_target = if (is.null(distribution_evidence)) {
@@ -1905,6 +2005,12 @@ run_hurdle_gate <- function(sim_result,
   cat(sprintf("Verdict  : %s\n", if (pass) "PASS" else "FAIL"))
   if (hard_fail) {
     cat(sprintf("Hard FAIL: %s\n", paste(fail_reasons, collapse = "; ")))
+  } else if (length(fail_reasons)) {
+    # [2026-08-23 v9.1 / S2b] `hard_fail=FALSE ∧ fail_reasons 비어있지 않음` 이라는 새 상태.
+    #   구판은 hard_fail 일 때만 찍었으므로 MDD 가 탈락 권한을 잃는 순간 구조 낙폭 문장이
+    #   콘솔에서 **증발한다** — 산출물엔 남는데 사람이 보는 자리에서만 사라지는 게 최악이다.
+    cat(sprintf("Structural note: %s (리서치 층 탈락 아님 — 결합 층 재료. 자본 층은 essence_score 가 별도 판정)\n",
+                paste(fail_reasons, collapse = "; ")))
   }
   cat(sprintf("Score    : %.1f / 100  |  Grade: %s (%s)\n", total_score, grade, role))
   cat(sprintf("5-Axis   : Ret=%d | Risk=%d | Rob=%d | Impl=%d | Div=%d\n",

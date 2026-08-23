@@ -1,5 +1,5 @@
 ## ============================================================================
-## audit_bt_result.R — Backtest Result Contract v1.0 audit (**18 checks**, 구 표기 11 정정)
+## audit_bt_result.R — Backtest Result Contract v1.0 audit (**19 checks**, 구 표기 11 정정)
 ## L3 hard block trigger: Critical FAIL 시 metrics is_official=FALSE 강제
 ## Lawbook §20
 ## L-249 enforcement (2026-04-29): Check 11 frequency-cadence mismatch detection
@@ -515,6 +515,41 @@ audit_bt_result <- function(bt_result) {
               "IR,Beta,Alpha", "medium")
   }
 
+  # Check 18 (E-5, 2026-08-23 도훈 결정): holdings_cap — 리밸일별 distinct ticker <= 25
+  #   왜 계약인가: 고정 축 "종목수 max 25"는 배포 현실이 정의한 문제의 정의(AX-000 따름정리)인데
+  #   2026-08-23 이전에는 **어디서도 검사되지 않았다** — hurdle_gate·audit 모두 grep 0건.
+  #   그 결과 backtest_harness 의 FACTORS$N 동적 오버라이드가 캡 없이 통과해 리밸일 distinct
+  #   ticker 167종(20260823_161630_24400) · 31종 · 35종이 등급까지 갔다.
+  #   물리적 강제는 harness(`n_hold_eff <- 25L`)가 하고, 여기는 **사후 계약 검사**다 —
+  #   harness 를 우회한 경로(외부 산출 holdings, 슬리브 결합, 소급 적재)까지 잡는다.
+  #   FAIL 이고 경고가 아니다. severity 는 "high" — critical(=official metrics 차단)로 두면
+  #   구 산출물 재감사에서 벤치-상대 지표가 통째로 unavailable 이 되어 소급 대조가 불가능해진다.
+  hd_cap <- bt_result$holdings
+  if (is.null(hd_cap) || nrow(hd_cap) == 0 ||
+      !all(c("date", "ticker") %in% names(hd_cap))) {
+    add_check("rebalance", "holdings_cap", "WARN",
+              "holdings 부재 또는 date/ticker 컬럼 없음 — 25종 상한 검사 skip(미측정, 통과 아님)",
+              "n_holdings", "medium")
+  } else {
+    n_by_date <- hd_cap[, .(n = uniqueN(ticker)), by = date]
+    n_max_obs <- max(n_by_date$n)
+    if (n_max_obs > 25L) {
+      viol <- n_by_date[n > 25L]
+      add_check("rebalance", "holdings_cap", "FAIL",
+                sprintf(paste0("리밸일별 distinct ticker 최대 %d종 > 25 (고정 축 위반) — ",
+                               "위반 리밸일 %d/%d, 최악 %s(%d종). 25종 상한은 배포 현실이 정의한 ",
+                               "문제의 정의이므로 결과 전체가 다른 게임의 산출물이다(E-5)."),
+                        n_max_obs, nrow(viol), nrow(n_by_date),
+                        format(viol$date[which.max(viol$n)]), max(viol$n)),
+                "CAGR,Sharpe,MDD,Turnover,IR", "high")
+    } else {
+      add_check("rebalance", "holdings_cap", "PASS",
+                sprintf("리밸일별 distinct ticker %d~%d종 <= 25 (%d 리밸일)",
+                        min(n_by_date$n), n_max_obs, nrow(n_by_date)),
+                "", "low")
+    }
+  }
+
   audit_tbl <- rbindlist(audit_rows, use.names = TRUE, fill = TRUE)
   bt_result$audit <- audit_tbl
 
@@ -555,4 +590,4 @@ audit_bt_result <- function(bt_result) {
   bt_result
 }
 
-cat("[audit_bt_result.R] Loaded — audit_bt_result() (11 checks, L3 trigger, L-249 frequency_cadence_consistency)\n")
+cat("[audit_bt_result.R] Loaded — audit_bt_result() (19 checks, L3 trigger, L-249 frequency_cadence_consistency, E-5 holdings_cap)\n")

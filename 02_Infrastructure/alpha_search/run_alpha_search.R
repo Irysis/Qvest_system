@@ -301,15 +301,15 @@ run_alpha_search <- function(strategy_name,
 
   .as_stage("sec4_done")
   if (!isTRUE(deep))
-    cat("[AlphaSearch] lean 모드(deep=FALSE): register_module·팩터회귀(FF3/FF5/FM)·권위재측정·improvement_potential 생략\n")
+    cat("[AlphaSearch] lean 모드(deep=FALSE): 팩터회귀(FF3/FF5/FM)·권위재측정·improvement_potential 생략 | 6c proxy 등재는 수행(module_quarantine, v9.1 S2c)\n")
 
   # ---- 4b. 후보 보존(register_module) — 계약 미충족분은 quarantine ---- [deep 전용]
   #   v8.1 hardening: PIT-clean 백테는 연구 후보로 보존하되, FR canonical pool은
   #   authoritative 재측정(contract_pass+backtested+frozen+hash) 성공분만 허용한다.
   #   따라서 이 early call은 통상 module_quarantine에 저장된다.
-  #   ★v9: lean 라운드는 레지스트리를 만지지 않는다 — 지명(deep=TRUE) 전까지 후보는
-  #   stage_artifacts(bt_result 계약 + manifest)에만 남는다. bt_result 는 lean 에서도 저장되므로
-  #   나중에 deep 으로 재실행하면 같은 산출물에서 등재가 가능하다(정보 손실 없음).
+  #   ★v9.1(2026-08-23): lean 라운드의 등재는 **6c 한 곳으로 모은다.** 여기(4b, 등급 이전)와
+  #   6e(권위 재측정)는 deep 전용 그대로다 — 등급 없는 조기 등재는 소비자가 쓸 수 없고
+  #   (screen_route 도 grade 도 아직 없다) 같은 id 를 한 라운드에 두 번 쓰는 낭비다.
   if (isTRUE(deep) && isTRUE(pit_clean)) tryCatch({
     source(file.path(PROJECT_ROOT, "02_Infrastructure", "contracts", "register_module.R"))
     register_module(sim, strategy_id, grade = NA_character_, origin_mode = "alpha_search",
@@ -349,6 +349,10 @@ run_alpha_search <- function(strategy_name,
   assign("%||%", `%||%`, envir = globalenv())
   grade  <- hg$grade %||% "uncertain"
   score  <- .as_num(hg$score)
+  # ★[2026-08-23 v9.1 / S2c] screening 을 여기로 끌어올린다(구 위치 = 6d, 6c 뒤).
+  #   6c 의 lean register_module 이 `screen_route`·`screen_pass`·`structural_dd` 를 meta 에
+  #   실어야 하는데, 구 배치에서는 그 시점에 아직 정의되지 않은 이름이었다.
+  screening <- hg$verdict$screening %||% list()
   m      <- hg$verdict$metrics %||% list()
   sdef   <- hg$verdict$statistical_defense %||% list()
   perf_bm <- tryCatch(summarise_perf(sim$bm_xts, "KOSPI200"), error = function(e) NULL)
@@ -385,14 +389,32 @@ run_alpha_search <- function(strategy_name,
               grade, score %||% 0, excess_cagr %||% 0, pass, notable, isTRUE(deep)))
 
   .as_stage("sec6_done")
-  # ---- 6c. 후보 quarantine grade 갱신 ---- [deep 전용]
-  #   허들 등급 산출 후에도 계약 실측 전이면 FR pool이 아니라 quarantine만 갱신된다.
-  if (isTRUE(deep) && isTRUE(pit_clean)) tryCatch({
+  # ---- 6c. 후보 등재(quarantine) — ★lean 라운드도 등재한다 (2026-08-23 v9.1 / S2c, E-4) ----
+  #   왜 열었나(실측): v9 lean 첫날 13라운드의 module_catalog 등재가 **0건**이었다
+  #   (register_module 3곳이 전부 `deep` 뒤). 그래서 리서치 층이 만든 재료가 결합 층
+  #   (오버레이·팩터 로테이션)에 **도달하지 못했다** — 만들고 안 부르는 계통 그대로.
+  #   ★그런데 FR 입력면은 오염시키지 않는다: `metric_type="proxy"` 를 **명시**하면
+  #   register_module.R:133-142 의 계약 floor(`metric_type=="backtested"` 요구)가 걸려
+  #   `fr_eligible=FALSE` → **module_quarantine.json** 으로 간다. module_catalog 에는
+  #   들어가지 않고, build_module_performance.R:63-67 필터는 한 줄도 건드리지 않는다.
+  #   무오염이 규칙이 아니라 **계약**으로 보장된다는 뜻이다.
+  #   소비자는 이미 있다 — overlay_candidate_queue.R:65-87 이 quarantine 을 스캔해
+  #   `mod$meta$screen_route` 를 읽는다("현재 0건, 배관 선설치" 주석).
+  #   kill switch: QVEST_LEAN_REGISTER=0.
+  if (isTRUE(pit_clean) && !identical(Sys.getenv("QVEST_LEAN_REGISTER", "1"), "0")) tryCatch({
     if (!exists("register_module", mode = "function"))
       source(file.path(PROJECT_ROOT, "02_Infrastructure", "contracts", "register_module.R"))
     register_module(sim, strategy_id, grade = grade, origin_mode = "alpha_search",
                     role = NA_character_,
-                    meta = list(strategy_idea = strategy_idea, score = score,
+                    metric_type = "proxy",   # ★기본값 의존 금지 — grep 가능해야 한다
+                    meta = list(strategy_idea = strategy_idea,
+                                strategy_name = strategy_name,   # ★backfill_lean_modules.R::bl_meta 와 키 동형
+                                score = score,
+                                lean = !isTRUE(deep),
+                                grade_basis = "proxy_diagnostic",
+                                screen_route = screening$screen_route %||% "NONE",
+                                screen_pass = isTRUE(screening$screen_pass),
+                                structural_dd = isTRUE(screening$structural_dd),
                                 f_grade_reasons = f_grade_reasons,
                                 fmt_codes = vapply(fmt_hits, function(x) x$code, ""),
                                 bt_result_path = .rel_project_path(bt_contract$bt_result_path %||% file.path(OUT_DIR, "bt_result.rds")),
@@ -427,7 +449,7 @@ run_alpha_search <- function(strategy_name,
   #   ★v9: 권위 재측정은 **자본 층 입구**의 일이다 — lean 라운드는 proxy 허들 등급까지만 낸다.
   #   (lean 에서도 bt_result 계약은 4장에서 이미 저장되므로 지명 시 그 산출물로 재측정 가능)
   auth <- NULL
-  screening <- hg$verdict$screening %||% list()
+  # (screening 은 6장 앞머리에서 이미 산출 — 6c 의 lean register_module 이 소비한다)
   screen_remeasure <- isTRUE(screening$screen_pass) &&
     grepl("OVERLAY_CANDIDATE|FR_RCMA|DPL_FEATURE|TURNOVER_REVIEW", screening$screen_route %||% "")
   # v8.3(2026-07-10): DPL_FEATURE 발급 중단(hurdle_gate) — 고회전 케이스는 TURNOVER_REVIEW로 대체.
@@ -580,6 +602,20 @@ run_alpha_search <- function(strategy_name,
       })
   }
 
+  # ---- 10. 스크리닝 큐 리프레시 (비동기 · 실패해도 라운드에 영향 없음) ----
+  #   6c 가 방금 quarantine 에 넣은 재료를 overlay/standalone/auto_spawn 큐가 집어가게 한다.
+  #   ★`wait=FALSE` + `--if-stale 10`(디바운스) — 라운드 wall-clock 예산(<=40분)에 붙지 않는다.
+  #   스크립트는 별도 태스크에서 생성된다 — **부재 시 조용히 실패**해야 한다(tryCatch NULL).
+  #   중단 스위치는 스크립트 쪽 QVEST_SCREEN_QUEUE_NORUN=1.
+  tryCatch({
+    .qsc <- file.path(PROJECT_ROOT, "02_Infrastructure/ops/refresh_screen_queues.R")
+    if (file.exists(.qsc)) {
+      qlog <- file.path(PROJECT_ROOT, "stage_artifacts", "alpha_search", "refresh_screen_queues.log")
+      system2(Sys.which("Rscript"), c("--no-save", shQuote(.qsc), "--if-stale", "10"),
+              stdout = qlog, stderr = qlog, wait = FALSE)
+    }
+  }, error = function(e) NULL)
+
   invisible(list(strategy_id = strategy_id, grade = grade, score = score,
                  pass = pass, notable = notable, excess_cagr = excess_cagr,
                  out_dir = OUT_DIR, charts = charts, l_code = l_code_path,
@@ -716,7 +752,13 @@ run_alpha_search <- function(strategy_name,
   if (is.list(fr)) fr <- unlist(fr, use.names = FALSE)
   fr <- fr[nzchar(fr)]
   if (length(fr)) {
-    items <- c(items, sprintf("게이트 사유: %s", .clip_msg(paste(fr, collapse = " | "), 165L)))
+    # ★[2026-08-23 v9.1] `hard_fail=FALSE` 인데 `fail_reasons` 가 남는 **새 상태**.
+    #   MDD 가 탈락 권한을 잃었으므로(E-2) 같은 문자열이 "게이트가 막았다"일 수도,
+    #   "구조 진단만 남았다"일 수도 있다. 라벨을 조건화하지 않으면 읽는 사람이
+    #   탈락 사유와 진단을 구분하지 못한다.
+    items <- c(items, sprintf("%s: %s",
+                              if (isTRUE(v$hard_fail)) "게이트 사유" else "구조 진단(탈락 아님)",
+                              .clip_msg(paste(fr, collapse = " | "), 165L)))
   } else if (isTRUE(v$hard_fail)) {
     items <- c(items, "게이트 사유: hard_fail=TRUE이나 상세 사유가 비어 있음")
   }
@@ -739,7 +781,8 @@ run_alpha_search <- function(strategy_name,
     items <- c(items, sprintf("초과수익 부족: 벤치 대비 %+.1f%%p", exc))
   }
   if (!is.na(mdd) && mdd > 45 && !any(grepl("최대낙폭|MDD|Structural|drawdown", items, ignore.case = TRUE))) {
-    items <- c(items, sprintf("낙폭 부담: 최대낙폭 %.1f%%", mdd))
+    # "탈락"이 아니라 "부담"이다 — 리서치 층에서 MDD 는 결합 층으로 보내는 주소지 판정이 아니다.
+    items <- c(items, sprintf("낙폭 부담(오버레이 대상): 최대낙폭 %.1f%%", mdd))
   }
   if (!is.na(to) && to > 1100) {
     items <- c(items, sprintf("구현 부담: 연환산 회전율 %.0f%%로 1,100%% 초과", to))
@@ -1374,12 +1417,31 @@ run_alpha_search <- function(strategy_name,
   oos_retention <- .as_num(tryCatch(hg$verdict$score_breakdown$oos$value, error = function(e) NA))
   fail_reasons  <- tryCatch(unlist(hg$verdict$fail_reasons), error = function(e) character(0))
   auth_ok <- !is.null(auth) && identical(auth$status, "OK")
+  # ── [2026-08-23 v9.1 / S2b] 논문 가정 충돌을 **1급 축**으로 승격하기 위한 선행 판정.
+  #   fmt_axis(아래)·lesson_reason·mechanism_hypothesis 세 곳이 같은 값을 봐야 하므로
+  #   여기서 한 번만 계산한다.
+  paper_gap_txt <- trimws(as.character(paper_assumption_broken %||% ""))
+  has_paper_gap <- nzchar(paper_gap_txt) && !identical(paper_gap_txt, "미기재")
+  # FMT-01/04(MDD 축)는 KR 롱온리에서 상수라 **선두에서 내린다** — 14/14 발화한 축이
+  #   교훈 문장의 첫머리를 차지하면 모든 라운드의 교훈이 같은 문장이 된다.
+  .fmt_lead <- Filter(function(x) !((x$code %||% "") %in% c("FMT-01", "FMT-04")), fmt)
+  .fmt_tail <- Filter(function(x)  ((x$code %||% "") %in% c("FMT-01", "FMT-04")), fmt)
+  .fmt_ord  <- c(.fmt_lead, .fmt_tail)
 
   # ---- lesson_text 꼬리 = 숫자 나열이 아니라 **사유 + 논문 가정 대비** (v9 Lean Loop) ----
   #   구판 꼬리("통과 — PG 편입 권고." / "명확한 실패 패턴 — 역방향 가설 탐색 후보.")는
   #   등급에서 기계적으로 파생되는 상수라 교훈이 없다. 축(FMT/fail_reasons)과 논문 가정을 적는다.
-  lesson_reason <- if (length(fmt)) {
-    paste(vapply(fmt, function(x) sprintf("%s %s", x$code %||% "FMT", x$reason %||% ""), ""), collapse = "; ")
+  lesson_reason <- if (has_paper_gap) {
+    # 논문 가정 충돌이 있으면 그것이 **지배 사유**다 — 그 뒤에 측정된 축을 잇는다.
+    .rest <- if (length(.fmt_ord)) {
+      paste(vapply(.fmt_ord, function(x) sprintf("%s %s", x$code %||% "FMT", x$reason %||% ""), ""), collapse = "; ")
+    } else if (length(fail_reasons)) {
+      paste(fail_reasons, collapse = "; ")
+    } else ""
+    sprintf("논문 가정 충돌: %s%s", paper_gap_txt,
+            if (nzchar(.rest)) sprintf(" | 측정된 축: %s", .rest) else "")
+  } else if (length(.fmt_ord)) {
+    paste(vapply(.fmt_ord, function(x) sprintf("%s %s", x$code %||% "FMT", x$reason %||% ""), ""), collapse = "; ")
   } else if (length(fail_reasons)) {
     paste(fail_reasons, collapse = "; ")
   } else if (pass) {
@@ -1387,8 +1449,7 @@ run_alpha_search <- function(strategy_name,
   } else {
     sprintf("탈락축 미기록 — 종합 %.0f점 미달(신호 약함)", .as_num(hg$score))
   }
-  paper_gap <- as.character(paper_assumption_broken %||% "")
-  if (!nzchar(trimws(paper_gap))) paper_gap <- "미기재"
+  paper_gap <- if (has_paper_gap) paper_gap_txt else "미기재"
   lesson <- sprintf("%s: 등급 %s, 연복리 %.1f%% (벤치마크 대비 %+.1f%%p), 샤프 %.2f, 최대낙폭 %.1f%%. 사유: %s; 논문 가정 대비: %s",
                     strategy_name, grade, .as_num(m$CAGR), excess_cagr %||% 0, .as_num(m$Sharpe),
                     -abs(.as_num(m$MDD)), .clip_msg(lesson_reason, 220L), .clip_msg(paper_gap, 120L))
@@ -1400,8 +1461,18 @@ run_alpha_search <- function(strategy_name,
 
   # ---- 학습 3필드 (의무, v8.1 트랙D — 형해화 해소: 탈락축/실측수치 기반 구체 문장) ----
   # mechanism_hypothesis: 전략 아이디어 + 판정된 실패축(FMT/fail_reasons)에서 구성. 보일러플레이트 금지.
-  axis_txt <- if (length(fmt)) {
-    paste(vapply(fmt, function(x) sprintf("%s(%s)", x$code, x$reason), ""), collapse = "; ")
+  axis_txt <- if (has_paper_gap) {
+    # 논문 가정이 깨진 지점이 **기전 가설의 출발점**이다 — "KR 에서 이 가정이 성립하지
+    #   않는다"는 것이 검증이 실제로 알아낸 것이고, MDD 상수는 그 뒤에 온다.
+    .rest2 <- if (length(.fmt_ord)) {
+      paste(vapply(.fmt_ord, function(x) sprintf("%s(%s)", x$code, x$reason), ""), collapse = "; ")
+    } else if (length(fail_reasons)) {
+      paste(fail_reasons, collapse = "; ")
+    } else ""
+    sprintf("논문 가정 충돌(%s)%s", paper_gap_txt,
+            if (nzchar(.rest2)) sprintf(" + %s", .rest2) else "")
+  } else if (length(.fmt_ord)) {
+    paste(vapply(.fmt_ord, function(x) sprintf("%s(%s)", x$code, x$reason), ""), collapse = "; ")
   } else if (length(fail_reasons)) {
     paste(fail_reasons, collapse = "; ")
   } else if (pass) {
@@ -1432,20 +1503,40 @@ run_alpha_search <- function(strategy_name,
   #   계약 = ①next_probes 2건 이상(축별 표에서 자동 생성) ②live_trigger(부활 조건, C/F만).
   #   ★차단하지 않는다 — 미충족이면 WARN 후 그대로 발행한다(정직 원장 우선).
   #   표 = {분기 조건 → probe① 기존 분기문 / probe② 축별 대안 / live_trigger 부활조건}.
+  # ── [2026-08-23 v9.1 / S2b] probe 축 재설계: PAPER_GAP 1급 · FMT-01/04 최하위 ───
+  #   실측 사유: v9 lean 첫날 L-code 14건 중 **FMT-01 이 14/14 발화**했다(FMT-04 는 9/14).
+  #   구 우선순위는 FMT-01/04 를 2순위에 뒀으므로 14건 **전부** 같은 축으로 판정됐고,
+  #   next_probes 가 "MDD 축 탈락 → 오버레이" 한 문장으로 붕괴했다(Grade B 라운드 포함).
+  #   상수는 축이 아니다 — 전부에 발화하는 판정은 아무것도 구분하지 못한다.
+  #   ⇒ ①MDD 축은 최하위로 내리고 ②그 자리에 **논문 가정 충돌(PAPER_GAP)** 을 놓는다.
+  #     PAPER_GAP 은 라운드마다 다르고(종목수 절단·유니버스 치환·비중방법 대체),
+  #     KR 데이터에서 직접 재볼 수 있는 **구성 변경**으로 곧장 번역되는 축이다.
+  #   예상 분포(오늘 14건 기준): PAPER_GAP 10 · FMT-07 2 · FMT-02 1 · FMT-01/04 1.
+  #   (`paper_gap_txt`·`has_paper_gap` 은 위 lesson_reason 블록에서 이미 산출됐다)
   fmt_axis <- if (pass) "PASS"
+              else if (has_paper_gap) "PAPER_GAP"
               else if ("FMT-05" %in% fmt_codes) "FMT-05"
-              else if (any(c("FMT-01", "FMT-04") %in% fmt_codes)) "FMT-01/04"
               else if ("FMT-02" %in% fmt_codes) "FMT-02"
               else if ("FMT-07" %in% fmt_codes) "FMT-07"
               else if ("FMT-08" %in% fmt_codes) "FMT-08"
               else if ("FMT-03" %in% fmt_codes) "FMT-03"
+              else if (any(c("FMT-01", "FMT-04") %in% fmt_codes)) "FMT-01/04"
               else if (is_fail) "FAIL_DEFAULT"
               else "NEAR_MISS"
 
   probe1 <- switch(fmt_axis,
     "PASS"        = "QEPM 정밀검증(WorkTask) 이행 + Grade-A 풀 직교성(GradeA_Corr)·book-marginal ΔIR>=0.05 확인.",
+    # ★1급 축. 파라미터 튜닝이 아니라 **구성 변경 1건**을 지시한다 — 논문이 가정한 것과
+    #   KR 배포 형태가 갈린 그 지점을 데이터에서 직접 재는 것이 이 라운드의 다음 수다.
+    "PAPER_GAP"   = sprintf(paste0("논문 가정 충돌 '%s' 을 KR 데이터에서 직접 측정 — ",
+                                   "충돌 축을 되돌린 **구성 변경 1건**(파라미터 조정 아님: 종목수 절단 전 N 복원 / ",
+                                   "논문 유니버스 근사 / 논문 비중방법 복원 중 해당 1건)으로 재검증하고 ",
+                                   "기여를 분리한다."),
+                            .clip_msg(paper_gap_txt, 120L)),
     "FMT-05"      = sprintf("회전율 축 탈락(연 %.0f%%) — 리밸 주기 연장(월->분기)·buffer_zone 확대·신호 지속성 측정 후 재검증.", .as_num(m$Turnover_Ann)),
-    "FMT-01/04"   = sprintf("MDD 축 탈락(%.1f%%) — 신호력 보존 시 OVERLAY_CANDIDATE 라우트(국면/DD overlay는 S5/QEPM 단계) 또는 저변동 결합 재검증.", abs(.as_num(m$MDD))),
+    "FMT-01/04"   = sprintf(paste0("MDD 축 진단(%.1f%%) — **리서치 층 탈락 아님**(도훈 결정 E-2). ",
+                                   "OVERLAY_CANDIDATE 라우트로 오버레이/국면 결합에서 소비하고, ",
+                                   "그 결합에서 실제로 낙폭이 내려가는지를 잰다."), abs(.as_num(m$MDD))),
     "FMT-02"      = "방향 역작동 의심 — kr-inverse-pattern-miner로 역방향 가설 생성 + long-short/multi-sleeve 구성 변경 탐색.",
     "FMT-07"      = "후반부 알파 붕괴 — 2017 전후 서브기간 분해 + 최근 5Y 한정 재검증으로 소멸 여부 확정.",
     "FMT-08"      = "게이팅 과적합 의심 — 게이트 임계 완화/제거 대조 실험으로 회복랠리 기여 분리.",
@@ -1456,8 +1547,11 @@ run_alpha_search <- function(strategy_name,
 
   probe2 <- switch(fmt_axis,
     "PASS"        = "지명 후 deep=TRUE 재실행으로 권위 재측정(PORT_t·oos_retention·calmar) 산출.",
+    # 대조군: 논문 **원 사양** 복제팔. 충돌 축을 되돌린 팔과 나란히 재야 "고정 축이 죽인 것"과
+    #   "KR 에서 원래 안 되는 것"이 구분된다 — 한 팔만 돌리면 둘이 같은 결과로 보인다.
+    "PAPER_GAP"   = "논문 원 사양 복제팔(고정 축 충돌분만 되돌린 대조군) 1건을 나란히 측정해 격차를 귀속.",
     "FMT-05"      = "신호 지속성 측정 후 보유기간 재설계.",
-    "FMT-01/04"   = "저변동 결합(lowvol sleeve) 재검증.",
+    "FMT-01/04"   = "오버레이/국면 결합 후 dMDD 측정(단독 재설계 아님 — MDD 는 결합 층에서 푼다).",
     "FMT-02"      = "multi-sleeve 구성 변경.",
     "FMT-07"      = "최근 5Y 한정 재검증.",
     "FMT-08"      = "게이트 제거 대조.",
@@ -1467,12 +1561,20 @@ run_alpha_search <- function(strategy_name,
 
   live_trigger <- switch(fmt_axis,
     "PASS"        = NA_character_,   # 통과 라운드는 부활 조건이 없다(이미 살아 있음)
+    # ★PAPER_GAP arm 누락 금지 — 빠지면 무명 default 로 떨어져 상수 문장이 나온다.
+    "PAPER_GAP"   = "논문 가정 축을 복원한 구성에서 IR>0 ∧ score>=25 회복 시",
     "FMT-05"      = "회전율<600% 변형이 SR 유지 시",
-    "FMT-01/04"   = "MDD<45% 구성에서 IR>0 유지 시",   # MDD 축 공통(FMT-01·04 동일 분기)
+    "FMT-01/04"   = "오버레이/국면 결합에서 dMDD<=-3pp ∧ IR 비열위 시",  # MDD 축 공통(FMT-01·04 동일 분기)
     "hard_fail 축 해소 후 score>=25 회복 시")
 
   next_probes <- unique(c(probe1, probe2))
   next_probes <- next_probes[nzchar(next_probes)]
+  # ★[2026-08-23 v9.1] `paper_assumption_broken` 미기재 = PAPER_GAP 축이 발화하지 않는다는 뜻이고,
+  #   그러면 probe 축이 FMT 상수(KR 롱온리에서 MDD>45%는 14/14 발화)로 떨어진다.
+  #   차단하지 않는다 — 기존 WARN 규약(정직 원장 우선) 전례를 따른다.
+  if (!pass && !has_paper_gap)
+    cat(sprintf("[L-CODE WARN] %s: paper_assumption_broken 미기재 — probe 축이 진단 상수로 떨어진다 (axis=%s)\n",
+                strategy_id, fmt_axis))
   if (!pass && (length(next_probes) < 2L || is.na(live_trigger)))
     cat(sprintf("[L-CODE WARN] continuity contract 미충족 (%s: next_probes=%d, live_trigger=%s) — 그대로 발행\n",
                 strategy_id, length(next_probes),

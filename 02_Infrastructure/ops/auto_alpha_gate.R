@@ -28,6 +28,9 @@
 #
 # 입력: auto_verify_<id>.json — flat(`pit_pass` …) 또는 L계층(`L1_pit_pass` …) 둘 다 허용.
 #       구조 탈락 신호: `hard_fail`(bool) + `hard_fail_reason`(str) + mdd/calmar/turnover.
+#       라우팅 신호: `screen_route_hint`(str, lean_verify_build.py 가 hurdle_result 에서 이관) —
+#       hard_fail 과 **독립**으로 SCREEN_TIER 를 여는 축(v9.1 S2a). MDD 가 리서치 층 탈락
+#       권한을 잃은 뒤에도 결합 층 주소가 살아 있어야 하므로 OR 가산이다.
 # 출력: 같은 JSON 에 gate_decision / gate_failed_layers / gate_rule / gate_authority /
 #       screen_route(해당 시) 기록. stdout 1줄. exit 0=ADOPT · 1=미채택(QUARANTINE|SCREEN_TIER) · 2=error.
 suppressMessages(library(jsonlite))
@@ -91,8 +94,18 @@ ok_or_absent <- function(nm) !isFALSE(layers[[nm]])
 # ── 구조 탈락(hard_fail): 신호 유무가 아니라 배포 형태(MDD·turnover)의 문제.
 hard_fail <- isTRUE(tri(v$hard_fail))
 hf_reason <- if (!is.null(v$hard_fail_reason)) as.character(v$hard_fail_reason)[1] else ""
-structural <- hard_fail && grepl("drawdown|mdd|turnover|calmar|concentration|structural",
-                                 hf_reason, ignore.case = TRUE)
+# ── [2026-08-23 v9.1 / S2a] 라우팅을 hard_fail 에서 분리한다.
+#   왜: 리서치 층에서 MDD 의 탈락 권한이 사라지면(E-2) `hard_fail=FALSE` 인데도
+#   구조 사유(MDD 69.8%)를 갖고 결합 층으로 가야 하는 산출물이 생긴다. 구판은
+#   `structural` 이 hard_fail 에 **곱해져** 있어서 그 순간 SCREEN_TIER 발급이 0 이 된다.
+#   ⇒ hurdle_gate 가 이미 발급한 라우트 라벨(`screen_route_hint`, lean_verify_build.py:172-174
+#     가 hurdle_result 에서 옮겨 적는다)을 **독립 근거로 OR 가산**한다.
+#   ★구 경로는 지우지 않는다 — hard_fail 이 살아 있는 구 산출물·합성 입력의 판정이
+#     바뀌면 기존 검사기 6개의 단언이 무의미해진다. 가산이지 대체가 아니다.
+route_hint <- if (!is.null(v$screen_route_hint)) as.character(v$screen_route_hint)[1] else ""
+structural <- (hard_fail && grepl("drawdown|mdd|turnover|calmar|concentration|structural",
+                                  hf_reason, ignore.case = TRUE)) ||
+              grepl("OVERLAY_CANDIDATE|TURNOVER_REVIEW", route_hint)
 
 # pit 은 항상 명시 TRUE 여야 한다(결측도 불가) — PIT 은 결측을 통과로 읽지 않는다.
 signal_alive <- isTRUE(layers[["pit"]]) && ok_or_absent("robustness")
@@ -108,11 +121,16 @@ grade_low  <- grade_raw %in% c("C", "F")
 if (grade_low) failed <- c(failed, sprintf("grade_%s", grade_raw))
 
 if (four_pass && !hard_fail && !grade_low) {
-  decision <- "ADOPT"; route <- ""
+  # ★ADOPT 도 라벨을 보존한다(2026-08-23). 구판은 여기서 route 를 "" 로 덮었다 —
+  #   그래서 "채택됐다"와 "어느 결합 층으로 가나"가 배타가 됐고, MDD 탈락 권한이
+  #   사라져 구조 후보들이 ADOPT 로 올라오는 순간 결합 층 주소가 통째로 증발한다.
+  decision <- "ADOPT"; route <- route_hint
 } else if (structural && signal_alive) {
   # §3 screening tier — 신호는 실재하고 배포 형태가 막았다. 버리지 않고 라우팅한다.
   decision <- "SCREEN_TIER"
-  route <- if (grepl("turnover", hf_reason, ignore.case = TRUE)) "TURNOVER_REVIEW" else "OVERLAY_CANDIDATE"
+  route <- if (nzchar(route_hint)) route_hint
+           else if (grepl("turnover", hf_reason, ignore.case = TRUE)) "TURNOVER_REVIEW"
+           else "OVERLAY_CANDIDATE"
 } else {
   decision <- "QUARANTINE"; route <- ""
 }
@@ -125,9 +143,11 @@ v$gate_authority <- "auto_alpha_gate.R"   # 에이전트가 쓴 판정과 구분
 v$gate_rule <- paste0(
   "PIT 는 명시 PASS 필수(결측 불가). contract/robustness/fidelity 는 명시 FAIL 만 실패이고 ",
   "**결측은 요구되지 않음**(v9 lean — L4 폐지·robustness 는 산출물에 있을 때만). ",
-  "그 조건 ∧ hard_fail 없음 ∧ hurdle 등급 명시 C/F 아님 → ADOPT. hard_fail 이 구조 사유(MDD/turnover/calmar) ∧ ",
-  "PIT PASS ∧ robustness 미-FAIL → SCREEN_TIER(자본 tier 면제 없음, ",
-  "measurement-graduation.md §3). 그 외 QUARANTINE.",
+  "그 조건 ∧ hard_fail 없음 ∧ hurdle 등급 명시 C/F 아님 → ADOPT. hard_fail 이 구조 사유(MDD/turnover/calmar) ",
+  "**또는** screen_route_hint 에 OVERLAY_CANDIDATE/TURNOVER_REVIEW ∧ PIT PASS ∧ robustness 미-FAIL → ",
+  "SCREEN_TIER(자본 tier 면제 없음, measurement-graduation.md §3). 그 외 QUARANTINE. ",
+  "★ADOPT 는 리서치 층 채택이고 자본 자격이 아니다 — MDD 는 essence_score(자본 층)가 별도 판정한다. ",
+  "screen_route 는 ADOPT 에서도 보존된다(라우팅은 등급·hard_fail 과 독립 축, v9.1 S2a).",
   if (lean_mode) sprintf(" [lean=true · 결측층=%s]", paste(absent, collapse = "/")) else "")
 if (nzchar(route)) v$screen_route <- route
 v$gate_checked_at <- format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z")

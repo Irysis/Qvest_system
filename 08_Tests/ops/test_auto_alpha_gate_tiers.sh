@@ -57,6 +57,19 @@ R=$(run '{"pit_pass":true,"contract_pass":true,"robustness_pass":true,"fidelity_
 [ "$(field screen_route)" = "TURNOVER_REVIEW" ] && ok "turnover → TURNOVER_REVIEW" \
   || ng "사유별 라우팅" "got=$(field screen_route)"
 
+echo "== ★라우팅 축 독립(v9.1 S2a): hard_fail=false 인데 screen_route_hint 만으로 SCREEN_TIER =="
+# 왜 이 케이스가 필요한가: 위 3건은 전부 hard_fail=true 인 합성 입력이라 구 게이트로도 통과한다.
+#   리서치 층에서 MDD 의 탈락 권한이 사라지면(E-2) **hard_fail=false 인데 결합 층으로 가야 하는**
+#   상태가 새로 생긴다 — 구판은 `structural = hard_fail && grepl(...)` 라 그 순간 발급이 0 이 된다.
+#   등급 C 로 ADOPT 를 닫아 두고(등급 바닥은 불변), 라우팅만 hint 로 살아나는지 잰다.
+R=$(run '{"paper_id":"S2A","pit_pass":true,"contract_pass":true,"robustness_pass":true,"fidelity_pass":true,"hard_fail":false,"grade":"C","screen_route_hint":"OVERLAY_CANDIDATE"}')
+case "${R#*|}" in
+  SCREEN_TIER*) ok "hard_fail 없이도 route_hint 로 SCREEN_TIER (라우팅이 hard_fail 에서 분리됨)" ;;
+  *)            ng "라우팅 축 미분리" "MDD 가 탈락 권한을 잃으면 이 입력이 표준이 된다 — 결합 층 재료가 통째로 사라진다: $R" ;;
+esac
+[ "$(field screen_route)" = "OVERLAY_CANDIDATE" ] && ok "route_hint 라벨 보존" \
+  || ng "라벨 소실" "got=$(field screen_route)"
+
 echo "== 위반 주입 2: 신호가 죽었으면 구조 사유여도 SCREEN_TIER 아님 =="
 # robustness FAIL = 신호 자체가 OOS 를 못 견딤. 소비면으로 보낼 재료가 아니다.
 R=$(run '{"pit_pass":true,"contract_pass":true,"robustness_pass":false,"fidelity_pass":true,"hard_fail":true,"hard_fail_reason":"Structural drawdown MDD 70%"}')

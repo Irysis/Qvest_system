@@ -174,6 +174,11 @@ def build(d, out=None):
         v['screen_route_hint'] = sr
     if _dig(hur, 'screening', 'screen_pass') is not None:
         v['screen_pass'] = bool(_dig(hur, 'screening', 'screen_pass'))
+    # [2026-08-23 v9.1 / S2b] `hard_fail=false` 인데 `hard_fail_reason` 에 구조 낙폭 문장이
+    #   남는 **새 상태**를 게이트 원장에서 구분 가능하게 병기한다. ★`hard_fail_reason` 키
+    #   이름은 바꾸지 않는다 — 검사기 6개가 그 이름을 읽는다.
+    if _dig(hur, 'screening', 'structural_dd') is not None:
+        v['structural_dd'] = bool(_dig(hur, 'screening', 'structural_dd'))
 
     path = out or os.path.join(d, 'auto_verify_lean.json')
     tmp = path + '.tmp'

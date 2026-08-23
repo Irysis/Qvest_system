@@ -1745,8 +1745,12 @@ tg_strategy_commentary <- function(strategy_name, hurdle_result, output_dir) {
   }
 
   # 2. MDD 분석
+  # ★[2026-08-23 v9.1 / S2b, 도훈 결정 E-2] "하드페일" 하드코딩 제거.
+  #   MDD 는 리서치 층에서 탈락 권한이 없다 — 텔레그램이 여기서 "하드페일"이라고 쓰면
+  #   산출물(hurdle_result.json)과 보고가 서로 다른 규범을 말하게 되고, 사람이 보는 쪽이
+  #   구 규범으로 남는다. 실제 판정은 hurdle_result.json 이 유일 출처다.
   if (abs(mdd) > 45) {
-    lines <- c(lines, sprintf("⛔ MDD %.1f%% — 하드페일. 레짐 게이팅 강화 필요", mdd))
+    lines <- c(lines, sprintf("⚠️ MDD %.1f%% — 리서치 층 탈락 사유 아님(오버레이 결합 후보). 자본 층에서 별도 판정", mdd))
   } else if (abs(mdd) > 40) {
     lines <- c(lines, sprintf("⚠️ MDD %.1f%% — 경계선. 방어 팩터 블렌딩 고려", mdd))
   } else {

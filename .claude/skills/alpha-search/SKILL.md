@@ -16,7 +16,11 @@ description: 알파 서칭 모드 — 논문/가설 1편을 lean 백테로 검�
 5. **임의 변형 금지**: 종목수·비중을 시스템 관습(top20 등)으로 바꾸면 별개 전략 = 검증 무효.
 6. **미명시 값만 시스템 표준**(PIT C1~C15, 15bps, 유동성 2e8) — 보충한 것을 명시.
 
-제약(max 25)과 논문(decile) 충돌 시 **논문 우선** + 충돌 명시. 근거 사건 = `02_Infrastructure/docs/CHANGELOG_constitution.md` 아카이브 절.
+★**고정 축 우선**(2026-08-23 도훈 결정 E-5, 구 "논문 우선" 폐기). 논문 종목수가 25를 넘으면(decile·quintile 등)
+**상위 25로 절단**하고, 절단 사실과 **절단 전 N**을 `paper_assumption_broken` 에 적는다.
+강제 지점은 규범이 아니라 코드다 — `backtest_harness.R` 의 `n_hold_eff <- min(n_hold_eff, 25L)` 캡(물리)
++ `contracts/audit_bt_result.R::holdings_cap` 검사(계약 FAIL). 구 규범으로 돌린 런은 계약이 FAIL 로 잡는다.
+근거 사건 = `02_Infrastructure/docs/CHANGELOG_constitution.md` 아카이브 절 + 2026-08-23 실측(리밸일별 distinct ticker 최대 167종).
 
 ## 선례 조회 (advisory)
 

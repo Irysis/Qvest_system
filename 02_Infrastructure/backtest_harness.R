@@ -918,6 +918,7 @@ run_monthly_simulation <- function(RAWDATA,
   prev_date <- min(all_dates)
 
   sig_counter <- 0L
+  .cap_warned <- FALSE   # 종목수 캡(25) 고지 1회용 — 리밸일마다 찍으면 로그가 캡 메시지로 덮인다
   for (sig_date in signal_dates) {
     sig_counter <- sig_counter + 1L
     if (sig_counter %% 5 == 0) gc(verbose = FALSE)
@@ -935,6 +936,21 @@ run_monthly_simulation <- function(RAWDATA,
     if ("N" %in% names(month_factors) && nrow(month_factors) > 0) {
       n_val <- month_factors$N[1]
       if (!is.na(n_val) && n_val > 0) n_hold_eff <- as.integer(n_val)
+    }
+    # ★고정 축 상한 25 (도훈 결정 E-5, 2026-08-23) — 물리적 강제 지점.
+    #   실측 사건: FACTORS$N 동적 오버라이드가 캡 없이 통과해 리밸일 distinct ticker
+    #   **최대 167종**(20260823_161630_24400) · 31종 · 35종이 산출됐다. hurdle_gate 에도
+    #   audit_bt_result 에도 종목수 검사가 0건이었으므로 위반이 조용히 등급까지 갔다.
+    #   ⇒ 여기서 자른다. 논문이 decile 을 요구해도 상위 25만 담고, 절단 사실은
+    #   호출자가 `paper_assumption_broken` 에 적는다(.claude/skills/alpha-search/SKILL.md 제1원칙).
+    #   소비 지점 = 아래 `head(selected, n_hold_eff)` / `min(n_hold_eff, nrow(month_factors))`.
+    if (is.finite(n_hold_eff) && n_hold_eff > 25L) {
+      if (!.cap_warned) {
+        cat(sprintf("[backtest_harness] ★종목수 캡: n_holdings %d -> 25 (고정 축, E-5). 이후 리밸일은 무음 적용\n",
+                    as.integer(n_hold_eff)))
+        .cap_warned <- TRUE
+      }
+      n_hold_eff <- 25L
     }
 
     if (nrow(month_factors) == 0) {
