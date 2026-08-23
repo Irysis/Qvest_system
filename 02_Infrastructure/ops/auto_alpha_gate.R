@@ -99,7 +99,15 @@ signal_alive <- isTRUE(layers[["pit"]]) && ok_or_absent("robustness")
 four_pass <- isTRUE(layers[["pit"]]) &&
   all(vapply(c("contract", "robustness", "fidelity"), ok_or_absent, logical(1)))
 
-if (four_pass && !hard_fail) {
+# ── 등급 바닥(v9 2026-08-23): ADOPT 는 hurdle 등급 A/B 에만. 2026-08-23 실측 — Grade C ·
+#   IR −0.48 · 초과CAGR −8.3%p(IVOL×TO 저-저 셀)가 hard_fail 없음 ∧ PIT PASS 만으로 ADOPT 가 됐다
+#   (IS 샤프≈0 이라 oos 비율이 5.32 로 폭발해 robustness 도 못 막음). 등급은 lean_verify_build 가
+#   hurdle_result 에서 옮겨 적는다(`grade`). 결측은 기존 철학대로 차단하지 않고 **명시 C/F 만** 막는다.
+grade_raw  <- if (!is.null(v$grade)) toupper(sub("_.*$", "", as.character(v$grade)[1])) else ""
+grade_low  <- grade_raw %in% c("C", "F")
+if (grade_low) failed <- c(failed, sprintf("grade_%s", grade_raw))
+
+if (four_pass && !hard_fail && !grade_low) {
   decision <- "ADOPT"; route <- ""
 } else if (structural && signal_alive) {
   # §3 screening tier — 신호는 실재하고 배포 형태가 막았다. 버리지 않고 라우팅한다.
@@ -117,7 +125,7 @@ v$gate_authority <- "auto_alpha_gate.R"   # 에이전트가 쓴 판정과 구분
 v$gate_rule <- paste0(
   "PIT 는 명시 PASS 필수(결측 불가). contract/robustness/fidelity 는 명시 FAIL 만 실패이고 ",
   "**결측은 요구되지 않음**(v9 lean — L4 폐지·robustness 는 산출물에 있을 때만). ",
-  "그 조건 ∧ hard_fail 없음 → ADOPT. hard_fail 이 구조 사유(MDD/turnover/calmar) ∧ ",
+  "그 조건 ∧ hard_fail 없음 ∧ hurdle 등급 명시 C/F 아님 → ADOPT. hard_fail 이 구조 사유(MDD/turnover/calmar) ∧ ",
   "PIT PASS ∧ robustness 미-FAIL → SCREEN_TIER(자본 tier 면제 없음, ",
   "measurement-graduation.md §3). 그 외 QUARANTINE.",
   if (lean_mode) sprintf(" [lean=true · 결측층=%s]", paste(absent, collapse = "/")) else "")
