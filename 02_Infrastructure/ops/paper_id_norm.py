@@ -140,9 +140,19 @@ def _validate(obj):
     return json.loads(json.dumps(obj, ensure_ascii=False))
 
 
-def _atomic_write(path, text):
+def _detect_eol(path):
+    """기존 줄끝을 그대로 잇는다 — 원장 전체가 줄끝만으로 diff 나는 것을 막는다."""
+    try:
+        with io.open(path, 'rb') as fh:
+            head = fh.read(4096)
+        return '\r\n' if b'\r\n' in head else '\n'
+    except Exception:
+        return '\n'
+
+
+def _atomic_write(path, text, eol='\n'):
     tmp = path + '.tmp'
-    with io.open(tmp, 'w', encoding='utf-8', newline='\n') as fh:
+    with io.open(tmp, 'w', encoding='utf-8', newline=eol) as fh:
         fh.write(text)
     os.replace(tmp, path)
 
