@@ -46,6 +46,54 @@ suppressPackageStartupMessages({ library(jsonlite); library(data.table) })
   hit[1]
 }
 
+# ── 원자적 JSON 쓰기 정본 부트스트랩 ─────────────────────────────────────────
+#   ★코드 루트는 **자기 파일이 실린 트리**다. env(QM_ROOT/CLAUDE_PROJECT_DIR)는 *데이터*
+#     루트라 worktree 에서 갈린다 — 실측(2026-08-23): worktree 사본을 source 했는데
+#     라이브러리를 main 에서 찾아 "cannot open the connection" 으로 halt
+#     (08_Tests/portfolio/test_standalone_track_queue.R 가 적발). r-portability ④-b 의
+#     "자기가 실린 트리" 규율이 러너뿐 아니라 **자기 라이브러리를 부르는 스크립트**에도 걸린다.
+#   ★ofile 을 --file= 보다 먼저 본다 — 검사기가 SUT 를 source 하면 --file= 은 검사기를 가리킨다.
+#   ★상대경로 self 는 **현재 cwd 기준으로 즉시 절대화**한다. 그래서 이 블록은 스크립트가
+#     setwd() 하기 **전에** 놓여야 한다(2차 실측: setwd 뒤에 두었더니 self='.' 가 main 으로
+#     해석돼 같은 halt 가 재발했다).
+#   ★깊이를 가정하지 않고 marker 를 찾을 때까지 상위로 올라간다.
+#   ★이 블록은 정본 안에 넣을 수 없다(그 정본을 찾는 코드다). 3소비자 동일 복제가 불가피하다.
+.qvest_atomic_json_src <- function() {
+  rel <- "02_Infrastructure/utils/atomic_json.R"
+  self <- ""
+  for (i in rev(seq_len(sys.nframe()))) {
+    o <- sys.frame(i)$ofile
+    if (!is.null(o) && nzchar(o)) { self <- o; break }
+  }
+  if (!nzchar(self)) {
+    a <- commandArgs(trailingOnly = FALSE)
+    f <- sub("^--file=", "", a[grepl("^--file=", a)])
+    if (length(f)) self <- f[1]
+  }
+  cands <- character(0)
+  if (nzchar(self)) {
+    self <- chartr("\\", "/", self)
+    # 절대경로 판정은 drive-letter·UNC·~ 를 인식할 것 (r-portability ③).
+    if (!grepl("^([A-Za-z]:)?[/\\]", self) && !grepl("^~", self))
+      self <- file.path(chartr("\\", "/", getwd()), self)
+    d <- dirname(self)
+    for (k in seq_len(6L)) {
+      cands <- c(cands, d)
+      nd <- dirname(d)
+      if (identical(nd, d)) break
+      d <- nd
+    }
+  }
+  cands <- c(cands, chartr("\\", "/", c(Sys.getenv("CLAUDE_PROJECT_DIR", ""),
+                                        Sys.getenv("QM_ROOT", ""), getwd())))
+  cands <- cands[nzchar(cands)]
+  hit <- cands[file.exists(file.path(cands, rel))]
+  if (!length(hit)) stop("[atomic_json] 정본 미발견 — 코드 루트 해석 실패 (후보: ",
+                         paste(cands, collapse = " | "), ")")
+  file.path(hit[1], rel)
+}
+source(.qvest_atomic_json_src())
+
 QUEUE_REL <- "06_Registry/standalone_track_queue.json"
 DISPO_REL <- "06_Registry/standalone_track_dispositions.json"
 
@@ -303,7 +351,10 @@ build_standalone_track_queue <- function(root = .st_root(), write = TRUE) {
   )
   if (isTRUE(write)) {
     qp <- file.path(root, QUEUE_REL)
-    write_json(q, qp, auto_unbox = TRUE, pretty = TRUE, digits = NA, null = "null", na = "null")
+    # (2026-08-23 v9.1 후속) 비원자적 write_json → 정본 위임. 처분 원장(아래)만 원자적이고
+    #   큐 자체는 아니었다 — 같은 파일 안에서 두 쓰기의 내구성 등급이 갈려 있었다.
+    qvest_atomic_write_json(q, qp, auto_unbox = TRUE, pretty = TRUE, digits = NA,
+                            null = "null", na = "null", tag = "standalone_track")
     cat(sprintf("[standalone_track] wrote %s — unconsumed=%d / standalone=%d / labeled=%d\n",
                 QUEUE_REL, s$n_unconsumed, s$n_standalone, s$n_labeled))
   }
@@ -340,15 +391,10 @@ st_record_disposition <- function(strategy_id, verdict, note = "", by = "Q-Lead"
               recorded_at = format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z"))
   if (!is.null(prior)) rec$supersedes <- prior$recorded_at %||% NA_character_
   d$dispositions[[strategy_id]] <- rec
-  # 원자적 temp-rename (OneDrive/Win 확립 관행 — hypothesis_index F-1 선례)
-  tmp <- paste0(dp, ".tmp", Sys.getpid())
-  write_json(d, tmp, auto_unbox = TRUE, pretty = TRUE, null = "null", na = "null")
-  if (file.exists(dp)) suppressWarnings(file.remove(dp))
-  if (!isTRUE(suppressWarnings(file.rename(tmp, dp)))) {
-    ok <- suppressWarnings(file.copy(tmp, dp, overwrite = TRUE))
-    suppressWarnings(file.remove(tmp))
-    if (!isTRUE(ok)) stop("[standalone_track] dispositions 원자 기록 실패: ", dp)
-  }
+  # 원자적 temp-rename — 정본 위임(02_Infrastructure/utils/atomic_json.R).
+  #   구 인라인판은 선삭제(파일 부재 창) + copy 폴백(제자리 절단)을 갖고 있었다.
+  qvest_atomic_write_json(d, dp, auto_unbox = TRUE, pretty = TRUE,
+                          null = "null", na = "null", tag = "standalone_track")
   # 기록 후 재읽기 확인 (frontier 큐 consume_rule 관행 승계 — 조용한 유실 차단)
   chk <- .st_json(dp)
   if (is.null(chk$dispositions[[strategy_id]]))

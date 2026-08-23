@@ -18,10 +18,67 @@
 #       처분이 죽은 주소 선언이 된다 — FR_RCMA "소비자 0" 전례의 재발 방지)
 # A/B 실측 결과(06_Registry/overlay_ab_results/<id>.json 존재 시) → 후보에 ab_result 첨부 + status="measured".
 #
+# 쓰기: 06_Registry/overlay_candidate_queue.json 은 **원자적**으로 기록한다
+#   (02_Infrastructure/utils/atomic_json.R::qvest_atomic_write_json — tmp→rename, 선삭제 없음).
+#   2026-08-23 v9.1 후속 수리 이전에는 비원자적 write_json 이라, refresh_screen_queues.R 의
+#   뮤텍스가 막지 못하는 **수동 동시 실행**에서 소비자가 절단 JSON 을 읽을 수 있었다
+#   (같은 계통의 실사고: axiom_context_inject.sh 변동부 통째 소실, 08-23 21:44).
+#   ★뮤텍스는 여전히 필요하다 — 원자적 쓰기는 "절단을 안 읽는다"를 보장할 뿐,
+#     두 빌더의 lost update(나중 쓴 쪽이 이김)는 막지 않는다. 두 층은 다른 문제를 푼다.
+#
 # 실행: Rscript 02_Infrastructure/regime/overlay_candidate_queue.R  (재실행 idempotent — 전량 재생성)
 suppressMessages({ library(data.table); library(jsonlite) })
 `%||%` <- function(a, b) if (!is.null(a) && length(a) > 0 && !all(is.na(a))) a else b
+# ── 원자적 JSON 쓰기 정본 부트스트랩 ─────────────────────────────────────────
+#   ★코드 루트는 **자기 파일이 실린 트리**다. env(QM_ROOT/CLAUDE_PROJECT_DIR)는 *데이터*
+#     루트라 worktree 에서 갈린다 — 실측(2026-08-23): worktree 사본을 source 했는데
+#     라이브러리를 main 에서 찾아 "cannot open the connection" 으로 halt
+#     (08_Tests/portfolio/test_standalone_track_queue.R 가 적발). r-portability ④-b 의
+#     "자기가 실린 트리" 규율이 러너뿐 아니라 **자기 라이브러리를 부르는 스크립트**에도 걸린다.
+#   ★ofile 을 --file= 보다 먼저 본다 — 검사기가 SUT 를 source 하면 --file= 은 검사기를 가리킨다.
+#   ★상대경로 self 는 **현재 cwd 기준으로 즉시 절대화**한다. 그래서 이 블록은 스크립트가
+#     setwd() 하기 **전에** 놓여야 한다(2차 실측: setwd 뒤에 두었더니 self='.' 가 main 으로
+#     해석돼 같은 halt 가 재발했다).
+#   ★깊이를 가정하지 않고 marker 를 찾을 때까지 상위로 올라간다.
+#   ★이 블록은 정본 안에 넣을 수 없다(그 정본을 찾는 코드다). 3소비자 동일 복제가 불가피하다.
+.qvest_atomic_json_src <- function() {
+  rel <- "02_Infrastructure/utils/atomic_json.R"
+  self <- ""
+  for (i in rev(seq_len(sys.nframe()))) {
+    o <- sys.frame(i)$ofile
+    if (!is.null(o) && nzchar(o)) { self <- o; break }
+  }
+  if (!nzchar(self)) {
+    a <- commandArgs(trailingOnly = FALSE)
+    f <- sub("^--file=", "", a[grepl("^--file=", a)])
+    if (length(f)) self <- f[1]
+  }
+  cands <- character(0)
+  if (nzchar(self)) {
+    self <- chartr("\\", "/", self)
+    # 절대경로 판정은 drive-letter·UNC·~ 를 인식할 것 (r-portability ③).
+    if (!grepl("^([A-Za-z]:)?[/\\]", self) && !grepl("^~", self))
+      self <- file.path(chartr("\\", "/", getwd()), self)
+    d <- dirname(self)
+    for (k in seq_len(6L)) {
+      cands <- c(cands, d)
+      nd <- dirname(d)
+      if (identical(nd, d)) break
+      d <- nd
+    }
+  }
+  cands <- c(cands, chartr("\\", "/", c(Sys.getenv("CLAUDE_PROJECT_DIR", ""),
+                                        Sys.getenv("QM_ROOT", ""), getwd())))
+  cands <- cands[nzchar(cands)]
+  hit <- cands[file.exists(file.path(cands, rel))]
+  if (!length(hit)) stop("[atomic_json] 정본 미발견 — 코드 루트 해석 실패 (후보: ",
+                         paste(cands, collapse = " | "), ")")
+  file.path(hit[1], rel)
+}
+source(.qvest_atomic_json_src())
+
 root <- Sys.getenv("QM_ROOT", "C:/Users/99922/OneDrive/Quant_Module_Moltbot"); if (dir.exists(root)) setwd(root)
+
 
 QUEUE_PATH   <- "06_Registry/overlay_candidate_queue.json"
 AB_RESULT_DIR <- "06_Registry/overlay_ab_results"
@@ -250,7 +307,8 @@ build_overlay_candidate_queue <- function(write = TRUE) {
     candidates     = cands
   )
   if (write) {
-    write_json(queue, QUEUE_PATH, auto_unbox = TRUE, pretty = TRUE, digits = NA, null = "null", na = "null")
+    qvest_atomic_write_json(queue, QUEUE_PATH, auto_unbox = TRUE, pretty = TRUE,
+                            digits = NA, null = "null", na = "null", tag = "overlay_queue")
     cat(sprintf("[queue] wrote %s — n_candidates=%d (measured=%d)\n", QUEUE_PATH, length(cands),
                 sum(vapply(cands, function(x) identical(x$status, "measured"), FALSE))))
   }

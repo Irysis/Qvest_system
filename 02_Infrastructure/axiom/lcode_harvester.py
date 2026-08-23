@@ -54,6 +54,7 @@ import math
 import os
 import re
 import sys
+import time
 from datetime import datetime, timezone
 
 RE_LCODE = re.compile(r"L-\d+")
@@ -667,11 +668,24 @@ def _record_type_dist(lcodes: list[dict]) -> dict[str, int]:
     return out
 
 
+_ATOMIC_RETRIES = 8
+_ATOMIC_SLEEP_INIT = 0.02
+_ATOMIC_SLEEP_CAP = 0.25
+
+
 def _write_json_atomic(obj: dict, path: str) -> None:
     """temp + os.replace 원자적 쓰기 — 중단/동시읽기 시 반파일(손상 JSON) 방지.
 
     OneDrive 경로 확립 관행(temp-rename, [project-windows-arrow-mmap-1224])과 정합.
-    hypothesis_index.R의 (F-1) 원자적 쓰기와 동일 패턴.
+    R 측 정본 = 02_Infrastructure/utils/atomic_json.R::qvest_atomic_write_json (같은 계약).
+
+    ★2026-08-23 v9.1 후속 실측 (Windows 11 · Python 3.12):
+      소비자가 대상 파일 핸들을 연 채이면 ``os.replace`` 는
+      ``PermissionError: [WinError 5]`` 로 **실패한다**. 파일이 찢기지는 않지만
+      (기존 내용이 그대로 남는다) 갱신분이 **조용히 유실**되고 tmp 가 잔재로 쌓인다.
+      write_positive_context() 호출부는 예외를 삼키므로(WARN 후 계속) 유실이 더 조용하다.
+      ⇒ 유한 재시도로 그 창을 덮고, 소진하면 tmp 를 치운 뒤 예외를 올린다.
+      ※핸들 점유는 소비자 1회 read 시간(수 ms)이라 대개 첫 1~2회에서 풀린다.
     """
     d = os.path.dirname(path)
     if d:
@@ -679,7 +693,21 @@ def _write_json_atomic(obj: dict, path: str) -> None:
     tmp = os.path.join(d or ".", f".{os.path.basename(path)}.tmp_{os.getpid()}")
     with open(tmp, "w", encoding="utf-8") as f:
         json.dump(obj, f, indent=2, ensure_ascii=False)
-    os.replace(tmp, path)  # Windows에서도 원자적 교체 (기존 파일 덮어씀)
+    last: "OSError | None" = None
+    for i in range(_ATOMIC_RETRIES):
+        try:
+            os.replace(tmp, path)  # Windows에서도 원자적 교체 (기존 파일 덮어씀)
+            return
+        except OSError as exc:     # PermissionError 포함 — 대상 핸들 점유가 대표 사유
+            last = exc
+            time.sleep(min(_ATOMIC_SLEEP_CAP, _ATOMIC_SLEEP_INIT * (2 ** i)))
+    try:
+        os.remove(tmp)             # 잔재 tmp 누적 차단 (payload 는 어차피 재계산 가능)
+    except OSError:
+        pass
+    raise OSError(
+        f"원자적 기록 실패 (os.replace {_ATOMIC_RETRIES}회) — 정본 미갱신: {path} ({last})"
+    )
 
 
 # ═══════════════════════════════════════════════════════════════════════════════

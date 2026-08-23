@@ -212,12 +212,18 @@ def _load_pc():
                      '\`Rscript 02_Infrastructure/tools/hypothesis_index.R lookup <kw>\` 1줄 확인]'
                      % _pc['n_dead'])
 
-# ★1회 재시도(0.15s): 생산자 lcode_harvester.py::write_positive_context() 가 **비원자적**으로
-#   쓰기 때문에, 그 밀리초 창에 Agent 가 스폰되면 파일이 부분 상태로 읽혀 변동부가 통째로
-#   비고 [현재 최고 연구-tier 전략]·[최근 교훈]·dead configs 3마커가 전부 소실된다
-#   (2026-08-23 21:44 실측: agent=alpha-research, len 807, 마커 3/3 소실 — HARD_10 발화).
-#   근본 수리(tmp→rename 원자적 쓰기)는 생산자 쪽 별건이고, 소비자 쪽 1회 재시도가
-#   그 창을 사실상 덮는다. 실패해도 조용히 축소되지 않도록 pc_status 를 계측에 남긴다.
+# ★1회 재시도(0.15s) — 사유 정정 (2026-08-23 v9.1 후속 실측).
+#   구 주석은 "생산자가 **비원자적**으로 쓴다"고 적었으나 **사실이 아니었다**:
+#   write_positive_context() 는 도입 시점부터 _write_json_atomic(= os.replace) 을 썼고,
+#   os.replace 는 Windows 에서도 원자적이라 이 파일은 애초에 찢기지 않는다.
+#   실측한 진짜 기전은 반대 방향이다 — 이 훅이 파일 핸들을 연 순간 생산자의
+#   os.replace 가 PermissionError[WinError 5] 로 **실패**한다(교체가 통째로 취소).
+#   즉 소비자가 보는 것은 "절단된 파일"이 아니라 **낡았거나 아직 없는 파일**이고,
+#   HARD_10 이 잡은 (len 807 · 마커 3/3 소실) 은 그 부재·정체의 결과다.
+#   ⇒ 생산자 쪽 수리 = os.replace 유한 재시도 + tmp 정리 (lcode_harvester.py).
+#     소비자 쪽 재시도는 그와 별개로 유지한다 — 파일이 교체되는 찰나의 open 실패와
+#     OneDrive/AV 의 일시 잠금은 생산자가 못 없앤다. 실패해도 조용히 축소되지 않도록
+#     pc_status 를 계측에 남긴다(missing/unreadable/retry_ok).
 try:
     _load_pc()
 except Exception:
