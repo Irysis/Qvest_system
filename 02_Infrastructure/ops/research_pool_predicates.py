@@ -203,8 +203,62 @@ def alpha_done_ids(stage):
     return done
 
 
+# ── pg2 강화 큐(id 없는 계열) ─────────────────────────────────────────────────
+#   `pg2_reinforcement_queue_*.json` 은 학술지·워킹페이퍼 혼합이라 **arXiv id 가 없다**
+#   (43편 중 doi.org URL 1편, 나머지는 기관 PDF·페이월). 그래서 `pid_of()` 가 빈 문자열을
+#   내고, 그 순간 이 큐 전체가 **조용히 0 편**으로 계수된다 — 이 모듈이 방어하는 바로 그
+#   기전이다. 여기서는 id 를 **파생**해 쓴다(없는 id 를 지어내는 게 아니라 규약을 고정한다):
+#     1. URL 안에 arXiv id 가 있으면 그것 (→ 기존 done 원장과 그대로 대조된다)
+#     2. 없으면 DOI (`doi.org/…` 또는 본문 `doi:…`) → `doi:<소문자 doi>`
+#     3. 둘 다 없으면 제목 정규화 → `title:<영숫자만·소문자>`
+#   ★3번은 **제목 기준**이라 표기 변형에 약하다. paper_id_norm.py 서문이 경고한 그
+#     약점이고, 여기서는 대안이 없으므로 규약을 명시해 두는 선까지만 한다.
+_DOI_URL = re.compile(r"(?:doi\.org/|\bdoi\s*:\s*)(10\.\d{4,9}/[^\s\"'<>)\]]+)", re.I)
+_ARXIV_IN_URL = re.compile(r"arxiv\.org/(?:abs|pdf)/(\d{4}\.\d{4,5})", re.I)
+_TITLE_JUNK = re.compile(r"[^0-9a-z가-힣]+")
+
+
+def _title_key(t):
+    s = _TITLE_JUNK.sub("", str(t or "").strip().lower())
+    return ("title:" + s) if s else ""
+
+
+def pg2_key(o):
+    """pg2 큐 레코드의 대조 키. 판별 불가면 빈 문자열(있는 척하지 않는다)."""
+    url = str(o.get("url") or "")
+    m = _ARXIV_IN_URL.search(url)
+    if m:
+        return nid(m.group(1))
+    m = _DOI_URL.search(url) or _DOI_URL.search(str(o.get("source") or ""))
+    if m:
+        return "doi:" + m.group(1).rstrip(".,;").lower()
+    return _title_key(o.get("title"))
+
+
+def alpha_done_keys(stage):
+    """done 원장을 **pg2 키 공간**으로도 투영한다.
+
+    원장 레코드는 arXiv id 기준이라 `pg2_key` 가 내는 `doi:`/`title:` 키와 만나지
+    않는다. 감산항이 만나지 못하면 이미 소비한 논문이 영구 pending 으로 남는다.
+    """
+    keys = set()
+    d = _load_ledger(os.path.join(stage, "alpha_search_queue_done.json"))
+    if isinstance(d, dict):
+        for r in (d.get("records") or []):
+            if not isinstance(r, dict):
+                continue
+            t = _title_key(r.get("paper_title") or r.get("title"))
+            if t:
+                keys.add(t)
+            for fld in ("doi", "url", "paper_url", "source"):
+                m = _DOI_URL.search(str(r.get(fld) or ""))
+                if m:
+                    keys.add("doi:" + m.group(1).rstrip(".,;").lower())
+    return keys
+
+
 def alpha_pending(stage):
-    """미소비 testable 후보 = (큐 candidates ∪ route papers) − done − 종결표식.
+    """미소비 testable 후보 = (큐 candidates ∪ route papers ∪ pg2 큐) − done − 종결표식.
 
     ★`_latest` 한 파일이 아니라 **전 파일**을 훑는다 — 진짜 미소비분은 과거 파일에
       남아 있고, 최신 파일만 보면 그 자리가 통째로 안 보인다(부팅 리더의 실결함).
@@ -231,6 +285,25 @@ def alpha_pending(stage):
         r = _load_json(f)
         if isinstance(r, dict):
             scan(r.get("papers") or [], os.path.basename(f))
+
+    # pg2 강화 큐 — id 없는 계열이라 키 파생 + 제목/DOI 대조를 따로 쓴다.
+    pg2_files = sorted(glob.glob(os.path.join(stage, "pg2_reinforcement_queue_*.json")))
+    if pg2_files:
+        done_keys = alpha_done_keys(stage)
+        for f in pg2_files:
+            d = _load_json(f)
+            if not isinstance(d, dict):
+                continue
+            for o in (d.get("papers") or []):
+                if not isinstance(o, dict):
+                    continue
+                k = pg2_key(o)
+                if not k or k in done or k in done_keys or k in pend:
+                    continue
+                if _title_key(o.get("title")) in done_keys:
+                    continue
+                if is_testable(o) and not is_resolved(o):
+                    pend[k] = o
     return pend
 
 
