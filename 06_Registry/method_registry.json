@@ -645,8 +645,26 @@
         "SCHUR_RIDGE": 1e-08,
         "note": "γ* 는 닫힌 해로 자유 파라미터 아님. 블록 수·ρ² 정의·블록내 규칙은 사전 고정(sweep 아님)"
       },
-      "measured": false,
-      "similar_to": []
+      "measured": {
+        "recorded_at": "2026-08-24",
+        "source_measured_at": "2026-08-24",
+        "basis": "h1b_sigma_ab_overlay.csv · weighted_screen_bt 계약 · KR top-25 carrier(selection fixed) · 오버레이 ON(beta_combined) · 271개월 · 15bps one-way",
+        "n_months": 271,
+        "metric_type": "canonical_screen_diag",
+        "tier": "screen_diagnostic",
+        "IR": 0.939,
+        "PORT_t": 3.9439,
+        "abs_CAGR": 0.3454,
+        "abs_MDD": -0.2501,
+        "abs_SR": 1.5344,
+        "baseline_EW_IR": 1.3008,
+        "baseline_EW_PORT_t": 5.7031,
+        "delta_IR_vs_EW": -0.3618,
+        "delta_PORT_t_vs_EW": -1.7592,
+        "verdict": "underperforms_EW"
+      },
+      "similar_to": [],
+      "measurement_status": "n=271개월 · 기준 h1b_sigma_ab_overlay.csv (weighted_screen_bt 계약, 오버레이 ON) · tier=screen_diagnostic · source_measured_at=2026-08-24. SchurDamping IR=0.939 vs EW IR=1.301(−27.8%) · PORT_t=3.944 vs EW 5.703 · abs_CAGR=34.5% vs EW 40.2% · abs_MDD=−25.0% vs EW −27.5%. EW 대비 열등: CAGR −5.6%p 하락, IR −27.8% 하락. shrinkage_builtin=yes·statistic_order=<=2nd 사전 우호 축이었으나 실측에서 EW를 밑떐. 기전 가설: 블록-상관 구조(k=⌈√p⌉)가 KR 단기 상관 변화에 취약하거나 top-25 고유동성 선별 집합에서 블록 헤지 기여가 작다."
     },
     {
       "method_id": "LMGarch2DMC",
@@ -774,8 +792,30 @@
         "TCB_MIN_OBS": 40,
         "note": "α_lo=0.10 은 ConformalKelly 양측 α=0.20 을 한쪽으로 옮긴 값 — 같은 총 신뢰수준에서 **방향만** 바꿔 두 arm 을 비교 가능하게 한 단일 사전고정. 백테로 고르지 않았다(sweep 아님)."
       },
-      "measured": false,
-      "similar_to": []
+      "measured": {
+        "recorded_at": "2026-08-24",
+        "source_measured_at": "2026-08-24",
+        "basis": "h1b_sigma_ab_overlay.csv · weighted_screen_bt 계약 · KR top-25 carrier(selection fixed) · 오버레이 ON(beta_combined) · 271개월 · 15bps one-way",
+        "n_months": 271,
+        "metric_type": "canonical_screen_diag",
+        "tier": "screen_diagnostic",
+        "IR": 1.3842,
+        "PORT_t": 6.0466,
+        "abs_CAGR": 0.4291,
+        "abs_MDD": -0.2546,
+        "abs_SR": 1.7801,
+        "baseline_EW_IR": 1.3008,
+        "baseline_EW_PORT_t": 5.7031,
+        "nearest_arm_ConformalKelly_IR": 1.3706,
+        "nearest_arm_ConformalKelly_PORT_t": 5.9593,
+        "delta_IR_vs_EW": 0.0834,
+        "delta_PORT_t_vs_EW": 0.3435,
+        "delta_IR_vs_ConformalKelly": 0.0136,
+        "delta_PORT_t_vs_ConformalKelly": 0.0873,
+        "verdict": "indistinguishable_from_ConformalKelly"
+      },
+      "similar_to": [],
+      "measurement_status": "n=271개월 · 기준 h1b_sigma_ab_overlay.csv (weighted_screen_bt 계약, 오버레이 ON) · tier=screen_diagnostic · source_measured_at=2026-08-24. TailConformalBand IR=1.384 vs EW IR=1.301(+6.4%) · PORT_t=6.047 vs EW 5.703 · abs_CAGR=42.9% vs EW 40.2%. ★ConformalKelly(IR=1.371·PORT_t=5.959)와 ΔIR=0.013·ΔPORT_t=0.087 — 등록 경고(근접) 실데이터에서 확인됨. 하방-one-sided 폭(band_down)이 대칭 band(ConformalKelly)와 실데이터에서 구별되지 않는다. statistic_order=tail_quantile의 꽃리 비대칭 설계가 EW를 소폭 이기되 대조 arm(ConformalKelly)과는 구별이 없어 독립 기여로 인정 불가. 두 arm 중 하나를 접을 근거 생성."
     },
     {
       "method_id": "CompLikFGnOverlay",
