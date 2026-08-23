@@ -210,9 +210,12 @@ WRITE_CASES = [
     ("W1 ★큐 적재 id 가 정규화형('arxiv:' 접두 제거)",
      {"alpha_search_route_x.json": route(unc("id", "arxiv:2699.00008")),
       "factor_recheck_done.json": done([])}, "2699.00008", True),
-    ("W2 curated 파일명은 원형 그대로 적재",
+    # v9 2026-08-23: curated id 는 `.pdf` 확장자만 벗긴다 — 원장 기록기(paper_id_norm.norm_id)와
+    #   같은 규약. 원형 보존(.pdf 유지)이면 done 집합과 영구히 안 만나 기록된 논문이 pending 으로
+    #   남았다(실측 ACADIAN/ROBECO 2편). 파일명 본체는 그대로(접두/대소문자 무변경).
+    ("W2 curated 파일명은 확장자만 벗기고 본체 보존",
      {"alpha_search_route_x.json": route(unc("id", "GMO_primer.pdf")),
-      "factor_recheck_done.json": done([])}, "GMO_primer.pdf", False),
+      "factor_recheck_done.json": done([])}, "GMO_primer", False),
 ]
 
 

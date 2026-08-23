@@ -78,7 +78,14 @@ def nid(v):
         return ""
     s = _AXPFX.sub("", s).strip()
     m = _AXID.match(s)
-    return m.group(1) if m else s
+    if m:
+        return m.group(1)
+    # v9 2026-08-23: curated PDF id 는 원장 기록기(paper_id_norm.norm_id)가 확장자를 벗겨 적는다.
+    #   여기서 `.pdf` 를 보존하면 done 집합과 영구히 안 만나 기록된 논문이 pending 으로 남는다
+    #   (실측: ACADIAN/ROBECO 2편이 SKIP 기록 후에도 집계됨). 양쪽 규약을 같게 둔다.
+    if s.lower().endswith(".pdf"):
+        s = s[:-4]
+    return s
 
 
 # ── id 키 이름 드리프트 ───────────────────────────────────────────────────────
