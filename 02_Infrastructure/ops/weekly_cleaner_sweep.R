@@ -547,8 +547,12 @@ run_step("axiom_weekly_cycle", {
                                        stdout = TRUE, stderr = TRUE))
       dv <- .promote_crash_verdict(dout)
       if (dv$crash) { pre_crash <- pre_crash + 1L; next }
-      vtok <- regmatches(dv$verdict_line, regexpr("(PASS|MAP|FAIL|SKIP_[A-Z_]+)$", dv$verdict_line))
-      rv <- regmatches(dout, regexpr("refine=(REFINED|HELD)", dout))
+      # ★perl=TRUE 필수 (r-portability.md 금칙 ⑥): promote.R stdout 은 한글·이모지가 섞인
+      #   statement 를 싣는다. TRE 색인은 UTF-16 오프셋이라 non-BMP 문자가 앞에 있으면
+      #   regmatches 의 추출 창이 밀려 엉뚱한 조각을 낸다(검사기 trap_premise 로 실증됨).
+      vtok <- regmatches(dv$verdict_line,
+                         regexpr("(PASS|MAP|FAIL|SKIP_[A-Z_]+)$", dv$verdict_line, perl = TRUE))
+      rv <- regmatches(dout, regexpr("refine=(REFINED|HELD)", dout, perl = TRUE))
       rv <- if (length(unlist(rv))) sub("refine=", "", unlist(rv)[1]) else NA_character_
       wa <- any(grepl("would_activate=TRUE", dout, fixed = TRUE))
       activation_preview[[basename(dry_cand)]] <- list(

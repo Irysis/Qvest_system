@@ -35,9 +35,12 @@ SC_HOLDINGS_CAP <- 25L
 .sc_source <- function(rel, probe) {
   if (exists(probe, mode = "function")) return(invisible(TRUE))
   here <- tryCatch(dirname(sys.frame(1)$ofile), error = function(e) NA_character_)
+  # ★resolver 우선순위 = CLAUDE_PROJECT_DIR 먼저 (r-portability.md 금칙 ④ 표준 계열).
+  #   ~/.Renviron 이 QM_ROOT 를 고정해 쉘 export 로 안 덮이므로, worktree 실행에서
+  #   호출자와 계열이 갈리면 존재하는 파일이 "package not found" 로 기각된다.
   cands <- c(if (!is.na(here)) file.path(here, basename(rel)) else NULL,
-             file.path(Sys.getenv("QM_ROOT", "."), rel),
              file.path(Sys.getenv("CLAUDE_PROJECT_DIR", "."), rel),
+             file.path(Sys.getenv("QM_ROOT", "."), rel),
              rel)
   for (f in cands) if (!is.null(f) && file.exists(f)) { suppressMessages(source(f)); return(invisible(TRUE)) }
   invisible(FALSE)

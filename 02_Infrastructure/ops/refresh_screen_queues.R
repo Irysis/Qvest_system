@@ -154,7 +154,9 @@ refresh_screen_queues_status_line <- function(root = .rsq_root()) {
 
 refresh_screen_queues <- function(root = .rsq_root(), if_stale_min = NA_real_) {
   rscript <- file.path(R.home("bin"), "Rscript")
-  Sys.setenv(QM_ROOT = root)   # 자식 프로세스 root 고정 (Windows 는 system2(env=) 미지원)
+  # 자식 프로세스 root 고정. Windows 에서는 자식 환경 주입 인자가 동작하지 않으므로
+  # (r-portability.md 금칙 ①) 부모 환경을 세팅해 상속시킨다.
+  Sys.setenv(QM_ROOT = root)
   lock <- file.path(root, RSQ_LOCK_REL)
   if (!.rsq_acquire(lock)) {
     .rsq_log(root, "SKIP  전체 — 다른 리프레시가 락 점유중(정상 동시성). 이번 호출은 건너뛴다.")

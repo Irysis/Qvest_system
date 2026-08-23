@@ -686,6 +686,10 @@ SUITES=(
   #   (정체성·지식손실·status·저술지식)를 하나씩 끄고 판정이 실제로 뒤집히는지 매 실행 실측.
   "08_Tests/axiom/test_distilled_supersede.py"
   "08_Tests/axiom/test_promotion_ladder_dryrun.py"
+  # 2026-08-23 v9.1-S4: 공리 무인화의 활성화 게이트 검사기. 사람 승인이 사라진 자리를
+  #   R0~R6 가 대신하므로, 이 suite 가 죽으면 무인 승격의 유일한 품질 관문이 침묵한다.
+  #   ★"전부 HELD" 는 게이트 사망과 결과가 같아 [C] 돌연변이 통제로 분포를 잰다.
+  "08_Tests/axiom/test_refine_statement.R"
   # 2026-08-09 추가: 논문 라우트 디스패치 4종 일괄 편입.
   #   ★등재 사유가 세 suite 는 "지연된 배선"이다 — freshness_gate·screen_axes·
   #     method_adapter_contract 는 2026-08-08 에 만들어졌는데 **이 배열에 들어온 적이 없어**
@@ -796,6 +800,10 @@ SUITES=(
   #   ★B4/B5 = 선형 통제의 한계: score=-log(vol) 가 **선형 통제를 통과**한다(오통과).
   #    "vol 로 통제했다"는 진술이 강도를 보증하지 않음을 양방향으로 못박는다.
   "08_Tests/contracts/test_distribution_target_screen.R"
+  # 2026-08-23 v9.1-S3a: score-level 결합 계약. 25종 상한(sc_cap_top_n)과 멤버 support
+  #   불일치 규약(결측을 0 으로 채워 "신호 없음"으로 위장하지 않는다)이 여기서만 강제된다.
+  #   ★L-484(4-sleeve return-blend 로 실보유 52~80종 → Judge A→B 강등)의 재발 방지선.
+  "08_Tests/contracts/test_score_composite.R"
 
   # (2026-08-13) ctx 특성 확장 계약 — 어댑터 ctx 에 characteristics 접근자를 붙여
   #   특성 기반 방법(CD-DFM 계열)을 열었다. ★확장은 선언만으로 살지 않는다 —

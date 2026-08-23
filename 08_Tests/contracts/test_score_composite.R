@@ -9,7 +9,9 @@
 # 실행: Rscript 08_Tests/contracts/test_score_composite.R
 suppressWarnings(suppressMessages({
   library(data.table)
-  ROOT <- Sys.getenv("QM_ROOT", Sys.getenv("CLAUDE_PROJECT_DIR", getwd()))
+  # ★금칙 ④ 표준 계열: CLAUDE_PROJECT_DIR 먼저 (테스트와 피호출 모듈의 계열이 갈리면
+  #   worktree 실행에서만 root 가 어긋나 잠복한다)
+  ROOT <- Sys.getenv("CLAUDE_PROJECT_DIR", Sys.getenv("QM_ROOT", getwd()))
   src  <- file.path(ROOT, "02_Infrastructure", "contracts", "score_composite.R")
 }))
 PASS <- 0L; FAIL <- 0L
