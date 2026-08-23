@@ -288,3 +288,5 @@ stage_result() {   # $1=표시명 $2=exit코드 $3=경보 컴포넌트명
 # (2026-07-26 probe① 도훈 승인) 완주 마커 — lock은 '시작'만 증명한다(once-per-day 선점).
 # 중도 사망 시 lock만 남아 부팅이 "실행됨"으로 오보하던 갭 → done 마커로 시작/완주 구분.
 date '+%H:%M:%S' > "${LOCK}.done" 2>/dev/null || true
+# (v9 2026-08-23) 경보 digest 갱신 — 부팅에서 걷어낸 전수 점검의 소비면. 기록만(수리 아님).
+bash "$BASE/02_Infrastructure/ops/alerts_digest_build.sh" >/dev/null 2>&1 || true

@@ -525,7 +525,7 @@ fi
 #   배너/체크리스트 기대값/인벤토리 스냅샷/훅 총계/PG2 참조가 헌법(CLAUDE.md)·실측보다
 #   낡으면 즉시 WARN. 기대값은 하드코딩 없이 매 부팅 CLAUDE.md/파일시스템에서 파생하므로,
 #   헌법이 바뀌는 순간(예: v8.4 승격) 다음 부팅이 낡은 곳을 전부 짚는다. WARN-only —
-#   수리는 세션 몫(WARN 발화 = 즉시 수리 의무, 수동 지시 불요 원칙).
+#   WARN = digest 등재(health_full 경로). 수리는 도훈 지시 시 태스크 분리 (v9 2026-08-23).
 BCC="$PROJECT/02_Infrastructure/ops/boot_currency_check.sh"
 if [ -f "$BCC" ]; then
   bash "$BCC" --boot || true

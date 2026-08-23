@@ -20,7 +20,11 @@
 ★이 규약은 `alpha_search_queue_prompt.md` §6 의 'bare arXiv id' 지시와 동일하다
   (그쪽이 먼저 명문화했고, 여기서 코드로 고정한다).
 """
+import io
+import json
+import os
 import re
+import sys
 
 _PREFIX = re.compile(r'^(?:arxiv\s*:|arxiv\.org/abs/|https?://arxiv\.org/abs/)', re.I)
 _VERSUF = re.compile(r'v\d+$', re.I)
