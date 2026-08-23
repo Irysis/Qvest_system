@@ -1,3 +1,9 @@
+---
+paths:
+  - "qepm/memory/axioms/**"
+  - "02_Infrastructure/axiom/**"
+---
+
 # Axioms (Level 0 공리)
 
 **모든 에이전트는 아래 공리를 전제로 작동. AX-code 위반 = 즉시 중단.**
@@ -43,8 +49,10 @@ mode-local `AX-<MODE>-NNN` (`active/modes/<mode>/`, MODE=AS/QPM/FR) + global `AX
 ## Hook 강제 (v7.2.1+ enforcement_mode 기준)
 
 `02_Infrastructure/hooks/axiom_enforcement_hook.sh` (PreToolUse[W/E]):
+**★v9 2026-08-23**: `axiom_enforcement_hook.sh` 자체가 **등록 해제**됐다(도훈 결정 ④ 강한 감산 — 파일 존치, 재등록 레시피 `02_Infrastructure/hooks/_archive_v8_enforcement/MANIFEST.md`). 아래 항목의 enforcement_mode 는 **사료**이며, 현행 방어선은 R 계약(`hurdle_gate.R` ax001 블록 · `essence_score` · `registry_writer`) + judge + 수동 confirm 이다.
+
 - AX-000 documented (immutable, hard-block 없음)
-- AX-001 block — **2026-08-02 수리 전까지 hurdle_result 계열에서 발화 불능이었음(실측 0/559)**. 원인 3중: ①regex `defense|defence`를 **상시 필드명**(`statistical_defense`/`defense_metrics`)이 100% 충족해 판별력 0 ②면제어 `stress`를 **상시 채점항목명**(`score_breakdown.stress`)이 100% 충족해 영구 면제 ③`_shared_parse.sh`가 CONTENT를 **첫 줄만** 추출해(다중행 pretty JSON → `{` 1글자) 모든 content 검사 훅이 다중행 쓰기에 눈이 멀어 있었음. 수리 후 패턴은 필드명이 아니라 **분류값**(`"detected_family":"defense"` 등)을 보고, 기각 조건은 grade F 단독 → `F|C|D ∨ hard_fail`로 확장. **1차 방어선은 훅이 아니라 생산자** — `hurdle_gate.R`의 `ax001` 블록(선언적 scope 판정 + 조건부 축 기록 + D076)이고, 훅은 수기 작성분 2차선(정상 산출물은 R `write_json()`이 써서 PreToolUse 시야 밖). 검사기 `08_Tests/hooks/test_ax001_defense_scope.R`(위반 주입 20/20, 돌연변이 4축 전부 검출)
+- AX-001 **documented (v9: `axiom_enforcement_hook.sh` 등록 해제 2026-08-23 — 1차 방어선은 훅이 아니라 생산자 `hurdle_gate.R::ax001`)**. 구 block 서술 — **2026-08-02 수리 전까지 hurdle_result 계열에서 발화 불능이었음(실측 0/559)**. 원인 3중: ①regex `defense|defence`를 **상시 필드명**(`statistical_defense`/`defense_metrics`)이 100% 충족해 판별력 0 ②면제어 `stress`를 **상시 채점항목명**(`score_breakdown.stress`)이 100% 충족해 영구 면제 ③`_shared_parse.sh`가 CONTENT를 **첫 줄만** 추출해(다중행 pretty JSON → `{` 1글자) 모든 content 검사 훅이 다중행 쓰기에 눈이 멀어 있었음. 수리 후 패턴은 필드명이 아니라 **분류값**(`"detected_family":"defense"` 등)을 보고, 기각 조건은 grade F 단독 → `F|C|D ∨ hard_fail`로 확장. **1차 방어선은 훅이 아니라 생산자** — `hurdle_gate.R`의 `ax001` 블록(선언적 scope 판정 + 조건부 축 기록 + D076)이고, 훅은 수기 작성분 2차선(정상 산출물은 R `write_json()`이 써서 PreToolUse 시야 밖). 검사기 `08_Tests/hooks/test_ax001_defense_scope.R`(위반 주입 20/20, 돌연변이 4축 전부 검출)
 - AX-002 advisory (warn + context, v7.3에서 block 검토)
 - AX-008 documented (hook hard-block 미도입)
 - ~~AX-003/004/005/007~~ **2026-07-05 Distilled 강등 — active enforcement 대상 아님** (지식은 Distilled 탐색지도/검색으로 소비, 강제 아님)

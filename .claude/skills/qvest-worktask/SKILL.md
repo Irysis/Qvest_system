@@ -63,11 +63,11 @@ lookup(중복)·DISTILLED_NEG(경로)는 **검색**이라 "기존 negative들의
 
 원칙: 본 triage는 INV-7(negative는 경로-scoped, 방향 일반화 금지)과 충돌하지 않는다 — "재조합 금지"가 아니라 "신규성 선언 + 상한 선계산"이다.
 
-### ★ 3단 게이트 (v8.3.1 리서치 레벨 v2, 2026-07-11 — WT 생성 전 순서 고정)
+### ★ 2단 게이트 (v9 Lean Loop 2026-08-23 — 구 3단에서 EV-지도 셀 판정 제거. 도훈 승인 D-h)
 
 1. **hypothesis_index lookup** (위 절차 — 중복·기실패 대조)
-2. **frontier 큐 확인**: `06_Registry/alpha_frontier_queue.json` — 착수 대상 엔트리의 owner/status 갱신 의무, `dohoon_decision`/`dohoon_data_work` 항목은 세션 임의 착수 금지 (consume_rule 준수)
-3. **EV-지도 셀 판정**: `06_Registry/research_ev_map.json` 죽은 계급(D1~D7+4, 예산 0)에 해당하면 novelty triage 2항의 **도훈 confirm 없인 착수 금지**. 셀 판정 결과(살아있는 lane / 죽은 계급 / virgin)를 `hypothesis_description`에 1줄 기록.
+2. **frontier 큐 확인**: `06_Registry/alpha_frontier_queue.json` (schema 2.0) — 착수 대상 엔트리의 owner/status 갱신 의무. **`status=parked` ∧ `parked_reason=dohoon_decision`(또는 `dohoon_data_work`) → 착수 금지** (구 규약의 "dohoon_decision 항목 임의 착수 금지" 가 enum 으로 보존된 자리다). 착수는 `status=open` 인 항목만, 집으면 `status=claimed` + owner 갱신. 인프라 항목은 이 파일에 없다 — `06_Registry/infra_backlog.json`.
+   > 구 3단째("EV-지도 셀 판정", `06_Registry/research_ev_map.json`)는 **폐지**됐다. 그 지도는 07-10 자 256건 코퍼스 기준으로 동결돼 `06_Registry/_archive/research_ev_map_20260710_frozen.json` 으로 이동했다(갱신 의무 없음). 죽은 계급 판정이 필요하면 그 아카이브를 참조는 하되 **착수 조건으로 쓰지 않는다**.
 
 ```r
 source("02_Infrastructure/worktask/worktask_manager.R")

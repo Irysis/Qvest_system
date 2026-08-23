@@ -50,4 +50,5 @@ Rscript 02_Infrastructure/tools/hypothesis_index.R lookup <keyword>   # FAIL/KIL
 ## 참조
 
 - `.claude/rules/axioms.md` (AX-000·INV-7) · `02_Infrastructure/docs/rules/axiom-engine.md` (Distilled/revival 엔진)
-- `06_Registry/alpha_frontier_queue.json` (등재 대상) · `06_Registry/layer_bottleneck_map.md` (병목 계층 우선순위)
+- `06_Registry/alpha_frontier_queue.json` (등재 대상, schema 2.0 — 신규 항목은 `status="open"` enum 으로 등재. 자유서술 금지, 서술은 `status_raw`)
+  - ★구 참조 `06_Registry/layer_bottleneck_map.md`(병목 계층 우선순위)는 **폐지**됐다 — 2026-08-23 v9 Lean Loop §3.4(f)/도훈 승인 D-h 로 `06_Registry/_archive/layer_bottleneck_map_20260822.md` 아카이브, 갱신 의무 없음. 우선순위는 지도가 아니라 `alpha_frontier_queue.json` 의 `status=open` 항목에서 고른다.

@@ -30,6 +30,10 @@
 #   list_proposed()                                 — status=proposed 목록 (모닝브리핑·다이제스트 소비)
 #   refine_distilled(dist_id, statement_refined, retry_condition=, refined_by=)
 #                                                   — /cleaner 수동 정제 → status=distilled (retain)
+#   auto_map_negative(cluster_key)                  — (v9 2026-08-23, §6 D-f) promote.R 사다리를
+#     통과한 **negative** 클러스터의 DIST 카드를 무인으로 status=distilled 로 올린다
+#     (공리 아님 — INV-7 탐색지도). statement_refined = "[자동-탐색지도] " + statement_draft,
+#     approved_by = "engine-auto(INV-7 map)". 사람 정제문·promoted·quarantined 는 무변경.
 #   expire_distilled(dist_id, reason)               — status=expired
 #   supersede_subsumed_distilled(dry_run=)          — 부분집합 구 카드 자동 supersede
 #     (판정 본체 = cluster_extractor.py::supersede_subsumed. 재등재 시 자동 실행되며
@@ -445,12 +449,21 @@ list_proposed <- function(root = .dist_root()) {
 #'   공매도 데이터게이트(도훈 08-09 폐쇄) · insider(3-프레임 삼각-null 실측 negative)를
 #'   frontier 에서 '미검증 레버'로 광고했고 그 문장이 매 spawn 주입면으로 나갔다.
 #'   draft_proposed 가 이미 frontier 를 받으므로 계약 일관성 측면에서도 맞다.
+#' @param approved_by (2026-08-23 v9) 승인 주체 기록. NULL 이면 미기록.
+#' @param .allow_engine_map (2026-08-23 v9, §6 D-f) 엔진 자동 지도 전용 우회.
+#'   기본 FALSE = 종전 INV-6 초안-표식 금지 그대로. TRUE 는 `auto_map_negative()` 만 쓰며
+#'   문장이 `[자동-탐색지도] ` 로 시작할 것을 강제한다 — 라벨 없는 무인 활성화는 여전히 불가.
 refine_distilled <- function(dist_id, statement_refined, retry_condition = NULL,
                              frontier = NULL,
-                             refined_by = "cleaner_session", root = .dist_root()) {
+                             refined_by = "cleaner_session", root = .dist_root(),
+                             approved_by = NULL, .allow_engine_map = FALSE) {
   stopifnot(nzchar(statement_refined))
-  if (grepl("\\[.*초안.*\\]|확정 필요", statement_refined))
+  if (isTRUE(.allow_engine_map)) {
+    if (!startsWith(statement_refined, AUTO_MAP_PREFIX))
+      stop("INV-6: 엔진 자동 지도는 '", AUTO_MAP_PREFIX, "' 라벨로 시작해야 한다")
+  } else if (grepl("\\[.*초안.*\\]|확정 필요", statement_refined)) {
     stop("INV-6: statement_refined에 초안 표식 잔존 — 정제문만 허용")
+  }
   x <- .dist_load_one(dist_id, root)
   d <- x$dist
   if (identical(d$status, "promoted")) stop("이미 promoted — 정제 불가(불변)")
@@ -458,6 +471,7 @@ refine_distilled <- function(dist_id, statement_refined, retry_condition = NULL,
   d$statement_refined <- statement_refined
   if (!is.null(retry_condition)) d$retry_condition <- retry_condition
   if (!is.null(frontier)) d$frontier <- frontier
+  if (!is.null(approved_by)) d$approved_by <- approved_by
   d$status <- "distilled"
   d$refined_at <- format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z")
   d$refined_by <- refined_by
@@ -491,6 +505,56 @@ refine_distilled <- function(dist_id, statement_refined, retry_condition = NULL,
     message("[distilled] revival flags 갱신 실패(비차단): ", conditionMessage(e),
             " — 다음 평일 모닝까지 주입면에 구 사본이 남을 수 있음"))
   invisible(d)
+}
+
+# ══ 음성 자동 지도 (v9 Lean Loop, 2026-08-23 — 도훈 결정 §3.4(a) + §6 D-f) ══════
+# promote.R 사다리를 통과한 **negative** 클러스터는 공리(Law)가 되지 않는다(INV-7).
+#   대신 그 클러스터의 DIST 카드를 status=distilled 로 올려 **탐색지도(검색면)** 로만 쓴다.
+# INV-6 와의 관계: INV-6 가 지키던 안전속성은 "무인으로 만들어진 텍스트가 주입면에 도달하지
+#   않는다" 였다. v9 주입 재극성(§3.4(c))에서 음성 블록이 주입면에서 빠지므로 그 속성은
+#   보존된다 — 그래서 도훈이 음성 한정 무인 활성화를 승인했다(D-f). 양성/조건부는 여전히
+#   사람 승인(approve_proposed / approve_axiom) 게이트를 통과해야 한다.
+# ★멱등: 이미 지도된 카드(같은 문장·status=distilled)는 **건드리지 않는다**. 사람이 정제한
+#   카드(refined_by ≠ engine-auto)도 덮어쓰지 않는다 — 자동이 수동을 이기면 안 된다.
+AUTO_MAP_PREFIX  <- "[자동-탐색지도] "
+AUTO_MAP_APPROVER <- "engine-auto(INV-7 map)"
+
+auto_map_negative <- function(cluster_key, root = .dist_root(), verbose = TRUE) {
+  key <- as.character(cluster_key)[1]
+  hit <- NULL
+  for (f in list.files(.dist_dir(root), pattern = "^DIST-.*\\.json$", full.names = TRUE)) {
+    d <- tryCatch(fromJSON(f, simplifyVector = FALSE), error = function(e) NULL)
+    if (is.null(d)) next
+    if (identical(as.character(d$cluster_key %||% "")[1], key)) { hit <- d; break }
+  }
+  if (is.null(hit)) {
+    if (verbose) cat(sprintf("[distilled][auto-map] cluster_key=%s 에 대응하는 DIST 카드 없음 — 생략\n", key))
+    return(invisible(list(status = "no_card", cluster_key = key)))
+  }
+  did <- as.character(hit$dist_id %||% "")[1]
+  cur <- as.character(hit$status %||% "")[1]
+  draft <- as.character(hit$statement_draft %||% "")[1]
+  if (!nzchar(draft) || identical(draft, "NA"))
+    draft <- sprintf("negative 클러스터 %s (supporting L-code %d건) — statement_draft 결측",
+                     key, length(hit$supporting_l_codes %||% list()))
+  target <- paste0(AUTO_MAP_PREFIX, draft)
+
+  if (cur %in% c("promoted", "expired", "quarantined_evidence")) {
+    if (verbose) cat(sprintf("[distilled][auto-map] %s status=%s — 대상 제외(무변경)\n", did, cur))
+    return(invisible(list(status = "skipped", reason = cur, dist_id = did, cluster_key = key)))
+  }
+  if (identical(cur, "distilled")) {
+    same <- identical(as.character(hit$statement_refined %||% "")[1], target)
+    if (verbose) cat(sprintf("[distilled][auto-map] %s 이미 distilled(%s) — 무쓰기\n", did,
+                             if (same) "동일 지도문" else "사람 정제문 보존"))
+    return(invisible(list(status = if (same) "unchanged" else "kept_manual",
+                          dist_id = did, cluster_key = key)))
+  }
+
+  refine_distilled(did, statement_refined = target, refined_by = AUTO_MAP_APPROVER,
+                   approved_by = AUTO_MAP_APPROVER, root = root, .allow_engine_map = TRUE)
+  if (verbose) cat(sprintf("[distilled][auto-map] %s → status=distilled (INV-7 탐색지도, 공리 아님)\n", did))
+  invisible(list(status = "mapped", dist_id = did, cluster_key = key, prev_status = cur))
 }
 
 expire_distilled <- function(dist_id, reason = "", root = .dist_root()) {

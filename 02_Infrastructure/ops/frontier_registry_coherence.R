@@ -83,11 +83,23 @@ frontier_coherence_scan <- function(root = .fc_root()) {
   mp <- file.path(root, "06_Registry/research_ev_map.json")
   dp <- file.path(root, "06_Registry/distilled_knowledge.json")
   # ★입력 부재를 '이상 없음'으로 흘리지 않는다 — 미측정과 정상은 다르다.
-  miss <- c(qp, mp, dp)[!file.exists(c(qp, mp, dp))]
+  #   단 **research_ev_map 은 예외**다 (2026-08-23 v9 Lean Loop §3.4(f), 도훈 승인 D-h):
+  #   그 지도는 07-10 자 256건 코퍼스 기준으로 동결돼 `06_Registry/_archive/
+  #   research_ev_map_20260710_frozen.json` 으로 이동했고, 착수 조건에서 제거됐다.
+  #   ⇒ 부재는 **결손이 아니라 설계**이므로 stop() 이 아니라 빈 dead_classes 로 진행한다.
+  #   ★그 사실을 반환값에 남긴다(`inputs$ev_map`) — "지도를 봤는데 비었다" 와
+  #     "지도가 없어서 안 봤다" 가 구별되지 않으면 사후에 판정을 못 읽는다.
+  miss <- c(qp, dp)[!file.exists(c(qp, dp))]
   if (length(miss)) stop("[coherence] 입력 부재(미측정, PASS 아님): ", paste(basename(miss), collapse = ", "))
 
   Q <- fromJSON(qp, simplifyVector = FALSE)
-  M <- fromJSON(mp, simplifyVector = FALSE)
+  ev_map_state <- "present"
+  if (file.exists(mp)) {
+    M <- fromJSON(mp, simplifyVector = FALSE)
+  } else {
+    M <- list(dead_classes = list())
+    ev_map_state <- "archived_20260823_frozen"
+  }
   D <- tryCatch(fromJSON(dp, simplifyVector = FALSE), error = function(e) NULL)
 
   g <- function(x, k) { v <- x[[k]]; if (is.null(v)) "" else paste(as.character(unlist(v)), collapse = " ") }
@@ -149,7 +161,13 @@ frontier_coherence_scan <- function(root = .fc_root()) {
   ##   이라는 의도의 증거 — 변형이 늘 때마다 손으로 따라가는 구조라 누락이 기본값이었다.
   ##   포함-기반으로 교체(설정-scoped negative 라도 frontier 가 열려 있으면 착수 전 대상).
   ##   settled/done/closed 계열은 이 토큰을 갖지 않아 오편입 없음(실측 122 entries).
-  is_open_status <- function(s) any(startsWith(s, OPEN)) || grepl("frontier_open", s, fixed = TRUE)
+  ## ★2026-08-23 (schema 2.0) — status 가 enum 으로 접혔다. 그대로 두면 `status=="open"` 이
+  ##   위 세 예측자 어느 것도 만족하지 않아 **대상이 통째로 0건**이 된다(스크린이 조용히 죽는다).
+  ##   구판 자유서술도 계속 받는다 — 아카이브·픽스처·미마이그레이션 사본이 남아 있다.
+  is_open_status <- function(s) {
+    identical(s, "open") ||                         # schema 2.0 enum
+      any(startsWith(s, OPEN)) || grepl("frontier_open", s, fixed = TRUE)   # schema 1.0 자유서술
+  }
   rows <- list()
   for (e in Q$entries) {
     st <- g(e, "status")
@@ -192,7 +210,8 @@ frontier_coherence_scan <- function(root = .fc_root()) {
   }
   R <- if (length(rows)) rbindlist(rows) else data.table()
   list(rows = R, n_flag = nrow(R),
-       inputs = list(entries = length(Q$entries), dead = length(dead), neg_cards = length(dcards)))
+       inputs = list(entries = length(Q$entries), dead = length(dead),
+                     neg_cards = length(dcards), ev_map = ev_map_state))
 }
 
 #==============================================================================
@@ -279,7 +298,9 @@ if (.fc_invoked_directly()) {
     cat(sprintf("=== frontier registry coherence (스크린) ===\n"))
     cat(sprintf("  큐 %d항목 / dead 계급 %d / DISTILLED_NEG 카드 %d\n",
                 res$inputs$entries, res$inputs$dead, res$inputs$neg_cards))
-    cat(sprintf("  ★게이트 재검토 후보: %d건 (판정 아님 — 3단 게이트로 사람이 확정)\n", res$n_flag))
+    ## "3단" → "2단" (2026-08-23): EV-지도 셀 판정이 폐지돼 착수 전 게이트는
+    ##   ①hypothesis_index lookup ②frontier 큐 확인 두 단계다(qvest-worktask SKILL).
+    cat(sprintf("  ★게이트 재검토 후보: %d건 (판정 아님 — 2단 게이트로 사람이 확정)\n", res$n_flag))
     if (res$n_flag) print(res$rows, row.names = FALSE)
   }
   # CIT-1 인용 검증 스캔 (보고만 — 차단 아님)

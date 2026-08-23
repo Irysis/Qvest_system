@@ -685,6 +685,7 @@ SUITES=(
   #   대상이 0건이라, 정상 경로만 돌리면 로직이 죽어 있어도 초록으로 보인다. 각 게이트
   #   (정체성·지식손실·status·저술지식)를 하나씩 끄고 판정이 실제로 뒤집히는지 매 실행 실측.
   "08_Tests/axiom/test_distilled_supersede.py"
+  "08_Tests/axiom/test_promotion_ladder_dryrun.py"
   # 2026-08-09 추가: 논문 라우트 디스패치 4종 일괄 편입.
   #   ★등재 사유가 세 suite 는 "지연된 배선"이다 — freshness_gate·screen_axes·
   #     method_adapter_contract 는 2026-08-08 에 만들어졌는데 **이 배열에 들어온 적이 없어**
@@ -1124,7 +1125,20 @@ _suite_cmd() {
   fi
 }
 
+#──────────────────────────────────────────────────────────────────────────────
+# 프로필 필터 (v9 Lean Loop, 2026-08-23) — 전체 프로필은 **불변**이 기본이고, 필터는
+#   환경변수로만 켜진다(둘 다 미설정이면 구 동작과 바이트 동일).
+#     QVEST_SUITES_EXCLUDE=<regex>  일치하는 suite 를 건너뜀
+#     QVEST_SUITES_ONLY=<regex>     일치하지 않는 suite 를 건너뜀
+#   lean 프로필 = 08_Tests/hooks/profiles/lean.exclude (v9 에서 등록 해제된 훅·폐지된
+#   부팅 검사에 붙은 suite 25종). 사용 예:
+#     QVEST_SUITES_EXCLUDE="$(cat 08_Tests/hooks/profiles/lean.exclude)" bash 08_Tests/hooks/run_all_hooks.sh
+#   ★두 루프(사전 스캔·본 실행) **양쪽**에 걸어야 한다 — 한쪽만 걸면 사전 스캔이 센
+#   suite 수와 실제 실행 수가 어긋나 "UNREPORTED" 로 나타난다.
+#──────────────────────────────────────────────────────────────────────────────
 for _s in "${SUITES[@]}"; do
+  [[ -n "${QVEST_SUITES_EXCLUDE:-}" && "$_s" =~ $QVEST_SUITES_EXCLUDE ]] && continue
+  [[ -n "${QVEST_SUITES_ONLY:-}" && ! "$_s" =~ $QVEST_SUITES_ONLY ]] && continue
   _name="$(basename "$_s")"; _name="${_name%.*}"
   run_test "$_name" "$(_suite_cmd "$_s")"
 done
@@ -1156,6 +1170,11 @@ UNREPORTED=()
 REGISTRY_GUARD_STRICT=(     # 저빈도 정본 — 변하면 실패로 계상
   "06_Registry/method_registry.json"
   "06_Registry/alpha_frontier_queue.json"
+  # v9 2026-08-23: 프론티어 큐가 알파 가설 전용으로 좁혀지면서 인프라 항목이 이 파일로
+  #   분리된다(재설계안 §3.4(f)). 같은 성격의 저빈도 정본이므로 같은 STRICT 축에 건다 —
+  #   분리만 하고 가드를 안 옮기면 보호 표면이 조용히 절반으로 준다.
+  #   ★파일이 아직 없어도 무해하다: _fp_one 이 부재를 'ABSENT ABSENT' 로 안정 기록한다.
+  "06_Registry/infra_backlog.json"
 )
 REGISTRY_GUARD_ADVISORY=(   # 파생 조회면 — 병렬 세션이 정당하게 갱신, 보고만
   "06_Registry/hypothesis_index.json"
@@ -1214,6 +1233,9 @@ print(pick)
 }
 
 for test_script in "${SUITES[@]}"; do
+  # 프로필 필터 — 위 사전 스캔 루프와 **동일 조건**(설명은 그쪽 주석 참조).
+  [[ -n "${QVEST_SUITES_EXCLUDE:-}" && "$test_script" =~ $QVEST_SUITES_EXCLUDE ]] && continue
+  [[ -n "${QVEST_SUITES_ONLY:-}" && ! "$test_script" =~ $QVEST_SUITES_ONLY ]] && continue
   _rg0="$(_reg_fp_strict)"; _ra0="$(_reg_fp_adv)"
   if [[ "$test_script" == *.R ]]; then
     OUT=$(Rscript "$PROJ_DIR/$test_script" 2>&1 | _last_summary_json)

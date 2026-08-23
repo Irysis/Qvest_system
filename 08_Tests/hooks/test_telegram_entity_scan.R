@@ -1,7 +1,7 @@
 #==============================================================================
 # test_telegram_entity_scan.R — tg_send_rich() 미지원 HTML entity 스캔 계약 검사기
 #
-# 계약: .claude/rules/answer-principles.md ("검증 어휘" 정본 = 위반 주입 테스트)
+# 계약: 02_Infrastructure/docs/rules/answer-principles.md ("검증 어휘" 정본 = 위반 주입 테스트)
 #       + "빈/틀린 결과가 합격으로 읽히지 않을 것"
 #
 # 배경 (2026-08-02 실측, WT-D20260802_012 R43 발송에서 적발):

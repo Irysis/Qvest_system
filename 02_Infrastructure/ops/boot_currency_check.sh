@@ -228,12 +228,24 @@ if [ -f "$F_LAWBOOK" ]; then
   fi
 fi
 
-# ── C9 환경 정합: 선언된 ML 실행기가 실재하나 ────────────────────────────────
-# 2026-08-16 실사고: .venv_qvest_ml 이 16:02 에 비워졌는데(생성 06-10) 부팅은 아무것도
-#   말하지 않았고, 무관한 배터리 실패를 쫓다 우연히 발견했다. python-policy.md 는 "환경
-#   선언은 라운드 전제이므로 착수 전 실측"을 요구하지만 그 실측을 기계가 하지 않았다.
-#   결손 시 v8.4 Lane A(분포-표적 ML) 가 착수 불가이므로 알파 라운드를 직접 막는다.
-# 기대 경로는 하드코딩하지 않는다 — python-policy.md 선언에서 파생(C0 계약과 동일).
+# ── C9~C11b 은퇴 (v9 Lean Loop, 2026-08-23) ──────────────────────────────────
+# 승인된 재설계안 §4 step 9 = 스케줄러 4종 비활성(AuditWatch 포함, 도훈이 직접 실행).
+# 이 축들은 그 스케줄 작업 사슬에 매달려 있어, 작업을 끄는 순간 **매 부팅 FAIL** 이 뜬다 —
+# 그건 결함 신호가 아니라 우리가 의도한 상태다. 해소 불가능한 경보는 곧 무시되고,
+# 무시되는 경보는 진짜 경보까지 함께 묻는다. ⇒ 4축을 한 줄 PASS 로 은퇴시킨다.
+#
+# 무엇을 잃는지 정직하게 적는다(되살릴 때 이 목록이 곧 체크리스트다):
+#   C9   python-policy.md 가 선언한 ML 실행기(venv python.exe)의 실재 — ★AuditWatch 비의존.
+#        2026-08-16 venv 소실 사고의 재발 감지선이었다. 대체 = 착수 전 수동 실측
+#        (python-policy.md 재확인 1줄) + 주간 health_full.sh.
+#   C10  venv 트리 삭제 감시 카나리아(.canary_*) 생존 — ★AuditWatch 비의존이나 C9 가 파생한
+#        _pypath 에 의존해 단독 존치가 불가.
+#   C11  감사 디제스트(.cache/audit_watch_status.json) 신선도 + 감사 정책 on + SACL 부착.
+#   C11b 감시 스케줄 무장(배터리 구동 시 0x800710E0 거부 여부).
+# 되살리기 = 이 블록을 git 히스토리(2026-08-23 직전 판)에서 복원 + Qvest_AuditWatch 재활성.
+ok "C11~C11b 은퇴 — v9: AuditWatch 비활성 예정 (감사 디제스트·스케줄 무장 2축 → 주간 health_full.sh 이관). C9(ML 실행기)·C10(venv 카나리아)은 존치 — 2026-08-16 venv 소실 회귀 검출기"
+
+_bcc_c9_c11() {   # v9: C9·C10 은 live. C11·C11b 는 BCC_RUN_C11=1 일 때만(AuditWatch 비활성 상태에선 영구 FAIL 이라 기본 off).
 if [ -f "$F_PYPOLICY" ]; then
   DECL_PY=$(grep -oE '`[^`]*\.venv[^`]*python\.exe`' "$F_PYPOLICY" 2>/dev/null | tr -d '`' | head -1)
   if [ -z "$DECL_PY" ]; then
@@ -272,6 +284,7 @@ else
   bad "C10 UNKNOWN — 실행기 경로 파생 실패로 venv 디렉터리를 특정 못 함"
 fi
 
+if [ "${BCC_RUN_C11:-0}" = "1" ]; then   # v9: AuditWatch 비활성 → 기본 skip
 # ── C11 감사 감시 생존: 삭제 주체를 볼 수 있는 상태인가 ──────────────────────
 # C10 은 "표식이 사라졌다"까지만 말한다. "누가 지웠나"는 Security 로그(4660/4663)에
 #   있는데 그건 관리자 권한이라 이 검사가 못 읽는다. 그래서 상승 권한 스케줄 작업
@@ -321,14 +334,18 @@ if [ -f "$F_AUDITW" ]; then
     *)     bad "C11b 미판정 — 디제스트에 schedule_battery_safe 필드 부재(자기점검 도입 이전 판). 상승 권한 작업이 새 스크립트로 1회 돌아야 판정 가능: Start-ScheduledTask -TaskName Qvest_AuditWatch" ;;
   esac
 fi
+fi   # BCC_RUN_C11
 
+
+}   # ← _bcc_c9_c11 끝
+_bcc_c9_c11   # v9: C9·C10 실행(live) · C11·C11b 는 BCC_RUN_C11=1 일 때만
 
 # ── 출력 ─────────────────────────────────────────────────────────────────────
 if [ "$MODE" = "--boot" ]; then
   if [ "$FAIL" -eq 0 ]; then
     echo "[boot] boot-currency: OK — 부팅 시퀀스 ↔ 헌법($VER·$MODEL_LABEL·$N_MODE)·실측 정합 ($PASS축)"
   else
-    echo "[boot] WARN: boot-currency 드리프트 ${FAIL}건 — 부팅 시퀀스가 헌법/실측보다 낡음. 세션이 즉시 수리할 것 (수동 지시 불요 원칙, 2026-07-26):"
+    echo "[boot] WARN: boot-currency 드리프트 ${FAIL}건 — 부팅 시퀀스가 헌법/실측보다 낡음. digest 등재 — 수리는 도훈 지시 시 태스크로 분리 (v9 2026-08-23):"
     for w in "${WARN_LINES[@]}"; do echo "[boot]    ✗ $w"; done
     echo "[boot]    상세: bash 02_Infrastructure/ops/boot_currency_check.sh"
   fi

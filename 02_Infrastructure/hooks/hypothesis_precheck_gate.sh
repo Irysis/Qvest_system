@@ -12,8 +12,12 @@
 #   본 게이트가 그 규율을 배선으로 옮긴다. **새로 만드는 규약이 아니라 기존 규약의 강제**다.
 #
 # 규약 근거:
-#   .claude/agents/alpha-hypothesis.md:28  "v8.3 착수 전 의무(선행 조건, 생략 금지):
+#   .claude/agents/alpha-hypothesis.md:28  "착수 전 의무(선행 조건, 생략 금지):
 #                                           hypothesis_index lookup + alpha_frontier_queue 확인"
+#   ★2026-08-23 (v9 Lean Loop §3.4(f)): 큐가 schema 2.0 으로 바뀌어 착수 자격은
+#     `status=open` 이고 `status=parked ∧ parked_reason=dohoon_decision` 은 금지다.
+#     본 게이트가 보는 것은 여전히 **lookup 선언의 존재**뿐이며(아래 판정 ①~④),
+#     status 판정은 하지 않는다 — 텍스트 정합만 맞춘 것이지 판정 축은 불변.
 #   .claude/skills/qvest-worktask/SKILL.md · docs/rules/axiom-engine.md (QEPM 모드 의무 lookup)
 #
 # 판정:

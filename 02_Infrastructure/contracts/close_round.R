@@ -60,6 +60,16 @@ suppressWarnings(suppressMessages({
 )
 .CR_NEGATIVE_TYPES <- c("config_scoped_negative", "screen_tier_routed", "revival_conditional")
 
+## schema 2.0 (2026-08-23) — 이 판정이 나면 큐 항목의 enum status 를 `done` 으로 접는다.
+## ★두 종은 **일부러 뺐다** — 이름 자체가 프론티어가 열려 있다고 선언하기 때문이다:
+##   · `ceiling_reached_frontier_open` — 천장이지 종결이 아니다(미검 축이 남아 있다)
+##   · `revival_conditional`           — 부활 조건 대기 = parked 성격이지 done 이 아니다
+##   INV-7 상 이 둘을 done 으로 접으면 재도전 대상이 살아 있는 채로 큐에서 사라진다.
+##   나머지(측정 negative · 소비면 라우팅 · 현직 확정 · 능력 확립)는 그 라운드가 닫힌 것이고,
+##   부활 조건은 항목의 `live_trigger`/`revival_condition` 에 남아 아카이브에서 grep 된다.
+.CR_DONE_VERDICTS <- c("config_scoped_negative", "screen_tier_routed",
+                       "incumbent_confirmed", "capability_established")
+
 #' close_round — 리서치 라운드를 계약에 맞게 닫고 종료 마커를 발행한다.
 #'
 #' @param round_id      라운드 식별자 (예 "R31" / "FQ-047" / "WT-D...").
@@ -72,7 +82,11 @@ suppressWarnings(suppressMessages({
 #'                      타모드) 문자열 벡터 (연속성 4호).
 #' @param frontier_update  frontier 큐 갱신 서술 (FQ-id + status) 또는 NULL.
 #' @param live_trigger  부활 조건 (negative 판정 시 필수, INV-7). 경로-scoped 재도전 신호.
-#' @param layer         병목 계층 태그 (①재료~⑨자본 중) — layer_bottleneck_map 갱신 대상.
+#' @param layer         병목 계층 태그 (①재료~⑨자본 중). **선택**이며 기본 NULL —
+#'                      2026-08-23 v9 Lean Loop §3.4(f)/D-h 로 `layer_bottleneck_map.md` 가
+#'                      `06_Registry/_archive/layer_bottleneck_map_20260822.md` 로 아카이브되고
+#'                      갱신 의무가 폐지됐다. 태그를 남기면 마커·요약에는 그대로 실리지만
+#'                      **갱신해야 할 지도는 없다**. 값을 지어내지 말 것(모르면 NULL).
 #' @param evidence_refs L-code/보고서 경로 벡터.
 #' @return (invisibly) 종료 기록 list. 콘솔에 사람용 요약 출력.
 close_round <- function(round_id,
@@ -156,20 +170,29 @@ close_round <- function(round_id,
     fq_ids <- unique(unlist(regmatches(blob, m)))
     fq_ids <- fq_ids[nzchar(fq_ids)]
     if (length(fq_ids)) {
-      qp <- file.path(.cr_root(), "06_Registry", "alpha_frontier_queue.json")
-      if (file.exists(qp)) {
-        qtxt <- paste(readLines(qp, warn = FALSE, encoding = "UTF-8"), collapse = "\n")
+      ## ★2026-08-23 (v9 Lean Loop §3.4(f)) — 큐가 **두 파일로 갈라졌다**.
+      ##   인프라 항목이 `06_Registry/infra_backlog.json` 으로 분리됐으므로, 알파 큐만
+      ##   대조하면 인프라 FQ 를 닫을 때마다 "큐에 없는 id" 경고가 뜬다 — 경고가 상시가
+      ##   되면 아무도 안 읽고, 그 순간 이 대조는 있으나마나가 된다(오탐이 검사를 죽인다).
+      qps <- file.path(.cr_root(), "06_Registry",
+                       c("alpha_frontier_queue.json", "infra_backlog.json"))
+      qps_have <- qps[file.exists(qps)]
+      if (length(qps_have)) {
+        qtxt <- paste(unlist(lapply(qps_have, function(p)
+          paste(readLines(p, warn = FALSE, encoding = "UTF-8"), collapse = "\n"))),
+          collapse = "\n")
         pres <- vapply(fq_ids, function(id)
           grepl(paste0("\"", id, "\""), qtxt, fixed = TRUE), logical(1))
         fq_missing <- fq_ids[!pres]
         fq_verified <- length(fq_missing) == 0L
         if (!fq_verified)
-          message("[close_round] ⚠ frontier 선언↔실기록 불일치 — 큐에 없는 FQ-id: ",
+          message("[close_round] ⚠ frontier 선언↔실기록 불일치 — 큐 2종에 없는 FQ-id: ",
                   paste(fq_missing, collapse = ", "),
                   " (FQ-167/168 계보: frontier_update 는 실제 기록 결과에서 파생시킬 것. ",
+                  "종결분은 06_Registry/_archive/alpha_frontier_queue_done_*.json 에 있을 수 있다. ",
                   "큐 기록 후 재확인 — 비차단 경고)")
       } else {
-        message("[close_round] frontier 대조 불가 — alpha_frontier_queue.json 부재")
+        message("[close_round] frontier 대조 불가 — alpha_frontier_queue.json / infra_backlog.json 둘 다 부재")
       }
     }
     # FQ-id 미언급 서술(예: '항목 status 갱신')은 대조 불가(NA) — 억지 판정 금지
@@ -184,8 +207,17 @@ close_round <- function(round_id,
   #   ⇒ 계약이 이미 강제하는 값(verdict_type · next_probes · round_id)을 **고정 키**로 기입한다.
   #     신규분부터 기계 독독 가능해지며, 기존 62종은 건드리지 않는다(소급 정규화는 값 손실 위험).
   #   비차단: 큐 쓰기 실패가 라운드 종료를 막지 않는다(기록은 마커가 정본, 큐는 파생 소비면).
+  #   ★★`write_marker` 로 막는다 (2026-08-23 수리). 구판은 이 쓰기가 **그 플래그 밖**에
+  #     있어서, 부작용을 안 내려고 `write_marker=FALSE` 로 부르는 호출자도 **정본 큐를
+  #     건드렸다**. 실측 증거: 08_Tests/hooks/test_p0_loop_closure.R T3d 가 실재 id 를 넘기며
+  #     `write_marker=FALSE` 로 부르는데, 그 결과가 정본에 남아 있다 —
+  #     `FQ-001.last_round = "P0TEST_R2"`(2026-08-22T11:26:44, git 커밋됨).
+  #     즉 **검사가 정본 레지스트리를 변형**했고 그 변형이 이력에 박혔다.
+  #     `test_dryrun_no_side_effects.R` [D] 가 이 계약을 이미 단언하고 있었으나 감시 경로에
+  #     큐가 없고 픽스처의 frontier_update 에 FQ-id 가 없어 이 자리를 지나쳤다
+  #     (= 검사가 있는데 그 축을 안 밟은 형태).
   fq_written <- character(0); fq_write_err <- NULL
-  if (length(fq_ids)) {
+  if (length(fq_ids) && isTRUE(write_marker)) {
     fq_write_err <- tryCatch({
       io <- file.path(.cr_root(), "02_Infrastructure", "ops", "frontier_queue_io.R")
       if (file.exists(io)) {
@@ -199,6 +231,17 @@ close_round <- function(round_id,
                 e$last_verdict    <- verdict_type
                 e$last_closed_at  <- format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z")
                 e$last_next_probe <- as.character(np)
+                ## ★schema 2.0 — 종결 판정은 enum status 에 반영한다(2026-08-23).
+                ##   구판은 status 를 손으로 갱신하게 뒀고, 그래서 251건에 자유서술 137종이
+                ##   쌓였다. 계약이 이미 강제하는 verdict_type 에서 파생시키면 그 축이 닫힌다.
+                ##   ★`status_raw` 는 건드리지 않는다 — 그건 역사이고 status 는 판정이다.
+                ## ★`%||%` 를 쓰지 않는다 — 이 파일에 정의가 없고, `if (!exists(...))` 가드는
+                ##   호출자 판본을 상속해 조용히 다르게 동작한 전례가 있다(2026-08-20).
+                if (verdict_type %in% .CR_DONE_VERDICTS) {
+                  if (is.null(e$status_raw))
+                    e$status_raw <- if (is.null(e$status)) "" else as.character(e$status)[1]
+                  e$status <- "done"
+                }
                 e
               }, reason = sprintf("close_round %s (%s)", round_id, verdict_type))
               TRUE
@@ -214,6 +257,10 @@ close_round <- function(round_id,
               " (고정 키 last_round/last_verdict/last_next_probe)")
     if (!is.null(fq_write_err))
       message("[close_round] 큐 되먹임 실패(비차단): ", fq_write_err)
+  } else if (length(fq_ids) && !isTRUE(write_marker)) {
+    ## 침묵하지 않는다 — "안 썼다" 를 말해야 호출자가 '기입됨' 으로 오해하지 않는다.
+    message("[close_round] 큐 되먹임 생략 (write_marker=FALSE) — 대조만 수행, 정본 미변경: ",
+            paste(fq_ids, collapse = ", "))
   }
 
   # ── 종료 기록 발행 ────────────────────────────────────────────────────────

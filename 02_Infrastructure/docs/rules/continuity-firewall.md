@@ -1,5 +1,8 @@
 # Continuity Firewall — 포기 원천차단 (Level 0 SOT)
 
+> **SUSPENDED 2026-08-23 (v9)** — L1 Stop 차단 등록 해제; L3 계약은 L-code 발행(`run_alpha_search.R::.write_lcode`, `lcode_schema.R` v3)에서 검사; `continuity_gate.py`는 수동 감사 도구로 존치.
+> 즉 아래 본문의 L1/L2 기계 차단 서술은 **현행이 아니다**(Stop 차단 훅 0). 계속-산출 요건은 lean 라운드에서 next_probe ≥ 2 + 부활 조건(`live_trigger`)으로 축소돼 L-code 발행 1지점에서만 검사되며, 미충족은 `[L-CODE WARN]` 후 발행(차단 아님)이다. 규범 위치 = `.claude/rules/lean-loop.md` "연속성 계약" 절.
+
 **발효**: 2026-07-15 (도훈 mandate — "자체적으로 포기하지 않는 자가발전형 아키텍처. 누적 실패 후 '끝남 표현들'로 라운드를 마무리하려는 것을 원천차단"). **위반 = AX-002 동급.**
 **계보**: answer-principles 연속성 6호(2026-07-13 헌법 승격) + research_continuity_guard.sh(warn) → **본 SOT가 block으로 승격·확장**. settings.json `_doc_research_continuity`가 예고한 "2주 관찰 후 block 승격"의 집행.
 
@@ -129,7 +132,7 @@
 **표현 방법**: 하네스 턴도 기존 enum으로 무리 없이 닫힌다 — `verdict_type="capability_established"` + `layer="harness"`, next_probe = 미측정 표면, live_trigger = 회귀 감시 조건(예: "배터리 총계가 직전 실측 대비 감소하면 회귀가 아니라 침묵 결손으로 의심"). 실제 발행 예: `HARNESS-20260725-hook-test-measurement`.
 
 ## 5. 참조
-- `.claude/rules/answer-principles.md` 리서치 연속성 6호(본 SOT가 6호의 집행 아키텍처)
+- `02_Infrastructure/docs/rules/answer-principles.md` 리서치 연속성 6호(본 SOT가 6호의 집행 아키텍처. 2026-08-23 v9 이동 — 구 경로 `.claude/rules/`)
 - `02_Infrastructure/docs/rules/axiom-engine.md` §0.1(메커니즘 비-ossification)·INV-7
 - 연구: `04_Research/01_reports/` 포기방식 아키텍처 연구(wf_2a348b0e, 2026-07-15) — 7표면·6긴장점
 - 메모리: [[project-continuity-firewall-20260715]]

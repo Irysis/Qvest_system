@@ -44,66 +44,40 @@ echo "=== Harness Health Check (v8.1) ==="
 # v55 legacy 제거: role_taxonomy_admission_gate.sh + cash_sleeve_validator.sh
 # 둘 다 .claude/settings.json 등록 0건 (v7.0 Sprint 5 cleanup) → required list에서도 제거
 # DEPRECATION.md 참조
+# ★v9 Lean Loop (2026-08-23) — 목록을 **현행 등록 11종 + 자기 자신**으로 축소.
+#   구판은 v6.1~v8.x 누적 28종을 요구했는데, 그중 대다수는 v9 에서 등록 해제됐다
+#   (라우터 dispatch 폐지 + Stop 훅 0 + PostToolUse 2종). 목록을 그대로 두면
+#   "등록도 안 된 훅의 파일 존재"를 계속 요구하게 되고, 그건 이 검사가 답하려는
+#   질문("지금 집행되는 훅이 성한가")과 다른 질문이다.
+#   ★해제 36종의 파일은 **삭제하지 않았다** — harness_health/배터리/08_Tests 31파일이
+#     경로로 직접 호출한다. 목록·사유·재등록 레시피 =
+#     02_Infrastructure/hooks/_archive_v8_enforcement/MANIFEST.md
 REQUIRED_HOOKS=(
-  # Tier 1 전역
+  # PreToolUse Write|Edit — 보호선
   "safety_guard.sh"
-  "axiom_enforcement_hook.sh"
-
-  # Tier 2 Agent (v8.0 WS5-3 — axiom_context_inject가 unified_agent_guard[v52] 대체. AX 공리 주입)
-  "axiom_context_inject.sh"
-  "agent_role_guard.sh"
-
-  # v6.1 Work Task 순서 + 제약
-  "worktask_sequence_enforcer.sh"
-  "worktask_spec_validator.sh"
-  "worktask_constraint_enforcer.sh"
-  "worktask_artifact_validator.sh"
-
-  # v6.1 R1 Discovery/Deployment
-  "discovery_graduation_gate.sh"
-
-  # v6.1 R2 Selection/Test Isolation + Method Shopping
-  # (2026-07-24 도훈 승인 C2) selection_contamination_detector.sh = 등록 해제(구조적 상시-allow 실증), FS retain — 목록 제외
-  "lockbox_audit_trail.sh"
-  "lockbox_post_judge_seal.sh"
-  "method_shopping_limiter.sh"
-
-  # v6.1 R3 Challenge Loop
-  "challenge_loop_limiter.sh"
-
-  # v6.1 R4 Role-specific Objective
-  "role_objective_guard.sh"
-
-  # v6.1 R6 Covariance Freshness
-  # (2026-07-24 도훈 승인 C2) covariance_freshness_gate.sh = 등록 해제(advisory 무전달+유물 캐시), FS retain — 목록 제외
-
-  # v6.1 R11 Lineage + Reproducibility
-  "lineage_recorder.sh"
-  "reproducibility_validator.sh"
-
-  # v6.1 R12 Forge Transparent Integration
-  "forge_integration_audit.sh"
-
-  # Pipeline + Post-Use
-  "pipeline_trigger.sh"
-  "red_flag_detector.sh"
-  "circuit_breaker.sh"
-  "teammate_idle_guard.sh"
-  "task_complete_guard.sh"
-
-  # Session
-  "harness_health.sh"
-  "auto_commit_on_stop.sh"
-  "milestone_commit.sh"
-  # (2026-07-26 부팅감사 수리) Continuity Firewall Stop 게이트 — AX-002 동급 계약(2026-07-15
-  # 도훈 mandate)인데 required 목록에 없어 settings.json에서 빠져도 harness_health가 PASS였음
-  "research_continuity_guard.sh"
-
-  # Active retain (v55 호환 — _archive_v55/ 미이동, settings.json 등록 retain)
-  "trail_consistency_checker.sh"
-
-  # v7.0 Sprint 5 신규
   "legacy_write_block.sh"
+
+  # PreToolUse Write — 자본 게이트 + 고정축
+  "discovery_graduation_gate.sh"
+  "worktask_constraint_enforcer.sh"
+
+  # PreToolUse Bash
+  "telegram_direct_call_guard.sh"
+
+  # PreToolUse Agent — 지식 주입
+  "axiom_context_inject.sh"
+
+  # PostToolUse Write|Edit — 자본 인증 + PIT C5
+  "governor_concord_certifier.sh"
+  "overlay_pit_grep.sh"
+
+  # SessionStart / SessionEnd
+  "boot_stamp_check.sh"
+  "auto_commit_on_stop.sh"
+  "auto_push_on_stop.sh"
+
+  # 자기 자신 (이 검사기도 파일로 존재·실행 가능해야 한다)
+  "harness_health.sh"
 )
 
 for HOOK in "${REQUIRED_HOOKS[@]}"; do
@@ -146,11 +120,14 @@ else
   FAIL=$((FAIL + 1))
 fi
 
-# ERR trap 확인 (v6.1 신규 Hook에 필수)
-for HOOK in "axiom_context_inject.sh" "circuit_breaker.sh" "safety_guard.sh" \
-            "selection_contamination_detector.sh" "method_shopping_limiter.sh" \
-            "role_objective_guard.sh" "challenge_loop_limiter.sh" \
-            "covariance_freshness_gate.sh" "agent_role_guard.sh"; do
+# ERR trap 확인 — 등록 훅은 내부 오류 시 조용히 죽지 말고 fail-open/fail-closed 판정을
+#   명시 발행해야 한다. (v9 2026-08-23: 목록을 현행 등록 11종으로 교체 — 구판은 해제·부재
+#   훅 4종을 검사해 항상 침묵했다. 11종 전부 trap 보유 실측.)
+for HOOK in "safety_guard.sh" "legacy_write_block.sh" \
+            "discovery_graduation_gate.sh" "worktask_constraint_enforcer.sh" \
+            "telegram_direct_call_guard.sh" "axiom_context_inject.sh" \
+            "governor_concord_certifier.sh" "overlay_pit_grep.sh" \
+            "boot_stamp_check.sh" "auto_commit_on_stop.sh" "auto_push_on_stop.sh"; do
   FPATH="$HOOKS_DIR/$HOOK"
   if [ -f "$FPATH" ]; then
     if ! grep -q "trap.*ERR\|trap.*err" "$FPATH"; then

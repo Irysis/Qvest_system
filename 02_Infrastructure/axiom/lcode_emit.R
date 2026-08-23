@@ -16,6 +16,12 @@
 #   - 신규 ID 채번 중복 가드(A1-F6 재발 방지): 자동 채번 l_code가 기존 원장과 충돌 시
 #     suffix 재발급. strategy_id 파일 덮어쓰기 시 l_code 상이하면 WARN.
 #
+# v3 변경 (2026-08-23 v9 Lean Loop — lcode_schema v3 정합):
+#   - 1급 인자 추가: next_probe(연속성 계약 — C/F 2건 이상, 리스트 또는 " | " 조인 문자열),
+#     source_paper, paper_assumption_broken. metrics 자유목록 경유 전달도 .pick 로 동일 승격.
+#   - oos_months / oos_effect_vs_is 는 시그니처에서 제거 — `...` 가 흡수하므로 기존 호출은
+#     오류 없이 계속 돌지만 그 필드는 **기록되지 않는다**(스키마 v3에서 폐지된 축).
+#
 # metric_type: QEPM/factor_rotation/RAMP = backtested(build_bt_result+essence_score)
 #              → INV-1상 global 승격 가능. canonical_screen = canonical_screen_bt 실측.
 #              (alpha_search만 proxy → run_alpha_search.R::.write_lcode에서 별도 적립.)
@@ -54,13 +60,18 @@ emit_lcode <- function(mode, strategy_id, grade, lesson_text,
                        metric_type = "backtested", construction_type = NULL,
                        mechanism_hypothesis = NULL,
                        falsification_attempts = NULL,
-                       oos_retention = NULL, oos_months = NULL,
+                       oos_retention = NULL,
                        portfolio_alpha_t = NULL,
                        selection_type = NULL, record_type = NULL,
                        family = NULL,
+                       # ── v3 스키마 축 (2026-08-23 v9 Lean Loop) ──────────────────────────
+                       next_probe = NULL,               # 연속성 계약: C/F는 2건 이상(리스트 또는 " | " 조인)
+                       source_paper = NULL,             # 원 논문 식별자/URL
+                       paper_assumption_broken = NULL,  # 논문의 어느 가정이 KR에서 깨졌나(1줄)
                        core_reference = "",
                        tags = NULL, metrics = list(), project_root = NULL,
-                       l_code = NULL, dry_run = FALSE) {
+                       l_code = NULL, dry_run = FALSE,
+                       ...) {   # oos_months/oos_effect_vs_is 등 폐지 인자 흡수 (v3: 호출 오류 없이 무시)
   suppressPackageStartupMessages(library(jsonlite))
   root <- project_root %||% Sys.getenv("CLAUDE_PROJECT_DIR",
             Sys.getenv("QM_ROOT", "G:/Quant_Module_Moltbot"))
@@ -79,16 +90,21 @@ emit_lcode <- function(mode, strategy_id, grade, lesson_text,
   mechanism_hypothesis   <- .pick(mechanism_hypothesis, "mechanism_hypothesis")
   falsification_attempts <- .pick(falsification_attempts, "falsification_attempts")
   oos_retention          <- .pick(oos_retention, "oos_retention")
-  oos_months             <- .pick(oos_months, "oos_months")
   portfolio_alpha_t      <- .pick(portfolio_alpha_t, "portfolio_alpha_t")
   selection_type         <- .pick(selection_type, "selection_type")
   record_type            <- .pick(record_type, "record_type")
+  # v3 축 — metrics 자유목록 경유 전달도 동일하게 승격 (back-compat 규약 유지)
+  next_probe              <- .pick(next_probe, "next_probe")
+  source_paper            <- .pick(source_paper, "source_paper")
+  paper_assumption_broken <- .pick(paper_assumption_broken, "paper_assumption_broken")
   # prefer-explicit family (2026-07-18): 명시 전달 시 harvester가 키워드 추론보다 우선 소비
   # (lcode_harvester._infer_family 폴백화). substring 오귀속(FQ011→q01) 방어의 emit-side 절반.
   family                 <- .pick(family, "family")
   metrics <- metrics[setdiff(names(metrics),
     c("mechanism_hypothesis", "falsification_attempts", "oos_retention", "oos_months",
-      "portfolio_alpha_t", "selection_type", "record_type", "family"))]
+      "oos_effect_vs_is",   # v3 폐지 축 — metrics 로 들어와도 기록하지 않는다
+      "portfolio_alpha_t", "selection_type", "record_type", "family",
+      "next_probe", "source_paper", "paper_assumption_broken"))]
 
   # construction_type 미전달 → 키워드 추론 폴백 (WARN — 승격축 정확도는 명시 전달이 우선)
   ct_inferred <- FALSE
@@ -162,11 +178,25 @@ emit_lcode <- function(mode, strategy_id, grade, lesson_text,
   # 승격축/분류 필드 — 값 있을 때만 기록 (없는 필드 = 정직한 결측)
   if (!is.null(falsification_attempts)) lcode$falsification_attempts <- falsification_attempts
   if (!is.null(oos_retention))          lcode$oos_retention <- oos_retention
-  if (!is.null(oos_months))             lcode$oos_months <- oos_months
   if (!is.null(portfolio_alpha_t))      lcode$portfolio_alpha_t <- portfolio_alpha_t
   if (!is.null(selection_type))         lcode$selection_type <- selection_type
   if (!is.null(record_type))            lcode$record_type <- record_type
   if (!is.null(family) && nzchar(as.character(family))) lcode$family <- as.character(family)
+  # ── v3 축: 연속성 계약 + 논문 축 ─────────────────────────────────────────────
+  #   next_probe 는 리스트로 오면 리스트(next_probes)와 " | " 조인 문자열을 함께 남긴다
+  #   (validate_lcode 는 둘 다 세고, 구 소비자는 문자열만 읽는다).
+  if (!is.null(next_probe)) {
+    np <- unlist(next_probe, use.names = FALSE)
+    np <- trimws(as.character(np)); np <- np[nzchar(np)]
+    if (length(np)) {
+      if (length(np) > 1L) lcode$next_probes <- as.list(np)
+      lcode$next_probe <- paste(np, collapse = " | ")
+    }
+  }
+  if (!is.null(source_paper) && nzchar(trimws(as.character(source_paper))))
+    lcode$source_paper <- as.character(source_paper)
+  if (!is.null(paper_assumption_broken) && nzchar(trimws(as.character(paper_assumption_broken))))
+    lcode$paper_assumption_broken <- as.character(paper_assumption_broken)
 
   # P0#5 emit 방화벽 backstop 게이트 — 제약-귀속/완화-레버 위반 오염표식 부착 (emit 비차단)
   if (exists("check_constraint_firewall", mode = "function")) {
@@ -282,7 +312,7 @@ emit_ramp_lcode <- function(strategy_id, grade, lesson_text,
 }
 
 if (sys.nframe() == 0L && !interactive()) {
-  # 1) v2 완전체 — 승격축 4필드 1급 인자 (promotion_ready 기대)
+  # 1) v3 완전체 — 승격축 1급 인자 + next_probe 2건 (promotion_ready 기대)
   r1 <- emit_fr_lcode("FR_TEST_001", "C",
          "현 12-모듈 풀 로테이션·오버레이 OOS 무가치(EW 천장), 직교 슬리브 추가가 선행조건.",
          track = "factor_rotation", construction_type = "regime_rotation",
@@ -291,23 +321,39 @@ if (sys.nframe() == 0L && !interactive()) {
            list(test = "EW 벤치 대비 paired NW-t", result = "survived", effect_retained = 0.9),
            list(test = "regime 라벨 셔플 placebo", result = "survived", effect_retained = 0.8)),
          oos_retention = 0.55, portfolio_alpha_t = 1.1, selection_type = "chain",
+         next_probe = list("직교 슬리브 1건 추가 후 재측정", "국면 라벨 해상도 축소 대조"),
+         source_paper = "internal FR R1",
+         paper_assumption_broken = "모듈 간 저상관 가정이 KR long-only에서 성립 안 함",
          metrics = list(cagr_pct = 8.2, sharpe = 0.9, mdd_pct = 22, excess_cagr = 1.1),
          dry_run = TRUE)
   # 2) 구 시그니처 호출 back-compat — metrics 자유목록 + 승격축 미전달 (WARN 나오되 dry-run 성공)
+  #    ★v3 폐지 인자(oos_months)를 그대로 넘겨도 오류 없이 흡수되는지 함께 확인.
   r2 <- emit_qepm_lcode("STR_TEST_OLDSTYLE", "F",
          "구 스타일 호출 — 승격축 미전달이어도 적립은 차단하지 않는다 (WARN only).",
-         source = "judge_gate",
+         source = "judge_gate", oos_months = 24L,
          metrics = list(sharpe = 0.4, portfolio_alpha_t = 2.1), dry_run = TRUE)
-  # 3) legacy grade alias + qepm 스타일 normalize 확인
+  # 3) legacy grade alias + qepm 스타일 normalize 확인 (+ next_probe 단일 문자열 경로)
   r3 <- emit_lcode("ramp", "RAMP_TEST_002", "A_DEF",
          "legacy alias grade 전달 시 canonical A로 normalize 되는지 확인용 dry-run.",
          mechanism_hypothesis = "저변동 방어 팩터의 위기 조건부 보상 구조 확인",
          construction_type = "low_vol", oos_retention = 0.7, portfolio_alpha_t = 3.0,
+         next_probe = "book-marginal ΔIR 확인",
          falsification_attempts = list(list(test = "subperiod split", result = "survived", effect_retained = 0.75)),
          dry_run = TRUE)
-  cat(sprintf("[lcode_emit v2 selftest] r1=%s r2=%s r3=%s(grade=%s)\n",
-              !is.null(r1), !is.null(r2), !is.null(r3), r3$grade %||% "?"))
+  cat(sprintf("[lcode_emit v3 selftest] r1=%s(np=%s,sv=%s) r2=%s(oos_months=%s) r3=%s(grade=%s,np=%s)\n",
+              !is.null(r1), length(r1$next_probes %||% list()),
+              r1$lcode_schema_version %||% "?",
+              !is.null(r2), is.null(r2$oos_months),
+              !is.null(r3), r3$grade %||% "?", r3$next_probe %||% "?"))
   stopifnot(!is.null(r1), !is.null(r2), !is.null(r3), identical(r3$grade, "A"),
-            identical(r2$portfolio_alpha_t, 2.1))  # metrics 자유목록 → 1급 필드 승격 확인
+            identical(r2$portfolio_alpha_t, 2.1),   # metrics 자유목록 → 1급 필드 승격 확인
+            identical(r1$lcode_schema_version, 3L),
+            length(r1$next_probes) == 2L,           # 리스트 전달 → next_probes 기록
+            grepl(" \\| ", r1$next_probe),          # + 구 소비자용 조인 문자열 병기
+            identical(r1$source_paper, "internal FR R1"),
+            nzchar(r1$paper_assumption_broken %||% ""),
+            is.null(r2$oos_months),                 # v3 폐지 축은 `...`가 흡수 — 기록 안 됨
+            identical(r3$next_probe, "book-marginal ΔIR 확인"),
+            is.null(r3$next_probes))                # 단건은 리스트 미생성(정직)
   cat("  PASS (3 cases)\n")
 }

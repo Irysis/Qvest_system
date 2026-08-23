@@ -49,7 +49,19 @@ if (!exists("frontier_citation_scan")) {
 mk <- function(entries, ledger_ids) {
   d <- file.path(tempdir(), paste0("cit_", as.integer(runif(1, 1e6, 9e6))))
   dir.create(file.path(d, "06_Registry"), recursive = TRUE, showWarnings = FALSE)
-  write(toJSON(list(entries = entries), auto_unbox = TRUE, pretty = TRUE, digits = NA),
+  ## ★schema 2.0 (2026-08-23 v9 Lean Loop §3.4(f)) — 자유서술 status 를 enum 으로 접고
+  ##   원문은 status_raw 로 보낸다. 케이스 본문은 여전히 `status="frontier_open"` 을 쓰므로
+  ##   여기서 한 번에 변환한다 — 케이스마다 손으로 바꾸면 새 케이스가 구 형태로 들어온다.
+  entries <- lapply(entries, function(e) {
+    raw <- if (is.null(e$status)) "" else as.character(e$status)[1]
+    if (!(raw %in% c("open", "claimed", "done", "parked"))) {
+      e$status_raw <- raw
+      e$status <- if (grepl("open", raw, fixed = TRUE) || !nzchar(raw)) "open" else "done"
+    }
+    e
+  })
+  write(toJSON(list(schema_version = "2.0", entries = entries),
+               auto_unbox = TRUE, pretty = TRUE, digits = NA),
         file.path(d, "06_Registry/alpha_frontier_queue.json"))
   write(toJSON(list(entries = lapply(ledger_ids, function(i) list(strategy_id = i))),
                auto_unbox = TRUE, pretty = TRUE, digits = NA),

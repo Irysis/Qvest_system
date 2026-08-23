@@ -1,0 +1,265 @@
+{
+  "axiom_id": "AX-RAMP-005",
+  "memory_id": "AX-RAMP-005",
+  "id": "AX-RAMP-005",
+  "research_mode": "ramp",
+  "tier": "mode_local",
+  "cluster_key": "c4308a214e2b",
+  "metric_type": "estimated",
+  "epistemic_status": "research_tier",
+  "confirm_required": "dohoon_one_line",
+  "type": "methodological",
+  "polarity": "conditional",
+  "statement": "[방법론 조건부 규칙 초안] family=value, tags=R,A,M, supporting=31건 L-code. (promote.R 5축 검증에서 범위·메커니즘·OOS 확정 필요)",
+  "canonical_statement": "[방법론 조건부 규칙 초안] family=value, tags=R,A,M, supporting=31건 L-code. (promote.R 5축 검증에서 범위·메커니즘·OOS 확정 필요)",
+  "text": "[방법론 조건부 규칙 초안] family=value, tags=R,A,M, supporting=31건 L-code. (promote.R 5축 검증에서 범위·메커니즘·OOS 확정 필요)",
+  "supporting_l_codes": [
+    "L-RAMP-20260618_131316B",
+    "L-RAMP-20260619_140656",
+    "L-RAMP-20260619_150531",
+    "L-RAMP-20260619_151835",
+    "L-RAMP-20260619_152736",
+    "L-RAMP-20260619_173504",
+    "L-RAMP-20260619_180008",
+    "L-RAMP-20260619_193015",
+    "L-RAMP-20260620_171915",
+    "L-RAMP-20260705_184828",
+    "L-RAMP-20260705_191446",
+    "L-RAMP-20260705_191446_02",
+    "L-RAMP-20260711_152314",
+    "L-RAMP-20260711_181539",
+    "L-RAMP-20260711_184155",
+    "L-RAMP-20260711_200226",
+    "L-RAMP-20260712_161537",
+    "L-RAMP-20260712_175852",
+    "L-RAMP-20260713_084821",
+    "L-RAMP-20260713_093129",
+    "L-RAMP-20260713_100638",
+    "L-RAMP-20260713_102944",
+    "L-RAMP-20260713_110343",
+    "L-RAMP-20260713_112544",
+    "L-RAMP-20260713_213904",
+    "L-RAMP-20260715_004100",
+    "L-RAMP-20260715_043643",
+    "L-RAMP-20260715_053646",
+    "L-RAMP-20260715_055418",
+    "L-RAMP-20260715_070019",
+    "L-RAMP-20260717_195731"
+  ],
+  "scope": {
+    "market": "KR",
+    "factor_family": "value",
+    "regime": null,
+    "construction_types": null
+  },
+  "evidence": {
+    "independent_l_codes": 31,
+    "independent_strategies": 31,
+    "strategies": [
+      "RAMP_R11_PPURE_DEV_20260713",
+      "RAMP_R1_SLEEVE_STACK_20260705",
+      "R47_krx_backfill_close_holes_parity_recovered",
+      "RAMP_R3_SLEEVE_ADDITION_20260711",
+      "R41_insider_safe_fading_horizon_bounded_wiring",
+      "RAMP_03B_BOOK_ABSORB_20260620",
+      "RAMP_SHUMULVEY_V3_DEBIAS_20260619",
+      "RAMP_R4_BORUTA_20260711",
+      "RAMP01_ENHANCE_DIR12_20260619",
+      "RAMP_03C_DELTAIR_DIAG_20260713",
+      "RAMP_SHUMULVEY_V2_20260619",
+      "RAMP_R15_fill_20260713",
+      "RAMP_SHUMULVEY_FINAL_20260619",
+      "RAMP_R5_selection_family_closure",
+      "RAMP_R9_insider_selection_20260715",
+      "RAMP_R13_DECAY_20260713",
+      "RAMP_SHUMULVEY_25STOCK_FAIL_20260619",
+      "R39_insider_safe_fading_state_transition_wiring",
+      "RAMP_R7_EWBASIS_20260712",
+      "RAMP_R10_WEIGHTING_20260713",
+      "RAMP_FULLSWEEP_20260618",
+      "R42_insider_safe_live_track_oos_wiring",
+      "R44_ret_sanity_firewall_wiring",
+      "RAMP_R2_TOPN_20260705",
+      "RAMP_R8_BAND_ESCALATION_20260712",
+      "RAMP_REGIME_STRENGTHEN_20260619",
+      "RAMP02_BREAKTHROUGH_SEARCH_20260619",
+      "RAMP_R6_PORTT_BORUTA_20260711",
+      "RAMP_R12_ASYM_20260713",
+      "RAMP_R14_exitcomb",
+      "RAMP_R2_ML_20260705"
+    ],
+    "effect_direction_consistency": null,
+    "note": "evidence_draft — promote.R 5축 검증에서 hurdle_result/grade_a_catalog 교차검증으로 확정",
+    "n_eff_signatures": 12,
+    "independent_constructions": 8,
+    "constructions": [
+      "KRX 일별 OHLCV 재수집(캐시56+live8일) → fill_set inner-join APPEND-ONLY interior merge(temp-rename) → 가드5종+parity4종",
+      "chain",
+      "composite",
+      "insider_safe_fading_horizon_bounded(months_since_off tracking, fading window {0,1}=R40 h0-1, auto-clear >=2) + R37 tier_confidence(MEGA_TOP30 low/MID_OTHER robust) + dur_trust(SUSTAIN>ENTRY) + catastrophic_vs_benign_boundary(98.3/0.9) + R40 censoring_immaterial",
+      "insider_safe_live_oos_track(발화 register + 완료 홀딩월 Ret_1m 실현위험 append(downside/tail/vol, R40-identical) + mso 1->2 auto-clear 로그) + oos_rollup(protection 창 mso{0,1} realized tail-hit vs R40 baseline OFF 7.9%)",
+      "insider_safe_state_machine_wiring(ENTRY/SUSTAIN=NET_BUY_SAFE, EXIT=SAFE_FADING SOFT-LAG, OFF=cleared) + tier_confidence(MEGA_TOP30 low / MID_OTHER robust) + censoring_caveat + rawdata_single_read",
+      "multi_sleeve",
+      "ret_sanity_firewall(2-tier: HARD Ret:=NA[phys|Ret|>1.0/zerodiv prevClose<=10/dategap>20d] + SUSPECT flag[0.31<|Ret|<=1.0 값유지·격리리스트]) wired into rawdata_sanitize.Step5 + canonical_screen_bt/build_monthly_forward_returns Ret_1m assert"
+    ],
+    "metric_types": [
+      "backtested",
+      "canonical_screen",
+      "observational_monitoring"
+    ]
+  },
+  "falsification": {
+    "attempts": [
+      {
+        "test": "적대검증 look-ahead/PIT (regime overlay t-1 shift · asof_close 유동성 t-1 · group_z PIT)",
+        "result": "survived",
+        "effect_retained": 1,
+        "detail": "음성은 look-ahead로 부풀 수 없음; soft-overlay pt 2.54->1.77 하락이 shift(,1) 작동 증명 (verdict_change=FALSE)"
+      },
+      {
+        "test": "적대검증 벤치 정렬 (cap-w BM provenance · realized_ym · active basis)",
+        "result": "survived",
+        "effect_retained": 1,
+        "detail": "cap-w 벤치는 K200 U KQ150에서 fresh 재계산(rawdata.BM_Ret 미사용) 256:256 0-NA; 게이트 flip에 ~43% boost 필요 (verdict_change=FALSE)"
+      },
+      {
+        "test": "적대검증 oos·통계 (NW lag-3 · oos_retention v2 · post2017 decay · sweep-DSR)",
+        "result": "survived",
+        "effect_retained": 1,
+        "detail": "NW/oos_retention v2 산식 정확(cap-w act_bm 기준); post2017 SR 11/11 음수=cohort-wide decay 실재 (verdict_change=FALSE)"
+      },
+      {
+        "test": "적대검증 firewall·해석 정직성 (INV-7 경로-scoped · frontier · 이중 실패모드)",
+        "result": "weakened",
+        "effect_retained": 0.85,
+        "detail": "측정(survivors=0) 불변이나 framing over-reach 교정: '직교!=수익 구조확정'->config-scoped 크기·안정성 부족(sleeve 불완전직교 beta0.92) + 이중 실패모드(active크기 vs oos decay) 구분 + frontier 명시 (verdict_change=TRUE: framing만)"
+      },
+      {
+        "test": "선택편향 제거 (N별 재선정 vs 구성고정 스택)",
+        "result": "falsified",
+        "effect_retained": 0,
+        "detail": "N20 stack raw 3.54는 39-trial sweep argmax(N별 상위4 재선정). 구성고정 시 2.59(-0.95pp) → 독립 실현신호 아님"
+      },
+      {
+        "test": "oos_retention·calmar HARD (IS 초과분)",
+        "result": "falsified",
+        "effect_retained": 0,
+        "detail": "N15 Consensus 3.18·N20 stack 3.54 raw 초과분 모두 oos_retention≈0·calmar<0.64 미달. IS 부풀림, OOS 무개선"
+      },
+      {
+        "test": "window-matched 비교 (헤드라인 갭이 윈도우 아티팩트인가)",
+        "result": "survived",
+        "effect_retained": 1,
+        "detail": "ML 1.42 vs R1 linear 2.54 갭=윈도우(ML 2010+ 195m vs 전기간). 동일윈도우 재측정 linear 1.473 vs ML 1.418=tie → 비선형 개선 0 확인"
+      },
+      {
+        "test": "lag1 look-ahead 스트레스",
+        "result": "weakened",
+        "effect_retained": 0.4,
+        "detail": "ML base 1.42→lag1 −0.08(Δ−1.50, linear Δ−0.54보다 급락)=과적합 방향 징후. 하드누출 아님(window-matched linear 검증·PIT clean), oos_retention −0.48 독립확증"
+      },
+      {
+        "test": "oos_retention v2 (과적합)",
+        "result": "falsified",
+        "effect_retained": 0,
+        "detail": "oos_retention −0.481(게이트 0.7), calmar 0.433, cap-w PORT_t 1.418 — 게이트 3종 전부 FAIL"
+      },
+      {
+        "test": "lag1-regime 스트레스(A3, 전월 regime → 당월 배분)",
+        "result": "survived_stronger",
+        "detail": "paired_t full +2.52 > 원본 +1.54 → 동월 look-ahead 아티팩트 부재(07-06 BearProb 대비)"
+      },
+      {
+        "test": "placebo(A3 regime 12m 시프트, crisis 정렬 파괴)",
+        "result": "mechanism_falsified",
+        "detail": "paired_t full +2.18 ≈ 원본 → crisis 조건부 방어 아닌 시점-무관 스타일 틸트"
+      },
+      {
+        "test": "A4 FWL 잔차 tail(스타일 제거)",
+        "result": "negative",
+        "detail": "paired_t −1.64 → 방어값은 raw 저-tail-risk 스타일 노출뿐, 잔차 tail은 해로움"
+      },
+      {
+        "test": "dual-basis(B, cap-w vs EW-uni)",
+        "result": "captier_trap_reproduced",
+        "detail": "EW-uni Δ+1.0 >> cap-w Δ+0.54 → 알파는 소형/OTHER tier, cap-w authoritable 미달"
+      },
+      {
+        "test": "paired NW-t(lag3) arm S(Boruta confirmed) − base(all-11) cap-w active, 가중 매칭 4쌍",
+        "result": "falsified",
+        "effect_retained": -2.022,
+        "detail": "개선 가설 반증 — 4쌍 전부 유의 음수(paired_t -2.51~-2.02). Boruta 선별이 base보다 손해."
+      },
+      {
+        "test": "graduation HARD 3종(cap-w PORT_t>=2.95·oos>=0.7·calmar>=0.64) 4 config",
+        "result": "falsified",
+        "effect_retained": 0.063,
+        "detail": "4/4 미달 — best pt_capwt 0.06<<2.95"
+      },
+      {
+        "test": "FM 수렴 판별(Jaccard vs ctrl_factormom·rank AC·churn)",
+        "result": "D-1 falsified(수렴·붕괴 Jaccard 0.713 oos=FM)·D-2 survived(구별 0.440)·D-3 survived(anti-mom 0.331)",
+        "effect_retained": "D-2 감쇠퇴출만 base 유지"
+      },
+      {
+        "test": "풀 구성 변화(Jaccard vs base)",
+        "result": "weakened",
+        "effect_retained": "D-1 풀 재편 실재(0.579)나 FM방향 역효과"
+      },
+      {
+        "test": "oos subperiod(2017 경계)",
+        "result": "weakened",
+        "effect_retained": "D-2 이득 post-2017 국소·미소(+0.048 SR)"
+      },
+      {
+        "test": "EW-basis vs cap-w oos",
+        "result": "D-2/D-3 EW-oos≥0.7이나 cap-w 붕괴",
+        "effect_retained": "cap-tier 트랩 재확인"
+      },
+      "challenge_note_r14 ①~⑦ (7 weaknesses: ①ACCEPT C-1≈base·②REBUTTAL C-2 비용아닌신호손실·③ACCEPT oos post2017·④PARTIAL fill·⑤ACCEPT IS-zero·⑥REBUTTAL chain·⑦ACCEPT return-substrate)",
+      "challenge_note_r15 ①~⑦ (7 weaknesses: ①REBUTTAL L-2≠K10-sweep(유효K 19.0)·②REBUTTAL L-1≠FM(fill-only Jaccard Δ+0.024)·③ACCEPT 저빈도 검정력한계·④PARTIAL IS승자(L-2)잡음·⑤ACCEPT L-3<base F-1·⑥ACCEPT 기본값-최적 null·⑦ACCEPT return-substrate 천장)",
+      {
+        "test": "book-marginal ΔIR>=0.05 (w그리드 4점, window-matched control 포함, net_active_recon_v1)",
+        "result": "falsified",
+        "effect_retained": 0.0005,
+        "detail": "window-matched ΔIR: EW +0.0001(0.05)/-0.0022(0.10)/-0.0071(0.15)/-0.0149(0.20), SCORE +0.0005/-0.0022/-0.0082/-0.0178 — 전 그리드 <0.05. vs-stored 명목통과는 w=0 control +0.0674로 아티팩트 판명."
+      },
+      "challenge_note_r9 ①~⑤ (①PARTIAL 소비면 미측정·②PARTIAL 희석 마스킹·③PARTIAL cap-tier base 재발 insider 무관·④ACCEPT F-1 parity 미달=window-fragile·⑤REBUTTAL vintage paired-canceling)"
+    ],
+    "note": "L-code 기록 반증 시도 실값 집계"
+  },
+  "mechanism": {
+    "economic_explanation": "R11 수렴점 '퇴출 빠르게·진입 엄격하게'를 비대칭 퇴출/비대칭 밴드/창 이질로 구현하면 oos·cap-w를 유의까지 밀 것 = config-scoped FALSE(비대칭/이질 config 집합 한정, dead-end 아님). armF-1(비대칭 퇴출)이 cap-w 계보 최고 2.937·첫 양 IS paired +0.410으로 최강 레버이나 유의(paired 2.0)·HARD 미달·oos +0.048<<0.7. B-1 비대칭 밴드는 대칭보다 개선이나 경계 신호 매도로 net-neg. V-1 창 이질은 다양성 달성이나 60m stale 주입 역효과. 결속 벽=oos_retention(0.048 vs 0.7)·cap-tier 국소화×cap-w = construction-invariant 진단. 다음-반복은 next_probe(감쇠속도 선별·교집합 이질·기여기반 퇴출·재료 R9). (멤버 가설 23건 — promote.R에서 일치성 재검증)",
+    "mechanism_type": "structural",
+    "causal_plausibility": null
+  },
+  "oos_validation": {
+    "oos_months": 24,
+    "oos_effect_vs_is": -0.043,
+    "note": "L-code oos_retention 실값 16건 median (IS65/OOS35 활성SR retention) + oos_months 실값 5건 median — promote.R essence_score 경유 재확정"
+  },
+  "promotion": {
+    "source_candidate": "CAND_ramp_c4308a214e2b",
+    "weighted_score": 0.82,
+    "threshold": 0.8,
+    "all_hurdles_pass": true,
+    "axis_scores": {
+      "independence": 1,
+      "rigor": 1,
+      "falsification": 0.8,
+      "external": 0.6,
+      "mechanism": 0.7
+    },
+    "promoted_at": "2026-08-23",
+    "next_review": "2026-11-21"
+  },
+  "enforcement": "",
+  "enforcement_mode": "documented",
+  "status": "proposed",
+  "version": 1,
+  "needs_refinement": true,
+  "memory_kind": "axiom_active",
+  "axiom_class": "methodological",
+  "authority": "high",
+  "review_policy": "quarterly"
+}

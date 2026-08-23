@@ -85,13 +85,23 @@ run_alpha_search <- function(strategy_name,
                              portfolio_id  = "PF_ALPHASEARCH",
                              send_telegram = TRUE,
                              tg_dry_run    = FALSE,
-                             factor_analysis = TRUE,   # FF3/FF5/Carhart 알파 + Fama-MacBeth 회귀
+                             factor_analysis = deep,   # FF3/FF5/Carhart 알파 + Fama-MacBeth 회귀 (기본 = deep)
                              vol_target = NULL,
                              vol_lookback = 60L,
                              dd_brake = NULL,
                              buffer_zone = NULL,
                              use_default_buffer = TRUE,
-                             cov_method = "sample") {
+                             cov_method = "sample",
+                             # ── v9 Lean Loop (2026-08-23) ─────────────────────────────────────────
+                             #   deep=FALSE(기본) = lean 라운드: 측정·판정·교훈만 돈다.
+                             #   deep=TRUE 는 "지명된 후보"에만 — register_module(3회)·FF3/FF5/FM
+                             #   회귀·권위 재측정·improvement_potential 을 추가로 돈다.
+                             #   ★신규 인자는 전부 시그니처 **끝**에 붙인다 — 기존 위치인자 호출
+                             #   (strategy_name, strategy_idea, factor_engine_path, n_holdings, ...)
+                             #   순서를 건드리지 않기 위함.
+                             deep = FALSE,
+                             source_paper = NULL,              # L-code source_paper 축 (원 논문 식별자/URL)
+                             paper_assumption_broken = NULL) { # 논문의 어느 가정이 KR에서 깨졌나(1줄)
   # 로컬 안전 %||% — 외부 source가 전역을 취약버전으로 덮어도 영향 없게 함수 스코프에 고정
   `%||%` <- function(a, b) if (is.null(a) || length(a) == 0L || (length(a) == 1L && is.na(a))) b else a
 
@@ -197,6 +207,37 @@ run_alpha_search <- function(strategy_name,
   cat(sprintf("[AlphaSearch] FACTORS: %d rows | %d signal dates | %d tickers\n",
               nrow(FACTORS), uniqueN(FACTORS$Date), uniqueN(FACTORS$Ticker)))
 
+  # ---- 2b. 선례 조회 (advisory 1줄 — 차단 아님, v9 Lean Loop) ----
+  #   Step 0 lookup 을 "세션이 손으로 돌리는 사전 의무"에서 러너 안 1줄 advisory 로 옮긴다.
+  #   ★차단하지 않는다: 조회 실패/인덱스 부재/stale 전부 무시하고 라운드는 계속 간다
+  #   (게이트로 만들면 그 순간 라운드가 인프라 수리로 흘러가는 게 이 저장소의 반복 패턴).
+  #   auto_rebuild=FALSE — 조회 때문에 인덱스를 재빌드하지 않는다(라운드 예산 보호).
+  tryCatch({
+    .hi_kw <- tolower(unlist(strsplit(gsub("[^A-Za-z0-9가-힣]+", " ", strategy_name %||% ""), "\\s+")))
+    .hi_kw <- .hi_kw[nchar(.hi_kw) >= 3L & !grepl("^(str|as|v[0-9]+|[0-9]+)$", .hi_kw)]
+    if (!length(.hi_kw)) {
+      .hi_kw <- tolower(unlist(strsplit(gsub("[^A-Za-z0-9가-힣]+", " ", strategy_idea %||% ""), "\\s+")))
+      .hi_kw <- .hi_kw[nchar(.hi_kw) >= 3L]
+    }
+    .hi_kw <- head(unique(.hi_kw), 3L)   # ≤3 토큰 (AND 매칭이라 많이 넣을수록 좁아진다)
+    if (length(.hi_kw)) {
+      source(file.path(PROJECT_ROOT, "02_Infrastructure", "tools", "hypothesis_index.R"), local = TRUE)
+      .hi_hits <- suppressMessages(lookup_hypothesis(.hi_kw, auto_rebuild = FALSE))
+      if (is.data.frame(.hi_hits) && nrow(.hi_hits)) {
+        .hi_g <- .hi_hits$grade[!is.na(.hi_hits$grade) & nzchar(as.character(.hi_hits$grade))]
+        .hi_best <- if (length(.hi_g)) sort(as.character(.hi_g))[1] else "NA"
+        cat(sprintf("[hypothesis_index] 선례 %d건 — 최고 %s · 최근 %s · 예) %s (advisory)\n",
+                    nrow(.hi_hits), .hi_best,
+                    as.character(.hi_hits$date[1] %||% "?"),
+                    .clip_msg(.hi_hits$title[1] %||% "?", 60L)))
+      } else {
+        cat(sprintf("[hypothesis_index] 선례 0건 (키워드: %s) — 신규 축 (advisory)\n",
+                    paste(.hi_kw, collapse = " ")))
+      }
+    }
+  }, error = function(e)
+    cat("[hypothesis_index] 조회 생략(비치명):", conditionMessage(e), "\n"))
+
   .as_stage("sec2_done")
   # ---- 3. PIT 준수 검증 (필수) ----
   pit <- detect_lookahead(factor_engine_path)
@@ -259,11 +300,17 @@ run_alpha_search <- function(strategy_name,
   )
 
   .as_stage("sec4_done")
-  # ---- 4b. 후보 보존(register_module) — 계약 미충족분은 quarantine ----
+  if (!isTRUE(deep))
+    cat("[AlphaSearch] lean 모드(deep=FALSE): register_module·팩터회귀(FF3/FF5/FM)·권위재측정·improvement_potential 생략\n")
+
+  # ---- 4b. 후보 보존(register_module) — 계약 미충족분은 quarantine ---- [deep 전용]
   #   v8.1 hardening: PIT-clean 백테는 연구 후보로 보존하되, FR canonical pool은
   #   authoritative 재측정(contract_pass+backtested+frozen+hash) 성공분만 허용한다.
   #   따라서 이 early call은 통상 module_quarantine에 저장된다.
-  if (isTRUE(pit_clean)) tryCatch({
+  #   ★v9: lean 라운드는 레지스트리를 만지지 않는다 — 지명(deep=TRUE) 전까지 후보는
+  #   stage_artifacts(bt_result 계약 + manifest)에만 남는다. bt_result 는 lean 에서도 저장되므로
+  #   나중에 deep 으로 재실행하면 같은 산출물에서 등재가 가능하다(정보 손실 없음).
+  if (isTRUE(deep) && isTRUE(pit_clean)) tryCatch({
     source(file.path(PROJECT_ROOT, "02_Infrastructure", "contracts", "register_module.R"))
     register_module(sim, strategy_id, grade = NA_character_, origin_mode = "alpha_search",
                     role = NA_character_,
@@ -310,9 +357,11 @@ run_alpha_search <- function(strategy_name,
 
   pass    <- grade %in% c("A", "A_NOVEL", "A_DEF")
   is_fail <- grade %in% c("F")
-  notable <- grade %in% c("B", "C") || (is_fail && pit_clean)   # 명확한 실패 패턴(clean PIT)
-  cat(sprintf("[AlphaSearch] Grade=%s Score=%.0f Excess=%+.2f%%p | pass=%s notable=%s\n",
-              grade, score %||% 0, excess_cagr %||% 0, pass, notable))
+  # notable 조임 (v9 Lean Loop): "clean PIT F등급" 전량이 아니라 **탈락축이 실제로 잡힌** F만
+  #   교훈으로 적립한다. FMT 판정도 fail_reasons 도 없는 F 는 "왜 안 됐나"를 못 쓰므로
+  #   L-code 로 남겨봐야 숫자만 남는다(형해화). fmt_hits 는 이 줄 아래에서 산출되므로
+  #   판정 후 재계산한다 — 아래 6a-2 참조.
+  notable <- grade %in% c("B", "C")
 
   # ---- 6a-2. FMT-01~08 실패모드 자동판정 (proxy 진단 라벨 — 게이트 아님) ----
   #   strategy_postmortem.md FMT taxonomy를 hurdle metrics rule로 매핑(.judge_fmt 주석 참조).
@@ -328,10 +377,17 @@ run_alpha_search <- function(strategy_name,
   }
   f_grade_reasons <- .alpha_failure_reasons(grade, hg, fmt_hits, m, excess_cagr, auth = NULL)
 
+  # notable 최종 판정 — 탈락축이 실제로 잡힌 clean-PIT 실패만 "의미있는 실패"
+  .fail_reasons_now <- tryCatch(unlist(hg$verdict$fail_reasons), error = function(e) character(0))
+  notable <- notable ||
+    (is_fail && pit_clean && (length(fmt_hits) > 0L || length(.fail_reasons_now) > 0L))
+  cat(sprintf("[AlphaSearch] Grade=%s Score=%.0f Excess=%+.2f%%p | pass=%s notable=%s deep=%s\n",
+              grade, score %||% 0, excess_cagr %||% 0, pass, notable, isTRUE(deep)))
+
   .as_stage("sec6_done")
-  # ---- 6c. 후보 quarantine grade 갱신 ----
+  # ---- 6c. 후보 quarantine grade 갱신 ---- [deep 전용]
   #   허들 등급 산출 후에도 계약 실측 전이면 FR pool이 아니라 quarantine만 갱신된다.
-  if (isTRUE(pit_clean)) tryCatch({
+  if (isTRUE(deep) && isTRUE(pit_clean)) tryCatch({
     if (!exists("register_module", mode = "function"))
       source(file.path(PROJECT_ROOT, "02_Infrastructure", "contracts", "register_module.R"))
     register_module(sim, strategy_id, grade = grade, origin_mode = "alpha_search",
@@ -345,45 +401,54 @@ run_alpha_search <- function(strategy_name,
   }, error = function(e) cat("[AlphaSearch] register_module(grade 갱신) 생략:", conditionMessage(e), "\n"))
 
   .as_stage("sec6c_done")
-  # ---- 6b. 팩터 회귀 분석 (FF3/FF5/Carhart 알파 + Fama-MacBeth) — 등급무관 진행(직교성 핵심 지표) ----
+  # ---- 6b. 팩터 회귀 분석 (FF3/FF5/Carhart 알파 + Fama-MacBeth) ---- [deep 전용]
+  #   ★게이트는 factor_analysis 이고 그 **기본값이 deep** 이다(시그니처 lazy default).
+  #   ⇒ lean 라운드는 자동으로 생략(R 시간의 ~25% 회수), 기존 호출자가 명시한
+  #   factor_analysis=TRUE 는 deep 과 무관하게 그대로 존중된다(back-compat).
+  analysis_ran <- FALSE
   if (isTRUE(factor_analysis) && exists("run_analysis")) {
     tryCatch({
       run_analysis(sim, FACTORS, RAWDATA, BM_DT, output_dir = OUT_DIR, strategy_name = strategy_name)
       assign("%||%", `%||%`, envir = globalenv())   # run_analysis 내부 source 오염 복원
+      analysis_ran <- TRUE   # tryCatch expr 는 호출자 프레임에서 평가되므로 `<-` 가 지역 갱신
     }, error = function(e) cat("[AlphaSearch] 팩터분석 생략:", conditionMessage(e), "\n"))
   }
 
   # ---- 6b-2. analysis_report.md FMT 체크리스트 자동 체크 ([x] + 사유) ----
   #   run_analysis가 생성한 보고서의 "Failure Mode Diagnosis" 빈 체크박스를 6a-2 판정으로 채움.
-  .patch_fmt_checklist(OUT_DIR, fmt_hits)
+  #   분석이 안 돌았으면 보고서 자체가 없다 — 없는 파일에 "부재 WARN"을 찍지 않는다(거짓 경보 방지).
+  if (isTRUE(analysis_ran)) .patch_fmt_checklist(OUT_DIR, fmt_hits)
 
   .as_stage("sec6b_done")
-  # ---- 6d. ★ 권위측정 사다리: hurdle B 이상 또는 screening_pass → 계약 실측 재측정 (자동) ----
+  # ---- 6d. ★ 권위측정 사다리: hurdle B 이상 또는 screening_pass → 계약 실측 재측정 ---- [deep 전용]
   #   v8.1 트랙C(measurement-graduation §1~§3): proxy(run_hurdle_gate) 등급이 B 이상이거나,
   #   MDD/turnover 같은 구조 사유로 C/F가 됐어도 screen_pass면 authoritative 재측정.
   #   → OUT_DIR/bt_result.rds + authoritative_remeasure.json (essence grade / PORT_t NW lag-3 / metric_type=backtested).
-  #   PIT 위반/신호력 부재 C/F는 기존 proxy 흐름 유지(비용 절약). 실패 시 정직 WARN — 침묵 금지.
+  #   ★v9: 권위 재측정은 **자본 층 입구**의 일이다 — lean 라운드는 proxy 허들 등급까지만 낸다.
+  #   (lean 에서도 bt_result 계약은 4장에서 이미 저장되므로 지명 시 그 산출물로 재측정 가능)
   auth <- NULL
   screening <- hg$verdict$screening %||% list()
   screen_remeasure <- isTRUE(screening$screen_pass) &&
     grepl("OVERLAY_CANDIDATE|FR_RCMA|DPL_FEATURE|TURNOVER_REVIEW", screening$screen_route %||% "")
   # v8.3(2026-07-10): DPL_FEATURE 발급 중단(hurdle_gate) — 고회전 케이스는 TURNOVER_REVIEW로 대체.
   #   DPL_FEATURE 패턴은 기존 manifest 호환 위해 잔존. FR_RCMA는 이제 조건부(회전율 hard-fail 이내)만.
-  if (grade %in% c("A", "A_NOVEL", "A_DEF", "B", "B_DEF") || screen_remeasure) {
-    if (screen_remeasure && !(grade %in% c("A", "A_NOVEL", "A_DEF", "B", "B_DEF"))) {
-      cat(sprintf("[AlphaSearch] 권위측정 사다리: grade=%s but screening_pass route=%s — 실측 재측정 진행\n",
-                  grade, screening$screen_route %||% ""))
+  if (isTRUE(deep)) {
+    if (grade %in% c("A", "A_NOVEL", "A_DEF", "B", "B_DEF") || screen_remeasure) {
+      if (screen_remeasure && !(grade %in% c("A", "A_NOVEL", "A_DEF", "B", "B_DEF"))) {
+        cat(sprintf("[AlphaSearch] 권위측정 사다리: grade=%s but screening_pass route=%s — 실측 재측정 진행\n",
+                    grade, screening$screen_route %||% ""))
+      }
+      auth <- .authoritative_remeasure(sim, strategy_id, strategy_name, strategy_idea,
+                                       factor_engine_path, OUT_DIR, grade,
+                                       universe = universe, weight_method = weight_method,
+                                       commission = commission,
+                                       risk_controls = risk_controls,
+                                       bt_contract = bt_contract)
+      assign("%||%", `%||%`, envir = globalenv())   # contract source 후 전역 %||% 복원
+    } else {
+      cat(sprintf("[AlphaSearch] 권위측정 사다리: grade=%s, screen_pass=%s — proxy 유지, 실측 재측정 생략\n",
+                  grade, isTRUE(screening$screen_pass)))
     }
-    auth <- .authoritative_remeasure(sim, strategy_id, strategy_name, strategy_idea,
-                                     factor_engine_path, OUT_DIR, grade,
-                                     universe = universe, weight_method = weight_method,
-                                     commission = commission,
-                                     risk_controls = risk_controls,
-                                     bt_contract = bt_contract)
-    assign("%||%", `%||%`, envir = globalenv())   # contract source 후 전역 %||% 복원
-  } else {
-    cat(sprintf("[AlphaSearch] 권위측정 사다리: grade=%s, screen_pass=%s — proxy 유지, 실측 재측정 생략\n",
-                grade, isTRUE(screening$screen_pass)))
   }
   f_grade_reasons <- .alpha_failure_reasons(grade, hg, fmt_hits, m, excess_cagr, auth = auth)
   strategy_manifest_path <- .write_alpha_search_strategy_manifest(
@@ -410,11 +475,11 @@ run_alpha_search <- function(strategy_name,
   )
 
   .as_stage("sec6d_done")
-  # ---- 6d+. Layer 1 개선-여지 평가 자동 첨부 (2026-08-16 L1 자동 스폰 — 도훈 승인) ----
+  # ---- 6d+. Layer 1 개선-여지 평가 자동 첨부 (2026-08-16 L1 자동 스폰 — 도훈 승인) ---- [deep 전용]
   #   screen_pass 라벨 보유 런은 같은 런 안에서 improvement_potential 을 실측해 레지스트리에
   #   적재한다 (권위측정 사다리와 같은 자리 — 라벨이 후속 측정을 자동 트리거하는 기존 전례).
   #   비치명: 평가 실패는 정직 WARN — 본 러너 산출물은 불변.
-  if (isTRUE(screening$screen_pass)) tryCatch({
+  if (isTRUE(deep) && isTRUE(screening$screen_pass)) tryCatch({
     if (!exists("improvement_potential_for_run", mode = "function")) {
       Sys.setenv(QVEST_IP_NORUN = "1")
       source(file.path(PROJECT_ROOT, "02_Infrastructure", "regime", "improvement_potential.R"))
@@ -425,19 +490,25 @@ run_alpha_search <- function(strategy_name,
                 conditionMessage(e))))
 
   .as_stage("sec6d_done_2")
-  # ---- 6e. FR-eligible 승격: 권위측정 OK일 때만 canonical module_catalog로 등록 ----
-  if (!is.null(auth) && identical(auth$status, "OK")) tryCatch({
+  # ---- 6e. FR-eligible 승격: 권위측정 OK일 때만 canonical module_catalog로 등록 ---- [deep 전용]
+  #   ★L434 수정 (v9, 플랜 §1.1): catalog grade 는 **리서치 허들 등급**이다.
+  #   구 `grade = auth$essence_grade %||% grade` 는 자본-보정 essence 등급으로 허들 A를
+  #   덮어써서 "역대 A등급 모듈 0"을 만들었다(meta.proxy_grade 에는 A 6·A_DEF 5건 잔존).
+  #   두 등급은 서로 다른 층의 판정이므로 각각의 필드에 각각 기록한다 —
+  #   grade=허들(리서치 층) / meta$essence_grade=자본 층 / meta$proxy_grade=허들(호환 유지).
+  if (isTRUE(deep) && !is.null(auth) && identical(auth$status, "OK")) tryCatch({
     if (!exists("register_module", mode = "function"))
       source(file.path(PROJECT_ROOT, "02_Infrastructure", "contracts", "register_module.R"))
     register_module(
       sim, strategy_id,
-      grade = auth$essence_grade %||% grade,
+      grade = grade,
       origin_mode = "alpha_search",
       role = NA_character_,
       meta = list(strategy_idea = strategy_idea, score = score,
                   selection_type = "chain",
                   chain_qualification = .chain_qualification_record(),  # §3 chain 자격요건 기록 (추가 필드)
                   proxy_grade = grade,
+                  essence_grade = auth$essence_grade %||% NA_character_,  # 자본 층 등급(별도 필드 — grade 를 덮지 않는다)
                   f_grade_reasons = f_grade_reasons,
                   fmt_codes = vapply(fmt_hits, function(x) x$code, ""),
                   strategy_manifest_path = .rel_project_path(strategy_manifest_path),
@@ -464,7 +535,8 @@ run_alpha_search <- function(strategy_name,
                                             hg = hg, fmt = fmt_hits, auth = auth,
                                             f_reasons = f_grade_reasons, dry_run = tg_dry_run)
         # 팩터 분석 메시지 ([팩터 분석] 기존 양식: FF3/FF5/Carhart 알파 + Fama-MacBeth + IC)
-        if (isTRUE(factor_analysis) && !isTRUE(tg_dry_run) && exists("tg_pass_analysis")) {
+        #   ★분석이 실제로 돈 경우에만 — lean 라운드는 산출물이 없으므로 발송 자체가 없다(텔레그램 1회).
+        if (isTRUE(analysis_ran) && !isTRUE(tg_dry_run) && exists("tg_pass_analysis")) {
           if (isTRUE(main_tg$ok)) {
             tryCatch(tg_pass_analysis(strategy_name, OUT_DIR),
                      error = function(e) cat("[AlphaSearch][팩터분석TG] 실패:", conditionMessage(e), "\n"))
@@ -492,8 +564,10 @@ run_alpha_search <- function(strategy_name,
   if (pass || notable) {
     l_code_path <- .write_lcode(strategy_id, strategy_name, strategy_idea, grade,
                                 m, excess_cagr, pass, is_fail,
-                                hg = hg, fmt = fmt_hits, auth = auth)
-    .run_axiom_pipeline()   # harvester + cluster (자가발전)
+                                hg = hg, fmt = fmt_hits, auth = auth,
+                                source_paper = source_paper,
+                                paper_assumption_broken = paper_assumption_broken)
+    .run_axiom_pipeline()   # harvester + cluster (자가발전, 비동기 spawn)
   }
 
   .as_stage("sec8_done")
@@ -1286,7 +1360,9 @@ run_alpha_search <- function(strategy_name,
 # ---- L-code 작성 (모드별 디렉터리 stage_artifacts/l_code/alpha_search/) ----
 .write_lcode <- function(strategy_id, strategy_name, strategy_idea, grade,
                          m, excess_cagr, pass, is_fail,
-                         hg = NULL, fmt = NULL, auth = NULL) {
+                         hg = NULL, fmt = NULL, auth = NULL,
+                         source_paper = NULL,
+                         paper_assumption_broken = NULL) {
   `%||%` <- function(a, b) if (is.null(a) || length(a) == 0L || (length(a) == 1L && is.na(a))) b else a
   lc_dir <-file.path(PROJECT_ROOT, "stage_artifacts", "l_code", "alpha_search")
   dir.create(lc_dir, recursive = TRUE, showWarnings = FALSE)
@@ -1299,13 +1375,23 @@ run_alpha_search <- function(strategy_name,
   fail_reasons  <- tryCatch(unlist(hg$verdict$fail_reasons), error = function(e) character(0))
   auth_ok <- !is.null(auth) && identical(auth$status, "OK")
 
-  lesson <- if (pass)
-    sprintf("%s: 등급 %s, 연복리 %.1f%% (벤치마크 대비 %+.1f%%p), 샤프 %.2f, 최대낙폭 %.1f%%. 통과 — PG 편입 권고.",
-            strategy_name, grade, .as_num(m$CAGR), excess_cagr %||% 0, .as_num(m$Sharpe), -abs(.as_num(m$MDD)))
-  else
-    sprintf("%s: 등급 %s, 연복리 %.1f%% (벤치마크 대비 %+.1f%%p), 샤프 %.2f. %s",
-            strategy_name, grade, .as_num(m$CAGR), excess_cagr %||% 0, .as_num(m$Sharpe),
-            if (is_fail) "명확한 실패 패턴 — 역방향 가설 탐색 후보." else "근접 탈락 — 보강 후 재검증 후보.")
+  # ---- lesson_text 꼬리 = 숫자 나열이 아니라 **사유 + 논문 가정 대비** (v9 Lean Loop) ----
+  #   구판 꼬리("통과 — PG 편입 권고." / "명확한 실패 패턴 — 역방향 가설 탐색 후보.")는
+  #   등급에서 기계적으로 파생되는 상수라 교훈이 없다. 축(FMT/fail_reasons)과 논문 가정을 적는다.
+  lesson_reason <- if (length(fmt)) {
+    paste(vapply(fmt, function(x) sprintf("%s %s", x$code %||% "FMT", x$reason %||% ""), ""), collapse = "; ")
+  } else if (length(fail_reasons)) {
+    paste(fail_reasons, collapse = "; ")
+  } else if (pass) {
+    sprintf("허들 통과 (종합 %.0f점, 초과CAGR %+.1f%%p)", .as_num(hg$score), excess_cagr %||% 0)
+  } else {
+    sprintf("탈락축 미기록 — 종합 %.0f점 미달(신호 약함)", .as_num(hg$score))
+  }
+  paper_gap <- as.character(paper_assumption_broken %||% "")
+  if (!nzchar(trimws(paper_gap))) paper_gap <- "미기재"
+  lesson <- sprintf("%s: 등급 %s, 연복리 %.1f%% (벤치마크 대비 %+.1f%%p), 샤프 %.2f, 최대낙폭 %.1f%%. 사유: %s; 논문 가정 대비: %s",
+                    strategy_name, grade, .as_num(m$CAGR), excess_cagr %||% 0, .as_num(m$Sharpe),
+                    -abs(.as_num(m$MDD)), .clip_msg(lesson_reason, 220L), .clip_msg(paper_gap, 120L))
   if (auth_ok)
     lesson <- sprintf("%s [실측재측정: essence %s, PORT_t(NW) %s, metric_type=backtested]",
                       lesson, auth$essence_grade %||% "?",
@@ -1340,27 +1426,58 @@ run_alpha_search <- function(strategy_name,
                                 sprintf("%.2f", .as_num(auth$essence$portfolio_alpha_t_nw_lag3))),
                          ifelse(is.na(.as_num(auth$essence$oos_retention)), "NA",
                                 sprintf("%.2f", .as_num(auth$essence$oos_retention)))) else "")
-  # next_probe: 탈락축 기반 다음 탐색 제안 (축별 분기 — 빈 제안 금지)
-  next_probe <- if (pass) {
-    "QEPM 정밀검증(WorkTask) 이행 + Grade-A 풀 직교성(GradeA_Corr)·book-marginal ΔIR>=0.05 확인."
-  } else if ("FMT-05" %in% fmt_codes) {
-    sprintf("회전율 축 탈락(연 %.0f%%) — 리밸 주기 연장(월->분기)·buffer_zone 확대·신호 지속성 측정 후 재검증.", .as_num(m$Turnover_Ann))
-  } else if (any(c("FMT-01", "FMT-04") %in% fmt_codes)) {
-    sprintf("MDD 축 탈락(%.1f%%) — 신호력 보존 시 OVERLAY_CANDIDATE 라우트(국면/DD overlay는 S5/QEPM 단계) 또는 저변동 결합 재검증.", abs(.as_num(m$MDD)))
-  } else if ("FMT-02" %in% fmt_codes) {
-    "방향 역작동 의심 — kr-inverse-pattern-miner로 역방향 가설 생성 + long-short/multi-sleeve 구성 변경 탐색."
-  } else if ("FMT-07" %in% fmt_codes) {
-    "후반부 알파 붕괴 — 2017 전후 서브기간 분해 + 최근 5Y 한정 재검증으로 소멸 여부 확정."
-  } else if ("FMT-08" %in% fmt_codes) {
-    "게이팅 과적합 의심 — 게이트 임계 완화/제거 대조 실험으로 회복랠리 기여 분리."
-  } else if ("FMT-03" %in% fmt_codes) {
-    "앙상블 희석 의심 — 구성 팩터 단독 성과 분해 후 강한 축 단독/가중 재설계."
-  } else if (is_fail) {
-    sprintf("탈락 사유(%s) 직접 해소 변형 1건 + 역방향 가설(kr-inverse-pattern-miner) 1건 검증.",
-            if (length(fail_reasons)) paste(fail_reasons, collapse = "; ") else "점수 미달")
-  } else {
-    sprintf("근접 탈락(종합 %.0f점) — 최약 축 보강(파라미터 아닌 구성 변경) 후 1회 재검증. 반복 sweep 시 n_trials 누적 신고.", .as_num(hg$score))
-  }
+  # ---- 연속성 계약의 유일한 집 (v9 Lean Loop, 2026-08-23) ----------------------
+  #   구판: 단일 문자열 next_probe 1개. → Stop 훅이 매 턴 "계속 산출물"을 강요하던 구조를
+  #   **L-code 발행 시점 1곳**으로 옮긴다. 여기가 계약이 걸리는 유일한 지점이다.
+  #   계약 = ①next_probes 2건 이상(축별 표에서 자동 생성) ②live_trigger(부활 조건, C/F만).
+  #   ★차단하지 않는다 — 미충족이면 WARN 후 그대로 발행한다(정직 원장 우선).
+  #   표 = {분기 조건 → probe① 기존 분기문 / probe② 축별 대안 / live_trigger 부활조건}.
+  fmt_axis <- if (pass) "PASS"
+              else if ("FMT-05" %in% fmt_codes) "FMT-05"
+              else if (any(c("FMT-01", "FMT-04") %in% fmt_codes)) "FMT-01/04"
+              else if ("FMT-02" %in% fmt_codes) "FMT-02"
+              else if ("FMT-07" %in% fmt_codes) "FMT-07"
+              else if ("FMT-08" %in% fmt_codes) "FMT-08"
+              else if ("FMT-03" %in% fmt_codes) "FMT-03"
+              else if (is_fail) "FAIL_DEFAULT"
+              else "NEAR_MISS"
+
+  probe1 <- switch(fmt_axis,
+    "PASS"        = "QEPM 정밀검증(WorkTask) 이행 + Grade-A 풀 직교성(GradeA_Corr)·book-marginal ΔIR>=0.05 확인.",
+    "FMT-05"      = sprintf("회전율 축 탈락(연 %.0f%%) — 리밸 주기 연장(월->분기)·buffer_zone 확대·신호 지속성 측정 후 재검증.", .as_num(m$Turnover_Ann)),
+    "FMT-01/04"   = sprintf("MDD 축 탈락(%.1f%%) — 신호력 보존 시 OVERLAY_CANDIDATE 라우트(국면/DD overlay는 S5/QEPM 단계) 또는 저변동 결합 재검증.", abs(.as_num(m$MDD))),
+    "FMT-02"      = "방향 역작동 의심 — kr-inverse-pattern-miner로 역방향 가설 생성 + long-short/multi-sleeve 구성 변경 탐색.",
+    "FMT-07"      = "후반부 알파 붕괴 — 2017 전후 서브기간 분해 + 최근 5Y 한정 재검증으로 소멸 여부 확정.",
+    "FMT-08"      = "게이팅 과적합 의심 — 게이트 임계 완화/제거 대조 실험으로 회복랠리 기여 분리.",
+    "FMT-03"      = "앙상블 희석 의심 — 구성 팩터 단독 성과 분해 후 강한 축 단독/가중 재설계.",
+    "FAIL_DEFAULT"= sprintf("탈락 사유(%s) 직접 해소 변형 1건 검증.",
+                            if (length(fail_reasons)) .clip_msg(paste(fail_reasons, collapse = "; "), 150L) else "점수 미달"),
+    "NEAR_MISS"   = sprintf("근접 탈락(종합 %.0f점) — 최약 축 보강(파라미터 아닌 구성 변경) 후 1회 재검증. 반복 sweep 시 n_trials 누적 신고.", .as_num(hg$score)))
+
+  probe2 <- switch(fmt_axis,
+    "PASS"        = "지명 후 deep=TRUE 재실행으로 권위 재측정(PORT_t·oos_retention·calmar) 산출.",
+    "FMT-05"      = "신호 지속성 측정 후 보유기간 재설계.",
+    "FMT-01/04"   = "저변동 결합(lowvol sleeve) 재검증.",
+    "FMT-02"      = "multi-sleeve 구성 변경.",
+    "FMT-07"      = "최근 5Y 한정 재검증.",
+    "FMT-08"      = "게이트 제거 대조.",
+    "FMT-03"      = "강한 축 단독 재설계.",
+    "FAIL_DEFAULT"= "역방향 가설(kr-inverse-pattern-miner) 1건.",
+    "NEAR_MISS"   = "논문 원 유니버스 대비 KR 치환 축 점검.")
+
+  live_trigger <- switch(fmt_axis,
+    "PASS"        = NA_character_,   # 통과 라운드는 부활 조건이 없다(이미 살아 있음)
+    "FMT-05"      = "회전율<600% 변형이 SR 유지 시",
+    "FMT-01/04"   = "MDD<45% 구성에서 IR>0 유지 시",   # MDD 축 공통(FMT-01·04 동일 분기)
+    "hard_fail 축 해소 후 score>=25 회복 시")
+
+  next_probes <- unique(c(probe1, probe2))
+  next_probes <- next_probes[nzchar(next_probes)]
+  if (!pass && (length(next_probes) < 2L || is.na(live_trigger)))
+    cat(sprintf("[L-CODE WARN] continuity contract 미충족 (%s: next_probes=%d, live_trigger=%s) — 그대로 발행\n",
+                strategy_id, length(next_probes),
+                if (is.na(live_trigger)) "NA" else "ok"))
+  next_probe <- paste(next_probes, collapse = " | ")   # 구 소비자(단일 문자열) 호환
 
   # ---- falsification_attempts (r7 Falsification 축 — AXM-01 공급측 배선, 2026-07-03) ----
   #   이미 산출된 반증형 검증 결과의 전달만 (신규 계산 금지). placebo/lag-stress는 현
@@ -1378,11 +1495,10 @@ run_alpha_search <- function(strategy_name,
   .fals_entry <- function(test, result, effect_retained = NA_real_, detail = "")
     list(test = test, result = result, effect_retained = effect_retained, detail = detail)
   fals <- list()
-  # PIT 정적스캔 — detect_lookahead 위반 시 run 자체가 중단되므로 emit 시점엔 항상 CLEAN
-  #   (효과 제거 0 = 잔존 1.0 — 스캔 통과의 정의이지 성과 수치 아님)
-  fals[[length(fals) + 1L]] <- .fals_entry(
-    "PIT 정적스캔(detect_lookahead)", "survived", 1.0,
-    "CLEAN — 위반 시 백테 중단 정책으로 emit 시점 통과 보장")
+  # ★삭제 (v9, 2026-08-23): "PIT 정적스캔 survived 1.0" 항목 제거.
+  #   detect_lookahead 위반 시 run 자체가 중단되므로 이 항목은 **모든 L-code에 100% 등장하는
+  #   상수**였다 — 판별력 0인데 Falsification 축 카운트만 1 올려 "반증을 시도했다"로 읽혔다
+  #   (효과 잔존 1.0 은 성과 수치도 아니다). PIT 통과 사실은 manifest.pit 에 이미 있다.
   dsr_lc <- .as_num(sdef_lc$dsr)
   if (is.finite(dsr_lc))
     fals[[length(fals) + 1L]] <- .fals_entry(
@@ -1440,11 +1556,20 @@ run_alpha_search <- function(strategy_name,
     # ---- 학습 3필드 (v8.1 트랙D 의무) + FMT + OOS ----
     mechanism_hypothesis      = mechanism_hypothesis,   # r7 Mechanism 축 입력
     data_supported_conclusion = data_supported_conclusion,
-    next_probe                = next_probe,
+    # ---- 연속성 계약 (v9): 리스트가 정본, 문자열은 구 소비자 호환 사본 ----
+    next_probes               = as.list(next_probes),   # ≥2 (C/F 기준) — 다음 라운드의 생성기
+    live_trigger              = live_trigger,           # 부활 조건 (PASS면 NA)
+    next_probe                = next_probe,             # " | " join — 구 스키마/소비자 호환
     fmt_codes                 = as.list(fmt_codes),     # 빈 list = 판정 없음 (정직)
     oos_retention             = oos_retention,          # IS65/OOS35 SR retention (hurdle D062, proxy)
     falsification_attempts    = fals                    # r7 Falsification 축 — 구조체 [{test,result,effect_retained}] (2026-07-04)
   )
+  # ---- 논문 축 (v9): 전달된 값만 기록 — 없는 값을 "미기재" 문자열로 채우지 않는다 ----
+  if (nzchar(trimws(as.character(source_paper %||% ""))))
+    lcode$source_paper <- as.character(source_paper)
+  if (nzchar(trimws(as.character(paper_assumption_broken %||% ""))))
+    lcode$paper_assumption_broken <- as.character(paper_assumption_broken)
+
   # ---- 권위측정 사다리 결과 라벨 (트랙C): 계약 실측 성공 시 backtested로 승격 ----
   #   INV-1: proxy는 mode-local 한정 — 실측(backtested) 라벨은 build_bt_result+essence_score
   #   계약 경유 성공분에만 부여. 수치도 계약값으로 교체하고 proxy 원값은 proxy_metrics에 보존.
@@ -1488,27 +1613,36 @@ run_alpha_search <- function(strategy_name,
 }
 
 # ---- Axiom 파이프라인(harvester + cluster) 명시 호출 — 자동 트리거 없으므로 ----
+#   v9 Lean Loop (2026-08-23): **비동기 spawn**(wait = FALSE)으로 전환한다.
+#   왜: 이 두 파이썬은 L-code corpus/cluster 를 갱신하는 *후처리*이고, 그 결과를 이 런이
+#   소비하지 않는다(반환값 미사용). 동기로 기다리면 라운드 예산만 먹는다.
+#   ★대가를 정직하게 적는다 — wait=FALSE 이므로 **종료코드 검사가 불가능**하다(구판의
+#   rc 검사 기능은 여기서 사라진다). 대신 stdout/stderr 를 로그 파일로 남겨 사후 확인이
+#   가능하게 하고, spawn 사실 1줄을 콘솔에 찍는다(침묵 금지).
 .run_axiom_pipeline <- function() {
   hv <- file.path(.AS_INFRA, "axiom", "lcode_harvester.py")
   cl <- file.path(.AS_INFRA, "axiom", "cluster_extractor.py")
-  # QVEST_PY 우선 → PATH python3. 침묵 실패 금지 — 종료코드 검사 + 정직한 메시지 (2026-06-10 fix:
-  # 기존엔 python3 스텁 실패에도 무조건 "갱신" 출력하는 거짓 성공 로그였음)
+  # QVEST_PY 우선 → PATH python3.
   py <- Sys.getenv("QVEST_PY", unset = Sys.which("python3"))
   if (!nzchar(py)) {
     cat("[AlphaSearch] WARN: python 부재 — Axiom 파이프라인 SKIP (QVEST_PY 환경변수 설정 필요)\n")
-  .as_stage("sec9_done")
     return(invisible(FALSE))
   }
-  rc1 <- tryCatch(system2(py, c(shQuote(hv), "--project-dir", shQuote(PROJECT_ROOT)),
-                          stdout = FALSE, stderr = FALSE), error = function(e) 1L)
-  rc2 <- tryCatch(system2(py, c(shQuote(cl), "--project-dir", shQuote(PROJECT_ROOT)),
-                          stdout = FALSE, stderr = FALSE), error = function(e) 1L)
-  if (identical(rc1, 0L) && identical(rc2, 0L)) {
-    cat("[AlphaSearch] Axiom 파이프라인(harvester+cluster) 갱신 완료\n")
-  } else {
-    cat(sprintf("[AlphaSearch] WARN: Axiom 파이프라인 실패 (harvester rc=%s / cluster rc=%s) — corpus 갱신 안 됨\n",
-                as.character(rc1), as.character(rc2)))
-  }
+  log_path <- file.path(PROJECT_ROOT, ".cache", "axiom_pipeline_spawn.log")
+  tryCatch(dir.create(dirname(log_path), showWarnings = FALSE, recursive = TRUE),
+           error = function(e) NULL)
+  ok <- tryCatch({
+    system2(py, c(shQuote(hv), "--project-dir", shQuote(PROJECT_ROOT)),
+            stdout = log_path, stderr = log_path, wait = FALSE)
+    system2(py, c(shQuote(cl), "--project-dir", shQuote(PROJECT_ROOT)),
+            stdout = log_path, stderr = log_path, wait = FALSE)
+    TRUE
+  }, error = function(e) { cat("[AlphaSearch] WARN: Axiom 파이프라인 spawn 실패 —",
+                               conditionMessage(e), "\n"); FALSE })
+  if (isTRUE(ok))
+    cat(sprintf("[AlphaSearch] Axiom 파이프라인 비동기 spawn (harvester+cluster, wait=FALSE) — 종료코드 미검사, 로그: %s\n",
+                .rel_project_path(log_path)))
+  invisible(ok)
 }
 
 # ---- STR 등록 (best-effort, origin=alpha_search) ----

@@ -76,7 +76,11 @@ write_json(list(modules = list(
   STR_AS_RUN3 = list(fr_eligible = TRUE, origin_mode = "alpha_search", registered_at = "2026-08-16",
                      meta = list())
 )), file.path(troot, "06_Registry/module_catalog.json"), auto_unbox = TRUE)
-write_json(list(entries = list()), file.path(troot, "06_Registry/alpha_frontier_queue.json"), auto_unbox = TRUE)
+# ★schema 2.0 (2026-08-23) — 빈 큐여도 정본 형태로 둔다. entries 는 비어 있으므로
+#   enum 을 실을 항목이 없지만, `schema_version` 이 빠져 있으면 소비자가 구판 판정
+#   경로로 떨어져도 이 픽스처는 초록이 난다(형태 회귀에 눈이 먼다).
+write_json(list(schema_version = "2.0", entries = list()),
+           file.path(troot, "06_Registry/alpha_frontier_queue.json"), auto_unbox = TRUE)
 
 ovq <- function(ids_status) write_json(
   list(candidates = lapply(names(ids_status), function(id)

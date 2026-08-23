@@ -1,3 +1,10 @@
+---
+paths:
+  - "02_Infrastructure/contracts/**"
+  - "qepm/mailbox/worktask/**"
+  - "04_Research/strategies/**/run_all.R"
+---
+
 # Backtest Result Contract v1.0 (Level 0)
 
 **발효**: 2026-04-29 / Session 75 v6.4 rule 분리
@@ -38,10 +45,11 @@
 - `save_bt_result(bt_result, output_dir)` — RDS + CSV × 10 + JSON × 2 + XLSX 11-sheet
 - `register_bt_result(bt_result)` — `qepm/registry/backtest_registry.csv` append (audit FAIL 차단)
 
-## L3 hard block
+## L3 hard block — **v9 2026-08-23 등록 해제**
 
-`02_Infrastructure/hooks/backtest_contract_audit.sh` PreToolUse[Write].
-- backtest_registry.csv / methodology_active.md L-code 등재 시 `audit_status=FAIL` 차단
+`02_Infrastructure/hooks/backtest_contract_audit.sh`(PreToolUse[Write])는 **등록 해제**됐다(도훈 결정 ④ 강한 감산. 파일 존치 — 재등록 레시피 `02_Infrastructure/hooks/_archive_v8_enforcement/MANIFEST.md`).
+- **계약 자체는 불변**: `audit_bt_result()` Critical FAIL → `metric_type='unavailable'` + `integrity='FAIL'`, `register_bt_result()`가 audit FAIL 등재를 계속 거부한다. 차단 지점이 훅(쓰기 시점)에서 **R 계약(등재 시점)** 으로 이동했을 뿐이다.
+- (사료) 구 동작: backtest_registry.csv / L-code 등재 시 `audit_status=FAIL` 차단
 
 ## 적용 대상
 

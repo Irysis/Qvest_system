@@ -69,6 +69,13 @@ pending 파일이 없으면: "증류 대기 없음" 보고 후 종료 (기계 �
 **axiom 후보 현황 (의무 절 — 2026-07-04 주간 axiom 사이클 Cleaner 통합)**:
 - 기계 스윕 step [3.5]가 harvester→cluster_extractor→promote 진단을 돌리고 pending의 `axiom_candidates` 섹션(`n_pending` / `failing_axis_histogram` / `near_miss`)을 채운다 (정규 경로 — 구 `axiom_weekly.sh`는 수동/보조 retain).
 - digest에 **axiom 후보 현황 절 포함**: pending 건수 + 실패 축 히스토그램(어느 축 결측이 승격을 막는지) + near-miss 목록.
+
+**★ v9 승격 사다리 산출 (2026-08-23 Lean Loop §3.4(a) — 의무 절)**:
+- pending의 `axiom_candidates.proposed_axioms[]`를 **한 건당 한 줄**로 digest에 옮긴다 — 형식:
+  `- AX-AS-001 (alpha_search, L-code 507건) — <statement 120자> · 승인: Rscript -e 'source("02_Infrastructure/axiom/promote.R"); approve_axiom(c("AX-AS-001"))'`
+  (도훈이 **한 줄 붙여넣기**로 활성화할 수 있어야 한다. `approve_cmd` 필드에 명령이 이미 들어 있으니 재작성 금지.)
+- `axiom_candidates.auto_mapped_negative[]`(음성 클러스터 자동 지도된 DIST id)도 1줄 목록으로 병기 — **공리가 아니라 탐색지도**(INV-7)이며 승인 대상이 아니다(무인 활성화는 §6 D-f 승인분).
+- `axiom_candidates.n_promote_skipped` / `promote_skips[]`: 스폰 자체를 건너뛴 후보(단일 L-code = `SKIP_SINGLETON`, 입력 불변 = `SKIP_UNCHANGED`). **이 수가 크다는 건 정상**이다 — 새 정보가 없는 후보를 매주 재채점하지 않는다는 뜻. 0으로 떨어지면 오히려 사전판정 배선이 죽은 것이므로 확인할 것.
 - **near-miss statement 정제**: 1축만 미달인 후보는 statement 초안(INV-6 `[초안]`)을 정제해 **distilled 지식으로 승격 제안 — 도훈 confirm 건별** (자동 활성화 금지. promote 재실행은 confirm 후). 실패 축이 입력 결측(mechanism/falsification 등)이면 해당 emit 지점 보강을 후속으로 기록.
 
 **★ INV-6 자동초안 흐름 (2026-07-04 도훈 confirm — "무인 정제 금지" → "무인 *활성화* 금지" 재정의)**:

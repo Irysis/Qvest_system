@@ -1,0 +1,80 @@
+{
+  "candidate_id": "CAND_20260718_ramp_infra_process_positive_L-RAMP-20260618_131316C_L-RAMP-20260618_131800_L-RAMP-20260618_175207",
+  "mode": "ramp",
+  "weighted_score": 0.47,
+  "threshold": 0.8,
+  "all_hurdles_pass": false,
+  "failing_hurdles": [
+    "falsification",
+    "external",
+    "mechanism"
+  ],
+  "axes": {
+    "independence": {
+      "score": 1,
+      "hurdle_pass": true,
+      "n_constructions": 3,
+      "direction_consistency": 0.8,
+      "direction_consistency_definition": "overall_grade_majority",
+      "reason": "3 distinct constructions (min 2), direction_consistency=0.80 [overall]"
+    },
+    "rigor": {
+      "score": 0.4,
+      "hurdle_pass": true,
+      "n_backtested": 3,
+      "reason": "positive port_t n=0[mode_local] n_backtested=3"
+    },
+    "falsification": {
+      "score": 0,
+      "hurdle_pass": false,
+      "n_attempts": 0,
+      "n_unstructured": 0,
+      "reason": "active attempts=0 (unstructured=0) none_falsified=TRUE retained_ok=TRUE"
+    },
+    "external": {
+      "score": 0.4,
+      "hurdle_pass": false,
+      "n_oos_retention_real": 1,
+      "oos_retention_median": 0.149,
+      "oos_retention_source": "corpus",
+      "oos_months": "NA",
+      "oos_months_bonus": false,
+      "reason": "oos_retention real n=1/5 (src=corpus) median=0.149 (min 0.50) | months=NA bonus=FALSE"
+    },
+    "mechanism": {
+      "score": 0.4,
+      "hurdle_pass": false,
+      "mechanism_type": "unknown",
+      "reason": "expl=present type=unknown"
+    }
+  },
+  "logged_at": "2026-07-18 09:23:38",
+  "note": "INV-4: 5축 min-hurdle 동시 충족 필요. 실패 축 보강 후 재시도. (same-day dedup: 최신본 overwrite)",
+  "cluster_key": "f41215fc7f23",
+  "history": [
+    {
+      "logged_at": "2026-07-04 13:26:23",
+      "weighted_score": 0.362,
+      "failing_hurdles": [
+        "independence",
+        "falsification",
+        "external",
+        "mechanism"
+      ]
+    },
+    {
+      "logged_at": "2026-07-18 09:23:38",
+      "weighted_score": 0.47,
+      "failing_hurdles": [
+        "falsification",
+        "external",
+        "mechanism"
+      ]
+    }
+  ],
+  "migrated_from": [
+    "AX-PENDING_CAND_20260704_ramp_infra_process_positive_L-RAMP-20260618_131316C_L-RAMP-20260618_131800_L-RAMP-20260618_175207_20260704.json",
+    "AX-PENDING_CAND_20260718_ramp_infra_process_positive_L-RAMP-20260618_131316C_L-RAMP-20260618_131800_L-RAMP-20260618_175207_20260718.json"
+  ],
+  "migration_note": "v9 이관 20260823: review_log 를 클러스터당 1파일로 접음. 구 파일은 삭제하지 않고 _archive_20260823/ 로 이동(이력·grep 보존)."
+}

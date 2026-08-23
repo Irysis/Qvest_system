@@ -28,15 +28,20 @@ source(file.path(PROJ, "02_Infrastructure/ops/frontier_registry_coherence.R"), e
 
 # 픽스처 루트: 함수가 <root>/06_Registry/*.json 을 읽으므로 그 형태만 갖추면 된다.
 # marker 파일도 만들어 .fc_root() 계약과 어긋나지 않게 한다(여기선 root 를 인자로 넘기지만).
-mk_root <- function(queue_entries, dead_classes, cards) {
+#   ★`write_ev_map`(2026-08-23 신설): research_ev_map.json 은 v9 Lean Loop §3.4(f)/D-h 로
+#     `06_Registry/_archive/research_ev_map_20260710_frozen.json` 에 **동결**됐다. 그래서
+#     "지도 부재" 는 이제 결손이 아니라 **정상 운영 상태**이고, 스캔은 stop 하면 안 된다.
+#     픽스처가 지도를 쓸지 말지를 고를 수 있어야 그 두 상태를 나눠 검사할 수 있다.
+mk_root <- function(queue_entries, dead_classes, cards, write_ev_map = TRUE) {
   r <- file.path(tempdir(), paste0("fcx_", as.integer(Sys.time()), "_", sample(1e6, 1)))
   dir.create(file.path(r, "06_Registry"), recursive = TRUE, showWarnings = FALSE)
   dir.create(file.path(r, "02_Infrastructure/hooks"), recursive = TRUE, showWarnings = FALSE)
   writeLines("x", file.path(r, "02_Infrastructure/hooks/qvest_hook_router.py"))
   write_json(list(entries = queue_entries), file.path(r, "06_Registry/alpha_frontier_queue.json"),
              auto_unbox = TRUE)
-  write_json(list(dead_classes = dead_classes),
-             file.path(r, "06_Registry/research_ev_map.json"), auto_unbox = TRUE)
+  if (write_ev_map)
+    write_json(list(dead_classes = dead_classes),
+               file.path(r, "06_Registry/research_ev_map.json"), auto_unbox = TRUE)
   write_json(list(entries = cards), file.path(r, "06_Registry/distilled_knowledge.json"),
              auto_unbox = TRUE)
   r
@@ -101,15 +106,45 @@ if (grepl("입력 부재", e5)) {
   bad("missing_input_refused", sprintf("부재인데 통과: %s", substr(e5, 1, 60)))
 }
 
-# ── ⑥ 회귀: 실제 원장에서 오늘의 근접사고(FQ-004)를 재현하는가 ──────────────
-sr <- tryCatch(frontier_coherence_scan(PROJ), error = function(e) NULL)
-if (is.null(sr)) {
-  bad("live_registry_scan", "실제 원장 스캔 실패")
-} else if ("FQ-004" %in% sr$rows$id) {
-  ok("live_registry_scan", sprintf("FQ-004 검출 (총 %d건 후보)", sr$n_flag))
+# ── ⑤b EV 지도 부재는 **stop 이 아니다** (2026-08-23 v9 §3.4(f) / D-h) ──────────
+#   지도가 07-10 코퍼스 기준으로 동결·아카이브됐으므로 부재가 정상이다. 다만 "지도를 봤는데
+#   비었다" 와 "지도가 없어서 안 봤다" 는 구별돼야 한다 — 그래서 inputs$ev_map 에 라벨을 남긴다.
+r5b <- mk_root(list(qe("FQ-T5B", "오버레이 국면 결합 재시도")), list(), list(LIVE_CARD),
+               write_ev_map = FALSE)
+s5b <- tryCatch(frontier_coherence_scan(r5b), error = function(e) e)
+if (inherits(s5b, "error")) {
+  bad("ev_map_absent_no_stop", sprintf("지도 부재로 stop — 동결이 스캔을 죽인다: %s",
+                                       substr(conditionMessage(s5b), 1, 60)))
+} else if (identical(s5b$inputs$ev_map, "archived_20260823_frozen") && s5b$inputs$dead == 0L) {
+  ok("ev_map_absent_no_stop", "지도 부재 → dead_classes=0 으로 진행 + 상태 라벨 기록")
 } else {
-  bad("live_registry_scan",
-      sprintf("FQ-004 미검출 — 2026-08-02 수동 게이트가 잡은 건을 기계가 못 잡음 (n=%d)", sr$n_flag))
+  bad("ev_map_absent_no_stop", sprintf("라벨 누락 — 미측정과 정상이 구별되지 않는다 (ev_map=%s dead=%s)",
+                                       s5b$inputs$ev_map, s5b$inputs$dead))
+}
+#   ★검사 사망 통제 — 지도가 **있으면** 여전히 그 축이 살아 있어야 한다(⑤b 만 있으면
+#     "dead 축을 통째로 껐다" 와 구별되지 않는다). ①이 그 통제를 이미 수행한다.
+
+# ── ⑥ 회귀: 08-02 근접사고(FQ-004↔D2 감사의견 계열)를 합성으로 재현하는가 ──────
+#   구판은 **실원장**에서 FQ-004 검출을 단언했는데, 지도가 동결된 지금은 그 단언이
+#   "지도가 비었으니 아무것도 안 잡힌다"는 자명한 사실만 확인한다(검출력 0). 검사의 목적은
+#   원장 상태가 아니라 **검출 능력**이므로 합성 픽스처로 옮긴다.
+r6a <- mk_root(list(qe("FQ-004", "DART 담보/질권 + 감사의견/going-concern — virgin 0-coverage",
+                       lane = "non_return", hyp = "감사의견 going concern 이벤트 횡단 신호")),
+               list(dc("D2 감사의견 going concern 이벤트 신호")), list(LIVE_CARD))
+s6a <- frontier_coherence_scan(r6a)
+if ("FQ-004" %in% s6a$rows$id) {
+  ok("near_miss_reproduced", sprintf("FQ-004 유형 검출 (n_flag=%d)", s6a$n_flag))
+} else {
+  bad("near_miss_reproduced",
+      sprintf("2026-08-02 수동 게이트가 잡은 유형을 기계가 못 잡음 (n=%d)", s6a$n_flag))
+}
+#   실원장은 "돌아가는가"만 본다 — 판정 내용이 아니라 **stop 하지 않는가**가 축이다.
+sr <- tryCatch(frontier_coherence_scan(PROJ), error = function(e) e)
+if (inherits(sr, "error")) {
+  bad("live_registry_scan", sprintf("실제 원장 스캔 실패: %s", substr(conditionMessage(sr), 1, 70)))
+} else {
+  ok("live_registry_scan", sprintf("실원장 스캔 완주 (entries=%d dead=%d ev_map=%s)",
+                                   sr$inputs$entries, sr$inputs$dead, sr$inputs$ev_map))
 }
 
 # ── ⑦ 부정 선언이 긍정 매칭으로 뒤집히지 않는다 (2026-08-02 오탐 수리 고정) ──
@@ -205,7 +240,33 @@ if (!any(c("FQ-T10c", "FQ-T10d") %in% got10)) {
       sprintf("확정 항목이 대상에 편입됨 — 스크린이 노이즈로 무력화 (검출=%s)", paste(got10, collapse = ",")))
 }
 
-unlink(c(r1, r2, r3, r4, r5, r6, r7, r8, r9, r10), recursive = TRUE)
+# ── ⑪ schema 2.0 enum status 가 대상 선정에 들어오는가 (2026-08-23 신설) ────────
+#   실사고 직전까지 갔던 자리: 마이그레이션이 status 를 enum {open,claimed,done,parked} 로
+#   접었는데 `is_open_status` 는 자유서술 예측자(startsWith/frontier_open)만 봤다.
+#   그 상태로 실원장을 돌리면 **대상 0건**이 되고, 0 은 '충돌 없음'과 겉보기가 같다
+#   (= 이 검사기가 존재하는 바로 그 이유의 재발).
+r11 <- mk_root(list(qe("FQ-T11a", "오버레이 국면 결합 재시도", status = "open"),
+                    qe("FQ-T11b", "오버레이 국면 결합 재시도", status = "done"),
+                    qe("FQ-T11c", "오버레이 국면 결합 재시도", status = "parked"),
+                    qe("FQ-T11d", "오버레이 국면 결합 재시도", status = "claimed")),
+               list(dc("D2 시장타이밍 오버레이 초월 국면")), list(LIVE_CARD))
+s11 <- frontier_coherence_scan(r11)
+got11 <- if (is.null(s11$rows) || !nrow(s11$rows)) character(0) else s11$rows$id
+if ("FQ-T11a" %in% got11) {
+  ok("enum_open_in_scope", "schema 2.0 status='open' 이 스캔 대상 (0건 침묵 방지)")
+} else {
+  bad("enum_open_in_scope",
+      sprintf("enum 'open' 미포함 — 마이그레이션 후 스크린이 통째로 죽는다 (검출=%s)",
+              paste(got11, collapse = ",")))
+}
+if (!any(c("FQ-T11b", "FQ-T11c", "FQ-T11d") %in% got11)) {
+  ok("enum_nonopen_excluded", "done/parked/claimed 는 제외 (범위 과확장 아님)")
+} else {
+  bad("enum_nonopen_excluded",
+      sprintf("착수 대상이 아닌 enum 이 편입됨 (검출=%s)", paste(got11, collapse = ",")))
+}
+
+unlink(c(r1, r2, r3, r4, r5, r5b, r6a, r6, r7, r8, r9, r10, r11), recursive = TRUE)
 cat(sprintf("TOTAL: %d pass / %d fail\n", PASS, FAIL))
 cat(toJSON(list(test = "frontier_coherence", pass = PASS, fail = FAIL,
                 total = PASS + FAIL), auto_unbox = TRUE), "\n", sep = "")

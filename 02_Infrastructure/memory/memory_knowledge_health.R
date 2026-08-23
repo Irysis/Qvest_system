@@ -472,46 +472,89 @@ if (file.exists(cache_path)) {
   }
 }
 
-# WARN_7: Stop hook script ↔ settings.json 등록 정합 (L-314 follow-up — L-275 silent fail 재발 방지)
+# WARN_7: 세션 종료 훅 script ↔ settings.json 등록 정합 (L-314 follow-up — L-275 silent fail 재발 방지)
 # (2026-07-13 task#54-3ⓒ) 기대목록을 현행 Stop hook 4건으로 갱신 — 구 패턴
 # ^auto_(commit|push)_on_stop\.sh$ 은 performance_realmeasure_gate(2026-06-17)·
 # research_continuity_guard(2026-07-13) 등록누락을 감지하지 못했음. 양방향 검사:
 # (a) FS 존재 + settings 미등록 → WARN (L-275 silent fail) / (b) 기대 스크립트 FS 부재 → WARN
 # (settings에 등록돼 있어도 파일이 없으면 || true 로 조용히 무력화되는 동형 패턴).
-cat("[W7] Stop hook script ↔ settings.json registration consistency\n")
+# ── ★v9 Lean Loop (2026-08-23) ────────────────────────────────────────────────
+# Stop 이벤트 등록은 **0** 이 됐다(차단 훅 2종 해제 = 승인된 재설계안 §3.2(a)·D-c·D-j).
+# 커밋/푸시 2종은 Stop → **SessionEnd** 로 이동했다(턴당 → 세션당 1회).
+# ⇒ 기대목록을 그 2종으로 줄이고, **어느 이벤트 아래에 있는지까지** 본다 — 이름만 보면
+#   Stop 으로 되돌아가도 초록이라 이 검사가 원래 잡으려던 것(등록 위치의 조용한 이동)을
+#   놓친다. 해제 2종은 FS retain 이며 원장 =
+#   02_Infrastructure/hooks/_archive_v8_enforcement/MANIFEST.md
+cat("[W7] SessionEnd hook script <-> settings.json registration consistency\n")
 stop_hook_dir <- file.path(PROJ_ROOT, "02_Infrastructure/hooks")
 expected_stop_hooks <- c("auto_commit_on_stop.sh",
-                         "auto_push_on_stop.sh",
-                         "performance_realmeasure_gate.sh",
-                         "research_continuity_guard.sh")
+                         "auto_push_on_stop.sh")
 settings_path <- file.path(PROJ_ROOT, ".claude/settings.json")
 if (file.exists(settings_path)) {
   settings_content <- paste(readLines(settings_path, warn = FALSE),
                             collapse = "\n")
+  # SessionEnd 이벤트 **안에서만** 이름을 찾는다.
+  # ★문자열 절단(‘"SessionEnd" 이후 전부’)을 쓰지 않는 이유: 키 순서에 종속돼
+  #   Stop 블록이 SessionEnd **뒤에** 오면 그 이름까지 같은 창에 들어와 **거짓 통과**가
+  #   된다 — 이 검사가 잡으려는 바로 그 회귀(턴당 커밋 복귀)를 못 본다. JSON 을 실제로
+  #   파싱하고, 파싱 불가일 때만 문자열 절단으로 폴백하되 그 사실을 경고로 남긴다.
+  se_cmds <- character()
+  se_parsed <- TRUE
+  st <- tryCatch(fromJSON(settings_path, simplifyVector = FALSE),
+                 error = function(e) NULL)
+  if (is.null(st)) {
+    se_parsed <- FALSE
+  } else {
+    se_groups <- st$hooks$SessionEnd
+    if (!is.null(se_groups)) {
+      for (g in se_groups) for (h in g$hooks) {
+        cmd <- h$command
+        if (!is.null(cmd)) se_cmds <- c(se_cmds, as.character(cmd))
+      }
+    }
+  }
+  if (!se_parsed) {
+    add_warn("WARN_7_settings_unparseable",
+             ".claude/settings.json JSON 파싱 실패 — SessionEnd 위치 판정이 문자열 절단 폴백(검사 약화 상태)")
+    se_at <- regexpr("\"SessionEnd\"", settings_content, fixed = TRUE)
+    session_end_block <- if (se_at > 0) substring(settings_content, se_at) else ""
+  } else {
+    session_end_block <- paste(se_cmds, collapse = "\n")
+  }
   unregistered <- character()
   fs_missing <- character()
+  wrong_event <- character()
   for (script in expected_stop_hooks) {
     on_fs <- file.exists(file.path(stop_hook_dir, script))
     in_settings <- grepl(script, settings_content, fixed = TRUE)
+    in_session_end <- nzchar(session_end_block) &&
+      grepl(script, session_end_block, fixed = TRUE)
     if (on_fs && !in_settings) unregistered <- c(unregistered, script)
+    if (in_settings && !in_session_end) wrong_event <- c(wrong_event, script)
     if (!on_fs) fs_missing <- c(fs_missing, script)
   }
   if (length(unregistered) > 0) {
-    add_warn("WARN_7_stop_hook_unregistered",
-             sprintf("Stop hook script(s) exist but not registered in settings.json: %s — L-275 silent fail pattern",
+    add_warn("WARN_7_session_end_hook_unregistered",
+             sprintf("SessionEnd hook script(s) exist but not registered in settings.json: %s — L-275 silent fail pattern",
                      paste(unregistered, collapse = ", ")))
   }
+  if (length(wrong_event) > 0) {
+    add_warn("WARN_7_session_end_hook_wrong_event",
+             sprintf("commit/push hook(s) registered outside SessionEnd: %s — v9는 Stop 등록 0(턴당 커밋 회귀 의심)",
+                     paste(wrong_event, collapse = ", ")))
+  }
   if (length(fs_missing) > 0) {
-    add_warn("WARN_7_stop_hook_script_missing",
-             sprintf("expected Stop hook script(s) missing on FS: %s — settings 등록만 남은 무력화 상태",
+    add_warn("WARN_7_session_end_hook_script_missing",
+             sprintf("expected SessionEnd hook script(s) missing on FS: %s — settings 등록만 남은 무력화 상태",
                      paste(fs_missing, collapse = ", ")))
   }
-  if (length(unregistered) == 0 && length(fs_missing) == 0) {
-    cat(sprintf("  %d expected Stop hook(s) present + registered in settings.json: OK\n",
+  if (length(unregistered) == 0 && length(fs_missing) == 0 &&
+      length(wrong_event) == 0) {
+    cat(sprintf("  %d expected SessionEnd hook(s) present + registered under SessionEnd: OK\n",
                 length(expected_stop_hooks)))
   }
 } else {
-  add_warn("WARN_7_settings_missing", ".claude/settings.json 부재 — Stop hook 등록 검증 불가")
+  add_warn("WARN_7_settings_missing", ".claude/settings.json 부재 — SessionEnd hook 등록 검증 불가")
 }
 
 # WARN_8 (2026-07-13 task#54-3ⓐ): layer_bottleneck_map.md 신선도 — 최신 L-code 대비 24h+ 뒤처짐.
@@ -651,6 +694,13 @@ if (file.exists(settings_path)) {
        lag_h = lag_h, table_sha = sha, n_rows = length(rows), reason = NA_character_)
 }
 
+# ── ★v9: 병목 지도 아카이브 — 의무 폐지 2026-08-23 ──────────────────────────
+# `06_Registry/layer_bottleneck_map.md` 는 `06_Registry/_archive/` 로 이관되고
+# "라운드 수집 시 계층 행 갱신" 의무(answer-principles 5호)는 폐지됐다
+# (승인된 재설계안 §3.4(f) · 결정 D-h). 갱신 의무가 없는 파일의 신선도를 재면
+# 매 라운드마다 해소 불가능한 WARN 이 뜬다 ⇒ 판정을 no-op PASS 로 바꾼다.
+# ★아래 raw_lc_files 정의는 **W9 가 그대로 소비**하므로 지우지 않는다
+#   (지우면 W9 가 조용히 0건을 돌며 통과한다 = 검사 사망).
 cat("[W8] layer_bottleneck_map freshness vs newest L-code\n")
 lbm_path <- file.path(PROJ_ROOT, "06_Registry/layer_bottleneck_map.md")
 # (2026-07-26 MKH-05 수리) W8/W9 는 루트 stage_artifacts 만 glob 했으나 W1(:280-283)과
@@ -665,38 +715,11 @@ raw_lc_files <- raw_lc_files[!grepl("/superseded/", raw_lc_files, fixed = TRUE)]
 if (length(raw_lc_files) == 0) {
   cat("  L-code 원본 파일 없음 — skip\n")
 } else {
-  newest_lc_mt <- suppressWarnings(max(do.call(c, lapply(raw_lc_files, .lc_research_time)),
-                                       na.rm = TRUE))
-  if (!file.exists(lbm_path)) {
-    add_warn("WARN_8_bottleneck_map_missing",
-             "06_Registry/layer_bottleneck_map.md 부재 — 병목지도 현행화 필요")
-  } else {
-    lbm_fresh <- .mf_judge(PROJ_ROOT, lbm_path, newest_lc_mt)
-    if (identical(lbm_fresh$basis, "content")) {
-      if (isTRUE(lbm_fresh$stale)) {
-        add_warn("WARN_8_bottleneck_map_stale",
-                 sprintf(paste0("layer_bottleneck_map.md **표 본문**이 최신 L-code보다 %.1fh 뒤처짐 ",
-                                "(임계 24h · basis=content · table_sha=%s · %d행) — ",
-                                "mtime 갱신·헤더 부기로는 해소되지 않습니다. 계층 행·갭 귀속을 갱신하세요."),
-                         lbm_fresh$lag_h, substr(lbm_fresh$table_sha, 1, 10), lbm_fresh$n_rows))
-      } else {
-        cat(sprintf("  bottleneck map fresh (표 본문 기준 lag %.1fh <= 24h, sha=%s, %d행)\n",
-                    max(lbm_fresh$lag_h, 0), substr(lbm_fresh$table_sha, 1, 10), lbm_fresh$n_rows))
-      }
-    } else {
-      # 폴백: 내용 대조 불가 → 구 mtime 판정 그대로 + 폴백 사실 자체를 경고로 남김.
-      add_warn("WARN_8_bottleneck_map_basis_fallback",
-               sprintf("layer_bottleneck_map 신선도가 내용 대조 불가로 mtime 폴백 (사유: %s) — 검사 약화 상태",
-                       lbm_fresh$reason))
-      if (isTRUE(lbm_fresh$stale)) {
-        add_warn("WARN_8_bottleneck_map_stale",
-                 sprintf("layer_bottleneck_map.md가 최신 L-code보다 %.1fh 뒤처짐 (임계 24h · basis=mtime 폴백) — 병목지도 현행화 필요",
-                         lbm_fresh$lag_h))
-      } else {
-        cat(sprintf("  bottleneck map fresh (mtime 폴백 lag %.1fh <= 24h)\n", max(lbm_fresh$lag_h, 0)))
-      }
-    }
-  }
+  # v9: 병목 지도 아카이브 — 의무 폐지 2026-08-23.
+  # 구 판정(내용-해시 기반 24h 신선도 + mtime 폴백)은 히스토리에 보존돼 있다.
+  # 되살릴 때는 `.mf_judge(PROJ_ROOT, lbm_path, newest_lc_mt)` 를 다시 부르면 된다
+  # (헬퍼 .mf_judge / lbm_path 는 위에 그대로 남겨 뒀다).
+  cat("  v9: 병목 지도 아카이브 — 의무 폐지 2026-08-23 (판정 no-op PASS)\n")
 }
 
 # WARN_9 (2026-07-13 task#54-3ⓑ): 최근 7일 negative performance L-code(C/F) next_probe 부재.

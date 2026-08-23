@@ -82,7 +82,12 @@ PYF  <- file.path(SBX, "hook_body.py")
 writeLines(PYSRC, PYF, useBytes = TRUE)
 
 REAL_MAP <- file.path(.root, "06_Registry/layer_bottleneck_map.md")
-if (!file.exists(REAL_MAP)) stop("정본 지도 파일 부재 — 실제 형식으로 검사할 수 없음")
+if (!file.exists(REAL_MAP)) {
+  # v9 2026-08-23: layer_bottleneck_map.md 는 06_Registry/_archive/ 로 아카이브됐고
+  # W3/W8(지도 신선도 의무)은 폐지됐다. 정본이 없으면 검사 대상 자체가 없으므로 SKIP(실패 아님).
+  cat('{"test":"map_freshness_content","pass":0,"fail":0,"skipped":1,"skips":[{"axis":"ALL","reason":"v9: layer_bottleneck_map.md archived (06_Registry/_archive/layer_bottleneck_map_20260822.md) — W3/W8 retired 2026-08-23","missing":"06_Registry/layer_bottleneck_map.md"}],"total":1}\n')
+  quit(status = 0)
+}
 invisible(file.copy(REAL_MAP, MAP, overwrite = TRUE))
 
 NOW <- as.numeric(Sys.time())

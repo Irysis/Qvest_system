@@ -1,0 +1,178 @@
+{
+  "schema_version": "v54_ax_p0_mode",
+  "candidate_id": "CAND_qepm_legacy_48ec61de489a",
+  "research_mode": "qepm_legacy",
+  "metric_type": "estimated",
+  "type": "methodological",
+  "polarity": "negative",
+  "statement_draft": "[방법론 실패 규칙 초안] family=quality_profitability, market=KR, mode=single_signal_standalone_long_only 구조적 실패. (1) GP as single-factor(Novy-Marx 2013, Piotroski/Ohlson 결합 없음), (2) Cash-based profitability(Ball 2016) DART 현금흐름 의존 단독, (3) growth stability composite IS-only는 모두 OOS 소멸. EXCLUSION: quality overlay in multi-factor blend / 3+ quality axis composite / multi-sleeve 내 Q07 defense sleeve는 scope 밖. (promote.R 5축 검증에서 negative-polarity 축 산식 구조결함 B2/B3/B4 상존 — GATE_GAP 참조)",
+  "supporting_l_codes": [
+    "L-133",
+    "L-134",
+    "L-139",
+    "L-AS-20260613_074936_250687",
+    "L-AS-20260612_154048_969566",
+    "L-AS-20260612_154048_969567"
+  ],
+  "scope_draft": {
+    "market": "KR",
+    "factor_family": "quality_profitability",
+    "regime": null,
+    "mode": "single_signal_standalone_long_only",
+    "construction_types": [
+      "GP_as_single_factor_without_Piotroski_Ohlson_combination",
+      "cash_based_profitability_DART_dependent_single_signal",
+      "growth_stability_composite_IS_only_type"
+    ]
+  },
+  "evidence_draft": {
+    "independent_l_codes": 6,
+    "independent_strategies": 6,
+    "strategies": [
+      "STR_1657_CBPQ",
+      "STR_1655_GSCD",
+      "STR_1626_profitability_fortress_defense",
+      "STR_AS_20260613_074936_250687",
+      "STR_AS_20260612_154048_969566",
+      "STR_AS_20260612_154048_969567"
+    ],
+    "effect_direction_consistency": 1,
+    "note": "6건 전부 KR quality standalone long-only 실패(grade F/C + re-measured essence C/F). 방향 100% 일치(전부 loss). L-133/134/139 = 원측정 estimated(2026-04, 클린) 3 construction. L-AS 3건 = 2026-06 backtested 재측정, real negative OOS retention(-0.958/-0.719/-1.014) 보유 — External/Rigor 실탄. b434 오염 없음(distill/keyword-fallback 미포함), strategy_id 6건 distinct(같은 전략 재측정 아님).",
+    "n_eff_signatures": 6,
+    "independent_constructions": 3,
+    "constructions": [
+      "GP_single_factor",
+      "cash_based_profitability",
+      "growth_stability_composite"
+    ],
+    "constructions_note": "corpus construction_type 오라벨(L-133=ml_sizing, L-139=momentum, L-AS-...969567=value)은 axiom 본문 GP/cash/GSCD·core_reference와 불일치 — 실측 근거는 lesson_text/core_reference. 논리적 distinct construction = 3(GP-single / cash-based / growth-stability-composite).",
+    "metric_types": [
+      "estimated",
+      "backtested"
+    ],
+    "removed_l_codes": {
+      "L-140": "STR_1642_lowbeta_3f는 low-beta/BAB(Frazzini-Pedersen 2014)로 quality_profitability가 아니라 defense·low-beta family. corpus에서 promoted_to_axiom=AX-005로 확정 — AX-004 클러스터에서 scope 정합상 제거(gaming 아님, 소속 오류 교정). evidence_gap 권고 반영."
+    }
+  },
+  "falsification_draft": {
+    "attempts": [
+      {
+        "description": "STR_1655 Growth Stability Composite Diversifier standalone — IS SR 0.60 -> OOS SR 0.00",
+        "result": "reproduced_failure",
+        "effect_retained": 1,
+        "mdd": 0.717
+      },
+      {
+        "description": "STR_1657 Cash-Based Profitability Quality(Ball 2016) standalone — DART 현금흐름 데이터 품질 이슈로 시그널 역방향, MDD 94%",
+        "result": "reproduced_failure",
+        "effect_retained": 1,
+        "mdd": 0.94
+      },
+      {
+        "description": "STR_1626 Profitability Fortress(Novy-Marx 2013) standalone — IS SR 1.044이지만 OOS retention 0.24 + recent 3Y SR 0.135 alpha decay",
+        "result": "reproduced_failure",
+        "effect_retained": 0.76,
+        "mdd": 0.541
+      },
+      {
+        "description": "2026-06 재확증: GPA+PiotroskiF 순수 quality baseline(STR_AS_...250687) backtested — essence C, PORT_t(NW lag-3) 0.67, OOS_ret -0.958. Piotroski-only(...969566) essence C/F, PORT_t 1.37, OOS_ret -0.719. Composite quality(...969567) essence F, PORT_t 0.58, OOS_ret -1.014. 3건 모두 계약등급 실측으로 negative 방향 재현.",
+        "result": "reproduced_failure",
+        "effect_retained": 1
+      }
+    ],
+    "note": "attempts backfilled from active AX-004 falsification(실측, 창작 아님) + 2026-06 backtested 재확증 1건. Supporting 6 = 3 estimated original construction + 3 backtested re-confirmation. reproduced_success_exception=0 (quality overlay/multi-axis composite 성공은 scope 밖)."
+  },
+  "mechanism_draft": {
+    "economic_explanation": "KR quality_profitability standalone long-only의 구조적 실패 3요인: (1) Novy-Marx(2013) GP premium은 2020년대 성장주 랠리로 recent 3Y SR 급격히 약화(STR_1626 0.135). (2) Ball et al.(2016) Cash-Based Profitability는 DART 재무 현금흐름 항목의 가용성·일관성 문제로 시그널 품질 저하(STR_1657 MDD 94%). (3) Growth Stability composite는 IS overfit, OOS 완전 소멸(STR_1655 retention -0.001). 공통 원인: 한국시장에서 quality premium은 standalone long-only로 재현 불가 — value/momentum overlay 또는 멀티팩터 blending 필수(Asness 2019 QMJ는 value와 결합 시 유효). 2026-06 backtested 재확증: 3개 독립 quality 구성 전부 essence C/F + OOS retention 음수(-0.72~-1.01)로 IS 대비 완전 붕괴.",
+    "mechanism_type": "market_structural",
+    "causal_plausibility": "high"
+  },
+  "oos_validation_draft": {
+    "oos_months": 12,
+    "oos_effect_vs_is": 0.08,
+    "oos_retention_backtested_median": -0.958,
+    "calculation_method": "estimated tier(L-133/134/139): simple mean of OOS retention ratios (0.24 + 0.00 + -0.001)/3 = 0.08 (IS-relative). backtested tier(L-AS 3건): corpus oos_retention median = median(-0.958, -0.719, -1.014) = -0.958.",
+    "note": "★negative 공리는 oos collapse(retention 낮음/음수)가 확증 증거. 두 tier 모두 collapse 확인. 단 promote.R External hurdle = median(oos_retention) >= 0.5는 polarity-blind이므로, 강한 negative 증거(-0.958)일수록 hurdle FAIL 확정 = 구조 결함(B3, GATE_GAP)."
+  },
+  "gate_rediagnosis_20260704": {
+    "review_log": "qepm/memory/axioms/review_log/R-AX-004_gate_rediagnosis_20260704.json",
+    "strengthened_configs_measured": {
+      "config_A_3estimated_plus_drafts": {
+        "supporting": [
+          "L-133",
+          "L-134",
+          "L-139"
+        ],
+        "weighted": 0.92,
+        "hurdles_pass": {
+          "independence": false,
+          "rigor": true,
+          "falsification": true,
+          "external": false,
+          "mechanism": true
+        },
+        "verdict": "weighted 통과선이나 Independence(dc 0.67<0.8) + External(oos draft 0.080<0.5) 2축 hurdle FAIL"
+      },
+      "config_B_add_3backtested_quality": {
+        "supporting": [
+          "L-133",
+          "L-134",
+          "L-139",
+          "L-AS-20260613_074936_250687",
+          "L-AS-20260612_154048_969566",
+          "L-AS-20260612_154048_969567"
+        ],
+        "weighted": 0.84,
+        "hurdles_pass": {
+          "independence": false,
+          "rigor": false,
+          "falsification": true,
+          "external": false,
+          "mechanism": true
+        },
+        "verdict": "★backtested negative 증거 추가가 점수를 오히려 낮춤 — Rigor 0.50(corpus grade=raw B라 backtested를 win으로 오집계, B4) + External median -0.958이 hurdle 0.5 미달(B3 polarity inversion) + Independence dc 0.50(grade 다양성 희석, B2). 진짜 강한 negative 증거를 넣을수록 게이트가 더 확실히 차단 = negative-polarity 축 산식 3건 구조결함."
+      }
+    },
+    "blockers": {
+      "B1_draft_backfill": "RESOLVED — mechanism/falsification/oos draft를 active AX-004 실측으로 backfill(창작 아님). config_A에서 mech/fals hurdle PASS 회복.",
+      "B2_independence_direction_consistency": "GATE_GAP(도훈 confirm 대상 산식) — direction_consistency=전체 grade 최빈비율이 negative에 부적합. F/F/C=0.67. 수리코드는 conditional엔 within-condition 재정의를 이미 도입했으나 negative엔 미적용. negative는 win/loss 이분(전부 loss=100% 방향일치)으로 측정해야.",
+      "B3_external_polarity_inversion": "GATE_GAP(도훈 confirm 대상) — External hurdle median(oos_retention)>=0.5가 polarity-blind. negative supporting은 정의상 oos collapse(<0.5)라 증거가 강할수록 hurdle FAIL. negative는 median<=0.5(collapse 확증)로 극성반전 필요. 문턱 내 재구성으로 해소 불가.",
+      "B4_rigor_corpus_grade_raw": "GATE_GAP(corpus 스키마) — corpus grade 필드가 raw near-miss B라 재측정 essence C/F인 backtested quality가 negative frac_fail에서 'win(B)'으로 집계 → frac_fail 0.50 붕괴. harvester가 authoritative.essence_grade(이미 corpus에 존재: C/C/C)를 grade로 반영하면 해소."
+    },
+    "verdict": "PASS_AFTER_STRENGTHEN는 불가 — B2/B3/B4가 negative-polarity 축 산식/스키마 구조결함(문턱완화 아닌 산식 정정 필요, INV-2에 따라 도훈 confirm 사항). 정당 강화(draft backfill + L-140 제거 + backtested 3건 결집)는 완료했으나 게이트 자체가 이 유형 negative를 통과시키도록 설계되지 않음 = GATE_GAP. active AX-004(2026-04 promote weighted 0.892)는 구 게이트(oos_months 기반 External, positive-basis) 하에서 통과했던 것 — 수리된 게이트가 negative 축을 polarity-aware로 정정하기 전까지 재승격 불가. INV-7 provisional 라벨이 이 갭을 정직 커버."
+  },
+  "cluster_members_count": 6,
+  "status": "pending_5axis_GATE_GAP",
+  "created_at": "2026-07-04T04:26:21+00:00",
+  "strengthened_at": "2026-07-04T05:00:00+00:00",
+  "recert_20260704": {
+    "recert_id": "ax_recert_003_004_007_20260704",
+    "axiom": "AX-004",
+    "gate_baseline_weighted": 0.335,
+    "gate_strengthened_weighted": 0.84,
+    "gate_configs_measured": {
+      "config_A_3estimated_drafts": 0.92,
+      "config_B_add_3backtested": 0.84
+    },
+    "threshold": 0.8,
+    "all_hurdles_pass": false,
+    "failing_hurdles": [
+      "independence",
+      "rigor",
+      "external"
+    ],
+    "verdict": "GATE_GAP",
+    "key_finding": "backtested negative 증거 추가가 점수를 낮춤(0.92→0.84) — B2 direction_consistency · B3 External median inversion · B4 corpus grade raw = negative-polarity 축 산식 3건 구조결함.",
+    "adversarial_verified": "a) Independence PARTIAL(3 core_reference distinct이나 전부 Piotroski F 공유=overlap, 명시) / b) 실패편향 아님 / c) 순환참조 없음 / d) b434 배제. 제외 L-code 0건.",
+    "recommended_enforcement": "advisory 유지",
+    "recommendation": "provisional/advisory 유지 + negative-polarity 축 산식(B2/B3/B4) 정정 도훈 confirm 대기.",
+    "active_json_untouched": true,
+    "review_log": "qepm/memory/axioms/review_log/R-AX-004_gate_rediagnosis_20260704.json",
+    "report": "04_Research/01_reports/ax_recert_003_004_007_20260704.md"
+  },
+  "cluster_key": "48ec61de489a",
+  "l_code_set_sha": "48ec61de489ab54c1496611f8155316fddcaf3b6",
+  "cluster_label": "qepm_legacy_negative",
+  "promotable": true,
+  "last_seen": "2026-07-04T04:26:21+00:00"
+}

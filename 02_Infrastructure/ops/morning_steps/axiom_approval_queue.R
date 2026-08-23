@@ -83,6 +83,37 @@ suppressWarnings(suppressMessages(tryCatch({
     cat("  (승인 시 status=proposed → distilled 전환 = 주입/hypothesis_index/strategic_truths 소비 활성화)\n")
   }
 
+  # ── v9 공리 제안 큐 (2026-08-23 Lean Loop §3.4(a)) ─────────────────────────
+  # promote.R 사다리가 양성/조건부 클러스터를 `active/modes/**/AX-<MODE>-NNN.json`
+  #   status="proposed" 로 발행한다. 활성화는 **도훈 1줄 confirm**(approve_axiom).
+  #   DIST 승인 큐(위)와 나란히 노출 — 둘은 다른 계층이다(공리 vs 탐색지도 카드).
+  tryCatch({
+    # 별도 env 로 적재 — 이 스텝의 `%||%`/헬퍼를 promote.R 판본이 덮어쓰지 않게.
+    # PROMOTE_SOURCED 는 promote.R CLI 자동실행 가드(원상복구 필수 — 자식 스폰에 샌다).
+    .had_ps <- Sys.getenv("PROMOTE_SOURCED", NA_character_)
+    Sys.setenv(PROMOTE_SOURCED = "1")
+    .pxe <- new.env(parent = globalenv())
+    suppressWarnings(suppressMessages(sys.source("02_Infrastructure/axiom/promote.R", envir = .pxe)))
+    if (is.na(.had_ps)) Sys.unsetenv("PROMOTE_SOURCED") else Sys.setenv(PROMOTE_SOURCED = .had_ps)
+    ax_props <- if (exists("list_proposed_axioms", envir = .pxe, mode = "function"))
+      .pxe$list_proposed_axioms() else list()
+    if (!length(ax_props)) {
+      cat("\n[공리 제안 대기 0건] — promote.R 사다리 통과분 없음(또는 전부 승인 완료)\n")
+    } else {
+      cat(sprintf("\n[공리 제안 대기 %d건] — mode-local 사다리 통과, 도훈 1줄 confirm 대기(주입 안 됨)\n",
+                  length(ax_props)))
+      for (p in ax_props) {
+        cat(sprintf("  · %s (%s/%s | supporting L-code %s건)\n",
+                    as.character(p$axiom_id), as.character(p$mode), as.character(p$polarity),
+                    as.character(p$n_support)))
+        cat(sprintf("      %s\n", as.character(p$statement)))
+        cat(sprintf("      승인: %s\n", as.character(p$approve_cmd)))
+      }
+    }
+  }, error = function(e) {
+    cat(sprintf("[공리 제안 대기] 섹션 실패(fail-soft): %s\n", conditionMessage(e)))
+  })
+
   # ── 재부상 섹션 (anti-ossification): live_trigger 충족 실패지식 재도전 시점 노출 ──
   # 계획서 G(2026-07-04). failure_revival_monitor.R를 소비 — distilled/proposed negative의
   #   live_trigger를 revival_signals 레지스트리 경유로 평가한 발화 목록.

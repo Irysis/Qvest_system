@@ -1,5 +1,8 @@
 # Qvest 답변 원칙 (Level 0)
 
+> **v9 적용 범위 (2026-08-23)**: 본 문서는 `.claude/rules/`(autoload)에서 **`02_Infrastructure/docs/rules/`(on-demand)로 이동**했다 — 효력은 동일하고 적재 시점만 바뀐다.
+> **lean 라운드(`.claude/rules/lean-loop.md`)에는 리서치 연속성 6항 중 3호(next_probe ≥ 2)만 적용**되며, 그 검사 지점은 **L-code 발행 1곳**(`run_alpha_search.R::.write_lcode` / `lcode_schema.R` v3)이다. 1·2·4·5·6호(대기-모드 마감 금지 · 종결 어휘 금지 · 소비처 7종 순회 · 계층 병목 지도 갱신 · Stop 훅 기계 차단)는 lean 라운드에서 **부과되지 않는다**(Stop 차단 훅 0, `continuity-firewall.md` SUSPENDED). 8원칙·5금지·회피 표현·자체합성 금지는 **전 계층 불변**.
+
 **원칙**: 쉬운/빠른/그럴듯한 답변 ❌ → 정확/완결/실행가능 답변 ✓
 **위반 = AX-002 동급**
 **발효**: 2026-04-29 (L-247) / Session 75 v6.4 rule 분리

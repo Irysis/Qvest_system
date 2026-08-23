@@ -104,3 +104,10 @@ catboost_info/
 *.bak_julfix_[0-9]*
 *.snap_[0-9]*
 *.testbak
+
+# 2026-08-23 (v9 Lean Loop §3.4(f)) 레지스트리 사이드카 백업.
+#   실측: 06_Registry/*.bak* 41개 19.3MB 가 추적되고 있었고, 그중 큰 것들은
+#   alpha_frontier_queue.json 의 옛 판본이라 **원장을 grep 하면 사본이 함께 걸린다**
+#   (= 어느 판본을 인용했는지 사후에 구별되지 않는다). 이동은 도훈 confirm 대기이고,
+#   여기서는 **앞으로 새로 생기는 사이드카가 추적되지 않도록만** 막는다.
+06_Registry/*.bak*

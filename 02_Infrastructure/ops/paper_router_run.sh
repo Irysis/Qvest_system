@@ -8,9 +8,9 @@
 #   당일 mcp_discovery_<TODAY>.json 존재 (recharge가 돌았음) — 단 v3: 백로그만 있어도 실행
 #   당일 신규 다운로드>0 (또는 QVEST_PAPER_ROUTER_FORCE=1, 또는 v3 백로그>0)
 # 옵션:
-#   QVEST_PAPER_ROUTER_AUTORUN=1 — alpha∧feasible 자동 alpha-search 실행 (기본 0=분류·큐·텔레그램만)
-#   QVEST_PAPER_ROUTER_MAX_ALPHA=N — 1일 자동 alpha-search 상한 (기본 2)
 #   QVEST_PAPER_ROUTER_DRYRUN=1  — v3: 대상 산정(백로그 포함)까지만 로그, claude 미호출
+#   ★(2026-08-23 v9) QVEST_PAPER_ROUTER_AUTORUN / _MAX_ALPHA 는 **더 이상 참조되지 않는다** —
+#     라우터는 배분만 하고 백테를 돌리지 않는다. 측정 상한 = 소비자 QVEST_ALPHA_QUEUE_MAX.
 #
 # v3 (2026-07-10, Qvest v8.3 Move M4 — 무인 인입 체인 복구·경보화):
 #   1) 백로그 합류 — 최근 7일 내 downloaded>0인데 alpha_search_route_<D>.json 없는 날짜를
@@ -242,14 +242,17 @@ CLAUDE_BIN="$(command -v claude || echo /c/Users/99922/AppData/Roaming/npm/claud
 [ -x "$CLAUDE_BIN" ] || { log "claude CLI not found ($CLAUDE_BIN) — skip"; exit 0; }
 PROMPT_FILE="$BASE/02_Infrastructure/ops/paper_router_prompt.md"
 [ -f "$PROMPT_FILE" ] || { log "prompt file missing — skip"; exit 0; }
-AUTORUN="${QVEST_PAPER_ROUTER_AUTORUN:-0}"
-CAP="${QVEST_PAPER_ROUTER_MAX_ALPHA:-2}"
-
+# ── v9 Lean Loop (2026-08-23): 라우터 헤더에서 AUTORUN·MAX_ALPHA 제거.
+#   라우터는 **배분기**이지 측정기가 아니다. 구 프롬프트 STEP 3 이 라우터 안에서
+#   백테를 돌려 ①런이 50분 상한에 걸리고 ②소비자 래퍼(alpha_search_queue_run.sh)와
+#   **이중 실행**이 났다. 두 변수를 헤더에서 빼면 프롬프트가 참조할 수단 자체가 없어진다.
+#   ★`QVEST_PAPER_ROUTER_AUTORUN`/`_MAX_ALPHA` env 는 남아 있어도 무해하다(미참조).
+#    측정 상한은 소비자 쪽 `QVEST_ALPHA_QUEUE_MAX` 가 단독으로 쥔다.
 # (2026-07-26 도훈 지시) 사용률 기반 보류·감축 제거 — "한도소비 관련 제약·방어 조건 모두 없애.
 #   한도 소비하면 재충전 후 내가 재개시킬게". 한도는 구독 외생 변수이지 게이트가 아니다
 #   ([[feedback-spend-limit-external-not-gate]]). 실패 시 경보만 남기고 그대로 멈춘다.
-log "start (downloaded=$DL, AUTORUN=$AUTORUN, MAX_ALPHA=$CAP, BACKLOG_DATES=${BACKLOG_DATES:-none})"
-HEADER="TODAY=${TODAY}  AUTORUN=${AUTORUN}  MAX_ALPHA=${CAP}  BACKLOG_DATES=${BACKLOG_DATES:-none}"
+log "start (downloaded=$DL, BACKLOG_DATES=${BACKLOG_DATES:-none})"
+HEADER="TODAY=${TODAY}  BACKLOG_DATES=${BACKLOG_DATES:-none}"
 # 헤드리스 1-shot. timeout 가드(자동 alpha-search 포함 시 길어질 수 있어 50분).
 PROMPT_TEXT="$(printf '%s\n\n%s\n' "$HEADER" "$(cat "$PROMPT_FILE")")"
 # (2026-07-25) 자격증명 사전 점검 — 무의미한 401 호출 회피 + 조치 즉시 안내

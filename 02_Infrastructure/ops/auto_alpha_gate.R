@@ -73,7 +73,20 @@ if (all(is.na(layers))) {
   quit(status = 2)
 }
 
-failed <- names(layers)[vapply(layers, function(z) !isTRUE(z), logical(1))]
+# ── v9 Lean Loop (2026-08-23): **결측 ≠ 실패**.
+#   구판은 `!isTRUE(z)` 라 NA(미기입)도 실패로 접었다. 그 규칙은 4층을 전부 채우는
+#   구 체인에서만 맞다 — v9 는 L4 충실성 검증자(claude -p)를 폐지했고, robustness 는
+#   산출물에 oos 축이 있을 때만 채워진다. 그대로 두면 lean 입력이 **항상** QUARANTINE 이
+#   되어 게이트가 판정을 그만두고 상수를 낸다.
+#   ⇒ pit 은 여전히 **필수**(PIT 는 증거 부재를 통과로 읽지 않는다). contract/robustness/
+#     fidelity 는 **명시 FALSE 일 때만** 실패고, NA 는 "요구되지 않음"으로 통과시킨다.
+#   ★그 사실은 판정에 함께 남긴다 — `lean=true` + `gate_absent_layers`. 판정이 4층 전수
+#     위에서 나왔는지 축소 입력 위에서 나왔는지 사후에 구별되지 않으면 수율 해석이 오염된다.
+absent <- names(layers)[vapply(layers, is.na, logical(1))]
+failed <- names(layers)[vapply(layers, function(z) isFALSE(z), logical(1))]
+lean_mode <- isTRUE(tri(v$lean)) || length(absent) > 0
+# NA 통과 술어 — 명시 FALSE 만 막는다.
+ok_or_absent <- function(nm) !isFALSE(layers[[nm]])
 
 # ── 구조 탈락(hard_fail): 신호 유무가 아니라 배포 형태(MDD·turnover)의 문제.
 hard_fail <- isTRUE(tri(v$hard_fail))
@@ -81,9 +94,10 @@ hf_reason <- if (!is.null(v$hard_fail_reason)) as.character(v$hard_fail_reason)[
 structural <- hard_fail && grepl("drawdown|mdd|turnover|calmar|concentration|structural",
                                  hf_reason, ignore.case = TRUE)
 
-signal_alive <- isTRUE(layers[["pit"]]) && isTRUE(layers[["robustness"]])
-four_pass <- isTRUE(layers[["pit"]]) && all(vapply(layers[c("contract", "robustness", "fidelity")],
-                                                   isTRUE, logical(1)))
+# pit 은 항상 명시 TRUE 여야 한다(결측도 불가) — PIT 은 결측을 통과로 읽지 않는다.
+signal_alive <- isTRUE(layers[["pit"]]) && ok_or_absent("robustness")
+four_pass <- isTRUE(layers[["pit"]]) &&
+  all(vapply(c("contract", "robustness", "fidelity"), ok_or_absent, logical(1)))
 
 if (four_pass && !hard_fail) {
   decision <- "ADOPT"; route <- ""
@@ -97,11 +111,16 @@ if (four_pass && !hard_fail) {
 
 v$gate_decision <- decision
 v$gate_failed_layers <- paste(c(failed, if (hard_fail) "hard_fail" else NULL), collapse = ",")
+v$gate_absent_layers <- paste(absent, collapse = ",")
+v$lean <- lean_mode
 v$gate_authority <- "auto_alpha_gate.R"   # 에이전트가 쓴 판정과 구분하기 위한 서명
 v$gate_rule <- paste0(
-  "PIT hard + contract&robustness&fidelity all PASS (unattended 4/4, fail-closed) ",
-  "AND hard_fail 없음 → ADOPT. hard_fail 이 구조 사유(MDD/turnover/calmar) ∧ PIT·robustness ",
-  "생존 → SCREEN_TIER(자본 tier 면제 없음, measurement-graduation.md §3). 그 외 QUARANTINE.")
+  "PIT 는 명시 PASS 필수(결측 불가). contract/robustness/fidelity 는 명시 FAIL 만 실패이고 ",
+  "**결측은 요구되지 않음**(v9 lean — L4 폐지·robustness 는 산출물에 있을 때만). ",
+  "그 조건 ∧ hard_fail 없음 → ADOPT. hard_fail 이 구조 사유(MDD/turnover/calmar) ∧ ",
+  "PIT PASS ∧ robustness 미-FAIL → SCREEN_TIER(자본 tier 면제 없음, ",
+  "measurement-graduation.md §3). 그 외 QUARANTINE.",
+  if (lean_mode) sprintf(" [lean=true · 결측층=%s]", paste(absent, collapse = "/")) else "")
 if (nzchar(route)) v$screen_route <- route
 v$gate_checked_at <- format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z")
 tryCatch(write(toJSON(v, pretty = TRUE, auto_unbox = TRUE, na = "null"), vf),

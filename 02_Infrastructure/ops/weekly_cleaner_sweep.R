@@ -406,6 +406,34 @@ run_step("inv_git_log", {
 axiom_candidates_summary <- NULL
 promote_failures <- list()   # promote 순회 crash(2축) 보존 — pending JSON 노출
 promote_n_crash <- 0L
+# v9 Lean Loop (2026-08-23): 스폰 전 사전 판정 결과. 주간 churn 의 본체는 채점이 아니라
+#   **아무것도 안 바뀐 후보를 매주 다시 스폰하는 것**이었다(102 후보 × Rscript 1회씩).
+promote_skip <- list()       # basename(candidate) -> 사유 문자열 (스폰 대상 제외)
+promote_skips <- list()      # 다이제스트 노출용 레코드
+promote_n_skip <- 0L
+auto_mapped_negative <- character(0)  # 이번 런에서 자동 지도된 DIST id (INV-7 탐색지도)
+
+# promote.R 을 **호출자 프로세스에** 사본 없이 적재 — cluster_key/candidate_sha 술어를
+#   재구현하지 않기 위함(두 벌이면 한쪽만 고쳐졌을 때 어느 검사에도 안 보인다).
+#   ★PROMOTE_SOURCED 는 source 직후 원상복구 — 남겨두면 뒤이어 스폰하는 자식
+#     `Rscript promote.R <cand>` 가 CLI 가드에 걸려 **아무 판정도 안 하고 조용히 종료**한다.
+.PROMOTE_ENV <- NULL
+.promote_env <- function(root) {
+  if (!is.null(.PROMOTE_ENV)) return(.PROMOTE_ENV)
+  pr <- file.path(root, "02_Infrastructure", "axiom", "promote.R")
+  if (!file.exists(pr)) return(NULL)
+  e <- new.env(parent = globalenv())
+  had <- Sys.getenv("PROMOTE_SOURCED", NA_character_)
+  Sys.setenv(PROMOTE_SOURCED = "1")
+  ok <- tryCatch({ suppressWarnings(suppressMessages(sys.source(pr, envir = e))); TRUE },
+                 error = function(err) {
+                   cat(sprintf("  | [axiom] promote.R 적재 실패(fail-soft, 사전판정 생략): %s\n",
+                               conditionMessage(err))); FALSE })
+  if (is.na(had)) Sys.unsetenv("PROMOTE_SOURCED") else Sys.setenv(PROMOTE_SOURCED = had)
+  if (!ok) return(NULL)
+  .PROMOTE_ENV <<- e
+  e
+}
 
 # ---- promote 자식 프로세스 crash 판정 (2026-08-20 수리 — 대리 지표 → exit status 1급) ----
 # 구 로직은 crash 를 **stdout 에 [promote] ... PASS/FAIL 줄이 있었는가**로만 판정했다.
@@ -426,7 +454,10 @@ promote_n_crash <- 0L
     if (is.na(ec)) { exit_code <- 1L; exit_parsed <- FALSE } else { exit_code <- ec; exit_parsed <- TRUE }
   }
   lines <- if (is.character(out)) out else as.character(out)
-  hit <- grep("\\[promote\\].*(PASS|FAIL)", lines, value = TRUE)
+  # v9 (2026-08-23): verdict 토큰이 4종으로 늘었다 — PASS/FAIL 에 더해 SKIP_*(조기 종료)과
+  #   MAP(음성 → DIST 탐색지도). 구 정규식 그대로 두면 정상 SKIP/MAP 자식이 전부
+  #   'no_verdict_line' crash 로 집계된다(수리가 계기를 망가뜨리는 전형).
+  hit <- grep("\\[promote\\].*(PASS|FAIL|SKIP|MAP)", lines, value = TRUE)
   exit_nonzero <- exit_code != 0L
   no_verdict   <- length(hit) == 0L
   reason <- if (exit_nonzero && no_verdict) "both"
@@ -455,14 +486,63 @@ run_step("axiom_weekly_cycle", {
       cat(sprintf("  | [axiom] %s → %s\n", scr, if (is.null(st) || st == 0) "OK" else sprintf("exit=%s", st)))
       if (!is.null(st) && st != 0) stop(sprintf("%s exit=%s: %s", scr, st, paste(tail(out, 3), collapse = " | ")))
     }
-    # promote 진단: pending candidate 순회 (INV-4 5축 hurdle — 미달은 review_log/AX-PENDING 기록)
+    # promote 진단: pending candidate 순회 (v9 mode-local hurdle — 미달은 review_log/AX-PENDING 기록)
     cands <- list.files(file.path(root, "qepm", "memory", "axioms", "candidates"),
                         pattern = "^CAND_.*\\.json$", full.names = TRUE)
     promote_r <- file.path(ax_dir, "promote.R")
+
+    # ── v9 사전 판정: 스폰할 가치가 없는 후보를 먼저 걸러낸다 (Rscript 미스폰) ──
+    #   ① promotable == FALSE (단일 L-code — independence 원리상 불가, 재채점해도 같은 답)
+    #   ② candidate_sha 가 직전 review_log 기록과 동일 (후보 파일도, 멤버 L-code 의 채점
+    #      입력도 하나도 안 바뀜 = 새 정보 0). 이 둘이 구 스윕의 "24회 동일 점수 재채점"이다.
+    rl_dir <- file.path(root, "qepm", "memory", "axioms", "review_log")
+    px <- .promote_env(root)
+    corpus_sha_src <- tryCatch(fromJSON(file.path(root, ".cache", "lcode_corpus.json"),
+                                        simplifyVector = FALSE), error = function(e) NULL)
+    # ★루프 변수를 `pre_cand` 로 둔다 — 아래 promote 순회는 `for (cand in cands)` 이고
+    #   08_Tests/hooks/test_promote_crash_exit.R [7] 이 **그 표현식을 이름으로 찾아** 실행한다.
+    #   여기서도 `cand` 를 쓰면 검사가 사전판정 루프를 잡아 배선 축이 조용히 죽는다(실측).
+    for (pre_cand in cands) {
+      cj <- tryCatch(fromJSON(pre_cand, simplifyVector = FALSE), error = function(e) NULL)
+      if (is.null(cj)) next
+      if (identical(cj$promotable, FALSE)) {
+        promote_skip[[basename(pre_cand)]] <- "SKIP_SINGLETON (promotable=false — 단일 L-code)"
+        next
+      }
+      if (is.null(px) || is.null(corpus_sha_src)) next
+      ck <- tryCatch(px$.cluster_key_of(cj), error = function(e) NULL)
+      if (is.null(ck)) next
+      hits <- list.files(rl_dir, pattern = sprintf("^AX-PENDING_%s\\.json$", ck), full.names = TRUE)
+      if (!length(hits)) next
+      rl <- tryCatch(fromJSON(hits[1], simplifyVector = FALSE), error = function(e) NULL)
+      prev_sha <- as.character(rl$candidate_sha %||% "")
+      if (!length(prev_sha) || !nzchar(prev_sha[1])) next
+      cur_sha <- tryCatch(as.character(px$.candidate_sha(pre_cand, corpus_sha_src)), error = function(e) NA_character_)
+      if (!is.na(cur_sha[1]) && identical(cur_sha[1], prev_sha[1]))
+        promote_skip[[basename(pre_cand)]] <- sprintf("SKIP_UNCHANGED (candidate_sha=%s 직전 리뷰와 동일)",
+                                                      substr(cur_sha[1], 1, 12))
+    }
+    cat(sprintf("  | [axiom] 사전판정: 후보 %d건 중 스폰 제외 %d건 (singleton/unchanged)\n",
+                length(cands), length(promote_skip)))
+
     for (cand in cands) {
+      .sk <- if (basename(cand) %in% names(promote_skip)) promote_skip[[basename(cand)]] else NULL
+      if (!is.null(.sk)) {
+        promote_n_skip <- promote_n_skip + 1L
+        promote_skips[[length(promote_skips) + 1L]] <- list(candidate = basename(cand), reason = .sk)
+        cat(sprintf("  | [axiom] promote %s: %s — Rscript 미스폰\n", basename(cand), .sk))
+        next
+      }
       out <- suppressWarnings(system2("Rscript", c(shQuote(promote_r), shQuote(cand)),
                                       stdout = TRUE, stderr = TRUE))
       v <- .promote_crash_verdict(out)
+      # 음성 자동 지도(INV-7) 실기록 수집 — 자식 stdout 이 유일한 1차 기록이다.
+      .mp <- grep("[auto-map]", out, fixed = TRUE, value = TRUE)
+      .mp <- grep("status=distilled", .mp, fixed = TRUE, value = TRUE)
+      if (length(.mp)) {
+        .ids <- regmatches(.mp, regexpr("DIST-[A-Za-z]+-[0-9]+", .mp, perl = TRUE))
+        if (length(.ids)) auto_mapped_negative <- unique(c(auto_mapped_negative, .ids))
+      }
       if (v$crash) {
         # crash 2축(exit≠0 / verdict 줄 부재) — stderr tail 을 로그 + pending JSON 에 보존
         #   (진단면 독립 확보: 원인 수리 여부와 무관하게 침묵 소실 재발 방지)
@@ -530,11 +610,19 @@ run_step("axiom_candidates_summary", {
     cid <- cj$candidate_id %||% sub("\\.json$", "", basename(cf))
     if (cid %in% promoted_ids) next
     n_pending <- n_pending + 1L
-    # 해당 candidate의 최신 AX-PENDING 리뷰(failing_hurdles) — promote 실기록만
-    rls <- list.files(rl_dir, pattern = paste0("^AX-PENDING_", gsub("([][{}()+*^$|\\\\?.])", "\\\\\\1", cid), "_"),
-                      full.names = TRUE)
+    # 해당 candidate의 AX-PENDING 리뷰(failing_hurdles) — promote 실기록만.
+    #   v9: review_log 는 **클러스터당 1파일**(`AX-PENDING_<cluster_key>.json`)이므로
+    #   candidate_id 접두 검색이 아니라 cluster_key 정확일치로 찾는다. 구 규약(날짜 suffix)
+    #   파일은 일회성 이관(migrate_candidates_v9.py)에서 `_archive_20260823/` 로 내려갔다.
+    ckey_s <- as.character(cj$cluster_key %||% "")[1]
+    if (is.na(ckey_s) || !nzchar(ckey_s)) {
+      px_s <- .promote_env(root)
+      ckey_s <- if (is.null(px_s)) "" else tryCatch(px_s$.cluster_key_of(cj), error = function(e) "")
+    }
+    if (is.na(ckey_s) || !nzchar(ckey_s)) next
+    rls <- list.files(rl_dir, pattern = sprintf("^AX-PENDING_%s\\.json$", ckey_s), full.names = TRUE)
     if (!length(rls)) next
-    rl_path <- rls[order(rls, decreasing = TRUE)][1]
+    rl_path <- rls[1]
     rl <- tryCatch(fromJSON(rl_path, simplifyVector = FALSE), error = function(e) NULL)
     if (is.null(rl)) next
     failing <- unlist(rl$failing_hurdles %||% list())
@@ -629,10 +717,29 @@ run_step("axiom_candidates_summary", {
                 paste(unlist(lcode_integrity$duplicate_ids), collapse = ", "),
                 lcode_integrity$n_entries, lcode_integrity$n_unique_ids))
 
+  # ── v9 승격 사다리 산출 (도훈 1줄 confirm 대기 큐 + 음성 자동 지도) ──────────
+  #   proposed_axioms = active/modes/**/AX-*.json 중 status=proposed. 다이제스트에서
+  #   `approve_cmd` 한 줄만 붙여넣으면 활성화되도록 명령까지 실어 보낸다(§3.4(a)).
+  proposed_axioms <- list()
+  px_p <- .promote_env(root)
+  if (!is.null(px_p) && exists("list_proposed_axioms", envir = px_p, mode = "function")) {
+    proposed_axioms <- tryCatch(px_p$list_proposed_axioms(root), error = function(e) list())
+    proposed_axioms <- lapply(proposed_axioms, function(p) list(
+      axiom_id = p$axiom_id, mode = p$mode, statement = substr(as.character(p$statement %||% ""), 1, 120),
+      n_support = p$n_support, approve_cmd = p$approve_cmd))
+  }
+
   axiom_candidates_summary <- list(
     n_candidates_total = length(cand_fs),
     n_pending = n_pending,
     n_promote_crash = promote_n_crash,
+    # v9: 스폰 자체를 건너뛴 후보 (singleton / candidate_sha 불변) — 주간 churn 제거 계기
+    n_promote_skipped = promote_n_skip,
+    promote_skips = promote_skips,
+    # v9: 도훈 1줄 confirm 대기 공리 제안 (status=proposed — 주입 안 됨)
+    proposed_axioms = proposed_axioms,
+    # v9: 음성 클러스터 자동 지도(INV-7 — 공리 아님, 검색면 전용) 결과 DIST id
+    auto_mapped_negative = as.list(auto_mapped_negative),
     # crash 판정 2축(2026-08-20): exit status ≠0 **또는** verdict 줄 부재. 각 레코드 detected_by 참조.
     #   구 판정은 verdict 줄 유무 단일축이라 exit≠0 인데 verdict 를 찍은 자식이 crash 0 으로 샜다.
     promote_crash_criteria = "exit_status_nonzero OR missing_verdict_line (v2, 2026-08-20)",
@@ -645,10 +752,16 @@ run_step("axiom_candidates_summary", {
     n_quarantined_evidence = n_quar,
     source = "promote.R review_log(AX-PENDING failing_hurdles) 실기록 집계 — 리뷰 없는 candidate는 histogram 미포함(정직)",
     note = if (DRY) "dry-run — promote 미실행, 기존 review_log 스냅샷 집계" else "step 3.5 promote 진단 직후 집계")
-  cat(sprintf("[cleaner] axiom 후보 현황: total=%d pending=%d promote_crash=%d near_miss=%d confirm_flags=%d p5axis=%d(최고령 %s일) quarantined=%d (failing axes: %s)\n",
-              length(cand_fs), n_pending, promote_n_crash, length(near_miss), length(confirm_flags),
+  cat(sprintf("[cleaner] axiom 후보 현황: total=%d pending=%d promote_crash=%d skipped=%d proposed_axioms=%d auto_mapped=%d near_miss=%d confirm_flags=%d p5axis=%d(최고령 %s일) quarantined=%d (failing axes: %s)\n",
+              length(cand_fs), n_pending, promote_n_crash, promote_n_skip,
+              length(proposed_axioms), length(auto_mapped_negative),
+              length(near_miss), length(confirm_flags),
               n_p5, as.character(p5_oldest_days), n_quar,
               if (length(hist_tab)) paste(sprintf("%s=%d", names(hist_tab), unlist(hist_tab)), collapse = " ") else "리뷰기록 없음"))
+  if (length(proposed_axioms))
+    for (p in proposed_axioms)
+      cat(sprintf("[cleaner]   · 공리 제안 %s (%s, L-code %s건) — 승인 1줄: %s\n",
+                  p$axiom_id, p$mode, as.character(p$n_support), p$approve_cmd))
   invisible(TRUE)
 })
 

@@ -75,7 +75,7 @@
 
 **상세 SOT**: `02_Infrastructure/docs/rules/lockbox-scope.md`
 
-**Hook 계층 (2026-07-24 도훈 승인 C2 개정)**: 구 `selection_contamination_detector.sh`(PreToolUse Read)는 **등록 해제** — 2026-07-03 감사가 확정한 대로 agent marker(`/tmp/qvest_current_agent_{pid}`) writer 부재 + subagent가 별도 OS 프로세스가 아니라 PPID 식별 자체가 불가한 구조적 상시-allow였음(파일 FS retain, 재등록 시 식별 메커니즘부터 재설계). lockbox 접근 기록은 `lockbox_audit_trail.sh`(PostToolUse Read, **유지**)가 전담. **실제 방어선(불변)** = R 계약(essence_score/registry_writer) + 게이트급 훅(safety_guard·backtest_contract_audit·legacy_write_block·discovery_graduation_gate) + judge 유일 lockbox 심사 + 수동 confirm. `agent_role_guard`(라우터 W/E)는 등록 유지 — 동일 marker 한계는 07-03 문서화대로 인지 상태(AGT-01 env-주입 수리가 후속 큐).
+**Hook 계층 (2026-07-24 도훈 승인 C2 개정)**: 구 `selection_contamination_detector.sh`(PreToolUse Read)는 **등록 해제** — 2026-07-03 감사가 확정한 대로 agent marker(`/tmp/qvest_current_agent_{pid}`) writer 부재 + subagent가 별도 OS 프로세스가 아니라 PPID 식별 자체가 불가한 구조적 상시-allow였음(파일 FS retain, 재등록 시 식별 메커니즘부터 재설계). lockbox 접근 기록은 `lockbox_audit_trail.sh`가 전담했으나 **2026-08-23(v9) 등록 해제**(모든 Read마다 서브프로세스 1개인데 판정 기능이 없음 — 07-24 "유지" 승인을 대체하는 도훈 결정 ④. **파일은 존치**, 재등록 레시피 = `02_Infrastructure/hooks/_archive_v8_enforcement/MANIFEST.md`). **실제 방어선(불변)** = R 계약(essence_score/registry_writer) + 게이트급 훅(safety_guard·backtest_contract_audit·legacy_write_block·discovery_graduation_gate) + judge 유일 lockbox 심사 + 수동 confirm. `agent_role_guard`(라우터 W/E)는 등록 유지 — 동일 marker 한계는 07-03 문서화대로 인지 상태(AGT-01 env-주입 수리가 후속 큐).
 
 ## V6 Gap-Directed 가설
 

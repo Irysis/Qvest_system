@@ -35,11 +35,15 @@ DAYS="${QVEST_HFC_DAYS:-7}"
 MODE="${1:-detail}"
 
 # 기대 목록 = _shared_parse.sh 를 source 하는 게이트급 훅 (자동 emit 경로 커버 대상).
-#   ★여기에 없는 게이트급 4종(discovery_graduation_gate / backtest_contract_audit /
-#     legacy_write_block / worktask_constraint_enforcer)은 source 를 안 하므로 이 경로로
-#     기록되지 않는다 — 커버리지 밖임을 아래에서 **이름으로** 보고한다(조용히 빼지 않는다).
-EXPECTED_DEFAULT="safety_guard.sh axiom_enforcement_hook.sh ast_spec_gate.sh artifact_placement_guard.sh cache_registry_enforce.sh worktask_sequence_enforcer.sh"
-UNCOVERED="discovery_graduation_gate.sh backtest_contract_audit.sh legacy_write_block.sh worktask_constraint_enforcer.sh"
+#   ★v9 Lean Loop (2026-08-23): 구 목록 6종 중 4종(axiom_enforcement_hook / ast_spec_gate /
+#     artifact_placement_guard / cache_registry_enforce / worktask_sequence_enforcer)은
+#     **등록 해제**됐다 — 등록되지 않은 훅의 "발화 0"은 결함이 아니라 설계이므로 기대
+#     목록에서 뺀다(그대로 두면 매주 정상 상태를 WARN 으로 보고한다).
+#     해제 36종 원장 = 02_Infrastructure/hooks/_archive_v8_enforcement/MANIFEST.md
+#   ★아래 UNCOVERED 는 "등록돼 있으나 _shared_parse.sh 를 source 하지 않아 이 경로로
+#     기록되지 않는" 훅 — 커버리지 밖임을 **이름으로** 보고한다(조용히 빼지 않는다).
+EXPECTED_DEFAULT="safety_guard.sh axiom_context_inject.sh"
+UNCOVERED="discovery_graduation_gate.sh legacy_write_block.sh worktask_constraint_enforcer.sh governor_concord_certifier.sh overlay_pit_grep.sh"
 read -r -a EXPECTED <<< "${QVEST_HFC_EXPECTED:-$EXPECTED_DEFAULT}"
 
 emit_line() { if [ "$MODE" = "--boot" ]; then echo "[boot] $1"; else echo "$1"; fi; }
@@ -170,7 +174,10 @@ if [ -n "$MISSING" ]; then
   emit_line "WARN: 게이트급 훅 ${DAYS}일 내 발화 0회 — ${MISSING}(계측 사망 또는 등록 해제. events.jsonl ${N_ROWS}행·원장 ${LED_AGE_D}일)"
   emit_line "   확인: bash 02_Infrastructure/ops/hook_fire_coverage.sh  ·  원장 미커버 게이트: ${UNCOVERED}"
 else
-  emit_line "hook-fire: OK — 게이트급 ${PRESENT}/${#EXPECTED[@]} 훅 ${DAYS}일 내 발화 확인 (원장 ${N_ROWS}행). 미커버 게이트 4종은 별 경로: ${UNCOVERED}"
+  # ★개수를 리터럴로 쓰지 않는다 — 구판은 "4종"이 박혀 있어 UNCOVERED 를 5종으로 늘린
+  #   v9 개정 후에도 "4종"이라 찍혔다(목록과 숫자가 어긋나는 전형적 낙후).
+  read -r -a _UNC_ARR <<< "$UNCOVERED"
+  emit_line "hook-fire: OK — 게이트급 ${PRESENT}/${#EXPECTED[@]} 훅 ${DAYS}일 내 발화 확인 (원장 ${N_ROWS}행). 미커버 게이트 ${#_UNC_ARR[@]}종은 별 경로: ${UNCOVERED}"
 fi
 
 if [ "$MODE" != "--boot" ]; then

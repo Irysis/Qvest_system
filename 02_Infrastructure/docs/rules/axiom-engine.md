@@ -62,7 +62,28 @@ L-code(모드별 emit v2 — 승격축 필드 포함) → harvest(v2: grade norm
 | External | supporting L-code oos_retention 실값 존재 + cluster median ≥ 0.5 | 2026-07-03 재정의(GOV-01). oos_months는 가산 증거(실값 ≥3m 시 score +0.2, hurdle 무관). corpus 실값 0건 시 draft oos_effect_vs_is 폴백 |
 | Mechanism | economic_explanation present + type ≠ unknown | 보일러플레이트("unknown"/"TBD"/10자 미만) 불인정 (schema v2) |
 
-부가 (2026-07-04 국소수리③): `.log_partial` review_log 파일명 = 날짜 기반(`AX-PENDING_<cand>_<YYYYMMDD>.json`) — same-day 동일 candidate 재실행 시 최신본 overwrite + 구 시분초-suffix 동일자 파일 자동 정리 (07-03 15×2 중복 오염 재발 차단).
+부가 (2026-07-04 국소수리③, **2026-08-23 v9 로 대체**): `.log_partial` review_log 파일명은 구 규약이 날짜 기반(`AX-PENDING_<cand>_<YYYYMMDD>.json`)이었다 — same-day overwrite + 시분초-suffix 정리로 07-03 중복 오염은 막았으나 **주 단위 중복(728건 적체)과 MAX_PATH 무음 crash 는 남았다**. v9 규약 = `AX-PENDING_<cluster_key(12-hex)>.json` **클러스터당 1파일** + `history[]`(최대 10회) + `candidate_sha`. 일회성 이관 = `02_Infrastructure/axiom/migrate_candidates_v9.py`(구 파일은 삭제 없이 `review_log/_archive_20260823/` 이동).
+
+### §3-v9. mode-local 사다리 (2026-08-23 — 도훈 결정 §3.4(a) · §6 D-f/D-g)
+
+**전역 Law 는 불변**(`promote_global.R` · `.HURDLE` · INV-1 · PORT_t 2.95 · AX-008). 아래는 **mode-local tier 전용** 재보정이며 근거는 실측이다 — 728회 재채점에서 5축 동시 통과 **0건**, 마지막 승격 2026-05-02, external 축 중앙값 **−0.04**(07-04 의 "입력 결측" 진단이 반증됨).
+
+| 항목 | v8 (5축) | v9 mode-local |
+|---|---|---|
+| hurdle 축 | independence·rigor·falsification·external·mechanism | **independence · rigor_research · mechanism** (external·falsification 은 점수만) |
+| 통과 규칙 | all_hurdles ∧ weighted ≥ 0.80 | **all_hurdles** (weighted 는 랭킹 전용) |
+| Independence | 전체 grade 최빈 비율 ≥ 0.8 | **win/loss 기준**(A/B=win, C/F=loss). positive·negative = 우세 방향 ≥ 0.8 ∧ 구성 ≥2 / conditional·mixed = 구성 ≥2 ∧ win ≥2 ∧ loss ≥2 |
+| Rigor | mode-local 은 hurdle 무조건 TRUE(사실상 축 없음) | **rigor_research** = A/B ∨ metric_type ∈ {canonical_screen, backtested} ≥2건 (negative 는 C/F ≥2건) |
+| 조기 SKIP | 없음 | **SKIP_SINGLETON**(supporting <2 — independence 원리상 불가) · **SKIP_UNKNOWN**(polarity 미상) |
+| 양성·조건부 산출 | `status=active` 즉시 | **`status=proposed`** + `epistemic_status=research_tier` + `confirm_required=dohoon_one_line` → `approve_axiom(ids)` 1줄 승인 시 active + sot_map status 갱신 + L-code 역링크 |
+| 음성 산출 | provisional 공리 | **공리 아님** — `auto_map_negative(cluster_key)` 로 DIST 탐색지도 카드 자동 활성화(INV-7). 사람 정제문·promoted·quarantined 카드는 무변경 |
+
+**INV-6 안전속성 보존 방식**: proposed 공리는 `documented_active=FALSE` + `status=proposed` 로만 sot_map 에 등재되고(그 등재 자체는 `memory_knowledge_health.R` HARD_3 계약), 주입 훅 `axiom_context_inject.sh` 가 `modes/**` 를 **`status=="active"` 로 필터**한다 ⇒ 무인 생성 텍스트는 주입면에 도달하지 않는다.
+
+**verdict 토큰(소비자가 grep)**: `→ PASS | MAP | FAIL | SKIP_SINGLETON | SKIP_UNKNOWN`. `weekly_cleaner_sweep.R::.promote_crash_verdict` 정규식이 이 4종을 모두 verdict 로 인정한다(구 `(PASS|FAIL)` 그대로면 정상 SKIP/MAP 자식이 crash 로 오집계).
+
+**dry-run**: `Rscript 02_Infrastructure/axiom/promote.R --dry-run <cand>` — 판정만 출력, 쓰기 0.
+**주간 스윕 사전판정**: `promotable == FALSE`(단일 L-code) 또는 `candidate_sha` 가 직전 review_log 기록과 동일하면 **Rscript 스폰 자체를 건너뛴다**(`SKIP_SINGLETON`/`SKIP_UNCHANGED`). 실측 2026-08-23: 후보 102건 중 **73건 미스폰**.
 
 ## §3b. emit 스키마 v2 — 필수·권장 필드표 (`lcode_schema.R` / `lcode_emit.R`)
 

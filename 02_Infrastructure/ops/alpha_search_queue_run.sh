@@ -175,6 +175,14 @@ _run_claude(){
 #   안 넘기면 기본 4시간 창이 쓰여 직전 3.5시간의 남의 산출까지 자기 것으로 보고한다
 #   (오늘 여섯 번 겪은 "범위를 안 정하고 센다" 의 알림 판본).
 _NOTIFY_SINCE=$(date +%s)
+
+# ── (2026-08-23 v9 Lean Loop) 산출 디렉터리 **전/후 목록**.
+#   왜 mtime 창이 아니라 목록 차집합인가: 시간 창은 "범위를 안 정하고 센다" 의 재발원이다
+#   (병렬 세션·수동 실행의 산출을 자기 것으로 집는다). 목록 차집합은 **이 런이 만든 것만**
+#   집는다 — 범위가 정의상 닫힌다.
+_ASD="$BASE/stage_artifacts/alpha_search"
+_AS_BEFORE="$(mktemp)"; _AS_AFTER="$(mktemp)"
+ls -1 "$_ASD" 2>/dev/null | sort > "$_AS_BEFORE"
 _run_claude "$CLAUDE_BIN" -p "$PROMPT_TEXT" \
   --dangerously-skip-permissions >> "$LOG" 2>&1
 rc=$?
@@ -212,6 +220,84 @@ if [ "$rc" -ne 0 ]; then
       "claude -p exit=$rc (pending=$N MAX_ALPHA=$MAXA) | ${_ann:-로그 확인 필요}"
   fi
 fi
+# ══ (2026-08-23 v9 Lean Loop) 산출물 전수 판정 + 원장 append ═══════════════════
+#   구 체인은 이 두 가지를 **프롬프트에게** 시켰다: L1~L3 verdict 를 손으로 모으고,
+#   L4 로 `claude -p` 를 한 번 더 스폰하고, 원장을 손편집했다. 결과 —
+#     · 원장 배열이 두 번 파손돼 소비자가 `LEDGER_UNREADABLE` 을 봤다(08-09 · 08-23)
+#     · L4 는 31건 동안 판정을 한 번도 바꾸지 않았다
+#     · 런이 중도 사망하면 판정도 원장도 통째로 유실됐다("실행됐는데 pending")
+#   ⇒ 판정 입력은 **산출물에서 기계로** 뽑고(`lean_verify_build.py`), 판정은 결정적
+#     게이트가 하고(`auto_alpha_gate.R`), 원장은 **원자적 append CLI** 가 쓴다.
+#   ★rc 와 무관하게 돈다 — 런이 실패로 끝나도 그 전에 만든 산출은 판정 대상이다.
+_GATE="$BASE/02_Infrastructure/ops/auto_alpha_gate.R"
+_LVB="$BASE/02_Infrastructure/ops/lean_verify_build.py"
+_PIDN="$BASE/02_Infrastructure/ops/paper_id_norm.py"
+_RS_BIN="$(command -v Rscript || echo '/c/Program Files/R/R-4.5.2/bin/Rscript')"
+_jget(){ "$PYBIN" -c "import json,io,sys
+try:
+    print(json.load(io.open(sys.argv[1], encoding='utf-8-sig')).get(sys.argv[2]) or '')
+except Exception:
+    print('')" "$1" "$2" 2>/dev/null; }
+_gated=0; _adopt=0; _screen=0; _quar=0; _unread=0; _noart=0
+if [ -d "$_ASD" ] && [ -f "$_GATE" ] && [ -f "$_LVB" ] && [ -x "$_RS_BIN" ]; then
+  ls -1 "$_ASD" 2>/dev/null | sort > "$_AS_AFTER"
+  _NEW_IDS=$(comm -13 "$_AS_BEFORE" "$_AS_AFTER")
+  log "신규 alpha_search 산출 디렉터리: $(printf '%s' "$_NEW_IDS" | grep -c . || true)건"
+  while IFS= read -r _id; do
+    [ -n "$_id" ] || continue
+    [ -d "$_ASD/$_id" ] || continue
+    _INFO=$("$PYBIN" "$_LVB" "$_ASD/$_id" 2>>"$LOG")
+    _st=$(printf '%s\n' "$_INFO" | sed -n 's/^STATUS=//p' | head -1)
+    if [ "$_st" != "ok" ]; then
+      _noart=$((_noart+1))
+      log "  [$_id] 판정 대상 아님 (STATUS=${_st:-unreadable}) — 백테 산출물 없음. 0 으로 삼키지 않고 라벨만 남긴다."
+      continue
+    fi
+    _vp=$(printf  '%s\n' "$_INFO" | sed -n 's/^VERIFY_PATH=//p'      | head -1)
+    _pid=$(printf '%s\n' "$_INFO" | sed -n 's/^PAPER_ID=//p'          | head -1)
+    _psrc=$(printf '%s\n' "$_INFO" | sed -n 's/^PAPER_ID_SOURCE=//p'  | head -1)
+    _sid=$(printf '%s\n' "$_INFO" | sed -n 's/^STRATEGY_ID=//p'       | head -1)
+    _grade=$(printf '%s\n' "$_INFO" | sed -n 's/^GRADE=//p'           | head -1)
+    _pt=$(printf  '%s\n' "$_INFO" | sed -n 's/^PORT_T=//p'            | head -1)
+    "$_RS_BIN" --no-save "$_GATE" "$_vp" >> "$LOG" 2>&1
+    _dec=$(_jget "$_vp" gate_decision)
+    _route=$(_jget "$_vp" screen_route)
+    _abs=$(_jget "$_vp" gate_absent_layers)
+    _gated=$((_gated+1))
+    log "  [$_id] gate=${_dec:-?} grade=${_grade:-?} port_t=${_pt:-NA} route=${_route:-NONE} paper=${_pid}(${_psrc}) 결측층=${_abs:-none}"
+    case "$_dec" in
+      ADOPT)       _adopt=$((_adopt+1)) ;;
+      SCREEN_TIER) _screen=$((_screen+1)) ;;
+      QUARANTINE)  _quar=$((_quar+1)) ;;
+      *)           _unread=$((_unread+1)) ;;
+    esac
+    # ★ERROR_UNREADABLE 은 판정이 아니라 입력 계약 불일치다 — 원장에 판정으로 적지 않는다.
+    if [ "$_dec" = "ADOPT" ] || [ "$_dec" = "SCREEN_TIER" ] || [ "$_dec" = "QUARANTINE" ]; then
+      _AR=( append-done --paper-id "$_pid" --gate "$_dec" --strategy-id "$_sid"
+            --processed-date "$TODAY" --verify-path "$_vp" --bt-result-dir "$_ASD/$_id"
+            --note "alpha_search_queue_run.sh v9 lean gate (paper_id_source=${_psrc})" )
+      [ -n "${_grade:-}" ] && _AR+=( --grade "$_grade" )
+      [ -n "${_pt:-}" ]    && _AR+=( --port-t "$_pt" )
+      [ -n "${_route:-}" ] && _AR+=( --screen-route "$_route" )
+      if "$PYBIN" "$_PIDN" "${_AR[@]}" >> "$LOG" 2>&1; then
+        log "  [$_id] 원장 append 완료 → $_pid / $_dec"
+      else
+        log "  [$_id] ★원장 append 실패 — 다음 런이 같은 논문을 다시 태운다. 수동 확인 필요."
+        scheduler_alert "alpha_queue" "ledger_append_failed" \
+          "판정($_dec)은 났는데 원장 append 가 실패했다 — paper_id=$_pid strategy=$_sid verify=$_vp"
+      fi
+    else
+      log "  [$_id] 원장 append 생략 — 판정이 아니라 입력 계약 불일치(${_dec:-empty})."
+    fi
+  done <<EOF_NEWIDS
+$_NEW_IDS
+EOF_NEWIDS
+  log "게이트 결과: 판정 $_gated (ADOPT $_adopt / SCREEN_TIER $_screen / QUARANTINE $_quar / 미판정 $_unread) · 산출없음 $_noart"
+else
+  log "게이트 건너뜀 — 구성요소 부재 (ASD=$_ASD gate=$([ -f "$_GATE" ] && echo y || echo n) lvb=$([ -f "$_LVB" ] && echo y || echo n) Rscript=$([ -x "$_RS_BIN" ] && echo y || echo n))"
+fi
+rm -f "$_AS_BEFORE" "$_AS_AFTER" 2>/dev/null || true
+
 _EFFECT_CMP=""
 if [ -n "${_EFFECT_BEFORE:-}" ]; then
   _EFFECT_CMP=$("$PYBIN" "$_EFFECT_SIG" "$BASE" --compare "${_EFFECT_BEFORE}" 2>/dev/null || true)

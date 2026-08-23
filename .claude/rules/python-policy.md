@@ -1,3 +1,9 @@
+---
+paths:
+  - "**/*.py"
+  - ".venv_qvest_ml/**"
+---
+
 # Python Policy (Level 1)
 
 > **자매 규칙 — R 측 호출 규약**: 본 문서는 Python 측을 규율한다. R에서 `system2`/`system`을 호출하거나 cleanup을 등록하거나 프로젝트 루트를 해석할 때는 **`02_Infrastructure/docs/rules/r-portability.md`**(금칙 4종 · 2026-07-25 승격, 위반 = AX-002 동급)를 함께 로드할 것. 두 문서가 언어별로 같은 층을 덮는다.
@@ -50,14 +56,15 @@
 
 ## 5. Hook 강제 (.py 확장 적용됨)
 
-- `answer_principles_grep.sh` + `backtest_contract_audit.sh` TARGET_PATTERN에 `.py` 포함 (자체합성·회피표현 탐지를 Python까지 — 2026-07-03 아키텍처 수리에서 배선 적용).
+- ★**v9 2026-08-23: `answer_principles_grep.sh`·`backtest_contract_audit.sh` 등록 해제**(도훈 결정 ④. `.py` 자체합성 idiom 차단이 분포-표적 ML 레인에 걸리는 부작용 포함 — 파일 존치, 재등록 레시피 `02_Infrastructure/hooks/_archive_v8_enforcement/MANIFEST.md`). **본 §4 금지 규칙과 R 브릿지 단일 경로는 불변**이며, 판정은 훅이 아니라 계약(`build_bt_result`/`audit_bt_result`/`register_bt_result`)과 리뷰가 담당한다.
+- (사료) 구 배선: `answer_principles_grep.sh` + `backtest_contract_audit.sh` TARGET_PATTERN에 `.py` 포함 (2026-07-03 아키텍처 수리에서 적용).
 - hook 미커버 영역은 본 rule + Self-Adversarial Challenge(v8.2 — Codex Round 제거·대체, `02_Infrastructure/docs/rules/codex-round.md`)로 보강 (warn-level).
 
 ## 6. 위반 시
 PIT/자체합성/lockbox 위반은 **언어 무관 AX-002 동급**. 즉시 중단 → 결과 무효 → 재실행.
 
 ## 참조
-- `.claude/rules/pit.md` / `backtest-contract.md` / `data_table_shift_convention.md` / `lockbox-scope.md` / `answer-principles.md`
+- `.claude/rules/pit.md` / `backtest-contract.md` / `data_table_shift_convention.md` / `lockbox-scope.md` / `02_Infrastructure/docs/rules/answer-principles.md`
 - `02_Infrastructure/contracts/` (R bridge — build/audit/save/register)
 - `02_Infrastructure/docs/qvest_v8_0_upgrade_plan.md` WS1
 

@@ -221,6 +221,11 @@ if (is.null(loop_expr)) {
     assign("promote_r", fake_path, envir = LE)
     assign("promote_n_crash", 0L, envir = LE)
     assign("promote_failures", list(), envir = LE)
+    ## v9 (2026-08-23) 사전 SKIP 상태 스텁 — 루프 본문 첫 줄이 promote_skip 을 조회한다.
+    ##   빈 목록 = "제외 대상 없음" → 아래 crash 축 판정은 종전과 동일 경로를 탄다.
+    assign("promote_skip", list(), envir = LE)
+    assign("promote_skips", list(), envir = LE)
+    assign("promote_n_skip", 0L, envir = LE)
     invisible(capture.output(eval(loop_expr, envir = LE)))
     list(n = get("promote_n_crash", envir = LE), f = get("promote_failures", envir = LE),
          log = capture.output(eval(loop_expr, envir = LE)))

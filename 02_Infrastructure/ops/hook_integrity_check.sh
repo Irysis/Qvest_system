@@ -44,7 +44,13 @@ ROUTER_OK=0
 #   라우터가 죽어 있어도(=진단이 가장 필요한 상황) 숫자를 낼 수 있다.
 N_DISPATCH="?"
 if [ -f "$POLICY" ]; then
-  N_DISPATCH=$(grep -c '"script"' "$POLICY" 2>/dev/null || echo "?")
+  # ★`grep -c` 는 **0건일 때 exit 1** 이다 — 구판의 `|| echo "?"` 가 그때 함께 발화해
+  #   N_DISPATCH 가 "0\n?" 라는 두 줄 값이 됐다(v9 의 빈 registry 에서 실측).
+  #   그 값은 어떤 숫자 비교와도 안 맞아 "dispatch 폐지" 모드 판정이 통째로 빗나갔다.
+  #   ⇒ 실패와 0건을 분리한다: grep 실패는 삼키고, 값이 비었을 때만 미측정("?")으로 둔다.
+  N_DISPATCH=$(grep -c '"script"' "$POLICY" 2>/dev/null || true)
+  N_DISPATCH=$(printf '%s' "$N_DISPATCH" | tr -d ' \r\n')
+  [ -n "$N_DISPATCH" ] || N_DISPATCH="?"
 fi
 
 # ── (2026-07-26 probe① 도훈 승인) dispatch 필수 훅 baseline 대조 ──────────────
@@ -60,16 +66,47 @@ REQUIRED_DISPATCH=(
   "legacy_write_block.sh"           # legacy 격리
   "worktask_constraint_enforcer.sh" # 25종/bounds/Σw=1
 )
+
+# ── ★v9 Lean Loop (2026-08-23): 직접 등록 모드 ───────────────────────────────
+# dispatch 목록이 **비어 있는 것**은 결손이 아니라 v9 의 정상 상태다 — 라우터 경유를
+# 폐지하고 자본·안전 W/E 게이트를 settings.json 에 직접 등록했기 때문이다.
+# 그런데 구판 로직은 "policy 에 이름이 있는가"만 보므로, 그 상태를 **결손 7종**으로
+# 오보한다(직접 등록이 오히려 강한 배선인데 경보가 뜬다 = 감시기가 거짓말을 한다).
+# ⇒ 모드를 먼저 판정하고, 직접 등록 모드에서는 **settings.json 의 W/E 게이트 4종**을
+#    같은 래칫으로 대조한다. dispatch 가 되살아나면 구 경로가 그대로 다시 적용된다.
+REQUIRED_DIRECT_WE=(
+  "safety_guard.sh"                 # Tier1 보호선 (Write|Edit + Bash)
+  "legacy_write_block.sh"           # legacy 격리
+  "discovery_graduation_gate.sh"    # HARD 3종 fail-closed
+  "worktask_constraint_enforcer.sh" # 25종/bounds/Σw=1
+)
+MODE_DIRECT=0
+case "$N_DISPATCH" in
+  0) MODE_DIRECT=1 ;;
+esac
+
 DISPATCH_MISS=""
-if [ -f "$POLICY" ]; then
+DIRECT_MISS=""
+if [ "$MODE_DIRECT" = "1" ]; then
+  if [ -f "$SETTINGS" ]; then
+    for _rd in "${REQUIRED_DIRECT_WE[@]}"; do
+      grep -q "hooks/$_rd" "$SETTINGS" 2>/dev/null || DIRECT_MISS="$DIRECT_MISS$_rd "
+    done
+  else
+    DIRECT_MISS="(settings.json 부재) "
+  fi
+elif [ -f "$POLICY" ]; then
   for _rd in "${REQUIRED_DISPATCH[@]}"; do
     grep -q "\"$_rd\"" "$POLICY" 2>/dev/null || DISPATCH_MISS="$DISPATCH_MISS$_rd "
   done
 fi
 
 # ── 이 트리 settings.json 에 worktree 폴백이 있는가 ─────────────────────────
+# v8 라우터 형식(`${QM_ROOT//\\//}`)과 v9 직접 등록 형식(`${QM_ROOT:-$PWD}`) 둘 다 인정.
+# 구판은 라우터 지문만 봐서, 라우터가 사라진 v9 settings.json 을 매번 "폴백 미적용"으로
+# 읽었다(= 정상 상태에 대한 거짓 경고).
 FALLBACK="미적용"
-if [ -f "$SETTINGS" ] && grep -q 'QM_ROOT//' "$SETTINGS" 2>/dev/null; then
+if [ -f "$SETTINGS" ] && grep -qE 'QM_ROOT//|QM_ROOT:-\$PWD' "$SETTINGS" 2>/dev/null; then
   FALLBACK="적용"
 fi
 
@@ -85,6 +122,22 @@ if [ -d "$LOGDIR" ] || mkdir -p "$LOGDIR" 2>/dev/null; then
 fi
 
 # ── 판정 ───────────────────────────────────────────────────────────────────
+# ★v9 직접 등록 모드가 먼저다 — 이 모드에서는 라우터 python 해석 여부가 판정과 무관하다
+#   (아무것도 dispatch 하지 않으므로 python 이 없어도 게이트는 전부 발화한다).
+#   구판처럼 ROUTER_OK 로 먼저 갈라면 python 부재 시 "★ROUTER 열화 → 0훅 무발화" 라는
+#   **사실과 반대인** 경보가 난다.
+if [ "$MODE_DIRECT" = "1" ]; then
+  N_DIRECT=$(grep -oE 'hooks/[A-Za-z0-9_]+\.sh' "$SETTINGS" 2>/dev/null | sort -u | wc -l | tr -d ' ')
+  if [ -n "$DIRECT_MISS" ]; then
+    echo "[hook-integrity] ★필수 W/E 게이트 결손: ${DIRECT_MISS}— settings.json 직접 등록에서 게이트급 훅이 빠짐 (등재 해제는 도훈 승인 사항)" >&2
+    echo "[hook-integrity] 직접 등록 모드(dispatch 폐지) · 등록 ${N_DIRECT}종 · worktree폴백=${FALLBACK}" >&2
+    exit 1
+  fi
+  echo "[hook-integrity] 직접 등록 모드 — dispatch 폐지(v9 2026-08-23) · W/E 게이트 4/4 직접 등록 · 등록 ${N_DIRECT}종 · worktree폴백=${FALLBACK}"
+  echo "[hook-integrity]   해제 36종 원장: 02_Infrastructure/hooks/_archive_v8_enforcement/MANIFEST.md"
+  exit 0
+fi
+
 if [ "$ROUTER_OK" = "1" ]; then
   echo "[hook-integrity] router=OK dispatch=${N_DISPATCH}훅 · worktree폴백=${FALLBACK} · py=$(basename "$PYX")"
   if [ -n "$DISPATCH_MISS" ]; then

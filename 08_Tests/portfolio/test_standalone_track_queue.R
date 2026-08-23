@@ -79,8 +79,17 @@ mk_root <- function(runs = list(), catalog = list(), quarantine = list(),
                auto_unbox = TRUE)
   write_json(list(modules = quarantine), file.path(r, "06_Registry/module_quarantine.json"),
              auto_unbox = TRUE)
-  write_json(list(entries = fq_entries), file.path(r, "06_Registry/alpha_frontier_queue.json"),
-             auto_unbox = TRUE)
+  ## ★schema 2.0 (2026-08-23 v9 Lean Loop §3.4(f)) — 픽스처도 정본 형태를 따른다.
+  ##   `status` 는 enum {open,claimed,done,parked} 이고 원문 서술은 `status_raw` 다.
+  ##   픽스처가 구 형태를 쓰면 "구 판을 통과시키는 검사"가 되어, 소비자가 v2 를 못 읽어도
+  ##   초록이 난다(= 검사가 마이그레이션 회귀에 눈이 먼다).
+  fq_entries <- lapply(fq_entries, function(e) {
+    if (is.null(e$status)) e$status <- "open"
+    if (is.null(e$status_raw)) e$status_raw <- "frontier_open"
+    e
+  })
+  write_json(list(schema_version = "2.0", entries = fq_entries),
+             file.path(r, "06_Registry/alpha_frontier_queue.json"), auto_unbox = TRUE)
   if (!is.null(dispositions))
     write_json(list(dispositions = dispositions),
                file.path(r, "06_Registry/standalone_track_dispositions.json"), auto_unbox = TRUE)

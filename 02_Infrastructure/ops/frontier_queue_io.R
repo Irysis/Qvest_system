@@ -98,6 +98,49 @@ FRONTIER_QUEUE_PATH <- "06_Registry/alpha_frontier_queue.json"
 }
 
 #------------------------------------------------------------------------------
+# (2026-08-23 v9 Lean Loop) 가드 2종 신설
+#------------------------------------------------------------------------------
+## ⑥ 사이드카 거부 — `06_Registry/*.bak*` 로는 쓰지 않는다.
+##   실측: 06_Registry 에 `alpha_frontier_queue.json.bak*` 41개(19.3MB)가 쌓여 있고
+##   그 각각이 원장의 옛 판본이다. 그래서 원장을 grep 하면 **사본이 함께 걸려**
+##   "어느 판본을 인용했나" 가 사후에 구별되지 않는다. 백업은 이 계층이 만들 것이
+##   아니라(CAS·뮤텍스가 이미 동시쓰기를 막는다) git 이 만든다.
+##   ★거부는 **경로** 축이다 — 내용 검사로는 사본 쓰기를 못 잡는다(내용이 정상이니까).
+FQ_SIDECAR_RX <- "06_Registry/[^/]*[.]bak"
+.fq_refuse_sidecar <- function(p) {
+  norm <- gsub("\\\\", "/", p)
+  if (grepl(FQ_SIDECAR_RX, norm, perl = TRUE))
+    stop("[fq_io] 사이드카 백업 경로에는 쓰지 않는다: ", basename(norm),
+         "\n  06_Registry/*.bak* 는 원장 grep 을 오염시킨다(사본이 함께 걸린다).",
+         "\n  판본 보존은 git 이 한다 — 백업을 만들려거든 06_Registry/_archive/ 아래 ",
+         "이름 있는 파일로 둘 것.")
+  invisible(TRUE)
+}
+
+## ⑦ status enum 검증 (schema 2.0) — `status` 는 4종만, 원문은 `status_raw` 에.
+##   왜: schema 1.0 에서 `status` 가 자유서술이라 251건에 **137종**이 들어 있었다.
+##   그 상태에서는 "지금 착수 가능한 항목이 몇 개인가" 를 기계가 답할 수 없다 —
+##   큐가 있는데 큐 역할을 못 한다. v2 는 판정 축(enum)과 서술 축(status_raw)을 나눈다.
+##   ★`status_raw` 는 자유롭게 둔다 — 접는 것이지 버리는 것이 아니다.
+FQ_STATUS_ENUM <- c("open", "claimed", "done", "parked")
+validate_status_enum <- function(entries, strict = TRUE) {
+  bad <- character(0)
+  for (e in entries) {
+    s <- if (is.null(e$status)) NA_character_ else as.character(e$status)[1]
+    if (is.na(s) || !(s %in% FQ_STATUS_ENUM))
+      bad <- c(bad, sprintf("%s: '%s'", if (is.null(e$id)) "(id없음)" else e$id,
+                            if (is.na(s)) "" else s))
+  }
+  if (length(bad) && strict)
+    stop("[fq_io] status 가 enum 밖이다 (", length(bad), "건). ",
+         "허용 = ", paste(FQ_STATUS_ENUM, collapse = "/"),
+         "\n  ", paste(utils::head(bad, 8), collapse = "\n  "),
+         "\n  ★원문 서술은 `status_raw` 에 넣을 것 — 그 필드는 자유다. ",
+         "판정 축을 자유서술로 되돌리면 137종 상태로 되돌아간다(v2 마이그레이션의 사유).")
+  invisible(bad)
+}
+
+#------------------------------------------------------------------------------
 # 판본 상태 — read 가 잡고 write 가 대조한다 (③ CAS 의 보관소).
 #
 # ★attribute 가 아니라 별도 환경에 두는 이유: R 에서 리스트를 편집하다 보면
@@ -157,7 +200,9 @@ fq_base_fingerprint <- function(path = NULL) {
 write_frontier_queue <- function(Q, path = NULL, allow_shrink = NULL,
                                  allow_reformat = NULL, allow_stale_base = NULL) {
   p <- .fq_path(path)
+  .fq_refuse_sidecar(p)
   if (is.null(Q$entries) || !length(Q$entries)) stop("[fq_io] entries 가 비어 있다 — 기록 거부")
+  validate_status_enum(Q$entries)
 
   new_txt <- .fq_serialize(Q)
   new_ids <- vapply(Q$entries, function(e) if (is.null(e$id)) NA_character_ else as.character(e$id)[1],

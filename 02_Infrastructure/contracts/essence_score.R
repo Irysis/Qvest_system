@@ -6,6 +6,11 @@
 # A/B/C/F 등급을 산정한다. 자체합성(prod(1+r)/수동 Sharpe) 금지 — 계약값만 사용.
 # DSR만 계약 미산출 → net active 시계열에서 BLdP(2014) 공식으로 보강 산출.
 #
+# ★문턱 정본 (v9 §3.3, 2026-08-23): 아래 수치는 전부
+#   02_Infrastructure/worktask/constraint_defaults.json :: tier_graduation 에서 읽는다.
+#   이 파일에는 폴백 사본(.GRAD_FALLBACK)만 남으며, 재보정은 JSON 한 곳만 고친다.
+#   실제로 쓰인 문턱은 반환 객체의 graduation_params 에 기록된다(사후 감사).
+#
 # Grade A 임계 (전부 문서값/도출값 — 지어낸 것 없음):
 #   PORT_t ≥ 2.95   (Harvey-Liu-Zhu 2016 — 문헌-레벨 다중검정 이미 반영)
 #   OOS retention ≥ 0.7  (활성 Sharpe OOS/IS, 65/35; 과적합 게이트 — DSR 대체)
@@ -37,6 +42,113 @@
 
 suppressPackageStartupMessages({ library(data.table) })
 
+#==============================================================================
+# v9 §3.3 파라미터 단일화 (2026-08-23) — 자본 층 문턱의 단일 정본
+#
+# 정본 = 02_Infrastructure/worktask/constraint_defaults.json :: tier_graduation.
+# 이 파일은 그 블록을 *읽기만* 한다. 구판은 같은 수치가 JSON 과 이 파일에 쌍둥이로
+# 존재했다 — 한쪽만 바뀌면 조용히 갈라지는 드리프트 경로였고, 실제로 헌법이
+# max_names 20→25 변경에서 같은 계통을 밟은 전례가 있다(worktask_manager.R
+# 2026-08-20 수리 주석 참조). 값 재보정은 도훈 권한이며 JSON 한 곳만 고치면 된다.
+#
+# ★fail-open 설계: 파일/키가 없으면 **현행 리터럴로 그대로 폴백**하고 경고 1줄만 낸다.
+#   판정 기계가 설정 결측으로 멈추면 안 된다(도입 시점 회귀 0 보장). 어느 키가
+#   폴백됐는지는 반환 객체 graduation_params 에 기록돼 사후 감사가 가능하다.
+#
+# ★`[[ ]]` 정확 일치 필수 — `$` 는 리스트에서 **부분 일치**를 한다. min_calmar 가
+#   결측이면 `$min_calmar` 가 min_calmar_rationale(문자열)에 매칭돼 as.numeric 이
+#   NA 를 낸다: 폴백이 아니라 "그럴듯한 쓰레기". 같은 함정을 worktask_manager.R 이
+#   2026-08-20 에 실측·기록했다.
+#==============================================================================
+
+.GRAD_CACHE <- new.env(parent = emptyenv())
+
+# 폴백 정본 = 2026-08-23 시점 하드코딩 값 그대로(= 오늘의 동작). 값 변경 금지 —
+#   이 목록을 고치는 것은 문턱 재보정이며 JSON 이 아니라 여기를 고치면 정본이 다시 갈라진다.
+.GRAD_FALLBACK <- list(
+  port_t_min   = 2.95,   # Grade A core: portfolio-alpha t (NW lag-3), Harvey-Liu-Zhu
+  oos_min      = 0.7,    # oos_retention band 상단(단독 PASS)
+  oos_floor    = 0.5,    # oos_retention band 하단(미만 = 증거 무관 FAIL)
+  calmar_min   = 0.64,   # = 16%/25%
+  dsr_min      = 0.5,    # BLdP DSR — sweep형 selection에서만 게이트
+  mdd_hard     = 0.45,   # drawdown 프로파일 severe 임계
+  sharpe_min   = 0.8,    # Grade A core
+  cagr_min     = 0.16,   # Grade A core
+  b_port_t_min = 2.0,    # Grade B(component) 진입
+  b_net_ir_min = 0.2     # Grade B(component) 진입 (초과 비교)
+)
+
+# R 파라미터명 → constraint_defaults.json::tier_graduation 키
+.GRAD_KEYMAP <- c(
+  port_t_min   = "min_portfolio_alpha_t_nw",
+  oos_min      = "min_oos_retention",
+  oos_floor    = "oos_retention_floor",
+  calmar_min   = "min_calmar",
+  dsr_min      = "min_deflated_sharpe_ratio",
+  mdd_hard     = "mdd_hard",
+  sharpe_min   = "grade_a_min_sharpe",
+  cagr_min     = "grade_a_min_cagr",
+  b_port_t_min = "grade_b_min_portfolio_alpha_t",
+  b_net_ir_min = "grade_b_min_net_ir"
+)
+
+# 프로젝트 루트 해석 — 후보를 marker(CLAUDE.md + 06_Registry)로 **정체성** 검증해 채택한다.
+#   존재 검사(dir.exists)만으로 루트를 신뢰하지 않는다(r-portability 금칙 ③).
+#   본 파일 하단 AST 사이드카 블록과 동일한 resolver 규약 — 규약을 하나로 유지한다.
+#   sys.frame()$ofile 은 중첩 source 시 바깥 스크립트를 가리켜 신뢰 불가(기지 트랩).
+.graduation_root <- function() {
+  for (.c0 in c(Sys.getenv("CLAUDE_PROJECT_DIR", unset = ""),
+                Sys.getenv("QM_ROOT", unset = ""), getwd())) {
+    if (!nzchar(.c0)) next
+    .c0 <- gsub("\\\\", "/", .c0)
+    if (file.exists(file.path(.c0, "CLAUDE.md")) &&
+        dir.exists(file.path(.c0, "06_Registry"))) return(.c0)
+  }
+  NA_character_
+}
+
+#' 자본 층(graduation) 문턱 로더 — 캐시됨
+#'
+#' ★캐시 수명 = R 세션. 정본 JSON 을 고쳐도 **이미 떠 있는 세션은 옛 값을 계속 쓴다**
+#'   (위반 주입 실측 S7, 2026-08-23). 재보정 후에는 새 세션에서 돌리거나
+#'   `.graduation_params(refresh = TRUE)` 를 한 번 호출할 것. 판정 배치가
+#'   중간에 문턱을 갈아타면 같은 라운드 안에서 기준이 달라지므로 캐시가 기본값이다.
+#'
+#' @param refresh TRUE 면 캐시 무시하고 재로드(테스트/재보정 확인용).
+#' @param root    명시 루트(검사기 격리용). NULL 이면 marker resolver.
+#' @return 위 .GRAD_FALLBACK 과 동일 이름의 numeric 리스트.
+.graduation_params <- function(refresh = FALSE, root = NULL) {
+  if (!refresh && is.null(root) && !is.null(.GRAD_CACHE$p)) return(.GRAD_CACHE$p)
+  p <- .GRAD_FALLBACK
+  src <- NA_character_; missed <- character(0)
+  r0 <- if (!is.null(root)) root else .graduation_root()
+  f <- if (!is.na(r0) && nzchar(r0)) {
+    file.path(r0, "02_Infrastructure", "worktask", "constraint_defaults.json")
+  } else NA_character_
+  tg <- NULL
+  if (!is.na(f) && file.exists(f) && requireNamespace("jsonlite", quietly = TRUE)) {
+    tg <- tryCatch(jsonlite::fromJSON(f, simplifyVector = TRUE)[["tier_graduation"]],
+                   error = function(e) NULL)
+    if (!is.null(tg)) src <- f
+  }
+  for (nm in names(.GRAD_KEYMAP)) {
+    v <- if (is.null(tg)) NULL else tg[[ .GRAD_KEYMAP[[nm]] ]]   # [[ ]] = 정확 일치
+    v <- suppressWarnings(as.numeric(v[1]))
+    if (length(v) == 1L && is.finite(v)) p[[nm]] <- v else missed <- c(missed, nm)
+  }
+  if (length(missed)) {
+    warning(sprintf("[essence_score] graduation 문턱 정본 미해소 (%s) — 현행 리터럴 폴백: %s",
+                    if (is.na(src)) "constraint_defaults.json 미발견" else "키 결측/비수치",
+                    paste(missed, collapse = ",")), call. = FALSE)
+  }
+  # ★속성을 캐시 *전에* 붙인다 — 뒤에 붙이면 캐시 적중 경로가 속성 없는 사본을 돌려줘
+  #   첫 호출과 두 번째 호출의 반환값이 달라진다(감사 기록이 조용히 비는 결함).
+  attr(p, "source") <- if (is.na(src)) "fallback_literals" else src
+  attr(p, "fallback_keys") <- missed
+  if (is.null(root)) .GRAD_CACHE$p <- p
+  p
+}
+
 # Bailey-López de Prado (2014) Deflated Sharpe (per-period; dpl_ens_eval_contract.R와 동일 공식)
 .essence_dsr <- function(sr_ann, n_obs, n_trials, skew = 0, kurt = 3, A = 12) {
   if (!is.finite(sr_ann) || !is.finite(n_obs) || n_obs < 12) return(NA_real_)
@@ -56,8 +168,21 @@ suppressPackageStartupMessages({ library(data.table) })
 
 .rn <- function(x, d = 3) if (is.null(x) || !is.finite(x)) NA_real_ else round(as.numeric(x), d)
 
+# (v9 §3.3) 문턱을 판정 사유 문자열에 찍을 때 쓰는 포맷터 — 정수값이어도 소수 1자리를
+#   유지한다. 구판 텍스트가 "PORT_t>=2.0" 이라 `%g`(→"2")로는 바이트가 달라진다.
+#   `%.1f` 로 하면 2.25 가 "2.2" 로 잘리므로(재보정 시 사유가 거짓말) 무손실로 처리한다.
+.thr1 <- function(x) {
+  s <- format(x, trim = TRUE, scientific = FALSE)
+  if (grepl(".", s, fixed = TRUE)) s else paste0(s, ".0")
+}
+
 .essence_drawdown_profile <- function(bt_result, mdd,
-                                      severe = 0.45, extreme = 0.55,
+                                      # (v9 §3.3) severe 기본값도 정본 경유 — 유일 호출자
+                                      #   essence_score() 는 항상 severe=mdd_hard 로 덮으므로
+                                      #   실경로 동작은 불변이고, 직접 호출 시의 쌍둥이만 제거된다.
+                                      #   extreme/catastrophic/count/frac 계열은 별개 휴리스틱이라
+                                      #   이번 범위 밖(정본화 후속 대상 — JSON mdd_hard_rationale 참조).
+                                      severe = .graduation_params()$mdd_hard, extreme = 0.55,
                                       catastrophic = 0.70,
                                       severe_hard_count = 15L,
                                       extreme_hard_count = 6L,
@@ -184,8 +309,12 @@ suppressPackageStartupMessages({ library(data.table) })
 }
 
 essence_score <- function(bt_result, n_trials_cumulative = NULL,
-                          hard_fail = NULL, mdd_hard = 0.45,
-                          oos_is_ratio_override = NULL, calmar_min = 0.64,
+                          # (v9 §3.3) 기본값 정본 = constraint_defaults.json::tier_graduation.
+                          #   R 기본인자는 지연 평가라 호출자가 명시 전달하면 그 값이 우선한다
+                          #   — 기존 override 동작 불변(회귀 없음).
+                          hard_fail = NULL, mdd_hard = .graduation_params()$mdd_hard,
+                          oos_is_ratio_override = NULL,
+                          calmar_min = .graduation_params()$calmar_min,
                           selection_type = NULL,
                           oos_stat_version = "v2",
                           escalation_evidence = NULL,
@@ -202,6 +331,8 @@ essence_score <- function(bt_result, n_trials_cumulative = NULL,
   .nz <- function(x) { v <- suppressWarnings(as.numeric(if (is.null(x) || length(x) == 0L) NA else x[[1]])); v }
   stopifnot(is.list(bt_result),
             !is.null(bt_result$metrics), !is.null(bt_result$benchmark_compare))
+  # (v9 §3.3) 나머지 문턱 일괄 로드. mdd_hard/calmar_min 은 형식인자라 위에서 이미 해소됐다.
+  .gp <- .graduation_params()
   M  <- as.data.table(bt_result$metrics)
   BC <- as.data.table(bt_result$benchmark_compare)
   # 스키마 변종 robust: 컬럼명 alias 해소 + 결측 시 NA(크래시 금지 → uncertain 강등)
@@ -275,7 +406,7 @@ essence_score <- function(bt_result, n_trials_cumulative = NULL,
 
   # --- C1 borderline band [0.5, 0.7): 보강증거 2/3 충족 시 조건부 통과 (2026-06-10 도훈 mandate) ---
   #   retention >= 0.7 단독 PASS(불변) / < 0.5 무조건 FAIL(증거 무관) / band는 escalation 2/3.
-  band_lo <- 0.5; band_hi <- 0.7
+  band_lo <- .gp$oos_floor; band_hi <- .gp$oos_min   # (v9 §3.3) 정본 경유
   esc_pass <- NA; esc_detail <- NULL
   if (!is.null(escalation_evidence) && is.list(escalation_evidence)) {
     ev <- escalation_evidence
@@ -299,11 +430,11 @@ essence_score <- function(bt_result, n_trials_cumulative = NULL,
   reasons <- character(0)
   contract_ok <- is.finite(port_t) && is.finite(net_ir)  # 계약 경유 여부
   # DSR 게이트: sweep형 selection에서만 요구. chain/1논문/1알파에선 부적용(통과 간주).
-  dsr_ok <- if (is_sweep) (is.finite(dsr) && dsr >= 0.5) else TRUE
-  a_core <- (is.finite(port_t) && port_t >= 2.95 &&
+  dsr_ok <- if (is_sweep) (is.finite(dsr) && dsr >= .gp$dsr_min) else TRUE
+  a_core <- (is.finite(port_t) && port_t >= .gp$port_t_min &&
              oos_ok &&
-             is.finite(sharpe) && sharpe >= 0.8 &&
-             is.finite(cagr)   && cagr   >= 0.16 &&
+             is.finite(sharpe) && sharpe >= .gp$sharpe_min &&
+             is.finite(cagr)   && cagr   >= .gp$cagr_min &&
              is.finite(calmar) && calmar >= calmar_min)
 
   if (!contract_ok) {
@@ -320,20 +451,28 @@ essence_score <- function(bt_result, n_trials_cumulative = NULL,
     reasons <- "non-positive alpha (PORT_t<=0 또는 net_IR<=0)"
   } else if (a_core && dsr_ok) {
     grade <- "A"
-    reasons <- sprintf("Standalone: PORT_t>=2.95 & OOS_ret %s & Sharpe>=0.8 & CAGR>=16%% & Calmar>=%.2f%s%s",
-                       if (identical(oos_band_status, "band_escalated")) "band[0.5,0.7) escalated 2/3" else ">=0.7",
-                       calmar_min, if (is_sweep) " & DSR>=0.5(sweep)" else "",
+    # (v9 §3.3) 사유 문자열도 정본을 찍는다 — 문턱이 재보정됐는데 사유가 옛 수치를
+    #   그대로 주장하면 감사 기록이 능동적으로 거짓이 된다(단일화의 목적 자체가 무효).
+    reasons <- sprintf("Standalone: PORT_t>=%g & OOS_ret %s & Sharpe>=%g & CAGR>=%g%% & Calmar>=%.2f%s%s",
+                       .gp$port_t_min,
+                       if (identical(oos_band_status, "band_escalated"))
+                         sprintf("band[%g,%g) escalated 2/3", band_lo, band_hi)
+                       else sprintf(">=%g", band_hi),
+                       .gp$sharpe_min, .gp$cagr_min * 100,
+                       calmar_min, if (is_sweep) sprintf(" & DSR>=%g(sweep)", .gp$dsr_min) else "",
                        if (isTRUE(dd_profile$tail_review)) " & drawdown_tail_review" else "")
-  } else if (port_t >= 2.0 && net_ir > 0.2) {
+  } else if (port_t >= .gp$b_port_t_min && net_ir > .gp$b_net_ir_min) {
     grade <- "B"
-    miss <- c(if (!oos_ok) sprintf("OOS_ret %s<0.7(band %s)",
+    miss <- c(if (!oos_ok) sprintf("OOS_ret %s<%g(band %s)",
                                    if (is.finite(oos_retention)) sprintf("%.2f", oos_retention) else "NA",
+                                   band_hi,
                                    if (is.na(oos_band_status)) "NA" else oos_band_status) else NULL,
-              if (!is.finite(sharpe) || sharpe < 0.8) "Sharpe<0.8" else NULL,
-              if (!is.finite(cagr) || cagr < 0.16) "CAGR<16%" else NULL,
+              if (!is.finite(sharpe) || sharpe < .gp$sharpe_min) sprintf("Sharpe<%g", .gp$sharpe_min) else NULL,
+              if (!is.finite(cagr) || cagr < .gp$cagr_min) sprintf("CAGR<%g%%", .gp$cagr_min * 100) else NULL,
               if (!is.finite(calmar) || calmar < calmar_min) sprintf("Calmar<%.2f", calmar_min) else NULL,
-              if (is_sweep && !dsr_ok) "DSR<0.5(sweep)" else NULL)
-    reasons <- paste0("Component: PORT_t>=2.0 & net_IR>0.2; A 미달[",
+              if (is_sweep && !dsr_ok) sprintf("DSR<%g(sweep)", .gp$dsr_min) else NULL)
+    reasons <- paste0("Component: PORT_t>=", .thr1(.gp$b_port_t_min),
+                      " & net_IR>", sprintf("%g", .gp$b_net_ir_min), "; A 미달[",
                       if (length(miss)) paste(miss, collapse = ",") else "?", "]")
   } else {
     grade <- "C"
@@ -376,6 +515,26 @@ essence_score <- function(bt_result, n_trials_cumulative = NULL,
     oos_band_status = oos_band_status,
     oos_escalation = esc_detail,
     oos_fail_pattern = if (is.null(oos_fail_pattern)) NA_character_ else as.character(oos_fail_pattern),
+    # (v9 §3.3) 이 판정에 **실제로 쓰인** 문턱 집합 — 판정의 사후 감사 가능성을 위해 기록.
+    #   mdd_hard/calmar_min 은 형식인자라 호출자 override 를 반영한 값(정본값이 아니라
+    #   '쓰인 값')을 담는다. source = 정본 파일 경로 또는 "fallback_literals",
+    #   fallback_keys = 정본에서 못 읽어 리터럴로 떨어진 키 목록(빈 문자벡터면 전부 정본).
+    graduation_params = list(
+      port_t_min   = .gp$port_t_min,
+      oos_min      = band_hi,
+      oos_floor    = band_lo,
+      calmar_min   = calmar_min,
+      dsr_min      = .gp$dsr_min,
+      mdd_hard     = mdd_hard,
+      sharpe_min   = .gp$sharpe_min,
+      cagr_min     = .gp$cagr_min,
+      b_port_t_min = .gp$b_port_t_min,
+      b_net_ir_min = .gp$b_net_ir_min,
+      # ★`%||%` 를 쓰지 않는다 — 이 파일은 그것을 정의하지 않고, 호출자 판본을 상속하면
+      #   단독 source 시 "could not find function" 으로 죽는다(2026-08-20 실측 계통).
+      source        = if (is.null(attr(.gp, "source"))) NA_character_ else attr(.gp, "source"),
+      fallback_keys = if (is.null(attr(.gp, "fallback_keys"))) character(0) else attr(.gp, "fallback_keys")
+    ),
     reasons = reasons
   )
 

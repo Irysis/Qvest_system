@@ -76,13 +76,33 @@ if [ -z "$CTX_C" ]; then ng "CLAUDE.md 부재 시 훅 사망"; else ok "CLAUDE.m
 case "$CTX_C" in *"고정 축"*) ok "고정 제약 축 블록은 여전히 주입" ;;
                   *) ng "고정 축 블록 소실" ;; esac
 
-echo "== [E] settled 패턴 정본 파생 =="
-# 정본 문장의 settled lane 이 바뀌면 패턴도 바뀌어야 한다 — 문구 치환 후 재파생 확인
-sed 's/DPL(06-26)·regime-conditional 교차결합(07-05)·ML\/uncertainty sizing(07-05 2세션)은 settled-negative/ZZTESTLANE(00-00)은 settled-negative/' "$CM" > "$TMP/CLAUDE.md"
+echo "== [E] 정본 변경 전파 (박제 아님) =="
+# (v9 재조준 2026-08-23) 구판은 정본 **꼬리**의 settled-negative 문장을 치환해 전파를 쟀다.
+#   v9 이 프론티어 줄 상한을 330→200자로 낮추면서 그 문장(정본 기준 ~230자 지점)은 주입
+#   대상에서 빠진다 — 구판 [E]는 그래서 '박제'가 아니라 '예산'을 재게 됐다.
+#   ★수리 전 baseline 도 같은 이유로 이미 FAIL 이었다(330자 상한 < 문장 위치). 즉 이 조정은
+#     검사를 통과시키려는 완화가 아니라, 재던 성질을 실제로 잴 수 있는 지점으로 옮기는 것이다.
+#   재는 성질(정본을 고치면 주입문이 따라 바뀐다 = 하드코딩 아님)은 그대로.
+sed 's/① \*\*비대칭 표적\*\*/① **ZZTESTLANE**/' "$CM" > "$TMP/CLAUDE.md"
 CTX_E=$(ctx_of "$TMP")
-case "$CTX_E" in *"ZZTESTLANE"*) ok "정본 settled lane 변경이 주입문에 전파" ;;
+case "$CTX_E" in *"ZZTESTLANE"*) ok "정본 레버 문구 변경이 주입문에 전파" ;;
                   *) ng "정본 변경이 전파 안 됨 — 어딘가 아직 박제" ;; esac
 rm -rf "$TMP"
+
+echo "== [F] 절단이 폐쇄 lane 을 레버로 남기지 않는가 (v9 신설) =="
+# 정본 꼬리 = 'DPL·regime-conditional·ML sizing 은 settled-negative — 레버 아님'.
+# 200자 상한에 **부정어만** 걸려 잘리면 폐쇄 lane 목록이 '레버 프론티어' 줄에 그대로 남는다
+# — v8 이 38일간 저지른 오독(닫힌 lane 을 ①순위 레버로 광고)의 재생산이다. 잘릴 바엔 버린다.
+FRONTIER_LINE=$(printf '%s\n' "$CTX" | grep -m1 '조건-안 레버 프론티어' || true)
+if [ -z "$FRONTIER_LINE" ]; then
+  ng "프론티어 줄 자체를 못 찾음"
+elif printf '%s' "$FRONTIER_LINE" | grep -q 'settled-negative'; then
+  ok "settled 문장이 부정어까지 온전히 실림"
+elif printf '%s' "$FRONTIER_LINE" | grep -qE 'DPL|regime-conditional|uncertainty sizing'; then
+  ng "부정어 없이 폐쇄 lane 만 남음 — 레버로 오독된다"
+else
+  ok "절단 시 폐쇄 lane 목록도 함께 제거 (반쪽 인용 없음)"
+fi
 
 echo
 printf '== 결과: %d PASS / %d FAIL ==\n' "$PASS" "$FAIL"

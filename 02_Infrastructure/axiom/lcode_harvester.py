@@ -589,10 +589,14 @@ def harvest(project_dir: str) -> dict:
         # portfolio_alpha_t는 promote_global essence 게이트(weakest_t)와 promote.R Rigor 축이 소비 —
         # 미전달 시 global 승격이 구조적으로 불가하던 갭 봉합.
         # v2 (2026-07-04): selection_type·lcode_schema_version 추가 (emit v2 신필드).
+        # v3 (2026-08-23 v9 Lean Loop): source_paper·paper_assumption_broken·next_probes·
+        #   live_trigger 추가. 스키마 v3(lcode_emit)가 발행하기 시작하면 별도 배선 없이
+        #   corpus 로 흐르게 미리 열어 둔다 — 없는 구 L-code 는 그대로 미기록(정직성 불변).
         for opt in ("mechanism_hypothesis", "data_supported_conclusion", "next_probe",
                     "fmt_codes", "oos_retention", "falsification_attempts", "authoritative",
                     "oos_months", "oos_effect_vs_is", "portfolio_alpha_t",
-                    "selection_type", "lcode_schema_version"):
+                    "selection_type", "lcode_schema_version",
+                    "source_paper", "paper_assumption_broken", "next_probes", "live_trigger"):
             v = data.get(opt)
             if v not in (None, "", [], {}):
                 entry[opt] = v
@@ -678,6 +682,268 @@ def _write_json_atomic(obj: dict, path: str) -> None:
     os.replace(tmp, path)  # Windows에서도 원자적 교체 (기존 파일 덮어씀)
 
 
+# ═══════════════════════════════════════════════════════════════════════════════
+# v9 Lean Loop — 양성 주입 컨텍스트 (2026-08-23)
+#
+# 배경(실측): 에이전트 spawn 주입면(axiom_context_inject.sh)이 사실상 "죽은 방향
+#   재제안 금지" 목록이었다 — distilled_knowledge 167 카드 중 negative 71 vs
+#   positive 11(6.6%), 주입 블록 제목이 "확립 전략 진실 — 죽은 방향 재제안 금지".
+#   창의성 입력면이 금지 목록이면 에이전트가 받는 건 지도가 아니라 울타리다.
+# 재설계: 주입문을 "무엇이 통했나(연구-tier 상위 전략) + 최근 교훈 + dead 는 1줄
+#   포인터"로 뒤집는다. 훅은 **읽기만** 하고 모든 집계는 여기서 한다 —
+#   주입 훅은 매 Agent spawn 마다 도는 경로라 레지스트리 3종을 파싱시킬 수 없다.
+# 출력: .cache/positive_context.json (훅이 부재 시 고정부만 주입 = 회귀 없음)
+# ═══════════════════════════════════════════════════════════════════════════════
+
+PC_OUTPUT_REL = os.path.join(".cache", "positive_context.json")
+PC_MIN_PORT_T = 1.96      # 연구-tier 하한 (자본 HARD 2.95 아님 — 여긴 "출발점" 표시용)
+PC_TOP_N = 5              # 상위 전략 줄 수
+PC_RECENT_N = 3           # 최근 교훈 줄 수
+PC_DIST_N = 3             # 양성 DIST 카드 줄 수
+PC_MECH_CHARS = 55        # 전략 줄의 기전 1줄 상한
+PC_LESSON_CHARS = 90      # 최근 교훈 lesson_text 상한
+PC_PROBE_CHARS = 40       # 최근 교훈 next_probe 첫 항목 상한
+PC_DIST_CHARS = 65        # DIST statement 상한
+
+# mechanism_hypothesis / lesson_text 앞에 붙는 생성기 보일러플레이트.
+#   예: "가설 'Piotroski F-Score …' — 검증 결과 지배 요인: FMT-01(MDD 53.9% > 45% …)"
+# ★제거하는 건 **템플릿 단어**("가설 '", "' — 검증 결과 지배 요인:")이지 그 안의 가설명이
+#   아니다. 가설명을 같이 버리면 5줄이 전부 동일한 FMT 진단문이 되어(실측) 판별 정보가
+#   0이 되고, 뒤에 붙는 [FMT-01] 토큰과도 중복된다. 캡처군 1 = 가설명을 앞에 남긴다.
+#   접두가 없으면 무변경(no-op) — 어느 원천에 적용해도 안전하다.
+RE_PC_BOILER = re.compile(
+    r"^\s*가설\s*['\"‘’“”](?P<name>.*?)['\"‘’“”]\s*"
+    r"[—–:\-]\s*검증\s*결과\s*지배\s*요인\s*:\s*"
+)
+
+
+def _pc_num(v):
+    """유한 실수만 통과. bool 은 int 서브클래스라 명시 배제."""
+    if isinstance(v, bool) or not isinstance(v, (int, float)):
+        return None
+    return v if math.isfinite(v) else None
+
+
+def _pc_clip(s, n: int) -> str:
+    """공백 정규화 후 n자 상한(초과 시 말줄임표). 주입 예산이 문자 단위라 문자로 센다."""
+    t = " ".join(str(s or "").split())
+    return t if len(t) <= n else t[: max(0, n - 1)] + "…"
+
+
+def _pc_fmt2(v) -> str:
+    x = _pc_num(v)
+    return f"{x:.2f}" if x is not None else "?"
+
+
+def _pc_pct(v) -> str:
+    """0.211 → '21%'. 원장이 비율(fraction)로 기록한다 — %로 이미 적힌 값은 없다."""
+    x = _pc_num(v)
+    return f"{round(x * 100):.0f}%" if x is not None else "?"
+
+
+def _pc_score(meta: dict) -> str:
+    x = _pc_num((meta or {}).get("score"))
+    return f"{x:g}" if x is not None else "?"
+
+
+def _pc_first_probe(entry: dict) -> str:
+    """next_probes(v3 리스트) → next_probe(구 스키마: 문자열 또는 리스트) 순."""
+    for key in ("next_probes", "next_probe"):
+        v = (entry or {}).get(key)
+        if isinstance(v, (list, tuple)):
+            for x in v:
+                if str(x or "").strip():
+                    return str(x)
+        elif isinstance(v, str) and v.strip():
+            return v
+    return ""
+
+
+def _pc_mechanism(lc_entry: dict, meta: dict) -> str:
+    """전략 1줄 기전.
+
+    우선순위 = corpus 의 mechanism_hypothesis → lesson_text(보일러플레이트 접두 제거)
+    → module_catalog 의 meta.strategy_idea. 셋 다 비면 빈 문자열(줄에서 생략).
+    ★접두 제거는 어느 원천에도 적용한다 — 접두가 없으면 no-op 이라 부작용이 없고,
+      mechanism_hypothesis 가 그 접두를 실제로 달고 있는 유일한 필드다.
+    """
+    for raw in ((lc_entry or {}).get("mechanism_hypothesis"),
+                (lc_entry or {}).get("lesson_text"),
+                (meta or {}).get("strategy_idea")):
+        t = " ".join(str(raw or "").split())
+        if not t:
+            continue
+        # 템플릿 단어만 걷어내고 가설명은 앞으로 끌어올린다("<가설명> — <지배 요인>").
+        stripped = RE_PC_BOILER.sub(
+            lambda m: (m.group("name").strip() + " — ") if m.group("name").strip() else "", t
+        ).strip()
+        return stripped or t
+    return ""
+
+
+def _pc_top_strategies(project_dir: str, by_sid: dict) -> list[str]:
+    """module_catalog.json 연구-tier 상위 N 전략 줄.
+
+    선별: authoritative_essence 보유 ∧ PORT_t(NW lag-3) ≥ 1.96 ∧ 오염 라벨 제외.
+    정렬: grade B/A 우선 → PORT_t 내림차순. 중복: module_hash 동일 = 같은 실산출물의
+      이명(2026-08-20 batch_434 치환 실측)이라 최상위 1건만 남긴다.
+    """
+    cat = _load(os.path.join(project_dir, "06_Registry", "module_catalog.json")) or {}
+    mods = cat.get("modules")
+    if not isinstance(mods, dict):
+        return []
+    rows = []
+    for sid, m in mods.items():
+        if not isinstance(m, dict):
+            continue
+        if m.get("label_contaminated") or m.get("grade_contaminated"):
+            continue  # 08-20 이명 오염 감사 라벨 — 등급/라벨 신뢰 불가
+        meta = m.get("meta") if isinstance(m.get("meta"), dict) else {}
+        ess = meta.get("authoritative_essence")
+        if not isinstance(ess, dict):
+            continue  # 실측 essence 없는 항목은 "통했다"의 근거가 될 수 없다
+        pt = _pc_num(ess.get("portfolio_alpha_t_nw_lag3"))
+        if pt is None or pt < PC_MIN_PORT_T:
+            continue
+        grade = str(m.get("grade") or "?")
+        rows.append({
+            "sid": str(m.get("strategy_id") or sid),
+            "grade": grade,
+            "pt": pt,
+            "ess": ess,
+            "meta": meta,
+            "hash": m.get("module_hash") or f"__nohash__{sid}",
+            "rank": 0 if grade in ("A", "B") else 1,
+        })
+    rows.sort(key=lambda r: (r["rank"], -r["pt"]))
+
+    lines, seen = [], set()
+    for r in rows:
+        if r["hash"] in seen:
+            continue
+        seen.add(r["hash"])
+        e, meta = r["ess"], r["meta"]
+        lc = by_sid.get(r["sid"]) or {}
+        mech = _pc_clip(_pc_mechanism(lc, meta), PC_MECH_CHARS)
+        fmt = lc.get("fmt_codes") or meta.get("fmt_codes")
+        if isinstance(fmt, (list, tuple)) and fmt:
+            mech = (mech + " " if mech else "") + f"[{fmt[0]}]"
+        elif isinstance(fmt, str) and fmt.strip():
+            mech = (mech + " " if mech else "") + f"[{fmt.split(',')[0].strip()}]"
+        lines.append(
+            f"- {r['sid']} {r['grade']} s{_pc_score(meta)} PORT_t {r['pt']:.2f} "
+            f"SR {_pc_fmt2(e.get('net_sharpe'))} CAGR {_pc_pct(e.get('cagr'))} "
+            f"MDD {_pc_pct(e.get('mdd'))} OOS {_pc_fmt2(e.get('oos_retention'))} | {mech}"
+        )
+        if len(lines) >= PC_TOP_N:
+            break
+    return lines
+
+
+def _pc_positive_dist(project_dir: str) -> list[str]:
+    """양성 DIST 카드 ≤3줄. proposed 는 [초안] 라벨(도훈 승인 D-i, INV-6 정합)."""
+    dk = _load(os.path.join(project_dir, "06_Registry", "distilled_knowledge.json")) or {}
+    out = []
+    for e in dk.get("entries", []) or []:
+        if not isinstance(e, dict) or e.get("polarity") != "positive":
+            continue
+        status = e.get("status")
+        if status not in ("distilled", "proposed"):
+            continue
+        stmt = (e.get("statement_refined") or "").strip() or (e.get("statement_draft") or "").strip()
+        if not stmt:
+            continue
+        tag = " [초안]" if status == "proposed" else ""
+        out.append(f"- {e.get('dist_id')}{tag}: {_pc_clip(stmt, PC_DIST_CHARS)}")
+        if len(out) >= PC_DIST_N:
+            break
+    return out
+
+
+def _pc_recent_lessons(corpus: dict) -> list[str]:
+    """최근 성과 L-code 3건 — mtime 내림차순. 다음 시도(next_probe 첫 항목)까지 한 줄에."""
+    perf = [x for x in (corpus.get("lcodes") or [])
+            if isinstance(x, dict) and x.get("record_type") == "performance"]
+    perf.sort(key=lambda x: str(x.get("mtime") or ""), reverse=True)
+    lines = []
+    for x in perf[:PC_RECENT_N]:
+        lesson = _pc_clip(x.get("lesson_text"), PC_LESSON_CHARS)
+        probe = _pc_clip(_pc_first_probe(x), PC_PROBE_CHARS)
+        tail = f" ▸ {probe}" if probe else ""
+        lines.append(f"- {x.get('l_code')} {x.get('grade') or '?'} | {lesson}{tail}")
+    return lines
+
+
+def _pc_dead_counts(project_dir: str) -> tuple:
+    """hypothesis_index 의 사망 판정 집계 — 주입은 개수 + lookup 1줄로만 한다.
+
+    구 주입면은 negative 카드 본문 5건을 매 spawn 마다 실었다(= 재제안 금지 목록).
+    개수 + 조회 명령이면 필요할 때 에이전트가 스스로 확인할 수 있다.
+    """
+    hi = _load(os.path.join(project_dir, "06_Registry", "hypothesis_index.json")) or {}
+    entries = hi.get("entries") if isinstance(hi, dict) else hi
+    n_fail = n_neg = 0
+    for e in entries or []:
+        if not isinstance(e, dict):
+            continue
+        v = e.get("verdict")
+        if v == "FAIL":
+            n_fail += 1
+        elif v == "DISTILLED_NEG":
+            n_neg += 1
+    return n_fail, n_neg
+
+
+def _pc_n_fired(project_dir: str) -> int:
+    """부활 발화 건수. 파일 부재 = 0 (모닝브리핑이 주말 skip 하므로 정상 상태)."""
+    rv = _load(os.path.join(project_dir, ".cache", "failure_revival_flags.json"))
+    if not isinstance(rv, dict):
+        return 0
+    n = _pc_num(rv.get("n_fired"))
+    if n is not None:
+        return int(n)
+    fired = rv.get("fired")
+    return len(fired) if isinstance(fired, list) else 0
+
+
+def write_positive_context(corpus: dict, project_dir: str) -> dict:
+    """.cache/positive_context.json 생성 — axiom_context_inject.sh 의 유일한 변동부 원천."""
+    by_sid = {}
+    for x in corpus.get("lcodes") or []:
+        sid = x.get("strategy_id")
+        if not sid:
+            continue
+        prev = by_sid.get(sid)
+        # 같은 전략에 L-code 가 여럿이면 mechanism_hypothesis 보유분 > 최신 mtime 순
+        if prev is None:
+            by_sid[sid] = x
+        elif bool(x.get("mechanism_hypothesis")) > bool(prev.get("mechanism_hypothesis")):
+            by_sid[sid] = x
+        elif (bool(x.get("mechanism_hypothesis")) == bool(prev.get("mechanism_hypothesis"))
+              and str(x.get("mtime") or "") > str(prev.get("mtime") or "")):
+            by_sid[sid] = x
+
+    n_fail, n_neg = _pc_dead_counts(project_dir)
+    n_fired = _pc_n_fired(project_dir)
+    dead_line = (f"[dead configs {n_fail + n_neg} (FAIL {n_fail} + DISTILLED_NEG {n_neg}) — 착수 전 "
+                 "`Rscript 02_Infrastructure/tools/hypothesis_index.R lookup <kw>` 1줄 확인]")
+    if n_fired > 0:
+        dead_line += f" (부활 발화 {n_fired})"
+
+    payload = {
+        "generated_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+        "generator": "02_Infrastructure/axiom/lcode_harvester.py::write_positive_context",
+        "positive_block": "\n".join(_pc_top_strategies(project_dir, by_sid)),
+        "dist_block": "\n".join(_pc_positive_dist(project_dir)),
+        "recent_block": "\n".join(_pc_recent_lessons(corpus)),
+        "dead_line": dead_line,
+        "n_dead": n_fail + n_neg,
+        "n_fired": n_fired,
+    }
+    _write_json_atomic(payload, os.path.join(project_dir, PC_OUTPUT_REL))
+    return payload
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument(
@@ -712,6 +978,20 @@ def main() -> int:
         f"families={corpus['family_distribution']} "
         f"grades={corpus['grade_distribution']}"
     )
+
+    # (v9 Lean Loop 2026-08-23) 주입면 양성 컨텍스트 생성.
+    #   ★실패해도 수확 자체는 성공으로 둔다 — 이 배선이 L-code 적립 경로를 막으면
+    #     주입 극성을 고치려다 지식 적립을 끊는 것이라 본말전도다.
+    #     훅은 파일 부재 시 고정부만 주입하므로 실패 = 구 동작보다 조용한 축소일 뿐.
+    try:
+        pc = write_positive_context(corpus, args.project_dir)
+        print(f"[lcode_harvester] positive_context — 전략 {len(pc['positive_block'].splitlines())}"
+              f" · DIST {len(pc['dist_block'].splitlines())}"
+              f" · 최근교훈 {len(pc['recent_block'].splitlines())}"
+              f" · dead {pc['n_dead']} · 부활발화 {pc['n_fired']}")
+    except Exception as exc:  # noqa: BLE001 — 정직 경보 후 계속
+        print(f"[lcode_harvester][WARN] positive_context 생성 실패: {exc}", file=sys.stderr)
+
     return 0
 
 

@@ -1,7 +1,7 @@
 # Qvest Index
 
 **3개월 후 도훈이 즉시 찾을 수 있게** — 1 page navigation + debug map.
-**v8.4 — 4-Mode 헌법 · 비대칭 알파 중심 재편(ML·수리통계 주력)** (2026-08-16 갱신).
+**v9.0 — Lean Loop · 4-Mode 헌법 · 게이트 2층(리서치/자본)** (2026-08-23 갱신. 직전 v8.4 = 비대칭 알파 재편, 전문은 `CHANGELOG_constitution.md` 아카이브 절).
 
 > ★**숫자 박제 금지** — 이 문서가 v8.1에서 2개월 낙후된 기전이 "8 axioms / 30 hook / 203 paper notes" 같은 **개수 하드코딩**이었다. 개수·목록은 아래 *확인 명령*으로 위임하고, 본문은 **어디를 보는지**만 적는다.
 
@@ -12,7 +12,7 @@
 | 층 | 위치 | 성격 |
 |---|---|---|
 | 1 | `CLAUDE.md` (루트) | **현행 헌법 본문** — 모델 표기·모드·제약의 단일 정본 |
-| 2 | `.claude/rules/` | 코어 룰 (매 세션 autoload): pit / axioms / answer-principles / backtest-contract / measurement-graduation / python-policy |
+| 2 | `.claude/rules/` | **autoload 2종 (v9 2026-08-23)**: pit / lean-loop. 나머지(axioms · backtest-contract · measurement-graduation · python-policy)는 같은 폴더에 있으나 `paths:` 프론트매터로 **경로 트리거 지연 적재**. `answer-principles`는 `02_Infrastructure/docs/rules/`로 이동 |
 | 3 | `02_Infrastructure/docs/rules/` | 확장 룰 (on-demand Read, **효력 동일**) — harness / axiom-engine / r-portability / continuity-firewall / caching / factor-db / lockbox-scope / artifact-{naming,storage} / factor-rotation / ramp / research_philosophy / data_table_shift_convention |
 | 4 | `00_Lawbook/` (본 폴더) | **원전 법전** + INDEX + DEPRECATION — 2·3층의 상당수가 여기서 파생 |
 
@@ -20,7 +20,8 @@
 
 ## 1. Active SOT
 
-- `02_Infrastructure/docs/qvest_v8_4_asymmetry_ml_sot.md` — **v8.4 주력 SOT** (비대칭 알파 재편: 4 lane A/D/B/C, 금지 4종, 부활 조건)
+- `.claude/rules/lean-loop.md` — **v9 루프 정본** (입력·6단계·예산·연속성 계약 1지점·지명→자본 계층·하지 않는 것)
+- `02_Infrastructure/docs/qvest_v8_4_asymmetry_ml_sot.md` — v8.4 리서치 방향 SOT (비대칭 알파: 4 lane A/D/B/C, 금지 4종, 부활 조건 — v9에서도 방향 근거로 retain)
 - `02_Infrastructure/docs/qvest_v8_3_alpha_discovery_sot.md` — v8.3 발굴 재편 (골격 승계 — dual-basis · 프론티어 큐 · 지식 환류)
 - `02_Infrastructure/docs/qvest_v8_1_sot.md` — v8.1 설계 SOT (measurement governance + module flow)
 - `02_Infrastructure/docs/qvest_ast_v1_1_sot.md` — AST 계층 v1.1 (alpha 3층 스펙 + PIT 3중 예방)

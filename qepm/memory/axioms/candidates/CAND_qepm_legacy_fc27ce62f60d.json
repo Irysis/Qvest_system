@@ -1,0 +1,158 @@
+{
+  "schema_version": "v54_ax_p0_mode",
+  "candidate_id": "CAND_qepm_legacy_fc27ce62f60d",
+  "research_mode": "qepm_legacy",
+  "metric_type": "estimated",
+  "type": "empirical",
+  "polarity": "negative",
+  "statement_draft": "[방법론 negative 규칙 초안] market=KR family=value: EP/accrual standalone long-only = 잠정 Grade F (provisional/INV-7). value premium 약화(post-2015) + 단독 시 quality/growth mix 부재 + 섹터중립 alpha 희석. multi-factor blend/overlay는 scope 밖 재도전 트리거. (promote.R 5축 검증 — External/Independence 확정 필요)",
+  "supporting_l_codes": [
+    "L-132",
+    "L-135",
+    "L-138",
+    "L-160",
+    "L-AS-20260605_202226_37668",
+    "L-AS-20260702_PG2W2"
+  ],
+  "scope_draft": {
+    "market": "KR",
+    "factor_family": "value",
+    "regime": null,
+    "construction_types": null
+  },
+  "evidence_draft": {
+    "independent_l_codes": 6,
+    "independent_strategies": 6,
+    "strategies": [
+      "STR_1663",
+      "STR_1654_BCSNA",
+      "STR_1635_ev_accrual_quality_defense",
+      "STR_1683",
+      "STR_AS_20260605_202226_37668",
+      "STR_AS_PG2W2_earnings3m_refine"
+    ],
+    "effect_direction_consistency": 0.83,
+    "note": "2026-07-04 재통과 세션 강화 — 오염 제거 후 순수 value-failure 6건. 원 클러스터(L-132/135/142/148/161/161A/162A/L-QPM×2)에서 Grade-A 인프라코드(L-142 CATALOG_INTEGRITY/NO_JUDGE_SWEEP, L-148 NOJUDGE_SWEEP_V2)·인프라버그(L-161 Z_SCORE_BUG, L-161A PROCESS_RULE, L-162A MERGE_DATE_CONFLICT)·비-value construction(L-QPM multi_sleeve/structural_limit) 제거. 추가 clean value: L-138(accrual not defense F)·L-160(IC-return decoupling F, ct=value)·L-AS-20260605(alpha_search EP Basu proxy F, 독립 파이프라인)·L-AS-20260702_PG2W2(earnings@3M value decay, canonical_screen C, 최근 07-02·COHORT_DECAY_2015).",
+    "n_eff_signatures": 6,
+    "independent_constructions": 1,
+    "constructions": [
+      "value"
+    ],
+    "constructions_note": "실측: clean value-failure 증거 6건 전부 construction_type=value. 명목상 다양성(momentum/multi_sleeve/structural_limit)은 원 클러스터의 인프라·비-value 오염이었음. family=value negative 공리의 증거는 정의상 value construction — 3-distinct-construction hurdle은 family-scoped negative에 구조적으로 도달 불가(GATE_GAP #1).",
+    "metric_types": [
+      "estimated",
+      "proxy",
+      "canonical_screen"
+    ]
+  },
+  "falsification_draft": {
+    "attempts": [
+      {
+        "description": "L-132 STR_1663 EP(Earnings/Price) 단독 diversifier",
+        "result": "reproduced_failure",
+        "effect_retained": 0.9
+      },
+      {
+        "description": "L-135 STR_1654 BCSNA 섹터중립 accrual (Sloan 1996), OOS retention 0.12",
+        "result": "reproduced_failure",
+        "effect_retained": 0.8
+      },
+      {
+        "description": "L-AS-20260605 alpha_search EP Basu K200∪KQ150 (독립 파이프라인·유니버스)",
+        "result": "reproduced_failure",
+        "effect_retained": 0.85
+      }
+    ],
+    "note": "active AX-003 falsification.attempts(2 reproduced_failure)에서 전파 + alpha_search 독립 재현 1건 추가. supporting L-code 자체가 반증 시도이며 전부 실패 재현 → negative polarity 확증. (창작 아님 — corpus lesson_text 실측 근거)"
+  },
+  "mechanism_draft": {
+    "economic_explanation": "한국시장 value factor(EP, accrual 등) standalone long-only는 (1) 최근 10년(post-2015) value premium 약화, (2) 단독 구현 시 quality/growth mix 부재, (3) 섹터중립은 오히려 alpha 희석(L-135 BM_Corr 0.717) → 지속적 Grade F. Fama-French(1993) value premium이 KR에서 quality-overlay/factor blending 없이 재현 불가 (박종원 2018; Asness 2019 QMJ). 2026-07-02 PG2W2 earnings@3M 정제도 cohort-wide 감가(2015+) 재확인.",
+    "mechanism_type": "market_structural",
+    "causal_plausibility": "moderate_to_high"
+  },
+  "oos_validation_draft": {
+    "oos_months": 12,
+    "oos_effect_vs_is": 0.12,
+    "note": "L-135 STR_1654 실측 OOS retention 0.12 (IS 0.575→OOS 0.071, 88% 열화). negative 공리에선 이 저-retention이 실패 재현 = 확증 증거이나, promote.R External hurdle(ext_min_oos_retention>=0.5)은 positive(신호가 OOS 생존) 의미론이라 0.12<0.5를 FAIL 처리 = polarity 반전 미대응(GATE_GAP #2). corpus의 value-failure L-code는 oos_retention 필드 실값 0건 — draft fallback으로만 median 산출."
+  },
+  "cluster_members_count": 6,
+  "status": "pending_5axis",
+  "created_at": "2026-07-04T04:26:21+00:00",
+  "strengthened_at": "2026-07-04",
+  "strengthening_audit": {
+    "session": "S-AX-003 recert readonly",
+    "polarity_correction": "conditional → negative (active AX-003.json polarity=negative authoritative; 원 CAND는 cluster_extractor 자동 mislabel)",
+    "removed_l_codes": [
+      "L-142",
+      "L-148",
+      "L-161",
+      "L-161A",
+      "L-162A",
+      "L-QPM-20260606-001",
+      "L-QPM-20260607-001"
+    ],
+    "removed_reason": "L-142/L-148 = Grade A 인프라코드(CATALOG_INTEGRITY/NO_JUDGE_SWEEP) value 실패증거 아님 · L-161/L-161A/L-162A = 인프라버그(Z-score/process/merge) · L-QPM×2 = multi_sleeve/structural_limit construction (SR ceiling·DPL, value standalone 아님). b434식 '가설라벨≠실행신호' 오염 제거.",
+    "added_l_codes": [
+      "L-138",
+      "L-160",
+      "L-AS-20260605_202226_37668",
+      "L-AS-20260702_PG2W2"
+    ],
+    "added_reason": "전부 construction_type=value grade F/C 실측 (corpus 검증). L-138/L-160은 family=quality_earnings이나 ct=value·accrual/distress-value 실패로 scope 정합. L-AS 2건은 독립 pipeline(alpha_search).",
+    "b434_poison_excluded": [
+      "L-AS-20260612_* value 계열 (grade B/backtested mislabel, VALIDATED_HARD_FAIL 태그 — oos_retention 실값 보유하나 re-grade 없이 negative 증거 편입 시 재오염)"
+    ],
+    "not_emitted_gaps": "MEMORY만 존재·corpus 미탑재로 편입 불가(창작 금지): 06-24 value 24/24 감쇠(reference-kr-value-factor-decay) · 07-03 KNS value-경로 자본급 실패(project-kns-shrinking-cross-section). 이들 backtested/canonical_screen L-code 정식 발행 후에만 External/Rigor 결집 가능."
+  },
+  "recert_20260704": {
+    "recert_id": "ax_recert_003_004_007_20260704",
+    "axiom": "AX-003",
+    "gate_baseline_weighted": 0.23,
+    "gate_strengthened_weighted": 0.82,
+    "threshold": 0.8,
+    "axis_scores": {
+      "independence": {
+        "score": 0.6,
+        "hurdle_pass": false,
+        "n_constructions": 1,
+        "direction_consistency": 0.833
+      },
+      "rigor": {
+        "score": 1.0,
+        "hurdle_pass": true
+      },
+      "falsification": {
+        "score": 1.0,
+        "hurdle_pass": true,
+        "n_attempts": 3
+      },
+      "external": {
+        "score": 0.6,
+        "hurdle_pass": false,
+        "oos_retention_median": 0.12,
+        "source": "draft"
+      },
+      "mechanism": {
+        "score": 1.0,
+        "hurdle_pass": true
+      }
+    },
+    "all_hurdles_pass": false,
+    "failing_hurdles": [
+      "independence",
+      "external"
+    ],
+    "verdict": "GATE_GAP",
+    "adversarial_verified": "3 자가약점: (1) 순환참조 — L-132/135는 AX-003 founding 증거 재인용, non-circular 신규강화는 L-138/L-AS 3건뿐 (2) 실패편향 방어됨 — grade-B value 12건은 b434 mislabel(가짜), 내 6건은 real grade F/C (3) 독립 construction 착시 — 6 distinct strategy이나 전부 ct=value = 게이트가 정확히 1 construction 카운트, 명목 다양성 창작 불가.",
+    "recommended_enforcement": "advisory 유지",
+    "recommendation": "provisional/advisory 유지 + 산식 정정(External polarity-aware · Independence family-scoped negative) 도훈 confirm 대기.",
+    "active_json_untouched": true,
+    "review_log": "qepm/memory/axioms/review_log/R-AX-003_readonly_reverify_20260704.json",
+    "report": "04_Research/01_reports/ax_recert_003_004_007_20260704.md"
+  },
+  "cluster_key": "fc27ce62f60d",
+  "l_code_set_sha": "fc27ce62f60d8adb6f87d9a91bbc8dc3f20a44e5",
+  "cluster_label": "qepm_legacy_negative",
+  "promotable": true,
+  "last_seen": "2026-07-04T04:26:21+00:00"
+}

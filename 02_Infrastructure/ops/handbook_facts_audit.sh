@@ -84,10 +84,17 @@ HOOK_DIRECT=$(grep -oE '[A-Za-z0-9_-]+\.(sh|py)' "$PROJECT/.claude/settings.json
 HOOK_FANOUT=$(grep -oE '"script"[[:space:]]*:[[:space:]]*"[^"]+"' "$PROJECT/02_Infrastructure/hooks/policies/router_dispatch.json" 2>/dev/null | sort -u | wc -l); HOOK_FANOUT=$(n "$HOOK_FANOUT")
 HOOK_ONDISK=$(ls "$PROJECT"/02_Infrastructure/hooks/*.sh 2>/dev/null | wc -l); HOOK_ONDISK=$(n "$HOOK_ONDISK")
 HOOK_TOTAL=$(( HOOK_DIRECT + HOOK_FANOUT ))
-# 차단 가능 경로 = PreToolUse + Stop 중 '|| true' 없는 훅. PostToolUse는 도구가 이미 실행된 뒤라 구조상 차단 불가.
+# 차단 가능 경로 = PreToolUse 등록 훅. PostToolUse는 도구가 이미 실행된 뒤라 구조상 차단 불가이고,
+#   SessionStart/SessionEnd 도 도구 호출을 막지 못한다 — 그래서 유지 11종 중 **PreToolUse 6종**만 센다.
 #   ⚠ grep -E 브래킷 안 '[^\n]' 은 "역슬래시·n 이 아닌 문자"로 해석돼 항상 빗나감(2026-07-25 오탐 0 실측) — 이름별 존재 확인으로 대체.
+# ★v9 Lean Loop (2026-08-23): 구 목록의 Stop 훅 2종(performance_realmeasure_gate ·
+#   research_continuity_guard)과 라우터(qvest_hook_router)는 **등록 해제**됐다 — 목록에 남기면
+#   해제 사실이 "차단 0"이 아니라 그냥 사라진 숫자로 보인다. 자본·안전 게이트 4종을 명시로 올린다.
+#   `|| true` 가 붙은 2종(discovery_graduation_gate · legacy_write_block)도 차단력은 그대로다 —
+#   둘 다 stdout JSON `decision:block` 으로 차단하고 '|| true' 는 exit code 만 무시한다.
+#   해제 36종 원장 = 02_Infrastructure/hooks/_archive_v8_enforcement/MANIFEST.md
 HOOK_BLOCKING=0
-for _h in safety_guard telegram_direct_call_guard axiom_context_inject performance_realmeasure_gate research_continuity_guard qvest_hook_router; do
+for _h in safety_guard legacy_write_block discovery_graduation_gate worktask_constraint_enforcer telegram_direct_call_guard axiom_context_inject; do
   grep -q "hooks/${_h}\." "$PROJECT/.claude/settings.json" 2>/dev/null && HOOK_BLOCKING=$((HOOK_BLOCKING + 1))
 done
 
@@ -108,7 +115,13 @@ AX_ACTIVE=$(ls "$PROJECT"/qepm/memory/axioms/active/AX-*.json 2>/dev/null | wc -
 AX_CAND=$(ls "$PROJECT"/qepm/memory/axioms/candidates/*.json 2>/dev/null | wc -l); AX_CAND=$(n "$AX_CAND")
 HYPO=$(jcount "$PROJECT/06_Registry/hypothesis_index.json" entries)
 DIST=$(jcount "$PROJECT/06_Registry/distilled_knowledge.json" entries)
-FRONTIER=$(jcount "$PROJECT/06_Registry/alpha_frontier_queue.json" entries)
+# ★v9 Lean Loop (2026-08-23): 프론티어 큐가 **알파 가설 전용**으로 좁혀지고, 인프라 항목은
+#   06_Registry/infra_backlog.json 으로 분리된다(재설계안 §3.4(f)). 두 파일을 합산해야 구
+#   총계와 같은 모집단이 된다 — 한쪽만 세면 분리 당일 숫자가 뚝 떨어져 "큐가 비었다"로 읽힌다.
+#   ★분리 전/후 둘 다 성립해야 하므로 **부재는 0으로 관용**한다(jcount 가 예외 시 0 반환).
+FRONTIER_ALPHA=$(jcount "$PROJECT/06_Registry/alpha_frontier_queue.json" entries)
+FRONTIER_INFRA=$(jcount "$PROJECT/06_Registry/infra_backlog.json" entries)
+FRONTIER=$(( ${FRONTIER_ALPHA:-0} + ${FRONTIER_INFRA:-0} ))
 PAPERS=$(jcount "$PROJECT/06_Registry/paper_registry.json")
 STRATS=$(jcount "$PROJECT/06_Registry/strategy_registry.json")
 LCODE=0

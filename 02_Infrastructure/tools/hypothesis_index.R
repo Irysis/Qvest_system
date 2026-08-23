@@ -1252,8 +1252,28 @@ if (sys.nframe() == 0 && !interactive()) {
   if (length(args) >= 1 && args[1] == "build") {
     build_hypothesis_index()
   } else if (length(args) >= 2 && args[1] == "lookup") {
+    # ── (2026-08-23 v9 Lean Loop §3.4(f)) CLI 출력 = **1줄 advisory**.
+    #   왜: 구판은 최대 30행 데이터프레임을 그대로 찍었다. 착수 전 lookup 은 매 라운드
+    #   의무이므로 그 표가 매번 컨텍스트에 실렸고, 실제로 필요한 판단("선례가 있나 ·
+    #   대체로 어떻게 끝났나 · 뭘 열어볼까")은 세 조각뿐이다.
+    #   ★`lookup_hypothesis()` 의 **반환값은 불변**이다 — R 에서 부르면 종전대로 전체
+    #     데이터프레임이 온다. 줄인 것은 CLI 표면이지 계약이 아니다.
     res <- lookup_hypothesis(args[-1])
-    if (nrow(res) > 0) print(res, right = FALSE)
+    n <- if (is.data.frame(res)) nrow(res) else 0L
+    cnt <- function(pat) if (n == 0L) 0L else sum(grepl(pat, res$verdict))
+    top <- ""
+    if (n > 0L) {
+      k <- min(3L, n)
+      lab <- character(k)
+      for (i in seq_len(k)) {
+        lab[i] <- if (i == 1L) sprintf("%s(%s)", res$strategy_id[i], res$verdict[i])
+                  else as.character(res$strategy_id[i])
+      }
+      top <- paste(lab, collapse = " ")
+    }
+    cat(sprintf(
+      "[hypothesis_index] %d hits (FAIL %d · DISTILLED_NEG %d · PASS %d · MARGINAL %d) top: %s — 상세: lookup_hypothesis() in R\n",
+      n, cnt("^FAIL"), cnt("^DISTILLED"), cnt("^PASS"), cnt("^MARGINAL"), top))
   } else {
     cat("usage:\n  Rscript hypothesis_index.R build\n  Rscript hypothesis_index.R lookup <keyword> [keyword...]\n")
   }

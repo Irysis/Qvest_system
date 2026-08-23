@@ -1,4 +1,4 @@
-# lcode_schema.R — L-code 입력 품질 게이트 v2 (2026-07-04 엔진 재설계, 3층 산출물 모델)
+# lcode_schema.R — L-code 입력 품질 게이트 v3 (2026-08-23 v9 Lean Loop)
 #
 # validate_lcode(): 신규 L-code 적립 시점에 필수필드 + sanity bound를 검증한다.
 #   위반(hard error) 시 호출부가 write를 차단 → garbage(예: -2028.7%p bm 정렬버그,
@@ -15,16 +15,27 @@
 #   [required_for_promotion — 승격축 입력. strict=TRUE(promotion 시점)면 error,
 #    strict=FALSE(emit 시점, 기본)면 WARN + missing_promotion_fields 반환.
 #    emit BLOCK 승격은 2사이클 관찰 후 도훈 confirm — 지금 미도입]
-#     mechanism_hypothesis  — Mechanism 축. 보일러플레이트("unknown"/"TBD"/공란) 불인정
-#     metric_type           — Rigor 축 (base required와 동일 필드, canonical_screen 추가)
+#     mechanism_hypothesis  — Mechanism 축. 보일러플레이트("unknown"/"TBD"/공란/
+#                             "…지배 요인:" 뒤 공란) 불인정
 #     construction_type     — Independence 축. controlled vocab. selection_type 값
 #                             (chain/sweep)은 거부 → selection_type 별도 필드로 분리
+#     next_probe            — ★v3 신설. **연속성 계약의 집**(v9 Lean Loop). grade C/F는
+#                             2건 이상, A/B는 1건 이상. 리스트(next_probes) 또는
+#                             " | " 조인 문자열 둘 다 인정. 실패가 다음 가설의 생성기가
+#                             되지 못하면 그 L-code는 승격축에 못 오른다.
 #   [recommended — 결측 시 WARN]
 #     falsification_attempts — Falsification 축. 구조체 list [{test, result∈{survived,
 #                              falsified,weakened}, effect_retained}] 권장. 문자열도
 #                              수용하되 WARN (promote.R .axis_falsification 보수 처리)
-#     oos_retention (+oos_months) — External 축
-#     metric_type=backtested 시 portfolio_alpha_t / oos_retention 결측 WARN
+#     metric_type=backtested 시 portfolio_alpha_t 결측 WARN (Rigor 축)
+#
+# v3 변경 (2026-08-23 — v9 Lean Loop §3.4(d)):
+#   - LCODE_SCHEMA_VERSION 3L. required_for_promotion = {mechanism, construction_type,
+#     next_probe}. metric_type 은 base required 와 중복이라 승격축 목록에서 제거(검증 동일).
+#   - oos_months / oos_effect_vs_is 를 recommended 에서 제거 — **읽기는 계속 허용**
+#     (기존 원장 필드 보존, 검증에서 요구만 안 함). 근거: r7 설계의 External 축은
+#     728회 review 실측 중앙값 −0.04 로 이 통계량으로는 도달 자체가 불가였고,
+#     "결측 WARN"이 매 L-code 에 붙어 실제 결함과 구분되지 않는 잡음이 됐다.
 #
 # 하위호환: 구 L-code(스키마 v1, lcode_schema_version 필드 부재)는 읽기/재검증 시
 #   strict=FALSE로 통과 (required_for_promotion은 WARN까지만). 정직 원장 보존.
@@ -40,7 +51,7 @@
 
 `%||%` <- function(a, b) if (is.null(a) || length(a) == 0L || (length(a) == 1L && is.na(a))) b else a
 
-LCODE_SCHEMA_VERSION <- 2L
+LCODE_SCHEMA_VERSION <- 3L
 
 # ── grade: canonical enum + legacy alias (distill plan grade_normalization_map과 동일) ──
 LCODE_VALID_GRADES <- c("A", "B", "C", "F")
@@ -148,7 +159,24 @@ infer_construction_type <- function(name = "", idea = "") {
   s <- trimws(tolower(as.character(x %||% "")))
   if (!nzchar(s)) return(TRUE)
   if (s %in% c("unknown", "n/a", "na", "none", "null", "tbd", "없음", "미정", "-")) return(TRUE)
+  # [v3 2026-08-23] 템플릿 껍데기 거부: run_alpha_search 의 mechanism 은
+  #   "가설 '<아이디어>' — 검증 결과 지배 요인: <축>" 형식인데, 판정축이 비면
+  #   콜론 뒤가 공란인 채로 원장에 들어간다 — 길이는 아이디어 덕에 10자를 넘으므로
+  #   기존 규칙을 통과했다(=길이 검사만으로는 안 잡히는 부류). 지배 요인이 없으면
+  #   그건 메커니즘 진술이 아니다.
+  if (grepl("지배\\s*요인\\s*[:：]\\s*$", s)) return(TRUE)
   nchar(s) < 10  # 10자 미만 = 경제적 설명으로 불인정
+}
+
+# next_probe 건수 판정 (연속성 계약 — 리스트/문자벡터/" | " 조인 문자열 모두 인정)
+#   반환: 유효(비공란) 제안 건수. 필드 부재/공란 = 0.
+.next_probe_count <- function(x) {
+  if (is.null(x)) return(0L)
+  if (is.list(x)) x <- unlist(x, use.names = FALSE)
+  x <- as.character(x)
+  if (length(x) == 1L) x <- strsplit(x, "\\|")[[1]]   # 단일 문자열은 " | " 조인으로 간주
+  x <- trimws(x)
+  sum(nzchar(x))
 }
 
 # falsification_attempts 형태 판정: "structured" / "string" / "empty" / "invalid"
@@ -246,6 +274,19 @@ validate_lcode <- function(lcode, strict = FALSE) {
     } else if (!(ct %in% LCODE_VALID_CONSTRUCTION_TYPES)) {
       warnings <- c(warnings, sprintf("construction_type='%s' controlled vocab 밖 — 신규 유형이면 LCODE_VALID_CONSTRUCTION_TYPES 등재 검토", ct))
     }
+    # next_probe — 필수 (v3 연속성 계약). C/F는 ≥2, A/B는 ≥1.
+    #   ★"실패 = 다음 가설의 생성기"가 성립하는지의 유일한 기계 검사 지점.
+    #   next_probes(리스트) 우선, 없으면 next_probe(리스트 또는 " | " 조인 문자열).
+    np_n <- max(.next_probe_count(lcode[["next_probes"]]),
+                .next_probe_count(lcode[["next_probe"]]))
+    g_can <- if (nzchar(g) && g %in% names(LCODE_GRADE_ALIASES)) unname(LCODE_GRADE_ALIASES[g]) else g
+    np_min <- if (g_can %in% c("C", "F")) 2L else 1L
+    if (np_n < np_min) {
+      missing_promo <- c(missing_promo, "next_probe")
+      warnings <- c(warnings, sprintf(
+        "next_probe %d건 < 요구 %d건(grade %s) — 연속성 계약 미충족 (C/F는 2건 이상, A/B는 1건 이상)",
+        np_n, np_min, if (nzchar(g_can)) g_can else "?"))
+    }
     # falsification_attempts — 권장 (구조체 권장, 문자열 WARN)
     fs <- .fals_shape(lcode[["falsification_attempts"]])
     if (fs == "empty") {
@@ -255,15 +296,14 @@ validate_lcode <- function(lcode, strict = FALSE) {
     } else if (fs == "invalid") {
       warnings <- c(warnings, "falsification_attempts 형식 불량 — 구조체 [{test,result,effect_retained}] 또는 문자열만 허용")
     }
-    # oos_retention — 권장
-    if (is.na(.num(lcode[["oos_retention"]])))
-      warnings <- c(warnings, "oos_retention 결측 — External 축 도달 불가 (essence_score oos_stat v2 산출치 전달 권장)")
-    # backtested/canonical_screen인데 portfolio_alpha_t 결측 → WARN
+    # [v3 삭제] oos_retention 결측 "External 축 도달 불가" WARN 2종 제거.
+    #   근거: 그 축은 통계량 자체가 도달 불가였는데(review_log 728회 실측 중앙값 −0.04)
+    #   WARN 은 "입력을 더 채우라"고 지시해 실제 결함 WARN 을 묻었다. 필드는 계속 읽고
+    #   기록한다 — 요구만 하지 않는다.
+    # backtested/canonical_screen인데 portfolio_alpha_t 결측 → WARN (Rigor 축은 도달 가능)
     if (mt %in% c("backtested", "canonical_screen")) {
       if (is.na(.num(lcode[["portfolio_alpha_t"]])))
         warnings <- c(warnings, sprintf("metric_type=%s인데 portfolio_alpha_t 결측 — Rigor 축(global weakest_t 2.95) 도달 불가", mt))
-      if (is.na(.num(lcode[["oos_retention"]])))
-        warnings <- c(warnings, sprintf("metric_type=%s인데 oos_retention 결측 — External 축 도달 불가", mt))
     }
   }
 
@@ -280,11 +320,13 @@ validate_lcode <- function(lcode, strict = FALSE) {
 
 # selftest (Rscript lcode_schema.R 직접 실행 시)
 if (sys.nframe() == 0L && !interactive()) {
-  # 1) v2 완전체 — valid + promotion_ready
+  # 1) v3 완전체 — valid + promotion_ready (next_probes 2건 = C/F 요구 충족)
   full <- validate_lcode(list(l_code = "L-AS-X", strategy_id = "STR_AS_X", grade = "F",
     lesson_text = "t", research_mode = "alpha_search", metric_type = "canonical_screen",
     construction_type = "momentum",
     mechanism_hypothesis = "KR 단기 모멘텀은 수급 주도 과잉반응으로 net 음수",
+    next_probes = list("보유기간 재설계", "역방향 가설 1건"),
+    live_trigger = "hard_fail 축 해소 후 score>=25 회복 시",
     falsification_attempts = list(list(test = "placebo shuffle", result = "survived", effect_retained = 0.8)),
     oos_retention = 0.62, portfolio_alpha_t = 1.2,
     cagr_pct = -20.7, sharpe = -0.57, mdd_pct = 30, excess_cagr = -2.1))
@@ -306,15 +348,40 @@ if (sys.nframe() == 0L && !interactive()) {
   np <- normalize_lcode(list(l_code = "L-P", strategy_id = "S2", grade = "INFRASTRUCTURE_CRITICAL",
     lesson_text = "hook bug", research_mode = "qepm_legacy", metric_type = "unavailable"))
   v6 <- validate_lcode(np$lcode)
+  # 7) [v3] 연속성 계약 — F등급에 next_probe 1건만 = promotion_ready FALSE, 2건이면 TRUE.
+  #    " | " 조인 문자열도 리스트와 동등하게 세는지 함께 확인(구 소비자 호환).
+  .base7 <- list(l_code = "L-AS-Z", strategy_id = "STR_AS_Z", grade = "F",
+    lesson_text = "t", research_mode = "alpha_search", metric_type = "proxy",
+    construction_type = "momentum",
+    mechanism_hypothesis = "KR 저유동 소형주에서 신호가 비용에 소진된다")
+  np1 <- validate_lcode(c(.base7, list(next_probe = "축 해소 변형 1건")))
+  np2 <- validate_lcode(c(.base7, list(next_probe = "축 해소 변형 1건 | 역방향 가설 1건")))
+  #    A등급은 1건으로 충족
+  npA <- validate_lcode(c(.base7[setdiff(names(.base7), "grade")],
+                          list(grade = "A", next_probes = list("QEPM 정밀검증 이행"))))
+  # 8) [v3] mechanism 템플릿 껍데기(지배 요인 뒤 공란) 거부 — 길이는 10자를 넘는다
+  bp <- validate_lcode(c(.base7[setdiff(names(.base7), "mechanism_hypothesis")],
+                         list(mechanism_hypothesis = "가설 '모멘텀 12-1 검증' — 검증 결과 지배 요인: ",
+                              next_probes = list("a", "b"))))
 
-  cat(sprintf("[lcode_schema v2 selftest] full=%s/%s bad=%s legacy=%s/%s strict=%s norm5=%s(%s/%s) norm6=%s(rt=%s)\n",
+  cat(sprintf("[lcode_schema v3 selftest] full=%s/%s bad=%s legacy=%s/%s strict=%s norm5=%s(%s/%s) norm6=%s(rt=%s) np1=%s np2=%s npA=%s bp=%s\n",
     full$valid, full$promotion_ready, bad$valid, legacy$valid, legacy$promotion_ready,
-    legacy_strict$valid, v5$valid, nz$lcode$grade, nz$lcode$selection_type, v6$valid, np$lcode$record_type))
-  stopifnot(isTRUE(full$valid), isTRUE(full$promotion_ready),
+    legacy_strict$valid, v5$valid, nz$lcode$grade, nz$lcode$selection_type, v6$valid, np$lcode$record_type,
+    np1$promotion_ready, np2$promotion_ready, npA$promotion_ready, bp$promotion_ready))
+  stopifnot(identical(LCODE_SCHEMA_VERSION, 3L),
+            isTRUE(full$valid), isTRUE(full$promotion_ready),
             !isTRUE(bad$valid),
             isTRUE(legacy$valid), !isTRUE(legacy$promotion_ready), length(legacy$warnings) > 0,
             !isTRUE(legacy_strict$valid),
             isTRUE(v5$valid), identical(nz$lcode$grade, "A"), identical(nz$lcode$selection_type, "chain"),
-            isTRUE(v6$valid), identical(np$lcode$record_type, "infra"), is.null(np$lcode[["grade"]]))
-  cat("  PASS (6 cases)\n")
+            isTRUE(v6$valid), identical(np$lcode$record_type, "infra"), is.null(np$lcode[["grade"]]),
+            # v3 연속성 계약: 1건 미달 / 2건 충족 / A는 1건 충족
+            !isTRUE(np1$promotion_ready), "next_probe" %in% np1$missing_promotion_fields,
+            isTRUE(np2$promotion_ready), isTRUE(npA$promotion_ready),
+            isTRUE(np1$valid),   # 미충족이어도 emit(strict=FALSE)은 통과 = 차단 아님
+            # v3 보일러플레이트: 템플릿 껍데기는 mechanism 결측 취급
+            !isTRUE(bp$promotion_ready), "mechanism_hypothesis" %in% bp$missing_promotion_fields,
+            # oos_retention 결측이 더 이상 WARN을 만들지 않는다(External 축 문구 제거)
+            !any(grepl("External", np2$warnings)))
+  cat("  PASS (8 cases)\n")
 }

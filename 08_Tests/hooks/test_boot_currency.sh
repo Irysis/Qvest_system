@@ -142,28 +142,30 @@ mk_clean; rm -f "$FX/book.json"
 if run_chk; then bad "T9 book_state 부재 = FAIL" "통과됨(fail-open)"; else
   echo "$OUT" | grep -q "C7 UNKNOWN" && ok "T9 book_state 부재 = UNKNOWN FAIL" || bad "T9" "다른 사유"; fi
 
-v10() { printf '실행기 = `%s/.venv_ghost/Scripts/python.exe` (합성)\n' "$FX" > "$FX/pypolicy.md"; }
-inject "V10 선언된 ML 실행기 부재 검출(환경 결손)" "C9 " v10
-
-v11() { rm -f "$FX/.venv_fake/.canary_fixture"; }
-inject "V11 카나리아 소실 검출(삭제 주체 실재 신호)" "C10 " v11
-
-# ── C11 감사 감시: "조용함"이 "안전"으로 위장되는 4경로를 각각 막는다 ────────
-v12() { rm -f "$FX/audit_watch.json"; }
-inject "V12 감사 디제스트 부재 = 미배선 검출" "C11 " v12
-
-# ★가장 중요한 축: 감시 작업이 죽으면 디제스트가 굳는다. 그때 verdict 는 여전히
-#   "OK" 라서, 신선도를 안 보면 **작업이 죽은 순간부터 영원히 초록**이 된다.
-v13() { printf '{\n  "generated_epoch":  %s,\n  "verdict":  "OK",\n  "notes": []\n}\n' \
-          "$(( $(date +%s) - 40*3600 ))" > "$FX/audit_watch.json"; }
-inject "V13 디제스트 정체 검출(죽은 감시가 OK로 위장)" "C11 " v13
-
-v14() { printf '{\n  "generated_epoch":  %s,\n  "verdict":  "ALERT",\n  "notes": ["AUDIT POLICY OFF - deletions are no longer recorded."]\n}\n' \
-          "$(date +%s)" > "$FX/audit_watch.json"; }
-inject "V14 감사 정책 꺼짐(ALERT) 검출" "C11 " v14
-
-v15() { printf '{\n  "verdict":  "OK",\n  "notes": []\n}\n' > "$FX/audit_watch.json"; }
-inject "V15 epoch 파싱 실패 = UNKNOWN FAIL(통과 위장 금지)" "C11 " v15
+# ── V10~V15 보류: C9~C11b 은퇴 (v9 Lean Loop, 2026-08-23) ───────────────────
+# boot_currency_check.sh 의 C9(ML 실행기)·C10(venv 카나리아)·C11/C11b(감사 디제스트·
+#   스케줄 무장) 4축이 은퇴하면서(스케줄러 Qvest_AuditWatch 비활성 예정), 그 축을
+#   겨냥한 위반 주입 6종은 **검사할 대상이 없다**.
+# ★PASS 로 접지 않는다 — "측정하지 않음"과 "통과"를 같은 칸에 넣으면 이 저장소가
+#   반복해서 당한 바로 그 위장이 된다. 별도 SKIP 으로 세고 요약에 그대로 노출한다.
+# 되살리기 = boot_currency_check.sh 의 _bcc_retired_c9_c11b() 를 인라인 복원 +
+#   Qvest_AuditWatch 재활성 + 아래 블록의 주석 해제.
+SKIP=0
+SKIPS_JSON=""
+_skip() {  # $1=축 이름
+  SKIP=$((SKIP+1))
+  echo "  SKIP  $1  (C9~C11b 은퇴 — v9 2026-08-23)"
+  # 러너(run_all_hooks.sh)가 읽는 형상 = skips:[{axis,reason,missing}]. 사유를
+  #   **조치 가능한 형태**로 남긴다("무언가 없어서 건너뜀"은 곧 무시된다).
+  [ -n "$SKIPS_JSON" ] && SKIPS_JSON="$SKIPS_JSON,"
+  SKIPS_JSON="$SKIPS_JSON{\"axis\":\"${1%% *}\",\"reason\":\"boot_currency_check.sh C9~C11b 은퇴 (v9 2026-08-23) — 판정 축 부재\",\"missing\":\"boot_currency_check.sh::_bcc_retired_c9_c11b (호출자 없음) + Qvest_AuditWatch 비활성\"}"
+}
+_skip "V10 선언된 ML 실행기 부재 검출(환경 결손)"
+_skip "V11 카나리아 소실 검출(삭제 주체 실재 신호)"
+_skip "V12 감사 디제스트 부재 = 미배선 검출"
+_skip "V13 디제스트 정체 검출(죽은 감시가 OK로 위장)"
+_skip "V14 감사 정책 꺼짐(ALERT) 검출"
+_skip "V15 epoch 파싱 실패 = UNKNOWN FAIL(통과 위장 금지)"
 
 # ── T10. Lawbook INDEX 부재 = UNKNOWN FAIL (fail-open 금지) ──────────────────
 mk_clean; rm -f "$FX/lawbook_index.md"
@@ -171,6 +173,6 @@ if run_chk; then bad "T10 Lawbook INDEX 부재 = FAIL" "통과됨(fail-open)"; e
   echo "$OUT" | grep -q "C8a UNKNOWN" && ok "T10 Lawbook INDEX 부재 = UNKNOWN FAIL" || bad "T10" "다른 사유"; fi
 
 echo ""
-echo "PASS=$PASS FAIL=$FAIL"
-echo "{\"test\":\"boot_currency_guard\",\"pass\":$PASS,\"fail\":$FAIL,\"total\":$((PASS+FAIL))}"
+echo "PASS=$PASS FAIL=$FAIL SKIP=${SKIP:-0}"
+echo "{\"test\":\"boot_currency_guard\",\"pass\":$PASS,\"fail\":$FAIL,\"skipped\":${SKIP:-0},\"skips\":[${SKIPS_JSON:-}],\"total\":$((PASS+FAIL+${SKIP:-0}))}"
 [ "$FAIL" -eq 0 ] || exit 1

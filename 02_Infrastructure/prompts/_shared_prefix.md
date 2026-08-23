@@ -56,7 +56,7 @@
 </research_philosophy>
 
 <answer_principles level="0" version="v2.0-stub" enforce="HOOK+L_CODE+AX_002" effective="2026-04-29" updated="2026-07-24">
-**SOT = `.claude/rules/answer-principles.md` — 비단순 작업 착수 전 Read 의무.** 위반 = AX-002 동급. (2026-07-24 도훈 승인 C6: 전문 사본이 rule 대비 드리프트(07-13 리서치 연속성 6항·금칙표현 누락) 발생해 포인터화 — 사본 유지 금지, rule 파일이 유일 전문.)
+**SOT = `02_Infrastructure/docs/rules/answer-principles.md` — 비단순 작업 착수 전 Read 의무.** (2026-08-23 v9 이동 — 구 경로 `.claude/rules/`. lean 라운드는 3호만 적용 — `.claude/rules/lean-loop.md`) 위반 = AX-002 동급. (2026-07-24 도훈 승인 C6: 전문 사본이 rule 대비 드리프트(07-13 리서치 연속성 6항·금칙표현 누락) 발생해 포인터화 — 사본 유지 금지, rule 파일이 유일 전문.)
 
 핵심 인덱스: 8원칙(실제 목적·분해·명시 처리·구체성·리스크 점검·생략 금지·불확실 라벨·실행가능 결론) + 5금지(조용한 단순화/TODO 대체/hallucination/무검증 완료/얕은 마무리) + 회피표현 grep + 백테스트 자체합성 금지(PerformanceAnalytics 표준만) + 리서치 연속성(next_probe≥2·종결어휘 금지) + 금칙표현.
 
@@ -197,14 +197,10 @@ v2 대기 (Risk/Optimizer용):
 - 05_Production/ 수정 금지 (promote_to_production()만 예외). 01_Literature/ read-only.
 </production_constraints>
 
-<!-- DISTILLED_MAP_START (generated — build_distilled_usage.py) -->
-<distilled_map>
-[Distilled 탐색지도 — 가설 착수 전 대조. 판결이 아니라 방향(프론티어) 표시다.]
-[선정 = 실사용 빈도순(소비면 파일 수), 동률 시 최신 정제순. 생산자 = build_distilled_usage.py]
-  - DIST-QPM-003 [탐색됨→프론티어(INV-7 조건-안 차별점 시 진행)· 인용 22] KR quality_profitability 단독/단순-composite long-only는 estimated 성과 기준 반복 실패 — supporting 4전략 모두 OOS에서 alpha 소멸(profitability fortress OOS retention 0.24·recent-3Y SR 0.135, growth-st
-  - DIST-RAMP-006 [조건부· 인용 19] KR 시장에서 value/국면-조건부 팩터배분은 배포 조건(25종 long-only)에서 실현 PORT_t 천장이 ~2.85로, 모든 regime 변형(AR+MSM 2.73·Cascade 2.85·Shu-Mulvey 그룹 0.83)이 이 이하다 — 이는 국면엔진 한계가 아니라 알파 자체 한계(2017+ cohort dec
-  - DIST-QPM-006 [조건부· 인용 13] KR value/quality 팩터의 single-signal long-only 구현은 실패 — EP 단독(L-132: V02 CAGR -1.71%/SR -0.265, turnover 3.3%로 rebalancing alpha 부재, 저PER 가치함정)과 sector-neutral accrual(L-135: OOS ret
-  - DIST-QPM-005 [탐색됨→프론티어(INV-7 조건-안 차별점 시 진행)· 인용 8] KR 개인투자자 순매수 contrarian(역발상) 단일팩터 long-only 신호는 알파 부재 (L-131/STR_1674 estimated: SR 0.157·MDD 65.6%·IR -0.283). 미국 retail-contrarian(Barber 2009) 효과가 한국의 높은 개인 비중(30%+)·약한 정보비대칭으로 
-  - DIST-AR-001 [탐색됨→프론티어(INV-7 조건-안 차별점 시 진행)· 인용 7] KR defense-family Q07+Accounting-Beta(D29) composite 30종목 long-only standalone은 자본 sleeve로 부적합 — 낙폭방어 자체는 양호(MDD 11.94%)하나 정상장 opportunity-cost drag로 CAGR 2.93%가 최소 기회비용(무위험2%+인플레3
-</distilled_map>
-<!-- DISTILLED_MAP_END -->
+<!-- (v9 Lean Loop 2026-08-23) 생성 블록 distilled_map 제거.
+     사유: 이 블록은 negative/conditional DIST 카드 top-5 를 모든 agent 의 의무 pull 면에
+     싣고 있었다 — 주입 훅과 합쳐 "죽은 방향 재제안 금지" 가 지식 입력의 대부분을 차지.
+     v9 은 양성 지식(통한 전략 + 최근 교훈)을 주입면으로 쓰고, 음성 지식은 착수 전
+     `Rscript 02_Infrastructure/tools/hypothesis_index.R lookup <kw>` 1줄 조회로 강등한다.
+     카드 자체는 06_Registry/distilled_knowledge.json 에 그대로 있고 삭제 아님(INV-7 보존).
+     생산자 build_distilled_usage.py 는 .cache/distilled_usage.json 만 계속 쓴다. -->

@@ -1,4 +1,16 @@
+---
+paths:
+  - "02_Infrastructure/contracts/**"
+  - "02_Infrastructure/worktask/**"
+  - "qepm/mailbox/worktask/**"
+  - "stage_artifacts/WT-*/**"
+---
+
 # Measurement Integrity + Graduation 허들 (Level 0)
+
+## §0 2층 적용 범위 (v9 2026-08-23)
+
+**2층 적용 범위 (v9 2026-08-23)**: §1~§7은 자본 층(Grade A 지명 후 `/worktask`→6-agent→dossier)에만 적용. 리서치 층(lean 라운드)은 `lean-loop.md`의 등급+PIT만 본다. HARD 3종 값은 `constraint_defaults.json::tier_graduation`이 정본, 재보정은 도훈 권한(INV-7 '완화 제안 금지'는 자본 층 한정).
 
 **발효**: 2026-05-29 (v8.x WS1/2/3, 도훈 mandate "한 번 재설계하고 가자"). **위반 = AX-002 동급**(proxy 수치로 게이트 통과 = 프로세스 우회 = 미래참조).
 **근거**: 16-cycle 리서치가 "alpha/risk/optimizer가 proxy 손계산 수치로 graduation PASS 선언"하는 구조결함 노출 (Cycle 5 QVALUE "5/5 PASS"가 전부 proxy). E2E 입증: FLOW proxy portfolio-α t 3.55 → forge 실측 2.35 (Cycle 2 D 4.31→2.31 재현).
@@ -51,7 +63,7 @@
 - placebo·lag-stress는 candidate 무결성만 시험 — **base 패널 vintage 오염 검거 도구 = vintage-swap 통제 + window-matched control** (메모리: project-stored-panel-samemonth-lookahead).
 
 ## 참조
-- `.claude/rules/backtest-contract.md`(10-component) / `pit.md` / `research_philosophy.md`(④⑤⑥) / `answer-principles.md`(자체합성 금지)
+- `.claude/rules/backtest-contract.md`(10-component) / `pit.md` / `research_philosophy.md`(④⑤⑥) / `02_Infrastructure/docs/rules/answer-principles.md`(자체합성 금지)
 - `02_Infrastructure/contracts/{backtest_result_contract,canonical_screen_bt,registry_writer}.R` · `hooks/discovery_graduation_gate.sh` · `portfolio/portfolio_governor.R`
 - ★**착수 크기산술 관문 (2026-08-22 신설 · 같은 날 재교정, 도훈 권한 위임)** — 검정력 계약을 호출한 **뒤** 적용하는 착수 판정 규약.
   **ratio = 기전-함의 효과크기 / MDE80** 을 산출하되, **ratio 단독 기재를 금지**한다. MDE80 의 t_threshold = z(0.80)+z(0.975) = **2.8016** 이므로 **기대 t = ratio x 2.8016** 이고 검정력 = `pnorm(ratio*2.8016 - 1.96)` 이라는 **정확한 항등**이 성립한다 — 산출물에 **ratio · 기대 t · 검정력 3종을 함께** 적어야 읽는 사람이 처분을 안다.

@@ -62,8 +62,12 @@ def consumption_surfaces(root):
     # ★hypothesis_index.json 은 **제외** — 실측(2026-08-16): 이 파일이 DIST id 120종을 *나열*하므로
     #   포함하면 사용 1회 카드 102종 중 87종이 '인덱스에 실렸다'는 사실만으로 계상돼 랭킹이 평탄해진다.
     #   등재는 소비가 아니다(생산 파일 제외와 같은 원리 — 자기참조는 아니나 판별력 0).
+    # ★`layer_bottleneck_map.md` 제거 (2026-08-23 v9 Lean Loop §3.4(f) / 도훈 승인 D-h):
+    #   그 지도는 `06_Registry/_archive/layer_bottleneck_map_20260822.md` 로 아카이브됐고
+    #   갱신 의무가 폐지됐다. 소비면 목록에 남겨두면 **아카이브된 문서의 언급이 '소비'로
+    #   계상**돼 카드 랭킹이 실제와 어긋난다(등재는 소비가 아니라는 위 ② 주석과 같은 원리).
     for rel in ("06_Registry/alpha_frontier_queue.json",
-                "06_Registry/layer_bottleneck_map.md"):
+                "06_Registry/infra_backlog.json"):
         p = os.path.join(root, rel)
         if os.path.exists(p):
             out.append(p)
@@ -104,7 +108,9 @@ def build(root, verbose=True):
         "generator": "02_Infrastructure/ops/build_distilled_usage.py",
         "note": ("DIST 카드 실사용 빈도(소비면 **파일 수**). 생산 파일(distilled/*.json, "
                  "distilled_knowledge.json)은 자기참조 오염이라 제외. "
-                 "소비자: axiom_context_inject.sh 랭킹 + _shared_prefix distilled 블록."),
+                 "★2026-08-23 v9 Lean Loop: 구 소비자 2종(axiom_context_inject.sh 의 DIST "
+                 "negative top-5 랭킹 · _shared_prefix.md distilled_map 블록)이 주입면에서 "
+                 "제거돼 현재 자동 소비자는 없다. 카드 실사용 감사·수동 조회용 산출물."),
         "n_surfaces_scanned": len(surfaces),
         "n_ids_cited": len(per_id),
         "n_dangling": len(dangling),
@@ -132,6 +138,12 @@ PREFIX_END = "<!-- DISTILLED_MAP_END -->"
 
 def write_prefix_block(root, top_k=5, verbose=True):
     """_shared_prefix.md 에 실사용-랭킹 distilled 블록을 멱등 갱신.
+
+    ★(v9 Lean Loop 2026-08-23) **기본 경로에서 호출하지 않는다** — `__main__` 배선 제거.
+      사유: 이 블록은 negative/conditional 카드 top-5 를 모든 agent 의 의무 pull 면에 실어,
+      주입 훅과 합쳐 지식 입력의 대부분을 "죽은 방향 재제안 금지" 로 만들었다(v9 재극성).
+      함수는 남긴다 — 되돌리려면 이 함수를 다시 부르면 되고, 삭제하면 그 레시피가 사라진다.
+      `.cache/distilled_usage.json` 산출(build)은 불변이며 다른 소비자가 계속 읽는다.
 
     ★도달 경로 정직 표기: `_shared_prefix.md` 는 하네스가 서브에이전트에 자동 주입하는 면이 아니다.
       10개 agent 정의(.claude/agents/*.md)가 '모든 agent autoload' 로 지목하는 **의무 pull** 면이다.
@@ -205,5 +217,7 @@ def write_prefix_block(root, top_k=5, verbose=True):
 if __name__ == "__main__":
     q = "--quiet" in sys.argv
     build(_root(), verbose=not q)
-    if "--no-prefix" not in sys.argv:
+    # (v9 Lean Loop 2026-08-23) 프리픽스 재작성 중단 — `.cache/distilled_usage.json` 만 쓴다.
+    #   구 동작을 되살리려면 --write-prefix. 기본값이 '안 쓴다' 인 것이 요점이다.
+    if "--write-prefix" in sys.argv:
         write_prefix_block(_root(), verbose=not q)

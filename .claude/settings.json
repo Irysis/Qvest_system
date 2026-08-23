@@ -47,27 +47,49 @@
   "hooks": {
     "PreToolUse": [
       {
-        "_doc_router_hookp14": "HOOK-P1-4 (2026-07-04): PreToolUse Write/Edit 게이트 17훅 → qvest_hook_router dispatch 1-command 통합 (병렬 fan-out, first-block verbatim 전달). 등록 SOT: 02_Infrastructure/hooks/policies/router_dispatch.json (구 등록 순서·'|| true'·2>>log 경로 보존 — W/E 게이트 훅 추가/제거는 그 파일만 수정). parity 실측 5/5 PASS + Edit-skip/fail-closed 엣지 PASS (구 등록 = settings.json.bak_20260704). venv python 부재 시 shell fallback = 보호패턴(05_Production/01_Literature/normalizePath/WT-P graduation) fail-closed block. Agent/Read/Bash 매처 + PostToolUse/Stop/SubagentStop은 라우터 미검증 이벤트 — 개별 등록 유지.",
+        "_doc_v9": "v9 lean loop 2026-08-23: router dispatch retired; only capital/safety gates remain; unregistered hooks are listed in 02_Infrastructure/hooks/_archive_v8_enforcement/MANIFEST.md (filenames intentionally not listed here)",
         "matcher": "Write|Edit",
         "hooks": [
           {
             "type": "command",
-            "command": "DIR=${CLAUDE_PROJECT_DIR:-${QM_ROOT:-$PWD}}; PYX=\"$DIR/.venv_qvest_ml/Scripts/python.exe\"; [ -x \"$PYX\" ] || PYX=\"${QM_ROOT//\\\\//}/.venv_qvest_ml/Scripts/python.exe\"; [ -x \"$PYX\" ] || PYX=\"${QVEST_PY//\\\\//}\"; if [ -x \"$PYX\" ]; then \"$PYX\" \"$DIR/02_Infrastructure/hooks/qvest_hook_router.py\" dispatch --event PreToolUse 2>>/tmp/qvest_hook_router_dispatch.stderr.log; else INPUT=$(cat); if printf '%s' \"$INPUT\" | grep -qE '05_Production|normalizePath' || { printf '%s' \"$INPUT\" | grep -q '01_Literature' && ! printf '%s' \"$INPUT\" | grep -q 'Korea_Research'; } || { printf '%s' \"$INPUT\" | grep -q 'WT-P' && printf '%s' \"$INPUT\" | grep -q 'request\\.json'; }; then echo '{\"decision\":\"block\",\"reason\":\"qvest_hook_router: python venv 부재 — 보호 대상 패턴 감지, 검증 불가 시 차단 (fail-closed). ※단순히 그 대상을 *설명·언급*하는 주석/문서라면 식별자를 풀어 쓰면 통과합니다 (예: 폴더명·함수명을 그대로 적지 말고 서술로)\"}'; else echo '{}'; fi; fi",
-            "timeout": 120
+            "command": "DIR=${CLAUDE_PROJECT_DIR:-${QM_ROOT:-$PWD}}; bash \"$DIR/02_Infrastructure/hooks/safety_guard.sh\""
+          },
+          {
+            "type": "command",
+            "command": "DIR=${CLAUDE_PROJECT_DIR:-${QM_ROOT:-$PWD}}; bash \"$DIR/02_Infrastructure/hooks/legacy_write_block.sh\" 2>>/tmp/legacy_write_block.log || true"
           }
         ]
       },
       {
-        "_doc_safety_bash": "safety_guard의 Write|Edit 분은 라우터(router_dispatch.json #2)로 이동 — Bash 분만 개별 잔존 (HOOK-P1-4, 커버리지 공백 0)",
+        "_doc_capital_gates": "자본 게이트 2종 — graduation HARD 3종 fail-closed + 고정축(종목수/bounds/Sigma w) 강제. 둘 다 stdout JSON decision:block 으로 차단하므로 '|| true' 는 exit code 만 무시한다(차단력 불변).",
+        "matcher": "Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "DIR=${CLAUDE_PROJECT_DIR:-${QM_ROOT:-$PWD}}; bash \"$DIR/02_Infrastructure/hooks/discovery_graduation_gate.sh\" 2>>/tmp/discovery_graduation.log || true"
+          },
+          {
+            "type": "command",
+            "command": "DIR=${CLAUDE_PROJECT_DIR:-${QM_ROOT:-$PWD}}; bash \"$DIR/02_Infrastructure/hooks/worktask_constraint_enforcer.sh\""
+          }
+        ]
+      },
+      {
+        "_doc_bash_guards": "Bash 경로 보호선 — 생산 폴더 쓰기 차단 + 텔레그램 직접 호출 차단(tg_agent_brief 단일 진입점 강제).",
         "matcher": "Bash",
         "hooks": [
           {
             "type": "command",
             "command": "DIR=${CLAUDE_PROJECT_DIR:-${QM_ROOT:-$PWD}}; bash \"$DIR/02_Infrastructure/hooks/safety_guard.sh\""
+          },
+          {
+            "type": "command",
+            "command": "DIR=${CLAUDE_PROJECT_DIR:-${QM_ROOT:-$PWD}}; bash \"$DIR/02_Infrastructure/hooks/telegram_direct_call_guard.sh\""
           }
         ]
       },
       {
+        "_doc_agent_inject": "에이전트 스폰 시 공리·고정축 컨텍스트 주입 (context only, 차단 없음).",
         "matcher": "Agent",
         "hooks": [
           {
@@ -75,253 +97,48 @@
             "command": "DIR=${CLAUDE_PROJECT_DIR:-${QM_ROOT:-$PWD}}; bash \"$DIR/02_Infrastructure/hooks/axiom_context_inject.sh\""
           }
         ]
-      },
-      {
-        "matcher": "Agent",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "DIR=${CLAUDE_PROJECT_DIR:-${QM_ROOT:-$PWD}}; bash \"$DIR/02_Infrastructure/hooks/worktask_sequence_enforcer.sh\" 2>>/tmp/worktask_seq.log || true"
-          }
-        ]
-      },
-      {
-        "_doc_telegram": "Block direct tg_send/tg_send_rich/tg_send_photo. Force tg_agent_brief() single entry point. (2026-07-24 도훈 승인 C2: 구 PreToolUse[Read] 2건 — selection_contamination_detector(marker writer 부재로 구조적 상시 allow)·covariance_freshness_gate(advisory 무전달+유물 캐시) 등록 해제. 파일 FS retain, 실방어선 = R 계약+게이트급 훅+lockbox_audit_trail(PostToolUse Read 유지)+수동 confirm.)",
-        "matcher": "Bash",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "DIR=${CLAUDE_PROJECT_DIR:-${QM_ROOT:-$PWD}}; bash \"$DIR/02_Infrastructure/hooks/telegram_direct_call_guard.sh\""
-          }
-        ]
       }
     ],
     "PostToolUse": [
       {
-        "matcher": "Write|Bash",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "DIR=${CLAUDE_PROJECT_DIR:-${QM_ROOT:-$PWD}}; bash \"$DIR/02_Infrastructure/hooks/pipeline_trigger.sh\" >> /tmp/pipeline_trigger.log 2>&1 || true"
-          }
-        ]
-      },
-      {
-        "_doc_milestone_recommit": "v8.1.2 2026-06-11 재등록 — 8674cb3 무언급 소실분 복구 (도훈 confirm). AX승격/GradeA/PG2배분/L-code 마일스톤 즉시 semantic commit+push. 인코딩 패치(buffer-decode+scrub) 적용본.",
-        "matcher": "Write",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "DIR=${CLAUDE_PROJECT_DIR:-${QM_ROOT:-$PWD}}; bash \"$DIR/02_Infrastructure/hooks/milestone_commit.sh\" 2>>/tmp/milestone_commit.log || true"
-          }
-        ]
-      },
-      {
-        "_doc_dispatch_allocation_auditor": "FR 배분 산출물(admission/registry) 쓰기 후 구조 기록 (Level 2 advisory) — 도훈 2026-06-05",
-        "matcher": "Write",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "DIR=${CLAUDE_PROJECT_DIR:-${QM_ROOT:-$PWD}}; bash \"$DIR/02_Infrastructure/hooks/dispatch_allocation_auditor.sh\" 2>>/tmp/dispatch_allocation_auditor.log || true"
-          }
-        ]
-      },
-      {
-        "matcher": "Write|Edit",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "DIR=${CLAUDE_PROJECT_DIR:-${QM_ROOT:-$PWD}}; bash \"$DIR/02_Infrastructure/hooks/answer_principles_grep.sh\" 2>>/tmp/answer_principles.log || true"
-          }
-        ]
-      },
-      {
-        "matcher": "Write|Edit",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "DIR=${CLAUDE_PROJECT_DIR:-${QM_ROOT:-$PWD}}; bash \"$DIR/02_Infrastructure/hooks/overlay_pit_grep.sh\" 2>>/tmp/overlay_pit_grep.log || true"
-          }
-        ]
-      },
-      {
-        "matcher": "Write",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "DIR=${CLAUDE_PROJECT_DIR:-${QM_ROOT:-$PWD}}; bash \"$DIR/02_Infrastructure/hooks/worktask_artifact_validator.sh\" 2>>/tmp/worktask_validator.log || true"
-          }
-        ]
-      },
-      {
-        "matcher": "Write",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "DIR=${CLAUDE_PROJECT_DIR:-${QM_ROOT:-$PWD}}; bash \"$DIR/02_Infrastructure/hooks/red_flag_detector.sh\" 2>>/tmp/red_flag_detector.log || true"
-          }
-        ]
-      },
-      {
-        "matcher": "Read",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "DIR=${CLAUDE_PROJECT_DIR:-${QM_ROOT:-$PWD}}; bash \"$DIR/02_Infrastructure/hooks/lockbox_audit_trail.sh\" 2>>/tmp/lockbox_audit.log || true"
-          }
-        ]
-      },
-      {
-        "matcher": "Bash",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "DIR=${CLAUDE_PROJECT_DIR:-${QM_ROOT:-$PWD}}; bash \"$DIR/02_Infrastructure/hooks/forge_integration_audit.sh\" 2>>/tmp/forge_audit.log || true"
-          }
-        ]
-      },
-      {
-        "matcher": "Write",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "DIR=${CLAUDE_PROJECT_DIR:-${QM_ROOT:-$PWD}}; bash \"$DIR/02_Infrastructure/hooks/lockbox_post_judge_seal.sh\" 2>>/tmp/lockbox_seal.log || true"
-          }
-        ]
-      },
-      {
-        "matcher": "Write",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "DIR=${CLAUDE_PROJECT_DIR:-${QM_ROOT:-$PWD}}; bash \"$DIR/02_Infrastructure/hooks/lineage_recorder.sh\" 2>>/tmp/lineage_recorder.log || true"
-          }
-        ]
-      },
-      {
-        "matcher": "Write",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "DIR=${CLAUDE_PROJECT_DIR:-${QM_ROOT:-$PWD}}; bash \"$DIR/02_Infrastructure/hooks/reproducibility_validator.sh\" 2>>/tmp/reproducibility.log || true"
-          }
-        ]
-      },
-      {
-        "matcher": "Write|Edit",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "DIR=${CLAUDE_PROJECT_DIR:-${QM_ROOT:-$PWD}}; bash \"$DIR/02_Infrastructure/hooks/mandate_compliance_check.sh\""
-          }
-        ]
-      },
-      {
-        "matcher": "Write|Edit",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "DIR=${CLAUDE_PROJECT_DIR:-${QM_ROOT:-$PWD}}; bash \"$DIR/02_Infrastructure/hooks/rationalization_detector.sh\""
-          }
-        ]
-      },
-      {
-        "matcher": "Write|Edit",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "DIR=${CLAUDE_PROJECT_DIR:-${QM_ROOT:-$PWD}}; bash \"$DIR/02_Infrastructure/hooks/schedule_fidelity_check.sh\" 2>>/tmp/schedule_fidelity.log || true"
-          }
-        ]
-      },
-      {
-        "matcher": "Write|Edit",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "DIR=${CLAUDE_PROJECT_DIR:-${QM_ROOT:-$PWD}}; bash \"$DIR/02_Infrastructure/hooks/sr_provenance_check.sh\" 2>>/tmp/sr_provenance.log || true"
-          }
-        ]
-      },
-      {
-        "matcher": "Write|Edit",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "DIR=${CLAUDE_PROJECT_DIR:-${QM_ROOT:-$PWD}}; bash \"$DIR/02_Infrastructure/hooks/alpha_discovery_certifier.sh\" 2>>/tmp/alpha_discovery_certifier.log || true"
-          }
-        ]
-      },
-      {
+        "_doc_post_v9": "PostToolUse 는 자본 게이트 인증(book_state 정합)과 PIT C5 오버레이 advisory 2종만 유지.",
         "matcher": "Write|Edit",
         "hooks": [
           {
             "type": "command",
             "command": "DIR=${CLAUDE_PROJECT_DIR:-${QM_ROOT:-$PWD}}; bash \"$DIR/02_Infrastructure/hooks/governor_concord_certifier.sh\" 2>>/tmp/governor_concord_certifier.log || true"
-          }
-        ]
-      },
-      {
-        "_doc_7trends_p3": "7 QEPM Modern Trends Principle 3 — Uncertainty-aware Forecasting. predictions.parquet 안 CI extension 부재 시 advisory.",
-        "matcher": "Write",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "DIR=${CLAUDE_PROJECT_DIR:-${QM_ROOT:-$PWD}}; bash \"$DIR/02_Infrastructure/hooks/ml_uncertainty_audit.sh\" 2>>/tmp/ml_uncertainty_audit.log || true"
-          }
-        ]
-      },
-      {
-        "_doc_7trends_p2": "7 QEPM Modern Trends Principle 2 — Cost-aware Alpha. summary_metrics.json net_port_sr 필드 부재 시 advisory.",
-        "matcher": "Write",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "DIR=${CLAUDE_PROJECT_DIR:-${QM_ROOT:-$PWD}}; bash \"$DIR/02_Infrastructure/hooks/ml_cost_aware_audit.sh\" 2>>/tmp/ml_cost_aware_audit.log || true"
-          }
-        ]
-      }
-    ],
-    "Stop": [
-      {
-        "_doc_stop_recommit": "v8.1.1 2026-06-10 재등록 — 8674cb3에서 무언급 소실. harness.md 문서·memory_knowledge_health WARN_7 기대와 정합 회복 (L-275 silent fail 방지)",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "DIR=${CLAUDE_PROJECT_DIR:-${QM_ROOT:-$PWD}}; bash \"$DIR/02_Infrastructure/hooks/auto_commit_on_stop.sh\" 2>>/tmp/auto_commit_on_stop.log || true"
           },
           {
             "type": "command",
-            "command": "DIR=${CLAUDE_PROJECT_DIR:-${QM_ROOT:-$PWD}}; bash \"$DIR/02_Infrastructure/hooks/auto_push_on_stop.sh\" 2>>/tmp/auto_push_on_stop.log || true"
-          }
-        ]
-      },
-      {
-        "_doc_perf_gate": "2026-06-17 도훈 mandate — 성과 수치(%)+이번턴 코드미실행 시 Stop 차단(실측 강제). feedback-performance-real-code-only enforcement.",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "DIR=${CLAUDE_PROJECT_DIR:-${QM_ROOT:-$PWD}}; bash \"$DIR/02_Infrastructure/hooks/performance_realmeasure_gate.sh\""
-          }
-        ]
-      },
-      {
-        "_doc_research_continuity": "2026-07-15 도훈 mandate '포기 원천차단' — Continuity Firewall: research_continuity_guard.sh가 continuity_gate.py(독립 semantic 판정 + verdict-close 신어 일반화 + 건설적 종료계약)로 종결프레이밍∧계속-산출물결측 턴을 {decision:block} 발행(강제속행, warn→BLOCK 승격). paved path=close_round()(next_probe≥2·소비면·부활조건 인자강제→마커→게이트 자동통과). 자가발전=continuity_cases.json(잡을수록 강해짐)+주간 cleaner 승격. 무한루프방지=게이트 per-turn cap3+stop_hook_active+ERR trap fail-open. SOT 02_Infrastructure/docs/rules/continuity-firewall.md. (구 2026-07-13 warn 백스톱의 block 승격 집행)",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "DIR=${CLAUDE_PROJECT_DIR:-${QM_ROOT:-$PWD}}; bash \"$DIR/02_Infrastructure/hooks/research_continuity_guard.sh\""
+            "command": "DIR=${CLAUDE_PROJECT_DIR:-${QM_ROOT:-$PWD}}; bash \"$DIR/02_Infrastructure/hooks/overlay_pit_grep.sh\" 2>>/tmp/overlay_pit_grep.log || true"
           }
         ]
       }
     ],
     "SessionStart": [
       {
-        "_doc_boot_canary": "2026-07-17 B2 (아키텍처 2주 운영 감사) — 부트 카나리아: bootstrap.sh 완주 스탬프(.cache/boot_stamp.json) 부재/24h+ stale 시 '/qvest 권장' 컨텍스트 경고. warn-only(차단 아님). 07-05 이후 12일 무부트 세션 가동 실측 대응.",
+        "_doc_boot_canary": "2026-07-17 B2 부트 카나리아 — 부트스탬프 부재/24h+ stale 시 '/qvest 권장' 컨텍스트 경고. warn-only.",
         "hooks": [
           {
             "type": "command",
             "command": "DIR=${CLAUDE_PROJECT_DIR:-${QM_ROOT:-$PWD}}; bash \"$DIR/02_Infrastructure/hooks/boot_stamp_check.sh\" 2>>/tmp/boot_stamp_check.log || true"
+          }
+        ]
+      }
+    ],
+    "SessionEnd": [
+      {
+        "_doc_session_end": "v9 2026-08-23: 구 Stop 등록에서 이동 — 턴당이 아니라 세션당 1회 커밋/푸시. Stop 이벤트는 등록 0(차단 훅 없음).",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "DIR=${CLAUDE_PROJECT_DIR:-${QM_ROOT:-$PWD}}; bash \"$DIR/02_Infrastructure/hooks/auto_commit_on_stop.sh\" 2>>/tmp/auto_commit_on_stop.log || true",
+            "timeout": 120
+          },
+          {
+            "type": "command",
+            "command": "DIR=${CLAUDE_PROJECT_DIR:-${QM_ROOT:-$PWD}}; bash \"$DIR/02_Infrastructure/hooks/auto_push_on_stop.sh\" 2>>/tmp/auto_push_on_stop.log || true",
+            "timeout": 120
           }
         ]
       }

@@ -25,7 +25,7 @@ QEPM **Alpha 가설설계자**. 가설을 *설계*할 뿐 검증·측정하지 �
 
 ### Step 0 — Hypothesis Discovery
 `alpha_research_init.md` `<pipeline>` Step 0 그대로 수행:
-- **v8.3 착수 전 의무 (선행 조건, 생략 금지)**: `06_Registry/hypothesis_index.json` lookup + `06_Registry/alpha_frontier_queue.json` 확인·owner 표기. `dohoon_decision` 항목 세션 임의 착수 금지.
+- **착수 전 의무 (선행 조건, 생략 금지)**: `06_Registry/hypothesis_index.json` lookup + `06_Registry/alpha_frontier_queue.json`(schema 2.0) 확인·owner 표기. **착수는 `status=open` 인 항목만** — `status=parked` ∧ `parked_reason=dohoon_decision`/`dohoon_data_work` 는 세션 임의 착수 금지. 인프라 항목은 `06_Registry/infra_backlog.json` 에 있고 이 레인 대상이 아니다.
 - discovery seed(있으면 1순위) / PG0 gap(`.cache/portfolio_gap_vector.json`) / L-code 실패패턴 survey(`kr-inverse-pattern-miner`) / 문헌 survey / Factor DB gap
 - **복수 가설 후보 3~5건** 생성(family 다양화) → 1건 선택 + 대안은 `challenge_flags` 보관
 

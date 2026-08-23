@@ -98,10 +98,26 @@ chk("T3b 부재 id가 frontier_ids_missing에 기록", "FQ-999999" %in% (rec_bad
 chk("T3c 불일치 경고 메시지 발화", any(grepl("선언↔실기록 불일치", msgs)))
 
 # 실재 id 추출 (큐 텍스트에서 "FQ-nnn" 첫 건)
+#   ★2026-08-23: 큐가 두 파일로 갈렸다(알파 / 인프라). close_round 도 둘 다 대조하므로
+#     여기서도 둘을 합쳐 읽는다 — 한쪽만 읽으면 "실재 id" 가 다른 파일에 있을 때 T3d 가
+#     실재 id 로 실패한다.
+#   ★★그리고 이 케이스는 `write_marker = FALSE` 다 = **정본을 건드리면 안 된다**.
+#     구판은 close_round 의 큐 되먹임이 그 플래그 밖에 있어서 실제로 정본을 변형했고,
+#     그 흔적이 아직 남아 있다: FQ-001.last_round = "P0TEST_R2" (2026-08-22, 커밋됨).
+#     계약을 수리했으므로(close_round.R: `length(fq_ids) && isTRUE(write_marker)`)
+#     이제 대조만 하고 쓰지 않는다. 아래 T3f 가 그 사실을 매 실행 확인한다.
 qp <- file.path(.root, "06_Registry/alpha_frontier_queue.json")
-qtxt <- paste(readLines(qp, warn = FALSE, encoding = "UTF-8"), collapse = "\n")
+qtxt <- paste(unlist(lapply(
+  Filter(file.exists, file.path(.root, "06_Registry",
+                                c("alpha_frontier_queue.json", "infra_backlog.json"))),
+  function(p) paste(readLines(p, warn = FALSE, encoding = "UTF-8"), collapse = "\n"))),
+  collapse = "\n")
 mm <- regmatches(qtxt, gregexpr('"FQ-[0-9]{1,4}"', qtxt, perl = TRUE))[[1]]
 real_id <- gsub('"', "", mm[1])
+## 정본 지문 — 이 호출 전후로 **바이트가 같아야** 한다(write_marker=FALSE 계약).
+.fq_live <- Filter(file.exists, file.path(.root, "06_Registry",
+                                          c("alpha_frontier_queue.json", "infra_backlog.json")))
+.fq_before <- vapply(.fq_live, function(p) as.character(tools::md5sum(p)), character(1))
 co <- capture.output(suppressMessages(
   rec_ok <- close_round("P0TEST_R2", "config_scoped_negative",
                         "P0 테스트 — frontier 실재 id 양성 대조용 기전 진단 문장.",
@@ -110,6 +126,12 @@ co <- capture.output(suppressMessages(
                         live_trigger = "테스트 트리거", write_marker = FALSE)))
 chk(sprintf("T3d 실재 id(%s) → verified=TRUE", real_id),
     isTRUE(rec_ok$frontier_update_verified))
+## T3f — ★검사가 정본을 변형하지 않는가 (2026-08-23 신설).
+##   구판은 변형했고 그 흔적이 커밋에 남았다: FQ-001.last_round="P0TEST_R2"(08-22).
+##   md5 로 본다 — 크기·줄수는 필드 하나 바뀌어도 그대로일 수 있다.
+.fq_after <- vapply(.fq_live, function(p) as.character(tools::md5sum(p)), character(1))
+chk("T3f write_marker=FALSE 가 정본 큐를 변형하지 않음 (md5 불변)",
+    identical(.fq_before, .fq_after))
 
 co <- capture.output(suppressMessages(
   rec_na <- close_round("P0TEST_R3", "config_scoped_negative",

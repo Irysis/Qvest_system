@@ -268,7 +268,11 @@ def _draft_statement(cluster: dict, cand_type: str, polarity: str) -> str:
 def _draft_evidence(cluster: dict) -> dict:
     """Extract draft evidence fields from member L-codes."""
     ids = [m["l_code"] for m in cluster["members"]]
-    strategies = list({m["strategy_id"] for m in cluster["members"] if m.get("strategy_id")})
+    # ★sorted 필수 (2026-08-23 실측): `list({...})` 는 set 순회 순서를 그대로 쓰는데
+    #   파이썬 문자열 해시는 프로세스마다 랜덤화(PYTHONHASHSEED)된다 ⇒ **내용이 하나도 안
+    #   바뀌어도 매 실행 순서가 달라져** 후보 파일이 매번 새로 쓰였다(크기는 같고 순서만 다름).
+    #   v9 무쓰기 판정을 넣고서야 보였다 — 그 전에는 무조건 덮어쓰기라 증상이 안 드러났다.
+    strategies = sorted({m["strategy_id"] for m in cluster["members"] if m.get("strategy_id")})
     return {
         "independent_l_codes": len(set(ids)),
         "independent_strategies": len(strategies),
@@ -413,25 +417,46 @@ def _draft_falsification(cluster: dict) -> dict:
     return {"attempts": attempts, "note": note}
 
 
-def _build_one_candidate(cl: dict, mode: str, today: str):
+def _build_one_candidate(cl: dict, mode: str):
+    """후보 1건 조립.
+
+    v9 (2026-08-23, Lean Loop §3.4(b)): candidate_id 에서 **날짜를 뺀다**.
+      구 id 는 `CAND_<YYYYMMDD>_<mode>_<family>_<polarity>_<L-code 3개>` 였다. 날짜가
+      들어 있으니 내용이 하나도 안 바뀌어도 매주 **새 파일**이 생기고(169 삭제→86 신규),
+      같은 클러스터가 최대 24회 동일 점수로 재채점됐다. 게다가 id 가 길어 review_log
+      파일명이 MAX_PATH 를 넘겨 쓰기가 무음 crash 한 사례가 있다.
+      ⇒ id = `CAND_<mode>_<cluster_key(12-hex)>` — 클러스터의 정체(=멤버 집합)만으로 결정.
+      날짜는 `created_at`(최초 생성)/`last_seen`(마지막 갱신)으로 남는다.
+    `promotable`: 단일 L-code 클러스터는 independence 축이 원리상 불가 —
+      승격 사다리에 올리지 않는다(소비자가 Rscript 스폰 자체를 건너뛴다). 초안(DIST)
+      생성은 종전대로 계속된다(지식 보존).
+    """
     cand_type = _classify_type(cl)
     polarity = _polarity(cl)
     family = _dominant_family(cl)  # 엄격 과반만 대표 — 이질 클러스터는 'mixed' (crash-safe)
-    cluster_key = f"{mode}_{family or 'unknown'}_{polarity}_{'_'.join(sorted(cl['l_codes'])[:3])}"
-    candidate_id = f"CAND_{today}_{cluster_key}"
+    l_codes = cl["l_codes"]
+    key = _cluster_key(l_codes)                       # 12-hex, promote.R/.log_partial 과 공유
+    l_code_set_sha = _cluster_key_full(l_codes)       # 40-hex 원본(감사·충돌 확인용)
+    candidate_id = f"CAND_{mode}_{key}"
 
     evidence = _draft_evidence(cl)
     evidence.update(_independence(cl))
 
+    now_iso = datetime.now(timezone.utc).isoformat(timespec="seconds")
     candidate = {
         "schema_version": "v54_ax_p0_mode",
         "candidate_id": candidate_id,
+        "cluster_key": key,
+        "l_code_set_sha": l_code_set_sha,
+        "cluster_label": f"{mode}_{family or 'unknown'}_{polarity}",  # 사람용 라벨(식별자 아님)
         "research_mode": mode,
         "metric_type": _cluster_metric_type(cl),
         "type": cand_type,
         "polarity": polarity,
+        # 단일 L-code = independence 원리상 불가 → 사다리 제외 (promote.R 도 SKIP_SINGLETON)
+        "promotable": len(set(l_codes)) >= 2,
         "statement_draft": _draft_statement(cl, cand_type, polarity),
-        "supporting_l_codes": cl["l_codes"],
+        "supporting_l_codes": l_codes,
         "scope_draft": _draft_scope(cl),
         "evidence_draft": evidence,
         # v8.1 트랙D: 빈 하드코딩 → L-code 실값 매핑 (mechanism_hypothesis / oos_retention /
@@ -441,22 +466,47 @@ def _build_one_candidate(cl: dict, mode: str, today: str):
         "oos_validation_draft": _draft_oos(cl),
         "cluster_members_count": cl["size"],
         "status": "pending_5axis",
-        "created_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+        "created_at": now_iso,
+        "last_seen": now_iso,
     }
-    return candidate_id, candidate, set(cl["l_codes"])
+    return candidate_id, candidate, set(l_codes)
+
+
+# 내용 동일성 비교에서 제외할 필드 — 시각 스탬프는 '변경'이 아니다.
+_CAND_VOLATILE_FIELDS = ("created_at", "last_seen")
+
+
+def _cand_payload_eq(a: dict, b: dict) -> bool:
+    """created_at/last_seen 을 뺀 나머지가 완전히 같은가 (무쓰기 판정의 유일한 기준)."""
+    if not isinstance(a, dict) or not isinstance(b, dict):
+        return False
+    ka = {k: v for k, v in a.items() if k not in _CAND_VOLATILE_FIELDS}
+    kb = {k: v for k, v in b.items() if k not in _CAND_VOLATILE_FIELDS}
+    return ka == kb
 
 
 def _write_with_superset_dedup(new_cands: list, out_dir: str) -> list[str]:
-    """replace-by-superset: 신 후보가 기존 pending CAND의 supporting 진부분집합을 포함하면 subset 제거."""
+    """replace-by-superset + **무쓰기(idempotent) 갱신**.
+
+    v9 (2026-08-23, Lean Loop §3.4(b)):
+      - 같은 supporting 집합 ∧ 내용 동일(created_at/last_seen 제외) → **파일을 안 건드린다**.
+        구 동작은 매주 무조건 덮어써 mtime·id 가 흔들렸고, 그것이 promote 재채점 churn 의
+        1차 원인이었다.
+      - 내용이 바뀐 경우만 제자리 overwrite 하되 `created_at` 은 **보존**한다
+        (최초 관측 시점은 사실이지 갱신 대상이 아니다).
+      - 기존 replace-by-superset 은 그대로 유지(subset/equal 구 파일 제거).
+    반환 = **실제로 쓴** 경로만 (무쓰기 분은 제외 — 호출자가 '몇 건이 바뀌었나'를 알 수 있어야 함).
+    """
     existing: dict = {}
     for f in glob.glob(os.path.join(out_dir, "CAND_*.json")):
         d = _load(f)
         if isinstance(d, dict):
             existing[f] = set(d.get("supporting_l_codes") or [])
     written: list[str] = []
+    unchanged = 0
     for cand_id, cand, sup in new_cands:
         cand_fname = f"{cand_id}.json"
-        # subset 또는 equal(파일명 상이 — 옛 mode-less id) 제거: 새 후보가 대체/갱신
+        # subset 또는 equal(파일명 상이 — 옛 날짜-기반 id) 제거: 새 후보가 대체/갱신
         for ef in [k for k, v in existing.items()
                    if v and v <= sup and os.path.basename(k) != cand_fname]:
             try:
@@ -468,11 +518,20 @@ def _write_with_superset_dedup(new_cands: list, out_dir: str) -> list[str]:
         # 새 후보가 남은 기존의 진부분집합이면 skip
         if any(sup and sup < v for v in existing.values()):
             continue
-        path = os.path.join(out_dir, f"{cand_id}.json")
+        path = os.path.join(out_dir, cand_fname)
+        old = _load(path) if os.path.exists(path) else None
+        if isinstance(old, dict) and _cand_payload_eq(old, cand):
+            existing[path] = sup
+            unchanged += 1
+            continue                                   # ★무쓰기 — churn 원천 차단
+        if isinstance(old, dict) and old.get("created_at"):
+            cand["created_at"] = old["created_at"]     # 최초 생성 시점 보존
         with open(path, "w", encoding="utf-8") as fh:
             json.dump(cand, fh, indent=2, ensure_ascii=False)
         existing[path] = sup
         written.append(path)
+    if unchanged:
+        print(f"  [idempotent] {unchanged} candidate(s) unchanged — not rewritten")
     return written
 
 
@@ -493,8 +552,18 @@ DIST_MODE_PREFIX = {
 }
 
 
+def _cluster_key_full(l_codes: list[str]) -> str:
+    """정렬된 supporting L-code 집합의 sha1 40-hex (cluster_key 는 이 값의 앞 12자리).
+
+    ★promote.R `.cluster_key_from_lcodes()` 와 **바이트 동치**여야 한다 —
+      R 쪽은 `sort(..., method="radix")`(C 로케일)로 python 의 코드포인트 정렬을 맞춘다.
+      기본 `sort()`(로케일 collation)를 쓰면 같은 클러스터가 다른 키를 얻는다.
+    """
+    return hashlib.sha1("|".join(sorted(set(l_codes))).encode("utf-8")).hexdigest()
+
+
 def _cluster_key(l_codes: list[str]) -> str:
-    return hashlib.sha1("|".join(sorted(set(l_codes))).encode("utf-8")).hexdigest()[:12]
+    return _cluster_key_full(l_codes)[:12]
 
 
 def _next_dist_id(dist_dir: str, mode: str, taken: set[str]) -> str:
@@ -1042,7 +1111,7 @@ def build_candidates(corpus: dict, out_dir: str) -> list[str]:
     if not lcodes:
         return []
     os.makedirs(out_dir, exist_ok=True)
-    today = datetime.now(timezone.utc).strftime("%Y%m%d")
+    # v9: candidate_id 에서 날짜를 뺐다 — `today` 는 더 이상 식별자에 쓰이지 않는다.
 
     # mode-partition: 같은 research_mode 내에서만 클러스터 (cross-mode 일반화는 promote_global 영역)
     by_mode: dict = {}
@@ -1064,13 +1133,13 @@ def build_candidates(corpus: dict, out_dir: str) -> list[str]:
         clusters = kept
         clustered_ids = {lid for cl in clusters for lid in cl["l_codes"]}
         for cl in clusters:
-            new_cands.append(_build_one_candidate(cl, mode, today))
+            new_cands.append(_build_one_candidate(cl, mode))
         # 콜드스타트(P1): 클러스터에 못 들어간(또는 disband된) 단독 L-code도
         #   pending_5axis 초안으로. (superset dedup이 이후 진짜 클러스터가 형성되면
         #   subset singleton을 자동 대체한다.)
         for lc in mode_lcodes:
             if lc.get("l_code") and lc["l_code"] not in clustered_ids:
-                new_cands.append(_build_one_candidate(_singleton_cluster(lc), mode, today))
+                new_cands.append(_build_one_candidate(_singleton_cluster(lc), mode))
 
     return _write_with_superset_dedup(new_cands, out_dir)
 

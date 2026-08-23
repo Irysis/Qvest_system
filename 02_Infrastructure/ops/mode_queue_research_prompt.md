@@ -87,8 +87,10 @@ QEPM 으로 올라가는 코드가 **없었다**(무인 러너 4종 `wt_create` 
 2. **경량 결과를 근거로 쓰되 재사용하지 않는다.** `sim_result`/`bt_result` 는 "왜 이걸 승격했나"
    의 근거로 인용하고, QEPM 의 α̂ 는 alpha-research 가 새로 만든다. 경량 수치를 QEPM 산출로
    옮겨 적으면 측정 계보가 끊긴다.
-3. 착수 전 `hypothesis_index` lookup + `06_Registry/alpha_frontier_queue.json` 확인 의무.
-   이미 같은 기전이 라운드로 돈 적 있으면 그 사실을 적고 **건너뛴다**(중복 라운드 금지).
+3. 착수 전 `hypothesis_index` lookup + `06_Registry/alpha_frontier_queue.json`(schema 2.0) 확인 의무.
+   **착수는 `status=open` 인 항목만** — `status=parked` ∧ `parked_reason=dohoon_decision`/
+   `dohoon_data_work` 는 착수 금지. 이미 같은 기전이 라운드로 돈 적 있으면 그 사실을 적고
+   **건너뛴다**(중복 라운드 금지). 종결분은 `06_Registry/_archive/alpha_frontier_queue_done_*.json`.
 4. WT 생성 후 `status.json.current_phase` 를 `ALPHA_DONE` 으로 두면 다음 런의 `qepm_dossier`
    레인이 risk → optimizer → forge → judge 로 **이어받는다**. 여기서 risk 를 직접 부르지 않는다
    — 한 런은 한 단계만 진행한다.
@@ -134,7 +136,8 @@ QEPM 으로 올라가는 코드가 **없었다**(무인 러너 4종 `wt_create` 
    ★이 레인과 경량 레인(alpha-search)은 술어상 **겹친다**(alpha_pending 의 폴백이
    `route=alpha ∧ kr_feasible` 만으로 참). 해소는 **선점** — 공용 원장에 남겨야 alpha-search 가
    같은 논문을 다시 태우지 않는다. 기록을 빠뜨리면 이중 소비가 난다.
-5. 착수 전 `hypothesis_index` lookup + `06_Registry/alpha_frontier_queue.json` 확인 의무(v8.3 규약).
+5. 착수 전 `hypothesis_index` lookup + `06_Registry/alpha_frontier_queue.json`(schema 2.0) 확인
+   의무. **`status=open` 만 착수** — `parked`(특히 `parked_reason=dohoon_decision`)는 금지.
    중복 라운드면 그 사실을 적고 건너뛴다.
 
 ### lane=optimizer / risk / regime
@@ -147,6 +150,36 @@ verdict · measured · routed_on · added`
 
 구현 불가면 `verdict="blocked_by_capability"` + `blocker` 사유를 적고 넘어간다
 (선례 3건: StationaryAmbiguity / PathSignature / MFCCA). 억지 구현 금지.
+
+#### optimizer/risk 2축 — 사전 스크린 (2026-08-23 라우터에서 이관)
+
+> 이 절은 원래 `paper_router_prompt.md` STEP 1-b 에 있었다. 라우터를 lean 으로 줄이면서
+> **소비 쪽인 여기로 옮긴다** — 축을 쓰는 것도 읽는 것도 이 레인이다.
+> 근거 = 사후 실측 3편(ConformalKelly · ProperScoreGAS · PreferenceRobustDistortion)이
+> **전부 게이트 미달**이었고 셋의 실패가 이 2축으로 설명됐다
+> (원장 `06_Registry/method_registry.json::cross_method_synthesis`).
+
+optimizer·risk 로 분류된 논문에는 아래 2축을 **반드시 함께 판정**해 `screen_axes` 에 기록한다.
+
+| 축 | 값 | 판정 근거 |
+|---|---|---|
+| `shrinkage_builtin` | `yes` / `weak` / `no` | 방법 자체가 축소·정규화·사전분포를 내장하는가. 측정틀(25종·250일 창)에서 추정오차가 지배하므로 이게 1급 판별자다 — Σ 성분 분해에서 **0.647→0.846 을 가른 것은 축소**(분산 +0.076 · 상관 +0.071 · 상호작용 +0.052)였지 어떤 구조도 아니었다 |
+| `statistic_order` | `<=2nd` / `higher` / `tail_quantile` | 방법이 의존하는 통계량의 차수. **고차·꼬리 통계는 축소를 얹어도 회수가 절반에 그친다** — PRD 는 공분산을 완전 축소(δ=1)해도 minvar_lw 에 0.181 못 미쳤고, 그 잔여가 목적함수 자체의 추정오차다. α=0.99·T=250 이면 관측 2~3개에 의존하는 통계를 최적화하는 셈 |
+
+**우선순위 규칙**: `shrinkage_builtin=yes ∧ statistic_order<=2nd` = ⭐⭐ 우선 구현 /
+`weak` 또는 `higher` = ⭐ 조건부 / `no ∧ tail_quantile` = 후순위(사후 posterior 낮음 — 실측 3/3 미달).
+
+⚠ **이 2축은 기각 사유가 아니라 우선순위다.** 후순위여도 등재는 하고 `verdict`·`blocker` 를
+명시한다(INV-7 — 경로-scoped 실패이지 방향 판결이 아니며, 일별 리밸·유니버스 확대·다른
+비중 규칙에서는 재검토 대상). **실측 없이 이 축만으로 `infeasible` 판정 금지.**
+
+★**키 이름과 값 어휘 고정 — 임의 변형 금지**(2026-08-13 적발). 세 키는 정확히
+`shrinkage_builtin` · `statistic_order` · `screen_priority` 철자로 쓰고 `screen_priority` 값은
+**`⭐⭐`/`⭐`/`후순위` 세 문자열만** 쓴다. 실사고: 07-27·08-04·08-08 세 날짜에 `screen_priority`
+대신 숫자 `priority`(1/2/3) 28건을 실었고 — 프롬프트에 없는 임의 키였으므로 **소비자가 읽지
+않아 표기해도 소비되지 않았다**. 두 키가 한 번도 같이 나오지 않아 `1/2/3 ↔ ⭐⭐/⭐/후순위`
+**매핑 근거가 없어 사후 복구도 불가**하다. 라우터 산출 직후
+`02_Infrastructure/ops/mode_queue_axis_audit.py --date <TODAY>` 가 채움률과 비정본 키 수를 찍는다.
 
 ## 공통 기록 의무
 
