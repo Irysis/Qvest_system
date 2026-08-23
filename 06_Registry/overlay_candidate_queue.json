@@ -1,10 +1,10 @@
 {
   "schema_version": "overlay_candidate_queue_v1",
-  "generated_at": "2026-08-22T18:18:40+0900",
+  "generated_at": "2026-08-23T22:28:27+0900",
   "producer_ref": "hurdle_gate.R verdict$screening$screen_route (measurement-graduation §3 screening tier)",
   "consumer_ref": "02_Infrastructure/ops/auto_regime_overlay_ab.R + 02_Infrastructure/regime/overlay_candidate_ab_lh.R + 02_Infrastructure/portfolio/module_dispatcher.R(FR Track2 풀 구성 시 no_signal 확인)",
   "note": "screening tier 라벨 — 자본/졸업 게이트 아님. overlay A/B 실측(clean-timing +1 lag 스트레스 의무) 후 status=measured. ★2026-08-22 추가: 각 후보에 no_signal 필드(measurement-graduation §3 무신호 대조 게이트) 부착. verdict=INDISTINGUISHABLE_FROM_NO_SIGNAL 이면 그 성과는 신호가 아니라 대형주 노출일 수 있으므로 소비자(FR Track2 등)는 직교 재료로 쓰기 전에 확인할 것. NOT_AUDITED 는 미확인이지 통과가 아니다.",
-  "n_candidates": 22,
+  "n_candidates": 23,
   "candidates": [
     {
       "id": "STR_AS_20260612_135316_470429",
@@ -5183,6 +5183,33 @@
         "beta": 0.822183209475899,
         "audited_by": "no_signal_queue_audit_r46_20260822.csv",
         "rule_ref": "measurement-graduation.md §3 무신호 대조 통과 의무 (2026-08-22)"
+      }
+    },
+    {
+      "id": "STR_AS_20260823_150421_3616",
+      "source": "alpha_search_manifest",
+      "source_path": "stage_artifacts/alpha_search/20260823_150421_3616/strategy_manifest.json",
+      "strategy_name": "AS_PeerValuation_Sim_2608_12594",
+      "screen_route": "OVERLAY_CANDIDATE|FR_RCMA",
+      "label_time": "2026-08-23T15:22:55+0900",
+      "grade": "F",
+      "essence_grade": null,
+      "metric_type": "backtested",
+      "bt_result_path": "stage_artifacts/alpha_search/20260823_150421_3616/bt_result.rds",
+      "signal_summary": {
+        "sharpe": 0.549,
+        "cagr_pct": 13.95,
+        "mdd_pct": 69.78,
+        "ir": 0.157,
+        "calmar": 0.2,
+        "turnover_ann_pct": 97,
+        "bm_corr": 0.726,
+        "fmt_codes": "FMT-01|FMT-04|FMT-07"
+      },
+      "status": "queued",
+      "no_signal": {
+        "verdict": "NOT_AUDITED",
+        "note": "감사 산출에 id 부재(no_signal_queue_audit_r46_20260822.csv) — 계열 추출 실패 등"
       }
     },
     {

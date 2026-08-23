@@ -1,14 +1,39 @@
 {
   "schema_version": "auto_spawn_queue_v1",
-  "generated_at": "2026-08-22T18:18:48+0900",
+  "generated_at": "2026-08-23T22:28:42+0900",
   "_doc": "Layer 2 스폰 큐 — 기계는 적재까지, 개시는 세션(/improve-drain). governor/book_state 도달 경로 없음. SOT = auto_spawn_orchestration_design_20260816.md",
   "config_ref": "06_Registry/auto_spawn_config.json",
   "counts": {
     "fr_disposition_suggest.done": 15,
     "overlay_drain.done": 5,
+    "overlay_drain.pending": 1,
+    "register_module_induce.pending": 1,
     "standalone_review.done": 15
   },
   "entries": {
+    "overlay_drain:STR_AS_20260823_150421_3616": {
+      "id": "overlay_drain:STR_AS_20260823_150421_3616",
+      "kind": "overlay_drain",
+      "candidate_id": "STR_AS_20260823_150421_3616",
+      "status": "pending",
+      "created_at": "2026-08-23T22:28:42+0900",
+      "strategy_name": "AS_PeerValuation_Sim_2608_12594",
+      "action": "Rscript 02_Infrastructure/regime/overlay_candidate_drain.R <candidate_id> (기계 실측 — dv_v1 판정 동반)",
+      "improvement_potential": null,
+      "no_signal_verdict": "NOT_AUDITED",
+      "no_signal_note": "무신호 대조 미확인(통과 아님) — run_nosignal_queue_audit_r46.R 로 감사 후 판단 가능"
+    },
+    "register_module_induce:STR_AS_20260823_150421_3616": {
+      "id": "register_module_induce:STR_AS_20260823_150421_3616",
+      "kind": "register_module_induce",
+      "candidate_id": "STR_AS_20260823_150421_3616",
+      "status": "pending",
+      "created_at": "2026-08-23T22:28:42+0900",
+      "route": "OVERLAY_CANDIDATE|FR_RCMA",
+      "proxy_grade": "F",
+      "action": "register_module() 계약 floor 충족 여부 확인 후 등재 — FR_RCMA 라벨의 소비 (D2 재정의)",
+      "src_path": "stage_artifacts/alpha_search/20260823_150421_3616/strategy_manifest.json"
+    },
     "fr_disposition_suggest:STR_AS_20260613_053006_236236": {
       "id": "fr_disposition_suggest:STR_AS_20260613_053006_236236",
       "kind": "fr_disposition_suggest",

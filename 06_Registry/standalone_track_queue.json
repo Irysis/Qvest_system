@@ -1,6 +1,6 @@
 {
   "schema_version": "standalone_track_queue_v1",
-  "generated_at": "2026-08-20T20:59:30+0900",
+  "generated_at": "2026-08-23T22:28:32+0900",
   "producer_ref": "02_Infrastructure/hurdle_gate.R:1581-1599 verdict$screening$screen_route (measurement-graduation §3 screening tier)",
   "consumer_ref": "Q-Lead standalone 판정 (graduation HARD 3종: PORT_t>=2.95 / oos_retention>=0.7 / calmar>=0.64) — 처분 기록은 06_Registry/standalone_track_dispositions.json",
   "note": "screening tier 라벨 — 자본/졸업 게이트 아님(HARD 불변). disposition='none' = standalone 판정을 아무도 안 한 backlog. FR 풀 등재(fr_eligible)는 standalone 처분이 아니다 — module_catalog 의 소비자는 factor-rotation 뿐이다.",
@@ -21,6 +21,10 @@
       "consumer": true,
       "ref": "02_Infrastructure/ops/auto_spawn_queue.R (2026-08-16 D2 재정의 — 도훈: FR_RCMA = 'register_module 유도 라벨'. catalog 부재 → register_module_induce / 등재+fr_eligible → fr_disposition_suggest. 구 '소비자 0 — RCMA 측 판독 코드 없음'은 라벨 의미 재정의로 해소 — RCMA 는 라벨이 아니라 module_catalog(fr_eligible)를 소비한다)"
     },
+    "DISTRIBUTION_TARGET": {
+      "consumer": true,
+      "ref": "02_Infrastructure/portfolio/distribution_target_queue.R (2026-08-22 신설 — 계약 02_Infrastructure/contracts/distribution_target_screen.R 와 **같은 세션에** 배선. 평균 공간 powered-null + 분포 축 통제 생존 + 독립 창 2개 부호 일치 3요건 충족분만 발급; 판정 권위는 dt_route_eligible() 단일 출처)"
+    },
     "TURNOVER_REVIEW": {
       "consumer": false,
       "ref": "소비자 0 — 설계상 기록 전용(hurdle_gate.R:1590 주석). 발급 실적 0건"
@@ -31,15 +35,59 @@
     }
   },
   "counts": {
-    "labeled": 519,
-    "tracked": 74,
-    "standalone": 52,
-    "unconsumed": 1,
+    "labeled": 541,
+    "tracked": 77,
+    "standalone": 54,
+    "unconsumed": 3,
     "routes_without_consumer": 1,
     "shadow_quarantine": 0,
     "orphan_ledger": 0
   },
   "unconsumed": [
+    {
+      "strategy_id": "STR_AS_20260823_161630_24400",
+      "run_dir": "20260823_161630_24400",
+      "src": "manifest",
+      "route": "STANDALONE_TRACK",
+      "screen_pass": true,
+      "proxy_grade": "B",
+      "essence_grade": null,
+      "port_t_nw3": null,
+      "oos_retention": null,
+      "calmar": null,
+      "net_sharpe": null,
+      "in_catalog": false,
+      "fr_eligible": false,
+      "metric_type": null,
+      "shadow_quarantine": false,
+      "disposition": "none",
+      "routes_without_consumer": "",
+      "strategy_name": "AS_RevisionAgreement_FLZ2012",
+      "labeled_at": "2026-08-23T16:27:16+0900",
+      "src_path": "stage_artifacts/alpha_search/20260823_161630_24400/strategy_manifest.json"
+    },
+    {
+      "strategy_id": "STR_AS_20260823_171019_40176",
+      "run_dir": "20260823_171019_40176",
+      "src": "manifest",
+      "route": "STANDALONE_TRACK",
+      "screen_pass": true,
+      "proxy_grade": "B",
+      "essence_grade": null,
+      "port_t_nw3": null,
+      "oos_retention": null,
+      "calmar": null,
+      "net_sharpe": null,
+      "in_catalog": false,
+      "fr_eligible": false,
+      "metric_type": null,
+      "shadow_quarantine": false,
+      "disposition": "none",
+      "routes_without_consumer": "",
+      "strategy_name": "AS_RevisionAgreement_FLZ2012_Top25",
+      "labeled_at": "2026-08-23T17:20:25+0900",
+      "src_path": "stage_artifacts/alpha_search/20260823_171019_40176/strategy_manifest.json"
+    },
     {
       "strategy_id": "STR_AS_20260611_153021_38500",
       "run_dir": "20260611_153021_38500",
