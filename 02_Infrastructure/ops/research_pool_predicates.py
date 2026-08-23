@@ -157,9 +157,11 @@ def _load_json(path):
 
     ★fail-soft 가 옳은 곳은 **원천 파일**(route/queue)뿐이다 — 결과가 pending 을
       과소 계상하는 보수적 방향이기 때문이다. 감산항(done)에는 _load_ledger 를 쓸 것.
+    ★인코딩은 `utf-8-sig` — BOM 을 쓰는 생산자 계열이 실재한다(pg2 큐). `utf-8-sig` 는
+      BOM 없는 UTF-8 도 그대로 읽으므로 종전 동작의 상위집합이다.
     """
     try:
-        with open(path, encoding="utf-8") as fh:
+        with open(path, encoding="utf-8-sig") as fh:
             return json.load(fh)
     except Exception:
         return None
