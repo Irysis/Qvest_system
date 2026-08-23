@@ -602,19 +602,25 @@ run_alpha_search <- function(strategy_name,
       })
   }
 
-  # ---- 10. 스크리닝 큐 리프레시 (비동기 · 실패해도 라운드에 영향 없음) ----
+  # ---- 10. 스크리닝 큐 리프레시 (동기 · 실패해도 라운드에 영향 없음) ----
   #   6c 가 방금 quarantine 에 넣은 재료를 overlay/standalone/auto_spawn 큐가 집어가게 한다.
-  #   ★`wait=FALSE` + `--if-stale 10`(디바운스) — 라운드 wall-clock 예산(<=40분)에 붙지 않는다.
-  #   스크립트는 별도 태스크에서 생성된다 — **부재 시 조용히 실패**해야 한다(tryCatch NULL).
-  #   중단 스위치는 스크립트 쪽 QVEST_SCREEN_QUEUE_NORUN=1.
+  #   ★2026-08-23 실측 수리: 구판은 `wait=FALSE` 였는데 **한 번도 실행되지 않았다**.
+  #     이 블록은 `invisible(list(...))` 직전이라 부모 R 이 곧바로 종료하고, Windows 에서는
+  #     그 순간 자식이 시작도 못 하고 죽는다(로그 파일이 0바이트로 생성된 것이 그 증거 —
+  #     리다이렉트는 걸렸는데 출력이 0). 검증 실런에서 큐 나이가 1687분 그대로였다.
+  #     ⇒ 동기 호출 + timeout. 실측 소요 21초로 라운드 예산(<=40분)의 0.9% 라 무해하고,
+  #       무엇보다 **실패가 로그에 보인다** — 조용한 미실행이 이 저장소의 반복 결함이다.
+  #   스크립트 부재 시에는 조용히 넘어간다(tryCatch NULL). 중단 = QVEST_SCREEN_QUEUE_NORUN=1.
   tryCatch({
     .qsc <- file.path(PROJECT_ROOT, "02_Infrastructure/ops/refresh_screen_queues.R")
     if (file.exists(.qsc)) {
       qlog <- file.path(PROJECT_ROOT, "stage_artifacts", "alpha_search", "refresh_screen_queues.log")
-      system2(Sys.which("Rscript"), c("--no-save", shQuote(.qsc), "--if-stale", "10"),
-              stdout = qlog, stderr = qlog, wait = FALSE)
+      .qrc <- system2(Sys.which("Rscript"), c("--no-save", shQuote(.qsc), "--if-stale", "10"),
+                      stdout = qlog, stderr = qlog, wait = TRUE, timeout = 180)
+      cat(sprintf("[AlphaSearch] 스크리닝 큐 리프레시 rc=%s (로그: %s)\n",
+                  as.character(.qrc), .rel_project_path(qlog)))
     }
-  }, error = function(e) NULL)
+  }, error = function(e) cat("[AlphaSearch] 큐 리프레시 생략:", conditionMessage(e), "\n"))
 
   invisible(list(strategy_id = strategy_id, grade = grade, score = score,
                  pass = pass, notable = notable, excess_cagr = excess_cagr,
