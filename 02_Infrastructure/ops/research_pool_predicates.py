@@ -148,6 +148,19 @@ def display_name(o):
             or o.get("name") or o.get("title") or "")
 
 
+def factor_hint(o):
+    """후보의 '무엇을 팩터로 볼 것인가' 한 조각. 없으면 빈 문자열.
+
+    생산자 계열마다 자리가 다르다 — arXiv 라우트는 `factor_candidate.factor_id`,
+    pg2 큐는 `angle`(+`pg2_lever`) 이다. 한쪽만 보면 목록이 절반 비어 보인다.
+    """
+    fc = o.get("factor_candidate") or {}
+    v = (fc.get("factor_id") or fc.get("id") or o.get("factor_id")
+         or o.get("factor_name") or o.get("factor_title")
+         or o.get("angle") or fc.get("name") or "")
+    return " ".join(str(v).split())
+
+
 class LedgerUnreadable(Exception):
     """소비 원장이 존재하는데 읽을 수 없다 = 계측 사망. 빈 값으로 내려앉히지 않는다."""
 
