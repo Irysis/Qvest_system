@@ -17,7 +17,7 @@ DG_AGE=$(( ( $(date +%s) - $(stat -c %Y "$DG" 2>/dev/null || echo 0) ) / 3600 ))
 if [ ! -f "$DG" ] || [ "$DG_AGE" -ge 24 ]; then
   bash "$PROJECT/02_Infrastructure/ops/alerts_digest_build.sh" >/dev/null 2>&1 || true
 fi
-PROJECT="$CLAUDE_PROJECT_DIR" PY="$PY" "$PY" - <<'PYEOF' 2>/dev/null || printf 'Data: ?\nQueue: ?\nLast: ?\nBook: ?\nAlerts/Budget: ? (status 산출 실패 — venv python 확인)\n'
+PROJECT="$CLAUDE_PROJECT_DIR" PY="$CLAUDE_PROJECT_DIR/.venv_qvest_ml/Scripts/python.exe" "$PY" - <<'PYEOF' 2>/dev/null || printf 'Data: ?\nQueue: ?\nLast: ?\nBook: ?\nAlerts/Budget: ? (status 산출 실패 — venv python 확인)\n'
 import json,os,re,glob,time,subprocess,datetime as dt
 P=os.environ["PROJECT"]; PY=os.environ["PY"]; o=[]
 R=lambda *a: os.path.join(P,*a)

@@ -95,9 +95,6 @@ def _project_root():
     ★`QM_ROOT` 를 먼저 보지 않는 이유: User scope 에 main 이 pin 돼 있어 워크트리에서
       실행해도 main 을 가리킨다(2026-08-21 실측). 자기 위치가 유일하게 정직한 좌표다.
     """
-    env = os.environ.get('QVEST_ALPHA_DONE_LEDGER')
-    if env:
-        return None  # 경로를 직접 지정받았으면 루트 추정 자체가 불필요
     return os.path.dirname(os.path.dirname(os.path.dirname(
         os.path.abspath(__file__))))
 
