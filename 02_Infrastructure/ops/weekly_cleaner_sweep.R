@@ -412,6 +412,17 @@ promote_skip <- list()       # basename(candidate) -> 사유 문자열 (스폰 �
 promote_skips <- list()      # 다이제스트 노출용 레코드
 promote_n_skip <- 0L
 auto_mapped_negative <- character(0)  # 이번 런에서 자동 지도된 DIST id (INV-7 탐색지도)
+# v9.1 커밋16 (2026-08-23): 무인 활성화 2-pass + 회로차단기 상태.
+#   사람 승인이 사라졌으므로 "이번 주에 무엇이 활성화되려 하는가"를 **쓰기 전에** 세고,
+#   폭주 신호가 있으면 전면 중단한다. 중단은 실패가 아니라 설계된 상태다 —
+#   cleaner_pending.json 의 axiom_candidates.activation_hold 로 사람에게 넘긴다.
+WEEKLY_ACTIVATION_MAX <- suppressWarnings(as.integer(Sys.getenv("WEEKLY_ACTIVATION_MAX", "3")))
+if (is.na(WEEKLY_ACTIVATION_MAX)) WEEKLY_ACTIVATION_MAX <- 3L
+activation_hold <- NULL      # NULL = 통과 / list(reasons=...) = 전면 중단
+activation_preview <- list() # basename -> list(verdict, refine_verdict, would_activate)
+n_new_active_planned <- 0L
+activated_axioms <- list()   # 다이제스트 §신규활성
+held_axioms <- list()        # 다이제스트 §정제보류(사유)
 
 # promote.R 을 **호출자 프로세스에** 사본 없이 적재 — cluster_key/candidate_sha 술어를
 #   재구현하지 않기 위함(두 벌이면 한쪽만 고쳐졌을 때 어느 검사에도 안 보인다).
@@ -524,6 +535,64 @@ run_step("axiom_weekly_cycle", {
     }
     cat(sprintf("  | [axiom] 사전판정: 후보 %d건 중 스폰 제외 %d건 (singleton/unchanged)\n",
                 length(cands), length(promote_skip)))
+
+    # ── v9.1 커밋16 pass ①: 전건 `--dry-run` (쓰기 0) ─────────────────────────
+    #   ★루프 변수를 `dry_cand` 로 둔다 — `08_Tests/hooks/test_promote_crash_exit.R [7]` 이
+    #     파일에서 **첫 `for (cand in ...)` 표현식**을 꺼내 stub 환경에서 실행한다.
+    #     여기서도 `cand` 를 쓰면 검사가 dry-run 루프를 잡아 crash 배선 축이 조용히 죽는다.
+    dry_targets <- cands[!(basename(cands) %in% names(promote_skip))]
+    pre_crash <- 0L
+    for (dry_cand in dry_targets) {
+      dout <- suppressWarnings(system2("Rscript", c(shQuote(promote_r), "--dry-run", shQuote(dry_cand)),
+                                       stdout = TRUE, stderr = TRUE))
+      dv <- .promote_crash_verdict(dout)
+      if (dv$crash) { pre_crash <- pre_crash + 1L; next }
+      vtok <- regmatches(dv$verdict_line, regexpr("(PASS|MAP|FAIL|SKIP_[A-Z_]+)$", dv$verdict_line))
+      rv <- regmatches(dout, regexpr("refine=(REFINED|HELD)", dout))
+      rv <- if (length(unlist(rv))) sub("refine=", "", unlist(rv)[1]) else NA_character_
+      wa <- any(grepl("would_activate=TRUE", dout, fixed = TRUE))
+      activation_preview[[basename(dry_cand)]] <- list(
+        verdict = if (length(vtok)) vtok[1] else NA_character_,
+        refine_verdict = rv, would_activate = wa)
+      if (wa) n_new_active_planned <- n_new_active_planned + 1L
+    }
+    # ── pass ②: 회로차단기 ────────────────────────────────────────────────────
+    .inj_len <- tryCatch({
+      ij <- fromJSON(file.path(root, ".cache", "axiom_inject_last.json"), simplifyVector = FALSE)
+      suppressWarnings(as.integer(ij$len))
+    }, error = function(e) NA_integer_)
+    # 상한 초과는 dry-run verdict 문자열이 아니라 **현 활성 재고 + 이번 주 예정분**으로 잰다
+    #   (dry-run 은 FAIL_CAP 을 찍지 않는다 — 그건 쓰기 시점 판정이다).
+    .n_act_now <- tryCatch(length(px$list_active_axioms(root = root)), error = function(e) NA_integer_)
+    .cap_breach <- is.finite(.n_act_now) && (.n_act_now + n_new_active_planned) >
+      (tryCatch(px$.TIER$mode_local$max_active_total, error = function(e) 20L) %||% 20L)
+    .reasons <- c(
+      if (n_new_active_planned > WEEKLY_ACTIVATION_MAX)
+        sprintf("신규 활성 예정 %d건 > WEEKLY_ACTIVATION_MAX %d", n_new_active_planned, WEEKLY_ACTIVATION_MAX),
+      if (isTRUE(.cap_breach)) "활성 상한 초과(FAIL_CAP)",
+      if (pre_crash > 0L) sprintf("dry-run crash %d건", pre_crash),
+      if (is.finite(.inj_len) && .inj_len > 1900L)
+        sprintf("주입 길이 %d > 1900 (2,000 예산 임박 — 활성화가 마커를 밀어낼 수 있음)", .inj_len))
+    if (length(.reasons)) {
+      activation_hold <- list(
+        held_at = format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z"),
+        reasons = as.list(.reasons),
+        n_new_active_planned = n_new_active_planned,
+        weekly_activation_max = WEEKLY_ACTIVATION_MAX,
+        inject_len = .inj_len, dry_run_crash = pre_crash,
+        action = "이번 주 promote 쓰기 전면 중단 — 검토 후 재실행: bash 02_Infrastructure/ops/weekly_cleaner_sweep.sh (또는 QVEST_AXIOM_UNATTENDED=0 로 보류 유지)",
+        preview = activation_preview)
+      cat(sprintf("  | [axiom][ACTIVATION HOLD] 전면 중단 — %s\n", paste(.reasons, collapse = " · ")))
+      cands <- character(0)   # 쓰기 pass 미실행 (본문 무변경 유지)
+    } else {
+      # 통과 — **쓰기 예고분만** 재스폰(SKIP_* 는 어차피 아무것도 안 쓴다).
+      .writers <- names(Filter(function(z) !is.na(z$verdict) && z$verdict %in% c("PASS", "MAP", "FAIL"),
+                               activation_preview))
+      cands <- cands[basename(cands) %in% .writers]
+      cat(sprintf("  | [axiom] 2-pass: dry-run %d건 → 쓰기 예고 %d건 재스폰 (신규 활성 예정 %d/%d · 주입 len=%s)\n",
+                  length(dry_targets), length(cands), n_new_active_planned, WEEKLY_ACTIVATION_MAX,
+                  as.character(.inj_len)))
+    }
 
     for (cand in cands) {
       .sk <- if (basename(cand) %in% names(promote_skip)) promote_skip[[basename(cand)]] else NULL
@@ -717,9 +786,12 @@ run_step("axiom_candidates_summary", {
                 paste(unlist(lcode_integrity$duplicate_ids), collapse = ", "),
                 lcode_integrity$n_entries, lcode_integrity$n_unique_ids))
 
-  # ── v9 승격 사다리 산출 (도훈 1줄 confirm 대기 큐 + 음성 자동 지도) ──────────
-  #   proposed_axioms = active/modes/**/AX-*.json 중 status=proposed. 다이제스트에서
-  #   `approve_cmd` 한 줄만 붙여넣으면 활성화되도록 명령까지 실어 보낸다(§3.4(a)).
+  # ── v9.1 커밋16 승격 사다리 산출 = **2절**(신규활성 / 정제보류) ───────────────
+  #   구 v9 는 `proposed_axioms` 1절 + `approve_cmd`(도훈 1줄 confirm) 였다. 승인이
+  #   품질 게이트로 대체됐으므로 다이제스트가 물어야 할 것도 바뀐다:
+  #     ① 이번 주 **무엇이 활성화됐나**(사람이 사후에 diff 를 볼 대상)
+  #     ② **무엇이 왜 보류됐나**(HELD 사유 — /cleaner 가 소비해 입력을 고치는 큐)
+  #   proposed_axioms 는 하위호환으로 남긴다(구 소비자 morning_steps/·SKILL 문구).
   proposed_axioms <- list()
   px_p <- .promote_env(root)
   if (!is.null(px_p) && exists("list_proposed_axioms", envir = px_p, mode = "function")) {
@@ -728,6 +800,33 @@ run_step("axiom_candidates_summary", {
       axiom_id = p$axiom_id, mode = p$mode, statement = substr(as.character(p$statement %||% ""), 1, 120),
       n_support = p$n_support, approve_cmd = p$approve_cmd))
   }
+  .ax_scan <- function(root) {
+    md <- file.path(root, "qepm", "memory", "axioms", "active", "modes")
+    if (!dir.exists(md)) return(list())
+    out <- list()
+    for (f in list.files(md, pattern = "^AX-.*\\.json$", full.names = TRUE, recursive = TRUE)) {
+      a <- tryCatch(fromJSON(f, simplifyVector = FALSE), error = function(e) NULL)
+      if (is.null(a)) next
+      out[[length(out) + 1L]] <- list(
+        axiom_id = as.character(a$axiom_id %||% sub("\\.json$", "", basename(f)))[1],
+        mode = as.character(a$research_mode %||% "?")[1],
+        status = as.character(a$status %||% "proposed")[1],
+        refine_verdict = as.character(a$refine_verdict %||% "미기록")[1],
+        refine_failing = as.list(unlist(a$refine_failing %||% list())),
+        refine_attempts = as.integer(a$refine_attempts %||% 0L),
+        statement_inject = as.character(a$statement_inject %||% "")[1],
+        n_support = length(a$supporting_l_codes %||% list()),
+        refined_at = as.character(a$refined_at %||% "")[1])
+    }
+    out
+  }
+  .ax_all <- tryCatch(.ax_scan(root), error = function(e) list())
+  activated_axioms <- Filter(function(a) identical(a$status, "active"), .ax_all)
+  held_axioms <- lapply(Filter(function(a) !identical(a$status, "active"), .ax_all), function(a) list(
+    axiom_id = a$axiom_id, mode = a$mode, status = a$status,
+    refine_verdict = a$refine_verdict, refine_failing = a$refine_failing,
+    refine_attempts = a$refine_attempts, n_support = a$n_support,
+    hint = "정제 게이트 미통과 — 입력(멤버 L-code next_probe/live_trigger·반증 시도·polarity 라벨)을 고치면 다음 스윕에서 자동 재시도 (수동 해제: approve_axiom)"))
 
   axiom_candidates_summary <- list(
     n_candidates_total = length(cand_fs),
@@ -736,8 +835,16 @@ run_step("axiom_candidates_summary", {
     # v9: 스폰 자체를 건너뛴 후보 (singleton / candidate_sha 불변) — 주간 churn 제거 계기
     n_promote_skipped = promote_n_skip,
     promote_skips = promote_skips,
-    # v9: 도훈 1줄 confirm 대기 공리 제안 (status=proposed — 주입 안 됨)
+    # v9: 하위호환 — status=proposed 목록(구 소비자용). v9.1 정본은 아래 2절.
     proposed_axioms = proposed_axioms,
+    # v9.1 커밋16: 무인 활성화 2절 + 회로차단기 상태
+    activated_axioms = activated_axioms,
+    held_axioms = held_axioms,
+    activation_hold = activation_hold,          # NULL = 통과 / list = 이번 주 쓰기 전면 중단
+    activation_preview = activation_preview,    # pass ① dry-run 수집분
+    n_new_active_planned = n_new_active_planned,
+    weekly_activation_max = WEEKLY_ACTIVATION_MAX,
+    unattended = identical(Sys.getenv("QVEST_AXIOM_UNATTENDED", "1"), "1"),
     # v9: 음성 클러스터 자동 지도(INV-7 — 공리 아님, 검색면 전용) 결과 DIST id
     auto_mapped_negative = as.list(auto_mapped_negative),
     # crash 판정 2축(2026-08-20): exit status ≠0 **또는** verdict 줄 부재. 각 레코드 detected_by 참조.
@@ -758,10 +865,26 @@ run_step("axiom_candidates_summary", {
               length(near_miss), length(confirm_flags),
               n_p5, as.character(p5_oldest_days), n_quar,
               if (length(hist_tab)) paste(sprintf("%s=%d", names(hist_tab), unlist(hist_tab)), collapse = " ") else "리뷰기록 없음"))
-  if (length(proposed_axioms))
-    for (p in proposed_axioms)
-      cat(sprintf("[cleaner]   · 공리 제안 %s (%s, L-code %s건) — 승인 1줄: %s\n",
-                  p$axiom_id, p$mode, as.character(p$n_support), p$approve_cmd))
+  # ── §신규활성 / §정제보류 2절 (v9.1 커밋16) ────────────────────────────────
+  if (!is.null(activation_hold)) {
+    cat(sprintf("[cleaner][ACTIVATION HOLD] 이번 주 공리 쓰기 전면 중단 — %s\n",
+                paste(unlist(activation_hold$reasons), collapse = " · ")))
+    cat(sprintf("[cleaner]   조치: %s\n", as.character(activation_hold$action)))
+  }
+  cat(sprintf("[cleaner] 공리 활성 %d건 / 보류 %d건 (이번 주 활성 예정 %d/%d · 무인 %s)\n",
+              length(activated_axioms), length(held_axioms), n_new_active_planned,
+              WEEKLY_ACTIVATION_MAX,
+              if (identical(Sys.getenv("QVEST_AXIOM_UNATTENDED", "1"), "1")) "ON" else "OFF"))
+  if (length(activated_axioms))
+    for (p in activated_axioms)
+      cat(sprintf("[cleaner]   · [활성] %s (%s, L-code %d건) %s | 되돌리기: deactivate_axiom(c(\"%s\"), reason=)\n",
+                  p$axiom_id, p$mode, p$n_support, substr(p$statement_inject, 1, 70), p$axiom_id))
+  if (length(held_axioms))
+    for (p in held_axioms)
+      cat(sprintf("[cleaner]   · [보류/%s] %s (%s, L-code %d건) 미통과=%s (시도 %d회)\n",
+                  p$refine_verdict, p$axiom_id, p$mode, p$n_support,
+                  if (length(p$refine_failing)) paste(unlist(p$refine_failing), collapse = ",") else "미기록",
+                  p$refine_attempts))
   invisible(TRUE)
 })
 
@@ -905,6 +1028,14 @@ if (Sys.getenv("QVEST_CLEANER_NO_TG", "0") != "1" && !DRY) {
         sprintf("axiom 후보 대기 %s건 (near-miss %s건 — /cleaner에서 정제)",
                 as.character(axiom_candidates_summary$n_pending %||% "?"),
                 as.character(length(axiom_candidates_summary$near_miss %||% list()))),
+        # v9.1 커밋16: 승인 대기 알림 → **신규 활성 통지 + 정제 보류 통지**
+        sprintf("공리 활성 %d건 / 정제보류 %d건%s",
+                length(axiom_candidates_summary$activated_axioms %||% list()),
+                length(axiom_candidates_summary$held_axioms %||% list()),
+                if (!is.null(axiom_candidates_summary$activation_hold))
+                  sprintf(" ⚠ 활성화 HOLD — %s",
+                          paste(unlist(axiom_candidates_summary$activation_hold$reasons), collapse = "; "))
+                else ""),
         sprintf("커밋 %d건 (git log 7일)", n_gc),
         sprintf("삭제 기록: .cache/hygiene_manifest.log (%s)",
                 if (DRY) "dry-run — 실삭제 없음" else "실삭제")

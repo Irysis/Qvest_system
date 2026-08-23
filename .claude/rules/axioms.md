@@ -12,7 +12,7 @@ paths:
 - Primary (authoritative): `qepm/memory/axioms/active/AX-*.json` (**active Law 4건: 000/001/002/008**. negative 4건 003/004/005/007 = 2026-07-05 **Distilled 강등**, `deprecated/` 아카이브 — INV-7)
 - Documented (Q-Lead 인지): `.claude/rules/axioms.md` (본 파일)
 - Mapping: `qepm/memory/axioms/axiom_sot_map.json`
-- Health: `02_Infrastructure/memory/memory_knowledge_health.R` (hard 6 + warning 6)
+- Health: `02_Infrastructure/memory/memory_knowledge_health.R` (hard 10 + warning 13 — v9.1 신설 **HARD_8** active mode-local 전건 `refine_verdict==REFINED` · **HARD_9** 활성 상한(모드당 ≤6 · 총 ≤20) · **HARD_10** 주입 계측 24h ∧ len ≤2000 ∧ 3마커 생존 · **WARN_12** tombstone 재발급 · **WARN_13** 역링크 충돌)
 
 **Derived cache (NOT authoritative)**:
 - `.cache/axiom_core.json` — bootstrap regenerate. 권위 X. 동기화 STALE 시 WARN (hard fail X).
@@ -28,7 +28,9 @@ AX-code (Lv0) > PIT C1-C15 (Lv1) > L-code (Lv2) > Signals (Lv3)
 
 ## 2-Tier (v8.0)
 
-mode-local `AX-<MODE>-NNN` (`active/modes/<mode>/`, MODE=AS/QPM/FR) + global `AX-NNN` (`active/`). negative 공리 = **Distilled 탐색지도**(INV-7, 재도전 대상 — Law 아님. 2026-07-05 AX-003/004/005/007 active→Distilled 강등, DIST 카드/Ledger 이관). Law 잔존 = process 규칙(polarity 없음, AX-000/001/002/008). 엔진 SOT: `02_Infrastructure/docs/rules/axiom-engine.md` (원전 r7 복원 + INV-1~7).
+**★mode-local `AX-<MODE>-NNN` 은 본 파일에 열거하지 않는다** (2026-08-23 v9.1). 정본 = `qepm/memory/axioms/axiom_sot_map.json` + `qepm/memory/axioms/active/modes/**`. 이유: v9.1부터 mode-local 활성화가 **무인**(`refine_statement.R` R0~R6)이라 목록이 주 단위로 바뀐다 — 여기 적으면 이 파일이 즉시 낡고, `memory_knowledge_health.R` HARD_3(문서↔JSON 불일치)이 매주 발화한다. 현재 활성 목록은 `Rscript -e 'source("02_Infrastructure/axiom/promote.R"); list_active_axioms()'`. 아래 "Active Law (4)" 절은 **global tier 전용**이며 그 4건만 본 파일이 문서화한다.
+
+mode-local `AX-<MODE>-NNN` (`active/modes/<mode>/`, MODE=AS/AR/QPM/JG/GV/FR/RR/RAMP) + global `AX-NNN` (`active/`). negative 공리 = **Distilled 탐색지도**(INV-7, 재도전 대상 — Law 아님. 2026-07-05 AX-003/004/005/007 active→Distilled 강등, DIST 카드/Ledger 이관). Law 잔존 = process 규칙(polarity 없음, AX-000/001/002/008). 엔진 SOT: `02_Infrastructure/docs/rules/axiom-engine.md` (원전 r7 복원 + INV-1~7).
 
 ## Active Law (4) — AX-000/001/002/008
 
@@ -64,4 +66,4 @@ mode-local `AX-<MODE>-NNN` (`active/modes/<mode>/`, MODE=AS/QPM/FR) + global `AX
 - `qepm/memory/axioms/candidates/CAND_*.json` (pending — AX-006 candidate-only)
 - `qepm/memory/axioms/axiom_sot_map.json` (Documented ↔ JSON 매핑)
 - `02_Infrastructure/axiom/lcode_harvester.py` (L-code → AX-code 승격 파이프라인)
-- `02_Infrastructure/memory/memory_knowledge_health.R` (health gate hard 6 + warning 6)
+- `02_Infrastructure/memory/memory_knowledge_health.R` (health gate hard 10 + warning 13 — v9.1 공리 무인 활성화 계약 HARD_8/9/10 · WARN_12/13 포함)

@@ -44,6 +44,12 @@ AGENT_NAME_LC=$(printf '%s' "$AGENT_NAME" | tr "[:upper:]" "[:lower:]")
 
 ACTIVE_DIR="$DIR/qepm/memory/axioms/active"
 CACHE_BODY="$DIR/.cache/axiom_inject_body.md"
+# (v9.1 2026-08-23 커밋2) 캐시 2분리 — 전역 Law 는 **고정부**, mode-local 은 **감축 tier**.
+#   한 파일에 섞으면 mode-local 이 body_fixed 로 들어가 감축 사다리의 손이 닿지 않는다
+#   (실측 예측: 18건 활성화 시 body_fixed 368→1,827자 → 렌더 3,030자 → ctx[:2000] 절단으로
+#   '[현재 최고 연구-tier 전략]'·'[최근 교훈]'·'dead configs' 가 전부 소실 = v9 재극성 역전).
+CACHE_ML="$DIR/.cache/axiom_inject_modelocal.md"
+INJECT_LAST="$DIR/.cache/axiom_inject_last.json"
 
 # regen body if missing or active AX newer than cache
 # (v9 2026-08-23) ★훅 자신이 캐시보다 새로우면 함께 재생성 — 렌더 규칙(status 필터·길이)을
@@ -51,23 +57,40 @@ CACHE_BODY="$DIR/.cache/axiom_inject_body.md"
 shopt -s globstar 2>/dev/null  # mode-local(active/modes/**) 포함
 NEWEST=$(ls -t "$ACTIVE_DIR"/**/AX-*.json "$ACTIVE_DIR"/AX-*.json 2>/dev/null | head -1)
 SELF="${BASH_SOURCE[0]:-$0}"
-if [ -n "$NEWEST" ] && { [ ! -f "$CACHE_BODY" ] || [ "$NEWEST" -nt "$CACHE_BODY" ] || [ "$SELF" -nt "$CACHE_BODY" ]; }; then
+if [ -n "$NEWEST" ] && { [ ! -f "$CACHE_BODY" ] || [ ! -f "$CACHE_ML" ] || \
+      [ "$NEWEST" -nt "$CACHE_BODY" ] || [ "$SELF" -nt "$CACHE_BODY" ] || \
+      [ "$NEWEST" -nt "$CACHE_ML" ] || [ "$SELF" -nt "$CACHE_ML" ]; }; then
   "$QVEST_PY_BIN" -c "
 import json, os, glob
 lines = []
+ml = []
 _files = set(glob.glob(os.path.join('$ACTIVE_DIR', '**', 'AX-*.json'), recursive=True)) | set(glob.glob(os.path.join('$ACTIVE_DIR', 'AX-*.json')))
 _n = 0
+ML_LINE_MAX = 70
 for f in sorted(_files):
     try:
         ax = json.load(open(f, encoding='utf-8'))
         # (v9) mode-local(active/modes/**) 은 status=active 인 것만 주입한다.
-        #   승격 사다리가 status=proposed 로 후보를 적재하므로(도훈 1줄 confirm 전),
-        #   필터가 없으면 미승인 공리가 '대전제' 로 광고된다. 전역 AX-*.json 은
-        #   status 필드 자체가 없어 이 조건에 걸리지 않는다(구 동작 불변).
+        #   승격 사다리가 status=proposed 로 후보를 적재하므로(무인 활성화 게이트 R0~R6
+        #   미통과분 = HELD/proposed), 필터가 없으면 미정제 공리가 '대전제' 로 광고된다.
+        #   전역 AX-*.json 은 status 필드 자체가 없어 이 조건에 걸리지 않는다(구 동작 불변).
         _rel = os.path.normpath(f).replace(chr(92), '/')
-        if '/modes/' in _rel and (ax.get('status') or 'active') != 'active':
+        _is_ml = '/modes/' in _rel
+        if _is_ml and (ax.get('status') or 'active') != 'active':
             continue
         axid = ax.get('axiom_id') or ax.get('id') or os.path.basename(f)[:-5]
+        if _is_ml:
+            # (커밋2) mode-local 은 별도 캐시로. 주입 문구는 statement_inject(정제기 S8 산출)
+            #   우선 — 없으면 statement 앞 70자. 정렬 = promotion.weighted_score 내림차순.
+            _txt = (ax.get('statement_inject') or ax.get('statement') or ax.get('text') or '')
+            _txt = ' '.join(str(_txt).split())[:ML_LINE_MAX]
+            _mode = ax.get('research_mode') or 'unknown'
+            try:
+                _w = float((ax.get('promotion') or {}).get('weighted_score') or 0.0)
+            except Exception:
+                _w = 0.0
+            ml.append((-_w, str(axid), '%s\t  - %s: %s' % (_mode, axid, _txt)))
+            continue
         stmt = (ax.get('statement') or ax.get('text') or ax.get('name') or '')[:75]
         tt = ax.get('type') or ax.get('grade') or 'IMMUTABLE'
         tp = ax.get('polarity') or ('axiom' if ax.get('grade')=='IMMUTABLE' else '?')
@@ -76,6 +99,8 @@ for f in sorted(_files):
     except Exception: pass
 lines.append(f'  → 전문: .claude/rules/axioms.md / active/ (+ modes/, total {_n})')
 open('$CACHE_BODY', 'w', encoding='utf-8').write(chr(10).join(lines))
+ml.sort()
+open('$CACHE_ML', 'w', encoding='utf-8').write(chr(10).join(m[2] for m in ml))
 " 2>/dev/null
 fi
 
@@ -95,7 +120,8 @@ esac
 CLAUDE_MD="$DIR/CLAUDE.md"
 # (v9 2026-08-23) 변동부 단일 원천 — lcode_harvester.py::write_positive_context() 산출물.
 POSITIVE_CTX="$DIR/.cache/positive_context.json"
-ESC=$(printf '%s' "$HEADER" | CB="$CACHE_BODY" PC="$POSITIVE_CTX" CM="$CLAUDE_MD" "$QVEST_PY_BIN" -c "
+ESC=$(printf '%s' "$HEADER" | CB="$CACHE_BODY" PC="$POSITIVE_CTX" CM="$CLAUDE_MD" \
+      ML="$CACHE_ML" IL="$INJECT_LAST" QVEST_INJECT_AGENT="$AGENT_NAME_LC" "$QVEST_PY_BIN" -c "
 import json, os, sys
 def rd(p):
     try:
@@ -172,7 +198,10 @@ axis = ('[고정 축 — 변수 아님, 이 안에서 풀 것]' + chr(10) +
 #   부재/파손 = 고정부만 주입. 훅이 레지스트리를 직접 읽지 않는 이유 = 매 spawn 경로.
 pos_lines, dist_lines, rec_lines = [], [], []
 dead_line = ''
-try:
+pc_status = 'ok'
+
+def _load_pc():
+    global pos_lines, dist_lines, rec_lines, dead_line
     _pc = json.load(open(os.environ.get('PC', ''), encoding='utf-8'))
     pos_lines = [l for l in (_pc.get('positive_block') or '').splitlines() if l.strip()]
     dist_lines = [l for l in (_pc.get('dist_block') or '').splitlines() if l.strip()]
@@ -182,20 +211,70 @@ try:
         dead_line = ('[dead configs %d — 착수 전 '
                      '\`Rscript 02_Infrastructure/tools/hypothesis_index.R lookup <kw>\` 1줄 확인]'
                      % _pc['n_dead'])
+
+# ★1회 재시도(0.15s): 생산자 lcode_harvester.py::write_positive_context() 가 **비원자적**으로
+#   쓰기 때문에, 그 밀리초 창에 Agent 가 스폰되면 파일이 부분 상태로 읽혀 변동부가 통째로
+#   비고 [현재 최고 연구-tier 전략]·[최근 교훈]·dead configs 3마커가 전부 소실된다
+#   (2026-08-23 21:44 실측: agent=alpha-research, len 807, 마커 3/3 소실 — HARD_10 발화).
+#   근본 수리(tmp→rename 원자적 쓰기)는 생산자 쪽 별건이고, 소비자 쪽 1회 재시도가
+#   그 창을 사실상 덮는다. 실패해도 조용히 축소되지 않도록 pc_status 를 계측에 남긴다.
+try:
+    _load_pc()
 except Exception:
-    pos_lines, dist_lines, rec_lines, dead_line = [], [], [], ''
+    try:
+        import time as _t
+        _t.sleep(0.15)
+        _load_pc()
+        pc_status = 'retry_ok'
+    except Exception:
+        pos_lines, dist_lines, rec_lines, dead_line = [], [], [], ''
+        pc_status = 'missing' if not os.path.exists(os.environ.get('PC', '')) else 'unreadable'
 
 H_POS = '[현재 최고 연구-tier 전략 — 여기서 출발·결합할 것]'
 H_DIST = '[검증된 양성 지식]'
 # 공리 블록: 렌더 라인당 80자 상한 (고정부 — 절대 절단 대상 아님).
 #   들여쓰기 재부여 = rd() 의 .strip() 이 캐시 첫 줄의 선행 공백만 먹어 정렬이 깨지던 것 수리.
+#   ★고정부 = 전역 Law 뿐. mode-local 은 아래 ml_lines(감축 tier)로 간다.
 body_fixed = chr(10).join(('  ' + ln.strip())[:80] for ln in body.splitlines() if ln.strip())
+
+# ── mode-local 공리(감축 tier, 커밋2) ────────────────────────────────────────
+#   캐시 형식 = '<mode>\\t  - <AX-ID>: <statement_inject ≤70자>' 한 줄에 하나.
+#   ML_MAX_TOTAL/PER_MODE 는 렌더 시점 상한이고, 사다리가 여기서 더 깎는다.
+ML_MAX_TOTAL = 5
+ML_MAX_PER_MODE = 2
+ml_all = []
+for _ln in rd(os.environ.get('ML', '')).splitlines():
+    if not _ln.strip():
+        continue
+    _m, _sep, _txt = _ln.partition(chr(9))
+    ml_all.append((_m if _sep else 'unknown', _txt if _sep else _ln))
+ML_N = len(ml_all)
+ML_PTR = ('[mode-local 공리 %d건 — Rscript -e \\'source(\"02_Infrastructure/axiom/promote.R\"); '
+          'list_active_axioms()\\']' % ML_N)
+
+def _ml_pick(n):
+    '''상위 n줄 — 모드당 ML_MAX_PER_MODE 상한을 지키며 weighted_score 순서(캐시 순서) 유지.'''
+    out, per = [], {}
+    for m, txt in ml_all:
+        if len(out) >= n:
+            break
+        if per.get(m, 0) >= ML_MAX_PER_MODE:
+            continue
+        per[m] = per.get(m, 0) + 1
+        out.append(txt)
+    return out
 
 def _blk(header, lines):
     return (header + chr(10) + chr(10).join(lines)) if lines else ''
 
-def _assemble(n_pos, n_dist, n_rec):
-    parts = [hdr, body_fixed, axis]
+def _assemble(n_pos, n_dist, n_rec, n_ml):
+    parts = [hdr, body_fixed]
+    if ML_N:
+        _ml = _ml_pick(min(n_ml, ML_MAX_TOTAL))
+        # n_ml==0 (사다리 마지막 단) = 1줄 포인터로 접는다. 활성 0건이면 아무것도 붙지 않는다
+        #   ⇒ mode-local 이 없는 저장소에서는 렌더 결과가 커밋2 이전과 **바이트 동일**.
+        parts.append(_blk('[mode-local 공리 %d/%d]' % (len(_ml), ML_N), _ml) if _ml else ML_PTR)
+    parts.append(axis)
     b = _blk(H_POS, pos_lines[:n_pos])
     if b:
         parts.append(b)
@@ -211,16 +290,48 @@ def _assemble(n_pos, n_dist, n_rec):
     return (chr(10) * 2).join(p for p in parts if p)
 
 MAX = 2000
-# 감축 사다리 — 고정부(hdr/공리/고정 축/프론티어/dead)는 어떤 단계에서도 손대지 않는다.
-#   ①DIST 포기 → ②최근 교훈 3→2→1 → ③전략 5→3. 그래도 초과면 hard cap.
-_ladder = [(5, 3, 3), (5, 0, 3), (5, 0, 2), (5, 0, 1), (3, 0, 1)]
+# 감축 사다리 — 고정부(hdr/전역 공리/고정 축/프론티어/dead)는 어떤 단계에서도 손대지 않는다.
+#   ①DIST 포기 → ②최근 교훈 3→2→1 → ③전략 5→3 → ④mode-local 5→3→1→0(1줄 포인터).
+#   ★mode-local 을 **맨 마지막**에 깎는 이유: 마지막 구(舊) 감축단이 1,571자라 여유 429자로
+#     5줄이 들어간다(실측 근거 §S4c-1). 그보다 먼저 깎으면 상한 5의 근거가 무너진다.
+_ladder = [(5, 3, 3, 5), (5, 0, 3, 5), (5, 0, 2, 5), (5, 0, 1, 5), (3, 0, 1, 5),
+           (3, 0, 1, 3), (3, 0, 1, 1), (3, 0, 1, 0)]
 ctx = ''
-for _np, _nd, _nr in _ladder:
-    ctx = _assemble(_np, _nd, _nr)
+_rung = 0
+_nml = 0
+for _i, (_np, _nd, _nr, _nm) in enumerate(_ladder):
+    ctx = _assemble(_np, _nd, _nr, _nm)
+    _rung, _nml = _i, min(_nm, ML_MAX_TOTAL) if ML_N else 0
     if len(ctx) <= MAX:
         break
 ctx = ctx[:MAX]
 ctx = ''.join(ch if not (0xD800 <= ord(ch) <= 0xDFFF) else '?' for ch in ctx)
+# ── 계측(커밋1): 이 파일이 memory_knowledge_health.R HARD_10 의 **유일한 입력**이다.
+#   조립기를 R 로 재구현하면 두 구현이 갈라지고, 갈라진 순간 계약이 실제 주입면을 안 잰다.
+#   fail-soft — 계측 실패가 주입 자체를 막지 않는다.
+try:
+    import datetime as _dt
+    _ml_rendered = len(_ml_pick(_nml)) if (ML_N and _nml) else 0
+    _p = os.environ.get('IL', '')
+    if _p:
+        _d = os.path.dirname(_p)
+        if _d and not os.path.isdir(_d):
+            os.makedirs(_d, exist_ok=True)
+        with open(_p, 'w', encoding='utf-8') as _fh:
+            json.dump({'at': _dt.datetime.now().astimezone().isoformat(timespec='seconds'),
+                       'len': len(ctx), 'max': MAX,
+                       'ladder_rung': _rung, 'ladder_total': len(_ladder),
+                       'ml_rendered': _ml_rendered, 'ml_active_total': ML_N,
+                       'ml_max_total': ML_MAX_TOTAL, 'ml_max_per_mode': ML_MAX_PER_MODE,
+                       'agent': os.environ.get('QVEST_INJECT_AGENT', ''),
+                       'pc_status': pc_status,
+                       'markers': {'positive': H_POS[:20] in ctx,
+                                   'recent': '[최근 교훈' in ctx,
+                                   'dead': 'dead configs' in ctx,
+                                   'dist': H_DIST in ctx}},
+                      _fh, ensure_ascii=False)
+except Exception:
+    pass
 print(json.dumps(ctx))
 ")
 echo "{\"hookSpecificOutput\":{\"hookEventName\":\"PreToolUse\",\"additionalContext\":$ESC}}"

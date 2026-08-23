@@ -70,13 +70,14 @@ pending 파일이 없으면: "증류 대기 없음" 보고 후 종료 (기계 �
 - 기계 스윕 step [3.5]가 harvester→cluster_extractor→promote 진단을 돌리고 pending의 `axiom_candidates` 섹션(`n_pending` / `failing_axis_histogram` / `near_miss`)을 채운다 (정규 경로 — 구 `axiom_weekly.sh`는 수동/보조 retain).
 - digest에 **axiom 후보 현황 절 포함**: pending 건수 + 실패 축 히스토그램(어느 축 결측이 승격을 막는지) + near-miss 목록.
 
-**★ v9 승격 사다리 산출 (2026-08-23 Lean Loop §3.4(a) — 의무 절)**:
-- pending의 `axiom_candidates.proposed_axioms[]`를 **한 건당 한 줄**로 digest에 옮긴다 — 형식:
-  `- AX-AS-001 (alpha_search, L-code 507건) — <statement 120자> · 승인: Rscript -e 'source("02_Infrastructure/axiom/promote.R"); approve_axiom(c("AX-AS-001"))'`
-  (도훈이 **한 줄 붙여넣기**로 활성화할 수 있어야 한다. `approve_cmd` 필드에 명령이 이미 들어 있으니 재작성 금지.)
-- `axiom_candidates.auto_mapped_negative[]`(음성 클러스터 자동 지도된 DIST id)도 1줄 목록으로 병기 — **공리가 아니라 탐색지도**(INV-7)이며 승인 대상이 아니다(무인 활성화는 §6 D-f 승인분).
+**★ v9.1 공리 사다리 산출 (2026-08-23 §7-S4 — 의무 절. 구 v9 '승인 대기 큐'를 대체)**:
+- **승인 대행은 더 이상 이 스킬의 역할이 아니다.** 공리 활성화는 `refine_statement.R` 의 **R0~R6 품질 게이트**가 무인으로 판정한다(INV-6 재정의 = 주입면 자격 게이트). digest 에는 **사후 통지 2절**을 옮긴다:
+  - `axiom_candidates.activated_axioms[]` → `- [활성] AX-AS-001 (alpha_search, L-code 187건) <statement_inject 70자> · 되돌리기: deactivate_axiom(c("AX-AS-001"), reason=)`
+  - `axiom_candidates.held_axioms[]` → `- [보류/HELD] AX-JG-001 (judge_gate, 13건) 미통과=R5_revival (시도 2회)` — **사유를 반드시 적는다**(사유 없는 보류 목록은 다음 주에 아무 행동도 유발하지 않는다).
+- `axiom_candidates.activation_hold` 가 비어 있지 않으면 **맨 위에 경고 1줄**: 회로차단기가 이번 주 공리 쓰기를 전면 중단했다는 뜻이다(사유 = 활성 예정 >3 · 상한 초과 · dry-run crash · 주입 len>1900). 이건 실패가 아니라 설계된 상태이며, 조치는 `activation_hold.action` 에 들어 있다.
+- `axiom_candidates.auto_mapped_negative[]`(음성 클러스터 자동 지도된 DIST id)도 1줄 목록으로 병기 — **공리가 아니라 탐색지도**(INV-7)이며 승인 대상이 아니다.
 - `axiom_candidates.n_promote_skipped` / `promote_skips[]`: 스폰 자체를 건너뛴 후보(단일 L-code = `SKIP_SINGLETON`, 입력 불변 = `SKIP_UNCHANGED`). **이 수가 크다는 건 정상**이다 — 새 정보가 없는 후보를 매주 재채점하지 않는다는 뜻. 0으로 떨어지면 오히려 사전판정 배선이 죽은 것이므로 확인할 것.
-- **near-miss statement 정제**: 1축만 미달인 후보는 statement 초안(INV-6 `[초안]`)을 정제해 **distilled 지식으로 승격 제안 — 도훈 confirm 건별** (자동 활성화 금지. promote 재실행은 confirm 후). 실패 축이 입력 결측(mechanism/falsification 등)이면 해당 emit 지점 보강을 후속으로 기록.
+- **★HELD 사유 소비가 이 스킬의 새 공리 역할이다**(정제가 아니라 *입력 수리*): `R5_revival`=멤버 L-code 에 `next_probe`/`live_trigger` 보강 · `R4_falsification`=반증 시도 구조화 기록 · `R0_polarity`=클러스터 polarity 오라벨 정정(`cluster_extractor.py` 재추출) · `R1_members`=결측 supporting 정리 · `R6_distinct`=중복 클러스터 병합 · `R2_tokens`/`R3_mechanism`=emit 지점 보강. 입력이 바뀌면 `refine_input_sha` 가 달라져 **다음 스윕이 자동 재시도**한다(영구 SKIP 없음, AX-000). statement 문안 자체를 손으로 고치지 말 것 — 조립기가 결정적으로 다시 만든다.
 
 **★ INV-6 자동초안 흐름 (2026-07-04 도훈 confirm — "무인 정제 금지" → "무인 *활성화* 금지" 재정의)**:
 DIST 초안 lifecycle이 반자동화됨:
@@ -130,7 +131,7 @@ pending_5axis → [자동초안 에이전트 + 적대검증] → proposed(주입
 
 - **증류(digest·삭제 판단) 자동화 금지** — 본 스킬은 항상 대화 세션에서 실행 (④ 삭제 판단은 LLM+도훈 감독 하).
 - **§0.2 claim 없이 증류 착수 금지** — claim `claimed=TRUE` 확인 전 digest 작성·L-code 발행·삭제 금지 (2-pass 중복실행 방지). in_progress면 병합 정합만.
-- **DIST 초안 무인 *활성화* 금지 (INV-6 재정의 2026-07-04)** — 자동초안(pending→proposed)+적대검증은 허용되나, proposed → distilled 활성화(주입 스트림 개방)는 **도훈 배치 승인 게이트 필수**. 본 스킬의 axiom 역할 = ① 자동초안 검토/재정제 ② 도훈 승인 대행 실행(`approve_proposed`) — 무인 활성화 아님. proposed·pending 초안은 주입되지 않는다.
+- **DIST 초안 무인 *활성화* 금지 (INV-6, DIST 카드 한정)** — DIST 카드는 자동초안(pending→proposed)+적대검증까지 허용되나 proposed → distilled 활성화는 **도훈 배치 승인 게이트 필수**(`approve_proposed`). ★**공리(AX-<MODE>-NNN)는 다르다(v9.1)**: 활성화는 `refine_statement.R` R0~R6 가 무인 판정하며 이 스킬은 승인 대행이 아니라 **HELD 사유 소비**(위 §공리 사다리 산출)를 한다. 두 계층을 섞지 말 것 — DIST 는 탐색지도 카드, AX 는 mode-local 공리다.
 - digest에 proxy/추정 수치를 실측처럼 기재 금지 (answer-principles 회피표현 grep 대상).
 - `stage_artifacts/` 내부는 인벤토리 소스일 뿐 — 어떤 파일도 이동·수정·삭제 금지 (§6 불변 런 기록).
 - 커밋은 메인 세션 규율에 따름 (본 스킬이 임의 커밋하지 않음).

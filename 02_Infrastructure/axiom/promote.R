@@ -80,7 +80,18 @@ suppressPackageStartupMessages({ library(jsonlite); library(data.table) })
     rigor_research_min_n    = 2L,           # positive/conditional: A/B ∨ canonical/backtested
     negative_min_fail       = 2L,           # negative: C/F 건수
     skip_polarity           = c("unknown"), # 방향 미상은 사다리 대상 아님
-    passed_rule             = "all_hurdles" # weighted 는 랭킹 전용(문턱 아님)
+    passed_rule             = "all_hurdles",# weighted 는 랭킹 전용(문턱 아님)
+    # ── v9.1 커밋14 활성 상한 (사람 승인이 사라지므로 필수) ──────────────────
+    #   초과 시 verdict = FAIL_CAP + 다이제스트 힌트. **자동 축출은 하지 않는다** —
+    #   "무엇을 버릴지"는 사람이 정한다(deactivate_axiom / rollback_axiom).
+    #   상한 6/20 의 근거: 주입 렌더 상한이 모드당 2·총 5줄이므로 활성 재고가 그보다
+    #   3~4배 커지면 "활성인데 한 번도 주입되지 않는 공리"가 다수가 된다(= 원장 비대).
+    max_active_per_mode     = 6L,
+    max_active_total        = 20L,
+    # 동일 refine_input_sha 로 이 주수만큼 연속 HELD 면 status="held_stale".
+    #   ★삭제가 아니다(AX-000) — 입력이 바뀌면 다시 판정 대상이 된다.
+    held_stale_weeks        = 8L,
+    backlink_max_files      = 60L  # 초과 시 개별 L-code 파일 대신 역인덱스 1파일
   ),
   global = list(
     hurdle_axes = c("independence", "rigor", "falsification", "external", "mechanism")
@@ -484,19 +495,48 @@ promote_to_axiom <- function(candidate_path, threshold = 0.80, auto_inject = NUL
 
   if (identical(verdict, "PASS")) {
     if (isTRUE(dry_run)) {
-      cat(sprintf("  (dry-run) 승격 대상 — active/modes/%s/AX-%s-NNN.json status=proposed 미기록\n",
-                  mode, .mode_prefix(mode)))
+      # dry-run 도 **정제는 돌린다**(쓰기 0). 그래야 주간 2-pass 회로차단기가 "이번 스윕이
+      #   몇 건을 활성화하려 하는가"를 쓰기 전에 셀 수 있다(weekly_cleaner_sweep.R:536).
+      rf <- .call_refine_statement(candidate, corpus, root = root)
+      report$refine_verdict <- as.character(rf$verdict %||% "HELD")[1]
+      report$refine_failing <- rf$failing %||% list()
+      report$refine_input_sha <- as.character(rf$refine_input_sha %||% NA_character_)[1]
+      report$statement_inject <- as.character(rf$statement_inject %||% "")[1]
+      .exists_ck <- length(list.files(file.path(root, "qepm/memory/axioms/active/modes"),
+                                      pattern = "^AX-.*\\.json$", full.names = TRUE, recursive = TRUE)) > 0
+      report$would_activate <- identical(report$refine_verdict, "REFINED") &&
+        .unattended_enabled() && isTRUE(.cap_ok(mode, file.path(root, "qepm/memory/axioms/active"), root = root)) &&
+        is.null(.tombstone_lookup(ckey, root = root))
+      cat(sprintf("  (dry-run) 승격 대상 — refine=%s%s · would_activate=%s (미기록)\n",
+                  report$refine_verdict,
+                  if (length(report$refine_failing)) paste0("(", paste(unlist(report$refine_failing), collapse = ","), ")") else "",
+                  report$would_activate))
     } else {
-      ap <- .promote_to_active(candidate, report, mode, root = root)
-      report$active_path <- ap
-      # ★L-code 역링크(promoted_to_axiom)는 **승인 시점**(approve_axiom)에만 기록한다.
-      #   proposed 는 아직 정본이 아니므로 원장에 '승격됨' 을 새기면 거짓이 되고,
-      #   부수적으로 매 주간 스윕이 stage_artifacts 수백 파일을 건드리게 된다.
+      ap <- .promote_to_active(candidate, report, mode, root = root, corpus = corpus)
+      report$active_path <- ap$path
+      report$promote_action <- ap$action
+      report$axiom_status <- ap$status
+      report$refine_verdict <- as.character(ap$refine$verdict %||% "HELD")[1]
+      report$refine_failing <- ap$refine$failing %||% list()
+      report$refine_input_sha <- as.character(ap$refine$refine_input_sha %||% NA_character_)[1]
+      report$cap_ok <- isTRUE(ap$cap_ok)
+      # tombstone 소비 = 파일 미생성. verdict 를 바꿔 원장·다이제스트가 그것을 볼 수 있게 한다.
+      if (identical(ap$action, "tombstoned")) {
+        verdict <- "SKIP_TOMBSTONED"; report$verdict <- verdict
+        cat(sprintf("[promote] %s%s → %s\n", dry_tag, cid, verdict))
+      } else if (identical(report$refine_verdict, "REFINED") && .unattended_enabled() &&
+                 !isTRUE(ap$cap_ok) && !identical(ap$status, "active")) {
+        report$cap_verdict <- "FAIL_CAP"
+      }
+      # ★L-code 역링크(promoted_to_axiom)는 **활성 전환 시점 1회**만 기록한다
+      #   (.maybe_write_back_links + backlinks_written 가드). 멱등 무변경 경로에서는 쓰지 않는다.
       do_inject <- if (is.null(auto_inject)) as.integer(Sys.getenv("QVEST_AXIOM_AUTO_INJECT", "0")) == 1 else isTRUE(auto_inject)
-      if (do_inject) {
+      if (do_inject && identical(ap$status, "active") && !is.na(ap$path)) {
         inj <- file.path(root, "02_Infrastructure", "axiom", "inject.R")
-        if (file.exists(inj)) { source(inj, local = TRUE); if (exists("inject_axiom", mode = "function")) try(inject_axiom(ap)) }
-      } else cat("[promote] inject 생략 (QVEST_AXIOM_AUTO_INJECT != 1) — status=proposed 는 주입 대상 아님\n")
+        if (file.exists(inj)) { source(inj, local = TRUE); if (exists("inject_axiom", mode = "function")) try(inject_axiom(ap$path)) }
+      } else if (!do_inject) {
+        cat("[promote] inject.R 생략 (QVEST_AXIOM_AUTO_INJECT != 1) — 주입면 도달은 axiom_context_inject.sh 가 status=active 로 판정한다\n")
+      }
     }
   } else if (identical(verdict, "MAP")) {
     # INV-7: 음성은 Law 가 아니라 **탐색지도**다. 공리 파일을 만들지 않는다.
@@ -528,47 +568,261 @@ promote_to_axiom <- function(candidate_path, threshold = 0.80, auto_inject = NUL
   })
 }
 
+# ── v9.1 커밋13: statement 정제기 호출 래퍼 ─────────────────────────────────
+# .call_auto_map_negative(위)와 같은 패턴 — 별도 env 로 sys.source 후 함수 호출.
+#   ★.fals_norm_result 를 **인자로 넘긴다**. 정제기가 반증 결산을 자기 판본으로 다시
+#     구현하면 result 토큰 정규화가 두 벌이 되고, 한쪽만 고쳐졌을 때 어느 검사에도 안 보인다.
+#   fail-soft: 정제 실패는 판정을 무효화하지 않고 verdict="HELD" 로 취급한다(승격 차단 쪽 —
+#   INV-4 "불확실은 승격 금지 쪽").
+.call_refine_statement <- function(candidate, corpus, root = .px_root(), peers = NULL) {
+  rs <- file.path(root, "02_Infrastructure", "axiom", "refine_statement.R")
+  if (!file.exists(rs)) {
+    cat("[promote][WARN] refine_statement.R 부재 — 정제 생략(HELD 취급)\n")
+    return(list(verdict = "HELD", failing = list("refiner_missing"),
+                statement = NULL, statement_inject = NULL, refine_input_sha = NA_character_,
+                gates = list()))
+  }
+  tryCatch({
+    had <- Sys.getenv("REFINE_SOURCED", NA_character_)
+    Sys.setenv(REFINE_SOURCED = "1")
+    on.exit(if (is.na(had)) Sys.unsetenv("REFINE_SOURCED") else Sys.setenv(REFINE_SOURCED = had),
+            add = TRUE)
+    env <- new.env(parent = globalenv())
+    suppressWarnings(suppressMessages(sys.source(rs, envir = env)))
+    if (!exists("refine_statement", envir = env, mode = "function"))
+      return(list(verdict = "HELD", failing = list("refine_statement_missing"), gates = list()))
+    env$refine_statement(candidate, corpus = corpus, fals_norm = .fals_norm_result,
+                         peers = peers, root = root)
+  }, error = function(e) {
+    cat(sprintf("[promote][WARN] 정제 실패(비차단, HELD 취급): %s\n", conditionMessage(e)))
+    list(verdict = "HELD", failing = list(paste0("refiner_error:", conditionMessage(e))),
+         gates = list())
+  })
+}
+
+# ── v9.1 커밋16: 무인 활성화 kill switch (런타임 — 코드 변경 없이 초 단위 정지) ──
+.unattended_enabled <- function() identical(Sys.getenv("QVEST_AXIOM_UNATTENDED", "1"), "1")
+
+# ── v9.1 커밋14: 활성 상한 ──────────────────────────────────────────────────
+list_active_axioms <- function(mode = NULL, root = .px_root()) {
+  md <- file.path(root, "qepm", "memory", "axioms", "active", "modes")
+  if (!dir.exists(md)) return(list())
+  out <- list()
+  for (f in list.files(md, pattern = "^AX-.*\\.json$", full.names = TRUE, recursive = TRUE)) {
+    a <- tryCatch(fromJSON(f, simplifyVector = FALSE), error = function(e) NULL)
+    if (is.null(a) || !identical(as.character(a$status %||% "")[1], "active")) next
+    m <- as.character(a$research_mode %||% "unknown")[1]
+    if (!is.null(mode) && !identical(m, mode)) next
+    out[[length(out) + 1L]] <- list(axiom_id = as.character(a$axiom_id %||% sub("\\.json$", "", basename(f)))[1],
+                                    mode = m, polarity = as.character(a$polarity %||% "?")[1],
+                                    refine_verdict = as.character(a$refine_verdict %||% "?")[1],
+                                    statement_inject = as.character(a$statement_inject %||% "")[1],
+                                    path = f)
+  }
+  out
+}
+.cap_ok <- function(mode, active_dir, root = NULL) {
+  root <- root %||% dirname(dirname(dirname(dirname(active_dir))))
+  act <- tryCatch(list_active_axioms(root = root), error = function(e) list())
+  n_tot <- length(act)
+  n_mode <- sum(vapply(act, function(a) identical(a$mode, mode), logical(1)))
+  ok <- (n_mode < .TIER$mode_local$max_active_per_mode) && (n_tot < .TIER$mode_local$max_active_total)
+  attr(ok, "detail") <- sprintf("mode=%s %d/%d · total %d/%d", mode, n_mode,
+                                .TIER$mode_local$max_active_per_mode, n_tot,
+                                .TIER$mode_local$max_active_total)
+  ok
+}
+
+# ── v9.1 커밋14: tombstone ──────────────────────────────────────────────────
+# 없으면 롤백이 **1주일짜리 임시조치**가 된다: .promote_to_active 의 멱등 검사는
+#   active/modes/** 만 스캔하므로, deprecated/ 로 옮겨진 클러스터를 다음 주 스윕이
+#   새 번호로 재발급한다(AX-AS-001 롤백 → 다음 주 AX-AS-003 으로 부활).
+# INV-7 정신: 영구 금지가 아니다 — clear_tombstone() + revive_condition 이 해제 경로다.
+.tombstone_path <- function(root) file.path(root, "qepm", "memory", "axioms", "tombstones.json")
+.tombstone_load <- function(root) {
+  p <- .tombstone_path(root)
+  if (!file.exists(p)) return(list(schema_version = "v1_axiom_tombstone", entries = list()))
+  d <- tryCatch(fromJSON(p, simplifyVector = FALSE), error = function(e) NULL)
+  if (is.null(d) || is.null(d$entries)) list(schema_version = "v1_axiom_tombstone", entries = list()) else d
+}
+.tombstone_lookup <- function(cluster_key, root = .px_root()) {
+  ck <- as.character(cluster_key %||% "")[1]
+  if (!nzchar(ck)) return(NULL)
+  for (e in .tombstone_load(root)$entries) {
+    if (identical(as.character(e$cluster_key %||% "")[1], ck) &&
+        !isTRUE(e$cleared)) return(e)
+  }
+  NULL
+}
+.tombstone_append <- function(root, cluster_key, axiom_id, source_candidate, reason,
+                              revive_condition = NULL) {
+  d <- .tombstone_load(root)
+  d$entries[[length(d$entries) + 1L]] <- list(
+    cluster_key = as.character(cluster_key %||% "")[1],
+    axiom_id = as.character(axiom_id %||% "")[1],
+    rolled_back_at = format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z"),
+    source_candidate = as.character(source_candidate %||% "")[1],
+    reason = as.character(reason)[1],
+    revive_condition = if (is.null(revive_condition)) NULL else as.character(revive_condition)[1],
+    cleared = FALSE)
+  d$updated_at <- format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z")
+  write_json(d, .tombstone_path(root), pretty = TRUE, auto_unbox = TRUE, null = "null")
+  invisible(d)
+}
+clear_tombstone <- function(cluster_key, reason, root = .px_root()) {
+  if (missing(reason) || !nzchar(as.character(reason)[1]))
+    stop("clear_tombstone: reason 필수 (해제 사유 없는 해제는 기록이 아니다)")
+  d <- .tombstone_load(root); ck <- as.character(cluster_key)[1]; n <- 0L
+  for (i in seq_along(d$entries)) {
+    if (identical(as.character(d$entries[[i]]$cluster_key %||% "")[1], ck) && !isTRUE(d$entries[[i]]$cleared)) {
+      d$entries[[i]]$cleared <- TRUE
+      d$entries[[i]]$cleared_at <- format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z")
+      d$entries[[i]]$cleared_reason <- as.character(reason)[1]
+      n <- n + 1L
+    }
+  }
+  if (n) {
+    d$updated_at <- format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z")
+    write_json(d, .tombstone_path(root), pretty = TRUE, auto_unbox = TRUE, null = "null")
+  }
+  cat(sprintf("[promote] tombstone 해제 %d건 (cluster_key=%s)\n", n, ck))
+  invisible(n)
+}
+
+# ★deprecated/ 도 스캔한다(커밋14). 롤백된 AX-AS-001 이 deprecated/AX-AS-001_rollback_*.json
+#   으로 옮겨진 뒤에도 그 번호를 다시 쓰면 원장·역링크·다이제스트에서 두 공리가 같은 이름으로
+#   충돌한다. 번호는 **재사용하지 않는다**.
 .next_axiom_id <- function(active_dir, mode = NULL) {
+  dep_dir <- file.path(dirname(active_dir), "deprecated")
+  .dep_nums <- function(pat) {
+    fs <- if (dir.exists(dep_dir)) list.files(dep_dir, pattern = pat) else character(0)
+    if (!length(fs)) return(integer(0))
+    m <- regmatches(fs, regexpr(pat, fs, perl = TRUE))
+    as.integer(sub(pat, "\\1", m, perl = TRUE))
+  }
   if (is.null(mode)) {
     files <- list.files(active_dir, pattern = "^AX-\\d+\\.json$")
     nums <- as.integer(sub("AX-(\\d+)\\.json", "\\1", files)); nums <- nums[!is.na(nums)]
+    dn <- .dep_nums("^AX-(\\d+)_.*"); nums <- c(nums, dn[!is.na(dn)])
     return(if (!length(nums)) "AX-003" else sprintf("AX-%03d", max(nums) + 1L))
   }
   prefix <- .mode_prefix(mode)
   md <- file.path(active_dir, "modes", mode)
   files <- if (dir.exists(md)) list.files(md, pattern = sprintf("^AX-%s-\\d+\\.json$", prefix)) else character(0)
   nums <- as.integer(sub(sprintf("AX-%s-(\\d+)\\.json", prefix), "\\1", files)); nums <- nums[!is.na(nums)]
+  dn <- .dep_nums(sprintf("^AX-%s-(\\d+)[_.].*", prefix)); nums <- c(nums, dn[!is.na(dn)])
   sprintf("AX-%s-%03d", prefix, if (length(nums)) max(nums) + 1L else 1L)
 }
 
-# v9 (2026-08-23): 승격 산출물은 **제안(proposed)** 이다.
-#   status="proposed" / tier="mode_local" / epistemic_status="research_tier" /
-#   confirm_required="dohoon_one_line". 주입·sot_map 등재는 approve_axiom() 이후로 미룬다
-#   (INV-6 안전속성 = 무인 텍스트가 주입면에 도달하지 않는다 — 그 속성은 그대로 보존).
-# ★멱등: 같은 cluster_key 의 공리가 이미 있으면 **쓰지 않는다**. 없으면 매주 새 번호가
-#   발급돼 AX-AS-001..NNN 이 무한 증식하고, 승인된 카드가 proposed 로 되돌아간다.
-.promote_to_active <- function(candidate, report, mode, root = .px_root()) {
+# v9.1 (2026-08-23 커밋13/14/16): 승격 산출물의 status 는 **정제 verdict 가 정한다**.
+#   REFINED ∧ QVEST_AXIOM_UNATTENDED=1 ∧ 상한 여유  → status="active"  (무인 활성화)
+#   그 외                                            → status="proposed" (HELD — 주입 안 됨)
+#   구 v9 는 전건 proposed + 도훈 1줄 confirm 이었다. E-1 이 그 승인을 **품질 게이트로 대체**한다:
+#   승인이 하던 일("이 문장이 대전제로 설 자격이 있는가")을 refine_statement.R 의 R0~R6 가 한다.
+#   되돌리기 = QVEST_AXIOM_UNATTENDED=0(초) · deactivate_axiom()(분) · rollback_axiom()(영구).
+# ★멱등: 같은 cluster_key 의 공리가 이미 있으면 **새 파일을 만들지 않는다**. 없으면 매주 새
+#   번호가 발급돼 AX-AS-001..NNN 이 무한 증식한다. 단 기존 파일에 대해서도 **재정제는 돈다** —
+#   입력(corpus)이 바뀌면 HELD 가 REFINED 로 뒤집힐 수 있어야 "실패 = 영구 SKIP 없음"(AX-000)이
+#   성립한다. 재정제 결과가 직전과 같으면(sha·verdict 동일) **한 바이트도 쓰지 않는다**.
+# ★역링크(promoted_to_axiom)는 **활성 전환 시점에 딱 한 번**만 쓴다(backlinks_written 가드).
+#   supporting 743 고유 L-code 중 175건이 2개 이상 공리에 중복 소유돼 있고 promoted_to_axiom 은
+#   스칼라다 — 주간 무조건 재기록이면 두 공리가 매주 서로를 덮어쓴다.
+.promote_to_active <- function(candidate, report, mode, root = .px_root(), corpus = NULL) {
   active_dir <- file.path(root, "qepm", "memory", "axioms", "active")
   out_dir <- file.path(active_dir, "modes", mode)
   dir.create(out_dir, recursive = TRUE, showWarnings = FALSE)
   ckey <- report$cluster_key %||% .cluster_key_of(candidate)
   cid  <- report$candidate_id %||% (candidate$candidate_id %||% "")
+
+  # 정제 verdict 를 status 판정 + 문장 산출의 단일 원천으로 쓴다.
+  refine <- .call_refine_statement(candidate, corpus, root = root)
+  refined <- identical(as.character(refine$verdict %||% ""), "REFINED")
+  cap <- .cap_ok(mode, active_dir, root = root)
+  unattended <- .unattended_enabled()
+  want_active <- refined && unattended && isTRUE(cap)
+  if (refined && unattended && !isTRUE(cap))
+    cat(sprintf("[promote][FAIL_CAP] 활성 상한 초과 — %s (자동 축출 없음: deactivate_axiom()/rollback_axiom() 은 사람이 부른다)\n",
+                attr(cap, "detail")))
+
+  .apply_refine <- function(ax) {
+    prev_sha <- as.character(ax$refine_input_sha %||% "")[1]
+    ax$refine_verdict <- as.character(refine$verdict %||% "HELD")[1]
+    ax$refine_failing <- refine$failing %||% list()
+    ax$refine_gates <- if (length(refine$gates))
+      lapply(refine$gates, function(g) isTRUE(g$pass)) else list()
+    ax$refine_input_sha <- as.character(refine$refine_input_sha %||% NA_character_)[1]
+    ax$refine_attempts <- as.integer(ax$refine_attempts %||% 0L) + 1L
+    ax$refined_at <- format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z")
+    if (!is.null(refine$statement_inject)) ax$statement_inject <- refine$statement_inject
+    if (refined && !is.null(refine$statement) && nzchar(refine$statement)) {
+      ax$statement <- refine$statement; ax$canonical_statement <- refine$statement
+      ax$text <- refine$statement
+    }
+    # v9 INV-6 표기는 이제 정제 verdict 가 정본이다(구 regex 는 backstop 으로 아래 유지).
+    ax$needs_refinement <- !refined
+    if (!refined) {
+      # 동일 입력으로 8주 연속 HELD = held_stale. **삭제하지 않는다**(AX-000) — 라벨만 바꾼다.
+      if (!identical(prev_sha, ax$refine_input_sha) || is.null(ax$refine_held_since))
+        ax$refine_held_since <- format(Sys.Date())
+      wk <- suppressWarnings(as.numeric(Sys.Date() - as.Date(as.character(ax$refine_held_since)[1]))) / 7
+      if (is.finite(wk) && wk >= .TIER$mode_local$held_stale_weeks %||% 8) ax$status <- "held_stale"
+    } else ax$refine_held_since <- NULL
+    ax
+  }
+
+  # ── ① 멱등 스캔 ──
   for (f in list.files(file.path(active_dir, "modes"), pattern = "^AX-.*\\.json$",
                        full.names = TRUE, recursive = TRUE)) {
     a <- tryCatch(fromJSON(f, simplifyVector = FALSE), error = function(e) NULL)
     if (is.null(a)) next
     if (identical(as.character(a$cluster_key %||% ""), ckey) ||
         identical(as.character(a$promotion$source_candidate %||% ""), as.character(cid))) {
-      cat(sprintf("[promote] 기존 공리 유지(무쓰기) → %s [status=%s]\n",
-                  f, as.character(a$status %||% "?")))
+      before_sha <- as.character(a$refine_input_sha %||% "")[1]
+      before_v   <- as.character(a$refine_verdict %||% "")[1]
+      before_st  <- as.character(a$status %||% "proposed")[1]
+      b <- .apply_refine(a)
+      # 활성 전환은 여기서만 일어난다 — proposed/held_stale → active.
+      if (want_active && !identical(before_st, "active")) b$status <- "active"
+      else if (!identical(before_st, "active") && is.null(b$status)) b$status <- before_st
+      after_st <- as.character(b$status %||% before_st)[1]
+      changed <- !(identical(before_sha, as.character(b$refine_input_sha %||% "")[1]) &&
+                     identical(before_v, as.character(b$refine_verdict %||% "")[1]) &&
+                     identical(before_st, after_st))
+      if (!changed) {
+        cat(sprintf("[promote] 기존 공리 유지(무쓰기 — 정제 입력·판정 불변) → %s [status=%s refine=%s]\n",
+                    f, before_st, before_v))
+      } else {
+        b$confirm_required <- NULL
+        write_json(b, f, pretty = TRUE, auto_unbox = TRUE, null = "null")
+        cat(sprintf("[promote] 기존 공리 갱신 → %s [status=%s→%s refine=%s%s]\n", f, before_st, after_st,
+                    b$refine_verdict,
+                    if (length(b$refine_failing)) paste0(" fail=", paste(unlist(b$refine_failing), collapse = ",")) else ""))
+        if (identical(after_st, "active") && !identical(before_st, "active"))
+          .maybe_write_back_links(b, f, root = root)
+      }
       # 자기치유: sot_map 이 뒤처져 있으면(등재 누락/status 불일치) 여기서 맞춘다.
       #   등재 자체가 memory_knowledge_health HARD_3 계약이므로 공리 파일만 있고 map 이
       #   비면 다음 헬스체크가 HARD FAIL 로 선다 — 무쓰기 경로에서도 정합을 지킨다.
-      .update_sot_map(as.character(a$axiom_id %||% sub("\\.json$", "", basename(f)))[1],
-                      as.character(a$research_mode %||% mode)[1], a, root = root)
-      return(f)
+      .update_sot_map(as.character(b$axiom_id %||% sub("\\.json$", "", basename(f)))[1],
+                      as.character(b$research_mode %||% mode)[1], b, root = root)
+      return(list(path = f, action = if (changed) "updated" else "unchanged",
+                  status = after_st, refine = refine, cap_ok = isTRUE(cap)))
     }
   }
+
+  # ── ② tombstone 소비 (멱등 스캔 직후 — 롤백된 클러스터의 새 번호 재발급 차단) ──
+  ts <- .tombstone_lookup(ckey, root = root)
+  if (!is.null(ts)) {
+    cat(sprintf("[promote] SKIP_TOMBSTONED — cluster_key=%s 는 %s 에 롤백됨(%s). 파일 미생성.\n",
+                ckey, as.character(ts$rolled_back_at %||% "?")[1], as.character(ts$reason %||% "?")[1]))
+    cat(sprintf("[promote]   해제: Rscript -e 'source(\"02_Infrastructure/axiom/promote.R\"); clear_tombstone(\"%s\", reason=\"...\")'%s\n",
+                ckey, if (!is.null(ts$revive_condition))
+                  sprintf(" | 부활 조건: %s", as.character(ts$revive_condition)[1]) else ""))
+    return(list(path = NA_character_, action = "tombstoned", status = NA_character_,
+                refine = refine, cap_ok = isTRUE(cap)))
+  }
+
+  # ── ③ 신규 발행 ──
   ax_id <- .next_axiom_id(active_dir, mode)
   polarity <- candidate$polarity %||% "unknown"
   epistemic <- "research_tier"   # v9: 리서치 층 산출 — 자본 층 Law 아님
@@ -580,7 +834,6 @@ promote_to_axiom <- function(candidate_path, threshold = 0.80, auto_inject = NUL
     cluster_key = ckey,
     metric_type = candidate$metric_type %||% "estimated",
     epistemic_status = epistemic,
-    confirm_required = "dohoon_one_line",
     type = candidate$type, polarity = polarity,
     statement = stmt, canonical_statement = stmt, text = stmt,
     supporting_l_codes = candidate$supporting_l_codes,
@@ -594,11 +847,14 @@ promote_to_axiom <- function(candidate_path, threshold = 0.80, auto_inject = NUL
       axis_scores = lapply(report$axes, function(a) a$score),
       promoted_at = format(Sys.Date()), next_review = format(Sys.Date() + 90)),
     enforcement = "", enforcement_mode = "documented",  # INV-2
-    status = "proposed", version = 1L                   # v9: 도훈 1줄 confirm 전까지 proposed
+    status = if (want_active) "active" else "proposed", version = 1L
   )
-  if (grepl("\\[.*초안.*\\]|확정 필요", stmt)) {           # INV-6
-    cat(sprintf("[promote][INV-6] %s statement가 cluster 초안 — needs_refinement=TRUE 표기\n", ax_id))
+  axiom <- .apply_refine(axiom)
+  # INV-6 backstop — 정제기가 부재/실패해도 초안 마커는 여전히 잡는다(정본은 refine_verdict).
+  if (grepl("\\[.*초안.*\\]|확정 필요", as.character(axiom$statement %||% "")[1])) {
+    cat(sprintf("[promote][INV-6 backstop] %s statement 가 여전히 cluster 초안 — needs_refinement=TRUE\n", ax_id))
     axiom$needs_refinement <- TRUE
+    if (identical(as.character(axiom$status %||% "")[1], "active")) axiom$status <- "proposed"
   }
   nrm <- file.path(root, "02_Infrastructure/memory/memory_metadata_normalize.R")
   if (file.exists(nrm)) { source(nrm, local = TRUE)
@@ -608,16 +864,81 @@ promote_to_axiom <- function(candidate_path, threshold = 0.80, auto_inject = NUL
         enforcement_mode = "documented", write = FALSE) }
   out_path <- file.path(out_dir, paste0(ax_id, ".json"))
   write_json(axiom, out_path, pretty = TRUE, auto_unbox = TRUE, null = "null")
-  cat(sprintf("[promote] 제안(mode-local, status=proposed) → %s [%s, %s]\n", out_path, epistemic, axiom$metric_type))
-  cat(sprintf("[promote] 승인 1줄: Rscript -e 'source(\"02_Infrastructure/axiom/promote.R\"); approve_axiom(c(\"%s\"))'\n", ax_id))
-  # sot_map 은 `status=proposed` + `documented_active=FALSE` 로만 등재한다(위 함수 주석 참조).
-  #   활성화(=주입·enforcement)는 approve_axiom() 이 status 를 active 로 올릴 때 성립한다.
+  .st <- as.character(axiom$status %||% "proposed")[1]
+  cat(sprintf("[promote] mode-local %s → %s [status=%s · refine=%s%s · %s]\n",
+              ax_id, out_path, .st, as.character(axiom$refine_verdict %||% "?")[1],
+              if (length(axiom$refine_failing)) paste0("(", paste(unlist(axiom$refine_failing), collapse = ","), ")") else "",
+              axiom$metric_type))
+  if (identical(.st, "active")) {
+    cat(sprintf("[promote] 무인 활성화(R0~R6 통과) — 정지 스위치 QVEST_AXIOM_UNATTENDED=0 · 되돌리기 deactivate_axiom(c(\"%s\"), reason=)\n", ax_id))
+    # ★전체 경로를 넘긴다 — 헬퍼가 역링크 기록 후 이 파일에 backlinks_written 플래그를 되쓴다
+    #   (basename 만 넘기면 file.exists 가 FALSE 라 플래그가 안 서고, 매주 역링크가 다시 돈다).
+    .maybe_write_back_links(axiom, out_path, root = root)
+  } else {
+    cat(sprintf("[promote] 보류(주입 안 됨) — 수동 해제: Rscript -e 'source(\"02_Infrastructure/axiom/promote.R\"); approve_axiom(c(\"%s\"))'\n", ax_id))
+  }
+  # sot_map 은 status 를 그대로 싣는다 — 활성화 의미(주입·enforcement)는 status 로 갈린다.
   .update_sot_map(ax_id, mode, axiom, root = root)
-  out_path
+  list(path = out_path, action = "created", status = .st, refine = refine, cap_ok = isTRUE(cap))
 }
 
-# ── 승인 (도훈 1줄 confirm — INV-6 활성화 게이트) ────────────────────────────
-# proposed → active 전환 + 이때 비로소 sot_map 등재 + L-code 역링크 기록.
+# 역링크는 공리당 **평생 1회**. backlinks_written 이 서 있으면 다시 쓰지 않는다.
+#   근거: supporting 743 고유 L-code 중 175건이 2개 이상 공리에 속하는데 promoted_to_axiom 은
+#   스칼라다 — 주간 무조건 재기록이면 두 공리가 매주 서로를 덮어쓴다(원장이 진동한다).
+#   근본 수리(promoted_to_axiom 스칼라 → 배열)는 별건 태스크(도훈 확인 F-c).
+.maybe_write_back_links <- function(axiom, ax_path, root = .px_root()) {
+  if (isTRUE(axiom$backlinks_written)) return(invisible(0L))
+  res <- .update_lcode_back_links(list(supporting_l_codes = axiom$supporting_l_codes),
+                                  basename(ax_path), root = root)
+  if (!is.na(ax_path) && file.exists(ax_path)) {
+    a <- tryCatch(fromJSON(ax_path, simplifyVector = FALSE), error = function(e) NULL)
+    if (!is.null(a)) {
+      a$backlinks_written <- TRUE
+      a$backlink_mode <- attr(res, "backlink_mode") %||% "per_file"
+      a$backlinks_n <- as.integer(res)
+      write_json(a, ax_path, pretty = TRUE, auto_unbox = TRUE, null = "null")
+    }
+  }
+  invisible(res)
+}
+
+# ── v9.1 커밋16: 비활성화(active → proposed, 파일 유지) ──────────────────────
+# 되돌리기의 '분 단위' 경로. rollback_axiom() 과 달리 **파일도 sot_map 도 지우지 않는다** —
+#   주입면에서만 즉시 내린다(주입 훅이 modes/** 를 status=="active" 로 거르므로).
+deactivate_axiom <- function(ids, reason, root = .px_root()) {
+  if (missing(reason) || !nzchar(as.character(reason)[1]))
+    stop("deactivate_axiom: reason 필수 (사유 없는 비활성화는 다음 주에 왜 내렸는지 알 수 없다)")
+  if (is.list(ids)) ids <- vapply(ids, function(z) as.character(z$axiom_id %||% z)[1], character(1))
+  active_dir <- file.path(root, "qepm", "memory", "axioms", "active")
+  out <- list()
+  for (id in as.character(ids)) {
+    fs <- list.files(file.path(active_dir, "modes"),
+                     pattern = sprintf("^%s\\.json$", gsub("([][{}()+*^$|\\\\?.])", "\\\\\\1", id)),
+                     full.names = TRUE, recursive = TRUE)
+    if (!length(fs)) { cat(sprintf("[deactivate][WARN] %s 미발견 — 건너뜀\n", id)); out[[id]] <- list(status = "not_found"); next }
+    f <- fs[1]
+    ax <- tryCatch(fromJSON(f, simplifyVector = FALSE), error = function(e) NULL)
+    if (is.null(ax)) { out[[id]] <- list(status = "unreadable"); next }
+    if (!identical(as.character(ax$status %||% "")[1], "active")) {
+      cat(sprintf("[deactivate] %s 이미 비활성(status=%s) — 무변경\n", id, as.character(ax$status %||% "?")[1]))
+      out[[id]] <- list(status = "already_inactive", path = f); next
+    }
+    ax$status <- "proposed"
+    ax$deactivated_at <- format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z")
+    ax$deactivated_reason <- as.character(reason)[1]
+    write_json(ax, f, pretty = TRUE, auto_unbox = TRUE, null = "null")
+    .update_sot_map(id, as.character(ax$research_mode %||% "qepm_legacy")[1], ax, root = root)
+    cat(sprintf("[deactivate] %s → status=proposed (주입면에서 제외) | 사유: %s\n", id, as.character(reason)[1]))
+    out[[id]] <- list(status = "deactivated", path = f)
+  }
+  invisible(out)
+}
+
+# ── 수동 승인 (v9.1: 상시 관문이 아니라 **예외 경로**) ───────────────────────
+# v9.1 커밋16 이후 활성화 정본은 refine_statement.R 의 R0~R6 다(무인). approve_axiom() 은
+#   ①롤백 후 재승인 ②HELD 를 사람이 판단해 수동 해제 ③QVEST_AXIOM_UNATTENDED=0 운용 중
+#   선별 활성화 — 이 세 경로로 **존치**한다. 삭제하면 되돌린 뒤 되돌아올 길이 없다.
+# proposed → active 전환 + sot_map 등재 + L-code 역링크(평생 1회 가드) 기록.
 # Usage: Rscript -e 'source("02_Infrastructure/axiom/promote.R"); approve_axiom(c("AX-AS-001"))'
 approve_axiom <- function(ids, approved_by = "dohoon", root = .px_root()) {
   active_dir <- file.path(root, "qepm", "memory", "axioms", "active")
@@ -643,8 +964,11 @@ approve_axiom <- function(ids, approved_by = "dohoon", root = .px_root()) {
     write_json(ax, f, pretty = TRUE, auto_unbox = TRUE, null = "null")
     mode <- as.character(ax$research_mode %||% "qepm_legacy")[1]
     .update_sot_map(id, mode, ax, root = root)
-    .update_lcode_back_links(list(supporting_l_codes = ax$supporting_l_codes), basename(f), root = root)
+    .maybe_write_back_links(ax, f, root = root)   # 평생 1회 가드 경유 (스칼라 상호 덮어쓰기 차단)
     cat(sprintf("[approve] %s → status=active (%s) | sot_map 등재 + L-code 역링크 기록\n", id, f))
+    if (!identical(as.character(ax$refine_verdict %||% "")[1], "REFINED"))
+      cat(sprintf("[approve][WARN] %s 는 refine_verdict=%s — 수동 활성화이므로 memory_knowledge_health HARD_8 이 발화한다(의도라면 refine 입력을 고치거나 다시 비활성화할 것)\n",
+                  id, as.character(ax$refine_verdict %||% "미기록")[1]))
     out[[id]] <- list(status = "approved", path = f)
   }
   invisible(out)
@@ -733,6 +1057,24 @@ list_proposed_axioms <- function(root = .px_root()) {
     if (!nzchar(k) || !is.null(idx[[k]])) next      # 첫 일치만 (구 동작의 break 와 동일)
     idx[[k]] <- list(path = f, doc = d)
   }
+  # v9.1 커밋16 — 역링크 폭증 대책. 18건 전부 활성화 시 stage_artifacts 515 파일 재작성이고
+  #   AX-AS-001 단독으로 184건이다. 상한 초과분은 개별 파일 대신 **역인덱스 1파일**에 적는다
+  #   (원장 진동·diff 폭증 억제. promoted_to_axiom 스칼라 충돌 175건도 같이 피한다).
+  hits <- Filter(function(lc) !is.null(idx[[lc]]), want)
+  if (length(hits) > (.TIER$mode_local$backlink_max_files %||% 60L)) {
+    bd <- file.path(root, "qepm", "memory", "axioms", "backlinks")
+    dir.create(bd, recursive = TRUE, showWarnings = FALSE)
+    bp <- file.path(bd, paste0(ax_id, ".json"))
+    write_json(list(axiom_id = ax_id, mode = "index",
+                    reason = sprintf("supporting %d건 > BACKLINK_MAX_FILES %d — 개별 L-code 파일 미수정",
+                                     length(hits), .TIER$mode_local$backlink_max_files %||% 60L),
+                    written_at = format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z"),
+                    l_codes = as.list(hits)),
+               bp, pretty = TRUE, auto_unbox = TRUE, null = "null")
+    cat(sprintf("[promote] L-code 역링크 = 역인덱스 1파일 (%d건 > 상한 %d) → %s\n",
+                length(hits), .TIER$mode_local$backlink_max_files %||% 60L, bp))
+    return(invisible(structure(length(hits), backlink_mode = "index")))
+  }
   for (lc in want) {
     e <- idx[[lc]]
     if (is.null(e)) next
@@ -744,7 +1086,7 @@ list_proposed_axioms <- function(root = .px_root()) {
     n <- n + 1L
   }
   cat(sprintf("[promote] L-code 역링크 기록: %d건 (대상 %d / 색인 %d)\n", n, length(want), length(idx)))
-  invisible(n)
+  invisible(structure(n, backlink_mode = "per_file"))
 }
 
 # v9 (2026-08-23): review_log = **클러스터당 1파일** + history[].
@@ -805,4 +1147,5 @@ if (!interactive() && Sys.getenv("PROMOTE_SOURCED") != "1" && length(commandArgs
   if (length(.paths)) invisible(promote_to_axiom(.paths[1], dry_run = .dry))
   else cat("[promote] 후보 경로 인자 없음 — usage: Rscript promote.R [--dry-run] <candidate.json>\n")
 }
-cat("[promote] Loaded (v9 Lean Loop 사다리 + 2-tier). promote_to_axiom(path, dry_run=) / approve_axiom(ids)\n")
+cat(sprintf("[promote] Loaded (v9.1 사다리 + 정제기 R0~R6 + 무인 활성화). unattended=%s | promote_to_axiom(path, dry_run=) / list_active_axioms(mode=) / deactivate_axiom(ids, reason=) / approve_axiom(ids) / clear_tombstone(key, reason=)\n",
+            if (.unattended_enabled()) "ON" else "OFF (QVEST_AXIOM_UNATTENDED=0)"))

@@ -83,10 +83,13 @@ suppressWarnings(suppressMessages(tryCatch({
     cat("  (승인 시 status=proposed → distilled 전환 = 주입/hypothesis_index/strategic_truths 소비 활성화)\n")
   }
 
-  # ── v9 공리 제안 큐 (2026-08-23 Lean Loop §3.4(a)) ─────────────────────────
-  # promote.R 사다리가 양성/조건부 클러스터를 `active/modes/**/AX-<MODE>-NNN.json`
-  #   status="proposed" 로 발행한다. 활성화는 **도훈 1줄 confirm**(approve_axiom).
-  #   DIST 승인 큐(위)와 나란히 노출 — 둘은 다른 계층이다(공리 vs 탐색지도 카드).
+  # ── v9.1 공리 활성/보류 통지 (2026-08-23 커밋16 · §7-S4b) ───────────────────
+  # 구 v9: "승인 대기 N건 — 도훈 1줄 confirm". v9.1 은 사람 승인을 refine_statement.R 의
+  #   R0~R6 품질 게이트로 대체했다(E-1). 그래서 이 스텝이 물어야 할 것도 바뀐다:
+  #     ① **무엇이 새로 활성화됐나** — 사람이 사후에 diff 를 볼 대상(승인이 아니라 통지)
+  #     ② **무엇이 왜 보류(HELD)됐나** — /cleaner 가 소비해 *입력*을 고치는 큐
+  #   ★파일명은 axiom_approval_queue.R 로 유지한다(morning_briefing.sh 호출부 확인 전
+  #     개명 금지). 바뀐 것은 내용이지 배선이 아니다.
   tryCatch({
     # 별도 env 로 적재 — 이 스텝의 `%||%`/헬퍼를 promote.R 판본이 덮어쓰지 않게.
     # PROMOTE_SOURCED 는 promote.R CLI 자동실행 가드(원상복구 필수 — 자식 스폰에 샌다).
@@ -95,23 +98,44 @@ suppressWarnings(suppressMessages(tryCatch({
     .pxe <- new.env(parent = globalenv())
     suppressWarnings(suppressMessages(sys.source("02_Infrastructure/axiom/promote.R", envir = .pxe)))
     if (is.na(.had_ps)) Sys.unsetenv("PROMOTE_SOURCED") else Sys.setenv(PROMOTE_SOURCED = .had_ps)
+
+    ax_active <- if (exists("list_active_axioms", envir = .pxe, mode = "function"))
+      .pxe$list_active_axioms() else list()
+    .unatt <- identical(Sys.getenv("QVEST_AXIOM_UNATTENDED", "1"), "1")
+    if (!length(ax_active)) {
+      cat(sprintf("\n[공리 활성 0건] — 무인 활성화 %s. 정제 게이트(R0~R6) 통과분 없음\n",
+                  if (.unatt) "ON" else "OFF(QVEST_AXIOM_UNATTENDED=0)"))
+    } else {
+      cat(sprintf("\n[공리 활성 %d건] — 무인 활성화 %s · 주입면 도달분(사후 통지, 승인 아님)\n",
+                  length(ax_active), if (.unatt) "ON" else "OFF"))
+      for (p in ax_active) {
+        cat(sprintf("  · %s (%s/%s | refine=%s)\n", as.character(p$axiom_id), as.character(p$mode),
+                    as.character(p$polarity), as.character(p$refine_verdict)))
+        cat(sprintf("      %s\n", as.character(p$statement_inject)))
+      }
+      cat("  되돌리기: deactivate_axiom(c('AX-...'), reason='...') 또는 QVEST_AXIOM_UNATTENDED=0\n")
+    }
+
+    # 보류(HELD) — 사유별로 묶어 /cleaner 가 무엇을 고쳐야 하는지 보이게 한다.
     ax_props <- if (exists("list_proposed_axioms", envir = .pxe, mode = "function"))
       .pxe$list_proposed_axioms() else list()
     if (!length(ax_props)) {
-      cat("\n[공리 제안 대기 0건] — promote.R 사다리 통과분 없음(또는 전부 승인 완료)\n")
+      cat("[공리 정제 보류 0건]\n")
     } else {
-      cat(sprintf("\n[공리 제안 대기 %d건] — mode-local 사다리 통과, 도훈 1줄 confirm 대기(주입 안 됨)\n",
+      .rd <- function(pth) tryCatch(jsonlite::fromJSON(pth, simplifyVector = FALSE), error = function(e) NULL)
+      cat(sprintf("[공리 정제 보류 %d건] — R0~R6 미통과. **입력을 고치면 다음 주간 스윕이 자동 재시도**한다\n",
                   length(ax_props)))
       for (p in ax_props) {
-        cat(sprintf("  · %s (%s/%s | supporting L-code %s건)\n",
-                    as.character(p$axiom_id), as.character(p$mode), as.character(p$polarity),
-                    as.character(p$n_support)))
-        cat(sprintf("      %s\n", as.character(p$statement)))
-        cat(sprintf("      승인: %s\n", as.character(p$approve_cmd)))
+        d <- .rd(as.character(p$path))
+        fl <- if (!is.null(d)) paste(unlist(d$refine_failing %||% list()), collapse = ",") else ""
+        cat(sprintf("  · %s (%s | supporting %s건) 미통과=%s\n",
+                    as.character(p$axiom_id), as.character(p$mode), as.character(p$n_support),
+                    if (nzchar(fl)) fl else "미기록(정제 미실행)"))
       }
+      cat("  고치는 곳 = 멤버 L-code(next_probe·live_trigger·반증 시도)와 클러스터 polarity 라벨. 수동 해제: approve_axiom(c('AX-...'))\n")
     }
   }, error = function(e) {
-    cat(sprintf("[공리 제안 대기] 섹션 실패(fail-soft): %s\n", conditionMessage(e)))
+    cat(sprintf("[공리 활성/보류 통지] 섹션 실패(fail-soft): %s\n", conditionMessage(e)))
   })
 
   # ── 재부상 섹션 (anti-ossification): live_trigger 충족 실패지식 재도전 시점 노출 ──

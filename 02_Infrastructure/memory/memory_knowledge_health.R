@@ -1,7 +1,10 @@
 # memory_knowledge_health.R — v7.2.1 Sprint 5
 #
 # Memory Knowledge Health Gate
-# Hard fail (6) + Warning (6 — external INFO 격하).
+# Hard fail (10) + Warning (13 — external INFO 격하).
+#   v9.1 (2026-08-23 커밋15) 신설: HARD_8/9/10 + WARN_12/13 = **공리 무인 활성화 계약**.
+#   이전에는 현재 공리 status 를 단언하는 검사가 **0건**이었다 — 사람 승인을 품질 게이트로
+#   바꾸는 순간 "무엇이 활성인가"를 아무도 안 재는 상태가 곧 무인화의 사각지대가 된다.
 #
 # Hard fail:
 #   1) active axiom JSON parse 실패
@@ -194,11 +197,19 @@ if (inherits(git_status, "mkh_git_fail")) {
            "git status 실행 실패 — active dir 변경 여부 미관측(깨끗함이 아님)")
   git_status <- character()
 }
-modified_active <- git_status[grepl("^.M", git_status)]
+# (v9.1 2026-08-23 커밋1 — 무인 승격 전제 수리) 구 정규식 `^.M` 은 **수정된 추적 파일만**
+#   잡았다. 그런데 무인 공리 승격은 `active/modes/<mode>/AX-<MODE>-NNN.json` 이라는
+#   **새 파일을 만드는** 행위다 — git 은 그걸 `?? path`(untracked) 또는 `A  path`(staged add)
+#   로 보고한다. 즉 "사람이 커밋 diff 를 본다"는 마지막 관문이 **신규 공리에 대해서만**
+#   구조적으로 눈이 멀어 있었다(무인화 이전에는 신규 공리 자체가 드물어 안 보였다).
+#   ⇒ untracked/added 를 시야에 넣는다. 판정 등급(WARN)과 메시지 계약은 유지.
+modified_active <- git_status[grepl("^(.M|\\?\\?|A )", git_status)]
 if (length(modified_active) > 0) {
+  .n_new <- sum(grepl("^(\\?\\?|A )", modified_active))
   add_warn("HARD_5_active_uncommitted",
-           sprintf("active dir uncommitted changes (%d files) — verify intent",
-                   length(modified_active)))
+           sprintf("active dir uncommitted changes (%d files, 그중 신규 %d) — verify intent%s",
+                   length(modified_active), .n_new,
+                   if (.n_new > 0) " | 신규 = 무인 승격 산출물일 수 있음(공리 diff 확인)" else ""))
 }
 cat("  review safety check complete\n\n")
 
@@ -253,6 +264,153 @@ if (!dir.exists(harness_mem)) {
     cat(sprintf("  하네스 메모리 OK (%d files, MEMORY.md %dB)\n",
                 length(list.files(harness_mem)), file.size(mem_idx)))
   }
+}
+cat("\n")
+
+# ═══ v9.1 커밋15 (2026-08-23): 공리 무인 활성화 계약 ═════════════════════════
+# 배경: 이 파일에는 **현재 공리 status 를 단언하는 검사가 0건**이었다(HARD 1~7 은 파싱·
+#   메타데이터·sot_map 등재·중복·git·헬퍼·메모리 디렉터리를 본다). 사람 승인을 품질 게이트로
+#   바꾸는 순간, "무엇이 활성인가"를 아무도 안 재는 상태가 곧 무인화의 사각지대가 된다.
+# ★커밋15 시점에는 active mode-local 이 0건이라 HARD_8/9 가 **자명 통과**여야 한다 —
+#   계약이 일하기 전에 초록인 것을 확인하는 것이 이 검사의 첫 임무다(양성 대조는
+#   08_Tests/axiom/test_refine_statement.R 의 위반 주입이 담당).
+# ★`%||%`(:39)를 쓰지 않는다 — HARD_6 의 source(memory_metadata_normalize.R, local=TRUE) 가
+#   전역 `%||%` 를 **길이 1 스칼라 전용 판본**으로 덮어써서, 리스트(markers/entries/
+#   supporting_l_codes)에 적용하면 'length = 4 in coercion to logical(1)' 로 죽는다(실측).
+#   검사기가 자기 의존성 때문에 죽으면 그건 "통과"가 아니라 관측 부재다 → 자체 헬퍼를 쓴다.
+`%|L|%` <- function(a, b) if (is.null(a) || length(a) == 0) b else a
+
+cat("[8/10 HARD] active mode-local 공리 = 정제 통과분만 (refine_verdict==REFINED)\n")
+ax_modes_dir <- file.path(PROJ_ROOT, "qepm/memory/axioms/active/modes")
+active_ml <- list()
+if (dir.exists(ax_modes_dir)) {
+  for (f in list.files(ax_modes_dir, pattern = "^AX-.*\\.json$", full.names = TRUE, recursive = TRUE)) {
+    d <- tryCatch(fromJSON(f, simplifyVector = FALSE), error = function(e) NULL)
+    if (is.null(d)) next
+    if (!identical(safe_str(d$status, ""), "active")) next
+    active_ml[[length(active_ml) + 1L]] <- list(
+      id = safe_str(d$axiom_id, basename(f)), mode = safe_str(d$research_mode, "unknown"),
+      refine_verdict = safe_str(d$refine_verdict, ""),
+      needs_refinement = isTRUE(d$needs_refinement),
+      cluster_key = safe_str(d$cluster_key, ""), path = f)
+  }
+}
+bad8 <- Filter(function(a) !identical(a$refine_verdict, "REFINED") || isTRUE(a$needs_refinement), active_ml)
+if (length(bad8)) {
+  add_hard("HARD_8_active_not_refined",
+           sprintf("active mode-local %d건이 정제 미통과(refine_verdict!=REFINED 또는 needs_refinement) — %s | 조치: deactivate_axiom(ids, reason=) 또는 refine 입력 수리",
+                   length(bad8), paste(vapply(bad8, function(a) sprintf("%s[%s]", a$id, if (nzchar(a$refine_verdict)) a$refine_verdict else "미기록"), character(1)), collapse = ",")))
+} else {
+  cat(sprintf("  active mode-local %d건 전부 REFINED (또는 활성 0건)\n", length(active_ml)))
+}
+
+cat("[9/10 HARD] 활성 상한 (모드당 <=6, 총 <=20)\n")
+MKH_CAP_PER_MODE <- 6L; MKH_CAP_TOTAL <- 20L
+mode_counts <- table(vapply(active_ml, function(a) a$mode, character(1)))
+over_mode <- names(mode_counts)[as.integer(mode_counts) > MKH_CAP_PER_MODE]
+if (length(over_mode) || length(active_ml) > MKH_CAP_TOTAL) {
+  add_hard("HARD_9_active_cap",
+           sprintf("활성 상한 초과 — 총 %d/%d%s | 자동 축출 없음: deactivate_axiom()/rollback_axiom() 은 사람이 부른다",
+                   length(active_ml), MKH_CAP_TOTAL,
+                   if (length(over_mode)) sprintf(" · 모드 초과: %s",
+                     paste(sprintf("%s=%d", over_mode, as.integer(mode_counts[over_mode])), collapse = ",")) else ""))
+} else {
+  cat(sprintf("  활성 %d/%d%s\n", length(active_ml), MKH_CAP_TOTAL,
+              if (length(mode_counts)) sprintf(" (%s)",
+                paste(sprintf("%s=%d", names(mode_counts), as.integer(mode_counts)), collapse = " ")) else ""))
+}
+
+cat("[10/10 HARD] 주입 계측 신선도 + 예산 + 마커 생존\n")
+# ★유일한 입력 = axiom_context_inject.sh 가 :224 직후 쓰는 .cache/axiom_inject_last.json.
+#   조립기를 여기서 R 로 재구현하지 않는다 — 두 구현이 갈라지는 순간 이 계약은 실제
+#   주입면이 아니라 자기 사본을 재게 된다(이 저장소의 반복 실패 계통).
+inj_last <- file.path(PROJ_ROOT, ".cache/axiom_inject_last.json")
+if (!file.exists(inj_last)) {
+  add_warn("HARD_10_inject_metric_missing",
+           "주입 계측 부재(.cache/axiom_inject_last.json) — Agent 스폰이 아직 없었거나 훅 미등록. 재현: echo '{\"tool_input\":{\"subagent_type\":\"forge\"}}' | bash 02_Infrastructure/hooks/axiom_context_inject.sh")
+} else {
+  ij <- tryCatch(fromJSON(inj_last, simplifyVector = FALSE), error = function(e) NULL)
+  if (is.null(ij)) {
+    add_hard("HARD_10_inject_metric_parse", "axiom_inject_last.json 파싱 실패 — 주입면 관측 불가")
+  } else {
+    age_h <- as.numeric(difftime(Sys.time(), file.info(inj_last)$mtime, units = "hours"))
+    ilen <- suppressWarnings(as.integer(ij$len %|L|% NA))
+    mk <- ij$markers %|L|% list()
+    mk_ok <- isTRUE(mk$positive) && isTRUE(mk$recent) && isTRUE(mk$dead)
+    probs <- c(if (!is.finite(age_h) || age_h > 24) sprintf("계측 %.1fh 경과(>24h)", age_h),
+               if (!is.finite(ilen) || ilen > 2000L) sprintf("주입 길이 %s > 2000", as.character(ilen)),
+               if (!mk_ok) sprintf("마커 소실(positive=%s recent=%s dead=%s)",
+                                   isTRUE(mk$positive), isTRUE(mk$recent), isTRUE(mk$dead)))
+    if (length(probs)) {
+      # 24h 초과 단독은 "에이전트를 안 띄웠다"와 구분 불가 → WARN. 예산·마커는 HARD.
+      only_age <- length(probs) == 1L && grepl("경과", probs[1])
+      (if (only_age) add_warn else add_hard)(
+        if (only_age) "HARD_10_inject_stale" else "HARD_10_inject_budget",
+        sprintf(paste0("주입면 계약 위반 — %s | agent=%s pc_status=%s ml_rendered=%s/%s rung=%s",
+                       " | 재현: echo '{\"tool_input\":{\"subagent_type\":\"forge\"}}' | ",
+                       "bash 02_Infrastructure/hooks/axiom_context_inject.sh"),
+                paste(probs, collapse = " · "),
+                as.character(ij$agent %|L|% "?"),
+                # pc_status: ok / retry_ok / missing / unreadable — 마커 소실의 원인 축.
+                #   missing·unreadable 이면 변동부 생산자(lcode_harvester.py::write_positive_context)
+                #   문제이지 조립기 문제가 아니다(실측 2026-08-23: 비원자적 쓰기 창에 스폰된
+                #   agent=alpha-research 가 len 807 · 마커 3/3 소실로 계측을 남겼다).
+                as.character(ij$pc_status %|L|% "미기록"),
+                as.character(ij$ml_rendered %|L|% "?"),
+                as.character(ij$ml_active_total %|L|% "?"), as.character(ij$ladder_rung %|L|% "?")))
+    } else {
+      cat(sprintf("  주입 len=%d/2000 · 마커 3종 생존 · mode-local %s/%s 렌더 · rung %s · %.1fh 전\n",
+                  ilen, as.character(ij$ml_rendered %|L|% 0), as.character(ij$ml_active_total %|L|% 0),
+                  as.character(ij$ladder_rung %|L|% "?"), age_h))
+    }
+  }
+}
+
+# WARN_12: tombstone 재발급 — 롤백된 클러스터가 active/proposed 로 되돌아왔는가.
+cat("[W12] tombstone 재발급 (롤백된 cluster_key 의 부활)\n")
+tomb_p <- file.path(PROJ_ROOT, "qepm/memory/axioms/tombstones.json")
+if (!file.exists(tomb_p)) {
+  cat("  tombstones.json 부재 — 롤백 이력 없음(검사 대상 0)\n")
+} else {
+  tb <- tryCatch(fromJSON(tomb_p, simplifyVector = FALSE), error = function(e) NULL)
+  tkeys <- character(0)
+  for (e in (tb$entries %|L|% list())) if (!isTRUE(e$cleared)) tkeys <- c(tkeys, safe_str(e$cluster_key, ""))
+  tkeys <- unique(tkeys[nzchar(tkeys)])
+  revived <- character(0)
+  if (length(tkeys) && dir.exists(ax_modes_dir)) {
+    for (f in list.files(ax_modes_dir, pattern = "^AX-.*\\.json$", full.names = TRUE, recursive = TRUE)) {
+      d <- tryCatch(fromJSON(f, simplifyVector = FALSE), error = function(e) NULL)
+      if (is.null(d)) next
+      if (!(safe_str(d$status, "") %in% c("active", "proposed"))) next
+      if (safe_str(d$cluster_key, "") %in% tkeys)
+        revived <- c(revived, sprintf("%s(%s)", safe_str(d$axiom_id, basename(f)), safe_str(d$cluster_key, "")))
+    }
+  }
+  if (length(revived)) {
+    add_warn("WARN_12_tombstone_revived",
+             sprintf("tombstone 클러스터가 %d건 재발급됨: %s — promote.R SKIP_TOMBSTONED 미작동 의심 (해제 의도라면 clear_tombstone(key, reason=))",
+                     length(revived), paste(head(revived, 5), collapse = ",")))
+  } else {
+    cat(sprintf("  tombstone %d건 · 재발급 0\n", length(tkeys)))
+  }
+}
+
+# WARN_13: 역링크 충돌 — 2개 이상 active 공리가 같은 L-code 를 supporting 으로 주장.
+#   promoted_to_axiom 이 스칼라라 이 숫자만큼 원장이 "마지막에 쓴 공리"만 기억한다.
+#   현재(전건 proposed) 기준 실측 175. 근본 수리(배열화)는 별건 태스크.
+cat("[W13] 역링크 충돌 (supporting L-code 중복 소유)\n")
+own <- list()
+for (a in active_ml) {
+  d <- tryCatch(fromJSON(a$path, simplifyVector = FALSE), error = function(e) NULL)
+  for (lc in unique(as.character(unlist(d$supporting_l_codes %|L|% list()))))
+    if (nzchar(lc)) own[[lc]] <- unique(c(own[[lc]], a$id))
+}
+n_conf <- sum(vapply(own, function(v) length(v) >= 2L, logical(1)))
+if (n_conf > 0) {
+  add_warn("WARN_13_backlink_conflict",
+           sprintf("active 공리 2건 이상이 같은 L-code 를 주장: %d건 — promoted_to_axiom 은 스칼라라 마지막 기록만 남는다(근본 수리 = 배열화, 별건)", n_conf))
+} else {
+  cat(sprintf("  충돌 0 (active 공리 %d건 · 고유 supporting %d)\n", length(active_ml), length(own)))
 }
 cat("\n")
 

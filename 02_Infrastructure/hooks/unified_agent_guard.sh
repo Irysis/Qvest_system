@@ -243,6 +243,19 @@ fi
 # AX-* JSON 파일들의 내용을 .cache/axiom_inject_body.md에 pre-render.
 # 소스 mtime 대비 캐시 mtime이 최신이면 cat만, 아니면 재생성.
 # Agent 스폰 시마다 발생하던 python3 spawn + json parse + string serialize 제거.
+#
+# ⚠⚠ 재등록 금지 경고 (2026-08-23 v9.1 커밋1 · 도훈 확인 항목 F-d) ⚠⚠
+#   이 훅은 현재 `.claude/settings.json` 미등록(휴면)이다. **다시 등록하면 아래 블록이
+#   `axiom_context_inject.sh` 와 같은 캐시(.cache/axiom_inject_body.md)를 덮어쓴다**:
+#     ① status 필터 없음 — proposed/HELD 공리까지 '대전제'로 광고한다
+#        (axiom_context_inject.sh 는 modes/** 를 status=="active" 로 거른다).
+#        무인 활성화(R0~R6 게이트) 도입 후에는 이것이 INV-6 주입면 자격 게이트의 우회로다.
+#     ② non-recursive glob (`AX-*.json` 만) — active/modes/** 를 못 읽는다.
+#        v9.1 은 mode-local 을 **별도 캐시** .cache/axiom_inject_modelocal.md 로 분리했으므로,
+#        이 블록이 body 를 재생성하면 mode-local 이 조용히 사라지고 계측(axiom_inject_last.json)의
+#        ml_rendered 도 함께 0 이 돼 HARD_10 이 그 소실을 못 잡는다.
+#   ⇒ 재등록하려면 먼저 이 블록을 axiom_context_inject.sh 의 2-캐시·status 필터 규약으로
+#     맞추거나 삭제할 것. **코드는 존치**(도훈 확인 전 제거 금지) — 이 주석이 계기다.
 AXIOM_CONTEXT=""
 ACTIVE_DIR="$DIR/qepm/memory/axioms/active"
 CACHE_BODY="$DIR/.cache/axiom_inject_body.md"
