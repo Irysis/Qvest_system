@@ -1,0 +1,68 @@
+{
+  "schema_version": "v54_ax_p0_mode",
+  "candidate_id": "CAND_20260823_ramp_factor_timing_allocation_negative_L-RAMP-20260822_134500_L-RAMP-20260822_140701_L-RAMP-20260822_144529",
+  "research_mode": "ramp",
+  "metric_type": "estimated",
+  "type": "empirical",
+  "polarity": "negative",
+  "statement_draft": "[실증 실패 규칙 초안] family=factor_timing_allocation, tags=DFA,factor_momentum,deployment_form, supporting=5건 L-code. (promote.R 5축 검증에서 범위·메커니즘·OOS 확정 필요)",
+  "supporting_l_codes": [
+    "L-RAMP-20260822_134500",
+    "L-RAMP-20260822_140701",
+    "L-RAMP-20260822_144529",
+    "L-RAMP-20260822_173112",
+    "L-RAMP-20260822_184930"
+  ],
+  "scope_draft": {
+    "market": "KR",
+    "factor_family": "factor_timing_allocation",
+    "regime": null,
+    "construction_types": null
+  },
+  "evidence_draft": {
+    "independent_l_codes": 5,
+    "independent_strategies": 5,
+    "strategies": [
+      "DFA_RegimeSignals_R20_F1k5",
+      "DFA_RegimeSignals_ARC_CLOSE_R35_R45",
+      "DFA_RegimeSignals_R22_risknorm",
+      "DFA_R54_fr_allocation_rule",
+      "DFA_RegimeSignals_R25_deployment_form"
+    ],
+    "effect_direction_consistency": null,
+    "note": "evidence_draft — promote.R 5축 검증에서 hurdle_result/grade_a_catalog 교차검증으로 확정",
+    "n_eff_signatures": 2,
+    "independent_constructions": 2,
+    "constructions": [
+      "module_allocation",
+      "overlay_regime"
+    ],
+    "metric_types": [
+      "backtested",
+      "canonical_screen"
+    ]
+  },
+  "falsification_draft": {
+    "attempts": [
+      "① placebo 30-seed 월블록 셔플 p=0.033(채택팔) ② shift 사다리 dec_lag 0/1/2/3 단조 감쇠(동월 누출 배제) ③ 진행월(2026-08) 제외 완결월만 집계 ④ 비용 5/15/25bps 전수 보고에서 순위 불변 ⑤ 대응표본 NW lag-3 ⑥ 사전등록 진단셀(k=3, k=10) 헤드라인 승격 금지 구속 준수 ⑦ book-marginal F0 팔이 R16b 기록 -0.0275 를 정확 재현(배관 양성 대조) ⑧ 인덱스 집중도 파라미터 실효를 방향까지 확인(active vol 0.1017/0.1382/0.1805 단조 증가, Market 지수 0.2293 3판본 불변=음성 대조).",
+      "① 2x2 반사실로 두 축을 교차 대입해 각 단독 효과 분리(순서 의존까지 보고) ② 사전등록 expected_failure_mode 를 결과 산출 전에 기록해 사후 합리화 차단 ③ 비용 3수준 x 지연 4수준 전수 보고에서 순위 불변 확인 ④ 진단셀 G2 헤드라인 승격 금지 구속 준수 ⑤ 대조군 G0 를 동일 창(n=209)에서 재측정해 창 효과 제거 ⑥ 창 축소가 만든 calmar 개선(0.300->0.562)을 개선으로 보고하지 않고 함정으로 명시 ⑦ book 구조 주장을 계획서 문구가 아니라 book_state.json 실측으로 확인.",
+      "① R23 sanity: 일별 재구성의 월집계 pt 가 R20 월간 채택팔과 정확히 일치(2.882 vs 2.882, delta 0.000) ② R23 PIT: lag 사다리 0/1/5일 단조 완만 감쇠로 동월 누출 배제 ③ R24 선택 오염 차단: 진단을 IS 구간(~2015-06)에만 한정하고 OOS 미조회, 인과 확장분위(t-1 까지 데이터로만 문턱 산출) ④ R24 like-for-like: 응답 규칙을 고정하고 신호만 교체해 신호 품질과 응답 설계를 분리 ⑤ R25 내부 정합: 각 팩터지수 내 cap-weight 합이 1 임을 stopifnot 으로 검증 ⑥ R25 그룹핑 버그 점검: cap-weight 그룹 키를 값(wfac)에서 팩터명으로 교체 후 재실행해 결과 불변 확인 ⑦ R25 이상치 해부: 실효 3.3 이 나온 2026-07 을 종목 수준으로 열어 버그가 아니라 메가캡 중복임을 확인(2021-01 정상 사례와 대조) ⑧ R25 표본 대 전수 대조: 8시점 표본(중앙 274)과 79시점 전수(중앙 275)가 일치",
+      "①무신호 대조군 병기(팩터 신호 미사용 시총 상위 25종, 동일 제약·비용) — 이것이 T3 를 죽였다 ②beta 통제 회귀로 alpha/leverage 분리(NW lag-3) ③2026 포함/제외 양 판본 병기 — 표본 5.3% 의존을 노출 ④2026 데이터 무결성을 종목 확산도로 검증(95~99.7% 동방향, 2008/2020 과 동일 지문) ⑤계약 검사기 위반 주입 3방향 + beta 오염 D 케이스(13/13) ⑥사전등록 반증조건이 실제 발화(R36 lag+1M, R39 중간형태, R40 예측 역전) ⑦양성 대조 선행 — 모든 신규 하네스가 정본 채택팔 재현(calmar 0.2996 · PORT_t 2.882)을 먼저 통과",
+      "①양성 대조: 정적 EW21 과 대응표본 비교(구분 불가 확인) ②조작 확인: top-5 로 좁혀 비중 sd 0.0272 = 21종의 13.3배(처치 전달 확인) ③표현력 상한: softmax/shrink/cap 전부 제거한 w~pmax(regime_IR,0) IS-only 양성 대조 병기 ④전 셀 전수 보고 arm x win x cost{5,15,25} x dec_lag{0,1,2,3}"
+    ],
+    "note": "L-code 기록 반증 시도 실값 집계"
+  },
+  "mechanism_draft": {
+    "economic_explanation": "팩터지수 배분 전략은 '지수 수준의 신호 품질' 과 '종목 수준의 배포 가능성' 이 분리돼 있고, 후자를 재지 않으면 전자의 게이트 통과가 자본 경로와 무관해진다. cap-weight 는 지수 내부에서는 자연스러운 규약이지만 여러 지수를 합집합할 때 같은 메가캡이 중복 계상돼 집중도가 곱으로 쌓인다. 그리고 노출 축의 유효성은 게이트마다 다르다 — IR 에는 무효(스케일 불변)이고 calmar 에는 유효(시변 노출이 낙폭을 비대칭적으로 줄임)다. 축을 닫을 때는 어느 게이트에 대해 닫는지를 명시해야 한다. (멤버 가설 5건 — promote.R에서 일치성 재검증)",
+    "mechanism_type": "structural",
+    "causal_plausibility": null
+  },
+  "oos_validation_draft": {
+    "oos_months": 233.0,
+    "oos_effect_vs_is": 0.875,
+    "note": "L-code oos_retention 실값 2건 median (IS65/OOS35 활성SR retention) + oos_months 실값 2건 median — promote.R essence_score 경유 재확정"
+  },
+  "cluster_members_count": 5,
+  "status": "pending_5axis",
+  "created_at": "2026-08-23T00:44:05+00:00"
+}

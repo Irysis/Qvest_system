@@ -1,0 +1,398 @@
+{
+  "date": "20260823",
+  "schema_version": "route_v2",
+  "generated_at": "2026-08-23T09:00:00+0900",
+  "counts_by_route": {
+    "alpha": 1,
+    "optimizer": 6,
+    "risk": 4,
+    "regime": 0,
+    "skip": 19
+  },
+  "n_factor_candidates": 2,
+  "n_factor_testable": 2,
+  "curated_new_processed": 0,
+  "autorun_planned": 1,
+  "autorun_completed": 1,
+  "papers": [
+    {
+      "arxiv_id": "2608.20304",
+      "title": "Calibration-Induced Degeneracy in LLM Financial Forecasting: An Audit-Trailed Case Study on Next-Day Market Risk",
+      "source": "arxiv",
+      "route": "skip",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "LLM calibration study on next-day market risk for broad-market funds. No cross-sectional stock signal. Not KR equities."
+    },
+    {
+      "arxiv_id": "2608.20179",
+      "title": "Dynamic Portfolio Optimization under CVaR Constraints",
+      "source": "arxiv",
+      "route": "optimizer",
+      "kr_feasible": true,
+      "factor_candidate": null,
+      "reason": "Continuous-time CVaR-constrained portfolio optimization. Relevant as optimizer method but lacks shrinkage and uses tail statistics.",
+      "mode_queue_meta": {
+        "shrinkage_builtin": "no",
+        "statistic_order": "tail_quantile",
+        "screen_priority": "후순위",
+        "screen_priority_reason": "CVaR optimization without regularization. Tail quantile in small-T setting (T=250d) gives high estimation error."
+      }
+    },
+    {
+      "arxiv_id": "2608.20020",
+      "title": "The Reconfiguration Premium: Co-movement Structure as an Unspanned Dimension of the Variance Risk Premium",
+      "source": "arxiv",
+      "route": "risk",
+      "kr_feasible": true,
+      "factor_candidate": {
+        "name": "comovement_reconfiguration_rate",
+        "def": "Per-stock temporal instability of market correlation: SD of rolling 3M market beta (vs KOSPI200) computed over 12 consecutive monthly snapshots. Higher = more unstable co-movement regime = higher reconfiguration rate.",
+        "novel": true,
+        "novel_vs_db": "CR01 measures static sector correlation level; this measures TEMPORAL INSTABILITY of market beta — distinct concept, no DB entry.",
+        "kr_feasible": true,
+        "data_required": "RAWDATA daily Ret + BM_Ret only (no options data). 13M rolling window, 1M PIT lag.",
+        "verdict": "testable",
+        "confidence": 0.75,
+        "autorun_priority": 1,
+        "implementation_note": "Factor: for each stock i at month t, compute sd(beta_3m_roll) over windows [t-12,t-1] (12 monthly betas). Use OLS beta from 66-day rolling window. Long top quintile (high instability = premium-bearing). PIT: returns from [t-13M, t-1M] only."
+      },
+      "reason": "Primary route = risk (co-movement structure, correlation-based). Hidden alpha: temporal beta instability is novel, KR-feasible, testable. Designated for AUTORUN.",
+      "mode_queue_meta": {
+        "shrinkage_builtin": "weak",
+        "statistic_order": "<=2nd",
+        "screen_priority": "⭐",
+        "screen_priority_reason": "Correlation matrix estimation (2nd order) with implicit dimensionality reduction via clustering. Interpretable structure for risk model."
+      }
+    },
+    {
+      "arxiv_id": "2608.19394",
+      "title": "Deep-MKV-TS: Path-Dependent McKean-Vlasov Control for Financial Time Series Generation",
+      "source": "arxiv",
+      "route": "skip",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "Synthetic financial scenario generation via McKean-Vlasov framework. Not a cross-sectional equity factor or KR-applicable optimizer."
+    },
+    {
+      "arxiv_id": "2608.19389",
+      "title": "Concentrated Liquidity Provision: a Reinforcement Learning Perspective",
+      "source": "arxiv",
+      "route": "skip",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "DeFi AMM liquidity provision (UniswapV3). Not KR equities."
+    },
+    {
+      "arxiv_id": "2608.18783",
+      "title": "When to Sell an Asset? - A Distribution Builder Approach",
+      "source": "arxiv",
+      "route": "optimizer",
+      "kr_feasible": true,
+      "factor_candidate": null,
+      "reason": "Optimal stopping / portfolio selection using distribution builder. Theoretical framework; no shrinkage.",
+      "mode_queue_meta": {
+        "shrinkage_builtin": "no",
+        "statistic_order": "<=2nd",
+        "screen_priority": "후순위",
+        "screen_priority_reason": "Pure theoretical stopping-time model. No empirical regularization. 후순위 — design insights only."
+      }
+    },
+    {
+      "arxiv_id": "2608.18299",
+      "title": "The Market's Conditioning Representation: Equilibrium, Crowding, and Convention Multiplicity",
+      "source": "arxiv",
+      "route": "risk",
+      "kr_feasible": true,
+      "factor_candidate": null,
+      "reason": "Equilibrium model with endogenous conditioning and crowding. Theoretical — no operational risk model. Crowding framing useful for risk-model narrative.",
+      "mode_queue_meta": {
+        "shrinkage_builtin": "no",
+        "statistic_order": "<=2nd",
+        "screen_priority": "후순위",
+        "screen_priority_reason": "Equilibrium theory paper. No implementable covariance estimator."
+      }
+    },
+    {
+      "arxiv_id": "2608.18022",
+      "title": "Entropic Value-at-Risk portfolio optimization for tempered stable Lévy processes",
+      "source": "arxiv",
+      "route": "optimizer",
+      "kr_feasible": true,
+      "factor_candidate": null,
+      "reason": "EVaR parametric portfolio optimization with tempered stable Lévy returns. Novel risk measure but tail_quantile + no shrinkage = same failure mode as PRD (실측 3편 기반 사전 선례).",
+      "mode_queue_meta": {
+        "shrinkage_builtin": "no",
+        "statistic_order": "tail_quantile",
+        "screen_priority": "후순위",
+        "screen_priority_reason": "EVaR is α=0.99 tail measure. T=250d gives ~2 extreme observations. No regularization → estimation error dominates. Consistent with prior PRD/conformal negative."
+      }
+    },
+    {
+      "arxiv_id": "2608.17808",
+      "title": "Self-Consistent Adjoint Policy Iteration for Constrained Dynamic Portfolio Choice",
+      "source": "arxiv",
+      "route": "optimizer",
+      "kr_feasible": true,
+      "factor_candidate": null,
+      "reason": "Simulation-based RL policy iteration for continuous-time constrained portfolio choice. Convex constraints match our setup. Needs external α̂ as predictor.",
+      "mode_queue_meta": {
+        "shrinkage_builtin": "no",
+        "statistic_order": "<=2nd",
+        "screen_priority": "⭐",
+        "screen_priority_reason": "Convex-constrained RL optimizer with predictable returns. Relevant if α̂ is supplied. No shrinkage but architecture addresses constraint satisfaction which is our binding constraint (25종·long-only·Σw=1)."
+      }
+    },
+    {
+      "arxiv_id": "2608.17715",
+      "title": "Communicating Credit Risk with Large Language Models",
+      "source": "arxiv",
+      "route": "skip",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "Individual borrower credit decisioning with LLM explainability. Not equity cross-section."
+    },
+    {
+      "arxiv_id": "2608.17481",
+      "title": "A generic nonparametric value-at-risk estimator for high dimensions",
+      "source": "arxiv",
+      "route": "risk",
+      "kr_feasible": true,
+      "factor_candidate": null,
+      "reason": "Nonparametric VaR/CVaR for high-dimensional portfolios. Bandwidth = implicit regularization, but tail statistic.",
+      "mode_queue_meta": {
+        "shrinkage_builtin": "weak",
+        "statistic_order": "tail_quantile",
+        "screen_priority": "후순위",
+        "screen_priority_reason": "Nonparametric has implicit bandwidth regularization (weak shrinkage) but tail_quantile estimation error at T=250 remains large. 후순위 per prior ConformalKelly/PRD pattern."
+      }
+    },
+    {
+      "arxiv_id": "2608.17363",
+      "title": "Conservation of Short-term Flows: Signed Optimal Transport",
+      "source": "arxiv",
+      "route": "skip",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "Theoretical framework for signed optimal transport via harmonic analysis. No operational equity factor or portfolio method."
+    },
+    {
+      "arxiv_id": "2608.16856",
+      "title": "zLend: A Dual-Scope Cash-Flow Reconstruction Framework for On-Chain Credit Underwriting",
+      "source": "arxiv",
+      "route": "skip",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "DeFi on-chain credit underwriting. Not KR equities."
+    },
+    {
+      "arxiv_id": "2608.16842",
+      "title": "When ratios fall: A dynamic approach to contingent convertibles",
+      "source": "arxiv",
+      "route": "skip",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "CoCo bond valuation via bivariate jump-diffusion. Derivative pricing, not equity cross-section."
+    },
+    {
+      "arxiv_id": "2608.16749",
+      "title": "Rough Volatility Across Assets",
+      "source": "arxiv",
+      "route": "skip",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "ALREADY_PROCESSED (20260822, in alpha_search_queue_done.json). Skipped."
+    },
+    {
+      "arxiv_id": "2608.15841",
+      "title": "Self-Supervised Auxiliary Task Discovery for Stable Reinforcement Learning in Stock Trading",
+      "source": "arxiv",
+      "route": "optimizer",
+      "kr_feasible": true,
+      "factor_candidate": null,
+      "reason": "RL with self-supervised auxiliary tasks for stock trading policy. Auxiliary tasks act as implicit regularizers. Implementation requires full paper for auxiliary task definitions.",
+      "mode_queue_meta": {
+        "shrinkage_builtin": "weak",
+        "statistic_order": "<=2nd",
+        "screen_priority": "⭐",
+        "screen_priority_reason": "Self-supervised auxiliary tasks = implicit regularization/shrinkage for RL policy. Standard return moments (2nd order). Relevant for our optimizer-research axis if combined with α̂ input."
+      }
+    },
+    {
+      "arxiv_id": "2608.15743",
+      "title": "Behavioral Participating Insurance: Optimal Investment under Probability Distortion and Aspiration Constraints",
+      "source": "arxiv",
+      "route": "skip",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "Insurance/actuarial investment problem with probability distortion. Not equity cross-section."
+    },
+    {
+      "arxiv_id": "2608.15667",
+      "title": "Scalable Pontryagin-Guided Adjoint-to-Control Recovery for Constrained Dynamic Portfolio Choice",
+      "source": "arxiv",
+      "route": "optimizer",
+      "kr_feasible": true,
+      "factor_candidate": null,
+      "reason": "Scalable adjoint-to-control framework for constrained continuous-time portfolio. Convex constraints directly applicable. Co-authors with 2608.17808.",
+      "mode_queue_meta": {
+        "shrinkage_builtin": "no",
+        "statistic_order": "<=2nd",
+        "screen_priority": "⭐",
+        "screen_priority_reason": "Convex constraints (long-only, weight bounds) = KR deployment match. Scalable = applicable to 350-stock universe. Companion to 2608.17808; consider joint read."
+      }
+    },
+    {
+      "arxiv_id": "2608.15447",
+      "title": "Detecting Money Laundering in Rwandan Mobile Money: A Machine Learning Framework",
+      "source": "arxiv",
+      "route": "skip",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "AML detection in mobile money (Rwanda). Not KR equities."
+    },
+    {
+      "arxiv_id": "2608.15212",
+      "title": "Is the medium the message? Social disclosure channels and firm risk",
+      "source": "arxiv",
+      "route": "skip",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "ESG/social disclosure channels (SEC/sustainability reports) as risk signals. Alt-data (ESG channel classification) not available in KR DART infrastructure."
+    },
+    {
+      "arxiv_id": "2608.14859",
+      "title": "Disclosed Human-Capital Disruption and Firm-Specific Risk",
+      "source": "arxiv",
+      "route": "skip",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "Human-capital disruption dictionary from earnings call transcripts. Earnings call transcripts not in KR DART infrastructure."
+    },
+    {
+      "arxiv_id": "2608.14323",
+      "title": "Dependence-Informed Sparse Neural Architecture for Stock Return Prediction",
+      "source": "arxiv",
+      "route": "alpha",
+      "kr_feasible": true,
+      "factor_candidate": {
+        "name": "mfcf_neural_score",
+        "def": "Maximally Filtered Clique Forest (MFCF) estimated dependence among firm characteristics → sparse neural network architecture with MFCF-determined edges → predicted monthly return score per stock.",
+        "novel": true,
+        "novel_vs_db": "No existing DB factor uses MFCF-guided architecture. Our DB has 373 characteristics as standalone factors; this uses them as inputs to a dependence-structured neural network.",
+        "kr_feasible": true,
+        "data_required": "factor_db (373 characteristics) + RAWDATA returns. Python venv (torch, sklearn, numpy available). Monthly cross-section.",
+        "verdict": "testable",
+        "confidence": 0.60,
+        "autorun_priority": 2,
+        "implementation_note": "QUEUED (pending full paper fetch for MFCF algorithm details). Do NOT autorun without reading full text of 2608.14323. Suggested: download paper, read MFCF definition, implement in Python with our factor DB characteristics as inputs."
+      },
+      "reason": "Explicitly about cross-sectional stock return prediction using MFCF-guided sparse neural architecture. Novel methodology, KR feasible. Complexity requires full paper read before implementation — queued."
+    },
+    {
+      "arxiv_id": "2608.14014",
+      "title": "Buy the Rumor, Sell the News: When Is News Priced In?",
+      "source": "arxiv",
+      "route": "skip",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "News pre-pricing study requiring structured news event data with publication timestamps. Not in KR infrastructure."
+    },
+    {
+      "arxiv_id": "2608.13745",
+      "title": "Dynamic Physical Hedging amid Jump Losses, Reconstruction-Price Uncertainty, Population Interactions",
+      "source": "arxiv",
+      "route": "skip",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "Catastrophe insurance hedging via jump-diffusion. Actuarial/insurance, not equity cross-section."
+    },
+    {
+      "arxiv_id": "2608.13056",
+      "title": "Simulating Stress Laws under Extremal Dependence: Characterizing What Generative Models Must Preserve",
+      "source": "arxiv",
+      "route": "risk",
+      "kr_feasible": true,
+      "factor_candidate": null,
+      "reason": "Multivariate extreme value stress scenario generation. Useful for risk model stress testing; no cross-sectional alpha factor. Downloaded by morning triage (MCP_2608_13056.pdf).",
+      "mode_queue_meta": {
+        "shrinkage_builtin": "no",
+        "statistic_order": "tail_quantile",
+        "screen_priority": "후순위",
+        "screen_priority_reason": "Extremal dependence / stress laws in tail regions. Requires many extreme observations for estimation. 후순위 per tail_quantile precedent. Useful as stress scenario methodology reference."
+      }
+    },
+    {
+      "arxiv_id": "2608.09087",
+      "title": "Joint Lyapunov Certificates for K-Agent Generative AI Governance",
+      "source": "arxiv",
+      "route": "skip",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "AI model governance framework (Lyapunov stability). Not equity cross-section."
+    },
+    {
+      "arxiv_id": "2608.02311",
+      "title": "AI Governance for Institutional Readiness in Finance",
+      "source": "arxiv",
+      "route": "skip",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "Survey of AI governance in asset management. Not a trading strategy or factor."
+    },
+    {
+      "arxiv_id": "2608.00885",
+      "title": "Optimal Trading of Microstructure Mean Reversion",
+      "source": "arxiv",
+      "route": "skip",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "HFT/microstructure — intraday optimal execution for mid-price mean reversion at seconds scale. Not monthly cross-section."
+    },
+    {
+      "arxiv_id": "2607.27039",
+      "title": "Forcing and duality-corrected contracts for volatility control",
+      "source": "arxiv",
+      "route": "skip",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "Continuous-time principal-agent theory (2BSDE). Pure theory, not operationalizable for equity cross-section."
+    },
+    {
+      "arxiv_id": "2607.26245",
+      "title": "OpenMarket: A Synchronized Polymarket-Binance Dataset for High-Frequency Prediction-Market Research",
+      "source": "arxiv",
+      "route": "skip",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "Crypto (BTC) prediction markets + HFT microstructure. Not KR equities."
+    }
+  ],
+  "factor_candidates_summary": [
+    {
+      "name": "comovement_reconfiguration_rate",
+      "source_paper": "2608.20020",
+      "source_route": "risk",
+      "verdict": "testable",
+      "autorun_priority": 1,
+      "status": "AUTORUN_COMPLETED",
+      "strategy_id": "STR_AS_20260823_093833_28740",
+      "gate_decision": "QUARANTINE",
+      "port_t": null,
+      "oos_retention": -0.926,
+      "calmar": 0.019,
+      "mdd": 76.1,
+      "ic_mean": -0.028,
+      "signal_direction": "REVERSED",
+      "next_probe": ["NP1_stable_comovement", "NP2_macro_regime_conditional", "NP3_distribution_target"]
+    },
+    {
+      "name": "mfcf_neural_score",
+      "source_paper": "2608.14323",
+      "source_route": "alpha",
+      "verdict": "testable",
+      "autorun_priority": 2,
+      "status": "QUEUED_PENDING_FULL_PAPER_FETCH"
+    }
+  ]
+}

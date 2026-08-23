@@ -1,0 +1,145 @@
+{
+  "run_date": "2026-08-23",
+  "paper": "arXiv 2608.20020 Carvalho 2026",
+  "paper_title": "The Reconfiguration Premium: Co-movement Structure as an Unspanned Dimension of the Variance Risk Premium",
+  "factor": "comovement_reconfiguration_rate",
+  "strategy_id": "STR_AS_20260823_093833_28740",
+  "run_timestamp": "2026-08-23 09:38:33",
+  "signal_definition": "reconfiguration_rate_i(t) = SD of 12 monthly beta snapshots [t-12M..t-1M], each beta from 66d rolling OLS Ret_i ~ BM_Ret",
+
+  "hypothesis_index_lookup": {
+    "keywords_searched": ["beta", "comovement"],
+    "hits": [
+      {
+        "strategy_id": "STR_CR01_Sector_Comovement_LO_top25",
+        "signature": "defense|cr01_sector_comovement_long_only_top25_s|unknown|alpha_search",
+        "grade": "F",
+        "verdict": "REGISTERED",
+        "note": "섹터 co-movement 기반 구조 — 이번 신호(beta 시계열 SD 불안정성)와 다른 차원. 차별점: CR01은 섹터 내 co-movement 수준이고, 본 신호는 개별 종목 beta의 시간적 불안정성(재구성 프리미엄)"
+      }
+    ],
+    "novelty_confirmed": true
+  },
+
+  "L1_pit_pass": true,
+  "L1_pit_notes": [
+    "LOOKAHEAD: CLEAN (factor_engine_comovement_reconfiguration_rate.R, 152 lines scanned)",
+    "PIT check: CLEAN",
+    "beta 창: 66일 rolling OLS, 창 끝=월말 당일 (동월 수익 포트폴리오 신호에 미포함)",
+    "Score(t): t-1M beta까지의 SD (t 당월 beta 미포함) -> lag 1M 이상 보장",
+    "전체표본 통계 없음: rolling/per-ticker 계산",
+    "NEGATE/FLIP 없음 (C13 준수)"
+  ],
+
+  "L2_contract_pass": false,
+  "L2_contract_notes": [
+    "bt_result audit: PASS=17 FAIL=0 WARN=1 | integrity=WARNING",
+    "register_module: QUARANTINE (grade=F, metric_type != backtested)",
+    "WARN 내용: 3Y rolling metric 관련 경고 (성과 판정에 영향 없음)"
+  ],
+
+  "L3_oos_retention": -0.926,
+  "L3_calmar": 0.019,
+  "L3_port_t": null,
+
+  "L3_hard_fail": true,
+  "L3_hard_fail_reason": "Structural drawdown: MDD=76.1%, 45%+ episodes=35 (limit 15), max_underwater=709d (limit 252d)",
+  "L3_graduation_gates": {
+    "port_t": "NOT_COMPUTED (proxy only — grade F, no authority measurement)",
+    "oos_retention": "FAIL (-0.926 vs 0.70 threshold)",
+    "calmar": "FAIL (0.019 vs 0.64 threshold)"
+  },
+
+  "L4_fidelity_pass": true,
+  "L4_stress_periods": {
+    "GFC_2008": {"strat_ret": -40.24, "bm_ret": -36.48, "alpha": -3.76, "outperform": false},
+    "Euro_Debt_2011": {"strat_ret": 12.58, "bm_ret": -13.48, "alpha": 26.06, "outperform": true},
+    "China_Shock_2015": {"strat_ret": -19.5, "bm_ret": -9.89, "alpha": -9.61, "outperform": false},
+    "US_China_Trade_2018": {"strat_ret": -16.87, "bm_ret": -16.26, "alpha": -0.60, "outperform": false},
+    "COVID_2020": {"strat_ret": 24.39, "bm_ret": -4.66, "alpha": 29.04, "outperform": true},
+    "Rate_Hike_2022": {"strat_ret": -40.82, "bm_ret": -26.15, "alpha": -14.67, "outperform": false},
+    "Iran_War": {"strat_ret": -9.13, "bm_ret": 29.12, "alpha": -38.24, "outperform": false},
+    "outperform_rate": "2/7 (Euro_Debt + COVID)",
+    "pattern": "위기 회복 국면(COVID/EuDebt) outperform / 매크로 악화 국면(GFC/Rate_Hike/Iran_War) underperform"
+  },
+
+  "L5_gate_decision": "QUARANTINE",
+
+  "metrics": {
+    "grade": "F",
+    "score": 6.1,
+    "sharpe": 0.047,
+    "sharpe_m": 0.198,
+    "cagr": 1.44,
+    "ann_vol": 30.8,
+    "mdd": 76.13,
+    "calmar": 0.019,
+    "ir": -0.415,
+    "turnover_ann": 141.3,
+    "bm_corr": 0.663,
+    "capm_beta": 0.875,
+    "es99_d": 7.68,
+    "es99_m": 24.83,
+    "rolling3y_pos_rate": 57.5,
+    "rolling6m_hit": 52.8,
+    "worst6m_ret": -59.46,
+    "max_consec_neg_alpha_months": 9,
+    "rolling12m_hit": 55.0,
+    "oos_is_sr": 0.238,
+    "oos_oos_sr": -0.221,
+    "oos_retention": -0.926,
+    "ic_mean": -0.0281,
+    "icir": -0.211,
+    "ic_pos_rate": 41.5,
+    "fmb_score_lambda": -0.00165,
+    "fmb_nw_t": -1.49,
+    "port_t": null
+  },
+
+  "factor_analysis_summary": {
+    "IC": -0.0281,
+    "ICIR": -0.211,
+    "IC_pos_rate_pct": 41.5,
+    "FMB_lambda": -0.00165,
+    "FMB_NW_t": -1.49,
+    "FMB_R2": 0.062,
+    "signal_direction": "NEGATIVE (long high-beta-SD = underperform unconditionally)"
+  },
+
+  "mechanism_diagnosis": {
+    "primary": "beta 불안정성(SD) 무조건부 long은 KR 시장에서 고위험 종목 집중을 의미 — beta 변동성 높은 종목은 소형/테마주 편향이 강해 시장 하락기 변동성이 배가됨. 무조건부 long-only에서 MDD 76%는 구조적 위험 집중.",
+    "signal_direction_mismatch": "IC = -0.0281, IC_pos_rate = 41.5% — 무조건부 관계가 오히려 역방향. 높은 beta SD 종목이 미래 수익에 negative 관계.",
+    "stress_pattern": "COVID/EuDebt 회복 국면에서만 outperform — 시장 회복기에 고위험 종목 반등 효과. 악화 국면에서 구조적 underperform (GFC -3.76%, Rate_Hike -14.67%).",
+    "oos_collapse": "IS SR=0.238 → OOS SR=-0.221, retention=-0.926 — 완전한 OOS 역전. 불안정성이 학습/검증 구간을 가리지 않음."
+  },
+
+  "novelty_assessment": "신규 시도 — beta 시계열 변동성(재구성률) 기반 long-only. 기존 downside beta(fe_dbeta)·섹터 co-movement(STR_CR01)와 다른 차원. 그러나 KR 시장에서 무조건부 long-only는 고위험 종목 집중으로 귀결되어 실패.",
+
+  "next_probes": [
+    {
+      "id": "NP1",
+      "title": "beta 불안정성 역방향(낮은 SD) 신호 검증",
+      "design": "Score = -reconfiguration_rate (낮은 beta SD = 안정적 co-movement = 저위험 프리미엄). IC 부호가 음수(-0.028)이므로 역방향이 양의 신호 가능성.",
+      "pit_note": "동일 factor_engine, 부호만 반전. C13 위반 아닌지 확인 필요 (단순 reversal은 C13 미적용).",
+      "priority": 1
+    },
+    {
+      "id": "NP2",
+      "title": "beta 불안정성 x 매크로 레짐 조건부 (Lane D)",
+      "design": "매크로 회복 레짐(예: Term_Spread 개선 + VIX 하락)에서만 고 beta-SD 종목 long. COVID/EuDebt 패턴이 레짐 정의와 일치하는지 확인.",
+      "prerequisite": "Lane D FQ-243(macro-beta momentum) NP1 완료 후 상호작용 설계",
+      "priority": 2
+    }
+  ],
+
+  "out_dir": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/alpha_search/20260823_093833_28740",
+  "l_code_filed": "l_code_STR_AS_20260823_093833_28740",
+  "telegram_sent": true,
+
+  "notes": [
+    "factor_engine 내 data.table by= 컨텍스트에서 return() 사용 오류 수정: return() -> list() 패턴으로 교체 (r-portability.md 위반 패턴)",
+    "실행 총 소요: 334초 (factor 계산 82초 + 백테 158초 + analyzer 70초)",
+    "factor signal dates: 260 | avg monthly tickers: 313",
+    "IC 음수(-0.028)가 역방향 신호를 시사 — 낮은 beta SD 종목이 미래 수익 상위"
+  ]
+}

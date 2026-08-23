@@ -1,0 +1,82 @@
+{
+  "schema_version": "v54_ax_p0_mode",
+  "candidate_id": "CAND_20260823_qepm_legacy_infra_process_conditional_L-142_L-148_L-161A",
+  "research_mode": "qepm_legacy",
+  "metric_type": "estimated",
+  "type": "methodological",
+  "polarity": "conditional",
+  "statement_draft": "[방법론 조건부 규칙 초안] family=infra_process, tags=AX-000_honest,self_correction,CATALOG_INTEGRITY, supporting=13건 L-code. (promote.R 5축 검증에서 범위·메커니즘·OOS 확정 필요)",
+  "supporting_l_codes": [
+    "L-142",
+    "L-148",
+    "L-161A",
+    "L-162A",
+    "L-167",
+    "L-612",
+    "L-722",
+    "L-731",
+    "L-QPM-20260607-001",
+    "L-QPM-20260718_101841",
+    "L-QPM-20260820_PROXY_CHECKER_INSTALL",
+    "L-QPM-20260821_R11_RETRY_PREVENTION_DIAGNOSIS",
+    "L-QPM-20260822_AXIOM_AUDIT_TEST_ISOLATION"
+  ],
+  "scope_draft": {
+    "market": "KR",
+    "factor_family": "infra_process",
+    "regime": null,
+    "construction_types": null
+  },
+  "evidence_draft": {
+    "independent_l_codes": 13,
+    "independent_strategies": 10,
+    "strategies": [
+      "PROXY_CHECKER_INSTALL_20260820",
+      "CODEX_CRITIC_INFRA",
+      "AXIOM_LOOP_R11_RETRY_PREVENTION_20260821",
+      "CLEANER_DISTILL_CLAIM_PROTOCOL",
+      "NO_JUDGE_SWEEP_20260417",
+      "STR_1506_ownership_concentration",
+      "WT-D20260606_001+002",
+      "AXIOM_ENGINE_DESIGN_AUDIT_20260822",
+      "NOJUDGE_SWEEP_V2_20260417",
+      "STR_1506_ownership_concentration_DD620"
+    ],
+    "effect_direction_consistency": null,
+    "note": "evidence_draft — promote.R 5축 검증에서 hurdle_result/grade_a_catalog 교차검증으로 확정",
+    "n_eff_signatures": 5,
+    "independent_constructions": 4,
+    "constructions": [
+      "infra_checker",
+      "single_factor_long_only",
+      "structural_limit",
+      "value"
+    ],
+    "metric_types": [
+      "backtested",
+      "estimated",
+      "unavailable"
+    ]
+  },
+  "falsification_draft": {
+    "attempts": [
+      "F1 설치 여부 — git grep 참조 census 로 자기파일+자기테스트뿐임을 확인(2곳). 배선 후 재측정. F2 호출자 오염 — deparse(get(\"%||%\")) 로 실제 바인딩을 런타임에 찍어 소스 39행 정의와 다름을 확정. 가설 4개(연산자 텍스트 동일 · ts 필드 길이 · 이름 충돌 · 직접 평가)가 전부 기각된 뒤 얻은 결론. F3 언어 간 정합 — R/python sha 를 나란히 산출해 527837f1428c 동치 확인. F4 우회 차단 양방향 — B1/B3 는 sha 불변(차단), 수치 1자·표 행 추가는 sha 변경(검출) = 과잉 교정 아님. F5 위반 주입(설치 실효) — index 3건 제거 시 'count_mismatch(corpus=494, index=491); missing_in_index=3' 발화, 복구 시 OK 회귀. F6 회귀 — 배터리 9종 182 PASS / 0 FAIL, memory health Hard fails 0.",
+      "F1 로직 사망 가설 — hurdle_gate.R 분기를 직접 읽어 5단 점수 체계가 온전함을 확인(기각). F2 입력 결측 가설 — 산출물 400건 전수에서 max_corr='NA'/independence='unknown'/bonus_base=0 확인(성립). F3 원천 존재 여부 — s3_orthogonality*.json 고유 8건 전부 legacy STR_*/H_* 명명, 최근 라운드 산출 0건. F4 대체 지표 가용성 — 최근 544건 표본에서 delta_ir 132 vs 상관 축 5종 전부 0건 ⇒ 선택지 A 불가(기각). F5 워크트리 부풀림 통제 — 142건이 사본 포함임을 디렉터리 분포로 확인 후 고유 8건으로 교정. F6 경로 어긋남 가설 — 루트 stage_artifacts 에 파일이 있어 경로 문제로 보였으나, 파일명이 전부 legacy 라 '경로'가 아니라 '시대' 문제로 재판정.",
+      "F1 격리 성립 — 수리 후 생산 method_registry·hypothesis_index md5 를 검사 전후로 비교해 둘 다 불변 확인. F2 검출력(주입1) — T5 가 sbx_mrp 대신 mrp 에 쓰도록 변형 → T5b FAIL 검거. F3 검출력(주입2) — T4a 를 구판(생산 재빌드)으로 되돌림 → T5c FAIL 검거. F4 검출력(주입3) — 생산 인덱스에 프로브 사전 주입(grep=1 로 조작 선행검증) → T5d FAIL 검거. F5 대조군 — 미변형 판에서 T5b/c/d 전부 ok(오탐 없음). F6 하네스 유효성 — 초판 주입 하네스가 .Renviron 때문에 격리에 실패했음을 QM_ROOT 실측 2회(기본 vs R_ENVIRON_USER=/dev/null)로 확정하고 F2~F4 를 전량 재측정. F7 러너 가드 검출력 — 파일에서 추출한 실제 _reg_fp 함수로 3축 주입(변조·provenance·삭제) 전부 검거, 대조군 무발화. 삭제 축은 초판 미검거 → 양쪽 diff 캡처로 수정 후 재확인. F8 회귀 — r_portability 21/1→22/0 · paper_intake_resolvers 6/2→8/0 · revival_flags_sync 7/0 · hypothesis_index_paper_lane 15/16→17/17. F9 provenance 원값 — git log 20 커밋 추적으로 오염 도입 시점(fbb133b2e, 검사 생성 당일) 특정."
+    ],
+    "note": "L-code 기록 반증 시도 실값 집계"
+  },
+  "mechanism_draft": {
+    "economic_explanation": "검사가 생산 원장을 in-place 변조하면 세 방향으로 샌다: (1) 같은 회차의 후속 검사가 그 가짜를 실물로 읽는다 (2) 크래시 시 오염이 다음 회차의 시작 상태가 되어, 자기청소 검사의 실패가 '내 뒷정리 실패'인지 '이미 더러웠음'인지 구별되지 않는다 (3) auto-commit 이 오염을 HEAD 에 박제해 git 복원 경로마저 오염본을 가리킨다. 그리고 이 결함을 고치려 할 때 가장 먼저 손이 가는 수단(환경변수로 루트 오버라이드)은 .Renviron 에 의해 조용히 무력화되므로, 하네스가 격리됐다고 믿으면서 실제로는 생산을 계속 만지는 fail-open 상태가 만들어진다. 유일하게 성립하는 이음매는 함수 인자다. (멤버 가설 4건 — promote.R에서 일치성 재검증)",
+    "mechanism_type": "unknown",
+    "causal_plausibility": null
+  },
+  "oos_validation_draft": {
+    "oos_months": null,
+    "oos_effect_vs_is": null,
+    "note": "promote.R r4_regime_payoff / essence_score 경유 확정"
+  },
+  "cluster_members_count": 13,
+  "status": "pending_5axis",
+  "created_at": "2026-08-23T00:44:03+00:00"
+}

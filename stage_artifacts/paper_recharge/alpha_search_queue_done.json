@@ -19,7 +19,8 @@
     "2608.08625",
     "2608.16749",
     "2608.09641",
-    "2608.12283"
+    "2608.12283",
+    "2608.20020"
   ],
   "records": [
     {
@@ -1005,8 +1006,59 @@
       "notable": true,
       "l_code": "l_code_STR_AS_20260822_143237_8580",
       "session_note": "AS-20260822 큐소비자 런 — alpha_search_route_20260822.json 유일 testable candidate. Python pre-computed parquet v3 engine(compute_macro_beta_v2.py) 경유. Telegram 자동 발송 완료. 무조건부 macro-beta momentum KR 비성립 확인. Lane D 착수 근거 생성."
+    },
+    {
+      "paper_id": "2608.20020",
+      "paper_title": "The Reconfiguration Premium: Co-movement Structure as an Unspanned Dimension of the Variance Risk Premium",
+      "factor_id": "comovement_reconfiguration_rate",
+      "factor_name": "SD of rolling 3M market beta across 12 monthly snapshots (beta instability / reconfiguration premium)",
+      "fq_id": null,
+      "strategy_id": "STR_AS_20260823_093833_28740",
+      "gate_decision": "QUARANTINE",
+      "gate_failed_layers": "L3_robustness",
+      "port_t": null,
+      "oos_retention": -0.926,
+      "calmar": 0.019,
+      "mdd": 76.1,
+      "sharpe": 0.047,
+      "cagr": 1.44,
+      "ic_mean": -0.028,
+      "ic_pos_rate": 41.5,
+      "fmb_nw_t": -1.49,
+      "grade": "F",
+      "score": 6.1,
+      "processed_date": "20260823",
+      "verify_path": "stage_artifacts/paper_recharge/auto_verify_comovement_reconfiguration_rate_20260823.json",
+      "bt_result_dir": "stage_artifacts/alpha_search/20260823_093833_28740",
+      "quarantine_reason": "IC=-0.028(역방향, pos_rate 41.5%). OOS retention=-0.926 << 0.5 FAIL. Calmar=0.019 << 0.64 HARD. MDD=76.1%(구조적 hard fail). Sharpe=0.047 / CAGR=1.44%. FMB NW-t=-1.49 비유의. Carvalho 2026 재구성 프리미엄(US VRP × co-movement 구조 변화)이 KR 롱온리 크로스섹션에서 역방향 작동 — 고 beta-SD 종목 = 소형·테마주 편향 → 하락기 변동성 배가. L1(PIT)/L2(contract)/L4(fidelity) PASS, L3 OOS·calmar·MDD 전패.",
+      "signal_direction": "REVERSED",
+      "stress_periods": {
+        "COVID": {"alpha_pct": 29.0, "outperform": true},
+        "Euro_Debt": {"alpha_pct": 26.0, "outperform": true},
+        "GFC": {"alpha_pct": -3.76, "outperform": false},
+        "Rate_Hike": {"alpha_pct": -14.67, "outperform": false},
+        "Iran_War": {"alpha_pct": -38.24, "outperform": false}
+      },
+      "mechanism_diagnosis": "rolling 66d OLS beta SD 12M — 고 beta-SD = 불안정 co-movement = 소형·테마주 편향. US 옵션시장 VRP × co-movement 구조 변화 기전이 KR 롱온리 이식 시 방향 반전. IS SR 0.238 → OOS SR -0.221 (부호 반전). 위기 국면 아웃퍼폼 2회(COVID/EuDebt)이나 GFC/Rate_Hike/Iran_War 구조적 underperform.",
+      "notable": true,
+      "paper_exhausted": false,
+      "next_probe": [
+        "NP1: stable_comovement (낮은 beta SD long) — IC 음수(-0.028) 역방향 확인, 대형 블루칩 선별 방어형 팩터 가설. C13 FLIP 금지이므로 `stable_comovement = -reconfiguration_rate` 팩터로 신규 정의 후 실행.",
+        "NP2: 매크로 레짐 조건부 — 회복 국면(COVID+26%/EuDebt+29%) 조건부 고 beta-SD long. FQ-245 착수 기준(ratio >= 0.15) 사전 산출 필수.",
+        "NP3: 분포-표적 전환 — beta SD 점수로 수익 분포 왜도/중앙값 예측. DISTRIBUTION_TARGET 요건 3종(효과없음 실증 + 2축 직교화 생존 + 비중첩창 2개) 충족 여부 진단."
+      ],
+      "consumer_surfaces_checked": [
+        "1팩터랭킹: QUARANTINE (IC 역방향, FMB t=-1.49)",
+        "2유니버스필터: 미측정 — 고 beta-SD 종목 제거 필터 소비면",
+        "3오버레이: NP2 방향 — 회복 국면 조건부 오버레이",
+        "4위험모델: ★소비 가능 — beta 불안정성 = co-movement 리스크 측정 지표로 위험모델 입력",
+        "5monitoring: 미설정",
+        "6선별라벨: 미설정",
+        "7타모드이식: RAMP 팩터군 후보(분산 위험 프리미엄 proxy)"
+      ],
+      "session_note": "AS-20260823 AUTORUN 완료(라우터 v2 STEP 3). L1~L4 PASS, L3 OOS/calmar/MDD 전패. 텔레그램 발송 완료(에이전트 내부 tg_agent_brief). 2608.20020 첫 시도."
     }
   ],
   "schema_note": "processed = list of paper_id strings (set-like, paper 단위 dedup). records = 전체 시도 감사 로그(동일 paper에서 여러 factor 추출 시 factor_id로 구분). last_updated 갱신 의무.",
-  "last_updated": "20260822"
+  "last_updated": "20260823"
 }

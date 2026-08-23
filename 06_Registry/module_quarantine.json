@@ -1773,19 +1773,22 @@
     "STR_AS_20260822_143237_8580": {
       "strategy_id": "STR_AS_20260822_143237_8580",
       "grade": "F",
-      "role": null,
+      "role": {},
       "origin_mode": "alpha_search",
       "sim_result_path": "stage_artifacts/module_quarantine/STR_AS_20260822_143237_8580/sim_result.rds",
       "n_days": 5314,
-      "date_range": ["2005-02-03", "2026-08-21"],
+      "date_range": [
+        "2005-02-03",
+        "2026-08-21"
+      ],
       "registered_at": "2026-08-22T14:38:49+09:00",
       "metric_type": "proxy",
       "fr_eligible": false,
       "frozen": false,
-      "source_contract_id": null,
+      "source_contract_id": {},
       "module_hash": "042c21032079ab62b3529b2ae48dc83b",
-      "build_version": null,
-      "cost_model_version": null,
+      "build_version": {},
+      "cost_model_version": {},
       "bt_result_path": "stage_artifacts/alpha_search/20260822_143237_8580/bt_result.rds",
       "contract": {
         "policy": "v8.1_fr_input_floor",
@@ -1795,15 +1798,55 @@
       "meta": {
         "strategy_idea": "arXiv 2608.12283 macro-beta momentum KR: rolling 60d OLS beta(Term_Spread/VIX/KRW_USD) x 20d macro change 합산. Python pre-computed .cache/macro_beta_scores.parquet 경유(260 month-ends). MA01-MA07 DB 정적 sensitivity 와 달리 동적(beta x delta_20d) 신호.",
         "score": 3,
-        "f_grade_reasons": ["게이트 사유: Structural drawdown (MDD>=70%, 45%+ episodes>=15, 55%+ episodes>=6, 45%+ days>=25%, max_underwater>=252d): MDD 70.2%, 45%+ episodes=18/15, max_underwater=997/252", "FMT-01 Structural MDD: MDD 70.2% > 45% — 선택 종목군의 위기 동반급락(구조적 꼬리위험)", "FMT-02 Factor Degeneration: IR -0.37 < -0.1 & 초과CAGR -7.6%p < 0 — KR에서 팩터 방향 역작동 의심", "알파 부재: 정보비율 -0.37로 벤치 대비 기여가 음수/미약", "초과수익 부족: 벤치 대비 -7.6%p"],
-        "fmt_codes": ["FMT-01", "FMT-02"],
+        "f_grade_reasons": [
+          "게이트 사유: Structural drawdown (MDD>=70%, 45%+ episodes>=15, 55%+ episodes>=6, 45%+ days>=25%, max_underwater>=252d): MDD 70.2%, 45%+ episodes=18/15, max_underwater=997/252",
+          "FMT-01 Structural MDD: MDD 70.2% > 45% — 선택 종목군의 위기 동반급락(구조적 꼬리위험)",
+          "FMT-02 Factor Degeneration: IR -0.37 < -0.1 & 초과CAGR -7.6%p < 0 — KR에서 팩터 방향 역작동 의심",
+          "알파 부재: 정보비율 -0.37로 벤치 대비 기여가 음수/미약",
+          "초과수익 부족: 벤치 대비 -7.6%p"
+        ],
+        "fmt_codes": [
+          "FMT-01",
+          "FMT-02"
+        ],
         "bt_result_path": "stage_artifacts/alpha_search/20260822_143237_8580/bt_result.rds",
+        "bt_contract_status": "OK"
+      }
+    },
+    "STR_AS_20260823_093833_28740": {
+      "strategy_id": "STR_AS_20260823_093833_28740",
+      "grade": "F",
+      "role": null,
+      "origin_mode": "alpha_search",
+      "sim_result_path": "stage_artifacts/module_quarantine/STR_AS_20260823_093833_28740/sim_result.rds",
+      "n_days": 5314,
+      "date_range": ["2005-02-03", "2026-08-21"],
+      "registered_at": "2026-08-23T09:42:47+09:00",
+      "metric_type": "proxy",
+      "fr_eligible": false,
+      "frozen": false,
+      "source_contract_id": null,
+      "module_hash": "6c3b246f6e701d8055e669319de4b719",
+      "build_version": null,
+      "cost_model_version": null,
+      "bt_result_path": "stage_artifacts/alpha_search/20260823_093833_28740/bt_result.rds",
+      "contract": {
+        "policy": "v8.1_fr_input_floor",
+        "contract_pass": false,
+        "eligibility_reason": "metric_type != backtested; contract_pass != TRUE; frozen != TRUE; source_contract_id missing; build_version missing; cost_model_version missing"
+      },
+      "meta": {
+        "strategy_idea": "Beta instability (12M rolling 66d OLS beta SD) captures co-movement reconfiguration premium - Carvalho 2026 arXiv 2608.20020",
+        "score": 6.1,
+        "f_grade_reasons": ["게이트 사유: Structural drawdown (MDD>=70%, 45%+ episodes>=15, 55%+ episodes>=6, 45%+ days>=25%, max_underwater>=252d): MDD 76.1%, 45%+ episodes=35/15, max_underwater=709/252", "FMT-01 Structural MDD: MDD 76.1% > 45% — 선택 종목군의 위기 동반급락(구조적 꼬리위험)", "FMT-02 Factor Degeneration: IR -0.41 < -0.1 & 초과CAGR -9.6%p < 0 — KR에서 팩터 방향 역작동 의심", "알파 부재: 정보비율 -0.41로 벤치 대비 기여가 음수/미약", "초과수익 부족: 벤치 대비 -9.6%p"],
+        "fmt_codes": ["FMT-01", "FMT-02"],
+        "bt_result_path": "stage_artifacts/alpha_search/20260823_093833_28740/bt_result.rds",
         "bt_contract_status": "OK"
       }
     }
   },
-  "last_updated": "2026-08-22T14:38:49+09:00",
-  "n_modules": 45,
+  "last_updated": "2026-08-23T09:42:47+09:00",
+  "n_modules": 46,
   "superseded": {
     "STR_AS_20260613_094148_265194": {
       "strategy_id": "STR_AS_20260613_094148_265194",

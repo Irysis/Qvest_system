@@ -147,6 +147,31 @@ if ($isAdmin) {
     }
 }
 
+# ---- 3b. is the SCHEDULE itself still armed? -------------------------------
+# The freshness axis in C11 can only notice a dead task after the digest goes
+# stale (30h). That window is long enough to read as safety. Worse, any manual
+# run refreshes the digest and hides a mis-armed schedule for another 30h -
+# which is exactly what happened on 2026-08-23. So the watch reports on its own
+# trigger conditions: a laptop task registered without -Settings inherits
+# DisallowStartIfOnBatteries=True and is REFUSED (0x800710E0) on every battery
+# run while still reading State=Ready. Flat booleans, grep-readable (see part 4).
+$schedBatterySafe = 'UNKNOWN'
+$schedStartWhenAvailable = 'UNKNOWN'
+$schedLastResult = 'UNKNOWN'
+try {
+    $selfTask = Get-ScheduledTask -TaskName 'Qvest_AuditWatch' -ErrorAction Stop
+    $schedBatterySafe = (-not $selfTask.Settings.DisallowStartIfOnBatteries -and
+                         -not $selfTask.Settings.StopIfGoingOnBatteries).ToString().ToLower()
+    $schedStartWhenAvailable = ([bool]$selfTask.Settings.StartWhenAvailable).ToString().ToLower()
+    $schedLastResult = '0x{0:X}' -f (Get-ScheduledTaskInfo -TaskName 'Qvest_AuditWatch').LastTaskResult
+    if ($schedBatterySafe -eq 'false') {
+        $null = $notes.Add("SCHEDULE NOT ARMED: DisallowStartIfOnBatteries/StopIfGoingOnBatteries is set, so battery-time runs are refused (0x800710E0) while the task still reads Ready. Repair in an ELEVATED shell: `$s = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -StartWhenAvailable -ExecutionTimeLimit (New-TimeSpan -Hours 2) -MultipleInstances IgnoreNew ; Set-ScheduledTask -TaskName 'Qvest_AuditWatch' -Settings `$s")
+    }
+} catch {
+    $null = $notes.Add("SCHEDULE SELF-CHECK FAILED: could not read own task registration - $($_.Exception.Message)")
+}
+
+
 # ---- 4. write digest -------------------------------------------------------
 # Top level is deliberately FLAT: the consumer (boot_currency_check.sh C11) is a
 # grep-based shell check with no JSON parser. Nested fields would force it to
@@ -157,6 +182,9 @@ $payload = [pscustomobject]@{
     generated_epoch = [int][double]::Parse((Get-Date -UFormat %s))
     watch_path     = $WatchPath
     window_hours   = $WindowHours
+    schedule_battery_safe = $schedBatterySafe
+    schedule_start_when_available = $schedStartWhenAvailable
+    schedule_last_result = $schedLastResult
     elevated       = $isAdmin
     audit_enabled  = $auditEnabled
     audit_setting  = $auditSetting

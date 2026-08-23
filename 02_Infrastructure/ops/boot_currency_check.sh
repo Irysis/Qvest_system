@@ -303,6 +303,26 @@ else
   fi
 fi
 
+# -- C11b schedule still armed: will the watch run TOMORROW, not just today? ---
+# C11 asks "is the digest fresh". That question cannot distinguish a healthy task
+# from a mis-armed one that somebody just ran by hand - a manual run buys 30h of
+# green over a schedule that is refused every time. Measured 2026-08-23: the task
+# was registered without -Settings, inherited DisallowStartIfOnBatteries=True, and
+# every 08:00 trigger on battery returned 0x800710E0 while State stayed "Ready".
+# audit_watch.ps1 now reports its own trigger conditions as flat booleans; this
+# axis reads them. Absent field = digest predates the self-check, which is not a
+# pass - a check that cannot see is not a check that found nothing.
+if [ -f "$F_AUDITW" ]; then
+  _armed=$(grep -oE '"schedule_battery_safe"[[:space:]]*:[[:space:]]*"?[A-Za-z]+"?' "$F_AUDITW" | grep -oE '(true|false|UNKNOWN)' | head -1)
+  case "$_armed" in
+    true)  ok "C11b 감시 스케줄 무장 확인 (배터리 구동에도 발화 — 내일도 돈다)" ;;
+    false) bad "C11b ★감시 스케줄 미무장 — 배터리 구동 시 작업이 거부(0x800710E0)되는데 State 는 Ready 로 보인다. 수동 실행은 30h 초록만 사고 원인을 덮는다. 상승 권한 셸에서: $(grep -oE 'Repair in an ELEVATED shell: [^"]*' "$F_AUDITW" | head -1 | sed 's/^Repair in an ELEVATED shell: //' | sed "s/\u0027/'/g")" ;;
+    UNKNOWN) bad "C11b UNKNOWN — 감시 스크립트가 자기 작업 등록을 못 읽었다(작업 삭제/개명 의심). 통과로 위장 금지" ;;
+    *)     bad "C11b 미판정 — 디제스트에 schedule_battery_safe 필드 부재(자기점검 도입 이전 판). 상승 권한 작업이 새 스크립트로 1회 돌아야 판정 가능: Start-ScheduledTask -TaskName Qvest_AuditWatch" ;;
+  esac
+fi
+
+
 # ── 출력 ─────────────────────────────────────────────────────────────────────
 if [ "$MODE" = "--boot" ]; then
   if [ "$FAIL" -eq 0 ]; then
