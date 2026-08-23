@@ -859,11 +859,29 @@ def main(argv):
         # ★원장 손상은 숫자를 내지 않는다 — 소비자(.sh)의 sched_assert_count 가
         #   비숫자를 잡아 count_measurement_failed 경보 후 중단한다.
         #   여기서 0 이나 과대값을 내면 그 방어선이 통째로 무력해진다.
+        # ★`--list N` 은 **추가 출력**이다. 기본 출력(정수 1줄)은 불변 — 소비자 .sh 가
+        #   그 한 줄을 그대로 파싱한다(형식을 바꾸면 러너가 조용히 죽는다).
+        n_list = 0
+        if "--list" in argv:
+            i = argv.index("--list")
+            if i + 1 >= len(argv):
+                sys.stderr.write("--list 에 개수가 없습니다\n")
+                return 2
+            try:
+                n_list = int(argv[i + 1])
+            except ValueError:
+                sys.stderr.write("--list 인자는 정수여야 합니다: %s\n" % argv[i + 1])
+                return 2
         try:
-            print(len(alpha_pending(argv[1])))
+            pend = alpha_pending(argv[1])
         except LedgerUnreadable as e:
             sys.stderr.write("LEDGER_UNREADABLE %s\n" % e)
             return 3
+        print(len(pend))
+        if n_list > 0:
+            for pid, o in list(pend.items())[:n_list]:
+                title = " ".join(str(display_name(o) or o.get("title") or "").split())
+                print("%s | %s | %s" % (pid, title[:40], factor_hint(o)))
         return 0
     if cmd == "recheck-build":
         if len(argv) < 3:
