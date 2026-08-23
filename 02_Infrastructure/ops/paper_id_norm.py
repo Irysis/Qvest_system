@@ -70,6 +70,189 @@ def collect_ids(obj, keys=('arxiv_id', 'paper_id', 'id')):
     return out
 
 
+# ── 소비 원장 append (2026-08-23 신설, v9 Lean Loop §3.4(e)) ──────────────────
+#   왜 여기인가: 원장을 **손편집**하던 프롬프트 2종이 배열을 조기에 닫아
+#   `LEDGER_UNREADABLE` 을 만들었다(2026-08-09 · 2026-08-23 두 번). 손편집을 없애려면
+#   호출 가능한 append 가 있어야 하고, id 정규화 정본이 이미 여기 있으므로 여기에 둔다.
+#   ★계약 3줄:
+#     1. 읽기는 BOM 관용(`utf-8-sig`) — 생산자 중 BOM 을 쓰는 계열이 실재한다.
+#     2. 쓰기는 **tmp + os.replace** 원자 교체 — 중단된 쓰기가 원장을 파손하지 않는다.
+#     3. 쓰기 직전 **재파싱 검증** — 검증 실패 시 원본을 건드리지 않고 예외를 던진다.
+
+_LEDGER_REL = os.path.join('stage_artifacts', 'paper_recharge',
+                           'alpha_search_queue_done.json')
+
+# 레코드 기본 골격 — 기존 31건이 공유하는 9개 필드의 순서를 그대로 따른다.
+_CORE_ORDER = ('paper_id', 'paper_title', 'factor_id', 'factor_name',
+               'strategy_id', 'gate_decision', 'gate_failed_layers',
+               'screen_route', 'port_t', 'grade', 'processed_date',
+               'verify_path', 'bt_result_dir')
+
+
+def _project_root():
+    """저장소 루트. **self-first** — 이 파일 위치에서 올라간다.
+
+    ★`QM_ROOT` 를 먼저 보지 않는 이유: User scope 에 main 이 pin 돼 있어 워크트리에서
+      실행해도 main 을 가리킨다(2026-08-21 실측). 자기 위치가 유일하게 정직한 좌표다.
+    """
+    env = os.environ.get('QVEST_ALPHA_DONE_LEDGER')
+    if env:
+        return None  # 경로를 직접 지정받았으면 루트 추정 자체가 불필요
+    return os.path.dirname(os.path.dirname(os.path.dirname(
+        os.path.abspath(__file__))))
+
+
+def default_ledger_path():
+    """소비 원장 정본 경로."""
+    env = os.environ.get('QVEST_ALPHA_DONE_LEDGER')
+    if env:
+        return env
+    return os.path.join(_project_root(), _LEDGER_REL)
+
+
+def load_ledger(ledger_path=None):
+    """원장을 BOM 관용으로 읽는다. 부재면 빈 골격(있는 척하지 않되 append 는 가능)."""
+    path = ledger_path or default_ledger_path()
+    if not os.path.exists(path):
+        return {'processed': [], 'records': [], 'last_updated': ''}
+    with io.open(path, 'r', encoding='utf-8-sig') as fh:
+        obj = json.load(fh)
+    if not isinstance(obj, dict):
+        raise ValueError('ledger top-level is %s, expected object'
+                         % type(obj).__name__)
+    obj.setdefault('processed', [])
+    obj.setdefault('records', [])
+    return obj
+
+
+def _validate(obj):
+    """쓰기 직전 검증 — 여기서 막지 못하면 다음 소비자가 LEDGER_UNREADABLE 을 본다."""
+    if not isinstance(obj.get('processed'), list):
+        raise ValueError('processed must be a list')
+    if not isinstance(obj.get('records'), list):
+        raise ValueError('records must be a list')
+    for i, x in enumerate(obj['processed']):
+        if not isinstance(x, str) or not x.strip():
+            raise ValueError('processed[%d] is not a non-empty string' % i)
+    for i, r in enumerate(obj['records']):
+        if not isinstance(r, dict):
+            raise ValueError('records[%d] is not an object' % i)
+        if not str(r.get('paper_id') or '').strip():
+            raise ValueError('records[%d] has no paper_id' % i)
+    # 직렬화 왕복 — 실제로 다시 읽히는지까지 확인한다.
+    return json.loads(json.dumps(obj, ensure_ascii=False))
+
+
+def _atomic_write(path, text):
+    tmp = path + '.tmp'
+    with io.open(tmp, 'w', encoding='utf-8', newline='\n') as fh:
+        fh.write(text)
+    os.replace(tmp, path)
+
+
+def append_done_record(paper_id, gate_decision, strategy_id=None,
+                       screen_route=None, processed_date=None, extra=None,
+                       ledger_path=None):
+    """소비 원장에 1건 append. 반환 = 기록된 레코드(dict).
+
+    · paper_id 는 `norm_id()` 정본으로 정규화된 뒤에 저장·비교된다.
+    · `processed[]` 는 집합 의미이므로 이미 있으면 다시 넣지 않는다(레코드는 항상 append
+      — 같은 논문에서 팩터를 여럿 뽑는 감사 로그가 실재한다, schema_note 참조).
+    · `extra` 는 자유 필드(paper_title / next_probe / l_code …)를 그대로 병합한다.
+    """
+    pid = norm_id(paper_id)
+    if not pid:
+        raise ValueError('paper_id 가 비었거나 정규화 불가: %r' % (paper_id,))
+    gate = str(gate_decision or '').strip()
+    if not gate:
+        raise ValueError('gate_decision 은 필수다 (ADOPT/SCREEN_TIER/QUARANTINE/…)')
+
+    path = ledger_path or default_ledger_path()
+    obj = load_ledger(path)
+
+    if processed_date is None:
+        import datetime
+        processed_date = datetime.datetime.now().strftime('%Y%m%d')
+
+    rec = {}
+    payload = dict(extra or {})
+    rec['paper_id'] = pid
+    rec['paper_title'] = payload.pop('paper_title', None)
+    rec['factor_id'] = payload.pop('factor_id', None)
+    rec['factor_name'] = payload.pop('factor_name', None)
+    rec['strategy_id'] = strategy_id
+    rec['gate_decision'] = gate
+    rec['gate_failed_layers'] = payload.pop('gate_failed_layers', None)
+    rec['screen_route'] = screen_route
+    rec['port_t'] = payload.pop('port_t', None)
+    rec['grade'] = payload.pop('grade', None)
+    rec['processed_date'] = str(processed_date)
+    rec['verify_path'] = payload.pop('verify_path', None)
+    rec['bt_result_dir'] = payload.pop('bt_result_dir', None)
+    for k, v in payload.items():
+        if k not in _CORE_ORDER:
+            rec[k] = v
+
+    existing = {norm_id(x) for x in obj['processed'] if norm_id(x)}
+    if pid not in existing:
+        obj['processed'].append(pid)
+    obj['records'].append(rec)
+    obj['last_updated'] = str(processed_date)
+
+    checked = _validate(obj)
+    _atomic_write(path, json.dumps(checked, ensure_ascii=False, indent=2) + '\n')
+    return rec
+
+
+def _cli_append_done(argv):
+    """append-done --paper-id … --gate … [--strategy-id …] [--screen-route …]"""
+    def opt(name, default=None):
+        flag = '--' + name
+        if flag in argv:
+            i = argv.index(flag)
+            if i + 1 < len(argv):
+                return argv[i + 1]
+            raise SystemExit('%s 에 값이 없습니다' % flag)
+        return default
+
+    pid = opt('paper-id')
+    gate = opt('gate')
+    if not pid or not gate:
+        sys.stderr.write(
+            'usage: paper_id_norm.py append-done --paper-id <id> --gate <decision>\n'
+            '           [--strategy-id <id>] [--screen-route <route>]\n'
+            '           [--processed-date <YYYYMMDD>] [--title <t>] [--grade <g>]\n'
+            '           [--port-t <x>] [--verify-path <p>] [--bt-result-dir <p>]\n'
+            '           [--note <text>] [--ledger <path>]\n')
+        return 2
+    extra = {}
+    for flag, key in (('title', 'paper_title'), ('grade', 'grade'),
+                      ('port-t', 'port_t'), ('verify-path', 'verify_path'),
+                      ('bt-result-dir', 'bt_result_dir'),
+                      ('factor-name', 'factor_name'), ('note', 'session_note')):
+        v = opt(flag)
+        if v is not None:
+            if key == 'port_t':
+                try:
+                    v = float(v)
+                except ValueError:
+                    pass
+            extra[key] = v
+    rec = append_done_record(pid, gate,
+                             strategy_id=opt('strategy-id'),
+                             screen_route=opt('screen-route'),
+                             processed_date=opt('processed-date'),
+                             extra=extra or None,
+                             ledger_path=opt('ledger'))
+    print('[append-done] %s → %s (strategy=%s, screen_route=%s)'
+          % (rec['paper_id'], rec['gate_decision'], rec['strategy_id'],
+             rec['screen_route']))
+    return 0
+
+
+if __name__ == '__main__' and len(sys.argv) > 1 and sys.argv[1] == 'append-done':
+    raise SystemExit(_cli_append_done(sys.argv[2:]))
+
 if __name__ == '__main__':
     cases = [
         ('arxiv:2607.19497', '2607.19497'),
