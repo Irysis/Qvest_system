@@ -12,9 +12,80 @@
 ##     alpha_search 16 run 이 그 벤치로 채점됨(연 초과 15/16 부호 반전). 존재↔정체 혼동 계통.
 ##   — 검사기 08_Tests/hooks/test_benchmark_values_plausible.R
 ##     실데이터 466 run 재생: 오염 16/16 발화 · 청정 450/450 무발화 · MUT-1 이 Check 5 구멍 실증.
+## Check 15 소생 (2026-08-24): lookahead_detector_self_scan 이 **신설(2026-04-30) 이래 한 번도
+##   실행된 적이 없었다** — 정의되지 않은 `scan_lookahead` 를 exists(inherits = FALSE) 안에서
+##   호출해 항상 스킵 WARN. 그 결과 모든 bt_result 의 integrity_status 가 상시 "WARNING" 이었고,
+##   integrity == "PASS" 를 요구하는 하류 검사기가 구조적 상시-FAIL 이 됐다.
+##   → detect_lookahead(factor_engine_path) 로 배선 + 경로 self-first 해석(.abr_path).
+##   — 검사기 08_Tests/contracts/test_audit_check15_lookahead_self_scan.R
+##     위반 주입 5종(C7b·C7a·C1·C10_LIQ·PY_C7_NEG_SHIFT) FAIL 실증 + 미스캔≠PASS +
+##     호출이름↔정의이름 계약(T9)·죽은 이름 재유입 차단(T10, MUT 3종으로 falsifiability 확인).
+##   ★상세 경위·"없애지 않은 이유"는 Check 15 블록 주석에 있다.
 ## ============================================================================
 
 suppressMessages({library(data.table)})
+
+## ── 경로 해석기 (r-portability ④ — self-first → CLAUDE_PROJECT_DIR → QM_ROOT → getwd()) ──
+##   메모리 규약 "코드 루트는 데이터 루트가 아니다": worktree 에서 돌면서 QM_ROOT(main) 의
+##   구판을 읽는 사고를 막는다. 후보는 **정체성 검사**(대상 파일 실재)로만 확정한다
+##   ("있다"가 "그것이다"를 뜻하지 않는다). Check 15 가 이 해석기를 쓴다 — R 실행 규약이
+##   전략 디렉터리로 cd 하므로 프로젝트-상대 경로는 cwd 만으로는 잡히지 않는다.
+##   ★경로 정규화 함수는 쓰지 않는다(한글 경로 파손) — dirname() 으로 상위 루트를 잡는다.
+##   ★★`source()` 는 프레임에 `ofile` 을, `sys.source()` 는 `file` 을 남긴다. 둘 중 하나만 보면
+##     sys.source 경로에서 self 해석이 통째로 낙하해 env 루트(=main)로 간다 — 실측(2026-08-24):
+##     ofile 만 보던 초판은 4개 적재 방식 중 3개(sys.source 상대·절대, source 상대)에서 main 을
+##     가리켰다. 그래서 프레임을 **안쪽부터** 훑어 둘 다 보고, 후보마다 marker 로 검증한다
+##     (중첩 source 의 "바깥 파일" 트랩은 marker 가 기각한다).
+##   ★상대 self 는 **즉시 절대화**한다 — 소비자가 나중에 setwd() 하면 상대 루트는 틀린 곳을 가리킨다.
+.ABR_ROOT <- local({
+  has_marker <- function(d) is.character(d) && length(d) == 1L && !is.na(d) && nzchar(d) &&
+    file.exists(file.path(d, "02_Infrastructure/contracts/audit_bt_result.R"))
+  absolutize <- function(p) {
+    if (!nzchar(p)) "" else if (grepl("^([A-Za-z]:)?[/\\\\]", p)) p else file.path(getwd(), p)
+  }
+  ## 깊이를 가정하지 않고 marker 를 만날 때까지 상위로 올라간다.
+  climb <- function(d) {
+    prev <- ""; hit <- ""
+    while (nzchar(d) && !identical(d, prev) && !nzchar(hit)) {
+      if (has_marker(d)) hit <- d else { prev <- d; d <- dirname(d) }
+    }
+    hit
+  }
+  res <- ""
+  for (i in rev(seq_len(sys.nframe()))) {           # 안쪽 프레임 우선
+    fr <- tryCatch(sys.frame(i), error = function(e) NULL)
+    if (is.null(fr)) next
+    for (nm in c("ofile", "file")) {
+      v <- tryCatch(get0(nm, envir = fr, inherits = FALSE), error = function(e) NULL)
+      if (is.character(v) && length(v) == 1L && !is.na(v) && nzchar(v)) {
+        cand <- climb(dirname(absolutize(v)))
+        if (nzchar(cand)) { res <- cand; break }
+      }
+    }
+    if (nzchar(res)) break
+  }
+  if (!nzchar(res)) {          # self 실패 시에만 env → cwd (데이터 루트 계열 = worktree 에서 갈린다)
+    for (d in c(Sys.getenv("CLAUDE_PROJECT_DIR", unset = ""),
+                Sys.getenv("QM_ROOT", unset = ""), getwd())) {
+      cand <- climb(absolutize(d))
+      if (nzchar(cand)) { res <- cand; break }
+    }
+  }
+  res
+})
+
+#' 프로젝트-상대(또는 절대) 경로를 실재 파일로 해석. 못 찾으면 "" (미측정 — PASS 아님).
+.abr_path <- function(p) {
+  if (is.null(p) || length(p) == 0L) return("")
+  p <- as.character(p[1])
+  if (is.na(p) || !nzchar(p)) return("")
+  if (file.exists(p)) return(p)
+  if (nzchar(.ABR_ROOT)) {
+    q <- file.path(.ABR_ROOT, p)
+    if (file.exists(q)) return(q)
+  }
+  ""
+}
 
 #' Audit bt_result — 10 checks
 #' @param bt_result list (10 components)
@@ -372,29 +443,73 @@ audit_bt_result <- function(bt_result) {
 
   # ────────────────────────────────────────────────────────────────────────────
   # Check 15 (L-258): lookahead_detector self-call (자체 PIT scan)
+  #
+  # [2026-08-24 소생] 이 체크는 2026-04-30 신설(b15e70f5d) 이래 **한 번도 실행된 적이 없다.**
+  #   이중으로 죽어 있었다:
+  #   ① `scan_lookahead` 는 저장소 어디에도 정의가 없다(신설 커밋부터 부재 — lookahead_detector.R
+  #      이 내보내는 것은 detect_lookahead / detect_lookahead_dir / detect_gate15_infra_pit 셋뿐).
+  #   ② 설령 정의돼 있어도 못 찾는다 — exists(..., inherits = FALSE) 는 직전 프레임만 본다.
+  #   ⇒ 항상 스킵 WARN → **모든 bt_result 의 integrity_status 가 상시 "WARNING"** 이었다.
+  #     integrity == "PASS" 를 요구하는 검사기는 구조적 상시-FAIL 이 되어 아무것도 못 잡았다
+  #     (test_overlay_bt_recon.R T2 가 그 이유로 문턱을 우회했다 — 그 우회의 본치가 여기다).
+  #
+  # ★살린 이유(없애지 않은 이유) — 이 감사에서 PIT 를 **실제로 재측정하는 유일한 지점**이다.
+  #   Check 7·8 은 strategy_spec$lookahead_prevention **문자열**만 본다. 그 문자열은 생산자가
+  #   자기 자신에 대해 쓴다(run_alpha_search.R:857 이 "detect_lookahead static scan CLEAN
+  #   (PIT C1-C15)" 를 하드코딩한다). Check 7 은 비어있지 않으면 PASS, Check 8 은 grepl("C\d+")
+  #   이면 PASS — 둘 다 진술을 재확인할 뿐 아무것도 재도출하지 않는다. 진술은 측정이 아니다.
+  #   이 체크를 지우면 계약 감사에 남는 독립 PIT 증거가 0 이 된다.
+  #   또 audit_bt_result() 는 detect_lookahead 게이트가 **없는** 레인들이 함께 쓴다
+  #   (forge/WT · overlay_bt_recon · reinforce_ladder · backfill_alpha_search_contracts).
+  #   run_alpha_search.R:243 의 하드 차단은 alpha_search 레인만 지킨다 — 그 밖에서는 이 자리가
+  #   유일한 재측정이다(WT-D20260527_001 forge_package 가 이 WARN 을 "known contract limitation"
+  #   으로 적어 둔 것이 그 공백의 실물 증거다).
+  #
+  # 배선: 호출부 인자가 **파일**(factor_engine_path)이므로 detect_lookahead(file) 이 이 자리다.
+  #   *_dir 두 변종은 디렉터리를 받는다. detect_gate15_infra_pit 는 이름만 비슷하고 C17/C18
+  #   infra 전용(admission Gate15)이다 — 여기 "Check 15" 는 감사 내 **순번**이고, PIT C15 를
+  #   보는 것은 바로 앞 c15_factor_db_load_path 다.
+  #
+  # ★clean 은 3값이다: TRUE(스캔·위반 0) / FALSE(위반) / NA(미스캔).
+  #   NA 를 PASS 로 내려앉히지 않는다 — 이 저장소가 반복해 고쳐 온 "빈 결과 = 합격" 계통이다.
+  # ★severity 는 신설판 그대로 "high" 를 유지한다(critical 아님). critical 로 올리면 official
+  #   metrics 가 소멸하고 integrity=FAIL 이 되어 하류 게이트 판정이 뒤집힌다 — 그 재보정은
+  #   이 수리의 범위가 아니다. high FAIL 도 audit_fail>0 을 만들어 조용히 지나가지 않는다
+  #   (lean_verify_build.py 의 contract_pass 가 FALSE 로 떨어진다).
   # ────────────────────────────────────────────────────────────────────────────
-  ld_path <- "02_Infrastructure/validation/lookahead_detector.R"
-  if (file.exists(ld_path) && nzchar(factor_engine_path) && file.exists(factor_engine_path)) {
+  ld_path      <- .abr_path("02_Infrastructure/validation/lookahead_detector.R")
+  fe_scan_path <- .abr_path(factor_engine_path)
+  if (nzchar(ld_path) && nzchar(fe_scan_path)) {
     tryCatch({
-      source(ld_path, local = TRUE)
-      if (exists("scan_lookahead", inherits = FALSE)) {
-        scan_result <- scan_lookahead(factor_engine_path)
-        prod_violations <- if (is.list(scan_result)) {
-          # 일반 lookahead_detector 결과: list(C1=integer, C2=integer, ...)
-          sum(sapply(scan_result, function(x) if (is.numeric(x)) length(x) else 0L))
-        } else 0L
-        if (prod_violations > 0L) {
+      # 전용 환경에 적재 — 호출부 프레임에 의존하지 않는다(구판 ② 결함의 근원).
+      ld_env <- new.env(parent = globalenv())
+      sys.source(ld_path, envir = ld_env)
+      if (exists("detect_lookahead", envir = ld_env, mode = "function")) {
+        scan_result <- ld_env$detect_lookahead(fe_scan_path, verbose = FALSE)
+        scan_clean  <- scan_result$clean
+        n_v <- as.integer(scan_result$n_violations %||% 0L)
+        if (isTRUE(scan_clean)) {
+          add_check("PIT", "lookahead_detector_self_scan", "PASS",
+                    sprintf("detect_lookahead CLEAN — %s (%s lines, 0 violations)",
+                            basename(fe_scan_path),
+                            as.character(scan_result$n_lines %||% NA)), "", "low")
+        } else if (isFALSE(scan_clean)) {
+          codes <- paste(unique(vapply(scan_result$violations,
+                                       function(v) as.character(v$check %||% "?"),
+                                       character(1))), collapse = ",")
           add_check("PIT", "lookahead_detector_self_scan", "FAIL",
-                    sprintf("scan_lookahead %s production violations (factor_engine_path)",
-                            prod_violations),
+                    sprintf("detect_lookahead %d violation(s) in %s [%s]",
+                            n_v, basename(fe_scan_path), codes),
                     "All metrics", "high")
         } else {
-          add_check("PIT", "lookahead_detector_self_scan", "PASS",
-                    "scan_lookahead 0 production violations", "", "low")
+          add_check("PIT", "lookahead_detector_self_scan", "WARN",
+                    sprintf("detect_lookahead 미스캔(PASS 아님) — %s",
+                            as.character(scan_result$error %||% "clean=NA")),
+                    "PIT integrity", "medium")
         }
       } else {
         add_check("PIT", "lookahead_detector_self_scan", "WARN",
-                  "scan_lookahead 함수 부재 — lookahead self-call skip",
+                  "lookahead_detector.R 에 detect_lookahead 부재 — self-call skip",
                   "PIT integrity", "medium")
       }
     }, error = function(e) {
@@ -404,7 +519,9 @@ audit_bt_result <- function(bt_result) {
     })
   } else {
     add_check("PIT", "lookahead_detector_self_scan", "WARN",
-              "lookahead_detector.R 또는 factor_engine_path 부재 — self-call skip",
+              sprintf("self-call skip — lookahead_detector.R %s / factor_engine_path %s",
+                      if (nzchar(ld_path)) "OK" else "부재",
+                      if (nzchar(fe_scan_path)) "OK" else "부재"),
               "PIT integrity", "medium")
   }
 

@@ -94,22 +94,22 @@ try_case("T1", "bare 재구성 period_returns$ret_net == 입력 월간 ret_net",
      sprintf("n=%d, %s", nrow(BT$period_returns), if (isTRUE(cmp)) "identical" else paste(cmp, collapse = "; ")))
 })
 
-## ── T2: 감사 상태 — 재구성이 base 대비 악화되지 않는다 ───────────────────────
-## ★사양(플랜)은 `integrity_status == "PASS"` 였으나 **이 하네스에서 PASS 는 도달 불가**하다:
-##   audit_bt_result Check 15(lookahead_detector_self_scan)가 `scan_lookahead` 를 찾는데
-##   lookahead_detector.R 은 그 이름의 함수를 정의하지 않는다(detect_lookahead / detect_lookahead_dir /
-##   detect_gate15_infra_pit 만 존재) → 모든 산출물이 항상 최소 1 WARN → integrity = "WARNING".
-##   실측 확인: base fixture 자신도 WARNING(PASS 17 / WARN 1)이다.
-##   ⇒ 도달 불가 문턱을 그대로 두면 검사기가 상시-FAIL 이 되어 아무것도 못 잡는다.
-##     의미를 보존하는 더 강한 형태로 바꾼다 — "FAIL 아님 ∧ 비-PASS 체크 집합이 base 의 부분집합"
-##     (= 재구성이 감사 상태를 **악화시키지 않는다**). Check 15 는 별건 수리 대상.
-try_case("T2", "integrity != FAIL ∧ 비-PASS 체크 ⊆ base 비-PASS 체크", function() {
+## ── T2: 감사 상태 — 재구성 산출물이 계약 감사를 통과한다 ─────────────────────
+## ★2026-08-24 원복: 사양(플랜)의 `integrity_status == "PASS"` 로 되돌린다.
+##   우회했던 이유가 사라졌다 — audit_bt_result Check 15(lookahead_detector_self_scan)가
+##   정의되지 않은 `scan_lookahead` 를 불러 항상 스킵 WARN 을 냈고, 그래서 **모든** 산출물이
+##   상시 integrity="WARNING" 이었다(base fixture 자신도 PASS 17 / WARN 1 — PASS 도달 불가).
+##   Check 15 를 detect_lookahead 로 배선하면서 PASS 가 실제로 도달 가능해졌다
+##   (위반 주입 검사기 = 08_Tests/contracts/test_audit_check15_lookahead_self_scan.R).
+##   ★약한 형태(비-PASS ⊆ base 비-PASS)도 **함께** 단언한다 — 문턱이 다시 도달 불가가 되면
+##     "무엇이 악화됐는가"를 문턱 실패와 분리해 보여주기 위해서다(우회 재발 방지).
+try_case("T2", "integrity_status == PASS ∧ 비-PASS 체크 ⊆ base 비-PASS 체크", function() {
   A <- as.data.table(BT$audit); Ab <- as.data.table(base_bt$audit)
   bad_new  <- sort(unique(A[status != "PASS" & status != "PASS_WITH_NOTES"]$check_name))
   bad_base <- sort(unique(Ab[status != "PASS" & status != "PASS_WITH_NOTES"]$check_name))
   integ <- as.character(BT$manifest$integrity_status[1])
-  ok("T2", "integrity != FAIL ∧ 비-PASS 체크 ⊆ base 비-PASS 체크",
-     !identical(integ, "FAIL") && all(bad_new %in% bad_base),
+  ok("T2", "integrity_status == PASS ∧ 비-PASS 체크 ⊆ base 비-PASS 체크",
+     identical(integ, "PASS") && all(bad_new %in% bad_base),
      sprintf("integrity=%s | recon 비-PASS={%s} | base 비-PASS={%s}", integ,
              paste(bad_new, collapse = ","), paste(bad_base, collapse = ",")))
 })
