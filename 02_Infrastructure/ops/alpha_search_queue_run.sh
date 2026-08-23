@@ -298,6 +298,20 @@ else
 fi
 rm -f "$_AS_BEFORE" "$_AS_AFTER" 2>/dev/null || true
 
+# --- (v9.1 §7-S2c) 스크린 큐 리프레시 — 무인 런당 1회, 순차 ---------------------
+#   왜: 게이트가 라벨(screen_route)을 산출물에 찍어도 큐 빌더 3종이 전부 수동이라
+#   라벨이 소비자에게 도달하지 않는다("생산자만 있고 소비자 0" 계통의 재발).
+#   순서·뮤텍스·개별 tryCatch 는 refresh_screen_queues.R 이 갖는다. 여기서는 1회 호출뿐이다.
+#   ★부팅/모닝브리핑에는 넣지 않는다 — bootstrap.sh:993 "상태라인은 읽기 전용"(8j 규약).
+if [ "$_gated" -gt 0 ] && [ "${QVEST_SCREEN_QUEUE_NORUN:-0}" != "1" ] && [ -x "$_RS_BIN" ]; then
+  log "스크린 큐 리프레시 시작 (overlay → standalone → auto_spawn)"
+  if "$_RS_BIN" --no-save "$BASE/02_Infrastructure/ops/refresh_screen_queues.R" >> "$LOG" 2>&1; then
+    log "스크린 큐 리프레시 완료"
+  else
+    log "★큐 리프레시 실패 — 라벨은 산출물에 있으나 큐에 도달 못 함"
+  fi
+fi
+
 _EFFECT_CMP=""
 if [ -n "${_EFFECT_BEFORE:-}" ]; then
   _EFFECT_CMP=$("$PYBIN" "$_EFFECT_SIG" "$BASE" --compare "${_EFFECT_BEFORE}" 2>/dev/null || true)
