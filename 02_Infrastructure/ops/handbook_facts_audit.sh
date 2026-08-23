@@ -124,6 +124,32 @@ FRONTIER_INFRA=$(jcount "$PROJECT/06_Registry/infra_backlog.json" entries)
 FRONTIER=$(( ${FRONTIER_ALPHA:-0} + ${FRONTIER_INFRA:-0} ))
 PAPERS=$(jcount "$PROJECT/06_Registry/paper_registry.json")
 STRATS=$(jcount "$PROJECT/06_Registry/strategy_registry.json")
+# ── knowledge_index 소비 직전 자가치유 (2026-08-24 배선) ─────────────────────
+#   바로 아래 LCODE 는 06_Registry/knowledge_index.json 의 lcode_corpus 를 세어 핸드북
+#   수치로 **박제**한다. 인덱스가 원천(.cache/lcode_corpus.json)보다 낙후면 낡은 수가
+#   "실측"으로 고정된다 — 이 감사기의 존재의의(스테일 문서 방지)와 정면으로 어긋난다.
+#   실사고 2026-08-24: index 530 / corpus 543 (8h45m 낙후, L-code 13건 결손).
+#   R 소비면은 distill_stats.R::qv_ledger_stats() 의 자가치유가 덮지만, 이 감사기는
+#   python 으로 파일을 직접 읽어 그 경로를 **우회**하므로 여기에 따로 건다.
+#   계약: 검사 → STALE 이면 복구 1회 → 소비. 재시도 루프 없음.
+#   fail-open: Rscript·검사기 부재나 복구 실패는 stderr 경보만 내고 기존 수치로 진행한다
+#   (이 스크립트는 "읽기 전용 · 실패해도 exit 0" 무인 파이프라인이다 — 파일 헤더 참조).
+#   ★루트는 CLAUDE_PROJECT_DIR 로 명시 전달한다. 검사기의 .kif_root() 는 후보가
+#   06_Registry/ 와 02_Infrastructure/ 를 **둘 다** 가질 때만 채택하므로(정체성 검사),
+#   $PROJECT 가 R 이 못 읽는 형식이면 조용히 다음 후보(cwd = 이미 cd 한 $PROJECT)로 떨어진다.
+KIF_R="$PROJECT/02_Infrastructure/ops/knowledge_index_freshness.R"
+if [ -f "$KIF_R" ] && command -v Rscript >/dev/null 2>&1; then
+  KIF_OUT=$(CLAUDE_PROJECT_DIR="$PROJECT" Rscript "$KIF_R" --repair 2>&1); KIF_RC=$?
+  if [ "${KIF_RC:-0}" != "0" ]; then
+    # ★메시지는 검사기 출력의 **첫 줄만** 쓴다. cut -c 는 Git Bash 기본 로케일에서 바이트를
+    #   잘라 한글을 문자 중간에서 끊는다(깨진 바이트가 stderr 에 남는다 — 2026-08-24 실측).
+    #   첫 줄이 이미 'STALE — corpus N / index M · missing X · extra Y' 로 필요한 전부다.
+    KIF_MSG=$(printf '%s' "$KIF_OUT" | head -n 1)
+    echo "[facts][경고] knowledge_index 미해소(rc=$KIF_RC) — 현 인덱스 수치로 진행: $KIF_MSG" >&2
+  fi
+else
+  echo "[facts][경고] knowledge_index 신선도 검사 건너뜀 (검사기 또는 Rscript 부재) — 낙후 여부 미판정" >&2
+fi
 LCODE=0
 if [ -x "$PY" ]; then
   LCODE=$("$PY" -c "

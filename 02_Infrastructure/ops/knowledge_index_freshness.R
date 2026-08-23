@@ -277,3 +277,17 @@ if (.kif_is_main() && !interactive()) {
 #          handbook_facts_audit.sh) 이지 이 파일이 아니다.
 #   ⇒ 결론: 기본은 **경보만**. 재빌드는 repair_knowledge_index() / `--repair` 로 명시 opt-in.
 #     소비면 자가치유는 별건으로 분리(그 파일들은 본 작업의 소유가 아님).
+#
+# ── 후속: 소비면 배선 완료 (2026-08-24) ───────────────────────────────────────
+# 위 결론 (c) 가 지목한 '별건' 이 실행됐다. **이 파일의 결정은 그대로다** — 검사기는 여전히
+# 경보만 내고, 재빌드는 repair_knowledge_index() / `--repair` 명시 opt-in 이다.
+# 배선된 소비면 진입점 2곳 (재발 계기: 2026-08-24 index 530 / corpus 543, 8h45m 낙후):
+#   ① 02_Infrastructure/memory/distill_stats.R :: qv_ledger_stats()
+#      = 이 저장소에서 knowledge_index 를 읽는 유일한 R 소비 함수. weekly_distill.R /
+#        monthly_distill.R / loop_integrator.R / data/daily_refresh.sh 가 전부 여기를 지난다.
+#   ② 02_Infrastructure/ops/handbook_facts_audit.sh (LCODE 집계 직전)
+#      = python 으로 파일을 직접 읽어 ①을 우회하는 유일한 소비면.
+# 계약: 검사 → STALE 이면 복구 1회 → 소비. 재시도 루프 없음. 실패는 경보 후 기존 인덱스로
+#   진행(fail-open). SKIP 은 복구하지 않는다(위 폴백 의미론 유지).
+# 배선 도달 검사 = 08_Tests/hooks/test_knowledge_index_consumer_heal.R (①배선 존재
+#   ②돌연변이 검출력 ③동작 실효 3층). 본 파일 자체 검출력 시험은 test_knowledge_index_stale.R.
