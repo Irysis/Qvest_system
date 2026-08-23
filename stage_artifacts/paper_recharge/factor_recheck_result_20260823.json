@@ -1,0 +1,62 @@
+{
+  "date": "20260823",
+  "n_input": 1,
+  "promoted": [],
+  "confirmed_infeasible": [
+    {
+      "paper_id": "2608.12634",
+      "title": "The Price of Permission: Classification Uncertainty in Constrained Capital Markets",
+      "factor_name": "shariah_classification_change",
+      "verdict": "confirmed_infeasible",
+      "infeasibility_class": "institutional_data_unavailable + mechanism_non_transferable",
+      "tier2_analysis": {
+        "core_signal": "SC Malaysia 공식 반기 Shariah 준수 목록 편입·제외 이벤트 (Route B) — 295개 편입 CAR[0,10]=+1.76%(p=0.008), CAR[0,20]=+2.25%(p=0.018).",
+        "secondary_signal": "연구자 모방 7-스탠더드 불일치 점수 DISC_i (Route A) — FM 통제 후 t=2.54 생존, eligibility share premium은 소멸(t=-0.35).",
+        "kr_feasibility": {
+          "institutional_analog": "NONE — SC Malaysia 공식 Shariah 인증 목록은 Bursa Malaysia 상장주 전용. KR 등가 기관 없음.",
+          "mechanism_transfer": "기전=이슬람 금융 기관의 강제 매매(AUM 강제 편출입). KR Islamic finance AUM ≈ 0 — 채널 자체가 부재.",
+          "emulation_feasibility": "DISC_i를 KR에 재구성 가능? 재무비율(부채/시총·현금·매출채권) + 업종 필터로 7-스탠더드 에뮬레이션 기술적 가능. 단: ①하람 수익비율은 사업부문 매출분류 필요(DART 미제공) ②US에서도 eligibility share premium이 품질+스크린 통제 후 소멸(t=-0.35) — KR에선 이슬람 투자자 기반 없으므로 신호 없음 예상.",
+          "authors_verdict": "저자 권고: classification risk = portfolio-monitoring state, alpha 생성 팩터 아님."
+        },
+        "key_results_extracted": {
+          "us_fm_eligibility_share_full_controls": "t=-0.35 (비유의)",
+          "us_fm_disagreement_full_controls": "t=2.54 (유의, 기전 의존성 때문에 KR 비전이)",
+          "malaysia_inclusion_car_10d": "+1.76% (p=0.008, 295건 turnover floor 충족)",
+          "malaysia_inclusion_car_20d": "+2.25% (p=0.018)",
+          "exclusion_signal": "CAR[0,10]≈-0.18% (비유의) — 비대칭적"
+        },
+        "registry_check": {
+          "closest_existing": "없음 — 레지스트리 373팩터 중 Shariah/이슬람 금융 관련 팩터 0건",
+          "in_our_inventory": false,
+          "redundant_with": "N/A (신규 팩터이나 KR infeasible)"
+        }
+      },
+      "next_probe": [
+        {
+          "probe_id": "NP1_index_boundary_proximity",
+          "hypothesis": "KOSPI200/KOSDAQ150 편입 기준(시총·유동성·거래일 수 임계값) 근접도 P_i,t = exp(-5·D_i,t) — 패시브 자금의 강제 편출입 메커니즘을 Shariah 논문의 경계 근접도 방법론으로 포착. 임계값 근접 종목의 investor base가 불확실 → 편입 발표 후 수요 충격.",
+          "data_available": "RAWDATA(Vol·Size·거래대금·Close) + factor_db(시총·유동성) — 완전 구현 가능",
+          "pit_check": "편입 발표일 이후 첫 거래일 컷오프 준수 (PIT C5 정합)",
+          "register_as": "신규 FQ 후보 (index_membership_boundary_proximity)"
+        },
+        {
+          "probe_id": "NP2_multi_screen_disagreement_kr",
+          "hypothesis": "KR 특화 다중 스크리닝 기준 불일치 지수 DISC_KR_i — ESG등급(여러 기관)·거버넌스 스크린·코스피200 적격 기준 중 몇 개가 포함/제외하는지의 Gini형 분산. 기전: 스크린 불일치 = 기관 투자자 기반 분열 → 뉴스나 재무 변화 시 급격한 수요 이동.",
+          "data_available": "부분적(ESG 점수 KR 미보유 — RAWDATA 재무비율 기반 스크린만 구현 가능). 착수 전 요건 확인 필요.",
+          "caveat": "US DISC_i t=2.54가 이슬람 금융 맥락에 의존하는지 vs. 범용 불일치 효과인지 구분 미확인 — 낮은 우선순위",
+          "register_as": "조건부 FQ 후보 (multi_screen_disagreement_kr)"
+        }
+      ]
+    }
+  ],
+  "redundant": [],
+  "still_uncertain": [],
+  "summary": {
+    "n_input": 1,
+    "n_promoted": 0,
+    "n_infeasible": 1,
+    "n_redundant": 0,
+    "n_still_uncertain": 0,
+    "alpha_search_queue_updated": false
+  }
+}
