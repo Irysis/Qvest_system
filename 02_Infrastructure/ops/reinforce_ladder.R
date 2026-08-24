@@ -180,7 +180,9 @@ rl_ledger_read <- function(root = RL_ROOT) {
 
 ## ★`cells`/`rungs`/`final` 은 **통째로 교체**한다 — modifyList 는 리스트를 재귀 병합하므로
 ##   구 라벨의 셀이 원장에 영구히 남는다(라벨 규약을 바꾸면 죽은 셀이 계속 표에 실린다).
-RL_LEDGER_REPLACE_KEYS <- c("cells", "rungs", "final")
+## ★v9.21: registration 추가 — 재개 시 이전 회차의 등재 결과가 재귀 병합으로 잔존하면
+##   "이번 회차에 등재했다"로 오독된다(위 주석과 같은 사유).
+RL_LEDGER_REPLACE_KEYS <- c("cells", "rungs", "final", "registration")
 
 rl_ledger_upsert <- function(cand_id, rec, root = RL_ROOT) {
   d <- rl_ledger_read(root)
@@ -832,7 +834,19 @@ rl_rung1_composite <- function(cand, pool, config, st) {
       out_root = file.path(config$out_root, cand$candidate_id, lbl),
       env = list(COMPOSITE_MEMBERS = paste(a$members, collapse = ","),
                  COMPOSITE_MIN_MEMBERS = "2", COMPOSITE_TOP_N = as.character(cand$n_holdings),
-                 QVEST_SCREEN_QUEUE_NORUN = "1")), st$jobs_dir, config$per_attempt_secs)
+                 QVEST_SCREEN_QUEUE_NORUN = "1",
+                 ## ★v9.21 누수 차단 — 중간 arm 은 module_quarantine 에 등재하지 않는다.
+                 ##   out_root 분리는 스크린 큐의 `stage_artifacts/alpha_search/*` 글롭만 막는다.
+                 ##   register_module 은 out_root 와 무관하게 06_Registry 에 쓰므로 그쪽으로 샜다
+                 ##   (실적재 4건: module_quarantine.json 의 LADDER_INTERNAL/*). 그리고
+                 ##   overlay_candidate_queue.R::collect_module_registries 는 quarantine 을
+                 ##   **경로 필터 없이** 읽는다 ⇒ 다음 refresh 1회면 사다리 내부 arm 이 오버레이
+                 ##   큐에 등재되고 ③칸이 그걸 소비한다 = 자기입력 루프(헤더 위험 R3).
+                 ##   ★킬스위치는 신설이 아니라 기존 것이다(run_alpha_search.R:433).
+                 ##   ★전역(Sys.setenv)이 아니라 **job 단위**로 거는 이유: 드라이버가 완주 후
+                 ##     최종 승자를 정식 등재(rl_register_winner)해야 하는데, 전역에 걸면
+                 ##     자기 env 가 그 등재를 막는다.
+                 QVEST_LEAN_REGISTER = "0")), st$jobs_dir, config$per_attempt_secs)
     if (!isTRUE(w$ok)) { rl_log("  ① arm %s 실패: %s", a$label, w$error %|N|% "?"); next }
     cells[[lbl]] <- rl_cell(file.path(RL_ROOT, w$bt_result_path), "daily_native", lbl,
                             n_trials_cumulative = st$n_trials, selection_type = sel,
@@ -870,7 +884,9 @@ rl_rung2_weights <- function(cand, config, st, arms_spec) {
       engine = base_cfg$engine, n_holdings = cand$n_holdings, weight_method = a,
       commission = cand$commission, universe = cand$universe,
       out_root = file.path(config$out_root, cand$candidate_id, lbl),
-      env = c(base_cfg$env, list(QVEST_SCREEN_QUEUE_NORUN = "1"))), st$jobs_dir, config$per_attempt_secs)
+      ## ★v9.21: QVEST_LEAN_REGISTER=0 — ①칸과 같은 사유(누수 차단, 위 주석 참조).
+      env = c(base_cfg$env, list(QVEST_SCREEN_QUEUE_NORUN = "1",
+                                 QVEST_LEAN_REGISTER = "0"))), st$jobs_dir, config$per_attempt_secs)
     if (!isTRUE(w$ok)) { rl_log("  ② arm %s 실패: %s", a, w$error %|N|% "?"); next }
     ## ★argmax 로 고르므로 sweep — DSR 게이트가 걸리고 n_trials 가 누적된다.
     cells[[lbl]] <- rl_cell(file.path(RL_ROOT, w$bt_result_path), "daily_native", lbl,
@@ -895,7 +911,12 @@ rl_rung3_overlay <- function(cand, config, st) {
     manifest_path = st$best_config$manifest_path %|N|% cand$manifest_path,
     bt_result_path = st$best_config$bt_result_path, pin_tag = cand$pin_tag, cost_bps = 15,
     n_trials = st$n_trials,
-    out_root = file.path(config$out_root, cand$candidate_id, lbl)), st$jobs_dir, config$per_attempt_secs)
+    out_root = file.path(config$out_root, cand$candidate_id, lbl),
+    ## ★v9.21: ③칸은 drain_run_candidate 만 타므로 register_module 경로가 없다(누수 4건이
+    ##   ①②칸뿐인 것과 일치). 그래도 방어적으로 건다 — 이 칸은 오버레이 큐를 **소비**하므로
+    ##   같은 회차에 큐를 건드리면 자기입력이 된다.
+    env = list(QVEST_SCREEN_QUEUE_NORUN = "1", QVEST_LEAN_REGISTER = "0")),
+    st$jobs_dir, config$per_attempt_secs)
   if (!isTRUE(w$ok))
     return(list(rung = "rung3_overlay", status = "FAILED", reason = as.character(w$error %|N|% "?"), cells = list()))
   st$spent <- st$spent + (w$secs %|N|% 0)
@@ -1095,6 +1116,21 @@ rl_run_candidate <- function(cand, pool, config, arms_spec, dry_run = FALSE) {
                     budget_left_secs = round(.rl_budget_left(st)))
   rec$stage <- if (rl_stop_requested()) "stopped" else "done"
   rec$cells <- cells; rec$rungs <- rungs
+
+  ## ★v9.21 §2-e — 승자를 전략 로테이션 풀에 정식 등재한다.
+  ##   중간 arm 은 QVEST_LEAN_REGISTER=0 으로 막았으므로, 여기서 열지 않으면 강화 산출물이
+  ##   풀에 영원히 못 들어간다. target_hit 여부와 **무관**하게 등재한다 —
+  ##   RCMA(regime_module_admission)는 등급이 아니라 국면조건부 성과로 판정하므로
+  ##   목표 미달이어도 국면 specialist 로는 쓸모가 있다(AX-001 과 같은 논리).
+  ##   특혜는 없다: 1단계와 같은 floor 를 타고, 미달이면 register_module 이 quarantine 으로 보낸다.
+  if (!dry_run) {
+    reg <- tryCatch(rl_register_winner(cand, st, cells, config),
+                    error = function(e) list(status = "FAILED", error = conditionMessage(e)))
+    rec$registration <- reg
+    rl_log("승자 등재: %s | %s → %s%s", reg$status %|N|% "?", reg$label %|N|% "-",
+           reg$registry %|N|% "-",
+           if (!is.null(reg$reason) && !is.na(reg$reason)) sprintf(" (%s)", reg$reason) else "")
+  }
   rec$spent_secs <- st$spent + as.numeric(difftime(Sys.time(), st$t0, units = "secs"))
   rec$n_trials <- st$n_trials
   if (!dry_run) {
@@ -1156,6 +1192,88 @@ rl_run_candidate <- function(cand, pool, config, arms_spec, dry_run = FALSE) {
   out2 <- if (is.null(prev) || !nrow(prev)) rows else rbindlist(list(prev, rows), fill = TRUE)
   fwrite(out2, p2)
   invisible(rows)
+}
+
+## ─── 강화 승자의 정식 풀 진입 (v9.21 §2-e) ──────────────────────────────────
+##
+## 왜 있나: 사다리 중간 arm 은 module_quarantine 으로 새고 있었고(QVEST_LEAN_REGISTER=0 으로
+##   차단), 그렇다고 막기만 하면 **강화 산출물이 전략 로테이션 풀에 영원히 못 들어간다.**
+##   Track2 소비원은 둘뿐이다(build_module_performance.R:8-9):
+##     ① module_catalog fr_eligible=true + metric_type=backtested + contract_pass  ← 1단계 272건
+##     ② legacy QEPM grade_a_catalog (catalog 에 **없는** 구세대만)                  ← QEPM 12건
+##   2단계(강화) 자리가 없다. 이 함수가 그 자리다 — **막는 것은 중간 arm, 여는 것은 최종 승자.**
+##
+## 계약: 특혜 없음. 1단계와 **같은 floor**(register_module.R::.eligibility_reason)를 그대로 탄다.
+##   floor 미달이면 register_module 이 알아서 quarantine 으로 보낸다(allow_quarantine 기본 TRUE).
+##   ★contract_pass 를 **선언하지 않는다** — bt_contract_status.json 의 실측
+##     (status=="OK" ∧ audit_fail==0 ∧ metric_type=="backtested")으로만 TRUE 가 된다.
+##   ★base 가 승자면 등재하지 않는다 — 개선이 없었고, base 는 자기 lean 라운드로 이미 풀에 있다.
+##   ★등급 NA(계약 미경유)면 등재하지 않는다 — 하네스 밖 성과는 유효하지 않다(AX-002).
+rl_register_winner <- function(cand, st, cells, config, dry_run = FALSE) {
+  lbl <- as.character(st$best$label %|N|% "")
+  if (!nzchar(lbl) || identical(lbl, "base"))
+    return(list(status = "SKIPPED_BASE", label = lbl,
+                note = "승자가 base — 개선 없음. base 는 자기 lean 라운드로 이미 등재됨"))
+  cell <- cells[[lbl]]
+  if (is.null(cell)) return(list(status = "SKIPPED_NO_CELL", label = lbl))
+  if (is.na(cell$grade) || !nzchar(as.character(cell$grade)))
+    return(list(status = "SKIPPED_NO_GRADE", label = lbl,
+                note = "권위 등급 미산출(계약 미경유) — AX-002"))
+
+  run_dir <- file.path(RL_ROOT, as.character(cell$out_dir))
+  btp <- file.path(run_dir, "bt_result.rds")
+  bcs <- file.path(run_dir, "bt_contract_status.json")
+  if (!file.exists(btp)) return(list(status = "SKIPPED_NO_BT", label = lbl, dir = cell$out_dir))
+
+  ct <- if (file.exists(bcs)) tryCatch(fromJSON(bcs, simplifyVector = TRUE), error = function(e) NULL) else NULL
+  contract_ok <- isTRUE(identical(as.character(ct$status %|N|% ""), "OK")) &&
+                 isTRUE(identical(as.character(ct$metric_type %|N|% ""), "backtested")) &&
+                 isTRUE(as.integer(ct$audit_fail %|N|% 1L) == 0L)
+  sid <- as.character(ct$strategy_id %|N|% basename(run_dir))
+
+  ## bt_result → register_module 최소 sim (DAILY_NAV_DT + bm_xts). 재구성기는 이미 있다 —
+  ## backfill_lean_modules.R::bl_sim_from_bt (lean 런에 sim_result.rds 가 없어서 만든 것).
+  ## 그 파일은 `.bl_invoked_directly()` 가드가 있어 source 해도 CLI 가 안 돈다.
+  out <- tryCatch({
+    .rl_source_once("02_Infrastructure/ops/backfill_lean_modules.R", "bl_sim_from_bt")
+    .rl_source_once("02_Infrastructure/contracts/register_module.R", "register_module")
+    sim <- bl_sim_from_bt(readRDS(btp))
+
+    base_cell <- cells[["base"]]
+    dl <- if (!is.null(base_cell)) tryCatch(rl_delta(cell, base_cell), error = function(e) NULL) else NULL
+
+    register_module(
+      sim, sid,
+      grade       = as.character(cell$grade),
+      origin_mode = "reinforce_ladder",          # ★1·2단계 산출을 풀에서 구분 가능하게
+      role        = NA_character_,
+      meta = list(
+        strategy_name = sprintf("LADDER/%s/%s", cand$candidate_id, lbl),
+        ladder_ref = list(base_candidate = cand$candidate_id, rung = lbl,
+                          entry_regime = cand$entry_regime, entry_ir = cand$entry_ir,
+                          dSR = dl$dSR %|N|% NA, dMDD = dl$dMDD %|N|% NA, dIR = dl$dIR %|N|% NA,
+                          target_grade = config$target_grade,
+                          target_hit = .rl_grade_rank(cell$grade) <= .rl_grade_rank(config$target_grade)),
+        essence_grade = as.character(cell$grade),
+        selection_type = as.character(cell$selection_type %|N|% NA),
+        n_trials_cumulative = as.integer(cell$n_trials_cumulative %|N|% NA),
+        basis = as.character(cell$basis %|N|% NA),
+        bt_contract_status = as.character(ct$status %|N|% "UNKNOWN")),
+      metric_type        = "backtested",
+      contract_pass      = contract_ok,          # ★선언 아님 — 위에서 실측
+      frozen             = TRUE,
+      source_contract_id = as.character(ct$run_id %|N|% sid),
+      build_version      = "reinforce_ladder_v9.21",
+      cost_model_version = "v2.4_delta_15bps",
+      bt_result_path     = .rl_rel(btp))
+  }, error = function(e) e)
+
+  if (inherits(out, "error"))
+    return(list(status = "FAILED", label = lbl, strategy_id = sid, error = conditionMessage(out)))
+  list(status = "REGISTERED", label = lbl, strategy_id = sid,
+       fr_eligible = isTRUE(out$fr_eligible), contract_pass = contract_ok,
+       registry = if (isTRUE(out$fr_eligible)) "module_catalog" else "module_quarantine",
+       reason = as.character(out$eligibility_reason %|N|% out$reason %|N|% NA))
 }
 
 ## ─── 종료 보고 (close_round 1회 + tg_agent_brief 1회) ───────────────────────
