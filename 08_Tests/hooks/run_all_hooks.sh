@@ -329,6 +329,17 @@ SUITES=(
   #   미보고를 일괄 1 fail 로 뭉개 신규 실패가 상시 카운트와 구분되지 않았다.
   #   양성 대조 + 위반 주입 2종 + 원버그(0/0/0=ALL PASS) 재현 방어 + 돌연변이 통제 + 단일실행.
   "08_Tests/hooks/test_runner_accounting.R"
+  # 2026-08-24 머지 등재 3종 — 오늘 수리된 계기들의 양방향 검사기.
+  #   · atomic_json_write: 쓰기/읽기 루프를 병렬로 돌려 절단 JSON 이 한 번도
+  #     읽히지 않음을 실증(소비자 재시도로 증상만 막던 것의 근본 수리).
+  #   · knowledge_index_consumer_heal: 소비면 자가치유 배선. 호출부를 지우면
+  #     검출기가 실제로 뒤집히는지까지 본다(배선 존재만 보는 검사는 무의미).
+  #   · audit_check15_lookahead_self_scan: 4개월간 0회 실행이던 Check 15 의
+  #     양성 대조. 위반 주입 5종(C7b·C7a·C1·C10_LIQ·PY_C7_NEG_SHIFT)이 실제로
+  #     FAIL 을 내는지 + 죽은 이름 재도입 래칫.
+  "08_Tests/contracts/test_atomic_json_write.R"
+  "08_Tests/hooks/test_knowledge_index_consumer_heal.R"
+  "08_Tests/contracts/test_audit_check15_lookahead_self_scan.R"
   # 2026-08-01 추가: 배포 홀딩 제약 검사기 위반 주입 —
   #   월간 리밸 Gate C 는 "CSV 생성 + 5행"만 봐서 전월 재출력·제약 위반이 통과했다
   #   (감사 실측: 하드 제약 4종이 배포 체인 어디서도 산출물에 대해 검증되지 않음).

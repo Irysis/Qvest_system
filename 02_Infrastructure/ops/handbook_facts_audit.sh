@@ -10,7 +10,10 @@
 # 산출: 06_Registry/handbook_facts.json
 #   생성 시각 + 계층별 실측치. 핸드북 재생성/검증의 단일 입력.
 #
-# 읽기 전용. 실패해도 exit 0 (무인 파이프라인 무중단).
+# 읽기 위주(★예외: knowledge_index 낙후 시 --repair 로 정본 재작성). 실패해도 exit 0 (무인 파이프라인 무중단).
+#   ★2026-08-24: 소비 직전 자가치유 배선으로 06_Registry/knowledge_index.{json,md} 를
+#   쓴다. 무인 실행(Qvest_StrandedRepairs.bat)에서 digest 보다 먼저 돌면 digest 가
+#   보고할 낙후를 지울 수 있다 — 스케줄 순서는 별건 과제로 분리(계획 §범위 밖).
 #
 # 사용:
 #   bash 02_Infrastructure/ops/handbook_facts_audit.sh
