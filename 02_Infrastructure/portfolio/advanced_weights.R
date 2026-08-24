@@ -1362,12 +1362,25 @@ solve_robust_socp_weights <- function(mu, Sigma, uncertainty = c("box", "ellipso
       } else stop(paste("ellipsoid SOCP status:", getstatus(res)[[1]]))
     }
   }, error = function(e) {
-    cat(sprintf("[robust_socp] failed (%s), falling back to max-SR approx\n", e$message))
+    cat(sprintf("[robust_socp] failed (%s) — max-SR 근사(mu/sigma)로 폴백, 캡은 재분배로 강제\n",
+                e$message))
     # 폴백: Sharpe 비율 최대화 (inverse-vol 비례)
+    # ★2026-08-24 수리 — 여기가 .normalize 원 결함과 **자구까지 동일한** 마지막 지점이었다.
+    #   구판: `w_raw <- pmin(w_raw, max_w); w_raw / sum(w_raw)`
+    #   mu/sig 는 정규화되지 않은 raw Sharpe 벡터(임의 스케일)라, 전 원소가 max_w 를
+    #   넘으면 pmin 이 전부 같은 값으로 눌러버리고 뒤이은 합-정규화가 그것을 **정확히
+    #   EW** 로 만든다. 예외도 경고도 없다. 게다가 로그는 "max-SR approx" 라고 적어
+    #   실제로 계산한 것과 다른 말을 했다 — 계기가 자기 산출을 거짓 보고한 형태다.
+    #   ⇒ 합-정규화를 **먼저** 하고, 캡은 normalize_long_only(초과분 반복 재분배)에 위임.
+    #   양성 대조 = test_weight_catalog.R 축 (f) socp_fallback.
     sig <- sqrt(pmax(diag(Sigma), 1e-8))
     w_raw <- mu / sig; w_raw[w_raw < 0] <- 0
     if (sum(w_raw) < 1e-10) w_raw <- rep(1 / p, p)
-    w_raw <- pmin(w_raw, max_w); w_raw / sum(w_raw)
+    nm_fb <- names(w_raw)
+    w_raw <- w_raw / sum(w_raw)
+    out_fb <- normalize_long_only(w_raw, lb = 0, ub = max_w, target_sum = 1)
+    names(out_fb) <- nm_fb
+    out_fb
   })
 
   result

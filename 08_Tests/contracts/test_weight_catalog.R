@@ -298,6 +298,68 @@ if (!file.exists(AW)) cat("  SKIP  advanced_weights.R 부재\n") else {
         ok("자구 순서 확인: 합-정규화가 캡 위임보다 **앞줄**") else
         ng("★자구 순서 — 합-정규화가 캡보다 뒤이거나 부재")
     } else ng("정적 검사 — .normalize 정의 추출 실패")
+
+    # ── (g) ★robust SOCP 폴백 — 원 결함과 **자구까지 동일했던** 마지막 지점 ──
+    # 왜 별도 축인가 (2026-08-24): .normalize 를 고쳐도 solve_robust_socp_weights 의
+    #   error 폴백은 구 자구를 그대로 갖고 있었다. mu/sigma 는 정규화되지 않은 raw
+    #   Sharpe 벡터라 통상 스케일에서도 max_w 를 넘고, 그러면 pmin 이 전 원소를 같은
+    #   값으로 눌러 **정확히 EW** 를 낸다. 더 나쁜 건 로그가 "max-SR approx" 라고 적어
+    #   실제 계산과 다른 말을 한 것이다 — 계기가 자기 산출을 거짓 보고하는 형태.
+    # ★여기서도 급소는 "지금 EW 가 아니다" 가 아니라 **"구판이면 EW 인가"** 다.
+    cat("== (g) ★robust SOCP 폴백 — 같은 결함의 마지막 잔존 지점 ==\n")
+    .nlo <- tryCatch(get("normalize_long_only", envir = ae), error = function(e) NULL)
+    if (is.null(.nlo)) ng("★normalize_long_only 미로드 — 폴백 축 판정 불가") else {
+      mu_g  <- seq(0.30, 0.90, length.out = NA_)   # raw Sharpe (임의 스케일, 3배 스프레드)
+      sig_g <- rep(0.02, NA_)                      # mu/sig 는 15~45 → 전 원소 > max_w
+      fb_new <- function(mu, sig, max_w = 0.15) {  # 수리판 자구
+        w <- mu / sig; w[w < 0] <- 0
+        if (sum(w) < 1e-10) w <- rep(1 / length(w), length(w))
+        w <- w / sum(w)
+        as.numeric(.nlo(w, lb = 0, ub = max_w, target_sum = 1))
+      }
+      fb_old <- function(mu, sig, max_w = 0.15) {  # 구판 자구 verbatim (돌연변이 통제)
+        w <- mu / sig; w[w < 0] <- 0
+        if (sum(w) < 1e-10) w <- rep(1 / length(w), length(w))
+        w <- pmin(w, max_w); as.numeric(w / sum(w))
+      }
+
+      # g-1 수리판: 신호가 살아 있고 캡·합 계약을 지키는가
+      gn <- fb_new(mu_g, sig_g)
+      if (!isEW(gn) && abs(sum(gn) - 1) < 1e-9 && max(gn) <= 0.15 + 1e-9 && min(gn) >= 0)
+        ok(sprintf("수리판 폴백: EW 아님 · Sw=1 · maxw=%.4f <= 0.15", max(gn))) else
+        ng("★수리판 폴백이 계약 위반", sprintf("isEW=%s sum=%.8f max=%.6f min=%.6f",
+                                              isEW(gn), sum(gn), max(gn), min(gn)))
+      # 강단조 — 균일 벡터도 통과하는 !is.unsorted() 로 짜면 자명참이 된다(f 축의 교훈)
+      if (all(diff(gn) > 0))
+        ok("수리판 폴백: mu 순서가 비중 순서로 **강단조** 전달") else
+        ng("★순위 소멸 — 폴백이 선호 순서를 보존하지 않는다",
+           sprintf("min diff=%.3e", min(diff(gn))))
+
+      # g-2 돌연변이 통제: 구 자구를 되돌리면 축이 실제로 뒤집히는가
+      go2 <- fb_old(mu_g, sig_g)
+      if (isEW(go2))
+        ok("돌연변이 통제: 구판 폴백은 같은 입력에서 **정확히 EW** — 축이 실제로 잰다") else
+        ng("★돌연변이 통제 실패 — 구판이 EW 를 안 낸다. 이 축은 아무것도 재고 있지 않다",
+           sprintf("dev=%.3e", max(abs(go2 - EWv))))
+
+      # g-3 정적: 폴백 블록이 정본에 위임하고, 구 자구가 실행 위치에 남아있지 않은가
+      aws2 <- readLines(AW, warn = FALSE)
+      fbl  <- grep("robust_socp\\] failed", aws2)
+      if (length(fbl)) {
+        blk2 <- aws2[fbl[1]:min(fbl[1] + 22L, length(aws2))]
+        code2 <- blk2[!grepl("^\\s*#", blk2)]           # 주석 제외 = 실행 자구만
+        j2 <- paste(code2, collapse = "\n")
+        if (grepl("normalize_long_only", j2, fixed = TRUE))
+          ok("폴백이 캡 강제를 normalize_long_only 에 위임 — 재구현 아님") else
+          ng("★폴백이 캡을 자체 구현한다 — 정본이 둘이 된다")
+        if (!grepl("pmin\\(w_raw, max_w\\)", j2))
+          ok("구 자구 `pmin(w_raw, max_w)` 가 실행 위치에 없다(주석 기록만 허용)") else
+          ng("★구 자구가 실행 위치에 잔존 — 폴백이 여전히 EW 를 낼 수 있다")
+        if (regexpr("sum\\(w_raw\\)", j2) < regexpr("normalize_long_only", j2))
+          ok("자구 순서 확인: 합-정규화가 캡 위임보다 **앞줄**") else
+          ng("★자구 순서 — 합-정규화가 캡보다 뒤이거나 부재")
+      } else ng("정적 검사 — SOCP 폴백 블록 추출 실패")
+    }
   }
 }
 
