@@ -87,16 +87,28 @@ if (length(oi)) {
 
 # A4 — ★돌연변이 통제: env 를 빼면 소비 조건이 실제로 뒤집히는가
 #   이게 없으면 A1~A3 는 "문자열이 있다"만 재고, 차단력을 재지 않는다.
-old <- Sys.getenv("QVEST_LEAN_REGISTER", unset = NA)
-on.exit({ if (is.na(old)) Sys.unsetenv("QVEST_LEAN_REGISTER") else
-           Sys.setenv(QVEST_LEAN_REGISTER = old) }, add = TRUE)
-gate <- function() !identical(Sys.getenv("QVEST_LEAN_REGISTER", "1"), "0")   # run_alpha_search:433 자구
-Sys.setenv(QVEST_LEAN_REGISTER = "0"); blocked <- !gate()
-Sys.unsetenv("QVEST_LEAN_REGISTER");   opened  <-  gate()
-if (blocked && opened)
+#   ★반드시 함수 안에서 한다 — r-portability 금칙 ②: 스크립트 최상위 `on.exit` 은
+#     함수 프레임이 없어 **조용히 no-op** 이다(정상종료/error/quit 3경로 전부 미발화 실측).
+#     즉 최상위에 쓰면 env 복원이 아예 실행되지 않고 테스트가 환경을 오염시킨다.
+.probe_killswitch <- function() {
+  old <- Sys.getenv("QVEST_LEAN_REGISTER", unset = NA)
+  on.exit({ if (is.na(old)) Sys.unsetenv("QVEST_LEAN_REGISTER") else
+              Sys.setenv(QVEST_LEAN_REGISTER = old) }, add = TRUE)
+  gate <- function() !identical(Sys.getenv("QVEST_LEAN_REGISTER", "1"), "0")  # run_alpha_search:433 자구
+  Sys.setenv(QVEST_LEAN_REGISTER = "0"); blocked <- !gate()
+  Sys.unsetenv("QVEST_LEAN_REGISTER");   opened  <-  gate()
+  list(blocked = blocked, opened = opened)
+}
+.ks <- .probe_killswitch()
+if (isTRUE(.ks$blocked) && isTRUE(.ks$opened))
   ok("돌연변이 통제: env=0 이면 등재 차단 · env 부재면 등재 개방 — 양방향 전환 실증") else
   ng("★돌연변이 통제 실패 — 킬스위치가 실제로 전환하지 않는다",
-     sprintf("blocked=%s opened=%s", blocked, opened))
+     sprintf("blocked=%s opened=%s", .ks$blocked, .ks$opened))
+# ★복원 실증 — on.exit 이 함수 프레임에서 실제로 돌았는지 본다(금칙 ② 재발 방지 래칫)
+if (identical(Sys.getenv("QVEST_LEAN_REGISTER", unset = "<unset>"), "<unset>"))
+  ok("probe 종료 후 env 복원 확인 — on.exit 이 함수 프레임에서 실제로 발화했다") else
+  ng("★env 가 오염된 채 남았다 — on.exit 미발화(금칙 ② 재발)",
+     Sys.getenv("QVEST_LEAN_REGISTER"))
 
 # ══ B. 최종 승자 등재 (§2-e) ════════════════════════════════════════════════
 cat("\n── B. 최종 승자 등재 ───────────────────────────────────────\n")
