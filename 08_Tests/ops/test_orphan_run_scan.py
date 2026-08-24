@@ -65,6 +65,7 @@ def ts(minutes_ago):
 if not os.path.exists(SCAN):
     print("  SKIP  스캐너 부재")
     print("== t_summary: PASS=0 FAIL=0 ==")
+    print('{"test":"orphan_run_scan","pass":0,"fail":0,"total":0,"skipped":1,"skips":[{"axis":"ALL","reason":"스캐너 부재","missing":"%s"}]}' % (SCAN))
     sys.exit(0)
 
 print("== 양성 대조: 정상 종료한 런을 무음 사망으로 세지 않는가 ==")
@@ -154,4 +155,5 @@ else:
     ok("실 저장소 스캔 동작 (18:30 건은 로그 상태에 따라 변동)")
 
 print("== t_summary: PASS=%d FAIL=%d ==" % (_p[0], _f[0]))
+print('{"test":"orphan_run_scan","pass":%d,"fail":%d,"total":%d,"skipped":0}' % (_p[0], _f[0], (_p[0])+(_f[0])))
 sys.exit(1 if _f[0] else 0)

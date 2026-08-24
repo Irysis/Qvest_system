@@ -21,7 +21,7 @@ ok(){ PASS=$((PASS+1)); echo "  PASS  $1"; }
 ng(){ FAIL=$((FAIL+1)); echo "  FAIL  $1 :: $2"; }
 
 if [ ! -f "$SCRIPT" ]; then
-  echo "  SKIP  상태 스크립트 부재"; echo "== t_summary: PASS=0 FAIL=0 =="; exit 0
+  echo "  SKIP  상태 스크립트 부재"; echo "== t_summary: PASS=0 FAIL=0 =="; printf '{"test":"scheduler_status_line_honesty","pass":0,"fail":0,"total":0,"skipped":1,"skips":[{"axis":"ALL","reason":"상태 스크립트 부재","missing":"%s"}]}\n' "$SCRIPT"; exit 0
 fi
 
 FIX="$(mktemp -d)"; trap 'rm -rf "$FIX"' EXIT
@@ -43,6 +43,7 @@ if echo "$SEAM_OUT" | grep -q "미해소 1건"; then
 else
   ng "격리 실패" "픽스처를 안 보고 있다: $SEAM_OUT — 이 상태의 통과는 전부 무효"
   echo "== t_summary: PASS=$PASS FAIL=$FAIL =="; exit 1
+  printf '{"test":"scheduler_status_line_honesty","pass":%d,"fail":%d,"total":%d,"skipped":0}\n' "$PASS" "$FAIL" "$((PASS+FAIL))"
 fi
 
 echo "== 위반 주입 1: unknown 만 있을 때 '전부 자동복구' 라 하지 않는가 (실사고 재현) =="
@@ -89,4 +90,5 @@ else
 fi
 
 echo "== t_summary: PASS=$PASS FAIL=$FAIL =="
+printf '{"test":"scheduler_status_line_honesty","pass":%d,"fail":%d,"total":%d,"skipped":0}\n' "$PASS" "$FAIL" "$((PASS+FAIL))"
 [ "$FAIL" -eq 0 ] || exit 1

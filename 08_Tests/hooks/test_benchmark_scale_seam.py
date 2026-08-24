@@ -284,6 +284,8 @@ def main() -> int:
     print(f'  {npass}/{len(CASES)} PASS')
     if fails:
         print('  ★실패:', ', '.join(n for n, _ in fails))
+    print('{"test":"benchmark_scale_seam","pass":%d,"fail":%d,"total":%d,"skipped":0}'
+          % (npass, len(fails), npass + len(fails)))
     return 0 if not fails else 1
 
 

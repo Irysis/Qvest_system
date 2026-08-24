@@ -109,4 +109,5 @@ else
 fi
 
 echo "== t_summary: PASS=$PASS FAIL=$FAIL =="
+printf '{"test":"credential_scope_wiring","pass":%d,"fail":%d,"total":%d,"skipped":0}\n' "$PASS" "$FAIL" "$((PASS+FAIL))"
 [ "$FAIL" -eq 0 ] || exit 1

@@ -21,7 +21,7 @@ PASS=0; FAIL=0
 ok(){ PASS=$((PASS+1)); echo "  PASS  $1"; }
 ng(){ FAIL=$((FAIL+1)); echo "  FAIL  $1 :: $2"; }
 
-if [ ! -f "$MR" ]; then echo "  SKIP  morning_run 부재"; echo "== t_summary: PASS=0 FAIL=0 =="; exit 0; fi
+if [ ! -f "$MR" ]; then echo "  SKIP  morning_run 부재"; echo "== t_summary: PASS=0 FAIL=0 =="; printf '{"test":"orchestrator_stage_gate","pass":0,"fail":0,"total":0,"skipped":1,"skips":[{"axis":"ALL","reason":"morning_run 부재","missing":"%s"}]}\n' "$MR"; exit 0; fi
 
 T="$(mktemp -d)"; trap 'rm -rf "$T"' EXIT
 ADIR="$T/.cache/scheduler_alerts"; mkdir -p "$ADIR"
@@ -32,6 +32,7 @@ H="$T/h.sh"
 if ! grep -q 'stage_result()' "$H"; then
   ng "함수 추출" "stage_result() 를 떼어내지 못함 — 정의 형태가 바뀌었다"
   echo "== t_summary: PASS=$PASS FAIL=$FAIL =="; exit 1
+  printf '{"test":"orchestrator_stage_gate","pass":%d,"fail":%d,"total":%d,"skipped":0}\n' "$PASS" "$FAIL" "$((PASS+FAIL))"
 fi
 ok "stage_result() 추출 성공"
 
@@ -77,4 +78,5 @@ if [ "$n_comp" -gt 0 ]; then ok "호출부 ${n_comp}건이 comp 인자 전달"
 else ng "comp 미전달" "게이트가 배선돼도 호출부가 comp 를 안 주면 발화하지 않는다"; fi
 
 echo "== t_summary: PASS=$PASS FAIL=$FAIL =="
+printf '{"test":"orchestrator_stage_gate","pass":%d,"fail":%d,"total":%d,"skipped":0}\n' "$PASS" "$FAIL" "$((PASS+FAIL))"
 [ "$FAIL" -eq 0 ] || exit 1

@@ -19,7 +19,10 @@ ok <- function(m) { PASS <<- PASS + 1L; cat("  PASS ", m, "\n") }
 ng <- function(m, d) { FAIL <<- FAIL + 1L; cat("  FAIL ", m, " :: ", paste(d, collapse = " "), "\n") }
 
 if (!file.exists(src)) {
-  cat("  SKIP  계약 부재:", src, "\n== t_summary: PASS=0 FAIL=0 ==\n"); quit(save = "no", status = 0)
+  cat("  SKIP  계약 부재:", src, "\n== t_summary: PASS=0 FAIL=0 ==\n")
+  cat(sprintf('{"test":"score_composite","pass":0,"fail":0,"total":0,"skipped":1,"skips":[{"axis":"ALL","reason":"계약 부재","missing":"%s"}]}
+', src))
+  quit(save = "no", status = 0)
 }
 source(src)
 set.seed(20260823)

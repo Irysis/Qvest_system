@@ -23,7 +23,7 @@ PASS=0; FAIL=0
 ok(){ PASS=$((PASS+1)); echo "  PASS  $1"; }
 ng(){ FAIL=$((FAIL+1)); echo "  FAIL  $1 :: $2"; }
 
-[ -f "$R" ] || { echo "  SKIP  라우터 부재"; echo "== t_summary: PASS=0 FAIL=0 =="; exit 0; }
+[ -f "$R" ] || { echo "  SKIP  라우터 부재"; echo "== t_summary: PASS=0 FAIL=0 =="; printf '{"test":"router_backfill_paths","pass":0,"fail":0,"total":0,"skipped":1,"skips":[{"axis":"ALL","reason":"라우터 부재","missing":"%s"}]}\n' "$R"; exit 0; }
 
 echo "== 배선 축: 3축이 모두 존재하는가 =="
 grep -q 'QVEST_PAPER_ROUTER_DATES' "$R" && ok "② 명시 날짜 경로 존재" \
@@ -83,4 +83,5 @@ runbf "abc,zz99" | grep -q "날짜 형식 아님 무시" \
   && ok "비숫자 입력 → 무시 (실행 확인)" || ng "형식 방어 미작동" "임의 문자열이 통과한다"
 
 echo "== t_summary: PASS=$PASS FAIL=$FAIL =="
+printf '{"test":"router_backfill_paths","pass":%d,"fail":%d,"total":%d,"skipped":0}\n' "$PASS" "$FAIL" "$((PASS+FAIL))"
 [ "$FAIL" -eq 0 ] || exit 1

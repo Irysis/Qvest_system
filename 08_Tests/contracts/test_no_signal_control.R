@@ -1,9 +1,19 @@
 ## test_no_signal_control.R — 무신호 대조군 계약 검사기 (양방향: 양성 대조 + 위반 주입)
 ## 규약: "경고 0" 만으로는 검사기가 살아있는지 알 수 없다 — 일부러 틀린 입력을 넣어 발화를 확인한다.
 suppressPackageStartupMessages({library(data.table)})
-ROOT <- Sys.getenv("CLAUDE_PROJECT_DIR", Sys.getenv("QM_ROOT", "C:/Users/99922/OneDrive/Quant_Module_Moltbot"))
-SELF <- normalizePath(file.path(dirname(sys.frame(1)$ofile %||% "."), "..", ".."), mustWork = FALSE)
+# ★앵커 — 2026-08-24 수리. 종전엔 `dirname(sys.frame(1)$ofile %||% ".")` 였는데
+#   sys.frame(1) 은 source() 로 불릴 때만 존재한다. `Rscript <file>` 직접 실행에는
+#   프레임 1 이 없어 **이 줄에서 죽었다** — 즉 이 검사기는 배터리에서 한 번도 돈 적이
+#   없다(2026-08-24 실측). audit_bt_result Check 15 와 같은 계통(프레임 한정 접근).
+#   commandArgs(--file=) 를 먼저 보고 source 경로는 폴백으로 둔다.
 `%||%` <- function(a, b) if (is.null(a)) b else a
+.qv_self_dir <- function() tryCatch({
+  a <- commandArgs(trailingOnly = FALSE)
+  f <- sub("^--file=", "", a[grepl("^--file=", a)])
+  if (length(f)) dirname(f[1]) else dirname(sys.frame(1)$ofile %||% ".")
+}, error = function(e) ".")
+ROOT <- Sys.getenv("CLAUDE_PROJECT_DIR", Sys.getenv("QM_ROOT", "C:/Users/99922/OneDrive/Quant_Module_Moltbot"))
+SELF <- normalizePath(file.path(.qv_self_dir(), "..", ".."), mustWork = FALSE)
 if (dir.exists(file.path(SELF, "02_Infrastructure/contracts"))) ROOT <- SELF
 setwd(ROOT)
 source("02_Infrastructure/contracts/no_signal_control.R")
@@ -76,4 +86,6 @@ if (file.exists(".cache/rawdata.parquet")) {
 } else cat("  [skip] .cache/rawdata.parquet 부재\n")
 
 cat(sprintf("\n=== 결과: PASS %d / FAIL %d ===\n", PASS, FAIL))
+cat(sprintf('{"test":"no_signal_control","pass":%d,"fail":%d,"total":%d,"skipped":0}
+', PASS, FAIL, PASS + FAIL))
 if (FAIL > 0) quit(status = 1)

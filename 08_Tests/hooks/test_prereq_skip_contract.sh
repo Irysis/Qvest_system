@@ -311,8 +311,11 @@ stub "$R1" s_skip '{"test":"s_skip","pass":1,"fail":0,"skipped":2,"total":1,"ski
 E1_OUT="$TD/e1.txt"
 CLAUDE_PROJECT_DIR="$R1" QM_ROOT="$R1" bash "$R1/08_Tests/hooks/run_all_hooks.sh" > "$E1_OUT" 2>&1
 E1_RC=$?
-if grep -qE '^FINAL: 4 pass / 0 fail / 2 skipped / 4 total' "$E1_OUT"; then
-  ok "E1_final_line_has_skipped" "FINAL 에 skipped 계상"
+# ★2026-08-24: FINAL 줄에 `unmeasured` 가 추가됐다(러너 계측 수리 — 미측정을 실패와
+#   분리하되 status 는 여전히 FAIL). 이 축은 **형식 계약**이므로 느슨하게 풀지 않고
+#   새 필드까지 함께 못박는다 — 여기서 `.*` 로 흘리면 다음 형식 변경은 조용히 지나간다.
+if grep -qE '^FINAL: 4 pass / 0 fail / 2 skipped / 0 unmeasured / 4 total' "$E1_OUT"; then
+  ok "E1_final_line_has_skipped" "FINAL 에 skipped + unmeasured 계상"
 else
   bad "E1_final_line_has_skipped" "FINAL='$(grep -m1 '^FINAL:' "$E1_OUT")'"
 fi

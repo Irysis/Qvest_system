@@ -72,4 +72,5 @@ chk("표본 0 이면 stop", e3 == "stopped")
 chk("known 비어도 정상 동작", isTRUE(census_assert_scope(pop, known = character(0))$ok))
 
 cat(sprintf("\n=== 결과: PASS %d / FAIL %d ===\n", PASS, FAIL))
+cat(sprintf('{"test":"census_helper","pass":%d,"fail":%d,"total":%d,"skipped":0}\n', PASS, FAIL, PASS + FAIL))
 if (FAIL > 0) quit(status = 1)

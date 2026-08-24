@@ -100,7 +100,6 @@ echo "Tests dir: $TEST_DIR"
 echo "Started: $(date -Iseconds)"
 echo ""
 
-ALL_RESULTS=()
 TOTAL_PASS=0
 TOTAL_FAIL=0
 
@@ -124,30 +123,6 @@ TOTAL_FAIL=0
 TOTAL_SKIP=0
 SKIP_LINES=()
 
-run_test() {
-  local name="$1"
-  local cmd="$2"
-  echo "─── Running: $name ───"
-  RESULT=$(eval "$cmd" 2>&1)
-  echo "$RESULT"
-  echo ""
-  # Extract last JSON line
-  JSON=$(echo "$RESULT" | tail -1)
-  echo "$JSON" | "$QVEST_PY_BIN" -c '
-import json, sys
-try:
-    d = json.loads(sys.stdin.read())
-    print("PARSED|" + str(d.get("test","?")) + "|" + str(d.get("pass",0)) + "|" + str(d.get("fail",0)) + "|" + str(d.get("total",0)) + "|" + str(d.get("skipped",0)))
-except Exception as e:
-    print("PARSE_ERROR|" + str(e))
-' | while IFS='|' read -r marker test_name pass fail total skipped; do
-    if [[ "$marker" == "PARSED" ]]; then
-      ALL_RESULTS+=("{\"test\":\"$test_name\",\"pass\":$pass,\"fail\":$fail,\"total\":$total,\"skipped\":$skipped}")
-      TOTAL_PASS=$((TOTAL_PASS + pass))
-      TOTAL_FAIL=$((TOTAL_FAIL + fail))
-    fi
-  done
-}
 
 # ─── 스위트 목록 = 단일 정본 (2026-07-26) ───────────────────────────────────
 # 구현은 "실행 목록"과 "집계 목록"을 각각 하드코딩해 두 벌로 갖고 있었다 —
@@ -348,6 +323,12 @@ SUITES=(
   #     상태였다 — 메모리는 "검사기 11/11 완료"로 기록했으나 main marker 참조는 0건이었다.
   #     '수리했는데 main에 없음' 실사고 계통(date32 writer·lcode harvester 전례) 재발.
   "08_Tests/hooks/test_resolve_project_marker.sh"
+  # 2026-08-24 추가: 배터리 러너 자신의 **계측 정확성**. 러너가 죽으면 아래 171개의
+  #   숫자가 전부 무의미해지는데 겉보기는 정상이다 — 실측으로 두 가지가 동시에 있었다:
+  #   exit code 를 파이프에서 잃어 크래시로 죽은 suite 2건이 형식 불일치 24건에 묻혔고,
+  #   미보고를 일괄 1 fail 로 뭉개 신규 실패가 상시 카운트와 구분되지 않았다.
+  #   양성 대조 + 위반 주입 2종 + 원버그(0/0/0=ALL PASS) 재현 방어 + 돌연변이 통제 + 단일실행.
+  "08_Tests/hooks/test_runner_accounting.R"
   # 2026-08-01 추가: 배포 홀딩 제약 검사기 위반 주입 —
   #   월간 리밸 Gate C 는 "CSV 생성 + 5행"만 봐서 전월 재출력·제약 위반이 통과했다
   #   (감사 실측: 하드 제약 4종이 배포 체인 어디서도 산출물에 대해 검증되지 않음).
@@ -1130,20 +1111,6 @@ SUITES=(
   "08_Tests/contracts/test_beta_controlled_alpha.R"
 )
 
-# (2026-08-02) .py 분기 추가 — 종전엔 확장자 무관 `bash` 로 던져 파이썬 suite 가
-#   구문오류로 죽고 UNREPORTED(=1 fail)로만 나타났다(무엇이 잘못됐는지는 안 보임).
-#   해석기는 bare python3 금지 — Windows Store 스텁이라 스크립트를 실행하지 않는다
-#   ([[reference-python3-windows-stub-use-qvest-py]]). 위 헤더가 세운 QVEST_PY_BIN 경유.
-_suite_cmd() {
-  local rel="$1"
-  if [[ "$rel" == *.R ]]; then
-    printf 'Rscript "%s/%s"' "$PROJ_DIR" "$rel"
-  elif [[ "$rel" == *.py ]]; then
-    printf '"%s" "%s/%s"' "$QVEST_PY_BIN" "$PROJ_DIR" "$rel"
-  else
-    printf 'bash "%s/%s"' "$PROJ_DIR" "$rel"
-  fi
-}
 
 #──────────────────────────────────────────────────────────────────────────────
 # 프로필 필터 (v9 Lean Loop, 2026-08-23) — 전체 프로필은 **불변**이 기본이고, 필터는
@@ -1153,21 +1120,43 @@ _suite_cmd() {
 #   lean 프로필 = 08_Tests/hooks/profiles/lean.exclude (v9 에서 등록 해제된 훅·폐지된
 #   부팅 검사에 붙은 suite 25종). 사용 예:
 #     QVEST_SUITES_EXCLUDE="$(cat 08_Tests/hooks/profiles/lean.exclude)" bash 08_Tests/hooks/run_all_hooks.sh
-#   ★두 루프(사전 스캔·본 실행) **양쪽**에 걸어야 한다 — 한쪽만 걸면 사전 스캔이 센
-#   suite 수와 실제 실행 수가 어긋나 "UNREPORTED" 로 나타난다.
+#   ★2026-08-24 이전엔 루프가 둘(사전 스캔·본 실행)이라 한쪽만 걸면 센 수와 실행 수가
+#   어긋나 UNREPORTED 로 나타났다. 사전 스캔을 제거해 루프는 이제 하나뿐이다.
 #──────────────────────────────────────────────────────────────────────────────
-for _s in "${SUITES[@]}"; do
-  [[ -n "${QVEST_SUITES_EXCLUDE:-}" && "$_s" =~ $QVEST_SUITES_EXCLUDE ]] && continue
-  [[ -n "${QVEST_SUITES_ONLY:-}" && ! "$_s" =~ $QVEST_SUITES_ONLY ]] && continue
-  _name="$(basename "$_s")"; _name="${_name%.*}"
-  run_test "$_name" "$(_suite_cmd "$_s")"
-done
+# ★사전 스캔 루프 제거 (2026-08-24) — 이 루프는 SUITES 전량을 **실제로 실행하고**
+#   그 결과를 전부 버렸다. run_test 의 집계가 파이프 오른쪽 while 서브셸에서 일어나
+#   부모로 전파되지 않았고(바로 아래 원 주석 "re-extract since subshells don't
+#   propagate" 가 그 사실을 인정한다), TOTAL_PASS/TOTAL_FAIL 을 0 으로 되돌린 뒤
+#   본 루프가 **같은 SUITES 를 처음부터 다시 돌렸다**. ALL_RESULTS 도 같은 서브셸
+#   에서만 채워져 읽는 곳이 0건이었다(전수 grep). ⇒ 배터리 비용의 정확히 절반이
+#   버려지는 실행이었다. 서브셸 문제를 고치는 대신 전체를 한 번 더 도는 것으로
+#   우회한 흔적이다.
+#   유일한 실효는 suite 별 출력 표시였고, 본 루프가 이미 $RAW 로 같은 것을 갖고 있다.
+#   ★부수 효과(의도됨): 이제 suite 는 회차당 1회만 돈다. 앞선 실행이 만든 상태에
+#     기대어 통과하던 suite 가 있었다면 여기서 드러난다 — 회귀가 아니라 정정이다.
+#     원장 격리 가드도 이제 사전 스캔의 오염을 본다(종전엔 지문 채취 전이라 불가시).
 
 # Aggregate (re-extract since subshells don't propagate)
 TOTAL_PASS=0
 TOTAL_FAIL=0
 TESTS_JSON=""
 UNREPORTED=()
+# ★미측정 ≠ 실패 (2026-08-24 신설) — 종전엔 요약 JSON 미발행을 일괄 `TOTAL_FAIL+=1` 로
+#   계상했다. 규칙 자체는 2026-07-25 의 정당한 수리(그전엔 전 suite 미보고 시 FINAL 0/0/0
+#   이 "✅ ALL PASS" 로 보고됐다)지만 해상도가 낮아 두 가지를 동시에 망가뜨렸다:
+#     (a) 8건 실패한 suite 도 1건으로 계상 → **실제 실패의 과소계상**
+#     (b) 미측정 26 + 실제 실패 10 = 36 이 한 숫자로 뭉쳐 **신규 실패가 상시 카운트와 구분 불가**
+#         (실측 2026-08-24T07:39:05 hook_dryrun_results.json — 산술이 정확히 닫힌다)
+#   ⇒ 미측정을 별도 버킷으로 가르되, exit code 가 실패를 신고하면 그건 실패로 센다.
+#     실측(2026-08-24 09:00, main): 미측정 26 중 exit≠0 은 **2건**(둘 다 실행 전 크래시),
+#     나머지 24 는 exit 0 — 즉 대부분은 '돌긴 돌았는데 계상이 안 된' 경우다. 소스에
+#     `quit(status = if (FAIL>0) 1 else 0)` 이 있다고 exit 1 을 내는 게 아니다(조건부).
+#     그래도 가르는 이유는 남는다: 크래시 2건이 형식 불일치 24건에 묻혀 안 보였다.
+#   ★안전성질 불변: status 는 TOTAL_FAIL 과 TOTAL_UNMEASURED 중 하나라도 0 이 아니면 FAIL.
+#     (미측정을 FAIL 에서 빼면서 status 를 안 고치면 2026-07-25 가 고친 원 버그가 되살아난다)
+TOTAL_UNMEASURED=0
+UNMEASURED_FAILING=()       # 요약 없음 + exit!=0 → 실패로 계상(단, 건수는 미상)
+UNMEASURED_SILENT=()        # 요약 없음 + exit==0 → 통과 아님, 측정 안 됨
 
 # ★생산 원장 격리 가드 (2026-08-22 신설 — 감사 HLT-1/HLT-2)
 #   검사가 생산 조회면을 변조하면 **같은 배터리의 후속 스위트가 그 가짜를 실물로 소비한다**
@@ -1253,17 +1242,36 @@ print(pick)
 }
 
 for test_script in "${SUITES[@]}"; do
-  # 프로필 필터 — 위 사전 스캔 루프와 **동일 조건**(설명은 그쪽 주석 참조).
+  # 프로필 필터 (설명은 SUITES 위 프로필 필터 주석 참조). 2026-08-24 사전 스캔 제거 후
+  #   이 루프가 유일한 실행 루프이므로 필터 지점도 여기 하나뿐이다.
   [[ -n "${QVEST_SUITES_EXCLUDE:-}" && "$test_script" =~ $QVEST_SUITES_EXCLUDE ]] && continue
   [[ -n "${QVEST_SUITES_ONLY:-}" && ! "$test_script" =~ $QVEST_SUITES_ONLY ]] && continue
   _rg0="$(_reg_fp_strict)"; _ra0="$(_reg_fp_adv)"
+  _name="$(basename "$test_script")"; _name="${_name%.*}"
+  # 헤더는 **실행 전에** 낸다 — 멈춘 suite 를 이름으로 특정할 수 있어야 한다.
+  echo "─── Running: $_name ───"
+  # ★exit code 는 파이프 안에서 잃는다 — `$( cmd | filter )` 의 $? 는 filter 의 것이고,
+  #   PIPESTATUS 는 명령치환 서브셸 밖으로 나오지 않는다. 게다가 바로 아래
+  #   `_rg1="$(...)"` 가 $? 를 덮어쓴다. ⇒ 출력을 먼저 통째로 받고 RC 를 **즉시** 읽는다.
+  #   (2026-08-24 — 이 한 줄 때문에 크래시로 죽은 suite 와 형식만 어긋난 suite 를 구분할
+#    수단이 없었다. 실측으로 전자가 2건 있었고 후자 24건에 묻혀 있었다)
+  # ★확장자 3분기는 유지한다 (2026-08-02 교훈, 구 _suite_cmd 에서 이관) — 종전엔
+  #   확장자 무관 `bash` 로 던져 파이썬 suite 가 구문오류로 죽고 UNREPORTED 로만
+  #   나타났다(무엇이 잘못됐는지는 안 보임). 해석기는 bare python3 금지 — Windows
+  #   Store 스텁이라 스크립트를 실행하지 않는다
+  #   ([[reference-python3-windows-stub-use-qvest-py]]). 헤더가 세운 QVEST_PY_BIN 경유.
   if [[ "$test_script" == *.R ]]; then
-    OUT=$(Rscript "$PROJ_DIR/$test_script" 2>&1 | _last_summary_json)
+    RAW=$(Rscript "$PROJ_DIR/$test_script" 2>&1); RC=$?
   elif [[ "$test_script" == *.py ]]; then
-    OUT=$("$QVEST_PY_BIN" "$PROJ_DIR/$test_script" 2>&1 | _last_summary_json)
+    RAW=$("$QVEST_PY_BIN" "$PROJ_DIR/$test_script" 2>&1); RC=$?
   else
-    OUT=$(bash "$PROJ_DIR/$test_script" 2>&1 | _last_summary_json)
+    RAW=$(bash "$PROJ_DIR/$test_script" 2>&1); RC=$?
   fi
+  OUT=$(printf '%s\n' "$RAW" | _last_summary_json)
+  # 구 사전 스캔 루프가 하던 유일한 실효(출력 표시)를 여기서 그대로 낸다 —
+  #   같은 출력이고, 실행은 한 번뿐이다.
+  echo "$RAW"
+  echo ""
   _rg1="$(_reg_fp_strict)"; _ra1="$(_reg_fp_adv)"
   if [[ "$_rg0" != "$_rg1" ]]; then
     while IFS= read -r _dl; do
@@ -1307,10 +1315,21 @@ for s in sk:
   else
     # 계측 사망 방어 (2026-07-25): 요약 JSON을 못 낸 suite는 "0건 실행"이지 "통과"가
     # 아니다. 종전엔 조용히 skip → 3 suite 전부 누락 시 FINAL 0/0/0이 "✅ ALL PASS"로
-    # 보고됐다(이 파일이 고치는 원 버그). 미보고 = 실패로 계상한다.
+    # 보고됐다(이 파일이 고치는 원 버그). **미보고는 어느 경우에도 통과가 아니다.**
+    # ★2026-08-24: 여기서 exit code 로 두 경우를 가른다(위 TOTAL_UNMEASURED 주석 참조).
+    #   가르는 이유는 관대해지려는 게 아니라 반대다 — 뭉쳐 놓으면 신규 실패가 상시
+    #   카운트에 묻혀 보이지 않는다. 두 버킷 다 status 를 FAIL 로 만든다.
     UNREPORTED+=("$test_script")
-    TOTAL_FAIL=$((TOTAL_FAIL + 1))
-    echo "⚠ UNREPORTED: $test_script — 요약 JSON 파싱 실패 (마지막 줄: ${OUT:0:120})" >&2
+    if [[ "${RC:-1}" -ne 0 ]]; then
+      UNMEASURED_FAILING+=("$test_script (exit ${RC:-?})")
+      TOTAL_FAIL=$((TOTAL_FAIL + 1))
+      echo "⚠ UNMEASURED+FAILING: $test_script — exit ${RC:-?} 인데 요약 JSON 없음." >&2
+      echo "   → 실패 1건으로 계상하나 **실제 실패 건수는 미상(과소계상)**. (마지막 줄: ${OUT:0:120})" >&2
+    else
+      UNMEASURED_SILENT+=("$test_script")
+      TOTAL_UNMEASURED=$((TOTAL_UNMEASURED + 1))
+      echo "⚠ UNMEASURED: $test_script — exit 0 이나 요약 JSON 없음 = 측정 안 됨(통과 아님). (마지막 줄: ${OUT:0:120})" >&2
+    fi
   fi
 done
 
@@ -1327,8 +1346,17 @@ cat > "$RESULTS_FILE" <<EOF
   "total_pass": $TOTAL_PASS,
   "total_fail": $TOTAL_FAIL,
   "total_skipped": $TOTAL_SKIP,
+  "total_unmeasured": $TOTAL_UNMEASURED,
   "total": $((TOTAL_PASS + TOTAL_FAIL)),
-  "status": "$(if [[ $TOTAL_FAIL -eq 0 ]]; then echo PASS; else echo FAIL; fi)",
+  "status": "$(if [[ $TOTAL_FAIL -eq 0 && $TOTAL_UNMEASURED -eq 0 ]]; then echo PASS; else echo FAIL; fi)",
+  "unmeasured_failing": [$(_j=""; for _l in ${UNMEASURED_FAILING[@]+"${UNMEASURED_FAILING[@]}"}; do
+                 _e="${_l//\\/\\\\}"; _e="${_e//\"/\\\"}"
+                 if [[ -n "$_j" ]]; then _j+=","; fi; _j+="\"$_e\""
+               done; printf '%s' "$_j")],
+  "unmeasured_silent": [$(_j=""; for _l in ${UNMEASURED_SILENT[@]+"${UNMEASURED_SILENT[@]}"}; do
+                 _e="${_l//\\/\\\\}"; _e="${_e//\"/\\\"}"
+                 if [[ -n "$_j" ]]; then _j+=","; fi; _j+="\"$_e\""
+               done; printf '%s' "$_j")],
   "registry_dirty": [$(_j=""; for _l in ${REGISTRY_DIRTY[@]+"${REGISTRY_DIRTY[@]}"}; do
                  _e="${_l//\/\\}"; _e="${_e//\"/\\\"}"
                  if [[ -n "$_j" ]]; then _j+=","; fi; _j+="\"$_e\""
@@ -1367,17 +1395,35 @@ if (( TOTAL_SKIP > 0 )); then
   for _l in ${SKIP_LINES[@]+"${SKIP_LINES[@]}"}; do echo "    $_l"; done
   echo "────────────────────────────────────────"
 fi
-echo "FINAL: $TOTAL_PASS pass / $TOTAL_FAIL fail / $TOTAL_SKIP skipped / $((TOTAL_PASS + TOTAL_FAIL)) total"
-if [[ $TOTAL_FAIL -eq 0 ]]; then
+# ★미측정은 FINAL **위에** 먼저 나열한다 — 숫자만 남으면 다음 사람은 그 숫자가 무엇의
+#   부재인지 알 수 없고, 알 수 없는 항목은 무시된다(SKIPPED 와 같은 이유).
+if (( ${#UNMEASURED_FAILING[@]} > 0 )); then
+  echo "✗ UNMEASURED+FAILING ${#UNMEASURED_FAILING[@]}건 — exit≠0 인데 요약 JSON 없음."
+  echo "   각 1건으로 계상됐으나 **실제 실패 건수는 미상**(과소계상). 요약 JSON 이관 대상:"
+  for _l in "${UNMEASURED_FAILING[@]}"; do echo "    $_l"; done
+  echo "────────────────────────────────────────"
+fi
+if (( ${#UNMEASURED_SILENT[@]} > 0 )); then
+  echo "✗ UNMEASURED ${#UNMEASURED_SILENT[@]}건 — exit 0 이나 요약 JSON 없음 = **측정 안 됨(통과 아님)**:"
+  for _l in "${UNMEASURED_SILENT[@]}"; do echo "    $_l"; done
+  echo "────────────────────────────────────────"
+fi
+echo "FINAL: $TOTAL_PASS pass / $TOTAL_FAIL fail / $TOTAL_SKIP skipped / $TOTAL_UNMEASURED unmeasured / $((TOTAL_PASS + TOTAL_FAIL)) total"
+if [[ $TOTAL_FAIL -eq 0 && $TOTAL_UNMEASURED -eq 0 ]]; then
   if (( TOTAL_SKIP > 0 )); then
     echo "STATUS: ✅ ALL PASS (단, $TOTAL_SKIP건 미판정 — 위 SKIPPED 목록)"
   else
     echo "STATUS: ✅ ALL PASS"
   fi
+elif [[ $TOTAL_FAIL -eq 0 ]]; then
+  echo "STATUS: ❌ FAIL (단언 실패 0 이나 $TOTAL_UNMEASURED건 미측정 — 측정 안 된 것은 통과가 아니다)"
 else
-  echo "STATUS: ❌ FAIL ($TOTAL_FAIL test failures)"
+  echo "STATUS: ❌ FAIL ($TOTAL_FAIL test failures / $TOTAL_UNMEASURED unmeasured)"
 fi
 echo "Results: $RESULTS_FILE"
 echo "════════════════════════════════════════"
 
-exit $TOTAL_FAIL
+# ★미측정도 비-0 종료로 신고한다 — 호출자 대부분은 !=0 만 본다. 255 초과 랩어라운드로
+#   많은 실패가 0(성공)으로 접히는 것을 막기 위해 250 에서 자른다.
+_rc=$((TOTAL_FAIL + TOTAL_UNMEASURED)); (( _rc > 250 )) && _rc=250
+exit $_rc

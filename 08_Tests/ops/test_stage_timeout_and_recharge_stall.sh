@@ -87,4 +87,5 @@ else
 fi
 
 echo "== t_summary: PASS=$PASS FAIL=$FAIL =="
+printf '{"test":"stage_timeout_and_recharge_stall","pass":%d,"fail":%d,"total":%d,"skipped":0}\n' "$PASS" "$FAIL" "$((PASS+FAIL))"
 [ "$FAIL" -eq 0 ] || exit 1

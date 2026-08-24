@@ -101,4 +101,5 @@ echo "$OUT" | grep -q "ALERT:" \
   || ok "문턱 상향 시 90분은 미발화 (문턱이 실효)"
 
 echo "== t_summary: PASS=$PASS FAIL=$FAIL =="
+printf '{"test":"stall_lock_alert","pass":%d,"fail":%d,"total":%d,"skipped":0}\n' "$PASS" "$FAIL" "$((PASS+FAIL))"
 [ "$FAIL" -eq 0 ] || exit 1

@@ -31,7 +31,7 @@ if [ -f "$LOCK" ]; then
   _p=$(awk '{print $1; exit}' "$LOCK" 2>/dev/null)
   if [ -n "${_p:-}" ] && kill -0 "$_p" 2>/dev/null; then
     echo "  SKIP  실운영 morning_run(PID=$_p) 생존 중 — 공유 락을 건드리지 않음"
-    echo "== t_summary: PASS=0 FAIL=0 =="; exit 0
+    echo "== t_summary: PASS=0 FAIL=0 =="; printf '{"test":"morning_run_live_pid_guard","pass":0,"fail":0,"total":0,"skipped":1,"skips":[{"axis":"ALL","reason":"실운영 morning_run 생존 중 — 공유 락 미접촉","missing":"%s"}]}\n' "$LOCK (점유 중)"; exit 0
   fi
 fi
 mkdir -p "$BAK"
@@ -93,4 +93,5 @@ fi
 
 rm -f "$OUT"
 echo "== t_summary: PASS=$PASS FAIL=$FAIL =="
+printf '{"test":"morning_run_live_pid_guard","pass":%d,"fail":%d,"total":%d,"skipped":0}\n' "$PASS" "$FAIL" "$((PASS+FAIL))"
 [ "$FAIL" -eq 0 ] || exit 1

@@ -113,4 +113,5 @@ chk("사본 작업장만 사용(정본 06_Registry 미기록)",
     !file.exists("06_Registry/no_signal_queue_audit_r99_test.csv"))
 
 cat(sprintf("\n=== 결과: PASS %d / FAIL %d ===\n", PASS, FAIL))
+cat(sprintf('{"test":"nosignal_wiring_reach","pass":%d,"fail":%d,"total":%d,"skipped":0}\n', PASS, FAIL, PASS + FAIL))
 if (FAIL > 0) quit(status = 1)

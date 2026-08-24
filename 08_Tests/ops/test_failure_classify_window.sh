@@ -20,7 +20,7 @@ PASS=0; FAIL=0
 ok(){ PASS=$((PASS+1)); echo "  PASS  $1"; }
 ng(){ FAIL=$((FAIL+1)); echo "  FAIL  $1 :: $2"; }
 
-if [ ! -f "$HELPER" ]; then echo "  SKIP  분류기 부재"; echo "== t_summary: PASS=0 FAIL=0 =="; exit 0; fi
+if [ ! -f "$HELPER" ]; then echo "  SKIP  분류기 부재"; echo "== t_summary: PASS=0 FAIL=0 =="; printf '{"test":"failure_classify_window","pass":0,"fail":0,"total":0,"skipped":1,"skips":[{"axis":"ALL","reason":"분류기 부재","missing":"%s"}]}\n' "$HELPER"; exit 0; fi
 source "$HELPER" 2>/dev/null
 
 T="$(mktemp)"; trap 'rm -f "$T"' EXIT
@@ -64,4 +64,5 @@ r=$(sched_classify_failure 0 "$T")
 [ "$r" = "ok" ] && ok "rc=0 → ok (실패 아님)" || ng "성공 처리" "got=$r"
 
 echo "== t_summary: PASS=$PASS FAIL=$FAIL =="
+printf '{"test":"failure_classify_window","pass":%d,"fail":%d,"total":%d,"skipped":0}\n' "$PASS" "$FAIL" "$((PASS+FAIL))"
 [ "$FAIL" -eq 0 ] || exit 1

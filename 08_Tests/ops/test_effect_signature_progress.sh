@@ -18,9 +18,9 @@ PASS=0; FAIL=0
 ok(){ PASS=$((PASS+1)); echo "  PASS  $1"; }
 ng(){ FAIL=$((FAIL+1)); echo "  FAIL  $1 :: $2"; }
 
-if [ ! -f "$SIG" ]; then echo "  SKIP  지문 모듈 부재"; echo "== t_summary: PASS=0 FAIL=0 =="; exit 0; fi
+if [ ! -f "$SIG" ]; then echo "  SKIP  지문 모듈 부재"; echo "== t_summary: PASS=0 FAIL=0 =="; printf '{"test":"effect_signature_progress","pass":0,"fail":0,"total":0,"skipped":1,"skips":[{"axis":"ALL","reason":"지문 모듈 부재","missing":"%s"}]}\n' "$SIG"; exit 0; fi
 if ! "$PY" -c "print(1)" >/dev/null 2>&1; then
-  echo "  SKIP  실물 python 없음 (QVEST_PY 미설정)"; echo "== t_summary: PASS=0 FAIL=0 =="; exit 0; fi
+  echo "  SKIP  실물 python 없음 (QVEST_PY 미설정)"; echo "== t_summary: PASS=0 FAIL=0 =="; printf '{"test":"effect_signature_progress","pass":0,"fail":0,"total":0,"skipped":1,"skips":[{"axis":"ALL","reason":"실물 python 없음 (QVEST_PY 미설정)","missing":"%s"}]}\n' "QVEST_PY 미설정"; exit 0; fi
 
 FIX="$(mktemp -d)"; trap 'rm -rf "$FIX"' EXIT
 mkdir -p "$FIX/06_Registry" "$FIX/qepm/mailbox/worktask"
@@ -78,4 +78,5 @@ else
 fi
 
 echo "== t_summary: PASS=$PASS FAIL=$FAIL =="
+printf '{"test":"effect_signature_progress","pass":%d,"fail":%d,"total":%d,"skipped":0}\n' "$PASS" "$FAIL" "$((PASS+FAIL))"
 [ "$FAIL" -eq 0 ] || exit 1

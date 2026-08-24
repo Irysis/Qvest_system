@@ -129,4 +129,5 @@ done
 [ -z "$miss" ] && ok "프롬프트 하드가드+레인 14축 명시" || ng "프롬프트 가드" "누락:$miss"
 
 echo "== t_summary: PASS=$PASS FAIL=$FAIL =="
+printf '{"test":"mode_queue_research_run","pass":%d,"fail":%d,"total":%d,"skipped":0}\n' "$PASS" "$FAIL" "$((PASS+FAIL))"
 [ "$FAIL" -eq 0 ] || exit 1

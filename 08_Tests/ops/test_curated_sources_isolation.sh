@@ -25,7 +25,7 @@ PASS=0; FAIL=0
 ok(){ PASS=$((PASS+1)); echo "  PASS  $1"; }
 ng(){ FAIL=$((FAIL+1)); echo "  FAIL  $1 :: $2"; }
 
-[ -f "$RR" ] || { echo "  SKIP  recharge 스크립트 부재"; echo "== t_summary: PASS=0 FAIL=0 =="; exit 0; }
+[ -f "$RR" ] || { echo "  SKIP  recharge 스크립트 부재"; echo "== t_summary: PASS=0 FAIL=0 =="; printf '{"test":"curated_sources_isolation","pass":0,"fail":0,"total":0,"skipped":1,"skips":[{"axis":"ALL","reason":"recharge 스크립트 부재","missing":"%s"}]}\n' "$RR"; exit 0; }
 
 echo "== 배선 축: 즉사가 제거됐는가 =="
 if grep -q 'stop("paper_recharge_sources.csv is empty or missing")' "$RR"; then
@@ -71,4 +71,5 @@ else
 fi
 
 echo "== t_summary: PASS=$PASS FAIL=$FAIL =="
+printf '{"test":"curated_sources_isolation","pass":%d,"fail":%d,"total":%d,"skipped":0}\n' "$PASS" "$FAIL" "$((PASS+FAIL))"
 [ "$FAIL" -eq 0 ] || exit 1

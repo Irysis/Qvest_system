@@ -151,4 +151,5 @@ finally:
     shutil.rmtree(tmp, ignore_errors=True)
 
 print("== t_summary: PASS=%d FAIL=%d ==" % (P, F))
+print('{"test":"factor_evidence_backfill","pass":%d,"fail":%d,"total":%d,"skipped":0}' % (P, F, (P)+(F)))
 sys.exit(1 if F else 0)

@@ -76,4 +76,5 @@ if grep -q "scheduler_alert_status.sh" "$REAL_ROOT/02_Infrastructure/ops/bootstr
 else ng "bootstrap 배선" "만들어만 두고 부르지 않으면 이 결함이 그대로 재발한다"; fi
 
 echo "== t_summary: PASS=$PASS FAIL=$FAIL =="
+printf '{"test":"scheduler_alert_surface","pass":%d,"fail":%d,"total":%d,"skipped":0}\n' "$PASS" "$FAIL" "$((PASS+FAIL))"
 [ "$FAIL" -eq 0 ] || exit 1

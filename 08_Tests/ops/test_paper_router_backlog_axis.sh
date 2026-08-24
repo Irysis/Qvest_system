@@ -97,4 +97,5 @@ if grep -q "stale lock 회수" "$FIX/.cache/scheduler_logs/paper_router_${TODAY}
 else ng "stale lock 회수" "회수 로그 없음 — 락 하나로 라우터가 영구 정지할 수 있음"; fi
 
 echo "== t_summary: PASS=$PASS FAIL=$FAIL =="
+printf '{"test":"paper_router_backlog_axis","pass":%d,"fail":%d,"total":%d,"skipped":0}\n' "$PASS" "$FAIL" "$((PASS+FAIL))"
 [ "$FAIL" -eq 0 ] || exit 1

@@ -82,4 +82,5 @@ gt <- grab(compute_regime_module_weights(ir5, mk(n5,0,0.15), setNames(rep(60L,n5
 chk("★문턱을 0.99 로 올리면 n=5 도 발화 (양방향 확인)", isTRUE(gt$fired))
 
 cat(sprintf("\n=== 결과: PASS %d / FAIL %d ===\n", PASS, FAIL))
+cat(sprintf('{"test":"fr_weight_expressiveness","pass":%d,"fail":%d,"total":%d,"skipped":0}\n', PASS, FAIL, PASS + FAIL))
 if (FAIL > 0) quit(status = 1)

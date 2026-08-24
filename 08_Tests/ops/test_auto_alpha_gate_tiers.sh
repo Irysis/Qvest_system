@@ -22,8 +22,8 @@ PASS=0; FAIL=0
 ok(){ PASS=$((PASS+1)); echo "  PASS  $1"; }
 ng(){ FAIL=$((FAIL+1)); echo "  FAIL  $1 :: $2"; }
 
-if [ ! -f "$GATE" ]; then echo "  SKIP  게이트 부재"; echo "== t_summary: PASS=0 FAIL=0 =="; exit 0; fi
-command -v Rscript >/dev/null 2>&1 || { echo "  SKIP  Rscript 없음"; echo "== t_summary: PASS=0 FAIL=0 =="; exit 0; }
+if [ ! -f "$GATE" ]; then echo "  SKIP  게이트 부재"; echo "== t_summary: PASS=0 FAIL=0 =="; printf '{"test":"auto_alpha_gate_tiers","pass":0,"fail":0,"total":0,"skipped":1,"skips":[{"axis":"ALL","reason":"게이트 부재","missing":"%s"}]}\n' "$GATE"; exit 0; fi
+command -v Rscript >/dev/null 2>&1 || { echo "  SKIP  Rscript 없음"; echo "== t_summary: PASS=0 FAIL=0 =="; printf '{"test":"auto_alpha_gate_tiers","pass":0,"fail":0,"total":0,"skipped":1,"skips":[{"axis":"ALL","reason":"Rscript 없음","missing":"%s"}]}\n' "Rscript (command -v 실패)"; exit 0; }
 
 T="$(mktemp -d)"; trap 'rm -rf "$T"' EXIT
 run(){ # run <json문자열> → "exit|stdout마지막줄"
@@ -116,4 +116,5 @@ echo "$RULE" | grep -q "면제" && ok "규칙이 '자본 tier 면제 없음' 을
   || ng "면제 경계" "screening 라벨이 자본 경로로 오해될 수 있다"
 
 echo "== t_summary: PASS=$PASS FAIL=$FAIL =="
+printf '{"test":"auto_alpha_gate_tiers","pass":%d,"fail":%d,"total":%d,"skipped":0}\n' "$PASS" "$FAIL" "$((PASS+FAIL))"
 [ "$FAIL" -eq 0 ] || exit 1

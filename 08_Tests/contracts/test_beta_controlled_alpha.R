@@ -20,7 +20,7 @@ ok <- function(m) { PASS <<- PASS + 1L; cat("  PASS ", m, "\n") }
 ng <- function(m, d) { FAIL <<- FAIL + 1L; cat("  FAIL ", m, " :: ", d, "\n") }
 
 if (!file.exists(src)) {
-  cat("  SKIP  계약 부재\n== t_summary: PASS=0 FAIL=0 ==\n"); quit(status = 0)
+  cat("  SKIP  계약 부재\n== t_summary: PASS=0 FAIL=0 ==\n"); cat(sprintf('{"test":"beta_controlled_alpha","pass":0,"fail":0,"total":0,"skipped":1,"skips":[{"axis":"ALL","reason":"계약 부재","missing":"%s"}]}\n', src)); quit(status = 0)
 }
 source(src)
 set.seed(20260822)
@@ -93,4 +93,5 @@ if (identical(x$metric_type, "backtested_beta_controlled")) ok("metric_type 라�
   ng("metric_type", x$metric_type)
 
 cat(sprintf("== t_summary: PASS=%d FAIL=%d ==\n", PASS, FAIL))
+cat(sprintf('{"test":"beta_controlled_alpha","pass":%d,"fail":%d,"total":%d,"skipped":0}\n', PASS, FAIL, PASS + FAIL))
 if (FAIL > 0L) quit(status = 1)

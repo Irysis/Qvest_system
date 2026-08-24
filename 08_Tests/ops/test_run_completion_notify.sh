@@ -20,7 +20,7 @@ ok(){ PASS=$((PASS+1)); echo "  PASS  $1"; }
 ng(){ FAIL=$((FAIL+1)); echo "  FAIL  $1 :: $2"; }
 
 if [ ! -f "$NOTIFY" ]; then
-  echo "  SKIP  알림기 부재"; echo "== t_summary: PASS=0 FAIL=0 =="; exit 0
+  echo "  SKIP  알림기 부재"; echo "== t_summary: PASS=0 FAIL=0 =="; printf '{"test":"run_completion_notify","pass":0,"fail":0,"total":0,"skipped":1,"skips":[{"axis":"ALL","reason":"알림기 부재","missing":"%s"}]}\n' "$NOTIFY"; exit 0
 fi
 
 RUNNERS="mode_queue_research_run.sh alpha_search_queue_run.sh paper_router_run.sh"
@@ -218,4 +218,5 @@ for f in $RUNNERS; do
 done
 
 echo "== t_summary: PASS=$PASS FAIL=$FAIL =="
+printf '{"test":"run_completion_notify","pass":%d,"fail":%d,"total":%d,"skipped":0}\n' "$PASS" "$FAIL" "$((PASS+FAIL))"
 [ "$FAIL" -eq 0 ] || exit 1

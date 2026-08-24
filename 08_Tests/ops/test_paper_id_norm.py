@@ -37,6 +37,7 @@ try:
 except Exception as e:
     print("  SKIP  정규화 모듈 부재/불러오기 실패: %s" % e)
     print("== t_summary: PASS=0 FAIL=0 ==")
+    print('{"test":"paper_id_norm","pass":0,"fail":0,"total":0,"skipped":1,"skips":[{"axis":"ALL","reason":"정규화 모듈 부재/불러오기 실패","missing":"%s"}]}' % ("paper_id_norm 모듈 (%s)" % str(e).replace('"', "'")[:120]))
     sys.exit(0)
 
 print("== 정규화 축: 같은 논문의 여러 표기가 한 값으로 모이는가 ==")
@@ -119,4 +120,5 @@ else:
     ng("소비자 0", "정본을 만들고 아무도 안 부른다 — 오늘 네 번 겪은 계통")
 
 print("== t_summary: PASS=%d FAIL=%d ==" % (_p[0], _f[0]))
+print('{"test":"paper_id_norm","pass":%d,"fail":%d,"total":%d,"skipped":0}' % (_p[0], _f[0], (_p[0])+(_f[0])))
 sys.exit(1 if _f[0] else 0)

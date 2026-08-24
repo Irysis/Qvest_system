@@ -30,8 +30,8 @@ mkfix <- function() list(
   schema_version = "1.0",
   updated = "fixture",
   entries = list(
-    list(id = "FQ-001", title = "가", status = "frontier_open", score = 0.009541984),
-    list(id = "FQ-002", title = "나", status = "config_scoped_negative_frontier_open", score = 0.123456789),
+    list(id = "FQ-001", title = "가", status = "open", status_raw = "frontier_open", score = 0.009541984),
+    list(id = "FQ-002", title = "나", status = "open", status_raw = "config_scoped_negative_frontier_open", score = 0.123456789),
     list(id = "FQ-003", title = "다", status = "done", score = 2)
   ))
 reset <- function() { Q <- mkfix(); writeLines(.fq_serialize(Q), TMP, useBytes = TRUE); invisible(Q) }
