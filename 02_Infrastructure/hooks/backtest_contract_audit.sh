@@ -8,13 +8,17 @@
 # 차단 대상 (audit_status != PASS 시 deny):
 #   - qepm/registry/backtest_registry.csv 등재 시도
 #   - methodology_active.md L-code 등재 시도 (백테스트 metric 인용 시)
-#   - .py 백테스트 자체합성 idiom (python-policy.md §5, v8.x Phase 3 이행)
+#
+# ★2026-08-24 재등록 이력 — 이 훅은 2026-08-23 플랜 D-d 로 **등록 해제**돼 있었다.
+#   해제 사유는 원장 integrity 차단이 아니라 **.py 자체합성 idiom 차단의 오탐**이었다
+#   (v8.4 ML 레인의 정상 .py Write 가 걸렸다). 두 임무는 조기 반환으로 이미 분리돼
+#   있었으므로 .py 가지만 잘라내고 재등록한다 — 오탐만 사라지고 게이트는 산다.
+#   ⇒ python-policy.md §4/§5 의 자체합성 금지 **룰 자체는 텍스트로 존치**하며,
+#     이 훅이 그것을 강제하지 않을 뿐이다. 다시 강제하려면 ML 레인 오탐부터 해결할 것.
+#   해제 당시 기록 = 02_Infrastructure/hooks/_archive_v8_enforcement/MANIFEST.md:62
 #
 # 작동:
-#   1. file_path가 backtest_registry.csv / methodology_*.md / *.py 일 때만 작동
-#   1b. *.py 는 자체합성 idiom (np.prod(1+r) / (1+r).cumprod() / (w*r).sum()
-#       / .prod()-1) 감지 시 deny (L3 block) — dispatch_measurement_gate.sh
-#       R 패턴(prod(1+r)/cumprod)과 동일 구조의 $INPUT grep
+#   1. file_path가 backtest_registry.csv / methodology_*.md / metrics_official.csv 일 때만 작동
 #   2. 동일 strategy의 bt_result.rds에서 audit$integrity_status 확인
 #   3. integrity == "FAIL" 이면 deny (L3 block)
 #   4. 그 외는 allow
@@ -27,8 +31,9 @@
 # (v8.2.1 2026-07-03 감사 HOOK-P2-1/MC-07, 도훈 confirm) 게이트급 fail-closed:
 #   내부 오류(ERR trap) 시 무조건 '{}' allow 대신, 게이트 보호 대상
 #   (backtest_registry.csv / methodology_active|memory.md / metrics_official.csv)
-#   경로가 payload에 잡히면 block. .py 자체합성 스캔은 코드 파일 일반 대상이라
-#   오류 시 fail-open 유지(전체 .py Write 마비 방지 — 정상 경로 스캔 로직은 불변).
+#   경로가 payload에 잡히면 block. 그 외 경로는 fail-open 유지.
+#   (2026-08-24: .py 자체합성 스캔 제거로 '코드 파일 일반'이 대상에서 빠졌다 —
+#    이제 fail-closed 대상과 TARGET_PATTERN 이 정확히 일치한다.)
 _gate_fail_closed() {
   local hay="${FILE_PATH:-}"
   [ -n "$hay" ] || hay="${INPUT:-}"
@@ -61,26 +66,10 @@ fi
 
 [ -z "$FILE_PATH" ] && { echo '{}'; exit 0; }
 
-# 차단 대상 패턴 (.py = python-policy.md §5 자체합성 커버리지)
-TARGET_PATTERN='(backtest_registry\.csv$|methodology_(active|memory)\.md$|metrics_official\.csv$|\.py$)'
+# 차단 대상 패턴 — 원장/방법론 정본만. (.py 는 2026-08-24 제거, 위 재등록 이력 참조)
+TARGET_PATTERN='(backtest_registry\.csv$|methodology_(active|memory)\.md$|metrics_official\.csv$)'
 
 if ! echo "$FILE_PATH" | grep -qE "$TARGET_PATTERN"; then
-  echo '{}'; exit 0
-fi
-
-# .py 자체합성 idiom L3 block (python-policy.md §4 금지 목록)
-# 구조 = dispatch_measurement_gate.sh R 패턴(prod(1+r)/cumprod)과 동일 ($INPUT grep)
-if echo "$FILE_PATH" | grep -qE '\.py$'; then
-  PY_SYNTH_PATTERN='np\.prod\( *1 *\+|\( *1 *\+ *[A-Za-z_][A-Za-z0-9_.]* *\)\.cumprod\(|\( *w *\* *r *\)\.sum\(|\.prod\( *\) *- *1|0\.[0-9]+ *\* *r[0-9]'
-  if echo "$INPUT" | grep -qE "$PY_SYNTH_PATTERN"; then
-    echo "[$TS] L3 BLOCK — Python 자체합성 idiom 감지 ($FILE_PATH)" >> "$LOG"
-    cat <<EOF
-{"decision": "block", "reason": "python-policy.md §4 — Python backtest 자체합성 금지 (np.prod(1+r) / (1+r).cumprod() / (w*r).sum() / .prod()-1). Return.portfolio R bridge + build_bt_result 경유만 허용. Reference: .claude/rules/python-policy.md / backtest-contract.md"}
-EOF
-    exit 0
-  fi
-  # .py 는 자체합성 스캔만 수행 — registry/methodology integrity 체크 비대상
-  echo "[$TS] allow — .py synth-scan clean ($FILE_PATH)" >> "$LOG"
   echo '{}'; exit 0
 fi
 
@@ -93,15 +82,17 @@ if [ -z "$LATEST_RDS" ]; then
 fi
 
 # Rscript로 audit integrity 추출
-INTEGRITY=$(Rscript -e "
-suppressMessages({
-  bt <- tryCatch(readRDS('$LATEST_RDS'), error = function(e) NULL)
-  if (is.null(bt)) {
-    cat('UNKNOWN')
-  } else {
-    cat(as.character(bt\$manifest\$integrity_status[1]))
-  }
-}" 2>/dev/null)
+# ★2026-08-24 — 여기가 이 훅이 **한 번도 판정한 적 없는** 이유였다.
+#   구판은 `Rscript -e "` 뒤에 개행이 들어간 여러 줄 표현식이었는데, 이 환경(Windows
+#   + Git Bash)에서는 개행이 포함된 -e 가 **rc=139 로 죽는다**(실측: 한 줄 -e 는 rc=0,
+#   같은 코드에 개행만 넣으면 139). 훅은 set -u + `trap _gate_fail_closed ERR` 이라
+#   그 크래시가 곧바로 fail-closed 차단으로 나타났다 —
+#   즉 integrity 를 읽어 판정하는 코드는 실행된 적이 없고, 산출은 항상
+#   "hook 내부 오류" 차단이거나(최근 rds 있음) 무조건 allow(없음) 둘 중 하나였다.
+#   ⇒ 한 줄로 고친다. 여러 개의 -e 로 나누는 것도 동작하나(실측), 한 줄이 더 짧다.
+#   같은 idiom 이 agent_stop_continuity_check.sh:87(미등록) 과
+#   ops/friday_alpha_snapshot.sh:170 에도 있다 — 별건 과제.
+INTEGRITY=$(Rscript -e "bt <- tryCatch(readRDS('$LATEST_RDS'), error = function(e) NULL); if (is.null(bt)) cat('UNKNOWN') else cat(as.character(bt\$manifest\$integrity_status[1]))" 2>/dev/null)
 
 INTEGRITY=${INTEGRITY:-UNKNOWN}
 

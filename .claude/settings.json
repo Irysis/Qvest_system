@@ -75,6 +75,16 @@
         ]
       },
       {
+        "_doc_bt_contract": "★2026-08-24 재등록 — 원장 integrity 게이트. 2026-08-23 플랜 D-d 로 해제됐던 사유는 이 임무가 아니라 .py 자체합성 idiom 차단의 오탐(v8.4 ML 레인)이었고, 그 가지만 제거했다. 재등록 전 양성/음성/돌연변이 대조 10/10 실증 = 08_Tests/hooks/test_backtest_contract_audit_gate.R. ★수리 중 발견: 구판은 여러 줄 Rscript -e 가 이 환경에서 rc=139 로 죽어 ERR trap → fail-closed 로만 반응했다 = 판정 코드가 한 번도 실행된 적이 없다. python-policy.md 의 자체합성 금지 룰은 텍스트로 존치하며 이 훅이 강제하지 않을 뿐이다.",
+        "matcher": "Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "DIR=${CLAUDE_PROJECT_DIR:-${QM_ROOT:-$PWD}}; bash \"$DIR/02_Infrastructure/hooks/backtest_contract_audit.sh\""
+          }
+        ]
+      },
+      {
         "_doc_bash_guards": "Bash 경로 보호선 — 생산 폴더 쓰기 차단 + 텔레그램 직접 호출 차단(tg_agent_brief 단일 진입점 강제).",
         "matcher": "Bash",
         "hooks": [

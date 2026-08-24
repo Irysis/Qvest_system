@@ -105,6 +105,35 @@ run_alpha_search <- function(strategy_name,
   # 로컬 안전 %||% — 외부 source가 전역을 취약버전으로 덮어도 영향 없게 함수 스코프에 고정
   `%||%` <- function(a, b) if (is.null(a) || length(a) == 0L || (length(a) == 1L && is.na(a))) b else a
 
+  # ── 비중방법 판별형 게이트 (2026-08-24, 도훈 결정 5-b) ──────────────────────
+  #   왜 여기인가: weight_method 는 이 함수의 인자이고 여기가 **소비면 진입점**이다.
+  #   EW 동치 방법으로 낸 성과는 EW 성과이지 그 방법의 성과가 아니다 — 라운드가
+  #   시작되기 전에 막는다(하네스 안에서만 성과가 유효하다는 AX-002 의 같은 이유).
+  #   ★사유는 이 계기가 없어서가 아니라 **게이트가 없어서** 6종이 EW 를 내는 채로
+  #   지나갔다는 것이다. probe 값은 이미 06_Registry/weight_catalog.json 에 있었다.
+  #   ★제약형 게이트(worktask_constraint_enforcer)로는 구조적으로 못 잡는다 — EW 는
+  #   종목수·bounds·Σw 를 전부 만족하는 가장 준수적인 점이다.
+  #   3상태: PASS 통과 / VIOLATION 중단 / UNKNOWN·모호는 **보고만**(미측정은 위반 아님).
+  local({
+    .wg <- file.path(PROJECT_ROOT, "02_Infrastructure", "portfolio", "weight_method_gate.R")
+    if (!file.exists(.wg)) {
+      cat("[weight-gate] 게이트 모듈 부재 — 판정 없음 (차단 아님)\n"); return(invisible(NULL))
+    }
+    .ge <- new.env(parent = globalenv())
+    v <- tryCatch({
+      sys.source(.wg, envir = .ge)
+      .ge$assert_weight_method_alive(weight_method, root = PROJECT_ROOT, strict = TRUE)
+    }, error = function(e) {
+      # VIOLATION 은 여기서 stop 으로 올라온다 — 삼키지 않고 그대로 올린다.
+      if (grepl("[weight-gate]", conditionMessage(e), fixed = TRUE)) stop(e)
+      cat(sprintf("[weight-gate] 게이트 실행 실패(차단 아님): %s\n", conditionMessage(e)))
+      NULL
+    })
+    if (!is.null(v) && !identical(v$verdict, "PASS"))
+      cat(sprintf("[weight-gate] %s — %s (차단 아님)\n", v$verdict, v$detail))
+    invisible(NULL)
+  })
+
   # ── (2026-08-22) 단계별 소요 계측 — 도훈 지시 "문제 없이 완성".
   #   왜: 무인 alpha 레인이 timeout 3000s 를 만성 초과하는데(42일 중 7일 exit=124),
   #   단계별 소요가 로그에 없어 **상한을 올릴지 작업량을 쪼갤지** 근거로 못 갈랐다.

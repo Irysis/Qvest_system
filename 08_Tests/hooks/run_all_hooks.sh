@@ -340,6 +340,16 @@ SUITES=(
   "08_Tests/contracts/test_atomic_json_write.R"
   "08_Tests/hooks/test_knowledge_index_consumer_heal.R"
   "08_Tests/contracts/test_audit_check15_lookahead_self_scan.R"
+  # 2026-08-24 신설: 원장 integrity 게이트 훅의 **발화 실증**. 이 훅은 재등록되며,
+  #   재등록 전 양성(FAIL→block)·음성(PASS/무관경로/.py→allow)·돌연변이(구판 가지
+  #   복원 시 .py 가 다시 막힘) 10축을 통과했다. 이 저장소에서 훅은 두 번 조용히
+  #   죽었다(selection_contamination=상시allow · lockbox_audit_trail=판정없음) —
+  #   기전이 훅이라고 안전한 게 아니다.
+  "08_Tests/hooks/test_backtest_contract_audit_gate.R"
+  # 2026-08-24 신설: 판별형 비중방법 게이트. EW 동치 방법(probe dev==0)의 소비를
+  #   막는다 — 그 사실은 이미 weight_catalog.json 에 측정돼 있었고 아무도 걸려
+  #   있지 않았다. 축 D 가 "제약형 게이트로는 구조적으로 못 잡는다"를 직접 단언한다.
+  "08_Tests/contracts/test_weight_method_gate.R"
   # 2026-08-01 추가: 배포 홀딩 제약 검사기 위반 주입 —
   #   월간 리밸 Gate C 는 "CSV 생성 + 5행"만 봐서 전월 재출력·제약 위반이 통과했다
   #   (감사 실측: 하드 제약 4종이 배포 체인 어디서도 산출물에 대해 검증되지 않음).

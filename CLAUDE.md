@@ -92,5 +92,5 @@
 ## 포인터
 
 - 룰 = autoload 2종(`pit.md` · `lean-loop.md`). 같은 폴더의 나머지 4종(`axioms` · `backtest-contract` · `measurement-graduation` · `python-policy`)은 `paths:` 프론트매터로 경로 트리거 지연 적재. 확장 룰은 `02_Infrastructure/docs/rules/`에서 해당 작업 시 Read(`answer-principles` 포함).
-- 스킬·에이전트·훅은 **문서로 세지 않는다** — 파일시스템이 정본(`.claude/skills/` · `.claude/agents/` · `02_Infrastructure/hooks/`). 현행 등록 = settings.json 11 distinct .sh (직접 등록만 — 라우터 dispatch 폐지 2026-08-23 v9; 목록 = 02_Infrastructure/hooks/_archive_v8_enforcement/MANIFEST.md)
+- 스킬·에이전트·훅은 **문서로 세지 않는다** — 파일시스템이 정본(`.claude/skills/` · `.claude/agents/` · `02_Infrastructure/hooks/`). 현행 등록 = settings.json **12** distinct .sh (직접 등록만 — 라우터 dispatch 폐지 2026-08-23 v9; 목록 = 02_Infrastructure/hooks/_archive_v8_enforcement/MANIFEST.md). ★2026-08-24 `backtest_contract_audit.sh` 재등록(11→12) — 해제 사유였던 `.py` 자체합성 오탐만 제거. 발화 실증 = `08_Tests/hooks/test_backtest_contract_audit_gate.R` 10축
 - 계보·릴리스 상세·**v8.4 헌법 전문 아카이브** = `02_Infrastructure/docs/CHANGELOG_constitution.md`.
