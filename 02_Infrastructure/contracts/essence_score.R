@@ -431,15 +431,35 @@ essence_score <- function(bt_result, n_trials_cumulative = NULL,
   contract_ok <- is.finite(port_t) && is.finite(net_ir)  # 계약 경유 여부
   # DSR 게이트: sweep형 selection에서만 요구. chain/1논문/1알파에선 부적용(통과 간주).
   dsr_ok <- if (is_sweep) (is.finite(dsr) && dsr >= .gp$dsr_min) else TRUE
+  ## ★MDD 직접 조건은 **의도적으로 없다** (도훈 확인 2026-08-24 — 되살리지 말 것).
+  ##   제2목표의 `MDD < 25%` 는 Calmar 로 **비율**로 걸려 있다:
+  ##     min_calmar 0.64 = 16% / 25% = 제2목표 CAGR / 제2목표 MDD
+  ##     (constraint_defaults.json::tier_graduation.min_calmar_rationale 원문 참조)
+  ##   ⇒ `CAGR 16% · MDD 25%` 와 `CAGR 32% · MDD 50%` 가 동등하게 취급된다. MDD 를 직접
+  ##     걸면 고수익·고변동 전략이 MDD 단독으로 탈락하는데, 롱온리 KR 25종에서 그건
+  ##     제약-귀속이다(AX-000 · 고정 축 규약). 실측이 이를 확인한다 — 2026-08-24 사다리
+  ##     후보 11건이 MDD 54~71% 인데 essence B 를 받았다.
+  ##   ★혼동 금지: `mdd_hard`(0.45)는 등급 조건이 아니라 **drawdown 프로파일의 severe
+  ##     에피소드 임계**(hard_fail 추론용)이고, `max_drawdown_days`(100)는 advisory 다.
   a_core <- (is.finite(port_t) && port_t >= .gp$port_t_min &&
              oos_ok &&
              is.finite(sharpe) && sharpe >= .gp$sharpe_min &&
              is.finite(cagr)   && cagr   >= .gp$cagr_min &&
              is.finite(calmar) && calmar >= calmar_min)
 
+  ## ★v9.21 §1-b — 등급 enum 을 A/B/C/F **4값**으로 일원화한다 (도훈 지시 "여러개면 헷갈린다").
+  ##   구판은 계약 미경유 시 `grade <- "uncertain"` 을 냈다. 그런데 **같은 사실을 두 필드에
+  ##   중복 기록**하고 있었다 — 바로 아래 `metric_type = if (contract_ok) "backtested" else
+  ##   "uncertain"`. 등급에서 빼도 정보가 사라지지 않는다.
+  ##   ⇒ 등급은 **미발행(NA)** 으로 두고 "왜 없는지"는 metric_type 이 보존한다.
+  ##   근거: 계약을 안 거친 성과는 하네스 밖이고, 하네스 밖 성과는 유효하지 않다(AX-002).
+  ##        등급을 매기지 않는 것이 "F(실패)"로 접는 것보다 정직하다 — 실패가 아니라 미측정이다.
+  ##   ★소비자 영향: LCODE_VALID_GRADES(lcode_schema.R:57)가 A/B/C/F 뿐이므로 이 변경으로
+  ##     enum 정합이 성립한다("uncertain" 을 그대로 넣으면 validate_lcode 가 적립을 통째로 막았다).
+  ##     NA 등급은 L-code 적립 대상이 아니며, 호출자는 침묵 누락 금지 — 사유를 남길 것.
   if (!contract_ok) {
-    grade <- "uncertain"
-    reasons <- "PORT_t/net_IR 미산출(계약 미경유) — 추정 등급 금지"
+    grade <- NA_character_
+    reasons <- "PORT_t/net_IR 미산출(계약 미경유) — 등급 미발행. 상태는 metric_type='uncertain' 참조"
   } else if (hard_fail) {
     grade <- "F"
     reasons <- sprintf("hard_fail drawdown structure (MDD %.1f%%, %.0f%%+ episodes=%d, %.0f%%+ episodes=%d, max_underwater=%d periods)",

@@ -156,10 +156,18 @@ res17 <- essence_score(mk_bt(a_block, port_t = -0.5))
 t_check("essence:ES17_nonpositive_alpha_F",
         identical(res17$grade, "F") &&
         any(grepl("non-positive alpha", res17$reasons, fixed = TRUE)))
+## ★v9.21 §1-b — 등급 enum 을 A/B/C/F 4값으로 일원화했다. 계약 미경유는 **등급 미발행(NA)**
+##   이고 "왜 없는지"는 metric_type='uncertain' 이 보존한다(같은 사실을 두 필드에 중복
+##   기록하던 것을 하나로). 이 축은 **둘 다** 단언한다 — 등급이 NA 인 것만 보면 원인이
+##   사라지고, metric_type 만 보면 등급 오염을 못 잡는다.
 res18 <- essence_score(mk_bt(a_block, drop_port_t = TRUE))
-t_check("essence:ES18_no_contract_uncertain",
-        identical(res18$grade, "uncertain") &&
+t_check("essence:ES18_no_contract_grade_NA",
+        is.na(res18$grade) &&
         identical(res18$metric_type, "uncertain"))
+## ★enum 정합 래칫 — 등급이 A/B/C/F/NA 밖의 값을 내면 lcode_schema.R:57 의
+##   LCODE_VALID_GRADES 가 validate_lcode 에서 적립을 통째로 막는다. 그 재발을 여기서 잡는다.
+t_check("essence:ES18b_grade_enum_4values",
+        is.na(res18$grade) || res18$grade %in% c("A", "B", "C", "F"))
 
 # --- ES19: structural drawdown (catastrophic MDD >= 70%) inferred hard fail --
 a_cat <- c(rep(-0.20, 6), rep(0.02, 54))   # nav trough 0.8^6 = 0.262 -> dd 73.8%

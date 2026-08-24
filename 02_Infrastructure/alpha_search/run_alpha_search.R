@@ -376,7 +376,14 @@ run_alpha_search <- function(strategy_name,
   # (`!is.null(a) && !is.na(a)`: 벡터에서 크래시)으로 덮어쓴다. tg_agent_brief 등 전역
   # %||%를 쓰는 함수가 오작동하지 않도록 견고버전(로컬)을 전역에 복원.
   assign("%||%", `%||%`, envir = globalenv())
-  grade  <- hg$grade %||% "uncertain"
+  ## ★v9.21 §1-c — 등급 정본은 essence 다. hurdle 등급은 **진단용 proxy** 로 내려간다.
+  ##   근거는 hurdle_gate.R:9-14 가 스스로 적어 둔 것이다 —
+  ##   "DEMOTED 2026-05-31 … prod(1+r)·수동 Sharpe·full-sample β 기반 = proxy.
+  ##    DIAGNOSTIC ONLY — 권위 등급 아님. 권위 등급 = essence_score()."
+  ##   그런데 CLAUDE.md:18,61 · lean-loop.md:19,66 은 여전히 hurdle 을 리서치 층 정본이라
+  ##   적고 있었다. 등급이 둘 병존한 게 아니라 **문서가 강등을 안 따라갔다**(축 5 에서 정정).
+  ##   ★"uncertain" 폴백 제거 — 그건 등급이 아니라 상태다(§1-b 와 같은 사유).
+  grade_proxy <- hg$grade %||% NA_character_   # 18-component proxy 진단 등급 (FMT·호환 기록용)
   score  <- .as_num(hg$score)
   # ★[2026-08-23 v9.1 / S2c] screening 을 여기로 끌어올린다(구 위치 = 6d, 6c 뒤).
   #   6c 의 lean register_module 이 `screen_route`·`screen_pass`·`structural_dd` 를 meta 에
@@ -388,18 +395,40 @@ run_alpha_search <- function(strategy_name,
   bm_cagr_pct <- if (!is.null(perf_bm)) .as_num(perf_bm$CAGR) else NA_real_  # summarise_perf CAGR은 이미 percent(round(ann*100,2))
   excess_cagr <- round(.as_num(m$CAGR) - bm_cagr_pct, 2)
 
-  pass    <- grade %in% c("A", "A_NOVEL", "A_DEF")
-  is_fail <- grade %in% c("F")
+  ## ★v9.21 §1-a/§1-c — 권위 측정을 **여기서** 한다(구 위치 = 6d, 플래그 뒤).
+  ##   왜 앞으로 당겼나: pass/is_fail/notable 이 등급으로 갈리는데 구 배치에서는 그 시점에
+  ##   권위 등급이 아직 없었다. 순서를 안 바꾸면 "일원화"가 플래그에는 적용되지 않는다.
+  ##   .authoritative_remeasure 는 sim·bt_contract 만 필요하고 둘 다 4장에서 이미 준비된다.
+  auth <- .authoritative_remeasure(sim, strategy_id, strategy_name, strategy_idea,
+                                   factor_engine_path, OUT_DIR, grade_proxy,
+                                   universe = universe, weight_method = weight_method,
+                                   commission = commission,
+                                   risk_controls = risk_controls,
+                                   bt_contract = bt_contract)
+  assign("%||%", `%||%`, envir = globalenv())   # contract source 후 전역 %||% 복원
+
+  ## ★단일 등급. 이후 이 파일의 `grade` 는 전부 권위(essence) 등급이다.
+  ##   NA = 계약 미경유(§1-b) — 등급 없음이지 실패가 아니다.
+  grade <- auth$essence_grade %||% NA_character_
+  cat(sprintf("[AlphaSearch] 권위 등급=%s (proxy hurdle=%s) status=%s\n",
+              grade %||% "NA", grade_proxy %||% "NA", auth$status %||% "?"))
+
+  ## essence 는 A_NOVEL/A_DEF/B_DEF 접미 변형을 **반환하지 않는다**(A/B/C/F 4값).
+  ##   구판이 나열하던 접미어를 그대로 두면 조건이 조용히 축소된다 — 그래서 제거한다.
+  pass    <- identical(grade, "A")
+  is_fail <- identical(grade, "F")
   # notable 조임 (v9 Lean Loop): "clean PIT F등급" 전량이 아니라 **탈락축이 실제로 잡힌** F만
   #   교훈으로 적립한다. FMT 판정도 fail_reasons 도 없는 F 는 "왜 안 됐나"를 못 쓰므로
   #   L-code 로 남겨봐야 숫자만 남는다(형해화). fmt_hits 는 이 줄 아래에서 산출되므로
   #   판정 후 재계산한다 — 아래 6a-2 참조.
-  notable <- grade %in% c("B", "C")
+  notable <- !is.na(grade) && grade %in% c("B", "C")
 
   # ---- 6a-2. FMT-01~08 실패모드 자동판정 (proxy 진단 라벨 — 게이트 아님) ----
   #   strategy_postmortem.md FMT taxonomy를 hurdle metrics rule로 매핑(.judge_fmt 주석 참조).
   #   판정 실패 시에도 run은 계속 (진단 누락은 콘솔 WARN으로 정직 고지).
-  fmt_hits <- tryCatch(.judge_fmt(m, hg, sim, strategy_name, strategy_idea, excess_cagr, grade),
+  ## ★FMT 는 hurdle metrics rule 로 매핑한 **proxy 진단 라벨**이다(게이트 아님).
+  ##   그러므로 권위 등급이 아니라 proxy 등급을 넘긴다 — 축을 섞지 않는다.
+  fmt_hits <- tryCatch(.judge_fmt(m, hg, sim, strategy_name, strategy_idea, excess_cagr, grade_proxy),
                        error = function(e) { cat("[AlphaSearch][FMT] WARN: 자동판정 실패 —",
                                                  conditionMessage(e), "\n"); list() })
   if (length(fmt_hits)) {
@@ -433,7 +462,12 @@ run_alpha_search <- function(strategy_name,
   if (isTRUE(pit_clean) && !identical(Sys.getenv("QVEST_LEAN_REGISTER", "1"), "0")) tryCatch({
     if (!exists("register_module", mode = "function"))
       source(file.path(PROJECT_ROOT, "02_Infrastructure", "contracts", "register_module.R"))
-    register_module(sim, strategy_id, grade = grade, origin_mode = "alpha_search",
+    ## ★v9.21: 이 `grade` 필드는 **P2 까지 proxy 를 유지**한다. 2026-08-23 에 essence 로
+    ##   바꿨다가 되돌린 기록이 :554 에 있다 — "자본-보정 essence 등급으로 허들 A를 덮어써서
+    ##   역대 A등급 모듈 0을 만들었다". 그 전환은 hurdle_gate.R 의 grade_a_catalog 발급
+    ##   기준(P2)과 **함께** 옮겨야 "A등급 0"이 아니라 "A의 의미가 자본 문턱으로 정확해지는"
+    ##   결과가 된다. 권위 등급은 meta$essence_grade 에 나란히 적는다.
+    register_module(sim, strategy_id, grade = grade_proxy, origin_mode = "alpha_search",
                     role = NA_character_,
                     metric_type = "proxy",   # ★기본값 의존 금지 — grep 가능해야 한다
                     meta = list(strategy_idea = strategy_idea,
@@ -441,6 +475,12 @@ run_alpha_search <- function(strategy_name,
                                 score = score,
                                 lean = !isTRUE(deep),
                                 grade_basis = "proxy_diagnostic",
+                                ## ★v9.21 §1-a 의 부수 이득 — 권위 등급을 **lean 라운드에서도**
+                                ##   기록한다. 구판은 6e(deep 전용)만 이 필드를 썼고 v9 lean 은
+                                ##   deep=FALSE 기본이라, module_catalog 275건 중 essence_grade
+                                ##   보유가 **0건**이었다(실측). 이제 매 라운드 채워진다.
+                                essence_grade = grade,
+                                proxy_grade = grade_proxy,
                                 screen_route = screening$screen_route %||% "NONE",
                                 screen_pass = isTRUE(screening$screen_pass),
                                 structural_dd = isTRUE(screening$structural_dd),
@@ -471,36 +511,10 @@ run_alpha_search <- function(strategy_name,
   if (isTRUE(analysis_ran)) .patch_fmt_checklist(OUT_DIR, fmt_hits)
 
   .as_stage("sec6b_done")
-  # ---- 6d. ★ 권위측정 사다리: hurdle B 이상 또는 screening_pass → 계약 실측 재측정 ---- [deep 전용]
-  #   v8.1 트랙C(measurement-graduation §1~§3): proxy(run_hurdle_gate) 등급이 B 이상이거나,
-  #   MDD/turnover 같은 구조 사유로 C/F가 됐어도 screen_pass면 authoritative 재측정.
-  #   → OUT_DIR/bt_result.rds + authoritative_remeasure.json (essence grade / PORT_t NW lag-3 / metric_type=backtested).
-  #   ★v9: 권위 재측정은 **자본 층 입구**의 일이다 — lean 라운드는 proxy 허들 등급까지만 낸다.
-  #   (lean 에서도 bt_result 계약은 4장에서 이미 저장되므로 지명 시 그 산출물로 재측정 가능)
-  auth <- NULL
-  # (screening 은 6장 앞머리에서 이미 산출 — 6c 의 lean register_module 이 소비한다)
-  screen_remeasure <- isTRUE(screening$screen_pass) &&
-    grepl("OVERLAY_CANDIDATE|FR_RCMA|DPL_FEATURE|TURNOVER_REVIEW", screening$screen_route %||% "")
-  # v8.3(2026-07-10): DPL_FEATURE 발급 중단(hurdle_gate) — 고회전 케이스는 TURNOVER_REVIEW로 대체.
-  #   DPL_FEATURE 패턴은 기존 manifest 호환 위해 잔존. FR_RCMA는 이제 조건부(회전율 hard-fail 이내)만.
-  if (isTRUE(deep)) {
-    if (grade %in% c("A", "A_NOVEL", "A_DEF", "B", "B_DEF") || screen_remeasure) {
-      if (screen_remeasure && !(grade %in% c("A", "A_NOVEL", "A_DEF", "B", "B_DEF"))) {
-        cat(sprintf("[AlphaSearch] 권위측정 사다리: grade=%s but screening_pass route=%s — 실측 재측정 진행\n",
-                    grade, screening$screen_route %||% ""))
-      }
-      auth <- .authoritative_remeasure(sim, strategy_id, strategy_name, strategy_idea,
-                                       factor_engine_path, OUT_DIR, grade,
-                                       universe = universe, weight_method = weight_method,
-                                       commission = commission,
-                                       risk_controls = risk_controls,
-                                       bt_contract = bt_contract)
-      assign("%||%", `%||%`, envir = globalenv())   # contract source 후 전역 %||% 복원
-    } else {
-      cat(sprintf("[AlphaSearch] 권위측정 사다리: grade=%s, screen_pass=%s — proxy 유지, 실측 재측정 생략\n",
-                  grade, isTRUE(screening$screen_pass)))
-    }
-  }
+  # ---- 6d. (제거) 권위 측정은 §1-a 로 **앞으로 이동**했다 — 6a 플래그 산출 직전. ----
+  #   pass/is_fail/notable 이 등급으로 갈리는데 구 배치(플래그 뒤)에서는 그 시점에 권위
+  #   등급이 없었다. 여기 남기면 auth 가 두 번 돈다. 구 게이트가 쓰던 screen_remeasure 도
+  #   함께 제거했다(소비자 0 이 되므로).
   f_grade_reasons <- .alpha_failure_reasons(grade, hg, fmt_hits, m, excess_cagr, auth = auth)
   strategy_manifest_path <- .write_alpha_search_strategy_manifest(
     out_dir = OUT_DIR,
@@ -558,14 +572,17 @@ run_alpha_search <- function(strategy_name,
       source(file.path(PROJECT_ROOT, "02_Infrastructure", "contracts", "register_module.R"))
     register_module(
       sim, strategy_id,
-      grade = grade,
+      ## ★v9.21: 6c 와 같은 사유로 `grade` 필드는 P2 까지 proxy 유지(:554 의 08-23 기록 참조).
+      ##   ★그리고 proxy_grade 에 **권위 등급이 들어가 있던 버그를 함께 고쳤다** — v9.21 에서
+      ##     `grade` 변수가 권위 등급이 되면서 `proxy_grade = grade` 는 이름과 값이 어긋난다.
+      grade = grade_proxy,
       origin_mode = "alpha_search",
       role = NA_character_,
       meta = list(strategy_idea = strategy_idea, score = score,
                   selection_type = "chain",
                   chain_qualification = .chain_qualification_record(),  # §3 chain 자격요건 기록 (추가 필드)
-                  proxy_grade = grade,
-                  essence_grade = auth$essence_grade %||% NA_character_,  # 자본 층 등급(별도 필드 — grade 를 덮지 않는다)
+                  proxy_grade = grade_proxy,
+                  essence_grade = auth$essence_grade %||% NA_character_,  # 권위 등급(별도 필드 — grade 를 덮지 않는다)
                   f_grade_reasons = f_grade_reasons,
                   fmt_codes = vapply(fmt_hits, function(x) x$code, ""),
                   strategy_manifest_path = .rel_project_path(strategy_manifest_path),
@@ -1106,7 +1123,10 @@ run_alpha_search <- function(strategy_name,
                                      out_dir = NULL, hg = list(), fmt = list(),
                                      auth = NULL, f_reasons = NULL, dry_run = FALSE) {
   `%||%` <- function(a, b) if (is.null(a) || length(a) == 0L || (length(a) == 1L && is.na(a))) b else a
-  verdict_word <-if (grade %in% c("A", "A_NOVEL", "A_DEF")) "통과"
+  ## ★v9.21 §1-c — 권위 등급 4값(A/B/C/F) + NA. essence 는 접미 변형을 반환하지 않으므로
+  ##   구판의 A_NOVEL/A_DEF 나열을 제거했다. NA 는 "미측정"이지 실패가 아니다.
+  verdict_word <-if (is.na(grade)) "미측정"
+                  else if (identical(grade, "A")) "통과"
                   else if (grade %in% c("B", "C")) "근접"
                   else "미달"
   uni_label <- if (identical(universe, "KR_TOP500")) "시총상위500(거래대금2억+)"
