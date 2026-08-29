@@ -33,7 +33,9 @@
                         strategy_rotation = "FR",   # v9.21 개명 — prefix 는 FR 유지(id 는 불투명 식별자)
                         factor_rotation = "FR",     # 역사 라벨(기존 L-FR-* 조회 보존)
                         regime_research = "RR",
-                        ramp = "RAMP", overlay_research = "OVL")
+                        ramp = "RAMP", overlay_research = "OVL",
+                        paper_replication = "RP",   # v10 2026-08-29: 1계층 충실구현
+                        reinforcement = "RF")       # v10 2026-08-29: 강화 프로세스
 
 # 기존 원장에서 사용 중인 l_code ID 집합 (충돌 가드용 — corpus 캐시 + 원장 파일 스캔)
 .existing_lcode_ids <- function(root) {

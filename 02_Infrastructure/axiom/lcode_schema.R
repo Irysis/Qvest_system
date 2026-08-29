@@ -84,7 +84,9 @@ LCODE_VALID_MODES <- c("alpha_search", "alpha_research", "qepm_legacy",
                        "factor_rotation",   # ★역사 라벨로 존치 — 기존 L-code 1건이 이 값을 갖는다
                        "regime_research",
                        "ramp",              # 2026-06-18: RAMP 자가발전 4번째 모드 (v9.21 모드 지위 퇴임 — 라벨은 존치)
-                       "overlay_research")  # 2026-07-06: OVL 오버레이 자가발전 모드 (lcode_emit OVL prefix와 정합)
+                       "overlay_research",  # 2026-07-06: OVL 오버레이 자가발전 모드 (lcode_emit OVL prefix와 정합)
+                       "paper_replication", # ★v10 2026-08-29: 1계층 충실구현 라운드 (prefix RP)
+                       "reinforcement")     # ★v10 2026-08-29: 강화 프로세스 (1계층 ≤20회 / 2계층 무한, prefix RF)
 # research_mode normalize 규칙 (promote GEN 폴백 봉합, A2-F8②)
 ## ★v9.21 개명 (도훈 지시 2026-08-24 "팩터 로테이션은 전략 로테이션으로"):
 ##   `factor_rotation` → `strategy_rotation`. **이름이 코드 현실과 오히려 일치하게 된다** —

@@ -642,11 +642,28 @@ audit_bt_result <- function(bt_result) {
   #   FAIL 이고 경고가 아니다. severity 는 "high" — critical(=official metrics 차단)로 두면
   #   구 산출물 재감사에서 벤치-상대 지표가 통째로 unavailable 이 되어 소급 대조가 불가능해진다.
   hd_cap <- bt_result$holdings
+  # ★v10 (2026-08-29 도훈): 충실구현(replication) 라운드는 종목수 상한이 애초에 없다
+  #   (논문 그대로 — 데실 100종 등). strategy_spec::constraint_profile == "replication"
+  #   이면 FAIL 대신 INFO 격 PASS 로 n_max 만 보고한다. 실투형 경로 판정은 무변경.
+  .cap_profile <- tryCatch({
+    ss <- bt_result$strategy_spec
+    if (!is.null(ss) && "constraint_profile" %in% names(ss)) {
+      as.character(ss[["constraint_profile"]][1])
+    } else NA_character_
+  }, error = function(e) NA_character_)
+  .cap_replication <- isTRUE(!is.na(.cap_profile) && .cap_profile == "replication")
   if (is.null(hd_cap) || nrow(hd_cap) == 0 ||
       !all(c("date", "ticker") %in% names(hd_cap))) {
     add_check("rebalance", "holdings_cap", "WARN",
               "holdings 부재 또는 date/ticker 컬럼 없음 — 25종 상한 검사 skip(미측정, 통과 아님)",
               "n_holdings", "medium")
+  } else if (.cap_replication) {
+    n_by_date <- hd_cap[, .(n = uniqueN(ticker)), by = date]
+    add_check("rebalance", "holdings_cap", "PASS",
+              sprintf(paste0("replication profile — 상한 비적용(v10 충실구현: 논문 그대로). ",
+                             "리밸일별 distinct ticker %d~%d종 (%d 리밸일) — 보고만."),
+                      min(n_by_date$n), max(n_by_date$n), nrow(n_by_date)),
+              "", "low")
   } else {
     n_by_date <- hd_cap[, .(n = uniqueN(ticker)), by = date]
     n_max_obs <- max(n_by_date$n)
