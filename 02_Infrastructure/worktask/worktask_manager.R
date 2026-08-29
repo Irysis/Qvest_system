@@ -20,8 +20,10 @@ WT_ROOT <- "qepm/mailbox/worktask"
 WT_SCHEMA <- "02_Infrastructure/worktask/schema.json"
 WT_CONSTRAINT_DEFAULTS <- "02_Infrastructure/worktask/constraint_defaults.json"
 
-# ─── WT ID 생성 (v1.2 wt_type 4-prefix Charter §10) ───────────────────
-# WT-D = Discovery, WT-P = Deployment, WT-S = Sizing-only, WT-H = Hyperparameter-sweep
+# ─── WT ID 생성 (v1.2 wt_type prefix Charter §10 · ★v10 WT-R 추가) ─────────
+# WT-D = Discovery, WT-P = Deployment, WT-S = Sizing-only, WT-H = Hyperparameter-sweep,
+# WT-R = Reinforcement (v10 2026-08-29 — 강화 프로세스 전용: QEPM alpha→risk→optimizer→forge,
+#         실투형 축 long-only·≤25종·15bps·Σw=1 (비중 상한 없음), governor 미호출)
 wt_generate_id <- function(wt_type = "discovery") {
   today <- format(Sys.Date(), "%Y%m%d")
   prefix <- switch(wt_type,
@@ -29,7 +31,8 @@ wt_generate_id <- function(wt_type = "discovery") {
     "deployment" = "WT-P",
     "sizing_only" = "WT-S",
     "hyperparameter_sweep" = "WT-H",
-    stop(sprintf("[wt_generate_id] Unknown wt_type: %s. Charter §10 enum: discovery/deployment/sizing_only/hyperparameter_sweep", wt_type))
+    "reinforcement" = "WT-R",
+    stop(sprintf("[wt_generate_id] Unknown wt_type: %s. enum: discovery/deployment/sizing_only/hyperparameter_sweep/reinforcement", wt_type))
   )
   existing <- list.files(WT_ROOT, pattern = sprintf("^%s%s_", prefix, today))
   seq <- length(existing) + 1
@@ -59,9 +62,9 @@ wt_create <- function(hypothesis_title = NULL,
   if (is.null(hypothesis_title) && is.null(theme)) {
     stop("[wt_create] hypothesis_title 또는 theme 중 최소 하나 필요")
   }
-  # v1.2 Charter §10: wt_type 4-way enum
-  if (!wt_type %in% c("discovery", "deployment", "sizing_only", "hyperparameter_sweep")) {
-    stop("[wt_create] wt_type must be one of: 'discovery', 'deployment', 'sizing_only', 'hyperparameter_sweep' (Charter §10)")
+  # v1.2 Charter §10: wt_type enum (★v10: reinforcement 추가 — 강화 프로세스 전용)
+  if (!wt_type %in% c("discovery", "deployment", "sizing_only", "hyperparameter_sweep", "reinforcement")) {
+    stop("[wt_create] wt_type must be one of: 'discovery', 'deployment', 'sizing_only', 'hyperparameter_sweep', 'reinforcement' (Charter §10 + v10)")
   }
   if (wt_type == "deployment" && is.null(discovery_of)) {
     warning("[wt_create] Deployment WT without discovery_of — graduation_criteria 우회 허용 (검증 완료된 alpha 직접 편성 목적).")

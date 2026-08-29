@@ -325,33 +325,11 @@ if [ "$_gated" -gt 0 ] && [ "${QVEST_SCREEN_QUEUE_NORUN:-0}" != "1" ] && [ -x "$
   fi
 fi
 
-# --- (v9.21 §2-d) 강화 프로세스 1후보 — 무인 러너 뒤 자동 --------------------
-#   도훈 결정 2026-08-24: "강화 기동 = 무인 러너 뒤 자동".
-#   위치 근거: 파이프라인 기본 순서가 **1단계 논문 알파리서치 → 2단계 강화**이므로
-#   큐 리프레시 직후가 그 순서 그대로다. 이 러너는 morning_run.sh:201-206 이
-#   QVEST_ALPHA_QUEUE_ENABLE=1 일 때 부르고, 그 env 는 Qvest_MorningReboot.bat 이 세운다.
-#   ★bootstrap.sh 에는 넣지 않는다 — 부팅 상태라인은 읽기 전용(8j 규약).
-#
-#   ★선행 조건이 이미 충족됐다 (2026-08-24 §2-f): rl_candidates() 가 원장의
-#     stage=="done" 후보를 배제하므로 **매일 다른 후보로 전진**한다. 이 폐쇄가 없으면
-#     여기 붙이는 순간 매일 아침 같은 1위 후보만 태우게 된다 — 붙이기 전에 닫았다.
-#   예산은 사다리 자체 budget_secs_per_candidate 가 관리한다(lean ≤40분 계약과 별개 —
-#   사다리는 lean 라운드가 아니다).
-_LADDER="$BASE/02_Infrastructure/ops/reinforce_ladder.R"
-if [ -f "$_LADDER" ] && [ "${QVEST_LADDER_NORUN:-0}" != "1" ] && [ -x "$_RS_BIN" ]; then
-  if [ "$_gated" -gt 0 ]; then
-    log "강화 프로세스 시작 (1후보 · 무인 러너 뒤 자동 — v9.21 §2-d)"
-    if "$_RS_BIN" --no-save "$_LADDER" --top=1 --no-telegram >> "$LOG" 2>&1; then
-      log "강화 프로세스 완료"
-    else
-      # ★비치명 — 강화 실패가 알파리서치 완주 알림을 막으면 안 된다(1단계는 이미 끝났다).
-      log "★강화 프로세스 실패(비치명) — 1단계 산출은 그대로 유효"
-    fi
-  else
-    # 침묵하지 않는다: "안 돌렸다"와 "돌렸는데 후보가 없었다"는 다른 상태다.
-    log "강화 프로세스 건너뜀 — 이번 런의 게이트 판정 0건(새 재료 없음)"
-  fi
-fi
+# --- (v10 2026-08-29) 구 기계 사다리 자동 기동 **퇴역** -----------------------
+#   도훈 결정: 강화 프로세스 = QEPM 기반 세션 주도 리서치(.claude/skills/reinforce/SKILL.md,
+#   1계층 ≤20회 · 원장 reinforce_ledger_l1.json)로 대체 + 무인 파이프라인은 수집까지만.
+#   reinforce_ladder.R 는 파일 존치(RETIRED 배너) — 구 v9.21 §2-d 호출 블록은 git 사료.
+log "강화 프로세스(기계 사다리) 자동 기동 — 퇴역 (v10 2026-08-29: QEPM 기반 세션 강화로 대체)"
 
 _EFFECT_CMP=""
 if [ -n "${_EFFECT_BEFORE:-}" ]; then

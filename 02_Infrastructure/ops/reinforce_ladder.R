@@ -1,4 +1,7 @@
 #!/usr/bin/env Rscript
+# ★RETIRED (v10 2026-08-29 도훈 지시): 기계식 3단 arm 스윕 강화는 퇴역 — 강화 프로세스는
+#   QEPM 기반 LLM 리서치(.claude/skills/reinforce/SKILL.md, 원장 reinforce_ledger_l1/l2.json)로
+#   대체됐다. 파일·구 원장(reinforce_ladder_ledger.json)은 read-only 사료. 재열람 = git pre-v10-2layer.
 ## ============================================================================
 ## reinforce_ladder.R — 자동 강화 사다리 드라이버 (v9.2 §8-S2, 2026-08-24)
 ##

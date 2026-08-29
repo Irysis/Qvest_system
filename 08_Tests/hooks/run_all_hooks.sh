@@ -244,6 +244,8 @@ SUITES=(
   "08_Tests/hooks/test_worktask_constraint_enforcer_v10.sh"
   # v10 (2026-08-29): 충실구현 하네스 — 롱숏 부호/비용/t+1/n무제한/audit 프로파일 양방향/enum
   "08_Tests/contracts/test_replication_harness.R"
+  # v10 (2026-08-29): 강화 원장 — root_papers 거부/L1 20회 상한/L2 무한/graduated/결합 검토/PIT 재활성화
+  "08_Tests/worktask/test_reinforce_ledger.R"
   # 2026-08-16 추가: 편입 드리프트 검사(suite_enrollment_check) 위반 주입.
   #   ★이 SUITES 배열이 하드코딩 열거라 새 테스트가 자동 편입되지 않는다 — 실측에서
   #   test_*.{R,sh} 121건 중 40건이 배터리에서 **한 번도 실행되지 않고** 있었고, 그중
