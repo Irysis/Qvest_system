@@ -13,7 +13,7 @@
       "engine_path": "stage_artifacts/replication/_pilot/fe_jt1993_momentum.R",
       "status": "active",
       "target_grade": "A",
-      "attempts_used": 3,
+      "attempts_used": 7,
       "attempts": [
         {
           "n": 1,
@@ -183,13 +183,137 @@
           "lessons": "회전율 조건화는 KR 승자 사이드에서 기각(부호도 반대·비단조). 그러나 라운드의 최대 소득은 판정이 아니라 양성 대조다 — 혼합 랭킹으로 자르면 t -2.526 의 '유의한 효과' 가 나오는데 그건 시장 더미(KOSDAQ 14.1% vs 65.3%)였고, 그게 이 라운드 유일한 |t|>2 관측이었다. 통제를 안 걸었으면 부호까지 반대인 결과를 원장에 적었다. 또한 검정력이 3~5%(착수금지구간)였다는 사실이 착수 후에야 산출됐다 — 4/20 부터 사전 검정력 게이트(ratio<0.15 면 설계 변경)를 건다. 누적 3회 요약: 재료 추가(이익)·형태 교정·조건화(회전율) 셋 다 cell4 의 α +5.14%/yr 를 움직이지 못했고 필요값은 +13.25%/yr 다.",
           "opened_at": "2026-08-29T15:41:18+0900",
           "closed_at": "2026-08-29T16:34:48+0900"
+        },
+        {
+          "n": 4,
+          "date": "20260829",
+          "idea": "DM2016/BSC2015 모멘텀 크래시 관리 — 강화 3축 중 유일하게 미사용인 리스크 오버레이 축. ★착수 근거가 문헌이 아니라 **우리 실측**이다: 강화 2/20 이 기저 패자 데실 손실의 **반등월 집중**을 measured 로 확인했고(recovery 더미 -0.0817/월 t -4.403, ★BM 수익 통제 후에도 -0.0427/월 **t -2.367** 로 생존 — '패자 고β' 로 환원되지 않음), 시장 방향을 고정한 대조에서 패자 데실 수익이 확장기 대비 반등기에 2.7배(승자는 1.2배)로 **비대칭이 패자 쪽에만** 있었다. Daniel & Moskowitz (2016, JFE 122(2):221-247) 는 모멘텀 크래시가 (a)시장 하락 후 (b)고변동성 국면(=panic state)에서 **부분 예측 가능**하고 (c)시장 반등과 동시라고 실증했다 — 우리 지문 셋과 정확히 같은 대상이다. Barroso & Santa-Clara (2015, JFE 116(1):111-120) 는 실현 모멘텀 변동성으로 노출을 스케일하면 크래시가 사실상 제거되고 **샤프가 거의 2배**가 된다고 보고했다. ★정직한 한계 인식: 이 축은 α 를 만들지 않고 α 의 분모(위험)를 줄인다. cell4 의 β-통제 α +5.14%/yr 자체는 안 움직일 가능성이 높고, 개선은 SR·Calmar 쪽에 나타난다. 그러나 등급 A 는 SR>=0.8 ∧ Calmar>=0.64 도 요구하며 기저 Calmar 는 0.012 였다 — 즉 이 축의 표적은 PORT_t 가 아니라 **위험 축 문턱**이다. 이 구분을 사전에 못박아 'PORT_t 가 안 올랐으니 실패' 로 오판정하지 않는다. ★필수: 오버레이 신호는 홀딩월 시작 전 데이터로만(C5) · assert_overlay_pit HARD · lag1 스트레스 · strict-PIT A/B 3종 의무. 과거 BearProb 오버레이가 이 지점에서 ~1개월 동월 look-ahead 로 개선 전량이 소멸한 실사고가 있다.",
+          "keyword_axis": "risk_overlay",
+          "root_papers": [
+            {
+              "title": "Returns to Buying Winners and Selling Losers (Jegadeesh & Titman 1993, JF 48(1):65-91)",
+              "url": "https://www.bauer.uh.edu/rsusmel/phd/jegadeesh-titman93.pdf",
+              "role": "base_paper"
+            },
+            {
+              "title": "Momentum Crashes (Daniel & Moskowitz 2016, JFE 122(2):221-247 / NBER w20439)",
+              "url": "https://www.nber.org/papers/w20439",
+              "role": "extension_followup"
+            },
+            {
+              "title": "Momentum has its moments (Barroso & Santa-Clara 2015, JFE 116(1):111-120)",
+              "url": "https://papers.ssrn.com/sol3/papers.cfm?abstract_id=2041429",
+              "role": "extension_risk_scaling"
+            }
+          ],
+          "wt_id": null,
+          "axiom_injected": true,
+          "grade": null,
+          "essence": null,
+          "artifacts": null,
+          "l_code": null,
+          "lessons": null,
+          "opened_at": "2026-08-29T16:41:55+0900"
+        },
+        {
+          "n": 5,
+          "date": "20260829",
+          "idea": "AMP2013 value-momentum 결합 — 미사용 축(combination). 누적 3회가 확정한 것: 같은 신호 위에서 재료를 더하거나(1/20) 형태를 바꾸거나(2/20) 조건화해도(3/20) 실투형 α 는 +5.14%/yr 에서 ±1%p 안이고 필요값은 +13.25%/yr 다. 즉 **조건화가 아니라 결합**이 남은 경로다. Asness, Moskowitz & Pedersen (2013, JF 68(3):929-985, DOI 10.1111/jofi.12021) 은 8개 시장·자산군에서 value 와 momentum 이 **서로 음(-)의 상관**을 가지며(자산군 내부·교차 모두), 그 결합이 각각보다 훨씬 높은 위험조정 수익을 낸다고 실증했다. 기전: 두 프리미엄이 공통 글로벌 위험(부분적으로 funding liquidity)에 노출되되 서로 반대 국면에서 발화한다. ★KR 좌표: 현행 연구-tier 최상위가 이미 value/quality/consensus 계열이다(STR_AS_20260612_154914 PORT_t 2.52 · STR_AS_20260612_161342 PORT_t 2.35). 그러나 본 시도는 **모듈 배합(2계층)이 아니라 팩터 수준 결합(1계층)** 이다 — 완성 전략을 섞는 것이 아니라 M02 모멘텀과 value 팩터를 한 신호 공간에서 결합해 단일 전략을 만든다. 이 구분을 유지하지 못하면 2계층 전략 로테이션 영역을 침범한다. ★사전 반증: 결합 arm 의 β-통제 α 가 value 단독 arm 대비 증분 <=0 이면 모멘텀의 기여 부재로 판정한다(1/20 에서 이익 축이 가격 축에 포섭됐듯, 이번엔 모멘텀이 value 에 포섭되는지가 쟁점이다). 음(-)상관 주장 자체도 KR 에서 재검정한다 — AMP2013 의 핵심 전제이므로 성립하지 않으면 결합 근거가 사라진다.",
+          "keyword_axis": "combination",
+          "root_papers": [
+            {
+              "title": "Returns to Buying Winners and Selling Losers (Jegadeesh & Titman 1993, JF 48(1):65-91)",
+              "url": "https://www.bauer.uh.edu/rsusmel/phd/jegadeesh-titman93.pdf",
+              "role": "base_paper"
+            },
+            {
+              "title": "Value and Momentum Everywhere (Asness, Moskowitz & Pedersen 2013, JF 68(3):929-985)",
+              "url": "https://onlinelibrary.wiley.com/doi/10.1111/jofi.12021",
+              "role": "extension_combination"
+            },
+            {
+              "title": "Value and Momentum Everywhere — 공개 PDF (NYU Stern)",
+              "url": "https://pages.stern.nyu.edu/~lpederse/papers/ValMomEverywhere.pdf",
+              "role": "extension_openaccess"
+            }
+          ],
+          "wt_id": null,
+          "axiom_injected": true,
+          "grade": null,
+          "essence": null,
+          "artifacts": null,
+          "l_code": null,
+          "lessons": null,
+          "opened_at": "2026-08-29T16:41:55+0900"
+        },
+        {
+          "n": 6,
+          "date": "20260829",
+          "idea": "EL2022 팩터 모멘텀 — 개별주 모멘텀이 실은 팩터 모멘텀인가. Ehsani & Linnainmaa (2022, JF 77:1877-1919, DOI 10.1111/jofi.13131) 는 대부분의 팩터가 양(+)자기상관을 가지며(평균 팩터는 손실 1년 뒤 월 6bp · 이익 1년 뒤 월 51bp), 팩터 모멘텀이 단면을 더 많이 설명하는 팩터에 집중되고, **모멘텀-중립 팩터가 오히려 더 큰 모멘텀을 보인다**고 실증했다. 결론은 '모멘텀은 독립 위험요인이 아니라 다른 팩터들을 타이밍한 결과' 다. ★이 시도는 알파 청구가 아니라 **기전 청구의 검정**이다 — 우리 기저(개별주 6-6)가 KR 에서 약한 이유가 '개별주 모멘텀 신호가 약해서' 인지 '개별주 모멘텀이 팩터 모멘텀의 그림자이고 KR 팩터들의 자기상관이 약해서' 인지를 가른다. 재료: 팩터 DB(계열 15 · 팩터 331)에서 팩터 수익 시계열의 12-1 자기상관을 산출하고, 그 타이밍이 함의하는 단면 스코어로 실투형 top-25 를 구성한다. ★사전 반증 1급: KR 팩터 수익의 12-1 자기상관이 유의 양(+)이 아니면 EL2022 의 전제가 KR 에 없는 것이고, 그 경우 '개별주 모멘텀 약세' 는 팩터 모멘텀 부재의 따름정리로 설명된다(성과 검정이 아니라 전제 검정 — 결과와 무관하게 먼저 보고). 2급: 팩터-모멘텀 구성 arm 의 β-통제 α 가 cell4(+5.14%/yr) 대비 증분 <=0 이면 소비면 전이 실패. ★반드시 읽을 선행 negative: DIST-RAMP-026(factor_timing_allocation) · DIST-AR-033(factor_timing) 은 DISTILLED_NEG 다. 본 시도가 그것과 갈리는 지점은 '팩터 타이밍으로 알파를 벌 수 있나' 가 아니라 '개별주 모멘텀이 팩터 모멘텀에 spanned 되나' 라는 **스패닝 검정**이라는 점이다 — 이 구분을 유지 못하면 소진 경로와 같아진다.",
+          "keyword_axis": "multifactor",
+          "root_papers": [
+            {
+              "title": "Returns to Buying Winners and Selling Losers (Jegadeesh & Titman 1993, JF 48(1):65-91)",
+              "url": "https://www.bauer.uh.edu/rsusmel/phd/jegadeesh-titman93.pdf",
+              "role": "base_paper"
+            },
+            {
+              "title": "Factor Momentum and the Momentum Factor (Ehsani & Linnainmaa 2022, JF 77:1877-1919)",
+              "url": "https://onlinelibrary.wiley.com/doi/abs/10.1111/jofi.13131",
+              "role": "extension_mechanism"
+            },
+            {
+              "title": "Factor Momentum and the Momentum Factor — NBER w25551 공개판",
+              "url": "https://www.nber.org/papers/w25551",
+              "role": "extension_openaccess"
+            }
+          ],
+          "wt_id": null,
+          "axiom_injected": true,
+          "grade": null,
+          "essence": null,
+          "artifacts": null,
+          "l_code": null,
+          "lessons": null,
+          "opened_at": "2026-08-29T16:45:38+0900"
+        },
+        {
+          "n": 7,
+          "date": "20260829",
+          "idea": "GH2004 52주 신고가 근접도 — 신호 정의 자체를 교체한다. George & Hwang (2004, JF 59:2145-2176) 은 현재가/52주 신고가 비율이 **과거 수익률(개별·산업 모두)의 예측력을 지배하고 개선**한다고 실증했고, 단기 모멘텀과 장기 반전이 별개 현상임을 보였다. 기전은 수익률 외삽이 아니라 **준거점 anchoring** 이다 — 투자자가 신고가를 준거점으로 삼아 그 부근에서 좋은 뉴스에 과소반응한다. ★누적 3회가 소진한 것은 '동일 신호(6-6 과거수익률) 위의 재료 추가·형태 교정·조건화' 다. 본 시도는 처음으로 **신호 자체를 교체**한다 — 과거수익률이 아니라 가격의 준거점 대비 위치다. 재료 = M06_High_52w(compute_momentum.R). ★사전 반증 1급(GH2004 핵심 주장의 직접 이식 검정): 52주 근접도와 과거수익률을 **동시에** 넣은 Fama-MacBeth 에서 근접도 계수가 유의 양(+)이고 과거수익률 계수를 압도하지 못하면 GH2004 의 '지배' 주장이 KR 에서 성립하지 않는다. 2급: 근접도 top-25 실투형 arm 의 β-통제 α 가 cell4(+5.14%/yr) 대비 증분 <=0 이면 소비면 전이 실패. ★교란 통제: 근접도는 변동성·유동성과 얽힌다 — 3/20 에서 회전율 축이 유동성 계열에 지배당한 전례가 있으므로(Amihud stratifier |t| 2.886 vs 회전율 0.807) L-family 직교성 검정 + EW-유니버스 대비 + cap-tier 분해 병기 의무. ★선행 확인 의무: DIST-AR-041 이 '가격-파생 모멘텀 변형은 저EV' 라고 적었다 — 근접도가 그 범주인지, 준거점 기전이 별개 축인지를 설계에서 명시 판단하라.",
+          "keyword_axis": "multifactor",
+          "root_papers": [
+            {
+              "title": "Returns to Buying Winners and Selling Losers (Jegadeesh & Titman 1993, JF 48(1):65-91)",
+              "url": "https://www.bauer.uh.edu/rsusmel/phd/jegadeesh-titman93.pdf",
+              "role": "base_paper"
+            },
+            {
+              "title": "The 52-Week High and Momentum Investing (George & Hwang 2004, JF 59:2145-2176)",
+              "url": "https://onlinelibrary.wiley.com/doi/abs/10.1111/j.1540-6261.2004.00695.x",
+              "role": "extension_signal_replacement"
+            }
+          ],
+          "wt_id": null,
+          "axiom_injected": true,
+          "grade": null,
+          "essence": null,
+          "artifacts": null,
+          "l_code": null,
+          "lessons": null,
+          "opened_at": "2026-08-29T16:45:38+0900"
         }
       ],
       "judge": {
         "spawned": false,
         "verdict_path": null
       },
-      "opened_at": "2026-08-29T12:26:33+0900"
+      "opened_at": "2026-08-29T12:26:33+0900",
+      "parked_reason": "도훈 결정 2026-08-29 — 3/20 소진 시점에 접는다. 근거: 서로 다른 재료 3종(이익 서프라이즈 1/20 · 형태 교정 2/20 · 회전율 조건화 3/20)이 실투형 arm 의 β-통제 α +5.14%/yr(t 1.205) 를 ±1%p 안에서만 흔들었고, PORT_t 2.95 에 필요한 값은 +13.25%/yr 다(2.3배 격차). 무신호 대조는 매 라운드 전 arm 구별불가. 즉 남은 문제는 '조건화를 잘못 골랐다' 가 아니라 '같은 신호 위에서는 배율이 안 나온다' 쪽이다. ★재개 조건: 회전율 축 미측정 좌표 2건(C2 ΔTurnover · C5 저회전 패자 리바운드) 또는 2/20 미결 축 B(집중도, 검정력 35.9%) 를 착수 전 검정력 ratio>=0.15 로 설계할 수 있게 될 때. 20회는 상한이지 할당량이 아니다.",
+      "parked_at": "2026-08-29T16:38:38+0900",
+      "parked_at_attempt": 3,
+      "unparked_at": "2026-08-29T16:40:10+0900",
+      "unpark_reason": "도훈 지시 2026-08-29 — 강화 재개(병렬 실행). 직전 park 사유·재개 조건은 parked_reason 에 보존."
     }
   ],
   "combination_review": {
@@ -197,5 +321,5 @@
     "last_review_date": "",
     "history": []
   },
-  "last_updated": "2026-08-29T16:34:48+0900"
+  "last_updated": "2026-08-29T16:45:38+0900"
 }

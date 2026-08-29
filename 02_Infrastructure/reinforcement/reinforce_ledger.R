@@ -197,6 +197,36 @@ rf_record_result <- function(layer, base_id, n, grade, essence = NULL,
   invisible(e$attempts[[j]])
 }
 
+#' 조기 중단(파킹) — 20회 소진 전에 도훈 결정으로 논문을 접을 때
+#'
+#' ★왜 필요한가: status enum 은 active / exhausted(20회 소진) / graduated(Grade A) 뿐이라
+#' "20회를 다 쓰지 않았지만 도훈이 접기로 했다" 를 표현할 어휘가 없었다. active 로 남기면
+#' v10 /qvest 규칙("원장 L1 active 우선")이 다음 세션에서 그 논문을 **자동 재개**해 결정과
+#' 어긋난다(boot_lean.sh:56 이 status=="active" 만 센다). parked 는 재개 가능한 중단이다 —
+#' 되돌리려면 status 를 active 로 명시적으로 되돌려야 하고, 그 사이 rf_append_attempt 의
+#' active 검사(line ~142)가 새 시도를 막는다.
+rf_park_entry <- function(layer, base_id, reason, root = .rf_root()) {
+  if (!nzchar(as.character(reason %||% "")))
+    stop("[reinforce_ledger] parked 는 사유 필수 — 왜 접었는지 없이 접지 않는다")
+  obj <- rf_load(layer, root)
+  i <- .rf_find(obj, base_id)
+  if (is.na(i)) stop(sprintf("[reinforce_ledger] entry 부재: %s", base_id))
+  e <- obj$entries[[i]]
+  if (!identical(e$status, "active"))
+    stop(sprintf("[reinforce_ledger] entry status=%s — active 만 park 할 수 있다", e$status))
+  e$status        <- "parked"
+  e$parked_reason <- as.character(reason)
+  e$parked_at     <- format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z")
+  e$parked_at_attempt <- as.integer(e$attempts_used %||% 0L)
+  obj$entries[[i]] <- e
+  .rf_write(obj, layer, root)
+  cat(sprintf("[reinforce_ledger] entry %s parked (시도 %d/%s 소진) — %s
+",
+              base_id, as.integer(e$attempts_used %||% 0L),
+              as.character(obj$max_attempts %||% "inf"), reason))
+  invisible(e)
+}
+
 #' Judge verdict 기록
 rf_record_judge <- function(layer, base_id, verdict_path, pit_pass, root = .rf_root()) {
   obj <- rf_load(layer, root)
@@ -248,4 +278,4 @@ rf_lessons_digest <- function(layer, base_id, n_last = 5L, root = .rf_root()) {
 
 `%||%` <- function(a, b) if (is.null(a) || length(a) == 0L || (length(a) == 1L && is.na(a))) b else a
 
-cat("[reinforce_ledger.R] Loaded (v10) — rf_open_entry / rf_append_attempt(★L1 20회 게이트·root_papers 필수) / rf_record_result / rf_record_judge / rf_record_combination_review / rf_lessons_digest\n")
+cat("[reinforce_ledger.R] Loaded (v10) — rf_open_entry / rf_append_attempt(★L1 20회 게이트·root_papers 필수) / rf_record_result / rf_park_entry(조기 중단·사유 필수) / rf_record_judge / rf_record_combination_review / rf_lessons_digest\n")

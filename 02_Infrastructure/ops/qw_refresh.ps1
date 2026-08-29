@@ -1,4 +1,4 @@
-# ==============================================================================
+﻿# ==============================================================================
 #  qw_refresh.ps1 - QuantiWise incremental refresh with kick-resilient retry
 #  (ASCII-only for PowerShell 5.1 encoding safety) - validated 2026-07-01
 # ==============================================================================
@@ -212,6 +212,37 @@ function Refresh-One($f,$target) {
     [GC]::Collect(); [GC]::WaitForPendingFinalizers()
   }
   return $result
+}
+
+# ---- 사전 점검: 자동 로그인 자격이 실제로 저장돼 있는가 (2026-08-29 신설) ----
+#   ★왜 필요한가 (실사고 2026-08-29): Ensure-Login 은 **LOGIN 버튼을 클릭만** 한다 —
+#     ID/PW 는 앱이 기억한다는 전제다. 그런데 maincfg.ini [LOGIN] SAVEUSERPW 가 0 이면
+#     실행할 때마다 PW 칸이 **빈 채로** 뜨고, 클릭은 매번 실패한다.
+#     구판은 그 조건을 못 읽어 **40라운드를 빈 비밀번호로 클릭**했다(그날 실측: 로그인 창
+#     ID=저장됨·PW len=0). 헛수고일 뿐 아니라 **반복 실패 로그인은 계정 잠금 위험**이다.
+#   ⇒ 라운드를 돌기 전에 플래그를 읽고, 꺼져 있으면 **즉시 중단하고 사람이 할 일을 말한다**.
+#     (자격 자체를 여기서 채우지 않는다 — 비밀번호 취급은 사람의 영역이다.)
+#   ★건너뛰기: -SkipLogin 이면 이미 로그인된 세션 전제이므로 점검하지 않는다.
+$MAINCFG = "C:\WISEfn\Common\Data\maincfg.ini"
+if (-not $SkipLogin) {
+  if (Test-Path $MAINCFG) {
+    $cfg = Get-Content $MAINCFG -Encoding Default -EA SilentlyContinue
+    $savepw = ($cfg | Where-Object { $_ -match '^\s*SAVEUSERPW\s*=' } | Select-Object -First 1) -replace '^[^=]+=', ''
+    $savepw = "$savepw".Trim()
+    if ($savepw -eq '0') {
+      Write-Host ""
+      Write-Host "XX ABORT [autologin] maincfg.ini [LOGIN] SAVEUSERPW=0 — 비밀번호 저장이 꺼져 있습니다."
+      Write-Host "   이 스크립트는 LOGIN 버튼을 클릭만 하므로, 저장된 비밀번호 없이는 **몇 번을 돌려도 실패**합니다."
+      Write-Host "   (반복 실패 로그인은 계정 잠금 위험이 있어 라운드를 시작하지 않습니다.)"
+      Write-Host "   조치: Quantiwise 로그인 창에서 비밀번호를 1회 입력하되 **'비밀번호 저장' 체크박스를 켜고** 로그인하세요."
+      Write-Host "         → maincfg.ini 가 SAVEUSERPW=1 로 바뀌면 이후 무인 실행이 복구됩니다."
+      Write-Host "   확인:  Select-String -Path '$MAINCFG' -Pattern 'SAVEUSERPW'"
+      exit 3
+    }
+    Write-Host "[autologin] SAVEUSERPW=$savepw (자격 저장 확인)"
+  } else {
+    Write-Host "[autologin] maincfg.ini 부재 — 사전 점검 생략(로그인 실패 시 원인 특정 불가)"
+  }
 }
 
 # ---- main: resilient round loop ----
