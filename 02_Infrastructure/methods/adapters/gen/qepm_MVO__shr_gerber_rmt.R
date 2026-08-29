@@ -58,7 +58,7 @@ method_weights <- function(ctx) {
   a <- ctx$assets
   S <- gen_sigma(ctx$R[, a, drop = FALSE], "gerber_rmt")
   w <- .qepm_dispatch("MVO", alpha = ctx$mu, cov_matrix = S, returns = ctx$R,
-                 bounds = c(0, if (is.null(ctx$ub)) 0.20 else ctx$ub),
+                 bounds = c(0, if (is.null(ctx$ub)) 1.0 else ctx$ub),  # v10 2026-08-29: mandate 상한 폐지 — 기본 무상한
                  max_names = 25L, min_names = min(15L, length(a)),
                  hhi_cap = max(0.10, 1.05 / length(a)))
   # 이름이 있으면 **이름으로** 정렬한다 — max_names 로 support 를 제한하는 부모(MVO 계열)는

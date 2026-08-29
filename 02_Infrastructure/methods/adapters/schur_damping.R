@@ -25,7 +25,7 @@
 #------------------------------------------------------------------------------
 # 논문은 배분 규칙 자체를 다루므로 L/S 가정이 없다 — 사상 왜곡 없이 그대로 쓴다.
 # 블록은 상관거리 계층군집으로 만든다(원문 Table 1 "portfolio side: block/cluster structure").
-# 반환은 **선호 벡터**다. long-only · Σw=1 · w≤0.20 은 wrap_adapter 가 강제한다.
+# 반환은 **선호 벡터**다. long-only · Σw=1 은 wrap_adapter 가 강제한다 (v10: 비중 상한 폐지).
 #
 # ★논문이 열어둔 부분과 이 구현이 정한 것을 구분해 적는다(원문 §3 "the one genuinely open
 #   choice—how to set the damping"):

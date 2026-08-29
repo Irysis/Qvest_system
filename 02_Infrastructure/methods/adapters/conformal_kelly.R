@@ -19,7 +19,7 @@
 #   구간을 직접 만든다 — 구조적으로 미래참조 불가(R 은 매수 이전 창만 담는다).
 #
 # PIT: ctx$R / ctx$Sigma 는 run_sigma_ab 가 `raw[Date < start_d]` 로 만든다(C1/C2/C9 준수).
-# 제약: 반환은 **선호 벡터**다. long-only/Σw=1/w≤0.20 은 wrap_adapter 가 강제한다.
+# 제약: 반환은 **선호 벡터**다. long-only/Σw=1 은 wrap_adapter 가 강제한다 (v10: 비중 상한 폐지).
 
 CONFORMAL_ALPHA <- 0.20   # 80% 구간 (양측 10%) — 표준 선택. sweep 아님(단일 사전 고정, DSR 부적용)
 

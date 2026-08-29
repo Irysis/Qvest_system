@@ -46,13 +46,13 @@ METHOD_REGISTRY_PATH <- file.path("06_Registry", "method_registry.json")
 #'   R             일별 수익 행렬 (obs × assets, 같은 창)
 #'   mu            named numeric — 현 book 알파 score (없을 수 있음)
 #'   assets        colnames(Sigma)
-#'   ub            상한 (0.20)
+#'   ub            상한 (기본 1.0 = 무상한 — v10 2026-08-29 mandate 상한 폐지)
 #'   lookback_days Σ 추정창 길이
 #'   decision_date / eval_date
 #' 반환: assets 순서의 numeric. NA/Inf 허용(하네스가 0 으로 처리).
 
 #' 어댑터를 제약-강제 래퍼로 감싼다. ★어댑터는 제약을 지킬 의무가 없다 — 여기서 강제한다.
-wrap_adapter <- function(fn, method_id, ub = 0.20) {
+wrap_adapter <- function(fn, method_id, ub = 1.0) {  # v10 2026-08-29: 기본 무상한 (mandate [0,0.20] 폐지)
   force(fn); force(method_id); force(ub)
   function(ctx) {
     v <- tryCatch(fn(ctx), error = function(e) {
@@ -93,7 +93,7 @@ wrap_adapter <- function(fn, method_id, ub = 0.20) {
 #'   영원히 안 실린다 — 라우팅 축 혼동이 조용한 드롭을 만드는 전형이다.
 #'   그래서 로더는 **kind 로 고른다**. route 는 보고·추적용으로만 남는다.
 #'   구 시그니처(route=)는 하위호환으로 받되 kind 로 해석한다.
-load_method_adapters <- function(kind = "weight", only = NULL, ub = 0.20, root = .mr_root(),
+load_method_adapters <- function(kind = "weight", only = NULL, ub = 1.0, root = .mr_root(),
                                  route = NULL) {
   if (!is.null(route)) kind <- if (identical(route, "risk")) "sigma" else "weight"
   rp <- file.path(root, METHOD_REGISTRY_PATH)

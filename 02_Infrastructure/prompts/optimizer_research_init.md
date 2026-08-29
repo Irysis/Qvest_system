@@ -166,7 +166,7 @@ Common Charter 8원칙 준수 (Point-in-time / Research Process / Family vs Prox
 
 - **max_names ≤ 25** (hard cap, 슬리브당 아님)
 - **long-only** (weights ≥ 0)
-- **weight_bounds** [0, 0.20]
+- **weight_bounds** [0, 1.0] — v10 2026-08-29: 종목별 비중 상한 폐지 (long-only 하한만)
 - **Σw** = 1 (absolute) / = 0 (active)
 - **universe** request.json `universe_definition.label` 준수
 - **liquidity** 20d avg TV ≥ 2e8원 (universe 필터)
@@ -355,7 +355,7 @@ mvo_weights(
 ```
 
 ### 의미
-- **bounds [0, 0.20]**: 단일 종목 20% 이상 집중 금지. 25종 균등 시 4%씩, 최대 2배 편차까지만.
+- **bounds [0, 1.0]**: v10 2026-08-29 — 종목별 비중 상한 폐지(도훈 지시). long-only 하한만 강제.
 - **min_names 15**: QP 결과 < 15 이면 lambda 반감 재시도(최대 4회) → 부족 시 top alpha 종목으로 baseline 보충.
 - **hhi_cap 0.10**: HHI 초과 시 greedy projection — top weight 0.005 step 감소 + 작은 종목에 균등 분배 반복 (≤500 iter).
 - **alpha_winsor 2.0**: cross-section z-score 계산 → |z| > 2 이면 sign(z) × 2σ + μ 로 clip. outlier 집중 방지.
@@ -380,7 +380,7 @@ mvo_weights(
 ### Hook 강제
 `worktask_constraint_enforcer.sh` 업데이트 예정:
 - `length(target_weights) < 15` 또는 `HHI > 0.10` → block.
-- `max(weights) > 0.20` → block (2026-06-13 도훈 confirm — weight_bounds [0, 0.20] v2.4).
+- (v10 2026-08-29) 종목별 비중 상한 block 폐지 — long-only·Σw=1·max_names 25 만 검증.
 </v61_breadth_constraints>
 
 <v61_perf>
@@ -452,7 +452,7 @@ dsr <- bootstrap_dsr_fast(backtest_returns, n_trials = n_methods, B = 1000L)
 3. **Uncertainty-aware Forecasting** (CI > Point) — Liao-Ma-Neuhierl-Schilling 2025 RFS
 4. **Direct Portfolio Learning** (Integration > Two-stage) — You-Zhang 2025 (Phase 3)
 5. **Risk Model 고도화** (Crowding + Concentration) — Acadian 2026 + Behmaram 2024
-6. **Implementation Discipline** — TO ≤ 11.0/yr + LIQ + max_names 25 + weight [0, 0.20] + Σw=1
+6. **Implementation Discipline** — TO ≤ 11.0/yr + LIQ + max_names 25 + Σw=1 (v10 2026-08-29: 종목별 비중 상한 폐지)
 7. **Attribution & Feedback Loop** — Brinson-Fachler 1985 + Carhart 1997 + Newey-West 1987
 
 **참조**: `_shared_prefix.md` <research_philosophy> tag (모든 agent autoload) + `02_Infrastructure/worktask/common_charter.md` §15 + `02_Infrastructure/docs/rules/research_philosophy.md`.

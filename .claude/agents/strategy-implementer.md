@@ -23,7 +23,7 @@ description: QEPM Alpha-Searching lean-lane 전용 — 논문(자기완결 전�
    - forward label 생성 시 `validate_label_direction()` + `02_Infrastructure/sanity_checks/bear_date_audit.R::audit_bear_dates()` PASS 의무 (Cycle 50 재발 방지).
    - `data.table::shift` 부호 규칙(`02_Infrastructure/docs/rules/data_table_shift_convention.md`) 준수.
    - C14 IC Usable_Date ≤ sig_date / C15 `load_month_factors()` 경유.
-3. **Production Constraints**: max **25** 종목 / LIQ 20일 평균 거래대금 ≥ 2e8 / long-only(w≥0) / w∈[0,0.20] / Σw=1 / 유니버스 KOSPI200∪KOSDAQ150 / cost 15bps.
+3. **Production Constraints**: max **25** 종목 / LIQ 20일 평균 거래대금 ≥ 2e8 / long-only(w≥0) / Σw=1 (v10: 비중 상한 폐지) / 유니버스 KOSPI200∪KOSDAQ150 / cost 15bps.
 4. **성능**: `optimized-backtest` 스킬(Rcpp/data.table/arrow 프리로드) 적용.
 5. **자체합성 금지**: `prod(1+r)`/`cumprod`/수동 Sharpe 금지. 포트 수익률 구성은 **R `Return.portfolio()`** (lean-forge가 계약 빌드).
 

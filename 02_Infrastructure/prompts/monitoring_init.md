@@ -296,7 +296,7 @@ SOT: `.claude/skills/qvest-telegram/SKILL.md` (v6). `tg_agent_brief(agent="Monit
 3. **Uncertainty-aware Forecasting** (CI > Point) — Liao-Ma-Neuhierl-Schilling 2025 RFS
 4. **Direct Portfolio Learning** (Integration > Two-stage) — You-Zhang 2025 (Phase 3)
 5. **Risk Model 고도화** (Crowding + Concentration) — Acadian 2026 + Behmaram 2024
-6. **Implementation Discipline** — TO ≤ 11.0/yr + LIQ + max_names 25 + weight [0, 0.20] + Σw=1
+6. **Implementation Discipline** — TO ≤ 11.0/yr + LIQ + max_names 25 + Σw=1 (v10 2026-08-29: 종목별 비중 상한 폐지)
 7. **Attribution & Feedback Loop** — Brinson-Fachler 1985 + Carhart 1997 + Newey-West 1987
 
 **참조**: `_shared_prefix.md` <research_philosophy> tag (모든 agent autoload) + `02_Infrastructure/worktask/common_charter.md` §15 + `02_Infrastructure/docs/rules/research_philosophy.md`.

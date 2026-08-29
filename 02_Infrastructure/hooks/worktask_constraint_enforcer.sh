@@ -15,8 +15,9 @@ fi
 # 검증 항목 (Deployment WT만):
 #   1. max_names ≤ 25 (hard cap, 도훈 mandate 2026-05-29 20→25)
 #   2. long-only: all weights ≥ 0
-#   3. weight_bounds: weights ≤ 0.20
-#   4. Σw = 1 (absolute, tolerance 0.001)
+#   3. Σw = 1 (absolute, tolerance 0.001)
+#   ★종목별 비중 상한(구 ≤0.20)은 v10 에서 mandate 층 전체 삭제 (도훈 지시 2026-08-29
+#     "종목별 20% 제한도 완전히 삭제해버려"). 등록 전략 frozen 스펙 내부의 캡은 별개.
 #
 # Discovery WT: SOFT 제약 SKIP, HARD mandate (PIT + liquidity floor 50M)만.
 
@@ -100,9 +101,7 @@ else:
     neg = [k for k,v in tw.items() if v < 0]
     if neg:
         errs.append(f"long-only 위반: {neg[:3]}")
-    too_high = [k for k,v in tw.items() if v > 0.20 + 1e-6]
-    if too_high:
-        errs.append(f"weight > 0.20: {too_high[:3]}")
+    # (v10 2026-08-29) 종목별 비중 상한 검사 삭제 — mandate 층 [0,0.20] 폐지 (도훈 지시).
     total = sum(tw.values())
     if abs(total - 1.0) > 0.001:
         errs.append(f"Σw = {total:.4f} ≠ 1.0")

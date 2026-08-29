@@ -226,7 +226,7 @@ GV_FIXED_RECIPE <- list(
     #   production(25종)에서는 min(15,25)=15 · max(0.10, 1.05/25=0.042)=0.10 으로 **동일**하다.
     #   즉 완화는 fixture 구간에서만 발화한다(게이트를 낮추는 것이 아니다).
     sprintf(paste0('.qepm_dispatch("%s", alpha = ctx$mu, cov_matrix = S, returns = ctx$R,\n',
-                   '                 bounds = c(0, if (is.null(ctx$ub)) 0.20 else ctx$ub),\n',
+                   '                 bounds = c(0, if (is.null(ctx$ub)) 1.0 else ctx$ub),\n',
                    '                 max_names = 25L, min_names = min(15L, length(a)),\n',
                    '                 hhi_cap = max(0.10, 1.05 / length(a))%s)'),
             as.character(.gv_get(r, "dispatch_name", "")), extra)

@@ -37,7 +37,7 @@ method_weights <- function(ctx) {
   T <- nrow(R); K <- length(PRD_ALPHAS)
   if (T < 60L) stop(sprintf("관측 부족 T=%d", T))
 
-  ub <- ctx$ub %||% 0.20
+  ub <- ctx$ub %||% 1.0  # v10 2026-08-29: mandate 상한 폐지
   # 변수 배치: [w(1..p)] [zeta(1..K)] [u(K*T)] [theta]
   iw <- seq_len(p); iz <- p + seq_len(K); iu <- p + K + seq_len(K * T); ith <- p + K + K * T + 1L
   nv <- ith

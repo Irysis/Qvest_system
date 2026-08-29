@@ -23,7 +23,7 @@ const stageDir = `stage_artifacts/WT_${wt.replace(/-/g, '_')}_${tag}`
 // Write/Bash hook(sequence_enforcer / constraint_enforcer / backtest_contract_audit)은 정상 발동. (v8.2: codex_round_pre_enforcer 등록 해제 — Codex Round 폐지)
 const GUARD =
   `[전제] WT ${wt} candidate=${tag}. canonical handoff 이름 사용(alpha_package.json/risk_package.json/optimization_package.json/forge_package.json/judge_verdict.json — artifact-naming 정책).\n` +
-  `제약: PIT lockbox ${cutoff()} strict / **long-only weights≥0 (도훈 mandate 2026-05-29 온리-롱 전용)** / max 25 names (도훈 mandate 20→25) / [0,0.20] / Σw=1 / 유동성 2e8 / 15bps / **회전율 hard cap 11.0/yr** / 백테스트 자체합성 금지(PerformanceAnalytics/R-bridge).\n` +
+  `제약: PIT lockbox ${cutoff()} strict / **long-only weights≥0 (도훈 mandate 2026-05-29 온리-롱 전용)** / max 25 names (도훈 mandate 20→25) / Σw=1 (v10: 비중 상한 폐지) / 유동성 2e8 / 15bps / **회전율 hard cap 11.0/yr** / 백테스트 자체합성 금지(PerformanceAnalytics/R-bridge).\n` +
   `[AX 전제 — workflow agent hook 미발동, 명시] AX-002 PIT 정직(우회=미래참조) / AX-001 v2 crisis 조건부 / AX-005 KR defense low-vol single-sleeve long-only 실패 / AX-007 multi-sleeve 예외 / AX-008 Verification Triangulation / AX-000 입증된 한계 정직보고. 전문 .claude/rules/axioms.md.\n` +
   `Self-Adversarial Challenge 의무(v8.2 — Codex Round 대체): finalize 직전 약점 ≥3건 자가 제기 → ACCEPT/PARTIAL/REBUTTAL 분류 → challenge_note.md 기록 → final. No Silent Override — 제약 완화/도달불가/충돌은 infeasibility_report로 surface(침묵 default 금지).\n` +
   `완료 시 tg_agent_brief 텔레그램 brief(한글 컨텍스트 첫섹션, 핵심kv 정량결과만, 약어 한글풀이, tg_send 직접금지).`
@@ -39,7 +39,7 @@ const OPT_SCHEMA = { type: 'object', required: ['method_selected', 'n_names', 't
   method_selected: { type: 'string' }, n_names: { type: 'number' }, turnover_yr: { type: 'number' },
   net_sharpe: { type: 'number' }, book_ir: { type: 'number' }, sr_2_5_reachable: { type: 'boolean' },
   sr_overlay_assumed: { type: 'number', description: 'overlay 적용 가정 시 추정 SR' },
-  constraints_ok: { type: 'boolean', description: 'long-only/≤25/Σw=1/[0,0.20]/TO≤11 전부 충족' },
+  constraints_ok: { type: 'boolean', description: 'long-only/≤25/Σw=1/TO≤11 전부 충족 (v10: 비중 상한 폐지)' },
   blocking: { type: 'boolean' }, infeasibility: { type: 'array', items: { type: 'string' } }, summary: { type: 'string' } } }
 const FORGE_SCHEMA = { type: 'object', required: ['sharpe', 'cagr', 'mdd', 'bt_audit_status', 'summary'], properties: {
   sharpe: { type: 'number' }, cagr: { type: 'number' }, mdd: { type: 'number' }, turnover_yr: { type: 'number' },

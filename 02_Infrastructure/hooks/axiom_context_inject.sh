@@ -190,8 +190,9 @@ def _fa_derive():
             pat = '|'.join(toks)
     return out, pat
 _fa_line, _SETTLED_PAT = _fa_derive()
-axis = ('[고정 축 — 변수 아님, 이 안에서 풀 것]' + chr(10) +
-        '  long-only(w>=0)·<=25종·K200∪KQ150·15bps(v2.4 delta)·[0,0.20]·Σw=1 + PIT C1~C15. 제약-귀속·완화 금지.' + chr(10) +
+axis = ('[고정 축 — 변수 아님, 이 안에서 풀 것] (v10 2026-08-29 2계층)' + chr(10) +
+        '  실투형(강화 프로세스부터): long-only(w>=0)·<=25종·K200∪KQ150·15bps(v2.4 delta)·Σw=1 + PIT C1~C15. 비중 상한 없음(v10 폐지). 제약-귀속·완화 금지.' + chr(10) +
+        '  충실구현 라운드(1계층 최초): 논문 그대로(롱숏·종목수·비중·리밸) — 유니버스만 K200∪KQ150 치환. PIT 는 계층 무관 불변.' + chr(10) +
         _fa_line)
 
 # ── 변동부: .cache/positive_context.json (생산자 = lcode_harvester.py) ────────

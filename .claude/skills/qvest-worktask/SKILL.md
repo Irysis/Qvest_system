@@ -85,7 +85,7 @@ wt_id <- wt_create(
 자동 주입:
 - `task_id = WT-{D|P|S|H}YYYYMMDD_NNN`
 - `hard_constraints.max_names = 25` (deployment) / NULL (discovery breadth)
-- `weight_bounds = [0, 0.20]` (deployment)
+- `weight_bounds = [0, 1.0]` (v10: 종목별 상한 폐지)
 - `liquidity_min = 2e8` (deployment) / 1e7 (discovery hard mandate floor)
 - `cost_model = v2.4_kr_retail_15bps`
 - `data_lag_rules` 4종 (fundamental / price / investor_flow / macro)
@@ -174,7 +174,7 @@ Agent(subagent_type="governor", prompt="WT{id} PG0~PG3 admission")
 |---|---|---|
 | max_names | 25 hard | worktask_constraint_enforcer |
 | Long-only | weights ≥ 0 | same |
-| Weight bounds | [0, 0.20] | same |
+| Weight bounds | 없음 — v10 폐지 (long-only만) | same |
 | Σw | = 1 (absolute) | same |
 | Universe | KOSPI200 ∪ KOSDAQ150 | worktask_spec_validator |
 | Liquidity | 20d TV ≥ 2e8 KRW | same + Alpha filter |

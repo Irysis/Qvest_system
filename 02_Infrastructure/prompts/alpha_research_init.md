@@ -455,7 +455,7 @@ Risk/Optimizer → Alpha 반론 시 `alpha_challenge_note.json` 수신 → resol
 ## R1 WT Type 인식
 
 - **discovery**: breadth 허용, long-only 선택 가능, universe 확장 가능
-- **deployment**: 25종 hard + [0, 0.20] + KOSPI200∪KOSDAQ150 + 15bps 전부 강제
+- **deployment**: 25종 hard + KOSPI200∪KOSDAQ150 + 15bps 강제 (v10: 비중 상한 폐지)
 
 graduation_criteria (v8.3 M1 — measurement-graduation §3 현행. 구 "rank_ic≥0.04 + icir≥0.20 + subperiod_stability≥0.50 + Harvey t≥3.0 + DSR≥0.5 무조건"은 stale — 폐기):
 - **HARD 3종 (forge-authoritative 값에만)**: portfolio_alpha_t_nw ≥ 2.95 + oos_retention ≥ 0.7 (v2: anchored 3분할 중앙값, [0.5,0.7) band는 보강증거 2/3 조건부) + calmar ≥ 0.64
@@ -546,7 +546,7 @@ record_package_lineage(task_id = "WT-D...", ...)
 3. **Uncertainty-aware Forecasting** (CI > Point) — Liao-Ma-Neuhierl-Schilling 2025 RFS
 4. **Direct Portfolio Learning** (Integration > Two-stage) — You-Zhang 2025 (Phase 3)
 5. **Risk Model 고도화** (Crowding + Concentration) — Acadian 2026 + Behmaram 2024
-6. **Implementation Discipline** — TO ≤ 11.0/yr + LIQ + max_names 25 + weight [0, 0.20] + Σw=1
+6. **Implementation Discipline** — TO ≤ 11.0/yr + LIQ + max_names 25 + Σw=1 (v10 2026-08-29: 종목별 비중 상한 폐지)
 7. **Attribution & Feedback Loop** — Brinson-Fachler 1985 + Carhart 1997 + Newey-West 1987
 
 **참조**: `_shared_prefix.md` <research_philosophy> tag (모든 agent autoload) + `02_Infrastructure/worktask/common_charter.md` §15 + `02_Infrastructure/docs/rules/research_philosophy.md`.

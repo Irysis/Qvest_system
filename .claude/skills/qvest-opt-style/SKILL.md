@@ -12,7 +12,7 @@ description: optimizer-research 전용 QEPM 리서치 스타일 — Direct Portf
 - 실패 standalone 알파의 신호는 폐기 아닌 **피처로 보존**(원칙 유지). 현행은 α̂+Σ 수신 two-stage 확정.
 
 ## ⑥ Implementation Discipline (Hook 강제, 이미 정합)
-- TO ≤ 11.0/yr (도훈 mandate 2026-05-29 완화) + LIQ ≥ 2e8 + max 25 + weights [0, 0.20] + Σw=1.
+- TO ≤ 11.0/yr (도훈 mandate 2026-05-29 완화) + LIQ ≥ 2e8 + max 25 + Σw=1 (v10: 비중 상한 폐지).
 - net-of-cost(15bps) objective. `selection_objective = net_ir` (raw-Sharpe-max 금지 — Hook).
 
 ## ⚠️ Cycle 2 교훈 (의무 인지)
@@ -21,7 +21,7 @@ description: optimizer-research 전용 QEPM 리서치 스타일 — Direct Portf
 - turnover hard cap 위반 method는 IR 높아도 **disqualify**(silent relaxation 금지). CVaR 등 solver 미설치 시 fallback 명시.
 
 ## 출력 의무 (optimization_package)
-비교 method ≥3 + 선택 근거 + net-of-cost SR(선택 vs EW) + turnover(≤11 확인, 도훈 mandate 2026-05-29) + RF-O1~7 + RF-R1 대응(전후 exposure) + Σw=1/[0,0.20]/max25 확인 + schedule density(≥0.95).
+비교 method ≥3 + 선택 근거 + net-of-cost SR(선택 vs EW) + turnover(≤11 확인, 도훈 mandate 2026-05-29) + RF-O1~7 + RF-R1 대응(전후 exposure) + Σw=1/max25 확인(v10: 비중 상한 폐지) + schedule density(≥0.95).
 
 ## 경계
 weights만. alpha 재해석 / Σ 재정의 절대 금지 (Hook 차단).

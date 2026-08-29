@@ -18,7 +18,7 @@
 #
 # 고정 제약 7종 (변수 아님):
 #   ① 종목수 max 25  ② 유동성 20일 평균 거래대금 ≥ 2e8 KRW  ③ Long-only(weights≥0)
-#   ④ Weight bounds [0,0.20]  ⑤ Σw=1  ⑥ Universe KOSPI200∪KOSDAQ150
+#   ④ (v10 폐지 — 구 Weight bounds [0,0.20])  ⑤ Σw=1  ⑥ Universe KOSPI200∪KOSDAQ150
 #   ⑦ Transaction cost 15bps one-way(v2.4 delta)  + PIT C1~C15
 #
 # envelope-안 레버(프론티어 화이트리스트 — 이것만 정당한 탐색축):
@@ -220,7 +220,7 @@ check_constraint_firewall <- function(text, mode = c("semantic", "backstop"), ro
 
   pass <- length(violations) == 0
   suggestion <- if (pass) "" else paste0(
-    "제약 방화벽 backstop 위반 — 고정 제약(종목수≤25·유동성 2e8·long-only·[0,0.20]·Σw=1·",
+    "제약 방화벽 backstop 위반 — 고정 제약(종목수≤25·유동성 2e8·long-only·Σw=1·",
     "K200∪KQ150·15bps·PIT)은 문제의 고정 축이지 변수가 아닙니다. envelope-안 레버",
     "(overlay·잔차 sleeve·비-return·DPL·regime-conditional·multi-sleeve·composite·ML sizing) ",
     "상대로 재작성하세요. ('봉투 안에서 천장' 정직 서술·'미해결 열어둠'은 허용.)")

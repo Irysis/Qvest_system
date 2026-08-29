@@ -26,7 +26,7 @@
 
 | Hook | 강제 대상 |
 |---|---|
-| worktask_constraint_enforcer | 25종 + bounds [0, 0.20] + Σw=1 + long-only |
+| worktask_constraint_enforcer | 25종 + Σw=1 + long-only (v10: 비중 상한 폐지) |
 | worktask_spec_validator | request.json schema (task_id format / universe / cost_model_version) |
 | ast_spec_gate | AST v1.1 스펙 게이트 (2026-07-25 신설, 라우터 dispatch[Write]) — alpha_package*.json: v1.1은 mechanism 3필드·falsification(field_dictionary 내)·regime_scope·𝒪 밖 연산자·ast_verify FAIL_LOOKAHEAD(+검증계층 경보 `06_Registry/ast_gate_alerts.jsonl`) block / 구식 패키지는 advisory 통과. SOT `qvest_ast_v1_1_sot.md` §7 |
 | ~~forge_code_guard~~ | ❌ **DEPRECATED 2026-05-16** (`_archive_v55/` 삭제 — Tier 1 cleanup. OPT-1~11 강제는 axiom_enforcement_hook + worktask_spec_validator로 대체) |
