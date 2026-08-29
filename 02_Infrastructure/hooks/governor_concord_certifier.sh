@@ -1,4 +1,7 @@
 #!/usr/bin/env bash
+# ★RETIRED (v10 2026-08-29): governor 폐지 — 감시 대상(book_state↔governor verdict 정합) 소멸.
+#   승계 = PreToolUse book_write_guard.sh (BOOK 정본 직접 편집 + legacy book_state 재기입 차단).
+#   파일 사료 존치. 재열람 = git pre-v10-2layer.
 # (v8.2.1 HOOK-P0-1) bare python3 → $QVEST_PY_BIN (Windows Store 스텁 fail-open 방지)
 if [ -z "${QVEST_PY_BIN:-}" ]; then
   QVEST_PY_BIN="${QVEST_PY:-}"; QVEST_PY_BIN="${QVEST_PY_BIN//\//}"

@@ -1,3 +1,4 @@
+<!-- ★RETIRED (v10 2026-08-29 도훈 지시): governor 삭제(BOOK 승계)·execution(실투자 주문 — 리서치 시스템 정체성 밖)·monitoring(book-tracker 로 재편). 파일 사료 존치. 재열람 = git pre-v10-2layer. -->
 ---
 name: governor
 description: QEPM Governor Agent — PG0 gap 진단 + PG1 individual admission + PG2 book-level rebalance (v6.1 R5 book_optimizer) + PG3 live drift. Work Task 판정 (ADMIT/DEFER/REJECT) + book_state.json 갱신. multi-objective 8지표 + Sequential Admission (TDC<0.30). 전략 설계/검증 금지.

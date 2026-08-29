@@ -1,4 +1,7 @@
 #==============================================================================
+# ★v10 (2026-08-29 도훈): governor 폐지 — pg0~pg3 admission 진입점 봉인. BOOK
+#   (06_Registry/book/book_registry.json + book_registry.R) 이 승계. book-marginal
+#   ΔIR 로직은 2계층 진단 도구로만 존치(호출 = 진단, 판정 아님). 사료 = git pre-v10-2layer.
 # Portfolio Governor — PG0~PG3 Module (V7 Research Engine)
 # portfolio_governor.R
 #

@@ -42,6 +42,7 @@ _nm=S(lambda: set(__import__("pyarrow.parquet",fromlist=["x"]).read_schema(R(".c
 mem="K200/KQ150 "+("?" if _nm is None else ("OK" if {"K200","KQ150"}<=_nm else "부재"))
 o.append("Data: 키캐시 %d/4%s · audit %s · rawdata %s · bench %s · %s%s"%(4-len(bad)," ["+", ".join(bad)+"]" if bad else " OK",ra,HH(AG(".cache/rawdata.parquet")),HH(AG(".cache/benchmark.parquet")),mem,"  → bash 02_Infrastructure/data/daily_refresh.sh" if bad else ""))
 # ② Queue — 미소비 논문 수(비숫자면 UNREPORTED, 0 으로 접지 않음) + frontier open 상위 2
+#   ★v10 (2026-08-29): 강화 원장 active(L1 n/20 · L2 무한) + data-pipeline open 병기 (fail-soft ?)
 _r=S(lambda: subprocess.run([PY,R("02_Infrastructure","ops","research_pool_predicates.py"),"alpha-pending",R("stage_artifacts","paper_recharge")],capture_output=True,text=True,timeout=90).stdout.strip())
 q=_r if (_r or "").isdigit() else "UNREPORTED"; fq=[]
 for e in ((J("06_Registry/alpha_frontier_queue.json") or {}).get("entries") or []):
@@ -49,16 +50,26 @@ for e in ((J("06_Registry/alpha_frontier_queue.json") or {}).get("entries") or [
     if st=="parked" or not (st=="open" or ("open" in st and "dohoon_decision" not in ow)): continue
     fq.append("%s · %s"%(e.get("id") or "?",str(e.get("title") or "")[:50]))
     if len(fq)>=2: break
-o.append("Queue: alpha-pending %s · %s"%(q," / ".join(fq) if fq else "frontier open 0"))
+def RF(l):
+    d=J("06_Registry/reinforce_ledger_l%d.json"%l)
+    if not d: return "?"
+    return str(sum(1 for e in (d.get("entries") or []) if (e.get("status") if isinstance(e,dict) else None)=="active"))
+dp=S(lambda: str(sum(1 for e in ((J("06_Registry/data_pipeline_queue.json") or {}).get("entries") or []) if (e.get("status") if isinstance(e,dict) else None)=="open")),"?")
+o.append("Queue: alpha-pending %s · %s | 강화 L1 %s·L2 %s active · data-pipe %s"%(q," / ".join(fq) if fq else "frontier open 0",RF(1),RF(2),dp))
 # ③ Last — 최신 alpha-search L-code (다음 라운드의 출발점)
 g=sorted(glob.glob(R("stage_artifacts","l_code","alpha_search","l_code_*.json")),key=os.path.getmtime)
 c=(J(g[-1]) or {}) if g else {}
 npb=c.get("next_probe"); npb=npb[0] if isinstance(npb,list) and npb else npb
 o.append("Last: %s %s · next %s"%(c.get("l_code") or "?",c.get("grade") or "?",str(npb or "?")[:80]))
-# ④ Book — 자본 층 현재 편입 (쓰기는 도훈 수동)
-b=J("qepm/mailbox/governor/book_state.json") or {}
-ai=(b.get("admitted_ids") or ["?"])[0]; wv=(b.get("book_weights") or {}).get(ai)
-o.append("Book: %s %s (%s~) — book_state.json 정본(도훈만 씀)"%(ai,("%.0f%%"%(float(wv)*100)) if wv is not None else "?%",str(b.get("updated_at") or "?")[:10]))
+# ④ Book — ★v10 정본 = 06_Registry/book/book_registry.json (governor/book_state 폐지)
+b=J("06_Registry/book/book_registry.json") or {}
+ents=[e for e in (b.get("entries") or []) if isinstance(e,dict)]
+act=[e for e in ents if e.get("status")=="active"]
+lt=act[-1] if act else None
+o.append("Book: %d entries (%d active)%s — book_registry.json 정본(writer 경유·도훈 confirm)"%(
+    len(ents),len(act),
+    (" · 최신 %s %s %s (트래킹 %s)"%(lt.get("book_id"),str(lt.get("strategy_id"))[:34],lt.get("grade"),
+     str((lt.get("tracking") or {}).get("last_nav_date") or "미실행"))) if lt else ""))
 # ⑤ Alerts/Budget — digest 헤더 + v9 예산 4종
 _hd=S(lambda: open(R(".cache","alerts_digest.md"),encoding="utf-8").readline(),"") or ""
 _m=S(lambda: re.search(r"open=(\d+).*?built=(\S+?)\s*-->",_hd))

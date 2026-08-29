@@ -57,6 +57,10 @@
           {
             "type": "command",
             "command": "DIR=${CLAUDE_PROJECT_DIR:-${QM_ROOT:-$PWD}}; bash \"$DIR/02_Infrastructure/hooks/legacy_write_block.sh\" 2>>/tmp/legacy_write_block.log || true"
+          },
+          {
+            "type": "command",
+            "command": "DIR=${CLAUDE_PROJECT_DIR:-${QM_ROOT:-$PWD}}; bash \"$DIR/02_Infrastructure/hooks/book_write_guard.sh\" 2>>/tmp/book_write_guard.log || true"
           }
         ]
       },
@@ -111,13 +115,9 @@
     ],
     "PostToolUse": [
       {
-        "_doc_post_v9": "PostToolUse 는 자본 게이트 인증(book_state 정합)과 PIT C5 오버레이 advisory 2종만 유지.",
+        "_doc_post_v10": "v10 2026-08-29: governor_concord_certifier 등록 해제(governor 폐지 — 감시 대상 소멸, 승계 훅 = PreToolUse book_write_guard.sh). PostToolUse 는 PIT C5 오버레이 advisory 1종만 유지.",
         "matcher": "Write|Edit",
         "hooks": [
-          {
-            "type": "command",
-            "command": "DIR=${CLAUDE_PROJECT_DIR:-${QM_ROOT:-$PWD}}; bash \"$DIR/02_Infrastructure/hooks/governor_concord_certifier.sh\" 2>>/tmp/governor_concord_certifier.log || true"
-          },
           {
             "type": "command",
             "command": "DIR=${CLAUDE_PROJECT_DIR:-${QM_ROOT:-$PWD}}; bash \"$DIR/02_Infrastructure/hooks/overlay_pit_grep.sh\" 2>>/tmp/overlay_pit_grep.log || true"

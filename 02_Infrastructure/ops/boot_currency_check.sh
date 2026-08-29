@@ -15,7 +15,7 @@
 #   C4 래칫  : 제거된 낡은 기대값 문자열의 재유입 금지 (qvest.md — 07-26 수리 회귀 가드)
 #   C5 인벤토리: qvest.md "실측 N종" 스냅샷 ↔ 실제 .claude/agents/*.md 수
 #   C6 훅 총계: CLAUDE.md "NN distinct .sh" ↔ 실측(직접∪dispatch)
-#   C7 PG2   : qvest.md에 등장하는 *_PG2 id ↔ book_state.json admitted_ids
+#   C7 BOOK  : qvest.md에 등장하는 전략 id ↔ book_registry.json entries (v10)
 #   C8a 항해도: CLAUDE.md Active Version ↔ 00_Lawbook/INDEX.md 헤더 버전
 #   C8c 커버리지: CLAUDE.md "★ Active SOT" 나열 ⊆ 00_Lawbook/INDEX.md 인용
 #   C9  환경  : python-policy.md 가 선언한 ML 실행기(venv)가 실제로 실행 가능한가
@@ -59,7 +59,7 @@ F_BOOT="${QVEST_BCC_BOOTSTRAP:-$PROJECT/02_Infrastructure/ops/bootstrap.sh}"
 F_QVEST="${QVEST_BCC_QVEST_MD:-$PROJECT/.claude/commands/qvest.md}"
 F_SETTINGS="${QVEST_BCC_SETTINGS:-$PROJECT/.claude/settings.json}"
 F_DISPATCH="${QVEST_BCC_DISPATCH:-$PROJECT/02_Infrastructure/hooks/policies/router_dispatch.json}"
-F_BOOK="${QVEST_BCC_BOOK_STATE:-$PROJECT/qepm/mailbox/governor/book_state.json}"
+F_BOOK="${QVEST_BCC_BOOK_STATE:-$PROJECT/06_Registry/book/book_registry.json}"  # v10: BOOK 정본 (구 book_state 폐지)
 D_AGENTS="${QVEST_BCC_AGENTS_DIR:-$PROJECT/.claude/agents}"
 F_LAWBOOK="${QVEST_BCC_LAWBOOK_INDEX:-$PROJECT/00_Lawbook/INDEX.md}"
 F_PYPOLICY="${QVEST_BCC_PY_POLICY:-$PROJECT/.claude/rules/python-policy.md}"
@@ -197,7 +197,7 @@ else
   bad "C6 UNKNOWN — settings.json 또는 router_dispatch.json 부재 (통과로 위장 금지)"
 fi
 
-# ── C7 PG2 참조: qvest.md의 *_PG2 id ↔ book_state admitted_ids ───────────────
+# ── C7 BOOK 참조: qvest.md의 전략 id ↔ book_registry entries (v10 재배선) ────
 if [ -f "$F_BOOK" ]; then
   QV_PG2=$(grep -oE 'STR_[0-9]+[A-Za-z0-9_]*_PG2' "$F_QVEST" 2>/dev/null | sort -u)
   if [ -z "$QV_PG2" ]; then
@@ -208,13 +208,13 @@ if [ -f "$F_BOOK" ]; then
       grep -qF "\"$id\"" "$F_BOOK" || MISS7="$MISS7$id "
     done
     if [ -z "$MISS7" ]; then
-      ok "C7 PG2 참조 = book_state admitted 일치 ($(printf '%s' "$QV_PG2" | wc -l | tr -d ' ')건)"
+      ok "C7 BOOK 참조 = book_registry 일치 ($(printf '%s\n' "$QV_PG2" | wc -l | tr -d ' ')건)"
     else
-      bad "C7 PG2 참조 낡음 — qvest.md의 ${MISS7}가 book_state.json admitted_ids에 없음 (book 교체 미반영)"
+      bad "C7 BOOK 참조 낡음 — qvest.md의 ${MISS7}가 book_registry.json entries에 없음 (BOOK 교체 미반영)"
     fi
   fi
 else
-  bad "C7 UNKNOWN — book_state.json 부재"
+  bad "C7 UNKNOWN — book_registry.json 부재"
 fi
 
 # ── C8c SOT 커버리지: CLAUDE.md ★Active SOT ⊆ Lawbook INDEX ──────────────────

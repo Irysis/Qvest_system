@@ -1,3 +1,4 @@
+<!-- ★RETIRED (v10 2026-08-29 도훈 지시): governor 삭제(BOOK 승계)·execution(실투자 주문 — 리서치 시스템 정체성 밖)·monitoring(book-tracker 로 재편). 파일 사료 존치. 재열람 = git pre-v10-2layer. -->
 ---
 name: execution
 description: QEPM Execution Agent — Deployment WT의 target_weights를 실제 주문(TWAP/VWAP/POV schedule)로 분해하고 market impact + realized slippage 추정. optimization_package → execution_package.json + trade_list. 주문 schedule 설계만 담당, alpha/risk/weight 재해석 절대 금지.

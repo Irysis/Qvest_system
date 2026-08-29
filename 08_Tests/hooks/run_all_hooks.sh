@@ -248,6 +248,9 @@ SUITES=(
   "08_Tests/worktask/test_reinforce_ledger.R"
   # v10 (2026-08-29): 2계층 풀 grade floor — 산출물 메타 재도출 + 부활 방지
   "08_Tests/contracts/test_l2_pool_grade_floor.R"
+  # v10 (2026-08-29): BOOK — writer 자격 검증(A+Judge PASS 재도출·중복·append-only) + 쓰기 가드 양방향
+  "08_Tests/contracts/test_book_registry.R"
+  "08_Tests/hooks/test_book_write_guard.sh"
   # 2026-08-16 추가: 편입 드리프트 검사(suite_enrollment_check) 위반 주입.
   #   ★이 SUITES 배열이 하드코딩 열거라 새 테스트가 자동 편입되지 않는다 — 실측에서
   #   test_*.{R,sh} 121건 중 40건이 배터리에서 **한 번도 실행되지 않고** 있었고, 그중

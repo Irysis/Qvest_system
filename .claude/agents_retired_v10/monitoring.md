@@ -1,3 +1,4 @@
+<!-- ★RETIRED (v10 2026-08-29 도훈 지시): governor 삭제(BOOK 승계)·execution(실투자 주문 — 리서치 시스템 정체성 밖)·monitoring(book-tracker 로 재편). 파일 사료 존치. 재열람 = git pre-v10-2layer. -->
 ---
 name: monitoring
 description: QEPM Monitoring Agent — admitted Deployment WT의 live drift 감지. Realized α vs predicted + TE ratio + crowding drift + signal decay + regime shift. monitoring_report.json + Telegram. Cron 월간 또는 Q-Lead 온디맨드.

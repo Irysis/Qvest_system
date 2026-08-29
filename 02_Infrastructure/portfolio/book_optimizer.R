@@ -1,4 +1,7 @@
 #==============================================================================
+# ★v10 (2026-08-29 도훈): governor 폐지 — book_update()/update_book_state() 의 book_state.json
+#   쓰기 경로는 봉인(legacy 동결 — book_write_guard.sh 가 차단). book_information_ratio 등
+#   계산 함수는 2계층 dispatcher 래퍼가 계속 쓴다(존치).
 # QEPM Book-Level Optimizer — v6.1 R5 (2026-04-24)
 #
 # Problem: Governor는 개별 WT admission만 판정. 여러 admitted WT가 결합됐을 때
