@@ -240,6 +240,8 @@ SUITES=(
   "08_Tests/data/test_frontier_coherence.R"
   # 2026-07-26 추가: 부팅 자기-정합 검사(boot_currency_check) 위반 주입 — 부팅 최신화 자동 배선의 가드
   "08_Tests/hooks/test_boot_currency.sh"
+  # v10 (2026-08-29): 비중 상한 폐지의 양방향 검증 — w=0.35 통과 + 잔존 3축(25종·long-only·Σw) 차단
+  "08_Tests/hooks/test_worktask_constraint_enforcer_v10.sh"
   # 2026-08-16 추가: 편입 드리프트 검사(suite_enrollment_check) 위반 주입.
   #   ★이 SUITES 배열이 하드코딩 열거라 새 테스트가 자동 편입되지 않는다 — 실측에서
   #   test_*.{R,sh} 121건 중 40건이 배터리에서 **한 번도 실행되지 않고** 있었고, 그중
