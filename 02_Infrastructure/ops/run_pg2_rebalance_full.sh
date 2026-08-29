@@ -120,9 +120,15 @@ PYEOF
 )"
   [ -n "$SIG_DATE" ] || abort "GateB-sigdate" "sig month $SIG_YM 의 거래일을 benchmark 에서 찾지 못함" 21
   say "[1b] sig-month factor DB 강제 재빌드 (sig_ym=$SIG_YM sig_date=$SIG_DATE)"
+  #   ★2026-08-29 수리: QM_ROOT 가 역슬래시 형(C:\Users\...)이면 R 문자열 안에서 `\U` 가
+  #   유니코드 이스케이프로 먹혀 **1행 11열에서 파스 에러**로 즉사한다
+  #   (Error: '\U' used without hex digits). 그런데 실패가 `|| say "[warn] ..."` 로 삼켜지고
+  #   Gate B 는 *앵커 날짜*만 보는데 그 앵커는 주가 축(API 경로·신선)이 채우므로 통과한다.
+  #   ⇒ 이 재빌드는 사실상 한 번도 돌지 않은 채 초록만 났다. 슬래시 정규화로 고정.
+  _QM_R="${QM_ROOT//\\//}"
   _T="$(mktemp /tmp/qm_fdb_XXXX.R)"
   printf '%s\n' \
-    "setwd('$QM_ROOT')" \
+    "setwd('$_QM_R')" \
     "source('02_Infrastructure/factor_db/factor_db_builder.R')" \
     "build_factor_db('$SIG_DATE', force = TRUE)" \
     "compute_all_factor_ic_monthly()" > "$_T"
