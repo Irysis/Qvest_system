@@ -1,0 +1,747 @@
+{
+  "date": "20260820",
+  "schema": "paper_research_dispatch_v1",
+  "note": "라우터 큐 → 리서치 액션 배선. optimizer=Σ배터리 ΔIR게이트 자동, risk/regime=수동 flag. 자본 admit 없음(governor 정지).",
+  "actions": {
+    "optimizer": {
+      "n": 4,
+      "papers": [
+        "When to Sell an Asset? - A Distribution Builder Approach [2608.18783]",
+        "Self-Consistent Adjoint Policy Iteration for Constrained Dynamic Portfolio Choice [2608.17808]",
+        "Scalable Pontryagin-Guided Adjoint-to-Control Recovery for Constrained Dynamic Portfolio Choice [2608.15667]",
+        "Large Language Model-Driven Small-Capitalization Trading [2608.12283]"
+      ],
+      "verdict": {
+        "book_ir": 1.433,
+        "best_method": "MVO_lw",
+        "best_ir": 1.411,
+        "best_method_route": "optimizer_or_builtin",
+        "n_arms": 12,
+        "n_risk_route_arms": 4,
+        "arms": [
+          {
+            "method_id": "MVO_lw",
+            "arm": "MVO_lw",
+            "route": "optimizer_or_builtin",
+            "measured": true,
+            "ir": 1.4113,
+            "control": "strategy",
+            "control_basis": "Σ-가중 A/B 배터리 · book(캐리어) strategy 팔",
+            "delta_ir": -0.0215
+          },
+          {
+            "method_id": "TailConformalBand",
+            "arm": "TailConformalBand",
+            "route": "risk",
+            "measured": true,
+            "ir": 1.3842,
+            "control": "strategy",
+            "control_basis": "Σ-가중 A/B 배터리 · book(캐리어) strategy 팔",
+            "delta_ir": -0.0485
+          },
+          {
+            "method_id": "ConformalKelly",
+            "arm": "ConformalKelly",
+            "route": "optimizer_or_builtin",
+            "measured": true,
+            "ir": 1.3706,
+            "control": "strategy",
+            "control_basis": "Σ-가중 A/B 배터리 · book(캐리어) strategy 팔",
+            "delta_ir": -0.0621
+          },
+          {
+            "method_id": "EW",
+            "arm": "EW",
+            "route": "optimizer_or_builtin",
+            "measured": true,
+            "ir": 1.3008,
+            "control": "strategy",
+            "control_basis": "Σ-가중 A/B 배터리 · book(캐리어) strategy 팔",
+            "delta_ir": -0.132
+          },
+          {
+            "method_id": "MVO_sample",
+            "arm": "MVO_sample",
+            "route": "optimizer_or_builtin",
+            "measured": true,
+            "ir": 1.2958,
+            "control": "strategy",
+            "control_basis": "Σ-가중 A/B 배터리 · book(캐리어) strategy 팔",
+            "delta_ir": -0.137
+          },
+          {
+            "method_id": "IV",
+            "arm": "IV",
+            "route": "optimizer_or_builtin",
+            "measured": true,
+            "ir": 1.2519,
+            "control": "strategy",
+            "control_basis": "Σ-가중 A/B 배터리 · book(캐리어) strategy 팔",
+            "delta_ir": -0.1808
+          },
+          {
+            "method_id": "HRP_lw",
+            "arm": "HRP_lw",
+            "route": "optimizer_or_builtin",
+            "measured": true,
+            "ir": 1.2328,
+            "control": "strategy",
+            "control_basis": "Σ-가중 A/B 배터리 · book(캐리어) strategy 팔",
+            "delta_ir": -0.1999
+          },
+          {
+            "method_id": "minvar_lw",
+            "arm": "minvar_lw",
+            "route": "optimizer_or_builtin",
+            "measured": true,
+            "ir": 1.1753,
+            "control": "strategy",
+            "control_basis": "Σ-가중 A/B 배터리 · book(캐리어) strategy 팔",
+            "delta_ir": -0.2574
+          },
+          {
+            "method_id": "ProperScoreGASFilter",
+            "arm": "minvar@ProperScoreGASFilter",
+            "route": "risk",
+            "measured": true,
+            "ir": 0.956,
+            "control": "strategy",
+            "control_basis": "Σ-가중 A/B 배터리 · book(캐리어) strategy 팔",
+            "delta_ir": -0.4767
+          },
+          {
+            "method_id": "LMGarch2DMC",
+            "arm": "minvar@LMGarch2DMC",
+            "route": "risk",
+            "measured": true,
+            "ir": 0.939,
+            "control": "strategy",
+            "control_basis": "Σ-가중 A/B 배터리 · book(캐리어) strategy 팔",
+            "delta_ir": -0.4937
+          },
+          {
+            "method_id": "SchurDamping",
+            "arm": "SchurDamping",
+            "route": "optimizer_or_builtin",
+            "measured": true,
+            "ir": 0.939,
+            "control": "strategy",
+            "control_basis": "Σ-가중 A/B 배터리 · book(캐리어) strategy 팔",
+            "delta_ir": -0.4938
+          },
+          {
+            "method_id": "PreferenceRobustDistortion",
+            "arm": "PreferenceRobustDistortion",
+            "route": "risk",
+            "measured": true,
+            "ir": 0.7016,
+            "control": "strategy",
+            "control_basis": "Σ-가중 A/B 배터리 · book(캐리어) strategy 팔",
+            "delta_ir": -0.7311
+          }
+        ],
+        "delta_ir": -0.021,
+        "gate": 0.05,
+        "beats_book": false,
+        "verdict": "가중 레버 아님: book IR 1.433 최고(최선 타방법 MVO_lw 1.411, ΔIR=-0.021, 게이트 0.05 미달) → 채택 0"
+      },
+      "method_triage": [
+        {
+          "method_id": "ConformalKelly",
+          "paper_id": "arxiv:2608.01494",
+          "verdict": "implemented",
+          "blocker": null,
+          "unblock_requirement": null
+        },
+        {
+          "method_id": "PathSignature",
+          "paper_id": "arxiv:2608.02355",
+          "verdict": "blocked_by_capability",
+          "blocker": "signature depth=2 도 25종목 × 월간 리밸에서 관측당 파라미터 비율이 과대 — 논문 자체가 추정 불안정을 경고. 현 측정틀(250일 창)에서 식별 불가",
+          "unblock_requirement": "일별 리밸 또는 유니버스 확대(v2 KR_TOP500)에서 재검토. 또는 depth=1 축약형으로 선행 실측"
+        },
+        {
+          "method_id": "MFCCA",
+          "paper_id": "arxiv:2608.04987",
+          "verdict": "blocked_by_capability",
+          "blocker": "scale × order 2D 스펙트럼 추정에 필요한 관측수가 250일 창 × 25종목을 크게 초과. 논문 실증은 ARFIMA+MSM 합성 과정 기반",
+          "unblock_requirement": "일별 창 확대(≥1250일) 또는 held_tickers 전체(442종) 풀에서 Σ 대체로 선행 실측"
+        },
+        {
+          "method_id": "SchurDamping",
+          "paper_id": "arxiv:2606.14798",
+          "verdict": "implemented",
+          "blocker": null,
+          "unblock_requirement": null
+        }
+      ],
+      "screen_axes": {
+        "n_items": 4,
+        "coverage": 1,
+        "missing": [],
+        "invalid_enum": []
+      },
+      "baseline_identity": {
+        "status": "ok",
+        "carrier_strategy": "STR_1715_on_M4gAE_R05_noLayer4_PG2",
+        "admitted_ids": "STR_1715_on_M4gAE_R05_noLayer4_PG2",
+        "carrier_book_state_at": "2026-07-19T05:12:00+09:00",
+        "book_state_updated_at": "2026-07-19T05:12:00+09:00",
+        "identity_match": true,
+        "carrier_older_than_book_state": false
+      },
+      "coverage": {
+        "status": "current",
+        "carrier_ym_max": "2026-08",
+        "book_ym_max": "2026-08",
+        "lag_months": 0,
+        "note": "측정창 = 북 최신월"
+      }
+    },
+    "risk": {
+      "n": 6,
+      "papers": [
+        "The Market's Conditioning Representation: Equilibrium, Crowding, and Convention Multiplicity [2608.18299]",
+        "Entropic Value-at-Risk portfolio optimization for tempered stable Levy processes [2608.18022]",
+        "A generic nonparametric value-at-risk estimator for high dimensions [2608.17481]",
+        "Conservation of Short-term Flows: Signed Optimal Transport [2608.17363]",
+        "Rough Volatility Across Assets [2608.16749]",
+        "Regime-Gated Residual Mixture-of-Experts for Cross-Sectional Volatility Forecasting [2608.12251]"
+      ],
+      "method_triage": [
+        {
+          "method_id": "PreferenceRobustDistortion",
+          "paper_id": "arxiv:2608.02854",
+          "verdict": "implemented",
+          "blocker": null,
+          "unblock_requirement": null
+        },
+        {
+          "method_id": "ProperScoreGASFilter",
+          "paper_id": "arxiv:2608.02828",
+          "verdict": "implemented",
+          "blocker": null,
+          "unblock_requirement": null
+        },
+        {
+          "method_id": "LMGarch2DMC",
+          "paper_id": "arxiv:2607.25189",
+          "verdict": "implemented",
+          "blocker": null,
+          "unblock_requirement": null
+        },
+        {
+          "method_id": "TailConformalBand",
+          "paper_id": "arxiv:2606.18199",
+          "verdict": "implemented",
+          "blocker": null,
+          "unblock_requirement": null
+        },
+        {
+          "method_id": "LowerSpectrumSyncMMinus",
+          "paper_id": "2608.09641",
+          "verdict": "blocked_by_capability",
+          "blocker": "Paper delivers a scalar market-synchronization/tail early-warning indicator, not a covariance estimator (sigma) nor a portfolio preference vector (weight). No overlay/regime adapter_kind exists in the risk method_registry dispatch (Sigma-A/B arms only). Forcing into sigma_estimate would fabricate a matrix from a scalar (contract + non-degeneracy violation).",
+          "unblock_requirement": null
+        }
+      ],
+      "screen_axes": {
+        "n_items": 6,
+        "coverage": 1,
+        "missing": [],
+        "invalid_enum": []
+      },
+      "harness_status": "Σ-A/B 배터리 합류 4/4건 측정 · 대조군 대비 개선 0건",
+      "verdict": {
+        "metric_type": "canonical_screen",
+        "basis": "Σ-A/B 배터리 overlay arm (캐리어 선별 고정 · 15bps · IR = net-active vs KOSPI200)",
+        "n_arms": 4,
+        "n_measured": 4,
+        "n_improved": 0,
+        "gate_note": "ΔIR 은 추정기/비중 **교체 대조** 진단량이다 — 자본 admission 게이트(§4 book-marginal, governor 수동)가 아니다.",
+        "arms": [
+          {
+            "method_id": "PreferenceRobustDistortion",
+            "paper_id": "arxiv:2608.02854",
+            "adapter_kind": "weight",
+            "arm": "PreferenceRobustDistortion",
+            "measured": true,
+            "ir": 0.702,
+            "port_t": 3.126,
+            "control": "strategy",
+            "control_basis": "비중 규칙 교체 → 현 book 대비 book-marginal (optimizer 레인과 동일 컨벤션)",
+            "control_ir": 1.433,
+            "delta_ir": -0.731,
+            "note": null
+          },
+          {
+            "method_id": "ProperScoreGASFilter",
+            "paper_id": "arxiv:2608.02828",
+            "adapter_kind": "sigma",
+            "arm": "minvar@ProperScoreGASFilter",
+            "measured": true,
+            "ir": 0.956,
+            "port_t": 4.217,
+            "control": "minvar_lw",
+            "control_basis": "비중 규칙(minvar) 고정 · Σ 만 교체 → Δ = 추정기 효과. 대조군 Σ = Ledoit-Wolf",
+            "control_ir": 1.175,
+            "delta_ir": -0.219,
+            "note": null
+          },
+          {
+            "method_id": "LMGarch2DMC",
+            "paper_id": "arxiv:2607.25189",
+            "adapter_kind": "sigma",
+            "arm": "minvar@LMGarch2DMC",
+            "measured": true,
+            "ir": 0.939,
+            "port_t": 4.123,
+            "control": "minvar_lw",
+            "control_basis": "비중 규칙(minvar) 고정 · Σ 만 교체 → Δ = 추정기 효과. 대조군 Σ = Ledoit-Wolf",
+            "control_ir": 1.175,
+            "delta_ir": -0.236,
+            "note": null
+          },
+          {
+            "method_id": "TailConformalBand",
+            "paper_id": "arxiv:2606.18199",
+            "adapter_kind": "weight",
+            "arm": "TailConformalBand",
+            "measured": true,
+            "ir": 1.384,
+            "port_t": 6.047,
+            "control": "strategy",
+            "control_basis": "비중 규칙 교체 → 현 book 대비 book-marginal (optimizer 레인과 동일 컨벤션)",
+            "control_ir": 1.433,
+            "delta_ir": -0.049,
+            "note": null
+          }
+        ]
+      },
+      "action": "자동 측정 4건 (대조 Δ 동봉) — 채택은 도훈 수동"
+    },
+    "regime": {
+      "n": 1,
+      "papers": [
+        "AI-Driven Multiscenario Interest Rate Forecasting [2608.12424]"
+      ],
+      "harness_status": "오버레이 레버 아님: book_L5 IR 1.433 최고(최선 후보 HurstTrendOverlay 1.445, ΔIR=+0.012, ΔMDD=-0.1746 (낙폭 심화)) → 채택 0",
+      "coverage": {
+        "status": "current",
+        "carrier_ym_max": "2026-08",
+        "book_ym_max": "2026-08",
+        "lag_months": 0,
+        "note": "측정창 = 북 최신월"
+      },
+      "verdict": {
+        "metric_type": "canonical_screen",
+        "arms": [
+          {
+            "method_id": "HurstTrendOverlay",
+            "arm": "HurstTrendOverlay",
+            "measured": true,
+            "ir": 1.4452,
+            "delta_ir": 0.012,
+            "delta_mdd": -0.1746,
+            "avg_exposure": 0.9657,
+            "control": "book_L5",
+            "control_basis": "H2 오버레이 A/B · 가중 고정 · 노출 스칼라만 교체",
+            "delta_ir_caveat": "exposure_confounded_R2_0.858_use_exposure_matched_residual"
+          },
+          {
+            "method_id": "HurstRateMatched",
+            "arm": "HurstRateMatched",
+            "measured": true,
+            "ir": 1.347,
+            "delta_ir": -0.086,
+            "delta_mdd": -0.1746,
+            "avg_exposure": 0.9258,
+            "control": "book_L5",
+            "control_basis": "H2 오버레이 A/B · 가중 고정 · 노출 스칼라만 교체",
+            "delta_ir_caveat": "exposure_confounded_R2_0.858_use_exposure_matched_residual"
+          },
+          {
+            "method_id": "VolRateMatched",
+            "arm": "VolRateMatched",
+            "measured": true,
+            "ir": 1.2689,
+            "delta_ir": -0.164,
+            "delta_mdd": -0.1746,
+            "avg_exposure": 0.9358,
+            "control": "book_L5",
+            "control_basis": "H2 오버레이 A/B · 가중 고정 · 노출 스칼라만 교체",
+            "delta_ir_caveat": "exposure_confounded_R2_0.858_use_exposure_matched_residual"
+          },
+          {
+            "method_id": "uni_cat",
+            "arm": "uni_cat",
+            "measured": true,
+            "ir": 1.2535,
+            "delta_ir": -0.179,
+            "delta_mdd": -0.0572,
+            "avg_exposure": 0.948,
+            "control": "book_L5",
+            "control_basis": "H2 오버레이 A/B · 가중 고정 · 노출 스칼라만 교체",
+            "delta_ir_caveat": "exposure_confounded_R2_0.858_use_exposure_matched_residual"
+          },
+          {
+            "method_id": "CompLikFGnOverlay",
+            "arm": "CompLikFGnOverlay",
+            "measured": true,
+            "ir": 1.1543,
+            "delta_ir": -0.278,
+            "delta_mdd": -0.0732,
+            "avg_exposure": 0.8085,
+            "control": "book_L5",
+            "control_basis": "H2 오버레이 A/B · 가중 고정 · 노출 스칼라만 교체",
+            "delta_ir_caveat": "exposure_confounded_R2_0.858_use_exposure_matched_residual"
+          },
+          {
+            "method_id": "VolTargetFloored",
+            "arm": "VolTargetFloored",
+            "measured": true,
+            "ir": 1.1449,
+            "delta_ir": -0.288,
+            "delta_mdd": -0.077,
+            "avg_exposure": 0.8332,
+            "control": "book_L5",
+            "control_basis": "H2 오버레이 A/B · 가중 고정 · 노출 스칼라만 교체",
+            "delta_ir_caveat": "exposure_confounded_R2_0.858_use_exposure_matched_residual"
+          },
+          {
+            "method_id": "VolTargetStrict",
+            "arm": "VolTargetStrict",
+            "measured": true,
+            "ir": 1.0185,
+            "delta_ir": -0.414,
+            "delta_mdd": -0.0666,
+            "avg_exposure": 0.7947,
+            "control": "book_L5",
+            "control_basis": "H2 오버레이 A/B · 가중 고정 · 노출 스칼라만 교체",
+            "delta_ir_caveat": "exposure_confounded_R2_0.858_use_exposure_matched_residual"
+          },
+          {
+            "method_id": "voltgt",
+            "arm": "voltgt",
+            "measured": true,
+            "ir": 0.9783,
+            "delta_ir": -0.454,
+            "delta_mdd": -0.0704,
+            "avg_exposure": 0.793,
+            "control": "book_L5",
+            "control_basis": "H2 오버레이 A/B · 가중 고정 · 노출 스칼라만 교체",
+            "delta_ir_caveat": "exposure_confounded_R2_0.858_use_exposure_matched_residual"
+          },
+          {
+            "method_id": "TFCostOptSpan",
+            "arm": "TFCostOptSpan",
+            "measured": true,
+            "ir": 0.6823,
+            "delta_ir": -0.75,
+            "delta_mdd": -0.0781,
+            "avg_exposure": 0.5726,
+            "control": "book_L5",
+            "control_basis": "H2 오버레이 A/B · 가중 고정 · 노출 스칼라만 교체",
+            "delta_ir_caveat": "exposure_confounded_R2_0.858_use_exposure_matched_residual"
+          },
+          {
+            "method_id": "HurstTrendOverlay",
+            "arm": "HurstTrendOverlay_x_book",
+            "measured": true,
+            "ir": 1.4059,
+            "delta_ir": -0.027,
+            "delta_mdd": 0,
+            "avg_exposure": 0.8796,
+            "control": "book_L5",
+            "control_basis": "H2 오버레이 A/B · 가중 고정 · 노출 스칼라만 교체",
+            "delta_ir_caveat": "exposure_confounded_R2_0.858_use_exposure_matched_residual"
+          },
+          {
+            "method_id": "HurstRateMatched",
+            "arm": "HurstRateMatched_x_book",
+            "measured": true,
+            "ir": 1.3079,
+            "delta_ir": -0.125,
+            "delta_mdd": 0,
+            "avg_exposure": 0.8418,
+            "control": "book_L5",
+            "control_basis": "H2 오버레이 A/B · 가중 고정 · 노출 스칼라만 교체",
+            "delta_ir_caveat": "exposure_confounded_R2_0.858_use_exposure_matched_residual"
+          },
+          {
+            "method_id": "VolRateMatched",
+            "arm": "VolRateMatched_x_book",
+            "measured": true,
+            "ir": 1.2275,
+            "delta_ir": -0.205,
+            "delta_mdd": 0,
+            "avg_exposure": 0.8543,
+            "control": "book_L5",
+            "control_basis": "H2 오버레이 A/B · 가중 고정 · 노출 스칼라만 교체",
+            "delta_ir_caveat": "exposure_confounded_R2_0.858_use_exposure_matched_residual"
+          },
+          {
+            "method_id": "uni_cat",
+            "arm": "uni_cat_x_book",
+            "measured": true,
+            "ir": 1.2164,
+            "delta_ir": -0.216,
+            "delta_mdd": 0,
+            "avg_exposure": 0.8756,
+            "control": "book_L5",
+            "control_basis": "H2 오버레이 A/B · 가중 고정 · 노출 스칼라만 교체",
+            "delta_ir_caveat": "exposure_confounded_R2_0.858_use_exposure_matched_residual"
+          },
+          {
+            "method_id": "VolTargetFloored",
+            "arm": "VolTargetFloored_x_book",
+            "measured": true,
+            "ir": 1.0749,
+            "delta_ir": -0.358,
+            "delta_mdd": 0.0207,
+            "avg_exposure": 0.7612,
+            "control": "book_L5",
+            "control_basis": "H2 오버레이 A/B · 가중 고정 · 노출 스칼라만 교체",
+            "delta_ir_caveat": "exposure_confounded_R2_0.858_use_exposure_matched_residual"
+          },
+          {
+            "method_id": "CompLikFGnOverlay",
+            "arm": "CompLikFGnOverlay_x_book",
+            "measured": true,
+            "ir": 1.0656,
+            "delta_ir": -0.367,
+            "delta_mdd": 0.0123,
+            "avg_exposure": 0.7379,
+            "control": "book_L5",
+            "control_basis": "H2 오버레이 A/B · 가중 고정 · 노출 스칼라만 교체",
+            "delta_ir_caveat": "exposure_confounded_R2_0.858_use_exposure_matched_residual"
+          },
+          {
+            "method_id": "VolTargetStrict",
+            "arm": "VolTargetStrict_x_book",
+            "measured": true,
+            "ir": 0.96,
+            "delta_ir": -0.473,
+            "delta_mdd": 0.0207,
+            "avg_exposure": 0.7265,
+            "control": "book_L5",
+            "control_basis": "H2 오버레이 A/B · 가중 고정 · 노출 스칼라만 교체",
+            "delta_ir_caveat": "exposure_confounded_R2_0.858_use_exposure_matched_residual"
+          },
+          {
+            "method_id": "voltgt",
+            "arm": "voltgt_x_book",
+            "measured": true,
+            "ir": 0.9248,
+            "delta_ir": -0.508,
+            "delta_mdd": 0.0174,
+            "avg_exposure": 0.7263,
+            "control": "book_L5",
+            "control_basis": "H2 오버레이 A/B · 가중 고정 · 노출 스칼라만 교체",
+            "delta_ir_caveat": "exposure_confounded_R2_0.858_use_exposure_matched_residual"
+          },
+          {
+            "method_id": "TFCostOptSpan",
+            "arm": "TFCostOptSpan_x_book",
+            "measured": true,
+            "ir": 0.6495,
+            "delta_ir": -0.783,
+            "delta_mdd": 0,
+            "avg_exposure": 0.5351,
+            "control": "book_L5",
+            "control_basis": "H2 오버레이 A/B · 가중 고정 · 노출 스칼라만 교체",
+            "delta_ir_caveat": "exposure_confounded_R2_0.858_use_exposure_matched_residual"
+          }
+        ],
+        "basis": "H2 오버레이 A/B (가중 = 현 book strategy 고정 · 노출 스칼라만 교체 · carrier_invested · carrier=carrier_STR_1715_on_M4gAE_R05_noLayer4_PG2.parquet)",
+        "baseline": "book_L5",
+        "baseline_ir": 1.433,
+        "baseline_mdd": -0.2327,
+        "bare_ir": 1.465,
+        "bare_mdd": -0.4074,
+        "best_candidate": "HurstTrendOverlay",
+        "best_ir": 1.445,
+        "delta_ir": 0.012,
+        "delta_mdd": -0.1746,
+        "gate": 0.05,
+        "beats_book": false,
+        "lag1_stress": {
+          "uni_cat_ir": 1.254,
+          "uni_cat_lag1_ir": 1.178,
+          "retention": 0.94,
+          "note": "lag1 보존율 — 붕괴 시 동월 누출 의심(오버레이 유일 판별검정, pit.md C5)"
+        },
+        "candidates": [
+          {
+            "scenario": "HurstTrendOverlay",
+            "IR": 1.4452,
+            "abs_SR": 1.4252,
+            "abs_MDD": -0.4074,
+            "avg_exposure": 0.9657,
+            "delta_ir": 0.012,
+            "delta_mdd": -0.1746
+          },
+          {
+            "scenario": "HurstTrendOverlay_x_book",
+            "IR": 1.4059,
+            "abs_SR": 1.6746,
+            "abs_MDD": -0.2327,
+            "avg_exposure": 0.8796,
+            "delta_ir": -0.027,
+            "delta_mdd": 0
+          },
+          {
+            "scenario": "HurstRateMatched",
+            "IR": 1.347,
+            "abs_SR": 1.3601,
+            "abs_MDD": -0.4074,
+            "avg_exposure": 0.9258,
+            "delta_ir": -0.086,
+            "delta_mdd": -0.1746
+          },
+          {
+            "scenario": "HurstRateMatched_x_book",
+            "IR": 1.3079,
+            "abs_SR": 1.6083,
+            "abs_MDD": -0.2327,
+            "avg_exposure": 0.8418,
+            "delta_ir": -0.125,
+            "delta_mdd": 0
+          },
+          {
+            "scenario": "VolRateMatched",
+            "IR": 1.2689,
+            "abs_SR": 1.4163,
+            "abs_MDD": -0.4074,
+            "avg_exposure": 0.9358,
+            "delta_ir": -0.164,
+            "delta_mdd": -0.1746
+          },
+          {
+            "scenario": "uni_cat",
+            "IR": 1.2535,
+            "abs_SR": 1.5155,
+            "abs_MDD": -0.2899,
+            "avg_exposure": 0.948,
+            "delta_ir": -0.179,
+            "delta_mdd": -0.0572
+          },
+          {
+            "scenario": "VolRateMatched_x_book",
+            "IR": 1.2275,
+            "abs_SR": 1.6349,
+            "abs_MDD": -0.2327,
+            "avg_exposure": 0.8543,
+            "delta_ir": -0.205,
+            "delta_mdd": 0
+          },
+          {
+            "scenario": "uni_cat_x_book",
+            "IR": 1.2164,
+            "abs_SR": 1.668,
+            "abs_MDD": -0.2327,
+            "avg_exposure": 0.8756,
+            "delta_ir": -0.216,
+            "delta_mdd": 0
+          },
+          {
+            "scenario": "CompLikFGnOverlay",
+            "IR": 1.1543,
+            "abs_SR": 1.4185,
+            "abs_MDD": -0.306,
+            "avg_exposure": 0.8085,
+            "delta_ir": -0.278,
+            "delta_mdd": -0.0732
+          },
+          {
+            "scenario": "VolTargetFloored",
+            "IR": 1.1449,
+            "abs_SR": 1.4321,
+            "abs_MDD": -0.3098,
+            "avg_exposure": 0.8332,
+            "delta_ir": -0.288,
+            "delta_mdd": -0.077
+          },
+          {
+            "scenario": "VolTargetFloored_x_book",
+            "IR": 1.0749,
+            "abs_SR": 1.6464,
+            "abs_MDD": -0.2121,
+            "avg_exposure": 0.7612,
+            "delta_ir": -0.358,
+            "delta_mdd": 0.0207
+          },
+          {
+            "scenario": "CompLikFGnOverlay_x_book",
+            "IR": 1.0656,
+            "abs_SR": 1.631,
+            "abs_MDD": -0.2205,
+            "avg_exposure": 0.7379,
+            "delta_ir": -0.367,
+            "delta_mdd": 0.0123
+          },
+          {
+            "scenario": "VolTargetStrict",
+            "IR": 1.0185,
+            "abs_SR": 1.4138,
+            "abs_MDD": -0.2993,
+            "avg_exposure": 0.7947,
+            "delta_ir": -0.414,
+            "delta_mdd": -0.0666
+          },
+          {
+            "scenario": "voltgt",
+            "IR": 0.9783,
+            "abs_SR": 1.4084,
+            "abs_MDD": -0.3031,
+            "avg_exposure": 0.793,
+            "delta_ir": -0.454,
+            "delta_mdd": -0.0704
+          },
+          {
+            "scenario": "VolTargetStrict_x_book",
+            "IR": 0.96,
+            "abs_SR": 1.6168,
+            "abs_MDD": -0.2121,
+            "avg_exposure": 0.7265,
+            "delta_ir": -0.473,
+            "delta_mdd": 0.0207
+          },
+          {
+            "scenario": "voltgt_x_book",
+            "IR": 0.9248,
+            "abs_SR": 1.606,
+            "abs_MDD": -0.2154,
+            "avg_exposure": 0.7263,
+            "delta_ir": -0.508,
+            "delta_mdd": 0.0174
+          },
+          {
+            "scenario": "TFCostOptSpan",
+            "IR": 0.6823,
+            "abs_SR": 1.2471,
+            "abs_MDD": -0.3108,
+            "avg_exposure": 0.5726,
+            "delta_ir": -0.75,
+            "delta_mdd": -0.0781
+          },
+          {
+            "scenario": "TFCostOptSpan_x_book",
+            "IR": 0.6495,
+            "abs_SR": 1.3986,
+            "abs_MDD": -0.2327,
+            "avg_exposure": 0.5351,
+            "delta_ir": -0.783,
+            "delta_mdd": 0
+          }
+        ],
+        "paper_adapters_registered": 7,
+        "scope_note": "후보 집합은 고정(unified 앙상블 · vol-target). 라우팅된 regime 논문이 후보가 되려면 method_registry 에 adapter_kind=\"exposure\" 등재 필요 — 현재 등재 7건.",
+        "gate_note": "ΔIR 은 book-marginal 대조 진단량 — 자본 admit 아님(governor 수동). ★오버레이의 실증된 레버는 IR 이 아니라 MDD 이므로 ΔMDD 를 함께 읽을 것.",
+        "delta_mdd_convention": "abs_MDD 음수 저장 — ΔMDD>0 이면 낙폭이 얕아진 것(개선), ΔMDD<0 이면 깊어진 것(악화)",
+        "mdd_improved_candidates": ["VolTargetFloored_x_book", "CompLikFGnOverlay_x_book", "VolTargetStrict_x_book", "voltgt_x_book"]
+      },
+      "action": "H2 오버레이 A/B 자동 측정 (후보 18) — 채택은 도훈 수동"
+    }
+  }
+}

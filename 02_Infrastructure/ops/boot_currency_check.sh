@@ -74,7 +74,14 @@ bad() { FAIL=$((FAIL+1)); WARN_LINES+=("$1"); [ "$MODE" != "--boot" ] && echo " 
 AV_LINE=$(awk '/^## Active Version/{f=1;next} f && /^\*\*Qvest v/{print;exit}' "$F_CLAUDE" 2>/dev/null)
 VER=$(printf '%s' "$AV_LINE" | grep -oE 'v[0-9]+\.[0-9]+' | head -1)
 MODEL_ID=$(printf '%s' "$AV_LINE" | grep -oE 'claude-[a-z0-9-]+' | head -1)     # 예: claude-fable-5
-N_MODE=$(printf '%s' "$AV_LINE" | grep -oE '[0-9]+-Mode' | head -1)             # 예: 4-Mode
+# ★v9.21(2026-08-24): 조직 개념이 '모드 개수' 에서 '파이프라인' 으로 바뀌었다.
+#   구판은 `[0-9]+-Mode` 를 필수로 요구했는데 v9.21 버전줄에는 그 토큰이 **의도적으로 없다**.
+#   ⇒ 구조 토큰을 버전줄 제목의 **첫 구절**에서 파생한다(예: '논문 알파리서치 → 강화 프로세스').
+#   N_MODE 는 구 배너 호환용으로만 남긴다 — **필수 아님**.
+N_MODE=$(printf '%s' "$AV_LINE" | grep -oE '[0-9]+-Mode' | head -1)
+STRUCT=$(printf '%s' "$AV_LINE" \
+  | sed -E 's/^\*\*Qvest v[0-9.]+ (—|-) //; s/\*\*.*$//' \
+  | awk -F'·' '{print $1}' | sed -E 's/^[[:space:]]+//; s/[[:space:]]+$//')
 # 모델 패밀리 라벨: claude-fable-5 → "Fable 5" (첫 글자 대문자 + 숫자)
 MODEL_LABEL=""
 if [ -n "$MODEL_ID" ]; then
@@ -83,10 +90,10 @@ if [ -n "$MODEL_ID" ]; then
   MODEL_LABEL="$(printf '%s' "${_fam^}") ${_num}"
 fi
 
-if [ -z "$VER" ] || [ -z "$MODEL_ID" ] || [ -z "$N_MODE" ]; then
-  bad "C0 정본 파생 실패 — CLAUDE.md Active Version 절에서 버전/모델/모드 추출 불가 (ver='$VER' model='$MODEL_ID' mode='$N_MODE'). 절 포맷 변경 시 이 파서도 갱신 필요"
+if [ -z "$VER" ] || [ -z "$MODEL_ID" ] || [ -z "$STRUCT" ]; then
+  bad "C0 정본 파생 실패 — CLAUDE.md Active Version 절에서 버전/모델/모드 추출 불가 (ver='$VER' model='$MODEL_ID' struct='$STRUCT'). 절 포맷 변경 시 이 파서도 갱신 필요"
 else
-  ok "C0 정본 파생: $VER · $MODEL_ID($MODEL_LABEL) · $N_MODE"
+  ok "C0 정본 파생: $VER · $MODEL_ID($MODEL_LABEL) · $STRUCT"
 
   # ── C1 버전 정합 ──────────────────────────────────────────────────────────
   BOOT_BANNERS=$(grep -E '^echo "=== (Qvest|부트스트랩 완료)' "$F_BOOT" 2>/dev/null)
@@ -117,10 +124,12 @@ else
   fi
 
   # ── C3 모드 정합 ──────────────────────────────────────────────────────────
-  if printf '%s' "$BOOT_BANNERS" | grep -q "$N_MODE"; then
-    ok "C3 배너 모드 = $N_MODE"
+  # ★v9.21: 모드 개수 대신 **파이프라인 구조 문구**를 대조한다. 배너와 헌법이 같은
+  #   조직 개념을 말하는지가 이 축의 목적이고, 그 개념 자체가 바뀌었다.
+  if printf '%s' "$BOOT_BANNERS" | grep -qF "$STRUCT"; then
+    ok "C3 배너 구조 = $STRUCT"
   else
-    bad "C3 bootstrap 배너에 '$N_MODE' 부재 — 모드 수 변경 미반영"
+    bad "C3 bootstrap 배너에 '$STRUCT' 부재 — 구조 개편(모드 표 → 파이프라인) 미반영"
   fi
 
   # ── C8a 항해도 배너 정합: 헌법 버전 ↔ 00_Lawbook/INDEX.md 헤더 ─────────────
@@ -162,7 +171,10 @@ else
 fi
 
 # ── C6 훅 총계: CLAUDE.md 선언 ↔ 실측 (직접∪dispatch distinct) ───────────────
-CL_HOOKS=$(grep -oE 'settings\.json [0-9]+ distinct \.sh' "$F_CLAUDE" 2>/dev/null | head -1 | grep -oE '[0-9]+')
+# ★2026-08-24 수리: 구 정규식은 `settings.json 12 distinct .sh` 만 맞아서, 문서가 숫자를
+#   **12** 로 굵게 쓴 순간부터 **상시 실패**했다(선행 결함). 경보가 상시가 되면 아무도 안 읽는다.
+#   ⇒ 마크다운 강조를 허용한다. 판정 대상은 숫자이지 서식이 아니다.
+CL_HOOKS=$(grep -oE 'settings\.json \**[0-9]+\** distinct \.sh' "$F_CLAUDE" 2>/dev/null | head -1 | grep -oE '[0-9]+')
 if [ -f "$F_SETTINGS" ] && [ -f "$F_DISPATCH" ]; then
   # (수리) dispatch 엔트리는 bare 파일명("script": "safety_guard.sh") — 경로절단 sed로는
   #   접두사가 안 벗겨져 union이 부풀었다(48 오측). 접두사-절단 후 경로절단. 또 union을
@@ -343,7 +355,7 @@ _bcc_c9_c11   # v9: C9·C10 실행(live) · C11·C11b 는 BCC_RUN_C11=1 일 때�
 # ── 출력 ─────────────────────────────────────────────────────────────────────
 if [ "$MODE" = "--boot" ]; then
   if [ "$FAIL" -eq 0 ]; then
-    echo "[boot] boot-currency: OK — 부팅 시퀀스 ↔ 헌법($VER·$MODEL_LABEL·$N_MODE)·실측 정합 ($PASS축)"
+    echo "[boot] boot-currency: OK — 부팅 시퀀스 ↔ 헌법($VER·$MODEL_LABEL·$STRUCT)·실측 정합 ($PASS축)"
   else
     echo "[boot] WARN: boot-currency 드리프트 ${FAIL}건 — 부팅 시퀀스가 헌법/실측보다 낡음. digest 등재 — 수리는 도훈 지시 시 태스크로 분리 (v9 2026-08-23):"
     for w in "${WARN_LINES[@]}"; do echo "[boot]    ✗ $w"; done

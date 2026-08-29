@@ -164,17 +164,37 @@ res18 <- essence_score(mk_bt(a_block, drop_port_t = TRUE))
 t_check("essence:ES18_no_contract_grade_NA",
         is.na(res18$grade) &&
         identical(res18$metric_type, "uncertain"))
-## ★enum 정합 래칫 — 등급이 A/B/C/F/NA 밖의 값을 내면 lcode_schema.R:57 의
+## ★enum 정합 단방향 검사 — 등급이 A/B/C/F/NA 밖의 값을 내면 lcode_schema.R:57 의
 ##   LCODE_VALID_GRADES 가 validate_lcode 에서 적립을 통째로 막는다. 그 재발을 여기서 잡는다.
 t_check("essence:ES18b_grade_enum_4values",
         is.na(res18$grade) || res18$grade %in% c("A", "B", "C", "F"))
 
-# --- ES19: structural drawdown (catastrophic MDD >= 70%) inferred hard fail --
+# --- ES19: ★MDD 는 등급을 접지 않는다 (2026-08-24 도훈 지시 — 판정 방향 반전) ----
+#   구 ES19 는 "catastrophic MDD >= 70% -> grade F" 를 단언했다. 그 단언이 곧
+#   **MDD 탈락**이었고, 도훈 지시 "hard_fail 조건에서 MDD만 걷어내면 되는거 아냐?" 로
+#   제거됐다(essence_score.R 의 drawdown 추론 삭제. hurdle_gate.R:465 가 2026-08-23 에
+#   리서치 층에서 한 것과 같은 절단).
+#   ★이 축은 세 가지를 한꺼번에 지킨다 — 하나만 보면 되살아난다:
+#     (a) MDD 가 등급을 F 로 접지 않는다      = 지시 이행
+#     (b) 구조 정보가 라벨로 **남아 있다**     = 조용한 정보 소실 방지
+#     (c) 사유 문자열에도 남는다               = 하류 오버레이 라우팅 근거 보존
 a_cat <- c(rep(-0.20, 6), rep(0.02, 54))   # nav trough 0.8^6 = 0.262 -> dd 73.8%
 res19 <- essence_score(mk_bt(a_cat, mdd = 0.74))
-t_check("essence:ES19_catastrophic_dd_hard_fail_F",
-        identical(res19$grade, "F") && isTRUE(res19$hard_fail) &&
-        isTRUE(res19$essence$drawdown_profile$structural_hard_fail))
+t_check("essence:ES19_catastrophic_mdd_does_not_grade_F",
+        !identical(res19$grade, "F") || !isTRUE(res19$hard_fail))
+t_check("essence:ES19b_mdd_not_hard_fail_and_source_none",
+        identical(res19$hard_fail, FALSE) &&
+        identical(res19$hard_fail_source, "none"))
+t_check("essence:ES19c_structural_label_survives",
+        isTRUE(res19$essence$drawdown_profile$structural_hard_fail) &&
+        isTRUE(res19$structural_drawdown))
+t_check("essence:ES19d_structural_reason_survives_in_text",
+        grepl("structural_drawdown", paste(c("", res19$reasons), collapse = ""), fixed = TRUE))
+# ★돌연변이 통제 — 추론을 되살리면 이 축이 실제로 뒤집히는가.
+#   되살린 판(hard_fail 주입 = 추론 결과와 동일 입력)이 F 를 내야 위 단언이 무언가를 재고 있다.
+res19m <- essence_score(mk_bt(a_cat, mdd = 0.74), hard_fail = TRUE)
+t_check("essence:ES19e_mutation_control_reinstated_inference_flips",
+        identical(res19m$grade, "F") && identical(res19m$hard_fail_source, "injected"))
 
 # --- ES20: single deep episode -> tail_review, NOT hard fail -----------------
 a_tail <- c(rep(-0.108, 6), rep(0.04, 54)) # trough dd ~49.6%, one episode

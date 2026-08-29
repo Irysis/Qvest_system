@@ -1,0 +1,200 @@
+{
+  "task_id": "WT-D20260822_007",
+  "as_of_date": "2026-06-30",
+  "sig_date": "2026-07-01",
+  "pit_note": "k*(k\u0013  l6\u0014l \u0015l\u001d",
+  "role_boundary": "alpha_vector l\b\u0018l \u0015 l\u0017\u0006l\u001d4 l\b\u0018l\u000b (328l\"\u0005). weight/MVO k/8l\u00020l6\u001c(optimizer scope). RF-R1 exposure bound k\n\u0014 l8!l \u0015B7j6\fj3 k'\f.",
+  "selection_objective": "condition_number",
+  "round_context": "CONFIG_SCOPED_NEGATIVE b",
+  "exposure_matrix_ref": "stage_artifacts/WT-D20260822_007/exposure_matrix.parquet",
+  "factor_covariance_ref": "stage_artifacts/WT-D20260822_007/factor_covariance.parquet",
+  "specific_risk_ref": "stage_artifacts/WT-D20260822_007/specific_risk.parquet",
+  "security_covariance_ref": "stage_artifacts/WT-D20260822_007/covariance.parquet",
+  "sigma_structure": "BOmegaB' + D (factor risk model)",
+  "n_names": 328,
+  "n_factors": 30,
+  "risk_summary": {
+    "top_common_risks": [
+      "Market (95%)",
+      "Sector (5%)",
+      "Specific (1%)",
+      "LowVol (0%)"
+    ],
+    "factor_variance_share": 0.9941,
+    "specific_variance_share": 0.0059,
+    "portfolio_beta_blume": 0.737,
+    "crowding_flags": [],
+    "crowding_score_per_factor": [
+      {
+        "factor_name": "F1_breadth_argmax_hard_selection",
+        "crowding_score": 0.261,
+        "hhi_top": 0.0041,
+        "n_effective": 245.4,
+        "vol_concentration": 0.112,
+        "passive_overlap_proxy": 0.227,
+        "demand_elasticity_proxy": 0.888,
+        "alert": "OK",
+        "crowding_score_contract": 0.218,
+        "hhi_top_contract": 0.1011,
+        "vol_concentration_contract": 0,
+        "passive_overlap_proxy_contract": 0.7,
+        "source": "contract_helper+manual"
+      }
+    ],
+    "liquidity_flags": [
+      "advt-based; l\u001c k\u000f\u0019l\u00041 m\u0015\u0018m\u0015\u001c 2e8 KRW k\n\u0014 m\u000e8l\u001e\u0005 k\u000b(j3\u0004 l \u001cl\u0015=(optimizer). k38 l'\u0004k\u000b(l\u001d"
+    ],
+    "concentration": {
+      "sector_hhi": 0.0587,
+      "sector_n_effective": 17,
+      "name_hhi": 0.00418,
+      "name_n_effective": 239.2
+    },
+    "cap_tier_decomposition": {
+      "basis": "cap_w_and_ew_uni_proxy(Size_tercile)",
+      "tiers": [
+        {
+          "tier": "MEGA",
+          "active_risk_share": 0.349,
+          "alpha_share": 0.349,
+          "signal_alive": true
+        },
+        {
+          "tier": "MID",
+          "active_risk_share": 0.337,
+          "alpha_share": 0.335,
+          "signal_alive": true
+        },
+        {
+          "tier": "SMALL",
+          "active_risk_share": 0.314,
+          "alpha_share": 0.317,
+          "signal_alive": true
+        }
+      ],
+      "dual_basis_divergence_flag": false
+    },
+    "stress_tests": {
+      "market_down_5": -0.0369,
+      "gfc_2008": {
+        "cum": -0.0608,
+        "coverage": 0.567,
+        "reliable": false
+      },
+      "eudebt_2011": {
+        "cum": -0.0601,
+        "coverage": 0.643,
+        "reliable": false
+      },
+      "china_2015": {
+        "cum": -0.0488,
+        "coverage": 0.729,
+        "reliable": false
+      },
+      "covid_2020": {
+        "cum": -0.3667,
+        "coverage": 0.881,
+        "reliable": true
+      },
+      "ratehike_2022": {
+        "cum": -0.1856,
+        "coverage": 0.963,
+        "reliable": true
+      },
+      "kr_bear_2018": {
+        "cum": -0.1217,
+        "coverage": 0.854,
+        "reliable": true
+      }
+    },
+    "tail_risk": {
+      "series": "long_only_attention_daily",
+      "n_days": 756,
+      "empirical": {
+        "var95": 0.02197989,
+        "var99": 0.04322101,
+        "es95": 0.03798838,
+        "es99": 0.06873262,
+        "skew": -0.98808194,
+        "kurt": 14.97576324
+      },
+      "evt_gpd": {
+        "threshold_q": 0.95,
+        "xi": 0.20519898,
+        "beta": 0.01272356,
+        "n_exceed": 38,
+        "var95": 0.02204707,
+        "var99": 0.04633771,
+        "es95": 0.0380729,
+        "es99": 0.06863482,
+        "interpretation": "heavy_tail_xi>0"
+      },
+      "hill_alpha_5pct": 2.54721969
+    }
+  },
+  "diagnostics": {
+    "condition_number_BOmegaB_D_precalibration": 1197.4,
+    "condition_number_before": 3639.1,
+    "condition_number_after": 400,
+    "shrinkage_used": true,
+    "shrinkage_method": "eigen_floor_cond400 (RF-R2 response, applied AFTER diagonal variance calibration)",
+    "variance_calibration": {
+      "applied": true,
+      "method": "diagonal_preserving: rescale each name so diag(N#)=realized total var; keeps factor-implied correlation",
+      "reason": "cross-sectional factor model over-attributes total variance (Var(fitted)+Var(resid)>Var(raw), temporal Cov(fitted,resid)b\t 0). Barra-style anchor of variance level to empirical.",
+      "vol_level_preservation_median": 1.01
+    },
+    "psd_verified": true,
+    "factor_correlation_warnings": [],
+    "regime_correlation": {
+      "low_vol": 0.108,
+      "mid_vol": 0.141,
+      "high_vol": 0.342,
+      "high_over_low_lift": 3.15,
+      "interpretation": "high-vol j5-k)4 l\u0003\u0001j4",
+      "ref": "stage_artifacts/WT-D20260822_007/regime_correlation.parquet"
+    },
+    "method_shopping_log": {
+      "risk_agent": {
+        "candidates_tried": 3,
+        "method_log": [
+          {
+            "name": "raw_sample_cov_NxN",
+            "condition": "full_rank_but_noisy",
+            "selected": false,
+            "note": "328 names x 756 days(3y): full-rank l\u001d4k\u0002\u0018 name-pair l\u0003\u0001j4"
+          },
+          {
+            "name": "factor_model_BOmegaB'+D (Omega LW-diag)",
+            "condition": 1197.4,
+            "selected": false,
+            "note": "base j5,l!0. k\u000b( l4\u001dk6\u0004l\u00020 j3<k\u000b$j7"
+          },
+          {
+            "name": "factor_model + diag-var-calibration + eigen_floor(cond<=400)",
+            "condition": 400,
+            "selected": true,
+            "note": "l1\u0004m\u0003\u001d b"
+          }
+        ],
+        "selection_objective": "condition_number"
+      }
+    },
+    "tdc_summary": {
+      "note": "factor-model j80k0\u0018 b"
+    },
+    "regime_correlation_ref": "stage_artifacts/WT-D20260822_007/regime_correlation.parquet"
+  },
+  "challenge_flags": [
+    "RF-R1 [HIGH] top_common_risk Market = 94.7% > 40% b",
+    "RF-note [INFO] l5\u001cl\u000b, l\u000b k\"0j0",
+    "RF-context [INFO] round_verdict=CONFIG_SCOPED_NEGATIVE b"
+  ],
+  "challenge_review": {
+    "from": "risk",
+    "to": "alpha",
+    "objection": false,
+    "targets_reviewed": ["alpha_package", "alpha_vector", "confidence_vector", "factor_specs"],
+    "note": "alpha_vector 328l\"\u0005 k,4j20 l\b\u0018l\u000b . round_verdict=CONFIG_SCOPED_NEGATIVE l\u001d8l'"
+  }
+}

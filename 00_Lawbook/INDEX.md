@@ -1,7 +1,7 @@
 # Qvest Index
 
 **3개월 후 도훈이 즉시 찾을 수 있게** — 1 page navigation + debug map.
-**v9.0 — Lean Loop · 4-Mode 헌법 · 게이트 2층(리서치/자본)** (2026-08-23 갱신. 직전 v8.4 = 비대칭 알파 재편, 전문은 `CHANGELOG_constitution.md` 아카이브 절).
+**v9.21 — 논문 알파리서치 → 강화 프로세스 · 등급 일원화(essence 단일) · 게이트 2층(리서치/자본)** (2026-08-24 갱신. 직전 v9.0 = Lean Loop, 전문은 `CHANGELOG_constitution.md`)
 
 > ★**숫자 박제 금지** — 이 문서가 v8.1에서 2개월 낙후된 기전이 "8 axioms / 30 hook / 203 paper notes" 같은 **개수 하드코딩**이었다. 개수·목록은 아래 *확인 명령*으로 위임하고, 본문은 **어디를 보는지**만 적는다.
 
@@ -13,7 +13,7 @@
 |---|---|---|
 | 1 | `CLAUDE.md` (루트) | **현행 헌법 본문** — 모델 표기·모드·제약의 단일 정본 |
 | 2 | `.claude/rules/` | **autoload 2종 (v9 2026-08-23)**: pit / lean-loop. 나머지(axioms · backtest-contract · measurement-graduation · python-policy)는 같은 폴더에 있으나 `paths:` 프론트매터로 **경로 트리거 지연 적재**. `answer-principles`는 `02_Infrastructure/docs/rules/`로 이동 |
-| 3 | `02_Infrastructure/docs/rules/` | 확장 룰 (on-demand Read, **효력 동일**) — harness / axiom-engine / r-portability / continuity-firewall / caching / factor-db / lockbox-scope / artifact-{naming,storage} / factor-rotation / ramp / research_philosophy / data_table_shift_convention |
+| 3 | `02_Infrastructure/docs/rules/` | 확장 룰 (on-demand Read, **효력 동일**) — harness / axiom-engine / r-portability / continuity-firewall / caching / factor-db / lockbox-scope / artifact-{naming,storage} / strategy-rotation / ramp(퇴임·사료) / research_philosophy / data_table_shift_convention |
 | 4 | `00_Lawbook/` (본 폴더) | **원전 법전** + INDEX + DEPRECATION — 2·3층의 상당수가 여기서 파생 |
 
 세션 모델명은 **여기 재기입하지 않는다** — 정본은 `CLAUDE.md` Active Version 절 (재기입 지점이 동시 낙후된 전례).
@@ -37,7 +37,7 @@
 |---|---|
 | `/qvest` | Session start + bootstrap (gap 확인 + harness health) |
 | `/worktask` | WT lifecycle CRUD (QEPM 모드) |
-| `/alpha-search` · `/factor-rotation <track>` · `/ramp <stage>` | 모드 진입 (②③④) |
+| `/alpha-search` · `/strategy-rotation <track>` | 진입점 (기본 1단계 · 소비 계층). ★강화 프로세스는 무인 러너 뒤 자동 · `/ramp` 는 v9.21 모드 퇴임 |
 | `/qlead` | Q-Lead session dashboard |
 | `02_Infrastructure/observability/qvest_observe wt <ID>` | Per-WT timeline JSON (rebuild + dump) |
 | `02_Infrastructure/observability/qvest_wt <ID>` | Per-WT ASCII pretty · `--active` book admit · `--recent N` |
@@ -138,9 +138,9 @@ SPEC_APPROVED → ALPHA_DONE → RISK_DONE → OPTIMIZER_DONE → FORGE_DONE
 
 ## 7. Skills · Agents · Tests
 
-- **Skills** `.claude/skills/` — 모드 진입(alpha-search/factor-rotation/ramp) · 절차(qvest-worktask/qvest-telegram/cleaner) · 스타일(qvest-{alpha,risk,opt,attribution}-style) · 디버그(qvest-hook-debug/qvest-cert-paths) · 발굴(factor-db-discovery/kr-inverse-pattern-miner)
+- **Skills** `.claude/skills/` — 진입점(alpha-search/strategy-rotation · ramp 는 퇴임·존치) · 절차(qvest-worktask/qvest-telegram/cleaner) · 스타일(qvest-{alpha,risk,opt,attribution}-style) · 디버그(qvest-hook-debug/qvest-cert-paths) · 발굴(factor-db-discovery/kr-inverse-pattern-miner)
 - **Agents** `.claude/agents/` — active 6 (alpha-hypothesis → alpha-research → risk → optimizer → forge → judge → governor) + ondemand 4 (architect/blender/execution/monitoring). 상세 = CLAUDE.md Multi-Agent 절
-- **Commands** `.claude/commands/` — qvest / worktask / alpha-search / factor-rotation / ramp / qlead
+- **Commands** `.claude/commands/` — qvest / worktask / alpha-search / strategy-rotation / ramp(퇴임·존치) / qlead
 - **Tests** `08_Tests/` — 진입점 `08_Tests/hooks/run_all_hooks.sh`(hook dry-run) · `08_Tests/contract_regression/run_contract_regression.R` · `08_Tests/integration/test_wt_lifecycle_e2e.R` · `08_Tests/integration/_e2e_cleanup_guard.sh`(CI gate). 스위트별 정체 = `08_Tests/INDEX.md`
 - **Examples** `02_Infrastructure/docs/examples/qvest_workflows/` — 표준 WT 3종 (discovery happy / cert_fail / pit_violation)
 

@@ -8,7 +8,12 @@
   "gate_verdict": "QUARANTINE",
   "grade": "F",
   "polarity": "negative_informative",
-  "tags": ["VALIDATED_HARD_FAIL", "direction_reversal", "frog_in_pan", "jump_share"],
+  "tags": [
+    "VALIDATED_HARD_FAIL",
+    "direction_reversal",
+    "frog_in_pan",
+    "jump_share"
+  ],
   "title": "FQ-110 jump-share 방향 A 역효과 — IC 음수, 역방향 frog-in-the-pan 기전 시사",
   "finding": "12M 창 상위-5 일간수익 기여 비중(JumpShare_12M) direction A(고 jump-share = long)가 역효과(IC=-0.028). frog-in-the-pan 기전은 존재하나 방향이 반대: 분산된 소폭 누적(저 jump-share)이 지속 모멘텀 신호 후보.",
   "mechanism": "수익이 소수 날짜에 집중(high jump-share)된 종목은 단기 탄력이지 지속 추세 아님. frog-in-the-pan은 '서서히 익는(알아차리지 못하는) 추세'를 포착하는데, low jump-share가 이 패턴에 부합. 방향 A는 opposite.",
@@ -27,5 +32,20 @@
   ],
   "revival_condition": "FQ-110B(역방향) PORT_t >= 2.95 실증 시 L-code로 upgraded",
   "axiom_candidate": false,
-  "note": "WT-013 NP-2 경로효율 F2 borderline(t+1.92) 파생. 기전 확증 실패(방향 A)지만 역방향 가설 생성에 기여 — 양방향 정보."
+  "note": "WT-013 NP-2 경로효율 F2 borderline(t+1.92) 파생. 기전 확증 실패(방향 A)지만 역방향 가설 생성에 기여 — 양방향 정보.",
+  "essence_grade": "C",
+  "essence_regrade": {
+    "ref": "essence_regrade_20260824",
+    "applied_at": "2026-08-24T19:27:59+0900",
+    "basis": "essence_score.R (v9.21 권위 등급) — bt_result.rds 재채점",
+    "grade_at_emit": "F",
+    "proxy_grade": "F",
+    "metric_type": "backtested",
+    "structural_drawdown": false,
+    "port_t": 0.618,
+    "net_ir": 0.142,
+    "calmar": 0.171,
+    "mdd": 0.555,
+    "note": "판정 축 병기 — 기존 `grade` 는 발행 시점 기록으로 불변. MDD 는 등급을 접지 않는다(2026-08-24): 구조 낙폭은 structural_drawdown 라벨로만 남는다."
+  }
 }

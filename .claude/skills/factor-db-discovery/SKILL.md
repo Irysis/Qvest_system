@@ -35,7 +35,7 @@ list_custom_factors(); remove_custom_factor(id, from_registry=TRUE)
 - **W1 (무결성)**: sweep 수치 = `metric_type="proxy"`(EW 산술평균·인라인 15bps 근사, 탐색용). **의사결정 수치는 `canonical_confirm`** (R `canonical_screen_bt` 경유 = contract-grade PORT_t `portfolio_alpha_t_nw_lag3` NW lag-3, `metric_type="canonical_screen"`, 자체합성 X). `--canonical`/`--validate`에서 자동. 브릿지 `run_canonical_screen.R`. **canonical은 frequency-native**: `canonical_confirm(mode="monthly"|"quarterly")` + `canonical_screen_bt(periods_per_year=)` — **horizon 신호를 자연 cadence(분기 ppy=4)로 잰다(월간 강제 금지, 도훈 mandate)**. ★**proxy 과대의 주범 = self-synthesis, cadence 아님**: earnings_rev H3 recent proxy 2.58 → 분기 contract 0.93(−1.65 self-synth) → 월간 contract 0.70(−0.23 cadence). H=1서 proxy=canonical ±0.003. **후보는 (a)자연 cadence로 (b)반드시 contract-grade로 둘 다 재라. proxy는 pre-filter일 뿐.**
 - **W2 (→QEPM)**: `--export-seed [WT_id]` → CANDIDATE를 `qepm/mailbox/worktask/{WT}/discovery_seed.json`(family·horizon·factor_ids·proxy/canonical PORT_t·caveat)로. alpha-research Step 0가 1순위 소비(`alpha_research_init.md` Step 0). canonical≪proxy면 caveat에 분기-마킹 경고 자동 삽입.
 - **W3 (온보딩 검증)**: `validate_new_factor(id)`(`add_factor.R`) = `--refresh-factor`(월별 factor_db→explore_panel 컬럼 증강, 스냅샷 패널의 신규팩터 부재 문제 해소) + `--validate`(score_eff 대비 proxy/canonical Δ).
-- **(보류) W4** discovery→module_quarantine→register_module→factor-rotation / **W5** RAMP 상류 축-정찰: screen-tier 후보 스트림이 쌓이면.
+- **(보류) W4** discovery→module_quarantine→register_module→strategy-rotation / **W5** RAMP 상류 축-정찰: screen-tier 후보 스트림이 쌓이면.
 
 ## 핵심 원리 — 발굴 기질 ≠ 생산 기질 (P7)
 생산(book) 소비 = `load_month_factors` → **C13 정렬(단조·선형) → score_eff(1M)**. 이 파이프에서 발굴을 시작하면 basis span에 funnel되어 *같은 천장 재확인*만 한다. → **발굴은 별도 통로에서**:

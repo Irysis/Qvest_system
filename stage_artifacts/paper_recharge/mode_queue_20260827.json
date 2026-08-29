@@ -1,0 +1,99 @@
+{
+  "date": "20260827",
+  "schema_version": "paper_router_v2",
+  "generated_at": "2026-08-28T20:21:14+0900",
+  "optimizer": [
+    {
+      "arxiv_id": "2608.23393",
+      "title": "KellyBoost: Growth-Optimal Portfolio Construction with Gradient-Boosted Trees",
+      "kr_feasible": true,
+      "reason": "XGBoost softmax 출력이 직접 포트폴리오 비중. 목적함수 = -log(1+wy). Kelly-optimal 비중 산출기. 신호 없음, 비중 방법론.",
+      "meta": {
+        "method_type": "kelly_growth_optimal_xgboost",
+        "shrinkage_builtin": "implicit_via_regularization",
+        "screen_priority": "우선",
+        "screen_priority_reason": "Kelly criterion XGBoost 직접 구현. closed-form gradient/Hessian. 기존 EW/MVO 대비 growth-optimal 목표 차별화. QEPM 비중 방법론 후보."
+      }
+    },
+    {
+      "arxiv_id": "2608.24449",
+      "title": "Generalizing Markowitz Portfolio Optimization by a Quadratic Risk Measure",
+      "kr_feasible": true,
+      "reason": "임의 SPD 행렬로 Markowitz 확장. closed-form efficient frontier/tangency. 거래비용·공분산 정규화·팩터 모델 통합. Optimizer 확장 방법론.",
+      "meta": {
+        "method_type": "generalized_markowitz_quadratic_risk",
+        "shrinkage_builtin": "yes_via_regularization_term",
+        "screen_priority": "우선",
+        "screen_priority_reason": "거래비용 quadratic penalty 내포. tangency != max-SR 신규 기하 현상. closed-form 공식 제공."
+      }
+    }
+  ],
+  "risk": [
+    {
+      "arxiv_id": "2608.23808",
+      "title": "Equity Strategy Backtesting: Luck or Edge? The MinervaScore as a Statistical Robustness Grade",
+      "kr_feasible": true,
+      "reason": "DSR+PBO+SPA+MTRL+레짐안정성 결합 후검증 등급 시스템. AUROC 0.989(합성). 실시장 forward rho=0.013(무의미). 백테 과적합 검증 레이어 도구.",
+      "meta": {
+        "use_case": "post_selection_robustness_grading",
+        "components": "DSR+PBO+SPA+MTRL+regime_stability",
+        "calibration_records": 359062,
+        "screen_priority": "우선",
+        "screen_priority_reason": "5개 검증 지표 통합 0-100 점수화. KR 백테 과적합 검증에 직접 적용 가능. 실시장 forward 예측력은 없음 — 검증 레이어 역할."
+      }
+    },
+    {
+      "arxiv_id": "2608.23944",
+      "title": "Bulk Phase Transition and Edge Behavior in Temporally Correlated Random Matrices",
+      "kr_feasible": true,
+      "reason": "AR(1)/power-law 시간 상관 무작위 행렬 스펙트럼 분포. gamma_c=0.5 임계점. 공분산 추정 이론적 기반 확장.",
+      "meta": {
+        "use_case": "covariance_spectral_analysis",
+        "correlation_type": "temporal_AR1_powerlaw",
+        "critical_exponent": 0.5,
+        "screen_priority": "후순위",
+        "screen_priority_reason": "이론 결과. KR 공분산 추정 개선에 간접 기여. 직접 구현 레시피 미제공."
+      }
+    },
+    {
+      "arxiv_id": "2608.20842",
+      "title": "Rethinking Synthetic Scenario Realism: Compatibility, Not Fidelity, Drives Hedging Performance",
+      "kr_feasible": true,
+      "reason": "합성 시나리오 평가 — fidelity 아닌 compatibility(전략-생성기 정렬)가 헤징 성과 결정. 스트레스 테스트/시뮬레이션 설계 기준.",
+      "meta": {
+        "use_case": "stress_test_scenario_design",
+        "key_insight": "compatibility_over_realism",
+        "screen_priority": "후순위",
+        "screen_priority_reason": "헤징 전략 전용. QEPM 롱온리 백테 스트레스 시나리오 적용은 간접적."
+      }
+    },
+    {
+      "arxiv_id": "2608.20727",
+      "title": "A Multiscale Ball Test for Conditional Mean Independence",
+      "kr_feasible": true,
+      "reason": "다중 스케일 볼 조건부 평균 독립 검정. KR 월별 금융 데이터 전체샘플 기각 사례 포함. 알파 신호 비선형 구조 검증 도구.",
+      "meta": {
+        "use_case": "signal_nonlinearity_validation",
+        "data_type": "monthly_financial_panel",
+        "screen_priority": "우선",
+        "screen_priority_reason": "cross-fitted residual 검정으로 동월 look-ahead 제거. KR 월별 패널에 직접 적용 가능."
+      }
+    }
+  ],
+  "regime": [
+    {
+      "arxiv_id": "2608.22864",
+      "title": "From Exponential to Polynomial: An Exact Filter for High-Dimensional MSM Models",
+      "kr_feasible": true,
+      "reason": "MSM 정확 필터 계산복잡도 O(D^k)→O(k^D) 감소. KR 변동성 레짐 식별에 MSM 모델 실용화 가능.",
+      "meta": {
+        "use_case": "volatility_regime_identification",
+        "model": "MSM_exact_filter",
+        "complexity_reduction": "O(D^k) to O(k^D)",
+        "screen_priority": "우선",
+        "screen_priority_reason": "MSM 레짐 식별 계산 장벽 제거. KR KOSPI200 변동성 레짐 분류에 직접 적용."
+      }
+    }
+  ],
+  "notes": "20260827 mode queue — optimizer 2·risk 4·regime 1"
+}

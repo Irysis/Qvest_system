@@ -151,24 +151,61 @@ def s6_codex_gate(src: Path, strategy: str, **_) -> bool:
 
 
 def s7_grade_gate(src: Path, strategy: str, **_) -> bool:
-    """Grade A/A_NOVEL/A_CONDITIONAL/B만 PG0 진입."""
+    """Grade A/A_NOVEL/A_CONDITIONAL/B만 PG0 진입.
+
+    ★★이 게이트는 **한 번도 발화한 적이 없다** (2026-08-24 실측):
+        TODO_PG0_* 0건 · DONE_S7_* 0건 · ARCHIVED_S7_* 0건 · 로그 기록 0건.
+        상류 배선도 죽어 있다 — 이 모듈을 부르는 `pipeline_trigger.sh` 는
+        `.claude/settings.json` 에 **미등록**이고, stage mailbox 는 `TODO_S*` 12건이
+        소비되지 않은 채 남아 `DONE_S*` 가 0 이다. 실제 QEPM 경로는
+        `qepm/mailbox/worktask/` (283 디렉터리)이고 자본 관문은
+        `hooks/discovery_graduation_gate.sh` 가 WT-D→WT-P 경계에서 forge-authoritative
+        HARD 4종으로 fail-closed 검사한다.
+      ⇒ **이 함수를 방어선으로 세지 말 것.** 양성 대조 없는 계기는 방어선이 아니다
+        (2026-08-24 세션 규율 — 같은 병으로 계기 3층이 동시에 비어 있었다).
+        되살리려면 상류 배선(등록 + DONE_S7 생산자)부터 실증할 것.
+
+    ★v9.21 §1-c 최소 정정: 등급 소스를 **권위(essence) 우선**으로 바꾸고 출처를 로그에
+      남긴다. 죽은 배선을 정교하게 재설계하지는 않는다(그게 이번 세션이 진단한 실수다).
+      정정 근거 = 이 게이트가 읽던 `hurdle_result.json` 은 2026-05-31 에 DEMOTED 된
+      proxy 다. 실측(같은 런 207건 대조): **hurdle A 11건 중 6건이 essence F** —
+      proxy-A 가 자본 큐로 통과한다. 라우팅이지 승인은 아니지만 축은 틀렸다.
+      ★접미어 나열(A_NOVEL/A_CONDITIONAL)은 **지우지 않는다** — hurdle 폴백 경로가
+        그 값을 실제로 반환하므로 지우면 조용히 조건이 좁아진다(논문 러너 12종과 같은 판단).
+    """
     target = MAILBOX / "q_lead" / "inbox" / f"TODO_PG0_{strategy}.json"
     if target.exists():
         return False
-    grade = "F"
+    grade = "F"                    # 산출물 부재 = 차단 (fail-closed, 불변)
+    grade_basis = "absent(default_F)"
     strat_dirs = list((PROJECT_ROOT / "04_Research" / "strategies").glob(f"*{strategy}*"))
     if strat_dirs:
-        for hr in strat_dirs[0].glob("output*/hurdle_result.json"):
+        # ① 권위: essence 등급 (authoritative_remeasure.json). 현재 전략 output 디렉터리에는
+        #    이 파일이 없다(실측) — 있으면 우선하고, 없으면 ②로 내려간다. 없는 것을 지어내지 않는다.
+        for ar in strat_dirs[0].glob("**/authoritative_remeasure.json"):
             try:
-                d = json.loads(hr.read_text())
-                v = d.get("verdict", d)
-                grade = v.get("grade", d.get("grade", "F"))
-                break
+                d = json.loads(ar.read_text(encoding="utf-8-sig"))
+                g = d.get("essence_grade")
+                if g:
+                    grade, grade_basis = g, "essence_score(authoritative_remeasure.json)"
+                    break
             except Exception:
                 continue
+        # ② proxy 폴백: hurdle. **비우지 않고 라벨한다** — 비우면 라우팅이 조용히 사라진다.
+        if grade_basis == "absent(default_F)":
+            for hr in strat_dirs[0].glob("output*/hurdle_result.json"):
+                try:
+                    d = json.loads(hr.read_text())
+                    v = d.get("verdict", d)
+                    grade = v.get("grade", d.get("grade", "F"))
+                    grade_basis = "hurdle_gate(proxy — 권위 등급 부재)"
+                    break
+                except Exception:
+                    continue
     if grade in ("A", "A_NOVEL", "A_CONDITIONAL", "B"):
         cp(src, target)
-        log(f"TRIGGER: Judge DONE_S7 → Governor TODO_PG0 ({strategy}, Grade={grade})")
+        log(f"TRIGGER: Judge DONE_S7 → Governor TODO_PG0 "
+            f"({strategy}, Grade={grade}, basis={grade_basis})")
     else:
         proc = src.parent.parent / "processed"
         proc.mkdir(parents=True, exist_ok=True)
@@ -176,7 +213,7 @@ def s7_grade_gate(src: Path, strategy: str, **_) -> bool:
             shutil.move(str(src), str(proc / f"ARCHIVED_S7_{strategy}.json"))
         except Exception:
             pass
-        log(f"BLOCKED: {strategy} Grade={grade} → ARCHIVE (PG 진입 거부)")
+        log(f"BLOCKED: {strategy} Grade={grade} (basis={grade_basis}) → ARCHIVE (PG 진입 거부)")
         return True  # processed
     return True
 

@@ -548,7 +548,12 @@ def _write_with_superset_dedup(new_cands: list, out_dir: str) -> list[str]:
 DIST_MODE_PREFIX = {
     "alpha_search": "AS", "alpha_research": "AR", "qepm_legacy": "QPM",
     "judge_gate": "JG", "governor_admission": "GV",
-    "factor_rotation": "FR", "regime_research": "RR", "ramp": "RAMP",
+    "strategy_rotation": "FR",   # v9.21 개명 (prefix 유지 — id 는 불투명 식별자)
+    "factor_rotation": "FR",     # 역사 라벨
+    "regime_research": "RR", "ramp": "RAMP",
+    # ★부채 봉합 2026-08-24: overlay_research 가 이 맵에만 없어 OVL 11건이 distill
+    #   경로에서 GEN 으로 떨어졌다(lcode_emit.R:33 은 갖고 있었다).
+    "overlay_research": "OVL",
 }
 
 

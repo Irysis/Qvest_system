@@ -2,7 +2,7 @@
 
 ## Active Version
 
-**Qvest v9.0 — Lean Loop · 4-Mode 헌법 · 게이트 2층 · 라운드 우선** (세션 모델 정본 `claude-fable-5`. 2026-08-23 도훈 결정 — 플랜 `~/.claude/plans/qvest-encapsulated-wave.md` 승인 + 결정 4항 선택(①게이트 2층+자본층 재보정 ②Stop 훅 해제→L-code 발행 시점 ③6-agent는 자본층 입구만 ④강한 감산): Stop 차단 훅 0 · 등록 훅 11 · 헌법 ≤8KB · autoload 룰 2종 · 부팅 5줄. 직전 판 = v8.4(2026-08-13 비대칭 알파 재편). 롤백 태그 `pre-v9-lean-loop`)
+**Qvest v9.21 — 논문 알파리서치 → 강화 프로세스 · 등급 일원화(essence 단일) · 게이트 2층** (세션 모델 정본 `claude-fable-5`. 2026-08-24 도훈 지시 6건 — ①강화 목표 등급 B→A ②등급체계 1개로 ③팩터 로테이션→전략 로테이션 개명 ④QEPM = A등급 이상 심층리서치로 재배치 ⑤기본 단계 = 논문 알파리서치 → 강화 ⑥RAMP 모드 퇴임(Track1 흡수) + 후속 지시 "MDD 탈락은 빼줘 — hard_fail 조건에서 MDD만 걷어내면 되는거 아냐?". 플랜 `~/.claude/plans/bright-dancing-snowflake.md`. 등록 훅 12 · 배터리 182 스위트. 직전 판 = v9.2/v9.0 Lean Loop(2026-08-23). 롤백 태그 `pre-v9-lean-loop`)
 
 > **★버전·모델 표기 단일 출처**: 위 줄이 유일한 정본이다(`boot_currency_check.sh` C0가 여기서 파생해 배너·상태라인 C1~C3를 대조). 다른 문서·룰은 재기입하지 말고 "정본 = 본 절"로 위임할 것.
 
@@ -15,7 +15,7 @@
 프로세스·하네스·게이트는 알파 발굴을 **신뢰할 수 있게 만드는 수단**이지 목적이 아니다. 세션 자원의 기본값은 **라운드 전진**이고, 인프라 작업은 ①라운드를 실제로 막는 결함 ②측정 신뢰를 훼손하는 결함(PIT·proxy·침묵 실패)에만 쓴다. 사이클이 생기면 "인프라를 더 다듬을까"가 아니라 **"다음 가설이 무엇인가"**를 먼저 묻는다.
 
 - **제1목표**: 미래참조 없는 전략 설계(PIT 완전 준수) — 성과보다 우선.
-- **제2목표(= 자본 계층 목표)**: SR 2.5+ / CAGR 16%+ / MDD <25%. **리서치 층의 통과 기준이 아니다** — 리서치 층은 `hurdle_gate.R` 등급으로 판정한다.
+- **제2목표(= 자본 계층 목표)**: SR 2.5+ / CAGR 16%+ / MDD <25%. **리서치 층의 통과 기준이 아니다** — 리서치 층은 **권위 등급**(`essence_score.R`)으로 판정한다. ★이 줄의 `MDD <25%`는 **목표 서술이지 게이트가 아니다** — 게이트에서는 Calmar 비율(=16%/25%=0.64)로만 걸린다(아래 「등급」 절).
 
 ---
 
@@ -28,9 +28,11 @@
 1. **읽기** — 논문/가설 1건에서 신호 정의·비중 방법·유니버스·리밸 주기·저자 주장 성과.
 2. **구현** — 논문 명시값 복제, 미명시분만 고정 축으로. 하드 게이트 = `detect_lookahead`.
 3. **실행** — `run_alpha_search(name, idea, engine, n_holdings=<논문>, weight_method="<논문>")` (`deep=FALSE` 기본).
-4. **판정** — `hurdle_result.json` 값만 인용. Grade A = CAGR ≥16% ∧ SR ≥0.8 ∧ score ≥40 ∧ hard_fail 없음.
+4. **판정** — **권위 등급**(`authoritative_remeasure.json::essence_grade`) 값만 인용. 손계산·재구성 금지. Grade A = PORT_t ≥2.95 ∧ OOS retention ∧ SR ≥0.8 ∧ CAGR ≥16% ∧ Calmar ≥0.64. `hurdle_result.json` 등급은 **진단(proxy)**이며 판정 근거가 아니다.
 5. **교훈** — 의미있는 실패(기전이 특정되는 실패)만 L-code 적립.
 6. **다음** — 큐 다음 항목. 보고는 3줄.
+
+★4단계 뒤 **기본 2단계(강화 프로세스)**가 붙는다 — 세션이 수동으로 부르는 것이 아니라 무인 러너 뒤에 자동으로 돈다(아래 「파이프라인」).
 
 **절차 정본 = `.claude/rules/lean-loop.md`**(autoload) — 예산 ≤40분·≤120K 토큰·하네스 쓰기 0 / 연속성 계약 1지점 / 하지 않는 것 목록.
 
@@ -56,23 +58,49 @@
 
 ---
 
+## 등급 — 하나뿐이다 (v9.21, 도훈 지시 "여러개면 헷갈린다")
+
+**권위 등급 = `02_Infrastructure/contracts/essence_score.R`. enum = A / B / C / F 4값.**
+`hurdle_gate.R` 등급은 2026-05-31에 이미 **DEMOTED**(`authoritative=FALSE` · `grade_basis="proxy_diagnostic_18component"`)됐다 — 둘이 병존한 게 아니라 문서가 강등을 안 따라갔던 것이다.
+
+- **lean 라운드도 권위 등급을 항상 산출한다**(v9.21 §1-a). 구판은 proxy 등급이 "권위 등급을 계산할지"를 정하는 **순환 의존**이라 lean에는 권위 등급이 아예 없었다(생존편향 구조 — `docs/qvest_ast_v1_1_sot.md:84` 반증 기록).
+- 계약 미경유 = **등급 미발행(NA)**. 사유는 `metric_type="uncertain"`이 보존한다. `"uncertain"`은 등급이 아니다.
+- 축 이름: `grade`=권위(essence) · `grade_proxy`=진단(hurdle). 출처는 `grade_basis`가 못박는다.
+- ★**MDD는 어느 층에서도 등급을 접지 않는다**(도훈 지시 2026-08-24 "hard_fail 조건에서 MDD만 걷어내면 되는거 아냐?"). 위험 축은 **Calmar 비율 하나**(=CAGR/\|MDD\| ≥ 0.64 = 16%/25%). `hard_fail`은 **외부(judge) 주입 전용**이고, 구조 낙폭은 `structural_drawdown` **라벨**로만 남아 오버레이 라우팅 근거가 된다. 문서 정합 중 MDD 직접 문턱을 되살리지 말 것 — `08_Tests/contracts/test_grade_unification.R` B4~B6이 잡는다.
+
 ## 게이트 2층
 
-- **리서치 층(모든 lean 라운드)** = `hurdle_gate.R` 등급(A/B/C/F) + PIT(`detect_lookahead` 차단). **추가 수치 허들 0.** 사전등록·검정력 계약·무신호 대조·β-통제 α·`DISTRIBUTION_TARGET`은 **선택 도구**이지 부과 의무가 아니다.
-- **자본 층(Grade A 또는 도훈 지명 후)** = `/worktask` → 6-agent → dossier → **forge-authoritative 수치**로 HARD 3종 판정 → governor. 값 정본 = `02_Infrastructure/worktask/constraint_defaults.json::tier_graduation`이며 **재보정은 도훈 권한**(INV-7 "게이트 완화 제안 금지"는 자본 층 한정). `qepm/mailbox/governor/book_state.json` 쓰기 = **도훈만**(자동화 금지).
+- **리서치 층(모든 lean 라운드)** = **권위 등급**(essence A/B/C/F) + PIT(`detect_lookahead` 차단). **추가 수치 허들 0.** 사전등록·검정력 계약·무신호 대조·β-통제 α·`DISTRIBUTION_TARGET`은 **선택 도구**이지 부과 의무가 아니다. (`hurdle_gate.R`는 지우지 않는다 — `screen_route` 라우팅 라벨의 생산자다.)
+- **자본 층(Grade A 또는 도훈 지명 후)** = 심층 QEPM 6-agent → dossier → **forge-authoritative 수치**로 HARD 4종 판정 → governor. 값 정본 = `02_Infrastructure/worktask/constraint_defaults.json::tier_graduation`이며 **재보정은 도훈 권한**(INV-7 "게이트 완화 제안 금지"는 자본 층 한정). `qepm/mailbox/governor/book_state.json` 쓰기 = **도훈만**(자동화 금지).
 - 자본 층 규범 전문 = `.claude/rules/measurement-graduation.md`(경로 트리거 지연 적재).
 
 ---
 
-## 모드 / 진입점
+## 파이프라인 (v9.21 — 모드 표를 대체한다)
+
+```
+기본 1단계   논문 알파리서치 (lean loop)                    ← 세션 기본값
+     ↓
+기본 2단계   강화 프로세스 (reinforce_ladder · 무인 러너 뒤 자동)
+             ①팩터 컴포지트 → ②비중 방법론 교체 → ③리스크 오버레이
+     ↓  (Grade A 또는 도훈 지명)
+심층        QEPM 6-agent — A등급 이상 전략의 스펙 강화
+     ↓
+소비 계층    전략 로테이션 — Track1 레짐엔진 · Track2 모듈 배분
+```
+
+**해상도로 가른다**: 강화 프로세스 = intra-strategy(전략 1개의 축 교체) · 전략 로테이션 Track2 = inter-strategy(완성 모듈 배합) · Track1 = 국면 정의/예측(둘의 토대). 순수팩터 추출(PCA/FWL/hclust)은 Track1이 필요할 때 부르는 **도구**이지 별도 모드가 아니다.
 
 | Command | 용도 |
 |---|---|
-| `/qvest` | 세션 시작 → 부팅 5줄 → lean loop |
-| `/alpha-search` | ② alpha-search — 논문 1편 경량 검증 (기본 레인) |
-| `/worktask` | ① QEPM 6-agent — **자본 층 입구** |
-| `/factor-rotation <track>` | ③ 국면조건부 모듈 배합 (모듈 소비) |
-| `/ramp <stage>` | ④ K-RAMP 팩터배분 (전략풀 소비) |
+| `/qvest` | 세션 시작 → 부팅 5줄 → lean loop (기본 1단계) |
+| `/alpha-search` | 논문 1편 경량 검증 (기본 1단계 레인) |
+| `/worktask` | 심층 QEPM 6-agent — **A등급 이상 스펙 강화** |
+| `/strategy-rotation <track>` | 소비 계층 — 국면조건부 모듈 배합 |
+
+**강화 프로세스는 전용 command가 없다** — 무인 러너(`alpha_search_queue_run.sh`) 뒤에 자동으로 1후보가 붙는다(도훈 결정 2026-08-24). 수동 기동은 `Rscript 02_Infrastructure/ops/reinforce_ladder.R --top=1`, 정지는 `QVEST_LADDER_NORUN=1`.
+
+★**RAMP는 모드에서 퇴임했다**(도훈 결정 2026-08-24). 선언 산출물(`RAMP_XXXX`·`FG_*`·`MCODE_M0~M4`·Gate 0~11 심사)이 **각 0건**이고, "RAMP" 라벨 아래 실제로 돈 것은 팩터배분 파이프라인이 아니라 **국면 조건부 리서치**(L-code 73건)였다 — 그건 전략 로테이션 Track1이 이미 선언한 일이다. **코드·데이터·L-code 73건은 삭제하지 않는다**(`ramp`는 L-code enum에 역사 라벨로 존치 — 선례 = `qepm_legacy`). 진입점에서만 내린다.
 
 ## 절대 규칙
 

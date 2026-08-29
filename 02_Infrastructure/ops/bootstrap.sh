@@ -58,7 +58,7 @@ case "${QVEST_BOOT_SANITIZED:-}" in
   *)      echo "[boot] WARN: utf8_output_guard INACTIVE (python3/guard 부재 또는 외부 QVEST_BOOT_SANITIZED 선점) — 이모지 포함 출력 시 API 400 위험" ;;
 esac
 
-echo "=== Qvest v9.0 부트스트랩 — health_full 전용 (Fable 5 · Lean Loop · 4-Mode +RAMP) ==="
+echo "=== Qvest v9.21 부트스트랩 — health_full 전용 (Fable 5 · 논문 알파리서치 → 강화 프로세스) ==="
 
 # 1. (제거됨 v8.0 2026-05-29) tmux rc telegram inbound listener — outbound tg_agent_brief()는
 #    영향 없음. inbound 명령 listener 불필요 판단(도훈). 필요 시 persistent_remote_control.sh 수동 기동.
@@ -1090,7 +1090,7 @@ echo ""
 if [ "${BOOT_FAILS:-0}" -gt 0 ]; then
   echo "=== 부트스트랩 DEGRADED — ${BOOT_FAILS}개 게이트 실패 (위 ERROR 라인 확인, '완료' 아님) ==="
 else
-  echo "=== 부트스트랩 완료 (Qvest v9.0 — Fable 5 · Lean Loop · 4-Mode +RAMP · health_full 경로) ==="
+  echo "=== 부트스트랩 완료 (Qvest v9.21 — Fable 5 · 논문 알파리서치 → 강화 프로세스 · health_full 경로) ==="
 fi
 
 # (2026-07-17 B2) 부트 스탬프 — SessionStart 카나리아(hooks/boot_stamp_check.sh)의 신선도 판정 원천.
@@ -1100,7 +1100,7 @@ printf '{"ts":"%s","ts_epoch":%s,"boot_fails":%s}\n' "$(date '+%Y-%m-%dT%H:%M:%S
 if [ -n "$PG2_INFO" ]; then
   echo "$PG2_INFO"
 fi
-echo "v9.0:       Lean Loop(도훈 결정 2026-08-23, 플랜 qvest-encapsulated-wave) — 리서치 층 = hurdle 등급+PIT / 자본 층 = 지명 후 6-agent·HARD 3종(constraint_defaults.json::tier_graduation) / Stop 차단 훅 0 · 등록 훅 11 · 세션 부팅 = boot_lean.sh 5줄 · 본 스크립트는 health_full.sh 전용"
+echo "v9.21:      논문 알파리서치 → 강화 프로세스(도훈 지시 2026-08-24, 플랜 bright-dancing-snowflake) — 등급 일원화(essence 단일 A/B/C/F) · MDD 는 등급을 접지 않음(Calmar 비율만) · 강화는 무인 러너 뒤 자동 · RAMP 모드 퇴임(라벨·데이터 존치)"
 echo "v8.4 base:  비대칭 알파 중심 재편(도훈 2026-08-13) — 표적을 평균→분포로(조건부 분위·왜도·꼬리초과확률) / 3 lane: A 분포-표적 학습 · B 일별 축 회수(9,005거래일·flow 1.25GB) · C 수리통계 구조추정 / 비-return FQ-001~005 주력 해제(2건 데이터게이트 폐쇄·3건 실측 negative, 구조판결 아님) / 금지4: ML결합기·ML사이징·평균표적 ML라운드·sweep DSR회피"
 echo "v8.3 base:  알파 발굴 중심(canonical PORT_t 1급·dual-basis·frontier 큐 확인 의무) + 2026-08-08 모델 라우팅 재핀(alpha-hypothesis=fable · QEPM 나머지=opus) / 4-Mode 헌법(alpha-search 논문복제·K200∪KQ150·2005 / factor-rotation Lane3 / RAMP Gate0~11 / Axiom r7) / 실측 거버넌스 / register_module 자동흐름"
 echo "v8.0 base:  R+Python 1급 / SR목표 2.5 / agent effort(judge·gov xhigh) / axiom_context_inject / qvest-*-style skill"

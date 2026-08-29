@@ -114,7 +114,7 @@ rl_log <- function(fmt, ...) {
 
 ## ─── 설정 ───────────────────────────────────────────────────────────────────
 RL_CONFIG_DEFAULTS <- list(
-  enabled = TRUE, max_active = 1L, target_grade = "B",
+  enabled = TRUE, max_active = 1L, target_grade = "B", redo_completed = FALSE,
   per_attempt_secs = 2100L, budget_secs_per_candidate = 14400L,
   rung1_max_attempts = 3L, rung2_max_arms = 4L,
   strike_limit = 2L, strike_blocks_rung3 = FALSE,
@@ -389,8 +389,40 @@ rl_candidates <- function(config, root = RL_ROOT) {
   dropped <- T0[dup_rank > 1L]
   T1 <- T0[dup_rank == 1L]
   T1[, dup_rank := NULL]
+
+  ## ── ★루프 폐쇄 (v9.21 §2-f, 2026-08-24) ─────────────────────────────────
+  ##   구판은 원장을 **전혀 보지 않았다**. `entry_strength` 내림차순 + `max_active=1` 이므로
+  ##   **매 실행이 같은 1위 후보를 다시 집는다.** 셀 재개 로직(out_dir/bt_result.rds 존재 시
+  ##   재실행 회피)이 있어 두 번째 실행은 빠르게 끝나지만, 같은 결과로 close_round 와
+  ##   등재를 되풀이하고 **다음 후보로는 영원히 넘어가지 않는다.**
+  ##   ⇒ 무인 기동(§2-d)을 붙이는 순간 이 결함이 binding 이 된다 — 매일 아침 같은 전략만 태운다.
+  ##
+  ##   ★플랜 §2-f 정정: 플랜은 "close_round 에 `frontier_update` 인자 한 줄만 채우면 큐
+  ##     되먹임이 발화한다"고 적었으나 **전제가 틀렸다**. `close_round.R:169` 는 그 서술에서
+  ##     `FQ-[0-9]+` 를 정규식 추출해 큐를 갱신하는데, 사다리 입력은 frontier 가설이 아니라
+  ##     전략 모듈이다 — `improvement_potential.json` 42 항목 전부 전략 id 키이고 **FQ-id 참조 0**
+  ##     (2026-08-24 실측). 인자를 채워도 `fq_ids` 는 빈 벡터라 아무것도 안 바뀐다.
+  ##     사다리의 실제 소비면은 frontier 큐가 아니라 **자기 원장**이고, 폐쇄 지점이 여기다.
+  ##
+  ##   ★배제 기준은 `stage == "done"` 하나다 — 중단(`stopped`)·진행 중은 재개해야 하므로 남긴다.
+  ##   ★`--redo` 로 명시 해제 가능(재측정 의도가 있을 때. 조용한 봉인 금지).
+  n_done_excluded <- 0L; done_ids <- character(0)
+  if (!isTRUE(config$redo_completed)) {
+    led <- tryCatch(rl_ledger_read(root), error = function(e) NULL)
+    if (!is.null(led) && length(led$runs)) {
+      done_ids <- names(led$runs)[vapply(led$runs, function(r)
+        identical(as.character(r$stage %|N|% ""), "done"), logical(1))]
+      if (length(done_ids)) {
+        keep <- !(T1$candidate_id %in% done_ids)
+        n_done_excluded <- sum(!keep)
+        T1 <- T1[keep]
+      }
+    }
+  }
+
   list(table = T1, n_available = n_avail, n_eligible = nrow(T0), n_taken = nrow(T1),
-       n_dup_dropped = nrow(dropped), dropped = dropped, cells = CELLS)
+       n_dup_dropped = nrow(dropped), dropped = dropped, cells = CELLS,
+       n_done_excluded = n_done_excluded, done_ids = done_ids)
 }
 
 ## ─── ②칸 arm 목록 (생산은 위임 — 드라이버는 검증만 한다) ────────────────────
@@ -1061,9 +1093,10 @@ rl_run_candidate <- function(cand, pool, config, arms_spec, dry_run = FALSE) {
                                         COMPOSITE_TOP_N = as.character(cand$n_holdings)),
                              bt_result_path = file.path(win$out_dir, "bt_result.rds"),
                              manifest_path = file.path(win$out_dir, "strategy_manifest.json"))
-    } else strikes <- strikes + 1L
+    } else if (.rl_measured(r1)) strikes <- strikes + 1L
     rungs[["rung1"]] <- r1
-    rl_log("① composite: %s · gain=%s · strikes=%d", r1$status, isTRUE(r1$gain), strikes)
+    rl_log("① composite: %s · gain=%s · strikes=%d%s", r1$status, isTRUE(r1$gain), strikes,
+           if (!.rl_measured(r1)) " (미측정 — strike 미계상)" else "")
     .flush("rung1_done")
   } else rl_log("① composite 생략 (stop=%s target_hit=%s budget_left=%.0fs)",
                 rl_stop_requested(), .target_hit(), .rl_budget_left(st))
@@ -1085,10 +1118,11 @@ rl_run_candidate <- function(cand, pool, config, arms_spec, dry_run = FALSE) {
       st$best_config$bt_result_path <- file.path(win$out_dir, "bt_result.rds")
       st$best_config$manifest_path  <- file.path(win$out_dir, "strategy_manifest.json")
       strikes <- 0L
-    } else strikes <- strikes + 1L
+    } else if (.rl_measured(r2)) strikes <- strikes + 1L
     rungs[["rung2"]] <- r2
-    rl_log("② weights: %s · arms=[%s] (%s) · gain=%s · strikes=%d", r2$status,
-           paste(arms_spec$arms, collapse = ","), arms_spec$source, isTRUE(r2$gain), strikes)
+    rl_log("② weights: %s · arms=[%s] (%s) · gain=%s · strikes=%d%s", r2$status,
+           paste(arms_spec$arms, collapse = ","), arms_spec$source, isTRUE(r2$gain), strikes,
+           if (!.rl_measured(r2)) " (미측정 — strike 미계상)" else "")
     .flush("rung2_done")
   } else rl_log("② weights 생략 (stop=%s target_hit=%s strikes=%d budget_left=%.0fs)",
                 rl_stop_requested(), .target_hit(), strikes, .rl_budget_left(st))
@@ -1347,6 +1381,10 @@ rl_main <- function(args = character(0)) {
   send_tg <- !("--no-telegram" %in% args) && !dry_run
 
   config <- rl_config(getopt("config"))
+  ## --redo: 원장 완주(stage=done) 후보도 다시 태운다(명시 재측정).
+  ##   ★반드시 rl_candidates() **앞**에 있어야 한다 — 뒤에 두면 플래그가 죽는다
+  ##     (2026-08-24 돌연변이 통제가 실제로 그 죽은 판을 잡았다: --redo 를 줘도 배제가 안 풀렸다).
+  if ("--redo" %in% args) config$redo_completed <- TRUE
   if (!is.null(getopt("per-attempt-secs"))) config$per_attempt_secs <- as.integer(getopt("per-attempt-secs"))
   if (!is.null(getopt("rung1-max")))        config$rung1_max_attempts <- as.integer(getopt("rung1-max"))
   if (!is.null(getopt("budget-secs")))      config$budget_secs_per_candidate <- as.integer(getopt("budget-secs"))
@@ -1381,8 +1419,17 @@ rl_main <- function(args = character(0)) {
       cat(sprintf("\n[자격 셀] %d (%s) — ★셀과 후보는 다른 분모다(한 후보가 여러 국면에서 자격 가능)\n",
                   nrow(cs$cells), paste(sprintf("%s %d", byL$regime, byL$N), collapse = " / ")))
     }
-    cat(sprintf("\n[요약] available=%d eligible_candidates=%d dup_dropped=%d taken=%d (max_active=%d)\n",
-                cs$n_available, cs$n_eligible, cs$n_dup_dropped, cs$n_taken, config$max_active))
+    cat(sprintf("
+[요약] available=%d eligible_candidates=%d dup_dropped=%d done_excluded=%d taken=%d (max_active=%d)
+",
+                cs$n_available, cs$n_eligible, cs$n_dup_dropped,
+                as.integer(cs$n_done_excluded %|N|% 0L), cs$n_taken, config$max_active))
+    ## ★배제를 침묵시키지 않는다 — "후보가 없다"와 "이미 다 태웠다"는 다른 상태다.
+    if (as.integer(cs$n_done_excluded %|N|% 0L) > 0L)
+      cat(sprintf("        (원장 완주 %d건 배제: %s%s — 재측정하려면 --redo)
+",
+                  length(cs$done_ids), paste(head(cs$done_ids, 3), collapse = ", "),
+                  if (length(cs$done_ids) > 3L) ", ..." else ""))
     cat("[규칙] ladder_entry_v1 — RCMA c1/c2/c4 재사용 + c0_sign 신설 · rcma_c3_oos=not_evaluated (RCMA-admitted 아님)\n")
     cat("[주의] RISK_OFF 는 unified_regime_signal 에서 월 0(공집합) — 이 국면 미진입은 '측정 안 됨'이지 통과가 아니다\n")
     return(invisible(CT))
@@ -1440,6 +1487,8 @@ if (sys.nframe() == 0L && !identical(Sys.getenv("QVEST_RL_NORUN"), "1")) {
                "  --out-root=<path>              산출 루트 (★alpha_search 와 분리 유지)\n",
                "  --no-telegram                  종료 브리프 미발송\n",
                "  --no-marker                    close_round 마커 미발행(검증 실행용 — 정본 큐 불변)\n",
+               "  --redo                         원장 완주(stage=done) 후보도 다시 태운다(기본: 배제 = 다음 후보로 전진)
+",
                "  --config=<path>                설정 파일\n"))
   } else {
     Sys.setenv(QVEST_SCREEN_QUEUE_NORUN = "1")            # 자식이 스크린 큐를 건드리지 않게 상속

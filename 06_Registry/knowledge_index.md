@@ -1,6 +1,6 @@
 # Knowledge Index — 순차 뷰 (안정 ID 불변 · 활성 집합 1..N 자동)
 
-생성: 2026-08-24T02:37:21+0900 · `build_knowledge_index.R` · **안정 ID(AX-003/L-132/DIST-*)는 provenance 앵커 = 영구 불변**. 순번(#)은 현재 활성 집합의 위치일 뿐 — 증류/강등되면 뷰에서 자동 제외되어 항상 1..N 연속(구멍 없음). 빠진 것도 아카이브+검색+부활로 보존.
+생성: 2026-08-29T10:02:03+0900 · `build_knowledge_index.R` · **안정 ID(AX-003/L-132/DIST-*)는 provenance 앵커 = 영구 불변**. 순번(#)은 현재 활성 집합의 위치일 뿐 — 증류/강등되면 뷰에서 자동 제외되어 항상 1..N 연속(구멍 없음). 빠진 것도 아카이브+검색+부활로 보존.
 
 ## Active Law (4)
 
@@ -25,7 +25,7 @@
 | 8 | DIST-AR-028 | negative | 자동-탐색지도 · family=flow_supply, tags=insider_prelim_dead,ev_downgrade,dual_basis_artifact_catch, suppo… | 2 |
 | 9 | DIST-AR-031 | negative | 자동-탐색지도 · family=quality_earnings, tags=non_return,accounting_forensic,benford_fsd, supporting=4건 L-… | 4 |
 | 10 | DIST-AR-041 | negative | 자동-탐색지도 · family=momentum, tags=MOMENTUM,KR_LONGONLY,NON_RETURN, supporting=17건 L-code. (promote.R 5… | 17 |
-| 11 | DIST-AS-008 | conditional | KR alpha-search fast-validation 후보군(momentum 중심 + value/quality/defense/ML 혼재, 134 L-code, VALIDATED… | 187 |
+| 11 | DIST-AS-008 | conditional | KR alpha-search fast-validation 후보군(momentum 중심 + value/quality/defense/ML 혼재, 134 L-code, VALIDATED… | 204 |
 | 12 | DIST-GEN-004 | negative | 자동-탐색지도 · family=overlay_regime, tags=E,O,V, supporting=10건 L-code. (promote.R 5축 검증에서 범위·메커니즘·OOS ) | 10 |
 | 13 | DIST-QPM-003 | negative | KR quality_profitability 단독/단순-composite long-only는 estimated 성과 기준 반복 실패 — supporting 4전략 모두 OOS에서 … | 5 |
 | 14 | DIST-QPM-005 | negative | KR 개인투자자 순매수 contrarian(역발상) 단일팩터 long-only 신호는 알파 부재 (L-131/STR_1674 estimated: SR 0.157·MDD 65.6%·… | 2 |

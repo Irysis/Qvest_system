@@ -1,0 +1,108 @@
+{
+  "ok": true,
+  "min_members": 2,
+  "n_harvest_ok": 3,
+  "n_harvest_fail": 2,
+  "member_support": [
+    {
+      "engine": "02_Infrastructure/alpha_search/fe_factor_combo.R",
+      "ok": false,
+      "reason": "[fe_factor_combo] FACTOR_NAMES 환경변수 미설정 — comma-separated factor names 필요",
+      "n_dates": null,
+      "n_tickers": null,
+      "n_rows": null
+    },
+    {
+      "engine": "02_Infrastructure/alpha_search/fe_single.R",
+      "ok": false,
+      "reason": "[fe_single] FACTOR_NAME 환경변수 미설정 — 검증할 factor_registry Factor_Name을 지정하세요.",
+      "n_dates": null,
+      "n_tickers": null,
+      "n_rows": null
+    },
+    {
+      "engine": "02_Infrastructure/alpha_search/fe_ptv_intermediate_top25.R",
+      "ok": true,
+      "reason": null,
+      "n_dates": 267,
+      "n_tickers": 837,
+      "n_rows": 79835
+    },
+    {
+      "engine": "02_Infrastructure/alpha_search/fe_ptv_intermediate.R",
+      "ok": true,
+      "reason": null,
+      "n_dates": 267,
+      "n_tickers": 837,
+      "n_rows": 79835
+    },
+    {
+      "engine": "02_Infrastructure/alpha_search/fe_revision_drift_underreaction.R",
+      "ok": true,
+      "reason": null,
+      "n_dates": 264,
+      "n_tickers": 629,
+      "n_rows": 66906
+    }
+  ],
+  "arms": [
+    {
+      "label": "c_single",
+      "members": "02_Infrastructure/alpha_search/fe_factor_combo.R,02_Infrastructure/alpha_search/fe_single.R",
+      "status": "UNHARVESTABLE",
+      "reason": "멤버 재현 불가: 02_Infrastructure/alpha_search/fe_factor_combo.R, 02_Infrastructure/alpha_search/fe_single.R",
+      "raw_dates": 0,
+      "raw_rows": 0,
+      "eff_dates": 0,
+      "eff_median_names": 0,
+      "eff_min_names": 0
+    },
+    {
+      "label": "c_ptvintermediatetop25",
+      "members": "02_Infrastructure/alpha_search/fe_factor_combo.R,02_Infrastructure/alpha_search/fe_ptv_intermediate_top25.R",
+      "status": "UNHARVESTABLE",
+      "reason": "멤버 재현 불가: 02_Infrastructure/alpha_search/fe_factor_combo.R",
+      "raw_dates": 0,
+      "raw_rows": 0,
+      "eff_dates": 0,
+      "eff_median_names": 0,
+      "eff_min_names": 0
+    },
+    {
+      "label": "c_ptvintermediate",
+      "members": "02_Infrastructure/alpha_search/fe_factor_combo.R,02_Infrastructure/alpha_search/fe_ptv_intermediate.R",
+      "status": "UNHARVESTABLE",
+      "reason": "멤버 재현 불가: 02_Infrastructure/alpha_search/fe_factor_combo.R",
+      "raw_dates": 0,
+      "raw_rows": 0,
+      "eff_dates": 0,
+      "eff_median_names": 0,
+      "eff_min_names": 0
+    },
+    {
+      "label": "c_revisiondriftunderreaction",
+      "members": "02_Infrastructure/alpha_search/fe_factor_combo.R,02_Infrastructure/alpha_search/fe_revision_drift_underreaction.R",
+      "status": "UNHARVESTABLE",
+      "reason": "멤버 재현 불가: 02_Infrastructure/alpha_search/fe_factor_combo.R",
+      "raw_dates": 0,
+      "raw_rows": 0,
+      "eff_dates": 0,
+      "eff_median_names": 0,
+      "eff_min_names": 0
+    },
+    {
+      "label": "c_single_ptvintermediatetop25",
+      "members": "02_Infrastructure/alpha_search/fe_factor_combo.R,02_Infrastructure/alpha_search/fe_single.R,02_Infrastructure/alpha_search/fe_ptv_intermediate_top25.R",
+      "status": "UNHARVESTABLE",
+      "reason": "멤버 재현 불가: 02_Infrastructure/alpha_search/fe_factor_combo.R, 02_Infrastructure/alpha_search/fe_single.R",
+      "raw_dates": 0,
+      "raw_rows": 0,
+      "eff_dates": 0,
+      "eff_median_names": 0,
+      "eff_min_names": 0
+    }
+  ],
+  "kind": "support",
+  "label": "STR_AS_20260612_154914_1055315_support",
+  "finished_at": "2026-08-24T20:09:39+0900"
+}

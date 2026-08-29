@@ -4,7 +4,11 @@
   "grade": "C",
   "core_reference": "AWARE-FX 논문 FX exposure baseline 직접 대응: (|외화환산이익|+|외화환산손실|)/TotalAssets. 높은 FX 노출 기업이 적극 헤징 → 불확실성 감소 → 리스크 프리미엄 감소 → 초과수익. annual lag 익년3/31 (PIT C4), K200∪KQ150, 월간 리밸 15bps.",
   "lesson_text": "FX_Intensity_FQ149: 등급 C, 연복리 7.2% (벤치마크 대비 +14.1%p), 샤프 0.29. 근접 탈락 — 보강 후 재검증 후보.",
-  "tags": ["ALPHA_SEARCH", "FAST_VALIDATION", "VALIDATED_HARD_FAIL"],
+  "tags": [
+    "ALPHA_SEARCH",
+    "FAST_VALIDATION",
+    "VALIDATED_HARD_FAIL"
+  ],
   "created_at": "2026-08-06",
   "research_mode": "alpha_search",
   "created_by": "AlphaSearch",
@@ -29,5 +33,20 @@
       "effect_retained": 1,
       "detail": "CLEAN — 위반 시 백테 중단 정책으로 emit 시점 통과 보장"
     }
-  ]
+  ],
+  "essence_grade": "C",
+  "essence_regrade": {
+    "ref": "essence_regrade_20260824",
+    "applied_at": "2026-08-24T19:27:59+0900",
+    "basis": "essence_score.R (v9.21 권위 등급) — bt_result.rds 재채점",
+    "grade_at_emit": "C",
+    "proxy_grade": "C",
+    "metric_type": "backtested",
+    "structural_drawdown": false,
+    "port_t": 0.119,
+    "net_ir": 0.04,
+    "calmar": 0.118,
+    "mdd": 0.612,
+    "note": "판정 축 병기 — 기존 `grade` 는 발행 시점 기록으로 불변. MDD 는 등급을 접지 않는다(2026-08-24): 구조 낙폭은 structural_drawdown 라벨로만 남는다."
+  }
 }

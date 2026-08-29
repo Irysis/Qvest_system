@@ -642,6 +642,12 @@ run_alpha_search <- function(strategy_name,
                                 source_paper = source_paper,
                                 paper_assumption_broken = paper_assumption_broken)
     .run_axiom_pipeline()   # harvester + cluster (자가발전, 비동기 spawn)
+  } else if (is.na(grade)) {
+    ## ★v9.21 §1-b — 등급 NA(계약 미경유)는 L-code 적립 대상이 아니다(하네스 밖 = AX-002).
+    ##   단 **침묵 누락은 금지**한다 — pass/notable 이 둘 다 FALSE 라 위 분기를 안 타는데,
+    ##   그 사유가 "등급이 낮아서"인지 "측정을 못 해서"인지 로그에 없으면 구분이 불가능하다.
+    cat(sprintf("[AlphaSearch] L-CODE SKIP — 권위 등급 미발행(계약 미경유). metric_type=%s · %s\n",
+                auth$metric_type %||% "?", auth$reasons %||% "사유 미기재"))
   }
 
   .as_stage("sec8_done")

@@ -1,0 +1,51 @@
+{
+  "date": "20260829",
+  "schema_version": "paper_router_v2",
+  "generated_at": "2026-08-29",
+  "optimizer": [
+    {
+      "id": "2608.24449",
+      "title": "Generalizing Markowitz Portfolio Optimization by a Quadratic Risk Measure",
+      "reason": "MVO 확장 closed-form. 광의 볼록 이차 리스크 척도. KR 비중 결정에 직접 적용 가능"
+    },
+    {
+      "id": "2608.23393",
+      "title": "KellyBoost: Growth-Optimal Portfolio Construction with Gradient-Boosted Trees",
+      "reason": "XGBoost softmax 출력 = 비중. Kelly (-log(1+wy)) 손실 함수. 기존 팩터 입력으로 KR 성장최적 비중 학습 가능"
+    },
+    {
+      "id": "2608.20179",
+      "title": "Dynamic Portfolio Optimization under CVaR Constraints",
+      "reason": "CVaR 제약 연속시간 동적 최적화. auxiliary-threshold 표현. 기존 alpha+Sigma 입력으로 KR 백테 적용 가능"
+    }
+  ],
+  "risk": [
+    {
+      "id": "2608.23944",
+      "title": "Bulk Phase Transition and Edge Behavior in Temporally Correlated Random Matrices",
+      "reason": "AR(1) 시계열 상관 하 랜덤 행렬 스펙트럼. 공분산 추정 개선에 직접 적용 가능",
+      "factor_candidate": {
+        "name": "AR1_temporal_correlation_covariance",
+        "def": "AR(1) 지수감쇠 시계열 상관을 가진 랜덤 행렬에서 공분산 스펙트럼 수정. 표본 공분산 행렬의 허브 메커니즘 보정으로 KR 수익률 공분산 추정 개선",
+        "novel": true,
+        "kr_feasible": true,
+        "verdict": "testable",
+        "confidence": "medium"
+      }
+    },
+    {
+      "id": "2608.17481",
+      "title": "A generic nonparametric value-at-risk estimator for high dimensions",
+      "reason": "고차원 비모수 VaR/CVaR 알고리즘. 시간 변화 분포 가정. KR 포트폴리오 리스크 직접 적용",
+      "factor_candidate": {
+        "name": "nonparametric_hd_VaR",
+        "def": "역사 분포의 시간 변화를 가정한 고차원 포트폴리오 VaR/CVaR 비모수 추정. 표본 크기 한계를 돌파해 KR 포트폴리오 꼬리 리스크 측정 개선",
+        "novel": true,
+        "kr_feasible": true,
+        "verdict": "testable",
+        "confidence": "medium"
+      }
+    }
+  ],
+  "regime": []
+}

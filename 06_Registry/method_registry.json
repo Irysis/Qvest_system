@@ -133,6 +133,28 @@
         "screen_priority": "⭐",
         "rationale": "R/S 는 창 내 다중 스케일 평균이라 약한 축소가 내장. 통계 차수는 누적편차 범위(2차 초과).",
         "assigned": "2026-08-09"
+      },
+      "measurement_status": "measured_negative: 발화율 88.5%(238/269개월)로 bare 수렴(IR 1.457 vs bare 1.477 · MDD -0.4073 vs -0.4074). ΔIR +0.048 은 신호 가치 아닌 오버레이 제거 효과. _x_book ΔIR -0.027. 2026-08-13 추가 진단: R/S 추정기 지속성과 무관(cor(H,ac1)=-0.093; 순수 랜덤워크 81.2%를 추세로 판정). F1 불판별(bare 수렴 — 오버레이 기능 자체 없음). 처분: 짝 arm CompLikFGnOverlay(추정기만 교체)가 ΔIR 비교 판정 경로.",
+      "measured": {
+        "source_measured_at": "2026-08-09",
+        "recorded_at": "2026-08-29",
+        "basis": "run_regime_overlay_ab 전사 (prereg_hurst_rate_matched_20260809.json 기록분)",
+        "carrier": "STR_1715_AR_on_M4_R05_overlay_PG2",
+        "ir": 1.457,
+        "bare_ir": 1.477,
+        "delta_ir": -0.02,
+        "ir_ew_basis": 1.457,
+        "delta_ir_ew": 0.048,
+        "mdd": -0.4073,
+        "bare_mdd": -0.4074,
+        "delta_mdd": 0.0001,
+        "avg_exposure": 0.9654,
+        "firing_rate": 0.885,
+        "verdict": "negative",
+        "falsifier_verdict": {
+          "F1_mdd_no_improvement": "불판별(bare 수렴 — 발화율 88.5%라 오버레이 기능 없음)",
+          "F3_firing_rate": "step 1 진단용 — step 2(HurstRateMatched)가 교정 대상"
+        }
       }
     },
     {
@@ -259,6 +281,31 @@
         "screen_priority": "⭐",
         "rationale": "확장창 백분위가 축소 역할(수준이 아니라 순위를 씀). 통계 차수는 R/S 누적편차 범위.",
         "assigned": "2026-08-09"
+      },
+      "measurement_status": "measured_negative: 발화율 교정 성공(31.8% vs 목표 30.1%, F3 통과). IR=1.347 vs bare=1.465(ΔIR=-0.118). MDD=-0.4074 vs bare=-0.4074(ΔMDD=0.000). F1 발화 — ΔMDD=0.000, 낙폭 완화 없음. 기각: R/S 추정기 자체가 지속성과 무관(HurstTrendOverlay 2026-08-13 진단 cor=-0.093)이라 발화율을 맞춰도 방어 효과가 없다. 결론: 발화율이 아니라 추정기가 근본 결함. CompLikFGnOverlay(추정기 교체)가 다음 경로.",
+      "measured": {
+        "source_measured_at": "2026-08-29",
+        "recorded_at": "2026-08-29",
+        "basis": "run_regime_overlay_ab (2026-08-29 신규 실측)",
+        "carrier": "STR_1715_on_M4gAE_R05_noLayer4_PG2",
+        "ir": 1.347,
+        "bare_ir": 1.4652,
+        "delta_ir": -0.1182,
+        "mdd": -0.4074,
+        "bare_mdd": -0.4074,
+        "delta_mdd": 0.0,
+        "abs_sr": 1.3601,
+        "abs_cagr": 0.3826,
+        "avg_exposure": 0.9258,
+        "firing_rate": 0.318,
+        "target_firing_rate": 0.301,
+        "n_months": 271,
+        "verdict": "negative",
+        "falsifier_verdict": {
+          "F1_mdd_no_improvement": "발화(ΔMDD=0.000) — Hurst 는 발화율 교정 후에도 방어 레버가 아님",
+          "F2_vs_uni_cat": "부분 통과(IR+0.093 나음, MDD-0.118 나쁨) — 단독 나음 불충분",
+          "F3_firing_rate": "통과(|0.318-0.301|=0.017 < 0.05)"
+        }
       }
     },
     {

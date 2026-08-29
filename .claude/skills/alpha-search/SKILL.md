@@ -52,11 +52,14 @@ lean 경로: 데이터·유니버스 → 선례 advisory → **PIT 검증(위반
 
 ### 4. 결과 해석
 - 반환 `list(strategy_id, grade, score, pass, notable, excess_cagr, out_dir, charts, l_code, ...)`.
-- 성과 수치는 **`hurdle_result.json` 값만 인용**(proxy 라벨). 손계산·재구성 금지.
+- 성과 수치·등급은 **`authoritative_remeasure.json` 값만 인용**(권위 = essence_score). 손계산·재구성 금지.
+  ★v9.21 등급 일원화: `hurdle_result.json` 등급은 **진단(proxy)** 이다(2026-05-31 DEMOTED). 판정 근거로 인용 금지.
+  ★MDD 는 등급을 접지 않는다 — 위험 축은 Calmar 비율(=CAGR/|MDD| ≥ 0.64) 하나.
 - 보고 3줄: ①등급·점수·초과CAGR ②탈락축(FMT/fail_reasons) ③다음 probe 2건.
 
 ## 스코어링
-- 별도 임계값 신설 금지 — `run_hurdle_gate()` 재사용: `grade`(A/B/C/F) + `score`(0–100) + `verdict$metrics`.
+- 별도 임계값 신설 금지 — 판정은 `essence_score()`(권위 `grade` A/B/C/F), 라우팅 라벨은 `run_hurdle_gate()`
+  (`screen_route` 생산자로 존치)를 재사용. 두 축을 섞지 않는다.
 - 텔레그램 kv = 등급·점수·샤프·연복리·최대낙폭·칼마·정보비율·회전율·벤치상관·초과수익.
 
 ## L-code 적립 (PASS + 의미있는 실패만)

@@ -362,6 +362,12 @@ SUITES=(
   #   이 검사기가 그 해제를 못박고 게이트 재도입을 돌연변이 통제로 잡는다.
   #   ★MDD 설계 보존 래칫 포함 — MDD 는 직접 걸리지 않고 Calmar 0.64(=16%/25%)가 대신한다.
   "08_Tests/contracts/test_grade_unification.R"
+  # v9.21 축 1-c — 무인 게이트의 등급 축(권위 {F} vs proxy {C,F}) + 구조 라우팅 3종 근거.
+  #   게이트를 실제 실행해 판정을 본다(자구 grep 아님). 돌연변이 통제 2건 포함.
+  "08_Tests/hooks/test_auto_alpha_gate_grade_axis.R"
+  # v9.21 축 3-a — 모드 개명(factor_rotation→strategy_rotation) 양방향 + prefix 맵 3종 정합.
+  #   ★옛 라벨 존치·FR prefix 유지·overlay_research 부채 봉합(OVL 11건 GEN 폴백 방지)을 못박는다.
+  "08_Tests/contracts/test_mode_rename_strategy_rotation.R"
   # 2026-08-01 추가: 배포 홀딩 제약 검사기 위반 주입 —
   #   월간 리밸 Gate C 는 "CSV 생성 + 5행"만 봐서 전월 재출력·제약 위반이 통과했다
   #   (감사 실측: 하드 제약 4종이 배포 체인 어디서도 산출물에 대해 검증되지 않음).

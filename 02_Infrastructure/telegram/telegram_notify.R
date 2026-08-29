@@ -1136,7 +1136,15 @@ tg_format_summary <- function(text, emoji = "\U0001F4CC") {
   # Macro / regime
   "MRS", "ESBR", "ADV", "NFCI", "FRED", "FOMC", "ECB", "BOJ", "BOK",
   # 기타 통상
-  "TDC", "ROC", "PnL"
+  "TDC", "ROC", "PnL",
+  # ── v9.21 판정축 정본 표기 (2026-08-24 도훈 지시 "순수한글 표현보단 보다 전문적인 표현")
+  #   왜 필요한가: SKILL.md v8 §5.6 은 지표·판정축을 **원표기로 쓰라**고 규정하는데,
+  #   kv key 의 영어 비율 검사가 그걸 하드 차단하고 있었다(실측: `PORT_t` / `OOS retention` 이
+  #   stop 을 냈다). ★검사를 약화시키지 않는다 — 이미 있는 whitelist 마스킹에 **정본 표기만**
+  #   더한다. Sharpe/Calmar/DSR/IR/MDD/OOS 는 이미 등재돼 있었고, 빠져 있던 것은 아래뿐이다.
+  "PORT_t", "PORT-t", "portfolio_alpha_t_nw_lag3", "retention",
+  "essence", "Grade", "n_max", "Turnover", "screen_route", "structural_drawdown",
+  "backtested", "proxy", "chain", "sweep"
 )
 .QUANT_WHITELIST_PATTERN <- paste0(
   "\\b(?:",
@@ -1163,10 +1171,13 @@ tg_agent_brief <- function(agent,
                              #   (영어 논문 제목 등 고유 콘텐츠 허용). 기본 FALSE = 기존 한글 규율·길이 제한 유지
                              #   (타 에이전트 영향 0). 구조 안전망(4096 byte 가드·skeleton 가드)은 relaxed여도 유지.
                              relaxed = FALSE,
-                             # v7 (2026-07-10 도훈 mandate) — 비전공자 가독 장치 ③:
-                             #   본문 등장 전문용어 자동 스캔 → "📖 용어 풀이" footer 부착 (.METRIC_MEANING, SKILL.md §5.5).
-                             #   기본 TRUE. FALSE는 내부 디버그 발송만.
-                             glossary = TRUE) {
+                             # v8 (2026-08-24 도훈 지시) — 용어 풀이 footer 는 **relaxed 브리핑 전용**.
+                             #   구 v7 은 매 메시지 하단에 최대 900B footer 를 상시 부착했다. 독자가
+                             #   시스템 운용자인데 매번 같은 사전이 붙으면 신호가 아니라 소음이고,
+                             #   최상단을 평문이 점유하던 v7 설계의 마지막 잔재였다.
+                             #   ★본문 inline 풀이는 그대로다 — decode_mode="inline_first"(첫 등장 1회).
+                             #   NULL = relaxed 에서 파생. TRUE/FALSE 는 caller 명시 override.
+                             glossary = NULL) {
   if (!isTRUE(dry_run) && .tg_serial_enabled() && !.tg_lock_held()) {
     return(tg_with_serial_lock(
       scope = sprintf("tg_agent_brief_%s", agent),
@@ -1416,7 +1427,7 @@ tg_agent_brief <- function(agent,
             (n_ascii_alpha / n_total) > 0.6
           }, logical(1))
           if (any(ascii_heavy)) {
-            stop(sprintf("[tg_agent_brief] 'kv' section heading='%s' keys %s 영어 비율 > 40%%. v6.3 SOT: 한글 정통 용어 의무 (예: '샤프지수' / '정보계수' / '회전율'). 학술 인용 (Asness 2013 / Frazzini-Pedersen 2014)은 면제.",
+            stop(sprintf("[tg_agent_brief] 'kv' section heading='%s' keys %s 영어 비율 > 60%%. v6.3 SOT: 한글 정통 용어 의무 (예: '샤프지수' / '정보계수' / '회전율'). 학술 인용 (Asness 2013 / Frazzini-Pedersen 2014)은 면제.",
                           heading, paste(kv_keys[ascii_heavy], collapse=" / ")))
           }
         }
@@ -1453,7 +1464,9 @@ tg_agent_brief <- function(agent,
 
   # ── 3.6. v7 자동 용어 풀이 footer (SKILL.md §5.5 — 비전공자 가독, 도훈 mandate 2026-07-10) ──
   # 메시지 4096 byte 근접 시 glossary 우선 절삭 (본문 보호).
-  if (isTRUE(glossary)) {
+  ## v8: NULL 이면 relaxed 에서 파생한다. 명시값은 그대로 존중(디버그·특수 발송).
+  .glossary_on <- if (is.null(glossary)) isTRUE(relaxed) else isTRUE(glossary)
+  if (.glossary_on) {
     .base_bytes <- nchar(msg, type = "bytes")
     .gl_budget  <- min(.TG_CONFIG$GLOSSARY_MAX_BYTES, max(0L, 3950L - .base_bytes))
     if (.gl_budget >= 60L) {
@@ -1462,11 +1475,17 @@ tg_agent_brief <- function(agent,
     }
   }
 
-  # v7 원칙 8-② warn-level — "쉬운 설명" 섹션 부재 경고 (기존 자동 caller 비파괴, stop 아님)
-  .has_plain_section <- any(vapply(sections, function(s)
-    grepl("쉬운", s$heading %||% "", fixed = TRUE), logical(1)))
-  if (!.has_plain_section && !isTRUE(relaxed)) {
-    message(sprintf("[tg_agent_brief] v7 WARN agent=%s: '쉬운 설명' 섹션 없음 — SKILL.md 원칙 8-② (에이전트 브리핑은 시도/방법/결과/의미 평문 bullet 의무, warn-level).", agent))
+  ## v8 원칙 8 warn-level (2026-08-24 도훈 지시) — 구 '쉬운 설명' 경고를 **대체**한다.
+  ##   구판: heading 에 '쉬운' 이 없으면 경고 → 최상단 두 칸을 평문이 점유하게 만든 강제 장치.
+  ##   신판: 최상단에 **현재 리서치 상황**(SKILL.md 6.1 필수 필드 4종)이 없으면 경고.
+  ##   ★경고 레벨 유지(stop 아님) — 기존 자동 caller 를 깨지 않는다.
+  .has_status_section <- any(vapply(sections, function(s)
+    grepl("현재 리서치 상황", s$heading %||% "", fixed = TRUE), logical(1)))
+  if (!.has_status_section && !isTRUE(relaxed)) {
+    message(sprintf(paste0(
+      "[tg_agent_brief] v8 WARN agent=%s: '현재 리서치 상황' 섹션 없음 — ",
+      "SKILL.md 6.1 (단계/대상/위치/직전 판정 4종). ",
+      "지금 어디서 무엇을 돌고 있는지가 최상단에 없으면 연속성이 끊긴다."), agent))
   }
 
   # ── 4. Width/bytes 사전 체크 (Telegram 4096 bytes 제한) ──────────────────────

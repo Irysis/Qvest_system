@@ -1,6 +1,6 @@
 ---
 name: qvest
-description: "Qvest v9.0 부팅(lean) — 상태 5줄 후 즉시 알파 서칭 루프 진입"
+description: "Qvest v9.21 부팅(lean) — 상태 5줄 후 즉시 알파 서칭 루프 진입"
 disable-model-invocation: true
 user-invocable: true
 ---
@@ -29,9 +29,14 @@ user-invocable: true
 |---|---|
 | `/qvest` | 부팅 5줄 → lean-loop 진입 (본 문서) |
 | `/alpha-search` | 논문/가설 1건 경량 백테 검증 — 루프의 기본 단위 |
-| `/worktask` | QEPM 6-agent 풀파이프라인 = **자본 층 입구** (Grade A 또는 도훈 지명 시) |
-| `/factor-rotation <track>` | 기존 모듈을 국면 조건부로 배합 (모듈 소비) |
-| `/ramp <stage>` | K-RAMP 팩터배분 운용체계 (풀 소비 · governor 정지) |
+| `/worktask` | 심층 QEPM 6-agent — **A등급 이상 전략의 스펙 강화** (Grade A 또는 도훈 지명 시) |
+| `/strategy-rotation <track>` | 기존 모듈을 국면 조건부로 배합 (모듈 소비) |
+
+★**기본 2단계 = 강화 프로세스**는 전용 command 가 없다 — 무인 러너(`alpha_search_queue_run.sh`) 뒤에 자동으로 1후보가 붙는다.
+수동 기동 `Rscript 02_Infrastructure/ops/reinforce_ladder.R --top=1` · 정지 `QVEST_LADDER_NORUN=1`.
+
+★**`/ramp` 는 v9.21 에서 모드 퇴임**(도훈 결정 2026-08-24) — 선언 산출물 0건이고 실제로 돈 것은 국면 리서치라
+전략 로테이션 Track1 로 흡수됐다. 파일·데이터·L-code 73건은 존치하되 진입점 목록에서는 내린다.
 
 ## 정본 위임 (사본은 낙후한다 — 여기에 목록을 다시 적지 않는다)
 

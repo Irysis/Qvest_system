@@ -35,8 +35,15 @@ suppressPackageStartupMessages({ library(jsonlite); library(data.table) })
 
 .MODE_PREFIX <- c(alpha_search = "AS", alpha_research = "AR", qepm_legacy = "QPM",
                   judge_gate = "JG", governor_admission = "GV",
-                  factor_rotation = "FR", regime_research = "RR",
-                  ramp = "RAMP")  # 2026-07-03: RAMP 4번째 모드 (lcode_emit/.LCODE_MODE_PREFIX·lcode_schema와 정합)
+                  strategy_rotation = "FR",  # v9.21 개명 (prefix 유지)
+                  factor_rotation = "FR",    # 역사 라벨
+                  regime_research = "RR",
+                  ramp = "RAMP",
+                  ## ★부채 봉합 2026-08-24: `overlay_research` 가 여기에만 없었다.
+                  ##   lcode_emit.R:33 은 OVL 을 갖는데 이 맵이 빠뜨려서, OVL L-code 11건이
+                  ##   승격 경로에서 GEN 폴백으로 떨어졌다 — 모드가 있는데 prefix 가 없으면
+                  ##   그 계열은 조용히 다른 계급으로 집계된다.
+                  overlay_research = "OVL")  # 2026-07-03: RAMP 4번째 모드 (lcode_emit/.LCODE_MODE_PREFIX·lcode_schema와 정합)
 
 # crash-safe prefix 조회 — named vector `[[`는 missing name에 hard error라
 # `%||% "GEN"` 폴백이 실행되지 않던 결함(예: research_mode="qepm"/"global") 교정.

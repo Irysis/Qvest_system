@@ -24,12 +24,15 @@ bad() { FAIL=$((FAIL+1)); echo "  FAIL  $1  ($2)"; }
 
 FX=$(mktemp -d); trap 'rm -rf "$FX"' EXIT
 
-# ── 깨끗한 픽스처 세트 (합성 버전 v9.9 · claude-testfam-7 · 5-Mode) ───────────
+# ── 깨끗한 픽스처 세트 (합성 버전 v9.9 · claude-testfam-7 · 구조='합성 A → 합성 B') ──
+#   ★2026-08-24: 픽스처가 실제 CLAUDE.md 포맷과 달랐다 — 모델 라벨이 **제목 안**에 있어서
+#     STRUCT(제목 첫 구절) 파생이 MODEL_LABEL 과 같은 값이 됐고, 그러면 C3 가 C2 의
+#     쌍둥이가 되어 **아무것도 새로 재지 않는다**. 실제 포맷은 모델을 괄호 안에 둔다.
 mk_clean() {
   cat > "$FX/CLAUDE.md" <<'EOF'
 ## Active Version
 
-**Qvest v9.9 — Testfam 7-Native · 5-Mode 헌법** (세션 모델 `claude-testfam-7`)
+**Qvest v9.9 — 합성 A → 합성 B · Testfam 7-Native · 5-Mode 헌법** (세션 모델 `claude-testfam-7`)
 
 - **현행 hook 등록 = settings.json 2 distinct .sh** (합성)
 
@@ -46,8 +49,8 @@ EOF
 - `02_Infrastructure/docs/synth_alpha_sot.md` — 합성 SOT
 EOF
   cat > "$FX/bootstrap.sh" <<'EOF'
-echo "=== Qvest v9.9 부트스트랩 (Testfam 7-Native · 5-Mode +X) ==="
-echo "=== 부트스트랩 완료 (Qvest v9.9 — Testfam 7-Native · 5-Mode) ==="
+echo "=== Qvest v9.9 부트스트랩 (합성 A → 합성 B · Testfam 7-Native · 5-Mode +X) ==="
+echo "=== 부트스트랩 완료 (Qvest v9.9 — 합성 A → 합성 B · Testfam 7-Native · 5-Mode) ==="
 echo "v9.9:       합성 상태라인"
 EOF
   cat > "$FX/qvest.md" <<'EOF'
@@ -113,8 +116,11 @@ inject "V1 배너 버전 낡음 검출" "C1 " v1
 v2() { sed -i 's/Testfam 7-Native/Oldfam 6-Native/g' "$FX/bootstrap.sh"; }
 inject "V2 배너 모델 낡음 검출" "C2 " v2
 
-v3() { sed -i 's/5-Mode/4-Mode/g' "$FX/bootstrap.sh"; }
-inject "V3 배너 모드 낡음 검출" "C3 " v3
+# ★v9.21: C3 축이 '모드 개수' → '파이프라인 구조 문구' 로 바뀌었다(boot_currency_check.sh).
+#   구 주입(5-Mode→4-Mode)은 그 축을 건드리지 못해 **위반이 통과**했다 — 이 가드가 잡았다.
+#   주입도 새 축에 맞춘다: 배너의 구조 문구를 낡은 것으로 바꾼다.
+v3() { sed -i 's/합성 A → 합성 B/구 합성 X → 구 합성 Y/g' "$FX/bootstrap.sh"; }
+inject "V3 배너 구조 낡음 검출" "C3 " v3
 
 v4() { printf 'Cache_core: FULL (8)\n' >> "$FX/qvest.md"; }
 inject "V4 낡은-기대값 재유입 검출" "C4 " v4

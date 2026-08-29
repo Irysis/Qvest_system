@@ -579,6 +579,23 @@ def harvest(project_dir: str) -> dict:
             "mtime": datetime.fromtimestamp(os.path.getmtime(p), tz=timezone.utc).isoformat(timespec="seconds"),
             "promoted_to_axiom": promoted,
         }
+        # ── v9.21 권위 등급 투영 (2026-08-24) ────────────────────────────────
+        #   ★corpus 는 **고정 키 집합**만 투영한다. 그래서 원본에 `essence_grade` 를 병기해도
+        #     여기서 투영하지 않으면 **소비자가 볼 수 없다** — 이 저장소가 반복한
+        #     "생산자만 있고 소비자 0" 형태다(실측: 재계산 반영 직후 corpus 보유 0/547).
+        #   ★`grade`(역사, 발행 시점 판정)를 덮지 않는다. 별도 키로 **병기**한다 —
+        #     `grade_raw` 가 원문을 보존하는 것과 같은 정직-원장 규약.
+        #   ★없는 것을 지어내지 않는다: 원본에 필드가 없으면 키를 만들지 않는다
+        #     (그래야 "재계산 대상이 아니었다"와 "등급이 미발행이다"가 구분된다).
+        if "essence_grade" in data:
+            entry["essence_grade"] = data.get("essence_grade")   # None = 권위 등급 미발행(계약 미경유)
+            _er = data.get("essence_regrade")
+            if isinstance(_er, dict):
+                # 전문은 원본에 있다. corpus 에는 **추적에 필요한 최소분**만 싣는다.
+                entry["essence_regrade_ref"] = _er.get("ref")
+                entry["essence_grade_at_emit"] = _er.get("grade_at_emit")
+                entry["essence_structural_drawdown"] = bool(_er.get("structural_drawdown"))
+
         if collision_with:
             entry["id_collision_with"] = collision_with
             entry["id_collision_kind"] = collision_kind  # v3: cross_strategy/same_dir_duplicate/cross_zone_variant

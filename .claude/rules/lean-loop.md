@@ -16,7 +16,12 @@
 1. **읽기** — 논문/가설 1건에서 ①신호 정의 ②비중 방법 ③유니버스 ④리밸 주기 ⑤저자 주장 성과를 뽑는다. 요약 문서를 따로 만들지 않는다.
 2. **구현** — factor engine 1파일. 신호는 논문 사양 그대로, 시점은 t-1 규약. 이 단계의 하드 게이트는 `detect_lookahead` 하나다.
 3. **실행** — `run_alpha_search(name, idea, engine, n_holdings=<논문값>, weight_method="<논문값>")`. **`deep=FALSE`가 기본**(측정·판정·교훈만 돈다). `deep=TRUE`는 **지명된 후보 1건에만**.
-4. **판정** — `hurdle_result.json`의 값만 인용한다(손계산·재구성 금지). **Grade A = CAGR ≥ 16% ∧ SR ≥ 0.8 ∧ score ≥ 40 ∧ hard_fail 없음.** B/C/F는 그 파일의 판정을 그대로 쓴다. PIT 위반은 등급 무관 절대 기각.
+4. **판정** — **권위 등급**(`authoritative_remeasure.json::essence_grade`)의 값만 인용한다(손계산·재구성 금지).
+   **Grade A = PORT_t ≥ 2.95 ∧ OOS retention ∧ SR ≥ 0.8 ∧ CAGR ≥ 16% ∧ Calmar ≥ 0.64.** B/C/F는 그 파일의 판정을 그대로 쓴다.
+   ★`hurdle_result.json` 등급은 **진단(proxy)** 이다 — 2026-05-31 DEMOTED. 판정 근거로 인용하지 않는다(v9.21 등급 일원화).
+   ★계약 미경유는 **등급 미발행(NA)** 이고 그건 실패가 아니라 미측정이다. L-code 적립 대상이 아니며 사유를 남긴다.
+   ★**MDD 는 등급을 접지 않는다**(도훈 지시 2026-08-24) — 위험 축은 Calmar 비율 하나. 구조 낙폭은 `structural_drawdown` 라벨로만 남는다.
+   PIT 위반은 등급 무관 절대 기각.
 5. **교훈** — **의미있는 실패만** L-code로 적립한다. 의미있는 실패 = 기전이 특정되는 실패(어느 축이 왜 꺼졌는지). "점수가 낮았다"는 적립 대상이 아니다.
 6. **다음** — 큐 다음 항목으로. 한 세션에 논문 여러 편을 도는 것이 정상이다.
 
@@ -37,13 +42,20 @@
 - `close_round()`는 **선택**이다. 호출하지 않아도 라운드는 완결된다.
 - `02_Infrastructure/docs/rules/answer-principles.md`의 리서치 연속성 6항 중 **3호(next_probe ≥ 2)만** lean 라운드에 적용되고, 그 검사 지점이 위의 L-code 발행이다.
 
-## 지명 → 자본 계층
+## 라운드 뒤 — 기본 2단계(강화 프로세스)
+
+lean 라운드가 끝나면 **강화 프로세스**가 무인 러너 뒤에서 자동으로 1후보를 태운다
+(`alpha_search_queue_run.sh` → `reinforce_ladder.R --top=1`. 도훈 결정 2026-08-24).
+**세션이 손으로 부르지 않는다** — 이건 lean 라운드가 아니고 예산도 별개다(`budget_secs_per_candidate`).
+정지 = `QVEST_LADDER_NORUN=1`. 사다리는 원장의 완주(`stage=="done"`) 후보를 배제하므로 매 실행이 다음 후보로 전진한다.
+
+## 지명 → 자본 계층 (심층 QEPM)
 
 Grade A 또는 도훈 지명이 나왔을 때만 층을 올린다:
 
-`/worktask` → 6-agent(alpha-hypothesis → alpha → risk → optimizer → forge → judge) → dossier → **forge-authoritative 수치**로 HARD 3종 판정 → governor.
+`/worktask` → 6-agent(alpha-hypothesis → alpha → risk → optimizer → forge → judge) → dossier → **forge-authoritative 수치**로 HARD 4종 판정 → governor.
 
-- HARD 3종 값 정본 = `02_Infrastructure/worktask/constraint_defaults.json::tier_graduation`. **재보정은 도훈 권한**.
+- HARD 4종 값 정본 = `02_Infrastructure/worktask/constraint_defaults.json::tier_graduation`. **재보정은 도훈 권한**.
 - `qepm/mailbox/governor/book_state.json` 쓰기 = **도훈만**. 자동화 금지.
 - 지명 전에는 QEPM 에이전트를 스폰하지 않는다.
 
@@ -63,7 +75,7 @@ Grade A 또는 도훈 지명이 나왔을 때만 층을 올린다:
 ## 보고 형식 (3줄)
 
 ```
-① <전략명> · Grade <A/B/C/F> · CAGR x% · SR x · MDD x% · n_max <리밸일 최대 보유종목수>  (출처: hurdle_result.json)
+① <전략명> · Grade <A/B/C/F> · CAGR x% · SR x · MDD x% · n_max <리밸일 최대 보유종목수>  (출처: authoritative_remeasure.json — 권위 등급)
 ② 기전 1줄 — 무엇이 켜졌고 무엇이 꺼졌나
 ③ 다음 — <next_probe 1건> · 큐 다음 항목 <id>
 ```

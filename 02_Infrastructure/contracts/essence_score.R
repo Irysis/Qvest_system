@@ -26,8 +26,11 @@
 # essence_score(bt_result, n_trials_cumulative = NULL, hard_fail = NULL, ..., selection_type = NULL)
 #   bt_result : build_bt_result() 10-component (계약). 필수: metrics, benchmark_compare.
 #   n_trials_cumulative : DSR 산출용 누적 시행수 (기록 의무 유지 — 게이트 적용 여부와 별개).
-#   hard_fail : 외부 주입(judge). NULL이면 MDD 깊이 단독이 아니라
-#               drawdown episode 빈도/지속성으로 구조적 hard fail 추론.
+#   hard_fail : **외부 주입(judge) 전용**. NULL 이면 FALSE 다.
+#               ★2026-08-24 도훈 지시로 drawdown 추론 경로를 걷어냈다 — MDD 는 등급을
+#               접지 않고 Calmar(=CAGR/|MDD| >= 0.64) 비율로만 걸린다. 구조 정보는
+#               반환 `structural_drawdown`(라벨) + `reasons` 후미 문장이 보존한다.
+#               (hurdle_gate.R:465 가 2026-08-23 에 리서치 층에서 한 것과 같은 절단)
 #   selection_type : "sweep"(게이트 강제) / "chain"(가설주도 순차개선 — 게이트 면제) /
 #                    NULL(legacy: n_trials>1 휴리스틱 유지, 기존 sweep caller 호환).
 #   oos_stat_version : "v2"(기본, 2026-06-10 도훈 mandate C1) = anchored 3분할{55/65/75} retention 중앙값
@@ -37,7 +40,7 @@
 #                      ① trailing PORT_t>0 ② placebo p<0.05 ③ ΔSR>0 ∧ |cor|<0.30. holdout은 증거 불가(봉인).
 #                      retention<0.5는 증거 무관 FAIL(band 남용 차단).
 #   oos_fail_pattern : 선택 라벨 "overfit"/"decay" — FAIL 시 사유 분리(decay→screen_route 라우팅, 자본졸업 불가).
-# Returns: list(grade, metric_type, essence{...}, hard_fail, reasons)
+# Returns: list(grade, metric_type, essence{...}, hard_fail, hard_fail_source, structural_drawdown, reasons)
 #==============================================================================
 
 suppressPackageStartupMessages({ library(data.table) })
@@ -399,10 +402,40 @@ essence_score <- function(bt_result, n_trials_cumulative = NULL,
   # judge lockbox 실 OOS 비율 주입 시 우선 (65/35 fallback 대체)
   if (!is.null(oos_is_ratio_override) && is.finite(oos_is_ratio_override)) oos_retention <- oos_is_ratio_override
 
-  # --- hard_fail: 외부(judge) 주입 우선. 없으면 MDD 깊이 단독이 아니라 빈도/표본 점유율로 추론 ---
-  # 단발/소수 시장 동반 폭락과 장기 회복 지연은 tail_review로 남기고,
-  # repeated severe drawdown / sample-dominant severe drawdown만 hard fail.
-  if (is.null(hard_fail)) hard_fail <- isTRUE(dd_profile$structural_hard_fail)
+  # --- hard_fail: 외부(judge) 주입 **전용** ---
+  ## ★2026-08-24 도훈 지시 "hard_fail 조건에서 MDD만 걷어내면 되는거 아냐?" — 그대로 적용.
+  ##   구판: `if (is.null(hard_fail)) hard_fail <- isTRUE(dd_profile$structural_hard_fail)`
+  ##   그 추론의 4개 논리합이 **전부 drawdown 량**이다(.essence_drawdown_profile:213-218):
+  ##     MDD ≥ 0.70 · 45%+ 에피소드 ≥ 15 · 55%+ 에피소드 ≥ 6 · 수중 표본비 ≥ 0.25.
+  ##   ⇒ 이 추론 = MDD 탈락 그 자체였다. 걷어낼 대상이 정확히 이 한 줄이다.
+  ##
+  ##   왜 지금인가: hurdle_gate.R:465 가 **2026-08-23 에 이미 같은 절단**을 했다("리서치 층에서
+  ##   MDD 는 탈락 사유가 아니다 — E-2"). 그때는 essence 가 자본 층 채점기라 예외로 남겼는데
+  ##   (hurdle_gate.R:440 "자본 층 essence_score 의 독립 판정(불변)"), v9.21 §1-a 가 essence 를
+  ##   **리서치 층 상시 채점기**로 만들었으므로 같은 E-2 논리가 이제 여기에도 적용된다.
+  ##
+  ##   ★남기는 것 (hurdle 이 쓴 패턴 그대로 — 사유는 살리고 판정만 뺀다):
+  ##     · 외부 주입 경로: judge 가 `hard_fail=TRUE` 를 넘기면 그대로 F (자본 층 권한 · INV-7)
+  ##     · `essence$drawdown_profile$structural_hard_fail` 라벨 (하류가 구조 재료를 식별)
+  ##     · 반환 `structural_drawdown` (신설 — 아래. `hard_fail` 이 FALSE 로 바뀌므로 이 필드가
+  ##       없으면 22건의 구조 정보가 **조용히 사라진다**)
+  ##   ★MDD 의 위험 축 = Calmar(=CAGR/|MDD| ≥ 0.64) 비율 하나. 자본 층은 그 위에
+  ##     `discovery_graduation_gate.sh` HARD 4종을 forge-authoritative 수치로 얹는다.
+  ##
+  ##   실측 영향(2026-08-24 · authoritative_remeasure.json 207 런 · bt_result.rds 재채점):
+  ##     essence F 66건 = **hard_fail 22 + non-positive alpha 44**(F 분지가 이 둘뿐이다).
+  ##     그 22건을 현행 코드로 재채점: **B 4 / C 15 / F 3**. F 잔존 3건은 PORT_t
+  ##     −0.046 / −1.812 / −1.876 = non-positive alpha 이므로 정당하다.
+  ##   ★단 이 22건 중 **현행 프로파일에서 structural 라벨이 서는 것은 7건뿐**이다
+  ##     (7 → B 2 / C 5 · 나머지 15 → B 2 / C 10 / F 3). 즉 **이 수정의 한계 효과는 7건**이고
+  ##     15건은 이미 다른 이유로 재채점될 예정이었다 — 저장 코퍼스의 drawdown 프로파일이
+  ##     **현행 산출과 다르다**(같은 rds·같은 mdd_hard 0.45 인데 2026-06-12 저장분은
+  ##     2 에피소드/2021기간/max 1374 · frac 0.3838, 현행은 8/391/159 · frac 0.0742 = 5.2배 차이).
+  ##     이 드리프트는 **본 수정과 무관한 선행 결함**이며 §1-d 전수 재계산의 소관이다
+  ##     (저장 JSON 에 catastrophic/hard_count 계열 5필드가 아예 없다 = 구 판본 산출).
+  structural_drawdown <- isTRUE(dd_profile$structural_hard_fail)
+  hard_fail_injected  <- !is.null(hard_fail)
+  if (!hard_fail_injected) hard_fail <- FALSE
 
   # --- C1 borderline band [0.5, 0.7): 보강증거 2/3 충족 시 조건부 통과 (2026-06-10 도훈 mandate) ---
   #   retention >= 0.7 단독 PASS(불변) / < 0.5 무조건 FAIL(증거 무관) / band는 escalation 2/3.
@@ -440,7 +473,9 @@ essence_score <- function(bt_result, n_trials_cumulative = NULL,
   ##     제약-귀속이다(AX-000 · 고정 축 규약). 실측이 이를 확인한다 — 2026-08-24 사다리
   ##     후보 11건이 MDD 54~71% 인데 essence B 를 받았다.
   ##   ★혼동 금지: `mdd_hard`(0.45)는 등급 조건이 아니라 **drawdown 프로파일의 severe
-  ##     에피소드 임계**(hard_fail 추론용)이고, `max_drawdown_days`(100)는 advisory 다.
+  ##     에피소드 임계**(라우팅 라벨용)이고, `max_drawdown_days`(100)는 advisory 다.
+  ##     ★2026-08-24: 구판은 그 임계에서 `hard_fail` 을 **추론해 등급을 F 로 접었다** —
+  ##       문서("등급 조건 아님")와 코드가 어긋난 유일한 지점이었다. 그 추론을 제거했다.
   a_core <- (is.finite(port_t) && port_t >= .gp$port_t_min &&
              oos_ok &&
              is.finite(sharpe) && sharpe >= .gp$sharpe_min &&
@@ -461,8 +496,11 @@ essence_score <- function(bt_result, n_trials_cumulative = NULL,
     grade <- NA_character_
     reasons <- "PORT_t/net_IR 미산출(계약 미경유) — 등급 미발행. 상태는 metric_type='uncertain' 참조"
   } else if (hard_fail) {
+    ## ★이 분기는 이제 **외부(judge) 주입 전용**이다 — drawdown 추론은 위에서 걷어냈다.
+    ##   그래서 사유를 "drawdown structure" 로 단정하지 않는다(주입 사유는 judge 소관이고
+    ##   drawdown 이 아닐 수 있다). drawdown 프로파일은 참고로만 병기한다.
     grade <- "F"
-    reasons <- sprintf("hard_fail drawdown structure (MDD %.1f%%, %.0f%%+ episodes=%d, %.0f%%+ episodes=%d, max_underwater=%d periods)",
+    reasons <- sprintf("hard_fail (외부 주입 — judge/자본 층). 참고 drawdown 프로파일: MDD %.1f%%, %.0f%%+ episodes=%d, %.0f%%+ episodes=%d, max_underwater=%d periods",
                        mdd * 100, mdd_hard * 100, dd_profile$severe_count,
                        max(0.55, mdd_hard + 0.10) * 100, dd_profile$extreme_count,
                        dd_profile$severe_max_periods)
@@ -499,6 +537,24 @@ essence_score <- function(bt_result, n_trials_cumulative = NULL,
     reasons <- "Ensemble: positive alpha이나 B 미달 (블렌드에서만 가치)"
   }
 
+  ## ★구조 drawdown 은 **판정에서 빠졌지만 사유에서 빠지지 않는다**(2026-08-24).
+  ##   hurdle_gate.R:466-468 이 세운 규약과 같다 — "fail_reasons 는 그대로 남긴다. 이 문장이
+  ##   사라지면 하류 소비자가 '구조 사유'를 식별할 근거를 잃고, 결합 층으로 보낼 재료와
+  ##   그냥 약한 신호가 같은 라벨이 된다." 등급이 B/C 여도 이 문장이 오버레이 라우팅의 근거다.
+  if (structural_drawdown && !is.na(grade) && !hard_fail) {
+    ## ★`%||%` 를 쓰지 않는다 — 이 파일은 그것을 정의하지 않는다(:590 의 같은 경고 참조).
+    ##   그리고 `.essence_drawdown_profile` 의 폴백 분지는 일부 필드를 내지 않으므로
+    ##   sprintf 에 NULL 이 들어가면 **여기서 죽는다**. 안전 추출로 감싼다.
+    .ddn <- function(x) { v <- suppressWarnings(as.numeric(x)[1]); if (length(v) && !is.na(v)) v else NA_real_ }
+    reasons <- paste0(reasons,
+      sprintf("; structural_drawdown(판정 아님 — 라우팅 근거): MDD %.1f%%, %.0f%%+ episodes=%.0f/%.0f, %.0f%%+ episodes=%.0f/%.0f, 수중 표본비 %.2f/%.2f",
+              .ddn(mdd) * 100, .ddn(mdd_hard) * 100,
+              .ddn(dd_profile$severe_count), .ddn(dd_profile$severe_hard_count),
+              max(0.55, .ddn(mdd_hard) + 0.10) * 100,
+              .ddn(dd_profile$extreme_count), .ddn(dd_profile$extreme_hard_count),
+              .ddn(dd_profile$severe_period_frac), .ddn(dd_profile$severe_period_hard_frac)))
+  }
+
   .res <- list(
     grade = grade,
     metric_type = if (contract_ok) "backtested" else "uncertain",
@@ -527,6 +583,11 @@ essence_score <- function(bt_result, n_trials_cumulative = NULL,
       )
     ),
     hard_fail = hard_fail,
+    ## ★신설(2026-08-24): `hard_fail` 에서 MDD 를 걷어냈으므로 구조 정보를 담을 필드가
+    ##   따로 필요하다. 없으면 22건의 구조 사유가 **조용히 사라진다**(하류가 오버레이
+    ##   라우팅 근거를 잃는다). 이 필드는 **판정이 아니라 라벨**이다.
+    structural_drawdown = structural_drawdown,
+    hard_fail_source = if (hard_fail_injected) "injected" else "none",
     n_trials_cumulative = n_trials_cumulative,
     selection_type = selection_type,
     dsr_gate_applied = is_sweep,

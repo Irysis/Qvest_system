@@ -103,9 +103,18 @@ hf_reason <- if (!is.null(v$hard_fail_reason)) as.character(v$hard_fail_reason)[
 #   ★구 경로는 지우지 않는다 — hard_fail 이 살아 있는 구 산출물·합성 입력의 판정이
 #     바뀌면 기존 검사기 6개의 단언이 무의미해진다. 가산이지 대체가 아니다.
 route_hint <- if (!is.null(v$screen_route_hint)) as.character(v$screen_route_hint)[1] else ""
+# ── [2026-08-24] ★세 번째 독립 근거: essence 의 구조 낙폭 라벨.
+#   왜 필요한가: 도훈 지시로 essence 의 `hard_fail` 에서 MDD 를 걷어냈다. 그러면 구조
+#   후보는 등급으로도 안 걸리고 `hard_fail` 로도 안 걸린다 — 여기서 라벨을 안 읽으면
+#   `structural` 이 FALSE 가 되어 **SCREEN_TIER 대신 QUARANTINE 으로 조용히 떨어진다**
+#   (실측 22건이 그 대상이었다). MDD 의 탈락 권한을 없애는 것과 **라우팅 근거를 없애는
+#   것은 다른 일**이고, 후자는 v9.1/S2a 가 이미 반대한 결함이다.
+#   ★가산이지 대체가 아니다 — 위 두 근거(hard_fail 사유 · route_hint)는 그대로 둔다.
+es_struct <- isTRUE(v$essence_structural_drawdown)
 structural <- (hard_fail && grepl("drawdown|mdd|turnover|calmar|concentration|structural",
                                   hf_reason, ignore.case = TRUE)) ||
-              grepl("OVERLAY_CANDIDATE|TURNOVER_REVIEW", route_hint)
+              grepl("OVERLAY_CANDIDATE|TURNOVER_REVIEW", route_hint) ||
+              es_struct
 
 # pit 은 항상 명시 TRUE 여야 한다(결측도 불가) — PIT 은 결측을 통과로 읽지 않는다.
 signal_alive <- isTRUE(layers[["pit"]]) && ok_or_absent("robustness")
@@ -114,10 +123,34 @@ four_pass <- isTRUE(layers[["pit"]]) &&
 
 # ── 등급 바닥(v9 2026-08-23): ADOPT 는 hurdle 등급 A/B 에만. 2026-08-23 실측 — Grade C ·
 #   IR −0.48 · 초과CAGR −8.3%p(IVOL×TO 저-저 셀)가 hard_fail 없음 ∧ PIT PASS 만으로 ADOPT 가 됐다
-#   (IS 샤프≈0 이라 oos 비율이 5.32 로 폭발해 robustness 도 못 막음). 등급은 lean_verify_build 가
-#   hurdle_result 에서 옮겨 적는다(`grade`). 결측은 기존 철학대로 차단하지 않고 **명시 C/F 만** 막는다.
+#   (IS 샤프≈0 이라 oos 비율이 5.32 로 폭발해 robustness 도 못 막음).
+#   ★v9.21 §1-c: `grade` 의 출처가 **hurdle proxy → essence 권위**로 바뀌었다. 옮겨 적는 주체는
+#     여전히 lean_verify_build.py 이고, 그 파일이 `grade_basis` 로 출처를 못박는다
+#     (essence 부재 시 hurdle 폴백 — 비우지 않는다. 비우면 등급 바닥이 조용히 사라진다).
+#   ★`sub("_.*$","")` 는 남긴다 — essence 는 접미어를 내지 않지만 구 산출물(proxy A_NOVEL 등)이
+#     같은 필드로 들어오므로, 지우면 그 판들이 "A_NOVEL" 그대로 비교돼 등급 바닥을 우회한다.
+#   결측(등급 없음)은 기존 철학대로 차단하지 않는다 — 막는 것은 **명시 등급**뿐이고,
+#   그 집합은 축마다 다르다(바로 아래에서 재단).
 grade_raw  <- if (!is.null(v$grade)) toupper(sub("_.*$", "", as.character(v$grade)[1])) else ""
-grade_low  <- grade_raw %in% c("C", "F")
+# ── ★바닥의 **엄격도는 등급 축마다 다르다** (2026-08-24 실측으로 재단).
+#   소스를 proxy→권위로 바꾸면서 차단 집합 {C,F} 를 그대로 두면 **바닥을 이중으로 조인다**.
+#   실측(authoritative_remeasure.json 207 런, 같은 런의 두 등급 대조):
+#     hurdle  A 11 · B 169 · C 18 · F  9  → {C,F} 차단  27 (13%)
+#     essence B  3 · C 138 · F 66        → {C,F} 차단 204 (**99%**)
+#   ⇒ 무인 레인의 ADOPT(=L-code 적립 허용)가 87%→1% 로 붕괴한다. 그건 판정 강화가 아니라
+#     **원장 정지**다(공리 엔진의 연료가 끊긴다).
+#
+#   ★바닥이 원래 막으려던 것으로 재단한다. 2026-08-23 도입 사유가 코드에 남아 있다 —
+#     "Grade C · **IR −0.48** · 초과CAGR −8.3%p 가 ADOPT 됐다". 그건 **음(−)의 알파**이고
+#     essence 에서 그것의 정확한 이름은 **F** 다(`port_t <= 0 || net_ir <= 0` 분지).
+#     반면 essence **C** 는 "양(+)의 알파이나 B 미달" — 리서치 층이 교훈으로 남겨야 하는
+#     재료이고 lean-loop 5단계가 적립 대상으로 규정한 바로 그것이다.
+#   ⇒ 권위 축에서는 **F 만** 막고, proxy 폴백 축에서는 구 동작 {C,F} 를 유지한다
+#     (구 산출물·합성 입력의 판정이 바뀌면 기존 검사기 6개의 단언이 무의미해진다).
+gb <- if (!is.null(v$grade_basis)) as.character(v$grade_basis)[1] else ""
+grade_authoritative <- grepl("essence", gb, fixed = TRUE)
+grade_floor <- if (grade_authoritative) c("F") else c("C", "F")
+grade_low  <- grade_raw %in% grade_floor
 if (grade_low) failed <- c(failed, sprintf("grade_%s", grade_raw))
 
 if (four_pass && !hard_fail && !grade_low) {
@@ -140,13 +173,29 @@ v$gate_failed_layers <- paste(c(failed, if (hard_fail) "hard_fail" else NULL), c
 v$gate_absent_layers <- paste(absent, collapse = ",")
 v$lean <- lean_mode
 v$gate_authority <- "auto_alpha_gate.R"   # 에이전트가 쓴 판정과 구분하기 위한 서명
+# ★판정 근거를 원장에 남긴다 — 세 근거 중 무엇이 SCREEN_TIER 를 만들었는지 사후에 갈리게.
+#   이걸 안 남기면 "라우팅이 왜 됐나"를 재구성할 수 없다(구조 라벨이 등급에서 빠진 뒤로
+#   등급만 보고는 알 수 없다).
+v$gate_structural_basis <- paste(c(
+  if (hard_fail && grepl("drawdown|mdd|turnover|calmar|concentration|structural", hf_reason,
+                         ignore.case = TRUE)) "hard_fail_reason" else NULL,
+  if (grepl("OVERLAY_CANDIDATE|TURNOVER_REVIEW", route_hint)) "screen_route_hint" else NULL,
+  if (es_struct) "essence_structural_drawdown" else NULL), collapse = ",")
+if (!is.null(v$grade_basis)) v$gate_grade_basis <- as.character(v$grade_basis)[1]
+# 바닥 집합도 남긴다 — 축마다 다르므로 사후에 "왜 이 등급이 통과/차단됐나"가 갈려야 한다.
+v$gate_grade_floor <- paste(grade_floor, collapse = ",")
 v$gate_rule <- paste0(
   "PIT 는 명시 PASS 필수(결측 불가). contract/robustness/fidelity 는 명시 FAIL 만 실패이고 ",
   "**결측은 요구되지 않음**(v9 lean — L4 폐지·robustness 는 산출물에 있을 때만). ",
-  "그 조건 ∧ hard_fail 없음 ∧ hurdle 등급 명시 C/F 아님 → ADOPT. hard_fail 이 구조 사유(MDD/turnover/calmar) ",
-  "**또는** screen_route_hint 에 OVERLAY_CANDIDATE/TURNOVER_REVIEW ∧ PIT PASS ∧ robustness 미-FAIL → ",
+  "그 조건 ∧ hard_fail 없음 ∧ 등급이 바닥 집합 밖 → ADOPT. ★바닥은 축마다 다르다 — ",
+  "권위(essence)={F} (음의 알파만) · proxy(hurdle)={C,F} (구 동작 유지). 소스를 권위로 바꾸며 ",
+  "{C,F} 를 그대로 두면 실측 99% 차단 = 원장 정지였다(2026-08-24). 구조 근거 3종 중 하나 ",
+  "(①hard_fail 사유가 MDD/turnover/calmar ②screen_route_hint 가 OVERLAY_CANDIDATE/TURNOVER_REVIEW ",
+  "③essence structural_drawdown 라벨) ∧ PIT PASS ∧ robustness 미-FAIL → ",
   "SCREEN_TIER(자본 tier 면제 없음, measurement-graduation.md §3). 그 외 QUARANTINE. ",
-  "★ADOPT 는 리서치 층 채택이고 자본 자격이 아니다 — MDD 는 essence_score(자본 층)가 별도 판정한다. ",
+  "★ADOPT 는 리서치 층 채택이고 자본 자격이 아니다. ★MDD 는 **어느 층에서도 등급을 접지 않는다** ",
+  "(2026-08-24 도훈 지시 — essence 의 drawdown→hard_fail 추론 제거). 위험 축은 Calmar 비율 ",
+  "(=CAGR/|MDD| ≥ 0.64) 하나이고, 자본 층은 그 위에 discovery_graduation_gate HARD 4종을 얹는다. ",
   "screen_route 는 ADOPT 에서도 보존된다(라우팅은 등급·hard_fail 과 독립 축, v9.1 S2a).",
   if (lean_mode) sprintf(" [lean=true · 결측층=%s]", paste(absent, collapse = "/")) else "")
 if (nzchar(route)) v$screen_route <- route
@@ -157,6 +206,7 @@ tryCatch(write(toJSON(v, pretty = TRUE, auto_unbox = TRUE, na = "null"), vf),
 msg <- decision
 if (length(failed)) msg <- sprintf("%s: failed=%s", msg, paste(failed, collapse = ","))
 if (hard_fail) msg <- sprintf("%s | hard_fail=%s", msg, substr(hf_reason, 1, 80))
-if (nzchar(route)) msg <- sprintf("%s | screen_route=%s (자본 tier 면제 아님)", msg, route)
+if (nzchar(route)) msg <- sprintf("%s | screen_route=%s (근거=%s · 자본 tier 면제 아님)",
+                                  msg, route, v$gate_structural_basis)
 cat(msg, "\n", sep = "")
 quit(status = if (decision == "ADOPT") 0L else 1L)

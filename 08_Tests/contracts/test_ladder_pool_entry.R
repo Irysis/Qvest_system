@@ -177,4 +177,107 @@ if (!file.exists(BMP)) {
     ng("★legacy 예외 서술이 사라졌다")
 }
 
+# ══ D. 루프 폐쇄 — 사다리가 다음 후보로 전진하는가 (§2-f) ═══════════════════
+cat("\n── D. 루프 폐쇄 (완주분 배제) ──────────────────────────────\n")
+#
+# ★실측 결함(2026-08-24): `rl_candidates()` 가 원장을 **전혀 보지 않았다**.
+#   `entry_strength` 내림차순 + `max_active=1` 이라 **매 실행이 같은 1위 후보를 다시 집는다**.
+#   셀 재개 로직 때문에 두 번째 실행은 빨리 끝나지만 결과가 같고, **다음 후보로는 영원히
+#   넘어가지 않는다.** 무인 기동(§2-d)을 붙이면 매일 아침 같은 전략만 태운다.
+#
+# ★플랜 §2-f 정정: 플랜은 "close_round 에 frontier_update 인자 한 줄"이라고 적었으나
+#   `close_round.R:169` 는 그 서술에서 `FQ-[0-9]+` 를 추출해 큐를 갱신한다. 사다리 입력은
+#   frontier 가설이 아니라 전략 모듈이다 — `improvement_potential.json` 42 항목 전부 전략 id
+#   키이고 **FQ-id 참조 0**(실측). 인자를 채워도 fq_ids 는 빈 벡터라 아무것도 안 바뀐다.
+#   사다리의 실제 소비면은 **자기 원장**이고 폐쇄 지점이 후보 선정이다.
+rlj <- paste(readLines(RL, warn = FALSE), collapse = "\n")
+
+# D1 — 후보 선정이 원장을 읽는가
+if (grepl("rl_ledger_read(root)", rlj, fixed = TRUE) &&
+    grepl("n_done_excluded", rlj, fixed = TRUE))
+  ok("후보 선정이 원장을 읽고 완주분을 배제 — 루프가 전진한다") else
+  ng("★후보 선정이 원장을 안 본다 — 매 실행이 같은 1위 후보를 다시 집는다")
+
+# D2 — 배제 기준이 stage=="done" 하나인가 (중단·진행 중은 재개해야 한다)
+if (grepl('identical(as.character(r$stage %|N|% ""), "done")', rlj, fixed = TRUE))
+  ok('배제 기준 = stage=="done" 만 — 중단(stopped)·진행 중은 재개 가능') else
+  ng("★배제 기준이 넓다 — 중단된 후보가 영구 봉인될 수 있다")
+
+# D3 — ★배제를 침묵시키지 않는가 ("후보 없음"과 "다 태웠음"은 다른 상태다)
+if (grepl("done_excluded=%d", rlj, fixed = TRUE) &&
+    grepl("원장 완주 %d건 배제", rlj, fixed = TRUE))
+  ok("배제 건수·id 를 요약에 노출 — 조용한 봉인 없음") else
+  ng("★배제가 침묵한다 — '후보가 없다'와 '이미 다 태웠다'가 같은 화면이 된다")
+
+# D4 — ★해제 경로(--redo)가 **선정보다 앞**에서 파싱되는가
+#   실측: 처음엔 `getopt("top")` 옆(선정 뒤)에 뒀더니 플래그가 죽었다 —
+#   `--redo` 를 줘도 배제가 안 풀렸다. 돌연변이 통제가 그 죽은 판을 잡았다.
+pos_redo <- regexpr('"--redo" %in% args', rlj, fixed = TRUE)
+pos_cand <- regexpr("cs <- rl_candidates(config)", rlj, fixed = TRUE)
+if (pos_redo > 0L && pos_cand > 0L && pos_redo < pos_cand)
+  ok("--redo 파싱이 rl_candidates() 앞 — 플래그가 실제로 작동한다") else
+  ng("★--redo 가 선정 뒤에서 파싱된다 — 플래그가 죽는다(실측 전례)",
+     sprintf("redo@%d cand@%d", pos_redo, pos_cand))
+
+# D5 — 기본값이 배제(=전진)인가. 기본이 재측정이면 루프가 안 닫힌다.
+if (grepl("redo_completed = FALSE", rlj, fixed = TRUE))
+  ok("기본값 = 완주분 배제(전진) · 재측정은 명시 --redo") else
+  ng("★기본이 재측정이다 — 루프가 닫히지 않는다")
+
+# ══ E. 무인 기동 배선 (§2-d) ════════════════════════════════════════════════
+cat("\n── E. 무인 러너 뒤 자동 기동 ───────────────────────────────\n")
+#
+# 도훈 결정 2026-08-24: "강화 기동 = 무인 러너 뒤 자동".
+# ★순서가 곧 파이프라인 선언이다 — 기본 1단계(논문 알파리서치) → 2단계(강화).
+#   그래서 큐 리프레시 **뒤**, 완주 알림 **앞**이어야 한다.
+ASQ <- file.path(ROOT, "02_Infrastructure", "ops", "alpha_search_queue_run.sh")
+## ★부팅 스크립트는 ops/ 에 있고 현행 경로는 boot_lean.sh 다 — 둘 다 본다.
+##   (구판은 hooks/bootstrap.sh 를 가리켜 SKIP 이 났다. SKIP 은 "재지 않았다"이지
+##    "통과"가 아니다 — 죽은 축을 통과로 세는 것이 이 저장소의 반복 결함이다.)
+BOOTS <- c(file.path(ROOT, "02_Infrastructure", "ops", "bootstrap.sh"),
+           file.path(ROOT, "02_Infrastructure", "ops", "boot_lean.sh"))
+BOOTS <- BOOTS[file.exists(BOOTS)]
+if (!file.exists(ASQ)) sk("E_wiring", "alpha_search_queue_run.sh 부재", ASQ) else {
+  asq <- paste(readLines(ASQ, warn = FALSE), collapse = "\n")
+
+  # E1 — 호출이 존재하는가
+  if (grepl("reinforce_ladder.R", asq, fixed = TRUE) && grepl("--top=1", asq, fixed = TRUE))
+    ok("무인 러너가 강화 프로세스 1후보를 기동한다") else
+    ng("★강화 기동 배선이 없다 — 2단계가 무인 경로에서 영원히 안 돈다")
+
+  # E2 — ★순서: 큐 리프레시 < 강화 < 완주 알림
+  p_q <- regexpr("스크린 큐 리프레시 시작", asq, fixed = TRUE)
+  p_l <- regexpr("강화 프로세스 시작", asq, fixed = TRUE)
+  p_n <- regexpr("research_run_notify.R", asq, fixed = TRUE)
+  if (p_q > 0L && p_l > 0L && p_n > 0L && p_q < p_l && p_l < p_n)
+    ok("순서 = 1단계 산출 → 큐 리프레시 → 2단계 강화 → 완주 알림 (파이프라인 선언 그대로)") else
+    ng("★기동 순서가 파이프라인과 어긋난다", sprintf("queue@%d ladder@%d notify@%d", p_q, p_l, p_n))
+
+  # E3 — 강화 실패가 **비치명**인가 (1단계 산출·알림을 막으면 안 된다)
+  if (grepl("강화 프로세스 실패(비치명)", asq, fixed = TRUE))
+    ok("강화 실패는 비치명 — 1단계 완주 알림을 막지 않는다") else
+    ng("★강화 실패가 러너를 죽인다 — 이미 끝난 1단계 산출까지 보고가 사라진다")
+
+  # E4 — 킬스위치가 있는가 (무인 경로에 정지 수단 없으면 되돌릴 방법이 없다)
+  if (grepl("QVEST_LADDER_NORUN", asq, fixed = TRUE))
+    ok("킬스위치 QVEST_LADDER_NORUN 존재 — 무인 기동을 끌 수 있다") else
+    ng("★킬스위치가 없다")
+
+  # E5 — 건너뜀을 침묵시키지 않는가
+  if (grepl("강화 프로세스 건너뜀", asq, fixed = TRUE))
+    ok("건너뜀 사유를 로그에 남긴다 — '안 돌렸다'와 '후보 0'을 구분") else
+    ng("★건너뜀이 침묵한다")
+}
+
+# E6 — ★부팅에는 붙이지 않는다 (부팅 상태라인 읽기 전용 규약 8j)
+if (!length(BOOTS)) sk("E6_boot", "부팅 스크립트 2종 모두 부재", "ops/{bootstrap,boot_lean}.sh") else {
+  bad <- BOOTS[vapply(BOOTS, function(f)
+    grepl("reinforce_ladder", paste(readLines(f, warn = FALSE), collapse = "\n"), fixed = TRUE),
+    logical(1))]
+  if (!length(bad))
+    ok(sprintf("부팅 스크립트 %d종에 강화 기동 없음 — 상태라인 읽기 전용 규약 유지", length(BOOTS))) else
+    ng("★부팅이 강화를 기동한다 — 상태라인이 부작용을 내면 부팅이 판정을 바꾼다",
+       paste(basename(bad), collapse = ","))
+}
+
 emit()

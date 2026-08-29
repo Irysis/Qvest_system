@@ -80,11 +80,22 @@ LCODE_VALID_METRIC_TYPES <- c("proxy", "estimated", "canonical_screen", "backtes
 
 LCODE_VALID_MODES <- c("alpha_search", "alpha_research", "qepm_legacy",
                        "judge_gate", "governor_admission",
-                       "factor_rotation", "regime_research",
-                       "ramp",              # 2026-06-18: RAMP 자가발전 4번째 모드
+                       "strategy_rotation", # 2026-08-24 v9.21: 구 factor_rotation 개명 (아래 alias)
+                       "factor_rotation",   # ★역사 라벨로 존치 — 기존 L-code 1건이 이 값을 갖는다
+                       "regime_research",
+                       "ramp",              # 2026-06-18: RAMP 자가발전 4번째 모드 (v9.21 모드 지위 퇴임 — 라벨은 존치)
                        "overlay_research")  # 2026-07-06: OVL 오버레이 자가발전 모드 (lcode_emit OVL prefix와 정합)
 # research_mode normalize 규칙 (promote GEN 폴백 봉합, A2-F8②)
-LCODE_MODE_ALIASES <- c("qepm" = "qepm_legacy")
+## ★v9.21 개명 (도훈 지시 2026-08-24 "팩터 로테이션은 전략 로테이션으로"):
+##   `factor_rotation` → `strategy_rotation`. **이름이 코드 현실과 오히려 일치하게 된다** —
+##   FR 입력은 이미 팩터가 아니라 완성 전략 모듈(module_performance.json)이고,
+##   팩터 분해(PCA/hclust/FWL)는 RAMP 쪽에만 있다.
+##   ★기존 값을 enum 에서 빼지 않는다 — 원장의 L-code 1건이 그 값을 갖고 있고, 빼면
+##     validate_lcode 가 **과거 기록을 무효로 만든다**(역사는 판정이 아니다). alias 가
+##     신규 발행만 새 이름으로 정규화한다.
+##   ★prefix 는 `FR` 유지 — id 는 불투명 식별자다. 바꾸면 기존 `L-FR-*` 2건이 끊긴다.
+LCODE_MODE_ALIASES <- c("qepm" = "qepm_legacy",
+                        "factor_rotation" = "strategy_rotation")
 
 # selection_type — measurement-graduation §3 selection operator (construction과 별개 축)
 LCODE_VALID_SELECTION_TYPES <- c("chain", "sweep", "single")

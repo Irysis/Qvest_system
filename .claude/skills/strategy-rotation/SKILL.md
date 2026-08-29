@@ -1,9 +1,9 @@
 ---
-name: factor-rotation
-description: 팩터 로테이션 모드 — QEPM/alpha-search가 생산한 전략 모듈들을 국면(regime) 조건부로 배합해 합성 운용체계(FR_XXXX)를 만드는 제3 리서치 모드. 모듈을 생산하지 않고 소비하는 meta-layer(Lane3). 1모드 2트랙(Track1 레짐엔진 리서치 + Track2 배분 리서치). 모듈 풀 admission은 overall 등급이 아닌 국면조건부 성과(RCMA — 방어형 CRISIS specialist + 공격형 확장 specialist 양방향, 등급무관). 실측-only(build_bt_result)+essence_score(DSR/OOS 게이트). governor 정지(book_state 수동). QEPM 6-에이전트·alpha-search와 구분.
+name: strategy-rotation
+description: 전략 로테이션 모드 — QEPM/alpha-search가 생산한 전략 모듈들을 국면(regime) 조건부로 배합해 합성 운용체계(FR_XXXX)를 만드는 제3 리서치 모드. 모듈을 생산하지 않고 소비하는 meta-layer(Lane3). 1모드 2트랙(Track1 레짐엔진 리서치 + Track2 배분 리서치). 모듈 풀 admission은 overall 등급이 아닌 국면조건부 성과(RCMA — 방어형 CRISIS specialist + 공격형 확장 specialist 양방향, 등급무관). 실측-only(build_bt_result)+essence_score(DSR/OOS 게이트). governor 정지(book_state 수동). QEPM 6-에이전트·alpha-search와 구분.
 ---
 
-# 팩터 로테이션 모드 (factor-rotation)
+# 전략 로테이션 모드 (strategy-rotation)
 
 Qvest 제3 리서치 모드. **신규 알파를 찾지 않고**, 이미 생산된 전략 모듈들을 **국면 조건부로 배합**해 합성 운용체계(`FR_XXXX`)를 만든다. alpha-search(논문 1편 검증)·QEPM(6-에이전트 풀파이프라인)과 별개의 독립 트랙(meta-layer).
 
@@ -12,7 +12,7 @@ Qvest 제3 리서치 모드. **신규 알파를 찾지 않고**, 이미 생산�
 FR 리서치(레짐엔진 변형·배분정책·RCMA 재설계) 착수 **전에** 기존 지식과 대조한다:
 
 1. **hypothesis_index 조회**: 먼저 `Rscript 02_Infrastructure/tools/hypothesis_index.R build`로 재빌드(stale 방지) 후 `Rscript 02_Infrastructure/tools/hypothesis_index.R lookup <keyword>` (예: `lookup regime`, `lookup allocation`). **단일 패밀리어로 넓게 조회 후 좁힐 것** — 다어(`regime rotation`)는 AND 매칭이라 결과가 과도하게 좁아져 진짜 히트를 놓친다. 동의어 자동확장(F1: 한영/축약/동의어)이 이미 걸려 있으니 단일어로 넓게 잡는다. 동일 서명 기존 시도가 있으면 기존 결과(verdict·grade·key_metrics)를 인용하고 **차별점을 명시해야만 진행 가능**.
-2. **모드 L-code grade F 스캔**: `stage_artifacts/l_code/{factor_rotation,regime_research,ramp}/` 하위 grade F/FAIL 엔트리(failure-ledger) 확인 — FR은 RAMP와 같은 모듈-소비 계열이라 ramp 실패도 교차 참조.
+2. **모드 L-code grade F 스캔**: `stage_artifacts/l_code/{strategy_rotation,factor_rotation,regime_research,ramp}/` 하위 grade F/FAIL 엔트리(failure-ledger) 확인 — FR은 RAMP와 같은 모듈-소비 계열이라 ramp 실패도 교차 참조.
 3. **히트 시**: FAIL/KILL 결과와 겹치는 설계는 차별점(무엇이 달라져 결과가 달라질 것인지) 명시 없인 진행 금지 — INV-7 재도전 사유를 산출물(연구노트/FR result json)에 기록. hit/miss 사실을 결과 보고에 1줄 기록.
 
 ## 1. 목적 (왜 만들었나)
@@ -24,12 +24,12 @@ FR 리서치(레짐엔진 변형·배분정책·RCMA 재설계) 착수 **전에*
 ## 2. 구조 — 1 모드, 2 nested 트랙
 
 ```
-팩터 로테이션 모드 ── 1 mode
+전략 로테이션 모드 ── 1 mode
 ├── Track 1: 레짐엔진 리서치   = 국면 정의 + 사전 예측 강화 (토대)
-└── Track 2: 팩터 로테이션 리서치 = 모듈 배분 강화 (Track1의 국면 사용)
+└── Track 2: 전략 로테이션 리서치 = 모듈 배분 강화 (Track1의 국면 사용)
 ```
 - 독립 아님 — Track1이 국면 인식·예측 강화 → Track2가 그 국면으로 배분 개선. **Track1 → Track2 의존.**
-- 공유: 진입점 `/factor-rotation <track∈{regime-engine, allocation}>` · 동일 measurement 계약 · L-code(`mode=factor_rotation|regime_research`).
+- 공유: 진입점 `/strategy-rotation <track∈{regime-engine, allocation}>` · 동일 measurement 계약 · L-code(`mode=strategy_rotation|regime_research`, 구 `factor_rotation` 은 alias 로 정규화).
 
 ## 3. 산출물 — FR vs STR (2계층)
 
@@ -80,7 +80,7 @@ admitted = ①∧②∧③∧④. m이 ≥1 regime admitted면 풀 진입. `run_
 
 Track1은 **각종 학술논문·헤지펀드 페이퍼를 참고해 국면 정의 및 예측 모델을 강화**하는 리서치 트랙이다. SOT: `04_Research/factor_rotation/regime_model_literature_review.md`.
 - **SOTA = Statistical/Sparse Jump Model**(Bemporad 2018 / Nystrup sparse 2021 / Shu-Mulvey 2024) — jump penalty λ로 과전환 명시 차단, HMM 대비 Sharpe·MDD 우위. **✅ PoC 빌드 완료(2026-06-05)** `02_Infrastructure/regime/regime_jump_model.R`(K=2, coordinate-descent+DP, feature=EWM downside-dev/Sortino + log-VIX, PIT online lookback+126d refit+1d delay). **실측: 월 churn 33.2%→7.1%(4.7×↓; λ↑ 단조 2.5%까지), GFC 100%/COVID 94%/2022 100% hit, HMM 73% parity.** 단 **앙상블 OOS SR 로버스트 이득 없음**(SJM_SR_GAIN_NONROBUST — k=3 top-3 집중·seed flip; min-across-k+seed gate로 노이즈 차단) — 신호품질은 크게 개선되나 현 0.70-상관 풀에선 천장이 입력(직교 슬리브)에 의해 결정(regime_study 정합). SJM 실가치는 직교 슬리브 확보 후 §3 Shu-Mulvey 결합 시 발현. 현재는 msm_daily 대체/병렬 신호로 보유. 검증: `04_Research/factor_rotation/regime_jm_{validation,ensemble_ab}.R`.
-- **팩터 로테이션 정본 = Shu-Mulvey 2024(arXiv 2410.14841)**: 팩터별 국면(SJM)→Black-Litterman→long-only MVO. 단 SOTA 순효익도 IR~0.5/active~1.5%/turnover 522%(겸손)+Quality(방어) 팩터 최약.
+- **전략 로테이션 정본 = Shu-Mulvey 2024(arXiv 2410.14841)**: 팩터별 국면(SJM)→Black-Litterman→long-only MVO. 단 SOTA 순효익도 IR~0.5/active~1.5%/turnover 522%(겸손)+Quality(방어) 팩터 최약.
 - forecaster 신호: MSM transition matrix + BOCPD changepoint + FRED 선행지표(Claims/Term-spread). KR: **US-VIX가 KR 국면 Granger-cause**(US 신호 1급 feature 의무).
 - **신규 국면축/모델은 문헌 economic-rationale 선존 필수**(research_philosophy ① Factor Zoo 축소 정합).
 
@@ -112,7 +112,7 @@ Track1은 **각종 학술논문·헤지펀드 페이퍼를 참고해 국면 정�
 ## 11. 구현 상태 (정직)
 
 - **빌드 완료**: Track2 전부(`module_dispatcher`/`run_wf_ensemble`/`build_module_performance` 광역화) · Track1 판별검증(`regime_engine_research`) · **Track1 SJM PoC(`regime_jump_model.R` — SOTA jump model, churn 33→7%, crisis 신속탐지·신호품질↑·앙상블SR 로버스트이득 無)** · **공용 `register_module`** · **RCMA `regime_module_admission`** · FR_001(grade C 실측).
-- **빌드 완료 (2026-07-24 정정 — 구 "미빌드" 목록이 역-stale)**: `/factor-rotation` command(.claude/commands/) · `dispatch-orchestrator` agent(.claude/agents/) · `02_Infrastructure/docs/rules/factor-rotation.md` · FR hooks 3종(factor_rotation_pit_guard / dispatch_measurement_gate / dispatch_allocation_auditor — 등록 실측) · `06_Registry/factor_rotation_registry.json` · CLAUDE.md 4-mode 명문화 · L-code mode 태깅(§6 emit).
+- **빌드 완료 (2026-07-24 정정 — 구 "미빌드" 목록이 역-stale)**: `/strategy-rotation` command(.claude/commands/) · `dispatch-orchestrator` agent(.claude/agents/) · `02_Infrastructure/docs/rules/strategy-rotation.md` · FR hooks 3종(factor_rotation_pit_guard / dispatch_measurement_gate / dispatch_allocation_auditor — 등록 실측) · `06_Registry/factor_rotation_registry.json` · CLAUDE.md 4-mode 명문화 · L-code mode 태깅(§6 emit).
 - **미빌드(후속) 잔여**: `regime_forecaster.R`(T1-B 예측 — 지표는 §8 정의) · QEPM의 register_module 일원화.
 
 ## 12. 참조 · 실행 메모

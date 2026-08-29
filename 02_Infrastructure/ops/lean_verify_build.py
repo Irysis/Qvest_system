@@ -89,6 +89,10 @@ def derive_paper_id(man):
 def build(d, out=None):
     man = _load(os.path.join(d, 'strategy_manifest.json')) or {}
     hur = _load(os.path.join(d, 'hurdle_result.json')) or {}
+    # ★v9.21 §1-c — 권위 등급(essence)의 산출물. run_alpha_search 의
+    #   .authoritative_remeasure() 가 쓴다. 없으면 이 런은 계약을 안 거친 것이고,
+    #   그 사실을 grade_basis 로 라벨한다(추측·기본값 금지 — 이 파일의 계약).
+    aut = _load(os.path.join(d, 'authoritative_remeasure.json')) or {}
     if not man and not hur:
         return None
 
@@ -132,11 +136,17 @@ def build(d, out=None):
     # ── L3 robustness — **산출물에 있을 때만** 적는다.
     #   hurdle_gate 의 oos 축(D062)이 essence 의 oos_retention 과 같은 양이다.
     #   구 L3 규칙(oos_retention >= 0.5, 자본 0.7 아님 — 오염 sanity)을 그대로 쓴다.
-    oos = _num(_dig(hur, 'score_breakdown', 'oos', 'value'))
+    #   ★권위 우선(v9.21 §1-c): essence.oos_retention 은 anchored 3분할 중앙값(v2)이고
+    #     hurdle 의 oos 축은 그 proxy 다. 같은 양이므로 문턱 0.5 는 그대로 쓴다.
+    oos = _num(_dig(aut, 'essence', 'oos_retention'))
+    oos_src = 'authoritative_remeasure.essence.oos_retention (essence v2 median)'
+    if oos is None:
+        oos = _num(_dig(hur, 'score_breakdown', 'oos', 'value'))
+        oos_src = 'hurdle_result.score_breakdown.oos.value (proxy)'
     if oos is not None:
         v['oos_retention'] = oos
         v['robustness_pass'] = bool(oos >= 0.5)
-        v['robustness_basis'] = 'hurdle_result.score_breakdown.oos.value >= 0.5 (screening sanity)'
+        v['robustness_basis'] = oos_src + ' >= 0.5 (screening sanity)'
     # (없으면 robustness_pass 를 **적지 않는다** → 게이트에서 NA → lean 상 요구되지 않음)
 
     # ── L4 fidelity — v9 에서 폐지. 필드를 만들지 않는다(그 자체가 "요구되지 않음").
@@ -149,11 +159,38 @@ def build(d, out=None):
         fr = '; '.join(str(x) for x in fr)
     if fr:
         v['hard_fail_reason'] = fr
-    for k in ('grade', 'total_score'):
-        if hur.get(k) is not None:
-            v['score' if k == 'total_score' else k] = hur.get(k)
-    if v.get('grade') is None and _dig(man, 'verdict', 'grade') is not None:
+    # ── 등급: ★권위(essence) 우선, hurdle 은 진단 축으로 병기 (v9.21 §1-c)
+    #   hurdle_gate 는 2026-05-31 에 이미 DEMOTED(authoritative=FALSE ·
+    #   grade_basis='proxy_diagnostic_18component') 됐다. 그런데 이 추출기는 그 강등된
+    #   등급을 `grade` 로 내보내 auto_alpha_gate 의 등급 바닥이 proxy 위에서 돌았다.
+    #   ⇒ 축을 이름으로 가른다: grade=권위 · grade_proxy=진단. grade_basis 가 출처를 못박는다.
+    if hur.get('total_score') is not None:
+        v['score'] = hur.get('total_score')
+    if hur.get('grade') is not None:
+        v['grade_proxy'] = hur.get('grade')          # hurdle 18-component (진단)
+    if aut.get('essence_grade') is not None:
+        v['grade'] = aut.get('essence_grade')
+        v['grade_basis'] = 'essence_score(authoritative_remeasure.json)'
+        if aut.get('metric_type') is not None:
+            v['grade_metric_type'] = aut.get('metric_type')
+    elif hur.get('grade') is not None:
+        # 권위 등급이 없다 = 계약 미경유(구 산출물 또는 백테 실패). **비우지 않고 라벨한다** —
+        # 비우면 게이트에서 '요구되지 않음'이 되어 등급 바닥이 조용히 사라진다.
+        v['grade'] = hur.get('grade')
+        v['grade_basis'] = 'hurdle_gate(proxy — 권위 등급 부재)'
+    elif _dig(man, 'verdict', 'grade') is not None:
         v['grade'] = _dig(man, 'verdict', 'grade')
+        v['grade_basis'] = 'strategy_manifest.verdict(proxy)'
+
+    # ── ★구조 낙폭 라벨을 게이트까지 옮긴다 (2026-08-24 도훈 지시의 필수 짝)
+    #   MDD 는 등급을 접지 않게 됐다. 그러면 구조 후보가 등급으로는 안 걸리는데,
+    #   **어디로 보낼지**를 정할 근거도 같이 사라지면 안 된다. essence 가 남긴
+    #   structural_drawdown 라벨을 여기서 옮겨 적어 auto_alpha_gate 가 SCREEN_TIER 로
+    #   라우팅할 수 있게 한다(hurdle 의 structural_dd 와 **독립 근거**, OR 가산).
+    if aut.get('structural_drawdown') is not None:
+        v['essence_structural_drawdown'] = bool(aut.get('structural_drawdown'))
+    if aut.get('hard_fail_source') is not None:
+        v['essence_hard_fail_source'] = aut.get('hard_fail_source')
 
     met = hur.get('metrics') or man.get('metrics') or {}
     for src_k, dst_k in (('MDD', 'mdd'), ('Calmar', 'calmar'),
@@ -215,6 +252,8 @@ def main(argv):
     print('GRADE=%s' % (v.get('grade') if v.get('grade') is not None else ''))
     print('PORT_T=%s' % (v.get('port_t') if v.get('port_t') is not None else ''))
     print('SCREEN_ROUTE_HINT=%s' % (v.get('screen_route_hint') or ''))
+    print('GRADE_BASIS=%s' % (v.get('grade_basis') or ''))
+    print('GRADE_PROXY=%s' % (v.get('grade_proxy') if v.get('grade_proxy') is not None else ''))
     return 0
 
 

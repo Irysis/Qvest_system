@@ -42,7 +42,7 @@ tg_agent_brief(
   sections = list(
     list(type="summary", emoji="📌",
       body="포트폴리오 빈자리를 어떤 팩터로 메울지 4가지 규칙을 22년치로 비교 — 현재 기본 규칙이 이미 최적임을 확인, 새 자본 배정 없음."),
-    list(type="bullet", emoji="📖", heading="쉬운 설명",
+    list(type="bullet", emoji="📖", heading="현재 리서치 상황",
       items=c(
         "시도: 팩터를 교체할 때 빈자리를 무엇으로 채우는지 4가지 방법(과거3년 수준/최근 신선함/안 채우기/일관성)을 비교",
         "방법: 진입·퇴출 규칙은 챔피언 전략에 고정하고 '충원 방법만' 바꿔 257개월 모의 운용(백테스팅)",

@@ -43,7 +43,7 @@ tg_agent_brief(
   sections = list(
     list(type="summary", emoji="📌",
       body="P-pure 전략의 종목 비중을 '동일가중'에서 '점수 비례'로 바꿔봤습니다. 성과는 소폭 올랐지만 우연과 구별될 만큼은 아니어서 동일가중을 그대로 유지합니다."),
-    list(type="bullet", emoji="📖", heading="쉬운 설명",
+    list(type="bullet", emoji="📖", heading="현재 리서치 상황",
       items=c(
         "시도: 25개 종목에 똑같이 나눠 담던 것을, 신호 점수가 높은 종목에 더 실어봤습니다",
         "방법: 과거 20년(220개월) 데이터로 모의 운용(백테스팅), 거래비용까지 반영했습니다",

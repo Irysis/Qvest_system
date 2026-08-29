@@ -1,8 +1,8 @@
 ---
-description: 팩터 로테이션 모드 — QEPM/alpha-search 생산 모듈을 국면조건부로 배합해 FR_XXXX 운용체계 산출 (모듈 frozen 소비, governor 정지)
+description: 전략 로테이션 모드 — QEPM/alpha-search 생산 모듈을 국면조건부로 배합해 FR_XXXX 운용체계 산출 (모듈 frozen 소비, governor 정지)
 ---
 
-# /factor-rotation <track>
+# /strategy-rotation <track>
 
 Qvest 제3 리서치 모드. 신규 알파를 찾지 않고 **이미 생산된 전략 모듈을 국면(regime) 조건부로 배합**해 합성 운용체계(`FR_XXXX`)를 만든다. 모듈을 생산하지 않고 소비하는 meta-layer(Lane3).
 
@@ -12,8 +12,8 @@ Qvest 제3 리서치 모드. 신규 알파를 찾지 않고 **이미 생산된 �
 
 **사용법**:
 ```
-/factor-rotation allocation
-/factor-rotation regime-engine
+/strategy-rotation allocation
+/strategy-rotation regime-engine
 ```
 
 **동작 (allocation)** — ★ 단일 진입 = `run_factor_rotation.R` (신선도 자동: 새/변경 모듈 감지 시 pool 자동 rebuild → FR-eligible 모듈 편입):
@@ -26,8 +26,8 @@ Qvest 제3 리서치 모드. 신규 알파를 찾지 않고 **이미 생산된 �
 
 **모듈 적재 계약**: 모든 모드 산출물은 `register_module()`(`02_Infrastructure/contracts/register_module.R`) 경유 표준화. 계약 floor 미충족분은 `module_quarantine`에 보존되고 FR pool에는 들어가지 않는다.
 
-**실행 방식**: `Skill(factor-rotation)` 또는 `Agent(subagent_type="dispatch-orchestrator", ...)` (Track2 배분 설계).
+**실행 방식**: `Skill(strategy-rotation)` 또는 `Agent(subagent_type="dispatch-orchestrator", ...)` (Track2 배분 설계).
 
 **제약**: 모듈 frozen(재백테 금지) · 스타일태깅 없음 · dispatcher=book_optimize 래퍼 · 실측-only(자체합성 금지) · governor 정지(book_state 도훈 수동 confirm) · WT-id 미사용. 위반=AX-002.
 
-상세: `.claude/skills/factor-rotation/SKILL.md` · `02_Infrastructure/docs/rules/factor-rotation.md`.
+상세: `.claude/skills/strategy-rotation/SKILL.md` · `02_Infrastructure/docs/rules/strategy-rotation.md`.

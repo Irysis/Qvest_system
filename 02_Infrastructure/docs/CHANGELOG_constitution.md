@@ -3,6 +3,43 @@
 > CLAUDE.md는 "현재 유효한 헌법"만 담는다. 버전 연혁·릴리스 상세는 본 파일이 SOT.
 > 최신 릴리스 상세: `qvest_v8_4_asymmetry_ml_sot.md` (**v8.4 — 주력 SOT**) · `qvest_v8_3_alpha_discovery_sot.md` (v8.3) · `qvest_v8_1_sot.md` (v8.1) · `qvest_v8_0_upgrade_plan.md` (v8.0)
 
+## v9.21 — 논문 알파리서치 → 강화 프로세스 · 등급 일원화 (2026-08-24)
+
+**도훈 지시 6건 + 후속 2건.** 플랜 = `~/.claude/plans/bright-dancing-snowflake.md`.
+
+| # | 지시 | 이행 |
+|---|---|---|
+| ① | 강화 목표 등급 B→A | `reinforce_ladder_config.json::target_grade="A"`. ★부수 효과가 본체였다 — base 가 이미 B 면 3칸이 **전부 생략**되고 `capability_established` 가 발행되던 거짓양성을 원천 차단 |
+| ② | 등급체계 1개로 | 권위 = `essence_score`(A/B/C/F). lean 라운드도 **항상** 산출(순환 의존 해제). `uncertain` 은 등급에서 제거(사유는 `metric_type` 이 보존) |
+| ③ | 팩터 로테이션 → 전략 로테이션 | enum + alias + 경로 3종. prefix `FR` 유지 |
+| ④ | QEPM = A등급 이상 심층리서치 | 모드 표 → 파이프라인 서술 |
+| ⑤ | 기본 = 논문 알파리서치 → 강화 | 무인 러너 뒤 자동 기동(§2-d) |
+| ⑥ | RAMP 모드 퇴임 | 진입점에서만 하차. 코드·데이터·L-code 73건 무손상 |
+| ⑦ | "MDD 탈락은 빼줘" | `essence_score` 의 drawdown→`hard_fail` 추론 제거 |
+| ⑧ | "hard_fail 조건에서 MDD만 걷어내면 되는거 아냐?" | 그 절단면이 정확했다 — 추론의 4개 논리합이 전부 drawdown 량이었다 |
+
+### 실측 (전수 재계산 508 런 · `06_Registry/essence_regrade_20260824.json`)
+
+| 축 | 전이 |
+|---|---|
+| ①MDD 탈락 제거 | F→B **2** · F→C **24** (계 26건). F 잔존 219 = 음의 알파(정당) |
+| ②선행 드리프트(본 수정과 무관) | F→B 2 · F→C 10 |
+| 권위 등급 **신규 발행** | NA 302건 → C 110 / F 192 (순환 의존으로 essence 가 아예 안 돌던 런) |
+
+### ★실행 중 잡은 것 — 플랜대로 했으면 터졌을 3건
+
+1. **등급 바닥 이중 조임**: 소스만 proxy→권위로 바꾸면 무인 레인 ADOPT(=L-code 적립 조건)가 **87%→1%** 로 붕괴한다(hurdle `{C,F}` 차단 13% vs essence 99%). 바닥을 도입 사유(IR −0.48 = 음의 알파)로 재단해 **권위 축 {F} · proxy 축 {C,F}** 로 분리.
+2. **사다리 루프 미폐쇄**: `rl_candidates()` 가 원장을 안 읽어 매 실행이 같은 1위 후보를 다시 집었다. 무인 기동을 붙이기 **전에** 닫아야 했다(안 그러면 매일 아침 같은 전략만 태운다).
+3. **텔레그램 v8 규격이 코드에 막힘**: `kv` key 영어 비율 검사가 `PORT_t`/`OOS retention` 을 하드 차단. 검사를 약화시키지 않고 whitelist 에 정본 표기만 추가.
+
+### 계기 규율 (이 판의 관통 원칙)
+
+**양성 대조 없는 계기는 방어선으로 세지 않는다.** `stage_dispatch.py::s7_grade_gate` 는 발화 이력 **0**(`TODO_PG0` 0 · `DONE_S7` 0)이고 상류 `pipeline_trigger.sh` 도 미등록이라, 정교한 재배선 대신 **최소 정정 + 사실 기록**으로 처리했다. 신규 검사 축은 전부 위반 주입·돌연변이 통제를 동반한다.
+
+**배터리**: 182 스위트 · 기준선 3150→3208 pass · fail 4(전부 선행) · unmeasured 0.
+
+---
+
 ## v8.4 헌법 전문 아카이브 (2026-08-23 v9 Lean Loop 이관)
 
 > **직전 Active Version**: **Qvest v8.4 — Opus 5-Native · 4-Mode 헌법 · 실측 거버넌스 · 비대칭 알파 중심 재편(ML·수리통계 주력)** (세션 모델 정본 `claude-opus-5`. 발효 2026-08-13, 모델 라우팅 재핀 2026-08-08).
