@@ -1,0 +1,152 @@
+{
+  "wt_id": "WT-R20260829_002",
+  "designed_by": "alpha-hypothesis",
+  "model_tier": "fable",
+  "created_at": "2026-08-29",
+  "spec_version": "ast_v1.1_design_section",
+  "prechecks": {
+    "hypothesis_index_hits": [
+      "lookup 'momentum' = 30 hits (FAIL 6 · DISTILLED_NEG 17 · PASS 1 · MARGINAL 0), top: DIST-AR-027 / DIST-AR-041 / DIST-RAMP-026 — 인라인 재빌드 후 fresh 인덱스 조회",
+      "DIST-AR-003 (n=12): KR long-only top-N momentum family 자본급 미전이 — return-derived 는 M01/M08/M24 spanned, catalyst 는 short-leg/mid-decile 신호라 롱온리 박스가 구조적 비매매 (AX-007 translation break)",
+      "DIST-AR-007 (n=13): return-파생 momentum 구성 cap-w 게이트 미통과 — 단 '경로-scoped(월말 그리드·횡단선택·top-25)' 명시, 방향(family) 판결 아님. live_trigger = cap-w vs EW-univ 판정 괴리 축소 감시",
+      "DIST-AR-041 (n=17): 가격-파생 모멘텀 변형 추가 탐색 저EV — 재도전 가치는 수급 주체 축·비-return 원천 교차로 지목"
+    ],
+    "frontier_queue_refs": [
+      "본 WT 는 frontier queue 소비가 아니라 reinforce_ledger_l1 entry[0](base RP_20260829_122020_9192) 의 attempt 2/20 — 사전등록 user_defined. parked_reason=dohoon_decision 항목 소비 없음",
+      "관련 open 항목(FQ-095 모멘텀×BearProb overlay · FQ-153 Hurst overlay)은 본 시도 대상 아님 — 오버레이는 S0/S1 금지 축"
+    ],
+    "owner": "Q-Lead (reinforcement lane, WT-R20260829_002) — 가설설계 = alpha-hypothesis(fable), 측정 = alpha-research 이하 (설계자≠측정자 firewall)",
+    "prior_attempt_consumed": "reinforce_ledger_l1 entry[0].attempts[0] (axis=multifactor, CJL1996) + L-RF-20260829_142955 + stage_artifacts/WT_R20260829_001/alpha_validation.json 직접 판독 완료",
+    "paper_read_evidence": "IM2013 원문 PDF 직접 판독(gritcap 공개 사본, JFE 108(2):275-301 판면 확인). 레그 분해 = 레그별 CAPM α (Table 1: UMD 10.48 = Up 5.55 (t 6.74) − Down −4.94 (t −3.74), 롱 몫 ≈ 53%, '롱·숏 동등 기여 귀무 기각 불가'). size 통제 = NYSE breakpoint size 5분위 종속 이중정렬 후 분위 내 5-1 스프레드 + Size1−Size5 t (Table 3: 모멘텀 롱 몫 최소형 70.9% → 최대형 38.3% — 소형일수록 숏이 덜 중요, HLS2000 소형·숏측 집중은 1980-1996 표본 특수). time 축 = UMD α 4개 20년 subperiod 전부 8.9~10.3%/yr 유의, 롱·숏 기여 시변 없음"
+  },
+  "candidates": [
+    {
+      "title": "IM2013 형태 분해 — 숏 레그 × 집중 형태 직교 4셀 (선택)",
+      "family": "momentum",
+      "mechanism": {
+        "agent": "KR 패자 데실 종목의 기존 보유 개인투자자(처분 지연·존버) + 반등 국면 저가매수 유입, 그리고 그 반대편에 서야 할 공매도 차익거래자의 부재",
+        "friction": "KR 공매도 제약(개인 접근 제한·소형주 차입 풀 부재·2023-11~2025 전면금지) + 데실 숏 레그의 소형주 편중 — 패자주 과대가격이 지워지지 않으며, 백테스트 숏 레그는 실행 불가능한 차익거래를 가정",
+        "path": "롱 레그 = 정보 확산 지연의 완만한 지속 수익(IM2013 US: 롱온리 U 포트 α 5.55%/yr, IR 0.73). 숏 레그 = KR 에서 패자 기대수익이 미국만큼 낮지 않고 반등월 조건부 고β 로 손실원 → 롱숏 합산 음수 + MDD 86.7%"
+      },
+      "why_not_selected": "selected — 아래 selected 블록"
+    },
+    {
+      "title": "6M overlapping buy-and-hold 호라이즌 재측정 (attempt-1 next_probe 1)",
+      "family": "momentum",
+      "mechanism": {
+        "agent": "동일(모멘텀 보유자)",
+        "friction": "1M 리밸 그리드가 6-6 논문 함의값과 다른 수확 주기를 강제 — 측정 그리드 마찰",
+        "path": "overlapping 6M 재산출로 '호라이즌 미스매치'와 '효과 부재' 분리"
+      },
+      "why_not_selected": "WT 사전등록이 IM2013 분해를 확정(근거 논문 임의 교체 금지). 호라이즌 축은 형태 귀속이 끝나야 해석 가능하고, 본 설계가 4셀 전부에 기저의 6-6 보유 규약을 공통 고정함으로써 부분 흡수한다"
+    },
+    {
+      "title": "size 층별 모멘텀 스프레드를 1차 검정으로 (IM2013 §4 직이식)",
+      "family": "momentum",
+      "mechanism": {
+        "agent": "size tier 별 상이한 투자자 구성(대형=기관/외인, 소형=개인)",
+        "friction": "tier 별 차익거래 자본·공매도 접근성 격차",
+        "path": "tier 내 스프레드로 신호의 서식지 특정"
+      },
+      "why_not_selected": "기저 F 의 귀속 질문('숏 레그인가 형태인가')에 직접 답하지 않는다. 교란 통제(cap-tier 분해 의무)로 강등 흡수 — IM2013 Table 3 이 그 통제의 논문 근거"
+    },
+    {
+      "title": "반등월 조건부 숏 레그 손실 집중을 1차 검정으로 (crash-state 분해)",
+      "family": "momentum",
+      "mechanism": {
+        "agent": "드로다운 상태 패자주의 저가매수 유입 + 숏커버 부재",
+        "friction": "공매도 제약이 반등월 패자 β 비대칭을 방치",
+        "path": "숏 레그 손실이 반등월에 옵션형 집중"
+      },
+      "why_not_selected": "국면 조건부 분할이 검정력을 파괴(실측 메모리: conditional splits destroy power)하고 S0/S1 오버레이 금지와 경계 접함. 부수 관측(반증 ③)으로 강등 배치 — 1차 검정은 무조건부 4셀 대비로 유지"
+    },
+    {
+      "title": "비중 방법론 축 (EW 데실 vs cap-w vs 논문 대안)",
+      "family": "momentum",
+      "mechanism": {
+        "agent": "동일",
+        "friction": "비중 규약이 tier 노출을 결정",
+        "path": "cap-w 화로 소형 노출 절단"
+      },
+      "why_not_selected": "강화 키워드 축 '비중방법론'은 별도 시도의 몫(라운드당 1축 원칙). 이번 두 축(숏·집중)과 직교라 셀 수만 배가시키고 귀속을 흐린다. 잔여 18 시도의 후보로 보관"
+    }
+  ],
+  "selected": {
+    "hypothesis_title": "JT1993 강화 2/20 — 숏 레그·집중 형태 직교 분해 (Israel-Moskowitz 2013)",
+    "hypothesis_description": "기저 JT1993 6-6 데실 롱숏(RP_20260829_122020_9192)의 essence F(PORT_t −1.291 · MDD 86.7%)는 '가격모멘텀 신호 부재'가 아니라 구성 형태의 산물이다 — 1차 귀속 후보는 숏 레그(축 A), 2차는 데실→top-25 집중(축 B). 근거 충돌 사실: 강화 1/20 이 부수 산출한 롱온리 top-25 arm(mom_only) canonical PORT_t +1.224 vs 기저 −1.291 (부호 역전). 단 그 두 관측은 신호 정의(M02 vs 6-6)까지 달라 3축이 동시에 움직였으므로, 본 설계는 신호·보유 규약을 기저의 J6/skip1·6-6 으로 4셀 전부에 공통 고정하고 숏 레그와 집중 형태만 직교 변주한다. IM2013 의 KR 이식 예측: US 에서 모멘텀 수익의 절반이 롱 레그(UMD 10.48 = Up 5.55 − Down −4.94)이고 소형일수록 숏 기여가 작다(롱 몫 70.9%→38.3%) — 공매도 제약이 US 보다 강한 KR 에서는 숏 레그가 기여 축소를 넘어 손실원으로 반전되어 있어야 기저 F 가 설명된다. 본 시도는 DIST-AR-003/007/041 이 소진한 '롱온리 top-25 모멘텀 알파 재시도'가 아니라 그 전이 실패·기저 실패의 원인 귀속을 논문 분해로 확정하는 attribution 라운드다.",
+    "mechanism": {
+      "agent": "KR 패자 데실(하위 10%) 종목의 기존 보유 개인투자자 — 손실 회피로 처분을 지연하고, 드로다운 후 반등 국면에서는 저가매수 유입이 가세한다. 그 반대편에서 패자주를 숏해야 할 차익거래 주체는 KR 에 구조적으로 부재하다",
+      "friction": "① KR 공매도 제약 — 개인 접근 제한, 기관도 소형주 차입 풀 부재, 2023-11~2025 전면금지 구간 존재. 백테스트의 숏 레그는 실제로 실행 불가능한 차익거래를 가정한다. ② 데실 숏 레그의 소형주 편중 — 유동성 하한(2e8 KRW)과 차입 불가가 겹치는 구간이라 마찰이 최대인 곳에 숏이 몰린다. 이 마찰 때문에 패자주 과대가격(공매도 제약 하 비관 정보 미반영)이 지워지지 않는다",
+      "path": "롱 레그: 승자 정보의 확산 지연이 만드는 완만한 지속 수익 — IM2013 실측(US 86년): 롱온리 모멘텀 α 5.55%/yr(t 6.74) · IR 0.73 · 4개 20년 subperiod 전부 유의. 숏 레그: KR 에서는 과대가격 잔존으로 패자 기대수익이 충분히 낮지 않고, 드로다운 상태의 패자는 반등월 조건부 β 가 비대칭 상승해 옵션형 손실을 낸다 → 롱숏 합산이 음수·MDD 86.7%. 따라서 신호가 수익이 되는 경로는 롱 레그 단독 소비이고, 그 경로의 실측 가능 여부가 축 A 검정이다. 축 B(데실 34종 → top-25)는 신호 강도 단조성이 참일 때만 양(+)의 집중 프리미엄을 낸다"
+    },
+    "falsification": {
+      "observable": "[1급 — 사전등록 arm 대비] Δ(cell2 − cell1) = 숏 레그 제거 효과. 동월 짝지은 활성수익 차의 NW lag-3 t 로 판정하며 β-통제 α 차 병기(measurement-graduation §2 — cell1 β≈0 vs cell2 β≈1 이므로 병기 없이는 비교 자체가 무효). [2급 — 형태 축] Δ(cell4 − cell2) = 데실→top-25 집중 효과. [부수 관측 — 성과 외 기전 지문 2종] (a) 숏 레그 원인이 참이면 cell1 숏 레그(패자 데실)의 손실은 시장 반등월(직전 드로다운 상태에서 BM_Ret 상위 월)에 집중되고 무국면 균일이 아니어야 한다 — A1 리프의 Ret·BM_Ret 로 산출. (b) 패자 데실 구성은 Size 하위(소형) 편중이어야 한다 — IM2013 size 축의 KR 지문. 손실이 국면·규모 무관 균일하면 마찰 기전 자체를 기각한다. [교란 통제 — 판정 성립 조건] cell4·cell2 의 양(+) 값은 EW-유니버스 벤치 대비 PORT_t 생존 + cap-tier 분해(MEGA/MID/OTHER)를 통과해야 신호로 인정 — 강화 1/20 실측(mom_only 보유 83.7% OTHER tier · EW-유니버스 PORT_t −0.064)이 '소형주 노출' 귀속의 사전 증거이며, 이 통제 없이는 본 시도 전체가 판정 불가다",
+      "field_dictionary_refs": [
+        "A1_RAWDATA_OHLCVS_daily:Ret",
+        "A1_RAWDATA_OHLCVS_daily:Size",
+        "A1_RAWDATA_OHLCVS_daily:BM_Ret",
+        "A1_RAWDATA_OHLCVS_daily:Vol"
+      ],
+      "reject_if": "① |NW-t(Δ(cell2−cell1))| < 2 (β-통제 α 차 기준 병기 일치) → '숏 레그 원인' 기각, 귀속은 축 B 로 이월. ② Δ(cell4−cell2) ≤ 0 → 집중 형태도 기각, 귀속은 신호로 회귀 — 그 경우 기저 F 는 6-6 가격모멘텀에 대한 정직한 신호 판정이 되고 잔여 18 시도는 '형태 교정' 축을 버린다. ③ 부수 관측 (a)(b) 불성립(숏 레그 손실이 반등월·소형에 비집중) → 성과 대비가 어떻게 나오든 마찰 기전 서사는 기각하고 결과를 통계적 사실로만 기록. ④ cell4 양(+)이 EW-유니버스 대비 소멸 ∧ OTHER tier 지배 → '신호'가 아니라 '소형주 노출' 로 귀속 확정(판정 보류 아님)",
+      "falsification_note": "1·2급이 arm 성과 대비인 것은 동어반복이 아니다 — 가설의 명제 자체가 '어느 형태 축이 성과 차를 만드는가'(attribution)이므로 축별 짝지은 차가 곧 기전 관측이다. 성과 동어반복 금지가 겨냥하는 'PORT_t 낮으면 기각' 류와 달리, 여기서는 개별 arm 의 절대 성과는 판정 근거가 아니고 축별 차 + 성과 외 지문 (a)(b) + 교란 통제가 판정한다"
+    },
+    "regime_scope": {
+      "holds_in": [
+        "neutral (저변동 추세 지속 — 승자 레그 지속수익이 살고 숏 레그 손실이 제한되어 축 A 격차가 관측 가능)",
+        "expansion (완만한 상승 — 동일)"
+      ],
+      "weakens_or_reverses_in": [
+        "recovery (심층 드로다운 직후 반등 — 숏 레그의 패자 조건부 고β 크래시로 cell1 이 최악, 축 A 격차가 이 국면에 집중되는 것이 기전의 지문)",
+        "crisis (급락·고변동 — 유동성 청산이 승자 레그의 정보 신호도 압도, 전 셀 약화)"
+      ],
+      "boundary_rationale": "경계는 숏 레그 기전에서 도출된다: 공매도 제약 하 과대가격 패자주는 드로다운에서 distress·레버리지 노출이 커져 반등월 조건부 β 가 비대칭 상승하고 손실이 옵션형으로 집중된다(기저 MDD 86.7% 는 이 기전과 정합하는 사후 관측이지 경계의 출처가 아님). IM2013 time 축이 반대편을 고정한다 — US 에서 UMD α 는 4개 20년 subperiod 전부 8.9~10.3%/yr 로 안정하고 롱·숏 기여의 시변이 없다. 즉 신호 자체는 국면 보편이므로, KR 기저의 국면 취약이 실재한다면 그것은 신호가 아니라 숏 레그의 소유물이어야 한다. 검정 가능 함의: 국면 약화가 축 A(숏 보유 셀 1·3)에서만 관측되면 기전 정합, 축 무관 전 셀 동일 약화면 이 경계 도출은 기각(그 경우 국면성은 신호 자체의 속성). 오버레이 적용은 하지 않는다(S0/S1 금지) — 국면은 여기서 판정 축이 아니라 반증 지문이다"
+    }
+  },
+  "design_matrix": {
+    "axes": {
+      "axis_A": "숏 레그: 롱숏 ↔ 롱-only (데실/집중 형태 고정)",
+      "axis_B": "집중 형태: 데실(승자 상위 10% ≈ 34종 EW) ↔ top-25 EW (롱-only/롱숏 고정)"
+    },
+    "held_fixed_across_all_cells": "신호 = 기저 엔진 fe_jt1993_momentum.R 그대로 (J=6 형성, skip 1M, 월말 시그널) · 보유 = 기저 러너의 6-6 규약 · 레그 내 EW · 유니버스 K200∪KQ150 · 2005-01-01~ · 15bps(v2.4 delta). ★강화 1/20 의 mom_only(M02 신호)는 셀이 아니다 — 동기 사실로만 남고 판정에 진입 금지(신호 축 3중 교란 차단)",
+    "cells": [
+      {
+        "id": "cell1_LS_decile",
+        "spec": "승자 데실 롱 + 패자 데실 숏 (기저 재현)",
+        "profile": "replication — 논문 그대로, 유니버스만 치환. 고정 축 위반 2건(숏 존재 · >25종) → 실투 불가, 재현·대조 전용",
+        "role": "base anchor + 레그별 분해(IM2013 방식: 레그별 α 를 벤치 대비 따로 추정, Percent-long-side 산출)"
+      },
+      {
+        "id": "cell2_LO_decile",
+        "spec": "승자 데실 롱-only (숏 제거, 데실 유지)",
+        "profile": "replication_diagnostic — ~34종 > 25 위반 → 실투 불가, 진단 전용",
+        "role": "축 A 단독 분리: Δ(cell2−cell1) = 숏 레그 기여 (1급 반증 대상)"
+      },
+      {
+        "id": "cell3_LS_top25",
+        "spec": "top-25 롱 + bottom-25 숏 (집중, 롱숏 유지)",
+        "profile": "replication_diagnostic — 숏 존재 위반 → 실투 불가, 진단 전용",
+        "role": "축 B 단독 분리 + 상호작용 점검: Δ(cell3−cell1) 이 Δ(cell4−cell2) 와 부호·크기 정합하면 두 축 가법성 지지, 불일치면 상호작용 존재를 기록"
+      },
+      {
+        "id": "cell4_LO_top25",
+        "spec": "top-25 롱-only EW",
+        "profile": "production — 고정 축 전부 준수(long-only · ≤25종 · Σw=1 · 개별 비중 상한 없음 v10 · 15bps · PIT C1~C15). 유일한 실투형 셀",
+        "role": "축 A+B 합성 종점: Δ(cell4−cell2) = 집중 효과 (2급 반증 대상). EW-유니버스 대비 + cap-tier 분해 의무 셀"
+      }
+    ],
+    "expected_dynamic_range_warning": "축 B 의 가동 범위가 작다(34종→25종) — 집중 효과의 기대 크기가 작으므로 2급 판정은 '유의 상승' 이 아니라 '비하락(Δ≤0 기각)' 으로 걸었다. 검정력 계약(required_effect_size) 산출은 alpha-research 착수 전 의무"
+  },
+  "challenge_flags": [
+    "[대안 보관] 6M 호라이즌 재측정 / size 층별 1차 검정 / crash-state 1차 검정 / 비중 방법론 축 — candidates 블록에 사유와 함께 보관, 잔여 18 시도 후보",
+    "[제3축 경고] 기저(6-6)와 mom_only(M02, 12-1계) 는 신호 정의가 다르다 — WT 서술 '동일 M02 신호'와 달리 부호 역전 관측쌍은 신호 축까지 3축 교란이었다. 본 설계는 4셀 전부 6-6 고정으로 차단했고, 그 결과 cell4 가 역사적 mom_only(+1.224)와 다르게 나오면 그 격차 자체가 신호 창(6-6 vs 12-1) 귀속의 부수 정보가 된다",
+    "[데이터 공백] KR 공매도 잔고·대차 데이터 미확보(field_map F1 = EXTERNAL, dohoon_data_work) — 숏 마찰 강도의 직접 관측 불가. 마찰 반증은 간접 지문(반등월 손실 집중·소형 편중)으로만 가능하며 이는 기전 확증 강도를 한 단계 낮춘다",
+    "[소진 경로 구분] cell4 는 DIST-AR-003/007/041 이 소진한 구성(롱온리 top-25 모멘텀)과 형태가 같다 — 단 역할이 다르다: 알파 재청구가 아니라 2급 대비의 비교항이며, DIST 카드 예측(cell4 비졸업·EW-대비 소멸)이 맞으면 그것이 곧 '신호 회귀' 판정의 증거로 소비된다. cell4 가 통제 통과 양(+)이면 DIST 카드와 충돌 — 그 경우 live_trigger(DIST-AR-007 benchmark_concentration) 재검 사유로 에스컬레이트",
+    "[측정 주의 이월] cell1(β≈0) vs cell2(β≈1) 대비는 PORT_t 만으로 무효 — β-통제 α 차 병기 의무(§2). 무신호 대조(no_signal_gate)는 롱온리 셀 2·4 에 의무. attempt-1 의 홀딩월 라벨 정렬 결함(anchor→holding-month 수리 전례)을 대조군 빌드에 재적용할 것",
+    "[국면 관측의 지위] regime_scope 의 반등월 집중 예측은 반증 지문이지 오버레이 설계가 아니다 — S0/S1 오버레이 금지 준수. 국면 조건부 분할의 검정력 파괴(실측 메모리)를 피하기 위해 1차 판정은 무조건부 4셀 대비"
+  ],
+  "verdict": "designed",
+  "handoff": {
+    "to": "alpha-research",
+    "next_steps": "Step 1~7 + ⑤ AST 구성. 승계 의무: ①4셀 신호·보유 규약 공통 고정(기저 엔진 J6/skip1 확장 — 신규 신호공학 금지) ②대비는 동월 짝지은 차 NW lag-3 + β-통제 α 병기 ③cell4(및 cell2)에 canonical_screen_bt + diag_ew_universe + diag_cap_tier(size_dt 전달) 의무 ④착수 전 required_effect_size 로 1·2급 각각의 ratio·기대 t·검정력 3종 병기(ratio<0.15 면 해당 대비 착수 금지) ⑤무신호 대조 롱온리 셀 의무 ⑥mechanism/falsification/regime_scope 재작성 금지 — 결함 발견 시 challenge_note 기록 + 재설계 요청 (Charter 원칙 8)"
+  }
+}

@@ -13,8 +13,156 @@
       "engine_path": "stage_artifacts/replication/_pilot/fe_jt1993_momentum.R",
       "status": "active",
       "target_grade": "A",
-      "attempts_used": 0,
-      "attempts": [],
+      "attempts_used": 3,
+      "attempts": [
+        {
+          "n": 1,
+          "date": "20260829",
+          "idea": "CJL1996 확장 — JT1993 가격모멘텀(6-1, M02)을 비-return 이익정보(SUE·추정치 개정 폭)와 독립 2-way 정렬로 결합한다. CJL1996 핵심 실증 = '과거 수익률과 과거 이익 서프라이즈는 서로를 통제한 뒤에도 각각 미래 드리프트를 예측한다(각 축 독립 예측력, 시장위험·size·B/M 로 설명 안 됨)'. 이를 KR 실투 축(long-only · ≤25종 · K200∪KQ150 · 15bps · Σw=1)에서 검정한다. 기저 실패 기전 = KR 가격모멘텀 단독 알파 음수(PORT_t -1.291 · net_IR -0.295)에 모멘텀 크래시(MDD 86.7%) 동반; CTW2010 이 KR 의 낮은 individualism → 낮은 모멘텀 수익을 국가패널로 진단. ★신규성 = ①재료 축: 비-return 이익정보(C01_SUE / C13_Revision_Breadth_3m) 결합 — DIST-AR-003/007/041 이 명시한 재도전 조건 ②구성 축: z-score composite 가 아닌 독립 2-way 정렬(price-mom × earnings-mom) — DIST-AR-007 이 소진한 '다축 composite 내 모멘텀 성분'과 구성이 다르다 ③기전 축: spanning 주장(momentum ⊂ M01/M08/M24)을 이익 서프라이즈 통제 하에서 직접 반증 시도. 사전 반증조건 = 이익 축 통제 후 가격모멘텀 분위 스프레드가 유의하지 않으면 CJL1996 의 KR 이식 실패로 판정.",
+          "keyword_axis": "multifactor",
+          "root_papers": [
+            {
+              "title": "Returns to Buying Winners and Selling Losers: Implications for Stock Market Efficiency (Jegadeesh & Titman 1993, JF 48(1):65-91)",
+              "url": "https://www.bauer.uh.edu/rsusmel/phd/jegadeesh-titman93.pdf",
+              "role": "base_paper"
+            },
+            {
+              "title": "Momentum Strategies (Chan, Jegadeesh & Lakonishok 1996, JF 51(5):1681-1713 / NBER w5375)",
+              "url": "https://www.nber.org/papers/w5375",
+              "role": "extension_followup"
+            },
+            {
+              "title": "Individualism and Momentum around the World (Chui, Titman & Wei 2010, JF 65(1):361-392)",
+              "url": "https://onlinelibrary.wiley.com/doi/abs/10.1111/j.1540-6261.2009.01532.x",
+              "role": "kr_diagnosis"
+            }
+          ],
+          "wt_id": null,
+          "axiom_injected": true,
+          "grade": "NA (등급 미발행 — essence 계약 미경유: alpha 구간에서 음성 마감, forge 미실행)",
+          "essence": {
+            "metric_type": "canonical_screen",
+            "grade_issued": false,
+            "grade_withheld_reason": "risk/optimizer/forge 미스폰 — 사전등록 1급 실패 + 역방향 powered null + 무신호 대조 5/5 구별불가로 음성 확정. 무신호 대조 구별불가 신호에 essence 등급을 발행하면 소형주 노출을 성과로 기록하게 된다.",
+            "T1_primary_nw_t": 1.291,
+            "T1_primary_power": 0.455,
+            "T1_disposition": "미결(underpowered) — FAIL_AS_PREREGISTERED 이나 '효과 없음' 아님",
+            "T2_reverse_nw_t": 0.15,
+            "T2_reverse_power": 1,
+            "T2_disposition": "REJECTED (powered null) — 결정적 판정",
+            "T3_fm_t_sue_rank": -0.024,
+            "joint2way_port_t": 0.5037,
+            "mom_only_port_t": 1.2239,
+            "sue_only_port_t": -0.975,
+            "zsum_control_port_t": 1.0141,
+            "increment_vs_mom_only": -0.030778,
+            "no_signal_verdict": "INDISTINGUISHABLE_FROM_NO_SIGNAL (5/5 arm)",
+            "ew_universe_port_t": -0.064,
+            "self_pit_check": "fail_lookahead_suspected (C01_SUE 정적 검증기 — 컨센서스 33종 공통, 실증 lag1 스트레스는 음성 inflation 0.768)",
+            "n_months": 259
+          },
+          "artifacts": {
+            "wt_id": "WT-R20260829_001",
+            "alpha_package": "qepm/mailbox/worktask/WT-R20260829_001/alpha_package.json",
+            "alpha_hypothesis": "qepm/mailbox/worktask/WT-R20260829_001/alpha_hypothesis.json",
+            "validation": "stage_artifacts/WT_R20260829_001/alpha_validation.json",
+            "challenge_note": "qepm/mailbox/worktask/WT-R20260829_001/challenge_note.md"
+          },
+          "l_code": "L-RF-20260829_142955",
+          "lessons": "CJL1996 의 '가격·이익 축 상호 비포섭' 은 KR 에서 일방으로 깨진다 — 이익 축이 가격 축에 포섭(T2 powered null NW-t 0.150 · FM t -0.024). 결합 형태도 미지지: joint2way(0.504) < mom_only(1.224) < 이며 증분 -3.08%/yr, 심지어 z-합산(1.014)보다 낮다 — 교집합의 상호통제 이득이 KR 셀 인구 축소 비용을 못 이긴다. ★다음 축의 근거: mom_only 롱온리 top-25 PORT_t +1.224 인데 기저 데실 롱숏은 -1.291 — 부호 역전. 기저 F 의 원인은 신호 부재가 아니라 숏 레그·데실 형태일 수 있고, 그렇다면 강화 축은 '재료 추가' 가 아니라 '형태 교정' 이다.",
+          "opened_at": "2026-08-29T13:32:08+0900",
+          "closed_at": "2026-08-29T14:30:20+0900"
+        },
+        {
+          "n": 2,
+          "date": "20260829",
+          "idea": "IM2013 형태 분해 — 기저 F 의 귀속을 '신호 부재' 에서 '구성 형태' 로 옮길 수 있는지 검정한다. 강화 1/20 이 부수 산출한 사실: 동일 M02 신호를 롱온리 top-25 로 담은 arm 의 PORT_t 는 +1.224 인데 기저 JT1993 6-6 데실 롱숏은 -1.291 로 부호가 반대다. 즉 기저 F 를 'KR 에 모멘텀 신호가 없다' 로 읽어온 귀속이 실측과 충돌한다. Israel & Moskowitz (2013, JFE 108(2):275-301) 는 size/value/momentum 아노말리 수익을 롱·숏 레그로 분해해 '모멘텀 수익의 절반이 롱 포지션에서 나오고 숏의 중요도는 기업규모에 따라 달라진다' 를 86년 미국 + 4개 해외시장으로 실증했다. 본 시도는 그 분해를 KR 에 적용해 ①숏 레그 기여 ②데실→top-25 집중 형태 두 축을 **직교 분리**한다(둘을 동시에 바꾼 mom_only 로는 귀속이 불가능하다). 사전 반증조건 1급: 숏 레그를 제거한 롱-only 데실 arm 과 기저 롱숏 arm 의 PORT_t 차이가 유의하지 않으면 '숏 레그 원인' 가설은 기각되고 F 의 귀속은 집중 형태 쪽으로 넘어간다. 2급(형태 축): 롱-only 데실 → 롱-only top-25 전이에서 PORT_t 가 오르지 않으면 집중 형태도 아니며 귀속은 다시 신호로 돌아간다. ★필수 병기 = EW-유니버스 대비 PORT_t + cap-tier 분해. 강화 1/20 에서 롱온리 arm 보유의 83.7% 가 OTHER tier 였고 EW-유니버스 PORT_t 는 -0.064 였다 — 양(+)으로 나오는 값이 소형주 노출인지 신호인지 분리하지 않으면 이 시도는 판정 불가다. IM2013 의 size 축 실증이 바로 그 통제의 논문 근거다. 신규성: 강화 1/20(축 multifactor, 재료 추가)과 축이 다르다 — 재료를 더하지 않고 동일 신호의 담는 형태만 바꾼다. DIST-AR-003/007/041 이 소진한 것은 '롱온리 top-25 에서 모멘텀 변형의 전이 실패' 이며 본 시도는 그 전이 실패의 **원인 귀속**을 논문 분해로 확정하는 것이지 같은 구성의 재시도가 아니다.",
+          "keyword_axis": "weighting",
+          "root_papers": [
+            {
+              "title": "Returns to Buying Winners and Selling Losers: Implications for Stock Market Efficiency (Jegadeesh & Titman 1993, JF 48(1):65-91)",
+              "url": "https://www.bauer.uh.edu/rsusmel/phd/jegadeesh-titman93.pdf",
+              "role": "base_paper"
+            },
+            {
+              "title": "The Role of Shorting, Firm Size, and Time on Market Anomalies (Israel & Moskowitz 2013, JFE 108(2):275-301)",
+              "url": "https://www.sciencedirect.com/science/article/pii/S0304405X12002401",
+              "role": "extension_decomposition"
+            },
+            {
+              "title": "The Role of Shorting, Firm Size, and Time on Market Anomalies — SSRN working paper (Israel & Moskowitz)",
+              "url": "https://papers.ssrn.com/sol3/papers.cfm?abstract_id=2089466",
+              "role": "extension_openaccess"
+            }
+          ],
+          "wt_id": null,
+          "axiom_injected": true,
+          "grade": "NA (등급 미발행 — essence 계약 미경유: 무신호 대조 구별불가 + 축A 기각 + 축B 미결로 risk/optimizer/forge 스폰 근거 부재)",
+          "essence": {
+            "metric_type": "canonical_screen",
+            "grade_issued": false,
+            "attribution_verdict": "신호 — 숏 레그도 집중 형태도 아니다",
+            "axisA_short_leg": "REJECTED_AS_PREREGISTERED (β-통제 α +2.28%/yr t 0.557 · 검정력 22.5% → 미결 라벨)",
+            "axisB_concentration": "불기각이나 미결 (+1.43%/yr t 1.392 · 검정력 35.9%)",
+            "basis_arithmetic": "cell1 활성 -7.953%/yr = α +1.426% + (β-1)E[bm] -9.379% (β 0.199) — 기저 음(-) PORT_t 의 정체",
+            "cell1_port_t": -1.1199,
+            "cell2_port_t": 0.961,
+            "cell3_port_t": -0.803,
+            "cell4_port_t": 1.294,
+            "cell4_alpha_ann": 0.0514,
+            "cell4_t_alpha": 1.205,
+            "cell4_ew_universe_port_t": 1.426,
+            "cell4_other_tier_share": 0.912,
+            "no_signal_control": "INDISTINGUISHABLE_FROM_NO_SIGNAL (cell4 +4.08%/yr NW-t 0.751 · cell2 t 0.442) → screen-tier 등재 불가",
+            "reachability": "PORT_t 2.95 필요 활성 +13.25%/yr vs 관측 +5.82%/yr (44%) — 창이 아니라 효과 크기",
+            "base_reproduction": "PASS (cell1 변형 4종 -1.120~-1.465 구간에 기저 -1.291 포함)",
+            "self_pit_check": "clean (detect_lookahead 위반 0)",
+            "n_months": 259
+          },
+          "artifacts": {
+            "wt_id": "WT-R20260829_002",
+            "alpha_package": "qepm/mailbox/worktask/WT-R20260829_002/alpha_package.json",
+            "alpha_hypothesis": "qepm/mailbox/worktask/WT-R20260829_002/alpha_hypothesis.json",
+            "validation": "stage_artifacts/WT_R20260829_002/alpha_validation.json",
+            "challenge_note": "qepm/mailbox/worktask/WT-R20260829_002/challenge_note.md"
+          },
+          "l_code": "L-RF-20260829_152717",
+          "lessons": "기저 F 의 귀속은 신호로 회귀했다 — 숏 레그 기각(t 0.557), 집중 형태 미결(t 1.392). ★그러나 그보다 큰 발견: 기저의 음(-) PORT_t 는 알파 판정이 아니라 basis 산술이었다(β 0.199 → -9.38%/yr 자동 차감). 형태 교정 개선분의 73%가 β basis 이고 27%만 α 다. 이건 이 라운드를 넘어 1계층 롱숏 논문 충실구현 전체에 걸리는 측정 규약 문제다 — β-통제 α 를 병기하지 않으면 롱숏 논문은 신호와 무관하게 F 를 받는다. 형태 교정 축은 소진, 다음은 신호 축.",
+          "opened_at": "2026-08-29T14:40:15+0900",
+          "closed_at": "2026-08-29T15:27:17+0900"
+        },
+        {
+          "n": 3,
+          "date": "20260829",
+          "idea": "LS2000 모멘텀 생애주기 — 과거 회전율로 모멘텀을 조건화한다. Lee & Swaminathan (2000, JF 55(5):2017-2069) 은 과거 거래량(turnover)이 모멘텀의 **크기와 지속성**을 모두 예측함을 실증했다: 고회전 승자는 빠르게 반전하고 저회전 승자는 지속한다(glamour/value 특성 + 향후 8분기 이익 서프라이즈 부호까지 정합). 강화 2/20 이 확정한 것 — 기저 F 의 귀속은 형태가 아니라 신호이고, 유일 실투형 cell4 의 β-통제 α 는 +5.14%/yr(t 1.205)로 자본 문턱(+13.25%/yr 필요)의 44% 다. 즉 필요한 것은 형태 교정이 아니라 **효과 크기 2.3배**이며, LS2000 의 미국 실측 배율이 그 규모다. 기전 가설: KR 모멘텀이 약한 이유가 '늦은 국면의 승자(고회전)'를 사기 때문이라면, 저회전 조건화가 정확히 그 지점을 고친다. ★신규성 3축 — ①재료: 거래량/회전율(L02_Turnover)은 return-derived 도 이익정보도 아닌 제3 정보축이다(강화 1/20 이 소진한 이익 축과 다르다) ②기전: 신호 강도가 아니라 **신호의 생애 단계**를 조건화한다 ③검정: M-family(M01/M08/M24) 스패닝 주장을 회전율 통제 하에서 재검정한다. ★필수 교란 통제 — **저회전 ≠ 저유동성**. 강화 2/20 에서 cell4 보유의 91.2% 가 OTHER tier 였으므로, 회전율 조건화가 유동성 하위로 더 밀어넣는 것인지 생애 단계를 고르는 것인지 분리해야 한다: 유동성 층(adv20) **안에서** 회전율 조건화를 측정하고, L-family(L01_Amihud·L09·L11_Kyle_Lambda) 대비 직교성과 EW-유니버스 대비 PORT_t · cap-tier 분해를 병기한다. 이 분리가 없으면 양(+) 결과는 인용 불가다. 사전 반증 1급: 승자 데실 내부에서 저회전 층과 고회전 층의 forward 수익 스프레드가 유의하지 않으면 LS2000 의 KR 이식 실패. 2급: 저회전 조건부 top-25 의 β-통제 α 가 무조건부 cell4(+5.14%/yr) 대비 증분 ≤0 이면 조건화가 소비 형태로 전이되지 않음.",
+          "keyword_axis": "multifactor",
+          "root_papers": [
+            {
+              "title": "Returns to Buying Winners and Selling Losers (Jegadeesh & Titman 1993, JF 48(1):65-91)",
+              "url": "https://www.bauer.uh.edu/rsusmel/phd/jegadeesh-titman93.pdf",
+              "role": "base_paper"
+            },
+            {
+              "title": "Price Momentum and Trading Volume (Lee & Swaminathan 2000, JF 55(5):2017-2069)",
+              "url": "https://onlinelibrary.wiley.com/doi/abs/10.1111/0022-1082.00280",
+              "role": "extension_followup"
+            },
+            {
+              "title": "Price Momentum and Trading Volume — 공개 PDF 사본 (Lee & Swaminathan 2000)",
+              "url": "https://www.lsvasset.com/pdf/research-papers/Price-Momentum-Trad-Vol-2000.pdf",
+              "role": "extension_openaccess"
+            }
+          ],
+          "wt_id": null,
+          "axiom_injected": true,
+          "grade": null,
+          "essence": null,
+          "artifacts": null,
+          "l_code": null,
+          "lessons": null,
+          "opened_at": "2026-08-29T15:41:18+0900"
+        }
+      ],
       "judge": {
         "spawned": false,
         "verdict_path": null
@@ -27,5 +175,5 @@
     "last_review_date": "",
     "history": []
   },
-  "last_updated": "2026-08-29T12:26:33+0900"
+  "last_updated": "2026-08-29T15:41:18+0900"
 }

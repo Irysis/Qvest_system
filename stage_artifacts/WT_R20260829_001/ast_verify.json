@@ -1,0 +1,96 @@
+{
+  "schema": "ast_verify/v1",
+  "strategy_id": null,
+  "package_path": "C:\\Users\\99922\\OneDrive\\Quant_Module_Moltbot\\stage_artifacts\\WT_R20260829_001\\alpha_package_verifier_dialect.json",
+  "checked_at": "2026-08-29T14:12:20",
+  "sources": {
+    "factor_registry": "C:\\Users\\99922\\OneDrive\\Quant_Module_Moltbot\\02_Infrastructure\\factor_db\\factor_registry.json",
+    "ast_field_map": "C:\\Users\\99922\\OneDrive\\Quant_Module_Moltbot\\06_Registry\\ast_field_map_v0.json",
+    "field_map_version": "v0"
+  },
+  "verdict": "FAIL_LOOKAHEAD",
+  "sig_date": "2026-08-28",
+  "decision_ts": "2026-08-28",
+  "max_avail_ts": "2026-08-29",
+  "leaf_count": 8,
+  "dialect_args_used": true,
+  "parity_unverified": [],
+  "unmapped_restatement": [],
+  "op_count": 21,
+  "violations": [
+    {
+      "type": "LOOKAHEAD",
+      "path": "root.WHERE/0.SIGN/0.SUB/0.MUL/0.SUB/0.ADD/1.CS_RANK/0",
+      "leaf": "REGISTRY[C01_SUE]",
+      "ref_ts": "2026-08-28",
+      "avail_ts": "2026-08-29",
+      "decision_ts": "2026-08-28",
+      "rule": "T-1",
+      "detail": "registry rule 보수 판정 결과 decision_ts 초과 — TS_LAG 보강 필요"
+    },
+    {
+      "type": "LOOKAHEAD",
+      "path": "root.WHERE/0.SIGN/0.SUB/0.MUL/0.SUB/1.ABS/0.SUB/1.CS_RANK/0",
+      "leaf": "REGISTRY[C01_SUE]",
+      "ref_ts": "2026-08-28",
+      "avail_ts": "2026-08-29",
+      "decision_ts": "2026-08-28",
+      "rule": "T-1",
+      "detail": "registry rule 보수 판정 결과 decision_ts 초과 — TS_LAG 보강 필요"
+    },
+    {
+      "type": "LOOKAHEAD",
+      "path": "root.WHERE/1.MUL/0.SUB/0.ADD/1.CS_RANK/0",
+      "leaf": "REGISTRY[C01_SUE]",
+      "ref_ts": "2026-08-28",
+      "avail_ts": "2026-08-29",
+      "decision_ts": "2026-08-28",
+      "rule": "T-1",
+      "detail": "registry rule 보수 판정 결과 decision_ts 초과 — TS_LAG 보강 필요"
+    },
+    {
+      "type": "LOOKAHEAD",
+      "path": "root.WHERE/1.MUL/0.SUB/1.ABS/0.SUB/1.CS_RANK/0",
+      "leaf": "REGISTRY[C01_SUE]",
+      "ref_ts": "2026-08-28",
+      "avail_ts": "2026-08-29",
+      "decision_ts": "2026-08-28",
+      "rule": "T-1",
+      "detail": "registry rule 보수 판정 결과 decision_ts 초과 — TS_LAG 보강 필요"
+    }
+  ],
+  "contract_failures": [],
+  "restatement_leaves": [],
+  "discrepancy_used": [
+    {
+      "path": "root.WHERE/0.SIGN/0.SUB/0.MUL/0.SUB/0.ADD/1.CS_RANK/0",
+      "leaf": "REGISTRY[C01_SUE]",
+      "rule": "T-1",
+      "conservative_applied": "+1d (보수 T-1)",
+      "registry_note_head": "코드 강제점은 Date <= sig_d(same-day 허용: factor_db_builder.R:441 .pit_consensus, compute_consensus.R:33) — 선언 T-1과 비대칭(구 lag_rule 'T-1 disclosure' 명시는 4/33건뿐, 제공 시각 메"
+    },
+    {
+      "path": "root.WHERE/0.SIGN/0.SUB/0.MUL/0.SUB/1.ABS/0.SUB/1.CS_RANK/0",
+      "leaf": "REGISTRY[C01_SUE]",
+      "rule": "T-1",
+      "conservative_applied": "+1d (보수 T-1)",
+      "registry_note_head": "코드 강제점은 Date <= sig_d(same-day 허용: factor_db_builder.R:441 .pit_consensus, compute_consensus.R:33) — 선언 T-1과 비대칭(구 lag_rule 'T-1 disclosure' 명시는 4/33건뿐, 제공 시각 메"
+    },
+    {
+      "path": "root.WHERE/1.MUL/0.SUB/0.ADD/1.CS_RANK/0",
+      "leaf": "REGISTRY[C01_SUE]",
+      "rule": "T-1",
+      "conservative_applied": "+1d (보수 T-1)",
+      "registry_note_head": "코드 강제점은 Date <= sig_d(same-day 허용: factor_db_builder.R:441 .pit_consensus, compute_consensus.R:33) — 선언 T-1과 비대칭(구 lag_rule 'T-1 disclosure' 명시는 4/33건뿐, 제공 시각 메"
+    },
+    {
+      "path": "root.WHERE/1.MUL/0.SUB/1.ABS/0.SUB/1.CS_RANK/0",
+      "leaf": "REGISTRY[C01_SUE]",
+      "rule": "T-1",
+      "conservative_applied": "+1d (보수 T-1)",
+      "registry_note_head": "코드 강제점은 Date <= sig_d(same-day 허용: factor_db_builder.R:441 .pit_consensus, compute_consensus.R:33) — 선언 T-1과 비대칭(구 lag_rule 'T-1 disclosure' 명시는 4/33건뿐, 제공 시각 메"
+    }
+  ],
+  "staleness_flags": [],
+  "notes": []
+}

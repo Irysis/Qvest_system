@@ -1,0 +1,1167 @@
+{
+  "schema": "alpha_validation/v1",
+  "task_id": "WT-R20260829_002",
+  "wt_type": "reinforcement",
+  "as_of_date": "2026-08-29",
+  "attempt": "2/20",
+  "axis": "weighting(형태) — 숏 레그 x 집중",
+  "base": {
+    "base_id": "RP_20260829_122020_9192",
+    "base_grade": "F",
+    "base_reported_port_t": -1.291,
+    "base_mdd": 0.867,
+    "base_cagr": 0.01
+  },
+  "metric_type": "canonical_screen",
+  "metric_type_note": "선택/보고 권위 = canonical_screen_bt 실측 경로(아래 parity 로 실증). admission authoritative 아님(그건 forge build_bt_result). 등급 권위 = essence_score.R — 본 산출물은 등급을 선언하지 않는다.",
+  "measurement_engine": {
+    "description": "4셀 공통 엔진 — 월간 패널 x 비중, delta 기반 15bps, contract build_benchmark_compare 경유.",
+    "positive_control": {
+      "max_abs_ret_diff": 0,
+      "abs_port_t_diff": 0,
+      "canon_port_t": 1.2939691,
+      "engine_port_t": 1.2939691,
+      "verdict": "PARITY_EXACT"
+    },
+    "positive_control_note": "★cell4(top-25 롱온리)를 canonical_screen_bt(top_n=25) 와 대조해 max|Δret_net| = 0.000e+00 · |ΔPORT_t| = 0.000e+00 (259/259 개월). 즉 본 엔진은 canonical 경로의 롱숏·가변데실 확장이며, 확장분에 대해서만 계약 밖이다. 이 양성 대조 없이는 셀 1·2·3 의 수치를 canonical 급으로 인용할 수 없다."
+  },
+  "fixed_axes": {
+    "signal": "기저 엔진 stage_artifacts/replication/_pilot/fe_jt1993_momentum.R 그대로 (J=6 형성 · skip 1M · 월말 시그널). 4셀 전부 동일 — 설계의 제3축(신호) 교란 차단.",
+    "universe": "K200 ∪ KQ150 (PIT 시변 멤버십)",
+    "window": "2005-01-31 ~ 2026-08-28 · 259 수익월",
+    "cost": "15bps one-way, delta 기반 (v2.4_kr_retail_15bps 규약)",
+    "liquidity": "20일 평균 거래대금(t-1) >= 2e8 KRW — liq_ruler='adv20_t1'(헌법 자, source=injected_adv20). 4셀 전부 동일 적용.",
+    "weighting": "레그 내 EW",
+    "rebalance": "monthly",
+    "eligible_names": {
+      "median": 343,
+      "min": 169,
+      "max": 350
+    }
+  },
+  "cell_profiles": {
+    "cell1_LS_decile": {
+      "profile": "replication",
+      "axis_violations": ["short leg 보유 — long_only_mandate 위반", "n_max 70 > 25 위반"],
+      "tradability": "실투 불가 — 재현·대조 전용"
+    },
+    "cell2_LO_decile": {
+      "profile": "replication_diagnostic",
+      "axis_violations": "n_max 35 > 25 위반",
+      "tradability": "실투 불가 — 진단 전용"
+    },
+    "cell3_LS_top25": {
+      "profile": "replication_diagnostic",
+      "axis_violations": ["short leg 보유 — long_only_mandate 위반", "n_max 50 > 25 위반"],
+      "tradability": "실투 불가 — 진단 전용"
+    },
+    "cell4_LO_top25": {
+      "profile": "production",
+      "axis_violations": [],
+      "tradability": "유일한 실투형 셀 — long-only · n_max 25 · Sigma w = 1 · 개별 비중 상한 없음(v10)"
+    },
+    "short_leg_feasibility": "★숏 보유 셀(1·3)은 KR 공매도 제약을 무시한 가정 위에 서 있다: 개인 접근 제한 · 소형주 차입 풀 부재 · 2023-11~2025 전면금지 구간 포함. 차입비용·업틱룰·차입 가용성 전부 0 으로 가정했다. 이 두 셀의 어떤 수치도 실투 성과로 읽어서는 안 되며, 본 라운드에서 이들의 역할은 축 분해의 대조항뿐이다."
+  },
+  "cells": {
+    "cell1_LS_decile": {
+      "id": "cell1_LS_decile",
+      "n_months": 259,
+      "n_names_median": 70,
+      "n_names_max": 70,
+      "port_t_capw": -1.11989694,
+      "port_p": 0.26275768,
+      "ir": -0.25100953,
+      "alpha_annualized": 0.01425665,
+      "net_sr": -0.25100953,
+      "mean_active_net_ann": -0.07953329,
+      "turnover_annual": 19.65854733,
+      "selected_ret_coverage": 0.99543122,
+      "beta_controlled": {
+        "alpha_ann": 0.01425665,
+        "t_alpha": 0.25682568,
+        "beta": 0.19941553,
+        "t_beta": 1.61323782,
+        "beta_contrib_ann": -0.09378994,
+        "n": 259
+      },
+      "diag_ew_universe": {
+        "port_t": -1.13684271,
+        "alpha_ann": 0.02829257,
+        "ir": -0.25517733,
+        "n_months": 259
+      },
+      "diag_cap_tier": {
+        "weight_share_avg": {
+          "MEGA": 0.02194071,
+          "MID": 0.03156803,
+          "OTHER": -0.05350873,
+          "UNRANKED": 0
+        },
+        "contrib_gross_annualized": {
+          "MEGA": 0.01126813,
+          "MID": 0.00639895,
+          "OTHER": 0.04921153,
+          "UNRANKED": 0
+        }
+      }
+    },
+    "cell2_LO_decile": {
+      "id": "cell2_LO_decile",
+      "n_months": 259,
+      "n_names_median": 35,
+      "n_names_max": 35,
+      "port_t_capw": 0.96101785,
+      "port_p": 0.33654319,
+      "ir": 0.21291487,
+      "alpha_annualized": 0.03706364,
+      "net_sr": 0.21291487,
+      "mean_active_net_ann": 0.04230061,
+      "turnover_annual": 9.08156728,
+      "selected_ret_coverage": 0.9954938,
+      "beta_controlled": {
+        "alpha_ann": 0.03706364,
+        "t_alpha": 0.9045107,
+        "beta": 1.04470244,
+        "t_beta": 10.69897118,
+        "beta_contrib_ann": 0.00523697,
+        "n": 259
+      },
+      "diag_ew_universe": {
+        "port_t": 1.03980571,
+        "alpha_ann": 0.01354604,
+        "ir": 0.22339837,
+        "n_months": 259
+      },
+      "diag_cap_tier": {
+        "weight_share_avg": {
+          "MEGA": 0.03195096,
+          "MID": 0.06011548,
+          "OTHER": 0.90793356,
+          "UNRANKED": 0
+        },
+        "contrib_gross_annualized": {
+          "MEGA": 0.01064447,
+          "MID": 0.01027251,
+          "OTHER": 0.15149706,
+          "UNRANKED": 0
+        }
+      }
+    },
+    "cell3_LS_top25": {
+      "id": "cell3_LS_top25",
+      "n_months": 259,
+      "n_names_median": 50,
+      "n_names_max": 50,
+      "port_t_capw": -0.802861,
+      "port_p": 0.42205508,
+      "ir": -0.16980032,
+      "alpha_annualized": 0.03620273,
+      "net_sr": -0.16980032,
+      "mean_active_net_ann": -0.0560165,
+      "turnover_annual": 20.22276923,
+      "selected_ret_coverage": 0.99592308,
+      "beta_controlled": {
+        "alpha_ann": 0.03620273,
+        "t_alpha": 0.6546878,
+        "beta": 0.21282296,
+        "t_beta": 1.63662118,
+        "beta_contrib_ann": -0.09221923,
+        "n": 259
+      },
+      "diag_ew_universe": {
+        "port_t": -0.83978492,
+        "alpha_ann": 0.05257209,
+        "ir": -0.17689388,
+        "n_months": 259
+      },
+      "diag_cap_tier": {
+        "weight_share_avg": {
+          "MEGA": 0.02246154,
+          "MID": 0.02553846,
+          "OTHER": -0.048,
+          "UNRANKED": 0
+        },
+        "contrib_gross_annualized": {
+          "MEGA": 0.01375946,
+          "MID": 0.01117238,
+          "OTHER": 0.06618066,
+          "UNRANKED": 0
+        }
+      }
+    },
+    "cell4_LO_top25": {
+      "id": "cell4_LO_top25",
+      "n_months": 259,
+      "n_names_median": 25,
+      "n_names_max": 25,
+      "port_t_capw": 1.2939691,
+      "port_p": 0.1956761,
+      "ir": 0.27869694,
+      "alpha_annualized": 0.05136546,
+      "net_sr": 0.27869694,
+      "mean_active_net_ann": 0.05816369,
+      "turnover_annual": 9.24,
+      "selected_ret_coverage": 0.996,
+      "beta_controlled": {
+        "alpha_ann": 0.05136546,
+        "t_alpha": 1.20485983,
+        "beta": 1.05802924,
+        "t_beta": 11.82687525,
+        "beta_contrib_ann": 0.00679823,
+        "n": 259
+      },
+      "diag_ew_universe": {
+        "port_t": 1.42577834,
+        "alpha_ann": 0.02926649,
+        "ir": 0.29274682,
+        "n_months": 259
+      },
+      "diag_cap_tier": {
+        "weight_share_avg": {
+          "MEGA": 0.032,
+          "MID": 0.05584615,
+          "OTHER": 0.91215385,
+          "UNRANKED": 0
+        },
+        "contrib_gross_annualized": {
+          "MEGA": 0.01250607,
+          "MID": 0.0131326,
+          "OTHER": 0.16280164,
+          "UNRANKED": 0
+        }
+      }
+    }
+  },
+  "contrasts": {
+    "A_c2_minus_c1": {
+      "mean_ann": 0.1218339,
+      "nw_t": 1.99523996,
+      "sd_monthly": 0.08268529,
+      "n": 259,
+      "beta_alpha": {
+        "alpha_ann": 0.02280699,
+        "t_alpha": 0.55662331,
+        "beta": 0.84528692,
+        "t_beta": 4.92307725,
+        "beta_contrib_ann": -0.01812492,
+        "n": 259
+      }
+    },
+    "B_c4_minus_c2": {
+      "mean_ann": 0.01586308,
+      "nw_t": 1.5239166,
+      "sd_monthly": 0.01479361,
+      "n": 259,
+      "beta_alpha": {
+        "alpha_ann": 0.01430182,
+        "t_alpha": 1.39204026,
+        "beta": 0.01332679,
+        "t_beta": 0.7270868,
+        "beta_contrib_ann": -0.11559057,
+        "n": 259
+      }
+    },
+    "B_LS_c3_minus_c1": {
+      "mean_ann": 0.02351679,
+      "nw_t": 1.644121,
+      "sd_monthly": 0.02108365,
+      "n": 259,
+      "beta_alpha": {
+        "alpha_ann": 0.02194608,
+        "t_alpha": 1.53502093,
+        "beta": 0.01340743,
+        "t_beta": 0.70222104,
+        "beta_contrib_ann": -0.11558112,
+        "n": 259
+      }
+    }
+  },
+  "preregistered_verdicts": {
+    "primary_axisA_short_leg": {
+      "contrast": "Delta(cell2 - cell1) — 숏 레그 제거",
+      "raw_mean_ann": 0.1218339,
+      "raw_nw_t": 1.99523996,
+      "beta_controlled_alpha_ann": 0.02280699,
+      "beta_controlled_t_alpha": 0.55662331,
+      "beta_of_contrast": 0.84528692,
+      "beta_contrib_ann": -0.01812492,
+      "reject_if_1_fired": true,
+      "verdict": "REJECTED_AS_PREREGISTERED — '숏 레그가 기저 F 의 원인' 기각",
+      "basis": "reject_if ① |NW-t| < 2 : raw 1.995 < 2.000 (발동) · 병기 의무 기준인 β-통제 α 차 t(α)=0.557 도 <2 로 일치. 두 기준이 갈리지 않는다.",
+      "power": {
+        "raw_axis": {
+          "n": 259,
+          "sd_monthly": 0.08268529,
+          "nw_inflation": 0.99040624,
+          "nw_inflation_source": "measured",
+          "mde80_monthly": 0.01425601,
+          "implied_monthly": 0.00411667,
+          "ratio": 0.28876717,
+          "expected_t": 0.80901011,
+          "power": 0.1248682
+        },
+        "beta_controlled_axis": {
+          "label": "Δ(cell2−cell1) β-통제 α",
+          "alpha_ann": 0.02280699,
+          "t_alpha": 0.55662331,
+          "se_alpha_ann": 0.04097383,
+          "mde80_annual": 0.11479227,
+          "implied_annual": 0.0494,
+          "implied_source": "IM2013 Table 1 — Down 포트 CAPM α −4.94%/yr (숏 레그 α 기여의 절대값)",
+          "ratio": 0.43034255,
+          "expected_t": 1.2056477,
+          "power": 0.22531885,
+          "disposition": "조건부(미결이 최빈 결말)"
+        }
+      },
+      "disposition_label": "미결(underpowered) — '효과 없음' 아님. β-통제 축 ratio 0.430 · 기대 t 1.205 · 검정력 22.5% (3단 처분 (b) 조건부 구간)",
+      "identity_caveat": "★Delta(cell2-cell1) 는 항등적으로 패자 데실의 총수익 r_lose 다(cell1 = r_win - r_lose, cell2 = r_win). 그 raw 평균의 81%가 시장 노출이다(β 0.849 · β기여 +9.90%/yr 대 α +2.28%/yr). 따라서 raw NW-t 1.995 는 '숏 레그의 알파 기여' 를 재는 통계량이 아니며, 문턱 2.0 을 0.005 차로 비껴간 것을 강도의 근거로 읽어서는 안 된다. 판정을 지탱하는 것은 β-통제 t 0.557 이다."
+    },
+    "secondary_axisB_concentration": {
+      "contrast": "Delta(cell4 - cell2) — 데실(35종) -> top-25",
+      "raw_mean_ann": 0.01586308,
+      "raw_nw_t": 1.5239166,
+      "beta_controlled_alpha_ann": 0.01430182,
+      "beta_controlled_t_alpha": 1.39204026,
+      "reject_if_2_fired": false,
+      "verdict": "NOT_REJECTED — Delta = +1.59%/yr > 0 이므로 reject_if ②(Delta<=0) 미발동. 집중 형태는 기각되지 않는다.",
+      "significance": "단 |t| < 2 (raw 1.524 · β-통제 1.392) — 불기각이지 확증 아님",
+      "power": {
+        "raw_axis": {
+          "n": 259,
+          "sd_monthly": 0.01479361,
+          "nw_inflation": 0.94367106,
+          "nw_inflation_source": "measured",
+          "mde80_monthly": 0.00243025,
+          "implied_monthly": 0.00136919,
+          "ratio": 0.56339587,
+          "expected_t": 1.57840987,
+          "power": 0.3513827,
+          "implied_source": "IS-only(first 86 months) 실측 앵커 — IM2013 은 집중 형태 효과크기 미제공"
+        },
+        "beta_controlled_axis": {
+          "label": "Δ(cell4−cell2) β-통제 α",
+          "alpha_ann": 0.01430182,
+          "t_alpha": 1.39204026,
+          "se_alpha_ann": 0.010274,
+          "mde80_annual": 0.02878364,
+          "implied_annual": 0.01643032,
+          "implied_source": "IS-only(전반 86개월) 실측 앵커 — IM2013 은 집중 형태 효과크기 미제공",
+          "ratio": 0.57082161,
+          "expected_t": 1.59921381,
+          "power": 0.35912964,
+          "disposition": "조건부(미결이 최빈 결말)"
+        }
+      },
+      "disposition_label": "미결(underpowered) — ratio 0.571 · 기대 t 1.600 · 검정력 35.9%",
+      "additivity_check": {
+        "contrast": "Delta(cell3 - cell1) — 롱숏 하 동일 집중 축",
+        "raw_mean_ann": 0.02351679,
+        "raw_nw_t": 1.644121,
+        "beta_controlled_alpha_ann": 0.02194608,
+        "beta_controlled_t_alpha": 1.53502093,
+        "note": "부호·크기 정합(+2.19%/yr vs +1.43%/yr, t 1.535 vs 1.392) — 두 축 가법성 지지, 상호작용 증거 없음"
+      }
+    },
+    "reject_if_3_fingerprints": {
+      "fired": false,
+      "a_short_leg_loss_concentrates_in_rebound": {
+        "holds": true,
+        "recovery_dummy_coef_monthly": -0.08173461,
+        "recovery_dummy_t": -4.40347752,
+        "beta_controlled": {
+          "coef_recovery": -0.04273919,
+          "t_recovery": -2.36652879,
+          "coef_bm": -0.78167454,
+          "t_bm": -4.67669309,
+          "note": "BM 수익 통제 후에도 recovery 계수가 음수·유의면 '패자 고베타' 로 환원되지 않는 반등월 특이 손실"
+        },
+        "up_month_contrast": [
+          {
+            "regime": "expansion",
+            "n": 65,
+            "bm_ann": 0.59495476,
+            "short_contrib_ann": -0.34907763,
+            "lose_ann": 0.34907763,
+            "win_ann": 0.67644172
+          },
+          {
+            "regime": "recovery",
+            "n": 38,
+            "bm_ann": 0.6279642,
+            "short_contrib_ann": -0.94285486,
+            "lose_ann": 0.94285486,
+            "win_ann": 0.80686768
+          }
+        ],
+        "note": "무통제 t −4.403. ★BM 수익 통제 후에도 recovery 계수 −0.0427/월 t −2.367 로 생존 = '패자주가 고β라서' 로 환원되지 않는다. 시장 방향을 거의 고정한 대조(expansion bm +59.5%/yr vs recovery bm +62.8%/yr)에서 패자 데실 수익이 +34.9% vs +94.3% 로 2.7배."
+      },
+      "b_loser_decile_small_cap_tilt": {
+        "holds": true,
+        "loser_minus_winner_size_pct": 0.16912168,
+        "nw_t": 10.02890765,
+        "loser_minus_universe": 0.13321503,
+        "nw_t_vs_universe": 17.2451067,
+        "note": "size_pct 0=최대형 1=최소형. 패자 데실 0.634 vs 승자 0.462 vs 유니버스 0.500."
+      },
+      "verdict": "지문 (a)(b) 모두 성립 — 마찰 기전 서사(공매도 제약 하 패자 과대가격 · 반등월 옵션형 손실 · 소형 편중) 불기각"
+    },
+    "reject_if_4_smallcap_attribution": {
+      "fired": false,
+      "cell4_ew_universe_port_t": 1.42577834,
+      "cell4_capw_port_t": 1.2939691,
+      "cell4_other_tier_weight_share": 0.91215385,
+      "verdict": "미발동 — 연언(EW-유니버스 대비 소멸 ∧ OTHER tier 지배) 중 앞항 불성립. EW-유니버스 대비 t +1.426 로 소멸하지 않고 cap-w(+1.294)보다 오히려 높다. OTHER tier 91.2% 는 성립.",
+      "contrast_with_attempt1": "강화 1/20 의 mom_only(M02) 는 EW-유니버스 PORT_t −0.064 로 소멸했다. 본 라운드의 6-6 신호는 그 축에서 살아남는다 = 두 관측쌍의 신호 축 차이가 실재했다는 사후 증거(설계의 [제3축 경고] 확증).",
+      "ew_basis_caveat": "★EW-basis 는 t 배율기다(실측 se_EW/se_capw 중앙 0.729 = t x1.37). 여기 관측된 배율은 1.426/1.294 = 1.10 로 그 전형값보다 작다 — 즉 배율을 걷어내면 EW-대비가 cap-w 대비보다 강하지 않다. '벤치를 바꿨더니 살아났다' 로 읽으면 안 된다."
+    },
+    "no_signal_control_gate": {
+      "mandatory_for": "롱온리 셀 2·4 (measurement-graduation §3 무신호 대조 의무)",
+      "control_spec": {
+        "n_stocks": 25,
+        "cap": 1,
+        "freq": 1,
+        "bps": 15,
+        "universe": "K200 U KQ150",
+        "selection": "market cap top-N (신호 미사용)"
+      },
+      "control_beta_check": {
+        "v10_cap1_beta": 1.07160482,
+        "cap020_beta": 1.0261352,
+        "note": "대조군 beta 가 1 근처가 아니면 홀딩월 라벨 정렬 결함 (1/20 실사고 재발 검사)"
+      },
+      "control_beta_verdict": "PASS — 대조군 β 1.072(cap 1.00) / 1.026(cap 0.20). 1/20 의 홀딩월 라벨 정렬 결함(β 0.041) 재발 없음. 라벨 = 시그널월 t 의 다음 캘린더월(t+1) 로 넘겼다.",
+      "cell4": {
+        "diff_ann": 0.04084293,
+        "diff_nw_t": 0.75089041,
+        "corr": 0.6435548,
+        "verdict": "INDISTINGUISHABLE_FROM_NO_SIGNAL"
+      },
+      "cell2": {
+        "diff_ann": 0.02375206,
+        "diff_nw_t": 0.4421423,
+        "corr": 0.64946396,
+        "verdict": "INDISTINGUISHABLE_FROM_NO_SIGNAL"
+      },
+      "consequence": "두 롱온리 셀 모두 INDISTINGUISHABLE_FROM_NO_SIGNAL → screen-tier 등재 불가. cell4 의 양(+) 수치를 알파로 인용할 수 없다."
+    },
+    "regime_boundary_cell_specific": {
+      "method": "사후 귀속 라벨 — 벤치 실현수익 + 시그널시점 낙폭(dd_prior, 과거만). 오버레이 미적용(S0/S1 금지 준수). 어떤 셀의 비중도 이 라벨을 쓰지 않는다.",
+      "beta_controlled_residual_ann": [
+        {
+          "regime": "crisis",
+          "cell1_LS_decile": 0.02262939,
+          "cell2_LO_decile": -0.17846742,
+          "cell3_LS_top25": 0.02864304,
+          "cell4_LO_top25": -0.1803055
+        },
+        {
+          "regime": "expansion",
+          "cell1_LS_decile": 0.16471934,
+          "cell2_LO_decile": 0.00408704,
+          "cell3_LS_top25": 0.1422288,
+          "cell4_LO_top25": -0.0246172
+        },
+        {
+          "regime": "neutral",
+          "cell1_LS_decile": -0.00255841,
+          "cell2_LO_decile": 0.05056035,
+          "cell3_LS_top25": 0.00036355,
+          "cell4_LO_top25": 0.05378944
+        },
+        {
+          "regime": "recovery",
+          "cell1_LS_decile": -0.30572133,
+          "cell2_LO_decile": 0.09885188,
+          "cell3_LS_top25": -0.28347683,
+          "cell4_LO_top25": 0.14162901
+        }
+      ],
+      "beta_controlled_residual_nw_t": [
+        {
+          "regime": "crisis",
+          "cell1_LS_decile": 0.26337528,
+          "cell2_LO_decile": -2.44583555,
+          "cell3_LS_top25": 0.31926466,
+          "cell4_LO_top25": -2.27937762
+        },
+        {
+          "regime": "expansion",
+          "cell1_LS_decile": 1.54583815,
+          "cell2_LO_decile": 0.03785044,
+          "cell3_LS_top25": 1.23768923,
+          "cell4_LO_top25": -0.22991553
+        },
+        {
+          "regime": "neutral",
+          "cell1_LS_decile": -0.02817488,
+          "cell2_LO_decile": 0.76943241,
+          "cell3_LS_top25": 0.00375961,
+          "cell4_LO_top25": 0.75624879
+        },
+        {
+          "regime": "recovery",
+          "cell1_LS_decile": -1.1559141,
+          "cell2_LO_decile": 0.66834602,
+          "cell3_LS_top25": -1.08742103,
+          "cell4_LO_top25": 0.88054474
+        }
+      ],
+      "recovery_axis": "지지(방향) — β-통제 잔차 숏 보유 셀 −30.6%/−28.3%/yr vs 롱온리 셀 +9.9%/+14.2%/yr 로 부호가 셀-특정으로 갈린다. 단 개별 |t| 는 1.16/1.09 로 유의 미달.",
+      "crisis_axis": "기각 — 설계는 '전 셀 약화' 를 예측했으나 실측은 롱온리 셀만 유의 약화(cell2 −17.8%/yr t −2.45 · cell4 −18.0% t −2.28)이고 숏 보유 셀은 무변(+2.3%/+2.9%, t 0.26/0.32)이다. 국면 약화의 소유자가 예측과 반대다.",
+      "verdict": "regime_scope 부분 지지 — recovery 경계는 셀-특정으로 살아 있고, crisis 경계('전 셀 약화')는 반증됐다. 오버레이 미적용(S0/S1 준수) — 이 라벨은 어떤 셀의 비중에도 쓰이지 않았다."
+    },
+    "attribution_conclusion": {
+      "answer": "신호",
+      "one_line": "기저 F 는 숏 레그가 알파를 파괴해서도, 데실이 너무 넓어서도 아니다 — 형태를 최대로 교정한 cell4 조차 β-통제 α t 1.205 · rank-IC 0.0072 · OOS retention −0.066 · 무신호 대조 구별 불가이고, 기저의 음(−) PORT_t 자체는 β 0.199 짜리 롱숏을 β 1 벤치로 재는 basis 산술(−9.38%/yr)이 만든 것이다.",
+      "arithmetic": {
+        "cell1_active_ann": -0.07953329,
+        "cell1_alpha_ann": 0.01425665,
+        "cell1_beta": 0.19941553,
+        "cell1_beta_contrib_ann": -0.09378994,
+        "cell4_active_ann": 0.05816369,
+        "cell4_alpha_ann": 0.05136546,
+        "cell4_beta": 1.05802924,
+        "cell4_beta_contrib_ann": 0.00679823,
+        "form_change_total_active_ann": 0.13769698,
+        "of_which_beta_basis": 0.10058817,
+        "of_which_alpha": 0.03710881,
+        "note": "형태 전면 교정의 활성수익 개선 +13.77%/yr 중 73%(+10.06%p)가 β basis 이고 27%(+3.71%p)만 α 다. 그 α 차조차 t 문턱 밖."
+      },
+      "residual_uncertainty": "축 A 는 '미결' 이다(검정력 22.5%) — 숏 레그 축을 통계적으로 닫은 것이 아니다. 다만 KR 공매도 제약상 숏은 실투 경로가 아니므로 잔여 18회의 자원을 여기에 더 쓸 근거는 약하다.",
+      "consequence_for_remaining_attempts": "'형태 교정' 축(숏 제거·집중도)은 소진에 가깝다. 잔여 시도는 신호 자체(재료·창·표적)를 바꾸는 축으로 가야 한다."
+    }
+  },
+  "base_reproduction": {
+    "A_liqfilter_capwuniv_bench": -1.11989694,
+    "B_noliq_capwuniv_bench": -1.1516455,
+    "C_noliq_kospi200_bench": -1.46547829,
+    "D_liq_kospi200_bench": -1.42973875,
+    "base_reported": -1.291,
+    "note": "기저 RP_20260829_122020_9192 는 유동성필터 미적용 + KOSPI200 지수 벤치 + 일간 하네스. C 가 가장 가까운 대응."
+  },
+  "base_reproduction_verdict": "PASS — cell1 을 기저 규약 쪽으로 되돌린 4변형의 PORT_t 가 −1.120 ~ −1.465 이고 기저 보고치 −1.291 이 그 구간 안에 있다. 차이의 원인은 (a)유동성필터 추가 (b)벤치(cap-w 유니버스 프록시 vs KOSPI200 지수) (c)일간 하네스 vs 월간 패널 — 셋 다 4셀에 공통이라 축 대비는 상쇄된다.",
+  "regime_and_fingerprints": {
+    "regime_definition": {
+      "method": "사후 귀속 라벨 — 벤치 실현수익 + 시그널시점 낙폭(dd_prior, 과거만). 오버레이 미적용(S0/S1 금지 준수). 어떤 셀의 비중도 이 라벨을 쓰지 않는다.",
+      "crisis": "홀딩월 BM 수익 하위 20%",
+      "recovery": "dd_prior <= -20% & BM 수익 > 0",
+      "expansion": "dd_prior > -10% & BM 수익 > 0",
+      "neutral": "그 외",
+      "counts": [
+        {
+          "regime": "neutral",
+          "N": 104
+        },
+        {
+          "regime": "expansion",
+          "N": 65
+        },
+        {
+          "regime": "crisis",
+          "N": 52
+        },
+        {
+          "regime": "recovery",
+          "N": 38
+        }
+      ]
+    },
+    "fingerprint_a": {
+      "by_regime": [
+        {
+          "regime": "neutral",
+          "n": 104,
+          "r_lose_ann": 0.1658044,
+          "r_win_ann": 0.2312399,
+          "short_contrib_ann": -0.1658044,
+          "ls_spread_ann": 0.06543549,
+          "bm_ann": 0.12500695
+        },
+        {
+          "regime": "expansion",
+          "n": 65,
+          "r_lose_ann": 0.34907763,
+          "r_win_ann": 0.67644172,
+          "short_contrib_ann": -0.34907763,
+          "ls_spread_ann": 0.3273641,
+          "bm_ann": 0.59495476
+        },
+        {
+          "regime": "crisis",
+          "n": 52,
+          "r_lose_ann": -0.92928797,
+          "r_win_ann": -1.03559582,
+          "short_contrib_ann": 0.92928797,
+          "ls_spread_ann": -0.10630785,
+          "bm_ann": -0.86909802
+        },
+        {
+          "regime": "recovery",
+          "n": 38,
+          "r_lose_ann": 0.94285486,
+          "r_win_ann": 0.80686768,
+          "short_contrib_ann": -0.94285486,
+          "ls_spread_ann": -0.13598719,
+          "bm_ann": 0.6279642
+        }
+      ],
+      "overall": [
+        {
+          "n": 259,
+          "short_contrib_ann": -0.10594291,
+          "nw_t": -1.73438651,
+          "ls_spread_ann": 0.06713682,
+          "ls_nw_t": 1.07991825
+        }
+      ],
+      "test": {
+        "coef_recovery_monthly": -0.08173461,
+        "t_recovery": -4.40347752,
+        "base_monthly": 0.00316338,
+        "interpretation": "계수<0 & |t|>=2 이면 숏 레그 손실이 반등월에 집중(기전 지문 (a) 성립)"
+      }
+    },
+    "fingerprint_b": {
+      "by_leg": [
+        {
+          "leg": "winner",
+          "n": 7989,
+          "size_pct_mean": 0.46224061,
+          "size_pct_median": 0.46541787
+        },
+        {
+          "leg": "loser",
+          "n": 7989,
+          "size_pct_mean": 0.63405414,
+          "size_pct_median": 0.69
+        }
+      ],
+      "test": {
+        "loser_minus_winner_size_pct": 0.16912168,
+        "nw_t": 10.02890765,
+        "loser_minus_universe": 0.13321503,
+        "nw_t_vs_universe": 17.2451067,
+        "interpretation": "size_pct 는 0=최대형/1=최소형. 양(+) & |t|>=2 이면 패자 데실 소형 편중(지문 (b) 성립)"
+      }
+    },
+    "regime_by_cell_raw_active": {
+      "long": [
+        {
+          "regime": "neutral",
+          "cell": "cell1_LS_decile",
+          "n": 104,
+          "active_ann": -0.08838038,
+          "nw_t": -0.84554654,
+          "ret_net_ann": 0.03662656
+        },
+        {
+          "regime": "crisis",
+          "cell": "cell1_LS_decile",
+          "n": 52,
+          "active_ann": 0.73267242,
+          "nw_t": 7.86222731,
+          "ret_net_ann": -0.1364256
+        },
+        {
+          "regime": "expansion",
+          "cell": "cell1_LS_decile",
+          "n": 65,
+          "active_ann": -0.29733555,
+          "nw_t": -2.57264327,
+          "ret_net_ann": 0.29761921
+        },
+        {
+          "regime": "recovery",
+          "cell": "cell1_LS_decile",
+          "n": 38,
+          "active_ann": -0.79420307,
+          "nw_t": -2.68795362,
+          "ret_net_ann": -0.16623887
+        },
+        {
+          "regime": "neutral",
+          "cell": "cell2_LO_decile",
+          "n": 104,
+          "active_ann": 0.09321211,
+          "nw_t": 1.43841741,
+          "ret_net_ann": 0.21821905
+        },
+        {
+          "regime": "crisis",
+          "cell": "cell2_LO_decile",
+          "n": 52,
+          "active_ann": -0.18025458,
+          "nw_t": -2.43617191,
+          "ret_net_ann": -1.04935261
+        },
+        {
+          "regime": "expansion",
+          "cell": "cell2_LO_decile",
+          "n": 65,
+          "active_ann": 0.06774661,
+          "nw_t": 0.63917351,
+          "ret_net_ann": 0.66270136
+        },
+        {
+          "regime": "recovery",
+          "cell": "cell2_LO_decile",
+          "n": 38,
+          "active_ann": 0.16398705,
+          "nw_t": 1.11701358,
+          "ret_net_ann": 0.79195125
+        },
+        {
+          "regime": "neutral",
+          "cell": "cell3_LS_top25",
+          "n": 104,
+          "active_ann": -0.06183631,
+          "nw_t": -0.54738927,
+          "ret_net_ann": 0.06317063
+        },
+        {
+          "regime": "crisis",
+          "cell": "cell3_LS_top25",
+          "n": 52,
+          "active_ann": 0.74897978,
+          "nw_t": 7.92793584,
+          "ret_net_ann": -0.12011824
+        },
+        {
+          "regime": "expansion",
+          "cell": "cell3_LS_top25",
+          "n": 65,
+          "active_ann": -0.2899032,
+          "nw_t": -2.63534911,
+          "ret_net_ann": 0.30505156
+        },
+        {
+          "regime": "recovery",
+          "cell": "cell3_LS_top25",
+          "n": 38,
+          "active_ann": -0.7415931,
+          "nw_t": -2.56675444,
+          "ret_net_ann": -0.11362889
+        },
+        {
+          "regime": "neutral",
+          "cell": "cell4_LO_top25",
+          "n": 104,
+          "active_ann": 0.11240895,
+          "nw_t": 1.60962375,
+          "ret_net_ann": 0.2374159
+        },
+        {
+          "regime": "crisis",
+          "cell": "cell4_LO_top25",
+          "n": 52,
+          "active_ann": -0.17937314,
+          "nw_t": -2.23243804,
+          "ret_net_ann": -1.04847116
+        },
+        {
+          "regime": "expansion",
+          "cell": "cell4_LO_top25",
+          "n": 65,
+          "active_ann": 0.06127303,
+          "nw_t": 0.58308179,
+          "ret_net_ann": 0.65622778
+        },
+        {
+          "regime": "recovery",
+          "cell": "cell4_LO_top25",
+          "n": 38,
+          "active_ann": 0.22943476,
+          "nw_t": 1.43836238,
+          "ret_net_ann": 0.85739896
+        }
+      ],
+      "wide": [
+        {
+          "regime": "crisis",
+          "cell1_LS_decile": 0.73267242,
+          "cell2_LO_decile": -0.18025458,
+          "cell3_LS_top25": 0.74897978,
+          "cell4_LO_top25": -0.17937314
+        },
+        {
+          "regime": "expansion",
+          "cell1_LS_decile": -0.29733555,
+          "cell2_LO_decile": 0.06774661,
+          "cell3_LS_top25": -0.2899032,
+          "cell4_LO_top25": 0.06127303
+        },
+        {
+          "regime": "neutral",
+          "cell1_LS_decile": -0.08838038,
+          "cell2_LO_decile": 0.09321211,
+          "cell3_LS_top25": -0.06183631,
+          "cell4_LO_top25": 0.11240895
+        },
+        {
+          "regime": "recovery",
+          "cell1_LS_decile": -0.79420307,
+          "cell2_LO_decile": 0.16398705,
+          "cell3_LS_top25": -0.7415931,
+          "cell4_LO_top25": 0.22943476
+        }
+      ]
+    },
+    "regime_by_cell_beta_controlled": {
+      "resid_ann": [
+        {
+          "regime": "crisis",
+          "cell1_LS_decile": 0.02262939,
+          "cell2_LO_decile": -0.17846742,
+          "cell3_LS_top25": 0.02864304,
+          "cell4_LO_top25": -0.1803055
+        },
+        {
+          "regime": "expansion",
+          "cell1_LS_decile": 0.16471934,
+          "cell2_LO_decile": 0.00408704,
+          "cell3_LS_top25": 0.1422288,
+          "cell4_LO_top25": -0.0246172
+        },
+        {
+          "regime": "neutral",
+          "cell1_LS_decile": -0.00255841,
+          "cell2_LO_decile": 0.05056035,
+          "cell3_LS_top25": 0.00036355,
+          "cell4_LO_top25": 0.05378944
+        },
+        {
+          "regime": "recovery",
+          "cell1_LS_decile": -0.30572133,
+          "cell2_LO_decile": 0.09885188,
+          "cell3_LS_top25": -0.28347683,
+          "cell4_LO_top25": 0.14162901
+        }
+      ],
+      "resid_nw_t": [
+        {
+          "regime": "crisis",
+          "cell1_LS_decile": 0.26337528,
+          "cell2_LO_decile": -2.44583555,
+          "cell3_LS_top25": 0.31926466,
+          "cell4_LO_top25": -2.27937762
+        },
+        {
+          "regime": "expansion",
+          "cell1_LS_decile": 1.54583815,
+          "cell2_LO_decile": 0.03785044,
+          "cell3_LS_top25": 1.23768923,
+          "cell4_LO_top25": -0.22991553
+        },
+        {
+          "regime": "neutral",
+          "cell1_LS_decile": -0.02817488,
+          "cell2_LO_decile": 0.76943241,
+          "cell3_LS_top25": 0.00375961,
+          "cell4_LO_top25": 0.75624879
+        },
+        {
+          "regime": "recovery",
+          "cell1_LS_decile": -1.1559141,
+          "cell2_LO_decile": 0.66834602,
+          "cell3_LS_top25": -1.08742103,
+          "cell4_LO_top25": 0.88054474
+        }
+      ],
+      "long": [
+        {
+          "regime": "neutral",
+          "cell": "cell1_LS_decile",
+          "n": 104,
+          "resid_ann": -0.00255841,
+          "nw_t": -0.02817488
+        },
+        {
+          "regime": "crisis",
+          "cell": "cell1_LS_decile",
+          "n": 52,
+          "resid_ann": 0.02262939,
+          "nw_t": 0.26337528
+        },
+        {
+          "regime": "expansion",
+          "cell": "cell1_LS_decile",
+          "n": 65,
+          "resid_ann": 0.16471934,
+          "nw_t": 1.54583815
+        },
+        {
+          "regime": "recovery",
+          "cell": "cell1_LS_decile",
+          "n": 38,
+          "resid_ann": -0.30572133,
+          "nw_t": -1.1559141
+        },
+        {
+          "regime": "neutral",
+          "cell": "cell2_LO_decile",
+          "n": 104,
+          "resid_ann": 0.05056035,
+          "nw_t": 0.76943241
+        },
+        {
+          "regime": "crisis",
+          "cell": "cell2_LO_decile",
+          "n": 52,
+          "resid_ann": -0.17846742,
+          "nw_t": -2.44583555
+        },
+        {
+          "regime": "expansion",
+          "cell": "cell2_LO_decile",
+          "n": 65,
+          "resid_ann": 0.00408704,
+          "nw_t": 0.03785044
+        },
+        {
+          "regime": "recovery",
+          "cell": "cell2_LO_decile",
+          "n": 38,
+          "resid_ann": 0.09885188,
+          "nw_t": 0.66834602
+        },
+        {
+          "regime": "neutral",
+          "cell": "cell3_LS_top25",
+          "n": 104,
+          "resid_ann": 0.00036355,
+          "nw_t": 0.00375961
+        },
+        {
+          "regime": "crisis",
+          "cell": "cell3_LS_top25",
+          "n": 52,
+          "resid_ann": 0.02864304,
+          "nw_t": 0.31926466
+        },
+        {
+          "regime": "expansion",
+          "cell": "cell3_LS_top25",
+          "n": 65,
+          "resid_ann": 0.1422288,
+          "nw_t": 1.23768923
+        },
+        {
+          "regime": "recovery",
+          "cell": "cell3_LS_top25",
+          "n": 38,
+          "resid_ann": -0.28347683,
+          "nw_t": -1.08742103
+        },
+        {
+          "regime": "neutral",
+          "cell": "cell4_LO_top25",
+          "n": 104,
+          "resid_ann": 0.05378944,
+          "nw_t": 0.75624879
+        },
+        {
+          "regime": "crisis",
+          "cell": "cell4_LO_top25",
+          "n": 52,
+          "resid_ann": -0.1803055,
+          "nw_t": -2.27937762
+        },
+        {
+          "regime": "expansion",
+          "cell": "cell4_LO_top25",
+          "n": 65,
+          "resid_ann": -0.0246172,
+          "nw_t": -0.22991553
+        },
+        {
+          "regime": "recovery",
+          "cell": "cell4_LO_top25",
+          "n": 38,
+          "resid_ann": 0.14162901,
+          "nw_t": 0.88054474
+        }
+      ]
+    }
+  },
+  "no_signal_control": {
+    "control_beta_check": {
+      "v10_cap1_beta": 1.07160482,
+      "cap020_beta": 1.0261352,
+      "note": "대조군 beta 가 1 근처가 아니면 홀딩월 라벨 정렬 결함 (1/20 실사고 재발 검사)"
+    },
+    "control_spec_v10": {
+      "n_stocks": 25,
+      "cap": 1,
+      "freq": 1,
+      "bps": 15,
+      "universe": "K200 U KQ150",
+      "selection": "market cap top-N (신호 미사용)"
+    },
+    "gates": {
+      "cell2_LO_decile": {
+        "cell": "cell2_LO_decile",
+        "vs_cap1_00": {
+          "n": 258,
+          "diff_ann": 0.02375206,
+          "diff_nw_t": 0.4421423,
+          "corr": 0.64946396,
+          "verdict": "INDISTINGUISHABLE_FROM_NO_SIGNAL",
+          "strategy": {
+            "alpha_ann": 0.02920557,
+            "beta": 1.03204537,
+            "t_alpha": 0.71558815,
+            "port_t": 0.75568059,
+            "beta_contrib_ann": 0.00365211
+          },
+          "control": {
+            "alpha_ann": 0.00094505,
+            "beta": 1.07160482,
+            "t_alpha": 0.07549568,
+            "port_t": 0.58916416,
+            "beta_contrib_ann": 0.00816057
+          }
+        },
+        "vs_cap0_20": {
+          "n": 258,
+          "diff_ann": 0.03572594,
+          "diff_nw_t": 0.72035775,
+          "corr": 0.6861855,
+          "verdict": "INDISTINGUISHABLE_FROM_NO_SIGNAL"
+        }
+      },
+      "cell4_LO_top25": {
+        "cell": "cell4_LO_top25",
+        "vs_cap1_00": {
+          "n": 258,
+          "diff_ann": 0.04084293,
+          "diff_nw_t": 0.75089041,
+          "corr": 0.6435548,
+          "verdict": "INDISTINGUISHABLE_FROM_NO_SIGNAL",
+          "strategy": {
+            "alpha_ann": 0.04458062,
+            "beta": 1.04710082,
+            "t_alpha": 1.0450383,
+            "port_t": 1.11724676,
+            "beta_contrib_ann": 0.00536793
+          },
+          "control": {
+            "alpha_ann": 0.00094505,
+            "beta": 1.07160482,
+            "t_alpha": 0.07549568,
+            "port_t": 0.58916416,
+            "beta_contrib_ann": 0.00816057
+          }
+        },
+        "vs_cap0_20": {
+          "n": 258,
+          "diff_ann": 0.05281682,
+          "diff_nw_t": 1.04964676,
+          "corr": 0.678889,
+          "verdict": "INDISTINGUISHABLE_FROM_NO_SIGNAL"
+        }
+      }
+    }
+  },
+  "advisory_battery": {
+    "rank_ic": 0.00723868,
+    "icir": 0.04398064,
+    "rank_ic_t_nw_lag3": 0.71755558,
+    "n_ic_months": 259,
+    "harvey_hurdle_note": "rank-IC t 는 advisory. 판정 권위 = portfolio-alpha t (measurement-graduation §3)",
+    "monotonicity_spearman": 0.78181818,
+    "decile_profile_ann": {
+      "D1": 0.10351677,
+      "D2": 0.0838675,
+      "D3": 0.13229358,
+      "D4": 0.08672176,
+      "D5": 0.11562749,
+      "D6": 0.11201945,
+      "D7": 0.10611821,
+      "D8": 0.14394097,
+      "D9": 0.17158234,
+      "D10": 0.17324915
+    },
+    "subperiod": [
+      {
+        "sub": "P1_2005_2012",
+        "n": 96,
+        "active_ann": 0.07119779,
+        "nw_t": 1.0192433,
+        "sr": 0.33458407
+      },
+      {
+        "sub": "P2_2013_2019",
+        "n": 84,
+        "active_ann": 0.08485042,
+        "nw_t": 1.16386369,
+        "sr": 0.4501078
+      },
+      {
+        "sub": "P3_2020_2026",
+        "n": 79,
+        "active_ann": 0.01394902,
+        "nw_t": 0.15370192,
+        "sr": 0.06185503
+      }
+    ],
+    "subperiod_stability": 1,
+    "oos_retention_approx": {
+      "cell4": -0.06630027,
+      "cell2": -0.24746778
+    },
+    "dsr_diagnostic": {
+      "cell4": 0.59752785,
+      "n_trials": 4,
+      "selection_type": "chain",
+      "note": "사전등록 4셀 직교 설계 — argmax/threshold-pick 아님. DSR 게이트 부적용(measurement-graduation §3)"
+    },
+    "turnover_annual": {
+      "cell1_LS_decile": 19.65854733,
+      "cell2_LO_decile": 9.08156728,
+      "cell3_LS_top25": 20.22276923,
+      "cell4_LO_top25": 9.24
+    },
+    "post_neutralization": {
+      "rank_ic_raw": 0.00723868,
+      "rank_ic_raw_t_nw": 0.71755558,
+      "post_neutralization_ic": 0.00299616,
+      "post_neutralization_ic_t_nw": 0.31403745,
+      "retention": 0.41390927,
+      "n_months": 259,
+      "neutralization": "cross-sectional OLS residual vs log(Size), per month",
+      "note": "RF-A4 축(post-neutral IC < 0.3 x rank_ic 이면 HIGH) 판정 입력"
+    }
+  },
+  "reachability_ceiling": {
+    "n_months": 259,
+    "sd_monthly_active": 0.06024613,
+    "required_active_ann_for_t2.95": 0.13252033,
+    "observed_active_ann": 0.05816369,
+    "note": "이 창에서 PORT_t 2.95 에 필요한 활성수익. 관측치와 나란히 읽어야 '신호 약함' 과 '창 짧음' 이 구분된다.",
+    "verdict": "이 창에서 PORT_t 2.95 는 원리적으로 도달 가능하다 — 필요 활성수익 +13.25%/yr, 관측 +5.82%/yr (44%). 즉 본 미달은 '창이 짧아서' 가 아니라 '효과가 작아서' 다. (단 축 A/B 대비 자체는 여전히 미결 구간)"
+  },
+  "pit": {
+    "hard_gate": {
+      "clean": true,
+      "n_violations": 0
+    },
+    "hard_gate_note": "detect_lookahead(fe_jt1993_momentum.R) CLEAN · 위반 0 (45줄 스캔)",
+    "c1": "full-sample 통계 미사용 — 시그널은 t-2..t-7 월간수익 shift 만. 단면 z/랭크는 당월 단면 내부 연산(미래 미참조).",
+    "c2": "same-day 순환참조 없음 — 시그널일 t 의 수익은 t+1 캘린더월 forward(build_monthly_forward_returns).",
+    "c4": "재무제표 리프 미사용 (가격 파생 신호 단독) — 해당 없음",
+    "c5": "오버레이 미적용(S0/S1 금지 준수). 국면 라벨은 사후 귀속 진단이며 어떤 셀의 비중에도 진입하지 않았다.",
+    "c6": "survivorship — K200/KQ150 멤버십을 각 시그널일의 실제 값으로 시변 적용(RAWDATA PIT 멤버십). 상장폐지 종목은 그 시점 유니버스에 그대로 남는다.",
+    "c10": "유동성 t-1 — build_adv20_t1() 이 당일을 창에서 제외(shift 1)한 20일 평균 거래대금. liq_ruler='adv20_t1' 라벨 기록.",
+    "c13": "NEGATE/FLIP 미사용 — Score 부호는 엔진 정의 그대로(승자=고득점).",
+    "c14": "해당 없음 — Factor DB IC 히스토리 미소비.",
+    "c15": "★부분 적용 — 본 신호는 Factor DB parquet 이 아니라 RAWDATA 가격 패널에서 기저 엔진이 직접 산출한다(강화 시도의 신호 고정 의무). load_month_factors() 경유 대상 리프 사용 0건이므로 C15 위반 없음.",
+    "stored_panel_reuse": "없음 — 저장 파생 패널 미사용. 패널은 본 라운드에서 RAWDATA 로부터 재빌드(동월 look-ahead 2.08x 전례 회피)."
+  },
+  "challenge_flags": ["[RF-A5 인접] cell4/cell2 보유의 cap-tier OTHER(31위 밖) 비중 평균 91.2%/90.8% — 유동성 하한(2e8)은 전부 통과하나 대형주 노출은 사실상 없다. 무신호 대조 구별불가와 함께 읽을 것.", "[미결 라벨 2건] 축 A(검정력 22.5%) · 축 B(35.9%) 둘 다 3단 처분 (b) 조건부 구간이다. '효과 없음' 으로 승격하지 말 것 — 본 라운드가 남기는 것은 귀속 산술(β basis 분해)·기전 지문 2종·재사용 패널이다.", "[cell1 != 기저 bit-parity] 유동성필터 추가 + 벤치/하네스 차이로 기저와 동일 수치가 아니다(−1.120 vs −1.291). 재현 대조 4변형으로 구간 포함을 실증했으나, 기저 수치를 인용할 때는 기저 산출물을 인용할 것.", "[숏 실행가능성] 셀 1·3 은 KR 공매도 제약(전면금지 구간 포함)·차입비용 0 가정 위에 있다 — 진단 전용.", "[국면 라벨 품질] regime 라벨은 벤치 실현수익 + 시그널시점 낙폭으로 만든 사후 귀속 라벨이다. 라벨 품질이 병목이라는 기존 실측(메모리)이 그대로 적용되며, 그래서 1차 판정은 무조건부 4셀 대비로 두었다.", "[falsification 형식 전사] alpha_hypothesis.json 의 falsification 은 {observable, field_dictionary_refs, reject_if} 객체인데 schema 는 필드 지목 객체배열을 요구한다. 내용을 재작성하지 않고 필드별로 분해 전사했다(원문은 alpha_hypothesis.json 이 정본).", "[대안 승계] 설계자가 보관한 대안 4건(6M 호라이즌 · size 층별 1차검정 · crash-state 1차검정 · 비중방법론 축)은 잔여 18 시도 후보로 그대로 유지."],
+  "selection_objective": "canonical_port_t",
+  "n_trials": 4,
+  "selection_type": "chain",
+  "selection_type_rationale": "사전등록 2x2 직교 4셀 — argmax/threshold-pick 부재. 셀 선택이 아니라 축 분해다. DSR 게이트 부적용(measurement-graduation §3), 수치는 진단 산출(0.598).",
+  "grade_declaration": "없음 — 등급 권위는 essence_score.R 하나이며 alpha 구간은 등급을 선언하지 않는다. 본 라운드는 risk/optimizer/forge 스폰 근거도 만들지 못했다(무신호 대조 구별불가 + 축 A 기각 + 축 B 미결)."
+}

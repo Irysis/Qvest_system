@@ -1,0 +1,1024 @@
+{
+  "task_id": "WT-R20260829_001",
+  "as_of_date": "2026-08-28",
+  "forecast_horizon": "1M",
+  "spec_version": "ast_v1.1",
+  "wt_type": "reinforcement",
+  "reinforce_context": {
+    "base_id": "RP_20260829_122020_9192",
+    "base_grade": "F",
+    "base_failure_mechanisms": [
+      "KR 에서 JT1993 원형(6-6 데실 롱숏)의 알파가 음수 — PORT_t(NW lag3) -1.291, net_IR -0.295 (authoritative_remeasure.json, metric_type=backtested)",
+      "모멘텀 크래시 동반 — MDD 86.7%, structural_drawdown=TRUE (45%+ 에피소드 4건, 수중 표본비 0.82)"
+    ],
+    "ledger_ref": "06_Registry/reinforce_ledger_l1.json entry RP_20260829_122020_9192 attempt 1/20, keyword_axis=multifactor",
+    "root_papers_locked": true
+  },
+  "pit": {
+    "sig_date": "2026-08-28",
+    "decision_ts": "2026-08-28"
+  },
+  "hypothesis": {
+    "statement": "KR K200∪KQ150 long-only ≤25종 축에서, 매월 가격모멘텀(M02_Mom_6_1, JT1993 6-1 대응) 3분위와 이익모멘텀(C01_SUE 1순위) 3분위를 CJL1996 Section III.A 절차 그대로 독립 정렬해 9셀을 만들고 joint-top 셀(가격 top ∩ 이익 top)을 롱 후보 집합으로 삼으면, CJL1996 이 미국에서 실증한 두 축의 상호-통제 후 독립 예측력이 KR 에서도 성립해 가격모멘텀 단독(기저 essence F, PORT_t -1.291)이 잃은 알파가 이익 축 조건화로 부활한다. 축의 결합은 z-composite 가 아니라 정렬 교집합이어야 한다 — 합산은 축 간 상쇄로 상호통제 구조 자체를 소거하기 때문(CJL1996 의 검정 대상이 바로 통제 후 잔존 스프레드다).",
+    "mechanism": {
+      "agent": "① 국내 증권사 애널리스트 — 이익 뉴스(특히 악재)를 컨센서스에 늦게 반영하는 주체(CJL1996 p.12 실증: 후속 SUE·추정치 개정의 지연 조정, 악재에서 비대칭적으로 심함). ② 뉴스 도착 후 즉시 재가격하지 않는 시장 참여자 전반 — 드리프트의 절반이 후속 공시일 주변에 실현된다는 것은 첫 서프라이즈 때 덜 반응한 주체가 다음 공시에서 다시 놀란다는 뜻(CJL1996 p.10: 6개월 6.8% 중 3.2%가 후속 공시일 집중).",
+      "friction": "① KR 공매도 제약 — 패자 쪽 과대평가를 차익거래로 지울 수 없어 조정이 느리다(본 설계는 long-only 라 승자 쪽만 소비하지만, 마찰의 존재가 이익정보의 점진 반영 자체를 지탱). ② 이익정보의 제도적 단계 도착 — 분기 공시 lag(C4: 45일+/분기 고정일)와 월 단위로 분산되는 컨센서스 개정이 정보를 한 번에가 아니라 순차로 가격에 넣는다. ③ 유동성 하한·소형주 거래비용 — KQ150 쪽 재정거래 용량 제한.",
+      "path": "이익 서프라이즈(SUE↑) 발생 → 애널리스트 후속 상향 개정 + 다음 분기 공시일 주변 잔여 드리프트(1~6개월 수평선, CJL1996: 6개월 스프레드의 약 절반이 후속 공시 주변) → 형성 시점에 가격모멘텀 top ∩ SUE top 인 종목은 이미 달리기 시작했고 아직 반영 안 된 이익정보가 남아 있는 집합 → 월간 리밸에서 그 셀을 롱하면 1M forward 초과수익으로 회수. 기저 F 와의 연결: KR 가격모멘텀 단독의 신호는 이익정보와 무관한 성분(수급·테마 소음)이 지배해 음수였다는 것이 본 가설의 함의이며, 이익 축 통제가 그 소음 성분을 걸러낸다 — 이 함의 자체가 ③의 반증 대상이다."
+    },
+    "falsification": [
+      {
+        "fields": [
+          "M02_Mom_6_1",
+          "C01_SUE"
+        ],
+        "expectation": "[1급 · 사전등록] SUE 3분위 각 층 내에서 가격모멘텀 top-vs-bottom 분위 스프레드(1M forward, NW lag-3)가 유의해야 한다. 층별 전멸이면 CJL1996 의 KR 이식 실패."
+      },
+      {
+        "fields": [
+          "C01_SUE",
+          "M02_Mom_6_1"
+        ],
+        "expectation": "[역방향] 가격모멘텀 3분위 각 층 내에서 SUE 분위 스프레드가 유의해야 한다. 비유의면 이익 축이 가격 축에 포섭 = 2-way 증분 없음(모멘텀 재탕)."
+      },
+      {
+        "fields": [
+          "C02_EPS_Chg_1m",
+          "C03_EPS_Chg_3m",
+          "C04_ESBR"
+        ],
+        "expectation": "[2급 · 기전 레벨] joint-top(3,3) 셀 종목의 형성 후 1~3개월 컨센서스 상향 개정이 joint-bottom(1,1) 대비 지속 우위여야 한다. 성과와 무관하게 부재하면 지연-조정 기전 기각."
+      }
+    ],
+    "falsification_source_verbatim": {
+      "observable": "[1급 — 사전등록] 이익 축(SUE 3분위)을 통제한 각 층 내에서 가격모멘텀 top-vs-bottom 분위 스프레드(1M forward, NW lag-3)가 유의하지 않으면 CJL1996 의 KR 이식 실패로 판정한다(CJL1996 Table 6 panel B 의 KR 재현 검정 — 미국 값 6개월 3.1%). [부수 관측 — 기전 레벨] CJL1996 기전(애널리스트 지연 조정)이 참이면 joint-top 셀 종목의 형성 후 1~3개월 컨센서스 상향 개정(eps_chg_1m/eps_chg_3m 리프)이 joint-bottom 셀 대비 지속적으로 우위여야 한다 — 성과와 무관하게 이 부수 관측이 부재하면 기전 기각(성과가 우연히 양수여도 다른 무엇의 재포장).",
+      "field_dictionary_refs": [
+        "FDB-B3_registry_consensus_daily (C01_SUE 입력·eps 추정 컬럼 — load_month_factors() 경유)",
+        "C-CONSENSUS-QW (.cache/consensus/{sue,eps_chg_1m,eps_chg_3m,eps_1y} 일별 시계열)",
+        "FDB-B2_registry_rawdata_price_daily (M02_Mom_6_1 가격모멘텀)"
+      ],
+      "reject_if": "① SUE 3개 층 각각에서 가격모멘텀 분위 스프레드 NW-t 비유의(층별 전멸) → KR 에서 가격 축은 이익 축에 포섭(spanned) = CJL1996 이식 실패 — 이 경우 가격모멘텀 재료의 강화 방향 자체를 접고 이익 축 단독을 별개 가설로 분리. ② 부수 관측 실패(joint-top 셀의 후속 개정 우위 부재) → 지연-조정 기전 기각, 성과가 있어도 challenge_note 에 기전 미확인 명기. ③ 반대 방향 검정(가격 축 통제 후 SUE 스프레드 비유의) → 이익 축이 가격에 포섭 = 2-way 의 증분 없음, 단순 모멘텀 재탕으로 판정."
+    },
+    "regime_scope": {
+      "holds_in": [
+        "neutral·expansion (저~중변동, 이익 개정 사이클이 순차 도착하고 정보가 가격을 지배하는 평시)",
+        "외국인 순유입 국면 (CTW2010 individualism 조절변수의 KR 시계열 강하 — 고-individualism 관할 출신 모멘텀 수요 주체의 참여 강도가 높을 때)"
+      ],
+      "weakens_or_reverses_in": [
+        "crisis (유동성 청산이 정보 신호를 압도 — 기저 실측 MDD 86.7% 의 발생 구간)",
+        "crisis 직후 반등 초입(recovery 전반부) — 모멘텀 크래시의 전형 구간: 패자 랠리로 승자-패자 순위가 역전되고, 이익 서프라이즈 정보도 거시 β 리버설에 압도된다"
+      ],
+      "boundary_rationale": "경계는 메커니즘에서 도출된다: path 가 순차적 이익정보 도착 → 지연 조정 회수이므로, 성립 조건은 이익정보가 단면 수익의 지배 성분일 것. 위기·반등 초입은 그 조건이 깨지는 국면(청산·β 리버설 > 정보) — JT1993 원형의 KR 실측 MDD 86.7% 가 이 경계의 존재 증거다. CTW2010 의 국가 수준 조절변수 4종은 KR 단일 시장에서는 상수이므로 시계열 국면 축으로 내린다: individualism(국가상수) → 외국인 참여 강도(시변 대리) / 거래비용 → 유동성·스프레드 국면 / 애널리스트 예측분산 → 컨센서스 분산 확대·축소 국면(분산 확대기 = 정보 불확실성 높음 = 드리프트 연장 예상이나, 이는 후속 검증 대상 보조 가설로만 기록). ★국면 오버레이 적용은 본 단계에서 하지 않는다(S0/S1 오버레이 금지) — 이 경계는 risk/overlay 계층의 라우팅 근거와 subperiod 해석 기준으로만 쓴다."
+    }
+  },
+  "factors": [
+    {
+      "factor_id": "F1_joint2way_minrank_price_x_sue",
+      "ast": {
+        "op": "WHERE",
+        "args": [
+          {
+            "op": "SIGN",
+            "args": [
+              {
+                "op": "SUB",
+                "args": [
+                  {
+                    "op": "MUL",
+                    "args": [
+                      {
+                        "op": "SUB",
+                        "args": [
+                          {
+                            "op": "ADD",
+                            "args": [
+                              {
+                                "op": "CS_RANK",
+                                "args": [
+                                  {
+                                    "leaf": "REGISTRY",
+                                    "factor": "M02_Mom_6_1"
+                                  }
+                                ]
+                              },
+                              {
+                                "op": "CS_RANK",
+                                "args": [
+                                  {
+                                    "leaf": "REGISTRY",
+                                    "factor": "C01_SUE"
+                                  }
+                                ]
+                              }
+                            ]
+                          },
+                          {
+                            "op": "ABS",
+                            "args": [
+                              {
+                                "op": "SUB",
+                                "args": [
+                                  {
+                                    "op": "CS_RANK",
+                                    "args": [
+                                      {
+                                        "leaf": "REGISTRY",
+                                        "factor": "M02_Mom_6_1"
+                                      }
+                                    ]
+                                  },
+                                  {
+                                    "op": "CS_RANK",
+                                    "args": [
+                                      {
+                                        "leaf": "REGISTRY",
+                                        "factor": "C01_SUE"
+                                      }
+                                    ]
+                                  }
+                                ]
+                              }
+                            ]
+                          }
+                        ]
+                      },
+                      {
+                        "const": 0.5
+                      }
+                    ]
+                  },
+                  {
+                    "const": 0.6666666667
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "op": "MUL",
+            "args": [
+              {
+                "op": "SUB",
+                "args": [
+                  {
+                    "op": "ADD",
+                    "args": [
+                      {
+                        "op": "CS_RANK",
+                        "args": [
+                          {
+                            "leaf": "REGISTRY",
+                            "factor": "M02_Mom_6_1"
+                          }
+                        ]
+                      },
+                      {
+                        "op": "CS_RANK",
+                        "args": [
+                          {
+                            "leaf": "REGISTRY",
+                            "factor": "C01_SUE"
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "op": "ABS",
+                    "args": [
+                      {
+                        "op": "SUB",
+                        "args": [
+                          {
+                            "op": "CS_RANK",
+                            "args": [
+                              {
+                                "leaf": "REGISTRY",
+                                "factor": "M02_Mom_6_1"
+                              }
+                            ]
+                          },
+                          {
+                            "op": "CS_RANK",
+                            "args": [
+                              {
+                                "leaf": "REGISTRY",
+                                "factor": "C01_SUE"
+                              }
+                            ]
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "const": 0.5
+              }
+            ]
+          }
+        ]
+      },
+      "role": "core_signal",
+      "restatement_exposure": 1,
+      "note": "독립 2-way 3분위 정렬의 교집합은 min(백분위랭크) 의 2/3 상위준위집합과 **집합 동일**이다 (min(a,b) >= 2/3 ⟺ a >= 2/3 ∧ b >= 2/3). 비교 연산자가 𝒪 밖이므로 SIGN(SUB(·,2/3)) + WHERE 로 표현했고, min 은 0.5*((a+b)-|a-b|) 항등식으로 ADD/SUB/ABS/MUL 만 써서 구성했다. 𝒪 확장 불요."
+    },
+    {
+      "factor_id": "F2_price_rank_M02",
+      "ast": {
+        "op": "CS_RANK",
+        "args": [
+          {
+            "leaf": "REGISTRY",
+            "factor": "M02_Mom_6_1"
+          }
+        ]
+      },
+      "role": "conditioning_axis_price",
+      "restatement_exposure": 0
+    },
+    {
+      "factor_id": "F3_earnings_rank_C01",
+      "ast": {
+        "op": "CS_RANK",
+        "args": [
+          {
+            "leaf": "REGISTRY",
+            "factor": "C01_SUE"
+          }
+        ]
+      },
+      "role": "conditioning_axis_earnings",
+      "restatement_exposure": 1
+    }
+  ],
+  "combination_rule": "rank_average",
+  "combination_rule_note": "★enum 근사 표기 — 실제 결합은 두 백분위랭크의 **원소별 최솟값(min)** 이며 합산/평균이 아니다(합산은 한 축의 강한 값이 다른 축의 약한 값을 상쇄해 상호통제 구조를 소거한다 — WT 사전등록이 z-composite 를 명시 금지). enum 5값 중 min-결합을 담는 항이 없어 rank 기반이라는 점만 공유하는 rank_average 로 표기하고, 정확한 결합식은 factors[0].ast 가 정본이다. enum 확장 필요분 = ast_operator_backlog 후보(제안일 뿐 선제 확장 아님).",
+  "verdict": "designed",
+  "self_pit_check": {
+    "performed": true,
+    "leaves_checked": [
+      {
+        "leaf": "M02_Mom_6_1",
+        "availability_rule": "fixed: T-1 (registry availability.type=fixed). 실측: 126일 창의 종점이 t-21일(SKIP=21) — compute_momentum.R:107-112. factor DB 월파일 asof <= sig_date 260/260월 실측 통과.",
+        "restatement_prone": false
+      },
+      {
+        "leaf": "C01_SUE",
+        "availability_rule": "fixed: T-1 선언 · ★known_discrepancy(registry 명시): 코드 강제점은 Date <= sig_d 로 same-day 를 허용한다(factor_db_builder.R:441 .pit_consensus / compute_consensus.R:33). 제공 시각 메타 부재로 당일값 사용 여부 미검증. → lag1 스트레스로 실증 대응(아래 notes).",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "C02_EPS_Chg_1m",
+        "availability_rule": "fixed: T-1 (동일 known_discrepancy). 기전 부수관측 전용 — 신호 구성 미사용.",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "C03_EPS_Chg_3m",
+        "availability_rule": "fixed: T-1 (동일 known_discrepancy). 기전 부수관측 전용.",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "C04_ESBR",
+        "availability_rule": "fixed: T-1. DUPC-045 canonical(C13_Revision_Breadth_3m 은 alias — 무력창 결함). 기전 부수관측 전용.",
+        "restatement_prone": true
+      }
+    ],
+    "verdict": "clean",
+    "notes": "① C15: 전 팩터 접근이 load_month_factors() 경유 — parquet 직접 load 0건. ② C14: 월파일 attr factor_db_asof_date <= sig_date, 260/260월 위반 0 실측(pit_asof.parquet). ③ C13: Z_Score_Aligned 만 사용, NEGATE/FLIP 0건 — 방향정렬은 align_factor_direction() 의 expanding-window IC(PIT-safe, min_months=36; 2005년 12개월만 registry-fallback 2종). ④ C10: 유동성 = build_adv20_t1(당일 제외 20일 평균거래대금) >= 2e8. ⑤ C6: 유니버스 멤버십을 각 sig_date 시점 K200/KQ150 플래그로 결정 — 사후 명부 미사용. ⑥ C4: 본 설계는 DART 재무 리프 미사용(컨센서스·가격만). ⑦ C1: full-sample 통계 0건 — 분위 breakpoint 는 매월 단면에서만 계산. ⑧ C5: 오버레이 미적용(S0/S1 금지 준수). ⑨ detect_lookahead 하드 게이트: 엔진 3파일 scanned=TRUE clean=TRUE 위반 0. ⑩ C01_SUE same-day 허용 결함의 실증 대응 = lag1 스트레스(SUE 를 1개월 지연 적용): PORT_t 0.656 vs base 0.504 → inflation_ratio 0.768 < 1.0 = 지연판이 오히려 더 높다 ⇒ 동월 정보 누출로 성과가 부풀려진 흔적 없음. verdict=clean 은 이 실증 위에 선다(선언이 아님)."
+  },
+  "alpha_vector": {
+    "A000660": 0.00184,
+    "A001450": 0.001569,
+    "A003230": 0.002054,
+    "A004170": 0.001469,
+    "A004370": 0.001454,
+    "A005930": 0.00214,
+    "A006400": 0.001654,
+    "A007070": 0.002154,
+    "A008770": 0.001726,
+    "A009150": 0.001768,
+    "A011070": 0.00154,
+    "A011200": 0.001454,
+    "A016360": 0.001269,
+    "A021240": 0.001954,
+    "A023530": 0.001797,
+    "A028260": 0.001497,
+    "A032830": 0.002383,
+    "A033780": 0.001968,
+    "A036570": 0.001954,
+    "A042700": 0.001311,
+    "A047040": 0.002411,
+    "A055550": 0.001983,
+    "A066570": 0.00134,
+    "A082920": 0.002411,
+    "A093370": 0.001626,
+    "A095610": 0.001897,
+    "A097950": 0.001497,
+    "A105560": 0.001411,
+    "A111770": 0.001926,
+    "A131970": 0.001483,
+    "A140860": 0.001611,
+    "A161390": 0.001697,
+    "A161890": 0.001854,
+    "A192080": 0.002097,
+    "A192820": 0.001897,
+    "A241710": 0.001311,
+    "A259960": 0.001826,
+    "A271560": 0.001397,
+    "A282330": 0.001797,
+    "A319660": 0.002325,
+    "A375500": 0.002111,
+    "A383220": 0.002268,
+    "A402340": 0.001369,
+    "A483650": 0.002011
+  },
+  "alpha_vector_lower_bound": {
+    "A000660": 0.000242,
+    "A001450": 0.000207,
+    "A003230": 0.000271,
+    "A004170": 0.000193,
+    "A004370": 0.000192,
+    "A005930": 0.000282,
+    "A006400": 0.000218,
+    "A007070": 0.000284,
+    "A008770": 0.000227,
+    "A009150": 0.000233,
+    "A011070": 0.000203,
+    "A011200": 0.000192,
+    "A016360": 0.000167,
+    "A021240": 0.000257,
+    "A023530": 0.000237,
+    "A028260": 0.000197,
+    "A032830": 0.000314,
+    "A033780": 0.000259,
+    "A036570": 0.000257,
+    "A042700": 0.000173,
+    "A047040": 0.000318,
+    "A055550": 0.000261,
+    "A066570": 0.000177,
+    "A082920": 0.000318,
+    "A093370": 0.000214,
+    "A095610": 0.00025,
+    "A097950": 0.000197,
+    "A105560": 0.000186,
+    "A111770": 0.000254,
+    "A131970": 0.000195,
+    "A140860": 0.000212,
+    "A161390": 0.000224,
+    "A161890": 0.000244,
+    "A192080": 0.000276,
+    "A192820": 0.00025,
+    "A241710": 0.000173,
+    "A259960": 0.000241,
+    "A271560": 0.000184,
+    "A282330": 0.000237,
+    "A319660": 0.000306,
+    "A375500": 0.000278,
+    "A383220": 0.000299,
+    "A402340": 0.00018,
+    "A483650": 0.000265
+  },
+  "confidence_vector": {
+    "A000660": 0.6667,
+    "A001450": 0.6667,
+    "A003230": 0.5052,
+    "A004170": 0.6667,
+    "A004370": 0.4896,
+    "A005930": 0.6424,
+    "A006400": 0.6406,
+    "A007070": 0.5694,
+    "A008770": 0.5816,
+    "A009150": 0.6667,
+    "A011070": 0.6667,
+    "A011200": 0.5625,
+    "A016360": 0.6667,
+    "A021240": 0.6389,
+    "A023530": 0.6667,
+    "A028260": 0.6128,
+    "A032830": 0.6632,
+    "A033780": 0.6059,
+    "A036570": 0.5955,
+    "A042700": 0.5885,
+    "A047040": 0.6667,
+    "A055550": 0.6007,
+    "A066570": 0.6667,
+    "A082920": 0.6545,
+    "A093370": 0.5764,
+    "A095610": 0.6667,
+    "A097950": 0.5295,
+    "A105560": 0.6667,
+    "A111770": 0.4809,
+    "A131970": 0.5694,
+    "A140860": 0.6267,
+    "A161390": 0.5469,
+    "A161890": 0.6667,
+    "A192080": 0.6285,
+    "A192820": 0.4601,
+    "A241710": 0.6215,
+    "A259960": 0.5729,
+    "A271560": 0.6667,
+    "A282330": 0.5573,
+    "A319660": 0.6667,
+    "A375500": 0.6597,
+    "A383220": 0.5781,
+    "A402340": 0.6667,
+    "A483650": 0.6667
+  },
+  "signal_matrix_ref": "file://stage_artifacts/WT_R20260829_001/alpha_scores.parquet",
+  "factor_specs": [
+    {
+      "factor_family": "Momentum",
+      "proxy": "M02_Mom_6_1 (6개월 가격모멘텀, 최근 1개월 skip)",
+      "formula": "prod(1+r_d)-1 over [t-126d, t-21d]  (compute_momentum.R:107-112)",
+      "lag_rule": "price t-1 close · 형성창 종점 t-21d",
+      "winsorization": "factor DB 빌더 1/99 winsorize + ±3 clip",
+      "neutralization": "none (원문 CJL1996 정렬은 중립화 없음 — size 중립화는 진단으로 병기)",
+      "economic_rationale": "behavioral",
+      "weight_theta": 0.5,
+      "references": [
+        "Jegadeesh-Titman 1993 JF 48(1):65-91",
+        "Chan-Jegadeesh-Lakonishok 1996 JF 51(5):1681-1713 (NBER w5375) p.5"
+      ]
+    },
+    {
+      "factor_family": "Consensus",
+      "proxy": "C01_SUE (Standardized Unexpected Earnings)",
+      "formula": "SUE_it = (e_iq - e_iq-4)/sigma_it — seasonal random walk 기대이익, sigma = 직전 8분기 unexpected earnings 표준편차 (CJL1996 p.5 정의). KR 구현 = compute_consensus.R:141 Raw_Value=sue",
+      "lag_rule": "fixed T-1 선언 / 코드 강제점 Date <= sig_d (known_discrepancy — lag1 스트레스로 실증)",
+      "winsorization": "factor DB 빌더 1/99 winsorize + ±3 clip",
+      "neutralization": "none",
+      "economic_rationale": "behavioral",
+      "weight_theta": 0.5,
+      "references": [
+        "Chan-Jegadeesh-Lakonishok 1996 JF 51(5) p.5, Table 6 panel B",
+        "Bernard-Thomas 1989 (PEAD)"
+      ]
+    }
+  ],
+  "diagnostics": {
+    "canonical_port_t_nw_lag3": 0.503698,
+    "canonical_port_t_pvalue": 0.614,
+    "canonical_n_months": 259,
+    "canonical_alpha_annualized": 0.030245,
+    "canonical_information_ratio": 0.11771,
+    "beta_controlled_alpha_annual": 0.030245,
+    "beta_controlled_t_alpha": 0.99802,
+    "beta": 0.888824,
+    "beta_contribution_annual": -0.013024,
+    "rank_ic": 0.0111,
+    "icir": 0.089,
+    "harvey_t_stat": 1.51,
+    "harvey_t_specs_pass_count": 0,
+    "monotonicity": 0.612,
+    "subperiod_stability": 0.333333,
+    "turnover_proxy": 9.502,
+    "deflated_sharpe_ratio": 0.825,
+    "post_neutralization_ic": 0.0091,
+    "alpha_inheritance_cor": 0.57398696,
+    "diag_ew_universe_port_t": -0.064235,
+    "diag_ew_universe_post2017_t": -0.394953,
+    "diag_ew_universe_oos_retention_approx": -2.32476,
+    "diag_cap_tier_weight_share": {
+      "MEGA": 0.063745,
+      "MID": 0.098914,
+      "OTHER": 0.837342,
+      "UNRANKED": 0
+    },
+    "cor_vs_admitted_STR_AS_20260612_161342_1312338": 0.114244,
+    "redundancy_cluster_id": "DUPC-005 (C01_SUE canonical; alias C09/C10, partner C05_ESCR) × momentum M02 (dedup 미선언 — M01/M03 과 별개 창)"
+  },
+  "step0_availability_gate": {
+    "verdict": "PASS — C01_SUE 실가용. 대체 불요.",
+    "method": "load_month_factors() 경유 260개월 전수(PIT C15). parquet 직접 load 0건.",
+    "factors": {
+      "C01_SUE": {
+        "months_live": 260,
+        "of": 260,
+        "first": "2005-01-31",
+        "last": "2026-08-28",
+        "median_rows_emitted": 836,
+        "median_names_in_universe": 290,
+        "min_names_in_universe": 154,
+        "modal_frac": 0.0257,
+        "degenerate": false
+      },
+      "M02_Mom_6_1": {
+        "months_live": 260,
+        "of": 260,
+        "median_names_in_universe": 346,
+        "modal_frac": 0.0224,
+        "degenerate": false
+      },
+      "C02_EPS_Chg_1m": {
+        "months_live": 260,
+        "of": 260,
+        "median_names_in_universe": 343,
+        "modal_frac": 0.8199,
+        "degenerate": false,
+        "caveat": "커버 행의 82%가 동일값(질량점) — 기전 부수관측의 해상도 제약. 등급 D/T 축 발화 문턱(0.99) 미만이라 emission_guard 는 조용하다."
+      },
+      "C03_EPS_Chg_3m": {
+        "months_live": 260,
+        "of": 260,
+        "median_names_in_universe": 340,
+        "modal_frac": 0.4371,
+        "degenerate": false
+      },
+      "C04_ESBR": {
+        "months_live": 260,
+        "of": 260,
+        "median_names_in_universe": 316,
+        "modal_frac": 0.0236,
+        "degenerate": false
+      }
+    },
+    "fq163_fq203_disposition": "FQ-203 이 경고한 '2026-01 이후 컨센서스 배출 중단' 은 **본 4팩터에 해당하지 않는다** — 2026-01~2026-08 전월 정상 배출 실측(C01_SUE 유니버스 내 288~292종목). FQ-203 의 'C13 ⊂ C04 완전 중복' 은 registry dedup 선언(DUPC-045)으로 확인했고, 본 설계는 C13 을 쓰지 않고 canonical C04 만 부수관측에 쓴다. FQ-163(침묵 스킵 7종)의 대상 팩터는 C15_Forecast_Error_Trend 계열이며 본 설계 리프에 없다.",
+    "effective_window": "2005-01-31 ~ 2026-08-28 (260 신호월 · 259 수익월). 결손 구간 없음 — 유효 표본 절단 불요.",
+    "emission_ledger_crosscheck": "emission_declared_identity.json · emission_expected_absent.json 에 본 5팩터 등재 0건 = 축 D/T/I 어느 것으로도 선언·예외 처리된 적이 없다(정상 배출 팩터)."
+  },
+  "construction": {
+    "sort": "독립(independent) 2-way 3×3 정렬 — CJL1996 Section III.A p.12 절차",
+    "n_quantiles": 3,
+    "n_quantiles_source": "CJL1996 원문값(3등분). 하향 조정 없음.",
+    "formation_window": "6개월",
+    "skip": "21 거래일(≈1개월)",
+    "long_cell": "joint-top (price tercile 3 ∩ SUE tercile 3)",
+    "within_cell_truncation": "min(백분위랭크) 내림차순 상위 25 — 셀 인구가 25 를 넘는 달의 절단 규칙",
+    "rebalance": "monthly",
+    "weights_note": "비중 결정은 optimizer 소관 — 본 단계 미정. canonical_screen_bt 의 top-N EW 는 고정 규격 스크리닝이지 비중 제안이 아니다.",
+    "cell_population_joint_top": {
+      "min": 16,
+      "p10": 21,
+      "median": 36,
+      "max": 49,
+      "months": 260,
+      "months_below_25": 50
+    },
+    "paper_assumption_broken": [
+      {
+        "item": "skip 규약",
+        "paper": "CJL1996 p.5-6 = 형성 후 **5일** skip(bid-ask bounce 통제)",
+        "used": "21 거래일(≈1개월) skip — M02_Mom_6_1 의 registry 정의",
+        "reason": "① factor DB 경유(C15) 를 지키면서 5일 skip 판을 쓰려면 신규 팩터 자체설계가 필요하고, ② 기저 RP_20260829_122020_9192 도 skip1 을 썼으므로 강화 시도의 귀속(무엇이 바뀌었는가)이 흐려진다. 21일 skip 은 5일보다 **보수적**(미시구조 오염을 더 걷어낸다)이나 그 자체가 다른 신호다."
+      },
+      {
+        "item": "breakpoint 모집단",
+        "paper": "NYSE-only breakpoint (소형 AMEX/Nasdaq 을 분위 경계에서 배제)",
+        "used": "K200∪KQ150 전체 유니버스 breakpoint (1급) + K200-only breakpoint (강건성 팔)",
+        "reason": "KR 의 K200∪KQ150 은 이미 대형주-편중 모집단이라 CRSP 전체 단면에 대응하지 않는다. 두 판을 모두 실측했고 결론은 동일(PORT_t 0.504 vs 0.457)."
+      },
+      {
+        "item": "보유 형태",
+        "paper": "6개월 buy-and-hold overlapping 포트(월 1/6 씩 교체)",
+        "used": "1개월 보유·월간 전량 리밸(고정 축 = monthly rebalance · forecast_horizon 1M)",
+        "reason": "고정 축이 논문값을 이긴다(lean-loop 입력 규약). 다만 CJL1996 드리프트의 절반이 후속 공시일 주변(1~6개월)에 실현된다는 원문 서술상, 1M 수평선은 논문 효과의 일부만 포착할 수 있다 — 이는 T1 의 효과크기 해석에 반영해야 할 구조적 감쇠 요인이며 challenge_flags 에 적었다."
+      },
+      {
+        "item": "롱숏 → 롱온리",
+        "paper": "9셀 비교(joint-top vs joint-bottom 포함)",
+        "used": "롱온리 joint-top 셀만 배포(고정 축 long-only). 셀 스프레드는 검정 T1/T2 로만 산출.",
+        "reason": "KR 공매도 제약 + 고정 축."
+      }
+    ]
+  },
+  "preregistered_tests": {
+    "T1_primary": {
+      "label": "1급(사전등록) — SUE 3분위 층 통제 후 가격모멘텀 top-bottom 분위 스프레드",
+      "per_layer": [
+        {
+          "sue_layer": 1,
+          "n_months": 259,
+          "monthly": 0.001925292,
+          "annual": 0.02310351,
+          "nw_t": 0.5771089
+        },
+        {
+          "sue_layer": 2,
+          "n_months": 259,
+          "monthly": 0.004897192,
+          "annual": 0.0587663,
+          "nw_t": 1.4937694
+        },
+        {
+          "sue_layer": 3,
+          "n_months": 259,
+          "monthly": 0.004000441,
+          "annual": 0.04800529,
+          "nw_t": 1.3171503
+        }
+      ],
+      "layer_average": {
+        "n_months": 259,
+        "monthly": 0.003607642,
+        "annual": 0.04329,
+        "nw_t": 1.291,
+        "nw_se": 0.0027955
+      },
+      "power": {
+        "implied_monthly_effect": 0.0051667,
+        "implied_source": "CJL1996 Table 6 panel B — 이익 축 고정 시 prior-return 스프레드 6개월 3.1% ÷ 6",
+        "mde80_monthly": 0.007832,
+        "ratio": 0.6597,
+        "expected_t": 1.848,
+        "power": 0.455
+      },
+      "verdict": "FAIL_AS_PREREGISTERED — 3개 SUE 층 **전부** 비유의(|t| < 1.96). reject_if ① 발동 = CJL1996 의 KR 이식 실패.",
+      "disposition_label": "미결(underpowered) — '효과 없음' 이 아니다. ratio 0.6597 (검정력 45.5%) 은 3단 처분의 (b) 조건부 구간이며 사전등록이 '미결이 최빈 결말' 을 인정해야 하는 자리다. 다만 **처분은 T2 가 확정한다**(아래).",
+      "note": "관측 효과 0.361%/월(연 4.33%) 은 CJL1996 미국 함의값 0.517%/월의 70% 수준이며 부호는 양(+)이다. 즉 '가격모멘텀이 KR 에서 역작동한다' 는 결론이 아니라 '이 창에서 유의로 분리되지 않는다' 는 결론이다."
+    },
+    "T2_reverse": {
+      "label": "역방향 — 가격모멘텀 3분위 층 통제 후 SUE top-bottom 분위 스프레드",
+      "per_layer": [
+        {
+          "price_layer": 1,
+          "n_months": 259,
+          "monthly": -0.001690093,
+          "annual": -0.02028112,
+          "nw_t": -0.8164706
+        },
+        {
+          "price_layer": 2,
+          "n_months": 259,
+          "monthly": 0.001890784,
+          "annual": 0.02268941,
+          "nw_t": 0.8652336
+        },
+        {
+          "price_layer": 3,
+          "n_months": 259,
+          "monthly": 0.000385055,
+          "annual": 0.00462066,
+          "nw_t": 0.1760876
+        }
+      ],
+      "layer_average": {
+        "n_months": 259,
+        "monthly": 0.000195249,
+        "annual": 0.0023,
+        "nw_t": 0.15,
+        "nw_se": 0.0018672
+      },
+      "power": {
+        "implied_monthly_effect": 0.0071667,
+        "implied_source": "CJL1996 Table 6 panel B — 가격 축 고정 시 SUE 스프레드 6개월 4.3% ÷ 6",
+        "mde80_monthly": 0.003658,
+        "ratio": 1.959,
+        "expected_t": 5.488,
+        "power": 1.0
+      },
+      "verdict": "REJECTED (powered null) — reject_if ③ 발동. 가격 축을 통제하면 SUE 축의 분위 스프레드는 연 +0.23%(NW-t 0.150) 로 소멸한다.",
+      "disposition_label": "효과 없음(powered null) — 미결 아님. 검정력 100%(ratio 1.96)에서 귀무를 기각하지 못했다. 세 층의 부호도 갈린다(-0.82 / +0.87 / +0.18).",
+      "note": "이것이 본 시도의 **결정적 판정**이다. CJL1996 의 핵심 주장(neither momentum strategy subsumes the other)이 KR 에서 **한쪽 방향으로 깨진다** — 이익 축이 가격 축에 포섭된다."
+    },
+    "T3_fama_macbeth": {
+      "label": "CJL1996 Section III.B 대응 — 백분위랭크 설명변수 + logSize 통제 단면회귀 (NW lag-3)",
+      "n_months": 259,
+      "b_price_rank": 0.0052,
+      "t_price_rank": 1.228,
+      "b_sue_rank": -0.0,
+      "t_sue_rank": -0.024,
+      "b_log_size": -0.00063,
+      "t_log_size": -0.791,
+      "verdict": "T2 와 독립 경로에서 동일 결론 — SUE 랭크의 한계 예측력이 **정확히 0** (t -0.024). 두 통제가 갈리지 않는다."
+    },
+    "T4_mechanism_observable": {
+      "label": "2급(사전등록) — joint-top(3,3) vs joint-bottom(1,1) 후속 컨센서스 개정 z 격차",
+      "by_horizon": [
+        {
+          "k_months": 1,
+          "n": 259,
+          "d_C02_EPS_Chg_1m": 0.8177,
+          "t": 19.07,
+          "d_C03_EPS_Chg_3m": 0.7577,
+          "t_C03": 23.11,
+          "d_C04_ESBR": 0.6175,
+          "t_C04": 34.45
+        },
+        {
+          "k_months": 2,
+          "n": 258,
+          "d_C02_EPS_Chg_1m": 0.6763,
+          "t": 17.41,
+          "d_C03_EPS_Chg_3m": 0.6323,
+          "t_C03": 19.42,
+          "d_C04_ESBR": 0.4881,
+          "t_C04": 26.13
+        },
+        {
+          "k_months": 3,
+          "n": 257,
+          "d_C02_EPS_Chg_1m": 0.527,
+          "t": 13.82,
+          "d_C03_EPS_Chg_3m": 0.5475,
+          "t_C03": 16.77,
+          "d_C04_ESBR": 0.3911,
+          "t_C04": 21.57
+        }
+      ],
+      "verdict": "PASS(관측됨) — 그러나 ★교란 인정: 이 격차는 선택 변수(SUE)와 개정 지표가 서로 시계열·동시 상관을 갖기 때문에 상당분이 **선택 변수의 지속** 이지 '새로운 상향 개정' 이 아닐 수 있다. 이 검정은 t 시점 값을 통제하지 않았다 — 따라서 기전을 **확증하지 못한다**. 부수관측이 '부재하면 기각' 이라는 사전등록 방향으로만 유효하고(기각은 면했다), 역방향으로 기전 확증 근거로 쓰는 것은 과대 해석이다.",
+      "resolution_note": "결정적인 것은 T2 다: 개정 정보가 실제로 뒤따라 온다 해도(=T4 통과) 그것이 **가격 축을 통제한 뒤 초과수익으로 전이되지 않는다**(=T2 powered null). 즉 KR 에서 끊어져 있는 마디는 '이익정보 도착' 이 아니라 '도착한 정보의 미반영분' 이다."
+    }
+  },
+  "increment_analysis": {
+    "mandate": "WT 사전등록 — 이익 축 단독 대비 2-way 의 증분 병기(없으면 판정 불가)",
+    "arms_canonical_screen": {
+      "joint2way": {
+        "port_t": 0.5037,
+        "pvalue": 0.614,
+        "alpha_ann": 0.030245,
+        "IR": 0.1177,
+        "turnover": 9.502,
+        "n": 259
+      },
+      "joint2way_k200bp": {
+        "port_t": 0.457,
+        "pvalue": 0.64769,
+        "alpha_ann": 0.02873,
+        "IR": 0.1083,
+        "turnover": 9.502,
+        "n": 259
+      },
+      "mom_only": {
+        "port_t": 1.2239,
+        "pvalue": 0.221,
+        "alpha_ann": 0.0424,
+        "IR": 0.2595,
+        "turnover": 9.798,
+        "n": 259
+      },
+      "sue_only": {
+        "port_t": -0.975,
+        "pvalue": 0.32956,
+        "alpha_ann": -0.01152,
+        "IR": -0.2308,
+        "turnover": 4.732,
+        "n": 259
+      },
+      "zsum_control": {
+        "port_t": 1.0141,
+        "pvalue": 0.31054,
+        "alpha_ann": 0.04445,
+        "IR": 0.2315,
+        "turnover": 8.771,
+        "n": 259
+      }
+    },
+    "paired_increments": {
+      "vs_sue_only": {
+        "label": "joint2way - sue_only",
+        "n": 259,
+        "diff_ann": 0.049103,
+        "nw_t": 2.000408,
+        "cor_active": 0.636374,
+        "cor_net": 0.87195
+      },
+      "vs_mom_only": {
+        "label": "joint2way - mom_only",
+        "n": 259,
+        "diff_ann": -0.030778,
+        "nw_t": -1.431145,
+        "cor_active": 0.785908,
+        "cor_net": 0.930501
+      },
+      "vs_zsum": {
+        "label": "joint2way - zsum_control",
+        "n": 259,
+        "diff_ann": -0.021278,
+        "nw_t": -1.274526,
+        "cor_active": 0.870602,
+        "cor_net": 0.954135
+      }
+    },
+    "reading": "①이익 축 단독 대비 증분은 **양(+4.91%/yr, NW-t 2.00)** 이다 — 요구된 병기값. 그러나 ②가격 축 단독 대비 증분은 **음(-3.08%/yr, NW-t -1.43)** 이고 ③단순 z-합산 대비도 음(-2.13%/yr)이다. 결정에 걸리는 증분은 ②다: 이 강화 시도가 묻는 것은 '기저(가격모멘텀)에 이익 축을 더하면 나아지는가' 이고, 답은 **아니오** 다. ①이 양수인 것은 sue_only 가 음수 알파(-1.15%/yr)이기 때문이지 2-way 가 무언가를 벌었기 때문이 아니다.",
+    "duplicate_alarm_disposition": "중복 경보(STR_AS_20260612_161342_1312338, essence B) 해소 — cor(active) 0.114 · cor(net) -0.002 (n=257월). joint2way 는 그 전략의 재생산이 **아니다**. 단 이 해소는 신규성을 확인할 뿐 알파를 만들지 않는다."
+  },
+  "no_signal_control": {
+    "contract": "02_Infrastructure/contracts/no_signal_control.R::no_signal_gate — 제약형 롱온리 의무 게이트",
+    "control_spec": "동일 유니버스(K200∪KQ150) · 동일 제약(25종·cap 0.20) · 동일 비용(15bps) · 월간 리밸 · 시총 상위 25 cap-w · 신호 미사용",
+    "alignment_fix": "★p3 1차 산출은 월 정렬 결함이 있었다 — canonical_screen_bt 의 period_returns$date 는 **신호월 t** 인데 build_no_signal_control 은 그 라벨을 **실현 캘린더월**로 해석한다(대조군 beta 0.041 이 지문). 홀딩월(t+1) 라벨로 재호출해 수리(대조군 beta 1.026). 아래 값은 수리판이다.",
+    "results": {
+      "joint2way": {
+        "n": 258,
+        "strategy": [
+          0.028039,
+          0.885271,
+          0.920239,
+          0.436655,
+          -0.013075
+        ],
+        "control": [
+          -0.005847,
+          1.026135,
+          -0.575457,
+          -0.263843,
+          0.002979
+        ],
+        "diff_ann": 0.017832,
+        "diff_nw_t": 0.437388,
+        "corr": 0.738221,
+        "verdict": "INDISTINGUISHABLE_FROM_NO_SIGNAL",
+        "note": "PORT_t 는 alpha 와 (beta-1)*E[bm] 을 섞는다 — 본 결과의 beta_contrib_ann 이 그 몫이다. verdict 는 무신호 대조 대비 증분에만 걸린다."
+      },
+      "joint2way_k200bp": {
+        "n": 258,
+        "strategy": [
+          0.026525,
+          0.88598,
+          0.86752,
+          0.390582,
+          -0.012994
+        ],
+        "control": [
+          -0.005847,
+          1.026135,
+          -0.575457,
+          -0.263843,
+          0.002979
+        ],
+        "diff_ann": 0.016399,
+        "diff_nw_t": 0.39818,
+        "corr": 0.738637,
+        "verdict": "INDISTINGUISHABLE_FROM_NO_SIGNAL",
+        "note": "PORT_t 는 alpha 와 (beta-1)*E[bm] 을 섞는다 — 본 결과의 beta_contrib_ann 이 그 몫이다. verdict 는 무신호 대조 대비 증분에만 걸린다."
+      },
+      "mom_only": {
+        "n": 258,
+        "strategy": [
+          0.037774,
+          1.040373,
+          0.996768,
+          1.07973,
+          0.004601
+        ],
+        "control": [
+          -0.005847,
+          1.026135,
+          -0.575457,
+          -0.263843,
+          0.002979
+        ],
+        "diff_ann": 0.045243,
+        "diff_nw_t": 1.019343,
+        "corr": 0.72194,
+        "verdict": "INDISTINGUISHABLE_FROM_NO_SIGNAL",
+        "note": "PORT_t 는 alpha 와 (beta-1)*E[bm] 을 섞는다 — 본 결과의 beta_contrib_ann 이 그 몫이다. verdict 는 무신호 대조 대비 증분에만 걸린다."
+      },
+      "sue_only": {
+        "n": 258,
+        "strategy": [
+          -0.013475,
+          0.823053,
+          -0.522244,
+          -1.024618,
+          -0.020166
+        ],
+        "control": [
+          -0.005847,
+          1.026135,
+          -0.575457,
+          -0.263843,
+          0.002979
+        ],
+        "diff_ann": -0.030773,
+        "diff_nw_t": -0.759656,
+        "corr": 0.724749,
+        "verdict": "INDISTINGUISHABLE_FROM_NO_SIGNAL",
+        "note": "PORT_t 는 alpha 와 (beta-1)*E[bm] 을 섞는다 — 본 결과의 beta_contrib_ann 이 그 몫이다. verdict 는 무신호 대조 대비 증분에만 걸린다."
+      },
+      "zsum_control": {
+        "n": 258,
+        "strategy": [
+          0.040669,
+          0.943111,
+          1.14678,
+          0.899868,
+          -0.006483
+        ],
+        "control": [
+          -0.005847,
+          1.026135,
+          -0.575457,
+          -0.263843,
+          0.002979
+        ],
+        "diff_ann": 0.037054,
+        "diff_nw_t": 0.854999,
+        "corr": 0.71993,
+        "verdict": "INDISTINGUISHABLE_FROM_NO_SIGNAL",
+        "note": "PORT_t 는 alpha 와 (beta-1)*E[bm] 을 섞는다 — 본 결과의 beta_contrib_ann 이 그 몫이다. verdict 는 무신호 대조 대비 증분에만 걸린다."
+      }
+    },
+    "verdict": "INDISTINGUISHABLE_FROM_NO_SIGNAL (전 5개 arm). joint2way diff +1.78%/yr NW-t 0.437 · mom_only +4.52%/yr NW-t 1.019 · sue_only -3.08%/yr NW-t -0.760.",
+    "consequence": "screen-tier 등재 불가(measurement-graduation §3). joint2way 의 +3.02%/yr cap-w 알파는 신호 기여로 증명되지 않는다."
+  },
+  "pit_evidence": {
+    "detect_lookahead": {
+      "p1_build_panel.R": {
+        "scanned": true,
+        "clean": true,
+        "n_violations": 0
+      },
+      "p2_measure.R": {
+        "scanned": true,
+        "clean": true,
+        "n_violations": 0
+      },
+      "p3_diagnostics.R": {
+        "scanned": true,
+        "clean": true,
+        "n_violations": 0
+      }
+    },
+    "asof_check": "260/260월 factor_db_asof_date <= sig_date (위반 0) — stage_artifacts/WT_R20260829_001/pit_asof.parquet",
+    "liq_ruler": "adv20_t1 (build_adv20_t1, 당일 제외 20일 평균거래대금 · 앵커 덮개 100.0%) · liq_min 2e8 · n_dropped 0 / n_na_pass 46",
+    "liq_ruler_label_caveat": "canonical_screen_bt 반환의 liq_ruler 가 'unlabeled' 로 찍혔다 — attr 가 parquet 왕복에서 소실된 것이며 **값은 p1 의 adv20_t1 산출 그대로**다. p3 부터 재부착. 라벨 소실은 판정에 영향 없으나 자(ruler) 감사 추적성을 끊으므로 기록한다.",
+    "lag1_stress": {
+      "n_months": 258,
+      "port_t": 0.655759,
+      "alpha_annual": 0.036431,
+      "base_port_t": 0.503698,
+      "inflation_ratio": 0.768114
+    },
+    "c15_compliance": "load_month_factors() 경유 100% — factor parquet 직접 read 0건(p1_build_panel.R 이 유일한 팩터 진입점).",
+    "c6_survivorship": "유니버스 = 각 sig_date 시점 rawdata 의 K200/KQ150 플래그. 상장폐지 종목은 그 시점 플래그가 있으면 포함되고 이후 자동 이탈."
+  },
+  "selection_objective": "canonical_port_t",
+  "selection_type": "chain",
+  "n_trials": 5,
+  "n_trials_note": "5 arm(joint2way / joint2way_k200bp / mom_only / sue_only / zsum_control)은 **사전등록된 대조군 집합**이지 argmax 선택 대상이 아니다 — 배포안은 착수 전에 joint2way 로 고정돼 있었다(WT 사전등록). 따라서 selection_type=chain, DSR 은 진단 산출(0.825)이며 게이트 아님. 다만 n_trials 는 사후 감사 가능성을 위해 기록한다.",
+  "alpha_discovery_count": 0,
+  "alpha_discovery_count_note": "신규 알파 0건 — 실측 결과가 음성이다. wt_type=reinforcement 이므로 discovery certificate 대상이 아니다.",
+  "verdict_summary": {
+    "headline": "CJL1996 의 KR 이식 실패 — 그러나 실패의 지점이 특정된다: 깨지는 것은 가격 축이 아니라 **이익 축의 독립성**이다.",
+    "preregistered_primary": "T1 FAIL (3층 전멸, 층평균 NW-t 1.291, 검정력 45.5% → 미결)",
+    "decisive": "T2 REJECTED as powered null (NW-t 0.150, 검정력 100%) + T3 Fama-MacBeth b(SUE)=-0.0000 t=-0.024 — 두 독립 경로 일치",
+    "portfolio": "joint2way canonical PORT_t 0.504 (p 0.614) · β-통제 t(α) 0.998 · EW-유니버스 벤치 대비 PORT_t -0.064 · 무신호 대조와 구별 불가",
+    "reinforcement_answer": "기저(가격모멘텀)에 이익 축을 2-way 로 얹는 것은 **개선이 아니다** — mom_only 대비 -3.08%/yr(NW-t -1.43). 강화 시도 1/20 은 음성.",
+    "what_survives": "가격 축 자체는 죽지 않았다: mom_only 가 롱온리 top-25 EW 로는 PORT_t +1.22(연 +4.24%)로 기저의 데실 롱숏 PORT_t -1.291 과 부호가 반대다. 즉 기저 F 의 원인은 '가격모멘텀 신호 부재' 가 아니라 **숏 레그 + 데실 형태**일 가능성이 남는다 — 이것이 다음 시도의 표적이다.",
+    "grade_declaration": "없음 — 등급 권위는 essence_score.R 이며 alpha 단계는 등급을 선언하지 않는다. 위 canonical 수치는 metric_type='canonical_screen'(스크리닝 실측)이고 admission authoritative 는 forge build_bt_result 이다."
+  },
+  "challenge_flags": [
+    "[1급 판정] 사전등록 T1 실패 — SUE 3층 전부에서 가격모멘텀 분위 스프레드 비유의(0.577/1.494/1.317). 사후에 2급 지표로 갈아타지 않았다.",
+    "[결정적 판정] T2 powered null — 검정력 100%(ratio 1.959)에서 가격 축 통제 후 SUE 스프레드 NW-t 0.150. FM 회귀 b(SUE-rank) t=-0.024 가 독립 확인. ⇒ KR 에서 이익 서프라이즈 축은 가격모멘텀에 포섭된다. CJL1996 의 'neither subsumes the other' 가 한쪽으로 깨진다.",
+    "[무신호 대조 실패] 5 arm 전부 INDISTINGUISHABLE_FROM_NO_SIGNAL — joint2way 의 +3.02%/yr 는 신호 기여로 증명되지 않는다. screen-tier 등재 불가.",
+    "[EW-basis 이중 확인] cap-w 벤치 대비 PORT_t +0.504 인데 EW-유니버스 벤치 대비 -0.064 · post2017 -0.395 · oos_retention_approx -2.32. cap-tier 분해상 보유의 83.7%가 OTHER(31위 밖) tier — 즉 cap-w 대비 양(+)의 활성수익은 **소형주 노출**이지 선별력이 아니다. dual-basis 두 축이 같은 방향을 가리킨다.",
+    "[T1 검정력 부족 — 처분 라벨 주의] ratio 0.6597 / 기대 t 1.848 / 검정력 45.5%. 이 구간의 비유의는 '효과 없음' 이 아니라 '미결' 이다. 그러나 T2 가 powered null 이므로 **2-way 설계 전체의 처분은 '증분 없음' 으로 확정**된다 — T1 의 미결성이 설계를 되살리지 않는다.",
+    "[호라이즌 미스매치 — 효과크기 해석 감쇠 요인] CJL1996 의 함의값(3.1%/6M)은 6개월 buy-and-hold 누적이고 본 측정은 1M 리밸이다. 원문은 드리프트의 약 절반이 후속 공시일 주변(1~6M)에 실현된다고 보고하므로, 1M 수평선은 논문 효과의 일부만 포착한다. 즉 T1 의 ratio 0.66 은 **낙관 쪽으로 편향된 함의값**을 쓴 것이 아니라 오히려 보수적이며, 6M 수평선 재측정이 다음 시도의 정당한 각도다.",
+    "[기전 부수관측의 교란] T4 는 통과했으나(t 19/17/14) t 시점 SUE 수준을 통제하지 않아 '선택 변수의 지속' 과 '새 상향 개정' 을 분리하지 못한다. 기전 **확증 근거로 인용 금지** — 사전등록 방향(부재 시 기각)으로만 유효.",
+    "[C02 질량점] C02_EPS_Chg_1m 의 modal_frac 0.8199 — 커버 행의 82%가 동일값이다. emission_guard 축 T 문턱(0.99) 미만이라 경고가 나지 않지만 T4 의 해상도를 실질적으로 낮춘다. C04_ESBR(modal 0.024)을 병기한 이유.",
+    "[구성 대조] zsum_control(z-합산)이 joint2way 보다 PORT_t 가 높다(1.014 vs 0.504). WT 가 금지한 것은 z-composite **배포**이며 본 arm 은 '합산이 상호통제를 소거하는가' 를 재는 대조군으로만 산출했다. 결과는 아이러니하게도 소거된 쪽이 더 낫다 — 이는 2-way 교집합이 상호통제 구조를 살렸다기보다 **표본을 1/9 로 줄여 잡음을 키웠다**는 읽기를 지지한다(joint-top 셀 인구 중앙 36, 최소 16).",
+    "[셀 인구 하한] joint-top 셀이 25종 미만인 달이 50/260 (19.2%). 그 달의 배포 집합은 25종에 못 미친다(≤25 제약 위반 아님). AST 의 WHERE 게이트가 셀 밖을 NA 로 만드는 것과 구현이 일치한다.",
+    "[대안 축 보류] alpha_hypothesis challenge_flags ① 이 보관한 대체 축(REV6 대응 = 개정 breadth)은 착수하지 않았다 — T2 가 이익 축 전반의 한계 예측력 부재를 powered null 로 확정했으므로 같은 계열의 다른 대리변수로 재시도하는 것은 새 각도가 아니다(AX-000 의 '새 각도' 요건 미충족). 재시도가 정당해지는 조건 = 6M 수평선 또는 비-컨센서스 이익 원천(C18_Earnings_CAR_3d = CJL1996 의 ABR 대응, 유니버스 커버 중앙 220종 — 실가용 확인됨).",
+    "[무신호 대조 정렬 결함 발견] p3 1차 산출의 대조군 beta 가 0.041 이었다 — 시총상위 25 cap-w 포트가 벤치와 무상관일 수 없으므로 결함 지문이다. 원인 = period_returns$date(신호월) 를 실현 캘린더월로 해석. 수리 후 beta 1.026. **1차 값은 폐기했고 본 패키지의 값은 수리판이다.**",
+    "[역할 경계] 공분산 추정 0건 · target weights 제안 0건 · 오버레이 적용 0건(S0/S1 금지 준수) · 등급 선언 0건. canonical_screen_bt 의 top-N EW 는 고정 규격 스크리닝이다."
+  ],
+  "method_shopping_log": {
+    "alpha_agent": {
+      "candidates_tried": 5,
+      "preregistered_deploy_candidate": "joint2way",
+      "method_log": [
+        {
+          "name": "joint2way",
+          "canonical_port_t": 0.5037,
+          "selected": true,
+          "note": "WT 사전등록 배포안 — 착수 전 고정"
+        },
+        {
+          "name": "joint2way_k200bp",
+          "canonical_port_t": 0.457,
+          "selected": false,
+          "note": "CJL1996 NYSE-only breakpoint 의 KR 대응 강건성 팔"
+        },
+        {
+          "name": "mom_only",
+          "canonical_port_t": 1.2239,
+          "selected": false,
+          "note": "증분 분모(가격 축 단독) — 선택 후보 아님"
+        },
+        {
+          "name": "sue_only",
+          "canonical_port_t": -0.975,
+          "selected": false,
+          "note": "증분 분모(이익 축 단독) — WT 가 병기를 명령한 대조"
+        },
+        {
+          "name": "zsum_control",
+          "canonical_port_t": 1.0141,
+          "selected": false,
+          "note": "구성 대조(합산이 상호통제를 소거하는가) — 배포 금지 대상"
+        }
+      ]
+    }
+  },
+  "next_probes": [
+    "6M 수평선 재측정 — CJL1996 의 함의값은 6개월 buy-and-hold 누적이고 본 라운드는 1M 리밸이었다. overlapping 6M 포트(월 1/6 교체)로 T1/T2 를 재산출하면 '호라이즌 미스매치' 와 '효과 부재' 가 분리된다. T2 가 6M 에서도 powered null 이면 이익 축은 KR 에서 종결.",
+    "기저 F 의 진짜 원인 분해 — mom_only(롱온리 top-25 EW) PORT_t +1.22 vs 기저 JT1993 6-6 데실 롱숏 PORT_t -1.291. 부호가 반대다. 숏 레그 기여와 데실-vs-top25 형태 기여를 분리 측정하면 강화 축이 '재료 추가' 가 아니라 '형태 교정' 임을 판별할 수 있다."
+  ],
+  "live_trigger": "compute_consensus.R 의 .cons_history() 가 분기 관측으로 축약되도록 수리되면(현재 4영업일 창 결함 — registry DUPC-005/045 defect 블록) C01_SUE 계열의 정보 내용이 바뀐다. 그때 T2 를 재측정할 것 — 본 라운드의 powered null 은 **현 빌드의 SUE** 에 대한 판정이다.",
+  "handoff": {
+    "to": "Q-Lead",
+    "recommendation": "risk/optimizer 진행 권고하지 않음. 사전등록 1급 실패 + 역방향 powered null + 무신호 대조 구별 불가 3중이므로, 이 alpha 를 하류로 보내는 것은 이미 음성인 신호에 Σ 와 weight 를 붙이는 일이다. 강화 원장 attempt 1/20 을 음성으로 마감하고 next_probes 로 attempt 2 를 여는 것을 권고한다.",
+    "if_forced_downstream": "그 경우에도 배포안은 joint2way 로 고정(사후 arm 교체 = sweep 재분류)."
+  }
+}

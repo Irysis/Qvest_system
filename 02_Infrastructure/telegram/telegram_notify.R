@@ -686,7 +686,9 @@ tg_format_gate_block <- function(gates, max_note_chars = 46L) {
   "Execution" = "🎬",
   "Monitoring" = "📡",
   "Architect" = "🏛️",
-  "AlphaSearch" = "🔭"
+  "AlphaSearch" = "🔭",
+  "Book" = "📒",           # v10 2026-08-29: BOOK 트래킹 (governor/monitoring 승계 — book-tracker)
+  "ReinforceLadder" = "🪜" # 사료 발신자 호환 (구 기계 사다리 로그 재발송 대비)
 )
 
 # ─── Emoji Catalog v1 (2026-04-24) — SOT for tg_agent_brief sections ────────

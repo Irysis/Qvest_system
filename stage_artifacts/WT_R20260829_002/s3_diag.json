@@ -1,0 +1,406 @@
+{
+  "regime_definition": {
+    "method": "사후 귀속 라벨 — 벤치 실현수익 + 시그널시점 낙폭(dd_prior, 과거만). 오버레이 미적용(S0/S1 금지 준수). 어떤 셀의 비중도 이 라벨을 쓰지 않는다.",
+    "crisis": "홀딩월 BM 수익 하위 20%",
+    "recovery": "dd_prior <= -20% & BM 수익 > 0",
+    "expansion": "dd_prior > -10% & BM 수익 > 0",
+    "neutral": "그 외",
+    "counts": [
+      {
+        "regime": "neutral",
+        "N": 104
+      },
+      {
+        "regime": "expansion",
+        "N": 65
+      },
+      {
+        "regime": "crisis",
+        "N": 52
+      },
+      {
+        "regime": "recovery",
+        "N": 38
+      }
+    ]
+  },
+  "fingerprint_a_short_leg_rebound": {
+    "by_regime": [
+      {
+        "regime": "neutral",
+        "n": 104,
+        "r_lose_ann": 0.1658044,
+        "r_win_ann": 0.2312399,
+        "short_contrib_ann": -0.1658044,
+        "ls_spread_ann": 0.06543549,
+        "bm_ann": 0.12500695
+      },
+      {
+        "regime": "expansion",
+        "n": 65,
+        "r_lose_ann": 0.34907763,
+        "r_win_ann": 0.67644172,
+        "short_contrib_ann": -0.34907763,
+        "ls_spread_ann": 0.3273641,
+        "bm_ann": 0.59495476
+      },
+      {
+        "regime": "crisis",
+        "n": 52,
+        "r_lose_ann": -0.92928797,
+        "r_win_ann": -1.03559582,
+        "short_contrib_ann": 0.92928797,
+        "ls_spread_ann": -0.10630785,
+        "bm_ann": -0.86909802
+      },
+      {
+        "regime": "recovery",
+        "n": 38,
+        "r_lose_ann": 0.94285486,
+        "r_win_ann": 0.80686768,
+        "short_contrib_ann": -0.94285486,
+        "ls_spread_ann": -0.13598719,
+        "bm_ann": 0.6279642
+      }
+    ],
+    "overall": [
+      {
+        "n": 259,
+        "short_contrib_ann": -0.10594291,
+        "nw_t": -1.73438651,
+        "ls_spread_ann": 0.06713682,
+        "ls_nw_t": 1.07991825
+      }
+    ],
+    "test": {
+      "coef_recovery_monthly": -0.08173461,
+      "t_recovery": -4.40347752,
+      "base_monthly": 0.00316338,
+      "interpretation": "계수<0 & |t|>=2 이면 숏 레그 손실이 반등월에 집중(기전 지문 (a) 성립)"
+    }
+  },
+  "fingerprint_b_loser_small_tilt": {
+    "by_leg": [
+      {
+        "leg": "winner",
+        "n": 7989,
+        "size_pct_mean": 0.46224061,
+        "size_pct_median": 0.46541787
+      },
+      {
+        "leg": "loser",
+        "n": 7989,
+        "size_pct_mean": 0.63405414,
+        "size_pct_median": 0.69
+      }
+    ],
+    "test": {
+      "loser_minus_winner_size_pct": 0.16912168,
+      "nw_t": 10.02890765,
+      "loser_minus_universe": 0.13321503,
+      "nw_t_vs_universe": 17.2451067,
+      "interpretation": "size_pct 는 0=최대형/1=최소형. 양(+) & |t|>=2 이면 패자 데실 소형 편중(지문 (b) 성립)"
+    }
+  },
+  "regime_cell_specific": {
+    "long": [
+      {
+        "regime": "neutral",
+        "cell": "cell1_LS_decile",
+        "n": 104,
+        "active_ann": -0.08838038,
+        "nw_t": -0.84554654,
+        "ret_net_ann": 0.03662656
+      },
+      {
+        "regime": "crisis",
+        "cell": "cell1_LS_decile",
+        "n": 52,
+        "active_ann": 0.73267242,
+        "nw_t": 7.86222731,
+        "ret_net_ann": -0.1364256
+      },
+      {
+        "regime": "expansion",
+        "cell": "cell1_LS_decile",
+        "n": 65,
+        "active_ann": -0.29733555,
+        "nw_t": -2.57264327,
+        "ret_net_ann": 0.29761921
+      },
+      {
+        "regime": "recovery",
+        "cell": "cell1_LS_decile",
+        "n": 38,
+        "active_ann": -0.79420307,
+        "nw_t": -2.68795362,
+        "ret_net_ann": -0.16623887
+      },
+      {
+        "regime": "neutral",
+        "cell": "cell2_LO_decile",
+        "n": 104,
+        "active_ann": 0.09321211,
+        "nw_t": 1.43841741,
+        "ret_net_ann": 0.21821905
+      },
+      {
+        "regime": "crisis",
+        "cell": "cell2_LO_decile",
+        "n": 52,
+        "active_ann": -0.18025458,
+        "nw_t": -2.43617191,
+        "ret_net_ann": -1.04935261
+      },
+      {
+        "regime": "expansion",
+        "cell": "cell2_LO_decile",
+        "n": 65,
+        "active_ann": 0.06774661,
+        "nw_t": 0.63917351,
+        "ret_net_ann": 0.66270136
+      },
+      {
+        "regime": "recovery",
+        "cell": "cell2_LO_decile",
+        "n": 38,
+        "active_ann": 0.16398705,
+        "nw_t": 1.11701358,
+        "ret_net_ann": 0.79195125
+      },
+      {
+        "regime": "neutral",
+        "cell": "cell3_LS_top25",
+        "n": 104,
+        "active_ann": -0.06183631,
+        "nw_t": -0.54738927,
+        "ret_net_ann": 0.06317063
+      },
+      {
+        "regime": "crisis",
+        "cell": "cell3_LS_top25",
+        "n": 52,
+        "active_ann": 0.74897978,
+        "nw_t": 7.92793584,
+        "ret_net_ann": -0.12011824
+      },
+      {
+        "regime": "expansion",
+        "cell": "cell3_LS_top25",
+        "n": 65,
+        "active_ann": -0.2899032,
+        "nw_t": -2.63534911,
+        "ret_net_ann": 0.30505156
+      },
+      {
+        "regime": "recovery",
+        "cell": "cell3_LS_top25",
+        "n": 38,
+        "active_ann": -0.7415931,
+        "nw_t": -2.56675444,
+        "ret_net_ann": -0.11362889
+      },
+      {
+        "regime": "neutral",
+        "cell": "cell4_LO_top25",
+        "n": 104,
+        "active_ann": 0.11240895,
+        "nw_t": 1.60962375,
+        "ret_net_ann": 0.2374159
+      },
+      {
+        "regime": "crisis",
+        "cell": "cell4_LO_top25",
+        "n": 52,
+        "active_ann": -0.17937314,
+        "nw_t": -2.23243804,
+        "ret_net_ann": -1.04847116
+      },
+      {
+        "regime": "expansion",
+        "cell": "cell4_LO_top25",
+        "n": 65,
+        "active_ann": 0.06127303,
+        "nw_t": 0.58308179,
+        "ret_net_ann": 0.65622778
+      },
+      {
+        "regime": "recovery",
+        "cell": "cell4_LO_top25",
+        "n": 38,
+        "active_ann": 0.22943476,
+        "nw_t": 1.43836238,
+        "ret_net_ann": 0.85739896
+      }
+    ],
+    "wide": [
+      {
+        "regime": "crisis",
+        "cell1_LS_decile": 0.73267242,
+        "cell2_LO_decile": -0.18025458,
+        "cell3_LS_top25": 0.74897978,
+        "cell4_LO_top25": -0.17937314
+      },
+      {
+        "regime": "expansion",
+        "cell1_LS_decile": -0.29733555,
+        "cell2_LO_decile": 0.06774661,
+        "cell3_LS_top25": -0.2899032,
+        "cell4_LO_top25": 0.06127303
+      },
+      {
+        "regime": "neutral",
+        "cell1_LS_decile": -0.08838038,
+        "cell2_LO_decile": 0.09321211,
+        "cell3_LS_top25": -0.06183631,
+        "cell4_LO_top25": 0.11240895
+      },
+      {
+        "regime": "recovery",
+        "cell1_LS_decile": -0.79420307,
+        "cell2_LO_decile": 0.16398705,
+        "cell3_LS_top25": -0.7415931,
+        "cell4_LO_top25": 0.22943476
+      }
+    ]
+  },
+  "no_signal_control": {
+    "control_beta_check": {
+      "v10_cap1_beta": 1.07160482,
+      "cap020_beta": 1.0261352,
+      "note": "대조군 beta 가 1 근처가 아니면 홀딩월 라벨 정렬 결함 (1/20 실사고 재발 검사)"
+    },
+    "control_spec_v10": {
+      "n_stocks": 25,
+      "cap": 1,
+      "freq": 1,
+      "bps": 15,
+      "universe": "K200 U KQ150",
+      "selection": "market cap top-N (신호 미사용)"
+    },
+    "gates": {
+      "cell2_LO_decile": {
+        "cell": "cell2_LO_decile",
+        "vs_cap1_00": {
+          "n": 258,
+          "diff_ann": 0.02375206,
+          "diff_nw_t": 0.4421423,
+          "corr": 0.64946396,
+          "verdict": "INDISTINGUISHABLE_FROM_NO_SIGNAL",
+          "strategy": {
+            "alpha_ann": 0.02920557,
+            "beta": 1.03204537,
+            "t_alpha": 0.71558815,
+            "port_t": 0.75568059,
+            "beta_contrib_ann": 0.00365211
+          },
+          "control": {
+            "alpha_ann": 0.00094505,
+            "beta": 1.07160482,
+            "t_alpha": 0.07549568,
+            "port_t": 0.58916416,
+            "beta_contrib_ann": 0.00816057
+          }
+        },
+        "vs_cap0_20": {
+          "n": 258,
+          "diff_ann": 0.03572594,
+          "diff_nw_t": 0.72035775,
+          "corr": 0.6861855,
+          "verdict": "INDISTINGUISHABLE_FROM_NO_SIGNAL"
+        }
+      },
+      "cell4_LO_top25": {
+        "cell": "cell4_LO_top25",
+        "vs_cap1_00": {
+          "n": 258,
+          "diff_ann": 0.04084293,
+          "diff_nw_t": 0.75089041,
+          "corr": 0.6435548,
+          "verdict": "INDISTINGUISHABLE_FROM_NO_SIGNAL",
+          "strategy": {
+            "alpha_ann": 0.04458062,
+            "beta": 1.04710082,
+            "t_alpha": 1.0450383,
+            "port_t": 1.11724676,
+            "beta_contrib_ann": 0.00536793
+          },
+          "control": {
+            "alpha_ann": 0.00094505,
+            "beta": 1.07160482,
+            "t_alpha": 0.07549568,
+            "port_t": 0.58916416,
+            "beta_contrib_ann": 0.00816057
+          }
+        },
+        "vs_cap0_20": {
+          "n": 258,
+          "diff_ann": 0.05281682,
+          "diff_nw_t": 1.04964676,
+          "corr": 0.678889,
+          "verdict": "INDISTINGUISHABLE_FROM_NO_SIGNAL"
+        }
+      }
+    }
+  },
+  "advisory_battery": {
+    "rank_ic": 0.00723868,
+    "icir": 0.04398064,
+    "rank_ic_t_nw_lag3": 0.71755558,
+    "n_ic_months": 259,
+    "harvey_hurdle_note": "rank-IC t 는 advisory. 판정 권위 = portfolio-alpha t (measurement-graduation §3)",
+    "monotonicity_spearman": 0.78181818,
+    "decile_profile_ann": {
+      "D1": 0.10351677,
+      "D2": 0.0838675,
+      "D3": 0.13229358,
+      "D4": 0.08672176,
+      "D5": 0.11562749,
+      "D6": 0.11201945,
+      "D7": 0.10611821,
+      "D8": 0.14394097,
+      "D9": 0.17158234,
+      "D10": 0.17324915
+    },
+    "subperiod": [
+      {
+        "sub": "P1_2005_2012",
+        "n": 96,
+        "active_ann": 0.07119779,
+        "nw_t": 1.0192433,
+        "sr": 0.33458407
+      },
+      {
+        "sub": "P2_2013_2019",
+        "n": 84,
+        "active_ann": 0.08485042,
+        "nw_t": 1.16386369,
+        "sr": 0.4501078
+      },
+      {
+        "sub": "P3_2020_2026",
+        "n": 79,
+        "active_ann": 0.01394902,
+        "nw_t": 0.15370192,
+        "sr": 0.06185503
+      }
+    ],
+    "subperiod_stability": 1,
+    "oos_retention_approx": {
+      "cell4": -0.06630027,
+      "cell2": -0.24746778
+    },
+    "dsr_diagnostic": {
+      "cell4": 0.59752785,
+      "n_trials": 4,
+      "selection_type": "chain",
+      "note": "사전등록 4셀 직교 설계 — argmax/threshold-pick 아님. DSR 게이트 부적용(measurement-graduation §3)"
+    },
+    "turnover_annual": {
+      "cell1_LS_decile": 19.65854733,
+      "cell2_LO_decile": 9.08156728,
+      "cell3_LS_top25": 20.22276923,
+      "cell4_LO_top25": 9.24
+    }
+  }
+}

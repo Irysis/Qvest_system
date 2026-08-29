@@ -137,6 +137,24 @@ if (length(drift_hard)) {
 ## ---- append-only 병합 ----
 pub_max <- max(pub$Date)
 add <- fresh[Date > pub_max]
+## ★(2026-08-29 수리) 독트린 정합 — "새 달만 잇는다" (선언 §16 그대로의 구현):
+##   재생성본은 발행 후보가 아닌 행 2류를 만들 수 있다 —
+##   ① 기발행 월의 중복 결정행(달력 1일 vs 실거래 첫날 표기 차: 발행 08-01 vs 재생성 08-03)
+##   ② 데이터 꼬리 행(마지막 데이터일 — 결정일이 아님. 월중 실행 시에만 생김)
+##   실측(2026-08-29, AS_OF=2026-09-01): add = {08-03(①), 08-28(②), 09-01(진짜 새 달)}.
+##   ②가 자기 달 말 라벨 매크로를 물어 PIT 게이트가 전체를 차단했다 — 게이트 판정은 옳았으나
+##   그 행은 애초에 발행 후보가 아니다. **미발행 월의 첫 행만** 후보로 삼는다
+##   (패널 불변량 = 월 1행 · 결정행 = 그 달 첫 행). PIT 검사는 남은 후보에 그대로 걸린다.
+if (nrow(add)) {
+  .add_ym <- format(add$Date, "%Y-%m")
+  .pub_ym <- unique(format(pub$Date, "%Y-%m"))
+  .keep <- !duplicated(.add_ym) & !(.add_ym %in% .pub_ym)
+  if (any(!.keep)) {
+    say("[m4-append] 발행 후보 제외 %d행 (기발행 월 중복/데이터 꼬리 — 결정행 아님): %s\n",
+        sum(!.keep), paste(as.character(add$Date[!.keep]), collapse = " "))
+  }
+  add <- add[.keep]
+}
 if (nrow(add)) {
   say("[m4-append] 신규 %d행 추가: %s\n", nrow(add), paste(as.character(add$Date), collapse = " "))
 } else {

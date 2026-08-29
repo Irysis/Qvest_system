@@ -1,0 +1,127 @@
+{
+  "wt_id": "WT-R20260829_001",
+  "designed_by": "alpha-hypothesis",
+  "model_tier": "fable",
+  "designed_at": "2026-08-29",
+  "wt_type": "reinforcement",
+  "reinforce_context": {
+    "base_id": "RP_20260829_122020_9192",
+    "base_grade": "F",
+    "base_failure_mechanisms": [
+      "KR 에서 JT1993 원형(6-6 데실 롱숏)의 알파가 음수 — PORT_t(NW lag3) -1.291, net_IR -0.295 (authoritative_remeasure.json, metric_type=backtested)",
+      "모멘텀 크래시 동반 — MDD 86.7%, structural_drawdown=TRUE (45%+ 에피소드 4건, 수중 표본비 0.82)"
+    ],
+    "ledger_ref": "06_Registry/reinforce_ledger_l1.json entry RP_20260829_122020_9192 attempt 1/20, keyword_axis=multifactor",
+    "root_papers_locked": true
+  },
+  "prechecks": {
+    "hypothesis_index_hits": [
+      "lookup momentum = 30 hits (FAIL 7 / DISTILLED_NEG 17 / PASS 2) — top: DIST-AR-027, DIST-AR-041, DIST-RAMP-026",
+      "DIST-AR-003: momentum family 12건 PORT_t<2.95 미전이 — return-derived 는 M01/M08/M24 에 spanned, 재도전 조건 = 비-return 결합/이벤트 축",
+      "DIST-AR-007: return-파생 구성(단일 M·잔차모멘텀·다축 composite 내 모멘텀 성분·tier-집중) cap-w 게이트 불통과 — frontier '비-return 이벤트와의 결합(conditioning)' 명시",
+      "DIST-AR-041: '가격-파생 모멘텀 변형의 추가 탐색은 저EV' — 재도전 가치는 비-return 원천/주체 축 교차"
+    ],
+    "frontier_queue_refs": [
+      "본 설계와 동일 구성의 기존 항목 없음 (2-way price-mom × earnings-mom 미등재)",
+      "인접: FQ-198(컨센서스 4종 재료 자격, open) · FQ-161(M26_Revenue_Mom, open) — 본 설계와 재료 겹침 없음(별개 단독-축 가설)",
+      "인프라 결함 경보: FQ-163(compute_consensus 침묵 스킵 7종) · FQ-203(C10⊂C01, C13⊂C04 완전 중복 + 2026-01 이후 배출 중단) — 이익 축 리프 실가용성 검증이 alpha-research Step 2 선행 의무",
+      "parked(dohoon_decision) 충돌 없음 — 본 착수 근거는 frontier 가 아니라 강화 원장 사전등록(attempt 1/20, status=active)"
+    ],
+    "owner": "reinforce_ledger_l1 (도훈 승인 강화 레인) — WT-R20260829_001"
+  },
+  "paper_reading_evidence": {
+    "cjl1996_source": "NBER w5375 PDF 원문 직접 판독 (텍스트 레이어 손상으로 p.3-14 페이지 이미지 렌더 후 독해)",
+    "verbatim_design_facts": [
+      "가격모멘텀 랭킹 변수 = 형성 시점 직전 6개월 과거 누적수익률 (p.5)",
+      "SUE_it = (e_iq - e_iq-4)/sigma_it — seasonal random walk 기대이익 모형, sigma = 직전 8분기 unexpected earnings 표준편차 (p.5)",
+      "ABR_it = sum_{j=-2}^{+1} (r_ij - r_mj) — 직전 공시일 주변 EW 시장 대비 누적초과수익 (p.5)",
+      "REV6_it = sum_{j=0}^{6} (f_it-j - f_it-j-1)/p_it-j-1 — 월간 컨센서스(mean) 추정치 개정의 6개월 이동합, 전월 주가 스케일 (p.6)",
+      "2-way 정렬 = 매월 초 과거 6개월 수익률로 3등분 + 독립적으로 최근 이익 서프라이즈로 3등분 → 9셀, 셀 내 EW, buy-and-hold (p.12, Section III.A)",
+      "상호통제 결과(Table 6): 이익 축 고정 시 prior-return 스프레드 6개월 3.1%(SUE, panel B)/4.5%(REV6, panel C), 가격 축 고정 시 SUE 스프레드 4.3%/REV6 3.8% — neither momentum strategy subsumes the other (p.13-14)",
+      "드리프트의 약 절반(3.2%/6.8%)이 후속 공시일 주변에 실현 — 시장의 점진적 조정 (p.10)",
+      "애널리스트는 과거 이익 뉴스를 늦게 반영하며 특히 악재·패자에서 지연이 심함 (p.4, p.12)",
+      "Fama-MacBeth 단면회귀: 백분위-랭크 변환 설명변수 + size 통제로 두 축의 독립 예측력 재확인 (p.14, Section III.B)",
+      "형성 후 첫 5일 skip(bid-ask bounce 통제), 상폐 시 VW 시장수익 대체, breakpoint 는 NYSE-only (p.5-6)"
+    ]
+  },
+  "candidates": [
+    {
+      "title": "독립 2-way 3분위 정렬 — M02_Mom_6_1 × C01_SUE (CJL1996 Panel B 직역)",
+      "family": "momentum_x_earnings",
+      "mechanism_sketch": "애널리스트·시장의 이익정보 지연 반영(CJL1996 실증)을 KR 에서 가격 축과 독립 정렬로 소비 — joint-top 셀만 롱",
+      "why_not_selected": null,
+      "selected": true
+    },
+    {
+      "title": "독립 2-way — M02 × 개정 breadth(REV6 대응: C13 계열)",
+      "family": "momentum_x_revision",
+      "mechanism_sketch": "CJL1996 Table 5에서 REV6 정렬이 1년 스프레드 최대(9.7%) — 개정 축이 SUE 축보다 강할 가능성",
+      "why_not_selected": "KR 컨센서스 커버리지가 좁고(코스닥 결측 다수 → 9셀 인구 부족 위험), FQ-203 이 C13⊂C04 완전 중복 + 2026-01 이후 배출 중단을 실측 — 리프 실가용성 미확정. SUE 축 실패 시 1순위 대체 축으로 challenge_flags 보관",
+      "selected": false
+    },
+    {
+      "title": "독립 2-way — M02 × 공시일 주변 CAR(ABR 대응, 신규 설계)",
+      "family": "momentum_x_event",
+      "mechanism_sketch": "모형-자유(model-free) 이익 서프라이즈 축 — 기대이익 모형 특정 오류 회피",
+      "why_not_selected": "KR 공시일 이벤트 CAR 팩터가 factor_db 에 부재(신규 설계 필요 — 이벤트 날짜 정합·PIT C5 리스크 추가), Foster-Olsen-Shevlin(1984)은 이 축의 드리프트 예측력 부재를 보고(CJL1996 p.3 인용). 후속 attempt 용",
+      "selected": false
+    },
+    {
+      "title": "z-score composite (M02+C01 가중합)",
+      "family": "composite",
+      "mechanism_sketch": "-",
+      "why_not_selected": "설계 자격 없음 — DIST-AR-007 이 소진한 다축 composite 내 모멘텀 성분 재탕이며 WT 사전등록이 명시적으로 금지. 2-way 정렬과 composite 는 소비 구조가 다르다(합산은 한 축의 강한 값이 다른 축의 약한 값을 상쇄 — 상호통제가 사라짐)",
+      "selected": false
+    },
+    {
+      "title": "이익모멘텀 단독 (C19_Composite_Earnings 데실)",
+      "family": "earnings_standalone",
+      "mechanism_sketch": "-",
+      "why_not_selected": "기저(JT1993 가격모멘텀)와의 연결이 끊겨 강화 시도(keyword_axis=multifactor)가 아니라 별개 가설이 됨 — frontier 인접 항목(FQ-198)이 이미 그 레인을 선점",
+      "selected": false
+    }
+  ],
+  "selected": {
+    "hypothesis_title": "JT1993 강화 1/20 — 가격모멘텀 × 이익 서프라이즈 독립 2-way (CJL1996)",
+    "hypothesis_description": "KR K200∪KQ150 long-only ≤25종 축에서, 매월 가격모멘텀(M02_Mom_6_1, JT1993 6-1 대응) 3분위와 이익모멘텀(C01_SUE 1순위) 3분위를 CJL1996 Section III.A 절차 그대로 독립 정렬해 9셀을 만들고 joint-top 셀(가격 top ∩ 이익 top)을 롱 후보 집합으로 삼으면, CJL1996 이 미국에서 실증한 두 축의 상호-통제 후 독립 예측력이 KR 에서도 성립해 가격모멘텀 단독(기저 essence F, PORT_t -1.291)이 잃은 알파가 이익 축 조건화로 부활한다. 축의 결합은 z-composite 가 아니라 정렬 교집합이어야 한다 — 합산은 축 간 상쇄로 상호통제 구조 자체를 소거하기 때문(CJL1996 의 검정 대상이 바로 통제 후 잔존 스프레드다).",
+    "mechanism": {
+      "agent": "① 국내 증권사 애널리스트 — 이익 뉴스(특히 악재)를 컨센서스에 늦게 반영하는 주체(CJL1996 p.12 실증: 후속 SUE·추정치 개정의 지연 조정, 악재에서 비대칭적으로 심함). ② 뉴스 도착 후 즉시 재가격하지 않는 시장 참여자 전반 — 드리프트의 절반이 후속 공시일 주변에 실현된다는 것은 첫 서프라이즈 때 덜 반응한 주체가 다음 공시에서 다시 놀란다는 뜻(CJL1996 p.10: 6개월 6.8% 중 3.2%가 후속 공시일 집중).",
+      "friction": "① KR 공매도 제약 — 패자 쪽 과대평가를 차익거래로 지울 수 없어 조정이 느리다(본 설계는 long-only 라 승자 쪽만 소비하지만, 마찰의 존재가 이익정보의 점진 반영 자체를 지탱). ② 이익정보의 제도적 단계 도착 — 분기 공시 lag(C4: 45일+/분기 고정일)와 월 단위로 분산되는 컨센서스 개정이 정보를 한 번에가 아니라 순차로 가격에 넣는다. ③ 유동성 하한·소형주 거래비용 — KQ150 쪽 재정거래 용량 제한.",
+      "path": "이익 서프라이즈(SUE↑) 발생 → 애널리스트 후속 상향 개정 + 다음 분기 공시일 주변 잔여 드리프트(1~6개월 수평선, CJL1996: 6개월 스프레드의 약 절반이 후속 공시 주변) → 형성 시점에 가격모멘텀 top ∩ SUE top 인 종목은 이미 달리기 시작했고 아직 반영 안 된 이익정보가 남아 있는 집합 → 월간 리밸에서 그 셀을 롱하면 1M forward 초과수익으로 회수. 기저 F 와의 연결: KR 가격모멘텀 단독의 신호는 이익정보와 무관한 성분(수급·테마 소음)이 지배해 음수였다는 것이 본 가설의 함의이며, 이익 축 통제가 그 소음 성분을 걸러낸다 — 이 함의 자체가 ③의 반증 대상이다."
+    },
+    "falsification": {
+      "observable": "[1급 — 사전등록] 이익 축(SUE 3분위)을 통제한 각 층 내에서 가격모멘텀 top-vs-bottom 분위 스프레드(1M forward, NW lag-3)가 유의하지 않으면 CJL1996 의 KR 이식 실패로 판정한다(CJL1996 Table 6 panel B 의 KR 재현 검정 — 미국 값 6개월 3.1%). [부수 관측 — 기전 레벨] CJL1996 기전(애널리스트 지연 조정)이 참이면 joint-top 셀 종목의 형성 후 1~3개월 컨센서스 상향 개정(eps_chg_1m/eps_chg_3m 리프)이 joint-bottom 셀 대비 지속적으로 우위여야 한다 — 성과와 무관하게 이 부수 관측이 부재하면 기전 기각(성과가 우연히 양수여도 다른 무엇의 재포장).",
+      "field_dictionary_refs": [
+        "FDB-B3_registry_consensus_daily (C01_SUE 입력·eps 추정 컬럼 — load_month_factors() 경유)",
+        "C-CONSENSUS-QW (.cache/consensus/{sue,eps_chg_1m,eps_chg_3m,eps_1y} 일별 시계열)",
+        "FDB-B2_registry_rawdata_price_daily (M02_Mom_6_1 가격모멘텀)"
+      ],
+      "reject_if": "① SUE 3개 층 각각에서 가격모멘텀 분위 스프레드 NW-t 비유의(층별 전멸) → KR 에서 가격 축은 이익 축에 포섭(spanned) = CJL1996 이식 실패 — 이 경우 가격모멘텀 재료의 강화 방향 자체를 접고 이익 축 단독을 별개 가설로 분리. ② 부수 관측 실패(joint-top 셀의 후속 개정 우위 부재) → 지연-조정 기전 기각, 성과가 있어도 challenge_note 에 기전 미확인 명기. ③ 반대 방향 검정(가격 축 통제 후 SUE 스프레드 비유의) → 이익 축이 가격에 포섭 = 2-way 의 증분 없음, 단순 모멘텀 재탕으로 판정."
+    },
+    "regime_scope": {
+      "holds_in": [
+        "neutral·expansion (저~중변동, 이익 개정 사이클이 순차 도착하고 정보가 가격을 지배하는 평시)",
+        "외국인 순유입 국면 (CTW2010 individualism 조절변수의 KR 시계열 강하 — 고-individualism 관할 출신 모멘텀 수요 주체의 참여 강도가 높을 때)"
+      ],
+      "weakens_or_reverses_in": [
+        "crisis (유동성 청산이 정보 신호를 압도 — 기저 실측 MDD 86.7% 의 발생 구간)",
+        "crisis 직후 반등 초입(recovery 전반부) — 모멘텀 크래시의 전형 구간: 패자 랠리로 승자-패자 순위가 역전되고, 이익 서프라이즈 정보도 거시 β 리버설에 압도된다"
+      ],
+      "boundary_rationale": "경계는 메커니즘에서 도출된다: path 가 순차적 이익정보 도착 → 지연 조정 회수이므로, 성립 조건은 이익정보가 단면 수익의 지배 성분일 것. 위기·반등 초입은 그 조건이 깨지는 국면(청산·β 리버설 > 정보) — JT1993 원형의 KR 실측 MDD 86.7% 가 이 경계의 존재 증거다. CTW2010 의 국가 수준 조절변수 4종은 KR 단일 시장에서는 상수이므로 시계열 국면 축으로 내린다: individualism(국가상수) → 외국인 참여 강도(시변 대리) / 거래비용 → 유동성·스프레드 국면 / 애널리스트 예측분산 → 컨센서스 분산 확대·축소 국면(분산 확대기 = 정보 불확실성 높음 = 드리프트 연장 예상이나, 이는 후속 검증 대상 보조 가설로만 기록). ★국면 오버레이 적용은 본 단계에서 하지 않는다(S0/S1 오버레이 금지) — 이 경계는 risk/overlay 계층의 라우팅 근거와 subperiod 해석 기준으로만 쓴다."
+    }
+  },
+  "challenge_flags": [
+    "[대안 보관] SUE 축 실패 시 1순위 대체 = 개정 축(REV6 대응) — CJL1996 Table 5 에서 1년 스프레드 최대(9.7%)였던 축. 단 FQ-203(C13⊂C04 중복·2026-01 이후 배출 중단)·FQ-163(침묵 스킵 7종) 확인 후 사용할 것",
+    "[인프라 선행 의무] 이익 축 리프 실가용성 — C01_SUE 의 442개월 커버리지·결측 분포를 load_month_factors() 로 확인 후 정렬 설계 확정 (FQ-163/203 이 컨센서스 파이프라인 결함을 실측한 상태)",
+    "[셀 인구 리스크] K200∪KQ150 ~342종 × 컨센서스 커버리지 결측 → 9셀 중 joint-top 인구가 top-25 소비에 부족할 수 있음 — 3분위(CJL1996 그대로)가 데실보다 안전하나, 커버리지 필터 후 셀 인구의 시계열 최소값을 진단으로 기록할 것",
+    "[breakpoint 주의] CJL1996 은 NYSE-only breakpoint 를 썼다 — KR 대응(K200-only breakpoint vs 전체 유니버스 breakpoint)은 ⑤ AST 구성 시 alpha-research 가 결정하되 어느 쪽이든 근거 기록",
+    "[기전 보조 서술의 사후성] 개인 수급 소음이 KR 가격모멘텀을 죽인다는 성분은 기저 F 를 보고 붙인 사후 해석 위험이 있어 mechanism 본문에서 함의(implication) 지위로 강등 — 주장의 지위는 ③ 반증 대상이지 전제가 아님",
+    "[국면 경계의 부분적 사후성] crisis 약화는 기저 실측(MDD 86.7%)을 이미 본 뒤의 서술 — 단 모멘텀 크래시는 KR 관측과 독립적으로 문헌이 사전 확립한 기전이므로 REBUTTAL 처리 (challenge_note_hypothesis.md ③)",
+    "[설계자 경계] 본 산출물은 ①~④ 설계만 — 팩터 소싱·2-way 셀 실측·AST(⑤)·성과 수치는 전부 alpha-research 이후 소관. 본 문서의 미국 수치(3.1%/4.3% 등)는 전부 CJL1996 원문 인용이지 KR 추정이 아님"
+  ],
+  "verdict": "designed",
+  "handoff": {
+    "to": "alpha-research",
+    "next_steps": "Step 1~7 + ⑤ AST 구성. 승계 필수: (a) 결합은 독립 2-way 정렬 교집합 — z-composite 환원 금지 (b) 1급 반증조건(이익 축 통제 후 가격 분위 스프레드)을 Step 4 진단에 사전등록된 형태로 포함 (c) 이익 축 리프 실가용성 검증(FQ-163/203) 선행 (d) 팩터 접근 load_month_factors() 경유(PIT C15) (e) 비중 방법은 optimizer 소관 — 가설설계·alpha 단계에서 미정 유지"
+  }
+}
