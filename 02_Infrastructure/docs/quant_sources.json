@@ -2,17 +2,15 @@
   "description": "퀀트 리서치 텍스트 소스 — arxiv(논문), jina(블로그/칼럼), RSS(뉴스)",
   "updated": "2026-03-14",
   "arxiv_queries": {
-    "description": "arxiv MCP로 정기 검색할 주제 (논문 수집 메인)",
+    "description": "arxiv MCP로 정기 검색할 주제 — v10: 팩터 전략 리서치 단일 목적 (2026-08-29 도훈 지시)",
     "queries": [
       "idiosyncratic volatility anomaly low risk stock returns",
       "earnings revision momentum analyst consensus stock",
       "cross-sectional stock return predictability firm characteristic",
       "value quality profitability factor stock returns",
-      "factor investing machine learning stock selection",
       "post-earnings announcement drift SUE PEAD",
       "short-term reversal momentum cross-section equity",
       "accruals investment asset growth anomaly stock",
-      "regime switching factor timing equity rotation",
       "insider trading executive share transaction stock returns",
       "corporate disclosure filing text sentiment stock returns",
       "annual report risk factor language cross-section returns",
@@ -23,13 +21,21 @@
       "corporate event buyback M&A announcement drift returns",
       "analyst forecast dispersion revision text equity",
       "large language model NLP financial disclosure asset pricing",
+      "seasonality calendar anomaly cross-section stock returns",
       "Korea KOSPI KOSDAQ stock market anomaly cross-section",
       "emerging Asian equity market factor evidence",
       "transaction cost capacity crowding factor investing constraint",
+      "multifactor portfolio integrated factor combination stock selection",
+      "factor timing allocation cross-section equity",
+      "characteristics composite signal combination equity returns",
+      "factor investing machine learning stock selection",
+      "portfolio construction weighting scheme factor equity",
       "long-only constrained concentrated portfolio construction",
-      "point-in-time look-ahead bias leakage backtest evaluation equity"
+      "risk parity hierarchical clustering portfolio allocation equity",
+      "volatility targeting drawdown control equity portfolio",
+      "regime switching factor timing equity rotation"
     ],
-    "_queries_note": "2026-08-02 논문 인입 커버리지 감사: 구 9질의(횡단면 return-derived 어휘 전용) + q-fin 4카테고리로는 insider/공시텍스트/공매도/공급망/기업이벤트/한국시장/비용·수용력/PIT-방법론 8개 주제가 구조적으로 도달 불가였다(질의어에 해당 단어가 없고, 해당 문헌의 1차 분류 cs.CL/cs.LG/econ.EM/q-fin.PR 이 카테고리 목록 밖). 카테고리 확장은 호출 수를 늘리지 않고(호출=질의 수), 질의는 9→24. 구 2026-06-18 축소 노트의 전제('방법론은 cross-list 로 유입')는 카테고리가 4종뿐이라 성립하지 않았다.",
+    "_queries_note": "v10 2026-08-29 (도훈 지시 — 팩터 전략 리서치 단일 목적): 질의 24→30, 4군 재편 = (a)팩터/이상현상 발굴 21종 (b)멀티팩터 결합 4종 (c)비중결정방법론 3종 (d)리스크 오버레이 2종 — (b)(c)(d)는 강화 프로세스 키워드 축(멀티팩터/비중방법론/리스크오버레이)과 정합. PIT-방법론 질의(인프라 주제)는 제거. recency_days 180→0 + sort_by=relevance: 최신성 불요(도훈), 고전·인용 상위가 자연 상위로 온다 — 재수집 방지는 paper_key 3단 dedup(paper_id_norm.py)이 담당. (구 2026-08-02 커버리지 감사 노트는 git 사료.)",
     "categories": [
       "q-fin.PM",
       "q-fin.ST",
@@ -42,7 +48,8 @@
       "q-fin.EC"
     ],
     "max_results_per_query": 10,
-    "recency_days": 180,
+    "recency_days": 0,
+    "sort_by": "relevance",
     "max_queries": 40,
     "_categories_note": "2026-08-02 실측 3회 반복 후 확정: q-fin 4종 -> q-fin 전 9계열(PR/TR/CP/MF/EC 추가)만 확장. econ.*/stat.*/cs.* 를 검색축에 넣는 안은 **위반 검사에서 두 번 기각**했다 — (1) cs.* 포함 시 후보 75건 중 금융 무관(화학/로보틱스/비전/종양학)이 대부분, (2) econ/stat 포함 시 61건 중 테니스 서브/AMOC 기후/Covid 기부/연합학습이 상위. 원인: arxiv-mcp 의 categories 인자가 느슨하고(코드 주석 32-35행 기존 관측) sort_by=date 가 질의 적합도와 무관하게 신착을 반환 -> 넓은 카테고리는 그대로 firehose 가 된다. q-fin 은 그 자체로 주제 자기제한적이라 안전. 비-q-fin 문헌(cs.CL 공시텍스트 등)은 검색축이 아니라 **확장 질의어 + 결과측 _FINANCE_EXACT cross-list** 로만 받는다."
   },

@@ -254,6 +254,42 @@ registry_next_ids <- function(registry, n) {
   sprintf("P%04d", seq.int(start + 1L, start + n))
 }
 
+# ── paper_key 3단 dedup (v10 2026-08-29, 도훈 지시 "중복 수집 방지 규칙 신설") ──
+#   키 규약 정본 = 02_Infrastructure/ops/paper_id_norm.py::paper_key (axv > doi > ttl).
+#   R 은 재구현하지 않고 keys-batch CLI 를 1회 호출한다 — 규약이 두 언어로 갈라지면
+#   같은 논문을 두 곳이 다르게 센다(norm_id 신설 사유와 동일).
+.resolve_qvest_py <- function() {
+  cands <- c(Sys.getenv("QVEST_PY", ""),
+             file.path(PROJECT_ROOT, ".venv_qvest_ml", "Scripts", "python.exe"))
+  for (p in cands) if (nzchar(p) && file.exists(p)) return(p)
+  ""
+}
+
+compute_paper_keys <- function(titles, source_urls) {
+  n <- length(titles)
+  if (n == 0L) return(list(ok = TRUE, keys = character(0), in_registry = logical(0)))
+  py <- .resolve_qvest_py()
+  if (!nzchar(py)) return(list(ok = FALSE, reason = "python_unavailable"))
+  items <- lapply(seq_len(n), function(i) list(
+    title = as.character(titles[i]), source = as.character(source_urls[i])))
+  tf_in <- tempfile(fileext = ".json"); tf_out <- tempfile(fileext = ".json")
+  on.exit(unlink(c(tf_in, tf_out)), add = TRUE)
+  write(toJSON(items, auto_unbox = TRUE, null = "null"), tf_in)
+  norm_py <- file.path(PROJECT_ROOT, "02_Infrastructure", "ops", "paper_id_norm.py")
+  cmd <- sprintf("%s %s keys-batch %s --out %s",
+                 shQuote(py), shQuote(norm_py), shQuote(tf_in), shQuote(tf_out))
+  rc <- suppressWarnings(system(cmd, ignore.stdout = TRUE, ignore.stderr = TRUE))
+  if (!identical(as.integer(rc), 0L) || !file.exists(tf_out)) {
+    return(list(ok = FALSE, reason = sprintf("keys-batch_exit_%s", rc)))
+  }
+  obj <- tryCatch(fromJSON(tf_out, simplifyVector = TRUE), error = function(e) NULL)
+  if (is.null(obj) || length(obj$keys) != n) {
+    return(list(ok = FALSE, reason = "keys-batch_output_mismatch"))
+  }
+  list(ok = TRUE, keys = as.character(obj$keys),
+       in_registry = as.logical(obj$in_registry) %in% TRUE)
+}
+
 append_registry <- function(success_rows) {
   reg_path <- file.path(PROJECT_ROOT, "06_Registry", "paper_registry.json")
   registry <- load_registry()
@@ -281,6 +317,9 @@ append_registry <- function(success_rows) {
     year = "",
     journal = success_rows$provider,
     date_added = format(Sys.Date(), "%Y-%m-%d"),
+    # v10: dedup 정본 키를 registry 에 남긴다 (arxiv_id/doi/title_hash 는
+    # paper_registry_backfill.py 재실행이 채운다 — 멱등).
+    paper_key = as.character(success_rows$paper_key %||% NA_character_),
     stringsAsFactors = FALSE
   )
 
@@ -519,17 +558,35 @@ existing_sources <- as.character(registry_snapshot$source %||% character(0))
 existing_titles <- tolower(trimws(as.character(registry_snapshot$title %||% character(0))))
 sources_all$title_key <- tolower(trimws(as.character(sources_all$title)))
 sources_all$source_key <- as.character(sources_all$source_url)
+# ── v10 1차 방어선: paper_key 3단 dedup (axv > doi > ttl — paper_id_norm.py 정본) ──
+#   recency 제거 + relevance 정렬(v10)로 같은 고전이 매일 재반환되므로 이 키가 없으면
+#   수집기가 성립하지 않는다. 구판 축(source_url·title 완전일치)은 belt-and-suspenders 로
+#   유지. python 불가 시 구판 축만으로 폴백하고 경고를 남긴다(수집이 멈추면 안 됨).
+pk_res <- compute_paper_keys(sources_all$title, sources_all$source_url)
+if (isTRUE(pk_res$ok)) {
+  sources_all$paper_key <- pk_res$keys
+  key_dup <- nzchar(pk_res$keys) & duplicated(pk_res$keys)
+  key_registered <- pk_res$in_registry
+} else {
+  log_line("[paper-recharge] WARN: paper_key dedup 불가(%s) — source/title 완전일치 폴백",
+           pk_res$reason %||% "unknown")
+  sources_all$paper_key <- NA_character_
+  key_dup <- rep(FALSE, nrow(sources_all))
+  key_registered <- rep(FALSE, nrow(sources_all))
+}
 source_dup <- duplicated(sources_all$source_key) | !nzchar(sources_all$source_key)
 title_dup <- duplicated(sources_all$title_key) | !nzchar(sources_all$title_key)
-already_registered <- sources_all$source_key %in% existing_sources | sources_all$title_key %in% existing_titles
+already_registered <- key_registered |
+  sources_all$source_key %in% existing_sources | sources_all$title_key %in% existing_titles
 # 영구 실패 skip-list 제외 (죽은 404/410 ID·반복 실패 URL의 재시도 루프 차단, 2026-06-18 Q)
 perm_skip <- vapply(sources_all$source_key, skip_is_permanent, logical(1))
-dup_reg_mask <- source_dup | title_dup | already_registered
+dup_reg_mask <- key_dup | source_dup | title_dup | already_registered
 skip_count <- sum(dup_reg_mask)
 perm_skip_count <- sum(perm_skip & !dup_reg_mask)
 sources <- sources_all[!(dup_reg_mask | perm_skip), , drop = FALSE]
 sources$title_key <- NULL
 sources$source_key <- NULL
+# paper_key 는 유지 — append_registry 가 registry 에 기록해 다음 실행의 대조 기준이 된다.
 if (max_new > 0L && nrow(sources) > max_new) sources <- head(sources, max_new)
 log_line("[paper-recharge] candidate filter: total=%d mcp=%d skipped_duplicate_or_registered=%d perm_failed_skip=%d to_fetch=%d",
          nrow(sources_all), nrow(mcp_sources), skip_count, perm_skip_count, nrow(sources))

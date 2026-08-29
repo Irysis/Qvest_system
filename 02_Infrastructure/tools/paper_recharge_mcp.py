@@ -21,6 +21,10 @@ import time
 from pathlib import Path
 from typing import Any
 
+# paper_key 정본 (v10 2026-08-29): 중복 판정 규약은 paper_id_norm.py 하나가 갖는다.
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "ops"))
+from paper_id_norm import paper_key  # noqa: E402
+
 
 def _load_json(path: Path, default: Any) -> Any:
     try:
@@ -304,6 +308,11 @@ def main() -> int:
     if recency_days > 0:
         from datetime import date, timedelta
         date_from = (date.today() - timedelta(days=recency_days)).isoformat()
+    # v10 (2026-08-29 도훈): 수집은 최신성 불요 — recency_days=0 이면 date_from 미전달,
+    # sort_by 는 config 소비(기본 relevance — 고전·인용 상위가 자연 상위로 온다).
+    sort_by = str(arxiv_cfg.get("sort_by") or "relevance").strip().lower()
+    if sort_by not in ("date", "relevance"):
+        sort_by = "relevance"
 
     report: dict[str, Any] = {
         "schema_version": "paper_recharge_mcp_v1",
@@ -314,7 +323,7 @@ def main() -> int:
         "recency_days": recency_days,
         "date_from": date_from,
         "max_results_per_query": max_results,
-        "sort_by": "date",
+        "sort_by": sort_by,
         "status": "not_run",
         "candidates": [],
         "errors": [],
@@ -363,15 +372,20 @@ def main() -> int:
         candidates: list[dict[str, Any]] = []
         for query in queries:
             ok, result = _call_search_tool(client, search_tool, query, categories, max_results,
-                                           date_from=date_from, sort_by="date")
+                                           date_from=date_from, sort_by=sort_by)
             if ok:
                 candidates.extend(_normalize_arxiv_results(result, query, report["errors"]))
             else:
                 report["errors"].append({"query": query, "response": result})
+        # uniq 키 = paper_key 정본 (v10) — 구 키(arxiv_id|pdf_url|title)는 버전 접미(v2)를
+        # 벗기지 않아 같은 논문의 개정판이 별개로 통과했다. 키 판별 불가 시에만 구 키 폴백.
         seen = set()
         uniq = []
         for row in candidates:
-            key = row.get("arxiv_id") or row.get("pdf_url") or row.get("title")
+            pk = paper_key(arxiv_id=row.get("arxiv_id"), title=row.get("title"),
+                           source_url=row.get("pdf_url") or row.get("abs_url"))
+            row["paper_key"] = pk
+            key = pk or row.get("arxiv_id") or row.get("pdf_url") or row.get("title")
             if key in seen:
                 continue
             seen.add(key)
@@ -380,8 +394,10 @@ def main() -> int:
         fin = [r for r in uniq if _is_finance_relevant(r.get("categories"))]
         # scope 배제: KR 주식 범위밖(crypto·보험·채권·파생가격·마이크로구조·에너지·양자) 제거 (2026-06-18 Q).
         kept = [r for r in fin if not _is_out_of_scope(r.get("title"), r.get("abstract"))]
-        # 최신순 정렬: published 내림차순 → 신규 논문 우선 적재.
-        kept.sort(key=lambda r: str(r.get("published") or ""), reverse=True)
+        # 정렬: date 모드만 published 내림차순. relevance 모드(v10 기본)는 검색엔진의
+        # 관련도 순서를 보존한다 — 재정렬하면 relevance 정렬을 요청한 의미가 사라진다.
+        if sort_by == "date":
+            kept.sort(key=lambda r: str(r.get("published") or ""), reverse=True)
         report["candidates_prefilter"] = len(uniq)
         report["candidates_dropped_non_finance"] = len(uniq) - len(fin)
         report["candidates_dropped_out_of_scope"] = len(fin) - len(kept)

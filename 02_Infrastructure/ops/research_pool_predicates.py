@@ -126,7 +126,13 @@ def is_testable(o):
         return True
     if v:
         return False
-    return o.get("route") == "alpha" and bool(o.get("kr_feasible"))
+    # route 동의어: "replication" = v10 트리아지(paper_router_v4)의 alpha 계승 라벨.
+    # v4 는 kr_feasible 필드를 내지 않으므로(충실구현 관점 — 유니버스 치환만 평가)
+    # replication 폴백은 route 단독으로 성립한다.
+    route = str(o.get("route") or "").strip().lower()
+    if route == "replication":
+        return True
+    return route == "alpha" and bool(o.get("kr_feasible"))
 
 
 # 레코드 자신의 종결 표식 — done 원장 append 를 빠뜨린 런이 실재하므로 2차 방어로 둔다.
