@@ -1,0 +1,134 @@
+{
+  "as_of_date": "2026-08-28",
+  "n_names": 347,
+  "fm_by_turnover_stratum": {
+    "1": {
+      "vter": 1,
+      "a": 0.01003199,
+      "b": 0.00102631,
+      "a_t": 2.96126451,
+      "b_t": 0.71991203,
+      "n": 259
+    },
+    "2": {
+      "vter": 2,
+      "a": 0.01111424,
+      "b": 0.00161261,
+      "a_t": 2.77840463,
+      "b_t": 0.90865748,
+      "n": 259
+    },
+    "3": {
+      "vter": 3,
+      "a": 0.00958194,
+      "b": 0.00259569,
+      "a_t": 2.07595279,
+      "b_t": 1.75587022,
+      "n": 259
+    }
+  },
+  "fm_intercept_gap_v1_minus_v3": {
+    "v1_minus_v3_monthly": 0.00045005,
+    "annualized": 0.00540062,
+    "nw_t": 0.19631208,
+    "n": 259,
+    "note": "층별 절편 차 = z 를 고정한 상태의 저회전 프리미엄(회귀판 1급 보조)."
+  },
+  "forecast_rule": "발행 스펙(arm B 사전등록) alpha_hat = b_V1 * z_mom - 정의역내 평균, V1(저회전 층) 정의역에만 정의. 병기 alpha_hat_stratified = (a_v + b_v * z_mom) - 단면평균 (층별 FM 실측 — 데이터가 말하는 것). a_v/b_v = 회전율 층 v 의 Fama-MacBeth 시계열 평균 계수(데이터 추정 — 하드코딩 0). 층화의 예측 표현이며 연속 composite 점수가 아니다.",
+  "power_increment_beta_controlled": {
+    "C_exclude_V3_low": {
+      "arm": "C_exclude_V3_top25",
+      "alpha_ann": 0.01142351,
+      "t_alpha": 0.38779885,
+      "se_alpha_ann": 0.0294573,
+      "mde80_annual": 0.08252758,
+      "implied_annual": 0.0072,
+      "implied_source": "LS2000 Table II/VI 승자 사이드 V1-V3 Year-1 (+0.06 ~ +0.18%/월) 의 연복리 환산",
+      "ratio": 0.08724356,
+      "expected_t": 0.24442156,
+      "power": 0.04311961,
+      "disposition": "착수금지구간(우연 수준)"
+    },
+    "C_exclude_V3_high": {
+      "arm": "C_exclude_V3_top25",
+      "alpha_ann": 0.01142351,
+      "t_alpha": 0.38779885,
+      "se_alpha_ann": 0.0294573,
+      "mde80_annual": 0.08252758,
+      "implied_annual": 0.0218,
+      "implied_source": "LS2000 Table II/VI 승자 사이드 V1-V3 Year-1 (+0.06 ~ +0.18%/월) 의 연복리 환산",
+      "ratio": 0.26415412,
+      "expected_t": 0.74005417,
+      "power": 0.11124271,
+      "disposition": "조건부(미결이 최빈 결말)"
+    },
+    "B_lowturn_V1_low": {
+      "arm": "B_lowturn_V1_top25",
+      "alpha_ann": -0.00188114,
+      "t_alpha": -0.05397823,
+      "se_alpha_ann": 0.03484992,
+      "mde80_annual": 0.09763553,
+      "implied_annual": 0.0072,
+      "implied_source": "LS2000 Table II/VI 승자 사이드 V1-V3 Year-1 (+0.06 ~ +0.18%/월) 의 연복리 환산",
+      "ratio": 0.07374365,
+      "expected_t": 0.2066002,
+      "power": 0.0397667,
+      "disposition": "착수금지구간(우연 수준)"
+    },
+    "B_lowturn_V1_high": {
+      "arm": "B_lowturn_V1_top25",
+      "alpha_ann": -0.00188114,
+      "t_alpha": -0.05397823,
+      "se_alpha_ann": 0.03484992,
+      "mde80_annual": 0.09763553,
+      "implied_annual": 0.0218,
+      "implied_source": "LS2000 Table II/VI 승자 사이드 V1-V3 Year-1 (+0.06 ~ +0.18%/월) 의 연복리 환산",
+      "ratio": 0.22327937,
+      "expected_t": 0.62553948,
+      "power": 0.09102649,
+      "disposition": "조건부(미결이 최빈 결말)"
+    }
+  },
+  "reachability_ceiling": {
+    "A_uncond_top25": {
+      "arm": "A_uncond_top25",
+      "n_months": 259,
+      "sd_monthly_active": 0.06024613,
+      "required_active_ann_for_t295": 0.13252033,
+      "observed_active_ann": 0.05816369,
+      "coverage_ratio": 0.43890391
+    },
+    "B_lowturn_V1_top25": {
+      "arm": "B_lowturn_V1_top25",
+      "n_months": 259,
+      "sd_monthly_active": 0.05016096,
+      "required_active_ann_for_t295": 0.11033651,
+      "observed_active_ann": 0.00865442,
+      "coverage_ratio": 0.07843655
+    },
+    "B2_lowturn_half_top25": {
+      "arm": "B2_lowturn_half_top25",
+      "n_months": 259,
+      "sd_monthly_active": 0.04818091,
+      "required_active_ann_for_t295": 0.1059811,
+      "observed_active_ann": 0.03497522,
+      "coverage_ratio": 0.33001379
+    },
+    "C_exclude_V3_top25": {
+      "arm": "C_exclude_V3_top25",
+      "n_months": 259,
+      "sd_monthly_active": 0.04886338,
+      "required_active_ann_for_t295": 0.10748229,
+      "observed_active_ann": 0.04552044,
+      "coverage_ratio": 0.4235157
+    },
+    "D_highturn_V3_top25": {
+      "arm": "D_highturn_V3_top25",
+      "n_months": 259,
+      "sd_monthly_active": 0.06161754,
+      "required_active_ann_for_t295": 0.13553696,
+      "observed_active_ann": 0.05448906,
+      "coverage_ratio": 0.40202358
+    }
+  }
+}

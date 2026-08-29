@@ -1,0 +1,388 @@
+{
+  "meta": {
+    "wt_id": "WT-R20260829_003",
+    "as_of": "2026-08-29",
+    "metric_type": "canonical_screen_diag",
+    "liq_ruler": "adv20_t1",
+    "liq_ruler_source": "injected_adv20",
+    "liq_min": 200000000,
+    "n_months": 259,
+    "elig_median": 343,
+    "window": "2005-01-31 ~ 2026-07-31",
+    "turnover_definition": "LS2000 원정의 — 일별 거래주식수/상장주식수 = Vol*Close/Size, 형성기(t-2..t-7) 월평균의 평균. 시장-내(K200/KQ150 별도) 백분위 랭킹.",
+    "composite_prohibition": "연속 composite(mom rank - turnover rank) 미구현 — 이중정렬 층화만(handoff 승계조건 ①)"
+  },
+  "confound_axes": {
+    "rho_size": 0.01814873,
+    "rho_adv": 0.4006387,
+    "rho_mkt_dummy": 0.49270198,
+    "rho_mktint_dummy": -0.00006846,
+    "note": "rho_mkt_dummy(혼합 랭킹) vs rho_mktint_dummy(시장-내 랭킹) 대비 = LS2000 Nasdaq 배제의 KR 대응 실증. size_pct 0=최대형이므로 rho_size>0 이면 고회전=소형."
+  },
+  "dispersion_precheck": {
+    "winner_x_advt_x_mkt": {
+      "cells": 1270,
+      "n_median": 5,
+      "n_min": 1,
+      "sd_log_turn_median": 0.65704768,
+      "iqr_log_turn_median": 0.62887466
+    },
+    "universe_x_mkt": {
+      "n_median": 188,
+      "sd_log_turn_median": 0.79286033
+    },
+    "retention_ratio": 0.82870545,
+    "verdict_rule": "retention_ratio 붕괴(<0.3) 또는 n_median<6 이면 층 내부 검정력 부족 -> '미결' 라벨"
+  },
+  "primary_preregistered": {
+    "definition": "R10V1 - R10V3 : 승자 데실 내부, 형성기 일평균 회전율 시장-내 랭킹 저층(V1) - 고층(V3) 의 forward 1M EW 수익 차. 독립 2-way(LS2000 절차).",
+    "metric_basis": "gross (신호 수준 스프레드 — 매매 미발생. 소비형 순수익 판정은 S4)",
+    "n_months": 190,
+    "mean_monthly": -0.00518948,
+    "mean_ann": -0.06227378,
+    "sd_monthly": 0.08469335,
+    "nw_t": -0.77922776,
+    "beta_controlled": {
+      "alpha_ann": -0.04254471,
+      "t_alpha": -0.56753497,
+      "beta": -0.23862792,
+      "t_beta": -2.55749741,
+      "beta_contrib_ann": -0.10240619,
+      "n": 190
+    },
+    "cell_n_lo_median": 5,
+    "cell_n_hi_median": 18,
+    "hit_rate": 0.47368421
+  },
+  "primary_adv20_stratified": {
+    "definition": "adv20 터사일 층 내부에서 (Date,mkt,advt) 재랭킹 중앙값 분할 저회전-고회전 스프레드 -> 층 평균(등가중). 유동성 축 기계적 통제(결과량 층화).",
+    "n_months": 234,
+    "mean_ann": -0.03378519,
+    "sd_monthly": 0.0654114,
+    "nw_t": -0.72881257,
+    "beta_controlled": {
+      "alpha_ann": -0.02484942,
+      "t_alpha": -0.55190007,
+      "beta": -0.07374149,
+      "t_beta": -1.0003946,
+      "beta_contrib_ann": -0.13011276,
+      "n": 234
+    },
+    "hit_rate": 0.4957265,
+    "per_stratum": {
+      "1": {
+        "advt": 1,
+        "n_months": 87,
+        "mean_ann": -0.00215442,
+        "nw_t": -0.01831233,
+        "n_lo_med": 4,
+        "n_hi_med": 3
+      },
+      "2": {
+        "advt": 2,
+        "n_months": 234,
+        "mean_ann": -0.03540894,
+        "nw_t": -0.48759734,
+        "n_lo_med": 6,
+        "n_hi_med": 5
+      },
+      "3": {
+        "advt": 3,
+        "n_months": 238,
+        "mean_ann": -0.04409419,
+        "nw_t": -0.69743502,
+        "n_lo_med": 8,
+        "n_hi_med": 7.5
+      }
+    },
+    "advt_note": "advt 1=최저 거래대금 층 · 3=최고"
+  },
+  "grid_10x3": {
+    "cells": {
+      "1": {
+        "mdec": 1,
+        "vter": 1,
+        "r_ann": 0.0767487,
+        "n_obs": 1905
+      },
+      "2": {
+        "mdec": 1,
+        "vter": 2,
+        "r_ann": 0.15801984,
+        "n_obs": 2574
+      },
+      "3": {
+        "mdec": 1,
+        "vter": 3,
+        "r_ann": 0.0501909,
+        "n_obs": 3258
+      },
+      "4": {
+        "mdec": 2,
+        "vter": 1,
+        "r_ann": 0.07175824,
+        "n_obs": 2705
+      },
+      "5": {
+        "mdec": 2,
+        "vter": 2,
+        "r_ann": 0.08068728,
+        "n_obs": 2720
+      },
+      "6": {
+        "mdec": 2,
+        "vter": 3,
+        "r_ann": 0.05738312,
+        "n_obs": 2466
+      },
+      "7": {
+        "mdec": 3,
+        "vter": 1,
+        "r_ann": 0.13032315,
+        "n_obs": 3082
+      },
+      "8": {
+        "mdec": 3,
+        "vter": 2,
+        "r_ann": 0.1007238,
+        "n_obs": 2726
+      },
+      "9": {
+        "mdec": 3,
+        "vter": 3,
+        "r_ann": 0.13115877,
+        "n_obs": 2066
+      },
+      "10": {
+        "mdec": 4,
+        "vter": 1,
+        "r_ann": 0.09092116,
+        "n_obs": 3263
+      },
+      "11": {
+        "mdec": 4,
+        "vter": 2,
+        "r_ann": 0.08832716,
+        "n_obs": 2687
+      },
+      "12": {
+        "mdec": 4,
+        "vter": 3,
+        "r_ann": 0.02613571,
+        "n_obs": 1913
+      },
+      "13": {
+        "mdec": 5,
+        "vter": 1,
+        "r_ann": 0.084262,
+        "n_obs": 3249
+      },
+      "14": {
+        "mdec": 5,
+        "vter": 2,
+        "r_ann": 0.13049108,
+        "n_obs": 2727
+      },
+      "15": {
+        "mdec": 5,
+        "vter": 3,
+        "r_ann": 0.09764483,
+        "n_obs": 1938
+      },
+      "16": {
+        "mdec": 6,
+        "vter": 1,
+        "r_ann": 0.11801195,
+        "n_obs": 3160
+      },
+      "17": {
+        "mdec": 6,
+        "vter": 2,
+        "r_ann": 0.05449731,
+        "n_obs": 2639
+      },
+      "18": {
+        "mdec": 6,
+        "vter": 3,
+        "r_ann": 0.11741936,
+        "n_obs": 2031
+      },
+      "19": {
+        "mdec": 7,
+        "vter": 1,
+        "r_ann": 0.11370056,
+        "n_obs": 2919
+      },
+      "20": {
+        "mdec": 7,
+        "vter": 2,
+        "r_ann": 0.07739564,
+        "n_obs": 2686
+      },
+      "21": {
+        "mdec": 7,
+        "vter": 3,
+        "r_ann": 0.09703697,
+        "n_obs": 2246
+      },
+      "22": {
+        "mdec": 8,
+        "vter": 1,
+        "r_ann": 0.09694354,
+        "n_obs": 2609
+      },
+      "23": {
+        "mdec": 8,
+        "vter": 2,
+        "r_ann": 0.16244952,
+        "n_obs": 2710
+      },
+      "24": {
+        "mdec": 8,
+        "vter": 3,
+        "r_ann": 0.14532404,
+        "n_obs": 2566
+      },
+      "25": {
+        "mdec": 9,
+        "vter": 1,
+        "r_ann": 0.15000711,
+        "n_obs": 2144
+      },
+      "26": {
+        "mdec": 9,
+        "vter": 2,
+        "r_ann": 0.19919795,
+        "n_obs": 2639
+      },
+      "27": {
+        "mdec": 9,
+        "vter": 3,
+        "r_ann": 0.13965885,
+        "n_obs": 3096
+      },
+      "28": {
+        "mdec": 10,
+        "vter": 1,
+        "r_ann": 0.12170639,
+        "n_obs": 1193
+      },
+      "29": {
+        "mdec": 10,
+        "vter": 2,
+        "r_ann": 0.1974925,
+        "n_obs": 2108
+      },
+      "30": {
+        "mdec": 10,
+        "vter": 3,
+        "r_ann": 0.16819912,
+        "n_obs": 4652
+      }
+    },
+    "winner_row_v1_v2_v3_ann": [0.12170639, 0.1974925, 0.16819912],
+    "decile_tests": {
+      "1": {
+        "mdec": 1,
+        "n": 243,
+        "v1_minus_v3_ann": 0.0527868,
+        "nw_t": 1.02676679
+      },
+      "2": {
+        "mdec": 5,
+        "n": 256,
+        "v1_minus_v3_ann": 0.01122275,
+        "nw_t": 0.22794015
+      },
+      "3": {
+        "mdec": 10,
+        "n": 190,
+        "v1_minus_v3_ann": -0.06227378,
+        "nw_t": -0.77922776
+      }
+    }
+  },
+  "mixed_rank_control": {
+    "mean_ann": -0.19580371,
+    "nw_t": -2.52618462,
+    "n_months": 172,
+    "kq_share_V1": 0.14054054,
+    "kq_share_V3": 0.65330867,
+    "kq_share_V1_mktint": 0.43000838,
+    "kq_share_V3_mktint": 0.50709372,
+    "note": "혼합 랭킹은 V 분위가 시장 더미로 오염된다(KQ150 비중 격차). 시장-내 랭킹이 그것을 제거하는지 실측."
+  },
+  "power": {
+    "primary": {
+      "low": {
+        "n": 190,
+        "sd_monthly": 0.08469335,
+        "nw_inflation": 1.25,
+        "nw_inflation_source": "assumed_default_series_unmeasurable",
+        "mde80_monthly": 0.02151734,
+        "implied_monthly": 0.0006,
+        "ratio": 0.02788448,
+        "expected_t": 0.07812116,
+        "power": 0.02992623
+      },
+      "mid": {
+        "n": 190,
+        "sd_monthly": 0.08469335,
+        "nw_inflation": 1.25,
+        "nw_inflation_source": "assumed_default_series_unmeasurable",
+        "mde80_monthly": 0.02151734,
+        "implied_monthly": 0.0012,
+        "ratio": 0.05576896,
+        "expected_t": 0.15624233,
+        "power": 0.03563465
+      },
+      "high": {
+        "n": 190,
+        "sd_monthly": 0.08469335,
+        "nw_inflation": 1.25,
+        "nw_inflation_source": "assumed_default_series_unmeasurable",
+        "mde80_monthly": 0.02151734,
+        "implied_monthly": 0.0018,
+        "ratio": 0.08365345,
+        "expected_t": 0.23436349,
+        "power": 0.04220641
+      }
+    },
+    "stratified": {
+      "low": {
+        "n": 234,
+        "sd_monthly": 0.0654114,
+        "nw_inflation": 1.25,
+        "nw_inflation_source": "assumed_default_series_unmeasurable",
+        "mde80_monthly": 0.01497482,
+        "implied_monthly": 0.0006,
+        "ratio": 0.04006726,
+        "expected_t": 0.11225243,
+        "power": 0.03231943
+      },
+      "mid": {
+        "n": 234,
+        "sd_monthly": 0.0654114,
+        "nw_inflation": 1.25,
+        "nw_inflation_source": "assumed_default_series_unmeasurable",
+        "mde80_monthly": 0.01497482,
+        "implied_monthly": 0.0012,
+        "ratio": 0.08013452,
+        "expected_t": 0.22450486,
+        "power": 0.04132657
+      },
+      "high": {
+        "n": 234,
+        "sd_monthly": 0.0654114,
+        "nw_inflation": 1.25,
+        "nw_inflation_source": "assumed_default_series_unmeasurable",
+        "mde80_monthly": 0.01497482,
+        "implied_monthly": 0.0018,
+        "ratio": 0.12020177,
+        "expected_t": 0.33675729,
+        "power": 0.05226877
+      }
+    },
+    "anchor_source": "LS2000 Table II/VI 승자 사이드 V1-V3 Year-1: J=6 K=3 +0.06%/mo · J=9 +0.18%/mo"
+  }
+}

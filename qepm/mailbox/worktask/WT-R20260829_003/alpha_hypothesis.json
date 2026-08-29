@@ -1,0 +1,139 @@
+{
+  "wt_id": "WT-R20260829_003",
+  "designed_by": "alpha-hypothesis",
+  "model_tier": "fable",
+  "designed_at": "2026-08-29",
+  "wt_type": "reinforcement",
+  "reinforce_attempt": "3/20",
+  "base_id": "RP_20260829_122020_9192",
+  "prechecks": {
+    "hypothesis_index_hits": [
+      "lookup momentum: 30 hits (FAIL 5 · DISTILLED_NEG 17 · PASS 0) — top DIST-AR-027/DIST-AR-041/DIST-RAMP-026. return-derived 모멘텀 변형 소진 확인",
+      "lookup turnover: 10 hits (FAIL 1 · DISTILLED_NEG 4 · PASS 3 · MARGINAL 2) — top DIST-QPM-020/029/039. 회전율 축 자체의 settled-negative 없음",
+      "lookup liquidity: 30 hits (FAIL 10 · DISTILLED_NEG 3 · PASS 5) — top DIST-QPM-025/026/029. 유동성-프리미엄 교란 위험의 선례 밀도 높음 → 본 설계의 교란 통제 의무를 재확인"
+    ],
+    "distilled_refs": {
+      "DIST-AR-003": "momentum family 12건 PORT_t<2.95 미전이. 소진 축 = return-derived(M01/M08/M24 spanned) + flow/event catalyst의 top-25 비매매. 재도전 조건에 '비-return 원천' 명시 — 회전율은 return-derived 아님",
+      "DIST-AR-007": "return-파생 구성(단일 M·잔차·다축 composite 내 모멘텀 성분·tier-집중)의 cap-w 게이트 실패. retry = 재료/기전/그리드 중 1축 신규 — 본 시도는 재료(거래량 제3축)+기전(생애 단계 조건화) 2축 신규",
+      "DIST-AR-041": "가격-파생 변형 추가 탐색 저EV(17건 소진). 재도전 가치 = 수급 주체 축 — 회전율은 수급 활동량 축으로 그 방향에 부합"
+    },
+    "frontier_queue_refs": [],
+    "frontier_queue_note": "alpha_frontier_queue 에 momentum×turnover 관련 open/parked 항목 없음 — 본 건은 reinforce_ledger_l1 entry[0] attempt n=3 (opened_at 2026-08-29T15:41:18, status active) 로 개설된 강화 레인 항목이며 frontier 레인과 중복되지 않는다",
+    "ledger_ref": "06_Registry/reinforce_ledger_l1.json entry[0].attempts[3] — 선행 1/20 (L-RF-20260829_142955, 이익 축 powered null) · 2/20 (귀속=신호 확정, cell4 β-통제 α +5.14%/yr t 1.205, 필요 활성 +13.25%/yr 의 44%) 판독 완료",
+    "owner": "alpha-hypothesis (WT-R20260829_003, Q-Lead orchestration)",
+    "discovery_seed": "부재 (확인 완료)"
+  },
+  "paper_reading": {
+    "primary_source_read": "Lee & Swaminathan (2000), Price Momentum and Trading Volume, JF 55(5):2017-2069 — 공개 PDF https://www.lsvasset.com/pdf/research-papers/Price-Momentum-Trad-Vol-2000.pdf 전문 직접 판독 (요약 기억 아님)",
+    "turnover_definition": "일별 회전율 = 당일 거래 주식수 / 당일 말 상장주식수. 신호 = 형성기간 J개월(주력 J=6)의 일평균 회전율(%). NYSE/AMEX 한정 — Nasdaq 은 딜러 이중계상으로 회전율 비교불능이라 제외(Gould-Kleidon 1994). ★KR 함의: K200(코스피)∪KQ150(코스닥) 혼합 유니버스는 LS2000 이 배제한 '시장 간 회전율 관행 차이' 문제를 그대로 갖는다 → 회전율 랭킹은 시장-내(within-market) 또는 시장-중립화 후 수행해야 한다",
+    "double_sort_procedure": "매월 초 독립(2-way independent) 정렬: 과거 J개월 수익률 10분위(R1~R10) × 같은 기간 일평균 회전율 3분위(V1 저회전~V3 고회전) = 30셀. 보유 K∈{3,6,9,12}개월 중첩(JT 방식 1/K 오버래핑, 단순 t 허용), 형성-보유 사이 1주 lag(마이크로스트럭처 회피). EW. 강건성: 대형 50% 표본은 5×5, 3×10 변형도 제시",
+    "early_late_stage_evidence": "early = R10V1−R1V3(저회전 승자 롱·고회전 패자 숏) / late = R10V3−R1V1. 실증 뿌리 3개: Table VI(저회전 패자가 5년 내내 고회전 패자 우위, 승자 사이드는 Year 2부터 저회전 우위 2~6%/yr), Table VIII Fama-MacBeth(early 는 Year 3 까지 지속·late 는 Year 2 부터 유의 반전), 8분기 이익 서프라이즈 CAR(저회전은 양(+)·고회전은 음(−) 서프라이즈가 8분기 지속 — 승자·패자 양쪽에서 동일). MLC 는 이 셋을 묶는 서술 도구이지 별도 실증이 아님",
+    "horizons": "Year 1~5 event-time (Hansen-Hodrick lag-11 t). JT 반전은 Year 4~5 에서 유의(J=12: Y2~5 누적 −10.95% ≈ Y1 +11.56% 상쇄). 회전율 효과는 3~5년 장수명",
+    "effect_magnitudes": {
+      "momentum_simple_y1": "R10−R1 = +12.49%/yr (t 5.04, J=6 raw)",
+      "early_stage_y1": "+16.70%/yr (t 5.85); early−simple = +4.21%/yr (t 2.40)",
+      "late_stage_y1": "+6.84%/yr (t 2.53)",
+      "winner_side_v1_minus_v3_y1": "★소(小): J=6 K=3 R10V1 1.63 vs R10V3 1.57%/mo (+0.06%/mo) · J=9 1.91 vs 1.73 (+0.18%/mo ≈ +2.2%/yr). 원문 명시: '승자 사이드 저회전-고회전 차이는 대부분 셀에서 작고 비유의'(각주 11: 유의 우위는 Year 2 이후 +2~6%/yr)",
+      "loser_side_v1_minus_v3_y1": "★대(大): R1V1 1.16 vs R1V3 0.03~0.41%/mo — 회전율 효과의 본체는 패자 사이드",
+      "volume_change_effect": "최근 회전율 > 4년 전 회전율 인 종목이 유의 저수익 — ΔVolume 은 유동성 대리 불가한 abnormal activity 축 (교란 분리에 유용한 대조 사양)",
+      "liquidity_contradiction": "원문이 유동성 해석을 직접 반박: 고회전(고유동성) 종목의 모멘텀 프리미엄이 더 큼(J=6 K=6: V3 1.46 vs V1 0.54%/mo) + 회전율은 전통 유동성 대리와 약상관 + 대형 50% 표본에서도 유지"
+    },
+    "international_followup": "Bornholt 외 국제 증거 후속은 원문 URL 미확인 상태 — 인용하지 않는다 (지시 준수)"
+  },
+  "candidates": [
+    {
+      "title": "C1 — 승자 분위 내부 회전율 층화 (LS2000 winner-side 직이식)",
+      "family": "momentum_x_volume_lifecycle",
+      "mechanism_sketch": "저회전 승자 = 관심 확산 초기 단계 → 지속. 고회전 승자 = glamour 말기 → 반전. 이중정렬 층화로 승자 중 초기 단계만 보유",
+      "why_selected": "사전등록 가설 축(request.json) 그대로 + 선행 2/20 의 cell4 좌표와 직접 비교 가능(증분 판정 가능) + 반증조건이 층화 스프레드로 깨끗"
+    },
+    {
+      "title": "C2 — ΔTurnover(회전율 변화) 조건화",
+      "family": "volume_dynamics",
+      "mechanism_sketch": "LS2000: 최근 회전율이 과거(4년 전) 대비 상승한 종목이 저수익 — abnormal activity 는 유동성 대리 불가. 수준(level)이 아니라 변화(change)로 조건화하면 저회전≠저유동성 교란이 구조적으로 약해진다",
+      "why_not_selected": "사전등록 논문 축은 수준-회전율 이중정렬이 주 실증. ΔTurnover 는 원문에서 보조 사양. 단 교란 기각 검정의 대조 사양으로 승계 권고 — C1 이 L-family 통제 후 소멸하면 C2 가 4/20 의 1순위 재료"
+    },
+    {
+      "title": "C3 — 모멘텀·회전율 연속 composite 점수",
+      "family": "momentum_composite",
+      "mechanism_sketch": "mom rank − turnover rank 를 연속 점수로 합성해 top-25 선별",
+      "why_not_selected": "★자기점검 해당 지점: 이 구현은 '다축 composite 내 모멘텀 성분'(DIST-AR-007 소진 경로)으로 환원된다. 조건화(층화)가 아닌 합성은 생애 단계 가설의 검정이 아니다 — 본 설계는 이중정렬 층화로 고정하고 composite 환원을 금지 사양으로 명시"
+    },
+    {
+      "title": "C4 — 고회전 승자 배제형(exclusion) 소비",
+      "family": "momentum_x_volume_lifecycle",
+      "mechanism_sketch": "무조건부 cell4 top-25 를 유지하되 고회전 승자만 배제하고 랭킹 후순위로 대체",
+      "why_not_selected": "선별형(C1)과 소비 형태만 다른 변형 — 설계 단계에서 갈라 세울 가설이 아니라 alpha-research 의 A/B 사양. 단 배제형 이득은 '배제 vs 대체'(잔류 아님) 대비로 재야 한다는 실측 규약(measurement-graduation 착수 관문 절)을 승계 조건으로 부기"
+    },
+    {
+      "title": "C5 — 저회전 패자 리바운드 롱 (loser-side MLC)",
+      "family": "reversal_x_volume_lifecycle",
+      "mechanism_sketch": "LS2000 효과 크기의 본체는 패자 사이드다(R1V1 1.16 vs R1V3 0.03%/mo, 5년 지속). 저회전 패자 = 말기 패자 → 리바운드. 롱온리로 직접 매수 가능",
+      "why_not_selected": "사전등록 가설 축(승자 지속/반전)을 벗어난다 — 임의 교체 금지. 또한 KR 패자 데실 × 저회전은 adv20≥2e8 하한과 정면 충돌 가능(생존 유니버스 선측정 필요). ★단 원문 배율 관점에서 승자 사이드보다 큰 재료이므로, 3/20 이 '방향 맞음·배율 부족' 으로 끝나면 4/20 후보 1순위로 challenge_flags 에 보존"
+    }
+  ],
+  "selected": {
+    "hypothesis_title": "JT1993 강화 3/20 — 회전율 조건부 모멘텀 생애주기 (Lee-Swaminathan 2000)",
+    "hypothesis_description": "KR K200∪KQ150 롱온리 top-25 에서, 승자(모멘텀 상위 분위) 내부를 형성기간 일평균 회전율로 층화하면 저회전 승자 층의 forward 수익이 고회전 승자 층을 초과하고(LS2000 MLC: 저회전 승자 = 관심 확산 초기 단계), 저회전 조건부 top-25 의 β-통제 α 가 무조건부 승자 top-25(강화 2/20 cell4, +5.14%/yr t 1.205) 대비 양(+)의 증분을 갖는다. 회전율은 시장-내(K200/KQ150 별도) 랭킹으로 산출하고 t-1 까지의 정보만 쓴다(C10 계열). 이중정렬 층화 구성만 허용 — 연속 composite 합성으로의 환원은 본 가설의 검정이 아니다(DIST-AR-007 소진 경로와 동일해짐).",
+    "mechanism": {
+      "agent": "관심-주도 개인 매매 군집 (KR 현물 거래대금의 절반 이상을 차지하는 개인 투자자의 순차적 관심 확산 — LS2000 의 glamour 수요 주체에 대응). 고회전 승자 = 개인 관심이 이미 집중돼 회전율이 부푼 생애 말기 승자, 저회전 승자 = 가격 신호는 발생했으나 관심 군집이 아직 도달하지 않은 초기 단계 승자",
+      "friction": "① KR 공매도 제약 — 과열된 고회전 승자를 숏으로 지울 수 없어 말기 과대평가가 잔존(no_short_legal_kr, request.json hard_mandate) ② 관심의 순차 확산 자체가 제약 — 저회전 승자의 정보는 공개돼 있으나 주목이 배분되기 전까지 수요가 형성되지 않는다(Merton 인지 가설 계열, LS2000 §IV) ③ 차익거래자 측: 저회전 종목은 포지션 구축 비용(시장충격)이 높아 기관의 신속 재정거래가 지연된다",
+      "path": "저회전 승자는 후속 분기 이익 서프라이즈가 체계적으로 양(+)(LS2000: 8분기 연속, 승자·패자 양쪽에서 동일 패턴) → 분기 공시 창마다 가격이 단계적으로 재평가 → 월간 리밸 top-25 보유가 그 지속 구간(수개월~수년)을 소비한다. 고회전 승자를 걷어내는 것은 같은 창에서 음(−) 서프라이즈로 반전할 말기 승자를 미리 배제하는 행위"
+    },
+    "falsification": {
+      "observable": "[1급·사전등록] 승자 분위 내부에서 저회전 층 vs 고회전 층의 forward 1M 수익 스프레드 — ★adv20(20일 평균 거래대금) 층 내부에서 측정(유동성 층화). 유의하지 않으면 LS2000 의 KR 이식 실패. [2급] 저회전 조건부 top-25 의 β-통제 α 증분 vs 무조건부 cell4(+5.14%/yr t 1.205, stage_artifacts/WT_R20260829_002/alpha_validation.json) ≤ 0 이면 조건화가 소비 형태로 전이되지 않음. [교란 기각] 회전율 층화 효과가 L-family(L01_Amihud·L09_Amihud_20d·L11_Kyle_Lambda) 통제 후 소멸하면 '생애주기' 가 아니라 유동성 프리미엄의 재명명 — 이때 통제 변환 규약(raw/rank)을 산출물에 기록하고 절단면(분위 프로파일) 병기(measurement-graduation §3 DISTRIBUTION_TARGET 절의 통제 규약 승계). [기전 부수 관측 — 성과 비동어반복] LS2000 기전이 참이면 KR 에서도 저회전 승자의 후속 이익 서프라이즈/컨센서스 대비 실적이 고회전 승자보다 우위여야 한다(8분기 CAR 정합). 이 부수 관측이 부재하면 수익 스프레드가 있어도 기전은 기각(유동성/사이즈 잔재로 재귀속). ★1/20 실측 경고 승계: C01_SUE 는 정적 검증기 fail_lookahead_suspected(컨센서스 33종 공통) — 부수 관측은 SUE 단독이 아니라 실현 공시창 수익률(A1 Ret 기반 이벤트 창) 병행으로 판정. [보조 부수 관측] 저회전 승자 층의 B/M 상방 틸트(LS2000 value 특성 정합, C-FUND-MERGED 리프)",
+      "field_dictionary_refs": [
+        "A1_RAWDATA_OHLCVS_daily (Vol·Close·Size·Ret·K200·KQ150·Float — 회전율 원천 + 공시창 실현수익)",
+        "FDB-B2_registry_rawdata_price_daily (L02_Turnover·M02_Mom_6_1·L01/L09/L11 L-family, load_month_factors 경유 = C15)",
+        "A9_liquidity_avgtv20_convention (adv20 층화 축 — t-1 규약·fail-open 주의사항 포함)",
+        "FDB-B3_registry_consensus_daily / C-CONSENSUS-QW (이익 서프라이즈 부수 관측 — 1/20 의 PIT caveat 병기)",
+        "C-FUND-MERGED (B/M 틸트 보조 관측)",
+        "E7_unified_regime_3layer / E3_macro_regime_monthly (국면 경계 라벨)"
+      ],
+      "reject_if": "①승자 분위 내부 adv20-층화 회전율 스프레드 비유의(1급 실패 = KR 이식 실패) 또는 ②β-통제 α 증분 ≤ 0(전이 실패) 또는 ③L-family 통제 후 스프레드 소멸(유동성 재명명 — 단 이 경우 라벨은 '기각' 이며 ΔTurnover 대조 사양(C2)이 미소진 축으로 남음을 병기) 또는 ④이익 서프라이즈 부수 관측 부재(기전 기각 — 수익이 있어도 MLC 로 귀속 불가)",
+      "reachability_disposition_bands": {
+        "threshold_context": "자본 문턱 PORT_t 2.95 에 이 창에서 필요한 활성수익 +13.25%/yr, 무조건부 cell4 관측 β-통제 α +5.14%/yr (44%) — 2/20 실측",
+        "band_reject": "β-통제 α 증분 ≤ 0 또는 1급 스프레드 비유의 → 기각/이식 실패 (L-code 적립, 기전 특정: 승자 사이드 vs 교란 vs 부수 관측 중 어느 축이 꺼졌는지)",
+        "band_partial": "저회전 조건부 β-통제 α ∈ (+5.14%, +8%]/yr → '방향은 맞으나 배율 부족' — 처분: 승자 사이드 단독 자본 불가 선언 + 본 층화를 composite/오버레이 재료로 보존 + 4/20 은 C5(패자 사이드 저회전 리바운드 롱, 원문 배율 본체) 또는 C2(ΔTurnover) 로 전환",
+        "band_reach": "β-통제 α ≥ +13%/yr 대 → 자본 문턱 사정권 — forge 완주 가치",
+        "preregistered_prior": "★정직 사전 기록: LS2000 원문의 승자 사이드 Year-1 스프레드는 +0.06~0.18%/mo(≈+0.7~2.2%/yr)로 작고 대부분 비유의하며, 유의 우위는 Year 2 이후다. 미국 배율을 그대로 이식하면 band_partial 미만이 최빈 결말이다. 본 시도가 그보다 큰 효과를 기대하는 유일한 근거 = KR 특이 기전(개인 회전율 극단 + 공매도 제약으로 말기 승자 과대평가가 미국보다 깊다)이며 이는 가설이지 실측이 아니다 — 따라서 '미결/배율 부족' 결말 시 이 라운드가 남기는 것: ①승자 사이드 회전율 층화의 KR 실측 좌표(최초) ②L-family 직교성 실측 ③C5/C2 의 착수 근거"
+      }
+    },
+    "regime_scope": {
+      "holds_in": ["neutral", "expansion"],
+      "weakens_or_reverses_in": ["crisis", "post_crisis_rebound"],
+      "boundary_rationale": "MLC 기전은 종목별 관심 확산 속도의 횡단면 차이를 소재로 한다 — 공통 성분이 지배하는 국면에서는 그 횡단면 차이가 신호로 기능하지 못한다. ①crisis: 강제 청산·유동성 회수가 생애 단계와 무관하게 전 승자를 타격(강화 2/20 basis 산술이 실측한 β 좌표 지배 — cell1 활성 −7.95%/yr 의 −9.38%p 가 β 항). ②post_crisis_rebound(모멘텀 크래시 창): 위기 직후 반등은 저가·고β 패자 축으로 발생해 승자 포트가 국면 역풍을 맞는다(기저 JT1993 KR 재현의 MDD 86.7% 좌표, Daniel-Moskowitz 2016 momentum crashes 문헌 뿌리 — 사후 관찰이 아니라 기전 도출: 크래시는 패자 옵션성 폭발이므로 승자-사이드 층화 변수인 회전율이 개입할 자리가 없다). 경계 라벨은 E7_unified_regime_3layer / E3_macro_regime_monthly 어휘로 판정. 보편타당 주장 아님 — 평온·확장 국면에서만 관심 확산 기전이 작동한다고 주장하며, 이는 LS2000 의 표본(1965~1995 NYSE/AMEX, 대공황·2008 급 위기 부재)이 사실상 평시 표본이라는 점과도 정합",
+      "kr_market_boundary_note": "시장 경계 추가: 코스피(K200) vs 코스닥(KQ150) 회전율 관행 차이는 LS2000 이 Nasdaq 을 제외한 이유의 KR 대응물 — 국면이 아니라 구조 경계이며, 시장-내 랭킹으로 통제한다(혼합 랭킹 시 회전율 분위가 시장 더미로 오염)"
+    }
+  },
+  "confound_control_design": {
+    "core_risk": "저회전 ≠ 저유동성. 2/20 실측: cell4 보유의 91.2% 가 이미 OTHER tier — 회전율 조건화가 (a)생애 단계 선별인지 (b)유동성 하위로의 추가 침강인지 분리 실패 시 판정 불가",
+    "design": [
+      "① adv20 층 내부 층화 측정: 유동성 층(20일 평균 거래대금 분위)을 먼저 자르고 각 층 안에서 회전율 층화 스프레드를 측정 — 층화가 유동성 축을 기계적으로 통제 (결과량 층화 통제 — measurement-graduation 의 '진단만으로는 걷어내지 못한다' 규약 정합)",
+      "② L-family 직교성 검정: L01_Amihud·L09_Amihud_20d·L11_Kyle_Lambda 통제 전후 스프레드 병기 + 통제 변환 규약(raw/rank) 기록 + 절단면(통제축 분위 프로파일) 병기",
+      "③ EW-유니버스 대비 PORT_t + cap-tier 분해(MEGA/MID/OTHER) 병기 의무 — 양(+) 결과가 소형주 노출이면 인용 불가(2/20 무신호 대조 교훈 승계)",
+      "④ 회전율 정의 자체의 교란 축소: 시장-내 랭킹(K200/KQ150 별도) + 분모는 상장주식수(LS2000 원정의) — 거래대금 기반 대리(adv20)와 분모가 달라 직교성 검정이 동어반복이 되지 않게 한다",
+      "⑤ 대조 사양 예약: ΔTurnover(C2) — 수준-회전율이 L-family 에 흡수될 경우의 미소진 대조축으로 사전 명시"
+    ],
+    "verdict_if_unseparated": "①~③ 이 분리에 실패하면(층 내부 스프레드 소멸 + 직교화 후 소멸 동시) 판정 = '유동성 재명명 기각'. 층 내부 생존 + 직교화 후 소멸처럼 신호가 갈리면 라벨 = 미결(통제 사양 갈림 — feedback-two-controls-disagree 규약: 갈린 이유 자체를 산출물에 기록)"
+  },
+  "differentiation_from_priors": {
+    "vs_1_20": "1/20 은 이익정보(SUE) 축 결합 — 가격 축 통제 후 powered null 로 소진. 본 시도의 회전율은 이익정보가 아니고, 결합(composite)이 아니라 조건화(층화)다",
+    "vs_2_20": "2/20 은 동일 신호의 형태(숏 레그·집중) 분해 — 신호 자체는 불변이었다. 본 시도는 신호의 정의역을 바꾼다(승자 전체 → 생애 초기 승자만). 2/20 이 남긴 cell4 좌표(+5.14%/yr)는 본 시도의 대조군",
+    "vs_DIST": "DIST-AR-003/007/041 이 소진한 것 = return-derived 변형(17건)·이익정보 결합·composite 내 모멘텀 성분. 회전율은 return 에서도 이익에서도 파생되지 않는 제3 정보축(수급 활동량)이며, 구성도 composite 가 아닌 이중정렬 층화다. ★자기점검: 구현이 연속 composite 점수로 환원되는 순간 DIST-AR-007 소진 경로와 동일해진다 — C3 반려 사유를 구현 금지 사양으로 명시"
+  },
+  "fixed_axes_acknowledged": "long-only(w≥0) · ≤25종 · K200∪KQ150 · 2005-01-01~ · 15bps(v2.4 delta) · Σw=1 · 개별 비중 상한 없음(v10) · adv20≥2e8 · PIT C1~C15 · 회전율은 t-1 정보만(C10 계열, A9 규약의 fail-open·당일포함 hazard 인지) · 팩터 접근 load_month_factors() 경유(C15) · S0/S1 오버레이 미적용",
+  "challenge_flags": [
+    "C5(저회전 패자 리바운드 롱) 보존 — LS2000 효과 크기의 본체는 패자 사이드(R1V1 1.16 vs R1V3 0.03%/mo)이며 롱온리로 매수 가능. 3/20 이 band_partial 이면 4/20 1순위. 단 KR 패자×저회전의 adv20 생존 유니버스 선측정 필요",
+    "C2(ΔTurnover) 보존 — 수준-회전율이 L-family 에 흡수되면 유일한 미소진 대조축",
+    "C4(배제형 소비) — alpha-research A/B 사양으로 이관, '배제 vs 대체' 대비 규약 승계 조건",
+    "승자 사이드 Year-1 스프레드의 미국 실측이 작다(+0.06~0.18%/mo) — band_partial 미만이 최빈 결말임을 사전 인정. KR 특이 기전(개인 회전율·공매도 제약)이 배율을 키운다는 주장은 본 라운드가 처음 실측하는 가설",
+    "이익 서프라이즈 부수 관측의 C01_SUE 경로는 1/20 에서 fail_lookahead_suspected — 실현 공시창 수익률 병행 없이는 부수 관측 판정 금지",
+    "K200/KQ150 회전율 관행 차이 — 혼합 랭킹 금지(시장-내 랭킹), 위반 시 회전율 분위가 시장 더미로 오염"
+  ],
+  "verdict": "designed",
+  "handoff": {
+    "to": "alpha-research",
+    "next_steps": "Step 1~7 + ⑤ AST 구성. 승계 불변 조건: ①이중정렬 층화(연속 composite 환원 금지) ②adv20 층 내부 측정 + L-family 직교성(통제 변환 규약 기록) ③EW-유니버스·cap-tier 병기 ④시장-내 회전율 랭킹 ⑤처분 구간(reachability_disposition_bands) 그대로 판정에 사용 ⑥부수 관측(이익 서프라이즈)은 SUE 단독 금지·실현 공시창 병행. 결함 발견 시 재작성 아닌 challenge_note 기록 + 재설계 요청(Charter 원칙 8)"
+  }
+}
