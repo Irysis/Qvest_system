@@ -215,6 +215,11 @@ def main() -> int:
                     help="라이브 원본으로 월별 새 핀을 만들어 사용 (r1 동결 유지). "
                          "리밸런싱 배선의 기본 경로 — 도훈 지시 2026-08-01")
     ap.add_argument("--dry-run", action="store_true", help="산출만 하고 기존 파일 미교체")
+    ap.add_argument("--accept-parity", default=None, metavar="REASON",
+                    help="parity 게이트가 잡은 과거 판정 변경을 **사유를 적어** 수용한다. "
+                         "게이트가 요구하는 '개정 시리즈 특정 후 사람 판단'을 손으로 파일을 "
+                         "덮는 대신 감사 가능한 경로로 남기기 위한 것. 사유 없이는 못 쓴다. "
+                         "★PIT 위반(exit 3)에는 적용되지 않는다 — 그건 여전히 무조건 차단.")
     a = ap.parse_args()
 
     as_of = pd.Timestamp(a.as_of)
@@ -278,11 +283,23 @@ def main() -> int:
     # ── parity 게이트 ────────────────────────────────────────────────────────
     ok, note = parity_check(OUT, new)
     print(f"[ae-monthly] parity: {note}")
-    if not ok:
+    if not ok and not a.accept_parity:
         keep = OUT + ".parity_reject"
         os.replace(tmp, keep)
         die(1, f"과거 발행 행이 변경됨 — 교체 중단. FRED 과거 개정 의심. "
                f"재계산본 보존: {keep} (개정 시리즈 특정 후 사람 판단)")
+    if not ok:
+        # ★수용 경로 — 게이트를 끄는 게 아니라 '누가 왜 넘겼는지'를 남긴다.
+        #   손으로 .parity_reject 를 OUT 에 복사하면 이 기록이 안 남는다. 그래서 여기 둔다.
+        import json as _json
+        _aud = OUT + ".parity_override.jsonl"
+        with open(_aud, "a", encoding="utf-8") as fh:
+            fh.write(_json.dumps({"as_of": dec_str, "note": note,
+                                  "reason": a.accept_parity,
+                                  "pin_dir": pin_dir.replace("\\", "/")},
+                                 ensure_ascii=False) + "\n")
+        print(f"[ae-monthly] ★parity 수용 — 사유: {a.accept_parity}")
+        print(f"[ae-monthly]   기록: {_aud}")
 
     if a.dry_run:
         print(f"[ae-monthly] dry-run — 교체 안 함. 산출: {tmp}")
