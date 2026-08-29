@@ -274,10 +274,14 @@ MODULE_QUARANTINE_PATH <- file.path(.RM_ROOT(), "06_Registry", "module_quarantin
 #' Register a strategy output. FR-consumable only when the v8.1 input floor passes.
 #' @param sim_result list(DAILY_NAV_DT[Date,NAV,Strategy_Ret], bm_xts, ...) (run_monthly_simulation 산출)
 #' @param strategy_id 예 "STR_AS_<run_id>" / "STR_1715"
-#' @param grade overall 등급(A/B/C/F/ungraded) — 정보용. FR 입력 floor 통과 후 RCMA가 사용 판단.
-#' @param origin_mode "alpha_search" | "qepm" | "factor_rotation" | ...
+#' @param grade overall 등급(A/B/C/F/ungraded). ★v10 (2026-08-29): 더 이상 정보용이 아니다 —
+#'   build_module_performance 의 grade floor(B 이상)가 2계층 풀 자격으로 소비한다.
+#' @param grade_basis 등급 출처 라벨 (예: "essence_score(authoritative_remeasure.json)" /
+#'   "dohoon_mandate_YYYYMMDD"). v10 신규 등재분 기록 의무 — proxy 등급과의 혼동 방지.
+#' @param origin_mode "alpha_search" | "qepm" | "factor_rotation" | "reinforcement" | ...
 #' @param role 선택 (diversifier/defensive/core 등 — RCMA 경제논리 휴리스틱에 활용)
 register_module <- function(sim_result, strategy_id, grade = NA_character_,
+                            grade_basis = NA_character_,
                             origin_mode = "unknown", role = NA_character_, meta = list(),
                             catalog_path = MODULE_CATALOG_PATH,
                             metric_type = NULL, contract_pass = NULL, frozen = NULL,
@@ -310,6 +314,7 @@ register_module <- function(sim_result, strategy_id, grade = NA_character_,
   entry <- list(
     strategy_id     = strategy_id,
     grade           = grade %||% "ungraded",
+    grade_basis     = grade_basis %||% NA,   # v10: 등급 출처 (essence/mandate/proxy 구분)
     role            = role %||% NA,
     origin_mode     = origin_mode,
     sim_result_path = sim_result_path,

@@ -1,122 +1,130 @@
 ---
 name: strategy-rotation
-description: 전략 로테이션 모드 — QEPM/alpha-search가 생산한 전략 모듈들을 국면(regime) 조건부로 배합해 합성 운용체계(FR_XXXX)를 만드는 제3 리서치 모드. 모듈을 생산하지 않고 소비하는 meta-layer(Lane3). 1모드 2트랙(Track1 레짐엔진 리서치 + Track2 배분 리서치). 모듈 풀 admission은 overall 등급이 아닌 국면조건부 성과(RCMA — 방어형 CRISIS specialist + 공격형 확장 specialist 양방향, 등급무관). 실측-only(build_bt_result)+essence_score(DSR/OOS 게이트). governor 정지(book_state 수동). QEPM 6-에이전트·alpha-search와 구분.
+description: 2계층 — 전략 로테이션 리서치 (v10). 1계층이 생산한 B등급 이상 전략 모듈을 소비해 어느 시장 상황에서나 통하는 한국 특화 전천후(all-weather) 모델을 설계하는 심화 계층. 논문 온디맨드 착수 → 리서치 1단위(국면엔진×배분규칙×WF 실측)마다 essence 등급(A/B/C/F) → 미달 시 강화 무한(국면식별/전략결합, reinforce_ledger_l2) → A 달성 시 Judge(PIT) → BOOK 등록. 모듈 풀 = 계약 floor + essence grade ∈ {A,B} 2단 게이트(RCMA는 그 위 국면조건부 배치 심사). governor 폐지.
 ---
 
-# 전략 로테이션 모드 (strategy-rotation)
+# 2계층 — 전략 로테이션 리서치 (v10 2026-08-29 재정의)
 
-Qvest 제3 리서치 모드. **신규 알파를 찾지 않고**, 이미 생산된 전략 모듈들을 **국면 조건부로 배합**해 합성 운용체계(`FR_XXXX`)를 만든다. alpha-search(논문 1편 검증)·QEPM(6-에이전트 풀파이프라인)과 별개의 독립 트랙(meta-layer).
+**정체성**: 1계층(팩터전략 리서치)이 생산한 **B등급 이상 전략**을 국면 조건부로 배합해
+**어느 시장 상황에서나 통하는 전략**(한국 특화 전천후 모델 — 최종 목표)을 만드는 심화
+계층. 모듈을 생산하지 않고 소비하는 meta-layer. 산출 = `FR_XXXX` 운용체계.
+페르소나 = `02_Infrastructure/docs/rules/quant-identity.md`.
 
-## Step 0 — 지식 대조 (의무, 2026-07-04 G-mode-wiring)
+## 0. 논문 기반 착수 (v10 — 아이디어는 논문에서 시작한다)
 
-FR 리서치(레짐엔진 변형·배분정책·RCMA 재설계) 착수 **전에** 기존 지식과 대조한다:
+1계층과 마찬가지로 **최초 아이디어 설계는 논문에서 시작**한다. 단 무인 수집기
+(paper_recharge)는 1계층 전용 — 2계층은 **세션 온디맨드 검색**:
+1. `mcp__jina__search_arxiv` / `mcp__paper-search__search_*` (SSRN 포함)로 국면식별·
+   regime-switching allocation·전략결합 방법론 논문 검색 → **원문 링크 확보**.
+2. Step 0 지식 대조(아래) 통과 후 착수. **모든 수치 의사결정(국면 정의·λ·배분규칙
+   파라미터)에 근거 논문 원문 링크 필수** — 파생 결정은 뿌리 논문 제시. **한 논문
+   매몰 금지**(교차 논문 ≥2 대조 권장). 하드코딩 금지 — 동적 리서치.
+3. 데이터가 없으면 "구현 불가"가 아니라 `06_Registry/data_pipeline_queue.json` 적재
+   → 수집 파이프라인 구축 후 재개 (v10 절대 규칙).
 
-1. **hypothesis_index 조회**: 먼저 `Rscript 02_Infrastructure/tools/hypothesis_index.R build`로 재빌드(stale 방지) 후 `Rscript 02_Infrastructure/tools/hypothesis_index.R lookup <keyword>` (예: `lookup regime`, `lookup allocation`). **단일 패밀리어로 넓게 조회 후 좁힐 것** — 다어(`regime rotation`)는 AND 매칭이라 결과가 과도하게 좁아져 진짜 히트를 놓친다. 동의어 자동확장(F1: 한영/축약/동의어)이 이미 걸려 있으니 단일어로 넓게 잡는다. 동일 서명 기존 시도가 있으면 기존 결과(verdict·grade·key_metrics)를 인용하고 **차별점을 명시해야만 진행 가능**.
-2. **모드 L-code grade F 스캔**: `stage_artifacts/l_code/{strategy_rotation,factor_rotation,regime_research,ramp}/` 하위 grade F/FAIL 엔트리(failure-ledger) 확인 — FR은 RAMP와 같은 모듈-소비 계열이라 ramp 실패도 교차 참조.
-3. **히트 시**: FAIL/KILL 결과와 겹치는 설계는 차별점(무엇이 달라져 결과가 달라질 것인지) 명시 없인 진행 금지 — INV-7 재도전 사유를 산출물(연구노트/FR result json)에 기록. hit/miss 사실을 결과 보고에 1줄 기록.
+## Step 0 — 지식 대조 (의무)
 
-## 1. 목적 (왜 만들었나)
+1. `Rscript 02_Infrastructure/tools/hypothesis_index.R lookup <keyword>` (단일어로 넓게 —
+   `lookup regime`, `lookup allocation`). 동일 서명 기존 시도 있으면 verdict·grade 인용 +
+   **차별점 명시 없인 진행 금지**.
+2. 모드 L-code grade F 스캔: `stage_artifacts/l_code/{strategy_rotation,factor_rotation,regime_research,ramp}/`.
+3. **원장 교훈 주입**: `rf_lessons_digest(2L, "<FR lineage>")` — 무한 모드의 "교훈 지속 주입"(도훈).
+4. 기존 실측 교훈 = 1급 강화 소재 (§7 하단 실증 목록).
 
-도훈 비전: **전략 = 모듈. Governor가 다양한 모듈을 국면에 적재적소 투입해 수익률을 극대화하는 의사결정 체계.**
-- 실증 근거: 단일 모듈 long-only **SR 천장 ~2.0**. SR 2.5는 단일 모듈을 키워서가 아니라 **여러 모듈을 국면 조건부로 엮는 앙상블 레벨**에서 발현(국면별 약점구간 회피 → 변동성·낙폭↓ → Sharpe↑).
-- **Lane1(QEPM full) / Lane2(alpha-search lean) = 모듈을 *생산*. Lane3(본 모드) = 그 모듈 풀을 국면 함수로 *시간배분*하는 meta-layer**(생성/태깅 없이 소비).
-
-## 2. 구조 — 1 모드, 2 nested 트랙
+## 1. 구조 — 1 모드 2 트랙 (유지)
 
 ```
-전략 로테이션 모드 ── 1 mode
-├── Track 1: 레짐엔진 리서치   = 국면 정의 + 사전 예측 강화 (토대)
-└── Track 2: 전략 로테이션 리서치 = 모듈 배분 강화 (Track1의 국면 사용)
+2계층 전략 로테이션 리서치
+├── Track 1: 레짐엔진 리서치   = 국면 정의 + 사전 예측 강화 (토대 · 학술 SOT §6)
+└── Track 2: 배분 리서치       = 모듈 배합 강화 (Track1 국면 소비)
 ```
-- 독립 아님 — Track1이 국면 인식·예측 강화 → Track2가 그 국면으로 배분 개선. **Track1 → Track2 의존.**
-- 공유: 진입점 `/strategy-rotation <track∈{regime-engine, allocation}>` · 동일 measurement 계약 · L-code(`mode=strategy_rotation|regime_research`, 구 `factor_rotation` 은 alias 로 정규화).
+진입 `/strategy-rotation <track∈{regime-engine, allocation}>` · `/qvest` 2계층 선택 시 기본 진입.
 
-## 3. 산출물 — FR vs STR (2계층)
+## 2. 리서치 1단위 (등급 산출의 단위)
 
-- **STR_XXXX = 개별 전략 모듈**(부품; QEPM/alpha-search 생산).
-- **FR_XXXX = 운용체계**(신규 ID): {module pool + 레짐엔진 버전 + 국면→모듈 배분정책}. essence_score 등급(A/B/C/F). `factor_rotation_registry.json`(후속).
-- **2계층**: ① book 레벨 — sleeve = STR(단일) 또는 **FR(1 sleeve)**. 표준 PG1→PG2→PG3. ② FR sleeve 내부 — 국면→STR 모듈 로테이션.
+**로테이션 규칙 1개 = {국면엔진 사양 + 배분규칙 사양 + `run_wf_ensemble.R` WF 실측 1회}**
+→ 산출 5종: FR_XXXX 등재(grade 포함) + essence 등급 + L-code(mode=`strategy_rotation`) +
+텔레그램 `[2계층]` + 원장 엔트리.
 
-## 4. ★ 모듈 적재 계약 (표준화 — QEPM·alpha-search 둘 다 소비 가능)
+등급 경로 (권위 = essence 하나): `run_wf_ensemble` → `build_bt_result`(metric_type=
+backtested) → `audit_bt_result` → `essence_score`(A/B/C/F) → `register_fr_result` →
+`emit_fr_lcode`(mode=`strategy_rotation` — 구 factor_rotation 은 alias 정규화).
 
-FR이 모듈을 소비하려면 **표준형** 필수:
-- `04_Research/strategies/{ID}/sim_result.rds` — `$DAILY_NAV_DT[Date, Strategy_Ret]` + `$bm_xts` (실측 NAV).
-- 카탈로그 엔트리(grade/role/origin/sim_result_path).
-- **진입점 = 공용 `register_module()`** (`02_Infrastructure/contracts/register_module.R`): sim_result 스키마 검증 → 계약 floor 판정. `contract_pass=true` + `metric_type=backtested` + `frozen=true` + `source_contract_id/module_hash/build_version/cost_model_version`가 있어야 canonical `06_Registry/module_catalog.json(fr_eligible=true)`에 들어간다. 등급은 무관하지만 계약 floor는 필수다.
-- floor 미충족 산출(proxy alpha-search, 계약 manifest 없는 ML/DPL 등)은 `stage_artifacts/module_quarantine/{id}/sim_result.rds` + `06_Registry/module_quarantine.json`에 보존되고 FR은 소비하지 않는다.
-- **QEPM** = native 준수(`run_monthly_simulation` 표준 sim_result + legacy grade_a_catalog A migration exception). **alpha-search** = 권위 재측정 OK일 때만 FR-eligible 재등록. **`build_module_performance.R`가 module_catalog.fr_eligible=true allowlist ∪ legacy QEPM Grade-A 예외만 적재** → `module_performance.json`(per-regime). 광역 scan은 `QVEST_FR_ALLOW_BROAD_SCAN=1` 진단 모드에서만 허용.
-- **★ 새 모듈 자동 인식**: allocation 단일 진입 `run_factor_rotation.R`이 `module_performance.json` 신선도(mtime vs strategies/·module_catalog 최신) 체크 → 새/변경 모듈 감지 시 pool 자동 rebuild(build_module_performance+RCMA). **QEPM/alpha-search 신규 산출물은 계약 floor를 통과한 경우에만 다음 FR 실행에 자동 편입**(`FR_FORCE_REBUILD=1` 강제).
+## 3. ★모듈 풀 = 2단 게이트 (v10 — "B등급 이상" 도훈 지시)
 
-## 5. ★ 모듈 풀 admission = RCMA (overall 등급 아님 — 국면조건부, 양방향 대칭)
+**①자격 = essence grade ∈ {A, B}** (전략 단위, `grade_basis` = essence 계열 또는
+dohoon_mandate) — `build_module_performance.R` 전방 필터(env `QVEST_L2_GRADE_FLOOR`,
+기본 `B`; `OFF` = 진단 전용). legacy 무등급 모듈은 **권위 재측정 후 grade 기입 시**
+재편입. 풀 축소는 결함이 아니라 지시의 귀결 — 첫 실행에서 풀 크기를 보고할 것.
+**②배치 = RCMA 6기준** (`regime_module_admission.R` — 유지): B+ 풀 **위에서** 어느
+국면에 얼마나 쓸지의 국면조건부 심사. 근거 = v2.1 A/B 실측 교훈 "dispatcher RP-앵커는
+IR 무관이라 admission 이 유일한 품질 게이트" — 등급 floor 만으로는 국면별 표본·유의성
+검증이 사라진다.
+- ★구 "등급무관 specialist 차용"(2026-06-10 mandate) 조항은 **본 v10 지시("B등급
+  이상의 전략들을 활용")가 대체** — 폐기. F-overall specialist 는 이제 풀 부적격.
+  그 재료가 아깝다면 1계층 강화로 B 이상을 먼저 만든 뒤 편입하는 것이 경로다.
+- 계약 floor 는 불변: `register_module()` — contract_pass ∧ metric_type=backtested ∧
+  frozen ∧ provenance 4종. floor 미충족은 quarantine. 신규 등재분은 `essence_grade` +
+  `grade_basis` 기록 의무.
 
-**Grade-A만 쓰지 않는다(도훈 mandate). 어느 국면이든 그 국면에서 압도적이면 차용 — F-overall이어도.**
-- **방어형 (CRISIS specialist)**: CRISIS 강·RISK_ON 약 → CRISIS-admitted. **AX-001**(방어형 조건부 평가: crisis_alpha + Core 대비 MDD + bad/normal IC ratio) 정합.
-- **공격형 (RISK_ON/확장 specialist)**: 확장기 압도·CRISIS 약 → 해당 국면 admitted. (성장/모멘텀이 확장 지배·위기 급락 → F-overall이어도 RISK_ON-A면 차용. 더 흔한 케이스.)
-- 논리: dispatcher가 **각 모듈을 강한 국면에서만 쓰고 약한 국면엔 ~0** → 약점 국면 무관, 강점만 앙상블 기여. **overall 등급(전국면 평균)은 약점이 강점을 상쇄한 잡음** → 게이트 부적합.
+## 4. 강화 프로세스 (★무한 — A등급까지)
 
-**RCMA 6기준** (`02_Infrastructure/portfolio/regime_module_admission.R` → `module_regime_admission.json`):
+리서치 1단위가 A 미달(B/C/F)이면 강화 착수. **시도 횟수 제한 없음** — 교훈을 지속
+주입받으며 A 달성까지 무한 리서치 모드(도훈). 원장 = `06_Registry/reinforce_ledger_l2.json`
+(`reinforce_ledger.R` — layer=2, keyword_axis 2축):
+- **`regime_identification`** — 국면 식별 강화: SJM/HMM/BOCPD/forecaster·신규 축·
+  label gate 개선. 근거 논문 필수 (Bemporad 2018 / Nystrup 2021 / Shu-Mulvey 2024 계열).
+- **`strategy_combination`** — 전략 결합 방법론: dispatcher 개선·Black-Litterman
+  (Shu-Mulvey 2024, arXiv 2410.14841)·top-k 제한·regime-conditional shrinkage·HRP.
+절차 = `.claude/skills/reinforce/SKILL.md` (rf_append_attempt — root_papers 없으면 거부).
+매 시도 = 리서치 1단위 전체(등급·발송·원장·L-code 전부).
 
-| # | 기준 | 합격선 |
-|---|---|---|
-| 1 | 국면 성과 | `regime_IR(m,L) ≥ 0.5` **OR** regime-L 상위 ⅓ (specialist) |
-| 2 | 표본 충분 | `n_months(m,L) ≥ 12` floor (`≥36`=high_conf; 희소국면 CRISIS는 36 비현실) |
-| 3 | OOS 지속(과적합) | IS·OOS regime IR **둘 다 양수**(부호 지속) |
-| 4 | 유의성 | `|t| = |IR·√(n_m/12)| ≥ 2` (소표본일수록 더 높은 IR 요구 — 표본-significance 담당) |
-| 5 | 경제논리 | role/regime 메커니즘 1줄(방어형 AX-001 / 공격형 고베타·모멘텀). 데이터마이닝 방지 |
-| 6 | 한계기여(권장) | regime-L 앙상블 ΔIR > 0 (median 초과 proxy) |
+**1급 강화 소재 (기존 실측 교훈 — 재발명 금지, 여기서 출발)**:
+- softmax 압축 결함: n=21 모듈에서 국면신호 91% 소실(입력 5.2×→출력 1.40×), λ/τ/k0 는
+  5-10 모듈 기준 보정(`module_dispatcher.R:47-70`). B+ floor 로 풀이 줄면 이 결함 지형이 바뀐다 — 재측정부터.
+- FR_001/FR_002 둘 다 grade C + **OOS retention 음수**(−0.146/−0.702) — OOS 열화가 1차 적수.
+- RCMA v2.0/v2.1 기각 교훈: 소표본 위기군 셀 IR 은 대부분 운. rare_mode OFF 유지.
+- SJM PoC: churn 33.2%→7.1%·위기 적중 94~100%인데 **앙상블 OOS SR 로버스트 이득 無**
+  — 천장은 입력(직교 슬리브)이 결정. B+ 풀 재편 후 재측정 가치.
 
-admitted = ①∧②∧③∧④. m이 ≥1 regime admitted면 풀 진입. `run_wf_ensemble`이 admitted union으로 풀 제한 + regime별 후보 제한.
+## 5. A등급 → Judge → BOOK (v10 종착)
 
-**★ C2 소표본 셀 완화 경로 (2026-06-10 도훈 mandate — `compute_rcma(rare_mode=)`, v2.1) → 2회 A/B 실측 최종 기각, rare_mode OFF 유지**: ②n≥12 × ④t≥2의 곱이 소표본 specialist 셀을 차단(valearn CRISIS n=7류) → 완화 경로 설계. **v2.0**(rare=국면 base rate<10%)은 A/B 악화였으나 진단 결과 구현 결함(CRISIS 16.7%라 표적 비껴감 + rationale-strict 소급 적용이 legacy 강셀 STR_1622 CAUTION 제거 — 단일 셀 가치 SR 0.043/PORT_t 0.375 실측). **v2.1 재설계**(rare = 위기군 국면 ∧ 셀 n<12, 소급조임 금지 — 순수완화 ON⊇OFF) **재A/B: OFF 0.880/1.871(FR_001 재현) vs ON 0.859/1.624, OOS active SR −0.084→−0.178(2배 악화), 신규입장 4모듈 → 깨끗한 인과로 기각.** 교훈: ① 현 풀에서 소표본(n6~12) 위기군 셀의 측정 IR은 대부분 운 ② dispatcher RP-앵커(λ_rp=0.5)는 IR 무관 inverse-vol 배분이라 **admission이 유일한 품질 게이트** ③ 앙상블은 단일 셀 멤버십에 민감. **재도전 트리거(INV-7)**: 직교 sleeve·진짜 CRISIS specialist 등재 시 v2.1 재실행. 그 전까지 legacy 판정이 권위.
+essence Grade A 확정 시에만: ① Judge(PIT 전담) 스폰(`.claude/agents/judge.md` —
+2계층 추가 축: regime 신호 t-1(C5)·`regime_label_gate` 통과·publisher append-only
+무결성) → ② `judge_verdict.json` pit_pass=true → ③ **BOOK 등록**
+(`register_book_entry(kind="rotation_rule", fr_id=...)` — 도훈 confirm 수동) →
+`rf_record_judge()` 원장 기록. PIT FAIL = 등급 무효 → 수리 후 재측정.
+★governor·book_state 는 폐지(v10) — BOOK(`06_Registry/book/book_registry.json`)이 승계.
 
-## 6. 작동 메커니즘
+## 6. Track1 = 학술 기반 (유지 — 국면 정의·예측 강화)
 
-- **Track1** — `regime_engine_research.R`(축 t-1 → 판별력 검증 → 채택) · `regime_forecaster.R`(다음국면 사전예측 — 후속).
-- **Track2** — `module_performance.json`(per-regime 실측) → `module_dispatcher.R`(`compute_regime_module_weights`: 국면조건부 rp inverse-vol + IR shrink 블렌드, λ/τ/k0 **국면불변 고정**) → `run_wf_ensemble.R`(anchored walk-forward, IS-only 가중, 모듈 frozen, forward 적용, 국면전환 turnover만 15bps).
-- **측정**: 모듈 NAV 가중합 → 월간 → `build_bt_result`(PerformanceAnalytics 표준함수만, metric_type=backtested) → `audit_bt_result`(11 checks) → `essence_score`.
-- **L-code 발행 (FR 모드 emit 1지점)**: `run_wf_ensemble.R`이 FR 레지스트리 등재 직후 `emit_fr_lcode()`(mode=factor_rotation, metric_type=backtested — grade/sharpe/port_t/oos/calmar/dsr + admitted pool + edge_vs_ew)를 자동 호출 → `stage_artifacts/l_code/factor_rotation/`.
+SOT: `04_Research/factor_rotation/regime_model_literature_review.md`. SOTA = Sparse Jump
+Model (PoC `02_Infrastructure/regime/regime_jump_model.R` — 실측 §4). 전략 로테이션 정본
+= Shu-Mulvey 2024. forecaster 신호: MSM transition + BOCPD + FRED 선행(US-VIX 가 KR 국면
+Granger-cause — 1급 feature). **신규 국면축은 문헌 economic-rationale 선존 필수 + 원문 링크.**
 
-## 7. ★ Track1 = 학술 기반 리서치 (국면 정의·예측 강화)
+## 7. 작동 메커니즘·지표·측정 게이트 (유지)
 
-Track1은 **각종 학술논문·헤지펀드 페이퍼를 참고해 국면 정의 및 예측 모델을 강화**하는 리서치 트랙이다. SOT: `04_Research/factor_rotation/regime_model_literature_review.md`.
-- **SOTA = Statistical/Sparse Jump Model**(Bemporad 2018 / Nystrup sparse 2021 / Shu-Mulvey 2024) — jump penalty λ로 과전환 명시 차단, HMM 대비 Sharpe·MDD 우위. **✅ PoC 빌드 완료(2026-06-05)** `02_Infrastructure/regime/regime_jump_model.R`(K=2, coordinate-descent+DP, feature=EWM downside-dev/Sortino + log-VIX, PIT online lookback+126d refit+1d delay). **실측: 월 churn 33.2%→7.1%(4.7×↓; λ↑ 단조 2.5%까지), GFC 100%/COVID 94%/2022 100% hit, HMM 73% parity.** 단 **앙상블 OOS SR 로버스트 이득 없음**(SJM_SR_GAIN_NONROBUST — k=3 top-3 집중·seed flip; min-across-k+seed gate로 노이즈 차단) — 신호품질은 크게 개선되나 현 0.70-상관 풀에선 천장이 입력(직교 슬리브)에 의해 결정(regime_study 정합). SJM 실가치는 직교 슬리브 확보 후 §3 Shu-Mulvey 결합 시 발현. 현재는 msm_daily 대체/병렬 신호로 보유. 검증: `04_Research/factor_rotation/regime_jm_{validation,ensemble_ab}.R`.
-- **전략 로테이션 정본 = Shu-Mulvey 2024(arXiv 2410.14841)**: 팩터별 국면(SJM)→Black-Litterman→long-only MVO. 단 SOTA 순효익도 IR~0.5/active~1.5%/turnover 522%(겸손)+Quality(방어) 팩터 최약.
-- forecaster 신호: MSM transition matrix + BOCPD changepoint + FRED 선행지표(Claims/Term-spread). KR: **US-VIX가 KR 국면 Granger-cause**(US 신호 1급 feature 의무).
-- **신규 국면축/모델은 문헌 economic-rationale 선존 필수**(research_philosophy ① Factor Zoo 축소 정합).
+- Track2 체인: `module_performance.json` → `module_dispatcher.R` → `run_wf_ensemble.R`
+  (anchored WF, IS-only 가중, 모듈 frozen, 국면전환 turnover 15bps).
+- 합격선: PORT_t 2.95 / DSR 0.5(sweep 만) / OOS_retention 0.7 / Calmar 0.64 HARD ·
+  edge_vs_ew > 0 · placebo p<0.05 · TO ≤ 11.0. T1 지표(Kendall τ·Brier·churn) 불변.
+- 측정·과적합 게이트: OOS v2 앵커 3분할 · DSR = sweep 만 · placebo · holdout
+  falsification (`measurement-graduation.md` §3 정합 — 이건 lockbox 가 아니라 측정 규율).
 
-## 8. 평가 지표 (정량 + 합격선)
+## 8. 거버넌스·제약
 
-| 트랙 | 지표 | 합격선 |
-|---|---|---|
-| T1 판별력 | Kendall τ(low/high bucket 모듈순위) / **OOS rank-persistence Spearman** | τ ≤ 0.5 / ρ > 0.2 / 유의모듈 ≥ 2 / BH-FDR q<0.10 |
-| T1 예측 | hit-rate / **Brier score** / ROC-AUC / detection latency | baseline(국면지속) 대비 우위. 채택=앙상블 OOS SR 실개선 시만 |
-| T1 신호품질 | monthly transition rate(churn) / avg duration / per-regime n | churn↓ / 셀 ≥ 12개월(≥36 high_conf) |
-| T2/FR | **PORT_t(NW lag-3) / DSR / OOS_retention / Calmar** | **2.95 / 0.5 / 0.7 / 0.64 HARD** |
-| T2/FR | net Sharpe / CAGR / MDD / net IR | 보고(SR 2.5 목표 — 미달 시 정직 표기) |
-| T2/FR | edge vs EW(edge_vs_ew, OOS edge retention) / placebo / turnover | edge > 0 / placebo p<0.05 / TO ≤ 11.0 |
-| RCMA | (module×regime) admission | §5 6기준 |
+- **모듈 frozen** — 배분만. 모듈 재백테/시그널 수정 금지(1계층 영역).
+- **dispatcher = book_optimize 래퍼** — 직접개조 금지(개선은 강화 시도로 — 원장 기록).
+- Production Constraints: long-only / Σw=1 / max 25종목 / 15bps / LIQ 2e8 / TO ≤ 11.0
+  (★v10: 종목별 비중 상한 폐지).
+- WT-id 미사용(2계층은 WorkTask lifecycle 밖 — 원장이 lineage 를 진다).
+  텔레그램 `tg_agent_brief()` 단일 진입, 표제 `[2계층] 전략 로테이션 — {FR} (등급 {g})` /
+  강화는 `[2계층·강화 n]`(무한 — 분모 없음).
+- Q-Lead 오케스트레이션 전용 — 측정은 R 체인(AX-008).
 
-## 9. 측정·과적합 게이트 (SR2.5보다 먼저)
+## 9. 참조
 
-실측-only. ① OOS_retention ≥ 0.7 — **C1 v2 (2026-06-10)**: anchored 3분할{55/65/75} 중앙값, <0.5 무조건 FAIL, [0.5,0.7) band는 보강증거 2/3(trailing PORT_t>0 / placebo / book-marginal ΔSR — holdout 제외) 시 조건부 통과, FAIL 시 overfit/decay 사유 라벨 → ② DSR ≥ 0.5 HARD — **sweep형 selection만**(grid/축탐색/레짐grid/forecaster/hyper sweep, n_trials 누적. 가설주도 chain·단일 A/B는 게이트 면제 `selection_type="chain"` — 도훈 mandate 2026-06-10) → ③ placebo(국면라벨 셔플 앙상블과 통계 구분, p<0.05) → ④ holdout — **C3 (2026-06-10)**: 성과 채점 금지, 채택 시점 사전등록 블록부트스트랩 예측구간 [5%,95%] falsification(`holdout_falsification.R`: <q05 FAIL / 구간내 PASS_LOW_INFO / >q95 PASS_PLUS), 열람 후 수정 시 구간 소모, 라이브 트래킹 = holdout 자동 연장(`06_Registry/live_track/`). `measurement-graduation §3` 정합.
-
-## 10. 거버넌스 · 제약 (반드시 준수)
-
-- **governor 정지** — FR_XXXX가 게이트 통과해도 `book_state.json` 자동 쓰기 금지. book-marginal ΔIR≥0.05 진단까지만, 실편입은 Q-Lead+도훈 수동 confirm(`measurement-graduation §4`).
-- **모듈 frozen** — 본 모드는 배분만. 모듈 재백테/시그널 수정 금지(alpha-research/forge 영역).
-- **스타일태깅 없음** — 모듈 = 기존 STR 직접. 배분은 각 모듈의 국면조건부 성과로 직접.
-- **dispatcher = book_optimize 래퍼** — 직접개조 금지. classifier/forecaster frozen(국면정의 후행 재튜닝 금지).
-- Production Constraints: long-only / Σw=1 / w∈[0,0.20] / max 25종목 / 15bps / LIQ 2e8 / turnover ≤ 11.0/yr.
-- **WT-id 미사용**(FR 트랙은 WorkTask lifecycle 밖). 텔레그램 `tg_agent_brief()` 단일 진입점.
-
-## 11. 구현 상태 (정직)
-
-- **빌드 완료**: Track2 전부(`module_dispatcher`/`run_wf_ensemble`/`build_module_performance` 광역화) · Track1 판별검증(`regime_engine_research`) · **Track1 SJM PoC(`regime_jump_model.R` — SOTA jump model, churn 33→7%, crisis 신속탐지·신호품질↑·앙상블SR 로버스트이득 無)** · **공용 `register_module`** · **RCMA `regime_module_admission`** · FR_001(grade C 실측).
-- **빌드 완료 (2026-07-24 정정 — 구 "미빌드" 목록이 역-stale)**: `/strategy-rotation` command(.claude/commands/) · `dispatch-orchestrator` agent(.claude/agents/) · `02_Infrastructure/docs/rules/strategy-rotation.md` · FR hooks 3종(factor_rotation_pit_guard / dispatch_measurement_gate / dispatch_allocation_auditor — 등록 실측) · `06_Registry/factor_rotation_registry.json` · CLAUDE.md 4-mode 명문화 · L-code mode 태깅(§6 emit).
-- **미빌드(후속) 잔여**: `regime_forecaster.R`(T1-B 예측 — 지표는 §8 정의) · QEPM의 register_module 일원화.
-
-## 12. 참조 · 실행 메모
-
-- 설계 SOT: `C:\Users\User\.claude\plans\curious-sauteeing-hippo.md`(원본 구현 계획) · Track1 학술: `04_Research/factor_rotation/regime_model_literature_review.md`.
-- 현 풀 한계·EW 천장 등 **실증 결과는 별도 연구노트**: `04_Research/factor_rotation/output/regime_study*.json` + 메모리 `project-factor-rotation-regime-study`.
-- 실행(Windows-native, 재시작 전): `"/c/Program Files/R/R-4.5.2/bin/Rscript.exe"` + env `CLAUDE_PROJECT_DIR=C:/Users/99922/OneDrive/Quant_Module_Moltbot` `PYTHONUTF8=1`. 레짐/모듈 분석은 R(arrow)로(anaconda python pandas DLL 손상). 참조 메모리 `project-windows-native-migration`.
+`.claude/agents/dispatch-orchestrator.md` · `02_Infrastructure/docs/rules/strategy-rotation.md`(거버넌스 상세) ·
+`.claude/skills/reinforce/SKILL.md`(강화 절차) · `02_Infrastructure/book/book_registry.R`(BOOK) ·
+연구노트 `04_Research/factor_rotation/output/regime_study*.json`

@@ -1,9 +1,10 @@
 #!/usr/bin/env Rscript
 # =============================================================================
-# build_module_performance.R — Factor Rotation Mode (Track2 데이터 레이어).
-# ★ FR 입력 floor를 통과한 모듈 allowlist만 regime Category로 분할
+# build_module_performance.R — 2계층 전략 로테이션 (Track2 데이터 레이어).
+# ★ FR 입력 floor(계약) + ★v10 grade floor(essence B 이상 — 도훈 2026-08-29)를 통과한
+#   모듈 allowlist만 regime Category로 분할
 #   → per-regime IR/Sharpe/MDD/n → 06_Registry/module_performance.json.
-# 등급은 정보용 attach만. 사용여부는 input floor 통과 후 국면조건부 admission(RCMA)이 판단한다.
+# v10: 등급은 더 이상 정보용이 아니다 — 풀 자격 = grade ∈ {A,B}. RCMA 는 그 위 배치 심사.
 # 기본 소비원:
 #   1) module_catalog.json fr_eligible=true + metric_type=backtested + contract_pass
 #   2) legacy QEPM grade_a_catalog A 모듈(마이그레이션 예외)
@@ -37,7 +38,19 @@ RG <- RG[!is.na(Category), .(Date=as.Date(Date), Category)]
 setorder(RG, Date); RG[, regime_lag := shift(Category, 1L)]
 RG <- RG[!is.na(regime_lag), .(Date, regime=regime_lag)]
 
-# 2. 등급 LUT + FR allowlist. 등급은 정보용, allowlist는 입력계약 기준.
+# 2. 등급 LUT + FR allowlist.
+# ★v10 (2026-08-29 도훈 지시 "1계층에서 생산된 B등급 이상의 전략들을 활용"):
+#   자격 = essence grade ∈ {A, B} — 구 "등급무관 specialist 차용"(2026-06-10) 폐기.
+#   RCMA 는 이 floor **위의** 국면조건부 배치 심사로 유지된다(§SKILL 3).
+#   env QVEST_L2_GRADE_FLOOR: "B"(기본) / "A" / "OFF"(진단 전용 — 구 동작).
+#   풀 축소는 결함이 아니라 지시의 귀결 — 제외 수를 반드시 보고한다.
+.L2_FLOOR <- toupper(Sys.getenv("QVEST_L2_GRADE_FLOOR", "B"))
+.floor_excluded <- 0L
+.floor_ok <- function(grade) {
+  if (identical(.L2_FLOOR, "OFF")) return(TRUE)
+  g <- toupper(as.character(grade %||% ""))
+  g %in% (if (identical(.L2_FLOOR, "A")) "A" else c("A", "B"))
+}
 grade_lut <- new.env()
 eligible_lut <- new.env()
 eligible_paths <- character()
@@ -112,12 +125,16 @@ if(!is.null(gac) && nrow(gac)) for(i in seq_len(nrow(gac))) {
 if(!is.null(mc)) for(id in names(mc)) {
   .attach(id, mc[[id]]$grade, mc[[id]]$role, mc[[id]]$origin_mode)
   if(.is_fr_eligible(mc[[id]])) {
+    if(!.floor_ok(mc[[id]]$grade)) { .floor_excluded <- .floor_excluded + 1L; next }  # ★v10 B+ floor
     sim_path <- file.path(PROJ, mc[[id]]$sim_result_path)
     if(!.verify_module_hash(id, sim_path, mc[[id]]$module_hash)) next   # ★ hash 불일치 = frozen 파기 → skip
     .add_eligible(id, sim_path, mc[[id]]$grade,
                   mc[[id]]$role, mc[[id]]$origin_mode, "contract_fr_eligible")
   }
 }
+if(!identical(.L2_FLOOR, "OFF"))
+  cat(sprintf("[build_module_performance] ★v10 grade floor %s: 계약 통과분 중 %d건 제외 · 풀 %d건 — 축소는 도훈 지시('B등급 이상')의 귀결. legacy 무등급 재편입 = 권위 재측정 후 grade 기입.\n",
+              .L2_FLOOR, .floor_excluded, length(unique(eligible_paths))))
 lookup_meta <- function(dirn){
   if(!is.null(eligible_lut[[dirn]])) return(eligible_lut[[dirn]])
   if(!is.null(grade_lut[[dirn]])) return(grade_lut[[dirn]])
@@ -180,11 +197,13 @@ for(f in sim_files){
     per_regime = per)
   kept <- kept + 1
 }
-res <- list(schema_version="v3.0", generated=as.character(Sys.Date()),
-            generated_by="Factor Rotation Mode (build_module_performance.R — FR input-floor allowlist)",
+res <- list(schema_version="v3.1", generated=as.character(Sys.Date()),
+            generated_by="2계층 전략 로테이션 (build_module_performance.R — 계약 floor + v10 grade floor)",
             regime_source="unified_regime_signal_daily.parquet Category (t-1 lag PIT)",
             regimes=regimes, metric_type="backtested_realized (sim_result NAV, 실측-only)",
-            note="FR input floor: module_catalog fr_eligible=true(contract_pass+backtested+frozen+hash/build_version) plus legacy QEPM grade_a_catalog A migration exception. module_hash는 등재값 신뢰가 아닌 실제 md5 대조로 검증(불일치=skip+quarantine log, CAP-P1-2). Broad scan only with QVEST_FR_ALLOW_BROAD_SCAN=1. grade=정보용 attach, 사용여부=RCMA.",
+            grade_floor=.L2_FLOOR,                       # ★v10: 이 산출물에 실제로 쓰인 floor (검사 재도출용)
+            n_floor_excluded=.floor_excluded,
+            note="입력 2단 게이트(v10 2026-08-29 도훈): ①계약 floor = module_catalog fr_eligible=true(contract_pass+backtested+frozen+hash/build_version, legacy QEPM grade-A 이관 예외) ②grade floor = essence grade B 이상(QVEST_L2_GRADE_FLOOR, OFF=진단). module_hash는 실제 md5 대조(불일치=skip+quarantine, CAP-P1-2). 배치 심사=RCMA.",
             n_modules=kept, modules=out)
 dir.create(file.path(PROJ,"06_Registry"), showWarnings=FALSE)
 write_json(res, file.path(PROJ,"06_Registry/module_performance.json"), auto_unbox=TRUE, pretty=TRUE, na="null", digits=4)
@@ -192,7 +211,7 @@ write_json(res, file.path(PROJ,"06_Registry/module_performance.json"), auto_unbo
 ##   항상 "광역"이라고 찍었다. allowlist 로 정상 실행해도 로그만 보면 **진단모드 산출물을
 ##   정본에 덮어쓴 것처럼 읽힌다**(실측: 08-08 FQ-056 재실행 때 그렇게 오독할 뻔했고,
 ##   generated_by 필드를 따로 확인하고서야 allowlist 경로였음이 밝혀졌다).
-cat(sprintf("module_performance.json written: %d modules (%s · 등급 게이트 없음)\n", kept,
+cat(sprintf("module_performance.json written: %d modules (%s · v10 grade floor 적용)\n", kept,
             if (identical(Sys.getenv("QVEST_FR_ALLOW_BROAD_SCAN", "0"), "1")) "광역 진단모드" else "FR allowlist"))
 gtab <- sort(table(vapply(out, function(x) as.character(x$grade %||% "ungraded"), character(1))), decreasing=TRUE)
 cat("grade 분포:", paste(names(gtab), gtab, sep="=", collapse=" "), "\n")
