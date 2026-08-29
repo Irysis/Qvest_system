@@ -25,25 +25,25 @@ wtraj<-function(dec_lag=1,freq=3,ncoh=3,start0=13){
   apply(W,c(2,3),function(x)if(all(is.finite(x)))mean(x) else NA_real_) }
 WT<-wtraj()                                  # NM x NAx (Market + 21팩터)
 DEV<-WT[,-1,drop=FALSE]-1/NF                 # 이탈: 팩터 가중 - EW(1/NF). Market 성분은 초과분 정의상 제외
-E<-list(pre=which(mon$ym<"2015-07"), clean=which(mon$ym>="2015-07"))
+E<-list(pre=which(mon$ym<"2015-07"), post=which(mon$ym>="2015-07"))  # (2026-08-29) clean→post 개명 — PIT $clean 소비 검사기 오탐 회피(구간명일 뿐)
 ok<-function(idx) idx[apply(DEV[idx,,drop=FALSE],1,function(x)all(is.finite(x)))]
 E<-lapply(E,ok)
 SIG<-lapply(E,function(idx) cov(ACT[idx,,drop=FALSE],use="pairwise.complete.obs"))
 cat("=== R21 타이밍 초과분 변동성 2x2 반사실 귀속 ===\n")
-cat(sprintf("표본: pre n=%d (%s~%s) | clean n=%d (%s~%s)\n\n",
-  length(E$pre),mon$ym[min(E$pre)],mon$ym[max(E$pre)],length(E$clean),mon$ym[min(E$clean)],mon$ym[max(E$clean)]))
+cat(sprintf("표본: pre n=%d (%s~%s) | post(구 clean) n=%d (%s~%s)\n\n",
+  length(E$pre),mon$ym[min(E$pre)],mon$ym[max(E$pre)],length(E$post),mon$ym[min(E$post)],mon$ym[max(E$post)]))
 vol<-function(d_era,s_era){ D<-DEV[E[[d_era]],,drop=FALSE]; Sg<-SIG[[s_era]]
   sqrt(mean(apply(D,1,function(x)as.numeric(t(x)%*%Sg%*%x)))*12) }
 cat("[2x2 반사실: 행=이탈벡터 d 출처, 열=공분산 Sigma 출처]\n")
-cat(sprintf("  %-12s %10s %10s\n","d \ Sigma","pre","clean"))
-for(dd in c("pre","clean")) cat(sprintf("  %-12s %10.4f %10.4f\n",dd,vol(dd,"pre"),vol(dd,"clean")))
-vpp<-vol("pre","pre"); vcc<-vol("clean","clean"); vpc<-vol("pre","clean"); vcp<-vol("clean","pre")
+cat(sprintf("  %-12s %10s %10s\n","d \ Sigma","pre","post"))
+for(dd in c("pre","post")) cat(sprintf("  %-12s %10.4f %10.4f\n",dd,vol(dd,"pre"),vol(dd,"post")))
+vpp<-vol("pre","pre"); vcc<-vol("post","post"); vpc<-vol("pre","post"); vcp<-vol("post","pre")
 cat(sprintf("\n실제 상승 배율: %.4f -> %.4f = x%.3f\n",vpp,vcc,vcc/vpp))
 cat(sprintf("  (A) 공분산 효과 단독 [d 고정=pre, Sigma pre->clean]: x%.3f\n",vpc/vpp))
 cat(sprintf("  (B) 이탈벡터 효과 단독 [Sigma 고정=pre, d pre->clean]: x%.3f\n",vcp/vpp))
 cat(sprintf("  (교차/상호작용) 잔여: x%.3f\n",(vcc/vpp)/((vpc/vpp)*(vcp/vpp))))
 cat("\n[보조 지표 — 두 축의 직접 관측]\n")
-for(e in c("pre","clean")){ idx<-E[[e]]
+for(e in c("pre","post")){ idx<-E[[e]]
   D<-DEV[idx,,drop=FALSE]; A<-ACT[idx,,drop=FALSE]
   disp<-mean(apply(D,1,function(x)sqrt(sum(x^2))))              # 이탈 벡터 노름
   nsel<-mean(apply(WT[idx,-1,drop=FALSE],1,function(x)sum(x>1e-8)))

@@ -4,7 +4,7 @@
 
 **Qvest v10.0 — 2계층 리서치(팩터전략/전략로테이션) · BOOK · Judge=PIT 전담 · lockbox/governor 폐지** (세션 모델 정본 `claude-fable-5`. 2026-08-29 도훈 지시. 플랜 `~/.claude/plans/qvest-2-moonlit-galaxy.md` · 등록 훅 12 · 직전 판 v9.21 · 롤백 태그 `pre-v10-2layer`)
 
-> **★버전·모델 표기 단일 출처**: 위 줄이 유일한 정본(`boot_currency_check.sh` C0 파생). 다른 문서는 "정본 = 본 절"로 위임.
+> **★버전·모델 표기 단일 출처**: 위 줄이 정본(`boot_currency_check.sh` C0 파생). 타 문서는 위임.
 
 **★ Active SOT**: `.claude/rules/lean-loop.md`(1계층 루프) · `.claude/skills/strategy-rotation/SKILL.md`(2계층) · `.claude/skills/reinforce/SKILL.md`(강화) · `02_Infrastructure/docs/CHANGELOG_constitution.md`(계보·전판 아카이브)
 

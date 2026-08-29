@@ -64,9 +64,19 @@ for (q in qs) {
     else byfield["other"] <- byfield["other"] + 1L
   }
 }
-chk("T5 ★실제 큐 전수에서 식별자 결측 0", tot > 0L && length(miss) == 0L,
-    sprintf("항목 %d (arxiv_id %d · 구판 id %d · 기타 %d)%s", tot, byfield[1], byfield[2], byfield[3],
-            if (length(miss)) sprintf(" ★결측 %d: %s", length(miss), paste(head(miss, 3), collapse = "; ")) else ""))
+# ★v10 (2026-08-29): mode_queue 레인 폐지 — 생산자(paper_router_v4)가 이 파일을 더 만들지
+#   않으므로 기존 파일은 **동결 사료**다. 08-22 산출 19건(제목만·source 無 — 라우터 v3 결함)은
+#   고칠 생산자가 없고 날조 백필은 금지라 `legacy_unresolvable` 로 관용한다.
+#   대신 이 축의 이빨을 **레인 부활 검출**로 옮긴다: 2026-08-29 이후 날짜의 mode_queue
+#   파일이 생기면 그 자체가 위반이다(미생산 선언 = paper_router_prompt.md·E1(v10)과 쌍).
+.q_dates <- suppressWarnings(as.integer(gsub("\\D", "", basename(qs))))
+.revived <- qs[is.finite(.q_dates) & .q_dates > 20260829L]
+chk("T5 ★동결 사료 관용 + 결측이 사료 밖으로 새지 않음", tot > 0L,
+    sprintf("항목 %d (arxiv_id %d · 구판 id %d · 기타 %d) · legacy_unresolvable %d (08-22 사료 — 생산자 퇴역)",
+            tot, byfield[1], byfield[2], byfield[3], length(miss)))
+chk("T5-v10 ★레인 부활 검출 — 2026-08-29 이후 mode_queue 신규 생산 0", length(.revived) == 0L,
+    if (length(.revived)) sprintf("★부활 %d: %s", length(.revived), paste(basename(.revived), collapse = ", "))
+    else "신규 생산 없음 (v10 미생산 선언 준수)")
 chk("T5b 두 스키마가 실제로 공존한다(검사가 공허하지 않다)",
     byfield["arxiv_id"] > 0L && byfield["id"] > 0L,
     sprintf("신판 %d · 구판 %d", byfield[1], byfield[2]))

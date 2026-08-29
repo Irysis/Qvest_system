@@ -29,8 +29,11 @@ suppressWarnings(suppressMessages({
   #   전용 변수는 Renviron 에 없으므로 통과한다 — 검사가 쓰는 유일한 이음매.
   root <- Sys.getenv("QVEST_NOTIFY_ROOT", "")
   if (!nzchar(root)) root <- Sys.getenv("CLAUDE_PROJECT_DIR", Sys.getenv("QM_ROOT", getwd()))  # 금칙 ④: CPD-first
-  setwd(root)
-  source(file.path(root, "02_Infrastructure", "telegram", "telegram_notify.R"))
+  # ★코드 루트 ≠ 데이터 루트 (2026-08-29 재확인 — root 는 픽스처일 수 있다):
+  #   telegram_notify(코드)는 정본 저장소에서 source 한다. root 에서 찾으면 픽스처 검사가
+  #   "cannot open the connection" 으로 죽는다(당일 실측 — run_completion_notify 9축).
+  setwd(Sys.getenv("QM_ROOT", getwd()))
+  source(file.path(Sys.getenv("QM_ROOT", getwd()), "02_Infrastructure", "telegram", "telegram_notify.R"))
   library(jsonlite)
 }))
 
