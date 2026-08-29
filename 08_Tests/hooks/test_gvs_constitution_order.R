@@ -70,9 +70,12 @@ cat("== [D] 박제 아님 — 정본 순서 변경이 전파 ==\n")
 #   음성 대조는 자기 조작이 유효함을 먼저 증명해야 결론을 낼 자격이 생긴다.
 i_lv <- grep("조건-안 레버만 프론티어", cm)[1]
 orig <- cm[i_lv]
-swapped_line <- sub("① \\*\\*비대칭 표적\\*\\*(.+?) ② screen-tier 재고 회수\\(overlay 큐\\)",
-                    "① screen-tier 재고 회수(overlay 큐) ② **비대칭 표적**\\1",
-                    orig, perl = TRUE)
+# (v10 2026-08-29) 정본 줄 개편 반영 — ② 가 '강화 3축' 이 되고 screen-tier 는 ③ 으로 밀렸다.
+#   치환 = ①(비대칭)과 ③(screen-tier) 자리 교환 (②는 그대로 — 파생 순위 대조 축은 두 개면 족하다).
+swapped_line <- sub(
+  "① \\*\\*비대칭 표적\\*\\*(.+?) ② 강화 3축\\(멀티팩터·비중방법론·리스크오버레이\\) ③ screen-tier 재고 회수\\(overlay 큐\\)",
+  "① screen-tier 재고 회수(overlay 큐) ② 강화 3축(멀티팩터·비중방법론·리스크오버레이) ③ **비대칭 표적**\\1",
+  orig, perl = TRUE)
 if (identical(swapped_line, orig)) {
   ng("[선행검증] 정본 줄 치환 실패 — 이 축은 판정 불가(테스트 패턴이 원문과 어긋남)")
 } else {

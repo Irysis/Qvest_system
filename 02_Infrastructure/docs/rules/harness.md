@@ -59,7 +59,7 @@
 | sr_provenance_check (Post) | `sr_provenance_certificate.json` (forge_package 4-field) |
 | schedule_fidelity_check | `schedule_fidelity_certificate.json` (density≥0.95 OR infeasibility) |
 | worktask_artifact_validator | `forge_package_validated_certificate.json` (8-field) |
-| governor_concord_certifier | `governor_concord_certificate.json` (book_state↔admission match) |
+| (v10 퇴역) governor_concord_certifier → book_write_guard | BOOK 정본 직접 편집 + legacy book_state 재기입 차단 (PreToolUse) |
 
 ## Tier 6 (Self-Adversarial Challenge — v8.2: Codex Round 제거)
 
@@ -170,7 +170,7 @@ QEPM Codex Critic Round(외부 codex auto-spawn)는 **2026-06-30 v8.2에서 폐�
 | 4 | `worktask_constraint_enforcer.sh` | 고정 축 7종(≤25종·long-only·Σw=1 …) |
 | 5 | `telegram_direct_call_guard.sh` | 텔레그램 단일 진입점(`tg_agent_brief()`) |
 | 6 | `axiom_context_inject.sh` | 에이전트 지식 주입(≤2,000자, 컨텍스트) |
-| 7 | `governor_concord_certifier.sh` | `book_state` 쓰기 감시(자본 비가역) |
+| 7 | `book_write_guard.sh` | ★v10 승계 — BOOK 정본·legacy book_state 쓰기 차단(writer 경유 강제) |
 | 8 | `overlay_pit_grep.sh` | PIT C5 오버레이 타이밍 advisory |
 | 9 | `boot_stamp_check.sh` | SessionStart "/qvest 권장" 넛지 |
 | 10 | `auto_commit_on_stop.sh` | 세션당 1회 커밋 |

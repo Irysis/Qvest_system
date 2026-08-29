@@ -224,49 +224,35 @@ if (grepl("redo_completed = FALSE", rlj, fixed = TRUE))
   ok("기본값 = 완주분 배제(전진) · 재측정은 명시 --redo") else
   ng("★기본이 재측정이다 — 루프가 닫히지 않는다")
 
-# ══ E. 무인 기동 배선 (§2-d) ════════════════════════════════════════════════
-cat("\n── E. 무인 러너 뒤 자동 기동 ───────────────────────────────\n")
+# ══ E. 무인 기동 배선 — ★v10 반전 (2026-08-29) ═══════════════════════════════
+cat("\n── E. 무인 기동 부재 검증 (v10 — 무인은 수집까지만) ─────────\n")
 #
-# 도훈 결정 2026-08-24: "강화 기동 = 무인 러너 뒤 자동".
-# ★순서가 곧 파이프라인 선언이다 — 기본 1단계(논문 알파리서치) → 2단계(강화).
-#   그래서 큐 리프레시 **뒤**, 완주 알림 **앞**이어야 한다.
+# ★구 E1~E5(2026-08-24 §2-d "강화 기동 = 무인 러너 뒤 자동")는 v10 도훈 결정
+#   ("무인 파이프라인은 수집까지만" + 기계 사다리 퇴역 → QEPM 기반 세션 강화)으로
+#   **판정 방향이 반전**됐다: 이제 무인 러너에 사다리 기동이 **있으면** 위반이다.
+#   구 5축 전문 = git pre-v10-2layer. 순서/비치명/킬스위치 축은 기동 자체가 사라져 소멸.
 ASQ <- file.path(ROOT, "02_Infrastructure", "ops", "alpha_search_queue_run.sh")
-## ★부팅 스크립트는 ops/ 에 있고 현행 경로는 boot_lean.sh 다 — 둘 다 본다.
-##   (구판은 hooks/bootstrap.sh 를 가리켜 SKIP 이 났다. SKIP 은 "재지 않았다"이지
-##    "통과"가 아니다 — 죽은 축을 통과로 세는 것이 이 저장소의 반복 결함이다.)
 BOOTS <- c(file.path(ROOT, "02_Infrastructure", "ops", "bootstrap.sh"),
            file.path(ROOT, "02_Infrastructure", "ops", "boot_lean.sh"))
 BOOTS <- BOOTS[file.exists(BOOTS)]
 if (!file.exists(ASQ)) sk("E_wiring", "alpha_search_queue_run.sh 부재", ASQ) else {
-  asq <- paste(readLines(ASQ, warn = FALSE), collapse = "\n")
-
-  # E1 — 호출이 존재하는가
-  if (grepl("reinforce_ladder.R", asq, fixed = TRUE) && grepl("--top=1", asq, fixed = TRUE))
-    ok("무인 러너가 강화 프로세스 1후보를 기동한다") else
-    ng("★강화 기동 배선이 없다 — 2단계가 무인 경로에서 영원히 안 돈다")
-
-  # E2 — ★순서: 큐 리프레시 < 강화 < 완주 알림
-  p_q <- regexpr("스크린 큐 리프레시 시작", asq, fixed = TRUE)
-  p_l <- regexpr("강화 프로세스 시작", asq, fixed = TRUE)
-  p_n <- regexpr("research_run_notify.R", asq, fixed = TRUE)
-  if (p_q > 0L && p_l > 0L && p_n > 0L && p_q < p_l && p_l < p_n)
-    ok("순서 = 1단계 산출 → 큐 리프레시 → 2단계 강화 → 완주 알림 (파이프라인 선언 그대로)") else
-    ng("★기동 순서가 파이프라인과 어긋난다", sprintf("queue@%d ladder@%d notify@%d", p_q, p_l, p_n))
-
-  # E3 — 강화 실패가 **비치명**인가 (1단계 산출·알림을 막으면 안 된다)
-  if (grepl("강화 프로세스 실패(비치명)", asq, fixed = TRUE))
-    ok("강화 실패는 비치명 — 1단계 완주 알림을 막지 않는다") else
-    ng("★강화 실패가 러너를 죽인다 — 이미 끝난 1단계 산출까지 보고가 사라진다")
-
-  # E4 — 킬스위치가 있는가 (무인 경로에 정지 수단 없으면 되돌릴 방법이 없다)
-  if (grepl("QVEST_LADDER_NORUN", asq, fixed = TRUE))
-    ok("킬스위치 QVEST_LADDER_NORUN 존재 — 무인 기동을 끌 수 있다") else
-    ng("★킬스위치가 없다")
-
-  # E5 — 건너뜀을 침묵시키지 않는가
-  if (grepl("강화 프로세스 건너뜀", asq, fixed = TRUE))
-    ok("건너뜀 사유를 로그에 남긴다 — '안 돌렸다'와 '후보 0'을 구분") else
-    ng("★건너뜀이 침묵한다")
+  asq_lines <- readLines(ASQ, warn = FALSE)
+  asq <- paste(asq_lines, collapse = "\n")
+  # E1(v10) — 사다리 **호출**(비주석 실행줄)이 없어야 한다. 주석·퇴역 선언 echo 는 무관.
+  live_call <- grepl("reinforce_ladder\\.R", asq_lines) & grepl("--top=", asq_lines) &
+               !grepl("^\\s*#", asq_lines)
+  if (!any(live_call))
+    ok("무인 러너에 기계 사다리 기동 없음 (v10 — 강화는 세션 주도 QEPM)") else
+    ng("★기계 사다리 기동이 되살아남 — v10 '무인은 수집까지만' 위반", asq_lines[live_call][1])
+  # E2(v10) — 퇴역이 침묵하지 않는가 ('안 돌렸다'를 로그가 말해야 한다)
+  if (grepl("퇴역", asq, fixed = TRUE))
+    ok("퇴역 선언이 러너 로그에 남는다 (침묵 아님)") else
+    ng("★퇴역이 침묵한다 — '안 돌렸다'와 '결함'이 구분 안 됨")
+  # E3(v10) — 신 강화 경로의 원장이 실재하는가 (기동을 걷었으면 대체가 있어야 한다)
+  RFL <- file.path(ROOT, "02_Infrastructure", "reinforcement", "reinforce_ledger.R")
+  if (file.exists(RFL))
+    ok("대체 강화 경로 실재 — reinforce_ledger.R (L1 20회 게이트)") else
+    ng("★사다리를 걷었는데 대체 강화 원장이 없다 — 강화가 공중에 뜬다")
 }
 
 # E6 — ★부팅에는 붙이지 않는다 (부팅 상태라인 읽기 전용 규약 8j)

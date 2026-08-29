@@ -5,7 +5,15 @@
 #       ⑥PIT FAIL → 재활성화 ⑦원자 쓰기 왕복 (재로드 파싱)
 # 실행: Rscript 08_Tests/worktask/test_reinforce_ledger.R
 
-root <- Sys.getenv("QM_ROOT", "C:/Users/99922/OneDrive/Quant_Module_Moltbot")
+# 앵커 = self-first (r-portability 금칙 ④-b: 테스트 러너는 자기 위치 1순위 — env 는 폴백)
+.self <- tryCatch({
+  a <- commandArgs(trailingOnly = FALSE)
+  f <- sub("^--file=", "", a[grepl("^--file=", a)])
+  if (length(f)) dirname(f[1]) else "."
+}, error = function(e) ".")
+root <- normalizePath(file.path(.self, "..", ".."), winslash = "/", mustWork = FALSE)
+if (!file.exists(file.path(root, "02_Infrastructure", "config.R")))
+  root <- Sys.getenv("QM_ROOT", "C:/Users/99922/OneDrive/Quant_Module_Moltbot")
 setwd(root)
 suppressPackageStartupMessages(library(jsonlite))
 
@@ -18,7 +26,6 @@ TMP <- file.path(tempdir(), sprintf("rf_test_%d", Sys.getpid()))
 dir.create(file.path(TMP, "02_Infrastructure"), recursive = TRUE, showWarnings = FALSE)
 dir.create(file.path(TMP, "06_Registry"), recursive = TRUE, showWarnings = FALSE)
 file.create(file.path(TMP, "02_Infrastructure", "config.R"))
-old_env <- Sys.getenv("QM_ROOT"); old_cpd <- Sys.getenv("CLAUDE_PROJECT_DIR")
 source("02_Infrastructure/reinforcement/reinforce_ledger.R")
 R <- TMP  # 명시 root 인자 사용 (env 오염 없이)
 

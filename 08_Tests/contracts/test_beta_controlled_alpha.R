@@ -12,7 +12,7 @@
 # ★그리고 **합성 대조**가 핵심이다 — 실데이터만으로는 '정답' 을 모른다.
 #   α·β 를 내가 정한 값으로 심고 그 값이 회수되는지 본다(위반 주입의 정공법).
 suppressWarnings(suppressMessages({
-  ROOT <- Sys.getenv("QM_ROOT", Sys.getenv("CLAUDE_PROJECT_DIR", getwd()))
+  ROOT <- Sys.getenv("CLAUDE_PROJECT_DIR", Sys.getenv("QM_ROOT", getwd()))  # 금칙 ④: CPD-first
   src <- file.path(ROOT, "02_Infrastructure", "contracts", "beta_controlled_alpha.R")
 }))
 PASS <- 0L; FAIL <- 0L

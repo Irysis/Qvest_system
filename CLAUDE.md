@@ -25,16 +25,12 @@
 ## 2계층 파이프라인 (v10)
 
 ```
-[무인 — 수집까지만]  paper_recharge(팩터전략 단일목적·recency 불요·고전 시드)
-                     → paper_key 3단 dedup(axv>doi>ttl) → 트리아지 v4(testable/redundant/
-                       data_pipeline_required/skip) → 큐 적재                ← 무인 종점
-[1계층]  충실구현(run_paper_replication — 논문 그대로·유니버스만 KR) → 권위 등급
-         → A 미달: 강화 ≤20회(Skill reinforce — QEPM alpha→risk→optimizer→forge→등급,
-           축 = 멀티팩터/비중방법론/리스크오버레이/결합, 논문 3편마다 결합 검토)
-         → A 달성: Judge(PIT 전담) → PASS → BOOK       (B 이상 = 2계층 풀 공급)
-[2계층]  전략 로테이션(strategy-rotation — 논문 온디맨드 착수, B+ 풀 국면 배합,
-         FR 단위 등급) → 미달: 강화 무한(국면식별/전략결합) → A → Judge → BOOK
-[BOOK]   06_Registry/book/book_registry.json — A등급 등록·온디맨드 트래킹(/book)
+[무인=수집만] paper_recharge(팩터전략 단일목적·고전 시드) → paper_key dedup → 트리아지 → 큐
+[1계층] 충실구현(run_paper_replication — 논문 그대로·유니버스만 KR) → 권위 등급
+        → 미달: 강화 ≤20회(Skill reinforce — QEPM→등급, 논문 3편마다 결합 검토)
+        → A: Judge(PIT) → PASS → BOOK          (B 이상 = 2계층 풀 공급)
+[2계층] 로테이션(논문 온디맨드·B+ 풀 국면 배합·FR 등급) → 미달: 강화 무한 → A → Judge → BOOK
+[BOOK]  06_Registry/book/book_registry.json — A등급 등록·온디맨드 트래킹(/book)
 ```
 
 **해상도**: 1계층 강화 = intra-strategy(축 교체) · 2계층 = inter-strategy(모듈 배합 + 국면). QEPM = alpha→risk→optimizer→forge + 등급 평가까지(governor 없음).
@@ -56,19 +52,22 @@
 | 실투형(강화부터) | long-only(w≥0) · ≤25종 · K200∪KQ150 · 2005-01-01~ · 15bps(v2.4 delta) · Σw=1 · **비중 상한 없음(v10 폐지)** · LIQ 2e8 |
 | 공통 | **PIT C1~C15 절대**(`.claude/rules/pit.md`) · lockbox 폐지 — 가용 데이터 전기간 사용 |
 
-★고정 축 완화를 레버로 제시 금지(INV-7). 과거 negative 조회 = `hypothesis_index.R lookup <kw>`(사실 기록이지 금지 목록 아님 — 새 각도면 재시도 정당, AX-000).
+<!-- FRONTIER_AXES_START -->
+> ★고정 축 완화를 레버로 제시 금지(INV-7). 조건-안 레버만 프론티어 — 현행(v10): ① **비대칭 표적**(분포-표적 학습 · 일별 축 정보 회수 · 수리통계 구조 추정 — v8.4 방향 근거 retain) ② 강화 3축(멀티팩터·비중방법론·리스크오버레이) ③ screen-tier 재고 회수(overlay 큐) ④ 국면식별·전략결합(2계층).
+⚠①이 과거 ML 실패의 부활이 아님을 구분할 것: 과거 negative 는 ML 을 결합기·사이징·평균 예측기로 쓴 구성에서 나왔고, ①은 표적을 분포로 바꾸는 미측정 축이다.
+<!-- FRONTIER_AXES_END -->
+과거 negative 조회 = `hypothesis_index.R lookup <kw>`(사실 기록이지 금지 목록 아님 — 새 각도면 재시도 정당, AX-000).
 
 ## 등급 — 하나뿐이다 (essence 단일, v9.21 계승)
 
-**권위 등급 = `02_Infrastructure/contracts/essence_score.R`. enum = A/B/C/F.** Grade A = PORT_t ≥2.95 ∧ OOS retention ∧ SR ≥0.8 ∧ CAGR ≥16% ∧ Calmar ≥0.64 (정본 = `constraint_defaults.json::tier_graduation`, 재보정 = 도훈 권한).
-- 모든 리서치 1단위가 권위 등급을 산출한다(`authoritative_remeasure.json::essence_grade`만 인용 — 손계산 금지). 계약 미경유 = 등급 미발행(NA = 미측정).
-- `hurdle_gate.R` 등급 = 진단(proxy) — 판정 근거 금지(`screen_route` 라벨 생산자로만 존치).
-- ★MDD 는 등급을 접지 않는다 — 위험 축 = Calmar 하나. `hard_fail` = 외부 주입 전용, 구조 낙폭은 `structural_drawdown` 라벨. 문턱 부활 방지 = `test_grade_unification.R` B4~B6.
+**권위 등급 = `essence_score.R`. enum = A/B/C/F.** Grade A = PORT_t ≥2.95 ∧ OOS retention ∧ SR ≥0.8 ∧ CAGR ≥16% ∧ Calmar ≥0.64 (정본 = `constraint_defaults.json::tier_graduation`, 재보정 = 도훈 권한).
+- 모든 리서치 1단위가 권위 등급 산출(`authoritative_remeasure.json::essence_grade`만 인용 — 손계산 금지). 계약 미경유 = NA(미측정). `hurdle` 등급 = 진단(proxy) — 판정 인용 금지.
+- ★MDD 는 등급을 접지 않는다 — 위험 축 = Calmar 하나. `hard_fail` = 주입 전용, 구조 낙폭 = `structural_drawdown` 라벨(부활 방지 = `test_grade_unification.R` B4~B6).
 
 ## Judge · BOOK (구 게이트 2층 대체)
 
-- **Judge(PIT 전담)**: 어느 계층이든 **essence Grade A 확정 후에만** 스폰(`.claude/agents/judge.md`). 검증 6축(C1~C15 감사·detect_lookahead 재실행·C5 타이밍·lag-1 스트레스·재현·selection 정직성) → `judge_verdict_v2`. FAIL = 결과 무효·재측정.
-- **BOOK**: A등급 + PIT PASS → `register_book_entry`(writer `02_Infrastructure/book/book_registry.R` 경유만 — 직접 편집은 `book_write_guard.sh` 차단) + **도훈 confirm**. 트래킹 = frozen 스펙 재현(`/book`). Qvest 는 리서치 시스템 — 실투자 집행 없음. 구 governor/book_state = legacy 동결.
+- **Judge(PIT 전담)**: 어느 계층이든 **essence Grade A 확정 후에만** 스폰. 검증 6축(C1~C15 감사·detect_lookahead 재실행·C5 타이밍·lag-1 스트레스·재현·selection 정직성) → `judge_verdict_v2`. FAIL = 결과 무효·재측정.
+- **BOOK**: A + PIT PASS → `register_book_entry`(writer `book_registry.R` 경유만 — 직접 편집은 `book_write_guard.sh` 차단) + **도훈 confirm**. 트래킹 = frozen 스펙 재현(`/book`). 리서치 시스템 — 실투자 집행 없음. 구 governor/book_state = legacy 동결.
 
 ## 절대 규칙
 
@@ -81,7 +80,7 @@
 
 ## Key Paths · 실행 · 톤
 
-- Root `C:/Users/99922/OneDrive/Quant_Module_Moltbot/`(Git Bash `/c/...`) · 인프라 `02_Infrastructure/` · 전략 `04_Research/strategies/STR_*/` · WT `qepm/mailbox/worktask/{WT_ID}/` · 산출물 `stage_artifacts/`(충실구현 = `stage_artifacts/replication/`).
+- Root `C:/Users/99922/OneDrive/Quant_Module_Moltbot/`(Git Bash `/c/...`) · 인프라 `02_Infrastructure/` · 전략 `04_Research/strategies/STR_*/` · WT `qepm/mailbox/worktask/{WT_ID}/` · 산출물 `stage_artifacts/`(충실구현 = `replication/`).
 - 원장: 강화 `06_Registry/reinforce_ledger_l1.json`(≤20)·`_l2.json`(무한) · BOOK `06_Registry/book/` · 데이터 파이프라인 `06_Registry/data_pipeline_queue.json`.
 - Env(User scope): `QM_ROOT`+`QVEST_PY`+`~/.Renviron` 동일값.
 - R 실행: 전략 디렉터리 `cd` 후 `Rscript -e 'source("run_all.R")'`(한글 경로 회피 — `--file=` 금지). R+Python 공히 1급(venv `.venv_qvest_ml`) — 언어는 PIT·계약을 면제하지 않는다.

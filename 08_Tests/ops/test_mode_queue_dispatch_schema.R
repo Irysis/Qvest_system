@@ -127,11 +127,18 @@ src <- readLines(TARGET, warn = FALSE)
 if (any(grepl("미해석 키가 있다", src, fixed = TRUE))) ok("D1 미해석 키 경고 배선 존재 (드롭≠0편 구분)") else bad("D1 경고 배선 부재", "0편과 못읽음이 다시 같은 출력이 된다")
 if (any(grepl("n_opt \\+ n_risk \\+ n_reg == 0", src))) ok("D2 경고 조건이 3라우트 합=0 에 걸려 있다") else bad("D2 경고 조건", "조건식 변경됨")
 
-# ── E. 생산자 계약 명문화 (형제 파일 미전파 방지) ──
+# ── E. 생산자 계약 — ★v10 반전 (2026-08-29): mode_queue 생산 자체가 폐지됐다 ──
+#   트리아지 v4(paper_router_v4)는 route {replication, skip} 만 내고 mode_queue 를
+#   생산하지 않는다(도훈: 수집 = 팩터전략 단일 목적). 이제 생산 선언이 **되살아나면**
+#   위반이다. 본 파일의 소비자(dispatch) 축 A~D·F 는 구 큐 파일 소급 소비 호환으로 유지.
 pp <- file.path(.root, "02_Infrastructure", "ops", "paper_router_prompt.md")
 ptxt <- if (file.exists(pp)) paste(readLines(pp, warn = FALSE), collapse = "\n") else ""
-if (grepl("정본 형태 = 평면", ptxt, fixed = TRUE)) ok("E1 생산자 프롬프트에 정본 형태(평면) 선언 존재") else bad("E1 생산자 계약 부재", "소비자만 고치면 생산자는 계속 흔들린다")
-if (grepl("schema_version", ptxt, fixed = TRUE) && grepl("형태 식별자", ptxt, fixed = TRUE)) ok("E2 schema_version = 형태 식별자 규약 선언 존재") else bad("E2 schema_version 규약 부재", "생산자 이름이 다시 들어가면 분기 불가")
+if (grepl("생산하지 않는다", ptxt, fixed = TRUE) && grepl("mode_queue", ptxt, fixed = TRUE))
+  ok("E1(v10) 트리아지가 mode_queue 미생산을 명문 선언") else
+  bad("E1(v10) 미생산 선언 부재", "생산 재개가 조용히 가능해진다")
+if (!grepl("정본 형태 = 평면", ptxt, fixed = TRUE))
+  ok("E2(v10) 구 생산 계약(평면 스키마 선언)이 프롬프트에서 제거됨") else
+  bad("E2(v10) 구 생산 계약 잔존", "mode_queue 생산이 되살아난 신호")
 
 # ── F. R↔Python 쌍둥이 동치 (2026-08-02 공용 모듈 승격 동반축) ────────────────
 #   dispatch 는 R 이라 술어 정본(research_pool_predicates.py)을 import 할 수 없어 getrt 를

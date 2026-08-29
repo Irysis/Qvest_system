@@ -28,9 +28,9 @@ suppressWarnings(suppressMessages({
   #   env 루트로는 격리가 원리적으로 불가능하다(2026-08-16 카드 · 오늘 재확인).
   #   전용 변수는 Renviron 에 없으므로 통과한다 — 검사가 쓰는 유일한 이음매.
   root <- Sys.getenv("QVEST_NOTIFY_ROOT", "")
-  if (!nzchar(root)) root <- Sys.getenv("QM_ROOT", Sys.getenv("CLAUDE_PROJECT_DIR", getwd()))
-  setwd(Sys.getenv("QM_ROOT", getwd()))
-  source(file.path(Sys.getenv("QM_ROOT", getwd()), "02_Infrastructure", "telegram", "telegram_notify.R"))
+  if (!nzchar(root)) root <- Sys.getenv("CLAUDE_PROJECT_DIR", Sys.getenv("QM_ROOT", getwd()))  # 금칙 ④: CPD-first
+  setwd(root)
+  source(file.path(root, "02_Infrastructure", "telegram", "telegram_notify.R"))
   library(jsonlite)
 }))
 
@@ -60,7 +60,7 @@ lane_ko <- if (lane %in% names(.lane_map)) .lane_map[[lane]] else lane
 # ── 산출물에서 **알아낸 것**을 뽑는다 ---------------------------------------
 # ★코드는 정본 저장소에서, **데이터는 root 에서** 읽는다 — 둘을 섞으면
 #   픽스처 검사가 스크립트를 못 찾아 조용히 0건이 된다.
-code_root <- Sys.getenv("QM_ROOT", Sys.getenv("CLAUDE_PROJECT_DIR", getwd()))
+code_root <- Sys.getenv("CLAUDE_PROJECT_DIR", Sys.getenv("QM_ROOT", getwd()))  # 금칙 ④: CPD-first
 py <- Sys.getenv("QVEST_PY", "")
 if (!nzchar(py) || !file.exists(py)) py <- file.path(code_root, ".venv_qvest_ml", "Scripts", "python.exe")
 if (!file.exists(py)) py <- "python"

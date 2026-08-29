@@ -1,7 +1,15 @@
 # test_book_registry.R — v10 BOOK writer 의 양방향 검증 (임시 루트 — 실장부 불변)
 # 계약: ①A등급만 등록 ②mandate 예외 아니면 judge_verdict(pit_pass=true) 실제 재도출
 #       ③pit_pass=false verdict 거부 ④중복 등록 거부 ⑤tracking append-only ⑥왕복 파싱
-root <- Sys.getenv("QM_ROOT", "C:/Users/99922/OneDrive/Quant_Module_Moltbot")
+# 앵커 = self-first (r-portability 금칙 ④-b: 테스트 러너는 자기 위치 1순위 — env 는 폴백)
+.self <- tryCatch({
+  a <- commandArgs(trailingOnly = FALSE)
+  f <- sub("^--file=", "", a[grepl("^--file=", a)])
+  if (length(f)) dirname(f[1]) else "."
+}, error = function(e) ".")
+root <- normalizePath(file.path(.self, "..", ".."), winslash = "/", mustWork = FALSE)
+if (!file.exists(file.path(root, "02_Infrastructure", "config.R")))
+  root <- Sys.getenv("QM_ROOT", "C:/Users/99922/OneDrive/Quant_Module_Moltbot")
 setwd(root)
 suppressPackageStartupMessages(library(jsonlite))
 pass <- 0L; fail <- 0L
