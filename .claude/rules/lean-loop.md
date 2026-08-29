@@ -1,90 +1,70 @@
-# Lean Loop (Level 0 — v9 루프 정본)
+# 1계층 루프 — 팩터전략 리서치 (Level 0 · v10 루프 정본)
 
-**발효**: 2026-08-23 (도훈 결정 — 요청 "검증에 매몰된 하네스를 걷어내고 초기 Qvest의 신속성·창의성 회복" → 전수 점검 플랜 `~/.claude/plans/qvest-encapsulated-wave.md` 승인 + 결정 4항 선택. 롤백 태그 `pre-v9-lean-loop`).
-**원칙**: 루프가 **기본 상태**다. 세션은 인프라가 아니라 라운드로 시작해 라운드로 끝난다.
-**적용 범위**: alpha-search 레인의 모든 lean 라운드. 자본 층(지명 후 `/worktask` 이하)은 `measurement-graduation.md`가 규율한다.
+**발효**: 2026-08-29 (도훈 지시 — 2계층 재편. 구 v9 lean loop 2026-08-23 은 git 사료 `pre-v10-2layer`).
+**원칙**: 루프가 기본 상태다. 세션은 인프라가 아니라 라운드로 시작해 라운드로 끝난다.
+**적용 범위**: 1계층(팩터전략 리서치) 전 라운드. 2계층 = `strategy-rotation` SKILL. BOOK = `/book`.
+**페르소나**: `02_Infrastructure/docs/rules/quant-identity.md` — 최정상급 퀀트 · 냉소는 방법론을 향한다 · 리서치는 지난하다.
 
 ## 입력
 
-- **큐 상단 1건** — `/qvest` 부팅 `Queue:` 줄의 최상단 항목(미소비 논문 또는 frontier `open`). 재검색·재정렬으로 고르지 않는다.
-- **고정 축**(논문이 명시하지 않은 것만 여기서 채운다): long-only(w ≥ 0) · ≤25종 · K200∪KQ150 · 2005-01-01~ · 15bps(v2.4 delta) · weight ∈ [0, 0.20] · Σw = 1 · PIT C1~C15.
-- **논문 명시값 우선(고정 축 안에서만)**: 종목수·비중방법·리밸 주기·유니버스 필터를 논문이 적었으면 **그대로 복제**한다. 단 **종목수는 25 이하일 때만** 논문값이 우선이다 — 25를 넘으면 상위 25로 절단하고 절단 사실·절단 전 N을 `paper_assumption_broken` 에 적는다(2026-08-23 도훈 결정 E-5). 다른 축도 고정 축과 충돌하면 고정 축이 이기고, 그 사실을 L-code에 적는다.
-- ★`parked_reason = dohoon_decision` 항목은 **세션 임의 착수 금지**. 큐에서 건너뛰고 다음 항목으로 간다.
+- **큐 상단 1건** — `/qvest` 부팅 `Queue:` 줄의 최상단(미소비 논문 또는 frontier `open`). 재검색·재정렬로 고르지 않는다. 단 **강화 원장 L1 에 active entry 가 있으면 그 강화가 우선**이다(새 논문은 그 다음).
+- ★`parked_reason = dohoon_decision` 항목은 세션 임의 착수 금지.
+- 데이터가 없으면 "구현 불가"가 아니다 — `data_pipeline_queue.json` 적재 → 파이프라인 구축(도훈 승인) → 재개.
 
-## 6단계
+## 축 2층 (v10 — 고정 축이 단계별로 다르다)
 
-1. **읽기** — 논문/가설 1건에서 ①신호 정의 ②비중 방법 ③유니버스 ④리밸 주기 ⑤저자 주장 성과를 뽑는다. 요약 문서를 따로 만들지 않는다.
-2. **구현** — factor engine 1파일. 신호는 논문 사양 그대로, 시점은 t-1 규약. 이 단계의 하드 게이트는 `detect_lookahead` 하나다.
-3. **실행** — `run_alpha_search(name, idea, engine, n_holdings=<논문값>, weight_method="<논문값>")`. **`deep=FALSE`가 기본**(측정·판정·교훈만 돈다). `deep=TRUE`는 **지명된 후보 1건에만**.
-4. **판정** — **권위 등급**(`authoritative_remeasure.json::essence_grade`)의 값만 인용한다(손계산·재구성 금지).
-   **Grade A = PORT_t ≥ 2.95 ∧ OOS retention ∧ SR ≥ 0.8 ∧ CAGR ≥ 16% ∧ Calmar ≥ 0.64.** B/C/F는 그 파일의 판정을 그대로 쓴다.
-   ★`hurdle_result.json` 등급은 **진단(proxy)** 이다 — 2026-05-31 DEMOTED. 판정 근거로 인용하지 않는다(v9.21 등급 일원화).
-   ★계약 미경유는 **등급 미발행(NA)** 이고 그건 실패가 아니라 미측정이다. L-code 적립 대상이 아니며 사유를 남긴다.
-   ★**MDD 는 등급을 접지 않는다**(도훈 지시 2026-08-24) — 위험 축은 Calmar 비율 하나. 구조 낙폭은 `structural_drawdown` 라벨로만 남는다.
-   PIT 위반은 등급 무관 절대 기각.
-5. **교훈** — **의미있는 실패만** L-code로 적립한다. 의미있는 실패 = 기전이 특정되는 실패(어느 축이 왜 꺼졌는지). "점수가 낮았다"는 적립 대상이 아니다.
-6. **다음** — 큐 다음 항목으로. 한 세션에 논문 여러 편을 도는 것이 정상이다.
+| 단계 | 축 |
+|---|---|
+| **충실구현 라운드(최초)** | **논문 그대로** — 롱숏·종목수·비중방법·리밸 전부 복제. 유일한 변경 = 유니버스 K200∪KQ150(PIT 시변 멤버십). 유동성 필터 = 논문 우선(`paper_faithful`). 비용 = 논문 명시값 병기 + **등급은 15bps 순비용 판** |
+| **강화 프로세스(그 이후)** | **실투형** — long-only(w≥0) · ≤25종 · K200∪KQ150 · 2005-01-01~ · 15bps(v2.4 delta) · Σw=1 · **비중 상한 없음(v10 폐지)** |
+| 공통 | **PIT C1~C15 — 계층·단계 무관 절대** |
+
+## 라운드 6단계 (충실구현)
+
+1. **읽기** — 논문 1건에서 ①신호 정의 ②비중 방법 ③유니버스 ④리밸 주기 ⑤저자 주장 성과. 원문 링크 확보(필수 — 러너가 거부한다).
+2. **구현** — engine 1파일 (`FACTORS(Date,Ticker,Score)` 또는 `PORTFOLIO(Date,Ticker,Weight,Leg)`). 논문 명시값 그대로, t-1 규약. 하드 게이트 = `detect_lookahead`.
+3. **실행** — `run_paper_replication(name, idea, engine, portfolio_spec=<논문값>, source_paper=list(url=...))` (`02_Infrastructure/alpha_search/run_paper_replication.R`).
+4. **판정** — **권위 등급**(`authoritative_remeasure.json::essence_grade`)만 인용(손계산·재구성 금지). Grade A = PORT_t ≥2.95 ∧ OOS retention ∧ SR ≥0.8 ∧ CAGR ≥16% ∧ Calmar ≥0.64. 계약 미경유 = 등급 미발행(NA — 실패가 아니라 미측정). ★MDD 는 등급을 접지 않는다(위험 축 = Calmar 하나). PIT 위반은 등급 무관 절대 기각.
+5. **교훈** — 의미있는 실패(기전이 특정되는 실패)만 L-code 적립(mode=`paper_replication`).
+6. **분기** —
+   - **Grade A** → **Judge(PIT 전담) 스폰**(`judge_request.json` 발행됨) → PASS → BOOK 등록 후보(도훈 confirm) / FAIL → 결과 무효·수리·재측정.
+   - **미달(B/C/F)** → **강화 프로세스**(`Skill(reinforce)` — 원장 `reinforce_ledger_l1.json` open 자동). 논문당 최대 20회, 축 = 멀티팩터/비중방법론/리스크오버레이/결합. 매 시도 = 근거 논문 필수 + QEPM(alpha→risk→optimizer→forge→등급) + L-code. 20회 소진 → exhausted → 큐 다음 논문.
+   - **논문 3편 소비마다** Q-Lead 가 논문 간 아이디어 결합 기회를 검토·기록(`rf_record_combination_review` — 착수 무관 의무).
 
 ## 예산 (라운드 1건)
 
 | 축 | 상한 |
 |---|---|
-| 시간 | ≤40분 |
+| 시간 | ≤40분 (충실구현) — 강화 시도는 QEPM 단위라 별도 |
 | 토큰 | ≤120K |
 | 하네스 파일 쓰기 | **0** (훅·테스트·계약·룰·부팅 스크립트) |
 
-초과하면 라운드를 접고 상태를 1줄로 남긴다. 하네스 결함은 **그 라운드를 실제로 막을 때만** 최소 수리하고, 그 외에는 태스크로 분리한다.
+초과하면 라운드를 접고 상태 1줄. 하네스 결함은 그 라운드를 실제로 막을 때만 최소 수리.
 
-## 연속성 계약 — 적용 지점은 L-code 발행 1곳
+## 연속성 계약
 
-- 계약은 `run_alpha_search.R::.write_lcode`(스키마 `02_Infrastructure/axiom/lcode_schema.R` v3)에서만 검사된다: **next_probes ≥ 2**(B/C/F) + **부활 조건 `live_trigger`**. 미충족은 `[L-CODE WARN]` 후 발행(차단 아님).
-- **턴 종료는 자유다** — "여기까지 하고 대기 중"으로 끝내도 위반이 아니다. Stop 차단 훅 0(`02_Infrastructure/docs/rules/continuity-firewall.md` = SUSPENDED).
-- `close_round()`는 **선택**이다. 호출하지 않아도 라운드는 완결된다.
-- `02_Infrastructure/docs/rules/answer-principles.md`의 리서치 연속성 6항 중 **3호(next_probe ≥ 2)만** lean 라운드에 적용되고, 그 검사 지점이 위의 L-code 발행이다.
+- L-code 발행 1지점: **next_probes ≥ 2**(B/C/F) + 부활 조건 `live_trigger`. 미충족 = WARN 후 발행(차단 아님).
+- 턴 종료는 자유다. Stop 차단 훅 0.
+- 강화 시도는 원장(`rf_append_attempt`)이 사전 등록을 강제한다 — 원장 밖 강화는 없다.
 
-## 라운드 뒤 — 기본 2단계(강화 프로세스)
+## 하지 않는 것 (1계층 라운드)
 
-lean 라운드가 끝나면 **강화 프로세스**가 무인 러너 뒤에서 자동으로 1후보를 태운다
-(`alpha_search_queue_run.sh` → `reinforce_ladder.R --top=1`. 도훈 결정 2026-08-24).
-**세션이 손으로 부르지 않는다** — 이건 lean 라운드가 아니고 예산도 별개다(`budget_secs_per_candidate`).
-정지 = `QVEST_LADDER_NORUN=1`. 사다리는 원장의 완주(`stage=="done"`) 후보를 배제하므로 매 실행이 다음 후보로 전진한다.
-
-## 지명 → 자본 계층 (심층 QEPM)
-
-Grade A 또는 도훈 지명이 나왔을 때만 층을 올린다:
-
-`/worktask` → 6-agent(alpha-hypothesis → alpha → risk → optimizer → forge → judge) → dossier → **forge-authoritative 수치**로 HARD 4종 판정 → governor.
-
-- HARD 4종 값 정본 = `02_Infrastructure/worktask/constraint_defaults.json::tier_graduation`. **재보정은 도훈 권한**.
-- `qepm/mailbox/governor/book_state.json` 쓰기 = **도훈만**. 자동화 금지.
-- 지명 전에는 QEPM 에이전트를 스폰하지 않는다.
-
-## 하지 않는 것 (lean 라운드)
-
-아래는 착수 관문·판정 의무로 **부과되지 않는다**. 필요하면 쓰는 선택 도구일 뿐이다.
-
-- `hypothesis_index` 중복 차단 · 3단 착수 게이트 · `research_ev_map` 죽은 계급 조회
-- 사전등록 · 검정력 계약(`required_effect_size`·`cluster_power`) · 착수 크기산술 관문
-- 무신호 대조 · β-통제 α 병기 · `DISTRIBUTION_TARGET` 요건 3종
-- FF3/FF5/Fama-MacBeth 회귀(= `deep=TRUE`에서만) · 권위 재측정 · `register_module`
-- `close_round()` 의무 호출 · L4 `claude -p` 검증자 · 세션의 `auto_alpha_gate` 실행
-- 텔레그램 5섹션 양식(러너 1회 발송으로 족하다) · 부팅 WARN 즉시 수리 · 지명 전 QEPM 스폰
-
-★면제되지 않는 것: PIT · 고정 축 · `dohoon_decision` 항목 임의 착수 금지 · `book_state` 수동.
+사전등록·검정력 계약·무신호 대조·β-통제 α·FF 회귀·`register_module`·`close_round()` 의무 —
+전부 선택 도구이지 부과 의무가 아니다. 부팅 WARN 즉시 수리 금지 · Grade A 전 Judge 스폰 금지 ·
+BOOK 자동 등록 금지.
+★면제되지 않는 것: PIT · 축 2층 · `dohoon_decision` 임의 착수 금지 · 근거 논문 의무 · 하드코딩 금지.
 
 ## 보고 형식 (3줄)
 
 ```
-① <전략명> · Grade <A/B/C/F> · CAGR x% · SR x · MDD x% · n_max <리밸일 최대 보유종목수>  (출처: authoritative_remeasure.json — 권위 등급)
-② 기전 1줄 — 무엇이 켜졌고 무엇이 꺼졌나
-③ 다음 — <next_probe 1건> · 큐 다음 항목 <id>
+① <전략명> · Grade <A/B/C/F> · CAGR x% · SR x · MDD x% · n_max <최대 보유종목수>  (출처: authoritative_remeasure.json — 권위 등급 · 15bps 판)
+② 기전 1줄 — 무엇이 켜졌고 무엇이 꺼졌나 (+ 논문 기준 성과 병기)
+③ 다음 — <next_probe 1건 또는 강화 n/20 축> · 큐 다음 항목 <id>
 ```
 
-`n_max` = `verdict$diagnostics` 의 `n_max`(리밸일별 distinct 종목수의 최댓값). 26 이상이면 계약 위반이고
-`audit_bt_result::holdings_cap` 이 FAIL 로 잡는다 — 보고에 노출하는 이유는 위반이 **조용히** 지나가지 않게 하기 위해서다.
-
-서사·표·재측정 블록은 붙이지 않는다. 상세는 L-code와 산출물 경로가 갖고 있다.
+텔레그램 표제 = `[1계층] 알파 서칭 — …` / `[1계층·강화 n/20] …` (qvest-telegram SKILL 정본).
 
 ## 참조
 
-`pit.md`(C1~C15) · `measurement-graduation.md`(자본 층) · `02_Infrastructure/docs/rules/answer-principles.md`(3호) · `.claude/skills/alpha-search/SKILL.md`(절차) · `CLAUDE.md`(고정 축·게이트 2층)
+`pit.md`(C1~C15) · `.claude/skills/reinforce/SKILL.md`(강화) · `.claude/agents/judge.md`(PIT 검증) ·
+`.claude/skills/alpha-search/SKILL.md`(절차) · `02_Infrastructure/book/book_registry.R`(BOOK) · `CLAUDE.md`(v10 헌법)

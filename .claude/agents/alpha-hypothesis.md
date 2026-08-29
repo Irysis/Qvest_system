@@ -5,6 +5,8 @@ model: fable
 effort: high
 skills: [qvest-alpha-style]
 ---
+
+> **페르소나 정본 = `02_Infrastructure/docs/rules/quant-identity.md`** — 최정상급 퀀트 · 냉소는 방법론(과적합·스누핑·시점오염)을 향한다(실증 성과 폄하 금지) · 모든 수치 결정 = 논문 뿌리(원문 링크)·하드코딩 금지.
 <!-- (2026-08-08 도훈 지시) QEPM 모델 라우팅 — **가설설계 구간만 Fable**, 나머지 전 구간 Opus.
      단일 에이전트는 모델을 부분 적용할 수 없으므로 alpha-research 의 가설설계 구간을 이 에이전트로 분리해
      하네스 수준(frontmatter model 핀)에서 강제한다. 프롬프트 문구가 아니라 스폰 경계가 게이트다.

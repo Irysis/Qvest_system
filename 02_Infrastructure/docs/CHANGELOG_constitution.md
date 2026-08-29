@@ -3,6 +3,18 @@
 > CLAUDE.md는 "현재 유효한 헌법"만 담는다. 버전 연혁·릴리스 상세는 본 파일이 SOT.
 > 최신 릴리스 상세: `qvest_v8_4_asymmetry_ml_sot.md` (**v8.4 — 주력 SOT**) · `qvest_v8_3_alpha_discovery_sot.md` (v8.3) · `qvest_v8_1_sot.md` (v8.1) · `qvest_v8_0_upgrade_plan.md` (v8.0)
 
+## v10.0 — 2계층 리서치 재편 (2026-08-29)
+
+**도훈 지시 전문 요지** (플랜 `~/.claude/plans/qvest-2-moonlit-galaxy.md` · 롤백 태그 `pre-v10-2layer` · 체크포인트 커밋 41eb28715):
+1. **논문 라우팅 개편** — 수집 = "팩터 전략 리서치" 단일 목적(최신성 불요 — recency 180d 제거·relevance 정렬·고전 시드 11편). **중복 방지 규칙 신설** = `paper_key` 3단(axv > doi > ttl, 정본 `paper_id_norm.py`) + registry 619건 백필(실중복 1쌍 적발). 트리아지 v4 = {replication, skip} + `data_pipeline_required` verdict 신설(데이터 부재 = 기각 아님 — `data_pipeline_queue.json` 적재 후 파이프라인 구축).
+2. **QEPM 재정의** — alpha 가설 설계 전기간 데이터. **lockbox 완전 폐지("반박 금지")** — 22개 지점 제거(schema required 완화·windowing 3-window·훅 4종 영구 퇴역·judge harness RETIRED). ⚠ C5 overlay SIGNAL_CUTOFF 는 PIT 기계 — 보존(diff 0). QEPM = alpha→risk→optimizer→forge + 등급 평가까지(FORGE_DONE→COMPLETED 전이 신설).
+3. **Judge 분리** — PIT 검증 전담 별도 에이전트. **essence Grade A 확정 후에만 스폰**(모든 모드 공통). 검증 6축(C1~C15 감사·detect_lookahead 재실행·C5 타이밍·lag-1 스트레스·재현·selection 정직성) → `judge_verdict_v2`. 구 Gate C/D/E/F·8지표·lockbox 의무 폐지.
+4. **1계층** = 논문 수집 → 공리 주입 → **완전 충실구현**(`run_paper_replication` + `replication_harness` — 롱숏·종목수·비중 논문 그대로, 유일한 변경 = 유니버스 K200∪KQ150. 등급은 15bps 순비용 판·논문 기준 병기) → 등급 → 미달 시 **강화 ≤20회**(QEPM 기반, 축 = 멀티팩터/비중방법론/리스크오버레이/결합, 원장 `reinforce_ledger_l1.json` — root_papers 없는 시도 기계 거부, 논문 3편마다 Q-Lead 결합 검토 의무) → A 시 Judge. 구 기계 사다리(reinforce_ladder) 퇴역.
+5. **2계층** = 전략 로테이션 리서치 — **B등급 이상 풀**(2단 게이트: 계약 floor + essence grade floor, 실측 99→15모듈. 구 "등급무관 RCMA 차용" 폐기 — RCMA 는 배치 심사로 존치) × 논문 온디맨드 착수 × 리서치 1단위 등급 × **강화 무한**(국면식별/전략결합, 원장 l2) → A → Judge → BOOK. 목표 = 한국 특화 전천후 모델.
+6. **BOOK** — governor/execution/monitoring 퇴역(monitoring → book-tracker 재편). `06_Registry/book/book_registry.json`(writer 자격검증 = A + judge pit_pass 재도출, append-only, `book_write_guard.sh` 훅이 직접 편집 차단 — governor_concord_certifier 자리 승계, 12 distinct 유지). **PG2 = BOOK_0001 이관**(`dohoon_mandate_20260829` — fresh essence 부재 정직 표기). 구 book_state.json = legacy 동결. Qvest = 리서치 시스템(실투자 집행 없음) — 트래킹 = `/book` frozen 스펙 재현.
+7. **규칙** — /qvest 시 계층 질문 · 텔레그램 계층 표제 의무(`[1계층]`/`[1계층·강화 n/20]`/`[2계층]`/`[Judge]`/`[BOOK]`) · **종목별 비중 상한([0,0.20]) 인프라 전체 삭제**(등록 전략 frozen 스펙·비중방법 내부 파라미터는 별개 — 무변경) · 하드코딩 전면 금지 + 근거 논문 원문 링크 의무 · Q-Lead 오케스트레이션 전용 · 페르소나 정본 신설(`quant-identity.md` — 최정상급 퀀트·냉소는 방법론·리서치는 지난하다) · **무인 파이프라인 = 수집까지만**(morning_run 자동 리서치 4단계 철거).
+- 신설 검사 8종(양방향·재도출): enforcer v10 4축 · replication 10축 · reinforce_ledger 11축 · judge_verdict 15축 · grade_floor 8축 · book_registry 8축 · book_write_guard 5축 · morning_rewire 13축. boot_currency 15/15 PASS.
+
 ## v9.21 — 논문 알파리서치 → 강화 프로세스 · 등급 일원화 (2026-08-24)
 
 **도훈 지시 6건 + 후속 2건.** 플랜 = `~/.claude/plans/bright-dancing-snowflake.md`.

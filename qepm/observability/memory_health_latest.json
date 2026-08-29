@@ -1,17 +1,21 @@
 {
   "schema_version": "v7.2.1_memory_health",
-  "ran_at": "2026-08-29T11:20:46+0900",
+  "ran_at": "2026-08-29T12:11:43+0900",
   "hard_fails": [],
   "warnings": [
     {
       "check_id": "WARN_6_cache_core_stale",
       "message": ".cache/axiom_core.json STALE — missing: AX-AR-001,AX-AR-002,AX-AR-003,AX-AR-004,AX-AS-001,AX-AS-002,AX-JG-001,AX-QPM-001,AX-QPM-002,AX-QPM-003,AX-QPM-004,AX-QPM-005,AX-RAMP-001,AX-RAMP-002,AX-RAMP-003,AX-RAMP-004,AX-RAMP-005,AX-RAMP-006 (regenerate via bootstrap)"
+    },
+    {
+      "check_id": "WARN_11_revival_flags_stale",
+      "message": "주입 사본이 정본보다 0분 뒤처짐 — DIST frontier 수정이 주입면에 미반영일 수 있음 (정본 08-29 11:20 > 사본 08-29 11:20). 복구: Rscript -e 'source(\"02_Infrastructure/ops/failure_revival_monitor.R\"); revival_monitor_run(write_flags=TRUE)'"
     }
   ],
   "infos": [],
   "summary": {
     "hard_fail_count": 0,
-    "warning_count": 1,
+    "warning_count": 2,
     "info_count": 0,
     "overall": "PASS"
   }

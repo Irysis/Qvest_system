@@ -1,7 +1,7 @@
 # Qvest Index
 
 **3개월 후 도훈이 즉시 찾을 수 있게** — 1 page navigation + debug map.
-**v9.21 — 논문 알파리서치 → 강화 프로세스 · 등급 일원화(essence 단일) · 게이트 2층(리서치/자본)** (2026-08-24 갱신. 직전 v9.0 = Lean Loop, 전문은 `CHANGELOG_constitution.md`)
+**v10.0 — 2계층 리서치(팩터전략/전략로테이션) · BOOK · Judge=PIT 전담** (2026-08-29 갱신. 직전 v9.21, 전문은 `CHANGELOG_constitution.md`)
 
 > ★**숫자 박제 금지** — 이 문서가 v8.1에서 2개월 낙후된 기전이 "8 axioms / 30 hook / 203 paper notes" 같은 **개수 하드코딩**이었다. 개수·목록은 아래 *확인 명령*으로 위임하고, 본문은 **어디를 보는지**만 적는다.
 
@@ -20,7 +20,11 @@
 
 ## 1. Active SOT
 
-- `.claude/rules/lean-loop.md` — **v9 루프 정본** (입력·6단계·예산·연속성 계약 1지점·지명→자본 계층·하지 않는 것)
+- `.claude/rules/lean-loop.md` — **1계층 루프 정본 (v10)** (입력·축 2층·충실구현 6단계·강화 분기·예산)
+- `.claude/skills/strategy-rotation/SKILL.md` — 2계층 정본 (논문 온디맨드·B+ 풀 2단 게이트·강화 무한·Judge→BOOK)
+- `.claude/skills/reinforce/SKILL.md` — 강화 프로세스 정본 (L1 ≤20회 / L2 무한 · 원장 reinforce_ledger_l1/l2)
+- `02_Infrastructure/docs/rules/quant-identity.md` — 페르소나 정본 (최정상급 퀀트 · 냉소는 방법론 · 논문 근거 의무)
+- `06_Registry/book/book_registry.json` — BOOK 정본 (writer = `02_Infrastructure/book/book_registry.R` 경유만)
 - `02_Infrastructure/docs/qvest_v8_4_asymmetry_ml_sot.md` — v8.4 리서치 방향 SOT (비대칭 알파: 4 lane A/D/B/C, 금지 4종, 부활 조건 — v9에서도 방향 근거로 retain)
 - `02_Infrastructure/docs/qvest_v8_3_alpha_discovery_sot.md` — v8.3 발굴 재편 (골격 승계 — dual-basis · 프론티어 큐 · 지식 환류)
 - `02_Infrastructure/docs/qvest_v8_1_sot.md` — v8.1 설계 SOT (measurement governance + module flow)

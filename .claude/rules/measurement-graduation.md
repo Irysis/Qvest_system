@@ -6,11 +6,12 @@ paths:
   - "stage_artifacts/WT-*/**"
 ---
 
-# Measurement Integrity + Graduation 허들 (Level 0)
+# Measurement Integrity + Judge·BOOK 규범 (Level 0)
 
-## §0 2층 적용 범위 (v9 2026-08-23)
+## §0 적용 범위 (★v10 2026-08-29 — "자본 층" 소멸, Judge·BOOK 층으로 재정의)
 
-**2층 적용 범위 (v9 2026-08-23)**: §1~§7은 자본 층(Grade A 지명 후 `/worktask`→6-agent→dossier)에만 적용. 리서치 층(lean 라운드)은 `lean-loop.md`의 등급+PIT만 본다. HARD 3종 값은 `constraint_defaults.json::tier_graduation`이 정본, 재보정은 도훈 권한(INV-7 '완화 제안 금지'는 자본 층 한정).
+**§1~§3·§5~§7 = 측정 무결성 정본** — 등급을 산출하는 모든 리서치 1단위(1계층 충실구현·강화, 2계층 로테이션)에 적용된다. 이 분할·게이트(OOS anchored·DSR selection 경계·holdout falsification)는 폐지된 lockbox 가 아니라 **측정 규율**이다 — 불변. **§4 = BOOK 등록 규범**(구 governor admission 대체). HARD 값 정본 = `constraint_defaults.json::tier_graduation`, 재보정 = 도훈 권한(INV-7 '완화 제안 금지').
+구 v9 문구("자본 층 = Grade A 지명 후 6-agent dossier")는 v10 에서 **Judge(PIT 전담) + BOOK 등록**으로 대체됐다 — Grade A → Judge 검증 6축 → PASS → `register_book_entry`(도훈 confirm).
 
 **발효**: 2026-05-29 (v8.x WS1/2/3, 도훈 mandate "한 번 재설계하고 가자"). **위반 = AX-002 동급**(proxy 수치로 게이트 통과 = 프로세스 우회 = 미래참조).
 **근거**: 16-cycle 리서치가 "alpha/risk/optimizer가 proxy 손계산 수치로 graduation PASS 선언"하는 구조결함 노출 (Cycle 5 QVALUE "5/5 PASS"가 전부 proxy). E2E 입증: FLOW proxy portfolio-α t 3.55 → forge 실측 2.35 (Cycle 2 D 4.31→2.31 재현).
@@ -42,10 +43,11 @@ paths:
   - **Graduation/자본 tier (불변)**: 위 HARD 3종(PORT_t 2.95·oos_retention 0.7·calmar 0.64) + §4 book-marginal — screening pass는 이 계층에 어떤 면제도 주지 않음. screening은 "버릴 후보"와 "다른 방식으로 쓸 후보"를 구분하는 라벨일 뿐. ★**분포-공간 증거는 자본 tier 에 어떤 자격도 주지 않는다 (2026-08-22 신설)** — `DISTRIBUTION_TARGET` 은 screening tier 라벨이며 HARD 3종은 **forge-authoritative 포트폴리오 수치로만** 판정한다. 분포 통계량(중앙값 스프레드·왜도·분위 프로파일)으로 PORT_t·oos_retention·calmar 를 **대체하거나 근사하는 주장은 §1 위반**이다. 분포 재료가 자본으로 가는 유일한 경로 = 소비 형태를 바꿔 **평균 basis 포트폴리오 수치를 실제로 산출**한 뒤 그 수치로 판정.
 - **훅 배선 완료 (2026-07-03 도훈 confirm, 아키텍처 감사)**: `discovery_graduation_gate.sh`가 HARD 3종(PORT_t·oos_retention·calmar)을 fail-closed 실차단 + sweep-DSR 미산출 block.
 
-## §4 Admission = book-marginal (standalone 졸업 아님)
-- `portfolio_governor.R::pg1_admission_with_book_context()`: standalone ADMIT 후 **ΔIR = new_book_ir − incumbent_book_ir ≥ 0.05** 충족 시에만 ADMIT(미달 DEFER). `book_optimizer.R` book_information_ratio/book_update 재사용. baseline = `book_state.json::incumbent_book_ir`.
-- **governor admit(book_state 쓰기)은 자동화 금지** — 비가역 자본 게이트, Q-Lead + 도훈 수동 confirm. (dossier 워크플로우는 risk→judge까지만 자동, governor 정지.)
-- **ΔIR 단일 컨벤션 (2026-07-03 도훈 confirm, 아키텍처 감사)**: book-marginal ΔIR의 IR = **recon NAV 기반 net-active IR**(`ir_convention=net_active_recon_v1`, `book_state.json` 선언 필드) 단일 기준. gross/geo 수치는 비교 인용 시 basis 라벨 의무.
+## §4 BOOK 등록 규범 (★v10 2026-08-29 — 구 "governor admission" 대체)
+- **등록 자격 = essence Grade A + Judge(PIT 전담) `judge_verdict_v2::pit_pass=true`.** writer(`02_Infrastructure/book/book_registry.R::register_book_entry`)가 verdict 를 **실제로 읽어** 검증한다(진술 불가). 예외 = 도훈 mandate(`grade_basis="dohoon_mandate_*"` — 선례 BOOK_0001 = 구 PG2).
+- **등록 자동화 금지** — 도훈 confirm 후 세션이 writer 를 호출한다. 직접 편집은 `book_write_guard.sh` 가 차단. 엔트리 삭제 금지(append-only — 상태 변경은 status 필드만).
+- **사후 관리** = `/book` 트래킹(frozen 스펙 재현 — 개선은 강화 프로세스로) + holdout 자동 연장 대조(§3) + drift 경보(book-tracker). Qvest 는 리서치 시스템 — 실투자 집행 없음.
+- (사료) 구 governor 규범: pg1 book-marginal ΔIR≥0.05(`ir_convention=net_active_recon_v1`)·book_state 수동 — **ΔIR 로직은 2계층 진단 도구로 강등**(판정 아님). 구 `book_state.json` = legacy 동결.
 
 ## §5 DPL = 피처 보존 원칙 (⚠ 2026-08-24 v9.2 G-5: settled-negative **선언 철회**)
 - 실패한 standalone 알파의 신호는 폐기 아닌 **피처로 보존**한다(원칙 유지).
