@@ -221,6 +221,7 @@ run_paper_replication <- function(strategy_name, strategy_idea, factor_engine_pa
   strategy_spec <- list(
     strategy_name = strategy_name, strategy_idea = strategy_idea,
     constraint_profile = "replication",          # audit holdings_cap INFO 강등 스위치
+    lookahead_prevention = "detect_lookahead(engine) CLEAN + t+1 실행(get_execution_date 익월 첫 거래일) + 시그널일>RAWDATA 범위 검사",
     construction = portfolio_spec$construction %||% "top_n_long",
     weight_method = portfolio_spec$weighting %||% "paper",
     rebalance = portfolio_spec$rebalance %||% "monthly",

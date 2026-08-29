@@ -1,6 +1,6 @@
 ---
 name: qvest-worktask
-description: QEPM v8.1 WorkTask lifecycle 절차 + 6-agent orchestration. /qvest 진입 후 신규 가설부터 admit까지 전 단계.
+description: QEPM WorkTask lifecycle 절차 (v10) — alpha→risk→optimizer→forge + 등급 평가까지. Judge 는 Grade A 한정 PIT 전담, governor 폐지(BOOK 승계). wt_type 5종(reinforcement=WT-R 포함).
 ---
 
 # Qvest WorkTask Skill
@@ -16,15 +16,16 @@ SPEC_APPROVED
   → ALPHA_DONE
   → RISK_DONE
   → OPTIMIZER_DONE
-  → FORGE_DONE
-  → JUDGE_PASSED | JUDGE_FAILED
-  → GOVERNOR_ADMITTED | GOVERNOR_REJECTED
-  → COMPLETED | ABORTED
+  → FORGE_DONE ──(등급 평가 = QEPM 종점)──→ COMPLETED     ← ★v10: grade < A (강화 대상)
+        └─(essence Grade A 일 때만)→ JUDGE_PASSED | JUDGE_FAILED → COMPLETED | ABORTED
 ```
 
-임의 phase jump는 waiver 없이 불가 (v8.1 state machine enforced).
+임의 phase jump는 waiver 없이 불가 (state machine enforced — `judge_conditional_on_grade_A`).
+★v10 (2026-08-29): GOVERNOR_* phases 는 legacy WT 호환으로만 존치 — 신규 WT 진입 금지.
+QEPM = alpha→risk→optimizer→forge + 등급 평가까지. Judge = PIT 전담(A등급 후에만).
+JUDGE_PASSED 후 BOOK 등록은 원장 밖 수동(`register_book_entry` + 도훈 confirm).
 
-### wt_type 4종 (Charter v1.7 §10 Role Card)
+### wt_type 5종 (Charter v1.7 §10 + ★v10 reinforcement)
 
 | wt_type | 용도 | own cert | inherit |
 |---|---|---|---|
@@ -32,6 +33,7 @@ SPEC_APPROVED
 | `deployment` | 검증 alpha 직접 편성 | sr + sched + forge_pkg + concord | alpha (from discovery) |
 | `sizing_only` | weight 변경만 | concord | alpha + sr + sched + forge_pkg |
 | `hyperparameter_sweep` | tuning | concord | alpha + sr + sched + forge_pkg |
+| `reinforcement` | ★v10 강화 프로세스(WT-R) — 실투형 축(long-only·≤25종·15bps·상한없음), 원장 reinforce_ledger_l1/l2 연동 | — | parent 충실구현/FR |
 
 ## 2. WT 생성
 
@@ -148,25 +150,24 @@ Agent(subagent_type="forge", prompt="WT{id} Integrate 3-agent packages → backt
   → AX-008 Verification Triangulation: Forge + Self-Adversarial + Architect 2/3 PASS 의무
 ```
 
-### Step 5: judge
+### Step 5: 등급 평가 = QEPM 종점 (★v10)
+
+forge 산출 bt_result → `essence_score` → `authoritative_remeasure.json::essence_grade`.
+- **grade < A** → FORGE_DONE → COMPLETED. 강화 대상(원장 `rf_record_result` 기록 → 다음 시도).
+- **grade A** → Step 6.
+
+### Step 6: judge — PIT 전담 (★v10, Grade A 한정)
 
 ```
-Agent(subagent_type="judge", prompt="WT{id} S6 cascade Gate 0~18")
-  → judge_verdict_draft.json → self-adversarial challenge → judge_verdict.json
-  → L-code 발행(의무): emit_qepm_lcode(source="judge_gate") → judge_verdict.json에 l_code_path 기록
+Agent(subagent_type="judge", prompt="WT{id} PIT 검증 — judge_request.json 참조")
+  → 검증 6축(C1~C15 감사·detect_lookahead 재실행·C5 타이밍·lag-1 스트레스·재현·selection 정직성)
+  → L-code 발행(의무): emit_lcode(mode="judge_gate") → judge_verdict.json(v2)에 l_code_path 기록
   → JUDGE_PASSED / JUDGE_FAILED
 ```
 
-**judge→governor 전이 체크**: `judge_verdict.json`에 `l_code_path` 존재 (L-code 발행 의무 — `.claude/agents/judge.md` "L-code 발행" 절). 부재 시 전이 보류·judge에 발행 요청.
-
-### Step 6: governor
-
-```
-Agent(subagent_type="governor", prompt="WT{id} PG0~PG3 admission")
-  → governor_admission_draft.json → self-adversarial challenge → governor_admission.json
-  → GOVERNOR_ADMITTED / GOVERNOR_REJECTED
-  → book_state.json admit (concord cert auto-issue)
-```
+- **PASS** → COMPLETED + BOOK 등록 후보(`register_book_entry` — writer 경유 + **도훈 confirm**. 자동 등록 없음).
+- **FAIL** → 결과 무효 — 위반 수리 후 재측정(등급 재산출).
+★구 Step 6(governor PG0~PG3 admission·book_state admit)은 v10 폐지 — BOOK 이 승계.
 
 ## 4. Hard Constraints (Hook 자동 검증)
 
@@ -206,7 +207,7 @@ Agent(subagent_type="governor", prompt="WT{id} PG0~PG3 admission")
 
 ## 7. Multi-Agent 실행 (v8.1+ — Agent tool spawn 단일 패턴)
 
-v53 TeamCreate/teammate 패턴은 **폐지됨** (v8.1 Agent tool spawn 대체 — TeammateIdle/TaskCompleted hook 등록 해제 2026-06-10, 스크립트 FS retain). 6-agent(alpha/risk/optimizer/forge/judge/governor)는 Agent tool로 개별 spawn, 추가 역할(Architect / Blender / Execution / Monitoring)은 ondemand spawn. (v8.2 — Codex Critic 역할 제거, 각 agent가 self-adversarial challenge 내장.)
+v53 TeamCreate/teammate 패턴은 **폐지됨** (v8.1 Agent tool spawn 대체). ★v10: 체인 = alpha-hypothesis/alpha/risk/optimizer/forge Agent tool 개별 spawn + judge 는 Grade A 한정. governor/execution 퇴역·monitoring→book-tracker(`.claude/agents_retired_v10/`). 추가 역할(Architect/Blender)은 ondemand. (각 agent self-adversarial challenge 내장.)
 
 **모델 라우팅 (2026-08-08 도훈 지시 — 2026-07-24 "핀 제거·상속" 정책 대체)**: QEPM 에이전트는 **전부 `model: opus`(현행 Opus 5) 명시 핀**. **유일 예외 = `alpha-hypothesis`(`model: fable`)** — 가설설계 구간(Step 0 + ①~④)만 Fable. 6-agent 파이프라인 구조는 불변(alpha-hypothesis 는 alpha-research 의 *내부 구간 분리*이지 7번째 심사 단계가 아니다 — 슬림화/확장 재제안 아님). SOT: `02_Infrastructure/docs/rules/caching.md`.
 

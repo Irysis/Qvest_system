@@ -18,11 +18,15 @@
 | `wiring_map.json` | 표준↔소비자 배선 지도 (ops/wiring_map_build.R 산출 — contracts/validation 헬퍼 + 권위 판정 원장의 실코드 소비자 수. status: orphan/thin/wired. ★판정은 이 원장이 권위 — 소비자는 n_consumers 로 재판정 금지) | active | 2026-08-23 | 76KB |
 | `wiring_map_baseline.json` | 배선 지도 래칫 기준선 — 소비자 수 감소(표준 우회 시작)만 드리프트로 경고. 자동 갱신 금지(자동이면 악화가 매일 흡수돼 래칫이 무력화) | active | 2026-08-08 | 6KB |
 
-## 계약 (5)
+## 계약 (9 — v10 신설 4 포함)
 
 | 항목 | 정체 | status | 최근 | 크기 |
 |---|---|---|---|---|
-| `factor_rotation_registry.json` | factor-rotation 모드 FR_XXXX 등록 레지스트리(현행 v6146B, 06-13 갱신) | active | 2026-08-09 | 5KB |
+| `book/book_registry.json` | ★v10 BOOK 정본 — A등급+PIT PASS 전략·로테이션 등재·트래킹(governor/book_state 승계). 쓰기 = `book_registry.R` writer 경유만(book_write_guard 훅 차단) | active | 2026-08-29 | 2KB |
+| `reinforce_ledger_l1.json` | ★v10 1계층 강화 원장 — 논문당 ≤20회, root_papers 기계 강제, 논문 3편마다 결합 검토 | active | 2026-08-29 | 1KB |
+| `reinforce_ledger_l2.json` | ★v10 2계층 강화 원장 — 무한(A까지), 축 = 국면식별/전략결합 | active | 2026-08-29 | 1KB |
+| `data_pipeline_queue.json` | ★v10 데이터 파이프라인 큐 — 트리아지 verdict=data_pipeline_required 적재(데이터 부재 = 기각 아님) | active | 2026-08-29 | 1KB |
+| `factor_rotation_registry.json` | 2계층 FR_XXXX 등록 레지스트리(현행 v6146B, 06-13 갱신) | active | 2026-08-09 | 5KB |
 | `live_track/STR_1715_AR_on_M4_R05_overlay_PG2/` | holdout falsification 1호 등록(구간 [0.39,3.16]) 라이브트랙 — measurement-graduation §3 규약상 불변 봉인 | active | 2026-07-13 | 2KB |
 | `module_catalog.json` | register_module 공용계약의 모듈 카탈로그(SOT) — 계약 floor 통과 모듈 표준 등록부, 07-03 갱신 | active | 2026-08-24 | 619KB |
 | `module_quarantine.json` | register_module 계약 미충족 산출물 격리 보존소(v8.1 헌법이 보존 명시) | active | 2026-08-23 | 161KB |
