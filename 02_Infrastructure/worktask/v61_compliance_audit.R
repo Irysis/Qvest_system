@@ -97,14 +97,16 @@ audit_p1_selection_freedom <- function(wt_id) {
   )
 }
 
-# ─── P2 Data Separation ─────────────────────────────────
-# 판정 3분기 (구 구현은 앞 두 개를 하나로 뭉개 "파일 없음 = clean" 으로 내려앉혔다):
-#   ① trail 미가동  → pass = NA  (SKIP, "못 쟀다")   ← 구 결함이 여기를 PASS 로 위장
-#   ② trail 가동 + 해당 WT 기록 없음 → pass = TRUE   ("실제로 접근 없음")
-#   ③ 기록 있음 → 위반 role 유무로 TRUE/FALSE
-# trail 가동 여부의 근거 = 훅/R writer 가 매 발화마다 갱신하는 heartbeat 파일.
-# 이게 없으면 "접근 0건"과 "검출기 사망"은 원리적으로 구별 불가다.
+# ─── P2 Data Separation — ★RETIRED (v10 2026-08-29) ─────────────────────────
+# lockbox 제도 폐지(도훈 "lock box 개념은 삭제. 반박 금지") — 이 축은 판정 대상이
+# 사라졌다. 항상 pass = NA + reason = "retired" 를 반환한다(축 번호는 보존 —
+# 리포트 스키마 호환). 구 3분기 판정 로직은 git 사료(pre-v10-2layer).
 audit_p2_data_separation <- function(wt_id) {
+  return(list(principle = "P2", pass = NA,
+              reason = "retired: lockbox 제도 폐지 (v10 2026-08-29 도훈 지시) — 판정 대상 없음"))
+}
+
+.audit_p2_data_separation_retired_v9 <- function(wt_id) {
   trail <- qvest_lockbox_trail_state(root = V61_ROOT)
   log_path <- qvest_lockbox_log(wt_id, root = V61_ROOT)
 

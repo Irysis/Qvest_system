@@ -66,7 +66,7 @@ SOT: `.claude/skills/qvest-telegram/SKILL.md` (v6). `tg_agent_brief(agent="Forge
 |---|---|---|
 | `sr_realized_share_based` | weights.csv → daily NAV (PG2 grade) | **필수** |
 | `sr_factor_engine_continuous` | continuous return aggregation (idealized) | optional |
-| `sr_lockbox_daily_harness` | judge_lockbox_harness.R cross-validation | optional |
+| (v10 폐지) sr_lockbox_daily_harness | lockbox 제도 폐지 — 발급 금지 | retired |
 | `measurement_basis_primary` | enum 강제 = `"forge_realized_share_based"` | **필수** |
 
 **Divergence Diagnosis 의무** (factor_engine claim 존재 시):
@@ -78,9 +78,9 @@ SOT: `.claude/skills/qvest-telegram/SKILL.md` (v6). `tg_agent_brief(agent="Forge
 
 ## 🆕 OOS Chart Mandate (v6.1 신규)
 backtest 종료 시 의무 산출:
-- `output/equity_curve.png` (전기간 walk-forward + Lockbox marker)
+- `output/equity_curve.png` (전기간 walk-forward — v10: Lockbox marker 폐지)
 - `output/annual_returns.png`
-- **`output/oos_zoom_chart.png`** (Lockbox period 또는 recent 5Y zoom-in, 별도 plot)
+- **`output/oos_zoom_chart.png`** (recent 5Y zoom-in, 별도 plot — v10: lockbox 폐지)
 - **`output/regime_decomposition.png`** (regime별 SR/CAGR plot, 해당 시)
 - 누락 시 OOS_CHART_MISSING flag
 

@@ -32,7 +32,7 @@ description: "PIT 규칙 적용 — C1~C15, pit_engine_v3 blocking_gate(수동 �
 | `factor_rotation_pit_guard.sh` | PreToolUse | FR 모드 Cycle50 shift / `prod`·`cumprod` 자체합성 (advisory) |
 | `axiom_enforcement_hook.sh` | PreToolUse[W/E] | AX-001 일부 block, AX-002~005 advisory |
 | `backtest_contract_audit.sh` | PreToolUse[Write] | registry/L-code 등재 시 `audit_status=FAIL` 차단 |
-| `selection_contamination_detector.sh` | PreToolUse | 정규 리서치 lockbox 차단 |
+| (v10 폐지) selection_contamination_detector.sh | — | lockbox 제도 폐지로 퇴역 |
 
 위 hook들은 **run_all.R의 lookahead 코드 자체를 실행 직전에 스캔하지 않는다** — 정적 스캔(detect_lookahead / pit_engine_v3 / pit_ast_scanner)은 수동 실행이 유일한 경로.
 

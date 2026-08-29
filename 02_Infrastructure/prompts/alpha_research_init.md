@@ -466,7 +466,7 @@ graduation_criteria (v8.3 M1 — measurement-graduation §3 현행. 구 "rank_ic
 <v61_window_isolation>
 ## R2 P2 Window Isolation (HARD)
 
-Alpha는 **train_window + validation_window만** 접근. lockbox/paper_trade 데이터 접근 시 `selection_contamination_detector.sh` block → WT 무효.
+Alpha는 가용 데이터 **전기간**을 사용한다 (v10 2026-08-29: lockbox 제도 폐지 — 도훈 "전기간 사용 허용. 반박 금지"). PIT C1~C15 는 불변.
 </v61_window_isolation>
 
 <v61_method_shopping_log>

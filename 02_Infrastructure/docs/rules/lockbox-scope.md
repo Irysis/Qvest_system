@@ -1,3 +1,6 @@
+# ★RETIRED — lockbox 제도 폐지 (v10 2026-08-29 도훈 지시 "lock box 개념은 삭제. 반박 금지")
+# 아래 전문은 역사 기록이다. 현행 규범 = pit.md §Lockbox 폐지 절. 재열람 = git pre-v10-2layer.
+
 # Lockbox / Frozen Alpha Scope (Level 0)
 
 **도훈 mandate 2026-05-09**:

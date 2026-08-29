@@ -124,3 +124,9 @@
 2. 라우터만 되돌리기: 이 폴더의 `router_dispatch_v1.2.json` 을 `02_Infrastructure/hooks/policies/router_dispatch.json` 으로 복사 + `settings.json` PreToolUse 첫 그룹에 v8 라우터 command 재삽입(`settings.json.v8_20260823.json` L50-58).
 3. 개별 1종만 되돌리기: §3 표의 `구 등록` matcher + `재등록 suffix` 로 위 조각을 만들어 해당 이벤트에 추가. **`.claude/settings.json` 의 `_doc*` 문자열에는 `.sh` 파일명을 쓰지 말 것** — `boot_currency_check.sh` C6 가 이 파일의 `[A-Za-z0-9_]+\.sh` 토큰을 세어 CLAUDE.md 선언과 대조하므로 주석에 적힌 이름이 총계를 부풀린다.
 4. 되돌린 뒤 반드시 함께 갱신: `CLAUDE.md` 의 `settings.json N distinct .sh` 줄 · `harness_health.sh` `REQUIRED_HOOKS` · `hook_fire_coverage.sh` `EXPECTED_DEFAULT`/`UNCOVERED` · `memory_knowledge_health.R` W7.
+
+## v10 (2026-08-29) — lockbox 제도 폐지 (도훈 지시 "lock box 개념은 삭제. 반박 금지")
+- `lockbox_audit_trail.sh` / `lockbox_post_judge_seal.sh` / `selection_contamination_detector.sh` / `lockbox_paths.sh`: **영구 퇴역** (재등록 금지 — 제도 자체가 소멸). 파일은 RETIRED 배너와 함께 존치.
+- 관련 R: `lockbox_paths.R`·`judge_oos_helper.R`·`judge_lockbox_harness.R` RETIRED, `windowing.R` 3-window 재작성(no-op stub), `v61_compliance_audit.R` P2 축 retired.
+- 검사: `test_lockbox_audit_path.R` 퇴역(SUITES 제거).
+- ⚠보존: `overlay_pit_guard.R`(C5 SIGNAL_CUTOFF = PIT 기계) + `overlay_pit_grep.sh` 등록 훅 — lockbox 아님, 무변경.

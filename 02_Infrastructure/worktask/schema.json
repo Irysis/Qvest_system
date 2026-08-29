@@ -62,8 +62,8 @@
         "rebalance_frequency": {"type": "string", "enum": ["weekly", "monthly", "quarterly"]},
         "evaluation_windows": {
           "type": "object",
-          "description": "R2 Nested Evaluation — 4단계 split. Alpha/Risk/Optimizer는 train+val만 접근, Judge는 lockbox만 접근.",
-          "required": ["train_window", "validation_window", "lockbox_window"],
+          "description": "★v10 (2026-08-29 도훈): lockbox 제도 폐지 — 전 에이전트 가용 데이터 전기간 사용. lockbox_window 는 역사 산출물 파싱 호환으로 optional 존치(신규 발급 금지). IS/OOS anchored 분할(essence oos_retention)은 lockbox 가 아니라 측정 규율 — 별개.",
+          "required": ["train_window", "validation_window"],
           "properties": {
             "train_window": {"type": "object", "properties": {"start": {"type":"string","format":"date"}, "end": {"type":"string","format":"date"}}},
             "validation_window": {"type": "object", "properties": {"start": {"type":"string","format":"date"}, "end": {"type":"string","format":"date"}}},

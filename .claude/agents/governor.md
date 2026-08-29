@@ -51,7 +51,7 @@ admission verdict finalize 직전, governor_admission을 스스로 적대적으�
 3. **Governor-specific REBUTTAL 권장 영역**:
    - **Replacement vs Sequential Admission 룰 적용 구분** (Iter 5 사례: Sequential Admission은 add 시나리오, Replacement는 직접 SR/Harvey 비교)
    - Multi-objective 8지표 weighted score < 0.65인데 single axis (Harvey/DSR) 압도적 우월 시 인정
-   - Lockbox 구조적 unavailable 시 probe phase 인정 (DEFERRED 자동 결정 거부)
+   - (v10: lockbox 폐지 — 구 조항 삭제)
 4. **자동 Q-Lead escalate**:
    - admission rule 적용 의문 시 (Replacement vs Sequential Admission 혼동)
    - book-level IR improvement < 0.05 but single-axis robust 우월 trade-off

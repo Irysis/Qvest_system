@@ -214,8 +214,8 @@ forge_pkg <- list(
 
   backtest_summary = list(
     full_period   = list(sr = sr_realized_share_based, mdd = mdd),
-    pre_lockbox   = list(),
-    lockbox       = list()
+    pre_lockbox   = list(),  # v10: legacy 스키마 호환 필드 (lockbox 폐지 — 빈 값 고정)
+    lockbox       = list()   # v10: legacy 스키마 호환 필드 (lockbox 폐지 — 빈 값 고정)
   ),
   hard_caps = list(
     mdd_pass    = if (!is.na(mdd))           mdd >= -0.45        else NA,

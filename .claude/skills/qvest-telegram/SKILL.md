@@ -345,7 +345,7 @@ R `02_Infrastructure/telegram/telegram_notify.R::.TG_CONFIG` list와 1:1 동기�
 | screen-tier / 스크린 등급 | 신호는 있으나 자본 투입 기준 미달 — 참고용 보관 등급 |
 | admission / admit | 실제 운용 목록(북) 편입 승인 |
 | book / 운용 북 | 실제 자본이 배정된 전략 묶음 |
-| lockbox | 검증 전 결과를 미리 못 보게 봉인하는 장치 |
+| lockbox | (v10 폐지) 구 봉인 장치 — 역사 메시지에서만 등장 |
 | long-only | 매수만 하는 운용 (공매도 없음) |
 | 워크포워드 / walk-forward | 시간 순서대로 한 구간씩 전진하며 검증하는 방식 |
 | 잔차 / residual | 시장·공통 요인으로 설명되고 남은 고유 부분 |

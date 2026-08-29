@@ -618,7 +618,7 @@ SUITES=(
   #   → 237/237 WT 가 "no_lockbox_access (clean)" 로 구조적 PASS. **P2 는 실패할 수 없었다.**
   #   경로 리터럴 동기화만 보는 정적 검사로는 부족하다 — 실제로 훅을 돌려 위반을 주입하고
   #   FAIL 이 나오는지, 그리고 구판 로직 재현본이 같은 주입에서 PASS 로 뒤집히는지까지 본다.
-  "08_Tests/hooks/test_lockbox_audit_path.R"
+  # (v10 2026-08-29) test_lockbox_audit_path.R 퇴역 — lockbox 제도 폐지 (파일 존치, 사료)
   # 2026-08-02 추가: tg_send_rich 미지원-entity 스캔 오프셋 계약.
   #   원 결함 = TRE(기본 엔진)가 위치를 **UTF-16 코드유닛**으로 세는데 regmatches/substr 은
   #   **코드포인트**로 잘라, 매치 앞 non-BMP(이모지) N개마다 추출 창이 N칸 밀렸다.

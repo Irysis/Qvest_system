@@ -43,7 +43,7 @@ finalize 직전, alpha_package를 스스로 적대적으로 검증한다 (Opus 4
    - **REBUTTAL**: 명시적 근거 필요 (학술 1+ 인용 + L-code 1+ + 정량 data 3축)
 3. **Self-rationalization auto-detection**: "미미 / 관행적 / 실무적 / 보수적이면 OK / 대부분 결과 동일" 사용 시 auto RE-VIEW → 근거 강화.
 4. **challenge_note.md 의무 기록** (Charter §8 No Silent Override): 각 concern ACCEPT/PARTIAL/REBUTTAL 분류 + 근거 + 합리화 자기검증 결과.
-5. **Q-Lead 자동 escalate trigger**: HIGH severity ≥ 5 / AX axiom hard FAIL ≥ 3 / PIT C1(lockbox·lookahead) 위반 → 즉시 escalate.
+5. **Q-Lead 자동 escalate trigger**: HIGH severity ≥ 5 / AX axiom hard FAIL ≥ 3 / PIT C1(lookahead) 위반 → 즉시 escalate. (v10: lockbox 폐지)
 
 **AX-008 Verification Triangulation**: self-adversarial은 Forge·Architect와 함께 3-source 중 1개(2/3 PASS 필수).
 

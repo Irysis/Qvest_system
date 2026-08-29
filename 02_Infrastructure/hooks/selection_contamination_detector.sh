@@ -1,4 +1,7 @@
 #!/usr/bin/env bash
+# ★RETIRED (v10 2026-08-29, 도훈 지시 "lock box 개념은 삭제. 반박 금지")
+#   lockbox 제도 폐지 — settings.json 미등록 + 재등록 금지. 파일은 사료 존치.
+#   재열람 = git 태그 pre-v10-2layer.
 # selection_contamination_detector.sh — Lockbox 데이터 오염 차단 (Level 3 hard block)
 # v6.1 R2 P2 / v6.5 (2026-05-09 도훈 mandate scope 정정)
 #

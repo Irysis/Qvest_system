@@ -1,4 +1,7 @@
 #!/usr/bin/env bash
+# ★RETIRED (v10 2026-08-29, 도훈 지시 "lock box 개념은 삭제. 반박 금지")
+#   lockbox 제도 폐지 — settings.json 미등록 + 재등록 금지. 파일은 사료 존치.
+#   재열람 = git 태그 pre-v10-2layer.
 # (v8.2.1 HOOK-P0-1) bare python3 → $QVEST_PY_BIN (Windows Store 스텁 fail-open 방지)
 if [ -z "${QVEST_PY_BIN:-}" ]; then
   QVEST_PY_BIN="${QVEST_PY:-}"; QVEST_PY_BIN="${QVEST_PY_BIN//\//}"

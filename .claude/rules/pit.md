@@ -61,21 +61,15 @@
 - 예외: 전략 자체가 국면을 alpha source로 사용 시만 Regime 허용
 - **오버레이는 S5 Mutation 또는 v6.4 Optimizer/Forge에서만**
 
-## Lockbox / Frozen Alpha Scope (도훈 mandate 2026-05-09)
+## Lockbox — 폐지 (v10 2026-08-29 도훈 지시)
 
-**원칙**: Lockbox / Frozen alpha (SIGNAL_CUTOFF) 정책은 **정규 리서치 단계 (alpha-research / risk-research / optimizer-research)** 에만 적용.
+**lockbox / Frozen Alpha(봉인 창) 제도는 완전 폐지됐다** ("lock box 개념은 삭제. 전략 구현 시 가용 가능한 데이터를 모두 활용할 것. 전기간 사용 허용. 반박 금지"). 전 에이전트·전 단계가 가용 데이터 전기간을 사용한다.
 
-**운용·트래킹 단계 폐기**:
-- forge (전기간 백테)
-- monitoring (라이브 성과 트래킹)
-- execution (주문 schedule)
-- Q-Lead (집계 보고 / 도훈 mandate 응답)
-
-이 단계들은 **최신 sig_date까지 자동 갱신** 의무 (lockbox 무관).
-
-**상세 SOT**: `02_Infrastructure/docs/rules/lockbox-scope.md`
-
-**Hook 계층 (2026-07-24 도훈 승인 C2 개정)**: 구 `selection_contamination_detector.sh`(PreToolUse Read)는 **등록 해제** — 2026-07-03 감사가 확정한 대로 agent marker(`/tmp/qvest_current_agent_{pid}`) writer 부재 + subagent가 별도 OS 프로세스가 아니라 PPID 식별 자체가 불가한 구조적 상시-allow였음(파일 FS retain, 재등록 시 식별 메커니즘부터 재설계). lockbox 접근 기록은 `lockbox_audit_trail.sh`가 전담했으나 **2026-08-23(v9) 등록 해제**(모든 Read마다 서브프로세스 1개인데 판정 기능이 없음 — 07-24 "유지" 승인을 대체하는 도훈 결정 ④. **파일은 존치**, 재등록 레시피 = `02_Infrastructure/hooks/_archive_v8_enforcement/MANIFEST.md`). **실제 방어선** = R 계약(essence_score/registry_writer) + 게이트급 훅(safety_guard·backtest_contract_audit·legacy_write_block·discovery_graduation_gate·worktask_constraint_enforcer) + judge 유일 lockbox 심사 + 수동 confirm. ★**2026-08-24 정정 — 이 문장은 그동안 사실이 아니었다.** ①`backtest_contract_audit`는 2026-08-23 플랜 D-d 로 **등록 해제**돼 있었는데 이 줄은 계속 방어선으로 세고 있었다(오탐 원인은 `.py` 자체합성 가지였고 그 가지만 제거해 재등록). ②더 근본적으로, 그 훅은 **한 번도 판정한 적이 없었다** — 여러 줄 `Rscript -e` 가 이 환경에서 rc=139 로 죽어 ERR trap → fail-closed 차단으로만 반응했다. ③상류 계기인 `audit_bt_result` Check 15 도 2026-04-30 이래 0회 실행이라 이 층에 넘길 입력 자체가 없었다. 세 층이 동시에 비어 있었다. 이제 셋 다 발화 실증(위반 주입 + 돌연변이 통제)을 갖는다 — **양성 대조 없는 계기는 방어선으로 세지 않는다**. 여기에 판별형 게이트 `weight_method_gate.R`(EW 동치 비중방법 차단)이 추가된다 — 제약형 훅은 EW 를 구조적으로 통과시키기 때문이다. `agent_role_guard`(라우터 W/E)는 등록 유지 — 동일 marker 한계는 07-03 문서화대로 인지 상태(AGT-01 env-주입 수리가 후속 큐).
+- **PIT C1~C15 는 계층 무관 불변** — lockbox 폐지는 미래참조 허용이 아니다. 검증 주체 = Judge(PIT 전담 에이전트, A등급 후 스폰).
+- ⚠혼동 금지: C5 오버레이 신호 타이밍의 `overlay_signal_cutoff()`(`overlay_pit_guard.R`) + 등록 훅 `overlay_pit_grep.sh`는 lockbox 가 아니라 **살아있는 PIT 기계** — 불변.
+- IS/OOS anchored 분할(`essence_score.R` oos_retention)도 lockbox 가 아니라 측정 규율 — 불변.
+- 구 제도 전문·훅 계층 사연(2026-08-24 "세 층이 동시에 비어 있었다" 정정 포함) = `02_Infrastructure/docs/rules/lockbox-scope.md`(RETIRED 사료) + git 태그 `pre-v10-2layer`.
+- (존치 교훈) **양성 대조 없는 계기는 방어선으로 세지 않는다** — 발화 실증(위반 주입 + 돌연변이 통제) 없는 훅·검사기를 방어선 목록에 올리지 말 것.
 
 ## V6 Gap-Directed 가설
 

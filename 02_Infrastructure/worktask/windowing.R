@@ -1,52 +1,30 @@
 #==============================================================================
-# QEPM Work Task Windowing — v6.1 R2 P2 Data Separation
-# 2026-04-24
+# QEPM Work Task Windowing — v10 (2026-08-29 도훈 지시: lockbox 제도 폐지)
 #
-# 4-Window split: train / validation / lockbox / paper-trade
+# 3-Window split: train / validation / paper-trade
 #
-# - Alpha / Risk / Optimizer agents → train + validation만 접근
-# - Judge → lockbox만 접근
-# - Execution Agent → paper_trade만 접근
-#
-# Lockbox 오염 시 WT 전체 무효 (selection_contamination_detector.sh 강제)
+# ★v10 변경: lockbox 창 산출·접근기록·봉인 검사 전부 폐지 — 모든 에이전트는
+#   가용 데이터 **전기간**을 쓴다(도훈 "lock box 개념은 삭제. 반박 금지").
+#   - IS/OOS anchored 분할(essence_score oos_retention)은 lockbox 가 아니라
+#     측정 규율이다 — 그쪽은 essence_score.R 이 자체 수행하며 여기와 무관.
+#   - log_lockbox_access / is_lockbox_sealed 는 잔존 호출자가 죽지 않도록
+#     no-op stub 으로만 존치(신규 코드에서 호출 금지).
+#   - 구판(4-window + lockbox_paths.R 연동)은 git 사료: pre-v10-2layer.
 #==============================================================================
 
 suppressPackageStartupMessages({
   library(jsonlite)
 })
 
-# ─── 경로 계약 (r-portability.md 금칙 ③) ────────────────────────────────────
-# lockbox 접근기록 경로는 bash 훅과 **공유**되므로 리터럴을 여기 두지 않는다.
-# 단일 정의 = worktask/lockbox_paths.R (bash 짝 = hooks/lockbox_paths.sh).
-.wnd_find_root <- function() {
-  marker <- "02_Infrastructure/hooks/qvest_hook_router.py"
-  cands <- c(Sys.getenv("CLAUDE_PROJECT_DIR", unset = ""),
-             Sys.getenv("QM_ROOT", unset = ""))
-  for (cand in cands[nzchar(cands)]) {
-    p <- normalizePath(gsub("\\\\", "/", cand), winslash = "/", mustWork = FALSE)
-    if (file.exists(file.path(p, marker))) return(p)
-  }
-  here <- normalizePath(getwd(), winslash = "/", mustWork = FALSE)
-  repeat {
-    if (file.exists(file.path(here, marker))) return(here)
-    parent <- dirname(here)
-    if (identical(parent, here)) break
-    here <- parent
-  }
-  stop("[windowing] project root 미발견 — CLAUDE_PROJECT_DIR 또는 QM_ROOT 설정 필요")
-}
-if (!exists("qvest_lockbox_log", mode = "function")) {
-  source(file.path(.wnd_find_root(), "02_Infrastructure/worktask/lockbox_paths.R"))
-}
-
 # ─── Split windows 자동 계산 ─────────────────────────────
 # as_of_date 기준 과거로 거슬러 split.
 # train_start가 주어지면 train을 그 날짜부터 시작 (train_years 무시). 기본: 1990-01-04 (benchmark 시작).
+# lockbox_years 인자는 하위호환으로만 받고 **무시**한다(v10 — 창을 만들지 않는다).
 split_windows <- function(as_of_date,
                           train_start = "1990-01-04",
                           train_years = NULL,
                           val_years = 2,
-                          lockbox_years = 2,
+                          lockbox_years = 0,
                           paper_months = 3) {
 
   asof <- as.Date(as_of_date)
@@ -54,10 +32,7 @@ split_windows <- function(as_of_date,
   paper_end <- asof
   paper_start <- seq(paper_end, length = 2, by = sprintf("-%d months", paper_months))[2]
 
-  lockbox_end <- paper_start - 1
-  lockbox_start <- seq(lockbox_end, length = 2, by = sprintf("-%d years", lockbox_years))[2]
-
-  val_end <- lockbox_start - 1
+  val_end <- paper_start - 1
   val_start <- seq(val_end, length = 2, by = sprintf("-%d years", val_years))[2]
 
   train_end <- val_start - 1
@@ -78,23 +53,17 @@ split_windows <- function(as_of_date,
       start = format(train_start, "%Y-%m-%d"),
       end = format(train_end, "%Y-%m-%d"),
       years = round(train_years_actual, 2),
-      role = "factor_selection + signal_engineering (Alpha)"
+      role = "factor_selection + signal_engineering (Alpha) — v10: 전기간 접근 허용"
     ),
     validation_window = list(
       start = format(val_start, "%Y-%m-%d"),
       end = format(val_end, "%Y-%m-%d"),
       role = "model_selection + hyperparam tuning (Risk + Optimizer)"
     ),
-    lockbox_window = list(
-      start = format(lockbox_start, "%Y-%m-%d"),
-      end = format(lockbox_end, "%Y-%m-%d"),
-      sealed = TRUE,
-      role = "final pass/fail judgment (Judge only)"
-    ),
     paper_trade_window = list(
       start = format(paper_start, "%Y-%m-%d"),
       end = format(paper_end, "%Y-%m-%d"),
-      role = "pre-deployment validation (Execution)"
+      role = "post-registration tracking (BOOK)"
     )
   )
 }
@@ -105,35 +74,18 @@ filter_by_window <- function(data, date_col, window) {
        as.Date(data[[date_col]]) <= as.Date(window$end), ]
 }
 
-# ─── Lockbox access 로그 ─────────────────────────────────
+# ─── v10 no-op stubs (구 lockbox 계약 잔존 호출자 보호 — 신규 호출 금지) ────
 log_lockbox_access <- function(task_id, agent_name, file_path) {
-  # 경로는 lockbox_paths.R 단일 정의 경유 (구 선행슬래시 tmp 리터럴 → Windows R 은 C:/tmp,
-  # bash 훅은 AppData\Local\Temp 로 갈렸다. 2026-08-02 수리)
-  log_file <- qvest_lockbox_log(task_id, create_dir = TRUE)
-  entry <- sprintf("%s | %s | %s\n",
-                   format(Sys.time(), "%Y-%m-%dT%H:%M:%S"),
-                   agent_name,
-                   file_path)
-  cat(entry, file = log_file, append = TRUE)
-  # 발화 사실 기록 — 감사가 "기록 0건"과 "검출기 사망"을 구별하는 근거 (bash 훅과 동일 계약)
-  cat(format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z"), "\n",
-      file = qvest_lockbox_heartbeat_path(), sep = "")
-  invisible(log_file)
+  # RETIRED (v10 2026-08-29): lockbox 폐지 — 기록하지 않는다.
+  invisible(NULL)
 }
 
-# ─── Sealed 상태 확인 ───────────────────────────────────
 is_lockbox_sealed <- function(task_id) {
-  status_path <- sprintf("qepm/mailbox/worktask/%s/status.json", task_id)
-  if (!file.exists(status_path)) return(FALSE)
-  st <- fromJSON(status_path, simplifyVector = TRUE)
-  # Judge가 판정 완료했으면 sealed
-  st$current_phase %in% c("JUDGE_PASSED", "JUDGE_FAILED",
-                          "GOVERNOR_PENDING", "GOVERNOR_ADMITTED",
-                          "GOVERNOR_REJECTED", "COMPLETED")
+  # RETIRED (v10 2026-08-29): lockbox 폐지 — 항상 FALSE.
+  FALSE
 }
 
-cat("[windowing.R] Loaded (v1.1 — train_start default 1990-01-04). Functions:\n")
-cat("  split_windows(as_of_date, train_start='1990-01-04', val_years=2, lockbox_years=2, paper_months=3)\n")
+cat("[windowing.R] Loaded (v10 — lockbox 폐지, 3-window). Functions:\n")
+cat("  split_windows(as_of_date, train_start='1990-01-04', val_years=2, paper_months=3)\n")
 cat("  filter_by_window(data, date_col, window)\n")
-cat("  log_lockbox_access(task_id, agent_name, file_path)\n")
-cat("  is_lockbox_sealed(task_id)\n")
+cat("  (stub) log_lockbox_access / is_lockbox_sealed — RETIRED no-op\n")

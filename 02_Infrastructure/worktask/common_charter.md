@@ -105,7 +105,7 @@ APT 실무: 거시요인 접근보다 **기업특성(fundamental) 접근**이 OO
 | `forge_realized_share_based` | weights.csv → daily share-based NAV | ✅ admission grade |
 | `factor_engine_continuous` | continuous return aggregation (idealized) | ❌ alpha signal meta only |
 | `optimizer_walk_forward_simulation` | Optimizer 자체 grid simulation | ❌ research only |
-| `lockbox_daily_harness` | judge_lockbox_harness.R 측정 | ✅ cross-validation |
+| (v10 폐지) lockbox_daily_harness | lockbox 제도 폐지 | retired |
 
 **위반 = AX-002 프로세스 우회 = 판단의 미래참조 동급**.
 

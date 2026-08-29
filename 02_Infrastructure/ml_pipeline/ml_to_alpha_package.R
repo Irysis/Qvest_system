@@ -1,3 +1,6 @@
+# ★v10 주석 (2026-08-29): 이 파일의 "lockbox" 는 폐지된 WT lockbox 제도가 아니라
+#   ML walk-forward CV 의 held-out 폴드 명칭(측정 규율)이다 — 기능 무변경.
+#   WT lockbox(창 봉인·접근 감사)는 v10 에서 완전 폐지됐다.
 #==============================================================================
 # ml_to_alpha_package.R -- Python ML pipeline → R alpha-research bridge
 #

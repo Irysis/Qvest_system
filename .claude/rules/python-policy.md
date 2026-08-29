@@ -44,7 +44,7 @@ paths:
   - C1 rolling/expanding window only. C2 same-day circular 금지.
   - **data.table::shift 부호 규칙**(`02_Infrastructure/docs/rules/data_table_shift_convention.md`)의 Python 등가: `df.shift(periods)` / `.groupby().shift()` 방향 명시. forward label은 `validate_label_direction()` + `bear_date_audit.R` PASS 의무 (Cycle 50 lookahead 사건 재발 방지 — 언어 무관).
   - C14 IC Usable_Date ≤ sig_date. C15 Factor DB는 `load_month_factors()` 경유 (Python에서도 — ML daily parquet carve-out은 명시 승인 hypothesis만).
-- **lockbox-scope** (`02_Infrastructure/docs/rules/lockbox-scope.md`): alpha/risk/optimizer 정규 리서치는 SIGNAL_CUTOFF 적용, forge/monitoring은 폐기 — 언어 무관.
+- **lockbox 폐지 (v10 2026-08-29)**: lockbox/SIGNAL_CUTOFF 봉인 제도는 완전 폐지 — 전기간 사용. PIT C1~C15 는 언어 무관 불변 (C5 overlay_signal_cutoff 는 PIT 기계로 존치).
 
 ## 4. Backtest Contract — 자체합성 금지 (최우선)
 
@@ -61,10 +61,10 @@ paths:
 - hook 미커버 영역은 본 rule + Self-Adversarial Challenge(v8.2 — Codex Round 제거·대체, `02_Infrastructure/docs/rules/codex-round.md`)로 보강 (warn-level).
 
 ## 6. 위반 시
-PIT/자체합성/lockbox 위반은 **언어 무관 AX-002 동급**. 즉시 중단 → 결과 무효 → 재실행.
+PIT/자체합성 위반은 **언어 무관 AX-002 동급**. 즉시 중단 → 결과 무효 → 재실행. (v10: lockbox 항목 폐지)
 
 ## 참조
-- `.claude/rules/pit.md` / `backtest-contract.md` / `data_table_shift_convention.md` / `lockbox-scope.md` / `02_Infrastructure/docs/rules/answer-principles.md`
+- `.claude/rules/pit.md` / `backtest-contract.md` / `data_table_shift_convention.md` / `02_Infrastructure/docs/rules/answer-principles.md`
 - `02_Infrastructure/contracts/` (R bridge — build/audit/save/register)
 - `02_Infrastructure/docs/qvest_v8_0_upgrade_plan.md` WS1
 
