@@ -1,4 +1,6 @@
 #!/bin/bash
+# ★RETIRED (v10 2026-08-29 도훈): 무인은 수집까지만 — morning_run 배선 제거. 파일 사료 존치.
+#   재개 레시피 = git pre-v10-2layer. (비-alpha 레인 폐지 — 수집은 팩터전략 단일 목적)
 # mode_queue_research_run.sh — 리서치 큐 무인 개시 (도훈 결정 2026-08-21 / 확장 08-22).
 #   레인: method_measure(측정 백로그) · alpha(alpha-hypothesis→alpha-research) ·
 #         optimizer · risk · regime. 정본 진입점 = research-queue-pending.

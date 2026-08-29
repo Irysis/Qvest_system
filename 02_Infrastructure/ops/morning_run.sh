@@ -190,52 +190,16 @@ stage_result() {   # $1=표시명 $2=exit코드 $3=경보 컴포넌트명
     echo "      paper_router skip (missing)"
   fi
 
-  echo "[0.55/3] factor_deep_recheck_run.sh (2축 tier-2: tier-1 uncertain 더미 심층 재검 → testable 승격, 도훈 mandate 2026-06-19)"
-  if [ "${QVEST_FACTOR_RECHECK_ENABLE:-0}" = "1" ] && [ -f "$BASE/02_Infrastructure/ops/factor_deep_recheck_run.sh" ]; then
-    bash "$BASE/02_Infrastructure/ops/factor_deep_recheck_run.sh" >> /tmp/qm_factor_recheck.log 2>&1
-    stage_result "factor_recheck" "$?" "factor_recheck"
-  else
-    echo "      factor_recheck skip (QVEST_FACTOR_RECHECK_ENABLE!=1 or missing)"
-  fi
-
-  echo "[0.56/3] alpha_search_queue_run.sh (팩터추출 → alpha-search 모드 가동: 큐 testable 자동 백테 + 5층 게이트, 도훈 mandate 2026-06-19)"
-  if [ "${QVEST_ALPHA_QUEUE_ENABLE:-0}" = "1" ] && [ -f "$BASE/02_Infrastructure/ops/alpha_search_queue_run.sh" ]; then
-    bash "$BASE/02_Infrastructure/ops/alpha_search_queue_run.sh" >> /tmp/qm_alpha_queue.log 2>&1
-    stage_result "alpha_queue" "$?" "alpha_queue"
-  else
-    echo "      alpha_queue skip (QVEST_ALPHA_QUEUE_ENABLE!=1 or missing)"
-  fi
-
-  # -- [0.57/3] mode_queue 리서치 배분 (2026-08-21 도훈 결정 "무인 개시까지", 배선 08-22)
-  #   끊긴 칸이었다: paper_router 가 opt/risk/regime 큐를 쌓는데 소비자가 세션 수동뿐이라
-  #   12일간 method_registry 등재 0건(누적 고유 93편 vs 원장 16건). alpha 레인은 [0.56] 이
-  #   이미 무인이므로 **같은 수준**으로 맞춘다. governor/book_state 도달 경로 없음(러너 하드가드).
-  #   ★무인 ON 은 여기(무인 체인)에만 스코프한다 — 시스템 환경변수로 켜면 수동 실행까지
-  #     따라 켜져서 사람이 의도하지 않은 라운드가 돈다.
-  #   ★레인 로테이션 (2026-08-24 v9.2 S1d) — 기아 해소.
-  #     실측: pending 170 중 qepm_dossier 71 이 상한 2(러너 :93)를 **영구 점유**해
-  #     risk 39 · optimizer 32 · regime 15 = 86건이 순번을 못 받았다(정렬이 고정이라
-  #     상한을 6으로 올려도 6건 전부 qepm_dossier 가 먹는다 — 상향은 해가 아니다).
-  #     러너는 --lane 을 이미 받고 쉼표 다중도 되므로 **러너·프롬프트·술어 수정 0**으로 푼다.
-  #     러너 자체 뮤텍스가 두 호출을 직렬화한다. 롤백 = 이 블록을 구판 1회 호출로 되돌림.
-  #     ※ method_measure 는 S3 생성 어댑터의 **측정 레인**이라 qepm_dossier 와 같은 군에
-  #       두면 구조적으로 기아 — 1군 배치(그러지 않으면 새 방법론이 등재만 되고 영영 안 돈다).
-  #     ※ adapter_backlog(29) 도 같은 이유로 1군. S3 가 신설한 레인인데
-  #       adapter_registration_queue.json 은 **생산자만 있고 소비자 0** 이었다 — 어느 군에도
-  #       안 넣으면 레인만 새로 생기고 소비는 그대로 0 이라 배선한 의미가 없다.
-  #       (레인 합 검산: 71+39+32+29+15+11+2 = 199. 1군 97+29=126 · 2군 73.)
-  #     ※ 부수효과: research_run_notify.R 가 lane 을 arg1 로 받아 레인별 텔레그램이 자동 분화.
-  for _LANE_GROUP in "risk,optimizer,regime,method_measure,adapter_backlog" "qepm_dossier,paper_promotion"; do
-    echo "[0.57/3] mode_queue_research_run.sh --lane $_LANE_GROUP"
-    if [ -f "$BASE/02_Infrastructure/ops/mode_queue_research_run.sh" ]; then
-      ( export QVEST_MODE_QUEUE_ENABLE="${QVEST_MODE_QUEUE_ENABLE:-1}"
-        export QVEST_MODE_QUEUE_LANE="$_LANE_GROUP"
-        bash "$BASE/02_Infrastructure/ops/mode_queue_research_run.sh" ) >> /tmp/qm_mode_queue.log 2>&1
-      stage_result "mode_queue" "$?" "mode_queue"
-    else
-      echo "      mode_queue skip (러너 부재)"
-    fi
-  done
+  # ── ★v10 (2026-08-29 도훈 결정): 무인 파이프라인은 **수집(중복제거·큐 적재)까지만** ──
+  #   [0.55] factor_deep_recheck / [0.56] alpha_search_queue(claude -p 자동 리서치) /
+  #   [0.57] mode_queue ×2 / [0.6] paper_research_dispatch+backfill 은 **퇴역** —
+  #   최초 충실구현·강화는 /qvest 세션이 주도한다(1계층 = run_paper_replication +
+  #   reinforce 스킬). 블록 자체를 걷은 이유: mode_queue 는 내부 기본
+  #   QVEST_MODE_QUEUE_ENABLE:-1 (ON) 이라 env 정리만으로는 되살아난다.
+  #   파일은 전부 사료 존치. 재개 레시피 = git pre-v10-2layer 의 이 구간.
+  echo "[0.55/3] factor_deep_recheck — 퇴역 (v10 2026-08-29: 무인은 수집까지만)"
+  echo "[0.56/3] alpha_search_queue — 퇴역 (v10: 리서치는 /qvest 세션 주도)"
+  echo "[0.57/3] mode_queue ×2 — 퇴역 (v10: 비-alpha 레인 폐지 — 수집은 팩터전략 단일 목적)"
 
   # -- [0.58/3] 팩터 근거 환류 (2026-08-22, 도훈 지시 "팩터DB 환류 부재도 같이 처리")
   #   .cache/conditional_ic_matrix.csv(327 팩터 실측)가 factor_registry 로 돌아오지 않아
@@ -249,30 +213,7 @@ stage_result() {   # $1=표시명 $2=exit코드 $3=경보 컴포넌트명
     echo "      factor_evidence skip (빌더 부재 또는 QVEST_PY 미설정)"
   fi
 
-  echo "[0.6/3] paper_research_dispatch.R (라우터 큐 → 리서치 액션: optimizer Σ-A/B 자동 + risk/regime flag, 도훈 mandate 2026-06-18)"
-  if [ "${QVEST_PAPER_DISPATCH_ENABLE:-0}" = "1" ] && [ -f "$BASE/02_Infrastructure/ops/paper_research_dispatch.R" ]; then
-    # (2026-08-08) LC_ALL 고정 — cron 은 C 로케일로 들어와 R 이 스크립트의 UTF-8 한글 리터럴을
-    #   **파싱 시점에** 망가뜨린다(실측: LC_ALL=C 에서 "가중 레버 아님" → "j0", 저장된
-    #   research_status_*.json 의 verdict 와 정확히 일치). ★출력단 UTF-8 쓰기로는 못 고친다 —
-    #   손상이 parse 에서 끝나 enc2utf8 이 복구할 게 없다(양쪽 arm 실측 확인). 1252 로케일은
-    #   반대로 바이너리 UTF-8 쓰기를 깨므로 로케일 고정이 유일 정답.
-    #   문자열은 paper_router_run.sh:85 선례와 동일( 'C.UTF-8' 은 이 Windows R 에서 C 로 폴백 — 사용 금지).
-    OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 ARROW_NUM_THREADS=1 R_DATATABLE_NUM_THREADS=1 \
-      LC_ALL='English_United States.utf8' \
-      Rscript "$BASE/02_Infrastructure/ops/paper_research_dispatch.R" >> /tmp/qm_paper_dispatch.log 2>&1
-    stage_result "paper_dispatch" "$?" "paper_dispatch"
-    # (2026-08-13) 백로그 소급 — 위 호출은 **오늘 큐**만 본다. 소비자가 생산자(라우터)보다 먼저
-    #   도는 날이 있고(08-13 실측: dispatch 06:47 → 라우터 큐 07:02), 그날 안에 뒤 틱이 없으면
-    #   그 큐는 영구 미소비로 남는다(06-19 25편 · 07-05 18편 실측). 라우터는 07-10 에 7일 백로그
-    #   스캔을 받았는데 **소비자에는 안 들어가 있었다** — 그 비대칭을 여기서 닫는다.
-    #   창 밖 날짜는 실행하지 않되 목록으로 찍힌다(무음 절단 금지). 전 기간 드레인은 수동 --all.
-    if [ -f "$BASE/02_Infrastructure/ops/paper_dispatch_backfill.sh" ]; then
-      bash "$BASE/02_Infrastructure/ops/paper_dispatch_backfill.sh" >> /tmp/qm_paper_dispatch.log 2>&1
-      stage_result "paper_dispatch_backfill" "$?" "paper_dispatch_backfill"
-    fi
-  else
-    echo "      paper_dispatch skip (QVEST_PAPER_DISPATCH_ENABLE!=1 or missing)"
-  fi
+  echo "[0.6/3] paper_research_dispatch — 퇴역 (v10 2026-08-29: 비-alpha 레인 폐지, 무인은 수집까지)"
 
   # (2026-07-26) 예약작업 *바깥 경계* 점검. 오늘 배선한 계측은 전부 스크립트 *안*이라
   #   "작업이 아예 안 돌았다 / OS가 죽였다"를 볼 수 없다 — 실측 당시 작업 rc를 읽는 코드 0건이었고

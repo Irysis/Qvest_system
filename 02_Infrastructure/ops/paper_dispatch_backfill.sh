@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# ★RETIRED (v10 2026-08-29 도훈): 무인은 수집까지만 — morning_run 배선 제거. 파일 사료 존치.
+#   재개 레시피 = git pre-v10-2layer. (비-alpha 레인 폐지 — 수집은 팩터전략 단일 목적)
 # paper_dispatch_backfill.sh — 논문 라우터 큐의 **미소비 날짜**를 찾아 dispatcher 를 날짜별로 구동.
 #
 # 왜 (2026-08-13 실사고):

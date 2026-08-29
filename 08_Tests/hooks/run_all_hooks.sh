@@ -251,6 +251,8 @@ SUITES=(
   # v10 (2026-08-29): BOOK — writer 자격 검증(A+Judge PASS 재도출·중복·append-only) + 쓰기 가드 양방향
   "08_Tests/contracts/test_book_registry.R"
   "08_Tests/hooks/test_book_write_guard.sh"
+  # v10 (2026-08-29): 무인 재배선 — 퇴역 러너 호출 부재 + 수집 체인 생존 + .bat env 청소
+  "08_Tests/ops/test_morning_run_rewire.sh"
   # 2026-08-16 추가: 편입 드리프트 검사(suite_enrollment_check) 위반 주입.
   #   ★이 SUITES 배열이 하드코딩 열거라 새 테스트가 자동 편입되지 않는다 — 실측에서
   #   test_*.{R,sh} 121건 중 40건이 배터리에서 **한 번도 실행되지 않고** 있었고, 그중

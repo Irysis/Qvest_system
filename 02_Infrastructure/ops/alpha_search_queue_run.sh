@@ -1,4 +1,6 @@
 #!/bin/bash
+# ★v10 (2026-08-29): 무인 morning_run 배선 제거 — 세션 수동 도구로만 존치 (무인은 수집까지).
+#   내부의 게이트 루프(lean_verify_build→auto_alpha_gate→append-done)는 수동 실행 시 유효.
 # alpha_search_queue_run.sh — 팩터추출 → alpha-search 모드 가동 (마지막 고리, 도훈 mandate 2026-06-19).
 # tier-1/tier-2가 alpha_search_queue에 쌓은 testable 팩터를 읽어 alpha-search를 실제 구동(5층 검증게이트).
 # 기존 끊김: tier-1 autorun은 *그 패스서 발견한* testable만 즉석 실행 → 큐(tier-2 승격분·오버플로)는 소비자 없어 미실행.

@@ -1,4 +1,6 @@
 #!/usr/bin/env Rscript
+## ★RETIRED (v10 2026-08-29 도훈): 무인은 수집까지만 — morning_run 배선 제거. 파일 사료 존치.
+##   비-alpha 레인(optimizer/risk/regime) 폐지. 재개 레시피 = git pre-v10-2layer.
 # paper_research_dispatch.R — 라우터 STEP2/3 후속: mode_queue의 비-alpha 라우트를 *실제 리서치 액션*으로 배선 (도훈 mandate 2026-06-18).
 #
 # 목적: paper_router가 큐에 넣은 optimizer/risk/regime 논문을, 각 모드 하니스로 *자동 소비*하고 결과를 텔레그램+JSON으로 보고.

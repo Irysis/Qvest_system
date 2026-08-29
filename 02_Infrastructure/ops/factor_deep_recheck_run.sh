@@ -1,4 +1,6 @@
 #!/bin/bash
+# ★RETIRED (v10 2026-08-29 도훈): 무인은 수집까지만 — morning_run 배선 제거. 파일 사료 존치.
+#   재개 레시피 = git pre-v10-2layer. (비-alpha 레인 폐지 — 수집은 팩터전략 단일 목적)
 # factor_deep_recheck_run.sh — 2축 구조 tier-2 runner (도훈 mandate 2026-06-19).
 # tier-1(paper_router_run.sh, 매일 보수적)이 uncertain으로 남긴 팩터 후보를 모아 *논문당 깊게* 재검 → testable 승격.
 #
