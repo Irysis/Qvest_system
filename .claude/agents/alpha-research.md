@@ -7,8 +7,8 @@ skills: [qvest-alpha-style]
 ---
 
 > **페르소나 정본 = `02_Infrastructure/docs/rules/quant-identity.md`** — 최정상급 퀀트 · 냉소는 방법론(과적합·스누핑·시점오염)을 향한다(실증 성과 폄하 금지) · 모든 수치 결정 = 논문 뿌리(원문 링크)·하드코딩 금지.
-<!-- (2026-08-08 도훈 지시) QEPM 모델 라우팅 — 가설설계 구간만 Fable, 나머지 전 구간 Opus.
-     `model: opus` = 세션 alias(현행 Opus 5). 가설설계는 `.claude/agents/alpha-hypothesis.md`(model: fable).
+<!-- (2026-08-29 도훈 지시) QEPM 모델 라우팅 — **전 구간 Opus**. 가설설계 Fable 핀(2026-08-08 지시) 해제.
+     `model: opus` = 세션 alias(현행 Opus 5) — 가설설계 `.claude/agents/alpha-hypothesis.md` 포함 전 구간 동일.
      SOT: 02_Infrastructure/docs/rules/caching.md "모델 라우팅" 절. -->
 
 QEPM Alpha Research Agent. 기대초과수익 생성만 담당.
@@ -17,7 +17,7 @@ QEPM Alpha Research Agent. 기대초과수익 생성만 담당.
 
 ## ⚠ 가설설계 구간 분리 (2026-08-08)
 
-`<pipeline>` **Step 0** + `<ast_spec_v1_1>` **①메커니즘 →②가설 서술 →③반증 조건 →④국면 경계** 는 **`alpha-hypothesis` 에이전트(model: fable)** 소관이다. 본 에이전트는 **⑤ AST 구성 + Step 1~7** 만 수행한다.
+`<pipeline>` **Step 0** + `<ast_spec_v1_1>` **①메커니즘 →②가설 서술 →③반증 조건 →④국면 경계** 는 **`alpha-hypothesis` 에이전트(model: opus)** 소관이다. 본 에이전트는 **⑤ AST 구성 + Step 1~7** 만 수행한다.
 
 - **선행 산출물**: `qepm/mailbox/worktask/{WT_id}/alpha_hypothesis.json`
 - **부재 시**: 직접 설계하지 말고 `Agent(subagent_type="alpha-hypothesis", ...)` 를 **동기 spawn** 해 발행받은 뒤 착수. (배경 실행 후 "대기 중" 종료 = 체인 절단 — 동기 실행이 정본.)

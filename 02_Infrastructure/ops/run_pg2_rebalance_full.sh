@@ -71,9 +71,20 @@ if [ "$SKIP_REFRESH" != "1" ]; then
 import json,os,pyarrow.parquet as pq,pandas as pd
 root=os.environ["QM_ROOT"]
 target=pd.to_datetime(pq.read_table(root+"/.cache/RAWDATA.parquet",columns=["Date"]).to_pandas()["Date"]).max().strftime("%Y%m%d")
-try: st=json.load(open(root+"/.cache/qw_refresh_state.json"))
-except Exception: st={}
+# ★(2026-08-29 수리) 상태 파일은 PowerShell(qw_refresh.ps1)이 쓰므로 **BOM 이 붙는다**.
+#   구판은 `open()` 기본 인코딩으로 읽어 JSONDecodeError → except 로 st={} → 신선하든
+#   낡았든 **언제나 "5종 전부 미달"**을 냈다(실측 2026-08-29: 파일에 20260731 5건이
+#   멀쩡히 있는데 Gate A 는 전건 미달로 보고). 게이트가 '못 읽음'과 '낡음'을 구분 못 하면
+#   차단 사유가 거짓이 된다 — 이 저장소가 반복해 겪은 '계측 사망의 위장' 부류다.
+#   ⇒ utf-8-sig 로 읽고, **읽기 실패는 UNREADABLE 로 따로 보고**한다(미달로 접지 않는다).
 need=["Benchmark","OHLCVS","Universe_Support","Investor_Act","Consensus"]
+p=root+"/.cache/qw_refresh_state.json"
+try:
+    st=json.load(open(p,encoding="utf-8-sig"))
+except FileNotFoundError:
+    print("UNREADABLE(state_file_absent) target="+target); raise SystemExit
+except Exception as e:
+    print("UNREADABLE(%s) target=%s"%(type(e).__name__,target)); raise SystemExit
 miss=[n for n in need if str((st.get(n) or {}).get("ymd"))!=target]
 print("ALLDONE target="+target if not miss else "INCOMPLETE("+",".join(miss)+") target="+target)
 PYEOF

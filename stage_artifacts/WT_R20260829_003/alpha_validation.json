@@ -1,0 +1,1933 @@
+{
+  "schema": "alpha_validation/v1",
+  "task_id": "WT-R20260829_003",
+  "wt_type": "reinforcement",
+  "as_of_date": "2026-08-29",
+  "attempt": "3/20",
+  "axis": "multifactor — 회전율 조건부 모멘텀 생애주기 (Lee-Swaminathan 2000)",
+  "base": {
+    "base_id": "RP_20260829_122020_9192",
+    "base_grade": "F"
+  },
+  "paper": {
+    "citation": "Lee, C.M.C. & Swaminathan, B. (2000), Price Momentum and Trading Volume, Journal of Finance 55(5):2017-2069",
+    "url": "https://onlinelibrary.wiley.com/doi/abs/10.1111/0022-1082.00280",
+    "open_pdf": "https://www.lsvasset.com/pdf/research-papers/Price-Momentum-Trad-Vol-2000.pdf",
+    "read_by": "alpha-hypothesis (원문 직접 판독 — alpha_hypothesis.json::paper_reading)"
+  },
+  "metric_type": "canonical_screen",
+  "metric_type_note": "arm 수치는 canonical_screen_bt 경로(arm A 와 bit-parity 실증). 층화 스프레드(1급)는 metric_type='canonical_screen_diag' — 신호 수준 gross 스프레드이며 매매가 없다. 등급 권위는 essence_score.R 하나이고 본 산출물은 등급을 선언하지 않는다.",
+  "measurement_engine": {
+    "positive_control": {
+      "max_abs_ret_diff": 0,
+      "abs_port_t_diff": 0,
+      "canon_port_t": 1.2939691,
+      "engine_port_t": 1.2939691,
+      "verdict": "PARITY_EXACT"
+    },
+    "note": "arm A(무조건부 top-25) 를 canonical_screen_bt(top_n=25) 와 대조해 max|Δret_net| = 0 · |ΔPORT_t| = 0 (259/259 개월). 조건부 arm 은 정의역만 다른 동일 엔진이다."
+  },
+  "fixed_axes": {
+    "signal": "기저 엔진 stage_artifacts/replication/_pilot/fe_jt1993_momentum.R 그대로 (J=6 형성 t-2..t-7 · skip 1M · 월말). 3/20 이 바꾼 것은 신호가 아니라 정의역(층화)이다.",
+    "new_material": "형성기 일평균 회전율 = Vol*Close/Size (LS2000 원정의 = 거래주식수/상장주식수). t-2..t-7 월 평균. 시장-내(K200/KQ150 별도) 백분위 랭킹.",
+    "turnover_adjustment_check": "Vol·Close·Size 동일 조정기준 확인 — 2018-05 삼성전자 50:1 액면분할 구간에서 implied shares(Size/Close)가 6.4193e9 로 불변(비조정 Vol 이면 50배 점프해야 함).",
+    "universe": "K200 ∪ KQ150 (PIT 시변 멤버십) · 월 중앙 343종",
+    "window": "2005-01-31 ~ 2026-07-31",
+    "cost": "15bps one-way, delta 기반 (v2.4_kr_retail_15bps)",
+    "liquidity": "20일 평균 거래대금(t-1) >= 2e8 KRW — liq_ruler='adv20_t1'",
+    "weighting": "EW · Σw = 1 · 개별 비중 상한 없음(v10)",
+    "rebalance": "monthly",
+    "long_only": true,
+    "max_names": 25,
+    "composite_prohibition_honored": "연속 composite(mom rank − turnover rank) 미구현. 전 arm 이 정의역 제한(층화)이다 — handoff 승계조건 ① 준수, DIST-AR-007 소진 경로 회피."
+  },
+  "primary_measurements": {
+    "grid_10x3": {
+      "cells": {
+        "1": {
+          "mdec": 1,
+          "vter": 1,
+          "r_ann": 0.0767487,
+          "n_obs": 1905
+        },
+        "2": {
+          "mdec": 1,
+          "vter": 2,
+          "r_ann": 0.15801984,
+          "n_obs": 2574
+        },
+        "3": {
+          "mdec": 1,
+          "vter": 3,
+          "r_ann": 0.0501909,
+          "n_obs": 3258
+        },
+        "4": {
+          "mdec": 2,
+          "vter": 1,
+          "r_ann": 0.07175824,
+          "n_obs": 2705
+        },
+        "5": {
+          "mdec": 2,
+          "vter": 2,
+          "r_ann": 0.08068728,
+          "n_obs": 2720
+        },
+        "6": {
+          "mdec": 2,
+          "vter": 3,
+          "r_ann": 0.05738312,
+          "n_obs": 2466
+        },
+        "7": {
+          "mdec": 3,
+          "vter": 1,
+          "r_ann": 0.13032315,
+          "n_obs": 3082
+        },
+        "8": {
+          "mdec": 3,
+          "vter": 2,
+          "r_ann": 0.1007238,
+          "n_obs": 2726
+        },
+        "9": {
+          "mdec": 3,
+          "vter": 3,
+          "r_ann": 0.13115877,
+          "n_obs": 2066
+        },
+        "10": {
+          "mdec": 4,
+          "vter": 1,
+          "r_ann": 0.09092116,
+          "n_obs": 3263
+        },
+        "11": {
+          "mdec": 4,
+          "vter": 2,
+          "r_ann": 0.08832716,
+          "n_obs": 2687
+        },
+        "12": {
+          "mdec": 4,
+          "vter": 3,
+          "r_ann": 0.02613571,
+          "n_obs": 1913
+        },
+        "13": {
+          "mdec": 5,
+          "vter": 1,
+          "r_ann": 0.084262,
+          "n_obs": 3249
+        },
+        "14": {
+          "mdec": 5,
+          "vter": 2,
+          "r_ann": 0.13049108,
+          "n_obs": 2727
+        },
+        "15": {
+          "mdec": 5,
+          "vter": 3,
+          "r_ann": 0.09764483,
+          "n_obs": 1938
+        },
+        "16": {
+          "mdec": 6,
+          "vter": 1,
+          "r_ann": 0.11801195,
+          "n_obs": 3160
+        },
+        "17": {
+          "mdec": 6,
+          "vter": 2,
+          "r_ann": 0.05449731,
+          "n_obs": 2639
+        },
+        "18": {
+          "mdec": 6,
+          "vter": 3,
+          "r_ann": 0.11741936,
+          "n_obs": 2031
+        },
+        "19": {
+          "mdec": 7,
+          "vter": 1,
+          "r_ann": 0.11370056,
+          "n_obs": 2919
+        },
+        "20": {
+          "mdec": 7,
+          "vter": 2,
+          "r_ann": 0.07739564,
+          "n_obs": 2686
+        },
+        "21": {
+          "mdec": 7,
+          "vter": 3,
+          "r_ann": 0.09703697,
+          "n_obs": 2246
+        },
+        "22": {
+          "mdec": 8,
+          "vter": 1,
+          "r_ann": 0.09694354,
+          "n_obs": 2609
+        },
+        "23": {
+          "mdec": 8,
+          "vter": 2,
+          "r_ann": 0.16244952,
+          "n_obs": 2710
+        },
+        "24": {
+          "mdec": 8,
+          "vter": 3,
+          "r_ann": 0.14532404,
+          "n_obs": 2566
+        },
+        "25": {
+          "mdec": 9,
+          "vter": 1,
+          "r_ann": 0.15000711,
+          "n_obs": 2144
+        },
+        "26": {
+          "mdec": 9,
+          "vter": 2,
+          "r_ann": 0.19919795,
+          "n_obs": 2639
+        },
+        "27": {
+          "mdec": 9,
+          "vter": 3,
+          "r_ann": 0.13965885,
+          "n_obs": 3096
+        },
+        "28": {
+          "mdec": 10,
+          "vter": 1,
+          "r_ann": 0.12170639,
+          "n_obs": 1193
+        },
+        "29": {
+          "mdec": 10,
+          "vter": 2,
+          "r_ann": 0.1974925,
+          "n_obs": 2108
+        },
+        "30": {
+          "mdec": 10,
+          "vter": 3,
+          "r_ann": 0.16819912,
+          "n_obs": 4652
+        }
+      },
+      "winner_row_v1_v2_v3_ann": [
+        0.12170639,
+        0.1974925,
+        0.16819912
+      ],
+      "decile_tests": {
+        "1": {
+          "mdec": 1,
+          "n": 243,
+          "v1_minus_v3_ann": 0.0527868,
+          "nw_t": 1.02676679
+        },
+        "2": {
+          "mdec": 5,
+          "n": 256,
+          "v1_minus_v3_ann": 0.01122275,
+          "nw_t": 0.22794015
+        },
+        "3": {
+          "mdec": 10,
+          "n": 190,
+          "v1_minus_v3_ann": -0.06227378,
+          "nw_t": -0.77922776
+        }
+      }
+    },
+    "primary": {
+      "definition": "R10V1 - R10V3 : 승자 데실 내부, 형성기 일평균 회전율 시장-내 랭킹 저층(V1) - 고층(V3) 의 forward 1M EW 수익 차. 독립 2-way(LS2000 절차).",
+      "metric_basis": "gross (신호 수준 스프레드 — 매매 미발생. 소비형 순수익 판정은 S4)",
+      "n_months": 190,
+      "mean_monthly": -0.00518948,
+      "mean_ann": -0.06227378,
+      "sd_monthly": 0.08469335,
+      "nw_t": -0.77922776,
+      "beta_controlled": {
+        "alpha_ann": -0.04254471,
+        "t_alpha": -0.56753497,
+        "beta": -0.23862792,
+        "t_beta": -2.55749741,
+        "beta_contrib_ann": -0.10240619,
+        "n": 190
+      },
+      "cell_n_lo_median": 5,
+      "cell_n_hi_median": 18,
+      "hit_rate": 0.47368421
+    },
+    "adv20_stratified": {
+      "definition": "adv20 터사일 층 내부에서 (Date,mkt,advt) 재랭킹 중앙값 분할 저회전-고회전 스프레드 -> 층 평균(등가중). 유동성 축 기계적 통제(결과량 층화).",
+      "n_months": 234,
+      "mean_ann": -0.03378519,
+      "sd_monthly": 0.0654114,
+      "nw_t": -0.72881257,
+      "beta_controlled": {
+        "alpha_ann": -0.02484942,
+        "t_alpha": -0.55190007,
+        "beta": -0.07374149,
+        "t_beta": -1.0003946,
+        "beta_contrib_ann": -0.13011276,
+        "n": 234
+      },
+      "hit_rate": 0.4957265,
+      "per_stratum": {
+        "1": {
+          "advt": 1,
+          "n_months": 87,
+          "mean_ann": -0.00215442,
+          "nw_t": -0.01831233,
+          "n_lo_med": 4,
+          "n_hi_med": 3
+        },
+        "2": {
+          "advt": 2,
+          "n_months": 234,
+          "mean_ann": -0.03540894,
+          "nw_t": -0.48759734,
+          "n_lo_med": 6,
+          "n_hi_med": 5
+        },
+        "3": {
+          "advt": 3,
+          "n_months": 238,
+          "mean_ann": -0.04409419,
+          "nw_t": -0.69743502,
+          "n_lo_med": 8,
+          "n_hi_med": 7.5
+        }
+      },
+      "advt_note": "advt 1=최저 거래대금 층 · 3=최고"
+    },
+    "variants": {
+      "independent_LS2000": {
+        "n_months": 190,
+        "mean_ann": -0.06505899,
+        "nw_t": -0.8074894,
+        "sd_monthly": 0.08497185,
+        "hit_rate": 0.47368421,
+        "beta_controlled": {
+          "alpha_ann": -0.04497863,
+          "t_alpha": -0.59624326,
+          "beta": -0.24287688,
+          "n": 190
+        }
+      },
+      "conditional_within_winner": {
+        "n_months": 259,
+        "mean_ann": -0.0414175,
+        "nw_t": -0.64859977,
+        "sd_monthly": 0.08622641,
+        "hit_rate": 0.47490347,
+        "beta_controlled": {
+          "alpha_ann": -0.03296077,
+          "t_alpha": -0.54113911,
+          "beta": -0.07218611,
+          "n": 259
+        }
+      },
+      "verdict_rule_declared_before_reading": "reject_if ① 은 '두 변형 모두 유의 양(+)' 이 아닐 때 발동한다(연언 규칙 — 결과를 본 뒤 유리한 변형으로 갈아타지 않기 위해 사전 고정)."
+    },
+    "fm_by_stratum": {
+      "1": {
+        "vter": 1,
+        "a": 0.01003199,
+        "b": 0.00102631,
+        "a_t": 2.96126451,
+        "b_t": 0.71991203,
+        "n": 259
+      },
+      "2": {
+        "vter": 2,
+        "a": 0.01111424,
+        "b": 0.00161261,
+        "a_t": 2.77840463,
+        "b_t": 0.90865748,
+        "n": 259
+      },
+      "3": {
+        "vter": 3,
+        "a": 0.00958194,
+        "b": 0.00259569,
+        "a_t": 2.07595279,
+        "b_t": 1.75587022,
+        "n": 259
+      }
+    },
+    "fm_reading": "층별 FM: 절편은 세 층이 거의 같고(1.00/1.11/0.96 %/월) 모멘텀 기울기는 회전율과 함께 커진다(0.103/0.161/0.260 %/z, t 0.72/0.91/1.76). LS2000 예측(초기단계=저회전 승자가 지속)과 방향이 반대다 — KR 에서 모멘텀의 단면 기울기는 고회전 종목에 집중된다."
+  },
+  "arms": {
+    "A_uncond_top25": {
+      "id": "A_uncond_top25",
+      "n_months": 259,
+      "n_names_median": 25,
+      "n_names_max": 25,
+      "port_t_capw": 1.2939691,
+      "port_p": 0.1956761,
+      "ir": 0.27869694,
+      "alpha_annualized": 0.05136546,
+      "net_sr": 0.27869694,
+      "mean_active_net_ann": 0.05816369,
+      "turnover_annual": 9.24,
+      "selected_ret_coverage": 0.996,
+      "beta_controlled": {
+        "alpha_ann": 0.05136546,
+        "t_alpha": 1.20485983,
+        "beta": 1.05802924,
+        "t_beta": 11.82687525,
+        "beta_contrib_ann": 0.00679823,
+        "n": 259
+      },
+      "diag_ew_universe": {
+        "port_t": 1.42577834,
+        "alpha_ann": 0.02926649,
+        "ir": 0.29274682,
+        "n_months": 259
+      },
+      "diag_cap_tier": {
+        "weight_share_avg": {
+          "MEGA": 0.032,
+          "MID": 0.05584615,
+          "OTHER": 0.91215385,
+          "UNRANKED": 0
+        },
+        "contrib_gross_annualized": {
+          "MEGA": 0.01250607,
+          "MID": 0.0131326,
+          "OTHER": 0.16280164,
+          "UNRANKED": 0
+        }
+      }
+    },
+    "B_lowturn_V1_top25": {
+      "id": "B_lowturn_V1_top25",
+      "n_months": 259,
+      "n_names_median": 25,
+      "n_names_max": 25,
+      "port_t_capw": 0.21710417,
+      "port_p": 0.82812717,
+      "ir": 0.04980595,
+      "alpha_annualized": 0.04948432,
+      "net_sr": 0.04980595,
+      "mean_active_net_ann": 0.00865442,
+      "turnover_annual": 8.62338462,
+      "selected_ret_coverage": 0.99569231,
+      "beta_controlled": {
+        "alpha_ann": 0.04948432,
+        "t_alpha": 1.56280477,
+        "beta": 0.65147872,
+        "t_beta": 7.1148944,
+        "beta_contrib_ann": -0.04082991,
+        "n": 259
+      },
+      "diag_ew_universe": {
+        "port_t": 0.11204558,
+        "alpha_ann": 0.0234474,
+        "ir": 0.02464592,
+        "n_months": 259
+      },
+      "diag_cap_tier": {
+        "weight_share_avg": {
+          "MEGA": 0.05369231,
+          "MID": 0.09123077,
+          "OTHER": 0.85507692,
+          "UNRANKED": 0
+        },
+        "contrib_gross_annualized": {
+          "MEGA": 0.00383352,
+          "MID": 0.01147621,
+          "OTHER": 0.12290896,
+          "UNRANKED": 0
+        }
+      }
+    },
+    "B2_lowturn_half_top25": {
+      "id": "B2_lowturn_half_top25",
+      "n_months": 259,
+      "n_names_median": 25,
+      "n_names_max": 25,
+      "port_t_capw": 0.90036569,
+      "port_p": 0.36792567,
+      "ir": 0.20955346,
+      "alpha_annualized": 0.05865879,
+      "net_sr": 0.20955346,
+      "mean_active_net_ann": 0.03497522,
+      "turnover_annual": 9.24738462,
+      "selected_ret_coverage": 0.996,
+      "beta_controlled": {
+        "alpha_ann": 0.05865879,
+        "t_alpha": 1.71936792,
+        "beta": 0.7978387,
+        "t_beta": 9.95532353,
+        "beta_contrib_ann": -0.02368357,
+        "n": 259
+      },
+      "diag_ew_universe": {
+        "port_t": 1.07404751,
+        "alpha_ann": 0.03695761,
+        "ir": 0.23961025,
+        "n_months": 259
+      },
+      "diag_cap_tier": {
+        "weight_share_avg": {
+          "MEGA": 0.05507692,
+          "MID": 0.08753846,
+          "OTHER": 0.85738462,
+          "UNRANKED": 0
+        },
+        "contrib_gross_annualized": {
+          "MEGA": 0.00601487,
+          "MID": 0.01115938,
+          "OTHER": 0.14817231,
+          "UNRANKED": 0
+        }
+      }
+    },
+    "C_exclude_V3_top25": {
+      "id": "C_exclude_V3_top25",
+      "n_months": 259,
+      "n_names_median": 25,
+      "n_names_max": 25,
+      "port_t_capw": 1.17048725,
+      "port_p": 0.24180494,
+      "ir": 0.26892568,
+      "alpha_annualized": 0.06278897,
+      "net_sr": 0.26892568,
+      "mean_active_net_ann": 0.04552044,
+      "turnover_annual": 9.64246154,
+      "selected_ret_coverage": 0.996,
+      "beta_controlled": {
+        "alpha_ann": 0.06278897,
+        "t_alpha": 1.76193452,
+        "beta": 0.85259703,
+        "t_beta": 10.26802185,
+        "beta_contrib_ann": -0.01726853,
+        "n": 259
+      },
+      "diag_ew_universe": {
+        "port_t": 1.41815549,
+        "alpha_ann": 0.04232503,
+        "ir": 0.30483374,
+        "n_months": 259
+      },
+      "diag_cap_tier": {
+        "weight_share_avg": {
+          "MEGA": 0.05353846,
+          "MID": 0.08338462,
+          "OTHER": 0.86307692,
+          "UNRANKED": 0
+        },
+        "contrib_gross_annualized": {
+          "MEGA": 0.01390145,
+          "MID": 0.01195693,
+          "OTHER": 0.15061315,
+          "UNRANKED": 0
+        }
+      }
+    },
+    "D_highturn_V3_top25": {
+      "id": "D_highturn_V3_top25",
+      "n_months": 259,
+      "n_names_median": 25,
+      "n_names_max": 25,
+      "port_t_capw": 1.12913605,
+      "port_p": 0.25884045,
+      "ir": 0.25527853,
+      "alpha_annualized": 0.04608849,
+      "net_sr": 0.25527853,
+      "mean_active_net_ann": 0.05448906,
+      "turnover_annual": 7.78892308,
+      "selected_ret_coverage": 0.99615385,
+      "beta_controlled": {
+        "alpha_ann": 0.04608849,
+        "t_alpha": 1.05662066,
+        "beta": 1.07170663,
+        "t_beta": 9.95675815,
+        "beta_contrib_ann": 0.00840056,
+        "n": 259
+      },
+      "diag_ew_universe": {
+        "port_t": 1.35999899,
+        "alpha_ann": 0.01923183,
+        "ir": 0.27993657,
+        "n_months": 259
+      },
+      "diag_cap_tier": {
+        "weight_share_avg": {
+          "MEGA": 0.02107692,
+          "MID": 0.04338462,
+          "OTHER": 0.93553846,
+          "UNRANKED": 0
+        },
+        "contrib_gross_annualized": {
+          "MEGA": 0.00541438,
+          "MID": 0.00863444,
+          "OTHER": 0.16857099,
+          "UNRANKED": 0
+        }
+      }
+    }
+  },
+  "increments_vs_armA": {
+    "B_lowturn_V1_top25": {
+      "arm": "B_lowturn_V1_top25",
+      "arm_beta_alpha_ann": 0.04948432,
+      "arm_t_alpha": 1.56280477,
+      "arm_beta": 0.65147872,
+      "increment_alpha_ann": -0.00188114,
+      "paired_diff_mean_ann": -0.04950927,
+      "paired_diff_nw_t": -1.29844887,
+      "paired_diff_beta_alpha_ann": -0.00188114,
+      "paired_diff_t_alpha": -0.05397823,
+      "n": 259
+    },
+    "B2_lowturn_half_top25": {
+      "arm": "B2_lowturn_half_top25",
+      "arm_beta_alpha_ann": 0.05865879,
+      "arm_t_alpha": 1.71936792,
+      "arm_beta": 0.7978387,
+      "increment_alpha_ann": 0.00729333,
+      "paired_diff_mean_ann": -0.02318847,
+      "paired_diff_nw_t": -0.72540276,
+      "paired_diff_beta_alpha_ann": 0.00729333,
+      "paired_diff_t_alpha": 0.2414486,
+      "n": 259
+    },
+    "C_exclude_V3_top25": {
+      "arm": "C_exclude_V3_top25",
+      "arm_beta_alpha_ann": 0.06278897,
+      "arm_t_alpha": 1.76193452,
+      "arm_beta": 0.85259703,
+      "increment_alpha_ann": 0.01142351,
+      "paired_diff_mean_ann": -0.01264325,
+      "paired_diff_nw_t": -0.41533143,
+      "paired_diff_beta_alpha_ann": 0.01142351,
+      "paired_diff_t_alpha": 0.38779885,
+      "n": 259
+    },
+    "D_highturn_V3_top25": {
+      "arm": "D_highturn_V3_top25",
+      "arm_beta_alpha_ann": 0.04608849,
+      "arm_t_alpha": 1.05662066,
+      "arm_beta": 1.07170663,
+      "increment_alpha_ann": -0.00527697,
+      "paired_diff_mean_ann": -0.00367463,
+      "paired_diff_nw_t": -0.15218583,
+      "paired_diff_beta_alpha_ann": -0.00527697,
+      "paired_diff_t_alpha": -0.23426997,
+      "n": 259
+    }
+  },
+  "preregistered_verdicts": {
+    "primary_1st_stratification_spread": {
+      "preregistered_statement": "승자 분위 내부에서 형성기간 회전율(시장-내 랭킹, t-1) 저층 vs 고층의 forward 수익 스프레드가 유의한가. 비유의면 LS2000 의 KR 이식 실패.",
+      "verdict_rule_declared_before_reading": "reject_if ① 은 '두 변형 모두 유의 양(+)' 이 아닐 때 발동한다(연언 규칙 — 결과를 본 뒤 유리한 변형으로 갈아타지 않기 위해 사전 고정).",
+      "independent_LS2000_sort": {
+        "mean_ann": -0.06505899,
+        "nw_t": -0.8074894,
+        "beta_controlled_alpha_ann": -0.04497863,
+        "beta_controlled_t": -0.59624326,
+        "n_months": 190
+      },
+      "conditional_within_winner": {
+        "mean_ann": -0.0414175,
+        "nw_t": -0.64859977,
+        "beta_controlled_alpha_ann": -0.03296077,
+        "beta_controlled_t": -0.54113911,
+        "n_months": 259
+      },
+      "adv20_stratified": {
+        "mean_ann": -0.03378519,
+        "nw_t": -0.72881257,
+        "beta_controlled_t": -0.55190007,
+        "per_stratum": {
+          "1": {
+            "advt": 1,
+            "n_months": 87,
+            "mean_ann": -0.00215442,
+            "nw_t": -0.01831233,
+            "n_lo_med": 4,
+            "n_hi_med": 3
+          },
+          "2": {
+            "advt": 2,
+            "n_months": 234,
+            "mean_ann": -0.03540894,
+            "nw_t": -0.48759734,
+            "n_lo_med": 6,
+            "n_hi_med": 5
+          },
+          "3": {
+            "advt": 3,
+            "n_months": 238,
+            "mean_ann": -0.04409419,
+            "nw_t": -0.69743502,
+            "n_lo_med": 8,
+            "n_hi_med": 7.5
+          }
+        }
+      },
+      "fm_regression_form": {
+        "v1_minus_v3_monthly": 0.00045005,
+        "annualized": 0.00540062,
+        "nw_t": 0.19631208,
+        "n": 259,
+        "note": "층별 절편 차 = z 를 고정한 상태의 저회전 프리미엄(회귀판 1급 보조)."
+      },
+      "reject_if_1_fired": true,
+      "verdict": "REJECTED_AS_PREREGISTERED — 승자 사이드 회전율 층화 스프레드는 어느 사양에서도 유의하지 않다. 부호는 LS2000 예측과 반대(저회전 승자가 열위): 독립정렬 -6.51%/yr(t -0.807) · 조건부정렬 -4.14%/yr(t -0.649) · adv20 층내부 -3.38%/yr(t -0.729) · FM 절편차 +0.54%/yr(t +0.196). LS2000 의 KR 이식은 승자 사이드에서 성립하지 않는다.",
+      "power_disposition": {
+        "note": "★이 판정은 '효과 없음' 으로 승격할 수 없다 — LS2000 함의 효과크기에 대한 검정력이 3~5% 다.",
+        "power_vs_paper_implied": {
+          "low": {
+            "n": 190,
+            "sd_monthly": 0.08469335,
+            "nw_inflation": 1.25,
+            "nw_inflation_source": "assumed_default_series_unmeasurable",
+            "mde80_monthly": 0.02151734,
+            "implied_monthly": 0.0006,
+            "ratio": 0.02788448,
+            "expected_t": 0.07812116,
+            "power": 0.02992623
+          },
+          "mid": {
+            "n": 190,
+            "sd_monthly": 0.08469335,
+            "nw_inflation": 1.25,
+            "nw_inflation_source": "assumed_default_series_unmeasurable",
+            "mde80_monthly": 0.02151734,
+            "implied_monthly": 0.0012,
+            "ratio": 0.05576896,
+            "expected_t": 0.15624233,
+            "power": 0.03563465
+          },
+          "high": {
+            "n": 190,
+            "sd_monthly": 0.08469335,
+            "nw_inflation": 1.25,
+            "nw_inflation_source": "assumed_default_series_unmeasurable",
+            "mde80_monthly": 0.02151734,
+            "implied_monthly": 0.0018,
+            "ratio": 0.08365345,
+            "expected_t": 0.23436349,
+            "power": 0.04220641
+          }
+        },
+        "power_stratified": {
+          "low": {
+            "n": 234,
+            "sd_monthly": 0.0654114,
+            "nw_inflation": 1.25,
+            "nw_inflation_source": "assumed_default_series_unmeasurable",
+            "mde80_monthly": 0.01497482,
+            "implied_monthly": 0.0006,
+            "ratio": 0.04006726,
+            "expected_t": 0.11225243,
+            "power": 0.03231943
+          },
+          "mid": {
+            "n": 234,
+            "sd_monthly": 0.0654114,
+            "nw_inflation": 1.25,
+            "nw_inflation_source": "assumed_default_series_unmeasurable",
+            "mde80_monthly": 0.01497482,
+            "implied_monthly": 0.0012,
+            "ratio": 0.08013452,
+            "expected_t": 0.22450486,
+            "power": 0.04132657
+          },
+          "high": {
+            "n": 234,
+            "sd_monthly": 0.0654114,
+            "nw_inflation": 1.25,
+            "nw_inflation_source": "assumed_default_series_unmeasurable",
+            "mde80_monthly": 0.01497482,
+            "implied_monthly": 0.0018,
+            "ratio": 0.12020177,
+            "expected_t": 0.33675729,
+            "power": 0.05226877
+          }
+        },
+        "label": "미결(underpowered) 위의 부호 반대 관측 — 라벨 규칙: 사전등록 reject_if 는 발동했으나 통계적 상태는 '논문 배율을 검출할 검정력 부재'다. 3단 처분 (a) 착수금지구간(ratio 0.028~0.120).",
+        "what_this_round_leaves": "①KR 승자 사이드 회전율 층화의 최초 실측 좌표(부호·크기·분산) ②시장-내 랭킹 의무의 양성 대조 실증 ③L-family 누출 귀무 좌표 ④패자 사이드 좌표(4/20 착수 근거)"
+      },
+      "sample_note": "★수치 출처 구분: 사전등록 1급 본판(전 적격집합, n=190) = -6.23%/yr NW-t -0.779 (alpha_validation.primary_measurements.primary · s2_primary.json). preregistered_verdicts 에 인용한 -6.51%/yr NW-t -0.807 은 L-family 완전관측 부분집합(78,583/78,677행, n=189)에서 재산출한 동일 사양이며 통제 전/후를 같은 표본에서 비교하기 위한 것이다. 두 값 모두 산출물에 있고 판정(비유의·부호 음)은 동일하다."
+    },
+    "secondary_2nd_transfer": {
+      "preregistered_statement": "저회전 조건부 top-25 의 β-통제 α 가 cell4(+5.14%/yr) 대비 증분 ≤ 0 이면 전이 실패.",
+      "baseline_armA": {
+        "port_t": 1.2939691,
+        "beta_alpha_ann": 0.05136546,
+        "t_alpha": 1.20485983,
+        "beta": 1.05802924,
+        "reproduction_of_2_20_cell4": "정확 재현 — PORT_t 1.294 · α +5.14%/yr · t 1.205 (2/20 보고치와 일치). canonical_screen_bt bit-parity 동시 실증."
+      },
+      "armB_lowturn_V1": {
+        "port_t": 0.21710417,
+        "beta_alpha_ann": 0.04948432,
+        "t_alpha": 1.56280477,
+        "beta": 0.65147872,
+        "increment_alpha_ann": -0.00188114,
+        "paired_diff_beta_controlled_t": -0.05397823
+      },
+      "variants": {
+        "B2_lowturn_half": {
+          "increment_alpha_ann": 0.00729333,
+          "paired_t": 0.2414486
+        },
+        "C_exclude_V3": {
+          "increment_alpha_ann": 0.01142351,
+          "paired_t": 0.38779885,
+          "note": "가설설계 challenge_flags 의 C4(배제형) 사양. 배제형은 25종을 유지하므로 '배제 vs 대체' 대비가 구조적으로 내장된다(랭킹 26위 이하가 강제 편입) — 별도 잔류 대비를 쓰지 않았다."
+        },
+        "D_highturn_V3": {
+          "increment_alpha_ann": -0.00527697,
+          "paired_t": -0.23426997
+        }
+      },
+      "reject_if_2_fired": true,
+      "verdict": "REJECTED_AS_PREREGISTERED — 사전등록 스펙(저회전 V1 조건부 top-25)의 β-통제 α 증분 = -0.19%p ≤ 0. 전이 실패. 변형 중 배제형(C)만 +1.14%p 로 양(+)이나 짝지음 β-통제 t = +0.388 로 전부 잡음 안. 다섯 arm 의 α 순서(C +6.28 > B2 +5.87 > A +5.14 > B +4.95 > D +4.61 %/yr)는 방향만 약하게 LS2000 정합이며 어떤 대비도 |t| < 0.4 다.",
+      "power": {
+        "C_exclude_V3_low": {
+          "arm": "C_exclude_V3_top25",
+          "alpha_ann": 0.01142351,
+          "t_alpha": 0.38779885,
+          "se_alpha_ann": 0.0294573,
+          "mde80_annual": 0.08252758,
+          "implied_annual": 0.0072,
+          "implied_source": "LS2000 Table II/VI 승자 사이드 V1-V3 Year-1 (+0.06 ~ +0.18%/월) 의 연복리 환산",
+          "ratio": 0.08724356,
+          "expected_t": 0.24442156,
+          "power": 0.04311961,
+          "disposition": "착수금지구간(우연 수준)"
+        },
+        "C_exclude_V3_high": {
+          "arm": "C_exclude_V3_top25",
+          "alpha_ann": 0.01142351,
+          "t_alpha": 0.38779885,
+          "se_alpha_ann": 0.0294573,
+          "mde80_annual": 0.08252758,
+          "implied_annual": 0.0218,
+          "implied_source": "LS2000 Table II/VI 승자 사이드 V1-V3 Year-1 (+0.06 ~ +0.18%/월) 의 연복리 환산",
+          "ratio": 0.26415412,
+          "expected_t": 0.74005417,
+          "power": 0.11124271,
+          "disposition": "조건부(미결이 최빈 결말)"
+        },
+        "B_lowturn_V1_low": {
+          "arm": "B_lowturn_V1_top25",
+          "alpha_ann": -0.00188114,
+          "t_alpha": -0.05397823,
+          "se_alpha_ann": 0.03484992,
+          "mde80_annual": 0.09763553,
+          "implied_annual": 0.0072,
+          "implied_source": "LS2000 Table II/VI 승자 사이드 V1-V3 Year-1 (+0.06 ~ +0.18%/월) 의 연복리 환산",
+          "ratio": 0.07374365,
+          "expected_t": 0.2066002,
+          "power": 0.0397667,
+          "disposition": "착수금지구간(우연 수준)"
+        },
+        "B_lowturn_V1_high": {
+          "arm": "B_lowturn_V1_top25",
+          "alpha_ann": -0.00188114,
+          "t_alpha": -0.05397823,
+          "se_alpha_ann": 0.03484992,
+          "mde80_annual": 0.09763553,
+          "implied_annual": 0.0218,
+          "implied_source": "LS2000 Table II/VI 승자 사이드 V1-V3 Year-1 (+0.06 ~ +0.18%/월) 의 연복리 환산",
+          "ratio": 0.22327937,
+          "expected_t": 0.62553948,
+          "power": 0.09102649,
+          "disposition": "조건부(미결이 최빈 결말)"
+        }
+      },
+      "basis_arithmetic_caveat": "arm B 의 PORT_t 는 1.294 -> 0.217 로 급락하나 β-통제 α 는 5.14 -> 4.95%/yr 로 거의 불변이다. 차이의 정체는 β 1.058 -> 0.647 하락에 따른 basis 산술((β-1)·E[bm])이며 알파 변화가 아니다(measurement-graduation §2 거울상). PORT_t 하락을 '조건화가 알파를 파괴했다' 로 읽어서는 안 된다."
+    },
+    "confound_rejection": {
+      "preregistered_statement": "회전율 층화 효과가 L-family(L01_Amihud·L09_Amihud_20d·L11_Kyle_Lambda) 통제 후 소멸하면 '생애주기' 가 아니라 유동성 프리미엄의 재명명.",
+      "dispersion_precheck": {
+        "winner_x_advt_x_mkt": {
+          "cells": 1270,
+          "n_median": 5,
+          "n_min": 1,
+          "sd_log_turn_median": 0.65704768,
+          "iqr_log_turn_median": 0.62887466
+        },
+        "universe_x_mkt": {
+          "n_median": 188,
+          "sd_log_turn_median": 0.79286033
+        },
+        "retention_ratio": 0.82870545,
+        "verdict_rule": "retention_ratio 붕괴(<0.3) 또는 n_median<6 이면 층 내부 검정력 부족 -> '미결' 라벨"
+      },
+      "orthogonality": {
+        "no_control_indep": {
+          "n_months": 189,
+          "mean_ann": -0.08360937,
+          "nw_t": -1.10216221,
+          "sd_monthly": 0.08335967,
+          "hit_rate": 0.46560847,
+          "beta_controlled": {
+            "alpha_ann": -0.06375272,
+            "t_alpha": -0.90462897,
+            "beta": -0.2376576,
+            "n": 189
+          }
+        },
+        "no_control_cond": {
+          "n_months": 259,
+          "mean_ann": -0.04070827,
+          "nw_t": -0.64497525,
+          "sd_monthly": 0.08583643,
+          "hit_rate": 0.47876448,
+          "beta_controlled": {
+            "alpha_ann": -0.03218739,
+            "t_alpha": -0.53545846,
+            "beta": -0.07273364,
+            "n": 259
+          }
+        },
+        "raw_control_indep": {
+          "n_months": 186,
+          "mean_ann": -0.0950241,
+          "nw_t": -1.22019675,
+          "sd_monthly": 0.08654149,
+          "hit_rate": 0.41397849,
+          "beta_controlled": {
+            "alpha_ann": -0.07362379,
+            "t_alpha": -1.01000949,
+            "beta": -0.22998775,
+            "n": 186
+          }
+        },
+        "raw_control_cond": {
+          "n_months": 259,
+          "mean_ann": 0.02828016,
+          "nw_t": 0.45109213,
+          "sd_monthly": 0.08469679,
+          "hit_rate": 0.55984556,
+          "beta_controlled": {
+            "alpha_ann": 0.03492568,
+            "t_alpha": 0.58079448,
+            "beta": -0.05672567,
+            "n": 259
+          }
+        },
+        "rank_control_indep": {
+          "n_months": 244,
+          "mean_ann": -0.02989812,
+          "nw_t": -0.51545437,
+          "sd_monthly": 0.08190808,
+          "hit_rate": 0.45901639,
+          "beta_controlled": {
+            "alpha_ann": -0.0345115,
+            "t_alpha": -0.61000905,
+            "beta": 0.04416945,
+            "n": 244
+          }
+        },
+        "rank_control_cond": {
+          "n_months": 259,
+          "mean_ann": -0.00939807,
+          "nw_t": -0.16897069,
+          "sd_monthly": 0.07831908,
+          "hit_rate": 0.47490347,
+          "beta_controlled": {
+            "alpha_ann": -0.01176693,
+            "t_alpha": -0.21336602,
+            "beta": 0.02022044,
+            "n": 259
+          }
+        },
+        "transform_convention": "raw = Z_Score_Aligned 원값 선형 직교화 / rank = 통제축 월별 백분위 랭크 변환 후 선형 직교화. 두 규약 병기 의무(measurement-graduation §3 통제 변환 규약 기록).",
+        "note": "직교화 대상 = log(형성기 회전율). 잔차를 시장-내 재랭킹해 층화."
+      },
+      "outcome_stratified": {
+        "L01_Amihud": {
+          "n_months": 196,
+          "mean_ann": 0.02091897,
+          "nw_t": 0.37956582,
+          "sd_monthly": 0.06664504,
+          "hit_rate": 0.53061224,
+          "beta_controlled": {
+            "alpha_ann": 0.00768989,
+            "t_alpha": 0.15457702,
+            "beta": 0.12100958,
+            "n": 196
+          }
+        },
+        "L09_Amihud_20d": {
+          "n_months": 198,
+          "mean_ann": 0.00870881,
+          "nw_t": 0.16428002,
+          "sd_monthly": 0.06791394,
+          "hit_rate": 0.53030303,
+          "beta_controlled": {
+            "alpha_ann": -0.00705083,
+            "t_alpha": -0.14204009,
+            "beta": 0.14737829,
+            "n": 198
+          }
+        },
+        "L11_Kyle_Lambda": {
+          "n_months": 196,
+          "mean_ann": 0.0408477,
+          "nw_t": 0.72066439,
+          "sd_monthly": 0.06600544,
+          "hit_rate": 0.5255102,
+          "beta_controlled": {
+            "alpha_ann": 0.03258464,
+            "t_alpha": 0.62634987,
+            "beta": 0.07558421,
+            "n": 196
+          }
+        },
+        "method": "각 통제축 5분위 내부에서 (Date,mkt,분위) 회전율 재랭킹 중앙값 분할 -> 분위 평균. 승자 데실 한정."
+      },
+      "leakage_null": {
+        "L01_Amihud": {
+          "axis": "L01_Amihud",
+          "independent_nw_t": -2.8863497,
+          "independent_mean_ann": -0.1706524,
+          "conditional_nw_t": -1.84623937,
+          "conditional_mean_ann": -0.09516335
+        },
+        "L09_Amihud_20d": {
+          "axis": "L09_Amihud_20d",
+          "independent_nw_t": 0.53017722,
+          "independent_mean_ann": 0.03281933,
+          "conditional_nw_t": 1.09794719,
+          "conditional_mean_ann": 0.05849077
+        },
+        "L11_Kyle_Lambda": {
+          "axis": "L11_Kyle_Lambda",
+          "independent_nw_t": -1.94243841,
+          "independent_mean_ann": -0.11877047,
+          "conditional_nw_t": -1.62343628,
+          "conditional_mean_ann": -0.08626092
+        },
+        "adv_rank": {
+          "axis": "adv_rank",
+          "independent_nw_t": 1.1135478,
+          "independent_mean_ann": 0.0844772,
+          "conditional_nw_t": 0.24158916,
+          "conditional_mean_ann": 0.01528786
+        },
+        "size_pct": {
+          "axis": "size_pct",
+          "independent_nw_t": -0.62608096,
+          "independent_mean_ann": -0.04500469,
+          "conditional_nw_t": 0.29228279,
+          "conditional_mean_ann": 0.01781521
+        },
+        "rule": "신호(회전율)의 |t| 가 어떤 순수-통제 귀무의 |t| 를 넘지 못하면 그 축의 독립성 미증명(VOL_INDEPENDENCE_UNPROVEN 대응)."
+      },
+      "cutplane": {
+        "mean_profile_V1_vs_V3": {
+          "1": {
+            "vgrp": 1,
+            "L01_Amihud": 0.36559032,
+            "L09_Amihud_20d": -0.20635924,
+            "L11_Kyle_Lambda": 0.31590047,
+            "adv_rank": 0.51532837,
+            "size_pct": 0.45212395,
+            "tr": 0.38107953
+          },
+          "2": {
+            "vgrp": 3,
+            "L01_Amihud": 0.43365369,
+            "L09_Amihud_20d": -0.24874736,
+            "L11_Kyle_Lambda": 0.61294041,
+            "adv_rank": 0.73279301,
+            "size_pct": 0.49247198,
+            "tr": 0.91708934
+          }
+        },
+        "q20_profiles": {
+          "L01_Amihud": {
+            "profile_V1": {
+              "q1": 0.0824,
+              "q2": 0.0425,
+              "q3": 0.0577,
+              "q4": 0.0584,
+              "q5": 0.0471,
+              "q6": 0.0391,
+              "q7": 0.0584,
+              "q8": 0.0524,
+              "q9": 0.0562,
+              "q10": 0.0406,
+              "q11": 0.0634,
+              "q12": 0.0645,
+              "q13": 0.0528,
+              "q14": 0.0357,
+              "q15": 0.0482,
+              "q16": 0.0429,
+              "q17": 0.0493,
+              "q18": 0.0368,
+              "q19": 0.0353,
+              "q20": 0.0364
+            },
+            "ends_over_mid_V1": 0.37810219,
+            "full_sample_spearman": 0.10434205
+          },
+          "L09_Amihud_20d": {
+            "profile_V1": {
+              "q1": 0.0565,
+              "q2": 0.0319,
+              "q3": 0.0474,
+              "q4": 0.0471,
+              "q5": 0.0357,
+              "q6": 0.0345,
+              "q7": 0.049,
+              "q8": 0.0524,
+              "q9": 0.0505,
+              "q10": 0.0398,
+              "q11": 0.055,
+              "q12": 0.0668,
+              "q13": 0.0524,
+              "q14": 0.0474,
+              "q15": 0.0565,
+              "q16": 0.0619,
+              "q17": 0.0573,
+              "q18": 0.0425,
+              "q19": 0.0535,
+              "q20": 0.0619
+            },
+            "ends_over_mid_V1": 0.4296,
+            "full_sample_spearman": -0.11702854
+          },
+          "L11_Kyle_Lambda": {
+            "profile_V1": {
+              "q1": 0.0789,
+              "q2": 0.0448,
+              "q3": 0.0698,
+              "q4": 0.0664,
+              "q5": 0.0505,
+              "q6": 0.0414,
+              "q7": 0.0569,
+              "q8": 0.0611,
+              "q9": 0.0558,
+              "q10": 0.0376,
+              "q11": 0.0584,
+              "q12": 0.0573,
+              "q13": 0.0486,
+              "q14": 0.03,
+              "q15": 0.0429,
+              "q16": 0.0433,
+              "q17": 0.0429,
+              "q18": 0.0338,
+              "q19": 0.0353,
+              "q20": 0.0444
+            },
+            "ends_over_mid_V1": 0.42371542,
+            "full_sample_spearman": 0.11424884
+          }
+        },
+        "note": "전 구간 상관과 20분위 프로파일을 나란히 기록(하나만 내면 되살아남을 놓친다)."
+      },
+      "confound_axes": {
+        "rho_size": 0.01814873,
+        "rho_adv": 0.4006387,
+        "rho_mkt_dummy": 0.49270198,
+        "rho_mktint_dummy": -0.00006846,
+        "note": "rho_mkt_dummy(혼합 랭킹) vs rho_mktint_dummy(시장-내 랭킹) 대비 = LS2000 Nasdaq 배제의 KR 대응 실증. size_pct 0=최대형이므로 rho_size>0 이면 고회전=소형."
+      },
+      "verdict": "판정 불가 — '분리 실패' 도 '분리 성공' 도 아니다. 통제 전 스프레드 자체가 유의하지 않으므로(1급 기각) '통제 후 소멸' 을 물을 대상이 없다. 다만 세 가지가 실측됐다: ①통제 규약 2종이 부호로 갈린다(조건부 사양 raw +2.83%/yr vs rank -0.94%/yr — feedback-two-controls-disagree 대상이나 둘 다 |t|<0.6 이라 갈림 자체가 잡음 안) ②결과량 층화(통제 5분위 내부) 후 스프레드는 +0.9~+4.1%/yr 로 부호가 뒤집히나 |t| <= 0.72 ③★누출 귀무가 신호보다 세다 — 순수 L01_Amihud 를 stratifier 로 주입하면 |NW-t| 2.886(-17.07%/yr)로 회전율 신호의 0.807 을 크게 넘는다. 즉 승자 데실 내부에서 실제로 수익을 가르는 축은 회전율이 아니라 유동성(Amihud) 계열이다.",
+      "label": "VOL_INDEPENDENCE_UNPROVEN 대응 — 단, 여기서는 '증명 안 된 독립성' 이 아니라 '분리할 신호가 없음' 이다.",
+      "sign_caveat": "L-family 는 Z_Score_Aligned(방향 정렬) 값이라 그 부호는 IC 로 결정된 데이터 산물이다. 누출 귀무의 부호를 기전으로 해석하지 말 것 — 여기서 쓰는 것은 크기(|t|)뿐이다."
+    },
+    "mechanism_side_observation": {
+      "preregistered_statement": "기전이 참이면 저회전 승자의 후속 이익 서프라이즈/실적이 고회전 승자보다 우위여야 한다. 부재하면 수익 스프레드가 있어도 기전 기각. ★C01_SUE 단독 금지 — 실현 공시창 수익률 병행.",
+      "realized_announcement_window": {
+        "n_formation_months": 245,
+        "v1_car3_mean": 0.00131589,
+        "v3_car3_mean": -0.00024152,
+        "diff": 0.00155741,
+        "nw_lag11_t": 1.31472927,
+        "hit_rate": 0.54285714,
+        "spec": "3거래일(공시 고정일 -1..+1) 시장조정 수익 합. 형성 후 8분기 이벤트 전부 평균 -> 형성월별 집계 -> NW lag-11(중첩 24개월).",
+        "pit_note": "실현 사후 관측(신호 미진입). C01_SUE 미사용 — 1/20 의 정적검증기 FAIL_LOOKAHEAD 축을 우회.",
+        "interpretation": "LS2000 기전이 참이면 diff>0 (저회전 승자의 후속 공시 반응 우위)."
+      },
+      "realized_earnings_growth": {
+        "label": "보조 관측 — 단독 근거 아님(1/20 C01_SUE PIT caveat 승계). 실현 DART 순이익성장(사후).",
+        "by_vter": {
+          "1": {
+            "vter": 1,
+            "n": 1813,
+            "nig_median": 0.04310172,
+            "nig_mean_w": 0.03963743
+          },
+          "2": {
+            "vter": 3,
+            "n": 10920,
+            "nig_median": 0.00617004,
+            "nig_mean_w": -0.00833633
+          }
+        }
+      },
+      "verdict": "부분 지지(미결) — 방향은 LS2000 정합이나 유의 미달. 실현 공시창 3일 시장조정 CAR: V1 +0.132% vs V3 -0.024%, 차 +0.156% NW(11)-t +1.315 (형성월 245, 형성 후 8분기 이벤트). 보조로 실현 DART 순이익성장 중앙값 V1 +4.31% vs V3 +0.62%. reject_if ④(부수 관측 부재)는 발동하지 않는다 — 부재가 아니라 약함이다.",
+      "consequence": "부수 관측이 방향으로 살아 있는데 수익 스프레드가 없다는 것 = 기전의 정보 축은 KR 에도 존재하나 top-25 롱온리 소비면으로 전이되지 않는다(전이 벽). 이는 4/20 설계가 소비 형태를 바꿔야 할 근거다."
+    },
+    "no_signal_control_gate": {
+      "mandatory_for": "롱온리 전 arm (measurement-graduation §3)",
+      "control_beta": 1.07160482,
+      "control_beta_verdict": "PASS — 대조군 β 1.072. 1/20 의 홀딩월 라벨 정렬 결함(β 0.041) 재발 없음. 라벨은 시그널월 t 의 다음 캘린더월(t+1).",
+      "gates": {
+        "A_uncond_top25": {
+          "arm": "A_uncond_top25",
+          "n": 258,
+          "diff_ann": 0.04084293,
+          "diff_nw_t": 0.75089041,
+          "corr": 0.6435548,
+          "verdict": "INDISTINGUISHABLE_FROM_NO_SIGNAL"
+        },
+        "B_lowturn_V1_top25": {
+          "arm": "B_lowturn_V1_top25",
+          "n": 258,
+          "diff_ann": -0.00735021,
+          "diff_nw_t": -0.14299689,
+          "corr": 0.55485829,
+          "verdict": "INDISTINGUISHABLE_FROM_NO_SIGNAL"
+        },
+        "B2_lowturn_half_top25": {
+          "arm": "B2_lowturn_half_top25",
+          "n": 258,
+          "diff_ann": 0.01858817,
+          "diff_nw_t": 0.37308924,
+          "corr": 0.62813828,
+          "verdict": "INDISTINGUISHABLE_FROM_NO_SIGNAL"
+        },
+        "C_exclude_V3_top25": {
+          "arm": "C_exclude_V3_top25",
+          "n": 258,
+          "diff_ann": 0.02706949,
+          "diff_nw_t": 0.5499913,
+          "corr": 0.64166798,
+          "verdict": "INDISTINGUISHABLE_FROM_NO_SIGNAL"
+        },
+        "D_highturn_V3_top25": {
+          "arm": "D_highturn_V3_top25",
+          "n": 258,
+          "diff_ann": 0.04230839,
+          "diff_nw_t": 0.71591414,
+          "corr": 0.62744624,
+          "verdict": "INDISTINGUISHABLE_FROM_NO_SIGNAL"
+        }
+      },
+      "consequence": "5개 arm 전부 INDISTINGUISHABLE_FROM_NO_SIGNAL (|t| 0.14~0.75) → screen-tier 등재 불가. 어떤 arm 의 양(+) 수치도 알파로 인용할 수 없다. 2/20 과 동일 결과이며 회전율 조건화는 이 게이트를 움직이지 못했다."
+    },
+    "market_internal_ranking_positive_control": {
+      "finding": {
+        "mean_ann": -0.19580371,
+        "nw_t": -2.52618462,
+        "n_months": 172,
+        "kq_share_V1": 0.14054054,
+        "kq_share_V3": 0.65330867,
+        "kq_share_V1_mktint": 0.43000838,
+        "kq_share_V3_mktint": 0.50709372,
+        "note": "혼합 랭킹은 V 분위가 시장 더미로 오염된다(KQ150 비중 격차). 시장-내 랭킹이 그것을 제거하는지 실측."
+      },
+      "verdict": "★시장-내 랭킹 의무의 양성 대조 성립 — 혼합(K200+KQ150 통합) 랭킹으로 회전율을 자르면 승자 사이드 스프레드가 -19.58%/yr NW-t -2.526 으로 '유의' 해진다. 그러나 그 V1 셀은 KOSDAQ 비중 14.1% · V3 셀은 65.3% 로, 실제로 재는 것은 회전율이 아니라 시장 더미(K200 롱 · KQ150 숏)다. 시장-내 랭킹은 그 오염을 제거한다(KQ 비중 43.0% vs 50.7%). LS2000 이 Nasdaq 을 배제한 이유의 KR 대응물이 실측으로 확인됐다.",
+      "consequence": "이 통제를 걸지 않았다면 본 라운드는 '유의한 회전율 효과' 를 보고했을 것이다 — 부호도 반대인 채로."
+    }
+  },
+  "disposition": {
+    "bands_from_hypothesis": {
+      "threshold_context": "자본 문턱 PORT_t 2.95 에 이 창에서 필요한 활성수익 +13.25%/yr, 무조건부 cell4 관측 β-통제 α +5.14%/yr (44%) — 2/20 실측",
+      "band_reject": "β-통제 α 증분 ≤ 0 또는 1급 스프레드 비유의 → 기각/이식 실패 (L-code 적립, 기전 특정: 승자 사이드 vs 교란 vs 부수 관측 중 어느 축이 꺼졌는지)",
+      "band_partial": "저회전 조건부 β-통제 α ∈ (+5.14%, +8%]/yr → '방향은 맞으나 배율 부족' — 처분: 승자 사이드 단독 자본 불가 선언 + 본 층화를 composite/오버레이 재료로 보존 + 4/20 은 C5(패자 사이드 저회전 리바운드 롱, 원문 배율 본체) 또는 C2(ΔTurnover) 로 전환",
+      "band_reach": "β-통제 α ≥ +13%/yr 대 → 자본 문턱 사정권 — forge 완주 가치",
+      "preregistered_prior": "★정직 사전 기록: LS2000 원문의 승자 사이드 Year-1 스프레드는 +0.06~0.18%/mo(≈+0.7~2.2%/yr)로 작고 대부분 비유의하며, 유의 우위는 Year 2 이후다. 미국 배율을 그대로 이식하면 band_partial 미만이 최빈 결말이다. 본 시도가 그보다 큰 효과를 기대하는 유일한 근거 = KR 특이 기전(개인 회전율 극단 + 공매도 제약으로 말기 승자 과대평가가 미국보다 깊다)이며 이는 가설이지 실측이 아니다 — 따라서 '미결/배율 부족' 결말 시 이 라운드가 남기는 것: ①승자 사이드 회전율 층화의 KR 실측 좌표(최초) ②L-family 직교성 실측 ③C5/C2 의 착수 근거"
+    },
+    "observed": {
+      "armB_beta_alpha_ann": 0.04948432,
+      "armC_beta_alpha_ann": 0.06278897,
+      "baseline_armA": 0.05136546
+    },
+    "verdict": "reject",
+    "rationale": "사전 정의: band_reject = 'β-통제 α 증분 ≤ 0 또는 1급 스프레드 비유의'. 둘 다 성립한다(증분 -0.19%p · 1급 전 사양 |t| < 0.81). band_partial(+5.14~+8%/yr)에 arm C 의 절대 α +6.28%/yr 가 들어가지만 그것은 밴드가 요구하는 '저회전 조건부' 스펙이 아니고(배제형 변형), 밴드의 판정 기준은 절대 α 가 아니라 증분이며 그 증분(+1.14%p)의 t 는 0.388 이다. 절대값으로 밴드를 읽어 partial 로 승격하면 사후 표적 교체가 된다.",
+    "reachability": {
+      "A_uncond_top25": {
+        "arm": "A_uncond_top25",
+        "n_months": 259,
+        "sd_monthly_active": 0.06024613,
+        "required_active_ann_for_t295": 0.13252033,
+        "observed_active_ann": 0.05816369,
+        "coverage_ratio": 0.43890391
+      },
+      "B_lowturn_V1_top25": {
+        "arm": "B_lowturn_V1_top25",
+        "n_months": 259,
+        "sd_monthly_active": 0.05016096,
+        "required_active_ann_for_t295": 0.11033651,
+        "observed_active_ann": 0.00865442,
+        "coverage_ratio": 0.07843655
+      },
+      "B2_lowturn_half_top25": {
+        "arm": "B2_lowturn_half_top25",
+        "n_months": 259,
+        "sd_monthly_active": 0.04818091,
+        "required_active_ann_for_t295": 0.1059811,
+        "observed_active_ann": 0.03497522,
+        "coverage_ratio": 0.33001379
+      },
+      "C_exclude_V3_top25": {
+        "arm": "C_exclude_V3_top25",
+        "n_months": 259,
+        "sd_monthly_active": 0.04886338,
+        "required_active_ann_for_t295": 0.10748229,
+        "observed_active_ann": 0.04552044,
+        "coverage_ratio": 0.4235157
+      },
+      "D_highturn_V3_top25": {
+        "arm": "D_highturn_V3_top25",
+        "n_months": 259,
+        "sd_monthly_active": 0.06161754,
+        "required_active_ann_for_t295": 0.13553696,
+        "observed_active_ann": 0.05448906,
+        "coverage_ratio": 0.40202358
+      }
+    }
+  },
+  "exploratory_not_preregistered": {
+    "label": "exploratory_not_preregistered",
+    "hard_rule": "★본 라운드 판정 근거로 승격 금지. 용도는 강화 4/20 의 사전등록 1급 좌표 생성 하나뿐이다.",
+    "loser_side_spread_1m": {
+      "1": {
+        "mdec": 1,
+        "n": 243,
+        "v1_minus_v3_ann": 0.0527868,
+        "nw_t": 1.02676679
+      },
+      "2": {
+        "mdec": 5,
+        "n": 256,
+        "v1_minus_v3_ann": 0.01122275,
+        "nw_t": 0.22794015
+      },
+      "3": {
+        "mdec": 10,
+        "n": 190,
+        "v1_minus_v3_ann": -0.06227378,
+        "nw_t": -0.77922776
+      }
+    },
+    "loser_side_consumption_arms": {
+      "E_loser_lowturn_top25": {
+        "id": "E_loser_lowturn_top25",
+        "n_months": 259,
+        "n_names_median": 25,
+        "n_names_max": 25,
+        "port_t_capw": -0.43963475,
+        "port_p": 0.66020167,
+        "ir": -0.10703994,
+        "alpha_annualized": 0.01961445,
+        "net_sr": -0.10703994,
+        "mean_active_net_ann": -0.02001004,
+        "turnover_annual": 9.45415385,
+        "selected_ret_coverage": 0.996,
+        "beta_controlled": {
+          "alpha_ann": 0.01961445,
+          "t_alpha": 0.6109353,
+          "beta": 0.66176805,
+          "t_beta": 4.63531849,
+          "beta_contrib_ann": -0.03962449,
+          "n": 259
+        },
+        "diag_ew_universe": {
+          "port_t": -1.02191837,
+          "alpha_ann": -0.01249962,
+          "ir": -0.23182806,
+          "n_months": 259
+        },
+        "diag_cap_tier": {
+          "weight_share_avg": {
+            "MEGA": 0.03061538,
+            "MID": 0.04569231,
+            "OTHER": 0.92369231,
+            "UNRANKED": 0
+          },
+          "contrib_gross_annualized": {
+            "MEGA": 0.002905,
+            "MID": 0.00012927,
+            "OTHER": 0.10787082,
+            "UNRANKED": 0
+          }
+        }
+      },
+      "F_loser_uncond_top25": {
+        "id": "F_loser_uncond_top25",
+        "n_months": 259,
+        "n_names_median": 25,
+        "n_names_max": 25,
+        "port_t_capw": -0.69962244,
+        "port_p": 0.48416312,
+        "ir": -0.15652298,
+        "alpha_annualized": -0.01768432,
+        "net_sr": -0.15652298,
+        "mean_active_net_ann": -0.03592484,
+        "turnover_annual": 10.98276923,
+        "selected_ret_coverage": 0.99584615,
+        "beta_controlled": {
+          "alpha_ann": -0.01768432,
+          "t_alpha": -0.43239106,
+          "beta": 0.84430016,
+          "t_beta": 4.99614866,
+          "beta_contrib_ann": -0.01824052,
+          "n": 259
+        },
+        "diag_ew_universe": {
+          "port_t": -1.20610047,
+          "alpha_ann": -0.05618296,
+          "ir": -0.25784769,
+          "n_months": 259
+        },
+        "diag_cap_tier": {
+          "weight_share_avg": {
+            "MEGA": 0.00953846,
+            "MID": 0.03030769,
+            "OTHER": 0.96015385,
+            "UNRANKED": 0
+          },
+          "contrib_gross_annualized": {
+            "MEGA": -0.00125339,
+            "MID": 0.00196022,
+            "OTHER": 0.09662097,
+            "UNRANKED": 0
+          }
+        }
+      },
+      "G_loser_highturn_top25": {
+        "id": "G_loser_highturn_top25",
+        "n_months": 259,
+        "n_names_median": 25,
+        "n_names_max": 25,
+        "port_t_capw": -1.07414616,
+        "port_p": 0.28275718,
+        "ir": -0.22827445,
+        "alpha_annualized": -0.04563034,
+        "net_sr": -0.22827445,
+        "mean_active_net_ann": -0.04885497,
+        "turnover_annual": 8.58276923,
+        "selected_ret_coverage": 0.99569231,
+        "beta_controlled": {
+          "alpha_ann": -0.04563034,
+          "t_alpha": -1.21228932,
+          "beta": 0.97247483,
+          "t_beta": 6.31864374,
+          "beta_contrib_ann": -0.00322462,
+          "n": 259
+        },
+        "diag_ew_universe": {
+          "port_t": -1.74689387,
+          "alpha_ann": -0.07881324,
+          "ir": -0.34909267,
+          "n_months": 259
+        },
+        "diag_cap_tier": {
+          "weight_share_avg": {
+            "MEGA": 0.00446154,
+            "MID": 0.02353846,
+            "OTHER": 0.972,
+            "UNRANKED": 0
+          },
+          "contrib_gross_annualized": {
+            "MEGA": -0.00032725,
+            "MID": 0.00546491,
+            "OTHER": 0.07573191,
+            "UNRANKED": 0
+          }
+        }
+      }
+    },
+    "loser_side_no_signal_gates": {
+      "E_loser_lowturn_top25": {
+        "arm": "E_loser_lowturn_top25",
+        "diff_ann": -0.02850208,
+        "diff_nw_t": -0.49298123,
+        "verdict": "INDISTINGUISHABLE_FROM_NO_SIGNAL"
+      },
+      "F_loser_uncond_top25": {
+        "arm": "F_loser_uncond_top25",
+        "diff_ann": -0.04487212,
+        "diff_nw_t": -0.73004644,
+        "verdict": "INDISTINGUISHABLE_FROM_NO_SIGNAL"
+      },
+      "G_loser_highturn_top25": {
+        "arm": "G_loser_highturn_top25",
+        "diff_ann": -0.05831089,
+        "diff_nw_t": -1.03970813,
+        "verdict": "INDISTINGUISHABLE_FROM_NO_SIGNAL"
+      }
+    },
+    "event_time_horizons": {
+      "by_cell": {
+        "1": {
+          "mdec": 10,
+          "vter": 1,
+          "y1_ann": 0.13717898,
+          "y1_n": 2889,
+          "y2_ann": 0.09915288,
+          "y2_n": 2776,
+          "y3_ann": 0.10592992,
+          "y3_n": 2655
+        },
+        "2": {
+          "mdec": 10,
+          "vter": 3,
+          "y1_ann": 0.14692047,
+          "y1_n": 3030,
+          "y2_ann": 0.11119014,
+          "y2_n": 2886,
+          "y3_ann": 0.14880298,
+          "y3_n": 2742
+        },
+        "3": {
+          "mdec": 1,
+          "vter": 1,
+          "y1_ann": 0.13642804,
+          "y1_n": 3030,
+          "y2_ann": 0.07525394,
+          "y2_n": 2854,
+          "y3_ann": 0.10437707,
+          "y3_n": 2684
+        },
+        "4": {
+          "mdec": 1,
+          "vter": 3,
+          "y1_ann": 0.07114901,
+          "y1_n": 3042,
+          "y2_ann": 0.11126957,
+          "y2_n": 2898,
+          "y3_ann": 0.09138031,
+          "y3_n": 2754
+        }
+      },
+      "spreads": {
+        "winner": {
+          "mdec": 10,
+          "y1_v1_minus_v3_ann": -0.00974149,
+          "y2_v1_minus_v3_ann": -0.01203726,
+          "y3_v1_minus_v3_ann": -0.04287306
+        },
+        "loser": {
+          "mdec": 1,
+          "y1_v1_minus_v3_ann": 0.06527903,
+          "y2_v1_minus_v3_ann": -0.03601563,
+          "y3_v1_minus_v3_ann": 0.01299676
+        }
+      },
+      "tests": {
+        "winner_y2": {
+          "mdec": 10,
+          "n_formation": 235,
+          "y2_spread_ann": -0.01813377,
+          "nw_lag11_t": -0.69192311,
+          "overlap_note": "중첩 12개월 이벤트타임 — Hansen-Hodrick 계열 lag-11 NW. LS2000 과 동일 처리."
+        },
+        "loser_y2": {
+          "mdec": 1,
+          "n_formation": 246,
+          "y2_spread_ann": -0.06701631,
+          "nw_lag11_t": -1.63029771,
+          "overlap_note": "중첩 12개월 이벤트타임 — Hansen-Hodrick 계열 lag-11 NW. LS2000 과 동일 처리."
+        }
+      },
+      "label": "exploratory_not_preregistered — Year2+ 수평선은 LS2000 효과 본체의 좌표이며 본 라운드 판정 근거가 아니다."
+    },
+    "reading": "패자 사이드(mdec=1)에서 V1-V3 = +5.28%/yr NW-t +1.027 로 부호가 LS2000 정합이고 승자 사이드(-6.23%, t -0.779)와 반대다. 롱온리 소비 형태에서도 같은 순서가 나온다: E(저회전 패자) β-통제 α +1.96%/yr t 0.611 > F(무조건부 패자) -1.77%/yr > G(고회전 패자) -4.56%/yr t -1.212 — 스프레드 +6.5%/yr. 이벤트타임: 패자 V1-V3 는 Y1 +6.53%/yr 인데 Y2 -3.60%(NW11-t -1.630) 로 부호가 뒤집힌다 — LS2000 의 5년 지속과 다르다. 즉 KR 에서 회전율 조건화가 무엇인가 가르는 곳이 있다면 그것은 승자 사이드가 아니라 패자 사이드이고, 수평선은 1년이다. ★어느 것도 유의하지 않다 — 이 문단은 4/20 의 사전등록 설계를 위한 좌표이지 발견 주장이 아니다."
+  },
+  "redundancy_check": {
+    "method": "샘플 30개월, load_month_factors(factor_names=...) Z_Score_Aligned 대비 월별 Spearman 평균",
+    "correlations": {
+      "L02_Turnover": {
+        "factor": "L02_Turnover",
+        "cor_vs_low_turnover_signal": 0.70599283,
+        "cor_vs_momentum_score": -0.07442809,
+        "n_months": 30
+      },
+      "L05_Dollar_Volume": {
+        "factor": "L05_Dollar_Volume",
+        "cor_vs_low_turnover_signal": 0.38248086,
+        "cor_vs_momentum_score": -0.18646366,
+        "n_months": 30
+      },
+      "L15_Turnover_252d": {
+        "factor": "L15_Turnover_252d",
+        "cor_vs_low_turnover_signal": 0.84126754,
+        "cor_vs_momentum_score": -0.04663443,
+        "n_months": 30
+      },
+      "L26_Log_MktCap": {
+        "factor": "L26_Log_MktCap",
+        "cor_vs_low_turnover_signal": -0.02033526,
+        "cor_vs_momentum_score": -0.17534283,
+        "n_months": 30
+      },
+      "M02_Mom_6_1": {
+        "factor": "M02_Mom_6_1",
+        "cor_vs_low_turnover_signal": -0.03436063,
+        "cor_vs_momentum_score": 0.69596013,
+        "n_months": 30
+      }
+    },
+    "reading": "저회전선호 신호(-turnover_rank)는 기존 등재 팩터 L02_Turnover 와 방향적으로 겹친다 — 본 라운드의 재료는 '신규 발굴' 이 아니라 기존 유동성 계열 팩터의 조건화 소비다(Factor Zoo 축소 원칙 ① 정합: 발굴이 아니라 검증)."
+  },
+  "advisory_battery": {
+    "momentum_score": {
+      "name": "M_JT6",
+      "rank_ic": 0.00723868,
+      "ic_sd": 0.16458787,
+      "icir": 0.04398064,
+      "nw_t": 0.71755558,
+      "n": 259
+    },
+    "turnover_low_pref": {
+      "name": "-turnover_rank",
+      "rank_ic": 0.0287141,
+      "ic_sd": 0.15843692,
+      "icir": 0.18123368,
+      "nw_t": 3.2112839,
+      "n": 259
+    },
+    "momentum_in_armC_domain": {
+      "name": "M_JT6 | V1∪V2",
+      "rank_ic": 0.00960479,
+      "ic_sd": 0.1654484,
+      "icir": 0.0580531,
+      "nw_t": 0.94408732,
+      "n": 259
+    },
+    "monotonicity_winner_row": {
+      "v1": 0.12170639,
+      "v2": 0.1974925,
+      "v3": 0.16819912,
+      "spearman_rank_vs_ret": 0.5,
+      "note": "LS2000 예측은 V1>V2>V3 (단조 감소). 실측 부호 확인용."
+    },
+    "subperiod": {
+      "1": {
+        "per": "P1_2005_2013",
+        "arm": "A_uncond_top25",
+        "active_ann": 0.09246977,
+        "nw_t": 1.36759679,
+        "n": 108
+      },
+      "2": {
+        "per": "P2_2014_2019",
+        "arm": "A_uncond_top25",
+        "active_ann": 0.05521788,
+        "nw_t": 0.74123312,
+        "n": 72
+      },
+      "3": {
+        "per": "P3_2020_2026",
+        "arm": "A_uncond_top25",
+        "active_ann": 0.01394902,
+        "nw_t": 0.15370192,
+        "n": 79
+      },
+      "4": {
+        "per": "P1_2005_2013",
+        "arm": "B_lowturn_V1_top25",
+        "active_ann": 0.06072136,
+        "nw_t": 1.28605525,
+        "n": 108
+      },
+      "5": {
+        "per": "P2_2014_2019",
+        "arm": "B_lowturn_V1_top25",
+        "active_ann": 0.01477347,
+        "nw_t": 0.22518946,
+        "n": 72
+      },
+      "6": {
+        "per": "P3_2020_2026",
+        "arm": "B_lowturn_V1_top25",
+        "active_ann": -0.06810257,
+        "nw_t": -0.72790598,
+        "n": 79
+      },
+      "7": {
+        "per": "P1_2005_2013",
+        "arm": "B2_lowturn_half_top25",
+        "active_ann": 0.10089862,
+        "nw_t": 1.99172756,
+        "n": 108
+      },
+      "8": {
+        "per": "P2_2014_2019",
+        "arm": "B2_lowturn_half_top25",
+        "active_ann": 0.03090794,
+        "nw_t": 0.4544865,
+        "n": 72
+      },
+      "9": {
+        "per": "P3_2020_2026",
+        "arm": "B2_lowturn_half_top25",
+        "active_ann": -0.05144101,
+        "nw_t": -0.61471125,
+        "n": 79
+      },
+      "10": {
+        "per": "P1_2005_2013",
+        "arm": "C_exclude_V3_top25",
+        "active_ann": 0.1059255,
+        "nw_t": 2.03089205,
+        "n": 108
+      },
+      "11": {
+        "per": "P2_2014_2019",
+        "arm": "C_exclude_V3_top25",
+        "active_ann": 0.077637,
+        "nw_t": 1.01514476,
+        "n": 72
+      },
+      "12": {
+        "per": "P3_2020_2026",
+        "arm": "C_exclude_V3_top25",
+        "active_ann": -0.06632943,
+        "nw_t": -0.90300856,
+        "n": 79
+      },
+      "13": {
+        "per": "P1_2005_2013",
+        "arm": "D_highturn_V3_top25",
+        "active_ann": 0.07556983,
+        "nw_t": 1.17573132,
+        "n": 108
+      },
+      "14": {
+        "per": "P2_2014_2019",
+        "arm": "D_highturn_V3_top25",
+        "active_ann": 0.04936502,
+        "nw_t": 0.67462872,
+        "n": 72
+      },
+      "15": {
+        "per": "P3_2020_2026",
+        "arm": "D_highturn_V3_top25",
+        "active_ann": 0.03033978,
+        "nw_t": 0.26853923,
+        "n": 79
+      }
+    },
+    "subperiod_stability_armC": 0.66666667,
+    "dsr_diagnostic": {
+      "A_uncond_top25": 0.54141411,
+      "B_lowturn_V1_top25": 0.17106321,
+      "B2_lowturn_half_top25": 0.41584209,
+      "C_exclude_V3_top25": 0.52222191,
+      "D_highturn_V3_top25": 0.49736076
+    },
+    "oos_retention_approx": {
+      "A_uncond_top25": {
+        "splits": [
+          -0.08084143,
+          -0.06630027,
+          0.20442421
+        ],
+        "median": -0.06630027
+      },
+      "B_lowturn_V1_top25": {
+        "splits": [
+          -0.73917014,
+          -0.92645734,
+          -1.16868935
+        ],
+        "median": -0.92645734
+      },
+      "B2_lowturn_half_top25": {
+        "splits": [
+          -0.50086814,
+          -0.54435193,
+          -0.85493222
+        ],
+        "median": -0.54435193
+      },
+      "C_exclude_V3_top25": {
+        "splits": [
+          -0.50496256,
+          -0.62186664,
+          -1.00945469
+        ],
+        "median": -0.62186664
+      },
+      "D_highturn_V3_top25": {
+        "splits": [
+          0.04836947,
+          0.21150773,
+          0.13891462
+        ],
+        "median": 0.13891462
+      }
+    },
+    "turnover_annual": {
+      "A_uncond_top25": 9.24,
+      "B_lowturn_V1_top25": 8.62338462,
+      "B2_lowturn_half_top25": 9.24738462,
+      "C_exclude_V3_top25": 9.64246154,
+      "D_highturn_V3_top25": 7.78892308
+    },
+    "post_neutralization": {
+      "pre": 0.0287141,
+      "post": 0.02982812,
+      "post_nw_t": 3.30521439,
+      "retention": 1.03879691
+    }
+  },
+  "advisory_headline": "★단일 최대 관측: 유니버스 전체 단면에서 저회전 선호(-turnover_rank)의 rank-IC = +0.0287 · ICIR 0.181 · NW-t +3.211 이고 size 중립화 후에도 유지(+0.0298, t +3.305, retention 1.039). 즉 회전율 축 자체에는 단면 정보가 있다. 그런데 그 정보는 (a)승자 데실 내부에서는 사라지고 (b)top-25 롱온리 소비로 전이되지 않는다(전 arm 무신호 대조 구별불가). 전이 벽의 또 하나의 사례이며, rank-IC t 와 portfolio-alpha t 를 구분해 읽어야 하는 이유다(measurement-graduation §2).",
+  "pit": {
+    "hard_gate": {
+      "tool": "detect_lookahead",
+      "files": [
+        {
+          "file": "fe_jt1993_momentum.R",
+          "clean": true,
+          "scanned": true,
+          "n_violations": 0,
+          "detail": {}
+        },
+        {
+          "file": "s1_panel.R",
+          "clean": true,
+          "scanned": true,
+          "n_violations": 0,
+          "detail": {}
+        },
+        {
+          "file": "s2_primary.R",
+          "clean": true,
+          "scanned": true,
+          "n_violations": 0,
+          "detail": {}
+        },
+        {
+          "file": "s3_confound.R",
+          "clean": true,
+          "scanned": true,
+          "n_violations": 0,
+          "detail": {}
+        },
+        {
+          "file": "s4_arms.R",
+          "clean": false,
+          "scanned": true,
+          "n_violations": 1,
+          "detail": [
+            {
+              "check": "C1",
+              "line": 52,
+              "code": "net_sr = mean(active)/stats::sd(active)*sqrt(PPY), mean_active_net = mean(active),",
+              "msg": "sd() on full vector * sqrt() without rolling/expanding window — possible full-sample vol"
+            }
+          ]
+        },
+        {
+          "file": "s5_side_pit.R",
+          "clean": false,
+          "scanned": true,
+          "n_violations": 2,
+          "detail": [
+            {
+              "check": "C1",
+              "line": 87,
+              "code": "act <- pr$ret_net - pr$benchmark_ret; sr <- mean(act)/sd(act)*sqrt(12); n <- length(act)",
+              "msg": "sd() on full vector * sqrt() without rolling/expanding window — possible full-sample vol"
+            },
+            {
+              "check": "C1",
+              "line": 90,
+              "code": "sr0 <- emax * sd(act)*sqrt(12)/sqrt(n) * 0 + emax*(sd(act/sd(act))/sqrt(n))*sqrt(12)",
+              "msg": "sd() on full vector * sqrt() without rolling/expanding window — possible full-sample vol"
+            }
+          ]
+        }
+      ],
+      "total_violations": 3,
+      "all_clean": false
+    },
+    "signal_path_clean": "fe_jt1993_momentum.R · s1_panel.R · s2_primary.R · s3_confound.R = detect_lookahead clean=TRUE · violations 0 (신호·층화·통제 산출 경로 전부).",
+    "reporting_path_flags": "s4_arms.R 1건 · s5_side_pit.R 2건 — 전부 C1 'sd() on full vector * sqrt()' 이며 해당 줄은 실현 수익 시계열의 사후 요약통계(연율 net SR · DSR 진단) 계산이다. 신호·선별·비중 어디에도 입력되지 않는다. 검출기가 살아 있다는 양성 대조이기도 하다(위반 주입 없이 3건 발화).",
+    "c1": "full-sample 통계 미사용 — 신호는 t-2..t-7 월간수익 shift, 회전율은 t-2..t-7 월평균 shift. 단면 랭크/z 는 당월 단면 내부 연산.",
+    "c2": "same-day 순환참조 없음 — 시그널일 t 의 수익은 t+1 캘린더월 forward(build_monthly_forward_returns).",
+    "c4": "재무제표 리프는 신호에 미진입. 부수 관측(공시창)만 DART 고정 공시일 규약(연간 익년 3/31 · 분기 5/15·8/15·11/15) 사용 — 사후 실현 진단.",
+    "c5": "오버레이 미적용(S0/S1 준수). 국면 라벨을 어떤 arm 의 비중에도 쓰지 않았다.",
+    "c6": "survivorship — K200/KQ150 멤버십을 각 시그널일 실제 값으로 시변 적용. 상폐 종목은 그 시점 유니버스에 잔존.",
+    "c10": "★회전율 t-1 준수 — 형성창을 t-2..t-7 로 잡아 당월과 t-1 월을 전면 배제했다(요구는 t-1 까지이나 신호 창과 정렬해 더 보수적으로 잡았다). 유동성 자 adv20 은 build_adv20_t1() 이 당일 제외 shift(1).",
+    "c13": "NEGATE/FLIP 미사용. L-family 통제는 load_month_factors 의 Z_Score_Aligned 그대로 사용.",
+    "c14": "Factor DB IC 히스토리 미소비 (align_factor_direction 은 커넥터 내부 PIT-safe 경로).",
+    "c15": "★L-family(L01/L09/L11) · 중복성 점검 팩터(L02/L15/L05/L26/M02) 전부 load_month_factors() 경유. 신호(모멘텀·회전율)는 Factor DB parquet 이 아니라 RAWDATA 에서 본 라운드가 직접 산출 — 직접 load 0건.",
+    "stored_panel_reuse": "없음 — 패널은 본 라운드에서 RAWDATA 로부터 재빌드."
+  },
+  "challenge_flags": [
+    "[1급 기각 · 검정력 3~5%] reject_if ① 은 사전등록대로 발동했으나 LS2000 함의 효과크기(+0.06~0.18%/월)에 대한 검정력은 3.0~5.2% 다(ratio 0.028~0.120 = 착수금지구간). '효과 없음' 으로 승격 금지 — 관측된 것은 '부호가 반대인 방향의 잡음' 이다.",
+    "[누출 귀무 > 신호] 순수 L01_Amihud stratifier 의 |NW-t| 2.886 이 회전율 신호의 0.807 을 넘는다. 승자 데실 내부의 수익 분산을 실제로 가르는 축은 유동성 계열이다. 회전율 축의 독립성은 증명되지 않았고, 증명할 신호도 없다.",
+    "[통제 규약 갈림] 조건부 사양에서 raw 통제 +2.83%/yr vs rank 통제 -0.94%/yr 로 부호가 갈린다. 둘 다 |t| < 0.6 이라 갈림 자체가 잡음 안이지만, 변환 규약을 명시하지 않은 '통제했다' 진술이 무의미하다는 규약(measurement-graduation §3)의 실측 사례로 남긴다.",
+    "[혼합 랭킹 함정] 시장-내 랭킹을 걸지 않으면 -19.58%/yr NW-t -2.526 의 '유의' 결과가 나오는데 그 정체는 K200-KQ150 시장 더미다. 본 라운드의 유일한 |t|>2 관측이 통제로 제거된 아티팩트라는 사실을 기록한다.",
+    "[무신호 대조 전 arm 실패] 5 arm + 탐색 3 arm 전부 INDISTINGUISHABLE_FROM_NO_SIGNAL. 2/20 과 동일하며 회전율 조건화로 움직이지 않았다.",
+    "[중복성] 저회전선호 신호는 기존 등재 L02_Turnover 계열과 방향 중복이다 — 신규 발굴이 아니라 기존 팩터의 조건화 소비. redundancy_check 참조.",
+    "[AST 연산자 공백] 시장-내(그룹) 랭킹은 𝒪 의 CS_RANK 로 표현되지 않는다(그룹 인자 부재). 우회 계산 없이 코드 경로를 명시하고 backlog 후보로 기록했다 — ast_operator_gap 필드. 계산 자체는 가설이 요구한 그대로다.",
+    "[탐색 라벨] 패자 사이드·Year2+ 측정은 exploratory_not_preregistered 다. 본 라운드 판정 근거로 승격 금지.",
+    "[C5/C2 승계] 가설 challenge_flags 의 C5(패자 사이드)·C2(ΔTurnover)는 그대로 유지되며, 본 라운드 탐색 결과가 C5 쪽에 좌표를 추가했다(d_turn 은 alpha_scores 패널에 미포함 — TURN 원장에 계산돼 있으나 본 라운드 소비 없음).",
+    "[계약 표면 분열 실증] ast_verify.py 정본 판정 FAIL_CONTRACT — 사유는 나눗셈 연산자 이름(schema=DIV_GUARD vs 검증기=DIV) 하나다. 이름만 바꾼 probe 는 PASS 이고 leaf_count/op_count/PIT 판정이 동일하다. PIT 위반 0(max_avail_ts <= decision_ts). 순회 리프 4개 — 2/20 의 빈 검증 재발 없음."
+  ],
+  "selection_objective": "canonical_port_t",
+  "n_trials": 8,
+  "selection_type": "chain",
+  "selection_type_rationale": "사전등록 1급 1개(사양 3변형) + 2급 arm 5개 + 탐색 arm 3개. argmax/threshold-pick 부재 — 어떤 arm 도 성과로 선택하지 않았고 발행 스펙은 사전등록 arm B 로 고정했다. DSR 게이트 부적용(measurement-graduation §3), 수치는 진단 산출.",
+  "grade_declaration": "없음 — 등급 권위는 essence_score.R 하나. 본 라운드는 risk/optimizer/forge 스폰 근거를 만들지 못했다(1급·2급 동시 기각 + 무신호 대조 전 arm 구별불가).",
+  "ast_verify_result": {
+    "tool": "02_Infrastructure/ast/ast_verify.py",
+    "main_package": {
+      "exit_code": 1,
+      "verdict": "FAIL_CONTRACT",
+      "leaf_count": 4,
+      "op_count": 7,
+      "decision_ts": "2026-08-28",
+      "max_avail_ts": "2026-08-28",
+      "violations_n": 0,
+      "contract_failures": [
+        {
+          "path": "root.WHERE/1.CS_RANK/0.TS_MEAN/0.TS_LAG[k=2m]/0",
+          "leaf_type": "OP",
+          "missing": [],
+          "detail": "𝒪 밖 연산자 'DIV_GUARD' — SOT §2 확장 규율(operator_backlog 경유)·ast_spec_gate ④ 대상"
+        }
+      ],
+      "restatement_leaves_n": 0,
+      "out": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/WT_R20260829_003/ast_verify.json"
+    },
+    "divname_probe": {
+      "exit_code": 0,
+      "verdict": "PASS",
+      "leaf_count": 4,
+      "op_count": 7,
+      "decision_ts": "2026-08-28",
+      "max_avail_ts": "2026-08-28",
+      "violations_n": 0,
+      "contract_failures": [],
+      "restatement_leaves_n": 0,
+      "out": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/WT_R20260829_003/ast_verify_probe.json"
+    },
+    "traversal_evidence": "순회 리프 4개 · 연산자 노드 7개 — 2/20 의 '리프 0개 순회(빈 검증)' 재발 없음. 리프 = A1_RAWDATA_OHLCVS_daily 의 Vol/Close/Size FIELD 3종 + 모멘텀 SPECIAL_OP 1종.",
+    "pit_reading": "max_avail_ts(2026-08-28) <= decision_ts(2026-08-28) · lookahead violations 0 — PIT 위반 0. FAIL 사유는 PIT 가 아니라 계약 표면 분열이다.",
+    "contract_surface_split": "나눗셈 연산자 이름이 두 정본에서 다르다: schema.json #/definitions/ast_node op enum = 'DIV_GUARD' / ast_verify.py operator_library ARITH_OPS = 'DIV'. 본 패키지는 schema.json(패키지 형식 정본)을 따라 DIV_GUARD 를 싣고, 동일 트리에서 이름만 DIV 로 바꾼 probe 를 stage_artifacts 에 함께 발행해 같은 검증기로 돌렸다. 결과: 정본 FAIL_CONTRACT(exit 1) vs probe PASS(exit 0), leaf_count 둘 다 4 · op_count 둘 다 7. 차이는 정확히 연산자 이름 하나이며 트리·리프·PIT 판정은 동일하다. 하네스 수리 대상(두 정본 중 하나로 통일)으로 기록한다 — 본 에이전트는 계약 파일을 고치지 않는다(역할 경계·lean 예산)."
+  }
+}

@@ -6,7 +6,7 @@ effort: xhigh
 skills: [qvest-attribution-style]
 allowed-tools: Bash(Rscript*) Read Grep Glob Write
 ---
-<!-- (2026-08-08 도훈 지시) QEPM 모델 라우팅 — 가설설계(alpha-hypothesis)만 Fable, 나머지 전 구간 Opus.
+<!-- (2026-08-29 도훈 지시) QEPM 모델 라우팅 — **전 구간 Opus**. 가설설계 Fable 핀(2026-08-08 지시) 해제.
      `model: opus` = 세션 alias(현행 Opus 5). SOT: 02_Infrastructure/docs/rules/caching.md "모델 라우팅" 절. -->
 
 # Judge Agent — v10 PIT 전담 검증자 (2026-08-29 도훈 지시로 재정의)

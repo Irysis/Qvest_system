@@ -255,6 +255,8 @@ SUITES=(
   "08_Tests/ops/test_morning_run_rewire.sh"
   # 2026-08-29: m4 append-only 후보 필터(새 달 첫 행만) — 실사고 셋 재현 + PIT 이빨 보존
   "08_Tests/regime/test_m4_append_candidate_filter.R"
+  # 2026-08-29: PG2 Gate A 상태 판독 — BOM 결함(항상 미달 오보) 회귀 + 못읽음/낡음 구분
+  "08_Tests/ops/test_gate_a_state_read.sh"
   # 2026-08-16 추가: 편입 드리프트 검사(suite_enrollment_check) 위반 주입.
   #   ★이 SUITES 배열이 하드코딩 열거라 새 테스트가 자동 편입되지 않는다 — 실측에서
   #   test_*.{R,sh} 121건 중 40건이 배터리에서 **한 번도 실행되지 않고** 있었고, 그중

@@ -1,16 +1,16 @@
 ---
 name: alpha-hypothesis
 description: QEPM Alpha Hypothesis Designer — alpha-research 파이프라인의 *가설설계 구간만* 담당. Step 0 Hypothesis Discovery + AST v1.1 설계순서 ①메커니즘 →②가설 서술 →③반증 조건 →④국면 경계를 수행하고 alpha_hypothesis.json 을 발행한다. 팩터 소싱·신호공학·실측·AST 구성·alpha_package 발행 절대 금지(= alpha-research 소관). 공분산/weight 금지.
-model: fable
+model: opus
 effort: high
 skills: [qvest-alpha-style]
 ---
 
 > **페르소나 정본 = `02_Infrastructure/docs/rules/quant-identity.md`** — 최정상급 퀀트 · 냉소는 방법론(과적합·스누핑·시점오염)을 향한다(실증 성과 폄하 금지) · 모든 수치 결정 = 논문 뿌리(원문 링크)·하드코딩 금지.
-<!-- (2026-08-08 도훈 지시) QEPM 모델 라우팅 — **가설설계 구간만 Fable**, 나머지 전 구간 Opus.
-     단일 에이전트는 모델을 부분 적용할 수 없으므로 alpha-research 의 가설설계 구간을 이 에이전트로 분리해
-     하네스 수준(frontmatter model 핀)에서 강제한다. 프롬프트 문구가 아니라 스폰 경계가 게이트다.
-     `model: fable` = 세션 alias(현행 Fable 5). 나머지 QEPM 에이전트는 `model: opus`(현행 Opus 5).
+<!-- (2026-08-29 도훈 지시) QEPM 모델 라우팅 — **전 구간 Opus**. 가설설계 Fable 핀(2026-08-08 지시) 해제.
+     ★분리 자체는 유지한다 — 모델 라우팅이 사라져도 설계자≠측정자 방화벽은 남고, 그 게이트는
+     프롬프트 문구가 아니라 스폰 경계다. 즉 이 에이전트의 존재 이유는 이제 모델 핀이 아니라 역할 분리다.
+     `model: opus` = 세션 alias(현행 Opus 5) — QEPM 전 에이전트 동일.
      SOT: 02_Infrastructure/docs/rules/caching.md "모델 라우팅" 절. -->
 
 QEPM **Alpha 가설설계자**. 가설을 *설계*할 뿐 검증·측정하지 않는다.
@@ -51,7 +51,7 @@ QEPM **Alpha 가설설계자**. 가설을 *설계*할 뿐 검증·측정하지 �
 ## 산출 스키마 (`alpha_hypothesis.json`)
 ```json
 {
-  "wt_id": "...", "designed_by": "alpha-hypothesis", "model_tier": "fable",
+  "wt_id": "...", "designed_by": "alpha-hypothesis", "model_tier": "opus",
   "prechecks": {"hypothesis_index_hits": [], "frontier_queue_refs": [], "owner": "..."},
   "candidates": [{"title": "...", "family": "...", "mechanism": {...}, "why_not_selected": "..."}],
   "selected": {

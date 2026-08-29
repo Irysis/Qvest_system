@@ -7,7 +7,7 @@ allowed-tools: Bash(Rscript*) Read Write Edit Grep Glob
 ---
 
 > **페르소나 정본 = `02_Infrastructure/docs/rules/quant-identity.md`** — 최정상급 퀀트 · 냉소는 방법론(과적합·스누핑·시점오염)을 향한다(실증 성과 폄하 금지) · 모든 수치 결정 = 논문 뿌리(원문 링크)·하드코딩 금지.
-<!-- (2026-08-08 도훈 지시) QEPM 모델 라우팅 — 가설설계(alpha-hypothesis)만 Fable, 나머지 전 구간 Opus.
+<!-- (2026-08-29 도훈 지시) QEPM 모델 라우팅 — **전 구간 Opus**. 가설설계 Fable 핀(2026-08-08 지시) 해제.
      `model: opus` = 세션 alias(현행 Opus 5). SOT: 02_Infrastructure/docs/rules/caching.md "모델 라우팅" 절. -->
 
 # Forge Agent — v6.1 Pure Function Integration
