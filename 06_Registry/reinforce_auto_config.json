@@ -2,7 +2,7 @@
  "schema": "reinforce_auto_config_v1",
  "enabled": true,
  "note": "강화 무인 러너 kill switch. enabled=false 면 reinforce_auto_run.R / _next_paper.R 가 즉시 정지한다. ★도훈 지시 2026-08-30 '모든 작업을 무인화' 로 v10 의 '무인은 수집까지' 경계가 해제됐다. 단 무인 개시는 **규칙 개시**다 — 셀은 reinforce_program.json 격자에서 나오고 엔진은 rf_cell_engine.R 하나이며 러너는 코드를 생성하지 않는다. LLM 무인 개시가 아니다.",
- "daily_cap": 20,
+ "daily_cap": 120,
  "claim_stale_hours": 6,
  "halt_on": {
   "queue_empty": "논문 큐가 비면 무동작(정지 아님) — 수집이 채우면 재개",
@@ -57,5 +57,6 @@
  },
  "promote_min_grade": "B",
  "promote_max_depth": 3,
- "promote_note": "★도훈 지시 2026-08-30 'B등급 이상 전략에 대해 추가 강화프로세스'. 20칸 소진 시 승자가 B 이상이면 그 승자 구성(factors/weighting/universe)을 carry 로 물려 새 20칸 entry 를 열고, 다음 논문은 그 사슬이 끝난 뒤로 밀린다. 승계 조건 2중: ①부모 최고 PORT_t 초과(못 넘으면 같은 실패의 재생산) ②깊이 ≤ promote_max_depth(한 논문이 큐 예산을 무한히 먹지 않게). ★병렬 폭은 늘리지 않았다 — 실측상 RAM 이 제약(워커 1개 ≈ 3GB · 총 31.7GB)이라 다논문 병렬은 농도를 나누는 것이지 처리량을 늘리지 않는다(도훈 결정 2026-08-30: 현행 유지)."
+ "promote_note": "★도훈 지시 2026-08-30 'B등급 이상 전략에 대해 추가 강화프로세스'. 20칸 소진 시 승자가 B 이상이면 그 승자 구성(factors/weighting/universe)을 carry 로 물려 새 20칸 entry 를 열고, 다음 논문은 그 사슬이 끝난 뒤로 밀린다. 승계 조건 2중: ①부모 최고 PORT_t 초과(못 넘으면 같은 실패의 재생산) ②깊이 ≤ promote_max_depth(한 논문이 큐 예산을 무한히 먹지 않게). ★병렬 폭은 늘리지 않았다 — 실측상 RAM 이 제약(워커 1개 ≈ 3GB · 총 31.7GB)이라 다논문 병렬은 농도를 나누는 것이지 처리량을 늘리지 않는다(도훈 결정 2026-08-30: 현행 유지).",
+ "daily_cap_note": "★도훈 지시 2026-08-30 '무한리서치 진행'. 구값 20 은 배치 4회(약 1시간) 만에 루프를 세워 무한 진행과 양립했다. 120 은 실질 상한이 아니다 — 셀 1칸이 약 14분이라 하루 물리적 최대가 100칸 안팛이다. 즉 폭주 backstop 은 유지하되 정상 진행을 막지 않는다."
 }

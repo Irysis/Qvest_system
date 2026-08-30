@@ -17,6 +17,9 @@
 suppressMessages({ library(data.table); library(jsonlite) })
 `%||%` <- function(a, b) if (is.null(a) || length(a) == 0L) b else a
 ROOT <- Sys.getenv("QM_ROOT", "C:/Users/99922/OneDrive/Quant_Module_Moltbot")
+# ★승자 셀 성과 요약 = 예전 알파 서칭 포맷(도훈 지시 2026-08-30).
+#   배치 kv 는 20칸 전체 요약이라 상세가 없다 — 승자 한 칸의 전체 지표를 붙인다.
+suppressMessages(source(file.path(ROOT, "02_Infrastructure/ops/rf_perf_summary.R")))
 
 # ── 원장에서 이 entry 의 실측 표를 뽑는다 (계약 산출값만 — 손계산 금지) ───────
 rf_notify_table <- function(base_id) {
@@ -112,6 +115,27 @@ rf_notify_charts <- function(tab, outdir) {
 #' ★B2/B3 는 격자에 factor2 가 없다 — **실행 시점에 B1 승자를 물려받기** 때문이다.
 #'   스펙 파일이 없는(수동 실행된) 셀은 원장에서 B1 승자를 읽어 채운다.
 #'   이게 없으면 B2 셀이 "모멘텀 단독" 으로 잘못 표시된다(2026-08-30 적발).
+# ── 대상 라벨 — ★원장 entry 에서 파생한다 ────────────────────────────────────
+#   2026-08-30: 이 자리에 논문 제목이 "제가디시-티트먼 1993 모멘텀" 으로 **하드코딩**돼
+#   있었다. 그 논문은 전날 소진된 직전 대상이고, 그 뒤 모든 블록 텔레그램이 틀린 대상을
+#   보고했다. 무인 배선은 다 있었는데 이 한 줄만 논문을 따라오지 않았다.
+#   출처 = 충실구현 산출물의 source_paper(계약이 쓴 값). 없으면 paper_key → base_id 순.
+.rf_target_label <- function(E) {
+  ttl <- NULL
+  ba <- E$base_artifacts %||% ""
+  ap <- file.path(ba, "authoritative_remeasure.json")
+  if (nzchar(ba) && file.exists(ap)) {
+    o <- tryCatch(fromJSON(ap, simplifyVector = FALSE), error = function(e) NULL)
+    ttl <- o$replication$source_paper$title %||% NULL
+  }
+  if (is.null(ttl) || !nzchar(ttl)) ttl <- E$paper_key %||% E$base_id %||% "?"
+  ttl <- substr(as.character(ttl), 1, 58)
+  # 승격 사슬이면 그 사실이 대상의 일부다 — 같은 논문이라도 다른 기저다
+  if (!is.null(E$parent))
+    ttl <- sprintf("%s [승격 %s대]", ttl, as.character(E$parent$depth %||% 1L))
+  ttl
+}
+
 rf_cell_desc <- function(base_id = NULL) {
   g <- tryCatch(fromJSON(file.path(ROOT, "06_Registry/reinforce_program.json"), simplifyVector = FALSE),
                 error = function(e) NULL)
@@ -180,6 +204,16 @@ rf_auto_notify <- function(base_id, n, kind = "block") {
   best <- tab[which.max(replace(port_t, !is.finite(port_t), -Inf))]
   bestC <- tab[which.max(replace(calmar, !is.finite(calmar), -Inf))]
   gcnt <- table(factor(tab$grade, levels = c("A", "B", "C", "F")))
+  # 승자 셀의 산출물 디렉터리 (원장 attempts[].artifacts)
+  .win_dir <- tryCatch({
+    hit <- Filter(function(x) identical(as.integer(x$n %||% -1L), as.integer(best$n)),
+                  info$entry$attempts)
+    d <- if (length(hit)) hit[[1]]$artifacts %||% NULL else NULL
+    if (!is.null(d) && dir.exists(d)) d else NULL
+  }, error = function(e) NULL)
+  .win_kv <- if (is.null(.win_dir)) list() else
+    tryCatch(rf_perf_kv(.win_dir), error = function(e) list())
+
   ch <- tryCatch(rf_notify_charts(tab, file.path(ROOT, "stage_artifacts/rf_auto_report")),
                  error = function(e) character(0))
   ttl <- if (identical(kind, "grade_a"))
@@ -190,7 +224,7 @@ rf_auto_notify <- function(base_id, n, kind = "block") {
   secs <- list(
     list(type = "bullet", emoji = "\U0001F3AF", heading = "현재 리서치 상황",
          items = c("단계: 1계층 강화 프로세스 — 무인 규칙 러너",
-                   sprintf("대상: 제가디시-티트먼 1993 모멘텀 강화 · 기저 등급 %s", S$entry$base_grade %||% "F"),
+                   sprintf("대상: %s · 기저 등급 %s", .rf_target_label(S$entry), S$entry$base_grade %||% "F"),
                    sprintf("위치: %d/%d 칸 소진 · 측정 완료 %d건", S$used, S$maxa, nrow(tab)),
                    sprintf("등급 분포: A %d · B %d · C %d · F %d",
                            gcnt[["A"]], gcnt[["B"]], gcnt[["C"]], gcnt[["F"]]))),
@@ -204,6 +238,12 @@ rf_auto_notify <- function(base_id, n, kind = "block") {
                    "최고 칼마" = sprintf("%.3f (%s · 합격선 0.64)", bestC$calmar, bestC$code),
                    "최대낙폭 대역" = sprintf("%.1f~%.1f%%", 100 * min(tab$mdd, na.rm = TRUE),
                                              100 * max(tab$mdd, na.rm = TRUE)))),
+    # ★승자 셀의 전체 지표 — 계약 산출물 읽기 전용(손계산 금지).
+    #   산출물 경로가 없는 예전 entry 는 조용히 건너뛴다(NULL → 섹션 미추가).
+    if (!is.null(.win_dir) && length(.win_kv))
+      list(type = "kv", emoji = "\U0001F4C8",
+           heading = sprintf("승자 셀 성과 요약 (%s)", best$code),
+           kv = .win_kv) else NULL,
     list(type = "bullet", emoji = "\U0001F527", heading = "무엇을 강화했나",
          items = { dsc <- rf_cell_desc(base_id)
                    ord <- tab[order(-replace(port_t, !is.finite(port_t), -Inf))]
@@ -227,6 +267,14 @@ rf_auto_notify <- function(base_id, n, kind = "block") {
          else c("처분: 자본 배정 없음 — 등급 C 이하는 참고용 보관",
                 sprintf("다음: 남은 %d칸을 무인으로 채웁니다", max(0L, S$maxa - S$used)),
                 "20칸 소진 시 큐 다음 논문 착수 요청이 발송됩니다")))
+  # ★NULL 섹션 제거 — 승자 산출물이 없는 예전 entry 는 그 칸이 NULL 로 남는다.
+  secs <- Filter(Negate(is.null), secs)
   tg_agent_brief(agent = "AlphaSearch", title = ttl, sections = secs, charts = ch)
+  # ★승자 셀의 [팩터 분석] — FF3/FF5/Carhart + Fama-MacBeth
+  if (!is.null(.win_dir) &&
+      (file.exists(file.path(.win_dir, "analysis_multifactor.csv")) ||
+       file.exists(file.path(.win_dir, "analysis_fmb_summary.csv"))))
+    tryCatch(tg_pass_analysis(sprintf("%s %s", base_id, best$code), .win_dir),
+             error = function(e) cat("[rf_notify] 팩터분석 발송 실패:", conditionMessage(e), "\n"))
   invisible(TRUE)
 }

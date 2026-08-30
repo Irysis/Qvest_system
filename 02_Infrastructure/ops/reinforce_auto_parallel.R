@@ -321,6 +321,12 @@ if (nb > 0L && (u2 %% 5L == 0L || u2 >= MAXA)) {
                    rf_auto_notify(BID, u2, kind = "block"); TRUE },
                  error = function(e) { jlog("telegram_failed", err = conditionMessage(e)); FALSE })
   jlog("telegram_block", n = u2, sent = ok)
+  # ★L-code 무인 발행 — SKILL §0 "블록당 L-code 1건" 의 소비자가 없었다(러너 2종 emit_lcode 0건).
+  #   세션이 안 오면 그 블록의 학습이 원장 밖에서 증발한다. 텔레그램과 같은 생산자를 쓴다.
+  lc <- tryCatch({ source(file.path(ROOT, "02_Infrastructure/ops/rf_block_lcode.R"))
+                   rf_emit_block_lcode(BID, u2, root = ROOT) },
+                 error = function(e) { jlog("lcode_failed", err = conditionMessage(e)); NULL })
+  jlog("lcode_block", n = u2, l_code = as.character(lc %||% "NA"))
 }
 jlog("batch_done", block = (if (!is.null(first)) first$block else "resume"), recorded = nb, used = u2)
 0L

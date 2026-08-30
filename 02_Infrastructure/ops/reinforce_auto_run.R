@@ -285,6 +285,12 @@ if (N %% 5L == 0L && !identical(G, "A")) {
                    rf_auto_notify(BID, N, kind = "block"); TRUE },
                  error = function(e) { jlog("telegram_failed", n = N, err = conditionMessage(e)); FALSE })
   jlog("telegram_block", n = N, sent = ok)
+  # ★L-code 무인 발행 — SKILL §0 "블록당 L-code 1건" 의 소비자가 없었다(러너 2종 emit_lcode 0건).
+  #   세션이 안 오면 그 블록의 학습이 원장 밖에서 증발한다. 텔레그램과 같은 생산자를 쓴다.
+  lc <- tryCatch({ source(file.path(ROOT, "02_Infrastructure/ops/rf_block_lcode.R"))
+                   rf_emit_block_lcode(BID, N, root = ROOT) },
+                 error = function(e) { jlog("lcode_failed", err = conditionMessage(e)); NULL })
+  jlog("lcode_block", n = N, l_code = as.character(lc %||% "NA"))
 }
 
 # ── 8. 분기 ───────────────────────────────────────────────────────────────────

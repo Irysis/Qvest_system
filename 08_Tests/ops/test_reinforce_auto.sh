@@ -446,6 +446,28 @@ else
   ng "claim 소유권" "$(echo "$CLM" | grep FAIL | head -1)"
 fi
 
+echo "=== 23. 블록 L-code 무인 발행 · 대상 표기 ==="
+# SKILL §0 은 '블록당 L-code 1건' 을 규정했는데 러너에 소비자가 0개였다 — 세션이
+# 안 오면 그 블록의 학습이 원장 밖에서 증발한다. 조용한 실패라 계기로 박아둔다.
+if grep -q "rf_emit_block_lcode" 02_Infrastructure/ops/reinforce_auto_parallel.R && grep -q "rf_emit_block_lcode" 02_Infrastructure/ops/reinforce_auto_run.R; then
+  ok "러너 2종이 블록 L-code 발행을 호출"
+else ng "L-code 소비자 부재" "무인 루프에 사람 대기 지점이 남는다"; fi
+# 대상 표기 — 논문 제목이 하드코딩되어 모든 블록 텔레그램이 틀린 대상을 보고했다(2026-08-30)
+if grep -q "rf_target_label" 02_Infrastructure/ops/rf_auto_notify.R; then
+  ok "텔레그램 대상을 원장에서 파생"
+else ng "대상 파생 부재" "논문이 바뀜어도 안 따라온다"; fi
+# ★주석이 아니라 **코드**를 재야 한다 — 수리를 설명하는 주석에 그 단어가 남아 있어서
+#   첫 판이 자기 설명문에 걸렸다(계기가 프로즈를 쟀다).
+if grep "제가디시" 02_Infrastructure/ops/rf_auto_notify.R | grep -qv "^ *#"; then
+  ng "논문 제목 하드코딩 잔존(코드)" "하드코딩 전면 금지(헌법)"
+else ok "논문 제목 하드코딩 0건(주석 제외)"; fi
+LCB=$(Rscript 08_Tests/reinforcement/test_rf_block_lcode.R 2>&1); LRC=$?
+if [ "$LRC" -eq 0 ]; then
+  ok "L-code 계약 — $(echo "$LCB" | tail -1)"
+else
+  ng "L-code 계약" "$(echo "$LCB" | grep FAIL | head -1)"
+fi
+
 echo
 printf '합계: 통과 %d · 실패 %d\n' "$PASS" "$FAIL"
 [ "$FAIL" -eq 0 ] || exit 1
