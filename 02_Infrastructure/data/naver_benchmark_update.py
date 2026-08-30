@@ -18,7 +18,9 @@ Source 우선순위 (도훈 mandate 2026-05-27):
 from __future__ import annotations
 import argparse
 import ast
+import gc
 import shutil
+import time
 from pathlib import Path
 from datetime import datetime
 
@@ -78,7 +80,64 @@ def _write_bm_parquet(df: pd.DataFrame, path) -> None:
         'BM_Close': pa.array(df['BM_Close'].astype('float64')),
         'BM_Ret': pa.array(df['BM_Ret'].astype('float64')),
     })
-    pq.write_table(table, str(path))
+    _atomic_write_table(table, str(path))
+
+
+# ── 원자적 교체 (2026-08-30 신설) ──────────────────────────────────────────────
+REPLACE_RETRIES = 8          # atomic_json.R / atomic_parquet.R 과 동일 규약
+REPLACE_SLEEP_INIT = 0.02
+REPLACE_SLEEP_CAP = 0.25
+
+
+def _atomic_write_table(table: 'pa.Table', path: str) -> None:
+    """tmp 에 쓴 뒤 os.replace 로 교체한다 — 대상 파일을 **열지 않는다**.
+
+    ★왜 (2026-08-29 23:32 실사고 + 2026-08-30 실측):
+      구 구현은 `pq.write_table(table, path)` 로 **정본 경로에 직접** 썼다. 두 가지가 깨진다.
+
+      [측정 1] **제자리 쓰기는 조용히 자른다.** 쓰기 도중 죽으면 파일은 남는데 내용이
+        절단된다 — 실측 9,017행 → 500행, 그리고 그 결과물은 **정상적으로 읽힌다**.
+        소비자는 오류가 아니라 짧은 벤치 시리즈를 본다(= 침묵 실패, 이 저장소의 반복 병).
+        같은 죽음에서 tmp 경유는 원본 9,017행 불변.
+
+      [측정 2] **대상이 매핑돼 있으면 열리지 않는다.** 다른 프로세스가 이 파일을 mmap 한
+        채면 Windows 가 `error 1224 (ERROR_USER_MAPPED_FILE)` 로 거부한다 — 2026-08-29
+        23:27 [1pre] 가 정확히 이 오류로 죽었다. tmp→replace 는 대상을 열지 않으므로
+        쓰기 자체는 성공하고, 마지막 교체만 재시도하면 된다.
+        (※같은 실측에서 이 프로세스 자신의 `pd.read_parquet` 은 매핑을 남기지 않았다 —
+          매핑 보유자는 외부다. 그래도 우리 쪽 참조를 먼저 놓아 조건을 줄인다.)
+
+    ★copy 폴백을 쓰지 않는다: replace 가 실패하는 유일한 실전 사유가 "소비자가 점유 중"인데
+      그 순간이 정확히 copy 가 파일을 제자리에서 찢는 순간이다.
+      근거 카드: reference-windows-atomic-write-copy-fallback-is-the-tear
+    ★선삭제도 하지 않는다: os.replace 는 대상이 있어도 덮어쓰므로 이득이 0이고,
+      삭제~교체 사이에 **파일 부재 창**을 만든다(같은 사고의 R 측 기전).
+
+    실패 시 원본은 **손대지 않은 채** 남고 tmp 가 보존된다 — 페이로드 회수 가능.
+    """
+    tmp = path + f'.tmp{os.getpid()}'
+    pq.write_table(table, tmp)
+
+    # "썼다" 와 "읽을 수 있는 것을 썼다" 는 다른 명제다 — promote 전에 되읽어 행 수를 본다.
+    n_tmp = pq.read_metadata(tmp).num_rows
+    if n_tmp != table.num_rows:
+        os.remove(tmp)
+        raise RuntimeError(f'[naver_benchmark] tmp 검증 실패 — 정본 미갱신 '
+                           f'(기대 {table.num_rows}행, 실측 {n_tmp}행)')
+
+    gc.collect()   # 우리 쪽 arrow 참조를 먼저 놓는다(교체 거부 조건 축소)
+    last = None
+    for i in range(REPLACE_RETRIES):
+        try:
+            os.replace(tmp, path)
+            return
+        except OSError as e:      # PermissionError(WinError 5) / WinError 1224 계열
+            last = e
+            time.sleep(min(REPLACE_SLEEP_CAP, REPLACE_SLEEP_INIT * 2 ** i))
+    raise RuntimeError(
+        f'[naver_benchmark] 원자적 교체 실패 (replace {REPLACE_RETRIES}회) — '
+        f'정본 미갱신(원본 보존): {path}' + chr(10) +
+        f'  기록분은 {tmp} 에 보존됨. 대개 소비자가 대상 핸들/매핑을 점유 중이다. 최종 오류: {last}')
 
 
 SCALE_LOOKBACK_DAYS = 150   # naver 재조회 여유 — canonical 스케일 추정 + 앵커 후퇴용

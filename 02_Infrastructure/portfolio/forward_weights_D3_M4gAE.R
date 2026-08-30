@@ -94,13 +94,37 @@ cat(sprintf("[m4] @%s weight=%.4f\n", as.character(m4r$Date), m4_scalar))
 
 ## --- 2b. ★AE fire_seq (walk-forward, last_feat < AS_OF) ---
 ae_path <- file.path(ROOT,"stage_artifacts/WT_D20260718_007/ae_regime_signal_ext.parquet")
-if(!file.exists(ae_path)) stop("[AE] ae_regime_signal_ext.parquet 부재 — ae_regime_extend.py 선행 필요(월간 배관)")
+## ★생산자 정본 = 02_Infrastructure/regime/ae_regime_monthly.py (월간 배관, 러너 [1a2]).
+##   구 문구는 ae_regime_extend.py 를 가리켰는데 그건 동결된 실험 확장기다 —
+##   EXTRA_DECISIONS 하드코딩이라 그대로 부르면 같은 223행을 재생산하는 침묵 no-op 이다.
+if(!file.exists(ae_path)) stop("[AE] ae_regime_signal_ext.parquet 부재 — ae_regime_monthly.py 선행 필요(러너 [1a2] 월간 배관)")
 ae <- as.data.table(read_parquet(ae_path)); ae[, decision_date:=as.Date(decision_date)]
-aer <- ae[decision_date<=AS_OF][which.max(decision_date)]
-ae_fire <- if(nrow(aer)) as.integer(aer$fire_seq[1]) else 0L
-ae_lfd <- if(nrow(aer)) as.character(aer$last_feat_date[1]) else NA
-stopifnot(is.na(ae_lfd) || as.Date(ae_lfd) < AS_OF)   ## PIT: last_feat < AS_OF
-cat(sprintf("[AE] decision@%s fire_seq=%d (last_feat %s, PIT %s)\n", as.character(aer$decision_date[1]), ae_fire, ae_lfd, ifelse(is.na(ae_lfd)||as.Date(ae_lfd)<AS_OF,"OK","VIOLATION")))
+## ── ★AE 신선도 하드 검사 (2026-08-30 신설, 도훈 지시) ─────────────────────────
+##   구판: `ae[decision_date<=AS_OF][which.max(decision_date)]` — AS_OF 행이 없으면
+##   **직전 달 행을 조용히 재사용**했다. 이것은 폴백이 아니라 **침묵 절단**이다:
+##     · 아래 PIT 가드(`last_feat < AS_OF`)는 낡음을 구조적으로 못 잡는다 —
+##       신호가 오래될수록 last_feat 이 AS_OF 에서 더 멀어져 **더 잘 통과한다**.
+##     · 실측 2026-08-01~30: 생산자에 호출자가 없어 신호가 한 달 정지했는데
+##       배포는 매달 초록이었다. 2026-09 는 m4 미발화(gate=1.00 고정)라 무해했을 뿐,
+##       m4 발화월(실측 37개월 중 36, 97.3%)에는 **30% de-risk 오판**이 된다.
+##   ⇒ 당월 결정행을 **요구**한다. 없으면 낡은 값으로 비중을 내지 않고 멈춘다.
+##   관련: feedback-freshness-must-be-measured-at-the-consumption-panel
+aer <- ae[decision_date == AS_OF]
+if (nrow(aer) != 1L) {
+  .amax <- if (nrow(ae)) as.character(max(ae$decision_date)) else "(빈 패널)"
+  stop(sprintf(paste0("[AE] ★신선도 FAIL — 결정일 %s 행이 %d건(1건이어야). 패널 최대 decision_date=%s.\n",
+                      "     낡은 AE 로 D3 게이트를 계산하지 않는다(직전 달 조용한 재사용 = 침묵 절단).\n",
+                      "     조치: python 02_Infrastructure/regime/ae_regime_monthly.py --as-of %s --advance-pin"),
+               as.character(AS_OF), nrow(aer), .amax, as.character(AS_OF)))
+}
+ae_fire <- as.integer(aer$fire_seq[1])
+ae_lfd  <- as.character(aer$last_feat_date[1])
+## PIT: last_feat < AS_OF. ★구판은 `is.na(ae_lfd) || ...` 라 **NA 가 통과**했다 —
+##   미측정을 합격으로 접는 형태(이 저장소의 '빈 결과 = 합격' 계통). NA 도 막는다.
+if (is.na(ae_lfd)) stop(sprintf("[AE] last_feat_date 결측 — PIT 판정 불가(결정일 %s)", as.character(AS_OF)))
+stopifnot(as.Date(ae_lfd) < AS_OF)
+cat(sprintf("[AE] decision@%s fire_seq=%d (last_feat %s, PIT OK · 신선도 OK: AS_OF 당월행)\n",
+            as.character(aer$decision_date[1]), ae_fire, ae_lfd))
 
 ## --- 2c. ★M4∩AE 게이트 (m4_scalar 대체) ---
 m4_fires <- as.integer(m4_scalar < 0.999)

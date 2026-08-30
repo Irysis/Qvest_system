@@ -337,6 +337,12 @@ run_paper_replication <- function(strategy_name, strategy_idea, factor_engine_pa
                     note = "v10: Grade A → Judge(PIT 전담) 스폰 요청 — 세션(Q-Lead)이 Agent 스폰"),
                file.path(OUT_DIR, "judge_request.json"), auto_unbox = TRUE, pretty = TRUE)
     cat("[replication] ★Grade A — judge_request.json 발행 (Judge 스폰은 세션 소관)\n")
+  } else if (identical(Sys.getenv("QVEST_NO_LEDGER_OPEN", "0"), "1")) {
+    # ★강화 셀 실행 중에는 새 강화 entry 를 열지 않는다 (강화 대상을 강화 중에 또 만드는 자기증식).
+    #   2026-08-30 실사고: 무인 병렬 러너가 셀 5개를 돌리자 원장에 active 0/20 쓰레기 entry 5개가 생겼고,
+    #   다음 논문 이월이 그 쓰레기를 붙잡을 뻔했다. 충실구현(신규 논문)에는 자동 open 이 옳으므로 조건부다.
+    cat("[replication] 강화 원장 auto-open 억제 (QVEST_NO_LEDGER_OPEN=1)
+")
   } else {
     tryCatch({
       source(file.path(.RP_INFRA, "reinforcement", "reinforce_ledger.R"))

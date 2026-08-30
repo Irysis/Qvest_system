@@ -32,9 +32,21 @@ try:
     import pandas as _pd_probe  # noqa: F401
 except ImportError:
     import os as _os, subprocess as _sp, sys as _sys
+    # ★[fix 2026-08-30] 해석기 루트 ≠ 코드 루트. venv 는 **main 체크아웃에만** 있고
+    #   worktree 에는 없다 — self 루트만 보던 구판은 worktree 배터리에서
+    #   ModuleNotFoundError 로 죽어 UNMEASURED+FAILING 으로 계상됐다(실측). 앵커 오설정이
+    #   "테스트 실패"로 읽히는 형태다. 검사 대상 코드는 self 트리(아래 ROOT)에서 그대로 잡고,
+    #   해석기만 어느 루트에서든 찾는다. 카드: feedback-code-root-is-not-data-root
     _root = _os.path.dirname(_os.path.dirname(_os.path.dirname(_os.path.abspath(__file__))))
-    _venv = _os.path.join(_root, ".venv_qvest_ml", "Scripts", "python.exe")
-    if _os.path.exists(_venv) and _os.environ.get("_SEAM_REEXEC") != "1":
+    _venv = ""
+    for _cand in (_root, _os.environ.get("CLAUDE_PROJECT_DIR", ""), _os.environ.get("QM_ROOT", "")):
+        if not _cand:
+            continue
+        _p = _os.path.join(_cand.replace("\\", "/"), ".venv_qvest_ml", "Scripts", "python.exe")
+        if _os.path.exists(_p):
+            _venv = _p
+            break
+    if _venv and _os.environ.get("_SEAM_REEXEC") != "1":
         _env = dict(_os.environ, _SEAM_REEXEC="1")
         _sys.exit(_sp.call([_venv, _os.path.abspath(__file__)] + _sys.argv[1:], env=_env))
     raise
@@ -263,6 +275,153 @@ def _():
         a = new_seam[new_seam.Date >= pd.Timestamp(CUTOFF)].BM_Ret.iloc[0]
     assert abs(a) < 0.15, f'신 구현도 이음매 생성: {a:.4f}'
     return f"구 {seam:+.4f} → 신 {a:+.4f} (같은 입력)"
+
+
+# ── 원자적 쓰기 축 (2026-08-30 추가 — 오버레이 배관 결함 ③) ────────────────────
+#   실사고 2026-08-29 23:27: `_write_bm_parquet` 이 **정본 경로에 직접** write 하다가
+#   `OSError [WinError 1224] ERROR_USER_MAPPED_FILE` 로 죽었고, 그 시점에
+#   benchmark.parquet 이 사라져 하류가 줄줄이 멈췄다
+#   (`[bm-gate][B] 부재` · `[regime_jump_model] Windows error 2` · `SJM refresh FAILED`).
+#   ★2026-08-30 실측으로 갈라둘 것: **1224 자체는 파일을 지우지 않는다**(4/4 시행에서 원본
+#     보존). 실제 소실 기전은 R 측 writer 3지점의 `file.remove(target)` **선삭제**였다
+#     (수리 = 02_Infrastructure/utils/atomic_parquet.R + 08_Tests/data/test_parquet_atomic_write.R).
+#   그럼에도 제자리 쓰기가 위험한 이유는 따로 있다 — **쓰기 도중 죽으면 조용히 잘린다**:
+#     실측 9,017행 → 500행, 그리고 그 결과물은 **정상적으로 읽힌다**. 아래 ATOM-2 가 그것.
+import gc as _gc            # noqa: E402
+import mmap as _mmap        # noqa: E402
+import os as _os            # noqa: E402
+import pyarrow as _pa       # noqa: E402
+import pyarrow.parquet as _pq   # noqa: E402
+
+
+def _bm_table(n: int) -> '_pa.Table':
+    d = pd.bdate_range(end=pd.Timestamp('2026-08-28'), periods=n)
+    return _pa.table({'Date': _pa.array(d.date, type=_pa.date32()),
+                      'BM_Close': _pa.array(np.arange(n).astype('float64')),
+                      'BM_Ret': _pa.array(np.full(n, 0.001))})
+
+
+class _DyingPq:
+    """pq 대역 — write_table 이 앞부분만 쓰고 죽는다(프로세스 사망 모사)."""
+
+    def __init__(self, keep: int):
+        self.keep = keep
+
+    def write_table(self, table, where, **kw):
+        w = _pq.ParquetWriter(where, table.schema)
+        w.write_table(table.slice(0, self.keep))
+        raise RuntimeError('process died mid-write')      # close() 없음 = 푸터 미기록
+
+    def __getattr__(self, k):
+        return getattr(_pq, k)
+
+
+@case('ATOM-1 정상 경로 — 결과 동일 + tmp 잔재 0')
+def _():
+    nv = make_naver()
+    bm = make_bm(nv)
+    with Harness(bm, nv) as h:
+        nbu.patch_benchmark_parquet(CUTOFF, '2026-08-07', backup=False)
+        out = h.result()
+        strays = [f for f in _os.listdir(h.path.parent) if '.tmp' in f]
+    assert len(out) >= len(bm), f'행 축소 {len(bm)}→{len(out)}'
+    assert not strays, f'tmp 잔재: {strays}'
+    return f'{len(out)}행 기록 · tmp 잔재 0'
+
+
+@case('ATOM-2 ★쓰기 도중 사망 → 원본 불변 (구판은 같은 죽음에서 조용히 잘린다)')
+def _():
+    nv = make_naver()
+    bm = make_bm(nv)
+    with Harness(bm, nv) as h:
+        p = str(h.path)
+        n0 = len(pd.read_parquet(p))
+        tbl = _bm_table(n0)
+
+        keep = max(1, n0 // 8)                    # ★반드시 n0 보다 작아야 절단이 성립한다
+        # (a) 구판 재현 — 정본 경로에 직접 쓰다가 죽는다
+        try:
+            _DyingPq(keep).write_table(tbl, p)
+        except RuntimeError:
+            pass
+        _gc.collect()
+        try:
+            n_legacy = len(pd.read_parquet(p))
+        except Exception:
+            n_legacy = -1
+        assert n_legacy != n0, f'구판이 원본을 안 건드림({n_legacy}) — 돌연변이 무효'
+
+        # (b) 신판 — 같은 죽음, 원본은 온전해야 한다
+        bm.to_parquet(p, index=False)             # 원상복구
+        n1 = len(pd.read_parquet(p))
+        real_pq = nbu.pq
+        nbu.pq = _DyingPq(keep)
+        try:
+            nbu._atomic_write_table(tbl, p)
+            raise AssertionError('죽었는데 예외가 안 남 — 침묵 실패')
+        except RuntimeError as e:
+            assert 'died mid-write' in str(e), f'다른 경로로 실패: {e}'
+        finally:
+            nbu.pq = real_pq
+        _gc.collect()
+        n_new = len(pd.read_parquet(p))
+    assert n_new == n1, f'신판도 원본 훼손 {n1}→{n_new}'
+    return f'구판 {n0}→{n_legacy}행(절단·정상 판독됨) / 신판 {n1}행 불변'
+
+
+@case('ATOM-3 ★교체가 계속 거부되면 stop + 원본 불변 + tmp 보존')
+def _():
+    nv = make_naver()
+    bm = make_bm(nv)
+    with Harness(bm, nv) as h:
+        p = str(h.path)
+        n0 = len(pd.read_parquet(p))
+        fh = open(p, 'rb')
+        mm = _mmap.mmap(fh.fileno(), 0, access=_mmap.ACCESS_READ)   # 소비자 매핑 점유
+        old_r = nbu.REPLACE_RETRIES
+        nbu.REPLACE_RETRIES = 2
+        try:
+            nbu._atomic_write_table(_bm_table(n0), p)
+            blocked = False
+        except RuntimeError as e:
+            blocked = '원자적 교체 실패' in str(e)
+        finally:
+            nbu.REPLACE_RETRIES = old_r
+            mm.close(); fh.close()
+        if not blocked:
+            # 이 플랫폼에서 매핑이 교체를 막지 않으면 주입 자체가 성립하지 않는다.
+            raise AssertionError('열린 매핑이 os.replace 를 막지 않음 — 주입 무효(미측정)')
+        _gc.collect()
+        n1 = len(pd.read_parquet(p))
+        strays = [f for f in _os.listdir(h.path.parent) if '.tmp' in f]
+    assert n1 == n0, f'원본 훼손 {n0}→{n1}'
+    assert strays, 'tmp 미보존 — 페이로드 회수 불가'
+    return f'차단 + 원본 {n0}행 불변 + tmp 보존({len(strays)}개)'
+
+
+@case('ATOM-4 배선 — 저장 단일점이 제자리 write 를 쓰지 않는다')
+def _():
+    src = open(ROOT / '02_Infrastructure' / 'data' / 'naver_benchmark_update.py',
+               encoding='utf-8').read()
+    # ★주석 제외 — 수리 주석이 구판 호출을 인용하고 있어 원문 검사는 자기 설명에 걸린다.
+    code = [ln for ln in src.split('\n') if not ln.lstrip().startswith('#')]
+    body = '\n'.join(code)
+    assert 'pq.write_table(table, str(path))' not in body, '제자리 write 잔존'
+    assert '_atomic_write_table' in body, '원자적 교체 경로 미배선'
+    # ★교체 함수 **본문**만 본다 — docstring 이 "copy 폴백을 쓰지 않는다"고 설명하므로
+    #   파일 전체 텍스트 검사는 자기 설명에 걸린다(초판 실측 오탐).
+    import ast as _ast
+    import inspect as _inspect
+    fn = _ast.parse(_inspect.getsource(nbu._atomic_write_table).lstrip()).body[0]
+    stmts = fn.body[1:] if (isinstance(fn.body[0], _ast.Expr)
+                            and isinstance(fn.body[0].value, _ast.Constant)) else fn.body
+    fbody = '\n'.join(_ast.unparse(s) for s in stmts)
+    assert 'os.replace' in fbody, 'os.replace 미사용'
+    assert 'copy' not in fbody, f'copy 폴백 존재 — 절단원: {fbody[:120]}'
+    assert 'os.remove(path)' not in fbody and 'os.unlink(path)' not in fbody, '대상 선삭제 존재'
+    # 음성 대조: 주석/docstring 제거가 검사까지 눈멀게 하지 않았는지
+    assert 'copy' in fbody + '\n    shutil.copy(tmp, path)', '돌연변이 무효 — 검사기가 눈멀었다'
+    return '제자리 write 0 · _atomic_write_table 배선 · 본문 copy/선삭제 0'
 
 
 def main() -> int:

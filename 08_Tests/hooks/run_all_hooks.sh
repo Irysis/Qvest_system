@@ -1059,6 +1059,19 @@ SUITES=(
   "08_Tests/regime/test_ktri_v3_builder.R"
   "08_Tests/regime/test_msm_daily_refit.R"
   "08_Tests/regime/test_regime_signal_merge.R"
+  # 2026-08-30 신설: m4 BOCPD 팔 가드의 양방향 검증. 구판 가드
+  #   `bocpd_expected_runlen_lag >= 12` 는 warm-up 주석을 달고 있었지만 실제로는
+  #   run-length posterior 기대값이라 short_run_mass 와 구조적 음상관(rho=-0.5898) —
+  #   271개월 내내 **0회 발화**했다(mass>=0.60 인 11개월 전량 차단). 양성 대조가
+  #   없었기 때문에 "규칙대로 도는 코드"로 보였다. 이 suite 가 양성(mass 高·runlen 低
+  #   픽스처 발화) + 음성(평시·warm-up 이전 미발화) 양방향을 건다.
+  "08_Tests/regime/test_m4_bocpd_guard.R"
+  # 2026-08-30 신설: compute_regime_score layer3 문턱 램프. 구판은 `ktri<=35`/`vea>=70`
+  #   이진 계단이라 값이 {0,8,15} 3종뿐 — 문턱을 스치면 8점이 통째로 켜지고 꺼졌다.
+  #   2026-09 PG2 사건이 그 기전(VEA 75.42->63.92 로 70 하향통과 -> 점수 48->40 ->
+  #   de-risk 문턱 45 이탈). 램프는 문턱을 **폐지하지 않고** 주변 ±0.5σ 만 잇는다.
+  #   양성(문턱 근방 중간값) + 음성(문턱 깊이 통과 시 구판 3값 그대로) + 구판 비트재현.
+  "08_Tests/regime/test_regime_l3_ramp.R"
   "08_Tests/portfolio/test_mvo_turnover_penalty.R"
   "08_Tests/portfolio/test_optimizer_breadth.R"
   "08_Tests/portfolio/test_pg2_coherence_check.R"
@@ -1168,6 +1181,27 @@ SUITES=(
   # β-통제 α 계약 (measurement-graduation.md §2). ★1급 축은 **양방향** —
   #   β>1 과대(α=0 인데 PORT_t 유의) · β<1 과소(진짜 α 를 버릴 위험). 합성 대조로 둘 다 실증.
   "08_Tests/contracts/test_beta_controlled_alpha.R"
+  # ── 2026-08-30 추가: PG2 오버레이 배관 결함 3종 수리 가드 ────────────────────
+  # ① AE 월간 배관 — 생산자에 **호출자가 0건**이었다(.sh/.ps1/예약작업 참조 0). 신호가
+  #   2026-08-01 에 멈췄는데 배포는 매달 초록이었다: 소비자가 AS_OF 행 부재 시
+  #   `which.max(decision_date)` 로 직전 달을 조용히 재사용했고, 그 위의 PIT 가드
+  #   (`last_feat < AS_OF`)는 낡음을 **구조적으로** 못 잡는다(오래될수록 더 잘 통과한다).
+  #   2026-09 는 m4 미발화(gate=1.00)라 무해했을 뿐, m4 발화월(37개월 중 36 = 97.3%)에는
+  #   30% de-risk 오판이 된다. ★1급 축은 "만들었다"가 아니라 **"부른다"** + fail-closed.
+  #   ②(핀 신선도)와 도훈 지시(리밸 시 데이터 리프레시)까지 같은 스위트가 덮는다 —
+  #   핀 신선도는 '핀 vs 라이브' 비교라 **라이브가 낡으면 눈이 먼다**(SRC-2 가 그 구멍을 실증).
+  "08_Tests/regime/test_ae_monthly_plumbing.py"
+  # ①의 소비자 쪽 — 배포 생성기 §2b 블록을 **텍스트째 잘라 eval** 한다(재구현 아님).
+  #   MUT-1 이 구판 블록을 같은 입력에 돌려 조용히 통과하는 것을 보여 검출력을 실증한다.
+  #   D2 는 generator_pins.json 핀 정합까지 본다 — 미러를 고치고 핀을 안 갱신하면
+  #   러너 [1b] 가 exit 12 로 죽으므로, 그 사고를 배터리에서 먼저 잡는다.
+  "08_Tests/portfolio/test_ae_consumer_freshness.R"
+  # ③ parquet 캐시 원자적 쓰기 — 2026-08-29 23:27 실사고로 .cache/benchmark.parquet 이
+  #   **부재**가 됐다(하류 정지: bm-gate B · regime_jump Windows error 2 · SJM FAILED).
+  #   기전은 writer 5벌에 복제된 `write_parquet(tmp)` → **`file.remove(target)`** → rename
+  #   의 선삭제다. ★1급 축은 B1(구판이 부재 창을 실제로 연다)과 D2(선삭제 잔재 0).
+  #   Python 측 대응 축은 test_benchmark_scale_seam.py ATOM-1~4 에 있다.
+  "08_Tests/data/test_parquet_atomic_write.R"
 )
 
 

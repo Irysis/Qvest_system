@@ -249,12 +249,19 @@ krx_merge_rawdata <- function() {
     setorder(old_bm_ext, Date)
     setkey(old_bm_ext, Date)
     # [fix 2026-06-17] Windows arrow mmap(error 1224): read_parquet(BM_CACHE)가 파일을
-    # mmap한 채라 동일 경로 write_parquet이 실패 → mmap 해제 후 temp-rename (consensus 동일 패턴)
+    # mmap한 채라 동일 경로 write_parquet이 실패 → temp-rename 으로 회피.
+    # [fix 2026-08-30] ★선삭제 제거 — 구판은 tmp 로 쓴 뒤 **본 파일을 지우고** rename 했다.
+    #   file.rename 은 대상이 존재해도 덮어쓰므로 선삭제는 얻는 게 0이고, 삭제~rename 사이에
+    #   **파일 부재 창**을 만든다. 2026-08-29 23:27 실사고: 그 창에서 프로세스가 죽어
+    #   benchmark.parquet 이 부재로 남았고 하류가 정지했다([bm-gate][B] 거래일 판정 불가 /
+    #   regime_jump_model Windows error 2). 게다가 rename 실패(소비자 핸들 점유)를
+    #   반환값 무시로 삼켜 **갱신 유실이 조용했다**. 공용 정본으로 교체 — 선삭제 없음 +
+    #   유한 재시도 + 실패 시 stop(원본 보존). copy 폴백은 절단원이라 쓰지 않는다.
+    #   근거: 02_Infrastructure/utils/atomic_parquet.R [측정 1][측정 4]
+    if (!exists("qvest_atomic_write_parquet"))
+      source(file.path(PROJECT_ROOT, "02_Infrastructure/utils/atomic_parquet.R"))
     rm(old_bm); gc(verbose = FALSE)
-    .bm_tmp <- paste0(BM_CACHE, ".tmp")
-    write_parquet(old_bm_ext, .bm_tmp)
-    if (file.exists(BM_CACHE)) file.remove(BM_CACHE)
-    file.rename(.bm_tmp, BM_CACHE)
+    qvest_atomic_write_parquet(old_bm_ext, BM_CACHE, tag = "krx_merge/bm")
     cat(sprintf("[krx_merge] Benchmark updated: %s ~ %s\n",
                 min(old_bm_ext$Date), max(old_bm_ext$Date)))
   } else {
@@ -306,11 +313,12 @@ krx_merge_rawdata <- function() {
 
   # [fix 2026-06-17] Windows arrow mmap(error 1224): read_parquet(RAWDATA_CACHE) mmap
   # 해제 후 temp-rename. (구 직접 write_parquet은 동일 경로 mmap halt — benchmark와 동일)
+  # [fix 2026-08-30] 위 BM 쓰기와 **같은 함수·같은 병** — 선삭제 제거 + 실패 fail-loud.
+  #   공용 정본 = 02_Infrastructure/utils/atomic_parquet.R
+  if (!exists("qvest_atomic_write_parquet"))
+    source(file.path(PROJECT_ROOT, "02_Infrastructure/utils/atomic_parquet.R"))
   rm(old_raw); gc(verbose = FALSE)
-  .raw_tmp <- paste0(RAWDATA_CACHE, ".tmp")
-  write_parquet(combined, .raw_tmp)
-  if (file.exists(RAWDATA_CACHE)) file.remove(RAWDATA_CACHE)
-  file.rename(.raw_tmp, RAWDATA_CACHE)
+  qvest_atomic_write_parquet(combined, RAWDATA_CACHE, tag = "krx_merge/rawdata")
 
   cat(sprintf("[krx_merge] RAWDATA extended: +%d rows | now %s ~ %s | %d total\n",
               nrow(new_rows), min(combined$Date), max(combined$Date), nrow(combined)))

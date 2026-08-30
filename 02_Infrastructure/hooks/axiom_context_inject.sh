@@ -34,12 +34,23 @@ DIR="${DIR//\\//}"
 if [ -z "$DIR" ] || [ ! -d "$DIR" ]; then
   DIR=$(ls -d /c/Users/99922/OneDrive/Quant_Module_Moltbot /mnt/c/Users/99922/OneDrive/Quant_Module_Moltbot /g/Quant_Module_Moltbot /mnt/g/Quant_Module_Moltbot 2>/dev/null | head -1 || echo "$PWD")
 fi
-AGENT_NAME=$(printf '%s' "$INPUT" | "$QVEST_PY_BIN" -c 'import json,sys
+# (v10.1 2026-08-29) 2줄 추출 — 1행 agent, 2행 round_type.
+#   ★사유: 구판은 subagent_type 만 읽어 고정 축을 **하드코딩 리터럴 1벌**로 주입했고, 그 리터럴에
+#   '충실구현 라운드: 논문 그대로(롱숏·종목수·비중·리밸)' 줄이 들어 있었다. 강화(WT-R) 에이전트도
+#   이 줄을 매 spawn 마다 받았으므로 **롱숏이 정당한 프로필로 광고**됐다(실측 2026-08-29 —
+#   강화 라운드에서 롱숏 설계 반복 등장, 도훈 지적 "롱숏을 왜 자꾸 설계하는거야").
+#   판별은 WT id 접두(R=reinforcement)라는 **구조**로 한다 — 프롬프트 문구가 아니라 식별자다.
+_AX_META=$(printf '%s' "$INPUT" | "$QVEST_PY_BIN" -c 'import json,re,sys
 sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 try:
     d=json.loads(sys.stdin.buffer.read().decode("utf-8","replace")); ti=d.get("tool_input",{})
     print(ti.get("subagent_type","") or ti.get("description",""))
-except Exception: print("")' 2>/dev/null || echo "")
+    _t = str(ti.get("prompt","")) + " " + str(ti.get("description",""))
+    print("reinforcement" if re.search(r"WT-R[0-9]{8}_[0-9]{3}", _t) else "")
+except Exception:
+    print(""); print("")' 2>/dev/null || echo "")
+AGENT_NAME=$(sed -n '1p' <<< "$_AX_META")
+ROUND_TYPE=$(sed -n '2p' <<< "$_AX_META")
 AGENT_NAME_LC=$(printf '%s' "$AGENT_NAME" | tr "[:upper:]" "[:lower:]")
 
 ACTIVE_DIR="$DIR/qepm/memory/axioms/active"
@@ -121,7 +132,7 @@ CLAUDE_MD="$DIR/CLAUDE.md"
 # (v9 2026-08-23) 변동부 단일 원천 — lcode_harvester.py::write_positive_context() 산출물.
 POSITIVE_CTX="$DIR/.cache/positive_context.json"
 ESC=$(printf '%s' "$HEADER" | CB="$CACHE_BODY" PC="$POSITIVE_CTX" CM="$CLAUDE_MD" \
-      ML="$CACHE_ML" IL="$INJECT_LAST" QVEST_INJECT_AGENT="$AGENT_NAME_LC" "$QVEST_PY_BIN" -c "
+      ML="$CACHE_ML" IL="$INJECT_LAST" QVEST_INJECT_AGENT="$AGENT_NAME_LC" QVEST_ROUND_TYPE="$ROUND_TYPE" "$QVEST_PY_BIN" -c "
 import json, os, sys
 def rd(p):
     try:
@@ -190,9 +201,17 @@ def _fa_derive():
             pat = '|'.join(toks)
     return out, pat
 _fa_line, _SETTLED_PAT = _fa_derive()
+# (v10.1) 고정 축은 **라운드 종류에 따라 다른 것**이라 리터럴 1벌로 주입하면 안 된다.
+#   강화(WT-R)에는 충실구현 프로필(롱숏 허용)을 아예 보여주지 않는다 — 보이면 선택지가 된다.
+_rt = os.environ.get('QVEST_ROUND_TYPE', '')
+if _rt == 'reinforcement':
+    _axis2 = ('  ★강화 라운드(WT-R) — 실투형 단일 프로필: long-only(w>=0)·<=25종·K200∪KQ150·15bps(v2.4 delta)·Σw=1 + PIT C1~C15. 비중 상한 없음(v10 폐지). 제약-귀속·완화 금지.' + chr(10) +
+              '  ★롱숏·>25종·논문 원구성 복제는 이 라운드의 선택지가 아니다 — 논문이 롱숏으로 보고해도 후보는 롱온리다. 원문 수치는 앵커로만 쓰고 구성은 이식하지 않는다.')
+else:
+    _axis2 = ('  실투형(강화 프로세스부터): long-only(w>=0)·<=25종·K200∪KQ150·15bps(v2.4 delta)·Σw=1 + PIT C1~C15. 비중 상한 없음(v10 폐지). 제약-귀속·완화 금지.' + chr(10) +
+              '  충실구현 라운드(1계층 최초): 논문 그대로(롱숏·종목수·비중·리밸) — 유니버스만 K200∪KQ150 치환. PIT 는 계층 무관 불변.')
 axis = ('[고정 축 — 변수 아님, 이 안에서 풀 것] (v10 2026-08-29 2계층)' + chr(10) +
-        '  실투형(강화 프로세스부터): long-only(w>=0)·<=25종·K200∪KQ150·15bps(v2.4 delta)·Σw=1 + PIT C1~C15. 비중 상한 없음(v10 폐지). 제약-귀속·완화 금지.' + chr(10) +
-        '  충실구현 라운드(1계층 최초): 논문 그대로(롱숏·종목수·비중·리밸) — 유니버스만 K200∪KQ150 치환. PIT 는 계층 무관 불변.' + chr(10) +
+        _axis2 + chr(10) +
         '[정체성 — quant-identity.md 정본] 최정상급 퀀트: ①최신 수리통계·ML 적극 ②냉소는 방법론(과적합·스누핑·시점오염)을 향한다 — 실증 통과 성과 폄하 금지' + chr(10) +
         '  ③리서치는 지난하다 — 실패가 정상, 지름길(허들 완화·측정 우회)이 진짜 실패 ④모든 수치 결정 = 논문 뿌리(원문 링크)·하드코딩 금지·한 논문 매몰 금지.' + chr(10) +
         _fa_line)

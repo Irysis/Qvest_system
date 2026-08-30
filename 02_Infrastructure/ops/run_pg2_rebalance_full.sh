@@ -163,7 +163,16 @@ fi
 
 # ── [2] 리밸 (비중 + monitor, Layer4 없음) + Gate C ─────────────────────────
 say "[2] rebalance (run_nolayer4_monthly.sh, AS_OF=$AS_OF)..."
-PG2_AS_OF="$AS_OF" bash "02_Infrastructure/monitoring/run_nolayer4_monthly.sh" >> "$LOG" 2>&1 \
+# ★PG2_REFRESH_DONE (2026-08-30) — 하위 러너에 "리프레시는 이미 했다"를 알린다.
+#   run_nolayer4_monthly.sh 는 예약 경로에서 직접 호출되므로 자체 [0] 리프레시를 갖게 됐다.
+#   이 플래그가 없으면 여기서 [0]/[1] 을 돌리고 [2] 안에서 **또 돌린다**(중복 = 수십 분 낭비).
+#   ★값은 "돌렸다"가 아니라 "이 실행에서 실제로 수행했다"여야 한다 — --only-weights 는
+#     [1] 을 건너뛰므로 하위가 스스로 갱신하도록 0 으로 내려보낸다(스킵을 완료로 위장 금지).
+_REFRESH_DONE=1
+[ "$ONLY_WEIGHTS" = "1" ] && _REFRESH_DONE=0
+say "  → PG2_REFRESH_DONE=$_REFRESH_DONE (0이면 하위 러너가 자체 리프레시 수행)"
+PG2_AS_OF="$AS_OF" PG2_REFRESH_DONE="$_REFRESH_DONE" \
+  bash "02_Infrastructure/monitoring/run_nolayer4_monthly.sh" >> "$LOG" 2>&1 \
   || say "[warn] run_nolayer4_monthly 일부 step warn (Gate C가 최종 검증)"
 [ -f "$HOLD" ] && [ "$(wc -l < "$HOLD")" -ge 5 ] \
   || abort "GateC-weights" "홀딩 CSV 미생성/부실: $HOLD (run_pg2_forward alpha/m4/beta 실패 가능 - 로그 확인)" 30

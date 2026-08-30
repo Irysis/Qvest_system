@@ -413,10 +413,14 @@ sanitize_rawdata <- function(dry_run = FALSE) {
     # [fix 2026-06-17] Windows arrow mmap(error 1224) — raw/bm가 각 source(RAWDATA_CACHE/
     # BM_CACHE)를 mmap한 채라 동일 경로 write_parquet halt 회피, temp-rename.
     # (raw/bm는 검증 요약·반환에 쓰이므로 rm 불가 — rename만으로 inode 교체)
-    .raw_tmp <- paste0(RAWDATA_CACHE, ".tmp")
-    write_parquet(raw, .raw_tmp)
-    if (file.exists(RAWDATA_CACHE)) file.remove(RAWDATA_CACHE)
-    file.rename(.raw_tmp, RAWDATA_CACHE)
+    # [fix 2026-08-30] ★선삭제 제거 + 실패 fail-loud. 구판은 tmp 로 쓴 뒤 본 파일을 **지우고**
+    #   rename 했고 rename 반환값을 버렸다. rename 은 대상이 있어도 덮어쓰므로 선삭제는
+    #   이득 0 · 손실 무한(삭제~rename 사이 부재 창 — 2026-08-29 23:27 benchmark 실사고).
+    #   공용 정본 = 02_Infrastructure/utils/atomic_parquet.R (선삭제 없음 · 유한 재시도 ·
+    #   실패 시 stop 으로 원본 보존 · copy 폴백 없음).
+    if (!exists("qvest_atomic_write_parquet"))
+      source(file.path(PROJECT_ROOT, "02_Infrastructure/utils/atomic_parquet.R"))
+    qvest_atomic_write_parquet(raw, RAWDATA_CACHE, tag = "sanitize/rawdata")
     # [정규화 2026-07-25] Date를 Date-class로 강제 후 기록 → on-disk date32[day] 보장.
     #   종전 passthrough는 읽은 dtype을 그대로 되썼기에, 상류가 timestamp를 남기면 그대로
     #   유통시켰다(오염원은 아니나 정규화 지점도 아님). writer 4곳(build_index_cache.py /
@@ -424,10 +428,7 @@ sanitize_rawdata <- function(dry_run = FALSE) {
     #   승격해 실행 순서와 무관하게 date32로 수렴시킨다. dtype 이탈은 소비자에서 silent
     #   all-NA 조인으로만 드러나므로(phase7 β-파생 ~54팩터 전멸, 2026-07-18) 쓰기 측에서 닫는다.
     if (!inherits(bm$Date, "Date")) bm[, Date := as.Date(Date)]
-    .bm_tmp <- paste0(BM_CACHE, ".tmp")
-    write_parquet(bm, .bm_tmp)
-    if (file.exists(BM_CACHE)) file.remove(BM_CACHE)
-    file.rename(.bm_tmp, BM_CACHE)
+    qvest_atomic_write_parquet(bm, BM_CACHE, tag = "sanitize/bm")
     cat(sprintf("  RAWDATA 저장: %s rows\n", format(nrow(raw), big.mark=",")))
     cat(sprintf("  Benchmark 저장: %d rows\n", nrow(bm)))
   }

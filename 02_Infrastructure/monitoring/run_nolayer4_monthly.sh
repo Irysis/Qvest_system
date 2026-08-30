@@ -24,6 +24,35 @@ TS="$(date +%Y%m%d)"; LOG="$LOGD/track_$TS.log"
 kill_stray(){ taskkill //F //IM Rscript.exe >/dev/null 2>&1 || true; }
 echo "=== noLayer4 월간 트래킹 $AS_OF ($(date)) ===" | tee "$LOG"
 
+# 0) ★데이터 리프레시 (2026-08-30 신설 — 도훈 지시 "리밸런싱할 때 데이터 리프레시도 진행")
+#    왜: 이 스크립트는 예약 작업(noLayer4_Monthly_PaperTracking)이 .bat 로 **직접** 부르는
+#    경로인데, 리프레시가 **한 스텝도 없었다** — 있는 캐시가 무엇이든 그 위에서 알파·m4·
+#    β·AE 를 계산했다. 그러면 신선도 게이트들이 **구조적으로 눈이 먼다**:
+#      · 아래 [1a2] AE 핀 신선도는 '핀 vs 라이브' 비교라, **라이브 자체가 낡으면 통과**한다.
+#      · Gate B(팩터DB 앵커)·Gate D 는 full 러너에만 있어 예약 경로에선 안 돈다.
+#    ⇒ 소비 직전에 원천을 전진시키고, 전진 실패는 삼키지 않는다.
+#    ★멱등: full 러너(run_pg2_rebalance_full.sh)는 [0]/[1] 에서 이미 refresh 를 돌리고
+#      PG2_REFRESH_DONE=1 을 내려보낸다 → 그 경로에선 중복 실행하지 않는다.
+#    ★QuantiWise(qw_refresh.ps1)는 **여기서 부르지 않는다** — 자동 로그인이 풀린 상태에서
+#      무인 실행하면 빈 PW 로 40회 클릭해 계정 잠금 위험이 있다(2026-08-29 실측).
+#      그건 사람이 붙는 full 러너의 [0]+Gate A 소관으로 남긴다.
+if [ "${PG2_REFRESH_DONE:-0}" = "1" ]; then
+  echo "── [0] 데이터 리프레시 스킵 — 상위 러너가 이미 수행(PG2_REFRESH_DONE=1)" | tee -a "$LOG"
+else
+  echo "[0] 데이터 리프레시 (daily_refresh.sh — ingest + factor DB)..." | tee -a "$LOG"
+  kill_stray
+  QVEST_REFRESH_TG=0 bash "$QM_ROOT/02_Infrastructure/data/daily_refresh.sh" >> "$LOG" 2>&1
+  _drrc=$?
+  # rc 만으로 판정하지 않는다 — 이 체인은 스텝 실패를 fail-soft 로 넘기는 구간이 있어
+  # rc=0 이 "전진했다"를 뜻하지 않는다(2026-08-14~20: 6일 연속 '실패 0' 인데 거래일 3일 결손).
+  # 그래서 rc 는 경고로만 남기고, **전진 여부는 아래 [1a2] AE 원천 신선도 게이트가 실측으로 잡는다**.
+  if [ "$_drrc" -ne 0 ]; then
+    echo "!! [0] daily_refresh rc=$_drrc — 원천 전진 실패 가능. [1a2] 원천 신선도 게이트가 실측 판정" | tee -a "$LOG"
+  else
+    echo "── [0] 데이터 리프레시 완료 (rc=0)" | tee -a "$LOG"
+  fi
+fi
+
 # 1) base 최신화 + noLayer4 배포 비중 (alpha->m4->β_R05->비중, Layer4 없음) — 슬롯2-3 하드닝 파이프라인
 #    ★faith 대비: 별도 β_faith 오버레이 스텝 없음. run_pg2_forward_noLayer4.sh가 alpha/m4/generator 자체 포함.
 #    (내부: _recompute_alpha_asof.R + STR_1715 run_all.R + m4 factor_engine → m4_extended.csv/alpha 신선)
@@ -56,6 +85,48 @@ case "$_m4rc" in
   3) echo "XX [1a] m4 AS_OF 행 미생성 — 이대로 가면 배포 생성기가 직전 달 m4 를 조용히 쓴다. 중단" | tee -a "$LOG"; exit 13 ;;
   4) echo "XX [1a] ★m4 PIT 위반 — 신규 행이 결정일 이후 매크로 관측 사용. 중단" | tee -a "$LOG"; exit 14 ;;
   *) echo "XX [1a] m4 append-only 게이트 실패(rc=$_m4rc) — 패널 신뢰 불가, 중단" | tee -a "$LOG"; exit 13 ;;
+esac
+
+# 1a2) ★AE 월간 배관 (2026-08-30 신설 — 도훈 지시). [1b] 의 D3 게이트가 이 신호를 먹는다.
+#     ★결함: `02_Infrastructure/regime/ae_regime_monthly.py` 는 D3 게이트용 AE 신호의 운영
+#       정본인데 **어떤 실행기도 부르지 않았다**(.sh/.ps1/예약작업 참조 0건). 자기 docstring 이
+#       이미 "AE 신호에 생산자가 아예 없었다"고 적어둔 상태로 방치돼 있었다(2026-08-01 감사).
+#       그래서 ae_regime_signal_ext.parquet 이 2026-08-01 에 멈췄고, 소비자는 AS_OF 행이
+#       없으면 `which.max(decision_date)` 로 **직전 달 행을 조용히 재사용**했다. 소비자의
+#       PIT 가드 `last_feat < AS_OF` 는 낡음을 구조적으로 못 잡는다 — 오래될수록 더 잘 통과한다.
+#       2026-09 는 m4 미발화라 gate=1.00 으로 고정돼 무해했으나, m4 발화월(실측 37개월 중 36,
+#       97.3%)에는 **30% de-risk 오판**으로 직결된다.
+#     ★배선 위치가 여기인 이유: 예약 작업(noLayer4_Monthly_PaperTracking)은
+#       run_nolayer4_monthly.bat → **이 스크립트를 직접** 부른다(아래 [1b] 주석 참조).
+#       run_pg2_rebalance_full.sh 에만 붙이면 무인 경로가 그대로 비어 있게 된다 —
+#       Gate C/D 가 예약 경로에서 한 번도 안 도는 것과 정확히 같은 계통이다.
+#       여기 두면 두 경로가 모두 덮인다(full 러너는 [2]에서 이 스크립트를 부른다).
+#     ★fail-closed. 경고로 삼키지 않는다 — 실패를 삼키면 [1b] 가 낡은 AE 로 비중을 낸다.
+kill_stray
+_AE_PY=""
+for _c in "$QM_ROOT/.venv_qvest_ml/Scripts/python.exe" "${QVEST_PY:-}"; do
+  _c="${_c//\\//}"
+  # ★존재가 아니라 **실행**으로 확인한다 — bare python 스텁 함정(resolve_admitted_slot.sh 선례).
+  [ -n "$_c" ] && "$_c" -c 'import sys' >/dev/null 2>&1 && { _AE_PY="$_c"; break; }
+done
+if [ -z "$_AE_PY" ]; then
+  echo "XX [1a2] AE 갱신용 python 미발견(venv/QVEST_PY) — 낡은 AE 로 배포하지 않는다. 중단" | tee -a "$LOG"
+  exit 16
+fi
+QM_ROOT="$QM_ROOT" CLAUDE_PROJECT_DIR="$QM_ROOT" \
+  timeout 900 "$_AE_PY" "$QM_ROOT/02_Infrastructure/regime/ae_regime_monthly.py" \
+    --as-of "$AS_OF" --advance-pin >> "$LOG" 2>&1
+_aerc=$?
+case "$_aerc" in
+  0)   echo "── [1a2] AE 월간 갱신 OK ($AS_OF 결정행 확보)" | tee -a "$LOG" ;;
+  124) echo "XX [1a2] AE 갱신 900초 타임아웃 — 중단" | tee -a "$LOG"; exit 20 ;;
+  1)   echo "XX [1a2] ★AE parity 차단 — 과거 발행 행이 변경됨(재계산본 .parity_reject 보존)." | tee -a "$LOG"
+       echo "        오염인지 **교정**인지 먼저 특정할 것(게이트 메시지의 'FRED 개정 의심'은 가설이지 증거가 아니다)." | tee -a "$LOG"
+       echo "        판정 컬럼과 점수 컬럼을 나눠 diff → 교정이면 --accept-parity '<사유>' 로 사유를 남겨 통과. 중단" | tee -a "$LOG"
+       exit 17 ;;
+  2)   echo "XX [1a2] AE 입력/환경 오류 (핀 원본 부재 또는 ★낡은 핀 재사용 거부) — 로그의 [ae-monthly] 사유 확인. 중단" | tee -a "$LOG"; exit 18 ;;
+  3)   echo "XX [1a2] ★AE PIT 위반 — 결정일 이후 관측 사용. 중단" | tee -a "$LOG"; exit 19 ;;
+  *)   echo "XX [1a2] AE 갱신 실패(rc=$_aerc) — 낡은 AE 로 배포하지 않는다. 중단" | tee -a "$LOG"; exit 20 ;;
 esac
 
 # 1b) ★deployed 슬롯 생성기 — book_state.admitted_ids 가 슬롯 2-3 이 아닐 때만 추가 실행.

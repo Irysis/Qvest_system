@@ -78,6 +78,37 @@ BL_OMEGA_SCALE <- 1.5             # view variance vs prior variance ratio
 # pillars agree regime is bad. Single pillar = neutral.
 CONJUNCTION_THRESHOLD <- 0.5      # both regime + decay must exceed this together
 
+# -- BOCPD 팔 가드 (2026-08-30 수리 -- 구판은 271개월 내내 0회 발화) --------------
+# [결함] 구판: `bocpd_expected_runlen_lag >= 12` 를 주석이 "must observe >= 12 mo of
+#   data" 라는 PIT warm-up 검사로 적어놨다. 그러나 expected_runlen 은 관측 데이터 길이가
+#   아니라 **현재 런(국면)이 얼마나 지속됐는지에 대한 BOCPD 사후 기대값** E[r_t|x_1:t] 다.
+#   BOCPD 는 변화점을 감지하면 run-length posterior 가 무너지도록 설계돼 있으므로
+#   short_run_mass 가 오르는 바로 그 순간 expected_runlen 이 내려간다 --
+#   **구조적 음상관 rho = -0.5898** (271개월 실측). 즉 가드가 신호를 정의상 지운다.
+#   실측: mass>=0.60 인 11개월 중 runlen>=12 동반 **0개월** -> bocpd_strong 발화 0.
+#         mass>=0.80 인 6개월 중 **0개월** -> bocpd_extreme 발화 0. Case C/D 의 bocpd
+#         경로가 전 이력 미발화, decay 팔만 살아 있었다(2020-06 weight 0.92 = decay 경유).
+# [수리] warm-up 은 warm-up 변수로 -- BOCPD 가 소비한 **관측 개월 수**로 건다.
+BOCPD_WARMUP_MONTHS <- 12L
+# expected_runlen 을 신호로 쓸지 여부. 실측으로 결정(2026-08-30, 근거는 아래):
+#   "off"    = 쓰지 않음  (기본값)
+#   "young"  = runlen <= THRESHOLD (부등호 반대 -- 짧을수록 전환 임박, 기전 정합 방향)
+#   "mature" = runlen >= THRESHOLD (구판 방향 -- 재현 전용. 실측 발화 0)
+# [실측 판정: 방향은 이 패널로 결정 불가 -- "young" 을 채택하지 않는 이유]
+#   warm-up 통과 후 mass>=0.60 후보는 4개월(2020-06/07/09/10)뿐이고 그 runlen 은
+#   전부 10.19~10.46 에 몰려 있다. 따라서 "young" 은 THRESHOLD>=10.5 에서 **비구속**
+#   (4건 그대로 통과 = "off" 와 동일), <=10 에서 **전멸**(0건 = 구판과 동일). 판별하는
+#   문턱이 존재하지 않는다(절벽이지 판별자가 아님). 게다가 4개월은 2020-06~10
+#   **단일 에피소드** -- 유효 n=1. 방향을 실측으로 고를 수 없으므로 쓰지 않는다.
+BOCPD_RUNLEN_MODE <- "off"
+BOCPD_RUNLEN_THRESHOLD <- 12
+# [수리가 드러낸 것 -- 도훈 판단 필요] 가드를 정정하면 bocpd 팔이 4회 발화하는데
+#   그 4개월 평균 ret_net = +5.76% (전체 평균 +3.34%, 순열검정 단측 p=0.736) 로
+#   **보호 방향이 아니다**(COVID 회복 국면의 상방 전환을 위험으로 오독). 더 검정력 있는
+#   전수 검사(n=247, baseline_cash==0): mass 의 rank-IC = **+0.046** -- 전제("mass 高 =
+#   위험")와 부호가 반대이고 5분위 단조성도 없다. 즉 mass 문턱(0.60/0.80)으로 리스크오프를
+#   트리거하는 설계 자체가 미지지. 문턱 재보정/팔 폐지는 등급 축 변경이라 도훈 권한.
+
 cat(sprintf("[engine] WT_ID=%s AS_OF=%s\n", WT_ID, format(AS_OF_DATE)))
 cat(sprintf("[engine] Hyperparams: roll=%d, hazard=%.4f, warmup=%d, tau=%.3f\n",
             ROLL_WINDOW_MONTHS, BOCPD_HAZARD, WARMUP_MONTHS, BL_TAU))
@@ -547,18 +578,36 @@ run_engine <- function() {
   #
   # PIT warmup guards:
   #   - decay_R2 ≥ 0.05 (require some hyperbolic fit)
-  #   - bocpd_expected_runlen_lag >= 12 (must observe ≥ 12 mo of data)
-  #   - row index >= WARMUP_MONTHS (handled below)
+  #   - bocpd 팔 = 관측 개월 수 >= BOCPD_WARMUP_MONTHS (상단 주석 참조 -- 2026-08-30 수리.
+  #     구판은 expected_runlen 을 warm-up 대리변수로 썼고, 그것은 관측 길이가 아니라
+  #     run-length posterior 기대값이라 mass 와 구조적 음상관(rho=-0.59) -- 발화 0)
+  #   ! WARMUP_MONTHS(36) 는 view_BL(정보성 열)에만 걸리고 weight_str1715 경로엔
+  #     걸리지 않는다 -- 구판 주석의 "row index >= WARMUP_MONTHS (handled below)" 도
+  #     사실과 달랐다. 비중 경로의 warm-up 은 아래 bocpd_warm 이 유일하다.
   out[, decay_strong := as.integer(decay_signal >= 0.7 & decay_R2 >= 0.05)]
   out[is.na(decay_strong), decay_strong := 0L]
   out[, decay_extreme := as.integer(decay_signal >= 0.9 & decay_R2 >= 0.05)]
   out[is.na(decay_extreme), decay_extreme := 0L]
+  # warm-up = BOCPD 가 소비한 관측 개월 수(패널 불변량 = 월 1행). row t 의 lag 값은
+  # 관측 t-1 개를 소비한 posterior 이므로 경과 = seq_len(.N) - 1L.
+  out[, bocpd_warm := as.integer((seq_len(.N) - 1L) >= BOCPD_WARMUP_MONTHS)]
+  # expected_runlen 은 기본 "off" -- 상단 주석의 실측 근거 참조.
+  out[, bocpd_rl_ok := switch(BOCPD_RUNLEN_MODE,
+        "off"    = rep(1L, .N),
+        "young"  = as.integer(bocpd_expected_runlen_lag <= BOCPD_RUNLEN_THRESHOLD),
+        "mature" = as.integer(bocpd_expected_runlen_lag >= BOCPD_RUNLEN_THRESHOLD),
+        stop(sprintf("BOCPD_RUNLEN_MODE 미지의 값: %s", BOCPD_RUNLEN_MODE)))]
+  out[is.na(bocpd_rl_ok), bocpd_rl_ok := 0L]
   out[, bocpd_strong := as.integer(bocpd_short_run_mass_lag >= 0.60 &
-                                      bocpd_expected_runlen_lag >= 12)]
+                                      bocpd_warm == 1L & bocpd_rl_ok == 1L)]
   out[is.na(bocpd_strong), bocpd_strong := 0L]
   out[, bocpd_extreme := as.integer(bocpd_short_run_mass_lag >= 0.80 &
-                                      bocpd_expected_runlen_lag >= 12)]
+                                      bocpd_warm == 1L & bocpd_rl_ok == 1L)]
   out[is.na(bocpd_extreme), bocpd_extreme := 0L]
+  cat(sprintf("  [bocpd guard] warmup=%dmo mode=%s thr=%s -> strong=%d extreme=%d (n=%d)
+",
+              BOCPD_WARMUP_MONTHS, BOCPD_RUNLEN_MODE, BOCPD_RUNLEN_THRESHOLD,
+              sum(out$bocpd_strong), sum(out$bocpd_extreme), nrow(out)))
 
   # Joint = both strong, indicates very high conviction
   out[, joint_alpha_warning := as.integer(decay_strong == 1L & bocpd_strong == 1L)]
