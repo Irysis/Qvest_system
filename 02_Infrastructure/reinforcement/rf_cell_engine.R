@@ -125,7 +125,17 @@ if (identical(.base$kind, "mom_12_1")) {
     fl <- .univ$flag; if (!fl %in% names(x)) stop("[rf_cell_engine] 멤버십 열 부재: ", fl)
     x <- x[get(fl) == TRUE]
   } else if (identical(k, "all_listed")) {
-    # 지수 멤버십 무제약 — 유동성 하한만
+    # 지수 멤버십 무제약 — 유동성 하한만.
+    # ★처치 확인(2026-08-30 실측): 기저 신호가 지수 멤버 위에서만 정의돼 있으면 '멤버십 해제' 는
+    #   넓힐 대상이 없다. B3_11 이 B1_5 와 보유 777/777 **완전 동일**한 포트폴리오를 내고도
+    #   등급 B 를 받았다 — 처치 미전달인데 수치가 나온다. 그러면 블록 승자를 가짜가 가져갈 수 있다.
+    #   (이 논문의 기저 엔진은 engine.R 에서 (K200|KQ150) 로 자기 유니버스를 이미 자른다)
+    if (all(c("K200", "KQ150") %in% names(x))) {
+      .n_idx <- nrow(x[K200 == TRUE | KQ150 == TRUE])
+      if (identical(.n_idx, nrow(x)))
+        stop("[rf_cell_engine] all_listed 후보가 지수 멤버와 동일 — 유니버스 처치 미전달",
+             "(기저 신호 지지집합이 지수로 한정). 측정 무효 — 같은 포트폴리오에 다른 이름을 붙이지 않는다.")
+    }
   } else if (identical(k, "size_band")) {
     if (!"Size" %in% names(x)) stop("[rf_cell_engine] Size 열 부재")
     # ★C1: 임계는 그 시그널일 횡단면 분위 — 전 표본 분위 금지. Size 는 t-1 값 사용(C2).

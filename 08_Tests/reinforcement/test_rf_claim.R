@@ -45,6 +45,30 @@ d2 <- rf_claim_acquire(P, stale_hours = -1)
 if (isTRUE(d2$ok) && grepl("시간 폴백", d2$note %||% "")) ok("owner 없음 + 나이 초과 → 시간 폴백 회수") else
   ng("시간 폴백 미작동", paste(d2$reason, d2$note))
 
+writeLines("=== 빈 고아 · 해제 표식 (2026-08-30 실측 경로) ===")
+# unlink 이 owner.json 만 지우고 디렉터리를 남기는 경우가 실재한다. 그러면 후속 실행이
+# 소유자를 못 읽어 6시간 폴백으로 떨어진다 — pid 수리만으로는 안 덮였다.
+reset(); dir.create(P, recursive = TRUE)
+Sys.setFileTime(P, Sys.time() - 300)                 # 5분 전 = 60초 유예 초과
+e1 <- rf_claim_acquire(P, stale_hours = 999)
+if (isTRUE(e1$ok) && grepl("빈 고아", e1$note %||% "")) {
+  ok("owner 없는 빈 claim(60초 경과) → 회수")
+} else ng("빈 고아 미회수", paste(e1$reason, e1$note))
+
+reset(); dir.create(P, recursive = TRUE)             # 갓 만든 빈 claim = 경합 창
+e2 <- rf_claim_acquire(P, stale_hours = 999)
+if (!isTRUE(e2$ok)) {
+  ok("갓 만든 빈 claim 은 지킨다(dir.create~owner 기록 사이 경합 보호)")
+} else ng("경합 창 미보호", "밀리초 창에서 살아있는 claim 을 빼앗는다")
+
+reset(); dir.create(P, recursive = TRUE)
+writeLines(toJSON(list(released_at = "x", by_pid = 1L), auto_unbox = TRUE),
+           file.path(P, "released.json"))
+e3 <- rf_claim_acquire(P, stale_hours = 999)
+if (isTRUE(e3$ok) && grepl("해제 표식", e3$note %||% "")) {
+  ok("해제 표식 → 나이 무관 즉시 회수")
+} else ng("해제 표식 무시", paste(e3$reason, e3$note))
+
 writeLines("=== 해제 ===")
 r <- rf_claim_release(P)
 if (isTRUE(r$ok) && !dir.exists(P)) ok("해제 → 디렉터리 제거") else ng("해제 실패", r$reason)

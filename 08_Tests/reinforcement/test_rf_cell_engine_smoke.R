@@ -31,7 +31,7 @@ ng <- function(m, d = "") { FAIL <<- FAIL + 1L; writeLines(paste("  FAIL ", m, "
 #   1년 반을 둬서 시그널일이 창 부족으로 전멸하지 않게 한다.
 #   Close*Vol 은 유동성 하한 2e8 을 항상 넘도록 잡는다 — 이 검사의 대상은 배관이지
 #   선별 경제학이 아니다.
-make_fixture <- function() {
+make_fixture <- function(idx_n = 20L) {
   set.seed(20260830L)
   d <- seq(as.Date("2003-06-02"), as.Date("2006-12-29"), by = "day")
   d <- d[as.integer(format(d, "%w")) %in% 1:5]
@@ -43,12 +43,14 @@ make_fixture <- function() {
   x[, .r := NULL]
   x[, Vol  := 200000]
   x[, Size := Close * 1e6]
-  x[, K200 := TRUE]
+  # 지수 멤버 idx_n 종 + 비지수 나머지 — all_listed 처치가 실제로 넓히는지 보려면 밖이 있어야 한다
+  x[, K200 := as.integer(sub("T", "", Ticker, fixed = TRUE)) <= idx_n]
   x[, KQ150 := FALSE]
   x[, Sector_Lv2 := paste0("S", (as.integer(sub("T", "", Ticker, fixed = TRUE)) %% 5L) + 1L)]
   x[]
 }
-FIX <- make_fixture()
+FIX <- make_fixture(20L)          # 30종 중 20종만 지수 멤버
+FIX_ALL <- make_fixture(30L)      # 전 종목이 지수 멤버 = 넓힐 대상 없음
 
 AXES <- list(long_only = TRUE, n_max = 25L, universe = "K200_KQ150",
              start_date = "2005-01-01", commission_bps = 15L, liq_adv20_min = 2e8)
@@ -56,12 +58,12 @@ PX <- list(kind = "price", id = "lowvol60")   # 오프라인 자기완결 팩터
 
 # 스펙을 파일로 굽고 엔진을 격리 env 에서 평가한다.
 #   엔진은 DT <- RAWDATA 로 **참조**를 잡고 열을 추가하므로 매번 copy() 를 넘긴다.
-run_cell <- function(spec, engine = ENGINE) {
+run_cell <- function(spec, engine = ENGINE, fixture = FIX) {
   p <- file.path(tempdir(), "rf_smoke_spec.json")
   writeLines(toJSON(spec, auto_unbox = TRUE, pretty = TRUE, null = "null"), p)
   Sys.setenv(RF_CELL_SPEC = p)
   env <- new.env()
-  assign("RAWDATA", copy(FIX), envir = env)
+  assign("RAWDATA", copy(fixture), envir = env)
   err <- NULL
   suppressWarnings(suppressMessages(
     tryCatch(source(engine, local = env), error = function(e) err <<- conditionMessage(e))))
@@ -116,6 +118,23 @@ if (is.null(r$err) && identical(r$out, "PORTFOLIO")) {
   else if (max(disp$sd, na.rm = TRUE) < 1e-10) ng("카탈로그 비중", "전 시점 EW — 처치 미전달(조용한 폴백)")
   else ok(sprintf("카탈로그 arm(lean:ivol) → PORTFOLIO · EW 아님(최대 비중 sd %.5f)", max(disp$sd, na.rm = TRUE)))
 } else ng("카탈로그 비중", r$err %||% "PORTFOLIO 없음")
+
+# A6/A7. 유니버스 처치 전달 (양방향) — 2026-08-30 실측: B3_11(지수 멤버십 해제)이
+#   B1_5 와 보유 777/777 완전 동일한 포트폴리오로 등급 B 를 받았다. 기저 신호가 지수
+#   멤버 위에서만 정의돼 있어 '해제' 가 넓힐 대상이 없었다 — 처치 미전달인데 수치는 나온다.
+r6 <- run_cell(base_spec(factor2 = list(kind = "none"), universe = list(kind = "all_listed")), fixture = FIX)
+r6k <- run_cell(base_spec(factor2 = list(kind = "none")), fixture = FIX)
+if (is.null(r6$err) && is.null(r6k$err)) {
+  n_all <- length(unique(get("FACTORS", envir = r6$env)$Ticker))
+  n_idx <- length(unique(get("FACTORS", envir = r6k$env)$Ticker))
+  if (n_all > n_idx) ok(sprintf("all_listed 가 실제로 넓힌다(종목 %d > 지수 %d)", n_all, n_idx))
+  else ng("all_listed 처치 미전달", sprintf("종목 %d = 지수 %d", n_all, n_idx))
+} else ng("all_listed 정상 경로", r6$err %||% r6k$err)
+
+r7 <- run_cell(base_spec(factor2 = list(kind = "none"), universe = list(kind = "all_listed")), fixture = FIX_ALL)
+if (!is.null(r7$err) && grepl("처치 미전달", r7$err)) {
+  ok("넓힐 대상이 없으면 실패로 끊는다(위반 주입)")
+} else ng("미전달 가드 미작동", "같은 포트폴리오에 다른 이름이 붙는다")
 
 writeLines("=== B. 위반 주입 — 같은 결함을 심으면 반드시 잡히는가 ===")
 

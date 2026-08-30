@@ -39,12 +39,24 @@ rf_claim_acquire <- function(claim, stale_hours = 6) {
     age_h <- suppressWarnings(as.numeric(
       difftime(Sys.time(), file.info(claim)$mtime, units = "hours")))
     op <- file.path(claim, "owner.json")
+    rp <- file.path(claim, "released.json")
     pid <- if (file.exists(op)) {
       o <- tryCatch(jsonlite::fromJSON(op, simplifyVector = TRUE), error = function(e) NULL)
       suppressWarnings(as.integer(o$pid %||% NA))
     } else NA_integer_
 
-    if (!is.na(pid) && !rf_claim_pid_alive(pid)) {
+    if (file.exists(rp)) {
+      # 해제 표식 — 소유자가 끝났다고 남긴 것. 디렉터리가 안 지워졌을 뿐이다.
+      unlink(claim, recursive = TRUE)
+      note <- "해제 표식(released.json) 존재 — 즉시 회수"
+    } else if (is.na(pid) && is.finite(age_h) && age_h * 3600 > 60) {
+      # ★빈 고아(2026-08-30 실측): unlink 이 owner.json 은 지우고 디렉터리는 못 지웠다.
+      #   그러면 후속 실행이 소유자를 못 읽어 6시간 폴백으로 떨어진다 — pid 수리가 이 경우를
+      #   못 덮었다. 소유자를 주장하는 자가 없는 claim 은 claim 이 아니다.
+      #   60초 유예 = dir.create 와 owner.json 기록 사이의 창(밀리초)을 넉넉히 덮는다.
+      unlink(claim, recursive = TRUE)
+      note <- sprintf("owner.json 부재 + %.0f초 경과 — 빈 고아로 회수", age_h * 3600)
+    } else if (!is.na(pid) && !rf_claim_pid_alive(pid)) {
       unlink(claim, recursive = TRUE)
       note <- sprintf("owner pid %d 사망 — 나이(%s h) 무관 즉시 회수", pid,
                       if (is.finite(age_h)) sprintf("%.2f", age_h) else "?")
@@ -71,7 +83,11 @@ rf_claim_release <- function(claim) {
   if (!dir.exists(claim)) return(list(ok = TRUE, reason = "removed"))
   Sys.sleep(0.3); unlink(claim, recursive = TRUE)                     # 일시적 핸들 점유 1회 재시도
   if (!dir.exists(claim)) return(list(ok = TRUE, reason = "removed_retry"))
-  # 마지막 수단: owner.json 만이라도 지워 후속 실행이 시간 폴백으로 떨어지게 한다.
-  # (owner 가 남아 있으면 이 프로세스 pid 가 죽은 뒤 다음 실행이 즉시 회수하므로 그대로 둬도 된다)
+  # ★디렉터리를 못 지웠다면 **해제 표식**을 남긴다. unlink 이 owner.json 만 지우고
+  #   디렉터리를 남기는 경우가 실재하고(2026-08-30), 그러면 후속 실행이 소유자를 못 읽어
+  #   6시간 폴백으로 떨어진다. 표식이 있으면 다음 실행이 즉시 회수한다.
+  tryCatch(writeLines(jsonlite::toJSON(list(
+      released_at = format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z"), by_pid = Sys.getpid()),
+      auto_unbox = TRUE), file.path(claim, "released.json")), error = function(e) NULL)
   list(ok = FALSE, reason = "unlink_failed")
 }
