@@ -1,0 +1,19 @@
+{
+  "run_id": "STR_1715_WT016_Iter31_20260830_LIVE",
+  "strategy_name": "STR_1715_Iter31_LinearTilt_Grid_Best",
+  "strategy_family": "Multi-sleeve (4F Consensus + Q07 + M08 + Q25 / 2 sleeves)",
+  "signal_description": "4F Consensus (Core) + Q07/M08/Q25 (Defense). Linear Tilt + Cash Overlay. PG2 live mode.",
+  "universe_rule": "KR top342 + LIQ_20d >= 2e8",
+  "rebalance_frequency": "monthly",
+  "signal_date_rule": "month-start label / prior month underlying (lockbox release, live)",
+  "execution_date_rule": "t+1 lag",
+  "weighting_method": "linear_tilt_to_penalty_qd(lambda=1.50, phi=3, ub=0.20) + cash_overlay_pct_iter31",
+  "max_position_weight": 0.2,
+  "max_leverage": 1,
+  "cash_rule": "Iter31 regime-conditional (normal=0% / caution=0% / crisis=0%)",
+  "cost_model": "commission=0.0015 (15bps each side) + turnover-based",
+  "missing_data_rule": "winsorize 1%/99% z-score (Variant A)",
+  "risk_controls": "mandate cap 0.20 strict (OVERRIDE_006)",
+  "lookahead_prevention": "C1 expanding IC + C2 t-1 lag + C13 Z_Score_Aligned + C14 Usable_Date <= sig_date",
+  "survivorship_bias_control": "RAWDATA full universe + delisted included"
+}

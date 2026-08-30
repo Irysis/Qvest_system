@@ -76,7 +76,13 @@ BL_TAU <- 0.05                    # BL prior confidence
 BL_OMEGA_SCALE <- 1.5             # view variance vs prior variance ratio
 # Conjunction rule (anti-spurious, anti-AX-002): only reduce STR_1715 if BOTH
 # pillars agree regime is bad. Single pillar = neutral.
-CONJUNCTION_THRESHOLD <- 0.5      # both regime + decay must exceed this together
+## ★★[사문(死文) 표기 — 2026-08-30 실측] 이 상수는 **어디서도 참조되지 않는다.**
+##   결정 경로(weight_str1715 := ...)는 아래 3분기 if-else 사다리이고, 그 사다리의
+##   Case C/D 는 `decay_* | bocpd_*` **OR** 로 발화한다. 즉 위 주석이 선언한
+##   "Single pillar = neutral"(결합 요구)은 **구현되어 있지 않다.**
+##   설계 문서(파일 상단 3-Pillar) 대로 BL 연속비중을 결정 경로에 연결해 재보았고,
+##   결과는 아래 §사문 블록에 기록했다 — 요약: **사다리가 설계판보다 낫다.**
+CONJUNCTION_THRESHOLD <- 0.5      # ※미사용(사문). 아래 사문 블록 참조
 
 # -- BOCPD 팔 가드 (2026-08-30 수리 -- 구판은 271개월 내내 0회 발화) --------------
 # [결함] 구판: `bocpd_expected_runlen_lag >= 12` 를 주석이 "must observe >= 12 mo of
@@ -644,6 +650,31 @@ run_engine <- function() {
   out[, weight_str1715 := pmax(0.0, pmin(1.0, weight_str1715))]
   out[, weight_cash := 1.0 - weight_str1715]
 
+  ##===[사문 블록 — 계산되지만 결정에 쓰이지 않는 것들. 2026-08-30 실측 기록]=======
+  ## 아래 combined_regime / decay_norm / conjunction_score / view_str / view_confidence /
+  ## view_BL / confidence 와 black_litterman_2asset() 결과는 **전부 보고용**이다.
+  ## 결정 경로는 위 3분기 사다리(baseline + Case B/C/D)로 끝났다.
+  ##
+  ## ★왜 그대로 두는가 — 설계판을 구현해 재보았고 **성과가 열위**였기 때문이다.
+  ##   파일 상단 설계(3-Pillar C: BL 2자산 동적배분)를 결정 경로에 연결해
+  ##   소비 경로 전체(m4 -> M4∩AE 게이트 -> β_R05)로 271개월 측정한 결과:
+  ##     판                      m4발화  Calmar   NAV      MDD
+  ##     ① 현행 사다리            38     1.7915   3714.0   -24.51%
+  ##     ② +월간 BOCPD            41     1.7831   3595.9   -24.51%
+  ##     ③ +일별 BOCPD            55     1.7605   3294.6   -24.51%
+  ##     ④ 설계판 BL 연속비중    236     1.7113   2721.9   -24.51%   ← 최악
+  ##   BL 비중 분포가 min 0.000 / 중앙 0.695 / 236개월이 1.0 미만 — **상시 de-risk 기계**라
+  ##   비용만 크고 MDD 는 네 판 모두 동일(개선 0)하다. 사다리가 발화를 14%로 조여
+  ##   비용을 줄인 형태이며 실제로 가장 낫다.
+  ##   ⇒ 이것은 "설계 미구현 결함"이 아니라 **측정으로 기각된 설계**다. 다만 그 사실이
+  ##      어디에도 없어 다음 사람이 결함으로 읽는다(2026-08-30 실제로 그렇게 읽었다).
+  ##   산출: 04_Research/method_frontier/bocpd_direction_repair/
+  ##         {bl_design_performance,chain_performance}.csv · VERDICT.md
+  ##
+  ## ★BOCPD 팔도 같은 자리에 있다 — bocpd_strong/bocpd_extreme 는 위 사다리에 배선돼
+  ##   있으나 BOCPD_RUNLEN_MODE="off" 로 발화하지 않는다. 켜면 ②③ 처럼 성과가 나빠진다.
+  ##   상세·부활 조건 = 위 VERDICT.md.
+  ##===============================================================================
   # Documentation: BL formal calc still done for reporting.
   # decay_norm + conjunction_score retained as features.
   out[, decay_norm := pmax(0, pmin(1, decay_signal * 2))]
