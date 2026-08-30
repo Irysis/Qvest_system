@@ -78,7 +78,13 @@ STALE_H <- as.numeric(CFG$claim_stale_hours %||% 6)
 #   물러난다. 그 로그는 **정상 대기와 글자 그대로 같아서** 아무도 못 본다(부팅 때 본 1.5h 공백).
 #   그래서 owner.json(pid) 을 남기고, 다음 실행이 그 pid 사망을 보면 나이 무관 즉시 회수한다.
 suppressMessages(source(file.path(ROOT, "02_Infrastructure/ops/rf_claim.R")))
-.ac <- rf_claim_acquire(CLAIM, stale_hours = STALE_H)
+# ★위임 호출에서는 부모가 이미 claim 을 쥐고 있다 — 자식이 다시 잡으려 하면 자기 부모에게 막혀
+#   아무 일도 못 하고 끝난다(2026-08-30 실사고: halt_exhausted_delegate → halt_claimed 가 8분마다
+#   2시간 반 동안 반복, 소진 전이가 영영 안 됐다). 부모가 이 플래그로 "이미 잡았다" 를 알린다.
+.CLAIM_HELD <- nzchar(Sys.getenv("QVEST_RF_CLAIM_HELD", ""))
+.ac <- if (.CLAIM_HELD) list(ok = TRUE, reason = "inherited", age_h = NA_real_,
+                            owner_pid = NA_integer_, note = "") else
+       rf_claim_acquire(CLAIM, stale_hours = STALE_H)
 if (!isTRUE(.ac$ok)) {
   if (identical(.ac$reason, "race")) jlog("halt_claim_race")
   else jlog("halt_claimed", age_h = round(.ac$age_h %||% NA_real_, 2), owner_pid = .ac$owner_pid %||% NA)
@@ -359,7 +365,7 @@ invisible(0L)
 }
 
 rc <- tryCatch(main(), error = function(e) { jlog("fatal", err = conditionMessage(e)); 1L })
-.rel <- rf_claim_release(CLAIM)
+.rel <- if (.CLAIM_HELD) list(ok = TRUE, reason = "inherited") else rf_claim_release(CLAIM)
 if (!isTRUE(.rel$ok)) jlog("claim_release_failed", reason = .rel$reason,
      note = "고아 claim 이 남았다 — owner.json 의 pid 가 죽으면 다음 tick 이 즉시 회수한다")
 quit(status = if (is.numeric(rc)) as.integer(rc) else 0L)

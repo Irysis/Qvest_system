@@ -448,6 +448,16 @@ else ng "claim 인라인" "고아 회수가 시간 폴백(6h)으로만 남는다
 if grep -q "claim_release_failed" 02_Infrastructure/ops/reinforce_auto_parallel.R; then
   ok "해제 실패를 조용히 넘기지 않는다"
 else ng "해제 실패 무기록" "고아가 생겨도 로그에 흔적이 없다"; fi
+# 위임 라이브락 — 부모가 claim 을 쥔 채 자식을 부르면 자식이 자기 부모에게 막힌다.
+# 2026-08-30 실사고: halt_exhausted_delegate → halt_claimed 가 8분마다 2시간 반 반복,
+# 소진 전이가 영영 안 됐다. 로그는 오류가 아니라 정상 대기처럼 보였다.
+if grep -q "QVEST_RF_CLAIM_HELD" 02_Infrastructure/ops/reinforce_auto_parallel.R && grep -q "QVEST_RF_CLAIM_HELD" 02_Infrastructure/ops/reinforce_auto_run.R; then
+  ok "위임 시 claim 상속 플래그(라이브락 방지)"
+else ng "claim 상속 플래그 부재" "위임이 자기 부모에게 막혀 소진 전이가 멈춘다"; fi
+# Windows 에서 system2(env=) 는 무시된다 — 부모 환경에 심어야 자식이 상속한다
+if grep -q "Sys.setenv(QVEST_RF_CLAIM_HELD" 02_Infrastructure/ops/reinforce_auto_parallel.R; then
+  ok "플래그를 부모 환경에 심는다(system2 env= 는 Windows 에서 무시)"
+else ng "플래그 전달 방식" "system2(env=) 는 Windows 에서 자식에게 안 간다"; fi
 CLM=$(Rscript 08_Tests/reinforcement/test_rf_claim.R 2>&1); CRC=$?
 if [ "$CRC" -eq 0 ]; then
   ok "claim 소유권 양방향 — $(echo "$CLM" | tail -1)"

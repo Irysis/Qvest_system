@@ -67,7 +67,13 @@ if (done_today >= DAILY_CAP) { jlog("halt_daily_cap", done = done_today, cap = D
 #   물러난다. 그 로그는 **정상 대기와 글자 그대로 같아서** 아무도 못 본다(부팅 때 본 1.5h 공백).
 #   그래서 owner.json(pid) 을 남기고, 다음 실행이 그 pid 사망을 보면 나이 무관 즉시 회수한다.
 suppressMessages(source(file.path(ROOT, "02_Infrastructure/ops/rf_claim.R")))
-.ac <- rf_claim_acquire(CLAIM, stale_hours = STALE_H)
+# ★위임 호출에서는 부모가 이미 claim 을 쥐고 있다 — 자식이 다시 잡으려 하면 자기 부모에게 막혀
+#   아무 일도 못 하고 끝난다(2026-08-30 실사고: halt_exhausted_delegate → halt_claimed 가 8분마다
+#   2시간 반 동안 반복, 소진 전이가 영영 안 됐다). 부모가 이 플래그로 "이미 잡았다" 를 알린다.
+.CLAIM_HELD <- nzchar(Sys.getenv("QVEST_RF_CLAIM_HELD", ""))
+.ac <- if (.CLAIM_HELD) list(ok = TRUE, reason = "inherited", age_h = NA_real_,
+                            owner_pid = NA_integer_, note = "") else
+       rf_claim_acquire(CLAIM, stale_hours = STALE_H)
 if (!isTRUE(.ac$ok)) {
   if (identical(.ac$reason, "race")) jlog("halt_claim_race")
   else jlog("halt_claimed", age_h = round(.ac$age_h %||% NA_real_, 2), owner_pid = .ac$owner_pid %||% NA)
@@ -90,7 +96,13 @@ cells <- do.call(c, lapply(PROG$blocks, function(b) lapply(b$cells, function(c) 
 pending <- Filter(function(a) is.null(a$essence) || is.null(a$essence$port_t), E$attempts)
 
 if (!length(pending) && used >= MAXA) { jlog("halt_exhausted_delegate", used = used)
-  system2("Rscript", shQuote(file.path(ROOT, "02_Infrastructure/ops/reinforce_auto_run.R")), wait = TRUE); return(0L) }
+  # ★Windows 에서 system2(env=) 는 무시된다(실측 2026-08-30: 자식이 로그 한 줄도 안 남겼다).
+  #   부모 환경에 심어 자식이 상속하게 한다.
+  Sys.setenv(QVEST_RF_CLAIM_HELD = "1")
+  on.exit(Sys.unsetenv("QVEST_RF_CLAIM_HELD"), add = TRUE)
+  system2("Rscript", shQuote(file.path(ROOT, "02_Infrastructure/ops/reinforce_auto_run.R")),
+          wait = TRUE)
+  Sys.unsetenv("QVEST_RF_CLAIM_HELD"); return(0L) }
 
 # ── ★블록 경계 강제: 같은 블록 안에서만 묶는다 (재개분이 없을 때만 신규 배치) ──
 batch <- list(); first <- NULL
@@ -389,7 +401,7 @@ jlog("batch_done", block = (if (!is.null(first)) first$block else "resume"), rec
 }
 
 rc <- tryCatch(main(), error = function(e) { jlog("fatal", err = conditionMessage(e)); 1L })
-.rel <- rf_claim_release(CLAIM)
+.rel <- if (.CLAIM_HELD) list(ok = TRUE, reason = "inherited") else rf_claim_release(CLAIM)
 if (!isTRUE(.rel$ok)) jlog("claim_release_failed", reason = .rel$reason,
      note = "고아 claim 이 남았다 — owner.json 의 pid 가 죽으면 다음 tick 이 즉시 회수한다")
 quit(status = if (is.numeric(rc)) as.integer(rc) else 0L)
