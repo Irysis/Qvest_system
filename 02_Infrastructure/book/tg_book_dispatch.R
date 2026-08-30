@@ -76,9 +76,12 @@ tg_book_weights <- function(book_id, label_month, as_of, weights_csv,
 #'   그러면 중복 가드가 상시 무력화된다. 실제로 발송 성공 여부를 확인하려 스크립트를
 #'   한 번 더 돌렸다가 **같은 메시지가 두 번 나갔다.** 편의를 위해 안전장치를 기본으로
 #'   끄면 안 된다 — 필요한 호출에서만 명시적으로 켠다(5-1 직후 5-2 를 보낼 때).
+#' @param topic  표제 꼬리표. 기본 "배분 해설". ★한 달에 코멘트를 여러 통 보낼 때는
+#'   **topic 을 달리한다** — 제목이 같으면 중복 가드의 scope 가 같아져 2통째가 막히고,
+#'   그걸 force 로 뚫는 습관이 들면 진짜 중복도 통과한다. 제목을 구분하는 게 정답이다.
 tg_book_comment <- function(book_id, label_month, as_of, summary, status_kv,
                             terms, axes, outlook, nature = NULL, footer,
-                            dry_run = FALSE, force = FALSE) {
+                            topic = "배분 해설", dry_run = FALSE, force = FALSE) {
   .tgb_src()
   if (!length(terms))
     stop("[tg_book_comment] terms 필수 — 약어 풀이 없는 코멘트는 보내지 않는다(SKILL §5-2)")
@@ -97,7 +100,7 @@ tg_book_comment <- function(book_id, label_month, as_of, summary, status_kv,
   #   기본 TRUE 였던 초판에서 재실행 한 번에 같은 메시지가 두 번 나갔다(2026-08-30).
   tg_agent_brief(
     agent = "Book",
-    title = sprintf("[BOOK] 코멘트 — %s %s 배분 해설", book_id, label_month),
+    title = sprintf("[BOOK] 코멘트 — %s %s %s", book_id, label_month, topic),
     as_of = as_of, dry_run = dry_run, force = force,
     sections = secs, footer = footer)
 }
