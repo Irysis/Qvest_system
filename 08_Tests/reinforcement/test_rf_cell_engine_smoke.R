@@ -33,7 +33,7 @@ ng <- function(m, d = "") { FAIL <<- FAIL + 1L; writeLines(paste("  FAIL ", m, "
 #   선별 경제학이 아니다.
 make_fixture <- function(idx_n = 20L) {
   set.seed(20260830L)
-  d <- seq(as.Date("2003-06-02"), as.Date("2006-12-29"), by = "day")
+  d <- seq(as.Date("2003-06-02"), as.Date("2016-12-30"), by = "day")   # 오버레이 확장창(60개월) 확보
   d <- d[as.integer(format(d, "%w")) %in% 1:5]
   tk <- sprintf("T%03d", 1:30)
   x <- CJ(Ticker = tk, Date = d)
@@ -51,6 +51,12 @@ make_fixture <- function(idx_n = 20L) {
 }
 FIX <- make_fixture(20L)          # 30종 중 20종만 지수 멤버
 FIX_ALL <- make_fixture(30L)      # 전 종목이 지수 멤버 = 넓힐 대상 없음
+# BM = 횡단면 평균 수익(시장 대용). 오버레이 신호의 입력이다.
+BMF <- { .t <- copy(FIX); setorder(.t, Ticker, Date)
+         .t[, r := Close / shift(Close, 1L) - 1, by = Ticker]      # ★티커 안에서 shift
+         .t[is.finite(r), .(BM_Ret = mean(r)), by = Date][order(Date)] }
+# 변동성이 상수인 BM — 오버레이가 개입할 근거가 없는 판(위반 주입용)
+BMF_FLAT <- copy(BMF)[, BM_Ret := 0.0003]
 
 AXES <- list(long_only = TRUE, n_max = 25L, universe = "K200_KQ150",
              start_date = "2005-01-01", commission_bps = 15L, liq_adv20_min = 2e8)
@@ -58,12 +64,13 @@ PX <- list(kind = "price", id = "lowvol60")   # 오프라인 자기완결 팩터
 
 # 스펙을 파일로 굽고 엔진을 격리 env 에서 평가한다.
 #   엔진은 DT <- RAWDATA 로 **참조**를 잡고 열을 추가하므로 매번 copy() 를 넘긴다.
-run_cell <- function(spec, engine = ENGINE, fixture = FIX) {
+run_cell <- function(spec, engine = ENGINE, fixture = FIX, bm = NULL) {
   p <- file.path(tempdir(), "rf_smoke_spec.json")
   writeLines(toJSON(spec, auto_unbox = TRUE, pretty = TRUE, null = "null"), p)
   Sys.setenv(RF_CELL_SPEC = p)
   env <- new.env()
   assign("RAWDATA", copy(fixture), envir = env)
+  assign("BM_DT", if (is.null(bm)) BMF else bm, envir = env)
   err <- NULL
   suppressWarnings(suppressMessages(
     tryCatch(source(engine, local = env), error = function(e) err <<- conditionMessage(e))))
@@ -135,6 +142,27 @@ r7 <- run_cell(base_spec(factor2 = list(kind = "none"), universe = list(kind = "
 if (!is.null(r7$err) && grepl("처치 미전달", r7$err)) {
   ok("넓힐 대상이 없으면 실패로 끊는다(위반 주입)")
 } else ng("미전달 가드 미작동", "같은 포트폴리오에 다른 이름이 붙는다")
+
+# A8/A9. 리스크 오버레이 (양방향) — 도훈 2026-08-30 "오버레이 계층". 노출 스케일이므로
+#   Sigma w <= 1 이고 나머지가 현금이다. ★핵심은 "돌았다" 가 아니라 "개입했다" 이다 —
+#   노출이 상시 1이면 오버레이를 쟀다고 말할 수 없다(처치 미전달).
+r8 <- run_cell(base_spec(factor2 = PX, overlay = list(kind = "vol_scale")))
+if (is.null(r8$err) && identical(r8$out, "PORTFOLIO")) {
+  P8 <- get("PORTFOLIO", envir = r8$env)
+  s8 <- P8[, .(s = sum(Weight)), by = Date]$s
+  if (max(s8) > 1 + 1e-8) {
+    ng("오버레이 Sigma w", "1 을 넘었다 — 현금이 아니라 레버리지다")
+  } else if (stats::sd(s8) < 1e-12) {
+    ng("오버레이 처치 미전달", "노출이 상시 동일")
+  } else {
+    ok(sprintf("오버레이 vol_scale → 노출 평균 %.3f · 최소 %.3f (Sigma w <= 1)", mean(s8), min(s8)))
+  }
+} else ng("오버레이 정상 경로", r8$err %||% "PORTFOLIO 없음")
+
+r9 <- run_cell(base_spec(factor2 = PX, overlay = list(kind = "vol_scale")), bm = BMF_FLAT)
+if (!is.null(r9$err) && grepl("처치 미전달", r9$err)) {
+  ok("변동성이 상수인 시장에서는 개입 근거가 없어 실패로 끊는다(위반 주입)")
+} else ng("오버레이 미전달 가드 미작동", "상시 노출 1 을 측정으로 기록한다")
 
 writeLines("=== B. 위반 주입 — 같은 결함을 심으면 반드시 잡히는가 ===")
 

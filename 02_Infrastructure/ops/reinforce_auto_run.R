@@ -172,6 +172,26 @@ SPEC <- list(code = CELL$code, label = CELL$label, block = CELL$block,
 if (identical(CELL$block, "B3")) SPEC$weighting <- list(kind = "ew")   # B3 는 비중 고정
 if (identical(CELL$block, "B4")) {
   w2 <- .winner_of("B2", "port_t"); w3 <- .winner_of("B3", "calmar")
+
+# ★B5(오버레이)는 블록 승자가 아니라 **지금까지의 전체 최고 구성** 위에 얹는 층이다.
+#   격자 셀은 자기가 바꾼 축만 들고 있으므로(예: B3_12 는 universe 만) 승자의 **실제 스펙 파일**을
+#   읽어 그대로 깐다 — 그래야 "그 전략에 오버레이를 얹었을 때" 를 재는 것이 된다.
+.wbest_spec <- NULL
+{ .cd0 <- Filter(function(a) !is.null(a$essence), E$attempts)
+  if (length(.cd0)) {
+    .v0 <- vapply(.cd0, function(a) .metric(a, "port_t"), numeric(1))
+    if (!all(is.na(.v0))) {
+      .w0 <- .cd0[[which.max(replace(.v0, !is.finite(.v0), -Inf))]]
+      .sp0 <- .w0$essence$spec
+      if (!is.null(.sp0) && nzchar(.sp0) && file.exists(.sp0))
+        .wbest_spec <- tryCatch(fromJSON(.sp0, simplifyVector = FALSE), error = function(e) NULL)
+    } } }
+
+# 기저 논문 — 오버레이 셀은 논문이 아니라 방법이 근거지만, 전략의 출처는 여전히 이 논문이다.
+.base_paper <- tryCatch({
+  ap <- file.path(E$base_artifacts %||% "", "authoritative_remeasure.json")
+  if (nzchar(ap) && file.exists(ap)) fromJSON(ap, simplifyVector = FALSE)$replication$source_paper else NULL
+}, error = function(e) NULL)
   use <- unlist(CELL$combo$use)
   # ★LOO 는 "그 축을 빼는" 것이다 — 폴백 팩터로 대체하면 제외가 공허해진다.
   #   B1 제외 = 제2팩터 없음(기저 신호 단독). 하드코딩 팩터 금지(2026-08-30 적발·수리).
@@ -215,12 +235,25 @@ if (!is.null(E$carry)) {
   if (!(CELL$block %in% c("B2", "B4")) && !is.null(E$carry$weighting)) SPEC$weighting <- E$carry$weighting
   if (!(CELL$block %in% c("B3", "B4")) && !is.null(E$carry$universe))  SPEC$universe  <- E$carry$universe
 }
+# ★B5 오버레이 — 전체 최고 구성을 그대로 깔고 그 위에 노출 스케일만 얹는다
+if (identical(CELL$block, "B5")) {
+  if (!is.null(.wbest_spec)) {
+    SPEC$factors   <- .wbest_spec$factors
+    SPEC$factor2   <- .wbest_spec$factor2
+    SPEC$factor3   <- .wbest_spec$factor3
+    SPEC$weighting <- .wbest_spec$weighting %||% list(kind = "ew")
+    SPEC$universe  <- .wbest_spec$universe  %||% list(kind = "k200_kq150")
+  }
+  SPEC$overlay <- CELL$overlay
+  SPEC$overlay_basis <- CELL$basis %||% ""
+  if (!is.null(.base_paper)) SPEC$root_paper <- .base_paper
+}
 rp <- CELL$root_paper %||% w1$root_paper
 idea <- sprintf("[무인 규칙강화 %s] %s — 격자 %s/%s · factor2=%s · weighting=%s · universe=%s. %s",
                 CELL$code, CELL$label, CELL$block, CELL$axis,
                 SPEC$factor2$id %||% "?", SPEC$weighting$kind, SPEC$universe$kind,
                 CELL$note %||% PROG$blocks[[which(vapply(PROG$blocks, function(b) identical(b$id, CELL$block), logical(1)))]]$rule)
-att <- tryCatch(rf_append_attempt(1L, BID, idea, CELL$axis, list(rp), wt_id = NULL, root = ROOT),
+att <- tryCatch(rf_append_attempt(1L, BID, idea, CELL$axis, list(if (identical(CELL$axis, "risk_overlay")) list(method = CELL$basis %||% CELL$label, url = rp$url %||% "") else rp), wt_id = NULL, root = ROOT),
                 error = function(e) { jlog("halt_append_failed", err = conditionMessage(e)); NULL })
 if (is.null(att)) return(invisible(1L))
 N <- as.integer(att$n)

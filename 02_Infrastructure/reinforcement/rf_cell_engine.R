@@ -315,6 +315,181 @@ if (identical(.wt$kind, "ew")) {
   stopifnot(max(abs(.chk$s - 1)) < 1e-8)
 }
 
+# ── 5.5 리스크 오버레이 (도훈 지시 2026-08-30) ────────────────────────────────
+#   "오버레이 계층은 없나? PG2의 성공도 오버레이인데" + "논문이 없어도 진행되게.
+#    통계/수학/머신러닝 방법론 적극 활용으로 리스크 컨트롤 목적의 오버레이 설계"
+#
+#   왜 여기가 자리인가: B1~B3 15칸이 MDD 61.6~77.2% 대역에 갇혀 Calmar 0.34/0.64 로
+#   A 를 못 연다. 신호를 더 깎아도 안 열린다 — 구속 축이 낙폭이기 때문이다.
+#
+#   ★구현 = 노출 스케일(Sigma w <= 1, 나머지 현금). 하네스가 gross exposure 를 그대로
+#     반영하므로(replication_harness.R 의 Rg = GL*Lr) 비중 축소가 곧 현금 보유다.
+#   ★PIT(C5): 신호는 BM/시장 시계열이고 창 종점 = 시그널일 d(월말). 홀딩은 익월부터라
+#     교집합이 없다. assert_overlay_pit 로 하드 통과. 적합·분위·임계는 전부 확장창이다.
+#   ★임의 상수 금지: 목표변동성·게이트 문턱·EWMA lambda 를 숫자로 박지 않는다. 전부 그
+#     시점까지의 데이터에서 추정한다. 상수를 박으면 그게 곧 사후 선택이다.
+.ov      <- SPEC$overlay
+.ov_kind <- if (is.null(.ov)) "none" else as.character(.ov$kind %||% "none")
+if (!identical(.ov_kind, "none")) {
+  if (!exists("BM_DT")) stop("[rf_cell_engine] overlay 는 BM_DT 를 요구한다(호출자 env)")
+  suppressMessages(source(file.path(.RF_ROOT, "02_Infrastructure/validation/overlay_pit_guard.R")))
+  .sdna <- function(v) if (anyNA(v)) NA_real_ else stats::sd(v)
+  .B <- as.data.table(BM_DT)[is.finite(BM_Ret), .(Date = as.Date(Date), BM_Ret = as.numeric(BM_Ret))]
+  setorder(.B, Date)
+  .B[, nav := cumprod(1 + BM_Ret)]
+  .B[, dd  := 1 - nav / cummax(nav)]
+  .B[, rv20  := frollapply(BM_Ret,  20L, .sdna, align = "right") * sqrt(252)]
+  .B[, rv60  := frollapply(BM_Ret,  60L, .sdna, align = "right") * sqrt(252)]
+  .B[, rv120 := frollapply(BM_Ret, 120L, .sdna, align = "right") * sqrt(252)]
+  .B[, r252 := nav / shift(nav, 252L) - 1]
+
+  # EWMA(lambda) 변동성 — lambda 를 상수로 박지 않고 격자에서 데이터가 고르게 한다
+  .lams <- seq(0.90, 0.99, by = 0.01)
+  .ew <- lapply(.lams, function(lam) {
+    x <- .B$BM_Ret; n <- length(x); s <- numeric(n); s[1] <- x[1]^2
+    for (i in 2:n) s[i] <- lam * s[i - 1] + (1 - lam) * x[i - 1]^2
+    sqrt(s) * sqrt(252)
+  })
+
+  # 횡단면 분산(난기류 특징) — 그날 종목 수익의 표준편차.
+  # ★RAWDATA 의 Ret 열에 의존하지 않는다 — 엔진이 스스로 만드는 .ret 을 쓴다(픽스처·패널 무관 동작).
+  if (!".ret" %in% names(DT)) DT[, .ret := Close / shift(Close, 1L) - 1, by = Ticker]
+  .XS <- DT[is.finite(.ret), .(xs = stats::sd(.ret, na.rm = TRUE)), by = Date]
+
+  # 월별 특징표(시그널일 기준). 학습·분위는 여기서 확장창으로만 쓴다.
+  .M <- data.table(Date = .sig_dates)
+  .M <- .M[Date >= min(.B$Date) & Date <= max(.B$Date)]
+  .M[, i := findInterval(Date, .B$Date)]
+  .M <- .M[i > 0]
+  .M[, rv20  := .B$rv20[i]]
+  .M[, rv60  := .B$rv60[i]]
+  .M[, rv120 := .B$rv120[i]]
+  .M[, dd    := .B$dd[i]]
+  .M[, r252  := .B$r252[i]]
+  .M[, nav   := .B$nav[i]]
+  for (k in seq_along(.lams)) .M[, (paste0("ew", k)) := .ew[[k]][i]]
+  .M <- merge(.M, .XS, by = "Date", all.x = TRUE)
+  setorder(.M, Date)
+  .M[, fwd := shift(nav, 1L, type = "lead") / nav - 1]   # 익월 BM 수익 — 학습에만, 과거쌍만 사용
+
+  .N <- nrow(.M)
+  .clip <- function(x) max(0, min(1, x))
+  .expo <- rep(1, .N)
+
+  for (t in seq_len(.N)) {
+    if (t < 60L) next                          # 추정 표본 부족 구간은 무개입(1)
+    H <- .M[seq_len(t)]                        # ★확장창 = d 까지. 미래 행 접근 없음
+    v_now <- H$rv60[t]
+    tgt   <- stats::median(H$rv60, na.rm = TRUE)          # 목표 = 자기 이력 중앙 변동성
+    e <- 1
+    if (identical(.ov_kind, "vol_scale")) {
+      e <- if (is.finite(v_now) && v_now > 0 && is.finite(tgt)) min(1, tgt / v_now) else 1
+
+    } else if (identical(.ov_kind, "ewma_vol")) {
+      best <- NA_integer_; bmse <- Inf         # lambda 선택 = 1개월 앞 예측 MSE 최소(과거쌍만)
+      for (k in seq_along(.lams)) {
+        pr <- H[[paste0("ew", k)]][-t]; ac <- H$rv20[-1]
+        m <- suppressWarnings(mean((pr - ac)^2, na.rm = TRUE))
+        if (is.finite(m) && m < bmse) { bmse <- m; best <- k }
+      }
+      s_hat <- if (is.na(best)) v_now else H[[paste0("ew", best)]][t]
+      e <- if (is.finite(s_hat) && s_hat > 0 && is.finite(tgt)) min(1, tgt / s_hat) else 1
+
+    } else if (identical(.ov_kind, "har_vol")) {
+      tr <- H[is.finite(rv20) & is.finite(rv60) & is.finite(rv120)]
+      tr[, y := shift(log(rv20), 1L, type = "lead")]
+      tr <- tr[is.finite(y)]
+      if (nrow(tr) >= 40L) {
+        fit <- tryCatch(stats::lm(y ~ log(rv20) + log(rv60) + log(rv120), data = tr),
+                        error = function(z) NULL)
+        if (!is.null(fit)) {
+          nd <- H[t, .(rv20, rv60, rv120)]
+          if (all(is.finite(unlist(nd))) && all(unlist(nd) > 0)) {
+            s_hat <- tryCatch(exp(as.numeric(stats::predict(fit, nd))), error = function(z) NA_real_)
+            if (is.finite(s_hat) && s_hat > 0 && is.finite(tgt)) e <- min(1, tgt / s_hat)
+          }
+        }
+      }
+
+    } else if (identical(.ov_kind, "turbulence")) {
+      FM <- as.matrix(H[, .(rv60, xs, dd)])
+      FM <- FM[stats::complete.cases(FM), , drop = FALSE]
+      if (nrow(FM) >= 60L) {
+        mu <- colMeans(FM); S <- stats::cov(FM) + diag(1e-12, ncol(FM))
+        Si <- tryCatch(solve(S), error = function(z) NULL)
+        if (!is.null(Si)) {
+          d2 <- apply(FM, 1L, function(r) as.numeric(t(r - mu) %*% Si %*% (r - mu)))
+          q <- stats::quantile(d2, c(0.5, 0.9), na.rm = TRUE, names = FALSE)
+          now <- d2[length(d2)]
+          e <- if (!is.finite(now) || now <= q[1]) 1 else
+               if (now >= q[2]) 0 else 1 - (now - q[1]) / max(1e-9, q[2] - q[1])
+        }
+      }
+
+    } else if (identical(.ov_kind, "ml_tail_gate")) {
+      tr <- H[seq_len(t - 1L)]                 # 결과가 실현된 과거쌍만
+      tr <- tr[is.finite(fwd) & is.finite(rv60) & is.finite(dd) & is.finite(r252) & is.finite(xs)]
+      if (nrow(tr) >= 60L) {
+        thr <- stats::quantile(tr$fwd, 0.10, na.rm = TRUE, names = FALSE)
+        tr[, bad := as.integer(fwd <= thr)]
+        if (sum(tr$bad) >= 5L && sum(tr$bad) < nrow(tr)) {
+          fit <- tryCatch(suppressWarnings(stats::glm(bad ~ rv60 + dd + r252 + xs,
+                            data = tr, family = stats::binomial())), error = function(z) NULL)
+          if (!is.null(fit)) {
+            nd <- H[t, .(rv60, dd, r252, xs)]
+            if (all(is.finite(unlist(nd)))) {
+              pp <- tryCatch(as.numeric(stats::predict(fit, nd, type = "response")),
+                             error = function(z) NA_real_)
+              if (is.finite(pp)) e <- .clip(1 - pp)
+            }
+          }
+        }
+      }
+
+    } else if (identical(.ov_kind, "dd_brake")) {
+      dq <- stats::quantile(H$dd, c(0.5, 0.9), na.rm = TRUE, names = FALSE)
+      dn <- H$dd[t]
+      e <- if (!is.finite(dn) || dn <= dq[1]) 1 else
+           if (dn >= dq[2]) 0 else 1 - (dn - dq[1]) / max(1e-9, dq[2] - dq[1])
+
+    } else if (identical(.ov_kind, "vol_x_dd")) {
+      ev <- if (is.finite(v_now) && v_now > 0 && is.finite(tgt)) min(1, tgt / v_now) else 1
+      dq <- stats::quantile(H$dd, c(0.5, 0.9), na.rm = TRUE, names = FALSE)
+      dn <- H$dd[t]
+      ed <- if (!is.finite(dn) || dn <= dq[1]) 1 else
+            if (dn >= dq[2]) 0 else 1 - (dn - dq[1]) / max(1e-9, dq[2] - dq[1])
+      e <- ev * ed
+
+    } else stop("[rf_cell_engine] overlay.kind 미지원: ", .ov_kind)
+    .expo[t] <- .clip(e)
+  }
+
+  if (!exists("PORTFOLIO")) {                  # EW 셀은 FACTORS 만 있으므로 여기서 비중을 만든다
+    PORTFOLIO <- SEL[, .(Ticker, Weight = 1 / .N), by = Date][, .(Date, Ticker, Weight, Leg = "LONG")]
+  }
+  .EX <- data.table(Date = .M$Date, oe = .expo)
+  # 홀딩월 시작 = 익월 1일(캘린더). ★d+1 을 month 로 자르면 월말이 거래일 기준일 때 같은 달이 나온다
+  .hs <- as.Date(vapply(.EX$Date, function(x)
+           as.character(seq(as.Date(format(x, "%Y-%m-01")), by = "month", length.out = 2L)[2L]),
+           character(1)))
+  assert_overlay_pit(.EX$Date, .hs, label = paste0("rf_cell:", .ov_kind))
+
+  # ★처치 확인 — 노출이 상시 1이면 "오버레이를 쟀다" 가 아니라 안 건 것이다(미측정).
+  if (stats::sd(.EX$oe) < 1e-12 || mean(.EX$oe) >= 1 - 1e-12)
+    stop(sprintf("[rf_cell_engine] overlay %s 노출이 상시 1 — 처치 미전달. 측정 무효.", .ov_kind))
+
+  PORTFOLIO <- merge(PORTFOLIO, .EX, by = "Date")
+  PORTFOLIO[, Weight := Weight * oe]
+  PORTFOLIO[, oe := NULL]
+  PORTFOLIO <- PORTFOLIO[is.finite(Weight) & Weight > 0]
+  if (!nrow(PORTFOLIO)) stop("[rf_cell_engine] overlay 적용 후 보유가 비었다: ", .ov_kind)
+  stopifnot(all(PORTFOLIO$Weight >= 0))
+  stopifnot(max(PORTFOLIO[, .(s = sum(Weight)), by = Date]$s) <= 1 + 1e-8)   # Sigma w <= 1
+  if (exists("FACTORS")) rm(FACTORS)
+  cat(sprintf("[rf_cell_engine] overlay %s | 평균노출 %.3f · 최소 %.3f · 완전현금 %d/%d개월",
+              .ov_kind, mean(.EX$oe), min(.EX$oe), sum(.EX$oe <= 1e-12), nrow(.EX)), fill = TRUE)
+}
+
 # ★N-ary 리팩터(2026-08-30) 후 이 줄만 구 변수(.f2/.f3)를 참조해 전 셀이
 #   마지막 문장에서 죽었다(B1_1~5). 로그 한 줄이라 계산을 다 마친 뒤에 터진다 — .flist 로 정정.
 cat(sprintf("[rf_cell_engine] cell=%s | univ=%s | factors=%s | wt=%s | months=%d | rows=%d\n",

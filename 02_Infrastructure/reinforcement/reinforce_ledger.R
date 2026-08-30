@@ -140,11 +140,20 @@ rf_append_attempt <- function(layer, base_id, idea, keyword_axis, root_papers,
   if (!keyword_axis %in% axes)
     stop(sprintf("[reinforce_ledger] keyword_axis '%s' 는 L%d 축이 아님 (허용: %s)",
                  keyword_axis, layer, paste(axes, collapse = "/")))
-  # ★논문 근거 의무 (v10 절대 규칙) — 기계 강제점
-  urls <- vapply(root_papers %||% list(),
-                 function(x) as.character(x$url %||% ""), character(1))
-  if (!length(urls) || !any(nzchar(urls)))
-    stop("[reinforce_ledger] root_papers 에 원문 url 이 1건도 없음 — 논문 근거 없는 강화 시도는 거부한다 (v10 하드코딩 금지·논문 근거 의무)")
+  # ★근거 의무 (v10 절대 규칙) — 기계 강제점
+  #   ★risk_overlay 예외 (도훈 지시 2026-08-30 "오버레이는 논문이 없어도 진행되게").
+  #     면제가 아니라 **근거의 종류를 바꾼 것**이다 — 리스크 컨트롤 오버레이는 문헌이 아니라
+  #     통계/수리/ML 방법에서 나오므로, 논문 url 대신 `method`(방법 명시)를 요구한다.
+  #     둘 다 없으면 여전히 거부한다: 근거 없는 시도는 어느 축에서도 허용되지 않는다.
+  .rp   <- root_papers %||% list()
+  urls  <- vapply(.rp, function(x) as.character(x$url    %||% ""), character(1))
+  meths <- vapply(.rp, function(x) as.character(x$method %||% ""), character(1))
+  .ok_url    <- length(urls)  && any(nzchar(urls))
+  .ok_method <- identical(keyword_axis, "risk_overlay") && length(meths) && any(nzchar(meths))
+  if (!.ok_url && !.ok_method)
+    stop(if (identical(keyword_axis, "risk_overlay"))
+           "[reinforce_ledger] risk_overlay 는 url 또는 method 중 하나가 필수 — 방법을 명시하지 않은 오버레이는 거부한다"
+         else "[reinforce_ledger] root_papers 에 원문 url 이 1건도 없음 — 논문 근거 없는 강화 시도는 거부한다 (v10 하드코딩 금지·논문 근거 의무)")
 
   obj <- rf_load(layer, root)
   i <- .rf_find(obj, base_id)

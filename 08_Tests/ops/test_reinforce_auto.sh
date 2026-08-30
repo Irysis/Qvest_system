@@ -76,18 +76,27 @@ echo "=== 4. 프로그램 격자 무결성 ==="
 "$PY" - <<'PYEOF'
 import io, json, sys
 d = json.load(io.open("06_Registry/reinforce_program.json", encoding="utf-8"))
+# ★칸 수를 20 으로 박지 않는다 — 오버레이 B5 신설처럼 블록이 늘면 검사가 낡는다.
+#   계약은 "블록마다 5칸"(병렬 배치 단위)이고 총합은 거기서 파생된다.
 n = sum(b["n"] for b in d["blocks"])
-assert n == 20, "총 칸 %d != 20" % n
+assert all(b["n"] == 5 for b in d["blocks"]), "블록당 5칸 계약 위반: %s" % [(b["id"], b["n"]) for b in d["blocks"]]
 codes = [c["code"] for b in d["blocks"] for c in b["cells"]]
-assert len(codes) == 20 and len(set(codes)) == 20, "코드 중복/누락: %s" % codes
+assert len(codes) == n and len(set(codes)) == n, "코드 중복/누락: %s" % codes
 for b in d["blocks"]:
     assert len(b["cells"]) == b["n"], "%s 선언 n=%d 실제 %d" % (b["id"], b["n"], len(b["cells"]))
     for c in b["cells"]:
-        if b["id"] != "B4":
-            assert c.get("root_paper", {}).get("url", "").startswith("http"), "%s 근거 논문 링크 없음" % c["code"]
+        # 근거 의무: 논문 url 또는 method(risk_overlay 는 문헌이 아니라 방법이 근거 — 도훈 2026-08-30).
+        # B4(조합)는 앞 블록 승자를 물려받으므로 자체 근거를 갖지 않는다.
+        if b["id"] == "B4":
+            continue
+        has_url = c.get("root_paper", {}).get("url", "").startswith("http")
+        has_method = bool(str(c.get("basis", "")).strip())
+        assert has_url or has_method, "%s 근거 없음(논문 url 도 method 도 아님)" % c["code"]
+        if b["axis"] == "risk_overlay":
+            assert has_method, "%s 오버레이는 method 명시 필수" % c["code"]
 ax = d["fixed_axes"]
 assert ax["long_only"] is True and ax["n_max"] == 25, "고정 축 위반: %s" % ax
-print("  OK   격자 20칸 · 코드 유일 · 근거 논문 링크 · 고정 축")
+print("  OK   격자 %d칸(블록 %d x 5) · 코드 유일 · 근거(논문 url 또는 method) · 고정 축" % (n, len(d["blocks"])))
 PYEOF
 [ $? -eq 0 ] && PASS=$((PASS+1)) || { FAIL=$((FAIL+1)); echo "  FAIL 격자 무결성"; }
 

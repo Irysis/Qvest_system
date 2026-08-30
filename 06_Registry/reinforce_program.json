@@ -1,333 +1,386 @@
 {
-  "schema": "reinforce_program_v1",
-  "version": "2026-08-30",
-  "note": "규칙기반 고속강화 프로그램 정본 (도훈 지시 2026-08-29 재설계 · 2026-08-30 무인화). ★논문 독립: 기저 신호만 각 논문의 충실구현에서 오고, 아래 20칸은 고정 변환이다. 새 논문으로 옮겨가도 이 파일은 그대로 재사용된다. 셀 실행은 rf_engine_gen.R 이 결정론적으로 생성한다 — LLM 이 엔진을 쓰지 않는다.",
-  "fixed_axes": {
-    "long_only": true,
-    "n_max": 25,
-    "universe": "K200_KQ150",
-    "start_date": "2005-01-01",
-    "commission_bps": 15,
-    "liq_adv20_min": 200000000,
-    "weight_cap": null
-  },
-  "blocks": [
+ "schema": "reinforce_program_v1",
+ "version": "2026-08-30b",
+ "note": "규칙기반 고속강화 프로그램 정본 (도훈 지시 2026-08-29 재설계 · 2026-08-30 무인화). ★논문 독립: 기저 신호만 각 논문의 충실구현에서 오고, 아래 20칸은 고정 변환이다. 새 논문으로 옮겨가도 이 파일은 그대로 재사용된다. 셀 실행은 rf_engine_gen.R 이 결정론적으로 생성한다 — LLM 이 엔진을 쓰지 않는다.",
+ "fixed_axes": {
+  "long_only": true,
+  "n_max": 25,
+  "universe": "K200_KQ150",
+  "start_date": "2005-01-01",
+  "commission_bps": 15,
+  "liq_adv20_min": 200000000,
+  "weight_cap": null
+ },
+ "blocks": [
+  {
+   "id": "B1",
+   "axis": "multifactor",
+   "n": 5,
+   "rule": "기저 신호 rank-Z + 제2팩터 rank-Z 를 50/50 합산 → 상위 25종 EW. 제2팩터만 셀마다 바뀐다.",
+   "select_winner_by": "port_t",
+   "cells": [
     {
-      "id": "B1",
-      "axis": "multifactor",
-      "n": 5,
-      "rule": "기저 신호 rank-Z + 제2팩터 rank-Z 를 50/50 합산 → 상위 25종 EW. 제2팩터만 셀마다 바뀐다.",
-      "select_winner_by": "port_t",
-      "cells": [
-        {
-          "code": "B1_1",
-          "label": "가치 B/M",
-          "factor2": {
-            "kind": "db",
-            "id": "V01_BM"
-          },
-          "root_paper": {
-            "title": "Fama & French (1992), The Cross-Section of Expected Stock Returns, JF 47(2)",
-            "url": "https://onlinelibrary.wiley.com/doi/10.1111/j.1540-6261.1992.tb04398.x"
-          }
-        },
-        {
-          "code": "B1_2",
-          "label": "수익성 GP/A",
-          "factor2": {
-            "kind": "db",
-            "id": "Q01_GPA"
-          },
-          "root_paper": {
-            "title": "Novy-Marx (2013), The Other Side of Value, JFE 108(1)",
-            "url": "https://www.sciencedirect.com/science/article/pii/S0304405X13000044"
-          }
-        },
-        {
-          "code": "B1_3",
-          "label": "저변동 sigma60",
-          "factor2": {
-            "kind": "price",
-            "id": "lowvol60"
-          },
-          "root_paper": {
-            "title": "Ang, Hodrick, Xing & Zhang (2006), The Cross-Section of Volatility and Expected Returns, JF 61(1)",
-            "url": "https://onlinelibrary.wiley.com/doi/10.1111/j.1540-6261.2006.00836.x"
-          }
-        },
-        {
-          "code": "B1_4",
-          "label": "이익수정 3m",
-          "factor2": {
-            "kind": "db",
-            "id": "C13_Revision_Breadth_3m"
-          },
-          "root_paper": {
-            "title": "Chan, Jegadeesh & Lakonishok (1996), Momentum Strategies, JF 51(5)",
-            "url": "https://onlinelibrary.wiley.com/doi/10.1111/j.1540-6261.1996.tb05222.x"
-          }
-        },
-        {
-          "code": "B1_5",
-          "label": "비유동 Amihud",
-          "factor2": {
-            "kind": "db",
-            "id": "L01_Amihud"
-          },
-          "root_paper": {
-            "title": "Amihud (2002), Illiquidity and Stock Returns, JFM 5(1)",
-            "url": "https://www.sciencedirect.com/science/article/pii/S1386418101000246"
-          }
-        }
-      ]
+     "code": "B1_1",
+     "label": "가치 B/M",
+     "factor2": {
+      "kind": "db",
+      "id": "V01_BM"
+     },
+     "root_paper": {
+      "title": "Fama & French (1992), The Cross-Section of Expected Stock Returns, JF 47(2)",
+      "url": "https://onlinelibrary.wiley.com/doi/10.1111/j.1540-6261.1992.tb04398.x"
+     }
     },
     {
-      "id": "B2",
-      "axis": "weighting",
-      "n": 5,
-      "rule": "B1 승자 컴포짓을 신호로 고정하고 비중 규칙만 교체. 종목 선정 동일(순수 비중-only A/B). ★2026-08-30 도훈 지시로 **카탈로그 소비**로 전환 — 세션이 5종을 재구현하던 것을 폐기하고 06_Registry/weight_catalog.json(29종 실행가능/52종 등록)에서 뽑는다. 계열당 1개 강제 + 낙폭 축 계열(tail_aware·entropy·risk_parity) 우선 — 구판은 5종 중 3종이 score_blend 한 계열이라 같은 결론만 냈다(1.441/1.411/1.396).",
-      "requires": "B1",
-      "select_winner_by": "port_t",
-      "cells": [
-        {
-          "code": "B2_6",
-          "label": "cvar(tail_aware)",
-          "weighting": {
-            "kind": "catalog",
-            "catalog_id": "lean:cvar",
-            "label": "cvar"
-          },
-          "note": "카탈로그 선정 — 계열 tail_aware · 출처 lean_builtin. 격자가 재구현하지 않고 등록부를 소비한다.",
-          "root_paper": {
-            "title": "weight_catalog: lean:cvar",
-            "url": "https://github.com/qvest/weight_catalog"
-          }
-        },
-        {
-          "code": "B2_7",
-          "label": "entropy(entropy)",
-          "weighting": {
-            "kind": "catalog",
-            "catalog_id": "lean:entropy",
-            "label": "entropy"
-          },
-          "note": "카탈로그 선정 — 계열 entropy · 출처 lean_builtin. 격자가 재구현하지 않고 등록부를 소비한다.",
-          "root_paper": {
-            "title": "weight_catalog: lean:entropy",
-            "url": "https://github.com/qvest/weight_catalog"
-          }
-        },
-        {
-          "code": "B2_8",
-          "label": "factor_rp(risk_parity)",
-          "weighting": {
-            "kind": "catalog",
-            "catalog_id": "lean:factor_rp",
-            "label": "factor_rp"
-          },
-          "note": "카탈로그 선정 — 계열 risk_parity · 출처 lean_builtin. 격자가 재구현하지 않고 등록부를 소비한다.",
-          "root_paper": {
-            "title": "weight_catalog: lean:factor_rp",
-            "url": "https://github.com/qvest/weight_catalog"
-          }
-        },
-        {
-          "code": "B2_9",
-          "label": "ivol(risk_based)",
-          "weighting": {
-            "kind": "catalog",
-            "catalog_id": "lean:ivol",
-            "label": "ivol"
-          },
-          "note": "카탈로그 선정 — 계열 risk_based · 출처 lean_builtin. 격자가 재구현하지 않고 등록부를 소비한다.",
-          "root_paper": {
-            "title": "weight_catalog: lean:ivol",
-            "url": "https://github.com/qvest/weight_catalog"
-          }
-        },
-        {
-          "code": "B2_10",
-          "label": "SchurDamping(optimizer)",
-          "weighting": {
-            "kind": "catalog",
-            "catalog_id": "paper:SchurDamping",
-            "label": "SchurDamping"
-          },
-          "note": "카탈로그 선정 — 계열 optimizer · 출처 paper_adapter. 격자가 재구현하지 않고 등록부를 소비한다.",
-          "root_paper": {
-            "title": "weight_catalog: paper:SchurDamping",
-            "url": "https://github.com/qvest/weight_catalog"
-          }
-        }
-      ],
-      "source": {
-        "registry": "06_Registry/weight_catalog.json",
-        "picker": "02_Infrastructure/ops/rf_weight_arms.R::rf_pick_weight_arms",
-        "note": "격자는 비중 규칙을 재구현하지 않는다 — 등록부를 소비한다. 카탈로그가 늘면 격자도 자동으로 넓어진다."
-      }
+     "code": "B1_2",
+     "label": "수익성 GP/A",
+     "factor2": {
+      "kind": "db",
+      "id": "Q01_GPA"
+     },
+     "root_paper": {
+      "title": "Novy-Marx (2013), The Other Side of Value, JFE 108(1)",
+      "url": "https://www.sciencedirect.com/science/article/pii/S0304405X13000044"
+     }
     },
     {
-      "id": "B3",
-      "axis": "universe",
-      "n": 5,
-      "rule": "B1 승자 컴포짓 + EW 로 고정하고 적용 유니버스만 교체. 유동성 하한은 전 유니버스 공통 유지.",
-      "requires": "B1",
-      "select_winner_by": "calmar",
-      "cells": [
-        {
-          "code": "B3_11",
-          "label": "지수 멤버십 해제",
-          "universe": {
-            "kind": "all_listed"
-          },
-          "root_paper": {
-            "title": "Hong, Lim & Stein (2000), Bad News Travels Slowly, JF 55(1)",
-            "url": "https://onlinelibrary.wiley.com/doi/10.1111/0022-1082.00206"
-          }
-        },
-        {
-          "code": "B3_12",
-          "label": "KOSPI200 단독",
-          "universe": {
-            "kind": "index",
-            "flag": "K200"
-          },
-          "root_paper": {
-            "title": "Hong, Lim & Stein (2000), Bad News Travels Slowly, JF 55(1)",
-            "url": "https://onlinelibrary.wiley.com/doi/10.1111/0022-1082.00206"
-          }
-        },
-        {
-          "code": "B3_13",
-          "label": "소형주(시총 하위 1/3)",
-          "universe": {
-            "kind": "size_band",
-            "q_lo": 0,
-            "q_hi": 0.3333
-          },
-          "root_paper": {
-            "title": "Banz (1981), The Relationship Between Return and Market Value of Common Stocks, JFE 9(1)",
-            "url": "https://www.sciencedirect.com/science/article/abs/pii/0304405X81900180"
-          }
-        },
-        {
-          "code": "B3_14",
-          "label": "대형주(시총 상위 1/3)",
-          "universe": {
-            "kind": "size_band",
-            "q_lo": 0.6667,
-            "q_hi": 1
-          },
-          "root_paper": {
-            "title": "Banz (1981), The Relationship Between Return and Market Value of Common Stocks, JFE 9(1)",
-            "url": "https://www.sciencedirect.com/science/article/abs/pii/0304405X81900180"
-          }
-        },
-        {
-          "code": "B3_15",
-          "label": "섹터 중립",
-          "universe": {
-            "kind": "sector_neutral",
-            "field": "Sector_Lv2"
-          },
-          "root_paper": {
-            "title": "Moskowitz & Grinblatt (1999), Do Industries Explain Momentum?, JF 54(4)",
-            "url": "https://onlinelibrary.wiley.com/doi/10.1111/0022-1082.00146"
-          }
-        }
-      ]
+     "code": "B1_3",
+     "label": "저변동 sigma60",
+     "factor2": {
+      "kind": "price",
+      "id": "lowvol60"
+     },
+     "root_paper": {
+      "title": "Ang, Hodrick, Xing & Zhang (2006), The Cross-Section of Volatility and Expected Returns, JF 61(1)",
+      "url": "https://onlinelibrary.wiley.com/doi/10.1111/j.1540-6261.2006.00836.x"
+     }
     },
     {
-      "id": "B4",
-      "axis": "combination",
-      "n": 5,
-      "rule": "B1/B2/B3 승자 요소의 곱집합 + leave-one-out 기여 분해 + **3팩터 확장**. ★2026-08-30 확장 사유: 20칸 실측에서 B4_20(모멘텀+GP/A) 1위·B1_5(모멘텀+Amihud) 2위였는데 **둘을 합친 3팩터 판은 한 번도 재지 않았다**. 승자 요소는 러너가 원장 실측에서 읽어 채운다(하드코딩 없음).",
-      "requires": [
-        "B1",
-        "B2",
-        "B3"
-      ],
-      "select_winner_by": "port_t",
-      "cells": [
-        {
-          "code": "B4_16",
-          "label": "전 요소 결합",
-          "combo": {
-            "use": [
-              "B1",
-              "B2",
-              "B3"
-            ]
-          }
-        },
-        {
-          "code": "B4_17",
-          "label": "팩터 제외(LOO)",
-          "combo": {
-            "use": [
-              "B2",
-              "B3"
-            ]
-          }
-        },
-        {
-          "code": "B4_18",
-          "label": "비중 제외(LOO)",
-          "combo": {
-            "use": [
-              "B1",
-              "B3"
-            ]
-          }
-        },
-        {
-          "code": "B4_19",
-          "label": "유니버스 제외(LOO)",
-          "combo": {
-            "use": [
-              "B1",
-              "B2"
-            ]
-          }
-        },
-        {
-          "code": "B4_20",
-          "label": "3팩터(승자+차순위)",
-          "combo": {
-            "use": [
-              "B1",
-              "B2",
-              "B3"
-            ],
-            "factor2_rank": 1,
-            "factor3_rank": 2
-          },
-          "note": "B1 1위 팩터 + 2위 팩터를 기저 신호와 **등가중 3분할**로 결합. 가중 비율 탐색은 조합 폭발이라 격자가 아니라 별도 축으로 남긴다. 구 B4_20(차순위 팩터 단독 교체)은 이미 측정돼 최고를 냈으므로(PORT_t 1.565) 그 좌표를 기저로 삼아 한 칸 더 나아간다."
-        }
-      ]
+     "code": "B1_4",
+     "label": "이익수정 3m",
+     "factor2": {
+      "kind": "db",
+      "id": "C13_Revision_Breadth_3m"
+     },
+     "root_paper": {
+      "title": "Chan, Jegadeesh & Lakonishok (1996), Momentum Strategies, JF 51(5)",
+      "url": "https://onlinelibrary.wiley.com/doi/10.1111/j.1540-6261.1996.tb05222.x"
+     }
+    },
+    {
+     "code": "B1_5",
+     "label": "비유동 Amihud",
+     "factor2": {
+      "kind": "db",
+      "id": "L01_Amihud"
+     },
+     "root_paper": {
+      "title": "Amihud (2002), Illiquidity and Stock Returns, JFM 5(1)",
+      "url": "https://www.sciencedirect.com/science/article/pii/S1386418101000246"
+     }
     }
-  ],
-  "graduation": {
-    "target_grade": "A",
-    "exhaust_action": "next_paper",
-    "improvement_check": {
-      "metric": "port_t",
-      "min_gain_vs_base": 0,
-      "note": "20회 소진 시 최고 셀이 기저 대비 개선을 못 냈으면 exhausted → 큐 다음 논문. 개선이 있어도 A 미달이면 동일하게 exhausted(상한은 20회)."
-    },
-    "on_grade_a": "큐 적재(grade_a_queue.json) + judge_request 발행 + 텔레그램. **루프 정지 없음** — 남은 칸과 다음 논문은 계속 진행한다(도훈 2026-08-30). BOOK 등재만 Judge PASS + 도훈 confirm 을 거친다.",
-    "judge_on_grade_a": true
+   ]
   },
-  "execution": {
-    "mode": "parallel_within_block",
-    "rule": "도훈 지시 2026-08-30 '병렬 실행도 규칙에 넣어줘'. 배치는 **같은 블록 안에서만** 묶는다. 블록 경계를 넘지 않는 이유: B2/B3 는 B1 승자 위에, B4 는 B1~B3 승자 위에 선다 — 승자가 확정되기 전에 다음 블록을 띄우면 결정되지 않은 값 위에서 측정하는 공허한 시도가 된다.",
-    "concurrency_source": "reinforce_auto_config.json::parallel_cells",
-    "ledger_contract": "등록(순차) → 실행(병렬·워커는 원장 미접근) → 수집(순차). read-modify-write 경합 원천 차단.",
-    "runner": "02_Infrastructure/ops/reinforce_auto_parallel.R (워커 = rf_cell_worker.R)",
-    "factor_blend": {
-      "max_factors": 3,
-      "weighting": "등가중 (2팩터 50:50 · 3팩터 1/3씩) — 비율 탐색은 미포함",
-      "who_decides": "팩터 **선정**은 격자(reinforce_program.json)가 정한다. 실행 중 LLM 판단 없음. 격자 자체를 LLM 이 만드는 경로는 rf_grid_propose.R — 논문 기전·팩터 DB 331종·죽은 구성 380건을 읽고 B1 5종을 제안한다. ★LLM 은 격자를 만들 때 1회만 판단하고 실행 중에는 없다 — 출력이 데이터(JSON)라 검증·수정 가능하고, 실행은 전부 규칙이라 무인 안전이 유지된다."
+  {
+   "id": "B2",
+   "axis": "weighting",
+   "n": 5,
+   "rule": "B1 승자 컴포짓을 신호로 고정하고 비중 규칙만 교체. 종목 선정 동일(순수 비중-only A/B). ★2026-08-30 도훈 지시로 **카탈로그 소비**로 전환 — 세션이 5종을 재구현하던 것을 폐기하고 06_Registry/weight_catalog.json(29종 실행가능/52종 등록)에서 뽑는다. 계열당 1개 강제 + 낙폭 축 계열(tail_aware·entropy·risk_parity) 우선 — 구판은 5종 중 3종이 score_blend 한 계열이라 같은 결론만 냈다(1.441/1.411/1.396).",
+   "requires": "B1",
+   "select_winner_by": "port_t",
+   "cells": [
+    {
+     "code": "B2_6",
+     "label": "cvar(tail_aware)",
+     "weighting": {
+      "kind": "catalog",
+      "catalog_id": "lean:cvar",
+      "label": "cvar"
+     },
+     "note": "카탈로그 선정 — 계열 tail_aware · 출처 lean_builtin. 격자가 재구현하지 않고 등록부를 소비한다.",
+     "root_paper": {
+      "title": "weight_catalog: lean:cvar",
+      "url": "https://github.com/qvest/weight_catalog"
+     }
+    },
+    {
+     "code": "B2_7",
+     "label": "entropy(entropy)",
+     "weighting": {
+      "kind": "catalog",
+      "catalog_id": "lean:entropy",
+      "label": "entropy"
+     },
+     "note": "카탈로그 선정 — 계열 entropy · 출처 lean_builtin. 격자가 재구현하지 않고 등록부를 소비한다.",
+     "root_paper": {
+      "title": "weight_catalog: lean:entropy",
+      "url": "https://github.com/qvest/weight_catalog"
+     }
+    },
+    {
+     "code": "B2_8",
+     "label": "factor_rp(risk_parity)",
+     "weighting": {
+      "kind": "catalog",
+      "catalog_id": "lean:factor_rp",
+      "label": "factor_rp"
+     },
+     "note": "카탈로그 선정 — 계열 risk_parity · 출처 lean_builtin. 격자가 재구현하지 않고 등록부를 소비한다.",
+     "root_paper": {
+      "title": "weight_catalog: lean:factor_rp",
+      "url": "https://github.com/qvest/weight_catalog"
+     }
+    },
+    {
+     "code": "B2_9",
+     "label": "ivol(risk_based)",
+     "weighting": {
+      "kind": "catalog",
+      "catalog_id": "lean:ivol",
+      "label": "ivol"
+     },
+     "note": "카탈로그 선정 — 계열 risk_based · 출처 lean_builtin. 격자가 재구현하지 않고 등록부를 소비한다.",
+     "root_paper": {
+      "title": "weight_catalog: lean:ivol",
+      "url": "https://github.com/qvest/weight_catalog"
+     }
+    },
+    {
+     "code": "B2_10",
+     "label": "SchurDamping(optimizer)",
+     "weighting": {
+      "kind": "catalog",
+      "catalog_id": "paper:SchurDamping",
+      "label": "SchurDamping"
+     },
+     "note": "카탈로그 선정 — 계열 optimizer · 출처 paper_adapter. 격자가 재구현하지 않고 등록부를 소비한다.",
+     "root_paper": {
+      "title": "weight_catalog: paper:SchurDamping",
+      "url": "https://github.com/qvest/weight_catalog"
+     }
     }
+   ],
+   "source": {
+    "registry": "06_Registry/weight_catalog.json",
+    "picker": "02_Infrastructure/ops/rf_weight_arms.R::rf_pick_weight_arms",
+    "note": "격자는 비중 규칙을 재구현하지 않는다 — 등록부를 소비한다. 카탈로그가 늘면 격자도 자동으로 넓어진다."
+   }
+  },
+  {
+   "id": "B3",
+   "axis": "universe",
+   "n": 5,
+   "rule": "B1 승자 컴포짓 + EW 로 고정하고 적용 유니버스만 교체. 유동성 하한은 전 유니버스 공통 유지.",
+   "requires": "B1",
+   "select_winner_by": "calmar",
+   "cells": [
+    {
+     "code": "B3_11",
+     "label": "지수 멤버십 해제",
+     "universe": {
+      "kind": "all_listed"
+     },
+     "root_paper": {
+      "title": "Hong, Lim & Stein (2000), Bad News Travels Slowly, JF 55(1)",
+      "url": "https://onlinelibrary.wiley.com/doi/10.1111/0022-1082.00206"
+     }
+    },
+    {
+     "code": "B3_12",
+     "label": "KOSPI200 단독",
+     "universe": {
+      "kind": "index",
+      "flag": "K200"
+     },
+     "root_paper": {
+      "title": "Hong, Lim & Stein (2000), Bad News Travels Slowly, JF 55(1)",
+      "url": "https://onlinelibrary.wiley.com/doi/10.1111/0022-1082.00206"
+     }
+    },
+    {
+     "code": "B3_13",
+     "label": "소형주(시총 하위 1/3)",
+     "universe": {
+      "kind": "size_band",
+      "q_lo": 0,
+      "q_hi": 0.3333
+     },
+     "root_paper": {
+      "title": "Banz (1981), The Relationship Between Return and Market Value of Common Stocks, JFE 9(1)",
+      "url": "https://www.sciencedirect.com/science/article/abs/pii/0304405X81900180"
+     }
+    },
+    {
+     "code": "B3_14",
+     "label": "대형주(시총 상위 1/3)",
+     "universe": {
+      "kind": "size_band",
+      "q_lo": 0.6667,
+      "q_hi": 1
+     },
+     "root_paper": {
+      "title": "Banz (1981), The Relationship Between Return and Market Value of Common Stocks, JFE 9(1)",
+      "url": "https://www.sciencedirect.com/science/article/abs/pii/0304405X81900180"
+     }
+    },
+    {
+     "code": "B3_15",
+     "label": "섹터 중립",
+     "universe": {
+      "kind": "sector_neutral",
+      "field": "Sector_Lv2"
+     },
+     "root_paper": {
+      "title": "Moskowitz & Grinblatt (1999), Do Industries Explain Momentum?, JF 54(4)",
+      "url": "https://onlinelibrary.wiley.com/doi/10.1111/0022-1082.00146"
+     }
+    }
+   ]
+  },
+  {
+   "id": "B4",
+   "axis": "combination",
+   "n": 5,
+   "rule": "B1/B2/B3 승자 요소의 곱집합 + leave-one-out 기여 분해 + **3팩터 확장**. ★2026-08-30 확장 사유: 20칸 실측에서 B4_20(모멘텀+GP/A) 1위·B1_5(모멘텀+Amihud) 2위였는데 **둘을 합친 3팩터 판은 한 번도 재지 않았다**. 승자 요소는 러너가 원장 실측에서 읽어 채운다(하드코딩 없음).",
+   "requires": [
+    "B1",
+    "B2",
+    "B3"
+   ],
+   "select_winner_by": "port_t",
+   "cells": [
+    {
+     "code": "B4_16",
+     "label": "전 요소 결합",
+     "combo": {
+      "use": [
+       "B1",
+       "B2",
+       "B3"
+      ]
+     }
+    },
+    {
+     "code": "B4_17",
+     "label": "팩터 제외(LOO)",
+     "combo": {
+      "use": [
+       "B2",
+       "B3"
+      ]
+     }
+    },
+    {
+     "code": "B4_18",
+     "label": "비중 제외(LOO)",
+     "combo": {
+      "use": [
+       "B1",
+       "B3"
+      ]
+     }
+    },
+    {
+     "code": "B4_19",
+     "label": "유니버스 제외(LOO)",
+     "combo": {
+      "use": [
+       "B1",
+       "B2"
+      ]
+     }
+    },
+    {
+     "code": "B4_20",
+     "label": "3팩터(승자+차순위)",
+     "combo": {
+      "use": [
+       "B1",
+       "B2",
+       "B3"
+      ],
+      "factor2_rank": 1,
+      "factor3_rank": 2
+     },
+     "note": "B1 1위 팩터 + 2위 팩터를 기저 신호와 **등가중 3분할**로 결합. 가중 비율 탐색은 조합 폭발이라 격자가 아니라 별도 축으로 남긴다. 구 B4_20(차순위 팩터 단독 교체)은 이미 측정돼 최고를 냈으므로(PORT_t 1.565) 그 좌표를 기저로 삼아 한 칸 더 나아간다."
+    }
+   ]
+  },
+  {
+   "id": "B5",
+   "axis": "risk_overlay",
+   "note": "★도훈 2026-08-30 '오버레이 계층은 없나? PG2의 성공도 오버레이인데' + '논문이 없어도 진행되게. 통계/수학/머신러닝 방법론 적극 활용으로 리스크 컨트롤 목적의 오버레이 설계'. B1~B3 15칸이 MDD 61.6~77.2% 대역에 갇혀 Calmar 0.34/0.64 로 A 를 못 여는 자리 — 구속 축이 낙폭이다. ★근거는 논문이 아니라 method(방법)이고, 원장이 risk_overlay 축에 한해 그것을 받는다. ★전 칸 임의 상수 없음: 목표변동성·문턱·lambda 전부 확장창 추정(PIT).",
+   "cells": [
+    {
+     "code": "B5_21",
+     "label": "실현변동성 타게팅",
+     "overlay": {
+      "kind": "vol_scale"
+     },
+     "basis": "통계 — 노출 = min(1, 확장창 중앙 실현변동성 / 현재 60일 실현변동성). 목표치를 상수로 두지 않고 자기 이력 중앙값으로 잡아 파라미터를 없앤다.",
+     "note": "변동성 타게팅의 최소형. 이후 예측형(B5_22/23) 대비 기준선."
+    },
+    {
+     "code": "B5_22",
+     "label": "HAR-RV 예측 타게팅",
+     "overlay": {
+      "kind": "har_vol"
+     },
+     "basis": "수리통계 — log RV(t+1) ~ log RV_d + log RV_w + log RV_m 를 확장창 OLS 로 적합해 1개월 앞 변동성을 예측하고 그 예측으로 타게팅. 실현치가 아니라 예측치를 쓰는 것이 차이.",
+     "note": "장기기억(HAR) 구조. 적합은 매 시점 확장창 — 계수 고정 없음."
+    },
+    {
+     "code": "B5_23",
+     "label": "마할라노비스 난기류 게이트",
+     "overlay": {
+      "kind": "turbulence"
+     },
+     "basis": "다변량 통계 — (실현변동성, 횡단면 분산, 낙폭) 벡터의 마할라노비스 거리를 확장창 평균·공분산 기준으로 계산하고, 확장 중앙값~90분위 사이에서 노출을 선형 축소.",
+     "note": "단일 축이 아니라 시장 상태의 다변량 이상도. 임계도 확장분위라 상수 없음."
+    },
+    {
+     "code": "B5_24",
+     "label": "ML 꼬리위험 게이트(로지스틱)",
+     "overlay": {
+      "kind": "ml_tail_gate"
+     },
+     "basis": "지도학습 — 익월 BM 수익이 그때까지의 하위 10분위에 들 확률을 확장창 로지스틱 회귀로 예측(특징: 실현변동성·낙폭·12개월 수익·횡단면 분산)하고 노출 = 1 - p_hat. 학습쌍은 결과가 실현된 과거만.",
+     "note": "★PIT 핵심: 라벨 임계(하위 10분위)도 그 시점까지 표본에서 잡는다. 미래 분포 사용 금지."
+    },
+    {
+     "code": "B5_25",
+     "label": "변동성 x 낙폭 결합",
+     "overlay": {
+      "kind": "vol_x_dd"
+     },
+     "basis": "결합 — 변동성 타게팅 노출과 데이터주도 낙폭 브레이크 노출(확장 중앙값 진입 ~ 90분위 전량현금)의 곱. 두 축이 서로 다른 국면(고변동 vs 깊은 낙폭)을 겨눈다.",
+     "note": "구속 축(MDD)을 정면으로 겨누는 칸. 결합 이득이 있는지 본다."
+    }
+   ],
+   "n": 5
   }
+ ],
+ "graduation": {
+  "target_grade": "A",
+  "exhaust_action": "next_paper",
+  "improvement_check": {
+   "metric": "port_t",
+   "min_gain_vs_base": 0,
+   "note": "20회 소진 시 최고 셀이 기저 대비 개선을 못 냈으면 exhausted → 큐 다음 논문. 개선이 있어도 A 미달이면 동일하게 exhausted(상한은 20회)."
+  },
+  "on_grade_a": "큐 적재(grade_a_queue.json) + judge_request 발행 + 텔레그램. **루프 정지 없음** — 남은 칸과 다음 논문은 계속 진행한다(도훈 2026-08-30). BOOK 등재만 Judge PASS + 도훈 confirm 을 거친다.",
+  "judge_on_grade_a": true
+ },
+ "execution": {
+  "mode": "parallel_within_block",
+  "rule": "도훈 지시 2026-08-30 '병렬 실행도 규칙에 넣어줘'. 배치는 **같은 블록 안에서만** 묶는다. 블록 경계를 넘지 않는 이유: B2/B3 는 B1 승자 위에, B4 는 B1~B3 승자 위에 선다 — 승자가 확정되기 전에 다음 블록을 띄우면 결정되지 않은 값 위에서 측정하는 공허한 시도가 된다.",
+  "concurrency_source": "reinforce_auto_config.json::parallel_cells",
+  "ledger_contract": "등록(순차) → 실행(병렬·워커는 원장 미접근) → 수집(순차). read-modify-write 경합 원천 차단.",
+  "runner": "02_Infrastructure/ops/reinforce_auto_parallel.R (워커 = rf_cell_worker.R)",
+  "factor_blend": {
+   "max_factors": 3,
+   "weighting": "등가중 (2팩터 50:50 · 3팩터 1/3씩) — 비율 탐색은 미포함",
+   "who_decides": "팩터 **선정**은 격자(reinforce_program.json)가 정한다. 실행 중 LLM 판단 없음. 격자 자체를 LLM 이 만드는 경로는 rf_grid_propose.R — 논문 기전·팩터 DB 331종·죽은 구성 380건을 읽고 B1 5종을 제안한다. ★LLM 은 격자를 만들 때 1회만 판단하고 실행 중에는 없다 — 출력이 데이터(JSON)라 검증·수정 가능하고, 실행은 전부 규칙이라 무인 안전이 유지된다."
+  }
+ }
 }

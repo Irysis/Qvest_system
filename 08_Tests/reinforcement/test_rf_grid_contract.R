@@ -30,8 +30,12 @@ codes <- unlist(lapply(g$blocks, function(b) vapply(b$cells, function(c) as.char
 if (length(codes) == length(unique(codes))) {
   ok(sprintf("셀 코드 %d개 중복 0", length(codes)))
 } else ng("셀 코드 중복", "승자 판정이 코드 기반이라 중복은 조용히 엇갈린다")
-n_exp <- as.integer(Sys.getenv("RF_GRID_N", "20"))
-if (length(codes) == n_exp) ok(sprintf("격자 %d칸", n_exp)) else ng("격자 칸 수", length(codes))
+# ★칸 수를 상수로 박지 않는다 — 블록이 늘면(오버레이 B5 신설처럼) 검사가 같이 낡는다.
+#   구조식으로 잰다: 블록마다 5칸 · 총합 = 5 x 블록수. 병렬 배치 단위가 5라 이게 계약이다.
+per <- vapply(g$blocks, function(b) length(b$cells), integer(1))
+if (all(per == 5L)) {
+  ok(sprintf("블록 %d개 x 5칸 = %d칸 (배치 단위 정합)", length(per), length(codes)))
+} else ng("블록별 칸 수 불균일", paste(per, collapse = "/"))
 
 writeLines("")
 writeLines(sprintf("합계: 통과 %d · 실패 %d", PASS, FAIL))
