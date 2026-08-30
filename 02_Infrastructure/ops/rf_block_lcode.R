@@ -27,6 +27,9 @@ rf_emit_block_lcode <- function(base_id, n_used, root = Sys.getenv("QM_ROOT",
   blk <- tab[n >= lo & n <= as.integer(n_used)]
   if (!nrow(blk)) return(invisible(NULL))
 
+  # ★진행 중 블록에서는 발행하지 않는다 — 측정 없는 L-code 는 기록이 아니라 잡음이다.
+  #   러너는 블록 경계(측정 완료 후)에서만 부르지만, 검사·수동 호출이 in-flight 를 집을 수 있다.
+  if (!any(is.finite(blk$port_t))) return(invisible(NULL))
   bid   <- sub("_.*$", "", blk$code[1])                      # B1/B2/B3/B4
   best  <- blk[which.max(replace(port_t, !is.finite(port_t), -Inf))]
   worst <- blk[which.min(replace(port_t, !is.finite(port_t),  Inf))]

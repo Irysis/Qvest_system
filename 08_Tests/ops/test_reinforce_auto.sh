@@ -468,6 +468,18 @@ else
   ng "L-code 계약" "$(echo "$LCB" | grep FAIL | head -1)"
 fi
 
+echo "=== 24. 격자 ↔ 원장 계약 ==="
+# 격자와 원장 검증기는 다른 파일인데 서로를 전제한다. 2026-08-30 B3 축이
+# risk_overlay → universe 로 바뀌었는데 원장 허용 목록이 안 따라와 B3 5칸이 **등록에서**
+# 거부됐고(append_failed → halt_no_jobs) 루프가 10/20 에서 영구 정지했다.
+# 로그에는 오류가 아니라 '할 일 없음' 으로 찍혀 정상 대기처럼 보였다.
+GRD=$(Rscript 08_Tests/reinforcement/test_rf_grid_contract.R 2>&1); GRC=$?
+if [ "$GRC" -eq 0 ]; then
+  ok "격자↔원장 계약 — $(echo "$GRD" | tail -1)"
+else
+  ng "격자↔원장 계약" "$(echo "$GRD" | grep FAIL | head -1)"
+fi
+
 echo
 printf '합계: 통과 %d · 실패 %d\n' "$PASS" "$FAIL"
 [ "$FAIL" -eq 0 ] || exit 1

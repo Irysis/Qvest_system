@@ -34,7 +34,10 @@ suppressPackageStartupMessages({ library(jsonlite) })
   stop("[reinforce_ledger] project root 미발견 — QM_ROOT 설정 필요")
 }
 
-RF_KEYWORD_AXES_L1 <- c("multifactor", "weighting", "risk_overlay", "combination")
+# ★universe 는 2026-08-30 도훈 지시로 격자 B3 가 리스크오버레이 → 유니버스로 바뀌면서 생겼다.
+#   그런데 이 목록은 안 따라와서 B3 5칸이 **등록 자체로 거부**됐고(append_failed → halt_no_jobs)
+#   루프가 10/20 에서 멈췄다. risk_overlay 는 격자 밖 경로에서 쓰이므로 존치한다.
+RF_KEYWORD_AXES_L1 <- c("multifactor", "weighting", "universe", "risk_overlay", "combination")
 RF_KEYWORD_AXES_L2 <- c("regime_identification", "strategy_combination")
 RF_STATUS_ENUM <- c("active", "graduated", "exhausted", "superseded", "parked")
 

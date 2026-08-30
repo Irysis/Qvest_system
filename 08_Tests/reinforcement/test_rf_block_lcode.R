@@ -18,8 +18,12 @@ act <- Filter(function(e) identical(e$status, "active"), led$entries)
 if (!length(act)) {
   writeLines("  SKIP  active entry 없음 — 발행 경로를 실측할 대상이 없다")
 } else {
-  E <- act[[1]]; used <- as.integer(E$attempts_used %||% 0L)
-  nb <- (used %/% 5L) * 5L
+  E <- act[[1]]
+  # ★진행 중 블록을 집으면 "발행 실패" 로 오탐한다 — 등급이 찍힌 칸만 세서 마지막
+  #   **완료된** 블록 경계를 고른다(2026-08-30: B3 가 도는 중에 이 검사가 붉게 떴다).
+  done <- sum(vapply(E$attempts, function(a)
+    isTRUE((a$grade %||% "") %in% c("A", "B", "C", "F")), logical(1)))
+  nb <- (as.integer(done) %/% 5L) * 5L
   if (nb < 5L) {
     writeLines("  SKIP  완료된 블록 없음")
   } else {
