@@ -1,0 +1,154 @@
+{
+  "schema": "book_rebalance_spec_v1",
+  "updated_at": "2026-08-30",
+  "why": "BOOK 코드별 리밸런싱 사양. 전략마다 필요한 코드·데이터·오버레이가 다르므로 book_id 로 키를 잡는다. 신선도는 원천 상태파일이 아니라 **소비면**(실제로 읽히는 파케이)에서 잰다 — 2026-08-30 실사고(다운로드 성공을 적재 성공으로 읽어 한 달 정지가 게이트 둘을 통과)의 귀결.",
+  "placement_note": "06_Registry/book/ 이 아니라 여기 둔다 — 그 폴더는 BOOK **등록 정본** 전용이고 book_write_guard.sh 가 writer 경유만 허용한다. 본 파일은 등록 항목이 아니라 인프라 사양이다.",
+  "checker": "02_Infrastructure/book/book_rebalance_preflight.py",
+  "specs": [
+    {
+      "book_id": "BOOK_0001",
+      "strategy_id": "STR_1715_on_M4gAE_R05_noLayer4_PG2",
+      "kind": "factor_strategy",
+      "layer": 1,
+      "runner": {
+        "cmd": "PG2_AS_OF={as_of} bash 02_Infrastructure/ops/run_pg2_rebalance_full.sh",
+        "as_of_rule": "홀딩월 1일 (예: 2026-09-01)",
+        "weights_out": "05_Production/2.Factor_Model/2-4.STR_1715_on_M4gAE_R05_noLayer4_PG2/02_holdings_universe/{as_of_compact}_M4gAE_weights_cap_0p20.csv",
+        "manifest_out": "05_Production/2.Factor_Model/2-4.STR_1715_on_M4gAE_R05_noLayer4_PG2/02_holdings_universe/{as_of_compact}_M4gAE_manifest.json",
+        "gates": ["GateA(원천 수신)", "GateB(팩터DB 앵커 내용)", "GateD(하드제약·전월지문)"]
+      },
+      "inputs": [
+        {
+          "id": "rawdata", "path": ".cache/RAWDATA.parquet", "date_col": "Date",
+          "mode": "data", "max_lag_days": 5,
+          "producer": "02_Infrastructure/data/daily_refresh.sh [1/7] naver_run_pipeline",
+          "wired_in_runner": true,
+          "role": "종목 선정·유동성·수익률 원천"
+        },
+        {
+          "id": "benchmark", "path": ".cache/benchmark.parquet", "date_col": "Date",
+          "mode": "data", "max_lag_days": 5,
+          "producer": "02_Infrastructure/data/daily_refresh.sh [1pre/7] naver_benchmark_update.py",
+          "wired_in_runner": true,
+          "role": "거래일 캘린더 단일 권위 + BM_Ret"
+        },
+        {
+          "id": "consensus", "path": ".cache/consensus/eps_1y.parquet", "date_col": "Date",
+          "mode": "data", "max_lag_days": 10,
+          "producer": "02_Infrastructure/data/incremental_update_file.R::incremental_update_all()",
+          "wired_in_runner": false,
+          "manual_cmd": "cd 02_Infrastructure && Rscript --no-save -e 'source(\"config.R\"); source(\"data/incremental_update_file.R\"); incremental_update_all()'",
+          "role": "컨센서스 팩터축",
+          "known_defect": "daily_refresh [0/7] 이 부르는 incremental_cache_update.R 은 **베이스** xlsx mtime 만 봐서 언제나 skip. Update_File/ 을 읽는 모듈은 이것(같은 함수명·다른 파일)."
+        },
+        {
+          "id": "universe_support", "path": ".cache/universe_support/us_k200.parquet", "date_col": "Date",
+          "mode": "data", "max_lag_days": 40,
+          "producer": "02_Infrastructure/data/incremental_update_file.R::incremental_universe_support()",
+          "wired_in_runner": false,
+          "manual_cmd": "cd 02_Infrastructure && Rscript --no-save -e 'source(\"config.R\"); source(\"data/incremental_update_file.R\"); incremental_update_all()'",
+          "role": "K200∪KQ150 PIT 시변 멤버십 (월간 스냅샷이라 관용 40일)"
+        },
+        {
+          "id": "investor_act", "path": ".cache/investor_stock/investor_all.parquet", "date_col": "Date",
+          "mode": "data", "max_lag_days": 10,
+          "producer": "02_Infrastructure/data/incremental_update_file.R::incremental_investor()",
+          "wired_in_runner": false,
+          "manual_cmd": "cd 02_Infrastructure && Rscript --no-save -e 'source(\"config.R\"); source(\"data/incremental_update_file.R\"); incremental_update_all()'",
+          "role": "수급 팩터축"
+        },
+        {
+          "id": "fred_wide", "path": ".cache/fred_macro_wide.parquet", "date_col": "Date",
+          "mode": "data", "max_lag_days": 14,
+          "producer": "02_Infrastructure/ops/morning_steps/fred_regime.R::fred_robust_fetch_all()",
+          "wired_in_runner": false,
+          "manual_cmd": "Rscript --no-save -e 'Sys.setenv(QM_ROOT=\"C:/Users/99922/OneDrive/Quant_Module_Moltbot\"); setwd(Sys.getenv(\"QM_ROOT\")); source(\"02_Infrastructure/regime/fred_robust.R\"); fred_robust_fetch_all()'",
+          "role": "AE 오버레이 입력 피처(VIX·Term_Spread·KRW_USD·StL_Fin_Stress·Chi_Fin_Cond 등)",
+          "known_defect": "생산자가 morning_briefing.sh 안에만 있고 평일에만 돈다(주말 skip). 리밸 경로에 호출자 없음. tryCatch fail-soft 라 실패해도 rc=0. AE 핀 신선도 게이트가 뒤에서 fail-closed 로 막지만, 그러면 리밸이 멈춘다 — 선행 갱신 권장."
+        },
+        {
+          "id": "ae_panel", "path": "stage_artifacts/WT_D20260718_007/ae_regime_signal_ext.parquet",
+          "date_col": "decision_date", "mode": "decision",
+          "producer": "02_Infrastructure/regime/ae_regime_monthly.py --as-of {as_of} --advance-pin",
+          "wired_in_runner": true,
+          "wired_since": "2026-08-30 (run_nolayer4_monthly.sh)",
+          "role": "AE 국면 신호 (M4∩AE 게이트의 한 축)"
+        },
+        {
+          "id": "m4_panel", "path": "qepm/mailbox/worktask/WT-D20260430_001/stage_artifacts/alpha_scores.parquet",
+          "date_col": "Date", "mode": "decision",
+          "producer": "factor_engine.R (run_pg2_forward_noLayer4.sh [2/4])",
+          "wired_in_runner": true,
+          "role": "m4 매크로 게이트 패널"
+        },
+        {
+          "id": "alpha_panel", "path": "stage_artifacts/WT_D20260425_010/alpha_scores.parquet",
+          "date_col": "Date", "mode": "decision",
+          "producer": "run_pg2_forward_noLayer4.sh [1/4] _recompute_alpha_asof.R",
+          "wired_in_runner": true,
+          "role": "종목 점수 + regime_state (β_R05·ub_crisis 입력)"
+        },
+        {
+          "id": "factor_db", "path": ".cache/factor_db/factor_db_{sig_ym}.parquet", "date_col": "Date",
+          "mode": "anchor",
+          "producer": "run_pg2_rebalance_full.sh [1b] build_factor_db(force=TRUE)",
+          "wired_in_runner": true,
+          "role": "R05_Tail_Risk Z-score (β_R05 입력)"
+        }
+      ],
+      "overlays": [
+        {
+          "id": "m4_baseline", "panel": "m4_panel", "date_col": "Date",
+          "fire_expr": "Cash_Pct_lag > 0",
+          "role": "매크로 국면점수 → 기본 현금 (문턱 ≈ 점수 45)",
+          "expect_alive": true
+        },
+        {
+          "id": "m4_decay", "panel": "m4_panel", "date_col": "Date",
+          "fire_expr": "decay_signal >= 0.7 & decay_R2 >= 0.05",
+          "role": "알파 감쇠 경보 (Case C/D)",
+          "expect_alive": true
+        },
+        {
+          "id": "m4_bocpd_legacy_guard", "panel": "m4_panel", "date_col": "Date",
+          "fire_expr": "bocpd_short_run_mass_lag >= 0.60 & bocpd_expected_runlen_lag >= 12",
+          "role": "구판 BOCPD 가드 (재발 감시용 — 0 이어야 정상)",
+          "expect_alive": false,
+          "note": "0/272 발화. 2026-08-30 수리로 warm-up 분리 + MODE=off. 이 줄은 구판 조건이 되살아나면 잡기 위한 회귀 감시다."
+        },
+        {
+          "id": "m4_final", "panel": "m4_panel", "date_col": "Date",
+          "fire_expr": "weight_str1715 < 0.999",
+          "role": "m4 최종 발화 (팔들의 합성)",
+          "expect_alive": true
+        },
+        {
+          "id": "ae_fire", "panel": "ae_panel", "date_col": "decision_date",
+          "fire_expr": "fire_seq == 1",
+          "role": "AE 국면 발화",
+          "expect_alive": true
+        },
+        {
+          "id": "regime_crisis", "panel": "alpha_panel", "date_col": "Date",
+          "fire_expr": "regime_state == 'CRISIS'",
+          "role": "β_R05 최저구간 + 종목 상한 0.20→0.10 (ub_crisis)",
+          "expect_alive": true
+        },
+        {
+          "id": "regime_derisk", "panel": "alpha_panel", "date_col": "Date",
+          "fire_expr": "regime_state in ['CRISIS','CAUTION']",
+          "role": "β_R05 de-risk 가능 구간",
+          "expect_alive": true
+        }
+      ],
+      "post_checks": [
+        "Sum(w) == 1.0",
+        "실질 보유 ≤ 25종",
+        "long-only (w ≥ 0)",
+        "유동성 20일 평균 거래대금 ≥ 2e8",
+        "비중 지문이 전월과 다를 것 (조용한 재출력 검출)",
+        "manifest.as_of == 요청 as_of"
+      ]
+    }
+  ]
+}

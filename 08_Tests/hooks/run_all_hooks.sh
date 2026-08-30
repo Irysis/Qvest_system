@@ -1196,6 +1196,11 @@ SUITES=(
   #   D2 는 generator_pins.json 핀 정합까지 본다 — 미러를 고치고 핀을 안 갱신하면
   #   러너 [1b] 가 exit 12 로 죽으므로, 그 사고를 배터리에서 먼저 잡는다.
   "08_Tests/portfolio/test_ae_consumer_freshness.R"
+  # 2026-08-30 신설: BOOK 코드별 리밸 사전점검의 양방향 10축(도훈 지시 "book 코드별 표준화").
+  #   축 A 소비면 신선도 · 축 B 생산자 배선 · 축 C 오버레이 팔 생존. 위반 주입 = data 낡음 /
+  #   as_of 행 부재(AE 침묵 재사용) / 앵커 불일치 / 부재 / 파손 / 0회 발화 / 구판 부활 /
+  #   미등재 book_id. 음성 대조 = 신선하면 GO · 발화하는 팔은 조용.
+  "08_Tests/book/test_book_rebalance_preflight.py"
   # ③ parquet 캐시 원자적 쓰기 — 2026-08-29 23:27 실사고로 .cache/benchmark.parquet 이
   #   **부재**가 됐다(하류 정지: bm-gate B · regime_jump Windows error 2 · SJM FAILED).
   #   기전은 writer 5벌에 복제된 `write_parquet(tmp)` → **`file.remove(target)`** → rename
