@@ -376,8 +376,19 @@ if (!identical(.ov_kind, "none")) {
   .clip <- function(x) max(0, min(1, x))
   .expo <- rep(1, .N)
 
+  # ★절벽형 워밍업 금지 (2026-08-30 실측): 첫 판은 60개월 미만을 통째로 무개입으로 뒀는데,
+  #   그 창(2005-02~2010-05)에 **최대낙폭 에피소드(2008-05~2008-10)가 통째로 들어간다**.
+  #   그러면 낙폭을 만든 구간에서는 안 걸고 수익을 만든 구간에서만 조이게 되어, 다섯 팔의 MDD 가
+  #   56.3% 로 완전히 동일해지고 CAGR 만 20.8%→4.5~7.9% 로 무너졌다. 오버레이의 결과가 아니라
+  #   계기의 결함이다.
+  #   수리 = 절벽 대신 **축소(shrinkage)**. 표본이 적으면 개입을 부분만 반영하고 표본이 쌓일수록
+  #   완전 반영한다: e = 1 - w * (1 - e_raw), w = min(1, n / n_min). 통계적으로도 이게 옳다 —
+  #   추정 불확실성이 큰 구간에서 무개입(사전평균)으로 끌어당기는 것이 축소 추정의 정의다.
+  .n_min <- switch(.ov_kind,
+    "har_vol" = 48L, "ml_tail_gate" = 48L, "turbulence" = 36L, "ewma_vol" = 36L, 24L)
+  .n_floor <- 12L                              # 이 아래로는 표본이라 부르지 않는다
   for (t in seq_len(.N)) {
-    if (t < 60L) next                          # 추정 표본 부족 구간은 무개입(1)
+    if (t < .n_floor) next
     H <- .M[seq_len(t)]                        # ★확장창 = d 까지. 미래 행 접근 없음
     v_now <- H$rv60[t]
     tgt   <- stats::median(H$rv60, na.rm = TRUE)          # 목표 = 자기 이력 중앙 변동성
@@ -488,7 +499,8 @@ if (!identical(.ov_kind, "none")) {
       e <- ev * ed
 
     } else stop("[rf_cell_engine] overlay.kind 미지원: ", .ov_kind)
-    .expo[t] <- .clip(e)
+    .w <- min(1, t / .n_min)                   # 표본 축소 가중 — 절벽 없음
+    .expo[t] <- .clip(1 - .w * (1 - .clip(e)))
   }
 
   if (!exists("PORTFOLIO")) {                  # EW 셀은 FACTORS 만 있으므로 여기서 비중을 만든다
