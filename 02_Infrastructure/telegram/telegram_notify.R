@@ -1490,11 +1490,19 @@ tg_agent_brief <- function(agent,
       "지금 어디서 무엇을 돌고 있는지가 최상단에 없으면 연속성이 끊긴다."), agent))
   }
 
-  # ── 4. Width/bytes 사전 체크 (Telegram 4096 bytes 제한) ──────────────────────
+  # ── 4. 길이 사전 체크 (Telegram sendMessage 한계 = 4096 **자**) ──────────────
+  #   ★2026-08-30 단위 정정: 구판은 `nchar(type="bytes") > 4000` 으로 쟀다. 그런데
+  #   텔레그램 한계는 바이트가 아니라 **문자 수**다. 한글은 UTF-8 3바이트라 실제 여유가
+  #   3배쯤 남은 지점에서 경고가 울렸다 — 실측: 4,429바이트 메시지의 실제 길이는 약
+  #   1,476자로 한계의 37%였고 정상 발송(ok=TRUE)됐다. 상시 오탐인 경고는 사람이
+  #   무시하는 법을 배우게 하므로, 잴 것을 재도록 문자 수로 바꾼다.
+  #   바이트는 참고로만 병기한다(전송량 감각).
+  msg_chars <- nchar(msg, type = "chars")
   msg_bytes <- nchar(msg, type = "bytes")
-  if (msg_bytes > 4000) {
-    warning(sprintf("[tg_agent_brief] WARN msg %d bytes — close to 4096 Telegram limit. Consider shorter sections.",
-                    msg_bytes))
+  if (msg_chars > 3900) {
+    warning(sprintf(paste0("[tg_agent_brief] WARN msg %d자 (%d bytes) — Telegram 4096자 한계 근접. ",
+                           "섹션을 줄이거나 두 통으로 나눌 것."),
+                    msg_chars, msg_bytes))
   }
 
   # ── 4.5. Empty / Skeleton guard (v6 SOT, .TG_CONFIG 참조) ─────────────────
