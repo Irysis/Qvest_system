@@ -55,7 +55,27 @@ def RF(l):
     if not d: return "?"
     return str(sum(1 for e in (d.get("entries") or []) if (e.get("status") if isinstance(e,dict) else None)=="active"))
 dp=S(lambda: str(sum(1 for e in ((J("06_Registry/data_pipeline_queue.json") or {}).get("entries") or []) if (e.get("status") if isinstance(e,dict) else None)=="open")),"?")
-o.append("Queue: alpha-pending %s · %s | 강화 L1 %s·L2 %s active · data-pipe %s"%(q," / ".join(fq) if fq else "frontier open 0",RF(1),RF(2),dp))
+# ★무인 러너 핸드오프 노출 (2026-08-30) — cleaner 선례: 기계가 남긴 대기 상태를 부팅이 보여야
+#   세션이 소비한다. 텔레그램만 쓰면 놓쳤을 때 어디서도 안 보인다. 0 이면 표기하지 않는다(소음 방지).
+def PEND():
+    z=[]
+    r=J("06_Registry/replication_request.json")
+    if r and (r.get("status")=="pending"):
+        z.append("★충실구현 대기 1(%s)"%str(((r.get("paper") or {}).get("paper_title") or "?"))[:28])
+    aq=J("06_Registry/grade_a_queue.json")
+    na=sum(1 for e in ((aq or {}).get("entries") or []) if (e.get("status") if isinstance(e,dict) else None)=="awaiting_judge")
+    if na: z.append("★A등급 대기 %d(Judge/BOOK confirm)"%na)
+    cc=J("06_Registry/combination_candidates.json")
+    nc=len((cc or {}).get("candidates") or [])
+    if nc: z.append("결합후보 %d"%nc)
+    # 공리 리뷰(건식) 미소비 보고서 — 기계가 산출하고 세션이 판단한다(cleaner 선례).
+    #   반증 축적분은 자동 deprecate 되지 않는다(metric_type=estimated 는 human-review 강제).
+    rv=sorted(glob.glob(R("qepm","memory","axioms","review_log","dryrun","review_dryrun_*.json")))
+    if rv:
+        age=(time.time()-os.path.getmtime(rv[-1]))/86400.0
+        if age<=8: z.append("공리리뷰 %s(%.0f일)"%(os.path.basename(rv[-1])[14:22],age))
+    return (" | "+" · ".join(z)) if z else ""
+o.append("Queue: alpha-pending %s · %s | 강화 L1 %s·L2 %s active · data-pipe %s%s"%(q," / ".join(fq) if fq else "frontier open 0",RF(1),RF(2),dp,S(PEND,"")))
 # ③ Last — 최신 alpha-search L-code (다음 라운드의 출발점)
 g=sorted(glob.glob(R("stage_artifacts","l_code","alpha_search","l_code_*.json")),key=os.path.getmtime)
 c=(J(g[-1]) or {}) if g else {}
@@ -66,8 +86,13 @@ b=J("06_Registry/book/book_registry.json") or {}
 ents=[e for e in (b.get("entries") or []) if isinstance(e,dict)]
 act=[e for e in ents if e.get("status")=="active"]
 lt=act[-1] if act else None
-o.append("Book: %d entries (%d active)%s — book_registry.json 정본(writer 경유·도훈 confirm)"%(
+# ★리밸 사양 미작성 대기 (2026-08-30 도훈 지시 "등재되면 시그널 정도는") —
+#   등재만 되고 사양이 없으면 /book-rebalance 가 rc=2 로 막힌다. 그 사실이 리밸을
+#   시도할 때가 아니라 **부팅 때** 보여야 조용히 쌓이지 않는다. 사양이 생기면 자동 해소.
+pend=(J("06_Registry/pending_rebalance_specs.json") or {}).get("items") or []
+o.append("Book: %d entries (%d active)%s%s — book_registry.json 정본(writer 경유·도훈 confirm)"%(
     len(ents),len(act),
+    (" · ★리밸사양 미작성 %d(%s)"%(len(pend),",".join(str(x.get("book_id")) for x in pend[:3]))) if pend else "",
     (" · 최신 %s %s %s (트래킹 %s)"%(lt.get("book_id"),str(lt.get("strategy_id"))[:34],lt.get("grade"),
      str((lt.get("tracking") or {}).get("last_nav_date") or "미실행"))) if lt else ""))
 # ⑤ Alerts/Budget — digest 헤더 + v9 예산 4종

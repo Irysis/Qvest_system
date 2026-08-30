@@ -117,7 +117,55 @@ register_book_entry <- function(kind, strategy_id, layer, grade = "A",
   .bk_write(obj, root)
   cat(sprintf("[book_registry] 등록: %s = %s (%s · L%d · %s)\n",
               entry$book_id, strategy_id, kind, as.integer(layer), grade_basis))
+  .bk_signal_rebalance_spec(entry$book_id, strategy_id, root)
   invisible(entry)
+}
+
+#' 리밸 사양 미작성 신호 (도훈 지시 2026-08-30)
+#'
+#' **왜**: BOOK 등재와 리밸 사양(02_Infrastructure/book/rebalance_spec.json)은 따로 논다.
+#'   등재해도 사양이 없으면 `/book-rebalance` 사전점검이 rc=2 로 막지만, 그건 **리밸을
+#'   시도한 뒤에야** 드러난다. 등재 시점에 신호를 내지 않으면 "등재는 됐는데 돌릴 수 없는
+#'   전략"이 조용히 쌓인다. 전략마다 소비 데이터·오버레이 축이 달라 사양은 기계가 못 채운다
+#'   — 그래서 **자동 생성이 아니라 신호**다(도훈: "자동으로 스킬을 생성하라는 시그널 정도").
+#' **어디에 남기나**: 콘솔은 흘러가므로 `06_Registry/pending_rebalance_specs.json` 에
+#'   적재하고 부팅 Book 줄이 계속 보여준다. 사양이 생기면 다음 호출에서 자동으로 빠진다.
+.bk_signal_rebalance_spec <- function(book_id, strategy_id, root = .bk_root()) {
+  spec_path <- file.path(root, "02_Infrastructure", "book", "rebalance_spec.json")
+  pend_path <- file.path(root, "06_Registry", "pending_rebalance_specs.json")
+  have <- tryCatch({
+    s <- jsonlite::fromJSON(spec_path, simplifyVector = FALSE)
+    vapply(s$specs, function(x) as.character(x$book_id), character(1))
+  }, error = function(e) character(0))
+  if (book_id %in% have) return(invisible(FALSE))
+
+  cat(strrep("=", 78), "\n", sep = "")
+  cat(sprintf("★ 리밸 사양 필요 — %s (%s)\n", book_id, strategy_id))
+  cat("  BOOK 에 등재됐으나 리밸런싱 사양이 없다. 사양 없이는 /book-rebalance 가\n")
+  cat("  사전점검에서 rc=2 로 막는다(설계대로 — 표준화되지 않은 리밸을 돌리지 않는다).\n")
+  cat("  작성: 02_Infrastructure/book/rebalance_spec.json · 규약 = .claude/skills/book-rebalance/SKILL.md\n")
+  cat("  채울 것: runner(cmd·산출·게이트) · inputs(소비면 경로·mode·max_lag_days·refresh_owner)\n")
+  cat("           · overlays(panel·fire_expr·expect_alive) · post_checks\n")
+  cat("  ※ max_lag_days 와 오버레이 발화식은 **실측으로 재단**한다 — 기계가 못 채운다.\n")
+  cat(strrep("=", 78), "\n", sep = "")
+
+  pend <- tryCatch(jsonlite::fromJSON(pend_path, simplifyVector = FALSE),
+                   error = function(e) list(schema = "pending_rebalance_specs_v1", items = list()))
+  if (is.null(pend$items)) pend$items <- list()
+  seen <- vapply(pend$items, function(x) as.character(x$book_id), character(1))
+  if (!(book_id %in% seen)) {
+    pend$items[[length(pend$items) + 1L]] <- list(
+      book_id = book_id, strategy_id = strategy_id,
+      signaled_at = format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z"),
+      note = "리밸 사양 미작성 — rebalance_spec.json 에 추가하면 자동 해소")
+    pend$updated_at <- format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z")
+    tmp <- paste0(pend_path, ".tmp")
+    writeLines(jsonlite::toJSON(pend, auto_unbox = TRUE, pretty = TRUE), tmp, useBytes = TRUE)
+    if (file.exists(pend_path)) file.remove(pend_path)
+    file.rename(tmp, pend_path)
+    cat(sprintf("[book_registry] 대기 목록 적재: %s\n", pend_path))
+  }
+  invisible(TRUE)
 }
 
 #' 트래킹 결과 기록 (온디맨드 — /book 이 재실행한 최신 NAV 결과)
