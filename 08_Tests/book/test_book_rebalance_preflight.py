@@ -11,9 +11,12 @@
         (AE 침묵 재사용 병의 픽스처. 직전 달 행이 있어도 '신선'으로 읽으면 안 된다)
   ④ [위반 주입] anchor-mode 앵커가 기대 sig_date 와 다름 → BLOCK + STALE
   ⑤ [미측정 ≠ 미달] 파일 부재 → MISSING · 판독 불가 → UNREADABLE (OK 로 접지 않는다)
-  ⑥ [축 C] expect_alive 인데 0회 발화 → DEAD (m4 BOCPD 병의 픽스처)
-  ⑦ [축 C] expect_alive:false 인데 발화 → REVIVED (구판 회귀 감시)
+  ⑥ [축 C] expect_alive 인데 0회 발화 → DEAD **이고 BLOCK(rc 1)**. 죽은 축은 전략
+        구현이 덜 된 것이므로 넘어가지 않는다(도훈 지시 2026-08-30). 음성 대조 = 발화하면 GO.
+  ⑦ [축 C] expect_alive:false 인데 발화 → REVIVED + BLOCK (구판 회귀 감시)
   ⑧ [fail-closed] 사양에 없는 book_id → rc 2 (GO 로 접지 않는다)
+  ⑨ [경계] 낡은 입력의 안내가 **소관 이관**이지 적재 명령이 아니다 — 데이터 적재는
+        데이터 리프레시 쪽 소관이고 리밸 스킬은 쓰기만 한다.
 
 방식: 임시 루트에 픽스처를 깔고 QM_ROOT 로 검사기를 실제 실행한다(재구현 금지).
 실행: python 08_Tests/book/test_book_rebalance_preflight.py
@@ -65,7 +68,7 @@ def _wp(path, df):
 
 
 def build_root(tmp, *, data_max="2026-08-28", decision_rows=("2026-08-01", "2026-09-01"),
-               anchor=SIG_DATE, m4_dead=True, legacy_revived=False,
+               anchor=SIG_DATE, m4_dead=False, legacy_revived=False,
                drop=(), corrupt=()):
     """픽스처 루트. 인자를 바꿔 각 위반을 주입한다.
 
@@ -102,16 +105,16 @@ def build_root(tmp, *, data_max="2026-08-28", decision_rows=("2026-08-01", "2026
         "runner": {"cmd": "echo run {as_of}", "weights_out": "x", "manifest_out": "y"},
         "inputs": [
             {"id": "rawdata", "path": ".cache/RAWDATA.parquet", "date_col": "Date",
-             "mode": "data", "max_lag_days": 5, "producer": "p", "wired_in_runner": True,
-             "manual_cmd": "run_rawdata"},
+             "mode": "data", "max_lag_days": 5, "producer": "p",
+             "produced_by_runner": False, "refresh_owner": "테스트 적재소관"},
             {"id": "ae_panel", "path": "ae.parquet", "date_col": "decision_date",
-             "mode": "decision", "producer": "p", "wired_in_runner": True},
+             "mode": "decision", "producer": "p", "produced_by_runner": True},
             {"id": "m4_panel", "path": "m4.parquet", "date_col": "Date",
-             "mode": "decision", "producer": "p", "wired_in_runner": True},
+             "mode": "decision", "producer": "p", "produced_by_runner": True},
             {"id": "alpha_panel", "path": "alpha.parquet", "date_col": "Date",
-             "mode": "decision", "producer": "p", "wired_in_runner": True},
+             "mode": "decision", "producer": "p", "produced_by_runner": True},
             {"id": "factor_db", "path": ".cache/factor_db/factor_db_{sig_ym}.parquet",
-             "date_col": "Date", "mode": "anchor", "producer": "p", "wired_in_runner": True},
+             "date_col": "Date", "mode": "anchor", "producer": "p", "produced_by_runner": True},
         ],
         "overlays": [
             {"id": "m4_decay", "panel": "m4_panel", "date_col": "Date",
@@ -205,27 +208,40 @@ def main():
         else:
             ng(f"⑤ 파손 판정 오류: {verdict_of(p,'inputs','ae_panel')}")
 
-    # ⑥ 축 C — expect_alive 인데 0회 발화 → DEAD (BOCPD 병의 픽스처)
+    # ⑥ 축 C — expect_alive 인데 0회 발화 → DEAD **이고 차단**
+    #   (도훈 지시 2026-08-30: "죽은 축이 있으면 전략 구현이 제대로 안 된 거니까
+    #    넘어가지 말아야 해." 구판은 경고로 뒀고, 그게 m4 BOCPD 271개월 0회 발화를
+    #    '정상'으로 통과시킨 구조다. 판정만 재고 rc 를 안 재면 계약이 반쪽이다.)
     with tempfile.TemporaryDirectory() as t:
         rc, p = run(build_root(t, m4_dead=True))
-        if verdict_of(p, "overlays", "m4_decay") == "DEAD":
-            ok("⑥ 0회 발화 팔 → DEAD (경고 없음 ≠ 살아 있음)")
+        if verdict_of(p, "overlays", "m4_decay") == "DEAD" and rc == 1 and p.get("verdict") == "BLOCK":
+            ok("⑥ 0회 발화 팔 → DEAD + BLOCK (경고로 넘기지 않는다)")
         else:
-            ng(f"⑥ 죽은 팔을 못 잡음: {verdict_of(p,'overlays','m4_decay')}")
+            ng(f"⑥ 죽은 팔 처리 오류: verdict={verdict_of(p,'overlays','m4_decay')} rc={rc} 판정={p.get('verdict')}")
     with tempfile.TemporaryDirectory() as t:
         rc, p = run(build_root(t, m4_dead=False))
-        if verdict_of(p, "overlays", "m4_decay") == "OK":
-            ok("⑥ 발화하는 팔 → OK (음성 대조 — 살아 있으면 조용하다)")
+        if verdict_of(p, "overlays", "m4_decay") == "OK" and rc == 0:
+            ok("⑥ 발화하는 팔 → OK + GO (음성 대조 — 살아 있으면 막지 않는다)")
         else:
-            ng(f"⑥ 살아 있는 팔을 DEAD 로 오판: {verdict_of(p,'overlays','m4_decay')}")
+            ng(f"⑥ 살아 있는 팔을 막음: {verdict_of(p,'overlays','m4_decay')} rc={rc}")
 
-    # ⑦ 축 C — 죽어 있어야 할 구판 조건이 부활
+    # ⑦ 축 C — 죽어 있어야 할 구판 조건이 부활 → REVIVED **이고 차단**
     with tempfile.TemporaryDirectory() as t:
         rc, p = run(build_root(t, legacy_revived=True))
-        if verdict_of(p, "overlays", "legacy_guard") == "REVIVED":
-            ok("⑦ 구판 조건 부활 → REVIVED (회귀 감시 작동)")
+        if verdict_of(p, "overlays", "legacy_guard") == "REVIVED" and rc == 1:
+            ok("⑦ 구판 조건 부활 → REVIVED + BLOCK (회귀 감시가 차단까지 간다)")
         else:
-            ng(f"⑦ 부활을 못 잡음: {verdict_of(p,'overlays','legacy_guard')}")
+            ng(f"⑦ 부활 처리 오류: {verdict_of(p,'overlays','legacy_guard')} rc={rc}")
+
+    # ⑨ [경계] 낡은 입력의 안내가 **리프레시 명령이 아니라 소관 이관**인가
+    #   리밸 스킬이 적재 방법을 안내하면 경계가 무너지고 같은 값을 두 곳에서 만들게 된다.
+    with tempfile.TemporaryDirectory() as t:
+        rc, p = run(build_root(t, data_max="2026-07-10"))
+        rec = next((x for x in p.get("inputs", []) if x["id"] == "rawdata"), {})
+        if rec.get("refresh_owner") and "manual_cmd" not in rec:
+            ok("⑨ 낡은 입력은 refresh_owner 로 이관 (적재 명령을 안내하지 않는다)")
+        else:
+            ng(f"⑨ 경계 위반 — 리밸 스킬이 적재를 안내한다: {sorted(rec.keys())}")
 
     # ⑧ fail-closed — 사양에 없는 book_id
     with tempfile.TemporaryDirectory() as t:

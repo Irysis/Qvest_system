@@ -18,10 +18,22 @@ BOOK 전략마다 필요한 코드·데이터·오버레이가 다르다. 그런
   축 A. 신선도를 **소비면**에서 잰다 (원천 상태파일·mtime 아님. 실제로 읽히는 파케이의
         max(Date)). 미측정은 미달로 접지 않고 UNREADABLE 로 따로 보고한다 —
         '못 읽음'과 '낡음'이 같은 색이면 다음 사람이 원인을 게이트에서 찾는다.
-  축 B. 각 입력의 **생산자가 리밸 경로에 배선돼 있는지** 선언과 대조한다. 배선 없는
-        생산자는 사람이 기억해야 하고, 기억은 한 달을 못 간다.
+  축 B. 각 입력이 **러너 산출인지 외부 적재인지** 선언과 대조한다.
   축 C. 각 오버레이 팔의 **역사 발화율**을 센다. `expect_alive: true` 인데 0회면
         그 팔은 죽은 것이다 — 경고가 없다는 사실은 팔이 살아 있다는 증거가 아니다.
+
+★경계 (도훈 지시 2026-08-30): **데이터 적재는 이 스킬 소관이 아니다.**
+  QuantiWise/DART/MCP/API 적재는 데이터 리프레시 쪽이 소유한다 —
+  신선도 판정 정본 `02_Infrastructure/ops/morning_steps/freshness_audit.R`,
+  보장 진입점 `02_Infrastructure/ops/ensure_data_current.sh`.
+  여기서는 **전제 충족 여부만 재고, 미달이면 중단해 그쪽으로 넘긴다.**
+  리프레시 명령을 안내하거나 대신 실행하지 않는다(경계가 무너지면 같은 값을 두 곳에서
+  만들게 되고, 두 곳에서 만든 값은 반드시 갈라진다).
+
+★죽은 축은 차단이다 (같은 지시): "죽은 축이 있으면 전략 구현이 제대로 안 된 거니까
+  넘어가지 말아야 해." 경고로 두면 '오버레이가 있다'는 서술만 남고 실제 보호는 없는
+  전략이 배포된다. 알면서 두는 축은 사양에서 `expect_alive:false` 로 뒤집어 **회귀 감시**로
+  전환하고 사유를 남긴다 — 조용한 통과는 없다.
 
 ★fail-closed: 판정 불가는 통과가 아니다. 사양 부재·패널 판독 실패는 BLOCK 으로 센다.
 
@@ -79,10 +91,9 @@ def check_inputs(spec, ctx):
     for inp in spec["inputs"]:
         path = _fmt(ctx, inp["path"])
         rec = {"id": inp["id"], "path": path, "role": inp.get("role", ""),
-               "wired": bool(inp.get("wired_in_runner")),
+               "by_runner": bool(inp.get("produced_by_runner")),
                "producer": inp.get("producer", ""),
-               "manual_cmd": _fmt(ctx, inp.get("manual_cmd", "")) if inp.get("manual_cmd") else "",
-               "known_defect": inp.get("known_defect", "")}
+               "refresh_owner": inp.get("refresh_owner", "데이터 리프레시")}
         if not os.path.exists(path):
             rec.update(verdict="MISSING", detail="파일 부재")
             rows.append(rec); continue
@@ -190,8 +201,13 @@ def main() -> int:
     overlays = check_overlays(spec, ctx, panels)
 
     blocks = [r for r in inputs if r["verdict"] in ("STALE", "MISSING", "UNREADABLE")]
+    # ★죽은 축은 경고가 아니라 차단이다 (도훈 지시 2026-08-30):
+    #   "죽은 축 자체가 생기지 않도록 스킬로 구성하는 거야. 죽은 축이 있으면 전략 구현이
+    #    제대로 안 된 거니까 넘어가지 말아야 해."
+    #   구판은 이걸 경고로 뒀었다 — 그러면 '오버레이가 있다'는 서술만 남고 실제 보호는
+    #   없는 전략이 그대로 배포된다(m4 BOCPD 팔 271개월 0회 발화가 그 실례).
     dead = [r for r in overlays if r["verdict"] in ("DEAD", "REVIVED", "UNREADABLE")]
-    verdict = "GO" if not blocks else "BLOCK"
+    verdict = "GO" if not blocks and not dead else "BLOCK"
 
     if a.json:
         print(json.dumps({"book_id": a.book_id, "as_of": a.as_of, "verdict": verdict,
@@ -204,30 +220,39 @@ def main() -> int:
     print(f"\n-- 축 A/B: 입력 신선도(소비면) + 생산자 배선 --")
     for r in inputs:
         mark = {"OK": "OK  ", "STALE": "STALE", "MISSING": "MISS", "UNREADABLE": "UNRD"}[r["verdict"]]
-        wire = "배선O" if r["wired"] else "배선X"
-        print(f"  [{mark}] {r['id']:18s} {wire}  {r.get('detail','')}")
-        if r["verdict"] != "OK" and r.get("manual_cmd"):
-            print(f"          → 선행 실행: {r['manual_cmd']}")
-        if r["verdict"] != "OK" and r.get("known_defect"):
-            print(f"          ※ {r['known_defect']}")
+        src = "러너산출" if r["by_runner"] else "외부적재"
+        print(f"  [{mark}] {r['id']:18s} {src}  {r.get('detail','')}")
+        if r["verdict"] != "OK":
+            print(f"          → 이관: {r['refresh_owner']} 소관 (이 스킬은 적재하지 않는다)")
     print(f"\n-- 축 C: 오버레이 팔 생존 (역사 발화율) --")
     for r in overlays:
-        mark = {"OK": "OK  ", "DEAD": "DEAD", "REVIVED": "REVIV", "UNREADABLE": "UNRD"}[r["verdict"]]
+        # ★살아 있는 팔과 '죽은 채로 감시 중인 팔'을 같은 색으로 찍지 않는다.
+        #   둘 다 OK 로 보이면 "오버레이 7개 전부 정상"으로 읽히고, 그게 정확히
+        #   이 검사기가 막으려는 착시다(구현 안 된 축이 서술로만 남는 것).
+        if r["verdict"] == "OK" and not r["expect_alive"]:
+            mark = "감시"
+        else:
+            mark = {"OK": "OK  ", "DEAD": "DEAD", "REVIVED": "REVIV", "UNREADABLE": "UNRD"}[r["verdict"]]
         cur = {True: "발화", False: "미발화", None: "as_of행없음"}[r.get("at_as_of")]
         print(f"  [{mark}] {r['id']:22s} {r.get('detail','')}  · as_of {cur}")
-        if r["verdict"] != "OK" and r.get("note"):
+        if r.get("note") and (r["verdict"] != "OK" or not r["expect_alive"]):
             print(f"          ※ {r['note']}")
 
     print(f"\n===== 판정: {verdict} =====")
     if blocks:
-        print("  차단 사유(입력):")
+        print("  차단 — 입력 신선도:")
         for r in blocks:
-            print(f"    · {r['id']} — {r['detail']}")
-        print("  ★낡은 입력으로 리밸을 돌리지 않는다. 위 선행 실행 명령을 먼저 돌릴 것.")
+            print(f"    · {r['id']} ({r['refresh_owner']}) — {r['detail']}")
+        print("  ★낡은 데이터로 리밸을 돌리지 않는다. 적재는 **데이터 리프레시 소관**이다 —")
+        print("    보장 진입점 02_Infrastructure/ops/ensure_data_current.sh ·")
+        print("    신선도 정본 02_Infrastructure/ops/morning_steps/freshness_audit.R")
     if dead:
-        print("  ⚠오버레이 경고(차단 아님 — 사람 판단):")
+        print("  차단 — 오버레이 축:")
         for r in dead:
             print(f"    · {r['id']} — {r['detail']}")
+        print("  ★죽은 축은 전략 구현이 덜 된 것이다. 넘어가지 않는다.")
+        print("    알면서 두는 축이면 사양에서 expect_alive:false 로 뒤집어 회귀 감시로")
+        print("    전환하고 사유를 note 에 남길 것 — 조용히 통과시키지 않는다.")
     if verdict == "GO":
         print(f"  실행: {_fmt(ctx, spec['runner']['cmd'])}")
     return 0 if verdict == "GO" else 1

@@ -50,6 +50,21 @@ audits$regime_daily    <- check_freshness("regime_daily",    ".cache/unified_reg
 audits$benchmark       <- check_freshness("benchmark",       ".cache/benchmark.parquet",               "Date", 2)  # KOSPI200 종가
 audits$p3_forecast     <- check_freshness("p3_forecast",     "04_Research/decision_framework/bearish_forecast_v3/03_models/daily_predictions/P3_daily.parquet", "Date", 3)
 
+# ── 전략 소비 패널 (2026-08-30 도훈 지시로 편입) ──────────────────────────────
+#   왜 여기인가: "데이터 리프레시는 리밸런싱 스킬이 아니라 **데이터 리프레시 쪽에서
+#   관리해야 할 이슈**" — 적재(QuantiWise/DART/MCP/API)의 신선도 소유권은 이 감사기에 있다.
+#   리밸런싱은 그 데이터를 *쓰는* 쪽이고, 낡으면 여기로 넘긴다(자기가 고치지 않는다).
+#   ★그동안 이 6종이 감사 밖이었다 — 2026-08-30 실사고: QuantiWise 다운로드는 성공했는데
+#     적재가 안 돼 consensus/universe_support/investor_act 가 2026-07-24 에 한 달 정지했고,
+#     Gate A(원천 상태파일)와 Gate B(팩터DB 앵커)가 **둘 다 통과**했다. 앵커는 신선한
+#     주가 축이 채우기 때문이다. 감사 목록에 없으면 아무도 안 잰다.
+#   ★max_lag 는 소스 성격으로 재단한다 — 일간(2~3) / 월간 스냅샷(40) / 주간계열 포함(14).
+audits$rawdata          <- check_freshness("rawdata",          ".cache/RAWDATA.parquet",                    "Date", 3)   # 주가 패널(전략 종목선정·유동성)
+audits$consensus        <- check_freshness("consensus",        ".cache/consensus/eps_1y.parquet",           "Date", 10)  # 컨센서스 축(QW 적재)
+audits$investor_act     <- check_freshness("investor_act",     ".cache/investor_stock/investor_all.parquet", "Date", 10)  # 수급 축(QW 적재)
+audits$universe_support <- check_freshness("universe_support", ".cache/universe_support/us_k200.parquet",   "Date", 40)  # K200∪KQ150 월간 스냅샷
+audits$fred_wide        <- check_freshness("fred_wide",        ".cache/fred_macro_wide.parquet",            "Date", 14)  # AE 오버레이 입력(주간계열 포함)
+
 cat("=== Freshness Audit ===\n")
 stale_items <- c()
 for (a in audits) {
