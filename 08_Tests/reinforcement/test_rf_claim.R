@@ -69,6 +69,15 @@ if (isTRUE(e3$ok) && grepl("해제 표식", e3$note %||% "")) {
   ok("해제 표식 → 나이 무관 즉시 회수")
 } else ng("해제 표식 무시", paste(e3$reason, e3$note))
 
+# ★제자리 인수 — 디렉터리를 못 지우는 환경에서도 회수되는가(2026-08-30 halt_claim_race 실사고)
+reset(); dir.create(P, recursive = TRUE)
+Sys.setFileTime(P, Sys.time() - 300)
+e4 <- rf_claim_acquire(P, stale_hours = 999)
+o4 <- tryCatch(jsonlite::fromJSON(file.path(P, "owner.json"), simplifyVector = TRUE), error = function(z) NULL)
+if (isTRUE(e4$ok) && dir.exists(P) && !is.null(o4) && identical(as.integer(o4$pid), as.integer(Sys.getpid()))) {
+  ok("고아를 지우지 않고 제자리 인수(owner.json 이 소유권 정의)")
+} else ng("제자리 인수 실패", paste(e4$reason, "| owner", if (is.null(o4)) "NA" else o4$pid))
+
 writeLines("=== 해제 ===")
 r <- rf_claim_release(P)
 if (isTRUE(r$ok) && !dir.exists(P)) ok("해제 → 디렉터리 제거") else ng("해제 실패", r$reason)

@@ -35,6 +35,26 @@ rf_claim_pid_alive <- function(pid) {
 #'   reason: acquired | claimed | race
 rf_claim_acquire <- function(claim, stale_hours = 6) {
   note <- ""
+  .take <- function(why) {
+    # ★제자리 인수 — 디렉터리를 지우지 않는다. 2026-08-30 실측: 고아를 회수하려고 unlink 한 뒤
+    #   dir.create 가 실패해(같은 지울 수 없는 디렉터리) halt_claim_race 로 튕겼다. 삭제에 성공해야만
+    #   회수되는 설계는 삭제가 실패하는 환경에서 자가회수를 통째로 무력화한다.
+    #   소유권의 정의를 "디렉터리 존재" 에서 **owner.json 내용**으로 옮긴다.
+    unlink(file.path(claim, "released.json"))
+    ok <- tryCatch({ writeLines(jsonlite::toJSON(list(
+        pid = Sys.getpid(), started_at = format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z"),
+        host = Sys.info()[["nodename"]]), auto_unbox = TRUE), file.path(claim, "owner.json")); TRUE },
+      error = function(e) FALSE)
+    if (!ok) return(list(ok = FALSE, reason = "owner_write_failed", age_h = NA_real_,
+                         owner_pid = NA_integer_, note = ""))
+    # 경합 확인 — 쓴 직후 되읽어 내 pid 가 맞는지 본다(둘이 동시에 고아 판정했을 수 있다)
+    o2 <- tryCatch(jsonlite::fromJSON(file.path(claim, "owner.json"), simplifyVector = TRUE),
+                   error = function(e) NULL)
+    if (is.null(o2) || !identical(as.integer(o2$pid %||% NA), as.integer(Sys.getpid())))
+      return(list(ok = FALSE, reason = "race", age_h = NA_real_, owner_pid = NA_integer_, note = ""))
+    list(ok = TRUE, reason = "acquired", age_h = NA_real_, owner_pid = Sys.getpid(), note = why)
+  }
+
   if (dir.exists(claim)) {
     age_h <- suppressWarnings(as.numeric(
       difftime(Sys.time(), file.info(claim)$mtime, units = "hours")))
@@ -46,23 +66,16 @@ rf_claim_acquire <- function(claim, stale_hours = 6) {
     } else NA_integer_
 
     if (file.exists(rp)) {
-      # 해제 표식 — 소유자가 끝났다고 남긴 것. 디렉터리가 안 지워졌을 뿐이다.
-      unlink(claim, recursive = TRUE)
-      note <- "해제 표식(released.json) 존재 — 즉시 회수"
+      return(.take("해제 표식(released.json) 존재 — 제자리 인수"))
     } else if (is.na(pid) && is.finite(age_h) && age_h * 3600 > 60) {
-      # ★빈 고아(2026-08-30 실측): unlink 이 owner.json 은 지우고 디렉터리는 못 지웠다.
-      #   그러면 후속 실행이 소유자를 못 읽어 6시간 폴백으로 떨어진다 — pid 수리가 이 경우를
-      #   못 덮었다. 소유자를 주장하는 자가 없는 claim 은 claim 이 아니다.
-      #   60초 유예 = dir.create 와 owner.json 기록 사이의 창(밀리초)을 넉넉히 덮는다.
-      unlink(claim, recursive = TRUE)
-      note <- sprintf("owner.json 부재 + %.0f초 경과 — 빈 고아로 회수", age_h * 3600)
+      # 빈 고아: unlink 이 owner.json 만 지우고 디렉터리를 남긴 경우. 60초 유예는
+      # dir.create 와 owner 기록 사이의 밀리초 경합 창을 덮는다.
+      return(.take(sprintf("owner.json 부재 + %.0f초 경과 — 빈 고아 제자리 인수", age_h * 3600)))
     } else if (!is.na(pid) && !rf_claim_pid_alive(pid)) {
-      unlink(claim, recursive = TRUE)
-      note <- sprintf("owner pid %d 사망 — 나이(%s h) 무관 즉시 회수", pid,
-                      if (is.finite(age_h)) sprintf("%.2f", age_h) else "?")
+      return(.take(sprintf("owner pid %d 사망 — 나이(%s h) 무관 제자리 인수", pid,
+                           if (is.finite(age_h)) sprintf("%.2f", age_h) else "?")))
     } else if (is.finite(age_h) && age_h > stale_hours) {
-      unlink(claim, recursive = TRUE)
-      note <- sprintf("나이 %.2f h > 상한 %.2f h — 시간 폴백 회수", age_h, stale_hours)
+      return(.take(sprintf("나이 %.2f h > 상한 %.2f h — 시간 폴백 인수", age_h, stale_hours)))
     } else {
       return(list(ok = FALSE, reason = "claimed", age_h = age_h, owner_pid = pid, note = ""))
     }
