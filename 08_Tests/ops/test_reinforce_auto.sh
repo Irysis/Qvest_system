@@ -430,6 +430,22 @@ else
   ng "승격 판정" "$(echo "$PROMO" | grep FAIL | head -1)"
 fi
 
+echo "=== 22. claim 소유권 (양방향) ==="
+# 고아 claim 은 **정상 대기와 로그가 같다**(halt_claimed 반복) — 2026-08-30 에 두 번,
+# 각각 최대 6시간씩 무인 루프를 조용히 세웠다. 회귀해도 조용하므로 검사로 박아둔다.
+if grep -q "rf_claim_acquire" 02_Infrastructure/ops/reinforce_auto_parallel.R && grep -q "rf_claim_acquire" 02_Infrastructure/ops/reinforce_auto_run.R; then
+  ok "러너 2종이 claim 헬퍼 경유"
+else ng "claim 인라인" "고아 회수가 시간 폴백(6h)으로만 남는다"; fi
+if grep -q "claim_release_failed" 02_Infrastructure/ops/reinforce_auto_parallel.R; then
+  ok "해제 실패를 조용히 넘기지 않는다"
+else ng "해제 실패 무기록" "고아가 생겨도 로그에 흔적이 없다"; fi
+CLM=$(Rscript 08_Tests/reinforcement/test_rf_claim.R 2>&1); CRC=$?
+if [ "$CRC" -eq 0 ]; then
+  ok "claim 소유권 양방향 — $(echo "$CLM" | tail -1)"
+else
+  ng "claim 소유권" "$(echo "$CLM" | grep FAIL | head -1)"
+fi
+
 echo
 printf '합계: 통과 %d · 실패 %d\n' "$PASS" "$FAIL"
 [ "$FAIL" -eq 0 ] || exit 1

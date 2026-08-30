@@ -73,12 +73,18 @@ if (file.exists(LOG_P)) {
 
 # ── 1. claim mutex (dir.create 원자성 + stale 재점유) ─────────────────────────
 STALE_H <- as.numeric(CFG$claim_stale_hours %||% 6)
-if (dir.exists(CLAIM)) {
-  age_h <- as.numeric(difftime(Sys.time(), file.info(CLAIM)$mtime, units = "hours"))
-  if (is.finite(age_h) && age_h > STALE_H) { unlink(CLAIM, recursive = TRUE); jlog("claim_stale_reclaim", age_h = round(age_h, 2)) }
-  else { jlog("halt_claimed", age_h = round(age_h %||% NA, 2)); quit(status = 0) }
+# ★claim 획득·해제는 rf_claim.R 하나. 2026-08-30 실사고 2회 — 배치 종료 후 unlink 이 조용히
+#   실패해 빈 claim 이 남았고, 그러면 stale_hours(6h) 가 찰 때까지 전 tick 이 halt_claimed 로
+#   물러난다. 그 로그는 **정상 대기와 글자 그대로 같아서** 아무도 못 본다(부팅 때 본 1.5h 공백).
+#   그래서 owner.json(pid) 을 남기고, 다음 실행이 그 pid 사망을 보면 나이 무관 즉시 회수한다.
+suppressMessages(source(file.path(ROOT, "02_Infrastructure/ops/rf_claim.R")))
+.ac <- rf_claim_acquire(CLAIM, stale_hours = STALE_H)
+if (!isTRUE(.ac$ok)) {
+  if (identical(.ac$reason, "race")) jlog("halt_claim_race")
+  else jlog("halt_claimed", age_h = round(.ac$age_h %||% NA_real_, 2), owner_pid = .ac$owner_pid %||% NA)
+  quit(status = 0)
 }
-if (!dir.create(CLAIM, showWarnings = FALSE)) { jlog("halt_claim_race"); quit(status = 0) }
+if (nzchar(.ac$note %||% "")) jlog("claim_stale_reclaim", note = .ac$note)
 on.exit(unlink(CLAIM, recursive = TRUE), add = TRUE)   # ★최상위 on.exit 은 no-op이므로 아래 main() 안에서도 정리한다
 
 main <- function() {
@@ -314,5 +320,7 @@ invisible(0L)
 }
 
 rc <- tryCatch(main(), error = function(e) { jlog("fatal", err = conditionMessage(e)); 1L })
-unlink(CLAIM, recursive = TRUE)
+.rel <- rf_claim_release(CLAIM)
+if (!isTRUE(.rel$ok)) jlog("claim_release_failed", reason = .rel$reason,
+     note = "고아 claim 이 남았다 — owner.json 의 pid 가 죽으면 다음 tick 이 즉시 회수한다")
 quit(status = if (is.numeric(rc)) as.integer(rc) else 0L)
