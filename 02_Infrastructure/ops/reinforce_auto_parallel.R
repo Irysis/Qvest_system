@@ -24,10 +24,16 @@ suppressMessages({ library(data.table); library(jsonlite) })
 
 ROOT <- Sys.getenv("QM_ROOT", "C:/Users/99922/OneDrive/Quant_Module_Moltbot")
 setwd(ROOT); Sys.setenv(QM_ROOT = ROOT, CLAUDE_PROJECT_DIR = ROOT)
-CFG_P  <- file.path(ROOT, "06_Registry/reinforce_auto_config.json")
+# ★검사가 격리 사본을 쓸 수 있게 — 공유 설정을 검사가 직접 만지면 그 창에 tick 이 끼어든다
+CFG_P  <- { .c <- Sys.getenv("QVEST_RF_CONFIG", "")
+            if (nzchar(.c) && file.exists(.c)) .c
+            else file.path(ROOT, "06_Registry/reinforce_auto_config.json") }
 PROG_P <- file.path(ROOT, "06_Registry/reinforce_program.json")
 LOG_P  <- file.path(ROOT, ".cache/reinforce_auto_log.jsonl")
-CLAIM  <- file.path(ROOT, ".cache/reinforce_auto.claim")
+# ★검사가 격리 사본을 쓸 수 있게 — 공유 claim 을 검사가 지우면 그 창에 tick 이 끼어들어
+#   살아있는 배치 옆에 둘째 배치가 뜼다(원장 경합). 설정 격리(QVEST_RF_CONFIG)와 같은 형태.
+CLAIM  <- { .cl <- Sys.getenv("QVEST_RF_CLAIM", "")
+           if (nzchar(.cl)) .cl else file.path(ROOT, ".cache/reinforce_auto.claim") }
 WDIR   <- file.path(ROOT, ".cache/rf_parallel")
 dir.create(dirname(LOG_P), recursive = TRUE, showWarnings = FALSE)
 dir.create(WDIR, recursive = TRUE, showWarnings = FALSE)
@@ -141,7 +147,12 @@ if (length(pending)) {
 # ── ① 사전 등록 (순차 — 원장 단독 접근). 재개분이 있으면 건너뛴다 ────────────
 if (!length(jobs)) for (CELL in batch) {
   SPEC <- list(code = CELL$code, label = CELL$label, block = CELL$block,
-               fixed_axes = PROG$fixed_axes, base_signal = list(kind = "mom_12_1"),
+               fixed_axes = PROG$fixed_axes,
+               # ★기저 신호는 원장의 충실구현 engine_path 에서 물려받는다 — 논문이 바뀌면 기저도 바뀐다.
+               #   경로가 없거나 파일이 없으면 mom_12_1 로 떨어진다(구 entry 하위호환).
+               base_signal = { .ep <- E$engine_path %||% ""
+                 if (nzchar(.ep) && file.exists(.ep)) list(kind = "engine", path = .ep)
+                 else list(kind = "mom_12_1") },
                factor2 = CELL$factor2 %||% w1$factor2,
                weighting = CELL$weighting %||% list(kind = "ew"),
                universe = CELL$universe %||% list(kind = "k200_kq150"))
@@ -151,6 +162,19 @@ if (!length(jobs)) for (CELL in batch) {
     SPEC$factor2   <- if ("B1" %in% use) w1$factor2 else list(kind = "none")
     SPEC$weighting <- if ("B2" %in% use && !is.null(w2)) (w2$weighting %||% list(kind="ew")) else list(kind = "ew")
     SPEC$universe  <- if ("B3" %in% use && !is.null(w3)) (w3$universe  %||% list(kind="k200_kq150")) else list(kind = "k200_kq150")
+    # ★3팩터 확장 — factor3_rank 가 있으면 B1 그 순위 팩터를 셋째로 얹는다(등가중)
+    f3r <- suppressWarnings(as.integer(CELL$combo$factor3_rank %||% NA))
+    if (!is.na(f3r)) {
+      b1x <- Filter(function(a) { cd <- a$essence$cell_code
+        !is.null(a$essence) && !is.null(cd) && startsWith(cd, "B1_") }, E$attempts)
+      vx <- vapply(b1x, function(a) .metric(a, "port_t"), numeric(1))
+      ox <- order(replace(vx, !is.finite(vx), -Inf), decreasing = TRUE)
+      if (length(ox) >= f3r) {
+        a3 <- .cell_by_code(b1x[[ox[f3r]]]$essence$cell_code)
+        if (!is.null(a3$factor2)) { SPEC$factor3 <- a3$factor2
+          jlog("b4_factor3", rank = f3r, code = a3$code, f3 = a3$factor2$id) }
+      }
+    }
     fr <- suppressWarnings(as.integer(CELL$combo$factor2_rank %||% NA))
     if (!is.na(fr) && fr >= 2L) {
       b1 <- Filter(function(a) { cd <- a$essence$cell_code
@@ -160,6 +184,23 @@ if (!length(jobs)) for (CELL in batch) {
       if (length(ord) >= fr) { alt <- .cell_by_code(b1[[ord[fr]]]$essence$cell_code)
         if (!is.null(alt$factor2)) { SPEC$factor2 <- alt$factor2; jlog("b4_alt_factor", rank = fr, code = alt$code) } }
     }
+  }
+  # ── ★승격 entry 의 carry 병합 (도훈 지시 2026-08-30 "B등급 이상 추가 강화") ──
+  #   승격은 B+ 를 낸 승자 구성을 **기저로 물려받아** 그 위에서 20칸을 다시 탐색한다.
+  #   기저 신호(engine_path)는 그대로다 — 바뀌는 것은 그 위에 깔린 팩터·비중·유니버스다.
+  #   축 소유권: 자기 축을 탐색하는 블록은 carry 를 덮는다(B2=비중 · B3=유니버스),
+  #   B4 는 **이 entry 안의 승자**를 조합하는 블록이라 carry 가 그 선택을 덮지 않는다.
+  if (!is.null(E$carry)) {
+    .cur <- SPEC$factors
+    if (is.null(.cur)) {
+      .cur <- list()
+      if (!is.null(SPEC$factor2) && !identical(SPEC$factor2$kind, "none")) .cur <- c(.cur, list(SPEC$factor2))
+      if (!is.null(SPEC$factor3)) .cur <- c(.cur, list(SPEC$factor3))
+    }
+    SPEC$factors <- c(E$carry$factors %||% list(), .cur)
+    SPEC$factor2 <- NULL; SPEC$factor3 <- NULL
+    if (!(CELL$block %in% c("B2", "B4")) && !is.null(E$carry$weighting)) SPEC$weighting <- E$carry$weighting
+    if (!(CELL$block %in% c("B3", "B4")) && !is.null(E$carry$universe))  SPEC$universe  <- E$carry$universe
   }
   rp <- CELL$root_paper %||% w1$root_paper
   SPEC$root_paper <- rp

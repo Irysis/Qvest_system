@@ -88,9 +88,15 @@ rf_load <- function(layer, root = .rf_root()) {
 }
 
 #' 강화 대상 등록 (충실구현/로테이션 라운드가 A 미달로 끝났을 때)
+#' @param carry  승격 entry 전용 — 부모의 승자 구성(factors/weighting/universe).
+#'   러너가 매 셀 스펙에 이것을 먼저 깔고 그 위에 격자 축을 얹는다.
+#' @param parent 승격 계보(부모 base_id · 승자 셀 · 그 때 port_t · 깊이).
+#' @param count_paper 논문 소비 카운터를 올릴지. ★승격은 새 논문이 아니다 — FALSE 로 부른다.
+#'   (TRUE 로 두면 결합 검토 3편 주기가 승격 횟수만큼 앞당겨져 검토 대상이 헛돈다)
 rf_open_entry <- function(layer, base_id, base_grade,
                           paper_key = "", paper_id = "",
                           base_artifacts = "", engine_path = "",
+                          carry = NULL, parent = NULL, count_paper = TRUE,
                           root = .rf_root()) {
   obj <- rf_load(layer, root)
   i <- .rf_find(obj, base_id)
@@ -108,9 +114,11 @@ rf_open_entry <- function(layer, base_id, base_grade,
     judge = list(spawned = FALSE, verdict_path = NULL),
     opened_at = format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z")
   )
+  if (!is.null(carry))  entry$carry  <- carry
+  if (!is.null(parent)) entry$parent <- parent
   obj$entries[[length(obj$entries) + 1L]] <- entry
   # 1계층: 논문 소비 카운터 +1 → 3편마다 결합 검토 플래그
-  if (layer == 1L) {
+  if (layer == 1L && isTRUE(count_paper)) {
     n <- as.integer(obj$combination_review$papers_since_last_review %||% 0L) + 1L
     obj$combination_review$papers_since_last_review <- n
     if (n >= 3L)

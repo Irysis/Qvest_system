@@ -33,10 +33,16 @@ setwd(ROOT); Sys.setenv(QM_ROOT = ROOT, CLAUDE_PROJECT_DIR = ROOT)
 # ★강화 셀은 원장 entry 를 새로 열지 않는다 (자기증식 차단)
 Sys.setenv(QVEST_NO_LEDGER_OPEN = "1")
 
-CFG_P  <- file.path(ROOT, "06_Registry/reinforce_auto_config.json")
+# ★검사가 격리 사본을 쓸 수 있게 — 공유 설정을 검사가 직접 만지면 그 창에 tick 이 끼어든다
+CFG_P  <- { .c <- Sys.getenv("QVEST_RF_CONFIG", "")
+            if (nzchar(.c) && file.exists(.c)) .c
+            else file.path(ROOT, "06_Registry/reinforce_auto_config.json") }
 PROG_P <- file.path(ROOT, "06_Registry/reinforce_program.json")
 LOG_P  <- file.path(ROOT, ".cache/reinforce_auto_log.jsonl")
-CLAIM  <- file.path(ROOT, ".cache/reinforce_auto.claim")
+# ★검사가 격리 사본을 쓸 수 있게 — 공유 claim 을 검사가 지우면 그 창에 tick 이 끼어들어
+#   살아있는 배치 옆에 둘째 배치가 뜼다(원장 경합). 설정 격리(QVEST_RF_CONFIG)와 같은 형태.
+CLAIM  <- { .cl <- Sys.getenv("QVEST_RF_CLAIM", "")
+           if (nzchar(.cl)) .cl else file.path(ROOT, ".cache/reinforce_auto.claim") }
 dir.create(dirname(LOG_P), recursive = TRUE, showWarnings = FALSE)
 
 jlog <- function(event, ...) {
@@ -149,7 +155,11 @@ if (!identical(CELL$block, "B1") && is.null(w1)) {
 
 SPEC <- list(code = CELL$code, label = CELL$label, block = CELL$block,
              fixed_axes = PROG$fixed_axes,
-             base_signal = list(kind = "mom_12_1"),
+             # ★기저 신호는 원장의 충실구현 engine_path 에서 물려받는다 — 논문이 바뀌면 기저도 바뀐다.
+             #   경로가 없거나 파일이 없으면 mom_12_1 로 떨어진다(구 entry 하위호환).
+             base_signal = { .ep <- E$engine_path %||% ""
+               if (nzchar(.ep) && file.exists(.ep)) list(kind = "engine", path = .ep)
+               else list(kind = "mom_12_1") },
              factor2  = CELL$factor2  %||% w1$factor2,
              weighting = CELL$weighting %||% list(kind = "ew"),
              universe = CELL$universe %||% list(kind = "k200_kq150"))
@@ -182,6 +192,23 @@ SPEC_P <- file.path(ROOT, ".cache", sprintf("rf_cell_spec_%s.json", CELL$code))
 write(toJSON(SPEC, auto_unbox = TRUE, pretty = TRUE, null = "null"), SPEC_P)
 
 # ── 5. 사전 등록 (원장이 근거 논문을 기계 강제한다) ───────────────────────────
+# ── ★승격 entry 의 carry 병합 (도훈 지시 2026-08-30 "B등급 이상 추가 강화") ──
+#   승격은 B+ 를 낸 승자 구성을 **기저로 물려받아** 그 위에서 20칸을 다시 탐색한다.
+#   기저 신호(engine_path)는 그대로다 — 바뀌는 것은 그 위에 깔린 팩터·비중·유니버스다.
+#   축 소유권: 자기 축을 탐색하는 블록은 carry 를 덮는다(B2=비중 · B3=유니버스),
+#   B4 는 **이 entry 안의 승자**를 조합하는 블록이라 carry 가 그 선택을 덮지 않는다.
+if (!is.null(E$carry)) {
+  .cur <- SPEC$factors
+  if (is.null(.cur)) {
+    .cur <- list()
+    if (!is.null(SPEC$factor2) && !identical(SPEC$factor2$kind, "none")) .cur <- c(.cur, list(SPEC$factor2))
+    if (!is.null(SPEC$factor3)) .cur <- c(.cur, list(SPEC$factor3))
+  }
+  SPEC$factors <- c(E$carry$factors %||% list(), .cur)
+  SPEC$factor2 <- NULL; SPEC$factor3 <- NULL
+  if (!(CELL$block %in% c("B2", "B4")) && !is.null(E$carry$weighting)) SPEC$weighting <- E$carry$weighting
+  if (!(CELL$block %in% c("B3", "B4")) && !is.null(E$carry$universe))  SPEC$universe  <- E$carry$universe
+}
 rp <- CELL$root_paper %||% w1$root_paper
 idea <- sprintf("[무인 규칙강화 %s] %s — 격자 %s/%s · factor2=%s · weighting=%s · universe=%s. %s",
                 CELL$code, CELL$label, CELL$block, CELL$axis,

@@ -1,0 +1,61 @@
+{
+ "schema": "reinforce_auto_config_v1",
+ "enabled": true,
+ "note": "강화 무인 러너 kill switch. enabled=false 면 reinforce_auto_run.R / _next_paper.R 가 즉시 정지한다. ★도훈 지시 2026-08-30 '모든 작업을 무인화' 로 v10 의 '무인은 수집까지' 경계가 해제됐다. 단 무인 개시는 **규칙 개시**다 — 셀은 reinforce_program.json 격자에서 나오고 엔진은 rf_cell_engine.R 하나이며 러너는 코드를 생성하지 않는다. LLM 무인 개시가 아니다.",
+ "daily_cap": 20,
+ "claim_stale_hours": 6,
+ "halt_on": {
+  "queue_empty": "논문 큐가 비면 무동작(정지 아님) — 수집이 채우면 재개",
+  "replication_pending": "충실구현은 논문 원문 판독이 필요해 규칙으로 환원되지 않는다 — 세션이 착수해야 다음 강화가 돈다",
+  "block_boundary": "병렬은 **같은 블록 안에서만** 묶는다 — B2/B3 는 B1 승자 위에, B4 는 B1~B3 승자 위에 서므로 승자 확정 전에 다음 블록을 띄우면 결정되지 않은 값 위에서 측정하게 된다(2026-08-30 '공허한 LOO' 사고의 병렬판)."
+ },
+ "boundaries": [
+  "book_state / 05_Production 미접근",
+  "쓰기 = 원장·로그·stage_artifacts 만",
+  "PIT C1~C15 는 엔진·계약이 강제",
+  "등급 = authoritative_remeasure.json 만 인용(손계산 금지)",
+  "병렬 시 원장 쓰기는 실행에서 분리 — 등록(순차) → 실행(병렬·원장 미접근) → 수집(순차)",
+  "Grade A 는 큐 적재 + 알림까지. 자동 BOOK 등재 없음 — 그 관문만 사람이 지킨다",
+  "결합 검토는 논문 3편마다 자동 실행(rf_combination_review) — 후보 제시까지. 결합 라운드 착수는 세션",
+  "무인 충실구현은 engine.R 만 생성 — 등급은 계약이 낸다(AX-008). 검증 실패 시 원장 미개설"
+ ],
+ "mode": "parallel",
+ "parallel_cells": 5,
+ "worker_timeout_sec": 5400,
+ "continue_on": {
+  "grade_a": "★도훈 지시 2026-08-30 'A등급 달성하더라도 리서치가 이어지게'. Grade A 는 **리서치를 멈추지 않는다** — 06_Registry/grade_a_queue.json 에 쌓이고 judge_request.json 이 발행되며 텔레그램이 즉시 나가되, 남은 칸·다음 논문은 그대로 진행한다. 리서치 루프와 BOOK 등재 관문은 다른 층이다. ★불변: BOOK 등재는 Judge(PIT) + 도훈 confirm — 자동 등재 없음(헌법).",
+  "axiom_activation": "★도훈 지시 2026-08-30 \"활성화까지도 무인화\". 사전 승인(opt-in) → 자동 활성화 + 사후 검토(opt-out). 기계 승인 게이트는 refine_statement.R 의 R0~R6 이 이미 담당한다(그 파일이 명시: \"사람 승인을 없애려면 승인이 하던 일을 기계가 해야 한다\"). 조건 3중: all_hurdles_pass ∧ needs_refinement=FALSE ∧ 활성 상한. ★초안(needs_refinement=TRUE)은 절대 활성화하지 않는다 — 클러스터 메타데이터가 대전제로 박힌다. 되돌리기 = deactivate_axiom / rollback_axiom (텔레그램 본문에 항상 포함).",
+  "paper_replication": "★도훈 지시 2026-08-30 '논문 충실구현도 무인으로 바로 실행'. cleaner 선례의 '무인 LLM 호출 배제' 경계를 도훈 명시 요청으로 넘는다. 리스크는 구조로 막는다: ①에이전트 산출은 engine.R 하나 — 측정·등급·PIT 는 계약 강제 ②권한 축소(Bash/Agent 금지 · 쓰기 디렉터리 한정) ③사후 검증 4관문(계약 산출물·고정축·PIT 구조·원장 개설) ④실패는 failed_needs_session 으로 기록하고 원장에 열지 않는다(조용한 통과 없음).",
+  "base_below_threshold": "★도훈 지시 2026-08-30 — 기저 PORT_t < 0 이면 강화 20칸을 생략하고 다음 논문으로 이월한다. 강화는 기저 신호 **위에** 팩터를 얹는 구조라 기저 알파가 음수면 무엇을 얹어도 헛돈다. 실측 근거: JT1993 은 기저 F 였으나 PORT_t 0.16(0 근처)이었고 거기서 12칸이 C 로 올라왔다. 반면 Lead-Lag 착안판은 -1.559 — '약하다' 가 아니라 '반대로 작동한다' 이다. ★측정과 기록은 남는다 — 생략은 포기가 아니라 예산 배분이다."
+ },
+ "combination_review_every": 3,
+ "axiom_max_active_per_mode": 6,
+ "axiom_max_active_total": 20,
+ "llm": {
+  "model": "opus",
+  "effort": "max",
+  "env_override": [
+   "QVEST_RP_MODEL",
+   "QVEST_RP_EFFORT"
+  ],
+  "rationale": "무인 루프 자체에는 LLM 이 없다(규칙 실행). LLM 이 남는 두 지점(충실구현·격자 제안)은 **깊이** 문제다 — 논문 하나를 정확히 읽고 기전을 이식할 수 있는지, 팩터 331종에서 5종을 왜 고르는지. 넓이(팬아웃)가 아니므로 울트라코드가 아니라 단일 에이전트 최대 노력이 맞다. 2026-08-29 실증: 최고 산출(sigma 허수 버그 적발·위기구간 폴백 51.5% 진단·Market 열 날조 발견)이 전부 깊은 프롬프트를 받은 단일 에이전트에서 나왔다. ★구판은 --model/--effort 미지정이라 CLI 기본값에 의존했다(도훈 지적)."
+ },
+ "base_min_port_t": 0,
+ "factor_analysis": {
+  "enabled": true,
+  "produces": [
+   "analysis_multifactor.csv (FF3/FF5/Carhart4)",
+   "analysis_fmb_summary.csv (Fama-MacBeth)",
+   "analysis_ic.csv",
+   "analysis_stress.csv",
+   "analysis_report.md"
+  ],
+  "producer": "02_Infrastructure/strategy_analyzer.R::run_analysis (재구현 아님 — 구 알파 서칭과 동일 함수)",
+  "consumer": "telegram_notify.R::tg_pass_analysis → [팩터 분석] 메시지",
+  "kill_switch": "QVEST_RP_NO_FACTOR_ANALYSIS=1",
+  "note": "★도훈 지시 2026-08-30 — 예전 알파 서칭의 FF3/FF5/Carhart4·Fama-MacBeth 포맷을 무인 경로에도. run_paper_replication 한 곳에 배선해 충실구현과 강화 셀 20칸이 함께 덮인다. FACTORS 가 NULL(PORTFOLIO 형 엔진)이면 IC·FMB 가 서지 않으므로 건너뛰되 사유를 로그에 남긴다."
+ },
+ "promote_min_grade": "B",
+ "promote_max_depth": 3,
+ "promote_note": "★도훈 지시 2026-08-30 'B등급 이상 전략에 대해 추가 강화프로세스'. 20칸 소진 시 승자가 B 이상이면 그 승자 구성(factors/weighting/universe)을 carry 로 물려 새 20칸 entry 를 열고, 다음 논문은 그 사슬이 끝난 뒤로 밀린다. 승계 조건 2중: ①부모 최고 PORT_t 초과(못 넘으면 같은 실패의 재생산) ②깊이 ≤ promote_max_depth(한 논문이 큐 예산을 무한히 먹지 않게). ★병렬 폭은 늘리지 않았다 — 실측상 RAM 이 제약(워커 1개 ≈ 3GB · 총 31.7GB)이라 다논문 병렬은 농도를 나누는 것이지 처리량을 늘리지 않는다(도훈 결정 2026-08-30: 현행 유지)."
+}
