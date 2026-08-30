@@ -94,17 +94,86 @@ dr_fail_summary() {
 }
 
 # ──────────────────────────────────────────────────────────────────────────────
-# [0] QuantiWise xlsx 증분 체크
-#     OHLCVS = 수정주가 → 전체 리빌드 + API 데이터 보존
-#     Consensus/Fundamental/Investor/Universe_Support = mtime 기반 증분
+# [0] QuantiWise 적재 — 2단 (2026-08-30 배선 수리)
+#
+# ★수리 배경 (실사고): 구판은 [0a] 하나만 불렀다. 그런데 qw_refresh.ps1 은
+#   03_Universe/**Update_File/**_update.xlsx 에 쓰고, [0a] 모듈은 **베이스** xlsx
+#   (03_Universe/Consensus.xlsx 등, 2026-06-08 이후 불변)의 mtime 만 본다.
+#   → 매일 "not newer — skip" 5줄만 찍고 **적재가 한 번도 일어나지 않았다**.
+#   실측: consensus/universe_support/investor_act 가 2026-07-24 에서 한 달 정지,
+#   그 상태로 9월 리밸이 돌아 20종 중 9종이 잘못 선택됐다.
+#   Update_File 을 읽는 모듈은 **이름이 같은 다른 파일**(incremental_update_file.R)이고
+#   정규 경로에 배선돼 있지 않았다(마지막 실행 = 2026-07-25 수동 d1_* 스크립트).
+#
+# ★두 모듈은 의미가 다르다 — 둘 다 필요하고, 순서가 있다:
+#   [0a] incremental_cache_update.R  = **베이스 교체 시 전체 재빌드** (드묾).
+#        QuantiWise 에서 베이스 xlsx 를 새로 받아 갈아끼웠을 때만 발화한다.
+#   [0b] incremental_update_file.R   = **일상 자동확장** (Update_File → parquet append).
+#        데이터가 쌓일 때마다 늘어나야 하는 정상 경로. 이것이 빠져 있었다.
+#   순서 = 베이스 재빌드 먼저, 그 위에 증분을 얹는다. 뒤집으면 증분이 지워진다.
+#
+# ★두 모듈은 incremental_update_all/consensus/investor/universe_support 를 **같은
+#   이름으로** export 한다(사고 원인). run_r 은 호출마다 새 R 프로세스라 shadowing 이
+#   없지만, 한 세션에서 둘을 source 하면 조용히 덮인다 — 아래 두 블록을 합치지 말 것.
 # ──────────────────────────────────────────────────────────────────────────────
-echo "[0/7] QuantiWise xlsx update check..."
+echo "[0a/7] QuantiWise 베이스 xlsx 교체 검사 (전체 재빌드 경로)..."
 cd "$INFRA"
 run_r '
   source("config.R")
   source("data/incremental_cache_update.R")
   incremental_update_all()
 '
+
+echo "[0b/7] QuantiWise Update_File 자동확장 (증분 적재)..."
+cd "$INFRA"
+run_r '
+  source("config.R")
+  source("data/incremental_update_file.R")
+  incremental_update_all()
+'
+
+# ── [0c] 적재 검증 — "돌렸다"가 아니라 "늘었나"를 잰다 ────────────────────────
+#   구판에는 이 축이 아예 없었다. Gate A 는 **다운로드**(qw_refresh_state.json)만,
+#   Gate B 는 팩터DB **앵커**만 보는데 그 앵커는 신선한 주가 축이 채운다 — 그래서
+#   컨센서스가 한 달 멈춰도 둘 다 초록이었다.
+#   ★판정을 여기서 다시 구현하지 않는다(도훈 지적 2026-08-30 "검사기를 굳이 왜 만드나").
+#     신선도 정본은 morning_steps/freshness_audit.R 하나뿐이고, 전략 소비 패널 5종
+#     (rawdata·consensus·investor_act·universe_support·fred_wide)을 거기 등재했다.
+#     여기서는 그 감사기를 **호출하고 판정을 읽을 뿐**이다. 같은 값을 두 곳에서 만들면
+#     반드시 갈라진다 — ensure_data_current.sh 헤더가 적어둔 그 원칙이다.
+#   ★fail-soft: daily_refresh 는 브리핑·수집 체인이라 여기서 중단하면 무관한 하류가
+#     다 죽는다. DR_FAILED 에 실려 종료코드·요약에 반영되고, **리밸 경로는
+#     book_rebalance_preflight.py 가 같은 축을 fail-closed 로 다시 잰다**.
+echo "[0c/7] 적재 신선도 검증 (정본 감사기 경유)..."
+cd "$BASE"
+QVEST_FRESHNESS_QUIET=1 QM_ROOT="$BASE" "$RSCRIPT" --no-save \
+  "$INFRA/ops/morning_steps/freshness_audit.R" \
+  || echo "[0c] 감사기 rc!=0 — 판정은 아래 JSON 으로 읽는다"
+_FA_JSON="$BASE/qepm/observability/morning_freshness_latest.json"
+_FA_PY="$BASE/.venv_qvest_ml/Scripts/python.exe"
+if [ -x "$_FA_PY" ]; then
+  _FA_ST="$("$_FA_PY" - "$_FA_JSON" <<'PYEOF' 2>/dev/null
+import io, json, sys
+try:
+    o = json.load(io.open(sys.argv[1], encoding="utf-8-sig"))
+except Exception:
+    print("UNREADABLE"); raise SystemExit
+s = o.get("stale_items") or []
+print("OK" if not s else "STALE:" + ",".join(map(str, s)))
+PYEOF
+)"
+  case "$_FA_ST" in
+    OK) echo "[0c] 전 소스 FRESH — 소비면이 최신 거래일에 도달" ;;
+    STALE:*) echo "[0c] ★적재 미달: ${_FA_ST#STALE:} — 하류가 낡은 축을 쓴다"
+             DR_FAILED+=("ingest_freshness") ;;
+    *) echo "[0c] 감사 판정 판독 불가 — 미측정(미달로 접지 않는다)"
+       DR_FAILED+=("ingest_freshness:unreadable") ;;
+  esac
+else
+  echo "[0c] venv python 부재 — 판정 판독 생략(미측정)"
+  DR_FAILED+=("ingest_freshness:no_python")
+fi
+cd "$INFRA"
 
 # ──────────────────────────────────────────────────────────────────────────────
 # [1pre] Benchmark (KOSPI200) chart-API 단일 SOT — v8.0 fix (c) 2026-05-29

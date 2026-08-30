@@ -1207,6 +1207,12 @@ SUITES=(
   #   의 선삭제다. ★1급 축은 B1(구판이 부재 창을 실제로 연다)과 D2(선삭제 잔재 0).
   #   Python 측 대응 축은 test_benchmark_scale_seam.py ATOM-1~4 에 있다.
   "08_Tests/data/test_parquet_atomic_write.R"
+  # 2026-08-30 신설: QuantiWise 적재 자동확장 **배선**의 회귀 검사. qw_refresh 는
+  #   Update_File/ 에 쓰는데 daily_refresh 는 베이스 xlsx mtime 만 봐서 매일 "skip" 하고
+  #   적재가 한 달 멈췄다(consensus/universe/investor 2026-07-24 정지 → 9월 비중 20종 중
+  #   9종 오선택). 두 모듈이 같은 함수명을 export 하는 것이 직접 원인이라 순서·블록 분리도
+  #   함께 건다. ★신선도 판정은 재구현하지 않는다 — 정본 freshness_audit.R 호출 여부만 잰다.
+  "08_Tests/data/test_ingest_autoextend.py"
 )
 
 
