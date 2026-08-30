@@ -1,0 +1,94 @@
+{
+ "schema": "overlay_catalog_v1",
+ "note": "리스크 컨트롤 오버레이 등록부. ★격자가 방법을 갖지 않는다 — 격자는 축(B5)만 선언하고 칸의 내용은 여기서 규칙으로 뽑는다(rf_overlay_arms.R). 비중 카탈로그(weight_catalog)와 같은 형태이고, 이유도 같다: 방법을 격자에 박으면 그게 곧 방법론 고정이고, 새 방법이 생겨도 아무도 안 쓴다. ★근거는 논문이 아니라 method(통계/수리/ML) — 원장이 risk_overlay 축에 한해 그것을 받는다. ★임의 상수 금지: 모든 팔의 목표·문턱·계수는 그 시점까지의 확장창에서 추정한다(PIT).",
+ "families": {
+  "drawdown": "낙폭 상태에 직접 반응 — 구속 축(MDD)을 정면으로 겨눈다",
+  "combo": "두 축의 곱 — 서로 다른 국면을 겨누는 팔의 결합",
+  "state_multivar": "시장 상태의 다변량 이상도 — 단일 축으로 안 잡히는 국면",
+  "ml": "지도학습 예측 — 꼬리 사건 확률을 직접 추정",
+  "vol_target": "변동성 타게팅 — 실현/예측 변동성으로 노출 조절",
+  "trend": "추세 부호 — 방향성 국면 게이트"
+ },
+ "arms": [
+  {
+   "id": "dd_brake_q",
+   "kind": "dd_brake",
+   "family": "drawdown",
+   "basis": "낙폭이 확장창 중앙값(진입)~90분위(전량현금) 구간에서 선형 축소. 임계를 상수로 두지 않고 데이터에서 추정.",
+   "status": "active",
+   "est_cost_min": 6
+  },
+  {
+   "id": "dd_recovery",
+   "kind": "dd_recovery",
+   "family": "drawdown",
+   "basis": "낙폭이 중앙값을 넘은 국면에서 직전 1개월 시장수익이 양일 때만 노출 유지 — 회복 조건부 재진입.",
+   "status": "active",
+   "est_cost_min": 6
+  },
+  {
+   "id": "vol_x_dd",
+   "kind": "vol_x_dd",
+   "family": "combo",
+   "basis": "변동성 타게팅 노출 x 데이터주도 낙폭 브레이크 노출. 고변동과 깊은 낙폭은 다른 국면이다.",
+   "status": "active",
+   "est_cost_min": 8
+  },
+  {
+   "id": "vol_x_turb",
+   "kind": "vol_x_turb",
+   "family": "combo",
+   "basis": "변동성 타게팅 노출 x 마할라노비스 난기류 게이트. 단변량 변동성이 못 보는 상태 이상을 곱한다.",
+   "status": "active",
+   "est_cost_min": 8
+  },
+  {
+   "id": "turbulence",
+   "kind": "turbulence",
+   "family": "state_multivar",
+   "basis": "(실현변동성·횡단면분산·낙폭) 벡터의 마할라노비스 거리를 확장창 평균·공분산 기준으로 계산, 확장분위 게이트.",
+   "status": "active",
+   "est_cost_min": 8
+  },
+  {
+   "id": "ml_tail_gate",
+   "kind": "ml_tail_gate",
+   "family": "ml",
+   "basis": "확장창 로지스틱으로 익월 시장수익이 하위 10분위에 들 확률을 예측하고 노출 = 1 - p_hat. 라벨 임계도 그 시점 표본에서.",
+   "status": "active",
+   "est_cost_min": 10
+  },
+  {
+   "id": "vol_median",
+   "kind": "vol_scale",
+   "family": "vol_target",
+   "basis": "노출 = min(1, 확장창 중앙 실현변동성 / 현재 60일 실현변동성). 목표치를 상수로 두지 않는다.",
+   "status": "active",
+   "est_cost_min": 5
+  },
+  {
+   "id": "vol_ewma",
+   "kind": "ewma_vol",
+   "family": "vol_target",
+   "basis": "EWMA 변동성으로 타게팅. lambda 를 상수로 박지 않고 1개월 앞 예측 MSE 최소화로 격자에서 고른다.",
+   "status": "active",
+   "est_cost_min": 7
+  },
+  {
+   "id": "vol_har",
+   "kind": "har_vol",
+   "family": "vol_target",
+   "basis": "HAR-RV(일/주/월) 확장창 OLS 로 1개월 앞 변동성을 예측하고 그 예측치로 타게팅.",
+   "status": "active",
+   "est_cost_min": 8
+  },
+  {
+   "id": "ts_mom_sign",
+   "kind": "ts_mom_gate",
+   "family": "trend",
+   "basis": "시장 12개월 누적수익 부호가 음이면 전량 현금. 롱온리 슬리브라 숏 대신 현금이다.",
+   "status": "active",
+   "est_cost_min": 5
+  }
+ ]
+}

@@ -446,6 +446,33 @@ if (!identical(.ov_kind, "none")) {
         }
       }
 
+    } else if (identical(.ov_kind, "ts_mom_gate")) {
+      e <- if (is.finite(H$r252[t]) && H$r252[t] < 0) 0 else 1        # 12개월 부호(롱온리 → 현금)
+
+    } else if (identical(.ov_kind, "dd_recovery")) {
+      dq <- stats::quantile(H$dd, c(0.5), na.rm = TRUE, names = FALSE)
+      dn <- H$dd[t]
+      rr <- if (t >= 2L) H$nav[t] / H$nav[t - 1L] - 1 else NA_real_   # 직전 1개월 BM 수익
+      e <- if (!is.finite(dn) || dn <= dq[1]) 1 else if (is.finite(rr) && rr > 0) 1 else 0
+
+    } else if (identical(.ov_kind, "vol_x_turb")) {
+      ev <- if (is.finite(v_now) && v_now > 0 && is.finite(tgt)) min(1, tgt / v_now) else 1
+      et <- 1
+      FM <- as.matrix(H[, .(rv60, xs, dd)])
+      FM <- FM[stats::complete.cases(FM), , drop = FALSE]
+      if (nrow(FM) >= 60L) {
+        mu <- colMeans(FM); S <- stats::cov(FM) + diag(1e-12, ncol(FM))
+        Si <- tryCatch(solve(S), error = function(z) NULL)
+        if (!is.null(Si)) {
+          d2 <- apply(FM, 1L, function(r) as.numeric(t(r - mu) %*% Si %*% (r - mu)))
+          q <- stats::quantile(d2, c(0.5, 0.9), na.rm = TRUE, names = FALSE)
+          nw <- d2[length(d2)]
+          et <- if (!is.finite(nw) || nw <= q[1]) 1 else
+                if (nw >= q[2]) 0 else 1 - (nw - q[1]) / max(1e-9, q[2] - q[1])
+        }
+      }
+      e <- ev * et
+
     } else if (identical(.ov_kind, "dd_brake")) {
       dq <- stats::quantile(H$dd, c(0.5, 0.9), na.rm = TRUE, names = FALSE)
       dn <- H$dd[t]

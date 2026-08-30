@@ -309,55 +309,61 @@
   {
    "id": "B5",
    "axis": "risk_overlay",
-   "note": "★도훈 2026-08-30 '오버레이 계층은 없나? PG2의 성공도 오버레이인데' + '논문이 없어도 진행되게. 통계/수학/머신러닝 방법론 적극 활용으로 리스크 컨트롤 목적의 오버레이 설계'. B1~B3 15칸이 MDD 61.6~77.2% 대역에 갇혀 Calmar 0.34/0.64 로 A 를 못 여는 자리 — 구속 축이 낙폭이다. ★근거는 논문이 아니라 method(방법)이고, 원장이 risk_overlay 축에 한해 그것을 받는다. ★전 칸 임의 상수 없음: 목표변동성·문턱·lambda 전부 확장창 추정(PIT).",
+   "note": "★도훈 2026-08-30 '오버레이 방법론을 특정하는건 별로인데'. 그래서 격자는 축만 선언하고 칸의 내용은 06_Registry/overlay_catalog.json 에서 규칙으로 뽑는다(rf_overlay_arms.R). 아래 cells 는 그 선정의 스냅샷이고 정본이 아니다 — 러너가 배치 시점에 이미 측정한 팔을 제외하고 다시 뽑는다. 비중 축(weight_catalog)과 같은 형태이고 이유도 같다: 방법을 격자에 박으면 새 방법이 등록돼도 아무도 안 쓴다. ★근거는 논문이 아니라 method(통계/수리/ML).",
    "cells": [
     {
      "code": "B5_21",
-     "label": "실현변동성 타게팅",
+     "label": "dd_brake_q(drawdown)",
      "overlay": {
-      "kind": "vol_scale"
+      "kind": "dd_brake",
+      "arm_id": "dd_brake_q"
      },
-     "basis": "통계 — 노출 = min(1, 확장창 중앙 실현변동성 / 현재 60일 실현변동성). 목표치를 상수로 두지 않고 자기 이력 중앙값으로 잡아 파라미터를 없앤다.",
-     "note": "변동성 타게팅의 최소형. 이후 예측형(B5_22/23) 대비 기준선."
+     "basis": "낙폭이 확장창 중앙값(진입)~90분위(전량현금) 구간에서 선형 축소. 임계를 상수로 두지 않고 데이터에서 추정.",
+     "note": "등록부 선정 — 계열 drawdown. 격자가 방법을 갖지 않고 overlay_catalog 를 소비한다."
     },
     {
      "code": "B5_22",
-     "label": "HAR-RV 예측 타게팅",
+     "label": "vol_x_dd(combo)",
      "overlay": {
-      "kind": "har_vol"
+      "kind": "vol_x_dd",
+      "arm_id": "vol_x_dd"
      },
-     "basis": "수리통계 — log RV(t+1) ~ log RV_d + log RV_w + log RV_m 를 확장창 OLS 로 적합해 1개월 앞 변동성을 예측하고 그 예측으로 타게팅. 실현치가 아니라 예측치를 쓰는 것이 차이.",
-     "note": "장기기억(HAR) 구조. 적합은 매 시점 확장창 — 계수 고정 없음."
+     "basis": "변동성 타게팅 노출 x 데이터주도 낙폭 브레이크 노출. 고변동과 깊은 낙폭은 다른 국면이다.",
+     "note": "등록부 선정 — 계열 combo. 격자가 방법을 갖지 않고 overlay_catalog 를 소비한다."
     },
     {
      "code": "B5_23",
-     "label": "마할라노비스 난기류 게이트",
+     "label": "turbulence(state_multivar)",
      "overlay": {
-      "kind": "turbulence"
+      "kind": "turbulence",
+      "arm_id": "turbulence"
      },
-     "basis": "다변량 통계 — (실현변동성, 횡단면 분산, 낙폭) 벡터의 마할라노비스 거리를 확장창 평균·공분산 기준으로 계산하고, 확장 중앙값~90분위 사이에서 노출을 선형 축소.",
-     "note": "단일 축이 아니라 시장 상태의 다변량 이상도. 임계도 확장분위라 상수 없음."
+     "basis": "(실현변동성·횡단면분산·낙폭) 벡터의 마할라노비스 거리를 확장창 평균·공분산 기준으로 계산, 확장분위 게이트.",
+     "note": "등록부 선정 — 계열 state_multivar. 격자가 방법을 갖지 않고 overlay_catalog 를 소비한다."
     },
     {
      "code": "B5_24",
-     "label": "ML 꼬리위험 게이트(로지스틱)",
+     "label": "ml_tail_gate(ml)",
      "overlay": {
-      "kind": "ml_tail_gate"
+      "kind": "ml_tail_gate",
+      "arm_id": "ml_tail_gate"
      },
-     "basis": "지도학습 — 익월 BM 수익이 그때까지의 하위 10분위에 들 확률을 확장창 로지스틱 회귀로 예측(특징: 실현변동성·낙폭·12개월 수익·횡단면 분산)하고 노출 = 1 - p_hat. 학습쌍은 결과가 실현된 과거만.",
-     "note": "★PIT 핵심: 라벨 임계(하위 10분위)도 그 시점까지 표본에서 잡는다. 미래 분포 사용 금지."
+     "basis": "확장창 로지스틱으로 익월 시장수익이 하위 10분위에 들 확률을 예측하고 노출 = 1 - p_hat. 라벨 임계도 그 시점 표본에서.",
+     "note": "등록부 선정 — 계열 ml. 격자가 방법을 갖지 않고 overlay_catalog 를 소비한다."
     },
     {
      "code": "B5_25",
-     "label": "변동성 x 낙폭 결합",
+     "label": "vol_median(vol_target)",
      "overlay": {
-      "kind": "vol_x_dd"
+      "kind": "vol_scale",
+      "arm_id": "vol_median"
      },
-     "basis": "결합 — 변동성 타게팅 노출과 데이터주도 낙폭 브레이크 노출(확장 중앙값 진입 ~ 90분위 전량현금)의 곱. 두 축이 서로 다른 국면(고변동 vs 깊은 낙폭)을 겨눈다.",
-     "note": "구속 축(MDD)을 정면으로 겨누는 칸. 결합 이득이 있는지 본다."
+     "basis": "노출 = min(1, 확장창 중앙 실현변동성 / 현재 60일 실현변동성). 목표치를 상수로 두지 않는다.",
+     "note": "등록부 선정 — 계열 vol_target. 격자가 방법을 갖지 않고 overlay_catalog 를 소비한다."
     }
    ],
-   "n": 5
+   "n": 5,
+   "source": "overlay_catalog"
   }
  ],
  "graduation": {

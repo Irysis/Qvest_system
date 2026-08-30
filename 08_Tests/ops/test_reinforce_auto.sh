@@ -489,6 +489,16 @@ else
   ng "격자↔원장 계약" "$(echo "$GRD" | grep FAIL | head -1)"
 fi
 
+echo "=== 25. 오버레이 등록부 소비 ==="
+# 도훈 2026-08-30 "오버레이 방법론을 특정하는건 별로인데" — 격자에 방법을 박으면 새 방법이
+# 등록돼도 아무도 안 쓰고 같은 다섯 개만 반복 측정한다. 격자는 축만 선언하고 칸은 등록부에서 뽑는다.
+OVA=$(Rscript 08_Tests/reinforcement/test_rf_overlay_arms.R 2>&1); ORC=$?
+if [ "$ORC" -eq 0 ]; then
+  ok "오버레이 등록부 — $(echo "$OVA" | tail -1)"
+else
+  ng "오버레이 등록부" "$(echo "$OVA" | grep FAIL | head -1)"
+fi
+
 echo
 printf '합계: 통과 %d · 실패 %d\n' "$PASS" "$FAIL"
 [ "$FAIL" -eq 0 ] || exit 1

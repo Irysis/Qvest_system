@@ -103,6 +103,29 @@ if (!length(pending) && used < length(cells)) {
   }
   room <- max(0L, DAILY_CAP - done_today)
   if (length(batch) > room) batch <- batch[seq_len(room)]
+
+# ★B5(오버레이) 칸은 격자에 박힌 값이 아니라 **등록부에서 배치 시점에 뽑는다**
+#   (도훈 2026-08-30 "오버레이 방법론을 특정하는건 별로인데"). 이미 측정한 팔은 제외하므로
+#   승격 사슬·다음 논문에서 같은 다섯 개를 반복 측정하지 않는다. 격자의 B5 cells 는 스냅샷일 뿐이다.
+if (length(batch) && identical(first$block, "B5")) {
+  .done_arms <- unique(unlist(lapply(E$attempts, function(a) {
+    sp <- a$essence$spec
+    if (is.null(sp) || !nzchar(sp) || !file.exists(sp)) return(NULL)
+    s <- tryCatch(fromJSON(sp, simplifyVector = FALSE), error = function(z) NULL)
+    if (is.null(s)) NULL else s$overlay$arm_id
+  })))
+  .pk <- tryCatch({ suppressMessages(source(file.path(ROOT, "02_Infrastructure/ops/rf_overlay_arms.R")))
+                    rf_pick_overlay_arms(length(batch), exclude = .done_arms %||% character(0), root = ROOT) },
+                  error = function(e) { jlog("overlay_pick_failed", err = conditionMessage(e)); NULL })
+  if (!is.null(.pk) && length(.pk$cells)) {
+    for (j in seq_along(batch)) if (j <= length(.pk$cells)) {
+      .c <- .pk$cells[[j]]; .c$code <- batch[[j]]$code; .c$block <- "B5"; .c$axis <- "risk_overlay"
+      batch[[j]] <- .c
+    }
+    jlog("overlay_arms_picked", ids = paste(.pk$picked_ids, collapse = ","),
+         excluded = paste(.done_arms %||% character(0), collapse = ","))
+  }
+}
   if (!length(batch)) { jlog("halt_no_room", room = room); return(0L) }
   jlog("batch_start", block = first$block, n_cells = length(batch),
        codes = paste(vapply(batch, function(c) c$code, character(1)), collapse = ","))
