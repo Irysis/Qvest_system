@@ -14,7 +14,9 @@ import os
 import sys
 import tempfile
 
-SRC = "02_Infrastructure/ops/reinforce_auto_parallel.R"
+# ★2026-09-04: 서명 헬퍼가 러너 인라인에서 rf_spec_sig.R 정본으로 올겨갔다(09-03).
+#   대상을 안 옮겨 니들이 0건이 되면서 양성 대조가 조용히 죽어 있었다.
+SRC = "02_Infrastructure/reinforcement/rf_spec_sig.R"
 NEEDLE = "as.character(toJSON(sp$universe"
 
 

@@ -1,6 +1,6 @@
 {
   "schema": "reinforce_auto_config_v1",
-  "enabled": false,
+  "enabled": true,
   "note": "강화 무인 러너 kill switch. enabled=false 면 reinforce_auto_run.R / _next_paper.R 가 즉시 정지한다. ★도훈 지시 2026-08-30 '모든 작업을 무인화' 로 v10 의 '무인은 수집까지' 경계가 해제됐다. 단 무인 개시는 **규칙 개시**다 — 셀은 reinforce_program.json 격자에서 나오고 엔진은 rf_cell_engine.R 하나이며 러너는 코드를 생성하지 않는다. LLM 무인 개시가 아니다.",
   "daily_cap": 120,
   "claim_stale_hours": 6,
@@ -73,5 +73,5 @@
   },
   "disabled_at": "2026-09-01T17:41:35+0900",
   "disabled_reason": "★도훈 지시 2026-09-01 — 측정 축 전환 후 새 세션에서 새 리서치를 시작하기 위해 정지. 정지 시점 상태: active entry 없음(마지막 entry 는 축 전환으로 park) · current_axis=n_max_25 · 과거 entry 15건 axis_valid=false(측정 147건은 보존). 재개는 이 파일의 enabled 를 true 로 되돌리면 된다 — 다음 tick 이 큐 상단 논문의 충실구현을 띄우고 거기서 열리는 entry 가 첫 새 축 entry 가 된다. ★이 스위치는 강화 러너 2종 + 무인 충실구현(rf_replication_auto)을 함께 세운다. 팩터 DB 백필([6d])과 일간 리프레시는 별개 스케줄이라 계속 돈다 — 새 축 리서치가 쓸 technical 12종·C15·M12 이력을 채우는 중이므로 의도적으로 남겨 둔다(정지하려면 QVEST_FDB_NO_BACKFILL=1).",
-  "_disabled_note": "2026-09-03 도훈 지시 — 오버레이 중첩 배선 작업 중. 재개 시 true 로."
+  "_resumed_note": "2026-09-04 도훈 지시 — 격자 커서 결함 수리 후 재개. 수리 전에는 등록 거부 1건이 격자 위치를 영우적 어긋냈다 (cells[[used+1L]] — 개수 기반). 지금은 기록된 cell_code 집합에서 뽑는다 (.rf_free_cells · 검사 test_rf_grid_cursor 23항 양방향). 재개 시점 상태: active RP_20260903_160341_combo 5/25 · 다음 칸 B2_6 · 빈 칸 20."
 }

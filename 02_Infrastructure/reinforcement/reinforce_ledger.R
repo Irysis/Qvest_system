@@ -143,7 +143,8 @@ rf_open_entry <- function(layer, base_id, base_grade,
 rf_append_attempt <- function(layer, base_id, idea, keyword_axis, root_papers,
                               wt_id = NULL, root = .rf_root(),
                               unmapped_families = NULL,
-                              axiom_injected = FALSE) {
+                              axiom_injected = FALSE,
+                              cell_code = NULL) {
   axes <- if (layer == 1L) RF_KEYWORD_AXES_L1 else RF_KEYWORD_AXES_L2
   if (!keyword_axis %in% axes)
     stop(sprintf("[reinforce_ledger] keyword_axis '%s' 는 L%d 축이 아님 (허용: %s)",
@@ -198,7 +199,16 @@ rf_append_attempt <- function(layer, base_id, idea, keyword_axis, root_papers,
     cat("[reinforce_ledger] WARN: 같은 root_papers 3회 연속 — 한 논문 매몰 금지 (교차 논문 탐색 권장)\n")
 
   n <- e$attempts_used + 1L
+  # ★격자 좌표를 **등록 시점에** 박는다 (2026-09-04). 구판은 cell_code 가 essence 안에만
+  #   있어서, 측정 전에는 이 시도가 격자의 어느 칸인지 원장만 봐서는 알 수 없었다.
+  #   그래서 러너 커서가 개수(attempts_used+1)로 움직였고, 등록이 한 건 거부되면
+  #   격자 위치와 시도 수가 영구히 어긋났다(실측: B1_1 미측정 · B1_5 2회 소각 ·
+  #   승자 스펙이 재실행분으로 덮여 20칸이 다른 기저 위에 섬). 좌표는 자리를 잡을 때 남긴다.
+  .cell_code <- { .cc <- suppressWarnings(as.character(cell_code %||% character(0)))
+                  .cc <- .cc[!is.na(.cc) & nzchar(trimws(.cc))]
+                  if (length(.cc)) .cc[1] else NA_character_ }
   att <- list(n = n, date = format(Sys.Date(), "%Y%m%d"),
+              cell_code = .cell_code,
               idea = .idea, keyword_axis = keyword_axis,
               root_papers = root_papers, wt_id = wt_id,
               # ★근거 종류 — paper(원문 url) / method(방법 명시) / none. 의무는 해제됐지만

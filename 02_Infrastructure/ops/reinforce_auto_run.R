@@ -126,7 +126,13 @@ if (used >= MAXA) {
 # ── 3. 다음 칸 결정 ───────────────────────────────────────────────────────────
 cells <- do.call(c, lapply(PROG$blocks, function(b) lapply(b$cells, function(c) { c$block <- b$id; c$axis <- b$axis; c })))
 if (used >= length(cells)) { jlog("halt_program_exhausted", used = used); return(invisible(0L)) }
-CELL <- cells[[used + 1L]]
+# ★커서는 개수가 아니라 **아직 자리가 빈 셀 코드**에서 뽑는다 (2026-09-04 · 병렬 러너와 동형).
+#   구판 `cells[[used + 1L]]` 은 등록이 한 건 거부되면 격자 위치가 영구히 어긋났다.
+#   두 러너가 같은 방어를 갖지 않으면 mode 를 바꾸는 순간 한쪽만 안전해진다.
+suppressMessages(source(file.path(ROOT, "02_Infrastructure/reinforcement/rf_spec_sig.R"), local = TRUE))
+.free <- .rf_free_cells(cells, E$attempts)
+if (!length(.free)) { jlog("halt_no_free_cell", used = used); return(invisible(0L)) }
+CELL <- cells[[.free[1]]]
 
 # ★B1 칸은 격자에 박힌 값이 아니라 **등록부에서 배치 시점에 뽑는다**(2026-09-01, 병렬 러너와 동형).
 #   격자의 B1 cells 는 스냅샷일 뿐 정본이 아니다. 두 러너가 다른 팩터를 쓰면 mode 를 바꾸는
@@ -342,8 +348,11 @@ idea <- sprintf("[무인 규칙강화 %s] %s — 격자 %s/%s · factor2=%s · w
                 .s1(SPEC$universe$kind, "k200_kq150"), .s1(CELL$note %||% .blk_rule, ""))
 att <- tryCatch(rf_append_attempt(1L, BID, idea, CELL$axis, .root_papers, wt_id = NULL, root = ROOT,
                                   unmapped_families = .rpz$unmapped_families,
-                                  axiom_injected = isTRUE(SPEC$preflight$axiom_injected)),
-                error = function(e) { jlog("halt_append_failed", err = conditionMessage(e)); NULL })
+                                  axiom_injected = isTRUE(SPEC$preflight$axiom_injected),
+                                  # ★격자 좌표를 등록 시점에 박는다 — 커서의 정본(2026-09-04)
+                                  cell_code = CELL$code),
+                error = function(e) { jlog("halt_append_failed", base_id = BID, code = CELL$code,
+                                          err = conditionMessage(e)); NULL })
 if (is.null(att)) return(invisible(1L))
 N <- as.integer(att$n)
 # ★무처치 셀은 실행하지 않는다 — 중복 제거 후 구성이 carry 와 같으면 같은 포트폴리오다.

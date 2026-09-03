@@ -20,7 +20,10 @@ suppressMessages({ library(jsonlite) })
 `%||%` <- function(a, b) if (is.null(a) || length(a) == 0L) b else a
 ROOT <- Sys.getenv("QM_ROOT", "C:/Users/99922/OneDrive/Quant_Module_Moltbot"); setwd(ROOT)
 PAR <- Sys.getenv("QVEST_RF_RUNNER", file.path(ROOT, "02_Infrastructure/ops/reinforce_auto_parallel.R"))
-SIG <- file.path(ROOT, "02_Infrastructure/reinforcement/rf_spec_sig.R")
+# ★정본 경로를 덮을 수 있게 둔다 — 이 검사의 **양성 대조**(구판 헬퍼 주입)를 공유 정본을
+#   건드리지 않고 돌리기 위해서다. 2026-09-03 헬퍼가 러너에서 이 파일로 옮겨갔는데
+#   프로브는 러너에 주입하고 있어 양성 대조 둘이 하루 동안 죽어 있었다(축을 옮기면 대조도 옮길 것).
+SIG <- Sys.getenv("QVEST_RF_SIG", file.path(ROOT, "02_Infrastructure/reinforcement/rf_spec_sig.R"))
 # ★2026-09-03: 헬퍼가 러너 인라인에서 rf_spec_sig.R 정본으로 이동했다.
 #   사본 재구현 대신 **정본을 그대로 source** 한다 — 러너가 바뀌어도 안 낡는다.
 if (!file.exists(SIG)) { cat("  FAIL 서명 정본 rf_spec_sig.R 부재

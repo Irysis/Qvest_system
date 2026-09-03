@@ -626,7 +626,7 @@ else ng "스펙 중복 가드" "$(echo "$DUP" | grep FAIL | head -1)"; fi
 #   실패하는 것을 "발화" 로 오독했다(2026-08-31). 주입 실패와 검사 통과를 구분한다.
 _DUPP="$("$PY" 08_Tests/ops/mk_partial_sig_probe.py)"
 if [ -z "$_DUPP" ]; then ng "중복 검사기 양성 대조 주입 실패" "서명이 바뀌었다 — 검사기가 낡음"
-elif QVEST_RF_RUNNER="$_DUPP" Rscript 08_Tests/reinforcement/test_rf_spec_dedup.R >/dev/null 2>&1; then
+elif QVEST_RF_SIG="$_DUPP" Rscript 08_Tests/reinforcement/test_rf_spec_dedup.R >/dev/null 2>&1; then
   ng "중복 검사기 죽음 — 축을 빼도 통과했다"
 else ok "중복 검사기 양성 대조 발화(축 누락 적발)"; fi
 rm -f "$_DUPP"
@@ -644,7 +644,7 @@ else
 fi
 # ★양성 대조: 중복 제거를 항등함수로 되돌린 사본에서 실제로 발화하는가
 _OLDC="$("$PY" 08_Tests/ops/mk_old_carry_probe.py)"
-if [ -n "$_OLDC" ] && QVEST_RF_RUNNER="$_OLDC" Rscript 08_Tests/reinforcement/test_rf_carry_treatment.R >/dev/null 2>&1; then
+if [ -n "$_OLDC" ] && QVEST_RF_SIG="$_OLDC" Rscript 08_Tests/reinforcement/test_rf_carry_treatment.R >/dev/null 2>&1; then
   ng "승계 검사기 죽음 — 구판을 주입해도 통과했다"
 elif [ -n "$_OLDC" ]; then ok "승계 검사기 양성 대조 발화"
 else ng "양성 대조 주입 실패 — 헬퍼를 못 찾았다(검사기 낡음)"; fi

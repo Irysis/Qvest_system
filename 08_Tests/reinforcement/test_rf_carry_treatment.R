@@ -38,7 +38,10 @@ ng <- function(m, d = "") { cat(sprintf("  FAIL %s — %s\n", m, d)); FAIL <<- F
 
 # ── 러너에서 헬퍼 4종을 추출해 이 환경에 정의 ────────────────────────────────
 src <- readLines(PAR, warn = FALSE)
-SIG <- file.path(ROOT, "02_Infrastructure/reinforcement/rf_spec_sig.R")
+# ★정본 경로를 덮을 수 있게 둔다 — 이 검사의 **양성 대조**(구판 헬퍼 주입)를 공유 정본을
+#   건드리지 않고 돌리기 위해서다. 2026-09-03 헬퍼가 러너에서 이 파일로 옮겨갔는데
+#   프로브는 러너에 주입하고 있어 양성 대조 둘이 하루 동안 죽어 있었다(축을 옮기면 대조도 옮길 것).
+SIG <- Sys.getenv("QVEST_RF_SIG", file.path(ROOT, "02_Infrastructure/reinforcement/rf_spec_sig.R"))
 # ★2026-09-03: 헬퍼가 러너 인라인에서 정본 파일로 이동 — 사본 대신 정본을 source 한다.
 if (!file.exists(SIG)) { cat("  FAIL 서명 정본 rf_spec_sig.R 부재\n"); quit(status = 1) }
 suppressMessages(source(SIG))

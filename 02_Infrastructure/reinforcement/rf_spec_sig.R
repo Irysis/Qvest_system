@@ -6,7 +6,7 @@
 #   만들 참이었다. 서명이 갈리는 순간 "같은 포트폴리오" 판정이 소비자마다 달라진다.
 #   본문은 러너에서 **그대로 옮겼다** — 거동 변경 0.
 #
-# 제공: .fkey / .fkeys / .dedup_factors / .same_axis / .rp_all_factors / .spec_sig / .ov_layers / .ov_stack / .ov_arm_ids
+# 제공: .rf_attempt_code / .rf_taken_codes / .rf_free_cells / .fkey / .fkeys / .dedup_factors / .same_axis / .rp_all_factors / .spec_sig / .ov_layers / .ov_stack / .ov_arm_ids
 # 요구: jsonlite(toJSON) · %||%
 #==============================================================================
 suppressPackageStartupMessages(library(jsonlite))
@@ -72,3 +72,40 @@ if (!exists("%||%")) `%||%` <- function(a, b) if (is.null(a) || length(a) == 0L)
   as.character(toJSON(sp$universe  %||% list(kind = "k200_kq150"),  auto_unbox = TRUE)),
   as.character(toJSON(sp$overlay   %||% list(),                     auto_unbox = TRUE)),
   as.character(sp$base_signal$path %||% sp$base_signal$kind %||% "")), collapse = "|")
+
+# ── ★격자 커서 — 자리를 차지한 셀 코드 집합 (2026-09-04 신설) ────────────────
+# 구판 커서는 `cells[[attempts_used + 1L]]` — **개수**였다. 등록이 한 건 거부되면
+# (rf_append_attempt 의 stop) 배치는 안 서고 그 칸만 조용히 빠지는데, 개수 기반이라
+# 격자 위치와 시도 수가 그 순간부터 **영구히** 어긋난다.
+#   실측 2026-09-03: root_papers 의무(그날 도훈이 해제한 바로 그것)가 B1_1 을 세 번 거부 →
+#   B1_1 은 영영 미측정, B1_5 는 두 번 소각(서로 다른 spec·다른 t). spec 파일 이름이 셀 코드라
+#   재실행분이 원본을 덮었고, RP_20260903_105808_combo 는 승자 B1_5(t 1.578·5팩터)의 스펙이
+#   1팩터(t 1.025)로 바뀐 채 B2~B4 20칸이 그 위에 섰다. 축 검사는 전부 통과했다.
+# 그래서 커서는 개수가 아니라 **기록된 코드 집합**에서 뽑는다. 개수(used)는 예산이지 위치가 아니다.
+#
+# 출처 우선순위 — 등록 필드 > 측정 산출 > 서술 접두 > 격자 위치(구 레코드 폴백).
+.rf_attempt_code <- function(a, cells = NULL) {
+  .one <- function(x) { x <- suppressWarnings(as.character(x))
+                        x <- x[!is.na(x) & nzchar(x)]
+                        if (length(x)) x[1] else NA_character_ }
+  cc <- .one(a$cell_code);            if (!is.na(cc)) return(cc)
+  cc <- .one(a$essence$cell_code);    if (!is.na(cc)) return(cc)
+  ide <- .one(a$idea)
+  # ★기본 regexpr 은 POSIX ERE 라 \b(단어 경계)가 없다 — 쓰면 매칭이 조용히 실패한다.
+  if (!is.na(ide)) { m <- regmatches(ide, regexpr("B[0-9]+_[0-9]+", ide))
+                     if (length(m) && nzchar(m[1])) return(m[1]) }
+  if (!is.null(cells)) { n <- suppressWarnings(as.integer(a$n %||% NA_integer_))
+    if (!is.na(n) && n >= 1L && n <= length(cells)) return(.one(cells[[n]]$code)) }
+  NA_character_
+}
+#' @return 이 entry 가 이미 자리를 차지한 셀 코드(중복·NA 제거)
+.rf_taken_codes <- function(attempts, cells = NULL) {
+  if (!length(attempts %||% list())) return(character(0))
+  v <- vapply(attempts, .rf_attempt_code, character(1), cells = cells)
+  unique(v[!is.na(v) & nzchar(v)])
+}
+#' 아직 자리가 비어 있는 격자 셀의 **인덱스** (격자 순서 유지 — 블록 순서 정렬 후 호출할 것)
+.rf_free_cells <- function(cells, attempts) {
+  tk <- .rf_taken_codes(attempts, cells)
+  which(!vapply(cells, function(c) as.character(c$code %||% "") %in% tk, logical(1)))
+}

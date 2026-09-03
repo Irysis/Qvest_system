@@ -46,6 +46,19 @@ jlog <- function(event, ...) {
                     sep = "=", collapse = " ")))
 }
 
+# ★등록 거부 누적 횟수 (entry·셀 코드 단위). 커서가 코드 기반이 된 뒤로 거부된 칸은
+#   다음 tick 에 그대로 다시 잡힌다 — 회복은 되지만 **결정론적 거부에는 출구가 없다**
+#   (2026-08-31 B3_11 16회 제자리 사고와 같은 형태). 그래서 상한을 두고 멈춰 세운다.
+.append_fail_count <- function(code, bid) {
+  if (!file.exists(LOG_P)) return(0L)
+  tryCatch(sum(vapply(readLines(LOG_P, warn = FALSE), function(l) {
+    if (!grepl('"append_failed"', l, fixed = TRUE)) return(FALSE)
+    r <- tryCatch(fromJSON(l, simplifyVector = TRUE), error = function(e) NULL)
+    !is.null(r) && identical(as.character(r$code %||% ""), code) &&
+      identical(as.character(r$base_id %||% ""), bid)
+  }, logical(1))), error = function(e) 0L)
+}
+
 CFG <- if (file.exists(CFG_P)) fromJSON(CFG_P, simplifyVector = FALSE) else list()
 if (!isTRUE(CFG$enabled %||% FALSE)) { jlog("halt_disabled"); quit(status = 0) }
 NPAR      <- as.integer(CFG$parallel_cells %||% 4L)
@@ -154,13 +167,21 @@ if (length(.blk_order)) {
 # ── ★블록 경계 강제: 같은 블록 안에서만 묶는다 (재개분이 없을 때만 신규 배치) ──
 batch <- list(); first <- NULL
 if (!length(pending) && used < length(cells)) {
-  first <- cells[[used + 1L]]
-  k <- used + 1L
-  while (k <= min(length(cells), MAXA) && length(batch) < NPAR) {
+  # ★커서는 개수가 아니라 **아직 자리가 빈 셀 코드**에서 뽑는다 (2026-09-04 · 정본 rf_spec_sig.R).
+  #   구판 `cells[[used + 1L]]` 은 등록 거부 1건에 격자 위치가 영구히 어긋났다 —
+  #   그 칸은 영영 안 재고 다른 칸이 두 번 탄다(실측 사연은 rf_spec_sig.R 주석).
+  .free <- .rf_free_cells(cells, E$attempts)
+  if (!length(.free)) { jlog("halt_no_free_cell", used = used,
+                             taken = length(.rf_taken_codes(E$attempts, cells))); return(0L) }
+  first <- cells[[.free[1]]]
+  for (k in .free) {
+    if (length(batch) >= NPAR) break
     if (!identical(cells[[k]]$block, first$block)) break
-    batch[[length(batch) + 1L]] <- cells[[k]]; k <- k + 1L
+    batch[[length(batch) + 1L]] <- cells[[k]]
   }
-  room <- max(0L, DAILY_CAP - done_today)
+  # ★예산 축이 둘이다 — 하루 상한과 25칸 상한. 상한을 넘겨 등록하면 원장이 거부하고,
+  #   그 거부가 곧 격자 훼손이었다. 넘길 일을 애초에 만들지 않는다.
+  room <- max(0L, min(DAILY_CAP - done_today, MAXA - used))
   if (length(batch) > room) batch <- batch[seq_len(room)]
 
 # ★B1(멀티팩터) 칸도 격자에 박힌 값이 아니라 **등록부에서 배치 시점에 뽑는다**
@@ -517,9 +538,23 @@ if (!length(jobs)) for (CELL in batch) {
   att <- tryCatch(rf_append_attempt(1L, BID, SPEC$idea, CELL$axis, .root_papers, wt_id = NULL, root = ROOT,
                                     unmapped_families = .rpz$unmapped_families,
                                     # ★실제 적재 여부를 넘긴다 — 상수 TRUE 는 거짓 기록이었다
-                                    axiom_injected = isTRUE(SPEC$preflight$axiom_injected)),
-                  error = function(e) { jlog("append_failed", code = CELL$code, err = conditionMessage(e)); NULL })
-  if (is.null(att)) { unlink(sp, force = TRUE); next }
+                                    axiom_injected = isTRUE(SPEC$preflight$axiom_injected),
+                                    # ★격자 좌표를 등록 시점에 박는다 — 커서의 정본(2026-09-04)
+                                    cell_code = CELL$code),
+                  error = function(e) { jlog("append_failed", base_id = BID, code = CELL$code,
+                                             err = conditionMessage(e)); NULL })
+  if (is.null(att)) {
+    unlink(sp, force = TRUE)
+    # ★거부된 칸은 자리를 잃지 않는다 — 커서가 코드 집합 기반이라 다음 tick 에 다시 잡힌다.
+    #   다만 같은 사유로 계속 거부되면 근면하게 제자리를 돌 뿐이므로 상한에서 멈춰 세운다.
+    .afc <- .append_fail_count(CELL$code, BID)
+    if (.afc >= MAX_RETRY) {
+      jlog("halt_append_stuck", code = CELL$code, fails = .afc,
+           note = "등록 반복 거부 — 조용히 건너뛰지 않는다. 거부 사유를 고치고 재개할 것")
+      break
+    }
+    next
+  }
   write(toJSON(SPEC, auto_unbox = TRUE, pretty = TRUE, null = "null"), sp)
   # ★중복 판정 — 배치 안 · entry 안 · **전 entry**(2026-09-03 확장) 세 층을 본다.
   #   먼저 온 칸 하나는 측정하고 나머지를 닫는다. 같은 포트폴리오에 다른 이름을 붙이지 않는다.

@@ -1244,6 +1244,8 @@ SUITES=(
   "08_Tests/reinforcement/test_rf_coverage.R"
   "08_Tests/reinforcement/test_rf_block_order.R"
   "08_Tests/reinforcement/test_rf_notify_overlay_axis.R"
+  # 2026-09-04 — 격자 커서. 등록 거부 1건이 격자 위치를 영구히 어긋내던 자리(양방향).
+  "08_Tests/reinforcement/test_rf_grid_cursor.R"
 )
 
 

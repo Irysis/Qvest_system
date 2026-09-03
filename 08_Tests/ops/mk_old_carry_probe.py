@@ -12,7 +12,10 @@ import os
 import sys
 import tempfile
 
-SRC = "02_Infrastructure/ops/reinforce_auto_parallel.R"
+# ★2026-09-04: 헬퍼가 rf_spec_sig.R 정본으로 올겨갔다(09-03). 대상을 함께 옮긴다.
+#   spec 경로 축(spec_%s__%s.json)은 여전히 러너에 있고 검사 ⑥가 살아있는 정본을 직접 본다 —
+#   이 프로브는 **중복제거 축** 하나만 되돌린다(합성 주입은 어느 축이 발화했는지 못 가른다).
+SRC = "02_Infrastructure/reinforcement/rf_spec_sig.R"
 DEDUP_NEW = ('.dedup_factors <- function(fs) { seen <- character(0); out <- list()\n'
              '  for (f in fs %||% list()) { k <- .fkey(f)\n'
              '    if (!(k %in% seen)) { seen <- c(seen, k); out[[length(out) + 1L]] <- f } }\n'
@@ -28,11 +31,11 @@ def main():
         s = io.open(path, encoding="utf-8").read()
     except OSError:
         return 1
-    if DEDUP_NEW not in s or SPEC_NEW not in s:
+    if DEDUP_NEW not in s:
         return 1                       # 구현이 바뀌었다 — 검사기가 낡았음을 알린다
     out = os.path.join(tempfile.gettempdir(), "rf_carry_old.R")
     with io.open(out, "w", encoding="utf-8", newline="") as f:
-        f.write(s.replace(DEDUP_NEW, DEDUP_OLD).replace(SPEC_NEW, SPEC_OLD))
+        f.write(s.replace(DEDUP_NEW, DEDUP_OLD))
     sys.stdout.write(out.replace("\\", "/") + "\n")
     return 0
 
