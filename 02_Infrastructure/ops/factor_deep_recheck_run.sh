@@ -1,4 +1,7 @@
 #!/bin/bash
+# ★RETIRED (v10 2026-08-29 · 헤더 2026-09-03) — 무인 리서치 레인 퇴역: morning_run 에서 철거됐고
+#   예약작업·bat 호출 0. 파일은 사료(08_Tests 가 경로로 직접 실행하므로 이동·삭제 금지).
+#   재개 레시피 = git 태그 pre-v10-2layer 의 morning_run.sh [0.55]~[0.6] 구간.
 # ★RETIRED (v10 2026-08-29 도훈): 무인은 수집까지만 — morning_run 배선 제거. 파일 사료 존치.
 #   재개 레시피 = git pre-v10-2layer. (비-alpha 레인 폐지 — 수집은 팩터전략 단일 목적)
 # factor_deep_recheck_run.sh — 2축 구조 tier-2 runner (도훈 mandate 2026-06-19).

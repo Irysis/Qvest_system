@@ -120,7 +120,7 @@ fi
 case "$AGENT_NAME_LC" in
   *forge*)    HEADER='[AX 전제 — Forge] AX 범위 내 실험이면 AX 인용 + 경계 조건 명시.' ;;
   *judge*)    HEADER='[AX 전제 — Judge] AX 범위인데 반대 결과면 결과가 아닌 실험을 먼저 의심 (auditor).' ;;
-  *governor*) HEADER='[AX 전제 — Governor] AX covered 전략은 core 배정 confidence 상승.' ;;
+  *book*)     HEADER='[AX 전제 — BOOK 트래커] frozen 스펙 재현만 — 등급 재채점 금지.' ;;
   *)          HEADER='[AX 전제] 아래 공리는 qvest 모든 행위의 대전제.' ;;
 esac
 
@@ -330,8 +330,10 @@ MAX = 2000
 #   ①DIST 포기 → ②최근 교훈 3→2→1 → ③전략 5→3 → ④mode-local 5→3→1→0(1줄 포인터).
 #   ★mode-local 을 **맨 마지막**에 깎는 이유: 마지막 구(舊) 감축단이 1,571자라 여유 429자로
 #     5줄이 들어간다(실측 근거 §S4c-1). 그보다 먼저 깎으면 상한 5의 근거가 무너진다.
+#   ★2026-09-03 연장: v10 고정부 증가로 (3,0,1,0) 이 ~2,045자가 돼 사다리가 소진됐다.
+#     전략 줄을 3→2→1 로 더 깎는 단을 잇는다. 검사 계약상 최소 1줄(B1 STR·C1 L-code)은 남긴다.
 _ladder = [(5, 3, 3, 5), (5, 0, 3, 5), (5, 0, 2, 5), (5, 0, 1, 5), (3, 0, 1, 5),
-           (3, 0, 1, 3), (3, 0, 1, 1), (3, 0, 1, 0)]
+           (3, 0, 1, 3), (3, 0, 1, 1), (3, 0, 1, 0), (2, 0, 1, 0), (1, 0, 1, 0)]
 ctx = ''
 _rung = 0
 _nml = 0
@@ -340,6 +342,16 @@ for _i, (_np, _nd, _nr, _nm) in enumerate(_ladder):
     _rung, _nml = _i, min(_nm, ML_MAX_TOTAL) if ML_N else 0
     if len(ctx) <= MAX:
         break
+# ★하드 절단은 dead 줄을 **보존**한다 — 사다리가 다 소진돼도 조회 명령은 살아야 한다.
+#   ★이 블록은 셸 -c 큰따옴표 안이다 — 주석에도 큰따옴표/달러/백틱 금지(넣으면 훅이 통째로 죽는다).
+#   개수만 주고 조회 방법을 자르면 dead 505건은 행동으로 옮길 수 없는 숫자가 된다(E5).
+if len(ctx) > MAX:
+    _tail = ((chr(10) * 2) + dead_line) if dead_line else ''
+    _head = ctx[:max(0, MAX - len(_tail))]
+    _nl = _head.rfind(chr(10))
+    if _nl > 0:
+        _head = _head[:_nl].rstrip()          # 문장 중간 절단 금지 — 줄 경계로 물린다
+    ctx = _head + _tail
 ctx = ctx[:MAX]
 ctx = ''.join(ch if not (0xD800 <= ord(ch) <= 0xDFFF) else '?' for ch in ctx)
 # ── 계측(커밋1): 이 파일이 memory_knowledge_health.R HARD_10 의 **유일한 입력**이다.

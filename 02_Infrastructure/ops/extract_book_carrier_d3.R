@@ -1,4 +1,6 @@
 #!/usr/bin/env Rscript
+# ★RETIRED (v10 2026-09-03) — 구 book_state(governor) 캐리어 추출기. book_state.json 은 v10 legacy 동결이고
+#   BOOK 정본은 06_Registry/book/book_registry.json(writer = book/book_registry.R) 이다. 사료 존치.
 # extract_book_carrier_d3.R — 현 PG2(STR_1715_on_M4gAE_R05_noLayer4_PG2)의 A/B 캐리어 (도훈 승인 1안, 2026-08-08).
 #
 # 배경(08-08 도훈 적발): Σ-A/B 배터리가 구 PG2(2-1, overlay+Layer4) 캐리어를 기준선으로 7주 사용.

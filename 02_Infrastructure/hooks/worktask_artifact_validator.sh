@@ -1,4 +1,7 @@
 #!/usr/bin/env bash
+# ★v10 (2026-09-03) 주의 — 이 파일은 v9 등록 해제분(사료)이고 judge_lockbox_audit 스키마 · governor_admission · cert 발급 라우팅 가 남아 있다.
+#   전부 v10 폐지 개념(lockbox·governor·book_state·cert)이므로 **재등록 금지** — 되살리려면 그 분기를 먼저
+#   제거하고 양성/음성 대조를 다시 만들 것. 파일 자체는 08_Tests·hook_e2e_battery 가 경로로 실행한다(이동 금지).
 # (v8.2.1 HOOK-P0-1) bare python3 → $QVEST_PY_BIN (Windows Store 스텁 fail-open 방지)
 if [ -z "${QVEST_PY_BIN:-}" ]; then
   QVEST_PY_BIN="${QVEST_PY:-}"; QVEST_PY_BIN="${QVEST_PY_BIN//\//}"

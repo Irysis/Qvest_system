@@ -32,15 +32,22 @@ if (is.null(p) || !length(p$cells)) {
   if (length(unique(p$picked_ids)) == length(p$picked_ids)) {
     ok(sprintf("5팔 선정 · 중복 0 (%s)", paste(p$picked_ids, collapse = ", ")))
   } else ng("선정 중복", paste(p$picked_ids, collapse = ", "))
-  # 계열 다양성 — 같은 계열을 두 번 뽑으면 같은 축을 반복 측정한다(B2 실측 교훈)
-  fam2 <- A[match(p$picked_ids, A$id)]$family
-  if (length(unique(fam2)) == length(fam2)) {
-    ok(sprintf("계열 다양성 강제 (%s)", paste(fam2, collapse = ", ")))
-  } else ng("계열 중복", paste(fam2, collapse = ", "))
-  # 구속 축 우선 — 지금 막고 있는 것이 낙폭이다
-  if (identical(fam2[1], "drawdown")) {
-    ok("구속 축(drawdown) 계열을 앞세운다")
-  } else ng("우선순위", paste("첫 팔 계열 =", fam2[1]))
+  # ★다양성 축 = (action, state) 좌표 (2026-09-03). 라벨(family)이 아니다.
+  #   실사고: dbeta_tilt_rank 와 csd_idio_tilt 는 state 가 다른데(drawdown vs dispersion)
+  #   family 가 같아 '계열당 1개' 규칙에 서로를 밀어냈다 — 라벨 다양성과 행동 다양성은 다르다.
+  .pk <- A[match(p$picked_ids, A$id)]
+  cel <- paste(.pk$action, .pk$state, sep = "/")
+  if (length(unique(cel)) == length(cel)) {
+    ok(sprintf("기전 좌표 다양성 강제 (%s)", paste(cel, collapse = ", ")))
+  } else ng("좌표 중복 — 같은 (action,state) 를 두 번 잰다", paste(cel, collapse = ", "))
+  # 행동 축이 실제로 갈리는가 — 전부 스칼라면 '오버레이를 여러 방향으로 쟀다' 가 거짓이 된다
+  if (length(unique(.pk$action)) >= 2L) {
+    ok(sprintf("행동 축 2종 이상 선정 (%s)", paste(unique(.pk$action), collapse = "+")))
+  } else ng("행동 축이 하나뿐 — 라벨만 다르고 하는 일이 같다", unique(.pk$action))
+  # 구속 축(낙폭)이 선정에서 밀려나지 않는가
+  if ("drawdown" %in% .pk$state) {
+    ok(sprintf("구속 축(drawdown 상태)이 선정에 남는다 (%s)", paste(unique(.pk$state), collapse = "+")))
+  } else ng("구속 축이 선정에서 빠졌다", paste(unique(.pk$state), collapse = "+"))
 }
 
 # 제외 회전 — 이미 측정한 팔은 다시 뽑지 않는다(같은 것을 두 번 재지 않는다)
@@ -64,4 +71,5 @@ if (any(grepl("rf_pick_overlay_arms", rr, fixed = TRUE))) {
 
 writeLines("")
 writeLines(sprintf("합계: 통과 %d · 실패 %d", PASS, FAIL))
+cat(sprintf('{"test":"rf_overlay_arms","pass":%d,"fail":%d,"total":%d}\n', PASS, FAIL, PASS + FAIL))
 if (FAIL > 0L) quit(status = 1L)

@@ -28,7 +28,7 @@
 5. **교훈** — 의미있는 실패(기전이 특정되는 실패)만 L-code 적립(mode=`paper_replication`).
 6. **분기** —
    - **Grade A** → **Judge(PIT 전담) 스폰**(`judge_request.json` 발행됨) → PASS → BOOK 등록 후보(도훈 confirm) / FAIL → 결과 무효·수리·재측정.
-   - **미달(B/C/F)** → **강화 프로세스**(`Skill(reinforce)` — 원장 `reinforce_ledger_l1.json` open 자동). 논문당 최대 20회, 축 = 멀티팩터/비중방법론/리스크오버레이/결합. 매 시도 = 근거 논문 필수 + QEPM(alpha→risk→optimizer→forge→등급) + L-code. 20회 소진 → exhausted → 큐 다음 논문.
+   - **미달(B/C/F)** → **강화 프로세스**(`Skill(reinforce)` — 원장 `reinforce_ledger_l1.json` open 자동). 논문당 최대 25회(격자 5블록×5), 축 = 멀티팩터/비중방법론/유니버스/리스크오버레이/결합. 매 시도 = QEPM(alpha→risk→optimizer→forge→등급) + L-code. ★근거 논문은 **의무 아님**(도훈 2026-09-03 해제) — 있으면 기록하고 없으면 `evidence=none` 으로 남긴다. 25회 소진 → exhausted → 큐 다음 논문.
    - **논문 3편 소비마다** Q-Lead 가 논문 간 아이디어 결합 기회를 검토·기록(`rf_record_combination_review` — 착수 무관 의무).
 
 ## 예산 (라운드 1건)
@@ -52,17 +52,18 @@
 사전등록·검정력 계약·무신호 대조·β-통제 α·FF 회귀·`register_module`·`close_round()` 의무 —
 전부 선택 도구이지 부과 의무가 아니다. 부팅 WARN 즉시 수리 금지 · Grade A 전 Judge 스폰 금지 ·
 BOOK 자동 등록 금지.
-★면제되지 않는 것: PIT · 축 2층 · `dohoon_decision` 임의 착수 금지 · 근거 논문 의무 · 하드코딩 금지.
+★면제되지 않는 것: PIT · 축 2층 · `dohoon_decision` 임의 착수 금지 · 하드코딩 금지(수치는 격자·등록부에서 온다).
+★2026-09-03 해제: **강화 레인 근거 논문 의무** — 원장이 더는 거부하지 않는다(충실구현은 불변).
 
 ## 보고 형식 (3줄)
 
 ```
 ① <전략명> · Grade <A/B/C/F> · CAGR x% · SR x · MDD x% · n_max <최대 보유종목수>  (출처: authoritative_remeasure.json — 권위 등급 · 15bps 판)
 ② 기전 1줄 — 무엇이 켜졌고 무엇이 꺼졌나 (+ 논문 기준 성과 병기)
-③ 다음 — <next_probe 1건 또는 강화 n/20 축> · 큐 다음 항목 <id>
+③ 다음 — <next_probe 1건 또는 강화 n/25 축> · 큐 다음 항목 <id>
 ```
 
-텔레그램 표제 = `[1계층] 알파 서칭 — …` / `[1계층·강화 n/20] …` (qvest-telegram SKILL 정본).
+텔레그램 표제 = `[1계층] 알파 서칭 — …` / `[1계층·강화 n/25] …` (qvest-telegram SKILL 정본).
 
 ## 참조
 

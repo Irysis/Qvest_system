@@ -24,6 +24,13 @@
 # engine 계약 (확장): 엔진은 둘 중 하나를 산출한다 —
 #   FACTORS(Date, Ticker, Score)               → 러너가 portfolio_spec 으로 비중 구성
 #   PORTFOLIO(Date, Ticker, Weight[, Leg])     → 논문 비중 그대로 소비 (construction="engine_direct")
+#
+# L-code 축 (2026-09-02): construction_type 은 러너가 **관측**(diagnostics$has_short)·실행 분기에서
+#   파생해 emit_lcode 에 명시 전달한다(.rp_construction_type). emit 측 키워드 추론 폴백은 기본값이
+#   'single_factor_long_only' 라 롱숏 5분위 VW 스프레드(RP_20260902_122546_22268, n_max 138·has_short
+#   TRUE)를 롱온리로 적었다 — hypothesis_index 태그 오염. 호출자가 더 잘 알면
+#   portfolio_spec$construction_type 로 덮어쓴다(LCODE_VALID_CONSTRUCTION_TYPES 어휘).
+#   mechanism_hypothesis 인자 미전달 시 = 논문 가설(strategy_idea)을 '검증 전 진술' 로 라벨해 채운다.
 # =============================================================================
 
 suppressWarnings(suppressMessages({
@@ -71,6 +78,7 @@ source(file.path(.RP_INFRA, "axiom", "lcode_emit.R"))
   sfrac <- spec$short_frac %||% lfrac
   nl    <- spec$n_long %||% NA
   ns    <- spec$n_short %||% NA
+  nmax  <- as.integer(spec$n_max %||% .RP_NMAX_DEFAULT)
 
   size_at <- NULL
   if (wgt == "vw") {
@@ -98,11 +106,18 @@ source(file.path(.RP_INFRA, "axiom", "lcode_emit.R"))
     n <- nrow(md)
     if (cons == "top_n_long") {
       k <- if (is.finite(nl)) as.integer(nl) else max(2L, as.integer(ceiling(n * lfrac)))
-      if (n < max(2L, k)) return(NULL)
+      k <- min(k, nmax)                                   # ★고정 축 상한
+      # ★"상위 k" 는 "있는 만큼 최대 k" 다 (2026-09-01). n_long 을 명시하면 후보가 얇은 달이
+      #   통째로 버려졌다. lfrac 경로는 k <= n 이 자명하므로 이 두 줄은 그쪽 거동을 바꾸지 않는다.
+      k <- min(k, n)
+      if (n < 2L) return(NULL)
       .leg_w(head(md, k), "long")
     } else if (cons %in% c("decile_long_short", "quantile_long_short")) {
       kl <- if (is.finite(nl)) as.integer(nl) else max(2L, as.integer(ceiling(n * lfrac)))
       ks <- if (is.finite(ns)) as.integer(ns) else max(2L, as.integer(ceiling(n * sfrac)))
+      # ★양 다리 **합계**가 상한이다(슬리브 조합에서도 최종 보유가 축을 넘지 않게).
+      if (kl + ks > nmax) { .sc <- nmax / (kl + ks)
+        kl <- max(1L, as.integer(floor(kl * .sc))); ks <- max(1L, as.integer(floor(ks * .sc))) }
       if (n < kl + ks) return(NULL)
       rbind(.leg_w(head(md, kl), "long"), .leg_w(tail(md, ks), "short"))
     } else stop(sprintf("[replication] 미지원 construction: %s", cons))
@@ -110,6 +125,28 @@ source(file.path(.RP_INFRA, "axiom", "lcode_emit.R"))
   W <- rbindlist(Filter(Negate(is.null), rows), use.names = TRUE)
   if (nrow(W) == 0L) stop("[replication] WEIGHTS 구성 실패 — FACTORS/spec 확인")
   W
+}
+
+# ── L-code construction_type 파생 (Independence 축 — 관측 우선 · 선언 폴백 · 미상은 NULL) ──
+#   선언(spec$construction)은 원천을 말하지 산출 축을 말하지 않는다 — 시뮬레이터가 실제로 기록한
+#   레그(diagnostics$has_short)가 1순위, 선언은 미관측일 때의 폴백. engine_direct = 러너가 엔진
+#   PORTFOLIO 를 그대로 썼는가(선언과 무관한 실제 실행 분기). 반환값은 전부
+#   lcode_schema.R::LCODE_VALID_CONSTRUCTION_TYPES 안의 라벨이고, 판별 불가면 NULL 이다 —
+#   라벨을 지어내지 않는다(emit 측이 키워드 추론 WARN 으로 정직 결측 처리).
+.rp_construction_type <- function(spec, diag, engine_direct = FALSE) {
+  explicit <- as.character(spec$construction_type %||% "")[1]
+  if (nzchar(explicit)) return(explicit)                              # 호출자 명시 > 파생
+  cons <- if (isTRUE(engine_direct)) "engine_direct" else as.character(spec$construction %||% "top_n_long")[1]
+  has_short <- diag$has_short %||% NA
+  if (isTRUE(has_short))  return("long_short")                        # 관측: 숏 레그 존재 (선언 무관)
+  if (isFALSE(has_short)) {                                           # 관측: 롱온리
+    if (identical(cons, "top_n_long")) return("single_sleeve_long_only_topN")
+    return("single_factor_long_only")                                 # engine_direct 논문 비중 그대로(롱온리)
+  }
+  # 미관측(diagnostics 부재) → 선언 폴백
+  if (cons %in% c("decile_long_short", "quantile_long_short")) return("long_short")
+  if (identical(cons, "top_n_long")) return("single_sleeve_long_only_topN")
+  NULL                                                                # engine_direct + 미관측 = 미상
 }
 
 # ── 논문 기준(충실구현) 성과 요약 — PerformanceAnalytics 표준 함수만 ──
@@ -124,21 +161,38 @@ source(file.path(.RP_INFRA, "axiom", "lcode_emit.R"))
   )
 }
 
+# ★"호출자가 고르지 않았다" 는 **부재(NULL)** 로 표현한다 — 특정 값을 표식으로 삼으면
+#   그 값을 진짜로 고른 호출자와 구분되지 않는다(2026-08-31 실사고).
+# ★종목수 상한 (도훈 지시 2026-08-31). 정본 = constraint_defaults.json::max_names 25
+#   = CLAUDE.md/pit.md 고정 축. 구판은 러너 구성 경로에 상한이 없어 long_frac 폴백 10%%가
+#   후보 수에 따라 27~36 종을 냈다(논문 값이 아니라 후보 수가 정한 숫자였다).
+#   spec$n_max 로 덮을 수 있게 두되 기본은 축을 따른다.
+.RP_NMAX_DEFAULT <- 25L
 run_paper_replication <- function(strategy_name, strategy_idea, factor_engine_path,
-                                  portfolio_spec = list(construction = "top_n_long",
-                                                        weighting = "ew",
-                                                        rebalance = "monthly"),
+                                  # ★NULL = "호출자가 고르지 않았다". 구판은 기본값이
+                                  #   "top_n_long" 이라 **명시적 top_n_long 과 구분되지 않았고**,
+                                  #   자동 판정이 그 명시를 덮었다(2026-08-31: 롱온리 판을 요청했는데
+                                  #   engine_direct 로 측정돼 롱숏 결과가 나왔다). 부재는 값이 아니다.
+                                  portfolio_spec = NULL,
                                   universe = "K200_KQ150",
                                   source_paper = NULL,
+                                  require_source_paper = TRUE,   # ★강화 레인만 FALSE (2026-09-03 해제)
                                   commission_paper = NULL,   # NULL = 논문 무명시 → gross(0)
                                   start_date = "2005-01-01",
                                   out_root = NULL,
-                                  send_telegram = TRUE, tg_dry_run = FALSE) {
+                                  send_telegram = TRUE, tg_dry_run = FALSE,
+                                  factor_analysis = TRUE,
+                                  mechanism_hypothesis = NULL) {   # L-code 기전 가설 — NULL 이면 논문 가설(strategy_idea)을 '검증 전 진술' 로 라벨
   `%||%` <- function(a, b) if (is.null(a) || length(a) == 0L || (length(a) == 1L && is.na(a))) b else a
   stopifnot(file.exists(factor_engine_path))
-  # 근거 논문 필수 (v10 절대 규칙: 모든 수치 결정에 뿌리 논문 — 원문 링크)
-  if (is.null(source_paper) || !nzchar(as.character(source_paper$url %||% "")))
+  # 근거 논문 — 충실구현은 필수(논문을 재현하는 단계에서 논문을 뺄 수 없다),
+  #   강화 레인은 2026-09-03 해제(도훈 지시). 호출자가 require_source_paper=FALSE 로 가른다.
+  if (isTRUE(require_source_paper) &&
+      (is.null(source_paper) || !nzchar(as.character(source_paper$url %||% ""))))
     stop("[replication] source_paper$url 필수 — 근거 논문 원문 링크 없이 착수 금지 (v10)")
+  # ★아래 서식·기록에서 NULL 이 sprintf 를 영길이로 붕괴시키지 않게 한 번만 정규화한다.
+  .sp_url <- as.character(source_paper$url %||% NA_character_)[1]
+  if (is.na(.sp_url) || !nzchar(.sp_url)) .sp_url <- "(근거 논문 없음 — 강화 레인)"
 
   run_id      <- paste0(format(Sys.time(), "%Y%m%d_%H%M%S"), "_", Sys.getpid())
   strategy_id <- paste0("RP_", run_id)
@@ -146,7 +200,7 @@ run_paper_replication <- function(strategy_name, strategy_idea, factor_engine_pa
   OUT_DIR <- file.path(out_root, run_id)
   dir.create(OUT_DIR, recursive = TRUE, showWarnings = FALSE)
   cat(sprintf("\n=== [Replication] %s (%s) ===\n    paper: %s\n    idea: %s\n",
-              strategy_name, strategy_id, source_paper$url, strategy_idea))
+              strategy_name, strategy_id, .sp_url, strategy_idea))
 
   # ---- 1. Data (LiqPass 미적용 — 논문 유니버스 필터 우선. paper_faithful 라벨) ----
   res <- load_rawdata(use_cache = TRUE)
@@ -181,7 +235,18 @@ run_paper_replication <- function(strategy_name, strategy_idea, factor_engine_pa
   }
   if (!is.null(FACTORS))   { stopifnot(all(c("Date","Ticker","Score") %in% names(FACTORS)))
                              if (!inherits(FACTORS$Date, "Date")) FACTORS[, Date := as.Date(Date)]
-                             FACTORS <- .apply_universe(FACTORS[Date >= as.Date(start_date)]) }
+                             FACTORS <- .apply_universe(FACTORS[Date >= as.Date(start_date)])
+    # ★스코어 패널을 산출물로 남긴다 (2026-09-01) — B+ 논문 신호를 팩터 DB 에 무인 등록하는
+    #   경로가 이 패널을 **동결 사본**으로 쓴다. 등록 시점에 엔진을 다시 돌리면 443개월 백필이
+    #   수시간이고, 그 사이 엔진 파일이 바뀌면 값이 달라져 재현이 깨진다.
+    #   ★여기서 저장하는 것은 **실제로 측정에 들어간 바로 그 패널**이다(유니버스 적용 후).
+    tryCatch({
+      suppressMessages(library(arrow))
+      arrow::write_parquet(FACTORS, file.path(OUT_DIR, "factors_panel.parquet"))
+    }, error = function(e) cat(sprintf("[replication] factors_panel 저장 실패(측정에는 영향 없음): %s
+",
+                                       conditionMessage(e))))
+  }
   if (!is.null(PORTFOLIO)) { stopifnot(all(c("Date","Ticker","Weight") %in% names(PORTFOLIO)))
                              if (!inherits(PORTFOLIO$Date, "Date")) PORTFOLIO[, Date := as.Date(Date)]
                              PORTFOLIO <- .apply_universe(PORTFOLIO[Date >= as.Date(start_date)]) }
@@ -196,11 +261,41 @@ run_paper_replication <- function(strategy_name, strategy_idea, factor_engine_pa
   cat("[replication] PIT check: CLEAN\n")
 
   # ---- 5. WEIGHTS ----
-  WEIGHTS <- if (!is.null(PORTFOLIO) && identical(portfolio_spec$construction %||% "", "engine_direct")) {
+  # ★엔진이 PORTFOLIO 를 냈다면 그것이 **논문 비중**이다 — 엔진이 비중을 만들 이유가 그것뿐이다.
+  #   구판은 construction 기본값이 "top_n_long" 이라, 호출자가 engine_direct 를 **명시하지
+  #   않으면** PORTFOLIO 를 조용히 버리고 FACTORS 로 top-N 롱온리를 다시 구성했다.
+  #   실사고 2026-08-31: 무인 충실구현 3편 전부(2608.24703 · 27156 · 27076) 가 이 경로로
+  #   측정됐다. 2608.27076 은 논문이 top-6 롱 + top-6 숏(베타≈0)인데 롱온리 36종으로 나가
+  #   설계의 핵심인 시장중립이 사라졌다 — 논문 성과와 비교 자체가 성립하지 않는다.
+  #   무인 검증기가 portfolio_spec 을 넘기지 않는 것이 방아쇠였지만, 기본값이 엔진 산출을
+  #   덮는 구조가 근인이다. 명시가 없으면 **산출물이 결정한다**(명시가 있으면 그것이 우선).
+  if (is.null(portfolio_spec)) portfolio_spec <- list()
+  .cons <- portfolio_spec$construction %||% ""
+  if (!nzchar(.cons)) {
+    .auto <- if (!is.null(PORTFOLIO)) "engine_direct" else "top_n_long"
+    if (!identical(.auto, .cons)) {
+      cat(sprintf("[replication] construction 자동 판정: %s (엔진 산출 = %s)
+",
+                  .auto, if (!is.null(PORTFOLIO)) "PORTFOLIO" else "FACTORS"))
+      portfolio_spec$construction <- .auto; .cons <- .auto
+    }
+  }
+  WEIGHTS <- if (!is.null(PORTFOLIO) && identical(.cons, "engine_direct")) {
+    # ★engine_direct 는 **논문 비중 그대로**가 존재 이유라 자르지 않는다. 자르면 그 순간
+    #   충실구현이 아니게 된다. 대신 축 초과를 조용히 넘기지 않는다 — 계약 감사(E-5)가
+    #   판정하고 여기서는 사실을 드러낸다.
+    .nd <- PORTFOLIO[, .N, by = Date]
+    if (nrow(.nd) && max(.nd$N) > .RP_NMAX_DEFAULT)
+      cat(sprintf("[replication] ★engine_direct 보유 최대 %d종 > 고정 축 %d — 논문 비중 그대로 유지, 축 초과는 감사에 남는다
+",
+                  max(.nd$N), .RP_NMAX_DEFAULT))
     PORTFOLIO
   } else if (!is.null(FACTORS)) {
     .rp_build_weights(FACTORS, RAWDATA, portfolio_spec)
   } else PORTFOLIO
+  # 러너가 실제로 탄 분기 — 선언(construction)이 아니라 이것이 L-code construction_type 의 근거 (제어흐름 불변)
+  weights_engine_direct <- !is.null(PORTFOLIO) &&
+    (identical(portfolio_spec$construction %||% "", "engine_direct") || is.null(FACTORS))
   # Weight 패널 날짜 정합 sanity: 시그널일이 미래로 튀면 중단
   if (max(WEIGHTS$Date) > max(RAWDATA$Date))
     stop("[replication] WEIGHTS 시그널일이 RAWDATA 범위 밖 (미래 날짜) — PIT 의심")
@@ -227,7 +322,7 @@ run_paper_replication <- function(strategy_name, strategy_idea, factor_engine_pa
     rebalance = portfolio_spec$rebalance %||% "monthly",
     universe = universe, liquidity_filter = "paper_faithful",
     n_max = sim_grade$diagnostics$n_max, has_short = sim_grade$diagnostics$has_short,
-    source_paper_url = as.character(source_paper$url),
+    source_paper_url = .sp_url,
     benchmark_note = if (isTRUE(sim_grade$diagnostics$has_short)) "long_short_vs_long_bm" else "long_vs_long_bm"
   )
   bt <- build_bt_result(sim_grade, strategy_spec,
@@ -241,6 +336,66 @@ run_paper_replication <- function(strategy_name, strategy_idea, factor_engine_pa
   saved <- tryCatch(save_bt_result(bt, OUT_DIR, save_xlsx = FALSE), error = function(e) {
     cat("[replication] save_bt_result 실패(비치명):", conditionMessage(e), "\n"); NULL })
   es <- essence_score(bt, n_trials_cumulative = 1L, selection_type = "chain")
+
+  # ---- 7-b. 팩터 회귀 분석 (FF3/FF5/Carhart 4F 알파 + Fama-MacBeth) ----
+  #   ★도훈 지시 2026-08-30 — 예전 알파 서칭의 [팩터 분석] 메시지를 무인 경로에도.
+  #   생산자는 `strategy_analyzer.R::run_analysis` 하나다 — 새로 구현하지 않는다.
+  #   산출: analysis_multifactor.csv(FF3/FF5/Carhart) · analysis_fmb_summary.csv(FMB) ·
+  #        analysis_ic.csv · analysis_stress.csv · analysis_report.md → tg_pass_analysis 가 소비.
+  #   ★FACTORS 가 NULL 이면(PORTFOLIO 형 엔진) IC·FMB 가 서지 않는다 — 조용히 건너뛰지 말고
+  #     사유를 남긴다(침묵 누락이 이 저장소의 반복 결함).
+  analysis_ran <- FALSE
+  if (isTRUE(factor_analysis) && !identical(Sys.getenv("QVEST_RP_NO_FACTOR_ANALYSIS", "0"), "1")) {
+    if (is.null(FACTORS) || !nrow(FACTORS)) {
+      cat("[replication] 팩터분석 생략 — FACTORS 부재(PORTFOLIO 형 엔진). FF/FMB 미산출
+")
+    } else if (!exists("run_analysis")) {
+      suppressWarnings(tryCatch(source(file.path(.RP_INFRA, "strategy_analyzer.R")),
+                                error = function(e) NULL))
+    }
+    if (exists("run_analysis") && !is.null(FACTORS) && nrow(FACTORS)) {
+      .t0 <- Sys.time()
+      # ★경계 어댑터 2개 — 분석기(strategy_analyzer.R)는 알파 서칭 하네스를 전제한다.
+      #   공유 분석기를 고치지 않고 호출자 쪽에서 맞춰준다(알파 서칭 경로 무영향).
+      #
+      #   ① HOLDINGS_LOG 열 이름: 복제 하네스는 Date(=exec_date) 로 찍고 분석기는
+      #      Signal_Date 를 찾는다 → 5절(회전율)에서 죽고 6절(FF3/FF5/Carhart)에
+      #      도달못한다. 실측 2026-08-30: "Object 'Signal_Date' not found amongst
+      #      [Date, Ticker, Weight, Leg]". ★기간 라벨로만 쓰이므로(연속 리밸런싱
+      #      간 종목 집합 차집합) exec_date 를 그대로 써도 의미가 보존된다 — 조회가
+      #      아니라 그룹핑 키라 PIT 함의 없음.
+      #   ② FUNC_PATH: 없으면 분석기가 dirname(dirname(output_dir))/02_Infrastructure 로
+      #      폴백하는데 그게 stage_artifacts/02_Infrastructure 로 풀려 **존재하지 않는다**.
+      #      file.exists 가드라 에러 없이 조용히 건너뛴다 — FF3/FF5/Carhart 가 침묵 누락된다.
+      .fp_had <- exists("FUNC_PATH", envir = globalenv())
+      .fp_old <- if (.fp_had) get("FUNC_PATH", envir = globalenv()) else NULL
+      assign("FUNC_PATH", .RP_INFRA, envir = globalenv())
+      on.exit({ if (.fp_had) assign("FUNC_PATH", .fp_old, envir = globalenv())
+                else suppressWarnings(rm("FUNC_PATH", envir = globalenv())) }, add = TRUE)
+      .sim_fa <- sim_grade
+      if (!is.null(.sim_fa$HOLDINGS_LOG) && nrow(.sim_fa$HOLDINGS_LOG) &&
+          !("Signal_Date" %in% names(.sim_fa$HOLDINGS_LOG))) {
+        .hl <- data.table::copy(.sim_fa$HOLDINGS_LOG)
+        .hl[, Signal_Date := Date]
+        .sim_fa$HOLDINGS_LOG <- .hl
+      }
+      tryCatch({
+        run_analysis(.sim_fa, FACTORS, RAWDATA, BM_DT,
+                     output_dir = OUT_DIR, strategy_name = strategy_name)
+        assign("%||%", `%||%`, envir = globalenv())   # run_analysis 내부 source 오염 복원
+        analysis_ran <- TRUE
+        if (!file.exists(file.path(OUT_DIR, "analysis_multifactor.csv")))
+          cat("[replication][WARN] analysis_multifactor.csv 미생성 — FF3/FF5/Carhart 누락",
+              "(factor_portfolios.R 경로 또는 KR 팩터 캐시 확인)
+")
+        cat(sprintf("[replication] 팩터분석 완료 — %.1f분 (FF3/FF5/Carhart + FMB)
+",
+                    as.numeric(difftime(Sys.time(), .t0, units = "mins"))))
+      }, error = function(e)
+        cat("[replication] 팩터분석 실패(비치명):", conditionMessage(e), "
+"))
+    }
+  }
   grade <- as.character(es$grade %||% NA)
   audit_tbl <- bt$audit
   integrity <- tryCatch(if (nrow(audit_tbl[severity == "critical" & status == "FAIL"])) "FAIL" else "OK",
@@ -294,7 +449,7 @@ run_paper_replication <- function(strategy_name, strategy_idea, factor_engine_pa
                      strategy_spec$construction, strategy_spec$weight_method,
                      sim_grade$diagnostics$n_max %||% "?",
                      if (isTRUE(sim_grade$diagnostics$has_short)) " · 롱숏" else ""),
-      "근거 논문" = as.character(source_paper$url)
+      "근거 논문" = .sp_url
     )
     charts <- Filter(file.exists, file.path(OUT_DIR, c("equity_curve.png", "annual_returns.png")))
     tg_agent_brief(
@@ -314,6 +469,17 @@ run_paper_replication <- function(strategy_name, strategy_idea, factor_engine_pa
   }, error = function(e) cat("[replication] 텔레그램 실패(비치명):", conditionMessage(e), "\n"))
 
   # ---- 10. L-code (research_mode = paper_replication) ----
+  #   construction_type = 관측(has_short)·실행 분기 파생 — emit 키워드 추론에 맡기지 않는다.
+  #   mechanism_hypothesis = 호출자 전달 > 논문 가설(strategy_idea, '검증 전 진술' 라벨). 아이디어가
+  #   비어 있으면 NULL(정직 결측 — 접두어만으로 보일러플레이트 검사를 통과시키지 않는다).
+  lc_construction <- .rp_construction_type(portfolio_spec, sim_grade$diagnostics, weights_engine_direct)
+  lc_mechanism <- {
+    mh <- trimws(as.character(mechanism_hypothesis %||% "")[1])
+    if (nzchar(mh)) mh else {
+      si <- trimws(as.character(strategy_idea %||% "")[1])
+      if (nzchar(si)) sprintf("논문 가설(충실구현 대상 — 검증 전 진술): %s", si) else NULL
+    }
+  }
   lc <- tryCatch({
     emit_lcode(mode = "paper_replication", strategy_id = strategy_id, grade = grade,
                lesson_text = sprintf("%s 충실구현: 등급 %s. 논문기준 SR %.2f vs 15bps SR %.2f. %s",
@@ -321,10 +487,12 @@ run_paper_replication <- function(strategy_name, strategy_idea, factor_engine_pa
                                      es$essence$net_sharpe %||% NA_real_,
                                      strategy_idea),
                metric_type = es$metric_type %||% "uncertain",
+               construction_type = lc_construction,     # Independence 축 — 관측·실행 분기 파생
+               mechanism_hypothesis = lc_mechanism,     # Mechanism 축 — 논문 가설(검증 전) / 호출자
                oos_retention = es$essence$oos_retention,
                portfolio_alpha_t = es$essence$portfolio_alpha_t_nw_lag3,
                selection_type = "chain",
-               source_paper = as.character(source_paper$url),
+               source_paper = .sp_url,
                next_probe = list("강화 프로세스 축 1 (멀티팩터/비중방법론/리스크오버레이 중 논문 후속연구가 가리키는 축)",
                                  "실투형 변환(long-only·≤25종·15bps) 시 신호 보존율 측정"))
   }, error = function(e) { cat("[replication] L-code 실패(비치명):", conditionMessage(e), "\n"); NULL })
@@ -358,7 +526,9 @@ run_paper_replication <- function(strategy_name, strategy_idea, factor_engine_pa
 
   invisible(list(strategy_id = strategy_id, grade = grade, out_dir = OUT_DIR,
                  paper_basis = paper_sum, essence = es$essence,
-                 diagnostics = sim_grade$diagnostics, l_code = lc))
+                 diagnostics = sim_grade$diagnostics, l_code = lc,
+                 analysis_ran = analysis_ran,
+                 construction_type = lc_construction))
 }
 
 cat("[run_paper_replication.R] Loaded (v10) — run_paper_replication(name, idea, engine, portfolio_spec, source_paper=...)\n")

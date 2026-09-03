@@ -1,4 +1,7 @@
 #!/usr/bin/env bash
+# ★RETIRED (v10 2026-09-03) — settings.json·라우터 어디에도 등록 이력이 없는 pre-v9 훅.
+#   재등록 금지(되살리려면 v10 폐지 개념 분기부터 제거하고 양성/음성 대조를 새로 만들 것). 파일은 사료 존치.
+#   ★되살릴 때 먼저 수리할 것 2곳: 여러 줄 `Rscript -e`(이 환경에서 rc=139) · tg_send 직접 호출(단일 진입 위반).
 # (v8.2.1 HOOK-P0-1) bare python3 → $QVEST_PY_BIN (Windows Store 스텁 fail-open 방지)
 if [ -z "${QVEST_PY_BIN:-}" ]; then
   QVEST_PY_BIN="${QVEST_PY:-}"; QVEST_PY_BIN="${QVEST_PY_BIN//\//}"

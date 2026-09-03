@@ -1,7 +1,12 @@
-# RAMP 모드 룰 (K-RAMP 헌법 매핑, Level 0)
+# RAMP 모드 룰 (K-RAMP 헌법 매핑) — ★RETIRED
 
-**발효**: 2026-06-17 (도훈 mandate). **위반 = AX-002 동급.**
-**SOT**: `00_Lawbook/K_RAMP/`(통합본 헌법 §0~§20 + 가이드북 §0~§17) · 운영매뉴얼 `.claude/skills/ramp/SKILL.md` · 빌드플랜 `C:/Users/99922/.claude/plans/misty-imagining-feather.md`.
+> **★RETIRED (v9.21 2026-08-24 모드 퇴임 · v10 2026-09-03 배너)** — 아래 전문은 **역사 기록**이다.
+> **Level 0 지위·AX-002 동급 효력 해제**: 현행 규범은 `CLAUDE.md`(v10 2계층) + `.claude/rules/lean-loop.md` +
+> `02_Infrastructure/docs/rules/strategy-rotation.md`. 본 문서의 제약 서술(비중 상한 [0,0.20] · governor 자본 게이트)은
+> v10 에서 폐지된 개념이므로 **인용 금지**. 코드·데이터·L-code 73건은 무손상 보존(재열람 = git 태그 pre-v10-2layer).
+
+**발효**: 2026-06-17 (도훈 mandate). ~~위반 = AX-002 동급~~ (효력 해제).
+**SOT**: `00_Lawbook/K_RAMP/`(통합본 헌법 §0~§20 + 가이드북 §0~§17) · 운영매뉴얼 `.claude/skills_retired_v10/ramp/SKILL.md`(퇴역) · 빌드플랜 `C:/Users/99922/.claude/plans/misty-imagining-feather.md`.
 **행위자 치환**: 통합본의 "Codex" = Qvest **Q-Lead(오케스트레이션·거버넌스·아키텍트) + 7-agent 로스터**.
 
 본 룰은 K-RAMP 헌법을 *참조·매핑*만 한다(기존 Qvest 룰 재진술 금지). 신규는 진짜 GAP만.

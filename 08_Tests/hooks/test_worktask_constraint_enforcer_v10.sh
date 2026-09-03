@@ -76,5 +76,9 @@ if echo "$OUT" | grep -q '"block"'; then ok "④ Σw=0.8 차단 (Σw=1 잔존)"
 else ng "④ Σw=0.8 이 통과됨 — Σw 축 사망: $OUT"; fi
 
 echo "결과: PASS=$PASS FAIL=$FAIL"
+# ★러너 요약 계약 (v10 2026-09-03): 이 줄이 없으면 run_all_hooks.sh 가 UNMEASURED 로 계상해
+#   이 스위트의 단언이 배터리 총계에 **0** 으로 들어간다(조용한 커버리지 구멍).
+printf '{"test":"worktask_constraint_enforcer_v10","pass":%d,"fail":%d,"total":%d,"skipped":0}
+' "$PASS" "$FAIL" "$((PASS+FAIL))"
 [ "$FAIL" -eq 0 ] || exit 1
 exit 0

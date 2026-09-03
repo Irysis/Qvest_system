@@ -58,7 +58,7 @@ case "${QVEST_BOOT_SANITIZED:-}" in
   *)      echo "[boot] WARN: utf8_output_guard INACTIVE (python3/guard 부재 또는 외부 QVEST_BOOT_SANITIZED 선점) — 이모지 포함 출력 시 API 400 위험" ;;
 esac
 
-echo "=== Qvest v10.0 부트스트랩 — health_full 전용 (Fable 5 · 2계층 리서치(팩터전략/전략로테이션)) ==="
+echo "=== Qvest v10.2 부트스트랩 — health_full 전용 (Fable 5 · 2계층 리서치(팩터전략/전략로테이션)) ==="
 
 # 1. (제거됨 v8.0 2026-05-29) tmux rc telegram inbound listener — outbound tg_agent_brief()는
 #    영향 없음. inbound 명령 listener 불필요 판단(도훈). 필요 시 persistent_remote_control.sh 수동 기동.
@@ -543,8 +543,37 @@ if [ -f "$HFC" ]; then
   bash "$HFC" --boot || true
 fi
 
-# 7b. v1.2 Charter §10 Measurement Coherence Health Score (Component D)
+# ── ★v10 (2026-09-03) legacy book/cert 감사 스위치 ──────────────────────────────────────────
+#   7b(measurement coherence · book_state) · 7c(cert backfill) · 7d(v8 readiness) · 7e(active-book timeline)
+#   는 전부 **폐지된 층**(governor book_state · cert · v8 착수 관문)을 정본으로 읽는다. v10 BOOK 정본은
+#   06_Registry/book/book_registry.json(writer = book/book_registry.R) 이고 boot_lean.sh 가 이미 그것을 읽는다.
+#   ★특히 7c 는 legacy 동결 디렉터리에 새 cert 를 쓸 수 있는 유일한 경로였다(cert_backfill_audit.R 안에도
+#     RETIRED 가드를 넣었지만, 여기서 기본 off 로 이중으로 막는다).
+#   되살리려면 QVEST_LEGACY_BOOK_AUDIT=1 로 실행.
+QVEST_LEGACY_BOOK_AUDIT="${QVEST_LEGACY_BOOK_AUDIT:-0}"
+if [ "$QVEST_LEGACY_BOOK_AUDIT" != "1" ]; then
+  echo "[boot] BOOK: $( PROJECT="$PROJECT" "$QVEST_PY" - <<'PYEOF' 2>/dev/null || echo "?"
+import json, io, os
+p = os.path.join(os.environ.get("PROJECT", "."), "06_Registry", "book", "book_registry.json")
+try:
+    d = json.load(io.open(p, encoding="utf-8-sig"))
+    es = [e for e in (d.get("entries") or []) if isinstance(e, dict)]
+    ac = [e for e in es if e.get("status") == "active"]
+    lt = ac[-1] if ac else None
+    s = "%d entries (%d active)" % (len(es), len(ac))
+    if lt:
+        s += " · 최신 %s %s %s (트래킹 %s)" % (lt.get("book_id"), str(lt.get("strategy_id"))[:34], lt.get("grade"),
+                                            str((lt.get("tracking") or {}).get("last_nav_date") or "미실행"))
+    print(s)
+except Exception:
+    print("?")
+PYEOF
+) — 정본 06_Registry/book/book_registry.json (v10 · legacy book_state 감사는 QVEST_LEGACY_BOOK_AUDIT=1)"
+fi
+
+# 7b. (legacy) v1.2 Charter §10 Measurement Coherence Health Score (Component D)
 BS_PATH="$PROJECT/qepm/mailbox/governor/book_state.json"
+[ "$QVEST_LEGACY_BOOK_AUDIT" = "1" ] || BS_PATH="/nonexistent-v10-legacy-off"
 MBA_R="$PROJECT/02_Infrastructure/portfolio/measurement_basis_audit.R"
 MBA_TIER=""
 if [ -f "$BS_PATH" ] && [ -f "$MBA_R" ]; then
@@ -577,6 +606,7 @@ fi
 #    근원은 book_state 안에서 정체성이 두 필드로 갈라진 것(admitted_ids ↔ current_pg2_official_name).
 #  ★차단하지 않는다 — 진단이다. 다만 **매 부팅 노출**이 "함께 갱신"을 보장하는 유일한 장치다.
 PG2C_R="$PROJECT/02_Infrastructure/portfolio/pg2_coherence_check.R"
+[ "$QVEST_LEGACY_BOOK_AUDIT" = "1" ] || PG2C_R="/nonexistent-v10-legacy-off"   # v10: book_state 소비 검사 — 기본 off
 if [ -f "$PG2C_R" ]; then
   PG2C_RAW=$(cd "$PROJECT" && Rscript "$PG2C_R" 2>&1); PG2C_RC=$?
   PG2C_MIS=$(printf '%s' "$PG2C_RAW" | grep -c "MISMATCH")
@@ -667,6 +697,7 @@ fi
 
 # 7c. Layer 2 — DRIFTED/WARNING 감지 시 cert backfill audit auto 호출
 CERT_BACKFILL_R="$PROJECT/02_Infrastructure/ops/cert_backfill_audit.R"
+[ "$QVEST_LEGACY_BOOK_AUDIT" = "1" ] || CERT_BACKFILL_R="/nonexistent-v10-legacy-off"   # v10: cert 층 폐지 — 기본 off
 if [[ "$MBA_TIER" == "DRIFTED" || "$MBA_TIER" == "WARNING" ]] && [ -f "$CERT_BACKFILL_R" ]; then
   echo "[boot] Coherence $MBA_TIER detected — cert_backfill_audit.R --auto 호출"
   BACKFILL_OUT=$(cd "$PROJECT" && Rscript "$CERT_BACKFILL_R" --auto 2>&1); BACKFILL_RC=$?
@@ -689,6 +720,7 @@ fi
 
 # 7e. v7.0 Sprint 6 — Active book WT timeline rebuild (observability ledger)
 WT_TIMELINE_R="$PROJECT/02_Infrastructure/observability/wt_timeline.R"
+[ "$QVEST_LEGACY_BOOK_AUDIT" = "1" ] || WT_TIMELINE_R="/nonexistent-v10-legacy-off"   # v10: active book = book_registry (7b 표면)
 if [ -f "$WT_TIMELINE_R" ]; then
   TIMELINE_OUT=$(cd "$PROJECT" && Rscript "$WT_TIMELINE_R" --rebuild-active-book 2>&1 || true)
   TIMELINE_COUNT=$(echo "$TIMELINE_OUT" | grep -oE 'rebuilt [0-9]+' | tail -1 | awk '{print $2}')
@@ -699,6 +731,9 @@ fi
 #     15 check 중 e2e_kernel + timeline_generation은 no-write 시 SKIP 정상 (13 PASS + 2 SKIP 기대값)
 #     memory_health check은 cached memory_health_latest.json read
 QV8_CLI="$PROJECT/02_Infrastructure/tools/qvest_v8_ready"
+# ★v10 (2026-09-03): v8 Design Readiness Gate 는 "v8.0 설계를 시작해도 되는가" 를 묻는 1회성 착수 관문이라
+#   v10 에서 판정 의미가 없다(그 게이트가 소비하는 cert·e2e 층도 함께 퇴역). 되살리려면 QVEST_V8_READINESS=1.
+[ "${QVEST_V8_READINESS:-0}" = "1" ] || QV8_CLI="/nonexistent-v10-readiness-off"
 if [ -f "$QV8_CLI" ]; then
   # L-314 follow-up: temp file 1회 parse로 4값 동시 추출.
   # (v8.1.1 2026-06-10 fix) python에는 stdin 리다이렉트로 전달 — Git Bash mktemp의 MSYS 경로(/tmp/...)를
@@ -797,7 +832,8 @@ fi
 # PG2 status (L-314 follow-up: 현 PG2 동적 표시 — book_state.json 자동 읽기)
 PG2_INFO=""
 if [ -f "$BS_PATH" ]; then
-  PG2_INFO=$(BS_PATH="$BS_PATH" python3 <<'PYEOF' 2>/dev/null
+  # ★v10: 이 블록은 legacy book_state.admitted_ids 를 읽는다 — 기본 off(7b 스위치). BOOK 표면은 7b 상단 1줄.
+  PG2_INFO=$([ "$QVEST_LEGACY_BOOK_AUDIT" = "1" ] || echo "SKIP (v10: BOOK 정본 = 06_Registry/book/book_registry.json)"; [ "$QVEST_LEGACY_BOOK_AUDIT" = "1" ] && BS_PATH="$BS_PATH" python3 <<'PYEOF' 2>/dev/null
 import json, os
 bs_path = os.environ.get('BS_PATH', '')
 try:
@@ -951,7 +987,7 @@ if [ -f "$MR_LOCK" ]; then
   # (2026-07-26 probe①) lock=시작 증명일 뿐 — done 마커로 완주/중도사망 구분 (구판은 시작=실행됨 오보)
   if [ -f "${MR_LOCK}.done" ]; then
     MR_D=$(cat "${MR_LOCK}.done" 2>/dev/null | head -1)
-    MORNING_STATUS="MorningRun:  $(date +%Y-%m-%d) 완주 (시작 ${MR_T:-?} → 종료 ${MR_D:-?}) — paper/router/dispatch + 평일 brief/regime"
+    MORNING_STATUS="MorningRun:  $(date +%Y-%m-%d) 완주 (시작 ${MR_T:-?} → 종료 ${MR_D:-?}) — paper_recharge/트리아지 + 평일 brief/regime (v10: 리서치 dispatch 퇴역)"
   else
     MORNING_STATUS="MorningRun:  $(date +%Y-%m-%d) ★시작됨(${MR_T:-?})·완주 마커 없음 — 진행 중이거나 중도 사망 (/tmp/qm_morning_run.log tail 확인)"
   fi
@@ -983,6 +1019,9 @@ fi
 #      ★★건수 0 은 여기서 '없음'이 아니다: 스캐너가 죽으면 UNREPORTED 로 표기된다.
 STANDALONE_TRACK_STATUS=""
 STQ_R="$PROJECT/02_Infrastructure/portfolio/standalone_track_queue.R"
+# ★v10 (2026-09-03): standalone_track 은 hurdle screen_route 기반 큐다. hurdle 은 v9.21 에서 proxy 진단으로
+#   강등돼 판정 인용이 금지됐으므로 부팅 표면에서 내린다(큐 소비는 /improve-drain 수동). QVEST_LEGACY_SPAWN_QUEUE=1 로 복원.
+[ "${QVEST_LEGACY_SPAWN_QUEUE:-0}" = "1" ] || STQ_R="/nonexistent-v10-legacy-off"
 if [ -f "$STQ_R" ]; then
   STANDALONE_TRACK_STATUS=$(cd "$PROJECT" && Rscript "$STQ_R" --status-line 2>/dev/null | tr -d '\r' | grep -m1 'StandaloneTrk:' | sed 's/^[[:space:]]*//' || true)
   [ -z "$STANDALONE_TRACK_STATUS" ] && STANDALONE_TRACK_STATUS="StandaloneTrk: UNREPORTED — 큐 빌더가 상태라인을 못 냄 (Rscript $STQ_R 로 사유 확인)"
@@ -1011,11 +1050,12 @@ if [ -f "$FEV_PY" ] && [ -n "${QVEST_PY:-}" ]; then
   [ -z "$FACTOR_EVIDENCE_STATUS" ] && FACTOR_EVIDENCE_STATUS="FactorEvidence: UNREPORTED — 상태라인 실패 ($FEV_PY --status-line 로 사유 확인)"
 fi
 
-# ── mode_queue 리서치 배분 대기 (2026-08-21 신설, 도훈 결정 "무인 개시까지")
-#    opt/risk/regime 레인은 12일간 등재 0건이었다(누적 고유 93편 vs registry 16건).
-#    러너 = mode_queue_research_run.sh (kill switch QVEST_MODE_QUEUE_ENABLE).
+# ── (v10 2026-08-29 퇴역) mode_queue 리서치 배분 대기 — 비-alpha 레인(optimizer/risk/regime) 폐지.
+#    러너 mode_queue_research_run.sh 는 morning_run 에서 철거됐고 ★RETIRED 헤더가 붙어 있다.
+#    복원하려면 QVEST_LEGACY_MODEQ=1 (사료 확인용).
 MODEQ_STATUS=""
 MODEQ_PRED="$PROJECT/02_Infrastructure/ops/research_pool_predicates.py"
+[ "${QVEST_LEGACY_MODEQ:-0}" = "1" ] || MODEQ_PRED="/nonexistent-v10-legacy-off"
 if [ -f "$MODEQ_PRED" ] && [ -n "${QVEST_PY:-}" ]; then
   _mq=$(cd "$PROJECT" && "$QVEST_PY" "$MODEQ_PRED" research-queue-pending "$PROJECT/stage_artifacts/paper_recharge" "$PROJECT" 2>/dev/null | tr -d '' | tail -1)
   case "$_mq" in
@@ -1090,7 +1130,7 @@ echo ""
 if [ "${BOOT_FAILS:-0}" -gt 0 ]; then
   echo "=== 부트스트랩 DEGRADED — ${BOOT_FAILS}개 게이트 실패 (위 ERROR 라인 확인, '완료' 아님) ==="
 else
-  echo "=== 부트스트랩 완료 (Qvest v10.0 — Fable 5 · 2계층 리서치(팩터전략/전략로테이션) · health_full 경로) ==="
+  echo "=== 부트스트랩 완료 (Qvest v10.2 — Fable 5 · 2계층 리서치(팩터전략/전략로테이션) · health_full 경로) ==="
 fi
 
 # (2026-07-17 B2) 부트 스탬프 — SessionStart 카나리아(hooks/boot_stamp_check.sh)의 신선도 판정 원천.
@@ -1100,11 +1140,11 @@ printf '{"ts":"%s","ts_epoch":%s,"boot_fails":%s}\n' "$(date '+%Y-%m-%dT%H:%M:%S
 if [ -n "$PG2_INFO" ]; then
   echo "$PG2_INFO"
 fi
-echo "v10.0:      2계층 리서치(도훈 지시 2026-08-29, 플랜 qvest-2-moonlit-galaxy) — 1계층 충실구현+강화 ≤20회 · 2계층 로테이션 무한강화 · lockbox/governor 폐지 · Judge=PIT 전담 · BOOK 신설 · 무인=수집까지"
-echo "v8.4 base:  비대칭 알파 중심 재편(도훈 2026-08-13) — 표적을 평균→분포로(조건부 분위·왜도·꼬리초과확률) / 3 lane: A 분포-표적 학습 · B 일별 축 회수(9,005거래일·flow 1.25GB) · C 수리통계 구조추정 / 비-return FQ-001~005 주력 해제(2건 데이터게이트 폐쇄·3건 실측 negative, 구조판결 아님) / 금지4: ML결합기·ML사이징·평균표적 ML라운드·sweep DSR회피"
-echo "v8.3 base:  알파 발굴 중심(canonical PORT_t 1급·dual-basis·frontier 큐 확인 의무) + 2026-08-08 모델 라우팅 재핀(alpha-hypothesis=fable · QEPM 나머지=opus) / 4-Mode 헌법(alpha-search 논문복제·K200∪KQ150·2005 / factor-rotation Lane3 / RAMP Gate0~11 / Axiom r7) / 실측 거버넌스 / register_module 자동흐름"
+echo "v10.2:      강화 LLM 재귀 루프(2026-09-03) — 오버레이 노출 종목별 벡터화 · 기전 지도 포화감지 · arm 생성 레인 + 오프라인 probe · 생성 세션 성과 열람 차단(arm_gen_read_guard)"
+echo "v10.1:      2계층 리서치(도훈 2026-08-29) + v9 잔재 하네스 정리(2026-09-03) — 1계층 충실구현+강화 · 2계층 로테이션 무한강화 · lockbox/governor 폐지 · Judge=PIT 전담 · BOOK · 무인=수집+강화"
+echo "계보:       CHANGELOG_constitution.md (v6.4~v9 아카이브 — 배너에 구판 서술을 재기입하지 말 것)"
 echo "v8.0 base:  R+Python 1급 / SR목표 2.5 / agent effort(judge·gov xhigh) / axiom_context_inject / qvest-*-style skill"
-echo "Modes:      ① QEPM(/worktask) ② alpha-search ③ factor-rotation ④ RAMP(/ramp · Gate0~11·CCS 13-score · governor 정지/자본 수동) — CLAUDE.md 4-Mode 헌법(RAMP 2026-06-17)"
+echo "계층:       ①1계층 팩터전략(/alpha-search → 강화 Skill(reinforce)) ②2계층 전략 로테이션(/strategy-rotation) ③BOOK(/book) — Judge(PIT)는 essence Grade A 후에만"
 echo "Skills:     $(ls "$PROJECT"/.claude/skills/*/SKILL.md 2>/dev/null | wc -l)개 (2026-07-24 C3: exec/mon=off 은닉·리서치 3종=user-invocable 스텁·구 worktask/telegram-protocol 삭제)"
 echo "Hooks:      settings.json 등록 (harness_health 결과 위 참조)"
 # ── 감시 probe 2종 (2026-07-25) ────────────────────────────────────────────
@@ -1134,7 +1174,7 @@ _run_probe() {
 _run_probe hook_integrity_check
 _run_probe suite_totals_watch --check
 echo "WT 누적:    ${WT_ACTIVE}건 (역대 디렉터리 총수 — 진행중 아님. 진행 상태는 wt_list())"
-echo "Inbox:      alpha=$ALPHA_T risk=$RISK_T optimizer=$OPT_T forge=$FORGE_T judge=$JUDGE_T governor=$GOV_T"
+echo "Inbox:      alpha=$ALPHA_T risk=$RISK_T optimizer=$OPT_T forge=$FORGE_T judge=$JUDGE_T   (governor 인박스는 v10 퇴역)"
 echo "Axioms:     active=$AX_ACTIVE candidates=$AX_CAND (sot_map documented=$AX_DOC_ACTIVE: documented=$AX_DOCUMENTED_MODE / block=$AX_BLOCK_MODE / advisory=$AX_ADVISORY_MODE)"
 echo "Cache_core: $AX_CACHE_STATUS"
 # (2026-07-26 도훈 지시) 사용률 배너 제거 — 한도는 구독 외생 변수, 관리 변수로 취급 금지.
@@ -1164,6 +1204,6 @@ fi
 command -v free >/dev/null 2>&1 && free -m | awk '/Mem:/ {printf "RAM:        %.0f%%\n", $3/$2*100}' || true
 # (Remote tmux rc 라인 제거 v8.0 — inbound listener 폐지)
 echo ""
-echo "다음: /qvest 5-B 절차 따라 Work Task 생성 + 6-agent 순차 spawn"
-echo "  wt_create('{hypothesis}') -> alpha -> risk -> optimizer -> forge(실측권위) -> judge -> governor(수동)"
+echo "다음: /qvest → 계층 질문(①1계층 ②2계층 ③BOOK)"
+echo "  1계층 = run_paper_replication(충실구현) -> 권위 등급(essence) -> 미달 시 Skill(reinforce) / A 시 Judge(PIT) -> BOOK 등록(도훈 confirm)"
 echo "===================================="

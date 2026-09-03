@@ -1,6 +1,6 @@
 ---
 name: optimized-backtest
-description: "최적화 백테스팅 코드 작성 스킬 (v8.x 계약 정합). 성능: Rcpp + data.table + arrow + 병렬/메모리. 측정: build_bt_result() 계약 + essence_score() 등급 의무 (summarise_perf/hurdle_gate은 진단용). Forge / lean-forge 전용."
+description: "최적화 백테스팅 코드 작성 스킬 (v8.x 계약 정합). 성능: Rcpp + data.table + arrow + 병렬/메모리. 측정: build_bt_result() 계약 + essence_score() 등급 의무 (summarise_perf/hurdle_gate은 진단용). Forge / 충실구현 러너(run_paper_replication·replication_harness) 전용. (v10 계약 정합)"
 ---
 
 ## 최적화 백테스팅 코드 작성 가이드
@@ -12,10 +12,10 @@ description: "최적화 백테스팅 코드 작성 스킬 (v8.x 계약 정합). 
 **성능 최적화(아래 원칙 0~6)와 측정 무결성을 분리하라.** 성과·등급 산출은 **반드시 계약 경유**:
 - 성과 = **`02_Infrastructure/contracts/build_bt_result()`** (10-component, NW lag-3 PORT_t, audit). `summarise_perf()` 등 legacy 손계산 = proxy → **권위 아님**.
 - 등급 = **`02_Infrastructure/contracts/essence_score()`** (PORT_t/OOS retention/Sharpe/CAGR/Calmar). `run_hurdle_gate()` 18-component = **진단용(authoritative=FALSE)**, 등급 권위 아님.
-- **포트폴리오 수익률 *구성* = `Return.portfolio()`** (PerformanceAnalytics, 도훈 mandate 2026-05-31 안 A). weight drift·rebalance를 검증함수가 처리. **수동 Σ(wᵢrᵢ)/일별 cumprod 합성 금지 — 언어무관.** Python도 동일: **비중(weights)만 산출 → R 브릿지 → `Return.portfolio`** (Python-native lib 미도입, python-policy §4). lean-forge: (holdings 비중, asset 일별수익) → Return.portfolio → ret_net → build_bt_result.
+- **포트폴리오 수익률 *구성* = `Return.portfolio()`** (PerformanceAnalytics, 도훈 mandate 2026-05-31 안 A). weight drift·rebalance를 검증함수가 처리. **수동 Σ(wᵢrᵢ)/일별 cumprod 합성 금지 — 언어무관.** Python도 동일: **비중(weights)만 산출 → R 브릿지 → `Return.portfolio`** (Python-native lib 미도입, python-policy §4). 충실구현 러너(`replication_harness.R`): (holdings 비중, asset 일별수익) → Return.portfolio → ret_net → build_bt_result.
 - 자체합성 금지(`prod(1+r)`/`cumprod`/수동 Sharpe — answer-principles). 위반 = AX-002 동급.
 - 표준 템플릿(맨 아래)이 정본 흐름. **성능 패턴은 살리되 측정은 계약으로.**
-  - ⚠️ legacy `backtest_harness.R::run_monthly_simulation`은 NAV 수동 구성(→ proxy 원인). lean-forge는 Return.portfolio 경유 의무. 기존 sim 마이그레이션은 별도(178 전략 영향).
+  - ⚠️ legacy `backtest_harness.R::run_monthly_simulation`은 NAV 수동 구성(→ proxy 원인). 충실구현 러너는 Return.portfolio 경유 의무. 기존 sim 마이그레이션은 별도(178 전략 영향).
 
 ### 원칙 0: Rcpp 필수 (Level 0 — 최상위 규칙)
 
@@ -404,7 +404,7 @@ overlay_sim <- apply_regime_overlay(sim, regime_dt, BM_DT)
 **정본 R 파일**: `02_Infrastructure/regime/apply_regime_overlay.R`
 **PIT NOTE**: MRS는 이미 t-1 lagged. 추가 shift() 금지.
 
-### 원칙 9: Codex PIT Review 연동
+### 원칙 9: PIT 검증 배선 (v10 — 구 Codex PIT Review 는 v8.2 폐지)
 
 Forge가 코드 작성 완료 후, **실행 전에** Codex PIT review를 요청.
 Q-Lead가 codex:codex-rescue 에이전트로 스폰:
@@ -432,7 +432,7 @@ Codex APPROVE 후에만 Forge가 실행.
 ### PIT 체크리스트 (코드 내 주석 필수)
 - C1: expanding/rolling window만. full-sample 금지
 - C2: same-day circular 금지. t-1 lag
-- C4: 재무제표 래깅 (연간→5월, 분기→45일)
+- C4: 재무제표 lag (annual = **익년 3/31** · quarterly 45일+ / DART 고정일 5·8·11/15 — `pit.md` C4 정본. 구 '연간→5월' 표기 폐기)
 - C9: DD/VT lag: t-1 기준
 - C13: Z_Score_Aligned만 사용
 - C14: IC 접근 시 Usable_Date <= sig_date

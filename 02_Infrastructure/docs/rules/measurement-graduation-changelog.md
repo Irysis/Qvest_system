@@ -35,3 +35,7 @@ PORT_t = `mean(r − r_bm)` 이므로 `α + (β−1)·E[r_bm]` 를 섞어 본다
 **배선**: `02_Infrastructure/contracts/no_signal_control.R` 신설 · `08_Tests/contracts/test_no_signal_control.R` 13/13(위반주입 3방향 + β 오염 분리) · `08_Tests/hooks/run_all_hooks.sh` SUITES 편입.
 
 **반영 파급**: 두 조항 모두 *신규 서술·신규 등재* 요건이라 기존 원장 소급 재판정 불요. 단 제약형 롱온리 모듈이 screen-tier 라벨을 보유한 경우 재확인 권고.
+
+## 2026-09-03 — v10 어휘 정리 (§3, 규범 불변)
+
+구 Judge Gate C(PORT_t≥2.95 ∧ net_IR>0.2) 폐지 명문화(Judge = PIT 전담·Grade A 후 스폰) · '자본 tier' → 'Graduation tier' · '자본 graduation 불가' → 'Grade A 불가' · holdout 라이브 연장 주체 monitoring → book-tracker(/book) · 참조 목록 portfolio_governor.R → book/book_registry.R(구 파일은 legacy 진단 도구로 병기). **HARD 3종·DSR selection 경계·oos_retention v2·holdout falsification 규율은 무변경** — 어휘만 v10 정본에 맞췄다.

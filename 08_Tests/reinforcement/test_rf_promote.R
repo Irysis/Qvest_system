@@ -65,4 +65,5 @@ if (identical(r3$new_base_id, "RP_TEST_promo2")) {
 
 writeLines("")
 writeLines(sprintf("합계: 통과 %d · 실패 %d", PASS, FAIL))
+cat(sprintf('{"test":"rf_promote","pass":%d,"fail":%d,"total":%d}\n', PASS, FAIL, PASS + FAIL))
 if (FAIL > 0L) quit(status = 1L)

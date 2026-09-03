@@ -203,7 +203,7 @@ factor_engine 측정과 forge_realized 측정 동시 존재 시:
 | Universe | KOSPI200 ∪ KOSDAQ150 | `worktask_spec_validator.sh` |
 | Liquidity | 20d avg TV ≥ 2e8원 | same |
 | Transaction cost | 15bps one-way | cost_model_version 고정 |
-| PIT C1~C15 | 전체 준수 | `pit-validation` skill |
+| PIT C1~C15 | 전체 준수 | `.claude/rules/pit.md`(정본·autoload) + `.claude/skills/pit-validation.md`(스캐너 호출 레시피 — 플랫 .md 라 Skill 로더 미노출) |
 | Work Task 순서 | Alpha → Risk → Optimizer | `worktask_sequence_enforcer.sh` |
 | **Backtest SR provenance** | **source_label 의무** | **`sr_provenance_check.sh`** |
 | **Schedule fidelity** | **weights/sig_dates ≥ 0.95** | **`schedule_fidelity_check.sh`** |

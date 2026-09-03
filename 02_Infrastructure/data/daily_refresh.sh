@@ -557,6 +557,23 @@ run_r '
 '
 
 # ──────────────────────────────────────────────────────────────────────────────
+# [6d] 신규 팩터 이력 백필 — 예산제 scoped backfill (2026-09-01 도훈 지시 "업데이트까지 자동")
+#   왜: [6a] 는 **당월 1파일**만 빌드한다. 생산자가 새로 생긴 계열(technical 12종)과 무인
+#   등록된 논문 신호는 그래서 당월만 채워지고, 이력이 없으면 IC 가 안 서고, IC 가 없으면
+#   B1 후보 풀에 못 들어간다 — "등재는 됐는데 아무도 못 쓴다" 가 그대로 재현된다.
+#   ★전 구간 재빌드(수시간)를 스케줄에 넣는 것이 아니다. 빌더의 팩터 단위 scoped backfill 을
+#   벽시계 예산까지만 돌리고, 안 끝나면 다음 밤이 이어받는다(진행 상태 = 이력 개월수, 커서 불요).
+#   WARN: [6b] 의 fdb_daily 게이트와 다르다 — 그건 전 파일 삭제 후 1990~ 전체 재구축이다.
+# ──────────────────────────────────────────────────────────────────────────────
+echo "[6d/7] 신규 팩터 이력 백필 (예산제 scoped backfill)..."
+export QVEST_FDB_BACKFILL_BUDGET_MIN="${QVEST_FDB_BACKFILL_BUDGET_MIN:-60}"
+echo "[guard] QVEST_FDB_BACKFILL_BUDGET_MIN=$QVEST_FDB_BACKFILL_BUDGET_MIN (0=예산없음) · 정지=QVEST_FDB_NO_BACKFILL=1"
+cd "$BASE"
+if ! QM_ROOT="$BASE" Rscript "$BASE/02_Infrastructure/ops/rf_factor_backfill_tick.R"; then
+  echo "[6d] 백필 tick 비정상 종료 — .cache/reinforce_auto_log.jsonl 참조(다음 밤이 이어받는다)"
+fi
+
+# ──────────────────────────────────────────────────────────────────────────────
 # [6c] conditional_ic_matrix 주간 재계산 (월요일) — 2026-07-25 배선
 #   .cache/conditional_ic_matrix.csv — pit.md V6 Gap-Directed 가설 조향 캐시.
 #   기존 producer 경로(memory/monthly_distill.sh)는 ① Windows 스케줄러 task 미등록

@@ -28,6 +28,30 @@
 #
 # 미적용: WT-D/WT-P(충실구현·운용) 경로 · 다른 파일명 → 무조건 통과.
 
+#==============================================================================
+# ★RETIRED — 2026-09-03 (v10.1 정리)
+#
+#   이 훅은 v10.1 에 작성됐으나 **settings.json 에 등록된 적이 없다**(등록 훅 12 distinct .sh).
+#   즉 존재 내내 한 번도 발화하지 않았고, 발화 여부를 보는 검사도 없었다 —
+#   "양성 대조 없는 계기는 방어선으로 세지 않는다"(pit.md 존치 교훈)에 정확히 해당한다.
+#
+#   ★등록 대신 은퇴를 택한 이유: 이 훅은 PreToolUse[Write|Edit] 라서 **도구 경유 쓰기만** 본다.
+#     v10 강화의 실제 산출 경로는 무인 레인의 R 직접 기록이므로 훅으로는 원천적으로 못 덮는다.
+#     축은 훅이 아니라 **엔진 계약**이 져야 한다.
+#
+#   이관처 = 08_Tests/reinforcement/test_rf_holdings_axis.R (5) long_only 축
+#     · rf_cell_engine.R 이 배출하는 Leg 를 직접 읽어 전부 LONG 인지 판정(키워드 검사 아님)
+#     · 숏 주입 양성 대조 동반 · 격자 fixed_axes.long_only 선언과 엔진 거동의 일치까지 확인
+#   n_max 축은 같은 파일 (1)~(4)절이 이미 지고 있다(엔진 25 -> 보유 25 · 구판 3 양성 대조).
+#
+#   본문은 사료로 남긴다(무엇을 어떻게 검사하려 했는지가 이관 설계의 근거다).
+#   되살리려면: 등록(훅 12->13) + CLAUDE.md 선언 줄 + boot_lean 예산 + boot_currency C6 동시 갱신.
+#==============================================================================
+if [ "${DESIGN_ENVELOPE_GATE_REVIVE:-0}" != "1" ]; then
+  echo "{}"
+  exit 0
+fi
+
 if [ -z "${QVEST_PY_BIN:-}" ]; then
   QVEST_PY_BIN="${QVEST_PY:-}"; QVEST_PY_BIN="${QVEST_PY_BIN//\//}"
   { [ -n "$QVEST_PY_BIN" ] && [ -x "$QVEST_PY_BIN" ]; } || QVEST_PY_BIN="/c/Users/99922/OneDrive/Quant_Module_Moltbot/.venv_qvest_ml/Scripts/python.exe"

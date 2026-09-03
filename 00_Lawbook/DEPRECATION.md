@@ -90,6 +90,8 @@ QEPM 파이프라인에서 **외부 Codex Critic Round를 완전 제거**. 메�
 
 **범위 한정**: 본 제거는 **QEPM Codex Critic Round 전용**. **S0 Debate codex**(codex_critic / s0_enforcer / s0_debate_*) · **RAMP "Codex"**(K_RAMP·ramp-orchestrator의 Q-Lead+agent 역할명) · 텔레그램 용어집 do-not-translate "Codex"는 **별개 시스템으로 유지**.
 
+**[철회 2026-09-03 — v10 하네스 정리]** 위 '별개 시스템으로 유지' 중 **S0 Debate codex(`02_Infrastructure/hooks/s0_enforcer/`)는 v10 에서 퇴역**한다(파일 사료 존치·★RETIRED 헤더 부여). 사유는 Codex Round 폐지의 연장이 아니라 **소비 경로 소멸**이다 — v10 1계층은 충실구현(`run_paper_replication`) + 강화 QEPM(WT-R)만 쓰고 S0~S7 스테이지 토론 기계를 부르지 않는다(등록 이력 0 · required_roles 에 폐지된 governor 포함 · `telegram_async.sh` 는 tg_agent_brief 단일 진입 규칙 위반 경로). **RAMP "Codex"** 역할명 항목은 이 철회의 대상이 아니다(RAMP 는 v9.21 진입점 퇴임, 코드·L-code 무손상 보존).
+
 **[개정 2026-07-24 — 도훈 승인 C1]** enabledPlugins `codex@openai-codex` 항목은 **해제**. Fable 5 하네스 감사 실측: `~/.claude/plugins/installed_plugins.json` 빈 상태(플러그인 미설치·codex-companion.mjs 디스크 부재)로 런타임 무효과인 **유령 설정**이었고, 원 보존 근거 "S0/RAMP가 codex CLI 사용"도 실체 부재(RAMP Codex=역할명, `run_pit_intent_scan.sh` v2는 로컬 codex CLI로 이관 완료 — 플러그인 비의존, S0 stage 스킬은 2026-07-05 삭제). 로컬 codex CLI(`C:/Users/99922/AppData/Roaming/npm/codex`)와 debate_helpers 스크립트는 FS retain — 플러그인 설정과 무관하게 동작. 근거: `04_Research/01_reports/fable5_harness_audit_20260724.md` §3 C1.
 
 | 자산 | 이전 위치 | Action | Replacement |

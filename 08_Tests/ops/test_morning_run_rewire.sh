@@ -42,5 +42,9 @@ for b in 02_Infrastructure/ops/scheduler/Qvest_MorningReboot.bat 02_Infrastructu
 done
 
 echo "결과: PASS=$PASS FAIL=$FAIL"
+# ★러너 요약 계약 (v10 2026-09-03): 이 줄이 없으면 run_all_hooks.sh 가 UNMEASURED 로 계상해
+#   이 스위트의 단언이 배터리 총계에 **0** 으로 들어간다(조용한 커버리지 구멍).
+printf '{"test":"morning_run_rewire","pass":%d,"fail":%d,"total":%d,"skipped":0}
+' "$PASS" "$FAIL" "$((PASS+FAIL))"
 [ "$FAIL" -eq 0 ] || exit 1
 exit 0

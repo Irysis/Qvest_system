@@ -94,7 +94,7 @@ RESULTS_DIR="$PROJ_DIR/.cache/test_results"
 mkdir -p "$RESULTS_DIR"
 RESULTS_FILE="$RESULTS_DIR/hook_dryrun_results.json"
 
-echo "=== Qvest v6.4 Hook Test Suite ==="
+echo "=== Qvest v10 Test Battery ==="
 echo "Project: $PROJ_DIR"
 echo "Tests dir: $TEST_DIR"
 echo "Started: $(date -Iseconds)"
@@ -467,6 +467,7 @@ SUITES=(
   #   만 봐서 38편이 좌초했다. downloaded 는 "PDF 를 새로 받았나"이지 "라우팅할 재료가
   #   있나"가 아니다. 무인 스케줄러 경로라 검사가 없으면 조용히 되돌아간다.
   "08_Tests/ops/test_paper_router_trigger.sh"
+  "08_Tests/ops/test_paper_router_prefilter.sh"
   # 2026-08-13 추가: 큐 항목 **식별자 필드 관용 읽기**. 실측 173건 중 **132건(76%)이 구판 `id`**,
   #   41건이 신판 `arxiv_id` 이고 스키마가 시간순도 아니다(두 생산자가 동시에 쓴다).
   #   `arxiv_id` 만 읽으면 대다수가 **식별자 없이** 에이전트에 도달해 `paper_pdf()` 로 원문을
@@ -1213,6 +1214,35 @@ SUITES=(
   #   9종 오선택). 두 모듈이 같은 함수명을 export 하는 것이 직접 원인이라 순서·블록 분리도
   #   함께 건다. ★신선도 판정은 재구현하지 않는다 — 정본 freshness_audit.R 호출 여부만 잰다.
   "08_Tests/data/test_ingest_autoextend.py"
+  # 2026-09-03 편입(v10.1 정리): 강화 레인 검사 18건. suite_enrollment_check E2 가
+  #   "미편입 18/218 — 배터리가 이 파일들을 한 번도 돌리지 않는다" 로 잡고 있던 것.
+  #   08_Tests/reinforcement/ 는 v10 의 실제 리서치 레인(격자 25칸·원장·셀 엔진)을 지키는
+  #   자리인데 디렉터리 통째로 배터리 밖에 있었다 — 계기가 있어도 안 돌면 방어선이 아니다.
+  "08_Tests/ops/test_reinforce_auto.sh"
+  "08_Tests/reinforcement/test_rf_backfill_idempotence.R"
+  "08_Tests/reinforcement/test_rf_base_weight.R"
+  "08_Tests/reinforcement/test_rf_block_lcode.R"
+  "08_Tests/reinforcement/test_rf_carry_treatment.R"
+  "08_Tests/reinforcement/test_rf_cell_engine_smoke.R"
+  "08_Tests/reinforcement/test_rf_claim.R"
+  "08_Tests/reinforcement/test_rf_combination_launch.R"
+  "08_Tests/reinforcement/test_rf_grid_contract.R"
+  "08_Tests/reinforcement/test_rf_holdings_axis.R"
+  "08_Tests/reinforcement/test_rf_overlay_arms.R"
+  "08_Tests/reinforcement/test_rf_pick_key.py"
+  "08_Tests/reinforcement/test_rf_promote.R"
+  "08_Tests/reinforcement/test_rf_root_papers.R"
+  "08_Tests/reinforcement/test_rf_send_verdict.R"
+  "08_Tests/reinforcement/test_rf_spec_dedup.R"
+  "08_Tests/reinforcement/test_rf_terminal_retry.R"
+  "08_Tests/reinforcement/test_rp_portfolio_spec.R"
+  # 2026-09-03 v10.2 — LLM 재귀 루프 계약 4종. 전부 위반 주입 동반.
+  "08_Tests/reinforcement/test_overlay_probe.R"
+  "08_Tests/reinforcement/test_rf_mechanism_map.R"
+  "08_Tests/reinforcement/test_rf_lesson.R"
+  "08_Tests/hooks/test_arm_gen_read_guard.sh"
+  "08_Tests/reinforcement/test_rf_coverage.R"
+  "08_Tests/reinforcement/test_rf_block_order.R"
 )
 
 
@@ -1444,7 +1474,7 @@ fi
 # Final results JSON
 cat > "$RESULTS_FILE" <<EOF
 {
-  "suite": "qvest_v6_4_hook_dryrun",
+  "suite": "qvest_test_battery",
   "version": "1.0",
   "ran_at": "$(date -Iseconds)",
   "total_pass": $TOTAL_PASS,

@@ -67,6 +67,15 @@ suppressPackageStartupMessages({
 FACTOR_DB_DIR    <- file.path(CACHE_DIR, "factor_db")
 FACTOR_IC_PATH   <- file.path(FACTOR_DB_DIR, "factor_ic_history.parquet")
 FACTOR_REG_PATH  <- file.path(FACTOR_DB_DIR, "factor_registry.json")
+
+# ★월 빌드용 RAWDATA 슬라이스 폭 (2026-09-01 수리).
+#   구값 1400일 = 실측 **935 거래일**이었는데, M12_LR_Reversal 의 정의가 "60m-13m 누적수익
+#   (1260-273 거래일)" 이다 — **창이 팩터 자신의 정의보다 좁아** 443개월 전 구간 0행이었다.
+#   생산자는 멀쩡했다: 같은 sig_date 에 창만 1900일(1,274 거래일)로 넓히면 2,124행이 나온다.
+#   실패가 아니라 침묵으로 나타나 emission_guard 의 "생산자는 있는데 도달 불가"(FQ-163 계통)에
+#   올라 있었다 — 계기는 결측을 봤지만 사유는 창이었다.
+#   ★새 팩터의 최장 lookback 이 이 값을 넘으면 여기를 함께 넓혀야 한다. 안 넓히면 조용히 0행이다.
+.FDB_SLICE_DAYS <- 1900L
 COMPUTE_MOD_DIR  <- file.path(FUNC_PATH, "factor_db")
 
 # ─── IC pair 완결성 판정 (순수 함수, 2026-07-26 R-ICGUARD 분리) ──────────────
@@ -508,6 +517,7 @@ cat("[factor_db_builder] Loaded. FACTOR_DB_DIR:", FACTOR_DB_DIR, "\n")
     crowding         = "compute_crowding.R",
     growth           = "compute_growth.R",
     investor         = "compute_investor.R",
+    technical        = "compute_technical.R",
     xlsx_fund        = "xlsx_factor_calculator.R",
     custom           = "compute_custom_factors.R"
   )
@@ -526,6 +536,7 @@ cat("[factor_db_builder] Loaded. FACTOR_DB_DIR:", FACTOR_DB_DIR, "\n")
     crowding         = "compute_crowding",
     growth           = "compute_growth",
     investor         = "compute_investor",
+    technical        = "compute_technical",
     xlsx_fund        = "compute_xlsx_fundamentals",
     custom           = "compute_custom_factors"
   )
@@ -778,7 +789,7 @@ if (!force && file.exists(out_path)) {
   # ─── Pre-slice data once — avoids 14× redundant full-scan inside modules ──
   # M12 Long-Run Reversal needs ~1260 trading days (~1400 calendar days).
   # All other modules need ≤365 calendar days. Use 1400d as conservative bound.
-  RAWDATA_sliced <- .fdb_env$RAWDATA[Date <= sig_d & Date >= (sig_d - 1400L)]
+  RAWDATA_sliced <- .fdb_env$RAWDATA[Date <= sig_d & Date >= (sig_d - .FDB_SLICE_DAYS)]
   setkey(RAWDATA_sliced, Date, Ticker)
 
   # Pre-filter fundamentals: modules do copy(FUND)[Factor_Date <= sig_d] N times.
@@ -806,7 +817,8 @@ if (!force && file.exists(out_path)) {
     liquidity = "compute_liquidity.R", accrual = "compute_accrual.R",
     risk = "compute_risk.R", regime = "compute_regime.R",
     crowding = "compute_crowding.R", growth = "compute_growth.R",
-    investor = "compute_investor.R", xlsx_fund = "xlsx_factor_calculator.R",
+    investor = "compute_investor.R", technical = "compute_technical.R",
+    xlsx_fund = "xlsx_factor_calculator.R",
     custom = "custom_factors"
   )
 
@@ -1054,10 +1066,16 @@ build_factor_db_monthly <- function(start_date = format(ANALYSIS_START_DATE, "%Y
 #' @param start_date/end_date  YYYY-MM 범위(NULL=전체 캐시). @param force  존재해도 재계산
 #' @return invisibly 처리 요약 리스트
 #' @export
-backfill_custom_factor <- function(id = NULL, start_date = NULL, end_date = NULL, force = FALSE) {
+#' @param module  어느 compute 모듈이 그 팩터를 내는가 (기본 "custom").
+#'   ★2026-09-01 일반화: 이 함수는 'custom 전용' 이 아니라 **팩터 단위 scoped backfill** 이다.
+#'   모듈만 갈아끼우면 그대로 쓸 수 있는데 한 줄 때문에 custom 에 묶여 있었다. technical 12종처럼
+#'   생산자가 새로 생긴 계열은 전면 재빌드(수시간) 말고 이 경로로 채운다.
+backfill_custom_factor <- function(id = NULL, start_date = NULL, end_date = NULL, force = FALSE,
+                                   module = "custom") {
   .load_base_data(); .preload_modules()
-  if (!"custom" %in% names(.fdb_env$module_funcs)) stop("[backfill] custom 모듈 미로드 (compute_custom_factors.R 확인)")
-  cf <- .fdb_env$module_funcs[["custom"]]
+  if (!module %in% names(.fdb_env$module_funcs))
+    stop(sprintf("[backfill] %s 모듈 미로드 (compute_%s.R 확인)", module, module))
+  cf <- .fdb_env$module_funcs[[module]]
 
   files <- list.files(FACTOR_DB_DIR, pattern = "^factor_db_\\d{6}\\.parquet$", full.names = TRUE)
   if (!length(files)) stop("[backfill] 월별 parquet 없음: ", FACTOR_DB_DIR)
@@ -1076,7 +1094,7 @@ backfill_custom_factor <- function(id = NULL, start_date = NULL, end_date = NULL
     sig_d <- as.Date(existing$Date[1])
 
     status <- tryCatch({
-      RAWDATA_sliced <- .fdb_env$RAWDATA[Date <= sig_d & Date >= (sig_d - 1400L)]
+      RAWDATA_sliced <- .fdb_env$RAWDATA[Date <= sig_d & Date >= (sig_d - .FDB_SLICE_DAYS)]
       setkey(RAWDATA_sliced, Date, Ticker)
       raw <- cf(RAWDATA = RAWDATA_sliced, sig_date = sig_d,
                 FUND = .fdb_env$FUND, CONSENSUS = .fdb_env$CONSENSUS)
@@ -1084,8 +1102,17 @@ backfill_custom_factor <- function(id = NULL, start_date = NULL, end_date = NULL
       if (!is.null(id) && !is.null(raw)) raw <- raw[Factor_Name == id]
       if (is.null(raw) || nrow(raw) == 0) { "empty" } else {
         target_ids <- unique(raw$Factor_Name)
-        # idempotent: 이미 있고 force=FALSE면 해당 id만 스킵
-        if (!force) target_ids <- setdiff(target_ids, unique(existing$Factor_Name))
+        # idempotent: 이미 **쓸 수 있는 값**이 있으면 스킵 (force=FALSE 일 때).
+        # ★2026-09-01 수리 — 구판은 "이미 있나"(Factor_Name 존재)만 봤다. 그런데 고쳐야 하는 것은
+        #   대개 **있는데 못 쓰는** 값이다: C15_Forecast_Error_Trend 는 301개월에 존재하지만 전 종목
+        #   0.0 이라 횡단면 sd=0 → Z 전건 NA → Coverage FALSE 였고(구 생산자 산물), 생산자가 수리된
+        #   뒤에도 백필이 "이미 있음" 으로 건너뛰어 **영원히 안 고쳐졌다**(실측: 201006/201506/202006
+        #   전부 distinct 1 · Coverage 0 유지). 멱등 검사가 물어야 할 것은 존재가 아니라 가용성이다.
+        if (!force) {
+          .usable <- if ("Coverage" %in% names(existing))
+            unique(existing[Coverage == TRUE, Factor_Name]) else unique(existing$Factor_Name)
+          target_ids <- setdiff(target_ids, .usable)
+        }
         if (!length(target_ids)) { "skip" } else {
           raw <- raw[Factor_Name %in% target_ids]
           snap <- .pit_rawdata(sig_d); sector_map <- snap[, .(Ticker, Sector)]

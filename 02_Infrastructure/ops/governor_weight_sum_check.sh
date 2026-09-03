@@ -1,4 +1,6 @@
 #!/bin/bash
+# ★RETIRED (v10 2026-09-03) — governor Gate 16 weight_sum 검사. governor 폐지로 감시 대상이 소멸했고
+#   호출자 0(자기 파일뿐). 고정축 Σw=1 은 등록 훅 worktask_constraint_enforcer.sh 가 강제한다. 사료 존치.
 # Governor pre-publish weight_sum assert (Gate 16 — v3.5.4)
 # Usage: ./governor_weight_sum_check.sh <json_file> [slots_path]
 # Example: ./governor_weight_sum_check.sh governor_rev9.json ".scenario_d.slots"

@@ -109,6 +109,15 @@ chk "T7 enabled=false → 실패 아님"             NO  "$(has "$V" bad Off)"
 V=$(run_judge "[$(mk Old Ready 0 ok 2026-07-01T09:00:00 true 2 40)]" '{}')
 chk "T8 age>max_stale → 정체로 잡힘(독립 축)"  YES "$(has "$V" stale Old)"
 
+# ── T8b (v10 2026-09-02) never_run 은 정체가 아니다 — 08-30 등록 주간작업 3개가 1999 센티넬(age 9773일)로
+#    매일 '정체 3' 거짓양성 → 텔레그램 매일(도훈 지목). 면제가 실제로 일하는지 돌연변이(T8c)로 실증.
+V=$(run_judge "[$(mk NeverRan Ready 267011 never_run 1999-11-30T00:00:00 true 9 9773)]" '{}')
+chk "T8b rc_label=never_run + age 센티넬 → 정체 아님"  NO  "$(has "$V" stale NeverRan)"
+chk "T8b2 never_run 은 실패로도 계상 안 함"           NO  "$(has "$V" bad NeverRan)"
+sed 's/lbl != "never_run" and ms and ag/ms and ag/' "$JUDGE" > "$TMP/mut_never.py"
+V=$(JUDGE_OVERRIDE="$TMP/mut_never.py" run_judge "[$(mk NeverRan Ready 267011 never_run 1999-11-30T00:00:00 true 9 9773)]" '{}')
+chk "T8c 돌연변이(never_run 면제 제거) → T8b 가 정체로 뒤집힘" YES "$(has "$V" stale NeverRan)"
+
 # ── T9/T10 돌연변이 ★면제 규칙이 실제로 일을 하는지: 규칙을 무력화하면 T2/T4 가 뒤집혀야 한다.
 #    뒤집히지 않으면 그 "통과"는 규칙 덕이 아니라 우연이다.
 sed 's/state == "Running" or lbl == "still_running"/False/' "$JUDGE" > "$TMP/mut_state.py"

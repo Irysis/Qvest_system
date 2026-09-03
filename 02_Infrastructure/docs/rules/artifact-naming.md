@@ -6,7 +6,7 @@
 ## 1. 핸드오프 파일 = canonical 단일 이름 (HARD)
 
 WT 파이프라인 단계 간 인계 파일은 **반드시 canonical 이름**:
-- `alpha_package.json` / `risk_package.json` / `optimization_package.json` / `forge_package.json` / `judge_verdict.json` / `governor_admission.json`
+- `alpha_package.json` / `risk_package.json` / `optimization_package.json` / `forge_package.json` / `judge_verdict.json` / *(legacy)* `governor_admission.json` — `state_machine.R` GOVERNOR_ADMITTED/REJECTED 구 상태 전용, **v10 신규 발행 없음**(BOOK = `book_registry.R` writer 경유 `book_registry.json`)
 - draft: `{role}_package_draft.json` (Self-Adversarial Challenge 입력 — 메인 에이전트 자체 적대검증)
 - self-adversarial record: `challenge_note.md` (자체 적대검증 기록)
 

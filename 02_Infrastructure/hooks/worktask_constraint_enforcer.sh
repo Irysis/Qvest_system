@@ -19,7 +19,9 @@ fi
 #   ★종목별 비중 상한(구 ≤0.20)은 v10 에서 mandate 층 전체 삭제 (도훈 지시 2026-08-29
 #     "종목별 20% 제한도 완전히 삭제해버려"). 등록 전략 frozen 스펙 내부의 캡은 별개.
 #
-# Discovery WT: SOFT 제약 SKIP, HARD mandate (PIT + liquidity floor 50M)만.
+# Discovery WT: max_names·비중 상한 SKIP · hard_mandate.long_only_mandate=TRUE 인 경우만 w≥0 · Σw∈{1.0, 0.0} 검사.
+#   ★PIT·유동성(pit.md LIQ 2e8)은 이 훅이 검사하지 않는다 — 유니버스/백테스트 계약층 담당
+#   (구 'liquidity floor 50M' 표기 폐기 — 정본과 수치도 달랐다. v10 2026-09-03 정정).
 
 set -euo pipefail
 trap 'echo "{}"; exit 0' ERR

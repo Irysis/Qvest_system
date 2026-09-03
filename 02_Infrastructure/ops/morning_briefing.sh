@@ -98,9 +98,9 @@ echo "[5b/5] Axiom 승인 대기 노출..."
 cd "$BASE"
 Rscript --no-save -e 'source("02_Infrastructure/ops/morning_steps/axiom_approval_queue.R")' || true
 
-# Step 3: Production strategy daily NAV report
-# NOTE: sleeve_save_helper.R 제거됨. daily_portfolio_nav.R만으로 동작.
-Rscript -e 'source("02_Infrastructure/config.R"); source("02_Infrastructure/backtest_harness.R"); source("02_Infrastructure/portfolio/daily_portfolio_nav.R"); tryCatch(daily_nav_report("STR_905"), error=function(e) cat("[NAV] Skip:", e$message, "\n"))' >> /tmp/qm_morning.log 2>&1
+# Step 3: (v10 2026-09-03 제거) STR_905 daily NAV report — 대상 전략이 04_Research/strategies/ 에 없어
+#   매일 "[NAV] Skip" 만 남기던 no-op 였다. BOOK 트래킹은 /book(book-tracker) 온디맨드가 정본이고,
+#   BOOK_0001 일별 MTM 은 아래 Step 3b 가 담당한다. 되살릴 일이 있으면 git 2026-09-03 이전 판.
 
 # Step 3b: noLayer4 PG2 book 데일리 mark-to-market (현 운용북 데일리 성과, 도훈 지시 2026-07-03 Layer4 제거 전환)
 #   구 FaithTrend(Layer4) 호출은 mark_nolayer4_daily.R로 대체 (Layer4 제거 → noLayer4 book). 구 스크립트는 rollback 보존(deprecated).

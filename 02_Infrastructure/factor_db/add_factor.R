@@ -23,7 +23,12 @@ suppressPackageStartupMessages({ library(jsonlite) })
 .TEMPLATE_PARAMS <- list(
   momentum=c("window","skip"), reversal=c("window"), volatility=c("window"),
   mean_reversion=c("window"), trailing_agg=c("col","window","agg"),
-  ratio=c("num","den"), gap_freq=c("window"))
+  ratio=c("num","den"), gap_freq=c("window"),
+  # ★engine — 논문 충실구현이 낸 **동결 스코어 패널**을 팩터로 등재한다(2026-09-01).
+  #   수식으로 환원되지 않는 논문 신호를 온보딩 계약 안으로 들이는 유일한 경로다.
+  #   등록 시점에 엔진을 다시 돌리지 않는 이유: 443개월 백필이 수시간이고 그 사이 엔진
+  #   파일이 바뀌면 값이 달라져 재현이 깨진다. 패널을 얼리면 재현 가능하고 빠르다.
+  engine=c("panel_path"))
 
 .af_validate <- function(id, category, direction, template, params) {
   if (!grepl("^[A-Za-z0-9_]+$", id)) stop("id는 영숫자·_만: ", id)

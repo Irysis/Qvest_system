@@ -57,6 +57,30 @@ else
   echo "  SKIP  Rscript 또는 probe 부재"
 fi
 
+echo "== ★로케일 축 (v10 2026-09-02): LC_ALL=C.UTF-8(Windows R 무효 로케일) 에서도 read_sources 가 행을 돌려주는가 =="
+#   실사고: Qvest_MorningReboot.bat 의 LC_ALL=C.UTF-8 아래서 read.csv(fileEncoding=) 가 0행 → 08-23~09-02 매일
+#   curated_sources_missing 거짓 경보 + unattended_line 일일 집계. 함수 본문을 원본에서 떼어 격리 실행한다(사본 금지).
+#   ★Rscript -e 에 개행을 넣지 않는다(rc=139) — 임시 파일로 실행.
+if command -v Rscript >/dev/null 2>&1 && [ -f "$ROOT/02_Infrastructure/config/paper_recharge_sources.csv" ]; then
+  T2="$(mktemp -d)"
+  # ★R 에는 Windows 형식 경로를 넘긴다 — MSYS `/c/...` 는 R 이 열지 못해 file.exists FALSE → 0행이 '정상' 으로 위장된다.
+  RW="$(cygpath -m "$ROOT" 2>/dev/null || echo "$ROOT")"; T2W="$(cygpath -m "$T2" 2>/dev/null || echo "$T2")"
+  awk '/^read_sources <- function/,/^}/' "$RR" > "$T2/probe.R"
+  printf '%s\n' "x <- read_sources('$RW/02_Infrastructure/config/paper_recharge_sources.csv'); cat('ROWS=', nrow(x), ' UNREADABLE=', isTRUE(attr(x, 'unreadable')), '\n')" >> "$T2/probe.R"
+  printf '' > "$T2/empty.csv"
+  printf '%s\n' "y <- read_sources('$T2W/empty.csv'); cat('EMPTY_ROWS=', nrow(y), ' EMPTY_UNREADABLE=', isTRUE(attr(y, 'unreadable')), ' EMPTY_EXISTS=', file.exists('$T2W/empty.csv'), '\n')" >> "$T2/probe.R"
+  OUT2=$(LC_ALL=C.UTF-8 LANG=C.UTF-8 Rscript --no-save "$T2/probe.R" 2>/dev/null)
+  echo "$OUT2" | grep -qE 'ROWS= *[1-9]' && ok "LC_ALL=C.UTF-8 에서 curated CSV 행 수 ≥1 (거짓 경보 원인 제거)" \
+    || ng "로케일 0행" "$(echo "$OUT2" | tr '\n' ' ')"
+  echo "$OUT2" | grep -q 'EMPTY_ROWS= *0 *EMPTY_UNREADABLE= *FALSE *EMPTY_EXISTS= *TRUE' && ok "0바이트 파일은 unreadable 아님(=missing 사유 유지)" \
+    || ng "빈 파일 분류" "$(echo "$OUT2" | tr '\n' ' ')"
+  rm -rf "$T2"
+else
+  echo "  SKIP  Rscript 또는 sources.csv 부재"
+fi
+grep -q 'reason=curated_sources_unreadable' "$RR" && ok "존재하나 0행 = 별도 사유(curated_sources_unreadable)로 분리" \
+  || ng "사유 미분리" "부재와 읽기실패가 한 사유로 뭉쳐 조치가 갈리지 않는다"
+
 echo "== git 축: sources.csv 가 추적 대상인가 (신규 클론 내성) =="
 C="02_Infrastructure/config/paper_recharge_sources.csv"
 if (cd "$ROOT" && git ls-files --error-unmatch "$C" >/dev/null 2>&1); then

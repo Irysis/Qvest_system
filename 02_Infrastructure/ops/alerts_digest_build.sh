@@ -50,9 +50,13 @@ sec("scheduler health — 등록 작업 rc (06_Registry/scheduler_task_health.js
     ["- sched | %s: %s"%(k,x) for k in ("failed_new","failed_known","stale") for x in (h.get(k) or [])])
 s=J("06_Registry/stranded_repairs.json") or {}; it=[]
 for w in (s.get("worktrees") or []):
+    if w.get("legacy_pre_v10"): continue   # (v10 2026-09-02) pre-v10 레거시 = 경보 제외(처분은 도훈 결정) — 요약 1줄로만
     n=w.get("lost"); n=len(n) if isinstance(n,list) else (n or 0)
     if n: it.append("- worktree | %s: main 미도달 %s건"%(w.get("worktree") or w.get("branch"),n))
-it=it[:6]; co=s.get("collisions") or []
+it=it[:6]
+_sm=s.get("summary") or {}
+if (_sm.get("worktrees_legacy_pre_v10") or 0): it.append("- worktree | pre-v10 레거시 %s개(유실 %s·부분 %s건) — 경보 제외, 처분(remove/cherry-pick)은 도훈 결정"%(_sm.get("worktrees_legacy_pre_v10"),_sm.get("files_lost_legacy_pre_v10"),_sm.get("files_partial_legacy_pre_v10")))
+co=s.get("collisions") or []
 if co: it.append("- worktree | 동일 경로 충돌 %d건 (collisions)"%len(co))
 sec("worktrees — 좌초 수리 (06_Registry/stranded_repairs.json)",it)
 print("\n".join(o))

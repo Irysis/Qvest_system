@@ -9,7 +9,7 @@
 - **arxiv**: `stage_artifacts/paper_recharge/mcp_discovery_${TODAY}.json` 의 `candidates[]`
   (각 항목에 `paper_key` 있음 — dedup 정본 키).
   `BACKLOG_DATES`≠`none` 이면 각 날짜 `D` 도 동일 처리 + 산출을 `..._route_${D}.json` 으로 분리.
-- **기관/고전 시드**: `config/paper_recharge_sources.csv` 미처리분(이력 `curated_routed.json`).
+- **기관/고전 시드**: `02_Infrastructure/config/paper_recharge_sources.csv` 미처리분(이력 `stage_artifacts/paper_recharge/curated_routed.json`).
   `source_url` PDF 를 `mcp__jina__read_url`/`extract_pdf` 로 읽어 동일 처리.
 
 ## 판정 — 논문 1편당 verdict 1개

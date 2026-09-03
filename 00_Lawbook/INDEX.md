@@ -1,7 +1,7 @@
 # Qvest Index
 
 **3개월 후 도훈이 즉시 찾을 수 있게** — 1 page navigation + debug map.
-**v10.0 — 2계층 리서치(팩터전략/전략로테이션) · BOOK · Judge=PIT 전담** (2026-08-29 갱신. 직전 v9.21, 전문은 `CHANGELOG_constitution.md`)
+**v10.2 — 2계층 리서치(팩터전략/전략로테이션) · BOOK · Judge=PIT 전담 · 강화 LLM 재귀 루프(횡단면 오버레이 축)** (2026-09-03 갱신. 직전 v10.1, 전문은 `CHANGELOG_constitution.md`)
 
 > ★**숫자 박제 금지** — 이 문서가 v8.1에서 2개월 낙후된 기전이 "8 axioms / 30 hook / 203 paper notes" 같은 **개수 하드코딩**이었다. 개수·목록은 아래 *확인 명령*으로 위임하고, 본문은 **어디를 보는지**만 적는다.
 
@@ -42,7 +42,7 @@
 | `/qvest` | Session start + bootstrap (gap 확인 + harness health) |
 | `/worktask` | WT lifecycle CRUD (QEPM 모드) |
 | `/alpha-search` · `/strategy-rotation <track>` | 진입점 (기본 1단계 · 소비 계층). ★강화 프로세스는 무인 러너 뒤 자동 · `/ramp` 는 v9.21 모드 퇴임 |
-| `/qlead` | Q-Lead session dashboard |
+| ~~`/qlead`~~ | ★v10 2026-09-03 퇴역 — `.claude/commands_retired_v10/`. 세션 진입점은 `/qvest` 하나 |
 | `02_Infrastructure/observability/qvest_observe wt <ID>` | Per-WT timeline JSON (rebuild + dump) |
 | `02_Infrastructure/observability/qvest_wt <ID>` | Per-WT ASCII pretty · `--active` book admit · `--recent N` |
 | `02_Infrastructure/search/qvest_search "<q>" [--type T] [--rebuild]` | Unified search (lcode/wt/cert/paper/axiom/registry/lawbook) |
@@ -142,9 +142,9 @@ SPEC_APPROVED → ALPHA_DONE → RISK_DONE → OPTIMIZER_DONE → FORGE_DONE
 
 ## 7. Skills · Agents · Tests
 
-- **Skills** `.claude/skills/` — 진입점(alpha-search/strategy-rotation · ramp 는 퇴임·존치) · 절차(qvest-worktask/qvest-telegram/cleaner) · 스타일(qvest-{alpha,risk,opt,attribution}-style) · 디버그(qvest-hook-debug/qvest-cert-paths) · 발굴(factor-db-discovery/kr-inverse-pattern-miner)
-- **Agents** `.claude/agents/` — active 6 (alpha-hypothesis → alpha-research → risk → optimizer → forge → judge → governor) + ondemand 4 (architect/blender/execution/monitoring). 상세 = CLAUDE.md Multi-Agent 절
-- **Commands** `.claude/commands/` — qvest / worktask / alpha-search / strategy-rotation / ramp(퇴임·존치) / qlead
+- **Skills** `.claude/skills/` — 진입점(alpha-search/strategy-rotation/book/book-rebalance) · 절차(qvest-worktask/qvest-telegram/cleaner/reinforce) · 스타일(qvest-{alpha,risk,opt,attribution}-style) · 디버그(qvest-hook-debug) · 발굴(factor-db-discovery/kr-inverse-pattern-miner). ★퇴역(v10 2026-09-03) = `.claude/skills_retired_v10/`: ramp · execution · monitoring · qvest-cert-paths · ensemble-design · pg2-allocation · axiom-io
+- **Agents** `.claude/agents/` — QEPM 체인(alpha-hypothesis → alpha-research → risk-research → optimizer-research → forge) + judge(PIT 전담, Grade A 후) + 1계층 alpha-search + 2계층 dispatch-orchestrator + BOOK book-tracker + ondemand architect. ★퇴역 = `.claude/agents_retired_v10/`: governor · execution · monitoring(→book-tracker) · blender · ramp-orchestrator · strategy-implementer. 상세 = CLAUDE.md
+- **Commands** `.claude/commands/` — qvest / worktask / alpha-search / strategy-rotation / book. ★퇴역 = `.claude/commands_retired_v10/`: ramp(v9.21 모드 퇴임) · qlead(v10 진입점 일원화)
 - **Tests** `08_Tests/` — 진입점 `08_Tests/hooks/run_all_hooks.sh`(hook dry-run) · `08_Tests/contract_regression/run_contract_regression.R` · `08_Tests/integration/test_wt_lifecycle_e2e.R` · `08_Tests/integration/_e2e_cleanup_guard.sh`(CI gate). 스위트별 정체 = `08_Tests/INDEX.md`
 - **Examples** `02_Infrastructure/docs/examples/qvest_workflows/` — 표준 WT 3종 (discovery happy / cert_fail / pit_violation)
 

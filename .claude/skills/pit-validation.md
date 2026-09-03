@@ -2,6 +2,9 @@
 name: pit-validation
 description: "PIT 규칙 적용 — C1~C15, pit_engine_v3 blocking_gate(수동 호출), 합리화 표현 탐지, detect_lookahead(.R + .py). ⚠ 자동 차단 훅(forge_code_guard)은 2026-05-16 DEPRECATED — 정적 스캔은 백테 전 수동 실행 의무."
 ---
+> ⚠ 본 파일은 **플랫 `.md` 라 Skill 로더에 노출되지 않는다**(로더는 `<name>/SKILL.md` 만 적재).
+> PIT 정본 = `.claude/rules/pit.md`(autoload). 본 문서 = 수동 스캐너 호출 레시피 + 체크리스트 요약.
+
 ## PIT (Point-in-Time) Enforcement
 
 ### C1~C15 체크리스트
@@ -10,14 +13,14 @@ description: "PIT 규칙 적용 — C1~C15, pit_engine_v3 blocking_gate(수동 �
 | C1 | full-sample 통계 금지 → rolling/expanding만 | `mean(전체)` |
 | C2 | same-day circular 금지 → t-1 lag | `today_signal → today_trade` |
 | C3 | 같은 기간 집계→적용 금지 | |
-| C4 | 재무제표 래깅 (연간→5월, 분기→45일) | |
+| C4 | 재무제표 lag — **annual = 익년 3/31** · quarterly 45일+ (DART 분기 고정일 5/15·8/15·11/15). 구 '연간→5월' 표기 폐기 | |
 | C5 | overlay t-1 기준 | |
 | C9 | DD/VT/FM lag: `c(0, dd_pct[-n])` / `c(vol[1], head(vol,-1))` | |
 | C11 | 데이터 시간축 검증 (FRED 시차 등) | |
 | C13 | Z_Score_Aligned만. 수동 방향 반전 금지. | |
 | C14 | IC: Usable_Date <= sig_date | |
 | C15 | Factor DB: load_month_factors() 경유 | |
-| C16 | 조합 폭발 금지 (grid search iter≥50 penalty) | |
+| C16 | 조합 폭발 금지 (grid search + winner selection) — `lookahead_detector.R::C16_COMBINATORIAL` 구현 탐지. ★`pit.md` 정본 표에는 미등재(정본 등재 여부 = 도훈 결정) | |
 
 ### PIT Engine v3 — 수동 게이트 (자동 차단 아님 — 2026-07-03 정정)
 
@@ -26,13 +29,15 @@ description: "PIT 규칙 적용 — C1~C15, pit_engine_v3 blocking_gate(수동 �
 - `pit_v3_daemon.sh`는 FS retain이나 호출자(forge_code_guard)가 사라져 **배선 끊김** (harness.md: "헬퍼/비-hook" 분류).
 - 따라서 **PIT Engine v3 blocking_gate는 현재 수동 호출로만 작동한다.** 백테 실행 전 forge/Q-Lead가 아래 수동 호출을 직접 실행할 의무.
 
-**실제 자동 방어선 (settings.json 등록 hook — 이것이 전부)**:
+**실제 자동 방어선 (settings.json 등록 hook — v10 2026-09-03 실측)**:
 | Hook | 이벤트 | 검사 내용 |
 |------|--------|-----------|
-| `factor_rotation_pit_guard.sh` | PreToolUse | FR 모드 Cycle50 shift / `prod`·`cumprod` 자체합성 (advisory) |
-| `axiom_enforcement_hook.sh` | PreToolUse[W/E] | AX-001 일부 block, AX-002~005 advisory |
-| `backtest_contract_audit.sh` | PreToolUse[Write] | registry/L-code 등재 시 `audit_status=FAIL` 차단 |
-| (v10 폐지) selection_contamination_detector.sh | — | lockbox 제도 폐지로 퇴역 |
+| `overlay_pit_grep.sh` | PostToolUse[W/E] | PIT C5 오버레이 신호 타이밍 (advisory) |
+| `backtest_contract_audit.sh` | PreToolUse[Write] | 원장 등재 integrity — `audit_status=FAIL` 차단 (2026-08-24 재등록) |
+
+★v9(2026-08-23) 감산으로 **등록 해제**된 구 방어선: `factor_rotation_pit_guard.sh` · `axiom_enforcement_hook.sh` ·
+`rationalization_detector.sh` · `answer_principles_grep.sh`(파일은 존치 — 재등록 레시피 = `02_Infrastructure/hooks/_archive_v8_enforcement/MANIFEST.md`).
+`selection_contamination_detector.sh` 는 v10 lockbox 폐지로 ★RETIRED.
 
 위 hook들은 **run_all.R의 lookahead 코드 자체를 실행 직전에 스캔하지 않는다** — 정적 스캔(detect_lookahead / pit_engine_v3 / pit_ast_scanner)은 수동 실행이 유일한 경로.
 
@@ -57,9 +62,8 @@ r <- pit_engine_v3$blocking_gate("04_Research/strategies/STR_XXX",
 
 ⚠️ 구 문구 "`artifact_validator.sh`가 자동 스캔 + `.p2b_violation` 자동 격리(rename)"는 stale — `artifact_validator.sh`는 ARCHIVED(`_archive_v55/`, worktask_artifact_validator로 rename됐으나 후자는 phrase 스캔을 하지 않음). 자동 rename 격리 메커니즘은 현재 없다.
 
-**실제 활성 탐지 (둘 다 soft — block 아님)**:
-- `rationalization_detector.sh` (PostToolUse[Write/Edit]) — challenge_note / verdict / admission 파일 한정, KR/EN phrase 라이브러리 매칭 → warn (3회+ escalate)
-- `answer_principles_grep.sh` (PostToolUse) — 회피 표현 soft alert
+**자동 탐지 없음 (v9 2026-08-23 등록 해제 — v10 실측)**: 구 `rationalization_detector.sh`·`answer_principles_grep.sh` 는 미등록이다.
+금지 표현은 **Judge(PIT) 감사 항목 + 자기 규율**로 지킨다 — "탐지가 없다" 가 "규율이 없다" 는 아니다(위반은 여전히 AX-002 동급).
 
 **금지 표현 (규율은 유지 — 탐지가 soft일 뿐 위반은 AX-002 동급)**:
 "영향 미미", "관행적 허용", "보수적이면 괜찮다", "대부분 결과 동일",
@@ -96,5 +100,5 @@ pit_ast_scan("04_Research/strategies/STR_XXX")  # AST 기반 간접 호출 탐�
 | 변수 | 효과 |
 |------|------|
 | `QVEST_SKIP_PIT_V3=1` | PIT Engine v3 blocking_gate 우회 |
-| `QVEST_STRICT_MODE=TRUE` (기본) | hurdle_gate D074 DSR/FF5 Hard Gate 활성 |
+| `QVEST_STRICT_MODE=TRUE` (기본) | hurdle_gate D074 strict — ★hurdle 은 **proxy 진단**이라 v10 판정 인용 금지(권위 등급 = `essence_score.R`) |
 | `QVEST_ALLOW_STALE_DB=1` | Factor DB 30일 초과 block 우회 (P3-A) |

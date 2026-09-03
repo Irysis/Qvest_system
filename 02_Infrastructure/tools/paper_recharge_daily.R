@@ -145,7 +145,15 @@ reg.finalizer(.lock_guard, function(e) release_lock(), onexit = TRUE)
 
 read_sources <- function(path) {
   if (!file.exists(path)) return(data.frame())
-  read.csv(path, stringsAsFactors = FALSE, check.names = FALSE, fileEncoding = "UTF-8")
+  # ★encoding=(마킹만) 을 쓴다 — fileEncoding= 은 iconv 재인코딩 경로라 Qvest_MorningReboot.bat 의
+  #   LC_ALL=C.UTF-8(Windows R 이 설정 실패 → C 로케일) 아래서 한글 summary_ko 열에서 'invalid input' 으로
+  #   0행을 돌려줬다. 그 0행이 매일 curated_sources_missing 거짓 경보(08-23~09-02)가 됐다(2026-09-02 재도출:
+  #   fileEncoding= 0행 / encoding= 26행 / 무설정 26행).
+  x <- tryCatch(read.csv(path, stringsAsFactors = FALSE, check.names = FALSE, encoding = "UTF-8"),
+                error = function(e) data.frame())
+  # 파일은 있는데 0행 = 부재가 아니라 '읽지 못함'(로케일/형식) — 다른 병이라 표식을 남긴다
+  if (nrow(x) == 0L && isTRUE(file.info(path)$size > 0)) attr(x, "unreadable") <- TRUE
+  x
 }
 
 load_registry <- function() {
@@ -503,17 +511,30 @@ curated_sources <- read_sources(source_path)
 #      구조적으로 보장됐다(라우터는 .done 을 보므로 3일간 29편씩 미소비).
 #   ⇒ 그 축만 skip 하고 **경보를 남긴다**. arXiv 축은 계속 돈다.
 if (nrow(curated_sources) == 0L) {
-  log_line("[paper-recharge] ★curated sources 비었음/부재 — curated 축만 skip, arXiv MCP 축은 계속 진행")
+  # (v10 2026-09-02) 부재/공백(curated_sources_missing) 과 '존재하나 0행'(curated_sources_unreadable) 을 가른다 —
+  #   조치가 다르다(파일 복구 vs 로케일/형식 점검). 두 리터럴을 따로 둔다(검사 test_curated_sources_isolation.sh 가 grep).
+  .cur_unreadable <- isTRUE(attr(curated_sources, "unreadable"))
+  log_line("[paper-recharge] ★curated sources 비었음/부재 — curated 축만 skip, arXiv MCP 축은 계속 진행%s",
+           if (.cur_unreadable) " (★파일은 존재 — 읽기 실패: 로케일/인코딩/형식 점검)" else "")
   tryCatch({
     adir <- file.path(PROJECT_ROOT, ".cache", "scheduler_alerts")
     dir.create(adir, recursive = TRUE, showWarnings = FALSE)
-    writeLines(c(sprintf("ts=%s", format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z")),
-                 "component=paper_recharge", "reason=curated_sources_missing",
-                 sprintf(paste0("detail=%s 가 비었거나 없습니다. curated(정적 PDF) 축만 건너뛰고 ",
-                                "arXiv MCP 축은 진행합니다. 구판은 여기서 즉사해 3일 연속 수집이 ",
-                                "좌초했습니다(08-15/16/17). 이 파일은 런타임 하드 의존이며 ",
-                                "2026-08-22 부터 git 추적 대상입니다."), source_path)),
-               file.path(adir, sprintf("paper_recharge_curated_sources_missing_%s.alert",
+    # ★이 분기 안에 단독 '}' 행을 두지 말 것 — 08_Tests/ops/lib/_probe_curated_branch.R 가 첫 '}' 행에서 블록 추출을 끊는다.
+    .cur_lines <- c(
+      sprintf("ts=%s", format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z")),
+      "component=paper_recharge",
+      if (.cur_unreadable) "reason=curated_sources_unreadable" else "reason=curated_sources_missing",
+      if (.cur_unreadable) sprintf(paste0("detail=%s 는 존재(%s바이트)하나 read.csv 가 0행을 돌려줬습니다 — 로케일/인코딩/형식 ",
+                                          "결손 의심(2026-09-02 실사고: LC_ALL=C.UTF-8 아래 fileEncoding= 재인코딩 0행). ",
+                                          "curated 축만 건너뛰고 arXiv MCP 축은 진행합니다."),
+                                   source_path, format(file.info(source_path)$size))
+      else sprintf(paste0("detail=%s 가 비었거나 없습니다. curated(정적 PDF) 축만 건너뛰고 ",
+                          "arXiv MCP 축은 진행합니다. 구판은 여기서 즉사해 3일 연속 수집이 ",
+                          "좌초했습니다(08-15/16/17). 이 파일은 런타임 하드 의존이며 ",
+                          "2026-08-22 부터 git 추적 대상입니다."), source_path))
+    writeLines(.cur_lines,
+               file.path(adir, sprintf("paper_recharge_%s_%s.alert",
+                                       if (.cur_unreadable) "curated_sources_unreadable" else "curated_sources_missing",
                                        format(Sys.Date(), "%Y%m%d"))))
   }, error = function(e) NULL)
   curated_sources <- curated_sources[0, , drop = FALSE]
@@ -858,7 +879,16 @@ if (!dry_run) {
   ), stamp)
 }
 
-send_tg <- !no_tg && !dry_run
+# (v10 2026-09-02) 신규 0 · 등록 0 · 죽은 링크 0 · MCP 정상인 날은 발송하지 않는다 — 최근 14일 락 41건 중
+#   '논문풀 일일 적재 완료' 는 downloaded=0 인 날에도 매일 나갔고(08-31·09-02 본문 '신규 없음'), 정보량 0 메시지의
+#   반복은 학습된 무시를 만든다. 붕괴 신호(mcp_suspect_empty)는 마커 외 가시성 유지를 위해 예외로 발송한다.
+.n_new_dl <- sum(summary_df$status == "downloaded")
+.tg_has_news <- (.n_new_dl > 0L) || (registry_added_total > 0L) || (n_curated_dead > 0L) ||
+                identical(mcp$status, "mcp_suspect_empty")
+send_tg <- !no_tg && !dry_run && .tg_has_news
+if (!no_tg && !dry_run && !.tg_has_news) {
+  log_line("[paper-recharge] tg skip: 신규 0 · 등록 0 · 죽은 링크 0 · MCP 정상 — 정보량 0 메시지는 보내지 않는다 (v10 2026-09-02)")
+}
 if (send_tg) {
   tg_path <- file.path(PROJECT_ROOT, "02_Infrastructure", "telegram", "telegram_notify.R")
   if (file.exists(tg_path)) {
@@ -890,6 +920,14 @@ if (send_tg) {
       chunk_size <- 8L
       chunk_starts <- seq(1L, length(paper_items_all), by = chunk_size)
       chunk_total <- length(chunk_starts)
+      # (v10 2026-09-02) 상세 청크 상한 — 08-30 재등록 229편이 28건 연속 발송됐다. 나머지는 매니페스트가 정본.
+      .chunk_cap <- suppressWarnings(as.integer(Sys.getenv("QVEST_RECHARGE_TG_MAX_CHUNKS", "3")))
+      if (is.na(.chunk_cap) || .chunk_cap < 1L) .chunk_cap <- 3L
+      if (chunk_total > .chunk_cap) {
+        log_line("[paper-recharge] tg detail chunk %d → %d 로 캡 (QVEST_RECHARGE_TG_MAX_CHUNKS) — 나머지 %d편은 매니페스트 참조",
+                 chunk_total, .chunk_cap, length(paper_items_all) - .chunk_cap * chunk_size)
+        chunk_total <- .chunk_cap
+      }
       paper_items <- paper_items_all[seq_len(min(chunk_size, length(paper_items_all)))]
       # alpha-search 후보 트리아지 상위 (KR 구현가능성 채점 + 저명저자 가점, 백테는 수동)
       triage_items <- if (is.data.frame(triage_df) && nrow(triage_df) > 0L) {
@@ -950,7 +988,7 @@ if (send_tg) {
       )))
       tg_agent_brief(
         agent = "AlphaSearch",
-        title = "논문풀 일일 적재 완료",
+        title = sprintf("[1계층] 논문 수집 — %s (신규 %d편)", format(Sys.Date(), "%Y-%m-%d"), .n_new_dl),  # §5.6b 계층 표제 (v10)
         as_of = format(Sys.Date(), "%Y-%m-%d"),
         force = TRUE,
         relaxed = TRUE,
@@ -965,7 +1003,7 @@ if (send_tg) {
           chunk_items <- pad_min2(paper_items_all[idx])
           tg_agent_brief(
             agent = "AlphaSearch",
-            title = sprintf("논문풀 적재 상세 %d/%d", chunk_idx, chunk_total),
+            title = sprintf("[1계층] 논문 수집 상세 %d/%d", chunk_idx, chunk_total),
             as_of = format(Sys.Date(), "%Y-%m-%d"),
             force = TRUE,
             relaxed = TRUE,

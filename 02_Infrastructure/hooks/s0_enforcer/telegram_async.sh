@@ -1,4 +1,10 @@
 #!/usr/bin/env bash
+# ★RETIRED (v10 2026-09-03) — S0 Debate 상태머신 = pre-v9 S0~S7 스테이지 기계. v10 은 충실구현
+#   (run_paper_replication) + QEPM(WT-R) 만 쓰므로 소비 경로가 소멸했다. 등록 이력 0(MANIFEST 36 밖).
+#   required_roles 에 governor(v10 폐지) 포함. ★00_Lawbook/DEPRECATION.md 의 'v8.2 범위 밖 유지' 판정을
+#   v10 2026-09-03 에 철회한 항목이다. 재열람 = git 태그 pre-v10-2layer.
+#   ★telegram_async.sh 는 .env 토큰으로 api.telegram.org 를 curl 직접 호출한다 — v10 '텔레그램 =
+#     tg_agent_brief() 단일 진입' 규칙 위반 경로이며 telegram_direct_call_guard(Rscript 페이로드만 스캔)의 사각. 재사용 금지.
 # telegram_async.sh — 텔레그램 non-blocking 발송 (Phase C3.5 split)
 # 사용: source "$SCRIPT_DIR/s0_enforcer/telegram_async.sh"; tg_notify "메시지"
 #

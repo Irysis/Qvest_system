@@ -1,0 +1,55 @@
+{
+  "requested_at": "2026-09-03T07:48:38+0900",
+  "source": "reinforce_auto_next_paper",
+  "reason": "직전 논문 강화 25회 소진 — 큐 다음 논문 충실구현 대기",
+  "prev": {
+    "base_id": "RP_20260902_122546_22268",
+    "n": 25,
+    "port_t": 1.228,
+    "grade": "C",
+    "base_grade": "F",
+    "cell_code": "B4_25",
+    "spec": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/.cache/rf_parallel/spec_B4_25__RP_20260902_122546_22268.json",
+    "artifacts": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/replication/20260902_185747_28488"
+  },
+  "paper": {
+    "title": "회귀트리 팩터 조건부 구조",
+    "paper_title": "Uncovering a factor-based expected return conditioning structure with Regression Trees jointly for many stocks",
+    "url": "https://arxiv.org/abs/2007.08115",
+    "paper_key": "2007.08115",
+    "source": "arxiv",
+    "reason": "FF3 팩터 비선형 의존성 — factor_db 가용",
+    "factor_name": "회귀트리 팩터 조건부 구조",
+    "factor_def": "Given the success and almost universal acceptance of the simple linear regression three-factor model, it is interesting to analyze the informational content of the three factors in explaining stock re",
+    "kr_feasible": null,
+    "skipped_no_url": 0
+  },
+  "status": "done",
+  "started_at": "2026-09-03T07:54:05+0900",
+  "base_id": "RP_20260903_081538_1520_adapted_rulefast",
+  "grade": "C",
+  "artifacts": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/replication/20260903_081538_1520",
+  "fidelity": "adapted",
+  "fidelity_detail": {
+    "fidelity": "adapted",
+    "kept": "기전 = 기대수익의 팩터 조건부 구조는 depth=1 회귀트리의 계단함수이고, 그 계단은 0이 아니라 시장수익 꼬리에 서며, 여러 종목에 동시에 적합하면(joint multi-output, 종목별 표준화 없음) 공통 임계값 하나가 나오고 종목은 그 위에서 잎 평균으로 갈린다 — 매월 유니버스 전 종목의 일간수익에 joint depth=1 트리를 적합해 공통 임계값 c*를 구하고, 종목 i 의 다수 잎(majority leaf) 평균 = 그 트리가 모달 국면에 내놓는 기대수익 예측값을 횡단면 스코어로 쓴다.",
+    "changed": "① 산출 형태: 논문은 포트폴리오를 만들지 않으므로(서술적 진단) top-25 롱온리 EW 월간 = 우리 고정 축을 쓴다. 논문에서 온 유일한 수치 파라미터는 추정 창 1,259 거래일뿐이다. ② 유니버스: US 대형주 5종 → K200∪KQ150(PIT 시변) + adv20(t-1) ≥ 2e8. ③ 설명변수: FF3(mex·SMB·HML) → mex 하나 — 인프라의 KR FF3 팩터가 월간뿐이라 일간 SMB/HML 패널이 없고(월 60관측으로는 1-99% 꼬리분할이 추정되지 않음), 내가 KR 일간 FF3 를 새로 구성하면 장부가 정의·절단점 규약·형성주기를 논문 밖에서 지어내야 한다. 논문 결론이 'in all cases (solo and joint) the most informative factor is always the market excess return factor' 이므로 이 축소가 제거하는 것은 결과가 만장일치로 보고된 경마이지 회수되는 구조가 아니다(★대가: KR 에서 SMB/HML 이 이겼을 가능성은 이 엔진이 검정하지 않는다 — 일간 KR FF3 패널이 생긴 뒤의 별도 축). ④ mex = KOSPI200 일간수익 − rf(월간 KR RF 전월값 일할, 캐시 부재·단위이상 시 rf=0 폴백·로그).",
+    "paper_original_form": "US 대형주 5종(IBM·KO·BK·PG·GOOG)의 2015-01-05~2020-04-30 일간수익 1,259개를 FF3 에 대해 depth=1 회귀트리(solo 및 joint multi-output)로 적합하고, 분기변수·분기 임계값(-350bp~+300bp)·트리 balance(1-99% ~ 22-78%)·joint 트리의 지배 종목을 표로 보고하는 서술적 진단 연구다. 매매전략·포트폴리오·백테스트·거래비용·종목수·비중·리밸 주기가 전무하며, 저자 스스로 'only done for demonstration purposes and not for statistical inference' 라고 명시한다.",
+    "portfolio_spec": {
+      "construction": "top_n_long",
+      "weighting": "ew",
+      "rebalance": "monthly",
+      "top_n": 25,
+      "n_long": 25,
+      "n_max": 25
+    },
+    "commission_paper": null,
+    "_notes": {
+      "engine_output": "FACTORS(Date, Ticker, Score) — Score = joint depth=1 트리의 다수-잎 예측 일간수익(클수록 롱). 부호를 내가 고르지 않는다: 스코어가 기대수익 예측값 그 자체다.",
+      "portfolio_spec_keys": "top_n 은 지시 스키마 키, n_long/n_max 는 run_paper_replication::.rp_build_weights 가 실제로 읽는 키다. 둘 다 25로 둬 이 객체가 러너에 그대로 전달돼도 정확히 25종이 나오게 했다.",
+      "source_text_access": "arXiv 2020년 투고분이라 /html·ar5iv 가 없다(404/redirect). PDF 전문을 텍스트 렌더러 경유로 읽어 방법론·데이터·Table 2c·비용무명시를 축자 확보했다. 인용 전문 = engine.R 헤더 Q1~Q6.",
+      "paper_url": "https://arxiv.org/abs/2007.08115"
+    }
+  },
+  "completed_at": "2026-09-03T08:20:39+0900"
+}

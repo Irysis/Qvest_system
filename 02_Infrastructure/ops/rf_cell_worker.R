@@ -32,9 +32,16 @@ res <- tryCatch({
   run_paper_replication(
     strategy_name = SNAME, strategy_idea = SPEC$idea %||% SPEC$label %||% SPEC$code,
     factor_engine_path = file.path(ROOT, "02_Infrastructure/reinforcement/rf_cell_engine.R"),
-    portfolio_spec = list(construction = "top_n_long", n = AX$n_max,
+    # ★2026-09-01 수리 — 구판은 `n =` 을 넘겼는데 러너는 `spec$n_max` / `spec$n_long` 을 읽는다.
+    #   키가 어긋나 격자의 n_max 가 **한 번도 전달된 적이 없고**, 기본값 25 위에 lfrac 10% 가
+    #   곱해져 실제 보유가 3종목이었다(실측: factors_panel 월 25행 -> 보유 3종, 라이브 셀 전부 n_max 3).
+    #   ★엔진이 이미 상위 25를 잘라 FACTORS 를 내보내므로 러너가 다시 분위로 자르면 이중 선정이다.
+    #   n_long 을 명시해 "엔진이 건넨 것을 그대로 담는다" 로 만든다.
+    portfolio_spec = list(construction = "top_n_long",
+                          n_long = AX$n_max, n_max = AX$n_max,
                           weighting = SPEC$weighting$kind, rebalance = "monthly"),
     universe = UNIV, source_paper = SPEC$root_paper,
+    require_source_paper = FALSE,   # ★강화 레인 — 근거 의무 해제(2026-09-03). 있으면 그대로 기록된다.
     commission_paper = AX$commission_bps / 10000, start_date = AX$start_date,
     send_telegram = FALSE)
 }, error = function(e) structure(list(err = conditionMessage(e)), class = "rf_err"))

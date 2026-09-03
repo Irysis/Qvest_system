@@ -86,4 +86,5 @@ if (isTRUE(r2$ok) && identical(r2$reason, "absent")) ok("이미 없으면 성공
 
 writeLines("")
 writeLines(sprintf("합계: 통과 %d · 실패 %d", PASS, FAIL))
+cat(sprintf('{"test":"rf_claim","pass":%d,"fail":%d,"total":%d}\n', PASS, FAIL, PASS + FAIL))
 if (FAIL > 0L) quit(status = 1L)

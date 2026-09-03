@@ -1,7 +1,8 @@
 #!/bin/bash
 # resolve_project.sh (hooks 판) — 디바이스/드라이브 독립적 프로젝트 경로 해석
 # 우선순위: CLAUDE_PROJECT_DIR → QM_ROOT → 자기 위치 역추론 → 후보 glob.
-# 소비자: pipeline_trigger.sh (settings.json 등록) · task_complete_guard.sh · teammate_idle_guard.sh
+# 소비자: auto_commit_on_stop.sh · auto_push_on_stop.sh (settings.json SessionEnd 등록)
+#   · 미등록 legacy: pipeline_trigger.sh(v9 해제 MANIFEST #26) · task_complete_guard.sh · teammate_idle_guard.sh
 # Usage: source "$(dirname "${BASH_SOURCE[0]:-$0}")/resolve_project.sh"
 #
 # ★ops/resolve_project.sh 와 **의도적으로 두 군데 다르다**. 하나로 합치지 않는다:

@@ -1,6 +1,10 @@
 #!/usr/bin/env python3
 """
-qvest_hook_router.py — Qvest v6.4 Hook Kernel Router
+qvest_hook_router.py — Qvest Hook Kernel Router (v10.1 기준)
+
+★dispatch 경로는 v9(2026-08-23) 폐지 — settings.json 은 12훅 직접 등록이다.
+  이 파일이 살아 있는 이유는 classify / check-* / validate-schema 서브커맨드이고
+  CI(qvest-kernel-ci.yml)와 hook_integrity_check 가 그것을 소비한다. 사연 = 00_Lawbook/DEPRECATION.md
 
 목적:
 - 3 policy JSON (state_transitions / role_permissions / cert_rules) 단일 진입점 (v8.2: codex_round_contract 제거 — Codex Round 폐지)

@@ -1,4 +1,7 @@
 #!/bin/bash
+# ★RETIRED (v10 2026-08-29 · 헤더 2026-09-03) — 무인 리서치 레인 퇴역: morning_run 에서 철거됐고
+#   예약작업·bat 호출 0. 파일은 사료(08_Tests 가 경로로 직접 실행하므로 이동·삭제 금지).
+#   재개 레시피 = git 태그 pre-v10-2layer 의 morning_run.sh [0.55]~[0.6] 구간.
 # ★v10 (2026-08-29): 무인 morning_run 배선 제거 — 세션 수동 도구로만 존치 (무인은 수집까지).
 #   내부의 게이트 루프(lean_verify_build→auto_alpha_gate→append-done)는 수동 실행 시 유효.
 # alpha_search_queue_run.sh — 팩터추출 → alpha-search 모드 가동 (마지막 고리, 도훈 mandate 2026-06-19).

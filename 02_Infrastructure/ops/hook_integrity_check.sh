@@ -64,7 +64,7 @@ REQUIRED_DISPATCH=(
   "backtest_contract_audit.sh"      # 자체합성 차단
   "ast_spec_gate.sh"                # AST v1.1 기계 게이트 (2026-07-25 등재)
   "legacy_write_block.sh"           # legacy 격리
-  "worktask_constraint_enforcer.sh" # 25종/bounds/Σw=1
+  "worktask_constraint_enforcer.sh" # 25종/long-only/Σw=1 (비중 상한은 v10 폐지)
 )
 
 # ── ★v9 Lean Loop (2026-08-23): 직접 등록 모드 ───────────────────────────────
@@ -78,7 +78,9 @@ REQUIRED_DIRECT_WE=(
   "safety_guard.sh"                 # Tier1 보호선 (Write|Edit + Bash)
   "legacy_write_block.sh"           # legacy 격리
   "discovery_graduation_gate.sh"    # HARD 3종 fail-closed
-  "worktask_constraint_enforcer.sh" # 25종/bounds/Σw=1
+  "worktask_constraint_enforcer.sh" # 25종/long-only/Σw=1 (비중 상한은 v10 폐지)
+  "book_write_guard.sh"             # v10 2026-08-29: BOOK 정본 writer 경유 강제 + legacy book_state 재기입 차단
+  "backtest_contract_audit.sh"      # 2026-08-24 재등록: 원장 integrity 게이트
 )
 MODE_DIRECT=0
 case "$N_DISPATCH" in
@@ -133,7 +135,7 @@ if [ "$MODE_DIRECT" = "1" ]; then
     echo "[hook-integrity] 직접 등록 모드(dispatch 폐지) · 등록 ${N_DIRECT}종 · worktree폴백=${FALLBACK}" >&2
     exit 1
   fi
-  echo "[hook-integrity] 직접 등록 모드 — dispatch 폐지(v9 2026-08-23) · W/E 게이트 4/4 직접 등록 · 등록 ${N_DIRECT}종 · worktree폴백=${FALLBACK}"
+  echo "[hook-integrity] 직접 등록 모드 — dispatch 폐지(v9 2026-08-23) · W/E 게이트 ${#REQUIRED_DIRECT_WE[@]}/${#REQUIRED_DIRECT_WE[@]} 직접 등록 · 등록 ${N_DIRECT}종 · worktree폴백=${FALLBACK}"
   echo "[hook-integrity]   해제 36종 원장: 02_Infrastructure/hooks/_archive_v8_enforcement/MANIFEST.md"
   exit 0
 fi

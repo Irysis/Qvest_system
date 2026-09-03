@@ -45,9 +45,9 @@ paths:
 - `save_bt_result(bt_result, output_dir)` — RDS + CSV × 10 + JSON × 2 + XLSX 11-sheet
 - `register_bt_result(bt_result)` — `qepm/registry/backtest_registry.csv` append (audit FAIL 차단)
 
-## L3 hard block — **v9 2026-08-23 등록 해제**
+## L3 hard block — v9(08-23) 등록 해제 → **2026-08-24 재등록**(원장 integrity 게이트)
 
-`02_Infrastructure/hooks/backtest_contract_audit.sh`(PreToolUse[Write])는 **등록 해제**됐다(도훈 결정 ④ 강한 감산. 파일 존치 — 재등록 레시피 `02_Infrastructure/hooks/_archive_v8_enforcement/MANIFEST.md`).
+`02_Infrastructure/hooks/backtest_contract_audit.sh`(PreToolUse[Write])는 08-23 에 해제됐다가 **2026-08-24 재등록됐다** — 해제 사유였던 `.py` 자체합성 idiom 차단 가지만 제거하고 원장 integrity 판정은 복원했다(대상 = `backtest_registry.csv`·`methodology_(active|memory).md`·`metrics_official.csv`. 양성/음성/돌연변이 10/10 실증 = `08_Tests/hooks/test_backtest_contract_audit_gate.R`). 현행 등록 12종에 포함(`.claude/settings.json` `_doc_bt_contract`).
 - **계약 자체는 불변**: `audit_bt_result()` Critical FAIL → `metric_type='unavailable'` + `integrity='FAIL'`, `register_bt_result()`가 audit FAIL 등재를 계속 거부한다. 차단 지점이 훅(쓰기 시점)에서 **R 계약(등재 시점)** 으로 이동했을 뿐이다.
 - (사료) 구 동작: backtest_registry.csv / L-code 등재 시 `audit_status=FAIL` 차단
 

@@ -27,10 +27,12 @@
 | `settings.json.v8_20260823.json` | v8 최종 `.claude/settings.json` 전문 (해제 직전 바이트 동일) |
 | `router_dispatch_v1.2.json` | v1.2 라우터 dispatch 19-entry 전문 (`02_Infrastructure/hooks/policies/router_dispatch.json` 은 v1.3 = `hooks: []` 로 비움, 파일은 유지) |
 
-## 2. 남은 등록 11종 (대조용 — 해제 대상 아님)
+## 2. 남은 등록 12종 (대조용 — 해제 대상 아님 · ★v10 2026-09-03 갱신)
 
-`safety_guard` · `legacy_write_block` · `discovery_graduation_gate` · `worktask_constraint_enforcer` · `telegram_direct_call_guard` · `axiom_context_inject` · `governor_concord_certifier` · `overlay_pit_grep` · `boot_stamp_check` · `auto_commit_on_stop` · `auto_push_on_stop`
-(12 command / 11 distinct · Write 정적 팬아웃 6 · **Stop 이벤트 등록 0**)
+`safety_guard` · `legacy_write_block` · `book_write_guard` · `discovery_graduation_gate` · `worktask_constraint_enforcer` · `backtest_contract_audit` · `telegram_direct_call_guard` · `axiom_context_inject` · `overlay_pit_grep` · `boot_stamp_check` · `auto_commit_on_stop` · `auto_push_on_stop`
+(13 command / 12 distinct · **Stop 이벤트 등록 0** — SessionEnd 2종)
+
+★v9(08-23) 판 대비 변경 3건: **`governor_concord_certifier` 등록 해제**(v10 governor 폐지 — 감시 대상 소멸, 자리를 `book_write_guard` 가 승계) · **`book_write_guard` 신설 등록**(BOOK 정본 writer 경유 강제 + legacy `book_state.json` 재기입 차단) · **`backtest_contract_audit` 재등록**(2026-08-24, 아래 §3.2 #3 참조 — 해제 사유였던 `.py` 자체합성 idiom 가지만 제거하고 원장 integrity 게이트는 복원).
 
 ## 3. 해제 36종
 
@@ -59,7 +61,7 @@
 
 | # | 스크립트 | 구 등록 | 차단력 | 사유 범주 | 재등록 suffix | mandate·문서 |
 |---|---|---|---|---|---|---|
-| 3 | `backtest_contract_audit.sh` | router #1 · Write\|Edit | block | research-path blockers | ` 2>>/tmp/backtest_contract_audit.log \|\| true` | `.claude/rules/backtest-contract.md` L3 hard block · `python-policy.md` §5. **해제 = 플랜 D-d** (.py 자체합성 idiom 차단이 v8.4 ML 레인에 걸림; 룰은 텍스트 존치) |
+| 3 | `backtest_contract_audit.sh` | router #1 · Write\|Edit | block | research-path blockers | ` 2>>/tmp/backtest_contract_audit.log \|\| true` | `.claude/rules/backtest-contract.md` L3 hard block · `python-policy.md` §5. **해제 = 플랜 D-d** (.py 자체합성 idiom 차단이 v8.4 ML 레인에 걸림; 룰은 텍스트 존치) — ★**2026-08-24 재등록**(PreToolUse[Write], `.py` idiom 가지 제거 · 양성/음성/돌연변이 10/10 실증 `08_Tests/hooks/test_backtest_contract_audit_gate.R`). 현행 등록 12종에 포함 = §2 |
 | 4 | `axiom_enforcement_hook.sh` | router #3 · Write\|Edit | block | research-path blockers | (없음) | `.claude/rules/axioms.md` "Hook 강제" 절 (AX-001 block / AX-002 advisory). ★`memory_knowledge_health.R` W5 가 이 **파일**을 계속 읽으므로 이동 금지 |
 | 5 | `agent_role_guard.sh` | router #5 · Write\|Edit | block | research-path blockers | (없음) | `.claude/rules/pit.md` "Hook 계층". 2026-07-03 감사: agent marker writer 부재로 **구조적 상시-allow** — 등록되어 있어도 판정한 적 없음 |
 | 6 | `worktask_spec_validator.sh` | router #7 · Write | block | research-path blockers | (없음) | v6.1 WT spec 검증 · `.claude/skills/qvest-worktask/SKILL.md` |

@@ -1,13 +1,13 @@
 #!/usr/bin/env Rscript
 #==============================================================================
-# reinforce_auto_next_paper.R — 20칸 소진 후 **다음 논문으로 이월** (무인화, 2026-08-30)
+# reinforce_auto_next_paper.R — 25칸 소진 후 **다음 논문으로 이월** (무인화, 2026-08-30)
 #
 # 도훈 지시: "강화프로세스 20회 진행 후에도 개선이 없으면 다른 논문으로 옮겨가게 해줘".
 #
 # 호출자 = reinforce_auto_run.R (entry status=exhausted 직후, 비동기)
 # 하는 일:
 #   1) 소진된 entry 의 최고 셀이 기저 대비 개선을 냈는지 판정해 로그·텔레그램에 남긴다
-#      (개선 유무와 무관하게 이월한다 — 상한은 20회다. 개선이 있었다면 그 사실이 기록된다)
+#      (개선 유무와 무관하게 이월한다 — 상한은 25회다(원장 max_attempts). 개선이 있었다면 그 사실이 기록된다)
 #   2) 논문 큐(alpha-pending)에서 다음 논문 1편을 뽑는다
 #      ★술어는 research_pool_predicates.py 정본을 **CLI 로 호출**한다 — 재구현 금지
 #        (그 파일이 명시한 계약. 소비자 독립 구현이 같은 결함을 3번 재발시킨 전례)
@@ -38,6 +38,9 @@ if (!isTRUE(CFG$enabled %||% FALSE)) { jlog("halt_disabled"); quit(status = 0) }
 main <- function() {
 suppressMessages(source(file.path(ROOT, "02_Infrastructure/reinforcement/reinforce_ledger.R")))
 led <- rf_load(1L, ROOT)
+# ★칸 상한은 원장이 정본이다 — 메시지에 숫자를 박으면 상한을 바꿔도 안 따라온다
+#   (2026-08-31 도훈 지적: 상한이 25 인데 텔레그램이 계속 "20칸" 이라고 말했다).
+MAXA <- as.integer(led$max_attempts %||% 25L)
 
 # 이미 active 가 있으면 이월할 필요 없음 (중복 개설 방지)
 if (length(Filter(function(e) identical(e$status, "active"), led$entries))) {
@@ -45,7 +48,11 @@ if (length(Filter(function(e) identical(e$status, "active"), led$entries))) {
 }
 
 # ── 1. 소진 entry 의 성적 요약 (개선 유무 판정 — 이월은 무조건) ──────────────
-ex <- Filter(function(e) identical(e$status, "exhausted"), led$entries)
+# ★이미 이월을 끝낸 entry 는 다시 요약하지 않는다. 구판은 exhausted 목록의 마지막을
+#   매 tick 다시 집어 exhausted_summary/promote 판정을 반복했고, 그때마다 "N회 소진"
+#   텔레그램이 나갔다(2026-08-31: 27076 한 건에 대해 4회 반복 — 도훈이 "텔레가 섞여서
+#   온다" 고 지적한 소음의 절반이 이것이다).
+ex <- Filter(function(e) identical(e$status, "exhausted") && !isTRUE(e$handed_off), led$entries)
 best <- NULL
 if (length(ex)) {
   E <- ex[[length(ex)]]
@@ -69,10 +76,10 @@ if (length(ex)) {
 
 # ── ★1.5 B등급 이상 승격 분기 (도훈 지시 2026-08-30) ─────────────────────────
 #   구판의 유일한 배선은 "20칸 소진 → 다음 논문" 하나였다. 그러면 B 를 낸 구성이
-#   더 파보지도 못하고 큐 뒤로 밀린다 — 20칸은 상한이지 그 신호의 한계가 아니다.
-#   그래서 소진 시점에 승자가 B+ 면 그 구성을 carry 로 물려 **새 20칸**을 연다.
+#   더 파보지도 못하고 큐 뒤로 밀린다 — 25칸은 상한이지 그 신호의 한계가 아니다.
+#   그래서 소진 시점에 승자가 B+ 면 그 구성을 carry 로 물려 **새 25칸**을 연다.
 #   ★승격은 자기 값을 증명해야 이어진다 — 부모 최고 PORT_t 를 넘지 못하면 승격하지 않는다.
-#     (넘지 못한 승격은 같은 실패의 재생산이고, 그게 20회 상한의 존재 이유다)
+#     (넘지 못한 승격은 같은 실패의 재생산이고, 그게 25회 상한의 존재 이유다)
 #   ★깊이 상한은 큐 정체 방지 — 한 논문이 승격 사슬로 무한히 예산을 먹지 않게 한다.
 # ★판정은 rf_promote.R 의 순수 함수 하나 — 인라인으로 두면 검사가 못 건드린다.
 if (length(ex)) {
@@ -131,7 +138,7 @@ if (length(ex)) {
                                    length(carry$factors), (carry$weighting$kind %||% "ew"),
                                    (carry$universe$kind %||% "k200_kq150")), 1, 78))),
             list(type = "summary", emoji = "\U0001F4CC",
-                 body = "20칸 소진 시 승자가 B등급 이상이라 그 구성을 기저로 물려 새 20칸을 엽니다. 다음 논문은 이 사슬이 끝난 뒤로 밀립니다."),
+                 body = sprintf("%d칸 소진 시 승자가 B등급 이상이라 그 구성을 기저로 물려 새 %d칸을 엽니다. 다음 논문은 이 사슬이 끝난 뒤로 밀립니다.", MAXA, MAXA)),
             list(type = "bullet", emoji = "\u27A1\uFE0F", heading = "다음",
                  items = c(sprintf("깊이 상한 %d — 부모 최고치를 못 넘으면 승격 중단", MAXD),
                            "처분: 자본 배정 없음 — 등재는 Judge(PIT) + 도훈 confirm"))))
@@ -170,6 +177,22 @@ tryCatch(system2("Rscript", shQuote(file.path(ROOT, "02_Infrastructure/ops/rf_co
                  wait = TRUE, stdout = TRUE, stderr = TRUE),
          error = function(e) jlog("combination_review_failed", err = conditionMessage(e)))
 
+# ── ★결합 **착수** (2026-08-31 도훈 지시 "착수해주고") ───────────────────────
+#   검토기는 후보만 쌓았고 소비자가 없었다(4회 · 10쌍이 그대로 남아 있었다).
+#   여기서 착수기를 부른다. 자체 가드가 다 들어 있어 조건이 안 맞으면 즉시 물러난다:
+#     · active entry 존재 → halt   · 새 쌍 없음 → halt   · 양수 t 쌍 없음 → halt
+#   ★결합이 열리면 **이월을 하지 않는다**. 결합 entry 가 곧 active 라, 이월까지 하면
+#     충실구현이 돌아도 그 결과로 entry 를 못 연다(active 중복). 둘 중 하나만 간다.
+.combo_opened <- FALSE
+tryCatch({
+  .out <- system2("Rscript", shQuote(file.path(ROOT, "02_Infrastructure/ops/rf_combination_launch.R")),
+                  wait = TRUE, stdout = TRUE, stderr = TRUE)
+  .combo_opened <- any(grepl("combo_entry_opened", .out, fixed = TRUE))
+  jlog("combination_launch", opened = .combo_opened,
+       note = if (.combo_opened) "결합 entry 개설 — 이월 생략" else "조건 미충족 — 이월 진행")
+}, error = function(e) jlog("combination_launch_failed", err = conditionMessage(e)))
+if (isTRUE(.combo_opened)) return(invisible(0L))
+
 # ── 3. 충실구현은 세션 소관으로 넘긴다 ────────────────────────────────────────
 # ★경계: 충실구현은 "논문 그대로"(롱숏·종목수·비중·리밸)를 읽어 구현해야 하므로
 #   규칙 격자로 환원되지 않는다 — 여기서 무인 LLM 개시를 하지 않는다.
@@ -178,10 +201,21 @@ tryCatch(system2("Rscript", shQuote(file.path(ROOT, "02_Infrastructure/ops/rf_co
 REQ <- file.path(ROOT, "06_Registry/replication_request.json")
 write(toJSON(list(requested_at = format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z"),
                   source = "reinforce_auto_next_paper",
-                  reason = "직전 논문 강화 20회 소진 — 큐 다음 논문 충실구현 대기",
+                  reason = sprintf("직전 논문 강화 %d회 소진 — 큐 다음 논문 충실구현 대기", MAXA),
                   prev = best, paper = pick, status = "pending"),
              auto_unbox = TRUE, pretty = TRUE, null = "null"), REQ)
 jlog("replication_requested", path = REQ)
+  # 이월 완료 표식 — 이 entry 는 다음 tick 부터 요약 대상이 아니다
+  if (!is.null(best$base_id)) tryCatch({
+    .o <- rf_load(1L, ROOT)
+    .k <- which(vapply(.o$entries, function(z) identical(z$base_id, best$base_id), logical(1)))
+    if (length(.k)) { .o$entries[[.k[1]]]$handed_off <- TRUE
+      .o$entries[[.k[1]]]$handed_off_at <- format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z")
+      .txt <- toJSON(.o, auto_unbox = TRUE, pretty = TRUE, null = "null", na = "null", digits = 6)
+      if (!is.null(fromJSON(.txt, simplifyVector = FALSE)$entries))
+        writeLines(.txt, file.path(ROOT, "06_Registry/reinforce_ledger_l1.json"), useBytes = TRUE)
+      jlog("handed_off", base_id = best$base_id) }
+  }, error = function(e) jlog("handoff_mark_failed", err = conditionMessage(e)))
 
 tryCatch({
   suppressMessages(source(file.path(ROOT, "02_Infrastructure/telegram/telegram_notify.R")))
@@ -191,16 +225,16 @@ tryCatch({
     #   2608.24703 이월이 차단됨). 중복 차단은 재발송을 막으라는 장치이지 **다른 사건을**
     #   막으라는 장치가 아니다.
     lock_scope = sprintf("rf_next_paper_%s", pick$paper_key %||% "unknown"),
-    title = "[1계층] 강화 20회 소진 — 다음 논문 충실구현 대기",
+    title = sprintf("[1계층] 강화 %d회 소진 — 다음 논문 충실구현 대기", MAXA),
     sections = list(
       list(type = "bullet", emoji = "\U0001F3AF", heading = "현재 리서치 상황",
            items = c("단계: 1계층 강화 프로세스 — 무인 러너",
-                     sprintf("대상: %s 소진(20회)", best$base_id %||% "직전 논문"),
+                     sprintf("대상: %s 소진(%d회)", best$base_id %||% "직전 논문", MAXA),
                      sprintf("위치: 논문 큐 대기 %d편 · 다음 1편 선정 완료", n_pending),
                      sprintf("직전 판정: 최고 등급 %s · 다중검정 t값 %.3f",
                              best$grade %||% "NA", best$port_t %||% NA_real_))),
       list(type = "summary", emoji = "\U0001F4CC",
-           body = "강화 20회를 소진해 다음 논문으로 이월합니다. 충실구현 착수를 기다립니다."),
+           body = sprintf("강화 %d회를 소진해 다음 논문으로 이월합니다. 충실구현 착수를 기다립니다.", MAXA)),
       # ★선정 논문 소개 (도훈 지시 2026-08-30) — 제목·출처·후보 팩터·트리아지 사유
       list(type = "bullet", emoji = "\U0001F4D6", heading = "선정 논문",
            items = {

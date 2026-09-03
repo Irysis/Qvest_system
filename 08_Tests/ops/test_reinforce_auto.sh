@@ -268,7 +268,7 @@ if sed -n '/halt_auth_expired/,/^fi$/p' 02_Infrastructure/ops/rf_replication_aut
   ok "인증 실패 → pending 복원"; else ng "인증 실패 후 재시도 불가"; fi
 
 echo "=== 15. 기저 신호 캐시 ==="
-# ★강화 20칸은 같은 기저를 쓴다 — 캐시가 없으면 무거운 논문에서 20배를 버린다
+# ★강화 25칸은 같은 기저를 쓴다 — 캐시가 없으면 무거운 논문에서 25배를 버린다
 if grep -q "rf_base_signal" 02_Infrastructure/reinforcement/rf_cell_engine.R; then
   ok "기저 캐시 존재"; else ng "기저 캐시 없음 — 셀마다 기저 재계산"; fi
 # ★캐시 키에 엔진 내용 해시가 들어가는가 (없으면 엔진을 고쳐도 옛 신호를 쓴다)
@@ -282,9 +282,9 @@ if grep -q "캐시 저장 실패(비치명)" 02_Infrastructure/reinforcement/rf_
   ok "캐시 저장 실패 시 비치명 폴백"; else ng "캐시 실패가 셀을 죽인다"; fi
 
 echo "=== 16. 기저 품질 문턱 ==="
-# ★기저 알파가 음수면 강화 20칸이 헛돈다 — 예산을 다음 논문에 쓴다(도훈 2026-08-30)
+# ★기저 알파가 음수면 강화 25칸이 헛돈다 — 예산을 다음 논문에 쓴다(도훈 2026-08-30)
 if grep -q "base_below_threshold" 02_Infrastructure/ops/rf_replication_verify.R; then
-  ok "기저 품질 문턱 존재"; else ng "문턱 없음 — 음수 알파 위에서 20칸 낭비"; fi
+  ok "기저 품질 문턱 존재"; else ng "문턱 없음 — 음수 알파 위에서 25칸 낭비"; fi
 if "$PY" -c "
 import io,json,sys
 d=json.loads(io.open('06_Registry/reinforce_auto_config.json','rb').read().decode('utf-8'))
@@ -421,11 +421,11 @@ else
 fi
 
 echo "=== 21. B+ 승격 분기 (양방향) ==="
-# 도훈 지시 2026-08-30 — 20칸 소진 시 승자가 B 이상이면 그 구성(carry)을 물려 새 20칸을 열다.
+# 도훈 지시 2026-08-30 — 25칸 소진 시 승자가 B 이상이면 그 구성(carry)을 물려 새 25칸을 열다.
 # 게이트가 회귀하면 ①영영 승격 안 함 ②무한 승격 — 둘 다 로그가 조용해 정상처럼 보인다.
 if grep -q "rf_promote_decide" 02_Infrastructure/ops/reinforce_auto_next_paper.R; then
   ok "이월 경로가 승격 판정을 호출"
-else ng "승격 분기 미배선" "20칸 소진 = 무조건 다음 논문"; fi
+else ng "승격 분기 미배선" "25칸 소진 = 무조건 다음 논문"; fi
 if grep -q 'E$carry' 02_Infrastructure/ops/reinforce_auto_parallel.R && grep -q 'E$carry' 02_Infrastructure/ops/reinforce_auto_run.R; then
   ok "러너 2종이 carry 를 셀 스펙에 병합"
 else ng "carry 미병합" "승격해도 승자 구성이 안 물려진다"; fi
@@ -508,7 +508,253 @@ if [ "$ORC" -eq 0 ]; then
 else
   ng "오버레이 등록부" "$(echo "$OVA" | grep FAIL | head -1)"
 fi
+echo "=== 22b. 충실구현 claim — 죽은 소유자를 회수하는가 ==="
+# 강화 러너(rf_claim.R)는 owner pid 사망을 보고 나이 무관 즉시 회수한다. 충실구현 claim 은
+# 2시간 경과만 봐서, 에이전트가 죽으면 그 두 시간 동안 in_progress 복원이 "아직 돌고 있다" 로
+# 판단해 루프가 통째로 선다(2026-08-31: 22:58 사망 후 45분 halt_no_active_entry 반복).
+# 같은 계기가 한쪽에만 깔려 있으면 죽은 claim 하나가 루프를 영구 차단한다.
+if grep -q 'echo \$\$ > "\$CLAIM/owner"' 02_Infrastructure/ops/rf_replication_auto.sh; then
+  ok "충실구현 claim 이 owner pid 를 남긴다"
+else ng "owner pid 미기록" "죽은 소유자를 구분할 수 없다"; fi
+if grep -q 'kill -0 "\$COWN"' 02_Infrastructure/ops/rf_replication_auto.sh; then
+  ok "pid 사망 시 즉시 회수"
+else ng "나이 기준만 본다" "에이전트 사망이 2시간 정지가 된다"; fi
+# ★양성 대조 — 검사기가 실제로 발화하는가
+PRB5="$ROOT/.cache/_rf_claim_probe.sh"; printf 'mkdir "$CLAIM"
+' > "$PRB5"
+if grep -q 'kill -0 "\$COWN"' "$PRB5"; then ng "claim 검사기 오발화 — 죽은 검사"
+else ok "claim 검사기 음성 대조 정상"; fi
+rm -f "$PRB5"
+
+echo "=== 23b. 논문 간 결합 — 착수 소비자가 있는가 ==="
+# 검토기는 2026-08-30 부터 후보를 쌓았지만(4회·10쌍) 소비자가 없었다. 검토 note 가 스스로
+# "착수하지 않는다" 고 적어 두었고 세션도 착수한 적이 없다 — 생산자만 있는 계기.
+CBL=$(Rscript 08_Tests/reinforcement/test_rf_combination_launch.R 2>&1); CBR=$?
+if [ "$CBR" -eq 0 ]; then ok "결합 착수 — $(echo "$CBL" | tail -1)"
+else ng "결합 착수" "$(echo "$CBL" | grep FAIL | head -1)"; fi
+
+echo "=== 24a. 충실구현 — 엔진이 낸 비중이 버려지지 않는가 ==="
+# 무인 3편(2608.24703·27156·27076)이 전부 top_n_long 으로 측정됐다. 엔진은 논문 비중을
+# PORTFOLIO 로 냈는데 construction 기본값이 그걸 덮었고, 검증기는 portfolio_spec 을 아예
+# 안 넘겼다. 27076 은 롱숏(베타≈0) 논문이 롱온리 36종으로 나가 비교가 성립하지 않았다.
+PSP=$(Rscript 08_Tests/reinforcement/test_rp_portfolio_spec.R 2>&1); PRC=$?
+if [ "$PRC" -eq 0 ]; then ok "충실구현 포트 사양 — $(echo "$PSP" | tail -1)"
+else ng "충실구현 포트 사양" "$(echo "$PSP" | grep FAIL | head -1)"; fi
+
+echo "=== 24b. 텔레그램 '보냈다' 가 실제 발송인가 ==="
+# tg_send() 는 HTTP 실패를 **예외가 아니라** list(ok=FALSE,...) 로 돌려준다. 구판은 그 값을
+# 버리고 예외만 없으면 성공으로 기록했다 — 실증 2026-08-30 07:16: 429 로 9건이 유실됐는데
+# 발신자는 전부 sent=true 였다. 아무도 모른 채 사라졌다.
+# 판정 축 = **결과를 변수에 받는가**. 줄 끝 패턴으로 재면 ".r <- tg_send_rich(...)" 도
+# 같은 모양이라 고친 코드가 오탐된다(2026-08-31 첫 판이 실제로 그랬다).
+if sed 's/#.*$//' 02_Infrastructure/telegram/telegram_notify.R | grep -qE "^[[:space:]]*tg_send_rich\("; then
+  ng "tg_agent_brief 가 발송 반환값을 버린다" "결과를 변수에 안 받는 단독 호출 — 실패가 성공으로 기록된다"
+else ok "tg_agent_brief 가 발송 반환값을 읽는다"; fi
+# ★양성 대조 — 구판 형태(단독 호출)를 주입하면 발화하는가
+PRB4="$ROOT/.cache/_rf_send_probe.R"; printf '  tg_send_rich(msg, emoji_min = emoji_min)
+' > "$PRB4"
+if sed 's/#.*$//' "$PRB4" | grep -qE "^[[:space:]]*tg_send_rich\("; then ok "발송 반환값 검사기 양성 대조 발화"
+else ng "검사기 미발화 — 죽은 검사"; fi
+rm -f "$PRB4"
+# 러너 2종이 rf_auto_notify 결과를 쓰는가 (예외 부재를 성공으로 지어내지 않는가)
+if grep -rqn "rf_auto_notify(.*); TRUE" 02_Infrastructure/ops/reinforce_auto_parallel.R 02_Infrastructure/ops/reinforce_auto_run.R; then
+  ng "러너가 '보냈다' 를 지어낸다" "rf_auto_notify 반환값 미사용"
+else ok "러너 2종이 실제 발송 결과로 sent 를 정한다"; fi
+# ★거동 검사 — 성공/실패/구판 3경우를 실제 함수로 통과시킨다
+TGO=$(Rscript 08_Tests/reinforcement/test_rf_send_verdict.R 2>&1); TGR=$?
+if [ "$TGR" -eq 0 ]; then ok "발송 판정 3경우 — $(echo "$TGO" | tail -1)"
+else ng "발송 판정 거동" "$(echo "$TGO" | grep FAIL | head -1)"; fi
+
+echo "=== 25a. 텔레그램 '무엇을 강화했나' — 기저·비율을 지어내지 않는가 ==="
+# 2026-08-31 적발: .rf_f2 가 기저를 "모멘텀 12-1" 로, 결합 비율을 "rankZ 50:50" 으로 **하드코딩**해
+# 논문이 바뀌어도(현행 기저 = 충실구현 engine.R) 비율이 바뀌어도(2팩터면 1/3씩) 따라오지 않았다.
+# 무인 보고라 아무도 대조하지 않는다 — 틀린 설명이 조용히 반복된다.
+if sed 's/#.*$//' 02_Infrastructure/ops/rf_auto_notify.R | grep -qE "모멘텀 12-1|50:50"; then
+  ng "텔레그램이 기저/비율을 하드코딩" "논문·팩터수가 바뀌어도 안 따라온다"
+else ok "기저·비율 하드코딩 0건(실행 코드)"; fi
+# ★양성 대조 — 검사기가 실제로 발화하는가
+PRB3="$ROOT/.cache/_rf_tg_probe.R"; printf 'x <- "모멘텀 12-1 + A rankZ 50:50"\n' > "$PRB3"
+if sed 's/#.*$//' "$PRB3" | grep -qE "모멘텀 12-1|50:50"; then ok "기저 하드코딩 검사기 양성 대조 발화"
+else ng "검사기 미발화 — 죽은 검사"; fi
+rm -f "$PRB3"
+# 승격 entry 의 대상 라벨이 **최초 조상**에서 오는가 (부모 승자 셀의 근거 논문이 아니라)
+if sed 's/#.*$//' 02_Infrastructure/ops/rf_auto_notify.R | grep -q "cur\$parent"; then
+  ok "대상 라벨이 승격 사슬을 거슬러 최초 entry 를 읽는다"
+else ng "대상이 승자 셀 근거 논문으로 표시된다" "승격 entry 의 base_artifacts 는 부모 승자 셀 산출물이다"; fi
+
+echo "=== 25b. 유니버스 격자 — 넓히는 처치 금지 (구조적 미전달) ==="
+# 기저 신호는 충실구현 engine.R 에서 오고 그 엔진이 헌법 유니버스(K200∪KQ150)를 먼저 자른다.
+# 그래서 all_listed 같은 **넓히는** 처치는 넓힐 대상이 없다 — rf_cell_engine 이 "측정 무효" 로
+# 거절하고, 격자에 남아 있으면 매 논문마다 25칸 중 1칸이 죽은 채 소비된다(2026-08-31 실사고).
+if "$PY" -c "
+import io,json,sys
+g=json.loads(io.open('06_Registry/reinforce_program.json','rb').read().decode('utf-8'))
+bad=[c['code'] for b in g['blocks'] for c in b['cells']
+     if (c.get('universe') or {}).get('kind')=='all_listed']
+sys.exit(1 if bad else 0)"; then
+  ok "격자에 all_listed 셀 0건(넓히는 처치 미포함)"
+else ng "격자에 all_listed 셀 잔존" "기저가 유니버스를 먼저 자르므로 영구 미전달 — 칸 낭비"; fi
+# ★양성 대조: 이 검사가 실제로 발화하는가 (격자 사본에 위반 주입)
+if "$PY" -c "
+import io,json,sys
+g=json.loads(io.open('06_Registry/reinforce_program.json','rb').read().decode('utf-8'))
+b3=[b for b in g['blocks'] if b['id']=='B3'][0]
+b3['cells'][0]['universe']={'kind':'all_listed'}
+bad=[c['code'] for b in g['blocks'] for c in b['cells']
+     if (c.get('universe') or {}).get('kind')=='all_listed']
+sys.exit(1 if bad else 0)"; then
+  ng "all_listed 검사기 죽음 — 위반을 주입해도 통과했다"
+else ok "all_listed 검사기 양성 대조 발화"; fi
+# ★유니버스 셀은 기저 지지집합의 **부분집합**이어야 처치가 전달된다 — index flag 는 실재해야 한다
+if "$PY" -c "
+import io,json,sys
+g=json.loads(io.open('06_Registry/reinforce_program.json','rb').read().decode('utf-8'))
+flags={(c.get('universe') or {}).get('flag') for b in g['blocks'] for c in b['cells']
+       if (c.get('universe') or {}).get('kind')=='index'}
+sys.exit(0 if flags <= {'K200','KQ150'} else 1)"; then
+  ok "index 셀 flag 가 실재 멤버십 열(K200/KQ150)"
+else ng "index 셀이 없는 멤버십 열을 참조 — 엔진이 '멤버십 열 부재' 로 죽는다"; fi
+
+echo "=== 25d. 스펙 중복 — 같은 포트폴리오를 다시 재지 않는가 ==="
+# carry 대조만으로는 부족하다. 2026-08-31 B4_16~19 는 carry 와도 다르고(유니버스가 격자
+# 기본값으로 떨어졌다) 서로는 같아서 같은 t(2.241)를 네 번 냈는데 아무 가드도 안 걸렸다.
+DUP=$(Rscript 08_Tests/reinforcement/test_rf_spec_dedup.R 2>&1); DRC=$?
+if [ "$DRC" -eq 0 ]; then ok "스펙 중복 가드 — $(echo "$DUP" | tail -1)"
+else ng "스펙 중복 가드" "$(echo "$DUP" | grep FAIL | head -1)"; fi
+# ★양성 대조: 서명에서 유니버스 축을 빼면 음성 대조가 무너져야 한다.
+#   셸 sed 로 하려다 패턴의 '|' 가 구분자와 충돌해 조용히 실패했고, 빈 프로브에서 검사가
+#   실패하는 것을 "발화" 로 오독했다(2026-08-31). 주입 실패와 검사 통과를 구분한다.
+_DUPP="$("$PY" 08_Tests/ops/mk_partial_sig_probe.py)"
+if [ -z "$_DUPP" ]; then ng "중복 검사기 양성 대조 주입 실패" "서명이 바뀌었다 — 검사기가 낡음"
+elif QVEST_RF_RUNNER="$_DUPP" Rscript 08_Tests/reinforcement/test_rf_spec_dedup.R >/dev/null 2>&1; then
+  ng "중복 검사기 죽음 — 축을 빼도 통과했다"
+else ok "중복 검사기 양성 대조 발화(축 누락 적발)"; fi
+rm -f "$_DUPP"
+
+echo "=== 25c. 승계(carry) 처치 전달 ==="
+# 승계는 부모 승자 구성을 물려받아 그 위에서 다시 탐색하는 장치인데, 병합이 단순 연결이라
+# 같은 팩터가 두 번 들어갔다. 스코어가 rowMeans 등가중이라 기저 가중이 조용히 깎이고
+# (실측 2026-08-31: 부모 2.63 -> 자식 2.251, 기저 캐시 md5 동일), carry 와 같아진 칸이
+# 블록 승자가 되어 격자가 자기 자신을 반복 측정했다.
+CRT=$(Rscript 08_Tests/reinforcement/test_rf_carry_treatment.R 2>&1); CRC=$?
+if [ "$CRC" -eq 0 ]; then
+  ok "승계 처치 전달 — $(echo "$CRT" | tail -1)"
+else
+  ng "승계 처치 전달" "$(echo "$CRT" | grep FAIL | head -1)"
+fi
+# ★양성 대조: 중복 제거를 항등함수로 되돌린 사본에서 실제로 발화하는가
+_OLDC="$("$PY" 08_Tests/ops/mk_old_carry_probe.py)"
+if [ -n "$_OLDC" ] && QVEST_RF_RUNNER="$_OLDC" Rscript 08_Tests/reinforcement/test_rf_carry_treatment.R >/dev/null 2>&1; then
+  ng "승계 검사기 죽음 — 구판을 주입해도 통과했다"
+elif [ -n "$_OLDC" ]; then ok "승계 검사기 양성 대조 발화"
+else ng "양성 대조 주입 실패 — 헬퍼를 못 찾았다(검사기 낡음)"; fi
+rm -f "$_OLDC"
+
+echo "=== 26. 재개의 출구 (구조적 실패 != 일시 실패) ==="
+# 재개는 *일시적* 실패만 상정한 장치였다. rf_cell_engine 의 결정론적 거절(처치 미전달)에는
+# 출구가 없어 B3_11 이 2026-08-31 00:16~07:46 사이 16회 동일 실패로 재실행됐고 루프가
+# 7.5시간 제자리를 돌았다. 로그는 매번 정상으로 보였다(resume -> spawn -> error -> batch_done).
+TRM=$(Rscript 08_Tests/reinforcement/test_rf_terminal_retry.R 2>&1); TRC=$?
+if [ "$TRC" -eq 0 ]; then
+  ok "재개 출구 계약 — $(echo "$TRM" | tail -1)"
+else
+  ng "재개 출구 계약" "$(echo "$TRM" | grep FAIL | head -1)"
+fi
+# ★양성 대조: 구판 술어를 주입하면 위 검사가 실제로 발화하는가 (공유 러너 무접촉 — 사본에 주입)
+_OLDR="$("$PY" 08_Tests/ops/mk_old_pending_probe.py)"
+if [ -n "$_OLDR" ] && QVEST_RF_RUNNER="$_OLDR" Rscript 08_Tests/reinforcement/test_rf_terminal_retry.R >/dev/null 2>&1; then
+  ng "재개 출구 검사기 죽음 — 구판 술어를 주입해도 통과했다"
+elif [ -n "$_OLDR" ]; then ok "재개 출구 검사기 양성 대조 발화"
+else ng "양성 대조 주입 실패 — 술어를 못 찾았다(검사기 낡음)"; fi
+rm -f "$_OLDR"
+echo "=== 27. 논문 소비 판정 키의 정본성 ==="
+# 판정 쪽에서 키를 다시 만들면 정규화 전후가 어긋나 소비한 논문이 큐 상단에 영원히 남는다.
+# 실사고 2026-09-01: paper_key='axv:2505.20608'(접두) vs 원장 '2505.20608'(pid_of 정본) →
+# 소비 7초 뒤 같은 논문을 다시 집어 충실구현 재실행, 2608.23944 는 4회 반복 측정, 큐 74건 정체.
+PKY=$("$PY" 08_Tests/reinforcement/test_rf_pick_key.py 2>&1); PKR=$?
+if [ "$PKR" -eq 0 ]; then
+  ok "소비 키 정본 — $(echo "$PKY" | tail -1)"
+else
+  ng "소비 키 정본" "$(echo "$PKY" | grep FAIL | head -1)"
+fi
+
+echo "=== 28. 고아 claim 회수의 순서 (상태 판정보다 먼저) ==="
+# 회수 블록이 pending 게이트 뒤에 있으면, in_progress 되살리기가 "claim 없음"을 조건으로 쓰는
+# 탓에 고아 claim + in_progress 조합에서 **회수 코드에 영영 도달하지 못한다**.
+# 실사고 2026-09-01: owner pid 사망 + in_progress -> 13시간 동안 no_pending_request 만 반복.
+# 이 검사는 격리 경로(QVEST_RP_*)로만 돈다 — 공유 요청·claim 무접촉.
+_RPD="$ROOT/.cache/_test_rp_claim_order"
+rm -rf "$_RPD"; mkdir -p "$_RPD"; : > "$_RPD/jlog.jsonl"
+_mkreq(){ printf '%s\n' '{"requested_at":"2026-01-01T00:00:00+0900","source":"test","paper":{"title":"t","paper_title":"t","url":"","paper_key":"TEST","source":"arxiv"},"status":"in_progress","started_at":"2026-01-01T00:00:00+0900"}' > "$_RPD/req.json"; }
+_rprun(){ QVEST_RP_REQUEST="$_RPD/req.json" QVEST_RP_CLAIM="$_RPD/claim" QVEST_RP_JLOG="$_RPD/jlog.jsonl" \
+          bash 02_Infrastructure/ops/rf_replication_auto.sh >/dev/null 2>&1; }
+_st(){ "$PY" -c "
+import io,json
+print(json.loads(io.open(r'$_RPD/req.json','rb').read().decode('utf-8')).get('status'))" 2>/dev/null; }
+
+# (1) 위반 상태 주입: 죽은 소유자 claim + in_progress -> 회수 + 되살리기
+_mkreq; mkdir -p "$_RPD/claim"; echo 999999 > "$_RPD/claim/owner"; _rprun
+if [ "$(_st)" = "pending" ] && grep -q claim_stale_reclaim "$_RPD/jlog.jsonl"; then
+  ok "고아 claim 회수 — 죽은 소유자 + in_progress 에서 pending 으로 복귀"
+else
+  ng "고아 claim 회수" "status=$(_st)"
+fi
+# (2) 양성 대조: 살아있는 소유자 claim 은 회수되지 않는다(동시 배치 방지선 생존)
+: > "$_RPD/jlog.jsonl"; rm -rf "$_RPD/claim"; _mkreq; mkdir -p "$_RPD/claim"; echo $$ > "$_RPD/claim/owner"; _rprun
+if [ "$(_st)" = "in_progress" ] && [ -d "$_RPD/claim" ]; then
+  ok "동시 실행 방지선 생존 — 살아있는 소유자 claim 은 회수하지 않는다"
+else
+  ng "동시 실행 방지선" "살아있는 claim 을 빼앗았다 (status=$(_st))"
+fi
+rm -rf "$_RPD"
+
+echo "=== 29. 기저 가중 w0 — 깊이와 희석의 교락 차단 ==="
+# 등가중 컴포짓은 팩터 n개에서 논문 신호를 1/(1+n) 로 깎는다(50/33/25/20/17%). B1 이 결합
+# 깊이를 재는 블록이 되면서 깊이와 희석이 교락되므로 w0 를 고정했다. 1팩터에서 w0=0.5 가
+# 등가중과 수치 동일한 것이 이 검사의 양성 대조다.
+BWT=$(Rscript 08_Tests/reinforcement/test_rf_base_weight.R 2>&1); BWR=$?
+if [ "$BWR" -eq 0 ]; then
+  ok "기저 가중 계약 — $(echo "$BWT" | tail -1)"
+else
+  ng "기저 가중 계약" "$(echo "$BWT" | grep FAIL | head -1)"
+fi
+
+echo "=== 30. 백필 멱등 — '있나' 가 아니라 '쓸 수 있나' ==="
+# 고쳐야 하는 값은 대개 없는 게 아니라 있는데 못 쓰는 것이다. C15 는 301개월에 존재하지만
+# 전 종목 0.0(sd=0 -> Z NA -> Coverage FALSE)이었고, 생산자가 수리된 뒤에도 백필이
+# "이미 있음" 으로 건너뛰어 영원히 안 고쳐졌다.
+BFI=$(Rscript 08_Tests/reinforcement/test_rf_backfill_idempotence.R 2>&1); BFR=$?
+if [ "$BFR" -eq 0 ]; then
+  ok "백필 멱등 판정 축 — $(echo "$BFI" | tail -1)"
+else
+  ng "백필 멱등 판정 축" "$(echo "$BFI" | grep FAIL | head -1)"
+fi
+
+echo "=== 31. 보유 종목수 축 — 이중 선정 차단 ==="
+# 강화 셀이 전부 3종목 포트폴리오를 재고 있었다(고정 축은 25). 엔진이 이미 상위 25를 잘라
+# FACTORS 를 내보내는데 러너의 top_n_long 이 그 25를 다시 분위(10%)로 잘랐다. 거들던 것은
+# 키 불일치 — 워커/러너가 `n =` 을 넘기는데 러너는 spec$n_max / spec$n_long 을 읽는다.
+HAX=$(Rscript 08_Tests/reinforcement/test_rf_holdings_axis.R 2>&1); HRC=$?
+if [ "$HRC" -eq 0 ]; then
+  ok "보유 종목수 축 — $(echo "$HAX" | tail -1)"
+else
+  ng "보유 종목수 축" "$(echo "$HAX" | grep FAIL | head -1)"
+fi
+
+echo "=== 32. 근거 논문 목록 — 첫 계열만 인용·승자 논문 차용 차단 (양방향) ==="
+# B1 사슬 5칸이 전부 Amihud(2002) 하나로 원장에 적혔다(첫 계열 = 항상 시드). B5 오버레이는 자체 논문이
+# 없어 B1 승자 논문을 차용했다(낙폭 브레이크가 유동성 논문 인용). '같은 root_papers 3회 연속' WARN 20회는
+# 한 논문 매몰이 아니라 이 표기 결함을 재고 있었다. 매핑 없는 계열은 이름으로 남아야 한다(침묵 누락 금지).
+RPZ=$(Rscript 08_Tests/reinforcement/test_rf_root_papers.R 2>&1); RPR=$?
+if [ "$RPR" -eq 0 ]; then
+  ok "근거 논문 목록 — $(echo "$RPZ" | tail -1)"
+else
+  ng "근거 논문 목록" "$(echo "$RPZ" | grep FAIL | head -1)"
+fi
+
+
 
 echo
 printf '합계: 통과 %d · 실패 %d\n' "$PASS" "$FAIL"
+printf '{"test":"reinforce_auto","pass":%d,"fail":%d,"total":%d}\n' "$PASS" "$FAIL" "$((PASS+FAIL))"
 [ "$FAIL" -eq 0 ] || exit 1

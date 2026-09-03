@@ -1,4 +1,7 @@
 #!/usr/bin/env Rscript
+# ★RETIRED (v10 2026-08-29 · 헤더 2026-09-03) — 무인 리서치 레인 퇴역: morning_run 에서 철거됐고
+#   예약작업·bat 호출 0. 파일은 사료(08_Tests 가 경로로 직접 실행하므로 이동·삭제 금지).
+#   재개 레시피 = git 태그 pre-v10-2layer 의 morning_run.sh [0.55]~[0.6] 구간.
 # auto_alpha_gate.R — 자동 alpha-search 산출물 검증 게이트 (도훈 mandate 2026-06-18)
 # 무인 AUTORUN 전용. 검증 verdict 를 받아 ADOPT / SCREEN_TIER / QUARANTINE 결정.
 # 결정은 *결정적*(코드)으로 — LLM 이 임의로 ADOPT 못 하게 한다. fail-closed(불명확→QUARANTINE).

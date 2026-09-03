@@ -205,16 +205,17 @@ inject_axiom <- function(axiom_path, claude_md_path = NULL,
   diff_path <- if (claude_result$changed) .write_diff(axiom, claude_result) else NULL
   if (!is.null(diff_path)) cat(sprintf("  diff: %s\n", diff_path))
 
-  # 2) prompts/*_init.md — tier/mode 인지 라우팅 (검증된 9개; scout/risk_manager 죽은 타겟 제거)
+  # 2) prompts/*_init.md — tier/mode 인지 라우팅
+  #    ★v10 2026-09-03: 9개 → 5개. governor/execution/monitoring/qlead init 은 소유 에이전트·커맨드 퇴역으로
+  #      02_Infrastructure/prompts/_retired_v10/ 로 이동했다(사료에 공리를 주입하지 않는다).
   tier <- axiom$tier %||% (if (grepl("^AX-[A-Z]+-", axiom$axiom_id %||% "")) "mode_local" else "global")
   ax_mode <- axiom$research_mode %||% ""
   .MODE_PROMPT <- list(
     alpha_research = "alpha_research_init.md", risk_research = "risk_research_init.md",
     optimizer_research = "optimizer_research_init.md",
-    judge_gate = "judge_init.md", governor_admission = "governor_init.md")
+    judge_gate = "judge_init.md")
   global_prompts <- c("alpha_research_init.md", "risk_research_init.md", "optimizer_research_init.md",
-                      "forge_init.md", "judge_init.md", "governor_init.md",
-                      "execution_init.md", "monitoring_init.md", "qlead_init.md")
+                      "forge_init.md", "judge_init.md")
   if (identical(tier, "mode_local")) {
     mp <- .MODE_PROMPT[[ax_mode]]
     prompt_files <- if (!is.null(mp)) mp else character(0)  # alpha_search/factor_rotation 전용 init 없음 → CLAUDE.md만

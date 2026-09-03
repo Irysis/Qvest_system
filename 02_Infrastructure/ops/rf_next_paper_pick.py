@@ -50,6 +50,31 @@ def _url_of(o, key=""):
     return ""
 
 
+def probe_keys(o, key):
+    """소비 판정에 쓸 키. ★**발행 키와 같은 술어**로 만든다.
+
+    2026-09-01 실사고: 판정은 `arxiv_id or paper_key or dict-key` 로 직접 만든
+    키를 쓰고, 원장·스킵리스트에 적히는 키는 pid_of() 정본이었다. 큐 항목 상당수가
+    `axv:2505.20608` 형태로 키가 붙어 있어 정규화 전후가 어긋났고, **이미 소비한
+    논문이 영원히 큐 상단에 남았다** — 2505.20608 은 소비 7초 뒤 다시 집혀 충실구현이
+    재실행됐고, 2608.23944 는 같은 이유로 4회 반복 측정(전부 PORT_t -0.408)됐다.
+    이 파일 헤더가 경고한 그 병이다: "술어를 소비자 쪽에 다시 적는 순간 재발한다."
+    판정 키를 다시 만드는 것 자체가 술어 재구현이다.
+    ★raw 도 함께 본다 — 정본 키 도입 이전에 raw 형태로 적힌 기록을 놓치지 않기 위해서다
+      (합집합이므로 누락 방향으로만 안전해진다)."""
+    ks = set()
+    try:
+        canon = str(pid_of(o, warn=False) or "").strip()
+        if canon:
+            ks.add(canon)
+    except Exception:
+        pass
+    raw = str(o.get("arxiv_id") or o.get("paper_key") or key or "").strip()
+    if raw:
+        ks.add(raw)
+    return ks
+
+
 def main(argv):
     stage = argv[0] if argv else os.path.join(
         os.path.dirname(os.path.dirname(HERE)), "stage_artifacts", "paper_recharge")
@@ -66,8 +91,46 @@ def main(argv):
         pairs = list(items.items())
     else:
         pairs = [("", o) for o in (items or [])]
+    # ★재현 불가로 판정된 논문은 건너뛴다 — 없으면 같은 논문을 영원히 다시 집는다(2026-08-30).
+    skip = set()
+    try:
+        sk = json.load(io.open(os.path.join(os.path.dirname(os.path.dirname(HERE)),
+                                            "06_Registry", "replication_skiplist.json"), encoding="utf-8"))
+        # ★revoked 는 건너뛰지 않는다 — 판정이 철회된 논문은 다시 후보다(AX-000)
+        skip = {str(e.get("paper_key")) for e in (sk.get("entries") or [])
+                if e.get("status") != "revoked"}
+    except Exception:
+        pass
+    # ★이미 강화 원장에 들어온 논문은 소비된 것이다 (도훈 지시 2026-08-30 실사고 수리).
+    #   실사고: 2026-08-30 12:43·12:44 무인 루프가 방금 끝낸 2608.24703 을 연속 두 번 다시
+    #   집었다. 스킵리스트는 "재현 불가" 판정만 담고, alpha_pending() 은 L-code 소비만 본다.
+    #   그 사이에 **무인 충실구현 경로가 통째로 빠져 있었다** — 이 경로로 소비된 논문은
+    #   어느 명부에도 안 실려서 큐 상단에 영원히 남는다.
+    #   ⇒ 원장(reinforce_ledger_l1)이 소비 기록의 정본이다. status 무관 — active/exhausted/
+    #     parked/skipped_base_quality 전부 "이미 손댄 논문"이다.
+    done = set()
+    try:
+        _led = json.load(io.open(os.path.join(os.path.dirname(os.path.dirname(HERE)),
+                                              "06_Registry", "reinforce_ledger_l1.json"),
+                                 encoding="utf-8"))
+        for _e in (_led.get("entries") or []):
+            _k = str(_e.get("paper_key") or "")
+            if _k:
+                done.add(_k)
+    except Exception:
+        pass
+
     skipped = 0
+    n_skiplist = 0
+    n_ledger = 0
     for key, o in pairs:
+        pk_keys = probe_keys(o, key)
+        if pk_keys & skip:
+            n_skiplist += 1
+            continue
+        if pk_keys & done:
+            n_ledger += 1
+            continue
         u = _url_of(o, key)
         if not u:
             skipped += 1

@@ -177,6 +177,17 @@ stage_result() {   # $1=표시명 $2=exit코드 $3=경보 컴포넌트명
       _prc=$?
     fi
     stage_result "paper_recharge" "$_prc" "paper_recharge"
+    # (v10 2026-09-02) 성공 런 뒤 해소 — 오늘 마커를 남기지 않은 성공이면 과거 미해소 마커를 _resolved/ 로 옮긴다.
+    #   구판은 paper_recharge 마커를 아무도 옮기지 않아(sched_mark_resolved 호출자 = alpha_queue/recheck/modeq/router 4종만)
+    #   curated_sources_missing 7건 + lock_owner_unknown 1건이 digest 에 영구 '열림' 이었다.
+    #   ★오늘 마커가 있으면 옮기지 않는다 — 러너는 fail-soft exit 0 이라 방금 쓴 경보를 지우면 안 된다.
+    if [ "${_prc:-1}" -eq 0 ] && ! ls "$BASE/.cache/scheduler_alerts/paper_recharge_"*"_$(date +%Y%m%d).alert" >/dev/null 2>&1; then
+      . "$BASE/02_Infrastructure/ops/_sched_failure_classify.sh" 2>/dev/null || true
+      if command -v sched_mark_resolved >/dev/null 2>&1; then
+        _mv=$(sched_mark_resolved "paper_recharge" "$BASE/.cache/scheduler_alerts")
+        [ -n "${_mv:-}" ] && echo "      paper_recharge 해소: 미해소 마커 ${_mv}건 _resolved/ 이동 (오늘 경보 0 · 성공 런)"
+      fi
+    fi
   else
     echo "      paper_recharge skip (disabled or missing)"
   fi
@@ -257,9 +268,12 @@ date '+%H:%M:%S' > "${LOCK}.done" 2>/dev/null || true
   if command -v sched_alert_emit >/dev/null 2>&1; then
     _ADIR="$BASE/.cache/scheduler_alerts"
     _TT=$(date '+%Y%m%d')
-    _TN=$(ls "$_ADIR"/*_"${_TT}".alert 2>/dev/null | wc -l | tr -d ' ')
+    # (v10 2026-09-02) 집계 대상 = **자체 텔레그램이 없는 마커**만. task_health·paper_router 는 sched_alert_emit/scheduler_alert 로
+    #   이미 자기 경보를 보내므로 같은 사실이 하루 2번 도달했고, 같은 날 두 번째 morning_run(cron+logon)은 자기 마커
+    #   unattended_line_daily_digest_* 를 1건으로 다시 셌다(today=N 부풀림).
+    _TN=$(ls "$_ADIR"/*_"${_TT}".alert 2>/dev/null | grep -v -E '/(unattended_line|task_health|paper_router)_' | wc -l | tr -d ' ')
     if [ "${_TN:-0}" -gt 0 ]; then
-      _TC=$(ls "$_ADIR"/*_"${_TT}".alert 2>/dev/null | sed "s#.*/##; s#_${_TT}\.alert\$##" \
+      _TC=$(ls "$_ADIR"/*_"${_TT}".alert 2>/dev/null | grep -v -E '/(unattended_line|task_health|paper_router)_' | sed "s#.*/##; s#_${_TT}\.alert\$##" \
             | sort -u | paste -sd'; ' - 2>/dev/null)
       # reason 에 날짜를 넣어 **하루 1건**으로 스로틀한다(sched_alert_emit 은 comp+reason 1일 1회).
       sched_alert_emit "unattended_line" "daily_digest_${_TT}" \

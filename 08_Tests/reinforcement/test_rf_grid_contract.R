@@ -39,4 +39,5 @@ if (all(per == 5L)) {
 
 writeLines("")
 writeLines(sprintf("합계: 통과 %d · 실패 %d", PASS, FAIL))
+cat(sprintf('{"test":"rf_grid_contract","pass":%d,"fail":%d,"total":%d}\n', PASS, FAIL, PASS + FAIL))
 if (FAIL > 0L) quit(status = 1L)

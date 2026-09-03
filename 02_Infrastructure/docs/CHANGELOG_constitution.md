@@ -3,13 +3,144 @@
 > CLAUDE.md는 "현재 유효한 헌법"만 담는다. 버전 연혁·릴리스 상세는 본 파일이 SOT.
 > 최신 릴리스 상세: `qvest_v8_4_asymmetry_ml_sot.md` (**v8.4 — 주력 SOT**) · `qvest_v8_3_alpha_discovery_sot.md` (v8.3) · `qvest_v8_1_sot.md` (v8.1) · `qvest_v8_0_upgrade_plan.md` (v8.0)
 
+## v10.3 — 강화 LLM 재귀 루프 · 횡단면 오버레이 축 신설 (2026-09-03)
+
+**도훈 지시**: "강화프로세스에 LLM을 어떻게 활용할지 계획. 재귀적 자가발전이 가능한 형태로. 실제 전략 성과 개선이 가능하게."
+**결정 3건**: 재귀 범위 = 카탈로그 arm만 · 자율성 = 등재 자동·측정 자동 · 오버레이 노출 = 종목별 벡터.
+
+### 진단 — A등급 0/305 의 원인은 신호가 아니라 위험 축 기전 부재
+
+측정 268셀에서 `port_t`(max 2.630/문턱 2.95)와 `calmar`(max 0.440/0.64)는 **충족 0%**, 84%가 5조건 중 0개.
+막는 쪽은 CAGR 이 아니라 MDD 다 — CAGR 은 이미 최대 21.7%로 목표 16%를 넘겼는데
+MDD 는 270셀 최저가 0.351(필요 ≤0.25), 벤치 자체가 52.9%다.
+위험 축 유일 블록 B5 는 MDD −10% 대비 CAGR −23% 로 **Calmar 중앙값이 전 블록 최악(0.160)**.
+기전: `Weight := Weight * oe` 의 `oe` 가 **월별 스칼라 1개**라 하락과 회복을 같은 비율로 깎는다.
+기전 지도로 재보니 **B5 50 측정 중 40이 이미 포화된 세 칸에 몰려 있고 전부 스칼라 행**이었다 —
+계열 라벨 6종이 다양해 보여 "오버레이는 다 해봤다" 로 오독되던 자리.
+
+### Phase 0 — 기전 공간 확장 (LLM 아님)
+
+- `rf_cell_engine.R`: 파일 디스패치 폴백 신설(`overlay_arms/<kind>.R`) — 기존 10 kind 는 사슬이 먼저 처리해 **코드 경로 무변경**
+- 노출을 스칼라 ∪ 종목별 벡터로. 처치 확인 게이트를 2축(시간 ∨ 횡단면)으로 — 스칼라일 때 구판 조건과 **정확히 동치**
+- 종목 상태 `.HOLD` 4축(beta·dbeta·ovol·bcorr) — 전부 누적합 확장창(C1)
+- 첫 횡단면 arm `dbeta_tilt`: 낙폭 경험분포로 개입 강도, 하방베타 횡단면 순위로 차등 축소
+- **실측 대조**(동일 기저·동일 위기): 스칼라 평균노출 0.749·완전현금 15/144개월 vs 벡터 0.887·**0/144개월**, 날짜 안 비중 sd 0.0148
+- B2 배선 결함 수리 — `rf_pick_weight_arms()` 를 아무도 호출하지 않아 카탈로그 52종이 격자 밖에 있었다
+
+### Phase 1~5 — 재귀 루프
+
+| 단계 | 산출 | 성질 |
+|---|---|---|
+| probe | `overlay_probe.R` | 백테 0 소모로 등재 전 5축 검사. 위반 주입 5방향 전부 발화 |
+| 포화 감지 | `rf_mechanism_map.R` | (action × state) 14칸. 표적 = 미포화 칸. 전 칸 포화면 **생성기를 안 부른다** |
+| 생성 레인 | `rf_overlay_propose.sh` | `claude -p` 헤드리스. 프롬프트에 성과 수치 없음 |
+| 등재 | `rf_overlay_admit.R` | R 이 등재. LLM 은 카탈로그를 못 쓴다 |
+| 원장 | `overlay_arm_ledger.jsonl` | 측정 전 방출 기록. `selection_type` 구조적 파생(k>1 → sweep) |
+| 교훈 | `rf_lesson.R` | 지표 되풀이(92%) → 기전 서술. carry 대비 위험·수익 이동으로 **대칭/비대칭 판정** |
+
+### 안전 — "생성기는 성과를 보지 않는다" 를 구조로 만든다
+
+★계획 초안의 구멍: `--add-dir` 는 쓰기만 가두고 **읽기를 안 가둔다**. Read 가 허용된 이상
+생성 세션이 원장을 열면 셀별 등급·Calmar 가 다 보이고 그 주장은 거짓이 된다.
+→ **신규 훅 `arm_gen_read_guard.sh`**(PreToolUse[Read|Grep|Glob], `QVEST_ARM_GEN=1` 일 때만).
+평시 무발화. 등록 훅 12→13. 검사에 평시 음성 대조 + 생성 세션 위반 주입 3종 + Grep 우회 축 포함.
+
+부수적으로 누출 스캐너가 **내가 쓴 첫 arm 도 잡았다** — 주석에 `calmar` 를 적었고, 측정 결과를
+실행 소스에 쓰는 것이 곧 성과를 보고 고른 흔적이다. 근거는 카탈로그 `basis` 로 옮겼다.
+
+**검증**: 강화 스위트 21종 + 신규 계약 4종. 배터리 편입 222/222.
+
+---
+
+## v10.2 — 강화 레인 근거 논문 의무 해제 · 원장 서술 의무 신설 (2026-09-03)
+
+**도훈 지시**: "강화에는 근거논문 필요없게 배선해".
+**계기**: 1계층 무인 레인을 멈추고 점검하다 두 결함이 같은 자리에서 드러났다.
+
+### 1. 원장이 기록으로서 죽어 있었다 — idea 60% 공백
+
+`sprintf()` 는 인자 하나만 길이 0이면 **경고 없이 결과 전체를 `character(0)`** 으로 만든다.
+러너가 `SPEC$factor2$id %||% SPEC$factor2$kind` 를 넘기는데 factor2 없는 칸에서 양쪽 다 NULL →
+idea 전체 소멸 → 원장에 `idea: []`. 실측 **305 시도 중 184건(60%)**, 여섯 entry 는 25칸 전부.
+같은 기간 등급 결측은 4건뿐 — **측정은 살아 있는데 기록이 죽어 있었다.**
+
+- 수리: `reinforce_auto_parallel.R`·`reinforce_auto_run.R` 조립부 `.s1()` 로 조각을 길이 1 강제
+- ★막는 자리는 조립기가 아니라 **원장**: `rf_append_attempt` 에 서술 의무 가드 신설(근거 의무와 같은 층).
+  조립기는 앞으로도 새로 생기지만 원장은 하나다.
+- 계약: `test_reinforce_ledger.R` ⑧ — 위반 주입 4방향(`character(0)`/`""`/공백/`NULL`) + **함정 실재 확인**
+  (이 런타임에서 `length(sprintf("a=%s", NULL)) == 0` 인지 직접 측정) + 러너 2종 정적 방어 확인
+- spec 파일을 **원장 등록 성공 뒤에** 쓰도록 순서 교정 — 거부된 칸의 산출물이 남아 spec 5 vs 원장 4 였다
+
+### 2. 근거 의무는 지키는 척만 하고 있었다 → 해제
+
+계열→논문 표 `.RFF_FAMILY_PAPER` 가 8계열만 덮어 **선정 풀 332종 중 91종(27%)이 미매핑**
+(accrual 25 · growth 21 · investor_flow 15 · crowding 14 · regime 10 · leverage 6).
+깊이 1 셀은 논문 0건이라 거부되는데 **깊이 2+ 는 형제 계열의 논문으로 통과**했다 —
+게이트가 시험 중인 축을 덮지 않는 근거로 충족되던 상태(누적 `root_paper_unmapped_family` 85회 발화).
+
+- **해제 범위 = `rf_append_attempt`(강화 전용 진입점)뿐.** 충실구현은 `run_paper_replication` 의
+  `source_paper` 를 쓰는 별도 경로라 불변 — 논문을 재현하는 단계에서 논문을 뺄 수는 없다.
+- root_papers 는 있으면 그대로 기록. 시도 레코드에 **`evidence` = paper/method/none** 신설 —
+  의무는 해제해도 "무엇에 기대어 돌았는가" 는 계속 셀 수 있어야 한다.
+- 시도 레코드에 `unmapped_families` 도 기록 — 종전엔 `.cache` jsonl 에만 있어 원장만 읽으면 안 보였다.
+- 축의 정당성은 이제 격자(`reinforce_program.json`)와 팩터 등록부가 진다.
+- 계약 뒤집기(표기만 바꾸지 않고 **적립된 필드를 재도출**): `test_rf_root_papers.R` ③'/③''(none↔paper 양성 대조),
+  `test_reinforce_ledger.R` ①(none/none/paper/method 4축). ★구판 ①은 '거부라서 카운트가 안 는다'는
+  **부작용에 기대고** 있어서, 거부를 없애자 ②의 상한 시험이 한 칸 밀렸다 — 부작용도 계약의 일부다.
+
+**검증**: 강화 스위트 16종 + `test_reinforce_auto` 117/0 + `test_reinforce_ledger` 18/0 + boot_currency 15/0.
+**문서 정합**: CLAUDE.md 하드코딩 금지 절 · lean-loop.md(라운드 6단계·면제 목록) · reinforce SKILL(§description·§84·§102) · 원장 note 필드.
+
+---
+
+## v10.1 — v9 잔재 하네스 정리 · 무인 텔레그램 소음 수리 (2026-09-02~03)
+
+**도훈 지시**: "v10 으로 업그레이드했다. 불필요하고 안 쓰게 된 인프라·검사기를 일괄 셧다운시키거나 v10 정합으로 패치" + "텔레그램에 계속 올라오는 무인 스케줄러·논문 라우터·좌초수리 알람도 같은 맥락으로 파악".
+**방법**: 서브시스템 6종(훅·무인 러너·에이전트/스킬/룰·테스트 배터리·R 검사기·텔레그램 발송원) 전수 감사 → 제안마다 **적대 검증**(반증 시도) → 검증 통과분만 적용. finding 약 200건(keep 42 · patch 70 · shutdown 30 · ask_dohoon 12).
+**규율**: 삭제 0 — 퇴역은 **★RETIRED 헤더 + 이동**이고 파일은 전부 존치(08_Tests·배터리가 경로로 직접 실행하므로). 롤백 = git.
+
+### 1. 텔레그램 일일 소음 4종 — 실패가 아니라 **검사기 거짓 양성**이었다 (→ 0/일)
+
+| 소음(매일) | 기전 | 수리 |
+|---|---|---|
+| `무인 스케줄러 경보 — task_health` | never_run(rc 267011) 작업의 LastRunTime 이 **1999-11-30 센티넬** → age 9,773일 > 9 로 staleness 발화. rc 축은 never_run 을 면제하는데 staleness 축만 빠진 **비대칭**. 08-30 등록된 주간작업 3종(AxiomActivate·AxiomReview·WeightCatalogGrow)이 매일 '정체 3' | `scheduler_task_health.sh` never_run 면제 + `.ps1` 센티넬 age null 화 + **전건 정상 시 마커 해소**(`sched_mark_resolved`, KNOWN 남아 있으면 보류). 검사 T8b/T8b2 + **돌연변이 T8c** |
+| 논문 라우터 2건 | arXiv MCP 고정 30쿼리·recency 0 재크롤이 매일 같은 243편을 재부상시키는데 라우터 트리거가 '미소비' 로만 판정 → 매일 `claude -p`(≈5분) → 전건 redundant → 트리아지 1건 + 완주 알림 1건 = 정보량 0 | `paper_router_run.sh` **paper_key 사전 필터**(정본 `paper_id_norm.py`) — 신규 0 이면 route 스텁만 남기고 종료(스텁이 없으면 내일 백로그 축이 재소비). 완주 알림 기본 off. `mode_queue_axis_audit` 호출 제거. 검사 `test_paper_router_prefilter.sh` **양성 대조 포함 12/12**. ★09-03 07:16 실증: 243건 전건 기존 키 → claude 미호출 |
+| 좌초 수리 경보 | 유실 worktree 15개 전부 브랜치 tip 이 v10 태그(`pre-v10-2layer`) 이전 = 폐기된 판의 잔재인데 감사기에 **세대(版) 개념이 없었고**, 스로틀이 '같은 날 1회' 뿐이라 동일 수치(127/19/1)를 7회 재발송 | `stranded_repairs_audit.sh` **legacy_pre_v10 분류**(tip < 태그 ∧ 미커밋 mtime < 태그 — 집계·JSON 에 남기고 경보 계수에서만 제외) + **발송 서명 게이트**. ★서명에서 경과 일수를 빼는 것이 핵심 — 넣으면 매일 달라져 게이트가 한 번도 억제하지 못한다. 09-02 20:08 실측: 유실 0 · 레거시 24 · 발송 0. 검사 T13/T13b/T13c |
+| `curated_sources_missing` | CSV 는 26행 존재. `Qvest_MorningReboot.bat` 의 `LC_ALL=C.UTF-8`(bash 한글 파싱 방어용)을 Windows R 이 설정하지 못해 C 로케일로 뜨고, `read.csv(fileEncoding=)`(iconv 재인코딩)가 한글 열에서 **조용히 0행** | `read_sources` → `encoding=`(마킹만) + '존재하나 0행' 을 별도 사유 `curated_sources_unreadable` 로 분리. bat 은 무변경, **Rscript 직전에만** 로케일 prefix. 성공 런 뒤 `sched_mark_resolved paper_recharge`(09-03 묵은 마커 7건 해소 실증). 검사에 로케일 축 추가 12/12 |
+
+부수: `unattended_line` 일일 집계에서 자체 발송 컴포넌트·자기 마커 제외 · paper_recharge 텔레그램은 신규 0·등록 0·죽은 링크 0·MCP 정상이면 침묵(상세 청크 상한 3, 표제 `[1계층] 논문 수집`) · 무인 경보 표제 `[무인]` 접두 · **`telegram_notify.R` 에 §5.6b 계층 표제 WARN 강제 지점 신설**(차단 아님 · `_layer_tag_missing.log` 적립) · 생성 R 스크립트 58개 아카이브 · 퇴역 레인 잔여 마커 3건 해소 · `events.jsonl` 회전 재가동(23,749→10,000행).
+
+### 2. 계측이 낡은 목록을 초록으로 보고하던 자리 3곳
+
+- **훅 검사기 3종**: `harness_health.sh` REQUIRED_HOOKS 가 ★RETIRED `governor_concord_certifier` 를 필수로 세고 v10 등록 훅 `book_write_guard`·(08-24 재등록) `backtest_contract_audit` 를 세지 않아 **두 파일이 사라져도 12/12 PASS** 였다 → 12종으로 동기(격리 양성 대조로 FAIL 실증) · `hook_fire_coverage.sh` UNCOVERED · `hook_integrity_check.sh` 직접 등록 래칫 4→6종 + 카운트 파생.
+- **배터리 총계 파서**: 러너가 2026-08-24 에 `unmeasured` 구간을 추가해 FINAL 이 5-part 가 됐는데 `suite_totals_watch.sh` 는 4-part 를 정확히 요구 → 3-part 폴백이 **개별 테스트 줄**을 집어 hooks=12(실제 3,308)·fail=0(실제 6). 2026-08-20(1563→7)과 **같은 기전 재발** → 3단 앵커 + `hooks_unmeasured` 축 신설, 검사기에 현행 5-part 픽스처와 구판 돌연변이 추가(11/11).
+- **v10 핵심 계약 9종이 UNMEASURED**: 러너 요약 JSON 한 줄이 없어 충실구현·강화 원장·L2 풀·BOOK writer/guard·Judge v2·비중상한 폐지 검사의 단언이 총계에 **0** 으로 들어가고 있었다 → 9종 전부에 요약 줄 추가.
+
+### 3. 퇴역 (삭제 0 · ★RETIRED 헤더 + 이동)
+
+- **에이전트** → `.claude/agents_retired_v10/`: `ramp-orchestrator`(RAMP v9.21 퇴임) · `blender`(발동조건 governor/PG2 소멸 — 2계층 결합은 strategy-rotation 승계) · `strategy-implementer`(핸드오프 대상 lean-forge 미구현) — 기존 execution·governor·monitoring 과 합류.
+- **커맨드** → `.claude/commands_retired_v10/`(신설): `qlead`(v10 진입점 = /qvest 하나) · `ramp`.
+- **스킬** → `.claude/skills_retired_v10/`(신설): `ramp` · `execution` · `monitoring` · `qvest-cert-paths` · `ensemble-design.md` · `pg2-allocation.md` · `axiom-io.md`.
+- **프롬프트** → `02_Infrastructure/prompts/_retired_v10/`: governor/execution/monitoring/qlead init · qlead_spawn_template (+ `inject.R`·`axiom_rollback.R` 주입 목록 9→5 로 축소 — 사료에 공리를 주입하지 않는다).
+- **훅**: pipeline 배관 3 + s0_enforcer 4 + pre-v9 미등록 10 = ★RETIRED 헤더. v9 해제분 중 폐지 개념을 **강제하는** 5종(agent_role_guard·worktask_sequence_enforcer·mandate_compliance_check·worktask_artifact_validator·unified_agent_guard)은 로직 무변경 + '재등록 금지' 경고 헤더. cert 데이터 층은 `governor_concord` 만 사문화(`_v10_retired` 키 · `qvest_cert_eval.py` 조기 반환 · **`cert_backfill_audit.R` R 가드** — bootstrap 7c 가 legacy 동결 디렉터리에 새 cert 를 쓰던 유일 경로를 이중으로 막았다).
+- **무인 러너**: 퇴역 레인 러너·프롬프트·보조기 14종 헤더(이동 금지 — 08_Tests 가 경로로 호출) · `governor_weight_sum_check.sh` · `auto_sigma_weighting_ab.R` · `extract_book_carrier{,_d3}.R`. ★`auto_weighting_ab.R`·`auto_regime_overlay_ab.R` 은 **라이브**(overlay 큐 = v10 프론티어 ③)라 제외. 예약 미등록 고아 bat 4종 → `ops/scheduler/_unregistered/`.
+- **bootstrap.sh**(health_full 전용): 7b/7c/7d/7e·PG2 status·standalone_track·mode_queue 절을 opt-in 스위치(`QVEST_LEGACY_BOOK_AUDIT` / `QVEST_V8_READINESS` / `QVEST_LEGACY_SPAWN_QUEUE` / `QVEST_LEGACY_MODEQ`) 아래로 내리고, 그 자리에 **BOOK 정본 1줄**(book_registry.json) 표면. 배너·꼬리 v10 재작성.
+
+### 4. 문서·룰 정합 (측정 신뢰 축 우선)
+
+`backtest-contract.md`·`python-policy.md`(살아있는 훅을 '해제' 로 오보 — 08-24 재등록 반영) · `measurement-graduation.md`(구 judge Gate C 폐지 명문 · 자본 tier→Graduation tier · monitoring→book-tracker · 참조 book_registry.R — **HARD 3종·DSR 경계·oos v2·holdout 규율은 무변경**) · `pit-validation.md`(방어선 표를 실측 2종으로 · C4 익년 3/31) · `harness.md`(11→12 distinct · v8.1 SOT 사료화) · `qvest-telegram/SKILL.md`(§5.6b 에 무인 발송 7종 **실측 포맷** 등재) · alpha-search 에이전트/커맨드(hurdle 인용 금지 → essence 권위) · worktask 커맨드 · forge/optimizer/risk/architect 에이전트 · `qvest-opt-style`·`kr-inverse-pattern-miner`(G-5 철회 반영 — settled-negative 는 금지 목록이 아니다) 등 30여 파일.
+
+### 5. 도훈 결정 대기 (파괴적·외부 영향 — 실행하지 않았다)
+
+예약작업 6건(AuditWatch 배터리 거부 · ReinforceAutoLoop 배터리 정책 · RAMP_AutoLoop Unregister · DART_Priority_Backfill 고아 · DART_Insider_Backfill 3시간 반복 · noLayer4_Monthly 이중화) · worktree 24개 처분 · `design_envelope_gate.sh` 등록 여부(훅 예산 12→13) · 강화 분모 20/25 정본 · Step 3b(noLayer4 일별 MTM) 발송 유지 여부.
+
 ## v10.0 — 2계층 리서치 재편 (2026-08-29)
 
 **도훈 지시 전문 요지** (플랜 `~/.claude/plans/qvest-2-moonlit-galaxy.md` · 롤백 태그 `pre-v10-2layer` · 체크포인트 커밋 41eb28715):
 1. **논문 라우팅 개편** — 수집 = "팩터 전략 리서치" 단일 목적(최신성 불요 — recency 180d 제거·relevance 정렬·고전 시드 11편). **중복 방지 규칙 신설** = `paper_key` 3단(axv > doi > ttl, 정본 `paper_id_norm.py`) + registry 619건 백필(실중복 1쌍 적발). 트리아지 v4 = {replication, skip} + `data_pipeline_required` verdict 신설(데이터 부재 = 기각 아님 — `data_pipeline_queue.json` 적재 후 파이프라인 구축).
 2. **QEPM 재정의** — alpha 가설 설계 전기간 데이터. **lockbox 완전 폐지("반박 금지")** — 22개 지점 제거(schema required 완화·windowing 3-window·훅 4종 영구 퇴역·judge harness RETIRED). ⚠ C5 overlay SIGNAL_CUTOFF 는 PIT 기계 — 보존(diff 0). QEPM = alpha→risk→optimizer→forge + 등급 평가까지(FORGE_DONE→COMPLETED 전이 신설).
 3. **Judge 분리** — PIT 검증 전담 별도 에이전트. **essence Grade A 확정 후에만 스폰**(모든 모드 공통). 검증 6축(C1~C15 감사·detect_lookahead 재실행·C5 타이밍·lag-1 스트레스·재현·selection 정직성) → `judge_verdict_v2`. 구 Gate C/D/E/F·8지표·lockbox 의무 폐지.
-4. **1계층** = 논문 수집 → 공리 주입 → **완전 충실구현**(`run_paper_replication` + `replication_harness` — 롱숏·종목수·비중 논문 그대로, 유일한 변경 = 유니버스 K200∪KQ150. 등급은 15bps 순비용 판·논문 기준 병기) → 등급 → 미달 시 **강화 ≤20회**(QEPM 기반, 축 = 멀티팩터/비중방법론/리스크오버레이/결합, 원장 `reinforce_ledger_l1.json` — root_papers 없는 시도 기계 거부, 논문 3편마다 Q-Lead 결합 검토 의무) → A 시 Judge. 구 기계 사다리(reinforce_ladder) 퇴역.
+4. **1계층** = 논문 수집 → 공리 주입 → **완전 충실구현**(`run_paper_replication` + `replication_harness` — 롱숏·종목수·비중 논문 그대로, 유일한 변경 = 유니버스 K200∪KQ150. 등급은 15bps 순비용 판·논문 기준 병기) → 등급 → 미달 시 **강화 ≤25회**(★2026-09-01 재편으로 20→25 = 격자 5블록×5. 상한 정본은 원장 `max_attempts` 이고 이 문장은 그 사본이다. QEPM 기반, 축 = 멀티팩터/비중방법론/유니버스/리스크오버레이/결합, 원장 `reinforce_ledger_l1.json` — root_papers 없는 시도 기계 거부, 논문 3편마다 Q-Lead 결합 검토 의무) → A 시 Judge. 구 기계 사다리(reinforce_ladder) 퇴역.
 5. **2계층** = 전략 로테이션 리서치 — **B등급 이상 풀**(2단 게이트: 계약 floor + essence grade floor, 실측 99→15모듈. 구 "등급무관 RCMA 차용" 폐기 — RCMA 는 배치 심사로 존치) × 논문 온디맨드 착수 × 리서치 1단위 등급 × **강화 무한**(국면식별/전략결합, 원장 l2) → A → Judge → BOOK. 목표 = 한국 특화 전천후 모델.
 6. **BOOK** — governor/execution/monitoring 퇴역(monitoring → book-tracker 재편). `06_Registry/book/book_registry.json`(writer 자격검증 = A + judge pit_pass 재도출, append-only, `book_write_guard.sh` 훅이 직접 편집 차단 — governor_concord_certifier 자리 승계, 12 distinct 유지). **PG2 = BOOK_0001 이관**(`dohoon_mandate_20260829` — fresh essence 부재 정직 표기). 구 book_state.json = legacy 동결. Qvest = 리서치 시스템(실투자 집행 없음) — 트래킹 = `/book` frozen 스펙 재현.
 7. **규칙** — /qvest 시 계층 질문 · 텔레그램 계층 표제 의무(`[1계층]`/`[1계층·강화 n/20]`/`[2계층]`/`[Judge]`/`[BOOK]`) · **종목별 비중 상한([0,0.20]) 인프라 전체 삭제**(등록 전략 frozen 스펙·비중방법 내부 파라미터는 별개 — 무변경) · 하드코딩 전면 금지 + 근거 논문 원문 링크 의무 · Q-Lead 오케스트레이션 전용 · 페르소나 정본 신설(`quant-identity.md` — 최정상급 퀀트·냉소는 방법론·리서치는 지난하다) · **무인 파이프라인 = 수집까지만**(morning_run 자동 리서치 4단계 철거).

@@ -39,10 +39,8 @@ AXIS_FILES <- list(
     "02_Infrastructure/prompts/risk_research_init.md",
     "02_Infrastructure/prompts/optimizer_research_init.md",
     "02_Infrastructure/prompts/forge_init.md",
-    "02_Infrastructure/prompts/judge_init.md",
-    "02_Infrastructure/prompts/governor_init.md",
-    "02_Infrastructure/prompts/monitoring_init.md",
-    "02_Infrastructure/prompts/execution_init.md"
+    "02_Infrastructure/prompts/judge_init.md"
+    # v10 2026-09-03: governor/monitoring/execution init 은 _retired_v10 이동 — 편집 대상 제외
   ),
   axis5_agent_defs = c(
     ".claude/agents/alpha-research.md",
@@ -50,11 +48,11 @@ AXIS_FILES <- list(
     ".claude/agents/optimizer-research.md",
     ".claude/agents/forge.md",
     ".claude/agents/judge.md",
-    ".claude/agents/governor.md",
     ".claude/agents/architect.md",
-    ".claude/agents/blender.md",
-    ".claude/agents/execution.md",
-    ".claude/agents/monitoring.md"
+    ".claude/agents/book-tracker.md",
+    ".claude/agents/dispatch-orchestrator.md",
+    ".claude/agents/alpha-hypothesis.md"
+    # v10 2026-09-03: governor/execution/monitoring/blender 는 agents_retired_v10 이동 — 편집 대상 제외
   ),
   axis5_memory = "C:/Users/99922/.claude/projects/C--Users-99922-OneDrive-Quant-Module-Moltbot/memory/methodology_active.md"  # auto-detect runtime
 )

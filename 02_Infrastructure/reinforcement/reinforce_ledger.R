@@ -3,6 +3,7 @@
 # =============================================================================
 # 도훈 지시:
 #   1계층: "강화 프로세스는 최대 20회 진행 … 실패의 재생산을 방지하기 위해 20회 제한"
+#          ★2026-09-01 격자 재편(B5 리스크 오버레이 블록 신설 · 5블록×5)으로 상한 25 — 원장 파일 max_attempts=25 가 정본. 위 인용은 8-29 원문.
 #          + "논문 3개마다 Q-Lead 가 아이디어 결합을 자체 검토"
 #   2계층: "강화 프로세스 시도 횟수 제한이 없으며 교훈을 지속적으로 주입 받으면서
 #          A등급 달성까지 무한 리서치 모드"
@@ -10,10 +11,11 @@
 #          교훈 생산 필수" + "모든 의사결정에 근거 논문(원문 링크) 필수"
 #
 # ★코드베이스에 시도 카운터 개념이 없었다(2026-08-29 전수 실측) — 이 원장이 유일 정본.
-# ★root_papers 필수 거부 = "하드코딩 전면 금지 · 논문 근거 의무"의 기계 강제점.
+# ★root_papers 필수 거부는 2026-09-03 **해제**(도훈 "강화에는 근거논문 필요없게 배선해").
+#   지금은 거부하지 않고 시도 레코드에 evidence = paper/method/none 을 남긴다.
 # ★구 reinforce_ladder_ledger.json(기계 사다리, v9.21)은 read-only 동결 — 별개 파일.
 #
-# 파일: 06_Registry/reinforce_ledger_l1.json (max_attempts=20)
+# 파일: 06_Registry/reinforce_ledger_l1.json (max_attempts=25)
 #       06_Registry/reinforce_ledger_l2.json (max_attempts=null — 무한)
 # 쓰기 계약: 원자(tmp+rename) + 쓰기 직전 재파싱 검증 (paper_id_norm append 계약 미러).
 # =============================================================================
@@ -50,9 +52,9 @@ RF_STATUS_ENUM <- c("active", "graduated", "exhausted", "superseded", "parked")
   list(
     schema_version = "reinforce_ledger_v2",
     layer = as.integer(layer),
-    max_attempts = if (layer == 1L) 20L else NULL,   # NULL = 무한 (2계층)
+    max_attempts = if (layer == 1L) 25L else NULL,   # NULL = 무한 (2계층)
     note = if (layer == 1L)
-      "v10 1계층 강화 원장 — QEPM(alpha→risk→optimizer→forge→등급) 기반, 논문당 최대 20회. root_papers 없는 attempt 는 거부(논문 근거 의무). 논문 3편마다 combination_review 의무." else
+      "v10 1계층 강화 원장 — QEPM(alpha→risk→optimizer→forge→등급) 기반, 논문당 최대 25회(격자 5블록×5). root_papers 는 선택(2026-09-03 의무 해제) — 시도마다 evidence=paper/method/none 기록. 논문 3편마다 combination_review 의무." else
       "v10 2계층 강화 원장 — 국면식별/전략결합 축, A등급까지 무한. 착수 시 직전 attempts 의 lessons 주입 의무.",
     entries = list(),
     combination_review = if (layer == 1L)
@@ -113,6 +115,10 @@ rf_open_entry <- function(layer, base_id, base_grade,
     paper_key = as.character(paper_key), paper_id = as.character(paper_id),
     base_artifacts = as.character(base_artifacts), engine_path = as.character(engine_path),
     status = "active", target_grade = "A",
+    # ★측정 축 각인 (2026-09-01) — 새 entry 는 그 시점의 current_axis 를 달고 태어난다.
+    #   이게 없으면 다음 축 전환 때 rf_mark_axis_epoch 이 "라벨 없음 = 구축" 으로 보고
+    #   **신규분을 legacy 로 오분류**한다. 축은 비교 가능성의 경계이므로 태어날 때 정해야 한다.
+    measurement_axis = obj$current_axis %||% "unlabeled", axis_valid = TRUE,
     attempts_used = 0L, attempts = list(),
     judge = list(spawned = FALSE, verdict_path = NULL),
     opened_at = format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z")
@@ -132,28 +138,44 @@ rf_open_entry <- function(layer, base_id, base_grade,
   invisible(entry)
 }
 
-#' 강화 시도 1회 사전 등록 — ★여기가 20회 게이트다 (1계층)
-#' root_papers = list(list(url=..., claim=...), ...) — 비면 거부(논문 근거 의무).
+#' 강화 시도 1회 사전 등록 — ★여기가 25회 게이트다 (1계층 — 값은 원장 max_attempts)
+#' root_papers = list(list(url=..., claim=...), ...) — 선택. 비어도 거부하지 않고 evidence="none" 으로 기록한다.
 rf_append_attempt <- function(layer, base_id, idea, keyword_axis, root_papers,
-                              wt_id = NULL, root = .rf_root()) {
+                              wt_id = NULL, root = .rf_root(),
+                              unmapped_families = NULL,
+                              axiom_injected = FALSE) {
   axes <- if (layer == 1L) RF_KEYWORD_AXES_L1 else RF_KEYWORD_AXES_L2
   if (!keyword_axis %in% axes)
     stop(sprintf("[reinforce_ledger] keyword_axis '%s' 는 L%d 축이 아님 (허용: %s)",
                  keyword_axis, layer, paste(axes, collapse = "/")))
-  # ★근거 의무 (v10 절대 규칙) — 기계 강제점
-  #   ★risk_overlay 예외 (도훈 지시 2026-08-30 "오버레이는 논문이 없어도 진행되게").
-  #     면제가 아니라 **근거의 종류를 바꾼 것**이다 — 리스크 컨트롤 오버레이는 문헌이 아니라
-  #     통계/수리/ML 방법에서 나오므로, 논문 url 대신 `method`(방법 명시)를 요구한다.
-  #     둘 다 없으면 여전히 거부한다: 근거 없는 시도는 어느 축에서도 허용되지 않는다.
+  # ★근거 논문 의무 — 강화 레인에서 해제 (도훈 지시 2026-09-03 "강화에는 근거논문 필요없게 배선해").
+  #   구판은 url(또는 risk_overlay 의 method)이 하나도 없으면 stop 으로 거부했다. 이제 거부하지 않는다.
+  #   ★해제 범위는 이 함수(강화 전용)뿐이다 — 충실구현은 run_paper_replication 의 source_paper 를
+  #     쓰는 별도 경로이고, 논문을 재현하는 단계에서 논문을 뺄 수는 없으므로 그대로 둔다.
+  #   ★왜 바뀌었나: 계열→논문 표(.RFF_FAMILY_PAPER)가 8계열만 담아 선정 풀 332종 중 91종(27%)이
+  #     미매핑이었다. 깊이 1 셀은 거부되고 깊이 2+ 는 **형제 계열의 논문**으로 통과했다 —
+  #     게이트가 시험 중인 축을 덮지 않는 근거로 충족되는, 지키는 척만 하는 상태였다.
+  #     축의 정당성은 이제 격자(reinforce_program.json)와 팩터 등록부가 진다.
+  #   root_papers 는 **있으면 그대로 기록**한다(출처 추적은 유지). 없다고 막지만 않는다.
   .rp   <- root_papers %||% list()
   urls  <- vapply(.rp, function(x) as.character(x$url    %||% ""), character(1))
   meths <- vapply(.rp, function(x) as.character(x$method %||% ""), character(1))
   .ok_url    <- length(urls)  && any(nzchar(urls))
-  .ok_method <- identical(keyword_axis, "risk_overlay") && length(meths) && any(nzchar(meths))
-  if (!.ok_url && !.ok_method)
-    stop(if (identical(keyword_axis, "risk_overlay"))
-           "[reinforce_ledger] risk_overlay 는 url 또는 method 중 하나가 필수 — 방법을 명시하지 않은 오버레이는 거부한다"
-         else "[reinforce_ledger] root_papers 에 원문 url 이 1건도 없음 — 논문 근거 없는 강화 시도는 거부한다 (v10 하드코딩 금지·논문 근거 의무)")
+  .ok_method <- length(meths) && any(nzchar(meths))
+  .evidence  <- if (.ok_url) "paper" else if (.ok_method) "method" else "none"
+  if (identical(.evidence, "none"))
+    cat("[reinforce_ledger] 근거 논문 없음 — 기록만 하고 진행 (강화 레인 근거 의무 해제, 2026-09-03)\n")
+
+  # ★서술 의무 (2026-09-03 신설) — 근거 의무(root_papers)와 같은 층에 둔다.
+  #   sprintf 는 인자 하나가 NULL/character(0) 이면 **경고 없이** character(0) 을 돌려준다.
+  #   호출자가 그걸 그대로 넘기면 원장에 idea=[] 가 박히고, 그 시도는 등급만 있고
+  #   무엇을 한 시도인지 영원히 알 수 없게 된다(실측 184/305 = 60%).
+  #   원장 밖 강화가 없듯, 서술 없는 시도도 없다.
+  .idea <- suppressWarnings(as.character(idea %||% character(0)))
+  .idea <- .idea[!is.na(.idea) & nzchar(trimws(.idea))]
+  if (!length(.idea))
+    stop("[reinforce_ledger] idea 가 비었다 — 무엇을 시도하는지 적지 않은 강화는 거부한다. ",
+         "sprintf 조립이면 조각 하나가 NULL/character(0) 일 수 있다(영길이 붕괴).")
 
   obj <- rf_load(layer, root)
   i <- .rf_find(obj, base_id)
@@ -161,7 +183,7 @@ rf_append_attempt <- function(layer, base_id, idea, keyword_axis, root_papers,
   e <- obj$entries[[i]]
   if (!identical(e$status, "active"))
     stop(sprintf("[reinforce_ledger] entry status=%s — active 아님", e$status))
-  # ★20회 상한 (1계층만)
+  # ★25회 상한 (1계층만 — 원장 max_attempts)
   maxa <- obj$max_attempts
   if (!is.null(maxa) && e$attempts_used >= maxa) {
     e$status <- "exhausted"
@@ -177,9 +199,18 @@ rf_append_attempt <- function(layer, base_id, idea, keyword_axis, root_papers,
 
   n <- e$attempts_used + 1L
   att <- list(n = n, date = format(Sys.Date(), "%Y%m%d"),
-              idea = as.character(idea), keyword_axis = keyword_axis,
+              idea = .idea, keyword_axis = keyword_axis,
               root_papers = root_papers, wt_id = wt_id,
-              axiom_injected = TRUE,   # PreToolUse[Agent] axiom_context_inject 자동 (스폰 경유 시)
+              # ★근거 종류 — paper(원문 url) / method(방법 명시) / none. 의무는 해제됐지만
+              #   사후에 "이 시도가 무엇에 기대어 돌았는가" 는 계속 셀 수 있어야 한다.
+              evidence = .evidence,
+              # ★근거 공백 표식 — 이 시도의 팩터 계열 중 논문 매핑이 없는 것들.
+              #   비어 있지 않다는 것은 "형제 계열 논문으로 게이트를 통과했다" 는 뜻이다.
+              unmapped_families = as.character(unmapped_families %||% character(0)),
+              # ★상수 TRUE 였다(2026-09-03 수리). axiom_context_inject 는 PreToolUse[Agent] 라
+              #   무인 R 레인을 지나지 않는데 316 시도 전부 TRUE 로 적혀 있었다 — 거짓 기록이다.
+              #   지금은 호출자가 **실제 적재 여부**를 넘긴다. 기본값 FALSE = 증명 못 하면 안 적는다.
+              axiom_injected = isTRUE(axiom_injected),
               grade = NA, essence = NULL, artifacts = NULL, l_code = NULL,
               lessons = NULL, opened_at = format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z"))
   e$attempts[[length(e$attempts) + 1L]] <- att
@@ -191,9 +222,47 @@ rf_append_attempt <- function(layer, base_id, idea, keyword_axis, root_papers,
   invisible(att)
 }
 
+
+#' 블록 순서 사전등록 (v10.2 2026-09-03 · C층)
+#' ★한 번만 쓴다. 이미 있으면 거부한다 — 결과를 보고 순서를 고쳐 쓰면 사후 선택이다.
+#' @param order  블록 id 벡터(격자 blocks 의 부분순열이 아니라 **전체 순열**이어야 한다)
+#' @param reason 결정 근거 — 진단 수치를 그대로 담는다(사후에 규칙을 재구성할 수 있게)
+rf_record_block_order <- function(layer, base_id, order, reason, adaptive = FALSE,
+                                  root = .rf_root()) {
+  order <- as.character(order); order <- order[nzchar(order)]
+  if (!length(order)) stop("[reinforce_ledger] block_order 가 비었다")
+  obj <- rf_load(layer, root)
+  i <- .rf_find(obj, base_id)
+  if (is.na(i)) stop(sprintf("[reinforce_ledger] entry 부재: %s", base_id))
+  e <- obj$entries[[i]]
+  if (length(as.character(e$block_order %||% character(0))))
+    stop("[reinforce_ledger] block_order 는 이미 기록됐다 — 덮어쓰기 금지(사후 선택 방지)")
+  e$block_order        <- as.list(order)
+  e$block_order_reason <- as.character(reason %||% "")
+  e$block_order_at     <- format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z")
+  # ★적응 탐색이면 표시한다 — 이 entry 의 탐색 경로가 측정에 의존했다는 사실이 남아야
+  #   Judge 6축(selection 정직성)이 사후에 판정할 수 있다.
+  e$search_adaptive    <- isTRUE(adaptive)
+  obj$entries[[i]] <- e
+  .rf_write(obj, layer, root)
+  cat(sprintf("[reinforce_ledger] block_order 사전등록: %s [%s]%s\n",
+              base_id, paste(order, collapse = ">"),
+              if (isTRUE(adaptive)) " ★적응" else ""))
+  invisible(order)
+}
+
 #' 시도 결과 기록 (QEPM 완주 후 — 등급·교훈·산출물)
+#'
+#' @param terminal 이 칸을 **더 이상 재시도하지 않는다**는 표식. 병렬 러너의 재개(resume)는
+#'   essence 없는 칸을 무한히 다시 띄우는데, 그 설계는 *일시적* 실패(워커 미기동·시간초과)만
+#'   상정했다. 구조적 실패 — 같은 스펙이면 몇 번을 돌려도 같은 자리에서 죽는 것 — 에는
+#'   출구가 없어 루프가 제자리를 돈다(2026-08-31 실사고: B3_11 이 7.5시간 16회 동일 실패).
+#'   terminal 은 "측정하지 못했다" 를 기록으로 **닫는다** — 성공으로 위장하지 않고(essence 는
+#'   여전히 NULL), 재개 대상에서만 빠진다.
+#' @param terminal_reason 왜 닫는가. 사유 없이 닫지 않는다.
 rf_record_result <- function(layer, base_id, n, grade, essence = NULL,
                              artifacts = NULL, l_code = NULL, lessons = NULL,
+                             terminal = FALSE, terminal_reason = NULL,
                              root = .rf_root()) {
   obj <- rf_load(layer, root)
   i <- .rf_find(obj, base_id)
@@ -208,6 +277,16 @@ rf_record_result <- function(layer, base_id, n, grade, essence = NULL,
   e$attempts[[j]]$l_code <- l_code
   e$attempts[[j]]$lessons <- lessons
   e$attempts[[j]]$closed_at <- format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z")
+  # 실패 횟수는 등급이 아니라 **재시도 예산**의 축이다 — 소비자(러너)가 상한을 건다.
+  if (is.null(essence)) {
+    e$attempts[[j]]$fail_count <- as.integer(e$attempts[[j]]$fail_count %||% 0L) + 1L
+  }
+  if (isTRUE(terminal)) {
+    if (!nzchar(as.character(terminal_reason %||% "")))
+      stop("[reinforce_ledger] terminal 은 사유 필수 — 왜 닫는지 없이 닫지 않는다")
+    e$attempts[[j]]$terminal <- TRUE
+    e$attempts[[j]]$terminal_reason <- as.character(terminal_reason)
+  }
   if (identical(as.character(grade), "A")) {
     e$status <- "graduated"
     cat(sprintf("[reinforce_ledger] ★Grade A — %s graduated. Judge(PIT) 스폰 → PASS 시 BOOK 등록\n", base_id))
@@ -217,14 +296,55 @@ rf_record_result <- function(layer, base_id, n, grade, essence = NULL,
   invisible(e$attempts[[j]])
 }
 
-#' 조기 중단(파킹) — 20회 소진 전에 도훈 결정으로 논문을 접을 때
+#' 조기 중단(파킹) — 25회 소진 전에 도훈 결정으로 논문을 접을 때
 #'
-#' ★왜 필요한가: status enum 은 active / exhausted(20회 소진) / graduated(Grade A) 뿐이라
-#' "20회를 다 쓰지 않았지만 도훈이 접기로 했다" 를 표현할 어휘가 없었다. active 로 남기면
+#' ★왜 필요한가: status enum 은 active / exhausted(25회 소진) / graduated(Grade A) 뿐이라
+#' "25회를 다 쓰지 않았지만 도훈이 접기로 했다" 를 표현할 어휘가 없었다. active 로 남기면
 #' v10 /qvest 규칙("원장 L1 active 우선")이 다음 세션에서 그 논문을 **자동 재개**해 결정과
 #' 어긋난다(boot_lean.sh:56 이 status=="active" 만 센다). parked 는 재개 가능한 중단이다 —
 #' 되돌리려면 status 를 active 로 명시적으로 되돌려야 하고, 그 사이 rf_append_attempt 의
 #' active 검사(line ~142)가 새 시도를 막는다.
+#' 측정 축 전환 기록 — 과거 entry 를 **무효 표시**하고 새 축의 시작을 남긴다
+#'
+#' 왜 필요한가 (2026-09-01 실사고): 강화 셀이 전부 **3종목 포트폴리오**를 재고 있었다.
+#'   고정 축은 25인데 ① 엔진이 이미 상위 25를 잘라 FACTORS 를 내보내고
+#'   ② run_paper_replication 의 top_n_long 이 그 25를 다시 분위(10%)로 잘랐다.
+#'   거들던 것은 키 불일치 — 셀 실행 경로가 `n =` 을 넘기는데 러너는 spec$n_max/$n_long 을
+#'   읽어서 **격자의 n_max 가 한 번도 전달된 적이 없었다**.
+#'   축이 바뀌면 과거 측정은 "틀린 값" 이 아니라 **다른 축에서 잰 값**이다. 지우지 않고
+#'   표시한다 — 비교만 막고 기록은 남긴다(사후 재현·귀속이 살아 있어야 한다).
+#'
+#' @param epoch  새 축 이름(예: "n_max_25")
+#' @param legacy 과거 축 이름(예: "legacy_double_selection")
+#' @param reason 왜 축이 바뀌었나 (필수)
+#' @param evidence 실측 근거 1줄 (필수 — 진술만으로 무효화하지 않는다)
+rf_mark_axis_epoch <- function(layer, epoch, legacy, reason, evidence, root = .rf_root()) {
+  for (.a in list(epoch, legacy, reason, evidence))
+    if (!nzchar(as.character(.a %||% "")))
+      stop("[reinforce_ledger] 축 전환은 epoch/legacy/reason/evidence 전부 필수 — 근거 없이 무효화하지 않는다")
+  obj <- rf_load(layer, root)
+  now <- format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z")
+  n_marked <- 0L
+  for (i in seq_along(obj$entries)) {
+    if (is.null(obj$entries[[i]]$measurement_axis)) {
+      obj$entries[[i]]$measurement_axis <- legacy
+      obj$entries[[i]]$axis_valid <- FALSE
+      obj$entries[[i]]$axis_marked_at <- now
+      n_marked <- n_marked + 1L
+    }
+  }
+  obj$axis_epochs <- c(obj$axis_epochs %||% list(), list(list(
+    epoch = epoch, legacy = legacy, switched_at = now,
+    reason = reason, evidence = evidence, entries_marked = n_marked,
+    note = paste0("이 시점 이후 개설되는 entry 는 measurement_axis='", epoch,
+                  "' 로 태어난다. 축이 다른 entry 끼리는 등급·PORT_t 를 비교하지 않는다."))))
+  obj$current_axis <- epoch
+  .rf_write(obj, layer, root)
+  cat(sprintf("[reinforce_ledger] 축 전환 %s -> %s · 과거 entry %d건 무효 표시
+", legacy, epoch, n_marked))
+  invisible(n_marked)
+}
+
 rf_park_entry <- function(layer, base_id, reason, root = .rf_root()) {
   if (!nzchar(as.character(reason %||% "")))
     stop("[reinforce_ledger] parked 는 사유 필수 — 왜 접었는지 없이 접지 않는다")
@@ -298,4 +418,4 @@ rf_lessons_digest <- function(layer, base_id, n_last = 5L, root = .rf_root()) {
 
 `%||%` <- function(a, b) if (is.null(a) || length(a) == 0L || (length(a) == 1L && is.na(a))) b else a
 
-cat("[reinforce_ledger.R] Loaded (v10) — rf_open_entry / rf_append_attempt(★L1 20회 게이트·root_papers 필수) / rf_record_result / rf_park_entry(조기 중단·사유 필수) / rf_record_judge / rf_record_combination_review / rf_lessons_digest\n")
+cat("[reinforce_ledger.R] Loaded (v10) — rf_open_entry / rf_append_attempt(★L1 25회 게이트·서술 의무 · root_papers 선택) / rf_record_result / rf_park_entry(조기 중단·사유 필수) / rf_record_judge / rf_record_combination_review / rf_lessons_digest\n")

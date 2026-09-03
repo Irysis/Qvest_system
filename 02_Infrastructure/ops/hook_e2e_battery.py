@@ -81,7 +81,8 @@ def main():
         "file_path": "qepm/mailbox/worktask/WT-D20990101_001/alpha_scores_v1.parquet", "content": KR}}, pre_shell=pre)
     case("agent_role_guard.allow", *judge(out, "allow"))
 
-    # ── worktask_constraint_enforcer: Σw=0.8 한글 필드 = block / Σw=1.0 = allow (개별 weight ≤0.20 준수)
+    # ── worktask_constraint_enforcer: Σw=0.8 = block / Σw=1.0 = allow
+    #    (v10 2026-08-29: 종목별 비중 상한 검사 없음 — 축은 ≤25종·long-only·Σw=1 뿐)
     w8 = {f"A{i:06d}": 0.10 for i in range(8)}    # Σ=0.8 위반
     w10 = {f"A{i:06d}": 0.10 for i in range(10)}  # Σ=1.0 정상
     bad = json.dumps({"target_weights": w8, "메모": KR}, ensure_ascii=False)
@@ -134,7 +135,9 @@ def main():
     #   (2026-07-05) 구 AX-003은 Distilled 강등으로 active 제거 → 잔존 active Law 중 'statement' 필드 보유한 AX-008로 교체.
     ax = "qepm/memory/axioms/active/AX-008.json"
     if os.path.exists(ax):
-        p = subprocess.run(["python3", "-c",
+        # (v10 2026-09-03) bare "python3" 금지 — Windows Store 스텁이면 stmt='' 로 조용히 FAIL 위장.
+        #   이 배터리는 이미 venv python 아래서 돌므로 sys.executable 이 가장 정직한 해석기다.
+        p = subprocess.run([sys.executable, "-c",
             "import json,sys\n"
             "try:\n"
             "    d=json.load(open(sys.argv[1], encoding='utf-8'))\n"

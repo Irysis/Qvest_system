@@ -10,6 +10,12 @@ LOG="$ROOT/.cache/scheduler_logs/reinforce_auto_${TODAY}.log"
 mkdir -p "$(dirname "$LOG")"
 {
   echo "=== $(date -Iseconds) tick 시작 ==="
+  # ★충실구현 대기가 있으면 먼저 처리한다 — active entry 없이는 강화가 못 돈다.
+  #   자체 claim/게이트를 갖고 있어 대기가 없으면 즉시 종료한다.
+  bash "$ROOT/02_Infrastructure/ops/rf_replication_auto.sh"
+  # ★arm 생성 레인 (v10.2) — 기전 지도가 미측정 칸을 지목할 때만 발화한다.
+  #   자체 claim·일 상한(1건)·포화 게이트를 갖고 있어 조건이 없으면 즉시 종료한다.
+  bash "$ROOT/02_Infrastructure/ops/rf_overlay_propose.sh"
   MODE=$("${QVEST_PY:-$ROOT/.venv_qvest_ml/Scripts/python.exe}" -c "
 import io,json,sys
 try: print(json.loads(io.open(r'$ROOT/06_Registry/reinforce_auto_config.json','rb').read().decode('utf-8')).get('mode','sequential'))

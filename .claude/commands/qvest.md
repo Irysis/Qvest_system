@@ -1,11 +1,11 @@
 ---
 name: qvest
-description: "Qvest v10.0 부팅 — 상태 5줄 후 진행 계층 질문(1계층/2계층/BOOK) → 해당 레인 진입"
+description: "Qvest v10.2 부팅 — 상태 5줄 후 진행 계층 질문(1계층/2계층/BOOK) → 해당 레인 진입"
 disable-model-invocation: true
 user-invocable: true
 ---
 
-# /qvest — 부팅 5줄 → 계층 질문 → 레인 진입 (v10 2026-08-29)
+# /qvest — 부팅 5줄 → 계층 질문 → 레인 진입 (v10.2 2026-09-03)
 
 1. `bash 02_Infrastructure/ops/boot_lean.sh` (≈5초 · 테스트 0 · 수리 0 · 백그라운드 0 · Rscript 0). 출력 5줄:
    - `Data:` — 키 캐시 4종 severity + 신선도 감사 나이(>36h면 `★audit stale`) + rawdata/benchmark mtime + K200/KQ150 멤버십 열(schema만). 결손 시에만 `→ daily_refresh` 조치.
@@ -32,12 +32,12 @@ user-invocable: true
 |---|---|
 | `/qvest` | 부팅 5줄 → 계층 질문 (본 문서) |
 | `/alpha-search` | 1계층 — 논문 1건 충실구현 검증 (기본 단위) |
-| `/reinforce` (Skill) | 강화 프로세스 — L1 ≤20회 / L2 무한 (QEPM 기반) |
+| `/reinforce` (Skill) | 강화 프로세스 — L1 ≤25회 / L2 무한 (QEPM 기반) |
 | `/worktask` | QEPM 체인 수동 관리 (alpha→risk→optimizer→forge→등급) |
 | `/strategy-rotation <track>` | 2계층 — B+ 모듈 국면 배합 → 전천후 모델 |
 | `/book` | BOOK 등록 목록·트래킹 (governor 승계) |
 
-★**무인 파이프라인은 수집까지만**(v10) — 아침 체인 = 논문 수집(중복 방지 paper_key) + 트리아지 적재. 리서치·강화는 세션이 주도한다.
+★**무인 파이프라인 = 수집 + 강화**(2026-08-30 도훈 "모든 작업을 무인화"). 아침 체인 = 논문 수집·트리아지, 그리고 `02_Infrastructure/ops/reinforce_auto_run.R` 이 강화를 사람 없이 돌린다(1회=1칸 · 25칸 소진 → 다음 논문). ★**규칙 개시**다 — 격자 `06_Registry/reinforce_program.json` · 엔진 `rf_cell_engine.R` 하나 · 러너는 코드 생성 없음. kill switch `06_Registry/reinforce_auto_config.json`. **충실구현·Judge 는 여전히 세션**(논문 판독·PIT 판단).
 ★**Judge(PIT 전담)는 어느 계층이든 essence Grade A 확정 후에만 스폰** → PASS 시 BOOK 등록 후보(도훈 confirm).
 ★`/ramp` 퇴임(v9.21) · 기계 사다리(reinforce_ladder)·governor·execution 퇴역(v10) — 파일 사료 존치.
 
@@ -46,7 +46,7 @@ user-invocable: true
 - agents / skills = `ls .claude/agents .claude/skills` (퇴역분 = `.claude/agents_retired_v10/`)
 - hooks = `.claude/settings.json` (예산 ≤12)
 - **BOOK = `06_Registry/book/book_registry.json`** (writer = `02_Infrastructure/book/book_registry.R` 경유만 · 도훈 confirm)
-- 강화 원장 = `06_Registry/reinforce_ledger_l1.json`(≤20회) · `_l2.json`(무한)
+- 강화 원장 = `06_Registry/reinforce_ledger_l1.json`(≤25회) · `_l2.json`(무한)
 - alerts = `.cache/alerts_digest.md` · 헌법 = `CLAUDE.md` (예산 ≤8KB)
 - 페르소나 = `02_Infrastructure/docs/rules/quant-identity.md`
 - 구 v8.4 본문 전문 = `02_Infrastructure/docs/CHANGELOG_qvest_command.md` 최상단 절

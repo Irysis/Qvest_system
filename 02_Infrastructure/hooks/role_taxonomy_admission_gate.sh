@@ -1,4 +1,7 @@
 #!/bin/bash
+# ★RETIRED (v10 2026-09-03) — settings.json·라우터 어디에도 등록 이력이 없는 pre-v9 훅.
+#   재등록 금지(되살리려면 v10 폐지 개념 분기부터 제거하고 양성/음성 대조를 새로 만들 것). 파일은 사료 존치.
+#   Scout/Forge/Judge/Governor 6-role v55 분류 — v10 역할 체계와 무관.
 # (v8.2.1 HOOK-P0-1) bare python3 → $QVEST_PY_BIN (Windows Store 스텁 fail-open 방지)
 if [ -z "${QVEST_PY_BIN:-}" ]; then
   QVEST_PY_BIN="${QVEST_PY:-}"; QVEST_PY_BIN="${QVEST_PY_BIN//\//}"

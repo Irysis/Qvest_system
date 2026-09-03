@@ -40,9 +40,32 @@ _h=S(lambda: (dt.datetime.now()-dt.datetime.fromisoformat(str(d.get("ran_at"))[:
 ra="?" if _h is None else HH(_h)+(" ★audit stale" if _h>36 else "")
 _nm=S(lambda: set(__import__("pyarrow.parquet",fromlist=["x"]).read_schema(R(".cache","rawdata.parquet")).names))
 mem="K200/KQ150 "+("?" if _nm is None else ("OK" if {"K200","KQ150"}<=_nm else "부재"))
-o.append("Data: 키캐시 %d/4%s · audit %s · rawdata %s · bench %s · %s%s"%(4-len(bad)," ["+", ".join(bad)+"]" if bad else " OK",ra,HH(AG(".cache/rawdata.parquet")),HH(AG(".cache/benchmark.parquet")),mem,"  → bash 02_Infrastructure/data/daily_refresh.sh" if bad else ""))
+# ★팩터 배출 격차 (2026-09-01) — emission_guard 는 매 빌드 돌고 있었는데 **소비자가 없어서**
+#   registry 373 중 42종이 조용히 빠진 걸 아무도 못 봤다. 차단이 아니라 표면화다.
+#   등재 N − IC 보유 N − 선언(expected_absent) N. 격차가 0 이면 조용하다.
+def _fgap():
+    try:
+        reg=json.load(io.open(R(".cache","factor_db","factor_registry.json"),encoding="utf-8"))
+        import pyarrow.parquet as _pq
+        ic=set(_pq.read_table(R(".cache","factor_db","factor_ic_monthly.parquet"),columns=["Factor_Name"])["Factor_Name"].to_pylist())
+        ea=json.load(io.open(R("02_Infrastructure","factor_db","emission_expected_absent.json"),encoding="utf-8"))
+        dec={e.get("factor") for e in (ea.get("expected_absent") or [])}
+        # ★격차에서 빼야 하는 두 부류 (2026-09-01):
+        #   deprecated = 승계돼서 **안 나오는 게 맞는** 팩터(C14→M26 · C17→M28)
+        #   time_series = 시장수준이라 횡단면 IC 가 구조적으로 불가(RE*/CR03/M31 — 빌더 Coverage 규칙과 정합)
+        dep={f for f,e in reg.items() if str(((e or {}).get("lifecycle") or {}).get("status"))=="deprecated"}
+        axf=S(lambda: json.load(io.open(R("06_Registry","factor_panel_axis.json"),encoding="utf-8"))["factors"]) or {}
+        ts={f for f,v in axf.items() if v.get("panel_axis")=="time_series"}
+        miss=[f for f in reg if f not in ic and f not in dec and f not in dep and f not in ts]
+        ax=S(lambda: json.load(io.open(R("06_Registry","factor_panel_axis.json"),encoding="utf-8"))["tally"])
+        axs=(" · 축 %s"%("/".join("%s %d"%(k[:2],v) for k,v in sorted(ax.items())))) if ax else ""
+        return "팩터 %d/%d%s%s"%(len([f for f in ic if f in reg]),len(reg),axs," · ★배출격차 %d"%len(miss) if miss else "")
+    except Exception:
+        return "팩터 ?"
+import io
+o.append("Data: 키캐시 %d/4%s · audit %s · rawdata %s · bench %s · %s · %s%s"%(4-len(bad)," ["+", ".join(bad)+"]" if bad else " OK",ra,HH(AG(".cache/rawdata.parquet")),HH(AG(".cache/benchmark.parquet")),mem,_fgap(),"  → bash 02_Infrastructure/data/daily_refresh.sh" if bad else ""))
 # ② Queue — 미소비 논문 수(비숫자면 UNREPORTED, 0 으로 접지 않음) + frontier open 상위 2
-#   ★v10 (2026-08-29): 강화 원장 active(L1 n/20 · L2 무한) + data-pipeline open 병기 (fail-soft ?)
+#   ★v10 (2026-08-29): 강화 원장 active(L1 n/25 · L2 무한) + data-pipeline open 병기 (fail-soft ?)
 _r=S(lambda: subprocess.run([PY,R("02_Infrastructure","ops","research_pool_predicates.py"),"alpha-pending",R("stage_artifacts","paper_recharge")],capture_output=True,text=True,timeout=90).stdout.strip())
 q=_r if (_r or "").isdigit() else "UNREPORTED"; fq=[]
 for e in ((J("06_Registry/alpha_frontier_queue.json") or {}).get("entries") or []):

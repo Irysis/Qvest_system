@@ -3,12 +3,12 @@
 # rf_auto_notify.R — 강화 무인 러너 **텔레그램 발송** (도훈 지시 2026-08-30 "텔레그램도 무인화")
 #
 # 발송 시점 3곳 (매 칸마다 보내면 소음이라 블록 단위로 묶는다):
-#   1) 블록 완료  — n %% 5 == 0 (5·10·15·20칸)  → 등급표 + 차트 2장
+#   1) 블록 완료  — n %% 5 == 0 (블록 경계마다)  → 등급표 + 차트 2장
 #   2) Grade A    — 즉시(러너가 스스로 정지하는 그 순간)
-#   3) 20칸 소진  — reinforce_auto_next_paper.R 이 별도로 보낸다
+#   3) 상한 소진  — reinforce_auto_next_paper.R 이 별도로 보낸다
 #
 # 규약 = qvest-telegram SKILL:
-#   §5.6b 계층 표제 `[1계층·강화 n/20]` 의무 · §6 5섹션 · 원칙 9 실측이면 차트 의무
+#   §5.6b 계층 표제 `[1계층·강화 n/N]` 의무(N = 원장 max_attempts) · §6 5섹션 · 원칙 9 실측이면 차트 의무
 #   §3.1 kv 키는 한글(영어 비율 60% 초과 stop) · bullet 항목당 영어 약어 2건 미만
 #   ★지표 원표기(PORT_t·Calmar)는 kv "값" 에만 쓰고 "키" 는 한글로 (v8 §5.6b)
 #
@@ -18,7 +18,7 @@ suppressMessages({ library(data.table); library(jsonlite) })
 `%||%` <- function(a, b) if (is.null(a) || length(a) == 0L) b else a
 ROOT <- Sys.getenv("QM_ROOT", "C:/Users/99922/OneDrive/Quant_Module_Moltbot")
 # ★승자 셀 성과 요약 = 예전 알파 서칭 포맷(도훈 지시 2026-08-30).
-#   배치 kv 는 20칸 전체 요약이라 상세가 없다 — 승자 한 칸의 전체 지표를 붙인다.
+#   배치 kv 는 전 칸 요약이라 상세가 없다 — 승자 한 칸의 전체 지표를 붙인다.
 suppressMessages(source(file.path(ROOT, "02_Infrastructure/ops/rf_perf_summary.R")))
 
 # ── 원장에서 이 entry 의 실측 표를 뽑는다 (계약 산출값만 — 손계산 금지) ───────
@@ -40,7 +40,7 @@ rf_notify_table <- function(base_id) {
   if (!nrow(rows)) return(NULL)
   setorder(rows, n)
   list(entry = E, tab = rows, used = as.integer(E$attempts_used %||% nrow(rows)),
-       maxa = as.integer(led$max_attempts %||% 20L))
+       maxa = as.integer(led$max_attempts %||% 25L))
 }
 
 # ── 차트 2장 (원칙 9 — 실측 보고는 글만 보내지 않는다) ────────────────────────
@@ -81,16 +81,29 @@ rf_notify_charts <- function(tab, outdir) {
 # ── ★셀별 "무엇을 강화했나" — **전문 팩트만** (도훈 지시 2026-08-30) ──────────
 #   "조합 축 · 승자 요소" 같은 추상 라벨은 무엇을 바꾼 건지 알려주지 않는다.
 #   실제 팩터 코드 · 비중식 · 유니버스 정의를 쓴다. 출처는 **실행된 셀 스펙**(스펙 부재 시 격자).
+# ★기저를 여기서 말하지 않는다. 구판은 "모멘텀 12-1 + X rankZ 50:50" 을 반환했는데,
+#   ①기저는 논문마다 다르고(현행은 충실구현 engine.R 신호이지 모멘텀이 아니다)
+#   ②비율은 팩터 개수에 따라 변한다(2팩터면 50:50 이 아니라 1/3씩).
+#   즉 두 군데가 동시에 틀렸다. 기저와 비율은 호출부가 한 번만 말한다.
 .rf_f2 <- function(f2) {
-  if (is.null(f2) || identical(f2$kind, "none")) return("모멘텀 12-1 단독")
-  id <- f2$id %||% "?"
-  nm <- switch(id, "V01_BM" = "가치 BM", "Q01_GPA" = "수익성 GP/A",
+  if (is.null(f2) || identical(f2$kind, "none")) return("추가 팩터 없음")
+  id <- f2$id %||% f2$catalog_id %||% "?"
+  nm <- switch(id, "V01_BM" = "가치 B/M", "Q01_GPA" = "수익성 GP/A",
                    "L01_Amihud" = "비유동 Amihud", "C13_Revision_Breadth_3m" = "이익수정 3M",
                    "lowvol60" = "저변동 sigma60", id)
-  sprintf("모멘텀 12-1 + %s (%s) rankZ 50:50", nm, id)
+  sprintf("%s (%s)", nm, id)
+}
+# 컴포짓 비율 — 기저 1 + 팩터 n 을 rankZ 등가중으로 섞는다. 이 한 줄이 희석의 크기다.
+.rf_mix <- function(nf) {
+  nf <- as.integer(nf %||% 0L)
+  sprintf("rankZ 등가중 기저 1/%d + 팩터 %d종", nf + 1L, nf)
 }
 .rf_wt <- function(w) {
   k <- w$kind %||% "ew"
+  # ★카탈로그 arm 은 kind 가 전부 "catalog" 라 그것만 찍으면 다섯 칸이 같은 이름이 된다
+  #   (2026-08-31 실측: B2 칸이 전부 "catalog"). 실제 방법 이름은 label/catalog_id 에 있다.
+  if (identical(k, "catalog"))
+    return(sprintf("비중 %s", w$label %||% sub("^.*:", "", w$catalog_id %||% "?")))
   switch(k,
     "ew"               = "동일가중 1/25",
     "score_tilt"       = sprintf("스코어 틸트 w~(z-zmin+%s)", format(w$eps %||% 0.05)),
@@ -122,7 +135,24 @@ rf_notify_charts <- function(tab, outdir) {
 #   출처 = 충실구현 산출물의 source_paper(계약이 쓴 값). 없으면 paper_key → base_id 순.
 .rf_target_label <- function(E) {
   ttl <- NULL
+  # ★승격 entry 의 base_artifacts 는 **부모의 승자 셀** 산출물이다. 그 안의 source_paper 는
+  #   그 셀의 근거 논문(예: 유니버스 셀이면 Hong-Lim-Stein)이지 이 전략의 기저 논문이 아니다.
+  #   2026-08-31 적발: 승격 1대 텔레그램이 대상을 B3_11 의 근거 논문으로 보고했다.
+  #   그래서 사슬을 거슬러 **parent 가 없는 최초 entry** 의 산출물을 본다.
   ba <- E$base_artifacts %||% ""
+  if (!is.null(E$parent)) {
+    led <- tryCatch(fromJSON(file.path(ROOT, "06_Registry/reinforce_ledger_l1.json"),
+                             simplifyVector = FALSE), error = function(e) NULL)
+    cur <- E; guard <- 0L
+    while (!is.null(led) && !is.null(cur$parent) && guard < 8L) {
+      guard <- guard + 1L
+      pid <- cur$parent$base_id %||% ""
+      nx <- Filter(function(x) identical(x$base_id, pid), led$entries)
+      if (!length(nx)) break
+      cur <- nx[[1]]
+    }
+    if (nzchar(cur$base_artifacts %||% "")) ba <- cur$base_artifacts
+  }
   ap <- file.path(ba, "authoritative_remeasure.json")
   if (nzchar(ba) && file.exists(ap)) {
     o <- tryCatch(fromJSON(ap, simplifyVector = FALSE), error = function(e) NULL)
@@ -136,6 +166,15 @@ rf_notify_charts <- function(tab, outdir) {
   ttl
 }
 
+# 미결 칸은 essence 가 없어 cell_code 를 못 읽는다 — 격자 순서(n)로 되찾는다.
+.rf_cellcode_of <- function(a) {
+  g <- tryCatch(fromJSON(file.path(ROOT, "06_Registry/reinforce_program.json"), simplifyVector = FALSE),
+                error = function(e) NULL)
+  if (is.null(g)) return(NULL)
+  cs <- do.call(c, lapply(g$blocks, function(b) lapply(b$cells, function(cl) cl$code)))
+  n <- as.integer(a$n %||% 0L)
+  if (n >= 1L && n <= length(cs)) cs[[n]] else NULL
+}
 rf_cell_desc <- function(base_id = NULL) {
   g <- tryCatch(fromJSON(file.path(ROOT, "06_Registry/reinforce_program.json"), simplifyVector = FALSE),
                 error = function(e) NULL)
@@ -153,15 +192,28 @@ rf_cell_desc <- function(base_id = NULL) {
   }
   out <- list()
   for (b in g$blocks) for (cl in b$cells) {
+    # ★spec 경로는 2026-08-31 부터 entry 별이다(구판 고정 이름은 다음 entry 가 덮어써
+    #   부모 스펙을 소실시켰다). 이 entry 것을 먼저 찾고, 없으면 구 이름으로 떨어진다.
     sp <- NULL
-    for (d in c(".cache/rf_parallel", ".cache")) {
-      f <- file.path(ROOT, d, sprintf(if (identical(d, ".cache")) "rf_cell_spec_%s.json" else "spec_%s.json", cl$code))
+    .cands <- character(0)
+    if (!is.null(base_id) && nzchar(base_id)) .cands <- c(.cands,
+      file.path(ROOT, ".cache/rf_parallel", sprintf("spec_%s__%s.json", cl$code, substr(base_id, 1, 48))),
+      file.path(ROOT, ".cache",             sprintf("rf_cell_spec_%s__%s.json", cl$code, substr(base_id, 1, 48))))
+    .cands <- c(.cands,
+      file.path(ROOT, ".cache/rf_parallel", sprintf("spec_%s.json", cl$code)),
+      file.path(ROOT, ".cache",             sprintf("rf_cell_spec_%s.json", cl$code)))
+    for (f in .cands) {
       if (file.exists(f)) { sp <- tryCatch(fromJSON(f, simplifyVector = FALSE), error = function(e) NULL); break }
     }
-    f2 <- if (!is.null(sp)) sp$factor2 else (cl$factor2 %||% (if (b$id %in% c("B2","B3")) .b1f2 else NULL))
+    # 승계 entry 의 스펙은 factor2 가 아니라 factors(복수)를 쓴다 — 그쪽이 정본이다.
+    f2 <- if (!is.null(sp) && length(sp$factors))
+            paste(vapply(sp$factors, .rf_f2, character(1)), collapse = "+")
+          else if (!is.null(sp)) sp$factor2
+          else (cl$factor2 %||% (if (b$id %in% c("B2","B3")) .b1f2 else NULL))
     wt <- if (!is.null(sp)) sp$weighting else (cl$weighting %||% list(kind = "ew"))
     un <- if (!is.null(sp)) sp$universe  else (cl$universe  %||% list(kind = "k200_kq150"))
-    out[[cl$code]] <- sprintf("%s | %s | %s", .rf_f2(f2), .rf_wt(wt), .rf_un(un))
+    .f2txt <- if (is.character(f2)) f2 else .rf_f2(f2)
+    out[[cl$code]] <- sprintf("%s | %s | %s", .f2txt, .rf_wt(wt), .rf_un(un))
   }
   out
 }
@@ -244,16 +296,92 @@ rf_auto_notify <- function(base_id, n, kind = "block") {
       list(type = "kv", emoji = "\U0001F4C8",
            heading = sprintf("승자 셀 성과 요약 (%s)", best$code),
            kv = .win_kv) else NULL,
+    # ★"무엇을 강화했나" — 순위표만으로는 **무엇 위에 무엇을 얹었는지**가 안 읽힌다
+    #   (도훈 2026-08-31 "무엇을 강화했나 파트 설명을 좀 더"). 네 줄을 먼저 세운다:
+    #   ①기저(무엇 위에) ②컴포짓 비율(희석의 크기) ③승계 구성과 그 성능(=이번 기준선)
+    #   ④이번 블록이 만진 축. 그 다음에야 순위가 뜻을 갖는다 — 기준선 대비 증감으로 읽힌다.
     list(type = "bullet", emoji = "\U0001F527", heading = "무엇을 강화했나",
-         items = { dsc <- rf_cell_desc(base_id)
-                   ord <- tab[order(-replace(port_t, !is.finite(port_t), -Inf))]
+         items = { dsc  <- rf_cell_desc(base_id)
+                   # ★순위는 **이번 블록** 칸으로 한정한다. 전체 정렬로 뽑으면 그 블록 성적이
+                   #   나쁠 때 지난 블록 칸이 상위를 차지해, 블록 완료 보고가 지난 얘기를 한다
+                   #   (2026-08-31 실측: B2 다섯 칸이 전부 음수라 B2 메시지의 순위 4개 중 3개가
+                   #   B1 칸이었고 "이번 축" 도 B1 로 표시됐다). 전체 최고는 [핵심 수치]가 준다.
+                   .curblk <- { .m <- tab[n <= S$used]
+                                if (nrow(.m)) sub("_.*$", "", .m[which.max(n)]$code) else NA_character_ }
+                   .inblk <- if (!is.na(.curblk)) tab[grepl(paste0("^", .curblk, "_"), code)] else tab[0]
+                   ord  <- (if (nrow(.inblk)) .inblk else tab)[order(-replace(port_t, !is.finite(port_t), -Inf))]
+                   .cut <- function(x) substr(x, 1, 78)
+                   EN   <- S$entry
+                   cy   <- EN$carry
+                   .cb  <- if (!is.null(cy)) suppressWarnings(as.numeric(EN$parent$best_port_t %||% NA)) else NA_real_
+                   # 제목은 58자까지 오는데 접미(승격 n대)까지 붙으면 80자를 넘어 꼬리가 잘린다.
+                   # 이 줄은 "무엇 위에 얹었나" 만 말하면 되므로 제목을 더 짧게 자른다.
+                   it <- .cut(sprintf("기저: %s 의 충실구현 신호", substr(.rf_target_label(EN), 1, 56)))
+                   # 승계 구성 + 기준선. 최초 entry 는 승계가 없다 — 그 사실을 적는다.
+                   if (!is.null(cy)) {
+                     .fs <- paste(vapply(cy$factors %||% list(), .rf_f2, character(1)), collapse = " + ")
+                     if (!nzchar(.fs)) .fs <- "없음"
+                     it <- c(it, .cut(sprintf("승계 구성: %s | %s | %s",
+                                              .fs, .rf_wt(cy$weighting), .rf_un(cy$universe))),
+                                 .cut(.rf_mix(length(cy$factors %||% list()))))
+                     if (is.finite(.cb)) it <- c(it,
+                       .cut(sprintf("기준선 t %.2f — 이번 칸들은 이걸 넘어야 개선이다", .cb)))
+                   } else it <- c(it, "승계: 없음(최초 강화) — 기준선은 기저 신호 자신")
+                   .blk <- if (!is.na(.curblk)) .curblk else sub("_.*$", "", ord[1]$code)
+                   it <- c(it, .cut(sprintf("이번 축: %s", switch(.blk,
+                     "B1" = "B1 멀티팩터 — 기저에 팩터 1종을 등가중으로 더한다",
+                     "B2" = "B2 비중방법론 — 종목 선정은 그대로, 비중 산식만 바꾼다",
+                     "B3" = "B3 유니버스 — 신호는 그대로, 후보 집합을 좁힌다",
+                     "B4" = "B4 결합 — 앞 승자를 합치고 하나씩 빼서(LOO) 기여를 가른다",
+                     "B5" = "B5 리스크 오버레이 — 최고 구성 위에 노출 스케일만 얹는다",
+                     sprintf("%s 축", .blk)))))
                    k <- min(4L, nrow(ord))
-                   vapply(seq_len(k), function(i2) {
+                   # ★순위 줄은 **그 칸이 바꾼 축**만 적는다. 전 축을 쓰면 승계와 겹치는
+                   #   부분(비중·유니버스)이 자리를 다 먹고 등급·기준선 대비가 80자에서 잘린다
+                   #   — 정작 판단에 쓰이는 두 값이 사라진다(2026-08-31 미리보기에서 적발).
+                   .delta_of <- function(code) {
+                     full <- dsc[[code]] %||% "격자 밖"
+                     pr <- strsplit(full, " | ", fixed = TRUE)[[1]]
+                     if (length(pr) != 3L) return(substr(full, 1, 48))
+                     if (!is.null(cy)) {
+                       # 정규식 대신 분리·차집합 — 팩터 이름에 정규식 메타문자가 섞이면
+                       # 접두 제거가 조용히 빗나간다(2026-08-31: "\+" 이스케이프로 파싱 실패).
+                       cfs <- trimws(vapply(cy$factors %||% list(), .rf_f2, character(1)))
+                       fs  <- trimws(strsplit(pr[1], "+", fixed = TRUE)[[1]])
+                       add <- setdiff(fs, cfs)
+                       ch <- character(0)
+                       if (length(add)) ch <- c(ch, paste(add, collapse = "+"))
+                       if (!identical(pr[2], .rf_wt(cy$weighting))) ch <- c(ch, pr[2])
+                       if (!identical(pr[3], .rf_un(cy$universe)))  ch <- c(ch, pr[3])
+                       if (length(ch)) return(substr(paste(ch, collapse = " · "), 1, 48))
+                       return("승계와 동일")
+                     }
+                     substr(full, 1, 48)
+                   }
+                   # ★칸별 미달 폭은 적지 않는다(도훈 2026-08-31). 기준선은 위에 한 번 서 있고
+                   #   각 칸의 t 가 옆에 있으니 차이는 읽는 사람이 본다 — 줄마다 반복하면 소음이다.
+                   #   그 자리를 라벨에 준다(무엇을 바꿨는지가 실제로 궁금한 값이다).
+                   it <- c(it, vapply(seq_len(k), function(i2) {
                      r <- ord[i2]
-                     substr(sprintf("%s %s — %s (%s)", if (i2 == 1L) "1위" else paste0(i2, "위"),
-                                    r$code, dsc[[r$code]] %||% "격자 밖",
-                                    sprintf("t %.2f · 등급 %s", r$port_t, r$grade)), 1, 78)
-                   }, character(1)) }),
+                     .cut(sprintf("%d위 %s %s · t %.2f · %s",
+                                  i2, r$code, .delta_of(r$code), r$port_t, r$grade))
+                   }, character(1)))
+                   # 미측정 칸은 왜 안 쟀는지 적는다 — 침묵하면 "재봤는데 나빴다" 로 읽힌다
+                   # 미결도 이번 블록 것을 먼저 — 지난 블록 미결이 자리를 먹으면 안 된다
+                   .tm <- Filter(function(a) isTRUE(a$terminal), EN$attempts %||% list())
+                   if (!is.na(.curblk) && length(.tm)) {
+                     .own <- Filter(function(a) identical(sub("_.*$", "", .rf_cellcode_of(a) %||% ""), .curblk), .tm)
+                     if (length(.own)) .tm <- .own
+                   }
+                   # 사유의 앞머리(무처치 / 구조적 미결)가 핵심이다 — 그걸 지우면 왜 안 쟀는지가 없다
+                   if (length(.tm)) it <- c(it, vapply(utils::head(.tm, 2), function(a) {
+                     rs <- a$terminal_reason %||% "사유 미기록"
+                     rs <- if (grepl("^무처치", rs)) "carry 와 동일 — 처치 미전달로 미측정"
+                           else if (grepl("^구조적 미결", rs)) "구조적 미결 — 이 기저에서 전달 불가"
+                           else substr(rs, 1, 44)
+                     .cut(sprintf("미결 %s — %s", .rf_cellcode_of(a) %||% paste0("n", a$n), rs))
+                   }, character(1)))
+                   it }),
 
     list(type = "bullet", emoji = "💡", heading = "이번 배치에서 알게 된 것",
          items = { ins <- rf_insights(tab)
@@ -266,15 +394,16 @@ rf_auto_notify <- function(base_id, n, kind = "block") {
              "요청 파일: qepm/mailbox/judge_request.json")
          else c("처분: 자본 배정 없음 — 등급 C 이하는 참고용 보관",
                 sprintf("다음: 남은 %d칸을 무인으로 채웁니다", max(0L, S$maxa - S$used)),
-                "20칸 소진 시 큐 다음 논문 착수 요청이 발송됩니다")))
+                sprintf("%d칸 소진 시 큐 다음 논문 착수 요청이 발송됩니다", S$maxa))))
   # ★NULL 섹션 제거 — 승자 산출물이 없는 예전 entry 는 그 칸이 NULL 로 남는다.
   secs <- Filter(Negate(is.null), secs)
-  tg_agent_brief(agent = "AlphaSearch", title = ttl, sections = secs, charts = ch)
+  .sent <- tg_agent_brief(agent = "AlphaSearch", title = ttl, sections = secs, charts = ch)
   # ★승자 셀의 [팩터 분석] — FF3/FF5/Carhart + Fama-MacBeth
   if (!is.null(.win_dir) &&
       (file.exists(file.path(.win_dir, "analysis_multifactor.csv")) ||
        file.exists(file.path(.win_dir, "analysis_fmb_summary.csv"))))
     tryCatch(tg_pass_analysis(sprintf("%s %s", base_id, best$code), .win_dir),
              error = function(e) cat("[rf_notify] 팩터분석 발송 실패:", conditionMessage(e), "\n"))
-  invisible(TRUE)
+  # ★발송 결과를 그대로 돌려준다 — 호출자(러너)가 "보냈다" 를 지어내지 않게.
+  invisible(isTRUE(.sent$ok %||% TRUE))
 }

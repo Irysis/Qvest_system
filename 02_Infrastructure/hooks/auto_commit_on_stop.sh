@@ -10,10 +10,12 @@ if [ -z "${QVEST_PY_BIN:-}" ]; then
   export QVEST_PY_BIN
 fi
 #==============================================================================
-# auto_commit_on_stop.sh — Claude Code Stop event hook
+# auto_commit_on_stop.sh — Claude Code SessionEnd hook
+#   (v9 2026-08-23: 구 Stop 등록에서 SessionEnd 로 이동 — settings.json "_doc_session_end")
 #
 # 세션 종료 시 자동 commit.
-# Push는 안 함 (daily_push.sh cron 또는 milestone_commit.sh가 담당).
+# Push는 안 함 — auto_push_on_stop.sh(같은 SessionEnd 그룹, 직후 실행)가 담당.
+#   milestone_commit.sh 는 v9 등록 해제(MANIFEST #27) · daily_push.sh 는 예약 미등록.
 #
 # 동작:
 #   1. secret 스캔 (Telegram token / API key / .env staging)
@@ -147,7 +149,7 @@ if [ "$TOKEN_HITS" -gt 0 ] || [ "$GENERIC_HITS" -gt 0 ] || [ "$ENV_INCLUDED" -eq
   MSG+=" token=$TOKEN_HITS generic=$GENERIC_HITS env=$ENV_INCLUDED."
   MSG+=" /tmp/auto_commit.log 확인 후 수동 정리 필요."
   MSG_ESC=$(_json_msg "$MSG")
-  echo "{\"hookSpecificOutput\":{\"hookEventName\":\"Stop\",\"additionalContext\":$MSG_ESC}}"
+  echo "{\"hookSpecificOutput\":{\"hookEventName\":\"SessionEnd\",\"additionalContext\":$MSG_ESC}}"
   exit 0
 fi
 
@@ -291,7 +293,7 @@ if [ $? -eq 0 ]; then
   #   가드 = test_auto_commit_worktree_target.sh D축(보고에 브랜치명 + tree= 라벨).
   MSG="[OK] [auto-commit] $HASH - $STAGED files committed → $AC_TARGET. Push는 milestone/cron으로 자동.${PARTIAL_NOTE}"
   MSG_ESC=$(_json_msg "$MSG")
-  echo "{\"hookSpecificOutput\":{\"hookEventName\":\"Stop\",\"additionalContext\":$MSG_ESC}}"
+  echo "{\"hookSpecificOutput\":{\"hookEventName\":\"SessionEnd\",\"additionalContext\":$MSG_ESC}}"
 else
   # 실패도 로그 + 마커에 남김 (HYG-01) — 조용한 실패 방지. Telegram 배선은 후속.
   echo "$TS COMMIT_FAILED${PARTIAL_NOTE}" >> "$LOG"

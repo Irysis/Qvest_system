@@ -1,4 +1,6 @@
 #!/usr/bin/env Rscript
+# ★RETIRED (v10 2026-09-03) — 구 book_state(governor) 캐리어 추출기. book_state.json 은 v10 legacy 동결이고
+#   BOOK 정본은 06_Registry/book/book_registry.json(writer = book/book_registry.R) 이다. 사료 존치.
 # extract_book_carrier.R — 현 book(PG2 admitted 전략)의 *faithful per-stock 캐리어*를 1회 추출·캐시 (도훈 mandate 2026-06-18, carrier-fix).
 #
 # 왜 재작성됐나(2026-06-18): v1 캐리어는 alpha_scores$Ret_1m(trailing/contemporaneous 컬럼)을 종목수익으로 썼는데,

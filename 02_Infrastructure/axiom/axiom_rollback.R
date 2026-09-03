@@ -57,10 +57,9 @@ rollback_axiom <- function(ax_id, apply = FALSE, reason, revive_condition = NULL
   ax_path <- hits[1]
   axiom <- fromJSON(ax_path, simplifyVector = FALSE)
 
-  # 1) 마커 블록 삭제: CLAUDE.md + 9 prompts
+  # 1) 마커 블록 삭제: CLAUDE.md + 5 prompts (v10 2026-09-03: governor/execution/monitoring/qlead 는 _retired_v10 이동)
   prompts <- c("alpha_research_init.md", "risk_research_init.md", "optimizer_research_init.md",
-               "forge_init.md", "judge_init.md", "governor_init.md",
-               "execution_init.md", "monitoring_init.md", "qlead_init.md")
+               "forge_init.md", "judge_init.md")
   targets <- c(file.path(root, "CLAUDE.md"), file.path(root, "02_Infrastructure", "prompts", prompts))
   total <- 0L
   for (t in targets) total <- total + .remove_axiom_block(t, ax_id, apply)

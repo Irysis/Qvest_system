@@ -5,7 +5,7 @@ description: QEPM WorkTask lifecycle 절차 (v10) — alpha→risk→optimizer�
 
 # Qvest WorkTask Skill
 
-**Active SOT**: `02_Infrastructure/docs/qvest_v8_1_sot.md` + `02_Infrastructure/docs/qvest_modes_sot.md`
+**Active SOT**: `CLAUDE.md`(v10 헌법) + `.claude/rules/lean-loop.md` + 본 문서 (구 `qvest_v8_1_sot.md`·`qvest_modes_sot.md` 2종 = 사료)
 
 ## 1. WorkTask Lifecycle
 
@@ -27,7 +27,7 @@ JUDGE_PASSED 후 BOOK 등록은 원장 밖 수동(`register_book_entry` + 도훈
 
 ### wt_type 5종 (Charter v1.7 §10 + ★v10 reinforcement)
 
-| wt_type | 용도 | own cert | inherit |
+| wt_type | 용도 | own cert (legacy v1.7 — v10 신규 WT 미발급) | inherit (legacy) |
 |---|---|---|---|
 | `discovery` | 신규 alpha 탐색 | alpha + sr + sched + forge_pkg | concord (global) |
 | `deployment` | 검증 alpha 직접 편성 | sr + sched + forge_pkg + concord | alpha (from discovery) |
@@ -217,19 +217,20 @@ v53 TeamCreate/teammate 패턴은 **폐지됨** (v8.1 Agent tool spawn 대체). 
 source("02_Infrastructure/worktask/worktask_manager.R")
 wt_list(include_completed = FALSE)
 wt_status("WT-D20260501_NNN")
-wt_check_graduation("WT-D20260501_NNN")  # cert 발급 상태 검사
+wt_check_graduation("WT-D20260501_NNN")  # legacy cert 파일 존재 검사(file.exists) — v10 신규 WT 는 cert 미발급이 정상.
+                                          # 권위 등급 = authoritative_remeasure.json::essence_grade
 ```
 
 ## 9. WT 간 병렬 / 내부 순차
 
 - **WT 간 병렬 허용** (WT001 + WT002 동시 진행 가능)
-- **WT 내부 순차 강제** (`worktask_sequence_enforcer.sh` Hook)
+- **WT 내부 순차 강제** (v9 2026-08-23 훅 등록 해제 — 순차는 `state_machine.R` 전이 규칙이 강제, 훅 파일은 MANIFEST 사료)
 
 ## 지식 절차 (QEPM 모드 — Axiom 엔진 배선, 2026-07-04)
 
 - **조회 의무 (consume)**: WT 생성 전 hypothesis_index lookup (§2 상단 블록). FAIL/KILL 히트 시 차별점 없인 진행 금지 + INV-7 재도전 사유 기록.
 - **emit 시점 (1지점)**: judge가 essence Grade 확정 직후 `emit_qepm_lcode(source="judge_gate", metric_type="backtested")` — 상세·필수필드(mechanism 1줄 + port_t/oos_retention/sharpe/mdd + falsification 실기록)는 `.claude/agents/judge.md` "L-code 발행" 절. 산출 경로 = `judge_verdict.json::l_code_path`.
-- **governor DEFER/REJECT**: 동일 함수 `source="governor_admission"` 재사용 (코드 0줄).
+- **(legacy WT 한정)** `source="governor_admission"` 은 `lcode_schema.R` 구 원장 호환 enum — **신규 WT 사용 금지**(v10 governor 폐지 · BOOK 등록은 L-code 발행 지점이 아니다).
 - 필수필드 결측(mechanism/metric_type/oos/falsification)이 승격 축 도달불가의 주원인 — emit 시점에 채운다 (문턱 완화 아님).
 
 ## 참조

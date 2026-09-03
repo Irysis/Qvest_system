@@ -40,9 +40,13 @@ PY="$(_py)"
 #   정본과 갈린다 - 이 저장소의 반복 실패 계통). 검사: 08_Tests/ops/test_suite_totals_anchor.sh
 st_pick_hooks_final() {
   local raw="${1:-}" out
-  # (1) 러너 현행 계약 - skipped 구간을 **정확히** 요구. 개별 테스트의 구-형식 줄을 배제한다.
-  out=$(printf '%s' "$raw" | grep -oE 'FINAL: [0-9]+ pass / [0-9]+ fail / [0-9]+ skipped / [0-9]+ total' | tail -1)
-  # (2) 폴백 - 러너가 구 형식으로 되돌아간 경우. 역시 tail(맨 끝 = 러너 총계).
+  # ★3단 앵커 (v10 2026-09-03 수리). 러너가 2026-08-24 에 unmeasured 구간을 추가해
+  #   `FINAL: N pass / N fail / N skipped / N unmeasured / N total` 5-part 가 됐는데 구판 1차 패턴은
+  #   4-part 를 **정확히** 요구해 매치 0 → 3-part 폴백이 **개별 테스트의 마지막 줄**을 집었다.
+  #   실측 결과 hooks=12(실제 총계 3308) · hooks_fail=0(실제 6) — 총계·fail 축이 함께 죽어 있었다.
+  #   같은 기전이 2026-08-20(1563→7)에 이미 한 번 났다. 순서: 5-part → 4-part → 3-part, 전부 tail -1.
+  out=$(printf '%s' "$raw" | grep -oE 'FINAL: [0-9]+ pass / [0-9]+ fail / [0-9]+ skipped / [0-9]+ unmeasured / [0-9]+ total' | tail -1)
+  [ -z "$out" ] && out=$(printf '%s' "$raw" | grep -oE 'FINAL: [0-9]+ pass / [0-9]+ fail / [0-9]+ skipped / [0-9]+ total' | tail -1)
   [ -z "$out" ] && out=$(printf '%s' "$raw" | grep -oE 'FINAL: [0-9]+ pass / [0-9]+ fail / [0-9]+ total' | tail -1)
   printf '%s' "$out"
 }
@@ -51,7 +55,7 @@ st_pick_hooks_final() {
 collect() {
   mkdir -p "$DIR/.cache"
   local hooks regime contract continuity
-  local hooks_out regime_out cont_out hooks_fail regime_fail continuity_fail
+  local hooks_out regime_out cont_out hooks_fail regime_fail continuity_fail hooks_unmeasured
 
   # (2026-07-26 probe① 도훈 승인) fail 축 동시 수집 — 구판은 total만 봐서
   # total=pass+fail 구조상 FAIL이 나도 총계 불변 = 회귀가 감시를 그냥 통과했다.
@@ -75,6 +79,9 @@ collect() {
   unset _hooks_raw
   hooks=$(printf '%s' "$hooks_out" | grep -oE '[0-9]+ total' | grep -oE '[0-9]+')
   hooks_fail=$(printf '%s' "$hooks_out" | grep -oE '[0-9]+ fail' | grep -oE '[0-9]+')
+  # ★unmeasured (v10 2026-09-03): 요약 JSON 을 안 내는 스위트는 러너가 UNMEASURED 로 계상한다 —
+  #   그 스위트의 단언은 총계에 **0 으로** 들어가므로 '조용한 커버리지 구멍'이다. fail 과 같은 급으로 본다.
+  hooks_unmeasured=$(printf '%s' "$hooks_out" | grep -oE '[0-9]+ unmeasured' | grep -oE '[0-9]+')
   regime_out=$(cd "$DIR" && CLAUDE_PROJECT_DIR="$DIR" Rscript 08_Tests/regime/run_all.R 2>/dev/null)
   regime=$(printf '%s' "$regime_out" | grep -oE 'of [0-9]+ total' | grep -oE '[0-9]+')
   regime_fail=$(printf '%s' "$regime_out" | grep -oE '[0-9]+ failed' | grep -oE '[0-9]+' | head -1)
@@ -109,10 +116,11 @@ collect() {
   printf '  "contract_regression": %s,\n' "${contract:-null}" >> "$LATEST"
   printf '  "continuity": %s,\n'  "${continuity:-null}" >> "$LATEST"
   printf '  "hooks_fail": %s,\n'      "${hooks_fail:-null}"      >> "$LATEST"
+  printf '  "hooks_unmeasured": %s,\n' "${hooks_unmeasured:-null}" >> "$LATEST"
   printf '  "regime_fail": %s,\n'     "${regime_fail:-null}"     >> "$LATEST"
   printf '  "continuity_fail": %s\n'  "${continuity_fail:-null}" >> "$LATEST"
   printf '}\n' >> "$LATEST"
-  echo "[suite-totals] 수집: hooks=${hooks:-?}(fail ${hooks_fail:-?}) regime=${regime:-?}(fail ${regime_fail:-?}) contract=${contract:-?} continuity=${continuity:-?}(fail ${continuity_fail:-?})"
+  echo "[suite-totals] 수집: hooks=${hooks:-?}(fail ${hooks_fail:-?} · unmeasured ${hooks_unmeasured:-?}) regime=${regime:-?}(fail ${regime_fail:-?}) contract=${contract:-?} continuity=${continuity:-?}(fail ${continuity_fail:-?})"
   echo "[suite-totals] → $LATEST"
 }
 

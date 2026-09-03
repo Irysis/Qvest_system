@@ -35,9 +35,9 @@ log(`${wt}: ${tracks.length} track 병렬 alpha-research (v10 — 전기간 데�
 const results = await parallel(tracks.map((t) => () =>
   agent(
     `WT ${wt} Track ${t.tag} — alpha-research. ${t.prompt}\n` +
-    `제약: PIT C1~C15 strict (v10: lockbox 폐지 — 전기간 사용) / 25 names (도훈 mandate 2026-05-29 20→25) / Σw=1 (v10: 비중 상한 폐지) / 15bps / AX-007 회피.\n` +
+    `제약: PIT C1~C15 strict (v10: lockbox 폐지 — 전기간 사용) / 25 names (도훈 mandate 2026-05-29 20→25) / Σw=1 (v10: 비중 상한 폐지) / 15bps.\n` +
     `qvest-alpha-style 적용: economic_rationale + net-of-cost loss + μ̃ uncertainty + IC t-stat≠portfolio-alpha t 구분.\n` +
-    `[AX 전제 — workflow agent엔 axiom_context_inject hook 미발동, 본 프롬프트가 명시] AX-002 PIT 정직성(우회=미래참조) / AX-001 v2 crisis 조건부 평가 / AX-007 multi-sleeve 예외 / AX-000 입증된 한계는 정직 보고. 전문 .claude/rules/axioms.md.\n` +
+    `[AX 전제 — workflow agent엔 axiom_context_inject hook 미발동, 본 프롬프트가 명시] AX-002 PIT 정직성(우회=미래참조) / AX-001 v2 crisis 조건부 평가 / DIST-AR-003(구 AX-007 · Distilled) 단일슬리브 top-N 전이단절 선례 인지 / AX-000 입증된 한계는 정직 보고. 전문 .claude/rules/axioms.md.\n` +
     `Self-Adversarial Challenge 의무(v8.2 — Codex Round 대체): finalize 직전 약점 ≥3건 자가 제기 → challenge_note.md 기록 → final. 산출: stage_artifacts/WT_${wt.replace(/-/g,'_')}_${t.tag}/ + alpha_package_${t.tag}.json.`,
     { label: `alpha:${t.tag}`, phase: 'Alpha Tracks', agentType: 'alpha-research', schema: ALPHA_SCHEMA }
   )

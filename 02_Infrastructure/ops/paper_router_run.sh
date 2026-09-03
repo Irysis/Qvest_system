@@ -65,15 +65,15 @@ suppressWarnings(suppressMessages({
 }))
 res <- tryCatch(tg_agent_brief(
   agent = "Q-Lead",
-  title = "무인 스케줄러 경보 — ${comp}",
+  title = "[무인] 스케줄러 경보 — ${comp}",
   relaxed = TRUE, force = TRUE,
   lock_scope = "sched_alert_${comp}_${reason}_${TODAY}",
   sections = list(
     list(type = "summary", emoji = "\U0001F6A8",
          body = "무인 파이프라인 ${comp} 가 ${reason} 사유로 정지했습니다. 수동 확인 필요."),
     list(type = "bullet", emoji = "\U0001F4A1", heading = "조치 안내",
-         items = c("실패분은 백로그 합류 로직이 다음 성공 런에서 자동 재처리됩니다",
-                   "spend limit 등 외부 구독 한도는 월 리셋 시 자동 해소 — 무인 런이 차기 사이클 자동 재시도")),
+         items = c("실패분은 백로그 합류 로직이 다음 성공 런에서 재처리됩니다",
+                   "한도(spend/session) 사유는 자동 재시도하지 않습니다 — 재충전 후 도훈이 재개 (2026-07-26 지시)")),
     list(type = "kv", emoji = "\U0001F4CB", heading = "상세",
          kv = list("구성요소" = "${comp}",
                    "사유" = "${reason}",
@@ -82,8 +82,11 @@ res <- tryCatch(tg_agent_brief(
   )
 ), error = function(e) { cat("tg fail:", conditionMessage(e), "\n"); NULL })
 RS
-  LC_ALL='English_United States.utf8' "$RS_BIN" "$rfile" >> "$LOG" 2>&1 \
-    || log "alert telegram 발송 실패 (마커는 보존): $marker"
+  if LC_ALL='English_United States.utf8' "$RS_BIN" "$rfile" >> "$LOG" 2>&1; then
+    rm -f "$rfile"   # (v10 2026-09-02) 발송 성공 시 생성 스크립트 삭제 — 마커 디렉터리에 57개 누적 방지(stdout 은 LOG 에 남음)
+  else
+    log "alert telegram 발송 실패 (마커·R 파일 보존): $marker"
+  fi
 }
 
 if [ "${QVEST_PAPER_ROUTER_ENABLE:-0}" != "1" ]; then
@@ -238,6 +241,93 @@ if [ "${QVEST_PAPER_ROUTER_DRYRUN:-0}" = "1" ]; then
   exit 0
 fi
 
+# ── (v10 2026-09-02) 신규 paper_key 0 사전 필터 ─────────────────────────────────────────
+#   arXiv MCP 는 고정 30쿼리·recency 0 재크롤이라 매일 같은 243편이 재부상한다. 구판은 'discovery 있고
+#   route 없음 = 미소비' 만 보고 매일 claude -p(≈5분)를 띄워 전건 redundant 판정 + [1계층] 논문 트리아지 1건
+#   + 완주 알림 1건 = 정보량 0 메시지 2건/일을 냈다(도훈 지목 2026-09-02). 트리아지 v4 의 1단계(paper_key
+#   대조 — 정본 paper_id_norm.py)는 기계적이므로 셸에서 먼저 재도출하고, 신규 0 이면 route 스텁만 남기고 끝낸다
+#   (스텁이 없으면 내일 백로그 축이 이 날짜를 '미소비' 로 다시 집는다).
+#   ★fail-open: 파이썬 미해석·비숫자 결과면 종전 경로(claude 호출)로 진행 — 단 '계기 미실행' 이 침묵 통과가
+#     되지 않게 로그에 남긴다. 키를 못 만드는 후보(구식 arXiv id 등)는 '신규' 로 센다 — 필터가 모르는 것을 버리지 않는다.
+#   ★DRYRUN 뒤에 둔다 — DRYRUN=1 테스트 3종이 stage_artifacts 에 스텁을 쓰지 않도록. 검사 = 08_Tests/ops/test_paper_router_prefilter.sh
+N_NEW="?"
+if [ "${UNROUTED_TODAY:-0}" -eq 1 ] && [ -f "$DISC" ] && [ "${QVEST_PAPER_ROUTER_DRYRUN:-0}" != "1" ]; then
+  _pb="${QVEST_PY:-}"; _pb="${_pb//\\//}"
+  { [ -n "$_pb" ] && [ -x "$_pb" ]; } || _pb="$BASE/.venv_qvest_ml/Scripts/python.exe"
+  [ -x "$_pb" ] || _pb="$(command -v python.exe 2>/dev/null || true)"
+  if [ -n "$_pb" ] && [ -x "$_pb" ]; then
+    N_NEW=$(PYTHONUTF8=1 "$_pb" - "$BASE" "$TODAY" <<'PY' 2>>"$LOG"
+import sys, os, io, json, glob
+base, today = sys.argv[1], sys.argv[2]
+sys.path.insert(0, os.path.join(base, '02_Infrastructure', 'ops'))
+import paper_id_norm as pn
+R = os.path.join(base, 'stage_artifacts', 'paper_recharge')
+def key_of(e):
+    if isinstance(e, dict):
+        k = pn.entry_paper_key(e)
+        if not k:
+            i = pn.norm_id(e.get('arxiv_id') or e.get('id') or '')
+            k = ('axv:' + i) if i else ''
+        return k
+    i = pn.norm_id(e)
+    return ('axv:' + i) if i else ''
+seen = set(pn.registry_keys(os.path.join(base, '06_Registry', 'paper_registry.json')))
+for p in glob.glob(os.path.join(R, 'alpha_search_route_*.json')):
+    if p.endswith('route_%s.json' % today):
+        continue
+    try:
+        for e in json.load(io.open(p, encoding='utf-8-sig')).get('papers') or []:
+            k = key_of(e)
+            if k: seen.add(k)
+    except Exception:
+        pass
+try:
+    for e in (pn.load_ledger(os.path.join(R, 'alpha_search_queue_done.json')).get('processed') or []):
+        k = key_of(e)
+        if k: seen.add(k)
+except Exception:
+    pass
+d = json.load(io.open(os.path.join(R, 'mcp_discovery_%s.json' % today), encoding='utf-8-sig'))
+cands = d.get('candidates') or []
+novel = [c for c in cands if not (key_of(c) and key_of(c) in seen)]
+print(len(novel))
+if cands and not novel:
+    stub = {"date": today, "schema_version": "paper_router_v4", "generated_by": "prefilter",
+            "note": "prefilter: all mcp candidates matched a known paper_key (registry / route history / queue_done) - claude triage not invoked, no telegram (v10 2026-09-02)",
+            "counts_by_route": {"replication": 0, "skip": len(cands)}, "n_factor_candidates": 0,
+            "papers": [{"title": c.get('title'), "id": pn.norm_id(c.get('arxiv_id') or c.get('id') or ''),
+                        "paper_key": key_of(c), "source": "arxiv", "route": "skip", "factor_candidate": None,
+                        "verdict": "redundant",
+                        "reason": "redundant - prefilter: paper_key already in registry/route history/queue_done"}
+                       for c in cands]}
+    out = os.path.join(R, 'alpha_search_route_%s.json' % today)
+    tmp = out + '.tmp'
+    with io.open(tmp, 'w', encoding='utf-8') as fh:
+        json.dump(stub, fh, ensure_ascii=False, indent=2)
+    os.replace(tmp, out)
+PY
+)
+    case "${N_NEW:-?}" in
+      0)
+        if [ "$DL" -eq 0 ] && [ "$curated_pending" -eq 0 ] && [ -z "$BACKLOG_DATES" ] && [ "${QVEST_PAPER_ROUTER_FORCE:-0}" != "1" ]; then
+          log "prefilter: 후보 $MC 전건 기존 paper_key — claude 미호출 · 텔레그램 미발송 · route 스텁 기록(alpha_search_route_${TODAY}.json)"
+          source "$(dirname "${BASH_SOURCE[0]:-$0}")/_sched_failure_classify.sh" 2>/dev/null || true
+          if command -v sched_mark_resolved >/dev/null 2>&1; then
+            _mv=$(sched_mark_resolved "paper_router" "$BASE/.cache/scheduler_alerts")
+            [ -n "${_mv:-}" ] && log "해소: 미해소 마커 ${_mv}건 _resolved/ 로 아카이브 (prefilter 완주)"
+          fi
+          exit 0
+        fi
+        log "prefilter: 신규 0 이나 다른 트리거 존재(downloaded=$DL curated=$curated_pending backlog=${BACKLOG_DATES:-none} force=${QVEST_PAPER_ROUTER_FORCE:-0}) — claude 진행"
+        ;;
+      ''|*[!0-9]*) log "prefilter: 계측 실패(N_NEW='${N_NEW}') — 종전 경로로 진행(fail-open · 침묵 아님)" ;;
+      *) log "prefilter: 신규 paper_key ${N_NEW}건 (후보 $MC) — claude 트리아지 진행" ;;
+    esac
+  else
+    log "prefilter: python 미해석 — 종전 경로로 진행"
+  fi
+fi
+
 CLAUDE_BIN="$(command -v claude || echo /c/Users/99922/AppData/Roaming/npm/claude)"
 [ -x "$CLAUDE_BIN" ] || { log "claude CLI not found ($CLAUDE_BIN) — skip"; exit 0; }
 PROMPT_FILE="$BASE/02_Infrastructure/ops/paper_router_prompt.md"
@@ -331,16 +421,8 @@ try:
 except Exception: print('?')" "$_rj" 2>/dev/null)
     log "라우팅 결과: route JSON 수록 ${_routed:-?}편 (등록기준 downloaded=$DL — 중복·기처리 포함이라 신규수와 다름)"
   fi
-  # (2026-08-13) 발행 **직후** 우선순위 축 채움 검사 — 사후 패턴 감사 아님, 필드 존재 확인.
-  #   비-alpha 레인의 실질 병목은 백로그가 아니라 어댑터 등재이고(Σ-A/B 는 큐가 아니라
-  #   method_registry 에서 arm 을 고른다), 등재 우선순위는 이 3축(screen_priority ·
-  #   shrinkage_builtin · statistic_order) 없이는 매길 수 없다. 축 지시는 08-08 도입 후
-  #   11/11 준수 중 — 이 검사는 **그 준수가 조용히 풀리는 것**을 잡는 회귀 감시다.
-  _AX="$BASE/02_Infrastructure/ops/mode_queue_axis_audit.py"
-  if [ -f "$_AX" ]; then
-    _pbx="${PYBIN:-$(command -v sched_resolve_python >/dev/null 2>&1 && sched_resolve_python || echo "${QVEST_PY:-python}")}"
-    "$_pbx" "$_AX" --date "$TODAY" >> "$LOG" 2>&1 || log "axis audit 실패(비치명)"
-  fi
+  # (v10 2026-09-02) 구 mode_queue_axis_audit.py 호출 제거 — 비-alpha 레인(mode_queue optimizer/risk/regime)은
+  #   v10 에서 폐지돼 매 런 '[axis] 대상 큐 없음' 만 찍었다. 파일은 사료 존치(재개 = git pre-v10-2layer).
 fi
 if [ "$rc" -eq 0 ] && command -v sched_mark_resolved >/dev/null 2>&1; then
   _mv=$(sched_mark_resolved "paper_router" "$BASE/.cache/scheduler_alerts")
@@ -405,7 +487,9 @@ _EFFECT_CMP="SAME"
 _BL_N=0
 [ -n "${BACKLOG_DATES:-}" ] && _BL_N=$(printf "%s" "$BACKLOG_DATES" | tr "," "\n" | grep -c .)
 _RS="$BASE/02_Infrastructure/ops/research_run_notify.R"
-if [ -f "$_RS" ] && [ "${QVEST_RUN_NOTIFY:-1}" = "1" ]; then
+# (v10 2026-09-02) 기본 off — 트리아지 프롬프트가 [1계층] 논문 트리아지 를 직접 발송하므로(§5.6b) 이 알림은 같은 사실의
+#   두 번째 메시지였고, 계층 표제 없음 + 레인 무관 L-code 수집(09-01 강화 러너 71건을 라우터 성과로 오귀속). 재가동 = QVEST_RUN_NOTIFY=1.
+if [ -f "$_RS" ] && [ "${QVEST_RUN_NOTIFY:-0}" = "1" ]; then
   QM_ROOT="$BASE" Rscript --no-save "$_RS" "paper_router" "${_BL_N:-0}" "${_ROUTE_DELTA:-0}" "$_EFFECT_CMP" "$rc" "" "${_NOTIFY_SINCE:-}" >> "$LOG" 2>&1 || log "완주 알림 실패(비치명)"
 fi
 exit 0

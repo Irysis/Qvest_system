@@ -34,12 +34,12 @@ Rscript 02_Infrastructure/tools/hypothesis_index.R lookup <keyword>   # FAIL/KIL
 
 1. **차별점 명시**: 원 실패의 config(구성·기간·유니버스·측정 기준)와 무엇이 다른지 1줄 — 동일 config 재시도는 제안 불가.
 2. **revival_spec 대조**: 해당 DIST 카드에 부활조건이 정의돼 있으면 발화 여부 확인 (미발화 시 "조건부 대기" 라벨).
-3. **settled-negative 재제안 금지 목록 준수**: DPL 구현·regime-conditional 교차결합·ML/uncertainty sizing·conjunctive AND-gate 등 (measurement-graduation §5~§6·memory 참조) — 이들은 부활신호 발화 전 역전 대상 아님.
+3. **선례 조회 의무(금지 목록 아님)**: DPL(§5 G-5 2026-08-24 settled-negative **철회**) · uncertainty sizing(§6 ④ — 새 각도·새 통제·새 표적이면 재시도 정당) · regime-conditional 교차결합 · conjunctive AND-gate 등 config-scoped negative 는 `hypothesis_index.R lookup <kw>` 로 선례를 1줄 대조하고 **차별점을 명시하면 재도전 정당**(AX-000 · INV-7 · CLAUDE.md v10). 동일 config 재시도만 금지(1항). revival_spec 발화 여부는 2항으로 병기.
 4. **제약 비귀속** (AX-000 따름정리): "long-only/25종이라서 실패"식 역전(제약 완화 제안) 금지 — 조건-안 레버만.
 
 ### Step 4: 출력 — frontier 큐 등재 제안 (v8.3 M5)
 
-가설을 `06_Registry/alpha_frontier_queue.json` FQ 항목 형식으로 제안 (mechanism·차별점·소비면·owner 표기). 등재 후 착수는 모드 진입점 경유: 논문-검증형 → `/alpha-search`, 정밀-편입형 → `/worktask create` (착수 전 큐 확인·hypothesis_index lookup 의무 — CLAUDE.md v8.3).
+가설을 `06_Registry/alpha_frontier_queue.json` FQ 항목 형식으로 제안 (mechanism·차별점·소비면·owner 표기). 등재 후 착수는 진입점 경유: 논문-검증형 → `/alpha-search`(v10 충실구현 `run_paper_replication`) · 강화 축(멀티팩터·비중방법론·리스크오버레이) → `Skill(reinforce)` 원장 등재 · 정밀 편입 → `/worktask create`(WT-R). 착수 전 큐 `status=open` 확인 + `hypothesis_index lookup` 의무 — CLAUDE.md v10 · lean-loop.md.
 
 ## 사용 제한
 

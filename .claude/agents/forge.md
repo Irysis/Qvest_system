@@ -20,7 +20,7 @@ allowed-tools: Bash(Rscript*) Read Write Edit Grep Glob
 - 금지: target_weights 재해석, alpha_vector 변형, covariance 재계산
 - 허용 write: `run_all.R`, `backtest_result/*`, `judge_ready/*`
 
-Hook: `agent_role_guard.sh` + `forge_integration_audit.sh` 강제.
+Hook(사료): `agent_role_guard.sh`·`forge_integration_audit.sh` 는 v9(2026-08-23) 등록 해제 — 현행 강제 = `worktask_constraint_enforcer.sh`(고정축 ≤25종·long-only·Σw=1) + `backtest_contract_audit.sh`(원장 integrity) + R 계약(`audit_bt_result`).
 
 ## 시작+완료 Hash 검증 필수
 3-package md5sum 시작/완료 동일 확인. 불일치 시 audit fail.
@@ -51,7 +51,7 @@ SOT: `.claude/skills/qvest-telegram/SKILL.md` (v6). `tg_agent_brief(agent="Forge
 
 **Reference 구현**: `qepm/mailbox/worktask/WT-D20260427_017/run_forge_v3_standalone.R` (모범 패턴)
 
-**Violation 자동 검출** (hooks: `schedule_fidelity_check.sh` + `forge_pure_function_strict.sh`):
+**Violation 자동 검출** (구 hooks `schedule_fidelity_check.sh`·`forge_pure_function_strict.sh` 는 v9 등록 해제 — 규칙은 유지되고 검출은 forge 자기검증 + Judge 재현이 담당):
 - 검출 시 `forge_package.json.pure_function_violation: true` 자동 기록 + Q-Lead escalate
 - 4주 안정화 후 L3 hard block 승격 예정
 
@@ -66,7 +66,7 @@ SOT: `.claude/skills/qvest-telegram/SKILL.md` (v6). `tg_agent_brief(agent="Forge
 
 | field | 의미 | 의무 |
 |---|---|---|
-| `sr_realized_share_based` | weights.csv → daily NAV (PG2 grade) | **필수** |
+| `sr_realized_share_based` | weights.csv → daily NAV (권위 basis) | **필수** |
 | `sr_factor_engine_continuous` | continuous return aggregation (idealized) | optional |
 | (v10 폐지) sr_lockbox_daily_harness | lockbox 제도 폐지 — 발급 금지 | retired |
 | `measurement_basis_primary` | enum 강제 = `"forge_realized_share_based"` | **필수** |
@@ -76,7 +76,7 @@ SOT: `.claude/skills/qvest-telegram/SKILL.md` (v6). `tg_agent_brief(agent="Forge
 - `vs_factor_engine.diagnosis` enum: NEGLIGIBLE / MINOR_DRIFT / SIGNIFICANT_DRAG / FABRICATION_SUSPECTED
 - |divergence_pp| ≥ 0.6 → FABRICATION_SUSPECTED → Q-Lead escalate
 
-**Schema 강제**: `02_Infrastructure/worktask/schema.json` `forge_package` 정의 (v6.3 신설). 8 required fields 누락 시 `worktask_artifact_validator.sh` warn.
+**Schema 강제**: `02_Infrastructure/worktask/schema.json` `forge_package` 정의 (v6.3 신설). 8 required fields 는 `state_machine.R::sm_validate_artifacts_schema`(FORGE_DONE 전이 시 검증)가 확인한다 — 구 `worktask_artifact_validator.sh` 훅은 v9 등록 해제.
 
 ## 🆕 OOS Chart Mandate (v6.1 신규)
 backtest 종료 시 의무 산출:
@@ -89,7 +89,7 @@ backtest 종료 시 의무 산출:
 ## 🆕 Same-Period Baseline Comparison Mandate (v6.1 신규)
 mega05_comparison 작성 시:
 - baseline metric을 새 strategy와 **동일 period · 동일 cost basis · 동일 DSR penalty** 기준 재측정 의무
-- "PG2 documented baseline" 같은 외부 인용은 **fair comparison 부적격** (period 불명확)
+- "BOOK_0001 documented baseline"(구 PG2) 같은 외부 인용은 **fair comparison 부적격** (period 불명확)
 - baseline DSR post method-shopping penalty 재산출 의무
 
 ## 🆕 Deploy Extension Mandate (v6.1 신규 — train cutoff vs deploy cutoff 구분)

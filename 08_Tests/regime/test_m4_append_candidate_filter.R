@@ -65,4 +65,6 @@ if (p_f > 0 && p_p > 0 && p_f < p_p)
   ok("③ 순서 = 후보 정제 → PIT 검사 (검사 대상이 정확)") else ng("③ 필터/검사 순서 이상")
 
 cat(sprintf("결과: PASS=%d FAIL=%d\n", pass, fail))
+## ★러너 요약 계약 (v10 2026-09-03) — 없으면 run_all_hooks.sh 가 UNMEASURED 로 계상해 이 스위트의 단언이 총계에 0 으로 들어간다.
+cat(sprintf('{"test":"m4_append_candidate_filter","pass":%d,"fail":%d,"total":%d,"skipped":0}\n', pass, fail, pass + fail))
 if (fail > 0L) quit(status = 1L)

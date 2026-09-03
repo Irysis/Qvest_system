@@ -17,7 +17,7 @@ fi
 #   2. fetch origin (해당 branch만)
 #   3. ahead 수 계산 — 0 이면 skip
 #   4. push origin <branch> (upstream 없으면 -u)
-#   5. 실패 시 log only (다음 Stop 또는 daily_push.sh가 재시도)
+#   5. 실패 시 log only (다음 SessionEnd 가 재시도 — daily_push.sh 는 예약 미등록 고아 진입점)
 #
 # 로그: /tmp/auto_push.log
 # 우회 env: QVEST_SKIP_AUTO_PUSH=1
@@ -147,5 +147,5 @@ else
 fi
 
 MSG_ESC=$(printf '%s' "$MSG" | "$QVEST_PY_BIN" -c "import sys,json; s=sys.stdin.buffer.read().decode('utf-8','replace'); print(json.dumps(''.join(ch if not(0xD800<=ord(ch)<=0xDFFF) else '?' for ch in s)))")
-echo "{\"hookSpecificOutput\":{\"hookEventName\":\"Stop\",\"additionalContext\":$MSG_ESC}}"
+echo "{\"hookSpecificOutput\":{\"hookEventName\":\"SessionEnd\",\"additionalContext\":$MSG_ESC}}"
 exit 0

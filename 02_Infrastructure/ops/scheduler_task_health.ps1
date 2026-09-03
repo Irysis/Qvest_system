@@ -51,7 +51,9 @@ foreach ($t in (Get-ScheduledTask -ErrorAction SilentlyContinue | Where-Object {
 
   $rc   = [long]$i.LastTaskResult
   $last = $i.LastRunTime
-  $hasLast = ($last -ne $null -and $last.Year -gt 1980)
+  # 2026-09-02: rc 267011 = never_run. Its LastRunTime is the 1999-11-30 sentinel; treating that as a
+  # real run made age_days ~9773 and the staleness axis flagged healthy, not-yet-due weekly tasks daily.
+  $hasLast = ($last -ne $null -and $last.Year -gt 1980 -and $rc -ne 267011)
   $ageDays = $null
   if ($hasLast) { $ageDays = [math]::Round(((Get-Date) - $last).TotalDays, 2) }
 
@@ -59,6 +61,13 @@ foreach ($t in (Get-ScheduledTask -ErrorAction SilentlyContinue | Where-Object {
   foreach ($tr in $t.Triggers) {
     if ($tr.StartBoundary) { $trig += ([datetime]$tr.StartBoundary).ToString('HH:mm') }
   }
+  # 2026-08-31: trigger *kind* is recorded so a "no next run" verdict can tell an expired
+  # schedule apart from an event-driven one. Logon/boot/event triggers legitimately have no
+  # NextRunTime; a time-based trigger with none has run out. Without this the verdict either
+  # misses the expiry (staleness can't see it: last_run is recent) or fires on every
+  # event-driven task -- and a permanently noisy alert is a permanently ignored one.
+  $tkinds = @()
+  foreach ($tr in $t.Triggers) { $tkinds += ("$($tr.CimClass.CimClassName)" -replace '^MSFT_Task','' -replace 'Trigger$','') }
 
   $rows += [pscustomobject]@{
     task            = "$($t.TaskName)"
@@ -72,6 +81,9 @@ foreach ($t in (Get-ScheduledTask -ErrorAction SilentlyContinue | Where-Object {
     exec_time_limit = "$($t.Settings.ExecutionTimeLimit)"
     enabled         = [bool]$t.Settings.Enabled
     triggers        = ($trig -join ',')
+    trigger_kinds   = ($tkinds -join ',')
+    # 시각 기반 트리거가 하나라도 있으면 NextRunTime 이 반드시 있어야 한다.
+    time_scheduled  = [bool](@($tkinds | Where-Object { $_ -in @('Time','Daily','Weekly','Monthly','MonthlyDOW') }).Count)
     # 2026-08-02: recorded so a co-termination verdict can RULE OUT hypotheses from the
     # record instead of requiring a live query. Interactive = session-scoped lifetime
     # (logoff/session teardown kills it -> 0xC000013A). stop_on_battery falsifies the

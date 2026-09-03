@@ -1,4 +1,8 @@
 #!/usr/bin/env python3
+# ★RETIRED (v10 2026-09-03) — V7 mailbox 스테이지 라우터. v9(2026-08-23) 등록 해제(MANIFEST #26) 후
+#   v10 에서 목적지(governor mailbox)마저 소멸해 배관 자체가 도달 불가. settings.json 재등록 금지 —
+#   hook_integrity_check.sh REQUIRED_* 에도 넣지 말 것. 파일은 사료 존치(resurrection_verify.sh 가 경로 인용).
+#   재열람 = git 태그 pre-v10-2layer.
 """stage_dispatch.py — Pipeline DONE→TODO 라우터 (Phase C2)
 
 호출 패턴 (pipeline_trigger.sh wrapper):

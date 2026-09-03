@@ -88,7 +88,14 @@ suppressPackageStartupMessages({ library(jsonlite); library(data.table) })
     negative_min_fail       = 2L,           # negative: C/F 건수
     skip_polarity           = c("unknown"), # 방향 미상은 사다리 대상 아님
     passed_rule             = "all_hurdles",# weighted 는 랭킹 전용(문턱 아님)
-    # ── v9.1 커밋14 활성 상한 (사람 승인이 사라지므로 필수) ──────────────────
+    # ── v9.1 커밋14 활성 상한 ─────────────────────────────────────────────
+    #   ★2026-08-30 문구 정정: 구 주석 "사람 승인이 사라지므로 필수" 는 오독을 부른다 —
+    #   **사람 승인은 사라지지 않았다**. promote.R 은 status="proposed" 까지만 쓰고
+    #   활성화는 approve_axiom(ids, approved_by="dohoon") 명시 호출로만 일어난다.
+    #   자동 경로(weekly_cleaner_sweep.R)는 그 함수를 **부르지 않고 안내만** 한다(833행).
+    #   훅도 status=="active" 만 주입한다. 2026-08-30 실측: mode-local 18건 전부 proposed,
+    #   active 0 — 관문이 실제로 작동 중이다. 상한은 승인 부재 대비가 아니라
+    #   **승인된 재고가 주입 렌더 상한(모드당 2·총 5줄)을 넘지 않게** 하는 장치다.
     #   초과 시 verdict = FAIL_CAP + 다이제스트 힌트. **자동 축출은 하지 않는다** —
     #   "무엇을 버릴지"는 사람이 정한다(deactivate_axiom / rollback_axiom).
     #   상한 6/20 의 근거: 주입 렌더 상한이 모드당 2·총 5줄이므로 활성 재고가 그보다

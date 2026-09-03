@@ -2,7 +2,7 @@
 ## score_composite.R — score-level 팩터 컴포짓 계약 (v9.1 §7-S3a, 도훈 지시 E-6)
 ##
 ## 지시: "팩터 노출도를 z-score화 → 팩터 컴포짓 스코어 → 상위 25종 편입".
-## 저장소 판례가 같은 답을 이미 갖고 있다 — `.claude/skills/ensemble-design.md:50`
+## 저장소 판례가 같은 답을 이미 갖고 있다 — `.claude/skills_retired_v10/ensemble-design.md:50`(v10 퇴역·사료)
 ##   "score-level blend만 허용(return blend는 L-484 위반)". L-484 = STR_1047/STR_1439 가
 ##   4-sleeve return-blend 로 **실보유 52~80종**이 되어 Judge 가 A→B 강등한 실사고.
 ##   weight-level 결합은 union 이 구조적으로 25 를 넘는다(실측: Top25 3건 월평균 union

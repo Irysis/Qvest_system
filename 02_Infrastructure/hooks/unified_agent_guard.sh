@@ -1,4 +1,7 @@
 #!/bin/bash
+# ★v10 (2026-09-03) 주의 — 이 파일은 v9 등록 해제분(사료)이고 Governor PG0→PG3 전이 게이트 가 남아 있다.
+#   전부 v10 폐지 개념(lockbox·governor·book_state·cert)이므로 **재등록 금지** — 되살리려면 그 분기를 먼저
+#   제거하고 양성/음성 대조를 다시 만들 것. 파일 자체는 08_Tests·hook_e2e_battery 가 경로로 실행한다(이동 금지).
 # DEPRECATED 2026-05-29 v8.0 WS5-3 — settings.json 등록 해제. axiom 주입은 axiom_context_inject.sh로 이전. legacy Stage Guard(S0~S5/STR_XXX)는 v6.4 WT no-op. 파일 retain(legacy compat).
 
 trap 'echo "{}"; exit 0' ERR  # Phase C3 전수 강제

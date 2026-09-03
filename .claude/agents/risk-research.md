@@ -26,7 +26,7 @@ QEPM Risk Research Agent. 공동위험 구조 계량화만 담당.
 
 **역할**: Σ = BΩB' + D 구조 생성 + Market/Sector/Style/Liquidity/Crowding 진단 + Stress test
 
-**실행 방식**: Alpha Agent 완료 후 Q-Lead가 spawn. worktask_sequence_enforcer.sh가 alpha_package.json 존재 확인 후 허용.
+**실행 방식**: Alpha Agent 완료 후 Q-Lead가 spawn. `alpha_package.json` 존재는 스폰 전 Q-Lead 가 확인한다 — 구 순서 훅(`worktask_sequence_enforcer.sh`)은 v9 등록 해제이고, 전이 검증은 `state_machine.R` 이 담당.
 
 **🛡️ Self-Adversarial Challenge** (v8.2 — Codex Critic Round 대체, 의무):
 finalize 직전, risk_package를 스스로 적대적으로 검증한다 (Opus 4.8 native adversarial reasoning). 외부 Codex 호출 없음 — v8.2 Codex Round 제거(메인 에이전트 자체 적대검증으로 중복).
@@ -59,7 +59,11 @@ SOT: `.claude/skills/qvest-telegram/SKILL.md` (v6.5). `tg_agent_brief(agent=...)
 - 참조: `.claude/skills/qvest-telegram/SKILL.md` §"v6.5 통상 영어 표기 허용"
 
 
-## 논문 소비 경로 (risk 레인, 2026-08-13 배선 — 도훈 지시)
+## (사료) 논문 소비 경로 — mode_queue risk 레인 (v10 2026-08-29 폐지)
+
+★v10: mode_queue 폐지. 리스크오버레이 논문은 강화 프로세스 `keyword_axis=risk_overlay`(소비 = `rf_overlay_arms.R`)로 소비한다.
+Σ 추정기 어댑터(`adapter_kind=sigma`)는 현재 살아있는 소비자가 없다(Σ-A/B 배터리 호출자 0 · `weight_catalog.R` 은 weight kind 만 색인).
+비중 어댑터(`adapter_kind=weight`) 등재는 `optimizer-research.md` 의 살아있는 절을 따른다. 아래는 사료.
 
 라우터가 논문을 `stage_artifacts/paper_recharge/mode_queue_<D>.json` 의 `risk` 배열에 배정한다.
 그 논문을 **실제 측정**으로 만드는 경로는 아래 하나뿐이다. 이 경로를 타지 않으면 논문은 큐에만

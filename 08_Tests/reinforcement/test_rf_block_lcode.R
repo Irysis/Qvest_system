@@ -30,8 +30,16 @@ if (!length(act)) {
     r <- rf_emit_block_lcode(E$base_id, nb, root = ROOT, dry_run = TRUE)
     if (!is.null(r)) ok(sprintf("블록 n=%d dry_run 발행", nb)) else ng("dry_run 발행 실패")
     # 실제 적립분에서 계약 2종을 재도출한다 — 진술이 아니라 파일에서
+    # ★블록 id 는 **격자 순서**에서 읽는다(발행기 rf_emit_block_lcode 와 같은 규칙). 구판은 sprintf("B%d", nb/5) 로
+    #   위치=번호를 가정했는데 2026-09-01 재편으로 순서가 B1→B2→B3→B5→B4 가 되자 4번째 완료 블록(B5) 을
+    #   B4 로 찾아 "적립 파일 부재" 오탐을 냈다(2026-09-02 실측). SKILL: 위치 의존 판정은 격자를 손보는 순간 어긋난다.
+    .prog <- tryCatch(jsonlite::fromJSON(file.path(ROOT, "06_Registry/reinforce_program.json"), simplifyVector = FALSE),
+                      error = function(e) NULL)
+    .bids <- if (!is.null(.prog)) vapply(.prog$blocks, function(b) as.character(b$id %||% ""), character(1)) else character(0)
+    .bi <- nb %/% 5L
+    .bid <- if (.bi >= 1L && .bi <= length(.bids) && nzchar(.bids[[.bi]])) .bids[[.bi]] else sprintf("B%d", .bi)
     f <- file.path(ROOT, "stage_artifacts/l_code/reinforcement",
-                   sprintf("l_code_%s_B%d.json", E$base_id, nb %/% 5L))
+                   sprintf("l_code_%s_%s.json", E$base_id, .bid))
     if (file.exists(f)) {
       d <- jsonlite::fromJSON(f, simplifyVector = TRUE)
       if (identical(d$record_type, "performance")) ok("record_type=performance (등급 집계에 잡힌다)")
@@ -48,4 +56,8 @@ if (!length(act)) {
 
 writeLines("")
 writeLines(sprintf("합계: 통과 %d · 실패 %d", PASS, FAIL))
+# ★단정 0건은 '통과' 가 아니라 skipped 다 — 원장에 완료 블록이 없으면 잴 대상이 없다.
+.skip <- if (PASS + FAIL == 0L) 1L else 0L
+cat(sprintf('{"test":"rf_block_lcode","pass":%d,"fail":%d,"total":%d,"skipped":%d}\n',
+            PASS, FAIL, PASS + FAIL, .skip))
 if (FAIL > 0L) quit(status = 1L)

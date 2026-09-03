@@ -647,7 +647,7 @@ tg_format_gate_block <- function(gates, max_note_chars = 46L) {
 }
 
 # ─── Agent Brief — 단일 진입점 (2026-04-24 v1, SOT) ────────────────────────────
-# 모든 agent (Alpha/Risk/Optimizer/Forge/Judge/Governor/Q-Lead)는
+# 모든 agent (Alpha/Risk/Optimizer/Forge/Judge/Book/Q-Lead · Governor 는 v10 퇴역 — 사료 호환)는
 # 이 함수만 호출. 직접 tg_send_rich + tg_format_table 조립 금지.
 # 내부에서 auto_escape + auto_sanitize + emoji 검증 + Single-Dispatch + 모바일 guard 자동.
 #
@@ -989,7 +989,7 @@ tg_decode_jargon <- function(text, mode = c("inline_first", "footer", "off")) {
   list(pattern = "운용 북|\\bbook\\b",
        term = "운용 북",        meaning = "실제 자본이 배정된 전략 묶음"),
   list(pattern = "lockbox",
-       term = "lockbox",        meaning = "검증 전 결과를 미리 못 보게 봉인하는 장치"),
+       term = "lockbox",        meaning = "(v10 2026-08-29 폐지) 구 봉인 장치 — 역사 메시지 전용"),
   list(pattern = "long[- ]only|롱온리",
        term = "long-only",      meaning = "매수만 하는 운용 (공매도 없음)"),
   list(pattern = "워크포워드|walk[- ]forward",
@@ -1489,6 +1489,22 @@ tg_agent_brief <- function(agent,
       "SKILL.md 6.1 (단계/대상/위치/직전 판정 4종). ",
       "지금 어디서 무엇을 돌고 있는지가 최상단에 없으면 연속성이 끊긴다."), agent))
   }
+  ## v10 §5.6b — 계층 표제 태그 (2026-09-02 · WARN, 차단 아님 · relaxed 브리핑도 대상 — 무인 경보가 바로 그 부류).
+  ##   caller 의무만으로 두면 sched 경보·recharge·research_run_notify 처럼 조용히 빠진다(실측: 무인 발송 6종 중 태그 0).
+  ##   Q-Lead 를 처음부터 포함 — 무인 경보 3 발송기가 전부 agent="Q-Lead" 라 빼면 관측이 0 이 된다.
+  ##   기록 = .cache/scheduler_alerts/_layer_tag_missing.log (마커와 같은 층, *.alert 글롭에 안 잡힘).
+  .layer_tag_re <- "^\\[(1계층|2계층|Judge|BOOK|무인)(·[^]]*)?\\]"
+  .layer_agents <- c("AlphaSearch", "Alpha", "Risk", "Optimizer", "Forge", "Judge", "Book", "Q-Lead")
+  if (agent %in% .layer_agents && !grepl(.layer_tag_re, title, perl = TRUE)) {
+    message(sprintf("[tg_agent_brief] v10 WARN agent=%s: 표제에 계층 태그 없음 — SKILL §5.6b ([1계층]/[2계층]/[Judge]/[BOOK]/[무인]). title='%s'",
+                    agent, substr(title, 1, 60)))
+    tryCatch({
+      .ltd <- file.path(.tg_lock_root(), ".cache", "scheduler_alerts")
+      dir.create(.ltd, recursive = TRUE, showWarnings = FALSE)
+      cat(sprintf("%s\tagent=%s\ttitle=%s\n", format(Sys.time(), "%Y-%m-%dT%H:%M:%S"), agent, substr(title, 1, 80)),
+          file = file.path(.ltd, "_layer_tag_missing.log"), append = TRUE)
+    }, error = function(e) NULL)
+  }
 
   # ── 4. 길이 사전 체크 (Telegram sendMessage 한계 = 4096 **자**) ──────────────
   #   ★2026-08-30 단위 정정: 구판은 `nchar(type="bytes") > 4000` 으로 쟀다. 그런데
@@ -1551,8 +1567,17 @@ tg_agent_brief <- function(agent,
 
   # ── 5. 발송 (tg_send_rich auto_sanitize) ─────────────────────────────────────
   result <- tryCatch({
-    tg_send_rich(msg, emoji_min = emoji_min)
-    list(ok = TRUE, bytes = msg_bytes, error = NULL)
+    # ★반환값을 읽는다. tg_send() 는 HTTP 실패를 **예외가 아니라** list(ok=FALSE,...) 로
+    #   돌려주므로, 구판처럼 값을 버리고 무조건 TRUE 를 쓰면 실패가 성공으로 기록된다.
+    #   실증 2026-08-30 07:16 — 429(레이트 리밋)로 '논문풀 적재 상세 21/29~29/29' 9건이
+    #   실제로 유실됐는데 발신자는 전부 성공으로 남겼다. 아무도 모른 채 9건이 사라졌다.
+    #   ★ok=FALSE 면 아래 5.5 에서 lock 을 만들지 않는다 → 다음 tick 이 자연히 재발송한다
+    #     (429 는 수십 초면 풀린다). 정직한 판정이 재시도까지 겸한다.
+    .r  <- tg_send_rich(msg, emoji_min = emoji_min)
+    .ok <- if (is.list(.r) && !is.null(.r$ok)) isTRUE(.r$ok) else TRUE
+    list(ok = .ok, bytes = msg_bytes,
+         error = if (.ok) NULL else sprintf('%s/%s: %s', .r$kind %||% '?',
+                                            .r$status %||% '?', substr(.r$error %||% '', 1, 200)))
   }, error = function(e) {
     log_f <- "/tmp/qvest_tg_brief.log"
     tryCatch(cat(sprintf("%s [tg_agent_brief] %s ERR %s\n",
@@ -1597,7 +1622,8 @@ tg_agent_brief <- function(agent,
   }
 
   cat(sprintf("[tg_agent_brief] %s · %d bytes · ok=%s\n",
-              agent, msg_bytes, result$ok))
+              agent, msg_bytes,
+              paste0(result$ok, if (isTRUE(result$ok)) "" else sprintf(" | SEND FAILED: %s", result$error %||% "?"))))
   invisible(result)
 }
 

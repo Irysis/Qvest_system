@@ -24,10 +24,20 @@ rf_overlay_catalog <- function(root = .RFO_ROOT) {
   if (!file.exists(p)) return(NULL)
   d <- tryCatch(fromJSON(p, simplifyVector = FALSE), error = function(e) NULL)
   if (is.null(d) || !length(d$arms)) return(NULL)
-  rbindlist(lapply(d$arms, function(a) data.table(
-    id = as.character(a$id), kind = as.character(a$kind), family = as.character(a$family),
-    basis = as.character(a$basis %||% ""), status = as.character(a$status %||% "active"),
-    est_cost_min = as.numeric(a$est_cost_min %||% 8))), use.names = TRUE)
+  # ★action/state 는 카탈로그가 정본. 없으면 기전 지도의 계열 매핑으로 파생한다(구 arm 하위호환).
+  .ax <- tryCatch({
+    suppressMessages(source(file.path(root, "02_Infrastructure/reinforcement/rf_mechanism_map.R"),
+                            local = TRUE))
+    get("rfm_arm_axis")
+  }, error = function(e) NULL)
+  rbindlist(lapply(d$arms, function(a) {
+    z <- if (!is.null(.ax)) .ax(a) else list(action = "scalar_exposure", state = "multivar")
+    data.table(
+      id = as.character(a$id), kind = as.character(a$kind), family = as.character(a$family),
+      action = as.character(a$action %||% z$action), state = as.character(a$state %||% z$state),
+      basis = as.character(a$basis %||% ""), status = as.character(a$status %||% "active"),
+      est_cost_min = as.numeric(a$est_cost_min %||% 8))
+  }), use.names = TRUE)
 }
 
 rf_pick_overlay_arms <- function(n = 5L, exclude = character(0), root = .RFO_ROOT) {
@@ -37,12 +47,20 @@ rf_pick_overlay_arms <- function(n = 5L, exclude = character(0), root = .RFO_ROO
   A <- A[!(id %in% exclude)]
   if (!nrow(A)) return(NULL)
 
-  setorderv(A, c("family", "est_cost_min"), c(1L, 1L), na.last = TRUE)
-  picked <- A[, .SD[1L], by = family]                       # ② 계열당 1개
-  prio <- c("drawdown" = 1, "combo" = 2, "state_multivar" = 3,
-            "ml" = 4, "vol_target" = 5, "trend" = 6)         # ③ 구속 축(MDD) 우선
-  picked[, .prio := as.numeric(prio[family])]
-  picked[is.na(.prio), .prio := 9]
+  # ② ★기전 좌표당 1개 — 다양화해야 할 축은 라벨(family)이 아니라 (action, state) 다.
+  #    family 로 묶으면 state 가 다른 두 횡단면 arm 이 서로를 밀어낸다(2026-09-03 실사고).
+  A[, .cell := paste(action, state, sep = "/")]
+  setorderv(A, c(".cell", "est_cost_min"), c(1L, 1L), na.last = TRUE)
+  picked <- A[, .SD[1L], by = .cell]
+  # ③ 구속 축(MDD) 우선. ★cross_sectional 을 맨 앞에 둔다 — drawdown 을 밀어낸 것이 아니라
+  #   같은 축을 **더 정밀하게** 겨누기 때문이다. 스칼라 축소는 하락과 회복을 같은 비율로 깎아
+  #   MDD 를 낮춘 만큼 CAGR 을 더 잃는다(실측). 종목별 차등은 그 대칭을 깨는 유일한 행동 축이다.
+  #    행동 축 우선(횡단면 먼저), 그 안에서 상태 축 우선순위.
+  aprio <- c("cross_sectional" = 0, "scalar_exposure" = 10)
+  sprio <- c("drawdown" = 1, "multivar" = 2, "dispersion" = 3, "holding_level" = 4,
+             "ml" = 5, "vol" = 6, "trend" = 7)
+  picked[, .prio := as.numeric(aprio[action]) + as.numeric(sprio[state])]
+  picked[is.na(.prio), .prio := 99]
   setorderv(picked, c(".prio", "est_cost_min"), c(1L, 1L), na.last = TRUE)
   picked <- head(picked, n)
   # 계열 수가 n 보다 적으면 남은 자리는 계열 2순위로 채운다(측정 예산을 비우지 않는다)

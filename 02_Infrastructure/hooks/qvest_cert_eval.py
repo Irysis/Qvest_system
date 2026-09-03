@@ -343,7 +343,8 @@ def evaluate(cert_name: str, package_path: str, **kwargs) -> dict:
         return {"eligible": False, "reason": f"unknown cert: {cert_name}", "payload": {}}
 
     if cert_name == "governor_concord":
-        return evaluate_governor_concord(package_path, spec, wt_root=kwargs.get("wt_root"))
+        # ★RETIRED (v10 2026-09-03): governor 폐지 — 신규 발급 없음. 판정 함수는 legacy 재판독용으로 존치.
+        return {"eligible": False, "reason": "RETIRED v10 (governor 폐지 2026-08-29)", "payload": {}}
 
     p = Path(package_path)
     if not p.exists():

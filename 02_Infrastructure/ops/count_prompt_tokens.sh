@@ -13,14 +13,11 @@ JSON_OUT=0
 declare -a FILES=(
   "CLAUDE.md"
   "02_Infrastructure/prompts/_shared_prefix.md"
-  "02_Infrastructure/prompts/qlead_init.md"
-  "02_Infrastructure/prompts/scout_init.md"
+  "02_Infrastructure/prompts/alpha_research_init.md"
+  "02_Infrastructure/prompts/risk_research_init.md"
+  "02_Infrastructure/prompts/optimizer_research_init.md"
   "02_Infrastructure/prompts/forge_init.md"
   "02_Infrastructure/prompts/judge_init.md"
-  "02_Infrastructure/prompts/governor_init.md"
-  "02_Infrastructure/prompts/risk_manager_init.md"
-  "02_Infrastructure/prompts/codex_critic_prompt.md"
-  "02_Infrastructure/prompts/codex_s5_review_prompt.md"
   "02_Infrastructure/prompts/pit_intent_scan_prompt.md"
   ".claude/commands/qvest.md"
 )

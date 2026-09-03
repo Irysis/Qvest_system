@@ -40,5 +40,9 @@ OUT="$(run_hook Bash "06_Registry/book/book_registry.json")"
 if echo "$OUT" | grep -q '"block"'; then ng "④ Bash tool 이 차단됨 — writer 경로 사망: $OUT"; else ok "④ Bash tool allow (writer 경로 생존)"; fi
 
 echo "결과: PASS=$PASS FAIL=$FAIL"
+# ★러너 요약 계약 (v10 2026-09-03): 이 줄이 없으면 run_all_hooks.sh 가 UNMEASURED 로 계상해
+#   이 스위트의 단언이 배터리 총계에 **0** 으로 들어간다(조용한 커버리지 구멍).
+printf '{"test":"book_write_guard","pass":%d,"fail":%d,"total":%d,"skipped":0}
+' "$PASS" "$FAIL" "$((PASS+FAIL))"
 [ "$FAIL" -eq 0 ] || exit 1
 exit 0

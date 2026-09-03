@@ -1,7 +1,7 @@
 # Harness Engineering (Level 0)
 
 **원칙 (v9 2026-08-23 개정)**: **훅은 자본/안전/PIT 경로에만 건다; 프로세스 규칙은 스킬·계약·문서로 강제한다.** 구 원칙("모든 프로세스 규칙은 프롬프트가 아닌 Hook으로 강제")은 등록 훅 47종·Write 팬아웃 37로 귀결돼 리서치 턴 자체를 예산 밖으로 밀어냈다 — 아래 "v9 정합" 절이 현행이고, 그 이전 Tier 표는 사료다.
-**v8.1 active**: v6.4 hook router/4 policy JSON 구조를 흡수하고, 현재 SOT는 `qvest_v8_1_sot.md` + `qvest_modes_sot.md` 기준으로 해석한다.
+**현행 SOT = 아래 "v9 정합" 절 + `.claude/settings.json`**(v10 2026-09-03 갱신). 아래 Tier 1~5 표와 v8.1 SOT 참조는 **사료**다 — 등록 여부는 반드시 settings.json 으로 확인할 것.
 
 ## Tier 1 (전역 hard block)
 
@@ -17,7 +17,7 @@
 | Hook | 강제 대상 |
 |---|---|
 | agent_role_guard | Alpha/Risk/Optimizer 역할 경계 |
-| worktask_sequence_enforcer | WT 순서 (Alpha→Risk→Optimizer→Forge→Judge→Governor) |
+| worktask_sequence_enforcer | (사료·v9 등록 해제) WT 순서 — v10 전이 검증은 `state_machine.R` |
 | unified_agent_guard | Stage 순서 + 1인 다역할 차단 |
 | s0_debate_guard | (legacy v55) S0 1인 다역할 스폰 차단 |
 | role_taxonomy_admission_gate | (legacy v55) 6-role 분류 admission |
@@ -154,20 +154,22 @@ QEPM Codex Critic Round(외부 codex auto-spawn)는 **2026-06-30 v8.2에서 폐�
 
 - `02_Infrastructure/hooks/*.sh` (톱레벨 61개, s0_enforcer/ 서브디렉토리 포함 64 — 2026-07-24 실측. 구 표기 55는 stale)
 - ~~`02_Infrastructure/hooks/_archive_v55/`~~ (Tier 1 cleanup 2026-05-16 삭제 — legacy v55 hooks 6건 영구 폐기)
-- `.claude/settings.json` Hook 등록 — **현행 v9 2026-08-23: 11 distinct .sh**(직접 등록만, 라우터 dispatch 폐지. 목록·근거 = 바로 아래 "v9 정합" 절 + `02_Infrastructure/hooks/_archive_v8_enforcement/MANIFEST.md`). 이하 괄호는 **사료**: (47 distinct .sh — v8.1.2 2026-06-11 기준, 아래 정합 절 참조. **v8.2 2026-06-30: codex_round_pre_enforcer + codex_round_auto_trigger 2건 등록 해제 → 45 distinct .sh**. **현행 2026-07-25: 46 distinct .sh** — 직접 29 + 라우터 dispatch 17 (2026-07-25 `ast_spec_gate.sh` dispatch 등재, AST v1.1 Step 3 — settings.json 재등록 불필요·router_dispatch.json만 개정). 2026-07-24 정합 절 참조)
-- `02_Infrastructure/docs/qvest_v8_1_sot.md` + `02_Infrastructure/docs/qvest_modes_sot.md` (active SOT)
+- `.claude/settings.json` Hook 등록 — **현행 v10 2026-09-03: 12 distinct .sh**(직접 등록만, 라우터 dispatch 폐지. 목록·근거 = 바로 아래 "v9 정합" 절 + `02_Infrastructure/hooks/_archive_v8_enforcement/MANIFEST.md`). 이하 괄호는 **사료**: (47 distinct .sh — v8.1.2 2026-06-11 기준, 아래 정합 절 참조. **v8.2 2026-06-30: codex_round_pre_enforcer + codex_round_auto_trigger 2건 등록 해제 → 45 distinct .sh**. **현행 2026-07-25: 46 distinct .sh** — 직접 29 + 라우터 dispatch 17 (2026-07-25 `ast_spec_gate.sh` dispatch 등재, AST v1.1 Step 3 — settings.json 재등록 불필요·router_dispatch.json만 개정). 2026-07-24 정합 절 참조)
+- `02_Infrastructure/docs/qvest_v8_1_sot.md` + `02_Infrastructure/docs/qvest_modes_sot.md` (**사료** — v8.1 SOT. 현행 = 아래 "v9 정합" 절 + settings.json + `CLAUDE.md` v10)
 - `02_Infrastructure/docs/qvest_v6_4_sot.md` Section 5 (historical Hook + Cert Matrix. QEPM Codex Round 절은 v8.2에서 폐지 — 현재 미적용, 사료용)
 
 ## v9 정합 (2026-08-23 — Lean Loop 감산, 도훈 결정 ④)
 
-**등록 = 11 distinct .sh (직접 등록만 — 라우터 dispatch 폐지).** 남긴 기준은 하나다: **자본·안전·PIT 경로**. 프로세스 규칙(연속성·실측어휘·역할경계·AST·인증서)은 훅에서 내려 스킬·계약·문서로 옮겼다 — 해제분 36종은 **파일 삭제 없이** `02_Infrastructure/hooks/_archive_v8_enforcement/MANIFEST.md`(이름·구 등록 위치·사유·재등록 레시피)와 구 settings/router JSON 사본에 보존한다.
+**등록 = 12 distinct .sh (직접 등록만 — 라우터 dispatch 폐지).** 남긴 기준은 하나다: **등급·축·안전·PIT 경로**(v10 은 '자본 게이트' 어휘를 폐지했다 — 측정 규율 + Judge/BOOK). 프로세스 규칙(연속성·실측어휘·역할경계·AST·인증서)은 훅에서 내려 스킬·계약·문서로 옮겼다 — 해제분 36종은 **파일 삭제 없이** `02_Infrastructure/hooks/_archive_v8_enforcement/MANIFEST.md`(이름·구 등록 위치·사유·재등록 레시피)와 구 settings/router JSON 사본에 보존한다.
 
 | # | 훅 | 남긴 사유 |
 |---|---|---|
 | 1 | `safety_guard.sh` | 프로덕션 폴더 / `01_Literature` 쓰기 차단 (W/E/Bash) |
 | 2 | `legacy_write_block.sh` | 아카이브·legacy 경로 read-only |
 | 3 | `discovery_graduation_gate.sh` | 자본 게이트 — HARD 3종 fail-closed |
-| 4 | `worktask_constraint_enforcer.sh` | 고정 축 7종(≤25종·long-only·Σw=1 …) |
+| 4 | `worktask_constraint_enforcer.sh` | 고정 축(≤25종·long-only·Σw=1 — v10 비중 상한 폐지) |
+| 12 | `book_write_guard.sh` | v10 2026-08-29 — BOOK 정본 writer 경유 강제 + legacy `book_state.json` 재기입 차단(구 `governor_concord_certifier` 자리 승계) |
+| 13 | `backtest_contract_audit.sh` | ★2026-08-24 **재등록** — 원장 integrity 게이트(.py idiom 가지 제거, 10/10 실증 `08_Tests/hooks/test_backtest_contract_audit_gate.R`) |
 | 5 | `telegram_direct_call_guard.sh` | 텔레그램 단일 진입점(`tg_agent_brief()`) |
 | 6 | `axiom_context_inject.sh` | 에이전트 지식 주입(≤2,000자, 컨텍스트) |
 | 7 | `book_write_guard.sh` | ★v10 승계 — BOOK 정본·legacy book_state 쓰기 차단(writer 경유 강제) |
@@ -176,7 +178,7 @@ QEPM Codex Critic Round(외부 codex auto-spawn)는 **2026-06-30 v8.2에서 폐�
 | 10 | `auto_commit_on_stop.sh` | 세션당 1회 커밋 |
 | 11 | `auto_push_on_stop.sh` | 세션당 1회 푸시 |
 
-**Stop 차단 훅 0** — `research_continuity_guard.sh`·`performance_realmeasure_gate.sh` 등록 해제(연속성 계약은 L-code 발행 1지점으로 이동, `continuity-firewall.md` SUSPENDED 배너 참조). `lockbox_audit_trail.sh`(모든 Read)·`ast_spec_gate.sh`·`backtest_contract_audit.sh`·`agent_role_guard.sh`·인증서 4종도 해제 — **룰·계약 텍스트는 존치**하며 위반 판정은 R 계약(`essence_score`/`registry_writer`/`build_bt_result`)과 judge·수동 confirm 이 계속 담당한다.
+**Stop 차단 훅 0** — `research_continuity_guard.sh`·`performance_realmeasure_gate.sh` 등록 해제(연속성 계약은 L-code 발행 1지점으로 이동, `continuity-firewall.md` SUSPENDED 배너 참조). `lockbox_audit_trail.sh`(모든 Read · v10 ★RETIRED)·`ast_spec_gate.sh`·`agent_role_guard.sh`·인증서 4종도 해제(★`backtest_contract_audit.sh` 는 08-23 해제 후 **08-24 재등록** — 위 표 13행) — **룰·계약 텍스트는 존치**하며 위반 판정은 R 계약(`essence_score`/`registry_writer`/`build_bt_result`)과 judge·수동 confirm 이 계속 담당한다.
 
 ## Hook 정합 audit (2026-05-16)
 
@@ -235,7 +237,7 @@ QEPM Codex Critic Round(외부 codex auto-spawn)는 **2026-06-30 v8.2에서 폐�
 - **FS-only 미등록 (의도적, 5건)**: cash_sleeve_validator / circuit_breaker / trail_consistency_checker / attribution_quarterly_trigger / **role_taxonomy_admission_gate**(v55 Scout 전용 — v8.1 흐름 불일치로 강등 확정, 도훈 2026-06-11. 파일 retain).
 - **등록 해제 documented (v53/v8.0 폐지)**: unified_agent_guard / task_complete_guard / teammate_idle_guard. **헬퍼/비-hook**: _shared_parse / resolve_project / harness_health / pit_v3_daemon.
 - **agent_role_guard 복원**: MSYS ps가 `-o` 미지원이라 PARENT_PID 식별이 항상 실패 → 역할 경계 가드가 이 머신에서 상시 allow였음. bash 내장 `$PPID`로 교체 수리 (battery 13/13 검증).
-- **회귀 배터리**: `02_Infrastructure/ops/hook_e2e_battery.py` — 등록 hook 한글 payload 블록/통과 13케이스. hook 파서/이스케이프 변경 시 실행 의무.
+- **회귀 배터리**: `02_Infrastructure/ops/hook_e2e_battery.py` — 등록·미등록 hook 을 파일 경로로 직접 실행하는 payload 블록/통과 **15케이스**(2026-09-03 실측 15/15 PASS). hook 파서/이스케이프 변경 시 실행 의무.
 
 ## 스위트 총계 래칫 (2026-07-25 신설 · 07-26 갱신)
 

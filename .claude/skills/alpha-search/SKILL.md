@@ -61,7 +61,7 @@ run_paper_replication(
   `hurdle` 등급 = 진단(proxy) — 인용 금지. MDD 는 등급을 접지 않는다(Calmar 하나).
 - 보고 3줄(lean-loop 양식): ①등급·CAGR·SR·MDD·n_max(+논문 기준 병기) ②기전 1줄 ③다음.
 - **Grade A** → Judge(PIT 전담) 스폰 → PASS → BOOK 후보(도훈 confirm).
-- **미달** → `Skill(reinforce)` — 원장 n/20, 축 = 멀티팩터/비중방법론/리스크오버레이/결합.
+- **미달** → `Skill(reinforce)` — 원장 n/25, 축 = 멀티팩터/비중방법론/유니버스/리스크오버레이/결합.
 
 ## L-code 적립 (PASS + 의미있는 실패만)
 

@@ -73,4 +73,6 @@ if (!is.null(chk) && length(chk$entries) == 2L) ok("⑥ 왕복 파싱 (2 entries
 
 unlink(TMP, recursive = TRUE, force = TRUE)
 cat(sprintf("결과: PASS=%d FAIL=%d\n", pass, fail))
+## ★러너 요약 계약 (v10 2026-09-03) — 없으면 run_all_hooks.sh 가 UNMEASURED 로 계상해 이 스위트의 단언이 총계에 0 으로 들어간다.
+cat(sprintf('{"test":"book_registry","pass":%d,"fail":%d,"total":%d,"skipped":0}\n', pass, fail, pass + fail))
 if (fail > 0L) quit(status = 1L)

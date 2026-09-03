@@ -1,4 +1,7 @@
 #!/usr/bin/env Rscript
+# ★RETIRED (v10 2026-09-03) — Σ-A/B 배터리. 유일한 호출자였던 paper_research_dispatch.R(비-alpha 레인)이 퇴역해
+#   살아있는 소비 경로가 없다. ★형제 파일 auto_weighting_ab.R·auto_regime_overlay_ab.R 은 **라이브**다
+#   (regime/overlay_candidate_drain.R·overlay_candidate_ab_lh.R 이 source — screen-tier 오버레이 큐, v10 프론티어 ③).
 # auto_sigma_weighting_ab.R — H1b Σ-가중 A/B (도훈 mandate 2026-06-18, optimizer 논문 소비).
 #
 # 소비 논문: arXiv 2606.14798 "Two Sides of Schur Damping"(HRP↔min-var 1-param 보간, 최적 damping = Ledoit-Wolf 강도)

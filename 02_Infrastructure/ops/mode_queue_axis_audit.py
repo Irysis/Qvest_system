@@ -1,4 +1,7 @@
 #!/usr/bin/env python
+# ★RETIRED (v10 2026-08-29 · 헤더 2026-09-03) — 무인 리서치 레인 퇴역: morning_run 에서 철거됐고
+#   예약작업·bat 호출 0. 파일은 사료(08_Tests 가 경로로 직접 실행하므로 이동·삭제 금지).
+#   재개 레시피 = git 태그 pre-v10-2layer 의 morning_run.sh [0.55]~[0.6] 구간.
 # -*- coding: utf-8 -*-
 """mode_queue_axis_audit.py — 비-alpha 큐의 **우선순위 축 채움**을 발행 시점에 검사하고,
 어댑터 등재 후보 큐를 산출한다. (2026-08-13 신설)

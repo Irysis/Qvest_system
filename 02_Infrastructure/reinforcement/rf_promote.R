@@ -34,7 +34,7 @@ rf_promote_decide <- function(entry, best, cfg = list()) {
     return(out(FALSE, "grade_below_min"))
   if (depth > maxd) return(out(FALSE, "depth_cap"))
 
-  # ★부모를 못 넘은 승격은 같은 실패의 재생산이다 — 20회 상한이 존재하는 이유와 같다.
+  # ★부모를 못 넘은 승격은 같은 실패의 재생산이다 — 25회 상한이 존재하는 이유와 같다.
   pbest <- suppressWarnings(as.numeric(entry$parent$best_port_t %||% NA_real_))
   bp    <- suppressWarnings(as.numeric(best$port_t %||% NA_real_))
   if (is.finite(pbest) && !(is.finite(bp) && bp > pbest))

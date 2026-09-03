@@ -1,4 +1,8 @@
 #!/usr/bin/env python3
+# ★RETIRED (v10 2026-09-03) — S0 Debate 상태머신 = pre-v9 S0~S7 스테이지 기계. v10 은 충실구현
+#   (run_paper_replication) + QEPM(WT-R) 만 쓰므로 소비 경로가 소멸했다. 등록 이력 0(MANIFEST 36 밖).
+#   required_roles 에 governor(v10 폐지) 포함. ★00_Lawbook/DEPRECATION.md 의 'v8.2 범위 밖 유지' 판정을
+#   v10 2026-09-03 에 철회한 항목이다. 재열람 = git 태그 pre-v10-2layer.
 """state_machine.py — S0 Debate 상태 머신 (Phase C3.5 split, v55 strict)
 
 호출 패턴 (s0_enforcer.sh wrapper):

@@ -64,6 +64,8 @@ log_msg <- function(msg) {
 }
 
 #--- Cert schema constants ----------------------------------------------------
+# ★v10 2026-09-03: governor_concord 는 벡터에 남기되 발급은 아래 루프에서 RETIRED 가드로 차단한다
+#   (wt_timeline.R·role_card_cert_inheritance.R 이 같은 enum 을 쓰므로 벡터 자체는 유지).
 CERT_TYPES <- c("alpha_discovery", "sr_provenance", "schedule_fidelity",
                 "forge_package_validated", "governor_concord")
 CHARTER_REF <- "v1.2 §10 (backfilled by cert_backfill_audit.R)"
@@ -484,8 +486,16 @@ backfill_wt <- function(wt_dir, book_state_path, governor_dir, wt_root,
       next
     }
 
-    # governor_concord: WT_DIR이 아니라 governor_dir에 발급
+    # ★RETIRED (v10 2026-09-03): governor 폐지 — 신규 발급 중단. 이 가드가 없으면 bootstrap 7c(--auto)가
+    #   legacy 동결 디렉터리(qepm/mailbox/governor/)에 새 cert 를 쓴다(book_write_guard 는 Claude Write 도구만 막는다).
     if (cert_type == "governor_concord") {
+      log_msg("  [RETIRED v10] governor_concord — 발급 중단(governor 폐지 2026-08-29)")
+      results[[cert_type]] <- list(action = "retired_v10", issued = FALSE)
+      next
+    }
+
+    # (사료) governor_concord: WT_DIR이 아니라 governor_dir에 발급
+    if (FALSE) {
       cert_path_global <- file.path(governor_dir, "governor_concord_certificate.json")
       if (file.exists(cert_path_global)) {
         log_msg(sprintf("  [SKIP] governor_concord already at governor_dir"))

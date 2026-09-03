@@ -153,6 +153,15 @@ NOW_S=$(date +%s)
 N_WT=0; N_DIRTY=0; N_AHEAD=0; N_STALE=0; N_LOST=0; N_PARTIAL=0; N_PRUNE=0
 N_LEDGER=0; N_SUPER=0; N_SCRATCH=0; N_CAPPED=0
 WT_JSON=""; PRUNE_JSON=""; LOST_SUMMARY=""
+# ── (v10 2026-09-02) 세대(版) 경계 — pre-v10 레거시 worktree 분류 ──────────────────────────
+#   v10 재편(2026-08-29 11:21, 태그 pre-v10-2layer) 이전에 브랜치 tip 이 멎은 worktree 의 '유실' 은 수리 유실이 아니라
+#   폐기된 판의 잔재다. 구판은 세대 개념이 없어 15개 worktree 의 유실 127건을 08-29 이후 매일 같은 수치로 재발송했다
+#   (도훈 지목 2026-09-02). 레거시는 **집계·JSON 에 남기되 경보 계수(N_LOST/N_PARTIAL/충돌)에서 뺀다** — 처분
+#   (remove/cherry-pick)은 도훈 결정. 경계 ref 가 없으면(픽스처·타 저장소) 0 → 분기 미발화(종전 동작).
+#   v10 이후 손댄 worktree(미커밋 파일 mtime ≥ 경계)는 레거시로 접지 않는다.
+LEGACY_REF="${STRANDED_LEGACY_REF:-pre-v10-2layer}"
+LEGACY_EPOCH=$(git -C "$PROJECT" log -1 --format=%ct "$LEGACY_REF" -- 2>/dev/null || echo 0); LEGACY_EPOCH="${LEGACY_EPOCH:-0}"
+N_LEGACY_LOST=0; N_LEGACY_PARTIAL=0; N_LEGACY_WT=0; LEGACY_SUMMARY=""
 : > "$TMP/touched.txt"   # "<path>\t<branch>" — 동시 수정 충돌 탐지용
 
 while IFS='|' read -r wt br; do
@@ -175,6 +184,21 @@ while IFS='|' read -r wt br; do
 
   git -C "$wt" --no-optional-locks status --porcelain 2>/dev/null > "$TMP/st.txt" || : > "$TMP/st.txt"
   dirty=$(wc -l < "$TMP/st.txt" | tr -d ' ')
+
+  # 레거시 판정 (v10): 브랜치 tip < v10 경계 ∧ (미커밋 없음 ∨ 미커밋 파일 최신 mtime < 경계)
+  is_legacy=0
+  if [ "${LEGACY_EPOCH:-0}" -gt 0 ] && [ "${ct:-0}" -gt 0 ] && [ "$ct" -lt "$LEGACY_EPOCH" ]; then
+    is_legacy=1
+    if [ "${dirty:-0}" -gt 0 ] 2>/dev/null; then
+      while IFS= read -r _sl; do
+        [ -n "${_sl:-}" ] || continue
+        _p="${_sl:3}"; _p="${_p#\"}"; _p="${_p%\"}"
+        _m=$(stat -c %Y "$wt/$_p" 2>/dev/null || echo 0)
+        if [ "${_m:-0}" -ge "$LEGACY_EPOCH" ]; then is_legacy=0; break; fi
+      done < "$TMP/st.txt"
+    fi
+  fi
+  [ "$is_legacy" -eq 1 ] && N_LEGACY_WT=$((N_LEGACY_WT + 1))
 
   [ "${ahead:-0}" -gt 0 ] 2>/dev/null && N_AHEAD=$((N_AHEAD + 1))
   [ "${dirty:-0}" -gt 0 ] 2>/dev/null && N_DIRTY=$((N_DIRTY + 1))
@@ -224,7 +248,7 @@ while IFS='|' read -r wt br; do
   fi
 
   # ── 파일 단위 triage
-  FILES_JSON=""; wt_lost=0; wt_partial=0
+  FILES_JSON=""; wt_lost=0; wt_partial=0; wt_legacy_lost=0; wt_legacy_partial=0
   while IFS=$'\t' read -r code path; do
     [ -z "${path:-}" ] && continue
     # theirs = 이 worktree/브랜치가 가진 판본 (방향 판정의 내용 근거로 쓴다)
@@ -290,13 +314,24 @@ while IFS='|' read -r wt br; do
         fi
       fi
     fi
-    case "$v" in
-      lost|mostly_lost)    wt_lost=$((wt_lost + 1)); N_LOST=$((N_LOST + 1)) ;;
-      partial)             wt_partial=$((wt_partial + 1)); N_PARTIAL=$((N_PARTIAL + 1)) ;;
-      ledger_divergence)   N_LEDGER=$((N_LEDGER + 1)) ;;
-      superseded_upstream) N_SUPER=$((N_SUPER + 1)) ;;
-      scratch_artifact)    N_SCRATCH=$((N_SCRATCH + 1)) ;;
-    esac
+    if [ "$is_legacy" -eq 1 ]; then
+      # (v10) pre-v10 레거시 — 유실/부분은 별도 계수 + verdict 접미(_legacy_pre_v10). 경보·충돌 접점에서 제외.
+      case "$v" in
+        lost|mostly_lost)    wt_legacy_lost=$((wt_legacy_lost + 1)); N_LEGACY_LOST=$((N_LEGACY_LOST + 1)); v="${v}_legacy_pre_v10" ;;
+        partial)             wt_legacy_partial=$((wt_legacy_partial + 1)); N_LEGACY_PARTIAL=$((N_LEGACY_PARTIAL + 1)); v="${v}_legacy_pre_v10" ;;
+        ledger_divergence)   N_LEDGER=$((N_LEDGER + 1)) ;;
+        superseded_upstream) N_SUPER=$((N_SUPER + 1)) ;;
+        scratch_artifact)    N_SCRATCH=$((N_SCRATCH + 1)) ;;
+      esac
+    else
+      case "$v" in
+        lost|mostly_lost)    wt_lost=$((wt_lost + 1)); N_LOST=$((N_LOST + 1)) ;;
+        partial)             wt_partial=$((wt_partial + 1)); N_PARTIAL=$((N_PARTIAL + 1)) ;;
+        ledger_divergence)   N_LEDGER=$((N_LEDGER + 1)) ;;
+        superseded_upstream) N_SUPER=$((N_SUPER + 1)) ;;
+        scratch_artifact)    N_SCRATCH=$((N_SCRATCH + 1)) ;;
+      esac
+    fi
     # ★충돌 후보는 **조치 대상 접점만** 센다. 충돌의 의미는 "병합 순서를 정해야 한다"인데,
     #   접점이 전부 원장 분기·상위판 교체·파생 스크래치면 병합할 것이 없어 정할 순서도 없다.
     #   (2026-08-08: 유실 0인데 충돌 8로 경보가 계속 떠서 "유실 0건 감지" 라는 자기모순 문구가 나갔다.
@@ -313,6 +348,9 @@ while IFS='|' read -r wt br; do
   if [ "$wt_lost" -gt 0 ]; then
     LOST_SUMMARY="${LOST_SUMMARY}${short}(${wt_lost}건·${age}일) "
   fi
+  if [ "${wt_legacy_lost:-0}" -gt 0 ] || [ "${wt_legacy_partial:-0}" -gt 0 ]; then
+    LEGACY_SUMMARY="${LEGACY_SUMMARY}${short}(유실${wt_legacy_lost}·부분${wt_legacy_partial}) "
+  fi
 
   if [ "${dirty:-0}" -gt 0 ] 2>/dev/null || [ "${ahead:-0}" -gt 0 ] 2>/dev/null; then
     [ -n "$WT_JSON" ] && WT_JSON="$WT_JSON,"
@@ -327,6 +365,9 @@ while IFS='|' read -r wt br; do
       \"stale\":$([ "$is_stale" -eq 1 ] && echo true || echo false),
       \"lost\":$wt_lost,
       \"partial\":$wt_partial,
+      \"legacy_pre_v10\":$([ "$is_legacy" -eq 1 ] && echo true || echo false),
+      \"lost_legacy\":${wt_legacy_lost:-0},
+      \"partial_legacy\":${wt_legacy_partial:-0},
       \"uninspected_over_cap\":${wt_capped:-0},
       \"files\":[${FILES_JSON}
       ]
@@ -361,7 +402,7 @@ fi
 mkdir -p "$(dirname "$OUT")"
 cat > "$OUT" <<JSON
 {
-  "_doc": "좌초 수리 감사 — worktree에 갇혀 main에 도달하지 못한 수리 탐지. 생성기 02_Infrastructure/ops/stranded_repairs_audit.sh. verdict: merged_upstream=worktree가 stale 사본(정리 가능) / lost=main에 전무(조치 필요) / mostly_lost=80%+ 미존재(사실상 유실) / partial=일부만 반영(수동 확인) / deletion_only=삭제만 / ledger_divergence=append-only 원장의 세션별 분기(수리 아님·경보 제외) / superseded_upstream=main이 그 경로에서 더 앞서 나감(구판 교체·조치 불요·경보 제외). ★lost/partial만 조치 대상이다 — 2026-08-08 이전 판은 뒤 2종을 유실로 계상해 경보의 80%가 허위였다(36건 중 진짜 7건). collisions=2개 이상 worktree가 같은 파일을 main 밖에서 수정 중(병합 순서 결정 필요).",
+  "_doc": "좌초 수리 감사 — worktree에 갇혀 main에 도달하지 못한 수리 탐지. 생성기 02_Infrastructure/ops/stranded_repairs_audit.sh. verdict: merged_upstream=worktree가 stale 사본(정리 가능) / lost=main에 전무(조치 필요) / mostly_lost=80%+ 미존재(사실상 유실) / partial=일부만 반영(수동 확인) / deletion_only=삭제만 / ledger_divergence=append-only 원장의 세션별 분기(수리 아님·경보 제외) / superseded_upstream=main이 그 경로에서 더 앞서 나감(구판 교체·조치 불요·경보 제외) / *_legacy_pre_v10=(v10 2026-09-02) 브랜치 tip 이 v10 경계(legacy_ref) 이전에 멎은 worktree 의 유실/부분 — 폐기된 판의 잔재라 경보·충돌 계수에서 제외, 처분은 도훈 결정. ★lost/partial만 조치 대상이다 — 2026-08-08 이전 판은 뒤 2종을 유실로 계상해 경보의 80%가 허위였다(36건 중 진짜 7건). collisions=2개 이상 worktree가 같은 파일을 main 밖에서 수정 중(병합 순서 결정 필요).",
   "generated_at": "$(date '+%Y-%m-%d %H:%M:%S')",
   "main_ref": "$(jesc "$MAIN_REF")",
   "stale_threshold_days": $STALE_DAYS,
@@ -375,6 +416,11 @@ cat > "$OUT" <<JSON
     "files_ledger_divergence": $N_LEDGER,
     "files_superseded_upstream": $N_SUPER,
     "files_scratch_artifact": $N_SCRATCH,
+    "worktrees_legacy_pre_v10": $N_LEGACY_WT,
+    "files_lost_legacy_pre_v10": $N_LEGACY_LOST,
+    "files_partial_legacy_pre_v10": $N_LEGACY_PARTIAL,
+    "legacy_ref": "$(jesc "$LEGACY_REF")",
+    "legacy_epoch": ${LEGACY_EPOCH:-0},
     "collisions": $N_COLL,
     "prune_candidates": $N_PRUNE,
     "uninspected_over_cap": $N_CAPPED
@@ -392,6 +438,7 @@ say ""
 hb "worktree ${N_WT} · 미커밋 ${N_DIRTY} · 미병합 ${N_AHEAD} · ${STALE_DAYS}일+ 방치 ${N_STALE} | 유실 ${N_LOST} · 부분 ${N_PARTIAL} · 충돌 ${N_COLL} · prune후보 ${N_PRUNE}"
 # 접힌 2종도 수를 남긴다 — 경보에서 뺐다고 기록에서 지우면 '조용해진 것'과 '고쳐진 것'이 구분 안 된다
 hb "  (경보 제외) 원장 분기 ${N_LEDGER} · 상위판 교체 ${N_SUPER} · 파생 스크래치 ${N_SCRATCH}"
+[ "${N_LEGACY_WT:-0}" -gt 0 ] && hb "  (경보 제외) pre-v10 레거시 worktree ${N_LEGACY_WT} · 레거시 유실 ${N_LEGACY_LOST} · 레거시 부분 ${N_LEGACY_PARTIAL} — ${LEGACY_SUMMARY}(처분 = 도훈 결정)"
 [ "$N_LOST" -gt 0 ] && hb "★ 유실 대상: ${LOST_SUMMARY}"
 [ "$N_COLL" -gt 0 ] && hb "★ 동시수정 충돌: ${COLL_SUMMARY}"
 say "[stranded] → $OUT"
@@ -425,8 +472,15 @@ fi
 if [ "$DO_TG" -eq 1 ] && { [ "$N_LOST" -gt 0 ] || [ "$N_PARTIAL" -gt 0 ] || [ "$N_COLL" -gt 0 ]; }; then
   TODAY=$(date +%Y%m%d)
   MARK="$PROJECT/.cache/stranded_alert_${TODAY}.marker"
+  # (v10 2026-09-02) 변화 게이트 — 대상 worktree·건수·충돌 파일이 직전 발송과 같으면 재발송하지 않는다.
+  #   구판 스로틀은 '같은 날 1회' 만이라 08-29~09-02 동일 수치(127/19/1)를 7회 재발송했다. 서명에서 경과 일수(·N일)는
+  #   빼야 한다 — 그대로 넣으면 매일 달라져 게이트가 한 번도 억제하지 못한다(수리가 '작동 중' 으로 보이며 소음은 그대로).
+  SIG="lost=${N_LOST}|partial=${N_PARTIAL}|coll=${N_COLL}|$(printf '%s' "$LOST_SUMMARY" | sed -E 's/·[0-9-]+일//g')|${COLL_SUMMARY}"
+  SIGF="$PROJECT/.cache/stranded_alert_last.sig"
   if [ -f "$MARK" ]; then
     say "[stranded] 텔레그램 skip — 오늘 이미 발송 (스로틀)"
+  elif [ -f "$SIGF" ] && [ "$(cat "$SIGF" 2>/dev/null)" = "$SIG" ]; then
+    hb "텔레그램 skip — 직전 발송과 동일 서명(변화 없음): $SIG"
   else
     RS_BIN="$(command -v Rscript || true)"
     if [ -z "$RS_BIN" ]; then
@@ -442,7 +496,7 @@ suppressWarnings(suppressMessages({
 }))
 invisible(tryCatch(tg_agent_brief(
   agent = "Q-Lead",
-  title = "좌초 수리 경보 — worktree 미반영 감지",
+  title = "[무인] 좌초 수리 경보 — worktree 미반영 감지",
   relaxed = TRUE, force = TRUE,
   lock_scope = "stranded_repairs_${TODAY}",
   sections = list(
@@ -461,7 +515,12 @@ invisible(tryCatch(tg_agent_brief(
   )
 ), error = function(e) cat("tg fail:", conditionMessage(e), "\n")))
 RS
-      "$RS_BIN" "$RFILE" >/dev/null 2>&1 && say "[stranded] 텔레그램 발송 시도 완료" || say "[stranded] 텔레그램 실패 (마커·레지스트리는 보존)"
+      if "$RS_BIN" "$RFILE" >/dev/null 2>&1; then
+        printf '%s' "$SIG" > "$SIGF" 2>/dev/null || true   # 발송 성공 시에만 서명 기록 — 실패면 다음 실행이 재시도
+        say "[stranded] 텔레그램 발송 시도 완료"
+      else
+        say "[stranded] 텔레그램 실패 (마커·레지스트리는 보존)"
+      fi
     fi
   fi
 fi

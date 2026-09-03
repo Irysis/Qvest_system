@@ -1,6 +1,11 @@
 #!/usr/bin/env Rscript
 # research_run_notify.R — 무인 리서치 런 알림 (도훈 지시 2026-08-22, **v2 재작성**).
 #
+# ★v10 (2026-09-02): 라이브 발송 0 — paper_router 호출은 기본 off(QVEST_RUN_NOTIFY=1 명시 시만: 트리아지 프롬프트가
+#   [1계층] 논문 트리아지 를 직접 발송해 이중이었고, 레인 무관 L-code 수집이 09-01 강화 러너 71건을 라우터 성과로
+#   오귀속했다), 나머지 두 호출자(alpha_search_queue_run.sh·mode_queue_research_run.sh)는 v10 퇴역 러너.
+#   재가동 조건 = §5.6b 계층 표제 + research_insight_extract.py 에 lane 필터 선행.
+#
 # ── v1 이 틀린 점 (도훈 지적 2026-08-22 밤):
 #   "리서치에서 얻을 수 있는 인사이트는 없고, 그저 완료했다는 얘기만 장황하게 온다."
 #   v1 은 런 **상태**만 날랐다 — "한 건이 끝났습니다 / 다음 단계로 넘어갔습니다 /
@@ -53,11 +58,15 @@ if (!is.finite(since)) since <- as.numeric(Sys.time()) - 4 * 3600
 # ★레인명은 QEPM 파이프라인의 정식 단계·모드 명칭을 쓴다.
 #   구어체 축약("이어붙이기" 등) 금지 — 정확도만 낮추고 가독은 안 오른다(도훈 지시 2026-08-22).
 #   비전공자 가독은 본문 용어를 풀어 쓰는 게 아니라 **자동 용어 풀이 footer**가 담당한다(SKILL v7 §5.5).
+# v10 레인(2026-09-02). 구 v9 레인 7종(qepm_dossier·paper_promotion·method_measure·alpha·optimizer·risk·regime)은
+#   퇴역 러너 전용이라 표시 전용 사료로 강등 — 미등록 레인은 원문 그대로 찍힌다(fallback 보증 = test_run_completion_notify).
 .lane_map <- c(
-  qepm_dossier = "QEPM dossier 승계", paper_promotion = "논문 승격",
-  method_measure = "방법론 실측",    alpha = "알파 리서치",
-  optimizer = "옵티마이저 리서치",   risk = "리스크 리서치",
-  regime = "국면 신호 리서치",       all = "리서치 큐")
+  paper_router = "논문 트리아지", replication = "충실구현", reinforce = "강화",
+  all = "리서치 큐",
+  # (사료 v9) qepm_dossier = "QEPM dossier 승계" · paper_promotion = "논문 승격" · method_measure = "방법론 실측"
+  #           alpha = "알파 리서치" · optimizer = "옵티마이저 리서치" · risk = "리스크 리서치" · regime = "국면 신호 리서치"
+  NULL)
+.lane_map <- .lane_map[!vapply(.lane_map, is.null, logical(1))]
 lane_ko <- if (lane %in% names(.lane_map)) .lane_map[[lane]] else lane
 
 # ── 산출물에서 **알아낸 것**을 뽑는다 ---------------------------------------

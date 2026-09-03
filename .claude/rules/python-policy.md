@@ -56,7 +56,7 @@ paths:
 
 ## 5. Hook 강제 (.py 확장 적용됨)
 
-- ★**v9 2026-08-23: `answer_principles_grep.sh`·`backtest_contract_audit.sh` 등록 해제**(도훈 결정 ④. `.py` 자체합성 idiom 차단이 분포-표적 ML 레인에 걸리는 부작용 포함 — 파일 존치, 재등록 레시피 `02_Infrastructure/hooks/_archive_v8_enforcement/MANIFEST.md`). **본 §4 금지 규칙과 R 브릿지 단일 경로는 불변**이며, 판정은 훅이 아니라 계약(`build_bt_result`/`audit_bt_result`/`register_bt_result`)과 리뷰가 담당한다.
+- ★**v9 2026-08-23: `answer_principles_grep.sh` 등록 해제**(도훈 결정 ④ — 파일 존치, 재등록 레시피 `02_Infrastructure/hooks/_archive_v8_enforcement/MANIFEST.md`). ★**`backtest_contract_audit.sh` 는 2026-08-24 재등록**됐다 — 다만 `.py` 자체합성 idiom 가지는 제거됐으므로 **본 §4 금지는 텍스트 규범으로만 존치**(훅이 `.py` 를 스캔하지 않는다). **본 §4 금지 규칙과 R 브릿지 단일 경로는 불변**이며, 판정은 훅이 아니라 계약(`build_bt_result`/`audit_bt_result`/`register_bt_result`)과 리뷰가 담당한다.
 - (사료) 구 배선: `answer_principles_grep.sh` + `backtest_contract_audit.sh` TARGET_PATTERN에 `.py` 포함 (2026-07-03 아키텍처 수리에서 적용).
 - hook 미커버 영역은 본 rule + Self-Adversarial Challenge(v8.2 — Codex Round 제거·대체, `02_Infrastructure/docs/rules/codex-round.md`)로 보강 (warn-level).
 

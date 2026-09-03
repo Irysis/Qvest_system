@@ -251,6 +251,26 @@ print(d['summary'].get('uninspected_over_cap','MISSING'))" \
   "$R/06_Registry/stranded_repairs.json" 2>/dev/null)
 chk "T12b 기본 상한에선 미검 0 (공허 경보 아님)"       "0" "${CAP0:-X}"
 
+# ── T13 (v10 2026-09-02) pre-v10 레거시 분류: 경계 ref 이전 tip 의 worktree 유실은 경보 계수에서 빠지고
+#    JSON 에 *_legacy_pre_v10 으로 남는다. 실사고: 15개 worktree 의 유실 127건이 v10 이후 매일 같은 수치로 재발송.
+build_fixture
+( cd "$R" && git tag -f pre-v10-2layer main >/dev/null 2>&1 )   # 경계 = main 의 advance 커밋(worktree tip 들보다 뒤)
+run_audit
+chk "T13 레거시 worktree 의 lost → lost_legacy_pre_v10"  "lost_legacy_pre_v10" "$(verdict_of_path "$R" src/genuine.txt)"
+LEG=$("$PYX" -c "
+import json,io,sys
+d=json.load(io.open(sys.argv[1],encoding='utf-8'))['summary']
+print(d.get('files_lost',-1), d.get('files_lost_legacy_pre_v10',-1), d.get('worktrees_legacy_pre_v10',-1))" \
+  "$R/06_Registry/stranded_repairs.json" 2>/dev/null)
+set -- $LEG
+if [ "${1:-x}" = "0" ] && [ "${2:-0}" -gt 0 ] 2>/dev/null && [ "${3:-0}" -gt 0 ] 2>/dev/null; then
+  PASS=$((PASS+1)); echo "  ok   T13b 경보 계수 files_lost=0 · 레거시 유실 ${2} · 레거시 worktree ${3}"
+else FAIL=$((FAIL+1)); echo "  FAIL T13b 레거시가 경보 계수에서 빠지지 않음 — files_lost/legacy/worktrees = '$LEG'"; fi
+# 대조: 경계 ref 가 없으면 종전 판정(lost) — 픽스처·타 저장소에서 분기가 발화하지 않아야 한다
+( cd "$R" && QM_ROOT="$R" CLAUDE_PROJECT_DIR="$R" STRANDED_LEGACY_REF=no-such-ref \
+    bash "$AUDIT" --no-telegram --quiet ) >/dev/null 2>&1
+chk "T13c 경계 ref 부재 → 종전 판정(lost) 유지"           "lost" "$(verdict_of_path "$R" src/genuine.txt)"
+
 TOTAL=$((PASS+FAIL))
 echo "  ── $PASS/$TOTAL pass"
 printf '{"test":"stranded_triage","pass":%d,"fail":%d,"total":%d}\n' "$PASS" "$FAIL" "$TOTAL"

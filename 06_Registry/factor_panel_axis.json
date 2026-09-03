@@ -1,0 +1,3722 @@
+{
+ "schema": "factor_panel_axis_v1",
+ "generated_at": "2026-09-01T16:08:13+0900",
+ "producer": "02_Infrastructure/factor_db/classify_panel_axis.py",
+ "note": "팩터의 패널 축 판정(파생 사이드카). cross_sectional = 종목별 노출 → B1 컴포짓 재료. time_series = 시장수준 상태 → B5 오버레이 국면 입력. unknown = 배출 0행이라 관측으로 정할 수 없음(추측하지 않는다 — 배출 격차 경보가 표면화한다). ★factor_registry.json 은 건드리지 않는다(13k줄 round-trip 위험).",
+ "sample_months": [
+  "202510",
+  "202511",
+  "202512",
+  "202601",
+  "202602",
+  "202603",
+  "202604",
+  "202605",
+  "202606",
+  "202607",
+  "202608",
+  "202609"
+ ],
+ "tally": {
+  "cross_sectional": 332,
+  "unknown": 17,
+  "time_series": 20
+ },
+ "factors": {
+  "V01_BM": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "value",
+   "data_source": "fundamental",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2151
+   }
+  },
+  "V02_EP": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "value",
+   "data_source": "fundamental",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 1779
+   }
+  },
+  "V03_CFP": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "value",
+   "data_source": "fundamental",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 1797
+   }
+  },
+  "V04_fPER": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "value",
+   "data_source": "consensus",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 1923
+   }
+  },
+  "V05_fPBR": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "value",
+   "data_source": "consensus",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 1895
+   }
+  },
+  "V06_fDY": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "value",
+   "data_source": "consensus",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 1229
+   }
+  },
+  "V07_EV_EBITDA": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "value",
+   "data_source": "fundamental",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 1256
+   }
+  },
+  "V08_PSR": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "value",
+   "data_source": "fundamental",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 1794
+   }
+  },
+  "V09_PEG": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "value",
+   "data_source": "consensus",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 1194
+   }
+  },
+  "V10_FCF_Yield": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "value",
+   "data_source": "fundamental",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 1785
+   }
+  },
+  "V11_Shareholder_Yield": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "value",
+   "data_source": "fundamental",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 913
+   }
+  },
+  "V12_Composite_Value": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "value",
+   "data_source": "fundamental",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 1983
+   }
+  },
+  "V13_EV_Sales": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "value",
+   "data_source": "fundamental",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 1737
+   }
+  },
+  "V14_EBIT_EV": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "value",
+   "data_source": "fundamental",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 1719
+   }
+  },
+  "V15_NetDebt_Adj_EP": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "value",
+   "data_source": "fundamental",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 1675
+   }
+  },
+  "V16_Tobins_Q": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "value",
+   "data_source": "fundamental",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2151
+   }
+  },
+  "V17_Payout_Ratio": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "value",
+   "data_source": "fundamental",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 743
+   }
+  },
+  "V18_AM": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "value",
+   "data_source": "fundamental",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2151
+   }
+  },
+  "V19_Debt_to_Market": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "value",
+   "data_source": "fundamental",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 1925
+   }
+  },
+  "V20_SP": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "value",
+   "data_source": "fundamental",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 1790
+   }
+  },
+  "V21_Composite_Equity_Issuance": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "value",
+   "data_source": "rawdata",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2448
+   }
+  },
+  "V22_FCFF_EV": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "value",
+   "data_source": "fundamental",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 1706
+   }
+  },
+  "V23_RAFI_Weight": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "value",
+   "data_source": "fundamental",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2149
+   }
+  },
+  "V24_Residual_Income": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "value",
+   "data_source": "fundamental",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 1778
+   }
+  },
+  "M01_Mom_12_1": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "momentum",
+   "data_source": "rawdata",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2487
+   }
+  },
+  "M02_Mom_6_1": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "momentum",
+   "data_source": "rawdata",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2520
+   }
+  },
+  "M03_Mom_3_1": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "momentum",
+   "data_source": "rawdata",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2707
+   }
+  },
+  "M04_Mom_1": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "momentum",
+   "data_source": "rawdata",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2765
+   }
+  },
+  "M05_Trended_Mom": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "momentum",
+   "data_source": "rawdata",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2850
+   }
+  },
+  "M06_High_52w": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "momentum",
+   "data_source": "rawdata",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2781
+   }
+  },
+  "M07_IndMom": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "momentum",
+   "data_source": "rawdata",
+   "evidence": {
+    "observed_months": 10,
+    "max_cross_sectional_distinct": 26
+   }
+  },
+  "M08_Residual_Mom": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "momentum",
+   "data_source": "rawdata",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2587
+   }
+  },
+  "M09_Composite_Mom": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "momentum",
+   "data_source": "rawdata",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2628
+   }
+  },
+  "M10_Intermediate_Mom": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "momentum",
+   "data_source": "rawdata",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2471
+   }
+  },
+  "M11_ST_Reversal": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "momentum",
+   "data_source": "rawdata",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2679
+   }
+  },
+  "M12_LR_Reversal": {
+   "panel_axis": "unknown",
+   "basis": "표본 12개월 배출 0행 — 관측으로 축을 정할 수 없다",
+   "category": "momentum",
+   "data_source": "rawdata",
+   "evidence": {
+    "observed_months": 0,
+    "sample_months": 12
+   }
+  },
+  "M13_VolAdj_Mom": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "momentum",
+   "data_source": "rawdata",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2485
+   }
+  },
+  "M14_RiskAdj_Mom": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "momentum",
+   "data_source": "rawdata",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2546
+   }
+  },
+  "M15_Mom_3": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "momentum",
+   "data_source": "rawdata",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2781
+   }
+  },
+  "M16_Trend_Factor": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "momentum",
+   "data_source": "rawdata",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 8
+   }
+  },
+  "M17_Low_52w": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "momentum",
+   "data_source": "rawdata",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2680
+   }
+  },
+  "M18_RSI": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "momentum",
+   "data_source": "rawdata",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2736
+   }
+  },
+  "M19_MACD": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "momentum",
+   "data_source": "rawdata",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2785
+   }
+  },
+  "M20_Keller_Mom": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "momentum",
+   "data_source": "rawdata",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2547
+   }
+  },
+  "M21_Seasonality": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "momentum",
+   "data_source": "rawdata",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2438
+   }
+  },
+  "M22_Max_Return": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "momentum",
+   "data_source": "rawdata",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2575
+   }
+  },
+  "M23_Acceleration": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "momentum",
+   "data_source": "rawdata",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2480
+   }
+  },
+  "M24_Sector_Rel_Mom": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "momentum",
+   "data_source": "rawdata",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2498
+   }
+  },
+  "M25_Earnings_Mom_Streak": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "momentum",
+   "data_source": "consensus",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 88
+   }
+  },
+  "M26_Revenue_Mom": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "momentum",
+   "data_source": "consensus",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 663
+   }
+  },
+  "M27_Analyst_Rev_Mom": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "momentum",
+   "data_source": "consensus",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 134
+   }
+  },
+  "M28_OP_Rev_Mom": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "momentum",
+   "data_source": "consensus",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 674
+   }
+  },
+  "M29_Mom_5d": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "momentum",
+   "data_source": "rawdata",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2679
+   }
+  },
+  "M30_Mom_10d": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "momentum",
+   "data_source": "rawdata",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2719
+   }
+  },
+  "M31_Breadth_Mom": {
+   "panel_axis": "time_series",
+   "basis": "배출은 되지만 표본 전 구간에서 **전 종목 동일값**(횡단면 분산 0) — 종목 축이 아니다",
+   "category": "momentum",
+   "data_source": "rawdata",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 1
+   }
+  },
+  "M32_Composite_Mom_v2": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "momentum",
+   "data_source": "rawdata",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2506
+   }
+  },
+  "Q01_GPA": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "quality",
+   "data_source": "fundamental",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2614
+   }
+  },
+  "Q02_ROE": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "quality",
+   "data_source": "fundamental",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2564
+   }
+  },
+  "Q03_ROA": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "quality",
+   "data_source": "fundamental",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2564
+   }
+  },
+  "Q04_Piotroski_F": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "quality",
+   "data_source": "fundamental",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 9
+   }
+  },
+  "Q05_Accrual": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "quality",
+   "data_source": "fundamental",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2512
+   }
+  },
+  "Q06_Asset_Growth": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "quality",
+   "data_source": "fundamental",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2938
+   }
+  },
+  "Q07_Earnings_Stability": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "quality",
+   "data_source": "fundamental",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2418
+   }
+  },
+  "Q08_Composite_Quality": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "quality",
+   "data_source": "fundamental",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2954
+   }
+  },
+  "Q09_CFOA": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "quality",
+   "data_source": "fundamental",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2547
+   }
+  },
+  "Q10_Gross_Margin": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "quality",
+   "data_source": "fundamental",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2565
+   }
+  },
+  "Q11_Net_Margin": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "quality",
+   "data_source": "fundamental",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2561
+   }
+  },
+  "Q12_Asset_Turnover": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "quality",
+   "data_source": "fundamental",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2628
+   }
+  },
+  "Q13_Fin_Leverage": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "quality",
+   "data_source": "fundamental",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2793
+   }
+  },
+  "Q14_Current_Ratio": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "quality",
+   "data_source": "fundamental",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2892
+   }
+  },
+  "Q15_Debt_to_Equity": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "quality",
+   "data_source": "fundamental",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 1031
+   }
+  },
+  "Q16_Debt_to_Assets": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "quality",
+   "data_source": "fundamental",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 849
+   }
+  },
+  "Q17_ROIC": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "quality",
+   "data_source": "fundamental",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2446
+   }
+  },
+  "Q18_Op_Leverage": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "quality",
+   "data_source": "fundamental",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2610
+   }
+  },
+  "Q19_Cash_to_Assets": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "quality",
+   "data_source": "fundamental",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 3012
+   }
+  },
+  "Q20_Net_Equity_Issuance": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "quality",
+   "data_source": "fundamental",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2562
+   }
+  },
+  "Q23_Sustainable_Growth": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "quality",
+   "data_source": "fundamental",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2344
+   }
+  },
+  "Q24_Altman_Z": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "quality",
+   "data_source": "fundamental",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 3012
+   }
+  },
+  "Q25_Ohlson_O": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "quality",
+   "data_source": "fundamental",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2572
+   }
+  },
+  "Q26_RnD_Intensity": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "quality",
+   "data_source": "fundamental",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 1939
+   }
+  },
+  "Q27_CapEx_to_Rev": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "quality",
+   "data_source": "fundamental",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2504
+   }
+  },
+  "Q28_Cash_Conversion": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "quality",
+   "data_source": "fundamental",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2326
+   }
+  },
+  "Q29_Inventory_Turnover": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "quality",
+   "data_source": "fundamental",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2441
+   }
+  },
+  "Q30_Receivables_Turnover": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "quality",
+   "data_source": "fundamental",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2564
+   }
+  },
+  "Q31_WC_to_Assets": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "quality",
+   "data_source": "fundamental",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2892
+   }
+  },
+  "Q32_Interest_Coverage": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "quality",
+   "data_source": "fundamental",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2537
+   }
+  },
+  "Q33_Earnings_Persistence": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "quality",
+   "data_source": "fundamental",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2369
+   }
+  },
+  "Q35_CashBased_OpProf": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "quality",
+   "data_source": "fundamental",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2509
+   }
+  },
+  "D01_IdioVol": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "defense",
+   "data_source": "rawdata",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2519
+   }
+  },
+  "D02_Beta": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "defense",
+   "data_source": "rawdata",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2519
+   }
+  },
+  "D03_RealVol": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "defense",
+   "data_source": "rawdata",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2519
+   }
+  },
+  "D04_Downside_Beta": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "defense",
+   "data_source": "rawdata",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2495
+   }
+  },
+  "D05_MaxRet": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "defense",
+   "data_source": "rawdata",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2479
+   }
+  },
+  "D06_Upside_Beta": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "defense",
+   "data_source": "rawdata",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2515
+   }
+  },
+  "D07_Beta_Asymmetry": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "defense",
+   "data_source": "rawdata",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2495
+   }
+  },
+  "D08_Tail_Beta": {
+   "panel_axis": "unknown",
+   "basis": "표본 12개월 배출 0행 — 관측으로 축을 정할 수 없다",
+   "category": "defense",
+   "data_source": "rawdata",
+   "evidence": {
+    "observed_months": 0,
+    "sample_months": 12
+   }
+  },
+  "D09_Dimson_Beta": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "defense",
+   "data_source": "rawdata",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2518
+   }
+  },
+  "D11_FP_Beta": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "defense",
+   "data_source": "rawdata",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2518
+   }
+  },
+  "D12_Beta_126d": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "defense",
+   "data_source": "rawdata",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2508
+   }
+  },
+  "D13_Beta_63d": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "defense",
+   "data_source": "rawdata",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2497
+   }
+  },
+  "D14_Beta_Change": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "defense",
+   "data_source": "rawdata",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2519
+   }
+  },
+  "D15_Cond_Bear_Beta": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "defense",
+   "data_source": "rawdata",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2504
+   }
+  },
+  "D16_Coskewness": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "defense",
+   "data_source": "rawdata",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2517
+   }
+  },
+  "D17_Cokurtosis": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "defense",
+   "data_source": "rawdata",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2516
+   }
+  },
+  "D19_EW_Beta_63": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "defense",
+   "data_source": "rawdata",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2519
+   }
+  },
+  "D20_EW_Beta_126": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "defense",
+   "data_source": "rawdata",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2519
+   }
+  },
+  "D21_CAPM_Alpha": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "defense",
+   "data_source": "rawdata",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2519
+   }
+  },
+  "D22_Tracking_Error": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "defense",
+   "data_source": "rawdata",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2519
+   }
+  },
+  "D23_Info_Ratio": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "defense",
+   "data_source": "rawdata",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2519
+   }
+  },
+  "D24_Systematic_Risk_Prop": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "defense",
+   "data_source": "rawdata",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2518
+   }
+  },
+  "D25_Left_Tail_Beta": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "defense",
+   "data_source": "rawdata",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2477
+   }
+  },
+  "D26_Right_Tail_Beta": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "defense",
+   "data_source": "rawdata",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2480
+   }
+  },
+  "D27_Beta_Stability": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "defense",
+   "data_source": "rawdata",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2474
+   }
+  },
+  "D28_Unlevered_Beta": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "defense",
+   "data_source": "fundamental",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2099
+   }
+  },
+  "D29_Accounting_Beta": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "defense",
+   "data_source": "fundamental",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2411
+   }
+  },
+  "D30_FM_Beta_21d": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "defense",
+   "data_source": "rawdata",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2698
+   }
+  },
+  "D32_Beta_VIX": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "defense",
+   "data_source": "macro",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2519
+   }
+  },
+  "D33_Beta_Persistence": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "defense",
+   "data_source": "rawdata",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2477
+   }
+  },
+  "D34_RealVol_21d": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "defense",
+   "data_source": "rawdata",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2697
+   }
+  },
+  "D35_RealVol_63d": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "defense",
+   "data_source": "rawdata",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2698
+   }
+  },
+  "D36_RealVol_126d": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "defense",
+   "data_source": "rawdata",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2658
+   }
+  },
+  "D37_Parkinson_Vol": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "defense",
+   "data_source": "rawdata",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2515
+   }
+  },
+  "D38_GarmanKlass_Vol": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "defense",
+   "data_source": "rawdata",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2515
+   }
+  },
+  "D39_RogersSatchell_Vol": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "defense",
+   "data_source": "rawdata",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2514
+   }
+  },
+  "D40_YangZhang_Vol": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "defense",
+   "data_source": "rawdata",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2518
+   }
+  },
+  "D41_Vol_of_Vol": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "defense",
+   "data_source": "rawdata",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2680
+   }
+  },
+  "D42_EWMA_Vol": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "defense",
+   "data_source": "rawdata",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2743
+   }
+  },
+  "D43_Skewness": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "defense",
+   "data_source": "rawdata",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2517
+   }
+  },
+  "D44_Kurtosis": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "defense",
+   "data_source": "rawdata",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2517
+   }
+  },
+  "D45_Downside_Dev": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "defense",
+   "data_source": "rawdata",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2515
+   }
+  },
+  "D46_Sortino": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "defense",
+   "data_source": "rawdata",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2514
+   }
+  },
+  "D47_CVaR_5pct": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "defense",
+   "data_source": "rawdata",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2515
+   }
+  },
+  "D48_VaR_5pct": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "defense",
+   "data_source": "rawdata",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2490
+   }
+  },
+  "D49_VaR_1pct": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "defense",
+   "data_source": "rawdata",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2511
+   }
+  },
+  "D50_MaxDrawdown": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "defense",
+   "data_source": "rawdata",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2739
+   }
+  },
+  "D51_Ulcer_Index": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "defense",
+   "data_source": "rawdata",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2741
+   }
+  },
+  "D52_MinRet": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "defense",
+   "data_source": "rawdata",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2394
+   }
+  },
+  "D53_Range_Vol": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "defense",
+   "data_source": "rawdata",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2515
+   }
+  },
+  "D54_Neg_Ret_Prop": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "defense",
+   "data_source": "rawdata",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 171
+   }
+  },
+  "D55_Vol_Trend": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "defense",
+   "data_source": "rawdata",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2476
+   }
+  },
+  "D56_Up_Vol": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "defense",
+   "data_source": "rawdata",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2611
+   }
+  },
+  "D57_Down_Vol": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "defense",
+   "data_source": "rawdata",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2662
+   }
+  },
+  "D58_Vol_Asymmetry": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "defense",
+   "data_source": "rawdata",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2608
+   }
+  },
+  "D60_Leverage": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "defense",
+   "data_source": "fundamental",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 841
+   }
+  },
+  "S01_Size": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "size",
+   "data_source": "rawdata",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2772
+   }
+  },
+  "S02_Float_Size": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "size",
+   "data_source": "fundamental",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2772
+   }
+  },
+  "C01_SUE": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "consensus",
+   "data_source": "consensus",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 1125
+   }
+  },
+  "C02_EPS_Chg_1m": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "consensus",
+   "data_source": "consensus",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 134
+   }
+  },
+  "C03_EPS_Chg_3m": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "consensus",
+   "data_source": "consensus",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 243
+   }
+  },
+  "C04_ESBR": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "consensus",
+   "data_source": "consensus",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 1581
+   }
+  },
+  "C05_ESCR": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "consensus",
+   "data_source": "consensus",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 1124
+   }
+  },
+  "C06_TP_Gap": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "consensus",
+   "data_source": "consensus",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 1570
+   }
+  },
+  "C07_TP_Mom": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "consensus",
+   "data_source": "consensus",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 450
+   }
+  },
+  "C08_Coverage": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "consensus",
+   "data_source": "consensus",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 26
+   }
+  },
+  "C09_Earnings_Surprise_Sq": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "consensus",
+   "data_source": "consensus",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 1125
+   }
+  },
+  "C10_SUE_Persistence": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "consensus",
+   "data_source": "consensus",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 1125
+   }
+  },
+  "C11_Earnings_Streak": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "consensus",
+   "data_source": "consensus",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 94
+   }
+  },
+  "C12_Estimate_Dispersion_Proxy": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "consensus",
+   "data_source": "consensus",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 1075
+   }
+  },
+  "C13_Revision_Breadth_3m": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "consensus",
+   "data_source": "consensus",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 1581
+   }
+  },
+  "C14_Revenue_Surprise": {
+   "panel_axis": "unknown",
+   "basis": "표본 12개월 배출 0행 — 관측으로 축을 정할 수 없다",
+   "category": "consensus",
+   "data_source": "consensus",
+   "evidence": {
+    "observed_months": 0,
+    "sample_months": 12
+   }
+  },
+  "C15_Forecast_Error_Trend": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "consensus",
+   "data_source": "consensus",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 176
+   }
+  },
+  "C16_EPS_Acceleration": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "consensus",
+   "data_source": "consensus",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 393
+   }
+  },
+  "C17_OP_Revision": {
+   "panel_axis": "unknown",
+   "basis": "표본 12개월 배출 0행 — 관측으로 축을 정할 수 없다",
+   "category": "consensus",
+   "data_source": "consensus",
+   "evidence": {
+    "observed_months": 0,
+    "sample_months": 12
+   }
+  },
+  "C18_Earnings_CAR_3d": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "consensus",
+   "data_source": "consensus",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 348
+   }
+  },
+  "C19_Composite_Earnings": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "consensus",
+   "data_source": "consensus",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 1969
+   }
+  },
+  "L01_Amihud": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "liquidity",
+   "data_source": "rawdata",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2475
+   }
+  },
+  "L02_Turnover": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "liquidity",
+   "data_source": "rawdata",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2732
+   }
+  },
+  "L03_Volume_Mom": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "liquidity",
+   "data_source": "rawdata",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2700
+   }
+  },
+  "L04_Bid_Ask_Proxy": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "liquidity",
+   "data_source": "rawdata",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 780
+   }
+  },
+  "L05_Dollar_Volume": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "liquidity",
+   "data_source": "rawdata",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2647
+   }
+  },
+  "L06_Zero_Trade_Days": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "liquidity",
+   "data_source": "rawdata",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 119
+   }
+  },
+  "L07_Zero_Return_Days": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "liquidity",
+   "data_source": "rawdata",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 228
+   }
+  },
+  "L08_Roll_Spread": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "liquidity",
+   "data_source": "rawdata",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 1918
+   }
+  },
+  "L09_Amihud_20d": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "liquidity",
+   "data_source": "rawdata",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2647
+   }
+  },
+  "L10_Amihud_Ratio": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "liquidity",
+   "data_source": "rawdata",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2438
+   }
+  },
+  "L11_Kyle_Lambda": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "liquidity",
+   "data_source": "rawdata",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2700
+   }
+  },
+  "L12_PS_Gamma": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "liquidity",
+   "data_source": "rawdata",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2740
+   }
+  },
+  "L13_Vol_Variance_Ratio": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "liquidity",
+   "data_source": "rawdata",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2700
+   }
+  },
+  "L14_Price_Impact": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "liquidity",
+   "data_source": "rawdata",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2700
+   }
+  },
+  "L15_Turnover_252d": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "liquidity",
+   "data_source": "rawdata",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2515
+   }
+  },
+  "L16_Turnover_Vol": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "liquidity",
+   "data_source": "rawdata",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2742
+   }
+  },
+  "L17_LOT_Measure": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "liquidity",
+   "data_source": "rawdata",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 227
+   }
+  },
+  "L18_Eff_Spread_Proxy": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "liquidity",
+   "data_source": "rawdata",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2743
+   }
+  },
+  "L19_Price_Delay": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "liquidity",
+   "data_source": "rawdata",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2752
+   }
+  },
+  "L20_Trade_Frequency": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "liquidity",
+   "data_source": "rawdata",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 119
+   }
+  },
+  "L21_Market_Depth": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "liquidity",
+   "data_source": "rawdata",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2742
+   }
+  },
+  "L22_Ret_Autocorr": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "liquidity",
+   "data_source": "rawdata",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2743
+   }
+  },
+  "L23_Vol_Autocorr": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "liquidity",
+   "data_source": "rawdata",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2700
+   }
+  },
+  "L24_Range_per_Vol": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "liquidity",
+   "data_source": "rawdata",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2694
+   }
+  },
+  "L25_Amihud_Vol": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "liquidity",
+   "data_source": "rawdata",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2700
+   }
+  },
+  "L26_Log_MktCap": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "liquidity",
+   "data_source": "rawdata",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2772
+   }
+  },
+  "L27_Price_Level": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "liquidity",
+   "data_source": "rawdata",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2009
+   }
+  },
+  "L28_Vol_Mom_63d": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "liquidity",
+   "data_source": "rawdata",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2699
+   }
+  },
+  "L29_Illiq_Change": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "liquidity",
+   "data_source": "rawdata",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2441
+   }
+  },
+  "L31_Vol_Concentration": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "liquidity",
+   "data_source": "rawdata",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2700
+   }
+  },
+  "L32_Ret_Vol_Corr": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "liquidity",
+   "data_source": "rawdata",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2700
+   }
+  },
+  "L33_AbsRet_Vol_Corr": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "liquidity",
+   "data_source": "rawdata",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2700
+   }
+  },
+  "L34_Vol_Spike_Ratio": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "liquidity",
+   "data_source": "rawdata",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2700
+   }
+  },
+  "L35_Reversal_Intensity": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "liquidity",
+   "data_source": "rawdata",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2709
+   }
+  },
+  "L36_CLV_Stability": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "liquidity",
+   "data_source": "rawdata",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2692
+   }
+  },
+  "L37_Relative_Vol": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "liquidity",
+   "data_source": "rawdata",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2663
+   }
+  },
+  "L38_DolVol_Mom": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "liquidity",
+   "data_source": "rawdata",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2700
+   }
+  },
+  "L39_Overnight_Spread": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "liquidity",
+   "data_source": "rawdata",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2738
+   }
+  },
+  "L40_VWAP_Spread": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "liquidity",
+   "data_source": "rawdata",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2700
+   }
+  },
+  "L41_Intraday_Vol_Proxy": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "liquidity",
+   "data_source": "rawdata",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2734
+   }
+  },
+  "L42_Vol_Skewness": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "liquidity",
+   "data_source": "rawdata",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2700
+   }
+  },
+  "L43_Turnover_Change": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "liquidity",
+   "data_source": "rawdata",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2677
+   }
+  },
+  "L44_Vol_Ret_Asymmetry": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "liquidity",
+   "data_source": "rawdata",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2700
+   }
+  },
+  "L45_Composite_Liquidity": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "liquidity",
+   "data_source": "rawdata",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2765
+   }
+  },
+  "AC01_Total_Accruals_CF": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "accrual",
+   "data_source": "fundamental",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2512
+   }
+  },
+  "AC02_Total_Accruals_BS": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "accrual",
+   "data_source": "fundamental",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2822
+   }
+  },
+  "AC03_WC_Accruals": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "accrual",
+   "data_source": "fundamental",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2822
+   }
+  },
+  "AC04_NCO_Accruals": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "accrual",
+   "data_source": "fundamental",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2822
+   }
+  },
+  "AC05_NOA": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "accrual",
+   "data_source": "fundamental",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 3014
+   }
+  },
+  "AC06_Comprehensive_Accruals": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "accrual",
+   "data_source": "fundamental",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2937
+   }
+  },
+  "AC07_Operating_Accruals": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "accrual",
+   "data_source": "fundamental",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2938
+   }
+  },
+  "AC08_Financial_Accruals": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "accrual",
+   "data_source": "fundamental",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2626
+   }
+  },
+  "AC09_NNI": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "accrual",
+   "data_source": "fundamental",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2938
+   }
+  },
+  "AC10_Pct_Accruals": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "accrual",
+   "data_source": "fundamental",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2510
+   }
+  },
+  "AC12_Inventory_Accruals": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "accrual",
+   "data_source": "fundamental",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2794
+   }
+  },
+  "AC13_Abnormal_Accruals": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "accrual",
+   "data_source": "fundamental",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2460
+   }
+  },
+  "AC15_NonDiscretionary_Accruals": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "accrual",
+   "data_source": "fundamental",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2460
+   }
+  },
+  "AC16_BS_vs_CF_Diff": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "accrual",
+   "data_source": "fundamental",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2413
+   }
+  },
+  "AC17_Accrual_Reversal": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "accrual",
+   "data_source": "fundamental",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2446
+   }
+  },
+  "AC19_Receivables_Accruals": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "accrual",
+   "data_source": "fundamental",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2853
+   }
+  },
+  "AC20_Payables_Accruals": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "accrual",
+   "data_source": "fundamental",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2792
+   }
+  },
+  "AC21_CF_to_Accrual_Ratio": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "accrual",
+   "data_source": "fundamental",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2510
+   }
+  },
+  "AC22_Accrual_Volatility": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "accrual",
+   "data_source": "fundamental",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2274
+   }
+  },
+  "AC23_Accrual_Persistence": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "accrual",
+   "data_source": "fundamental",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2227
+   }
+  },
+  "AC24_NOA_Growth": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "accrual",
+   "data_source": "fundamental",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2938
+   }
+  },
+  "AC25_Accrual_Size_Interaction": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "accrual",
+   "data_source": "fundamental",
+   "evidence": {
+    "observed_months": 10,
+    "max_cross_sectional_distinct": 1788
+   }
+  },
+  "R01_VaR_95": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "risk",
+   "data_source": "rawdata",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2714
+   }
+  },
+  "R02_VaR_99": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "risk",
+   "data_source": "rawdata",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2737
+   }
+  },
+  "R03_CVaR_95": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "risk",
+   "data_source": "rawdata",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2741
+   }
+  },
+  "R04_CVaR_99": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "risk",
+   "data_source": "rawdata",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2528
+   }
+  },
+  "R05_Tail_Risk": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "risk",
+   "data_source": "rawdata",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2719
+   }
+  },
+  "R06_MDD": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "risk",
+   "data_source": "rawdata",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2739
+   }
+  },
+  "R07_Downside_Dev": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "risk",
+   "data_source": "rawdata",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2709
+   }
+  },
+  "R08_Semi_Variance": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "risk",
+   "data_source": "rawdata",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2709
+   }
+  },
+  "R09_Coskewness": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "risk",
+   "data_source": "rawdata",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2517
+   }
+  },
+  "R10_Cokurtosis": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "risk",
+   "data_source": "rawdata",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2516
+   }
+  },
+  "R11_Systematic_Risk": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "risk",
+   "data_source": "rawdata",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2518
+   }
+  },
+  "R12_Idiosyncratic_Risk": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "risk",
+   "data_source": "rawdata",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2519
+   }
+  },
+  "R13_NCSKEW": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "risk",
+   "data_source": "rawdata",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2516
+   }
+  },
+  "R14_DUVOL": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "risk",
+   "data_source": "rawdata",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2508
+   }
+  },
+  "R15_Sortino": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "risk",
+   "data_source": "rawdata",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2709
+   }
+  },
+  "R16_Calmar": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "risk",
+   "data_source": "rawdata",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2740
+   }
+  },
+  "R17_Market_Leverage": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "risk",
+   "data_source": "fundamental",
+   "evidence": {
+    "observed_months": 10,
+    "max_cross_sectional_distinct": 1926
+   }
+  },
+  "R18_Book_Leverage": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "risk",
+   "data_source": "fundamental",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2676
+   }
+  },
+  "R19_Composite_Risk": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "risk",
+   "data_source": "fundamental",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2777
+   }
+  },
+  "RE01_Mkt_EWMA_21d": {
+   "panel_axis": "time_series",
+   "basis": "배출은 되지만 표본 전 구간에서 **전 종목 동일값**(횡단면 분산 0) — 종목 축이 아니다",
+   "category": "regime",
+   "data_source": "rawdata",
+   "evidence": {
+    "observed_months": 10,
+    "max_cross_sectional_distinct": 1
+   }
+  },
+  "RE02_Vol_Regime_Pctile": {
+   "panel_axis": "time_series",
+   "basis": "배출은 되지만 표본 전 구간에서 **전 종목 동일값**(횡단면 분산 0) — 종목 축이 아니다",
+   "category": "regime",
+   "data_source": "rawdata",
+   "evidence": {
+    "observed_months": 10,
+    "max_cross_sectional_distinct": 1
+   }
+  },
+  "RE03_Mkt_Drawdown": {
+   "panel_axis": "time_series",
+   "basis": "배출은 되지만 표본 전 구간에서 **전 종목 동일값**(횡단면 분산 0) — 종목 축이 아니다",
+   "category": "regime",
+   "data_source": "rawdata",
+   "evidence": {
+    "observed_months": 10,
+    "max_cross_sectional_distinct": 1
+   }
+  },
+  "RE04_HighVol_Beta": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "regime",
+   "data_source": "rawdata",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2512
+   }
+  },
+  "RE05_LowVol_Beta": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "regime",
+   "data_source": "rawdata",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2491
+   }
+  },
+  "RE06_Beta_Asymmetry": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "regime",
+   "data_source": "rawdata",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2517
+   }
+  },
+  "RE07_Crisis_Beta": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "regime",
+   "data_source": "rawdata",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2506
+   }
+  },
+  "RE08_Down_Market_Excess": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "regime",
+   "data_source": "rawdata",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2519
+   }
+  },
+  "RE09_Capture_Ratio": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "regime",
+   "data_source": "rawdata",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2515
+   }
+  },
+  "RE10_VIX_Pctile": {
+   "panel_axis": "time_series",
+   "basis": "배출은 되지만 표본 전 구간에서 **전 종목 동일값**(횡단면 분산 0) — 종목 축이 아니다",
+   "category": "regime",
+   "data_source": "macro",
+   "evidence": {
+    "observed_months": 10,
+    "max_cross_sectional_distinct": 1
+   }
+  },
+  "RE11_VIX_Change_EWMA": {
+   "panel_axis": "time_series",
+   "basis": "배출은 되지만 표본 전 구간에서 **전 종목 동일값**(횡단면 분산 0) — 종목 축이 아니다",
+   "category": "regime",
+   "data_source": "macro",
+   "evidence": {
+    "observed_months": 10,
+    "max_cross_sectional_distinct": 1
+   }
+  },
+  "RE12_VIX_Regime_3State": {
+   "panel_axis": "time_series",
+   "basis": "배출은 되지만 표본 전 구간에서 **전 종목 동일값**(횡단면 분산 0) — 종목 축이 아니다",
+   "category": "regime",
+   "data_source": "macro",
+   "evidence": {
+    "observed_months": 10,
+    "max_cross_sectional_distinct": 1
+   }
+  },
+  "RE13_Credit_Spread_Pctile": {
+   "panel_axis": "time_series",
+   "basis": "배출은 되지만 표본 전 구간에서 **전 종목 동일값**(횡단면 분산 0) — 종목 축이 아니다",
+   "category": "regime",
+   "data_source": "macro",
+   "evidence": {
+    "observed_months": 10,
+    "max_cross_sectional_distinct": 1
+   }
+  },
+  "RE14_Inflation_YoY": {
+   "panel_axis": "time_series",
+   "basis": "배출은 되지만 표본 전 구간에서 **전 종목 동일값**(횡단면 분산 0) — 종목 축이 아니다",
+   "category": "regime",
+   "data_source": "macro",
+   "evidence": {
+    "observed_months": 10,
+    "max_cross_sectional_distinct": 1
+   }
+  },
+  "RE15_Market_Breadth_21d": {
+   "panel_axis": "time_series",
+   "basis": "배출은 되지만 표본 전 구간에서 **전 종목 동일값**(횡단면 분산 0) — 종목 축이 아니다",
+   "category": "regime",
+   "data_source": "rawdata",
+   "evidence": {
+    "observed_months": 10,
+    "max_cross_sectional_distinct": 1
+   }
+  },
+  "RE16_Canary_Signal": {
+   "panel_axis": "time_series",
+   "basis": "배출은 되지만 표본 전 구간에서 **전 종목 동일값**(횡단면 분산 0) — 종목 축이 아니다",
+   "category": "regime",
+   "data_source": "macro",
+   "evidence": {
+    "observed_months": 10,
+    "max_cross_sectional_distinct": 1
+   }
+  },
+  "MA01_GDP_Sensitivity": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "regime",
+   "data_source": "macro",
+   "evidence": {
+    "observed_months": 10,
+    "max_cross_sectional_distinct": 2464
+   }
+  },
+  "MA02_CPI_Sensitivity": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "regime",
+   "data_source": "macro",
+   "evidence": {
+    "observed_months": 8,
+    "max_cross_sectional_distinct": 2454
+   }
+  },
+  "MA03_Rate_Sensitivity": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "regime",
+   "data_source": "macro",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2471
+   }
+  },
+  "MA04_YieldCurve_Sensitivity": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "regime",
+   "data_source": "macro",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2471
+   }
+  },
+  "MA05_MonetaryPolicy_Mom": {
+   "panel_axis": "time_series",
+   "basis": "배출은 되지만 표본 전 구간에서 **전 종목 동일값**(횡단면 분산 0) — 종목 축이 아니다",
+   "category": "regime",
+   "data_source": "macro",
+   "evidence": {
+    "observed_months": 10,
+    "max_cross_sectional_distinct": 1
+   }
+  },
+  "MA06_Risk_Sentiment_1Y": {
+   "panel_axis": "time_series",
+   "basis": "배출은 되지만 표본 전 구간에서 **전 종목 동일값**(횡단면 분산 0) — 종목 축이 아니다",
+   "category": "regime",
+   "data_source": "macro",
+   "evidence": {
+    "observed_months": 10,
+    "max_cross_sectional_distinct": 1
+   }
+  },
+  "MA07_BusinessCycle_Composite": {
+   "panel_axis": "time_series",
+   "basis": "배출은 되지만 표본 전 구간에서 **전 종목 동일값**(횡단면 분산 0) — 종목 축이 아니다",
+   "category": "regime",
+   "data_source": "macro",
+   "evidence": {
+    "observed_months": 10,
+    "max_cross_sectional_distinct": 1
+   }
+  },
+  "CR01_Sector_Comovement": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "crowding",
+   "data_source": "rawdata",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2473
+   }
+  },
+  "CR02_Volume_Concentration": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "crowding",
+   "data_source": "rawdata",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2700
+   }
+  },
+  "CR03_Herding_Dispersion": {
+   "panel_axis": "time_series",
+   "basis": "배출은 되지만 표본 전 구간에서 **전 종목 동일값**(횡단면 분산 0) — 종목 축이 아니다",
+   "category": "crowding",
+   "data_source": "rawdata",
+   "evidence": {
+    "observed_months": 10,
+    "max_cross_sectional_distinct": 1
+   }
+  },
+  "CR04_Ownership_Concentration": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "crowding",
+   "data_source": "rawdata",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2726
+   }
+  },
+  "CR05_Short_Pressure_Proxy": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "crowding",
+   "data_source": "rawdata",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2697
+   }
+  },
+  "CR06_DTC_Proxy": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "crowding",
+   "data_source": "rawdata",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2725
+   }
+  },
+  "CR07_Momentum_Crowding": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "crowding",
+   "data_source": "rawdata",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2743
+   }
+  },
+  "CR08_Volume_Price_Divergence": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "crowding",
+   "data_source": "rawdata",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2707
+   }
+  },
+  "CR09_Money_Flow_Ratio": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "crowding",
+   "data_source": "rawdata",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2700
+   }
+  },
+  "CR10_Convergence_Premium": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "crowding",
+   "data_source": "rawdata",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2743
+   }
+  },
+  "CR11_Idiosyncratic_Return": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "crowding",
+   "data_source": "rawdata",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2743
+   }
+  },
+  "SE01_Consensus_Dispersion": {
+   "panel_axis": "unknown",
+   "basis": "표본 12개월 배출 0행 — 관측으로 축을 정할 수 없다",
+   "category": "crowding",
+   "data_source": "consensus",
+   "evidence": {
+    "observed_months": 0,
+    "sample_months": 12
+   }
+  },
+  "SE01_Volatility_Uncertainty": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "crowding",
+   "data_source": "rawdata",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2731
+   }
+  },
+  "SE02_Consensus_Revision": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "crowding",
+   "data_source": "consensus",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 114
+   }
+  },
+  "TR01_ADX_Proxy": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "crowding",
+   "data_source": "rawdata",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2753
+   }
+  },
+  "TR02_Trend_Consistency": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "crowding",
+   "data_source": "rawdata",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 37
+   }
+  },
+  "GR01_Revenue_Growth": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "growth",
+   "data_source": "fundamental",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2571
+   }
+  },
+  "GR02_Earnings_Growth": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "growth",
+   "data_source": "fundamental",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2491
+   }
+  },
+  "GR03_Asset_Growth": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "growth",
+   "data_source": "fundamental",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2938
+   }
+  },
+  "GR04_GPA_Growth": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "growth",
+   "data_source": "fundamental",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2321
+   }
+  },
+  "GR05_ROE_Growth": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "growth",
+   "data_source": "fundamental",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 1866
+   }
+  },
+  "GR06_OCF_Growth": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "growth",
+   "data_source": "fundamental",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2494
+   }
+  },
+  "GR07_Composite_Growth": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "growth",
+   "data_source": "fundamental",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2575
+   }
+  },
+  "IN01_CapEx_to_Assets": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "growth",
+   "data_source": "fundamental",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2546
+   }
+  },
+  "IN02_CapEx_to_Revenue": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "growth",
+   "data_source": "fundamental",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2543
+   }
+  },
+  "IN03_RD_to_Market": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "growth",
+   "data_source": "fundamental",
+   "evidence": {
+    "observed_months": 10,
+    "max_cross_sectional_distinct": 1352
+   }
+  },
+  "IN04_Net_Equity_Issuance": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "growth",
+   "data_source": "fundamental",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2562
+   }
+  },
+  "IN05_Net_Debt_Issuance": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "growth",
+   "data_source": "fundamental",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2492
+   }
+  },
+  "IN06_Investment_to_Assets": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "growth",
+   "data_source": "fundamental",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2938
+   }
+  },
+  "MK01_CAPM_Beta": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "growth",
+   "data_source": "rawdata",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2519
+   }
+  },
+  "XF_DU01_NetMargin": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "quality",
+   "data_source": "fundamental_xlsx",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2536
+   }
+  },
+  "XF_DU02_AssetTurnover": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "quality",
+   "data_source": "fundamental_xlsx",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2584
+   }
+  },
+  "XF_DU03_EquityMultiplier": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "leverage",
+   "data_source": "fundamental_xlsx",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2994
+   }
+  },
+  "XF_LL01_DebtToCapital": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "leverage",
+   "data_source": "fundamental_xlsx",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 1032
+   }
+  },
+  "XF_LL02_NetDebt": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "leverage",
+   "data_source": "fundamental_xlsx",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2995
+   }
+  },
+  "XF_LL03_CashRatio": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "leverage",
+   "data_source": "fundamental_xlsx",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2870
+   }
+  },
+  "XF_LL04_QuickRatio": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "leverage",
+   "data_source": "fundamental_xlsx",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2871
+   }
+  },
+  "XF_LL05_WorkingCapital": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "leverage",
+   "data_source": "fundamental_xlsx",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2892
+   }
+  },
+  "XF_PR01_EBITDA_Margin": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "quality",
+   "data_source": "fundamental_xlsx",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2603
+   }
+  },
+  "XF_PR02_RetainedEarnings_Ratio": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "quality",
+   "data_source": "fundamental_xlsx",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2884
+   }
+  },
+  "XF_PR03_TaxRate": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "quality",
+   "data_source": "fundamental_xlsx",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 1716
+   }
+  },
+  "XF_PR04_NetInterestMargin": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "quality",
+   "data_source": "fundamental_xlsx",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2523
+   }
+  },
+  "XF_PR05_EBITDA_to_Assets": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "quality",
+   "data_source": "fundamental_xlsx",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2631
+   }
+  },
+  "XF_EF01_InventoryTurnover": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "quality",
+   "data_source": "fundamental_xlsx",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2508
+   }
+  },
+  "XF_EF02_DaysPayable": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "quality",
+   "data_source": "fundamental_xlsx",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2358
+   }
+  },
+  "XF_EF03_DaysReceivable": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "quality",
+   "data_source": "fundamental_xlsx",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2520
+   }
+  },
+  "XF_EF04_CCC": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "quality",
+   "data_source": "fundamental_xlsx",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2324
+   }
+  },
+  "XF_GD01_GrossProfit_Growth": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "growth",
+   "data_source": "fundamental_xlsx",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2556
+   }
+  },
+  "XF_GD02_OpProfit_Growth": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "growth",
+   "data_source": "fundamental_xlsx",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2562
+   }
+  },
+  "XF_GD03_OCF_Growth": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "growth",
+   "data_source": "fundamental_xlsx",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2481
+   }
+  },
+  "XF_GD04_Dividend_Growth": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "growth",
+   "data_source": "fundamental_xlsx",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 666
+   }
+  },
+  "XF_RI01_RnD_to_Revenue": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "quality",
+   "data_source": "fundamental_xlsx",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 1975
+   }
+  },
+  "XF_RI02_CapEx_proxy": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "quality",
+   "data_source": "fundamental_xlsx",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2546
+   }
+  },
+  "XF_RI03_SGA_to_Revenue": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "quality",
+   "data_source": "fundamental_xlsx",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2591
+   }
+  },
+  "INV13_Foreign_Resid_Individual_21d": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "investor_flow",
+   "data_source": "investor_flow",
+   "evidence": {
+    "observed_months": 10,
+    "max_cross_sectional_distinct": 3362
+   }
+  },
+  "INV13_Foreign_Resid_Individual_63d": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "investor_flow",
+   "data_source": "investor_flow",
+   "evidence": {
+    "observed_months": 10,
+    "max_cross_sectional_distinct": 3344
+   }
+  },
+  "INV13_Foreign_Resid_Individual_126d": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "investor_flow",
+   "data_source": "investor_flow",
+   "evidence": {
+    "observed_months": 10,
+    "max_cross_sectional_distinct": 3325
+   }
+  },
+  "INV01_Foreign_NetBuy_20d": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "investor_flow",
+   "data_source": "investor_flow",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2618
+   }
+  },
+  "INV02_Foreign_NetBuy_60d": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "investor_flow",
+   "data_source": "investor_flow",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2618
+   }
+  },
+  "INV03_Inst_NetBuy_20d": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "investor_flow",
+   "data_source": "investor_flow",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2588
+   }
+  },
+  "INV04_Inst_NetBuy_60d": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "investor_flow",
+   "data_source": "investor_flow",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2596
+   }
+  },
+  "INV05_Foreign_Momentum": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "investor_flow",
+   "data_source": "investor_flow",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2699
+   }
+  },
+  "INV06_Inst_Momentum": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "investor_flow",
+   "data_source": "investor_flow",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 1991
+   }
+  },
+  "INV07_Retail_Contrarian": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "investor_flow",
+   "data_source": "investor_flow",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2618
+   }
+  },
+  "INV08_Foreign_Inst_Agreement": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "investor_flow",
+   "data_source": "investor_flow",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2587
+   }
+  },
+  "INV09_Flow_Persistence": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "investor_flow",
+   "data_source": "investor_flow",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 21
+   }
+  },
+  "INV10_Smart_Money_Flow": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "investor_flow",
+   "data_source": "investor_flow",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 3288
+   }
+  },
+  "INV11_Foreign_Concentration": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "investor_flow",
+   "data_source": "investor_flow",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2
+   }
+  },
+  "INV12_Supply_Demand_Imbalance": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "investor_flow",
+   "data_source": "investor_flow",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 3287
+   }
+  },
+  "AC11_Accruals_to_Assets": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "accrual",
+   "data_source": "fundamental",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2512
+   }
+  },
+  "AC18_Accrual_Quality": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "accrual",
+   "data_source": "fundamental",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2512
+   }
+  },
+  "D10_Blume_Adj_Beta": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "defense",
+   "data_source": "price",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2519
+   }
+  },
+  "D18_BAB_Rank": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "defense",
+   "data_source": "price",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2519
+   }
+  },
+  "D31_Relative_Beta": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "defense",
+   "data_source": "price",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2519
+   }
+  },
+  "Q21_Revenue_Growth": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "growth",
+   "data_source": "fundamental",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2571
+   }
+  },
+  "Q22_Earnings_Growth": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "growth",
+   "data_source": "fundamental",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2491
+   }
+  },
+  "Q34_GP_Growth": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "growth",
+   "data_source": "fundamental",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2556
+   }
+  },
+  "T01_RSI14": {
+   "panel_axis": "unknown",
+   "basis": "표본 12개월 배출 0행 — 관측으로 축을 정할 수 없다",
+   "category": "technical",
+   "data_source": "price",
+   "evidence": {
+    "observed_months": 0,
+    "sample_months": 12
+   }
+  },
+  "T03_BB20": {
+   "panel_axis": "unknown",
+   "basis": "표본 12개월 배출 0행 — 관측으로 축을 정할 수 없다",
+   "category": "technical",
+   "data_source": "price",
+   "evidence": {
+    "observed_months": 0,
+    "sample_months": 12
+   }
+  },
+  "T04_OBV21": {
+   "panel_axis": "unknown",
+   "basis": "표본 12개월 배출 0행 — 관측으로 축을 정할 수 없다",
+   "category": "technical",
+   "data_source": "price",
+   "evidence": {
+    "observed_months": 0,
+    "sample_months": 12
+   }
+  },
+  "T05_MFI14": {
+   "panel_axis": "unknown",
+   "basis": "표본 12개월 배출 0행 — 관측으로 축을 정할 수 없다",
+   "category": "technical",
+   "data_source": "price",
+   "evidence": {
+    "observed_months": 0,
+    "sample_months": 12
+   }
+  },
+  "T06_PMA5": {
+   "panel_axis": "unknown",
+   "basis": "표본 12개월 배출 0행 — 관측으로 축을 정할 수 없다",
+   "category": "technical",
+   "data_source": "price",
+   "evidence": {
+    "observed_months": 0,
+    "sample_months": 12
+   }
+  },
+  "T07_PMA20": {
+   "panel_axis": "unknown",
+   "basis": "표본 12개월 배출 0행 — 관측으로 축을 정할 수 없다",
+   "category": "technical",
+   "data_source": "price",
+   "evidence": {
+    "observed_months": 0,
+    "sample_months": 12
+   }
+  },
+  "T08_PMA60": {
+   "panel_axis": "unknown",
+   "basis": "표본 12개월 배출 0행 — 관측으로 축을 정할 수 없다",
+   "category": "technical",
+   "data_source": "price",
+   "evidence": {
+    "observed_months": 0,
+    "sample_months": 12
+   }
+  },
+  "T09_PMA120": {
+   "panel_axis": "unknown",
+   "basis": "표본 12개월 배출 0행 — 관측으로 축을 정할 수 없다",
+   "category": "technical",
+   "data_source": "price",
+   "evidence": {
+    "observed_months": 0,
+    "sample_months": 12
+   }
+  },
+  "T10_RSI28": {
+   "panel_axis": "unknown",
+   "basis": "표본 12개월 배출 0행 — 관측으로 축을 정할 수 없다",
+   "category": "technical",
+   "data_source": "price",
+   "evidence": {
+    "observed_months": 0,
+    "sample_months": 12
+   }
+  },
+  "T13_Gap": {
+   "panel_axis": "unknown",
+   "basis": "표본 12개월 배출 0행 — 관측으로 축을 정할 수 없다",
+   "category": "technical",
+   "data_source": "price",
+   "evidence": {
+    "observed_months": 0,
+    "sample_months": 12
+   }
+  },
+  "T14_HLRange": {
+   "panel_axis": "unknown",
+   "basis": "표본 12개월 배출 0행 — 관측으로 축을 정할 수 없다",
+   "category": "technical",
+   "data_source": "price",
+   "evidence": {
+    "observed_months": 0,
+    "sample_months": 12
+   }
+  },
+  "T15_AutoCorr": {
+   "panel_axis": "unknown",
+   "basis": "표본 12개월 배출 0행 — 관측으로 축을 정할 수 없다",
+   "category": "technical",
+   "data_source": "price",
+   "evidence": {
+    "observed_months": 0,
+    "sample_months": 12
+   }
+  },
+  "RE_HY_z": {
+   "panel_axis": "time_series",
+   "basis": "배출 0행 + data_source=macro_fred(시장수준 원천) — 선언 기반 판정",
+   "category": "regime",
+   "data_source": "macro_fred",
+   "evidence": {
+    "observed_months": 0,
+    "sample_months": 12,
+    "by": "declaration"
+   }
+  },
+  "RE_TS_z": {
+   "panel_axis": "time_series",
+   "basis": "배출 0행 + data_source=macro_fred(시장수준 원천) — 선언 기반 판정",
+   "category": "regime",
+   "data_source": "macro_fred",
+   "evidence": {
+    "observed_months": 0,
+    "sample_months": 12,
+    "by": "declaration"
+   }
+  },
+  "RE_VIX_z": {
+   "panel_axis": "time_series",
+   "basis": "배출 0행 + data_source=macro_fred(시장수준 원천) — 선언 기반 판정",
+   "category": "regime",
+   "data_source": "macro_fred",
+   "evidence": {
+    "observed_months": 0,
+    "sample_months": 12,
+    "by": "declaration"
+   }
+  },
+  "RE_MRS": {
+   "panel_axis": "time_series",
+   "basis": "배출 0행 + data_source=macro_fred(시장수준 원천) — 선언 기반 판정",
+   "category": "regime",
+   "data_source": "macro_fred",
+   "evidence": {
+    "observed_months": 0,
+    "sample_months": 12,
+    "by": "declaration"
+   }
+  },
+  "RE_exposure": {
+   "panel_axis": "time_series",
+   "basis": "배출 0행 + data_source=macro_fred(시장수준 원천) — 선언 기반 판정",
+   "category": "regime",
+   "data_source": "macro_fred",
+   "evidence": {
+    "observed_months": 0,
+    "sample_months": 12,
+    "by": "declaration"
+   }
+  },
+  "AC14_Discretionary_Accruals": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "accrual",
+   "data_source": "fundamental",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2460
+   }
+  },
+  "XF_Q06_Op_Margin": {
+   "panel_axis": "cross_sectional",
+   "basis": "횡단면 분산 실재(관측)",
+   "category": "quality",
+   "data_source": "fundamental_xlsx",
+   "evidence": {
+    "observed_months": 12,
+    "max_cross_sectional_distinct": 2455
+   }
+  }
+ }
+}

@@ -6,7 +6,7 @@ description: "Factor DB 팩터 조회/IC 계산 시 적용 — 288팩터, Z_Scor
 
 ### 로드
 ```r
-source("02_Infrastructure/factor_db_connector.R")
+source("02_Infrastructure/factor_db/factor_db_connector.R")
 factors <- load_month_factors(sig_date)  # C15 필수 경유
 ```
 
@@ -23,7 +23,7 @@ RE(10 Regime), CR(13 Crowding), GR(12 Growth), XF(44 xlsx-derived)
 
 ### IC 계산
 ```r
-source("02_Infrastructure/factor_db_builder.R")
+source("02_Infrastructure/factor_db/factor_db_builder.R")
 compute_all_factor_ic_monthly()  # 전기간 IC
 ```
 

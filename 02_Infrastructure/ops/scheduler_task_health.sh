@@ -109,8 +109,25 @@ for t in tasks:
         seen_next.pop(name, None)                        # 성공하면 기억을 비운다(다음 실패는 신규)
 
     ms, ag = t.get("max_stale_days"), t.get("age_days")
-    if ms and ag is not None and ag > ms:
+    # ★never_run 면제 (v10 2026-09-02): LastRunTime 이 1999-11-30 센티넬이라 age 9773일로 계산돼
+    #   08-30 등록된 주간 작업 3개(AxiomActivate·AxiomReview·WeightCatalogGrow, 첫 발화 09-05/06)가
+    #   매일 '정체 3' 거짓양성 → 텔레그램 매일(도훈 지목). rc 축은 이미 never_run 을 면제했는데
+    #   staleness 축만 빠져 있었다(비대칭). 아직 한 번도 안 돈 작업은 '되돌아오지 않는' 것이 아니다 —
+    #   예정일이 지났는데도 never_run 이면 아래 '다음 실행 없음' 축(time_scheduled ∧ next_run 없음)이 잡는다.
+    if lbl != "never_run" and ms and ag is not None and ag > ms:
         stale.append("%s(%.0f일>%s)" % (name, ag, ms))
+
+    # ★다음 실행이 없으면 그 작업은 **끝난** 것이다 — staleness 로는 절대 안 잡힌다.
+    #   반복 트리거가 만료되면 last_run 은 방금이고(age 0일) next_run 만 비는데,
+    #   판정 축이 "마지막 실행 나이" 하나라 가장 건강해 보이는 순간이 영구 정지의 순간이 된다.
+    #   실측 2026-08-31: Qvest_ReinforceAutoLoop 의 반복이 23시간 만료(StartBoundary 고정)로
+    #   08:22 에 끝났고, health 는 next_run=null 을 **기록해 두고도** age 0.04일이라 정상으로 봤다.
+    #   무인 강화 루프가 조용히 멈춘 채 2시간이 지났다.
+    #   ★시각 기반 트리거에만 건다. 로그온·부팅·이벤트 트리거는 NextRunTime 이 원래 없다
+    #     — 첫 판이 Qvest_MorningReboot(로그온 트리거)에 오탐했다. 상시 오탐은 상시 침묵이다.
+    if (t.get("time_scheduled") and state not in ("Running", "Disabled")
+            and not (t.get("next_run") or "")):
+        stale.append("%s(다음 실행 없음 — 트리거 만료)" % name)
 
 # (2026-08-01) 동시 다발 종료를 N건의 개별 실패로 세지 않는다 — **원인은 단정하지 않는다**.
 #   실측 2회, 둘 다 "동일 rc·좁은 시간창" 서명이지만 의미가 정반대였다:
@@ -237,6 +254,14 @@ log "예약작업 $N개 · 신규실패 ${nbad} · 정체 ${nst} · 진행중 ${
 # 아래 2종은 경보 대상이 아니지만 **로그에는 남긴다** — 조용해진 것과 고쳐진 것을 구분하기 위함
 [ -n "$INFLT" ] && log "  · 진행중(판정 보류): $INFLT"
 [ -n "$KNOWN" ] && log "  · 기보고 실패(재시도 대기): $KNOWN"
+
+# 2b) 해소 (v10 2026-09-02) — 전건 정상(신규·기지 실패 0 · 정체 0 · 정지 0)이면 task_health 미해소 마커를 _resolved/ 로.
+#   구판은 이 컴포넌트 마커를 아무도 옮기지 않아 07-27 이후 21개가 digest 에 영구 '열림' 이었다(open=47 의 절반).
+#   ★KNOWN(기보고 실패 재출현)이 남아 있으면 실패가 아직 살아 있는 것 — 옮기지 않는다(streak 이력 보존).
+if [ -z "$BAD" ] && [ -z "$KNOWN" ] && [ -z "$STALE" ] && [ -z "$SHUTDOWN" ] && command -v sched_mark_resolved >/dev/null 2>&1; then
+  _mv=$(sched_mark_resolved "task_health" "$BASE/.cache/scheduler_alerts")
+  [ -n "${_mv:-}" ] && log "해소: task_health 마커 ${_mv}건 _resolved/ 이동 (전건 정상)"
+fi
 
 # 3) 경보 — 무인 선언 시에만 (TTY 추론 아님. 내 시험 실행이 도훈 텔레그램으로 새는 사고 재발방지)
 #    시스템 정지는 그 자체로 경보 대상 — 4일간 무인 실행이 0 이었다는 뜻이기 때문(08-01 실측).

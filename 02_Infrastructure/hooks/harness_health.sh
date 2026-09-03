@@ -38,13 +38,16 @@ FAIL=0
 TOTAL=0
 PASS=0
 
-echo "=== Harness Health Check (v8.1) ==="
+echo "=== Harness Health Check (v10.1) ==="
 
 # v7.0/v7.1 Required Hooks (v55 legacy archived to _archive_v55/, v7.1-lite Sprint 0.3 동기화)
 # v55 legacy 제거: role_taxonomy_admission_gate.sh + cash_sleeve_validator.sh
 # 둘 다 .claude/settings.json 등록 0건 (v7.0 Sprint 5 cleanup) → required list에서도 제거
 # DEPRECATION.md 참조
-# ★v9 Lean Loop (2026-08-23) — 목록을 **현행 등록 11종 + 자기 자신**으로 축소.
+# ★v9 Lean Loop (2026-08-23) — 목록을 **현행 등록 종 + 자기 자신**으로 축소.
+#   ★v10 (2026-09-02): 등록 12종으로 갱신 — governor_concord_certifier(v10 RETIRED·등록 해제) 제거,
+#     book_write_guard(v10 08-29 승계)·backtest_contract_audit(08-24 재등록) 추가. 구 목록은 두 파일이 사라져도
+#     12/12 PASS 를 내던 낡은 초록이었다.
 #   구판은 v6.1~v8.x 누적 28종을 요구했는데, 그중 대다수는 v9 에서 등록 해제됐다
 #   (라우터 dispatch 폐지 + Stop 훅 0 + PostToolUse 2종). 목록을 그대로 두면
 #   "등록도 안 된 훅의 파일 존재"를 계속 요구하게 되고, 그건 이 검사가 답하려는
@@ -53,13 +56,15 @@ echo "=== Harness Health Check (v8.1) ==="
 #     경로로 직접 호출한다. 목록·사유·재등록 레시피 =
 #     02_Infrastructure/hooks/_archive_v8_enforcement/MANIFEST.md
 REQUIRED_HOOKS=(
-  # PreToolUse Write|Edit — 보호선
+  # PreToolUse Write|Edit — 보호선 (+ v10 BOOK 정본 writer 경유 강제)
   "safety_guard.sh"
   "legacy_write_block.sh"
+  "book_write_guard.sh"
 
-  # PreToolUse Write — 자본 게이트 + 고정축
+  # PreToolUse Write — 측정 규율 게이트(graduation HARD 3종) + 고정축 + 원장 integrity(08-24 재등록)
   "discovery_graduation_gate.sh"
   "worktask_constraint_enforcer.sh"
+  "backtest_contract_audit.sh"
 
   # PreToolUse Bash
   "telegram_direct_call_guard.sh"
@@ -67,8 +72,10 @@ REQUIRED_HOOKS=(
   # PreToolUse Agent — 지식 주입
   "axiom_context_inject.sh"
 
-  # PostToolUse Write|Edit — 자본 인증 + PIT C5
-  "governor_concord_certifier.sh"
+  # PreToolUse Read|Grep|Glob — arm 생성 세션 성과 열람 차단(평시 무발화, v10.2)
+  "arm_gen_read_guard.sh"
+
+  # PostToolUse Write|Edit — PIT C5 advisory (governor_concord_certifier 는 v10 RETIRED — 등록 해제)
   "overlay_pit_grep.sh"
 
   # SessionStart / SessionEnd
@@ -121,12 +128,13 @@ else
 fi
 
 # ERR trap 확인 — 등록 훅은 내부 오류 시 조용히 죽지 말고 fail-open/fail-closed 판정을
-#   명시 발행해야 한다. (v9 2026-08-23: 목록을 현행 등록 11종으로 교체 — 구판은 해제·부재
-#   훅 4종을 검사해 항상 침묵했다. 11종 전부 trap 보유 실측.)
-for HOOK in "safety_guard.sh" "legacy_write_block.sh" \
-            "discovery_graduation_gate.sh" "worktask_constraint_enforcer.sh" \
+#   명시 발행해야 한다. (v9 2026-08-23: 목록을 현행 등록 종으로 교체 — 구판은 해제·부재
+#   훅 4종을 검사해 항상 침묵했다. v10 2026-09-02: 등록 12종으로 동기 — book_write_guard·backtest_contract_audit
+#   추가(둘 다 trap 보유 실측), governor_concord_certifier 제거.)
+for HOOK in "safety_guard.sh" "legacy_write_block.sh" "book_write_guard.sh" \
+            "discovery_graduation_gate.sh" "worktask_constraint_enforcer.sh" "backtest_contract_audit.sh" \
             "telegram_direct_call_guard.sh" "axiom_context_inject.sh" \
-            "governor_concord_certifier.sh" "overlay_pit_grep.sh" \
+            "overlay_pit_grep.sh" \
             "boot_stamp_check.sh" "auto_commit_on_stop.sh" "auto_push_on_stop.sh"; do
   FPATH="$HOOKS_DIR/$HOOK"
   if [ -f "$FPATH" ]; then

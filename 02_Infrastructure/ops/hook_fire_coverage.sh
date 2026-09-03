@@ -43,7 +43,9 @@ MODE="${1:-detail}"
 #   ★아래 UNCOVERED 는 "등록돼 있으나 _shared_parse.sh 를 source 하지 않아 이 경로로
 #     기록되지 않는" 훅 — 커버리지 밖임을 **이름으로** 보고한다(조용히 빼지 않는다).
 EXPECTED_DEFAULT="safety_guard.sh axiom_context_inject.sh"
-UNCOVERED="discovery_graduation_gate.sh legacy_write_block.sh worktask_constraint_enforcer.sh governor_concord_certifier.sh overlay_pit_grep.sh"
+#   ★v10 (2026-09-02): governor_concord_certifier.sh 는 RETIRED·등록 해제라 커버리지 대상이 아니다(제거).
+#     등록 훅 중 _shared_parse.sh 미소싱 = book_write_guard·backtest_contract_audit·telegram_direct_call_guard 추가.
+UNCOVERED="discovery_graduation_gate.sh legacy_write_block.sh worktask_constraint_enforcer.sh book_write_guard.sh backtest_contract_audit.sh telegram_direct_call_guard.sh overlay_pit_grep.sh"
 read -r -a EXPECTED <<< "${QVEST_HFC_EXPECTED:-$EXPECTED_DEFAULT}"
 
 emit_line() { if [ "$MODE" = "--boot" ]; then echo "[boot] $1"; else echo "$1"; fi; }

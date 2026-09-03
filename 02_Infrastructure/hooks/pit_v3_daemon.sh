@@ -1,4 +1,7 @@
 #!/usr/bin/env bash
+# ★RETIRED (v10 2026-09-03) — settings.json·라우터 어디에도 등록 이력이 없는 pre-v9 훅.
+#   재등록 금지(되살리려면 v10 폐지 개념 분기부터 제거하고 양성/음성 대조를 새로 만들 것). 파일은 사료 존치.
+#   ★PIT 기계 본체가 아니다 — archived forge_code_guard.sh 의 비동기 래퍼일 뿐(정본 = lookahead_detector.R·pit_enforcement.R).
 # pit_v3_daemon.sh — PIT Engine v3 비동기 분석 데몬 (Phase C1)
 #
 # 역할: forge_code_guard.sh의 PreToolUse[Bash] critical path에서

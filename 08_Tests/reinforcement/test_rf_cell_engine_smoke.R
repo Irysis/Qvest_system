@@ -190,5 +190,49 @@ if (!length(hit)) {
 }
 
 writeLines("")
+writeLines("=== C. 오버레이 행동 축 — 스칼라 vs 종목별 (v10.2) ===")
+
+within_sd <- function(env) {
+  w <- get("PORTFOLIO", envir = env, inherits = FALSE)
+  z <- as.data.table(w)[, .(s = stats::sd(Weight)), by = Date]
+  max(z$s[is.finite(z$s)], na.rm = TRUE)
+}
+
+# C1. 스칼라 arm(빌트인) — EW 기저에 걸면 날짜 안 비중은 여전히 균등해야 한다
+rs <- run_cell(base_spec(factor2 = list(kind = "none"),
+                         overlay = list(kind = "dd_brake", arm_id = "dd_brake_q")))
+if (is.null(rs$err) && identical(rs$out, "PORTFOLIO")) {
+  s <- within_sd(rs$env)
+  if (s < 1e-12) ok("C1 스칼라 arm — 날짜 안 비중 균등 유지(대칭 축소)") else
+    ng("C1 스칼라 arm 인데 횡단면 분산이 생겼다", sprintf("max sd %.3e", s))
+} else ng("C1 스칼라 arm 실행 실패", rs$err %||% "산출물 없음")
+
+# C2. 벡터 arm(파일 디스패치) — 같은 기저에서 날짜 안 비중이 갈려야 한다
+rv <- run_cell(base_spec(factor2 = list(kind = "none"),
+                         overlay = list(kind = "dbeta_tilt", arm_id = "dbeta_tilt_rank")))
+if (is.null(rv$err) && identical(rv$out, "PORTFOLIO")) {
+  s <- within_sd(rv$env)
+  if (s > 1e-9) ok(sprintf("C2 벡터 arm — 횡단면 비대칭이 비중까지 전달 (max sd %.4f)", s)) else
+    ng("C2 벡터 arm 인데 비중이 균등하다 — 비대칭 미전달")
+} else ng("C2 벡터 arm 실행 실패", rv$err %||% "산출물 없음")
+
+# C3. 고정 축 불변 — 벡터판도 Sigma w <= 1 을 지켜야 한다(현금은 잔여)
+if (is.null(rv$err) && identical(rv$out, "PORTFOLIO")) {
+  w <- as.data.table(get("PORTFOLIO", envir = rv$env, inherits = FALSE))
+  smax <- max(w[, .(s = sum(Weight)), by = Date]$s)
+  if (smax <= 1 + 1e-8 && all(w$Weight >= 0))
+    ok(sprintf("C3 고정 축 유지 — Sigma w 최대 %.6f · 롱온리", smax)) else
+    ng("C3 고정 축 위반", sprintf("Sigma w 최대 %.6f", smax))
+}
+
+# C4. 미지 kind — 파일도 없으면 경로를 알려주며 죽어야 한다(조용한 통과 금지)
+ru <- run_cell(base_spec(factor2 = list(kind = "none"),
+                         overlay = list(kind = "zz_no_such_arm", arm_id = "x")))
+if (!is.null(ru$err) && grepl("zz_no_such_arm", ru$err, fixed = TRUE))
+  ok("C4 미지 kind — 파일 부재를 지목하며 정지") else
+  ng("C4 미지 kind 가 조용히 통과했다", ru$err %||% "오류 없음")
+
+writeLines("")
 writeLines(sprintf("합계: 통과 %d · 실패 %d", PASS, FAIL))
+cat(sprintf('{"test":"rf_cell_engine_smoke","pass":%d,"fail":%d,"total":%d}\n', PASS, FAIL, PASS + FAIL))
 if (FAIL > 0L) quit(status = 1L)

@@ -27,7 +27,7 @@ suppressPackageStartupMessages({ library(data.table) })
 }
 
 # 종목당 trailing 윈도우로 단일값 산출 (RAWDATA sorted by Ticker,Date; Date<=sig_date 가정)
-.cf_apply <- function(dt, tmpl, p) {
+.cf_apply <- function(dt, tmpl, p, sig_date = NULL) {
   W <- as.integer(p$window %||% 0L); K <- as.integer(p$skip %||% 0L)
   col <- p$col %||% "Ret"
   if (tmpl == "momentum") {
@@ -52,6 +52,22 @@ suppressPackageStartupMessages({ library(data.table) })
   } else if (tmpl == "gap_freq") {
     dt[, .(Raw_Value = { n<-.N; if (n < W+1L) NA_real_ else {
       idx<-(n-W+1L):n; up<-Open[idx] > Close[idx-1L]; mean(up, na.rm=TRUE) } }), by=Ticker]
+  } else if (tmpl == "engine") {
+    # ★동결 패널 소비 — 논문 충실구현이 낸 (Date,Ticker,Score) 를 그대로 읽는다.
+    #   PIT: 패널의 Date 는 시그널일이고 Score 는 그 날까지의 데이터로 계산됐다(엔진이 강제).
+    #   sig_date 에 정확히 해당 행이 없으면 **그 이전 최신 시그널일**을 쓴다 — 미래를 당기지 않는다.
+    pp <- p$panel_path
+    if (is.null(pp) || !nzchar(pp) || !file.exists(pp))
+      stop(sprintf("engine 템플릿: 동결 패널 부재 (%s)", pp %||% "NULL"))
+    suppressPackageStartupMessages(library(arrow))
+    PN <- as.data.table(arrow::read_parquet(pp))
+    if (!all(c("Date", "Ticker", "Score") %in% names(PN)))
+      stop("engine 템플릿: 패널에 Date/Ticker/Score 가 없다")
+    if (!inherits(PN$Date, "Date")) PN[, Date := as.Date(Date)]
+    sd0 <- as.Date(sig_date %||% max(PN$Date, na.rm = TRUE))
+    av <- PN[Date <= sd0, unique(Date)]
+    if (!length(av)) return(data.table(Ticker = character(0), Raw_Value = numeric(0)))
+    PN[Date == max(av) & is.finite(Score), .(Ticker = as.character(Ticker), Raw_Value = as.numeric(Score))]
   } else {
     stop(sprintf("unknown template '%s'", tmpl))
   }
@@ -74,7 +90,7 @@ compute_custom_factors <- function(RAWDATA, sig_date, FUND = NULL, CONSENSUS = N
     if (isTRUE(s$disabled)) next
     id <- s$id; tmpl <- s$template
     if (is.null(id) || is.null(tmpl)) next
-    val <- tryCatch(.cf_apply(dt, tmpl, s$params %||% list()),
+    val <- tryCatch(.cf_apply(dt, tmpl, s$params %||% list(), sig_date = sig_date),
                     error = function(e) { cat(sprintf("  [custom] %s ERR: %s\n", id, conditionMessage(e))); NULL })
     if (!is.null(val) && nrow(val) > 0) {
       val <- val[!is.na(Raw_Value)]

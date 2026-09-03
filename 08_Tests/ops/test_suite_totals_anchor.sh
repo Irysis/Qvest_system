@@ -54,6 +54,27 @@ chk "I1 러너 총계(1565)를 집는다 — 앞선 테스트 줄(7)이 아님" 
 chk "I2 fail 도 러너 것(2)" "2" "$(printf '%s' "$got" | grep -oE '[0-9]+ fail' | grep -oE '[0-9]+')"
 
 echo
+echo "=== ★현행 5-part 계약 (2026-08-24 러너가 unmeasured 구간 추가 — v10 2026-09-03 수리) ==="
+#   구판 파서는 4-part 를 **정확히** 요구해 5-part 줄에 매치 0 → 3-part 폴백이 앞선 개별 테스트 줄을 집었다.
+#   실측 결과 hooks=12(실제 3308) · fail=0(실제 6). 이 픽스처가 그 자리를 양성 대조로 고정한다.
+# 실제 러너 출력 모양: 개별 테스트의 3-part 줄들 + 맨 끝 러너 5-part 총계(구 4-part 줄은 없다)
+CURRENT='─── Running: test_a ───
+FINAL: 7 pass / 0 fail / 7 total
+─── Running: test_b ───
+FINAL: 12 pass / 0 fail / 12 total
+SKIPPED: (none)
+FINAL: 3302 pass / 6 fail / 7 skipped / 9 unmeasured / 3308 total'
+got5=$(st_pick_hooks_final "$CURRENT")
+chk "C1 5-part 러너 총계(3308)를 집는다" "3308" "$(tot "$got5")"
+chk "C2 fail 도 러너 것(6) — 앞선 개별 테스트의 0 이 아님" "6" "$(printf '%s' "$got5" | grep -oE '[0-9]+ fail' | grep -oE '[0-9]+')"
+chk "C3 unmeasured 구간(9)이 보존된다" "9" "$(printf '%s' "$got5" | grep -oE '[0-9]+ unmeasured' | grep -oE '[0-9]+')"
+
+echo "--- 돌연변이: 5-part 앵커를 제거하면 오늘의 결함이 재현되는가(구판=개별 줄 12를 집음) ---"
+mut5=$(printf '%s' "$CURRENT" | grep -oE 'FINAL: [0-9]+ pass / [0-9]+ fail / [0-9]+ skipped / [0-9]+ total' | tail -1)
+[ -z "$mut5" ] && mut5=$(printf '%s' "$CURRENT" | grep -oE 'FINAL: [0-9]+ pass / [0-9]+ fail / [0-9]+ total' | tail -1)
+chk "C4 돌연변이(구판 2단 앵커) → 개별 테스트 줄(12)로 뒤집힘 = 검출력 실증" "12" "$(tot "$mut5")"
+
+echo
 echo "=== 양성 대조: 러너 총계만 있는 정상 출력 ==="
 CLEAN='SKIPPED: (none)
 FINAL: 800 pass / 0 fail / 3 skipped / 800 total'

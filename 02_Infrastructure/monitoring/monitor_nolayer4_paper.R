@@ -107,13 +107,20 @@ if (Sys.getenv("NOLAYER4_MONITOR_TG","1") != "1") {
   cat("[monitor] TG suppressed (NOLAYER4_MONITOR_TG!=1)\n")
 } else tryCatch({
   source(file.path(ROOT,"02_Infrastructure/telegram/telegram_notify.R"))
-  hd <- if (STALE) "⚠️ noLayer4 페이퍼 트래킹 — 시리즈 결손 (성과 반영 안 됨)"
-        else if (alert) "⚠️ noLayer4 페이퍼 트래킹 — 봉인구간 하단 침범 (도훈 확인)"
-        else "noLayer4 book 페이퍼 트래킹 월간 리포트"
+  ## ★v10 (2026-09-03): §5.6b 계층 표제 [BOOK] · agent Monitoring(v10 퇴역) → Book.
+  .bkid <- tryCatch({
+    .br  <- jsonlite::fromJSON(file.path(ROOT, "06_Registry/book/book_registry.json"), simplifyVector = FALSE)
+    .act <- Filter(function(e) identical(e$status, "active"), .br$entries)
+    .mm  <- Filter(function(e) identical(e$strategy_id, BOOK_ID), .act)
+    if (length(.mm)) .mm[[1]]$book_id else if (length(.act)) .act[[1]]$book_id else "BOOK"
+  }, error = function(e) "BOOK")
+  hd <- if (STALE) sprintf("[BOOK] 경보 — %s 트래킹 시리즈 결손 (성과 반영 안 됨)", .bkid)
+        else if (alert) sprintf("[BOOK] 경보 — %s 봉인구간 하단 침범 (도훈 확인)", .bkid)
+        else sprintf("[BOOK] 트래킹 — %s 월간 리포트", .bkid)
   body <- if (length(msg_lines)) paste(msg_lines, collapse=" · ")
           else sprintf("신규 실현월 없음 · 시리즈 종점 %s = 기대치, 정상.", SERIES_MAX)
   if (nchar(body) > 95) body <- substr(body,1,95)
-  tg_agent_brief(agent="Monitoring", title=hd,
+  tg_agent_brief(agent="Book", title=hd,
     sections=list(
       list(type="summary", emoji=if(alert)"⚠️" else "📈", body=body),
       list(type="kv", emoji="📊", heading="트래킹 상태",

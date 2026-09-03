@@ -69,4 +69,6 @@ if (grepl("grade_basis = NA_character_", rm_txt, fixed = TRUE) &&
 } else ng("④ register_module grade_basis 배선 부재")
 
 cat(sprintf("결과: PASS=%d FAIL=%d\n", pass, fail))
+## ★러너 요약 계약 (v10 2026-09-03) — 없으면 run_all_hooks.sh 가 UNMEASURED 로 계상해 이 스위트의 단언이 총계에 0 으로 들어간다.
+cat(sprintf('{"test":"l2_pool_grade_floor","pass":%d,"fail":%d,"total":%d,"skipped":0}\n', pass, fail, pass + fail))
 if (fail > 0L) quit(status = 1L)

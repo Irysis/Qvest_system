@@ -93,7 +93,14 @@ setorder(dn,date); fwrite(dn,dn_path)
 if(send_tg) tryCatch({
   source(file.path(ROOT,"02_Infrastructure/telegram/telegram_notify.R"))
   top <- stk[order(-Weight)][seq_len(min(5,nrow(stk)))]
-  tg_agent_brief(agent="Monitoring", title="noLayer4 book 데일리 성과 (모닝브리핑)",
+  ## ★v10 (2026-09-03): agent Monitoring(v10 퇴역) → Book · §5.6b 계층 표제 [BOOK].
+  .bkid <- tryCatch({
+    .br  <- jsonlite::fromJSON(file.path(ROOT, "06_Registry/book/book_registry.json"), simplifyVector = FALSE)
+    .act <- Filter(function(e) identical(e$status, "active"), .br$entries)
+    .mm  <- Filter(function(e) identical(e$strategy_id, BOOK_ID), .act)
+    if (length(.mm)) .mm[[1]]$book_id else if (length(.act)) .act[[1]]$book_id else "BOOK"
+  }, error = function(e) "BOOK")
+  tg_agent_brief(agent="Book", title=sprintf("[BOOK] 트래킹 — %s 일별 (%s)", .bkid, as.character(last_d)),
     sections=list(
       list(type="summary", emoji="📈", body=sprintf("현 라이브 북 평가 (리밸 %s 이후 %d거래일). 노출 %.0f%%·현금 %.0f%% (Layer4 제거·m4×β_R05).", reb_date, length(days), invested*100, cash*100)),
       list(type="kv", emoji="📊", heading=sprintf("성과 북/KOSPI (기준 %s)", last_d),

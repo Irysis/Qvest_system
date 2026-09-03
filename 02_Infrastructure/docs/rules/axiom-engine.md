@@ -39,7 +39,7 @@ L-code(모드별 emit v2 — 승격축 필드 포함) → harvest(v2: grade norm
 ```
 
 - **재등재 supersede (2026-08-02)**: `cluster_extractor.build_distilled` 후-패스 `supersede_subsumed`가 **부분집합 구 카드를 자동 회수**(status=expired, `superseded_by=<new_id>`). 클러스터가 supporting L-code 성장으로 새 dist_id에 재등재될 때 구 카드가 남아 pending 백로그가 부푸는 갭(07-17 49건 → 08-02 89건, 부분집합 쌍 30) 차단. 판정 = **진부분집합 ∧ family/polarity/type/research_mode 전부 동일 ∧ 지식 손실 0(구 카드 L-code 전량 포함) ∧ 구 카드 저술 지식 미보유**. `distilled/promoted/quarantined_evidence`는 대상 제외(활성 카드 자동 회수 금지) — 07-18 forward-migration(refined 조상의 정제 승계)과 상보: 저술 지식이 있으면 supersede가 아니라 migration/수동 /cleaner 소관. 카드 파일 삭제 없음(status 전환만). 가드 `08_Tests/axiom/test_distilled_supersede.py`(배터리 등재, 돌연변이 5축).
-- **4 모드**: alpha_search(**proxy** — mode-local 한정) / QEPM(**backtested** forge) / factor_rotation(**backtested** build_bt_result+essence_score) / RAMP(**backtested** canonical_screen_bt/build_bt_result — `docs/rules/ramp.md`). modecode AS/QPM/FR/RAMP (`lcode_emit.R::.LCODE_MODE_PREFIX` = `promote.R::.MODE_PREFIX` 정합).
+- **4 모드**: alpha_search(**proxy** — mode-local 한정) / QEPM(**backtested** forge) / factor_rotation(**backtested** build_bt_result+essence_score) / RAMP(**backtested** canonical_screen_bt/build_bt_result — `docs/rules/ramp.md` ★RETIRED. **v9.21 2026-08-24 RAMP 진입점 퇴임** — modecode RAMP 는 `promote.R::.MODE_PREFIX`·구 L-code 재판독 호환용 사료이며 신규 라운드는 없다). modecode AS/QPM/FR/RAMP (`lcode_emit.R::.LCODE_MODE_PREFIX` = `promote.R::.MODE_PREFIX` 정합).
 - **2-tier**: mode-local `active/modes/<mode>/AX-<MODE>-NNN.json` + global `active/AX-NNN.json`.
 
 ## §2. 안전 불변식 (절대 위반 금지 — v2 불변)
@@ -115,7 +115,7 @@ L-code(모드별 emit v2 — 승격축 필드 포함) → harvest(v2: grade norm
 | 모드 | emit (1지점) | consume (1지점) |
 |---|---|---|
 | alpha-search | `run_alpha_search.R` 기배선 유지 — falsification만 구조체 전환 | SKILL 조회 의무 기존 완비 (no-op) |
-| QEPM | judge verdict finalize 직후 `emit_qepm_lcode` 의무 (essence_score 산출치 port_t/oos/falsification 전달; governor DEFER 시 `source="governor_admission"`) | `/worktask` create 시 `hypothesis_index` lookup 의무 — FAIL/KILL/DISTILLED_NEG 히트 시 차별점 명시 없인 진행 금지(INV-7 재도전 사유 기록) |
+| QEPM | judge verdict finalize 직후 `emit_qepm_lcode` 의무 (essence_score 산출치 port_t/oos/falsification 전달; **legacy WT 한정** — `source="governor_admission"` enum(`lcode_emit.R`)·GV prefix 는 구 L-code 재판독 호환으로만 존치. v10 governor 폐지 — 신규 전이 없음) | `/worktask` create 시 `hypothesis_index` lookup 의무 — FAIL/KILL/DISTILLED_NEG 히트 시 차별점 명시 없인 진행 금지(INV-7 재도전 사유 기록) |
 | FR | `run_wf_ensemble.R` fr 레지스트리 등재 직후 `emit_fr_lcode` 1콜 | SKILL Step-0 지식 대조 의무 (hypothesis_index + 인접 모드 grade F 스캔) |
 | RAMP | `ramp_loop.R` 기배선 — construction_type 필수 인자화 + `run_ramp_graduation.R` 실측치 자동 전달 | `ramp_observe()` xmode_keywords 교차조회 |
 

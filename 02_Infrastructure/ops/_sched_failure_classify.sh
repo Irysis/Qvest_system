@@ -27,7 +27,9 @@ sched_classify_failure() {
   #   ∴ 마지막 실행 구간(가장 최근 시작 마커 이후)만 본다. 마커가 없으면 짧은 꼬리로 제한.
   local tail_txt=""
   if [ -n "$log" ] && [ -f "$log" ]; then
-    tail_txt=$(awk '/\[(alpha_queue|router|recheck|modeq|paper-recharge)\] (start|trigger)/{buf=""} {buf=buf $0 ORS} END{printf "%s", buf}' "$log" 2>/dev/null)
+    # ★v10 2026-09-03: 강화 무인 러너 태그 추가 — 실측 시작 마커 `[rp_auto] start`(rf_replication_auto) ·
+    #   `[rf_par] …`(reinforce_auto_parallel). 구 태그(alpha_queue/recheck/modeq)는 퇴역 레인이나 사료 로그 파싱을 위해 유지.
+    tail_txt=$(awk '/\[(alpha_queue|router|recheck|modeq|paper-recharge|rp_auto|rf_par|reinforce)\] (start|trigger)/{buf=""} {buf=buf $0 ORS} END{printf "%s", buf}' "$log" 2>/dev/null)
     [ -z "$tail_txt" ] && tail_txt=$(tail -n 15 "$log" 2>/dev/null)
   fi
 
@@ -404,7 +406,7 @@ suppressWarnings(suppressMessages({
   source(file.path(root, "02_Infrastructure", "telegram", "telegram_notify.R"))
 }))
 invisible(tryCatch(tg_agent_brief(
-  agent = "Q-Lead", title = "무인 스케줄러 경보 — ${comp}",
+  agent = "Q-Lead", title = "[무인] 스케줄러 경보 — ${comp}",
   relaxed = TRUE, force = TRUE, lock_scope = "sched_${comp}_${reason}_${today}",
   sections = list(
     list(type = "summary", emoji = "\U0001F6A8",
@@ -414,7 +416,10 @@ invisible(tryCatch(tg_agent_brief(
   )
 ), error = function(e) NULL))
 RS
-  "$rs" "$rfile" >/dev/null 2>&1 || true
+  # (v10 2026-09-02) stdout 은 사후 증거로 남기고(구판은 /dev/null — '무엇이 발송됐나' 의 유일 증거가 이 .R 파일이었다),
+  #   발송 성공 시 생성 스크립트를 지운다(마커 디렉터리에 57개 누적). 실패 시 사후 분석용으로 보존.
+  if "$rs" "$rfile" >> "$adir/_tg_alert_send.log" 2>&1; then rm -f "$rfile"; fi
+  return 0
 }
 
 sched_credentials_guidance() {

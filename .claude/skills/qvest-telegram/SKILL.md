@@ -205,7 +205,7 @@ R `02_Infrastructure/telegram/telegram_notify.R::.TG_CONFIG` list와 1:1 동기�
 
 **렌더링 차이**: relaxed=TRUE면 `bullet` 항목을 빈 줄(`\n\n`)로 분리한다(긴 영어 제목이 모바일에서 줄바꿈돼 붙어 보이는 것 방지, 도훈 2026-06-18). 일반(FALSE)은 단일 줄바꿈 유지.
 
-- **기본값 `FALSE`** — 일반 에이전트(alpha/risk/optimizer/judge/governor/Q-Lead 등)는 **사용 금지**. §2 한글 규율 그대로 유지.
+- **기본값 `FALSE`** — 일반 에이전트(alpha/risk/optimizer/judge/book/Q-Lead 등)는 **사용 금지**. §2 한글 규율 그대로 유지.
 - **유일 허용 용도** = 영어 논문 제목 등 고유명사 콘텐츠를 그대로 노출해야 하는 브리핑. 현재 유일 사용처 = 페이퍼 적재 digest (`02_Infrastructure/tools/paper_recharge_daily.R`, "오늘 적재 논문" bullet에 `영어제목 (한글요약)` 표시).
 
 ---
@@ -288,7 +288,7 @@ R `02_Infrastructure/telegram/telegram_notify.R::.TG_CONFIG` list와 1:1 동기�
 | **알고리즘/통계** | Pareto / Sharpe / Newey-West / HRP / MVO / CVaR / ERC / GARCH / HMM / EWMA / EM |
 | **메트릭** | TDC / MDD / IC / ICIR / DSR / TE / VaR / CAGR / SUE / ESBR / ADV / FF3 / FF5 / MRS |
 | **시스템 용어** | PIT / OOS / GPU / ML / NN / RL / EW / JSON / API |
-| **Agent 이름** | Q-Lead / Alpha / Risk / Optimizer / **Forge** / Judge / Governor / Scout / Execution / Monitoring / **Architect** / **Codex** |
+| **Agent 이름** | Q-Lead / Alpha / Risk / Optimizer / **Forge** / Judge / **Book**(book-tracker) / **AlphaSearch** / **Architect** · (legacy 호출자 잔존: Monitoring — noLayer4 월간·morning_briefing·ae_crisis_tripwire 가 Book 으로 이관될 때까지 허용) · (사료: Governor · Scout · Execution · Codex — 역사 메시지 전용) |
 
 ❌ **자의적 한글 변형 금지** (라이트지비엠 / 다각화비 / 포지/코덱스/아키텍트 등 X — 영어 원어 retain)
 
@@ -389,14 +389,22 @@ R `02_Infrastructure/telegram/telegram_notify.R::.TG_CONFIG` list와 1:1 동기�
 | 발원 | 표제 규약 |
 |---|---|
 | 1계층 충실구현 | `[1계층] 알파 서칭 — {전략} 충실구현 (등급 {A/B/C/F})` |
-| 1계층 강화 | `[1계층·강화 n/20] {전략} — {축} (등급 {g})` (축 = 멀티팩터/비중방법론/리스크오버레이/결합) |
+| 1계층 강화 | `[1계층·강화 n/25] {전략} — {축} (등급 {g})` (축 = 멀티팩터/비중방법론/유니버스/리스크오버레이/결합 · 분모 = 원장 max_attempts) |
 | 2계층 리서치 | `[2계층] 전략 로테이션 — {FR_id} (등급 {g})` |
 | 2계층 강화 | `[2계층·강화 n] {lineage} — {국면식별\|전략결합} (등급 {g})` (무한 — 분모 없음) |
 | Judge | `[Judge] PIT 검증 — {id} ({PASS\|FAIL})` |
 | BOOK | `[BOOK] 등록 — {book_id}` / `[BOOK] 트래킹 — {book_id}` / `[BOOK] 경보 — {book_id} drift` |
 | 논문 트리아지(무인) | `[1계층] 논문 트리아지 — {날짜}` |
+| 논문 수집(무인) | `[1계층] 논문 수집 — {날짜} (신규 n편)` · 상세 `[1계층] 논문 수집 상세 n/N` (신규 0·등록 0·죽은 링크 0 이면 **미발송**) |
+| 무인 충실구현 | `[1계층] 무인 {충실구현\|변형구현} 완료 — 등급 {g} · 강화 {생략\|개시}` / 실패 시 `[1계층] 무인 충실구현 실패 — 세션 착수 필요` |
+| 강화 승격·소진 | `[1계층·승격] {등급} 등급 구성 추가 강화 개시 (깊이 {d})` / `[1계층] 강화 {N}회 소진 — 다음 논문 충실구현 대기` |
+| 공리·결합·팩터(무인) | `[1계층] 공리 자동 활성화 — {n}건` / `[1계층] 논문 결합 검토 — 후보 {n}쌍` / `[1계층] 팩터 DB 자동등록 — {fid} (등급 {g})` |
+| BOOK 트래킹·코멘트 | `[BOOK] 트래킹 — {book_id} {월} 확정 비중` / `[BOOK] 코멘트 — {book_id} {월} {topic}` |
+| 무인 경보(스케줄러·좌초·집계) | `[무인] 스케줄러 경보 — {comp}` / `[무인] 좌초 수리 경보 — worktree 미반영 감지` / `[무인] 일일 집계 — {날짜}` |
 
 본문 양식(5섹션·2차트·kv 원표기)은 현행 유지 — 계층 태그만 추가다.
+★강제 지점(v10 2026-09-03): `telegram_notify.R::tg_agent_brief` 가 계층 태그 없는 표제를 **WARN**(차단 아님)으로 잡고
+`.cache/scheduler_alerts/_layer_tag_missing.log` 에 적립한다 — caller 의무가 조용히 빠지지 않게.
 
 ★**지표·판정축은 번역하지 않는다**: `PORT_t` · `Calmar` · `DSR` · `OOS retention` · `IR` · `Sharpe` ·
 등급 `A/B/C/F`. §5 사전의 한글 정통 용어(샤프지수·최대낙폭 등)는 **서술문 안에서** 쓰고,
@@ -426,7 +434,7 @@ R `02_Infrastructure/telegram/telegram_notify.R::.TG_CONFIG` list와 1:1 동기�
 
 | 필드 | 내용 | 예 |
 |---|---|---|
-| **단계** | 파이프라인 위치 (★v10 값) | `1계층 팩터전략 리서치 — 충실구현` / `1계층 강화 n/20` / `2계층 전략 로테이션` / `2계층 강화 n` / `Judge PIT 검증` / `BOOK 트래킹` |
+| **단계** | 파이프라인 위치 (★v10 값) | `1계층 팩터전략 리서치 — 충실구현` / `1계층 강화 n/25` / `2계층 전략 로테이션` / `2계층 강화 n` / `Judge PIT 검증` / `BOOK 트래킹` |
 | **대상** | 전략 id · 논문/가설 식별자 | `STR_AS_20260612_154914_1055315` · `FQ-182` · `arXiv 2410.14841` |
 | **위치** | 라운드 n번째 · 강화면 단계 ①/②/③ · 큐 잔량 | `라운드 3 · 강화 ②비중 방법론 · 큐 open 92` |
 | **직전 판정** | 등급 + PORT_t (연속성 — 이 라운드가 무엇 위에 서 있는지) | `직전 Grade B · PORT_t 2.23` |
@@ -525,7 +533,11 @@ tg_agent_brief(
 )
 ```
 
-### 7.4 Judge Gate 판정 (v7 — 판정 평문 1줄 의무)
+### 7.4 Judge PIT 검증 (v10 — 판정 평문 1줄 의무)
+
+★v10: Judge = **PIT 전담**이다. 아래 v7 예시의 '운용 승격 권고'·'자본 배정 후보'·다중검정 t/DSR 인용은 **폐지된 Gate 층 어휘**다 —
+v10 표제는 `[Judge] PIT 검증 — {id} ({PASS|FAIL})`, kv 는 `PIT C1~C15 / detect_lookahead / lag-1 스트레스 / 재현` 이고
+등급 수치는 `essence` 산출값을 **인용만** 한다(Judge 는 재채점하지 않는다). 아래 블록은 사료.
 
 ```r
 tg_agent_brief(
@@ -549,7 +561,11 @@ tg_agent_brief(
 )
 ```
 
-### 7.5 Governor admit
+### 7.5 (v9 사료) Governor admit — v10 에서는 `[BOOK] 등록` 표제를 쓴다
+
+★v10 대체 예시: `tg_agent_brief(agent = "Book", title = "[BOOK] 등록 — BOOK_0002 (STR_xxxx)", ...)` —
+summary 는 "essence Grade A + Judge PIT PASS → `register_book_entry`(도훈 confirm)", table 은 등록 frozen 스펙,
+bullet 은 트래킹 규약(`/book`). 아래 블록은 사료.
 
 ```r
 tg_agent_brief(
@@ -650,6 +666,9 @@ tg_agent_brief(
 
 ## Change log
 
+- **2026-09-03 v10.1**: §5.6b 표에 무인 발송 7종(논문 수집·무인 충실구현·승격/소진·공리/결합/팩터·BOOK 트래킹/코멘트·무인 경보) 실측 포맷 등재 + `tg_agent_brief` 계층 태그 WARN 강제 지점 명기. Agent 표에서 Governor/Scout/Execution/Codex 를 사료로, Book/AlphaSearch 를 현행으로. §7.4 Judge = PIT 전담(구 Gate 어휘 사료화) · §7.5 → `[BOOK] 등록` 대체 예시.
+- **2026-08-29 v10**: §5.6b 계층 표제 정본 신설(`[1계층]`/`[2계층]`/`[Judge]`/`[BOOK]`) — 도훈 지시 "계층별 구분을 구독자가 인지할 수 있는 방식으로".
+- **2026-08-24 v8**: 전문 독자 기준 — 원칙 8 개정 + §5.6 표시 용어 정본(사다리✗ → 강화 프로세스○).
 - **2026-08-21 v7.2 (도훈 지시 — 차트 형태 자유화)**: 원칙 9 의 사실상 막대·표준3종 한정을 해제 — 형태는 연구 내용이 정한다(분포=히스토그램·분위 프로파일 / 국면=음영·박스 / 횡단면=산점·히트맵 등, ggplot2 직접 작성 + `charts=` 첨부). 표준 3종은 권장 기본값으로 유지, 규율 3항(계약 수치만·stage_artifacts 보존·최소 1장) 불변. 배경 = 하네스 목적은 알파 서칭 능력 강화 — v8.4 분포 리서치 산출이 막대로 표현 불가.
 - **2026-07-11 v7.1 (도훈 mandate — 실측 시각화 의무)**: §2 원칙 9 신설 — 실측 수치 보고 = `charts=` 그래프 첨부 의무("글만 오니까 밋밋하고 직관적이지가 않아"). 표준 생성기 `02_Infrastructure/telegram/tg_chart_pack.R` 신설(표준 3종: 누적수익 로그·연간수익 막대·낙폭 수중곡선 + sweep 비교 가로막대 + bt_result 계약 래퍼). 규율: 차트팩 = 시각화 전용(수치 계산 금지, metrics_note는 계약 산출값만)·PNG는 stage_artifacts/ 보존. 면제 = 수치 없는 착수/상태/스펙 알림. 기존 caller 비파괴(charts= 기존 파라미터 활용).
 - **2026-07-10 v7 (도훈 mandate — 비전공자 가독화, 전문용어 유지)**: 원칙 8 신설(비전공자 1분 이해 3장치 — ①한줄 결론 평문 ②"쉬운 설명" 섹션 의무(R warn-level) ③자동 용어 풀이 footer) + §5.5 용어 뜻 사전(`.METRIC_MEANING`, 뜻+판정기준 40자 내외) + §6 표준 4→5섹션(쉬운 설명 삽입) + 판정 평문 1줄 의무 + `.TG_CONFIG$GLOSSARY_MAX_BYTES=900` + `tg_agent_brief(glossary=TRUE)` 기본 ON. 기존 자동 caller 비파괴(glossary는 자동 부착, 쉬운 설명 부재는 warn만).

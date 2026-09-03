@@ -2,7 +2,7 @@
 
 ## Active Version
 
-**Qvest v10.0 — 2계층 리서치(팩터전략/전략로테이션) · BOOK · Judge=PIT 전담 · lockbox/governor 폐지** (세션 모델 정본 `claude-fable-5`. 2026-08-29 도훈 지시. 플랜 `~/.claude/plans/qvest-2-moonlit-galaxy.md` · 등록 훅 12 · 직전 판 v9.21 · 롤백 태그 `pre-v10-2layer`)
+**Qvest v10.2 — 2계층 리서치(팩터전략/전략로테이션) · BOOK · Judge=PIT 전담 · 강화 LLM 재귀 루프(횡단면 오버레이 축)** (세션 모델 정본 `claude-fable-5`. 2026-08-29 도훈 지시. 플랜 `~/.claude/plans/qvest-2-moonlit-galaxy.md` · 등록 훅 13 · 직전 판 v9.21 · 롤백 태그 `pre-v10-2layer`)
 
 > **★버전·모델 표기 단일 출처**: 위 줄이 정본(`boot_currency_check.sh` C0 파생). 타 문서는 위임.
 
@@ -25,9 +25,9 @@
 ## 2계층 파이프라인 (v10)
 
 ```
-[무인=수집만] paper_recharge(팩터전략 단일목적·고전 시드) → paper_key dedup → 트리아지 → 큐
+[무인] 수집(paper_recharge→dedup→트리아지→큐) + **강화**(reinforce_auto_run · 규칙격자 · reinforce SKILL §0.1)
 [1계층] 충실구현(run_paper_replication — 논문 그대로·유니버스만 KR) → 권위 등급
-        → 미달: 강화 ≤20회(Skill reinforce — QEPM→등급, 논문 3편마다 결합 검토)
+        → 미달: 강화 ≤25회(Skill reinforce — QEPM→등급, 논문 3편마다 결합 검토)
         → A: Judge(PIT) → PASS → BOOK          (B 이상 = 2계층 풀 공급)
 [2계층] 로테이션(논문 온디맨드·B+ 풀 국면 배합·FR 등급) → 미달: 강화 무한 → A → Judge → BOOK
 [BOOK]  06_Registry/book/book_registry.json — A등급 등록·온디맨드 트래킹(/book)
@@ -39,7 +39,7 @@
 |---|---|
 | `/qvest` | 부팅 → 계층 질문 |
 | `/alpha-search` | 1계층 논문 1건 충실구현 |
-| `/reinforce`(Skill) | 강화 — L1 ≤20회(원장 l1) / L2 무한(원장 l2) |
+| `/reinforce`(Skill) | 강화 — L1 ≤25회(원장 l1) / L2 무한(원장 l2) |
 | `/worktask` | QEPM 체인 수동 관리 (WT-R = 강화 타입) |
 | `/strategy-rotation <track>` | 2계층 — 전천후 모델 |
 | `/book` | BOOK 목록·트래킹 |
@@ -73,15 +73,15 @@
 
 - **PIT C1~C15** 위반 = 계층 무관 절대 기각.
 - `05_Production/` NEVER modify(`promote_to_production()`만 예외) · `01_Literature/` read-only. 산출물은 `04_Research/`·`06_Registry/`에만.
-- **하드코딩 전면 금지** — 모든 수치 결정(레짐 로직·비중방법·파라미터)에 근거 논문 원문 링크 필수. 파생 결정은 뿌리 논문 제시. 한 논문 매몰 금지. 강화 원장이 root_papers 없는 시도를 거부한다.
+- **하드코딩 전면 금지** — 모든 수치 결정(레짐 로직·비중방법·파라미터)에 근거 논문 원문 링크 필수. 파생 결정은 뿌리 논문 제시. 한 논문 매몰 금지. ★**강화 레인은 근거 논문 의무 해제**(도훈 2026-09-03) — 원장은 거부하지 않고 `evidence`(paper/method/none)만 기록한다. 축의 정당성은 격자(`reinforce_program.json`)·팩터 등록부가 진다. **충실구현·2계층 판정 서술의 근거 의무는 불변**.
 - **데이터 부재 = 포기 사유 아님** — `data_pipeline_queue.json` 적재 → 수집 파이프라인 구축 → 재개. 인프라 내 모든 데이터 적극 활용.
 - **Q-Lead = 오케스트레이션 전용** — 자체 리서치·백테·수치 산출 금지(측정 = R 계약, AX-008).
-- 텔레그램 = `tg_agent_brief()` 단일 진입 + **계층 표제 의무**(`[1계층]`/`[1계층·강화 n/20]`/`[2계층]`/`[Judge]`/`[BOOK]` — qvest-telegram SKILL §5.6b). 모든 리서치 1단위 종료 시 발송.
+- 텔레그램 = `tg_agent_brief()` 단일 진입 + **계층 표제 의무**(`[1계층]`/`[1계층·강화 n/25]`/`[2계층]`/`[Judge]`/`[BOOK]` — qvest-telegram SKILL §5.6b). 모든 리서치 1단위 종료 시 발송.
 
 ## Key Paths · 실행 · 톤
 
 - Root `C:/Users/99922/OneDrive/Quant_Module_Moltbot/`(Git Bash `/c/...`) · 인프라 `02_Infrastructure/` · 전략 `04_Research/strategies/STR_*/` · WT `qepm/mailbox/worktask/{WT_ID}/` · 산출물 `stage_artifacts/`(충실구현 = `replication/`).
-- 원장: 강화 `06_Registry/reinforce_ledger_l1.json`(≤20)·`_l2.json`(무한) · BOOK `06_Registry/book/` · 데이터 파이프라인 `06_Registry/data_pipeline_queue.json`.
+- 원장: 강화 `06_Registry/reinforce_ledger_l1.json`(≤25)·`_l2.json`(무한) · BOOK `06_Registry/book/` · 데이터 파이프라인 `06_Registry/data_pipeline_queue.json`.
 - Env(User scope): `QM_ROOT`+`QVEST_PY`+`~/.Renviron` 동일값.
 - R 실행: 전략 디렉터리 `cd` 후 `Rscript -e 'source("run_all.R")'`(한글 경로 회피 — `--file=` 금지). R+Python 공히 1급(venv `.venv_qvest_ml`) — 언어는 PIT·계약을 면제하지 않는다.
 - 톤: 한국어 존댓말. User = Dohoon Kim(도훈), 나 = "Q".
@@ -89,5 +89,5 @@
 ## 포인터
 
 - autoload 룰 2종(`pit.md`·`lean-loop.md`) + 경로 트리거 4종(`axioms`·`backtest-contract`·`measurement-graduation`·`python-policy`). 확장 룰 = `02_Infrastructure/docs/rules/`(`strategy-rotation`·`quant-identity`·`answer-principles` 등).
-- 스킬·에이전트·훅은 문서로 세지 않는다 — 파일시스템이 정본(`.claude/skills/`·`.claude/agents/`·settings.json **12** distinct .sh. 퇴역 = `.claude/agents_retired_v10/`·`_archive_v8_enforcement/MANIFEST.md`).
+- 스킬·에이전트·훅은 문서로 세지 않는다 — 파일시스템이 정본(`.claude/skills/`·`.claude/agents/`·settings.json **13** distinct .sh(v10.2 arm_gen_read_guard 신설 — 생성 세션 성과 열람 차단). 퇴역 = `.claude/agents_retired_v10/`·`_archive_v8_enforcement/MANIFEST.md`).
 - 계보 = `CHANGELOG_constitution.md`.

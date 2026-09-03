@@ -1,0 +1,35 @@
+{
+ "schema": "replication_skiplist_v1",
+ "note": "무인 충실구현이 **정당하게** 재현 불가로 판정한 논문. 큐에서 건너뛴다. ★실패 기록이지 금지 목록이 아니다 — 원문 접근이 열리거나 장르 판정이 바뀌면 다시 볼 수 있다(AX-000). 세션이 수동 착수하는 것도 막지 않는다.",
+ "entries": [
+  {
+   "paper_key": "2608.24703",
+   "title": "Lead-Lag Relationships in Financial Markets: A Comparison of Multiple Clustering Algorithms",
+   "url": "https://arxiv.org/abs/2608.24703",
+   "skipped_at": "2026-08-30T11:24:23+0900",
+   "verdict": "unreproducible_without_fabrication",
+   "reason": "에이전트가 WebFetch 2회 교차확인으로 논문 실재를 확인한 뒤 ABORT. 사유 3중: ①DTW lead-lag 집계식(median 의 무엇인지)이 접근 본문에 미특정 — 재구현하면 지어내야 함 ②MiniRocket 세부(84 커널·dilation·bias 분위)가 참조 구현 없이 검증 불가 ③★결정적: 논문의 'lead strategy' 는 리더 바스켓 **한 개 시계열**(sign 모멘텀 베팅)이지 KR 주식 **횡단면 포트폴리오가 아니다** — 장르 불일치. FACTORS/PORTFOLIO 사상은 논문이 주지 않는 설계 결정을 요구하므로 '충실구현' 이 아니라 '착안한 신설 전략' 이 되고, 거기 논문 권위 등급을 붙이면 misattribution.",
+   "artifacts": "04_Research/strategies/RP_AUTO_2608_24703/ABORT.txt",
+   "triage_note": "트리아지가 알파 큐에 넣었으나 횡단면 종목선택 논문이 아니다 — 큐 선별 기준의 사각",
+   "status": "revoked",
+   "revoked_at": "2026-08-30T11:44:24+0900",
+   "revoke_reason": "장르 불일치(횡단면 아님)로 건너뛰었으나, 2026-08-30 도훈 지시로 **변형구현(착안) 경로**가 생겼다 — 리더-팔로워 기전은 횡단면 팩터로 이식 가능하고 특정 군집기(MiniRocket)·정렬기(DTW)는 한 구현일 뿐이다. 데이터 부재가 아니므로 되살린다."
+  },
+  {
+   "paper_key": "2608.22768",
+   "title": "The Loop-Gain Matrix (Woo 2026)",
+   "url": "https://arxiv.org/abs/2608.22768",
+   "skipped_at": "2026-08-30T11:32:52+0900",
+   "verdict": "data_unavailable",
+   "unblock": "DP_LETF_NAV_20260830 · DP_CLOSING_AUCTION_20260830 해결 시 재개",
+   "reason": "원문 접근 OK(abs+pdf 교차확인). ★거래전략 논문이 아니라 **시스템 위험 모니터링 논문**이고, 트리아지가 뽑은 신호는 Prop.3(익일 리버설) 파생이다. 구현에 필요한 3입력이 인프라에 전무: (A)LETF NAV/AUM+레버리지배수 (B)ETF 보유내역·종가충격계수 Φ (C)장중/종가단일가. ★데이터 파이프라인 큐 3건 적재 — 포기가 아니라 대기다(헌법: 데이터 부재 = 포기 사유 아님).",
+   "artifacts": "04_Research/strategies/RP_AUTO_2608_22768/ABORT.txt"
+  },
+  {
+   "paper_key": "2003.02515",
+   "status": "unreproducible",
+   "added_at": "2026-09-02T23:04:38+0900",
+   "reason": "무인 충실구현 3회 연속 no_engine — 에이전트가 엔진을 산출하지 못했다. ★판정 철회는 status=revoked 로 (AX-000 — 새 각도면 재시도 정당)."
+  }
+ ]
+}

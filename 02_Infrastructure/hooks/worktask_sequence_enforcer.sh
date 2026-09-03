@@ -1,4 +1,7 @@
 #!/usr/bin/env bash
+# ★v10 (2026-09-03) 주의 — 이 파일은 v9 등록 해제분(사료)이고 book_state.json 부재 시 block · GOVERNOR_ADMITTED 이후만 execution 가 남아 있다.
+#   전부 v10 폐지 개념(lockbox·governor·book_state·cert)이므로 **재등록 금지** — 되살리려면 그 분기를 먼저
+#   제거하고 양성/음성 대조를 다시 만들 것. 파일 자체는 08_Tests·hook_e2e_battery 가 경로로 실행한다(이동 금지).
 # worktask_sequence_enforcer.sh — QEPM WT 순차 실행 강제 (Level 3 hard block)
 #
 # 이벤트: PreToolUse[Agent]

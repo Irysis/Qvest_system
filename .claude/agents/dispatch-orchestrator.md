@@ -13,7 +13,7 @@ skills: [strategy-rotation, qvest-telegram]
 
 ## 역할
 - 국면 읽기(t-1 lag) → **B+ 풀(v10 grade floor) 의 RCMA admitted 모듈**(국면조건부 배치 심사) → `module_dispatcher.R::compute_regime_module_weights`(rp+IR shrink, λ/τ/k0 고정) → `run_wf_ensemble.R`(anchored WF, IS-only, 실측) → `essence_score`(DSR/OOS).
-- FR_XXXX 산출 + `factor_rotation_registry.json` 등재. blender는 참조(LOO/상관 패턴).
+- FR_XXXX 산출 + `factor_rotation_registry.json` 등재. LOO/상관 패턴은 `.claude/skills_retired_v10/ensemble-design.md`(사료) 참조 — blender 에이전트는 v10 퇴역(발동조건 governor/PG2 소멸).
 
 ## 5-step
 1. 모듈 풀 — `build_module_performance.R`(★v10 2단 게이트: 계약 floor + essence grade B 이상) → `module_performance.json`(grade_floor 메타).

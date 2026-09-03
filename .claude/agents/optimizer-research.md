@@ -52,7 +52,7 @@ finalize 직전, optimization_package를 스스로 적대적으로 검증한다 
 - ratio 0.38 << 0.95 → §9 violation
 - run_all.R이 240 monthly 가상 schedule 재생성 → factor_engine SR 1.4522 (fabricated)
 
-**Hook 강제**: `schedule_fidelity_check.sh` (PostToolUse) — schedule_density_ratio < 0.95 시 warn.
+**규칙(훅 아님)**: schedule_density_ratio < 0.95 면 경고 — 구 `schedule_fidelity_check.sh` 는 v9 등록 해제라 `optimization_package` 자기 기록으로 확인한다.
 
 **🚨 Hurdle Result Provenance Mandate** (v6.3 HARD — Charter §9):
 
@@ -64,7 +64,7 @@ finalize 직전, optimization_package를 스스로 적대적으로 검증한다 
 | `production_grade` | boolean (factor_engine_continuous → false) | **필수** |
 | `method` | "ProductionSchedule[N]m" 표현 **금지** | format check |
 
-**production_grade=false인 SR은 PG2 admission 부적격**임을 hurdle_result.json 헤더에 명시.
+**production_grade=false인 SR은 BOOK 등록 근거 부적격**(권위 basis 아님)임을 산출물 헤더에 명시.
 
 **🆕 Deploy Extension Mandate** (v6.1 신규):
 - alpha agent의 PIT cutoff (train end)을 deploy cutoff와 **반드시 구분**
@@ -110,7 +110,14 @@ SOT: `.claude/skills/qvest-telegram/SKILL.md` (v6.5). `tg_agent_brief(agent=...)
 - 참조: `.claude/skills/qvest-telegram/SKILL.md` §"v6.5 통상 영어 표기 허용"
 
 
-## 논문 소비 경로 (optimizer 레인, 2026-08-13 배선 — 도훈 지시)
+## 비중방법론 논문 소비 경로 (v10 — 강화 격자 R3 어댑터 층)
+
+★v10 2026-08-29: mode_queue optimizer 레인은 **폐지**(morning_run [0.57] 퇴역). 비중방법론 논문은 강화 프로세스
+`keyword_axis=weighting`(reinforce SKILL · 원장 root_papers)으로 소비한다. 아래 등재 절차(new_adapter → `methods/adapters/<name>.R`
+adapter_kind=weight → register_method → `06_Registry/method_registry.json`)는 **살아 있다** — `weight_catalog.R`(R3 층)이 색인해
+`rf_weight_arms` 격자 arm 이 된다. 구 큐 인입 문구만 사료다.
+
+### (사료) 구 mode_queue 인입 서술
 
 라우터가 논문을 `stage_artifacts/paper_recharge/mode_queue_<D>.json` 의 `optimizer` 배열에 배정한다.
 그 논문을 **실제 측정**으로 만드는 경로는 아래 하나뿐이다. 안 타면 큐에만 남는다
@@ -145,7 +152,7 @@ SOT: `.claude/skills/qvest-telegram/SKILL.md` (v6.5). `tg_agent_brief(agent=...)
    통과분만 implemented. **비-퇴화 검사**가 본체다: 출력이 EW 와 구별되지 않으면 거부된다
    (wrap_adapter 는 퇴화 입력을 EW 로 내려앉히므로, 그대로 두면 "측정됨"으로 집계되고
    실제로는 EW 를 잰다 — 실사고 기록 method_registry.R:73-78).
-4. 등재되면 **다음 dispatch 런에서 자동으로** Σ-A/B arm 이 된다.
+4. 등재되면 `rf_weight_catalog_grow.sh`(주간 Qvest_WeightCatalogGrow) `sync_catalog` 재색인 후 **강화 격자 비중 arm** 이 된다 — `adapter_kind=weight` 만(sigma/exposure 는 weight_catalog.R 이 건너뛴다).
 
 ★어댑터는 **선호 벡터만** 낸다. long-only·Σw=1 은 wrapper 가 강제한다(v10: 비중 상한 폐지). 스케일은
   자유롭게 둬도 된다(wrapper 가 먼저 합-정규화 후 상한 적용).

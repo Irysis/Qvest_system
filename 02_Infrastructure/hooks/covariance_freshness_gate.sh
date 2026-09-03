@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# ★RETIRED (v10 2026-09-03) — v8 2026-07-24 C2 등록 해제분(advisory 무전달 실증). 재등록 금지 · 사료 존치.
 # (v8.2.1 HOOK-P0-1) bare python3 → $QVEST_PY_BIN (Windows Store 스텁 fail-open 방지)
 if [ -z "${QVEST_PY_BIN:-}" ]; then
   QVEST_PY_BIN="${QVEST_PY:-}"; QVEST_PY_BIN="${QVEST_PY_BIN//\//}"

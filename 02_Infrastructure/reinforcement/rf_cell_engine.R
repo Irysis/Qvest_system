@@ -51,16 +51,80 @@ DT[, .mom_12_1 := shift(Close, 21L) / shift(Close, 252L) - 1, by = Ticker]      
 
 # ── 기저 신호 (★2026-08-30 수리: 논문 독립성 회복) ────────────────────────────
 #   구판은 mom_12_1 을 하드코딩하고 다른 값이면 stop 했다. 격자를 "논문 독립" 이라 써 놓고
-#   기저를 모멘텀에 못 박아 둔 셈이라, 새 논문의 강화 20칸이 전부 **그 논문 신호가 아니라**
+#   기저를 모멘텀에 못 박아 둔 셈이라, 새 논문의 강화 25칸이 전부 **그 논문 신호가 아니라**
 #   모멘텀 위에서 돌 뻔했다(무인 루프라 조용히 반복됐을 것 — 아직 미발화 상태에서 적발).
 #   현행: 충실구현 엔진을 그대로 물려받는다. 그 엔진이 논문의 신호를 이미 구현해 뒀다.
 .base <- SPEC$base_signal %||% list(kind = "mom_12_1")
 if (identical(.base$kind, "mom_12_1")) {
   DT[, .base_sig := .mom_12_1]
-} else if (identical(.base$kind, "engine")) {
+} else if (identical(.base$kind, "engine") || identical(.base$kind, "engine_blend")) {
+  # ★engine_blend — 논문 **간** 결합. 두 충실구현 엔진의 신호를 각각 만들고 월별 rank-Z 로
+  #   정규화해 평균한다. 척도가 다른 두 신호를 그대로 더하면 분산 큰 쪽이 결합을 지배하므로
+  #   순위 정규화가 필수다(격자 B4 는 같은 논문 **안**의 축 결합이라 이것과 다른 층이다).
+  #   PIT: 각 엔진이 자기 시점 규약을 지키고, 평균은 같은 시그널일 횡단면 안에서만 일어난다.
+  .load_one <- function(.be) {
+    if (is.null(.be) || !file.exists(.be))
+      stop("[rf_cell_engine] base_signal path 부재: ", .be %||% "(NULL)")
+    .cdir <- file.path(.RF_ROOT, ".cache", "rf_base_signal")
+    dir.create(.cdir, recursive = TRUE, showWarnings = FALSE)
+    .rawp <- file.path(.RF_ROOT, ".cache", "rawdata.parquet")
+    .key <- paste(tryCatch(unname(tools::md5sum(.be)), error = function(e) "nohash"),
+                  tryCatch(as.character(file.info(.rawp)$mtime), error = function(e) "nomtime"),
+                  nrow(DT), as.character(.START), sep = "_")
+    .key <- gsub("[^A-Za-z0-9]", "", .key)
+    .cpath <- file.path(.cdir, paste0("base_", substr(.key, 1, 40), ".rds"))
+    .b <- NULL
+    if (file.exists(.cpath)) {
+      .b <- tryCatch(readRDS(.cpath), error = function(e) NULL)
+      if (!is.null(.b)) cat(sprintf("[rf_cell_engine] 기저 캐시 적중 — %s (%d행)
+",
+                                    basename(.cpath), nrow(.b)))
+    }
+    if (is.null(.b)) {
+      cat("[rf_cell_engine] 기저 캐시 미스 — 엔진 실행:", basename(.be), "
+")
+      .env <- new.env(parent = globalenv())
+      .env$RAWDATA <- DT; .env$BM_DT <- if (exists("BM_DT")) BM_DT else NULL
+      sys.source(.be, envir = .env)
+      .b <- if (exists("FACTORS", envir = .env, inherits = FALSE)) {
+              x <- as.data.table(get("FACTORS", envir = .env)); setnames(x, "Score", ".base_sig"); x
+            } else if (exists("PORTFOLIO", envir = .env, inherits = FALSE)) {
+              x <- as.data.table(get("PORTFOLIO", envir = .env))
+              x[, .(Date, Ticker, .base_sig = as.numeric(Weight))]
+            } else stop("[rf_cell_engine] 기저 엔진이 FACTORS/PORTFOLIO 를 만들지 않았다: ", .be)
+      .b <- .b[, .(Date, Ticker, .base_sig)]
+      if (!nrow(.b)) stop("[rf_cell_engine] 기저 엔진 산출이 비었다: ", .be)
+      tryCatch(saveRDS(.b, .cpath), error = function(e)
+        cat("[rf_cell_engine] 캐시 저장 실패(비치명):", conditionMessage(e), "
+"))
+      rm(.env); gc(verbose = FALSE)
+    }
+    .b
+  }
+  if (identical(.base$kind, "engine_blend")) {
+    .paths <- unlist(.base$paths %||% list())
+    if (length(.paths) < 2L)
+      stop("[rf_cell_engine] engine_blend 는 엔진 2개 이상 필요 — 받은 수: ", length(.paths))
+    .rz1 <- function(v) { r <- frank(v, ties.method = "average"); (r - mean(r)) / stats::sd(r) }
+    .parts <- lapply(seq_along(.paths), function(k) {
+      b <- copy(.load_one(.paths[k]))
+      b <- b[is.finite(.base_sig)]
+      b[, z := .rz1(.base_sig), by = Date]          # 월별 횡단면 rank-Z (C1: 그 날 안에서만)
+      b[, .(Date, Ticker, z)]
+    })
+    .M <- Reduce(function(a, b) merge(a, b, by = c("Date", "Ticker"), all = FALSE), .parts)
+    if (!nrow(.M))
+      stop("[rf_cell_engine] engine_blend — 두 엔진의 공통 (Date,Ticker) 가 없다")
+    .zc <- setdiff(names(.M), c("Date", "Ticker"))
+    .M[, .base_sig := rowMeans(as.matrix(.SD)), .SDcols = .zc]
+    .bs <- .M[, .(Date, Ticker, .base_sig)]
+    cat(sprintf("[rf_cell_engine] engine_blend %d개 — 공통 %d행 (%s)
+",
+                length(.paths), nrow(.bs), paste(basename(.paths), collapse = " + ")))
+  } else {
   # 논문 충실구현 엔진 재사용 — 같은 계약(FACTORS/PORTFOLIO)이라 그대로 붙는다.
   #
-  # ★기저 캐시 (도훈 지시 2026-08-30) — 강화 20칸은 **전부 같은 기저 신호**를 쓴다.
+  # ★기저 캐시 (도훈 지시 2026-08-30) — 강화 25칸은 **전부 같은 기저 신호**를 쓴다.
   #   셀마다 기저를 재계산하면 무거운 논문에서 20배를 버린다(실측: Lead-Lag 착안 엔진은
   #   월당 거리행렬 + KMeans K=2~10 silhouette + DTW 를 260개월 반복한다).
   #   ★PIT 를 깨지 않는다: 같은 시점 규약으로 한 번 만든 패널을 나눠 쓰는 것뿐이고,
@@ -68,44 +132,9 @@ if (identical(.base$kind, "mom_12_1")) {
   #     미래 정보를 끌어오는 것이 아니다.
   #   ★캐시 키에 **엔진 내용 해시 + 데이터 판본**을 넣는다 — 둘 중 하나만 바뀌어도
   #     다른 키가 되어 자동 무효화된다. 이게 없으면 엔진을 고쳐도 옛 신호를 계속 쓴다.
-  .be <- .base$path
-  if (is.null(.be) || !file.exists(.be))
-    stop("[rf_cell_engine] base_signal.path 부재: ", .be %||% "(NULL)")
-  .cdir <- file.path(.RF_ROOT, ".cache", "rf_base_signal")
-  dir.create(.cdir, recursive = TRUE, showWarnings = FALSE)
-  .rawp <- file.path(.RF_ROOT, ".cache", "rawdata.parquet")
-  .key <- paste(
-    tryCatch(unname(tools::md5sum(.be)), error = function(e) "nohash"),
-    tryCatch(as.character(file.info(.rawp)$mtime), error = function(e) "nomtime"),
-    nrow(DT), as.character(.START), sep = "_")
-  .key <- gsub("[^A-Za-z0-9]", "", .key)
-  .cpath <- file.path(.cdir, paste0("base_", substr(.key, 1, 40), ".rds"))
-  .bs <- NULL
-  if (file.exists(.cpath)) {
-    .bs <- tryCatch(readRDS(.cpath), error = function(e) NULL)
-    if (!is.null(.bs)) cat(sprintf("[rf_cell_engine] 기저 캐시 적중 — %s (%d행)
-",
-                                   basename(.cpath), nrow(.bs)))
+    .bs <- .load_one(.base$path)
   }
-  if (is.null(.bs)) {
-    cat("[rf_cell_engine] 기저 캐시 미스 — 엔진 실행:", basename(.be), "
-")
-    .env <- new.env(parent = globalenv())
-    .env$RAWDATA <- DT; .env$BM_DT <- if (exists("BM_DT")) BM_DT else NULL
-    sys.source(.be, envir = .env)
-    .bs <- if (exists("FACTORS", envir = .env, inherits = FALSE)) {
-             x <- as.data.table(get("FACTORS", envir = .env)); setnames(x, "Score", ".base_sig"); x
-           } else if (exists("PORTFOLIO", envir = .env, inherits = FALSE)) {
-             x <- as.data.table(get("PORTFOLIO", envir = .env))
-             x[, .(Date, Ticker, .base_sig = as.numeric(Weight))]
-           } else stop("[rf_cell_engine] 기저 엔진이 FACTORS/PORTFOLIO 를 만들지 않았다: ", .be)
-    .bs <- .bs[, .(Date, Ticker, .base_sig)]
-    if (!nrow(.bs)) stop("[rf_cell_engine] 기저 엔진 산출이 비었다")
-    tryCatch(saveRDS(.bs, .cpath), error = function(e)
-      cat("[rf_cell_engine] 캐시 저장 실패(비치명):", conditionMessage(e), "
-"))
-    rm(.env); gc(verbose = FALSE)
-  }
+
   DT <- merge(DT, .bs, by = c("Date", "Ticker"), all.x = TRUE)
 
 } else stop("[rf_cell_engine] base_signal.kind 미지원: ", .base$kind)
@@ -217,7 +246,21 @@ for (k in seq_along(.tags)) {
   .zt <- c(.zt, zc)
 }
 .zcols <- c(".zb", .zt)
-PANEL[, Score := rowMeans(as.matrix(.SD), na.rm = TRUE), .SDcols = .zcols]
+# ★기저 가중 w0 (2026-09-01 도훈 결정) — 등가중이면 팩터를 n개 얹을 때 논문 신호 가중이
+#   1/(1+n) 로 떨어져(50/33/25/20/17%) **결합 깊이와 기저 희석이 교락된다**. 5팩터 칸이 져도
+#   깊이가 나쁜 건지 논문 신호를 17%로 깎은 탓인지 분리할 수 없다. 실측 전례: 2026-08-31
+#   승계에서 1/2 -> 1/3 희석만으로 B1 다섯 칸이 전부 부모 기준선(2.63)을 못 넘었다(최고 0.814).
+#   w0 를 고정하면 깊이가 순수 축이 된다.
+# ★기본값을 여기 박지 않는다 — 격자 fixed_axes 에서만 온다. 값 없는 구 스펙은 등가중 그대로
+#   재현된다(사후 재현성 보존). 1팩터일 때 w0=0.5 는 rowMeans(2열)과 수치적으로 동일하다.
+.w0 <- suppressWarnings(as.numeric(SPEC$base_weight %||% NA))
+if (is.finite(.w0) && length(.zt)) {
+  if (.w0 < 0 || .w0 > 1) stop("[rf_cell_engine] base_weight 는 [0,1]: ", .w0)
+  PANEL[, .zfac := rowMeans(as.matrix(.SD), na.rm = TRUE), .SDcols = .zt]
+  PANEL[, Score := .w0 * .zb + (1 - .w0) * .zfac]
+} else {
+  PANEL[, Score := rowMeans(as.matrix(.SD), na.rm = TRUE), .SDcols = .zcols]
+}
 PANEL <- PANEL[is.finite(Score)]
 
 # ── 5. 선정 + 비중 ────────────────────────────────────────────────────────────
@@ -374,7 +417,8 @@ if (!identical(.ov_kind, "none")) {
 
   .N <- nrow(.M)
   .clip <- function(x) max(0, min(1, x))
-  .expo <- rep(1, .N)
+  .expo   <- rep(1, .N)
+  .expo_x <- vector("list", .N)   # 월별 종목 노출(횡단면 비대칭 arm 전용). NULL = 그 달은 스칼라
 
   # ★절벽형 워밍업 금지 (2026-08-30 실측): 첫 판은 60개월 미만을 통째로 무개입으로 뒀는데,
   #   그 창(2005-02~2010-05)에 **최대낙폭 에피소드(2008-05~2008-10)가 통째로 들어간다**.
@@ -384,8 +428,71 @@ if (!identical(.ov_kind, "none")) {
   #   수리 = 절벽 대신 **축소(shrinkage)**. 표본이 적으면 개입을 부분만 반영하고 표본이 쌓일수록
   #   완전 반영한다: e = 1 - w * (1 - e_raw), w = min(1, n / n_min). 통계적으로도 이게 옳다 —
   #   추정 불확실성이 큰 구간에서 무개입(사전평균)으로 끌어당기는 것이 축소 추정의 정의다.
+  # ── ★파일 기반 arm 디스패치 (v10.2 2026-09-03) ──────────────────────────────
+  #   왜: 구판은 kind 를 추가하려면 이 파일의 if/else 사슬을 편집해야 했다. 그러면 생성기(LLM)가
+  #   **측정 경로 자체**를 편집하게 된다. arm 을 파일 하나로 격리하면 생성 세션의 쓰기 범위를
+  #   overlay_arms/ 한 디렉터리로 묶을 수 있다(--add-dir 하나).
+  #   ★기존 10 kind 는 위 사슬이 먼저 처리하므로 여기 오지 않는다 — 구 경로 무변경.
+  .OV_BUILTIN <- c("vol_scale", "ewma_vol", "har_vol", "turbulence", "ml_tail_gate",
+                   "ts_mom_gate", "dd_recovery", "vol_x_turb", "dd_brake", "vol_x_dd")
+  .OV_FN <- NULL
+  if (!.ov_kind %in% .OV_BUILTIN) {
+    .ov_file <- file.path(.RF_ROOT, "02_Infrastructure/reinforcement/overlay_arms",
+                          paste0(.ov_kind, ".R"))
+    if (!file.exists(.ov_file))
+      stop("[rf_cell_engine] overlay.kind 미지원: ", .ov_kind,
+           " — overlay_arms/", .ov_kind, ".R 도 없다")
+    .ov_env <- new.env(parent = globalenv())
+    source(.ov_file, local = .ov_env)          # ★sys.source 는 ofile 이 없다 — source(local=) 사용
+    .fn_name <- paste0("overlay_expo_", .ov_kind)
+    if (!exists(.fn_name, envir = .ov_env, inherits = FALSE))
+      stop(sprintf("[rf_cell_engine] %s 에 %s() 가 없다 — arm 계약 위반", basename(.ov_file), .fn_name))
+    .OV_FN <- get(.fn_name, envir = .ov_env)
+    if (!is.function(.OV_FN)) stop("[rf_cell_engine] ", .fn_name, " 가 함수가 아니다")
+  }
+
   .n_min <- switch(.ov_kind,
     "har_vol" = 48L, "ml_tail_gate" = 48L, "turbulence" = 36L, "ewma_vol" = 36L, 24L)
+  # ── ★종목 수준 상태 (v10.2 2026-09-03 · Phase 0-c) ──────────────────────────
+  #   누적합 기반 확장창 통계. 각 신호일 d 에서 d 까지의 모든 관측만 쓴다(홀딩월은 익월이라 교집합 0).
+  #   beta/dbeta 는 (n·Sxy − Sx·Sy)/(n·Syy − Sy²) 형태로 O(n) 에 나온다.
+  .HOLD <- NULL
+  if (!is.null(.OV_FN)) {
+    if (!exists("PORTFOLIO")) {              # EW 셀은 FACTORS 만 있다 — 보유를 여기서 확정한다
+      PORTFOLIO <- SEL[, .(Ticker, Weight = 1 / .N), by = Date][, .(Date, Ticker, Weight, Leg = "LONG")]
+    }
+    .HB <- merge(DT[is.finite(.ret), .(Date, Ticker, x = .ret)],
+                 .B[, .(Date, y = BM_Ret)], by = "Date")
+    setorder(.HB, Ticker, Date)
+    .HB[, `:=`(
+      n_   = seq_len(.N),
+      Sx   = cumsum(x),      Sy   = cumsum(y),
+      Sxx  = cumsum(x * x),  Syy  = cumsum(y * y),  Sxy = cumsum(x * y),
+      dn_  = cumsum(y < 0),
+      dSx  = cumsum(fifelse(y < 0, x,     0)),
+      dSy  = cumsum(fifelse(y < 0, y,     0)),
+      dSyy = cumsum(fifelse(y < 0, y * y, 0)),
+      dSxy = cumsum(fifelse(y < 0, x * y, 0))
+    ), by = Ticker]
+    .HF <- .HB[PORTFOLIO[, .(Date, Ticker)], on = .(Ticker, Date), roll = TRUE]  # d 이하 최종 관측
+    .MINOBS <- 250L                          # 1년 미만 표본으로는 베타를 말하지 않는다
+    .HF[, `:=`(
+      beta  = fifelse(n_  >= .MINOBS & (n_  * Syy  - Sy^2)  > 0,
+                      (n_  * Sxy  - Sx  * Sy)  / (n_  * Syy  - Sy^2),  NA_real_),
+      dbeta = fifelse(dn_ >= 60L      & (dn_ * dSyy - dSy^2) > 0,
+                      (dn_ * dSxy - dSx * dSy) / (dn_ * dSyy - dSy^2), NA_real_),
+      ovol  = fifelse(n_  >= .MINOBS & n_ > 1L,
+                      sqrt(pmax(0, (Sxx - Sx^2 / n_) / (n_ - 1))) * sqrt(252), NA_real_)
+    )]
+    .HF[, bcorr := fifelse(n_ >= .MINOBS & (Sxx - Sx^2 / n_) > 0 & (Syy - Sy^2 / n_) > 0,
+                           (Sxy - Sx * Sy / n_) /
+                             sqrt((Sxx - Sx^2 / n_) * (Syy - Sy^2 / n_)), NA_real_)]
+    .HOLD <- .HF[, .(Date, Ticker, beta, dbeta, ovol, bcorr, n_obs = n_)]
+    setkey(.HOLD, Date)
+    cat(sprintf("[rf_cell_engine] .HOLD %d행 · 종목상태 4축(beta·dbeta·ovol·bcorr) · 최소관측 %d",
+                nrow(.HOLD), .MINOBS), fill = TRUE)
+  }
+
   .n_floor <- 12L                              # 이 아래로는 표본이라 부르지 않는다
   for (t in seq_len(.N)) {
     if (t < .n_floor) next
@@ -393,6 +500,9 @@ if (!identical(.ov_kind, "none")) {
     v_now <- H$rv60[t]
     tgt   <- stats::median(H$rv60, na.rm = TRUE)          # 목표 = 자기 이력 중앙 변동성
     e <- 1
+    .ov_ctx <- if (is.null(.OV_FN)) NULL else list(
+      t = t, date = .M$Date[t], v_now = v_now, tgt = tgt, n_min = .n_min,
+      hold = if (!is.null(.HOLD)) .HOLD[J(.M$Date[t]), nomatch = 0L] else NULL)
     if (identical(.ov_kind, "vol_scale")) {
       e <- if (is.finite(v_now) && v_now > 0 && is.finite(tgt)) min(1, tgt / v_now) else 1
 
@@ -498,26 +608,74 @@ if (!identical(.ov_kind, "none")) {
             if (dn >= dq[2]) 0 else 1 - (dn - dq[1]) / max(1e-9, dq[2] - dq[1])
       e <- ev * ed
 
+    } else if (!is.null(.OV_FN)) {
+      # 파일 기반 arm — 스칼라 e 또는 data.table(Ticker, e) 를 돌려줄 수 있다.
+      e <- .OV_FN(H, t, .ov_ctx)
     } else stop("[rf_cell_engine] overlay.kind 미지원: ", .ov_kind)
     .w <- min(1, t / .n_min)                   # 표본 축소 가중 — 절벽 없음
-    .expo[t] <- .clip(1 - .w * (1 - .clip(e)))
+    if (is.data.frame(e)) {
+      # ★횡단면 비대칭 arm — 종목별 노출. 축소 가중은 종목마다 동일하게 적용한다.
+      .ex <- as.data.table(e)
+      if (!all(c("Ticker", "e") %in% names(.ex)))
+        stop("[rf_cell_engine] arm 반환표에 Ticker/e 열이 없다: ", .ov_kind)
+      .ex[, oe := vapply(1 - .w * (1 - vapply(e, .clip, numeric(1))), .clip, numeric(1))]
+      .ex <- .ex[is.finite(oe), .(Ticker = as.character(Ticker), oe)]
+      if (nrow(.ex)) {
+        .expo_x[[t]] <- .ex
+        .expo[t] <- mean(.ex$oe)               # 요약·로그용 대표값(판정은 아래 두 축을 함께 본다)
+      }
+    } else {
+      .expo[t] <- .clip(1 - .w * (1 - .clip(e)))
+    }
   }
 
   if (!exists("PORTFOLIO")) {                  # EW 셀은 FACTORS 만 있으므로 여기서 비중을 만든다
     PORTFOLIO <- SEL[, .(Ticker, Weight = 1 / .N), by = Date][, .(Date, Ticker, Weight, Leg = "LONG")]
   }
-  .EX <- data.table(Date = .M$Date, oe = .expo)
+  # ★벡터 여부는 arm 이 실제로 종목표를 냈는가로 정한다(선언이 아니라 산출로).
+  .VEC <- any(!vapply(.expo_x, is.null, logical(1)))
+  if (.VEC) {
+    # 스칼라만 낸 달은 그 달 보유 전 종목으로 펼쳐 하나의 (Date,Ticker,oe) 표로 만든다.
+    .EX <- rbindlist(lapply(seq_len(.N), function(k) {
+      if (!is.null(.expo_x[[k]]))
+        data.table(Date = .M$Date[k], Ticker = .expo_x[[k]]$Ticker, oe = .expo_x[[k]]$oe)
+      else {
+        .tk <- PORTFOLIO[Date == .M$Date[k], unique(as.character(Ticker))]
+        if (!length(.tk)) NULL else data.table(Date = .M$Date[k], Ticker = .tk, oe = .expo[k])
+      }
+    }), use.names = TRUE)
+  } else {
+    .EX <- data.table(Date = .M$Date, oe = .expo)
+  }
   # 홀딩월 시작 = 익월 1일(캘린더). ★d+1 을 month 로 자르면 월말이 거래일 기준일 때 같은 달이 나온다
-  .hs <- as.Date(vapply(.EX$Date, function(x)
+  #   ★신호일 집합(.M$Date)으로 판정한다 — 벡터판은 .EX$Date 가 종목 수만큼 반복되므로.
+  .hs <- as.Date(vapply(.M$Date, function(x)
            as.character(seq(as.Date(format(x, "%Y-%m-01")), by = "month", length.out = 2L)[2L]),
            character(1)))
-  assert_overlay_pit(.EX$Date, .hs, label = paste0("rf_cell:", .ov_kind))
+  assert_overlay_pit(.M$Date, .hs, label = paste0("rf_cell:", .ov_kind))
 
-  # ★처치 확인 — 노출이 상시 1이면 "오버레이를 쟀다" 가 아니라 안 건 것이다(미측정).
-  if (stats::sd(.EX$oe) < 1e-12 || mean(.EX$oe) >= 1 - 1e-12)
+  # ★처치 확인 — 2축이다. 시간축 변동이 없어도 **횡단면 변동**이 있으면 처치는 전달된 것이다.
+  #   스칼라 arm 은 .x_var == 0 이라 구판 조건(sd<1e-12 || mean>=1-1e-12)과 정확히 동치로 떨어진다.
+  .t_var <- stats::sd(.expo, na.rm = TRUE)
+  .x_var <- if (.VEC) max(vapply(.expo_x, function(z)
+                if (is.null(z) || nrow(z) < 2L) 0 else stats::sd(z$oe), numeric(1)), na.rm = TRUE) else 0
+  if ((!is.finite(.t_var) || .t_var < 1e-12) && .x_var < 1e-12)
+    stop(sprintf("[rf_cell_engine] overlay %s 노출이 상수 — 처치 미전달. 측정 무효.", .ov_kind))
+  if (mean(.expo, na.rm = TRUE) >= 1 - 1e-12 && .x_var < 1e-12)
     stop(sprintf("[rf_cell_engine] overlay %s 노출이 상시 1 — 처치 미전달. 측정 무효.", .ov_kind))
+  if (.VEC && .x_var < 1e-12)
+    cat("[rf_cell_engine] ★경고 — 벡터 arm 인데 횡단면 분산 0: 스칼라와 동치다(비대칭 미전달)", fill = TRUE)
 
-  PORTFOLIO <- merge(PORTFOLIO, .EX, by = "Date")
+  if (.VEC) {
+    PORTFOLIO <- merge(PORTFOLIO, .EX, by = c("Date", "Ticker"), all.x = TRUE)
+    .cov <- mean(!is.na(PORTFOLIO$oe))
+    if (!is.finite(.cov) || .cov < 0.8)
+      stop(sprintf("[rf_cell_engine] overlay %s 종목 커버리지 %.2f < 0.80 — arm 이 보유를 못 덮었다.",
+                   .ov_kind, .cov))
+    PORTFOLIO[is.na(oe), oe := 1]              # arm 이 지목하지 않은 종목 = 무개입
+  } else {
+    PORTFOLIO <- merge(PORTFOLIO, .EX, by = "Date")
+  }
   PORTFOLIO[, Weight := Weight * oe]
   PORTFOLIO[, oe := NULL]
   PORTFOLIO <- PORTFOLIO[is.finite(Weight) & Weight > 0]
@@ -525,8 +683,11 @@ if (!identical(.ov_kind, "none")) {
   stopifnot(all(PORTFOLIO$Weight >= 0))
   stopifnot(max(PORTFOLIO[, .(s = sum(Weight)), by = Date]$s) <= 1 + 1e-8)   # Sigma w <= 1
   if (exists("FACTORS")) rm(FACTORS)
-  cat(sprintf("[rf_cell_engine] overlay %s | 평균노출 %.3f · 최소 %.3f · 완전현금 %d/%d개월",
-              .ov_kind, mean(.EX$oe), min(.EX$oe), sum(.EX$oe <= 1e-12), nrow(.EX)), fill = TRUE)
+  cat(sprintf("[rf_cell_engine] overlay %s | 축 %s | 평균노출 %.3f · 최소 %.3f · 완전현금 %d/%d개월%s",
+              .ov_kind, if (.VEC) "종목별" else "스칼라",
+              mean(.expo, na.rm = TRUE), min(.expo, na.rm = TRUE),
+              sum(.expo <= 1e-12, na.rm = TRUE), .N,
+              if (.VEC) sprintf(" · 횡단면 sd 최대 %.3f", .x_var) else ""), fill = TRUE)
 }
 
 # ★N-ary 리팩터(2026-08-30) 후 이 줄만 구 변수(.f2/.f3)를 참조해 전 셀이
