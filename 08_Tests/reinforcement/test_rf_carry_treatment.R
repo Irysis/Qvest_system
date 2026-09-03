@@ -84,7 +84,10 @@ cat("=== 4b. 오버레이 칸은 무처치가 아니다 (조립 순서) ===\n")
 #   아니라 재기 쉬운 것(그 시점의 세 축)을 쟀다. 순서가 판정 축이다.
 for (f in c(PAR, SEQ)) {
   L  <- readLines(f, warn = FALSE)
-  io <- grep("SPEC$overlay <- CELL$overlay", L, fixed = TRUE)
+  # ★RHS 를 리터럴로 박지 않는다 — 2026-09-03 중첩(.ov_stack) 도입 때 이 줄이 낡아
+  #   불변(순서)은 멀쩡한데 검사만 빨개졌다. 재는 것은 "B5 의 overlay 대입 위치" 다.
+  io <- grep("SPEC$overlay <- ", L, fixed = TRUE)
+  io <- io[grepl("CELL$overlay", L[io], fixed = TRUE)]
   ij <- grep(".no_treatment <- identical(", L, fixed = TRUE)
   if (length(io) && length(ij) && ij[1] > io[1])
     ok(sprintf("%s — 무처치 판정이 overlay 설정 뒤", basename(f))) else

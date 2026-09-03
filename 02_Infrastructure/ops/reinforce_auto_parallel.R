@@ -200,12 +200,20 @@ if (length(batch) && identical(first$block, "B1")) {
 #   (도훈 2026-08-30 "오버레이 방법론을 특정하는건 별로인데"). 이미 측정한 팔은 제외하므로
 #   승격 사슬·다음 논문에서 같은 다섯 개를 반복 측정하지 않는다. 격자의 B5 cells 는 스냅샷일 뿐이다.
 if (length(batch) && identical(first$block, "B5")) {
-  .done_arms <- unique(unlist(lapply(E$attempts, function(a) {
-    sp <- a$essence$spec
-    if (is.null(sp) || !nzchar(sp) || !file.exists(sp)) return(NULL)
-    s <- tryCatch(fromJSON(sp, simplifyVector = FALSE), error = function(z) NULL)
-    if (is.null(s)) NULL else s$overlay$arm_id
-  })))
+  # ★중첩(v10.2) 이후 overlay 는 단수 객체 또는 층 리스트다. 구판 s$overlay$arm_id 는
+  #   리스트에서 NULL 을 내 제외 목록이 통째로 비고, 이미 측정한 팔이 다시 뽑힌다.
+  .arm_ids <- .ov_arm_ids   # 정본 = rf_spec_sig.R
+  .done_arms <- unique(c(
+    unlist(lapply(E$attempts, function(a) {
+      sp <- a$essence$spec
+      if (is.null(sp) || !nzchar(sp) || !file.exists(sp)) return(NULL)
+      s <- tryCatch(fromJSON(sp, simplifyVector = FALSE), error = function(z) NULL)
+      if (is.null(s)) NULL else .arm_ids(s$overlay)
+    })),
+    # ★carry 에 이미 깔린 팔도 제외한다 — 같은 팔을 또 뽑으면 .ov_stack 이 중복을 지워
+    #   그 칸이 무처치로 닫힌다(측정 0으로 칸 하나 소각).
+    .arm_ids(E$carry$overlay)))
+  .done_arms <- .done_arms[nzchar(.done_arms)]
   .pk <- tryCatch({ suppressMessages(source(file.path(ROOT, "02_Infrastructure/ops/rf_overlay_arms.R")))
                     rf_pick_overlay_arms(length(batch), exclude = .done_arms %||% character(0), root = ROOT) },
                   error = function(e) { jlog("overlay_pick_failed", err = conditionMessage(e)); NULL })
@@ -392,7 +400,10 @@ if (!length(jobs)) for (CELL in batch) {
     SPEC$factors   <- if ("B1" %in% use) .win_factors(w1) else NULL
     SPEC$weighting <- if ("B2" %in% use && !is.null(w2)) (w2$weighting %||% list(kind="ew")) else list(kind = "ew")
     SPEC$universe  <- if ("B3" %in% use && !is.null(w3)) (w3$universe  %||% list(kind="k200_kq150")) else list(kind = "k200_kq150")
-    SPEC$overlay   <- if ("B5" %in% use) .w5_overlay else NULL
+    # ★B5 승자 스펙은 이미 carry 를 포함한 중첩판이라 그대로 쓴다(이중 적용 없음).
+    #   B5 를 뺀 칸도 부모의 오버레이는 기저로 남겨야 LOO 대조가 성립한다 —
+    #   안 그러면 "B5 제외" 가 이 세대 처치와 부모 위험통제를 동시에 벗기는 두 겹 처치가 된다.
+    SPEC$overlay   <- if ("B5" %in% use) .w5_overlay else (E$carry$overlay %||% NULL)
     SPEC$factor2 <- NULL; SPEC$factor3 <- NULL
     jlog("b4_axes", code = CELL$code, use = paste(use, collapse = "+"),
          f = length(SPEC$factors %||% list()), w = SPEC$weighting$kind %||% "?",
@@ -418,6 +429,11 @@ if (!length(jobs)) for (CELL in batch) {
     SPEC$factor2 <- NULL; SPEC$factor3 <- NULL
     if (!(CELL$block %in% c("B2", "B4")) && !is.null(E$carry$weighting)) SPEC$weighting <- E$carry$weighting
     if (!(CELL$block %in% c("B3", "B4")) && !is.null(E$carry$universe))  SPEC$universe  <- E$carry$universe
+    # ★2026-09-03 오버레이 승계 — 구판은 이 줄이 없었다. weighting/universe 는 물려받는데
+    #   overlay 만 안 물려받아, 승격된 자식의 B1/B2/B3 는 부모의 위험 통제가 벗겨진 채 돌았다.
+    #   팩터는 누적(.dedup_factors)되는데 오버레이는 세대마다 0 으로 리셋된 것이다.
+    #   B5 는 자기 축이라 아래에서 **중첩**으로 처리하고, B4 는 부분집합 조립이라 제외한다.
+    if (!(CELL$block %in% c("B5", "B4")) && !is.null(E$carry$overlay)) SPEC$overlay <- E$carry$overlay
   }
   # ★B5 오버레이 — 전체 최고 구성을 그대로 깔고 그 위에 노출 스케일만 얹는다
   if (identical(CELL$block, "B5")) {
@@ -428,7 +444,10 @@ if (!length(jobs)) for (CELL in batch) {
       SPEC$weighting <- .wbest_spec$weighting %||% list(kind = "ew")
       SPEC$universe  <- .wbest_spec$universe  %||% list(kind = "k200_kq150")
     }
-    SPEC$overlay <- CELL$overlay
+    # ★중첩 — carry 의 오버레이를 지우지 않고 그 위에 이 칸의 arm 을 얹는다(v10.2).
+    #   구판은 덮어쓰기라 부모가 낙폭을 30% 깎아 승격됐어도 자식 B5 는 그 30% 를 버리고
+    #   처음부터 다시 깎았다. 노출은 곱으로 합성된다(rf_cell_engine .ov_compose).
+    SPEC$overlay <- .ov_stack(E$carry$overlay, CELL$overlay)
     SPEC$overlay_basis <- CELL$basis %||% ""
     if (!is.null(.base_paper)) SPEC$root_paper <- .base_paper
   }

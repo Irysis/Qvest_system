@@ -233,6 +233,48 @@ if (!is.null(ru$err) && grepl("zz_no_such_arm", ru$err, fixed = TRUE))
   ng("C4 미지 kind 가 조용히 통과했다", ru$err %||% "오류 없음")
 
 writeLines("")
+writeLines("=== D. 오버레이 중첩 — 곱 합성 (v10.2) ===")
+
+mean_expo <- function(env) {
+  w <- as.data.table(get("PORTFOLIO", envir = env, inherits = FALSE))
+  mean(w[, .(s = sum(Weight)), by = Date]$s)   # EW 기저라 날짜별 비중합 = 그 달 노출
+}
+OV_S <- list(kind = "dd_brake",   arm_id = "dd_brake_q")        # 스칼라 층
+OV_X <- list(kind = "dbeta_tilt", arm_id = "dbeta_tilt_rank")   # 종목별 층
+
+rA <- run_cell(base_spec(factor2 = list(kind = "none"), overlay = OV_S))
+rB <- run_cell(base_spec(factor2 = list(kind = "none"), overlay = OV_X))
+rS <- run_cell(base_spec(factor2 = list(kind = "none"), overlay = list(OV_S, OV_X)))
+
+# D1. 리스트 형태를 받는가 (구판은 단수 객체만 받아 여기서 죽었다)
+if (is.null(rS$err) && identical(rS$out, "PORTFOLIO"))
+  ok("D1 오버레이 리스트 수용 — 두 층이 한 셀에서 돈다") else
+  ng("D1 중첩 실행 실패", rS$err %||% "산출물 없음")
+
+if (is.null(rA$err) && is.null(rB$err) && is.null(rS$err)) {
+  eA <- mean_expo(rA$env); eB <- mean_expo(rB$env); eS <- mean_expo(rS$env)
+  # D2. 곱 합성 — 두 층을 겹치면 각 층 단독보다 노출이 낮아야 한다
+  if (eS < eA - 1e-9 && eS < eB - 1e-9)
+    ok(sprintf("D2 곱 합성 — 단독 %.3f / %.3f → 중첩 %.3f", eA, eB, eS)) else
+    ng(sprintf("D2 중첩이 노출을 안 줄인다 (단독 %.3f/%.3f · 중첩 %.3f)", eA, eB, eS))
+  # D3. 종목축 성질 보존 — 스칼라를 겹쳐도 횡단면 비대칭이 살아 있어야 한다
+  sS <- within_sd(rS$env)
+  if (sS > 1e-9)
+    ok(sprintf("D3 횡단면 비대칭 보존 (날짜 안 비중 sd %.4f)", sS)) else
+    ng("D3 중첩 후 비중이 균등해졌다 — 종목축 층이 지워졌다")
+  # D4. 고정 축 — 층을 겹쳐도 Sigma w <= 1
+  w <- as.data.table(get("PORTFOLIO", envir = rS$env, inherits = FALSE))
+  smax <- max(w[, .(s = sum(Weight)), by = Date]$s)
+  if (smax <= 1 + 1e-8 && all(w$Weight >= 0))
+    ok(sprintf("D4 고정 축 유지 — Sigma w 최대 %.6f", smax)) else
+    ng("D4 고정 축 위반", sprintf("%.6f", smax))
+}
+
+# D5. 단수 객체 하위호환 — 구 스펙이 그대로 돌아야 한다
+if (is.null(rA$err) && identical(rA$out, "PORTFOLIO"))
+  ok("D5 단수 객체 하위호환 — 구 스펙 무변경") else ng("D5 단수 형태가 깨졌다", rA$err %||% "")
+
+writeLines("")
 writeLines(sprintf("합계: 통과 %d · 실패 %d", PASS, FAIL))
 cat(sprintf('{"test":"rf_cell_engine_smoke","pass":%d,"fail":%d,"total":%d}\n', PASS, FAIL, PASS + FAIL))
 if (FAIL > 0L) quit(status = 1L)

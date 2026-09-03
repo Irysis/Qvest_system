@@ -22,7 +22,12 @@ source <- function(file, ...) {
 BID <- Sys.getenv("QVEST_RF_TEST_BID", "")
 if (!nzchar(BID)) {
   led <- fromJSON(file.path(ROOT, "06_Registry/reinforce_ledger_l1.json"), simplifyVector = FALSE)
-  act <- Filter(function(e) length(e$attempts) >= 5L, led$entries)
+  # ★"5칸 있다" 가 아니라 "**측정된** 5칸이 있다" 로 고른다. 루프를 tick 중간에 멈추면
+  #   사전등록만 된 미측정 엔트리가 최신으로 남고, 거기서 FALSE 는 결함이 아니라 정답이다
+  #   (rf_notify_table 이 보고할 것이 없어 NULL). 2026-09-03 오탐.
+  .measured <- function(e) sum(vapply(e$attempts, function(a) {
+    sp <- a$essence$spec %||% ""; nzchar(sp) && file.exists(sp) }, logical(1)))
+  act <- Filter(function(e) .measured(e) >= 5L, led$entries)
   if (!length(act)) { cat("  FAIL 측정된 entry 가 없어 검사 불가\n"); quit(status = 1) }
   BID <- act[[length(act)]]$base_id
 }

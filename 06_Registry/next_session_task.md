@@ -1,73 +1,71 @@
-# 다음 세션 인계 — 2026-09-01 (측정 축 전환 후 정지 상태)
+# 다음 세션 인계 — 2026-09-03 (오버레이 중첩 배선 완료 · 무인 루프 정지)
 
 ## 지금 상태 한 줄
 
-**무인 리서치 루프는 도훈 지시로 정지돼 있다**(`reinforce_auto_config.json::enabled = false`).
-축 전환이 끝났고, 재개하면 **첫 새 축 entry** 부터 시작한다.
+**무인 리서치 루프는 도훈 지시로 정지돼 있다** — 예약작업 `Qvest_ReinforceAutoLoop` = **Disabled**,
+`06_Registry/reinforce_auto_config.json::enabled = false`. 재개는 **둘 다** 되돌려야 한다.
 
-## 왜 세웠나 — 이번 세션의 핵심 발견
+## 이번 세션에 바뀐 것 — 오버레이 중첩 (v10.2)
 
-**모든 강화 셀이 3종목 포트폴리오를 재고 있었다. 고정 축은 25다.**
+도훈 질문에서 출발했다: "B등급 전략 위에 새 팩터가 추가되고 오버레이가 중첩되는 형태인가?"
+실측 답은 **절반만 그랬다** — 팩터는 `.dedup_factors` 로 누적되는데 **오버레이는 승계 자체가 없었다.**
+`reinforce_auto_parallel.R` 의 carry 병합 블록에 `weighting`·`universe` 줄은 있고 `overlay` 줄이 없었다.
+그래서 승격된 자식은 부모의 위험 통제를 벗은 채 B1/B2/B3 를 돌았고, 자식 B5 는 부모 오버레이를
+**덮어쓰고** 처음부터 다시 깎았다. 세대를 넘겨도 오버레이는 항상 1층이었다.
 
-기전 2단:
-1. `rf_cell_engine.R` 이 이미 상위 25를 잘라 `FACTORS` 를 내보낸다
-   (`PANEL[order(Date,-Score)][, head(.SD, .N_MAX), by=Date]` · 실측 `factors_panel.parquet` 월 정확히 25행)
-2. `run_paper_replication` 의 `top_n_long` 이 **그 25개를 다시** 분위로 잘랐다
-   (`k = max(2, ceiling(n * 0.10))` → `ceiling(25*0.10) = 3`)
+배선 3곳:
+1. **엔진** `rf_cell_engine.R` — `SPEC$overlay` 가 단수 객체뿐 아니라 **층 리스트**를 받는다.
+   층마다 노출을 계산해 **곱으로 합성**(`.ov_compose`, 스칼라×벡터 혼합 가능 · 결측 티커는 1).
+   `n_min` 은 층들의 최댓값. 고정 축(Σw≤1·롱온리)은 합성 뒤에도 불변.
+2. **승계** 두 러너(`reinforce_auto_parallel.R`·`reinforce_auto_run.R`) —
+   carry 의 오버레이가 B1/B2/B3 로 전달되고, B5 는 `.ov_stack(carry, cell)` 로 **얹는다**.
+   B4 는 B5 승자 스펙(이미 중첩판)을 그대로 쓰고, B5 를 뺀 칸도 부모 오버레이는 기저로 남긴다
+   (안 그러면 "B5 제외" 가 두 겹 처치가 되어 LOO 대조가 깨진다).
+3. **제외 목록** — `.done_arms` 가 `s$overlay$arm_id` 로 뽑고 있었다. 중첩판은 리스트라 NULL 이 나와
+   제외가 통째로 비었을 것이다. `.ov_arm_ids` 로 층 전부를 뽑고, **carry 에 이미 깔린 팔도 제외**한다
+   (같은 팔을 또 뽑으면 `.ov_stack` 중복 제거로 그 칸이 무처치가 되어 측정 0으로 탄다).
 
-거들던 것: 셀 실행 경로가 `portfolio_spec` 에 **`n =`** 을 넘기는데 러너는 **`spec$n_max` / `spec$n_long`**
-을 읽는다 — 격자의 `n_max` 가 **한 번도 전달된 적이 없었다**.
+**정본 헬퍼**: `02_Infrastructure/reinforcement/rf_spec_sig.R` —
+`.ov_layers` / `.ov_stack` / `.ov_arm_ids`. 두 러너가 공유한다.
+★`.ov_stack` 은 **단층이면 구판 단수 형태를 그대로** 돌려준다 — 시그니처(`toJSON`)가 바뀌면
+기존 263 측정이 전부 미측정으로 되살아나 격자가 같은 칸을 다시 태운다. 검사 B1 이 이걸 지킨다.
 
-★아무도 못 본 이유: 보고 줄이 `n_max <최대 보유종목수>` 였고 **3 ≤ 25 라 제약을 만족한다**.
-축이 전달됐는지는 아무도 안 물었다.
+**실측(스모크)**: 같은 기저·같은 위기에서 단독 평균노출 0.836(dd_brake) / 0.887(dbeta_tilt) →
+**중첩 0.806**, 날짜 안 비중 sd 0.0044(횡단면 비대칭 보존), Σw 최대 1.000000.
 
-**실측 영향 (같은 스펙, 축만 교체)**: 보유 3종 → **25종** · MDD 70.6% → **56.2%** · PORT_t 0.222 → **−0.054**
-(등급 C → F). 낙폭 개선은 진짜이고 알파 소멸도 진짜다 — 둘 다 이전 값이 축 인공물이었다는 뜻이다.
+## 같이 고친 것 — 텔레그램 순위 줄 중복 (도훈 2회 적발)
 
-## 원장 상태
+`.delta_of` 는 "carry 대비 바뀐 축"을 적는데, **B4(결합) 칸의 처치는 축이 아니라 부분집합**이다.
+LOO 로 뺀 축이 마침 carry 와 같은 값이면 여러 칸이 글자까지 같아진다 —
+실측으로 1·3·4위가 전부 `GR02_Earnings_Growth (GR02_Earnings_Growth) · 비중` 이었다.
+`.rf_combo(code)` 신설 → 격자의 `combo.use` + 라벨로 적는다:
+`오버레이 제외(LOO) = 구 3축 전체결합 · 팩터+비중+유니버스`.
+8-31 의 B5 건(오버레이가 서술에 없어 네 칸이 동문)과 **같은 병**이다 —
+그 블록의 처치를 구분하는 축이 서술에서 빠졌다.
 
-- `current_axis = "n_max_25"` · `axis_epochs` 1건(전환 사유·실측 근거 포함)
-- **entry 15건 전부 `axis_valid = false`, `measurement_axis = "legacy_double_selection_n3"`**
-- **측정 시도 147건은 보존** — 축이 다를 뿐 틀린 값이 아니다(사후 재현·귀속 유지)
-- 마지막 entry(`RP_20260901_145755_5376_adapted_rulefast`, 20/25)는 축 전환 + 전이 창으로 **park**
-- `rf_open_entry` 가 새 entry 에 `measurement_axis` 를 각인한다 — 신규분이 legacy 로 오분류되지 않는다
+**재발 방지** = `test_rf_notify_rank_distinct.R` — 실제 발송 텍스트를 가로채 순위 줄 서술이
+서로 다른지 잰다(+ 양성 대조). 서술 경로가 또 바뀌어도 이 검사는 낡지 않는다.
 
-★**축이 다른 entry 끼리 등급·PORT_t 를 비교하지 말 것.** B/C 등급 순위가 새 축에서 유지된다고 볼 근거가 없다.
+## 진행 중이던 것 (세션 종료 시점)
 
-## 재개 방법
+`RP_20260903_160341_combo` — B4 다섯 칸이 20:27 기동, 82분째 100% CPU 로 **실제 계산 중**이었다.
+멈추기 전에 뜬 tick 이라 **구판 코드**(중첩 이전)로 로드됐다 — 결과는 단층 오버레이 측정으로 일관된다.
+B4 는 마지막 블록이라 끝나면 25/25 exhausted 로 자연 종료된다.
+★죽이면 그 5칸은 `attempts_used` 만 오르고 측정 0으로 탄다(사전등록 시점에 카운트가 오른다).
 
-```bash
-python -c "import io,json;p='06_Registry/reinforce_auto_config.json';d=json.load(io.open(p,encoding='utf-8'));d['enabled']=True;io.open(p,'w',encoding='utf-8').write(json.dumps(d,ensure_ascii=False,indent=1))"
-```
+## 재개 절차
 
-다음 tick 이 큐 상단 논문(현재 `cond-mat/0410079` 다음)의 충실구현을 띄우고, 거기서 열리는 entry 가
-**첫 새 축 entry** 가 된다. 큐는 `alpha-pending 75`.
+1. `06_Registry/reinforce_auto_config.json::enabled` → `true` (`_disabled_note` 삭제)
+2. `Enable-ScheduledTask -TaskName Qvest_ReinforceAutoLoop` (관리자 PowerShell)
+3. 첫 tick 후 확인: 승격 entry 의 B5 칸 스펙에 `overlay` 가 **리스트**로 들어가는지
+   (`.cache/rf_parallel/spec_B5_*__<base_id>.json`) — 이게 중첩이 실제로 도는 유일한 증거다.
 
-## 이번 세션에 바뀐 것 (요약)
+## 검사
 
-| 영역 | 변경 |
-|---|---|
-| 정지 결함 | 소비 키 정본화(`pid_of`) · 고아 claim 회수를 상태 판정 앞으로 |
-| B1 | 격자 고정 → 등록부 소비(`rf_factor_arms.R`) · IC 상관 최소화 사슬 · **계열 라운드로빈 시드 회전** · 깊이 1~5 |
-| 엔진 | 기저 가중 `w0 = 0.5` 고정(격자 `fixed_axes` 가 정본, 구 스펙은 등가중 폴백) |
-| 격자 | 블록 순서 **B1→B2→B3→B5→B4** · B4 **4축 LOO**(오버레이 포함) · 코드 재번호 |
-| 승자 해석 | 격자 조회 → **측정된 spec 파일** 기준(B1·B5 셀은 격자에 없다) |
-| 자동등록 | B+ 논문 신호 → 팩터 DB(`engine` 템플릿 · 동결 패널) · 게이트 3종 |
-| 팩터 DB | `panel_axis` 판정기 · `compute_technical.R` 12종 신설 · registry 위생 4종 제거(373→369) · 슬라이스 창 1400→**1900일**(M12 영구 0행 수리) · 백필 멱등을 "가용성" 기준으로 |
-| 가시성 | 부팅 `Data:` 줄에 배출 격차 표면화 (현재 **14** = 백필 대기분) |
-| 검사 | 배터리 **116 통과 / 0 실패** (§27~§31 신설, 전부 양성 대조 포함) |
+`08_Tests/reinforcement/` 24개 전부 통과(`test_rf_block_lcode` 만 skip).
+신설 2종: `test_rf_overlay_stack.R`(13) · `test_rf_notify_rank_distinct.R`(6).
 
-## 계속 도는 것 (의도적)
+## 이전 세션 사료
 
-`daily_refresh` 는 정지 대상이 아니다. `[6d]` 예산제 백필이 밤마다 **technical 12 + C15 + M12** 의
-이력을 채운다(밤당 3~4종, 4일 예상). 새 축 리서치가 쓸 팩터 커버리지이므로 남겨 뒀다.
-정지하려면 `QVEST_FDB_NO_BACKFILL=1`.
-
-## 남은 항목 (범위 밖으로 분리한 것)
-
-- `factor_evidence.json` 의 `lifecycle_status` 가 항상 `active` — registry 가 `deprecated` 로 표시한
-  C14/C17 도 active 로 보고한다(사이드카 결함). `rf_factor_pool` 은 registry 정본을 읽도록 이미 우회했다.
-- `build_factor_evidence.py --if-stale` 이 2026-08-20 이후 안 돈 이유 미확인
-- **일간 증분 빌드가 배치 빌드보다 얇다** — 202608·202609 가 324종(직전 347~348), `M07_IndMom` 0행.
-  최신 달을 쓰는 전략이 그 팩터를 쓰면 조용히 1~2개월을 잃는다. 원인 미규명.
-- B2 가 `rf_pick_weight_arms()` 를 호출하지 않는다(스냅샷 5종 고정). B1 에 깐 배선과 같은 형태.
+2026-09-01 "측정 축 전환(n_max 3→25)" 인계문은 이 파일이 덮어썼다 — 그 내용은 git 이력과
+`memory/feedback-satisfying-the-constraint-is-not-receiving-the-setting.md` 카드에 있다.

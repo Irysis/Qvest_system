@@ -6,7 +6,7 @@
 #   만들 참이었다. 서명이 갈리는 순간 "같은 포트폴리오" 판정이 소비자마다 달라진다.
 #   본문은 러너에서 **그대로 옮겼다** — 거동 변경 0.
 #
-# 제공: .fkey / .fkeys / .dedup_factors / .same_axis / .rp_all_factors / .spec_sig
+# 제공: .fkey / .fkeys / .dedup_factors / .same_axis / .rp_all_factors / .spec_sig / .ov_layers / .ov_stack / .ov_arm_ids
 # 요구: jsonlite(toJSON) · %||%
 #==============================================================================
 suppressPackageStartupMessages(library(jsonlite))
@@ -21,6 +21,30 @@ if (!exists("%||%")) `%||%` <- function(a, b) if (is.null(a) || length(a) == 0L)
   for (f in fs %||% list()) { k <- .fkey(f)
     if (!(k %in% seen)) { seen <- c(seen, k); out[[length(out) + 1L]] <- f } }
   out }
+# ── 오버레이 층 합성 (v10.2 중첩) ────────────────────────────────────────────
+# 오버레이는 단수 객체 · 층 리스트 · NULL 세 형태로 온다. 이 둘이 그 셋을 정규화한다.
+# ★단층이면 **구판 단수 형태 그대로** 돌려준다 — 시그니처(toJSON)가 바뀌면 기존 측정이
+#   전부 미측정으로 되살아나 격자가 같은 칸을 다시 태운다.
+.ov_layers <- function(x) {
+  if (is.null(x)) return(list())
+  if (!is.null(x$kind)) return(list(x))
+  Filter(function(z) is.list(z) && !is.null(z$kind), x)
+}
+#' 오버레이(단수·리스트·NULL)에서 arm_id 를 전부 뽑는다. 제외 목록의 정본.
+.ov_arm_ids <- function(ov) {
+  L <- .ov_layers(ov)
+  v <- as.character(unlist(lapply(L, function(z) z$arm_id %||% "")))
+  v[nzchar(v)]
+}
+.ov_stack <- function(...) {
+  L <- unlist(lapply(list(...), .ov_layers), recursive = FALSE)
+  L <- Filter(function(z) !identical(as.character(z$kind %||% "none"), "none"), L)
+  if (!length(L)) return(NULL)
+  # 같은 arm 을 두 번 얹지 않는다(부모가 깔아둔 것을 자식이 또 곱하면 이중 축소).
+  L <- L[!duplicated(vapply(L, function(z) paste0(z$kind, "~", z$arm_id %||% ""), character(1)))]
+  if (length(L) == 1L) L[[1]] else L
+}
+
 .same_axis <- function(a, b) identical(as.character(toJSON(a %||% list(), auto_unbox = TRUE)),
                                        as.character(toJSON(b %||% list(), auto_unbox = TRUE)))
 # ★측정에 영향을 주는 축 전부를 한 줄 서명으로 접는다. 두 칸의 서명이 같으면 **같은

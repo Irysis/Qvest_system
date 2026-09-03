@@ -371,8 +371,33 @@ if (identical(.wt$kind, "ew")) {
 #     교집합이 없다. assert_overlay_pit 로 하드 통과. 적합·분위·임계는 전부 확장창이다.
 #   ★임의 상수 금지: 목표변동성·게이트 문턱·EWMA lambda 를 숫자로 박지 않는다. 전부 그
 #     시점까지의 데이터에서 추정한다. 상수를 박으면 그게 곧 사후 선택이다.
-.ov      <- SPEC$overlay
-.ov_kind <- if (is.null(.ov)) "none" else as.character(.ov$kind %||% "none")
+# ★중첩 지원 (v10.2 2026-09-03): overlay 는 **단수 객체 또는 리스트**다.
+#   승격 사슬에서 부모의 오버레이 위에 자식의 오버레이가 얹히는 형태를 담기 위한 것.
+#   팩터는 이미 세대를 거쳐 누적되는데(.dedup_factors) 오버레이만 매번 교체였다.
+.ov <- SPEC$overlay
+.OV_LIST <- if (is.null(.ov)) list() else
+            if (!is.null(.ov$kind)) list(.ov) else                 # 단수 객체
+            Filter(function(z) is.list(z) && !is.null(z$kind), .ov) # 리스트
+.OV_LIST <- Filter(function(z) !identical(as.character(z$kind %||% "none"), "none"), .OV_LIST)
+.OV_KINDS <- vapply(.OV_LIST, function(z) as.character(z$kind), character(1))
+.OV_LABEL <- if (!length(.OV_KINDS)) "none" else paste(.OV_KINDS, collapse = "+")
+.ov_kind  <- .OV_LABEL
+
+# 층별 노출 합성 — 곱. 한 층이 안 지목한 종목은 그 층에서 무개입(1)이다.
+.ov_compose <- function(a, b) {
+  if (is.null(a)) return(b)
+  if (is.null(b)) return(a)
+  ta <- is.data.frame(a); tb <- is.data.frame(b)
+  .cl <- function(x) pmax(0, pmin(1, x))
+  if (!ta && !tb) return(.cl(as.numeric(a)[1] * as.numeric(b)[1]))
+  if (ta && !tb) { z <- as.data.table(a); z[, e := .cl(e * as.numeric(b)[1])]; return(z[, .(Ticker, e)]) }
+  if (!ta && tb) { z <- as.data.table(b); z[, e := .cl(e * as.numeric(a)[1])]; return(z[, .(Ticker, e)]) }
+  za <- as.data.table(a)[, .(Ticker = as.character(Ticker), ea = e)]
+  zb <- as.data.table(b)[, .(Ticker = as.character(Ticker), eb = e)]
+  m  <- merge(za, zb, by = "Ticker", all = TRUE)
+  m[is.na(ea), ea := 1][is.na(eb), eb := 1]
+  m[, .(Ticker, e = .cl(ea * eb))]
+}
 if (!identical(.ov_kind, "none")) {
   if (!exists("BM_DT")) stop("[rf_cell_engine] overlay 는 BM_DT 를 요구한다(호출자 env)")
   suppressMessages(source(file.path(.RF_ROOT, "02_Infrastructure/validation/overlay_pit_guard.R")))
@@ -435,29 +460,32 @@ if (!identical(.ov_kind, "none")) {
   #   ★기존 10 kind 는 위 사슬이 먼저 처리하므로 여기 오지 않는다 — 구 경로 무변경.
   .OV_BUILTIN <- c("vol_scale", "ewma_vol", "har_vol", "turbulence", "ml_tail_gate",
                    "ts_mom_gate", "dd_recovery", "vol_x_turb", "dd_brake", "vol_x_dd")
-  .OV_FN <- NULL
-  if (!.ov_kind %in% .OV_BUILTIN) {
-    .ov_file <- file.path(.RF_ROOT, "02_Infrastructure/reinforcement/overlay_arms",
-                          paste0(.ov_kind, ".R"))
-    if (!file.exists(.ov_file))
-      stop("[rf_cell_engine] overlay.kind 미지원: ", .ov_kind,
-           " — overlay_arms/", .ov_kind, ".R 도 없다")
-    .ov_env <- new.env(parent = globalenv())
-    source(.ov_file, local = .ov_env)          # ★sys.source 는 ofile 이 없다 — source(local=) 사용
-    .fn_name <- paste0("overlay_expo_", .ov_kind)
-    if (!exists(.fn_name, envir = .ov_env, inherits = FALSE))
-      stop(sprintf("[rf_cell_engine] %s 에 %s() 가 없다 — arm 계약 위반", basename(.ov_file), .fn_name))
-    .OV_FN <- get(.fn_name, envir = .ov_env)
-    if (!is.function(.OV_FN)) stop("[rf_cell_engine] ", .fn_name, " 가 함수가 아니다")
-  }
+  # 층마다 해석한다 — 빌트인은 NULL(사슬이 처리), 파일 arm 은 함수.
+  .OV_FNS <- lapply(.OV_KINDS, function(k) {
+    if (k %in% .OV_BUILTIN) return(NULL)
+    .f <- file.path(.RF_ROOT, "02_Infrastructure/reinforcement/overlay_arms", paste0(k, ".R"))
+    if (!file.exists(.f))
+      stop("[rf_cell_engine] overlay.kind 미지원: ", k, " — overlay_arms/", k, ".R 도 없다")
+    .en <- new.env(parent = globalenv())
+    source(.f, local = .en)                    # ★sys.source 는 ofile 이 없다 — source(local=) 사용
+    .nm <- paste0("overlay_expo_", k)
+    if (!exists(.nm, envir = .en, inherits = FALSE))
+      stop(sprintf("[rf_cell_engine] %s 에 %s() 가 없다 — arm 계약 위반", basename(.f), .nm))
+    .fn <- get(.nm, envir = .en)
+    if (!is.function(.fn)) stop("[rf_cell_engine] ", .nm, " 가 함수가 아니다")
+    .fn
+  })
 
-  .n_min <- switch(.ov_kind,
-    "har_vol" = 48L, "ml_tail_gate" = 48L, "turbulence" = 36L, "ewma_vol" = 36L, 24L)
+  # 워밍업 표본 하한은 **층 중 최댓값** — 가장 늦게 서는 층이 전체를 정한다.
+  .n_min <- max(vapply(.OV_KINDS, function(k) switch(k,
+    "har_vol" = 48L, "ml_tail_gate" = 48L, "turbulence" = 36L, "ewma_vol" = 36L, 24L),
+    integer(1)), 24L)
   # ── ★종목 수준 상태 (v10.2 2026-09-03 · Phase 0-c) ──────────────────────────
   #   누적합 기반 확장창 통계. 각 신호일 d 에서 d 까지의 모든 관측만 쓴다(홀딩월은 익월이라 교집합 0).
   #   beta/dbeta 는 (n·Sxy − Sx·Sy)/(n·Syy − Sy²) 형태로 O(n) 에 나온다.
   .HOLD <- NULL
-  if (!is.null(.OV_FN)) {
+  # 파일 arm 이 한 층이라도 있으면 종목 상태를 만든다(빌트인만이면 비용 0).
+  if (any(!vapply(.OV_FNS, is.null, logical(1)))) {
     if (!exists("PORTFOLIO")) {              # EW 셀은 FACTORS 만 있다 — 보유를 여기서 확정한다
       PORTFOLIO <- SEL[, .(Ticker, Weight = 1 / .N), by = Date][, .(Date, Ticker, Weight, Leg = "LONG")]
     }
@@ -499,6 +527,11 @@ if (!identical(.ov_kind, "none")) {
     H <- .M[seq_len(t)]                        # ★확장창 = d 까지. 미래 행 접근 없음
     v_now <- H$rv60[t]
     tgt   <- stats::median(H$rv60, na.rm = TRUE)          # 목표 = 자기 이력 중앙 변동성
+    .e_acc <- NULL
+    for (.oi in seq_along(.OV_LIST)) {
+    # ★층별로 .ov_kind/.OV_FN 을 갈아끼운다 — 아래 사슬 본문은 구판 그대로다(회귀 0).
+    .ov_kind <- .OV_KINDS[.oi]
+    .OV_FN   <- .OV_FNS[[.oi]]
     e <- 1
     .ov_ctx <- if (is.null(.OV_FN)) NULL else list(
       t = t, date = .M$Date[t], v_now = v_now, tgt = tgt, n_min = .n_min,
@@ -612,6 +645,10 @@ if (!identical(.ov_kind, "none")) {
       # 파일 기반 arm — 스칼라 e 또는 data.table(Ticker, e) 를 돌려줄 수 있다.
       e <- .OV_FN(H, t, .ov_ctx)
     } else stop("[rf_cell_engine] overlay.kind 미지원: ", .ov_kind)
+    .e_acc <- .ov_compose(.e_acc, e)
+    }
+    .ov_kind <- .OV_LABEL                      # 층 루프가 갈아끼운 것을 되돌린다(로그·판정용)
+    e <- if (is.null(.e_acc)) 1 else .e_acc
     .w <- min(1, t / .n_min)                   # 표본 축소 가중 — 절벽 없음
     if (is.data.frame(e)) {
       # ★횡단면 비대칭 arm — 종목별 노출. 축소 가중은 종목마다 동일하게 적용한다.

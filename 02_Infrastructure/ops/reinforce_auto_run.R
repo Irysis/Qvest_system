@@ -283,6 +283,9 @@ if (!is.null(E$carry)) {
   SPEC$factor2 <- NULL; SPEC$factor3 <- NULL
   if (!(CELL$block %in% c("B2", "B4")) && !is.null(E$carry$weighting)) SPEC$weighting <- E$carry$weighting
   if (!(CELL$block %in% c("B3", "B4")) && !is.null(E$carry$universe))  SPEC$universe  <- E$carry$universe
+  # ★오버레이 승계 (2026-09-03, 병렬 러너와 동일 규약) — 구판은 이 줄이 없어
+  #   승격된 자식이 부모의 위험 통제를 벗은 채 B1/B2/B3 를 돌았다.
+  if (!(CELL$block %in% c("B5", "B4")) && !is.null(E$carry$overlay)) SPEC$overlay <- E$carry$overlay
 }
 # ★B5 오버레이 — 전체 최고 구성을 그대로 깔고 그 위에 노출 스케일만 얹는다
 if (identical(CELL$block, "B5")) {
@@ -293,7 +296,7 @@ if (identical(CELL$block, "B5")) {
     SPEC$weighting <- .wbest_spec$weighting %||% list(kind = "ew")
     SPEC$universe  <- .wbest_spec$universe  %||% list(kind = "k200_kq150")
   }
-  SPEC$overlay <- CELL$overlay
+  SPEC$overlay <- .ov_stack(E$carry$overlay, CELL$overlay)   # ★중첩 — 덮어쓰기 아님
   SPEC$overlay_basis <- CELL$basis %||% ""
   if (!is.null(.base_paper)) SPEC$root_paper <- .base_paper
 }

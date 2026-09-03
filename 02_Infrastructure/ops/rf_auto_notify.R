@@ -118,7 +118,23 @@ rf_notify_charts <- function(tab, outdir) {
 .RF_OV_ST  <- c(drawdown = "낙폭", vol = "변동성", multivar = "다변량", ml = "학습",
                 trend = "추세", dispersion = "분산", holding_level = "종목상태")
 # 오버레이 축 — B5 다섯 칸을 가르는 유일한 값이다. 이게 없으면 순위 네 줄이 같은 문장이 된다.
+#' 오버레이 서술. 층 리스트(v10.2 중첩)를 받으면 층마다 축약해 " + " 로 잇는다.
+#' ★구판은 단수 객체만 봤다 — 리스트가 오면 o$kind 가 NULL 이라 NA 를 돌려주고
+#'   오버레이 축이 서술에서 통째로 사라졌다(B5 네 칸이 같은 문장으로 보이던 병의 재발 경로).
 .rf_ov <- function(o) {
+  if (is.null(o)) return(NA_character_)
+  if (is.null(o$kind)) {
+    L <- Filter(function(z) is.list(z) && !is.null(z$kind), o)
+    if (!length(L)) return(NA_character_)
+    v <- vapply(L, function(z) .rf_ov1(z) %||% NA_character_, character(1))
+    v <- v[!is.na(v)]
+    if (!length(v)) return(NA_character_)
+    v[-1] <- sub("^오버레이 ", "", v[-1])   # 접두는 한 번만 — 층은 " + " 로 잇는다
+    return(paste(v, collapse = " + "))
+  }
+  .rf_ov1(o)
+}
+.rf_ov1 <- function(o) {
   if (is.null(o) || identical(as.character(o$kind %||% "none"), "none")) return(NA_character_)
   aid <- as.character(o$arm_id %||% "")
   knd <- as.character(o$kind   %||% "?")
@@ -205,6 +221,25 @@ rf_notify_charts <- function(tab, outdir) {
   n <- as.integer(a$n %||% 0L)
   if (n >= 1L && n <= length(cs)) cs[[n]] else NULL
 }
+# ★B4(결합) 칸 라벨 — 결합 칸의 정체성은 팩터/비중/유니버스 값이 아니라 **어느 블록을
+#   넣고 뺐는가**(부분집합)다. 축 차집합으로 서술하면, LOO 로 뺀 축이 마침 carry 와 같은
+#   값일 때 여러 칸이 정확히 같은 문장이 된다 — 2026-09-03 도훈 적발("2위에서 4위 같은 내용").
+.RF_BLK_KO <- c(B1 = "팩터", B2 = "비중", B3 = "유니버스", B5 = "오버레이")
+.rf_combo <- function(code) {
+  g <- tryCatch(fromJSON(file.path(ROOT, "06_Registry/reinforce_program.json"), simplifyVector = FALSE),
+                error = function(e) NULL)
+  if (is.null(g)) return(NA_character_)
+  for (b in g$blocks) for (cl in b$cells) if (identical(as.character(cl$code %||% ""), code)) {
+    u <- as.character(unlist(cl$combo$use %||% list()))
+    if (!length(u)) return(NA_character_)
+    ko <- unname(.RF_BLK_KO[u]); ko[is.na(ko)] <- u[is.na(ko)]
+    lab <- as.character(cl$label %||% "")
+    return(if (nzchar(lab)) sprintf("%s · %s", lab, paste(ko, collapse = "+"))
+           else paste(ko, collapse = "+"))
+  }
+  NA_character_
+}
+
 rf_cell_desc <- function(base_id = NULL) {
   g <- tryCatch(fromJSON(file.path(ROOT, "06_Registry/reinforce_program.json"), simplifyVector = FALSE),
                 error = function(e) NULL)
@@ -375,6 +410,11 @@ rf_auto_notify <- function(base_id, n, kind = "block") {
                    #   부분(비중·유니버스)이 자리를 다 먹고 등급·기준선 대비가 80자에서 잘린다
                    #   — 정작 판단에 쓰이는 두 값이 사라진다(2026-08-31 미리보기에서 적발).
                    .delta_of <- function(code) {
+                     # ★결합 칸은 부분집합이 곧 처치다 — 축 차집합 경로를 타지 않는다.
+                     if (grepl("^B4_", code)) {
+                       .z <- .rf_combo(code)
+                       if (!is.na(.z)) return(substr(.z, 1, 48))
+                     }
                      full <- dsc[[code]] %||% "격자 밖"
                      pr <- strsplit(full, " | ", fixed = TRUE)[[1]]
                      # 3축(팩터·비중·유니버스) 또는 4축(+오버레이). 4축은 B5 처럼
