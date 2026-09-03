@@ -4,7 +4,25 @@
   "grade": "B",
   "core_reference": "R46 P1(KRX 백필·armed) stage_artifacts/WT_D20260715_015/verdict.json; R45 근원(Close hole·stored 참값) WT_D20260715_014; precedent project-rawdata-april-gap-incident-20260711(KRX 백필·가드5종 재사용)+reference-rawdata-ret-firewall-20260715; wiring krx_data_collector.R+krx_build_rawdata.R",
   "lesson_text": "[데이터무결성 근원수리] R47 R46-P1 — R46 tripwire가 특정한 218 source-seam Close 구멍을 KRX 백필로 실수리. ★rawdata 실변경 유일 작업(밤샘 라인 중). append-only·KRX API만·단일스레드·io(2)·temp-rename·book/05_Production 무변경. ★표적: 216 April-cluster(prevDate 04-29→Date 07-02, 결측 04-30~07-01) + 2 April-seam(A150840/A208340) = 전량 유니버스內 0. 근본: 이 218은 KRX 소스(04-29 backfill·07-02+ krx_api)에만 존재, 05~06월 QuantiWise-only 창에서 QW 미수출 → interior hole(유니버스 종목은 QW 완전커버라 유니버스內 0). ★방법: KRX 일별 캐시 56/64일 재사용 + 8일(06-18/19/23/24/25/26/29/30) live API 수집(캐시-only write). krx_transform_daily 정합 → fill_set(진짜 부재 (Ticker,Date)) inner-join으로만 제한(APPEND-ONLY 원천보장·collision gate=0). OHLCV=KRX·meta/flags=티커 pre-gap template carry-forward·BM_Ret=Date canonical join(독립재계산 X)·Ret=chained(pre-gap Close부터)·source=krx_api_backfill_20260717. interior merge = rbind+unique(old우선)+temp-rename. ★핵심 발견(seam parity): seam-end(07-02) stored Ret은 원래 KRX 07-01 Close 대비로 정확(미영속) — 5샘플 implied prevClose==KRX 07-01 5/5, 전수 216/216 07-02 recompute(Close07-02/Close07-01−1)==stored. 즉 07-01 채움만으로 recompute==stored 자동 성립(07-02 무변경=append-only 정합). ★가드 5종(pre-write·실패시 write안함): g1 행수정확 14,009,624+8,856=14,018,480·g2 삭제0·g3 유니버스 행 2,370,544 불변·g4 maxDate 07-16 불변·g5 minDate 1990-01-05 불변 + collision0 + book-overlap0. ★parity 4종: P1 기존 14,009,624행 max|ΔClose|=max|ΔRet|=0·P2 source-seam 218→2·216/216 seam match·P3 유니버스 행 max|ΔRet|=0·P4 북14 71,125행 max|ΔRet|=0. ★firewall: 정지-재개 2행(A004415 05-21·A032685 05-26, Vol=0 frozen→resume Vol>0 지문)은 |Ret|>1.0 물리불가 단일일 → Ret:=NA·Close 참값 보존(R44/R46 규칙+April fix 정직-NA 선례). 채운 8,856행 |Ret|>0.31=0(±30% 물리한계 內). ★잔여: source-seam 2(A150840·A208340 penny 128~172원, 03-30~04-29 실미거래=KRX Close 부재=채울 데이터 없음, illiquidity 정직 잔여) + 27 old delisting(source_seam=FALSE·R47 표적 아님). 표적 216 fillable=100% 해소. ★downstream: factor_db 재빌드 불요 — stored Ret 직접소비·canonical=유니버스 필터라 non-universe fill은 소비 factor 무영향(4월 사고=유니버스 momentum 오염이었으나 이번 구멍은 비-유니버스 전용). 교훈: (1) 4월-사고 방어 = full-rebuild 금지·append-only(interior fill)·유니버스 행 불변 가드·행수 정확 가드가 mechanical 방어선. (2) seam-end stored Ret이 미영속 prevClose 대비 정확할 수 있으므로 구멍만 채우면 parity 자동 회복(day-after 수정 불요). (3) KRX 무수정주가는 stored seam과 정합(둘 다 KRX). (4) 미거래 penny는 fabricate 금지·정직 잔여. next_probe: P1(잔여 2 penny 대체소스/상장상태 재확인); P2(tripwire 리빌드 pre-hook 게이트화·R46 이월); P3(qw_refresh 수정주가 자동승격 검증).",
-  "tags": ["data_integrity", "krx_backfill", "close_hole_repair", "append_only", "recompute_stored_parity", "non_universe", "live_impact_zero", "universe_rows_unchanged", "book_unchanged", "april_gap_defense", "guards_5_pass", "parity_4_pass", "integrity_line_complete", "non_capital", "hygiene_layer", "capability_established", "rawdata_modified_scoped"],
+  "tags": [
+    "data_integrity",
+    "krx_backfill",
+    "close_hole_repair",
+    "append_only",
+    "recompute_stored_parity",
+    "non_universe",
+    "live_impact_zero",
+    "universe_rows_unchanged",
+    "book_unchanged",
+    "april_gap_defense",
+    "guards_5_pass",
+    "parity_4_pass",
+    "integrity_line_complete",
+    "non_capital",
+    "hygiene_layer",
+    "capability_established",
+    "rawdata_modified_scoped"
+  ],
   "created_at": "2026-07-17",
   "research_mode": "ramp",
   "created_by": "emit:ramp",
@@ -41,9 +59,19 @@
   "all_guards_pass": true,
   "all_parity_pass": true,
   "n_trials": 1,
-  "next_probe": ["잔여 2 penny 대체소스 (P1)", "tripwire 리빌드 pre-hook 게이트화 (P2)", "qw_refresh 수정주가 자동승격 검증 (P3)"],
-  "consumer_surfaces": ["①재료: seam 구멍 채움·완전성 회복", "⑧위험감시: tripwire pre-hook 후보", "⑨자본: 유니버스·북 parity 불변·라이브 무영향"],
+  "next_probe": [
+    "잔여 2 penny 대체소스 (P1)",
+    "tripwire 리빌드 pre-hook 게이트화 (P2)",
+    "qw_refresh 수정주가 자동승격 검증 (P3)"
+  ],
+  "consumer_surfaces": [
+    "①재료: seam 구멍 채움·완전성 회복",
+    "⑧위험감시: tripwire pre-hook 후보",
+    "⑨자본: 유니버스·북 parity 불변·라이브 무영향"
+  ],
   "evidence": "stage_artifacts/WT_D20260715_016/{verdict,r47_parity_verify,r47_merge_guards}.json",
   "selection_type": "chain",
-  "record_type": "process"
+  "record_type": "process",
+  "promoted_to_axiom": "AX-RAMP-006",
+  "promoted_at": "2026-09-01"
 }

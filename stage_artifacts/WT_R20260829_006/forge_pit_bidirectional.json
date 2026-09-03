@@ -1,0 +1,60 @@
+{
+  "detector": "02_Infrastructure/validation/lookahead_detector.R::detect_lookahead()",
+  "scanned_file": "stage_artifacts/WT_R20260829_006/run_all.R",
+  "baseline_violations": 0,
+  "positive_control": {
+    "injected": {
+      "P1": "  ann_sr <- mean(x) / sd(x) * sqrt(252)   # 선언 idiom: 연율화 Sharpe",
+      "P2": "  q <- quantile(dt$Ret_1m, 0.9)           # 선언 idiom: 전 표본 분위수",
+      "P3": "  s <- scale(dt$score)                    # 선언 idiom: 전 표본 표준화"
+    },
+    "fired": {
+      "P1": true,
+      "P2": false,
+      "P3": false
+    },
+    "n_fired": 1,
+    "n_total": 3,
+    "reading": "검출기가 이 실행 환경에서 살아 있는지의 증거. 발화 = 계기 생존."
+  },
+  "negative_coverage": {
+    "injected": {
+      "N1": "  mu_full <- mean(dt$Ret_1m, na.rm = TRUE)          # 전 표본 평균 (미래 포함)",
+      "N2": "  fwd <- shift(dt$Close, -1)                        # 미래 시점 참조 (lead)",
+      "N3": "  W[, w := w / sum(w)]                              # 비중 재정규화 (사후 개입)",
+      "N4": "  cvm <- cov(as.matrix(dt[, .(a, b)]))              # 전 표본 공분산",
+      "N5": "  best <- dt[which.max(cumret)]                     # 결과 최대점 선택"
+    },
+    "fired": {
+      "N1": false,
+      "N2": false,
+      "N3": false,
+      "N4": false,
+      "N5": false
+    },
+    "n_fired": 0,
+    "n_total": 5,
+    "reading": "미발화분은 검출기가 원리적으로 못 보는 idiom 계열이다. 따라서 baseline CLEAN 은 '선언 idiom 부재'의 증거일 뿐 PIT 증명이 아니다."
+  },
+  "structural_argument": {
+    "t_plus_1_exec_gap_days": {
+      "min": 1,
+      "median": 3,
+      "max": 11,
+      "n_non_positive": 0
+    },
+    "weights_as_is": {
+      "weights_pairs": 6200,
+      "holdings_pairs": 6200,
+      "holdings_not_in_weights": 0,
+      "reading": "집행 명부가 weights.csv 의 부분집합 -> forge 는 종목을 고르지 않았다."
+    },
+    "reselection_scan": {
+      "alpha_scores_mentions": 1,
+      "setorder_calls": 2,
+      "head_calls": 0,
+      "reading": "top-N 재선택 패턴(setorder(-score)+head(N)) 부재."
+    },
+    "full_sample_statistics": "0 — 일별 NAV 는 보유 주식수 x 당일 종가만 사용. 경로 누적이라 표본 전체 통계 미사용."
+  }
+}

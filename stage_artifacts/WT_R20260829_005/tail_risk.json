@@ -1,0 +1,70 @@
+{
+  "task_id": "WT-R20260829_005",
+  "as_of_date": "2026-07-31",
+  "pit_note": "실현 월별 계열은 holding_ym <= 2026-07 까지만 (2026-08 은 sig_date 시점 미실현). 259 -> 258개월.",
+  "realized_monthly": {
+    "n_months": 258,
+    "source": "stage_artifacts/WT_R20260829_005/period_returns_production.csv (PIT-cut)",
+    "empirical": {
+      "var_95": 0.09821392,
+      "es_95": 0.14614711,
+      "var_99": 0.1475089,
+      "es_99": 0.2209026,
+      "active_var_95": 0.06237827,
+      "active_es_95": 0.1080012,
+      "bench_var_95": 0.08207174,
+      "bench_es_95": 0.13853246
+    },
+    "skew": 0.14119856,
+    "excess_kurtosis": 3.72663407,
+    "evt_gpd_95": {
+      "var_evt": 0.09739756,
+      "es_evt": 0.14696199,
+      "shape_xi": 0.17039311,
+      "scale_beta": 0.03649031,
+      "threshold_u": 0.07023285,
+      "n_exceedances": 26,
+      "method": "gpd_mle_evir"
+    },
+    "evt_gpd_99": {
+      "var_evt": 0.17353997,
+      "es_evt": 0.2387433,
+      "shape_xi": 0.17039311,
+      "scale_beta": 0.03649031,
+      "threshold_u": 0.07023285,
+      "n_exceedances": 26,
+      "method": "gpd_mle_evir"
+    },
+    "cornish_fisher_99": {
+      "var_cf": 0.21488392,
+      "skew": 0.14037844,
+      "exkurt": 3.67459067,
+      "method": "cornish_fisher"
+    },
+    "cdar_95": {
+      "max_dd": 0.53034324,
+      "avg_dd": 0.13794146,
+      "var_dd": 0.35602748,
+      "cdar": 0.43987353
+    },
+    "hill_alpha_strategy": 3.14326448,
+    "hill_k_strategy": 16,
+    "hill_alpha_benchmark": 1.94993234
+  },
+  "current_basket_daily": {
+    "note": "as-of top-25 균등 기준바스켓의 과거 756거래일 역투영 — 구성 아티팩트(현행 종목을 과거에 소급) 존재. 진단 전용.",
+    "n_days": 756,
+    "name_coverage": 1,
+    "evt_gpd_99": {
+      "var_evt": 0.05873632,
+      "es_evt": 0.08865555,
+      "shape_xi": 0.28087367,
+      "scale_beta": 0.01367066,
+      "threshold_u": 0.03080547,
+      "n_exceedances": 38,
+      "method": "gpd_mle_evir"
+    },
+    "hill_alpha": 1.83338857
+  },
+  "interpretation": "월별 GPD shape xi=0.17 > 0 = 두꺼운 꼬리(Frechet 영역). 전략 Hill alpha 3.14 가 벤치 1.95 보다 크다 = 월별 손실 꼬리는 벤치보다 얇다. 반면 현행 바스켓 **일별** Hill alpha 1.83 는 훨씬 두껍다 — 월 집계가 일별 꼬리를 평활한다는 뜻이며, 월 단위 CVaR 만 보면 일중/주중 꼬리를 과소평가한다."
+}

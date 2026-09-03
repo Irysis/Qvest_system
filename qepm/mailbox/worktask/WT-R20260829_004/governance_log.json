@@ -6,6 +6,52 @@
       "agent": "q-lead",
       "action": "WT_CREATED",
       "summary": "Work Task 생성: JT1993 강화 4/20 — 모멘텀 크래시 관리 리스크 오버레이 (Daniel-Moskowitz 2016) | source=user_defined"
+    },
+    {
+      "timestamp": "2026-08-29T17:52:00+0900",
+      "agent": "alpha-research",
+      "action": "ALPHA_PACKAGE_EMITTED",
+      "summary": "JT1993 J6 top-25 EW + 국면조건부(패닉월) pool-내 저변동 구성 교체 — 실투형 단일 후보 1건. PORT_t 0.915 · SR 0.505 · CAGR 11.42% · MDD -63.53% · Calmar 0.180 · beta 1.035 · beta-통제 alpha +3.61%/yr t 0.867 · TO 9.38 · n_max 25 (metric_type=canonical_screen). 사전등록: F1 PASS / F2 FAIL / F3 BETA_PATH_PRESENT(비유의) / F4 DISTINGUISHABLE(방향 반전) / F5 CANCELLED(세션 지시 ①) / F6 FAIL / F7 FAIL / F8 PASS. 검정력 Calmar ratio 1.112 power 0.876 — powered null(미결 아님). 체인 완주 의무(지시 ②)에 따라 음성 판정 하에서도 완전형 발행.",
+      "artifacts": [
+        "qepm/mailbox/worktask/WT-R20260829_004/alpha_package.json",
+        "qepm/mailbox/worktask/WT-R20260829_004/challenge_note.md",
+        "stage_artifacts/WT_R20260829_004/alpha_scores.parquet",
+        "stage_artifacts/WT_R20260829_004/alpha_validation.json",
+        "stage_artifacts/WT_R20260829_004/period_returns_production.csv",
+        "stage_artifacts/WT_R20260829_004/regime_signal_timeseries.parquet",
+        "stage_artifacts/WT_R20260829_004/stock_pred_vol_panel.parquet",
+        "stage_artifacts/WT_R20260829_004/sleeve_realized_variance.parquet"
+      ]
+    },
+    {
+      "timestamp": "2026-08-29T17:52:00+0900",
+      "agent": "alpha-research",
+      "action": "PIT_REPAIR_DURING_ROUND",
+      "summary": "ast_verify.py 가 A1_RAWDATA_OHLCVS_daily:Ret same-day 사용을 LOOKAHEAD 로 적발 → 종목 실현변동성 126d · 시장 실현변동성 126d · I_B 24개월 누적종가를 strict t-1(Date < 신호일)로 조이고 S2~S7 전 측정 재실행. AST 는 TS_LAG(k=1,unit=d) 로 표현. 재측정 후 검증기 방언 probe PASS (max_avail_ts 2026-08-28 <= decision_ts 2026-08-28 · violations 0). 판정 불변."
+    },
+    {
+      "timestamp": "2026-08-29T17:52:00+0900",
+      "agent": "alpha-research",
+      "action": "HYPOTHESIS_REDESIGN_REQUESTED",
+      "summary": "F4 실측이 승계 mechanism 의 agent 방향을 반증 — 패닉월에 개인이 순매수 전환(NW-t +2.90), 기관이 순매도 전환(NW-t -3.45), 외국인 무변화. Charter 원칙 8 에 따라 hypothesis 미수정, challenge_note.md C3 에 alpha-hypothesis 앞 재설계 요청으로 기록."
+    },
+    {
+      "timestamp": "2026-08-29T18:36:33+0900",
+      "agent": "risk",
+      "action": "CHALLENGE_REVIEWED",
+      "summary": "Review complete: risk — no formal challenge (targets=alpha_package,alpha_vector,confidence_vector,factor_specs,regime_signal_timeseries,preregistered_verdicts_F1_F2_F8,alpha_validation,challenge_note)",
+      "objection_raised": false,
+      "reason": "정식 challenge(alpha 재작업 요구) 미발행 — 발견 3건은 alpha 판정을 바꾸지 않는다. ①데이터 무결성 267건은 alpha 선택 경로 침투 12/6475 슬롯이고 패닉월과 공집합 ②요인모형 walk-forward 시장share 42.7% 는 alpha F2(50.4%) 를 반박이 아니라 **확인** ③오버레이 미적용은 S0/S1 규약 준수. 대신 challenge_flags 6건을 하류로 이관한다.",
+      "targets_reviewed": [
+        "alpha_package",
+        "alpha_vector",
+        "confidence_vector",
+        "factor_specs",
+        "regime_signal_timeseries",
+        "preregistered_verdicts_F1_F2_F8",
+        "alpha_validation",
+        "challenge_note"
+      ]
     }
   ]
 }

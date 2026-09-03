@@ -1,0 +1,442 @@
+{
+  "wt_id": "WT-R20260829_008",
+  "designed_by": "alpha-hypothesis",
+  "model_tier": "opus",
+  "designed_at": "2026-08-29",
+  "spec_scope": "AST v1.1 설계순서 ①메커니즘 ②가설서술 ③반증조건 ④국면경계 + pipeline Step 0. ⑤AST 구성·팩터 소싱·신호공학·실측·alpha_package 발행은 alpha-research 소관 — 본 문서는 그 구간을 수행하지 않았다.",
+
+  "prechecks": {
+    "hypothesis_index_hits": {
+      "query": "Rscript 02_Infrastructure/tools/hypothesis_index.R lookup momentum",
+      "result": "30 hits (FAIL 1 · DISTILLED_NEG 17 · PASS 0 · MARGINAL 4). top: DIST-AR-027(consensus) · DIST-AR-041(momentum) · DIST-RAMP-026(factor_timing_allocation)",
+      "targeted_greps": {
+        "discreteness": 0,
+        "frog": 1,
+        "일별 경로 / path shape": 0,
+        "return consistency / Grinblatt": 0
+      },
+      "reading": "정보 이산성(ID/IDZ/IDMAG) 축과 '일별 경로 모양으로 부분집합 선택' 축은 hypothesis_index 에 선행 측정이 없다. 즉 *측정 이력*은 신규다. 그러나 아래 dist_ar_041_judgment 대로 *범주*는 신규가 아니다 — 둘을 혼동하지 않는다."
+    },
+    "frontier_queue_refs": {
+      "file": "06_Registry/alpha_frontier_queue.json (schema_version 2.0)",
+      "status_counts": {"open": 92, "claimed": 5, "parked": 21},
+      "claimed_entry_for_this_wt": null,
+      "note": "본 라운드는 frontier 큐 항목이 아니라 강화 원장(06_Registry/reinforce_ledger_l1.json entry[0], base RP_20260829_122020_9192, attempts_used=8)의 8/20 시도다. 따라서 frontier 항목을 claim 하지 않았고 어떤 open 항목도 점유하지 않았다. parked_reason ∈ {dohoon_decision, dohoon_data_work} 항목(FQ-009 · FQ-072 등 21건)은 열람만 하고 착수하지 않았다.",
+      "infra_backlog_checked": "본 라운드는 인프라 항목 아님 — 06_Registry/infra_backlog.json 대상 밖"
+    },
+    "owner": "alpha-hypothesis (WT-R20260829_008, Q-Lead 스폰). 원장 소유 = reinforce_ledger_l1 entry[0]",
+    "prior_rounds_read": {
+      "ledger": "06_Registry/reinforce_ledger_l1.json entry[0] attempts 1~7 전문",
+      "l_codes": [
+        "stage_artifacts/l_code/reinforcement/l_code_RF_WT-R20260829_001_JT1993_x_SUE_2way.json",
+        "stage_artifacts/l_code/reinforcement/l_code_RF_WT-R20260829_002_JT1993_form_decomposition.json",
+        "stage_artifacts/l_code/reinforcement/l_code_RF_WT-R20260829_003_JT1993_x_turnover_MLC.json",
+        "stage_artifacts/l_code/reinforcement/l_code_WTR20260829_004_DM2016_CRASHOVL_IV25.json",
+        "stage_artifacts/l_code/reinforcement/l_code_WTR20260829_005_AMP2013_VALMOM_EW25.json",
+        "stage_artifacts/l_code/reinforcement/l_code_WTR20260829_006_EL2022_FACMOM_EWBAND40.json",
+        "stage_artifacts/l_code/reinforcement/l_code_WTR20260829_007_GH2004_52WHIGH_EW25_BUF50.json"
+      ],
+      "carried_coordinates": {
+        "base": "RP_20260829_122020_9192 (JT1993 6-6 데실 롱숏 충실구현) essence F",
+        "cell4_beta_controlled_alpha": "+5.14%/yr (2/20 실투형 좌표)",
+        "required_active_for_PORT_t_2.95": "+13.25%/yr (관측 +5.82%/yr)",
+        "common_wall": "OOS 소멸 — 권위 표본외 유지율 4라운드 -0.660 / -0.747 / -0.780 / -0.693, 분할 단조 악화",
+        "risk_side_counterpart_6of20": "2015 전후 계열 상관구조 상이 (Jennrich χ² 210.5, p=5.5e-17) + 알파가 타이밍하는 계열 진폭 일제 축소 (regime -24.8% · investor_flow -23.6% · leverage -22.7%)",
+        "confound_precedents": "3/20 회전율이 L01_Amihud 에 지배 (|NW-t| 2.886 vs 0.807) · 7/20 근접도가 L11_Kyle_Lambda 에 지배 (2.557 vs 1.541) · 3/20 합집합 혼합 랭킹의 시장 더미 아티팩트 t -2.526"
+      }
+    }
+  },
+
+  "paper_reading": {
+    "source": "Da, Z., Gurun, U. G., & Warachka, M. (2014). Frog in the Pan: Continuous Information and Momentum. Review of Financial Studies 27(7), 2171-2218.",
+    "urls": [
+      "https://academic.oup.com/rfs/article-abstract/27/7/2171/1578455",
+      "https://papers.ssrn.com/sol3/papers.cfm?abstract_id=1777988",
+      "https://academicweb.nd.edu/~zda/Frog.pdf (저자 배포 전문 PDF 48p — 본 판독의 실제 원본)"
+    ],
+    "read_method": "저자 배포 PDF 전문 텍스트 추출 후 직접 판독 (요약·2차문헌 아님). 아래 수치는 전부 원문 표에서 옮긴 것이며 본 에이전트의 계산이 아니다 — 계산인 항목은 명시적으로 'derived_arithmetic' 라벨을 붙였다.",
+
+    "q1_ID_definition": {
+      "equation_1_page_7": "ID = sgn(PRET) × [%neg − %pos]",
+      "formation_window": "PRET = 개별 기업의 **과거 12개월 누적수익, 단 직전 1개월 스킵**(12-1). ID 는 그 형성창의 **일별** 수익으로 계산.",
+      "sign_convention": "sgn(PRET) = +1 (PRET > 0), −1 (PRET < 0). %pos / %neg = 형성창 중 일별 수익이 양/음인 **날 수 비율**. 크기는 무시하고 각 관측을 등가중.",
+      "interpretation": "ID 大 = 불연속(discrete) 정보, ID 小 = 연속(continuous) 정보. 승자(PRET 高)에서 %pos > %neg 이면 ID 가 낮아지고, 일별 수익이 전부 양이면 ID 는 최솟값 −1.",
+      "conditioning_requirement": "★원문 명시: 'ID is interpreted **after conditioning on the magnitude of formation-period returns, PRET**'. 즉 ID 는 PRET 을 통제한 *뒤*의 조건부 측도이지 단독 신호가 아니다. Appendix A: 모멘텀은 주의 문턱 k 아래 신호의 **초기 절단**에서 나오고 ID 가 그 절단을 포착한다.",
+      "variant_eq2_IDMAG_page_8": "IDMAG = −(1/N)·sgn(PRET)·Σᵢ sgn(Returnᵢ)·wᵢ, 가중 wᵢ = 5/15, 4/15, 3/15, 2/15, 1/15 을 |Returnᵢ| 5분위(작은 것부터)에 부여. 자유 파라미터 5개.",
+      "variant_eq3_IDZ_page_9": "IDZ = sgn(PRET) × [%neg − %pos] / [%neg + %pos]. %zero = 0 이면 ID 와 동일. 도입 사유: Lesmond-Ogden-Trzcinka (1999) 가 **영수익일 빈도를 비유동성 측도**로 해석했으므로 ID(Eq.1)의 암묵 분모 1 에는 %zero 가 섞여 들어간다 — IDZ 는 그 성분을 제거한다.",
+      "simulation_validation": "Appendix A, N=250 시뮬레이션: ID 와 후속 수익 지속의 상관 = −0.65(승자) / −0.67(패자), PRET≈0 인 3분위에서는 −0.02(무의미).",
+      "measurement_caveat_verbatim_paraphrase": "원문 스스로 밝힘 — ID 는 일별 수익의 *크기*에 의존하지 않으므로 반례를 만들 수 있고, 그런 반례는 **N 이 커질수록 드물어진다**."
+    },
+
+    "q2_which_portfolio_is_5.94_vs_-2.07": {
+      "answer": "**롱숏(zero-cost)** 이다. Table 2 Panel A, PRET 5분위 → ID 5분위 **순차** 이중정렬, **6개월 보유**(형성 후 1개월 스킵), NW 6-lag t.",
+      "definition_verbatim_paraphrase": "'momentum, the six-month return from buying winners and selling losers, decreases monotonically from 5.94% in the low ID quintile … to −2.07% in the high ID quintile'",
+      "post_1927": {"discrete_LS": -2.07, "discrete_t": -2.01, "continuous_LS": 5.94, "continuous_t": 4.63, "cont_minus_disc": 8.01, "cont_minus_disc_t": 8.54, "FF3_alpha_cont_minus_disc": 10.78, "FF3_alpha_t": 10.55},
+      "post_1980": {"discrete_LS": 2.36, "discrete_t": 1.53, "continuous_LS": 9.10, "continuous_t": 6.35, "cont_minus_disc": 6.74, "cont_minus_disc_t": 5.41},
+      "panel_B_independent_sort_post1927": {"discrete_LS": -0.63, "discrete_t": -0.52, "continuous_LS": 5.72}
+    },
+
+    "q3_winner_leg_alone": {
+      "★핵심": "원문 Table 2 Panel A/C/D 의 `winner` 열이 승자 레그 단독 6개월 평균수익이다. **원문은 이 열에 t-통계량을 보고하지 않는다** — 보고된 t(4.63 · 8.54 · 6.35 · 5.41 등)는 전부 롱숏 또는 롱숏 차분이다. 따라서 승자-레그 단독 효과의 **유의성 근거는 원문에 존재하지 않는다**.",
+      "panel_A_ID_post1927_winner_by_ID_quintile": [7.53, 9.48, 10.01, 9.98, 9.56],
+      "panel_A_ID_post1927_loser_by_ID_quintile": [9.60, 8.84, 6.89, 5.62, 3.62],
+      "panel_A_ID_post1980_winner_by_ID_quintile": [7.60, 9.53, 10.86, 10.57, 10.54],
+      "panel_A_ID_post1980_loser_by_ID_quintile": [5.24, 4.82, 4.33, 3.55, 1.44],
+      "panel_C_IDZ_post1927_winner": [7.58, 9.28, 9.86, 10.09, 9.91],
+      "panel_C_IDZ_post1927_loser": [8.22, 7.52, 6.32, 5.45, 5.80],
+      "panel_C_IDZ_post1980_winner": [7.59, 9.33, 10.62, 10.52, 11.05],
+      "panel_C_IDZ_post1980_loser": [5.09, 4.72, 4.08, 3.58, 1.84],
+      "panel_C_IDZ_LS": {"post1927": {"discrete": -0.64, "t": -0.65, "continuous": 4.11, "t_cont": 3.27, "diff": 4.75, "t_diff": 4.11}, "post1980": {"discrete": 2.50, "t": 1.59, "continuous": 9.21, "t_cont": 6.66, "diff": 6.71, "t_diff": 5.85}},
+      "panel_D_IDMAG_post1927_winner": [8.00, 8.61, 9.83, 10.48, 10.70],
+      "panel_D_IDMAG_post1980_winner": [8.58, 9.86, 11.31, 12.81, 12.94],
+      "quintile_order_note": "각 배열은 [discrete, 2, 3, 4, continuous] 순서다.",
+      "derived_arithmetic": {
+        "_label": "아래는 원문 표 값에 대한 단순 산술이며 KR 실측이 아니다.",
+        "winner_leg_spread_cont_minus_disc": {"panelA_post1927": 2.03, "panelA_post1980": 2.94, "panelC_post1927": 2.33, "panelC_post1980": 3.46, "panelD_post1927": 2.70, "panelD_post1980": 4.36},
+        "winner_share_of_longshort": {"panelA_post1927": "2.03/8.01 = 25.3%", "panelA_post1980": "2.94/6.74 = 43.6%", "panelC_post1927": "2.33/4.75 = 49.1%", "panelC_post1980": "3.46/6.71 = 51.6%"},
+        "monotonicity_of_winner_leg": "★Panel A(ID)의 승자 레그는 **단조가 아니다** — post-1927 최댓값은 3분위(10.01), post-1980 최댓값도 3분위(10.86)이고 연속 층(9.56 / 10.54)이 아니다. Panel C(IDZ)도 비단조(최댓값 4분위 10.09 / 연속 11.05 는 post-1980 만 최댓값). Panel D(IDMAG)만 승자 레그가 양 표본 모두 단조다. 즉 **헤드라인의 단조성은 패자 레그가 만든다**: Panel A 패자 9.60→3.62(post-1927), 5.24→1.44(post-1980).",
+        "structural_reading": "롱온리는 승자 레그만 수확한다. Panel A 기준 효과의 **56.4~74.7%가 패자/숏 레그**에 있다. 이것은 7/20 GH2004(자기금융 우위의 76.6%가 숏 레그)와 **같은 구조**이며, 3/20 LS2000(승자 Year-1 +0.06~0.18%/월)의 재현 위험이다."
+      }
+    },
+
+    "q4_no_long_run_reversal_test": {
+      "design": "Table 2 Panel E — Panel A 와 **동일한 순차 이중정렬**(PRET 5분위 → ID 5분위)을 두고 **보유기간만 3년(36개월)으로 연장**. 미조정 수익과 FF3 알파 병기, NW 6-lag t.",
+      "horizon": "36개월 (6개월 판정과 같은 정렬, 다른 수평선)",
+      "post_1927": {"discrete_raw": -8.48, "discrete_t": -2.08, "discrete_FF3": -8.79, "discrete_FF3_t": -2.04, "continuous_raw": 5.39, "continuous_t": 2.23, "continuous_FF3": 9.56, "continuous_FF3_t": 2.14, "cont_minus_disc_raw": 13.88, "t": 2.49, "cont_minus_disc_FF3": 18.34, "FF3_t": 3.08},
+      "post_1980": {"continuous_raw": 6.57, "continuous_t": 1.06, "continuous_FF3": 10.40, "continuous_FF3_t": 1.90, "cont_minus_disc_raw": 17.60, "t": 2.40, "cont_minus_disc_FF3": 16.20, "FF3_t": 3.88},
+      "claim_verbatim_paraphrase": "'An underreaction to information does not predict long-term return reversals … stocks with continuous information in the formation period have higher long-term returns than stocks following discrete information.'",
+      "figure_2_persistence_profile": "형성 후 1~10개월 **한계**(누적 아님) 모멘텀 이익. 연속-정보는 8개월까지 지속 — 8개월차 0.46% (t 2.08), 9개월차 0.21% (t 0.97)로 소멸. 불연속-정보는 3개월차에 이미 비유의 — 0.31% (t 1.30).",
+      "★본 라운드에의 함의": "이것이 이 축을 고른 유일한 이유다. 4~7/20 의 공통 벽은 OOS 소멸(유지율 −0.66~−0.78)이었고, DGW2014 의 Panel E + Figure 2 는 정확히 '지속이 길고 반전하지 않는다'는 **수평선 청구**다. 단 Panel E 역시 롱숏이며 승자 단독 3년 수치는 원문에 없다.",
+      "post1980_caveat": "post-1980 연속 층의 3년 미조정 t 는 1.06 으로 비유의다. 유의한 것은 FF3 알파(t 1.90, 10% 수준) 와 continuous−discrete 차분(t 2.40)뿐이다 — 즉 '무반전' 청구의 최근 표본 강도는 전체 표본보다 약하다."
+    },
+
+    "q5_media_coverage_interaction": {
+      "table_3_panel_E": "저(低)미디어커버리지 종목의 연속−불연속 모멘텀 격차 5.89% vs 고(高)커버리지 3.75% (약 1.6배). FF3 적용 시 격차가 1.96% → 5.94% 로 벌어지고 그 차분 3.98% 가 유의 (t 2.09).",
+      "sibling_moderators_table_3": {
+        "institutional_ownership_dispersed_vs_concentrated": "11.23% vs 5.44%, 차분 5.79 (t 2.41)",
+        "small_vs_large": "7.17% vs 4.92%, 차분 2.25 (t 2.18)",
+        "low_vs_high_analyst_coverage": "6.83% vs 3.41%, 차분 3.42 (t 2.24)"
+      },
+      "mechanism_role": "미디어·애널리스트 커버리지는 **주의 문턱 k 의 대리변수**다 — k 가 높을수록(주의가 덜 갈수록) FIP 가 강하다. 원문 스스로 미디어커버리지가 내생적임을 각주 4 에서 인정하고, 종목 특성으로 직교화한 잔차 커버리지로도 유사 결과를 얻었다고 보고(unreported).",
+      "endogeneity_note": "대형주가 언론에 더 나오므로 커버리지는 size 와 얽힌다 — KR 이식에서 이 축을 신호로 쓰면 size 노출을 성과로 기록할 위험(1/20 실측 EW-유니버스 PORT_t −0.064 전례)이 있다. ⇒ 본 설계는 커버리지를 **신호가 아니라 국면 경계 검정용 조절변수**로만 쓴다."
+      ,
+      "adjacent_findings_used_in_falsification": {
+        "order_flow": "'following continuous information, past winners have positive order-flow imbalances, while past losers have negative order-flow imbalances' — 처분효과(disposition effect) 예측과 반대이며 FIP 의 '처리 지연' 예측과 일치.",
+        "vs_return_consistency_GM2004": "Grinblatt-Moskowitz(2004) 수익 일관성 더미(12개월 중 ≥8개월 동부호)의 예측력은 **승자에 국한**되는 반면 ID 는 승자·패자 양쪽 지속을 설명한다. ID 가 더 강한 예측자.",
+        "vs_IVOL": "Eq.(9) RES IVOL = IVOL 을 |PRET| 에 회귀한 잔차(Fu 2009 4-요인 일별 잔차 IVOL). Table 5 Panel B: 고 RES IVOL 모멘텀 6.30% vs 저 6.28%, 차이 0.02% (t 0.25) — |PRET| 영향을 제거하면 IVOL 은 모멘텀을 설명하지 않는다.",
+        "FM_specification_eq10": "r_{i,t+1,t+6} = β0 + β1·PRET + β2·ID + β3·(PRET×ID) + αX + αI·(PRET×X) + ε. FIP 예측 = **β3 < 0**. 원문: PRET×ID 상호작용은 미실현자본이득·수익일관성·Frazzini(2006) capital gains overhang 을 통제한 **모든** 사양에서 유의 생존."
+      }
+    }
+  },
+
+  "dist_ar_041_judgment": {
+    "verdict": "IN_CATEGORY (범주 안 — 억지 신규성 주장을 하지 않는다)",
+    "card": "DIST-AR-041 · family=momentum · polarity=negative · status=distilled · metric_type=estimated · expiry 2027-02-09 · supporting L-code 17건",
+    "card_retry_condition_verbatim": "가격-파생 모멘텀 변형의 추가 탐색은 저EV 다(직교해도 전이 실패가 반복 실측). 재도전 가치는 수급 주체 축에 있다: (1) 기타법인 채널의 하위 분해 (2) 미분류·기타 주체군에서 동일 accumulation 구조 탐색 (3) 주체 축과 공시 이벤트(비-return 원천)의 교차",
+    "honest_reasoning": [
+      "IDZ 는 일별 종가수익 **부호**만으로 계산된다. 데이터 원천은 전적으로 가격이다. 따라서 '가격-파생' 이다 — 이 점에 이견의 여지가 없다.",
+      "부모 지시의 구분('신호 강도 재정의가 아니라 경로 모양으로 부분집합 선택')은 **구성 형태**의 차이이지 **데이터 원천**의 차이가 아니다. DIST-AR-041 의 범주 축은 원천이다. 그러므로 본 설계는 범주 **안**이다.",
+      "카드가 지목한 고-EV 방향(수급 주체 축)은 본 라운드가 하는 일이 아니다. 그 축은 본 설계에서 **신호가 아니라 반증 관측**(A6 투자자 flow 순매수 불균형)으로만 쓰인다."
+    ],
+    "what_is_nonetheless_new": [
+      "측정 이력: hypothesis_index 에 ID/IDZ/IDMAG · 정보 이산성 · 일별 경로 모양 축의 선행 측정이 0건이다(grep discreteness=0, path shape=0, return consistency=0).",
+      "supporting L-code 17건은 전부 수급/채널 축(OtherCorp accumulation 계열)이며 경로-모양 축의 실측 근거가 아니다 — 즉 카드의 '반복 실측' 은 이 하위축에서 나온 것이 아니다.",
+      "카드는 axiom 승격되지 않았고(promoted_to_axiom=null) expiry 2027-02-09 이며 metric_type=estimated 다."
+    ],
+    "launch_justification": "'범주 밖이라서' 가 아니라 **①도훈/부모의 사전등록 지시(논문 임의 교체 금지) ②AX-000(실증 negative 는 사실 기록이지 금지 목록이 아니다; 재시도는 새 각도·새 통제·새 표적일 때 정당) ③표적이 수준이 아니라 지속(OOS)이라는 새 표적** 때문이다. 저EV 판정은 본 라운드의 사전 기대치를 **낮게** 잡는 근거로 그대로 계승하며, 아래 사전 검정력 계약의 얇은 마진(ratio ≈ 0.17)이 그 계승의 정량 표현이다."
+  },
+
+  "candidates": [
+    {
+      "title": "[선택] FIP-IDZ 승자-내부 부분집합 선택 — 기저 6-1 신호 불변, 일별 부호빈도로 top-25 를 좁힌다",
+      "family": "momentum_path_shape",
+      "mechanism": {"agent": "주의가 유한한 KR 개인 거래층 + 얇은 국내 sell-side 커버리지", "friction": "공매도 제약 + 주의 문턱 k 아래 신호의 절단 + 저커버리지로 인한 외부 주의 계기 부재", "path": "형성창 동안 작은 양(+)의 조각으로 쌓인 승자의 미반영분이 보유 후 수개월에 걸쳐 순차 반영"},
+      "selected": true,
+      "why_selected": "DGW2014 의 유일한 winner-side 지속 청구(Figure 2 8개월 · Panel E 3년 무반전)가 4~7/20 이 공통으로 막힌 벽(OOS 소멸)과 정확히 같은 대상을 겨눈다. 부호-only 정의라 크기·변동성 교란을 구조적으로 덜 탄다."
+    },
+    {
+      "title": "IDMAG(Eq.2 크기가중) 기반 부분집합",
+      "family": "momentum_path_shape_magnitude",
+      "mechanism": {"agent": "동일", "friction": "동일", "path": "작은 일별 수익에 더 큰 가중을 주어 절단 신호를 더 정확히 포착"},
+      "selected": false,
+      "why_not_selected": "①원문 스스로 '크기 가중의 추가 복잡도는 경제적 가치가 제한적' 이라고 결론(Panel D 논의) ②자유 파라미터 5개(5/15…1/15) 추가 = complexity prior 위배 ③★결정적으로 **크기 의존이 곧 변동성 의존**이라 본 라운드가 반드시 기각해야 할 교란(IVOL·Amihud·Kyle λ)을 신호 안에 들여온다 — 3/20·7/20 의 사인(死因)을 설계에 내장하는 셈. ④승자 레그가 IDMAG 에서만 단조라는 사실은 알지만, **그것을 근거로 선택하면 원문 표를 가로지른 사양 탐색**(paper-level snooping)이 된다. 선택 근거로 쓰지 않았다."
+    },
+    {
+      "title": "ID(Eq.1 원본 헤드라인 정의) 기반 부분집합",
+      "family": "momentum_path_shape",
+      "mechanism": {"agent": "동일", "friction": "동일", "path": "동일"},
+      "selected": false,
+      "why_not_selected": "Eq.1 의 암묵 분모 1 에 %zero 가 섞인다. 원문이 인용한 Lesmond-Ogden-Trzcinka(1999)대로 **영수익일 빈도는 비유동성 측도**이며, KR 은 가격제한폭·거래정지·저유동 종목 탓에 미국보다 %zero 가 크다. ID 를 쓰면 신호에 유동성이 실려 들어가고 그것이 3/20(회전율→Amihud 지배)·7/20(근접도→Kyle λ 지배)의 반복이 된다. IDZ(Eq.3)는 %zero 를 분모에서 제거한다 — **교란 기각을 위한 사전(ex-ante) 선택**이지 표를 보고 고른 것이 아니다."
+    },
+    {
+      "title": "애널리스트 커버리지·개인 거래비중(주의 대리)으로 승자 부분집합 선택",
+      "family": "attention_proxy",
+      "mechanism": {"agent": "동일", "friction": "커버리지 부재 자체가 마찰", "path": "저커버리지 승자에 미반영분이 더 오래 남는다"},
+      "selected": false,
+      "why_not_selected": "DGW2014 에서 커버리지는 ID 의 **조절변수**이지 신호가 아니다(Table 3). 그리고 커버리지는 size 와 강하게 얽혀 있어 1/20 이 실측한 소형주 노출 아티팩트(롱온리 보유의 83.7%가 OTHER tier · EW-유니버스 PORT_t −0.064)를 그대로 재생산한다. ⇒ 신호로 쓰지 않고 **국면 경계 검정의 조절변수**로 흡수했다."
+    },
+    {
+      "title": "형성 후 순매수 불균형 지속으로 승자 부분집합 선택",
+      "family": "investor_flow",
+      "mechanism": {"agent": "지연 처리 중인 기관/외국인", "friction": "정보 처리 지연", "path": "형성 후에도 이어지는 매수 압력이 후속 드리프트를 만든다"},
+      "selected": false,
+      "why_not_selected": "DIST-AR-041 이 지목한 고-EV 축(수급 주체)과 정합해 매력적이나, DGW2014 에서 이것은 **검정 대상이 아니라 기전의 부수 관측**이다. 본 라운드는 그것을 정확히 그 자리(③ 반증 관측)에 쓴다. 신호로 승격하는 것은 별도 라운드의 일 — frontier 등재를 권고한다(아래 challenge_flags)."
+    }
+  ],
+
+  "selected": {
+    "hypothesis_title": "JT1993 강화 8/20 — 일별 축 정보 회수 (Da-Gurun-Warachka 2014 frog-in-the-pan)",
+
+    "hypothesis_description": "KOSPI200∪KOSDAQ150 승자 구간 **내부**에서, 형성창 일별 수익의 부호 빈도로 정의한 영수익일-정규화 정보 이산성 IDZ = sgn(PRET)·[%neg−%pos]/[%neg+%pos] 가 낮은 — 즉 정보가 연속적으로 도착한 — 부분집합은, 동일한 PRET 을 가진 불연속-정보 부분집합보다 보유 후 수익 지속이 **더 길고**(형성 후 여러 달에 걸쳐 한계 수익이 살아남고) 장기에도 **반전하지 않는다**. 신호 정의는 기저 6-1 모멘텀 그대로 두고 IDZ 로 부분집합만 좁힌다 — 재료 추가가 아니라 해상도 상향이다. ★본 라운드의 사전등록 **1차 표적은 수익 수준이 아니라 지속(표본외 유지율)** 이다. 근거: ①4~7/20 의 공통 벽이 OOS 소멸(−0.660/−0.747/−0.780/−0.693, 분할 단조 악화)이고 ②DGW2014 의 승자-측 강한 증거가 수준이 아니라 수평선 청구(Figure 2 8개월 지속 · Table 2 Panel E 3년 무반전)이며 ③아래 사전 검정력 계약이 보여주듯 원문 승자-레그 단독 수준 효과는 필요치의 약 1/6 에 불과해 이 라운드로 PORT_t 격차를 닫는다는 주장 자체가 원문 근거를 넘어선다. 수준 개선을 이 라운드의 성공 조건으로 세우지 않는다는 것을 **측정 전에** 못박는다.",
+
+    "mechanism": {
+      "agent": "①KR 개인 거래층 — KOSDAQ150 구간에서 거래대금 비중이 압도적이며 종목별 주의 배분이 자극의 *크기*에 반응한다(작은 일별 변동은 인지 자체가 안 된다). ②국내 sell-side 애널리스트 — 커버리지가 대형주에 집중돼 K200 하단·KQ150 상단의 종목은 추정치 갱신 자체가 드물다. 이 둘이 DGW2014 Appendix A 의 주의 문턱 k 를 보유한 주체다. 원문 Table 3 이 '분산된 기관지분(k 高)·소형·저애널리스트커버리지·저미디어커버리지에서 ID 의 설명력이 크다'로 이 주체 특정을 실증했다(차분 t 2.41 / 2.18 / 2.24 / 2.09).",
+
+      "friction": "①**KR 개별주 공매도 제약** — 대차가 기관에 한정되고 개인 공매도는 사실상 봉쇄돼 있어, 불연속-정보로 과대평가된 승자를 되돌리는 차익거래가 작동하지 않는다. 그 결과 살아남는 비대칭은 '연속-정보 승자의 과소평가' 쪽이며 이는 롱온리가 수확 가능한 유일한 방향이다. ②**주의 자원의 절단** — 정보가 작은 조각으로 오면 각 조각이 k 아래에서 절단되어 *관측조차 되지 않는다*. 관측되지 않은 것은 차익거래 대상이 될 수 없으므로 이 마찰은 유동성이나 거래비용과 달리 자본 투입으로 지워지지 않는다. ③**커버리지의 내생적 결손** — 연속-정보 종목은 애초에 언론·애널리스트를 끌지 못하므로 주의를 외부에서 공급받을 계기가 없다(원문 Table 3 Panel E: 저커버리지 격차 5.89% vs 고커버리지 3.75%). ④유동성 하한(20일 평균 거래대금 ≥ 2e8 KRW)이 하위 유동성 구간을 잘라내므로, 마찰의 잔존분은 '거래 못 해서' 가 아니라 '보지 못해서' 쪽으로 국소화된다.",
+
+      "path": "형성창(리밸 시점 t 기준 t−7 ~ t−2 월, 최근 1개월 스킵)의 일별 수익이 작은 양(+)의 조각으로 **자주** 쌓여 PRET 을 만든 승자는, 각 조각이 절단되어 그 시점에 가격에 반영되지 않았다. 남은 미반영분은 보유 시작 이후 조각들이 누적해 k 를 넘기거나 외부 계기가 주의를 끌어올 때 순차 반영된다 → 드리프트가 *연장*된다. 원문 Figure 2 가 그 시간 형태를 직접 잰다: 연속-정보의 한계 모멘텀 이익은 8개월차까지 0.46% (t 2.08)로 살아 있고 9개월차 0.21% (t 0.97)에서 꺼진다. 불연속-정보는 3개월차에 이미 0.31% (t 1.30)로 비유의다. 그리고 Table 2 Panel E 가 그 반영이 **과잉반응이 아님**을 보인다 — 3년 보유에서 연속-정보는 +5.39% (t 2.23, FF3 α +9.56%, t 2.14)로 양(+)이고 불연속은 −8.48% (t −2.08)로 음(−)이다. 즉 수익의 원천은 '되돌아올 과열' 이 아니라 '아직 안 들어간 정보' 다. 월간 리밸·1M forecast horizon 의 실투형 소비는 이 8개월 지속창의 앞머리를 매월 갱신하며 수확한다."
+    },
+
+    "falsification": {
+      "principle": "성과 동어반복 금지. **1급은 기전이 참일 때 성과와 무관하게 관측되어야 할 부수 관측**으로 세우고, 부모가 지정한 성과 검정은 별도 블록(preregistered_performance_tests)에 사전등록한다. 부수 관측이 기각되면 성과가 살아 있어도 **기전 청구를 철회**한다 — 성과만 남은 경우는 'FIP 가 아니라 다른 무엇' 이다.",
+
+      "observable": "FIP 가 참이면, 형성창 IDZ 가 낮은(연속-정보) 승자는 **형성기간이 끝난 뒤에도** 정보가 계속 처리되는 중이어야 한다. 따라서 (O1) 형성 후 1~3개월 구간의 기관+외국인 **순매수 불균형이 양(+)** 이어야 하고 그 값이 IDZ 고층 승자보다 커야 한다(원문: 'following continuous information, past winners have positive order-flow imbalances' — 처분효과 예측과 반대 방향). (O2) 연속-정보 승자는 형성기간 중 애널리스트 주의를 **끌지 못했어야** 하므로, 형성창 내 컨센서스 추정치 갱신 빈도·기여 증권사 수가 IDZ 고층 승자보다 **낮아야** 한다(원문: 연속 정보는 애널리스트 주의를 끌지 못하고 예측오차가 크다). (O3) IDZ 의 설명력은 주의 문턱 k 가 높은 부분집합(저커버리지 · 소형 · 개인 거래비중 高 · KQ150 tier)에서 **더 커야** 한다(원문 Table 3 Panel C/D/E 의 KR 재현).",
+
+      "field_dictionary_refs": [
+        "A6_investor_flow_stock_daily",
+        "FDB-B3_registry_consensus_daily",
+        "A1_RAWDATA_OHLCVS_daily",
+        "A2_universe_krx_monthly",
+        "A3_universe_support_membership_panels",
+        "FDB-B2_registry_rawdata_price_daily",
+        "A9_liquidity_avgtv20_convention",
+        "A4_benchmark_kospi200"
+      ],
+
+      "reject_if": "(R1) O1 기각 — 형성 후 1~3개월 기관+외국인 순매수 불균형이 IDZ 저층 승자에서 양(+)이 아니거나 IDZ 고층 대비 우위가 없으면(단측 NW t < 1.65), 'FIP 지연 처리' 기전은 KR 에서 기각된다. (R2) O2 기각 — IDZ 저층 승자의 형성창 컨센서스 갱신 빈도가 고층보다 낮지 않으면 '주의를 못 끈다'는 전제가 KR 에 없다. (R3) O3 기각 — k-대리 축(커버리지·size·개인비중·시장 tier) 어느 축에서도 IDZ 효과의 조절이 관측되지 않으면 주의 문턱 기전이 아니라 다른 무엇이 작동하는 것이다. ★R1~R3 중 **2건 이상 기각 시 verdict = 기전 미이식**으로 보고하며, 그 경우 성과가 양(+)이어도 FIP 라벨을 붙이지 않는다.",
+
+      "preregistered_performance_tests": {
+        "T1_primary_사전등록": {
+          "statement": "승자 데실 **내부**에서 IDZ 저층 vs 고층의 forward 수익 스프레드가 유의하지 않으면 DGW2014 의 KR 이식 실패.",
+          "spec": "매 리밸 시점 단면에서 PRET(6-1) 상위 5분위(=승자)를 잡고 그 안에서 IDZ 5분위로 분할. 저층−고층 forward 1M 수익 차이의 시계열 평균에 NW lag-3 t. 단측 α=0.05.",
+          "reject_if": "NW t < 1.65",
+          "note": "이것은 성과 검정이며 그렇게 라벨한다. 위 O1~O3 을 대체하지 않는다."
+        },
+        "T2_OOS_★1급_옆의_축": {
+          "statement": "본 라운드가 이 논문을 고른 이유가 '장기적으로 반전하지 않는다' 이므로, **연속-정보 부분집합의 표본외 유지율이 무조건화보다 나은가**를 명시 검정으로 세운다.",
+          "spec": "essence_score.R oos_stat_version=v2 의 anchored 3분할(55/65/75%) 활성 Sharpe 유지율 중앙값. 비교 기준은 대비 arm 이 아니라(단일 측정 규율) **누적 좌표**: 4~7/20 권위 유지율 −0.660 / −0.747 / −0.780 / −0.693 및 2/20 cell4 좌표.",
+          "reject_if": "본 후보의 권위 oos_retention 중앙값이 위 4개 값의 **최댓값(−0.660) 이하**이면 지속 청구는 KR 에서 재현되지 않은 것이다. ★이 조건은 사전등록이며 사후 완화 금지.",
+          "secondary_shape_test": "형성 후 k=1..12 월별 **한계** 액티브 수익 프로파일(원문 Figure 2 의 KR 승자-단독 재현). IDZ 저층의 한계 수익이 k=1..4 에서 고층 대비 단측 NW t ≥ 1.65 의 우위를 못 보이면 '지속이 길다'는 형태 청구도 기각."
+        },
+        "T3_소비면_전이_2급": {
+          "statement": "연속-정보 조건부 실투형 top-25 의 **essence 등급**이 개선되지 않으면 소비면 전이 실패.",
+          "spec": "단일 측정 규율상 대비 arm 을 짓지 않는다. 비교 기준 = 2/20 cell4 좌표(β-통제 α +5.14%/yr)와 4~7/20 권위 등급(전부 C).",
+          "reject_if": "권위 essence 등급이 C 이하이고 T2 유지율도 개선 없음 → 전이 실패 확정."
+        }
+      },
+
+      "confound_rejection_design": {
+        "principle": "★대비 arm·형태 분해 셀·탐색 arm 을 짓지 않는다(단일 측정 규율 ①). 교란 기각은 **하나의 측정에 붙는 회귀 통제항 + 랭킹 규약 + canonical_screen_bt 가 자동 부기하는 진단**으로만 수행한다. 회귀 통제항은 arm 이 아니다.",
+        "C1_FM_통제항": "원문 Eq.(10) 사양을 KR 로 이식 — r_{i,t+1} = β0 + β1·PRET + β2·IDZ + β3·(PRET×IDZ) + αX + αI·(PRET×X) + ε. FIP 예측 = **β3 < 0**. 통제 X 에 반드시 포함: (a) **RES IVOL** — 원문 Eq.(9) 그대로, IVOL 을 |PRET| 에 횡단면 회귀한 잔차(IVOL 은 Fu 2009 4요인 일별 잔차 변동성) (b) **L01_Amihud** — 3/20 에서 회전율 축을 지배한 바로 그 변수(|NW-t| 2.886 vs 0.807) (c) **L11_Kyle_Lambda** — 7/20 에서 근접도 축을 지배한 변수(2.557 vs 1.541) (d) **%zero (영수익일 비율)** — IDZ 가 분모에서 제거한 성분을 *독립 통제항*으로 되돌려 넣어 유동성 경로를 명시적으로 흡수(Lesmond-Ogden-Trzcinka 1999) (e) 회전율 · log(Size) · 20일 평균 거래대금 (f) **GM2004 수익 일관성 더미**(형성창 월별 수익 중 동부호 비율) — 원문이 ID 와 구분한 처분효과 축. ★(a)~(f)는 전부 **같은 회귀 안의 통제항**이며 별도 arm 이 아니다.",
+        "C2_시장내_랭킹": "IDZ 및 PRET 의 횡단면 랭킹은 **K200 과 KQ150 을 분리한 시장-내(within-market) 랭킹**으로 산출한 뒤 시장별 정원으로 합친다. 합집합에서 혼합 랭킹하면 시장 더미를 재게 된다 — 3/20 실측 아티팩트 t −2.526 의 사인. 정원 배분 규칙도 사전등록(측정 후 조정 금지).",
+        "C3_EW유니버스_대비": "canonical_screen_bt() 가 append 하는 diag_ew_universe(EW-유니버스 벤치 대비 PORT_t · post2017_t_nw_lag3 · oos_retention_approx)를 **후보 기각 전에** 확인·병기. 1/20 에서 롱온리 arm 의 EW-유니버스 PORT_t 가 −0.064 였다 — 양(+)으로 나오는 값이 신호인지 소형주 노출인지 가르는 유일한 부기다.",
+        "C4_cap_tier_분해": "size_dt 전달로 diag_cap_tier(MEGA top-10 / MID 11-30 / OTHER) 국소화 병기. IDZ 효과가 OTHER tier 에만 있으면 그것은 신호가 아니라 tier 노출이다.",
+        "C5_벤치_basis_명시": "5/20(상류 1.196 vs 권위 0.646, 46% 이동)·6/20(1.2211 → 0.8695) 이 반복 실증한 대로 벤치 basis 가 PORT_t 를 크게 옮긴다. **상류 canonical PORT_t 를 권위 값과 같은 양으로 인용 금지** — 모든 인용에 basis 라벨 의무."
+      }
+    },
+
+    "regime_scope": {
+      "holds_in": [
+        "정상·확장 국면 — 일별 수익이 실제로 '작은 조각' 인 저~중 변동성 구간. 주의 절단(k 문턱)은 자극이 작을 때만 발생하므로 기전의 존재 조건 자체가 저변동이다.",
+        "주의 문턱 k 가 높은 단면 — 애널리스트 커버리지 얇음 · 개인 거래비중 높음 · KQ150 tier · 유동성 하한 바로 위 구간. 원문 Table 3 Panel C/D/E 에서 직접 도출(소형 7.17% vs 대형 4.92%, 차분 t 2.18 · 저커버리지 6.83% vs 고커버리지 3.41%, 차분 t 2.24 · 저미디어 5.89% vs 고미디어 3.75%, FF3 차분 t 2.09).",
+        "형성창에 거래정지·상하한가가 드문 구간 — %zero 가 작아 IDZ 의 분모(%pos+%neg)가 안정적인 곳."
+      ],
+      "weakens_or_reverses_in": [
+        "위기·패닉 국면 — 일별 수익이 전 종목에서 크고 잦은 점프로 바뀌면 절단할 작은 신호 자체가 사라진다. 동시에 %pos/%neg 구성이 종목 고유 정보 도착이 아니라 **시장 공통 성분**에 지배되어 IDZ 가 국면을 재게 된다(원문도 Cooper-Gutierrez-Hameed 2004 대응으로 시장조정 일별수익 기반 ID 를 별도 검토했다). ⇒ 기전 소멸 + 측정 오염이 동시에 온다.",
+        "패닉 직후 급반등 구간 — IDZ 저층은 구조적으로 **저변동에 치우친다**(원문: 연속 정보 종목이 낮은 개별변동성을 가진다). 4/20 이 실측한 KR 패닉 후 강반등장(벤치 연율 +45.5%)에서 저변동 편향 구성은 반등 베타를 반납한다 — 오버레이 한계기여가 전 축 음수였던 것과 같은 기전이 부분집합 선택에서도 재현될 수 있다.",
+        "가격제한폭 도달·거래정지가 빈발하는 구간 — %zero 급증으로 IDZ 의 분모가 얇아져 추정 잡음이 커진다. IDZ 가 ID 보다 이 구간에서 더 불안정하다는 점을 인정한다(정규화의 대가).",
+        "2015 이후 구간(약화 가설) — 6/20 risk 가 특정한 계열 상관구조 전환(Jennrich χ² 210.5, p=5.5e-17)과 알파가 타이밍하는 계열의 진폭 일제 축소(regime −24.8% · investor_flow −23.6% · leverage −22.7%). 커버리지 확대·알고리즘 거래 확산은 주의 문턱 k 를 낮추므로 FIP 마찰을 얇게 만든다. ★이 항목은 **사후 관찰에서 왔다** — 사전 예측이 아니라 부기간 라벨로만 쓰고, 이 구간을 제외해 성과를 살리는 데 쓰지 않는다."
+      ],
+      "boundary_rationale": "경계는 메커니즘의 단 하나의 파라미터, **주의 문턱 k** 에서 도출된다. FIP 수익은 '신호가 k 아래로 절단되었을 것' 을 요구하므로 (a) 신호 조각이 커지면(위기·점프 장세) 절단이 사라져 기전이 꺼지고, (b) k 가 낮아지면(커버리지 두꺼움·대형주·기관 집중·알고 거래 확산) 절단량이 줄어 기전이 약해진다. 즉 holds_in 은 'k 가 높고 조각이 작은 곳', weakens_in 은 'k 가 낮거나 조각이 큰 곳' 이며 둘은 같은 부등식의 양변이다. ★보편타당 주장을 하지 않는다 — 원문 스스로 지속 수평선을 8개월로 못박았고(9개월차 t 0.97 소멸) post-1980 3년 미조정 t 는 1.06 으로 비유의다. 이 축은 언제나·어디서나 작동하는 축이 아니다.",
+      "usage_constraint": "★국면 라벨은 **경계 검정(사후 귀속)용이며 오버레이가 아니다**. S0/S1 오버레이 금지 규약대로 이 라운드는 국면 오버레이를 적용하지 않는다. 라벨 소비 시에도 C5(홀딩월 시작 전 데이터만) 준수."
+    },
+
+    "design_constants_preregistered": {
+      "_note": "아래는 alpha-research 가 측정 전에 고정해야 할 사전등록 상수다. 본 에이전트는 이 값들을 *선언* 할 뿐 어떤 것도 측정하지 않았다.",
+      "ID_variant": "IDZ (Eq.3) 단일. ID(Eq.1)·IDMAG(Eq.2)는 arm 으로 짓지 않는다.",
+      "formation_window": "★원문 12-1 이 아니라 **기저 신호와 동일한 6-1** — t−7 ~ t−2 월(직전 1개월 스킵)의 일별 수익. 사유: 원문 명시대로 ID 는 'PRET 을 조건으로 한 뒤' 해석되는 측도이고, sgn(PRET) 의 PRET 은 *같은 창*의 누적수익이어야 한다. 기저 6-1 을 유지하라는 지시와 정합하려면 창을 맞추는 쪽이 옳다.",
+      "paper_assumption_broken": "형성창 12-1 → 6-1 (일수 N ≈ 250 → ≈ 122). 원문이 'ID 의 반례는 N 이 커질수록 드물어진다' 고 적었으므로 **N 절반은 IDZ 의 측정 잡음을 키운다** — 정직한 열화 요인으로 기록하고 성과 해석 시 감안한다. 이 절단은 고정 축(기저 신호 불변)이 논문 사양을 이긴 사례다.",
+      "zero_return_handling": "%zero 는 IDZ 분모에서 제외(정의상) + FM 회귀에 독립 통제항으로 재투입.",
+      "construction_rule": "매 리밸 시점: ①유동성 필터(20일 평균 거래대금 ≥ 2e8 KRW, **t−1 기준**) → ②K200/KQ150 **시장-내** PRET(6-1) 랭킹으로 승자 풀 상위 N₁ 선정 → ③그 안에서 IDZ 오름차순 상위 25 를 선택. ★N₁ 은 측정 전에 고정한다(사후 조정 금지). 권고 = 승자 5분위 정합을 위해 유니버스의 약 20%(≈ 70~75종) — 그러면 25/75 = 승자 내 IDZ **하위 1/3** 컷이 되며 아래 검정력 계약의 앵커도 그 컷 기준이다.",
+      "holding_and_rebalance": "월간 리밸 · forecast_horizon 1M · long-only · ≤25종 · Σw=1 · 비중 상한 없음(v10) · 15bps v2.4_kr_retail delta · 2005-01-01 ~ 2026-08",
+      "weighting": "EW (1/25). 비중 방법론은 이 라운드의 축이 아니다(2/20 이 형태 축을 이미 소진). ★특이분산 라우팅 결과에 따라서만 optimizer 경로가 열린다 — 아래 idiosyncratic_variance_share_declaration 참조."
+    },
+
+    "preregistered_power_contract": {
+      "★anchor_rule": "효과크기 앵커는 **반드시 승자-레그 단독** 수치로 잡는다. 3/20(LS2000 롱숏 헤드라인으로 검정력을 잡았으나 승자 Year-1 은 +0.06~0.18%/월)·7/20(GH2004 자기금융 우위의 76.6%가 숏 레그)의 반복을 차단한다.",
+      "anchor_source": "DGW2014 Table 2 **Panel C (IDZ), post-1980 표본, `winner` 열** — 논문 PDF p.14 (RFS 27(7), Table 2 Continued). post-1980 을 쓰는 이유는 우리 표본(2005~)이 post-1927 전체 표본이 아니라 근대 구간에 대응하기 때문이다.",
+      "anchor_values": {
+        "winner_by_IDZ_quintile_post1980": [7.59, 9.33, 10.62, 10.52, 11.05],
+        "winner_quintile_mean_post1980_derived": 9.822,
+        "continuous_layer_minus_winner_mean_derived": "+1.23%p / 6개월 보유",
+        "realizable_cut_lower_third_derived": "≈ +1.1%p / 6개월 ≈ **+2.2%p/yr** (승자 상위 75 중 IDZ 최저 25 = 하위 1/3 컷 기준. 논문의 최저 5분위 컷보다 완만하므로 감가)",
+        "post1927_floor_derived": "≈ +0.6%p / 6개월 ≈ +1.2%p/yr (하한 표기용)"
+      },
+      "ratio_definition": "ratio = (승자-레그 단독 앵커로 기대되는 연율 활성수익 증분) / (PORT_t 2.95 도달에 필요한 활성수익 +13.25%/yr). 2/20 이 산출한 필요치를 분모로 쓴다.",
+      "ratio_at_design_time": {
+        "post1980_anchor": "≈ 2.2 / 13.25 = **0.166**",
+        "post1927_anchor": "≈ 1.2 / 13.25 = 0.091 (하한)",
+        "reading": "★중단 문턱 0.15 를 post-1980 앵커로 겨우 넘고 post-1927 앵커로는 못 넘는다. **마진이 얇다** — 이 라운드가 수준(PORT_t) 격차를 닫는다는 주장은 원문 근거로 지지되지 않으며, 그래서 1차 표적을 지속(OOS)으로 사전등록했다."
+      },
+      "prohibited_anchors_사전등록_금지어": [
+        "롱숏 스프레드 8.01%p (= 5.94 − (−2.07), Table 2 Panel A post-1927 continuous − discrete)",
+        "롱숏 스프레드 6.74%p (Panel A post-1980) · 6.71%p (Panel C IDZ post-1980) · 4.75%p (Panel C post-1927)",
+        "독립정렬 스프레드 6.35%p (= 5.72 − (−0.63), Panel B)",
+        "3년 롱숏 13.88%p / 17.60%p / FF3 α 18.34%p (Panel E)",
+        "연속 층 롱숏 단독 5.94% · 9.10% · 9.21% · 4.11%",
+        "IDMAG 롱숏 9.62%p / 8.29%p (Panel D)",
+        "★위 값 중 어느 것도 검정력·기대효과 앵커로 인용해서는 안 된다. 인용 시 그 라운드의 검정력 계약은 무효다."
+      ],
+      "no_t_stat_available_for_anchor": "★원문은 승자-레그 단독 스프레드의 t-통계량을 어느 Panel 에서도 보고하지 않는다. 앵커는 **점추정뿐**이며 유의성 근거가 원문에 없다. 이 사실은 challenge_flags 최상단에 있다.",
+      "winner_leg_non_monotonicity_warning": "★Panel A(ID)의 승자 레그 최댓값은 양 표본 모두 **3분위**(10.01 / 10.86)이지 연속 층(9.56 / 10.54)이 아니다. Panel C(IDZ)도 post-1927 최댓값은 4분위(10.09)다. 즉 '가장 연속적인 층이 승자 안에서 최선' 이라는 소비 규칙은 원문 표에서 부분적으로만 지지된다. KR 에서 IDZ 저층이 아니라 중간층이 최선으로 나온다면 그것은 **잡음이 아니라 원문과 정합하는 결과**이며, 사후에 층을 갈아타는 것은 금지한다(사전등록 = 최저 IDZ 컷).",
+      "action_required_by_alpha_research": "착수 첫 행위로 KR 패널에서 위 **실현 가능 컷**(승자 풀 N₁ 중 IDZ 하위 1/3)의 사전 MDE 와 ratio 를 산출한다. **ratio < 0.15 이면 착수 중단·설계 변경**하고 그 사실을 그대로 보고한다(설계 변경 시 본 문서의 사전등록을 갱신 발행). 계산은 alpha-research 소관 — 본 에이전트는 수행하지 않았다."
+    },
+
+    "idiosyncratic_variance_share_declaration": {
+      "_purpose": "새 규율 ③ — alpha 가 book 기준 특이(비체계) 분산 비중을 산출하고, < 15% 면 EW 확정 + optimizer 배터리 생략, ≥ 15% 면 risk → optimizer 정규 경로. **추정 방법을 측정 전에 선언한다**(본 블록이 그 선언이며 사후 교체 금지).",
+      "primary_estimator": {
+        "target_series": "후보 top-25 EW 포트폴리오의 **월별 액티브 수익** a_t = r_cand,t − r_bench,t (bench = KOSPI200 total return, request.json benchmark_definition).",
+        "spanning_regression": "a_t = c + φ₁·a_book,t + φ₂·MKT_t + φ₃·SMB_t + φ₄·HML_t + φ₅·UMD_t + u_t",
+        "book_definition": "a_book,t = 현행 book 포트폴리오(current_portfolio = STR_1631 0.8 + STR_1656 0.2)의 동일 벤치 대비 액티브 수익. ⇒ '**book 기준**' 특이분산이란 book 과 KR 4요인이 함께 설명하지 못하는 잔여를 뜻한다.",
+        "factor_source": "KR FF4 (MKT/SMB/HML/UMD) — ff5_kr_tracker.R 계열. 전부 t−1 까지의 정보만.",
+        "statistic": "idio_share = Var(u) / Var(a)",
+        "estimation_window": "전기간 점추정을 **판정값**으로 한다. 병기(진단): anchored 3분할(55/65/75%) 각 구간 값과 그 중앙값 — 판정을 뒤집지 않고 안정성만 보고한다.",
+        "standard_error": "Newey-West lag-3 로 회귀 표준오차 산출, idio_share 의 불확실성은 블록 부트스트랩(block length 6개월, B=1000)으로 부기."
+      },
+      "secondary_diagnostic": "종목 수준 부기 — 각 홀딩 i 의 일별 초과수익을 KR 4요인에 252거래일 rolling 회귀(전부 t−1 까지)해 잔차 분산 Var(e_i) 산출 후, w=1/25 고정으로 Σᵢ wᵢ²·Var(eᵢ) / Var(Σᵢ wᵢ·rᵢ) 를 리밸일별 계산하고 **표본 중앙값**을 보고. 판정값이 아니라 primary 와의 정합 확인용.",
+      "routing_rule": "idio_share(primary, 전기간 점추정) < 0.15 → **EW 확정 + risk 심층 진단·optimizer 배터리 생략**, 체인은 alpha → forge → 등급으로 직행. ≥ 0.15 → risk → optimizer 정규 경로. ★어느 분기든 **체인은 완주한다**(규율 ②) — 음성 판정이 체인을 멈추지 않는다.",
+      "role_boundary_note": "★이 산출은 **공분산행렬 추정이 아니다**. OLS 잔차 분산의 스칼라 비율만 계산하며 종목 간 교차 공분산은 요인 노출로 흡수되고 별도 추정하지 않는다. 비중은 고정 규격 EW(1/25)를 쓰며 이는 canonical_screen_bt 의 top-N EW 와 같은 성격의 *규격*이지 비중 제안이 아니다. 그럼에도 이 계산은 **alpha-research 가** 수행한다 — 본 에이전트(alpha-hypothesis)는 수행하지 않았다."
+    },
+
+    "pit_hazard_map_daily_axis": {
+      "_note": "★일별 데이터를 쓰므로 C10·C2·C1 이 급소다. 아래는 설계 수준의 사전 못박기이며 검증 실행은 alpha-research 소관.",
+      "C1_확장창만": "IDZ 의 횡단면 분위 경계는 **각 리밸 시점의 그 단면에서만** 산출한다. full-sample 분위 경계·전체표본 표준화 절대 금지. PRET 랭킹도 동일.",
+      "C2_same_day_circular": "%pos/%neg/%zero 는 형성창 **종료일까지 확정된 일별 Ret** 만으로 계산한다. 리밸 시점 당일 수익은 어떤 형태로도 형성창에 들어가지 않는다.",
+      "C4_해당없음": "재무 리프 미사용 — 본 신호는 가격 전용.",
+      "C5_오버레이": "오버레이 미적용(S0/S1). 국면 라벨은 사후 귀속 진단으로만 소비하며 소비 시에도 홀딩월 시작 전 데이터만.",
+      "C6_survivorship": "A1_RAWDATA 는 상폐 포함 survivorship-free 원장이다. 유니버스 멤버십은 A2/A3 의 해당 시점 vintage 로만 — 현행 멤버 명부로 과거를 재구성 금지(KQ150 백필의 '퇴출 미기록' 전례: 편입 22/퇴출 0).",
+      "C10_유동성_t-1": "20일 평균 거래대금 필터는 **t−1 종료 기준**. 형성창과 별개로 리밸 시점 직전까지의 거래대금만 쓴다. 당일 거래량 사용 금지.",
+      "C15_팩터DB": "L01_Amihud · L11_Kyle_Lambda · M02 등 팩터 리프는 반드시 load_month_factors() 경유. factor_db parquet 직접 load 금지. 단 **일별 Ret 자체는 A1 raw**(load_rawdata) 이며 factor DB 리프가 아니므로 C15 대상이 아니다.",
+      "★vintage_pin_의무": "A1_RAWDATA 는 restatement_prone=true 다 — 수정주가 원장은 액면분할·배당 반영 시 **과거 일별 Ret 이 전기간 재작성**된다. 본 라운드의 신호는 *일별 수익의 부호 빈도* 이므로 이 재작성에 직접 노출된다(분할 처리 차이가 %pos/%neg 를 바꿀 수 있다). ⇒ 착수 시 `02_Infrastructure/data/pin_cache.R::pin_cache()` 로 RAWDATA vintage 를 고정하고 그 vintage id 를 산출물에 기록한다. 다중 라운드 판정 정합의 전제.",
+      "형성창_격리": "형성창 = [t−7월 첫 거래일, t−2월 말 거래일]. 스킵월 = t−1월. 보유월 = t월. 일별 루프가 스킵월·보유월 거래일을 단 하루도 읽지 않음을 코드 수준에서 assert 한다. detect_lookahead 는 하드 게이트지만 7/20 이 실증했듯 R 분기에 음수 shift 패턴이 없어 4종 중 0건 발화했다 — **자동 탐지에 의존하지 말고 창 경계 assert 를 직접 심어라**."
+    }
+  },
+
+  "challenge_flags": [
+    "★★★[최우선] 승자-레그 단독 앵커의 유의성 근거가 원문에 없다 — DGW2014 는 Table 2 어느 Panel 에서도 winner 열의 t-통계량을 보고하지 않는다. 보고된 t 는 전부 롱숏이다. 앵커는 점추정뿐이며 ratio ≈ 0.166 (post-1980) / 0.091 (post-1927) 로 중단 문턱 0.15 를 겨우 넘거나 못 넘는다.",
+    "★★★[구조] Panel A 기준 FIP 효과의 56.4~74.7% 가 패자/숏 레그에 있다(승자 몫 25.3% post-1927 / 43.6% post-1980). Panel C(IDZ)에서 49.1% / 51.6% 로 개선되나 여전히 절반이다. 7/20 GH2004(숏 76.6%)·3/20 LS2000 과 **같은 구조적 위험**이며 롱온리는 그 절반을 수확할 수 없다.",
+    "★★★[비단조] 원문 승자 레그는 ID 에서 비단조다 — 최댓값이 연속 층이 아니라 3분위(post-1927 10.01 / post-1980 10.86). IDZ post-1927 도 최댓값이 4분위(10.09). '가장 연속적인 층이 승자 안에서 최선'이라는 소비 규칙은 원문 표에서 부분적으로만 지지된다. 사전등록은 최저 IDZ 컷으로 고정했고 사후 층 교체를 금지한다.",
+    "★★[범주] DIST-AR-041(가격-파생 모멘텀 변형 = 저EV) **범주 안**이다. IDZ 는 일별 종가수익 부호에서만 나오므로 가격-파생이다. '부분집합 선택 vs 신호 강도 재정의'는 구성 형태의 차이이지 데이터 원천의 차이가 아니다 — 억지 신규성 주장을 하지 않는다. 착수 정당성은 범주 밖이 아니라 사전등록 지시 + 새 표적(지속)이다.",
+    "★★[표적 재설정의 사후성] 1차 표적을 '수준' 에서 '지속(OOS)' 으로 옮긴 결정은 승자-레그 앵커를 계산한 **뒤** 나왔다. 즉 사후적이다. 게이트 회피로 읽힐 수 있다. 그렇지 않다는 근거는 재표적 후에도 하드 수치 게이트(T2 reject_if: oos_retention ≤ −0.660 이면 기각)를 사전등록으로 남겼다는 것뿐이다. 이 사실을 감추지 않는다.",
+    "★★[형성창 절단] 원문 12-1(N≈250) → 본 설계 6-1(N≈122). 원문이 'ID 반례는 N 이 커질수록 드물어진다'고 적었으므로 IDZ 측정 잡음이 커진다. 고정 축(기저 신호 불변)이 논문 사양을 이긴 사례이며 paper_assumption_broken 에 기록.",
+    "★★[구성 인구] K200∪KQ150 유동성 필터 후 ~350종에서 top-25 는 상위 7% ≈ 승자 데실 자체다. 원문의 '승자 5분위 → ID 5분위' 이중정렬 셀은 유니버스의 상위 4% 로 우리 top-25 보다 좁다. 그래서 실현 가능 컷을 IDZ 하위 5분위가 아니라 **하위 1/3** 로 감가해 앵커를 잡았다. N₁ 을 측정 후 조정하면 그 순간 이 계약은 무효다.",
+    "★★[3년 무반전 청구의 최근 표본 약화] Panel E post-1980 연속 층 3년 미조정 t = 1.06 (비유의). 유의한 것은 FF3 α (t 1.90) 와 차분(t 2.40) 뿐이다. '반전하지 않는다'는 청구의 근대 구간 강도는 전체 표본보다 약하다.",
+    "★[대안 보관 — IDMAG] Eq.(2) 크기가중 변형은 승자 레그가 양 표본 모두 단조(8.00→10.70 / 8.58→12.94)이고 승자 스프레드도 크다(+2.70 / +4.36). 롱온리 소비자에게는 매력적이나 **크기 의존 = 변동성 의존**이라 본 라운드가 기각해야 할 교란을 신호에 내장한다. 선택하지 않았고, 선택 근거로 원문 표를 가로지른 비교를 쓰지 않았다는 사실을 기록한다. 후속 라운드 후보.",
+    "★[대안 보관 — 순매수 불균형 신호화] 형성 후 순매수 불균형을 *반증 관측*이 아니라 *신호*로 쓰는 축은 DIST-AR-041 이 지목한 고-EV 방향(수급 주체)과 정합한다. 본 라운드의 O1 이 강하게 성립하면 그 자체가 다음 라운드의 근거다 — alpha_frontier_queue 신규 등재를 권고한다(등재는 Q-Lead 소관, 본 에이전트는 큐를 수정하지 않았다).",
+    "★[대안 보관 — 주의 대리 직접 선택] 커버리지·개인비중으로 승자 부분집합을 고르는 축은 size 와 얽혀 1/20 의 소형주 아티팩트(EW-유니버스 PORT_t −0.064)를 재생산할 위험이 가장 크다. 신호가 아니라 국면 경계 조절변수로만 흡수했다.",
+    "★[대안 보관 — GM2004 수익 일관성] 월별 해상도 더미(12개월 중 ≥8개월 동부호). 원문이 ID 와 명시 구분하고 ID 가 더 강한 예측자라고 실증했으며 예측력이 승자에 국한된다. 본 설계에서는 **FM 회귀 통제항**으로만 들어간다(별도 arm 아님).",
+    "★[벤치 basis] 5/20(46% 이동)·6/20(1.2211 → 0.8695) 이 반복 실증한 대로 상류 canonical PORT_t 와 권위 PORT_t 는 다른 양이다. 모든 인용에 basis 라벨 의무.",
+    "★[측정 계기 신뢰] 7/20 이 실증 — detect_lookahead 의 R 분기에 음수 shift 패턴이 아예 없어 실제 look-ahead 4종 중 0건 발화했다. 일별 축 라운드에서 자동 탐지에 의존하면 안 되며 형성창 경계 assert 를 직접 심어야 한다."
+  ],
+
+  "design_hazards_for_alpha_research": [
+    "① 착수 첫 행위 = 사전 검정력 계약 실행(preregistered_power_contract.action_required_by_alpha_research). ratio < 0.15 면 중단·설계 변경하고 그대로 보고할 것.",
+    "② 단일 측정 규율 — 대비 arm · 형태 분해 셀 · 탐색 arm · 아티팩트 대조 · 무신호 대조를 짓지 않는다. 한 시도 = 실투형 후보 하나. 교란 기각은 FM 회귀 통제항 + 시장-내 랭킹 + canonical_screen_bt 자동 부기 진단(diag_ew_universe · diag_cap_tier)으로만.",
+    "③ 체인 완주 의무 — 어떤 음성 판정도 체인을 멈추지 않는다. alpha → [idio_share ≥ 0.15 일 때만 risk → optimizer] → forge → 등급.",
+    "④ 승계 불변 — mechanism / falsification / regime_scope 는 alpha-research 가 **재작성하지 않는다**. 결함 발견 시 수정이 아니라 challenge_note.md 기록 + 재설계 요청(Charter 원칙 8 No Silent Override).",
+    "⑤ RAWDATA vintage pin 필수(pin_cache) — 일별 부호 빈도는 수정주가 재작성에 직접 노출된다.",
+    "⑥ N₁(승자 풀 크기)·IDZ 컷 위치·정원 배분 규칙은 측정 전에 고정. 사후 조정 시 검정력 계약 무효.",
+    "⑦ 사전등록 1급이 실패하면 그게 판정이다 — 사후에 2급으로 갈아타지 않는다.",
+    "⑧ ⑤AST 구성·factors[]·self_pit_check·alpha_package 발행은 alpha-research 소관. 본 문서는 그 어느 것도 포함하지 않는다."
+  ],
+
+  "round_value_reframing": {
+    "what_this_round_can_claim": "IDZ 로 좁힌 승자 부분집합이 (a) 기전 부수관측 O1~O3 을 KR 에서 재현하는가 (b) 표본외 유지율이 4~7/20 의 −0.660 ~ −0.780 대비 개선되는가 (c) 형성 후 한계 수익 프로파일이 원문 Figure 2 형태를 승자 단독으로 재현하는가.",
+    "what_this_round_cannot_claim": "PORT_t 2.95 도달 또는 +13.25%/yr 활성수익 격차의 실질적 축소. 원문 승자-레그 앵커가 필요치의 약 1/6 이므로 이 청구는 **원문 근거를 넘어선다**. 이 라운드가 등급 C 로 끝나도 그것이 '수준 청구의 실패' 로 기록되어서는 안 된다 — 사전에 그 청구를 하지 않았기 때문이다.",
+    "what_a_negative_teaches": "O1~O3 중 2건 이상 기각 → 주의-마찰 기전이 KR 에 없다는 결정적 정보(4~7/20 이 특정하지 못한 '왜 OOS 가 소멸하는가' 의 한 후보를 제거). T2 기각이되 O1~O3 생존 → 기전은 있으나 롱온리 top-25 소비면이 그것을 담지 못한다는 여섯 번째 전이 실패 사례이며, 그 경우 구속 축은 신호가 아니라 **소비 형태** 임이 다섯 축에서 여섯 축으로 확장 확인된다."
+  },
+
+  "self_adversarial_challenge": {
+    "protocol": "v8.2 축소판 — 설계 축만(①사후 서술 ②반증의 성과 위장 ③국면 경계의 도출성 ④settled-negative 재포장). finalize 직전 자기 약점 제기 후 ACCEPT/PARTIAL/REBUTTAL 분류.",
+    "rationalization_lexicon_check": "'미미 / 관행적 / 보수적이면 OK / 대부분 결과 동일 / 이미 반영되어 있었을 것 / 기간이 충분히 길어서 상쇄' 어휘 사용 0건 — 자기 점검 완료.",
+    "items": [
+      {
+        "axis": "① 메커니즘이 사후 서술(story-fitting)인가",
+        "verdict": "PARTIAL",
+        "charge": "메커니즘 자체는 원문의 사전 모델(Appendix A truncation, k 문턱)에서 왔지만, '왜 하필 이 축인가' 의 근거는 4~7/20 의 OOS 소멸을 **관찰한 뒤** 만들어졌다. 즉 논문 선택이 사후적이다.",
+        "resolution": "논문 선택의 사후성은 인정하고 기록한다. 상쇄 장치는 표적(OOS 유지율)과 그 출처(원문 Figure 2 · Panel E)를 **측정 전에** 못박고, reject_if 를 −0.660 이라는 구체 숫자로 고정한 것이다. 사후 선택 자체는 AX-000 아래 정당하나(새 표적) 사후 *판정*은 차단된다."
+      },
+      {
+        "axis": "② 반증조건이 성과 동어반복으로 위장됐나",
+        "verdict": "ACCEPT (부분 유죄)",
+        "charge": "부모가 1급으로 지정한 '승자 데실 내부 IDZ 층 forward 수익 스프레드' 는 성과다. 그것을 1급이라 부르면 AST v1.1 §③(성과 동어반복 금지)을 형식적으로 위반한다.",
+        "resolution": "구조를 바꿨다 — falsification.observable 의 1급은 기전-특유 **부수 관측 O1~O3**(형성 후 순매수 불균형 부호 · 형성창 컨센서스 갱신 열위 · k-대리 축 조절효과)으로 세우고, 부모 지정 성과 검정은 preregistered_performance_tests 블록에 T1/T2/T3 로 **성과라고 라벨해서** 사전등록했다. 그리고 'O1~O3 중 2건 이상 기각 시 성과가 살아도 FIP 라벨을 붙이지 않는다' 를 명시했다 — 이것이 동어반복을 깨는 지점이다."
+      },
+      {
+        "axis": "③ 국면 경계가 메커니즘에서 도출됐나, 사후 데이터 관찰인가",
+        "verdict": "PARTIAL",
+        "charge": "holds_in 의 저커버리지·소형 축은 원문 Table 3 에서 도출(사전)이나, weakens_in 의 '2015 이후 약화' 는 6/20 risk 실측(Jennrich χ² 210.5)에서 왔다 — 사후 관찰이다. 사후 관찰을 경계로 세우면 그 구간을 제외해 성과를 살리는 도구가 된다.",
+        "resolution": "해당 항목에 '사후 관찰에서 왔다' 를 명시 표기하고, **부기간 라벨로만 쓰며 성과 산출에서 구간을 제외하지 않는다** 를 못박았다. 나머지 3개 weakens_in 항목(위기 점프 · 패닉 후 반등 · %zero 급증)은 전부 k 부등식에서 도출된 사전 예측이다."
+      },
+      {
+        "axis": "④ hypothesis_index 에 settled-negative 로 있는 가설의 재포장인가",
+        "verdict": "PARTIAL (범주는 유죄, 측정 이력은 무죄)",
+        "charge": "DIST-AR-041 이 '가격-파생 모멘텀 변형은 저EV' 라고 적었고 IDZ 는 명백히 가격-파생이다. '경로 모양' 이라는 라벨로 범주를 빠져나가려 하면 그것이 재포장이다.",
+        "resolution": "범주 안임을 정면으로 인정했다(dist_ar_041_judgment.verdict = IN_CATEGORY). 억지 신규성 주장을 하지 않았다. 무죄인 부분은 오직 *측정 이력* 이다 — index grep 결과 discreteness/path shape/return consistency 전부 0건이고 카드의 supporting L-code 17건은 전부 수급/채널 축이다. 착수 정당성을 '범주 밖' 이 아니라 '사전등록 지시 + 새 표적' 에 둔다."
+      },
+      {
+        "axis": "⑤ 효과크기가 착수 문턱에 걸려 있는데 착수를 정당화하려 표적을 갈아탄 것 아닌가",
+        "verdict": "ACCEPT (가장 무거운 약점)",
+        "charge": "실현 가능 컷의 ratio 가 0.091~0.166 로 중단 문턱 0.15 를 경계로 걸친다. 표적을 수준→지속으로 옮긴 것은 그 사실을 안 뒤의 결정이므로 게이트 회피로 읽힐 수 있다.",
+        "resolution": "완전한 방어를 하지 않는다. 사실 셋을 나란히 남긴다 — (a) 부모의 규칙 자체가 'ratio < 0.15 면 착수 중단 **또는 설계 변경**' 이므로 재표적은 규칙 안의 선택지다 (b) 재표적 후에도 하드 게이트가 남는다(T2 reject_if = oos_retention ≤ −0.660) (c) 그럼에도 재표적 결정이 앵커 계산 뒤에 나왔다는 것은 사실이며 challenge_flags 에 그대로 적었다. 판단은 Q-Lead/도훈 몫으로 넘긴다."
+      },
+      {
+        "axis": "⑥ IDZ 선택이 표를 보고 고른 것 아닌가(paper-level snooping)",
+        "verdict": "REBUTTAL",
+        "charge": "ID / IDZ / IDMAG 셋 중 IDZ 를 고른 근거가 Panel C 의 승자 몫(51.6%)이 Panel A(43.6%)보다 크다는 관찰이라면 그것은 표를 가로지른 사양 탐색이다.",
+        "resolution": "선택 근거는 표가 아니라 **KR 데이터 구조**다 — 가격제한폭·거래정지·저유동 종목으로 %zero 가 미국보다 크고, 원문 자신이 인용한 Lesmond-Ogden-Trzcinka(1999)에 따라 %zero 는 비유동성 측도다. ID(Eq.1)를 쓰면 유동성이 신호에 실려 3/20(→Amihud 지배)·7/20(→Kyle λ 지배)이 반복된다. 이 논증은 표를 보지 않아도 성립한다. 반대로 IDMAG 는 승자 레그가 단조라는 **표 관찰이 유리함에도 기각**했다 — 크기 의존이 변동성 교란을 들여오기 때문이며, 이 비대칭이 선택이 표-주도가 아니었다는 증거다."
+      },
+      {
+        "axis": "⑦ 이 설계가 '단일 측정' 규율을 회귀 통제항으로 우회하는가",
+        "verdict": "PARTIAL",
+        "charge": "FM 회귀에 통제항 6종(RES IVOL · Amihud · Kyle λ · %zero · 회전율/size · GM2004 일관성)을 넣는 것은 사실상 여러 사양을 도는 것 아닌가.",
+        "resolution": "통제항은 **하나의 회귀 안의 항** 이고 arm 이 아니다 — 각 통제항마다 별도 포트폴리오를 만들거나 별도 등급을 산출하지 않는다. 다만 '통제항을 하나씩 빼며 사다리를 올린다' 는 형태(7/20 의 S0→S5 통제 사다리)는 **사양 탐색으로 미끄러질 수 있다**. 그래서 사전등록 사양을 **전 통제항 동시 투입 1개**로 고정하고, 사다리를 돌 경우 그것은 진단이며 판정 근거가 아님을 명시한다."
+      }
+    ],
+    "review_required": false,
+    "note_file": "qepm/mailbox/worktask/WT-R20260829_008/challenge_note_hypothesis.md"
+  },
+
+  "scope_note": {
+    "not_performed_by_this_agent": [
+      "⑤ AST 구성 / factors[] 작성 / 𝒪 연산자 선택 / 리프 매핑 / self_pit_check",
+      "팩터 소싱 · 신호공학 · canonical_screen_bt 실측 · 백테스트 · 등급 선언",
+      "alpha_package.json 쓰기",
+      "공분산 추정 · weights 결정",
+      "성과 수치 추정 · proxy 손계산 (본 문서의 모든 수치는 ①DGW2014 원문 표 전재 또는 ②그 표 값에 대한 단순 산술('derived_arithmetic' 라벨) 또는 ③선행 라운드 산출물 전재이며, KR 데이터에 대한 어떤 측정도 수행하지 않았다)",
+      "alpha_frontier_queue.json 수정 (열람만)",
+      "텔레그램 발송"
+    ],
+    "request_json_hypothesis_title": "이미 존재하므로 주입하지 않았다 — 'JT1993 강화 8/20 — 일별 축 정보 회수 (Da-Gurun-Warachka 2014 frog-in-the-pan)'"
+  },
+
+  "verdict": "designed",
+  "verdict_qualifier": "메커니즘 3요건이 원문 사전 모델(주의 문턱 k)로 실명 특정되고 반증 관측이 field_dictionary 안에서 확인 가능하므로 economic_void 가 아니다. 단 **조건부 발행**이다 — 실현 가능 컷의 사전 검정력 ratio 가 0.091~0.166 로 중단 문턱 0.15 에 걸쳐 있으므로, alpha-research 는 KR 패널 MDE 산출을 착수 첫 행위로 수행하고 ratio < 0.15 이면 중단·설계 변경한다. 이 조건은 사전등록이며 사후 완화 금지.",
+
+  "handoff": {
+    "to": "alpha-research",
+    "next_steps": "Step 1 Hypothesis Intake → Step 2 Factor Sourcing → Step 3 Signal Engineering → Step 4 Canonical Screen 실측 + 진단 → Step 5 Alpha Forecast → Step 6 Confidence → Step 7 alpha_package Emission + ⑤ AST 구성(𝒪 표현 가능성 판정 포함 — IDZ 는 일별 패널의 부호 집계이므로 𝒪 최소집합의 TS 연산으로 표현 가능한지 직접 확인하고, 불가하면 blocked_by_capability + ast_operator_backlog 적립).",
+    "must_carry_forward_unchanged": ["selected.mechanism", "selected.falsification", "selected.regime_scope", "selected.preregistered_power_contract", "selected.idiosyncratic_variance_share_declaration"],
+    "chain": "alpha → [idio_share ≥ 0.15 일 때만 risk → optimizer] → forge → essence 등급 (규율 ② 체인 완주 의무)"
+  }
+}

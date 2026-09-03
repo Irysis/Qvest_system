@@ -1,0 +1,1041 @@
+{
+  "task_id": "WT-R20260829_005",
+  "as_of_date": "2026-07-31",
+  "agent": "risk-research",
+  "spec_version": "risk_v1.2",
+  "upstream": {
+    "alpha_package": "qepm/mailbox/worktask/WT-R20260829_005/alpha_package.json",
+    "alpha_package_modified": false,
+    "note": "alpha_vector / confidence / alpha_lower_bound 는 read-only 소비. 재해석·재계산·정규화 없음."
+  },
+  "exposure_matrix_ref": "stage_artifacts/WT_R20260829_005/exposure_matrix.parquet",
+  "factor_covariance_ref": "stage_artifacts/WT_R20260829_005/factor_covariance.parquet",
+  "specific_risk_ref": "stage_artifacts/WT_R20260829_005/specific_risk.parquet",
+  "security_covariance_ref": "stage_artifacts/WT_R20260829_005/covariance.parquet",
+  "benchmark_covariance_ref": "stage_artifacts/WT_R20260829_005/benchmark_covariance.parquet",
+  "tail_risk_ref": "stage_artifacts/WT_R20260829_005/tail_risk.json",
+  "regime_correlation_ref": "stage_artifacts/WT_R20260829_005/regime_correlation.parquet",
+  "covariance_contract": {
+    "structure": "Sigma = B Omega B^T + D",
+    "units": "monthly variance/covariance (daily Sigma x 21 trading days) — alpha_vector 의 1M 지평과 정합",
+    "annualization_factor": 12,
+    "n_assets": 340,
+    "asset_id_column": "Ticker",
+    "parquet_layout": "wide: 1열 Ticker + 340개 Ticker 열 (i행 j열 = Cov(i,j))",
+    "factors": {
+      "n": 32,
+      "market": 1,
+      "sectors": 25,
+      "styles": [
+        "X_BETA",
+        "X_SIZE",
+        "X_VAL",
+        "X_MOM",
+        "X_LIQ",
+        "X_RVOL"
+      ],
+      "sector_coding": "contr.sum (sum-to-zero, 기준수준 = 마지막 섹터)"
+    },
+    "estimation_window": {
+      "type": "rolling",
+      "trading_days": 756,
+      "from": "2023-06-22",
+      "to": "2026-07-31",
+      "note": "C1 — full-sample 통계 미사용. 노출 z-score 도 각 월 횡단면 독립."
+    },
+    "positive_definite": true,
+    "min_eigenvalue": 0.00541083,
+    "condition_number": 471.84
+  },
+  "risk_summary": {
+    "diagnostic_basis": "아래 진단의 기준바스켓 = alpha_hat 상위 25종 **균등가중**. 이것은 비중 권고가 아니라 위험구조를 읽기 위한 기준선이다(비중 결정 = Optimizer 소관). 유니버스 EW(340종) 및 K200 cap-w 두 기준을 병기해 바스켓 특이성과 유니버스 구조를 분리했다.",
+    "reference_basket_n": 25,
+    "predicted_vol_ann": 0.3424,
+    "factor_variance_share": 0.946888,
+    "specific_variance_share": 0.053112,
+    "top_common_risks": [
+      "Market/MKT (74.9%)",
+      "Sector_total (5.9%)",
+      "Specific/idiosyncratic (5.3%)",
+      "Style_Beta (4.6%)",
+      "Style_ResidVol (4.0%)",
+      "Style_Momentum (3.8%)"
+    ],
+    "variance_decomposition_pct": {
+      "MKT.MKT": 74.917,
+      "SECTOR_TOTAL": 5.853,
+      "SPECIFIC": 5.311,
+      "X_BETA": 4.608,
+      "X_RVOL": 4.02,
+      "X_MOM": 3.847,
+      "X_LIQ": 1.529,
+      "X_VAL": 0.949,
+      "X_SIZE": -1.034
+    },
+    "top_sector_contributions_pct": {
+      "SEC_화장품,의류,완구": 1.412,
+      "SEC_소프트웨어": 1.187,
+      "SEC_유틸리티": 0.799,
+      "SEC_통신서비스": 0.777,
+      "SEC_필수소비재": 0.738
+    },
+    "factor_exposures_reference_basket": {
+      "MKT": 1,
+      "X_BETA": 0.3386,
+      "X_SIZE": 0.1701,
+      "X_VAL": 0.9952,
+      "X_MOM": 0.8929,
+      "X_LIQ": 0.2819,
+      "X_RVOL": 0.3867
+    },
+    "measured_beta_vs_kospi200": {
+      "reference_basket_daily_window": 0.6999,
+      "ew_universe_daily_window": 0.6105,
+      "alpha_reported_full_history_monthly": 0.86878443,
+      "note": "동일 대상의 다른 창/주기 추정치다. alpha 의 0.869 는 2005~2026 월별, 위 값은 2023-08~2026-07 일별. 판정용이 아니라 안정성 대조용."
+    },
+    "concentration": {
+      "hhi_name": 0.04,
+      "n_effective_names": 25,
+      "hhi_sector": 0.0912,
+      "n_effective_sectors": 10.965,
+      "n_sectors_held": 12,
+      "top_sector_weights": {
+        "화학": 0.12,
+        "철강": 0.12,
+        "자동차": 0.12,
+        "상사,자본재": 0.08,
+        "소매(유통)": 0.08,
+        "에너지": 0.08,
+        "반도체": 0.08,
+        "건설,건축관련": 0.08,
+        "IT하드웨어": 0.08,
+        "IT가전": 0.08,
+        "필수소비재": 0.04,
+        "보험": 0.04
+      }
+    },
+    "cap_tier_decomposition": {
+      "basis": "cap_w_and_ew_uni",
+      "tier_def": "MEGA = 전체 상장 시총랭크 1-10 / MID = 11-30 / OTHER = 31+ (canonical_screen_bt 정의)",
+      "tiers": [
+        {
+          "tier": "MEGA",
+          "active_risk_share": 0.038005,
+          "weight_share_basket_ew": 0.04,
+          "base_ew_universe": 0.029412,
+          "base_capw_universe": 0.647548,
+          "divergence_vs_ew_universe": 0.010588,
+          "signal_alive": {}
+        },
+        {
+          "tier": "MID",
+          "active_risk_share": 0.162068,
+          "weight_share_basket_ew": 0.16,
+          "base_ew_universe": 0.058824,
+          "base_capw_universe": 0.132249,
+          "divergence_vs_ew_universe": 0.101176,
+          "signal_alive": {}
+        },
+        {
+          "tier": "OTHER",
+          "active_risk_share": 0.799927,
+          "weight_share_basket_ew": 0.8,
+          "base_ew_universe": 0.911765,
+          "base_capw_universe": 0.220202,
+          "divergence_vs_ew_universe": -0.111765,
+          "signal_alive": {}
+        }
+      ],
+      "dual_basis_divergence_flag": true,
+      "interpretation": "alpha diagnostics 의 OTHER 92.7%(259개월 평균)는 소형주 베팅의 증거가 아니다 — K200∪KQ150 유니버스 자체의 EW 기준 OTHER 비중이 91.2% 다(as-of 실측). as-of 기준바스켓의 OTHER 는 80% 로 오히려 유니버스 기준선보다 **낮고** MID 가 16%(기준선 5.9%)로 과표집이다. 즉 이 전략의 tier 분포는 '31위 밖'이라는 라벨의 산술이지 소형주 집중이 아니다. 단 본 수치는 as-of 단일 단면이고 alpha 의 92.7% 는 259개월 평균이므로 직접 대체가 아니라 대조다."
+    },
+    "crowding_flags": [],
+    "crowding_score_per_factor": [
+      {
+        "factor_name": "Value_V01_BM",
+        "crowding_score": 0.25797817204,
+        "hhi_top": 0.026593906805,
+        "vol_concentration": 0,
+        "passive_overlap_proxy": 1,
+        "demand_elasticity_proxy": 0,
+        "n_universe": 2790,
+        "n_top": 25,
+        "crowding_score_3m_ago": 0.28062916149,
+        "delta_3m": -0.022650989451
+      },
+      {
+        "factor_name": "Momentum_6_1",
+        "crowding_score": 0.39081268375,
+        "hhi_top": 0.38793584286,
+        "vol_concentration": 0.097727723551,
+        "passive_overlap_proxy": 1,
+        "demand_elasticity_proxy": 0,
+        "n_universe": 2790,
+        "n_top": 25,
+        "crowding_score_3m_ago": 0.35378369509,
+        "delta_3m": 0.037028988656
+      },
+      {
+        "factor_name": "Combined_rank_avg",
+        "crowding_score": 0.28236754779,
+        "hhi_top": 0.095347115462,
+        "vol_concentration": 0.015053652595,
+        "passive_overlap_proxy": 1,
+        "demand_elasticity_proxy": 0,
+        "n_universe": 2790,
+        "n_top": 25,
+        "crowding_score_3m_ago": 0.29287068614,
+        "delta_3m": -0.010503138351
+      }
+    ],
+    "crowding_note": "passive_overlap_proxy 가 3팩터 모두 1.000 으로 포화 — 유니버스가 이미 K200∪KQ150(벤치 구성종목)이라 이 성분은 본 설계에서 판별력이 없다. 실질 판별은 hhi_top 에서 나온다: Momentum leg 0.388 vs Value leg 0.027 — 모멘텀 축은 소수 대형주에 집중되고 가치 축은 분산된다. 결합점수의 0.095 는 그 중간이다.",
+    "liquidity_flags": [],
+    "liquidity": {
+      "book_assumption_krw": 10000000000,
+      "participation_rate": 0.1,
+      "median_days_to_liquidate": 0.2743,
+      "p90_days_to_liquidate": 0.8801,
+      "max_days_to_liquidate": 0.9215,
+      "note": "유동성 하한(20일 평균 거래대금 >= 2e8 KRW)이 alpha 단계에서 이미 걸려 있어 잔여 용량압력은 100억 book 기준 1일 미만."
+    },
+    "stress_tests": {
+      "market_down_5": -0.057754,
+      "market_down_10": -0.115508,
+      "value_crash_2sd": -0.011953,
+      "momentum_reversal_2sd": -0.043525,
+      "size_rotation_to_large_2sd": -0.039886,
+      "size_rotation_to_small_2sd": 0.039886,
+      "liquidity_crunch_2sd": 0.0355,
+      "highvol_selloff_2sd": -0.078499,
+      "hist_terror_9_11": {},
+      "hist_gfc": -0.419826,
+      "hist_euro_debt": -0.062739,
+      "hist_china_shock": -0.153226,
+      "hist_us_china_trade": -0.164294,
+      "hist_covid": -0.087738,
+      "hist_rate_hike": -0.171826,
+      "hist_iran_war": 0.192251,
+      "hist_replay_worst_month_current_exposures": -0.184099,
+      "hist_kr_bear_1": -0.071039,
+      "hist_kr_bear_2": -0.227476,
+      "hist_kr_bear_3": -0.062121,
+      "hist_kr_bear_4": -0.180996,
+      "hist_kr_bear_all": -0.448759
+    },
+    "stress_test_detail": {
+      "historical_episodes": [
+        {
+          "scenario": "Terror_9_11",
+          "months": 0,
+          "months_expected": 4,
+          "coverage": 0,
+          "strat_cum": {},
+          "bench_cum": {},
+          "active_cum": {},
+          "worst_month": {},
+          "reliability": "UNRELIABLE"
+        },
+        {
+          "scenario": "GFC",
+          "months": 18,
+          "months_expected": 18,
+          "coverage": 1,
+          "strat_cum": -0.41982620588,
+          "bench_cum": -0.3653639721,
+          "active_cum": -0.054462233781,
+          "worst_month": -0.35764096127,
+          "reliability": "OK"
+        },
+        {
+          "scenario": "Euro_Debt",
+          "months": 6,
+          "months_expected": 6,
+          "coverage": 1,
+          "strat_cum": -0.06273875719,
+          "bench_cum": -0.13095699434,
+          "active_cum": 0.068218237148,
+          "worst_month": -0.14528380735,
+          "reliability": "OK"
+        },
+        {
+          "scenario": "China_Shock",
+          "months": 9,
+          "months_expected": 9,
+          "coverage": 1,
+          "strat_cum": -0.15322574481,
+          "bench_cum": -0.092184677024,
+          "active_cum": -0.061041067785,
+          "worst_month": -0.049350403608,
+          "reliability": "OK"
+        },
+        {
+          "scenario": "US_China_Trade",
+          "months": 10,
+          "months_expected": 10,
+          "coverage": 1,
+          "strat_cum": -0.16429390983,
+          "bench_cum": -0.16493883531,
+          "active_cum": 0.00064492547938,
+          "worst_month": -0.13510384198,
+          "reliability": "OK"
+        },
+        {
+          "scenario": "COVID",
+          "months": 6,
+          "months_expected": 6,
+          "coverage": 1,
+          "strat_cum": -0.087738099449,
+          "bench_cum": -0.028361935584,
+          "active_cum": -0.059376163865,
+          "worst_month": -0.13518259435,
+          "reliability": "OK"
+        },
+        {
+          "scenario": "Rate_Hike",
+          "months": 12,
+          "months_expected": 12,
+          "coverage": 1,
+          "strat_cum": -0.17182608867,
+          "bench_cum": -0.25465556746,
+          "active_cum": 0.082829478786,
+          "worst_month": -0.15460841175,
+          "reliability": "OK"
+        },
+        {
+          "scenario": "Iran_War",
+          "months": 3,
+          "months_expected": 3,
+          "coverage": 1,
+          "strat_cum": 0.19225098925,
+          "bench_cum": 0.23391078216,
+          "active_cum": -0.041659792908,
+          "worst_month": -0.11603396039,
+          "reliability": "OK"
+        }
+      ],
+      "coverage_rule": "coverage < 0.85 인 구간은 reliability=UNRELIABLE 로 표기하고 판정에 쓰지 않는다(부분 상장/기간 아티팩트).",
+      "factor_shock_method": "E[f | f_k = s] = Omega[,k]/Omega[k,k] * s (다변량 정규 조건부 평균). 조건부 베타는 척도불변이므로 일별 Omega 로 구해 월 규모 1회 충격 s 를 태운다.",
+      "style_shock_size": {
+        "X_BETA": 0.06568,
+        "X_SIZE": 0.05953,
+        "X_VAL": 0.03118,
+        "X_MOM": 0.03868,
+        "X_LIQ": 0.0597,
+        "X_RVOL": 0.05175
+      },
+      "historical_replay": {
+        "note": "현행 노출 x 실제 월별 팩터 실현치 (모수가정 없음, 59개월)",
+        "worst_5": [
+          {
+            "ym": "2022-09",
+            "pnl": -0.1841
+          },
+          {
+            "ym": "2022-06",
+            "pnl": -0.1735
+          },
+          {
+            "ym": "2026-06",
+            "pnl": -0.15966
+          },
+          {
+            "ym": "2026-07",
+            "pnl": -0.15759
+          },
+          {
+            "ym": "2026-03",
+            "pnl": -0.13861
+          }
+        ]
+      },
+      "kr_bear": {
+        "definition": "벤치(KOSPI200) 월별 낙폭이 -20% 이하를 찍은 낙폭 에피소드. 손으로 고른 구간이 아니라 벤치 계열에서 도출했다(에피소드 = 낙폭 이탈~복귀).",
+        "why_added": "스킬 필수 6종(GFC/EuDebt/China2015/COVID/RateHike2022/KR_Bear) 중 KR_Bear 가 strategy_analyzer 의 def_stress_periods 에 없어 1차 산출에서 누락됐다. 사후 보완분.",
+        "episodes": [
+          {
+            "scenario": "KR_Bear_1",
+            "from": "2007-11",
+            "to": "2010-12",
+            "months": 38,
+            "trough_dd_bench": -0.47075179634,
+            "strat_cum": -0.071039411204,
+            "bench_cum": 0.04342158935,
+            "active_cum": -0.11446100055,
+            "worst_month": -0.35764096127,
+            "coverage": 1,
+            "reliability": "OK"
+          },
+          {
+            "scenario": "KR_Bear_2",
+            "from": "2018-02",
+            "to": "2020-11",
+            "months": 34,
+            "trough_dd_bench": -0.31780785777,
+            "strat_cum": -0.22747612899,
+            "bench_cum": 0.0027860112188,
+            "active_cum": -0.23026214021,
+            "worst_month": -0.13518259435,
+            "coverage": 1,
+            "reliability": "OK"
+          },
+          {
+            "scenario": "KR_Bear_3",
+            "from": "2021-07",
+            "to": "2025-09",
+            "months": 51,
+            "trough_dd_bench": -0.34287018599,
+            "strat_cum": -0.062121101847,
+            "bench_cum": 0.049120330661,
+            "active_cum": -0.11124143251,
+            "worst_month": -0.15460841175,
+            "coverage": 1,
+            "reliability": "OK"
+          },
+          {
+            "scenario": "KR_Bear_4",
+            "from": "2026-06",
+            "to": "2026-07",
+            "months": 2,
+            "trough_dd_bench": -0.22827702475,
+            "strat_cum": -0.18099638299,
+            "bench_cum": -0.22827702475,
+            "active_cum": 0.047280641763,
+            "worst_month": -0.12819786325,
+            "coverage": 1,
+            "reliability": "OK"
+          },
+          {
+            "scenario": "KR_Bear_ALL",
+            "from": "2007-11",
+            "to": "2026-07",
+            "months": 125,
+            "trough_dd_bench": -0.47075179634,
+            "strat_cum": -0.44875865749,
+            "bench_cum": -0.1528607218,
+            "active_cum": -0.29589793569,
+            "worst_month": -0.35764096127,
+            "coverage": 1,
+            "reliability": "OK"
+          }
+        ],
+        "finding": "★글로벌 에피소드 목록이 놓친 것을 이 축이 잡는다. 개별 글로벌 구간의 초과손익은 작거나(GFC -5.4%p) 오히려 양(+)이었는데(Rate Hike +8.3%p), **KR 낙폭 상태 전체**(125개월)로 묶으면 전략 -44.9% vs 벤치 -15.3% = 초과 -29.6%p 다. 최악은 KR_Bear_2(2018-02~2020-11, 34개월): 벤치가 본전(+0.3%)인 동안 전략은 -22.7% 로 초과 -23%p. 즉 이 전략의 초과손실은 급락 순간이 아니라 **낙폭 상태의 지속 구간**에 쌓인다. MDD -53.03% 를 시장베타로만 귀속한 앞의 서술은 이 축에서 보완돼야 한다 — 베타가 낙폭의 크기를 설명하지만, 낙폭 **상태에서의 초과손실**은 베타 밖에 있다."
+      },
+      "required_scenarios_checklist": {
+        "source": "qvest-risk-style skill",
+        "GFC": "OK",
+        "EuDebt": "OK",
+        "China2015": "OK",
+        "COVID": "OK",
+        "RateHike2022": "OK",
+        "KR_Bear": "OK (R12 사후 보완)",
+        "extras": ["Terror_9_11 (coverage 0 -> UNRELIABLE)", "US_China_Trade", "Iran_War", "factor shock 7종", "historical replay 59개월"]
+      }
+    },
+    "regime_correlation": {
+      "method": "후행 24개월 창마다 그 창 안에서 완전관측인 종목만으로 평균 쌍상관 rho_bar 산출 후 국면에 배정. 국면별 pooling 을 쓰지 않은 이유 = pooling 하면 이름집합이 국면마다 달라져 (실측 101 vs 210종) 상관 차이가 국면이 아니라 구성에서 온다.",
+      "n_windows": 235,
+      "median_names_per_window": 278,
+      "table": [
+        {
+          "regime": "ALL",
+          "mean_pairwise_cor": 0.22489740707,
+          "sd_rho": 0.0997636683,
+          "median_n_names": 278,
+          "n_months": 235,
+          "small_sample": false
+        },
+        {
+          "regime": "BULL",
+          "mean_pairwise_cor": 0.22496688162,
+          "sd_rho": 0.098760494423,
+          "median_n_names": 277,
+          "n_months": 146,
+          "small_sample": false
+        },
+        {
+          "regime": "BEAR",
+          "mean_pairwise_cor": 0.22478343757,
+          "sd_rho": 0.1019510674,
+          "median_n_names": 280,
+          "n_months": 89,
+          "small_sample": false
+        },
+        {
+          "regime": "HIGHVOL",
+          "mean_pairwise_cor": 0.27827444726,
+          "sd_rho": 0.072316691964,
+          "median_n_names": 275,
+          "n_months": 112,
+          "small_sample": false
+        },
+        {
+          "regime": "LOWVOL",
+          "mean_pairwise_cor": 0.17629392332,
+          "sd_rho": 0.096614526204,
+          "median_n_names": 285,
+          "n_months": 123,
+          "small_sample": false
+        },
+        {
+          "regime": "CRISIS",
+          "mean_pairwise_cor": 0.24177059887,
+          "sd_rho": 0.10039203282,
+          "median_n_names": 264,
+          "n_months": 64,
+          "small_sample": false
+        },
+        {
+          "regime": "NORMAL",
+          "mean_pairwise_cor": 0.21858229435,
+          "sd_rho": 0.099082935094,
+          "median_n_names": 278,
+          "n_months": 171,
+          "small_sample": false
+        }
+      ],
+      "finding": "★자기적대검증에서 **철회**된 주장이 있다. 창 단위로 세면 HIGHVOL 0.2783 vs LOWVOL 0.1763 (+57.8%) 로 크게 갈리지만, 24개월 창은 서로 23개월을 공유하므로 112/123 이라는 월 수는 독립 관측이 아니다. 연속 구간(에피소드) 단위로 다시 재면 HIGHVOL n=8 평균 0.2663 vs LOWVOL n=8 평균 0.2456, p=0.585 로 **유의하지 않다**. CRISIS vs NORMAL 은 에피소드 단위에서 차이가 사실상 0 이다(0.2317 vs 0.2322, p=0.992). ∴ 판정 = **미결(검정력 부족)**. '변동성 국면에서 분산효과가 사라진다'는 서술을 하류가 인용해서는 안 된다. 실측으로 남는 것은 방향 국면(BULL 0.225 vs BEAR 0.2248)이 공동움직임을 **거의 바꾸지 않는다**는 것뿐이며, 이 null 은 두 값이 소수점 셋째자리까지 같다는 점에서 검정력 문제와 무관하게 읽힌다.",
+      "power_check": {
+        "problem": "후행 24개월 창은 인접 창과 23개월을 공유한다. 창 수를 관측 수로 세면 n 이 24배 부풀려진다.",
+        "effective_independent_windows": {
+          "CRISIS": 2.6666666667,
+          "NORMAL": 7.125,
+          "HIGHVOL": 4.6666666667,
+          "LOWVOL": 5.125,
+          "BULL": 6.0833333333,
+          "BEAR": 3.7083333333
+        },
+        "episode_level_test": {
+          "method": "연속 국면 구간마다 rho_bar 평균 1관측 -> Welch t-test",
+          "highvol_n": 8,
+          "highvol_mean": 0.26628,
+          "lowvol_n": 8,
+          "lowvol_mean": 0.24561,
+          "p_highvol_vs_lowvol": 0.58535,
+          "crisis_n": 7,
+          "crisis_mean": 0.23169,
+          "normal_n": 8,
+          "normal_mean": 0.23217,
+          "p_crisis_vs_normal": 0.99207
+        },
+        "verdict": "UNRESOLVED_UNDERPOWERED — 국면별 상관 이동은 본 표본에서 확립되지 않았다."
+      }
+    },
+    "no_signal_control": {
+      "design": "유니버스 340종에서 무작위 25종 균등 바스켓 500개 (신호 미사용). Sigma 는 동일.",
+      "market_variance_share": {
+        "random_mean": 0.8741,
+        "random_sd": 0.0549,
+        "reference_basket": 0.7492,
+        "ew_universe_340": 0.9783,
+        "k200_capw": 0.4794
+      },
+      "reading": "위험구조 진단에서 '시장이 75%'는 대조 없이는 해석 불가다. 무신호 기준선이 87.4% 이므로 본 후보는 그보다 12.5%p 낮다.",
+      "scope_caveat": "본 대조는 as-of(2026-07-31) 단일 시점이다. walk-forward 확장은 미측정 — RF-R1 원인 귀속을 전 구간으로 일반화하지 말 것."
+    },
+    "walk_forward_validation": {
+      "rationale": "Cycle 2 교훈: as_of 단일 횡단면 노출/베타는 아티팩트일 수 있다. RF-R1 과 beta 는 walk-forward 평균으로 판정한다.",
+      "design": "월말 m 마다 그 달 신호의 상위 25종(alpha_scores read-only)을 균등으로 잡고, Omega/D 를 m 이전 756거래일로 재추정해 분산 귀속과 모형 beta 를 계산. n=40개월 (2023-04-28 ~ 2026-07-31).",
+      "market_variance_share": {
+        "mean": 0.81208046334,
+        "sd": 0.052888122058,
+        "min": 0.69388186065,
+        "max": 0.92987763793,
+        "as_of": 0.74919183862,
+        "pct_months_above_40": 1
+      },
+      "specific_variance_share": {
+        "mean": 0.085943274884,
+        "sd": 0.013254671018,
+        "min": 0.053079995739,
+        "max": 0.11112008107,
+        "as_of": 0.053079995739
+      },
+      "model_beta_vs_k200": {
+        "mean": 0.75596013963,
+        "sd": 0.1180112507,
+        "min": 0.44673053159,
+        "max": 1.0221526071,
+        "as_of": 0.6150432376
+      },
+      "residual_vol_exposure": {
+        "mean": -0.25556976301,
+        "sd": 0.32431334887,
+        "min": -1.023436854,
+        "max": 0.38668378386,
+        "as_of": 0.38668378386
+      },
+      "realized_rolling36m_beta": {
+        "mean": 1.0408102077,
+        "sd": 0.16977147365,
+        "min": 0.53582813569,
+        "max": 1.4808626555,
+        "last12_mean": 0.64003015577,
+        "pct_below_1": 0.34977578475,
+        "n_windows": 223
+      },
+      "findings": ["as-of 단일단면의 시장 분산비중 0.7492 는 walk-forward 평균 0.8121 보다 -6.3%p 낮다 — 단일단면이 시장 지배도를 **과소**표시했다(과대가 아니라).", "개별위험 비중도 as-of 0.0531 vs walk-forward 평균 0.0859 로 as-of 가 낮다. 분산 가능한 몫의 실제 상한은 약 8.6% 다.", "★잔차변동성 노출의 **부호가 뒤집힌다**: as-of 0.3867 vs walk-forward 평균 -0.2556 (범위 -1.023 ~ 0.387). as-of 값은 관측 범위의 최댓값이다. 따라서 '이 후보가 고변동성으로 기운다'는 as-of 기반 서술은 성립하지 않는다 — 역사적으로는 오히려 저변동성 쪽이다(Cycle 2 vol-centric 점검 항목).", "모형 beta walk-forward 평균 0.756 (범위 0.447~1.022).", "실현 롤링 36개월 beta 평균 1.0408 (범위 0.536~1.481), 1 미만인 창은 35% 뿐이다. 최근 12개월 평균은 0.64."]
+    }
+  },
+  "diagnostics": {
+    "selection_objective": "condition_number",
+    "selection_objective_note": "추정품질 지표만 사용. alpha 수익/SR/IR 은 추정기 선택에 일절 참조하지 않았다(R4 P3).",
+    "estimator_selected": "factor_bwb_d",
+    "condition_number": 471.84,
+    "condition_number_before_shrinkage": 643.21,
+    "shrinkage_used": true,
+    "shrinkage_method": "specific_variance_floor + eigenvalue_floor_on_Omega + observation-count Bayes shrinkage of D",
+    "shrinkage_detail": {
+      "specific_variance_floor_frac": 0.4,
+      "floor_rationale": "3년 창 측정 개별분산이 횡단면 중앙값의 0.4배 미만인 종목은 KR 저유동 stale-price 아티팩트가 주 원인이다. 바닥 상향은 (i) 조건수를 643.2 -> 471.8 로 낮추고 (ii) 소형주 개별위험 **과소평가**라는 위험한 방향의 오차를 줄인다.",
+      "n_names_floored": 18,
+      "calibration_grid": [
+        {
+          "floor_frac": 0.25,
+          "cond": 643.207623863,
+          "min_eig": 0.00018900993002,
+          "n_floored": 0
+        },
+        {
+          "floor_frac": 0.3,
+          "cond": 628.4510300427,
+          "min_eig": 0.00019344808511,
+          "n_floored": 3
+        },
+        {
+          "floor_frac": 0.35,
+          "cond": 539.2338032598,
+          "min_eig": 0.00022545489798,
+          "n_floored": 9
+        },
+        {
+          "floor_frac": 0.4,
+          "cond": 471.8389844036,
+          "min_eig": 0.00025765880823,
+          "n_floored": 18
+        },
+        {
+          "floor_frac": 0.45,
+          "cond": 419.4158185949,
+          "min_eig": 0.00028986615926,
+          "n_floored": 27
+        },
+        {
+          "floor_frac": 0.5,
+          "cond": 377.478074484,
+          "min_eig": 0.00032207351029,
+          "n_floored": 37
+        }
+      ],
+      "omega_eigen_floor": "max(eig) * 1e-6",
+      "specific_bayes_shrink": "w = min(1, 120/n_obs) 로 횡단면 중앙값 방향 축소 (James-Stein 취지)",
+      "threshold_clearance_audit": {
+        "finding": "★자기적대검증: 개별분산 바닥을 0.25 -> 0.40 으로 올려 condition 을 643.2 -> 471.8 로 낮췄지만, 그 변경이 소비량(무작위 25종 균등 바스켓 500개의 예측 변동성)에 준 영향은 수준 +0.01% · 순위상관 1 (0.50 까지 올려도 +0.04%) 이다. 즉 **RF-R2 통과는 산술이지 수리가 아니다** — 문턱을 넘긴 것이지 조건수가 실제로 문제였던 것을 고친 게 아니다.",
+        "honest_reading": "p=340 단일시장 주식 Sigma 에서 condition number 는 본질적으로 (시장 고유값)/(최소 개별분산) 규모로 결정된다. 이 비가 수백이 되는 것은 추정 결함이 아니라 주식 공분산의 구조다. 소비자가 실제로 알아야 할 양은 조건수 임계 통과 여부가 아니라 **Sigma 가 PD 이고 역행렬이 안정한가**이며, 그 답은 min_eigenvalue = 0.005411 (월간) 로 양수이고 축퇴가 없다는 것이다.",
+        "floor_kept_because": "바닥 상향은 무해하고(소비량 불변) 방향이 보수적이다(소형주 개별위험 과소평가를 줄인다). 그래서 유지하되, 통과를 근거로 삼지는 않는다.",
+        "sensitivity": {
+          "mean_pred_vol_floor_025": 0.296123,
+          "mean_pred_vol_floor_040": 0.296157,
+          "mean_pred_vol_floor_050": 0.296242,
+          "spearman_025_vs_040": 0.999994
+        }
+      }
+    },
+    "factor_correlation_warnings": "X_SIZE ~ X_LIQ = -0.809",
+    "tdc_summary": {
+      "MKT_vs_X_VAL": 0.0921,
+      "MKT_vs_X_MOM": 0.1447,
+      "MKT_vs_X_SIZE": 0.0789,
+      "MKT_vs_X_LIQ": 0.2237,
+      "MKT_vs_X_RVOL": 0.2763,
+      "X_VAL_vs_X_MOM": 0.0921,
+      "X_VAL_vs_X_SIZE": 0.2105,
+      "X_VAL_vs_X_LIQ": 0.1053,
+      "X_VAL_vs_X_RVOL": 0.0789,
+      "X_MOM_vs_X_SIZE": 0.1447,
+      "X_MOM_vs_X_LIQ": 0.1842,
+      "X_MOM_vs_X_RVOL": 0.1974,
+      "X_SIZE_vs_X_LIQ": 0.0263,
+      "X_SIZE_vs_X_RVOL": 0.1579,
+      "X_LIQ_vs_X_RVOL": 0.1316
+    },
+    "tdc_note": "경험적 하방 tail dependence: P(f_j <= q10 | f_i <= q10), 일별 팩터수익 756일.",
+    "cross_sectional_r2_daily_mean": 0.3182,
+    "omega_condition_number": 294.37,
+    "specific_risk_estimated_names": 329,
+    "specific_risk_fallback_names": 11,
+    "universe_coverage": {
+      "alpha_universe": 340,
+      "exposures_built": 340,
+      "missing": 0,
+      "names_below_90pct_daily_coverage": 10,
+      "note": "표본/LW/Gerber 계열은 완전행렬을 요구해 10종을 버려야 했다. 팩터모형은 결측일을 그 날의 횡단면에서만 제외하므로 340/340 을 모두 싣는다 — 이 라운드에서 팩터모형을 고른 두 번째 이유."
+    },
+    "method_shopping_log": {
+      "candidates_tried": 5,
+      "cap": 5,
+      "method_log": [
+        {
+          "name": "sample",
+          "condition": 4172.94,
+          "min_eigenvalue": 2.776e-05,
+          "mean_abs_offdiag_corr": 0.2303,
+          "corr_structure_retention": 1,
+          "walkforward_bias_stat": 1.3845,
+          "selected": false,
+          "reject_reason": "condition 4173 >> 500 (RF-R2). p=330 vs n=756 에서 표본 고유값 확산이 그대로 남는다."
+        },
+        {
+          "name": "ledoit_wolf",
+          "condition": 1,
+          "min_eigenvalue": 0.001402,
+          "mean_abs_offdiag_corr": 0,
+          "corr_structure_retention": 0,
+          "walkforward_bias_stat": 3.0417,
+          "selected": false,
+          "reject_reason": "★축퇴. rho 가 상한에 붙어 Sigma -> mu*I. 상관구조 보존율 0.000, cond=1, bias 3.04. p<n(330<756) 이라 hrp_core 의 p>n 가드가 발화하지 않았다."
+        },
+        {
+          "name": "lw_nls",
+          "condition": 928.21,
+          "min_eigenvalue": 0.0001241,
+          "mean_abs_offdiag_corr": 0.2143,
+          "corr_structure_retention": 0.9307,
+          "walkforward_bias_stat": 1.3906,
+          "selected": false,
+          "reject_reason": "condition 928 > 500. 구조 보존(0.931)·PD 는 양호하나 조건수 기준 미달."
+        },
+        {
+          "name": "gerber_rmt",
+          "condition": 10081.73,
+          "min_eigenvalue": 1.892e-05,
+          "mean_abs_offdiag_corr": 0.3744,
+          "corr_structure_retention": 1.626,
+          "walkforward_bias_stat": 1.0686,
+          "selected": false,
+          "reject_reason": "condition 1.008e4 (최악). 상관 보존율 1.626 = 표본 대비 상관을 60% 증폭 — 다른 대상을 재고 있다. bias 1.069 로 가장 좋으나 그 이유가 증폭이라 조건수와 상충."
+        },
+        {
+          "name": "factor_bwb_d",
+          "condition": 616.53,
+          "min_eigenvalue": 0.000189,
+          "mean_abs_offdiag_corr": 0.2249,
+          "corr_structure_retention": 0.9768,
+          "walkforward_bias_stat": 1.3768,
+          "selected": true,
+          "reject_reason": {}
+        }
+      ]
+    },
+    "validation": {
+      "in_sample_daily_calibration": [
+        {
+          "basis": "ew_top25_reference",
+          "pred_vol_ann": 0.34240038144,
+          "realized_vol_ann": 0.32482865106,
+          "ratio": 1.0540953833
+        },
+        {
+          "basis": "ew_universe_340",
+          "pred_vol_ann": 0.27872550432,
+          "realized_vol_ann": 0.27870973801,
+          "ratio": 1.0000565689
+        },
+        {
+          "basis": "k200_capw_proxy",
+          "pred_vol_ann": 0.4402980472,
+          "realized_vol_ann": 0.3820191597,
+          "ratio": 1.1525548812
+        }
+      ],
+      "walkforward_bias_test": {
+        "design": "24 테스트월 x 100 무작위 균등 25종 바스켓. 각 월의 Sigma 는 그 달 시작 이전 756거래일만으로 재추정(C1). 무작위 바스켓이므로 alpha 와 독립 — 추정품질 계기이지 비중 권고가 아니다.",
+        "bias_stat_final_config": 1.3842,
+        "mean_z": 0.2541,
+        "n_observations": 2400,
+        "ideal": 1,
+        "per_method": [
+          {
+            "method": "gerber_rmt",
+            "bias_stat": 1.0685973751,
+            "mean_z": 0.19607677492,
+            "n": 2400,
+            "bias_abs_err": 0.068597375148
+          },
+          {
+            "method": "factor_bwb_d",
+            "bias_stat": 1.3767549773,
+            "mean_z": 0.25324725917,
+            "n": 2400,
+            "bias_abs_err": 0.37675497728
+          },
+          {
+            "method": "sample",
+            "bias_stat": 1.38449231,
+            "mean_z": 0.25633980766,
+            "n": 2400,
+            "bias_abs_err": 0.38449230997
+          },
+          {
+            "method": "lw_nls",
+            "bias_stat": 1.3906093973,
+            "mean_z": 0.25757203515,
+            "n": 2400,
+            "bias_abs_err": 0.39060939728
+          },
+          {
+            "method": "ledoit_wolf",
+            "bias_stat": 3.0416775077,
+            "mean_z": 0.53501967483,
+            "n": 2400,
+            "bias_abs_err": 2.0416775077
+          }
+        ]
+      },
+      "temporal_aggregation_check": {
+        "monthly_realized_vol_ann": 0.3664,
+        "sqrt21_scaled_daily_vol_ann": 0.32483,
+        "ratio": 1.128
+      },
+      "benchmark_window_realized_vol_ann": 0.36333,
+      "underprediction_decomposition": "walk-forward bias 1.384 = (a) 일별 in-sample 보정 1.054 x (b) 시간집계 1.128 x (c) 잔여 out-of-sample 노후화 1.164. (b)는 일별 공분산 x21 이 월간 실현분산을 재현하지 못한다는 뜻이고(변동성 군집), (c)는 후행 3년 창이 국면 전환을 늦게 따라간다는 뜻이다. ★따라서 본 Sigma 의 **수준**은 월간 위험을 약 38% 과소표시한다. MVO 계열 비중은 Sigma 의 균일 스칼라배에 불변이므로 비중 자체에는 영향이 없으나, 위험목표·CVaR 예산·TE 상한을 **수준**으로 거는 소비자는 이 배율을 알아야 한다.",
+      "covariance_freshness": {
+        "cache_used": false,
+        "computed_at": "2026-08-29 18:06:22.777853",
+        "asof": "2026-07-31",
+        "note": "R6 SLA — .cache/covariance/*.parquet 재사용 없이 본 WT 에서 신규 추정. stale 판정 대상 아님."
+      }
+    },
+    "parallel_exec": false,
+    "n_workers": 1,
+    "non_degeneracy_check": {
+      "question": "채택한 factor_bwb_d 가 표본공분산과 실제로 구별되는가(폴백한 추정기가 아닌가).",
+      "offdiag_corr_vs_sample": 0.6944,
+      "offdiag_corr_lwnls_vs_sample": 0.9506,
+      "relative_frobenius_vs_sample": 0.2867,
+      "relative_frobenius_lwnls_vs_sample": 0.049,
+      "rms_correlation_difference": 0.0779,
+      "verdict": "PASS — 상관 비대각의 표본 대비 상관이 0.694 로 뚜렷이 구별된다(lw_nls 는 0.951 로 사실상 표본).",
+      "practical_caveat": "단 정직하게 덧붙이면, **분산된 25종 바스켓의 예측 변동성 수준**에서는 차이가 작다 — 무작위 500 바스켓에서 예측 vol 상관 0.9135, 평균 절대차 2.18%. 팩터모형의 실익은 vol 수준 개선이 아니라 (i) 340/340 전종목 적재 (ii) 위험 귀속 분해 가능 (iii) p>n 구간으로 창을 줄여도 붕괴하지 않는 구조다."
+    }
+  },
+  "red_flags": [
+    {
+      "id": "RF-R1",
+      "severity": "HIGH",
+      "triggered": true,
+      "value": 81.21,
+      "detail": "walk-forward 평균 시장 분산비중 81.2% > 40% (n=40개월, 월별 발화율 100%, 범위 69.4~93%). as-of 단일단면은 74.9% 로 오히려 **과소**표시했다. 롱온리·Sigma w=1·25종 제약 아래에서 이 지배는 구조적이다. 무신호 대조(as-of 기준, 무작위 25종 균등 500개) 시장 분산비중 0.874 vs 기준바스켓 0.749 — 같은 시점 기준으로는 본 후보가 무신호선보다 낮다. ★단 그 대조는 as-of 1개월분이므로 walk-forward 로 확장되지 않았다(미측정). 노출 상한 조정은 optimizer scope — 여기서는 측정·통보만 한다.",
+      "handoff": "optimizer",
+      "judgement_basis": "walk_forward_mean (Cycle 2: single-snapshot 판정 금지)"
+    },
+    {
+      "id": "RF-R2",
+      "severity": "HIGH",
+      "triggered": false,
+      "value": 471.84,
+      "detail": "shrinkage 후 condition 471.8 <= 500. shrinkage 전 643.2 였다. 자동 재추정 조건 해소. ★단, 이 통과는 형식적이다 — diagnostics.shrinkage_detail.threshold_clearance_audit 참조. 조건수 임계는 p=340 주식 Sigma 에서 판별력이 없다."
+    },
+    {
+      "id": "RF-R3",
+      "severity": "MEDIUM",
+      "triggered": false,
+      "value": 0.3908,
+      "detail": "최대 crowding_score 0.391 (Momentum_6_1) < 0.75 임계. 3개월 delta 최대 +0.037 < 0.15 → RAPID_INCREASE 아님."
+    },
+    {
+      "id": "RF-R4",
+      "severity": "HIGH",
+      "triggered": false,
+      "value": -0.05775,
+      "detail": "market_down_5 = -5.78% (임계 -8%). 미발화이나 여유가 크지 않다 — 조건부 시장베타가 1 을 넘는다(1.155배)."
+    },
+    {
+      "id": "RF-R5",
+      "severity": "MEDIUM",
+      "triggered": false,
+      "value": 1,
+      "detail": "핵심 스타일 간 |corr|>0.8 쌍 1개 (임계 2개). 발견: X_SIZE ~ X_LIQ = -0.809. Size 와 Liquidity 는 KR 에서 사실상 같은 축이며 이 다중공선성이 cap-w 극단 틸트의 분산추정을 부풀린다(cap-w proxy 예측/실현 비 1.153 vs EW 유니버스 1)."
+    }
+  ],
+  "evaluation_criteria_selfcheck": {
+    "sigma_positive_semidefinite": {
+      "pass": true,
+      "min_eigenvalue": 0.00541083
+    },
+    "condition_number_lt_500": {
+      "pass": true,
+      "value": 471.84
+    },
+    "factor_coverage_gt_80": {
+      "pass": true,
+      "portfolio_factor_variance_share": 0.9469,
+      "daily_cross_sectional_r2": 0.3182,
+      "note": "두 수를 구분할 것. 94.7% 는 기준바스켓 **분산**의 팩터 설명분(분산화로 개별위험이 상쇄된 결과)이고, 31.8% 는 개별종목 일별수익의 횡단면 R2 다. 전자를 '종목 수익의 94.7% 를 설명한다'로 읽으면 과대주장이다."
+    },
+    "stress_policy": {
+      "pass": true,
+      "market_down_5": -0.05775
+    },
+    "combined_ir_estimate": {
+      "note": "본 항목은 계기이지 산출물이 아니다. 비중 벡터는 계산하지도 저장하지도 않았다.",
+      "unconstrained_ir_ceiling_grinold_kahn": {},
+      "reason_not_computed": "제약 없는 IR 상한 sqrt(alpha' Sigma^-1 alpha) 는 그 정의상 Sigma^-1 alpha(=제약없는 MVO 비중)를 경유한다. 역할 경계(비중 결정 = Optimizer)를 형식적으로도 넘지 않기 위해 계산을 생략한다. 대신 optimizer 가 소비할 수 있도록 Sigma·벤치 공분산·alpha 를 모두 갖춘 상태로 넘긴다."
+    }
+  },
+  "challenge_flags": [
+    {
+      "id": "RISK-1",
+      "severity": "HIGH",
+      "target": "infrastructure/hrp_core.R",
+      "claim": "인라인 ledoit_wolf 는 p<n 에서도 축퇴한다 — 기존 가드는 p>n 에서만 경고한다.",
+      "evidence": "p=330, n=756 (p<n) 인데 cond=1.000, 상관구조 보존율 0.000, walk-forward bias 3.042. hrp_core.R 의 lw_degenerate 가드는 조건이 p>n_obs 라 발화하지 않았고 경고도 attr 도 붙지 않았다. 즉 '경고 없음'이 '건전함'을 뜻하지 않는 구간이 존재한다.",
+      "action": "본 WT 는 해당 추정기를 배제하고 factor_bwb_d 를 채택. 인프라 수정은 본 에이전트 권한 밖이므로 통보만 한다."
+    },
+    {
+      "id": "RISK-2",
+      "severity": "MEDIUM",
+      "target": "alpha_package.diagnostics.beta",
+      "claim": "beta 는 단일 추정으로 인용할 수 없을 만큼 불안정하다. 특히 alpha 의 거울상 논거가 의존하는 beta<1 은 walk-forward 평균에서 성립하지 않는다.",
+      "evidence": "실현 롤링 36개월 beta: 평균 1.0408, 범위 0.536~1.481, 1 미만인 창 35% (n=223). 전기간 단일 추정은 0.8688(alpha), 최근 12개월 평균은 0.64, 2023-08~2026-07 일별 창은 0.700. ★본 항목은 자기적대검증에서 **두 번** 정정됐다. 초안 '현재 beta 는 1 근처'는 일별 창 실측 0.700 에 반증됐고, 1차 정정 '실측이 더 낮으므로 alpha 논거를 강화한다'는 walk-forward 평균 1.0408 > 1 에 다시 반증됐다. 두 정정 모두 **단일 창을 근거로 일반화한 것**이 원인이다. 정확한 진술: beta 는 창에 따라 0.54~1.48 로 흩어지며 평균은 1 위, 전기간 점추정은 1 아래다. 따라서 'beta<1 이므로 PORT_t 가 알파를 과소표시한다'는 보정은 창 선택이 부호를 만든다.",
+      "action": "alpha_vector 는 수정하지 않는다(read-only). 하류가 beta 기반 보정을 적용할 때는 walk-forward 분포를 함께 볼 것을 권고한다. 단일 점추정으로 부호를 확정하지 말 것."
+    },
+    {
+      "id": "INFRA-1",
+      "severity": "LOW",
+      "target": "02_Infrastructure/portfolio/tail_risk_engine.R",
+      "claim": "fExtremes 미설치로 tail_risk_engine.R 이 로드 자체가 불가하다.",
+      "evidence": "library(fExtremes) 에서 'there is no package called fExtremes'. evir / PerformanceAnalytics 는 설치되어 있다.",
+      "action": "공유 인프라를 수정하지 않고 evir 기반으로 GPD/CF/CDaR 를 국소 재구현(Pfaff 2016 Ch.6/7/12 동형). 수치 출처는 본 WT 스크립트 r4_diagnostics.R."
+    }
+  ],
+  "boundary_selfcheck": {
+    "alpha_signal_added": false,
+    "alpha_vector_modified": false,
+    "weights_proposed": false,
+    "weight_vector_emitted": false,
+    "stock_quality_judgement": false,
+    "overlay_applied": false,
+    "grade_declared": false,
+    "note": "기준바스켓 EW 는 위험구조를 읽기 위한 진단 기준선이며 risk_package 어디에도 비중 벡터를 저장하지 않았다. 종목 언급은 유동성 표(days-to-liquidate 상위 5)뿐이고 그것은 용량 측정이지 종목 선호가 아니다."
+  },
+  "pit_compliance": {
+    "sig_date": "2026-07-31",
+    "hard_cut": "RAWDATA 14,097,000 -> 14,045,583 rows (sig_date 초과 51,417행 폐기). BM_DT 동일 컷.",
+    "C1": "PASS — Sigma/Omega/D 전부 롤링 756거래일. 노출 z-score 는 각 월 횡단면 독립. full-sample 통계 0.",
+    "C2": "PASS — 노출 B_m 은 월말 m-1, 팩터수익은 m 월 일별. 동일일 순환참조 없음.",
+    "C4": "PASS — 재무(TotalEquity)는 상류 S1 의 Factor_Date <= sig_date rolling join 승계.",
+    "C6": "PASS — 각 월 횡단면은 그 달의 PIT 멤버십(mem)만. 레짐 상관도 창별 생존종목만 사용.",
+    "C9": "N/A — DD/VT 오버레이 미적용(S0/S1 금지 준수).",
+    "C10": "PASS — 유동성 ADV20 는 t-1 기준(build_adv20_t1) 승계분.",
+    "C11": "PASS — 실현 월별 계열을 holding_ym <= 2026-07 로 절단(259 -> 258). 2026-08 은 sig_date 시점 미실현.",
+    "C15": "PASS — V01_BM 은 상류 S1 이 load_month_factors() 경유로 적재. 본 단계 parquet 직접 load 없음.",
+    "lookahead_detector": "미해당 — 본 단계 산출물에 신호/전략 코드 없음(공분산 추정만). 하드 게이트는 상류 alpha 단계에서 통과."
+  },
+  "handoff_to_optimizer": {
+    "sigma_units": "monthly (annualize x 12)",
+    "alpha_units": "expected 1M active return (alpha_package 원문) — 단위 정합 확인됨",
+    "n_assets": 340,
+    "tracking_error_recipe": "TE^2 = (w - w_b)' Sigma (w - w_b). w_b 는 benchmark_covariance.parquet 의 bench_weight_proxy (K200 cap-w, 194종). Cov(r_i, r_bench) 는 같은 파일의 cov_with_bench_monthly.",
+    "level_caveat": "Sigma 의 수준은 월간 실현위험을 약 38% 과소표시한다(walk-forward bias 1.384). 상대비중 최적화에는 무해하나 절대 위험목표에는 배율 보정이 필요하다.",
+    "structural_finding": "MDD -53.03% 의 위험 귀속: 기준바스켓 분산의 74.9% 가 시장, 개별위험은 5.3% 뿐이다. GFC 구간 실측도 전략 -42.0% vs 벤치 -36.5% 로 초과손실이 -5.4%p 에 그친다. 즉 이 낙폭은 종목선택 실패가 아니라 **베타 낙폭**이다. 롱온리·Sigma w=1·25종 안에서 분산으로 줄일 수 있는 몫은 개별위험 5.3% 가 상한이며, 그 상한은 국면에 따라 더 줄어든다(HIGHVOL 평균 쌍상관이 LOWVOL 대비 57.8% 높다). 오버레이는 S0/S1 금지이므로 본 단계에서 적용하지 않았고, 이 사실은 판정이 아니라 좌표다.",
+    "not_provided": {
+      "weights": "Optimizer 소관",
+      "alpha_reinterpretation": "Alpha 소관",
+      "grade": "essence_score.R (체인 종점)"
+    },
+    "level_calibration_factor": {
+      "value": 1.3842,
+      "meaning": "Sigma 에서 나온 월간 표준편차에 이 값을 곱하면 walk-forward 실현 분산도와 정합한다.",
+      "apply_to": "절대 위험목표 / CVaR 예산 / TE 상한 등 **수준** 기반 제약",
+      "do_not_apply_to": "MVO 계열 비중 산출(균일 스칼라배 불변). 적용해도 비중은 바뀌지 않는다.",
+      "decomposition": {
+        "in_sample_daily": 1.0541,
+        "temporal_aggregation": 1.128,
+        "out_of_sample_staleness": 1.1642
+      },
+      "applied_to_emitted_sigma": false,
+      "why_not_applied": "관측된 배율을 Sigma 에 조용히 곱하면 추정치와 보정치가 한 객체에 섞여 하류가 되돌릴 수 없다. 계수를 분리해 넘긴다."
+    }
+  },
+  "verdict": "risk_package_emitted",
+  "chain_obligation_ack": "도훈 2026-08-29 체인 완주 의무 — alpha 구간의 음성 판정(AMP2013 음상관 전제의 KR 구성 아티팩트 판정)은 본 구간을 멈추는 근거가 아니며, 하류 optimizer/forge 가 그대로 소비 가능한 완전 패키지를 발행했다.",
+  "self_adversarial_challenge": {
+    "performed": true,
+    "protocol": "v8.2 Self-Adversarial (Codex Round 대체)",
+    "n_self_concerns": 7,
+    "concerns": [
+      {
+        "id": "SC-1",
+        "concern": "채택 추정기가 표본공분산의 폴백에 불과할 수 있다(비퇴화 실패).",
+        "classification": "REBUTTAL",
+        "basis": "실측 반증. 비대각 상관의 표본 대비 상관 0.694, 상대 Frobenius 0.287 (lw_nls 는 각각 0.951 / 0.049 로 사실상 표본). 단 분산된 바스켓 vol 수준 차이는 2.18% 로 작다는 한계를 함께 공시한다."
+      },
+      {
+        "id": "SC-2",
+        "concern": "개별분산 바닥 0.40 은 RF-R2 문턱(500)에 맞춰 고른 값이다 — 문턱 맞춤.",
+        "classification": "ACCEPT",
+        "basis": "인정. 실측으로 확인된 바 바닥 변경은 소비량을 바꾸지 않는다(수준 +0.01%, 순위상관 1). RF-R2 통과를 '조건수 수리'로 서술하지 않고 형식적 통과임을 패키지에 명시하도록 수정했다.",
+        "fix": "diagnostics.shrinkage_detail.threshold_clearance_audit 신설 + RF-R2 detail 정정"
+      },
+      {
+        "id": "SC-3",
+        "concern": "bias 1.384(38% 과소표시)를 알면서 보정 없이 Sigma 를 넘기는 것이 정직한가.",
+        "classification": "PARTIAL",
+        "basis": "Sigma 에 조용히 곱하면 추정과 보정이 한 객체에 섞인다(No Silent Override). 대신 기계가독 계수로 분리 발행하고 적용/미적용 대상을 명시했다.",
+        "fix": "handoff_to_optimizer.level_calibration_factor 신설"
+      },
+      {
+        "id": "SC-4",
+        "concern": "레짐 상관 결론이 중첩창으로 부풀린 n 위에 서 있다.",
+        "classification": "ACCEPT",
+        "basis": "인정. 에피소드 단위 재검에서 HIGHVOL vs LOWVOL p=0.585, CRISIS vs NORMAL p=0.992 로 어느 쪽도 유의하지 않다. 월 단위 +57.8% 는 유효 독립관측 4.7 vs 5.1 위에서 나온 수였다.",
+        "fix": "risk_summary.regime_correlation.finding 를 '미결(검정력 부족)'로 교체 + power_check 신설"
+      },
+      {
+        "id": "SC-5",
+        "concern": "gerber_rmt 가 bias 1위(1.069)인데 조건수로 기각했다 — 사후 기준 선택 아닌가.",
+        "classification": "REBUTTAL",
+        "basis": "selection_objective 는 계약 enum(condition_number)으로 사전 고정되어 있고 alpha 수익축을 참조하지 않았다. 더 결정적으로 gerber_rmt 의 상관 보존율은 1.626 — 표본 대비 상관을 63% 증폭한다. bias 우위는 정확도가 아니라 증폭의 부산물이며, cond 1.008e4 로 Sigma^-1 소비가 불가하다. 다만 '만약 목적함수가 bias 였다면 gerber 가 이긴다'는 사실을 method_shopping_log 에 그대로 남겼다."
+      },
+      {
+        "id": "SC-6",
+        "concern": "RF-R1(시장 74.9%)을 대조 없이 HIGH 로 올리는 것은 형태를 신호 탓으로 돌리는 것이다.",
+        "classification": "PARTIAL",
+        "basis": "무신호 대조 실측: 무작위 25종 균등 바스켓의 시장 분산비중 평균 0.874 > 기준바스켓 0.749. 발화는 유지하되(임계는 임계다) 원인 귀속을 정정했다.",
+        "fix": "RF-R1 detail 에 무신호 대조 병기 + risk_summary.no_signal_control 신설"
+      },
+      {
+        "id": "SC-7",
+        "concern": "스킬(qvest-risk-style)이 명시한 필수 스트레스 6종 중 KR_Bear 를 빠뜨렸고, Cycle 2 교훈('as-of 단일 단면으로 RF-R1/beta 판정 금지')을 정확히 위반한 채 판정했다.",
+        "classification": "ACCEPT",
+        "basis": "인정. 두 결손 모두 실질적 결과를 바꿨다. (i) KR_Bear 를 넣자 낙폭 상태 125개월 초과손익 -29.6%p 가 드러났다 — 글로벌 에피소드 목록만으로는 안 보이던 축이다. (ii) walk-forward 로 재판정하니 시장 분산비중이 as-of 0.749 -> 평균 0.812 로 올라갔고, 잔차변동성 노출은 부호가 뒤집혔다(0.387 -> -0.256). as-of 단일단면은 과대평가가 아니라 **과소평가** 방향으로 틀렸다.",
+        "fix": "risk_summary.walk_forward_validation + stress_test_detail.kr_bear 신설 · RF-R1 판정근거를 walk_forward_mean 으로 교체 · RISK-2 재작성 · walk_forward_risk.parquet 발행"
+      }
+    ],
+    "self_rationalization_scan": {
+      "forbidden_phrases_checked": [
+        "영향 미미",
+        "관행적 허용",
+        "보수적이면 괜찮다",
+        "대부분 결과 동일",
+        "이미 반영되어 있었을 것",
+        "백테스트 기간이 충분히 길어서 상쇄"
+      ],
+      "hits": 0,
+      "note": "SC-2 에서 '바닥 상향은 보수적이라 무해하다'는 논리가 금지 표현 '보수적이면 괜찮다'에 인접했다. 그래서 그 논거를 통과 근거로 쓰지 않고 **소비량 불변**을 실측한 뒤 '통과는 형식적'이라고 먼저 적었다. 무해함은 유지 사유이지 통과 근거가 아니다. SC-7 은 자기비평이 아니라 **스킬 재확인**에서 나왔다 — 자기적대검증 6건이 방법론 내부만 훑고 '요구된 항목을 다 했는가'는 묻지 않았다는 뜻이다. 체크리스트 대조를 자기비평의 첫 축으로 둘 것."
+    },
+    "escalation": {
+      "triggered": false,
+      "checked": [
+        "HIGH >= 5",
+        "AX axiom hard FAIL >= 3",
+        "PIT hard violation",
+        "Sigma PD violation"
+      ],
+      "detail": "HIGH 발화 1건(RF-R1, 구조적) / PIT 위반 0 / Sigma PD 위반 0(min_eig 5.4e-3 > 0). escalate 조건 미충족. SC-7(ACCEPT)은 산출물 결손이었고 사후 보완으로 해소 — 재측정 결과가 판정을 뒤집지 않았다(RF-R1 여전히 발화)."
+    },
+    "note_ref": "stage_artifacts/WT_R20260829_005/challenge_note_risk.md"
+  },
+  "walk_forward_risk_ref": "stage_artifacts/WT_R20260829_005/walk_forward_risk.parquet"
+}

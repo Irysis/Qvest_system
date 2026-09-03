@@ -1,0 +1,151 @@
+{
+  "task_id": "WT-R20260829_007",
+  "as_of_date": "2026-08-28",
+  "agent": "risk-research",
+  "series": {
+    "monthly_net": {
+      "n": 259,
+      "window": "2005-02 ~ 2026-08",
+      "mean_ann": 0.13976,
+      "vol_ann": 0.2232,
+      "skew": -0.0576,
+      "excess_kurtosis": 1.4087
+    },
+    "daily_gross": {
+      "n": 5321,
+      "window": "2005-02-01 ~ 2026-08-28",
+      "note": "일간 book 은 홀딩월 시작 EW · 월중 drift 로 재구성했다. 월 집계가 period_returns_production.csv::ret_gross 와 최대오차 0.00000 으로 일치한다(재구성 검증)."
+    }
+  },
+  "empirical": {
+    "monthly_net": {
+      "VaR_95": 0.08471,
+      "ES_95": 0.13139,
+      "VaR_99": 0.16744,
+      "ES_99": 0.20419
+    },
+    "daily_gross": {
+      "VaR_95": 0.02159,
+      "ES_95": 0.03445,
+      "VaR_99": 0.0417,
+      "ES_99": 0.05668
+    }
+  },
+  "cornish_fisher": {
+    "monthly_VaR_95": 0.09217,
+    "monthly_VaR_99": 0.16073
+  },
+  "evt_gpd": {
+    "method": "evir::gpd (POT / MLE). Pfaff FRM Ch.7.",
+    "monthly_net": {
+      "xi": 0.178949,
+      "beta": 0.032981,
+      "threshold": 0.062042,
+      "n_exceed": 26,
+      "n": 259,
+      "VaR95": 0.086525,
+      "ES95": 0.13203,
+      "VaR99": 0.156211,
+      "ES99": 0.216905,
+      "threshold_quantile": 0.9
+    },
+    "daily_gross": {
+      "xi": 0.12601,
+      "beta": 0.011294,
+      "threshold": 0.021588,
+      "n_exceed": 266,
+      "n": 5321,
+      "VaR95": 0.021586,
+      "ES95": 0.034508,
+      "VaR99": 0.041737,
+      "ES99": 0.057565,
+      "threshold_quantile": 0.95
+    },
+    "interpretation": "xi 0.179(월) / 0.126(일) > 0 → Frechet 영역(두꺼운 꼬리). 월간 ES99 는 경험 20.42% vs EVT 21.69% 로 EVT 가 더 크다 — 표본 259개월이 1% 꼬리를 4~5건으로만 덮기 때문이다."
+  },
+  "hill_alpha": {
+    "monthly": 2.9266,
+    "daily": 2.5191,
+    "interpretation": "alpha ~2.5~2.9 → 분산은 유한하나 3·4차 적률은 발산 영역. 표본 분산·첨도 추정치는 불안정하며 Σ 기반 정규 VaR 은 하한이다."
+  },
+  "drawdown": {
+    "max_drawdown_monthly_net": -0.50368,
+    "max_drawdown_daily_gross": -0.53342,
+    "cdar_5pct": 0.4107,
+    "note": "MDD 는 어느 층에서도 등급을 접지 않는다(CLAUDE.md v9.21). 여기서는 구조 낙폭 서술로만 싣는다 — 위험 축 판정은 Calmar 소관이며 그 산출은 forge 다."
+  },
+  "tail_dependence": {
+    "lower_TDC_5pct": 0.545,
+    "lower_TDC_10pct": 0.5563,
+    "benchmark": "K200/KQ150 blended BM_Ret (일간)",
+    "interpretation": "★핵심. 무조건부 beta 는 0.737 인데 하방 5% 꼬리에서의 동시발생 확률은 0.545 다(독립이면 0.05). 저-beta 는 '시장이 무너질 때 덜 무너진다'를 뜻하지 않는다 — 평시에 덜 움직였을 뿐이다. COVID 국면 실측 beta 0.946 · 평균 pairwise 상관 0.342(평시 0.141의 2.4배)가 같은 사실의 다른 얼굴이다."
+  },
+  "regime_tail": [
+    {
+      "regime": "GFC_2008",
+      "book_ret": -0.44716,
+      "bm_ret": -0.39709,
+      "book_vol_ann": 0.27002,
+      "max_dd": -0.52877,
+      "avg_pairwise_corr": 0.1926,
+      "beta": 0.583,
+      "coverage": 1,
+      "coverage_note": "OK"
+    },
+    {
+      "regime": "EuDebt_2011",
+      "book_ret": 0.02191,
+      "bm_ret": -0.18014,
+      "book_vol_ann": 0.29037,
+      "max_dd": -0.16671,
+      "avg_pairwise_corr": 0.2155,
+      "beta": 0.6999,
+      "coverage": 1,
+      "coverage_note": "OK"
+    },
+    {
+      "regime": "China_2015",
+      "book_ret": -0.10667,
+      "bm_ret": -0.09893,
+      "book_vol_ann": 0.22432,
+      "max_dd": -0.21851,
+      "avg_pairwise_corr": 0.1407,
+      "beta": 0.7511,
+      "coverage": 1,
+      "coverage_note": "OK"
+    },
+    {
+      "regime": "COVID_2020",
+      "book_ret": 0.00085,
+      "bm_ret": -0.09271,
+      "book_vol_ann": 0.49712,
+      "max_dd": -0.30017,
+      "avg_pairwise_corr": 0.3422,
+      "beta": 0.9457,
+      "coverage": 1,
+      "coverage_note": "OK"
+    },
+    {
+      "regime": "RateHike_2022",
+      "book_ret": -0.25357,
+      "bm_ret": -0.24001,
+      "book_vol_ann": 0.19947,
+      "max_dd": -0.27465,
+      "avg_pairwise_corr": 0.2105,
+      "beta": 0.7389,
+      "coverage": 1,
+      "coverage_note": "OK"
+    },
+    {
+      "regime": "KR_Bear_2018",
+      "book_ret": -0.31264,
+      "bm_ret": -0.23737,
+      "book_vol_ann": 0.19978,
+      "max_dd": -0.31103,
+      "avg_pairwise_corr": 0.1413,
+      "beta": 0.7047,
+      "coverage": 1,
+      "coverage_note": "OK"
+    }
+  ]
+}

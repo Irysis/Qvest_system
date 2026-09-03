@@ -1,0 +1,57 @@
+{
+  "meta": {
+    "wt_id": "WT-R20260829_004",
+    "metric_type": "canonical_screen",
+    "note": "F3/F4 는 부수 관측 진단 — 신호·선별·비중에 진입 금지"
+  },
+  "F3_dm_optionality_winner_leg": {
+    "n": 259,
+    "n_IB": 85,
+    "n_IB_up": 52,
+    "alpha0_monthly": 0.0019718,
+    "alpha0_t": 0.46211946,
+    "alpha_B_monthly": 0.01714577,
+    "alpha_B_t": 1.73563796,
+    "beta0": 1.06546405,
+    "beta0_t": 10.00869383,
+    "beta_B": 0.25007728,
+    "beta_B_t": 1.07515311,
+    "beta_BU": -0.49710567,
+    "beta_BU_t": -1.73920967,
+    "us_anchor_dm2016": {
+      "winner_decile_up_increment": -0.215,
+      "loser_decile_up_increment": 0.6,
+      "wml_beta_BU": -0.815,
+      "note": "DM2016 Table 4 Panel A — 롱숏 WML/데실. 우리는 승자만 보유"
+    },
+    "verdict_rule": "beta_BU >= 0 이면 '반등월 beta 부족' 경로는 KR 롱온리에 이식되지 않음(path 의 beta 성분 기각)",
+    "verdict": "BETA_PATH_PRESENT"
+  },
+  "F4_agent_reality": {
+    "available": true,
+    "n_months": 258,
+    "n_panic": 26,
+    "unit": "홀딩월 종목별 순매수대금 / 신호일 20일평균거래대금(ADV20 t-1) 의 보유종목 평균 (= ADV 일수)",
+    "individual": {
+      "mean_nonpanic": -0.13005707,
+      "mean_panic": 0.25666196,
+      "diff": 0.38671903,
+      "nw_t": 2.9028339
+    },
+    "foreign": {
+      "mean_nonpanic": 0.08608609,
+      "mean_panic": 0.06309205,
+      "diff": -0.02299404,
+      "nw_t": -0.28299778
+    },
+    "institutional": {
+      "mean_nonpanic": 0.08890015,
+      "mean_panic": -0.43674802,
+      "diff": -0.52564817,
+      "nw_t": -3.45422225
+    },
+    "verdict_rule": "패닉월 주체별 순매수 대비가 비패닉월과 부호·크기 모두에서 구별되지 않으면 agent 기전 기각(확증은 불가 — 배제만 가능)",
+    "diagnostic_only": true,
+    "verdict": "DISTINGUISHABLE"
+  }
+}

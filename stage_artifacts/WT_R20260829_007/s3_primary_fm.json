@@ -1,0 +1,626 @@
+{
+  "meta": {
+    "wt_id": "WT-R20260829_007",
+    "test_id": "F1",
+    "tier": "primary_cross_sectional_statistic",
+    "envelope_applicability": "NOT_APPLICABLE — 단면 회귀 계수 검정. 실투형 envelope(<=25종/long-only/Sigma w=1) 미적용. 포트폴리오 판정 아님.",
+    "metric_type": "cross_sectional_regression",
+    "spec": "GH2004 Table V 9변수: R_{t-1} + size_{t-1} + JH + JL + MH + ML + FHH + FHL. 상/하위 30% 더미. j=2..7 평균(1개월 skip).",
+    "deviation_from_paper": ["GH2004 = CRSP 전종목(수천), 20개 2-digit SIC 산업, 1963-07~2001-12(462월). 본 이식 = K200 union KQ150(월중앙 ~349종), RAWDATA Sector 라벨 EW 산업수익, 2005-01~2026-08.", "GH2004 의 high = 최근 12개월 최고가. 본 라운드는 두 규약 병기 — fh252(in-house M06, 최근 252 거래일 종가 최고) / fh12m(원문 규약, 최근 12 캘린더월 월중 종가 최고).", "산업 정의: GH2004 는 시가총액가중 20 SIC 산업. 본 이식은 RAWDATA Sector EW — M07_IndMom 관행 계승(H8 승계)."],
+    "paper_reference": {
+      "FHH": "+0.16%/월 (t 3.06) raw / +0.27%/월 (t 6.49) risk-adj",
+      "FHL": "-0.48%/월 (t -4.07) raw",
+      "JH": "+0.17%/월 (t 2.07) raw",
+      "JL": "-0.21%/월 raw",
+      "MH": "+0.18%/월 raw",
+      "ML": "-0.07%/월 raw"
+    }
+  },
+  "F1_market_internal_M06_252d": {
+    "label": "F1 base (시장-내 랭킹, M06 252d 규약)",
+    "fh_convention": "fh252",
+    "ranking_mode": "mktint",
+    "j_range": [2, 7],
+    "n_months": 259,
+    "n_cs_regressions": 1554,
+    "coefficients": {
+      "(Intercept)": {
+        "var": "(Intercept)",
+        "mean_monthly": 0.03371058,
+        "mean_ann_pct": 40.45269997,
+        "nw_t": 1.34103478,
+        "n_months": 259
+      },
+      "mret": {
+        "var": "mret",
+        "mean_monthly": 0.0070593,
+        "mean_ann_pct": 8.47116288,
+        "nw_t": 0.7516882,
+        "n_months": 259
+      },
+      "logsize": {
+        "var": "logsize",
+        "mean_monthly": -0.00097452,
+        "mean_ann_pct": -1.16942301,
+        "nw_t": -1.15633135,
+        "n_months": 259
+      },
+      "JH": {
+        "var": "JH",
+        "mean_monthly": 0.00170361,
+        "mean_ann_pct": 2.04433322,
+        "nw_t": 1.38370199,
+        "n_months": 259
+      },
+      "JL": {
+        "var": "JL",
+        "mean_monthly": 0.0008612,
+        "mean_ann_pct": 1.03343479,
+        "nw_t": 0.94127245,
+        "n_months": 259
+      },
+      "MH": {
+        "var": "MH",
+        "mean_monthly": 0.00136419,
+        "mean_ann_pct": 1.6370299,
+        "nw_t": 0.9148796,
+        "n_months": 259
+      },
+      "ML": {
+        "var": "ML",
+        "mean_monthly": -0.00198085,
+        "mean_ann_pct": -2.3770201,
+        "nw_t": -1.74615823,
+        "n_months": 259
+      },
+      "FHH": {
+        "var": "FHH",
+        "mean_monthly": 0.00094684,
+        "mean_ann_pct": 1.1362046,
+        "nw_t": 0.90974927,
+        "n_months": 259
+      },
+      "FHL": {
+        "var": "FHL",
+        "mean_monthly": -0.00309534,
+        "mean_ann_pct": -3.71440428,
+        "nw_t": -2.61602471,
+        "n_months": 259
+      }
+    },
+    "spreads": {
+      "fh_HminusL": {
+        "mean_monthly": 0.00404217,
+        "mean_ann_pct": 4.85060887,
+        "nw_t": 2.1143431
+      },
+      "jt_HminusL": {
+        "mean_monthly": 0.00084242,
+        "mean_ann_pct": 1.01089843,
+        "nw_t": 0.45838738
+      },
+      "ind_HminusL": {
+        "mean_monthly": 0.00334504,
+        "mean_ann_pct": 4.01405,
+        "nw_t": 1.79000721
+      },
+      "fh_minus_jt_spread": {
+        "mean_monthly": 0.00319976,
+        "nw_t": 1.14807001,
+        "labeling": "reference_only_not_verdict_bearing — 숏 레그 포함 청구"
+      }
+    }
+  },
+  "F1_pooled_M06_252d": {
+    "label": "F1 base (혼합 랭킹, M06 252d 규약)",
+    "fh_convention": "fh252",
+    "ranking_mode": "pooled",
+    "j_range": [2, 7],
+    "n_months": 259,
+    "n_cs_regressions": 1554,
+    "coefficients": {
+      "(Intercept)": {
+        "var": "(Intercept)",
+        "mean_monthly": 0.03091946,
+        "mean_ann_pct": 37.10335726,
+        "nw_t": 1.28623038,
+        "n_months": 259
+      },
+      "mret": {
+        "var": "mret",
+        "mean_monthly": 0.00595894,
+        "mean_ann_pct": 7.15073022,
+        "nw_t": 0.64020638,
+        "n_months": 259
+      },
+      "logsize": {
+        "var": "logsize",
+        "mean_monthly": -0.00089937,
+        "mean_ann_pct": -1.07924552,
+        "nw_t": -1.11662531,
+        "n_months": 259
+      },
+      "JH": {
+        "var": "JH",
+        "mean_monthly": 0.00174874,
+        "mean_ann_pct": 2.09848305,
+        "nw_t": 1.33845845,
+        "n_months": 259
+      },
+      "JL": {
+        "var": "JL",
+        "mean_monthly": 0.00076942,
+        "mean_ann_pct": 0.92330503,
+        "nw_t": 0.81112687,
+        "n_months": 259
+      },
+      "MH": {
+        "var": "MH",
+        "mean_monthly": 0.00218327,
+        "mean_ann_pct": 2.61991845,
+        "nw_t": 1.29498807,
+        "n_months": 259
+      },
+      "ML": {
+        "var": "ML",
+        "mean_monthly": -0.00112255,
+        "mean_ann_pct": -1.34705922,
+        "nw_t": -0.8995267,
+        "n_months": 259
+      },
+      "FHH": {
+        "var": "FHH",
+        "mean_monthly": 0.00104569,
+        "mean_ann_pct": 1.2548268,
+        "nw_t": 0.92438593,
+        "n_months": 259
+      },
+      "FHL": {
+        "var": "FHL",
+        "mean_monthly": -0.00234738,
+        "mean_ann_pct": -2.81685034,
+        "nw_t": -1.64677055,
+        "n_months": 259
+      }
+    },
+    "spreads": {
+      "fh_HminusL": {
+        "mean_monthly": 0.00339306,
+        "mean_ann_pct": 4.07167714,
+        "nw_t": 1.50414141
+      },
+      "jt_HminusL": {
+        "mean_monthly": 0.00097932,
+        "mean_ann_pct": 1.17517802,
+        "nw_t": 0.51387706
+      },
+      "ind_HminusL": {
+        "mean_monthly": 0.00330581,
+        "mean_ann_pct": 3.96697766,
+        "nw_t": 1.61694831
+      },
+      "fh_minus_jt_spread": {
+        "mean_monthly": 0.00241375,
+        "nw_t": 0.74212321,
+        "labeling": "reference_only_not_verdict_bearing — 숏 레그 포함 청구"
+      }
+    }
+  },
+  "F1_market_internal_GH_12m": {
+    "label": "F1 base (시장-내 랭킹, GH2004 12개월 규약)",
+    "fh_convention": "fh12m",
+    "ranking_mode": "mktint",
+    "j_range": [2, 7],
+    "n_months": 259,
+    "n_cs_regressions": 1554,
+    "coefficients": {
+      "(Intercept)": {
+        "var": "(Intercept)",
+        "mean_monthly": 0.03381228,
+        "mean_ann_pct": 40.57473414,
+        "nw_t": 1.34237568,
+        "n_months": 259
+      },
+      "mret": {
+        "var": "mret",
+        "mean_monthly": 0.00702169,
+        "mean_ann_pct": 8.4260238,
+        "nw_t": 0.74898486,
+        "n_months": 259
+      },
+      "logsize": {
+        "var": "logsize",
+        "mean_monthly": -0.00098077,
+        "mean_ann_pct": -1.17691948,
+        "nw_t": -1.1613923,
+        "n_months": 259
+      },
+      "JH": {
+        "var": "JH",
+        "mean_monthly": 0.0017946,
+        "mean_ann_pct": 2.15352292,
+        "nw_t": 1.46264738,
+        "n_months": 259
+      },
+      "JL": {
+        "var": "JL",
+        "mean_monthly": 0.00084064,
+        "mean_ann_pct": 1.00876791,
+        "nw_t": 0.92159178,
+        "n_months": 259
+      },
+      "MH": {
+        "var": "MH",
+        "mean_monthly": 0.00126708,
+        "mean_ann_pct": 1.52049577,
+        "nw_t": 0.84375152,
+        "n_months": 259
+      },
+      "ML": {
+        "var": "ML",
+        "mean_monthly": -0.00194775,
+        "mean_ann_pct": -2.33730104,
+        "nw_t": -1.7145468,
+        "n_months": 259
+      },
+      "FHH": {
+        "var": "FHH",
+        "mean_monthly": 0.00101097,
+        "mean_ann_pct": 1.21316068,
+        "nw_t": 0.9931409,
+        "n_months": 259
+      },
+      "FHL": {
+        "var": "FHL",
+        "mean_monthly": -0.00299912,
+        "mean_ann_pct": -3.59894296,
+        "nw_t": -2.50130092,
+        "n_months": 259
+      }
+    },
+    "spreads": {
+      "fh_HminusL": {
+        "mean_monthly": 0.00401009,
+        "mean_ann_pct": 4.81210364,
+        "nw_t": 2.1115139
+      },
+      "jt_HminusL": {
+        "mean_monthly": 0.00095396,
+        "mean_ann_pct": 1.14475502,
+        "nw_t": 0.52390775
+      },
+      "ind_HminusL": {
+        "mean_monthly": 0.00321483,
+        "mean_ann_pct": 3.8577968,
+        "nw_t": 1.71257413
+      },
+      "fh_minus_jt_spread": {
+        "mean_monthly": 0.00305612,
+        "nw_t": 1.11123861,
+        "labeling": "reference_only_not_verdict_bearing — 숏 레그 포함 청구"
+      }
+    }
+  },
+  "F1_pooled_GH_12m": {
+    "label": "F1 base (혼합 랭킹, GH2004 12개월 규약)",
+    "fh_convention": "fh12m",
+    "ranking_mode": "pooled",
+    "j_range": [2, 7],
+    "n_months": 259,
+    "n_cs_regressions": 1554,
+    "coefficients": {
+      "(Intercept)": {
+        "var": "(Intercept)",
+        "mean_monthly": 0.03094621,
+        "mean_ann_pct": 37.13544631,
+        "nw_t": 1.28608662,
+        "n_months": 259
+      },
+      "mret": {
+        "var": "mret",
+        "mean_monthly": 0.00600414,
+        "mean_ann_pct": 7.20496867,
+        "nw_t": 0.64649569,
+        "n_months": 259
+      },
+      "logsize": {
+        "var": "logsize",
+        "mean_monthly": -0.00090128,
+        "mean_ann_pct": -1.08154026,
+        "nw_t": -1.11796269,
+        "n_months": 259
+      },
+      "JH": {
+        "var": "JH",
+        "mean_monthly": 0.00176689,
+        "mean_ann_pct": 2.12026272,
+        "nw_t": 1.35395021,
+        "n_months": 259
+      },
+      "JL": {
+        "var": "JL",
+        "mean_monthly": 0.00073753,
+        "mean_ann_pct": 0.88503645,
+        "nw_t": 0.78319111,
+        "n_months": 259
+      },
+      "MH": {
+        "var": "MH",
+        "mean_monthly": 0.00217482,
+        "mean_ann_pct": 2.60978613,
+        "nw_t": 1.28727563,
+        "n_months": 259
+      },
+      "ML": {
+        "var": "ML",
+        "mean_monthly": -0.00121149,
+        "mean_ann_pct": -1.45379178,
+        "nw_t": -0.96921507,
+        "n_months": 259
+      },
+      "FHH": {
+        "var": "FHH",
+        "mean_monthly": 0.00103201,
+        "mean_ann_pct": 1.23840713,
+        "nw_t": 0.92778447,
+        "n_months": 259
+      },
+      "FHL": {
+        "var": "FHL",
+        "mean_monthly": -0.00222827,
+        "mean_ann_pct": -2.67392598,
+        "nw_t": -1.59081072,
+        "n_months": 259
+      }
+    },
+    "spreads": {
+      "fh_HminusL": {
+        "mean_monthly": 0.00326028,
+        "mean_ann_pct": 3.91233311,
+        "nw_t": 1.47840105
+      },
+      "jt_HminusL": {
+        "mean_monthly": 0.00102936,
+        "mean_ann_pct": 1.23522627,
+        "nw_t": 0.54696423
+      },
+      "ind_HminusL": {
+        "mean_monthly": 0.00338631,
+        "mean_ann_pct": 4.06357791,
+        "nw_t": 1.65161217
+      },
+      "fh_minus_jt_spread": {
+        "mean_monthly": 0.00223092,
+        "nw_t": 0.70381969,
+        "labeling": "reference_only_not_verdict_bearing — 숏 레그 포함 청구"
+      }
+    }
+  },
+  "F5_low52_identification_mktint": {
+    "label": "F5 (M17_Low_52w 동시 투입, 시장-내 랭킹)",
+    "fh_convention": "fh252",
+    "ranking_mode": "mktint",
+    "j_range": [2, 7],
+    "n_months": 259,
+    "n_cs_regressions": 1554,
+    "coefficients": {
+      "(Intercept)": {
+        "var": "(Intercept)",
+        "mean_monthly": 0.03390881,
+        "mean_ann_pct": 40.69057703,
+        "nw_t": 1.34186612,
+        "n_months": 259
+      },
+      "mret": {
+        "var": "mret",
+        "mean_monthly": 0.00709082,
+        "mean_ann_pct": 8.508987,
+        "nw_t": 0.75957306,
+        "n_months": 259
+      },
+      "logsize": {
+        "var": "logsize",
+        "mean_monthly": -0.00097689,
+        "mean_ann_pct": -1.17227146,
+        "nw_t": -1.15351844,
+        "n_months": 259
+      },
+      "JH": {
+        "var": "JH",
+        "mean_monthly": 0.0024946,
+        "mean_ann_pct": 2.9935183,
+        "nw_t": 2.67971513,
+        "n_months": 259
+      },
+      "JL": {
+        "var": "JL",
+        "mean_monthly": 0.00044399,
+        "mean_ann_pct": 0.53279106,
+        "nw_t": 0.51830858,
+        "n_months": 259
+      },
+      "MH": {
+        "var": "MH",
+        "mean_monthly": 0.00127873,
+        "mean_ann_pct": 1.53447815,
+        "nw_t": 0.87078416,
+        "n_months": 259
+      },
+      "ML": {
+        "var": "ML",
+        "mean_monthly": -0.00224259,
+        "mean_ann_pct": -2.69110277,
+        "nw_t": -1.98135485,
+        "n_months": 259
+      },
+      "FHH": {
+        "var": "FHH",
+        "mean_monthly": 0.00100236,
+        "mean_ann_pct": 1.20283472,
+        "nw_t": 0.93048472,
+        "n_months": 259
+      },
+      "FHL": {
+        "var": "FHL",
+        "mean_monthly": -0.00314674,
+        "mean_ann_pct": -3.7760928,
+        "nw_t": -2.72348343,
+        "n_months": 259
+      },
+      "lo52_H": {
+        "var": "lo52_H",
+        "mean_monthly": -0.00117436,
+        "mean_ann_pct": -1.40923505,
+        "nw_t": -0.88815081,
+        "n_months": 259
+      },
+      "lo52_L": {
+        "var": "lo52_L",
+        "mean_monthly": 0.00081648,
+        "mean_ann_pct": 0.9797793,
+        "nw_t": 0.86812224,
+        "n_months": 259
+      }
+    },
+    "spreads": {
+      "fh_HminusL": {
+        "mean_monthly": 0.00414911,
+        "mean_ann_pct": 4.97892752,
+        "nw_t": 2.15455028
+      },
+      "jt_HminusL": {
+        "mean_monthly": 0.00205061,
+        "mean_ann_pct": 2.46072725,
+        "nw_t": 1.39018029
+      },
+      "ind_HminusL": {
+        "mean_monthly": 0.00352132,
+        "mean_ann_pct": 4.22558092,
+        "nw_t": 1.92475738
+      },
+      "fh_minus_jt_spread": {
+        "mean_monthly": 0.0020985,
+        "nw_t": 0.88287775,
+        "labeling": "reference_only_not_verdict_bearing — 숏 레그 포함 청구"
+      }
+    }
+  },
+  "F5_low52_identification_pooled": {
+    "label": "F5 (M17_Low_52w 동시 투입, 혼합 랭킹)",
+    "fh_convention": "fh252",
+    "ranking_mode": "pooled",
+    "j_range": [2, 7],
+    "n_months": 259,
+    "n_cs_regressions": 1554,
+    "coefficients": {
+      "(Intercept)": {
+        "var": "(Intercept)",
+        "mean_monthly": 0.02988745,
+        "mean_ann_pct": 35.86493543,
+        "nw_t": 1.24608128,
+        "n_months": 259
+      },
+      "mret": {
+        "var": "mret",
+        "mean_monthly": 0.00589674,
+        "mean_ann_pct": 7.07609384,
+        "nw_t": 0.63910741,
+        "n_months": 259
+      },
+      "logsize": {
+        "var": "logsize",
+        "mean_monthly": -0.0008658,
+        "mean_ann_pct": -1.03895493,
+        "nw_t": -1.07720435,
+        "n_months": 259
+      },
+      "JH": {
+        "var": "JH",
+        "mean_monthly": 0.00207626,
+        "mean_ann_pct": 2.49151369,
+        "nw_t": 2.31012669,
+        "n_months": 259
+      },
+      "JL": {
+        "var": "JL",
+        "mean_monthly": 0.00044654,
+        "mean_ann_pct": 0.53584474,
+        "nw_t": 0.51240497,
+        "n_months": 259
+      },
+      "MH": {
+        "var": "MH",
+        "mean_monthly": 0.00209469,
+        "mean_ann_pct": 2.51362385,
+        "nw_t": 1.2633328,
+        "n_months": 259
+      },
+      "ML": {
+        "var": "ML",
+        "mean_monthly": -0.0013612,
+        "mean_ann_pct": -1.63343741,
+        "nw_t": -1.09600314,
+        "n_months": 259
+      },
+      "FHH": {
+        "var": "FHH",
+        "mean_monthly": 0.00097951,
+        "mean_ann_pct": 1.17540833,
+        "nw_t": 0.84465873,
+        "n_months": 259
+      },
+      "FHL": {
+        "var": "FHL",
+        "mean_monthly": -0.00239951,
+        "mean_ann_pct": -2.87941702,
+        "nw_t": -1.72528582,
+        "n_months": 259
+      },
+      "lo52_H": {
+        "var": "lo52_H",
+        "mean_monthly": -0.0000981,
+        "mean_ann_pct": -0.11772103,
+        "nw_t": -0.07121536,
+        "n_months": 259
+      },
+      "lo52_L": {
+        "var": "lo52_L",
+        "mean_monthly": 0.00094821,
+        "mean_ann_pct": 1.13785729,
+        "nw_t": 0.99668687,
+        "n_months": 259
+      }
+    },
+    "spreads": {
+      "fh_HminusL": {
+        "mean_monthly": 0.00337902,
+        "mean_ann_pct": 4.05482536,
+        "nw_t": 1.49191294
+      },
+      "jt_HminusL": {
+        "mean_monthly": 0.00162972,
+        "mean_ann_pct": 1.95566894,
+        "nw_t": 1.1267537
+      },
+      "ind_HminusL": {
+        "mean_monthly": 0.00345588,
+        "mean_ann_pct": 4.14706125,
+        "nw_t": 1.72605865
+      },
+      "fh_minus_jt_spread": {
+        "mean_monthly": 0.0017493,
+        "nw_t": 0.64118795,
+        "labeling": "reference_only_not_verdict_bearing — 숏 레그 포함 청구"
+      }
+    }
+  },
+  "preregistered_verdict": {
+    "primary_spec": "F1 시장-내 랭킹 / M06 252d 규약 (선행 런과의 신호 규약 정합)",
+    "reject_if_1": "FHH 가 유의 양(+)이 아니면 근접도의 KR 예측력 부재 -> 기각",
+    "reject_if_1_fired": true,
+    "reject_if_2": "(FHH-FHL) 이 (JH-JL) 을 압도하지 못하면 GH2004 지배 주장이 KR 에 불성립",
+    "reject_if_2_fired": true,
+    "dominance_gap_monthly": 0.00319976,
+    "labeling_constraint": "(FHH-FHL) 지배 검정은 숏 레그 포함 청구다 — reference_only_not_verdict_bearing. 롱온리 관련 반쪽은 FHH 단독이며 별도 보고한다."
+  }
+}

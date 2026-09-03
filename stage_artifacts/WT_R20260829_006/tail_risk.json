@@ -1,0 +1,60 @@
+{
+  "basis": "strategy net monthly returns (period_returns_production.csv, 15bps delta 차감 후)",
+  "n_months": 248,
+  "moments": {
+    "mean": 0.012786
+  },
+  "full_sample": {
+    "n": 248,
+    "emp_var_5": 0.1092,
+    "emp_es_5": 0.1747,
+    "emp_var_1": 0.2046,
+    "emp_es_1": 0.2841,
+    "cf_var_5": 0.124,
+    "hill_alpha": 1.862,
+    "gpd_threshold_q": 0.9,
+    "gpd_n_exceed": 25,
+    "gpd_xi": 0.0955,
+    "gpd_var_95": 0.1129,
+    "gpd_es_95": 0.1794,
+    "gpd_var_99": 0.2176,
+    "gpd_es_99": 0.2951
+  },
+  "pre_2025": {
+    "n": 228,
+    "emp_var_5": 0.1061,
+    "emp_es_5": 0.1618,
+    "emp_var_1": 0.1954,
+    "emp_es_1": 0.26,
+    "cf_var_5": 0.118,
+    "hill_alpha": 1.807,
+    "gpd_threshold_q": 0.9,
+    "gpd_n_exceed": 23,
+    "gpd_xi": 0.1615,
+    "gpd_var_95": 0.1046,
+    "gpd_es_95": 0.1669,
+    "gpd_var_99": 0.2006,
+    "gpd_es_99": 0.2815
+  },
+  "active_leg": {
+    "var_5": 0.0814,
+    "es_5": 0.1238,
+    "var_1": 0.1469,
+    "es_1": 0.1909,
+    "hill_alpha": 1.907
+  },
+  "drawdown": {
+    "monthly_mdd": -0.5577,
+    "cdar_95": 0.5014
+  },
+  "sigma_implied": {
+    "book_monthly_sd": 0.07275,
+    "normal_var_5": 0.1197,
+    "normal_var_1": 0.1692,
+    "t5_var_5": 0.1135,
+    "t5_var_1": 0.1896
+  },
+  "calibration_note": "정규-Sigma 는 5% 지점에서 보수적(11.97 vs 실측 10.92)이나 1% 지점에서 17% 과소(16.92 vs 실측 20.46). 꼬리 소비는 t(5) 또는 GPD 값을 쓸 것.",
+  "evt_caveat": "월간 n=248, 90% 임계 초과 25개 — GPD/Hill 은 소표본 추정치. 일별 패널 부재로 정밀화 불가.",
+  "data_integrity_caveat": "상류 WT006-17: 2025-01~ BM/수익 변동성 이상(sd 0.0759 -> 0.1162). pre_2025 절단본 병기."
+}

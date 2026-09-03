@@ -4,7 +4,25 @@
   "grade": "F",
   "core_reference": "FQ-044 (도훈 2026-07-14); parent FQ-040/041 R27 L-AR-20260714_161109 / R28 L-AR-20260714_164238; production _recompute_alpha_asof.R; base STR_1715_on_M4_R05_noLayer4_PG2; prereg_sha256 07744bdbd58118cbb9b0fec3940957af763f3d0d09870b6e51c06350ce353fda",
   "lesson_text": "[canonical_screen 실측] R29 FQ-044 Z6 value-blend PIT-clean 재측정 + 저장 268m 패널 vintage seam 확정(도훈 최우선 지시 2026-07-14, R27->R28->R29 chain) = 판정1 seam CONFIRMED + 판정2 Z6 clean CONFIG_SCOPED_NEGATIVE. ★판정1(Q1 seam): 저장 alpha_scores_str1715_268m 패널 = 전기간 균일 same-month(off+1) factor vintage(look-ahead), era boundary 없음. production forward recompute(_recompute_alpha_asof.R)=T-1(off0) clean. seam=패널내부 아님, {historical stored=same-month} vs {forward recompute=T-1} live-경계 1개월 불연속. 독립 재현: stored 직접 5.241(=R28), controlled off0->off1 inflation 2.08x(stored-th 3.058->6.376)/2.13x(ic-th 3.247->6.922). ★★value 성분 vintage=완전 T-1 clean: median cor(pure_factor_scores value, factor_db off0[T-1])=1.0000, off1[same-month]=0.985, value self-seam 0.985(EBIT_EV/EV_EBITDA 저속 fundamental). => R27 value 병합은 seam 미도입, look-ahead는 전적으로 base(core+momentum) 패널. ★판정2(Q2 Z6 clean): R27 3.807=look-ahead-base 아티팩트. 파이프라인 검증=R27 exact 재현 paired 3.738(R27 3.807)/IS 3.107/HO 4.357/dIR 0.458. controlled vintage swap(동일 value vz_pfs): LA base off+1 paired 2.23(stored)/2.59(ic) -> CLEAN base off0 paired 1.02(stored)/1.33(ic). primary clean(factor_db T-1 value): paired 1.243(IS 0.918/HO 1.075)/dIR +0.153/lag1 1.530/EW-uni pt 6.39/oos_approx 0.52. 전 clean cell paired 1.02~1.72<2.0 => AND-게이트(paired>=2.0 ∧ dIR>=0.05) FAIL. 기전 정합(placebo/lag 통과 vs clean FAIL 모순 해소): R27 placebo(p=0)/lag1(2.98)은 VALUE 무결성만 시험(그 결론 유지-value 진짜·clean); 미시험=BASE vintage(R28/R29 검거). look-ahead base가 value 오버레이 dIR을 ~2배 증폭(clean 0.153 vs LA 0.345). ★config-scoped negative(not dead): clean에서도 variant PORT_t 3.06->3.85·dIR+0.153·EW-uni pt 6.39 => value 신호 실재·clean, cap-w top-25(mega-편중) paired 국소화 벽. cap-tier 국소화 프론티어. 방법론: R28 recon_panels/screen_inputs 재사용 · cap-w authoritative + EW-uni dual-basis · vintage 2x2(base off0/off1 x value off0/off1/pfs) 전수(argmax 없음, n_trials=1 chain, DSR sweep 부적용) · book_state/05_Production 무변경 · DART API 금지 · pin R28_current_20260714 · prereg_sha256 07744bdb. next_probe: P1(cap-tier 국소화) clean value EW-uni pt 6.39 vs cap-w 3.85 gap -> cap-tier-conditional(MID/OTHER) 또는 EW-tilt 재소비 프론티어(FQ 신설), IS-only; P2(base seam 후속=FQ-044 본류) 저장 268m 패널 clean(T-1) 전량 재빌드 + 현직 book pinned 6.130 clean-basis 재산출(별도 judge 라운드) + factor_db 매핑 off0 통일; P3(조건부) clean base w sweep 0.20~0.40는 P1 신호 시 후속(단독 EV 낮음, clean w0.30 paired 1.24).",
-  "tags": ["book_enhancement", "book_marginal", "value_zblend", "z6_v14_v07", "pit_clean_remeasure", "vintage_seam", "same_month_factor_lookahead", "lookahead_confirmed", "value_vintage_clean", "screen_tier", "config_scoped_negative", "captier_localization", "dossier_nogo_clean", "fq_044", "fq_040", "fq_042", "frontier_open"],
+  "tags": [
+    "book_enhancement",
+    "book_marginal",
+    "value_zblend",
+    "z6_v14_v07",
+    "pit_clean_remeasure",
+    "vintage_seam",
+    "same_month_factor_lookahead",
+    "lookahead_confirmed",
+    "value_vintage_clean",
+    "screen_tier",
+    "config_scoped_negative",
+    "captier_localization",
+    "dossier_nogo_clean",
+    "fq_044",
+    "fq_040",
+    "fq_042",
+    "frontier_open"
+  ],
   "created_at": "2026-07-14",
   "research_mode": "alpha_research",
   "created_by": "emit:alpha_research",
@@ -40,5 +58,7 @@
   "oos_months": 268,
   "portfolio_alpha_t": 3.85,
   "selection_type": "chain",
-  "record_type": "performance"
+  "record_type": "performance",
+  "promoted_to_axiom": "AX-AR-004",
+  "promoted_at": "2026-09-01"
 }

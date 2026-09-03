@@ -1,0 +1,97 @@
+{
+  "l_code": "L-RF-20260829_193556",
+  "strategy_id": "WTR20260829_006_EL2022_FACMOM_EWBAND40",
+  "grade": "C",
+  "core_reference": "stage_artifacts/WT_R20260829_006/authoritative_remeasure.json | forge_baseline_reconciliation.json",
+  "lesson_text": "EL2022 팩터 모멘텀의 KR 검정 — essence C (0/5). PORT_t 1.002 · OOS retention -0.780(분할 -0.484/-0.780/-1.272 단조 악화) · SR 0.587 · CAGR 13.2% · Calmar 0.216 · MDD 0.610. ★1급 전제는 KR 에 존재한다: 팩터 12-1 자기상관 pooled 기울기 +0.8157%/월 t 2.169(게재판 0.45%/월의 1.81배, lag 사다리 2.169/2.438/2.673 로 동월 누출 지문 없음) ⇒ 개별주 모멘텀 약세를 팩터 모멘텀 부재의 따름정리로 귀속하는 경로는 닫혔다. 단 전수 261팩터로 재면 t 1.888(5% 미달) — 해상도를 바꾸면 유의성이 사라진다(계열별 유의는 size·crowding·regime 3개뿐). ★2급 스패닝은 양방향 모두 spanned 라 설계의 사전등록 무효화 조항이 발동해 미결: 정방향 M02 절편 t 2.486 → 1.448(흡수 49.3%), 역방향 TS-FMOM t 2.564 → 1.771(흡수 38.5%). 배관 결함이 아님을 양성대조 2종이 확인 — F-사다리 잔여 |t| 2.360→2.012→1.863→1.544→1.448 단조 감소, sham-FMOM 300회 경험 p 0.0000. ★소비면: EW_band40 으로 회전 11.98 → 8.74(-27%) 하면서 net_IR 0.2578 → 0.2987. 다만 알파 측 +0.476%p 는 t 0.438 로 0 과 구별 안 됨 — 실증 명제는 회전을 27% 줄여도 알파가 깎이는 증거가 없다는 것이지 회전 제어가 알파를 만든다는 것이 아니다. DIST-RAMP-014 사전선언(소비면 음수)의 실질이 적중했다. ★★벤치 basis 2x2(248개월): 상류 1.2211 → 벤치 교체 -0.3277 → 전략실현 교체 -0.0239 → 권위 0.8695. 누적 벤치 4.983(production) vs 3.996(alpha panel) = 서로 다른 구성물. 네 basis 전부 B 문턱 2.0 미만이라 등급은 안 옮긴다. ★부기간 IR 0.833 / 0.283 / -0.369(2020+) — OOS 소멸이 이 계열의 구속 축이고 회전·비중으로 닿는 표면이 아니다. risk 가 그 위험-측 대응물을 특정했다: 2015 전후 계열 상관구조가 다르고(Jennrich chi2 210.5, p=5.5e-17) 알파가 타이밍하는 계열들의 진폭이 일제히 축소됐다(regime -24.8% · investor_flow -23.6% · leverage -22.7%). ★PIT 수정이 성과를 올렸다: ast_verify 가 23리프를 FAIL_LOOKAHEAD 로 잡아 체인 2회 재실행, consensus 계열 전멸(13→12), 그런데 alpha 가 5.66% → 6.36% 로 상승 — 제외분이 성과를 부풀리던 게 아니라는 실증.",
+  "tags": ["reinforcement", "L1_attempt_6_of_20", "multifactor", "factor_momentum", "EL2022", "premise_present_spanning_undetermined", "oos_collapse_binding", "benchmark_basis_dominant", "vacuous_pass_detected"],
+  "created_at": "2026-08-29",
+  "research_mode": "reinforcement",
+  "created_by": "emit:reinforcement",
+  "metric_type": "backtested",
+  "construction_type": "composite",
+  "mechanism_hypothesis": "KR 에 팩터 자기상관이라는 전제는 있으나(t 2.169) 그것이 개별주 모멘텀을 spanning 하는지는 양방향 미결이고, 소비면(롱온리 top-25)으로의 전이는 실패한다. 후반부 붕괴의 기전은 신호 정의가 아니라 타이밍 대상 계열들의 진폭 축소다.",
+  "lcode_schema_version": 3,
+  "port_t_daily_authority": 1.002,
+  "port_t_monthly_authority": 0.8695,
+  "port_t_upstream_basis": 1.2211,
+  "net_sharpe": 0.587,
+  "cagr": 0.132,
+  "calmar": 0.216,
+  "mdd": 0.61,
+  "net_ir": 0.2294,
+  "beta": 0.83,
+  "dsr": 0.436,
+  "turnover_yr": 9.386,
+  "premise_slope_pct_per_month": 0.8157,
+  "premise_t": 2.169,
+  "premise_t_all261": 1.888,
+  "spanning_fwd_t_after": 1.448,
+  "spanning_rev_t_after": 1.771,
+  "bench_swap_delta_t": -0.3277,
+  "strategy_swap_delta_t": -0.0239,
+  "subperiod_ir_p1": 0.833,
+  "subperiod_ir_p2": 0.283,
+  "subperiod_ir_p3": -0.369,
+  "n_months": 248,
+  "falsification_attempts": [
+    {
+      "test": "1급 전제 — EL2022 Table 2 사양 pooled 지시변수 회귀(12-1, 모멘텀 계열 제외, 계열-대표 사양 사전등록)",
+      "result": "전제 존재 확인 — +0.8157%/월 t 2.169(p 0.030). lag 사다리 2.169/2.438/2.673 로 동월 누출 지문 없음. 단 전수 261팩터 해상도에서는 t 1.888 로 유의성 소멸",
+      "effect_retained": true
+    },
+    {
+      "test": "2급 스패닝 — 개별주 모멘텀(M02) vs TS-FMOM 양방향 절편 검정",
+      "result": "양방향 모두 spanned → 사전등록 무효화 조항 발동 = 미결. 정방향 t 2.486→1.448(49.3% 흡수), 역방향 2.564→1.771(38.5%)",
+      "effect_retained": {}
+    },
+    {
+      "test": "배관 양성대조 — F-사다리(F=1/3/5/10/12) + sham-FMOM 300회",
+      "result": "F-사다리 잔여 |t| 단조 감소(2.360→1.448) · sham 경험 p 0.0000, sham 절편 |t| 중앙 2.498 = base 2.486 → 절편 하락은 회귀자 추가 효과가 아니라 실제 타이밍 신호",
+      "effect_retained": true
+    },
+    {
+      "test": "기전 (d) 고유값 정렬 방향성 — 팩터 모멘텀이 고고유값 축에 집중되는가",
+      "result": "미결 — Spearman -0.287, 상위5 PC 기울기 0.0970(t 1.478) vs 하위5 0.00014(t 0.002). 부호는 EL2022 방향이나 비유의·판본 민감. 논문 대조강도(t 6.08 vs 2.15) 재현 실패",
+      "effect_retained": {}
+    },
+    {
+      "test": "소비면 전이 — EW_band40 회전 제어의 알파 교환",
+      "result": "비용 -0.486%p 확정, 알파 +0.476%p 이나 t 0.438 로 0 과 구별 불가. 합산 t 0.883 비유의. 명제 = 회전 27% 감축에 알파 손실 무증거",
+      "effect_retained": {}
+    },
+    {
+      "test": "벤치 basis 2x2 귀속(248개월)",
+      "result": "벤치 교체 -0.3277 vs 전략 교체 -0.0239 = 벤치 항이 13.7배 지배. 네 basis 전부 B 문턱 2.0 미만이라 등급 불변",
+      "effect_retained": true
+    },
+    {
+      "test": "PIT 수정 blast radius — ast_verify 23리프 FAIL_LOOKAHEAD 제외 후 재실행",
+      "result": "consensus 계열 전멸(13→12)에도 alpha 5.66%→6.36% 상승. 제외분이 성과를 부풀리지 않았다는 실증. 월수익 상관 0.9714",
+      "effect_retained": true
+    },
+    {
+      "test": "detect_lookahead 양방향 대조(forge 층 직접 실행)",
+      "result": "양성 1/3 발화(sd*sqrt 만; quantile·scale 미발화) · 음성 0/5(전 표본 mean/cov · shift(-1) · 재정규화 · which.max). CLEAN 은 선언 idiom 부재의 증거로만 인용",
+      "effect_retained": false
+    },
+    {
+      "test": "계기 공허 PASS 적발 — audit Check 13 · Check 16",
+      "result": "Check 13 은 정규식이 t_plus_1 표기 미인식으로 skip 하며 PASS, Check 16 은 manifest frequency 가 rebalance_frequency 에서 채워져 월간 전략에서 원리적 미발화. 둘 다 통과로 세지 않고 직접 재도출로 대체",
+      "effect_retained": false
+    }
+  ],
+  "oos_retention": -0.78,
+  "portfolio_alpha_t": 1.002,
+  "selection_type": "chain",
+  "record_type": "performance",
+  "family": "momentum",
+  "next_probes": [
+    "OOS 소멸이 구속 축이다 — 회전 제어(-27%)도 비중 방법론도 부기간 붕괴(IR 0.833 → -0.369)를 못 건드렸다. 다음 축은 감쇠의 원인(타이밍 대상 계열 진폭 축소: regime -24.8% · investor_flow -23.6%)을 직접 다루거나 그 계열들이 살아있던 구간에 한정한 조건부 설계여야 한다.",
+    "DSR n_trials 누적 정합 — forge 가 HIGH 로 남긴 F-02: n_trials_cumulative=5 가 강화 사다리 7/20 누적을 세지 않아 DSR 이 낙관 방향이다. 사다리 전체를 selection operator 로 세는 규약이 필요하다.",
+    "계기 공허 PASS 2건 수리 — Check 13(T+1)은 정규식이 t_plus_1 표기를 못 읽어 skip 하면서 PASS 를 냈고, Check 16(nav cadence)은 manifest frequency 가 rebalance_frequency 에서 채워져 월간 리밸 전략에서 원리적으로 발화 불가다. 둘 다 통과로 세면 안 된다."
+  ],
+  "next_probe": "OOS 소멸이 구속 축이다 — 회전 제어(-27%)도 비중 방법론도 부기간 붕괴(IR 0.833 → -0.369)를 못 건드렸다. 다음 축은 감쇠의 원인(타이밍 대상 계열 진폭 축소: regime -24.8% · investor_flow -23.6%)을 직접 다루거나 그 계열들이 살아있던 구간에 한정한 조건부 설계여야 한다. | DSR n_trials 누적 정합 — forge 가 HIGH 로 남긴 F-02: n_trials_cumulative=5 가 강화 사다리 7/20 누적을 세지 않아 DSR 이 낙관 방향이다. 사다리 전체를 selection operator 로 세는 규약이 필요하다. | 계기 공허 PASS 2건 수리 — Check 13(T+1)은 정규식이 t_plus_1 표기를 못 읽어 skip 하면서 PASS 를 냈고, Check 16(nav cadence)은 manifest frequency 가 rebalance_frequency 에서 채워져 월간 리밸 전략에서 원리적으로 발화 불가다. 둘 다 통과로 세면 안 된다.",
+  "source_paper": "Ehsani & Linnainmaa (2022), Factor Momentum and the Momentum Factor, JF 77:1877-1919 — https://onlinelibrary.wiley.com/doi/abs/10.1111/jofi.13131",
+  "paper_assumption_broken": "EL2022 의 모멘텀=팩터 타이밍 결과 주장은 KR 에서 확정되지 않는다 — 자기상관 전제는 성립(t 2.169)하나 스패닝이 양방향이라 방향 판정 불가. 또한 논문 효과크기 0.45%/월이 계열-대표 사양에서는 재현되지만 전수 261팩터 해상도에서는 유의성이 소멸(t 1.888)한다 — 유효 독립 계열이 3.25 라 12계열 분산이 명목이다."
+}

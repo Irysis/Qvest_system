@@ -1,0 +1,6018 @@
+{
+  "meta": {
+    "wt_id": "WT-R20260829_007",
+    "metric_type": "canonical_screen",
+    "engine": "02_Infrastructure/contracts/canonical_screen_bt.R (계약 경유 실측 — proxy 손계산 0)",
+    "n_months": 259,
+    "window": "2005-01-31 ~ 2026-07-31",
+    "single_measurement_note": "★도훈 지시 1: arm 배터리 폐지. 대비 arm / 탐색 arm / 아티팩트 대조 / 무신호 대조를 세션 차원에서 짓지 않았다. 한 시도 = 실투형 후보 하나."
+  },
+  "spec": {
+    "signal": "fh252 = Close_t / max(Close, 최근 252 거래일) — GH2004 FH(P/high), in-house M06_High_52w 규약과 bit 동일(S4 parity |rho|=1.0000)",
+    "selection": "월말 근접도 상위 25종",
+    "weighting": "EW · Sigma w = 1 · 개별 비중 상한 없음(v10)",
+    "long_only": true,
+    "max_names": 25,
+    "rebalance": "monthly",
+    "universe": "K200 union KQ150 (PIT 시변 멤버십)",
+    "liquidity": "20일 평균 거래대금(t-1) >= 2e8 KRW · liq_ruler = adv20_t1",
+    "cost": "15bps one-way, delta 기반 (v2.4_kr_retail_15bps)",
+    "window": "2005-01-31 ~ 2026-08 (신호월 라벨)",
+    "skip_convention": "실투 후보는 skip 없음(월말 종가로 결정·집행). GH2004 의 1개월 skip 은 **회귀 검정 규약**이며 F1 에만 적용했다(H2 승계).",
+    "paper_assumption_broken": {
+      "paper_spec": "GH2004 = 상위 30% winner(K200 union KQ150 에서 ~100종) · 6개월 보유 · 6 vintage 중첩(최대 ~150종) · EW",
+      "implemented": "상위 25종 · 1개월 보유 · 단일 vintage · EW",
+      "n_before_truncation_median": 102,
+      "reason": "고정 축 max_names 25 (lean-loop E-5). 종목수 논문값이 25 를 넘으면 상위 25 로 절단하고 절단 사실과 절단 전 N 을 기록한다.",
+      "note": "제약 완화를 레버로 제시하지 않는다(INV-7). 절단은 문제의 정의이지 결함이 아니다."
+    }
+  },
+  "measurements": {
+    "portfolio_alpha_t_nw_lag3": 0.70307478,
+    "portfolio_alpha_t_pvalue": 0.48200915,
+    "alpha_annualized": 0.05433938,
+    "information_ratio": 0.17525794,
+    "net_sr_active": 0.17525794,
+    "mean_active_net_ann": 0.02692418,
+    "beta_controlled": {
+      "alpha_ann": 0.05433938,
+      "t_alpha": 1.55888076,
+      "se_alpha_ann": 0.03485795,
+      "beta": 0.76598572,
+      "t_beta": 15.66115662,
+      "beta_contrib_ann": -0.0274152,
+      "n": 259
+    },
+    "turnover_annual_measured": 15.36553846,
+    "turnover_annual_from_contract": 15.36553846,
+    "n_names_max": 25,
+    "n_names_median": 25,
+    "selected_ret_coverage": 0.99615385,
+    "liq_ruler": null,
+    "prior_run_turnover_reference": 6.64,
+    "diag_ew_universe": {
+      "metric_type": "canonical_screen_diag",
+      "metric_type_note": "EW-유니버스(해당월 유동성필터 前 패널 동일가중) 벤치 대비 진단. HARD 게이트 비바인딩 — cap-w basis(bench_dt)가 판정 권위. 결측수익 종목은 그 달 EW 벤치에서 제외 — 본판정 0-fill과 비대칭, 진단에 보수(하방) 방향. ★t 차이의 채널 분해는 basis_channels 필드 참조 — se 배율을 신호로 읽는 오독 방지(2026-08-09).",
+      "benchmark_id": "EW_universe_prefilter",
+      "basis_channels": {
+        "available": true,
+        "t_capw": 0.70307478,
+        "t_ew": 0.72450043,
+        "se_capw": 0.00319124,
+        "se_ew": 0.00240916,
+        "se_ratio_ew_over_capw": 0.75492992,
+        "t_magnification": 1.32462627,
+        "mean_shift_monthly": -0.00049824,
+        "mean_shift_t_contrib": -0.15612773,
+        "se_shrink_t_contrib": 0.17755338,
+        "dominant_channel": "se_shrink",
+        "interpretation_note": "★이 diag 의 t 를 '핸디캡을 걷어낸 진짜 t' 로 읽지 말 것. basis 전환은 두 채널의 합성이다: ①mean 이동(벤치 수준 차 — 재료 무관 상수에 가깝다) ②se 축소(EW 벤치가 포트와 닮아 active 변동이 작아짐 → **부호 무관 배율**). se 채널은 알파의 증거가 아니다 — 음수 알파에 걸면 더 음수가 된다. 자본 자격 주장은 cap-w basis 로만 하고, 이 t 는 '기각 전 재분류 확인'(v8.3 dual-basis 의무) 용도로만 쓴다."
+      },
+      "n_months": 259,
+      "portfolio_alpha_t_nw_lag3": 0.72450043,
+      "portfolio_alpha_t_pvalue": 0.46875856,
+      "information_ratio": 0.15082083,
+      "alpha_annualized": 0.04368059,
+      "net_sr": 0.15082083,
+      "oos_retention_approx": 3.53371664,
+      "oos_retention_approx_note": "anchored 3분할{55/65/75} 중앙값 근사 — 게이트 권위는 essence_score.R",
+      "post2017_t_nw_lag3": 0.75671109,
+      "n_months_post2017": 115,
+      "benchmark_compare": [
+        {
+          "run_id": "WT-R20260829_007_prod_diagEW",
+          "strategy_id": "GH2004_52wHigh_proximity_top25",
+          "benchmark_id": "EW_universe_prefilter",
+          "period_start": "2005-01-31",
+          "period_end": "2026-07-31",
+          "frequency": "monthly",
+          "metric_name": "Excess_Total_Return",
+          "strategy_value": 11.81622647,
+          "benchmark_value": 7.2512068,
+          "active_value": 4.56501967,
+          "metric_unit": "ratio",
+          "observation_count": 259
+        },
+        {
+          "run_id": "WT-R20260829_007_prod_diagEW",
+          "strategy_id": "GH2004_52wHigh_proximity_top25",
+          "benchmark_id": "EW_universe_prefilter",
+          "period_start": "2005-01-31",
+          "period_end": "2026-07-31",
+          "frequency": "monthly",
+          "metric_name": "Active_Return_Mean",
+          "strategy_value": 0.01200633,
+          "benchmark_value": 0.01026089,
+          "active_value": 0.00174544,
+          "metric_unit": "ratio",
+          "observation_count": 259
+        },
+        {
+          "run_id": "WT-R20260829_007_prod_diagEW",
+          "strategy_id": "GH2004_52wHigh_proximity_top25",
+          "benchmark_id": "EW_universe_prefilter",
+          "period_start": "2005-01-31",
+          "period_end": "2026-07-31",
+          "frequency": "monthly",
+          "metric_name": "Tracking_Error",
+          "strategy_value": null,
+          "benchmark_value": null,
+          "active_value": 0.13887529,
+          "metric_unit": "ratio",
+          "observation_count": 259
+        },
+        {
+          "run_id": "WT-R20260829_007_prod_diagEW",
+          "strategy_id": "GH2004_52wHigh_proximity_top25",
+          "benchmark_id": "EW_universe_prefilter",
+          "period_start": "2005-01-31",
+          "period_end": "2026-07-31",
+          "frequency": "monthly",
+          "metric_name": "Information_Ratio",
+          "strategy_value": null,
+          "benchmark_value": null,
+          "active_value": 0.15082083,
+          "metric_unit": "ratio",
+          "observation_count": 259
+        },
+        {
+          "run_id": "WT-R20260829_007_prod_diagEW",
+          "strategy_id": "GH2004_52wHigh_proximity_top25",
+          "benchmark_id": "EW_universe_prefilter",
+          "period_start": "2005-01-31",
+          "period_end": "2026-07-31",
+          "frequency": "monthly",
+          "metric_name": "Beta_to_Benchmark",
+          "strategy_value": 0.81535637,
+          "benchmark_value": 1,
+          "active_value": -0.18464363,
+          "metric_unit": "ratio",
+          "observation_count": 259
+        },
+        {
+          "run_id": "WT-R20260829_007_prod_diagEW",
+          "strategy_id": "GH2004_52wHigh_proximity_top25",
+          "benchmark_id": "EW_universe_prefilter",
+          "period_start": "2005-01-31",
+          "period_end": "2026-07-31",
+          "frequency": "monthly",
+          "metric_name": "Alpha_Annualized",
+          "strategy_value": 0.04368059,
+          "benchmark_value": 0,
+          "active_value": 0.04368059,
+          "metric_unit": "ratio",
+          "observation_count": 259
+        },
+        {
+          "run_id": "WT-R20260829_007_prod_diagEW",
+          "strategy_id": "GH2004_52wHigh_proximity_top25",
+          "benchmark_id": "EW_universe_prefilter",
+          "period_start": "2005-01-31",
+          "period_end": "2026-07-31",
+          "frequency": "monthly",
+          "metric_name": "Portfolio_Alpha_t_NW_lag3",
+          "strategy_value": 0.72450043,
+          "benchmark_value": 0,
+          "active_value": 0.72450043,
+          "metric_unit": "t_stat",
+          "observation_count": 259
+        },
+        {
+          "run_id": "WT-R20260829_007_prod_diagEW",
+          "strategy_id": "GH2004_52wHigh_proximity_top25",
+          "benchmark_id": "EW_universe_prefilter",
+          "period_start": "2005-01-31",
+          "period_end": "2026-07-31",
+          "frequency": "monthly",
+          "metric_name": "Portfolio_Alpha_t_pvalue",
+          "strategy_value": 0.46875856,
+          "benchmark_value": null,
+          "active_value": 0.46875856,
+          "metric_unit": "pvalue",
+          "observation_count": 259
+        },
+        {
+          "run_id": "WT-R20260829_007_prod_diagEW",
+          "strategy_id": "GH2004_52wHigh_proximity_top25",
+          "benchmark_id": "EW_universe_prefilter",
+          "period_start": "2005-01-31",
+          "period_end": "2026-07-31",
+          "frequency": "monthly",
+          "metric_name": "Correlation",
+          "strategy_value": 0.80759685,
+          "benchmark_value": 1,
+          "active_value": -0.19240315,
+          "metric_unit": "ratio",
+          "observation_count": 259
+        },
+        {
+          "run_id": "WT-R20260829_007_prod_diagEW",
+          "strategy_id": "GH2004_52wHigh_proximity_top25",
+          "benchmark_id": "EW_universe_prefilter",
+          "period_start": "2005-01-31",
+          "period_end": "2026-07-31",
+          "frequency": "monthly",
+          "metric_name": "Up_Capture",
+          "strategy_value": 0.90819747,
+          "benchmark_value": 1,
+          "active_value": -0.09180253,
+          "metric_unit": "ratio",
+          "observation_count": 259
+        },
+        {
+          "run_id": "WT-R20260829_007_prod_diagEW",
+          "strategy_id": "GH2004_52wHigh_proximity_top25",
+          "benchmark_id": "EW_universe_prefilter",
+          "period_start": "2005-01-31",
+          "period_end": "2026-07-31",
+          "frequency": "monthly",
+          "metric_name": "Down_Capture",
+          "strategy_value": 0.76556759,
+          "benchmark_value": 1,
+          "active_value": -0.23443241,
+          "metric_unit": "ratio",
+          "observation_count": 259
+        },
+        {
+          "run_id": "WT-R20260829_007_prod_diagEW",
+          "strategy_id": "GH2004_52wHigh_proximity_top25",
+          "benchmark_id": "EW_universe_prefilter",
+          "period_start": "2005-01-31",
+          "period_end": "2026-07-31",
+          "frequency": "monthly",
+          "metric_name": "Hit_Ratio_vs_BM",
+          "strategy_value": 0.52895753,
+          "benchmark_value": 0.5,
+          "active_value": 0.02895753,
+          "metric_unit": "ratio",
+          "observation_count": 259
+        }
+      ],
+      "period_returns": [
+        {
+          "date": "2005-01-31",
+          "ret_net": 0.11939946,
+          "ew_bench_ret": 0.13376108,
+          "active_ew": -0.01436162
+        },
+        {
+          "date": "2005-02-28",
+          "ret_net": -0.08524892,
+          "ew_bench_ret": -0.04448184,
+          "active_ew": -0.04076708
+        },
+        {
+          "date": "2005-03-31",
+          "ret_net": -0.0576527,
+          "ew_bench_ret": -0.0726886,
+          "active_ew": 0.0150359
+        },
+        {
+          "date": "2005-04-29",
+          "ret_net": 0.02648751,
+          "ew_bench_ret": 0.06097001,
+          "active_ew": -0.03448249
+        },
+        {
+          "date": "2005-05-31",
+          "ret_net": 0.08657214,
+          "ew_bench_ret": 0.07627965,
+          "active_ew": 0.01029249
+        },
+        {
+          "date": "2005-06-30",
+          "ret_net": 0.02370285,
+          "ew_bench_ret": 0.07424823,
+          "active_ew": -0.05054538
+        },
+        {
+          "date": "2005-07-29",
+          "ret_net": -0.03626365,
+          "ew_bench_ret": -0.02077204,
+          "active_ew": -0.01549162
+        },
+        {
+          "date": "2005-08-31",
+          "ret_net": 0.13325594,
+          "ew_bench_ret": 0.16156552,
+          "active_ew": -0.02830958
+        },
+        {
+          "date": "2005-09-30",
+          "ret_net": -0.03669097,
+          "ew_bench_ret": -0.02693016,
+          "active_ew": -0.00976081
+        },
+        {
+          "date": "2005-10-31",
+          "ret_net": 0.13686375,
+          "ew_bench_ret": 0.13761878,
+          "active_ew": -0.00075503
+        },
+        {
+          "date": "2005-11-30",
+          "ret_net": 0.03658935,
+          "ew_bench_ret": 0.01407903,
+          "active_ew": 0.02251032
+        },
+        {
+          "date": "2005-12-29",
+          "ret_net": -0.03624765,
+          "ew_bench_ret": -0.01026175,
+          "active_ew": -0.0259859
+        },
+        {
+          "date": "2006-01-31",
+          "ret_net": 0.00071093,
+          "ew_bench_ret": 0.0032958,
+          "active_ew": -0.00258487
+        },
+        {
+          "date": "2006-02-28",
+          "ret_net": 0.01604678,
+          "ew_bench_ret": 0.00418112,
+          "active_ew": 0.01186566
+        },
+        {
+          "date": "2006-03-31",
+          "ret_net": 0.03879493,
+          "ew_bench_ret": 0.03373166,
+          "active_ew": 0.00506328
+        },
+        {
+          "date": "2006-04-28",
+          "ret_net": -0.08963944,
+          "ew_bench_ret": -0.08920806,
+          "active_ew": -0.00043139
+        },
+        {
+          "date": "2006-05-30",
+          "ret_net": -0.05194551,
+          "ew_bench_ret": -0.04776052,
+          "active_ew": -0.00418499
+        },
+        {
+          "date": "2006-06-30",
+          "ret_net": -0.00663094,
+          "ew_bench_ret": -0.00856293,
+          "active_ew": 0.00193199
+        },
+        {
+          "date": "2006-07-31",
+          "ret_net": 0.01786498,
+          "ew_bench_ret": 0.06898709,
+          "active_ew": -0.05112211
+        },
+        {
+          "date": "2006-08-31",
+          "ret_net": 0.06434549,
+          "ew_bench_ret": 0.03739269,
+          "active_ew": 0.0269528
+        },
+        {
+          "date": "2006-09-29",
+          "ret_net": 0.01086784,
+          "ew_bench_ret": 0.00830663,
+          "active_ew": 0.00256121
+        },
+        {
+          "date": "2006-10-31",
+          "ret_net": 0.05349195,
+          "ew_bench_ret": 0.07730609,
+          "active_ew": -0.02381414
+        },
+        {
+          "date": "2006-11-30",
+          "ret_net": -0.04046991,
+          "ew_bench_ret": -0.01079484,
+          "active_ew": -0.02967507
+        },
+        {
+          "date": "2006-12-28",
+          "ret_net": -0.0902886,
+          "ew_bench_ret": -0.07614706,
+          "active_ew": -0.01414154
+        },
+        {
+          "date": "2007-01-31",
+          "ret_net": 0.0545876,
+          "ew_bench_ret": 0.03681891,
+          "active_ew": 0.0177687
+        },
+        {
+          "date": "2007-02-28",
+          "ret_net": 0.09518907,
+          "ew_bench_ret": 0.06326946,
+          "active_ew": 0.0319196
+        },
+        {
+          "date": "2007-03-30",
+          "ret_net": 0.12320011,
+          "ew_bench_ret": 0.09643245,
+          "active_ew": 0.02676766
+        },
+        {
+          "date": "2007-04-30",
+          "ret_net": 0.1179149,
+          "ew_bench_ret": 0.14569794,
+          "active_ew": -0.02778303
+        },
+        {
+          "date": "2007-05-31",
+          "ret_net": 0.00807495,
+          "ew_bench_ret": 0.02581958,
+          "active_ew": -0.01774462
+        },
+        {
+          "date": "2007-06-29",
+          "ret_net": 0.1449053,
+          "ew_bench_ret": 0.15001075,
+          "active_ew": -0.00510545
+        },
+        {
+          "date": "2007-07-31",
+          "ret_net": -0.01047469,
+          "ew_bench_ret": -0.02855415,
+          "active_ew": 0.01807946
+        },
+        {
+          "date": "2007-08-31",
+          "ret_net": 0.03131838,
+          "ew_bench_ret": 0.02076674,
+          "active_ew": 0.01055164
+        },
+        {
+          "date": "2007-09-28",
+          "ret_net": 0.03992852,
+          "ew_bench_ret": 0.03058971,
+          "active_ew": 0.00933881
+        },
+        {
+          "date": "2007-10-31",
+          "ret_net": -0.07764064,
+          "ew_bench_ret": -0.07670366,
+          "active_ew": -0.00093699
+        },
+        {
+          "date": "2007-11-30",
+          "ret_net": -0.02802751,
+          "ew_bench_ret": -0.00449686,
+          "active_ew": -0.02353066
+        },
+        {
+          "date": "2007-12-28",
+          "ret_net": -0.13063812,
+          "ew_bench_ret": -0.14804224,
+          "active_ew": 0.01740412
+        },
+        {
+          "date": "2008-01-31",
+          "ret_net": -0.00200055,
+          "ew_bench_ret": 0.07780775,
+          "active_ew": -0.0798083
+        },
+        {
+          "date": "2008-02-29",
+          "ret_net": -0.01219846,
+          "ew_bench_ret": -0.01568097,
+          "active_ew": 0.00348251
+        },
+        {
+          "date": "2008-03-31",
+          "ret_net": 0.06199006,
+          "ew_bench_ret": 0.06466699,
+          "active_ew": -0.00267693
+        },
+        {
+          "date": "2008-04-30",
+          "ret_net": -0.01246658,
+          "ew_bench_ret": 0.0119017,
+          "active_ew": -0.02436828
+        },
+        {
+          "date": "2008-05-30",
+          "ret_net": -0.05669064,
+          "ew_bench_ret": -0.06920165,
+          "active_ew": 0.01251101
+        },
+        {
+          "date": "2008-06-30",
+          "ret_net": -0.03540213,
+          "ew_bench_ret": -0.04337137,
+          "active_ew": 0.00796923
+        },
+        {
+          "date": "2008-07-31",
+          "ret_net": -0.05313826,
+          "ew_bench_ret": -0.08300885,
+          "active_ew": 0.02987059
+        },
+        {
+          "date": "2008-08-29",
+          "ret_net": -0.02879588,
+          "ew_bench_ret": -0.02232817,
+          "active_ew": -0.00646771
+        },
+        {
+          "date": "2008-09-30",
+          "ret_net": -0.20433111,
+          "ew_bench_ret": -0.30020549,
+          "active_ew": 0.09587438
+        },
+        {
+          "date": "2008-10-31",
+          "ret_net": -0.02026019,
+          "ew_bench_ret": 0.02975209,
+          "active_ew": -0.05001228
+        },
+        {
+          "date": "2008-11-28",
+          "ret_net": 0.02020971,
+          "ew_bench_ret": 0.0936987,
+          "active_ew": -0.07348899
+        },
+        {
+          "date": "2008-12-30",
+          "ret_net": -0.06493132,
+          "ew_bench_ret": 0.03710824,
+          "active_ew": -0.10203956
+        },
+        {
+          "date": "2009-01-30",
+          "ret_net": -0.04977261,
+          "ew_bench_ret": -0.06150236,
+          "active_ew": 0.01172975
+        },
+        {
+          "date": "2009-02-27",
+          "ret_net": 0.09317957,
+          "ew_bench_ret": 0.1713584,
+          "active_ew": -0.07817882
+        },
+        {
+          "date": "2009-03-31",
+          "ret_net": 0.1187999,
+          "ew_bench_ret": 0.19426207,
+          "active_ew": -0.07546217
+        },
+        {
+          "date": "2009-04-30",
+          "ret_net": 0.05821944,
+          "ew_bench_ret": 0.01386473,
+          "active_ew": 0.04435472
+        },
+        {
+          "date": "2009-05-29",
+          "ret_net": -0.06508556,
+          "ew_bench_ret": -0.01773881,
+          "active_ew": -0.04734675
+        },
+        {
+          "date": "2009-06-30",
+          "ret_net": 0.04992536,
+          "ew_bench_ret": 0.08291159,
+          "active_ew": -0.03298623
+        },
+        {
+          "date": "2009-07-31",
+          "ret_net": 0.04092227,
+          "ew_bench_ret": 0.02310833,
+          "active_ew": 0.01781394
+        },
+        {
+          "date": "2009-08-31",
+          "ret_net": 0.01165383,
+          "ew_bench_ret": 0.02915247,
+          "active_ew": -0.01749865
+        },
+        {
+          "date": "2009-09-30",
+          "ret_net": -0.04546107,
+          "ew_bench_ret": -0.05526193,
+          "active_ew": 0.00980086
+        },
+        {
+          "date": "2009-10-30",
+          "ret_net": -0.0109834,
+          "ew_bench_ret": -0.02649652,
+          "active_ew": 0.01551312
+        },
+        {
+          "date": "2009-11-30",
+          "ret_net": 0.05928071,
+          "ew_bench_ret": 0.08535231,
+          "active_ew": -0.0260716
+        },
+        {
+          "date": "2009-12-30",
+          "ret_net": -0.08377692,
+          "ew_bench_ret": -0.0652148,
+          "active_ew": -0.01856211
+        },
+        {
+          "date": "2010-01-29",
+          "ret_net": 0.01448797,
+          "ew_bench_ret": 0.01722805,
+          "active_ew": -0.00274008
+        },
+        {
+          "date": "2010-02-26",
+          "ret_net": 0.05701058,
+          "ew_bench_ret": 0.05200242,
+          "active_ew": 0.00500815
+        },
+        {
+          "date": "2010-03-31",
+          "ret_net": 0.11034848,
+          "ew_bench_ret": 0.0250391,
+          "active_ew": 0.08530938
+        },
+        {
+          "date": "2010-04-30",
+          "ret_net": -0.01731392,
+          "ew_bench_ret": -0.05812857,
+          "active_ew": 0.04081465
+        },
+        {
+          "date": "2010-05-31",
+          "ret_net": 0.05659349,
+          "ew_bench_ret": 0.05834245,
+          "active_ew": -0.00174896
+        },
+        {
+          "date": "2010-06-30",
+          "ret_net": -0.00812376,
+          "ew_bench_ret": 0.0141875,
+          "active_ew": -0.02231126
+        },
+        {
+          "date": "2010-07-30",
+          "ret_net": 0.04861029,
+          "ew_bench_ret": 0.00818576,
+          "active_ew": 0.04042453
+        },
+        {
+          "date": "2010-08-31",
+          "ret_net": 0.06371748,
+          "ew_bench_ret": 0.08896246,
+          "active_ew": -0.02524498
+        },
+        {
+          "date": "2010-09-30",
+          "ret_net": 0.03449353,
+          "ew_bench_ret": 0.04240189,
+          "active_ew": -0.00790836
+        },
+        {
+          "date": "2010-10-29",
+          "ret_net": -0.00739017,
+          "ew_bench_ret": -0.02256921,
+          "active_ew": 0.01517904
+        },
+        {
+          "date": "2010-11-30",
+          "ret_net": 0.09631172,
+          "ew_bench_ret": 0.05580635,
+          "active_ew": 0.04050537
+        },
+        {
+          "date": "2010-12-30",
+          "ret_net": -0.00291641,
+          "ew_bench_ret": 0.01045172,
+          "active_ew": -0.01336813
+        },
+        {
+          "date": "2011-01-31",
+          "ret_net": -0.08941776,
+          "ew_bench_ret": -0.04706638,
+          "active_ew": -0.04235139
+        },
+        {
+          "date": "2011-02-28",
+          "ret_net": 0.12065945,
+          "ew_bench_ret": 0.08604558,
+          "active_ew": 0.03461387
+        },
+        {
+          "date": "2011-03-31",
+          "ret_net": 0.08176158,
+          "ew_bench_ret": 0.03134933,
+          "active_ew": 0.05041225
+        },
+        {
+          "date": "2011-04-29",
+          "ret_net": -0.05688942,
+          "ew_bench_ret": -0.04314832,
+          "active_ew": -0.01374111
+        },
+        {
+          "date": "2011-05-31",
+          "ret_net": 0.00812255,
+          "ew_bench_ret": 0.01700802,
+          "active_ew": -0.00888547
+        },
+        {
+          "date": "2011-06-30",
+          "ret_net": 0.05057546,
+          "ew_bench_ret": 0.0925369,
+          "active_ew": -0.04196144
+        },
+        {
+          "date": "2011-07-29",
+          "ret_net": -0.04584441,
+          "ew_bench_ret": -0.09324203,
+          "active_ew": 0.04739762
+        },
+        {
+          "date": "2011-08-31",
+          "ret_net": -0.01871355,
+          "ew_bench_ret": -0.10083423,
+          "active_ew": 0.08212069
+        },
+        {
+          "date": "2011-09-30",
+          "ret_net": 0.05994397,
+          "ew_bench_ret": 0.11847442,
+          "active_ew": -0.05853044
+        },
+        {
+          "date": "2011-10-31",
+          "ret_net": -0.02264332,
+          "ew_bench_ret": -0.01390495,
+          "active_ew": -0.00873838
+        },
+        {
+          "date": "2011-11-30",
+          "ret_net": -0.01493436,
+          "ew_bench_ret": 0.00486774,
+          "active_ew": -0.0198021
+        },
+        {
+          "date": "2011-12-29",
+          "ret_net": -0.0120968,
+          "ew_bench_ret": 0.07086422,
+          "active_ew": -0.08296101
+        },
+        {
+          "date": "2012-01-31",
+          "ret_net": 0.0549657,
+          "ew_bench_ret": 0.04443925,
+          "active_ew": 0.01052644
+        },
+        {
+          "date": "2012-02-29",
+          "ret_net": -0.03560362,
+          "ew_bench_ret": -0.03795951,
+          "active_ew": 0.00235589
+        },
+        {
+          "date": "2012-03-30",
+          "ret_net": -0.0049297,
+          "ew_bench_ret": -0.06767437,
+          "active_ew": 0.06274467
+        },
+        {
+          "date": "2012-04-30",
+          "ret_net": -0.01736439,
+          "ew_bench_ret": -0.03542019,
+          "active_ew": 0.0180558
+        },
+        {
+          "date": "2012-05-31",
+          "ret_net": 0.07847107,
+          "ew_bench_ret": 0.04092541,
+          "active_ew": 0.03754566
+        },
+        {
+          "date": "2012-06-29",
+          "ret_net": -0.00297964,
+          "ew_bench_ret": -0.01477174,
+          "active_ew": 0.0117921
+        },
+        {
+          "date": "2012-07-31",
+          "ret_net": 0.09444165,
+          "ew_bench_ret": 0.07979968,
+          "active_ew": 0.01464197
+        },
+        {
+          "date": "2012-08-31",
+          "ret_net": 0.04962271,
+          "ew_bench_ret": 0.05618559,
+          "active_ew": -0.00656288
+        },
+        {
+          "date": "2012-09-28",
+          "ret_net": 0.03625075,
+          "ew_bench_ret": -0.02258317,
+          "active_ew": 0.05883392
+        },
+        {
+          "date": "2012-10-31",
+          "ret_net": -0.01495959,
+          "ew_bench_ret": -0.00199774,
+          "active_ew": -0.01296185
+        },
+        {
+          "date": "2012-11-30",
+          "ret_net": -0.00588542,
+          "ew_bench_ret": 0.02085304,
+          "active_ew": -0.02673846
+        },
+        {
+          "date": "2012-12-28",
+          "ret_net": -0.01925516,
+          "ew_bench_ret": 0.00604369,
+          "active_ew": -0.02529885
+        },
+        {
+          "date": "2013-01-31",
+          "ret_net": 0.07290345,
+          "ew_bench_ret": 0.05388059,
+          "active_ew": 0.01902287
+        },
+        {
+          "date": "2013-02-28",
+          "ret_net": 0.0081106,
+          "ew_bench_ret": 0.02305405,
+          "active_ew": -0.01494345
+        },
+        {
+          "date": "2013-03-29",
+          "ret_net": 0.11463586,
+          "ew_bench_ret": 0.01748419,
+          "active_ew": 0.09715167
+        },
+        {
+          "date": "2013-04-30",
+          "ret_net": -0.04542729,
+          "ew_bench_ret": 0.02136588,
+          "active_ew": -0.06679317
+        },
+        {
+          "date": "2013-05-31",
+          "ret_net": -0.06212092,
+          "ew_bench_ret": -0.08692745,
+          "active_ew": 0.02480652
+        },
+        {
+          "date": "2013-06-28",
+          "ret_net": 0.00762622,
+          "ew_bench_ret": 0.07114735,
+          "active_ew": -0.06352114
+        },
+        {
+          "date": "2013-07-31",
+          "ret_net": -0.04974628,
+          "ew_bench_ret": -0.03883578,
+          "active_ew": -0.01091051
+        },
+        {
+          "date": "2013-08-30",
+          "ret_net": 0.04342951,
+          "ew_bench_ret": 0.06115219,
+          "active_ew": -0.01772267
+        },
+        {
+          "date": "2013-09-30",
+          "ret_net": 0.03342488,
+          "ew_bench_ret": -0.00134666,
+          "active_ew": 0.03477154
+        },
+        {
+          "date": "2013-10-31",
+          "ret_net": 0.00901141,
+          "ew_bench_ret": -0.01043078,
+          "active_ew": 0.0194422
+        },
+        {
+          "date": "2013-11-29",
+          "ret_net": 0.00220788,
+          "ew_bench_ret": -0.01139545,
+          "active_ew": 0.01360333
+        },
+        {
+          "date": "2013-12-30",
+          "ret_net": 0.01085242,
+          "ew_bench_ret": 0.00891019,
+          "active_ew": 0.00194223
+        },
+        {
+          "date": "2014-01-29",
+          "ret_net": 0.06338434,
+          "ew_bench_ret": 0.03601863,
+          "active_ew": 0.02736571
+        },
+        {
+          "date": "2014-02-28",
+          "ret_net": 0.03188539,
+          "ew_bench_ret": 0.0257024,
+          "active_ew": 0.00618299
+        },
+        {
+          "date": "2014-03-31",
+          "ret_net": 0.00232891,
+          "ew_bench_ret": 0.01936502,
+          "active_ew": -0.01703611
+        },
+        {
+          "date": "2014-04-30",
+          "ret_net": 0.0522742,
+          "ew_bench_ret": -0.00341568,
+          "active_ew": 0.05568988
+        },
+        {
+          "date": "2014-05-30",
+          "ret_net": 0.04854668,
+          "ew_bench_ret": 0.00716314,
+          "active_ew": 0.04138354
+        },
+        {
+          "date": "2014-06-30",
+          "ret_net": 0.0730574,
+          "ew_bench_ret": 0.0323128,
+          "active_ew": 0.0407446
+        },
+        {
+          "date": "2014-07-31",
+          "ret_net": 0.06470349,
+          "ew_bench_ret": 0.04829739,
+          "active_ew": 0.0164061
+        },
+        {
+          "date": "2014-08-29",
+          "ret_net": -0.02410655,
+          "ew_bench_ret": 0.01233218,
+          "active_ew": -0.03643873
+        },
+        {
+          "date": "2014-09-30",
+          "ret_net": 0.01716437,
+          "ew_bench_ret": -0.03218012,
+          "active_ew": 0.04934449
+        },
+        {
+          "date": "2014-10-31",
+          "ret_net": -0.02805542,
+          "ew_bench_ret": -0.00348897,
+          "active_ew": -0.02456645
+        },
+        {
+          "date": "2014-11-28",
+          "ret_net": 0.00580691,
+          "ew_bench_ret": -0.01589458,
+          "active_ew": 0.02170149
+        },
+        {
+          "date": "2014-12-30",
+          "ret_net": 0.0587046,
+          "ew_bench_ret": 0.065796,
+          "active_ew": -0.0070914
+        },
+        {
+          "date": "2015-01-30",
+          "ret_net": 0.07298877,
+          "ew_bench_ret": 0.04806874,
+          "active_ew": 0.02492003
+        },
+        {
+          "date": "2015-02-27",
+          "ret_net": 0.1260823,
+          "ew_bench_ret": 0.04680725,
+          "active_ew": 0.07927504
+        },
+        {
+          "date": "2015-03-31",
+          "ret_net": 0.1010979,
+          "ew_bench_ret": 0.06694668,
+          "active_ew": 0.03415122
+        },
+        {
+          "date": "2015-04-30",
+          "ret_net": 0.03433706,
+          "ew_bench_ret": 0.02245572,
+          "active_ew": 0.01188134
+        },
+        {
+          "date": "2015-05-29",
+          "ret_net": 0.05135442,
+          "ew_bench_ret": 0.01673788,
+          "active_ew": 0.03461654
+        },
+        {
+          "date": "2015-06-30",
+          "ret_net": -0.03318346,
+          "ew_bench_ret": -0.01424068,
+          "active_ew": -0.01894277
+        },
+        {
+          "date": "2015-07-31",
+          "ret_net": 0.008843,
+          "ew_bench_ret": -0.04138079,
+          "active_ew": 0.05022379
+        },
+        {
+          "date": "2015-08-31",
+          "ret_net": -0.0536419,
+          "ew_bench_ret": 0.00248136,
+          "active_ew": -0.05612326
+        },
+        {
+          "date": "2015-09-30",
+          "ret_net": -0.0133813,
+          "ew_bench_ret": -0.00708708,
+          "active_ew": -0.00629422
+        },
+        {
+          "date": "2015-10-30",
+          "ret_net": -0.00222689,
+          "ew_bench_ret": -0.01281894,
+          "active_ew": 0.01059205
+        },
+        {
+          "date": "2015-11-30",
+          "ret_net": 0.03542222,
+          "ew_bench_ret": -0.00824766,
+          "active_ew": 0.04366988
+        },
+        {
+          "date": "2015-12-30",
+          "ret_net": -5.41366632e-06,
+          "ew_bench_ret": -0.01678952,
+          "active_ew": 0.01678411
+        },
+        {
+          "date": "2016-01-29",
+          "ret_net": -0.04559785,
+          "ew_bench_ret": -0.01335476,
+          "active_ew": -0.03224309
+        },
+        {
+          "date": "2016-02-29",
+          "ret_net": 0.01212324,
+          "ew_bench_ret": 0.04156422,
+          "active_ew": -0.02944098
+        },
+        {
+          "date": "2016-03-31",
+          "ret_net": -0.00243956,
+          "ew_bench_ret": 0.0245182,
+          "active_ew": -0.02695776
+        },
+        {
+          "date": "2016-04-29",
+          "ret_net": 0.00376135,
+          "ew_bench_ret": -0.01650394,
+          "active_ew": 0.02026529
+        },
+        {
+          "date": "2016-05-31",
+          "ret_net": -0.0032131,
+          "ew_bench_ret": -0.0236605,
+          "active_ew": 0.02044739
+        },
+        {
+          "date": "2016-06-30",
+          "ret_net": 0.03030641,
+          "ew_bench_ret": 0.02108425,
+          "active_ew": 0.00922216
+        },
+        {
+          "date": "2016-07-29",
+          "ret_net": -0.00043383,
+          "ew_bench_ret": -0.04038981,
+          "active_ew": 0.03995598
+        },
+        {
+          "date": "2016-08-31",
+          "ret_net": 0.00070054,
+          "ew_bench_ret": 0.01259506,
+          "active_ew": -0.01189452
+        },
+        {
+          "date": "2016-09-30",
+          "ret_net": -0.01646269,
+          "ew_bench_ret": -0.05458255,
+          "active_ew": 0.03811986
+        },
+        {
+          "date": "2016-10-31",
+          "ret_net": -0.05105515,
+          "ew_bench_ret": -0.02991217,
+          "active_ew": -0.02114298
+        },
+        {
+          "date": "2016-11-30",
+          "ret_net": 0.01559808,
+          "ew_bench_ret": 0.03261112,
+          "active_ew": -0.01701303
+        },
+        {
+          "date": "2016-12-29",
+          "ret_net": 0.01203379,
+          "ew_bench_ret": -0.02480515,
+          "active_ew": 0.03683894
+        },
+        {
+          "date": "2017-01-31",
+          "ret_net": -0.00658121,
+          "ew_bench_ret": 0.03270167,
+          "active_ew": -0.03928288
+        },
+        {
+          "date": "2017-02-28",
+          "ret_net": 0.00613441,
+          "ew_bench_ret": 0.00842579,
+          "active_ew": -0.00229138
+        },
+        {
+          "date": "2017-03-31",
+          "ret_net": -0.0224259,
+          "ew_bench_ret": 0.01986036,
+          "active_ew": -0.04228626
+        },
+        {
+          "date": "2017-04-28",
+          "ret_net": 0.08058143,
+          "ew_bench_ret": 0.0678051,
+          "active_ew": 0.01277632
+        },
+        {
+          "date": "2017-05-31",
+          "ret_net": 0.00856993,
+          "ew_bench_ret": -0.00440269,
+          "active_ew": 0.01297262
+        },
+        {
+          "date": "2017-06-30",
+          "ret_net": 0.02360389,
+          "ew_bench_ret": -0.00896292,
+          "active_ew": 0.03256681
+        },
+        {
+          "date": "2017-07-31",
+          "ret_net": -0.01927692,
+          "ew_bench_ret": -0.00363869,
+          "active_ew": -0.01563823
+        },
+        {
+          "date": "2017-08-31",
+          "ret_net": -0.02434763,
+          "ew_bench_ret": -0.03490969,
+          "active_ew": 0.01056206
+        },
+        {
+          "date": "2017-09-29",
+          "ret_net": 0.04110312,
+          "ew_bench_ret": 0.06027829,
+          "active_ew": -0.01917517
+        },
+        {
+          "date": "2017-10-31",
+          "ret_net": 0.03703541,
+          "ew_bench_ret": 0.0503406,
+          "active_ew": -0.01330519
+        },
+        {
+          "date": "2017-11-30",
+          "ret_net": 0.00417348,
+          "ew_bench_ret": 0.01093473,
+          "active_ew": -0.00676125
+        },
+        {
+          "date": "2017-12-28",
+          "ret_net": 0.12412907,
+          "ew_bench_ret": 0.07611311,
+          "active_ew": 0.04801596
+        },
+        {
+          "date": "2018-01-31",
+          "ret_net": -0.05909688,
+          "ew_bench_ret": -0.05928414,
+          "active_ew": 0.00018725
+        },
+        {
+          "date": "2018-02-28",
+          "ret_net": -0.02565686,
+          "ew_bench_ret": 0.00393537,
+          "active_ew": -0.02959223
+        },
+        {
+          "date": "2018-03-30",
+          "ret_net": 0.04348669,
+          "ew_bench_ret": 0.01330426,
+          "active_ew": 0.03018243
+        },
+        {
+          "date": "2018-04-30",
+          "ret_net": 0.05160003,
+          "ew_bench_ret": -0.03041294,
+          "active_ew": 0.08201297
+        },
+        {
+          "date": "2018-05-31",
+          "ret_net": -0.08140188,
+          "ew_bench_ret": -0.0508139,
+          "active_ew": -0.03058797
+        },
+        {
+          "date": "2018-06-29",
+          "ret_net": -0.04002485,
+          "ew_bench_ret": -0.02578817,
+          "active_ew": -0.01423668
+        },
+        {
+          "date": "2018-07-31",
+          "ret_net": -0.01635806,
+          "ew_bench_ret": 0.02955349,
+          "active_ew": -0.04591155
+        },
+        {
+          "date": "2018-08-31",
+          "ret_net": 0.01729685,
+          "ew_bench_ret": 0.01503579,
+          "active_ew": 0.00226106
+        },
+        {
+          "date": "2018-09-28",
+          "ret_net": -0.11134196,
+          "ew_bench_ret": -0.16576549,
+          "active_ew": 0.05442353
+        },
+        {
+          "date": "2018-10-31",
+          "ret_net": -0.00857124,
+          "ew_bench_ret": 0.06304297,
+          "active_ew": -0.07161422
+        },
+        {
+          "date": "2018-11-30",
+          "ret_net": -0.00432697,
+          "ew_bench_ret": -0.01490377,
+          "active_ew": 0.01057679
+        },
+        {
+          "date": "2018-12-28",
+          "ret_net": -0.01509645,
+          "ew_bench_ret": 0.04706387,
+          "active_ew": -0.06216033
+        },
+        {
+          "date": "2019-01-31",
+          "ret_net": 0.01796567,
+          "ew_bench_ret": 0.02763046,
+          "active_ew": -0.00966479
+        },
+        {
+          "date": "2019-02-28",
+          "ret_net": -0.01681101,
+          "ew_bench_ret": -0.018654,
+          "active_ew": 0.00184299
+        },
+        {
+          "date": "2019-03-29",
+          "ret_net": 0.03370358,
+          "ew_bench_ret": 0.02117309,
+          "active_ew": 0.01253048
+        },
+        {
+          "date": "2019-04-30",
+          "ret_net": -0.04664773,
+          "ew_bench_ret": -0.08420105,
+          "active_ew": 0.03755332
+        },
+        {
+          "date": "2019-05-31",
+          "ret_net": 0.03169074,
+          "ew_bench_ret": 0.01096874,
+          "active_ew": 0.020722
+        },
+        {
+          "date": "2019-06-28",
+          "ret_net": -0.06880769,
+          "ew_bench_ret": -0.06963125,
+          "active_ew": 0.00082356
+        },
+        {
+          "date": "2019-07-31",
+          "ret_net": 0.00526709,
+          "ew_bench_ret": -0.03390716,
+          "active_ew": 0.03917424
+        },
+        {
+          "date": "2019-08-30",
+          "ret_net": 0.03077415,
+          "ew_bench_ret": 0.0273144,
+          "active_ew": 0.00345976
+        },
+        {
+          "date": "2019-09-30",
+          "ret_net": -0.01258051,
+          "ew_bench_ret": 0.02753352,
+          "active_ew": -0.04011402
+        },
+        {
+          "date": "2019-10-31",
+          "ret_net": -0.01664721,
+          "ew_bench_ret": -0.00741525,
+          "active_ew": -0.00923196
+        },
+        {
+          "date": "2019-11-29",
+          "ret_net": 0.0957859,
+          "ew_bench_ret": 0.05389272,
+          "active_ew": 0.04189318
+        },
+        {
+          "date": "2019-12-30",
+          "ret_net": -0.00799342,
+          "ew_bench_ret": -0.07166713,
+          "active_ew": 0.06367371
+        },
+        {
+          "date": "2020-01-31",
+          "ret_net": -0.04900093,
+          "ew_bench_ret": -0.07303595,
+          "active_ew": 0.02403502
+        },
+        {
+          "date": "2020-02-28",
+          "ret_net": -0.01254999,
+          "ew_bench_ret": -0.10928565,
+          "active_ew": 0.09673566
+        },
+        {
+          "date": "2020-03-31",
+          "ret_net": 0.02202663,
+          "ew_bench_ret": 0.16585886,
+          "active_ew": -0.14383223
+        },
+        {
+          "date": "2020-04-29",
+          "ret_net": 0.14868132,
+          "ew_bench_ret": 0.06317585,
+          "active_ew": 0.08550547
+        },
+        {
+          "date": "2020-05-29",
+          "ret_net": 0.07371904,
+          "ew_bench_ret": 0.02466309,
+          "active_ew": 0.04905596
+        },
+        {
+          "date": "2020-06-30",
+          "ret_net": 0.15603751,
+          "ew_bench_ret": 0.08626426,
+          "active_ew": 0.06977325
+        },
+        {
+          "date": "2020-07-31",
+          "ret_net": 0.07386455,
+          "ew_bench_ret": 0.04027629,
+          "active_ew": 0.03358826
+        },
+        {
+          "date": "2020-08-31",
+          "ret_net": -0.05556734,
+          "ew_bench_ret": 0.00064557,
+          "active_ew": -0.05621291
+        },
+        {
+          "date": "2020-09-29",
+          "ret_net": -0.04904683,
+          "ew_bench_ret": -0.03774383,
+          "active_ew": -0.011303
+        },
+        {
+          "date": "2020-10-30",
+          "ret_net": 0.12312507,
+          "ew_bench_ret": 0.11667254,
+          "active_ew": 0.00645254
+        },
+        {
+          "date": "2020-11-30",
+          "ret_net": 0.1500498,
+          "ew_bench_ret": 0.08600204,
+          "active_ew": 0.06404775
+        },
+        {
+          "date": "2020-12-30",
+          "ret_net": 0.07211605,
+          "ew_bench_ret": 0.00551996,
+          "active_ew": 0.06659608
+        },
+        {
+          "date": "2021-01-29",
+          "ret_net": -0.02477968,
+          "ew_bench_ret": 0.01709303,
+          "active_ew": -0.04187271
+        },
+        {
+          "date": "2021-02-26",
+          "ret_net": 0.0466984,
+          "ew_bench_ret": 0.04670874,
+          "active_ew": -0.00001034
+        },
+        {
+          "date": "2021-03-31",
+          "ret_net": 0.06763095,
+          "ew_bench_ret": 0.03332989,
+          "active_ew": 0.03430106
+        },
+        {
+          "date": "2021-04-30",
+          "ret_net": -0.03207113,
+          "ew_bench_ret": 0.02826468,
+          "active_ew": -0.06033581
+        },
+        {
+          "date": "2021-05-31",
+          "ret_net": -0.01417287,
+          "ew_bench_ret": 0.03055993,
+          "active_ew": -0.0447328
+        },
+        {
+          "date": "2021-06-30",
+          "ret_net": 0.0145633,
+          "ew_bench_ret": -0.01844213,
+          "active_ew": 0.03300543
+        },
+        {
+          "date": "2021-07-30",
+          "ret_net": 0.03611631,
+          "ew_bench_ret": 0.00276988,
+          "active_ew": 0.03334643
+        },
+        {
+          "date": "2021-08-31",
+          "ret_net": -0.01811714,
+          "ew_bench_ret": -0.0205771,
+          "active_ew": 0.00245996
+        },
+        {
+          "date": "2021-09-30",
+          "ret_net": -0.04576406,
+          "ew_bench_ret": -0.0147495,
+          "active_ew": -0.03101456
+        },
+        {
+          "date": "2021-10-29",
+          "ret_net": -0.07556311,
+          "ew_bench_ret": -0.07556651,
+          "active_ew": 3.40355704e-06
+        },
+        {
+          "date": "2021-11-30",
+          "ret_net": 0.02968021,
+          "ew_bench_ret": 0.0750935,
+          "active_ew": -0.0454133
+        },
+        {
+          "date": "2021-12-30",
+          "ret_net": -0.10325725,
+          "ew_bench_ret": -0.11404255,
+          "active_ew": 0.0107853
+        },
+        {
+          "date": "2022-01-28",
+          "ret_net": 0.00512289,
+          "ew_bench_ret": 0.03151467,
+          "active_ew": -0.02639178
+        },
+        {
+          "date": "2022-02-28",
+          "ret_net": 0.06445884,
+          "ew_bench_ret": 0.05145875,
+          "active_ew": 0.01300009
+        },
+        {
+          "date": "2022-03-31",
+          "ret_net": -0.01888853,
+          "ew_bench_ret": -0.01763832,
+          "active_ew": -0.00125021
+        },
+        {
+          "date": "2022-04-29",
+          "ret_net": -0.01286474,
+          "ew_bench_ret": -0.01513137,
+          "active_ew": 0.00226664
+        },
+        {
+          "date": "2022-05-31",
+          "ret_net": -0.12833636,
+          "ew_bench_ret": -0.1462454,
+          "active_ew": 0.01790904
+        },
+        {
+          "date": "2022-06-30",
+          "ret_net": -0.01184738,
+          "ew_bench_ret": 0.05861866,
+          "active_ew": -0.07046604
+        },
+        {
+          "date": "2022-07-29",
+          "ret_net": 0.03886848,
+          "ew_bench_ret": 0.0074555,
+          "active_ew": 0.03141298
+        },
+        {
+          "date": "2022-08-31",
+          "ret_net": -0.15405862,
+          "ew_bench_ret": -0.15469176,
+          "active_ew": 0.00063314
+        },
+        {
+          "date": "2022-09-30",
+          "ret_net": 0.00379637,
+          "ew_bench_ret": 0.02673853,
+          "active_ew": -0.02294215
+        },
+        {
+          "date": "2022-10-31",
+          "ret_net": 0.05108024,
+          "ew_bench_ret": 0.08830348,
+          "active_ew": -0.03722324
+        },
+        {
+          "date": "2022-11-30",
+          "ret_net": -0.05424011,
+          "ew_bench_ret": -0.05292333,
+          "active_ew": -0.00131678
+        },
+        {
+          "date": "2022-12-29",
+          "ret_net": 0.01840547,
+          "ew_bench_ret": 0.06465397,
+          "active_ew": -0.0462485
+        },
+        {
+          "date": "2023-01-31",
+          "ret_net": 0.04173614,
+          "ew_bench_ret": 0.01496716,
+          "active_ew": 0.02676898
+        },
+        {
+          "date": "2023-02-28",
+          "ret_net": 0.09484395,
+          "ew_bench_ret": 0.02214854,
+          "active_ew": 0.07269541
+        },
+        {
+          "date": "2023-03-31",
+          "ret_net": 0.01219247,
+          "ew_bench_ret": -0.00617118,
+          "active_ew": 0.01836366
+        },
+        {
+          "date": "2023-04-28",
+          "ret_net": 0.04122809,
+          "ew_bench_ret": 0.0157979,
+          "active_ew": 0.02543019
+        },
+        {
+          "date": "2023-05-31",
+          "ret_net": 0.03749067,
+          "ew_bench_ret": -0.00224879,
+          "active_ew": 0.03973946
+        },
+        {
+          "date": "2023-06-30",
+          "ret_net": 0.09171089,
+          "ew_bench_ret": 0.02237148,
+          "active_ew": 0.06933942
+        },
+        {
+          "date": "2023-07-31",
+          "ret_net": -0.0148433,
+          "ew_bench_ret": 0.00516899,
+          "active_ew": -0.02001229
+        },
+        {
+          "date": "2023-08-31",
+          "ret_net": -0.07871855,
+          "ew_bench_ret": -0.03964975,
+          "active_ew": -0.0390688
+        },
+        {
+          "date": "2023-09-27",
+          "ret_net": -0.07515887,
+          "ew_bench_ret": -0.07441139,
+          "active_ew": -0.00074747
+        },
+        {
+          "date": "2023-10-31",
+          "ret_net": 0.03401473,
+          "ew_bench_ret": 0.1096643,
+          "active_ew": -0.07564957
+        },
+        {
+          "date": "2023-11-30",
+          "ret_net": 0.04195886,
+          "ew_bench_ret": 0.0402058,
+          "active_ew": 0.00175306
+        },
+        {
+          "date": "2023-12-28",
+          "ret_net": -0.0463421,
+          "ew_bench_ret": -0.06316945,
+          "active_ew": 0.01682736
+        },
+        {
+          "date": "2024-01-31",
+          "ret_net": 0.06388167,
+          "ew_bench_ret": 0.05586108,
+          "active_ew": 0.00802059
+        },
+        {
+          "date": "2024-02-29",
+          "ret_net": 0.00550733,
+          "ew_bench_ret": 0.03145226,
+          "active_ew": -0.02594493
+        },
+        {
+          "date": "2024-03-29",
+          "ret_net": 0.00907625,
+          "ew_bench_ret": -0.00307966,
+          "active_ew": 0.01215591
+        },
+        {
+          "date": "2024-04-30",
+          "ret_net": 0.04728448,
+          "ew_bench_ret": 0.00249019,
+          "active_ew": 0.04479429
+        },
+        {
+          "date": "2024-05-31",
+          "ret_net": 0.05159549,
+          "ew_bench_ret": 0.01000611,
+          "active_ew": 0.04158939
+        },
+        {
+          "date": "2024-06-28",
+          "ret_net": -0.01429897,
+          "ew_bench_ret": -0.03328201,
+          "active_ew": 0.01898304
+        },
+        {
+          "date": "2024-07-31",
+          "ret_net": 0.02028532,
+          "ew_bench_ret": -0.02851211,
+          "active_ew": 0.04879742
+        },
+        {
+          "date": "2024-08-30",
+          "ret_net": -0.04180527,
+          "ew_bench_ret": 0.00465882,
+          "active_ew": -0.04646409
+        },
+        {
+          "date": "2024-09-30",
+          "ret_net": 0.0115202,
+          "ew_bench_ret": -0.01067268,
+          "active_ew": 0.02219288
+        },
+        {
+          "date": "2024-10-31",
+          "ret_net": -0.01470767,
+          "ew_bench_ret": -0.06418842,
+          "active_ew": 0.04948075
+        },
+        {
+          "date": "2024-11-29",
+          "ret_net": -0.06551979,
+          "ew_bench_ret": -0.02993393,
+          "active_ew": -0.03558586
+        },
+        {
+          "date": "2024-12-27",
+          "ret_net": 0.05094506,
+          "ew_bench_ret": 0.07233312,
+          "active_ew": -0.02138806
+        },
+        {
+          "date": "2025-01-31",
+          "ret_net": 0.05943736,
+          "ew_bench_ret": 0.02518399,
+          "active_ew": 0.03425337
+        },
+        {
+          "date": "2025-02-28",
+          "ret_net": -0.02851623,
+          "ew_bench_ret": -0.05588527,
+          "active_ew": 0.02736904
+        },
+        {
+          "date": "2025-03-31",
+          "ret_net": 0.06836643,
+          "ew_bench_ret": 0.05144146,
+          "active_ew": 0.01692498
+        },
+        {
+          "date": "2025-04-30",
+          "ret_net": 0.11377335,
+          "ew_bench_ret": 0.05892328,
+          "active_ew": 0.05485008
+        },
+        {
+          "date": "2025-05-30",
+          "ret_net": 0.13848852,
+          "ew_bench_ret": 0.10146898,
+          "active_ew": 0.03701953
+        },
+        {
+          "date": "2025-06-30",
+          "ret_net": 0.01448587,
+          "ew_bench_ret": 0.03713316,
+          "active_ew": -0.02264729
+        },
+        {
+          "date": "2025-07-31",
+          "ret_net": -0.02780578,
+          "ew_bench_ret": -0.02154047,
+          "active_ew": -0.00626532
+        },
+        {
+          "date": "2025-08-29",
+          "ret_net": 0.02937243,
+          "ew_bench_ret": 0.04353403,
+          "active_ew": -0.0141616
+        },
+        {
+          "date": "2025-09-30",
+          "ret_net": 0.07447338,
+          "ew_bench_ret": 0.08598037,
+          "active_ew": -0.01150699
+        },
+        {
+          "date": "2025-10-31",
+          "ret_net": -0.03893698,
+          "ew_bench_ret": -0.00499184,
+          "active_ew": -0.03394514
+        },
+        {
+          "date": "2025-11-28",
+          "ret_net": -0.02401988,
+          "ew_bench_ret": 0.00251499,
+          "active_ew": -0.02653487
+        },
+        {
+          "date": "2025-12-30",
+          "ret_net": 0.22963256,
+          "ew_bench_ret": 0.24173315,
+          "active_ew": -0.01210058
+        },
+        {
+          "date": "2026-01-30",
+          "ret_net": 0.14993433,
+          "ew_bench_ret": 0.08021739,
+          "active_ew": 0.06971694
+        },
+        {
+          "date": "2026-02-27",
+          "ret_net": -0.1526146,
+          "ew_bench_ret": -0.12730111,
+          "active_ew": -0.02531349
+        },
+        {
+          "date": "2026-03-31",
+          "ret_net": 0.18527932,
+          "ew_bench_ret": 0.18202215,
+          "active_ew": 0.00325716
+        },
+        {
+          "date": "2026-04-30",
+          "ret_net": 0.09680512,
+          "ew_bench_ret": -0.05921197,
+          "active_ew": 0.15601709
+        },
+        {
+          "date": "2026-05-29",
+          "ret_net": -0.15751358,
+          "ew_bench_ret": -0.11049473,
+          "active_ew": -0.04701884
+        },
+        {
+          "date": "2026-06-30",
+          "ret_net": -0.26161071,
+          "ew_bench_ret": -0.11846803,
+          "active_ew": -0.14314268
+        },
+        {
+          "date": "2026-07-31",
+          "ret_net": 0.06803353,
+          "ew_bench_ret": 0.14386501,
+          "active_ew": -0.07583148
+        }
+      ]
+    },
+    "diag_cap_tier": {
+      "available": true,
+      "metric_type": "canonical_screen_diag",
+      "metric_type_note": "포트 보유의 시총-tier 분해 진단(size_dt 패널 내 월별 Size 내림차순 랭킹). HARD 게이트 비바인딩.",
+      "tier_def": "MEGA = cap rank 1-10 / MID = 11-30 / OTHER = 31+ / UNRANKED = size_dt에 없음",
+      "n_months": 260,
+      "weight_share_avg": {
+        "MEGA": 0.06107692,
+        "MID": 0.10061538,
+        "OTHER": 0.83830769,
+        "UNRANKED": 0
+      },
+      "contrib_gross_monthly_avg": {
+        "MEGA": 0.0005147,
+        "MID": 0.0006167,
+        "OTHER": 0.01274391,
+        "UNRANKED": 0
+      },
+      "contrib_gross_annualized": {
+        "MEGA": 0.00617643,
+        "MID": 0.00740038,
+        "OTHER": 0.15292692,
+        "UNRANKED": 0
+      },
+      "by_month": [
+        {
+          "Date": "2005-01-31",
+          "tier": "OTHER",
+          "weight_share": 0.92,
+          "contrib_gross": 0.11971301
+        },
+        {
+          "Date": "2005-01-31",
+          "tier": "MID",
+          "weight_share": 0.08,
+          "contrib_gross": 0.00118645
+        },
+        {
+          "Date": "2005-02-28",
+          "tier": "OTHER",
+          "weight_share": 0.92,
+          "contrib_gross": -0.08063025
+        },
+        {
+          "Date": "2005-02-28",
+          "tier": "MID",
+          "weight_share": 0.08,
+          "contrib_gross": -0.00197867
+        },
+        {
+          "Date": "2005-03-31",
+          "tier": "OTHER",
+          "weight_share": 0.84,
+          "contrib_gross": -0.04658364
+        },
+        {
+          "Date": "2005-03-31",
+          "tier": "MID",
+          "weight_share": 0.12,
+          "contrib_gross": -0.00379597
+        },
+        {
+          "Date": "2005-03-31",
+          "tier": "MEGA",
+          "weight_share": 0.04,
+          "contrib_gross": -0.0048731
+        },
+        {
+          "Date": "2005-04-29",
+          "tier": "OTHER",
+          "weight_share": 0.88,
+          "contrib_gross": 0.02673309
+        },
+        {
+          "Date": "2005-04-29",
+          "tier": "MEGA",
+          "weight_share": 0.04,
+          "contrib_gross": 0.00124567
+        },
+        {
+          "Date": "2005-04-29",
+          "tier": "MID",
+          "weight_share": 0.08,
+          "contrib_gross": 0.00054875
+        },
+        {
+          "Date": "2005-05-31",
+          "tier": "OTHER",
+          "weight_share": 0.8,
+          "contrib_gross": 0.07337246
+        },
+        {
+          "Date": "2005-05-31",
+          "tier": "MID",
+          "weight_share": 0.16,
+          "contrib_gross": 0.01208935
+        },
+        {
+          "Date": "2005-05-31",
+          "tier": "MEGA",
+          "weight_share": 0.04,
+          "contrib_gross": 0.00255034
+        },
+        {
+          "Date": "2005-06-30",
+          "tier": "OTHER",
+          "weight_share": 0.96,
+          "contrib_gross": 0.0214997
+        },
+        {
+          "Date": "2005-06-30",
+          "tier": "MID",
+          "weight_share": 0.04,
+          "contrib_gross": 0.00424315
+        },
+        {
+          "Date": "2005-07-29",
+          "tier": "MID",
+          "weight_share": 0.2,
+          "contrib_gross": -0.00627348
+        },
+        {
+          "Date": "2005-07-29",
+          "tier": "MEGA",
+          "weight_share": 0.2,
+          "contrib_gross": -0.00938509
+        },
+        {
+          "Date": "2005-07-29",
+          "tier": "OTHER",
+          "weight_share": 0.6,
+          "contrib_gross": -0.01808509
+        },
+        {
+          "Date": "2005-08-31",
+          "tier": "OTHER",
+          "weight_share": 0.84,
+          "contrib_gross": 0.12596448
+        },
+        {
+          "Date": "2005-08-31",
+          "tier": "MID",
+          "weight_share": 0.16,
+          "contrib_gross": 0.00993147
+        },
+        {
+          "Date": "2005-09-30",
+          "tier": "OTHER",
+          "weight_share": 0.96,
+          "contrib_gross": -0.03233864
+        },
+        {
+          "Date": "2005-09-30",
+          "tier": "MEGA",
+          "weight_share": 0.04,
+          "contrib_gross": -0.00195233
+        },
+        {
+          "Date": "2005-10-31",
+          "tier": "OTHER",
+          "weight_share": 1,
+          "contrib_gross": 0.13926375
+        },
+        {
+          "Date": "2005-11-30",
+          "tier": "OTHER",
+          "weight_share": 0.88,
+          "contrib_gross": 0.0233902
+        },
+        {
+          "Date": "2005-11-30",
+          "tier": "MEGA",
+          "weight_share": 0.04,
+          "contrib_gross": 0.00546729
+        },
+        {
+          "Date": "2005-11-30",
+          "tier": "MID",
+          "weight_share": 0.08,
+          "contrib_gross": 0.01025186
+        },
+        {
+          "Date": "2005-12-29",
+          "tier": "MEGA",
+          "weight_share": 0.04,
+          "contrib_gross": 0.00226629
+        },
+        {
+          "Date": "2005-12-29",
+          "tier": "OTHER",
+          "weight_share": 0.88,
+          "contrib_gross": -0.03282251
+        },
+        {
+          "Date": "2005-12-29",
+          "tier": "MID",
+          "weight_share": 0.08,
+          "contrib_gross": -0.00353143
+        },
+        {
+          "Date": "2006-01-31",
+          "tier": "MEGA",
+          "weight_share": 0.16,
+          "contrib_gross": -0.00781868
+        },
+        {
+          "Date": "2006-01-31",
+          "tier": "OTHER",
+          "weight_share": 0.72,
+          "contrib_gross": 0.01930556
+        },
+        {
+          "Date": "2006-01-31",
+          "tier": "MID",
+          "weight_share": 0.12,
+          "contrib_gross": -0.00837595
+        },
+        {
+          "Date": "2006-02-28",
+          "tier": "OTHER",
+          "weight_share": 0.88,
+          "contrib_gross": 0.02129777
+        },
+        {
+          "Date": "2006-02-28",
+          "tier": "MID",
+          "weight_share": 0.08,
+          "contrib_gross": -0.00235445
+        },
+        {
+          "Date": "2006-02-28",
+          "tier": "MEGA",
+          "weight_share": 0.04,
+          "contrib_gross": -0.00109654
+        },
+        {
+          "Date": "2006-03-31",
+          "tier": "OTHER",
+          "weight_share": 0.76,
+          "contrib_gross": 0.02741338
+        },
+        {
+          "Date": "2006-03-31",
+          "tier": "MID",
+          "weight_share": 0.12,
+          "contrib_gross": 0.00744033
+        },
+        {
+          "Date": "2006-03-31",
+          "tier": "MEGA",
+          "weight_share": 0.12,
+          "contrib_gross": 0.00550122
+        },
+        {
+          "Date": "2006-04-28",
+          "tier": "MID",
+          "weight_share": 0.16,
+          "contrib_gross": -0.00970013
+        },
+        {
+          "Date": "2006-04-28",
+          "tier": "OTHER",
+          "weight_share": 0.68,
+          "contrib_gross": -0.06945914
+        },
+        {
+          "Date": "2006-04-28",
+          "tier": "MEGA",
+          "weight_share": 0.16,
+          "contrib_gross": -0.00844018
+        },
+        {
+          "Date": "2006-05-30",
+          "tier": "OTHER",
+          "weight_share": 0.76,
+          "contrib_gross": -0.03857921
+        },
+        {
+          "Date": "2006-05-30",
+          "tier": "MID",
+          "weight_share": 0.16,
+          "contrib_gross": -0.00799498
+        },
+        {
+          "Date": "2006-05-30",
+          "tier": "MEGA",
+          "weight_share": 0.08,
+          "contrib_gross": -0.00345133
+        },
+        {
+          "Date": "2006-06-30",
+          "tier": "OTHER",
+          "weight_share": 0.64,
+          "contrib_gross": -0.0121415
+        },
+        {
+          "Date": "2006-06-30",
+          "tier": "MID",
+          "weight_share": 0.2,
+          "contrib_gross": 0.00675128
+        },
+        {
+          "Date": "2006-06-30",
+          "tier": "MEGA",
+          "weight_share": 0.16,
+          "contrib_gross": 0.00055927
+        },
+        {
+          "Date": "2006-07-31",
+          "tier": "OTHER",
+          "weight_share": 0.64,
+          "contrib_gross": 0.0150185
+        },
+        {
+          "Date": "2006-07-31",
+          "tier": "MID",
+          "weight_share": 0.28,
+          "contrib_gross": 0.00971941
+        },
+        {
+          "Date": "2006-07-31",
+          "tier": "MEGA",
+          "weight_share": 0.08,
+          "contrib_gross": -0.00579292
+        },
+        {
+          "Date": "2006-08-31",
+          "tier": "OTHER",
+          "weight_share": 0.64,
+          "contrib_gross": 0.0519581
+        },
+        {
+          "Date": "2006-08-31",
+          "tier": "MEGA",
+          "weight_share": 0.04,
+          "contrib_gross": 0.00054348
+        },
+        {
+          "Date": "2006-08-31",
+          "tier": "MID",
+          "weight_share": 0.32,
+          "contrib_gross": 0.01280391
+        },
+        {
+          "Date": "2006-09-29",
+          "tier": "OTHER",
+          "weight_share": 0.76,
+          "contrib_gross": 0.00229544
+        },
+        {
+          "Date": "2006-09-29",
+          "tier": "MID",
+          "weight_share": 0.24,
+          "contrib_gross": 0.0091724
+        },
+        {
+          "Date": "2006-10-31",
+          "tier": "OTHER",
+          "weight_share": 0.72,
+          "contrib_gross": 0.04668593
+        },
+        {
+          "Date": "2006-10-31",
+          "tier": "MID",
+          "weight_share": 0.24,
+          "contrib_gross": 0.00349444
+        },
+        {
+          "Date": "2006-10-31",
+          "tier": "MEGA",
+          "weight_share": 0.04,
+          "contrib_gross": 0.00463158
+        },
+        {
+          "Date": "2006-11-30",
+          "tier": "OTHER",
+          "weight_share": 0.84,
+          "contrib_gross": -0.03808306
+        },
+        {
+          "Date": "2006-11-30",
+          "tier": "MID",
+          "weight_share": 0.12,
+          "contrib_gross": -0.00303562
+        },
+        {
+          "Date": "2006-11-30",
+          "tier": "MEGA",
+          "weight_share": 0.04,
+          "contrib_gross": 0.00232877
+        },
+        {
+          "Date": "2006-12-28",
+          "tier": "OTHER",
+          "weight_share": 0.88,
+          "contrib_gross": -0.08640063
+        },
+        {
+          "Date": "2006-12-28",
+          "tier": "MID",
+          "weight_share": 0.12,
+          "contrib_gross": -0.00172797
+        },
+        {
+          "Date": "2007-01-31",
+          "tier": "OTHER",
+          "weight_share": 0.68,
+          "contrib_gross": 0.0352468
+        },
+        {
+          "Date": "2007-01-31",
+          "tier": "MID",
+          "weight_share": 0.16,
+          "contrib_gross": 0.01451451
+        },
+        {
+          "Date": "2007-01-31",
+          "tier": "MEGA",
+          "weight_share": 0.16,
+          "contrib_gross": 0.00674629
+        },
+        {
+          "Date": "2007-02-28",
+          "tier": "OTHER",
+          "weight_share": 0.76,
+          "contrib_gross": 0.09379294
+        },
+        {
+          "Date": "2007-02-28",
+          "tier": "MID",
+          "weight_share": 0.16,
+          "contrib_gross": -0.00380321
+        },
+        {
+          "Date": "2007-02-28",
+          "tier": "MEGA",
+          "weight_share": 0.08,
+          "contrib_gross": 0.00651933
+        },
+        {
+          "Date": "2007-03-30",
+          "tier": "OTHER",
+          "weight_share": 0.84,
+          "contrib_gross": 0.112641
+        },
+        {
+          "Date": "2007-03-30",
+          "tier": "MID",
+          "weight_share": 0.12,
+          "contrib_gross": 0.01251101
+        },
+        {
+          "Date": "2007-03-30",
+          "tier": "MEGA",
+          "weight_share": 0.04,
+          "contrib_gross": -0.0001519
+        },
+        {
+          "Date": "2007-04-30",
+          "tier": "OTHER",
+          "weight_share": 0.88,
+          "contrib_gross": 0.11943659
+        },
+        {
+          "Date": "2007-04-30",
+          "tier": "MID",
+          "weight_share": 0.12,
+          "contrib_gross": 0.00051831
+        },
+        {
+          "Date": "2007-05-31",
+          "tier": "OTHER",
+          "weight_share": 1,
+          "contrib_gross": 0.01023495
+        },
+        {
+          "Date": "2007-06-29",
+          "tier": "OTHER",
+          "weight_share": 0.96,
+          "contrib_gross": 0.14885226
+        },
+        {
+          "Date": "2007-06-29",
+          "tier": "MEGA",
+          "weight_share": 0.04,
+          "contrib_gross": -0.00154696
+        },
+        {
+          "Date": "2007-07-31",
+          "tier": "OTHER",
+          "weight_share": 0.96,
+          "contrib_gross": -0.00571937
+        },
+        {
+          "Date": "2007-07-31",
+          "tier": "MID",
+          "weight_share": 0.04,
+          "contrib_gross": -0.00247532
+        },
+        {
+          "Date": "2007-08-31",
+          "tier": "OTHER",
+          "weight_share": 0.92,
+          "contrib_gross": 0.02640341
+        },
+        {
+          "Date": "2007-08-31",
+          "tier": "MEGA",
+          "weight_share": 0.04,
+          "contrib_gross": 0.00689895
+        },
+        {
+          "Date": "2007-08-31",
+          "tier": "MID",
+          "weight_share": 0.04,
+          "contrib_gross": 0.00005602
+        },
+        {
+          "Date": "2007-09-28",
+          "tier": "OTHER",
+          "weight_share": 0.84,
+          "contrib_gross": 0.0301047
+        },
+        {
+          "Date": "2007-09-28",
+          "tier": "MID",
+          "weight_share": 0.12,
+          "contrib_gross": 0.01340801
+        },
+        {
+          "Date": "2007-09-28",
+          "tier": "MEGA",
+          "weight_share": 0.04,
+          "contrib_gross": -0.00166419
+        },
+        {
+          "Date": "2007-10-31",
+          "tier": "OTHER",
+          "weight_share": 0.76,
+          "contrib_gross": -0.05831848
+        },
+        {
+          "Date": "2007-10-31",
+          "tier": "MID",
+          "weight_share": 0.12,
+          "contrib_gross": -0.01099563
+        },
+        {
+          "Date": "2007-10-31",
+          "tier": "MEGA",
+          "weight_share": 0.12,
+          "contrib_gross": -0.00628653
+        },
+        {
+          "Date": "2007-11-30",
+          "tier": "OTHER",
+          "weight_share": 0.64,
+          "contrib_gross": -0.02932752
+        },
+        {
+          "Date": "2007-11-30",
+          "tier": "MID",
+          "weight_share": 0.28,
+          "contrib_gross": 0.00463355
+        },
+        {
+          "Date": "2007-11-30",
+          "tier": "MEGA",
+          "weight_share": 0.08,
+          "contrib_gross": -0.00153354
+        },
+        {
+          "Date": "2007-12-28",
+          "tier": "OTHER",
+          "weight_share": 0.64,
+          "contrib_gross": -0.08273574
+        },
+        {
+          "Date": "2007-12-28",
+          "tier": "MID",
+          "weight_share": 0.32,
+          "contrib_gross": -0.04079866
+        },
+        {
+          "Date": "2007-12-28",
+          "tier": "MEGA",
+          "weight_share": 0.04,
+          "contrib_gross": -0.00578372
+        },
+        {
+          "Date": "2008-01-31",
+          "tier": "OTHER",
+          "weight_share": 0.68,
+          "contrib_gross": 0.01191265
+        },
+        {
+          "Date": "2008-01-31",
+          "tier": "MID",
+          "weight_share": 0.2,
+          "contrib_gross": -0.00362166
+        },
+        {
+          "Date": "2008-01-31",
+          "tier": "MEGA",
+          "weight_share": 0.12,
+          "contrib_gross": -0.00897154
+        },
+        {
+          "Date": "2008-02-29",
+          "tier": "OTHER",
+          "weight_share": 0.76,
+          "contrib_gross": -0.02420132
+        },
+        {
+          "Date": "2008-02-29",
+          "tier": "MID",
+          "weight_share": 0.2,
+          "contrib_gross": 0.00376228
+        },
+        {
+          "Date": "2008-02-29",
+          "tier": "MEGA",
+          "weight_share": 0.04,
+          "contrib_gross": 0.00932058
+        },
+        {
+          "Date": "2008-03-31",
+          "tier": "OTHER",
+          "weight_share": 0.6,
+          "contrib_gross": 0.02415495
+        },
+        {
+          "Date": "2008-03-31",
+          "tier": "MID",
+          "weight_share": 0.28,
+          "contrib_gross": 0.02072415
+        },
+        {
+          "Date": "2008-03-31",
+          "tier": "MEGA",
+          "weight_share": 0.12,
+          "contrib_gross": 0.01783095
+        },
+        {
+          "Date": "2008-04-30",
+          "tier": "OTHER",
+          "weight_share": 0.68,
+          "contrib_gross": -0.00846339
+        },
+        {
+          "Date": "2008-04-30",
+          "tier": "MID",
+          "weight_share": 0.2,
+          "contrib_gross": -0.00123683
+        },
+        {
+          "Date": "2008-04-30",
+          "tier": "MEGA",
+          "weight_share": 0.12,
+          "contrib_gross": -0.00204636
+        },
+        {
+          "Date": "2008-05-30",
+          "tier": "OTHER",
+          "weight_share": 0.76,
+          "contrib_gross": -0.03024911
+        },
+        {
+          "Date": "2008-05-30",
+          "tier": "MID",
+          "weight_share": 0.16,
+          "contrib_gross": -0.01266924
+        },
+        {
+          "Date": "2008-05-30",
+          "tier": "MEGA",
+          "weight_share": 0.08,
+          "contrib_gross": -0.01245228
+        },
+        {
+          "Date": "2008-06-30",
+          "tier": "OTHER",
+          "weight_share": 0.88,
+          "contrib_gross": -0.02758401
+        },
+        {
+          "Date": "2008-06-30",
+          "tier": "MID",
+          "weight_share": 0.12,
+          "contrib_gross": -0.00649813
+        },
+        {
+          "Date": "2008-07-31",
+          "tier": "OTHER",
+          "weight_share": 0.88,
+          "contrib_gross": -0.0462754
+        },
+        {
+          "Date": "2008-07-31",
+          "tier": "MID",
+          "weight_share": 0.08,
+          "contrib_gross": -0.00679373
+        },
+        {
+          "Date": "2008-07-31",
+          "tier": "MEGA",
+          "weight_share": 0.04,
+          "contrib_gross": 0.00089087
+        },
+        {
+          "Date": "2008-08-29",
+          "tier": "OTHER",
+          "weight_share": 0.8,
+          "contrib_gross": -0.01813171
+        },
+        {
+          "Date": "2008-08-29",
+          "tier": "MID",
+          "weight_share": 0.12,
+          "contrib_gross": -0.01007689
+        },
+        {
+          "Date": "2008-08-29",
+          "tier": "MEGA",
+          "weight_share": 0.08,
+          "contrib_gross": 0.00013272
+        },
+        {
+          "Date": "2008-09-30",
+          "tier": "OTHER",
+          "weight_share": 0.84,
+          "contrib_gross": -0.17732782
+        },
+        {
+          "Date": "2008-09-30",
+          "tier": "MID",
+          "weight_share": 0.08,
+          "contrib_gross": -0.01477799
+        },
+        {
+          "Date": "2008-09-30",
+          "tier": "MEGA",
+          "weight_share": 0.08,
+          "contrib_gross": -0.0113853
+        },
+        {
+          "Date": "2008-10-31",
+          "tier": "OTHER",
+          "weight_share": 0.68,
+          "contrib_gross": -0.00307784
+        },
+        {
+          "Date": "2008-10-31",
+          "tier": "MEGA",
+          "weight_share": 0.16,
+          "contrib_gross": -0.0133822
+        },
+        {
+          "Date": "2008-10-31",
+          "tier": "MID",
+          "weight_share": 0.16,
+          "contrib_gross": -0.00296015
+        },
+        {
+          "Date": "2008-11-28",
+          "tier": "OTHER",
+          "weight_share": 0.76,
+          "contrib_gross": 0.02085122
+        },
+        {
+          "Date": "2008-11-28",
+          "tier": "MEGA",
+          "weight_share": 0.12,
+          "contrib_gross": -0.00372749
+        },
+        {
+          "Date": "2008-11-28",
+          "tier": "MID",
+          "weight_share": 0.12,
+          "contrib_gross": 0.00416598
+        },
+        {
+          "Date": "2008-12-30",
+          "tier": "OTHER",
+          "weight_share": 0.84,
+          "contrib_gross": -0.05636991
+        },
+        {
+          "Date": "2008-12-30",
+          "tier": "MID",
+          "weight_share": 0.08,
+          "contrib_gross": -0.00952629
+        },
+        {
+          "Date": "2008-12-30",
+          "tier": "MEGA",
+          "weight_share": 0.08,
+          "contrib_gross": 0.00168489
+        },
+        {
+          "Date": "2009-01-30",
+          "tier": "OTHER",
+          "weight_share": 0.8,
+          "contrib_gross": -0.03423161
+        },
+        {
+          "Date": "2009-01-30",
+          "tier": "MID",
+          "weight_share": 0.08,
+          "contrib_gross": -0.00650865
+        },
+        {
+          "Date": "2009-01-30",
+          "tier": "MEGA",
+          "weight_share": 0.12,
+          "contrib_gross": -0.00819235
+        },
+        {
+          "Date": "2009-02-27",
+          "tier": "OTHER",
+          "weight_share": 0.76,
+          "contrib_gross": 0.08767031
+        },
+        {
+          "Date": "2009-02-27",
+          "tier": "MID",
+          "weight_share": 0.12,
+          "contrib_gross": 0.00592781
+        },
+        {
+          "Date": "2009-02-27",
+          "tier": "MEGA",
+          "weight_share": 0.12,
+          "contrib_gross": 0.00066145
+        },
+        {
+          "Date": "2009-03-31",
+          "tier": "OTHER",
+          "weight_share": 0.88,
+          "contrib_gross": 0.11343738
+        },
+        {
+          "Date": "2009-03-31",
+          "tier": "MID",
+          "weight_share": 0.08,
+          "contrib_gross": 0.00761388
+        },
+        {
+          "Date": "2009-03-31",
+          "tier": "MEGA",
+          "weight_share": 0.04,
+          "contrib_gross": -0.00177136
+        },
+        {
+          "Date": "2009-04-30",
+          "tier": "OTHER",
+          "weight_share": 0.96,
+          "contrib_gross": 0.05147427
+        },
+        {
+          "Date": "2009-04-30",
+          "tier": "MID",
+          "weight_share": 0.04,
+          "contrib_gross": 0.00806517
+        },
+        {
+          "Date": "2009-05-29",
+          "tier": "OTHER",
+          "weight_share": 0.88,
+          "contrib_gross": -0.05363001
+        },
+        {
+          "Date": "2009-05-29",
+          "tier": "MID",
+          "weight_share": 0.12,
+          "contrib_gross": -0.01025555
+        },
+        {
+          "Date": "2009-06-30",
+          "tier": "OTHER",
+          "weight_share": 0.84,
+          "contrib_gross": 0.02451816
+        },
+        {
+          "Date": "2009-06-30",
+          "tier": "MEGA",
+          "weight_share": 0.12,
+          "contrib_gross": 0.02074981
+        },
+        {
+          "Date": "2009-06-30",
+          "tier": "MID",
+          "weight_share": 0.04,
+          "contrib_gross": 0.0064574
+        },
+        {
+          "Date": "2009-07-31",
+          "tier": "OTHER",
+          "weight_share": 0.76,
+          "contrib_gross": 0.02692073
+        },
+        {
+          "Date": "2009-07-31",
+          "tier": "MEGA",
+          "weight_share": 0.12,
+          "contrib_gross": 0.00838147
+        },
+        {
+          "Date": "2009-07-31",
+          "tier": "MID",
+          "weight_share": 0.12,
+          "contrib_gross": 0.00754007
+        },
+        {
+          "Date": "2009-08-31",
+          "tier": "OTHER",
+          "weight_share": 0.56,
+          "contrib_gross": 0.01292515
+        },
+        {
+          "Date": "2009-08-31",
+          "tier": "MID",
+          "weight_share": 0.28,
+          "contrib_gross": 0.00467761
+        },
+        {
+          "Date": "2009-08-31",
+          "tier": "MEGA",
+          "weight_share": 0.16,
+          "contrib_gross": -0.00378892
+        },
+        {
+          "Date": "2009-09-30",
+          "tier": "OTHER",
+          "weight_share": 0.72,
+          "contrib_gross": -0.02815659
+        },
+        {
+          "Date": "2009-09-30",
+          "tier": "MID",
+          "weight_share": 0.2,
+          "contrib_gross": -0.00849797
+        },
+        {
+          "Date": "2009-09-30",
+          "tier": "MEGA",
+          "weight_share": 0.08,
+          "contrib_gross": -0.00652651
+        },
+        {
+          "Date": "2009-10-30",
+          "tier": "MID",
+          "weight_share": 0.16,
+          "contrib_gross": -0.0074306
+        },
+        {
+          "Date": "2009-10-30",
+          "tier": "OTHER",
+          "weight_share": 0.72,
+          "contrib_gross": 0.00519345
+        },
+        {
+          "Date": "2009-10-30",
+          "tier": "MEGA",
+          "weight_share": 0.12,
+          "contrib_gross": -0.00682625
+        },
+        {
+          "Date": "2009-11-30",
+          "tier": "OTHER",
+          "weight_share": 0.84,
+          "contrib_gross": 0.0556168
+        },
+        {
+          "Date": "2009-11-30",
+          "tier": "MID",
+          "weight_share": 0.12,
+          "contrib_gross": 0.00080284
+        },
+        {
+          "Date": "2009-11-30",
+          "tier": "MEGA",
+          "weight_share": 0.04,
+          "contrib_gross": 0.00430108
+        },
+        {
+          "Date": "2009-12-30",
+          "tier": "OTHER",
+          "weight_share": 0.72,
+          "contrib_gross": -0.06875137
+        },
+        {
+          "Date": "2009-12-30",
+          "tier": "MID",
+          "weight_share": 0.16,
+          "contrib_gross": -0.00389747
+        },
+        {
+          "Date": "2009-12-30",
+          "tier": "MEGA",
+          "weight_share": 0.12,
+          "contrib_gross": -0.00932807
+        },
+        {
+          "Date": "2010-01-29",
+          "tier": "MID",
+          "weight_share": 0.08,
+          "contrib_gross": 0.00032457
+        },
+        {
+          "Date": "2010-01-29",
+          "tier": "OTHER",
+          "weight_share": 0.8,
+          "contrib_gross": 0.01908003
+        },
+        {
+          "Date": "2010-01-29",
+          "tier": "MEGA",
+          "weight_share": 0.12,
+          "contrib_gross": -0.00263663
+        },
+        {
+          "Date": "2010-02-26",
+          "tier": "MID",
+          "weight_share": 0.04,
+          "contrib_gross": 0.00643678
+        },
+        {
+          "Date": "2010-02-26",
+          "tier": "OTHER",
+          "weight_share": 0.92,
+          "contrib_gross": 0.05195988
+        },
+        {
+          "Date": "2010-02-26",
+          "tier": "MEGA",
+          "weight_share": 0.04,
+          "contrib_gross": 0.00017391
+        },
+        {
+          "Date": "2010-03-31",
+          "tier": "MID",
+          "weight_share": 0.12,
+          "contrib_gross": 0.01563403
+        },
+        {
+          "Date": "2010-03-31",
+          "tier": "MEGA",
+          "weight_share": 0.04,
+          "contrib_gross": 0.00254682
+        },
+        {
+          "Date": "2010-03-31",
+          "tier": "OTHER",
+          "weight_share": 0.84,
+          "contrib_gross": 0.09408763
+        },
+        {
+          "Date": "2010-04-30",
+          "tier": "MID",
+          "weight_share": 0.12,
+          "contrib_gross": 0.00194846
+        },
+        {
+          "Date": "2010-04-30",
+          "tier": "OTHER",
+          "weight_share": 0.8,
+          "contrib_gross": -0.020774
+        },
+        {
+          "Date": "2010-04-30",
+          "tier": "MEGA",
+          "weight_share": 0.08,
+          "contrib_gross": 0.00367161
+        },
+        {
+          "Date": "2010-05-31",
+          "tier": "OTHER",
+          "weight_share": 0.88,
+          "contrib_gross": 0.05419059
+        },
+        {
+          "Date": "2010-05-31",
+          "tier": "MID",
+          "weight_share": 0.04,
+          "contrib_gross": 0.00178914
+        },
+        {
+          "Date": "2010-05-31",
+          "tier": "MEGA",
+          "weight_share": 0.08,
+          "contrib_gross": 0.00289375
+        },
+        {
+          "Date": "2010-06-30",
+          "tier": "OTHER",
+          "weight_share": 0.84,
+          "contrib_gross": -0.00470634
+        },
+        {
+          "Date": "2010-06-30",
+          "tier": "MEGA",
+          "weight_share": 0.12,
+          "contrib_gross": 0.00328278
+        },
+        {
+          "Date": "2010-06-30",
+          "tier": "MID",
+          "weight_share": 0.04,
+          "contrib_gross": -0.00466019
+        },
+        {
+          "Date": "2010-07-30",
+          "tier": "OTHER",
+          "weight_share": 0.76,
+          "contrib_gross": 0.04879454
+        },
+        {
+          "Date": "2010-07-30",
+          "tier": "MID",
+          "weight_share": 0.04,
+          "contrib_gross": 0.00205347
+        },
+        {
+          "Date": "2010-07-30",
+          "tier": "MEGA",
+          "weight_share": 0.2,
+          "contrib_gross": -0.00043773
+        },
+        {
+          "Date": "2010-08-31",
+          "tier": "OTHER",
+          "weight_share": 0.96,
+          "contrib_gross": 0.0678667
+        },
+        {
+          "Date": "2010-08-31",
+          "tier": "MID",
+          "weight_share": 0.04,
+          "contrib_gross": -0.00198922
+        },
+        {
+          "Date": "2010-09-30",
+          "tier": "OTHER",
+          "weight_share": 0.96,
+          "contrib_gross": 0.03355376
+        },
+        {
+          "Date": "2010-09-30",
+          "tier": "MEGA",
+          "weight_share": 0.04,
+          "contrib_gross": 0.00357977
+        },
+        {
+          "Date": "2010-10-29",
+          "tier": "MID",
+          "weight_share": 0.04,
+          "contrib_gross": 0.00360802
+        },
+        {
+          "Date": "2010-10-29",
+          "tier": "OTHER",
+          "weight_share": 0.92,
+          "contrib_gross": -0.0076439
+        },
+        {
+          "Date": "2010-10-29",
+          "tier": "MEGA",
+          "weight_share": 0.04,
+          "contrib_gross": -0.00071429
+        },
+        {
+          "Date": "2010-11-30",
+          "tier": "OTHER",
+          "weight_share": 0.88,
+          "contrib_gross": 0.09117403
+        },
+        {
+          "Date": "2010-11-30",
+          "tier": "MID",
+          "weight_share": 0.08,
+          "contrib_gross": 0.00722841
+        },
+        {
+          "Date": "2010-11-30",
+          "tier": "MEGA",
+          "weight_share": 0.04,
+          "contrib_gross": 0.00030928
+        },
+        {
+          "Date": "2010-12-30",
+          "tier": "OTHER",
+          "weight_share": 0.76,
+          "contrib_gross": -0.00709765
+        },
+        {
+          "Date": "2010-12-30",
+          "tier": "MID",
+          "weight_share": 0.16,
+          "contrib_gross": 0.00677911
+        },
+        {
+          "Date": "2010-12-30",
+          "tier": "MEGA",
+          "weight_share": 0.08,
+          "contrib_gross": -0.00031788
+        },
+        {
+          "Date": "2011-01-31",
+          "tier": "OTHER",
+          "weight_share": 0.72,
+          "contrib_gross": -0.06359127
+        },
+        {
+          "Date": "2011-01-31",
+          "tier": "MID",
+          "weight_share": 0.24,
+          "contrib_gross": -0.01861506
+        },
+        {
+          "Date": "2011-01-31",
+          "tier": "MEGA",
+          "weight_share": 0.04,
+          "contrib_gross": -0.00457143
+        },
+        {
+          "Date": "2011-02-28",
+          "tier": "MEGA",
+          "weight_share": 0.04,
+          "contrib_gross": 0.00808362
+        },
+        {
+          "Date": "2011-02-28",
+          "tier": "OTHER",
+          "weight_share": 0.96,
+          "contrib_gross": 0.11509582
+        },
+        {
+          "Date": "2011-03-31",
+          "tier": "MEGA",
+          "weight_share": 0.16,
+          "contrib_gross": 0.01582673
+        },
+        {
+          "Date": "2011-03-31",
+          "tier": "OTHER",
+          "weight_share": 0.8,
+          "contrib_gross": 0.05591299
+        },
+        {
+          "Date": "2011-03-31",
+          "tier": "MID",
+          "weight_share": 0.04,
+          "contrib_gross": 0.01182186
+        },
+        {
+          "Date": "2011-04-29",
+          "tier": "OTHER",
+          "weight_share": 0.72,
+          "contrib_gross": -0.03252986
+        },
+        {
+          "Date": "2011-04-29",
+          "tier": "MID",
+          "weight_share": 0.16,
+          "contrib_gross": -0.01780072
+        },
+        {
+          "Date": "2011-04-29",
+          "tier": "MEGA",
+          "weight_share": 0.12,
+          "contrib_gross": -0.00427885
+        },
+        {
+          "Date": "2011-05-31",
+          "tier": "OTHER",
+          "weight_share": 0.92,
+          "contrib_gross": 0.01168245
+        },
+        {
+          "Date": "2011-05-31",
+          "tier": "MEGA",
+          "weight_share": 0.04,
+          "contrib_gross": -0.00245545
+        },
+        {
+          "Date": "2011-05-31",
+          "tier": "MID",
+          "weight_share": 0.04,
+          "contrib_gross": 0.00129554
+        },
+        {
+          "Date": "2011-06-30",
+          "tier": "OTHER",
+          "weight_share": 0.88,
+          "contrib_gross": 0.05512337
+        },
+        {
+          "Date": "2011-06-30",
+          "tier": "MID",
+          "weight_share": 0.08,
+          "contrib_gross": -0.00074791
+        },
+        {
+          "Date": "2011-06-30",
+          "tier": "MEGA",
+          "weight_share": 0.04,
+          "contrib_gross": -0.002
+        },
+        {
+          "Date": "2011-07-29",
+          "tier": "OTHER",
+          "weight_share": 1,
+          "contrib_gross": -0.04308441
+        },
+        {
+          "Date": "2011-08-31",
+          "tier": "OTHER",
+          "weight_share": 0.96,
+          "contrib_gross": -0.01940611
+        },
+        {
+          "Date": "2011-08-31",
+          "tier": "MID",
+          "weight_share": 0.04,
+          "contrib_gross": 0.00273256
+        },
+        {
+          "Date": "2011-09-30",
+          "tier": "OTHER",
+          "weight_share": 0.88,
+          "contrib_gross": 0.06499484
+        },
+        {
+          "Date": "2011-09-30",
+          "tier": "MID",
+          "weight_share": 0.12,
+          "contrib_gross": -0.00337087
+        },
+        {
+          "Date": "2011-10-31",
+          "tier": "MID",
+          "weight_share": 0.04,
+          "contrib_gross": -0.00302521
+        },
+        {
+          "Date": "2011-10-31",
+          "tier": "OTHER",
+          "weight_share": 0.92,
+          "contrib_gross": -0.01882572
+        },
+        {
+          "Date": "2011-10-31",
+          "tier": "MEGA",
+          "weight_share": 0.04,
+          "contrib_gross": 0.0014876
+        },
+        {
+          "Date": "2011-11-30",
+          "tier": "OTHER",
+          "weight_share": 0.8,
+          "contrib_gross": -0.00255039
+        },
+        {
+          "Date": "2011-11-30",
+          "tier": "MEGA",
+          "weight_share": 0.04,
+          "contrib_gross": 0.00215139
+        },
+        {
+          "Date": "2011-11-30",
+          "tier": "MID",
+          "weight_share": 0.16,
+          "contrib_gross": -0.01249537
+        },
+        {
+          "Date": "2011-12-29",
+          "tier": "OTHER",
+          "weight_share": 0.92,
+          "contrib_gross": -0.01089343
+        },
+        {
+          "Date": "2011-12-29",
+          "tier": "MEGA",
+          "weight_share": 0.04,
+          "contrib_gross": 0.00185255
+        },
+        {
+          "Date": "2011-12-29",
+          "tier": "MID",
+          "weight_share": 0.04,
+          "contrib_gross": -0.00137592
+        },
+        {
+          "Date": "2012-01-31",
+          "tier": "OTHER",
+          "weight_share": 0.96,
+          "contrib_gross": 0.05318846
+        },
+        {
+          "Date": "2012-01-31",
+          "tier": "MEGA",
+          "weight_share": 0.04,
+          "contrib_gross": 0.00357724
+        },
+        {
+          "Date": "2012-02-29",
+          "tier": "OTHER",
+          "weight_share": 0.96,
+          "contrib_gross": -0.03585218
+        },
+        {
+          "Date": "2012-02-29",
+          "tier": "MEGA",
+          "weight_share": 0.04,
+          "contrib_gross": 0.00228856
+        },
+        {
+          "Date": "2012-03-30",
+          "tier": "OTHER",
+          "weight_share": 0.8,
+          "contrib_gross": -0.00451863
+        },
+        {
+          "Date": "2012-03-30",
+          "tier": "MEGA",
+          "weight_share": 0.08,
+          "contrib_gross": 0.00401188
+        },
+        {
+          "Date": "2012-03-30",
+          "tier": "MID",
+          "weight_share": 0.12,
+          "contrib_gross": -0.00214296
+        },
+        {
+          "Date": "2012-04-30",
+          "tier": "MEGA",
+          "weight_share": 0.16,
+          "contrib_gross": -0.01129576
+        },
+        {
+          "Date": "2012-04-30",
+          "tier": "OTHER",
+          "weight_share": 0.8,
+          "contrib_gross": -0.00402155
+        },
+        {
+          "Date": "2012-04-30",
+          "tier": "MID",
+          "weight_share": 0.04,
+          "contrib_gross": -0.00060708
+        },
+        {
+          "Date": "2012-05-31",
+          "tier": "OTHER",
+          "weight_share": 0.84,
+          "contrib_gross": 0.08067505
+        },
+        {
+          "Date": "2012-05-31",
+          "tier": "MEGA",
+          "weight_share": 0.08,
+          "contrib_gross": -0.0045874
+        },
+        {
+          "Date": "2012-05-31",
+          "tier": "MID",
+          "weight_share": 0.08,
+          "contrib_gross": 0.00358343
+        },
+        {
+          "Date": "2012-06-29",
+          "tier": "OTHER",
+          "weight_share": 0.84,
+          "contrib_gross": 0.00008201
+        },
+        {
+          "Date": "2012-06-29",
+          "tier": "MID",
+          "weight_share": 0.16,
+          "contrib_gross": -0.00126165
+        },
+        {
+          "Date": "2012-07-31",
+          "tier": "OTHER",
+          "weight_share": 0.84,
+          "contrib_gross": 0.09802332
+        },
+        {
+          "Date": "2012-07-31",
+          "tier": "MID",
+          "weight_share": 0.16,
+          "contrib_gross": -0.00226167
+        },
+        {
+          "Date": "2012-08-31",
+          "tier": "OTHER",
+          "weight_share": 1,
+          "contrib_gross": 0.05166271
+        },
+        {
+          "Date": "2012-09-28",
+          "tier": "OTHER",
+          "weight_share": 0.8,
+          "contrib_gross": 0.04859858
+        },
+        {
+          "Date": "2012-09-28",
+          "tier": "MID",
+          "weight_share": 0.16,
+          "contrib_gross": -0.0108813
+        },
+        {
+          "Date": "2012-09-28",
+          "tier": "MEGA",
+          "weight_share": 0.04,
+          "contrib_gross": 0.00057348
+        },
+        {
+          "Date": "2012-10-31",
+          "tier": "OTHER",
+          "weight_share": 0.88,
+          "contrib_gross": -0.00962304
+        },
+        {
+          "Date": "2012-10-31",
+          "tier": "MID",
+          "weight_share": 0.08,
+          "contrib_gross": -0.00055507
+        },
+        {
+          "Date": "2012-10-31",
+          "tier": "MEGA",
+          "weight_share": 0.04,
+          "contrib_gross": -0.00226148
+        },
+        {
+          "Date": "2012-11-30",
+          "tier": "OTHER",
+          "weight_share": 0.84,
+          "contrib_gross": -0.00465759
+        },
+        {
+          "Date": "2012-11-30",
+          "tier": "MID",
+          "weight_share": 0.12,
+          "contrib_gross": -0.00188797
+        },
+        {
+          "Date": "2012-11-30",
+          "tier": "MEGA",
+          "weight_share": 0.04,
+          "contrib_gross": 0.00330014
+        },
+        {
+          "Date": "2012-12-28",
+          "tier": "OTHER",
+          "weight_share": 0.84,
+          "contrib_gross": -0.0147903
+        },
+        {
+          "Date": "2012-12-28",
+          "tier": "MEGA",
+          "weight_share": 0.08,
+          "contrib_gross": 0.00061677
+        },
+        {
+          "Date": "2012-12-28",
+          "tier": "MID",
+          "weight_share": 0.08,
+          "contrib_gross": -0.00352162
+        },
+        {
+          "Date": "2013-01-31",
+          "tier": "OTHER",
+          "weight_share": 0.96,
+          "contrib_gross": 0.07267646
+        },
+        {
+          "Date": "2013-01-31",
+          "tier": "MID",
+          "weight_share": 0.04,
+          "contrib_gross": 0.00262699
+        },
+        {
+          "Date": "2013-02-28",
+          "tier": "OTHER",
+          "weight_share": 1,
+          "contrib_gross": 0.0096706
+        },
+        {
+          "Date": "2013-03-29",
+          "tier": "OTHER",
+          "weight_share": 0.96,
+          "contrib_gross": 0.11696034
+        },
+        {
+          "Date": "2013-03-29",
+          "tier": "MID",
+          "weight_share": 0.04,
+          "contrib_gross": 0.00019553
+        },
+        {
+          "Date": "2013-04-30",
+          "tier": "OTHER",
+          "weight_share": 0.96,
+          "contrib_gross": -0.04598421
+        },
+        {
+          "Date": "2013-04-30",
+          "tier": "MEGA",
+          "weight_share": 0.04,
+          "contrib_gross": 0.00307692
+        },
+        {
+          "Date": "2013-05-31",
+          "tier": "MEGA",
+          "weight_share": 0.04,
+          "contrib_gross": -0.00124224
+        },
+        {
+          "Date": "2013-05-31",
+          "tier": "OTHER",
+          "weight_share": 0.88,
+          "contrib_gross": -0.05086349
+        },
+        {
+          "Date": "2013-05-31",
+          "tier": "MID",
+          "weight_share": 0.08,
+          "contrib_gross": -0.0074952
+        },
+        {
+          "Date": "2013-06-28",
+          "tier": "OTHER",
+          "weight_share": 0.88,
+          "contrib_gross": 0.01389789
+        },
+        {
+          "Date": "2013-06-28",
+          "tier": "MEGA",
+          "weight_share": 0.08,
+          "contrib_gross": -0.00531339
+        },
+        {
+          "Date": "2013-06-28",
+          "tier": "MID",
+          "weight_share": 0.04,
+          "contrib_gross": 0.00120172
+        },
+        {
+          "Date": "2013-07-31",
+          "tier": "OTHER",
+          "weight_share": 0.96,
+          "contrib_gross": -0.04713481
+        },
+        {
+          "Date": "2013-07-31",
+          "tier": "MID",
+          "weight_share": 0.04,
+          "contrib_gross": -0.00045148
+        },
+        {
+          "Date": "2013-08-30",
+          "tier": "MID",
+          "weight_share": 0.16,
+          "contrib_gross": 0.00394035
+        },
+        {
+          "Date": "2013-08-30",
+          "tier": "OTHER",
+          "weight_share": 0.72,
+          "contrib_gross": 0.03932443
+        },
+        {
+          "Date": "2013-08-30",
+          "tier": "MEGA",
+          "weight_share": 0.12,
+          "contrib_gross": 0.00244473
+        },
+        {
+          "Date": "2013-09-30",
+          "tier": "OTHER",
+          "weight_share": 0.96,
+          "contrib_gross": 0.03259234
+        },
+        {
+          "Date": "2013-09-30",
+          "tier": "MID",
+          "weight_share": 0.04,
+          "contrib_gross": 0.00287253
+        },
+        {
+          "Date": "2013-10-31",
+          "tier": "OTHER",
+          "weight_share": 1,
+          "contrib_gross": 0.01117141
+        },
+        {
+          "Date": "2013-11-29",
+          "tier": "MEGA",
+          "weight_share": 0.08,
+          "contrib_gross": 0.00343163
+        },
+        {
+          "Date": "2013-11-29",
+          "tier": "MID",
+          "weight_share": 0.04,
+          "contrib_gross": -0.00023033
+        },
+        {
+          "Date": "2013-11-29",
+          "tier": "OTHER",
+          "weight_share": 0.88,
+          "contrib_gross": 0.00116658
+        },
+        {
+          "Date": "2013-12-30",
+          "tier": "MEGA",
+          "weight_share": 0.08,
+          "contrib_gross": 0.0017744
+        },
+        {
+          "Date": "2013-12-30",
+          "tier": "MID",
+          "weight_share": 0.12,
+          "contrib_gross": -0.00729072
+        },
+        {
+          "Date": "2013-12-30",
+          "tier": "OTHER",
+          "weight_share": 0.8,
+          "contrib_gross": 0.01804874
+        },
+        {
+          "Date": "2014-01-29",
+          "tier": "OTHER",
+          "weight_share": 0.96,
+          "contrib_gross": 0.06497273
+        },
+        {
+          "Date": "2014-01-29",
+          "tier": "MEGA",
+          "weight_share": 0.04,
+          "contrib_gross": 0.00045161
+        },
+        {
+          "Date": "2014-02-28",
+          "tier": "OTHER",
+          "weight_share": 0.92,
+          "contrib_gross": 0.03620477
+        },
+        {
+          "Date": "2014-02-28",
+          "tier": "MID",
+          "weight_share": 0.04,
+          "contrib_gross": -0.00029412
+        },
+        {
+          "Date": "2014-02-28",
+          "tier": "MEGA",
+          "weight_share": 0.04,
+          "contrib_gross": -0.00210526
+        },
+        {
+          "Date": "2014-03-31",
+          "tier": "OTHER",
+          "weight_share": 0.88,
+          "contrib_gross": 0.00930783
+        },
+        {
+          "Date": "2014-03-31",
+          "tier": "MEGA",
+          "weight_share": 0.04,
+          "contrib_gross": -0.00253968
+        },
+        {
+          "Date": "2014-03-31",
+          "tier": "MID",
+          "weight_share": 0.08,
+          "contrib_gross": -0.00203924
+        },
+        {
+          "Date": "2014-04-30",
+          "tier": "OTHER",
+          "weight_share": 0.96,
+          "contrib_gross": 0.05137847
+        },
+        {
+          "Date": "2014-04-30",
+          "tier": "MID",
+          "weight_share": 0.04,
+          "contrib_gross": 0.00341573
+        },
+        {
+          "Date": "2014-05-30",
+          "tier": "MEGA",
+          "weight_share": 0.04,
+          "contrib_gross": 0.00398641
+        },
+        {
+          "Date": "2014-05-30",
+          "tier": "MID",
+          "weight_share": 0.08,
+          "contrib_gross": 0.00178747
+        },
+        {
+          "Date": "2014-05-30",
+          "tier": "OTHER",
+          "weight_share": 0.88,
+          "contrib_gross": 0.0448128
+        },
+        {
+          "Date": "2014-06-30",
+          "tier": "OTHER",
+          "weight_share": 0.92,
+          "contrib_gross": 0.06823283
+        },
+        {
+          "Date": "2014-06-30",
+          "tier": "MID",
+          "weight_share": 0.08,
+          "contrib_gross": 0.00734457
+        },
+        {
+          "Date": "2014-07-31",
+          "tier": "MID",
+          "weight_share": 0.16,
+          "contrib_gross": 0.00722648
+        },
+        {
+          "Date": "2014-07-31",
+          "tier": "OTHER",
+          "weight_share": 0.76,
+          "contrib_gross": 0.05898969
+        },
+        {
+          "Date": "2014-07-31",
+          "tier": "MEGA",
+          "weight_share": 0.08,
+          "contrib_gross": 0.00112733
+        },
+        {
+          "Date": "2014-08-29",
+          "tier": "OTHER",
+          "weight_share": 0.88,
+          "contrib_gross": -0.01354625
+        },
+        {
+          "Date": "2014-08-29",
+          "tier": "MID",
+          "weight_share": 0.08,
+          "contrib_gross": -0.00494888
+        },
+        {
+          "Date": "2014-08-29",
+          "tier": "MEGA",
+          "weight_share": 0.04,
+          "contrib_gross": -0.00297143
+        },
+        {
+          "Date": "2014-09-30",
+          "tier": "MID",
+          "weight_share": 0.12,
+          "contrib_gross": -0.00793405
+        },
+        {
+          "Date": "2014-09-30",
+          "tier": "OTHER",
+          "weight_share": 0.84,
+          "contrib_gross": 0.0293107
+        },
+        {
+          "Date": "2014-09-30",
+          "tier": "MEGA",
+          "weight_share": 0.04,
+          "contrib_gross": -0.00145228
+        },
+        {
+          "Date": "2014-10-31",
+          "tier": "MID",
+          "weight_share": 0.08,
+          "contrib_gross": 0.00313043
+        },
+        {
+          "Date": "2014-10-31",
+          "tier": "OTHER",
+          "weight_share": 0.88,
+          "contrib_gross": -0.03103427
+        },
+        {
+          "Date": "2014-10-31",
+          "tier": "MEGA",
+          "weight_share": 0.04,
+          "contrib_gross": 0.00188841
+        },
+        {
+          "Date": "2014-11-28",
+          "tier": "MID",
+          "weight_share": 0.12,
+          "contrib_gross": -0.00802839
+        },
+        {
+          "Date": "2014-11-28",
+          "tier": "OTHER",
+          "weight_share": 0.84,
+          "contrib_gross": 0.01767857
+        },
+        {
+          "Date": "2014-11-28",
+          "tier": "MEGA",
+          "weight_share": 0.04,
+          "contrib_gross": -0.00180328
+        },
+        {
+          "Date": "2014-12-30",
+          "tier": "OTHER",
+          "weight_share": 0.96,
+          "contrib_gross": 0.05609124
+        },
+        {
+          "Date": "2014-12-30",
+          "tier": "MID",
+          "weight_share": 0.04,
+          "contrib_gross": 0.00417335
+        },
+        {
+          "Date": "2015-01-30",
+          "tier": "OTHER",
+          "weight_share": 0.96,
+          "contrib_gross": 0.07631528
+        },
+        {
+          "Date": "2015-01-30",
+          "tier": "MID",
+          "weight_share": 0.04,
+          "contrib_gross": -0.00104651
+        },
+        {
+          "Date": "2015-02-27",
+          "tier": "OTHER",
+          "weight_share": 1,
+          "contrib_gross": 0.1278823
+        },
+        {
+          "Date": "2015-03-31",
+          "tier": "OTHER",
+          "weight_share": 0.92,
+          "contrib_gross": 0.10267207
+        },
+        {
+          "Date": "2015-03-31",
+          "tier": "MID",
+          "weight_share": 0.08,
+          "contrib_gross": 0.00094583
+        },
+        {
+          "Date": "2015-04-30",
+          "tier": "OTHER",
+          "weight_share": 0.88,
+          "contrib_gross": 0.03426964
+        },
+        {
+          "Date": "2015-04-30",
+          "tier": "MID",
+          "weight_share": 0.08,
+          "contrib_gross": 0.00086083
+        },
+        {
+          "Date": "2015-04-30",
+          "tier": "MEGA",
+          "weight_share": 0.04,
+          "contrib_gross": 0.00160659
+        },
+        {
+          "Date": "2015-05-29",
+          "tier": "OTHER",
+          "weight_share": 1,
+          "contrib_gross": 0.05411442
+        },
+        {
+          "Date": "2015-06-30",
+          "tier": "OTHER",
+          "weight_share": 0.92,
+          "contrib_gross": -0.02793731
+        },
+        {
+          "Date": "2015-06-30",
+          "tier": "MID",
+          "weight_share": 0.08,
+          "contrib_gross": -0.00260615
+        },
+        {
+          "Date": "2015-07-31",
+          "tier": "MID",
+          "weight_share": 0.2,
+          "contrib_gross": -0.00910792
+        },
+        {
+          "Date": "2015-07-31",
+          "tier": "OTHER",
+          "weight_share": 0.76,
+          "contrib_gross": 0.0226299
+        },
+        {
+          "Date": "2015-07-31",
+          "tier": "MEGA",
+          "weight_share": 0.04,
+          "contrib_gross": -0.00227898
+        },
+        {
+          "Date": "2015-08-31",
+          "tier": "OTHER",
+          "weight_share": 0.96,
+          "contrib_gross": -0.05232389
+        },
+        {
+          "Date": "2015-08-31",
+          "tier": "MID",
+          "weight_share": 0.04,
+          "contrib_gross": 0.00036199
+        },
+        {
+          "Date": "2015-09-30",
+          "tier": "OTHER",
+          "weight_share": 0.88,
+          "contrib_gross": -0.01721934
+        },
+        {
+          "Date": "2015-09-30",
+          "tier": "MEGA",
+          "weight_share": 0.04,
+          "contrib_gross": 0.00195918
+        },
+        {
+          "Date": "2015-09-30",
+          "tier": "MID",
+          "weight_share": 0.08,
+          "contrib_gross": 0.00355886
+        },
+        {
+          "Date": "2015-10-30",
+          "tier": "OTHER",
+          "weight_share": 0.68,
+          "contrib_gross": 0.00249035
+        },
+        {
+          "Date": "2015-10-30",
+          "tier": "MEGA",
+          "weight_share": 0.08,
+          "contrib_gross": -0.00427221
+        },
+        {
+          "Date": "2015-10-30",
+          "tier": "MID",
+          "weight_share": 0.24,
+          "contrib_gross": 0.00099497
+        },
+        {
+          "Date": "2015-11-30",
+          "tier": "OTHER",
+          "weight_share": 0.68,
+          "contrib_gross": 0.03183697
+        },
+        {
+          "Date": "2015-11-30",
+          "tier": "MID",
+          "weight_share": 0.24,
+          "contrib_gross": 0.00418546
+        },
+        {
+          "Date": "2015-11-30",
+          "tier": "MEGA",
+          "weight_share": 0.08,
+          "contrib_gross": 0.00083979
+        },
+        {
+          "Date": "2015-12-30",
+          "tier": "OTHER",
+          "weight_share": 0.8,
+          "contrib_gross": -0.00554719
+        },
+        {
+          "Date": "2015-12-30",
+          "tier": "MID",
+          "weight_share": 0.16,
+          "contrib_gross": 0.01052004
+        },
+        {
+          "Date": "2015-12-30",
+          "tier": "MEGA",
+          "weight_share": 0.04,
+          "contrib_gross": -0.00401826
+        },
+        {
+          "Date": "2016-01-29",
+          "tier": "OTHER",
+          "weight_share": 0.76,
+          "contrib_gross": -0.04666201
+        },
+        {
+          "Date": "2016-01-29",
+          "tier": "MID",
+          "weight_share": 0.16,
+          "contrib_gross": -0.00066461
+        },
+        {
+          "Date": "2016-01-29",
+          "tier": "MEGA",
+          "weight_share": 0.08,
+          "contrib_gross": 0.00316876
+        },
+        {
+          "Date": "2016-02-29",
+          "tier": "OTHER",
+          "weight_share": 0.76,
+          "contrib_gross": 0.00460686
+        },
+        {
+          "Date": "2016-02-29",
+          "tier": "MID",
+          "weight_share": 0.16,
+          "contrib_gross": 0.00632995
+        },
+        {
+          "Date": "2016-02-29",
+          "tier": "MEGA",
+          "weight_share": 0.08,
+          "contrib_gross": 0.00298643
+        },
+        {
+          "Date": "2016-03-31",
+          "tier": "OTHER",
+          "weight_share": 0.76,
+          "contrib_gross": 0.01837142
+        },
+        {
+          "Date": "2016-03-31",
+          "tier": "MID",
+          "weight_share": 0.12,
+          "contrib_gross": -0.01410551
+        },
+        {
+          "Date": "2016-03-31",
+          "tier": "MEGA",
+          "weight_share": 0.12,
+          "contrib_gross": -0.00538547
+        },
+        {
+          "Date": "2016-04-29",
+          "tier": "OTHER",
+          "weight_share": 0.76,
+          "contrib_gross": 0.00019728
+        },
+        {
+          "Date": "2016-04-29",
+          "tier": "MEGA",
+          "weight_share": 0.12,
+          "contrib_gross": 0.00240806
+        },
+        {
+          "Date": "2016-04-29",
+          "tier": "MID",
+          "weight_share": 0.12,
+          "contrib_gross": 0.003316
+        },
+        {
+          "Date": "2016-05-31",
+          "tier": "OTHER",
+          "weight_share": 0.84,
+          "contrib_gross": -0.00476186
+        },
+        {
+          "Date": "2016-05-31",
+          "tier": "MEGA",
+          "weight_share": 0.08,
+          "contrib_gross": -0.00214538
+        },
+        {
+          "Date": "2016-05-31",
+          "tier": "MID",
+          "weight_share": 0.08,
+          "contrib_gross": 0.00513414
+        },
+        {
+          "Date": "2016-06-30",
+          "tier": "OTHER",
+          "weight_share": 0.72,
+          "contrib_gross": 0.03357835
+        },
+        {
+          "Date": "2016-06-30",
+          "tier": "MEGA",
+          "weight_share": 0.2,
+          "contrib_gross": -0.00477854
+        },
+        {
+          "Date": "2016-06-30",
+          "tier": "MID",
+          "weight_share": 0.08,
+          "contrib_gross": 0.00306661
+        },
+        {
+          "Date": "2016-07-29",
+          "tier": "OTHER",
+          "weight_share": 0.84,
+          "contrib_gross": -0.00106341
+        },
+        {
+          "Date": "2016-07-29",
+          "tier": "MEGA",
+          "weight_share": 0.08,
+          "contrib_gross": -0.00004808
+        },
+        {
+          "Date": "2016-07-29",
+          "tier": "MID",
+          "weight_share": 0.08,
+          "contrib_gross": 0.00259766
+        },
+        {
+          "Date": "2016-08-31",
+          "tier": "OTHER",
+          "weight_share": 0.72,
+          "contrib_gross": -0.00206295
+        },
+        {
+          "Date": "2016-08-31",
+          "tier": "MEGA",
+          "weight_share": 0.16,
+          "contrib_gross": 0.00759732
+        },
+        {
+          "Date": "2016-08-31",
+          "tier": "MID",
+          "weight_share": 0.12,
+          "contrib_gross": -0.00291383
+        },
+        {
+          "Date": "2016-09-30",
+          "tier": "OTHER",
+          "weight_share": 0.8,
+          "contrib_gross": -0.02101211
+        },
+        {
+          "Date": "2016-09-30",
+          "tier": "MEGA",
+          "weight_share": 0.12,
+          "contrib_gross": -0.00052724
+        },
+        {
+          "Date": "2016-09-30",
+          "tier": "MID",
+          "weight_share": 0.08,
+          "contrib_gross": 0.00687666
+        },
+        {
+          "Date": "2016-10-31",
+          "tier": "OTHER",
+          "weight_share": 0.64,
+          "contrib_gross": -0.04097546
+        },
+        {
+          "Date": "2016-10-31",
+          "tier": "MEGA",
+          "weight_share": 0.24,
+          "contrib_gross": -0.01000758
+        },
+        {
+          "Date": "2016-10-31",
+          "tier": "MID",
+          "weight_share": 0.12,
+          "contrib_gross": 0.0011279
+        },
+        {
+          "Date": "2016-11-30",
+          "tier": "OTHER",
+          "weight_share": 0.72,
+          "contrib_gross": 0.01232632
+        },
+        {
+          "Date": "2016-11-30",
+          "tier": "MEGA",
+          "weight_share": 0.2,
+          "contrib_gross": 0.00476059
+        },
+        {
+          "Date": "2016-11-30",
+          "tier": "MID",
+          "weight_share": 0.08,
+          "contrib_gross": 0.00031117
+        },
+        {
+          "Date": "2016-12-29",
+          "tier": "OTHER",
+          "weight_share": 0.72,
+          "contrib_gross": -0.00225229
+        },
+        {
+          "Date": "2016-12-29",
+          "tier": "MEGA",
+          "weight_share": 0.12,
+          "contrib_gross": 0.01242406
+        },
+        {
+          "Date": "2016-12-29",
+          "tier": "MID",
+          "weight_share": 0.16,
+          "contrib_gross": 0.00354202
+        },
+        {
+          "Date": "2017-01-31",
+          "tier": "OTHER",
+          "weight_share": 0.76,
+          "contrib_gross": -0.00191906
+        },
+        {
+          "Date": "2017-01-31",
+          "tier": "MEGA",
+          "weight_share": 0.16,
+          "contrib_gross": -0.00370592
+        },
+        {
+          "Date": "2017-01-31",
+          "tier": "MID",
+          "weight_share": 0.08,
+          "contrib_gross": 0.00084378
+        },
+        {
+          "Date": "2017-02-28",
+          "tier": "OTHER",
+          "weight_share": 0.84,
+          "contrib_gross": 0.00256509
+        },
+        {
+          "Date": "2017-02-28",
+          "tier": "MID",
+          "weight_share": 0.12,
+          "contrib_gross": 0.00545497
+        },
+        {
+          "Date": "2017-02-28",
+          "tier": "MEGA",
+          "weight_share": 0.04,
+          "contrib_gross": -0.00008565
+        },
+        {
+          "Date": "2017-03-31",
+          "tier": "MID",
+          "weight_share": 0.12,
+          "contrib_gross": -0.00196409
+        },
+        {
+          "Date": "2017-03-31",
+          "tier": "OTHER",
+          "weight_share": 0.84,
+          "contrib_gross": -0.01507156
+        },
+        {
+          "Date": "2017-03-31",
+          "tier": "MEGA",
+          "weight_share": 0.04,
+          "contrib_gross": -0.00323024
+        },
+        {
+          "Date": "2017-04-28",
+          "tier": "MID",
+          "weight_share": 0.12,
+          "contrib_gross": 0.00199317
+        },
+        {
+          "Date": "2017-04-28",
+          "tier": "MEGA",
+          "weight_share": 0.08,
+          "contrib_gross": 0.00229394
+        },
+        {
+          "Date": "2017-04-28",
+          "tier": "OTHER",
+          "weight_share": 0.8,
+          "contrib_gross": 0.07833432
+        },
+        {
+          "Date": "2017-05-31",
+          "tier": "OTHER",
+          "weight_share": 0.92,
+          "contrib_gross": 0.00387746
+        },
+        {
+          "Date": "2017-05-31",
+          "tier": "MID",
+          "weight_share": 0.08,
+          "contrib_gross": 0.00697247
+        },
+        {
+          "Date": "2017-06-30",
+          "tier": "OTHER",
+          "weight_share": 0.84,
+          "contrib_gross": 0.02023215
+        },
+        {
+          "Date": "2017-06-30",
+          "tier": "MID",
+          "weight_share": 0.12,
+          "contrib_gross": 0.00459323
+        },
+        {
+          "Date": "2017-06-30",
+          "tier": "MEGA",
+          "weight_share": 0.04,
+          "contrib_gross": 0.00117851
+        },
+        {
+          "Date": "2017-07-31",
+          "tier": "OTHER",
+          "weight_share": 0.8,
+          "contrib_gross": -0.01952471
+        },
+        {
+          "Date": "2017-07-31",
+          "tier": "MEGA",
+          "weight_share": 0.08,
+          "contrib_gross": 0.00048329
+        },
+        {
+          "Date": "2017-07-31",
+          "tier": "MID",
+          "weight_share": 0.12,
+          "contrib_gross": 0.0022845
+        },
+        {
+          "Date": "2017-08-31",
+          "tier": "OTHER",
+          "weight_share": 0.72,
+          "contrib_gross": -0.03082204
+        },
+        {
+          "Date": "2017-08-31",
+          "tier": "MEGA",
+          "weight_share": 0.08,
+          "contrib_gross": -0.00171385
+        },
+        {
+          "Date": "2017-08-31",
+          "tier": "MID",
+          "weight_share": 0.2,
+          "contrib_gross": 0.01046826
+        },
+        {
+          "Date": "2017-09-29",
+          "tier": "OTHER",
+          "weight_share": 0.8,
+          "contrib_gross": 0.04069925
+        },
+        {
+          "Date": "2017-09-29",
+          "tier": "MEGA",
+          "weight_share": 0.08,
+          "contrib_gross": 0.00083571
+        },
+        {
+          "Date": "2017-09-29",
+          "tier": "MID",
+          "weight_share": 0.12,
+          "contrib_gross": 0.00172815
+        },
+        {
+          "Date": "2017-10-31",
+          "tier": "MID",
+          "weight_share": 0.12,
+          "contrib_gross": -0.00148201
+        },
+        {
+          "Date": "2017-10-31",
+          "tier": "MEGA",
+          "weight_share": 0.12,
+          "contrib_gross": -0.00379442
+        },
+        {
+          "Date": "2017-10-31",
+          "tier": "OTHER",
+          "weight_share": 0.76,
+          "contrib_gross": 0.04471184
+        },
+        {
+          "Date": "2017-11-30",
+          "tier": "OTHER",
+          "weight_share": 0.84,
+          "contrib_gross": 0.007565
+        },
+        {
+          "Date": "2017-11-30",
+          "tier": "MID",
+          "weight_share": 0.08,
+          "contrib_gross": -0.00213115
+        },
+        {
+          "Date": "2017-11-30",
+          "tier": "MEGA",
+          "weight_share": 0.08,
+          "contrib_gross": 0.00113962
+        },
+        {
+          "Date": "2017-12-28",
+          "tier": "MID",
+          "weight_share": 0.04,
+          "contrib_gross": -0.00083477
+        },
+        {
+          "Date": "2017-12-28",
+          "tier": "OTHER",
+          "weight_share": 0.92,
+          "contrib_gross": 0.11036946
+        },
+        {
+          "Date": "2017-12-28",
+          "tier": "MEGA",
+          "weight_share": 0.04,
+          "contrib_gross": 0.01711438
+        },
+        {
+          "Date": "2018-01-31",
+          "tier": "OTHER",
+          "weight_share": 0.84,
+          "contrib_gross": -0.05460182
+        },
+        {
+          "Date": "2018-01-31",
+          "tier": "MID",
+          "weight_share": 0.04,
+          "contrib_gross": 0.00371431
+        },
+        {
+          "Date": "2018-01-31",
+          "tier": "MEGA",
+          "weight_share": 0.12,
+          "contrib_gross": -0.00544937
+        },
+        {
+          "Date": "2018-02-28",
+          "tier": "MID",
+          "weight_share": 0.12,
+          "contrib_gross": -0.00375581
+        },
+        {
+          "Date": "2018-02-28",
+          "tier": "OTHER",
+          "weight_share": 0.8,
+          "contrib_gross": -0.01845172
+        },
+        {
+          "Date": "2018-02-28",
+          "tier": "MEGA",
+          "weight_share": 0.08,
+          "contrib_gross": -0.00116933
+        },
+        {
+          "Date": "2018-03-30",
+          "tier": "OTHER",
+          "weight_share": 0.96,
+          "contrib_gross": 0.04556453
+        },
+        {
+          "Date": "2018-03-30",
+          "tier": "MEGA",
+          "weight_share": 0.04,
+          "contrib_gross": 0.00008216
+        },
+        {
+          "Date": "2018-04-30",
+          "tier": "OTHER",
+          "weight_share": 0.92,
+          "contrib_gross": 0.05619947
+        },
+        {
+          "Date": "2018-04-30",
+          "tier": "MID",
+          "weight_share": 0.08,
+          "contrib_gross": -0.00267944
+        },
+        {
+          "Date": "2018-05-31",
+          "tier": "MEGA",
+          "weight_share": 0.04,
+          "contrib_gross": -0.00329764
+        },
+        {
+          "Date": "2018-05-31",
+          "tier": "OTHER",
+          "weight_share": 0.92,
+          "contrib_gross": -0.07788279
+        },
+        {
+          "Date": "2018-05-31",
+          "tier": "MID",
+          "weight_share": 0.04,
+          "contrib_gross": 0.00157856
+        },
+        {
+          "Date": "2018-06-29",
+          "tier": "OTHER",
+          "weight_share": 0.96,
+          "contrib_gross": -0.03277534
+        },
+        {
+          "Date": "2018-06-29",
+          "tier": "MID",
+          "weight_share": 0.04,
+          "contrib_gross": -0.00532951
+        },
+        {
+          "Date": "2018-07-31",
+          "tier": "MEGA",
+          "weight_share": 0.04,
+          "contrib_gross": -0.00152955
+        },
+        {
+          "Date": "2018-07-31",
+          "tier": "OTHER",
+          "weight_share": 0.88,
+          "contrib_gross": -0.01362301
+        },
+        {
+          "Date": "2018-07-31",
+          "tier": "MID",
+          "weight_share": 0.08,
+          "contrib_gross": 0.0001145
+        },
+        {
+          "Date": "2018-08-31",
+          "tier": "OTHER",
+          "weight_share": 0.88,
+          "contrib_gross": 0.01753816
+        },
+        {
+          "Date": "2018-08-31",
+          "tier": "MID",
+          "weight_share": 0.12,
+          "contrib_gross": 0.00131869
+        },
+        {
+          "Date": "2018-09-28",
+          "tier": "MID",
+          "weight_share": 0.2,
+          "contrib_gross": -0.01604371
+        },
+        {
+          "Date": "2018-09-28",
+          "tier": "OTHER",
+          "weight_share": 0.76,
+          "contrib_gross": -0.09163284
+        },
+        {
+          "Date": "2018-09-28",
+          "tier": "MEGA",
+          "weight_share": 0.04,
+          "contrib_gross": -0.00198541
+        },
+        {
+          "Date": "2018-10-31",
+          "tier": "MID",
+          "weight_share": 0.24,
+          "contrib_gross": -0.00589789
+        },
+        {
+          "Date": "2018-10-31",
+          "tier": "OTHER",
+          "weight_share": 0.72,
+          "contrib_gross": -0.00468183
+        },
+        {
+          "Date": "2018-10-31",
+          "tier": "MEGA",
+          "weight_share": 0.04,
+          "contrib_gross": 0.00320848
+        },
+        {
+          "Date": "2018-11-30",
+          "tier": "OTHER",
+          "weight_share": 0.88,
+          "contrib_gross": 0.0037043
+        },
+        {
+          "Date": "2018-11-30",
+          "tier": "MID",
+          "weight_share": 0.08,
+          "contrib_gross": -0.00406845
+        },
+        {
+          "Date": "2018-11-30",
+          "tier": "MEGA",
+          "weight_share": 0.04,
+          "contrib_gross": -0.00276282
+        },
+        {
+          "Date": "2018-12-28",
+          "tier": "MID",
+          "weight_share": 0.16,
+          "contrib_gross": 0.0018604
+        },
+        {
+          "Date": "2018-12-28",
+          "tier": "OTHER",
+          "weight_share": 0.8,
+          "contrib_gross": -0.01452929
+        },
+        {
+          "Date": "2018-12-28",
+          "tier": "MEGA",
+          "weight_share": 0.04,
+          "contrib_gross": -0.00170756
+        },
+        {
+          "Date": "2019-01-31",
+          "tier": "OTHER",
+          "weight_share": 0.88,
+          "contrib_gross": 0.01436397
+        },
+        {
+          "Date": "2019-01-31",
+          "tier": "MID",
+          "weight_share": 0.08,
+          "contrib_gross": 0.00439591
+        },
+        {
+          "Date": "2019-01-31",
+          "tier": "MEGA",
+          "weight_share": 0.04,
+          "contrib_gross": 0.0004058
+        },
+        {
+          "Date": "2019-02-28",
+          "tier": "OTHER",
+          "weight_share": 0.88,
+          "contrib_gross": -0.01347311
+        },
+        {
+          "Date": "2019-02-28",
+          "tier": "MID",
+          "weight_share": 0.12,
+          "contrib_gross": -0.0021379
+        },
+        {
+          "Date": "2019-03-29",
+          "tier": "MID",
+          "weight_share": 0.12,
+          "contrib_gross": 0.01402029
+        },
+        {
+          "Date": "2019-03-29",
+          "tier": "OTHER",
+          "weight_share": 0.84,
+          "contrib_gross": 0.02134215
+        },
+        {
+          "Date": "2019-03-29",
+          "tier": "MEGA",
+          "weight_share": 0.04,
+          "contrib_gross": 0.00014114
+        },
+        {
+          "Date": "2019-04-30",
+          "tier": "MID",
+          "weight_share": 0.12,
+          "contrib_gross": -0.01328381
+        },
+        {
+          "Date": "2019-04-30",
+          "tier": "OTHER",
+          "weight_share": 0.84,
+          "contrib_gross": -0.02775328
+        },
+        {
+          "Date": "2019-04-30",
+          "tier": "MEGA",
+          "weight_share": 0.04,
+          "contrib_gross": -0.00405063
+        },
+        {
+          "Date": "2019-05-31",
+          "tier": "OTHER",
+          "weight_share": 0.88,
+          "contrib_gross": 0.02923215
+        },
+        {
+          "Date": "2019-05-31",
+          "tier": "MID",
+          "weight_share": 0.08,
+          "contrib_gross": 0.00421364
+        },
+        {
+          "Date": "2019-05-31",
+          "tier": "MEGA",
+          "weight_share": 0.04,
+          "contrib_gross": 0.00040495
+        },
+        {
+          "Date": "2019-06-28",
+          "tier": "OTHER",
+          "weight_share": 0.76,
+          "contrib_gross": -0.05833938
+        },
+        {
+          "Date": "2019-06-28",
+          "tier": "MID",
+          "weight_share": 0.12,
+          "contrib_gross": -0.00482109
+        },
+        {
+          "Date": "2019-06-28",
+          "tier": "MEGA",
+          "weight_share": 0.12,
+          "contrib_gross": -0.00432722
+        },
+        {
+          "Date": "2019-07-31",
+          "tier": "OTHER",
+          "weight_share": 0.72,
+          "contrib_gross": 0.00253426
+        },
+        {
+          "Date": "2019-07-31",
+          "tier": "MID",
+          "weight_share": 0.16,
+          "contrib_gross": 0.00700748
+        },
+        {
+          "Date": "2019-07-31",
+          "tier": "MEGA",
+          "weight_share": 0.12,
+          "contrib_gross": -0.00247466
+        },
+        {
+          "Date": "2019-08-30",
+          "tier": "OTHER",
+          "weight_share": 0.68,
+          "contrib_gross": 0.02797458
+        },
+        {
+          "Date": "2019-08-30",
+          "tier": "MID",
+          "weight_share": 0.2,
+          "contrib_gross": -0.00203132
+        },
+        {
+          "Date": "2019-08-30",
+          "tier": "MEGA",
+          "weight_share": 0.12,
+          "contrib_gross": 0.00591089
+        },
+        {
+          "Date": "2019-09-30",
+          "tier": "OTHER",
+          "weight_share": 0.68,
+          "contrib_gross": -0.00881191
+        },
+        {
+          "Date": "2019-09-30",
+          "tier": "MID",
+          "weight_share": 0.16,
+          "contrib_gross": -0.00337341
+        },
+        {
+          "Date": "2019-09-30",
+          "tier": "MEGA",
+          "weight_share": 0.16,
+          "contrib_gross": 0.00056481
+        },
+        {
+          "Date": "2019-10-31",
+          "tier": "OTHER",
+          "weight_share": 0.8,
+          "contrib_gross": -0.01975823
+        },
+        {
+          "Date": "2019-10-31",
+          "tier": "MEGA",
+          "weight_share": 0.16,
+          "contrib_gross": 0.00083343
+        },
+        {
+          "Date": "2019-10-31",
+          "tier": "MID",
+          "weight_share": 0.04,
+          "contrib_gross": 0.0039576
+        },
+        {
+          "Date": "2019-11-29",
+          "tier": "MID",
+          "weight_share": 0.12,
+          "contrib_gross": 0.00184642
+        },
+        {
+          "Date": "2019-11-29",
+          "tier": "MEGA",
+          "weight_share": 0.2,
+          "contrib_gross": 0.02008355
+        },
+        {
+          "Date": "2019-11-29",
+          "tier": "OTHER",
+          "weight_share": 0.68,
+          "contrib_gross": 0.07553593
+        },
+        {
+          "Date": "2019-12-30",
+          "tier": "OTHER",
+          "weight_share": 0.88,
+          "contrib_gross": -0.0103597
+        },
+        {
+          "Date": "2019-12-30",
+          "tier": "MEGA",
+          "weight_share": 0.12,
+          "contrib_gross": 0.00368629
+        },
+        {
+          "Date": "2020-01-31",
+          "tier": "MEGA",
+          "weight_share": 0.12,
+          "contrib_gross": -0.0053551
+        },
+        {
+          "Date": "2020-01-31",
+          "tier": "MID",
+          "weight_share": 0.12,
+          "contrib_gross": 0.00684173
+        },
+        {
+          "Date": "2020-01-31",
+          "tier": "OTHER",
+          "weight_share": 0.76,
+          "contrib_gross": -0.04844756
+        },
+        {
+          "Date": "2020-02-28",
+          "tier": "MEGA",
+          "weight_share": 0.24,
+          "contrib_gross": -0.0243493
+        },
+        {
+          "Date": "2020-02-28",
+          "tier": "MID",
+          "weight_share": 0.12,
+          "contrib_gross": -0.01263644
+        },
+        {
+          "Date": "2020-02-28",
+          "tier": "OTHER",
+          "weight_share": 0.64,
+          "contrib_gross": 0.02575574
+        },
+        {
+          "Date": "2020-03-31",
+          "tier": "OTHER",
+          "weight_share": 0.8,
+          "contrib_gross": 0.01531819
+        },
+        {
+          "Date": "2020-03-31",
+          "tier": "MEGA",
+          "weight_share": 0.12,
+          "contrib_gross": 0.0114549
+        },
+        {
+          "Date": "2020-03-31",
+          "tier": "MID",
+          "weight_share": 0.08,
+          "contrib_gross": -0.00282647
+        },
+        {
+          "Date": "2020-04-29",
+          "tier": "OTHER",
+          "weight_share": 0.76,
+          "contrib_gross": 0.12132432
+        },
+        {
+          "Date": "2020-04-29",
+          "tier": "MEGA",
+          "weight_share": 0.16,
+          "contrib_gross": 0.00870309
+        },
+        {
+          "Date": "2020-04-29",
+          "tier": "MID",
+          "weight_share": 0.08,
+          "contrib_gross": 0.02021391
+        },
+        {
+          "Date": "2020-05-29",
+          "tier": "OTHER",
+          "weight_share": 0.84,
+          "contrib_gross": 0.05232531
+        },
+        {
+          "Date": "2020-05-29",
+          "tier": "MEGA",
+          "weight_share": 0.08,
+          "contrib_gross": 0.01044646
+        },
+        {
+          "Date": "2020-05-29",
+          "tier": "MID",
+          "weight_share": 0.08,
+          "contrib_gross": 0.01286726
+        },
+        {
+          "Date": "2020-06-30",
+          "tier": "OTHER",
+          "weight_share": 0.92,
+          "contrib_gross": 0.15482569
+        },
+        {
+          "Date": "2020-06-30",
+          "tier": "MEGA",
+          "weight_share": 0.08,
+          "contrib_gross": 0.00385182
+        },
+        {
+          "Date": "2020-07-31",
+          "tier": "OTHER",
+          "weight_share": 0.88,
+          "contrib_gross": 0.05576023
+        },
+        {
+          "Date": "2020-07-31",
+          "tier": "MEGA",
+          "weight_share": 0.12,
+          "contrib_gross": 0.02050432
+        },
+        {
+          "Date": "2020-08-31",
+          "tier": "OTHER",
+          "weight_share": 0.84,
+          "contrib_gross": -0.04759101
+        },
+        {
+          "Date": "2020-08-31",
+          "tier": "MEGA",
+          "weight_share": 0.08,
+          "contrib_gross": -0.00372365
+        },
+        {
+          "Date": "2020-08-31",
+          "tier": "MID",
+          "weight_share": 0.08,
+          "contrib_gross": -0.00173268
+        },
+        {
+          "Date": "2020-09-29",
+          "tier": "OTHER",
+          "weight_share": 0.76,
+          "contrib_gross": -0.03650506
+        },
+        {
+          "Date": "2020-09-29",
+          "tier": "MID",
+          "weight_share": 0.16,
+          "contrib_gross": -0.00590485
+        },
+        {
+          "Date": "2020-09-29",
+          "tier": "MEGA",
+          "weight_share": 0.08,
+          "contrib_gross": -0.00423691
+        },
+        {
+          "Date": "2020-10-30",
+          "tier": "MID",
+          "weight_share": 0.08,
+          "contrib_gross": 0.01252375
+        },
+        {
+          "Date": "2020-10-30",
+          "tier": "OTHER",
+          "weight_share": 0.8,
+          "contrib_gross": 0.09653489
+        },
+        {
+          "Date": "2020-10-30",
+          "tier": "MEGA",
+          "weight_share": 0.12,
+          "contrib_gross": 0.01574643
+        },
+        {
+          "Date": "2020-11-30",
+          "tier": "OTHER",
+          "weight_share": 0.84,
+          "contrib_gross": 0.12826891
+        },
+        {
+          "Date": "2020-11-30",
+          "tier": "MID",
+          "weight_share": 0.08,
+          "contrib_gross": 0.02009178
+        },
+        {
+          "Date": "2020-11-30",
+          "tier": "MEGA",
+          "weight_share": 0.08,
+          "contrib_gross": 0.0042091
+        },
+        {
+          "Date": "2020-12-30",
+          "tier": "OTHER",
+          "weight_share": 0.84,
+          "contrib_gross": 0.05621463
+        },
+        {
+          "Date": "2020-12-30",
+          "tier": "MEGA",
+          "weight_share": 0.08,
+          "contrib_gross": 0.00724538
+        },
+        {
+          "Date": "2020-12-30",
+          "tier": "MID",
+          "weight_share": 0.08,
+          "contrib_gross": 0.01117603
+        },
+        {
+          "Date": "2021-01-29",
+          "tier": "OTHER",
+          "weight_share": 0.84,
+          "contrib_gross": -0.01952894
+        },
+        {
+          "Date": "2021-01-29",
+          "tier": "MID",
+          "weight_share": 0.12,
+          "contrib_gross": -0.00634252
+        },
+        {
+          "Date": "2021-01-29",
+          "tier": "MEGA",
+          "weight_share": 0.04,
+          "contrib_gross": 0.00373178
+        },
+        {
+          "Date": "2021-02-26",
+          "tier": "OTHER",
+          "weight_share": 1,
+          "contrib_gross": 0.0494584
+        },
+        {
+          "Date": "2021-03-31",
+          "tier": "OTHER",
+          "weight_share": 0.84,
+          "contrib_gross": 0.06168528
+        },
+        {
+          "Date": "2021-03-31",
+          "tier": "MID",
+          "weight_share": 0.16,
+          "contrib_gross": 0.00846567
+        },
+        {
+          "Date": "2021-04-30",
+          "tier": "MID",
+          "weight_share": 0.12,
+          "contrib_gross": -0.00295386
+        },
+        {
+          "Date": "2021-04-30",
+          "tier": "OTHER",
+          "weight_share": 0.88,
+          "contrib_gross": -0.02683727
+        },
+        {
+          "Date": "2021-05-31",
+          "tier": "OTHER",
+          "weight_share": 1,
+          "contrib_gross": -0.01117287
+        },
+        {
+          "Date": "2021-06-30",
+          "tier": "OTHER",
+          "weight_share": 0.92,
+          "contrib_gross": 0.02254892
+        },
+        {
+          "Date": "2021-06-30",
+          "tier": "MEGA",
+          "weight_share": 0.04,
+          "contrib_gross": 0.00153293
+        },
+        {
+          "Date": "2021-06-30",
+          "tier": "MID",
+          "weight_share": 0.04,
+          "contrib_gross": -0.00687855
+        },
+        {
+          "Date": "2021-07-30",
+          "tier": "OTHER",
+          "weight_share": 0.96,
+          "contrib_gross": 0.03752881
+        },
+        {
+          "Date": "2021-07-30",
+          "tier": "MEGA",
+          "weight_share": 0.04,
+          "contrib_gross": 0.0005075
+        },
+        {
+          "Date": "2021-08-31",
+          "tier": "OTHER",
+          "weight_share": 0.96,
+          "contrib_gross": -0.01167022
+        },
+        {
+          "Date": "2021-08-31",
+          "tier": "MEGA",
+          "weight_share": 0.04,
+          "contrib_gross": -0.00464692
+        },
+        {
+          "Date": "2021-09-30",
+          "tier": "OTHER",
+          "weight_share": 0.88,
+          "contrib_gross": -0.03300812
+        },
+        {
+          "Date": "2021-09-30",
+          "tier": "MID",
+          "weight_share": 0.12,
+          "contrib_gross": -0.01011594
+        },
+        {
+          "Date": "2021-10-29",
+          "tier": "OTHER",
+          "weight_share": 0.88,
+          "contrib_gross": -0.0692311
+        },
+        {
+          "Date": "2021-10-29",
+          "tier": "MID",
+          "weight_share": 0.12,
+          "contrib_gross": -0.00405201
+        },
+        {
+          "Date": "2021-11-30",
+          "tier": "OTHER",
+          "weight_share": 1,
+          "contrib_gross": 0.03208021
+        },
+        {
+          "Date": "2021-12-30",
+          "tier": "OTHER",
+          "weight_share": 1,
+          "contrib_gross": -0.10181725
+        },
+        {
+          "Date": "2022-01-28",
+          "tier": "OTHER",
+          "weight_share": 0.84,
+          "contrib_gross": 0.0040725
+        },
+        {
+          "Date": "2022-01-28",
+          "tier": "MID",
+          "weight_share": 0.12,
+          "contrib_gross": 0.00295594
+        },
+        {
+          "Date": "2022-01-28",
+          "tier": "MEGA",
+          "weight_share": 0.04,
+          "contrib_gross": 0.00013445
+        },
+        {
+          "Date": "2022-02-28",
+          "tier": "OTHER",
+          "weight_share": 0.88,
+          "contrib_gross": 0.06191935
+        },
+        {
+          "Date": "2022-02-28",
+          "tier": "MID",
+          "weight_share": 0.12,
+          "contrib_gross": 0.00349949
+        },
+        {
+          "Date": "2022-03-31",
+          "tier": "OTHER",
+          "weight_share": 0.96,
+          "contrib_gross": -0.01807504
+        },
+        {
+          "Date": "2022-03-31",
+          "tier": "MID",
+          "weight_share": 0.04,
+          "contrib_gross": 0.00062651
+        },
+        {
+          "Date": "2022-04-29",
+          "tier": "OTHER",
+          "weight_share": 0.96,
+          "contrib_gross": -0.01167883
+        },
+        {
+          "Date": "2022-04-29",
+          "tier": "MID",
+          "weight_share": 0.04,
+          "contrib_gross": 0.00085409
+        },
+        {
+          "Date": "2022-05-31",
+          "tier": "OTHER",
+          "weight_share": 0.84,
+          "contrib_gross": -0.10530084
+        },
+        {
+          "Date": "2022-05-31",
+          "tier": "MEGA",
+          "weight_share": 0.04,
+          "contrib_gross": -0.00392065
+        },
+        {
+          "Date": "2022-05-31",
+          "tier": "MID",
+          "weight_share": 0.12,
+          "contrib_gross": -0.01791486
+        },
+        {
+          "Date": "2022-06-30",
+          "tier": "OTHER",
+          "weight_share": 0.88,
+          "contrib_gross": -0.00820914
+        },
+        {
+          "Date": "2022-06-30",
+          "tier": "MID",
+          "weight_share": 0.12,
+          "contrib_gross": -0.00195824
+        },
+        {
+          "Date": "2022-07-29",
+          "tier": "OTHER",
+          "weight_share": 0.96,
+          "contrib_gross": 0.04026553
+        },
+        {
+          "Date": "2022-07-29",
+          "tier": "MEGA",
+          "weight_share": 0.04,
+          "contrib_gross": -0.00019704
+        },
+        {
+          "Date": "2022-08-31",
+          "tier": "OTHER",
+          "weight_share": 0.92,
+          "contrib_gross": -0.14374949
+        },
+        {
+          "Date": "2022-08-31",
+          "tier": "MID",
+          "weight_share": 0.08,
+          "contrib_gross": -0.00886913
+        },
+        {
+          "Date": "2022-09-30",
+          "tier": "OTHER",
+          "weight_share": 0.88,
+          "contrib_gross": -0.00510171
+        },
+        {
+          "Date": "2022-09-30",
+          "tier": "MID",
+          "weight_share": 0.08,
+          "contrib_gross": 0.00722844
+        },
+        {
+          "Date": "2022-09-30",
+          "tier": "MEGA",
+          "weight_share": 0.04,
+          "contrib_gross": 0.00346964
+        },
+        {
+          "Date": "2022-10-31",
+          "tier": "OTHER",
+          "weight_share": 0.72,
+          "contrib_gross": 0.04281601
+        },
+        {
+          "Date": "2022-10-31",
+          "tier": "MID",
+          "weight_share": 0.2,
+          "contrib_gross": 0.00968229
+        },
+        {
+          "Date": "2022-10-31",
+          "tier": "MEGA",
+          "weight_share": 0.08,
+          "contrib_gross": 0.00002194
+        },
+        {
+          "Date": "2022-11-30",
+          "tier": "OTHER",
+          "weight_share": 0.72,
+          "contrib_gross": -0.02415687
+        },
+        {
+          "Date": "2022-11-30",
+          "tier": "MID",
+          "weight_share": 0.16,
+          "contrib_gross": -0.0103119
+        },
+        {
+          "Date": "2022-11-30",
+          "tier": "MEGA",
+          "weight_share": 0.12,
+          "contrib_gross": -0.01821134
+        },
+        {
+          "Date": "2022-12-29",
+          "tier": "OTHER",
+          "weight_share": 0.84,
+          "contrib_gross": 0.01529537
+        },
+        {
+          "Date": "2022-12-29",
+          "tier": "MID",
+          "weight_share": 0.16,
+          "contrib_gross": 0.00455011
+        },
+        {
+          "Date": "2023-01-31",
+          "tier": "OTHER",
+          "weight_share": 0.8,
+          "contrib_gross": 0.04591909
+        },
+        {
+          "Date": "2023-01-31",
+          "tier": "MID",
+          "weight_share": 0.2,
+          "contrib_gross": -0.00286295
+        },
+        {
+          "Date": "2023-02-28",
+          "tier": "OTHER",
+          "weight_share": 0.96,
+          "contrib_gross": 0.08240515
+        },
+        {
+          "Date": "2023-02-28",
+          "tier": "MID",
+          "weight_share": 0.04,
+          "contrib_gross": 0.0139988
+        },
+        {
+          "Date": "2023-03-31",
+          "tier": "OTHER",
+          "weight_share": 0.84,
+          "contrib_gross": -0.00890761
+        },
+        {
+          "Date": "2023-03-31",
+          "tier": "MID",
+          "weight_share": 0.12,
+          "contrib_gross": 0.02156183
+        },
+        {
+          "Date": "2023-03-31",
+          "tier": "MEGA",
+          "weight_share": 0.04,
+          "contrib_gross": 0.00097826
+        },
+        {
+          "Date": "2023-04-28",
+          "tier": "OTHER",
+          "weight_share": 0.8,
+          "contrib_gross": 0.04717405
+        },
+        {
+          "Date": "2023-04-28",
+          "tier": "MEGA",
+          "weight_share": 0.12,
+          "contrib_gross": 0.0047721
+        },
+        {
+          "Date": "2023-04-28",
+          "tier": "MID",
+          "weight_share": 0.08,
+          "contrib_gross": -0.00855807
+        },
+        {
+          "Date": "2023-05-31",
+          "tier": "OTHER",
+          "weight_share": 0.8,
+          "contrib_gross": 0.04280758
+        },
+        {
+          "Date": "2023-05-31",
+          "tier": "MEGA",
+          "weight_share": 0.12,
+          "contrib_gross": -0.00019267
+        },
+        {
+          "Date": "2023-05-31",
+          "tier": "MID",
+          "weight_share": 0.08,
+          "contrib_gross": -0.00332424
+        },
+        {
+          "Date": "2023-06-30",
+          "tier": "OTHER",
+          "weight_share": 0.88,
+          "contrib_gross": 0.10289186
+        },
+        {
+          "Date": "2023-06-30",
+          "tier": "MEGA",
+          "weight_share": 0.08,
+          "contrib_gross": -0.00336354
+        },
+        {
+          "Date": "2023-06-30",
+          "tier": "MID",
+          "weight_share": 0.04,
+          "contrib_gross": -0.00577743
+        },
+        {
+          "Date": "2023-07-31",
+          "tier": "OTHER",
+          "weight_share": 0.88,
+          "contrib_gross": -0.00178048
+        },
+        {
+          "Date": "2023-07-31",
+          "tier": "MID",
+          "weight_share": 0.12,
+          "contrib_gross": -0.01102281
+        },
+        {
+          "Date": "2023-08-31",
+          "tier": "OTHER",
+          "weight_share": 1,
+          "contrib_gross": -0.07667855
+        },
+        {
+          "Date": "2023-09-27",
+          "tier": "OTHER",
+          "weight_share": 0.8,
+          "contrib_gross": -0.062572
+        },
+        {
+          "Date": "2023-09-27",
+          "tier": "MID",
+          "weight_share": 0.2,
+          "contrib_gross": -0.01030686
+        },
+        {
+          "Date": "2023-10-31",
+          "tier": "MID",
+          "weight_share": 0.16,
+          "contrib_gross": 0.01018279
+        },
+        {
+          "Date": "2023-10-31",
+          "tier": "OTHER",
+          "weight_share": 0.8,
+          "contrib_gross": 0.02186429
+        },
+        {
+          "Date": "2023-10-31",
+          "tier": "MEGA",
+          "weight_share": 0.04,
+          "contrib_gross": 0.00352765
+        },
+        {
+          "Date": "2023-11-30",
+          "tier": "OTHER",
+          "weight_share": 0.84,
+          "contrib_gross": 0.03467665
+        },
+        {
+          "Date": "2023-11-30",
+          "tier": "MEGA",
+          "weight_share": 0.08,
+          "contrib_gross": 0.00540222
+        },
+        {
+          "Date": "2023-11-30",
+          "tier": "MID",
+          "weight_share": 0.08,
+          "contrib_gross": 0.0038
+        },
+        {
+          "Date": "2023-12-28",
+          "tier": "OTHER",
+          "weight_share": 0.8,
+          "contrib_gross": -0.03226159
+        },
+        {
+          "Date": "2023-12-28",
+          "tier": "MEGA",
+          "weight_share": 0.12,
+          "contrib_gross": -0.00371768
+        },
+        {
+          "Date": "2023-12-28",
+          "tier": "MID",
+          "weight_share": 0.08,
+          "contrib_gross": -0.00856283
+        },
+        {
+          "Date": "2024-01-31",
+          "tier": "OTHER",
+          "weight_share": 0.8,
+          "contrib_gross": 0.04157067
+        },
+        {
+          "Date": "2024-01-31",
+          "tier": "MEGA",
+          "weight_share": 0.08,
+          "contrib_gross": 0.00525365
+        },
+        {
+          "Date": "2024-01-31",
+          "tier": "MID",
+          "weight_share": 0.12,
+          "contrib_gross": 0.01909735
+        },
+        {
+          "Date": "2024-02-29",
+          "tier": "MEGA",
+          "weight_share": 0.08,
+          "contrib_gross": -0.00738879
+        },
+        {
+          "Date": "2024-02-29",
+          "tier": "OTHER",
+          "weight_share": 0.84,
+          "contrib_gross": 0.01751039
+        },
+        {
+          "Date": "2024-02-29",
+          "tier": "MID",
+          "weight_share": 0.08,
+          "contrib_gross": -0.00245427
+        },
+        {
+          "Date": "2024-03-29",
+          "tier": "OTHER",
+          "weight_share": 0.92,
+          "contrib_gross": 0.01565839
+        },
+        {
+          "Date": "2024-03-29",
+          "tier": "MEGA",
+          "weight_share": 0.08,
+          "contrib_gross": -0.00430214
+        },
+        {
+          "Date": "2024-04-30",
+          "tier": "OTHER",
+          "weight_share": 0.96,
+          "contrib_gross": 0.04948575
+        },
+        {
+          "Date": "2024-04-30",
+          "tier": "MEGA",
+          "weight_share": 0.04,
+          "contrib_gross": 0.00031873
+        },
+        {
+          "Date": "2024-05-31",
+          "tier": "OTHER",
+          "weight_share": 1,
+          "contrib_gross": 0.05351549
+        },
+        {
+          "Date": "2024-06-28",
+          "tier": "OTHER",
+          "weight_share": 0.84,
+          "contrib_gross": -0.01084515
+        },
+        {
+          "Date": "2024-06-28",
+          "tier": "MEGA",
+          "weight_share": 0.08,
+          "contrib_gross": -0.01332397
+        },
+        {
+          "Date": "2024-06-28",
+          "tier": "MID",
+          "weight_share": 0.08,
+          "contrib_gross": 0.01251015
+        },
+        {
+          "Date": "2024-07-31",
+          "tier": "OTHER",
+          "weight_share": 0.68,
+          "contrib_gross": 0.02310754
+        },
+        {
+          "Date": "2024-07-31",
+          "tier": "MID",
+          "weight_share": 0.24,
+          "contrib_gross": 0.00026165
+        },
+        {
+          "Date": "2024-07-31",
+          "tier": "MEGA",
+          "weight_share": 0.08,
+          "contrib_gross": -0.00068388
+        },
+        {
+          "Date": "2024-08-30",
+          "tier": "OTHER",
+          "weight_share": 0.88,
+          "contrib_gross": -0.04114474
+        },
+        {
+          "Date": "2024-08-30",
+          "tier": "MID",
+          "weight_share": 0.08,
+          "contrib_gross": 0.00126191
+        },
+        {
+          "Date": "2024-08-30",
+          "tier": "MEGA",
+          "weight_share": 0.04,
+          "contrib_gross": -0.00012244
+        },
+        {
+          "Date": "2024-09-30",
+          "tier": "OTHER",
+          "weight_share": 0.88,
+          "contrib_gross": 0.01230252
+        },
+        {
+          "Date": "2024-09-30",
+          "tier": "MID",
+          "weight_share": 0.12,
+          "contrib_gross": 0.00125768
+        },
+        {
+          "Date": "2024-10-31",
+          "tier": "OTHER",
+          "weight_share": 0.92,
+          "contrib_gross": -0.01508193
+        },
+        {
+          "Date": "2024-10-31",
+          "tier": "MID",
+          "weight_share": 0.08,
+          "contrib_gross": 0.00193426
+        },
+        {
+          "Date": "2024-11-29",
+          "tier": "MID",
+          "weight_share": 0.2,
+          "contrib_gross": -0.01788668
+        },
+        {
+          "Date": "2024-11-29",
+          "tier": "OTHER",
+          "weight_share": 0.76,
+          "contrib_gross": -0.04177614
+        },
+        {
+          "Date": "2024-11-29",
+          "tier": "MEGA",
+          "weight_share": 0.04,
+          "contrib_gross": -0.00465696
+        },
+        {
+          "Date": "2024-12-27",
+          "tier": "OTHER",
+          "weight_share": 0.84,
+          "contrib_gross": 0.04270617
+        },
+        {
+          "Date": "2024-12-27",
+          "tier": "MID",
+          "weight_share": 0.12,
+          "contrib_gross": 0.00706825
+        },
+        {
+          "Date": "2024-12-27",
+          "tier": "MEGA",
+          "weight_share": 0.04,
+          "contrib_gross": 0.00297064
+        },
+        {
+          "Date": "2025-01-31",
+          "tier": "OTHER",
+          "weight_share": 0.68,
+          "contrib_gross": 0.0293119
+        },
+        {
+          "Date": "2025-01-31",
+          "tier": "MID",
+          "weight_share": 0.28,
+          "contrib_gross": 0.03063036
+        },
+        {
+          "Date": "2025-01-31",
+          "tier": "MEGA",
+          "weight_share": 0.04,
+          "contrib_gross": 0.0012951
+        },
+        {
+          "Date": "2025-02-28",
+          "tier": "OTHER",
+          "weight_share": 0.92,
+          "contrib_gross": -0.0229974
+        },
+        {
+          "Date": "2025-02-28",
+          "tier": "MID",
+          "weight_share": 0.08,
+          "contrib_gross": -0.00347883
+        },
+        {
+          "Date": "2025-03-31",
+          "tier": "OTHER",
+          "weight_share": 0.92,
+          "contrib_gross": 0.06780305
+        },
+        {
+          "Date": "2025-03-31",
+          "tier": "MID",
+          "weight_share": 0.08,
+          "contrib_gross": 0.00176338
+        },
+        {
+          "Date": "2025-04-30",
+          "tier": "OTHER",
+          "weight_share": 0.88,
+          "contrib_gross": 0.10123154
+        },
+        {
+          "Date": "2025-04-30",
+          "tier": "MID",
+          "weight_share": 0.08,
+          "contrib_gross": 0.01387355
+        },
+        {
+          "Date": "2025-04-30",
+          "tier": "MEGA",
+          "weight_share": 0.04,
+          "contrib_gross": 0.00034826
+        },
+        {
+          "Date": "2025-05-30",
+          "tier": "OTHER",
+          "weight_share": 0.8,
+          "contrib_gross": 0.08716704
+        },
+        {
+          "Date": "2025-05-30",
+          "tier": "MID",
+          "weight_share": 0.16,
+          "contrib_gross": 0.05119032
+        },
+        {
+          "Date": "2025-05-30",
+          "tier": "MEGA",
+          "weight_share": 0.04,
+          "contrib_gross": 0.00253116
+        },
+        {
+          "Date": "2025-06-30",
+          "tier": "MEGA",
+          "weight_share": 0.04,
+          "contrib_gross": -0.00253425
+        },
+        {
+          "Date": "2025-06-30",
+          "tier": "OTHER",
+          "weight_share": 0.84,
+          "contrib_gross": 0.01601097
+        },
+        {
+          "Date": "2025-06-30",
+          "tier": "MID",
+          "weight_share": 0.12,
+          "contrib_gross": 0.00340915
+        },
+        {
+          "Date": "2025-07-31",
+          "tier": "OTHER",
+          "weight_share": 0.88,
+          "contrib_gross": -0.02320664
+        },
+        {
+          "Date": "2025-07-31",
+          "tier": "MEGA",
+          "weight_share": 0.08,
+          "contrib_gross": -0.00209228
+        },
+        {
+          "Date": "2025-07-31",
+          "tier": "MID",
+          "weight_share": 0.04,
+          "contrib_gross": -0.00010686
+        },
+        {
+          "Date": "2025-08-29",
+          "tier": "OTHER",
+          "weight_share": 0.76,
+          "contrib_gross": 0.03283634
+        },
+        {
+          "Date": "2025-08-29",
+          "tier": "MID",
+          "weight_share": 0.2,
+          "contrib_gross": -0.0012793
+        },
+        {
+          "Date": "2025-08-29",
+          "tier": "MEGA",
+          "weight_share": 0.04,
+          "contrib_gross": -0.00038462
+        },
+        {
+          "Date": "2025-09-30",
+          "tier": "OTHER",
+          "weight_share": 0.76,
+          "contrib_gross": 0.0427863
+        },
+        {
+          "Date": "2025-09-30",
+          "tier": "MEGA",
+          "weight_share": 0.12,
+          "contrib_gross": 0.01322832
+        },
+        {
+          "Date": "2025-09-30",
+          "tier": "MID",
+          "weight_share": 0.12,
+          "contrib_gross": 0.02061876
+        },
+        {
+          "Date": "2025-10-31",
+          "tier": "MEGA",
+          "weight_share": 0.16,
+          "contrib_gross": -0.01269988
+        },
+        {
+          "Date": "2025-10-31",
+          "tier": "OTHER",
+          "weight_share": 0.8,
+          "contrib_gross": -0.01819625
+        },
+        {
+          "Date": "2025-10-31",
+          "tier": "MID",
+          "weight_share": 0.04,
+          "contrib_gross": -0.00540084
+        },
+        {
+          "Date": "2025-11-28",
+          "tier": "OTHER",
+          "weight_share": 0.96,
+          "contrib_gross": -0.01734178
+        },
+        {
+          "Date": "2025-11-28",
+          "tier": "MID",
+          "weight_share": 0.04,
+          "contrib_gross": -0.0040381
+        },
+        {
+          "Date": "2025-12-30",
+          "tier": "MID",
+          "weight_share": 0.12,
+          "contrib_gross": 0.02081555
+        },
+        {
+          "Date": "2025-12-30",
+          "tier": "MEGA",
+          "weight_share": 0.12,
+          "contrib_gross": 0.05135368
+        },
+        {
+          "Date": "2025-12-30",
+          "tier": "OTHER",
+          "weight_share": 0.76,
+          "contrib_gross": 0.15986333
+        },
+        {
+          "Date": "2026-01-30",
+          "tier": "OTHER",
+          "weight_share": 0.92,
+          "contrib_gross": 0.1187567
+        },
+        {
+          "Date": "2026-01-30",
+          "tier": "MEGA",
+          "weight_share": 0.04,
+          "contrib_gross": 0.00668867
+        },
+        {
+          "Date": "2026-01-30",
+          "tier": "MID",
+          "weight_share": 0.04,
+          "contrib_gross": 0.02736897
+        },
+        {
+          "Date": "2026-02-27",
+          "tier": "OTHER",
+          "weight_share": 0.8,
+          "contrib_gross": -0.10909791
+        },
+        {
+          "Date": "2026-02-27",
+          "tier": "MEGA",
+          "weight_share": 0.08,
+          "contrib_gross": -0.01901709
+        },
+        {
+          "Date": "2026-02-27",
+          "tier": "MID",
+          "weight_share": 0.12,
+          "contrib_gross": -0.0217396
+        },
+        {
+          "Date": "2026-03-31",
+          "tier": "OTHER",
+          "weight_share": 1,
+          "contrib_gross": 0.18827932
+        },
+        {
+          "Date": "2026-04-30",
+          "tier": "OTHER",
+          "weight_share": 0.72,
+          "contrib_gross": -0.02560977
+        },
+        {
+          "Date": "2026-04-30",
+          "tier": "MEGA",
+          "weight_share": 0.16,
+          "contrib_gross": 0.11411252
+        },
+        {
+          "Date": "2026-04-30",
+          "tier": "MID",
+          "weight_share": 0.12,
+          "contrib_gross": 0.01094237
+        },
+        {
+          "Date": "2026-05-29",
+          "tier": "MID",
+          "weight_share": 0.2,
+          "contrib_gross": -0.03754777
+        },
+        {
+          "Date": "2026-05-29",
+          "tier": "MEGA",
+          "weight_share": 0.32,
+          "contrib_gross": 0.00174886
+        },
+        {
+          "Date": "2026-05-29",
+          "tier": "OTHER",
+          "weight_share": 0.48,
+          "contrib_gross": -0.11955467
+        },
+        {
+          "Date": "2026-06-30",
+          "tier": "MEGA",
+          "weight_share": 0.12,
+          "contrib_gross": -0.04171505
+        },
+        {
+          "Date": "2026-06-30",
+          "tier": "OTHER",
+          "weight_share": 0.76,
+          "contrib_gross": -0.20864615
+        },
+        {
+          "Date": "2026-06-30",
+          "tier": "MID",
+          "weight_share": 0.12,
+          "contrib_gross": -0.00884951
+        },
+        {
+          "Date": "2026-07-31",
+          "tier": "MID",
+          "weight_share": 0.12,
+          "contrib_gross": 0.01043717
+        },
+        {
+          "Date": "2026-07-31",
+          "tier": "OTHER",
+          "weight_share": 0.84,
+          "contrib_gross": 0.05902046
+        },
+        {
+          "Date": "2026-07-31",
+          "tier": "MEGA",
+          "weight_share": 0.04,
+          "contrib_gross": 0.00073591
+        },
+        {
+          "Date": "2026-08-28",
+          "tier": "MID",
+          "weight_share": 0.12,
+          "contrib_gross": 0
+        },
+        {
+          "Date": "2026-08-28",
+          "tier": "OTHER",
+          "weight_share": 0.84,
+          "contrib_gross": 0
+        },
+        {
+          "Date": "2026-08-28",
+          "tier": "MEGA",
+          "weight_share": 0.04,
+          "contrib_gross": 0
+        }
+      ]
+    }
+  },
+  "multifactor_alpha": {
+    "FF3": {
+      "model": "FF3",
+      "alpha_monthly": 0.01139116,
+      "alpha_annual_pct": 13.66939078,
+      "alpha_t": 2.85888533,
+      "adj_r2": 0.01538468
+    },
+    "Carhart4": {
+      "model": "Carhart4",
+      "alpha_monthly": 0.01114786,
+      "alpha_annual_pct": 13.37743632,
+      "alpha_t": 2.75921168,
+      "adj_r2": 0.01210185
+    },
+    "FF5": {
+      "model": "FF5",
+      "alpha_monthly": 0.01129844,
+      "alpha_annual_pct": 13.55812303,
+      "alpha_t": 2.92001703,
+      "adj_r2": 0.05129851
+    }
+  },
+  "advisory_battery": {
+    "rank_ic": 0.01456476,
+    "icir": 0.07856837,
+    "harvey_t_stat": 1.33274201,
+    "post_neutralization_ic": 0.00217867,
+    "post_neutralization_retention": 0.14958511,
+    "monotonicity_spearman": 0.64848485,
+    "decile_ann_returns": [0.1090137, 0.10667901, 0.07391472, 0.08389108, 0.08148029, 0.10399885, 0.11250479, 0.1649061, 0.1304051, 0.15095132],
+    "subperiod": {
+      "1": {
+        "per": "P1_2005_2014",
+        "n": 120,
+        "active_ann": 0.0656358,
+        "sr": 0.47247176,
+        "nw_t": 1.42285849
+      },
+      "2": {
+        "per": "P2_2015_2019",
+        "n": 60,
+        "active_ann": 0.04172445,
+        "sr": 0.31181818,
+        "nw_t": 0.63354199
+      },
+      "3": {
+        "per": "P3_2020_2026",
+        "n": 79,
+        "active_ann": -0.04311898,
+        "sr": -0.23228685,
+        "nw_t": -0.49163546
+      }
+    },
+    "subperiod_stability": 0.66666667,
+    "oos_retention_v2_median": -0.38778953,
+    "oos_retention_splits": [-0.36356762, -0.38778953, -1.14068968],
+    "deflated_sharpe_ratio": 0.78893531,
+    "note": "rank-IC 계열은 advisory. portfolio-alpha t 와 명시 구분(measurement-graduation §2)."
+  },
+  "reachability_ceiling": {
+    "n_months": 259,
+    "sd_monthly_active": 0.04434802,
+    "required_active_ann_for_t295": 0.09755007,
+    "observed_active_ann": 0.02692418,
+    "coverage_ratio": 0.27600373
+  },
+  "post_hoc_power": {
+    "A_raw": {
+      "effect_ann": 0.0192,
+      "mde80_ann": 0.09765803,
+      "ratio": 0.19660442,
+      "expected_t": 0.55080695,
+      "power": 0.07938905
+    },
+    "A_riskadj": {
+      "effect_ann": 0.0324,
+      "mde80_ann": 0.09765803,
+      "ratio": 0.33176996,
+      "expected_t": 0.92948673,
+      "power": 0.15138456
+    },
+    "C_ff3": {
+      "effect_ann": 0.0346,
+      "mde80_ann": 0.09765803,
+      "ratio": 0.35429755,
+      "expected_t": 0.99260003,
+      "power": 0.16667206
+    }
+  }
+}

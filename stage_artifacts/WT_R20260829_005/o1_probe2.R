@@ -1,0 +1,11 @@
+setwd("C:/Users/99922/OneDrive/Quant_Module_Moltbot")
+suppressPackageStartupMessages({library(jsonlite)})
+ap <- fromJSON("qepm/mailbox/worktask/WT-R20260829_005/alpha_package.json", simplifyVector = FALSE)
+pr <- function(lbl, x) { cat("\n=== ", lbl, " ===\n"); cat(toJSON(x, auto_unbox=TRUE, pretty=TRUE, digits=6), "\n") }
+pr("diagnostics", ap$diagnostics)
+pr("universe_and_timing_contract", ap$universe_and_timing_contract)
+pr("handoff_to_risk", ap$handoff_to_risk)
+cat("\nsignal_matrix_ref:", ap$signal_matrix_ref, "\n")
+cat("alpha_vector_note:", ap$alpha_vector_note, "\n")
+pr("factor_specs", ap$factor_specs)
+pr("selection_objective/n_trials", list(so=ap$selection_objective, nt=ap$n_trials, ni=ap$n_iterations, st=ap$selection_type))

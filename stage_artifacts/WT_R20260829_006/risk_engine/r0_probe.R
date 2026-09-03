@@ -1,0 +1,10 @@
+suppressPackageStartupMessages({library(data.table);library(arrow)})
+S <- "C:/Users/99922/AppData/Local/Temp/claude/C--Users-99922-OneDrive-Quant-Module-Moltbot/0c0807c3-c2cd-4903-8044-987993f6f62f/scratchpad/wt006"
+m <- fread(file.path(S,"p1s_family_map.csv")); print(table(m$family))
+z <- as.data.table(read_parquet(file.path(S,"p1s_family_z_panel.parquet")))
+cat("famz rows",nrow(z),"\n"); print(z[,.(N=.N, k=max(k)),by=family]); print(range(z$Date))
+fl <- as.data.table(read_parquet(file.path(S,"p1s_family_ls_returns.parquet")))
+print(fl[,.N,by=family]); print(range(fl$Date))
+mk <- readRDS(file.path(S,"p1s_market.rds")); cat("names:",paste(names(mk),collapse=","),"\n")
+cat("RET_DT range:",as.character(range(mk$RET_DT$Date)),"rows",nrow(mk$RET_DT),"\n")
+cat("ME n=",length(mk$ME)," last=",as.character(max(mk$ME)),"\n")

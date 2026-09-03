@@ -1,0 +1,22 @@
+{
+  "run_id": "FORGE_WT-R20260829_005",
+  "strategy_id": "WTR20260829_005_AMP2013_VALMOM_EW25",
+  "strategy_name": "AMP2013 value-momentum combination (WT-R20260829_005 reinforcement)",
+  "strategy_family": "value_momentum_combination",
+  "signal_description": "alpha_package.json alpha_vector (340 names) top-25 -> optimizer EW",
+  "universe_rule": "KOSPI200 U KOSDAQ150, ADV20 >= 2e8 KRW (alpha t-1 PIT filter inherited)",
+  "rebalance_frequency": "monthly",
+  "signal_date_rule": "month_end sig_date (259 months, 2005-01-31 ~ 2026-07-31)",
+  "execution_date_rule": "month_end_signal_t_plus_1 (get_execution_date)",
+  "weighting_method": "EW top-25 (optimization_package weights.csv as-is)",
+  "max_position_weight": 0.04,
+  "max_leverage": 1,
+  "cash_rule": "residual cash 0% return (integer-share rounding remainder only)",
+  "cost_model": "v2.4_kr_retail_15bps one-way, delta based (|delta notional| charged)",
+  "missing_data_rule": "exec_date close missing -> name excluded, remaining renormalized (logged)",
+  "risk_controls": "none (no overlay — S0/S1 prohibition observed)",
+  "lookahead_prevention": "PIT C1-C15 검사: C1/C2/C3/C6/C10/C15 PASS, C4/C5/C9/C13 N/A(상류 승계 또는 미적용). sig_date 신호 -> t+1 종가 집행. weights.csv as-is 소비(재선택 0). detect_lookahead static scan on run_all.R = CLEAN(0 violations). ★검출기 커버리지 한계: 비선언 idiom 3종 주입 0/3 미발화 — CLEAN 은 PIT 증명이 아니라 선언 idiom 부재의 증거다.",
+  "survivorship_bias_control": "full RAWDATA panel + alpha monthly PIT membership inherited",
+  "factor_engine_path": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/WT_R20260829_005/run_all.R",
+  "cost_model_version": "v2.4_delta"
+}

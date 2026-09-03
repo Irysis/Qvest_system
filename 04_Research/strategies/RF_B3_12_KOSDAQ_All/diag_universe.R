@@ -1,0 +1,17 @@
+PROJECT_ROOT <- Sys.getenv("QM_ROOT", "C:/Users/99922/OneDrive/Quant_Module_Moltbot")
+Sys.setenv(CLAUDE_PROJECT_DIR = PROJECT_ROOT, QM_ROOT = PROJECT_ROOT)
+setwd(PROJECT_ROOT)
+suppressPackageStartupMessages({library(data.table); library(arrow)})
+source("02_Infrastructure/config.R")
+source("02_Infrastructure/backtest_harness.R")
+res <- load_rawdata(TRUE); RAWDATA <- res$RAWDATA; rm(res); gc()
+cat("\n== COLS ==\n"); print(names(RAWDATA))
+if ("Market" %in% names(RAWDATA)) { cat("\n== Market value counts ==\n"); print(RAWDATA[, .N, by=Market][order(-N)]) } else cat("\nNO Market col\n")
+cat("\n== Date range ==\n"); print(range(RAWDATA$Date))
+lastd <- RAWDATA[, .(last=max(Date), first=min(Date), n=.N), by=.(Ticker)]
+maxD <- max(RAWDATA$Date)
+cat(sprintf("\ntickers total = %d ; last==maxDate = %d ; last < maxDate-90d = %d\n",
+    nrow(lastd), sum(lastd$last==maxD), sum(lastd$last < maxD-90)))
+cat("\n== yearly count of tickers whose panel ENDS that year ==\n")
+print(lastd[last < maxD-90, .N, by=.(yr=year(last))][order(yr)])
+saveRDS(lastd, "04_Research/strategies/RF_B3_12_KOSDAQ_All/lastd.rds")

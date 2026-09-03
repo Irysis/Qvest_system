@@ -1,0 +1,839 @@
+{
+  "task_id": "WT-R20260829_006",
+  "as_of_date": "2026-08-28",
+  "agent": "risk-research",
+  "spec_version": "risk_v1.2",
+  "pit": {
+    "sig_date": "2026-08-28",
+    "decision_ts": "2026-08-29T18:36:09+0900",
+    "estimation_window": "2005-12-29 ~ 2026-07-31 (248 monthly cross-sections, expanding to sig_date)",
+    "c1_rule": "Omega/D 는 sig_date 이전 관측만 사용하는 확장창. full-sample 미래참조 없음. 추정기 선택도 rolling-60m OOS 우도(매 시점 직전 60개월만)로 판정.",
+    "c15_rule": "계열 z 는 load_month_factors(sig_date) 경유 · Z_Score_Aligned(C13) · PIT-strict 제외 23리프 승계",
+    "c10_rule": "유동성 adv20 = build_adv20_t1 (당일 미포함 shift(1))",
+    "c6_rule": "유니버스는 월별 K200|KQ150 실측 멤버십 스냅샷 — 생존편향 없음",
+    "c9_rule": "rolling beta 는 당월 forward 수익 제외(Date < d)"
+  },
+  "exposure_matrix_ref": "stage_artifacts/WT_R20260829_006/exposure_matrix.parquet",
+  "factor_covariance_ref": "stage_artifacts/WT_R20260829_006/factor_covariance.parquet",
+  "specific_risk_ref": "stage_artifacts/WT_R20260829_006/specific_risk.parquet",
+  "security_covariance_ref": "stage_artifacts/WT_R20260829_006/covariance.parquet",
+  "tail_risk_ref": "stage_artifacts/WT_R20260829_006/tail_risk.json",
+  "regime_correlation_ref": "stage_artifacts/WT_R20260829_006/regime_correlation.parquet",
+  "sigma_period_heterogeneity_ref": "stage_artifacts/WT_R20260829_006/sigma_period_heterogeneity.parquet",
+  "model": {
+    "form": "Sigma = B * Omega * B' + D",
+    "n_assets": 347,
+    "n_factors": 24,
+    "factor_blocks": {
+      "market": "Intercept (횡단면 등가중 시장수익)",
+      "style": [
+        "x_beta(Blume 60m)",
+        "x_size(log 시총)",
+        "x_liq(log adv20)"
+      ],
+      "family": [
+        "x_f_accrual",
+        "x_f_crowding",
+        "x_f_defense",
+        "x_f_growth",
+        "x_f_investor_flow",
+        "x_f_leverage",
+        "x_f_liquidity",
+        "x_f_momentum",
+        "x_f_quality",
+        "x_f_regime",
+        "x_f_risk",
+        "x_f_size",
+        "x_f_value"
+      ],
+      "sector": [
+        "s_HEALTH",
+        "s_CONSDISC",
+        "s_STAPLE",
+        "s_INDUST",
+        "s_MATER",
+        "s_FIN",
+        "s_ENUTIL"
+      ],
+      "sector_reference": "IT (+ 미분류 OTHER 흡수)"
+    },
+    "factor_return_estimation": "월별 횡단면 OLS (평균 n=284 · 평균 R2 0.2335 · 248개월)",
+    "omega_estimator": "lw_nls (Ledoit-Wolf analytical nonlinear shrinkage, hrp_core::.get_cor_cov 등재분)",
+    "specific_risk_estimator": "EWMA(halflife 24m) of cross-sectional residual^2, winsor 5/95, 이력<12m 은 횡단면 중앙값과 50:50 혼합",
+    "universe_alignment": "alpha_vector 347종 전건 = as_of K200|KQ150 ∩ adv20_t1 >= 2e8. 결격 0."
+  },
+  "risk_summary": {
+    "top_common_risks": [
+      "Market (68.8%)",
+      "Family/Style-composite (15.7%)",
+      "Sector (6.2%, 최대 INDUST 5.6%)",
+      "Size/Liquidity/Beta style (0.8%)",
+      "Specific (8.5%)"
+    ],
+    "variance_decomposition_book": {
+      "basis": "진단용 기준 book = 전략 사양 그대로의 top-25 EW (비중 제안 아님 — optimizer 소관)",
+      "book_ann_vol_pct": 25.2,
+      "factor_share": 0.9148,
+      "specific_share": 0.0852,
+      "market": 0.6882,
+      "family": 0.1573,
+      "sector": 0.0618,
+      "style": 0.0077,
+      "specific": 0.0852,
+      "top_single_factors": [
+        0.6882,
+        0.056,
+        0.0284,
+        0.0271,
+        0.0197,
+        0.0185,
+        0.0176,
+        0.0163
+      ]
+    },
+    "book_factor_exposures": [
+      1.187,
+      -1.12,
+      1.037,
+      1,
+      0.914,
+      -0.909,
+      0.771,
+      0.733,
+      0.469,
+      0.454,
+      -0.428,
+      0.4
+    ],
+    "family_concentration": {
+      "n_declared": 12,
+      "mean_abs_rho": 0.2448,
+      "n_eff_nyholt": 3.25,
+      "n_eff_participation_ratio": 5.42,
+      "pc1_variance_share": 0.3469,
+      "cum_eigen_share_top3": 0.639,
+      "alpha_weight_hhi": 0.0907,
+      "alpha_weight_n_eff": 11.02,
+      "variance_contribution_hhi": 0.1072,
+      "per_family": [
+        {
+          "family": "size",
+          "alpha_weight_theta": -0.0723,
+          "variance_share": 0.1294
+        },
+        {
+          "family": "leverage",
+          "alpha_weight_theta": 0.1176,
+          "variance_share": 0.1274
+        },
+        {
+          "family": "crowding",
+          "alpha_weight_theta": 0.0771,
+          "variance_share": 0.1271
+        },
+        {
+          "family": "regime",
+          "alpha_weight_theta": -0.0581,
+          "variance_share": 0.1117
+        },
+        {
+          "family": "accrual",
+          "alpha_weight_theta": 0.1185,
+          "variance_share": 0.1067
+        },
+        {
+          "family": "quality",
+          "alpha_weight_theta": 0.0936,
+          "variance_share": 0.1047
+        },
+        {
+          "family": "value",
+          "alpha_weight_theta": 0.0614,
+          "variance_share": 0.1006
+        },
+        {
+          "family": "investor_flow",
+          "alpha_weight_theta": -0.1234,
+          "variance_share": 0.0796
+        },
+        {
+          "family": "risk",
+          "alpha_weight_theta": 0.0621,
+          "variance_share": 0.0666
+        },
+        {
+          "family": "growth",
+          "alpha_weight_theta": 0.0995,
+          "variance_share": 0.0454
+        },
+        {
+          "family": "defense",
+          "alpha_weight_theta": -0.057,
+          "variance_share": 0.0123
+        },
+        {
+          "family": "liquidity",
+          "alpha_weight_theta": -0.0595,
+          "variance_share": -0.0115
+        }
+      ],
+      "interpretation": "12계열 가중합의 실효 해상도는 3.25(Nyholt) ~ 5.42(참여비). 가중치는 고르게 퍼져 있으나(HHI 0.0907) 기저 축이 3~5개라 분산은 명목이다."
+    },
+    "period_heterogeneity": {
+      "split": "2015-01-01",
+      "n_pre": 109,
+      "n_post": 139,
+      "correlation_relfro": 0.536,
+      "jennrich_chi2": 210.5,
+      "jennrich_df": 66,
+      "jennrich_p": 5.519e-17,
+      "cross_sectional_r2": {
+        "pre": 0.2622,
+        "post": 0.211
+      },
+      "specific_vol_ann_pct": {
+        "pre": 32.24,
+        "post": 35.86
+      },
+      "family_mean_abs_rho": {
+        "pre": 0.2767,
+        "post": 0.2816
+      },
+      "family_participation_ratio": {
+        "pre": 5.28,
+        "post": 4.65
+      },
+      "omega_condition": {
+        "pre": 178,
+        "post": 137.4
+      },
+      "factor_vol_ratio_post_over_pre": [
+        {
+          "factor": "Intercept",
+          "vol_ann_pre2015_pct": 22.33,
+          "vol_ann_post2015_pct": 21.8,
+          "ratio": 0.976
+        },
+        {
+          "factor": "s_CONSDISC",
+          "vol_ann_pre2015_pct": 16.02,
+          "vol_ann_post2015_pct": 14.31,
+          "ratio": 0.893
+        },
+        {
+          "factor": "s_ENUTIL",
+          "vol_ann_pre2015_pct": 21.08,
+          "vol_ann_post2015_pct": 18.51,
+          "ratio": 0.878
+        },
+        {
+          "factor": "s_FIN",
+          "vol_ann_pre2015_pct": 23.05,
+          "vol_ann_post2015_pct": 17.61,
+          "ratio": 0.764
+        },
+        {
+          "factor": "s_HEALTH",
+          "vol_ann_pre2015_pct": 21.12,
+          "vol_ann_post2015_pct": 21.59,
+          "ratio": 1.022
+        },
+        {
+          "factor": "s_INDUST",
+          "vol_ann_pre2015_pct": 21.7,
+          "vol_ann_post2015_pct": 15.01,
+          "ratio": 0.692
+        },
+        {
+          "factor": "s_MATER",
+          "vol_ann_pre2015_pct": 18.86,
+          "vol_ann_post2015_pct": 15.69,
+          "ratio": 0.832
+        },
+        {
+          "factor": "s_STAPLE",
+          "vol_ann_pre2015_pct": 17.8,
+          "vol_ann_post2015_pct": 15.45,
+          "ratio": 0.868
+        },
+        {
+          "factor": "x_beta",
+          "vol_ann_pre2015_pct": 5.36,
+          "vol_ann_post2015_pct": 4.75,
+          "ratio": 0.885
+        },
+        {
+          "factor": "x_f_accrual",
+          "vol_ann_pre2015_pct": 4.13,
+          "vol_ann_post2015_pct": 3.47,
+          "ratio": 0.839
+        },
+        {
+          "factor": "x_f_crowding",
+          "vol_ann_pre2015_pct": 5.36,
+          "vol_ann_post2015_pct": 5.46,
+          "ratio": 1.019
+        },
+        {
+          "factor": "x_f_defense",
+          "vol_ann_pre2015_pct": 14.39,
+          "vol_ann_post2015_pct": 13.62,
+          "ratio": 0.946
+        },
+        {
+          "factor": "x_f_growth",
+          "vol_ann_pre2015_pct": 4.75,
+          "vol_ann_post2015_pct": 3.68,
+          "ratio": 0.775
+        },
+        {
+          "factor": "x_f_investor_flow",
+          "vol_ann_pre2015_pct": 4.33,
+          "vol_ann_post2015_pct": 3.3,
+          "ratio": 0.764
+        },
+        {
+          "factor": "x_f_leverage",
+          "vol_ann_pre2015_pct": 4.56,
+          "vol_ann_post2015_pct": 3.52,
+          "ratio": 0.773
+        },
+        {
+          "factor": "x_f_liquidity",
+          "vol_ann_pre2015_pct": 7.76,
+          "vol_ann_post2015_pct": 9.21,
+          "ratio": 1.186
+        },
+        {
+          "factor": "x_f_momentum",
+          "vol_ann_pre2015_pct": 5.44,
+          "vol_ann_post2015_pct": 4.71,
+          "ratio": 0.865
+        },
+        {
+          "factor": "x_f_quality",
+          "vol_ann_pre2015_pct": 4.88,
+          "vol_ann_post2015_pct": 4.41,
+          "ratio": 0.903
+        },
+        {
+          "factor": "x_f_regime",
+          "vol_ann_pre2015_pct": 12.91,
+          "vol_ann_post2015_pct": 9.71,
+          "ratio": 0.752
+        },
+        {
+          "factor": "x_f_risk",
+          "vol_ann_pre2015_pct": 7.27,
+          "vol_ann_post2015_pct": 8.59,
+          "ratio": 1.181
+        },
+        {
+          "factor": "x_f_size",
+          "vol_ann_pre2015_pct": 14.94,
+          "vol_ann_post2015_pct": 13.07,
+          "ratio": 0.875
+        },
+        {
+          "factor": "x_f_value",
+          "vol_ann_pre2015_pct": 4.62,
+          "vol_ann_post2015_pct": 5.52,
+          "ratio": 1.195
+        },
+        {
+          "factor": "x_liq",
+          "vol_ann_pre2015_pct": 11.67,
+          "vol_ann_post2015_pct": 10.87,
+          "ratio": 0.932
+        },
+        {
+          "factor": "x_size",
+          "vol_ann_pre2015_pct": 16.2,
+          "vol_ann_post2015_pct": 15.49,
+          "ratio": 0.956
+        }
+      ],
+      "verdict": "공통구조 약화 + 특이위험 증가 + 알파 타이밍 대상 계열의 진폭 축소. 상류 기간절단(2015~ alpha -0.05%)의 위험-측 대응물."
+    },
+    "cap_tier_decomposition": {
+      "basis": "cap_w_and_ew_uni",
+      "tiers": [
+        {
+          "tier": "MEGA",
+          "n_book": 18,
+          "active_risk_share": 0.9237,
+          "alpha_share": 0.7249,
+          "signal_alive": true
+        },
+        {
+          "tier": "MID",
+          "n_book": 6,
+          "active_risk_share": 0.06,
+          "alpha_share": 0.2302,
+          "signal_alive": true
+        },
+        {
+          "tier": "SMALL",
+          "n_book": 1,
+          "active_risk_share": 0.0162,
+          "alpha_share": 0.0449,
+          "signal_alive": true
+        }
+      ],
+      "te_vs_capw_universe_pct": 20.2,
+      "te_vs_ew_universe_pct": 12.97,
+      "dual_basis_divergence_pp": 7.23,
+      "dual_basis_divergence_flag": true
+    },
+    "concentration": {
+      "book_sector_hhi": 0.2704,
+      "book_sector_n_eff": 3.7,
+      "universe_sector_hhi": 0.179,
+      "n_names": 25
+    },
+    "crowding_score_per_factor": [
+      {
+        "factor_name": "size",
+        "crowding_score": 0.4159,
+        "hhi_top": 0.0009,
+        "vol_concentration": 0,
+        "passive_overlap_proxy": 1,
+        "demand_elasticity_proxy": 0.8279,
+        "delta_3m": -0.005
+      },
+      {
+        "factor_name": "accrual",
+        "crowding_score": 0.4126,
+        "hhi_top": 0.2772,
+        "vol_concentration": 0.0049,
+        "passive_overlap_proxy": 1,
+        "demand_elasticity_proxy": 0.3914,
+        "delta_3m": -0.1567
+      },
+      {
+        "factor_name": "liquidity",
+        "crowding_score": 0.4096,
+        "hhi_top": 0.1037,
+        "vol_concentration": 0,
+        "passive_overlap_proxy": 1,
+        "demand_elasticity_proxy": 0.6423,
+        "delta_3m": -0.0248
+      },
+      {
+        "factor_name": "crowding",
+        "crowding_score": 0.3865,
+        "hhi_top": 0.1315,
+        "vol_concentration": 0,
+        "passive_overlap_proxy": 1,
+        "demand_elasticity_proxy": 0.4852,
+        "delta_3m": 0.0074
+      },
+      {
+        "factor_name": "momentum",
+        "crowding_score": 0.3773,
+        "hhi_top": 0.3692,
+        "vol_concentration": 0.066,
+        "passive_overlap_proxy": 1,
+        "demand_elasticity_proxy": 0,
+        "delta_3m": 0.0792
+      },
+      {
+        "factor_name": "defense",
+        "crowding_score": 0.3601,
+        "hhi_top": 0.0743,
+        "vol_concentration": 0,
+        "passive_overlap_proxy": 1,
+        "demand_elasticity_proxy": 0.4389,
+        "delta_3m": -0.0278
+      },
+      {
+        "factor_name": "growth",
+        "crowding_score": 0.357,
+        "hhi_top": 0.0307,
+        "vol_concentration": 0,
+        "passive_overlap_proxy": 1,
+        "demand_elasticity_proxy": 0.4888,
+        "delta_3m": 0.002
+      },
+      {
+        "factor_name": "investor_flow",
+        "crowding_score": 0.3336,
+        "hhi_top": 0.0466,
+        "vol_concentration": 0,
+        "passive_overlap_proxy": 1,
+        "demand_elasticity_proxy": 0.3479,
+        "delta_3m": -0.0312
+      },
+      {
+        "factor_name": "leverage",
+        "crowding_score": 0.324,
+        "hhi_top": 0.1837,
+        "vol_concentration": 0.0755,
+        "passive_overlap_proxy": 1,
+        "demand_elasticity_proxy": 0,
+        "delta_3m": 0.0205
+      },
+      {
+        "factor_name": "quality",
+        "crowding_score": 0.2886,
+        "hhi_top": 0.0754,
+        "vol_concentration": 0,
+        "passive_overlap_proxy": 1,
+        "demand_elasticity_proxy": 0.0798,
+        "delta_3m": -0.0276
+      },
+      {
+        "factor_name": "regime",
+        "crowding_score": 0.2852,
+        "hhi_top": 0.0634,
+        "vol_concentration": 0,
+        "passive_overlap_proxy": 1,
+        "demand_elasticity_proxy": 0.0811,
+        "delta_3m": -0.0614
+      },
+      {
+        "factor_name": "risk",
+        "crowding_score": 0.2824,
+        "hhi_top": 0.1079,
+        "vol_concentration": 0,
+        "passive_overlap_proxy": 1,
+        "demand_elasticity_proxy": 0,
+        "delta_3m": -0.0066
+      },
+      {
+        "factor_name": "value",
+        "crowding_score": 0.2756,
+        "hhi_top": 0.0653,
+        "vol_concentration": 0.0238,
+        "passive_overlap_proxy": 1,
+        "demand_elasticity_proxy": 0,
+        "delta_3m": 0.0048
+      }
+    ],
+    "crowding_flags": [],
+    "crowding_instrument_note": "crowding_score_per_factor() 를 라이브 유니버스(347종·as_of) 기준으로 호출. ★본 유니버스에서 composite 의 구조적 상한 = 0.7345 이라 threshold 0.75 는 발화 불가 — passive_overlap_proxy 가 전 계열 1.0 고정(유니버스=벤치)이고 vol_concentration 이 9/13 계열에서 0. '군집 없음'이 아니라 '이 계기로는 판정 불가'.",
+    "liquidity_flags": [],
+    "liquidity_diagnostics": {
+      "book_adv20_median_krw": 63960000000,
+      "book_adv20_min_krw": 2717000000,
+      "names_below_5e8": 0,
+      "days_to_trade_at_10pct_participation": {
+        "aum_10bn": {
+          "median": 0.06,
+          "max": 1.47,
+          "n_gt_5d": 0
+        },
+        "aum_50bn": {
+          "median": 0.31,
+          "max": 7.36,
+          "n_gt_5d": 3
+        },
+        "aum_100bn": {
+          "median": 0.63,
+          "max": 14.72,
+          "n_gt_5d": 4
+        }
+      }
+    },
+    "turnover_risk": {
+      "monthly_name_turnover": 0.4993,
+      "annual_two_way_turnover": 11.98,
+      "traded_leg_gap_mean_monthly": -0.00089,
+      "traded_leg_gap_t": -0.22,
+      "trade_timing_risk_ann_pct": 10.59,
+      "cost_drag_pct": {
+        "bps15": 1.8,
+        "bps30": 3.59,
+        "bps45": 5.39
+      },
+      "note": "상류 turnover_proxy 11.9826 을 명부 재구성으로 독립 재현(11.98). 권고선 11.0/yr 초과."
+    },
+    "stress_tests": {
+      "market_down_5": -0.044,
+      "market_down_10": -0.088,
+      "momentum_reversal_2sd": -0.0264,
+      "size_reversal_2sd": 0.0016,
+      "liquidity_crunch_2sd": 0.0283,
+      "value_crash_2sd": -0.0108,
+      "defense_shock_2sd": 0.0329,
+      "regime_shock_2sd": 0.0152,
+      "realized_windows": [
+        {
+          "period": "Terror_9_11",
+          "window": "2001-09-01 ~ 2001-12-31",
+          "n_months": 0,
+          "strat_cum": "NA",
+          "bench_cum": "NA",
+          "alpha_cum": "NA",
+          "strat_mdd": "NA",
+          "book_coverage": 0,
+          "reliability": "UNRELIABLE_NO_RETURN_COVERAGE"
+        },
+        {
+          "period": "GFC",
+          "window": "2007-10-01 ~ 2009-03-31",
+          "n_months": 18,
+          "strat_cum": -0.467,
+          "bench_cum": -0.3654,
+          "alpha_cum": -0.1016,
+          "strat_mdd": -0.5577,
+          "book_coverage": 0.52,
+          "reliability": "UNRELIABLE_BOOK_COVERAGE_LT_85"
+        },
+        {
+          "period": "Euro_Debt",
+          "window": "2011-07-01 ~ 2011-12-31",
+          "n_months": 6,
+          "strat_cum": 0.2647,
+          "bench_cum": -0.131,
+          "alpha_cum": 0.3956,
+          "strat_mdd": -0.0543,
+          "book_coverage": 0.72,
+          "reliability": "UNRELIABLE_BOOK_COVERAGE_LT_85"
+        },
+        {
+          "period": "China_Shock",
+          "window": "2015-06-01 ~ 2016-02-29",
+          "n_months": 9,
+          "strat_cum": -0.1964,
+          "bench_cum": -0.0922,
+          "alpha_cum": -0.1042,
+          "strat_mdd": -0.2411,
+          "book_coverage": 0.8,
+          "reliability": "UNRELIABLE_BOOK_COVERAGE_LT_85"
+        },
+        {
+          "period": "US_China_Trade",
+          "window": "2018-03-01 ~ 2018-12-31",
+          "n_months": 10,
+          "strat_cum": -0.206,
+          "bench_cum": -0.1649,
+          "alpha_cum": -0.0411,
+          "strat_mdd": -0.2959,
+          "book_coverage": 0.84,
+          "reliability": "UNRELIABLE_BOOK_COVERAGE_LT_85"
+        },
+        {
+          "period": "COVID",
+          "window": "2020-01-01 ~ 2020-06-30",
+          "n_months": 6,
+          "strat_cum": 0.0303,
+          "bench_cum": -0.0284,
+          "alpha_cum": 0.0587,
+          "strat_mdd": -0.0614,
+          "book_coverage": 0.84,
+          "reliability": "UNRELIABLE_BOOK_COVERAGE_LT_85"
+        },
+        {
+          "period": "Rate_Hike",
+          "window": "2022-01-01 ~ 2022-12-31",
+          "n_months": 12,
+          "strat_cum": -0.0991,
+          "bench_cum": -0.2547,
+          "alpha_cum": 0.1555,
+          "strat_mdd": -0.2214,
+          "book_coverage": 0.84,
+          "reliability": "UNRELIABLE_BOOK_COVERAGE_LT_85"
+        },
+        {
+          "period": "Iran_War",
+          "window": "2026-02-01 ~ 2026-04-30",
+          "n_months": 3,
+          "strat_cum": 0.1327,
+          "bench_cum": 0.2339,
+          "alpha_cum": -0.1012,
+          "strat_mdd": -0.1418,
+          "book_coverage": 1,
+          "reliability": "OK; BM_INTEGRITY_SUSPECT(WT006-17)"
+        }
+      ],
+      "kr_bear": {
+        "n_months": 89,
+        "mean_strat": -0.0072,
+        "mean_bench": -0.0109,
+        "mean_active": 0.0037
+      },
+      "scenario_method": "Omega 조건부 기댓값 E[f | f_k = shock] = Omega[,k]/Omega[k,k]*shock, book 노출 내적",
+      "coverage_note": "GFC~Rate_Hike 6구간은 현 book 종목 커버리지 52~84% (<85%) 로 UNRELIABLE. hard-fail 아님."
+    }
+  },
+  "diagnostics": {
+    "condition_number": 399.9,
+    "condition_number_omega": 132.8,
+    "condition_number_d": 9.1,
+    "min_eigenvalue": 0.00351,
+    "positive_definite": true,
+    "shrinkage_used": true,
+    "shrinkage_method": "ledoit_wolf_analytical_nls (Omega) + winsor 5/95 EWMA (D)",
+    "condition_before_shrinkage": 194.7,
+    "condition_after_shrinkage": 132.8,
+    "condition_sensitivity_ladder": {
+      "winsor_2_98": {
+        "cond_sigma": 483.5,
+        "cond_D": 15.2,
+        "mean_specific_vol_ann": 38.98
+      },
+      "winsor_5_95": {
+        "cond_sigma": 399.9,
+        "cond_D": 9.1,
+        "mean_specific_vol_ann": 38.54
+      },
+      "winsor_10_90": {
+        "cond_sigma": 313.4,
+        "cond_D": 5.7,
+        "mean_specific_vol_ann": 38.06
+      }
+    },
+    "factor_correlation_warnings": "none (max |rho| 0.754)",
+    "factor_variance_share_trace": 0.3607,
+    "specific_variance_share_trace": 0.6393,
+    "mean_pairwise_correlation": 0.1842,
+    "mean_asset_ann_vol_pct": 49.18,
+    "regime_correlation_ref": "stage_artifacts/WT_R20260829_006/regime_correlation.parquet",
+    "estimation_fallbacks": {
+      "beta_history_lt_24m": 57,
+      "specific_history_lt_12m": 47
+    },
+    "infra_note": "tail_risk_engine.R(fExtremes) 미설치 — GPD/Hill/CF 자체 구현"
+  },
+  "selection_objective": "shrinkage_quality",
+  "method_shopping_log": {
+    "risk_agent": {
+      "candidates_tried": 4,
+      "cap": 5,
+      "selection_criterion": "rolling-60m out-of-sample Gaussian log-likelihood (일차) + condition number (이차) — 수익/SR/IR 미참조",
+      "decision": "lw_nls 선택. 페어드 DM-t(NW lag3) = +5.23 vs ledoit_wolf (dLL +2.579/월). linear LW 가 조건수(59.6 vs 132.8)·분할반쪽 안정성(0.421 vs 0.547)에서 앞서지만, 예측우도 차가 결정적이고 두 후보 모두 cond<500 이라 예측력을 택했다. p(24) << n(248) 이라 v8.3.1 posterior 의 linear-LW p>n 퇴화 조건은 비발동.",
+      "method_log": [
+        {
+          "name": "sample",
+          "condition": 194.7,
+          "min_eigen": 5.888e-05,
+          "pd": true,
+          "splithalf_relfro": 0.5894,
+          "oos_rolling60m_mean_loglik": 72.072,
+          "mean_rolling_condition": 709.6,
+          "selected": false
+        },
+        {
+          "name": "ledoit_wolf",
+          "condition": 59.6,
+          "min_eigen": 0.00017742,
+          "pd": true,
+          "splithalf_relfro": 0.4206,
+          "oos_rolling60m_mean_loglik": 75.515,
+          "mean_rolling_condition": 17.9,
+          "selected": false
+        },
+        {
+          "name": "lw_nls",
+          "condition": 132.8,
+          "min_eigen": 8.517e-05,
+          "pd": true,
+          "splithalf_relfro": 0.547,
+          "oos_rolling60m_mean_loglik": 78.094,
+          "mean_rolling_condition": 174.2,
+          "selected": true
+        },
+        {
+          "name": "gerber_rmt",
+          "condition": 208.6,
+          "min_eigen": 6.776e-05,
+          "pd": true,
+          "splithalf_relfro": 0.6295,
+          "oos_rolling60m_mean_loglik": 75.106,
+          "mean_rolling_condition": 331.8,
+          "selected": false
+        }
+      ],
+      "parallel_exec": false,
+      "n_workers": 1
+    }
+  },
+  "challenge_flags": [
+    "RF-R1 [HIGH] 공통위험 1위 = Market 68.8% > 40% 게이트. 진단 book(top-25 EW)의 팩터 분산 기여 91.5% 중 시장 절편이 68.8%다. 전략의 능동위험은 신호가 아니라 시장 방향에 실려 있다.",
+    "RF-R2 [부분] cond(Sigma) 399.9 — 500 게이트 통과, 다만 200 권고선 초과. 분해: cond(Omega)=132.8(lw_nls 축소 후) · cond(D)=9.1. 조건수는 추정잡음이 아니라 347종 특이변동성의 실제 분산이 만든다. 200 이하로 내리려면 특이변동성을 2.4% 이상 왜곡(10/90 winsor)해야 한다 — 하지 않았고 사다리 전체를 기록한다.",
+    "RF-R3 [미발화·계기결함] crowding_score 최대 0.4159(size) < 0.75. ★그러나 본 유니버스에서 composite 의 구조적 상한이 0.7345 라 게이트 0.75 는 원리적으로 발화 불가다 — passive_overlap_proxy 는 유니버스=벤치(K200∪KQ150)라 전 계열 1.0 로 고정이고 vol_concentration 은 13계열 중 9계열에서 정확히 0 이다. 양성 대조 없는 계기이므로 '군집 없음'이 아니라 '이 계기로는 판정 불가'로 읽어야 한다.",
+    "RF-R4 [미발화] market_down_5 조건부 book 수익 -4.40% > -8% 정책선.",
+    "RF-R5 [미발화] |rho|>0.8 팩터쌍 0개. 최대 0.754.",
+    "WT006R-01 [HIGH] 구간 이질성이 실증됐다. 계열 상관구조 pre/post-2015 Jennrich chi2=210.5 (df 66, p=5.5e-17) — 동일 구조 가설 기각. 팩터 상관행렬 relFro 0.536. 횡단면 R2 0.2622->0.2110(공통성 -19.5%), 특이변동성 32.24%->35.86%(+11.2%). 알파가 타이밍하는 계열들의 변동성이 일제히 하락(regime -24.8% · investor_flow -23.6% · leverage -22.7% · growth -22.5%): **타이밍 대상 자체의 진폭이 줄었다**. 2015~ alpha -0.05%(t -0.009)의 위험-측 대응물이다.",
+    "WT006R-02 [HIGH] 계열 집중. 12계열 mean|rho| 0.2448 -> Nyholt n_eff 3.25 (상류 신고 3.25 재현) · 고유값 참여비 5.42 · PC1 이 분산의 34.7%. 알파-가중 분산기여 HHI 0.1072(n_eff 9.3)로 가중치는 고르지만 **기저 축이 3~5개뿐**이라 12계열 분산은 명목이다. post-2015 에는 참여비가 5.28->4.65 로 더 줄었다 — 감쇠 구간에서 해상도가 더 나빠진다.",
+    "WT006R-03 [HIGH] 회전 위험. 명부 회전 월 49.9%(연 양방향 11.98회, 상류 turnover_proxy 11.98 과 일치 재현). 진입종목-이탈종목의 익월 수익차 평균 -0.0009/월 (t -0.22) — **교체되는 절반에서 측정 가능한 우위가 없다**. 그 교체가 만드는 분산은 연 10.59%. 비용은 15bps 에서 연 1.80%, 30bps 3.59%, 45bps 5.39% 로 선형 증가한다.",
+    "WT006R-04 [HIGH] 꼬리. Hill alpha 1.862 < 2 — 표본 꼬리지수가 유한분산 경계 아래다. 실측 월 VaR1 0.2046 / ES1 0.2841 인데 정규-Sigma 는 0.1692 로 1% 지점을 17% 과소평가한다(5% 지점은 반대로 보수적). 하류는 꼬리 소비 시 t(5) 또는 GPD(xi 0.0955) 값을 쓸 것. 월간 n=248·초과 25 라 EVT 는 소표본이다.",
+    "WT006R-05 [MEDIUM] 스트레스 신뢰도. 8구간 중 Terror_9_11 은 수익 커버리지 0(UNRELIABLE), GFC~Rate_Hike 6구간은 **현 book 종목 커버리지 52~84%로 85% 미만**이라 UNRELIABLE 표기. 부분상장 아티팩트를 hard-fail 로 쓰지 않되 해석에 실을 수 없다. 유일한 완전커버(Iran_War 2026-02~04)는 상류 WT006-17 벤치 무결성 의심 구간과 겹친다.",
+    "WT006R-06 [MEDIUM] cap-tier 편중. 진단 book 25종 중 MEGA 18종이 능동위험의 92.4%·알파의 72.5%를 갖는다. dual-basis 괴리: TE(vs cap-w 유니버스) 20.20% vs TE(vs EW 유니버스) 12.97% = 7.23pp. 상류 EW-유니버스 대비 PORT_t 1.4615 와 cap-w 대비 1.044 의 격차가 위험-측에서도 같은 부호로 재현된다.",
+    "WT006R-07 [MEDIUM · Risk->Alpha 이의] '비-모멘텀 12계열' 구성이 모멘텀 중립을 뜻하지 않는다. 진단 book 의 x_f_momentum 노출 +0.469 sigma, 분산기여 1.63%. 모멘텀 계열을 알파에서 뺐어도 12계열 가중합이 모멘텀과 상관된 종목을 고르고 있다. alpha_package 수정 요구가 아니라 소비 시 인지 요구다(공식 wt_challenge 대신 review-with-objection 으로 기록 — 체인 완주 의무상 phase 되돌림 금지).",
+    "WT006R-08 [MEDIUM] 섹터 집중. book 섹터 HHI 0.2704 (n_eff 3.70) vs 유니버스 0.1790. INDUST 10종·IT 7종으로 2개 매크로섹터가 68%다. 섹터가 book 분산의 6.2%(그중 INDUST 단독 5.6%)를 설명한다.",
+    "WT006R-09 [LOW] 추정 이력 결손: beta 이력<24개월 57종(Blume 사전값 1.0 대체) · 특이위험 이력<12개월 47종(횡단면 중앙값 혼합). Sigma 유니버스 347 전건이 as_of 유니버스∩유동성(adv20 t-1 >= 2e8)을 통과했다 — 상류 as_of 347 과 정확히 일치.",
+    "WT006R-10 [LOW] 인프라: tail_risk_engine.R 은 fExtremes 미설치로 로드 불가. GPD(MLE)·Hill·Cornish-Fisher 를 본 라운드에서 자체 구현해 사용했다. 은닉하지 않고 기록한다."
+  ],
+  "challenge_review": {
+    "from_agent": "risk",
+    "to_agent": "alpha",
+    "objection": true,
+    "round": 1,
+    "mechanism": "wt_record_challenge_review(objection=TRUE)",
+    "why_not_formal_challenge": "wt_challenge 는 phase 를 alpha 로 되돌린다. 2026-08-29 도훈 체인 완주 지시에 따라 phase 되돌림 없이 이의를 원장에 기록하고 하류가 인지하도록 한다. alpha_package 는 무수정.",
+    "targets_reviewed": [
+      "alpha_package",
+      "alpha_vector",
+      "confidence_vector",
+      "factor_specs",
+      "challenge_note.md",
+      "alpha_validation.json"
+    ],
+    "reason": "WT006R-07: '비-모멘텀 12계열' 이 모멘텀 중립이 아니다(book x_f_momentum +0.469 sigma, 분산기여 1.63%). 추가로 WT006R-01(구간 이질성)·WT006R-03(교체 레그 무우위)은 alpha 의 기간절단·회전율 자기신고와 정합하나 위험-측 정량은 본 패키지가 소유한다."
+  },
+  "boundary_declaration": {
+    "alpha_vector_modified": false,
+    "weights_proposed": false,
+    "grade_declared": false,
+    "overlay_applied": false,
+    "note": "alpha_vector 347 read-only. 진단용 기준 book(top-25 EW)은 전략 사양의 재현이며 비중 제안이 아니다. 등급 권위는 essence_score.R. S0/S1 오버레이 미적용."
+  },
+  "pit_gate": {
+    "detector": "02_Infrastructure/validation/lookahead_detector.R::detect_lookahead",
+    "scanned_files": 12,
+    "scanned": true,
+    "clean": true,
+    "n_violations": 0,
+    "engine_ref": "stage_artifacts/WT_R20260829_006/risk_engine/",
+    "positive_control": {
+      "performed": true,
+      "injected": 4,
+      "detected": 4,
+      "checks": [
+        "C1",
+        "C15_DIRECT_PARQUET",
+        "C5_VT",
+        "C14_IC_TIMING"
+      ],
+      "note": "위반 주입본이 4/4 적발됨 — 검사기 생존 실증. 양성 대조 없는 '경고 0' 은 방어선으로 세지 않는다."
+    },
+    "manual_c_checks": {
+      "C1": "Omega/D 는 sig_date 까지의 확장창. 추정기 선택도 rolling-60m OOS 우도. 구간별 Sigma(pre/post-2015)는 어떤 의사결정에도 투입되지 않는 사후 구조 진단이며 두 구간 모두 sig_date 이전.",
+      "C5": "rolling beta 는 Date < d 로 당월 forward 수익 제외. 오버레이 미적용(S0/S1 금지 준수).",
+      "C6": "유니버스는 월별 K200|KQ150 실측 멤버십. 생존편향 없음.",
+      "C9": "beta/노출 어디에도 same-day DD/VT 없음.",
+      "C10": "유동성 adv20 = build_adv20_t1 (shift(1) — 당일 미포함). as_of 는 sig_date 에서 직접 재계산.",
+      "C11": "외생 매크로 시계열 미사용(FRED 등 미소비).",
+      "C13": "Z_Score_Aligned 만 사용 · NEGATE/FLIP 없음.",
+      "C14": "IC 접근 없음(추정기 선택은 우도 기반).",
+      "C15": "계열 z 는 load_month_factors() 경유 · factor_db parquet 직접 로드 0."
+    }
+  },
+  "escalation": {
+    "trigger": "HIGH >= 5",
+    "high_count": 5,
+    "high_flags": [
+      "RF-R1 (Market 68.8% > 40%)",
+      "WT006R-01 (구간 이질성 · Jennrich p 5.5e-17)",
+      "WT006R-02 (계열 실효 해상도 3.25)",
+      "WT006R-03 (교체 레그 무우위 t -0.22)",
+      "WT006R-04 (Hill alpha 1.862 < 2 · 정규-Sigma 1% 과소)"
+    ],
+    "sigma_pd_violation": false,
+    "pit_hard_violation": false,
+    "action": "Q-Lead 보고(본 에이전트 최종 보고로 전달). Sigma PD/PIT 위반이 없으므로 ABORTED 아님 — 체인 완주 지시에 따라 하류 소비 가능 상태로 발행."
+  },
+  "challenge_note_ref": "qepm/mailbox/worktask/WT-R20260829_006/challenge_note_risk.md"
+}

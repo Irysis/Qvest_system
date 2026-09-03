@@ -1,0 +1,426 @@
+{
+  "wt_id": "WT-R20260829_005",
+  "designed_by": "alpha-hypothesis",
+  "model_tier": "opus",
+  "designed_at": "2026-08-29",
+  "wt_type": "reinforcement",
+  "keyword_axis": "combination",
+  "attempt": "5/20",
+  "scope_note": "본 산출물은 AST v1.1 설계순서 ①메커니즘 ②가설 ③반증 ④국면경계 만 담는다. ⑤AST 구성·factors[]·self_pit_check·팩터 소싱·신호공학·실측은 alpha-research 소관이며 본 에이전트는 어떤 수치도 산출하지 않았다(인용된 수치는 전부 기존 산출물·논문 원문에서 읽은 값이다).",
+
+  "prechecks": {
+    "hypothesis_index_hits": [
+      {
+        "query": "AMP2013",
+        "n_hits": 2,
+        "verdict": "FAIL 2 · DISTILLED_NEG 0 · PASS 0",
+        "hits": [
+          {
+            "strategy_id": "STR_AS_20260605_221011_31932",
+            "title": "STR_valmom_AMP2013",
+            "date": "2026-06-05",
+            "core_reference": "value(BM)+momentum(12-1) z-combo, AMP 2013 완전복제",
+            "grade": "F",
+            "grade_basis": "proxy_diagnostic (run_hurdle_gate) — 2026-05-31 DEMOTED. 권위 등급(essence_score.R) 미산출.",
+            "key_metrics": {"sharpe": 0.825, "cagr_pct": 20.76, "mdd_pct": 60.4, "ir": 0.653, "calmar": 0.344, "excess_cagr_pp": 9.86},
+            "l_code": "L-AS-20260605_221011_31932"
+          },
+          {
+            "strategy_id": "STR_AS_20260610_213712_20276",
+            "title": "valmom_AMP2013_winz_smoke",
+            "date": "2026-06-10",
+            "core_reference": "Value+Momentum 50/50 composite (AMP2013) — winsorize DB 재측정 스모크",
+            "grade": "F",
+            "grade_basis": "proxy_diagnostic. 권위 등급 미산출.",
+            "key_metrics": {"sharpe": 0.799, "cagr_pct": 20.09, "mdd_pct": 60.72, "ir": 0.628, "calmar": 0.331, "excess_cagr_pp": 9.44, "oos_retention": 0.757, "turnover_ann_pct": 208.8, "ic_mean": 0.0284, "icir": 0.203, "ff3_alpha_ann_pct": 7.79, "ff3_alpha_t": 2.235, "fm_lambda_nw_t": 3.347, "top10_conc_pct": 50},
+            "fmt_codes": ["FMT-01 구조적 MDD 60.7%>45%", "FMT-03 앙상블 희석 의심(키워드 heuristic)", "FMT-04 국면맹목 MDD>35% ∧ BM상관 0.80", "FMT-07 발표후 감쇠 활성SR pre2017 1.15 → post2017 −0.11"],
+            "fail_reasons": "MDD 60.7% > 45%",
+            "next_probe_recorded": "MDD 축 탈락 — 신호력 보존 시 OVERLAY_CANDIDATE 라우트 또는 저변동 결합 재검증",
+            "l_code": "L-AS-20260610_213712_20276"
+          }
+        ],
+        "disposition": "★본 라운드의 최대 사전 리스크. AMP2013 value-momentum 50/50 결합은 KR 에서 이미 2회 측정됐다. 아래 novelty_delimitation 이 무엇이 미측정이고 무엇이 반복인지를 착수 전에 못박는다. 이 구분 없이 성과 수치를 다시 내면 settled-negative 재포장이다(자기적대검증 축 ④)."
+      },
+      {"query": "value_momentum", "n_hits": 30, "verdict": "DISTILLED_NEG 30 · PASS 0", "top": ["DIST-AR-027", "DIST-AR-041", "DIST-RAMP-026"]},
+      {"query": "momentum", "n_hits": 30, "verdict": "FAIL 3 · DISTILLED_NEG 17 · PASS 0"},
+      {"query": "combination", "n_hits": 1, "verdict": "DISTILLED_NEG 1", "top": ["DIST-GEN-015"]},
+      {"query": "Asness", "n_hits": 1, "verdict": "본 WT 자신(IN_PROGRESS) — 신규 등록 확인"}
+    ],
+    "frontier_queue_refs": {
+      "file": "06_Registry/alpha_frontier_queue.json",
+      "schema_version_field_present": true,
+      "consumed_item": null,
+      "note": "본 착수는 frontier queue 항목 소비가 아니라 reinforce_ledger_l1 entry[0] attempt n=5 (axis=combination) 의 실행이다. queue 의 parked/dohoon_decision 항목은 건드리지 않았다."
+    },
+    "ledger_ref": {
+      "file": "06_Registry/reinforce_ledger_l1.json",
+      "entry": 0,
+      "base_id": "RP_20260829_122020_9192",
+      "base_grade": "F",
+      "paper_key": "ttl:jt1993",
+      "target_grade": "A",
+      "attempts_used": 5,
+      "attempt_axis": "combination (미사용 축)"
+    },
+    "owner": "alpha-hypothesis (설계) → alpha-research (Step 1~7 + ⑤AST). 병렬 WT-R20260829_004(axis=risk_overlay) mailbox 미접근 — 본 세션은 005 만 기록했다.",
+    "prior_rounds_read": [
+      {"round": "1/20", "l_code": "L-RF-20260829_142955", "axis": "multifactor (CJL1996 이익 서프라이즈)", "outcome": "음성 — 이익 축이 가격 축에 포섭(T2 powered null NW-t 0.150 · FM t −0.024). 결합 형태도 미지지: joint2way 0.504 < z-합산 1.014 < mom_only 1.224, 증분 −3.08%/yr."},
+      {"round": "2/20", "l_code": "L-RF-20260829_152717", "axis": "weighting (IM2013 형태 분해)", "outcome": "숏 레그 기각(β-통제 t 0.557) · 집중 형태 미결(t 1.392). 기저 음(−) PORT_t 의 정체 = basis 산술(β 0.199 → −9.38%/yr 자동 차감). 유일 실투형 cell4: PORT_t 1.294 · β-통제 α +5.14%/yr(t 1.205) · β 1.058(t 11.83) · net_IR 0.279 · 활성 +5.82%/yr · TO 9.24×/yr · EW-유니버스 PORT_t 1.426 · cap-tier OTHER 91.2% · 무신호 대조 구별불가."},
+      {"round": "3/20", "l_code": "L-RF-20260829_163417", "axis": "multifactor (LS2000 회전율 조건화)", "outcome": "1급 기각 — 승자 사이드 4사양 전부 비유의, 3사양 부호 반대(독립정렬 −6.51%/yr t −0.807 · 조건부 −4.14%/yr t −0.649 · adv20 층내 −3.38%/yr t −0.729 · FM 절편차 +0.54%/yr t +0.196). 검정력 3~5%(착수금지구간)가 착수 후에야 산출. 유일 |t|>2 관측(−2.526)은 K200/KQ150 시장 더미 아티팩트였다."}
+    ],
+    "reachability_coordinate": {
+      "required_active_return_for_port_t_2p95": "+13.25%/yr",
+      "observed_cell4_active_return": "+5.82%/yr",
+      "observed_cell4_beta_controlled_alpha": "+5.14%/yr (t 1.205)",
+      "gap": "약 +7.4%p/yr (활성수익 기준)",
+      "three_prior_axes_moved_alpha_by": "±1%p 안",
+      "source": "reinforce_ledger_l1 entry[0] attempts + stage_artifacts/WT_R20260829_00{1,2,3}/alpha_validation.json"
+    }
+  },
+
+  "paper_reading": {
+    "read_by": "alpha-hypothesis — 원문 PDF 직접 판독(전 57쪽 텍스트 추출)",
+    "base_paper": {
+      "citation": "Jegadeesh, N. & Titman, S. (1993), Returns to Buying Winners and Selling Losers, Journal of Finance 48(1):65-91",
+      "url": "https://www.bauer.uh.edu/rsusmel/phd/jegadeesh-titman93.pdf",
+      "role": "기저 RP_20260829_122020_9192 의 원천(6-6 데실 롱숏 충실구현, essence F). 본 라운드는 이 기저의 모멘텀 레그를 승계한다."
+    },
+    "combination_paper": {
+      "citation": "Asness, C.S., Moskowitz, T.J. & Pedersen, L.H. (2013), Value and Momentum Everywhere, Journal of Finance 68(3):929-985",
+      "doi": "10.1111/jofi.12021",
+      "url": "https://onlinelibrary.wiley.com/doi/10.1111/jofi.12021",
+      "open_pdf": "https://w4.stern.nyu.edu/facdir/lpederse/papers/ValMomEverywhere.pdf",
+      "extracted": {
+        "value_signal_stocks": {
+          "definition": "개별주식 value = BE/ME (book-to-market). **장부가는 6개월 lag**(투자자 가용성 확보), **시장가치는 가장 최근값(contemporaneous ME)** 사용. 원문 §I.B (p.936).",
+          "correction_of_prior_assumption": "★WT 지시문의 전제 '그들의 value 는 BE/ME 를 5년 전 시점으로 잡는다' 는 **개별주식에는 해당하지 않는다**. 5년 전 시점(4.5~5.5년 평균) 정의는 commodities·currencies·bonds 등 **비주식 자산군**에만 적용된다(p.937). 주식은 표준 BE/ME + book 6M lag + 최근 ME 다. 이 정정 없이 5년 lag value 를 구현하면 논문 미준수이자 별개 팩터(장기반전 M12_LR_Reversal 계열)가 된다.",
+          "authors_own_statement_on_correlation": "\"When using more recent prices in the value measure, the negative correlation between value and momentum is more negative and the value premium is slightly reduced, but our conclusions are not materially affected.\" (p.936) — ★즉 음(−)상관의 크기가 ME 의 시점 선택에 의존한다고 저자가 명시했다. 이것이 본 설계 반증조건 FAL-1 의 논문 뿌리다.",
+          "cross_reference": "Asness & Frazzini (2012) — momentum 존재 하에서 value 를 볼 때 contemporaneous ME 가 해석에 중요. Gerakos & Linnainmaa (2012) — value 를 book/market 성분으로 분해하면 가격정보(ME)가 대부분의 pricing 정보를 담는다."
+        },
+        "momentum_signal": {
+          "definition": "MOM2–12 = 과거 12개월 누적 원수익, **최근 1개월 skip**. 1개월 반전(유동성·미시구조) 회피 목적. 원문 §I.B (p.936).",
+          "note": "AMP2013 은 MOM7–12(Novy-Marx 2012) 대비 MOM2–12 를 택한 이유를 3가지로 명시(미국 외 35/36개국에서 차이 없음 — Goyal & Wahal 2012). 기저 JT1993 은 6-1(J=6) 이며 **본 라운드의 승계 대상은 기저의 6-1** 이다 — 아래 arm 설계에서 두 지평을 사전등록 병기한다."
+        },
+        "portfolio_construction": {
+          "sort_portfolios": "각 시장 내에서 value 또는 momentum 으로 랭킹 → **3등분**(3분위, P1/P2/P3). 개별주식은 전월말 시가총액 가중, 비주식은 EW. §I.C (p.938).",
+          "factor_portfolios": "랭크-가중 zero-cost 롱숏: w_it = c_t·(rank(S_it) − Σrank(S_it)/N), Σw=0, 1달러 롱/1달러 숏 스케일. 식 (1). 랭크 사용은 이상치 완화 목적이며 raw signal 도 유사(약간 더 좋음).",
+          "combo": "★식 (3): r_COMBO_t = 0.5·r_VALUE_t + 0.5·r_MOM_t — **수익 수준(return-level) 50/50 등가중**. 최적 가중이 아니다. 파라미터 탐색 없음.",
+          "critical_form_note": "논문의 COMBO 는 **두 롱숏 팩터 포트폴리오의 수익을 블렌드**한 것이다. 이는 본 시도의 1계층 경계(단일 신호공간·단일 top-25)와 형태가 다르다 — layer_boundary_selfcheck 절 참조."
+        },
+        "measured_correlations": {
+          "measurement_basis": "각 시장의 마지막 행 = value 와 momentum 의 **벤치마크 대비 zero-cost 잔차수익 간 상관**(Table I 주석). 전 구간 단일 수치다.",
+          "us_stocks": {"P3_P1": -0.53, "factor": -0.65},
+          "uk_stocks": {"P3_P1": -0.43, "factor": -0.62},
+          "europe_stocks": {"P3_P1": -0.52, "factor": -0.55},
+          "japan_stocks": {"P3_P1": -0.60, "factor": null},
+          "global_stocks": {"P3_P1": -0.52, "factor": -0.60}
+        },
+        "combination_gain_table_I": {
+          "us_stocks": {"value_P3_P1": {"mean_pct": 3.7, "t": 1.83, "sd_pct": 12.8, "sr": 0.29, "capm_alpha_pct": 5.3, "alpha_t": 2.66}, "mom_P3_P1": {"mean_pct": 5.4, "t": 2.08, "sd_pct": 16.4, "sr": 0.33, "capm_alpha_pct": 6.0, "alpha_t": 2.30}, "combo_P3_P1": {"mean_pct": 4.6, "t": 3.98, "sd_pct": 7.2, "sr": 0.63, "capm_alpha_pct": 5.7, "alpha_t": 5.05}, "value_factor_sr": 0.26, "mom_factor_sr": 0.45, "combo_factor": {"mean_pct": 5.8, "t": 5.40, "sd_pct": 6.8, "sr": 0.86, "capm_alpha_pct": 7.2, "alpha_t": 7.06}},
+          "japan_stocks": {"value_P3_P1": {"mean_pct": 12.0, "t": 4.31, "sd_pct": 15.3, "sr": 0.79, "capm_alpha_pct": 13.0, "alpha_t": 4.71}, "mom_P3_P1": {"mean_pct": 1.7, "t": 0.57, "sd_pct": 18.6, "sr": 0.09, "capm_alpha_pct": 1.7, "alpha_t": 0.54}, "combo_P3_P1": {"mean_pct": 6.4, "t": 4.28, "sd_pct": 8.1, "sr": 0.78, "capm_alpha_pct": 6.8, "alpha_t": 4.63}, "value_factor_sr": 0.77, "mom_factor_sr": 0.13, "combo_factor": {"mean_pct": 5.9, "t": 4.80, "sd_pct": 6.7, "sr": 0.88, "capm_alpha_pct": 6.1, "alpha_t": 5.05}},
+          "global_stocks": {"value_P3_P1": {"mean_pct": 6.2, "t": 3.60, "sd_pct": 10.9, "sr": 0.57, "capm_alpha_pct": 6.6}, "mom_P3_P1": {"mean_pct": 5.6, "t": 2.94, "sd_pct": 12.0, "sr": 0.47, "capm_alpha_pct": 6.4}, "combo_P3_P1": {"mean_pct": 6.3, "t": 6.52, "sd_pct": 6.1, "sr": 1.04, "capm_alpha_pct": 6.8, "alpha_t": 7.09}, "value_factor_sr": 0.51, "mom_factor_sr": 0.59, "combo_factor": {"sr": 1.28, "capm_alpha_pct": 7.5, "alpha_t": 8.98}}
+        },
+        "three_factor_structure": {
+          "model": "R^p_i,t − rf = α + β·MKT_t + v·VAL^everywhere_t + m·MOM^everywhere_t (식 (5), §IV.B). VAL/MOM^everywhere = 8개 자산군에 걸친 **동일변동성 가중** 평균 팩터. 48개 test asset(3분위×2특성×8자산군)에 적용.",
+          "why_two_factors": "단일 팩터로는 부족 — 두 전략 모두 양(+)의 평균수익을 내면서 서로 음(−)상관이기 때문(p.930).",
+          "funding_liquidity": "유동성 위험이 value 에 음(−), momentum 에 양(+)으로 유의하게 연결되며, 이 **반대부호 노출이 음(−)상관의 일부를 만든다**. market/funding 을 분리하면 주 연결은 **funding risk**(Brunnermeier-Pedersen 2009)이고 1998 펀딩위기 이후 중요성이 증가. ★그러나 경제적 크기로는 프리미엄·공변의 **작은 부분만** 설명하며, **50/50 결합은 유동성 위험에 immune** 하면서도 상당한 초과수익을 낸다 — 즉 funding liquidity 는 momentum 의 부분적 설명일 뿐 value 프리미엄도 결합 프리미엄도 설명하지 못한다(p.931).",
+          "authors_power_caveat": "★\"these results cannot be detected by examining a single market in isolation. The statistical power gained by looking across many markets at once ... allows these factor exposures to be revealed.\" (p.931) — **저자 스스로 단일 시장에서는 이 메커니즘이 식별 불가라고 명시했다.** 따라서 KR 단일시장 라운드는 메커니즘(funding liquidity 반대부호 노출)을 검정할 수 없다. 본 설계는 메커니즘의 **귀결**(음상관 + 결합이득)만 검정하며, 메커니즘 자체 검정은 비구속 probe 로만 둔다."
+        }
+      }
+    }
+  },
+
+  "candidates": [
+    {
+      "title": "C1 — 점수수준 50/50 랭크결합(단일 top-25) + 음상관 전제의 기계/경제 분해",
+      "family": "value×momentum combination (score-level)",
+      "mechanism": {
+        "agent": "KR 개인·기관의 서로 다른 두 오류 주체 — ①추세추종 개인 순매수 군집(가격 연속성 과소반응→과잉반응 경로) ②장부가 대비 저평가 종목의 장기 소외를 유지시키는 기관 벤치마크-추종 배분",
+        "friction": "KR 공매도 제약(개인 접근 제한·소형주 차입풀 부재·2023-11~2025 전면금지 구간) + 20일 거래대금 2e8 하한 + 롱온리 25종 상한 — 두 오류 중 어느 쪽도 숏으로 지워지지 않고, 롱 사이드에서만 부분 수확된다",
+        "path": "두 신호가 **서로 다른 달에 발화**하므로(음상관) 한 신호가 꺼진 달을 다른 신호가 채운다 → 단일 top-25 의 월별 활성수익 분산이 축소되고 정보비율이 오른다. 알파 수준이 아니라 알파의 **시간적 균질성**이 개선 경로다."
+      },
+      "why_selected": "AMP2013 이 실제로 주장한 것(위험조정 개선)과 형태가 맞고, 1계층 경계(단일 신호공간)를 침범하지 않으며, 선행 2회 KR 실측이 남긴 미측정 축(권위 등급·β-통제 α·전제 검정·통제 3종)을 정확히 겨냥한다."
+    },
+    {
+      "title": "C2 — 수익수준 50/50 블렌드(식 (3) 문자 그대로)",
+      "family": "value×momentum combination (return-level)",
+      "mechanism": {"agent": "C1 과 동일", "friction": "C1 과 동일", "path": "두 롱숏 팩터 포트폴리오의 수익을 0.5/0.5 로 합산"},
+      "why_not_selected": "★두 겹으로 기각. ①1계층 경계 침범 — 롱온리 top-25 로 옮기면 '완성된 두 포트폴리오의 수익 블렌드' = 모듈 배합이고 그건 2계층 전략 로테이션 Track2 소관이다. ②**envelope 밖** — 논문 식 (3)의 COMBO 는 두 **롱숏 zero-cost** 팩터의 블렌드라 long-only·≤25종을 위반한다. 또한 롱온리에서는 top-N 선택이 비선형 연산자라 점수결합과 수익결합이 동치가 아니다. **폐기하지 않되 `reference_only_not_verdict_bearing` 으로만 병기**한다 — 발행 스펙 아니고 axis_A/B/C 어디에도 입력되지 않으며 어떤 판정도 걸지 않는다."
+    },
+    {
+      "title": "C3 — 국면조건부 가변가중 결합 (w_value(L), w_mom(L))",
+      "family": "regime-conditional combination",
+      "mechanism": {"agent": "C1 과 동일", "friction": "C1 과 동일", "path": "국면 라벨에 따라 두 축의 가중을 전환"},
+      "why_not_selected": "세 가지 이유로 기각. ①AMP2013 은 고정 50/50 을 쓰고 시변 베타/프리미엄에 대해 명시적으로 agnostic 하다(각주 2) — 가변가중은 논문 근거가 없다. ②가중 탐색 = sweep 형 selection → DSR 게이트 발동 + n_trials 팽창. ③조건화 축은 3/20 에서 이미 기각됐고(회전율), 조건부 분할은 검정력을 파괴한다는 실측 규약이 있다."
+    },
+    {
+      "title": "C4 — value×momentum 교집합 이중정렬(두 축 모두 상위인 종목만 매수)",
+      "family": "double-sort intersection",
+      "mechanism": {"agent": "C1 과 동일", "friction": "C1 과 동일", "path": "두 축 동시 충족 종목에 집중"},
+      "why_not_selected": "★직접 측정된 선례가 반대다. 1/20 에서 교집합형(joint2way) PORT_t 0.504 가 z-합산 1.014 와 단독 1.224 보다 **낮았고** 증분 −3.08%/yr 였다 — 교집합의 상호통제 이득이 KR 셀 인구 축소 비용을 못 이긴다. 결합의 이득이 '분산 축소'라면 교집합은 정확히 그 이득을 버리는 형태다."
+    },
+    {
+      "title": "C5 — value 잔차화 모멘텀(value 코어 + 직교화된 momentum)",
+      "family": "orthogonalized overlay signal",
+      "mechanism": {"agent": "C1 과 동일", "friction": "C1 과 동일", "path": "momentum 을 value 에 직교화한 잔차만 가산"},
+      "why_not_selected": "가장 강한 대안이지만 primary 아님. ①AMP2013 은 명시적으로 잔차화하지 **않는다** — 두 팩터를 별개로 두는 것이 논문의 논지(단일 팩터로는 부족)다. ②잔차화는 '결합'이 아니라 '신규 신호 설계'로 객체가 바뀌어 combination 축을 벗어난다. ③단, 1급 반증(momentum 이 value 에 포섭되는가)의 **직접 대응물**이므로 challenge_flags 에 대안으로 보관하고, 1급이 기각될 경우 6/20 의 1순위 후보로 넘긴다."
+    }
+  ],
+
+  "selected": {
+    "hypothesis_title": "JT1993 강화 5/20 — value-momentum 팩터 결합 (Asness-Moskowitz-Pedersen 2013)",
+    "hypothesis_description": "KR 롱온리 ≤25종 단일 신호공간에서 value(BE/ME)와 momentum 을 점수수준 50/50 랭크결합하면, 두 신호가 서로 다른 달에 발화하는 성질(AMP2013 이 8개 시장에서 −0.43~−0.65 로 실측한 음상관) 때문에 월별 활성수익의 분산이 축소되어 **알파 수준이 아니라 정보비율·샤프가 개선된다**. 누적 3회(재료 추가·형태 교정·조건화)가 기저 모멘텀의 β-통제 α 를 +5.14%/yr 에서 ±1%p 안으로만 움직였고 필요값이 +13.25%/yr 인 상황에서, 남은 미사용 경로는 조건화가 아니라 결합이다. 단 본 가설은 결합이 α 를 끌어올린다고 주장하지 않는다 — AMP2013 의 일본 행(모멘텀 단독이 죽은 시장)에서 결합의 CAPM α 는 value 단독보다 **낮고**(6.8% vs 13.0%) 개선은 전적으로 위험 축에 나타난다(SR 0.77→0.88). KR 은 모멘텀 단독이 죽은 시장이므로 일본이 KR-유사물이며, 따라서 사전 기대는 'α 증분 ≈ 0 또는 음수 · 위험조정 증분 소폭 양(+)' 이다.",
+    "mechanism": {
+      "agent": "두 개의 구분되는 오류 주체. ①**KR 개인투자자 추세추종 순매수 군집** — 가격 연속성에 과소반응 후 과잉반응하는 주체이며, KR 의 낮은 individualism 이 모멘텀 프리미엄을 약화시킨다는 국가패널 진단(CTW2010)이 기저 F 의 배경이다. ②**기관 벤치마크-추종 배분** — K200 지수 대비 추적오차 예산 안에서 운용되어 장부가 대비 저평가되고 지수 비중이 낮은 종목의 소외를 유지시키는 주체. 이 둘은 같은 종목집합을 서로 다른 시점에 잘못 가격매긴다.",
+      "friction": "①**KR 공매도 제약** — 개인 접근 제한, 소형주 차입풀 부재, 2023-11~2025 전면금지 구간 포함. 두 오류 중 어느 쪽도 숏으로 지워지지 않으므로 롱 사이드에만 잔존한다. ②**유동성 하한 20일 평균 거래대금 ≥ 2e8 KRW** 와 **롱온리 ≤25종** — 차익거래 자본이 들어갈 수 있는 종목 폭 자체가 좁아 오정가가 완전 해소되지 않는다. ③**펀딩 유동성 충격 시의 강제청산** — AMP2013 은 유동성 위험이 value 에 음(−)·momentum 에 양(+)으로 반대부호로 걸린다고 실증했고, 이 반대부호가 두 축이 서로 다른 달에 발화하는 이유의 일부다. 다만 저자 스스로 이 노출은 **단일 시장에서 식별 불가**라고 명시했으므로(p.931), 본 라운드에서 이 마찰은 검정 대상이 아니라 서술된 근거다.",
+      "path": "value 신호는 저평가가 해소되는 달(반등·재평가 국면)에, momentum 신호는 추세가 지속되는 달(확장 국면)에 각각 수익을 낸다. 두 신호를 **한 점수공간에서 랭크평균**하면 매월 선택되는 25종이 두 발화 조건을 절반씩 담게 되고, 한 축이 꺼진 달의 손실을 다른 축이 부분 상쇄한다. 따라서 수익 경로는 '평균 초과수익의 증가'가 아니라 **월별 활성수익 표준편차의 축소를 통한 정보비율 상승**이다. AMP2013 표 I 이 이 경로를 수치로 보여준다: 미국 롱숏 스프레드 기준 value 12.8% / momentum 16.4% 였던 표준편차가 결합에서 7.2% 로 떨어지는데 평균수익은 4.6% 로 두 축의 중간값이다 — 이득 전량이 분모에서 나온다."
+    },
+    "falsification": {
+      "principle": "성과 동어반복 금지. 아래 3종은 전부 **성과가 아닌 부수 관측**이며 field_dictionary(06_Registry/ast_field_map_v0.json) 내 리프로 확인 가능하다. 성과축 사전등록은 별도 키 preregistered_primary 에 둔다.",
+      "observables": [
+        {
+          "id": "FAL-1",
+          "label": "음(−)상관의 기계/경제 분해 — 1급 전제검정",
+          "envelope_applicability": "★**포트폴리오 envelope 미적용** — 이것은 팩터 신호·수익 수준의 통계이지 포트폴리오 성과 판정이 아니다(Q-Lead 정정 2026-08-29 의 명시 예외). long-only·≤25종 규칙은 여기 걸리지 않으며, 산출물에 '전제 검정 — 포트폴리오 envelope 미적용' 을 명시할 것.",
+          "rationale_root": "AMP2013 p.936 저자 진술: 최근 가격을 쓰면 value-momentum 음상관이 **더 음(−)이 된다**. ME 의 분모에 가격이 있고 momentum 의 분자에 가격이 있으므로, contemporaneous ME 를 쓰는 순간 두 신호는 **구성상(mechanically)** 음상관을 갖는다. 결합의 근거가 경제적 분산효과인지 산술적 공유항인지는 여기서 갈린다.",
+          "observable": "월별 단면에서 value 점수와 momentum 점수의 순위상관을 두 사양으로 측정한다. (a) **contemporaneous ME**(t-1 종가 기준 시가총액, AMP2013 주식 정의) (b) **price-lagged ME**(모멘텀 형성창 시작 이전 시점의 시가총액으로 고정 — 두 신호가 어떤 가격 관측치도 공유하지 않도록). 전 구간 단일 수치가 아니라 **연도별·국면별 절단면과 분위 양끝(1분위·10분위) 국소 상관을 병기**한다.",
+          "reject_if": "사양 (b)에서 측정한 음상관의 절대값이 사양 (a)의 **절반 미만**이면(|ρ_b| < 0.5·|ρ_a|) AMP2013 의 음상관 전제는 KR 에서 **구성 아티팩트**로 판정한다. 이 경우 결합에서 어떤 개선이 나오든 'AMP2013 의 분산효과가 KR 에서 재현됐다'로 보고할 수 없으며, 개선분은 construction_effect 로 재라벨한다. 추가로 사양 (b)의 ρ 가 0 이상(양수)이면 전제는 완전 기각이다.",
+          "field_dictionary_refs": ["A1_RAWDATA_OHLCVS_daily", "FDB-B1_registry_fundamental_quarterly", "FDB-B2_registry_rawdata_price_daily", "A2_universe_krx_monthly"],
+          "cross_section_warning": "★전 구간 단일 상관으로 접지 말 것. 전 구간 상관 0 인데 분위 양끝에서 통제축이 1.1889배로 부활한 실측 전례가 있다(project-fq234-control-spec-and-axis-leakage). 절단면 병기가 의무다."
+        },
+        {
+          "id": "FAL-2",
+          "label": "처치 전달 확인(manipulation check) — 결합이 실제로 다른 종목을 사는가",
+          "rationale_root": "결합이 momentum 기여를 갖는다면 결합 top-25 의 **구성원 자체**가 value 단독 top-25 와 달라야 한다. 이건 성과 관측이 아니라 보유 관측이다.",
+          "observable": "매 리밸일 (결합 top-25) ∩ (value 단독 top-25) 의 종목수 / 25 를 계산해 시계열 중앙값과 분포를 낸다. momentum 단독 top-25 와의 중첩도 병기.",
+          "reject_if": "value 단독과의 중첩 중앙값 ≥ 0.80 이면 **처치 미전달**이다. 이 경우 1급 성과검정의 결과는 '효과 없음'이 아니라 **미결(처치 미전달)** 로 처분하며, momentum 기여 부재로 판정해서는 안 된다. (근거 규약: 처치가 전달되지 않은 셀은 '효과없음'이 아니라 '미결' — fail_rule 에 조작확인 동반. project-fr-rule-collapses-to-static-rp-at-large-n)",
+          "field_dictionary_refs": ["A1_RAWDATA_OHLCVS_daily", "A2_universe_krx_monthly", "A9_liquidity_avgtv20_convention"]
+        },
+        {
+          "id": "FAL-3",
+          "label": "펀딩 유동성 반대부호 노출 — **비구속 mechanism probe**",
+          "rationale_root": "AMP2013 이 제시한 음상관의 원천은 value(−)/momentum(+)의 반대부호 유동성위험 노출이다. 그것이 KR 에서 같은 부호를 갖는지를 본다.",
+          "observable": "value 레그·momentum 레그 각각의 월수익을 펀딩유동성 충격(대용: KR 정책금리·단기금리 스프레드 계열 및 미국 TED 계열의 AR(2) 잔차)에 회귀해 계수 부호를 병기한다.",
+          "reject_if": "★**이 관측으로는 기각하지 않는다**. 저자가 p.931 에서 이 노출은 단일 시장 단독으로는 통계적 검정력이 없어 식별 불가라고 명시했기 때문이다. 두 계수 부호가 같게 나와도 메커니즘 기각의 근거로 인용 금지 — 결과는 기록만 하고 disposition='underpowered_by_authors_own_statement' 로 라벨한다. 이 항목을 반증조건에 넣는 순간 검정력 없는 기각이 되므로 의도적으로 비구속으로 둔다.",
+          "field_dictionary_refs": ["E1_fred_macro_raw", "E2_ecos_kr_rates", "A4_benchmark_kospi200"]
+        }
+      ]
+    },
+    "regime_scope": {
+      "holds_in": [
+        "**국면 전환기 — 위기 저점 이후 재평가 구간**: value 레그의 저평가 해소와 momentum 레그의 추세 지속이 서로 다른 달에 발화하므로 두 축의 월별 상쇄가 가장 크게 작동하는 구간. AMP2013 의 결합이득이 전적으로 분산 축소에서 나온다는 구조(미국 12.8%/16.4% → 7.2%)가 여기에 대응한다.",
+        "**단면 분산(dispersion)이 큰 확장 국면**: 두 신호 모두 상위-하위 격차가 벌어져 랭크 정보가 살아 있는 구간. 신호가 눌린 구간에서는 결합해도 합칠 정보가 없다.",
+        "**공매도 제약이 실제로 구속하는 평시**: 마찰 ①이 오정가를 유지시키는 조건. 이 마찰이 느슨해지면(차입 가능·전면허용) 롱 사이드 잔존분이 줄어든다."
+      ],
+      "weakens_or_reverses_in": [
+        "**펀딩 스트레스·강제청산 국면(crisis)**: 마찰 ③의 반대부호 노출이 무너지는 구간. 유동성 충격이 극단이면 두 레그 모두 강제청산에 지배당해 음상관이 소멸하고 동반 하락한다. 롱온리 25종은 β≈1 을 그대로 지니므로 상쇄가 작동하지 않는다. **직접 실측 근거: 선행 KR AMP2013 런의 FMT-04 — MDD 60.7% ∧ BM상관 0.80(국면필터 부재로 인한 위기 동조 낙폭).**",
+        "**위기 직후 반등월(rebound)**: 2/20 이 우리 데이터에서 measured 로 확인 — 패자 데실 손실이 반등월에 집중되고(recovery 더미 −0.0817/월 t −4.403) **BM 수익 통제 후에도 −0.0427/월 t −2.367 로 생존**한다. momentum 레그가 정확히 이 달에 붕괴하며(Daniel-Moskowitz 2016 momentum crash 와 같은 대상) value 레그의 반등 이득을 잠식한다. 결합의 상쇄가 가장 필요한 달에 상쇄가 아니라 상충이 될 수 있다.",
+        "**2017년 이후 구간**: 선행 KR AMP2013 런에서 FMT-07 로 자동판정 — 활성 SR pre-2017 **1.15** → post-2017 **−0.11**. 이것이 본 라운드의 가장 강한 사전 반대증거이며, 국면 경계라기보다 **발표후 감쇠 또는 KR 구조변화**의 지문이다. 결합이득이 pre-2017 에만 존재한다면 OOS retention 게이트에서 걸린다."
+      ],
+      "boundary_rationale": "경계는 메커니즘의 세 구성요소에서 각각 도출된다. ①**path 에서**: 수익 경로가 '두 축이 서로 다른 달에 발화 → 분산 축소'이므로, 두 축이 **같은 달에 같은 방향으로 지배당하는 국면**(펀딩 강제청산)에서 경로 자체가 끊긴다. 보편타당하지 않다는 것이 메커니즘의 직접 귀결이다. ②**friction 에서**: 마찰이 공매도 제약이므로 마찰이 완화되는 구간(차입 가능·전면허용 복귀)에서 롱 사이드 잔존 프리미엄이 줄어든다. ③**★형태에서 도출되는 결정적 경계** — AMP2013 의 분산 축소는 **롱숏 zero-cost 스프레드(β≈0)** 위에서 측정된 것이다. 롱온리 top-25 는 β≈1 을 유지하므로(2/20 실측 cell4 β 1.058, t 11.83) **논문의 분산 축소는 형태상 상속되지 않는다**. 즉 결합은 활성수익의 분산은 줄일 수 있어도 **총수익의 낙폭(MDD)은 줄이지 못한다** — 낙폭은 β·시장에서 오기 때문이다. 이것이 선행 KR 런 2회가 SR 0.80/0.83·CAGR 20%로 두 축을 통과하면서도 Calmar 0.331/0.344 로 걸린 구조적 이유이며, **본 축(1계층 결합)이 Calmar 게이트를 고칠 수 없다는 사전 선언**이다. 위험 축 문턱은 별개 축(오버레이)의 표적이다."
+    }
+  },
+
+  "preregistered_primary": {
+    "note": "★③ falsification 은 부수관측 전용이므로 성과축 사전등록은 여기 둔다. 아래 3축은 **측정 전에 고정**되며 결과를 본 뒤 유리한 축으로 갈아타는 것은 금지다(사전등록 1급이 실패하면 그게 판정 — feedback-preregistered-primary-fails-that-is-the-verdict).",
+    "envelope_rule": {
+      "status": "HARD — Q-Lead 착수 중 주입(2026-08-29). 본 절의 모든 판정 arm 에 무조건 적용.",
+      "rule": "★**사전등록 성과 판정(axis_A · axis_B · axis_C)은 고정 축(실투형 envelope)을 전부 지키는 arm 위에서만 세운다.** 대조군·처치군 **양쪽 모두** long-only(w ≥ 0) · **≤25종** · K200∪KQ150 · 15bps(v2.4 delta) · Σw = 1 · 월간 리밸 · 유동성 2e8 을 만족해야 한다.",
+      "concretely_for_this_round": "결합 arm 도 **top-25 롱온리**, value 단독 대조 arm 도 **top-25 롱온리**, momentum 단독 대조 arm 도 **top-25 롱온리**다. ★value 단독 대조군을 **데실(35종)·롱숏·>25종으로 잡는 것 금지**. 세 arm 이 같은 envelope 위에 있어야 증분이 신호 차이지 형태 차가 아니다.",
+      "why_this_correction_exists": "우리 자신의 실수 교정이다 — 강화 2/20 은 1급 판정을 Δ(cell2 − cell1) 위에 세웠는데 cell2 는 35종(>25), cell1 은 롱숏으로 **둘 다 envelope 밖**이었다. '진단 전용' 라벨을 붙였지만 **라벨이 규정을 면제하지 않는다**. 근거: reinforce 스킬 4단계 '제약 = 실투형 축' + 공리 주입 '실투형(강화 프로세스부터)' + CLAUDE.md 가 금지 대상을 '>25종·short' 로 명시.",
+      "outside_envelope_handling": "envelope 밖 구성이 필요하면 `reference_only_not_verdict_bearing` 로 라벨하고 **어떤 판정도 걸지 않는다**. 특히 본 라운드의 '수익수준 50/50 블렌드(논문 식 (3) 충실 arm)'는 논문 정의상 두 **롱숏 zero-cost** 팩터의 블렌드라 envelope 밖이다 — reference_only_not_verdict_bearing 이며 axis_A/B/C 어디에도 입력되지 않는다.",
+      "premise_test_exemption": "★2급(FAL-1 음(−)상관 전제 검정)은 **팩터 신호·수익 수준의 통계**이지 포트폴리오 성과 판정이 아니므로 envelope 이 적용되지 않는다. 그대로 둔다. 단 산출물에 '전제 검정 — 포트폴리오 envelope 미적용' 을 명시할 것.",
+      "inv7_reminder": "제약-귀속(‘25종 제약 때문에 안 된다’)·완화 레버 제시(>25종·short·유동성 하향)는 여전히 금지(INV-7). 고정 축은 문제의 정의이지 최적화 변수가 아니다."
+    },
+    "axis_A_alpha_level": {
+      "status": "BINDING — WT 지시문이 하달한 1급 그대로 승계. 문구 변경 없음.",
+      "statement": "결합 arm 의 β-통제 α 가 **value 단독 arm 대비 증분 ≤ 0** 이면 모멘텀 기여 부재로 판정한다.",
+      "envelope": "★양쪽 arm 모두 long-only · top-25 · K200∪KQ150 · 15bps · Σw=1 (envelope_rule 적용). value 단독 대조군의 데실·롱숏·>25종 구성 금지.",
+      "paper_implied_effect_size": "★AMP2013 일본(모멘텀 단독이 죽은 시장 = KR-유사물) P3−P1 기준 CAPM α: value 13.0% → 결합 6.8% ⇒ 함의 증분 = **−6.2%/yr (음수)**. 미국은 value 5.3% → 결합 5.7% ⇒ +0.4%p. 글로벌 주식은 6.6% → 6.8% ⇒ +0.2%p.",
+      "objection_recorded_not_overridden": "★**No Silent Override(Charter 원칙 8) 준수 — 문구는 고치지 않고 이의만 기록한다.** 이 축은 논문의 KR-유사물 캘리브레이션에서 함의 효과크기가 **음수**다. 즉 axis_A 가 기각되는 것은 AMP2013 이 KR 에서 실패했다는 증거가 아니라, **AMP2013 이 그 시장에서 하지 않은 주장을 검정한 결과**다. 결합(0.5·value + 0.5·momentum)에서 한 축이 죽어 있으면 α 는 산술적으로 절반이 되고, 이득은 분모(변동성)에서 나온다 — 논문의 주장은 위험조정 수익이지 α 수준이 아니다(p.930, 표 I 일본 행). 따라서 axis_A 기각 시 보고 문구는 반드시 **'결합은 α 수준을 올리지 않는다(논문도 그렇게 주장하지 않는다)'** 여야 하며 'AMP2013 의 KR 이식 실패'로 승격 금지다.",
+      "power_disposition": "일방(+) 검정에 대한 함의 효과크기가 음수이므로 MDE 기반 검정력 계산이 무의미하다. disposition = 'implied_effect_negative_under_KR_analogue' 로 라벨하고 ratio 를 산출하지 않는다(억지 양수 대입 금지)."
+    },
+    "axis_B_risk_adjusted": {
+      "status": "BINDING — 논문이 실제로 주장한 축. axis_A 와 **동시에** 사전등록되며 사후 교체가 아니다.",
+      "statement": "결합 arm 의 **net IR(또는 net SR)** 이 value 단독 arm 대비 증분 ≤ 0 이면 결합의 분산효과가 KR 롱온리에서 전이되지 않은 것으로 판정한다.",
+      "envelope": "★양쪽 arm 모두 long-only · top-25 · K200∪KQ150 · 15bps · Σw=1 (envelope_rule 적용).",
+      "basis_mismatch_disclosure": "★함의 효과크기(일본 ΔSR +0.11)는 논문의 **롱숏 zero-cost 팩터(β≈0)** 위에서 측정된 값이고, 우리 판정 arm 은 **롱온리 top-25(β≈1)** 다. 두 basis 는 다른 양이다 — 함의값은 '착수 자격을 재는 자'로만 쓰고, 측정된 ΔSR 을 논문값과 같은 축에서 비교하거나 졸업 문턱과 대조하지 말 것(basis 라벨 의무). basis 가 다르다는 사실 자체가 boundary_rationale ③(분산 축소 비상속)의 예측 근거이기도 하다.",
+      "paper_implied_effect_size": "KR-유사물 = AMP2013 **일본** 행. factor basis ΔSR = 0.88 − 0.77 = **+0.11**. (P3−P1 basis 는 0.78 − 0.79 = −0.01 이며 이 역시 병기 의무.) 맥락값(구속 아님): 글로벌 주식 P3−P1 basis ΔSR = 1.04 − 0.57 = +0.47, factor basis = 1.28 − 0.51 = +0.77 / 미국 P3−P1 = 0.63 − 0.29 = +0.34.",
+      "gate_calibration_source": "★게이트는 **일본 factor basis +0.11 하나로만** 건다. 글로벌·미국 값은 문맥으로 보고할 뿐 게이트 근거로 쓰지 않는다 — 모멘텀이 살아있는 시장의 효과크기를 KR 에 대입하면 3/20 이 밟은 낙관(착수 후 검정력 3~5% 발각)을 반복하게 된다."
+    },
+    "axis_C_gate_relevant_descriptive": {
+      "status": "DESCRIPTIVE — 추론 검정이 아니라 게이트 좌표 보고 의무.",
+      "statement": "결합 arm 의 Calmar 를 병기한다. 등급 A 는 Calmar ≥ 0.64 를 요구하고 선행 KR AMP2013 런 2회의 Calmar 는 0.331 / 0.344 였다.",
+      "envelope": "★long-only · top-25 · K200∪KQ150 · 15bps · Σw=1 arm 에서만 산출(envelope_rule 적용). 선행 런 2회는 약 20종 EW 로 envelope 근접이나 동일 셀이 아니므로 직접 차분 금지 — 좌표 병기 용도.",
+      "ex_ante_expectation": "★사전 선언: 본 축(1계층 결합)은 Calmar 를 고치지 못할 것으로 예측한다. 근거는 regime_scope.boundary_rationale ③ — 논문의 변동성 축소가 β≈0 인 롱숏 스프레드 위에서 측정됐고 롱온리 top-25 는 β≈1 을 유지하므로 상속되지 않는다. **이 예측은 측정 전에 기록됐으므로, Calmar 가 여전히 낮게 나와도 그것을 사후 발견으로 보고할 수 없다.**"
+    }
+  },
+
+  "preregistered_power_contract": {
+    "trigger": "★3/20 교훈 — 논문 함의 효과크기 대비 검정력 3~5%(착수금지구간)로 돌았고 그 사실이 착수 후에야 산출됐다. 본 라운드는 **alpha-research Step 0 에서, 어떤 arm 을 측정하기 전에** 아래를 산출한다.",
+    "required_outputs_before_any_arm": [
+      "n (수익월 수) · 대비축의 월별 표준편차 sd_monthly · NW 팽창계수(measured, 가정 금지)",
+      "MDE80 (양측 α=0.05 · 검정력 0.80 기준 최소검출효과)",
+      "implied_effect (axis_B: 일본 factor basis ΔSR +0.11 을 월 단위 활성수익 차로 환산)",
+      "ratio = implied_effect / MDE80",
+      "expected_t 및 power"
+    ],
+    "abort_rule": "★**ratio < 0.15 이면 착수 중단 · 설계 변경**. 중단 시 alpha-research 는 arm 을 측정하지 않고 challenge_note 에 사유를 적어 Q-Lead 로 반환하며, 대체 설계는 challenge_flags 의 C5(value 잔차화 모멘텀)를 1순위로 한다.",
+    "axis_A_exemption": "axis_A 는 함의 효과크기가 음수라 ratio 를 산출하지 않는다(위 objection_recorded 참조). 게이트는 axis_B 의 ratio 로만 판정한다.",
+    "honesty_clause": "ratio 가 0.15 를 넘더라도 그것은 '검정할 자격'일 뿐 '효과가 있다'가 아니다. 비유의 결과는 검정력이 충분할 때만 '효과 없음'으로, 그 외에는 '미결'로 처분한다."
+  },
+
+  "design_constraints_for_alpha_research": {
+    "note": "★아래는 설계 승계 조건이다. alpha-research 는 ⑤AST 구성부터 담당하되 이 조건 안에서 구성한다. 조건에 결함을 발견하면 수정하지 말고 challenge_note.md 에 기록 후 재설계 요청(Charter 원칙 8).",
+    "signal_definitions_from_paper": {
+      "value": "AMP2013 §I.B 주식 정의 = BE/ME. **장부가 lag 는 논문의 6개월이 아니라 KR C4 규약(연간=익년 3/31 · 분기=45일 / DART 고정일 5/15·8/15·11/15)을 쓴다** — 논문보다 보수적이므로 고정 축이 이긴다. 이 대체 사실을 paper_assumption_adjusted 에 기록할 것. 시장가치 ME 는 논문대로 **contemporaneous(t-1 종가 기준)**. 논문 대응 팩터명은 V01_BM 계열이며 **최종 선택은 alpha-research 소관**(본 에이전트는 소싱하지 않는다).",
+      "momentum_two_preregistered_arms": "★지평 충돌을 사후 선택으로 처리하지 않기 위해 **두 arm 을 착수 전에 고정**한다. (a) **primary = 기저 승계 6-1**(M02_Mom_6_1 계열) — 본 WT 는 JT1993 기저의 *강화*이므로 기저 신호를 바꾸면 강화가 아니라 신규 기저가 된다. (b) **paper-fidelity = AMP2013 MOM2–12**(M01_Mom_12_1 계열, 최근 1개월 skip). 둘 다 동등 비중으로 보고한다. **사전 고정 판정규칙: 두 arm 의 부호가 갈리면 라운드는 '미결(지평 민감)'이며 유리한 쪽을 골라 양성으로 보고할 수 없다.**",
+      "combination_rule": "★**고정 50/50 랭크평균 — 가중 탐색 금지**. AMP2013 식 (3)이 명시적으로 0.5/0.5 등가중이고 최적화하지 않는다. 가중을 탐색하면 sweep 형 selection 이 되어 DSR 게이트가 발동하고 n_trials 가 팽창한다. combination_rule enum 은 rank_average 또는 z_score_aligned_equal_weight 중 택일(가중 자유도 0)."
+    },
+    "mandatory_controls": [
+      "**EW-유니버스 대비 PORT_t 병기 — 전 arm**. 2/20 에서 cap-w PORT_t 1.294 vs EW-유니버스 1.426 로 갈렸다.",
+      "**cap-tier 분해 병기 — 전 arm**. 2/20 cell4 보유의 **91.2% 가 OTHER tier** 였다. 결합의 양(+) 결과가 소형주 노출인지 신호인지 분리하지 않으면 인용 불가다.",
+      "**무신호 대조 필수 — 전 arm**. 2/20·3/20 모두 전 arm INDISTINGUISHABLE_FROM_NO_SIGNAL 이었다. 이번에도 구별불가면 그것이 판정이다.",
+      "**β-통제 α 병기 의무**. 2/20 이 확정 — 롱숏/데실 형태에서는 basis 산술(β 0.199 → −9.38%/yr 자동 차감)이 α 를 압도한다. raw PORT_t 단독 인용 금지.",
+      "**시장-내(K200/KQ150) 랭킹 의무**. 3/20 에서 시장 더미가 |t| 2.526 의 가짜 유의를 만들었다(KOSDAQ 비중 14.1% vs 65.3%). 혼합 랭킹 금지.",
+      "**상관은 절단면 병기**. FAL-1 참조 — 전 구간 단일 수치 금지.",
+      "★**전 판정 arm 은 envelope 안에서만 구성**(preregistered_primary.envelope_rule). 결합·value 단독·momentum 단독 세 대조군 전부 long-only · top-25 · Σw=1 · K200∪KQ150 · 15bps. 2/20 처럼 데실(35종)·롱숏 arm 위에 1급을 세우지 말 것 — '진단 전용' 라벨은 규정을 면제하지 않는다.",
+      "envelope 밖 구성(수익수준 블렌드 등)은 `reference_only_not_verdict_bearing` 라벨 + 판정 무입력."
+    ],
+    "mandatory_prior_run_disclosure": "★**선행 KR AMP2013 런 2건(STR_AS_20260605_221011_31932 · STR_AS_20260610_213712_20276)의 좌표를 본 라운드 산출물에 반드시 병기한다.** 병기 없이 결합 성과 수치만 새로 보고하면 그것은 settled-negative 재포장이다. 병기 시 반드시 grade_basis='proxy_diagnostic (DEMOTED 2026-05-31)' 를 함께 적어 권위 등급으로 오인되지 않게 한다.",
+    "fixed_axes": {
+      "long_only": true,
+      "max_names": 25,
+      "universe": "KOSPI200 ∪ KOSDAQ150 (PIT 시변 멤버십)",
+      "window": "2005-01-01 ~",
+      "cost": "15bps one-way, delta 기반 (v2.4_kr_retail_15bps)",
+      "weight_sum": "Σw = 1 · 개별 비중 상한 없음(v10)",
+      "rebalance": "monthly",
+      "liquidity": "20일 평균 거래대금(t-1) ≥ 2e8 KRW",
+      "pit": "C1~C15 전체",
+      "overlay": "미적용 (S0/S1 오버레이 금지)"
+    },
+    "factor_access": "전 팩터 접근은 load_month_factors() 경유만 (PIT C15). Factor DB parquet 직접 load 금지."
+  },
+
+  "layer_boundary_selfcheck": {
+    "declaration": "★본 시도는 **1계층 팩터 수준 결합**이다. 완성 전략(STR_*) 을 섞는 것은 2계층 전략 로테이션 Track2 소관이며 본 라운드가 침범해서는 안 된다.",
+    "operational_test": "설계가 1계층인지 2계층인지는 **결합이 일어나는 지점**으로 판별한다. **점수(score) 수준에서 합쳐 단일 top-25 를 뽑으면 1계층**이고, **각각 포트폴리오를 만든 뒤 수익을 w_v·r_value + w_m·r_mom 로 블렌드하면 2계층(모듈 배합)**이다. 본 설계의 발행 스펙은 전자다: 단일 신호공간 → 단일 랭크평균 점수 → 단일 top-25 → 단일 수익시계열.",
+    "paper_tension_disclosed": "★정직한 긴장: AMP2013 식 (3)의 COMBO 는 **수익 수준** 블렌드이며 그 두 재료가 **롱숏 zero-cost 팩터**다(r_COMBO = 0.5·r_VALUE + 0.5·r_MOM). 따라서 논문을 문자 그대로 복제하면 ①모듈 배합 형태가 되고 ②long-only·≤25종 envelope 밖으로 나간다. 본 설계는 이를 숨기지 않고 분리한다 — **발행 스펙 = 점수수준 롱온리 top-25(1계층 · envelope 안)**, **수익수준 블렌드 = `reference_only_not_verdict_bearing`(비발행 · 판정 무관)**. 두 형태는 롱온리 top-N 선택이 비선형이라 동치가 아니므로 **차이를 보고**하되, 그 차이에 어떤 판정도 걸지 않는다. 차이가 크면 그 자체가 '논문의 형태가 KR 롱온리 제약으로 옮겨지지 않는다'는 서술적 발견이다(제약-귀속 금지 — INV-7: 이를 제약 완화 근거로 쓰지 말 것).",
+    "violation_tripwire": "설계가 다음 중 하나라도 만족하면 그 순간 2계층 침범이다 — ①두 개 이상의 완성 전략/모듈 id 를 입력으로 받는다 ②최종 수익이 두 포트폴리오 수익의 가중합으로 정의된다 ③가중이 국면 라벨의 함수다(w(L)). 셋 다 아님을 alpha-research 가 산출물에 명시 확인할 것.",
+    "novelty_vs_existing_top_tier": "참고 좌표(침범 금지 · 인용만): 현행 연구-tier 최상위가 이미 value/quality/consensus 계열이다 — STR_AS_20260612_154914_1055315(PORT_t 2.52) · STR_AS_20260612_161342_1312338(PORT_t 2.35). ★**최종 산출물에 이 둘 대비 수익 상관을 병기할 의무**. 결합 결과가 이들과 사실상 같아지면(상관 ≥ 0.95) 신규성 없음이며 새 전략이 아니라 기존 전략의 재발견으로 보고해야 한다."
+  },
+
+  "novelty_delimitation": {
+    "already_measured_do_not_repeat": [
+      "value(BM) + momentum(12-1) 의 **50/50 z-composite**, 약 20종 EW, K200∪KQ150, 월간 리밸 — 2026-06-05 · 2026-06-10 두 차례 측정. proxy 결과: CAGR 20.1~20.8% · SR 0.80~0.83 · IR 0.63~0.65 · MDD 60.4~60.7% · Calmar 0.331~0.344 · OOS retention 0.757 · TO 208.8%/yr · IC 0.0284 · ICIR 0.203 · FF3 α 7.79%/yr(t 2.235) · FM λ NW-t 3.347.",
+      "⇒ **동일 구성을 다시 돌려 CAGR/SR 을 새 발견처럼 보고하는 것은 금지**다."
+    ],
+    "genuinely_unmeasured": [
+      "①**권위 등급 경로 전무** — 두 선행 런 모두 proxy hurdle 경로(2026-05-31 DEMOTED)이며 essence_score.R·canonical_screen_bt·권위 PORT_t·β-통제 α 가 산출된 적이 없다. Grade A 4조건 중 SR≥0.8·CAGR≥16%·OOS≥0.7 은 이미 proxy 로 충족돼 있고 미측정인 것은 **PORT_t ≥ 2.95** 와 Calmar 다.",
+      "②**음(−)상관 전제 자체가 KR 에서 한 번도 검정된 적 없다** — 선행 런은 전제를 확인하지 않고 곧장 합성했다. FAL-1 이 이 공백을 메운다.",
+      "③**기계/경제 분해 미실시** — 음상관이 ME 공유항의 산술 결과인지 경제적 분산효과인지 구분된 적 없다. 이 분해는 논문 저자의 진술(p.936)에서 직접 도출된 것으로 문헌에도 KR 실측이 없다.",
+      "④**처치 전달 확인 미실시** — 결합 top-25 가 value 단독 top-25 와 실제로 다른 종목인지 확인된 적 없다(FMT-03 '앙상블 희석'이 키워드 heuristic 자동판정이었을 뿐 보유 실측이 아니다).",
+      "⑤**통제 3종 미실시** — EW-유니버스 대비 basis · cap-tier 분해 · 무신호 대조. 2/20 이 cell4 보유의 91.2%가 OTHER tier 임을 밝힌 뒤로 이 통제 없는 양(+) 수치는 인용 불가가 됐는데, 선행 런은 그 이전(2026-06)이라 통제가 없다.",
+      "⑥**점수수준 vs 수익수준 결합의 형태 구분** — 롱온리 top-25 에서 두 형태가 동치가 아님이 측정된 적 없다."
+    ],
+    "verdict": "재포장 아님 — 단, **조건부**다. 본 라운드의 산출 가치는 ②~⑥(전제검정·분해·통제)에 있고 성과 수치는 그 위에 얹히는 부수물이다. 만약 산출물이 다시 'CAGR x% SR y' 중심으로 나오면 그때는 재포장이 맞다. mandatory_prior_run_disclosure 가 그 방지 장치다."
+  },
+
+  "expected_outcome_declared_ex_ante": {
+    "note": "★사후에 '발견'으로 승격하지 못하도록 측정 전에 기록한다.",
+    "alpha_axis": "결합의 β-통제 α 는 value 단독 대비 증분 ≈ 0 또는 음(−)일 가능성이 높다(AMP2013 일본 캘리브레이션 −6.2%p). axis_A 기각이 최빈 결말이다.",
+    "risk_adjusted_axis": "net IR/SR 은 소폭 개선될 수 있으나 일본 캘리브레이션 ΔSR +0.11 은 작다. 검정력 게이트를 통과하지 못할 가능성이 실재하며 그 경우 착수 중단이 정상 결말이다.",
+    "gate_axis": "Calmar 는 개선되지 않을 것으로 예측한다(β≈1 상속 논거). 선행 런 0.331/0.344 대비 큰 이동이 없으면 그것은 예측 적중이지 새 발견이 아니다.",
+    "reachability": "PORT_t 2.95 에 필요한 활성수익 +13.25%/yr 대비, 선행 런의 초과 CAGR +9.4~9.9%p 와 FF3 α 7.79%/yr 는 **동일 basis 가 아니어서 차분 불가**하다(FF3 3팩터 vs 단일-β 시장모형, n≈20 vs 25). 따라서 '결합이 gap 을 메운다'는 사전 주장을 하지 않는다. 다만 세 선행 축이 ±1%p 였던 것에 비해 결합 축은 이동 폭이 클 가능성이 있고, 그것이 이 축을 마지막에 둔 이유다."
+  },
+
+  "self_adversarial_challenge": {
+    "note": "v8.2 축소판 — 설계 축 4개(①사후서술 ②반증의 성과 위장 ③국면경계의 도출성 ④settled-negative 재포장)에 대해 스스로 약점을 제기하고 분류한다. '미미/관행적/보수적이면 OK' 류 합리화 어휘 사용 시 auto RE-VIEW.",
+    "challenges": [
+      {
+        "id": "SAC-1",
+        "axis": "④ settled-negative 재포장",
+        "challenge": "AMP2013 value-momentum 50/50 은 KR 에서 이미 2회 측정돼 F 를 받았다. 5/20 은 같은 논문·같은 결합을 다시 돌리는 것 아닌가.",
+        "classification": "PARTIAL",
+        "resolution": "형태는 겹치고 측정 축은 안 겹친다. 겹치는 부분(50/50 결합 성과)은 **선행 좌표 병기 의무**로 재발견을 금지했고, 안 겹치는 부분(권위 경로·전제검정·기계/경제 분해·처치 전달·통제 3종·형태 구분)이 산출 가치다. 다만 이 방어는 산출물이 실제로 전제검정 중심으로 나올 때만 성립하므로 **조건부 통과**로 분류한다. 결정적 완화 불가 — 재포장 위험은 잔존한다."
+      },
+      {
+        "id": "SAC-2",
+        "axis": "② 반증조건이 성과 동어반복으로 위장됐나",
+        "challenge": "WT 가 하달한 1급('β-통제 α 증분 ≤ 0')은 결국 성과 비교다. 이걸 반증조건이라 부르면 동어반복 아닌가.",
+        "classification": "ACCEPT",
+        "resolution": "인정한다. 그래서 **성과축을 falsification 필드에서 빼서 preregistered_primary 로 분리**했고, ③ falsification 에는 field_dictionary 리프로 확인 가능한 부수관측(FAL-1 상관 분해 · FAL-2 보유 중첩 · FAL-3 유동성 노출)만 남겼다. 셋 다 수익률 시계열이 아니라 신호·보유·노출 관측이다."
+      },
+      {
+        "id": "SAC-3",
+        "axis": "② 반증조건의 사양 의존",
+        "challenge": "FAL-1 의 판정 문턱 '|ρ_b| < 0.5·|ρ_a|' 의 0.5 는 어디서 왔나. 하드코딩 아닌가.",
+        "classification": "PARTIAL",
+        "resolution": "논문 뿌리는 있으나 정확한 값은 없다 — AMP2013 은 '최근 가격을 쓰면 음상관이 더 음(−)이 된다'는 **방향**만 진술하고 크기를 주지 않는다(p.936). 0.5 는 그 방향 진술을 이분 판정으로 옮기기 위한 선언값이며, **완화 불가한 약점**으로 남긴다. 완화책: 문턱 단독 판정에 의존하지 않도록 ρ_b ≥ 0(양수)이면 완전 기각이라는 **문턱 무관 조건**을 병기했고, 절단면(연도별·분위 양끝) 병기를 의무화해 단일 수치 판정을 막았다. alpha-research 는 이 0.5 를 사후에 옮기지 말 것."
+      },
+      {
+        "id": "SAC-4",
+        "axis": "① 메커니즘이 사후 서술(story-fitting)인가",
+        "challenge": "'두 신호가 서로 다른 달에 발화한다'는 서술은 음상관이라는 **결과**를 원인처럼 다시 쓴 것 아닌가.",
+        "classification": "PARTIAL",
+        "resolution": "부분 인정. 음상관 자체는 관측이고, 그 원인으로 논문이 제시한 것은 반대부호 펀딩유동성 노출인데 **저자가 단일 시장에서는 식별 불가라고 명시**했다(p.931). 따라서 본 라운드는 메커니즘을 검정할 수 없고, 검정하는 것은 그 **귀결**뿐이다. 이 한계를 숨기지 않고 FAL-3 을 **비구속 probe** 로 명시 강등했다. 다만 agent·friction 은 사후 서술이 아니다 — 공매도 제약·유동성 하한·25종 상한은 KR 배포 현실에서 독립적으로 확인되는 마찰이다."
+      },
+      {
+        "id": "SAC-5",
+        "axis": "③ 국면 경계가 메커니즘에서 도출됐나 (사후 데이터 관찰 아닌가)",
+        "challenge": "weakens_or_reverses_in 의 '2017년 이후'는 메커니즘 도출이 아니라 선행 런의 FMT-07 자동판정을 그대로 옮긴 **데이터 관찰**이다.",
+        "classification": "ACCEPT",
+        "resolution": "인정한다. 그래서 그 항목에 '국면 경계라기보다 발표후 감쇠 또는 KR 구조변화의 지문'이라고 성격을 명시해 다른 두 항목(펀딩 스트레스·반등월)과 구분했다. 앞의 둘은 각각 friction ③과 path 에서 도출된 것이고, 세 번째는 도출이 아니라 **사전 반대증거**로 라벨했다. 국면 경계의 도출성 주장은 앞의 둘에만 걸린다."
+      },
+      {
+        "id": "SAC-6",
+        "axis": "설계 정합성 — 하달된 1급의 방향",
+        "challenge": "WT 지시문의 1급은 'momentum 이 value 에 포섭되는가'인데, AMP2013 일본 캘리브레이션에서 α 증분이 음수라면 이 1급은 애초에 기각되도록 설계된 것 아닌가.",
+        "classification": "REBUTTAL (설계 결함이 아니라 축의 불일치)",
+        "resolution": "1급 자체는 유효한 질문이다 — 문제는 **어느 축에서 묻느냐**다. α 수준에서는 결합이 산술적으로 두 축의 중간이므로 죽은 축을 섞으면 반드시 내려간다. 논문의 주장은 위험조정 축이다. 따라서 문구를 고치지 않고(No Silent Override) axis_B 를 **동시 사전등록**해 두 축을 함께 물었다. 사후 교체가 아니라 사전 병기이므로 method shopping 이 아니다."
+      },
+      {
+        "id": "SAC-7",
+        "axis": "형태 — 1계층/2계층 경계",
+        "challenge": "논문의 COMBO 가 수익수준 블렌드인데 우리는 점수수준으로 바꾼다. 이건 논문 미준수 아닌가.",
+        "classification": "PARTIAL",
+        "resolution": "미준수 맞다 — 숨기지 않고 paper_tension_disclosed 에 명시했고, 수익수준 블렌드를 **논문충실 진단 arm** 으로 병기해 차이를 측정하게 했다. 1계층 경계가 고정 축이므로 발행 스펙은 점수수준이어야 하고, 그 대가로 논문과의 형태 차를 보고할 의무를 졌다. 차이가 크면 그 자체가 발견이다."
+      },
+      {
+        "id": "SAC-8",
+        "axis": "착수 정당성",
+        "challenge": "선행 런이 SR 0.80·CAGR 20% 를 이미 냈는데 Calmar 만 못 넘겼다. 그렇다면 필요한 것은 결합 축이 아니라 오버레이 축이고, 5/20 은 순서가 틀린 것 아닌가.",
+        "classification": "PARTIAL",
+        "resolution": "타당한 지적이며 regime_scope.boundary_rationale ③이 같은 결론을 사전 선언한다 — **1계층 결합은 Calmar 를 고칠 수 없다**. 그래도 5/20 이 필요한 이유는 오버레이가 붙을 **기저 신호의 α 축이 아직 권위 경로로 측정되지 않았기** 때문이다(PORT_t 미측정). 오버레이는 α 를 만들지 않고 분모를 줄이므로, α 축이 확보되지 않은 기저 위에 오버레이를 얹으면 낮은 α 를 낮은 위험으로 나누는 것뿐이다. 순서는 α 축 확보 → 위험 축이 맞다. handoff 에 조합 경로를 남긴다."
+      }
+    ],
+    "review_flags": [],
+    "prohibited_vocabulary_check": "'미미' · '관행적' · '보수적이면 OK' · '대부분 결과 동일' · '이미 반영되어 있었을 것' 등 합리화 어휘 사용 0건 확인."
+  },
+
+  "challenge_flags": [
+    "[대안 보관 C5] value 잔차화 모멘텀(value 코어 + 직교화 momentum) — 1급 반증(momentum 이 value 에 포섭되는가)의 직접 대응물. 본 라운드 axis_A/axis_B 가 모두 기각되거나 검정력 게이트로 착수 중단될 경우 6/20 의 1순위 후보.",
+    "[대안 보관 C4] value×momentum 교집합 이중정렬 — 1/20 실측(joint2way 0.504 < z-합산 1.014 < 단독 1.224)이 반대 방향이므로 재시도 시 새 통제 필요.",
+    "[대안 보관 C3] 국면조건부 가변가중 — 논문 근거 부재 + sweep/DSR + 3/20 조건화 기각 선례. 부활 조건: 국면 라벨 품질이 개선되고(2계층 Track1) 가중이 사전등록 고정일 때.",
+    "[사전 리스크 · 최상위] settled-negative 인접 — STR_AS_20260605_221011_31932 / STR_AS_20260610_213712_20276 두 건이 동일 논문·유사 구성이다. mandatory_prior_run_disclosure 미이행 시 본 라운드는 재포장으로 처분되어야 한다.",
+    "[사전 리스크] FMT-07 발표후 감쇠 — 선행 런 활성 SR pre-2017 1.15 → post-2017 −0.11. OOS retention 게이트에서 걸릴 개연성이 높고, 이는 결합 설계의 결함이 아니라 KR 에서의 시간 경계다.",
+    "[사전 리스크] cap-tier 오염 — 2/20 cell4 보유의 91.2%가 OTHER tier. 결합의 양(+) 결과가 소형주 노출일 가능성을 통제 없이 배제할 수 없다.",
+    "[사전 리스크] 무신호 대조 — 2/20·3/20 전 arm 구별불가. 결합이 이 벽을 넘는다는 근거는 아직 없다.",
+    "[설계 한계 · 완화불가] FAL-1 판정 문턱 0.5 는 논문의 방향 진술을 이분화한 선언값이며 논문에 크기 근거가 없다(SAC-3). 사후 이동 금지.",
+    "[설계 한계 · 완화불가] FAL-3(펀딩유동성 반대부호 노출)은 저자 스스로 단일 시장 식별 불가라고 명시해 비구속 probe 로만 둔다 — 본 라운드는 AMP2013 의 메커니즘을 검정하지 못하고 귀결만 검정한다.",
+    "[지시문 정정] WT 지시문의 '그들의 value 는 BE/ME 를 5년 전 시점으로 잡는다' 전제는 개별주식에 해당하지 않는다(5년 정의는 비주식 자산군 전용). 주식은 book 6M lag + contemporaneous ME. 이 정정을 반영하지 않으면 논문 미준수이자 별개 팩터(장기반전)를 구현하게 된다.",
+    "[축 불일치 이의 · No Silent Override] 하달된 1급(α 수준)은 AMP2013 이 KR-유사 시장에서 하지 않은 주장을 검정한다(일본 함의 증분 −6.2%p). 문구는 고치지 않았고 axis_B(위험조정)를 동시 사전등록했다. axis_A 기각을 'AMP2013 KR 이식 실패'로 승격 금지.",
+    "[병렬 WT] WT-R20260829_004(axis=risk_overlay)가 병렬 진행 중이며 그 mailbox 는 미접근이다. 두 축의 결과 조합은 Q-Lead 판단 사항이며 본 설계가 선점하지 않는다.",
+    "[착수 중 정정 반영 · Q-Lead 2026-08-29] 사전등록 성과 판정은 실투형 envelope(long-only·≤25종·K200∪KQ150·15bps·Σw=1) 안의 arm 위에서만 세운다는 규율을 axis_A/B/C 에 명시 배선했다. 변경점 2곳 — ①value 단독 대조군을 데실·롱숏·>25종으로 잡는 것을 금지(2/20 이 Δ(cell2−cell1)로 1급을 세운 실수의 재발 방지) ②논문 식 (3) 수익수준 블렌드를 '논문충실 진단 arm' 에서 `reference_only_not_verdict_bearing` 으로 강등해 판정 무입력화. FAL-1 전제검정은 명시 예외로 유지."
+  ],
+
+  "verdict": "designed",
+
+  "handoff": {
+    "to": "alpha-research",
+    "next_steps": "Step 1~7 + ⑤ AST 구성. 착수 순서 강제: (0) preregistered_power_contract 를 **어떤 arm 도 측정하기 전에** 산출 — ratio < 0.15 면 착수 중단·설계 변경(대체 = challenge_flags C5). (1) FAL-1 음(−)상관 전제검정을 **성과 arm 보다 먼저** 수행하고 결과와 무관하게 보고. (2) FAL-2 처치 전달 확인. (3) 성과 arm(axis_A·axis_B·axis_C) — momentum 2 arm(6-1 primary · 12-1 paper-fidelity) 병기, 고정 50/50 랭크평균, 가중 탐색 금지. (4) mandatory_controls 6종 전량. (5) mandatory_prior_run_disclosure 이행. (6) layer_boundary_selfcheck.violation_tripwire 3항 미해당 명시 확인 + 기존 최상위 2건 대비 상관 병기.",
+    "inherited_without_rewrite": "mechanism / falsification / regime_scope / preregistered_primary / preregistered_power_contract 는 **승계분이며 재작성 금지**다. 결함 발견 시 수정이 아니라 challenge_note.md 기록 + 재설계 요청(Charter 원칙 8 No Silent Override).",
+    "composition_note": "본 축은 α 축을 겨냥하고 Calmar 를 고치지 못한다고 사전 선언했다(boundary_rationale ③). α 축이 확보될 경우 위험 축과의 조합 경로가 자연스럽게 열리나, 그 판단은 Q-Lead 소관이며 본 설계는 병렬 WT 의 산출물을 참조하지 않았다."
+  }
+}

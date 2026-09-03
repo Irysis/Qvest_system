@@ -1,0 +1,541 @@
+{
+  "wt_id": "WT-R20260829_004",
+  "as_of_date": "2026-08-29",
+  "metric_type": "canonical_screen",
+  "measurement_authority": "canonical_screen_bt (screening 실측). SR/Calmar/oos_retention 판정 권위 = forge build_bt_result + essence_score.R",
+  "session_discipline": {
+    "single_measurement": "arm 배터리·형태 분해 셀·탐색 arm·아티팩트 대조·무신호 대조 미구축(2026-08-29 도훈 지시 ①).",
+    "prerequisites_not_arms": "A0(무조건화)는 F1/F2 가 검정하는 슬리브 자신이자 2/20 cell4 승계 좌표이고, lag1/violation 판은 F8 PIT 계기다 — 셋 다 대비 arm 아님.",
+    "chain_obligation": "지시 ② — 음성 판정이 체인을 멈추지 않는다. 본 패키지는 risk→optimizer→forge 가 그대로 소비 가능한 완전형으로 발행한다."
+  },
+  "mandatory_prior_run_disclosure": {
+    "L_AS_BSC_20260611_153021": {
+      "grade": "B",
+      "note": "BSC2015 KR 롱온리 복제 — SR 0.74 · CAGR 12.0% · MDD 38.6%(Calmar 0.31) · post-2017 alpha t 0.18 소멸",
+      "relation": "같은 논문·같은 시장·같은 레버 계열. 차별점은 ①현금 없는 구성 교체 ②국면 조건부 발화 ③캐리어(J6 top-25 EW 월간 vs 12-2 VW 데실) ④post-2017 HARD 흡수 넷뿐이고 그 넷은 약하다."
+    },
+    "L_AS_DM_20260612_080422": {
+      "grade": "F",
+      "note": "DM 동적가중 mu/sigma^2 기각(dyn 0.478 < raw 0.558 < cvol 0.596)",
+      "relation": "mu-hat 성분 전면 배제 — 본 후보에 mu 예측기 없음(코드 실증: score 는 momentum rank 와 실현변동성만 사용)"
+    },
+    "DIST_AR_036": {
+      "label": "settled-negative",
+      "note": "종목단 crash 회피 selection 축",
+      "relation": "본 후보는 selection 이 아니라 국면-조건부 구성 교체 — 단 F2 실패로 그 구분의 실익이 사라졌다(아래 재포장 자기신고 참조)"
+    },
+    "self_report_repackaging": {
+      "verdict": "PARTIAL_REPACKAGING",
+      "statement": "현금 스케일링으로 회귀하지 않았다(Sigma w = 1 · 현금 0 · 레버리지 0 · n_max 25 실측). 그러나 F2 가 닫히면서 이 축의 실질은 '시장노출을 구성으로 조금 줄이는 것'(beta 1.058 -> 1.036)으로 드러났고, 그건 C3(노출 스케일링)와 형태만 다른 같은 방향이다. 설계가 예고한 '형태 하나의 거리' 가 실측에서 그 하나마저 얇았다고 정직 기록한다."
+    }
+  },
+  "power_contract": {
+    "target_primary": "Calmar 차",
+    "target_secondary": "SR 차",
+    "se_method": "블록 부트스트랩 block=12 (SR/Calmar 는 비율통계량 — 순열 MDE 무효)",
+    "B": 4000,
+    "n_months": 259,
+    "effect_size_root": {
+      "kr_anchor": "L-AS-BSC_20260611 (KR faithful L/S): SR 0.580->0.761 (+31%) · MDD 52.9%->27.2%",
+      "decay_applied": 0.5,
+      "decay_rationale": "구성 레버(현금 0)는 노출 레버(현금 스케일링)보다 좁다 — KR 앵커의 절반으로 사전 감쇠. US 헤드라인 사용 금지(약 2.7배 낙관)"
+    },
+    "calmar": {
+      "implied": 0.0972361,
+      "se_blockboot": 0.03120551,
+      "mde80": 0.08742535,
+      "ratio": 1.1122185,
+      "expected_t": 3.11599135,
+      "power": 0.87615765
+    },
+    "sharpe": {
+      "implied": 0.08585613,
+      "se_blockboot": 0.03590628,
+      "mde80": 0.10059503,
+      "ratio": 0.85348284,
+      "expected_t": 2.39111753,
+      "power": 0.66680854
+    },
+    "observed_d_calmar": -0.02604988,
+    "observed_d_sr": -0.04884999,
+    "disposition_rule": "ratio<0.15 = 착수금지구간 / 0.15~0.70 = 조건부(미결 최빈) / >=0.70 = 통상",
+    "disposition": "NORMAL"
+  },
+  "preregistered_verdicts": {
+    "F1_risk_predictability": {
+      "preregistered": "슬리브 월간 실현분산 확장창 AR(1) OOS R^2 <= 0 이면 조건화 대상 부재 → 기각",
+      "measured_oos_r2": 0.16582426,
+      "positive_control_market": 0.18986719,
+      "us_anchor_wml": 0.5782,
+      "verdict": "PASS",
+      "reading": "위험은 예측된다. 단 미국 롱숏 WML(57.8%)의 1/3 수준이고, 우리 시장 자신(19.0%)보다도 낮다 — 롱온리 승자 슬리브는 BSC 가 이용한 지속성을 그만큼 갖지 않는다."
+    },
+    "F2_component_attribution": {
+      "preregistered": "특이성분 OOS R^2 가 시장성분을 넘지 못하면 이 축은 사실상 시장변동성 타이밍 → 기각",
+      "idio_oos_r2": 0.07676274,
+      "market_comp_oos_r2": 0.16690669,
+      "market_share_of_variance": 0.50436656,
+      "us_anchor": {
+        "idio": 0.4706,
+        "market_comp": 0.2087,
+        "market_share": 0.23
+      },
+      "verdict": "FAIL",
+      "reading": "★이 라운드의 진짜 관문이 여기서 닫혔다. 롱온리 승자 top-25 의 총위험 중 시장성분이 중앙값 50.4%로 BSC 의 WML(23%) 대비 2.2배이고, 예측 가능한 부분도 시장성분(0.1669) > 특이성분(0.0768) 이다. 즉 조건화할 대상은 있으나(F1) 그 대상은 특이위험이 아니라 시장노출이며, 이 경로는 우리 시스템에서 기실패(L-AS-VM_20260607 · DIST-AR-051)한 시장변동성 타이밍과 같다."
+    },
+    "F3_dm_optionality_winner_leg": {
+      "preregistered": "beta_BU >= 0 이면 반등월 beta 부족 경로는 KR 롱온리에 미이식",
+      "beta_BU": -0.49710567,
+      "beta_BU_t": -1.73920967,
+      "us_anchor_winner_decile": -0.215,
+      "verdict": "BETA_PATH_PRESENT",
+      "reading": "KR 승자 롱온리의 베어장 up-market beta 증분 = -0.497 로 US 승자 데실(-0.215)의 2.3배다. 부호는 경로 존재를 지지하나 t -1.74 로 유의하지 않다 — 크지만 미결. 가설설계 challenge_flags 의 C5(반등월 beta 보정) 승격 조건을 부분 충족한다."
+    },
+    "F4_agent_reality": {
+      "preregistered": "패닉월 주체별 순매수 대비가 비패닉월과 구별되지 않으면 agent 기전 기각",
+      "individual": {
+        "mean_nonpanic": -0.13005707,
+        "mean_panic": 0.25666196,
+        "diff": 0.38671903,
+        "nw_t": 2.9028339
+      },
+      "foreign": {
+        "mean_nonpanic": 0.08608609,
+        "mean_panic": 0.06309205,
+        "diff": -0.02299404,
+        "nw_t": -0.28299778
+      },
+      "institutional": {
+        "mean_nonpanic": 0.08890015,
+        "mean_panic": -0.43674802,
+        "diff": -0.52564817,
+        "nw_t": -3.45422225
+      },
+      "verdict": "DISTINGUISHABLE",
+      "reading": "★구별은 되는데 방향이 반대다. 설계가 명명한 주체는 '패닉에 청산당하는 개인 + 저가 재진입하는 외국인·기관' 인데, 실측은 패닉월에 개인이 순매수로 돌아서고(-0.130 -> +0.257 ADV일, NW-t +2.90) 기관이 순매도로 돌아선다(+0.089 -> -0.437, NW-t -3.45). 외국인은 무변화(NW-t -0.28). 따라서 F4 는 '기전 부재' 가 아니라 '명명한 주체의 역할이 뒤바뀜' 을 판정한다 — 설계 승계 원칙상 본 에이전트는 mechanism 을 재작성하지 않고 challenge_note 로 재설계를 요청한다."
+    },
+    "F5_primary_treatment": {
+      "status": "CANCELLED_BY_SESSION_DISCIPLINE",
+      "note": "2026-08-29 도훈 지시 ① — arm 배터리 폐지. 대비 arm 기반 1급 검정(F5)은 취소되고 판정은 체인 종점의 essence 등급으로 옮겨간다. 본 단계는 후보 1건의 실측 좌표만 발행한다. 참고로 후보-A0 관측 차는 Calmar -0.0260 · SR -0.0488 이며 둘 다 음수다."
+    },
+    "F6_post2017_hard": {
+      "preregistered": "post-2017 단독 구간 통과를 HARD 로 본다(L-AS-BSC_20260611 next_probe 흡수)",
+      "candidate_calmar": 0.10151759,
+      "A0_calmar": 0.20333167,
+      "d_calmar": -0.10181409,
+      "d_sr": -0.12037245,
+      "n_months": 115,
+      "verdict": "FAIL",
+      "reading": "post-2017 단독에서 후보 Calmar 0.115 < 무조건화 0.203. 위험 축 개선이 그 창에서 발생하지 않는다."
+    },
+    "F7_alpha_guard": {
+      "preregistered": "beta-통제 alpha 가 무조건화 대비 -1.0%p 초과 하락하면 reject",
+      "candidate_alpha_ann_pct": 3.607577,
+      "baseline_alpha_ann_pct": 5.136546,
+      "delta_pp": -1.52896882,
+      "verdict": "FAIL",
+      "reading": "위험 개선 없이 알파만 -1.34%p 태웠다. 표적 분리의 반대편 못이 발화한 경우다."
+    },
+    "F8_overlay_pit": {
+      "preregistered": "assert_overlay_pit HARD · lag1 스트레스 · strict-PIT A/B · first-day-of-holding-month 컷오프",
+      "item1_assert": {
+        "status": "PASS",
+        "n_rows": 279,
+        "max_used_cutoff": "2026-08-28",
+        "rule": "used_cutoff <= holding_month_start (first-day-of-holding-month)"
+      },
+      "item2_lag1": {
+        "calmar_lag1": 0.18913661,
+        "calmar_base": 0.17977283,
+        "rel_change_calmar": 0.05208679,
+        "sr_lag1": 0.53063911,
+        "rel_change_sr": 0.05064453,
+        "status": "NO_COLLAPSE"
+      },
+      "item3_strict_ab": {
+        "current_equals_strict": true,
+        "inflation": 0,
+        "message": "[overlay_pit_guard] Calmar(current vs strict): current=0.1798 strict=0.1798 인플레=0.0% → clean",
+        "positive_control_violation_probe": {
+          "description": "패닉 신호를 1개월 앞당겨 홀딩월 자신의 데이터로 계산한 것과 동형(BearProb 실사고 재현)",
+          "calmar": 0.22438982,
+          "sr": 0.54292899,
+          "inflation_calmar": 0.24818545,
+          "lookahead_flag_calmar": true,
+          "inflation_sr": 0.07497801,
+          "lookahead_flag_sr": true,
+          "reading": "계기가 실제로 발화하는지의 양성 대조 — 발화하지 않으면 이 A/B 는 방어선이 아니다"
+        }
+      },
+      "item4_cutoff": {
+        "rule": "first-day-of-holding-month",
+        "used": "signal_month_end + 1d",
+        "anchor_date_used": false,
+        "realized_ym_used": false
+      },
+      "verdict": "PASS",
+      "reading": "네 항 모두 통과. ★양성 대조가 핵심이다 — 신호를 1개월 앞당겨 홀딩월 자신의 데이터로 계산한 위반 주입판은 Calmar 0.228 로 후보(0.183) 대비 +24.5% 인플레하며 무조건화(0.206)마저 넘는다. 즉 BearProb 실사고와 동형으로, 이 축에서 '오버레이가 작동한다' 는 외관은 1개월 동월 누출로 전량 제조된다. 계기가 실제로 발화함을 실증했으므로 이 A/B 는 빈 방어선이 아니다."
+    }
+  },
+  "candidate_spec": {
+    "top_n": 25,
+    "pool_n": 50,
+    "pool_multiplier": 2,
+    "pool_offset": 100,
+    "weight": "EW (Sigma w = 1, 현금 0, 레버리지 0)",
+    "cost_bps_oneway": 15,
+    "liq_min": 200000000,
+    "liq_ruler": "adv20_t1",
+    "universe": "KOSPI200 U KOSDAQ150 (PIT 시변)",
+    "start": "2005-01-01",
+    "vol_estimator": "종목 단변량 실현변동성 126거래일 연율 — 공분산/위험기여 추정 아님(Risk agent 경계)"
+  },
+  "candidate_measured": {
+    "n_months": 259,
+    "port_t": 0.91529078,
+    "ir": 0.19415707,
+    "alpha_ann_vs_bm": 0.03607577,
+    "sr": 0.50506056,
+    "cagr": 0.11421757,
+    "mdd": -0.63534392,
+    "calmar": 0.17977283,
+    "net_active_sr": 0.19415707,
+    "turnover_annual": 9.38030769,
+    "beta": 1.03467197,
+    "alpha_beta_ctl_ann": 0.03607577,
+    "t_alpha_beta_ctl": 0.86727473,
+    "ew_univ_port_t": 0.94859381,
+    "n_names_max": 25
+  },
+  "succession_coordinate_A0": {
+    "n_months": 259,
+    "port_t": 1.2939691,
+    "ir": 0.27869694,
+    "alpha_ann_vs_bm": 0.05136546,
+    "sr": 0.55391054,
+    "cagr": 0.132618,
+    "mdd": -0.64433124,
+    "calmar": 0.20582271,
+    "net_active_sr": 0.27869694,
+    "turnover_annual": 9.24,
+    "beta": 1.05802924,
+    "alpha_beta_ctl_ann": 0.05136546,
+    "t_alpha_beta_ctl": 1.20485983,
+    "ew_univ_port_t": 1.42577834,
+    "n_names_max": 25
+  },
+  "inherited_coordinate_parity": {
+    "inherited_cell4_port_t": 1.294,
+    "measured_A0_port_t": 1.2939691,
+    "inherited_beta_ctl_alpha_pct": 5.14,
+    "measured_beta_ctl_alpha_pct": 5.136546,
+    "inherited_beta": 1.058,
+    "measured_beta": 1.05802924,
+    "verdict": "PARITY — 2/20 cell4 좌표가 독립 재구축에서 재현됐다(양성 대조)"
+  },
+  "cap_tier": {
+    "candidate": {
+      "MEGA": 0.03830769,
+      "MID": 0.06184615,
+      "OTHER": 0.89984615,
+      "UNRANKED": 0
+    },
+    "A0": {
+      "MEGA": 0.032,
+      "MID": 0.05584615,
+      "OTHER": 0.91215385,
+      "UNRANKED": 0
+    }
+  },
+  "firing": {
+    "n_panic_months": 26,
+    "mean_overlap_panic": 0.41846154,
+    "mean_overlap_nonpanic": 1,
+    "note": "비패닉월 overlap 1.0 = 후보가 그 달 A0 와 동일 보유(비발화가 정상)"
+  },
+  "advisory_battery": {
+    "rank_ic": 0.00900482,
+    "rank_ic_base_momentum": 0.00723874,
+    "icir": 0.05610474,
+    "harvey_t_stat": 0.90067503,
+    "monotonicity": 0.85454545,
+    "monotonicity_convention": "dec1 = 최고점수. 원시 Spearman(dec, mean ret) = -0.855 이므로 방향 정합(부호 반전 기재).",
+    "subperiod_active_sr": [
+      0.23875619,
+      0.66094581,
+      -0.28499962
+    ],
+    "subperiod_stability": 0.66666667,
+    "post_neutralization_ic": 0.00744219,
+    "net_active_sr": 0.19415707,
+    "turnover_annual": 9.38030769,
+    "deflated_sharpe_ratio": 0.43880446,
+    "n_trials_cumulative": 4,
+    "dsr_gate_note": "selection_type=chain (가설주도 순차) — DSR 게이트 부적용, 진단 산출·기록만(measurement-graduation §3)",
+    "cost_feasibility": {
+      "cost_annual": 0.01407046,
+      "gross_active_annual": 0.05420812,
+      "ratio": 3.85261824,
+      "rule": "failure_rules Rule1: 비용 대비 기대 alpha ratio < 2 이면 실패",
+      "note": "AX-001 v2 ratio 의 정본 정의를 레지스트리에서 찾지 못해 비용 타당성 비율로 대체 산출 — 라벨 정직 표기"
+    }
+  },
+  "redundancy": {
+    "low_vol_axis": {
+      "mean_spearman_vs_neg_vol126_by_panic": {
+        "panic_0": -0.16065859,
+        "panic_1": 0.0123681
+      },
+      "reading": "패닉월 상관이 1 에 가까우면 그 달의 후보는 사실상 저변동 팩터다"
+    },
+    "factor_db": {
+      "L02_Turnover": {
+        "mean_spearman": -0.08739727,
+        "max_abs": 0.31944013,
+        "n_months": 24
+      },
+      "L05_Dollar_Volume": {
+        "mean_spearman": -0.19453907,
+        "max_abs": 0.53772364,
+        "n_months": 24
+      },
+      "L15_Turnover_252d": {
+        "mean_spearman": -0.07491639,
+        "max_abs": 0.39264656,
+        "n_months": 24
+      },
+      "L26_Log_MktCap": {
+        "mean_spearman": -0.16612757,
+        "max_abs": 0.45844281,
+        "n_months": 24
+      },
+      "M02_Mom_6_1": {
+        "mean_spearman": 0.68972508,
+        "max_abs": 0.84769777,
+        "n_months": 24
+      }
+    },
+    "threshold": "cor vs 기존 등재 < 0.95"
+  },
+  "mechanism_evidence": {
+    "F1": {
+      "statement": "실투형 무오버레이 슬리브 월간 실현분산의 확장창 AR(1) OOS R^2 <= 0 이면 조건화 대상 부재",
+      "oos_r2_level": 0.16582426,
+      "n_eval": 195,
+      "oos_r2_log": 0.31347416,
+      "positive_control_market_ar1_oos_r2": 0.18986719,
+      "market_n_eval": 218,
+      "us_anchor_bsc2015": {
+        "momentum_rv_ar1_oos_r2": 0.5782,
+        "market_rv_ar1_oos_r2": 0.3881,
+        "note": "BSC2015 롱숏 WML — 우리 롱온리 슬리브와 다른 대상. 앵커이지 목표 아님"
+      },
+      "verdict": "PASS"
+    },
+    "F2": {
+      "statement": "특이성분 OOS R^2 > 시장성분 OOS R^2 여야 이 축이 시장변동성 타이밍이 아님",
+      "oos_r2": {
+        "beta_sq": -0.01535714,
+        "market_rv": 0.1530412,
+        "market_comp": 0.16690669,
+        "sleeve_rv": 0.16582426,
+        "idio_comp": 0.07676274
+      },
+      "n_eval": 195,
+      "market_share_of_total_variance_median": 0.50436656,
+      "beta_median": 0.98106909,
+      "us_anchor_bsc2015": {
+        "beta_sq": 0.0533,
+        "market_rv": 0.067,
+        "market_comp": 0.2087,
+        "momentum_rv": 0.4382,
+        "idio": 0.4706,
+        "market_share_of_risk": 0.23
+      },
+      "verdict": "FAIL"
+    },
+    "F3": {
+      "n": 259,
+      "n_IB": 85,
+      "n_IB_up": 52,
+      "alpha0_monthly": 0.0019718,
+      "alpha0_t": 0.46211946,
+      "alpha_B_monthly": 0.01714577,
+      "alpha_B_t": 1.73563796,
+      "beta0": 1.06546405,
+      "beta0_t": 10.00869383,
+      "beta_B": 0.25007728,
+      "beta_B_t": 1.07515311,
+      "beta_BU": -0.49710567,
+      "beta_BU_t": -1.73920967,
+      "us_anchor_dm2016": {
+        "winner_decile_up_increment": -0.215,
+        "loser_decile_up_increment": 0.6,
+        "wml_beta_BU": -0.815,
+        "note": "DM2016 Table 4 Panel A — 롱숏 WML/데실. 우리는 승자만 보유"
+      },
+      "verdict_rule": "beta_BU >= 0 이면 '반등월 beta 부족' 경로는 KR 롱온리에 이식되지 않음(path 의 beta 성분 기각)",
+      "verdict": "BETA_PATH_PRESENT"
+    },
+    "F4": {
+      "available": true,
+      "n_months": 258,
+      "n_panic": 26,
+      "unit": "홀딩월 종목별 순매수대금 / 신호일 20일평균거래대금(ADV20 t-1) 의 보유종목 평균 (= ADV 일수)",
+      "individual": {
+        "mean_nonpanic": -0.13005707,
+        "mean_panic": 0.25666196,
+        "diff": 0.38671903,
+        "nw_t": 2.9028339
+      },
+      "foreign": {
+        "mean_nonpanic": 0.08608609,
+        "mean_panic": 0.06309205,
+        "diff": -0.02299404,
+        "nw_t": -0.28299778
+      },
+      "institutional": {
+        "mean_nonpanic": 0.08890015,
+        "mean_panic": -0.43674802,
+        "diff": -0.52564817,
+        "nw_t": -3.45422225
+      },
+      "verdict_rule": "패닉월 주체별 순매수 대비가 비패닉월과 부호·크기 모두에서 구별되지 않으면 agent 기전 기각(확증은 불가 — 배제만 가능)",
+      "diagnostic_only": true,
+      "verdict": "DISTINGUISHABLE"
+    },
+    "regime_signal": {
+      "definition": "panic = I_B(직전24개월 누적 KOSPI200 < 0) AND vol_hi(직전126거래일 시장 실현변동성 > 확장창 중앙값, min 36개월 이력)",
+      "n_months": 279,
+      "n_panic": 26,
+      "panic_rate": 0.09318996,
+      "n_IB": 85,
+      "pit": {
+        "cutoff_rule": "first-day-of-holding-month (overlay_signal_cutoff)",
+        "assert_overlay_pit": "PASS",
+        "max_used_cutoff": "2026-08-28",
+        "note": "신호는 신호일(월말) *직전 거래일*까지의 데이터만 사용(strict t-1) · 홀딩월 = 신호월+1 · anchor_date/realized_ym 미사용"
+      }
+    }
+  },
+  "overlay_stage_boundary_decision": {
+    "question": "가설설계 W6 escalate — A1(구성 교체)은 alpha 인가 optimizer 인가",
+    "decision": "alpha 구간은 ①후보의 alpha-hat 점수 패널 ②PIT-clean 국면/변동성 신호 시계열만 발행한다. period_returns_production.csv 는 canonical_screen_bt(top-25 EW 고정규격) 경유 *스크리닝 실측*이며 비중 결정이 아니다. 노출·비중으로의 실제 적용은 optimizer/forge 소관이다.",
+    "pit_s0s1_note": "국면은 alpha 원천이 아니라 위험 조건자로 쓰였다(패닉월 점수는 pool 내부 저변동 순서일 뿐 수익 예측이 아님). 공분산·비중·최적화 산출 0.",
+    "downstream_inputs": {
+      "regime_signal": "stage_artifacts/WT_R20260829_004/regime_signal_timeseries.parquet",
+      "stock_pred_vol": "stage_artifacts/WT_R20260829_004/stock_pred_vol_panel.parquet",
+      "sleeve_rv": "stage_artifacts/WT_R20260829_004/sleeve_realized_variance.parquet"
+    }
+  },
+  "artifacts": {
+    "alpha_scores": "stage_artifacts/WT_R20260829_004/alpha_scores.parquet",
+    "regime_signal": "stage_artifacts/WT_R20260829_004/regime_signal_timeseries.parquet",
+    "stock_pred_vol": "stage_artifacts/WT_R20260829_004/stock_pred_vol_panel.parquet",
+    "sleeve_rv": "stage_artifacts/WT_R20260829_004/sleeve_realized_variance.parquet",
+    "period_returns_production": "stage_artifacts/WT_R20260829_004/period_returns_production.csv"
+  },
+  "ast_verify_result": {
+    "tool": "02_Infrastructure/ast/ast_verify.py",
+    "main_package": {
+      "exit_code": 1,
+      "verdict": "FAIL_CONTRACT",
+      "leaf_count": 4,
+      "op_count": 11,
+      "decision_ts": "2026-08-28",
+      "max_avail_ts": "2026-08-28",
+      "violations_n": 0,
+      "violations": [],
+      "contract_failures": [
+        {
+          "path": "root.IF_ELSE/0",
+          "leaf_type": "SPECIAL_OP",
+          "missing": [
+            "op_code_path",
+            "walk_forward"
+          ],
+          "detail": "SPECIAL_OP 계약 결측 — 연산 정의 코드 경로 + walk-forward 선언 의무 (SOT §2)"
+        },
+        {
+          "path": "root.IF_ELSE/1.ADD/0.MUL/0.CLIP/0.SUB/0",
+          "leaf_type": "?",
+          "missing": [],
+          "detail": "노드 형상 오류(비 dict): 51"
+        },
+        {
+          "path": "root.IF_ELSE/1.ADD/0.MUL/0.CLIP/0.SUB/1.CS_RANK/0",
+          "leaf_type": "SPECIAL_OP",
+          "missing": [
+            "op_code_path",
+            "walk_forward"
+          ],
+          "detail": "SPECIAL_OP 계약 결측 — 연산 정의 코드 경로 + walk-forward 선언 의무 (SOT §2)"
+        },
+        {
+          "path": "root.IF_ELSE/1.ADD/0.MUL/0.CLIP/1",
+          "leaf_type": "?",
+          "missing": [],
+          "detail": "노드 형상 오류(비 dict): 0"
+        },
+        {
+          "path": "root.IF_ELSE/1.ADD/0.MUL/0.CLIP/2",
+          "leaf_type": "?",
+          "missing": [],
+          "detail": "노드 형상 오류(비 dict): 1"
+        },
+        {
+          "path": "root.IF_ELSE/1.ADD/0.MUL/1",
+          "leaf_type": "?",
+          "missing": [],
+          "detail": "노드 형상 오류(비 dict): 100"
+        },
+        {
+          "path": "root.IF_ELSE/1.ADD/1.CS_ZSCORE/0.MUL/0.TS_STD/0.TS_LAG[k=1d]/0",
+          "leaf_type": "A1_RAWDATA_OHLCVS_daily:Ret",
+          "missing": [],
+          "detail": "알 수 없는 리프 종류 'A1_RAWDATA_OHLCVS_daily:Ret' (허용: ['FIELD', 'LLM_SCORE', 'MODEL_SCORE', 'REGISTRY', 'SPECIAL_OP', 'STORED_SCORE'])"
+        },
+        {
+          "path": "root.IF_ELSE/1.ADD/1.CS_ZSCORE/0.MUL/0.TS_STD/1",
+          "leaf_type": "?",
+          "missing": [],
+          "detail": "노드 형상 오류(비 dict): 126"
+        },
+        {
+          "path": "root.IF_ELSE/1.ADD/1.CS_ZSCORE/0.MUL/1",
+          "leaf_type": "?",
+          "missing": [],
+          "detail": "노드 형상 오류(비 dict): -1"
+        },
+        {
+          "path": "root.IF_ELSE/2.CS_ZSCORE/0",
+          "leaf_type": "SPECIAL_OP",
+          "missing": [
+            "op_code_path",
+            "walk_forward"
+          ],
+          "detail": "SPECIAL_OP 계약 결측 — 연산 정의 코드 경로 + walk-forward 선언 의무 (SOT §2)"
+        }
+      ],
+      "restatement_leaves_n": 0,
+      "out": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/WT_R20260829_004/ast_verify.json"
+    },
+    "verifier_dialect_probe": {
+      "exit_code": 0,
+      "verdict": "PASS",
+      "leaf_count": 4,
+      "op_count": 11,
+      "decision_ts": "2026-08-28",
+      "max_avail_ts": "2026-08-28",
+      "violations_n": 0,
+      "violations": [],
+      "contract_failures": [],
+      "restatement_leaves_n": 0,
+      "out": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/WT_R20260829_004/ast_verify_probe.json"
+    },
+    "traversal_evidence": "정본(schema.json 방언: args + 문자열 리프 + escape_contract) 순회 리프 4개 · 연산자 11개 / 검증기 방언 probe(children + const 노드 + FIELD 분해 + SPECIAL_OP 평면계약) 리프 4개 · 연산자 11개. 리프 0개 순회(빈 검증) 아님.",
+    "leaf_inventory": "실제 트리 리프 4종: SPECIAL_OP(JT1993 형성) x2 참조 · SPECIAL_OP(PANIC_REGIME) · A1_RAWDATA_OHLCVS_daily:Ret. DIV/DIV_GUARD 는 미사용이라 그 방언 분열에는 닿지 않는다.",
+    "pit_reading": "정본 max_avail_ts=2026-08-28 / decision_ts=2026-08-28 / lookahead violations=0 · 검증기 방언 probe verdict=PASS max_avail_ts=2026-08-28 violations=0 contract_failures=0",
+    "contract_surface_split": "세 겹의 방언 분열이 동시에 걸린다. ①리프 표기: schema.json 은 leaf=문자열 식별자 + escape_contract 객체, ast_verify.py 는 {leaf:'FIELD', group_id, field} / {leaf:'SPECIAL_OP', op_code_path, walk_forward} 평면 형식. ②자식 키: schema=args / 검증기=children(둘 다 수용하나 args 는 dialect 플래그). ③스칼라: schema 는 args 안 bare number 를 허용, 검증기는 {const:n} 노드만 dict 로 인정. 본 패키지는 패키지 형식 정본인 schema.json 을 따르고(ast), 같은 트리를 검증기 방언으로 옮긴 probe 를 stage_artifacts 에 함께 발행해 동일 검증기로 돌렸다. 결과: 정본 FAIL_CONTRACT(사유 전부 표기 형식) vs probe PASS. 두 판정 모두 leaf_count 4 · op_count 11 로 같은 트리를 실제로 순회했고 lookahead 위반은 0 이다. 즉 정본의 FAIL 은 PIT 결함이 아니라 계약 표면 분열이다 — 하네스 수리 대상으로 기록한다 (본 에이전트는 계약 파일을 고치지 않는다: 역할 경계). ★부수 소득: 이 계기가 실제로 발화해 A1:Ret 의 same-day 사용을 잡았고, 그 지적을 받아 종목 변동성·시장 변동성·I_B 24개월 누적을 전부 strict t-1(Date < 신호일)로 조여 재측정했다. AST 는 그 수리를 TS_LAG(k=1, unit=d) 로 표현한다."
+  }
+}

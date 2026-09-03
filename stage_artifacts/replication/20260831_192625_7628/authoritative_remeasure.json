@@ -1,0 +1,66 @@
+{
+  "status": "OK",
+  "strategy_id": "RP_20260831_192625_7628",
+  "strategy_name": "RP_AUTO_260823944",
+  "remeasured_at": "2026-08-31T19:30:55+0900",
+  "run_id": "20260831_192625_7628",
+  "bt_result_path": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/replication/20260831_192625_7628/bt_result.rds",
+  "metric_type": "backtested",
+  "essence_grade": "F",
+  "grade_basis": "replication_chain",
+  "essence": {
+    "net_sharpe": 0.421,
+    "net_ir": -0.189,
+    "portfolio_alpha_t_nw_lag3": -0.867,
+    "oos_retention": -5.647,
+    "dsr": null,
+    "mdd": 0.615,
+    "calmar": 0.121,
+    "cagr": 0.074,
+    "drawdown_profile": {
+      "severe45_count": 6,
+      "severe55_count": 2,
+      "severe45_total_periods": 105,
+      "severe45_max_periods": 78,
+      "severe45_period_frac": 0.0197,
+      "catastrophic_mdd_threshold": 0.7,
+      "severe45_hard_count": 15,
+      "severe55_hard_count": 6,
+      "severe45_period_hard_frac": 0.25,
+      "severe45_max_hard_periods": 252,
+      "tail_review": true,
+      "structural_hard_fail": false
+    }
+  },
+  "hard_fail": false,
+  "structural_drawdown": false,
+  "selection_type": "chain",
+  "dsr_gate_applied": false,
+  "reasons": "non-positive alpha (PORT_t<=0 또는 net_IR<=0)",
+  "replication": {
+    "source_paper": {
+      "url": "https://arxiv.org/abs/2608.23944",
+      "title": "Bulk Phase Transition and Edge Behavior in Temporally Correlated Random Matrices",
+      "paper_key": "2608.23944"
+    },
+    "commission_paper_bps": 15,
+    "paper_basis": {
+      "cagr": 0.073985,
+      "sharpe": 0.307446,
+      "mdd": 0.614729,
+      "n_months": 259
+    },
+    "grade_basis_note": "등급은 15bps 순비용 판 (essence 문턱 15bps 보정 — gross 등급은 인플레)",
+    "fidelity": "universe 치환(K200∪KQ150)만 — 그 외 논문 그대로 (v10 완전 충실구현)",
+    "benchmark_note": "long_vs_long_bm",
+    "n_max": 25,
+    "has_short": false
+  },
+  "contract": {
+    "integrity_status": "OK",
+    "cagr": 0.074,
+    "sharpe": 0.421,
+    "mdd": 0.615,
+    "calmar": 0.121
+  }
+}

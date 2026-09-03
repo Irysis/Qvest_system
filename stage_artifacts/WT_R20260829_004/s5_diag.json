@@ -1,0 +1,73 @@
+{
+  "meta": {
+    "wt_id": "WT-R20260829_004",
+    "metric_type": "canonical_screen",
+    "note": "rank-IC 계열은 advisory — 선택 권위는 canonical PORT_t"
+  },
+  "rank_ic": 0.00900482,
+  "rank_ic_base_momentum": 0.00723874,
+  "icir": 0.05610474,
+  "harvey_t_stat": 0.90067503,
+  "harvey_t_note": "rank-IC 시계열 NW lag-3 t — portfolio-alpha t 와 다른 양(measurement-graduation §2)",
+  "monotonicity": -0.85454545,
+  "subperiod_active_sr": [0.23875619, 0.66094581, -0.28499962],
+  "subperiod_stability": 0.66666667,
+  "post_neutralization_ic": 0.00744219,
+  "post_neutralization_note": "섹터 패널 부재 — log(Size) 중립화만 적용",
+  "net_active_sr": 0.19415707,
+  "turnover_annual": 9.38030769,
+  "deflated_sharpe_ratio": 0.43880446,
+  "n_trials_cumulative": 4,
+  "dsr_gate_note": "selection_type=chain (가설주도 순차) — DSR 게이트 부적용, 진단 산출·기록만(measurement-graduation §3)",
+  "cost_feasibility": {
+    "cost_annual": 0.01407046,
+    "gross_active_annual": 0.05420812,
+    "ratio": 3.85261824,
+    "rule": "failure_rules Rule1: 비용 대비 기대 alpha ratio < 2 이면 실패",
+    "note": "AX-001 v2 ratio 의 정본 정의를 레지스트리에서 찾지 못해 비용 타당성 비율로 대체 산출 — 라벨 정직 표기"
+  },
+  "redundancy": {
+    "low_vol_axis": {
+      "mean_spearman_vs_neg_vol126_by_panic": {
+        "panic_0": -0.16065859,
+        "panic_1": 0.0123681
+      },
+      "reading": "패닉월 상관이 1 에 가까우면 그 달의 후보는 사실상 저변동 팩터다"
+    },
+    "factor_db": {
+      "L02_Turnover": {
+        "mean_spearman": -0.08739727,
+        "max_abs": 0.31944013,
+        "n_months": 24
+      },
+      "L05_Dollar_Volume": {
+        "mean_spearman": -0.19453907,
+        "max_abs": 0.53772364,
+        "n_months": 24
+      },
+      "L15_Turnover_252d": {
+        "mean_spearman": -0.07491639,
+        "max_abs": 0.39264656,
+        "n_months": 24
+      },
+      "L26_Log_MktCap": {
+        "mean_spearman": -0.16612757,
+        "max_abs": 0.45844281,
+        "n_months": 24
+      },
+      "M02_Mom_6_1": {
+        "mean_spearman": 0.68972508,
+        "max_abs": 0.84769777,
+        "n_months": 24
+      }
+    },
+    "threshold": "cor vs 기존 등재 < 0.95"
+  },
+  "artifacts": {
+    "alpha_scores": "stage_artifacts/WT_R20260829_004/alpha_scores.parquet",
+    "regime_signal": "stage_artifacts/WT_R20260829_004/regime_signal_timeseries.parquet",
+    "stock_pred_vol": "stage_artifacts/WT_R20260829_004/stock_pred_vol_panel.parquet",
+    "sleeve_rv": "stage_artifacts/WT_R20260829_004/sleeve_realized_variance.parquet",
+    "period_returns_production": "stage_artifacts/WT_R20260829_004/period_returns_production.csv"
+  }
+}

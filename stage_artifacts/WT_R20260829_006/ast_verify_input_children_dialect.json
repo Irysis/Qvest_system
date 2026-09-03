@@ -1,0 +1,1298 @@
+{
+ "task_id": "WT-R20260829_006",
+ "strategy_id": "WT-R20260829_006_ast_verify_dialect",
+ "pit": {
+  "sig_date": "2026-08-28",
+  "decision_ts": "2026-08-28"
+ },
+ "_dialect_note": "ast_verify.py 방언 — children + 스칼라를 노드 필드(scale)로. 정본(schema 방언 args+스칼라)은 alpha_package.json. 차이는 스칼라 배치뿐이며 MUL 의 PIT 의미론(max(children))상 가용성 판정에 불변.",
+ "factors": [
+  {
+   "factor_id": "F_fam_accrual",
+   "ast": {
+    "op": "MUL",
+    "children": [
+     {
+      "op": "ADD",
+      "children": [
+       {
+        "leaf": "REGISTRY",
+        "factor": "AC01_Total_Accruals_CF"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "AC02_Total_Accruals_BS"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "AC03_WC_Accruals"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "AC04_NCO_Accruals"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "AC05_NOA"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "AC06_Comprehensive_Accruals"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "AC07_Operating_Accruals"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "AC08_Financial_Accruals"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "AC09_NNI"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "AC10_Pct_Accruals"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "AC11_Accruals_to_Assets"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "AC12_Inventory_Accruals"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "AC13_Abnormal_Accruals"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "AC14_Discretionary_Accruals"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "AC15_NonDiscretionary_Accruals"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "AC16_BS_vs_CF_Diff"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "AC17_Accrual_Reversal"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "AC18_Accrual_Quality"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "AC19_Receivables_Accruals"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "AC20_Payables_Accruals"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "AC21_CF_to_Accrual_Ratio"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "AC22_Accrual_Volatility"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "AC23_Accrual_Persistence"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "AC24_NOA_Growth"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "AC25_Accrual_Size_Interaction"
+       }
+      ]
+     }
+    ],
+    "scale": 0.04
+   },
+   "role": "core_signal",
+   "restatement_exposure": 25
+  },
+  {
+   "factor_id": "F_fam_crowding",
+   "ast": {
+    "op": "MUL",
+    "children": [
+     {
+      "op": "ADD",
+      "children": [
+       {
+        "leaf": "REGISTRY",
+        "factor": "CR01_Sector_Comovement"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "CR02_Volume_Concentration"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "CR05_Short_Pressure_Proxy"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "CR06_DTC_Proxy"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "CR07_Momentum_Crowding"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "CR08_Volume_Price_Divergence"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "CR09_Money_Flow_Ratio"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "CR10_Convergence_Premium"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "CR11_Idiosyncratic_Return"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "SE01_Volatility_Uncertainty"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "TR01_ADX_Proxy"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "TR02_Trend_Consistency"
+       }
+      ]
+     }
+    ],
+    "scale": 0.083333333333
+   },
+   "role": "core_signal",
+   "restatement_exposure": 12
+  },
+  {
+   "factor_id": "F_fam_defense",
+   "ast": {
+    "op": "MUL",
+    "children": [
+     {
+      "op": "ADD",
+      "children": [
+       {
+        "leaf": "REGISTRY",
+        "factor": "D01_IdioVol"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "D02_Beta"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "D03_RealVol"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "D04_Downside_Beta"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "D05_MaxRet"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "D06_Upside_Beta"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "D07_Beta_Asymmetry"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "D09_Dimson_Beta"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "D10_Blume_Adj_Beta"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "D11_FP_Beta"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "D12_Beta_126d"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "D13_Beta_63d"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "D14_Beta_Change"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "D15_Cond_Bear_Beta"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "D16_Coskewness"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "D17_Cokurtosis"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "D18_BAB_Rank"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "D19_EW_Beta_63"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "D20_EW_Beta_126"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "D21_CAPM_Alpha"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "D22_Tracking_Error"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "D23_Info_Ratio"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "D24_Systematic_Risk_Prop"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "D25_Left_Tail_Beta"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "D26_Right_Tail_Beta"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "D27_Beta_Stability"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "D28_Unlevered_Beta"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "D29_Accounting_Beta"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "D30_FM_Beta_21d"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "D31_Relative_Beta"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "D33_Beta_Persistence"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "D34_RealVol_21d"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "D35_RealVol_63d"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "D36_RealVol_126d"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "D37_Parkinson_Vol"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "D38_GarmanKlass_Vol"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "D39_RogersSatchell_Vol"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "D40_YangZhang_Vol"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "D41_Vol_of_Vol"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "D42_EWMA_Vol"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "D43_Skewness"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "D44_Kurtosis"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "D45_Downside_Dev"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "D46_Sortino"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "D47_CVaR_5pct"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "D48_VaR_5pct"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "D49_VaR_1pct"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "D50_MaxDrawdown"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "D51_Ulcer_Index"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "D52_MinRet"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "D53_Range_Vol"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "D54_Neg_Ret_Prop"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "D55_Vol_Trend"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "D56_Up_Vol"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "D57_Down_Vol"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "D58_Vol_Asymmetry"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "D60_Leverage"
+       }
+      ]
+     }
+    ],
+    "scale": 0.017543859649
+   },
+   "role": "core_signal",
+   "restatement_exposure": 57
+  },
+  {
+   "factor_id": "F_fam_growth",
+   "ast": {
+    "op": "MUL",
+    "children": [
+     {
+      "op": "ADD",
+      "children": [
+       {
+        "leaf": "REGISTRY",
+        "factor": "GR01_Revenue_Growth"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "GR02_Earnings_Growth"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "GR03_Asset_Growth"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "GR04_GPA_Growth"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "GR05_ROE_Growth"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "GR06_OCF_Growth"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "GR07_Composite_Growth"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "IN01_CapEx_to_Assets"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "IN02_CapEx_to_Revenue"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "IN03_RD_to_Market"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "IN04_Net_Equity_Issuance"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "IN05_Net_Debt_Issuance"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "IN06_Investment_to_Assets"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "MK01_CAPM_Beta"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "Q21_Revenue_Growth"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "Q22_Earnings_Growth"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "Q34_GP_Growth"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "XF_GD01_GrossProfit_Growth"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "XF_GD02_OpProfit_Growth"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "XF_GD03_OCF_Growth"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "XF_GD04_Dividend_Growth"
+       }
+      ]
+     }
+    ],
+    "scale": 0.047619047619
+   },
+   "role": "core_signal",
+   "restatement_exposure": 21
+  },
+  {
+   "factor_id": "F_fam_investor_flow",
+   "ast": {
+    "op": "MUL",
+    "children": [
+     {
+      "op": "ADD",
+      "children": [
+       {
+        "leaf": "REGISTRY",
+        "factor": "INV01_Foreign_NetBuy_20d"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "INV02_Foreign_NetBuy_60d"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "INV03_Inst_NetBuy_20d"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "INV04_Inst_NetBuy_60d"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "INV05_Foreign_Momentum"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "INV06_Inst_Momentum"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "INV07_Retail_Contrarian"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "INV08_Foreign_Inst_Agreement"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "INV09_Flow_Persistence"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "INV10_Smart_Money_Flow"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "INV11_Foreign_Concentration"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "INV12_Supply_Demand_Imbalance"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "INV13_Foreign_Resid_Individual_126d"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "INV13_Foreign_Resid_Individual_21d"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "INV13_Foreign_Resid_Individual_63d"
+       }
+      ]
+     }
+    ],
+    "scale": 0.066666666667
+   },
+   "role": "core_signal",
+   "restatement_exposure": 0
+  },
+  {
+   "factor_id": "F_fam_leverage",
+   "ast": {
+    "op": "MUL",
+    "children": [
+     {
+      "op": "ADD",
+      "children": [
+       {
+        "leaf": "REGISTRY",
+        "factor": "XF_DU03_EquityMultiplier"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "XF_LL01_DebtToCapital"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "XF_LL02_NetDebt"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "XF_LL03_CashRatio"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "XF_LL04_QuickRatio"
+       }
+      ]
+     }
+    ],
+    "scale": 0.2
+   },
+   "role": "core_signal",
+   "restatement_exposure": 5
+  },
+  {
+   "factor_id": "F_fam_liquidity",
+   "ast": {
+    "op": "MUL",
+    "children": [
+     {
+      "op": "ADD",
+      "children": [
+       {
+        "leaf": "REGISTRY",
+        "factor": "L01_Amihud"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "L02_Turnover"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "L03_Volume_Mom"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "L04_Bid_Ask_Proxy"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "L05_Dollar_Volume"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "L06_Zero_Trade_Days"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "L07_Zero_Return_Days"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "L08_Roll_Spread"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "L09_Amihud_20d"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "L10_Amihud_Ratio"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "L11_Kyle_Lambda"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "L12_PS_Gamma"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "L13_Vol_Variance_Ratio"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "L14_Price_Impact"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "L15_Turnover_252d"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "L16_Turnover_Vol"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "L17_LOT_Measure"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "L18_Eff_Spread_Proxy"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "L19_Price_Delay"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "L20_Trade_Frequency"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "L21_Market_Depth"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "L22_Ret_Autocorr"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "L23_Vol_Autocorr"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "L24_Range_per_Vol"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "L25_Amihud_Vol"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "L26_Log_MktCap"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "L27_Price_Level"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "L28_Vol_Mom_63d"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "L29_Illiq_Change"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "L31_Vol_Concentration"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "L32_Ret_Vol_Corr"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "L33_AbsRet_Vol_Corr"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "L34_Vol_Spike_Ratio"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "L35_Reversal_Intensity"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "L36_CLV_Stability"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "L37_Relative_Vol"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "L38_DolVol_Mom"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "L39_Overnight_Spread"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "L40_VWAP_Spread"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "L41_Intraday_Vol_Proxy"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "L42_Vol_Skewness"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "L43_Turnover_Change"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "L44_Vol_Ret_Asymmetry"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "L45_Composite_Liquidity"
+       }
+      ]
+     }
+    ],
+    "scale": 0.022727272727
+   },
+   "role": "core_signal",
+   "restatement_exposure": 44
+  },
+  {
+   "factor_id": "F_fam_quality",
+   "ast": {
+    "op": "MUL",
+    "children": [
+     {
+      "op": "ADD",
+      "children": [
+       {
+        "leaf": "REGISTRY",
+        "factor": "Q01_GPA"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "Q02_ROE"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "Q03_ROA"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "Q04_Piotroski_F"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "Q05_Accrual"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "Q06_Asset_Growth"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "Q07_Earnings_Stability"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "Q08_Composite_Quality"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "Q09_CFOA"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "Q10_Gross_Margin"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "Q11_Net_Margin"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "Q12_Asset_Turnover"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "Q13_Fin_Leverage"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "Q14_Current_Ratio"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "Q15_Debt_to_Equity"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "Q16_Debt_to_Assets"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "Q17_ROIC"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "Q18_Op_Leverage"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "Q19_Cash_to_Assets"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "Q20_Net_Equity_Issuance"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "Q23_Sustainable_Growth"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "Q24_Altman_Z"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "Q25_Ohlson_O"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "Q26_RnD_Intensity"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "Q27_CapEx_to_Rev"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "Q28_Cash_Conversion"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "Q29_Inventory_Turnover"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "Q30_Receivables_Turnover"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "Q31_WC_to_Assets"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "Q32_Interest_Coverage"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "Q33_Earnings_Persistence"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "Q35_CashBased_OpProf"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "XF_DU01_NetMargin"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "XF_DU02_AssetTurnover"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "XF_EF01_InventoryTurnover"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "XF_EF02_DaysPayable"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "XF_EF03_DaysReceivable"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "XF_EF04_CCC"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "XF_PR01_EBITDA_Margin"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "XF_PR02_RetainedEarnings_Ratio"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "XF_PR03_TaxRate"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "XF_PR04_NetInterestMargin"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "XF_PR05_EBITDA_to_Assets"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "XF_Q06_Op_Margin"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "XF_RI01_RnD_to_Revenue"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "XF_RI02_CapEx_proxy"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "XF_RI03_SGA_to_Revenue"
+       }
+      ]
+     }
+    ],
+    "scale": 0.021276595745
+   },
+   "role": "core_signal",
+   "restatement_exposure": 47
+  },
+  {
+   "factor_id": "F_fam_regime",
+   "ast": {
+    "op": "MUL",
+    "children": [
+     {
+      "op": "ADD",
+      "children": [
+       {
+        "leaf": "REGISTRY",
+        "factor": "RE04_HighVol_Beta"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "RE05_LowVol_Beta"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "RE06_Beta_Asymmetry"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "RE07_Crisis_Beta"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "RE08_Down_Market_Excess"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "RE09_Capture_Ratio"
+       }
+      ]
+     }
+    ],
+    "scale": 0.16666666667
+   },
+   "role": "core_signal",
+   "restatement_exposure": 6
+  },
+  {
+   "factor_id": "F_fam_risk",
+   "ast": {
+    "op": "MUL",
+    "children": [
+     {
+      "op": "ADD",
+      "children": [
+       {
+        "leaf": "REGISTRY",
+        "factor": "R01_VaR_95"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "R02_VaR_99"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "R03_CVaR_95"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "R04_CVaR_99"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "R05_Tail_Risk"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "R06_MDD"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "R07_Downside_Dev"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "R08_Semi_Variance"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "R09_Coskewness"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "R10_Cokurtosis"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "R11_Systematic_Risk"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "R13_NCSKEW"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "R14_DUVOL"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "R15_Sortino"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "R16_Calmar"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "R17_Market_Leverage"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "R18_Book_Leverage"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "R19_Composite_Risk"
+       }
+      ]
+     }
+    ],
+    "scale": 0.055555555556
+   },
+   "role": "core_signal",
+   "restatement_exposure": 18
+  },
+  {
+   "factor_id": "F_fam_size",
+   "ast": {
+    "op": "MUL",
+    "children": [
+     {
+      "op": "ADD",
+      "children": [
+       {
+        "leaf": "REGISTRY",
+        "factor": "S01_Size"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "S02_Float_Size"
+       }
+      ]
+     }
+    ],
+    "scale": 0.5
+   },
+   "role": "core_signal",
+   "restatement_exposure": 2
+  },
+  {
+   "factor_id": "F_fam_value",
+   "ast": {
+    "op": "MUL",
+    "children": [
+     {
+      "op": "ADD",
+      "children": [
+       {
+        "leaf": "REGISTRY",
+        "factor": "V01_BM"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "V02_EP"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "V03_CFP"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "V07_EV_EBITDA"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "V08_PSR"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "V10_FCF_Yield"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "V11_Shareholder_Yield"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "V12_Composite_Value"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "V13_EV_Sales"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "V14_EBIT_EV"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "V15_NetDebt_Adj_EP"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "V16_Tobins_Q"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "V17_Payout_Ratio"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "V18_AM"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "V21_Composite_Equity_Issuance"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "V22_FCFF_EV"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "V23_RAFI_Weight"
+       },
+       {
+        "leaf": "REGISTRY",
+        "factor": "V24_Residual_Income"
+       }
+      ]
+     }
+    ],
+    "scale": 0.055555555556
+   },
+   "role": "core_signal",
+   "restatement_exposure": 18
+  },
+  {
+   "factor_id": "F_tsfmom_weights",
+   "ast": {
+    "leaf": "SPECIAL_OP",
+    "op_code_path": "stage_artifacts/WT_R20260829_006/engine/phase5_candidate.R",
+    "walk_forward": true,
+    "escape_contract": {
+     "escape_type": "SPECIAL_OP",
+     "op_code_path": "stage_artifacts/WT_R20260829_006/engine/phase5_candidate.R",
+     "walk_forward": true
+    }
+   },
+   "role": "conditioning",
+   "restatement_exposure": 0
+  }
+ ]
+}

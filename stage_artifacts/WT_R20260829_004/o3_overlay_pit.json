@@ -1,0 +1,55 @@
+{
+  "item1_assert_overlay_pit": {
+    "status": "PASS",
+    "n_rows": 279,
+    "max_used_cutoff": "2026-08-28",
+    "rule": "used_cutoff <= holding_month_start (first-day-of-holding-month)",
+    "optimizer_layer_extra": {
+      "desc": "optimizer 자체 소비 정합 — 신호(signal_ym) 라벨이 그 달 말 Date 의 비중에 쓰이고 수익은 holding_ym 에서 실현",
+      "used_cutoff_le_asof": true,
+      "n_asof_dates": 260
+    }
+  },
+  "item2_lag1_stress": {
+    "calmar_base": 0.19757189,
+    "calmar_lag1": 0.20285541,
+    "rel_change_calmar": 0.02674229,
+    "sr_base": 0.54205165,
+    "sr_lag1": 0.56087292,
+    "rel_change_sr": 0.03472228,
+    "status": "NO_COLLAPSE",
+    "rule": "lag1 판이 base 대비 -25% 초과 붕괴하면 동월 누출 의심"
+  },
+  "item3_strict_ab": {
+    "current_equals_strict": true,
+    "inflation": 0,
+    "message": "[overlay_pit_guard] Calmar(current vs strict): current=0.1976 strict=0.1976 인플레=0.0% → clean",
+    "strict_definition": "현행 컷오프(signal_month_end, = holding_month_start 직전)가 곧 strict 정의와 동일 — 두 값이 같으므로 인플레 0",
+    "positive_control_violation_probe": {
+      "description": "패닉 신호를 1개월 앞당김(shift -1) = 홀딩월 자신의 정보로 국면 판정 (BearProb 실사고 동형)",
+      "calmar": 0.2495128,
+      "sr": 0.58749509,
+      "alpha_ann_pct": 5.66512996,
+      "inflation_calmar": 0.26289629,
+      "lookahead_flag_calmar": true,
+      "inflation_sr": 0.083836,
+      "lookahead_flag_sr": true
+    }
+  },
+  "item4_cutoff_rule": {
+    "rule": "first-day-of-holding-month",
+    "used": "signal_month_end (= holding_month_start - 1d) 이전 데이터만",
+    "scan_split": {
+      "decision_path_lines": 222,
+      "posthoc_evaluator_lines": 57
+    },
+    "anchor_date_in_decision_path": false,
+    "realized_ym_in_decision_path": false,
+    "anchor_date_in_posthoc_mentions": 5,
+    "consumed_columns_have_anchor_date": false,
+    "consumed_columns_have_realized_ym": false,
+    "join_key": "signal_ym (신호월) — holding_ym 으로 조인하지 않음",
+    "self_reference_note": "초판 검사기가 자기 코드의 토큰을 읽어 TRUE 를 냈다(자기참조 오탐). 소비 컬럼 존재검사를 병기해 재도출."
+  },
+  "verdict": "PASS"
+}

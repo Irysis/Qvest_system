@@ -1,0 +1,401 @@
+{
+  "wt_id": "WT-R20260829_014",
+  "designed_by": "alpha-hypothesis",
+  "model_tier": "opus",
+  "designed_at": "2026-08-29",
+  "spec_scope": "AST v1.1 설계순서 ①메커니즘 ②가설서술 ③반증조건 ④국면경계 + pipeline Step 0. ⑤AST 구성·팩터 소싱·신호공학·실측·alpha_package 발행은 alpha-research 소관 — 본 문서는 그 구간을 수행하지 않았다.",
+
+  "prechecks": {
+    "hypothesis_index_hits": {
+      "instruction": "이름이 아니라 **구성으로** 조회하라 (현저성 가중 · 분포 모양 · 수익 분산 구성)",
+      "queries_run": [
+        {"kw": "salience", "hits": "1 (FAIL 0 · DISTILLED_NEG 0)", "top": "WT-R20260829_014(IN_PROGRESS) = 본 라운드 자신", "reading": "이름으로 조회하면 선행이 없다 — 이 결과만 보고 '신규' 라고 쓰면 오독이다"},
+        {"kw": "salient", "hits": "0", "top": "-", "reading": "동일 — 이름 축 조회는 이 설계에 대해 아무것도 말해주지 않는다"},
+        {"kw": "max5", "hits": "6 (DISTILLED_NEG 3)", "top": "DIST-AR-060 · DIST-AR-051 · DIST-AR-044", "reading": "★구성 축 조회는 즉시 발화한다"},
+        {"kw": "lottery/복권", "hits": "30 (FAIL 6 · DISTILLED_NEG 11 · PASS 3)", "top": "DIST-AR-060(DISTILLED_NEG) · DIST-QPM-005 · DIST-AR-051"},
+        {"kw": "skewness", "hits": "24 (FAIL 5 · DISTILLED_NEG 5 · PASS 1)", "top": "DIST-AR-060 · DIST-AR-051 · DIST-AR-050"},
+        {"kw": "exclusion", "hits": "11 (FAIL 3 · DISTILLED_NEG 4 · PASS 1)", "top": "DIST-AR-051(DISTILLED) · DIST-QPM-035 · DIST-QPM-007"},
+        {"kw": "dispersion", "hits": "30 (DISTILLED_NEG 27)", "top": "DIST-RAMP-026 · DIST-RAMP-006 · DIST-RAMP-014"},
+        {"kw": "volatility", "hits": "30 (FAIL 13)", "top": "DIST-RAMP-014 · WTR20260829_004_DM2016_CRASHOVL_IV25"},
+        {"kw": "momentum(승계 — 8/20 실행분)", "hits": "30 (FAIL 1 · DISTILLED_NEG 17)", "top": "DIST-AR-041 · DIST-AR-027 · DIST-RAMP-026"}
+      ],
+      "decisive_construction_hits": [
+        {
+          "id": "L-AR-20260808_120900 (DIST-AR-050 근거, VALIDATED_NEGATIVE)",
+          "what": "KR 복권형(MAX5 = 과거 1개월 상위 5개 일간수익 평균) 효과 = **전량 변동성 대리**. 유동성 필터 후 cap-tier 3분할 438개월·472,754행 실측.",
+          "numbers": "단순 스펙 MID t −5.42 · SMALL t −6.21 (강한 음의 효과, 문헌 정합) → **vol·size 통제 투입 시 MID t 0.14 · SMALL t 0.34 로 완전 소멸**. MEGA 는 통제 전후 무신호(0.22 → 1.27).",
+          "revival_condition_verbatim": "①vol 과 직교하도록 구성한 복권형 대리(왜도·IVOL 잔차 등)를 별도 사전등록 ②vol 통제 없는 스펙을 소비하려면 '중복 인지' 명시",
+          "relevance": "현저성(ST)의 고-현저 승자 = 형성기간에 시장 대비 튀는 상승일을 가진 종목 = MAX5 가 재는 집합과 구성상 대부분 겹친다. 이 저장소에서 그 재료는 vol 통제 후 신호가 0 이다."
+        },
+        {
+          "id": "DIST-AR-051 (배제-필터 경로, WITHDRAW 확정 · WT-D20260802_022 n=256)",
+          "what": "복권형(MAX5 상위 10%) 유니버스 **제외-필터**가 스크리닝에서 통과한 뒤 production 실코드 경로 재측정에서 뒤집혔다.",
+          "numbers": "스크리닝(WT-014 bare): dIR +0.1692 · PORT_t 2.879→3.620 · absMDD −0.5587→−0.4443 (통과) ⇒ production 재측정: **IR 1.5592→1.4103 · dIR −0.1489 · paired t −1.9763 · MDD −23.29%→−26.20%(악화)**. 사전등록 진단 4종 전부 음수. 재현 정합 게이트 A/B/C PASS(max_dret 5.13e-16) — 측정 오류가 아니라 결과가 다른 것.",
+          "mechanism_note_verbatim_gist": "양수는 capnorm25 가중 구성에서만 나온다(+0.1579) — rank-tilt 는 최상위 비중 종목을 자르는데 cap_norm 은 그 종목 무게가 0 에 가까워 분모만 축소된다. 그 유일한 양수 셀조차 paired t −0.253.",
+          "relevance": "본 설계의 소비 형태(고-현저 종목을 롱온리 북에서 배제)는 **이미 실측되고 철회된 구성**이다. ST 가 MAX5 와 정의상 다르다는 사실은 이 선례를 무효화하지 않는다 — 다르다는 것과 vol 에 직교하다는 것은 다른 명제다."
+        },
+        {
+          "id": "DIST-AR-041 (family=momentum · polarity=negative · status=distilled · metric_type=estimated · expiry 2027-02-09 · supporting L-code 17건 · promoted_to_axiom=null)",
+          "retry_condition_verbatim": "가격-파생 모멘텀 변형의 추가 탐색은 저EV 다(직교해도 전이 실패가 반복 실측). 재도전 가치는 수급 주체 축에 있다: (1) 기타법인 채널의 하위 분해(법인 유형·거래 목적)로 신호 강도 재측정 (2) 미분류·기타 주체군에서 동일 accumulation 구조 탐색 (3) 주체 축과 공시 이벤트(비-return 원천)의 교차",
+          "relevance": "축3 판정의 대상 카드 — 아래 dist_ar_041_judgment 참조."
+        }
+      ]
+    },
+    "frontier_queue_refs": {
+      "file": "06_Registry/alpha_frontier_queue.json (schema_version 2.0)",
+      "status_counts": {"open": 92, "claimed": 5, "parked": 21},
+      "parked_reasons": {"dohoon_decision": 5, "blocked": 4, "data_gate": 3, "inconclusive": 3, "key_gated": 2, "awaiting": 2, "deprioritized": 1, "capacity_wait": 1},
+      "salience_related_entries": 0,
+      "claimed_entry_for_this_wt": null,
+      "note": "본 라운드는 frontier 큐 항목이 아니라 강화 원장(06_Registry/reinforce_ledger_l1.json entry[0], base RP_20260829_122020_9192, paper_key=ttl:jt1993, attempts_used=16)의 **14/20** 시도다. 어떤 open 항목도 claim·점유하지 않았다. parked_reason ∈ {dohoon_decision(5건), dohoon_data_work} 항목은 열람만 하고 착수하지 않았다.",
+      "infra_backlog_checked": "본 라운드는 인프라 항목 아님 — 06_Registry/infra_backlog.json 대상 밖"
+    },
+    "owner": "alpha-hypothesis (WT-R20260829_014, Q-Lead 스폰). 원장 소유 = reinforce_ledger_l1 entry[0] attempt n=14",
+    "parallel_rounds_noted": "_013 / _015 / _016 동시 설계 · _011 alpha 실행 중. 본 에이전트는 qepm/mailbox/worktask/WT-R20260829_014/ 밖에 쓰지 않았다.",
+    "prior_rounds_read": {
+      "ledger": "06_Registry/reinforce_ledger_l1.json entry[0] attempts 1~16 전문",
+      "l_codes_read": [
+        "stage_artifacts/l_code/reinforcement/l_code_RF_WT-R20260829_008_DGW2014_ABORTED_AT_POWER_GATE.json (★8/20 — 지시된 정독 대상)",
+        "stage_artifacts/l_code/alpha_research/l_code_AR_max_effect_is_vol_proxy_20260808.json",
+        "qepm/mailbox/worktask/WT-R20260829_008/alpha_hypothesis.json (판독 정밀도 기준)"
+      ],
+      "carried_coordinates": {
+        "base": "RP_20260829_122020_9192 (JT1993 6-6 데실 롱숏 충실구현) essence F",
+        "cell4_beta_controlled_alpha": "+5.14%/yr (2/20 실투형 좌표)",
+        "required_active_for_PORT_t_2.95": "+13.25%/yr ⇒ 필요 증분 +8.11%p/yr",
+        "graded_rounds_4to7": "essence C 4건 — 공통 벽 = OOS 소멸 (권위 표본외 유지율 −0.660 / −0.747 / −0.780 / −0.693)",
+        "aborted_at_gate": "8·9·10·12/20 (4건) — 착수 게이트에서 체인 미진입",
+        "cross_paper_winner_share": "GH2004 숏 76.6% · DGW2014 승자 몫 25~52% · NM2012 41% · CGH2004 13.2% · LS2000 패자편중 — 5편 전부 미국 논문",
+        "confound_precedents": "3/20 회전율이 L01_Amihud 에 지배(|NW-t| 2.886 vs 0.807) · 7/20 근접도가 L11_Kyle_Lambda 에 지배(2.557 vs 1.541) · 3/20 합집합 혼합 랭킹의 시장 더미 아티팩트 t −2.526(KOSDAQ 14.1% vs 65.3%)",
+        "benchmark_basis_finding": "5/20·6/20 재현 — 벤치 basis 가 PORT_t 를 46% / 13.7배 옮긴다. 상류 PORT_t 를 권위 값과 같은 양으로 인용 금지"
+      }
+    }
+  },
+
+  "target_declared_before_anchor": {
+    "declaration_order_statement": "본 절은 앵커 탐색을 시작하기 **전에** 확정했고, 실제로 이 라운드에서는 앵커가 끝내 확보되지 않았으므로 사후 표적 교체가 물리적으로 불가능했다(8/20 이 자백한 결함의 재발 여지 없음).",
+    "target": "실투형 롱온리 top-25 의 **수준(level)** — β-통제 α(%/yr, NW lag-3). 지속(OOS)·분포·부수 통계로 표적을 옮기지 않는다.",
+    "comparison_baseline": "무조건화 cell4 β-통제 α = +5.14%/yr (2/20 실측 좌표)",
+    "required": "+13.25%/yr (PORT_t 2.95 도달분) ⇒ 필요 증분 +8.11%p/yr",
+    "gate_rule_preregistered": "축1 앵커(원문 승자 레그 또는 데실 수준 결과)로 실현 컷 후 기대 증분을 산출 → ratio = 기대증분 / 13.25%. ratio < 0.15 이면 중단. 롱숏 헤드라인을 앵커로 쓰는 것 금지. 외부(타 논문) 승자 몫 곱셈으로 분자를 만드는 것 금지."
+  },
+
+  "paper_reading": {
+    "source": "Sim, M., Kang, J., Kim, H.-E., & Lee, E. (2022). The Momentum Strategies and Salience: Evidence from the Korean Stock Market. Emerging Markets Finance and Trade, 58(11), 3177-3190. DOI 10.1080/1540496X.2022.2034615",
+    "base_paper": "Jegadeesh & Titman (1993), JF 48(1):65-91 — https://www.bauer.uh.edu/rsusmel/phd/jegadeesh-titman93.pdf",
+    "read_method": "★전문 판독 불가. 아래는 확보된 것과 확보 실패한 것을 구분해 적는다. 8/20 은 저자 배포 PDF 전문을 판독했으나 본 논문은 그런 경로가 없다.",
+    "access_attempts": [
+      {"route": "tandfonline.com/doi/abs + /doi/full", "result": "402/403 — paywall"},
+      {"route": "Semantic Scholar Graph API (openAccessPdf)", "result": "status = **CLOSED**, url = 빈 문자열"},
+      {"route": "Unpaywall (download_with_fallback, use_scihub=false)", "result": "no OA URL found"},
+      {"route": "OpenAlex W4220702102", "result": "pdf_url = 빈 문자열"},
+      {"route": "Google Scholar 클러스터", "result": "PDF 링크 0건"},
+      {"route": "KAIST Pure / KOASAS(저자 Kang 소속 기관 리포지터리)", "result": "전문 없음 — 메타데이터만"},
+      {"route": "KCI/DBpia 한국어판 검색(심명화·강장구 현저성 모멘텀)", "result": "동일 논문의 한국어판 없음"},
+      {"route": "ResearchGate", "result": "full-text 미공개(요청형)"}
+    ],
+    "what_was_actually_obtained": {
+      "abstract_verbatim": "This study compares momentum strategies based on traditional, idiosyncratic, rank, and sign momentum measures in the Korean stock market. We find that the traditional momentum strategy underperforms and suffers long-term return reversals, while other strategies (idiosyncratic, rank, and sign) exhibit stable profits. We employ a direct measure of salience and suggest that the unprofitability of the traditional momentum strategy in the Korean market can be explained by the salience effect. We further show that the traditional momentum strategy can be profitable after excluding stocks with salient payoffs in the formation period.",
+      "abstract_source": "publisher abstract (Semantic Scholar Graph API mirror + RePEc + KAIST Pure 3중 일치)",
+      "body_fragment_from_scholar_snippet": "'… momentum profitability in the Korean stock market is possibly driven by the salience effect. … Following Fama and French (2015), we construct five factors for the Korean stock markets. …'",
+      "body_fragment_caveat": "★이것은 검색엔진이 원문 본문에서 잘라낸 조각이다. 표가 아니고 문맥이 없다. 수치 근거로 쓰지 않았고, 축2 판정에서 '위험조정 보고가 존재한다' 는 사실 확인에만 썼다."
+    },
+    "what_was_NOT_obtained_and_is_load_bearing": [
+      "표본 기간 · 유니버스 정의 · 리밸 주기",
+      "**데실/분위 표 자체** — 승자 열도 패자 열도 없다",
+      "승자 레그 단독 수익 · 승자 레그 t-통계량",
+      "현저성 배제 전/후의 수익 차이 크기(%p) — 즉 **효과크기의 분자가 존재하지 않는다**",
+      "ST 의 정확한 구현 사양(θ·δ·형성창 길이·가중 방식) — Cosemans-Frehen (2021) 을 따랐는지, 변형인지"
+    ],
+    "companion_paper_not_used_as_anchor": {
+      "id": "Sim, M. & Kim, H.-E. (2022). Salience theory and enhancing momentum profits. Finance Research Letters, DOI 10.1016/j.frl.2022.103274",
+      "why_not": "저자가 겹치나 **본 라운드의 근거 논문이 아니다**. 시장·표본이 KR 이라는 확인이 없고(초록 API 반환 null), 이 논문 수치를 KR 앵커로 쓰면 8/20 이 금지한 '외부 수치 대입' 이 된다. 참고 표시만 하고 앵커로 쓰지 않았다."
+    },
+    "third_party_summaries_seen_and_rejected": "검색엔진이 합성한 '고-현저 승자와 저-현저 패자가 반전한다 / 배제하면 수익과 샤프가 유의하게 증가한다' 류 요약을 보았으나, 어느 논문의 문장인지(EMFT 판인지 FRL 판인지) 확정할 수 없고 수치가 없다. **근거로 쓰지 않았다.**"
+  },
+
+  "launch_gate_3axes": {
+    "axis1_winner_leg_anchor": {
+      "verdict": "**FAIL — 앵커 추출 불가**",
+      "reason": "원문 전문이 유료 봉쇄이고 OA 경로 8종이 전부 실패했다. 확보된 초록에는 **수치가 0개**다 — 데실 표도, 승자 열도, t 도, 표본 기간도 없다.",
+      "ratio": null,
+      "expected_t": null,
+      "power": null,
+      "ratio_note": "ratio 는 '작다' 가 아니라 **정의되지 않는다** — 분자(승자-레그 또는 데실 수준 효과크기)가 존재하지 않기 때문이다. 8/20 은 분자가 있었고(승자 +1.23%p/6mo → +2.2%p/yr) ratio 0.091~0.166 이 나와 문턱에 '걸린' 경우였다. 본 라운드는 그보다 앞단이다.",
+      "forbidden_workarounds_explicitly_declined": [
+        "롱숏 헤드라인을 앵커로 승격 — 부모 지시상 금지어이고, 애초에 이 논문은 롱숏 수치조차 초록에 없다",
+        "타 논문(GH2004 23.4% · DGW2014 25~52% · NM2012 41% · CGH2004 13.2%)의 승자 몫을 곱해 분자 합성 — 부모가 명시적으로 금지",
+        "FRL 자매 논문(Sim & Kim 2022) 수치 대입 — 시장 확인 불가",
+        "2차 요약·검색엔진 합성문의 수치 사용",
+        "우리 자신의 사전 추정으로 분자를 만들고 그것을 '논문 앵커' 로 라벨 — measurement-graduation §1 위반"
+      ],
+      "parent_rule_applied": "부모 지시 원문: '축1: 원문에서 승자 레그 또는 데실 수준 결과를 앵커로. **추출 불가 = 중단 사유.**' ⇒ 이 축 단독으로 중단이 성립한다."
+    },
+    "axis2_beta_compensation": {
+      "verdict": "**조건부 PASS (행태 모형 · 위험조정 보고 존재 확인, 수치 미확인)**",
+      "evidence_for": [
+        "초록 verbatim: KR 전통 모멘텀의 **무수익성**을 '**the salience effect**' 로 설명한다 — 즉 논문의 주장은 '이 수익이 위험보상' 이 아니라 '**오정가**' 다. 위험보상 모형이면 무수익을 설명할 수 없다.",
+        "이론적 뿌리 = Bordalo-Gennaioli-Shleifer 현저성 이론(선호·확률가중 왜곡) + Cosemans-Frehen 의 준거의존 선호 — 전부 **미스프라이싱 계열**이지 위험 프리미엄 계열이 아니다.",
+        "원문 본문 조각: 'Following Fama and French (2015), we construct five factors for the Korean stock markets.' ⇒ 논문이 **KR FF5 위험조정을 실제로 수행**한다. 즉 결과가 표준 위험요인으로 설명되는지 저자가 직접 시험했다."
+      ],
+      "evidence_gap": "어느 표에 어떤 α 와 t 가 실렸는지 **확인하지 못했다**. '위험조정을 했다' 는 확인과 '위험조정 후 살아남았다' 는 확인은 다른 명제이고, 후자는 미확인이다.",
+      "comparison_to_prior_rounds": "12/20(NM2012)이 축2 통과·축1 차단 · 9/20(SS2007)이 축2 차단. 본 라운드는 12/20 과 같은 형태다 — 축2 는 문제가 아니고 축1 에서 죽는다.",
+      "one_genuine_point_in_favor": "★기전이 **롱온리 친화적**이라는 점은 정직하게 기록해 둔다. 현저성 기전의 오정가는 '고-현저 종목이 **과대**평가' 이고, KR 공매도 제약 때문에 그 과대평가를 파는 쪽에 자본이 못 들어간다. 롱온리 북은 그 종목을 **살 수 있는 후보에서 빼는** 행위로 그 오정가를 회피할 수 있다 — GH2004/DGW2014 처럼 '가치가 숏에 있어서 못 먹는' 구조와는 다르다. 다만 그 회피 이득의 크기는 아래 '배제 vs 대체' 문제로 결정되고, 그 크기는 이 저장소에서 이미 음수로 실측됐다(DIST-AR-051)."
+    },
+    "axis3_dist_ar_041_category": {
+      "verdict": "**IN_CATEGORY — 이중으로 (원천 범주 1건 + 구성 범주 2건). 8/20 보다 나쁘다.**",
+      "honest_reasoning": [
+        "**원천 축(DIST-AR-041)**: 현저성 측도 ST 는 종목의 일별 수익과 같은 날 시장수익만으로 계산된다(현저성 가중 σ = |r_i − r_m| / (|r_i| + |r_m| + θ) 계열). 입력이 가격 하나다. 따라서 '가격-파생' 이며 카드의 범주 축은 **원천**이므로 범주 **안**이다.",
+        "부모 지시의 구분('수익 분포의 모양이라는 별개 정보인가')은 **구성 형태**의 차이이지 **데이터 원천**의 차이가 아니다. 8/20 이 IDZ 에 대해 내린 판정과 **같은 논리**이고, 그 판정을 여기서 뒤집을 근거가 없다. 억지 신규성 주장을 하지 않는다.",
+        "ST 가 준거의존(시장수익 대비 상대 편차)이라는 점은 MAX 와의 **정의상 차이**를 만든다. 그러나 준거점도 가격이다 — 준거의존은 원천을 바꾸지 않는다.",
+        "**구성 축(8/20 에는 없던 추가 발화)**: 본 설계의 구성 = '형성기간에 시장 대비 두드러진 상승을 보인 종목을 롱온리 북에서 배제'. 이 구성은 이 저장소에서 이미 두 번 실측됐다 — (i) L-AR-20260808_120900: MAX5 계열은 vol·size 통제 후 t −5.42→0.14 로 **완전 소멸**(VALIDATED_NEGATIVE, 438개월) (ii) DIST-AR-051: 그 계열의 **제외-필터**가 스크리닝 통과 후 production 에서 dIR −0.1489 · paired t −1.9763 로 **철회 확정**.",
+        "따라서 '측정 이력이 없다' 는 방어는 이 라운드에서 성립하지 않는다. 8/20 은 '이름 축 미측정(discreteness 0 · path shape 0)' 이 사실이었으나, 본 라운드는 **이름으로는 0 건인데 구성으로는 3 건이 발화한다**. 이름으로 조회했다면 '신규' 로 오독했을 것이다 — 부모의 '구성으로 조회하라' 지시가 정확히 이 함정을 겨냥했다."
+      ],
+      "what_is_nonetheless_new": [
+        "ST 의 준거의존 형태(시장수익 대비 상대 편차의 현저성 가중)는 MAX5(절대 상위 일간수익 평균)와 동일 함수가 아니다. L-AR-20260808_120900 의 부활 조건 ①('vol 과 직교하도록 구성한 복권형 대리를 별도 사전등록')의 **후보 자격은 있다**.",
+        "다만 그 자격은 **주장이 아니라 증명**을 요구한다: measurement-graduation ②-a(축별 누출 귀무 — 순수 vol 함수 placebo 가 실제 신호보다 센지) + ②-b(절단면 위 통제축 자신의 분위 프로파일). 그리고 FQ-234 실측은 raw/rank 직교화가 vol 의 비선형 구조를 못 걷는다는 것을 이미 보였다. 즉 이 증명의 사전 성공률을 높게 잡을 근거가 없다.",
+        "논문의 **다른** 결과(idiosyncratic / rank / sign 모멘텀이 KR 에서 안정적 이익)는 신호 정의 축이지 현저성 축이 아니다 — 아래 candidates C3 참조. 그것도 가격-파생이라 DIST-AR-041 범주는 동일하다."
+      ]
+    },
+    "supplementary_gate_exclusion_vs_replacement": {
+      "why_this_matters_here": "본 논문의 설계는 **배제형**이다(초록 verbatim: 'profitable after **excluding** stocks with salient payoffs'). measurement-graduation 의 명시 규약: '이득 항의 비교군을 틀리지 말 것 — 배제형 설계에서 이득을 배제 vs **잔류**로 재면 통과하고 배제 vs **대체**로 재면 미달한 사례가 실측됐다(WT-D20260822_010: 0.00805 vs 0.00310 → ratio 0.1465 → **0.0445**, 소급 무효).'",
+      "structural_fact": "롱온리 top-25 에서 무엇을 배제하든 랭킹 N+1 이하가 **강제 편입**된다. 손익은 '배제 이득 > 대체 비용' 으로만 결정된다.",
+      "kr_measured_answer_already_exists": "DIST-AR-051 이 바로 그 실험이다 — 복권형 상위 10% 제외-필터, production 실코드 경로, n=256: dIR −0.1489 · paired t −1.9763 · MDD 악화. 즉 '고-현저/복권형 종목을 롱온리 북에서 뺀다' 는 행위의 KR 실측 답은 **이미 음수**다.",
+      "consequence": "설령 축1 앵커가 확보되어 승자-데실 스프레드가 유의했더라도, 그 스프레드는 '배제 vs 잔류' 량이지 '배제 vs 대체' 량이 아니다. 실현 컷에서 다시 한 번 감가된다."
+    }
+  },
+
+  "candidates": [
+    {
+      "title": "C1 (선택) — 저-현저성 승자 선별: 형성기간 ST 상위 층을 승자 풀에서 배제하고 롱온리 top-25 구성",
+      "family": "momentum × behavioral(salience)",
+      "mechanism": {
+        "agent": "KR 개인투자자 매수 군집 — 형성기간 중 시장 대비 두드러진(salient) 상승일을 과잉 확률가중하는 현저성-사고 주체",
+        "friction": "KR 공매도 제약(개인 대차 불가 · 전면 금지 이력) + 고-현저 종목의 고변동·재고비용 → 과대평가를 파는 쪽에 자본이 못 들어간다",
+        "path": "형성기간에 현저 상승일이 몰린 종목이 과대평가 상태로 승자 데실에 진입 → 후속 반전으로 승자 레그를 갉아먹는다 → 그 층을 빼면 남은 승자의 드리프트만 남는다"
+      },
+      "why_selected": "부모가 사전등록한 축이고 1급 반증(승자 데실 내부 고/저 현저성 층 스프레드)이 이 후보에만 대응한다. 표적 교체를 하지 않기 위해 이것을 선택한다."
+    },
+    {
+      "title": "C2 — 방향 반전 소비: 저-ST(현저 하방) 저평가 종목 매수",
+      "family": "behavioral(salience) reversal",
+      "mechanism": {
+        "agent": "동일 — 현저 하락일에 과잉 반응해 투매하는 개인",
+        "friction": "동일 공매도 제약(반대 방향으로는 마찰이 오히려 약함 — 사는 데는 제약이 없다)",
+        "path": "현저 하방 종목이 저평가 → 반등. 롱온리가 직접 살 수 있는 쪽"
+      },
+      "why_not_selected": "표적이 모멘텀 강화가 아니라 **반전 전략**으로 바뀐다 — 강화 원장 entry[0] 의 base(JT1993 모멘텀)와 결합 논리가 끊긴다. 그리고 DIST-QPM-005(개인 flow contrarian 알파 부재) · DIST-AR-049 가 인접 범주에서 이미 음성이다. challenge_flags 에 보관."
+    },
+    {
+      "title": "C3 — 신호 정의 교체: idiosyncratic / rank / sign 모멘텀 직접 이식",
+      "family": "momentum (signal redefinition)",
+      "mechanism": {
+        "agent": "동일 개인 주체 — 다만 기전이 '현저성 배제' 가 아니라 '수익 크기의 극단값이 랭킹을 오염시킨다'",
+        "friction": "동일",
+        "path": "rank/sign 변환이 극단 수익의 영향을 잘라 승자 정의를 안정화 → 승자 레그 드리프트 회수"
+      },
+      "why_not_selected": "★**이것이 본 논문에서 가장 강한 KR 실측 주장**이다(초록: traditional 은 무수익인데 idiosyncratic·rank·sign 은 'stable profits'). 그러나 지금 여기서 이것으로 갈아타는 것은 **8/20 이 자백한 사후 표적 교체와 정확히 같은 행위**다 — 부모가 사전등록한 축은 현저성 조건화이지 신호 정의 교체가 아니다. 따라서 선택하지 않고, **Q-Lead 가 새 라운드로 사전등록할 것을 권고**하는 형태로만 남긴다. 주의: 이것도 가격-파생이라 DIST-AR-041 범주는 동일하고, 앵커 문제(원문 유료 봉쇄)도 동일하게 걸린다."
+    },
+    {
+      "title": "C4 — 시장 전체 현저성 수준으로 모멘텀 노출 타이밍(오버레이)",
+      "family": "risk_overlay / regime",
+      "mechanism": {
+        "agent": "총계 수준의 현저성-사고 강도(시장 전체 현저 상승일 비중)",
+        "friction": "동일",
+        "path": "현저성이 높은 국면에 모멘텀 노출을 줄인다"
+      },
+      "why_not_selected": "4/20(DM2016 크래시 오버레이)이 권위 층에서 **한계기여 전 축 음수**로 마감했고(무조건화 PORT_t 1.0149 vs 오버레이 0.7547), 그 라운드가 '오버레이 개선 외관은 동월 누출로 제조된다' 를 실증했다. 같은 소비면 재시도는 저EV."
+    },
+    {
+      "title": "C5 — 비-가격 현저성 대리: 주의 포착을 비-return 원천으로 재기 (공시 이벤트 · 거래주체 급변)",
+      "family": "attention × non-return source",
+      "mechanism": {
+        "agent": "동일 개인 주체",
+        "friction": "동일",
+        "path": "'무엇이 두드러졌나' 를 가격이 아니라 공시/주체 흐름으로 재면 vol 대리 문제를 구조적으로 회피"
+      },
+      "why_not_selected": "★**DIST-AR-041 이 지목한 유일한 고-EV 방향이고 범주 밖으로 나가는 유일한 후보**다. 그러나 본 라운드의 근거 논문(현저성)이 정의하는 신호가 아니다 — 논문 검정이 아니라 새 가설이 된다. 부모의 사전등록(논문 직접 검정)을 넘는다. **Q-Lead 에 별도 라운드로 제안**한다."
+    }
+  ],
+
+  "selected": {
+    "hypothesis_title": "JT1993 강화 14/20 — KR 현저성(salience) 조건부 모멘텀",
+    "hypothesis_description": "KR 롱온리 top-25 모멘텀 북에서, 형성기간(12-1) 현저성 ST 상위 층에 속한 승자를 배제하고 그 자리를 **차순위 승자로 대체**했을 때, 대체 비용을 차감한 뒤에도 β-통제 α 가 무조건화(cell4 +5.14%/yr) 대비 개선되는가. ★서술을 '배제 vs 대체' 로 고정한다 — '배제 vs 잔류' 로 재면 통과하고 대체로 재면 미달한 선례(WT-D20260822_010, ratio 0.1465→0.0445 소급 무효)가 있기 때문이다.",
+
+    "mechanism": {
+      "agent": "**KR 개인투자자 매수 군집** — 거래대금 비중이 높고 KOSDAQ 에서 더 높다. 현저성 이론(Bordalo-Gennaioli-Shleifer)의 주체: 종목의 과거 수익 분포에서 **시장수익 대비 두드러진 상승일**에 과잉 확률가중을 부여하고, 그 종목을 검색·매수한다. 특정: '지난 12개월 중 시장 대비 크게 튄 상승일이 몇 번 있었던 종목' 을 사는 개인 순매수 흐름이며, 전체 개인이 아니라 그 하위 흐름이다.",
+      "friction": "**KR 공매도 제약** — 개인은 대차 접근이 사실상 없고, 제도적으로도 전면 금지 구간이 반복적으로 존재했다(2008-10~2009-05 · 2011-08~2011-11 · 2020-03~2021-05 전면 · 2023-11~ 재금지. ★정확한 캘린더는 alpha-research 가 1차 출처로 확정할 것 — 본 문서의 날짜는 설계 근거이지 검증된 데이터가 아니다). 과대평가된 고-현저 승자를 파는 쪽에 차익거래 자본이 들어갈 수 없다. 보조 마찰: 고-현저 종목은 고변동·고회전이라 기관 차익거래자에게 트래킹에러·재고비용이 크다.",
+      "path": "형성기간(t−12~t−2)에 현저 상승일이 몰린 종목은 t 시점에 이미 과대평가 상태로 승자 데실에 진입한다 → 보유기간(t+1 이후 1~12개월)에 그 과대평가가 되돌려지며(논문이 보고하는 'long-term return reversals') 승자 레그의 드리프트를 상쇄한다 → 형성기간 ST 상위 층을 승자 풀에서 제외하면 남는 승자는 '연속·비현저 상승으로 온 승자' 이고 그 드리프트만 남는다. 소비 시점 = 월간 리밸, 신호는 **t−1 종가까지의 일별 수익만**(C1·C2·C10)."
+    },
+
+    "falsification": {
+      "primary_preregistered": {
+        "observable": "승자 데실 **내부**에서 고-ST 층과 저-ST 층의 forward 수익 스프레드",
+        "test": "승자 풀(12-1 상위 데실) 안에서 ST 3분할 → 저-ST 층 − 고-ST 층의 익월 수익 차, NW lag-3, 시장(KOSPI/KOSDAQ) **내부** 랭킹으로 산출",
+        "field_dictionary_refs": ["A1_RAWDATA_OHLCVS_daily", "A2_universe_krx_monthly", "A9_liquidity_avgtv20_convention", "FDB-B2_registry_rawdata_price_daily"],
+        "reject_if": "스프레드가 비유의(|NW-t| < 2.0)하거나 부호가 반대이거나 3분할 프로파일이 비단조 ⇒ **KR 이식 실패로 판정**",
+        "honest_caveat": "★이 1급은 여전히 **수익 스프레드**다 — 부수 관측이 아니라 성과 관측이다. 그래서 아래 side_observations 를 기전 반증의 본체로 둔다(AST v1.1 ③ 요건 충족은 side_observations 가 담당한다)."
+      },
+      "secondary_preregistered": {
+        "observable": "현저성 조건부 실투형 top-25 의 β-통제 α",
+        "test": "배제 후 차순위 대체를 포함한 완전 실현 컷(long-only · ≤25종 · K200∪KQ150 · 15bps · Σw=1 · ADV≥2e8)의 β-통제 α(NW lag-3)를 무조건화 대비 **짝지음** 비교",
+        "reject_if": "증분 ≤ 0 이거나 paired NW-t < 2.0",
+        "comparison_baseline": "2/20 cell4 β-통제 α +5.14%/yr · 4~7/20 권위 등급 C",
+        "field_dictionary_refs": ["A1_RAWDATA_OHLCVS_daily", "A4_benchmark_kospi200", "A9_liquidity_avgtv20_convention"]
+      },
+      "side_observations_mechanism_not_performance": [
+        {
+          "id": "S1 — agent 명제 반증",
+          "observable": "고-ST 승자의 형성기간 말미 **개인 순매수 강도**가 저-ST 승자보다 높은가",
+          "field_dictionary_refs": ["A6_investor_flow_stock_daily", "A7_investor_flow_registry_ptr", "FDB-B4_registry_investor_flow_monthly"],
+          "reject_if": "두 층 간 개인 순매수 강도 차이가 비유의 ⇒ ①의 agent('현저성-사고 주체 = 개인') 명제 기각. 그러면 ST 층화가 무언가를 고르더라도 그것은 이 기전이 아니다.",
+          "availability_note": "★A6/F2 는 **수동 QuantiWise export · 정기 배치 없음 · 실효 ~60d lag**(ast_field_map A6·F2 실측). 과거 검정에는 쓸 수 있으나 **실투 신호로는 쓸 수 없다**. 본 관측은 신호가 아니라 **반증용 부수 관측**으로만 쓴다 — 이 구분을 alpha-research 가 유지할 것. FDB-B4 는 'Date < sig_d (C2 strict, T+1)' 강제점이 compute_investor.R:98-100 에 있다."
+        },
+        {
+          "id": "S2 — friction 명제 반증 (자연실험)",
+          "observable": "공매도 **전면 금지 구간**과 정상 구간에서 고-ST 승자의 후속 반전 강도 차이",
+          "field_dictionary_refs": ["A1_RAWDATA_OHLCVS_daily", "A2_universe_krx_monthly"],
+          "reject_if": "금지 구간에서 고-ST 승자의 반전이 더 강하지 **않으면** ⇒ ②의 friction('공매도 제약이 오정가를 지운다') 명제 기각",
+          "why_this_is_strong": "★우리 유니버스(K200∪KQ150)는 2021-05-03 부분 재개 때 **정확히 공매도 허용 집합**이었다. 즉 마찰 토글이 우리 유니버스 위에서 직접 켜지고 꺼진다. 이건 성과가 아니라 기전을 겨누는 관측이다.",
+          "data_gap_declared": "공매도 **잔고** 데이터(F1_short_interest_lending)는 field_dictionary 에서 **미확보**(강제점 없음, 문서만)다. 따라서 잔고 수준으로 재지 않고 **제도 캘린더 분할**로만 잰다 — 캘린더는 새 리프가 아니라 A1 의 날짜 분할이다. 잔고 확보 전에는 이 반증의 해상도가 제한적임을 명시한다."
+        },
+        {
+          "id": "S3 — 교란(vol) 누출 귀무 · measurement-graduation ②-a",
+          "observable": "ST 를 **순수 vol 함수**(−win_vol, −log(win_vol), IVOL)로 치환한 placebo score 의 |NW-t|",
+          "field_dictionary_refs": ["A1_RAWDATA_OHLCVS_daily", "FDB-B2_registry_rawdata_price_daily", "FDB-B6_fdb_daily_store"],
+          "reject_if": "placebo |t| ≥ 실제 ST |t| ⇒ ST 는 vol 대리이며 독립 재료가 아니다. **L-AR-20260808_120900(MAX5 = 전량 vol 대리) 재현**으로 판정하고 즉시 중단.",
+          "precedent": "FQ-234 에서 tail_dn_prob_diff 의 누출 귀무 |t| 4.454 가 실제 신호 4.136 을 **넘었다** — 귀무가 신호보다 셌다."
+        },
+        {
+          "id": "S4 — 교란(vol) 절단면 정합 · measurement-graduation ②-b",
+          "observable": "ST 층화로 자른 뒤 **통제축(win_vol) 자신의 분위 프로파일**이 되살아나는가 + 전 구간 상관",
+          "field_dictionary_refs": ["A1_RAWDATA_OHLCVS_daily", "FDB-B2_registry_rawdata_price_daily"],
+          "reject_if": "전 구간 상관 ≈ 0 인데 절단집합 양끝에서 통제축이 부활(FQ-234 실측 U자 1.1889 배 패턴) ⇒ 라벨 `VOL_INDEPENDENCE_UNPROVEN`(미결) — **'신호 없음' 이 아니다**",
+          "control_spec_obligation": "통제 변환 규약(raw / rank / nonparam)을 산출물에 **기록**한다. FQ-234: rank 가 셋 중 **가장 약한** 통제였다(dcor nonparam 0.1521 < raw 0.1926 < rank 0.1971). '가장 약한 통제에서만 살아남는 축은 생존이 아니라 누출' — 척도는 **사전등록**(dcor·20분위, 어느 후보도 직접 최소화하지 않는 척도)."
+        }
+      ],
+      "mandatory_controls": [
+        "L-family 직교성 — D01_IdioVol · MAX5 · 왜도 · L01_Amihud · L11_Kyle_Lambda 와의 지배 관계 병기 (3/20 회전율↔Amihud 2.886 vs 0.807 · 7/20 근접도↔Kyle λ 2.557 vs 1.541 전례)",
+        "**시장-내 랭킹** — KOSPI/KOSDAQ 합집합 혼합 랭킹 금지. 3/20 이 혼합 랭킹에서 t −2.526 의 '유의한 효과' 를 얻었는데 그건 시장 더미였다(KOSDAQ 14.1% vs 65.3%)",
+        "EW-유니버스 대비 dual-basis 병기 + cap-tier(MEGA/MID/OTHER) 국소화 병기",
+        "무신호 대조(no_signal_gate) — 동일 제약 시총상위 N cap-w 와 구별 가능해야 screen-tier 등재 가능",
+        "β-통제 α 병기 의무 — PORT_t 는 α + (β−1)·E[r_bm] 을 섞어 본다. 2/20 에서 기저 음(−)PORT_t 의 정체가 β 0.199 의 basis 산술이었다",
+        "벤치 basis 명시 — 5/20 에서 상류 1.196 vs 권위 0.646(46% 이동), 6/20 에서 13.7배 이동. 상류 PORT_t 를 권위 값과 같은 양으로 인용 금지"
+      ]
+    },
+
+    "regime_scope": {
+      "holds_in": [
+        "개인 거래비중이 높은 국면 — 현저성-사고 주체의 시장 점유가 커야 오정가가 생성된다",
+        "**공매도 전면 금지 구간** — 마찰이 최대라 오정가가 지워지지 않는다",
+        "상승·과열 국면 — 현저한 상승일이 실제로 다수 생성되어 ST 의 횡단면 분산이 확보된다",
+        "KOSDAQ 비중이 큰 하위표본 — 개인 비중과 변동성이 모두 높다"
+      ],
+      "weakens_or_reverses_in": [
+        "**공매도 정상 국면(특히 2021-05 이후 K200∪KQ150 허용 구간)** — friction 이 완화되면 기전상 효과가 **약해져야 한다**. 약해지지 않으면 ②가 기각된다",
+        "위기·급락 국면 — 유동성 청산이 정보·현저성 신호를 압도한다(4/20 실측: KR 패닉 구간이 강한 반등장(벤치 연율 +45.5%)이라 저변동 구성 교체가 반등 β 를 반납했다)",
+        "저변동 국면 — ST 의 횡단면 분산이 축소돼 층화 자체가 무의미해진다(층이 노이즈로 갈린다)",
+        "형성창에 시장 전체 급등일이 몰린 구간 — 현저성이 종목 고유가 아니라 시장 공통으로 발생해 ST 가 개별 오정가를 못 짚는다"
+      ],
+      "boundary_rationale": "경계를 **마찰에서 도출**했다. 기전의 마찰이 공매도 제약이므로, 그 제약이 제도적으로 켜지고 꺼지는 구간에서 효과가 켜지고 꺼져야 한다 — 이건 성과를 보고 고른 경계가 아니라 메커니즘이 강제하는 예측이고, 그래서 S2 가 반증 관측이 된다. 두 번째 경계(위기 국면)는 4/20 의 KR 실측(패닉 후 강반등에서 저변동 교체가 β 를 반납)에서 왔음을 **정직하게 밝힌다** — 이 축은 부분적으로 사후 데이터 관찰이며 순수 도출이 아니다(자기 반증 W3 참조). 보편타당 주장은 하지 않는다: 공매도 정상 국면에서 약화되지 않으면 이 가설은 틀린 것이다."
+    }
+  },
+
+  "optimizer_conditional_prespec": {
+    "rule": "특이분산 비중 < 15% 이면 EW 확정(optimizer 스폰 없음)",
+    "computation_method_declared_in_advance": "risk 층이 산출하는 Σ = BΩB' + D 분해에서 **w'Dw / w'Σw** (w = EW 1/25, 후보 top-25 집합의 월별 수익 기준). B = KR FF5(Fama-French 2015 KR 구성) + 모멘텀 노출, 롤링 60개월 추정, D = 잔차 대각. 산출 창 = 전 표본, pin_cache 로 vintage 고정 + pin tag 기록(measurement-graduation §7).",
+    "who_computes": "risk-research (본 에이전트는 공분산을 만들지 않는다 — 방법만 사전 선언한다)",
+    "prior_expectation": "롱온리 top-25 · K200∪KQ150 은 β≈0.7~0.9 로 시장성분이 분산의 대부분을 차지한다(§6: PC1=시장이 분산 0.76 지배). 15% 문턱 미달 가능성이 실질적이며, 그 경우 EW 확정이 정상 산출물이다."
+  },
+
+  "relation_to_round_8_of_20": "8/20(DGW2014 정보 불연속성)은 **미국 논문의 승자 몫(25~52%)** 에서 막혔고 본 라운드는 KR 실측 논문이라 그 벽이 없을 것으로 기대됐으나 — 더 앞단에서 막혔다: 원문이 유료 봉쇄(OA 8경로 전부 실패, Semantic Scholar openAccessPdf status=CLOSED)라 **승자 몫을 계산할 숫자 자체가 존재하지 않는다**. 그리고 8/20 이 IN_CATEGORY 로 정직 판정한 그 범주(DIST-AR-041 가격-파생)에 본 라운드도 동일 논리로 들어가며, 여기서는 **구성 층에서 한 번 더** 들어간다(MAX/lottery 제외-필터 = 이미 production 에서 철회된 구성).",
+
+  "challenge_flags": [
+    "대안 보관 C3 — **논문의 가장 강한 KR 주장은 현저성이 아니라 신호 정의 교체**다(idiosyncratic·rank·sign 모멘텀이 KR 에서 'stable profits'). 지금 여기서 갈아타면 8/20 이 자백한 사후 표적 교체이므로 하지 않았다. Q-Lead 가 **새 라운드로 사전등록**할 것을 권고 — 단 앵커 문제(원문 유료 봉쇄)와 DIST-AR-041 범주는 동일하게 걸린다.",
+    "대안 보관 C5 — 비-가격 현저성 대리(공시 이벤트 · 주체 흐름). DIST-AR-041 이 지목한 **유일한 고-EV 방향**이자 범주 밖으로 나가는 유일한 후보. 논문 검정이 아니라 새 가설이므로 본 라운드에서 선택 불가. 별도 라운드 제안.",
+    "대안 보관 C2 — 저-ST(현저 하방) 매수. 롱온리가 직접 살 수 있는 쪽이나 표적이 반전 전략으로 바뀌고 DIST-QPM-005 인접 음성.",
+    "★교란 최우선 — ST 와 vol/왜도의 구성상 얽힘. KR 실측이 이미 있다(L-AR-20260808_120900: MAX5 vol 통제 후 t −5.42→0.14). S3(누출 귀무) 를 **첫 행위**로 두고, placebo 가 이기면 즉시 중단할 것.",
+    "★배제형 설계 — 이득은 반드시 '배제 vs **대체**' 로. '배제 vs 잔류' 로 재면 통과하고 대체로 재면 미달한 선례(WT-D20260822_010: ratio 0.1465→0.0445 소급 무효).",
+    "★DIST-AR-051 가 경고하는 실사고 형태 — 이 구성은 **스크리닝에서 통과한 뒤 production 에서 뒤집혔다**(dIR +0.1692 → −0.1489). 스크리닝 통과를 결론으로 읽지 말 것. 그리고 그때 양수를 만든 것은 신호가 아니라 **가중 규칙**(cap_norm 25)이었다.",
+    "A6/F2 개인 flow 는 ~60d 수동 export lag — **반증 관측 전용**, 실투 신호 금지.",
+    "F1 공매도 잔고 **미확보** — friction 반증(S2)의 해상도가 제도 캘린더 수준으로 제한된다.",
+    "축2 는 통과지만 근거가 초록 + 검색 스니펫이지 **표가 아니다**. '위험조정을 수행했다' 와 '위험조정 후 살아남았다' 는 다른 명제이고 후자는 미확인."
+  ],
+
+  "self_adversarial_challenge": {
+    "protocol": "v8.2 축소판 — 설계 축만(①사후 서술 ②반증의 성과 동어반복 위장 ③국면 경계의 사후 관찰 ④settled-negative 재포장). 합리화 어휘('미미 / 관행적 / 보수적이면 OK') 사용 시 auto RE-VIEW.",
+    "items": [
+      {
+        "id": "W1",
+        "axis": "① 메커니즘이 사후 서술(story-fitting)인가",
+        "claim": "현저성 이론 자체는 선행(BGS 2012·2013 · Cosemans-Frehen 2021)이나, **KR 적용은 사후 설명이다** — 논문은 'KR 전통 모멘텀이 무수익' 이라는 **이미 관측된 사실**에 현저성이라는 설명을 붙였다. 우리 base 도 같은 사실을 F 등급으로 이미 갖고 있다.",
+        "verdict": "PARTIAL",
+        "resolution": "이론은 선행이고 본 설계의 표적(승자 데실 **내부** 층화 + 공매도 금지 자연실험)은 그 사후 설명이 만드는 **새 예측**을 시험하는 형태다. 그러나 '설명이 사후였다' 는 사실은 사전 기대치를 낮추는 근거로 승계한다."
+      },
+      {
+        "id": "W2",
+        "axis": "③ 반증조건이 성과 동어반복으로 위장됐나",
+        "claim": "1급(승자 데실 내부 스프레드)은 **수익** 관측이다. 부모가 그렇게 사전등록했지만, AST v1.1 ③ 요건('성과 외에 관측되어야 할 것')을 그것만으로 충족하지 못한다.",
+        "verdict": "ACCEPT",
+        "resolution": "설계를 수정해 S1(개인 순매수 — agent 반증) · S2(공매도 금지 자연실험 — friction 반증)를 **기전 반증의 본체**로 두었다. 1급은 사전등록 유지하되 그것만으로 기전이 참/거짓이 되지 않음을 명시했다."
+      },
+      {
+        "id": "W3",
+        "axis": "④ 국면 경계가 메커니즘에서 도출됐나(사후 데이터 관찰 아닌가)",
+        "claim": "'위기 국면에서 약화' 경계는 4/20 의 KR 실측(패닉 후 강반등 +45.5%에서 저변동 교체가 β 반납)을 이미 본 뒤에 적은 것이다 — 순수 도출이 아니다.",
+        "verdict": "PARTIAL",
+        "resolution": "공매도 마찰 경계(holds_in 2번 · weakens 1번)는 메커니즘에서 **직접 도출**이고 사후 관찰이 아니다 — 이것을 1급 경계로 둔다. 위기 국면 경계는 사후 지식 혼입임을 boundary_rationale 에 **명시**하고 승계 지식으로만 표시했다. 숨기지 않는다."
+      },
+      {
+        "id": "W4",
+        "axis": "④ hypothesis_index 에 이미 settled-negative 로 있는 가설의 재포장인가",
+        "claim": "**그렇다 — 구성 층에서.** 이름('salience')으로 조회하면 0 건이지만, 구성('현저 상승 종목을 롱온리 북에서 배제')으로 조회하면 (i) L-AR-20260808_120900 VALIDATED_NEGATIVE(MAX5 = 전량 vol 대리, vol 통제 후 t 0.14/0.34) (ii) DIST-AR-051 WITHDRAW 확정(제외-필터가 production 에서 dIR −0.1489 · paired t −1.9763) (iii) DIST-AR-041 원천 범주 — 3 건이 발화한다.",
+        "verdict": "**ACCEPT (가장 무거운 지적)**",
+        "resolution": "억지 신규성 주장을 하지 않는다. ST 가 MAX5 와 정의상 다르다는 것은 사실이나 **다르다 ≠ vol 에 직교하다** 이고, 후자는 증명 대상이지 전제가 아니다. 이 항목을 축3 판정과 착수 권고에 그대로 반영했다."
+      },
+      {
+        "id": "W5",
+        "axis": "축1 앵커 — 게이트 우회 유혹",
+        "claim": "앵커가 없으니 '초록이 profitable 이라 했으니 유의하다고 보자' 또는 '자매 논문(FRL) 수치를 쓰자' 또는 '타 논문 승자 몫을 곱하자' 로 진행할 수 있다.",
+        "verdict": "ACCEPT",
+        "resolution": "셋 다 명시적으로 거부하고 forbidden_workarounds_explicitly_declined 에 기록했다. 8/20 의 교훈 — '유리한 앵커를 골라 진행하는 것은 게이트 우회다'. 여기서는 유리한 앵커조차 없다."
+      },
+      {
+        "id": "W6",
+        "axis": "반대 심문 — 중단이 과잉 아닌가",
+        "claim": "축2 는 통과했고, 기전이 롱온리 친화적(과대평가 회피는 롱온리가 할 수 있는 행위)이라는 점은 GH2004/DGW2014 와 구조가 다르다. 이건 착수 근거가 되지 않나.",
+        "verdict": "REBUTTAL 검토 후 기각",
+        "resolution": "그 논점은 **정직하게 기록했다**(axis2.one_genuine_point_in_favor). 그러나 ①앵커 부재는 부모 지시상 **단독 중단 사유**이고 ②그 롱온리-친화 행위의 KR 실측 답이 이미 음수다(DIST-AR-051, production n=256). 기전이 그럴듯하다는 것과 이 envelope 에서 수확된다는 것은 다른 명제다. 중단은 과잉이 아니다."
+      }
+    ],
+    "summary": "ACCEPT 3 · PARTIAL 2 · REBUTTAL-기각 1. 설계 자체는 완결됐으나 착수 게이트 3축 중 축1 FAIL · 축3 IN_CATEGORY(이중)로 착수를 권고하지 않는다.",
+    "note_file": "qepm/mailbox/worktask/WT-R20260829_014/challenge_note_hypothesis.md"
+  },
+
+  "scope_note": "본 에이전트는 ①~④ + Step 0 만 수행했다. ⑤ AST 구성 · factors[] 작성 · 팩터 소싱 · 신호공학 · canonical_screen_bt 실측 · 백테스트 · 등급 선언 · alpha_package 발행 · 공분산 · weights 는 **일절 하지 않았다**. 성과 수치 추정·proxy 손계산도 하지 않았다 — 본 문서의 모든 수치는 원장·L-code·distilled 카드에서 **인용**한 것이며 계산한 것이 아니다.",
+
+  "verdict": "designed",
+  "verdict_qualifier": "메커니즘 3요건이 선행 이론(BGS 현저성)과 KR 제도 마찰(공매도 제약)로 실명 특정되고 반증 관측(S1 개인 순매수 · S2 공매도 금지 자연실험)이 field_dictionary 안에서 확인 가능하므로 `economic_void` 가 아니다. 설계는 완결됐다. **그러나 착수는 권고하지 않는다** — 아래 launch_recommendation.",
+
+  "launch_recommendation": {
+    "decision": "**HALT — 착수 비권고 (체인 미진입 권고)**",
+    "grounds": [
+      "①**축1 FAIL(단독 중단 사유)** — 원문 전문 접근 불가(OA 8경로 전부 실패 · openAccessPdf status=CLOSED · Unpaywall no OA URL). 확보된 초록에 수치 0개. 승자 레그·데실 수준 결과 추출 불가 ⇒ ratio 는 작은 게 아니라 **정의되지 않는다**. 부모 지시: '추출 불가 = 중단 사유'.",
+      "②**축3 IN_CATEGORY, 그것도 이중** — 원천 범주(DIST-AR-041 가격-파생 저EV) + 구성 범주 2건(L-AR-20260808_120900 VALIDATED_NEGATIVE · DIST-AR-051 production WITHDRAW). 8/20 은 '이름 축 미측정' 이 사실이었으나 본 라운드는 **구성으로 조회하면 이미 측정되고 철회된 구성**이다.",
+      "③**배제형 설계의 KR 실측 답이 이미 음수** — 복권형 상위 10% 제외-필터, production 실코드 n=256: dIR −0.1489 · paired t −1.9763 · MDD 악화. 그리고 그때의 유일한 양수 셀은 신호가 아니라 가중 규칙(cap_norm)이 만든 것이었다."
+    ],
+    "what_would_unblock": [
+      "**앵커**: 원문 PDF 확보(도훈의 기관 접근 · 저자 직접 요청 · 도서관 ILL). 확보되면 Table 의 승자 열 또는 데실 수준 수치로 ratio 를 산출하고 게이트를 다시 돌린다 — 설계는 이미 완결돼 있으므로 재설계 비용 없이 재개 가능하다.",
+      "**범주**: ST 의 vol 직교성을 S3(축별 누출 귀무) + S4(절단면 분위 프로파일)로 **먼저** 증명하는 축소 라운드. 이건 성과 측정이 아니라 재료 자격 검정이고, 통과하면 L-AR-20260808_120900 의 부활 조건 ①을 충족시킨다. 실패하면 이 계열 전체가 한 번 더 정리된다 — **어느 결말이든 남는 것이 있는 설계**다(3단 처분 (b) 요건).",
+      "**대체 표적**: C3(rank/sign 모멘텀 — 논문의 가장 강한 KR 주장) 또는 C5(비-가격 현저성 대리 — DIST-AR-041 이 지목한 고-EV 방향)를 **Q-Lead 가 새로 사전등록**. 본 라운드 내에서의 교체는 사후 표적 교체이므로 하지 않는다."
+    ],
+    "budget_spent": "가설설계 구간만 — alpha 이하 미실행. 측정 예산 0.",
+    "ledger_disposition_proposed": "reinforce_ledger_l1 entry[0] attempt n=14 → grade NA(착수 게이트 발동 — 체인 미진입) · essence.grade_issued=false · metric_type='unavailable' · abort_stage='pre-launch gate (착수 전, 축1 앵커 추출 불가)'. ★최종 처분은 Q-Lead 권한 — 본 에이전트는 원장에 쓰지 않았다."
+  },
+
+  "handoff": {
+    "to": "alpha-research",
+    "next_steps": "★**조건부**. launch_recommendation = HALT 이므로 Step 1~7 + ⑤ AST 구성으로 진행하지 **않는다**. Q-Lead 가 (a)원문 확보 후 축1 재판정 (b)ST vol-직교성 축소 라운드 (c)새 표적 사전등록 중 하나를 결정한 뒤 재개한다. 재개 시 본 문서의 ①~④ 는 그대로 승계하고 alpha-research 는 **재작성하지 않는다**(Charter 원칙 8 — 결함 발견 시 challenge_note 기록 + 재설계 요청).",
+    "if_resumed_first_action": "S3(vol 누출 귀무)를 **착수 첫 행위**로 수행. placebo |t| ≥ 실제 |t| 이면 즉시 중단."
+  }
+}

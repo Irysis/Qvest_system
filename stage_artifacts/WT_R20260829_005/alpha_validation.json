@@ -1,0 +1,1586 @@
+{
+  "wt_id": "WT-R20260829_005",
+  "generated_at": "2026-08-29 17:29:25.198692",
+  "step0_A": {
+    "source": "AMP2013 원문 PDF §I.B p.936-937 직접 판독(pdftotext)",
+    "verbatim_stocks": "For individual stocks, we use the common value signal of the ratio of the book value of equity to market value of equity, or book-to-market ratio, BE/ME ... Book values are lagged 6 months to ensure data availability to investors at the time, and the most recent market values are used to compute the ratios.",
+    "verbatim_five_year": "For commodities, we define value as the log of the spot price 5 years ago (actually, the average spot price from 4.5 to 5.5 years ago), divided by the most recent spot price ... Similarly, for currencies ... For bonds, we use the 5-year change in the yields of 10-year bonds",
+    "resolution": "5년 시점 정의는 commodities/currencies/bonds 전용이며 개별주식에는 해당하지 않는다. WT 지시문 전제는 정정됐고 설계 에이전트의 정정이 원문과 일치한다. 5년 lag 로 구현했다면 value 가 아니라 장기반전(DeBondt-Thaler 1985 계열) 팩터가 됐을 것이다.",
+    "implemented": "BE = TotalEquity, Factor_Date <= sig_date (KR C4 규약 = quarterly +45d / annual 익년 3/31 — 논문의 6개월 lag 보다 보수적이므로 고정 축이 이긴다). ME = contemporaneous(sig_date 시가총액). = V01_BM 정의와 동일.",
+    "paper_assumption_adjusted": "book lag: 논문 6M -> KR C4 규약(더 보수적). momentum: 논문 MOM2-12 -> 기저 승계 6-1 을 primary 로, MOM2-12 를 지평 민감도로 병기(부호 일치 확인)."
+  },
+  "step0_B": {
+    "obligation": "설계 mandatory_prior_run_disclosure — 병기 없이 결합 성과만 새로 보고하면 settled-negative 재포장이다.",
+    "prior_runs": [
+      {
+        "strategy_id": "STR_AS_20260605_221011_31932",
+        "title": "STR_valmom_AMP2013",
+        "date": "2026-06-05",
+        "spec": "value(BM)+momentum(12-1) z-combo 50/50 · ~20종 EW · K200∪KQ150 · 월간",
+        "grade": "F",
+        "grade_basis": "proxy_diagnostic (run_hurdle_gate) — 2026-05-31 DEMOTED. 권위 등급(essence_score.R) 미산출.",
+        "sharpe": 0.825,
+        "cagr_pct": 20.76,
+        "mdd_pct": 60.4,
+        "ir": 0.653,
+        "calmar": 0.344,
+        "l_code": "L-AS-20260605_221011_31932"
+      },
+      {
+        "strategy_id": "STR_AS_20260610_213712_20276",
+        "title": "valmom_AMP2013_winz_smoke",
+        "date": "2026-06-10",
+        "spec": "동일 50/50 composite — winsorize DB 재측정 스모크",
+        "grade": "F",
+        "grade_basis": "proxy_diagnostic — DEMOTED. 권위 등급 미산출.",
+        "sharpe": 0.799,
+        "cagr_pct": 20.09,
+        "mdd_pct": 60.72,
+        "ir": 0.628,
+        "calmar": 0.331,
+        "oos_retention": 0.757,
+        "turnover_ann_pct": 208.8,
+        "ic_mean": 0.0284,
+        "icir": 0.203,
+        "ff3_alpha_ann_pct": 7.79,
+        "ff3_alpha_t": 2.235,
+        "fm_lambda_nw_t": 3.347,
+        "fail_reason_then": "MDD 60.7% > 45% (당시 규칙 — v9.21 에서 MDD 직접 문턱 폐기, 현행 위험 축은 Calmar 하나)",
+        "fmt": [
+          "FMT-01 구조적 MDD",
+          "FMT-04 국면맹목 MDD>35% ∧ BM상관 0.80",
+          "FMT-07 발표후 감쇠 활성SR pre2017 1.15 -> post2017 -0.11"
+        ],
+        "l_code": "L-AS-20260610_213712_20276"
+      }
+    ],
+    "self_report_repackaging": {
+      "this_round": {
+        "sharpe_total": 0.61920322,
+        "cagr_pct": 13.420011,
+        "mdd_pct": -53.034324,
+        "calmar": 0.25304387,
+        "oos_retention_median": -0.56107106,
+        "turnover_ann_x": 8.81976834
+      },
+      "verdict": "NOT_NUMERICALLY_IDENTICAL — 그러나 형태는 겹친다. 좌표가 선행 2건보다 **낮다**(CAGR 13.4% vs 20.1~20.8% · SR 0.62 vs 0.80~0.83 · Calmar 0.253 vs 0.331~0.344 · OOS retention -0.561 vs 0.757). 구성 차이 = 시장-내 pct-rank 결합 · 25종(선행 ~20종) · 유동성 2e8 사전필터 · 2005~2026 창 · 6-1 모멘텀(선행 12-1). 성과 축에서 새 발견은 없다 — 본 라운드의 산출 가치는 FAL-1 전제검정과 권위 경로 좌표에 있다.",
+      "honesty_note": "선행 런의 CAGR/SR 이 더 높다는 사실을 숨기지 않는다. 결합 축이 기저를 개선했다는 주장은 하지 않는다."
+    }
+  },
+  "step0_C_power_contract": {
+    "meta": {
+      "wt_id": "WT-R20260829_005",
+      "stage": "preregistered_power_contract",
+      "executed_before_any_portfolio_arm": true,
+      "calibration_source": "AMP2013 Table I Japan stocks, Factor column: combo SR 0.88 - value SR 0.77 = +0.11 (원문 PDF 재확인)",
+      "calibration_excluded": "global stocks factor +0.77 / US +0.20 / Europe·UK 등 — 모멘텀 생존 시장 캘리브레이션 사용 금지(설계 gate_calibration_source)",
+      "basis": "rank-weighted zero-cost factor portfolio (AMP2013 eq.(1)) — 논문 dSR 과 동일 basis. 후보(롱온리 top-25) basis 와는 다른 양임을 명시.",
+      "test_statistic": "Sharpe difference, Jobson-Korkie with Memmel(2003) correction, correlated samples",
+      "t_threshold": 2.8015852,
+      "note_on_t_threshold": "z(0.80)+z(0.975)=2.8016 — 귀무 95분위(1.96)를 MDE 로 오칭하는 모드(i) 회피"
+    },
+    "measured_inputs": {
+      "n_months": 259,
+      "portfolio_layer_n_months": 259,
+      "sr_value_monthly": 0.12255123,
+      "sr_mom_monthly": 0.08245379,
+      "sr_combo_monthly": 0.18353364,
+      "sr_value_ann": 0.42452991,
+      "sr_combo_ann": 0.63577918,
+      "rho_combo_value": 0.41196922,
+      "sd_paired_diff_monthly": 0.04330504,
+      "se_paired_iid": 0.00269084,
+      "se_paired_nw_lag3": 0.00269971,
+      "nw_inflation_measured": 1.00329635
+    },
+    "mde": {
+      "se_dsr_iid_monthly": 0.06797103,
+      "se_dsr_nw_monthly": 0.06819509,
+      "mde80_dSR_monthly": 0.19105436,
+      "mde80_dSR_annualized": 0.6618317,
+      "mde80_mean_diff_annualized": 0.09076174
+    },
+    "verdict": {
+      "implied_effect_dSR_ann": 0.11,
+      "ratio": 0.1662054,
+      "expected_t": 0.46563858,
+      "power": 0.06754529,
+      "disposition": "CONDITIONAL_undetermined_is_modal",
+      "abort_rule": "ratio < 0.15 -> 착수 중단 (설계 preregistered_power_contract.abort_rule)",
+      "honesty": "ratio 가 문턱을 넘어도 '검정할 자격'일 뿐이며, 비유의는 검정력이 충분할 때만 '효과 없음'이고 그 외에는 '미결'이다."
+    },
+    "axis_A_exemption": "axis_A(알파 수준)는 논문 KR-유사물(일본) 함의 증분이 음수(-6.2%p)라 ratio 를 산출하지 않는다(설계 승계)."
+  },
+  "fal1_premise_test_full": {
+    "meta": {
+      "wt_id": "WT-R20260829_005",
+      "test": "FAL-1 negative-correlation premise",
+      "envelope": "portfolio envelope MI-JEOG-YONG (factor signal/return level statistic) - design premise_test_exemption",
+      "threshold_source": "alpha_hypothesis.json FAL-1 reject_if (inherited 0.5, no post-hoc move)",
+      "paper_root": "AMP2013 p.936 verbatim: 'When using more recent prices in the value measure, the negative correlation between value and momentum is more negative and the value premium is slightly reduced, but our conclusions are not materially affected.' (original PDF re-read)",
+      "price_lag_spec": "ME lagged 14 months (shares no price observation with 12-1 formation window t-2..t-13)",
+      "n_months": 259,
+      "median_names": 340
+    },
+    "self_bm_vs_dbpath_parity": {
+      "rank_cor_median": 0.99999591,
+      "rank_cor_mean": 0.99924739,
+      "months": 259
+    },
+    "signal_level": {
+      "summary": {
+        "a_contemp_mom61": {
+          "spec": "a_contemp_mom61",
+          "n_months": 259,
+          "rho_mean": -0.18407456,
+          "rho_median": -0.19705385,
+          "rho_sd": 0.1936271,
+          "frac_negative": 0.82239382,
+          "t_mean": -8.51192961
+        },
+        "b_lagged_mom61": {
+          "spec": "b_lagged_mom61",
+          "n_months": 245,
+          "rho_mean": 0.08507594,
+          "rho_median": 0.09864363,
+          "rho_sd": 0.17096478,
+          "frac_negative": 0.28979592,
+          "t_mean": 4.33939766
+        },
+        "a_contemp_mom121": {
+          "spec": "a_contemp_mom121",
+          "n_months": 259,
+          "rho_mean": -0.27289815,
+          "rho_median": -0.29330698,
+          "rho_sd": 0.18455963,
+          "frac_negative": 0.91505792,
+          "t_mean": -12.61150774
+        },
+        "b_lagged_mom121": {
+          "spec": "b_lagged_mom121",
+          "n_months": 245,
+          "rho_mean": 0.12018195,
+          "rho_median": 0.13805086,
+          "rho_sd": 0.17511246,
+          "frac_negative": 0.23265306,
+          "t_mean": 5.7167387
+        },
+        "v01_mom61": {
+          "spec": "v01_mom61",
+          "n_months": 259,
+          "rho_mean": -0.18355328,
+          "rho_median": -0.19705385,
+          "rho_sd": 0.19363305,
+          "frac_negative": 0.82239382,
+          "t_mean": -8.48549113
+        }
+      },
+      "by_year": [
+        {
+          "y": 2005,
+          "spec": "a_contemp_mom61",
+          "rho_mean": -0.11156449,
+          "n": 12
+        },
+        {
+          "y": 2006,
+          "spec": "a_contemp_mom61",
+          "rho_mean": -0.28948353,
+          "n": 12
+        },
+        {
+          "y": 2007,
+          "spec": "a_contemp_mom61",
+          "rho_mean": -0.15517058,
+          "n": 12
+        },
+        {
+          "y": 2008,
+          "spec": "a_contemp_mom61",
+          "rho_mean": -0.28146418,
+          "n": 12
+        },
+        {
+          "y": 2009,
+          "spec": "a_contemp_mom61",
+          "rho_mean": -0.22014399,
+          "n": 12
+        },
+        {
+          "y": 2010,
+          "spec": "a_contemp_mom61",
+          "rho_mean": -0.24258905,
+          "n": 12
+        },
+        {
+          "y": 2011,
+          "spec": "a_contemp_mom61",
+          "rho_mean": -0.32704404,
+          "n": 12
+        },
+        {
+          "y": 2012,
+          "spec": "a_contemp_mom61",
+          "rho_mean": -0.27975353,
+          "n": 12
+        },
+        {
+          "y": 2013,
+          "spec": "a_contemp_mom61",
+          "rho_mean": -0.15769346,
+          "n": 12
+        },
+        {
+          "y": 2014,
+          "spec": "a_contemp_mom61",
+          "rho_mean": -0.27070873,
+          "n": 12
+        },
+        {
+          "y": 2015,
+          "spec": "a_contemp_mom61",
+          "rho_mean": -0.41334953,
+          "n": 12
+        },
+        {
+          "y": 2016,
+          "spec": "a_contemp_mom61",
+          "rho_mean": -0.07356479,
+          "n": 12
+        },
+        {
+          "y": 2017,
+          "spec": "a_contemp_mom61",
+          "rho_mean": 0.07512163,
+          "n": 12
+        },
+        {
+          "y": 2018,
+          "spec": "a_contemp_mom61",
+          "rho_mean": -0.31294729,
+          "n": 12
+        },
+        {
+          "y": 2019,
+          "spec": "a_contemp_mom61",
+          "rho_mean": -0.04806171,
+          "n": 12
+        },
+        {
+          "y": 2020,
+          "spec": "a_contemp_mom61",
+          "rho_mean": -0.40314072,
+          "n": 12
+        },
+        {
+          "y": 2021,
+          "spec": "a_contemp_mom61",
+          "rho_mean": 0.0659003,
+          "n": 12
+        },
+        {
+          "y": 2022,
+          "spec": "a_contemp_mom61",
+          "rho_mean": 0.00404149,
+          "n": 12
+        },
+        {
+          "y": 2023,
+          "spec": "a_contemp_mom61",
+          "rho_mean": -0.20443946,
+          "n": 12
+        },
+        {
+          "y": 2024,
+          "spec": "a_contemp_mom61",
+          "rho_mean": -0.0302175,
+          "n": 12
+        },
+        {
+          "y": 2025,
+          "spec": "a_contemp_mom61",
+          "rho_mean": -0.12704195,
+          "n": 12
+        },
+        {
+          "y": 2026,
+          "spec": "a_contemp_mom61",
+          "rho_mean": -0.29078994,
+          "n": 7
+        },
+        {
+          "y": 2006,
+          "spec": "b_lagged_mom61",
+          "rho_mean": 0.07335426,
+          "n": 10
+        },
+        {
+          "y": 2007,
+          "spec": "b_lagged_mom61",
+          "rho_mean": 0.25161166,
+          "n": 12
+        },
+        {
+          "y": 2008,
+          "spec": "b_lagged_mom61",
+          "rho_mean": 0.04491104,
+          "n": 12
+        },
+        {
+          "y": 2009,
+          "spec": "b_lagged_mom61",
+          "rho_mean": 0.04776383,
+          "n": 12
+        },
+        {
+          "y": 2010,
+          "spec": "b_lagged_mom61",
+          "rho_mean": 0.10427012,
+          "n": 12
+        },
+        {
+          "y": 2011,
+          "spec": "b_lagged_mom61",
+          "rho_mean": 0.10102661,
+          "n": 12
+        },
+        {
+          "y": 2012,
+          "spec": "b_lagged_mom61",
+          "rho_mean": 0.00690212,
+          "n": 12
+        },
+        {
+          "y": 2013,
+          "spec": "b_lagged_mom61",
+          "rho_mean": 0.17341404,
+          "n": 12
+        },
+        {
+          "y": 2014,
+          "spec": "b_lagged_mom61",
+          "rho_mean": 0.04245341,
+          "n": 12
+        },
+        {
+          "y": 2015,
+          "spec": "b_lagged_mom61",
+          "rho_mean": -0.11083278,
+          "n": 12
+        },
+        {
+          "y": 2016,
+          "spec": "b_lagged_mom61",
+          "rho_mean": 0.12428114,
+          "n": 12
+        },
+        {
+          "y": 2017,
+          "spec": "b_lagged_mom61",
+          "rho_mean": 0.28349709,
+          "n": 12
+        },
+        {
+          "y": 2018,
+          "spec": "b_lagged_mom61",
+          "rho_mean": -0.10346394,
+          "n": 12
+        },
+        {
+          "y": 2019,
+          "spec": "b_lagged_mom61",
+          "rho_mean": 0.10897322,
+          "n": 12
+        },
+        {
+          "y": 2020,
+          "spec": "b_lagged_mom61",
+          "rho_mean": -0.19244837,
+          "n": 12
+        },
+        {
+          "y": 2021,
+          "spec": "b_lagged_mom61",
+          "rho_mean": 0.27360314,
+          "n": 12
+        },
+        {
+          "y": 2022,
+          "spec": "b_lagged_mom61",
+          "rho_mean": 0.18065487,
+          "n": 12
+        },
+        {
+          "y": 2023,
+          "spec": "b_lagged_mom61",
+          "rho_mean": 0.01035613,
+          "n": 12
+        },
+        {
+          "y": 2024,
+          "spec": "b_lagged_mom61",
+          "rho_mean": 0.19781673,
+          "n": 12
+        },
+        {
+          "y": 2025,
+          "spec": "b_lagged_mom61",
+          "rho_mean": 0.12409977,
+          "n": 12
+        },
+        {
+          "y": 2026,
+          "spec": "b_lagged_mom61",
+          "rho_mean": 0.01191223,
+          "n": 7
+        },
+        {
+          "y": 2005,
+          "spec": "a_contemp_mom121",
+          "rho_mean": -0.09863146,
+          "n": 12
+        },
+        {
+          "y": 2006,
+          "spec": "a_contemp_mom121",
+          "rho_mean": -0.42931202,
+          "n": 12
+        },
+        {
+          "y": 2007,
+          "spec": "a_contemp_mom121",
+          "rho_mean": -0.24208671,
+          "n": 12
+        },
+        {
+          "y": 2008,
+          "spec": "a_contemp_mom121",
+          "rho_mean": -0.3825903,
+          "n": 12
+        },
+        {
+          "y": 2009,
+          "spec": "a_contemp_mom121",
+          "rho_mean": -0.29148863,
+          "n": 12
+        },
+        {
+          "y": 2010,
+          "spec": "a_contemp_mom121",
+          "rho_mean": -0.30867094,
+          "n": 12
+        },
+        {
+          "y": 2011,
+          "spec": "a_contemp_mom121",
+          "rho_mean": -0.38093336,
+          "n": 12
+        },
+        {
+          "y": 2012,
+          "spec": "a_contemp_mom121",
+          "rho_mean": -0.45162283,
+          "n": 12
+        },
+        {
+          "y": 2013,
+          "spec": "a_contemp_mom121",
+          "rho_mean": -0.26209866,
+          "n": 12
+        },
+        {
+          "y": 2014,
+          "spec": "a_contemp_mom121",
+          "rho_mean": -0.28227861,
+          "n": 12
+        },
+        {
+          "y": 2015,
+          "spec": "a_contemp_mom121",
+          "rho_mean": -0.53154326,
+          "n": 12
+        },
+        {
+          "y": 2016,
+          "spec": "a_contemp_mom121",
+          "rho_mean": -0.28147043,
+          "n": 12
+        },
+        {
+          "y": 2017,
+          "spec": "a_contemp_mom121",
+          "rho_mean": 0.10222769,
+          "n": 12
+        },
+        {
+          "y": 2018,
+          "spec": "a_contemp_mom121",
+          "rho_mean": -0.46895802,
+          "n": 12
+        },
+        {
+          "y": 2019,
+          "spec": "a_contemp_mom121",
+          "rho_mean": -0.1480532,
+          "n": 12
+        },
+        {
+          "y": 2020,
+          "spec": "a_contemp_mom121",
+          "rho_mean": -0.45373011,
+          "n": 12
+        },
+        {
+          "y": 2021,
+          "spec": "a_contemp_mom121",
+          "rho_mean": -0.13694144,
+          "n": 12
+        },
+        {
+          "y": 2022,
+          "spec": "a_contemp_mom121",
+          "rho_mean": -0.05803438,
+          "n": 12
+        },
+        {
+          "y": 2023,
+          "spec": "a_contemp_mom121",
+          "rho_mean": -0.17832763,
+          "n": 12
+        },
+        {
+          "y": 2024,
+          "spec": "a_contemp_mom121",
+          "rho_mean": -0.21910698,
+          "n": 12
+        },
+        {
+          "y": 2025,
+          "spec": "a_contemp_mom121",
+          "rho_mean": -0.17896425,
+          "n": 12
+        },
+        {
+          "y": 2026,
+          "spec": "a_contemp_mom121",
+          "rho_mean": -0.35560503,
+          "n": 7
+        },
+        {
+          "y": 2006,
+          "spec": "b_lagged_mom121",
+          "rho_mean": 0.08772885,
+          "n": 10
+        },
+        {
+          "y": 2007,
+          "spec": "b_lagged_mom121",
+          "rho_mean": 0.28220507,
+          "n": 12
+        },
+        {
+          "y": 2008,
+          "spec": "b_lagged_mom121",
+          "rho_mean": 0.12623925,
+          "n": 12
+        },
+        {
+          "y": 2009,
+          "spec": "b_lagged_mom121",
+          "rho_mean": 0.16518793,
+          "n": 12
+        },
+        {
+          "y": 2010,
+          "spec": "b_lagged_mom121",
+          "rho_mean": 0.24210729,
+          "n": 12
+        },
+        {
+          "y": 2011,
+          "spec": "b_lagged_mom121",
+          "rho_mean": 0.18004044,
+          "n": 12
+        },
+        {
+          "y": 2012,
+          "spec": "b_lagged_mom121",
+          "rho_mean": 0.03472604,
+          "n": 12
+        },
+        {
+          "y": 2013,
+          "spec": "b_lagged_mom121",
+          "rho_mean": 0.19009295,
+          "n": 12
+        },
+        {
+          "y": 2014,
+          "spec": "b_lagged_mom121",
+          "rho_mean": 0.13284171,
+          "n": 12
+        },
+        {
+          "y": 2015,
+          "spec": "b_lagged_mom121",
+          "rho_mean": -0.1102449,
+          "n": 12
+        },
+        {
+          "y": 2016,
+          "spec": "b_lagged_mom121",
+          "rho_mean": 0.04343049,
+          "n": 12
+        },
+        {
+          "y": 2017,
+          "spec": "b_lagged_mom121",
+          "rho_mean": 0.40977444,
+          "n": 12
+        },
+        {
+          "y": 2018,
+          "spec": "b_lagged_mom121",
+          "rho_mean": -0.16786068,
+          "n": 12
+        },
+        {
+          "y": 2019,
+          "spec": "b_lagged_mom121",
+          "rho_mean": 0.12285577,
+          "n": 12
+        },
+        {
+          "y": 2020,
+          "spec": "b_lagged_mom121",
+          "rho_mean": -0.16764385,
+          "n": 12
+        },
+        {
+          "y": 2021,
+          "spec": "b_lagged_mom121",
+          "rho_mean": 0.20696755,
+          "n": 12
+        },
+        {
+          "y": 2022,
+          "spec": "b_lagged_mom121",
+          "rho_mean": 0.24471084,
+          "n": 12
+        },
+        {
+          "y": 2023,
+          "spec": "b_lagged_mom121",
+          "rho_mean": 0.12785244,
+          "n": 12
+        },
+        {
+          "y": 2024,
+          "spec": "b_lagged_mom121",
+          "rho_mean": 0.13129013,
+          "n": 12
+        },
+        {
+          "y": 2025,
+          "spec": "b_lagged_mom121",
+          "rho_mean": 0.17428838,
+          "n": 12
+        },
+        {
+          "y": 2026,
+          "spec": "b_lagged_mom121",
+          "rho_mean": 0.0201363,
+          "n": 7
+        },
+        {
+          "y": 2005,
+          "spec": "v01_mom61",
+          "rho_mean": -0.11156219,
+          "n": 12
+        },
+        {
+          "y": 2006,
+          "spec": "v01_mom61",
+          "rho_mean": -0.28926219,
+          "n": 12
+        },
+        {
+          "y": 2007,
+          "spec": "v01_mom61",
+          "rho_mean": -0.15011192,
+          "n": 12
+        },
+        {
+          "y": 2008,
+          "spec": "v01_mom61",
+          "rho_mean": -0.28147763,
+          "n": 12
+        },
+        {
+          "y": 2009,
+          "spec": "v01_mom61",
+          "rho_mean": -0.22014063,
+          "n": 12
+        },
+        {
+          "y": 2010,
+          "spec": "v01_mom61",
+          "rho_mean": -0.24034186,
+          "n": 12
+        },
+        {
+          "y": 2011,
+          "spec": "v01_mom61",
+          "rho_mean": -0.3255471,
+          "n": 12
+        },
+        {
+          "y": 2012,
+          "spec": "v01_mom61",
+          "rho_mean": -0.27986411,
+          "n": 12
+        },
+        {
+          "y": 2013,
+          "spec": "v01_mom61",
+          "rho_mean": -0.15611435,
+          "n": 12
+        },
+        {
+          "y": 2014,
+          "spec": "v01_mom61",
+          "rho_mean": -0.26940107,
+          "n": 12
+        },
+        {
+          "y": 2015,
+          "spec": "v01_mom61",
+          "rho_mean": -0.41339184,
+          "n": 12
+        },
+        {
+          "y": 2016,
+          "spec": "v01_mom61",
+          "rho_mean": -0.07358748,
+          "n": 12
+        },
+        {
+          "y": 2017,
+          "spec": "v01_mom61",
+          "rho_mean": 0.07509126,
+          "n": 12
+        },
+        {
+          "y": 2018,
+          "spec": "v01_mom61",
+          "rho_mean": -0.31295461,
+          "n": 12
+        },
+        {
+          "y": 2019,
+          "spec": "v01_mom61",
+          "rho_mean": -0.04809275,
+          "n": 12
+        },
+        {
+          "y": 2020,
+          "spec": "v01_mom61",
+          "rho_mean": -0.40322741,
+          "n": 12
+        },
+        {
+          "y": 2021,
+          "spec": "v01_mom61",
+          "rho_mean": 0.06589839,
+          "n": 12
+        },
+        {
+          "y": 2022,
+          "spec": "v01_mom61",
+          "rho_mean": 0.00382804,
+          "n": 12
+        },
+        {
+          "y": 2023,
+          "spec": "v01_mom61",
+          "rho_mean": -0.20452007,
+          "n": 12
+        },
+        {
+          "y": 2024,
+          "spec": "v01_mom61",
+          "rho_mean": -0.03013991,
+          "n": 12
+        },
+        {
+          "y": 2025,
+          "spec": "v01_mom61",
+          "rho_mean": -0.12713158,
+          "n": 12
+        },
+        {
+          "y": 2026,
+          "spec": "v01_mom61",
+          "rho_mean": -0.29081252,
+          "n": 7
+        }
+      ],
+      "tail_cuts": [
+        {
+          "cut": "value_D1_lowest_BM_expensive",
+          "n_months": 245,
+          "rho_a_mean": -0.09460869,
+          "rho_b_mean": 0.41285715
+        },
+        {
+          "cut": "value_D10_highest_BM_cheap",
+          "n_months": 245,
+          "rho_a_mean": -0.03947874,
+          "rho_b_mean": 0.34328263
+        },
+        {
+          "cut": "mom_D1_losers",
+          "n_months": 245,
+          "rho_a_mean": 0.08645378,
+          "rho_b_mean": 0.16283873
+        },
+        {
+          "cut": "mom_D10_winners",
+          "n_months": 245,
+          "rho_a_mean": -0.25779498,
+          "rho_b_mean": -0.04600496
+        },
+        {
+          "cut": "value_both_ends",
+          "n_months": 245,
+          "rho_a_mean": -0.31088116,
+          "rho_b_mean": -0.10921344
+        },
+        {
+          "cut": "value_middle_D4_D7",
+          "n_months": 245,
+          "rho_a_mean": -0.06133093,
+          "rho_b_mean": 0.41899887
+        }
+      ]
+    },
+    "return_level_paper_basis": {
+      "pairs": [
+        {
+          "lab": "value_contemporaneousME_vs_mom61",
+          "rho": -0.46564577
+        },
+        {
+          "lab": "value_pricelaggedME_vs_mom61",
+          "rho": -0.01124226
+        },
+        {
+          "lab": "value_contemporaneousME_vs_mom121",
+          "rho": -0.53920574
+        },
+        {
+          "lab": "value_pricelaggedME_vs_mom121",
+          "rho": -0.05557459
+        },
+        {
+          "lab": "V01_BM_dbpath_vs_mom61",
+          "rho": -0.46469951
+        }
+      ],
+      "by_year": [
+        {
+          "y": 2006,
+          "rho_a": -0.55301429,
+          "rho_b": 0.15276602,
+          "n": 10
+        },
+        {
+          "y": 2007,
+          "rho_a": -0.38602351,
+          "rho_b": 0.50188039,
+          "n": 12
+        },
+        {
+          "y": 2008,
+          "rho_a": -0.49586255,
+          "rho_b": 0.65749144,
+          "n": 12
+        },
+        {
+          "y": 2009,
+          "rho_a": -0.89108744,
+          "rho_b": -0.41280125,
+          "n": 12
+        },
+        {
+          "y": 2010,
+          "rho_a": -0.40243128,
+          "rho_b": 0.48025068,
+          "n": 12
+        },
+        {
+          "y": 2011,
+          "rho_a": -0.54179772,
+          "rho_b": 0.09092385,
+          "n": 12
+        },
+        {
+          "y": 2012,
+          "rho_a": -0.48675834,
+          "rho_b": 0.16635946,
+          "n": 12
+        },
+        {
+          "y": 2013,
+          "rho_a": -0.47661425,
+          "rho_b": 0.37104525,
+          "n": 12
+        },
+        {
+          "y": 2014,
+          "rho_a": -0.85457126,
+          "rho_b": -0.63511158,
+          "n": 12
+        },
+        {
+          "y": 2015,
+          "rho_a": -0.9303192,
+          "rho_b": -0.78852925,
+          "n": 12
+        },
+        {
+          "y": 2016,
+          "rho_a": -0.40582075,
+          "rho_b": -0.22285903,
+          "n": 12
+        },
+        {
+          "y": 2017,
+          "rho_a": -0.28476475,
+          "rho_b": 0.0993901,
+          "n": 12
+        },
+        {
+          "y": 2018,
+          "rho_a": -0.67495829,
+          "rho_b": -0.67152023,
+          "n": 12
+        },
+        {
+          "y": 2019,
+          "rho_a": 0.68013372,
+          "rho_b": 0.73527874,
+          "n": 12
+        },
+        {
+          "y": 2020,
+          "rho_a": -0.79230357,
+          "rho_b": -0.65606328,
+          "n": 12
+        },
+        {
+          "y": 2021,
+          "rho_a": -0.40814666,
+          "rho_b": -0.25434015,
+          "n": 12
+        },
+        {
+          "y": 2022,
+          "rho_a": 0.10173527,
+          "rho_b": 0.38820116,
+          "n": 12
+        },
+        {
+          "y": 2023,
+          "rho_a": -0.49472198,
+          "rho_b": -0.0735403,
+          "n": 12
+        },
+        {
+          "y": 2024,
+          "rho_a": 0.07793062,
+          "rho_b": 0.30226016,
+          "n": 12
+        },
+        {
+          "y": 2025,
+          "rho_a": -0.41365664,
+          "rho_b": -0.11856668,
+          "n": 12
+        }
+      ],
+      "leg_performance": [
+        {
+          "leg": "value_contempME",
+          "mean_ann": 0.03418212,
+          "sr_ann": 0.19743359
+        },
+        {
+          "leg": "value_laggedME",
+          "mean_ann": 0.05658478,
+          "sr_ann": 0.37987352
+        },
+        {
+          "leg": "mom61",
+          "mean_ann": 0.04311515,
+          "sr_ann": 0.25051946
+        },
+        {
+          "leg": "mom121",
+          "mean_ann": 0.03901121,
+          "sr_ann": 0.2227174
+        },
+        {
+          "leg": "V01_BM_dbpath",
+          "mean_ann": 0.03572195,
+          "sr_ann": 0.2064846
+        }
+      ],
+      "paper_reference": {
+        "japan_P3_P1": -0.6,
+        "japan_factor": -0.64,
+        "global_stocks_factor": -0.6,
+        "us_factor": -0.65,
+        "source": "AMP2013 Table I last row"
+      }
+    },
+    "verdict": {
+      "signal_level": "PREMISE_FULLY_REJECTED_rho_b_nonnegative",
+      "return_level": "CONSTRUCTION_ARTIFACT",
+      "rho_a_signal": -0.18407456,
+      "rho_b_signal": 0.08507594,
+      "rho_a_return": -0.46564577,
+      "rho_b_return": -0.01124226,
+      "ratio_signal": 0.46218197,
+      "ratio_return": 0.02414338
+    }
+  },
+  "candidate_measurement_full": {
+    "meta": {
+      "wt_id": "WT-R20260829_005",
+      "stage": "single_production_candidate",
+      "discipline_note": "도훈 지시 2026-08-29 — arm 배터리 폐지. 한 시도 = 실투형 후보 하나.",
+      "spec": {
+        "value": "V01_BM (BE/ME, contemporaneous ME) via load_month_factors() [C15/C13/C14]",
+        "momentum_primary": "6-1 (t-2..t-7 로그누적, 기저 fe_jt1993_momentum.R 승계)",
+        "momentum_paper_fidelity": "MOM2-12 (t-2..t-13) — AMP2013 원문 정의, 지평 민감도로만 병기",
+        "combination": "시장-내(K200/KQ150) pct-rank 후 고정 50/50 평균 (rank_average · 가중 탐색 0)",
+        "selection": "pooled top-25",
+        "weighting": "EW (Sw=1, 개별 상한 없음 — v10)",
+        "cost": "15bps one-way delta (v2.4_kr_retail_15bps)",
+        "rebalance": "monthly",
+        "liquidity": "20d avg turnover value (t-1) >= 2e8 KRW, 랭킹 前 적용"
+      }
+    },
+    "candidate": {
+      "id": "AMP2013_valmom_rankavg_top25",
+      "metric_type": "canonical_screen",
+      "n_months": 259,
+      "n_names_max": 25,
+      "n_names_median": 25,
+      "kq150_share": 0.29374517,
+      "portfolio_alpha_t_nw_lag3": 1.19591606,
+      "portfolio_alpha_t_pvalue": 0.23172932,
+      "information_ratio": 0.24921272,
+      "alpha_annualized": 0.05782917,
+      "net_sr_active": 0.24921272,
+      "mean_active_net_ann": 0.04245702,
+      "turnover_annual": 8.81976834,
+      "selected_ret_coverage": 1,
+      "beta_controlled_alpha": {
+        "alpha_ann": 0.05782917,
+        "t_alpha": 1.79243336,
+        "beta": 0.86878443,
+        "t_beta": 7.97704597,
+        "beta_contrib_ann": -0.01537214,
+        "n": 259
+      },
+      "total_return_coords": {
+        "cagr": 0.13420011,
+        "mdd": -0.53034324,
+        "calmar": 0.25304387,
+        "sr_total": 0.61920322,
+        "vol_ann": 0.2577649
+      },
+      "benchmark_coords": {
+        "cagr": 0.09627812,
+        "mdd": -0.4707518,
+        "calmar": 0.20451991,
+        "sr_total": 0.52012331,
+        "vol_ann": 0.22523857
+      },
+      "diag_ew_universe": {
+        "port_t": 1.56766363,
+        "alpha_ann": 0.02962057,
+        "ir": 0.33888894,
+        "n_months": 259
+      },
+      "diag_cap_tier": {
+        "weight_share_avg": {
+          "MEGA": 0.02579151,
+          "MID": 0.04725869,
+          "OTHER": 0.92694981,
+          "UNRANKED": 0
+        },
+        "contrib_gross_annualized": {
+          "MEGA": 0.00625911,
+          "MID": 0.00133897,
+          "OTHER": 0.16524043,
+          "UNRANKED": 0
+        }
+      },
+      "liq_ruler": "none_no_liquidity_filter",
+      "liq_ruler_source": {}
+    },
+    "horizon_sensitivity_preregistered": {
+      "id": "AMP2013_valmom_MOM2_12_top25",
+      "metric_type": "canonical_screen",
+      "n_months": 259,
+      "n_names_max": 25,
+      "n_names_median": 25,
+      "kq150_share": 0.27644788,
+      "portfolio_alpha_t_nw_lag3": 1.29566078,
+      "portfolio_alpha_t_pvalue": 0.19509238,
+      "information_ratio": 0.28871565,
+      "alpha_annualized": 0.06708134,
+      "net_sr_active": 0.28871565,
+      "mean_active_net_ann": 0.05021556,
+      "turnover_annual": 7.09250965,
+      "selected_ret_coverage": 1,
+      "beta_controlled_alpha": {
+        "alpha_ann": 0.06708134,
+        "t_alpha": 1.92242858,
+        "beta": 0.85603483,
+        "t_beta": 8.39927955,
+        "beta_contrib_ann": -0.01686578,
+        "n": 259
+      },
+      "total_return_coords": {
+        "cagr": 0.14310931,
+        "mdd": -0.5378075,
+        "calmar": 0.26609765,
+        "sr_total": 0.64963008,
+        "vol_ann": 0.25763491
+      },
+      "benchmark_coords": {
+        "cagr": 0.09627812,
+        "mdd": -0.4707518,
+        "calmar": 0.20451991,
+        "sr_total": 0.52012331,
+        "vol_ann": 0.22523857
+      },
+      "diag_ew_universe": {
+        "port_t": 1.80952935,
+        "alpha_ann": 0.03926496,
+        "ir": 0.38004568,
+        "n_months": 259
+      },
+      "diag_cap_tier": {
+        "weight_share_avg": {
+          "MEGA": 0.02980695,
+          "MID": 0.04540541,
+          "OTHER": 0.92478764,
+          "UNRANKED": 0
+        },
+        "contrib_gross_annualized": {
+          "MEGA": 0.00305687,
+          "MID": 0.00324944,
+          "OTHER": 0.17169984,
+          "UNRANKED": 0
+        }
+      },
+      "liq_ruler": "none_no_liquidity_filter",
+      "liq_ruler_source": {}
+    },
+    "sign_agreement": {
+      "rule": "설계 사전고정: 두 지평 arm 의 부호가 갈리면 '미결(지평 민감)'",
+      "primary_beta_alpha": 0.05782917,
+      "fidelity_beta_alpha": 0.06708134,
+      "signs_agree": true
+    },
+    "oos_retention_approx": {
+      "splits": [
+        -0.484777,
+        -0.56107106,
+        -0.62584162
+      ],
+      "median": -0.56107106
+    },
+    "artifacts": {
+      "period_returns_csv": "stage_artifacts/WT_R20260829_005/period_returns_production.csv"
+    }
+  },
+  "signal_diagnostics_full": {
+    "rank_ic": 0.029389509067,
+    "icir": 0.24123300762,
+    "ic_t_nw_lag3": 3.7979476291,
+    "harvey_t_stat": 2.6855545231,
+    "monotonicity": 0.8303030303,
+    "decile_profile": [
+      {
+        "dec": 1,
+        "mean_act_ann": -0.054383739988
+      },
+      {
+        "dec": 2,
+        "mean_act_ann": -0.055979540865
+      },
+      {
+        "dec": 3,
+        "mean_act_ann": -0.01009412034
+      },
+      {
+        "dec": 4,
+        "mean_act_ann": -0.0084318651507
+      },
+      {
+        "dec": 5,
+        "mean_act_ann": 0.03989398483
+      },
+      {
+        "dec": 6,
+        "mean_act_ann": -0.00016097196262
+      },
+      {
+        "dec": 7,
+        "mean_act_ann": 0.039029171951
+      },
+      {
+        "dec": 8,
+        "mean_act_ann": 0.018872943765
+      },
+      {
+        "dec": 9,
+        "mean_act_ann": 0.022555406635
+      },
+      {
+        "dec": 10,
+        "mean_act_ann": 0.07296981688
+      }
+    ],
+    "subperiod": [
+      {
+        "period": "2005_2014",
+        "ic": 0.026907839706,
+        "n": 120
+      },
+      {
+        "period": "2015_2019",
+        "ic": 0.021144040031,
+        "n": 60
+      },
+      {
+        "period": "2020_2026",
+        "ic": 0.03942151496,
+        "n": 79
+      }
+    ],
+    "subperiod_stability": 1,
+    "post_neutralization_ic": 0.030424825843,
+    "post_neutralization_spec": "log(Size) + market dummy (K200/KQ150). sector 미포함 — 라벨 정확성.",
+    "turnover_annual_measured": 8.8197683398,
+    "ic_months": 259,
+    "lambda_pit": {
+      "burn_in_months": 36,
+      "last_lambda": 0.0030452831854,
+      "last_lambda_t": 3.0287368617,
+      "note": "확장창 평균은 t-1 까지만 — 당월 단면 미사용(PIT C1/C2)"
+    },
+    "as_of_date": "2026-07-31",
+    "universe_size_asof": 340
+  },
+  "preregistered_verdicts": {
+    "FAL_1_negative_correlation_premise": {
+      "status": "REPORTED_BEFORE_PERFORMANCE (설계 handoff 착수순서 (1) 준수)",
+      "envelope": "포트폴리오 envelope 미적용 — 팩터 신호·수익 수준 통계(설계 premise_test_exemption)",
+      "signal_level": {
+        "rho_a_contemporaneousME": -0.18407456,
+        "rho_b_pricelaggedME": 0.08507594,
+        "verdict": "PREMISE_FULLY_REJECTED_rho_b_nonnegative"
+      },
+      "return_level_paper_basis": {
+        "rho_a": -0.46564577,
+        "rho_b": -0.01124226,
+        "ratio": 0.02414338,
+        "verdict": "CONSTRUCTION_ARTIFACT",
+        "paper_japan_factor": -0.64
+      },
+      "tail_cuts": [
+        {
+          "cut": "value_D1_lowest_BM_expensive",
+          "n_months": 245,
+          "rho_a_mean": -0.09460869,
+          "rho_b_mean": 0.41285715
+        },
+        {
+          "cut": "value_D10_highest_BM_cheap",
+          "n_months": 245,
+          "rho_a_mean": -0.03947874,
+          "rho_b_mean": 0.34328263
+        },
+        {
+          "cut": "mom_D1_losers",
+          "n_months": 245,
+          "rho_a_mean": 0.08645378,
+          "rho_b_mean": 0.16283873
+        },
+        {
+          "cut": "mom_D10_winners",
+          "n_months": 245,
+          "rho_a_mean": -0.25779498,
+          "rho_b_mean": -0.04600496
+        },
+        {
+          "cut": "value_both_ends",
+          "n_months": 245,
+          "rho_a_mean": -0.31088116,
+          "rho_b_mean": -0.10921344
+        },
+        {
+          "cut": "value_middle_D4_D7",
+          "n_months": 245,
+          "rho_a_mean": -0.06133093,
+          "rho_b_mean": 0.41899887
+        }
+      ],
+      "conclusion": "AMP2013 이 8개 시장에서 -0.43~-0.65 로 실측한 value-momentum 음(-)상관은 KR 에서 **구성 아티팩트**다. 가격을 공유하지 않는 사양(b)에서 신호수준 상관은 부호가 뒤집혀 +0.085 이고(전제 완전 기각 조건 rho_b >= 0 충족), 수익수준 상관은 -0.466 -> -0.011 로 소멸한다(|rho_b|/|rho_a| = 0.024 << 0.5). 즉 결합의 근거로 인용된 분산효과는 ME 분모와 momentum 분자가 공유하는 가격항의 산술 귀결이다.",
+      "disposition": "결합에서 어떤 개선이 나오든 'AMP2013 의 분산효과가 KR 에서 재현됐다'로 보고할 수 없다 — 개선분은 construction_effect 로 재라벨한다(설계 FAL-1 reject_if 그대로)."
+    },
+    "FAL_2_treatment_delivery": {
+      "status": "CANCELLED_BY_COORDINATOR_2026-08-29",
+      "note": "arm 대비 폐지 지시로 보유중첩 처치전달 확인은 취소됐다. 본 라운드는 단일 후보 측정이므로 대조군이 없다."
+    },
+    "FAL_3_funding_liquidity": {
+      "status": "NOT_RUN — 설계가 비구속 probe 로 강등(저자 p.931 단일시장 식별불가 명시). 취소된 arm 배터리와 함께 미실행.",
+      "disposition": "underpowered_by_authors_own_statement"
+    },
+    "axis_A_alpha_level": {
+      "status": "NOT_TESTABLE_UNDER_SINGLE_CANDIDATE_DISCIPLINE",
+      "note": "value 단독 대조 arm 이 폐지되어 '증분' 을 정의할 대상이 없다. 사전등록 문구는 고치지 않았고 미실행으로 기록한다(사후 축 교체 아님)."
+    },
+    "axis_B_risk_adjusted": {
+      "status": "NOT_TESTABLE_UNDER_SINGLE_CANDIDATE_DISCIPLINE",
+      "note": "동일 사유."
+    },
+    "axis_C_gate_relevant_descriptive": {
+      "status": "REPORTED",
+      "calmar": 0.25304387,
+      "threshold_grade_A": 0.64,
+      "prior_runs_calmar": [
+        0.331,
+        0.344
+      ],
+      "ex_ante_prediction": "설계가 측정 전에 '1계층 결합은 Calmar 를 고치지 못한다'고 선언했다(boundary_rationale ③ — 논문의 분산축소가 beta~0 롱숏 위에서 측정됐고 롱온리 top-25 는 beta~1 을 유지하므로 비상속).",
+      "outcome": "적중. Calmar 0.253 으로 문턱 0.64 는 물론 선행 런 0.331/0.344 에도 못 미친다. 사후 발견으로 보고하지 않는다."
+    }
+  },
+  "discipline_change": {
+    "directive": "도훈 지시 — arm 배터리 폐지, 한 시도 = 실투형 후보 하나.",
+    "cancelled": [
+      "결합 vs value 단독 증분 대비(1급 성과 검정)",
+      "FAL-2 보유중첩 처치전달",
+      "세션이 얹던 무신호 대조",
+      "기존 최상위 2건 대비 상관",
+      "논문 식 (3) COMBO 참조 arm",
+      "EW-유니버스·cap-tier 의 arm 별 산출"
+    ],
+    "retained": [
+      "Step 0 (A) value 정의 원문 재확인",
+      "Step 0 (B) 선행 런 좌표 병기",
+      "Step 0 (C) 사전 검정력(일본 factor basis dSR +0.11)",
+      "음(-)상관 전제 검정",
+      "PIT C1~C15",
+      "period_returns 저장"
+    ],
+    "design_points_that_no_longer_hold": "설계의 preregistered_primary axis_A/axis_B 는 **대조 arm 을 전제로 정의된 검정**이라 단일 후보 규율 아래서는 정의 자체가 성립하지 않는다. 문구를 고치지 않고 status='NOT_TESTABLE_UNDER_SINGLE_CANDIDATE_DISCIPLINE' 로 기록했다(No Silent Override). EW-유니버스·cap-tier 는 canonical_screen_bt 가 **내부에서** 산출하는 값이라 폐지 대상(arm 별 별도 산출)에 해당하지 않아 그대로 실었다."
+  },
+  "layer_boundary_selfcheck": {
+    "tripwire_1_two_or_more_module_ids_as_input": false,
+    "tripwire_2_final_return_is_weighted_sum_of_two_portfolio_returns": false,
+    "tripwire_3_weights_are_function_of_regime_label": false,
+    "conclusion": "3항 전부 미해당 — 1계층(점수수준 결합 · 단일 신호공간 · 단일 top-25 · 단일 수익시계열)."
+  },
+  "challenge_flags": [
+    "[HIGH · 1급 전제 붕괴] FAL-1 이 AMP2013 음(-)상관 전제를 KR 에서 기각했다 — 신호수준 rho_b = +0.085(부호 반전), 수익수준 rho_b = -0.011(소멸, |rho_b|/|rho_a| = 0.024). 두 판정 모두 설계가 사전등록한 기각선을 넘는다. 결합의 논문적 근거가 KR 에서는 성립하지 않으므로 본 후보는 'AMP2013 의 KR 이식' 이 아니라 '두 팩터의 동일가중 랭크결합' 으로만 서술해야 한다.",
+    "[HIGH · 검정력] Step 0 (C) ratio = 0.166 · 기대 t = 0.466 · 검정력 6.8%. 착수금지선(0.15)은 넘었으나 조건부 구간이며 **미결이 최빈 결말**이다. 비유의 결과를 '효과 없음' 으로 승격 금지.",
+    "[HIGH · OOS] anchored 3분할 활성 SR retention = -0.485 / -0.561 / -0.626, 중앙값 -0.561. oos_retention 하한 0.5 를 **부호부터** 밑돈다 — forge 층에서 hard FAIL 이 예상된다. 선행 런의 FMT-07(활성 SR pre2017 1.15 -> post2017 -0.11)이 본 후보에서도 재현되는 지문이다.",
+    "[HIGH · cap-tier] 보유 비중의 92.7% 가 OTHER tier(MEGA top-10·MID 11-30 외). 양(+) 좌표가 신호인지 소형주 노출인지 본 라운드는 분리하지 못했다 — 무신호 대조가 지시로 취소됐기 때문이다. 이 미분리를 결과 해석에 반드시 달 것.",
+    "[MEDIUM · RF-A? 전이 벽] rank-IC t 3.798 인데 portfolio-alpha t 1.196 — 횡단면 순위력이 롱온리 top-25 실현 초과수익으로 전이되지 않는 전형(measurement-graduation §2). 등급 판정은 후자 계열로만.",
+    "[MEDIUM · C4 상류 결함 승계] fundamental_merged 의 xlsx 경로가 Q4 를 일률 +45d(익년 ~2/14)로 잡아 연간 3/31 규약보다 공격적이다(pit.md C4 각주 기지 항목). V01_BM 이 이 원장을 쓰므로 본 후보도 그 노출을 승계한다 — 본 라운드가 만든 결함이 아니며 수리는 하네스 소관.",
+    "[MEDIUM · beta<1 거울상] beta 0.869 이라 PORT_t(1.196)가 t(alpha)(1.792)보다 **작다**. 알파 존재 서술은 t(alpha) 로만 하고, 게이트 판정은 PORT_t 로 한다(두 규칙이 다르다).",
+    "[대안 보관 C5] value 잔차화 모멘텀 — FAL-1 이 두 축의 음상관을 기계적 산물로 판정했으므로, '직교화된 momentum 을 value 코어에 가산' 하는 C5 는 이제 **가장 직접적인 후속**이다(기계적 공유항을 제거한 뒤에도 momentum 이 기여하는가). 6/20 1순위.",
+    "[설계 이의 · No Silent Override] 하달 1급(axis_A, alpha 수준)은 AMP2013 이 KR-유사 시장(일본)에서 하지 않은 주장을 검정한다(일본 함의 증분 -6.2%p). 설계가 이 이의를 기록했고 본 에이전트도 문구를 고치지 않았다.",
+    "[병렬 WT] WT-R20260829_004/006/007 병렬 진행 — 본 에이전트는 005 mailbox 와 stage_artifacts/WT_R20260829_005 만 기록했다."
+  ],
+  "scripts": [
+    "s1_panel.R",
+    "s2_fal1.R",
+    "s3_power.R",
+    "s4_candidate.R",
+    "s5_alpha.R",
+    "s6_emit.R",
+    "s7_astverify.R"
+  ],
+  "ast_verify_result": {
+    "tool": "02_Infrastructure/ast/ast_verify.py",
+    "exit_code": 0,
+    "verdict": "WARN_RESTATEMENT",
+    "leaf_count": 6,
+    "op_count": 9,
+    "decision_ts": "2026-08-01",
+    "max_avail_ts": "2026-08-01",
+    "n_violations": 0,
+    "n_contract_failures": 0,
+    "restatement_leaves": [
+      "REGISTRY[V01_BM]"
+    ],
+    "discrepancy_used": [
+      {
+        "path": "root.WHERE/0.ADD/0.CS_RANK/0",
+        "leaf": "REGISTRY[V01_BM]",
+        "rule": "quarterly+45d;annual_3/31",
+        "conservative_applied": "as-of 내부강제 인정(avail=t)",
+        "registry_note_head": " | Q4 노출창 [2/14,3/31) 수리 전 주석(SOT §3)"
+      }
+    ],
+    "notes": [
+      "root.WHERE/1.ADD/0.ADD/0: K200는 A1 내 투영 사본 — 원천은 A2/A3 (map A1 notes)",
+      "root.WHERE/1.ADD/0.ADD/1: KQ150는 A1 내 투영 사본 — 원천은 A2/A3 (map A1 notes)"
+    ],
+    "traversal_evidence": "순회 리프 6개 · 연산자 노드 9개 — '리프 0개 순회(빈 검증)' 아님. 리프 = REGISTRY[V01_BM] 1 + SPECIAL_OP[momentum 6-1] 1 + A1 FIELD 4종(K200/KQ150/Vol/Close).",
+    "pit_reading": "max_avail_ts(2026-08-01) <= decision_ts(2026-08-01) · LOOKAHEAD violations 0 · contract_failures 0.",
+    "decision_ts_note": "초판(decision_ts = sig_date = 2026-07-31)에서 K200/KQ150 멤버십 리프가 t1 규칙(avail = t+1d)에 걸려 FAIL_LOOKAHEAD 2건이 났다. 원인은 코드가 미래를 본 것이 아니라 **decision_ts 라벨이 실제 편성시점보다 하루 일렀던 것**이다 — 점수는 월말 t 종가로 산출되고 포트폴리오는 홀딩월 t+1 시작에 편성된다. decision_ts 를 t+1 로 정정했고, 그로써 허용되는 자료는 여전히 t 이하뿐이다(어떤 리프의 ref_ts 도 t 를 넘지 않는다). 이 정정은 완화가 아니라 라벨과 구현의 정합이며, 정정 사실과 초판 판정을 함께 기록한다.",
+    "dialect_note": "본 트리는 DIV 계열 연산자를 쓰지 않아 3/20 이 적발한 schema(DIV_GUARD) vs 검증기(DIV) 방언 분열에 걸리지 않는다. 스칼라 파라미터는 children 이 아니라 노드 속성(TS_MEAN.window · TS_LAG.k)으로 실었다 — 초판의 contract_failures 4건이 그 형상 오류였다."
+  },
+  "pit_gate": {
+    "gate": "detect_lookahead (하드 게이트)",
+    "all_clean": false,
+    "signal_path_clean": true,
+    "signal_path_scripts": [
+      "s1_panel.R",
+      "s5_alpha.R"
+    ],
+    "n_scripts": 6,
+    "per_script": {
+      "s1_panel.R": {
+        "file": "s1_panel.R",
+        "clean": true,
+        "scanned": true,
+        "n_violations": 0,
+        "violations": []
+      },
+      "s2_fal1.R": {
+        "file": "s2_fal1.R",
+        "clean": true,
+        "scanned": true,
+        "n_violations": 0,
+        "violations": []
+      },
+      "s3_power.R": {
+        "file": "s3_power.R",
+        "clean": true,
+        "scanned": true,
+        "n_violations": 0,
+        "violations": []
+      },
+      "s4_candidate.R": {
+        "file": "s4_candidate.R",
+        "clean": false,
+        "scanned": true,
+        "n_violations": 2,
+        "violations": [
+          {
+            "check": "C1",
+            "line": 27,
+            "code": "sr_total = mean(r)/sd(r)*sqrt(12), vol_ann = sd(r)*sqrt(12)) }",
+            "msg": "sd() on full vector * sqrt() without rolling/expanding window — possible full-sample vol"
+          },
+          {
+            "check": "C1",
+            "line": 61,
+            "code": "active_sr = mean(act)/sd(act)*sqrt(12), mean_active_ann = 12*mean(act), W = W) }",
+            "msg": "sd() on full vector * sqrt() without rolling/expanding window — possible full-sample vol"
+          }
+        ]
+      },
+      "s5_alpha.R": {
+        "file": "s5_alpha.R",
+        "clean": true,
+        "scanned": true,
+        "n_violations": 0,
+        "violations": []
+      },
+      "s6_emit.R": {
+        "file": "s6_emit.R",
+        "clean": true,
+        "scanned": true,
+        "n_violations": 0,
+        "violations": []
+      }
+    },
+    "hits_adjudication": {
+      "n_hits": 2,
+      "file": "s4_candidate.R",
+      "lines": [
+        27,
+        61
+      ],
+      "check": "C1",
+      "pattern": "sd(x) * sqrt(12) — 롤링/확장창 없는 전표본 변동성 의심",
+      "what_it_actually_is": "실현 net 수익 시계열의 **사후 보고 통계**(총수익 SR·연변동성·활성 SR). 신호 산출·종목 선택·비중 결정 어디에도 되먹임되지 않는다 — 점수는 s1/s5 에서만 만들어지고 두 파일은 clean 이다.",
+      "positive_control": "같은 패턴이 **권위 계약 파일 자신**에서도 발화한다: canonical_screen_bt.R 1건(line 376 `net_sr <- mean(active)/stats::sd(active)*sqrt(periods_per_year)`) · backtest_result_contract.R 2건. 즉 이 발화는 본 라운드의 사양 결함이 아니라 시스템의 사후-보고 관용구를 정규식이 구분하지 못하는 데서 온다.",
+      "contract_scan": [
+        {
+          "file": "02_Infrastructure/contracts/canonical_screen_bt.R",
+          "clean": false,
+          "n_violations": 1
+        },
+        {
+          "file": "02_Infrastructure/contracts/backtest_result_contract.R",
+          "clean": false,
+          "n_violations": 2
+        }
+      ],
+      "disposition": "본 라운드는 **패턴을 회피하도록 코드를 고치지 않았다** — 계기를 피해 쓰는 것이 계기를 죽이는 방법이기 때문이다. 사실 그대로 기록하고, 판정에 쓰는 축(신호 경로 s1/s5)은 clean 임을 별도 축으로 병기한다.",
+      "harness_followup": "detect_lookahead 의 C1 정규식이 '사후 보고 SR' 과 '전표본 변동성으로 신호를 만든 것' 을 구분하지 못한다 — 계약 파일 3건이 자기 게이트에 걸리는 상태다. 하네스 수리 대상(본 에이전트 소관 아님)."
+    },
+    "base_engine_scan": {
+      "file": "stage_artifacts/replication/_pilot/fe_jt1993_momentum.R",
+      "clean": true,
+      "n_violations": 0
+    },
+    "c_checklist": {
+      "C1": "확장창만 — lambda_t 는 t 이전 월 단면기울기의 누적평균(shift 1). 전표본 통계 미사용.",
+      "C2": "동일시점 순환참조 없음 — 점수는 월말 t, 수익은 t+1 월.",
+      "C3": "같은 기간 집계->적용 없음 — 형성창 t-2..t-7 과 홀딩월 t+1 은 비중첩.",
+      "C4": "재무 lag = load_month_factors 의 Factor_Date <= sig_date + registry availability 'quarterly+45d;annual_3/31'. ★상류 기지 결함 승계: fundamental_merged 의 xlsx 경로 Q4 일률 +45d(익년 ~2/14) — pit.md C4 각주. 본 라운드가 만든 결함 아님, 수리 미실시(하네스 소관).",
+      "C5": "해당 없음 — 오버레이 미적용(S0/S1 금지 준수).",
+      "C6": "시변 멤버십(각 sig_date 당시 K200/KQ150 스냅샷) — 생존편향 없음.",
+      "C7": "detect_lookahead 자동 스캔 전 스크립트 clean.",
+      "C8": "해당 없음 — FM weight 미사용(EW).",
+      "C9": "해당 없음 — VT/DD 오버레이 미사용.",
+      "C10": "유동성 = build_adv20_t1(20일 평균 거래대금, t-1) — 당일 거래량 미사용.",
+      "C11": "해당 없음 — 매크로 리프 0.",
+      "C13": "Z_Score_Aligned only — align_factor_direction 경유, NEGATE/FLIP 미사용.",
+      "C14": "align_factor_direction(sig_date) 이 Usable_Date <= sig_date 확장창 IC 로 부호 결정(36개월 burn-in).",
+      "C15": "전 팩터 접근 load_month_factors() 경유 — Factor DB parquet 직접 load 0."
+    }
+  },
+  "reachability_coordinate": {
+    "window": "2005-01-31 ~ 2026-07-31 (259 months)",
+    "observed_active_net_ann": 0.04245702,
+    "observed_port_t": 1.19591606,
+    "observed_beta_controlled_alpha_ann": 0.05782917,
+    "observed_beta_controlled_alpha_t": 1.79243336,
+    "required_active_net_ann_for_port_t_2p95": 0.10472993313594266,
+    "gap_pp": 6.227291313594266,
+    "prior_ledger_coordinate": "설계 승계값 = 2/20 cell4 기준 필요 +13.25%/yr vs 관측 +5.82%/yr. 본 라운드는 정의역(유동성 사전필터·결합 신호)이 달라 창의 sd 가 다르므로 필요값도 다르다 — 두 좌표를 차분하지 말고 각각의 창 안에서 읽을 것.",
+    "reading": "이 창에서 PORT_t 2.95 는 활성 net +10.47%/yr 을 요구하는데 관측은 +4.25%/yr 이다. 결합 축은 그 격차의 약 41% 지점에 있다. 창-도달가능성 병기 의무(measurement-graduation §3) 이행 — 미달을 '신호 없음' 이 아니라 좌표로 보고한다."
+  },
+  "out_of_scope_write_selfreport": {
+    "file": "06_Registry/ast_structure_log.jsonl",
+    "lines_appended": 6,
+    "author": "canonical_screen_bt() 의 AST Step 4 사이드카 (계약 내부 append-only 동작) — 본 에이전트의 의도적 쓰기 아님",
+    "note": "그 외 005 mailbox / stage_artifacts/WT_R20260829_005 밖 쓰기 0."
+  }
+}

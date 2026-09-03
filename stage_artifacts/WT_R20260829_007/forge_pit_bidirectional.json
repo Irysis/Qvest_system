@@ -1,0 +1,96 @@
+{
+  "wt_id": "WT-R20260829_007",
+  "purpose": "detect_lookahead 양방향 대조 — 양성 대조(R 방언 선언 idiom) + 커버리지 반증(비선언 idiom)",
+  "detector": "02_Infrastructure/validation/lookahead_detector.R::detect_lookahead",
+  "target": "stage_artifacts/WT_R20260829_007/run_all.R",
+  "baseline_clean": true,
+  "baseline_violations": 0,
+  "probes": {
+    "A0_baseline": {
+      "tag": "A0_baseline",
+      "scanned": true,
+      "clean": true,
+      "violations": 0,
+      "fired": false,
+      "codes": []
+    },
+    "B1_C7a_scale_signal": {
+      "tag": "B1_C7a_scale_signal",
+      "scanned": true,
+      "clean": false,
+      "violations": 1,
+      "fired": true,
+      "codes": "C7a"
+    },
+    "B2_C7b_rank_fwd_ret": {
+      "tag": "B2_C7b_rank_fwd_ret",
+      "scanned": true,
+      "clean": false,
+      "violations": 1,
+      "fired": true,
+      "codes": "C7b"
+    },
+    "B3_C15_direct_parquet": {
+      "tag": "B3_C15_direct_parquet",
+      "scanned": true,
+      "clean": false,
+      "violations": 1,
+      "fired": true,
+      "codes": "C15_DIRECT_PARQUET"
+    },
+    "B4_C13_negate": {
+      "tag": "B4_C13_negate",
+      "scanned": true,
+      "clean": false,
+      "violations": 1,
+      "fired": true,
+      "codes": "C13_MANUAL_DIRECTION"
+    },
+    "B5_C12_best_sharpe": {
+      "tag": "B5_C12_best_sharpe",
+      "scanned": true,
+      "clean": false,
+      "violations": 2,
+      "fired": true,
+      "codes": "C12_FULLSAMPLE_OPT"
+    },
+    "C1_R_negative_shift": {
+      "tag": "C1_R_negative_shift",
+      "scanned": true,
+      "clean": true,
+      "violations": 0,
+      "fired": false,
+      "codes": []
+    },
+    "C2_fullsample_cov": {
+      "tag": "C2_fullsample_cov",
+      "scanned": true,
+      "clean": true,
+      "violations": 0,
+      "fired": false,
+      "codes": []
+    },
+    "C3_fullsample_mean_renorm": {
+      "tag": "C3_fullsample_mean_renorm",
+      "scanned": true,
+      "clean": true,
+      "violations": 0,
+      "fired": false,
+      "codes": []
+    },
+    "C4_manual_future_index": {
+      "tag": "C4_manual_future_index",
+      "scanned": true,
+      "clean": true,
+      "violations": 0,
+      "fired": false,
+      "codes": []
+    }
+  },
+  "positive_control_fired": 5,
+  "positive_control_n": 5,
+  "coverage_probe_fired": 0,
+  "coverage_probe_n": 4,
+  "dialect_split_record": "1차 시도에서 Python 방언 idiom(.shift(-1) / merge_asof forward)을 양성 대조로 주입했으나 0/3 미발화. detect_lookahead 는 is_python 로 분기하며 PY_* 패턴은 .py 파일에만 적용된다. R 분기에는 **음수 shift 대응 패턴이 아예 없다** — 아래 C1 이 그 직접 실증이다.",
+  "interpretation": "양성 대조 5/5 발화 -> 검출기는 살아있다. 커버리지 반증 0/4 발화 -> CLEAN 은 '선언 idiom 부재'의 증거일 뿐이며 PIT 증명이 아니다."
+}

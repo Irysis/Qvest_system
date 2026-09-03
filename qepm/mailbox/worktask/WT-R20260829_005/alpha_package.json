@@ -1,0 +1,2980 @@
+{
+  "task_id": "WT-R20260829_005",
+  "strategy_id": "AMP2013_valmom_rankavg_top25",
+  "as_of_date": "2026-07-31",
+  "forecast_horizon": "1M",
+  "spec_version": "ast_v1.1",
+  "pit": {
+    "sig_date": "2026-07-31",
+    "decision_ts": "2026-08-01",
+    "timing_convention": "점수는 신호월 t 의 월말 종가 기준으로 산출되고 포트폴리오는 **홀딩월 t+1 시작에** 편성된다. 따라서 의사결정 시각은 t 가 아니라 t+1 일이며, t 시점 자료(유니버스 멤버십 K200/KQ150 스냅샷 포함)는 그 시점에 이미 가용하다. period_returns 의 date 컬럼은 **신호월 t** 라벨이고 수익은 t+1 월의 실현치다. decision_ts 를 t 로 두면 ast_verify 의 t1 규칙(avail = t+1d)이 당일 멤버십을 미래참조로 표시하는데, 그것은 코드가 미래를 본 것이 아니라 decision_ts 라벨이 실제 편성시점보다 하루 이른 데서 온다."
+  },
+  "hypothesis": {
+    "statement": "KR 롱온리 ≤25종 단일 신호공간에서 value(BE/ME)와 momentum 을 점수수준 50/50 랭크결합하면, 두 신호가 서로 다른 달에 발화하는 성질(AMP2013 이 8개 시장에서 −0.43~−0.65 로 실측한 음상관) 때문에 월별 활성수익의 분산이 축소되어 **알파 수준이 아니라 정보비율·샤프가 개선된다**. 누적 3회(재료 추가·형태 교정·조건화)가 기저 모멘텀의 β-통제 α 를 +5.14%/yr 에서 ±1%p 안으로만 움직였고 필요값이 +13.25%/yr 인 상황에서, 남은 미사용 경로는 조건화가 아니라 결합이다. 단 본 가설은 결합이 α 를 끌어올린다고 주장하지 않는다 — AMP2013 의 일본 행(모멘텀 단독이 죽은 시장)에서 결합의 CAPM α 는 value 단독보다 **낮고**(6.8% vs 13.0%) 개선은 전적으로 위험 축에 나타난다(SR 0.77→0.88). KR 은 모멘텀 단독이 죽은 시장이므로 일본이 KR-유사물이며, 따라서 사전 기대는 'α 증분 ≈ 0 또는 음수 · 위험조정 증분 소폭 양(+)' 이다.",
+    "mechanism": {
+      "agent": "두 개의 구분되는 오류 주체. ①**KR 개인투자자 추세추종 순매수 군집** — 가격 연속성에 과소반응 후 과잉반응하는 주체이며, KR 의 낮은 individualism 이 모멘텀 프리미엄을 약화시킨다는 국가패널 진단(CTW2010)이 기저 F 의 배경이다. ②**기관 벤치마크-추종 배분** — K200 지수 대비 추적오차 예산 안에서 운용되어 장부가 대비 저평가되고 지수 비중이 낮은 종목의 소외를 유지시키는 주체. 이 둘은 같은 종목집합을 서로 다른 시점에 잘못 가격매긴다.",
+      "friction": "①**KR 공매도 제약** — 개인 접근 제한, 소형주 차입풀 부재, 2023-11~2025 전면금지 구간 포함. 두 오류 중 어느 쪽도 숏으로 지워지지 않으므로 롱 사이드에만 잔존한다. ②**유동성 하한 20일 평균 거래대금 ≥ 2e8 KRW** 와 **롱온리 ≤25종** — 차익거래 자본이 들어갈 수 있는 종목 폭 자체가 좁아 오정가가 완전 해소되지 않는다. ③**펀딩 유동성 충격 시의 강제청산** — AMP2013 은 유동성 위험이 value 에 음(−)·momentum 에 양(+)으로 반대부호로 걸린다고 실증했고, 이 반대부호가 두 축이 서로 다른 달에 발화하는 이유의 일부다. 다만 저자 스스로 이 노출은 **단일 시장에서 식별 불가**라고 명시했으므로(p.931), 본 라운드에서 이 마찰은 검정 대상이 아니라 서술된 근거다.",
+      "path": "value 신호는 저평가가 해소되는 달(반등·재평가 국면)에, momentum 신호는 추세가 지속되는 달(확장 국면)에 각각 수익을 낸다. 두 신호를 **한 점수공간에서 랭크평균**하면 매월 선택되는 25종이 두 발화 조건을 절반씩 담게 되고, 한 축이 꺼진 달의 손실을 다른 축이 부분 상쇄한다. 따라서 수익 경로는 '평균 초과수익의 증가'가 아니라 **월별 활성수익 표준편차의 축소를 통한 정보비율 상승**이다. AMP2013 표 I 이 이 경로를 수치로 보여준다: 미국 롱숏 스프레드 기준 value 12.8% / momentum 16.4% 였던 표준편차가 결합에서 7.2% 로 떨어지는데 평균수익은 4.6% 로 두 축의 중간값이다 — 이득 전량이 분모에서 나온다."
+    },
+    "falsification": "사양 (b)에서 측정한 음상관의 절대값이 사양 (a)의 **절반 미만**이면(|ρ_b| < 0.5·|ρ_a|) AMP2013 의 음상관 전제는 KR 에서 **구성 아티팩트**로 판정한다. 이 경우 결합에서 어떤 개선이 나오든 'AMP2013 의 분산효과가 KR 에서 재현됐다'로 보고할 수 없으며, 개선분은 construction_effect 로 재라벨한다. 추가로 사양 (b)의 ρ 가 0 이상(양수)이면 전제는 완전 기각이다.",
+    "falsification_full": {
+      "principle": "성과 동어반복 금지. 아래 3종은 전부 **성과가 아닌 부수 관측**이며 field_dictionary(06_Registry/ast_field_map_v0.json) 내 리프로 확인 가능하다. 성과축 사전등록은 별도 키 preregistered_primary 에 둔다.",
+      "observables": [
+        {
+          "id": "FAL-1",
+          "label": "음(−)상관의 기계/경제 분해 — 1급 전제검정",
+          "envelope_applicability": "★**포트폴리오 envelope 미적용** — 이것은 팩터 신호·수익 수준의 통계이지 포트폴리오 성과 판정이 아니다(Q-Lead 정정 2026-08-29 의 명시 예외). long-only·≤25종 규칙은 여기 걸리지 않으며, 산출물에 '전제 검정 — 포트폴리오 envelope 미적용' 을 명시할 것.",
+          "rationale_root": "AMP2013 p.936 저자 진술: 최근 가격을 쓰면 value-momentum 음상관이 **더 음(−)이 된다**. ME 의 분모에 가격이 있고 momentum 의 분자에 가격이 있으므로, contemporaneous ME 를 쓰는 순간 두 신호는 **구성상(mechanically)** 음상관을 갖는다. 결합의 근거가 경제적 분산효과인지 산술적 공유항인지는 여기서 갈린다.",
+          "observable": "월별 단면에서 value 점수와 momentum 점수의 순위상관을 두 사양으로 측정한다. (a) **contemporaneous ME**(t-1 종가 기준 시가총액, AMP2013 주식 정의) (b) **price-lagged ME**(모멘텀 형성창 시작 이전 시점의 시가총액으로 고정 — 두 신호가 어떤 가격 관측치도 공유하지 않도록). 전 구간 단일 수치가 아니라 **연도별·국면별 절단면과 분위 양끝(1분위·10분위) 국소 상관을 병기**한다.",
+          "reject_if": "사양 (b)에서 측정한 음상관의 절대값이 사양 (a)의 **절반 미만**이면(|ρ_b| < 0.5·|ρ_a|) AMP2013 의 음상관 전제는 KR 에서 **구성 아티팩트**로 판정한다. 이 경우 결합에서 어떤 개선이 나오든 'AMP2013 의 분산효과가 KR 에서 재현됐다'로 보고할 수 없으며, 개선분은 construction_effect 로 재라벨한다. 추가로 사양 (b)의 ρ 가 0 이상(양수)이면 전제는 완전 기각이다.",
+          "field_dictionary_refs": [
+            "A1_RAWDATA_OHLCVS_daily",
+            "FDB-B1_registry_fundamental_quarterly",
+            "FDB-B2_registry_rawdata_price_daily",
+            "A2_universe_krx_monthly"
+          ],
+          "cross_section_warning": "★전 구간 단일 상관으로 접지 말 것. 전 구간 상관 0 인데 분위 양끝에서 통제축이 1.1889배로 부활한 실측 전례가 있다(project-fq234-control-spec-and-axis-leakage). 절단면 병기가 의무다."
+        },
+        {
+          "id": "FAL-2",
+          "label": "처치 전달 확인(manipulation check) — 결합이 실제로 다른 종목을 사는가",
+          "rationale_root": "결합이 momentum 기여를 갖는다면 결합 top-25 의 **구성원 자체**가 value 단독 top-25 와 달라야 한다. 이건 성과 관측이 아니라 보유 관측이다.",
+          "observable": "매 리밸일 (결합 top-25) ∩ (value 단독 top-25) 의 종목수 / 25 를 계산해 시계열 중앙값과 분포를 낸다. momentum 단독 top-25 와의 중첩도 병기.",
+          "reject_if": "value 단독과의 중첩 중앙값 ≥ 0.80 이면 **처치 미전달**이다. 이 경우 1급 성과검정의 결과는 '효과 없음'이 아니라 **미결(처치 미전달)** 로 처분하며, momentum 기여 부재로 판정해서는 안 된다. (근거 규약: 처치가 전달되지 않은 셀은 '효과없음'이 아니라 '미결' — fail_rule 에 조작확인 동반. project-fr-rule-collapses-to-static-rp-at-large-n)",
+          "field_dictionary_refs": [
+            "A1_RAWDATA_OHLCVS_daily",
+            "A2_universe_krx_monthly",
+            "A9_liquidity_avgtv20_convention"
+          ]
+        },
+        {
+          "id": "FAL-3",
+          "label": "펀딩 유동성 반대부호 노출 — **비구속 mechanism probe**",
+          "rationale_root": "AMP2013 이 제시한 음상관의 원천은 value(−)/momentum(+)의 반대부호 유동성위험 노출이다. 그것이 KR 에서 같은 부호를 갖는지를 본다.",
+          "observable": "value 레그·momentum 레그 각각의 월수익을 펀딩유동성 충격(대용: KR 정책금리·단기금리 스프레드 계열 및 미국 TED 계열의 AR(2) 잔차)에 회귀해 계수 부호를 병기한다.",
+          "reject_if": "★**이 관측으로는 기각하지 않는다**. 저자가 p.931 에서 이 노출은 단일 시장 단독으로는 통계적 검정력이 없어 식별 불가라고 명시했기 때문이다. 두 계수 부호가 같게 나와도 메커니즘 기각의 근거로 인용 금지 — 결과는 기록만 하고 disposition='underpowered_by_authors_own_statement' 로 라벨한다. 이 항목을 반증조건에 넣는 순간 검정력 없는 기각이 되므로 의도적으로 비구속으로 둔다.",
+          "field_dictionary_refs": [
+            "E1_fred_macro_raw",
+            "E2_ecos_kr_rates",
+            "A4_benchmark_kospi200"
+          ]
+        }
+      ]
+    },
+    "regime_scope": {
+      "holds_in": [
+        "**국면 전환기 — 위기 저점 이후 재평가 구간**: value 레그의 저평가 해소와 momentum 레그의 추세 지속이 서로 다른 달에 발화하므로 두 축의 월별 상쇄가 가장 크게 작동하는 구간. AMP2013 의 결합이득이 전적으로 분산 축소에서 나온다는 구조(미국 12.8%/16.4% → 7.2%)가 여기에 대응한다.",
+        "**단면 분산(dispersion)이 큰 확장 국면**: 두 신호 모두 상위-하위 격차가 벌어져 랭크 정보가 살아 있는 구간. 신호가 눌린 구간에서는 결합해도 합칠 정보가 없다.",
+        "**공매도 제약이 실제로 구속하는 평시**: 마찰 ①이 오정가를 유지시키는 조건. 이 마찰이 느슨해지면(차입 가능·전면허용) 롱 사이드 잔존분이 줄어든다."
+      ],
+      "weakens_or_reverses_in": [
+        "**펀딩 스트레스·강제청산 국면(crisis)**: 마찰 ③의 반대부호 노출이 무너지는 구간. 유동성 충격이 극단이면 두 레그 모두 강제청산에 지배당해 음상관이 소멸하고 동반 하락한다. 롱온리 25종은 β≈1 을 그대로 지니므로 상쇄가 작동하지 않는다. **직접 실측 근거: 선행 KR AMP2013 런의 FMT-04 — MDD 60.7% ∧ BM상관 0.80(국면필터 부재로 인한 위기 동조 낙폭).**",
+        "**위기 직후 반등월(rebound)**: 2/20 이 우리 데이터에서 measured 로 확인 — 패자 데실 손실이 반등월에 집중되고(recovery 더미 −0.0817/월 t −4.403) **BM 수익 통제 후에도 −0.0427/월 t −2.367 로 생존**한다. momentum 레그가 정확히 이 달에 붕괴하며(Daniel-Moskowitz 2016 momentum crash 와 같은 대상) value 레그의 반등 이득을 잠식한다. 결합의 상쇄가 가장 필요한 달에 상쇄가 아니라 상충이 될 수 있다.",
+        "**2017년 이후 구간**: 선행 KR AMP2013 런에서 FMT-07 로 자동판정 — 활성 SR pre-2017 **1.15** → post-2017 **−0.11**. 이것이 본 라운드의 가장 강한 사전 반대증거이며, 국면 경계라기보다 **발표후 감쇠 또는 KR 구조변화**의 지문이다. 결합이득이 pre-2017 에만 존재한다면 OOS retention 게이트에서 걸린다."
+      ],
+      "boundary_rationale": "경계는 메커니즘의 세 구성요소에서 각각 도출된다. ①**path 에서**: 수익 경로가 '두 축이 서로 다른 달에 발화 → 분산 축소'이므로, 두 축이 **같은 달에 같은 방향으로 지배당하는 국면**(펀딩 강제청산)에서 경로 자체가 끊긴다. 보편타당하지 않다는 것이 메커니즘의 직접 귀결이다. ②**friction 에서**: 마찰이 공매도 제약이므로 마찰이 완화되는 구간(차입 가능·전면허용 복귀)에서 롱 사이드 잔존 프리미엄이 줄어든다. ③**★형태에서 도출되는 결정적 경계** — AMP2013 의 분산 축소는 **롱숏 zero-cost 스프레드(β≈0)** 위에서 측정된 것이다. 롱온리 top-25 는 β≈1 을 유지하므로(2/20 실측 cell4 β 1.058, t 11.83) **논문의 분산 축소는 형태상 상속되지 않는다**. 즉 결합은 활성수익의 분산은 줄일 수 있어도 **총수익의 낙폭(MDD)은 줄이지 못한다** — 낙폭은 β·시장에서 오기 때문이다. 이것이 선행 KR 런 2회가 SR 0.80/0.83·CAGR 20%로 두 축을 통과하면서도 Calmar 0.331/0.344 로 걸린 구조적 이유이며, **본 축(1계층 결합)이 Calmar 게이트를 고칠 수 없다는 사전 선언**이다. 위험 축 문턱은 별개 축(오버레이)의 표적이다."
+    },
+    "inheritance_note": "mechanism / falsification / regime_scope 는 alpha-hypothesis 승계분이며 재작성하지 않았다(Charter 원칙 8 No Silent Override). 이의는 challenge_flags 에 기록."
+  },
+  "ast": {
+    "op": "WHERE",
+    "args": [
+      {
+        "op": "ADD",
+        "args": [
+          {
+            "op": "CS_RANK",
+            "args": [
+              {
+                "leaf": "REGISTRY",
+                "factor": "V01_BM"
+              }
+            ],
+            "children": [
+              {
+                "leaf": "REGISTRY",
+                "factor": "V01_BM"
+              }
+            ]
+          },
+          {
+            "op": "CS_RANK",
+            "args": [
+              {
+                "leaf": "SPECIAL_OP",
+                "escape_contract": {
+                  "escape_type": "SPECIAL_OP",
+                  "op_code_path": "stage_artifacts/WT_R20260829_005/s1_panel.R (MOM 블록 — 캘린더월 복리 log(1+mr), 형성창 t-2..t-7; 기저 stage_artifacts/replication/_pilot/fe_jt1993_momentum.R 승계)",
+                  "walk_forward": true
+                },
+                "op_code_path": "stage_artifacts/WT_R20260829_005/s1_panel.R",
+                "walk_forward": true
+              }
+            ],
+            "children": [
+              {
+                "leaf": "SPECIAL_OP",
+                "escape_contract": {
+                  "escape_type": "SPECIAL_OP",
+                  "op_code_path": "stage_artifacts/WT_R20260829_005/s1_panel.R (MOM 블록 — 캘린더월 복리 log(1+mr), 형성창 t-2..t-7; 기저 stage_artifacts/replication/_pilot/fe_jt1993_momentum.R 승계)",
+                  "walk_forward": true
+                },
+                "op_code_path": "stage_artifacts/WT_R20260829_005/s1_panel.R",
+                "walk_forward": true
+              }
+            ]
+          }
+        ],
+        "children": [
+          {
+            "op": "CS_RANK",
+            "args": [
+              {
+                "leaf": "REGISTRY",
+                "factor": "V01_BM"
+              }
+            ],
+            "children": [
+              {
+                "leaf": "REGISTRY",
+                "factor": "V01_BM"
+              }
+            ]
+          },
+          {
+            "op": "CS_RANK",
+            "args": [
+              {
+                "leaf": "SPECIAL_OP",
+                "escape_contract": {
+                  "escape_type": "SPECIAL_OP",
+                  "op_code_path": "stage_artifacts/WT_R20260829_005/s1_panel.R (MOM 블록 — 캘린더월 복리 log(1+mr), 형성창 t-2..t-7; 기저 stage_artifacts/replication/_pilot/fe_jt1993_momentum.R 승계)",
+                  "walk_forward": true
+                },
+                "op_code_path": "stage_artifacts/WT_R20260829_005/s1_panel.R",
+                "walk_forward": true
+              }
+            ],
+            "children": [
+              {
+                "leaf": "SPECIAL_OP",
+                "escape_contract": {
+                  "escape_type": "SPECIAL_OP",
+                  "op_code_path": "stage_artifacts/WT_R20260829_005/s1_panel.R (MOM 블록 — 캘린더월 복리 log(1+mr), 형성창 t-2..t-7; 기저 stage_artifacts/replication/_pilot/fe_jt1993_momentum.R 승계)",
+                  "walk_forward": true
+                },
+                "op_code_path": "stage_artifacts/WT_R20260829_005/s1_panel.R",
+                "walk_forward": true
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "op": "ADD",
+        "args": [
+          {
+            "op": "ADD",
+            "args": [
+              {
+                "leaf": "FIELD",
+                "group_id": "A1_RAWDATA_OHLCVS_daily",
+                "field": "K200"
+              },
+              {
+                "leaf": "FIELD",
+                "group_id": "A1_RAWDATA_OHLCVS_daily",
+                "field": "KQ150"
+              }
+            ],
+            "children": [
+              {
+                "leaf": "FIELD",
+                "group_id": "A1_RAWDATA_OHLCVS_daily",
+                "field": "K200"
+              },
+              {
+                "leaf": "FIELD",
+                "group_id": "A1_RAWDATA_OHLCVS_daily",
+                "field": "KQ150"
+              }
+            ]
+          },
+          {
+            "op": "TS_MEAN",
+            "args": [
+              {
+                "op": "TS_LAG",
+                "args": [
+                  {
+                    "op": "MUL",
+                    "args": [
+                      {
+                        "leaf": "FIELD",
+                        "group_id": "A1_RAWDATA_OHLCVS_daily",
+                        "field": "Vol"
+                      },
+                      {
+                        "leaf": "FIELD",
+                        "group_id": "A1_RAWDATA_OHLCVS_daily",
+                        "field": "Close"
+                      }
+                    ],
+                    "children": [
+                      {
+                        "leaf": "FIELD",
+                        "group_id": "A1_RAWDATA_OHLCVS_daily",
+                        "field": "Vol"
+                      },
+                      {
+                        "leaf": "FIELD",
+                        "group_id": "A1_RAWDATA_OHLCVS_daily",
+                        "field": "Close"
+                      }
+                    ]
+                  }
+                ],
+                "children": [
+                  {
+                    "op": "MUL",
+                    "args": [
+                      {
+                        "leaf": "FIELD",
+                        "group_id": "A1_RAWDATA_OHLCVS_daily",
+                        "field": "Vol"
+                      },
+                      {
+                        "leaf": "FIELD",
+                        "group_id": "A1_RAWDATA_OHLCVS_daily",
+                        "field": "Close"
+                      }
+                    ],
+                    "children": [
+                      {
+                        "leaf": "FIELD",
+                        "group_id": "A1_RAWDATA_OHLCVS_daily",
+                        "field": "Vol"
+                      },
+                      {
+                        "leaf": "FIELD",
+                        "group_id": "A1_RAWDATA_OHLCVS_daily",
+                        "field": "Close"
+                      }
+                    ]
+                  }
+                ],
+                "k": 1,
+                "unit": "d"
+              }
+            ],
+            "children": [
+              {
+                "op": "TS_LAG",
+                "args": [
+                  {
+                    "op": "MUL",
+                    "args": [
+                      {
+                        "leaf": "FIELD",
+                        "group_id": "A1_RAWDATA_OHLCVS_daily",
+                        "field": "Vol"
+                      },
+                      {
+                        "leaf": "FIELD",
+                        "group_id": "A1_RAWDATA_OHLCVS_daily",
+                        "field": "Close"
+                      }
+                    ],
+                    "children": [
+                      {
+                        "leaf": "FIELD",
+                        "group_id": "A1_RAWDATA_OHLCVS_daily",
+                        "field": "Vol"
+                      },
+                      {
+                        "leaf": "FIELD",
+                        "group_id": "A1_RAWDATA_OHLCVS_daily",
+                        "field": "Close"
+                      }
+                    ]
+                  }
+                ],
+                "children": [
+                  {
+                    "op": "MUL",
+                    "args": [
+                      {
+                        "leaf": "FIELD",
+                        "group_id": "A1_RAWDATA_OHLCVS_daily",
+                        "field": "Vol"
+                      },
+                      {
+                        "leaf": "FIELD",
+                        "group_id": "A1_RAWDATA_OHLCVS_daily",
+                        "field": "Close"
+                      }
+                    ],
+                    "children": [
+                      {
+                        "leaf": "FIELD",
+                        "group_id": "A1_RAWDATA_OHLCVS_daily",
+                        "field": "Vol"
+                      },
+                      {
+                        "leaf": "FIELD",
+                        "group_id": "A1_RAWDATA_OHLCVS_daily",
+                        "field": "Close"
+                      }
+                    ]
+                  }
+                ],
+                "k": 1,
+                "unit": "d"
+              }
+            ],
+            "window": 20
+          }
+        ],
+        "children": [
+          {
+            "op": "ADD",
+            "args": [
+              {
+                "leaf": "FIELD",
+                "group_id": "A1_RAWDATA_OHLCVS_daily",
+                "field": "K200"
+              },
+              {
+                "leaf": "FIELD",
+                "group_id": "A1_RAWDATA_OHLCVS_daily",
+                "field": "KQ150"
+              }
+            ],
+            "children": [
+              {
+                "leaf": "FIELD",
+                "group_id": "A1_RAWDATA_OHLCVS_daily",
+                "field": "K200"
+              },
+              {
+                "leaf": "FIELD",
+                "group_id": "A1_RAWDATA_OHLCVS_daily",
+                "field": "KQ150"
+              }
+            ]
+          },
+          {
+            "op": "TS_MEAN",
+            "args": [
+              {
+                "op": "TS_LAG",
+                "args": [
+                  {
+                    "op": "MUL",
+                    "args": [
+                      {
+                        "leaf": "FIELD",
+                        "group_id": "A1_RAWDATA_OHLCVS_daily",
+                        "field": "Vol"
+                      },
+                      {
+                        "leaf": "FIELD",
+                        "group_id": "A1_RAWDATA_OHLCVS_daily",
+                        "field": "Close"
+                      }
+                    ],
+                    "children": [
+                      {
+                        "leaf": "FIELD",
+                        "group_id": "A1_RAWDATA_OHLCVS_daily",
+                        "field": "Vol"
+                      },
+                      {
+                        "leaf": "FIELD",
+                        "group_id": "A1_RAWDATA_OHLCVS_daily",
+                        "field": "Close"
+                      }
+                    ]
+                  }
+                ],
+                "children": [
+                  {
+                    "op": "MUL",
+                    "args": [
+                      {
+                        "leaf": "FIELD",
+                        "group_id": "A1_RAWDATA_OHLCVS_daily",
+                        "field": "Vol"
+                      },
+                      {
+                        "leaf": "FIELD",
+                        "group_id": "A1_RAWDATA_OHLCVS_daily",
+                        "field": "Close"
+                      }
+                    ],
+                    "children": [
+                      {
+                        "leaf": "FIELD",
+                        "group_id": "A1_RAWDATA_OHLCVS_daily",
+                        "field": "Vol"
+                      },
+                      {
+                        "leaf": "FIELD",
+                        "group_id": "A1_RAWDATA_OHLCVS_daily",
+                        "field": "Close"
+                      }
+                    ]
+                  }
+                ],
+                "k": 1,
+                "unit": "d"
+              }
+            ],
+            "children": [
+              {
+                "op": "TS_LAG",
+                "args": [
+                  {
+                    "op": "MUL",
+                    "args": [
+                      {
+                        "leaf": "FIELD",
+                        "group_id": "A1_RAWDATA_OHLCVS_daily",
+                        "field": "Vol"
+                      },
+                      {
+                        "leaf": "FIELD",
+                        "group_id": "A1_RAWDATA_OHLCVS_daily",
+                        "field": "Close"
+                      }
+                    ],
+                    "children": [
+                      {
+                        "leaf": "FIELD",
+                        "group_id": "A1_RAWDATA_OHLCVS_daily",
+                        "field": "Vol"
+                      },
+                      {
+                        "leaf": "FIELD",
+                        "group_id": "A1_RAWDATA_OHLCVS_daily",
+                        "field": "Close"
+                      }
+                    ]
+                  }
+                ],
+                "children": [
+                  {
+                    "op": "MUL",
+                    "args": [
+                      {
+                        "leaf": "FIELD",
+                        "group_id": "A1_RAWDATA_OHLCVS_daily",
+                        "field": "Vol"
+                      },
+                      {
+                        "leaf": "FIELD",
+                        "group_id": "A1_RAWDATA_OHLCVS_daily",
+                        "field": "Close"
+                      }
+                    ],
+                    "children": [
+                      {
+                        "leaf": "FIELD",
+                        "group_id": "A1_RAWDATA_OHLCVS_daily",
+                        "field": "Vol"
+                      },
+                      {
+                        "leaf": "FIELD",
+                        "group_id": "A1_RAWDATA_OHLCVS_daily",
+                        "field": "Close"
+                      }
+                    ]
+                  }
+                ],
+                "k": 1,
+                "unit": "d"
+              }
+            ],
+            "window": 20
+          }
+        ]
+      }
+    ],
+    "children": [
+      {
+        "op": "ADD",
+        "args": [
+          {
+            "op": "CS_RANK",
+            "args": [
+              {
+                "leaf": "REGISTRY",
+                "factor": "V01_BM"
+              }
+            ],
+            "children": [
+              {
+                "leaf": "REGISTRY",
+                "factor": "V01_BM"
+              }
+            ]
+          },
+          {
+            "op": "CS_RANK",
+            "args": [
+              {
+                "leaf": "SPECIAL_OP",
+                "escape_contract": {
+                  "escape_type": "SPECIAL_OP",
+                  "op_code_path": "stage_artifacts/WT_R20260829_005/s1_panel.R (MOM 블록 — 캘린더월 복리 log(1+mr), 형성창 t-2..t-7; 기저 stage_artifacts/replication/_pilot/fe_jt1993_momentum.R 승계)",
+                  "walk_forward": true
+                },
+                "op_code_path": "stage_artifacts/WT_R20260829_005/s1_panel.R",
+                "walk_forward": true
+              }
+            ],
+            "children": [
+              {
+                "leaf": "SPECIAL_OP",
+                "escape_contract": {
+                  "escape_type": "SPECIAL_OP",
+                  "op_code_path": "stage_artifacts/WT_R20260829_005/s1_panel.R (MOM 블록 — 캘린더월 복리 log(1+mr), 형성창 t-2..t-7; 기저 stage_artifacts/replication/_pilot/fe_jt1993_momentum.R 승계)",
+                  "walk_forward": true
+                },
+                "op_code_path": "stage_artifacts/WT_R20260829_005/s1_panel.R",
+                "walk_forward": true
+              }
+            ]
+          }
+        ],
+        "children": [
+          {
+            "op": "CS_RANK",
+            "args": [
+              {
+                "leaf": "REGISTRY",
+                "factor": "V01_BM"
+              }
+            ],
+            "children": [
+              {
+                "leaf": "REGISTRY",
+                "factor": "V01_BM"
+              }
+            ]
+          },
+          {
+            "op": "CS_RANK",
+            "args": [
+              {
+                "leaf": "SPECIAL_OP",
+                "escape_contract": {
+                  "escape_type": "SPECIAL_OP",
+                  "op_code_path": "stage_artifacts/WT_R20260829_005/s1_panel.R (MOM 블록 — 캘린더월 복리 log(1+mr), 형성창 t-2..t-7; 기저 stage_artifacts/replication/_pilot/fe_jt1993_momentum.R 승계)",
+                  "walk_forward": true
+                },
+                "op_code_path": "stage_artifacts/WT_R20260829_005/s1_panel.R",
+                "walk_forward": true
+              }
+            ],
+            "children": [
+              {
+                "leaf": "SPECIAL_OP",
+                "escape_contract": {
+                  "escape_type": "SPECIAL_OP",
+                  "op_code_path": "stage_artifacts/WT_R20260829_005/s1_panel.R (MOM 블록 — 캘린더월 복리 log(1+mr), 형성창 t-2..t-7; 기저 stage_artifacts/replication/_pilot/fe_jt1993_momentum.R 승계)",
+                  "walk_forward": true
+                },
+                "op_code_path": "stage_artifacts/WT_R20260829_005/s1_panel.R",
+                "walk_forward": true
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "op": "ADD",
+        "args": [
+          {
+            "op": "ADD",
+            "args": [
+              {
+                "leaf": "FIELD",
+                "group_id": "A1_RAWDATA_OHLCVS_daily",
+                "field": "K200"
+              },
+              {
+                "leaf": "FIELD",
+                "group_id": "A1_RAWDATA_OHLCVS_daily",
+                "field": "KQ150"
+              }
+            ],
+            "children": [
+              {
+                "leaf": "FIELD",
+                "group_id": "A1_RAWDATA_OHLCVS_daily",
+                "field": "K200"
+              },
+              {
+                "leaf": "FIELD",
+                "group_id": "A1_RAWDATA_OHLCVS_daily",
+                "field": "KQ150"
+              }
+            ]
+          },
+          {
+            "op": "TS_MEAN",
+            "args": [
+              {
+                "op": "TS_LAG",
+                "args": [
+                  {
+                    "op": "MUL",
+                    "args": [
+                      {
+                        "leaf": "FIELD",
+                        "group_id": "A1_RAWDATA_OHLCVS_daily",
+                        "field": "Vol"
+                      },
+                      {
+                        "leaf": "FIELD",
+                        "group_id": "A1_RAWDATA_OHLCVS_daily",
+                        "field": "Close"
+                      }
+                    ],
+                    "children": [
+                      {
+                        "leaf": "FIELD",
+                        "group_id": "A1_RAWDATA_OHLCVS_daily",
+                        "field": "Vol"
+                      },
+                      {
+                        "leaf": "FIELD",
+                        "group_id": "A1_RAWDATA_OHLCVS_daily",
+                        "field": "Close"
+                      }
+                    ]
+                  }
+                ],
+                "children": [
+                  {
+                    "op": "MUL",
+                    "args": [
+                      {
+                        "leaf": "FIELD",
+                        "group_id": "A1_RAWDATA_OHLCVS_daily",
+                        "field": "Vol"
+                      },
+                      {
+                        "leaf": "FIELD",
+                        "group_id": "A1_RAWDATA_OHLCVS_daily",
+                        "field": "Close"
+                      }
+                    ],
+                    "children": [
+                      {
+                        "leaf": "FIELD",
+                        "group_id": "A1_RAWDATA_OHLCVS_daily",
+                        "field": "Vol"
+                      },
+                      {
+                        "leaf": "FIELD",
+                        "group_id": "A1_RAWDATA_OHLCVS_daily",
+                        "field": "Close"
+                      }
+                    ]
+                  }
+                ],
+                "k": 1,
+                "unit": "d"
+              }
+            ],
+            "children": [
+              {
+                "op": "TS_LAG",
+                "args": [
+                  {
+                    "op": "MUL",
+                    "args": [
+                      {
+                        "leaf": "FIELD",
+                        "group_id": "A1_RAWDATA_OHLCVS_daily",
+                        "field": "Vol"
+                      },
+                      {
+                        "leaf": "FIELD",
+                        "group_id": "A1_RAWDATA_OHLCVS_daily",
+                        "field": "Close"
+                      }
+                    ],
+                    "children": [
+                      {
+                        "leaf": "FIELD",
+                        "group_id": "A1_RAWDATA_OHLCVS_daily",
+                        "field": "Vol"
+                      },
+                      {
+                        "leaf": "FIELD",
+                        "group_id": "A1_RAWDATA_OHLCVS_daily",
+                        "field": "Close"
+                      }
+                    ]
+                  }
+                ],
+                "children": [
+                  {
+                    "op": "MUL",
+                    "args": [
+                      {
+                        "leaf": "FIELD",
+                        "group_id": "A1_RAWDATA_OHLCVS_daily",
+                        "field": "Vol"
+                      },
+                      {
+                        "leaf": "FIELD",
+                        "group_id": "A1_RAWDATA_OHLCVS_daily",
+                        "field": "Close"
+                      }
+                    ],
+                    "children": [
+                      {
+                        "leaf": "FIELD",
+                        "group_id": "A1_RAWDATA_OHLCVS_daily",
+                        "field": "Vol"
+                      },
+                      {
+                        "leaf": "FIELD",
+                        "group_id": "A1_RAWDATA_OHLCVS_daily",
+                        "field": "Close"
+                      }
+                    ]
+                  }
+                ],
+                "k": 1,
+                "unit": "d"
+              }
+            ],
+            "window": 20
+          }
+        ],
+        "children": [
+          {
+            "op": "ADD",
+            "args": [
+              {
+                "leaf": "FIELD",
+                "group_id": "A1_RAWDATA_OHLCVS_daily",
+                "field": "K200"
+              },
+              {
+                "leaf": "FIELD",
+                "group_id": "A1_RAWDATA_OHLCVS_daily",
+                "field": "KQ150"
+              }
+            ],
+            "children": [
+              {
+                "leaf": "FIELD",
+                "group_id": "A1_RAWDATA_OHLCVS_daily",
+                "field": "K200"
+              },
+              {
+                "leaf": "FIELD",
+                "group_id": "A1_RAWDATA_OHLCVS_daily",
+                "field": "KQ150"
+              }
+            ]
+          },
+          {
+            "op": "TS_MEAN",
+            "args": [
+              {
+                "op": "TS_LAG",
+                "args": [
+                  {
+                    "op": "MUL",
+                    "args": [
+                      {
+                        "leaf": "FIELD",
+                        "group_id": "A1_RAWDATA_OHLCVS_daily",
+                        "field": "Vol"
+                      },
+                      {
+                        "leaf": "FIELD",
+                        "group_id": "A1_RAWDATA_OHLCVS_daily",
+                        "field": "Close"
+                      }
+                    ],
+                    "children": [
+                      {
+                        "leaf": "FIELD",
+                        "group_id": "A1_RAWDATA_OHLCVS_daily",
+                        "field": "Vol"
+                      },
+                      {
+                        "leaf": "FIELD",
+                        "group_id": "A1_RAWDATA_OHLCVS_daily",
+                        "field": "Close"
+                      }
+                    ]
+                  }
+                ],
+                "children": [
+                  {
+                    "op": "MUL",
+                    "args": [
+                      {
+                        "leaf": "FIELD",
+                        "group_id": "A1_RAWDATA_OHLCVS_daily",
+                        "field": "Vol"
+                      },
+                      {
+                        "leaf": "FIELD",
+                        "group_id": "A1_RAWDATA_OHLCVS_daily",
+                        "field": "Close"
+                      }
+                    ],
+                    "children": [
+                      {
+                        "leaf": "FIELD",
+                        "group_id": "A1_RAWDATA_OHLCVS_daily",
+                        "field": "Vol"
+                      },
+                      {
+                        "leaf": "FIELD",
+                        "group_id": "A1_RAWDATA_OHLCVS_daily",
+                        "field": "Close"
+                      }
+                    ]
+                  }
+                ],
+                "k": 1,
+                "unit": "d"
+              }
+            ],
+            "children": [
+              {
+                "op": "TS_LAG",
+                "args": [
+                  {
+                    "op": "MUL",
+                    "args": [
+                      {
+                        "leaf": "FIELD",
+                        "group_id": "A1_RAWDATA_OHLCVS_daily",
+                        "field": "Vol"
+                      },
+                      {
+                        "leaf": "FIELD",
+                        "group_id": "A1_RAWDATA_OHLCVS_daily",
+                        "field": "Close"
+                      }
+                    ],
+                    "children": [
+                      {
+                        "leaf": "FIELD",
+                        "group_id": "A1_RAWDATA_OHLCVS_daily",
+                        "field": "Vol"
+                      },
+                      {
+                        "leaf": "FIELD",
+                        "group_id": "A1_RAWDATA_OHLCVS_daily",
+                        "field": "Close"
+                      }
+                    ]
+                  }
+                ],
+                "children": [
+                  {
+                    "op": "MUL",
+                    "args": [
+                      {
+                        "leaf": "FIELD",
+                        "group_id": "A1_RAWDATA_OHLCVS_daily",
+                        "field": "Vol"
+                      },
+                      {
+                        "leaf": "FIELD",
+                        "group_id": "A1_RAWDATA_OHLCVS_daily",
+                        "field": "Close"
+                      }
+                    ],
+                    "children": [
+                      {
+                        "leaf": "FIELD",
+                        "group_id": "A1_RAWDATA_OHLCVS_daily",
+                        "field": "Vol"
+                      },
+                      {
+                        "leaf": "FIELD",
+                        "group_id": "A1_RAWDATA_OHLCVS_daily",
+                        "field": "Close"
+                      }
+                    ]
+                  }
+                ],
+                "k": 1,
+                "unit": "d"
+              }
+            ],
+            "window": 20
+          }
+        ]
+      }
+    ]
+  },
+  "factors": [
+    {
+      "factor_id": "F1_value_BEME_contemporaneousME",
+      "ast": {
+        "op": "CS_RANK",
+        "args": [
+          {
+            "leaf": "REGISTRY",
+            "factor": "V01_BM"
+          }
+        ],
+        "children": [
+          {
+            "leaf": "REGISTRY",
+            "factor": "V01_BM"
+          }
+        ]
+      },
+      "role": "core_signal",
+      "restatement_exposure": 1
+    },
+    {
+      "factor_id": "F2_momentum_6_1_skip1",
+      "ast": {
+        "op": "CS_RANK",
+        "args": [
+          {
+            "leaf": "SPECIAL_OP",
+            "escape_contract": {
+              "escape_type": "SPECIAL_OP",
+              "op_code_path": "stage_artifacts/WT_R20260829_005/s1_panel.R (MOM 블록 — 캘린더월 복리 log(1+mr), 형성창 t-2..t-7; 기저 stage_artifacts/replication/_pilot/fe_jt1993_momentum.R 승계)",
+              "walk_forward": true
+            },
+            "op_code_path": "stage_artifacts/WT_R20260829_005/s1_panel.R",
+            "walk_forward": true
+          }
+        ],
+        "children": [
+          {
+            "leaf": "SPECIAL_OP",
+            "escape_contract": {
+              "escape_type": "SPECIAL_OP",
+              "op_code_path": "stage_artifacts/WT_R20260829_005/s1_panel.R (MOM 블록 — 캘린더월 복리 log(1+mr), 형성창 t-2..t-7; 기저 stage_artifacts/replication/_pilot/fe_jt1993_momentum.R 승계)",
+              "walk_forward": true
+            },
+            "op_code_path": "stage_artifacts/WT_R20260829_005/s1_panel.R",
+            "walk_forward": true
+          }
+        ]
+      },
+      "role": "core_signal",
+      "restatement_exposure": 1
+    },
+    {
+      "factor_id": "F3_universe_liquidity_gate",
+      "ast": {
+        "op": "ADD",
+        "args": [
+          {
+            "op": "ADD",
+            "args": [
+              {
+                "leaf": "FIELD",
+                "group_id": "A1_RAWDATA_OHLCVS_daily",
+                "field": "K200"
+              },
+              {
+                "leaf": "FIELD",
+                "group_id": "A1_RAWDATA_OHLCVS_daily",
+                "field": "KQ150"
+              }
+            ],
+            "children": [
+              {
+                "leaf": "FIELD",
+                "group_id": "A1_RAWDATA_OHLCVS_daily",
+                "field": "K200"
+              },
+              {
+                "leaf": "FIELD",
+                "group_id": "A1_RAWDATA_OHLCVS_daily",
+                "field": "KQ150"
+              }
+            ]
+          },
+          {
+            "op": "TS_MEAN",
+            "args": [
+              {
+                "op": "TS_LAG",
+                "args": [
+                  {
+                    "op": "MUL",
+                    "args": [
+                      {
+                        "leaf": "FIELD",
+                        "group_id": "A1_RAWDATA_OHLCVS_daily",
+                        "field": "Vol"
+                      },
+                      {
+                        "leaf": "FIELD",
+                        "group_id": "A1_RAWDATA_OHLCVS_daily",
+                        "field": "Close"
+                      }
+                    ],
+                    "children": [
+                      {
+                        "leaf": "FIELD",
+                        "group_id": "A1_RAWDATA_OHLCVS_daily",
+                        "field": "Vol"
+                      },
+                      {
+                        "leaf": "FIELD",
+                        "group_id": "A1_RAWDATA_OHLCVS_daily",
+                        "field": "Close"
+                      }
+                    ]
+                  }
+                ],
+                "children": [
+                  {
+                    "op": "MUL",
+                    "args": [
+                      {
+                        "leaf": "FIELD",
+                        "group_id": "A1_RAWDATA_OHLCVS_daily",
+                        "field": "Vol"
+                      },
+                      {
+                        "leaf": "FIELD",
+                        "group_id": "A1_RAWDATA_OHLCVS_daily",
+                        "field": "Close"
+                      }
+                    ],
+                    "children": [
+                      {
+                        "leaf": "FIELD",
+                        "group_id": "A1_RAWDATA_OHLCVS_daily",
+                        "field": "Vol"
+                      },
+                      {
+                        "leaf": "FIELD",
+                        "group_id": "A1_RAWDATA_OHLCVS_daily",
+                        "field": "Close"
+                      }
+                    ]
+                  }
+                ],
+                "k": 1,
+                "unit": "d"
+              }
+            ],
+            "children": [
+              {
+                "op": "TS_LAG",
+                "args": [
+                  {
+                    "op": "MUL",
+                    "args": [
+                      {
+                        "leaf": "FIELD",
+                        "group_id": "A1_RAWDATA_OHLCVS_daily",
+                        "field": "Vol"
+                      },
+                      {
+                        "leaf": "FIELD",
+                        "group_id": "A1_RAWDATA_OHLCVS_daily",
+                        "field": "Close"
+                      }
+                    ],
+                    "children": [
+                      {
+                        "leaf": "FIELD",
+                        "group_id": "A1_RAWDATA_OHLCVS_daily",
+                        "field": "Vol"
+                      },
+                      {
+                        "leaf": "FIELD",
+                        "group_id": "A1_RAWDATA_OHLCVS_daily",
+                        "field": "Close"
+                      }
+                    ]
+                  }
+                ],
+                "children": [
+                  {
+                    "op": "MUL",
+                    "args": [
+                      {
+                        "leaf": "FIELD",
+                        "group_id": "A1_RAWDATA_OHLCVS_daily",
+                        "field": "Vol"
+                      },
+                      {
+                        "leaf": "FIELD",
+                        "group_id": "A1_RAWDATA_OHLCVS_daily",
+                        "field": "Close"
+                      }
+                    ],
+                    "children": [
+                      {
+                        "leaf": "FIELD",
+                        "group_id": "A1_RAWDATA_OHLCVS_daily",
+                        "field": "Vol"
+                      },
+                      {
+                        "leaf": "FIELD",
+                        "group_id": "A1_RAWDATA_OHLCVS_daily",
+                        "field": "Close"
+                      }
+                    ]
+                  }
+                ],
+                "k": 1,
+                "unit": "d"
+              }
+            ],
+            "window": 20
+          }
+        ],
+        "children": [
+          {
+            "op": "ADD",
+            "args": [
+              {
+                "leaf": "FIELD",
+                "group_id": "A1_RAWDATA_OHLCVS_daily",
+                "field": "K200"
+              },
+              {
+                "leaf": "FIELD",
+                "group_id": "A1_RAWDATA_OHLCVS_daily",
+                "field": "KQ150"
+              }
+            ],
+            "children": [
+              {
+                "leaf": "FIELD",
+                "group_id": "A1_RAWDATA_OHLCVS_daily",
+                "field": "K200"
+              },
+              {
+                "leaf": "FIELD",
+                "group_id": "A1_RAWDATA_OHLCVS_daily",
+                "field": "KQ150"
+              }
+            ]
+          },
+          {
+            "op": "TS_MEAN",
+            "args": [
+              {
+                "op": "TS_LAG",
+                "args": [
+                  {
+                    "op": "MUL",
+                    "args": [
+                      {
+                        "leaf": "FIELD",
+                        "group_id": "A1_RAWDATA_OHLCVS_daily",
+                        "field": "Vol"
+                      },
+                      {
+                        "leaf": "FIELD",
+                        "group_id": "A1_RAWDATA_OHLCVS_daily",
+                        "field": "Close"
+                      }
+                    ],
+                    "children": [
+                      {
+                        "leaf": "FIELD",
+                        "group_id": "A1_RAWDATA_OHLCVS_daily",
+                        "field": "Vol"
+                      },
+                      {
+                        "leaf": "FIELD",
+                        "group_id": "A1_RAWDATA_OHLCVS_daily",
+                        "field": "Close"
+                      }
+                    ]
+                  }
+                ],
+                "children": [
+                  {
+                    "op": "MUL",
+                    "args": [
+                      {
+                        "leaf": "FIELD",
+                        "group_id": "A1_RAWDATA_OHLCVS_daily",
+                        "field": "Vol"
+                      },
+                      {
+                        "leaf": "FIELD",
+                        "group_id": "A1_RAWDATA_OHLCVS_daily",
+                        "field": "Close"
+                      }
+                    ],
+                    "children": [
+                      {
+                        "leaf": "FIELD",
+                        "group_id": "A1_RAWDATA_OHLCVS_daily",
+                        "field": "Vol"
+                      },
+                      {
+                        "leaf": "FIELD",
+                        "group_id": "A1_RAWDATA_OHLCVS_daily",
+                        "field": "Close"
+                      }
+                    ]
+                  }
+                ],
+                "k": 1,
+                "unit": "d"
+              }
+            ],
+            "children": [
+              {
+                "op": "TS_LAG",
+                "args": [
+                  {
+                    "op": "MUL",
+                    "args": [
+                      {
+                        "leaf": "FIELD",
+                        "group_id": "A1_RAWDATA_OHLCVS_daily",
+                        "field": "Vol"
+                      },
+                      {
+                        "leaf": "FIELD",
+                        "group_id": "A1_RAWDATA_OHLCVS_daily",
+                        "field": "Close"
+                      }
+                    ],
+                    "children": [
+                      {
+                        "leaf": "FIELD",
+                        "group_id": "A1_RAWDATA_OHLCVS_daily",
+                        "field": "Vol"
+                      },
+                      {
+                        "leaf": "FIELD",
+                        "group_id": "A1_RAWDATA_OHLCVS_daily",
+                        "field": "Close"
+                      }
+                    ]
+                  }
+                ],
+                "children": [
+                  {
+                    "op": "MUL",
+                    "args": [
+                      {
+                        "leaf": "FIELD",
+                        "group_id": "A1_RAWDATA_OHLCVS_daily",
+                        "field": "Vol"
+                      },
+                      {
+                        "leaf": "FIELD",
+                        "group_id": "A1_RAWDATA_OHLCVS_daily",
+                        "field": "Close"
+                      }
+                    ],
+                    "children": [
+                      {
+                        "leaf": "FIELD",
+                        "group_id": "A1_RAWDATA_OHLCVS_daily",
+                        "field": "Vol"
+                      },
+                      {
+                        "leaf": "FIELD",
+                        "group_id": "A1_RAWDATA_OHLCVS_daily",
+                        "field": "Close"
+                      }
+                    ]
+                  }
+                ],
+                "k": 1,
+                "unit": "d"
+              }
+            ],
+            "window": 20
+          }
+        ]
+      },
+      "role": "eligibility_gate",
+      "restatement_exposure": 1
+    }
+  ],
+  "combination_rule": "rank_average",
+  "verdict": "designed",
+  "self_pit_check": {
+    "performed": true,
+    "leaves_checked": [
+      {
+        "leaf": "REGISTRY:V01_BM",
+        "restatement_prone": true,
+        "availability_rule": "regulatory: quarterly+45d ; annual = 익년 3/31 (factor_registry V01_BM availability, C4 2026-07-25 확정). load_month_factors() 가 Factor_Date <= sig_date 슬라이스를 강제하고 align_factor_direction 이 Usable_Date <= sig_date 확장창 IC 로 부호를 정한다(C14/C13/C15)."
+      },
+      {
+        "leaf": "SPECIAL_OP:momentum_6_1",
+        "restatement_prone": false,
+        "availability_rule": "코드 경로 escape — 형성창 t-2..t-7 월 수익만 입력(shift 로 과거 참조). 당월·t-1 월 미참조."
+      },
+      {
+        "leaf": "A1_RAWDATA_OHLCVS_daily:K200",
+        "restatement_prone": false,
+        "availability_rule": "fixed t1 — 월말 시변 멤버십 스냅샷(C6 survivorship: 각 sig_date 의 당시 편입 명부만)"
+      },
+      {
+        "leaf": "A1_RAWDATA_OHLCVS_daily:KQ150",
+        "restatement_prone": false,
+        "availability_rule": "fixed t1 — 동일"
+      },
+      {
+        "leaf": "A1_RAWDATA_OHLCVS_daily:Vol",
+        "restatement_prone": true,
+        "availability_rule": "fixed t1 — 20일 평균 거래대금은 t-1 까지만(C10, build_adv20_t1)"
+      },
+      {
+        "leaf": "A1_RAWDATA_OHLCVS_daily:Close",
+        "restatement_prone": true,
+        "availability_rule": "fixed t1 — 동일 (수정주가 원장이라 액면분할·배당 시 과거 재작성 = restatement_prone)"
+      }
+    ],
+    "verdict": "warn_restatement",
+    "notes": "V01_BM 은 registry restatement_prone=true(재무 정정) 이고 RAWDATA 는 수정주가 원장이다. 본 라운드는 단일 스냅샷에서 전 산출을 동시에 냈으므로 내부 정합은 같은 vintage 위에 있다. 다중 라운드 비교 시 pin_cache 의무(measurement-graduation §7). 재무 리프의 C4 급소: fundamental_merged 의 xlsx 경로가 Q4 를 일률 +45d(익년 ~2/14)로 잡아 연간 3/31 대비 공격적이라는 기지 결함(pit.md C4 각주)이 V01_BM 상류에 존재한다 — 본 라운드가 만든 결함이 아니며 수리 대상으로 승계 보고한다."
+  },
+  "alpha_vector": {
+    "A023530": 0.00722636,
+    "A000880": 0.00688972,
+    "A038500": 0.00667975,
+    "A034730": 0.00632867,
+    "A088350": 0.00632867,
+    "A120110": 0.00605937,
+    "A000210": 0.00583495,
+    "A375500": 0.00574518,
+    "A005380": 0.00556564,
+    "A004170": 0.00547587,
+    "A004020": 0.00534122,
+    "A011210": 0.00534122,
+    "A003550": 0.00529634,
+    "A010060": 0.00525145,
+    "A009830": 0.0051168,
+    "A003380": 0.00506946,
+    "A050890": 0.00506946,
+    "A222080": 0.00495017,
+    "A001430": 0.00484749,
+    "A005490": 0.00466796,
+    "A066570": 0.00462307,
+    "A036540": 0.00453269,
+    "A074600": 0.00447305,
+    "A189300": 0.00441341,
+    "A012330": 0.00435377,
+    "A001800": 0.00430888,
+    "A028670": 0.00430888,
+    "A131970": 0.00429413,
+    "A032190": 0.00429413,
+    "A036830": 0.00423449,
+    "A003240": 0.00417423,
+    "A267250": 0.00412935,
+    "A056190": 0.00405556,
+    "A032830": 0.00403958,
+    "A298020": 0.00403958,
+    "A002380": 0.00403958,
+    "A178320": 0.00393628,
+    "A272290": 0.00387664,
+    "A078930": 0.00386004,
+    "A011170": 0.00374783,
+    "A006260": 0.0036805,
+    "A069960": 0.00359074,
+    "A015750": 0.00357844,
+    "A139130": 0.00354585,
+    "A218410": 0.0035188,
+    "A139480": 0.00350097,
+    "A003030": 0.00345608,
+    "A000720": 0.0034112,
+    "A082920": 0.00328024,
+    "A005850": 0.00327655,
+    "A357780": 0.0032206,
+    "A028260": 0.00318678,
+    "A047040": 0.00314189,
+    "A131290": 0.00310131,
+    "A007340": 0.00309701,
+    "A000270": 0.00305213,
+    "A018880": 0.00305213,
+    "A005290": 0.00304167,
+    "A034220": 0.00300724,
+    "A006800": 0.00296236,
+    "A086520": 0.00292239,
+    "A006400": 0.0028277,
+    "A031980": 0.00268383,
+    "A232140": 0.00262419,
+    "A204320": 0.00260328,
+    "A025900": 0.00256455,
+    "A030530": 0.00256455,
+    "A009970": 0.0025584,
+    "A004000": 0.00251352,
+    "A071050": 0.00251352,
+    "A137400": 0.00238563,
+    "A417200": 0.00238563,
+    "A000990": 0.00237886,
+    "A006730": 0.00232599,
+    "A014620": 0.00232599,
+    "A032500": 0.00232599,
+    "A064760": 0.00232599,
+    "A096530": 0.00232599,
+    "A166090": 0.00232599,
+    "A420770": 0.00232599,
+    "A138930": 0.00228909,
+    "A017670": 0.00224421,
+    "A078600": 0.0022067,
+    "A011780": 0.00219933,
+    "A000150": 0.00215444,
+    "A011070": 0.00215444,
+    "A033100": 0.00208742,
+    "A192080": 0.00206467,
+    "A048410": 0.00202778,
+    "A097950": 0.00201979,
+    "A016360": 0.0019749,
+    "A067310": 0.00196814,
+    "A086790": 0.00193002,
+    "A007070": 0.00188514,
+    "A078340": 0.00184886,
+    "A121600": 0.00184886,
+    "A001040": 0.00179537,
+    "A004990": 0.00175048,
+    "A319660": 0.00172958,
+    "A005940": 0.00166072,
+    "A051910": 0.00166072,
+    "A060370": 0.0016103,
+    "A001450": 0.00157095,
+    "A003490": 0.00152606,
+    "A000120": 0.00143629,
+    "A055550": 0.00143629,
+    "A036930": 0.00143138,
+    "A240810": 0.00143138,
+    "A018260": 0.00139141,
+    "A028050": 0.00134653,
+    "A195940": 0.00131209,
+    "A101490": 0.00131209,
+    "A039490": 0.00125676,
+    "A080220": 0.00125245,
+    "A085660": 0.00125245,
+    "A095610": 0.00125245,
+    "A215200": 0.00125245,
+    "A006650": 0.00121187,
+    "A161390": 0.00121187,
+    "A100790": 0.00119281,
+    "A222800": 0.00119281,
+    "A253590": 0.00119281,
+    "A086280": 0.00116699,
+    "A272210": 0.00116699,
+    "A039030": 0.00113317,
+    "A024110": 0.00112211,
+    "A064400": 0.00112211,
+    "A096770": 0.00112211,
+    "A280360": 0.00107722,
+    "A316140": 0.00107722,
+    "A060250": 0.00107353,
+    "A095340": 0.00107353,
+    "A005930": 0.00103234,
+    "A036810": 0.00101389,
+    "A278280": 0.00101389,
+    "A402340": 0.00089768,
+    "A030520": 0.00089461,
+    "A263750": 0.00083497,
+    "A053800": 0.00077533,
+    "A052400": 0.00077533,
+    "A036460": 0.00076303,
+    "A307950": 0.00071815,
+    "A069080": 0.00071569,
+    "A032820": 0.00071569,
+    "A105560": 0.00067326,
+    "A041190": 0.00065605,
+    "A043260": 0.00065605,
+    "A095660": 0.00065605,
+    "A112040": 0.00065605,
+    "A036570": 0.00062838,
+    "A000670": 0.00053861,
+    "A001440": 0.00053861,
+    "A009150": 0.00053861,
+    "A030200": 0.00053861,
+    "A032640": 0.00053861,
+    "A084370": 0.00047713,
+    "A035760": 0.00041748,
+    "A058610": 0.00041748,
+    "A247540": 0.00041748,
+    "A005830": 0.00031419,
+    "A137310": 0.00031419,
+    "A161890": 0.00031419,
+    "A000660": 0.00026931,
+    "A124500": 0.00023856,
+    "A348210": 0.00023856,
+    "A002790": 0.00022442,
+    "A010950": 0.00022442,
+    "A213420": 0.00017892,
+    "A025980": 0.00011928,
+    "A271560": 8.977e-05,
+    "A083650": 5.964e-05,
+    "A098460": 5.964e-05,
+    "A001680": 0,
+    "A047050": 0,
+    "A099320": 0,
+    "A319400": 0,
+    "A011790": -4.488e-05,
+    "A034230": -4.488e-05,
+    "A101730": -5.964e-05,
+    "A295310": -5.964e-05,
+    "A011200": -8.977e-05,
+    "A281740": -0.00011928,
+    "A005300": -0.00022442,
+    "A298050": -0.00022442,
+    "A237690": -0.00023856,
+    "A145020": -0.0002982,
+    "A253450": -0.0002982,
+    "A002030": -0.00031419,
+    "A285130": -0.00031419,
+    "A352480": -0.00035784,
+    "A058470": -0.00035784,
+    "A000810": -0.00035907,
+    "A006280": -0.00049373,
+    "A175330": -0.00049373,
+    "A041510": -0.00053677,
+    "A293490": -0.00053677,
+    "A079550": -0.00058349,
+    "A298040": -0.00058349,
+    "A033500": -0.00065605,
+    "A008770": -0.00067326,
+    "A071320": -0.00067326,
+    "A112610": -0.00067326,
+    "A025320": -0.00071569,
+    "A122870": -0.00071569,
+    "A183300": -0.00071569,
+    "A042700": -0.00076303,
+    "A323280": -0.00077533,
+    "A161580": -0.00077533,
+    "A403870": -0.00077533,
+    "A007310": -0.00080792,
+    "A067160": -0.00083497,
+    "A000240": -0.0008528,
+    "A066970": -0.0008528,
+    "A005420": -0.00089768,
+    "A093370": -0.00089768,
+    "A000250": -0.00095425,
+    "A241710": -0.00095425,
+    "A348370": -0.00101389,
+    "A047810": -0.00103234,
+    "A062040": -0.00103234,
+    "A082740": -0.00103234,
+    "A290650": -0.00107353,
+    "A361610": -0.00107722,
+    "A015760": -0.00112211,
+    "A033780": -0.00112211,
+    "A065350": -0.00113317,
+    "A089970": -0.00113317,
+    "A056080": -0.00113317,
+    "A029780": -0.00116699,
+    "A009520": -0.00119281,
+    "A457190": -0.00121187,
+    "A034020": -0.00125676,
+    "A069260": -0.00125676,
+    "A204270": -0.00131209,
+    "A108490": -0.00131209,
+    "A003090": -0.00134653,
+    "A052690": -0.00134653,
+    "A035900": -0.00137173,
+    "A251270": -0.00139141,
+    "A225570": -0.00143138,
+    "A051900": -0.00143629,
+    "A171090": -0.00149102,
+    "A090710": -0.00155066,
+    "A018290": -0.0016103,
+    "A017960": -0.00175048,
+    "A194480": -0.00178922,
+    "A004370": -0.00179537,
+    "A278470": -0.00179537,
+    "A282330": -0.00184025,
+    "A035420": -0.00184025,
+    "A060280": -0.00184886,
+    "A437730": -0.0019085,
+    "A042000": -0.00196814,
+    "A035250": -0.0019749,
+    "A376300": -0.00208742,
+    "A111770": -0.00210956,
+    "A226950": -0.00214706,
+    "A036620": -0.00214706,
+    "A329180": -0.00215444,
+    "A014820": -0.00219933,
+    "A277810": -0.0022067,
+    "A014680": -0.00228909,
+    "A022100": -0.00233398,
+    "A185750": -0.00233398,
+    "A003670": -0.00237886,
+    "A454910": -0.00237886,
+    "A140860": -0.00238563,
+    "A012450": -0.00242375,
+    "A000080": -0.00246863,
+    "A007390": -0.00262419,
+    "A267260": -0.00264817,
+    "A323410": -0.00264817,
+    "A103140": -0.00273794,
+    "A090360": -0.00274347,
+    "A009540": -0.00278282,
+    "A259960": -0.0028277,
+    "A009420": -0.00287259,
+    "A051600": -0.00287259,
+    "A090430": -0.00287259,
+    "A089030": -0.00292239,
+    "A180640": -0.00296236,
+    "A068760": -0.00298203,
+    "A073240": -0.00300724,
+    "A310210": -0.00304167,
+    "A373220": -0.00305213,
+    "A383220": -0.00305213,
+    "A028300": -0.00310131,
+    "A399720": -0.00310131,
+    "A010130": -0.00314189,
+    "A358570": -0.00316095,
+    "A214430": -0.00328024,
+    "A042660": -0.00332143,
+    "A388720": -0.00333988,
+    "A443060": -0.0034112,
+    "A012750": -0.0034112,
+    "A021240": -0.0034112,
+    "A010140": -0.00345608,
+    "A064350": -0.00345608,
+    "A466100": -0.00345916,
+    "A026960": -0.00354585,
+    "A128940": -0.00359074,
+    "A138040": -0.00359074,
+    "A450080": -0.00359074,
+    "A214150": -0.00369772,
+    "A192820": -0.00394981,
+    "A035720": -0.00399469,
+    "A002840": -0.00399469,
+    "A030000": -0.00403958,
+    "A068270": -0.00403958,
+    "A141080": -0.00405556,
+    "A017800": -0.00408446,
+    "A069620": -0.00408446,
+    "A302440": -0.00417423,
+    "A241560": -0.004264,
+    "A008730": -0.00435377,
+    "A214370": -0.00447305,
+    "A377300": -0.00462307,
+    "A039200": -0.00489053,
+    "A257720": -0.00489053,
+    "A071970": -0.00502703,
+    "A082270": -0.00506946,
+    "A006040": -0.0051168,
+    "A347850": -0.00518874,
+    "A214450": -0.00530802,
+    "A328130": -0.00530802,
+    "A087010": -0.0054273,
+    "A081660": -0.00570029,
+    "A008930": -0.00574518,
+    "A007660": -0.00605937,
+    "A352820": -0.00614914,
+    "A009240": -0.00619402,
+    "A000100": -0.00637356,
+    "A003230": -0.00659798,
+    "A207940": -0.00664286,
+    "A196170": -0.00715688,
+    "A251970": -0.00751472,
+    "A326030": -0.00780985,
+    "A298380": -0.00787257,
+    "A211050": -0.00811113,
+    "A010120": -0.00843823
+  },
+  "confidence_vector": {
+    "A023530": 0.984415,
+    "A000880": 0.95922,
+    "A038500": 0.991401,
+    "A034730": 0.937479,
+    "A088350": 0.996127,
+    "A120110": 0.944327,
+    "A000210": 0.95922,
+    "A375500": 0.975208,
+    "A005380": 0.955181,
+    "A004170": 0.941593,
+    "A004020": 0.967247,
+    "A011210": 0.969908,
+    "A003550": 0.90103,
+    "A010060": 0.983105,
+    "A009830": 0.971236,
+    "A003380": 0.970454,
+    "A050890": 0.987941,
+    "A222080": 0.973976,
+    "A001430": 0.963242,
+    "A005490": 0.987029,
+    "A066570": 0.927806,
+    "A036540": 0.986206,
+    "A074600": 0.965146,
+    "A189300": 0.99485,
+    "A012330": 0.903886,
+    "A001800": 0.994832,
+    "A028670": 0.971236,
+    "A131970": 0.96337,
+    "A032190": 0.994,
+    "A036830": 0.959783,
+    "A003240": 0.953831,
+    "A267250": 0.989637,
+    "A056190": 0.975733,
+    "A032830": 0.948412,
+    "A298020": 0.94569,
+    "A002380": 0.947052,
+    "A178320": 0.968688,
+    "A272290": 0.991401,
+    "A078930": 0.927806,
+    "A011170": 0.913812,
+    "A006260": 0.963242,
+    "A069960": 0.944327,
+    "A015750": 0.982787,
+    "A139130": 0.968579,
+    "A218410": 0.99485,
+    "A139480": 0.926416,
+    "A003030": 0.898165,
+    "A000720": 0.985723,
+    "A082920": 0.986206,
+    "A005850": 0.993536,
+    "A357780": 0.979236,
+    "A028260": 0.905311,
+    "A047040": 0.975208,
+    "A131290": 0.998286,
+    "A007340": 0.976529,
+    "A000270": 0.929194,
+    "A018880": 0.8495,
+    "A005290": 0.938156,
+    "A034220": 0.821741,
+    "A006800": 0.98048,
+    "A086520": 0.984468,
+    "A006400": 0.976529,
+    "A031980": 0.982728,
+    "A232140": 0.972217,
+    "A204320": 0.975208,
+    "A025900": 0.959825,
+    "A030530": 0.973976,
+    "A009970": 0.929194,
+    "A004000": 0.93058,
+    "A071050": 0.942961,
+    "A137400": 0.987941,
+    "A417200": 0.989673,
+    "A000990": 0.969908,
+    "A006730": 0.910366,
+    "A014620": 0.973976,
+    "A032500": 0.958023,
+    "A064760": 0.96337,
+    "A096530": 0.938156,
+    "A166090": 0.973976,
+    "A420770": 0.968688,
+    "A138930": 0.951125,
+    "A017670": 0.990938,
+    "A078600": 0.991401,
+    "A011780": 0.983105,
+    "A000150": 0.964579,
+    "A011070": 0.968579,
+    "A033100": 0.984468,
+    "A192080": 0.948412,
+    "A048410": 0.991401,
+    "A097950": 0.993536,
+    "A016360": 0.961903,
+    "A067310": 0.9418,
+    "A086790": 0.956529,
+    "A007070": 0.983105,
+    "A078340": 0.978077,
+    "A121600": 0.966919,
+    "A001040": 0.92363,
+    "A004990": 1,
+    "A319660": 0.972217,
+    "A005940": 0.98048,
+    "A051910": 0.968579,
+    "A060370": 0.980984,
+    "A001450": 0.95922,
+    "A003490": 0.940224,
+    "A000120": 0.952479,
+    "A055550": 0.979164,
+    "A036930": 0.989673,
+    "A240810": 0.970454,
+    "A018260": 0.784844,
+    "A028050": 0.997419,
+    "A195940": 0.991401,
+    "A101490": 0.966919,
+    "A039490": 0.964579,
+    "A080220": 0.972217,
+    "A085660": 0.9418,
+    "A095610": 0.952646,
+    "A215200": 0.967718,
+    "A006650": 0.885158,
+    "A161390": 0.964579,
+    "A100790": 0.99485,
+    "A222800": 0.897103,
+    "A253590": 0.986206,
+    "A086280": 0.902459,
+    "A272210": 0.992238,
+    "A039030": 0.987941,
+    "A024110": 0.963242,
+    "A064400": 0.804305,
+    "A096770": 0.973886,
+    "A280360": 0.98545,
+    "A316140": 0.961903,
+    "A060250": 0.984468,
+    "A095340": 0.961591,
+    "A005930": 0.981793,
+    "A036810": 0.977486,
+    "A278280": 0.959438,
+    "A402340": 0.988334,
+    "A030520": 0.964748,
+    "A263750": 0.950847,
+    "A053800": 0.973976,
+    "A052400": 0.972217,
+    "A036460": 0.984415,
+    "A307950": 0.979164,
+    "A069080": 0.958165,
+    "A032820": 0.989673,
+    "A105560": 0.977847,
+    "A041190": 0.984468,
+    "A043260": 0.993127,
+    "A095660": 0.980297,
+    "A112040": 0.977486,
+    "A036570": 0.927806,
+    "A000670": 0.834548,
+    "A001440": 0.976529,
+    "A009150": 0.988334,
+    "A030200": 0.973886,
+    "A032640": 0.957876,
+    "A084370": 0.9418,
+    "A035760": 0.991401,
+    "A058610": 0.928985,
+    "A247540": 0.9418,
+    "A005830": 0.968579,
+    "A137310": 0.960084,
+    "A161890": 0.944327,
+    "A000660": 0.984415,
+    "A124500": 0.972217,
+    "A348210": 0.956234,
+    "A002790": 0.927806,
+    "A010950": 0.93058,
+    "A213420": 0.975733,
+    "A025980": 0.965146,
+    "A271560": 0.975208,
+    "A083650": 0.989673,
+    "A098460": 0.93998,
+    "A001680": 0.967773,
+    "A047050": 0.933346,
+    "A099320": 0.996569,
+    "A319400": 0.991401,
+    "A011790": 0.841881,
+    "A034230": 0.948412,
+    "A101730": 0.973976,
+    "A295310": 0.99485,
+    "A011200": 0.955181,
+    "A281740": 0.998286,
+    "A005300": 0.983982,
+    "A298050": 0.922234,
+    "A237690": 0.96337,
+    "A145020": 0.945429,
+    "A253450": 0.981421,
+    "A002030": 0.978062,
+    "A285130": 0.968579,
+    "A352480": 0.937474,
+    "A058470": 0.958023,
+    "A000810": 0.926416,
+    "A006280": 0.976529,
+    "A175330": 0.967247,
+    "A041510": 0.984468,
+    "A293490": 0.987941,
+    "A079550": 0.98048,
+    "A298040": 0.994832,
+    "A033500": 0.988342,
+    "A008770": 0.987029,
+    "A071320": 0.978886,
+    "A112610": 0.898165,
+    "A025320": 0.972217,
+    "A122870": 0.972217,
+    "A183300": 0.891359,
+    "A042700": 0.985723,
+    "A323280": 0.921583,
+    "A161580": 0.984468,
+    "A403870": 0.970454,
+    "A007310": 0.975973,
+    "A067160": 0.993127,
+    "A000240": 0.947052,
+    "A066970": 0.963242,
+    "A005420": 0.956309,
+    "A093370": 0.971236,
+    "A000250": 0.989673,
+    "A241710": 0.947238,
+    "A348370": 0.979236,
+    "A047810": 0.997419,
+    "A062040": 0.993536,
+    "A082740": 0.983105,
+    "A290650": 0.92714,
+    "A361610": 0.977847,
+    "A015760": 0.955181,
+    "A033780": 0.98048,
+    "A065350": 0.979236,
+    "A089970": 0.989673,
+    "A056080": 0.986206,
+    "A029780": 0.957876,
+    "A009520": 0.968253,
+    "A457190": 0.976529,
+    "A034020": 0.988334,
+    "A069260": 0.966835,
+    "A204270": 0.925292,
+    "A108490": 0.982728,
+    "A003090": 0.944594,
+    "A052690": 0.963242,
+    "A035900": 0.96337,
+    "A251270": 0.994832,
+    "A225570": 0.955104,
+    "A051900": 0.949769,
+    "A171090": 0.986206,
+    "A090710": 0.989673,
+    "A018290": 0.979236,
+    "A017960": 0.971236,
+    "A194480": 0.973932,
+    "A004370": 0.960563,
+    "A278470": 0.996127,
+    "A282330": 0.981793,
+    "A035420": 0.920836,
+    "A060280": 0.891645,
+    "A437730": 0.943616,
+    "A042000": 0.98224,
+    "A035250": 0.979164,
+    "A376300": 0.975267,
+    "A111770": 0.860053,
+    "A226950": 0.986206,
+    "A036620": 0.90996,
+    "A329180": 0.937479,
+    "A014820": 0.944598,
+    "A277810": 0.975733,
+    "A014680": 0.987029,
+    "A022100": 0.987029,
+    "A185750": 0.985779,
+    "A003670": 0.969908,
+    "A454910": 0.988334,
+    "A140860": 0.949044,
+    "A012450": 0.993536,
+    "A000080": 0.973926,
+    "A007390": 0.85808,
+    "A267260": 0.998711,
+    "A323410": 0.967247,
+    "A103140": 0.987029,
+    "A090360": 0.881701,
+    "A009540": 0.936103,
+    "A259960": 0.948412,
+    "A009420": 0.934725,
+    "A051600": 0.956529,
+    "A090430": 0.944327,
+    "A089030": 0.9418,
+    "A180640": 0.977847,
+    "A068760": 0.973976,
+    "A073240": 0.858553,
+    "A310210": 0.986206,
+    "A373220": 0.926416,
+    "A383220": 0.989637,
+    "A028300": 0.987941,
+    "A399720": 0.958023,
+    "A010130": 0.895291,
+    "A358570": 0.968688,
+    "A214430": 0.99485,
+    "A042660": 0.913812,
+    "A388720": 0.986206,
+    "A443060": 0.951125,
+    "A012750": 0.956529,
+    "A021240": 0.937479,
+    "A010140": 0.971236,
+    "A064350": 0.987029,
+    "A466100": 0.993127,
+    "A026960": 0.985723,
+    "A128940": 0.977847,
+    "A138040": 0.969908,
+    "A450080": 0.971236,
+    "A214150": 0.947238,
+    "A192820": 0.955181,
+    "A035720": 0.977847,
+    "A002840": 0.946203,
+    "A030000": 0.972562,
+    "A068270": 0.981793,
+    "A141080": 0.919723,
+    "A017800": 0.920836,
+    "A069620": 0.929194,
+    "A302440": 0.988334,
+    "A241560": 0.98048,
+    "A008730": 0.977957,
+    "A214370": 0.915992,
+    "A377300": 0.984415,
+    "A039200": 0.908484,
+    "A257720": 0.958023,
+    "A071970": 0.983105,
+    "A082270": 0.990555,
+    "A006040": 0.969174,
+    "A347850": 0.987941,
+    "A214450": 0.970454,
+    "A328130": 0.993127,
+    "A087010": 0.991401,
+    "A081660": 0.947052,
+    "A008930": 0.979164,
+    "A007660": 0.909571,
+    "A352820": 0.990938,
+    "A009240": 0.950237,
+    "A000100": 0.985723,
+    "A003230": 0.98048,
+    "A207940": 0.964579,
+    "A196170": 0.987941,
+    "A251970": 0.986206,
+    "A326030": 0.983105,
+    "A298380": 0.866025,
+    "A211050": 0.947641,
+    "A010120": 0.994832
+  },
+  "alpha_lower_bound_vector": {
+    "A023530": 0.00484043,
+    "A000880": 0.00461494,
+    "A038500": 0.00447429,
+    "A034730": 0.00423913,
+    "A088350": 0.00423913,
+    "A120110": 0.00405874,
+    "A000210": 0.00390842,
+    "A375500": 0.00384829,
+    "A005380": 0.00372803,
+    "A004170": 0.0036679,
+    "A004020": 0.00357771,
+    "A011210": 0.00357771,
+    "A003550": 0.00354764,
+    "A010060": 0.00351758,
+    "A009830": 0.00342738,
+    "A003380": 0.00339567,
+    "A050890": 0.00339567,
+    "A222080": 0.00331577,
+    "A001430": 0.00324699,
+    "A005490": 0.00312673,
+    "A066570": 0.00309667,
+    "A036540": 0.00303613,
+    "A074600": 0.00299618,
+    "A189300": 0.00295623,
+    "A012330": 0.00291628,
+    "A001800": 0.00288622,
+    "A028670": 0.00288622,
+    "A131970": 0.00287633,
+    "A032190": 0.00287633,
+    "A036830": 0.00283638,
+    "A003240": 0.00279602,
+    "A267250": 0.00276596,
+    "A056190": 0.00271654,
+    "A032830": 0.00270583,
+    "A298020": 0.00270583,
+    "A002380": 0.00270583,
+    "A178320": 0.00263664,
+    "A272290": 0.00259669,
+    "A078930": 0.00258557,
+    "A011170": 0.00251041,
+    "A006260": 0.00246531,
+    "A069960": 0.00240518,
+    "A015750": 0.00239694,
+    "A139130": 0.00237512,
+    "A218410": 0.00235699,
+    "A139480": 0.00234505,
+    "A003030": 0.00231499,
+    "A000720": 0.00228492,
+    "A082920": 0.0021972,
+    "A005850": 0.00219473,
+    "A357780": 0.00215725,
+    "A028260": 0.0021346,
+    "A047040": 0.00210453,
+    "A131290": 0.00207735,
+    "A007340": 0.00207447,
+    "A000270": 0.0020444,
+    "A018880": 0.0020444,
+    "A005290": 0.0020374,
+    "A034220": 0.00201434,
+    "A006800": 0.00198427,
+    "A086520": 0.0019575,
+    "A006400": 0.00189408,
+    "A031980": 0.00179771,
+    "A232140": 0.00175776,
+    "A204320": 0.00174376,
+    "A025900": 0.00171781,
+    "A030530": 0.00171781,
+    "A009970": 0.00171369,
+    "A004000": 0.00168363,
+    "A071050": 0.00168363,
+    "A137400": 0.00159796,
+    "A417200": 0.00159796,
+    "A000990": 0.00159343,
+    "A006730": 0.00155801,
+    "A014620": 0.00155801,
+    "A032500": 0.00155801,
+    "A064760": 0.00155801,
+    "A096530": 0.00155801,
+    "A166090": 0.00155801,
+    "A420770": 0.00155801,
+    "A138930": 0.0015333,
+    "A017670": 0.00150324,
+    "A078600": 0.00147812,
+    "A011780": 0.00147317,
+    "A000150": 0.00144311,
+    "A011070": 0.00144311,
+    "A033100": 0.00139822,
+    "A192080": 0.00138298,
+    "A048410": 0.00135827,
+    "A097950": 0.00135291,
+    "A016360": 0.00132285,
+    "A067310": 0.00131832,
+    "A086790": 0.00129278,
+    "A007070": 0.00126272,
+    "A078340": 0.00123842,
+    "A121600": 0.00123842,
+    "A001040": 0.00120259,
+    "A004990": 0.00117253,
+    "A319660": 0.00115852,
+    "A005940": 0.0011124,
+    "A051910": 0.0011124,
+    "A060370": 0.00107862,
+    "A001450": 0.00105227,
+    "A003490": 0.0010222,
+    "A000120": 0.00096207,
+    "A055550": 0.00096207,
+    "A036930": 0.00095878,
+    "A240810": 0.00095878,
+    "A018260": 0.00093201,
+    "A028050": 0.00090194,
+    "A195940": 0.00087888,
+    "A101490": 0.00087888,
+    "A039490": 0.00084181,
+    "A080220": 0.00083893,
+    "A085660": 0.00083893,
+    "A095610": 0.00083893,
+    "A215200": 0.00083893,
+    "A006650": 0.00081175,
+    "A161390": 0.00081175,
+    "A100790": 0.00079898,
+    "A222800": 0.00079898,
+    "A253590": 0.00079898,
+    "A086280": 0.00078168,
+    "A272210": 0.00078168,
+    "A039030": 0.00075903,
+    "A024110": 0.00075162,
+    "A064400": 0.00075162,
+    "A096770": 0.00075162,
+    "A280360": 0.00072155,
+    "A316140": 0.00072155,
+    "A060250": 0.00071908,
+    "A095340": 0.00071908,
+    "A005930": 0.00069149,
+    "A036810": 0.00067913,
+    "A278280": 0.00067913,
+    "A402340": 0.0006013,
+    "A030520": 0.00059924,
+    "A263750": 0.00055929,
+    "A053800": 0.00051934,
+    "A052400": 0.00051934,
+    "A036460": 0.0005111,
+    "A307950": 0.00048104,
+    "A069080": 0.00047939,
+    "A032820": 0.00047939,
+    "A105560": 0.00045097,
+    "A041190": 0.00043944,
+    "A043260": 0.00043944,
+    "A095660": 0.00043944,
+    "A112040": 0.00043944,
+    "A036570": 0.00042091,
+    "A000670": 0.00036078,
+    "A001440": 0.00036078,
+    "A009150": 0.00036078,
+    "A030200": 0.00036078,
+    "A032640": 0.00036078,
+    "A084370": 0.00031959,
+    "A035760": 0.00027964,
+    "A058610": 0.00027964,
+    "A247540": 0.00027964,
+    "A005830": 0.00021045,
+    "A137310": 0.00021045,
+    "A161890": 0.00021045,
+    "A000660": 0.00018039,
+    "A124500": 0.0001598,
+    "A348210": 0.0001598,
+    "A002790": 0.00015032,
+    "A010950": 0.00015032,
+    "A213420": 0.00011985,
+    "A025980": 7.99e-05,
+    "A271560": 6.013e-05,
+    "A083650": 3.995e-05,
+    "A098460": 3.995e-05,
+    "A001680": 0,
+    "A047050": 0,
+    "A099320": 0,
+    "A319400": 0,
+    "A011790": -5.97e-05,
+    "A034230": -5.97e-05,
+    "A101730": -7.933e-05,
+    "A295310": -7.933e-05,
+    "A011200": -0.00011941,
+    "A281740": -0.00015866,
+    "A005300": -0.00029852,
+    "A298050": -0.00029852,
+    "A237690": -0.00031733,
+    "A145020": -0.00039666,
+    "A253450": -0.00039666,
+    "A002030": -0.00041793,
+    "A285130": -0.00041793,
+    "A352480": -0.00047599,
+    "A058470": -0.00047599,
+    "A000810": -0.00047763,
+    "A006280": -0.00065674,
+    "A175330": -0.00065674,
+    "A041510": -0.00071399,
+    "A293490": -0.00071399,
+    "A079550": -0.00077615,
+    "A298040": -0.00077615,
+    "A033500": -0.00087265,
+    "A008770": -0.00089555,
+    "A071320": -0.00089555,
+    "A112610": -0.00089555,
+    "A025320": -0.00095199,
+    "A122870": -0.00095199,
+    "A183300": -0.00095199,
+    "A042700": -0.00101496,
+    "A323280": -0.00103132,
+    "A161580": -0.00103132,
+    "A403870": -0.00103132,
+    "A007310": -0.00107467,
+    "A067160": -0.00111065,
+    "A000240": -0.00113437,
+    "A066970": -0.00113437,
+    "A005420": -0.00119407,
+    "A093370": -0.00119407,
+    "A000250": -0.00126932,
+    "A241710": -0.00126932,
+    "A348370": -0.00134865,
+    "A047810": -0.00137318,
+    "A062040": -0.00137318,
+    "A082740": -0.00137318,
+    "A290650": -0.00142798,
+    "A361610": -0.00143289,
+    "A015760": -0.00149259,
+    "A033780": -0.00149259,
+    "A065350": -0.00150731,
+    "A089970": -0.00150731,
+    "A056080": -0.00150731,
+    "A029780": -0.00155229,
+    "A009520": -0.00158664,
+    "A457190": -0.001612,
+    "A034020": -0.0016717,
+    "A069260": -0.0016717,
+    "A204270": -0.00174531,
+    "A108490": -0.00174531,
+    "A003090": -0.00179111,
+    "A052690": -0.00179111,
+    "A035900": -0.00182464,
+    "A251270": -0.00185081,
+    "A225570": -0.00190397,
+    "A051900": -0.00191052,
+    "A171090": -0.00198331,
+    "A090710": -0.00206264,
+    "A018290": -0.00214197,
+    "A017960": -0.00232844,
+    "A194480": -0.00237997,
+    "A004370": -0.00238815,
+    "A278470": -0.00238815,
+    "A282330": -0.00244785,
+    "A035420": -0.00244785,
+    "A060280": -0.0024593,
+    "A437730": -0.00253863,
+    "A042000": -0.00261796,
+    "A035250": -0.00262696,
+    "A376300": -0.00277663,
+    "A111770": -0.00280607,
+    "A226950": -0.00285596,
+    "A036620": -0.00285596,
+    "A329180": -0.00286578,
+    "A014820": -0.00292548,
+    "A277810": -0.00293529,
+    "A014680": -0.00304489,
+    "A022100": -0.00310459,
+    "A185750": -0.00310459,
+    "A003670": -0.00316429,
+    "A454910": -0.00316429,
+    "A140860": -0.00317329,
+    "A012450": -0.003224,
+    "A000080": -0.0032837,
+    "A007390": -0.00349062,
+    "A267260": -0.00352252,
+    "A323410": -0.00352252,
+    "A103140": -0.00364192,
+    "A090360": -0.00364928,
+    "A009540": -0.00370163,
+    "A259960": -0.00376133,
+    "A009420": -0.00382103,
+    "A051600": -0.00382103,
+    "A090430": -0.00382103,
+    "A089030": -0.00388728,
+    "A180640": -0.00394044,
+    "A068760": -0.00396661,
+    "A073240": -0.00400014,
+    "A310210": -0.00404594,
+    "A373220": -0.00405985,
+    "A383220": -0.00405985,
+    "A028300": -0.00412528,
+    "A399720": -0.00412528,
+    "A010130": -0.00417926,
+    "A358570": -0.00420461,
+    "A214430": -0.00436327,
+    "A042660": -0.00441807,
+    "A388720": -0.00444261,
+    "A443060": -0.00453748,
+    "A012750": -0.00453748,
+    "A021240": -0.00453748,
+    "A010140": -0.00459718,
+    "A064350": -0.00459718,
+    "A466100": -0.00460127,
+    "A026960": -0.00471659,
+    "A128940": -0.00477629,
+    "A138040": -0.00477629,
+    "A450080": -0.00477629,
+    "A214150": -0.0049186,
+    "A192820": -0.00525392,
+    "A035720": -0.00531362,
+    "A002840": -0.00531362,
+    "A030000": -0.00537333,
+    "A068270": -0.00537333,
+    "A141080": -0.00539459,
+    "A017800": -0.00543303,
+    "A069620": -0.00543303,
+    "A302440": -0.00555244,
+    "A241560": -0.00567185,
+    "A008730": -0.00579125,
+    "A214370": -0.00594992,
+    "A377300": -0.00614948,
+    "A039200": -0.00650524,
+    "A257720": -0.00650524,
+    "A071970": -0.00668681,
+    "A082270": -0.00674324,
+    "A006040": -0.00680622,
+    "A347850": -0.00690191,
+    "A214450": -0.00706057,
+    "A328130": -0.00706057,
+    "A087010": -0.00721923,
+    "A081660": -0.00758236,
+    "A008930": -0.00764207,
+    "A007660": -0.00805999,
+    "A352820": -0.0081794,
+    "A009240": -0.0082391,
+    "A000100": -0.00847792,
+    "A003230": -0.00877644,
+    "A207940": -0.00883614,
+    "A196170": -0.00951987,
+    "A251970": -0.00999586,
+    "A326030": -0.01038843,
+    "A298380": -0.01047186,
+    "A211050": -0.01078919,
+    "A010120": -0.01122429
+  },
+  "alpha_vector_note": "alpha_hat_{i,t} = lambda_t * z(score)_{i,t}. lambda_t = **t 이전 월 단면 기울기의 확장창 평균** (Fama-MacBeth 1단계 · burn-in 36개월 · 당월 단면 미사용 = PIT C1/C2). 단위 = 기대 1개월 **활성**수익(벤치 대비, 소수). alpha_lower_bound_vector = alpha_hat - 1.0*SE(alpha_hat) (uncertainty-aware, Liao et al. 2025 RFS 취지 — 점추정 아닌 하한 병기). as_of 는 forward 수익 패널의 종점월이다.",
+  "signal_matrix_ref": "stage_artifacts/WT_R20260829_005/alpha_scores.parquet",
+  "factor_specs": [
+    {
+      "factor_family": "Value",
+      "proxy": "BE/ME (V01_BM)",
+      "formula": "TotalEquity(Factor_Date <= sig_date) / MarketCap(sig_date, contemporaneous ME)",
+      "lag_rule": "quarterly +45d ; annual = 익년 3/31 (C4)",
+      "winsorization": "factor_db 표준(Z_Score 산출 시 적용) — 본 단계 추가 winsorize 없음",
+      "neutralization": "시장-내(K200/KQ150) 백분위 랭크 — sector/size 중립화 미적용(진단으로만 병기)",
+      "economic_rationale": "기관 벤치마크-추종 배분이 장부가 대비 저평가·지수비중 낮은 종목의 소외를 유지시킨다(설계 mechanism.agent ②). 공매도 제약으로 롱 사이드에만 잔존.",
+      "weight_theta": 0.5,
+      "redundancy_cluster_id": "value_cluster (factor_registry V01_BM labels.correlation_group)",
+      "references": [
+        "Asness-Moskowitz-Pedersen 2013 JF 68(3):929-985 §I.B p.936",
+        "Fama-French 1992/1993",
+        "Lakonishok-Shleifer-Vishny 1994"
+      ],
+      "source": "db_existing"
+    },
+    {
+      "factor_family": "Momentum",
+      "proxy": "6-1 (J=6 형성 · 최근 1개월 skip)",
+      "formula": "sum_{k=2..7} log(1 + r_{t-k})  (캘린더월 복리)",
+      "lag_rule": "t-2..t-7 월만 (당월·t-1 월 미참조)",
+      "winsorization": "없음 (랭크 변환이 이상치를 흡수)",
+      "neutralization": "시장-내(K200/KQ150) 백분위 랭크",
+      "economic_rationale": "개인 추세추종 순매수 군집의 과소반응→과잉반응 경로(설계 mechanism.agent ①). KR 낮은 individualism 이 프리미엄을 약화시킨다는 국가패널 진단(CTW2010)이 기저 F 의 배경.",
+      "weight_theta": 0.5,
+      "redundancy_cluster_id": "momentum_cluster (factor_registry M02_Mom_6_1)",
+      "references": [
+        "Jegadeesh-Titman 1993 JF 48(1):65-91 (기저)",
+        "Asness-Moskowitz-Pedersen 2013 §I.B p.936 (MOM2-12 원정의 — 지평 민감도로 병기)"
+      ],
+      "source": "db_derived"
+    }
+  ],
+  "diagnostics": {
+    "canonical_port_t_nw_lag3": 1.19591606,
+    "canonical_port_t_pvalue": 0.23172932,
+    "canonical_n_months": 259,
+    "metric_type": "canonical_screen",
+    "metric_type_note": "canonical_screen_bt() 실측. 판정 권위 아님 — authoritative = forge build_bt_result + essence_score.R.",
+    "beta_controlled_alpha_ann": 0.05782917,
+    "beta_controlled_alpha_t": 1.79243336,
+    "beta": 0.86878443,
+    "beta_t": 7.97704597,
+    "beta_contribution_ann": -0.01537214,
+    "beta_reading": "beta 0.869 < 1 — measurement-graduation §2 거울상: PORT_t 가 alpha 를 **과소** 표시한다(활성수익 = alpha + (beta-1)E[bm], 후항이 음수). 알파 존재 주장은 t(alpha) 로만 한다.",
+    "information_ratio": 0.24921272,
+    "net_sr_active": 0.24921272,
+    "mean_active_net_ann": 0.04245702,
+    "rank_ic": 0.029389509067,
+    "icir": 0.24123300762,
+    "rank_ic_t_nw_lag3": 3.7979476291,
+    "harvey_t_stat": 2.6855545231,
+    "rank_ic_vs_portfolio_alpha_t_note": "rank-IC t(3.798)와 portfolio-alpha t(1.196)는 다른 양이다 — 후자가 롱온리 top-25 의 실현 초과수익 권위(Cycle 2 교훈, measurement-graduation §2). 본 후보는 그 전이 벽의 전형이다.",
+    "monotonicity": 0.8303030303,
+    "decile_profile": [
+      {
+        "dec": 1,
+        "mean_act_ann": -0.054383739988
+      },
+      {
+        "dec": 2,
+        "mean_act_ann": -0.055979540865
+      },
+      {
+        "dec": 3,
+        "mean_act_ann": -0.01009412034
+      },
+      {
+        "dec": 4,
+        "mean_act_ann": -0.0084318651507
+      },
+      {
+        "dec": 5,
+        "mean_act_ann": 0.03989398483
+      },
+      {
+        "dec": 6,
+        "mean_act_ann": -0.00016097196262
+      },
+      {
+        "dec": 7,
+        "mean_act_ann": 0.039029171951
+      },
+      {
+        "dec": 8,
+        "mean_act_ann": 0.018872943765
+      },
+      {
+        "dec": 9,
+        "mean_act_ann": 0.022555406635
+      },
+      {
+        "dec": 10,
+        "mean_act_ann": 0.07296981688
+      }
+    ],
+    "subperiod_stability": 1,
+    "subperiod": [
+      {
+        "period": "2005_2014",
+        "ic": 0.026907839706,
+        "n": 120
+      },
+      {
+        "period": "2015_2019",
+        "ic": 0.021144040031,
+        "n": 60
+      },
+      {
+        "period": "2020_2026",
+        "ic": 0.03942151496,
+        "n": 79
+      }
+    ],
+    "post_neutralization_ic": 0.030424825843,
+    "post_neutralization_spec": "log(Size) + market dummy (K200/KQ150). sector 미포함 — 라벨 정확성.",
+    "turnover_proxy": 8.81976834,
+    "turnover_annual": 8.81976834,
+    "n_names_max": 25,
+    "n_names_median": 25,
+    "kq150_share": 0.29374517,
+    "total_return_coords": {
+      "cagr": 0.13420011,
+      "mdd": -0.53034324,
+      "calmar": 0.25304387,
+      "sr_total": 0.61920322,
+      "vol_ann": 0.2577649
+    },
+    "benchmark_coords": {
+      "cagr": 0.09627812,
+      "mdd": -0.4707518,
+      "calmar": 0.20451991,
+      "sr_total": 0.52012331,
+      "vol_ann": 0.22523857
+    },
+    "diag_ew_universe": {
+      "port_t": 1.56766363,
+      "alpha_ann": 0.02962057,
+      "ir": 0.33888894,
+      "n_months": 259
+    },
+    "diag_cap_tier": {
+      "weight_share_avg": {
+        "MEGA": 0.02579151,
+        "MID": 0.04725869,
+        "OTHER": 0.92694981,
+        "UNRANKED": 0
+      },
+      "contrib_gross_annualized": {
+        "MEGA": 0.00625911,
+        "MID": 0.00133897,
+        "OTHER": 0.16524043,
+        "UNRANKED": 0
+      }
+    },
+    "oos_retention_approx": {
+      "splits": [
+        -0.484777,
+        -0.56107106,
+        -0.62584162
+      ],
+      "median": -0.56107106
+    },
+    "deflated_sharpe_ratio": {},
+    "dsr_note": "selection_type='chain' (1논문 1스펙, 가중 탐색 0, 열거 trial 집합 없음) — DSR 게이트 부적용(measurement-graduation §3). n_trials=1.",
+    "liq_ruler": "none_no_liquidity_filter",
+    "liq_ruler_source": {}
+  },
+  "selection_objective": "canonical_port_t",
+  "n_trials": 1,
+  "n_iterations": 1,
+  "selection_type": "chain",
+  "alpha_discovery_count": 1,
+  "universe_and_timing_contract": {
+    "universe": "KOSPI200 ∪ KOSDAQ150 (PIT 시변 멤버십, C6)",
+    "universe_label": "KR_top342",
+    "median_names_per_month": 340,
+    "liquidity_filter": "20일 평균 거래대금(t-1) >= 2e8 KRW — 랭킹 前 적용",
+    "rebalance": "monthly (월말 시그널 -> 익월 보유)",
+    "signal_timing": "score at month-end t (sig_date) -> holding month t+1. period_returns 의 date 컬럼 = **신호월 t** 라벨.",
+    "cost_model": "v2.4_kr_retail_15bps (one-way, delta 기반)",
+    "long_only": true,
+    "max_names": 25,
+    "weight_sum": 1,
+    "per_name_cap": "없음 (v10)",
+    "n_months": 259,
+    "window": "2005-01-31 ~ 2026-07-31"
+  },
+  "step0_A_value_definition_verified": {
+    "source": "AMP2013 원문 PDF §I.B p.936-937 직접 판독(pdftotext)",
+    "verbatim_stocks": "For individual stocks, we use the common value signal of the ratio of the book value of equity to market value of equity, or book-to-market ratio, BE/ME ... Book values are lagged 6 months to ensure data availability to investors at the time, and the most recent market values are used to compute the ratios.",
+    "verbatim_five_year": "For commodities, we define value as the log of the spot price 5 years ago (actually, the average spot price from 4.5 to 5.5 years ago), divided by the most recent spot price ... Similarly, for currencies ... For bonds, we use the 5-year change in the yields of 10-year bonds",
+    "resolution": "5년 시점 정의는 commodities/currencies/bonds 전용이며 개별주식에는 해당하지 않는다. WT 지시문 전제는 정정됐고 설계 에이전트의 정정이 원문과 일치한다. 5년 lag 로 구현했다면 value 가 아니라 장기반전(DeBondt-Thaler 1985 계열) 팩터가 됐을 것이다.",
+    "implemented": "BE = TotalEquity, Factor_Date <= sig_date (KR C4 규약 = quarterly +45d / annual 익년 3/31 — 논문의 6개월 lag 보다 보수적이므로 고정 축이 이긴다). ME = contemporaneous(sig_date 시가총액). = V01_BM 정의와 동일.",
+    "paper_assumption_adjusted": "book lag: 논문 6M -> KR C4 규약(더 보수적). momentum: 논문 MOM2-12 -> 기저 승계 6-1 을 primary 로, MOM2-12 를 지평 민감도로 병기(부호 일치 확인)."
+  },
+  "step0_B_mandatory_prior_run_disclosure": {
+    "obligation": "설계 mandatory_prior_run_disclosure — 병기 없이 결합 성과만 새로 보고하면 settled-negative 재포장이다.",
+    "prior_runs": [
+      {
+        "strategy_id": "STR_AS_20260605_221011_31932",
+        "title": "STR_valmom_AMP2013",
+        "date": "2026-06-05",
+        "spec": "value(BM)+momentum(12-1) z-combo 50/50 · ~20종 EW · K200∪KQ150 · 월간",
+        "grade": "F",
+        "grade_basis": "proxy_diagnostic (run_hurdle_gate) — 2026-05-31 DEMOTED. 권위 등급(essence_score.R) 미산출.",
+        "sharpe": 0.825,
+        "cagr_pct": 20.76,
+        "mdd_pct": 60.4,
+        "ir": 0.653,
+        "calmar": 0.344,
+        "l_code": "L-AS-20260605_221011_31932"
+      },
+      {
+        "strategy_id": "STR_AS_20260610_213712_20276",
+        "title": "valmom_AMP2013_winz_smoke",
+        "date": "2026-06-10",
+        "spec": "동일 50/50 composite — winsorize DB 재측정 스모크",
+        "grade": "F",
+        "grade_basis": "proxy_diagnostic — DEMOTED. 권위 등급 미산출.",
+        "sharpe": 0.799,
+        "cagr_pct": 20.09,
+        "mdd_pct": 60.72,
+        "ir": 0.628,
+        "calmar": 0.331,
+        "oos_retention": 0.757,
+        "turnover_ann_pct": 208.8,
+        "ic_mean": 0.0284,
+        "icir": 0.203,
+        "ff3_alpha_ann_pct": 7.79,
+        "ff3_alpha_t": 2.235,
+        "fm_lambda_nw_t": 3.347,
+        "fail_reason_then": "MDD 60.7% > 45% (당시 규칙 — v9.21 에서 MDD 직접 문턱 폐기, 현행 위험 축은 Calmar 하나)",
+        "fmt": [
+          "FMT-01 구조적 MDD",
+          "FMT-04 국면맹목 MDD>35% ∧ BM상관 0.80",
+          "FMT-07 발표후 감쇠 활성SR pre2017 1.15 -> post2017 -0.11"
+        ],
+        "l_code": "L-AS-20260610_213712_20276"
+      }
+    ],
+    "self_report_repackaging": {
+      "this_round": {
+        "sharpe_total": 0.61920322,
+        "cagr_pct": 13.420011,
+        "mdd_pct": -53.034324,
+        "calmar": 0.25304387,
+        "oos_retention_median": -0.56107106,
+        "turnover_ann_x": 8.81976834
+      },
+      "verdict": "NOT_NUMERICALLY_IDENTICAL — 그러나 형태는 겹친다. 좌표가 선행 2건보다 **낮다**(CAGR 13.4% vs 20.1~20.8% · SR 0.62 vs 0.80~0.83 · Calmar 0.253 vs 0.331~0.344 · OOS retention -0.561 vs 0.757). 구성 차이 = 시장-내 pct-rank 결합 · 25종(선행 ~20종) · 유동성 2e8 사전필터 · 2005~2026 창 · 6-1 모멘텀(선행 12-1). 성과 축에서 새 발견은 없다 — 본 라운드의 산출 가치는 FAL-1 전제검정과 권위 경로 좌표에 있다.",
+      "honesty_note": "선행 런의 CAGR/SR 이 더 높다는 사실을 숨기지 않는다. 결합 축이 기저를 개선했다는 주장은 하지 않는다."
+    }
+  },
+  "step0_C_preregistered_power_contract": {
+    "meta": {
+      "wt_id": "WT-R20260829_005",
+      "stage": "preregistered_power_contract",
+      "executed_before_any_portfolio_arm": true,
+      "calibration_source": "AMP2013 Table I Japan stocks, Factor column: combo SR 0.88 - value SR 0.77 = +0.11 (원문 PDF 재확인)",
+      "calibration_excluded": "global stocks factor +0.77 / US +0.20 / Europe·UK 등 — 모멘텀 생존 시장 캘리브레이션 사용 금지(설계 gate_calibration_source)",
+      "basis": "rank-weighted zero-cost factor portfolio (AMP2013 eq.(1)) — 논문 dSR 과 동일 basis. 후보(롱온리 top-25) basis 와는 다른 양임을 명시.",
+      "test_statistic": "Sharpe difference, Jobson-Korkie with Memmel(2003) correction, correlated samples",
+      "t_threshold": 2.8015852,
+      "note_on_t_threshold": "z(0.80)+z(0.975)=2.8016 — 귀무 95분위(1.96)를 MDE 로 오칭하는 모드(i) 회피"
+    },
+    "measured_inputs": {
+      "n_months": 259,
+      "portfolio_layer_n_months": 259,
+      "sr_value_monthly": 0.12255123,
+      "sr_mom_monthly": 0.08245379,
+      "sr_combo_monthly": 0.18353364,
+      "sr_value_ann": 0.42452991,
+      "sr_combo_ann": 0.63577918,
+      "rho_combo_value": 0.41196922,
+      "sd_paired_diff_monthly": 0.04330504,
+      "se_paired_iid": 0.00269084,
+      "se_paired_nw_lag3": 0.00269971,
+      "nw_inflation_measured": 1.00329635
+    },
+    "mde": {
+      "se_dsr_iid_monthly": 0.06797103,
+      "se_dsr_nw_monthly": 0.06819509,
+      "mde80_dSR_monthly": 0.19105436,
+      "mde80_dSR_annualized": 0.6618317,
+      "mde80_mean_diff_annualized": 0.09076174
+    },
+    "verdict": {
+      "implied_effect_dSR_ann": 0.11,
+      "ratio": 0.1662054,
+      "expected_t": 0.46563858,
+      "power": 0.06754529,
+      "disposition": "CONDITIONAL_undetermined_is_modal",
+      "abort_rule": "ratio < 0.15 -> 착수 중단 (설계 preregistered_power_contract.abort_rule)",
+      "honesty": "ratio 가 문턱을 넘어도 '검정할 자격'일 뿐이며, 비유의는 검정력이 충분할 때만 '효과 없음'이고 그 외에는 '미결'이다."
+    },
+    "axis_A_exemption": "axis_A(알파 수준)는 논문 KR-유사물(일본) 함의 증분이 음수(-6.2%p)라 ratio 를 산출하지 않는다(설계 승계)."
+  },
+  "preregistered_verdicts": {
+    "FAL_1_negative_correlation_premise": {
+      "status": "REPORTED_BEFORE_PERFORMANCE (설계 handoff 착수순서 (1) 준수)",
+      "envelope": "포트폴리오 envelope 미적용 — 팩터 신호·수익 수준 통계(설계 premise_test_exemption)",
+      "signal_level": {
+        "rho_a_contemporaneousME": -0.18407456,
+        "rho_b_pricelaggedME": 0.08507594,
+        "verdict": "PREMISE_FULLY_REJECTED_rho_b_nonnegative"
+      },
+      "return_level_paper_basis": {
+        "rho_a": -0.46564577,
+        "rho_b": -0.01124226,
+        "ratio": 0.02414338,
+        "verdict": "CONSTRUCTION_ARTIFACT",
+        "paper_japan_factor": -0.64
+      },
+      "tail_cuts": [
+        {
+          "cut": "value_D1_lowest_BM_expensive",
+          "n_months": 245,
+          "rho_a_mean": -0.09460869,
+          "rho_b_mean": 0.41285715
+        },
+        {
+          "cut": "value_D10_highest_BM_cheap",
+          "n_months": 245,
+          "rho_a_mean": -0.03947874,
+          "rho_b_mean": 0.34328263
+        },
+        {
+          "cut": "mom_D1_losers",
+          "n_months": 245,
+          "rho_a_mean": 0.08645378,
+          "rho_b_mean": 0.16283873
+        },
+        {
+          "cut": "mom_D10_winners",
+          "n_months": 245,
+          "rho_a_mean": -0.25779498,
+          "rho_b_mean": -0.04600496
+        },
+        {
+          "cut": "value_both_ends",
+          "n_months": 245,
+          "rho_a_mean": -0.31088116,
+          "rho_b_mean": -0.10921344
+        },
+        {
+          "cut": "value_middle_D4_D7",
+          "n_months": 245,
+          "rho_a_mean": -0.06133093,
+          "rho_b_mean": 0.41899887
+        }
+      ],
+      "conclusion": "AMP2013 이 8개 시장에서 -0.43~-0.65 로 실측한 value-momentum 음(-)상관은 KR 에서 **구성 아티팩트**다. 가격을 공유하지 않는 사양(b)에서 신호수준 상관은 부호가 뒤집혀 +0.085 이고(전제 완전 기각 조건 rho_b >= 0 충족), 수익수준 상관은 -0.466 -> -0.011 로 소멸한다(|rho_b|/|rho_a| = 0.024 << 0.5). 즉 결합의 근거로 인용된 분산효과는 ME 분모와 momentum 분자가 공유하는 가격항의 산술 귀결이다.",
+      "disposition": "결합에서 어떤 개선이 나오든 'AMP2013 의 분산효과가 KR 에서 재현됐다'로 보고할 수 없다 — 개선분은 construction_effect 로 재라벨한다(설계 FAL-1 reject_if 그대로)."
+    },
+    "FAL_2_treatment_delivery": {
+      "status": "CANCELLED_BY_COORDINATOR_2026-08-29",
+      "note": "arm 대비 폐지 지시로 보유중첩 처치전달 확인은 취소됐다. 본 라운드는 단일 후보 측정이므로 대조군이 없다."
+    },
+    "FAL_3_funding_liquidity": {
+      "status": "NOT_RUN — 설계가 비구속 probe 로 강등(저자 p.931 단일시장 식별불가 명시). 취소된 arm 배터리와 함께 미실행.",
+      "disposition": "underpowered_by_authors_own_statement"
+    },
+    "axis_A_alpha_level": {
+      "status": "NOT_TESTABLE_UNDER_SINGLE_CANDIDATE_DISCIPLINE",
+      "note": "value 단독 대조 arm 이 폐지되어 '증분' 을 정의할 대상이 없다. 사전등록 문구는 고치지 않았고 미실행으로 기록한다(사후 축 교체 아님)."
+    },
+    "axis_B_risk_adjusted": {
+      "status": "NOT_TESTABLE_UNDER_SINGLE_CANDIDATE_DISCIPLINE",
+      "note": "동일 사유."
+    },
+    "axis_C_gate_relevant_descriptive": {
+      "status": "REPORTED",
+      "calmar": 0.25304387,
+      "threshold_grade_A": 0.64,
+      "prior_runs_calmar": [
+        0.331,
+        0.344
+      ],
+      "ex_ante_prediction": "설계가 측정 전에 '1계층 결합은 Calmar 를 고치지 못한다'고 선언했다(boundary_rationale ③ — 논문의 분산축소가 beta~0 롱숏 위에서 측정됐고 롱온리 top-25 는 beta~1 을 유지하므로 비상속).",
+      "outcome": "적중. Calmar 0.253 으로 문턱 0.64 는 물론 선행 런 0.331/0.344 에도 못 미친다. 사후 발견으로 보고하지 않는다."
+    }
+  },
+  "layer_boundary_selfcheck": {
+    "tripwire_1_two_or_more_module_ids_as_input": false,
+    "tripwire_2_final_return_is_weighted_sum_of_two_portfolio_returns": false,
+    "tripwire_3_weights_are_function_of_regime_label": false,
+    "conclusion": "3항 전부 미해당 — 1계층(점수수준 결합 · 단일 신호공간 · 단일 top-25 · 단일 수익시계열)."
+  },
+  "discipline_change_2026_08_29": {
+    "directive": "도훈 지시 — arm 배터리 폐지, 한 시도 = 실투형 후보 하나.",
+    "cancelled": [
+      "결합 vs value 단독 증분 대비(1급 성과 검정)",
+      "FAL-2 보유중첩 처치전달",
+      "세션이 얹던 무신호 대조",
+      "기존 최상위 2건 대비 상관",
+      "논문 식 (3) COMBO 참조 arm",
+      "EW-유니버스·cap-tier 의 arm 별 산출"
+    ],
+    "retained": [
+      "Step 0 (A) value 정의 원문 재확인",
+      "Step 0 (B) 선행 런 좌표 병기",
+      "Step 0 (C) 사전 검정력(일본 factor basis dSR +0.11)",
+      "음(-)상관 전제 검정",
+      "PIT C1~C15",
+      "period_returns 저장"
+    ],
+    "design_points_that_no_longer_hold": "설계의 preregistered_primary axis_A/axis_B 는 **대조 arm 을 전제로 정의된 검정**이라 단일 후보 규율 아래서는 정의 자체가 성립하지 않는다. 문구를 고치지 않고 status='NOT_TESTABLE_UNDER_SINGLE_CANDIDATE_DISCIPLINE' 로 기록했다(No Silent Override). EW-유니버스·cap-tier 는 canonical_screen_bt 가 **내부에서** 산출하는 값이라 폐지 대상(arm 별 별도 산출)에 해당하지 않아 그대로 실었다."
+  },
+  "challenge_flags": [
+    "[HIGH · 1급 전제 붕괴] FAL-1 이 AMP2013 음(-)상관 전제를 KR 에서 기각했다 — 신호수준 rho_b = +0.085(부호 반전), 수익수준 rho_b = -0.011(소멸, |rho_b|/|rho_a| = 0.024). 두 판정 모두 설계가 사전등록한 기각선을 넘는다. 결합의 논문적 근거가 KR 에서는 성립하지 않으므로 본 후보는 'AMP2013 의 KR 이식' 이 아니라 '두 팩터의 동일가중 랭크결합' 으로만 서술해야 한다.",
+    "[HIGH · 검정력] Step 0 (C) ratio = 0.166 · 기대 t = 0.466 · 검정력 6.8%. 착수금지선(0.15)은 넘었으나 조건부 구간이며 **미결이 최빈 결말**이다. 비유의 결과를 '효과 없음' 으로 승격 금지.",
+    "[HIGH · OOS] anchored 3분할 활성 SR retention = -0.485 / -0.561 / -0.626, 중앙값 -0.561. oos_retention 하한 0.5 를 **부호부터** 밑돈다 — forge 층에서 hard FAIL 이 예상된다. 선행 런의 FMT-07(활성 SR pre2017 1.15 -> post2017 -0.11)이 본 후보에서도 재현되는 지문이다.",
+    "[HIGH · cap-tier] 보유 비중의 92.7% 가 OTHER tier(MEGA top-10·MID 11-30 외). 양(+) 좌표가 신호인지 소형주 노출인지 본 라운드는 분리하지 못했다 — 무신호 대조가 지시로 취소됐기 때문이다. 이 미분리를 결과 해석에 반드시 달 것.",
+    "[MEDIUM · RF-A? 전이 벽] rank-IC t 3.798 인데 portfolio-alpha t 1.196 — 횡단면 순위력이 롱온리 top-25 실현 초과수익으로 전이되지 않는 전형(measurement-graduation §2). 등급 판정은 후자 계열로만.",
+    "[MEDIUM · C4 상류 결함 승계] fundamental_merged 의 xlsx 경로가 Q4 를 일률 +45d(익년 ~2/14)로 잡아 연간 3/31 규약보다 공격적이다(pit.md C4 각주 기지 항목). V01_BM 이 이 원장을 쓰므로 본 후보도 그 노출을 승계한다 — 본 라운드가 만든 결함이 아니며 수리는 하네스 소관.",
+    "[MEDIUM · beta<1 거울상] beta 0.869 이라 PORT_t(1.196)가 t(alpha)(1.792)보다 **작다**. 알파 존재 서술은 t(alpha) 로만 하고, 게이트 판정은 PORT_t 로 한다(두 규칙이 다르다).",
+    "[대안 보관 C5] value 잔차화 모멘텀 — FAL-1 이 두 축의 음상관을 기계적 산물로 판정했으므로, '직교화된 momentum 을 value 코어에 가산' 하는 C5 는 이제 **가장 직접적인 후속**이다(기계적 공유항을 제거한 뒤에도 momentum 이 기여하는가). 6/20 1순위.",
+    "[설계 이의 · No Silent Override] 하달 1급(axis_A, alpha 수준)은 AMP2013 이 KR-유사 시장(일본)에서 하지 않은 주장을 검정한다(일본 함의 증분 -6.2%p). 설계가 이 이의를 기록했고 본 에이전트도 문구를 고치지 않았다.",
+    "[병렬 WT] WT-R20260829_004/006/007 병렬 진행 — 본 에이전트는 005 mailbox 와 stage_artifacts/WT_R20260829_005 만 기록했다."
+  ],
+  "handoff_to_risk": {
+    "alpha_vector_units": "expected 1M active return (decimal, 벤치 = KOSPI200 total return)",
+    "coverage": 340,
+    "confidence_range": [
+      0.78484353947,
+      1
+    ],
+    "full_panel": "stage_artifacts/WT_R20260829_005/alpha_scores.parquet (Date x Ticker x score/alpha_hat/alpha_se/alpha_lb/confidence, 259 months)",
+    "period_returns": "stage_artifacts/WT_R20260829_005/period_returns_production.csv (signal_date/signal_ym/holding_ym/ret_net/benchmark_ret/active_net)",
+    "covariance": "미산출 — Risk Agent 소관(역할 경계)",
+    "weights": "미산출 — Optimizer Agent 소관(역할 경계)",
+    "chain_obligation": "체인 완주 의무(도훈 2026-08-29): 본 라운드의 음성 판정은 체인을 멈추는 근거가 아니다. risk -> optimizer -> forge 로 진행해 essence 등급을 발행할 것."
+  },
+  "validation_ref": "stage_artifacts/WT_R20260829_005/alpha_validation.json",
+  "ast_verify_result": {
+    "tool": "02_Infrastructure/ast/ast_verify.py",
+    "exit_code": 0,
+    "verdict": "WARN_RESTATEMENT",
+    "leaf_count": 6,
+    "op_count": 9,
+    "decision_ts": "2026-08-01",
+    "max_avail_ts": "2026-08-01",
+    "n_violations": 0,
+    "n_contract_failures": 0,
+    "restatement_leaves": [
+      "REGISTRY[V01_BM]"
+    ],
+    "discrepancy_used": [
+      {
+        "path": "root.WHERE/0.ADD/0.CS_RANK/0",
+        "leaf": "REGISTRY[V01_BM]",
+        "rule": "quarterly+45d;annual_3/31",
+        "conservative_applied": "as-of 내부강제 인정(avail=t)",
+        "registry_note_head": " | Q4 노출창 [2/14,3/31) 수리 전 주석(SOT §3)"
+      }
+    ],
+    "notes": [
+      "root.WHERE/1.ADD/0.ADD/0: K200는 A1 내 투영 사본 — 원천은 A2/A3 (map A1 notes)",
+      "root.WHERE/1.ADD/0.ADD/1: KQ150는 A1 내 투영 사본 — 원천은 A2/A3 (map A1 notes)"
+    ],
+    "traversal_evidence": "순회 리프 6개 · 연산자 노드 9개 — '리프 0개 순회(빈 검증)' 아님. 리프 = REGISTRY[V01_BM] 1 + SPECIAL_OP[momentum 6-1] 1 + A1 FIELD 4종(K200/KQ150/Vol/Close).",
+    "pit_reading": "max_avail_ts(2026-08-01) <= decision_ts(2026-08-01) · LOOKAHEAD violations 0 · contract_failures 0.",
+    "decision_ts_note": "초판(decision_ts = sig_date = 2026-07-31)에서 K200/KQ150 멤버십 리프가 t1 규칙(avail = t+1d)에 걸려 FAIL_LOOKAHEAD 2건이 났다. 원인은 코드가 미래를 본 것이 아니라 **decision_ts 라벨이 실제 편성시점보다 하루 일렀던 것**이다 — 점수는 월말 t 종가로 산출되고 포트폴리오는 홀딩월 t+1 시작에 편성된다. decision_ts 를 t+1 로 정정했고, 그로써 허용되는 자료는 여전히 t 이하뿐이다(어떤 리프의 ref_ts 도 t 를 넘지 않는다). 이 정정은 완화가 아니라 라벨과 구현의 정합이며, 정정 사실과 초판 판정을 함께 기록한다.",
+    "dialect_note": "본 트리는 DIV 계열 연산자를 쓰지 않아 3/20 이 적발한 schema(DIV_GUARD) vs 검증기(DIV) 방언 분열에 걸리지 않는다. 스칼라 파라미터는 children 이 아니라 노드 속성(TS_MEAN.window · TS_LAG.k)으로 실었다 — 초판의 contract_failures 4건이 그 형상 오류였다."
+  },
+  "pit_gate": {
+    "gate": "detect_lookahead (하드 게이트)",
+    "all_clean": false,
+    "signal_path_clean": true,
+    "signal_path_scripts": [
+      "s1_panel.R",
+      "s5_alpha.R"
+    ],
+    "n_scripts": 6,
+    "per_script": {
+      "s1_panel.R": {
+        "file": "s1_panel.R",
+        "clean": true,
+        "scanned": true,
+        "n_violations": 0,
+        "violations": []
+      },
+      "s2_fal1.R": {
+        "file": "s2_fal1.R",
+        "clean": true,
+        "scanned": true,
+        "n_violations": 0,
+        "violations": []
+      },
+      "s3_power.R": {
+        "file": "s3_power.R",
+        "clean": true,
+        "scanned": true,
+        "n_violations": 0,
+        "violations": []
+      },
+      "s4_candidate.R": {
+        "file": "s4_candidate.R",
+        "clean": false,
+        "scanned": true,
+        "n_violations": 2,
+        "violations": [
+          {
+            "check": "C1",
+            "line": 27,
+            "code": "sr_total = mean(r)/sd(r)*sqrt(12), vol_ann = sd(r)*sqrt(12)) }",
+            "msg": "sd() on full vector * sqrt() without rolling/expanding window — possible full-sample vol"
+          },
+          {
+            "check": "C1",
+            "line": 61,
+            "code": "active_sr = mean(act)/sd(act)*sqrt(12), mean_active_ann = 12*mean(act), W = W) }",
+            "msg": "sd() on full vector * sqrt() without rolling/expanding window — possible full-sample vol"
+          }
+        ]
+      },
+      "s5_alpha.R": {
+        "file": "s5_alpha.R",
+        "clean": true,
+        "scanned": true,
+        "n_violations": 0,
+        "violations": []
+      },
+      "s6_emit.R": {
+        "file": "s6_emit.R",
+        "clean": true,
+        "scanned": true,
+        "n_violations": 0,
+        "violations": []
+      }
+    },
+    "hits_adjudication": {
+      "n_hits": 2,
+      "file": "s4_candidate.R",
+      "lines": [
+        27,
+        61
+      ],
+      "check": "C1",
+      "pattern": "sd(x) * sqrt(12) — 롤링/확장창 없는 전표본 변동성 의심",
+      "what_it_actually_is": "실현 net 수익 시계열의 **사후 보고 통계**(총수익 SR·연변동성·활성 SR). 신호 산출·종목 선택·비중 결정 어디에도 되먹임되지 않는다 — 점수는 s1/s5 에서만 만들어지고 두 파일은 clean 이다.",
+      "positive_control": "같은 패턴이 **권위 계약 파일 자신**에서도 발화한다: canonical_screen_bt.R 1건(line 376 `net_sr <- mean(active)/stats::sd(active)*sqrt(periods_per_year)`) · backtest_result_contract.R 2건. 즉 이 발화는 본 라운드의 사양 결함이 아니라 시스템의 사후-보고 관용구를 정규식이 구분하지 못하는 데서 온다.",
+      "contract_scan": [
+        {
+          "file": "02_Infrastructure/contracts/canonical_screen_bt.R",
+          "clean": false,
+          "n_violations": 1
+        },
+        {
+          "file": "02_Infrastructure/contracts/backtest_result_contract.R",
+          "clean": false,
+          "n_violations": 2
+        }
+      ],
+      "disposition": "본 라운드는 **패턴을 회피하도록 코드를 고치지 않았다** — 계기를 피해 쓰는 것이 계기를 죽이는 방법이기 때문이다. 사실 그대로 기록하고, 판정에 쓰는 축(신호 경로 s1/s5)은 clean 임을 별도 축으로 병기한다.",
+      "harness_followup": "detect_lookahead 의 C1 정규식이 '사후 보고 SR' 과 '전표본 변동성으로 신호를 만든 것' 을 구분하지 못한다 — 계약 파일 3건이 자기 게이트에 걸리는 상태다. 하네스 수리 대상(본 에이전트 소관 아님)."
+    },
+    "base_engine_scan": {
+      "file": "stage_artifacts/replication/_pilot/fe_jt1993_momentum.R",
+      "clean": true,
+      "n_violations": 0
+    },
+    "c_checklist": {
+      "C1": "확장창만 — lambda_t 는 t 이전 월 단면기울기의 누적평균(shift 1). 전표본 통계 미사용.",
+      "C2": "동일시점 순환참조 없음 — 점수는 월말 t, 수익은 t+1 월.",
+      "C3": "같은 기간 집계->적용 없음 — 형성창 t-2..t-7 과 홀딩월 t+1 은 비중첩.",
+      "C4": "재무 lag = load_month_factors 의 Factor_Date <= sig_date + registry availability 'quarterly+45d;annual_3/31'. ★상류 기지 결함 승계: fundamental_merged 의 xlsx 경로 Q4 일률 +45d(익년 ~2/14) — pit.md C4 각주. 본 라운드가 만든 결함 아님, 수리 미실시(하네스 소관).",
+      "C5": "해당 없음 — 오버레이 미적용(S0/S1 금지 준수).",
+      "C6": "시변 멤버십(각 sig_date 당시 K200/KQ150 스냅샷) — 생존편향 없음.",
+      "C7": "detect_lookahead 자동 스캔 전 스크립트 clean.",
+      "C8": "해당 없음 — FM weight 미사용(EW).",
+      "C9": "해당 없음 — VT/DD 오버레이 미사용.",
+      "C10": "유동성 = build_adv20_t1(20일 평균 거래대금, t-1) — 당일 거래량 미사용.",
+      "C11": "해당 없음 — 매크로 리프 0.",
+      "C13": "Z_Score_Aligned only — align_factor_direction 경유, NEGATE/FLIP 미사용.",
+      "C14": "align_factor_direction(sig_date) 이 Usable_Date <= sig_date 확장창 IC 로 부호 결정(36개월 burn-in).",
+      "C15": "전 팩터 접근 load_month_factors() 경유 — Factor DB parquet 직접 load 0."
+    }
+  },
+  "reachability_coordinate": {
+    "window": "2005-01-31 ~ 2026-07-31 (259 months)",
+    "observed_active_net_ann": 0.04245702,
+    "observed_port_t": 1.19591606,
+    "observed_beta_controlled_alpha_ann": 0.05782917,
+    "observed_beta_controlled_alpha_t": 1.79243336,
+    "required_active_net_ann_for_port_t_2p95": 0.10472993313594266,
+    "gap_pp": 6.227291313594266,
+    "prior_ledger_coordinate": "설계 승계값 = 2/20 cell4 기준 필요 +13.25%/yr vs 관측 +5.82%/yr. 본 라운드는 정의역(유동성 사전필터·결합 신호)이 달라 창의 sd 가 다르므로 필요값도 다르다 — 두 좌표를 차분하지 말고 각각의 창 안에서 읽을 것.",
+    "reading": "이 창에서 PORT_t 2.95 는 활성 net +10.47%/yr 을 요구하는데 관측은 +4.25%/yr 이다. 결합 축은 그 격차의 약 41% 지점에 있다. 창-도달가능성 병기 의무(measurement-graduation §3) 이행 — 미달을 '신호 없음' 이 아니라 좌표로 보고한다."
+  },
+  "out_of_scope_write_selfreport": {
+    "file": "06_Registry/ast_structure_log.jsonl",
+    "lines_appended": 6,
+    "author": "canonical_screen_bt() 의 AST Step 4 사이드카 (계약 내부 append-only 동작) — 본 에이전트의 의도적 쓰기 아님",
+    "note": "그 외 005 mailbox / stage_artifacts/WT_R20260829_005 밖 쓰기 0."
+  }
+}

@@ -1,0 +1,6 @@
+suppressMessages({library(arrow);library(data.table)})
+a <- as.data.table(read_parquet("stage_artifacts/WT_R20260829_007/alpha_scores.parquet"))
+cat("alpha_scores dim:", dim(a), "\n"); print(names(a)); print(head(a,3))
+cat("date range:\n"); print(range(a[[grep("date|Date|ym", names(a), value=TRUE)[1]]]))
+pn <- readRDS("stage_artifacts/WT_R20260829_007/panel.rds")
+cat("\npanel class:", class(pn), " dim:", dim(pn), "\n"); print(names(pn)); print(head(pn,2))

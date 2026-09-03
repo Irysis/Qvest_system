@@ -1,0 +1,178 @@
+{
+  "meta": {
+    "wt_id": "WT-R20260829_004",
+    "as_of": "2026-08-29",
+    "metric_type": "canonical_screen",
+    "measurement_authority": "canonical_screen_bt (screening 실측) — SR/Calmar 판정 권위는 forge build_bt_result",
+    "single_measurement_discipline": "arm 배터리 없음. A0 = F1/F2 슬리브이자 승계 좌표(2/20 cell4), lag1/violation 은 PIT 계기(F8) 이지 대비 arm 아님",
+    "spec": {
+      "top_n": 25,
+      "pool_n": 50,
+      "pool_multiplier": 2,
+      "pool_offset": 100,
+      "weight": "EW (Sigma w = 1, 현금 0, 레버리지 0)",
+      "cost_bps_oneway": 15,
+      "liq_min": 200000000,
+      "liq_ruler": "adv20_t1",
+      "universe": "KOSPI200 U KOSDAQ150 (PIT 시변)",
+      "start": "2005-01-01",
+      "vol_estimator": "종목 단변량 실현변동성 126거래일 연율 — 공분산/위험기여 추정 아님(Risk agent 경계)"
+    }
+  },
+  "candidate": {
+    "n_months": 259,
+    "port_t": 0.91529078,
+    "ir": 0.19415707,
+    "alpha_ann_vs_bm": 0.03607577,
+    "sr": 0.50506056,
+    "cagr": 0.11421757,
+    "mdd": -0.63534392,
+    "calmar": 0.17977283,
+    "net_active_sr": 0.19415707,
+    "turnover_annual": 9.38030769,
+    "beta": 1.03467197,
+    "alpha_beta_ctl_ann": 0.03607577,
+    "t_alpha_beta_ctl": 0.86727473,
+    "ew_univ_port_t": 0.94859381,
+    "n_names_max": 25
+  },
+  "A0_succession_coordinate": {
+    "n_months": 259,
+    "port_t": 1.2939691,
+    "ir": 0.27869694,
+    "alpha_ann_vs_bm": 0.05136546,
+    "sr": 0.55391054,
+    "cagr": 0.132618,
+    "mdd": -0.64433124,
+    "calmar": 0.20582271,
+    "net_active_sr": 0.27869694,
+    "turnover_annual": 9.24,
+    "beta": 1.05802924,
+    "alpha_beta_ctl_ann": 0.05136546,
+    "t_alpha_beta_ctl": 1.20485983,
+    "ew_univ_port_t": 1.42577834,
+    "n_names_max": 25
+  },
+  "cap_tier": {
+    "candidate": {
+      "MEGA": 0.03830769,
+      "MID": 0.06184615,
+      "OTHER": 0.89984615,
+      "UNRANKED": 0
+    },
+    "A0": {
+      "MEGA": 0.032,
+      "MID": 0.05584615,
+      "OTHER": 0.91215385,
+      "UNRANKED": 0
+    }
+  },
+  "firing": {
+    "n_panic_months": 26,
+    "mean_overlap_panic": 0.41846154,
+    "mean_overlap_nonpanic": 1,
+    "note": "비패닉월 overlap 1.0 = 후보가 그 달 A0 와 동일 보유(비발화가 정상)"
+  },
+  "F6_post2017": {
+    "candidate": {
+      "n": 115,
+      "sr": 0.32328798,
+      "cagr": 0.05411061,
+      "mdd": -0.53301713,
+      "calmar": 0.10151759,
+      "alpha_beta_ctl_ann": -0.04833536,
+      "t_alpha_beta_ctl": -0.8481923,
+      "beta": 0.96768409
+    },
+    "A0": {
+      "n": 115,
+      "sr": 0.44366042,
+      "cagr": 0.09781761,
+      "mdd": -0.48107415,
+      "calmar": 0.20333167,
+      "alpha_beta_ctl_ann": -0.00754015,
+      "t_alpha_beta_ctl": -0.12166826,
+      "beta": 0.98600622
+    },
+    "rule": "post-2017 단독 구간에서 후보의 Calmar 가 A0 대비 음이면 HARD reject (L-AS-BSC_20260611 next_probe 흡수)",
+    "d_calmar": -0.10181409,
+    "d_sr": -0.12037245,
+    "status": "FAIL"
+  },
+  "F7_alpha_guard": {
+    "rule": "beta-통제 alpha 가 무조건화 대비 -1.0%p 초과 하락하면 reject",
+    "candidate_alpha_ann": 0.03607577,
+    "A0_alpha_ann": 0.05136546,
+    "delta_pp": -1.52896882,
+    "status": "FAIL"
+  },
+  "power_contract": {
+    "target_primary": "Calmar 차",
+    "target_secondary": "SR 차",
+    "se_method": "블록 부트스트랩 block=12 (SR/Calmar 는 비율통계량 — 순열 MDE 무효)",
+    "B": 4000,
+    "n_months": 259,
+    "effect_size_root": {
+      "kr_anchor": "L-AS-BSC_20260611 (KR faithful L/S): SR 0.580->0.761 (+31%) · MDD 52.9%->27.2%",
+      "decay_applied": 0.5,
+      "decay_rationale": "구성 레버(현금 0)는 노출 레버(현금 스케일링)보다 좁다 — KR 앵커의 절반으로 사전 감쇠. US 헤드라인 사용 금지(약 2.7배 낙관)"
+    },
+    "calmar": {
+      "implied": 0.0972361,
+      "se_blockboot": 0.03120551,
+      "mde80": 0.08742535,
+      "ratio": 1.1122185,
+      "expected_t": 3.11599135,
+      "power": 0.87615765
+    },
+    "sharpe": {
+      "implied": 0.08585613,
+      "se_blockboot": 0.03590628,
+      "mde80": 0.10059503,
+      "ratio": 0.85348284,
+      "expected_t": 2.39111753,
+      "power": 0.66680854
+    },
+    "observed_d_calmar": -0.02604988,
+    "observed_d_sr": -0.04884999,
+    "disposition_rule": "ratio<0.15 = 착수금지구간 / 0.15~0.70 = 조건부(미결 최빈) / >=0.70 = 통상",
+    "disposition": "NORMAL"
+  },
+  "overlay_pit_F8": {
+    "item1_assert_overlay_pit": {
+      "status": "PASS",
+      "n_rows": 279,
+      "max_used_cutoff": "2026-08-28",
+      "rule": "used_cutoff <= holding_month_start (first-day-of-holding-month)"
+    },
+    "item2_lag1_stress": {
+      "calmar_lag1": 0.18913661,
+      "calmar_base": 0.17977283,
+      "rel_change_calmar": 0.05208679,
+      "sr_lag1": 0.53063911,
+      "rel_change_sr": 0.05064453,
+      "status": "NO_COLLAPSE"
+    },
+    "item3_strict_ab": {
+      "current_equals_strict": true,
+      "inflation": 0,
+      "message": "[overlay_pit_guard] Calmar(current vs strict): current=0.1798 strict=0.1798 인플레=0.0% → clean",
+      "positive_control_violation_probe": {
+        "description": "패닉 신호를 1개월 앞당겨 홀딩월 자신의 데이터로 계산한 것과 동형(BearProb 실사고 재현)",
+        "calmar": 0.22438982,
+        "sr": 0.54292899,
+        "inflation_calmar": 0.24818545,
+        "lookahead_flag_calmar": true,
+        "inflation_sr": 0.07497801,
+        "lookahead_flag_sr": true,
+        "reading": "계기가 실제로 발화하는지의 양성 대조 — 발화하지 않으면 이 A/B 는 방어선이 아니다"
+      }
+    },
+    "item4_cutoff_rule": {
+      "rule": "first-day-of-holding-month",
+      "used": "signal_month_end + 1d",
+      "anchor_date_used": false,
+      "realized_ym_used": false
+    }
+  }
+}

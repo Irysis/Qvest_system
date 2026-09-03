@@ -1,0 +1,279 @@
+{
+  "status": "OK",
+  "wt_id": "WT-R20260829_005",
+  "wt_type": "reinforcement",
+  "axis": "combination",
+  "strategy_id": "WTR20260829_005_AMP2013_VALMOM_EW25",
+  "strategy_name": "AMP2013 value-momentum combination (WT-R20260829_005)",
+  "remeasured_at": "2026-08-29 19:02:54",
+  "run_id": "FORGE_WT-R20260829_005",
+  "bt_result_path": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/WT_R20260829_005/bt_result.rds",
+  "measurement_basis_primary": "forge_realized_share_based",
+  "measurement_note": "weights.csv(259 sig_date x 25) as-is -> t+1 집행 -> 정수 주식수 -> 일별 share-based NAV -> 15bps one-way(v2.4_delta). 빈도 daily, af=252.",
+  "metric_type": "backtested",
+  "grade": "C",
+  "essence_grade": "C",
+  "grade_basis": "essence_score(bt_result) — 권위. hurdle_result.json proxy 미인용(2026-05-31 DEMOTED)",
+  "grade_a_conditions": {
+    "PORT_t": {
+      "value": 0.646,
+      "threshold": 2.95,
+      "pass": false
+    },
+    "OOS_retention": {
+      "value": -0.747,
+      "threshold": 0.7,
+      "floor": 0.5,
+      "band_status": "fail",
+      "splits": [-0.588, -0.747, -0.895],
+      "pass": false
+    },
+    "Sharpe": {
+      "value": 0.648,
+      "threshold": 0.8,
+      "pass": false
+    },
+    "CAGR": {
+      "value": 0.134,
+      "threshold": 0.16,
+      "pass": false
+    },
+    "Calmar": {
+      "value": 0.215,
+      "threshold": 0.64,
+      "pass": false
+    }
+  },
+  "essence": {
+    "net_sharpe": 0.648,
+    "net_ir": 0.143,
+    "portfolio_alpha_t_nw_lag3": 0.646,
+    "oos_retention": -0.747,
+    "dsr": 0.297,
+    "mdd": 0.623,
+    "calmar": 0.215,
+    "cagr": 0.134,
+    "drawdown_profile": {
+      "severe45_count": 4,
+      "severe55_count": 4,
+      "severe45_total_periods": 125,
+      "severe45_max_periods": 104,
+      "severe45_period_frac": 0.0235,
+      "catastrophic_mdd_threshold": 0.7,
+      "severe45_hard_count": 15,
+      "severe55_hard_count": 6,
+      "severe45_period_hard_frac": 0.25,
+      "severe45_max_hard_periods": 252,
+      "tail_review": true,
+      "structural_hard_fail": false
+    }
+  },
+  "structural_drawdown": false,
+  "hard_fail": false,
+  "hard_fail_source": "none",
+  "reasons": "Ensemble: positive alpha이나 B 미달 (블렌드에서만 가치)",
+  "selection_type_primary": "sweep",
+  "selection_type_note": "optimizer 가 비중방법 5종을 열거하고 사전선언 net_ir 규칙으로 선택했다 -> sweep 로 보수 판정. chain 라벨 대조판도 병기(등급 동일 여부 확인용).",
+  "dsr_gate_applied": true,
+  "n_trials_cumulative": 5,
+  "grade_under_chain_label": "C",
+  "oos_stat_version": "v2",
+  "oos_band_status": "fail",
+  "oos_retention_splits": [-0.588, -0.747, -0.895],
+  "graduation_params": {
+    "port_t_min": 2.95,
+    "oos_min": 0.7,
+    "oos_floor": 0.5,
+    "calmar_min": 0.64,
+    "dsr_min": 0.5,
+    "mdd_hard": 0.45,
+    "sharpe_min": 0.8,
+    "cagr_min": 0.16,
+    "b_port_t_min": 2,
+    "b_net_ir_min": 0.2,
+    "source": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/02_Infrastructure/worktask/constraint_defaults.json",
+    "fallback_keys": []
+  },
+  "contract": {
+    "integrity_status": "PASS",
+    "audit_pass": 19,
+    "audit_fail": 0,
+    "audit_warn": 0,
+    "audit_non_pass": [],
+    "components_present": ["manifest", "strategy_spec", "nav", "period_returns", "holdings", "benchmark_returns", "metrics", "benchmark_compare", "rolling_metrics", "drawdowns", "audit"],
+    "cagr": 0.13371172,
+    "sharpe": 0.64753602,
+    "mdd": 0.62283079,
+    "calmar": 0.21468386,
+    "ann_vol": 0.23891166,
+    "net_ir": 0.1430245,
+    "tracking_error": 0.16533257,
+    "portfolio_alpha_t_nw_lag3": 0.64649049,
+    "portfolio_alpha_t_pvalue": 0.51796175,
+    "alpha_annualized": 0.05345337,
+    "beta_to_benchmark_full_sample": 0.77256696,
+    "beta_label": "전기간 CAPM 단일 추정치일 뿐이다. risk 가 실측한 롤링 36m 범위 0.536~1.481 과 함께 읽어야 하며 단일 수치로 소비하지 말 것.",
+    "correlation_vs_bm": 0.75534665,
+    "up_capture": 0.81399364,
+    "down_capture": 0.77203764,
+    "hit_ratio_vs_bm": 0.51645046,
+    "n_obs_daily": 5319,
+    "period": ["2005-02-03", "2026-08-28"]
+  },
+  "implementation": {
+    "n_max_rebalance_distinct": 25,
+    "holdings_cap": 25,
+    "holdings_cap_pass": true,
+    "turnover_ann_oneway_realized": 9.46170804,
+    "cost_ann_realized": 0.01419256,
+    "long_only": true,
+    "sum_w_max_dev": 2.22044605e-16,
+    "exec_drop_dates": 0,
+    "deploy_extension_days": 18
+  },
+  "schedule_fidelity": {
+    "weights_csv_unique_dates_count": 259,
+    "alpha_sig_dates_count": 259,
+    "schedule_density_ratio": 1,
+    "schedule_density_pass": true,
+    "source": "optimization_package.json (alpha_package uses canonical_n_months, not sig_dates_count)"
+  },
+  "monthly_basis_diagnostic": {
+    "declared_as": "diagnostic — 권위 아님. 권위 = daily(af=252) 계약값(lean 레인 규약 동일).",
+    "n_months": 259,
+    "portfolio_alpha_t_nw_lag3": 0.6932751,
+    "portfolio_alpha_t_pvalue": 0.48813693,
+    "net_ir": 0.14859603,
+    "tracking_error": 0.18072868,
+    "alpha_annualized": 0.05517281,
+    "beta_to_benchmark": 0.78037077,
+    "sharpe_monthly_basis": 0.6153547,
+    "upstream_reported": {
+      "port_t": 1.196,
+      "beta_controlled_alpha_ann": 0.0578,
+      "beta_controlled_alpha_t": 1.792,
+      "net_ir": 0.2492
+    },
+    "note": "월별 basis 에서 상류 수치와 나란히 읽는다. NW lag-3 는 일별에서 월간 리밸런싱의 자기상관을 담지 못하므로 daily PORT_t 는 월별보다 보수적으로 나올 수 있다."
+  },
+  "baseline_reconciliation_vs_upstream": {
+    "n_months": 259,
+    "strategy_series": {
+      "cor": 0.99649337,
+      "mean_abs_diff": 0.00426783,
+      "max_abs_diff": 0.05238401,
+      "forge_ann_mean": 0.15578759,
+      "alpha_ann_mean": 0.15960885,
+      "forge_cum": 13.28055901,
+      "alpha_cum": 14.14905968
+    },
+    "benchmark_series": {
+      "cor": 0.99253732,
+      "mean_abs_diff": 0.00562198,
+      "max_abs_diff": 0.07008643,
+      "forge_ann_mean": 0.12893203,
+      "alpha_ann_mean": 0.11715183,
+      "forge_cum": 7.93400132,
+      "alpha_cum": 6.27147885,
+      "forge_source": ".cache/benchmark.parquet BM_Ret (production harness BM_DT)",
+      "alpha_source": "period_returns_production.csv benchmark_ret (alpha 패널 구성)"
+    },
+    "ir_attribution": {
+      "forge_strategy_vs_forge_bm": 0.14859603,
+      "forge_strategy_vs_alpha_bm": 0.23358672,
+      "alpha_strategy_vs_alpha_bm": 0.24921272,
+      "upstream_reported": 0.2492,
+      "reading": "net_IR 격차 0.2492 -> 0.1486 의 지배항은 벤치 계열 차이다 (같은 forge 수익 계열에 상류 벤치를 쓰면 0.2336). 전략 실현 차이는 잔여분."
+    },
+    "port_t_by_basis": {
+      "forge_strategy_vs_forge_bm": 0.6932751,
+      "forge_strategy_vs_alpha_bm": 1.1249161,
+      "alpha_strategy_vs_alpha_bm": 1.19591606,
+      "b_threshold": 2,
+      "a_threshold": 2.95,
+      "all_below_b": true
+    },
+    "verdict_invariance": "세 basis 전부 PORT_t < 2.0 이므로 벤치 계열 선택은 등급을 옮기지 않는다. 권위 basis 는 production harness BM (계약/lean 레인 공통)."
+  },
+  "regime_decomposition_forge_operationalization": {
+    "definition": "벤치(KOSPI200) 누적 낙폭 <= -20% 인 일자 = drawdown state. forge 자체 조작화.",
+    "caveat": "risk 의 KR_Bear_ALL 125개월 / optimizer 의 54개월과 다른 조작화다. 재현 주장 아님.",
+    "table": {
+      "state": ["normal", "bench_dd<=-20%"],
+      "n": [4072, 1247],
+      "sr_s": [1.44553666, -0.97058707],
+      "sr_b": [1.28316644, -0.86365785],
+      "cagr_s": [0.31835172, -0.30593192],
+      "cagr_b": [0.26587045, -0.27914743]
+    }
+  },
+  "vs_factor_engine": {
+    "factor_engine_claimed_sr": 0.6192,
+    "factor_engine_basis": "optimization_package.method_comparison.EW.sr_total (monthly aggregation, continuous)",
+    "forge_realized_sr_daily": 0.64753602,
+    "forge_realized_sr_monthly_basis": 0.6153547,
+    "divergence_pp_daily_basis": -0.02833602,
+    "diagnosis_daily_basis": "NEGLIGIBLE",
+    "divergence_pp_same_frequency": 0.0038453,
+    "diagnosis_same_frequency": "NEGLIGIBLE",
+    "note": "일별 SR 과 월별 SR 은 집계빈도가 다르므로 same-frequency 대조가 fabrication 판정의 정본이다. daily-basis 격차는 빈도효과를 포함한다."
+  },
+  "upstream_claims_not_cited": {
+    "level_calibration_factor": "1.384 — Sigma 에 미적용. 성과수치에 곱하지 않았다.",
+    "regime_correlation": "risk 철회(에피소드 p=0.585) — 미인용",
+    "structural_finding_field": "risk_package.handoff_to_optimizer.structural_finding 의 74.9%/5.3% 는 철회 수치 — 미인용(walk-forward 0.812/0.086)",
+    "beta_single_number": "롤링 36m 0.536~1.481 — 단일 수치로 쓰지 않았다. 계약 Beta 는 전기간 CAPM 값으로 라벨 명시.",
+    "drawdown_state": "KR_Bear_ALL 125개월 초과 -29.6%p 진단 승계 — 베타 낙폭으로 접지 않는다."
+  },
+  "pit": {
+    "detector": "02_Infrastructure/validation/lookahead_detector.R::detect_lookahead()",
+    "decision_path_file": "stage_artifacts/WT_R20260829_005/run_all.R",
+    "decision_path_result": "CLEAN (272 lines scanned, 0 violations)",
+    "expost_evaluator_file": "stage_artifacts/WT_R20260829_005/forge_emit.R",
+    "positive_control": "선언 idiom 2종(sd(x)*sqrt() / quantile(dt$col)) 주입 -> 2/2 발화. 검출기 생존 확인.",
+    "negative_coverage": "비선언 idiom 3종(full-sample mean, shift(-1), 비중 재정규화) 주입 -> 0/3 미발화. R 경로 커버리지는 3 idiom 계열로 좁다 — CLEAN 은 PIT 증명이 아니다.",
+    "structural_argument": "종목선택/비중은 weights.csv 가 전량 결정(재선택 0). 신호일 t -> 집행 t+1 종가. 일별 NAV 는 보유 주식수 x 당일 종가만 사용. 전 표본 통계 0.",
+    "c_checks": {
+      "C1": "PASS — forge 층에 전 표본 추정치 0. NAV 는 경로 누적.",
+      "C2": "PASS — sig_date 신호를 다음 거래일 종가로 집행.",
+      "C3": "PASS — 동기간 집계 후 소급적용 없음.",
+      "C4": "N/A — 재무제표 lag 는 alpha 소관(승계).",
+      "C5": "N/A — 오버레이 미적용.",
+      "C6": "PASS — RAWDATA 전종목 패널. 상장폐지 종목도 가격 결측 시 last_price 유지 후 리밸 시 제외 — 생존편향 도입 없음.",
+      "C9": "N/A — VT/DD 오버레이 미적용.",
+      "C10": "PASS — 유동성 필터는 alpha t-1 ADV20 승계. forge 추가 필터 0.",
+      "C13": "N/A — 부호 반전 없음.",
+      "C15": "PASS — Factor DB parquet 직접 load 0. RAWDATA(.cache) + weights.csv 만 소비."
+    }
+  },
+  "known_instrument_defects": {
+    "schedule_fidelity_check_sh": "diagnostics.sig_dates_count 를 읽는데 이 alpha_package 는 canonical_n_months 를 쓴다 -> SIG_DATES=0, 인증서 무발급, warn 없음(무발화). 스케줄 사실은 optimization_package 필드로 대체 기록(259/259=1.000).",
+    "worktask_schema_json": "schema.json:17 task_id 패턴 ^WT-[DPSH][0-9]{8}_[0-9]{3}$ 에 v10 접두 R 이 없고, wt_type enum 에도 reinforcement 가 없다. 두 축 모두 INVALID 를 낸다. 우회하지 않았다 — status.json current_phase 는 ALPHA_DONE 그대로 두고 기록만 한다. 수리는 별건 태스크.",
+    "lookahead_detector_coverage": "R 경로 3 idiom 계열만 검사. 위 pit.negative_coverage 참조.",
+    "price_limit_band_rows": "일간 패널 법정 제한폭 초과 267건(무상증자/액면분할 미조정). risk 가 Sigma substrate 만 winsorize. forge 는 추가로 손대지 않았다 — 권위 수치는 계약 경유."
+  },
+  "artifacts": {
+    "run_all": "stage_artifacts/WT_R20260829_005/run_all.R",
+    "bt_result_rds": "stage_artifacts/WT_R20260829_005/bt_result.rds",
+    "contract_csv": "stage_artifacts/WT_R20260829_005/00_manifest.csv ~ 10_audit.csv (10-component + audit)",
+    "challenge_note": "stage_artifacts/WT_R20260829_005/challenge_note_forge.md",
+    "baseline_reconciliation": "stage_artifacts/WT_R20260829_005/forge_baseline_reconciliation.json",
+    "schema_probe": "stage_artifacts/WT_R20260829_005/forge_schema_probe.json",
+    "charts": ["stage_artifacts/WT_R20260829_005/output/equity_curve.png", "stage_artifacts/WT_R20260829_005/output/annual_returns.png", "stage_artifacts/WT_R20260829_005/output/oos_zoom_chart.png", "stage_artifacts/WT_R20260829_005/output/regime_decomposition.png"],
+    "forge_package": "qepm/mailbox/worktask/WT-R20260829_005/forge_package.json"
+  },
+  "hash_audit": {
+    "start": {
+      "C:/Users/99922/OneDrive/Quant_Module_Moltbot/qepm/mailbox/worktask/WT-R20260829_005/alpha_package.json": "24f9935cbd5c796a9a4a2f0dd6b84287",
+      "C:/Users/99922/OneDrive/Quant_Module_Moltbot/qepm/mailbox/worktask/WT-R20260829_005/risk_package.json": "dc2cfe0173ee9ed24697ab6bc39e931d",
+      "C:/Users/99922/OneDrive/Quant_Module_Moltbot/qepm/mailbox/worktask/WT-R20260829_005/optimization_package.json": "3a63592789dc308357ed9cd27d8c1fcf"
+    },
+    "end": {
+      "C:/Users/99922/OneDrive/Quant_Module_Moltbot/qepm/mailbox/worktask/WT-R20260829_005/alpha_package.json": "24f9935cbd5c796a9a4a2f0dd6b84287",
+      "C:/Users/99922/OneDrive/Quant_Module_Moltbot/qepm/mailbox/worktask/WT-R20260829_005/risk_package.json": "dc2cfe0173ee9ed24697ab6bc39e931d",
+      "C:/Users/99922/OneDrive/Quant_Module_Moltbot/qepm/mailbox/worktask/WT-R20260829_005/optimization_package.json": "3a63592789dc308357ed9cd27d8c1fcf"
+    },
+    "identical": true,
+    "note": "3-package md5 시작/완료 동일 -> pure function 준수 실증"
+  }
+}

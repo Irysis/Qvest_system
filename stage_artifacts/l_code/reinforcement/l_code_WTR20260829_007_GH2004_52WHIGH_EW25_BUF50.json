@@ -1,0 +1,90 @@
+{
+  "l_code": "L-RF-20260829_193556_02",
+  "strategy_id": "WTR20260829_007_GH2004_52WHIGH_EW25_BUF50",
+  "grade": "C",
+  "core_reference": "stage_artifacts/WT_R20260829_007/authoritative_remeasure.json | forge_pit_bidirectional.json",
+  "lesson_text": "GH2004 52주 신고가 근접도의 KR 검정 — essence C (0/5). PORT_t 0.6364 · OOS -0.693(분할 -0.561/-0.693/-1.227) · SR 0.688 · CAGR 13.84% · Calmar 0.2516 · MDD 55.03% · beta 0.687 · net_IR 0.138 · DSR 0.152(n_trials 12). ★1급 기각: Table V 이식 FM 에서 롱온리 관련 반쪽 FHH 가 +0.095%/월 t +0.910 비유의. 숏 편중이 미국(74%)보다 심하다 — KR 76.6%. ★최대 소득은 선행 C등급 런(STR_AS_20260612_132740_321992, PORT_t 0.303)의 t +3.199 재귀속이다. 4축 분해로 정의(Spearman 0.9995)·사양(t +0.032)·수익경로(t -0.393) 축은 전부 기각되고 유니버스 축만 남았다 — 선행은 월평균 단면 N 1397.7(전 시장)로 돌았고, 전 시장 복원 시 부호 패턴이 재현되지만(t Score +1.458) mandate 유니버스로 좁히면 t Score -0.090 으로 부호가 뒤집힌다. ★F4 통제 사다리 S0 +0.877 → S5 전통제 +0.097 — 신호는 통제로 죽기 전에 이미 비유의였다. 누출 귀무가 더 세다(Kyle lambda +2.557 · RealVol +2.111 vs 신호 +1.541). ★그러나 anchoring 라벨은 살아남았다: 근접도는 k=12~48 전 구간 무반전(t -0.98/-0.26/+0.37/-0.47)인데 JT winner 는 k=12 t -2.01 · k=48 t -2.87 유의 반전 — GH2004 Table VI 가 KR 에서 재현됐고 근접도가 수익률 외삽의 재파라미터화가 아님을 뜻한다. 알파는 없어도 기전은 별개다. ★alpha 사양이 이미 하드 제약 위반이었다(연 양방향 회전 15.31 > 상한 11.0). optimizer 가 buffer50 으로 10.35 에 맞췄고 대가는 총활성 알파 -127bp(비용 절감 -74bp) — 비용 절감보다 알파 손실이 크다. 회전 제어는 병을 못 건드린다: 부기간 활성 2005-14 +11.03%/yr → 2015-19 -3.61% → 2020-26 -6.53%. ★★벤치 basis 2x2(259개월): 벤치만 교체 delta_t -0.3577 vs 전략만 교체 -0.0518 = 벤치 항이 6.9배 지배(누적 7.934 vs 6.271). 상류 0.929 와 권위 0.636 은 다른 양이다. ★선행 런 대비 4축 개선하나 문턱 미달: PORT_t 0.303→0.636(2.95) · retention -1.131→-0.693(0.70) · Calmar 0.188→0.2516(0.64) · 회전 편도 6.64→5.057.",
+  "tags": ["reinforcement", "L1_attempt_7_of_20", "multifactor", "week52_high", "GH2004", "universe_artifact_reattribution", "anchoring_survives_alpha_does_not", "detect_lookahead_r_branch_gap", "spec_violated_hard_constraint"],
+  "created_at": "2026-08-29",
+  "research_mode": "reinforcement",
+  "created_by": "emit:reinforcement",
+  "metric_type": "backtested",
+  "construction_type": "single_factor_long_only",
+  "mechanism_hypothesis": "근접도는 수익률 외삽의 재파라미터화가 아니다(장기 무반전으로 확인). 그러나 그 anchoring 정보가 KR mandate 유니버스의 롱온리 top-25 소비 형태로 전이되지 않고, 선행 런이 관측한 유의성은 전 시장 표본에서만 성립했다.",
+  "lcode_schema_version": 3,
+  "port_t_authority": 0.6364,
+  "port_t_upstream_basis": 0.929,
+  "net_sharpe": 0.6877,
+  "cagr": 0.1384,
+  "calmar": 0.2516,
+  "mdd": 0.5503,
+  "net_ir": 0.138,
+  "beta": 0.687,
+  "dsr": 0.152,
+  "n_trials_cumulative": 12,
+  "turnover_2way": 10.113,
+  "fhh_t": 0.91,
+  "short_leg_share_kr": 0.766,
+  "control_ladder_s0": 0.877,
+  "control_ladder_s5": 0.097,
+  "prior_run_port_t": 0.303,
+  "bench_swap_delta_t": -0.3577,
+  "strategy_swap_delta_t": -0.0518,
+  "subperiod_active_p3": -0.0653,
+  "n_months": 259,
+  "falsification_attempts": [
+    {
+      "test": "1급 GH2004 Table V 이식 FM(시장-내 랭킹, 1554 단면회귀)",
+      "result": "reject_if 발동 — FHH +0.095%/월 t +0.910 비유의. FHL -0.310 t -2.616 로 숏 쪽에만 유의",
+      "effect_retained": false
+    },
+    {
+      "test": "F4 통제 사다리(시장-내 랭킹 + 모멘텀/규모 + 산업모멘텀 + 변동성 + L-family + D35/M17)",
+      "result": "S0 +0.877 → S5 +0.097. 통제 전에 이미 비유의. 누출 귀무가 더 셈(Kyle 2.557 · RealVol 2.111 vs 1.541)",
+      "effect_retained": false
+    },
+    {
+      "test": "선행 런 t +3.199 재귀속 4축 분해",
+      "result": "유니버스 축 확정 — 전 시장 N 1397.7 에서만 성립, mandate 유니버스에서 t Score -0.090 부호 반전. 나머지 3축 기각",
+      "effect_retained": false
+    },
+    {
+      "test": "F2 장기 무반전(k=12/24/36/48) — anchoring vs 수익률 외삽",
+      "result": "NOT_REJECTED — 근접도 전 구간 무반전 vs JT winner 유의 반전(k=12 -2.01 · k=48 -2.87). GH2004 Table VI 재현",
+      "effect_retained": true
+    },
+    {
+      "test": "시장 더미 아티팩트 통제(혼합 랭킹 vs 시장-내 랭킹)",
+      "result": "혼합 z vs KQ더미 rho -0.165, 시장-내 랭킹이 정확히 0 으로 제거. 3/20 과 달리 유의를 만들지는 않음",
+      "effect_retained": true
+    },
+    {
+      "test": "detect_lookahead 양방향 대조(forge 직접 실행)",
+      "result": "양성 5/5 발화. 커버리지 반증 0/4 미발화 — shift(Close,-1L) · 전표본 cov() · 전표본 mean() 재정규화 · 수동 미래 인덱싱. 원인: is_python 분기 + PY_* 가 .py 전용 → R 분기에 음수 shift 패턴 부재",
+      "effect_retained": false
+    },
+    {
+      "test": "벤치 basis 2x2 귀속(259개월)",
+      "result": "벤치 교체 -0.3577 vs 전략 교체 -0.0518 = 6.9배 지배. 상류 0.929 != 권위 0.636",
+      "effect_retained": true
+    },
+    {
+      "test": "자기적대 초판 철회 — FF3 +15.59% 정렬 아티팩트",
+      "result": "신호월 라벨을 회귀에 넘긴 오류. 홀딩월 정렬 시 선행 런의 Carhart4 모멘텀 흡수 재현. 손익분기 40.7bps 이나 비용 0 에서도 활성 t +1.471 → 급소는 비용이 아니라 신호",
+      "effect_retained": false
+    }
+  ],
+  "oos_retention": -0.693,
+  "portfolio_alpha_t": 0.6364,
+  "selection_type": "chain",
+  "record_type": "performance",
+  "family": "momentum",
+  "next_probes": [
+    "비-가격 준거점 축 — 설계가 DIST-AR-041(가격-파생 저EV) 범주를 실제로 벗어나는 유일한 경로로 목표주가 기반 준거점을 지목했다. M06 은 100% 가격 파생이라 범주 안이다.",
+    "★detect_lookahead R 분기 수리 — 양성 5/5 발화하나 실제 look-ahead 4종이 0/4 미발화(음수 shift · 전표본 cov/mean · 수동 미래 인덱싱). 원인은 PY_* 패턴이 .py 전용이라 R 분기에 대응 패턴이 없는 것. 이 시스템 리서치 코드는 거의 전부 R 이므로 PIT 하드 게이트가 실사용 언어에서 범주적 사각을 갖는다.",
+    "회전 제어는 이 후보의 병이 아니다 — 순활성 2020-26 -4.72→-4.54%/yr(18bp)에 그치고 oos proxy 는 optimizer 경로에서 오히려 악화(-0.384→-0.425). 병은 후반부 신호 붕괴다."
+  ],
+  "next_probe": "비-가격 준거점 축 — 설계가 DIST-AR-041(가격-파생 저EV) 범주를 실제로 벗어나는 유일한 경로로 목표주가 기반 준거점을 지목했다. M06 은 100% 가격 파생이라 범주 안이다. | ★detect_lookahead R 분기 수리 — 양성 5/5 발화하나 실제 look-ahead 4종이 0/4 미발화(음수 shift · 전표본 cov/mean · 수동 미래 인덱싱). 원인은 PY_* 패턴이 .py 전용이라 R 분기에 대응 패턴이 없는 것. 이 시스템 리서치 코드는 거의 전부 R 이므로 PIT 하드 게이트가 실사용 언어에서 범주적 사각을 갖는다. | 회전 제어는 이 후보의 병이 아니다 — 순활성 2020-26 -4.72→-4.54%/yr(18bp)에 그치고 oos proxy 는 optimizer 경로에서 오히려 악화(-0.384→-0.425). 병은 후반부 신호 붕괴다.",
+  "source_paper": "George & Hwang (2004), The 52-Week High and Momentum Investing, JF 59:2145-2176 — https://onlinelibrary.wiley.com/doi/abs/10.1111/j.1540-6261.2004.00695.x",
+  "paper_assumption_broken": "GH2004 의 근접도 지배 주장이 KR mandate 유니버스에서 성립하지 않는다 — FHH t +0.910 비유의, 전통제 후 +0.097 소멸. 자기금융 우위의 74%가 숏 레그인데 KR 은 76.6%로 더 심해 롱온리 수확분이 원문보다 작다. 단 Table VI(장기 무반전)는 재현된다."
+}

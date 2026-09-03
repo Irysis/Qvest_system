@@ -1,0 +1,304 @@
+{
+  "wt_id": "WT-R20260829_006",
+  "designed_by": "alpha-hypothesis",
+  "model_tier": "opus",
+  "designed_at": "2026-08-29",
+  "scope_note": "본 산출물은 AST v1.1 설계순서 ①메커니즘 ②가설 서술 ③반증 조건 ④국면 경계 만 담는다. ⑤AST 구성(factors[] · 𝒪 연산자 · 리프 매핑 · self_pit_check) · 팩터 소싱 · 신호공학 · 실측 · 등급 선언은 alpha-research 소관이며 본 문서는 어떤 수치도 산출하지 않았다(논문 인용 수치는 원문 판독분).",
+
+  "prechecks": {
+    "hypothesis_index_hits": [
+      {"id": "DIST-RAMP-026", "verdict": "DISTILLED_NEG", "family": "factor_timing_allocation", "tags": "DFA,factor_momentum,deployment_form", "n_supporting_l_codes": 5, "relation": "지시된 필독 카드. 질문 축이 다르다 — 아래 divergence_from_settled_negatives 참조"},
+      {"id": "DIST-AR-033", "verdict": "DISTILLED_NEG", "family": "factor_timing", "status": "pending_5axis", "n_supporting_l_codes": 2, "relation": "지시된 필독 카드. statement 는 초안 상태(5축 미검증)이며 범위·기전 미확정 — 구속력은 DIST-RAMP-026/014 보다 약하다"},
+      {"id": "DIST-RAMP-014", "verdict": "DISTILLED_COND", "relation": "★가장 날카로운 이웃(지시문에 없었으나 lookup 에서 나옴). '지수-비중 최적화 계열(Black-Litterman / 팩터 모멘텀 배분)을 KR 배포 형태인 top-25 횡단면으로 변환하면 엣지가 남지 않는다 — 변환에서 살아남는 것은 알파가 아니라 베타다(cor(시장상관, clean IR)=+0.974). 무신호 대조(시총 상위 25 cap-w)와 구별 불가. 필요 신호품질 = 현재 rank-IC 의 4.18배'. ⇒ 본 설계의 3급(소비면 전이) 좌표는 이 카드와 정확히 겹친다. 그래서 3급을 헤드라인에서 내리고 사전등록 기대를 음(-)으로 선언한다 — falsification.tier3 참조"},
+      {"id": "DIST-RAMP-006", "verdict": "DISTILLED_NEG", "relation": "KR 국면-조건부 팩터배분 실현 PORT_t 천장 ~2.85. 겸하여 방법 교훈: placebo·OOS·DSR 전부 통과했는데도 동월 look-ahead 를 못 잡고 shift A/B 만 갈랐다 — 본 설계의 lag 사다리 의무 근거"},
+      {"id": "DIST-AR-041", "verdict": "DISTILLED_NEG", "n_supporting_l_codes": 17, "relation": "'가격-파생 모멘텀 변형의 추가 탐색은 저EV(직교해도 전이 실패가 반복 실측)'. ⇒ 본 라운드의 의사결정 가치가 바로 여기 있다 — 1급이 음(-)이면 개별주 모멘텀 신호 변형 소싱을 계속할 근거가 사라진다"},
+      {"id": "DIST-AR-051", "verdict": "DISTILLED_NEG(초안)", "relation": "'소비 형태 교체의 판정은 production 실코드 경로에서 확정한다 — 스크리닝 통과를 근거로 인용하지 말 것'. 3급 판정 규율에 승계"},
+      {"id": "DIST-AR-003 / DIST-AR-007 / DIST-AR-027 / DIST-AR-036 / DIST-GEN-011 / DIST-QPM-017 / DIST-QPM-027 / DIST-QPM-032 / DIST-RAMP-025 / DIST-AS-008", "verdict": "혼재(NEG 다수)", "relation": "momentum family 광역 negative 군. 전부 '개별주 모멘텀 변형의 롱온리 top-N 전이' 좌표 — 본 설계의 1급·2급과 좌표가 다르다"}
+    ],
+    "hypothesis_index_lookup_commands": [
+      "Rscript 02_Infrastructure/tools/hypothesis_index.R lookup factor_timing  → 30 hits (DISTILLED_NEG 28 · FAIL 0 · PASS 0)",
+      "lookup_hypothesis(\"factor_momentum\") → 12 hits (상단 DIST-AR-027 / DIST-AR-041 / DIST-RAMP-026 / DIST-RAMP-014)",
+      "lookup_hypothesis(\"spanning\") → ★no prior attempt matched — 스패닝 축의 선례 0건"
+    ],
+    "frontier_queue_refs": {
+      "file": "06_Registry/alpha_frontier_queue.json",
+      "schema_version": "2.0",
+      "status_counts": {"open": 92, "claimed": 5, "parked": 21},
+      "matched_open_item": null,
+      "note": "팩터 모멘텀 스패닝에 대응하는 open FQ 는 없다. 본 WT 의 착수 권한은 frontier 큐가 아니라 강화 원장(06_Registry/reinforce_ledger_l1.json entries[0].attempts n=6, base RP_20260829_122020_9192)에서 온다. parked_reason=dohoon_decision / dohoon_data_work 항목은 건드리지 않았다.",
+      "infra_note": "인프라 항목은 06_Registry/infra_backlog.json 소관 — 본 레인 대상 아님"
+    },
+    "owner": "alpha-hypothesis (WT-R20260829_006 세션). 병렬 WT-R20260829_004(risk_overlay) · _005(combination) · _007(52주 신고가) 와 mailbox 분리 — 본 세션은 _006 mailbox 밖을 쓰지 않았다.",
+    "cumulative_coordinates_read": {
+      "ledger": "06_Registry/reinforce_ledger_l1.json entries[0] (base_grade F · attempts_used 7)",
+      "l_codes": ["L-RF-20260829_142955 (1/20 이익 서프라이즈 결합 — 음성)", "L-RF-20260829_152717 (2/20 형태 분해 — 귀속=신호)", "L-RF-20260829_163417 (3/20 회전율 조건화 — reject)"],
+      "key_measured_anchors": {
+        "cell4_beta_controlled_alpha_ann": "+5.14%/yr (t 1.205, β 1.058, OTHER tier 91.2%) — 유일 실투형 arm",
+        "reachability_gap": "PORT_t 2.95 필요 활성수익 +13.25%/yr vs 관측 +5.82%/yr",
+        "basis_arithmetic": "기저 음(-) PORT_t 는 알파 판정이 아니라 β 0.199 의 basis 산술",
+        "power_failure_3of20": "검정력 3.0~5.2% (ratio 0.028~0.120) = 착수금지구간 — 착수 후에야 산출됐다"
+      }
+    },
+    "papers_read_directly": [
+      {
+        "role": "base_paper",
+        "citation": "Jegadeesh & Titman (1993), Returns to Buying Winners and Selling Losers, JF 48(1):65-91",
+        "url": "https://www.bauer.uh.edu/rsusmel/phd/jegadeesh-titman93.pdf",
+        "read_status": "기저 충실구현의 원천 — 본 라운드에서 재판독하지 않음(1/20~3/20 에서 소비 완료)"
+      },
+      {
+        "role": "mechanism_paper",
+        "citation": "Ehsani & Linnainmaa (2022), Factor Momentum and the Momentum Factor, JF 77(3):1877-1919, DOI 10.1111/jofi.13131",
+        "urls_fetched": [
+          "https://www.nber.org/system/files/working_papers/w25551/w25551.pdf (NBER WP, Feb 2019, 54p — 전문 판독)",
+          "https://www.q-group.org/resources/Documents/Linnainmaa_Factor%20Momentum%20Paper.pdf (Q-Group 판, 76p — 게재판 정합. 표본 종점 2019-12, PC·모멘텀중립 절 포함 — 전문 판독)"
+        ],
+        "provenance_caveat": "★두 판본의 수치가 다르다. NBER WP(2019-02, 표본 ~2015-12): pooled 절편 0.01%/월(t 0.06) · 기울기 0.52%/월(t 4.67). Q-Group/게재판(표본 ~2019-12, 20팩터 중 모멘텀 2종 제외한 pooled): 절편 0.06%/월(t 0.72) · 기울기 0.45%/월(t 4.22) ⇒ 상승년 이후 0.51%/월. request.json 이 인용한 '손실 1년 뒤 6bp vs 이익 1년 뒤 51bp' 는 **게재판 수치**이며 우리가 원문에서 확인했다. 사전등록 효과크기는 게재판(0.45%/월, t 4.22)을 쓴다.",
+        "extracted_specs": {
+          "1_factor_autocorrelation_design": "종속 = 팩터 f 의 월 t 수익. 독립 = 1{t−12 ~ t−1 평균수익 > 0} 의 지시변수. **스킵월 없음**(개별주 UMD 의 12-2 관행과 다르다 — 팩터는 12-1). pooled 회귀 + SE 월 클러스터, 팩터별 개별 회귀 병기. 팩터 수익 자체는 '상위 3데실 평균 − 하위 3데실 평균'(원논문 정렬 규격 그대로). 정규화: TS 전략 구성 시 모든 팩터를 t 시점까지의 변동성으로 동일화(PC 판과 비교 가능하게). 표본 1964-07~2019-12, 팩터 시작일이 달라 13→20 으로 증가.",
+          "2_6bp_vs_51bp_derivation": "위 pooled 지시변수 회귀의 절편(=하락년 이후 평균 6bp, t 0.72)과 절편+기울기(=상승년 이후 51bp). 기울기 0.45%/월 t 4.22 가 유일한 검정 통계이며, pooled 는 모멘텀 팩터 2종을 **제외**한 18개 비-모멘텀 팩터로 추정. 시사 SE ≈ 0.45/4.22 = 0.107%/월.",
+          "3_concentration_in_high_eigenvalue": "Kozak et al.(2020) 47팩터에서 PC 추출. 5단계 out-of-sample 절차: ①1973-07~월 t 까지의 **일별** 팩터수익 상관행렬에서 고유벡터 ②그 고유벡터로 t+1 까지 PC 월수익 계산 ③t 까지의 평균 0·분산 = 평균 개별팩터 분산이 되도록 demean·lever ④t−11~t 평균수익 부호로 롱/숏 ⑤t+1 수익. 결과: 47 PC 전수 FF5 α 12bp(t 6.63) · 상위 10 PC 만 18bp(t 6.08) · 하위 7 PC 는 7bp(t 2.15). 논리: 저고유값 팩터에 모멘텀이 있으면 차익거래자가 팩터위험 없이 근-차익을 취해 지워버린다 — 그래서 고고유값에만 남는다.",
+          "4_momentum_neutral_factors": "min_x Σ_i (w_i − x_i)² s.t. Σx_i = 0, Σ x_i·r_{i,t−12,t−2} = 0. 부록 C 에서 이는 **원 가중치를 과거수익에 횡단면 회귀한 잔차**와 동치임을 보임: w_{i,t} = a + b·r_{i,t−12,t−2} + x_{i,t}. 평균 R² 2.4%(중앙 1.5%, 범위 0.4~10.2%) ⇒ 원 가중치와의 상관 ≈ 0.99. 결과: 모멘텀-중립 팩터가 프리미엄은 비슷하고 변동성은 낮아 IR 상승(유의 37팩터 중 30팩터). 모멘텀-중립 PC 팩터모멘텀 FF5 α t 8.19(IR 1.20) > 표준 PC t 6.63(IR 0.97). 대결 회귀에서 표준팩터 전략 α 는 t 0.12 로 소멸, 모멘텀-중립 쪽은 t 4.62 로 생존.",
+          "5_spanning_specification": "종속 = 개별주 모멘텀 요인(UMD 규격 — 시총 2 × 과거성과 3 의 6포트, 상위 2 평균 − 하위 2 평균; 정렬변수는 12-2 스킵월). 독립 = FF5 + TS 팩터모멘텀(FMOM). 결과: UMD 절편 0.00%/월(t −0.04). 다른 4종(산업조정·중간기·Sharpe비율·산업)도 전부 spanned — 최대 |t| 1.67. 역방향은 성립 안 함: 개별주 모멘텀 5종을 전부 넣어도 FMOM α 는 t 4.30 으로 생존(최저 4.07).",
+          "6_transmission_identity_eq9": "E[π^mom] = Σ_f cov(r^f_{−t}, r^f_t)·σ²_{β^f} + Σ_{f≠g} cov(r^f_{−t}, r^g_t)·cov(β^g,β^f) + (1/N)Σ_s cov(ε^s_{−t}, ε^s_t) + σ²_η. ★본 설계의 판별 도구. 개별주 모멘텀 이익 = (팩터 자기상관) × (팩터 베타의 횡단면 분산) 의 합.",
+          "7_F_ladder_positive_control": "NBER WP Figure 3 — 팩터 수 F 에 따라 FMOM 의 FF5 α t 가 단조 증가(F=1 평균 2.91 · F=10 6.30 · F=20 7.05)하고, **UMD 를 스패닝하는 능력도 단조 개선**(F=1 잔여 t 2.96 · F=10 1.24 · F=20 0.07). ⇒ 스패닝 실패는 '팩터 모멘텀 부재'와 'F 부족'이 구별 불가하므로 F-사다리 없이는 해석 불가.",
+          "8_crash_link": "NBER WP §4.5 — eq.(10) 으로 첫 항을 ρ_auto 지수로 근사. 그 지수의 probit 에서 1단위 증가가 모멘텀 크래시 확률을 15% 낮춤(z −6.78). 게재판은 이 실증절 대신 Kozak-Shleifer-Vishny(2018) 감정수요 AR(1) 모형으로 이론화.",
+          "9_sentiment_conditioning": "NBER WP — 저-sentiment 국면에서 승자−패자 팩터 격차 71bp/월(t 4.79), 고-sentiment 국면 18bp/월(t 1.32). 게재판에서는 Baker-Wurgler 실증절이 빠지고 KSV 모형의 φ(지속성)로 대체됐다. 본 설계의 ④ 국면 경계는 **이론(φ 붕괴)** 을 1차 근거로 쓰고 WP 실증은 보조로만 인용한다."
+        }
+      }
+    ],
+    "data_feasibility_check": {
+      "factor_panel": "02_Infrastructure/factor_db/factor_registry.json — 팩터 331종, 접두 계열 ~20종(AC/C/CR/D/GR/IN/INV/L/M/MA/MK/Q/R/RE/S/SE/T/TR/V/XF). 선언 계열 15 가 구속 해상도라는 기존 실측(군집 유의에 |rho|≥0.514 필요)을 검정력 계약에 반영한다 — pooled 회귀의 유효 독립수는 331 이 아니다.",
+      "access_rule": "load_month_factors() 경유만(PIT C15). parquet 직접 load 금지.",
+      "daily_factor_store": "FDB-B6_fdb_daily_store 존재(load_daily_factors v2.3, C15 carve-out 해소). ★단 EL2022 PC 절차는 일별 팩터수익 10년+ 를 요구하므로 커버리지 시작시점 확인 전에는 (g) 부수관측을 월별 대체 사양으로 강등할 수 있다 — 이는 1급·2급을 막지 않는다.",
+      "ic_history": "FDB-B7_ic_history_monthly (팩터별 월간 IC) — 수익 자기상관과 별개로 IC 자기상관을 병기할 수 있다."
+    }
+  },
+
+  "candidates": [
+    {
+      "title": "[선택] EL2022 팩터-모멘텀 스패닝 — 개별주 모멘텀이 팩터 모멘텀의 그림자인가",
+      "family": "factor_structure / momentum_mechanism",
+      "mechanism": {
+        "agent": "지속적 스타일 수요를 가진 투자자군 + 그 수요의 공통-공분산 정렬분을 상쇄하지 못하는 차익거래자",
+        "friction": "KR 공매도 제약 + 롱온리 mandate 추적오차 예산 + 상쇄하려면 고고유값 팩터위험을 떠안아야 함",
+        "path": "EL2022 eq.(9) 전달식 — 팩터 자기상관 × 팩터베타 횡단면분산"
+      },
+      "why_not_selected": null,
+      "selection_rationale": "1급이 **전제 검정**이라 결과가 어느 쪽으로 나오든 후속 라운드의 EV 를 확정한다. 나머지 후보 전부가 이 전제에 종속된다(자기상관이 없으면 PC·모멘텀중립·잔차 축은 자동 무의미). 누적 3회가 '재료 추가·형태 교정·조건화' 를 소진했으므로 남은 것은 성과 최대화가 아니라 귀속 확정이다."
+    },
+    {
+      "title": "고유값 정렬 PC 팩터 모멘텀 — EL2022 Table 8 이식",
+      "family": "factor_pc / dimension_reduction",
+      "mechanism": {
+        "agent": "동일(감정수요 투자자군)",
+        "friction": "근-차익 논리 — 저고유값 팩터의 모멘텀은 팩터위험 없이 지워지므로 고고유값에만 남는다",
+        "path": "고유값 상위 PC 의 자기상관 → PC 노출을 통한 종목 수익 전달"
+      },
+      "why_not_selected": "① 1급 전제(팩터 자기상관 유의 양)가 서지 않으면 PC 정렬은 잴 대상이 없다 — 논리적 선후가 있다. ② EL2022 의 5단계 out-of-sample PC 절차는 일별 팩터수익 10년+ 를 요구하는데 FDB-B6 커버리지 시작시점이 미확인이다. ③ 다만 **고유값 정렬 방향성**은 성과와 독립인 기전 반증으로 강력하므로, 선택 후보의 부수 관측 (g)로 흡수했다(전면 축으로 세우지 않고 방향만 확인)."
+    },
+    {
+      "title": "모멘텀-중립 팩터 — EL2022 eq.(20)/(21) 이식",
+      "family": "factor_construction / orthogonalization",
+      "mechanism": {
+        "agent": "동일",
+        "friction": "동일",
+        "path": "가중치를 과거수익에 직교화해도(평균 R² 2.4%, 상관 0.99) 팩터 모멘텀이 남는다 → 팩터 모멘텀이 개별주 모멘텀의 부산물이 아님"
+      },
+      "why_not_selected": "이것은 **인식론적 확인**(팩터 모멘텀이 개별주 모멘텀의 재포장이 아님)이지 우리 기저 F 의 귀속을 (a)/(b) 로 가르지 못한다. 1급이 양(+)으로 서고 2급이 spanned 를 지지한 **뒤에야** 의미가 생긴다. 7/20 이후 후속 축으로 보관."
+    },
+    {
+      "title": "잔차 모멘텀 = 누락팩터 모멘텀 (Grundy-Martin 1998 / EL2022 §5)",
+      "family": "momentum_residual",
+      "mechanism": {
+        "agent": "동일",
+        "friction": "투자자 모형이 오설정이면 누락 팩터의 자기상관이 잔차에 남는다",
+        "path": "M08_Residual_Mom 이 M02 보다 강해야 하고, 팩터셋을 넓히면 그 우위가 소멸해야 한다"
+      },
+      "why_not_selected": "① 재료 축 교체 = 1/20~3/20 이 소진한 계열이고 DIST-AR-041 이 '가격-파생 모멘텀 변형 추가 탐색은 저EV' 로 17건 L-code 실측. ② EL2022 자신이 잔차 모멘텀을 팩터셋 확장 시 유의성 소멸로 **설명**하므로, 이 축의 결과는 선택 후보의 결과에 종속된다 — 독립 정보가 아니다."
+    },
+    {
+      "title": "ρ_auto 크래시 지표 오버레이 (EL2022 eq.(10) + WP §4.5 probit z −6.78)",
+      "family": "regime / overlay",
+      "mechanism": {
+        "agent": "동일",
+        "friction": "동일",
+        "path": "팩터 자기상관 지수가 꺾이는 마디에서 모멘텀이 크래시 → 노출 축소"
+      },
+      "why_not_selected": "① 본 WT 는 S0/S1 이라 오버레이 미적용이 경계다. ② 병렬 WT-R20260829_004(risk_overlay, DM2016/BSC2015)와 축이 정면 충돌한다 — 같은 마디를 두 세션이 각자 재는 것은 검정력 낭비이자 중복 선택이다. ⇒ challenge_flags 로 보관하고 _004 에 라우팅 권고."
+    }
+  ],
+
+  "selected": {
+    "hypothesis_title": "JT1993 강화 6/20 — 팩터 모멘텀 스패닝 검정 (Ehsani-Linnainmaa 2022)",
+
+    "hypothesis_description": "KR 개별주 모멘텀(기저 JT1993 6-6 데실 롱숏, essence F)의 약세는 신호 정의의 결함이 아니라 **전달식의 첫 항이 KR 에서 비어 있기 때문**이라는 기전 가설을 검정한다. EL2022 eq.(9): E[π^mom] = Σ_f cov(r^f_{−t}, r^f_t)·σ²_{β^f} + (교차항·잔차항·평균분산항). 즉 개별주 모멘텀 이익은 (팩터 수익 자기상관) × (팩터 베타의 횡단면 분산) 의 합이며, 앞 항이 0 이면 개별주 모멘텀은 신호 품질과 무관하게 죽는다. 따라서 우리 기저의 약세는 두 갈래로 갈린다 — (a) 개별주 모멘텀 신호 자체가 약하다(강화 2/20 이 도달한 귀속) vs (b) 개별주 모멘텀은 팩터 모멘텀의 그림자인데 KR 팩터들의 자기상관이 약하다. 본 시도는 (a)/(b) 를 가른다. ★이것은 알파 청구가 아니라 **기전 청구의 검정**이며, 설계는 성과 최대화가 아니라 판별로 잡혀 있다. 의사결정 가치: 1급이 음(-)이면 (b) 가 확정되고, 개별주 모멘텀 신호 변형을 계속 소싱하는 후속 라운드(DIST-AR-041 이 이미 17건 L-code 로 저EV 판정)는 근거를 완전히 잃는다. 1급이 양(+)이고 2급 스패닝이 성립하면 (b) 가 확정되되 경로가 열린다 — 팩터 수준에서 재료를 찾아야 한다는 뜻이다. 1급이 양(+)인데 2급 스패닝이 실패하면 (a) 로 회귀하며 개별주 모멘텀에 팩터 모멘텀 밖 정보가 있다는 뜻이다(EL2022 의 KR 이식 실패).",
+
+    "mechanism": {
+      "agent": "**지속적 스타일-단위 수요를 가진 투자자군**과 **그 수요를 상쇄하지 않는 국내 롱온리 차익거래자**. KR 실명: (i) 수요 측 — 스타일 단위로 지속 유입·유출되는 외국인·기관 배분 흐름(A6_investor_flow_stock_daily · FDB-B4_registry_investor_flow_monthly 의 INV01~INV06 계열이 관측하는 주체)과 그 반대편의 개인 순매수 군집(INV07_Retail_Contrarian). (ii) 차익 측 — 국내 연기금·공모펀드 등 롱온리 mandate 기관. Kozak-Shleifer-Vishny(2018) 틀에서 수요는 AR(1) 지속성 φ 를 갖고, 차익거래자는 그 수요 중 **공통 공분산에 정렬된 성분**만 상쇄하지 못한다. ★정직 고지: '감정수요 투자자' 는 KR 에서 직접 관측되지 않으며 INV 계열 flow 로 **대리**된다. EL2022 자신도 Baker-Wurgler 지수로 대리했고 게재판에서 그 실증절을 뺐다. 주체 특정의 강도는 friction·path 축보다 약하다.",
+      "friction": "**왜 지워지지 않는가 — 셋이 겹친다.** ① KR 공매도 제약: 개별주 공매도 금지 구간이 반복되고 대차 가용성이 제한되어, 팩터의 숏 레그를 직접 실행하는 상쇄 거래 자체가 성립하지 않는다(우리 고정 축이 long-only 인 것도 같은 현실의 반영이다). ② EL2022 의 근-차익 논리: 자기상관을 상쇄하려면 **고유값이 큰(=체계적) 팩터 위험**을 떠안아야 한다. 위험을 지지 않고 지울 수 있는 것(저고유값 팩터)은 이미 지워졌고, 남은 것은 위험을 져야만 지울 수 있는 것이다 — 그래서 자기상관이 고고유값 쪽에 집중된다(EL2022 Table 8: 상위 10 PC t 6.08 vs 하위 7 PC t 2.15). ③ 롱온리 mandate 의 추적오차 예산이 스타일 편차를 되돌리는 속도를 구조적으로 제한한다.",
+      "path": "**어떻게 수익이 되나 — 항등식이지 서술이 아니다.** 종목 수익이 R_{s,t} = Σ_f β^f_s r^f_t + ε_{s,t} 로 생성되면, 과거 12개월 승자는 최근 잘한 팩터에 양(+)으로, 패자는 음(-)으로 적재된다. 횡단면 모멘텀 전략의 기대 이익은 EL2022 eq.(9) 로 정확히 분해된다: **Σ_f cov(r^f_{−t}, r^f_t)·σ²_{β^f}** (팩터 자기상관 × 베타 분산) + Σ_{f≠g} cov(r^f_{−t}, r^g_t)·cov(β^g,β^f) (교차항 — EL2022 부록 A.3 이 부호 동시성 요구 때문에 무시가능 실증) + 잔차 자기상관 + 평균수익 분산. 시점·형태: 팩터 수익이 t−12~t−1 에 양(+)이면 t 월에도 평균 51bp(vs 하락년 뒤 6bp) 로 이어지고(EL2022 Table 2, 게재판 기울기 0.45%/월 t 4.22), 그 지속이 승자 종목의 유지된 팩터 노출을 통해 다음 달 수익으로 실현된다. 역으로 자기상관이 동시에 음으로 꺾이면 곱이 뒤집혀 모멘텀이 크래시한다(WP §4.5 probit z −6.78). ⇒ 이 경로가 KR 에서 끊긴 지점을 찾는 것이 본 라운드다."
+    },
+
+    "falsification": {
+      "layering_note": "★Q-Lead 정정(2026-08-29 착수 중 주입) 반영. 1급·2급은 **팩터/요인 수익 수준의 통계**이며 포트폴리오 envelope 이 적용되지 않는다 — 전제·기전 검정이지 성과 판정이 아니다. 3급만이 성과 판정이며 그 arm 은 전부 실투형(long-only · ≤25종 · K200∪KQ150 · 15bps v2.4 delta · Σw=1 · 비중 상한 없음)이어야 하고 비교 대상(cell4)도 실투형이다. 팩터 수익 시계열이 롱숏 스프레드인 것은 팩터의 정의이지 envelope 위반이 아니다 — 금지되는 것은 **포트폴리오 성과 판정을 envelope 밖 구성 위에 세우는 것**이다. envelope 밖 포트폴리오 구성이 진단상 필요하면 `reference_only_not_verdict_bearing` 라벨을 달고, 제약-귀속·완화 레버 제시는 금지(INV-7).",
+
+      "tier1_premise": {
+        "name": "1급 — KR 팩터 수익의 12-1 자기상관 (전제 검정 · 성과 아님 · envelope 미적용)",
+        "level": "factor_level_statistic",
+        "spec": "EL2022 Table 2 사양 그대로. 종속 = 팩터 f 의 월 t 수익. 독립 = 1{팩터 f 의 t−12 ~ t−1 평균수익 > 0} 지시변수(**스킵월 없음** — 개별주 UMD 의 12-2 관행과 다르다). pooled 회귀 + SE 월 클러스터. 팩터별 개별 회귀 병기. 모멘텀 계열 팩터는 pooled 에서 **제외**(EL2022 게재판과 동일 — 그러지 않으면 종속변수에 검정 대상이 들어간다).",
+        "sample_axis": "2005-01 ~ 2026-08, 형성창 12개월 차감. 유니버스 K200∪KQ150. 팩터 접근 = load_month_factors() 경유(PIT C15).",
+        "preregistered_primary_spec": "**계열-대표 사양** — 선언 계열별 대표 1팩터. 331 전수 사양은 병기하되 1급이 아니다(월 클러스터로도 계열 내 중복이 t 를 부풀린다 — 계열 15 가 구속 해상도라는 기존 실측 + 군집 유의에 |rho|≥0.514 필요).",
+        "reject_if": "pooled 기울기 β̂ ≤ 0 **또는** |t(β̂)| < 1.96 → EL2022 의 전제가 KR 에 없다. 이 경우 '개별주 모멘텀 약세' 는 팩터 모멘텀 부재의 **따름정리**로 귀속되며, 개별주 모멘텀 신호 변형 소싱의 EV 가 0 임이 확정된다.",
+        "reporting_obligation": "★**결과와 무관하게 라운드 헤드라인으로 먼저 보고**한다. 2급·3급 결과가 어떻든 1급 판정을 뒤로 미루거나 부기로 내리는 것은 금지."
+      },
+
+      "tier2_spanning": {
+        "name": "2급 — 개별주 모멘텀의 팩터-모멘텀 스패닝 (기전 검정 · 성과 아님 · envelope 미적용)",
+        "level": "factor_level_regression",
+        "spec": "종속 = KR 개별주 모멘텀 요인(M02 6-1 기반, EL2022 Table 6 Panel A 규격 = 시총 2 × 과거성과 3 의 6포트에서 상위 2 평균 − 하위 2 평균). 독립 = KR 기본 요인집합 + **TS-FMOM**(시계열 팩터 모멘텀: 각 팩터의 t−12~t−1 평균수익 부호로 롱/숏, 월 리밸, 전 팩터를 t 시점까지 변동성으로 동일화). 절편의 NW 조정 t 를 본다.",
+        "reject_if": "TS-FMOM 을 통제한 뒤에도 개별주 모멘텀 절편의 |t| ≥ 1.96 → spanned 아님 = **EL2022 의 KR 이식 실패**(개별주 모멘텀에 팩터 모멘텀 밖 정보가 있다). 귀속은 (a) 로 회귀.",
+        "reverse_regression_obligation": "역방향 필수 — TS-FMOM 을 종속으로, 개별주 모멘텀 요인들을 독립으로. EL2022 에서는 이 방향이 성립하지 않았다(FMOM α t 4.30, 최저 4.07). KR 에서 **양방향 모두 spanned** 로 나오면 그건 스패닝이 아니라 두 계열이 같은 것을 재고 있다는 뜻이며 판정 무효.",
+        "positive_control_F_ladder": "★필수. EL2022 Figure 3 이식 — TS-FMOM 을 F ∈ {1, 5, 10, 전 계열} 로 재구성했을 때 개별주 모멘텀의 잔여 |t| 가 **F 에 대해 단조 감소**해야 한다(EL2022: F=1 잔여 t 2.96 → F=10 1.24 → F=20 0.07). 단조성이 없으면 배관 결함 의심 → 판정 보류. **이 사다리 없이는 2급이 해석 불가하다**: '스패닝 실패' 와 'F 가 작아서 못 잡음' 이 구별되지 않기 때문이다(KR 유효 계열 ≈15 < EL2022 의 18~47).",
+        "no_signal_control": "매월 팩터 부호를 무작위로 뒤집은 sham-FMOM 으로 동일 회귀. sham 과 구별 불가하면 2급 판정 무효(무신호 대조 규약 — 1/20~3/20 에서 8 arm 전부 구별불가였던 전례)."
+      },
+
+      "tier3_consumption": {
+        "name": "3급 — 소비면 전이 (★성과 판정. 전 arm 실투형 의무)",
+        "level": "portfolio_performance_verdict",
+        "envelope": "long-only(w ≥ 0) · ≤25종 · K200∪KQ150 · 2005-01-01~2026-08 · 15bps v2.4_kr_retail delta-based · Σw = 1 · 비중 상한 없음(v10) · PIT C1~C15. 오버레이 미적용(S0/S1).",
+        "spec": "TS-FMOM 이 지시하는 팩터 노출을 종목 스코어로 사영해 구성한 실투형 top-25 arm 의 β-통제 α(연율). 비교 대상 = 강화 2/20 cell4 (+5.14%/yr, t 1.205, β 1.058) — **cell4 도 실투형 arm 이므로 동종 대비다**.",
+        "reject_if": "cell4 대비 β-통제 α 증분 ≤ 0 → 팩터 모멘텀이 소비면으로 전이되지 않음.",
+        "preregistered_expectation": "★**음(-)일 것으로 사전 기대한다.** 근거 = DIST-RAMP-014 실측: '팩터 모멘텀 배분을 KR 배포 형태인 top-25 횡단면으로 변환하면 엣지가 남지 않는다 — 변환에서 살아남는 것은 알파가 아니라 베타(cor(시장상관, clean IR) = +0.974)' + 무신호 대조(시총 상위 25 cap-w) 구별 불가 + 필요 신호품질 = 현행 rank-IC 의 4.18배. ⇒ **3급 실패는 이 라운드의 실패가 아니며 1급·2급 판정을 뒤집지 못한다.** 반대로 3급이 양(+)으로 나오면 그것은 DIST-RAMP-014 의 반증이므로 별도 재현 의무(production 실코드 경로 재측정 — DIST-AR-051 규약)가 발생한다.",
+        "mandatory_confounder_controls": [
+          "EW-유니버스 대비 PORT_t 병기 (cap-w 벤치 아티팩트 분리 — 2/20 에서 cell4 의 EW-유니버스 PORT_t 1.426 이 cap-w 1.294 와 갈렸다)",
+          "cap-tier 분해 병기 (MEGA top-10 / MID 11-30 / OTHER — 2/20 cell4 보유의 91.2% 가 OTHER tier 였다. 양(+)이 소형주 노출인지 신호인지 분리 못 하면 인용 불가)",
+          "무신호 대조 필수 — 시총 상위 25 cap-w 및 무작위 25종. 구별 불가면 screen-tier 등재 불가",
+          "시장-내(K200 / KQ150) 랭킹 통제 — 3/20 의 유일한 |t|>2 관측이 시장 더미 아티팩트(V1 KOSDAQ 14.1% vs V3 65.3%)였다"
+        ]
+      },
+
+      "ancillary_observables_non_performance": [
+        {
+          "id": "a_factor_return_autocorr_panel",
+          "observation": "팩터 수익 자기상관 계수의 계열별 분포 — EL2022 는 20팩터 중 모멘텀 팩터를 뺀 전부에서 기울기가 양(+)이고 9개가 5% 유의였다. KR 에서 기울기의 **부호 분포**가 대칭이면 자기상관 구조 자체가 없다는 강한 증거다(pooled t 만 보는 것보다 판별력이 높다).",
+          "field_dictionary_refs": ["FDB-B6_fdb_daily_store", "FDB-B1_registry_fundamental_quarterly", "FDB-B2_registry_rawdata_price_daily", "FDB-B3_registry_consensus_daily", "FDB-B4_registry_investor_flow_monthly", "FDB-B5_registry_macro"]
+        },
+        {
+          "id": "b_ic_autocorrelation_vs_return_autocorrelation",
+          "observation": "팩터별 월간 IC 의 자기상관을 팩터 **수익** 자기상관과 나란히 낸다. 둘이 갈리면(예: IC 는 지속되는데 수익은 아님) 그 자체가 신호다 — 지속되는 것이 신호 품질인지 프리미엄인지 갈린다. EL2022 는 수익 자기상관만 쟀으므로 이 대조는 KR 고유 증거가 된다.",
+          "field_dictionary_refs": ["FDB-B7_ic_history_monthly", "FDB-B8_daily_ic_panel_fq055"]
+        },
+        {
+          "id": "c_beta_dispersion_second_term",
+          "observation": "★전달식 두 번째 요소 σ²_{β^f}(팩터 베타의 횡단면 분산)를 KR 에서 산출한다. 이것이 **(b) 안을 다시 두 갈래로 가른다**: ρ_auto > 0 인데 σ²_β 가 작아 전달이 안 되는 것이면 귀속은 '자기상관 부재'가 아니라 '전달 실패'다. 반대로 σ²_β 가 충분한데도 개별주 모멘텀이 없다면 첫 항이 범인이라는 귀속이 강화된다. EL2022 eq.(9)/(10) 을 그대로 쓴다.",
+          "field_dictionary_refs": ["A1_RAWDATA_OHLCVS_daily", "A3_universe_support_membership_panels", "A4_benchmark_kospi200"]
+        },
+        {
+          "id": "d_eigenvalue_ordering_direction",
+          "observation": "★**성과와 독립인 가장 강한 기전 반증.** EL2022 의 근-차익 논리는 자기상관이 **고고유값** PC 쪽에 몰릴 것을 요구한다(상위 10 PC t 6.08 vs 하위 7 PC t 2.15). KR 팩터 상관행렬의 PC 를 고유값 순으로 정렬해 자기상관(또는 TS-FMOM 이익)을 재었을 때 **부호/순서가 반대(저고유값에 몰림)면 마찰 논리가 KR 에 없다 → 메커니즘 기각**. 자기상관이 관측되더라도 그렇다. PC 추출은 EL2022 5단계 out-of-sample 절차를 그대로 따른다(t 까지 데이터로 고유벡터 → t+1 수익 → t 까지로 demean/lever). ⚠ 일별 팩터수익 커버리지가 10년+ 에 미달하면 월별 대체 사양으로 강등하고 그 사실을 기록 — 1급·2급을 막지 않는다.",
+          "field_dictionary_refs": ["FDB-B6_fdb_daily_store", "FDB-B10_registry_meta_and_caches"]
+        },
+        {
+          "id": "e_crash_coincidence",
+          "observation": "eq.(10) 의 ρ_auto 지수가 꺾이는 달과 KR 개별주 모멘텀 크래시 달이 겹치는가. 우리 기저는 MDD 86.7% 이고 2/20 이 패자 데실 손실의 **반등월 집중**을 BM 수익 통제 후에도 확인했다(−0.0427/월, t −2.367). 겹치지 않으면 '모멘텀이 팩터를 간접 타이밍한다' 는 주장이 KR 에서 성립하지 않는다.",
+          "field_dictionary_refs": ["E3_macro_regime_monthly", "E7_unified_regime_3layer", "A4_benchmark_kospi200"]
+        },
+        {
+          "id": "f_universe_and_liquidity_pit",
+          "observation": "팩터 수익 패널의 유니버스·유동성 필터가 PIT 로 적용됐는지. KQ150 백필이 편입 22 / 퇴출 0 인 '퇴출 미기록 누적 명부' 라는 기존 실측이 있으므로 2015-07 이전 구간의 팩터 수익은 생존편향 의심 구간으로 별도 표기한다.",
+          "field_dictionary_refs": ["A3_universe_support_membership_panels", "A9_liquidity_avgtv20_convention", "A2_universe_krx_monthly"]
+        }
+      ],
+
+      "pit_stress_obligations": [
+        "lag 사다리 필수 — 팩터 수익 자기상관에서 형성창 종점을 t−1 / t−2 / t−3 으로 밀며 단조 감쇠 확인. DIST-RAMP-006 의 방법 교훈: placebo·OOS·DSR·정적틸트 분해가 전부 통과했는데도 동월 look-ahead 를 못 잡았고 **shift A/B 만 갈랐다**.",
+        "load_month_factors() 경유 강제(C15). Factor DB parquet 직접 load 금지.",
+        "형성창 t−12~t−1 은 팩터 규격이고 개별주 모멘텀 요인의 정렬변수는 12-2 스킵월이다 — 두 규격을 혼용하지 말 것(EL2022 가 명시적으로 다르게 쓴다).",
+        "PIT C1~C15 전체. 위반은 계층 무관 절대 기각."
+      ],
+
+      "prepower_contract": {
+        "gate": "★**착수 전 검정력 게이트 — alpha-research Step 0 에서 산출, 1급 실측 이전. ratio < 0.15 이면 착수 중단 · 설계 변경.**",
+        "why": "강화 3/20 은 검정력 3.0~5.2%(ratio 0.028~0.120 = 착수금지구간)로 돌았고 그 사실이 **착수 후에야** 산출됐다. 재발 방지.",
+        "el2022_implied_effect_size": {
+          "pooled_slope": "0.45 %/month (게재판 Table 2 · 상승년 이후 0.51%/월 − 하락년 이후 0.06%/월)",
+          "t_value": 4.22,
+          "implied_clustered_se": "≈ 0.107 %/month (= 0.45 / 4.22)",
+          "sample": "1964-07 ~ 2019-12 (≈666 months) × 18 non-momentum factors, SE clustered by month",
+          "source": "https://www.q-group.org/resources/Documents/Linnainmaa_Factor%20Momentum%20Paper.pdf Table 2 (게재판 정합). NBER WP w25551 판은 0.52%/월 t 4.67 — 판본 차이를 반드시 기록할 것."
+        },
+        "kr_quantities_to_compute": [
+          "n_months (2005-01 ~ 2026-08 에서 형성창 12개월 차감 — 선언값이 아니라 **실측 유효 월수**. 3/20 교훈: 선언 창과 실측 창이 갈린다)",
+          "F_eff = 선언 계열 수 (≈15). ★331 을 쓰지 말 것 — 계열 15 가 구속 해상도이고 군집 유의에 |rho| ≥ 0.514 가 필요하다는 기존 실측",
+          "계열 내 평균 |rho| 실측 → 유효 클러스터 수 보정",
+          "MDE80 (월-클러스터 SE 하 검정력 80% 최소검출효과)",
+          "ratio = EL2022 효과크기(0.45%/월) / MDE80",
+          "기대 t 와 검정력(power)"
+        ],
+        "per_tier": "1급 · 2급 · 3급 각각 별도 산출. 특히 2급은 F-사다리 각 단계(F=1/5/10/전수)에서도 산출 — F 가 작을 때의 검정력 부족을 '스패닝 실패' 로 오독하지 않기 위해.",
+        "action_on_fail": "ratio < 0.15 → 착수 중단. 설계 변경 경로 = ① F_eff 를 늘릴 수 없으므로(계열 15 가 상한) 창을 넓히거나 ② 일별 축으로 정보 회수(EL2022 자신이 PC 고유벡터를 일별로 뽑는다) ③ 그래도 안 되면 verdict 를 미결(underpowered)로 정직 산출하고 '효과 없음' 으로 승격하지 않는다."
+      },
+
+      "self_check_against_exhausted_path": "★설계가 '팩터를 타이밍해 수익을 낸다' 로 환원되면 DIST-RAMP-026 / DIST-AR-033 / DIST-RAMP-014 와 같은 소진 경로다. **판별 규칙(기계적)**: 라운드 헤드라인이 3급의 PORT_t 또는 β-통제 α 가 되는 순간 환원됐다. 헤드라인은 항상 1급(전제)과 2급(스패닝)이고 3급은 부기다. L-code 의 lessons 첫 문장이 3급 성과로 시작하면 그 라운드는 소진 경로로 접수하고 종결한다."
+    },
+
+    "regime_scope": {
+      "holds_in": [
+        "normal / expansion — 스타일 배분 흐름이 지속되는 국면. KSV(2018) 에서 자기상관은 감정수요 AR(1) 지속성 φ 가 충분히 클 때 발생한다(EL2022 §6, φ > R_f 조건)",
+        "low-sentiment 국면 — EL2022 NBER WP 실측: 저-sentiment 에서 승자−패자 팩터 격차 71bp/월(t 4.79) vs 고-sentiment 18bp/월(t 1.32). KR 대응 라벨은 E3_macro_regime_monthly / E7_unified_regime_3layer 의 neutral·recovery"
+      ],
+      "weakens_or_reverses_in": [
+        "crisis — 유동성 청산이 스타일 지속성을 압도해 φ 가 붕괴한다. 팩터 부호가 **동시에** 반전하고, 전달식 첫 항의 곱이 뒤집혀 개별주 모멘텀이 크래시한다(EL2022: 'most of the autocorrelations sometimes, and abruptly, turn negative at the same time')",
+        "급반등(rebound) 국면 — 우리 실측: 강화 2/20 에서 기저 패자 데실 손실이 반등월에 집중되고 BM 수익 통제 후에도 생존(−0.0427/월, t −2.367). 즉 KR 에서 팩터 부호가 동시 반전하는 마디가 실존하며 그것이 반등월이다",
+        "high-sentiment 국면 — EL2022 WP 에서 격차가 18bp/월(t 1.32) 로 유의성 상실"
+      ],
+      "boundary_rationale": "경계는 성과 관찰이 아니라 **메커니즘의 구동 파라미터에서 도출된다**. 기전은 감정수요의 지속성 φ 에 전적으로 의존한다 — φ 가 크면 팩터 수익이 양(+)자기상관을 갖고, φ 가 깨지면 자기상관이 동시에 음으로 꺾인다(KSV 2018 의 AR(1) 수요 + EL2022 §6 의 φ > R_f 조건). 따라서 φ 가 붕괴하는 국면(위기 청산·정책 충격 후 급반등)에서 이 가설은 **약화가 아니라 역전**된다. 이는 EL2022 가 크래시를 ρ_auto 지수로 예측한 것(probit z −6.78)과 같은 진술이다. ★보편타당 주장을 하지 않는다: EL2022 자신도 자기상관이 상시 양(+)이라고 주장하지 않으며, 오히려 '왜 자기상관이 가끔, 그리고 갑자기, 동시에 음으로 꺾이는가' 를 이론이 설명해야 할 두 번째 과제로 남겼다. ⚠정직 고지: rebound 경계의 절반은 우리 자신의 2/20 실측에서 왔고 그건 이 기저와 **같은 데이터**다 — 사후 관찰 혐의를 완전히 벗지 못한다. 그래서 국면 조건부 판정은 사전등록 1급이 **아니며**(1급은 무조건부 pooled), 국면 분해는 진단으로만 낸다."
+    }
+  },
+
+  "divergence_from_settled_negatives": {
+    "cards": ["DIST-RAMP-026 (factor_timing_allocation, DISTILLED_NEG)", "DIST-AR-033 (factor_timing, DISTILLED_NEG · pending_5axis)", "DIST-RAMP-014 (팩터 모멘텀 배분 → top-25 변환, DISTILLED_COND)"],
+    "their_question": "'국면/팩터 타이밍 **배분 규칙**으로 KR 배포 형태(top-25 long-only)에서 **알파를 벌 수 있나**'. 산출물은 배분 규칙과 그 성과였고, 판정은 성과 문턱이었다. 실측 결론: 변환에서 살아남는 것은 알파가 아니라 베타이며(cor(시장상관, clean IR) = +0.974), 채택팔조차 무신호 대조(시총 상위 25 cap-w)와 구별되지 않았고, 필요 신호품질은 현행의 4.18배다.",
+    "our_question": "'개별주 모멘텀 **수익이 팩터-모멘텀 요인에 spanned 되는가**(스패닝 회귀 절편의 유의성)'. 산출물은 배분 규칙이 아니라 **회귀 절편의 t** 이고, 판정 기준은 성과 문턱이 아니라 스패닝 여부다. 그리고 그 판정은 포트폴리오 변환(top-25 · long-only · 15bps)을 **거치지 않는 팩터 수준 통계**이므로 DIST-RAMP-014 가 실측한 '변환 손실' 마디를 통과하지 않는다.",
+    "index_evidence": "hypothesis_index lookup(\"spanning\") = **no prior attempt matched**. 소진 좌표에 이 축의 선례가 0건이다. 반면 lookup(\"factor_timing\") 은 30건, lookup(\"factor_momentum\") 은 12건 — 그 전부가 '배분·타이밍으로 성과' 좌표다.",
+    "decision_value": "본 라운드의 가치는 알파가 아니라 **후속 탐색의 EV 확정**이다. 1급이 음(-)이면 (b)가 확정되고, DIST-AR-041 이 17건 L-code 로 이미 저EV 판정한 '개별주 모멘텀 신호 변형 소싱' 이 근거를 완전히 잃는다 — 남은 강화 시도(7/20 이후)의 축 선택이 바뀐다.",
+    "collapse_condition": "본 설계가 '팩터를 타이밍해 수익을 낸다' 로 환원되면 위 세 카드와 같은 경로다. 기계적 판별 규칙은 falsification.self_check_against_exhausted_path 에 못박았다."
+  },
+
+  "challenge_flags": [
+    "[대안 보관 · C2] 고유값 정렬 PC 팩터 모멘텀(EL2022 Table 8) — 1급이 양(+)으로 서면 전면 축으로 승격. 현재는 부수 관측 (d)로 방향만 확인. 일별 팩터수익 10년+ 커버리지 확인이 선행조건.",
+    "[대안 보관 · C3] 모멘텀-중립 팩터(EL2022 eq.20/21 — 가중치를 과거수익에 횡단면 회귀한 잔차). 1급·2급이 모두 지지된 뒤의 후속 축. 인식론적 확인이지 (a)/(b) 판별 도구가 아니다.",
+    "[대안 보관 · C4] 잔차 모멘텀 = 누락팩터 모멘텀(Grundy-Martin / EL2022 §5). DIST-AR-041 저EV 판정 + 결과가 C1 에 종속되어 독립 정보가 아님.",
+    "[라우팅 권고 · C5] ρ_auto 크래시 지표 오버레이(EL2022 eq.10 + WP §4.5 probit z −6.78) — 본 WT 는 S0/S1 오버레이 미적용이 경계이고, 병렬 WT-R20260829_004(risk_overlay, DM2016/BSC2015)와 축이 충돌한다. _004 로 라우팅 권고. 두 세션이 같은 마디를 각자 재면 검정력 낭비이자 중복 선택이다.",
+    "[설계 약점 · W1 PARTIAL] mechanism.agent 의 '감정수요 투자자군' 은 KR 에서 직접 관측되지 않고 INV 계열 flow 로 대리된다. EL2022 자신도 Baker-Wurgler 지수로 대리했고 게재판에서 그 실증절을 뺐다. 주체 특정의 강도는 friction·path 축보다 약하다 — 산출물에 명시했다.",
+    "[설계 약점 · W3 PARTIAL] regime_scope 의 rebound 경계 절반이 우리 자신의 2/20 실측에서 왔다 = 같은 데이터의 사후 관찰. 나머지 절반(φ 붕괴)만 사전 이론 도출이다. 국면 조건부 판정을 사전등록 1급에서 뺀 것이 완화책이다.",
+    "[설계 약점 · W4 PARTIAL] 3급 좌표는 DIST-RAMP-014 와 정확히 겹친다 — 그 부분은 재포장이 맞다. 그래서 3급을 헤드라인에서 내리고 사전등록 기대를 음(-)으로 선언했다. '재포장 아님' 은 1급·2급에 한해서만 성립한다.",
+    "[설계 약점 · W5 ACCEPT] KR 유효 계열 ≈15 는 EL2022 의 F=18~47 보다 작다. EL2022 Figure 3 이 보인 대로 스패닝 능력은 F 에 단조 증가하므로, KR 에서 스패닝이 실패해도 그것이 '팩터 모멘텀 부재' 인지 'F 부족' 인지 구별되지 않는다. F-사다리 양성 대조 + 사전 검정력 계약이 유일한 판별 수단이며, 둘 다 없으면 2급은 해석 불가다.",
+    "[설계 약점 · W6 PARTIAL] 부수 관측 (d) 고유값 정렬은 EL2022 절차상 일별 팩터수익 10년+ 를 요구한다. FDB-B6 커버리지 시작시점 미확인 — 미달 시 월별 대체 사양으로 강등하고 사실을 기록. 1급·2급은 월별로 충분하므로 verdict 를 blocked 로 만들 사유는 아니다.",
+    "[측정 규약 승계] 2/20 이 확정한 basis 산술 — 롱숏 논문 충실구현은 β-통제 α 를 병기하지 않으면 신호와 무관하게 F 를 받는다(기저 음(-) PORT_t 의 73%가 β basis, 27%만 α). 3급 보고에 β-통제 α 병기 의무.",
+    "[판본 경고] EL2022 는 NBER WP(2019, 표본 ~2015-12)와 게재판(~2019-12)의 수치가 다르다. 사전등록 효과크기는 게재판(pooled 기울기 0.45%/월, t 4.22)을 쓰며, WP 수치(0.52%/월, t 4.67)를 섞어 인용하지 말 것."
+  ],
+
+  "self_adversarial_challenge": {
+    "note": "축소판(설계 축 4종). 상세 = qepm/mailbox/worktask/WT-R20260829_006/challenge_note_hypothesis.md",
+    "axes": [
+      {"axis": "① 메커니즘이 사후 서술(story-fitting)인가", "verdict": "PARTIAL", "summary": "agent 는 대리 관측(약함). friction 은 KR 실명 관측 가능(공매도 제약). path 는 서술이 아니라 EL2022 eq.(9) 항등식 — 이 축은 강하다."},
+      {"axis": "② 반증조건이 성과 동어반복으로 위장됐나", "verdict": "ACCEPT → 수정 반영", "summary": "초안 3급은 성과다. 1급을 팩터-수준 통계로 못박고 3급 사전등록 기대를 음(-)으로 선언했으며, 성과와 독립인 기전 반증 2건((d) 고유값 정렬 방향성 · (c) σ²_β 분해)을 추가했다."},
+      {"axis": "③ 국면 경계가 메커니즘에서 도출됐나", "verdict": "PARTIAL", "summary": "절반은 φ 붕괴 이론에서 사전 도출, 절반은 우리 데이터의 사후 관찰. 국면 조건부를 사전등록 1급에서 제외."},
+      {"axis": "④ settled-negative 의 재포장인가", "verdict": "PARTIAL → 1급·2급 한정 REBUTTAL", "summary": "3급은 DIST-RAMP-014 좌표와 겹친다(재포장 맞음, 그래서 강등). 1급·2급은 포트폴리오 변환을 거치지 않는 팩터-수준 통계이고 lookup(\"spanning\") 선례 0건."},
+      {"axis": "⑤ [추가] 검정력이 설계를 지지하는가", "verdict": "ACCEPT", "summary": "KR 유효 계열 15 < EL2022 F 18~47. F-사다리 + 사전 검정력 계약(ratio < 0.15 → 착수 중단) 없이는 2급이 해석 불가."}
+    ],
+    "prohibited_vocabulary_check": "'미미 / 관행적 / 보수적이면 OK' 류 합리화 어휘 미사용 확인."
+  },
+
+  "verdict": "designed",
+
+  "handoff": {
+    "to": "alpha-research",
+    "next_steps": "Step 1~7 + ⑤ AST 구성. ★착수 순서 강제: (1) Step 0 잔여 = 사전 검정력 계약 산출(1급·2급·3급 각각 + F-사다리 각 단계) → **ratio < 0.15 이면 착수 중단·설계 변경 요청을 alpha-hypothesis 로 회신**(임의 진행 금지). (2) 1급 실측 → 결과 무관 헤드라인 보고. (3) 2급 — F-사다리 양성 대조와 sham-FMOM 무신호 대조를 회귀 **이전에** 배선. (4) 3급 — 전 arm 실투형, cell4 대비, EW-유니버스/cap-tier/무신호/시장-내 랭킹 통제 4종 병기. (5) lag 사다리 PIT 스트레스는 1급·2급 공히 의무.",
+    "inherited_without_rewrite": "mechanism / falsification / regime_scope 는 alpha-research 가 재작성하지 않는다. 결함 발견 시 수정이 아니라 challenge_note.md 기록 + 재설계 요청(Charter 원칙 8 No Silent Override).",
+    "not_done_here": ["⑤ AST factors[] 구성", "𝒪 연산자 선택 · 리프 매핑 · self_pit_check", "팩터 소싱 · 신호공학", "canonical_screen_bt 실측 · 백테스트 · 등급 선언", "alpha_package.json 발행", "공분산 · weights"],
+    "request_json_title_injection": "불필요 — request.json 에 hypothesis_title 이 이미 존재한다(\"JT1993 강화 6/20 — 팩터 모멘텀 스패닝 검정 (Ehsani-Linnainmaa 2022)\")."
+  }
+}

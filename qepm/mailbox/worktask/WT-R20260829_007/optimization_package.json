@@ -1,0 +1,575 @@
+{
+  "task_id": "WT-R20260829_007",
+  "agent": "optimizer-research",
+  "spec_version": "opt_v1.3",
+  "as_of_date": "2026-08-28",
+  "wt_type": "reinforcement",
+  "upstream": {
+    "alpha_package": "qepm/mailbox/worktask/WT-R20260829_007/alpha_package.json",
+    "risk_package": "qepm/mailbox/worktask/WT-R20260829_007/risk_package.json",
+    "alpha_scores": "stage_artifacts/WT_R20260829_007/alpha_scores.parquet",
+    "period_returns": "stage_artifacts/WT_R20260829_007/period_returns_production.csv (strict-PIT 판만 소비)",
+    "ab_file_not_consumed": "period_returns_same_close_ab.csv - A/B 대조용, 소비하지 않음"
+  },
+  "predeclaration_ref": "stage_artifacts/WT_R20260829_007/op_predeclaration.md",
+  "selection_objective": "net_ir",
+  "selection_objective_note": "사전 선언(method_comparison 산출 이전). 선택축에서 명시 배제: sharpe 단독(Hook 금지) / beta(risk 1급 경고 - 하방 TDC 0.545, COVID beta 0.946 이므로 저-beta 는 위험 축소가 아니다) / MDD(등급 미접촉).",
+  "method_selected": "M2_EW25_buffer50",
+  "method_selected_full": "근접도 top-25 · 등가중 · no-trade band(보유 종목은 근접도 순위 <= 50 인 동안 유지, 공석만 상단에서 충원)",
+  "target_weights": {
+    "A000810": 0.04,
+    "A001450": 0.04,
+    "A001800": 0.04,
+    "A003490": 0.04,
+    "A007070": 0.04,
+    "A010950": 0.04,
+    "A026960": 0.04,
+    "A030000": 0.04,
+    "A032640": 0.04,
+    "A033780": 0.04,
+    "A051900": 0.04,
+    "A055550": 0.04,
+    "A078930": 0.04,
+    "A086790": 0.04,
+    "A096530": 0.04,
+    "A105560": 0.04,
+    "A138040": 0.04,
+    "A161390": 0.04,
+    "A161890": 0.04,
+    "A192820": 0.04,
+    "A241710": 0.04,
+    "A271560": 0.04,
+    "A280360": 0.04,
+    "A282330": 0.04,
+    "A483650": 0.04
+  },
+  "active_weights": {
+    "A000810": 0.033262,
+    "A001450": 0.037429,
+    "A001800": 0.038473,
+    "A003490": 0.036045,
+    "A007070": 0.038184,
+    "A010950": 0.035014,
+    "A026960": 0.038036,
+    "A030000": 0.038185,
+    "A032640": 0.036928,
+    "A033780": 0.034795,
+    "A051900": 0.037345,
+    "A055550": 0.031269,
+    "A078930": 0.035785,
+    "A086790": 0.032568,
+    "A096530": 0.03834,
+    "A105560": 0.030509,
+    "A138040": 0.034503,
+    "A161390": 0.036511,
+    "A161890": 0.037623,
+    "A192820": 0.037744,
+    "A241710": 0.03844,
+    "A271560": 0.037247,
+    "A280360": 0.038588,
+    "A282330": 0.038061,
+    "A483650": 0.03794
+  },
+  "active_weights_note": "활성 = target - cap-weighted 적격 유니버스(벤치 프록시, risk capw 좌표계 동형). 미보유 322종의 음(-)활성은 암묵이며 전체 합 = 0.",
+  "n_names": 25,
+  "hhi": 0.04,
+  "max_weight": 0.04,
+  "min_weight": 0.04,
+  "sum_weights": 1,
+  "min_names_enforced": true,
+  "hhi_enforced": false,
+  "winsor_applied": false,
+  "lambda_retries": 0,
+  "lambda_used": null,
+  "breadth_note": "min_names 15 / hhi_cap 0.10 는 등가중 25종에서 자동 충족(HHI 0.04). winsor/lambda 는 선택 method 가 QP 를 쓰지 않아 해당 없음.",
+  "expected_active_return": 0.028728,
+  "expected_tracking_error": 0.168955,
+  "expected_information_ratio": 0.170031,
+  "expected_note": "risk 발행 as-of covariance.parquet(347x347) 사용. alpha_vector 를 그대로 mu 로 소비(재해석 없음).",
+  "turnover": 0.862604,
+  "turnover_annual_2way": 10.3513,
+  "turnover_annual_1way": 5.1756,
+  "turnover_convention": "sum|dw| (양방향, 직전월말 drift 후 비중 대비) x 12 = round-trip 연율. x12 는 월 1회 리밸 규약이며 round-trip 이중계상 없음.",
+  "estimated_cost": 0.015527,
+  "cost_model_version": "v2.4_kr_retail_15bps (delta-based, one-way)",
+  "binding_constraints": ["turnover_hard_cap_11.0_two_way (G5 - 수신 사양이 위반 상태였음)", "max_names_25", "long_only", "sum_w_equals_1"],
+  "infeasibility_report": null,
+  "constraint_incident_report": {
+    "incident": "수신 사양(alpha 생산 = 근접도 top-25 등가중)은 연 양방향 회전 15.31 로 constraint_defaults.json::turnover_hard_fail_annual = 11.0 을 위반한 상태였다.",
+    "detected_at": "사전 선언 게이트 G5 (method_comparison 이전)",
+    "resolution": "제약을 완화하지 않고 no-trade band 를 도입해 10.35 로 충족. 완화·예외 0건.",
+    "silent_override": false,
+    "cost_of_resolution": "총활성 -127bps/yr / 비용 -74bps/yr / 순활성 -52bps/yr"
+  },
+  "method_comparison": {
+    "M1_EW25_base": {
+      "net_ir": 0.2598,
+      "turnover_annual_2way": 15.149,
+      "G5_turnover_cap_pass": false,
+      "active_return_ann": 0.042,
+      "net_cagr": 0.1266,
+      "net_sharpe": 0.6518,
+      "hhi": 0.04,
+      "max_weight": 0.04,
+      "cost_ann": 0.0227,
+      "capacity_aum_median_krw": 1617650743,
+      "capacity_aum_last12m_krw": 7461991536,
+      "evt_es99_monthly": 0.2144,
+      "realized_beta_diagnostic_only": 0.727,
+      "new_names_per_month": 15.76,
+      "eligible": false
+    },
+    "M2_EW25_buffer40": {
+      "net_ir": 0.2652,
+      "turnover_annual_2way": 11.769,
+      "G5_turnover_cap_pass": false,
+      "active_return_ann": 0.0407,
+      "net_cagr": 0.126,
+      "net_sharpe": 0.6562,
+      "hhi": 0.04,
+      "max_weight": 0.04,
+      "cost_ann": 0.0177,
+      "capacity_aum_median_krw": 2134642132,
+      "capacity_aum_last12m_krw": 7756983291,
+      "evt_es99_monthly": 0.2266,
+      "realized_beta_diagnostic_only": 0.737,
+      "new_names_per_month": 12.15,
+      "eligible": false
+    },
+    "M2_EW25_buffer50": {
+      "net_ir": 0.237,
+      "turnover_annual_2way": 10.196,
+      "G5_turnover_cap_pass": true,
+      "active_return_ann": 0.0368,
+      "net_cagr": 0.1223,
+      "net_sharpe": 0.6445,
+      "hhi": 0.04,
+      "max_weight": 0.04,
+      "cost_ann": 0.0153,
+      "capacity_aum_median_krw": 2600228331,
+      "capacity_aum_last12m_krw": 7789598655,
+      "evt_es99_monthly": 0.2076,
+      "realized_beta_diagnostic_only": 0.722,
+      "new_names_per_month": 10.46,
+      "eligible": true
+    },
+    "M2_EW25_buffer60": {
+      "net_ir": 0.2863,
+      "turnover_annual_2way": 8.954,
+      "G5_turnover_cap_pass": true,
+      "active_return_ann": 0.0431,
+      "net_cagr": 0.1282,
+      "net_sharpe": 0.6597,
+      "hhi": 0.04,
+      "max_weight": 0.04,
+      "cost_ann": 0.0134,
+      "capacity_aum_median_krw": 2934600968,
+      "capacity_aum_last12m_krw": 8446208408,
+      "evt_es99_monthly": 0.2561,
+      "realized_beta_diagnostic_only": 0.756,
+      "new_names_per_month": 9.11,
+      "eligible": true
+    },
+    "M2_EW25_buffer75": {
+      "net_ir": 0.0545,
+      "turnover_annual_2way": 7.443,
+      "G5_turnover_cap_pass": true,
+      "active_return_ann": 0.0081,
+      "net_cagr": 0.0897,
+      "net_sharpe": 0.5039,
+      "hhi": 0.04,
+      "max_weight": 0.04,
+      "cost_ann": 0.0112,
+      "capacity_aum_median_krw": 3524435039,
+      "capacity_aum_last12m_krw": 8674483585,
+      "evt_es99_monthly": 0.2311,
+      "realized_beta_diagnostic_only": 0.756,
+      "new_names_per_month": 7.46,
+      "eligible": true
+    },
+    "M3_ALPHA_TILT": {
+      "net_ir": 0.1656,
+      "turnover_annual_2way": 15.776,
+      "G5_turnover_cap_pass": false,
+      "active_return_ann": 0.0283,
+      "net_cagr": 0.1125,
+      "net_sharpe": 0.6005,
+      "hhi": 0.0436,
+      "max_weight": 0.06,
+      "cost_ann": 0.0237,
+      "capacity_aum_median_krw": 1754099491,
+      "capacity_aum_last12m_krw": 6176383259,
+      "evt_es99_monthly": 0.1967,
+      "realized_beta_diagnostic_only": 0.679,
+      "new_names_per_month": 15.76,
+      "eligible": false
+    },
+    "M4_MVO_TO": {
+      "net_ir": 0.0628,
+      "turnover_annual_2way": 14.125,
+      "G5_turnover_cap_pass": false,
+      "active_return_ann": 0.0107,
+      "net_cagr": 0.0979,
+      "net_sharpe": 0.5743,
+      "hhi": 0.053,
+      "max_weight": 0.1583,
+      "cost_ann": 0.0212,
+      "capacity_aum_median_krw": 1551129486,
+      "capacity_aum_last12m_krw": 5187850992,
+      "evt_es99_monthly": 0.1602,
+      "realized_beta_diagnostic_only": 0.596,
+      "new_names_per_month": 15.61,
+      "eligible": false
+    },
+    "M5_BUF40_MVO_TO": {
+      "net_ir": 0.0932,
+      "turnover_annual_2way": 10.511,
+      "G5_turnover_cap_pass": true,
+      "active_return_ann": 0.0149,
+      "net_cagr": 0.1033,
+      "net_sharpe": 0.6089,
+      "hhi": 0.0534,
+      "max_weight": 0.1438,
+      "cost_ann": 0.0158,
+      "capacity_aum_median_krw": 1897489869,
+      "capacity_aum_last12m_krw": 5631768418,
+      "evt_es99_monthly": 0.1783,
+      "realized_beta_diagnostic_only": 0.615,
+      "new_names_per_month": 11.99,
+      "eligible": true
+    },
+    "M5_BUF50_MVO_TO": {
+      "net_ir": 0.0669,
+      "turnover_annual_2way": 9.015,
+      "G5_turnover_cap_pass": true,
+      "active_return_ann": 0.0109,
+      "net_cagr": 0.0994,
+      "net_sharpe": 0.5936,
+      "hhi": 0.0535,
+      "max_weight": 0.1456,
+      "cost_ann": 0.0135,
+      "capacity_aum_median_krw": 2262548833,
+      "capacity_aum_last12m_krw": 5581118619,
+      "evt_es99_monthly": 0.1766,
+      "realized_beta_diagnostic_only": 0.596,
+      "new_names_per_month": 10.33,
+      "eligible": true
+    },
+    "M5_BUF60_MVO_TO": {
+      "net_ir": 0.1751,
+      "turnover_annual_2way": 7.82,
+      "G5_turnover_cap_pass": true,
+      "active_return_ann": 0.0279,
+      "net_cagr": 0.1163,
+      "net_sharpe": 0.6536,
+      "hhi": 0.0531,
+      "max_weight": 0.1598,
+      "cost_ann": 0.0117,
+      "capacity_aum_median_krw": 2539186025,
+      "capacity_aum_last12m_krw": 5509192071,
+      "evt_es99_monthly": 0.1793,
+      "realized_beta_diagnostic_only": 0.642,
+      "new_names_per_month": 9.01,
+      "eligible": true
+    },
+    "M5_BUF75_MVO_TO": {
+      "net_ir": -0.0428,
+      "turnover_annual_2way": 6.281,
+      "G5_turnover_cap_pass": true,
+      "active_return_ann": -0.0065,
+      "net_cagr": 0.0794,
+      "net_sharpe": 0.4885,
+      "hhi": 0.0526,
+      "max_weight": 0.1718,
+      "cost_ann": 0.0094,
+      "capacity_aum_median_krw": 3218503360,
+      "capacity_aum_last12m_krw": 7271315897,
+      "evt_es99_monthly": 0.1853,
+      "realized_beta_diagnostic_only": 0.651,
+      "new_names_per_month": 7.34,
+      "eligible": true
+    }
+  },
+  "method_comparison_window": "공통 비교창 2006-01 ~ 2026-08 (247개월). Sigma warm-up 12개월을 모든 계열에 동일 적용 - 방법론 간 창 길이 차이를 없애기 위함(비교가능성 요건이지 성과 선택이 아님).",
+  "method_shopping_log": {
+    "candidates_tried": 11,
+    "families_predeclared": 5,
+    "n_trials_optimizer_for_downstream_dsr": 11,
+    "posterior_default": true,
+    "posterior_note": "Cycle2 L-code posterior: 25종 broad-alpha 에서 MVO/HRP/ERC 집중은 net SR 을 떨어뜨린다(DeMiguel-Garlappi-Uppal 2009). 본 라운드가 재확인 - MVO sizing 이 net_ir 0.260 -> 0.063.",
+    "sweep_escalation_trigger": "risk_package heavy-tail 진단 임계 발화(TDC 0.545 / Hill alpha 2.93) -> 5계열 비교로 확장",
+    "b_ladder_rule": "사전 선언: G5 를 만족하는 최소 B. 성과로 B 를 고르지 않았다 - 증거: B=60(net_ir 0.2863 로 더 높고 G5 도 통과)을 채택하지 않았다.",
+    "parallel_exec": false,
+    "n_workers": 1
+  },
+  "hard_constraint_verification": {
+    "max_names_25": {
+      "pass": true,
+      "observed_max": 25,
+      "dates_checked": 260
+    },
+    "long_only": {
+      "pass": true,
+      "min_weight_all_dates": 0.04
+    },
+    "sum_w_1": {
+      "pass": true,
+      "max_abs_dev": 2.22044604925031e-16
+    },
+    "weight_cap": {
+      "applies": false,
+      "note": "v10 2026-08-29 종목별 비중 상한 폐지 - long-only 하한만"
+    },
+    "liquidity": {
+      "pass": true,
+      "note": "유니버스는 alpha 발행 적격집합 승계. 관측 최소 20일 ADV = 2.005e8 KRW >= 2e8"
+    },
+    "universe": "KOSPI200_KOSDAQ150_intersection (PIT 시변 멤버십, alpha 승계)"
+  },
+  "hook_bidirectional_probe": {
+    "hook": "02_Infrastructure/hooks/worktask_constraint_enforcer.sh (PreToolUse[Write])",
+    "wt_type_resolved": "request.json wt_type=reinforcement -> deployment 분기(전 제약 강제)",
+    "CLEAN_25": "allow ({})",
+    "VIOL_n26": "block - max_names 26 > 25",
+    "VIOL_negative_weight": "block - long-only 위반 (A000810 = -0.04)",
+    "VIOL_sum_1_26": "block - sum w = 1.2600 != 1.0",
+    "note": "양성 대조(clean 통과) + 위반 주입 3종 전부 차단 실증. 경고 0 만으로 방어선이라 부르지 않는다.",
+    "probe_payloads": "stage_artifacts/WT_R20260829_007/_hookprobe_*.json"
+  },
+  "schedule": {
+    "weights_csv": "stage_artifacts/WT_R20260829_007/weights.csv",
+    "unique_dates": 260,
+    "alpha_sig_dates_realized": 259,
+    "alpha_sig_dates_total": 260,
+    "schedule_density_ratio": 1,
+    "first_date": "2005-01-31",
+    "last_date": "2026-08-28",
+    "deploy_cutoff": "2026-08-28 (as-of). 본 후보는 alpha train cutoff 와 deploy cutoff 가 동일 - 별도 lockbox 분리 없음.",
+    "deploy_extension_note": "weights.csv 는 실현수익이 아직 없는 2026-08-28 배포행을 포함한다. forge 는 259 실현월로 측정하고 260번째 행은 배포 스냅숏이다.",
+    "walk_forward": true,
+    "single_snapshot": false
+  },
+  "turnover_capacity_tradeoff": {
+    "baseline": {
+      "method": "M1_EW25_base",
+      "to_2way": 15.308,
+      "cost_ann": 0.023,
+      "gross_active_ann": 0.062,
+      "net_active_ann": 0.039,
+      "breakeven_oneway_bps": 40.51,
+      "cap_median_krw": 1486910575,
+      "cap_p10_krw": 621504147,
+      "cap_last12m_krw": 7461991536
+    },
+    "selected": {
+      "method": "M2_EW25_buffer50",
+      "to_2way": 10.351,
+      "cost_ann": 0.0155,
+      "gross_active_ann": 0.0494,
+      "net_active_ann": 0.0338,
+      "breakeven_oneway_bps": 47.68,
+      "cap_median_krw": 2396681939,
+      "cap_p10_krw": 709220806,
+      "cap_last12m_krw": 7789598655
+    },
+    "delta": {
+      "turnover_pct": -32.4,
+      "cost_saved_bps_yr": 74,
+      "gross_alpha_lost_bps_yr": 127,
+      "net_active_bps_yr": -52,
+      "breakeven_headroom_bps": 7.17,
+      "capacity_median_pct": 61.2
+    },
+    "cost_sensitivity": {
+      "bps_15": {
+        "M1": 0.039,
+        "SEL": 0.0338
+      },
+      "bps_40_5": {
+        "M1": 0,
+        "SEL": 0.0074
+      },
+      "bps_50": {
+        "M1": -0.0145,
+        "SEL": -0.0024
+      },
+      "bps_60": {
+        "M1": -0.0298,
+        "SEL": -0.0128
+      }
+    },
+    "capacity_convention": "AUM 상한 = min over traded names of (0.10 x ADV20_t-1 / |dw_i|). 매매 구속 종목 기준(보수적). risk 발행 중앙 31억은 다른 집계 규약이며 본 값이 그것을 뒤집지 않는다.",
+    "honest_read": "비용 절감(74bps)보다 알파 손실(127bps)이 크다. 회전 제어는 순활성을 개선하지 못했고 제약 충족과 용량(+61%)과 손익분기 여유(+7.2bps)를 샀다."
+  },
+  "risk_usage": {
+    "sigma_source": "risk 발행 covariance.parquet (as-of 스냅숏 지표 산출용)",
+    "sigma_walkforward_instantiation": {
+      "used_in": ["M4_MVO_TO", "M5_BUF40_MVO_TO", "M5_BUF50_MVO_TO", "M5_BUF60_MVO_TO", "M5_BUF75_MVO_TO"],
+      "used_in_selected": false,
+      "recipe_inherited_from": "risk rk5_walkforward.R (LW-Omega / rolling-60 D / p10 floor / B = MKT + 섹터더미 + 7스타일)",
+      "parameters_chosen_by_optimizer": "없음 - 추정기/shrinkage/창/floor 전량 risk 승계",
+      "disclosure": "risk 는 as-of Sigma 1개만 발행했다. 259개월 schedule 비교를 위해 risk 의 조립식을 결정시점마다 인스턴스화했다. 재추정이 아니라 적용이지만 경계 사안이므로 명시 공개한다(No Silent Override). 선택된 M2 는 Sigma 를 쓰지 않으므로 발행 weights 에 대한 영향은 0 이다.",
+      "pit": "결정시점 t 에서 f_1..f_{t-1}, u_1..u_{t-1} 만 사용(risk C1 규약 동일)",
+      "ledoit_wolf_direct_estimator": "사용하지 않음 - risk 가 rho=1.000 상관구조 전멸 + walk-forward bias 2.194 로 기각한 추정기로 되돌아가지 않았다."
+    },
+    "beta_not_used_as_risk_proxy": {
+      "statement": "beta 는 목적함수/제약/선택축 어디에도 들어가지 않았다.",
+      "objective": "max w'(c.alpha) - (lambda/2) w'Sigma w - psi sum w^2 (1-c)^2 - phi sum|dw|  -- beta 항 없음",
+      "gates": "G1~G6 전부 beta 무관(종목수/부호/합/유니버스/회전/schedule density)",
+      "selection": "net_ir 단일. beta 는 진단 컬럼으로만 기록",
+      "demonstration": "선택 method 실현 beta 0.731 은 baseline 0.737 과 사실상 동일 - 회전 제어가 beta 를 바꾸지 않았고 바꾸려 하지도 않았다. beta 를 위험 대리로 썼다면 최저 beta arm(M4 = 0.596)이 선택됐어야 하는데 그 arm 은 net_ir 로 탈락했다.",
+      "tail_axis_reported_instead": {
+        "evt_gpd_es99_monthly_selected": 0.2123,
+        "evt_gpd_xi_selected": 0.1443,
+        "evt_gpd_es99_monthly_baseline": 0.217,
+        "risk_published_es99": 0.216905,
+        "reproduction_note": "baseline ES99 0.2170 은 risk tail_risk.json 의 0.216905 를 독립 재현한다(검증).",
+        "hill_alpha_monthly": 2.9266,
+        "lower_tdc_5pct": 0.545,
+        "covid_beta_realized_selected": 0.66,
+        "normal_cvar_use": "금지 - 3/4차 적률 발산 영역(Hill alpha 2.93). EVT GPD 값만 사용."
+      }
+    },
+    "d_floor_bias_diagnosis": {
+      "applies_to": "최소분산 계열(M4/M5). 선택된 M2 는 Sigma-free 이므로 발행 비중에는 해당 없음",
+      "floored_names_per_month": 3,
+      "floored_share_of_25": 0.12,
+      "variance_lift_mean": 1.0606,
+      "floored_VOL_exposure_mean": -0.794,
+      "book_VOL_exposure_mean": -0.104,
+      "floored_SIZE_exposure_mean": 1.502,
+      "book_SIZE_exposure_mean": 0.385,
+      "corr_D_raw_VOL_exposure_timemean": 0.5738,
+      "finding": "p10 바닥은 25종 book 안에서 월평균 3종의 특이분산을 6.1% 올린다. 그 3종은 체계적으로 대형(SIZE +1.50) 저변동(VOL -0.79) 종목이다 - 최소분산형 목적함수는 정확히 그 종목들을 덜 선호하게 된다. risk 의 경고를 정량 확인했다.",
+      "d_not_independent_noise": "corr(D_raw, VOL 노출) 시간평균 +0.574 (risk as-of 실측 +0.768 과 동부호). D 를 독립 잡음으로 보면 변동성 집중이 안 보인다는 risk 진술을 시계열로 재확인.",
+      "effect_on_emitted_weights": 0
+    }
+  },
+  "exposure_handling": {
+    "basis": "활성 = book - cap-weighted 적격 유니버스. 시간평균 259개월.",
+    "before_M1": {
+      "SIZE": -0.4345,
+      "MOM": 0.974,
+      "REV": 0.9724,
+      "VOL": 0.1038,
+      "LIQ": 0.3765,
+      "INDMOM": 0.4687,
+      "SIGNAL": 1.1671
+    },
+    "after_selected": {
+      "SIZE": -0.3907,
+      "MOM": 0.9853,
+      "REV": 0.7673,
+      "VOL": 0.0704,
+      "LIQ": 0.3392,
+      "INDMOM": 0.4745,
+      "SIGNAL": 1.1209
+    },
+    "as_of_snapshot_M1": {
+      "SIZE": -0.31,
+      "MOM": 0.937,
+      "REV": 0.888,
+      "VOL": -0.674,
+      "LIQ": 0.178,
+      "INDMOM": -0.112,
+      "SIGNAL": 1.717
+    },
+    "as_of_snapshot_selected": {
+      "SIZE": -0.37,
+      "MOM": 0.72,
+      "REV": 0.342,
+      "VOL": -0.963,
+      "LIQ": 0.281,
+      "INDMOM": -0.318,
+      "SIGNAL": 1.601
+    },
+    "sign_conflict_disclosure": "VOL 활성은 표본평균 +0.070 인데 as-of 스냅숏은 -0.963 으로 부호가 반대다. 단일 스냅숏으로 판정하지 않고 양쪽을 병기한다(risk 지시).",
+    "reading": "no-trade band 는 VOL(+0.104 -> +0.070) / LIQ(+0.377 -> +0.339) / REV(+0.972 -> +0.767) 를 완만히 낮춘다. 그러나 SIZE(-0.435 -> -0.391) / SIGNAL(1.167 -> 1.121) 은 거의 그대로다 - 축 노출은 신호의 정체성이지 회전의 부산물이 아니며 회전 제어로 제거되지 않는다.",
+    "rf_r1_response": "risk 가 exposure bound 를 optimizer 로 위임했으나 본 라운드는 노출 bound 를 제약으로 걸지 않았다 - 사전 선언 게이트에 없었고 사후 추가는 사전등록 파기이기 때문이다. next_probe 로 넘긴다."
+  },
+  "red_flags": {
+    "RF_O1": {
+      "severity": "HIGH",
+      "fired": false,
+      "note": "binding 4건 < K/2 = 12.5"
+    },
+    "RF_O2": {
+      "severity": "HIGH",
+      "fired": false,
+      "margin": "순활성 3.38%/yr vs 2x비용 3.11%/yr = 2.18배. 여유 27bps 로 아슬아슬하며 비용이 40.5bps 로 오르면 즉시 발화한다."
+    },
+    "RF_O3": {
+      "severity": "MEDIUM",
+      "fired": false,
+      "note": "월 회전 0.863 >> 0.02"
+    },
+    "RF_O4": {
+      "severity": "HIGH",
+      "fired": false,
+      "note": "선택 method 는 QP 미사용(dual 없음). M4/M5 QP 는 247/247 정상해, fallback 0건"
+    },
+    "RF_O5": {
+      "severity": "CRITICAL",
+      "fired": false,
+      "observed": 25
+    },
+    "RF_O6": {
+      "severity": "CRITICAL",
+      "fired": false,
+      "observed_max_dev": 2.22044604925031e-16
+    },
+    "RF_O7": {
+      "severity": "CRITICAL",
+      "fired": false,
+      "observed_min": 0.04,
+      "note": "v10 상한 폐지 - 하한만 검사"
+    },
+    "RF_O9": {
+      "severity": "CRITICAL",
+      "fired": false,
+      "note": "weights.csv 260 as_of_date 시계열. single-snapshot 아님."
+    }
+  },
+  "pit": {
+    "as_of": "2026-08-28",
+    "checks": {
+      "C1": "의사결정 경로(op3_sigma_mod / op4_core / op6 emit_run / op9)는 결정시점 t 이전 정보만 사용. Sigma 인스턴스화는 f_1..f_{t-1}. 버퍼 상태는 직전월 보유에서만 전이.",
+      "C2": "같은 달 수익 미사용. 선별은 fh_lag1d(t-1 종가 기준 근접도).",
+      "C5": "오버레이 미적용(S0/S1 준수).",
+      "C6": "유니버스는 alpha 발행 PIT 시변 멤버십 승계 - ever-member 확장 없음.",
+      "C8": "FM weight same-day 미사용. alpha 의 lambda_FM 은 발행값 그대로 소비.",
+      "C10": "유동성은 alpha 승계 t-1 ADV20. 재계산 없음.",
+      "C11": "외부 시차 데이터 미사용. 시간축 단일.",
+      "C13": "부호 반전 없음.",
+      "C15": "Factor DB parquet 직접 load 0건 - 모든 입력은 alpha/risk 발행 산출물."
+    },
+    "detect_lookahead": {
+      "decision_path": {
+        "files": ["op3_sigma_mod.R", "op4_core.R", "op6_emit_prep.R", "op9_weights_csv.R"],
+        "violations": 1,
+        "detail": "op6_emit_prep.R:38 C1 - 사후 성과 요약 함수 fs() 의 sd(act)*sqrt(12). 비중 생성 루프 emit_run() 과 분리된 평가기이며 어떤 비중에도 입력되지 않는다."
+      },
+      "evaluator": {
+        "files": ["op1_engine.R", "op2_sigmafree.R", "op4_mvo.R", "op5_compare.R", "op7_diag.R", "op8_asof.R", "op10_hookprobe.R", "op11_pit.R"],
+        "violations": 2,
+        "detail": "op2:58 / op5:26 - 동일 범주(sd()*sqrt() 연율화). risk 층이 양성 대조로 확인한 오탐 범주."
+      },
+      "pattern_evasion": "없음 - 탐지 회피 목적의 코드 수정 0건(금지 규약 준수)"
+    },
+    "reconstruction_check": "M1(alpha 생산 사양) 재현: ret_gross 최대오차 4.996e-16 (259/259 월 일치). traded 최대오차 0.0497 - drift 규약 차이(본 엔진은 직전월말 drift 후 비중 대비). 연회전 15.31 vs alpha 발행 15.23."
+  },
+  "schema_validation_note": "02_Infrastructure/worktask/schema.json:17 의 task_id 패턴은 여전히 ^WT-[DPSH][0-9]{8}_[0-9]{3}$ 로 v10 접두 R 을 포함하지 않는다(미수리 확인). 다만 본 라운드의 wt_validate_package(task_id, optimization_package) 실행 결과는 valid=TRUE 였다 - 그 검증기가 optimization_package 경로에서 task_id 패턴을 실제로 행사하지 않기 때문이며, 패턴 결함이 고쳐진 것이 아니다. 우회 시도 0건, 내용 기반 검증 완주. 수리는 별건 태스크.",
+  "challenge_note_ref": "qepm/mailbox/worktask/WT-R20260829_007/challenge_note_optimizer.md",
+  "weight_method_selected_ref": "stage_artifacts/WT_R20260829_007/weight_method_selected.md",
+  "explanation": {
+    "top_overweights": ["A000810", "A001450", "A001800", "A003490", "A007070"],
+    "main_tradeoffs": ["수신 사양이 회전 hard cap(11.0)을 위반하고 있었다 - 이번 라운드의 실제 문제는 sizing 이 아니라 제약 충족이었다.", "no-trade band 로 회전 15.31 -> 10.35 (-32%). 대가는 총활성 -127bps/yr, 이득은 비용 -74bps/yr -> 순활성 -52bps/yr.", "따라서 optimizer 는 알파를 더하지 못했다. 산 것은 제약 충족 + 용량(+61%) + 손익분기 여유(+7.2bps)다.", "MVO sizing 은 net_ir 을 0.260 -> 0.063 으로 파괴했다 - DeMiguel 2009 / Grinold breadth 재확인.", "회전은 selection 에서 나오지 sizing 에서 나오지 않는다: MVO 단독(M4)은 회전을 15.15 -> 14.13 밖에 못 줄였다."],
+    "what_this_optimizer_did_not_fix": "2020-26 순활성 -4.72%/yr -> -4.54%/yr. oos_retention proxy 는 -0.384 -> -0.425 로 오히려 악화. 이 후보의 병은 회전이 아니라 후반부 신호 붕괴이며 비중 설계로 닿지 않는다."
+  },
+  "handoff_to_forge": {
+    "chain_completion_mandate": "음성 판정이 체인을 멈추지 않는다. 본 패키지는 forge 로 넘어가 essence 등급을 받는다.",
+    "weights": "stage_artifacts/WT_R20260829_007/weights.csv (260 as_of_date x 25종)",
+    "grade_declaration": "금지 - 등급은 essence_score.R 소관",
+    "known_weaknesses_for_downstream": ["회전 제어는 이 후보의 진짜 병을 못 건드린다: 2020-26 순활성 -4.72 -> -4.54%/yr(개선 18bps). oos_retention proxy 악화(-0.384 -> -0.425).", "손익분기 편도 47.7bps. 현행 15bps 대비 3.18배 여유지만 실제 왕복비용이 50bps 를 넘으면 순활성이 음(-)이다.", "축 노출(SIGNAL +1.12 / MOM +0.99 / REV +0.77 / LIQ +0.34 / SIZE -0.39)은 상시이며 회전 제어로 사라지지 않는다.", "as-of VOL 활성 -0.963 vs 표본평균 +0.070 - 부호 반대. 단일 스냅숏 판정 금지.", "MDD(진단 라벨) -49.6%(baseline -50.4%). 등급 판정은 Calmar 소관이며 산출은 forge.", "optimizer 단계 시행수 11 - 하류 DSR 계산에 반영할 것(optimizer 서치 = sweep 형 selection)."]
+  }
+}

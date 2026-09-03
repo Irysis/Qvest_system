@@ -6,6 +6,39 @@
       "agent": "q-lead",
       "action": "WT_CREATED",
       "summary": "Work Task 생성: JT1993 강화 6/20 — 팩터 모멘텀 스패닝 검정 (Ehsani-Linnainmaa 2022) | source=user_defined"
+    },
+    {
+      "timestamp": "2026-08-29T18:36:10+0900",
+      "agent": "risk",
+      "action": "CHALLENGE_REVIEWED",
+      "summary": "Review: risk raised objection — WT006R-07 비-모멘텀 구성이 모멘텀 중립 아님(book x_f_momentum +0.469sd) + 구간 이질성/회전 레그 무우위 정량화. alpha 무수정.",
+      "objection_raised": true,
+      "reason": "WT006R-07 비-모멘텀 구성이 모멘텀 중립 아님(book x_f_momentum +0.469sd) + 구간 이질성/회전 레그 무우위 정량화. alpha 무수정.",
+      "targets_reviewed": [
+        "alpha_package",
+        "confidence_vector",
+        "factor_specs"
+      ]
+    },
+    {
+      "timestamp": "2026-08-29T19:06:39+0900",
+      "agent": "optimizer",
+      "action": "CHALLENGE_REVIEWED",
+      "summary": "Review: optimizer raised objection — WT006O-01 [MEDIUM · Optimizer->Risk] risk 의 역사 노출패널(r1_reg::BB)이 beta 24개월 이력 미달 종목을 통째로 제외해, 전략의 실현",
+      "objection_raised": true,
+      "reason": "WT006O-01 [MEDIUM · Optimizer->Risk] risk 의 역사 노출패널(r1_reg::BB)이 beta 24개월 이력 미달 종목을 통째로 제외해, 전략의 실현 보유 종목-월 1160/6200(18.71%)에 노출행이 없다(2011-08-31 실측: 유니버스 337 중 패널 173). as_of 에는 Blume 사전값(beta 1.0)이 적용됐으나 역사 패널에는 미적용 — as_of Sigma 커버리지 347/347 과 역사 커버리지가 비대칭이다. 본 라운드는 중립 사전값(z=0)으로 채우고 영향을 격리 실증했다(선택된 EW_band40 은 Sigma 미사용 -> 승자 비중 영향 0). alpha_package/risk_package 수정 요구 아님 — 체인 완주 의무상 phase 되돌림 없이 원장 기록. WT006R-07(모멘텀 비중립) 은 인지·정량화 완료: 밴드가 노출을 +0.187->+0.226sigma 로 키우며, 중립화 가격은 net -0.83%/yr(t -0.615) + turnover 8.74->11.45(게이트 재위반)라 미적용.",
+      "targets_reviewed": [
+        "risk_package",
+        "covariance.parquet",
+        "exposure_matrix.parquet",
+        "factor_covariance.parquet",
+        "specific_risk.parquet",
+        "tail_risk.json",
+        "challenge_note_risk.md",
+        "alpha_package",
+        "alpha_vector",
+        "confidence_vector"
+      ]
     }
   ]
 }

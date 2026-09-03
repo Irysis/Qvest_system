@@ -1,0 +1,643 @@
+{
+  "meta": {
+    "wt_id": "WT-R20260829_007",
+    "test_id": "F4",
+    "tier": "confound_rejection_mandatory",
+    "metric_type": "cross_sectional_regression",
+    "envelope_applicability": "NOT_APPLICABLE — 단면 회귀. 포트폴리오 판정 아님.",
+    "control_transform_convention": "z = 시장-내(또는 혼합) 단면 정규분위(rank -> qnorm). 직교화는 raw/rank 두 규약 병기 — '통제했다' 진술은 변환 규약 없이 강도가 미정이다(measurement-graduation §3).",
+    "pit_c15": "L01/L09/L11/D35/M06/M02/M07/M17 전부 load_month_factors() 경유 · Z_Score_Aligned 그대로(C13)",
+    "n_months": 259
+  },
+  "parity_own_signal_vs_factordb_M06": {
+    "mean_abs_spearman": 0.99999995,
+    "median_spearman": 1,
+    "min_abs": 0.99999518,
+    "n_months": 259,
+    "note": "Z_Score_Aligned 는 IC 로 방향이 결정되므로 부호는 데이터 산물이다 — 크기(|rho|)만 읽는다. |rho| ~ 1 이면 자체 산출 신호가 등재 M06 과 동일 대상."
+  },
+  "ladder_pooled": {
+    "S0_signal_only": {
+      "step": "S0_signal_only",
+      "controls": [],
+      "n_months": 259,
+      "n_obs_median": 339,
+      "signal_lambda_monthly": 0.00116706,
+      "signal_lambda_ann_pct": 1.40047774,
+      "signal_nw_t": 0.84861553,
+      "all_coefs": {
+        "(Intercept)": {
+          "var": "(Intercept)",
+          "mean": 0.01027775,
+          "nw_t": 2.65924882
+        },
+        "z_fh252": {
+          "var": "z_fh252",
+          "mean": 0.00116706,
+          "nw_t": 0.84861553
+        }
+      }
+    },
+    "S1_plus_mom_size": {
+      "step": "S1_plus_mom_size",
+      "controls": ["jt6", "logsize"],
+      "n_months": 259,
+      "n_obs_median": 339,
+      "signal_lambda_monthly": 0.00238658,
+      "signal_lambda_ann_pct": 2.86390105,
+      "signal_nw_t": 1.63842713,
+      "all_coefs": {
+        "(Intercept)": {
+          "var": "(Intercept)",
+          "mean": 0.0103268,
+          "nw_t": 2.67328379
+        },
+        "z_fh252": {
+          "var": "z_fh252",
+          "mean": 0.00238658,
+          "nw_t": 1.63842713
+        },
+        "z_jt6": {
+          "var": "z_jt6",
+          "mean": -0.00060602,
+          "nw_t": -0.43853865
+        },
+        "z_logsize": {
+          "var": "z_logsize",
+          "mean": -0.0024333,
+          "nw_t": -1.88288137
+        }
+      }
+    },
+    "S2_plus_indmom": {
+      "step": "S2_plus_indmom",
+      "controls": ["jt6", "logsize", "ind6"],
+      "n_months": 259,
+      "n_obs_median": 339,
+      "signal_lambda_monthly": 0.00243621,
+      "signal_lambda_ann_pct": 2.92345394,
+      "signal_nw_t": 1.68388095,
+      "all_coefs": {
+        "(Intercept)": {
+          "var": "(Intercept)",
+          "mean": 0.01033487,
+          "nw_t": 2.67368249
+        },
+        "z_fh252": {
+          "var": "z_fh252",
+          "mean": 0.00243621,
+          "nw_t": 1.68388095
+        },
+        "z_jt6": {
+          "var": "z_jt6",
+          "mean": -0.00150061,
+          "nw_t": -1.24557443
+        },
+        "z_logsize": {
+          "var": "z_logsize",
+          "mean": -0.00222484,
+          "nw_t": -1.73970893
+        },
+        "z_ind6": {
+          "var": "z_ind6",
+          "mean": 0.00201097,
+          "nw_t": 1.95762443
+        }
+      }
+    },
+    "S3_plus_vol": {
+      "step": "S3_plus_vol",
+      "controls": ["jt6", "logsize", "ind6", "rv63"],
+      "n_months": 259,
+      "n_obs_median": 339,
+      "signal_lambda_monthly": 0.00140345,
+      "signal_lambda_ann_pct": 1.68413809,
+      "signal_nw_t": 0.94545005,
+      "all_coefs": {
+        "(Intercept)": {
+          "var": "(Intercept)",
+          "mean": 0.01032639,
+          "nw_t": 2.67043771
+        },
+        "z_fh252": {
+          "var": "z_fh252",
+          "mean": 0.00140345,
+          "nw_t": 0.94545005
+        },
+        "z_jt6": {
+          "var": "z_jt6",
+          "mean": -0.00051225,
+          "nw_t": -0.44896558
+        },
+        "z_logsize": {
+          "var": "z_logsize",
+          "mean": -0.00225079,
+          "nw_t": -1.77302931
+        },
+        "z_ind6": {
+          "var": "z_ind6",
+          "mean": 0.0022506,
+          "nw_t": 2.21610439
+        },
+        "z_rv63": {
+          "var": "z_rv63",
+          "mean": -0.00207812,
+          "nw_t": -1.57829547
+        }
+      }
+    },
+    "S4_plus_Lfamily": {
+      "step": "S4_plus_Lfamily",
+      "controls": ["jt6", "logsize", "ind6", "rv63", "L01_Amihud", "L09_Amihud_20d", "L11_Kyle_Lambda"],
+      "n_months": 259,
+      "n_obs_median": 339,
+      "signal_lambda_monthly": 0.00184443,
+      "signal_lambda_ann_pct": 2.21331011,
+      "signal_nw_t": 1.27917491,
+      "all_coefs": {
+        "(Intercept)": {
+          "var": "(Intercept)",
+          "mean": 0.01037321,
+          "nw_t": 2.6866279
+        },
+        "z_fh252": {
+          "var": "z_fh252",
+          "mean": 0.00184443,
+          "nw_t": 1.27917491
+        },
+        "z_jt6": {
+          "var": "z_jt6",
+          "mean": -0.00085771,
+          "nw_t": -0.7525241
+        },
+        "z_logsize": {
+          "var": "z_logsize",
+          "mean": -0.00323382,
+          "nw_t": -2.4919535
+        },
+        "z_ind6": {
+          "var": "z_ind6",
+          "mean": 0.00233672,
+          "nw_t": 2.37034534
+        },
+        "z_rv63": {
+          "var": "z_rv63",
+          "mean": -0.00253679,
+          "nw_t": -1.97573127
+        },
+        "z_L01_Amihud": {
+          "var": "z_L01_Amihud",
+          "mean": -0.0044478,
+          "nw_t": -0.83404946
+        },
+        "z_L09_Amihud_20d": {
+          "var": "z_L09_Amihud_20d",
+          "mean": -0.00318572,
+          "nw_t": -1.34760028
+        },
+        "z_L11_Kyle_Lambda": {
+          "var": "z_L11_Kyle_Lambda",
+          "mean": -0.00086246,
+          "nw_t": -0.16710644
+        }
+      }
+    },
+    "S5_full_D35_M17": {
+      "step": "S5_full_D35_M17",
+      "controls": ["jt6", "logsize", "ind6", "rv63", "L01_Amihud", "L09_Amihud_20d", "L11_Kyle_Lambda", "D35_RealVol_63d", "lo52"],
+      "n_months": 259,
+      "n_obs_median": 339,
+      "signal_lambda_monthly": 0.00038031,
+      "signal_lambda_ann_pct": 0.45637543,
+      "signal_nw_t": 0.27603411,
+      "all_coefs": {
+        "(Intercept)": {
+          "var": "(Intercept)",
+          "mean": 0.01042748,
+          "nw_t": 2.70177347
+        },
+        "z_fh252": {
+          "var": "z_fh252",
+          "mean": 0.00038031,
+          "nw_t": 0.27603411
+        },
+        "z_jt6": {
+          "var": "z_jt6",
+          "mean": -0.00338575,
+          "nw_t": -2.95671481
+        },
+        "z_logsize": {
+          "var": "z_logsize",
+          "mean": -0.00333707,
+          "nw_t": -2.61454563
+        },
+        "z_ind6": {
+          "var": "z_ind6",
+          "mean": 0.00248826,
+          "nw_t": 2.55048881
+        },
+        "z_rv63": {
+          "var": "z_rv63",
+          "mean": -0.02135168,
+          "nw_t": -1.36299862
+        },
+        "z_L01_Amihud": {
+          "var": "z_L01_Amihud",
+          "mean": -0.00931174,
+          "nw_t": -1.75750156
+        },
+        "z_L09_Amihud_20d": {
+          "var": "z_L09_Amihud_20d",
+          "mean": -0.00350551,
+          "nw_t": -1.43821974
+        },
+        "z_L11_Kyle_Lambda": {
+          "var": "z_L11_Kyle_Lambda",
+          "mean": 0.0038494,
+          "nw_t": 0.73156904
+        },
+        "z_D35_RealVol_63d": {
+          "var": "z_D35_RealVol_63d",
+          "mean": -0.01836254,
+          "nw_t": -1.077999
+        },
+        "z_lo52": {
+          "var": "z_lo52",
+          "mean": 0.00523267,
+          "nw_t": 4.10670499
+        }
+      }
+    }
+  },
+  "ladder_market_internal": {
+    "S0_signal_only": {
+      "step": "S0_signal_only",
+      "controls": [],
+      "n_months": 259,
+      "n_obs_median": 339,
+      "signal_lambda_monthly": 0.00120435,
+      "signal_lambda_ann_pct": 1.44521861,
+      "signal_nw_t": 0.87688943,
+      "all_coefs": {
+        "(Intercept)": {
+          "var": "(Intercept)",
+          "mean": 0.01027783,
+          "nw_t": 2.65915225
+        },
+        "z_fh252": {
+          "var": "z_fh252",
+          "mean": 0.00120435,
+          "nw_t": 0.87688943
+        }
+      }
+    },
+    "S1_plus_mom_size": {
+      "step": "S1_plus_mom_size",
+      "controls": ["jt6", "logsize"],
+      "n_months": 259,
+      "n_obs_median": 339,
+      "signal_lambda_monthly": 0.00214481,
+      "signal_lambda_ann_pct": 2.5737746,
+      "signal_nw_t": 1.51528709,
+      "all_coefs": {
+        "(Intercept)": {
+          "var": "(Intercept)",
+          "mean": 0.0102977,
+          "nw_t": 2.66575734
+        },
+        "z_fh252": {
+          "var": "z_fh252",
+          "mean": 0.00214481,
+          "nw_t": 1.51528709
+        },
+        "z_jt6": {
+          "var": "z_jt6",
+          "mean": -0.00045112,
+          "nw_t": -0.34694616
+        },
+        "z_logsize": {
+          "var": "z_logsize",
+          "mean": -0.00143915,
+          "nw_t": -1.39330572
+        }
+      }
+    },
+    "S2_plus_indmom": {
+      "step": "S2_plus_indmom",
+      "controls": ["jt6", "logsize", "ind6"],
+      "n_months": 259,
+      "n_obs_median": 339,
+      "signal_lambda_monthly": 0.00217502,
+      "signal_lambda_ann_pct": 2.61002754,
+      "signal_nw_t": 1.54144254,
+      "all_coefs": {
+        "(Intercept)": {
+          "var": "(Intercept)",
+          "mean": 0.01030407,
+          "nw_t": 2.66588328
+        },
+        "z_fh252": {
+          "var": "z_fh252",
+          "mean": 0.00217502,
+          "nw_t": 1.54144254
+        },
+        "z_jt6": {
+          "var": "z_jt6",
+          "mean": -0.00128582,
+          "nw_t": -1.11651485
+        },
+        "z_logsize": {
+          "var": "z_logsize",
+          "mean": -0.0014199,
+          "nw_t": -1.36322875
+        },
+        "z_ind6": {
+          "var": "z_ind6",
+          "mean": 0.00207782,
+          "nw_t": 2.11195611
+        }
+      }
+    },
+    "S3_plus_vol": {
+      "step": "S3_plus_vol",
+      "controls": ["jt6", "logsize", "ind6", "rv63"],
+      "n_months": 259,
+      "n_obs_median": 339,
+      "signal_lambda_monthly": 0.00109035,
+      "signal_lambda_ann_pct": 1.30842398,
+      "signal_nw_t": 0.76239596,
+      "all_coefs": {
+        "(Intercept)": {
+          "var": "(Intercept)",
+          "mean": 0.01029292,
+          "nw_t": 2.66176371
+        },
+        "z_fh252": {
+          "var": "z_fh252",
+          "mean": 0.00109035,
+          "nw_t": 0.76239596
+        },
+        "z_jt6": {
+          "var": "z_jt6",
+          "mean": -0.00031782,
+          "nw_t": -0.2935425
+        },
+        "z_logsize": {
+          "var": "z_logsize",
+          "mean": -0.00147623,
+          "nw_t": -1.41636447
+        },
+        "z_ind6": {
+          "var": "z_ind6",
+          "mean": 0.00224938,
+          "nw_t": 2.30841693
+        },
+        "z_rv63": {
+          "var": "z_rv63",
+          "mean": -0.00220086,
+          "nw_t": -1.9642259
+        }
+      }
+    },
+    "S4_plus_Lfamily": {
+      "step": "S4_plus_Lfamily",
+      "controls": ["jt6", "logsize", "ind6", "rv63", "L01_Amihud", "L09_Amihud_20d", "L11_Kyle_Lambda"],
+      "n_months": 259,
+      "n_obs_median": 339,
+      "signal_lambda_monthly": 0.00151231,
+      "signal_lambda_ann_pct": 1.81476869,
+      "signal_nw_t": 1.09634014,
+      "all_coefs": {
+        "(Intercept)": {
+          "var": "(Intercept)",
+          "mean": 0.01033683,
+          "nw_t": 2.67695195
+        },
+        "z_fh252": {
+          "var": "z_fh252",
+          "mean": 0.00151231,
+          "nw_t": 1.09634014
+        },
+        "z_jt6": {
+          "var": "z_jt6",
+          "mean": -0.00065621,
+          "nw_t": -0.60796773
+        },
+        "z_logsize": {
+          "var": "z_logsize",
+          "mean": -0.00230567,
+          "nw_t": -2.16739837
+        },
+        "z_ind6": {
+          "var": "z_ind6",
+          "mean": 0.00232379,
+          "nw_t": 2.44128879
+        },
+        "z_rv63": {
+          "var": "z_rv63",
+          "mean": -0.00259802,
+          "nw_t": -2.36397594
+        },
+        "z_L01_Amihud": {
+          "var": "z_L01_Amihud",
+          "mean": -0.00304132,
+          "nw_t": -0.66667408
+        },
+        "z_L09_Amihud_20d": {
+          "var": "z_L09_Amihud_20d",
+          "mean": -0.00272836,
+          "nw_t": -1.21052423
+        },
+        "z_L11_Kyle_Lambda": {
+          "var": "z_L11_Kyle_Lambda",
+          "mean": -0.00148506,
+          "nw_t": -0.34213673
+        }
+      }
+    },
+    "S5_full_D35_M17": {
+      "step": "S5_full_D35_M17",
+      "controls": ["jt6", "logsize", "ind6", "rv63", "L01_Amihud", "L09_Amihud_20d", "L11_Kyle_Lambda", "D35_RealVol_63d", "lo52"],
+      "n_months": 259,
+      "n_obs_median": 339,
+      "signal_lambda_monthly": 0.00012737,
+      "signal_lambda_ann_pct": 0.15284827,
+      "signal_nw_t": 0.09660678,
+      "all_coefs": {
+        "(Intercept)": {
+          "var": "(Intercept)",
+          "mean": 0.01038704,
+          "nw_t": 2.69287065
+        },
+        "z_fh252": {
+          "var": "z_fh252",
+          "mean": 0.00012737,
+          "nw_t": 0.09660678
+        },
+        "z_jt6": {
+          "var": "z_jt6",
+          "mean": -0.00327691,
+          "nw_t": -2.99737004
+        },
+        "z_logsize": {
+          "var": "z_logsize",
+          "mean": -0.00248043,
+          "nw_t": -2.35154022
+        },
+        "z_ind6": {
+          "var": "z_ind6",
+          "mean": 0.00244407,
+          "nw_t": 2.58951578
+        },
+        "z_rv63": {
+          "var": "z_rv63",
+          "mean": -0.00367731,
+          "nw_t": -0.1926639
+        },
+        "z_L01_Amihud": {
+          "var": "z_L01_Amihud",
+          "mean": -0.00753831,
+          "nw_t": -1.69945646
+        },
+        "z_L09_Amihud_20d": {
+          "var": "z_L09_Amihud_20d",
+          "mean": -0.00309232,
+          "nw_t": -1.33905917
+        },
+        "z_L11_Kyle_Lambda": {
+          "var": "z_L11_Kyle_Lambda",
+          "mean": 0.00288046,
+          "nw_t": 0.66365253
+        },
+        "z_D35_RealVol_63d": {
+          "var": "z_D35_RealVol_63d",
+          "mean": 0.00040904,
+          "nw_t": 0.01988168
+        },
+        "z_lo52": {
+          "var": "z_lo52",
+          "mean": 0.00532264,
+          "nw_t": 4.20506826
+        }
+      }
+    }
+  },
+  "leakage_null_by_axis": {
+    "rv63": {
+      "axis": "rv63",
+      "lambda_monthly": -0.00226736,
+      "nw_t": -2.11767321,
+      "n": 259
+    },
+    "amih20": {
+      "axis": "amih20",
+      "lambda_monthly": -0.00129851,
+      "nw_t": -0.79276865,
+      "n": 259
+    },
+    "logsize": {
+      "axis": "logsize",
+      "lambda_monthly": -0.00099406,
+      "nw_t": -0.93499551,
+      "n": 259
+    },
+    "L01_Amihud": {
+      "axis": "L01_Amihud",
+      "lambda_monthly": 0.00164645,
+      "nw_t": 1.90396143,
+      "n": 259
+    },
+    "L09_Amihud_20d": {
+      "axis": "L09_Amihud_20d",
+      "lambda_monthly": -0.00099651,
+      "nw_t": -1.11322417,
+      "n": 259
+    },
+    "L11_Kyle_Lambda": {
+      "axis": "L11_Kyle_Lambda",
+      "lambda_monthly": 0.00203813,
+      "nw_t": 2.5566587,
+      "n": 259
+    },
+    "D35_RealVol_63d": {
+      "axis": "D35_RealVol_63d",
+      "lambda_monthly": 0.00224657,
+      "nw_t": 2.11054763,
+      "n": 259
+    }
+  },
+  "signal_reference_t_S2": 1.54144254,
+  "orthogonalized": {
+    "raw": {
+      "convention": "raw",
+      "n_months": 259,
+      "resid_signal_lambda": 0.00151231,
+      "resid_signal_ann_pct": 1.81476869,
+      "resid_signal_nw_t": 1.09634014,
+      "fullsample_spearman_after_orth": {
+        "rv63": 0.02545332,
+        "amihud20": 0.01607303,
+        "logsize": -0.00454913
+      },
+      "cutplane_decile_profile": {
+        "rv63": [0.03068844, 0.02734183, 0.02677922, 0.02658041, 0.02678628, 0.0269166, 0.02714601, 0.02731151, 0.02804164, 0.02905582],
+        "amihud20": [9.87373993e-12, 9.20268955e-12, 9.44394889e-12, 9.56053293e-12, 9.32339772e-12, 9.22474418e-12, 9.30630684e-12, 9.58609284e-12, 9.39915354e-12, 9.38562966e-12],
+        "logsize": [27.71261502, 27.83300808, 27.8441268, 27.88191505, 27.82796079, 27.82944279, 27.79623739, 27.80072715, 27.7802964, 27.71609739],
+        "ends_over_middle_ratio": {
+          "rv63": 1.11225265,
+          "amihud20": 1.02950042,
+          "logsize": 0.99570549
+        }
+      },
+      "reading_rule": "전 구간 상관 ~0 인데 양끝/중앙 비율이 1 에서 멀면 통제축이 절단면 위에서 되살아난 것 — 직교성 주장 불성립."
+    },
+    "rank": {
+      "convention": "rank",
+      "n_months": 259,
+      "resid_signal_lambda": 0.00152518,
+      "resid_signal_ann_pct": 1.83021121,
+      "resid_signal_nw_t": 1.10628823,
+      "fullsample_spearman_after_orth": {
+        "rv63": 0.0252495,
+        "amihud20": 0.01616113,
+        "logsize": -0.00452979
+      },
+      "cutplane_decile_profile": {
+        "rv63": [0.03068302, 0.02736856, 0.02678554, 0.02658834, 0.0267744, 0.0269095, 0.02714201, 0.02729253, 0.02806363, 0.02904015],
+        "amihud20": [9.83767501e-12, 9.24239146e-12, 9.43074166e-12, 9.53852843e-12, 9.29549284e-12, 9.27605643e-12, 9.43676981e-12, 9.40835995e-12, 9.3596816e-12, 9.4726374e-12],
+        "logsize": [27.7149696, 27.82557387, 27.8426393, 27.88347773, 27.8354588, 27.82190081, 27.79397093, 27.8099596, 27.77976377, 27.71529667],
+        "ends_over_middle_ratio": {
+          "rv63": 1.11201574,
+          "amihud20": 1.02859833,
+          "logsize": 0.99574009
+        }
+      },
+      "reading_rule": "전 구간 상관 ~0 인데 양끝/중앙 비율이 1 에서 멀면 통제축이 절단면 위에서 되살아난 것 — 직교성 주장 불성립."
+    }
+  },
+  "market_dummy_artifact_check": {
+    "rho_pooled_z_vs_KQ_dummy": -0.1652901,
+    "rho_mktint_z_vs_KQ_dummy": -0.00002027,
+    "kq_share_top30_pooled": 0.25889933,
+    "kq_share_bot30_pooled": 0.41082998,
+    "kq_share_top30_mktint": 0.31957684,
+    "note": "3/20 은 같은 자리에서 혼합 랭킹이 시장 더미(-19.58%/yr NW-t -2.526)를 재고 있음을 적발했다. 본 축에서도 같은 검사를 건다."
+  },
+  "verdict": {
+    "prior_run_coordinate": {
+      "strategy_id": "STR_AS_20260612_132740_321992",
+      "fmb_score_lambda": 0.00494,
+      "fmb_score_t_nw": 3.199,
+      "controls_present_in_prior_run": "없음 — 시장-내 랭킹 여부 불명 · L-family/변동성/산업모멘텀 통제 전부 부재",
+      "what_this_test_does": "동일 신호를 동일 시점 규약으로 재측정하되 통제를 단계별로 추가해 t 3.199 의 귀속을 확정한다."
+    },
+    "t_no_control": 0.87688943,
+    "t_after_Lfamily_vol": 1.09634014,
+    "t_full_spec": 0.09660678,
+    "attenuation_ratio": 1.25026041,
+    "reject_if_1": "혼합 랭킹에서 유의하던 FHH 가 시장-내 랭킹에서 소멸하면 시장 더미 아티팩트",
+    "reject_if_2": "L-family/변동성 통제 후 신호가 소멸하면 저변동성/유동성 계열의 재명명",
+    "leakage_null_max_abs_t": 2.5566587,
+    "leakage_null_beats_signal": true
+  }
+}

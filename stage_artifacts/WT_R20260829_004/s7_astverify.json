@@ -1,0 +1,103 @@
+{
+  "tool": "02_Infrastructure/ast/ast_verify.py",
+  "main_package": {
+    "exit_code": 1,
+    "verdict": "FAIL_CONTRACT",
+    "leaf_count": 4,
+    "op_count": 11,
+    "decision_ts": "2026-08-28",
+    "max_avail_ts": "2026-08-28",
+    "violations_n": 0,
+    "violations": [],
+    "contract_failures": [
+      {
+        "path": "root.IF_ELSE/0",
+        "leaf_type": "SPECIAL_OP",
+        "missing": [
+          "op_code_path",
+          "walk_forward"
+        ],
+        "detail": "SPECIAL_OP 계약 결측 — 연산 정의 코드 경로 + walk-forward 선언 의무 (SOT §2)"
+      },
+      {
+        "path": "root.IF_ELSE/1.ADD/0.MUL/0.CLIP/0.SUB/0",
+        "leaf_type": "?",
+        "missing": [],
+        "detail": "노드 형상 오류(비 dict): 51"
+      },
+      {
+        "path": "root.IF_ELSE/1.ADD/0.MUL/0.CLIP/0.SUB/1.CS_RANK/0",
+        "leaf_type": "SPECIAL_OP",
+        "missing": [
+          "op_code_path",
+          "walk_forward"
+        ],
+        "detail": "SPECIAL_OP 계약 결측 — 연산 정의 코드 경로 + walk-forward 선언 의무 (SOT §2)"
+      },
+      {
+        "path": "root.IF_ELSE/1.ADD/0.MUL/0.CLIP/1",
+        "leaf_type": "?",
+        "missing": [],
+        "detail": "노드 형상 오류(비 dict): 0"
+      },
+      {
+        "path": "root.IF_ELSE/1.ADD/0.MUL/0.CLIP/2",
+        "leaf_type": "?",
+        "missing": [],
+        "detail": "노드 형상 오류(비 dict): 1"
+      },
+      {
+        "path": "root.IF_ELSE/1.ADD/0.MUL/1",
+        "leaf_type": "?",
+        "missing": [],
+        "detail": "노드 형상 오류(비 dict): 100"
+      },
+      {
+        "path": "root.IF_ELSE/1.ADD/1.CS_ZSCORE/0.MUL/0.TS_STD/0.TS_LAG[k=1d]/0",
+        "leaf_type": "A1_RAWDATA_OHLCVS_daily:Ret",
+        "missing": [],
+        "detail": "알 수 없는 리프 종류 'A1_RAWDATA_OHLCVS_daily:Ret' (허용: ['FIELD', 'LLM_SCORE', 'MODEL_SCORE', 'REGISTRY', 'SPECIAL_OP', 'STORED_SCORE'])"
+      },
+      {
+        "path": "root.IF_ELSE/1.ADD/1.CS_ZSCORE/0.MUL/0.TS_STD/1",
+        "leaf_type": "?",
+        "missing": [],
+        "detail": "노드 형상 오류(비 dict): 126"
+      },
+      {
+        "path": "root.IF_ELSE/1.ADD/1.CS_ZSCORE/0.MUL/1",
+        "leaf_type": "?",
+        "missing": [],
+        "detail": "노드 형상 오류(비 dict): -1"
+      },
+      {
+        "path": "root.IF_ELSE/2.CS_ZSCORE/0",
+        "leaf_type": "SPECIAL_OP",
+        "missing": [
+          "op_code_path",
+          "walk_forward"
+        ],
+        "detail": "SPECIAL_OP 계약 결측 — 연산 정의 코드 경로 + walk-forward 선언 의무 (SOT §2)"
+      }
+    ],
+    "restatement_leaves_n": 0,
+    "out": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/WT_R20260829_004/ast_verify.json"
+  },
+  "verifier_dialect_probe": {
+    "exit_code": 0,
+    "verdict": "PASS",
+    "leaf_count": 4,
+    "op_count": 11,
+    "decision_ts": "2026-08-28",
+    "max_avail_ts": "2026-08-28",
+    "violations_n": 0,
+    "violations": [],
+    "contract_failures": [],
+    "restatement_leaves_n": 0,
+    "out": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/WT_R20260829_004/ast_verify_probe.json"
+  },
+  "traversal_evidence": "정본(schema.json 방언: args + 문자열 리프 + escape_contract) 순회 리프 4개 · 연산자 11개 / 검증기 방언 probe(children + const 노드 + FIELD 분해 + SPECIAL_OP 평면계약) 리프 4개 · 연산자 11개. 리프 0개 순회(빈 검증) 아님.",
+  "leaf_inventory": "실제 트리 리프 4종: SPECIAL_OP(JT1993 형성) x2 참조 · SPECIAL_OP(PANIC_REGIME) · A1_RAWDATA_OHLCVS_daily:Ret. DIV/DIV_GUARD 는 미사용이라 그 방언 분열에는 닿지 않는다.",
+  "pit_reading": "정본 max_avail_ts=2026-08-28 / decision_ts=2026-08-28 / lookahead violations=0 · 검증기 방언 probe verdict=PASS max_avail_ts=2026-08-28 violations=0 contract_failures=0",
+  "contract_surface_split": "세 겹의 방언 분열이 동시에 걸린다. ①리프 표기: schema.json 은 leaf=문자열 식별자 + escape_contract 객체, ast_verify.py 는 {leaf:'FIELD', group_id, field} / {leaf:'SPECIAL_OP', op_code_path, walk_forward} 평면 형식. ②자식 키: schema=args / 검증기=children(둘 다 수용하나 args 는 dialect 플래그). ③스칼라: schema 는 args 안 bare number 를 허용, 검증기는 {const:n} 노드만 dict 로 인정. 본 패키지는 패키지 형식 정본인 schema.json 을 따르고(ast), 같은 트리를 검증기 방언으로 옮긴 probe 를 stage_artifacts 에 함께 발행해 동일 검증기로 돌렸다. 결과: 정본 FAIL_CONTRACT(사유 전부 표기 형식) vs probe PASS. 두 판정 모두 leaf_count 4 · op_count 11 로 같은 트리를 실제로 순회했고 lookahead 위반은 0 이다. 즉 정본의 FAIL 은 PIT 결함이 아니라 계약 표면 분열이다 — 하네스 수리 대상으로 기록한다 (본 에이전트는 계약 파일을 고치지 않는다: 역할 경계). ★부수 소득: 이 계기가 실제로 발화해 A1:Ret 의 same-day 사용을 잡았고, 그 지적을 받아 종목 변동성·시장 변동성·I_B 24개월 누적을 전부 strict t-1(Date < 신호일)로 조여 재측정했다. AST 는 그 수리를 TS_LAG(k=1, unit=d) 로 표현한다."
+}

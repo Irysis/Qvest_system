@@ -1,0 +1,44 @@
+{
+  "strategy_id": "STR_1715_WT016_Iter31_GridBestProd",
+  "iter_label": "Iter31_LinTilt_lam1.5_TOphi3_M4_outer",
+  "as_of_date": "2026-09-01",
+  "mandate": "cap_0.20",
+  "mode": "forward_recompute",
+  "layer_a": {
+    "source": "stage_artifacts/WT_D20260425_010/alpha_scores.parquet",
+    "iter": "Iter5_multi_sleeve_composite",
+    "lockbox": "released (PG2 live)",
+    "n_eligible": 347,
+    "n_after_liquidity": 20,
+    "n_picked": 20
+  },
+  "layer_b": {
+    "iter": "Iter31_grid_best",
+    "lambda": 1.5,
+    "tophi": 3,
+    "ub": 0.2,
+    "cash_overlay": "DEPRECATED 2026-05-02 (M4 단독)"
+  },
+  "layer_c": {
+    "source": "WT-D20260430_001/stage_artifacts/alpha_scores.parquet",
+    "schedule": "M4_BOCPD_decay_BL_tri_pillar",
+    "weight_str1715": 1,
+    "weight_cash": 0,
+    "status": "M4_LOADED"
+  },
+  "n_total_lines": 20,
+  "n_risk_holdings": 20,
+  "sum_weights": 1,
+  "max_weight": 0.1,
+  "total_cash_pct": 0,
+  "measurement_basis_primary": "forge_realized_share_based",
+  "capacity_check": {
+    "AUM_won": 10000000000,
+    "n_tickers": 20,
+    "n_breach_ADV5": 2,
+    "breach_tickers": ["A189300", "A251270"],
+    "worst_ADV_pct": 10.36,
+    "worst_ticker": "A189300"
+  },
+  "notes": "Mode=forward_recompute v2.0 (도훈 명시 2026-05-02). PG2 LIVE — base Iter31 cash overlay 제거, M4 단독 cash 결정. Iter5 alpha layer + Iter31 weighting + M4 outer overlay."
+}

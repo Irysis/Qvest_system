@@ -1,0 +1,115 @@
+{
+  "item1_assert_overlay_pit": {
+    "status": "PASS",
+    "n_rows": 260,
+    "rule": "used_cutoff(as_of_date) <= holding_month_start (first-day-of-holding-month)",
+    "max_used_cutoff": "2026-08-28",
+    "max_gap_days": 5,
+    "min_gap_days": 1,
+    "exec_after_holding_start_all": true,
+    "n_exec_na": 1,
+    "note": "forge 는 오버레이를 새로 적용하지 않는다 — 상류가 확정한 패널의 소비 시점 정합만 검사."
+  },
+  "panel_rebuild_identity": {
+    "unmatched": 0,
+    "max_abs_diff": 5.55111512e-17
+  },
+  "item2_lag1_stress": {
+    "calmar_base": 0.18428225,
+    "calmar_lag1": 0.19476021,
+    "rel_change_calmar": 0.05685821,
+    "sr_base": 0.56988434,
+    "sr_lag1": 0.59070657,
+    "rel_change_sr": 0.03653764,
+    "rule": "lag1 판이 base 대비 -25% 초과 붕괴하면 동월 누출 의심",
+    "status": "NO_COLLAPSE",
+    "basis": "forge share-based daily NAV, 15bps delta"
+  },
+  "item3_strict_ab": {
+    "current_equals_strict": true,
+    "strict_definition": "현행 컷오프 = as_of_date(신호월말) = holding_month_start - 1d. strict 정의(홀딩월 시작 전 데이터만)와 동일 집합이므로 두 판이 같다.",
+    "inflation_calmar": 0,
+    "lookahead_suspected": false,
+    "message": "[overlay_pit_guard] Calmar(current vs strict): current=0.1843 strict=0.1843 인플레=0.0% → clean",
+    "positive_control_violation_probe": {
+      "description": "국면 신호를 1개월 앞당김(shift -1) = 홀딩월 자신의 국면으로 구성 교체 (BearProb 실사고 동형)",
+      "calmar": 0.23503713,
+      "sr": 0.61384667,
+      "cagr": 0.14017557,
+      "mdd": -0.59639756,
+      "inflation_calmar": 0.27541927,
+      "lookahead_flag_calmar": true,
+      "inflation_sr": 0.07714254,
+      "lookahead_flag_sr": true,
+      "interpretation": "계기가 살아있다는 양성 대조 — 위반을 주입하면 성과가 뛴다. 현행 판이 그 값을 내지 않는다는 것이 clean 의 내용이다."
+    }
+  },
+  "item4_cutoff_rule": {
+    "rule": "first-day-of-holding-month",
+    "used": "as_of_date(신호월말) 비중 -> get_execution_date() = 홀딩월 첫 거래일 종가 집행",
+    "consumed_columns": ["as_of_date", "signal_ym", "holding_ym", "ticker", "weight", "rank", "sector", "panic", "vol126_ann"],
+    "consumed_columns_have_anchor_date": false,
+    "consumed_columns_have_realized_ym": false,
+    "anchor_date_in_decision_path": false,
+    "realized_ym_in_decision_path": false,
+    "holding_ym_in_decision_path": false,
+    "join_key": "as_of_date (신호월말) — holding_ym 으로 조인하지 않는다",
+    "decision_path_code_lines": 123,
+    "decision_path_definition": ".replay() 함수 본문(deparse) + weights.csv 소비 블록 [2]",
+    "whole_file_scan_anchor_date": true,
+    "whole_file_scan_realized_ym": true,
+    "self_reference_note": "파일 전문 grep 은 TRUE 를 낸다 — 그 히트는 spec$lookahead_prevention 의 선언 문장('anchor_date/realized_ym 결정경로 미참조') 자기 자신이다. 초판 검사기가 그 오탐에 걸렸고, 결정경로를 함수 본문으로 한정해 재도출했다. 소비 컬럼 존재검사(weights.csv 헤더 = FALSE/FALSE)를 독립 증거로 병기한다.",
+    "note": "holding_ym 은 결정경로에서 쓰이지 않고 본 진단(사후)에서만 컷오프 검증에 쓰인다."
+  },
+  "item5_detect_lookahead_two_way": {
+    "base_run_all": {
+      "clean": true,
+      "scanned": true,
+      "n_violations": 0
+    },
+    "probe_declared_idioms": {
+      "clean": false,
+      "n_violations": 1,
+      "fired": true
+    },
+    "probe_nondeclared_idioms": {
+      "clean": true,
+      "n_violations": 0,
+      "fired": false
+    },
+    "negative_control_comment_only": {
+      "clean": true,
+      "n_violations": 0
+    },
+    "interpretation": "양성 대조(선언 idiom)가 발화하고 음성 대조가 조용해야 계기가 살아있다. 비선언 idiom 이 미발화하면 그 계통은 **미측정**이며 CLEAN 은 선언 idiom 부재의 증거일 뿐 PIT 증명이 아니다."
+  },
+  "item6_benchmark_basis": {
+    "upstream_basis": "weighted_screen_bt — 월별 가중수익 집계(259 months), benchmark_ret 월별",
+    "forge_basis": "share-based daily NAV(정수주 + 잔여현금) + BM_DT 일별 BM_Ret",
+    "upstream": {
+      "n_months": 259,
+      "strat_cum": 12.67807537,
+      "bench_cum": 7.27147885,
+      "strat_cagr": 0.12488135,
+      "bench_cagr": 0.09627812,
+      "port_t": 1.15746441,
+      "net_ir": 0.2443138
+    },
+    "forge": {
+      "n_days": 5319,
+      "strat_cum": 13.55012675,
+      "bench_cum": 8.93400132,
+      "strat_cagr": 0.13143198,
+      "bench_cagr": 0.109323,
+      "port_t": 0.75465806,
+      "net_ir": 0.17193316
+    },
+    "attribution": {
+      "d_port_t_total": -0.40280635,
+      "bench_cum_ratio_forge_over_upstream": 1.22863609,
+      "strat_cum_ratio_forge_over_upstream": 1.06878421,
+      "note": "상류 PORT_t 와 forge 권위 PORT_t 는 **다른 양**이다(월별 weighted_screen vs 일별 share-based + 다른 BM 계열). 어느 쪽이 높다고 상대를 반증하지 않으며, 판정에 쓰는 값은 forge 권위값 하나다."
+    }
+  },
+  "verdict": "PASS"
+}

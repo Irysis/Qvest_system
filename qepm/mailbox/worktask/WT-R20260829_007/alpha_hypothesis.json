@@ -1,0 +1,414 @@
+{
+  "wt_id": "WT-R20260829_007",
+  "designed_by": "alpha-hypothesis",
+  "model_tier": "opus",
+  "designed_at": "2026-08-29T17:05:00+0900",
+  "scope_note": "본 산출물은 AST v1.1 설계순서 ①메커니즘 ②가설서술 ③반증조건 ④국면경계 + pipeline Step 0 만 담는다. ⑤AST 구성·factors[]·자기PIT점검·팩터소싱·신호공학·실측·등급은 alpha-research 소관이며 여기서 수행하지 않았다.",
+
+  "round_value_reframing": {
+    "headline": "본 라운드는 신규 알파 청구가 아니라 in-house 양(+) 관측의 반증 라운드다.",
+    "why": "동일 신호(52주 신고가 근접도)가 2026-06-12 alpha-search 레인에서 이미 측정됐다. 그 런의 Fama-MacBeth 는 이미 GH2004 지배 패턴(Score NW-t +3.199 vs Momentum t -1.886 비유의)을 냈고, 소비면은 이미 실패했다(essence 재채점 C · PORT_t 0.303 · oos_retention -1.131). 즉 1급의 답도 2급의 답도 이미 존재한다.",
+    "what_is_genuinely_unmeasured": [
+      "2026-06-12 FM 은 시장-내(K200 내부/KQ150 내부) 랭킹 여부가 불명이고 L-family·실현변동성·산업모멘텀(M07) 통제가 전부 비어 있다. 3/20 이 정확히 같은 자리에서 혼합 랭킹의 시장 더미 아티팩트(-19.58%/yr NW-t -2.526)를 잡았으므로 t 3.199 는 확립된 사실이 아니라 재검 대상이다.",
+      "기전 청구의 부수 관측 3종(장기 무반전 · 개인 순매수 방향 · 고가/저가 준거점 비대칭)은 KR 에서 한 번도 측정된 적이 없다.",
+      "동일-envelope 짝지음 대조(cell4 실투형 top-25)가 2026-06-12 시점에는 존재하지 않았다."
+    ],
+    "recommendation_to_q_lead": "착수 여부 재검토 필요. 알파 획득 기대값은 사전 근거상 낮다(아래 power_contract 앵커 참조). 착수한다면 표적을 '기전 반증'으로 선언하고 2급은 게이트 통과 여부만 기록하는 부차 축으로 두는 것이 정직하다."
+  },
+
+  "prechecks": {
+    "hypothesis_index_hits": [
+      {
+        "strategy_id": "STR_AS_20260612_132740_321992",
+        "title": "52-Week High Anchor Momentum",
+        "date": "2026-06-12",
+        "lane": "alpha_search",
+        "metric_type": "backtested",
+        "proxy_grade": "B",
+        "essence_grade_regraded_20260824": "C",
+        "portfolio_alpha_t_nw_lag3": 0.303,
+        "oos_retention": -1.131,
+        "calmar": 0.188,
+        "mdd": 0.644,
+        "cagr": 0.121,
+        "sharpe": 0.671,
+        "turnover_annual_pct": 664,
+        "ff3_alpha_annual_pct": 3.46,
+        "ff3_alpha_t": 1.178,
+        "carhart4_alpha_annual_pct": 0.71,
+        "carhart4_alpha_t": 0.275,
+        "fmb_score_lambda": 0.00494,
+        "fmb_score_t_nw": 3.199,
+        "fmb_momentum_lambda": -0.00177,
+        "fmb_momentum_t_nw": -1.886,
+        "fmb_size_t_nw": -3.225,
+        "rank_ic_mean": 0.0403,
+        "icir": 0.295,
+        "fmt_codes": ["FMT-01 구조적 MDD", "FMT-04 국면 동조 낙폭(BM상관 0.75)"],
+        "source_paths": [
+          "06_Registry/hypothesis_index.json",
+          "06_Registry/essence_regrade_20260824.json",
+          "stage_artifacts/alpha_search/20260612_132740_321992/analysis_fmb_summary.csv",
+          "stage_artifacts/alpha_search/20260612_132740_321992/analysis_multifactor.csv",
+          "stage_artifacts/l_code/alpha_search/l_code_STR_AS_20260612_132740_321992.json"
+        ],
+        "significance": "★동일 신호의 직접 선행 측정. 착수 전 필독. 신규성 주장 불가."
+      },
+      {
+        "strategy_id": "STR_AS_20260612_123546_52003",
+        "title": "52-Week High Anchor Momentum",
+        "date": "2026-06-12",
+        "verdict": "FAIL",
+        "proxy_grade": "F",
+        "essence_grade_regraded_20260824": "C",
+        "note": "위 항목과 동일 클러스터(CL019)로 병합됨 — 대표 L-code = L-AS-20260612_132740_321992"
+      }
+    ],
+    "hypothesis_index_lookup_log": [
+      "lookup 'momentum' → 30 hits (FAIL 2 · DISTILLED_NEG 17 · PASS 0) top: DIST-AR-027 / DIST-AR-041 / DIST-RAMP-026",
+      "lookup '52-week' → 2 hits (위 2건, 동일 제목)",
+      "lookup '52주' → 1 hit (본 WT 자신, IN_PROGRESS)",
+      "lookup 'anchoring' / 'High_52w' / 'M06' → 0 hits"
+    ],
+    "frontier_queue_refs": {
+      "file": "06_Registry/alpha_frontier_queue.json",
+      "schema_version_checked": true,
+      "entries_total": 118,
+      "matching_entries": [],
+      "verdict": "52주 신고가/근접도/anchoring 축은 frontier queue 에 미등재. 따라서 본 착수는 frontier open 항목 소비가 아니라 reinforce_ledger_l1 entry[0] attempt n=7(status active, opened_at 2026-08-29T16:45:38) 소비다 — 강화 원장 레인이며 frontier 게이트 대상이 아니다.",
+      "parked_dohoon_decision_check": "본 축은 parked 항목이 아니다(dohoon_decision / dohoon_data_work 해당 없음). 임의 착수 금지 대상 아님."
+    },
+    "owner": "Q-Lead (강화 프로세스 7/20 · base RP_20260829_122020_9192 · WT-R20260829_007). 설계 = alpha-hypothesis, 측정 = alpha-research (설계자≠측정자 방화벽).",
+    "parallel_wt_notice": "WT-R20260829_004(risk_overlay) · _005(combination) · _006(팩터 모멘텀) 동시 진행 중. 본 산출물은 _007 mailbox 밖에 쓰지 않았다.",
+    "cumulative_coordinates": {
+      "base": "RP_20260829_122020_9192 (JT1993 6-6 데실 롱숏 충실구현) essence F",
+      "attempt_1": "CJL1996 이익 서프라이즈 결합 → 음성 (T2 powered null NW-t 0.150 · FM t_SUE -0.024). L-RF-20260829_142955",
+      "attempt_2": "IM2013 형태 분해 → 귀속=신호. 실투형 cell4 β-통제 α +5.14%/yr t 1.205 · cell4_port_t 1.294 · OTHER tier 91.2%. L-RF-20260829_152717",
+      "attempt_3": "LS2000 회전율 조건화 → reject (1급·2급 동시 기각, 검정력 3.0~5.2% 착수금지구간). 양성대조가 혼합랭킹 시장더미 아티팩트 -19.58%/yr t -2.526 적발. L-code L-RF-20260829_163417",
+      "reachability": "PORT_t 2.95 도달에 필요한 활성 +13.25%/yr vs 현 관측 +5.82%/yr (44%)",
+      "what_3_rounds_exhausted": "동일 신호(6-6 과거수익률) 위의 재료 추가·형태 교정·조건화. 본 시도는 처음으로 신호 자체를 교체한다."
+    }
+  },
+
+  "dist_ar_041_judgment": {
+    "verdict": "belongs_to_category",
+    "verdict_ko": "속한다",
+    "dist_statement": "가격-파생 모멘텀 변형의 추가 탐색은 저EV 다(직교해도 전이 실패가 반복 실측). 재도전 가치는 수급 주체 축에 있다.",
+    "reasoning": [
+      "구성 축: M06_High_52w = Close(t) / max(Close, 252d) 로 100% 가격 시계열 파생이다. 비-return 원천이 하나도 들어가지 않는다. 형식 요건상 '가격-파생 모멘텀 변형' 범주에 그대로 들어간다.",
+      "판정 근거 축: DIST-AR-041 의 저EV 판정 근거는 기전이 아니라 **소비면 전이 실패의 반복 실측**이다('직교해도 전이 실패'). 기전이 다르다는 이유로 범주를 벗어난다고 주장하려면 전이 실패의 원인이 기전이었어야 하는데, 그 카드는 정반대를 적고 있다.",
+      "직접 확인 사례: STR_AS_20260612_132740_321992 가 이 신호의 전이 실패를 이미 실측했다(PORT_t 0.303 · oos_retention -1.131). 즉 근접도는 이 범주의 반례가 아니라 **확인 사례**다.",
+      "★기전 신규성(anchoring vs 수익률 외삽)은 실재한다 — GH2004 Table VI 의 장기 무반전이 그 구분의 실증이다. 그러나 기전 신규성이 저EV 판정을 뒤집지 않는다. 뒤집으려면 기전이 소비면 전이를 바꾼다는 증거가 필요하고, 그 증거는 아직 없다."
+    ],
+    "what_would_leave_the_category": "준거점(anchor)을 가격 이력이 아닌 비-가격 원천으로 바꿀 때. 후보 C4(애널리스트 목표주가 대비 위치)가 그것이며 DIST-AR-041 의 frontier(비-return 원천 · 주체 축 교차)와 정합한다 — 다만 별도 논문 근거가 필요해 본 WT 사전등록 밖이다.",
+    "honest_position": "억지 신규성 주장 없음. 본 축은 DIST-AR-041 범주 안이며, 그 안에서 정당화 가능한 것은 알파 청구가 아니라 in-house 양(+) FM 관측의 반증뿐이다."
+  },
+
+  "paper_reading": {
+    "read_directly": true,
+    "source_pdf": "https://www.bauer.uh.edu/tgeorge/papers/gh4-paper.pdf (George & Hwang 2004, JF 59(5):2145-2176, DOI 10.1111/j.1540-6261.2004.00695.x)",
+    "extraction_method": "pdftotext -layout 전문 추출 후 직접 판독",
+    "① 근접도 정의 · 시점 규약": "FH measure = P_{i,t-1} / high_{i,t-1}. P_{i,t-1} = 월 t-1 말 가격. high_{i,t-1} = 월 t-1 마지막 날에 끝나는 **12개월 구간**의 최고가(당월 포함). 회귀 검정에서는 bid-ask bounce 회피를 위해 랭킹과 보유 사이 **1개월 skip**(j=2,...)을 둔다 — 서술용 Table I~IV 에는 skip 없음. ★우리 M06_High_52w(compute_momentum.R:145-150) = prices[n] / max(prices[(n-252+1):n]) 로 구조가 동일하며 skip 없음 ⇒ 1급 FM 이식 시 skip 정합 필요.",
+    "② 지배 회귀 사양 (Table V)": "R_it = b0jt + b1jt·R_{i,t-1} + b2jt·size_{i,t-1} + b3jt·JH_{i,t-j} + b4jt·JL + b5jt·MH + b6jt·ML + b7jt·FHH + b8jt·FHL + e_it. JH/JL = JT 개별 6개월 수익률 상/하위 30% 더미, MH/ML = MG 산업(20 industries, 2-digit SIC) 6개월 수익률 상/하위 30% 더미, FHH/FHL = 52주 신고가 근접도 상/하위 30% 더미. 계수는 (6,6) 은 j=2..7, (6,12) 는 j=2..13 평균. 표본 = CRSP 전종목 1963-07~2001-12.",
+    "② 계수 (raw, Jan 포함 / Jan 제외 / risk-adj Jan 포함 / risk-adj Jan 제외, %/월)": {
+      "52wh_winner_FHH": [0.16, 0.27, 0.27, 0.32],
+      "52wh_winner_FHH_t": [3.06, 5.25, 6.49, 7.66],
+      "52wh_loser_FHL": [-0.48, -0.79, -0.59, -0.81],
+      "52wh_loser_FHL_t": [-4.07, -7.76, -6.30, -10.65],
+      "JT_winner_JH": [0.17, 0.15, 0.16, 0.16],
+      "JT_winner_JH_t": [2.07, 1.69, 2.80, 2.69],
+      "JT_loser_JL": [-0.21, -0.31, -0.22, -0.30],
+      "MG_winner_MH": [0.18, 0.17, 0.19, 0.19],
+      "MG_loser_ML": [-0.07, -0.05, -0.07, -0.05],
+      "self_financing_52wh": [0.65, 1.06, 0.86, 1.13],
+      "self_financing_52wh_t": [4.08, 7.64, 7.29, 11.35],
+      "self_financing_JT": [0.38, 0.46, 0.38, 0.46],
+      "self_financing_MG": [0.25, 0.22, 0.25, 0.24]
+    },
+    "★ 롱온리 관점의 결정적 판독": "GH2004 의 '지배'는 **거의 전부 loser(숏) 레그에서 나온다**. raw Jan-포함 기준 자기금융 0.65%/월 중 loser 레그 기여가 -0.48 로 약 74% 다. winner 레그만 보면 52주 신고가(+0.16, t 3.06)가 JT winner(+0.17, t 2.07)를 raw 에서 **이기지 못한다**. risk-adjusted 에서만 +0.27 vs +0.16 으로 앞선다. ⇒ KR 롱온리 mandate 에서 법적으로 수확 가능한 부분은 GH2004 가 보인 우위의 소수 지분이다. 이 사실이 본 라운드 2급의 사전 기대치를 구조적으로 규정한다.",
+    "③ 단기 모멘텀 ≠ 장기 반전 (Table VI)": "gap k = 12/24/36/48 을 두고 (6,k,12) 회귀. JT winner 는 유의 음(-0.09, t -2.63 at k=12; JT winner-loser -0.13, t -2.65), MG winner 도 -0.11(t -2.42)로 반전. 반면 **52주 신고가 winner/loser 계수는 전 gap 에서 작고 대체로 비유의**(유일 예외: Jan 제외 (6,12,12) winner +0.06 t 2.15 — 반전이 아니라 2년차까지 상승 지속). 원문: 52주 신고가가 예측한 수익은 permanent 하며 트레이더가 편향을 교정할 때 과/과소 교정을 하지 않는다.",
+    "④ anchoring 기전 서술": "트레이더는 52주 신고가를 뉴스의 영향을 평가하는 **준거점(reference point)** 으로 쓴다. 좋은 뉴스가 가격을 신고가 부근/신고가로 밀어올리면, 정보가 그것을 정당화해도 **더 높이 호가하기를 주저**한다. 정보는 결국 이기고 가격은 올라 continuation 이 발생한다. 대칭적으로 나쁜 뉴스가 가격을 신고가에서 멀리 밀어내면 정보가 함의하는 만큼 낮은 가격에 팔기를 주저한다. **주저는 가격-수준 의존적**이며 신고가에서 가장 가까운 지점과 가장 먼 지점에서 최대다 — 중간 지점에서는 사전믿음이 빠르게 조정되어 예측력이 없다. 실험경제학의 adjustment-and-anchoring bias(Kahneman-Slovic-Tversky 1982)와 정합. ★주체 증거로 Grinblatt & Keloharju (2001) 핀란드 개별 거래 데이터를 인용: 투자자는 **역사적 고가 부근 종목을 (보유·매수보다) 매도할 확률이 훨씬 높고**, 역사적 저가 부근 종목을 매수할 확률이 높다. Grinblatt & Han (2002) disposition 모형이 이론 형태를 제공하나, GH 의 준거점(취득가)에 기반한 전략은 52주 신고가 전략에 강하게 지배당한다.",
+    "⑤ 포트폴리오 구성 절차": "매월 근접도로 정렬해 상위 30% = winner, 하위 30% = loser. **동일가중**(JT 를 따름 — MG 의 시가총액가중이 아님). (6,6) = 보유 6개월, 6개 vintage 중첩 평균. 강건성으로 (6,12)/(12,6)/(12,12) 확인. 회귀 검정에만 1개월 skip."
+  },
+
+  "candidates": [
+    {
+      "rank": 1,
+      "selected": true,
+      "title": "GH2004 52주 신고가 근접도 — 준거점 anchoring 신호 교체",
+      "family": "behavioral_anchoring_price_reference",
+      "mechanism": {
+        "agent": "KR 개인 투자자층 (신고가를 준거점으로 삼는 한계 거래자)",
+        "friction": "편향 보유자가 거래량 다수 + 기관 편입 규정 지연 + 유동성/회전 비용 문턱",
+        "path": "신고가 부근 좋은 뉴스에 호가 상향 주저 → 정보의 분할 반영 → 후속 드리프트"
+      },
+      "why_selected": "사전등록 확정 축(request.json + reinforce_ledger_l1 attempt n=7). 누적 3회가 소진한 '동일 신호 위의 조작'을 처음으로 벗어나며, GH2004 가 명시적 지배 주장을 갖고 있어 1급 반증조건을 논문에서 직접 이식할 수 있다."
+    },
+    {
+      "rank": 2,
+      "selected": false,
+      "title": "산업 수준 52주 신고가 근접도 — GH2004 의 MG 축 이식",
+      "family": "behavioral_anchoring_industry",
+      "mechanism": {
+        "agent": "섹터 로테이션을 수행하는 국내 기관 배분자",
+        "friction": "섹터 배분 결정의 위원회 주기 · 벤치 대비 섹터 언더웨이트 회피",
+        "path": "섹터 지수의 신고가 준거점 부근에서 배분 상향 지연 → 섹터 드리프트"
+      },
+      "why_not_selected": "M07_IndMom 은 섹터 평균으로 축퇴하며 KR 섹터 수가 적어 단면 해상도가 무너진다(MEMORY: '계열 15종이 구속 해상도' — 군집 유의에 |rho|≥0.514 필요). 검정력이 개별주 축보다 구조적으로 낮고, GH2004 자신도 MG 축이 셋 중 가장 약함을 보였다(MH-ML 0.25 vs 52wh 0.65). 다만 1급 회귀에는 MH/ML 을 **통제 변수로** 반드시 포함한다 — 후보로 버리되 통제로 살린다."
+    },
+    {
+      "rank": 3,
+      "selected": false,
+      "title": "준거점 접근 속도 — 근접도의 변화율(velocity toward the anchor)",
+      "family": "behavioral_anchoring_dynamic",
+      "mechanism": {
+        "agent": "동일(개인 준거점 거래층)",
+        "friction": "동일",
+        "path": "과소반응은 준거점에 *도달하는 과정*에서 발생하므로 수준이 아니라 접근 속도가 편향의 강도를 잰다"
+      },
+      "why_not_selected": "GH2004 는 **수준 비율**을 사양으로 못박았다. 충실 이식 검정(1급)이 먼저 성립해야 변형의 기저가 생긴다. 또한 가격-파생 변형을 하나 더 만드는 것이라 DIST-AR-041 저EV 범주로 더 깊이 들어간다. 1급 PASS 시 next_probe 로 승계."
+    },
+    {
+      "rank": 4,
+      "selected": false,
+      "title": "비-가격 준거점 — 애널리스트 목표주가 대비 현재가 위치",
+      "family": "consensus_reference_point",
+      "mechanism": {
+        "agent": "목표주가를 앵커로 삼는 리테일·자문 채널",
+        "friction": "목표주가 개정의 경직성(애널리스트 herding·개정 지연)",
+        "path": "현재가가 목표주가에 근접할수록 추가 상향 호가 주저 → 개정 도착 시 지연 반영"
+      },
+      "why_not_selected": "★DIST-AR-041 범주를 실제로 벗어나는 유일 후보(비-return·비-가격 원천)이며 그 카드의 frontier 와 정합한다. 그러나 (a) 본 WT 사전등록 논문 근거가 GH2004 이고 목표주가 준거점은 별도 논문 근거를 요구 (b) 컨센서스 계열은 WT-R20260829_001 에서 self_pit_check `fail_lookahead_suspected` 를 받은 전례가 있다(C01_SUE, 컨센서스 33종 공통). ⇒ 본 라운드 밖. **alpha_frontier_queue 신규 등재 권고**로 남긴다."
+    },
+    {
+      "rank": 5,
+      "selected": false,
+      "title": "근접도를 선택기가 아니라 배제기로 — 하위 근접도 유니버스 배제 필터",
+      "family": "construction_form_exclusion",
+      "mechanism": {
+        "agent": "동일(개인 준거점 거래층)",
+        "friction": "동일. 단 far-end(신고가에서 먼 쪽)에서 마찰이 더 강하다 — KR 공매도 제약으로 하락 방향 차익거래가 구조적으로 봉쇄된다",
+        "path": "신고가에서 먼 종목은 나쁜 뉴스가 가격에 덜 반영된 상태 → 후속 하락. 이를 롱온리 envelope 안에서 수확하는 방법은 숏이 아니라 **유니버스 배제**다"
+      },
+      "why_not_selected": "사전등록 축이 selection 이지 exclusion 이 아니다. ★그러나 GH2004 Table V 판독상 효과의 74% 가 loser 레그에 있고 그 레그는 롱온리에서 숏 대신 **배제**로만 접근 가능하다. ⇒ 본 후보를 `power_contract` 의 **사전지정 설계 변경 경로**로 승격했다: 2급 ratio < 0.15 발동 시 재량 없이 이 구성으로 전환한다. 참고 근거: FQ-142(robustness 지표를 선택기가 아니라 배제기로) · MEMORY '오버레이 효과 = 그것이 무엇을 밀어냈는가'."
+    }
+  ],
+
+  "selected": {
+    "hypothesis_title": "JT1993 강화 7/20 — 52주 신고가 근접도 신호 교체 (George-Hwang 2004)",
+    "hypothesis_description": "KR 시장에서 현재가의 52주 신고가 대비 위치(P/high, M06_High_52w)는 과거 수익률(개별 M02 및 산업 M07)의 예측력을 지배하고 개선한다. 기전은 수익률 외삽이 아니라 준거점 anchoring 이다 — 개인 거래층이 52주 신고가를 뉴스 평가의 준거점으로 삼아, 좋은 뉴스가 가격을 신고가로 밀어올려도 그 위로 호가를 올리기를 주저하고, 그 주저가 정보의 분할 반영을 낳아 후속 드리프트로 나타난다. 검정은 두 층으로 나뉜다 — (1급) GH2004 Table V 사양의 Fama-MacBeth 단면회귀에서 근접도 더미가 유의 양(+)이고 JT/산업 모멘텀 더미를 압도하는가 [단면 통계 · 성과 판정 아님 · 실투형 envelope 미적용], (2급) 근접도 top-25 실투형 arm 의 β-통제 α 가 동일 envelope 대조군 cell4(+5.14%/yr) 대비 증분을 내는가 [성과 판정 · 양쪽 arm 모두 실투형]. ★사전 인지: GH2004 자신의 Table V 에서 자기금융 우위의 약 74% 가 숏(loser) 레그에 있고 롱온리 winner 레그만 보면 52주 신고가(+0.16%/월 t 3.06)가 JT winner(+0.17%/월 t 2.07)를 raw 에서 이기지 못한다. ★선행 측정 존재: 동일 신호가 2026-06-12 에 이미 측정돼 essence C(PORT_t 0.303 · oos_retention -1.131)를 받았고 그 런의 FM 은 이미 지배 패턴(Score t +3.199)을 냈다. 따라서 본 라운드의 정당한 표적은 알파 발굴이 아니라 그 양(+) 관측이 시장-내 랭킹·L-family·변동성 통제 뒤에도 생존하는지의 반증이다.",
+
+    "mechanism": {
+      "agent": "**52주 신고가를 준거점으로 삼아 매도 여부를 판단하는 KR 개인 투자자층**. GH2004 가 인용한 Grinblatt & Keloharju (2001) 가 개별 거래 데이터로 실증한 주체 — 투자자는 역사적 고가 부근 종목을 (보유·매수보다) 매도할 확률이 유의하게 높다. KR 에서 이 주체가 특히 중요한 이유는 KOSPI/KOSDAQ 거래대금의 개인 비중이 높아 편향 보유자가 한계 가격결정자 자리에 자주 서기 때문이다. 대비 주체(편향 없는 차익거래자) = 국내외 기관·외국인.",
+      "friction": "**winner 레그의 마찰 3종** — (a) 한계 거래자 구성: 편향 보유자가 거래량 다수를 차지해 편향이 가격에 실리고, 차익거래 자본이 그 규모에 비해 작다 (b) 기관 유입 지연: 신고가 종목은 밸류에이션 기준·내부 신규편입 규정상 즉시 매수 대상이 되지 못해 교정 flow 가 시차를 갖는다 (c) 실행비용 문턱: 유동성 하한(20일 평균 거래대금 2e8 KRW)과 고회전(2026-06-12 실측 664%/yr)이 15bps 비용 축에서 차익거래 순이익을 잠식한다. **★far 레그(신고가에서 먼 쪽)의 마찰은 훨씬 강하다 — KR 공매도 제약으로 개인·중소형 하락 방향 차익거래가 사실상 봉쇄된다. 이것이 GH2004 효과의 74%가 loser 레그에 있으면서도 KR 롱온리에서 수확 불가한 이유이며, 동시에 배제형(후보 5)이 사전지정 대체 경로인 이유다.**",
+      "path": "좋은 뉴스가 종목 가격을 52주 신고가 부근/신고가로 밀어올림 → 준거점을 넘어서는 호가 상향에 대한 주저가 매도 압력(개인 순매도)과 매수 유입 지연으로 나타남 → 뉴스가 가격에 **분할 반영** → 잔여 반영이 이후 1~6개월에 걸쳐 드리프트로 실현 → 소비 형태 = 월말 근접도 상위 실투형 top-25 롱온리 보유. ★GH2004 Table VI 가 이 path 에 부가 제약을 건다: 반영은 **완결적**이며 과교정(장기 반전)을 낳지 않는다 — 이 성질이 수익률 외삽 기전과 본 기전을 가르는 관측 가능한 분기점이다."
+    },
+
+    "falsification": {
+      "design_note": "성과 동어반복 금지 원칙 준수를 위해 반증 관측을 2층으로 나눴다. F1~F5 는 **성과와 독립적으로 실패할 수 있는 부수 관측**이며 기전 청구를 진다. F6 은 성과 판정이며 소비면 전이만 진다. F6 결과를 기전 확인/기각으로 승격 인용하는 것을 금지한다.",
+
+      "primary_preregistered": {
+        "id": "F1",
+        "tier": "primary_cross_sectional_statistic",
+        "envelope_applicability": "NOT_APPLICABLE — 이것은 단면 회귀 계수 검정이지 포트폴리오 성과가 아니다. 실투형 envelope(≤25종·long-only·Σw=1)은 적용되지 않는다. 이 구분을 산출물에 명시할 것.",
+        "observable": "GH2004 Table V 사양의 Fama-MacBeth 단면회귀를 KR 로 이식: R_it = b0 + b1·R_{i,t-1} + b2·size_{i,t-1} + b3·JH + b4·JL + b5·MH + b6·ML + b7·FHH + b8·FHL + e. FHH/FHL = 근접도(M06_High_52w) 상/하위 30% 더미, JH/JL = M02_Mom_6_1 상/하위 30% 더미, MH/ML = M07_IndMom 상/하위 30% 더미. j=2..7 평균(1개월 skip — GH2004 회귀 규약과 정합).",
+        "reject_if": "① FHH 계수가 유의 양(+)이 아니면 근접도의 KR 예측력 자체가 부재 → 기각. ② (FHH−FHL)이 (JH−JL)을 압도하지 못하면 GH2004 의 '지배' 주장이 KR 에 성립하지 않음 → GH2004 이식 실패로 판정.",
+        "labeling_constraint": "(FHH−FHL) 지배 검정은 숏 레그를 포함한 청구다. 이 값을 근거로 어떤 실투형 성과 판정도 하지 않으며 산출물에 `reference_only_not_verdict_bearing` 로 라벨한다. 롱온리 관련 반쪽은 **FHH 단독**이며 별도로 보고한다.",
+        "field_dictionary_refs": ["FDB-B2_registry_rawdata_price_daily", "A1_RAWDATA_OHLCVS_daily", "A2_universe_krx_monthly"]
+      },
+
+      "side_observations": [
+        {
+          "id": "F2",
+          "tier": "mechanism_discriminant",
+          "name": "장기 무반전 — anchoring vs 수익률 외삽의 분기점",
+          "observable": "GH2004 Table VI 사양: gap k = 12/24/36/48 을 둔 (6,k,12) 단면회귀에서 FHH/FHL 계수 대비 JH/JL 계수의 반전 여부. GH2004 미국 실측 = JT winner 유의 음(-0.09 t -2.63), 52주 신고가 winner/loser 전 gap 비유의(무반전).",
+          "reject_if": "KR 에서 근접도 winner 더미가 k=12~48 구간에서 **유의 음(반전)** 이면 근접도는 anchoring 이 아니라 과거수익률 외삽의 재파라미터화다. 이 경우 DIST-AR-041 범주에 완전히 포섭되며 `anchoring` 라벨을 철회한다.",
+          "why_not_tautological": "성과와 무관하다 — 근접도의 1개월 forward 성과가 아무리 좋아도 24개월 gap 계수는 독립적으로 음(-)일 수 있다.",
+          "field_dictionary_refs": ["A1_RAWDATA_OHLCVS_daily", "FDB-B2_registry_rawdata_price_daily"]
+        },
+        {
+          "id": "F3",
+          "tier": "mechanism_agent_evidence",
+          "name": "주체 검정 — 신고가 부근에서 개인이 파는가 (GK2001 함의)",
+          "observable": "근접도 상위 코호트에서 개인 순매수(투자자 수급 패널)의 부호·강도. GH2004 가 anchoring 주체 증거로 인용한 Grinblatt-Keloharju(2001)의 KR 대응 관측: 편향 주체는 신고가 부근 종목을 **매도**한다.",
+          "reject_if": "근접도 상위 코호트에서 개인 순매수가 유의 **양(+)** 이면(= 추격매수), GH2004 가 서술한 주체·마찰 구조가 KR 에 없는 것이고, 관측된 예측력이 있더라도 그것은 anchoring 이 아니라 다른 기전이다. mechanism.agent 서술 철회.",
+          "why_not_tautological": "flow 부호는 forward 수익과 독립 관측이다. 성과가 양(+)이면서 flow 가 양(+)일 수 있고, 그 조합은 기전 기각이다.",
+          "data_caveat": "A6/A7 은 수동 QuantiWise export 계열로 실효 지연 ~22일(비정기)이며 종점 2026-07-01 이다(ast_field_map_v0 도메인 A 채록). 미래참조는 코드 강제점(strict t-1)이 막지만 스테일은 못 막는다 — 본 관측은 기전 진단 전용이며 신호 경로에 넣지 않는다.",
+          "field_dictionary_refs": ["A6_investor_flow_stock_daily", "A7_investor_flow_registry_ptr"]
+        },
+        {
+          "id": "F4",
+          "tier": "confound_rejection_mandatory",
+          "name": "교란 기각 — 시장-내 랭킹 + L-family/변동성 직교성",
+          "observable": "F1 회귀를 (a) **시장-내 랭킹**(KOSPI200 내부 / KOSDAQ150 내부 각각 30% 절단 후 통합)으로 재실행 (b) L01_Amihud · L09_Amihud_20d · L11_Kyle_Lambda · D35_RealVol_63d 를 회귀에 추가 투입하거나 근접도를 이들에 직교화한 후 재실행. 병기 의무: EW-유니버스 대비 PORT_t · cap-tier 분해(MEGA top-10 / MID 11-30 / OTHER).",
+          "reject_if": "① 혼합 랭킹에서 유의하던 FHH 가 시장-내 랭킹에서 소멸하면 그 유의성은 **시장 더미 아티팩트**다 — 3/20 이 정확히 같은 자리에서 -19.58%/yr NW-t -2.526 의 아티팩트를 적발했고 그것이 그 라운드 유일한 |t|>2 였다. 이 경우 2026-06-12 의 FM t 3.199 도 함께 재귀속된다. ② L-family/변동성 통제 후 FHH 가 소멸하면 근접도는 저변동성·유동성 계열의 재명명이며 anchoring 청구는 근거를 잃는다.",
+          "orthogonality_measurement_rule": "★직교성 주장을 전 구간 상관계수로 하지 말 것. 분위 양끝(절단면)에서 통제축 잔존을 재라 — MEMORY 카드 '직교화 주장은 절단면 위에서 다시 재라'(전 구간 상관 0인데 분위 양끝에서 통제축이 1.1889배 부활한 실측).",
+          "field_dictionary_refs": ["FDB-B2_registry_rawdata_price_daily", "A2_universe_krx_monthly", "A9_liquidity_avgtv20_convention", "A1_RAWDATA_OHLCVS_daily"]
+        },
+        {
+          "id": "F5",
+          "tier": "mechanism_identification",
+          "name": "준거점 식별 — 고가 앵커의 저가 대비 비대칭",
+          "observable": "동일 회귀에 52주 **저가** 대비 위치(M17_Low_52w = Close/min(Close,252d))를 함께 투입했을 때 두 변수의 상대 설명력.",
+          "reject_if": "M17 계수가 M06 계수를 흡수하거나 동등 이상의 유의성을 가지면 '52주 **신고가**가 준거점'이라는 주장은 식별되지 않는다 — 변수는 단순 가격-레인지 위치이며 anchoring 의 특정 앵커 주장이 무너진다.",
+          "why_not_tautological": "두 변수 모두 forward 수익을 예측할 수 있으며, 그 경우에도 이 관측은 기전 서술을 기각한다.",
+          "field_dictionary_refs": ["FDB-B2_registry_rawdata_price_daily", "A1_RAWDATA_OHLCVS_daily"]
+        }
+      ],
+
+      "secondary_performance_verdict": {
+        "id": "F6",
+        "tier": "secondary_performance_verdict",
+        "envelope_applicability": "APPLICABLE_BOTH_ARMS — 처치군·대조군 **양쪽 모두 실투형**이어야 한다(long-only · ≤25종 · K200∪KQ150 · 2005-01-01~2026-08 · 15bps v2.4 delta · Σw=1 · 비중 상한 없음 · PIT C1~C15). 데실·롱숏·>25종 구성으로 이 대비를 만들지 않는다.",
+        "observable": "근접도 top-25 실투형 arm 의 β-통제 α (연율) vs 동일 envelope 대조군 cell4(WT-R20260829_002 롱온리 top-25 실투형, β-통제 α +5.14%/yr, t 1.205)의 β-통제 α. 동일 월 집합에서 **짝지음(paired)** 비교.",
+        "reject_if": "증분 ≤ 0 이면 소비면 전이 실패.",
+        "labeling_constraint": "F6 결과를 기전 확인/기각으로 승격 인용 금지. F6 이 말할 수 있는 것은 소비면 전이 여부뿐이다.",
+        "comparator_envelope_check": "cell4 는 2/20 의 롱온리 top-25 arm 이므로 이미 envelope 안이다. cell2(35종)·cell3(롱숏)은 envelope 밖이며 본 판정에 쓰지 않는다.",
+        "field_dictionary_refs": ["FDB-B2_registry_rawdata_price_daily", "A1_RAWDATA_OHLCVS_daily", "A4_benchmark_kospi200", "A2_universe_krx_monthly", "A9_liquidity_avgtv20_convention"]
+      },
+
+      "power_contract_preregistered": {
+        "gate": "alpha-research Step 0 에서 **착수 전** 산출한다. ratio < 0.15 이면 착수 중단 · 설계 변경(사전지정 경로로 전환). 근거 = 3/20 교훈(검정력 3.0~5.2%·ratio 0.028~0.120 이 착수 후에야 산출됨).",
+        "required_outputs": ["effect_size_target", "MDE80", "ratio (= effect_size_target / MDE80)", "expected_t", "power"],
+        "anchors_to_compute_all_three": [
+          {
+            "anchor_id": "A_paper_winner_leg",
+            "for": "F6 (2급, 실투형 롱온리)",
+            "value": "GH2004 Table V 52주 신고가 **winner 더미 단독**: raw Jan-포함 +0.16%/월 (t 3.06) / risk-adjusted Jan-포함 +0.27%/월 (t 6.49)",
+            "why": "롱온리 mandate 에서 법적으로 수확 가능한 유일한 절반이다."
+          },
+          {
+            "anchor_id": "B_paper_increment_over_JT",
+            "for": "F6 증분(vs cell4 = 과거수익률 신호 arm)",
+            "value": "GH2004 winner 레그 대비 비교: 52주 신고가 +0.16%/월(t 3.06) vs JT winner +0.17%/월(t 2.07) [raw]; +0.27%/월(t 6.49) vs +0.16%/월(t 2.80) [risk-adjusted]",
+            "why": "★2급이 묻는 것은 절대 알파가 아니라 **과거수익률 신호 대비 증분**이다. GH2004 원문이 함의하는 winner-레그 증분은 raw 기준 사실상 없고 risk-adjusted 기준에서만 존재한다. 이 앵커를 쓰지 않으면 2급의 검정력 계약이 과대 산출된다."
+          },
+          {
+            "anchor_id": "C_inhouse_prior",
+            "for": "F6 (KR 현실 사전)",
+            "value": "STR_AS_20260612_132740_321992 — FF3 α 3.46%/yr (t 1.178, n=254월) / Carhart4 α 0.71%/yr (t 0.275) / PORT_t 0.303 / oos_retention -1.131",
+            "why": "동일 신호의 KR 실측 사전. Carhart4 에서 알파가 사실상 소멸한다는 사실(3.46→0.71)은 근접도 포트폴리오 수익이 모멘텀 팩터에 흡수됨을 시사한다 — 단면에서 근접도가 개별 모멘텀을 지배하더라도 포트폴리오 수준에서는 UMD 노출로 환원될 수 있다는 긴장이며, 이 긴장 자체가 F1 과 F6 이 갈릴 수 있는 구조적 이유다."
+          }
+        ],
+        "forbidden_anchor": "★GH2004 의 **자기금융 스프레드 0.65%/월 (t 4.08)** 을 2급 효과크기 앵커로 사용 금지. 그 값의 약 74%가 숏(loser) 레그이고 KR 롱온리에서 수확 불가하므로, 이를 앵커로 쓰면 검정력을 대략 4배 과대 산출해 게이트를 무력화한다. 이 금지는 사전등록 사항이다.",
+        "primary_test_power_separately": "F1 은 단면 회귀 계수 검정이므로 별도 검정력을 산출한다. GH2004 는 n=462월 · 단면 수천 종목에서 t 3.06 을 얻었다. KR 은 n≈259월 · 단면 ~350 종목이므로 축소분을 명시 산출하고 그 결과도 ratio 게이트에 건다.",
+        "prespecified_design_change_if_gate_fires": {
+          "trigger": "F6 의 ratio < 0.15",
+          "action": "재량 없이 후보 5(배제형)로 전환한다 — 근접도 **하위 30%** 를 유니버스에서 배제한 뒤 기저 신호로 실투형 top-25 를 구성하고, 배제 없는 동일 구성 대비 β-통제 α 증분을 잰다. 근거: GH2004 효과의 약 74%가 loser 레그에 있고 롱온리 envelope 에서 그 레그는 숏이 아니라 배제로만 접근 가능하다.",
+          "constraint": "배제형 arm 도 실투형 envelope 안(long-only · ≤25종 · K200∪KQ150 · 15bps · Σw=1)에서 구성한다. 제약 완화 레버(>25종·short·유동성 하향) 제시 금지 — INV-7.",
+          "recording": "전환 시 사전등록 문서에 전환 사실·시점·트리거 값을 기록한다. 사후 재량이 아니라 사전지정 분기임을 남긴다."
+        }
+      }
+    },
+
+    "regime_scope": {
+      "holds_in": [
+        "neutral / expansion — 신고가가 실제로 갱신되고 있어 준거점이 **도달 가능**하며, 근접도의 단면 분산이 anchoring 강도를 담는 국면. GH2004 의 path(좋은 뉴스 → 호가 상향 주저 → 분할 반영)가 성립하려면 '좋은 뉴스가 가격을 신고가로 미는' 사건이 실제로 발생해야 한다.",
+        "개인 거래대금 비중이 높은 국면 — mechanism.agent 가 한계 가격결정자 자리에 서는 조건. 편향 보유자가 거래량 다수일 때만 편향이 가격에 실린다(GK2001 이 실증한 주체가 개인이다)."
+      ],
+      "weakens_or_reverses_in": [
+        "crisis — 급락 국면에서는 단면의 거의 전 종목이 신고가에서 동시에 멀어져 근접도의 단면 분산이 붕괴하고, 남은 순위는 anchoring 이 아니라 **저베타·방어성**을 잰다. path 의 운반체(좋은 뉴스의 도착)가 사라지므로 신호는 기전이 예측하는 것과 무관한 것을 측정한다.",
+        "post_crash_rebound — 반등 국면에서 준거점(과거 신고가)이 현재가 대비 아득히 멀어 salience 를 잃고, GH2004 의 **far-end 논리**(신고가에서 먼 종목은 나쁜 뉴스가 덜 반영된 상태 → 정보가 결국 이긴다)가 반대 부호로 발화한다: 반등에서는 먼 종목이 크게 오른다. ⇒ 근접도 상위(가까운 쪽) 선택은 이 국면에서 **약화 또는 역전**된다.",
+        "high_dispersion / high_volatility — 실현변동성이 단면을 지배하는 국면에서 근접도는 저변동성 프록시로 축퇴한다. 이 국면은 F4 의 교란 통제 축과 같은 대상을 가리키며, 여기서 신호가 강해 보이면 그것은 anchoring 이 아니라 변동성 순위다."
+      ],
+      "boundary_rationale": "★도출 순서를 명시한다 — 경계는 먼저 **메커니즘에서 도출**되고, 그 다음 실측이 독립 확인한다.\n\n[도출] anchoring 은 *도달 가능한* 준거점을 요구한다. GH2004 의 서술은 주저가 **가격-수준 의존적**이며 신고가에 가장 가까운 지점과 가장 먼 지점에서 최대라는 것이다. 따라서 단면 전체가 준거점에서 동시에 멀어지는 국면(위기·반등)에서는 (a) '가까운 쪽' 코호트 자체가 얇아져 근접도 순위가 anchoring 순위가 아니라 β·변동성 순위로 축퇴하고, (b) GH2004 자신의 far-end 예측이 반대 방향으로 발화한다. 이것이 경계의 도출이며 성과 관찰과 무관하다.\n\n[독립 확인] 강화 2/20 이 기저 패자 데실 손실의 **반등월 집중**을 실측했다(recovery 더미 -0.0817/월 t -4.403, BM 수익 통제 후에도 -0.0427/월 t -2.367 로 생존 — '패자 고β' 로 환원되지 않음). 또 2026-06-12 근접도 런의 FMT-04 진단(MDD 64.4% · BM상관 0.75)이 위기 동조를 기록했다. 이 둘은 위 도출의 확인이지 출처가 아니다.\n\n[보편타당 주장 회피] 본 가설은 모든 국면에서 성립한다고 주장하지 않는다. 특히 위기·반등에서 약화/역전한다는 것이 기전의 직접 따름정리이며, 이는 등급 A 의 Calmar 0.64 문턱을 이 신호 **단독**으로 넘기 어렵다는 사전 인지와 정합한다(2026-06-12 실측 Calmar 0.188)."
+    }
+  },
+
+  "design_hazards_for_alpha_research": [
+    {
+      "id": "H1",
+      "severity": "HIGH",
+      "issue": "M06 은 **수준 비율**(Close / max(Close,252d))이다. 분자와 분모(과거 최고가)의 액면분할·무상증자 조정이 정합하지 않으면 분할 종목이 인위적 극저 근접도로 나타나 하위 코호트를 오염시킨다.",
+      "action": "착수 전 RAWDATA Close 의 수정주가 여부와 분할 이벤트 전후 M06 연속성을 점검할 것. 점검 없이 착수 금지."
+    },
+    {
+      "id": "H2",
+      "severity": "MEDIUM",
+      "issue": "M06 은 skip 이 없다(당일 Close 포함 252일 max). GH2004 의 **회귀 검정**은 1개월 skip 을 쓴다(bid-ask bounce 회피). 또 request.json data_lag_rules 는 price = t-1 close 다.",
+      "action": "F1/F2 이식 시 j≥2 (1개월 skip) 정합을 맞출 것. skip 유무를 산출물에 기록."
+    },
+    {
+      "id": "H3",
+      "severity": "HIGH",
+      "issue": "근접도 상위는 정의상 최근 상승 종목이므로 M02/M01 과 기계적 양(+) 상관을 갖는다. 전 구간 상관계수로 직교성을 주장하면 안 된다.",
+      "action": "직교성은 **분위 양끝(절단면)에서 통제축 잔존**으로 잴 것. MEMORY: 전 구간 상관 0인데 분위 양끝에서 통제축이 1.1889배 부활한 실측 전례."
+    },
+    {
+      "id": "H4",
+      "severity": "MEDIUM",
+      "issue": "2026-06-12 실측 회전율 664%/yr. 근접도는 고회전 신호다.",
+      "action": "모든 판정은 15bps(v2.4 delta) 반영 net 기준으로만. gross 인용 금지(qvest-alpha-style ②)."
+    },
+    {
+      "id": "H5",
+      "severity": "MEDIUM",
+      "issue": "F1(단면 지배)과 F6(포트폴리오 전이)이 갈릴 구조적 이유가 사전에 존재한다 — 2026-06-12 런에서 FF3 α 3.46%/yr 가 Carhart4 에서 0.71%/yr 로 소멸했다. 단면에서 근접도가 개별 모멘텀을 지배해도 포트폴리오 수익이 UMD 노출로 환원될 수 있다.",
+      "action": "F6 보고 시 FF3/Carhart4 알파를 **모두** 병기하고 어느 쪽을 인용하는지 명시. rank-IC t 와 portfolio-alpha t 를 명시 구분(qvest-alpha-style Cycle 2 교훈)."
+    },
+    {
+      "id": "H6",
+      "severity": "MEDIUM",
+      "issue": "cell4 대조군은 동일 신호의 변형이 아니라 **다른 신호**의 실투형 arm 이다.",
+      "action": "동일 월 집합에서 짝지음(paired) 검정으로 비교. 3/20 이 짝지음 t -0.054 로 증분을 판정한 선례와 정합."
+    },
+    {
+      "id": "H7",
+      "severity": "HIGH",
+      "issue": "GH2004 포트폴리오 사양(상위 30% · 6개월 보유 · 6 vintage 중첩)은 실투형 envelope(≤25종)과 충돌한다. K200∪KQ150 의 상위 30% ≈ 100+ 종목이고, 6 vintage 중첩 top-25 는 최대 150 종목이 된다.",
+      "action": "논문값 절단 사실과 절단 전 N 을 `paper_assumption_broken` 에 기록할 것(lean-loop 고정축 규약 E-5 정합). 구성 선택은 alpha-research 소관이나, 어떤 선택을 하든 최종 보유 ≤25 를 지키고 그 사실을 기록한다. 제약을 완화 레버로 제시하지 말 것(INV-7)."
+    },
+    {
+      "id": "H8",
+      "severity": "LOW",
+      "issue": "M07_IndMom 은 섹터 단순평균 수익률 기반이며 GH2004 의 MG 는 20개 2-digit SIC 산업의 **시가총액가중** 수익률이다.",
+      "action": "차이를 기록. 통제 변수로만 쓰므로 판정 영향은 제한적이나 '산업 모멘텀을 통제했다'는 주장의 정확도에 영향."
+    },
+    {
+      "id": "H9",
+      "severity": "MEDIUM",
+      "issue": "PIT C15 — Factor DB parquet 직접 load 금지. M06/M02/M07/M17/L01/L09/L11/D35 접근은 `load_month_factors()` 경유만.",
+      "action": "C13 Z_Score_Aligned 규약 준수(NEGATE_FACTORS/FLIP_SIGN 금지). 오버레이 미적용(S0/S1)."
+    }
+  ],
+
+  "challenge_flags": [
+    "★최중량 — 재포장 인정: 동일 신호가 STR_AS_20260612_132740_321992 로 이미 측정됐다(essence 재채점 C · PORT_t 0.303 · oos_retention -1.131 · Calmar 0.188). 신호·소비형태 축의 신규성은 없다. 정당한 표적은 알파가 아니라 그 런의 FM t +3.199 가 통제 뒤에도 생존하는지의 반증이다.",
+    "★DIST-AR-041 범주에 **속한다** — M06 은 100% 가격-파생이며, 그 카드의 저EV 판정 근거는 기전이 아니라 소비면 전이 실패의 반복 실측이다. 기전 신규성(anchoring)은 판정을 뒤집지 않는다.",
+    "★GH2004 효과의 약 74%가 숏(loser) 레그에 있다 — 롱온리 KR 에서 수확 불가. winner 레그만 보면 raw 에서 JT winner 를 이기지 못한다(+0.16 vs +0.17). 2급의 사전 기대치가 구조적으로 낮다.",
+    "대안 보관 — 후보 2(산업 수준 근접도): 후보로는 기각했으나 MH/ML 통제 변수로 F1 회귀에 필수 투입.",
+    "대안 보관 — 후보 3(준거점 접근 속도): F1 PASS 시 next_probe 로 승계. 논문 사양 이탈이라 지금은 착수하지 않는다.",
+    "대안 보관 — 후보 4(애널리스트 목표주가 준거점): ★DIST-AR-041 범주를 실제로 벗어나는 유일 후보. 별도 논문 근거 필요 + 컨센서스 계열 PIT 전례(WT-R20260829_001 self_pit_check fail_lookahead_suspected) 있음. **alpha_frontier_queue 신규 등재 권고** — 등재는 Q-Lead 소관이며 본 에이전트는 _007 mailbox 밖에 쓰지 않았다.",
+    "대안 보관 — 후보 5(배제형): 사전지정 설계 변경 경로로 승격됨. F6 ratio < 0.15 시 재량 없이 전환.",
+    "설계 규율 정정 반영(Q-Lead 착수 중 주입): 1급은 단면 회귀 통계이므로 envelope 미적용으로 명시 라벨했고, 2급은 처치·대조 **양쪽 모두 실투형**으로 고정했다(cell4 는 이미 롱온리 top-25 라 정합). envelope 밖 구성(자기금융 스프레드 등)은 `reference_only_not_verdict_bearing` 라벨을 붙였고 어떤 판정도 걸지 않았다.",
+    "제약-귀속 금지 준수: 실패를 종목수·long-only 탓으로 돌리지 않았다. 숏 레그 수확 불가는 **마찰 서술의 일부**(KR 공매도 제약 = 기전이 지워지지 않는 이유)이자 효과크기 앵커 산정 근거로만 쓰였으며, 제약 완화 레버는 제시하지 않았다(INV-7)."
+  ],
+
+  "self_adversarial_challenge": {
+    "performed": true,
+    "note_path": "qepm/mailbox/worktask/WT-R20260829_007/challenge_note_hypothesis.md",
+    "weaknesses_raised": 6,
+    "classification": {"ACCEPT": ["W1 메커니즘 소거법 유래", "W4 재포장(최중량)", "W5 마찰 서술 과장", "W6 검정력 앵커 오용 위험"], "PARTIAL": ["W2 2급의 성과 동어반복성", "W3 국면경계의 실측 유래 의심"], "REBUTTAL": []},
+    "rationalization_vocabulary_check": "'미미 / 관행적 / 보수적이면 OK / 대부분 결과 동일 / 이미 반영되어 있었을 것' 사용 0건 — auto RE-VIEW 미발동."
+  },
+
+  "verdict": "designed",
+  "verdict_qualifier": "설계는 완결됐으나 **착수 권고가 아니다**. DIST-AR-041 범주 소속 + 동일 신호의 선행 essence C 측정 + GH2004 자신의 winner-leg 약세라는 세 사전 근거가 알파 기대값을 낮춘다. 착수 여부는 Q-Lead 판단 사항이며, 착수 시 표적을 '기전 반증'으로 선언할 것을 권고한다. 메커니즘 자체는 실명 서술 가능하므로 economic_void 아님.",
+
+  "handoff": {
+    "to": "alpha-research",
+    "next_steps": "Step 1~7 + ⑤ AST 구성. 본 산출물의 mechanism / falsification / regime_scope 는 **승계하되 재작성하지 않는다**(Charter 원칙 8 No Silent Override) — 결함 발견 시 수정이 아니라 challenge_note.md 기록 + 재설계 요청.",
+    "step0_obligations_inherited": [
+      "power_contract_preregistered 를 Step 0 에서 산출(앵커 3종 전부). ratio < 0.15 → 착수 중단 · 사전지정 배제형으로 전환.",
+      "H1(분할 조정) 사전 점검 통과 전 신호 산출 금지.",
+      "F4(시장-내 랭킹 + L-family/변동성 직교성)는 선택 진단이 아니라 **필수 교란 기각**이다. 미수행 시 어떤 양(+) 결과도 인용 불가.",
+      "load_month_factors() 경유(PIT C15) · Z_Score_Aligned(C13) · 오버레이 미적용(S0/S1)."
+    ],
+    "artifacts_written_by_this_agent": [
+      "qepm/mailbox/worktask/WT-R20260829_007/alpha_hypothesis.json",
+      "qepm/mailbox/worktask/WT-R20260829_007/challenge_note_hypothesis.md"
+    ],
+    "artifacts_not_written": "request.json 미수정(hypothesis_title 이미 존재) · alpha_package.json 미작성 · factors[] 미작성 · self_pit_check 미작성 · 실측 0건 · 텔레그램 미발송(alpha-research 가 라운드 단위 보고)."
+  }
+}

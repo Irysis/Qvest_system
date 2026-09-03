@@ -1,0 +1,22 @@
+{
+  "run_id": "FORGE_WT-R20260829_004",
+  "strategy_id": "WTR20260829_004_JT1993_CRASHOVL_IV25",
+  "strategy_name": "JT1993 momentum + crash-management regime overlay, inverse-vol weights (WT-R20260829_004 reinforcement 4/20)",
+  "strategy_family": "momentum_crash_risk_overlay",
+  "signal_description": "alpha_package alpha_vector = JT1993 6M skip-1 모멘텀 z (combination_rule z_score_aligned_weighted_sum). 패닉 국면월에는 alpha spec 이 구성을 교체 (Daniel-Moskowitz 2016 crash management). 비중은 optimizer W2_IV = 역실현변동성(vol126_ann, strict t-1) 정규화. forge 는 재선택/재가중 0.",
+  "universe_rule": "KOSPI200 U KOSDAQ150, ADV20 >= 2e8 KRW (alpha t-1 PIT filter inherited)",
+  "rebalance_frequency": "monthly",
+  "signal_date_rule": "month_end as_of_date (260 months, 2005-01-31 ~ 2026-08-28)",
+  "execution_date_rule": "first trading day of holding month (get_execution_date) = overlay cutoff first-day-of-holding-month",
+  "weighting_method": "inverse realized volatility (optimization_package W2_IV weights.csv as-is)",
+  "max_position_weight": 0.094,
+  "max_leverage": 1,
+  "cash_rule": "residual cash 0% return (integer-share rounding remainder only) — declared cash_weight 0",
+  "cost_model": "v2.4_kr_retail_15bps one-way, delta based (|delta notional| charged)",
+  "missing_data_rule": "exec_date close missing -> name excluded, remaining renormalized (logged in audit)",
+  "risk_controls": "regime overlay applied UPSTREAM (alpha 구성 교체 + optimizer 비중). forge 층은 오버레이를 추가 적용하지 않는다. 패닉월 26/260.",
+  "lookahead_prevention": "PIT C1-C15: C1/C2/C3/C6/C10/C15 PASS, C4/C5/C9/C13 상류 승계 또는 N/A. as_of_date(신호월말) -> 홀딩월 첫 거래일 종가 집행. weights.csv as-is 소비(재선택 0). 오버레이 컷오프 = first-day-of-holding-month; anchor_date/realized_ym 결정경로 미참조. detect_lookahead static scan on run_all.R = CLEAN. ★검출기 커버리지 한계: 비선언 idiom 주입이 상류 3층에서 0/3 미발화 — CLEAN 은 PIT 증명이 아니라 선언 idiom 부재의 증거일 뿐이다.",
+  "survivorship_bias_control": "full RAWDATA panel + alpha monthly PIT membership inherited",
+  "factor_engine_path": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/WT_R20260829_004/run_all.R",
+  "cost_model_version": "v2.4_delta"
+}

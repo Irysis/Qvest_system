@@ -1,0 +1,16 @@
+{
+  "run_id": "20260829_233244_16608",
+  "strategy_name": "RF_B3_11_KOSPI_All",
+  "lookahead_prevention": "detect_lookahead(engine) CLEAN + t+1 실행(get_execution_date 익월 첫 거래일) + 시그널일>RAWDATA 범위 검사",
+  "strategy_idea": "규칙기반 고속강화 B3-11: 신호·비중은 RF_B1_5_MomIlliq 완전 동일(모멘텀 12-1 rankZ 50% + Amihud L01 aligned-Z rankZ 50%, long-only top-25 EW 월간, 15bps). 바꾸는 것은 적용 유니버스 하나 — K200∪KQ150 지수 멤버십 제약을 제거하고 상장 전수(adv20>=2e8 t-1 유지)로 확장. Hong-Lim-Stein(2000): 정보 확산이 느린 소형·저커버리지 종목에서 모멘텀이 강하다. 기준선과의 차이 = 지수 멤버십이 무엇을 잘랐나.",
+  "constraint_profile": "replication",
+  "construction": "top_n_long",
+  "weight_method": "ew",
+  "rebalance": "monthly",
+  "universe": "KOSPI_ALL_LISTED_ADV20",
+  "liquidity_filter": "paper_faithful",
+  "n_max": 25,
+  "has_short": false,
+  "source_paper_url": "https://onlinelibrary.wiley.com/doi/10.1111/0022-1082.00206",
+  "benchmark_note": "long_vs_long_bm"
+}

@@ -1,0 +1,16 @@
+{
+  "run_id": "20260829_233243_31308",
+  "strategy_name": "RF_B2_9_MinVarLW",
+  "lookahead_prevention": "detect_lookahead(engine) CLEAN + t+1 실행(get_execution_date 익월 첫 거래일) + 시그널일>RAWDATA 범위 검사",
+  "strategy_idea": "규칙기반 고속강화 B2-9: 신호는 B1-5 승자 그대로(모멘텀 12-1 rankZ 50% + Amihud 비유동성 rankZ 50%) 고정하고, 비중만 EW → Ledoit-Wolf(2004 JMVA) 축소 공분산 하 long-only 최소분산으로 교체. 공분산 창 = 직전 60개월 월수익, 창 종점 = 시그널월 직전월(C1/C2). K200∪KQ150 · adv20>=2e8(t-1) · 15bps · Σw=1 · w>=0. 가설 = 위기 동조 낙폭(MDD 59.3%)을 비중 축에서 줄일 수 있는가.",
+  "constraint_profile": "replication",
+  "construction": "engine_direct",
+  "weight_method": "minvar_ledoit_wolf",
+  "rebalance": "monthly",
+  "universe": "K200_KQ150",
+  "liquidity_filter": "paper_faithful",
+  "n_max": 25,
+  "has_short": false,
+  "source_paper_url": "https://www.sciencedirect.com/science/article/pii/S0047259X03000964",
+  "benchmark_note": "long_vs_long_bm"
+}

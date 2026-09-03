@@ -1,104 +1,106 @@
 {
- "l_code": "L-WT20260803_005",
- "strategy_id": "WT-D20260803_005",
- "research_mode": "alpha_research",
- "fq": "FQ-131",
- "title": "팩터 '자격'(PORT_t 부호)의 시간구조는 거의 전부 국면 공통성분 — 달력 반감기 부재, 정적 |t| 게이트는 원리적 불가",
- "type": "ANTI-PATTERN",
- "grade": "F",
- "metric_type": "canonical_screen",
- "record_type": "measurement_round",
- "gate_eligible": false,
- "capital_claim": "none",
- "issued_at": "2026-08-03T11:50:00+09:00",
- "issued_by": "Q-Lead (WT-D20260803_005 판정 수집 — 라운드 에이전트 미적립분 보정)",
- "core_reference": "WT-D20260802_015(단일이 조합·로테이션 지배) + WT-D20260802_021(전이-음성 성분의 slot 잠식 = gap 75%) + WT-D20260803_004(IS/OOS 분리 시 자격 부호 안정 2/5, IS 최강 V01_SECREL +2.634 → OOS -0.389) — 세 라운드가 다른 각도에서 같은 지점에 도달한 뒤의 상위 질문",
- "lesson_text": "285팩터(registry active 322 → 수익상관>=0.99 중복 37 제거) x 비중첩 창 3격자로 자격 부호의 지속성을 측정했다. (1) **달력 시간의 반감기가 존재하지 않는다** — 비절단 sign-run 중앙값 = 1창(3격자 전부), 기하 중앙값은 창 단위 2.26/2.39/2.20 으로 격자 무관 동일한데 개월 환산은 136/86/53 으로 창 길이에 비례한다. 실제 감쇠 시간상수가 있으면 개월수가 일치해야 하므로 이는 감쇠가 아니라 **추정잡음 지배의 지문**이다. 상수-알파 귀무(block bootstrap, 시간순서 파괴) 0.548 [0.326, 0.748] 안에 관측 0.578(60.2 백분위). (2) **정적 |t| 자격 게이트는 원리적으로 불가** — bin 별 지속률 0.503/0.571/0.666/**0.500** 으로 단조가 아니라 최상위에서 무너진다(|t|>=2 CI [0.366,0.655] = 동전던지기 미배제). level 회귀 b=+0.277(팩터-군집 t 10.65)은 유의하나 **저-|t| 구간이 만든 기울기**다. 운용 시뮬 tau=2 선발 → 다음 창 PORT_t 평균 -0.112, 양수 41.7%, tau>=1.5 부터 0 이하. (3) ★★**지배 발견 — 자격은 팩터 라벨이 아니라 국면 라벨**: era 부호 유지 전이 49쌍 지속 0.959 vs era 전환 전이 115쌍 0.304. cap-w 창별 양수 팩터 비율 0.75/0.91/0.22/0.02(최근 5년 285개 중 6개)·era 일치율 0.856. EW-유니버스로 바꾸면 0.37/0.50/0.42/0.48·0.558 ⇒ **수준은 벤치 구성 아티팩트**이나 **지속성은 basis-invariant**(EW 0.607 vs cap-w 0.578) ⇒ 벤치를 고쳐도 게이트는 살아나지 않는다. era-demean 후 P_persist 0.548/0.568/0.563 = 귀무 근방 ⇒ 팩터별 고유 지속성은 거의 없다. (4) 전이 벽 재확인 — 이번 창 rank-IC 부호 → 다음 창 PORT_t 부호 적중 0.472(동전 이하), 동일 창 cor(ic_t, port_t) 0.313. (5) 조건부: 성장 0.667·수급흐름 0.667·퀄리티 0.659·모멘텀 0.655 vs 방어 0.465·유동성 0.487(방어형 저지속은 위기 캘린더 종속 cor +0.842 → AX-001 v2 별도 취급), 대형 0.514 < 소형 0.614.",
- "self_adversarial_findings": "자가 적대검증이 **자기 결함 2건을 검출**했고 둘 다 재측정 후 판정 불변. (A) top-80 절단 parity 표본 편향 — 주류 3종만 봐서 정확 0 이 나왔으나 L26_Log_MktCap 에서 실제로 물었다(PORT_t 0.7618→0.7438). 위험 18종 x 3격자 392셀 재측정 → 부호 불일치 0건, P_persist 0.5776 불변. (B) ast_spec_gate 가 REGISTRY[D32_Beta_VIX] FAIL_LOOKAHEAD(C11 35일 상한) 검거 — 해당 5종 제외 시 P_persist Δ<=0.0014 로 판정 불변, pit.decision_ts 를 실행가능 최초시점으로 사유와 함께 정정. ★규율: 위반 주입이 집계 기준 미발화(Δp +0.0165 < 0.02)한 것을 **사후 판정식 교체 없이 그대로 보고**하되 (b) 지표의 지문은 병기했다(b 0.277→0.557, 최강 bin 0.500→0.791).",
- "process_rule": "판정 지속성 라운드의 필수 통제 3종: ① **격자 불변성 검사** — 창 길이를 바꿔도 창-단위 지속이 같고 개월 환산만 비례하면 그것은 감쇠가 아니라 추정잡음이다(달력 반감기 주장 전 필수). ② **era-demean 대조** — 팩터별 고유 지속성을 주장하려면 국면 공통성분을 뺀 뒤에도 남는지 봐야 한다. ③ **basis 교차 확인** — 수준(양수 비율)과 지속성을 분리하라. 전자는 벤치 아티팩트일 수 있으나 후자가 basis-invariant 면 벤치 교정으로 해결되지 않는다.",
- "next_probe": [
-  "NP-1 era 공통성분을 사전 관측가능하게 추정 가능한가 — 구속 관문(FQ-133으로 착수, WT-006 에서 FAIL 판정)",
-  "NP-2 era-demean 상대순위(Spearman 0.19~0.20, 3격자 공통)가 자본으로 전이되는가 — 절대 자격이 아니라 상대 순위는 살아있을 수 있다",
-  "NP-3 중형주 대역 유니버스에서 판정 안정성이 오르는가(대형 0.514 < 소형 0.614 의 중간)",
-  "NP-4 판정을 부호가 아니라 예측구간으로 전환(Liao 2025) — 이진 자격이 동전이면 구간 추정이 정합"
- ],
- "consumption_surfaces_checked": {
-  "factor_ranking": "해당 없음 — 본 라운드는 판정의 성질을 잼",
-  "universe_filter": "해당 없음",
-  "overlay_regime_input": "NP-1(FQ-133)로 이관 — WT-006 에서 사전 추정 불가 판정",
-  "risk_model": "해당 없음",
-  "monitoring": "★후보 — era 사후 탐지 기반 재심사 트리거(FQ-134로 발전)",
-  "screen_label": "★양성 — 판정에 era 라벨 부착 + era-robust 기준 전환(FQ-135로 발전)",
-  "other_mode": "RAMP/FR 의 모듈 채택 판정에도 동일 유효기간 문제 적용 — 미측정"
- },
- "revival_condition": "INV-7 — 비-return 원천 팩터가 부호 지속 >=0.70 을 보이면 그 재료군 한정 자격 게이트 재개 / NP-1 통과 시 국면 타이밍 lane 으로 문제 재정의 / primary 전이 표본 >=6 축적 시 추론 정밀도 재확인. 현 판정은 정보집합-scoped 이지 구조 판결이 아니다.",
- "tags": [
-  "eligibility",
-  "persistence",
-  "era",
-  "regime_common_component",
-  "gate_infeasibility",
-  "half_life_absent",
-  "basis_invariance",
-  "estimation_noise",
-  "null_calibration",
-  "config_scoped_negative"
- ],
- "measured": {
-  "n_factors": 285,
-  "grids": [
-   "W60_primary",
-   "W36",
-   "W24"
+  "l_code": "L-WT20260803_005",
+  "strategy_id": "WT-D20260803_005",
+  "research_mode": "alpha_research",
+  "fq": "FQ-131",
+  "title": "팩터 '자격'(PORT_t 부호)의 시간구조는 거의 전부 국면 공통성분 — 달력 반감기 부재, 정적 |t| 게이트는 원리적 불가",
+  "type": "ANTI-PATTERN",
+  "grade": "F",
+  "metric_type": "canonical_screen",
+  "record_type": "measurement_round",
+  "gate_eligible": false,
+  "capital_claim": "none",
+  "issued_at": "2026-08-03T11:50:00+09:00",
+  "issued_by": "Q-Lead (WT-D20260803_005 판정 수집 — 라운드 에이전트 미적립분 보정)",
+  "core_reference": "WT-D20260802_015(단일이 조합·로테이션 지배) + WT-D20260802_021(전이-음성 성분의 slot 잠식 = gap 75%) + WT-D20260803_004(IS/OOS 분리 시 자격 부호 안정 2/5, IS 최강 V01_SECREL +2.634 → OOS -0.389) — 세 라운드가 다른 각도에서 같은 지점에 도달한 뒤의 상위 질문",
+  "lesson_text": "285팩터(registry active 322 → 수익상관>=0.99 중복 37 제거) x 비중첩 창 3격자로 자격 부호의 지속성을 측정했다. (1) **달력 시간의 반감기가 존재하지 않는다** — 비절단 sign-run 중앙값 = 1창(3격자 전부), 기하 중앙값은 창 단위 2.26/2.39/2.20 으로 격자 무관 동일한데 개월 환산은 136/86/53 으로 창 길이에 비례한다. 실제 감쇠 시간상수가 있으면 개월수가 일치해야 하므로 이는 감쇠가 아니라 **추정잡음 지배의 지문**이다. 상수-알파 귀무(block bootstrap, 시간순서 파괴) 0.548 [0.326, 0.748] 안에 관측 0.578(60.2 백분위). (2) **정적 |t| 자격 게이트는 원리적으로 불가** — bin 별 지속률 0.503/0.571/0.666/**0.500** 으로 단조가 아니라 최상위에서 무너진다(|t|>=2 CI [0.366,0.655] = 동전던지기 미배제). level 회귀 b=+0.277(팩터-군집 t 10.65)은 유의하나 **저-|t| 구간이 만든 기울기**다. 운용 시뮬 tau=2 선발 → 다음 창 PORT_t 평균 -0.112, 양수 41.7%, tau>=1.5 부터 0 이하. (3) ★★**지배 발견 — 자격은 팩터 라벨이 아니라 국면 라벨**: era 부호 유지 전이 49쌍 지속 0.959 vs era 전환 전이 115쌍 0.304. cap-w 창별 양수 팩터 비율 0.75/0.91/0.22/0.02(최근 5년 285개 중 6개)·era 일치율 0.856. EW-유니버스로 바꾸면 0.37/0.50/0.42/0.48·0.558 ⇒ **수준은 벤치 구성 아티팩트**이나 **지속성은 basis-invariant**(EW 0.607 vs cap-w 0.578) ⇒ 벤치를 고쳐도 게이트는 살아나지 않는다. era-demean 후 P_persist 0.548/0.568/0.563 = 귀무 근방 ⇒ 팩터별 고유 지속성은 거의 없다. (4) 전이 벽 재확인 — 이번 창 rank-IC 부호 → 다음 창 PORT_t 부호 적중 0.472(동전 이하), 동일 창 cor(ic_t, port_t) 0.313. (5) 조건부: 성장 0.667·수급흐름 0.667·퀄리티 0.659·모멘텀 0.655 vs 방어 0.465·유동성 0.487(방어형 저지속은 위기 캘린더 종속 cor +0.842 → AX-001 v2 별도 취급), 대형 0.514 < 소형 0.614.",
+  "self_adversarial_findings": "자가 적대검증이 **자기 결함 2건을 검출**했고 둘 다 재측정 후 판정 불변. (A) top-80 절단 parity 표본 편향 — 주류 3종만 봐서 정확 0 이 나왔으나 L26_Log_MktCap 에서 실제로 물었다(PORT_t 0.7618→0.7438). 위험 18종 x 3격자 392셀 재측정 → 부호 불일치 0건, P_persist 0.5776 불변. (B) ast_spec_gate 가 REGISTRY[D32_Beta_VIX] FAIL_LOOKAHEAD(C11 35일 상한) 검거 — 해당 5종 제외 시 P_persist Δ<=0.0014 로 판정 불변, pit.decision_ts 를 실행가능 최초시점으로 사유와 함께 정정. ★규율: 위반 주입이 집계 기준 미발화(Δp +0.0165 < 0.02)한 것을 **사후 판정식 교체 없이 그대로 보고**하되 (b) 지표의 지문은 병기했다(b 0.277→0.557, 최강 bin 0.500→0.791).",
+  "process_rule": "판정 지속성 라운드의 필수 통제 3종: ① **격자 불변성 검사** — 창 길이를 바꿔도 창-단위 지속이 같고 개월 환산만 비례하면 그것은 감쇠가 아니라 추정잡음이다(달력 반감기 주장 전 필수). ② **era-demean 대조** — 팩터별 고유 지속성을 주장하려면 국면 공통성분을 뺀 뒤에도 남는지 봐야 한다. ③ **basis 교차 확인** — 수준(양수 비율)과 지속성을 분리하라. 전자는 벤치 아티팩트일 수 있으나 후자가 basis-invariant 면 벤치 교정으로 해결되지 않는다.",
+  "next_probe": [
+    "NP-1 era 공통성분을 사전 관측가능하게 추정 가능한가 — 구속 관문(FQ-133으로 착수, WT-006 에서 FAIL 판정)",
+    "NP-2 era-demean 상대순위(Spearman 0.19~0.20, 3격자 공통)가 자본으로 전이되는가 — 절대 자격이 아니라 상대 순위는 살아있을 수 있다",
+    "NP-3 중형주 대역 유니버스에서 판정 안정성이 오르는가(대형 0.514 < 소형 0.614 의 중간)",
+    "NP-4 판정을 부호가 아니라 예측구간으로 전환(Liao 2025) — 이진 자격이 동전이면 구간 추정이 정합"
   ],
-  "p_persist": {
-   "W60": 0.5776,
-   "W36": 0.6079,
-   "W24": 0.56
+  "consumption_surfaces_checked": {
+    "factor_ranking": "해당 없음 — 본 라운드는 판정의 성질을 잼",
+    "universe_filter": "해당 없음",
+    "overlay_regime_input": "NP-1(FQ-133)로 이관 — WT-006 에서 사전 추정 불가 판정",
+    "risk_model": "해당 없음",
+    "monitoring": "★후보 — era 사후 탐지 기반 재심사 트리거(FQ-134로 발전)",
+    "screen_label": "★양성 — 판정에 era 라벨 부착 + era-robust 기준 전환(FQ-135로 발전)",
+    "other_mode": "RAMP/FR 의 모듈 채택 판정에도 동일 유효기간 문제 적용 — 미측정"
   },
-  "p_persist_era_demeaned": {
-   "W60": 0.5482,
-   "W36": 0.5679,
-   "W24": 0.563
-  },
-  "null_block_bootstrap": {
-   "mean": 0.548,
-   "ci": [
-    0.326,
-    0.748
-   ],
-   "observed_pctile": 60.2
-  },
-  "bins_W60": {
-   "[0,0.5)": 0.5028,
-   "[0.5,1)": 0.5714,
-   "[1,2)": 0.6656,
-   "[2,inf)": 0.5
-  },
-  "era_transition": {
-   "sign_kept_n": 49,
-   "sign_kept_persist": 0.959,
-   "era_switch_n": 115,
-   "era_switch_persist": 0.304
-  },
-  "window_positive_ratio_capw": [
-   0.754,
-   0.908,
-   0.216,
-   0.021
+  "revival_condition": "INV-7 — 비-return 원천 팩터가 부호 지속 >=0.70 을 보이면 그 재료군 한정 자격 게이트 재개 / NP-1 통과 시 국면 타이밍 lane 으로 문제 재정의 / primary 전이 표본 >=6 축적 시 추론 정밀도 재확인. 현 판정은 정보집합-scoped 이지 구조 판결이 아니다.",
+  "tags": [
+    "eligibility",
+    "persistence",
+    "era",
+    "regime_common_component",
+    "gate_infeasibility",
+    "half_life_absent",
+    "basis_invariance",
+    "estimation_noise",
+    "null_calibration",
+    "config_scoped_negative"
   ],
-  "window_positive_ratio_ew": [
-   0.37,
-   0.5,
-   0.42,
-   0.48
+  "measured": {
+    "n_factors": 285,
+    "grids": [
+      "W60_primary",
+      "W36",
+      "W24"
+    ],
+    "p_persist": {
+      "W60": 0.5776,
+      "W36": 0.6079,
+      "W24": 0.56
+    },
+    "p_persist_era_demeaned": {
+      "W60": 0.5482,
+      "W36": 0.5679,
+      "W24": 0.563
+    },
+    "null_block_bootstrap": {
+      "mean": 0.548,
+      "ci": [
+        0.326,
+        0.748
+      ],
+      "observed_pctile": 60.2
+    },
+    "bins_W60": {
+      "[0,0.5)": 0.5028,
+      "[0.5,1)": 0.5714,
+      "[1,2)": 0.6656,
+      "[2,inf)": 0.5
+    },
+    "era_transition": {
+      "sign_kept_n": 49,
+      "sign_kept_persist": 0.959,
+      "era_switch_n": 115,
+      "era_switch_persist": 0.304
+    },
+    "window_positive_ratio_capw": [
+      0.754,
+      0.908,
+      0.216,
+      0.021
+    ],
+    "window_positive_ratio_ew": [
+      0.37,
+      0.5,
+      0.42,
+      0.48
+    ],
+    "gate_sim_tau2_next_port_t": -0.112,
+    "ic_sign_to_next_port_t_sign_hit": 0.472
+  },
+  "source_paths": [
+    "stage_artifacts/WT_D20260803_005/{preregistration.json,alpha_validation.json,alpha_scores.parquet,rank_ic_panel.parquet,adversarial_probes.rds,charts/}",
+    "qepm/mailbox/worktask/WT-D20260803_005/{alpha_package.json,challenge_note.md}",
+    "06_Registry/layer_bottleneck_map.md v45"
   ],
-  "gate_sim_tau2_next_port_t": -0.112,
-  "ic_sign_to_next_port_t_sign_hit": 0.472
- },
- "source_paths": [
-  "stage_artifacts/WT_D20260803_005/{preregistration.json,alpha_validation.json,alpha_scores.parquet,rank_ic_panel.parquet,adversarial_probes.rds,charts/}",
-  "qepm/mailbox/worktask/WT-D20260803_005/{alpha_package.json,challenge_note.md}",
-  "06_Registry/layer_bottleneck_map.md v45"
- ]
+  "promoted_to_axiom": "AX-AR-004",
+  "promoted_at": "2026-09-01"
 }

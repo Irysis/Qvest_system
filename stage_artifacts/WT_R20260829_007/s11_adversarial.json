@@ -1,0 +1,129 @@
+{
+  "meta": {
+    "wt_id": "WT-R20260829_007",
+    "purpose": "Self-Adversarial Challenge 의 정량 근거 — 진술이 아니라 재도출"
+  },
+  "W7_inhouse_MKT_vs_mandate_bench": {
+    "n_months_aligned": 254,
+    "n_months_signal_label": 255,
+    "aligned_holding_month": {
+      "cor": 0.9681815,
+      "beta": 0.94315799,
+      "alpha_ann_pct": -0.11108428,
+      "alpha_t": -0.09858286,
+      "adj_r2": 0.93712691
+    },
+    "signal_month_label": {
+      "cor": -0.00407583,
+      "beta": -0.00413933,
+      "alpha_ann_pct": 11.53492404,
+      "alpha_t": 2.46478108,
+      "adj_r2": -0.00393589
+    },
+    "mean_ann_bm_excess_pct": 10.17559459,
+    "mean_ann_MKT_pct": 10.9066339,
+    "reading": "mandate 벤치의 초과수익을 in-house MKT 로 회귀한다. 정렬판에서 beta 가 1 근처·상관이 높으면 두 시장 대리가 같은 것을 재는 것이고, 어긋남판과의 차이가 라벨 정렬이 만들어내는 가짜 alpha 의 크기다."
+  },
+  "W7b_factor_model_label_alignment": {
+    "aligned_holding_month": {
+      "FF3": {
+        "alpha_ann_pct": 7.76230119,
+        "alpha_t": 2.02257985,
+        "loadings": {
+          "MKT": 0.7454,
+          "SMB": 0.1713,
+          "HML": 0.111
+        },
+        "adj_r2": 0.50854089,
+        "n": 254
+      },
+      "Carhart4": {
+        "alpha_ann_pct": 3.86897451,
+        "alpha_t": 1.22532997,
+        "loadings": {
+          "MKT": 0.7541,
+          "SMB": 0.3755,
+          "HML": 0.019,
+          "WML": 0.4733
+        },
+        "adj_r2": 0.62246499,
+        "n": 254
+      }
+    },
+    "signal_month_label": {
+      "FF3": {
+        "alpha_ann_pct": 15.58970773,
+        "alpha_t": 3.17791645,
+        "loadings": {
+          "MKT": 0.0911,
+          "SMB": 0.2906,
+          "HML": -0.3516
+        },
+        "adj_r2": 0.01619693,
+        "n": 255
+      },
+      "Carhart4": {
+        "alpha_ann_pct": 14.8257701,
+        "alpha_t": 3.04181888,
+        "loadings": {
+          "MKT": 0.0928,
+          "SMB": 0.3311,
+          "HML": -0.3692,
+          "WML": 0.0929
+        },
+        "adj_r2": 0.01665282,
+        "n": 255
+      }
+    },
+    "s5c_reported": "S5c 의 FF3 +15.59%/yr (t 3.178) / Carhart4 +14.83%/yr (t 3.042) 는 run_multifactor_regression 에 **신호월 라벨** xts 를 넘겨 산출됐다.",
+    "reading": "라벨 하나로 FF alpha 가 크게 달라지면 S5c 값은 알파가 아니라 정렬 아티팩트다."
+  },
+  "W8_cost_binding_check": {
+    "turnover_annual_two_sided": 15.24324324,
+    "turnover_annual_one_way": 7.62162162,
+    "cost_drag_ann_pct": 2.28648649,
+    "gross_active_ann_pct": 6.20049393,
+    "net_active_ann_pct": 3.91400745,
+    "cost_share_of_gross_active": 0.36875877,
+    "breakeven_cost_bps_oneway": 40.67699921,
+    "cost_sensitivity": [
+      {
+        "cost_bps": 0,
+        "active_ann_pct": 6.20049393,
+        "nw_t": 1.47069994,
+        "net_sr": 0.38648182
+      },
+      {
+        "cost_bps": 5,
+        "active_ann_pct": 5.43833177,
+        "nw_t": 1.29005315,
+        "net_sr": 0.33896818
+      },
+      {
+        "cost_bps": 10,
+        "active_ann_pct": 4.67616961,
+        "nw_t": 1.10934022,
+        "net_sr": 0.29145244
+      },
+      {
+        "cost_bps": 15,
+        "active_ann_pct": 3.91400745,
+        "nw_t": 0.92857549,
+        "net_sr": 0.24393666
+      },
+      {
+        "cost_bps": 25,
+        "active_ann_pct": 2.38968312,
+        "nw_t": 0.56694825,
+        "net_sr": 0.14891315
+      },
+      {
+        "cost_bps": 40,
+        "active_ann_pct": 0.10319664,
+        "nw_t": 0.02447899,
+        "net_sr": 0.00642862
+      }
+    ],
+    "reading": "손익분기 편도 bps 가 현행 15bps 에 가까울수록 '회전율이 급소' 라는 주장이 강해진다. 멀면 급소는 회전율이 아니라 신호 자체다."
+  }
+}

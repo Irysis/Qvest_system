@@ -1,0 +1,61 @@
+{
+  "meta": {
+    "wt_id": "WT-R20260829_004",
+    "as_of": "2026-08-29",
+    "metric_type": "canonical_screen",
+    "liq_ruler": "adv20_t1",
+    "liq_ruler_source": "injected_adv20",
+    "rv_convention": "BSC2015 eq5 — 월 스케일 21*mean(r^2), 슬리브 EW 일간수익",
+    "n_rv_months": 259,
+    "sleeve_median_names": 25
+  },
+  "F1_risk_predictability": {
+    "statement": "실투형 무오버레이 슬리브 월간 실현분산의 확장창 AR(1) OOS R^2 <= 0 이면 조건화 대상 부재",
+    "oos_r2_level": 0.16582426,
+    "n_eval": 195,
+    "oos_r2_log": 0.31347416,
+    "positive_control_market_ar1_oos_r2": 0.18986719,
+    "market_n_eval": 218,
+    "us_anchor_bsc2015": {
+      "momentum_rv_ar1_oos_r2": 0.5782,
+      "market_rv_ar1_oos_r2": 0.3881,
+      "note": "BSC2015 롱숏 WML — 우리 롱온리 슬리브와 다른 대상. 앵커이지 목표 아님"
+    },
+    "verdict": "PASS"
+  },
+  "F2_component_attribution": {
+    "statement": "특이성분 OOS R^2 > 시장성분 OOS R^2 여야 이 축이 시장변동성 타이밍이 아님",
+    "oos_r2": {
+      "beta_sq": -0.01535714,
+      "market_rv": 0.1530412,
+      "market_comp": 0.16690669,
+      "sleeve_rv": 0.16582426,
+      "idio_comp": 0.07676274
+    },
+    "n_eval": 195,
+    "market_share_of_total_variance_median": 0.50436656,
+    "beta_median": 0.98106909,
+    "us_anchor_bsc2015": {
+      "beta_sq": 0.0533,
+      "market_rv": 0.067,
+      "market_comp": 0.2087,
+      "momentum_rv": 0.4382,
+      "idio": 0.4706,
+      "market_share_of_risk": 0.23
+    },
+    "verdict": "FAIL"
+  },
+  "regime_signal": {
+    "definition": "panic = I_B(직전24개월 누적 KOSPI200 < 0) AND vol_hi(직전126거래일 시장 실현변동성 > 확장창 중앙값, min 36개월 이력)",
+    "n_months": 279,
+    "n_panic": 26,
+    "panic_rate": 0.09318996,
+    "n_IB": 85,
+    "pit": {
+      "cutoff_rule": "first-day-of-holding-month (overlay_signal_cutoff)",
+      "assert_overlay_pit": "PASS",
+      "max_used_cutoff": "2026-08-28",
+      "note": "신호는 신호일(월말) *직전 거래일*까지의 데이터만 사용(strict t-1) · 홀딩월 = 신호월+1 · anchor_date/realized_ym 미사용"
+    }
+  }
+}

@@ -1,0 +1,11 @@
+# R13 — 상태 전이 ALPHA_DONE -> RISK_DONE (필수 산출물 검증 포함)
+suppressWarnings(suppressMessages({library(jsonlite)}))
+ROOT <- Sys.getenv("QM_ROOT"); if(!nzchar(ROOT)) ROOT <- getwd(); setwd(ROOT)
+Sys.setenv(CLAUDE_PROJECT_DIR = ROOT)
+source(file.path(ROOT,"02_Infrastructure/worktask/state_machine.R"))
+TID <- "WT-R20260829_004"
+cat("transition check:\n"); print(sm_check_transition("ALPHA_DONE","RISK_DONE"))
+cat("artifacts check (RISK_DONE):\n"); print(sm_check_artifacts(TID, "RISK_DONE"))
+r <- tryCatch(sm_validated_advance(TID, "ALPHA_DONE", "RISK_DONE"), error=function(e) conditionMessage(e))
+print(r)
+cat("status.json 현재:\n"); cat(readLines(file.path(ROOT,"qepm/mailbox/worktask",TID,"status.json")), sep="\n")

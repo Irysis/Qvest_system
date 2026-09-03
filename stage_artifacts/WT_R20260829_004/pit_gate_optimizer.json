@@ -1,0 +1,158 @@
+{
+  "gate": "detect_lookahead",
+  "split_scan": true,
+  "decision_path": {
+    "files": ["o1_inputs.R", "o2_methods.R"],
+    "raw_all_clean": false,
+    "per_file": [
+      {
+        "file": "o1_inputs.R",
+        "clean": false,
+        "n_violations": 1,
+        "viol": [
+          {
+            "check": "C1",
+            "line": 31,
+            "code": "lab,n,m$portfolio_alpha_t_nw_lag3, mean(r)/sd(r)*sqrt(12), cg, mdd, cg/abs(mdd),"
+          }
+        ]
+      },
+      {
+        "file": "o2_methods.R",
+        "clean": false,
+        "n_violations": 1,
+        "viol": [
+          {
+            "check": "C1",
+            "line": 73,
+            "code": "sr=mean(r)/stats::sd(r)*sqrt(PPY), cagr=cg, mdd=mdd, calmar=cg/abs(mdd),"
+          }
+        ]
+      }
+    ]
+  },
+  "posthoc_evaluator": {
+    "files": ["o3_overlay_pit.R", "o4_pit_gate.R"],
+    "raw_all_clean": false,
+    "per_file": [
+      {
+        "file": "o3_overlay_pit.R",
+        "clean": false,
+        "n_violations": 1,
+        "viol": [
+          {
+            "check": "C1",
+            "line": 60,
+            "code": "list(sr=mean(r)/stats::sd(r)*sqrt(PPY), calmar=cg/abs(mdd), cagr=cg, mdd=mdd,"
+          }
+        ]
+      },
+      {
+        "file": "o4_pit_gate.R",
+        "clean": false,
+        "n_violations": 4,
+        "viol": [
+          {
+            "check": "C1",
+            "line": 29,
+            "code": "zA <- mk(c('vol_ann <- sd(port_ret) * sqrt(252)',"
+          },
+          {
+            "check": "C5_VT",
+            "line": 30,
+            "code": "'after_vt <- ret_series * vt_scale',"
+          },
+          {
+            "check": "C5_DDshort",
+            "line": 31,
+            "code": "'window_ret <- nav[(i-19):i]   # drawdown window'), \"_o4_probeA.R\")"
+          },
+          {
+            "check": "C1",
+            "line": 44,
+            "code": "flagged_construct = \"mean(r)/sd(r)*sqrt(12) — 실현 net 수익 시계열의 SR/Calmar 산출\","
+          }
+        ]
+      }
+    ]
+  },
+  "alpha_cohort": [
+    {
+      "file": "s4_candidate.R",
+      "clean": false,
+      "n_violations": 4,
+      "viol": [
+        {
+          "check": "C1",
+          "line": 70,
+          "code": "sr <- mean(r)/stats::sd(r)*sqrt(PPY)"
+        },
+        {
+          "check": "C1",
+          "line": 77,
+          "code": "net_active_sr = mean(act)/stats::sd(act)*sqrt(PPY),"
+        },
+        {
+          "check": "C1",
+          "line": 95,
+          "code": "list(n = n, sr = mean(r)/stats::sd(r)*sqrt(PPY), cagr = cagr, mdd = mdd,"
+        },
+        {
+          "check": "C1",
+          "line": 108,
+          "code": "c(sr = mean(r)/stats::sd(r)*sqrt(PPY), calmar = cg/abs(mdd)) }"
+        }
+      ]
+    },
+    {
+      "file": "s5_diag.R",
+      "clean": false,
+      "n_violations": 2,
+      "viol": [
+        {
+          "check": "C1",
+          "line": 37,
+          "code": "sub_sr <- vapply(1:3, function(k) { a <- act[g == k]; mean(a)/stats::sd(a)*sqrt(PPY) }, numeric(1))"
+        },
+        {
+          "check": "C1",
+          "line": 50,
+          "code": "net_active_sr <- mean(act)/stats::sd(act)*sqrt(PPY)"
+        }
+      ]
+    },
+    {
+      "file": "s2_mech.R",
+      "clean": true,
+      "n_violations": 0,
+      "viol": []
+    }
+  ],
+  "rederivation": {
+    "flagged_construct": "mean(r)/sd(r)*sqrt(12) — 실현 net 수익 시계열의 SR/Calmar 산출",
+    "where": "measure()/met() 사후 평가 함수 내부 (o1:31 · o2:73 · o3:60)",
+    "cohort_context": "alpha 의 s4_candidate.R 도 동일 idiom 4건 · s5_diag.R 2건 발화 — 본 라운드가 만든 결함이 아니라 측정 스크립트 전반의 검출기 특성",
+    "decision_inputs_at_date_t": ["score_final(t) = alpha 발행 alpha_scores.parquet 의 score (신호월말 t-1 데이터)", "score_base_momentum(t) = 동 parquet (t-1)", "vol126_ann(t) = alpha 발행 종목 실현변동성 126d (strict t-1)", "panic(signal_ym t) = alpha 발행 regime_signal_timeseries (used_cutoff <= holding_month_start)", "Sector(t) = 월말 시변 섹터 패널 (risk_inputs SECM, <= sig_date)"],
+    "future_inputs_at_date_t": "없음 — Ret_1m(전방 실현수익)은 비중 산출식 어디에도 들어가지 않는다(weighted_screen_bt 가 비중을 받아 사후 결합)",
+    "honest_exposure": "★단 method **선택**은 전 표본 성과로 했다(IS-selection). 이는 PIT 위반이 아니라 선택편향 노출이며 방어선은 DSR(sweep, n_trials=5) + oos_retention + 아래 anchored 선택 안정성이다.",
+    "verdict": "DECISION_PATH_CLEAN_AFTER_REDERIVATION (플래그는 사후 평가기 소재 · 미은폐)"
+  },
+  "positive_control_A": {
+    "purpose": "검출기 선언 idiom(C1 full-sample vol / C5_VT / C5_DDshort)",
+    "n": 4,
+    "checks": [
+      "C1",
+      "C5_VT",
+      "C5_DDshort"
+    ],
+    "fired": true,
+    "note": "양성 대조 없는 계기는 방어선으로 세지 않는다"
+  },
+  "negative_axis_control_B": {
+    "purpose": "optimizer 레인 고유 위반(전 표본 cov 기반 비중 · 국면라벨 shift(-1) · 전 표본 SR argmax)",
+    "n": 1,
+    "fired": false,
+    "reading": "B 미발화 = R 경로에 그 축의 일반 검사가 없다(risk 가 이미 실증). 그 축의 PIT 담보는 검출기가 아니라 설계·산출물 기록이다 — detect_lookahead PASS 를 그 축의 통과 근거로 인용 금지."
+  },
+  "pattern_evasion_declaration": "의사결정 경로 코드를 검출 패턴 회피 목적으로 수정한 바 없음(발화 줄 원문 그대로 기록)."
+}

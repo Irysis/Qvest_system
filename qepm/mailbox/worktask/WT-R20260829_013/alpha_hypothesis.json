@@ -1,0 +1,942 @@
+{
+  "wt_id": "WT-R20260829_013",
+  "designed_by": "alpha-hypothesis",
+  "model_tier": "opus",
+  "designed_at": "2026-08-29",
+  "spec_stage": "AST v1.1 (1)~(4) only — (5) AST/factors 는 alpha-research 소관",
+  "launch_gate_version": "v2 (9/20 축1 앵커 강화 + 9/20 축2 베타보상 검사 + 8/20 축3 범주 자기판정)",
+  "prechecks": {
+    "hypothesis_index_hits_by_name": [
+      {
+        "query": "duration",
+        "result": "4 hits (FAIL 1 · PASS 1 · MARGINAL 1). top: R38_insider_safe_exit_timing_symmetry(PASS) / STR_AS_20260613_054807_237853 'FM Duration'(MARGINAL, C). ★둘 다 본 축과 무관 — 전자는 insider hold-duration, 후자는 팩터-모멘텀 지속기간이다. Weber(2018) 형 캐시플로 듀레이션 선례는 0건."
+      },
+      {
+        "query": "illiq / ILLIQ",
+        "result": "1 hit — STR_AS_20260613_032946_226119 (SCREEN_TIER, grade B)"
+      },
+      {
+        "query": "amihud / liquidity",
+        "result": "30 hits (FAIL 10 · DISTILLED_NEG 3 · PASS 3 · MARGINAL 2). top: DIST-QPM-025/026/029"
+      },
+      {
+        "query": "foreign",
+        "result": "5 hits (FAIL 1 · PASS 2)"
+      },
+      {
+        "query": "FIR",
+        "result": "13 hits (FAIL 1 · DISTILLED_NEG 1 · PASS 3 · MARGINAL 1). top: DIST-QPM-027(DISTILLED_NEG)"
+      }
+    ],
+    "hypothesis_index_hits_by_construction": {
+      "protocol_note": "★9/20 규약 — 이름이 아니라 구성으로 조회했다. 본 축의 구성 = {가격모멘텀 r(t-12,t-7), Amihud 비유동성, 외국인·기관 거래비중(FIR), 캐시플로 듀레이션, K200∪KQ150 top-25 롱온리 EW}. 조회 키 = amihud / illiq / liquidity / foreign / investor / flow / FIR / duration.",
+      "material_hits": [
+        {
+          "strategy_id": "C24_LIQ_IMPROVE_WT-D20260621_006",
+          "signature": "momentum|momentum+liquidity|unknown|amihud_slope_liquidity_trend",
+          "verdict": "FAIL",
+          "grade": "F",
+          "key_metrics": {
+            "portfolio_alpha_t": 1.11,
+            "oos_retention": -0.33
+          },
+          "why_it_matters": "★가장 인접한 선례 — 우리 유니버스에서 '모멘텀 x Amihud 유동성' 구성을 이미 한 번 측정했고 F 다(PORT_t 1.11 · OOS -0.33). 이름 조회('duration'/'illiq')로는 안 잡히고 구성 조회로만 잡혔다. 본 라운드의 사전 기대 좌표를 이 위에서 읽어야 한다."
+        },
+        {
+          "strategy_id": "STR_AS_20260613_032946_226119",
+          "title": "Trading Friction 배치 — Amihud Illiquidity + Short-Term Reversal + Abnormal Volume (한국 유의 확인)",
+          "verdict": "SCREEN_TIER",
+          "grade": "B",
+          "key_metrics": {
+            "sharpe": 0.642,
+            "cagr": 12.39,
+            "mdd": 58.71,
+            "ir": 0.135,
+            "calmar": 0.211
+          },
+          "why_it_matters": "우리 envelope 에서 Amihud 비유동성 축이 도달한 최고 좌표(screen-tier B, IR 0.135). 자본 문턱과는 거리가 멀다."
+        },
+        {
+          "strategy_id": "STR_AS_20260612_124658_77279 / STR_AS_20260612_135316_470429",
+          "title": "Modified Amihud Liquidity",
+          "verdict": "FAIL / SCREEN_TIER",
+          "grade": "F / F",
+          "key_metrics": {
+            "sharpe": 0.772,
+            "mdd": 71.44,
+            "portfolio_alpha_t": 2.065,
+            "oos_retention": 0.187
+          },
+          "why_it_matters": "단독 유동성 신호의 우리 유니버스 좌표. PORT_t 2.065 는 이 세션 어느 arm 보다 높지만 OOS 0.187 로 무너진다 — 공통 벽(OOS 소멸)이 유동성 축에도 이미 걸려 있다."
+        },
+        {
+          "strategy_id": "WT-D20260426_002",
+          "title": "L01_Amihud Regime-Conditional Sleeve",
+          "verdict": "INFLIGHT_STALE",
+          "why_it_matters": "유동성 국면조건부 sleeve 가 미완결 상태로 남아 있다 — 본 라운드가 되풀이할 위험이 있는 좌표."
+        },
+        {
+          "strategy_id": "STR_887_foreign_flow_alpha / _v71",
+          "verdict": "PASS",
+          "grade": "B / A",
+          "signature": "momentum|momentum+liquidity+flow / behavioral|single_factor_long_only",
+          "why_it_matters": "★수급-주체(외국인 flow) 축이 우리 시스템에서 PASS/A 를 낸 유일 계보다. 본 논문의 FIR 축이 그 계보와 같은 원천을 쓴다 — 다만 본 라운드의 표적은 그 축의 신호화가 아니라 흡수 검정이다(candidates[2] 로 분리 보관)."
+        }
+      ],
+      "adjacency_judgment": "ADJACENT_AND_PARTIALLY_MEASURED. 본 라운드의 2급 구성(유동성 조건부 모멘텀 top-25)은 C24_LIQ_IMPROVE 가 이미 F 로 측정한 셀과 재료·유니버스·소비형태가 같다. 신규성은 (1)조건화 변수에 캐시플로 듀레이션이 추가되고 (2)조건화가 Amihud 수준이 아니라 투자자군(FIR) 분할 위에서 이뤄진다는 두 점뿐이다."
+    },
+    "frontier_queue_refs": {
+      "schema_version": "2.0",
+      "n_entries": 118,
+      "matched_open_entries": [
+        {
+          "id": "FQ-190",
+          "status": "open",
+          "title": "롱 레그 실현 수익의 모집단 분포 — screen-tier 재고 전수 (구 'long-leg share' 재명세)",
+          "relation": "★본 라운드의 축1 산출물이 이 항목에 직접 기여한다 — 본 논문 Table 3·9 가 KR 원산 승자-레그 몫을 3개 척도(raw / CAPM alpha / NMF 노출)로 동시에 제공한다."
+        },
+        {
+          "id": "FQ-232",
+          "status": "open",
+          "title": "canonical_screen_bt 소비 경로의 헌법 유동성 잣대 복원 (adv1_sameday_DEGRADED)",
+          "relation": "본 라운드는 유동성 축을 조건화 변수로 쓰므로 이 결함이 직접 오염원이 된다 — 착수 시 선행 조건."
+        },
+        {
+          "id": "FQ-181",
+          "status": "parked",
+          "parked_reason": "dohoon_decision",
+          "title": "유동성 잣대 이원화 — 계약 함수가 헌법 정의(20일 평균)와 달리 월말 1일치 거래대금을 쓴다",
+          "relation": "★parked/dohoon_decision — 세션 임의 착수 없음. 다만 본 라운드의 조건화 변수가 바로 그 잣대라 이 파킹이 측정 신뢰의 상한을 정한다는 사실을 기록한다."
+        }
+      ],
+      "note": "듀레이션(Weber 캐시플로) 축의 frontier 항목은 존재하지 않는다. parked / dohoon_decision 항목 임의 착수 없음. infra_backlog 미접촉."
+    },
+    "owner": "Q-Lead (WT-R20260829_013, reinforcement L1 attempt 13/20, base RP_20260829_122020_9192)",
+    "ledger_context": {
+      "base_id": "RP_20260829_122020_9192",
+      "base_grade": "F",
+      "attempts_used": 16,
+      "prior_arms": "1/20 CJL1996(NA) · 2/20 IM2013 형태분해(NA) · 3/20 LS2000 회전율(NA) · 4/20 DM2016(C) · 5/20 AMP2013(C) · 6/20 EL2022(C) · 7/20 GH2004(C) · 8/20 DGW2014(착수게이트 중단) · 9/20 SS2007(중단) · 10/20 CGH2004(중단) · 11/20 GH2005(alpha 실행 중) · 12/20 NM2012(중단) · 13~16/20 설계 중",
+      "common_wall": "OOS 소멸 — 권위 표본외 유지율 -0.660 / -0.747 / -0.780 / -0.693 (분할 단조 악화)",
+      "live_coordinate": "2/20 cell4 (실투형 유일 좌표): beta-통제 alpha +5.14%/yr t 1.205 · PORT_t 1.294 · 무신호 대조 대비 +4.08%/yr NW-t 0.751 = INDISTINGUISHABLE_FROM_NO_SIGNAL",
+      "required_active_return_for_PORT_t_295": "+13.25%/yr (2/20 도달가능성 병기 산출)",
+      "this_axis_prior_hits": "★이 축은 세 번 밟았다 — 3/20 회전율이 L01_Amihud 누출귀무에 지배(|NW-t| 2.886 vs 0.807) · 7/20 근접도가 L11_Kyle_Lambda 에 지배(2.557 vs 1.541) · 11/20 이 같은 통제를 의무화. 본 라운드는 그 반복 관측을 논문 사양으로 정식 검정하려는 것이다."
+    }
+  },
+  "paper_reading": {
+    "primary_source": "Bae, Jaewan and Lee, Changjun (2021), 'Illiquidity, duration and momentum profits: evidence from the Korean stock market', Journal of Derivatives and Quantitative Studies 29(1):49-72. DOI 10.1108/JDQS-11-2020-0028.",
+    "url": "https://www.emerald.com/jdqs/article/29/1/49/195316/Illiquidity-duration-and-momentum-profits-evidence",
+    "access": "FULL_TEXT_OBTAINED — CC BY 4.0 오픈액세스. PDF 24p 전문을 직접 판독했다(Emerald jdqs article-pdf/29/1/49/1331201). ★12/20(NM2012 페이월)과 달리 본 건은 원문 표를 직접 읽었고 아래 수치는 전부 원문 표에서 온 KR 실측이다 — 2차 출처·복제논문 추정치 없음.",
+    "sample": "2001-07 ~ 2019-06 (216개월). 유니버스 = KOSPI 합집합 KOSDAQ 보통주 전수(음의 장부가·결측 제외). Newey-West lag 4.",
+    "momentum_definition": "Mom = t-11월 말 ~ t-6월 말 월수익 합 (Table 1·Table 3 주석 원문: 'the sum of the monthly returns from the end of the month t-11 to the end of the month t-6'). ★즉 이 논문의 '모멘텀' 은 최근 6개월이 아니라 **중간 수평선(intermediate horizon)** 이다 — 12/20(NM2012)이 다룬 바로 그 형성창이며, 12/20 은 그 축에서 착수 게이트에 걸려 중단됐다. 우리 기저(JT1993 6-1)와 형성창이 다르다는 사실을 반드시 승계할 것.",
+    "portfolio_construction": "KOSPI 종목의 과거수익 하위/상위 10%(20%, 30%)를 breakpoint 로 잡고 KOSPI 합집합 KOSDAQ 전체에 적용. 승자·패자 포트폴리오는 각각 EW·VW 둘 다 보고.",
+    "illiquidity_definition": "ILLIQ = Amihud(2002) = (1/D)*sum|R_d|/VOL_d. FIR = 과거 6개월 외국인+기관 거래대금 비중. size(KOSPI 중위) x FIR(중위) 2x2 후 각 셀 내부 ILLIQ 30/40/30 삼분 → IML_FI = 고-FIR 셀들의 (고비유동 − 저비유동), IML_ID = 저-FIR 셀들의 동일 차분.",
+    "duration_definition": "Weber(2018) 캐시플로(Macaulay) 듀레이션. 40분기 예측, ROE·매출성장 AR(1) 계수 0.41 / 0.24, 장기평균 성장률 12% / 6%, 할인율 r = 0.12. **매년 6월 말에 직전 회계연도(t-1) 재무 + 당해 6월 말 시가로 계산**. 듀레이션 팩터 NMF(near minus far) = FF(1993) 2x3 방식으로 (저듀레이션 − 고듀레이션). ★임의 대체 금지 — 원문 정의를 그대로 쓴다.",
+    "key_tables_verbatim": {
+      "_format_note": "[값, t] 쌍. 단위 = %/월.",
+      "Table_1_correlations": {
+        "corr_Illq_Size": -0.736,
+        "corr_FIR_Size": 0.772,
+        "corr_FIR_Illq": -0.457,
+        "corr_Dur_BM": -0.527,
+        "corr_Mom_Illq": -0.154,
+        "Dur_mean_years": 12.5,
+        "Dur_q25": 9.5,
+        "Dur_q75": 16.58,
+        "Illq_q25": -1.57,
+        "Illq_q50": -0.41,
+        "Illq_q75": 0.77
+      },
+      "Table_2_factor_means": {
+        "IML_FI": [
+          0.77,
+          3.92
+        ],
+        "IML_ID": [
+          1.39,
+          4.92
+        ],
+        "NMF": [
+          1.32,
+          4.95
+        ],
+        "HML": [
+          1.35,
+          4.88
+        ],
+        "MKT": [
+          0.63,
+          1.47
+        ],
+        "corr_HML_NMF": 0.71,
+        "corr_IMLFI_NMF": 0.45
+      },
+      "Table_3_leg_level_EW": {
+        "excess_r": {
+          "L10": [
+            -0.14,
+            -0.23
+          ],
+          "W10": [
+            0.7,
+            1.24
+          ],
+          "WML10": [
+            0.84,
+            3.36
+          ],
+          "L20": [
+            0.27,
+            0.47
+          ],
+          "W20": [
+            0.93,
+            1.67
+          ],
+          "WML20": [
+            0.65,
+            3.15
+          ],
+          "L30": [
+            0.5,
+            0.88
+          ],
+          "W30": [
+            1.0,
+            1.82
+          ],
+          "WML30": [
+            0.5,
+            2.84
+          ]
+        },
+        "CAPM_alpha": {
+          "L10": [
+            -0.75,
+            -1.84
+          ],
+          "W10": [
+            0.06,
+            0.16
+          ],
+          "WML10": [
+            0.81,
+            3.44
+          ],
+          "L20": [
+            -0.33,
+            -0.88
+          ],
+          "W20": [
+            0.29,
+            0.85
+          ],
+          "WML20": [
+            0.62,
+            3.12
+          ],
+          "L30": [
+            -0.1,
+            -0.27
+          ],
+          "W30": [
+            0.37,
+            1.15
+          ],
+          "WML30": [
+            0.47,
+            2.83
+          ]
+        },
+        "FF3_alpha": {
+          "L10": [
+            -0.77,
+            -2.88
+          ],
+          "W10": [
+            -0.09,
+            -0.42
+          ],
+          "WML10": [
+            0.68,
+            2.56
+          ],
+          "L20": [
+            -0.4,
+            -1.88
+          ],
+          "W20": [
+            0.09,
+            0.5
+          ],
+          "WML20": [
+            0.49,
+            2.27
+          ],
+          "L30": [
+            -0.22,
+            -1.13
+          ],
+          "W30": [
+            0.14,
+            0.9
+          ],
+          "WML30": [
+            0.36,
+            1.94
+          ]
+        }
+      },
+      "Table_3_leg_level_VW": {
+        "excess_r": {
+          "L10": [
+            -0.18,
+            -0.33
+          ],
+          "W10": [
+            0.58,
+            1.03
+          ],
+          "WML10": [
+            0.76,
+            1.58
+          ],
+          "W20": [
+            1.08,
+            2.06
+          ],
+          "WML20": [
+            1.06,
+            2.53
+          ],
+          "W30": [
+            1.1,
+            2.15
+          ],
+          "WML30": [
+            0.83,
+            2.43
+          ]
+        },
+        "CAPM_alpha": {
+          "L10": [
+            -0.88,
+            -2.78
+          ],
+          "W10": [
+            -0.11,
+            -0.36
+          ],
+          "WML10": [
+            0.77,
+            1.61
+          ],
+          "L20": [
+            -0.61,
+            -2.37
+          ],
+          "W20": [
+            0.4,
+            1.68
+          ],
+          "WML20": [
+            1.01,
+            2.47
+          ],
+          "L30": [
+            -0.33,
+            -1.75
+          ],
+          "W30": [
+            0.42,
+            2.26
+          ],
+          "WML30": [
+            0.75,
+            2.31
+          ]
+        },
+        "FF3_alpha": {
+          "W10": [
+            -0.29,
+            -1.04
+          ],
+          "WML10": [
+            0.5,
+            1.08
+          ],
+          "W20": [
+            0.35,
+            1.41
+          ],
+          "WML20": [
+            0.89,
+            2.17
+          ],
+          "W30": [
+            0.38,
+            2.01
+          ],
+          "WML30": [
+            0.69,
+            2.19
+          ]
+        }
+      },
+      "Table_6_duration_deciles_EW": {
+        "raw_excess_D1_to_D10": [
+          1.9,
+          1.85,
+          1.54,
+          1.38,
+          1.29,
+          1.14,
+          0.73,
+          0.35,
+          0.11,
+          -0.95
+        ],
+        "raw_spread_1_10": [
+          2.85,
+          6.59
+        ],
+        "CAPM_alpha_D1_to_D10": [
+          1.3,
+          1.27,
+          0.95,
+          0.78,
+          0.69,
+          0.51,
+          0.1,
+          -0.29,
+          -0.75,
+          -1.49
+        ],
+        "CAPM_spread": [
+          2.79,
+          6.57
+        ],
+        "FF3_alpha_D1": [
+          0.54,
+          4.51
+        ],
+        "FF3_spread": [
+          1.9,
+          5.44
+        ]
+      },
+      "Table_6_duration_deciles_VW": {
+        "raw_D1": [
+          1.12,
+          1.86
+        ],
+        "raw_spread": [
+          1.56,
+          3.42
+        ],
+        "CAPM_alpha_D1": [
+          0.4,
+          1.47
+        ],
+        "CAPM_spread": [
+          1.44,
+          3.15
+        ],
+        "FF3_alpha_D1": [
+          0.19,
+          0.69
+        ],
+        "FF3_spread": [
+          0.92,
+          1.93
+        ]
+      },
+      "Table_9_MKT_plus_NMF_model_leg_level": {
+        "note": "★본 라운드의 가장 중요한 표. 승자/패자 레그를 분리해 MKT+NMF 2요인 모형으로 회귀한 결과.",
+        "W10": {
+          "alpha": [
+            -0.2,
+            -0.64
+          ],
+          "beta_MKT": 1.08,
+          "beta_NMF": [
+            0.07,
+            0.59
+          ]
+        },
+        "L10": {
+          "alpha": [
+            -0.45,
+            -1.4
+          ],
+          "beta_MKT": 1.11,
+          "beta_NMF": [
+            -0.33,
+            -4.5
+          ]
+        },
+        "WML10": {
+          "alpha": [
+            0.25,
+            0.52
+          ],
+          "beta_NMF": [
+            0.4,
+            2.79
+          ],
+          "ExplainingDur2": 0.67,
+          "ExplainingFF3": 0.35
+        },
+        "W20": {
+          "alpha": [
+            0.23,
+            0.91
+          ],
+          "beta_MKT": 1.06,
+          "beta_NMF": [
+            0.13,
+            1.66
+          ]
+        },
+        "L20": {
+          "alpha": [
+            -0.21,
+            -0.83
+          ],
+          "beta_NMF": [
+            -0.31,
+            -4.22
+          ]
+        },
+        "WML20": {
+          "alpha": [
+            0.45,
+            1.06
+          ],
+          "beta_NMF": [
+            0.44,
+            3.52
+          ],
+          "ExplainingDur2": 0.58,
+          "ExplainingFF3": 0.15
+        },
+        "W30": {
+          "alpha": [
+            0.32,
+            1.56
+          ],
+          "beta_MKT": 1.07,
+          "beta_NMF": [
+            0.08,
+            1.18
+          ]
+        },
+        "L30": {
+          "alpha": [
+            -0.07,
+            -0.34
+          ],
+          "beta_NMF": [
+            -0.21,
+            -3.44
+          ]
+        },
+        "WML30": {
+          "alpha": [
+            0.39,
+            1.1
+          ],
+          "beta_NMF": [
+            0.28,
+            2.68
+          ],
+          "ExplainingDur2": 0.54,
+          "ExplainingFF3": 0.17
+        }
+      },
+      "Table_10_after_duration_control": {
+        "IML_FI_beta_WML20": [
+          -0.03,
+          -0.14
+        ],
+        "IML_FI_beta_WML30": [
+          0.02,
+          0.13
+        ],
+        "NMF_beta_WML20": [
+          0.51,
+          2.78
+        ]
+      }
+    },
+    "sign_reconstruction_note": "PDF 텍스트 추출이 음부호를 탈락시키므로 모든 부호를 항등식(승자 − 패자 = WML)으로 역산해 복원했다. 3개 패널 x 4개 척도 전부에서 재구성이 소수점 둘째 자리까지 닫힌다(예: EW CAPM W10 0.06 − L10 (-0.75) = 0.81 = WML10 확인). 이 재구성 자체를 alpha-research 가 재검증할 것.",
+    "authors_own_conclusion": "'the risk-adjusted return of the momentum strategies measured by alpha is statistically insignificant in all regressions, indicating that the duration factor explains the momentum returns well' — 즉 원저자의 1급 결론은 **KR 모멘텀에 잔여 알파가 없다**는 것이다."
+  },
+  "launch_gate": {
+    "axis_1_leg_allocation": {
+      "protocol": "measurement-graduation 착수 크기산술 관문 — ratio = 승자-레그 단독 효과크기 / 필요 활성수익(+13.25%/yr). 기대 t = ratio x 2.8016, 검정력 = pnorm(ratio x 2.8016 − 1.96). 롱숏 헤드라인 앵커 금지. 승자-레그 추출 불가 = 그 자체가 중단 사유(9/20).",
+      "target_fixed_before_anchor": true,
+      "target_declaration": "표적은 request.json 이 사전 고정한 1급/2급이다 — (1급) 유동성·듀레이션 통제 후 KR 모멘텀 단면 예측력 잔존 여부, 결과 무관 선보고 (2급) 유동성 조건부 실투형 top-25 좌표가 무조건화(2/20 cell4 beta-통제 alpha +5.14%/yr t 1.205 · 4~7/20 essence C) 대비 개선되는가. 분모 +13.25%/yr 은 2/20 산출값으로 본 설계 이전에 확정돼 있었다. ★8/20 이 중단 사유로 삼은 사후 표적 교체를 하지 않는다 — 아래 duration D1 레그 앵커가 훨씬 크지만 그쪽으로 표적을 옮기지 않았다.",
+      "denominator_required_active_return_pct_yr": 13.25,
+      "extractability": {
+        "level_anchor": "PASS — Table 3 이 L10/W10/WML10 을 EW·VW x raw/CAPM/FF3/FF5 전부에 대해 레그 분리 보고한다. ★이 세션에서 승자-레그가 이 해상도로 추출된 것은 처음이며, KR 원산 실측이라 이식 가정이 0 이다.",
+        "treatment_anchor": "FAIL — 논문은 모멘텀 x 유동성(또는 x 듀레이션) **이중 정렬을 하지 않는다**. 방법론이 전부 WML 수익의 시계열 요인회귀이므로 '유동성 조건부 승자 레그' 라는 처치효과는 원문에 존재하지 않는다. ⇒ 본 라운드 2급(조건화 이득)의 앵커는 원문에서 추출 불가하며, 9/20 규칙상 그 자체가 중단 사유다."
+      },
+      "anchors_valid_level": [
+        {
+          "id": "EW_CAPM_W10",
+          "status": "PRIMARY",
+          "desc": "EW 승자 상위10% 레그 단독 CAPM alpha (우리 구성과 가장 정합: EW · 롱온리 · beta-통제 alpha · 최고 집중도)",
+          "effect_pct_per_month": 0.06,
+          "effect_pct_yr": 0.72,
+          "t_in_paper": 0.16,
+          "ratio": 0.0543,
+          "expected_t": 0.152,
+          "power": 0.0353,
+          "disposition": "착수 금지 구간 (<0.15)"
+        },
+        {
+          "id": "EW_CAPM_W20",
+          "status": "SECONDARY",
+          "effect_pct_per_month": 0.29,
+          "effect_pct_yr": 3.48,
+          "t_in_paper": 0.85,
+          "ratio": 0.2626,
+          "expected_t": 0.736,
+          "power": 0.1104,
+          "disposition": "조건부 구간 [0.15,0.70) — 미결이 최빈 결말"
+        },
+        {
+          "id": "EW_CAPM_W30",
+          "status": "MOST_FAVORABLE_VALID",
+          "effect_pct_per_month": 0.37,
+          "effect_pct_yr": 4.44,
+          "t_in_paper": 1.15,
+          "ratio": 0.3351,
+          "expected_t": 0.939,
+          "power": 0.1536,
+          "disposition": "조건부 구간 — 단 집중도가 우리와 가장 먼 앵커"
+        },
+        {
+          "id": "EW_FF3_W10",
+          "status": "DIAGNOSTIC",
+          "effect_pct_per_month": -0.09,
+          "effect_pct_yr": -1.08,
+          "t_in_paper": -0.42,
+          "ratio": -0.0815,
+          "power": 0.0143,
+          "disposition": "음(-) — 수확량이 0 미만"
+        },
+        {
+          "id": "VW_CAPM_W10",
+          "status": "DIAGNOSTIC",
+          "effect_pct_per_month": -0.11,
+          "effect_pct_yr": -1.32,
+          "t_in_paper": -0.36,
+          "ratio": -0.0996,
+          "power": 0.0126,
+          "disposition": "음(-)"
+        }
+      ],
+      "anchors_disqualified": [
+        {
+          "id": "WML10/20/30 (0.50~1.06%/mo · CAPM alpha 0.47~1.01)",
+          "reason": "롱숏 헤드라인 — 금지어. 우리는 숏을 실행할 수 없다."
+        },
+        {
+          "id": "duration 1-10 spread (EW 2.85%/mo t 6.59 · VW 1.56%/mo t 3.42)",
+          "reason": "롱숏 스프레드 헤드라인. 또한 표적이 아니다(모멘텀 흡수 검정)."
+        },
+        {
+          "id": "IML_FI 0.77%/mo · IML_ID 1.39%/mo · NMF 1.32%/mo",
+          "reason": "전부 팩터(롱숏) 평균수익. 레그 앵커가 아니다."
+        }
+      ],
+      "concentration_monotonicity_warning": "★결정적 관측 — 승자 레그의 CAPM alpha 가 집중도에 **역방향 단조**다: W30 +0.37 → W20 +0.29 → W10 +0.06 (EW), W30 +0.42 → W20 +0.40 → W10 -0.11 (VW). 우리 구성은 K200 합집합 KQ150 ~350종 중 25종 = **상위 약 7%** 로 W10(상위 10%)보다 **더 집중**돼 있다. 따라서 우리 좌표의 사전 기대값은 W10 앵커보다 **더 작거나 음수**이고, W20/W30 앵커를 우리 것으로 쓰는 것은 외삽 방향이 반대다. ⇒ PRIMARY 로 W10 을 쓴 것은 보수 선택이 아니라 **유일하게 정합한 선택**이다.",
+      "winner_leg_share_of_WML": {
+        "EW_CAPM": {
+          "W10": 0.074,
+          "W20": 0.468,
+          "W30": 0.787
+        },
+        "EW_FF3": {
+          "W10": -0.132,
+          "W20": 0.184,
+          "W30": 0.389
+        },
+        "VW_CAPM": {
+          "W10": -0.143,
+          "W20": 0.396,
+          "W30": 0.56
+        },
+        "EW_raw_excess": {
+          "W10": 0.833,
+          "W20": 1.431,
+          "W30": 2.0
+        },
+        "interpretation": "★raw 로 재면 승자 레그가 모멘텀 이익의 83~200% 를 낸 것처럼 보이는데 beta 를 통제하면 최고 집중도에서 7.4%(EW) / -14.3%(VW) 로 붕괴한다. 승자 레그의 beta_MKT 가 1.06~1.08(Table 9)이므로 raw 초과수익의 대부분이 beta x E[mkt] 다. 이것은 measurement-graduation §2 가 규정한 beta-기여 과대표시가 **원문 안에서** 그대로 실증된 사례다."
+      },
+      "verdict": "FAIL. (1)처치(조건화) 앵커는 원문에 존재하지 않아 추출 불가 = 9/20 중단 사유 (2)수준 앵커의 PRIMARY(EW CAPM W10) ratio 0.0543 · 기대 t 0.152 · 검정력 3.5% = 3단 처분 (a) 착수 금지 구간 (3)집중도 역단조 때문에 우리 좌표의 기대값은 그 앵커보다 **더 낮다**.",
+      "annualization_convention": "월평균 효과의 연환산은 x12(산술합). x sqrt(12) 미사용."
+    },
+    "axis_2_beta_compensation": {
+      "protocol": "9/20(SS2007) 신설 축 — 원문이 위험조정 수익을 한 번이라도 보고하는가 + 모형이 합리(위험보상)인가 행태(미스프라이싱)인가. 우리 판정량이 beta-통제 alpha 이므로 합리 위험보상 모형은 기대 수확이 구조적으로 ~0 이다.",
+      "does_paper_report_risk_adjusted_alpha": true,
+      "model_class": "RATIONAL_RISK_COMPENSATION — 명시적이다. 원문: 'This indicates that the duration factor is further exposed to risks distinguished from the existing factors for future stock returns, providing a risk premium.' 위험의 정체까지 지목한다: Chen-Yang(2019)의 **시간선호 위험(longevity risk)** — 장기 듀레이션 주식은 기대수명 증가로 인한 부의 급감 위험에 대한 헤지라서 낮은 수익을 얻는다. 행태·미스프라이싱 서술은 논문 어디에도 없다.",
+      "verdict": "FAIL (차단). 세 근거가 겹친다.",
+      "grounds": [
+        "(1) 모형이 합리 위험보상이다 — 9/20 이 SS2007 을 차단한 바로 그 계열. 유동성 프리미엄·듀레이션 프리미엄 둘 다 '보상' 으로 해석된다.",
+        "(2) 원문이 alpha 를 보고하기는 하지만, **우리가 보유할 대상에 대해 보고한 alpha 가 ~0 이고 비유의**다. EW CAPM alpha W10 +0.06 (t 0.16) · EW FF3 alpha W10 -0.09 (t -0.42) · VW CAPM alpha W10 -0.11 (t -0.36) · MKT+NMF 모형 W10 alpha -0.20 (t -0.64). 즉 축2 는 '보고 안 함' 으로 발화하는 게 아니라 '보고했는데 0' 으로 발화한다 — 더 강한 차단이다.",
+        "(3) 논문의 1급 결론 자체가 잔여 알파 부재다 — 'the risk-adjusted return ... is statistically insignificant in all regressions'. 우리 판정량이 정확히 그 잔여 알파다."
+      ],
+      "mechanism_carrier_is_the_short_leg": "★★축2 판정을 결정지은 관측 — Table 9 가 레그를 분리하자 논문이 주장한 기전('승자는 패자보다 듀레이션이 짧아 NMF 노출이 높다')이 **승자 레그에서 성립하지 않는다**. beta_NMF: W10 +0.07 (t 0.59) · W20 +0.13 (t 1.66) · W30 +0.08 (t 1.18) — 전부 비유의. 반면 L10 -0.33 (t -4.50) · L20 -0.31 (t -4.22) · L30 -0.21 (t -3.44) — 전부 강하게 유의. **WML 의 듀레이션 노출 0.40 중 0.33(83%)이 패자 레그에서 온다.** 롱온리 mandate 는 기전의 캐리어를 구조적으로 보유할 수 없다. 이것은 성과 관찰이 아니라 기전 서술의 반증이다.",
+      "honesty_note": "request.json 이 '유동성 프리미엄은 합리 위험보상 계열이라 이 축이 발화할 가능성이 실재한다 — 정직하게 판정하라' 고 명시했다. 발화했다. 우회하지 않는다."
+    },
+    "axis_3_category": {
+      "card": "DIST-AR-041",
+      "card_retry_condition_verbatim": "탐색됨(경로 F 기록). 프론티어(미탐색): 기타법인 채널 하위 분해 ...; 수급 주체 축 x 공시 이벤트(비-return 원천) 교차 — 두 축 모두 M01 직교 확인. 영역 부활 트리거: data; 투자자 주체 분류가 더 세분된 데이터원이 확보될 때.",
+      "verdict": "OUT_OF_CATEGORY (partial)",
+      "confidence": "medium-high",
+      "attribute_by_attribute": [
+        {
+          "attribute": "듀레이션 (Weber 2018 캐시플로 듀레이션)",
+          "source": "DART/QW 재무 — BE·ROE·매출성장 40분기 예측 + 당해 6월 ME",
+          "call": "OUT",
+          "reason": "가격은 분모 ME 로만 들어가고 본체는 재무 예측이다. DIST-AR-041 이 소진 판정한 '가격-파생 모멘텀 변형' 이 아니다."
+        },
+        {
+          "attribute": "FIR (외국인·기관 6개월 거래대금 비중)",
+          "source": "투자자 수급 패널",
+          "call": "OUT",
+          "reason": "★카드가 **명시적으로 프론티어로 지목한 '수급 주체 축'** 그 자체다. 가격 무관."
+        },
+        {
+          "attribute": "ILLIQ (Amihud = |R|/VOL)",
+          "source": "일별 가격 + 거래대금",
+          "call": "PARTIALLY_IN",
+          "reason": "수익률의 함수이므로 가격-파생 성분이 있다. 다만 본 라운드에서 ILLIQ 는 **신규 재료가 아니라 이미 등재된 누출 귀무**(L01_Amihud)이고, 3/20·7/20 에서 우리 신호를 지배한 통제축이다 — 신규성 주장을 여기에 걸지 않는다."
+        },
+        {
+          "attribute": "기저 모멘텀 신호 r(t-11, t-6)",
+          "source": "가격",
+          "call": "IN",
+          "reason": "가격-파생. 게다가 12/20 이 IN_CATEGORY 로 중단한 **중간 수평선 형성창** 과 사실상 동일 구간이다."
+        }
+      ],
+      "blocks": false,
+      "escalation_note": "★축3 은 본 라운드가 유일하게 통과하는 축이다. 그러나 통과 사유(FIR·듀레이션이 비-가격 원천)가 착수 정당성이 되지는 않는다 — 8/20 원칙: 세 축 중 어느 하나만으로도 착수가 정당화되지 않는다. 그리고 축3 의 통과 근거인 FIR 축은 본 라운드의 표적이 아니라 candidates[2] 로 분리 보관된 별개 표적이다."
+    },
+    "combined_verdict": "축1 FAIL(처치앵커 추출불가 + 수준앵커 ratio 0.0543 검정력 3.5%) · 축2 FAIL(합리 위험보상 + 우리 레그 alpha ~0) · 축3 PASS(OUT_OF_CATEGORY). 3축 중 2축이 차단.",
+    "what_this_round_leaves_if_undetermined": [
+      "mandate 유니버스에서의 승자-레그 beta_NMF 판정 — 원문 전 시장 결과(비유의)가 대형·유동 구간에서도 유지되는지. 모멘텀 계열 전체에 재사용되는 진단이다.",
+      "Weber(2018) 40분기 캐시플로 듀레이션 패널 — 한 번 만들면 candidates[2]·[5]와 이후 가치/성장 라운드가 그대로 재사용한다. KR 에서 우리 시스템이 이 패널을 가진 적이 없다.",
+      "유동성 절단 retention 통계 — 이 envelope 의 모든 유동성-조건화 라운드에 걸리는 상수. FQ-181/FQ-232 판단에도 입력된다.",
+      "도달가능성 상한 — 유동성 조건화만으로 이 창에서 도달 가능한 승자-레그 PORT_t 의 양성 대조."
+    ]
+  },
+  "liquidity_floor_truncation": {
+    "question": "유동성 하한(adv20 >= 2e8)이 조건화 축을 이미 자르는 정도 — 유니버스 안에 남은 유동성 분산이 논문의 분산과 같은 규모인가.",
+    "method": "본 역할은 측정자가 아니므로 원문이 보고한 통계에서 연역하고, 실측 검사를 alpha-research 에 사전등록 항목으로 넘긴다.",
+    "derivation_from_source": [
+      "논문 유니버스 = KOSPI 합집합 KOSDAQ 보통주 전수. 우리 유니버스 = K200 합집합 KQ150 (~350종) 그리고 adv20 >= 2e8.",
+      "corr(Illq, Size) = -0.736 — 비유동성은 사실상 소형주 축이다. 시총 상위 ~350종으로 자르면 논문 단면의 **가장 유동적인 구간만** 남는다.",
+      "corr(FIR, Size) = +0.772 — 논문의 IML_FI 는 **고-FIR 셀** 에서 만들어지고 고-FIR 은 대형주다. 우리 유니버스는 IML_FI 쪽에 가깝고 IML_ID 쪽과는 거의 겹치지 않는다.",
+      "그런데 프리미엄의 크기는 반대 방향이다: IML_ID 1.39%/mo (t 4.92) 가 IML_FI 0.77%/mo (t 3.92) 의 1.8배다. **가장 큰 유동성 프리미엄이 있는 구간(저-FIR·소형·저유동)이 우리 유니버스 밖이다.**",
+      "IML_FI 자체도 (LARGE-high-FIR + SMALL-high-FIR)/2 로 구성된다 — 우리는 그중 SMALL 절반을 잃는다.",
+      "Illq 사분위(log): q25 -1.57 / q50 -0.41 / q75 +0.77 이므로 IQR 2.34 log 단위 = 약 10.4배. 우리 유니버스는 이 분포의 하단(유동) 꼬리에 몰려 있으므로 잔여 IQR 은 이보다 크게 작을 수밖에 없다."
+    ],
+    "conclusion": "조건화 축은 완전히 소멸하지는 않지만(대형주 안에도 Amihud 분산은 남는다) **논문의 효과를 만든 구간이 체계적으로 잘려 나간다**. 특히 처치가 가장 센 IML_ID 셀은 유니버스 밖이다. 이는 4/20·FR 규칙의 '처치 미전달 셀' 위험 — 그 경우 결과는 '효과 없음' 이 아니라 **'미결'** 로만 라벨 가능하다.",
+    "mandatory_precheck_for_alpha_research": {
+      "statistic": "각 리밸일 t 에서 log(L01_Amihud) 의 사분위범위(IQR)를, (A) mandate 유니버스(K200 합집합 KQ150 그리고 adv20 >= 2e8) 와 (B) 동일 시점 KRX 보통주 전수 에서 각각 산출하고 전 리밸일 중앙값으로 집계.",
+      "prespecified_threshold": "retention = IQR_A / IQR_B. **retention < 0.50 이면 조건화 축이 구조적으로 절단된 것으로 판정**하고, 그 라운드의 어떤 음성 결과도 '효과 없음' 이 아니라 '처치 미전달(미결)' 로 라벨한다.",
+      "also_report": "FIR 의 유니버스-내 분산 retention(동일 방식) — FIR 은 size 와 0.772 상관이라 절단이 더 심할 수 있다.",
+      "why_prespecified": "사후에 이 수치를 보고 라벨을 고르면 3/20 이 적발한 것과 같은 계통의 자유도가 생긴다."
+    }
+  },
+  "candidates": [
+    {
+      "rank": 1,
+      "selected": true,
+      "title": "KR 유동성·듀레이션의 모멘텀 흡수 검정 + 유동성 조건부 롱온리 top-25",
+      "family": "momentum x liquidity",
+      "mechanism_1liner": "시간선호 단기화 → 단기 듀레이션 선호 + 시장 유동성 개선 → NMF·IML_FI 양(+) 실현 → 상대적 단기 듀레이션인 과거 승자 동조 상승",
+      "why_selected": "request.json 이 고정한 표적이고, 3/20·7/20·11/20 이 반복 관측한 '유동성이 우리 모멘텀 신호를 흡수한다' 를 KR 원산 논문 사양으로 정식 검정한다."
+    },
+    {
+      "rank": 2,
+      "selected": false,
+      "title": "단기 듀레이션 롱온리 top-25 (Weber 2018 캐시플로 듀레이션 D1 레그 단독)",
+      "family": "duration / value",
+      "anchor_if_pursued": {
+        "EW_full_universe_CAPM_alpha_D1": {
+          "pct_yr": 15.6,
+          "t": 4.31,
+          "ratio": 1.1774,
+          "power": 0.9096
+        },
+        "VW_full_universe_CAPM_alpha_D1": {
+          "pct_yr": 4.8,
+          "t": 1.47,
+          "ratio": 0.3623,
+          "power": 0.1723
+        },
+        "VW_full_universe_FF3_alpha_D1": {
+          "pct_yr": 2.28,
+          "t": 0.69,
+          "ratio": 0.1721,
+          "power": 0.0697
+        }
+      },
+      "why_not_selected": "★표적은 앵커를 보기 **전에** 확정됐다. D1 레그 앵커가 본 라운드 표적의 앵커보다 20배 크다는 이유로 여기로 옮기는 것은 8/20 이 중단 사유로 삼은 **사후 표적 교체**다. 옮기지 않는다. 별도로 사전등록해야 착수 자격이 생긴다. ★그리고 옮겼어도 통과가 자명하지 않다: (a) EW→VW 에서 alpha 가 1.30→0.40 (t 4.31→1.47)으로 붕괴한다 = 효과가 소형주에 국소돼 있고 우리 유니버스는 VW 쪽이다 (b) corr(Dur, BM) = -0.527, corr(NMF, HML) = +0.71 이므로 단기 듀레이션은 사실상 가치이고 5/20(AMP2013 value-momentum)이 이미 essence C 를 냈다 (c) 듀레이션은 연 1회(6월) 갱신이라 월간 리밸에서 신호가 최대 11개월 stale 하다."
+    },
+    {
+      "rank": 3,
+      "selected": false,
+      "title": "FIR(외국인·기관 거래비중) 조건부 모멘텀 — 수급 주체 축",
+      "family": "flow x momentum",
+      "why_not_selected": "DIST-AR-041 이 명시한 재도전 프론티어에 정면 부합하고 STR_887_foreign_flow_alpha_v71(PASS/A) 계보와 원천이 같아 이 목록에서 가장 유망하다. 그러나 본 라운드 1급이 흡수 검정으로 고정돼 있어 표적이 다르고, 승자-레그 앵커를 이 논문에서 추출할 수 없다(FIR x 모멘텀 이중정렬 미보고). ★PIT 급소 = A6 투자자수급 실효 지연 ~22일(수동 export) — 월간 리밸에서 이 지연이 신호를 뒤로 미는지 착수 전 확인 필요. 별도 사전등록 권고."
+    },
+    {
+      "rank": 4,
+      "selected": false,
+      "title": "IML_FI 셀 내부 모멘텀 (고-FIR x 고-Amihud 층 한정)",
+      "family": "liquidity x momentum",
+      "why_not_selected": "논문 효과의 발생지에 가장 가깝지만, **유동성 하한(adv20 >= 2e8)이 고-Amihud 층을 유니버스에서 이미 제거한다.** 처치가 전달되지 않는 셀이므로 결과가 무엇이든 '효과 없음' 으로 읽을 수 없다(4/20·FR 규칙 선례). 고정 축 완화로만 가능한 설계 = INV-7 위반."
+    },
+    {
+      "rank": 5,
+      "selected": false,
+      "title": "산업 듀레이션 노출 조건부 (Table 8: 운수 beta_NMF 0.59 · 의료기기 0.57 · 소재 0.37)",
+      "family": "industry x duration",
+      "why_not_selected": "산업 수준 노출을 25종 envelope 에 담으면 3~4개 섹터 집중이 강제되고, 산업 더미가 3/20 이 적발한 시장 더미 아티팩트와 같은 계통의 위험을 만든다. 또한 원문 산업 alpha 는 대부분 비유의(t 0.14~2.43)다."
+    }
+  ],
+  "selected": {
+    "hypothesis_title": "JT1993 강화 13/20 — KR 유동성·듀레이션이 모멘텀을 흡수하는가",
+    "hypothesis_description": "Bae-Lee(2021, JDQS 29(1):49)의 KR 실측을 우리 실투 축(롱온리 · 25종 이하 · K200 합집합 KQ150 · 15bps · Sigma w=1 · adv20 >= 2e8)에서 검정한다. 원문 주장 = (1)외국인·기관 비유동성 팩터(IML_FI)가 KR 모멘텀을 설명한다 (2)시장+듀레이션 2요인 모형이 경쟁 모형보다 모멘텀을 훨씬 잘 설명한다(설명비율 54~67% vs FF3 15~35%) (3)듀레이션을 통제하면 IML_FI 의 설명력이 사라진다. **1급(흡수 검정, 성과 아님, 결과 무관 선보고)**: 유동성(Amihud·FIR)과 듀레이션(Weber 캐시플로)을 통제한 뒤 KR 모멘텀의 단면 예측력이 mandate 유니버스에서 남는가. 남지 않으면 세션의 반복 관측(3/20 Amihud 지배 · 7/20 Kyle-lambda 지배)이 논문 사양으로 확증된 것이고, 남으면 우리가 쓴 통제 사양이 과했다는 뜻이다 — 양 갈래 모두 정보다. **2급(소비면 전이)**: 유동성 조건부 실투형 top-25 좌표가 무조건화(2/20 cell4 beta-통제 alpha +5.14%/yr t 1.205) 대비 개선되는가.",
+    "mechanism": {
+      "agent": "외국인·기관 투자자(특히 연기금·보험). 원문이 지목한 주체다 — 이들의 효용은 개인보다 시간선호(기대수명) 변동에 민감하고(연금·보험의 부채 듀레이션), KR 에서 고-FIR 종목의 거래를 주도한다(corr(FIR, Size) = +0.772). Kim-Lee(2018)·Kang et al.(2014)은 KR 모멘텀이 **외환위기 이후 외국인이 적극 매매하기 시작한 시점부터** 나타났음을 실증했다 — 즉 이 효과의 등장 자체가 이 주체의 등장에 붙어 있다.",
+      "friction": "(1)KR 개별종목 차입공매도 제약 + 전면금지 이력(2008-10~2009-05, 2011-08~11, 2020-03~2021-04) — 패자(장기 듀레이션·저유동) 레그의 가격발견이 구조적으로 막혀 미스프라이싱이 지워지지 않는다. (2)유동성 마찰 그 자체 — Amihud 비유동성이 높은 구간은 거래충격 때문에 기관 자본이 들어가지 못하고(corr(FIR, Illq) = -0.457), 그래서 IML_ID(개인 주도 저유동 구간) 프리미엄이 1.39%/mo 로 IML_FI(0.77%)의 1.8배로 남아 있다. (3)우리 mandate 의 유동성 하한(adv20 >= 2e8)은 바로 그 마찰 구간을 유니버스에서 제거한다 — 마찰이 프리미엄의 원천이므로 **마찰을 피하는 제약이 프리미엄도 함께 잘라낸다.**",
+      "path": "시간선호가 단기화(할인율 상승 기대)되면 단기 캐시플로 비중이 큰 저듀레이션 주식 수요가 오르고 동시에 시장 유동성이 개선된다. 그러면 NMF(near minus far)와 IML_FI 가 같은 달에 양(+)으로 실현된다(corr(IML_FI, NMF) = +0.45). 과거 승자는 패자보다 듀레이션이 짧으므로 NMF 실현치에 양(+)으로 동조해 t+1 월 수익이 높아진다. 즉 모멘텀 수익은 t+1 시점 듀레이션-요인 실현치에 **조건부**이며, 그 조건이 꺼지는 달에는 모멘텀도 꺼진다."
+    },
+    "falsification": {
+      "observable": "성과가 아니라 기전이 참이면 관측되어야 할 부수 사실 4종을 mandate 유니버스에서 확인한다. (a) **승자 레그의 듀레이션-요인 노출** — 기전상 승자는 짧은 듀레이션이므로 승자 포트폴리오의 beta_NMF 가 유의 양(+)이어야 한다. (b) **승자-패자 듀레이션 격차의 부호** — 승자 데실 평균 캐시플로 듀레이션이 패자 데실보다 **짧아야** 한다(기전의 전제 그 자체). (c) **주체 지목의 확인** — 고-FIR 층에서 승자-레그 forward 수익이 저-FIR 층보다 높아야 한다(Kim-Lee 2018 함의). (d) **유동성 경로의 확인** — 시장 유동성이 개선된 달에 승자-레그 초과수익이 커야 한다(Avramov 2016·Kim-Lee 2018 전제).",
+      "field_dictionary_refs": [
+        "A1_RAWDATA_OHLCVS_daily",
+        "A3_universe_support_membership_panels",
+        "A4_benchmark_kospi200",
+        "A6_investor_flow_stock_daily",
+        "A9_liquidity_avgtv20_convention",
+        "C-DART-ANNUAL",
+        "C-QWXLSX-RAW",
+        "C-FUND-MERGED",
+        "FDB-B2_registry_rawdata_price_daily",
+        "F2_investor_flow_stock_level",
+        "F3_investor_flow_market_level",
+        "E3_macro_regime_monthly"
+      ],
+      "reject_if": "(a) 와 (b) 가 **동시에** 성립하지 않으면 — 즉 승자 레그의 beta_NMF 가 비유의(|t| < 2)이고 승자-패자 듀레이션 격차의 부호도 원문 방향이 아니면 — 기전이 mandate 유니버스에서 반증된 것으로 판정한다. 성과와 무관하게 선보고한다. 추가로 (c)·(d) 가 둘 다 0 이면 주체·경로 지목이 함께 반증된 것이며, 그 경우 남는 것은 '유동성 대리 변수가 모멘텀 랭킹을 재현했다' 는 기계적 진술뿐이다.",
+      "leakage_null_obligation": "★위 어느 관측이든 **축별 누출 귀무를 병기**한다 — 순수 L01_Amihud / L11_Kyle_Lambda 함수를 score 로 주입한 귀무의 |NW-t| 를 함께 산출하고, 신호가 그것을 넘지 못하면 유동성 대리로 판정한다. 실측 선례: 3/20 Amihud 귀무 2.886 vs 신호 0.807 · 7/20 Kyle-lambda 귀무 2.557 vs 신호 1.541.",
+      "not_a_performance_tautology": "네 관측 전부 등급·PORT_t·SR 과 독립이다. 'PORT_t 가 낮으면 기각' 류 동어반복을 쓰지 않았다."
+    },
+    "regime_scope": {
+      "holds_in": [
+        "시간선호 단기화 국면 — 금리 상승 기대 / 할인율 상승기. 기전상 저듀레이션 선호가 커져 NMF 가 양으로 실현되는 달.",
+        "시장 유동성 개선 국면 — Amihud 시장평균 하락기. IML_FI 가 양으로 실현되어 유동성 경로가 켜진다.",
+        "외국인·기관 순매수 확대 국면 — 기전이 지목한 주체의 자본이 실제로 들어오는 구간(Kim-Lee 2018: KR 모멘텀은 외국인 활동기에만 관측)."
+      ],
+      "weakens_or_reverses_in": [
+        "유동성 경색·패닉 국면 — 유동성 프리미엄은 유동성이 사라지는 순간 프리미엄이 아니라 실현손실이 된다. 저유동 종목이 먼저 무너지므로 IML 부호가 뒤집힌다. 이건 성과 관찰이 아니라 기전에서의 연역이다.",
+        "금리 하락·장기성장 선호 국면 — 할인율 하락기에는 장기 듀레이션(성장주)이 아웃퍼폼해 NMF 가 음이 되고, 기전상 모멘텀도 함께 꺼진다. corr(NMF, HML) = +0.71 이므로 가치 역풍 국면이 곧 이 축의 역풍 국면이다.",
+        "공매도 금지 기간(2008-10~2009-05 · 2011-08~11 · 2020-03~2021-04) — 마찰 항이 극단으로 가서 패자 레그 가격발견이 멈춘다. 원문 효과의 83%가 패자 레그의 듀레이션 노출에서 오는데(Table 9 beta_NMF: WML 0.40 중 L 레그 -0.33) 그 레그가 얼어붙는다."
+      ],
+      "boundary_rationale": "경계는 성과 관찰이 아니라 기전에서 **연역**된다. 기전이 '시간선호 변화 → 듀레이션 요인 실현 → 모멘텀 동조' 라는 조건부 연쇄이므로, 조건 변수(NMF·IML 의 실현 부호)가 뒤집히는 국면이 곧 경계다. 보편타당 주장을 하지 않는다: 이 가설은 NMF < 0 인 달에는 **역작동을 예측**한다. 검증 가능한 함의 = 국면별 승자-레그 초과수익의 부호가 NMF 실현 부호와 같아야 한다."
+    }
+  },
+  "prespecified_confound_rejections": [
+    "★시장-내 랭킹 강제 — KOSPI 내 / KOSDAQ 내로 각각 랭킹. 3/20 실측: 합집합 혼합 랭킹은 거래활동 축을 자를 때 회전율이 아니라 **시장 더미**를 재서 -19.58%/yr NW-t -2.526 의 가짜 유의를 만들었다(V1 KOSDAQ 비중 14.1% vs V3 65.3%). ★본 논문이 정확히 그 위험 위에 서 있다 — breakpoint 를 KOSPI 에서 잡고 KOSPI 합집합 KOSDAQ 전체에 적용하는 구성이며, corr(Illq, Size) -0.736 · corr(FIR, Size) +0.772 이므로 유동성·FIR 축은 시장 더미와 강하게 얽힌다.",
+    "★축별 누출 귀무 병기 — L01_Amihud · L11_Kyle_Lambda · L02_Turnover 의 순수 함수를 stratifier/score 로 주입한 귀무 |NW-t| 를 신호와 나란히 산출. 신호가 귀무를 넘지 못하면 유동성 대리로 판정. 이 축에서 두 번(3/20 · 7/20) 진 자리다.",
+    "★듀레이션 정의 고정 — Weber(2018) 사양 그대로: 40분기, AR(1) 0.41(ROE)/0.24(매출성장), 장기평균 12%/6%, r = 0.12, **6월 말 계산 · 직전 회계연도 재무**. 임의 대체(단순 BM 역수·성장률 대리 등) 금지. 대체 시 그 사실을 paper_assumption_broken 에 적을 것.",
+    "★듀레이션의 C4 lag — 연간 재무 = 익년 3/31 가용(pit.md C4). 원문의 6월 말 계산 시점은 3/31 보다 늦으므로 **PIT 안전하다**. 다만 신호가 연 1회 갱신이라 월간 리밸에서 최대 11개월 stale 하다는 사실을 진단에 기록.",
+    "★A6 투자자수급 실효 지연 ~22일 — FIR 은 이 패널에서 온다. 월말 sig_date 기준으로 FIR 이 실제 가용한지 확인하고, 미가용이면 한 달 밀어 쓰고 그 사실을 기록. 확인 없이 쓰면 C11 위반.",
+    "★유동성 잣대 오염 — FQ-232(canonical_screen_bt 소비 경로의 adv1_sameday_DEGRADED) · FQ-181(월말 1일치 vs 20일 평균, parked/dohoon_decision). 조건화 변수가 바로 그 잣대이므로 착수 시 어느 잣대를 썼는지 산출물에 명시.",
+    "무신호 대조 — no_signal_gate() (동일 유니버스·제약·비용의 시총 상위 N cap-w). 본 체인의 arm 전부가 INDISTINGUISHABLE 이었다(|t| 0.14~0.75). 구별 불가면 screen-tier 등재 불가.",
+    "EW-유니버스 대비 + cap-tier 병기 — diag_ew_universe / diag_cap_tier(MEGA top-10 · MID 11-30 · OTHER). 2/20 cell4 의 OTHER tier 비중이 91.2% 였다.",
+    "beta-통제 alpha 병기 — PORT_t 와 t(alpha) 동시 보고(measurement-graduation §2). ★본 논문이 그 필요성의 교과서 사례다: 승자 레그 beta_MKT 1.06~1.08 이고 raw 로 재면 승자 몫 83~200% 인데 beta 통제 후 7.4%(EW) / -14.3%(VW) 로 붕괴한다.",
+    "★형성창 불일치 명시 — 본 논문의 '모멘텀' 은 r(t-11, t-6) = **중간 수평선**이고 우리 기저(JT1993)는 6-1 이다. 어느 창으로 재현할지 사전 고정하고, 원문 창을 쓰면 12/20 이 IN_CATEGORY 로 중단한 축과 겹친다는 사실을 기록할 것.",
+    "★듀레이션과 가치의 중복 — corr(Dur, BM) -0.527 · corr(NMF, HML) +0.71. 5/20(AMP2013 value-momentum, essence C)와의 신호 상관을 사전 산출하고 0.7 을 넘으면 재포장으로 라벨."
+  ],
+  "idiosyncratic_variance_prespecification": {
+    "declaration_only": true,
+    "scope_note": "★사전 선언이며 본 역할은 어떤 공분산도 산출하지 않는다(Sigma = risk-research, weight = optimizer 소관). 규율 'optimizer 조건부 — book 기준 특이분산 <15% 면 EW 확정' 의 산출 방법을 착수 전에 못박기 위한 절이다.",
+    "definition": "특이분산 비중 = w'Dw / (w'Sigma w), Sigma = B Omega B' + D",
+    "components": {
+      "B": "risk-research 가 산출하는 팩터 노출 행렬(스타일 + 산업)",
+      "Omega": "팩터 공분산",
+      "D": "diag(잔차분산) — 횡단면 팩터회귀 잔차의 표본분산"
+    },
+    "estimation_window": "각 리밸일 t 에서 종점 <= t-1 인 rolling 60개월 창(주 사양). 부 사양으로 EWMA half-life 24개월 병기. PIT C1(rolling only) 준수 — full-sample 잔차분산 금지.",
+    "weights_used": "w = EW top-25 (사전 고정). optimizer 미개입 상태의 진단값이며 이 계산이 weight 결정 행위가 아님을 명시.",
+    "aggregation": "전 리밸일 share 의 **중앙값**을 판정값으로 하고 [10%, 90%] 분위를 병기.",
+    "decision_rule": "중앙값 < 0.15 이면 EW 확정하고 optimizer 단계를 스킵한다. 0.15 이상이면 optimizer 조건부 착수. 경계(0.13~0.17)면 EWMA 부 사양과의 일치 여부를 확인하고 불일치 시 EW 확정(보수 방향).",
+    "axis_specific_caveat": "★본 축은 조건화 변수가 유동성·듀레이션이라 B 에 **유동성·듀레이션 노출을 명시 열로 넣어야** 한다. 넣지 않으면 그 공통 노출이 D 로 흘러들어 특이분산을 과대 계상하고 optimizer 를 불필요하게 켠다."
+  },
+  "single_measurement_discipline": {
+    "contrast_arms": 0,
+    "exploration_arms": 0,
+    "no_signal_control_arms": 0,
+    "note": "8/20 부터의 규율 — 단일 측정. prespecified_confound_rejections 는 대비 arm 이 아니라 **동일 측정 위의 진단·통제 병기**다.",
+    "chain_completion": "체인 완주 — 음성이어도 멈추지 않는다(단, 본 설계의 launch_recommendation 은 착수 자체를 비권고한다. 착수하면 완주한다).",
+    "chain_qualification": {
+      "selection_type": "chain",
+      "iteration_reason_logged": true,
+      "is_only_selection": "iteration 중 변형 선택은 IS 구간 canonical PORT_t 로만. OOS 반복조회 금지.",
+      "holdout": "최종판 1회만"
+    }
+  },
+  "challenge_flags": [
+    "대안 가설 보관 — candidates[1] 단기 듀레이션 롱온리 top-25 (D1 레그 EW CAPM alpha +15.6%/yr t 4.31, 단 VW 로는 +4.80%/yr t 1.47 로 붕괴). 별도 사전등록 필요, 사후 표적 교체 금지.",
+    "대안 가설 보관 — candidates[2] FIR 수급 주체 축 조건부 모멘텀. DIST-AR-041 프론티어 정면 부합 + STR_887_foreign_flow_alpha_v71(PASS/A) 계보. 이 목록에서 가장 유망하나 표적이 다르다.",
+    "대안 가설 보관 — candidates[3] IML_FI 셀 내부 모멘텀(처치 미전달 위험) · candidates[4] 산업 듀레이션 노출 조건부(섹터 집중 강제).",
+    "★교차논문 6번째 수렴이며 최초의 KR 원산 사례 — LS2000(효과 본체 패자·Y2+) · GH2004(숏 76.6%) · DGW2014(승자 25~52%) · NM2012 · CGH2004(13.2%) 에 이어 Bae-Lee(2021)이 **KR 데이터로** 같은 구조를 보고한다. 8/20 이 '미국 논문이라 이식에서 죽었다' 로 정리했던 서술이 이제 성립하지 않는다 — 이식 문제가 아니라 **롱온리 25종 이하 envelope 이 모멘텀 계열에서 수확할 수 있는 몫이 구조적으로 작다**는 것이 KR 원산으로 확인됐다.",
+    "★본 논문의 모멘텀 형성창이 r(t-11, t-6) = 중간 수평선이며 12/20 이 그 축에서 IN_CATEGORY 로 중단됐다 — 원문 사양 그대로 재현하면 12/20 과 축이 겹친다.",
+    "★C24_LIQ_IMPROVE_WT-D20260621_006 이 이미 '모멘텀 x Amihud' 구성을 F 로 측정했다(PORT_t 1.11 · OOS -0.33). 구성 조회로만 잡혔다.",
+    "★FQ-181(유동성 잣대 이원화)가 parked/dohoon_decision 이고 본 라운드의 조건화 변수가 바로 그 잣대다 — 측정 신뢰의 상한이 세션 권한 밖에서 정해져 있다."
+  ],
+  "verdict": "designed",
+  "verdict_rationale": "메커니즘은 실재한다(유동성 프리미엄 + 시간선호/듀레이션 위험, 주체·마찰·경로 전부 실명). economic_void 가 아니다. 다만 착수 게이트 3축 중 2축이 차단이며, 차단 사유가 '측정 못 해서' 가 아니라 **원문 표가 이미 답을 보여줘서** 라는 점이 이 라운드의 성격이다.",
+  "launch_recommendation": {
+    "recommendation": "DO_NOT_LAUNCH_AS_SCORED_ROUND — 착수 비권고. Q-Lead escalate.",
+    "grounds": [
+      "(1) 축1 처치 앵커 추출 불가 — 논문에 모멘텀 x 유동성/듀레이션 이중정렬이 없다. 2급(조건화 이득)의 효과크기가 원문에 존재하지 않는다 = 9/20 중단 사유.",
+      "(2) 축1 수준 앵커 = 착수 금지 구간 — PRIMARY(EW CAPM alpha W10) +0.72%/yr · ratio 0.0543 · 기대 t 0.152 · 검정력 3.5%. 그리고 집중도 역단조(W30 0.37 → W20 0.29 → W10 0.06)이므로 상위 7% 인 우리 좌표의 기대값은 이보다 **더 낮다**.",
+      "(3) 축2 FAIL — 합리 위험보상 모형이고, 원문이 보고한 우리 레그의 alpha 가 네 사양 전부에서 ~0 또는 음수다(+0.06 t 0.16 / -0.09 t -0.42 / -0.11 t -0.36 / -0.20 t -0.64). 원저자의 1급 결론이 곧 '잔여 알파 없음' 이다.",
+      "(4) ★기전의 캐리어가 우리가 보유할 수 없는 레그에 있다 — Table 9 에서 WML 의 듀레이션 노출 0.40 중 0.33(83%)이 패자 레그이고, 승자 레그 beta_NMF 는 세 breakpoint 전부 비유의(t 0.59 / 1.66 / 1.18). 논문의 기전 서술('승자가 짧은 듀레이션')이 승자 레그에서 실증되지 않는다.",
+      "(5) 유동성 하한이 처치 발생지를 자른다 — 가장 큰 프리미엄인 IML_ID(1.39%/mo)의 저-FIR·소형·저유동 구간이 유니버스 밖이다. 마찰이 프리미엄의 원천인데 우리 제약이 마찰을 제거한다.",
+      "(6) 8/20 원칙 — 이 여섯 중 어느 하나만으로도 착수가 정당화되지 않으며, 유리한 앵커(W30 · duration D1)를 골라 진행하는 것은 게이트 우회다."
+    ],
+    "positive_findings_for_the_record": [
+      "★축1 extractability 의 **level 앵커는 PASS** 했다 — 이 세션에서 승자 레그가 EW·VW x raw/CAPM/FF3/FF5 해상도로 추출된 것은 처음이고, KR 원산이라 이식 가정이 0 이다. 12/20 이 페이월로 2차 출처에 의존했던 것과 대조된다.",
+      "★축3 OUT_OF_CATEGORY — FIR·듀레이션은 비-가격 원천이고 FIR 은 DIST-AR-041 이 명시한 프론티어(수급 주체 축)다. 이 축은 살아 있다(candidates[2]).",
+      "★beta-기여 과대표시의 원문-내 실증 — raw 승자 몫 83~200% vs beta-통제 후 7.4% / -14.3%. measurement-graduation §2 의 규범이 외부 논문 안에서 그대로 재현됐다. FQ-190(롱 레그 실현 수익 모집단 분포)에 직접 기여한다.",
+      "★듀레이션 축(candidates[1])은 별개 표적으로 살아 있고 앵커가 크다 — 다만 EW→VW 붕괴(1.30→0.40)와 가치 중복(corr 0.71)을 먼저 닫아야 한다."
+    ],
+    "counterweight_for_q_lead": "★비용 논거는 처분을 바꾸지 않는다. 다만 3단 처분 (b)의 '남길 것' 은 실재한다 — (1)mandate 유니버스에서의 승자-레그 beta_NMF 판정은 모멘텀 계열 전체에 재사용되는 진단이고 (2)듀레이션 패널(Weber 40분기)은 한 번 만들면 candidates[1]·[4]와 후속 라운드가 그대로 재사용한다 (3)유동성 절단 retention 통계는 이 envelope 의 모든 유동성-조건화 라운드에 걸리는 상수다. Q-Lead 가 진행을 택한다면 등급을 노리는 강화 시도(attempts_used +1)가 아니라 **진단 전용 서브라운드**(포트폴리오 구성·essence 등급 없이 falsification (a)~(d) + 유동성 retention 통계만)로 격하해 원장 시도 카운트를 소모하지 않는 형태를 권한다. 자원 배분 판단은 Q-Lead 몫이다.",
+    "alternative_if_capacity_redirected": "candidates[2] FIR 수급 주체 축 — DIST-AR-041 이 명시한 재도전 조건에 정면 부합하고 우리 시스템에서 PASS/A 를 낸 유일 계보(STR_887_v71)와 원천이 같다. 착수 전 (a) 승자-레그 앵커를 다른 논문에서 추출 (b) A6 실효 지연 ~22일의 PIT 영향 확인 두 가지가 선행 조건."
+  },
+  "handoff": {
+    "to": "alpha-research",
+    "next_steps": "Step 1~7 + (5) AST 구성. ★launch_recommendation 이 DO_NOT_LAUNCH 이므로 Q-Lead 착수 결정 전에는 진행하지 않는다.",
+    "if_launched_inheritance": [
+      "(a) 듀레이션은 Weber(2018) 원문 사양 그대로 — 40분기 · AR(1) 0.41/0.24 · 12%/6% · r=0.12 · 6월 말 계산 · 직전 회계연도 재무. 임의 대체 금지.",
+      "(b) 형성창을 사전 고정할 것 — 원문은 r(t-11,t-6) 중간 수평선이고 기저 JT1993 은 6-1 이다. 원문 창을 쓰면 12/20 축과 겹친다.",
+      "(c) 시장-내 랭킹 강제 + 축별 누출 귀무(L01_Amihud · L11_Kyle_Lambda) 병기 — 이 축에서 두 번 진 자리다.",
+      "(d) 유동성 절단 retention 통계를 **1급 산출물로** 먼저 낼 것(사전등록 문턱 0.50). 이 값이 낮으면 이후 음성 결과는 '미결' 라벨이지 '효과 없음' 이 아니다.",
+      "(e) beta-통제 alpha 와 PORT_t 동시 보고 + EW-유니버스 대비 + cap-tier + 무신호 대조.",
+      "(f) 승계분(mechanism / falsification / regime_scope) 재작성 금지 — 결함 발견 시 수정이 아니라 challenge_note.md 기록 + 재설계 요청(Charter 원칙 8 No Silent Override).",
+      "(g) 원문 표의 부호는 PDF 추출에서 음부호가 탈락해 항등식으로 역산 복원했다 — alpha-research 가 재검증할 것(paper_reading.sign_reconstruction_note)."
+    ],
+    "request_json_hypothesis_title": "이미 존재 — 주입 불필요 ('JT1993 강화 13/20 — KR 유동성·듀레이션이 모멘텀을 흡수하는가')"
+  },
+  "self_adversarial_challenge_ref": "qepm/mailbox/worktask/WT-R20260829_013/challenge_note_hypothesis.md"
+}

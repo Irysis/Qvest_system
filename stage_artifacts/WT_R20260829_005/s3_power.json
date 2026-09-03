@@ -1,0 +1,44 @@
+{
+  "meta": {
+    "wt_id": "WT-R20260829_005",
+    "stage": "preregistered_power_contract",
+    "executed_before_any_portfolio_arm": true,
+    "calibration_source": "AMP2013 Table I Japan stocks, Factor column: combo SR 0.88 - value SR 0.77 = +0.11 (원문 PDF 재확인)",
+    "calibration_excluded": "global stocks factor +0.77 / US +0.20 / Europe·UK 등 — 모멘텀 생존 시장 캘리브레이션 사용 금지(설계 gate_calibration_source)",
+    "basis": "rank-weighted zero-cost factor portfolio (AMP2013 eq.(1)) — 논문 dSR 과 동일 basis. 후보(롱온리 top-25) basis 와는 다른 양임을 명시.",
+    "test_statistic": "Sharpe difference, Jobson-Korkie with Memmel(2003) correction, correlated samples",
+    "t_threshold": 2.8015852,
+    "note_on_t_threshold": "z(0.80)+z(0.975)=2.8016 — 귀무 95분위(1.96)를 MDE 로 오칭하는 모드(i) 회피"
+  },
+  "measured_inputs": {
+    "n_months": 259,
+    "portfolio_layer_n_months": 259,
+    "sr_value_monthly": 0.12255123,
+    "sr_mom_monthly": 0.08245379,
+    "sr_combo_monthly": 0.18353364,
+    "sr_value_ann": 0.42452991,
+    "sr_combo_ann": 0.63577918,
+    "rho_combo_value": 0.41196922,
+    "sd_paired_diff_monthly": 0.04330504,
+    "se_paired_iid": 0.00269084,
+    "se_paired_nw_lag3": 0.00269971,
+    "nw_inflation_measured": 1.00329635
+  },
+  "mde": {
+    "se_dsr_iid_monthly": 0.06797103,
+    "se_dsr_nw_monthly": 0.06819509,
+    "mde80_dSR_monthly": 0.19105436,
+    "mde80_dSR_annualized": 0.6618317,
+    "mde80_mean_diff_annualized": 0.09076174
+  },
+  "verdict": {
+    "implied_effect_dSR_ann": 0.11,
+    "ratio": 0.1662054,
+    "expected_t": 0.46563858,
+    "power": 0.06754529,
+    "disposition": "CONDITIONAL_undetermined_is_modal",
+    "abort_rule": "ratio < 0.15 -> 착수 중단 (설계 preregistered_power_contract.abort_rule)",
+    "honesty": "ratio 가 문턱을 넘어도 '검정할 자격'일 뿐이며, 비유의는 검정력이 충분할 때만 '효과 없음'이고 그 외에는 '미결'이다."
+  },
+  "axis_A_exemption": "axis_A(알파 수준)는 논문 KR-유사물(일본) 함의 증분이 음수(-6.2%p)라 ratio 를 산출하지 않는다(설계 승계)."
+}

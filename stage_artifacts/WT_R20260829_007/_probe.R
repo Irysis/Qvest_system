@@ -1,0 +1,5 @@
+suppressWarnings(suppressMessages({library(data.table);library(arrow)}))
+r <- arrow::read_parquet(".cache/RAWDATA.parquet")
+cat("cols:", paste(names(r), collapse=", "), "\n")
+cat("rows:", nrow(r), " range:", as.character(min(r$Date)), as.character(max(r$Date)), "\n")
+print(utils::head(r, 3))

@@ -1,0 +1,467 @@
+{
+  "wt_id": "WT-R20260829_009",
+  "designed_by": "alpha-hypothesis",
+  "model_tier": "opus",
+  "designed_at": "2026-08-29",
+  "spec_scope": "AST v1.1 설계순서 ①메커니즘 ②가설서술 ③반증조건 ④국면경계 + pipeline Step 0. ⑤AST 구성·팩터 소싱·신호공학·실측·alpha_package 발행은 alpha-research 소관 — 본 문서는 그 구간을 수행하지 않았다. 본 문서의 모든 KR 수치는 선행 라운드 산출물 전재이며, 이 세션은 KR 데이터에 대한 어떤 측정도 수행하지 않았다.",
+
+  "prechecks": {
+    "hypothesis_index_hits": {
+      "queries_run": [
+        "Rscript 02_Infrastructure/tools/hypothesis_index.R lookup \"revenue volatility\"",
+        "Rscript 02_Infrastructure/tools/hypothesis_index.R lookup \"operating leverage\"",
+        "Rscript 02_Infrastructure/tools/hypothesis_index.R lookup \"market-to-book\""
+      ],
+      "results": {
+        "revenue volatility": "2어 AND 0건 → 단일어 폴백('volatility') 30 hits (FAIL 13 · DISTILLED_NEG 1 · MARGINAL 5 · PASS 0). top: DIST-RAMP-014(DISTILLED_COND) · WTR20260829_004_DM2016_CRASHOVL_IV25 · STR_AS_20260823_152915_17340. ★폴백 결과이므로 '변동성' 일반의 이력이지 '매출성장 변동성' 이력이 아니다 — 후자는 0건.",
+        "operating leverage": "1 hit (MARGINAL 1). STR_AS_20260613_082043_255426",
+        "market-to-book": "0 hits (no prior attempt matched)"
+      },
+      "reading": "SS2007 세 축의 *직접* 측정 이력은 사실상 없다(매출성장 변동성 0 · 비용 1 marginal · M/B 0). 그러나 M/B 축은 이름이 아니라 구성으로 이미 측정됐다 — 5/20(AMP2013 value×momentum, essence C)이 같은 셀을 다른 이름으로 재고 전제를 기각했다. lookup 무매치를 신규성의 증거로 읽지 않는다."
+    },
+    "frontier_queue_refs": {
+      "file": "06_Registry/alpha_frontier_queue.json (schema_version 2.0)",
+      "status_counts": {"open": 92, "claimed": 5, "parked": 21},
+      "claimed_entry_for_this_wt": null,
+      "note": "본 라운드는 frontier 큐 항목이 아니라 강화 원장(06_Registry/reinforce_ledger_l1.json entry[0], base RP_20260829_122020_9192, attempts_used=12)의 9/20 시도다. 어떤 open 항목도 점유하지 않았고 parked(dohoon_decision/dohoon_data_work) 항목은 열람도 착수도 하지 않았다.",
+      "infra_backlog_checked": "본 라운드는 인프라 항목 아님 — 06_Registry/infra_backlog.json 대상 밖"
+    },
+    "pg0_gap_vector": {
+      "file": ".cache/portfolio_gap_vector.json (as_of 2026-07-25)",
+      "gap": "sharpe_gap 1.479 (현 1.021 vs 목표 2.5) · return_gap -0.0067 · mdd_gap -0.0476",
+      "reading": "구속 gap 은 수익이 아니라 Sharpe 다. 원수익률을 3%p 올리는 축은 이 gap 을 거의 건드리지 않는다 — SS2007 이 제안하는 것은 원수익률 축이다(아래 mechanism_is_risk_not_alpha 참조)."
+    },
+    "owner": "alpha-hypothesis (WT-R20260829_009, Q-Lead 스폰). 원장 소유 = reinforce_ledger_l1 entry[0]",
+    "prior_rounds_read": {
+      "ledger": "06_Registry/reinforce_ledger_l1.json entry[0] (base_grade F · attempts_used 12 · target A)",
+      "l_codes": [
+        "stage_artifacts/l_code/reinforcement/l_code_RF_WT-R20260829_001_JT1993_x_SUE_2way.json",
+        "stage_artifacts/l_code/reinforcement/l_code_RF_WT-R20260829_002_JT1993_form_decomposition.json",
+        "stage_artifacts/l_code/reinforcement/l_code_RF_WT-R20260829_003_JT1993_x_turnover_MLC.json",
+        "stage_artifacts/l_code/reinforcement/l_code_WTR20260829_004_DM2016_CRASHOVL_IV25.json",
+        "stage_artifacts/l_code/reinforcement/l_code_WTR20260829_005_AMP2013_VALMOM_EW25.json",
+        "stage_artifacts/l_code/reinforcement/l_code_WTR20260829_006_EL2022_FACMOM_EWBAND40.json",
+        "stage_artifacts/l_code/reinforcement/l_code_WTR20260829_007_GH2004_52WHIGH_EW25_BUF50.json",
+        "stage_artifacts/l_code/reinforcement/l_code_RF_WT-R20260829_008_DGW2014_ABORTED_AT_POWER_GATE.json"
+      ],
+      "carried_coordinates": {
+        "base": "RP_20260829_122020_9192 (JT1993 충실구현) essence F · PORT_t -1.291 · net_IR -0.295",
+        "cell4_beta_controlled_alpha": "+5.14%/yr (2/20 실투형 좌표)",
+        "required_active_for_grade_A": "+13.25%/yr",
+        "authoritative_grades_4_to_7": "4/20 DM2016 C(PORT_t 0.7547 · OOS -0.660) · 5/20 AMP2013 C(0.646 · -0.747) · 6/20 EL2022 C(1.002 · -0.780) · 7/20 GH2004 C(0.6364 · -0.693)",
+        "common_wall": "OOS 소멸 — 권위 표본외 유지율 4라운드 -0.660 / -0.747 / -0.780 / -0.693, 분할 단조 악화. 다섯 축(재료·형태·조건화·결합·오버레이) 전부 이 벽에서 멈췄다",
+        "8_of_20_outcome": "착수 전 검정력 게이트 최초 발화로 중단. ratio 0.091~0.166",
+        "cross_paper_short_leg_finding": "LS2000 효과 본체 패자·Year2+ · GH2004 KR 실측 숏 레그 76.6% · DGW2014 승자 몫 25.3~51.6%"
+      }
+    }
+  },
+
+  "paper_reading": {
+    "source": "Sagi, J. S., & Seasholes, M. S. (2007). Firm-specific attributes and the cross-section of momentum. Journal of Financial Economics 84(2), 389-434. doi:10.1016/j.jfineco.2006.02.002",
+    "urls": [
+      "https://www.sciencedirect.com/science/article/abs/pii/S0304405X06002066",
+      "http://www.seasholes.com/uploads/3/2/0/6/32066083/sagi_seasholes_2007_jfe.pdf"
+    ],
+    "read_method": "저자 배포 PDF(39p) 전문 직접 판독 — §1.2~1.4 · §2 모델 서술 · §3 수치분석 Table 3 · §4 실증 전문 Table 4/5/6/7 · §5 결론. 헤드라인 재인용이 아니라 표 원값 전재.",
+    "base_paper": "JT1993 — https://www.bauer.uh.edu/rsusmel/phd/jegadeesh-titman93.pdf",
+
+    "q1_proxy_definitions_verbatim": {
+      "revenue_growth_volatility": {
+        "definition": "g_t^rev = (revenues_t − revenues_{t−4}) / revenues_{t−4}  [Eq.(24), p.30]. 분기 데이터의 계절성을 흡수하려 YoY 로 잡는다. 변동성 = 최근 10개 관측치 {g_{t−9},…,g_t} 의 표준편차, t−9~t 사이 최소 5개 관측 요구.",
+        "lagged_variant_panel_B": "{g_{t−10},…,g_{t−1}} 의 표준편차, t−10~t−1 사이 최소 5개 관측. 'quarter t 매출은 quarter t+1 중에야 공식 발표된다'는 이유로 한 분기 추가 지연(p.31 Table 5 표제)."
+      },
+      "costs": {
+        "definition": "cost of goods sold / total assets (COGS/TA) [§4.5 p.32]. '주주가 부담하는 비용' 으로 정의. Panel B 는 발표 지연 반영해 한 분기 추가 지연.",
+        "calibration_note": "원문 §3: 시장 데이터에서 CGS/sales 평균 72%, CGS/total assets 평균 75%"
+      },
+      "growth_options": {
+        "definition": "market-to-book ratio [§4.6 p.34]. market value of equity = 분기말 주가 × 발행주식수(§4.1 p.29). Panel B 는 한 분기 추가 지연. 각주 15: 수치분석에서 high(low) M/B = 30 백분위 위(아래)."
+      },
+      "sorting_methodology": "조건부 이중정렬(conditional double sort, §4.2 p.29). ①firm attribute 로 4분위 → ②각 분위 *내부*에서 직전 분기 수익률로 20개 bin → 각 bin 은 value-weighted. P=1 은 최상/최하 분위, P=2 는 상위/하위 2분위. N 은 사용하는 bin 수(top N / bottom N). 분기당 최소 80종목 요구. 표본 1963:Q1~2004:Q3, 형성 1분기 · 보유 1분기.",
+      "note_on_conditional_vs_independent": "LSV1994 · CJL1996 · LS2000 은 독립 이중정렬이나 SS2007 은 조건부 이중정렬 — 각 bin 종목수가 균등해진다(§4.2 p.30)."
+    },
+
+    "q2_what_portfolio_is_the_5pct": {
+      "answer": "**롱숏(W−L) 두 개의 차이**다. 승자만의 수치가 아니다.",
+      "derivation_verbatim": "p.31: 'we see the P=1, N=4 enhanced momentum strategy implemented in high volatility firms greatly outperforms a traditional strategy by 1.33% = 0.0239 − 0.0106 per quarter. This outperformance in returns is equal to 5.43% on an annual basis.'",
+      "term_1": "0.0239/qtr = Table 5 Panel A(**미지연**) P=1,N=4 고변동성 분위의 **W−L**",
+      "term_2": "0.0106/qtr = Table 4 Panel B(매출변동성 스크린 통과 표본) N=4 전통 모멘텀의 **W−L**",
+      "annualization": "복리 — 1.0133^4 − 1 = 5.43% (검산 일치)",
+      "conclusion_restatement": "§5 결론: 'Our strategies produce momentum profits that outperform traditional strategies by approximately 5%/year.' 두 항 모두 롱숏이다."
+    },
+
+    "q3_winner_leg_standalone": {
+      "finding": "★**SS2007 원문에는 승자-레그 단독 수치가 한 개도 없다.**",
+      "evidence": "Table 4 Panel A(단일정렬) · Panel B(스크린 후) · Table 5 Panel A/B(매출변동성) · Table 6 Panel A/B(비용) · Table 7 Panel A/B(M/B) · Table 3 Panel C(수치분석) — 보고된 모든 양이 W−L 이다. 어떤 레그의 수준도, 어떤 레그의 t 도 보고되지 않는다. 'winner' 문자열 전수 검색(20개소) 결과 전부 방법론 서술이거나 모델 직관 서술이며 수치가 붙은 곳이 없다.",
+      "comparison_to_8_of_20": "DGW2014 는 Table 2 Panel A/C 에 5분위 승자 *열* 이 있어 승자 몫(25.3~51.6%)을 추출할 수 있었다. SS2007 은 그 열조차 없다 — 앵커 게이트 관점에서 **더 나쁜 원천**이다.",
+      "verbatim_reported_ts": "보고된 t 는 전부 두 롱숏의 *차이* 에 대한 t 다: Table 5 Panel B P=1 → 2.86/2.59/3.38 · Table 6 Panel B P=1 → 1.73/2.11/2.29 · Table 7 Panel B P=1 → 1.70/2.25/2.62"
+    },
+
+    "q4_per_attribute_vs_combined": {
+      "per_attribute": {
+        "revenue_growth_volatility_Table5_PanelB_lagged_P1": [
+          {"N": 2, "high_vol_WmL": 0.0238, "low_vol_WmL": -0.0043, "diff": 0.0281, "annual": 0.1170, "t_of_diff": 2.86, "n_qtrs": 157},
+          {"N": 3, "high_vol_WmL": 0.0188, "low_vol_WmL": -0.0044, "diff": 0.0232, "annual": 0.0960, "t_of_diff": 2.59, "n_qtrs": 157},
+          {"N": 4, "high_vol_WmL": 0.0191, "low_vol_WmL": -0.0077, "diff": 0.0268, "annual": 0.1114, "t_of_diff": 3.38, "n_qtrs": 157}
+        ],
+        "costs_Table6_PanelB_lagged_P1": [
+          {"N": 2, "low_cost_WmL": 0.0419, "high_cost_WmL": 0.0207, "diff": 0.0213, "annual": 0.0878, "t_of_diff": 1.73, "n_qtrs": 127},
+          {"N": 3, "low_cost_WmL": 0.0338, "high_cost_WmL": 0.0122, "diff": 0.0216, "annual": 0.0894, "t_of_diff": 2.11, "n_qtrs": 127},
+          {"N": 4, "low_cost_WmL": 0.0279, "high_cost_WmL": 0.0082, "diff": 0.0198, "annual": 0.0814, "t_of_diff": 2.29, "n_qtrs": 127}
+        ],
+        "costs_Table6_PanelA_unlagged_P1_INSIGNIFICANT": [
+          {"N": 2, "diff": -0.0007, "t_of_diff": -0.07},
+          {"N": 3, "diff": 0.0051, "t_of_diff": 0.51},
+          {"N": 4, "diff": 0.0083, "t_of_diff": 0.98}
+        ],
+        "market_to_book_Table7_PanelB_lagged_P1": [
+          {"N": 2, "high_MB_WmL": 0.0396, "low_MB_WmL": 0.0167, "diff": 0.0228, "annual": 0.0945, "t_of_diff": 1.70, "n_qtrs": 135},
+          {"N": 3, "high_MB_WmL": 0.0383, "low_MB_WmL": 0.0124, "diff": 0.0259, "annual": 0.1078, "t_of_diff": 2.25, "n_qtrs": 135},
+          {"N": 4, "high_MB_WmL": 0.0372, "low_MB_WmL": 0.0098, "diff": 0.0274, "annual": 0.1141, "t_of_diff": 2.62, "n_qtrs": 135}
+        ],
+        "traditional_baseline_Table4_PanelB_screened": {
+          "revenue_vol_screen": [{"N": 2, "WmL": 0.0186, "t": 1.74}, {"N": 3, "WmL": 0.0141, "t": 1.46}, {"N": 4, "WmL": 0.0106, "t": 1.23}],
+          "cost_screen": [{"N": 2, "WmL": 0.0304, "t": 2.43}, {"N": 3, "WmL": 0.0235, "t": 2.14}, {"N": 4, "WmL": 0.0192, "t": 1.97}],
+          "MB_screen": [{"N": 2, "WmL": 0.0269, "t": 2.32}, {"N": 3, "WmL": 0.0184, "t": 1.74}, {"N": 4, "WmL": 0.0153, "t": 1.61}],
+          "note": "★매출변동성 스크린 표본에서 **전통 모멘텀 자체가 전 N 에서 비유의**(t 1.23~1.74)다. '+5.43%' 의 비교 기준이 유의하지 않은 전략이다."
+        }
+      },
+      "combined": "★**원문은 세 속성을 결합하지 않는다.** Tables 5·6·7 은 각각 단일 조건 정렬이며 이중/삼중 속성 결합 테스트가 논문 어디에도 없다. KR 에서 '세 속성 결합' 을 설계하면 그것은 원문 밖 외삽이지 이식이 아니다.",
+      "paper_supplied_negative_controls_§4.7": "저자 스스로 돌린 위약: ①총자산 book value 4분위 정렬 → P=1,N=2 차이 −0.23%/qtr t −0.22 (지연판 −0.42%/qtr t −0.43) ②매출 *수준* 4분위 정렬 → 차이 +0.08%/qtr t 0.10 (지연판 +0.28%/qtr t 0.32). 즉 규모·매출수준으로는 향상이 나오지 않는다 — 이식 시 반드시 재현해야 할 양성/음성 대조쌍이다."
+    },
+
+    "mechanism_is_risk_not_alpha": {
+      "★finding": "SS2007 의 기전은 **미스프라이싱이 아니라 요인노출(factor loading) 분산**이다. 저자 스스로 그렇게 세운다.",
+      "evidence_1_lineage": "§1.3 p.7-8: Berk-Green-Naik(1999) · Johnson(2002) · Carlson-Fisher-Giammarino(2004) · Zhang(2005) 계보의 **부분균형 합리적 실물옵션 모형**. 행태 설명을 '배제하지 않는다' 고만 쓴다 — 자기 모형은 행태가 아니다.",
+      "evidence_2_geometry": "p.6: 'winners have higher average factor loadings than losers (a weighted average of the factor loadings at a log price of +1 is higher than a weighted average at a log price of −1). The difference in average factor loadings between the right and left sides of Panel B leads to the prediction that low cost firms generate momentum strategy profits.' 고비용 기업에서 롱숏이 안 되는 이유도 '패자 쪽 loading 도 같이 높아서' 다(p.6-7).",
+      "evidence_3_no_risk_adjustment_anywhere": "Table 4~7 전부 **원수익률**이다. FF3/Carhart/CAPM 조정 알파가 논문 전체에 0건. 위험조정 후 초과수익을 주장하는 문장이 없다.",
+      "consequence_for_our_metric": "우리 판정량은 essence 체인 종점의 β-통제 portfolio-alpha t(PORT_t, NW lag-3, 액티브수익 기준)다. SS2007 자기 모형이 참이면 그 양의 기대값은 **구조적으로 0** 이다 — 효과 전부가 loading 에 들어있기 때문이다. 이것은 측정 결과가 아니라 원천 판독이다.",
+      "lane_corroboration": "4/20 alpha F2 '예측되는 성분이 특이위험 0.077 이 아니라 시장노출 0.167' · 메모리 '오버레이 ΔIR 의 86% 가 노출 수준' · MFRO '격차의 107% 가 β'. 같은 자리를 세 번째로 짚는다."
+    }
+  },
+
+  "dist_ar_041_judgment": {
+    "card": "DIST-AR-041 — 가격-파생 모멘텀 변형의 저 기대값 범주",
+    "verdict_by_axis": {
+      "revenue_growth_volatility": "OUT_OF_CATEGORY — 손익계산서 매출액의 YoY 성장률 분산. 가격이 들어가지 않는다.",
+      "costs_COGS_over_TA": "OUT_OF_CATEGORY — 매출원가/총자산. 가격이 들어가지 않는다.",
+      "market_to_book": "IN_CATEGORY — market value of equity = 분기말 주가 × 발행주식수. 가격-파생일 뿐 아니라 **모멘텀 정렬과 같은 분기의 같은 가격을 공유한다**(§4.1 p.29 정의 + §4.2 정렬 시점). 'high M/B × winner' 셀은 '가격이 올랐다' 를 두 번 세는 셀이다."
+    },
+    "summary": "3축 중 2축이 범주 밖이다. **이 라운드의 차단 사유는 범주가 아니다** — 8/20 과 달리 범주 판정은 통과했다. 차단은 아래 앵커와 기전에서 나온다. 이 구분을 흐리지 않는다.",
+    "contrast_with_1_of_20": "1/20 은 이익 서프라이즈(수익 놀람)를 썼고 SS2007 은 사업 구조(매출 분산·원가구조)를 쓴다 — 재료가 다르다는 요청서의 서술은 매출변동성·비용 축에 한해 사실이다."
+  },
+
+  "preregistered_power_contract": {
+    "★ordering_declaration": {
+      "target_fixed_before_anchor": true,
+      "why_verifiable": "표적은 이 세션이 고른 것이 아니라 강화 레인의 상수다 — request.json::hypothesis_description 에 '필요 +13.25%/yr' 로 이미 적혀 있었고, 8/20 L-code(2026-08-29, 이 라운드 이전)에 required_active_annual_pp=13.25 · abort_threshold=0.15 로 기록돼 있다. 분모·문턱·판정량 중 어느 것도 이 세션이 정하거나 바꾸지 않았다.",
+      "honest_caveat": "다만 설계자가 Table 4~7 을 읽은 *뒤에* 본 문서를 작성한 것은 사실이다. 순서 주장의 근거는 설계자의 자제가 아니라 표적의 외생성이다. (자기적대 W1 참조)"
+    },
+    "target": "essence Grade A (체인 종점 권위 등급) — 실투형 롱온리 top-25 · K200∪KQ150 · 2005-01~2026-08 · 15bps · Σw=1",
+    "required_active_return_annual_pp": 13.25,
+    "current_coordinate_beta_controlled_alpha_annual_pp": 5.14,
+    "abort_threshold_ratio": 0.15,
+    "anchor_must_be": "승자-레그 단독 효과크기. 롱숏 헤드라인은 사전등록 금지어.",
+
+    "step_1_anchor_availability": {
+      "result": "**NOT_AVAILABLE**",
+      "statement": "SS2007 은 승자-레그 단독 수치를 한 개도 보고하지 않는다(q3 참조). 게이트가 요구하는 앵커를 원천에서 놓을 수 없다. 이것이 중단의 **1차 사유**다."
+    },
+
+    "step_2_estimate_under_external_prior": {
+      "status": "SS2007 수치가 아니라 **외부 사전분포를 곱한 추정**이다. 앵커가 아니라 추정이며, 그렇게만 인용한다.",
+      "long_short_incremental_PIT_legal": {
+        "panel_used": "Table 5 **Panel B**(지연판) P=1, N=4 — Panel A(미지연)는 quarter-t 매출을 quarter-t 에 쓰므로 우리 C4 에서 불법이다",
+        "high_vol_WmL_qtr": 0.0191,
+        "traditional_screened_WmL_qtr": 0.0106,
+        "incremental_qtr": 0.0085,
+        "incremental_annual_pp": 3.443,
+        "arithmetic": "1.0085^4 − 1 = 3.443% (논문 복리 관행 검산: 1.0133^4 − 1 = 5.432% = 논문 보고 5.43% 일치)",
+        "note": "논문 헤드라인 5.43%/yr 은 미지연 Panel A 기준이다. **PIT-합법 상한은 3.44%/yr** — 레그를 나누기 전에 이미 37% 감가된다.",
+        "label": "derived_arithmetic (논문 표 원값의 사칙연산). 이 값 자체는 롱숏이며 앵커로 쓰지 않는다."
+      },
+      "winner_leg_share_prior": {
+        "source": "레인 자체 실측/판독 3편 — GH2004 KR 실측 숏 레그 76.6% → 승자 몫 0.234(유일한 KR 측정) · DGW2014 US 승자 몫 0.253~0.516 · LS2000 효과 본체 패자·Year2+",
+        "interval": [0.234, 0.516],
+        "kr_point": 0.234
+      },
+      "ratios": {
+        "kr_point_share_0.234": {"winner_leg_annual_pp": 0.806, "ratio": 0.061},
+        "most_favorable_admissible_share_0.516": {"winner_leg_annual_pp": 1.777, "ratio": 0.134},
+        "inadmissible_maximum_unlagged_x_top_share": {"winner_leg_annual_pp": 2.803, "ratio": 0.212, "why_inadmissible": "Panel A 는 C4 위반이고 상단 share 선택은 유리한 앵커 고르기다. 8/20 이 '유리한 앵커를 골라 진행하는 것은 게이트 우회' 로 판정한 그 행위다. 기록만 하고 쓰지 않는다."}
+      },
+      "unapplied_downward_haircut": "실현 컷 감가는 적용하지 않아 위 ratio 는 **상한**이다. 근거: 우리 envelope 는 유동성 통과 ~350종 중 top-25. 상위 속성 4분위(~87종) 안에서 25종은 분위-내 상위 28.7% ≈ SS2007 N≈6. Panel B 고변동성 분위는 N 이 넓어질수록 약해진다(N=2 0.0238 > N=3 0.0188 ≈ N=4 0.0191). N=6 행이 원문에 없어 수치화하지 않고 방향만 기록한다."
+    },
+
+    "step_3_decision": {
+      "admissible_ratio_interval": [0.061, 0.134],
+      "threshold": 0.15,
+      "decision": "ABORT",
+      "why_stronger_than_8_of_20": "8/20 은 [0.091, 0.166] 으로 문턱을 **걸쳤다**. 9/20 은 허용 가능한 조합 **전부**가 문턱 아래다. 증거가 약해진 게 아니라 세졌다.",
+      "independent_second_blocker": "기전이 β 다(mechanism_is_risk_not_alpha). ratio 가 통과했더라도 우리 판정량(β-통제 PORT_t)의 기대값은 원문 모형상 ~0 이다. 이 사유는 앵커와 독립이며 앵커 계산 전에도 성립했다.",
+      "independent_third_blocker": "3축 중 M/B 축은 5/20(AMP2013, essence C)이 이미 측정하고 전제를 CONSTRUCTION_ARTIFACT 로 기각한 셀의 재포장이다."
+    }
+  },
+
+  "candidates": [
+    {
+      "id": "C1",
+      "title": "매출성장 변동성 조건부 모멘텀 적격성 스크린 (SS2007 Table 5 Panel B 이식)",
+      "family": "fundamental_conditioned_momentum",
+      "mechanism": {
+        "agent": "실물옵션 볼록성 구간에 놓인 기업의 한계 주주 — 현금흐름 충격 후 기대수익률이 이동하는데 그 이동을 즉시 재가격하지 않는 보유자",
+        "friction": "볼록성 위치(로그 기업가치의 요인가격 탄력도)는 관측 불가이고 CAPM 베타 추정으로 대리하기 어렵다(§4 서두) — 재가격 지연이 아니라 **관측 불가 상태변수**가 마찰이다",
+        "path": "매출성장 분산이 큰 기업일수록 승자·패자 간 요인노출 격차가 벌어져 직전 분기 수익률이 다음 분기 기대수익률을 더 강하게 예측한다"
+      },
+      "selected_for_evaluation": true,
+      "why_this_one_was_evaluated": "3축 중 유일하게 ①범주 밖 ②지연 패널에서 통계적으로 견고(t 2.59~3.38) ③레인 선행 측정 없음 ④5/20 가격공유 아티팩트 없음 을 동시에 만족",
+      "outcome": "사전 검정력 게이트에서 중단 — ratio [0.061, 0.134] < 0.15. 추가로 기전이 β 다."
+    },
+    {
+      "id": "C2",
+      "title": "비용구조(COGS/TotalAssets) 조건부 모멘텀 — 저비용 분위 한정",
+      "family": "quality_conditioned_momentum",
+      "mechanism": {
+        "agent": "영업레버리지가 낮아 shutdown 경계에서 먼 기업의 주주",
+        "friction": "영업레버리지의 실효 수준은 산업 관행·고정비 회계처리에 가려 단면 비교가 어렵다",
+        "path": "저비용 기업은 로그 볼록성이 유지돼 양의 수익 자기상관을 갖고, 극단적 영업레버리지 기업은 자기상관이 **음**으로 뒤집힌다(§5 결론)"
+      },
+      "selected_for_evaluation": false,
+      "why_not_selected": "①원문 3축 중 저자 스스로 '가장 약하다' 고 적은 축(§4.5 p.33 'least strong')이고 미지연 Panel A 의 P=1 은 전 N 비유의(t −0.07/0.51/0.98) ②KR 의 COGS/TA 4분위는 산업 구성(화학·철강 vs 소프트웨어)이 지배할 가능성이 크다 — 저자는 US 에서 이를 §4.5 로 반박하나 그 반박은 산업 *내* 분산이 충분하다는 전제에 기대며 KR 의 좁은 산업 기반에서 같은 전제가 성립하는지가 미확인 ③C1 과 같은 앵커·기전 차단에 걸린다"
+    },
+    {
+      "id": "C3",
+      "title": "성장옵션(Market-to-Book) 조건부 모멘텀 — 고 M/B 분위 한정",
+      "family": "value_conditioned_momentum",
+      "mechanism": {
+        "agent": "미행사 성장옵션을 보유한 기업의 주주",
+        "friction": "성장옵션의 가치는 장부에 잡히지 않아 M/B 로만 간접 관측된다",
+        "path": "만료되지 않는 성장옵션·유한책임옵션이 로그 볼록성을 높여 수익 자기상관을 올린다(§5)"
+      },
+      "selected_for_evaluation": false,
+      "why_not_selected": "★settled-negative 재포장. 5/20(AMP2013 value×momentum, essence C)이 같은 셀을 측정하고 전제를 기각했다 — KR 의 value-momentum 음상관은 **CONSTRUCTION_ARTIFACT**(신호수준 순위상관 동시점 ME −0.184 vs 가격지연 ME +0.085 로 부호 반전, 수익수준 비 0.024 ≪ 0.5). SS2007 Table 7 은 같은 결함을 **구조적으로** 갖는다: M/B 분자 = 분기말 주가 × 주식수, 모멘텀 정렬 = 같은 분기 수익률. 'high M/B × winner' = '가격이 올랐다' 를 두 번 세는 셀. 게다가 DIST-AR-041 IN_CATEGORY."
+    },
+    {
+      "id": "C4",
+      "title": "역방향 — 저 매출변동성/고비용 분위 **내부의 패자** 롱온리 매수(SS2007 이 예측하는 단기 반전면)",
+      "family": "conditioned_short_term_reversal",
+      "mechanism": {
+        "agent": "shutdown 경계에 가까운 고영업레버리지 기업의 주주",
+        "friction": "동일 — 볼록성 위치 관측 불가",
+        "path": "극단 영업레버리지·저 매출분산 기업은 **음의** 수익 자기상관을 가져(§5 · Fig.4 캡션 'short-term reversals possible') 직전 패자가 다음 분기에 상대적으로 낫다"
+      },
+      "selected_for_evaluation": false,
+      "why_not_selected": "★두 가지 이유. ①원문 수치로도 앵커를 놓을 수 없다 — 저변동성 분위의 W−L = −0.0077/qtr 은 여전히 롱숏이며 패자 레그의 *수준* 이 없다. 같은 벽이다. ②더 중요하게, **C1 이 앵커에서 실패한 것을 본 뒤에** 이 갈래로 갈아타는 것은 8/20 이 자백하고 중단된 바로 그 사후 표적 교체다. 따라서 이 라운드의 표적으로 삼지 않고 challenge_flags 로 보관해 **별도 사전등록** 대상으로 넘긴다.",
+      "note": "원문이 전략으로 검정한 적 없는 방향이며(저자는 반전면을 수확하지 않는다), 착수하려면 SS2007 이 아닌 다른 근거 논문이 필요하다."
+    },
+    {
+      "id": "C5",
+      "title": "상승장 조건부 모멘텀 (SS2007 §3 + Cooper-Gutierrez-Hameed 2004)",
+      "family": "regime_conditioned_momentum",
+      "mechanism": {
+        "agent": "동일 — 실물옵션 보유 기업 주주",
+        "friction": "동일",
+        "path": "상승장에서 전 기업이 성장옵션 행사 영역(고 볼록성)에 가까워지고 하락장에서 shutdown 경계(저 볼록성)에 가까워진다 → 모멘텀 수익이 상승장 3.09%/qtr vs 하락장 0.20%/qtr(수치분석), CGH2004 실측 2.82% vs −1.11%"
+      },
+      "selected_for_evaluation": false,
+      "why_not_selected": "①이 레인의 최다 측정 계급이다 — 국면 조건부 리서치 L-code 73건 · hypothesis_index 'volatility' 30 hits top = DIST-RAMP-014(DISTILLED_COND) · 메모리 '국면 라벨이 병목' ②해상도가 틀리다 — 국면 정의/예측은 전략 로테이션 Track1 소관이고 본 WT 는 intra-strategy 강화다 ③4/20(DM2016 크래시 오버레이)이 이미 국면 지시자로 KR 모멘텀을 조건화해 essence C 였고 한계기여가 전 축 음수였다"
+    }
+  ],
+
+  "selected": {
+    "hypothesis_title": "JT1993 강화 9/20 — 기업속성 조건화 (Sagi-Seasholes 2007)",
+    "selected_candidate_id": "C1",
+    "hypothesis_description": "SS2007 의 조건부 이중정렬을 KR 실투 envelope 로 이식한다: K200∪KQ150 유동성 통과 유니버스를 직전 10분기 매출성장(YoY) 표준편차 상위 분위로 좁힌 뒤, 그 안에서만 JT1993 형식의 과거수익 정렬로 top-25 롱온리를 구성한다. 무조건화 top-25 대비 개선이 나오면 KR 의 모멘텀 실패(base essence F, PORT_t −1.291)가 '양의 자기상관 하위군과 음의 자기상관 하위군의 혼합' 에서 왔다는 SS2007 의 구조적 설명이 지지된다. 매출·원가는 DART 재무제표에서 오므로 DIST-AR-041(가격-파생) 범주 밖이고 1/20 의 이익 서프라이즈(수익 놀람)와도 다르다(사업 구조).",
+
+    "mechanism": {
+      "agent": "실물옵션 볼록성 구간에 놓인 기업의 한계 주주 — 매출 충격이 성장옵션 행사 확률과 shutdown 확률을 동시에 이동시키는데, 그 이동이 기대수익률(요인노출)을 바꾼다는 사실을 즉시 반영하지 못하는 보유자. 오류의 주체는 '시장' 이 아니라 **관측 불가 상태변수(로그 기업가치의 요인가격 볼록성)를 대리변수 없이 거래하는 투자자**다.",
+      "friction": "차익거래를 막는 것은 거래비용이나 공매도 제약이 아니라 **관측 불가능성**이다. SS2007 §4 서두가 명시한다 — 모형이 요구하는 로그 기업가치-요인가격 함수관계는 관측 가능한 기업 속성이 아니고, CAPM 베타로 대리하려면 가격 급변 직전/직후의 베타를 재야 하는데 그것이 매우 어렵다. 여기에 KR 고유 마찰이 겹친다: 분기 재무제표 공시가 DART 고정일(5/15·8/15·11/15) + 연간 익년 3/31 로 묶여 있어 매출 분산의 갱신이 이산적이고 지연된다.",
+      "path": "t 분기 매출성장 분산이 큰 기업 집합에서는 승자와 패자의 요인노출 격차가 벌어진다 → t 분기 수익률 부호가 t+1 분기 기대수익률 방향을 더 강하게 예측한다 → 상위 분산 분위 안에서만 승자를 사면 무조건화 승자 대비 t+1 원수익률이 높다. ★**경로의 종착은 원수익률이지 위험조정 초과수익이 아니다** — SS2007 자기 모형에서 이 격차는 요인노출 보상이며 논문은 어떤 위험조정 알파도 보고하지 않는다. 이 사실을 경로 서술에 명시한다."
+    },
+
+    "falsification": {
+      "primary": {
+        "observable": "승자 데실 **내부**의 층별 forward 수익 스프레드 — 무조건화 모멘텀 승자 데실을 먼저 잡고, 그 안에서 매출성장 변동성 상위 1/3 층과 하위 1/3 층의 다음 1개월(및 1분기) forward 수익 차이를 시장-내(K200 / KQ150 각각) 랭킹으로 잰다.",
+        "reject_if": "이 스프레드가 0 과 구별되지 않으면(양측 NW t < 2) SS2007 의 KR 이식 실패. 승자 밖(전체 단면)에서 유의해도 승자 내부에서 유의하지 않으면 롱온리 envelope 로 전이되지 않는 것이며 그것이 판정이다.",
+        "field_dictionary_refs": ["C-DART-QUARTERLY", "C-FUND-MERGED", "FDB-B1_registry_fundamental_quarterly", "A1_RAWDATA_OHLCVS_daily", "A2_universe_krx_monthly", "A9_liquidity_avgtv20_convention"],
+        "why_not_tautological": "성과 지표가 아니라 승자 집합 *내부*의 단면 스프레드다. 전략 등급·SR·PORT_t 를 참조하지 않는다."
+      },
+      "mechanism_discriminating": {
+        "★observable": "매출변동성 상위층 승자와 하위층 승자의 **시장 베타 차이**(t 이전 창으로만 추정, 일별 수익 60~250일 rolling, 벤치 KOSPI200 TR).",
+        "reject_if": "① forward 수익 스프레드는 있는데 대응하는 β 차이가 없으면 — 관측된 스프레드는 SS2007 의 기전이 아니다(다른 무엇이며 이 논문은 그 warrant 가 아니다) ② β 차이가 스프레드를 전부 설명하면 — 기전은 **확인**되지만 우리 β-통제 판정량에서 수확은 0 이다. 두 갈래 모두 정보를 준다.",
+        "field_dictionary_refs": ["A1_RAWDATA_OHLCVS_daily", "A4_benchmark_kospi200", "A5_index_panels_multi"],
+        "why_this_matters": "이 관측이 본 라운드 중단 결정 자체를 사후 검정 가능하게 만든다 — '기전이 β 다' 는 판독을 데이터로 반증할 수 있는 형태로 남긴다."
+      },
+      "paper_supplied_negative_control": {
+        "observable": "SS2007 §4.7 이 스스로 돌린 위약 두 개의 KR 재현 — ①총자산(규모) 4분위 조건화 ②매출 **수준** 4분위 조건화.",
+        "reject_if": "이 둘 중 하나라도 매출성장 **변동성** 조건화와 비슷한 크기의 향상을 KR 에서 만들면, 관측된 향상은 분산 기전이 아니라 규모/스케일 아티팩트다. 원문 US 값은 각각 t −0.22/−0.43 과 t 0.10/0.32 로 무효과여야 한다.",
+        "field_dictionary_refs": ["C-DART-QUARTERLY", "C-FUND-MERGED", "FDB-B1_registry_fundamental_quarterly", "A2_universe_krx_monthly"]
+      },
+      "pit_vintage_control": {
+        "observable": "C4-합법 vintage(DART 분기 5/15·8/15·11/15, 연간 익년 3/31)로 계산한 10분기 매출성장 표준편차의 단면 순위 vs 공시일 무시한 순진판 순위의 Spearman 상관, 그리고 두 판의 forward IC 차이.",
+        "reject_if": "두 판의 순위 상관이 높아 IC 가 사실상 동일하면(차이가 0 과 구별 안 되면) PIT 처리가 무의미했다는 뜻이 아니라 **어느 쪽이 이겼는지 알 수 없다**는 뜻이다 — 순진판이 유의하게 높으면 그 초과분은 누출이고, 합법판만 남긴다. xlsx 경로의 Q4 일률 +45d(≈익년 2/14)가 3/31 규약보다 공격적이라는 기지 결함(PIT C4 각주)을 이 검사가 직접 건드린다.",
+        "field_dictionary_refs": ["C-DART-QUARTERLY", "C-DART-ANNUAL", "C-QWXLSX-RAW", "C-QWXLSX-DERIVED", "C-REGISTRY-PTR-FUND"]
+      },
+      "industry_confound_control": {
+        "observable": "매출성장 변동성 4분위 소속의 산업 분류(KRX 업종) 설명력 — 분위 소속을 산업 더미로 회귀했을 때의 pseudo-R².",
+        "reject_if": "산업 더미가 분위 소속을 지배적으로 설명하면(예 pseudo-R² > 0.5) 이 정렬은 기업 속성 정렬이 아니라 Moskowitz-Grinblatt 산업 모멘텀 정렬이고, SS2007 이 §4.5 에서 US 에 대해 부인한 바로 그 혼동이 KR 에서는 성립하는 것이다.",
+        "field_dictionary_refs": ["A2_universe_krx_monthly", "A3_universe_support_membership_panels", "C-FUND-MERGED"]
+      }
+    },
+
+    "regime_scope": {
+      "holds_in": [
+        {"regime": "상승장 / 확장 국면", "derived_from_mechanism": true, "rationale": "전 기업이 성장옵션 행사 영역으로 이동해 로그 볼록성이 상승 → 자기상관 상승. SS2007 §3 수치분석 상승장 3.09%/qtr vs 하락장 0.20%/qtr, CGH2004 2.82% vs −1.11%"},
+        {"regime": "매출성장 단면 분산이 넓은 시기(산업 사이클 전환기·수요 충격기)", "derived_from_mechanism": true, "rationale": "기전이 '요인노출 분산' 이므로 그 원인인 매출 분산이 좁아지면 격차 자체가 생기지 않는다"},
+        {"regime": "shutdown 경계에서 먼 기업이 다수인 시기(총자본비용 낮고 마진 여유 있는 국면)", "derived_from_mechanism": true, "rationale": "§5 — 극단 영업레버리지는 자기상관을 음으로 뒤집는다. 경계에서 멀어야 양의 볼록성 구간에 머문다"}
+      ],
+      "weakens_or_reverses_in": [
+        {"regime": "하락장 / 위기 국면", "derived_from_mechanism": true, "rationale": "기업이 내생적 shutdown 지점에 접근 → 볼록성 하락 → 자기상관 하락. 저자 스스로 명시한 경계다(§3 · §5). ★4/20 이 KR 에서 잰 바로는 패닉 구간에 벤치가 연율 +45.5% 로 반등하고 롱온리 book 이 그 베타를 반납한다 — 같은 방향의 KR 실측"},
+        {"regime": "고영업레버리지 지배 시장(원가율 높은 제조·소재 비중이 큰 단면)", "derived_from_mechanism": true, "rationale": "§5 — 'extreme operating leverage leads firms to have negative return autocorrelation'. KR 은 US 대비 이 쪽으로 치우친 산업 구성을 가질 개연이 있고, 그 경우 조건화 이전에 무조건화 모멘텀이 음(base essence F, PORT_t −1.291)인 것과 정합한다"},
+        {"regime": "성장옵션이 이미 행사되어 post-exercise 기업이 다수인 성숙 단면", "derived_from_mechanism": true, "rationale": "Fig.1/2 — post-exercise 기업은 볼록성이 낮아 승자·패자 loading 격차가 좁다"},
+        {"regime": "2015년 이후 KR", "derived_from_mechanism": false, "source": "lane_measurement", "rationale": "★메커니즘 도출이 아니라 레인 실측이다. 6/20 risk 측정: 2015 전후 계열 상관구조 상이(Jennrich χ² 210.5, p=5.5e-17) + 알파가 타이밍하는 계열 진폭 일제 축소(regime −24.8% · investor_flow −23.6% · leverage −22.7%). 그리고 4~7/20 전부 OOS 유지율 −0.66~−0.78 로 후반부에서 죽는다. 이 경계를 메커니즘에서 도출된 것처럼 적지 않는다."}
+      ],
+      "boundary_rationale": "경계는 실물옵션 기하에서 직접 나온다. 로그 기업가치의 요인가격 볼록성은 (i) 성장옵션 행사 경계 근처에서 최대, (ii) shutdown 경계 근처에서 최소이며, 시장 수준·영업레버리지·옵션 행사 여부가 기업을 이 축 위에서 이동시킨다. 따라서 '모든 국면에서 성립' 은 이 모형과 양립하지 않는다 — 모형 자체가 자기상관의 부호를 국면에 따라 뒤집는다(§1.3: 'our model produces firms with time-varying autocorrelation that can be either positive or negative'). 다만 2015년 이후 KR 경계는 데이터 관찰이며 그렇게 표시했다."
+    },
+
+    "preregistered_idiosyncratic_variance_declaration": {
+      "★declared_at": "설계 시점(측정 전). 착수했다면 이 방법으로 산출했을 것이며, 착수 여부와 무관하게 사전 선언으로 남긴다.",
+      "method": "후보 top-25 EW 의 **월별 액티브 수익**(포트 월수익 − KOSPI200 TR 월수익)을 종속변수로, ①현행 book(STR_1631_80_STR_1656_20)의 월별 액티브 수익 ②KR FF4(MKT-RF · SMB · HML · UMD, K200∪KQ150 위에서 구성) 을 설명변수로 하는 OLS 회귀.",
+      "statistic": "idiosyncratic_share = Var(residual) / Var(active). 전 표본 월별, 최소 200개월.",
+      "routing_rule": "< 0.15 → EW 확정, risk·optimizer 배터리 생략 · ≥ 0.15 → risk → optimizer",
+      "prior_from_lane": "5/20 이 같은 구성으로 book 기준 특이위험 8.5% 를 냈다. 같은 모멘텀 계열이므로 15% 미만이 될 개연이 높다고 사전 예상하며, 이 예상은 사후에 바꾸지 않는다.",
+      "note": "선례(요청서 명시)와 동일 구성이다 — 후보 top-25 EW 월별 액티브수익을 book 액티브 + KR FF4 에 회귀해 Var(resid)/Var(active)."
+    },
+
+    "chain_contract": "alpha → [idio_share ≥ 0.15 일 때만 risk → optimizer] → forge → essence 등급. 단일 측정(대비 arm·탐색 arm·무신호 대조 없음). 음성도 체인을 멈추지 않는다. — **본 라운드는 이 계약을 실행하지 않는다**(아래 verdict)."
+  },
+
+  "prelaunch_power_gate_result": {
+    "decision": "ABORT",
+    "fired_at": "설계 단계 — 측정 예산 집행 전",
+    "grounds": [
+      {
+        "rank": 1,
+        "ground": "앵커 산출 불가",
+        "detail": "게이트는 승자-레그 단독 효과크기를 요구하는데 SS2007 은 그런 수치를 한 개도 보고하지 않는다. Table 4(A·B) · 5(A·B) · 6(A·B) · 7(A·B) · Table 3 Panel C 전부 W−L 이고, 어떤 레그의 t 도 없다. 8/20 의 DGW2014 는 최소한 승자 열이 있었다 — SS2007 은 그 열조차 없다."
+      },
+      {
+        "rank": 2,
+        "ground": "외부 사전분포를 쓴 추정 ratio 가 허용 구간 전체에서 문턱 미만",
+        "detail": "PIT-합법(Table 5 Panel B) 롱숏 증분 +3.44%/yr × 승자 몫 [0.234(KR 실측), 0.516(US 상단)] = +0.81~+1.78%/yr → ratio [0.061, 0.134] < 0.15. 실현 컷 감가 미적용이므로 상한이다. 8/20 은 문턱을 걸쳤으나(0.091~0.166) 이번은 전 구간이 아래다."
+      },
+      {
+        "rank": 3,
+        "ground": "기전이 α 가 아니라 β (앵커와 독립)",
+        "detail": "SS2007 은 합리적 실물옵션 모형이고 수익 격차의 원천을 명시적으로 요인노출 차이로 둔다(p.6-7). 실증 표는 전부 원수익률이며 위험조정 알파가 논문 전체에 0건. 우리 판정량은 β-통제 PORT_t 이므로 기대값이 구조적으로 ~0 이다. 이 사유는 ratio 가 통과했어도 성립했다."
+      },
+      {
+        "rank": 4,
+        "ground": "3축 중 1축(M/B)은 이미 측정된 negative 의 재포장",
+        "detail": "5/20 AMP2013 이 KR value×momentum 전제를 CONSTRUCTION_ARTIFACT 로 기각. SS2007 Table 7 은 M/B 분자의 가격과 모멘텀 정렬의 가격이 같아 동일 결함을 구조적으로 갖는다."
+      }
+    ],
+    "what_did_NOT_block": [
+      "DIST-AR-041 범주 — 3축 중 2축(매출변동성·비용)이 범주 밖이다. 8/20 과 달리 범주는 통과했다.",
+      "측정 이력 중복 — 매출성장 변동성 조건화는 hypothesis_index 0건, 신규 축이 맞다.",
+      "데이터 부재 — 재료는 있다(Revenue·COGS·TotalAssets 가 fundamentals 에 존재, compute_quality.R Q18 이 이미 COGS/TotalAssets 를 계산한다). 착수 불가는 재료 문제가 아니다."
+    ],
+    "★portable_regulation_produced": {
+      "statement": "착수 전 수확량 게이트를 **2축**으로 확장한다. 지금까지 게이트는 ①레그 배분(승자-레그 단독 효과크기)만 물었다. SS2007 은 ①로는 판정 자체가 불가능하면서 ②에서 확실히 걸리는 사례다.",
+      "axis_1_leg_allocation": "원문에서 승자-레그 단독 효과크기를 뽑아 필요 활성수익 대비 ratio 를 계산한다. **뽑을 수 없으면 그 자체가 중단 사유다** — 외부 논문의 승자 몫을 빌려 곱한 값은 앵커가 아니라 추정이며, 추정으로 게이트를 통과시키지 않는다.",
+      "axis_2_return_nature": "원문이 **위험조정 수익을 한 번이라도 보고하는가**, 그리고 원문의 모형이 합리적(위험보상)인가 행태적(미스프라이싱)인가를 확인한다. 원수익률만 보고하는 합리적 모형 논문은, 레그 배분이 아무리 유리해도 β-통제 판정량에서 기대 수확이 ~0 이다.",
+      "why_this_generalizes": "레인이 지금까지 설계 단계에서 판독한 모멘텀 후속 4편의 실패 사유가 두 종류로 갈린다 — LS2000·GH2004·DGW2014 는 축1(숏 편중), SS2007 은 축2(β 보상). 축1 만 검사하는 게이트는 SS2007 형 논문을 통과시켰을 것이다."
+    }
+  },
+
+  "challenge_flags": [
+    "★C4 보관 — SS2007 의 **반전면**(저 매출변동성 / 고비용 분위 내부의 패자 매수)은 롱온리로 구현 가능한 유일한 미검정 갈래다. 원문 저변동성 W−L = −0.0077/qtr 은 패자가 승자를 이긴다는 뜻이고, 이 방향은 숏 레그를 요구하지 않는다. 단 ①원문이 전략으로 검정한 적 없고 ②레그 수준 수치가 없어 같은 앵커 벽에 걸리며 ③이 라운드에서 갈아타면 사후 표적 교체다. **별도 사전등록 · 별도 근거 논문**으로만 착수할 것.",
+    "C2 보관 — 비용(COGS/TA) 축은 KR 산업 구성 의존성이 미확인이다. 착수한다면 산업-내 정렬로만, 그리고 industry_confound_control 을 1급 반증으로 놓고.",
+    "C5 보관 — 상승장 조건화는 전략 로테이션 Track1 해상도다. intra-strategy 강화 레인에서 다시 꺼내지 않는다.",
+    "C3 폐기 — M/B 축은 5/20 재포장이며 가격공유 아티팩트를 구조적으로 갖는다. 재개하려면 M/B 를 가격 비공유 사양(예: 지연 가격 ME)으로 재정의해야 하고, 그러면 SS2007 의 정의가 아니다.",
+    "★레인 자원 배분 질문(8/20 next_probe 승계 · 이번에 더 날카로워졌다) — JT1993 강화 12/20 소진, 다섯 축 essence C, 여섯·일곱 번째가 착수 게이트. 설계 단계에서 판독한 모멘텀 후속 4편이 **두 개의 서로 다른 구조적 이유**로 같은 envelope 에 실패한다(숏 편중 3편 · β 보상 1편). 남은 8회를 같은 논문에 쓸지 alpha-pending 큐로 옮길지는 도훈/Q-Lead 판단 영역이며 이 에이전트가 결정하지 않는다.",
+    "★기전 자체는 미측정으로 남는다 — SS2007 의 실물옵션 볼록성 기전이 KR 에서 반증된 것이 아니다. 앵커 부재와 수익 성격(β) 때문에 **이 envelope 에서** 착수하지 않을 뿐이다. 롱숏 가능 계층 또는 β-통제를 하지 않는 판정면에서는 여전히 열려 있다.",
+    "설계 부산물 — 'traditional 비교 기준이 유의하지 않다': Table 4 Panel B 매출변동성 스크린 표본에서 전통 모멘텀 W−L 이 전 N 비유의(t 1.23~1.74). '+5.43% 초과' 의 기준선 자체가 US 에서도 통계적으로 서 있지 않다. 향후 어떤 논문이든 '전통 대비 초과' 를 인용할 때 기준선의 유의성을 함께 확인할 것."
+  ],
+
+  "self_adversarial_challenge": {
+    "count": 6,
+    "axis": "설계 축만 — ①사후 서술 여부 ②반증조건의 성과 동어반복 위장 ③국면 경계의 도출 여부 ④settled-negative 재포장 여부",
+    "items": [
+      {
+        "id": "W1",
+        "weakness": "표적을 앵커 계산 전에 확정했다는 주장이 검증 가능한가 — 설계자가 Table 4~7 을 읽은 뒤에 이 문서를 썼다.",
+        "verdict": "PARTIAL",
+        "response": "표적(essence A · 필요 +13.25%/yr · 좌표 +5.14%/yr · 문턱 0.15)은 이 세션이 고른 것이 아니다. request.json 과 8/20 L-code(이 라운드 이전 발행)에 이미 상수로 적혀 있다. 순서 주장의 근거는 설계자의 자제가 아니라 **표적의 외생성**이며, 그것은 파일로 검증된다. 그러나 '나는 읽기 전에 정했다' 라고 쓰지 않는다 — 정확히는 '정할 것이 없었다' 다. 분모·문턱·판정량 어느 것도 이 세션이 손대지 않았다."
+      },
+      {
+        "id": "W2",
+        "weakness": "승자 몫을 다른 논문에서 빌려와 곱했다. SS2007 에 없는 수를 외부에서 가져다 만든 ratio 는 앵커가 아니라 추측이다.",
+        "verdict": "ACCEPT — 가장 무거운 약점",
+        "response": "전면 수용한다. 그래서 중단의 **1차 사유를 '앵커 산출 불가' 로 두고 ratio 를 2차로 내렸다**(prelaunch_power_gate_result.grounds 순위). ratio [0.061, 0.134] 는 '외부 사전분포 하 추정' 으로만 라벨했고 앵커라고 부르지 않았다. 그리고 이 약점이 곧 portable_regulation 축1 의 개정 내용이다 — 앞으로는 '뽑을 수 없으면 그 자체가 중단 사유' 로 못박는다. 만약 반대로 추정 ratio 가 0.15 를 넘었다면 그것으로 착수를 정당화했을 것인가? 아니다 — 그 경우에도 앵커 부재가 남고, 게이트는 통과가 아니라 미판정이 된다."
+      },
+      {
+        "id": "W3",
+        "weakness": "'기전이 β 다' 는 앵커가 실패한 뒤에 붙인 사후 합리화 아닌가.",
+        "verdict": "REBUTTAL",
+        "response": "원천의 성질이며 누구나 대조할 수 있다: §1.3 의 계보 선언(BGN1999·Johnson2002·CFG2004·Zhang2005 부분균형 합리 모형), p.6 의 'winners have higher average factor loadings than losers', 그리고 Table 4~7 에 위험조정 알파가 0건이라는 사실. 앵커가 통과했더라도 이 판독은 같았을 것이다. 결정적으로, 이 사유는 **반증 가능한 형태로 남겼다** — falsification.mechanism_discriminating 이 β 차이 유무 두 갈래를 모두 정보로 만든다. 합리화는 자기를 반증 가능하게 만들지 않는다."
+      },
+      {
+        "id": "W4",
+        "weakness": "이 라운드는 5/20(value×momentum)의 재포장 아닌가.",
+        "verdict": "PARTIAL (3축 중 1축 유죄)",
+        "response": "M/B 축(C3)은 재포장이 맞고 그 이유로 기각했다 — 이름은 '성장옵션' 이지만 구성은 5/20 이 이미 잰 셀이고, SS2007 정의(ME = 분기말 주가 × 주식수)는 5/20 이 특정한 가격공유 결함을 구조적으로 갖는다. 매출성장 변동성·비용 축은 재포장이 아니다(hypothesis_index 0건 / 1건 marginal). 그래서 정확한 서술은 이것이다 — **재포장인 부분은 기각했고, 재포장이 아닌 부분이 검정력 게이트에서 실패했다.** 둘을 섞어 '전부 신규' 라고도, '전부 중복' 이라고도 쓰지 않는다."
+      },
+      {
+        "id": "W5",
+        "weakness": "두 라운드 연속 중단은 게이트의 작동이 아니라 회피의 습관 아닌가.",
+        "verdict": "REBUTTAL (단서 수용)",
+        "response": "두 중단의 근거가 다르고 독립적으로 대조 가능하다 — 8/20: 범주 IN + 승자 몫 25~52% + 사후 표적 교체 자백. 9/20: 앵커 부재 + β 기전 + 1/3 축 settled-negative, 그리고 범주는 오히려 통과했다. 증거 강도도 반대 방향이다: 8/20 은 문턱을 걸쳤고(0.091~0.166) 9/20 은 허용 구간 전체가 아래다. 단서는 수용한다 — 중단이 산출을 남기지 않으면 회피와 구별되지 않는다. 그래서 이 라운드의 실제 산출물은 등급이 아니라 **게이트 2축 확장 규약**이고, 그것이 없었다면 다음 SS2007 형 논문을 그대로 통과시켰을 것이다."
+      },
+      {
+        "id": "W6",
+        "weakness": "국면 경계 중 '2015년 이후 KR' 은 메커니즘에서 도출된 것이 아니라 사후 데이터 관찰이다.",
+        "verdict": "ACCEPT",
+        "response": "수용하고 산출물에 그대로 표시했다 — regime_scope.weakens_or_reverses_in 의 해당 항목에 derived_from_mechanism: false, source: lane_measurement 를 붙였다. 나머지 3개 약화 경계(하락장·고영업레버리지·post-exercise 성숙 단면)와 3개 성립 경계는 전부 실물옵션 기하에서 도출된다. 도출된 것과 관찰된 것을 같은 목록에 섞되 라벨로 갈랐다."
+      }
+    ],
+    "forbidden_vocabulary_check": "'미미 / 관행적 / 보수적이면 OK / 대부분 결과 동일 / 이미 반영되어 있었을 것' 사용 0건 — self-check 통과. auto RE-VIEW 미발동.",
+    "review_required": false,
+    "note_file": "qepm/mailbox/worktask/WT-R20260829_009/challenge_note_hypothesis.md"
+  },
+
+  "scope_note": {
+    "not_performed_by_this_agent": [
+      "⑤ AST 구성 / factors[] 작성 / 𝒪 연산자 선택 / 리프 매핑 / self_pit_check",
+      "팩터 소싱 · 신호공학 · canonical_screen_bt 실측 · 백테스트 · 등급 선언",
+      "alpha_package.json 쓰기",
+      "공분산 추정 · weights 결정",
+      "성과 수치 추정 · KR proxy 손계산 — 본 문서의 모든 수치는 ①SS2007 원문 표 전재 ②그 표 값의 단순 사칙연산(derived_arithmetic 라벨) ③선행 라운드 산출물 전재 중 하나이며, KR 데이터에 대한 어떤 측정도 수행하지 않았다",
+      "alpha_frontier_queue.json / reinforce_ledger_l1.json 수정 (열람만)",
+      "텔레그램 발송",
+      "mailbox 밖 쓰기 — 본 세션의 쓰기는 qepm/mailbox/worktask/WT-R20260829_009/ 2개 파일뿐"
+    ],
+    "request_json_hypothesis_title": "이미 존재하므로 주입하지 않았다 — 'JT1993 강화 9/20 — 기업속성 조건화 (Sagi-Seasholes 2007)'"
+  },
+
+  "verdict": "economic_void",
+  "verdict_precision": {
+    "★what_this_verdict_does_NOT_mean": "메커니즘이 부재한다는 뜻이 아니다. SS2007 의 실물옵션 볼록성 기전은 3요건(주체·마찰·경로)이 모두 실명 특정되고 원문 모형으로 정식화돼 있다. 그 기전이 KR 에서 반증된 것도 아니다 — 측정하지 않았다.",
+    "what_it_means": "**이 envelope 에서 수확 가능한 α 기전이 부재한다.** ①게이트가 요구하는 승자-레그 앵커를 원천이 제공하지 않아 사전 검정력을 판정할 수 없고 ②외부 사전분포를 쓴 추정은 허용 구간 전체(ratio 0.061~0.134)가 중단 문턱 0.15 아래이며 ③원문 기전은 요인노출 보상이고 우리 판정량은 β-통제 알파라 기대값이 구조적으로 ~0 이다.",
+    "void_subtype": "aborted_at_prelaunch_power_gate",
+    "operational_effect": "alpha-research 는 Step 1~7 을 진행하지 않는다. Q-Lead 로 escalate 한다. 이 조건은 사전등록이며 사후 완화 금지 — 유리한 앵커(미지연 Panel A × 상단 승자 몫 = ratio 0.212)를 골라 되살리는 것은 8/20 이 게이트 우회로 판정한 행위다.",
+    "why_not_designed": "8/20 은 ratio 가 문턱을 걸쳐 '조건부 designed' 로 발행하고 하류에서 판정을 남겼다. 이번에는 허용 조합 전체가 문턱 아래여서 하류가 해소할 잔여 조건이 없다. 'designed' 로 발행하면 alpha-research 가 착수하게 되어 게이트를 무력화한다."
+  },
+
+  "handoff": {
+    "to": "Q-Lead",
+    "not_to": "alpha-research (economic_void 수신 시 Step 1~7 진행 금지 — alpha_research_init.md <pipeline> Step 0 계약)",
+    "next_steps": [
+      "L-code 적립(강화 레인) — record_type: process · metric_type: unavailable · grade: '' · tags 에 aborted_at_prelaunch_power_gate · winner_leg_anchor_absent · mechanism_is_risk_not_alpha · 8/20 선례 형식 준용",
+      "★게이트 규약 개정 등재 — prelaunch_power_gate_result.portable_regulation_produced 2축(레그 배분 + 수익 성격)을 강화 레인 착수 규약에 반영. 축1 에 '앵커 산출 불가 = 중단 사유' 를 명문화",
+      "레인 자원 배분 판단(도훈/Q-Lead) — JT1993 12/20 소진, 남은 8회의 배치. 이 에이전트의 결정 영역 아님",
+      "challenge_flags 의 C4(반전면)는 별도 사전등록 · 별도 근거 논문으로만 착수"
+    ],
+    "chain": "미실행 — 규율 ② 체인 완주 의무는 착수한 시도에 적용되며, 본 라운드는 착수 전 게이트에서 멈췄으므로 체인이 시작되지 않았다"
+  }
+}

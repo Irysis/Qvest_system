@@ -4,7 +4,24 @@
   "grade": "B",
   "core_reference": "FQ-053 P2 (R41 next_probe P1 SAFE/SAFE_FADING live OOS 추적 배관, armed→active); R41 verdict stage_artifacts/WT_D20260715_010/verdict.json; R40 verdict WT_D20260715_009(protection ~1개월 transient baseline); writer 02_Infrastructure/reports/insider_safe_live_track.R + monitoring_init.md Part C-live",
   "lesson_text": "[monitoring 배선 — live OOS 추적] R42 FQ-053 P2 insider SAFE/SAFE_FADING live 발화 종목 익월 실현위험 OOS 추적 배관 활성화 (wiring 태스크·새 canonical 측정 아님·자본/sizing 아님). R41이 현 북에서 SAFE_FADING 2건(LG이노텍 A011070·신세계 A004170, 둘 다 mso=1·MID_OTHER robust)을 발화시켜 FQ-053 P2 armed→active 전환 — 이 2건의 익월 실현위험을 누적해 R40(WT_D20260715_009) protection 창 예측을 out-of-sample 확증하는 배관을 세움. ★배관: 신규 writer 02_Infrastructure/reports/insider_safe_live_track.R가 상류 filing_delay_watch_latest.json(insider_net_buy_safe)을 소비 → ① 발화 register(현 홀딩월 NET_BUY_SAFE/SAFE_FADING 보유를 발화월·종목·상태·mso·tier·발화시점 INS02 z로 등록·idempotent — 재실행 시 register 0·update N) / ② 익월 실현위험 append(각 트랙의 *완료된* fading/SAFE 홀딩월만 — Ret_1m 동월 실현=prod(1+Ret)-1 per Ticker×월, R40-identical 단일자산 월수익·포트 합성 아님 → downside=mean(r<0)·tail=P(r<-0.15)·vol=sd. 당월/미래월 pending) / ③ mso auto-clear 로그(active 트랙이 현 홀딩월 fired 집합에서 사라짐=mso 1→2 → cleared_log 기록, R40 transient horizon 실증 누적). 산출 스키마 = qepm/observability/insider_safe_live_track.json(insider_safe_live_track_v1): tracked[]·cleared_log[]·oos_rollup·r40_baseline(off_tail 0.07946·h0 5.2%·h1 3.5%·h2 12.3%·h3 10.5%·protection window mso{0,1}). OOS 대조: protection 창(mso∈{0,1}) 실현 tail-hit 누적이 baseline OFF 7.9% 미만이면 라이브 protection 재현 — ★표본 축적 전 판정 금지·자동조치 없음(도훈 재료). ★검증: writer 실행 → 현 SAFE_FADING 2건 등록 확인(A011070·A004170 SAFE_FADING@202607 mso=1 MID_OTHER robust_midcap z=0.912 z_prev=0.998 clears_at_mso=2 state=active, obs=0 pending) + JSON well-formed(fromJSON 파싱·required 13필드·ASSERT PASS) + idempotency 실증(2차 실행 register 0·update 2). 현 2건은 홀딩월 202607 미완결(as-of 2026-07-15 mid-July)로 realized pending → 익월(202608) 202607 홀딩월 Ret_1m append 예정, mso 1→2 auto-clear도 익월 로그. monitoring_init.md 배선: <required> Part C-live 항목 + <metrics_computation> block(insider_safe_fading_cleared / insider_protection_oos_divergence flag) + <output_schema> insider_safe_live_track 섹션. 실행 순서 규약: filing_delay_watch.R *후* insider_safe_live_track.R source. 규율: wiring only·새 canonical 측정 없음·n_trials=1(chain·DSR 부적용·monitoring-face). book_state/05_Production/outputs.ramp 무변경·DART API 금지·cov/weights 미산출(역할경계)·텔레그램 미발송(배관)·단일스레드·arrow io(2)·OneDrive temp-rename·§7b clean base. insider 라인 R9~R42 monitoring 소비면 확립 완료(자본 미검 불변). next_probe: P1(익월 202608 1차 실현위험 관측 + mso 1→2 auto-clear 실증 — h1 창 tail vs R40 baseline 7.9%/h1 3.5% 대조); P2(부실 tripwire coverage 확장 FQ-038 결합 — catastrophic exit 0.9% pre-filter small-cap 소관); P3(catastrophic-exit 경계 명시 tripwire 형식화, R39 P3 승계).",
-  "tags": ["insider_netbuy", "safe_tripwire", "safe_fading", "live_oos_track", "months_since_off", "auto_clear", "protection_window_oos", "monitoring_face", "wiring_only", "tier_confidence", "midcap_robust", "r40_baseline_compare", "non_capital", "capability_established", "insider_line_monitoring_established", "armed_to_active"],
+  "tags": [
+    "insider_netbuy",
+    "safe_tripwire",
+    "safe_fading",
+    "live_oos_track",
+    "months_since_off",
+    "auto_clear",
+    "protection_window_oos",
+    "monitoring_face",
+    "wiring_only",
+    "tier_confidence",
+    "midcap_robust",
+    "r40_baseline_compare",
+    "non_capital",
+    "capability_established",
+    "insider_line_monitoring_established",
+    "armed_to_active"
+  ],
   "created_at": "2026-07-15",
   "research_mode": "ramp",
   "created_by": "emit:ramp",
@@ -23,8 +40,17 @@
   "data_hygiene_finding": "★live rawdata 전역 Ret max=66999(물리 불가능=오염, R40 pin도 동일 vintage) → writer에 KR ±30% 가드 추가(오염만 제거·정당 limit-bound 보존). A011070 202605 일간 ≤+28.6%는 가드 미제거(반도체 레짐 정당 가능·오염 아님). 익월 1차 obs source_verified=FALSE → R40 production-basis cohort 스팟체크 후 신뢰(§7b). 초기 등록 영향 없음(realized 미실행).",
   "n_trials": 1,
   "selection_type": "chain",
-  "next_probe": ["익월 202608 1차 실현위험 관측 + mso 1->2 auto-clear 실증 (h1 tail vs R40 baseline)", "부실 tripwire coverage 확장 (FQ-038 결합, catastrophic 0.9% 소관)", "catastrophic-exit 경계 명시 tripwire 형식화 (R39 P3)"],
-  "consumer_surfaces": ["monitoring: insider_safe_live_track.R 실배선 + monitoring_init.md Part C-live/metrics/output_schema", "위험감시: protection 창 OOS tail 누적 vs R40 baseline · per-holding track"],
+  "next_probe": [
+    "익월 202608 1차 실현위험 관측 + mso 1->2 auto-clear 실증 (h1 tail vs R40 baseline)",
+    "부실 tripwire coverage 확장 (FQ-038 결합, catastrophic 0.9% 소관)",
+    "catastrophic-exit 경계 명시 tripwire 형식화 (R39 P3)"
+  ],
+  "consumer_surfaces": [
+    "monitoring: insider_safe_live_track.R 실배선 + monitoring_init.md Part C-live/metrics/output_schema",
+    "위험감시: protection 창 OOS tail 누적 vs R40 baseline · per-holding track"
+  ],
   "evidence": "stage_artifacts/WT_D20260715_011/ (_validate_live_track.R + _r42_validate_log.txt + _close_r42.R + _r42_close_log.txt) · qepm/observability/insider_safe_live_track.json",
-  "record_type": "process"
+  "record_type": "process",
+  "promoted_to_axiom": "AX-RAMP-006",
+  "promoted_at": "2026-09-01"
 }

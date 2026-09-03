@@ -1,0 +1,6 @@
+setwd("C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/WT_R20260829_006")
+suppressPackageStartupMessages(library(data.table))
+bt <- readRDS("bt_result.rds")
+AU <- as.data.table(bt$audit)
+print(names(AU))
+print(AU[, .(check_name, status, details)], nrow = 30)

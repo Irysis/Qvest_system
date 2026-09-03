@@ -1,0 +1,61 @@
+{
+  "meta": {
+    "wt_id": "WT-R20260829_007",
+    "test_id": "F4c — 수익 구성 경로 재귀속",
+    "metric_type": "cross_sectional_regression",
+    "envelope_applicability": "NOT_APPLICABLE"
+  },
+  "return_path_comparison": {
+    "cor_pret_vs_Ret1m": 0.97210693,
+    "mean_abs_diff": 0.02177298,
+    "pret_max": 2.62162162,
+    "pret_min": -0.96551724,
+    "n_above_firewall": 0
+  },
+  "grid": {
+    "A_prior_ret_prior_def": {
+      "label": "선행 수익경로(일간복리, 무방화벽) x 선행 정의",
+      "score": "prior_score",
+      "ret": "pret",
+      "winsor_cap": {},
+      "n_months": 258,
+      "lambda_score": -0.00061509,
+      "t_score": -0.39298744,
+      "t_size": -1.33279795,
+      "t_mom": 2.28044379
+    },
+    "B_prior_ret_gh_def": {
+      "label": "선행 수익경로 x GH2004 정의",
+      "score": "fh252",
+      "ret": "pret",
+      "winsor_cap": {},
+      "n_months": 258,
+      "lambda_score": -0.00058203,
+      "t_score": -0.36729711,
+      "t_size": -1.35562888,
+      "t_mom": 2.29754939
+    },
+    "C_firewalled_prior_def": {
+      "label": "본 라운드 수익경로(방화벽) x 선행 정의",
+      "score": "prior_score",
+      "ret": "Ret_1m",
+      "winsor_cap": {},
+      "n_months": 258,
+      "lambda_score": 0.00022101,
+      "t_score": 0.16225329,
+      "t_size": -1.46462249,
+      "t_mom": 1.87626459
+    },
+    "D_prior_ret_capped": {
+      "label": "선행 수익경로 + 방화벽 상한만 적용",
+      "score": "prior_score",
+      "ret": "pret",
+      "winsor_cap": 5,
+      "n_months": 258,
+      "lambda_score": -0.00061509,
+      "t_score": -0.39298744,
+      "t_size": -1.33279795,
+      "t_mom": 2.28044379
+    }
+  }
+}

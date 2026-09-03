@@ -1,0 +1,55 @@
+{
+  "basis_daily": "슬리브 일간 gross(EW top-25, 법정한도 winsorize) n=5321 · 비용 미반영(꼬리 형상용)",
+  "basis_monthly": "period_returns_production.csv ret_net (15bps 반영) n=259",
+  "daily": {
+    "var95": 0.02938124,
+    "es95": 0.04593262,
+    "var99": 0.05445924,
+    "es99": 0.07590341,
+    "skew": -0.10529321,
+    "kurt": 11.55802545,
+    "hill_alpha_left": 2.59858244,
+    "hill_alpha_right": 2.78109004
+  },
+  "monthly": {
+    "var95": 0.11517568,
+    "es95": 0.18840068,
+    "var99": 0.20670884,
+    "es99": 0.29134474,
+    "worst": -0.36926458,
+    "skew": -0.00191716,
+    "kurt": 5.15840416
+  },
+  "evt_gpd_95": {
+    "var_evt": 0.02927885,
+    "es_evt": 0.04613139,
+    "shape_xi": 0.11637359,
+    "scale_beta": 0.01373763,
+    "threshold_u": 0.01936486,
+    "threshold_q": 0.9,
+    "n_exceedances": 532,
+    "method": "gpd_mle_selfimpl"
+  },
+  "evt_gpd_99": {
+    "var_evt": 0.05511283,
+    "es_evt": 0.07652286,
+    "shape_xi": 0.15569763,
+    "scale_beta": 0.01407019,
+    "threshold_u": 0.02938124,
+    "threshold_q": 0.95,
+    "n_exceedances": 266,
+    "method": "gpd_mle_selfimpl"
+  },
+  "cdar_95": {
+    "cdar": 0.57590013,
+    "dar": 0.54564631,
+    "max_dd": -0.69324963,
+    "alpha": 0.95
+  },
+  "tail_dependence_lower_vs_market_q05": 0.57883856,
+  "c9_lagged_drawdown": {
+    "rule": "dd_lag <- c(0, dd_pct[-n])",
+    "max_dd_lagged": -0.69324963,
+    "mean_dd_lagged": -0.24495689
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "fidelity": "faithful",
+
+  "kept": "논문의 INTANFT 팩터 구성 전부 — INTAN = (R&D + SG&A 투자성분) / 평균총자산이고, SG&A 투자성분은 산업-연도 회귀 `SG&A = a + b*Revenues + g*Revenue_Decrease + l*Loss + e` 의 잔차 e (SG&A·Revenues 모두 평균총자산으로 스케일, R&D 결측=0), 매년 6월 size×INTAN 2x3 정렬(본시장 median으로 S/B, INTAN 3분위로 L/M/H), 팩터 = 매월 [S/H, B/H 수익의 단순평균] − [S/L, B/L 수익의 단순평균]. 코너 포트폴리오 내부는 등가중 — 논문이 내부 가중을 명시하지 않지만 유일한 가중 진술인 각주 6(\"...robust if R(t)-RF(t) is computed as the value-weighted return...\")이 시가가중을 강건성 확인으로 두어 기준선이 등가중임을 드러낸다.",
+
+  "changed": "유니버스만 NYSE/Amex/NASDAQ → K200∪KQ150(PIT 시변 멤버십) + adv20(t-1) ≥ 2e8. 그 치환에 자동으로 딸려오는 KR 대응물 3건은 독립 설계 변경이 아니다: ①NYSE 기준군 → K200(본시장) 기준군 ②3-digit SIC 산업-연도 회귀 → RAWDATA$Sector(WI26 대분류) 셀, 셀 표본 <20이면 그 해 전체 풀링 회귀 잔차로 폴백(KR에 SIC이 없고 SIC 3자리를 한국 모집단에 쓰면 셀이 1~3개 기업이 되어 회귀 자체가 성립하지 않는다) ③COMPUSTAT → .cache/fundamental_merged.parquet(DART+QuantiWise). 논문이 수치를 주지 않은 2건은 지어내지 않고 뿌리 논문에서 가져왔다 — 3분위 절단점 30/40/30과 '절단점은 본시장 분포에서' 규약은 Fama & French (1993, JFE 33:3-56) p.9의 문장(원논문 2.2 문단이 백분율 괄호만 뺀 축자 복제)에서 온다. ★데이터 한계(스펙 변경 아님): K-IFRS 이후 KR 손익계산서에서 연구개발비가 독립 계정이 아니게 되어 후반부 RandD 커버리지가 떨어진다(사내 선례 mohanram G6: 1203→42종목). 논문 규약대로 결측=0을 넣되(RandD 결측 시 OrdRandD로 보완 — data_collector_dart.R:462가 이미 같은 계정으로 매핑), 형성연도별 R&D 실보유 비율을 매 형성일 로그로 출력해 이 인공물이 침묵하지 않게 했다.",
+
+  "paper_original_form": "Fama-French 5요인+모멘텀 시계열 회귀의 설명변수로 쓰이는 월별 팩터 수익률(INTANFT, 및 FF5에 회귀한 절편+잔차인 직교화판 INTANFT_Org)이고, 논문의 최종 산출은 1963-1992 vs 1993-2022 두 구간의 회귀 계수표다 — 다만 그 설명변수 자체가 2x3 정렬 롱숏 포트폴리오라 매매 가능한 형태로 이미 완결돼 있어, 팩터를 그대로 복제하는 것이 곧 충실구현이다.",
+
+  "portfolio_spec": {
+    "construction": "engine_direct"
+  },
+
+  "commission_paper": null
+}

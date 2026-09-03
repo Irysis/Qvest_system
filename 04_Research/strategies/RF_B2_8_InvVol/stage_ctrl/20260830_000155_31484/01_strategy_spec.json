@@ -1,0 +1,16 @@
+{
+  "run_id": "20260830_000155_31484",
+  "strategy_name": "RF_B2_8_CTRL_EW",
+  "lookahead_prevention": "detect_lookahead(engine) CLEAN + t+1 실행(get_execution_date 익월 첫 거래일) + 시그널일>RAWDATA 범위 검사",
+  "strategy_idea": "[대조군] B2-8 동일 패널 EW 컨트롤: B1-5 승자 신호(모멘텀 12-1 rank-Z 50% + Amihud 비유동성 rank-Z 50%) + 보유집합은 처치와 동일 + **비중만 EW**. 처치(w∝1/σ)와의 델타에서 패널 갱신(daily_refresh) 교란을 제거하기 위한 동일 패널 기준선. B1-5(EW top-25)와 σ 부적격 0건이면 동일 구성.",
+  "constraint_profile": "replication",
+  "construction": "engine_direct",
+  "weight_method": "ew_control",
+  "rebalance": "monthly",
+  "universe": "K200_KQ150",
+  "liquidity_filter": "paper_faithful",
+  "n_max": 25,
+  "has_short": false,
+  "source_paper_url": "https://www.tandfonline.com/doi/abs/10.2469/faj.v68.n1.1",
+  "benchmark_note": "long_vs_long_bm"
+}

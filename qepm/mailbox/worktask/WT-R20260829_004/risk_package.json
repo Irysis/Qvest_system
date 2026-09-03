@@ -1,0 +1,1291 @@
+{
+  "task_id": "WT-R20260829_004",
+  "as_of_date": "2026-08-28",
+  "agent": "risk-research",
+  "spec_version": "risk_package_v1.2",
+  "wt_type": "reinforcement",
+  "keyword_axis": "risk_overlay",
+  "upstream": {
+    "alpha_package": "qepm/mailbox/worktask/WT-R20260829_004/alpha_package.json",
+    "alpha_verdict_note": "F2 FAIL · F6 FAIL · F7 FAIL (검정력 0.876 powered null). risk 는 판정을 바꾸지 않으며 체인 완주 지시(2026-08-29)에 따라 하류 소비 가능한 완전형을 발행한다.",
+    "alpha_vector_modified": false,
+    "weights_proposed": false,
+    "overlay_applied": false,
+    "grade_declared": false
+  },
+  "pit": {
+    "sig_date": "2026-08-28",
+    "decision_ts": "2026-08-28",
+    "C1_rolling_only": "Omega = 직전 504 영업일 EWMA(hl=126) · D = 직전 24개월 EWMA(hl=6M) · beta = 252일 rolling(Blume). full-sample 통계 없음. 국면 Omega 는 <= sig_date 전체 표본이지만 미래참조 없음이며, 사전 인지가능성은 별도 walk-forward 로 실증(ex_ante_knowability).",
+    "C5_regime_timing": "국면 라벨 재산출 없음 — alpha 의 regime_signal_timeseries(used_cutoff <= holding_month_start) 소비만. anchor_date / realized_ym 미사용. 일자 라벨은 그 일자가 속한 홀딩월의 사전확정 라벨.",
+    "C6_survivorship": "K200/KQ150 시변 멤버십(PIT) 패널 승계 — 생존자 소급 없음.",
+    "C9_dd_lag": "낙폭 계열 진단은 전기 값만: dd_lag <- c(0, dd_pct[-n]). 동일자 낙폭/변동성 스케일 참조 없음.",
+    "C10_liquidity": "ADV20 은 t-1 이전 20영업일만(Date < sig_date).",
+    "C11_time_axis": "외부 매크로 미사용 — 시계열 축은 KRX 거래일 하나. 벤치 일간 수익도 동일 축.",
+    "C15_factor_db": "Factor DB parquet 직접 로드 없음 — 패널은 alpha 가 넘긴 panel.rds / alpha_scores.parquet 소비.",
+    "overlay_applied": false,
+    "overlay_note": "S0/S1 오버레이 금지 준수 — risk 는 오버레이를 적용하지 않는다. 패닉 국면의 Sigma 구조만 진단해 optimizer 가 소비할 형태로 넘긴다.",
+    "gate_detect_lookahead": {
+      "scanned_files": 9,
+      "all_clean": true,
+      "per_file": [
+        {
+          "file": "r1_inputs.R",
+          "clean": true,
+          "n_violations": 0
+        },
+        {
+          "file": "r2_model.R",
+          "clean": true,
+          "n_violations": 0
+        },
+        {
+          "file": "r3_sigma.R",
+          "clean": true,
+          "n_violations": 0
+        },
+        {
+          "file": "r4_regime.R",
+          "clean": true,
+          "n_violations": 0
+        },
+        {
+          "file": "r5_tail_stress.R",
+          "clean": true,
+          "n_violations": 0
+        },
+        {
+          "file": "r6_emit.R",
+          "clean": true,
+          "n_violations": 0
+        },
+        {
+          "file": "r7_package.R",
+          "clean": true,
+          "n_violations": 0
+        },
+        {
+          "file": "r8_selfadv.R",
+          "clean": true,
+          "n_violations": 0
+        },
+        {
+          "file": "r9_patch.R",
+          "clean": true,
+          "n_violations": 0
+        }
+      ],
+      "positive_control": {
+        "probeA_declared_idioms": {
+          "fired": true,
+          "n": 3,
+          "checks": [
+            "C1",
+            "C5_VT",
+            "C5_DDshort"
+          ]
+        },
+        "probeB_risk_specific": {
+          "fired": false,
+          "n": 0
+        },
+        "reading": "A(선언 idiom C1/C5_VT/C5_DDshort) 3/3 발화 → 계기는 살아 있다. B(전 표본 cov · 국면라벨 shift(-1)) 0/3 → detect_lookahead 의 R 경로에는 **전 표본 공분산에 대한 일반 검사가 없다**. 따라서 본 라운드의 detect_lookahead PASS 를 'Sigma 의 C1 통과' 근거로 인용하면 안 된다 — 그 축은 아래 c1_evidence 가 담보한다.",
+        "c1_evidence": [
+          "Omega = 직전 504영업일 EWMA(rolling)",
+          "D = 직전 24개월 EWMA(rolling)",
+          "beta = 252일 rolling(Blume)",
+          "국면 Omega 는 as-of 진단 전용 + consumption_restriction 명시",
+          "사전 인지가능성은 시점별 재추정(walk-forward)으로 별도 실증"
+        ],
+        "instrument_gap": "detect_lookahead R 경로 미검출 축(risk 레인): cov()/var() 전 표본 추정 · 국면 라벨 shift(-1). 인프라 후속 대상."
+      },
+      "artifacts": {
+        "gate": "stage_artifacts/WT_R20260829_004/pit_gate_risk.json",
+        "positive_control": "stage_artifacts/WT_R20260829_004/pit_gate_positive_control.json"
+      }
+    }
+  },
+  "exposure_matrix_ref": "stage_artifacts/WT_R20260829_004/exposure_matrix.parquet",
+  "factor_covariance_ref": "stage_artifacts/WT_R20260829_004/factor_covariance.parquet",
+  "specific_risk_ref": "stage_artifacts/WT_R20260829_004/specific_risk.parquet",
+  "security_covariance_ref": "stage_artifacts/WT_R20260829_004/covariance.parquet",
+  "security_covariance_panic_ref": "stage_artifacts/WT_R20260829_004/covariance_panic.parquet",
+  "security_covariance_normal_ref": "stage_artifacts/WT_R20260829_004/covariance_normal.parquet",
+  "tail_risk_ref": "stage_artifacts/WT_R20260829_004/tail_risk.json",
+  "regime_correlation_ref": "stage_artifacts/WT_R20260829_004/regime_correlation.parquet",
+  "covariance_units": {
+    "matrix": "monthly variance (1M horizon)",
+    "n_assets": 25,
+    "annualize": "x12",
+    "diagnostic_basis": "EW w=1/25 — 진단 집계 기준일 뿐 비중 제안 아님(optimizer 소관)"
+  },
+  "model": {
+    "structure": "Sigma = B Omega B' + D",
+    "factors": {
+      "market": "beta(252d rolling, Blume 0.67b+0.33) x KOSPI200 일간수익",
+      "sector": "27개 섹터 더미(시장성분 제거 후 일간 횡단면 WLS, sqrt(Size) 가중)",
+      "style": [
+        "x_size(log 시총 z)",
+        "x_mom(JT1993 6M skip1 z)",
+        "x_vol(126d 실현변동성 z)",
+        "x_liq(log ADV20 z)"
+      ]
+    },
+    "n_factors": 32,
+    "n_live_factors": 31,
+    "estimation": "일간 횡단면 회귀 5321일(2005-02~2026-08) → 요인수익 시계열 → Omega(EWMA hl126, 504일) · D(월별 특이분산 EWMA hl 6M, 24개월)",
+    "exposure_timing": "신호월말(t) 노출 → 홀딩월(t+1) 일간수익 회귀 (월내 노출 고정)"
+  },
+  "risk_summary": {
+    "top_common_risks": [
+      "Market (68.8%)",
+      "Style_Momentum (15.6%)",
+      "Style_Volatility (8.6%)",
+      "Sector_반도체 (2.0%)",
+      "Specific (3.0%)"
+    ],
+    "variance_decomposition_asof": {
+      "Market": 0.68750155,
+      "Sector": -0.01050324,
+      "Style": 0.29271019,
+      "Specific": 0.0302915
+    },
+    "variance_decomposition_walkforward_mean": {
+      "Market": 0.42738785,
+      "Sector": 0.2425831,
+      "Style": 0.27337339,
+      "Specific": 0.05665566,
+      "n_months": 235,
+      "note": "as-of 단일 스냅샷 아티팩트 방어(risk-style Cycle2 교훈). 판정은 walk-forward 로 읽을 것."
+    },
+    "residual_D_share": {
+      "asof": 0.0302915,
+      "normal_regime": 0.12803251,
+      "panic_regime": 0.12551931,
+      "reading": "as-of 특이분산 비중 3.0% — 시장성분이 68.8% 를 먹고 잔차가 거의 남지 않는다. 장기(normal-Omega) 기준으로는 12.8% 로 회복되므로, '잔차가 없다'가 아니라 '현 vintage 에서 시장에 눌려 있다'가 정확한 서술."
+    },
+    "portfolio_beta": {
+      "asof_exposure_weighted": 0.96720311,
+      "walk_forward_mean": 0.89252008,
+      "alpha_regression_beta": 1.035,
+      "note": "노출가중 beta(0.967/0.893)보다 alpha 의 회귀 beta(1.035)가 높다 — 모멘텀 슬리브의 실현 베타가 추정 베타를 상회하는 전형(beta drift). optimizer 는 RF-R1 exposure bound 설계 시 회귀 beta 를 보수측으로 볼 것."
+    },
+    "portfolio_vol_ann_asof": 0.68800556,
+    "crowding_flags": [],
+    "crowding_score_per_factor": [
+      {
+        "factor_name": "Liquidity_ADV20",
+        "crowding_score": 0.32670902,
+        "hhi_top": 0.24644898,
+        "vol_concentration": 0.01109731,
+        "passive_overlap_proxy": 1,
+        "demand_elasticity_proxy": 0,
+        "n_universe": 2855,
+        "n_top": 25,
+        "cs_3m_ago": 0.33262029,
+        "delta_3m": -0.00591127,
+        "alert": "none"
+      },
+      {
+        "factor_name": "LowVol_realized126d",
+        "crowding_score": 0.26873658,
+        "hhi_top": 0.06245528,
+        "vol_concentration": 0,
+        "passive_overlap_proxy": 1,
+        "demand_elasticity_proxy": 0,
+        "n_universe": 2855,
+        "n_top": 25,
+        "cs_3m_ago": 0.26533986,
+        "delta_3m": 0.00339672,
+        "alert": "none"
+      },
+      {
+        "factor_name": "Momentum_JT1993_6M_skip1",
+        "crowding_score": 0.36062965,
+        "hhi_top": 0.35794069,
+        "vol_concentration": 0.01298975,
+        "passive_overlap_proxy": 1,
+        "demand_elasticity_proxy": 0,
+        "n_universe": 2855,
+        "n_top": 25,
+        "cs_3m_ago": 0.42258339,
+        "delta_3m": -0.06195375,
+        "alert": "none"
+      },
+      {
+        "factor_name": "Size_logMktCap",
+        "crowding_score": 0.31317324,
+        "hhi_top": 0.20540897,
+        "vol_concentration": 0.00620219,
+        "passive_overlap_proxy": 1,
+        "demand_elasticity_proxy": 0,
+        "n_universe": 2855,
+        "n_top": 25,
+        "cs_3m_ago": 0.3200057,
+        "delta_3m": -0.00683246,
+        "alert": "none"
+      }
+    ],
+    "crowding_note": "Acadian 2026 4성분(HHI/vol집중/passive overlap/수요탄력). 전 요인 0.75 미만 · 3개월 delta 0.15 미만 → LEVEL_HIGH·RAPID_INCREASE 모두 미발화. passive_overlap_proxy=1 은 유니버스 자체가 K200∪KQ150 이라 구조적 상수(판별력 없음) — 해석에서 제외할 것.",
+    "liquidity_flags": [],
+    "liquidity": {
+      "rule": "20일 평균 거래대금(t-1 이전) >= 2e8 KRW",
+      "n_below_floor": 0,
+      "n_missing": 0,
+      "min_adv20": 12435452237.5,
+      "median_adv20": 52966993615,
+      "capacity_at_10pct_adv_1day_krw": 31088630593.75,
+      "days_to_liquidate_100e8_at_10pct": 0.07551873,
+      "worst_names": [
+        {
+          "Ticker": "A082920",
+          "adv20": 12435452237.5
+        },
+        {
+          "Ticker": "A420770",
+          "adv20": 14182352875
+        },
+        {
+          "Ticker": "A023530",
+          "adv20": 19229290490
+        }
+      ]
+    },
+    "concentration": {
+      "basis": "EW 진단기준(w=1/25) — 비중 제안 아님",
+      "sector_hhi": 0.3056,
+      "sector_hhi_normalized": 0.2188,
+      "n_sectors": 9,
+      "top_sector": "반도체",
+      "top_sector_weight": 0.52,
+      "n_effective_weight": 25,
+      "n_effective_risk": 23.5899879,
+      "max_risk_contribution": 0.0523612,
+      "sector_weights": {
+        "반도체": 0.52,
+        "IT하드웨어": 0.12,
+        "IT가전": 0.08,
+        "소매(유통)": 0.08,
+        "건설,건축관련": 0.04,
+        "상사,자본재": 0.04,
+        "에너지": 0.04,
+        "화학": 0.04,
+        "보험": 0.04
+      },
+      "per_factor_variance_share": {
+        "Market": 0.687502,
+        "SEC_IT가전": -0.00878,
+        "SEC_IT하드웨어": 0.009131,
+        "SEC_UNKNOWN": 0,
+        "SEC_건강관리": 0,
+        "SEC_건설,건축관련": -0.003568,
+        "SEC_기계": 0,
+        "SEC_디스플레이": 0,
+        "SEC_미디어,교육": 0,
+        "SEC_반도체": 0.020169,
+        "SEC_보험": -0.005255,
+        "SEC_비철,목재등": 0,
+        "SEC_상사,자본재": -0.003977,
+        "SEC_소매(유통)": -0.008698,
+        "SEC_소프트웨어": 0,
+        "SEC_에너지": -0.005036,
+        "SEC_운송": 0,
+        "SEC_유틸리티": 0,
+        "SEC_은행": 0,
+        "SEC_자동차": 0,
+        "SEC_조선": 0,
+        "SEC_증권": 0,
+        "SEC_철강": 0,
+        "SEC_통신서비스": 0,
+        "SEC_필수소비재": 0,
+        "SEC_호텔,레저서비스": 0,
+        "SEC_화장품,의류,완구": 0,
+        "SEC_화학": -0.00449,
+        "x_size": -0.024886,
+        "x_mom": 0.156389,
+        "x_vol": 0.085693,
+        "x_liq": 0.075514
+      },
+      "sector_block_variance_contribution": {
+        "method": "Sigma 안에서 섹터 블록별 분산 기여 = sum_{i in S} w_i (Sigma w)_i / (w'Sigma w) · within = 블록 내부 공분산만",
+        "table": [
+          {
+            "sector": "반도체",
+            "n": 13,
+            "weight": 0.52,
+            "within_block_var_share": 0.3687602,
+            "total_contribution": 0.58856479
+          },
+          {
+            "sector": "IT하드웨어",
+            "n": 3,
+            "weight": 0.12,
+            "within_block_var_share": 0.02517189,
+            "total_contribution": 0.13818179
+          },
+          {
+            "sector": "IT가전",
+            "n": 2,
+            "weight": 0.08,
+            "within_block_var_share": 0.00728154,
+            "total_contribution": 0.06159463
+          },
+          {
+            "sector": "상사,자본재",
+            "n": 1,
+            "weight": 0.04,
+            "within_block_var_share": 0.00496931,
+            "total_contribution": 0.04008322
+          },
+          {
+            "sector": "건설,건축관련",
+            "n": 1,
+            "weight": 0.04,
+            "within_block_var_share": 0.00315027,
+            "total_contribution": 0.03942923
+          },
+          {
+            "sector": "소매(유통)",
+            "n": 2,
+            "weight": 0.08,
+            "within_block_var_share": 0.00393427,
+            "total_contribution": 0.03772214
+          },
+          {
+            "sector": "화학",
+            "n": 1,
+            "weight": 0.04,
+            "within_block_var_share": 0.00417786,
+            "total_contribution": 0.03761442
+          },
+          {
+            "sector": "에너지",
+            "n": 1,
+            "weight": 0.04,
+            "within_block_var_share": 0.00205663,
+            "total_contribution": 0.03058917
+          },
+          {
+            "sector": "보험",
+            "n": 1,
+            "weight": 0.04,
+            "within_block_var_share": 0.00174909,
+            "total_contribution": 0.02622062
+          }
+        ],
+        "reading": "반도체 13종(비중 52%)이 총분산의 58.9% 를 만든다(그 중 블록 내부 공분산만 36.9%p). 요인 라벨 'SEC_반도체 2.0%' 는 **시장성분 제거 후 잔여 섹터요인** 의 몫일 뿐이며, 반도체 집중의 실질 위험은 Market·x_mom·x_vol 을 통해 흐른다. 집중을 요인 라벨 share 로 읽으면 과소평가한다.",
+        "correction": "risk_summary.top_common_risks 의 'Sector_반도체 (2.0%)' 는 요인-라벨 기준 값이다. 집중 판단은 본 블록 기여(58.9%)로 할 것."
+      }
+    },
+    "cap_tier_decomposition": {
+      "basis": "cap_w_and_ew_uni",
+      "tier_def": "MEGA=cap rank 1-10 / MID=11-30 / OTHER=31+ (SIZE 패널 내 월별 랭킹)",
+      "tiers": {
+        "MEGA": {
+          "tier": "MEGA",
+          "n_months": 130,
+          "weight_share_avg": 0.07507692,
+          "active_risk_share": 0.01102765,
+          "alpha_share": 0.0687827,
+          "mean_active_monthly": 0.00061896,
+          "t_stat": 0.91297119,
+          "signal_alive": false
+        },
+        "MID": {
+          "tier": "MID",
+          "n_months": 163,
+          "weight_share_avg": 0.09840491,
+          "active_risk_share": 0.07985919,
+          "alpha_share": 0.07409082,
+          "mean_active_monthly": 0.00053175,
+          "t_stat": 0.67171362,
+          "signal_alive": false
+        },
+        "OTHER": {
+          "tier": "OTHER",
+          "n_months": 259,
+          "weight_share_avg": 0.9003861,
+          "active_risk_share": 0.94466697,
+          "alpha_share": 0.85712649,
+          "mean_active_monthly": 0.00387145,
+          "t_stat": 1.08742973,
+          "signal_alive": true
+        },
+        "UNRANKED": {
+          "tier": "UNRANKED",
+          "n_months": 0,
+          "available": false
+        }
+      },
+      "current_snapshot": {
+        "MEGA": 5,
+        "MID": 1,
+        "OTHER": 19
+      },
+      "dual_basis_divergence_flag": false,
+      "dual_basis_note": "alpha 실측 ew_universe_port_t 0.949 vs canonical(cap-w 벤치) 0.915 — 괴리 0.034, 기저 판정 불변"
+    },
+    "regime_sigma_heterogeneity": {
+      "label_source": "stage_artifacts/WT_R20260829_004/regime_signal_timeseries.parquet (alpha 산출)",
+      "c5_compliance": "일자 d 의 국면 라벨 = d 가 속한 홀딩월의 라벨. 그 라벨은 used_cutoff(<= holding_month_start)로 확정 — 홀딩월 정보 미사용. risk 는 라벨을 재산출하지 않고 소비만 함.",
+      "n_panic_months": 26,
+      "n_panic_episodes": 4,
+      "n_panic_days": 540,
+      "n_normal_days": 4781,
+      "small_sample_caveat": "에피소드 4건(2008-11~2009-09 / 2020-03~07 / 2022-10~2023-05 / 2024-02~03). 실질 자유도는 26개월이 아니라 에피소드 4 — 국면-조건부 Sigma 의 모든 배율은 이 해상도 안에서만 읽을 것.",
+      "structural_sigma_same_B": {
+        "method": "현재 노출 B 고정 · Omega 만 국면별(sample + eigen-floor) · D 는 국면 특이분산 배율 kappa 적용",
+        "vol_ann_panic": 0.36093077,
+        "vol_ann_normal": 0.33465105,
+        "vol_ratio": 1.07852875,
+        "mean_pairwise_corr_panic": 0.2213071,
+        "mean_pairwise_corr_normal": 0.22009773,
+        "variance_share_panic": {
+          "Market": 0.54357216,
+          "Sector": 0.11712598,
+          "Style": 0.21378255,
+          "Specific": 0.12551931
+        },
+        "variance_share_normal": {
+          "Market": 0.46468452,
+          "Sector": 0.14115821,
+          "Style": 0.26612475,
+          "Specific": 0.12803251
+        },
+        "market_factor_vol_ann_panic": 0.29057172,
+        "market_factor_vol_ann_normal": 0.22615724,
+        "specific_var_kappa_panic_over_normal": 1.14039082,
+        "cond_panic": 44.18102674,
+        "cond_normal": 44.44831502,
+        "reading": "패닉에서 바뀌는 것은 상관(0.2201 -> 0.2213, 사실상 불변)이 아니라 시장성분 비중(46.5% -> 54.4%, +7.9pp)이다. 총 vol 배율은 1.08 에 그친다. 즉 이 책의 패닉 위험은 '전면 동조화'가 아니라 '시장성분 회전'으로 온다."
+      },
+      "realized_holdings_level": {
+        "method": "보유 25종의 일간 상관/슬리브 vol 을 홀딩월 단위로 실측(구성 전환 포함)",
+        "n_months_panic": 26,
+        "n_months_normal": 233,
+        "mean_pairwise_corr_panic": 0.20784668,
+        "mean_pairwise_corr_normal": 0.21522309,
+        "vol_ann_panic": 0.21512479,
+        "vol_ann_normal": 0.26691063,
+        "vol_ratio_realized": 0.8059806,
+        "reading": "실현 패닉 vol 은 오히려 0.81배로 낮다. 구조 Sigma(동일 B)가 1.08배를 말하는데 실현이 0.81배라는 것은 그 격차가 전부 **구성 전환(B 의 이동)** 에서 왔다는 뜻이다 — 이 라운드의 de-risking 레버는 Omega 가 아니라 B 에서 작동했다."
+      },
+      "ex_ante_knowability": {
+        "method": "각 패닉월 시작 전 데이터만으로 panic-Omega / normal-Omega 를 추정해 vol 배율을 예측하고 실현 배율과 대조(PIT walk-forward). 첫 에피소드(2008-11~2009-04)는 선행 패닉표본 부재로 제외.",
+        "n": 20,
+        "pred_ratio_median": 1.55053569,
+        "realized_ratio_median": 0.64696794,
+        "correlation": 0.16943627,
+        "baseline_note": "pred 의 분모는 직전 504일 rolling normal-Omega, realized 의 분모는 그 시점까지의 비패닉월 평균 실현 vol — 분모 정의가 다르므로 수준 비교가 아니라 **순위 정보 유무**로 읽을 것.",
+        "verdict": "NO_TIMING_INFORMATION",
+        "reading": "상관 0.169(n=20). 국면-조건부 Sigma 배율은 사전에 알 수 없다. optimizer 가 패닉 국면 예측 Sigma 로 위험회피를 스케일하면, 실현이 오히려 낮았던 달에 과잉 de-risking 하게 된다. ★이 축의 오버레이 소비는 'Sigma 배율 타이밍'이 아니라 '구성(B) 전환'으로만 정당화된다.",
+        "episode_resolution_note": "n=20 은 월 단위이고 에피소드는 3건(첫 에피소드 제외)이다 — 상관 0.169 는 '정보 없음'의 강한 증거가 아니라 '정보를 검출할 검정력이 없음'에 가깝다. 두 서술의 차이를 흐리지 않기 위해 verdict 는 NO_TIMING_INFORMATION 로 두되 근거는 검정력 한계로 읽을 것."
+      },
+      "artifacts": {
+        "panic": "stage_artifacts/WT_R20260829_004/covariance_panic.parquet",
+        "normal": "stage_artifacts/WT_R20260829_004/covariance_normal.parquet",
+        "regime_correlation": "stage_artifacts/WT_R20260829_004/regime_correlation.parquet"
+      },
+      "consumption_restriction": {
+        "scope": "as-of 진단 전용",
+        "rule": "structural_sigma_same_B(Sigma_panic / Sigma_normal)는 sig_date 2026-08-28 시점 표본 전체로 추정한 **as-of 구조 비교**다. 과거 의사결정일에 이 행렬을 그대로 소비하면 그 시점 기준 미래참조가 된다(C1). 백테스트 경로에서 국면 Sigma 가 필요하면 ex_ante_knowability 절차대로 **각 시점 이전 표본만으로** 재추정할 것.",
+        "forge_note": "forge 가 전기간 백테스트에서 covariance_panic.parquet / covariance_normal.parquet 를 시점 무관하게 쓰면 PIT 위반이다. 사용 시 재추정 경로를 산출물에 명시하라."
+      },
+      "episode_level_dispersion": {
+        "method": "패닉 26개월을 연속 구간으로 묶어 에피소드 4건으로 환원하고, 각 에피소드의 실현 슬리브 vol 을 비패닉 평균 대비 배율로 산출",
+        "base_vol_ann_nonpanic": 0.26691063,
+        "episodes": [
+          {
+            "episode": 1,
+            "n_months": 11,
+            "vol_ann": 0.20722285,
+            "mean_corr": 0.18818845,
+            "ratio_vs_nonpanic": 0.77637541
+          },
+          {
+            "episode": 2,
+            "n_months": 5,
+            "vol_ann": 0.36384489,
+            "mean_corr": 0.335894,
+            "ratio_vs_nonpanic": 1.36317122
+          },
+          {
+            "episode": 3,
+            "n_months": 8,
+            "vol_ann": 0.15165616,
+            "mean_corr": 0.19274531,
+            "ratio_vs_nonpanic": 0.5681908
+          },
+          {
+            "episode": 4,
+            "n_months": 2,
+            "vol_ann": 0.14065971,
+            "mean_corr": 0.05625418,
+            "ratio_vs_nonpanic": 0.52699177
+          }
+        ],
+        "ratio_range": [
+          0.52699177,
+          1.36317122
+        ],
+        "ratio_sd_across_episodes": 0.38543803,
+        "reading": "에피소드별 배율 0.53 / 0.78 / 1.36 / 0.57 — 에피소드 간 sd 0.385. 구조 Sigma 가 말하는 1.08 배는 이 산포 안에 완전히 파묻힌다. 26개월은 표본 크기가 아니라 **에피소드 4** 가 실질 자유도다(memory: 구속하는 건 월 수가 아니라 에피소드 수).",
+        "verdict_downgrade": "국면별 Sigma 이질성의 **수준(배율)** 은 유의하다고 주장하지 않는다. 유의하게 말할 수 있는 것은 ①구성(structure) 축의 이동 — 시장성분 share +7.9pp ②상관은 움직이지 않는다는 부정 결과 ③사전 인지 불가(상관 0.169) 세 가지다."
+      }
+    },
+    "stress_tests": {
+      "scenario_sigma_based": {
+        "basis": "EW 진단기준(w=1/25) · Sigma(as-of, ewma_hl126+eigen-floor) · 1개월 horizon",
+        "market_down_5": -0.04836016,
+        "market_down_10": -0.09672031,
+        "market_3sd_month": -0.49730342,
+        "momentum_reversal_3sd": -0.2212162,
+        "vol_factor_3sd": -0.14633098,
+        "size_3sd": -0.07730184,
+        "joint_market_and_momentum_3sd": -0.71851962,
+        "portfolio_beta": 0.96720311,
+        "portfolio_vol_ann": 0.68800556
+      },
+      "historical_periods": {
+        "Terror_9_11": {
+          "name": "Terror_9_11",
+          "n_months": 0,
+          "coverage": 0,
+          "status": "UNRELIABLE_NO_DATA"
+        },
+        "GFC": {
+          "name": "GFC",
+          "start": "2007-10-01",
+          "end": "2009-03-31",
+          "n_months": 18,
+          "coverage": 1,
+          "status": "OK",
+          "strat_cum": -0.54783143,
+          "bm_cum": -0.36536397,
+          "alpha_cum": -0.18246746,
+          "mdd": -0.63534392,
+          "worst_month": -0.36926458,
+          "n_panic_months": 5
+        },
+        "Euro_Debt": {
+          "name": "Euro_Debt",
+          "start": "2011-07-01",
+          "end": "2011-12-31",
+          "n_months": 6,
+          "coverage": 1,
+          "status": "OK",
+          "strat_cum": -0.04095202,
+          "bm_cum": -0.13095699,
+          "alpha_cum": 0.09000498,
+          "mdd": -0.20758489,
+          "worst_month": -0.12063006,
+          "n_panic_months": 0
+        },
+        "China_Shock": {
+          "name": "China_Shock",
+          "start": "2015-06-01",
+          "end": "2016-02-29",
+          "n_months": 9,
+          "coverage": 1,
+          "status": "OK",
+          "strat_cum": -0.10618911,
+          "bm_cum": -0.09218468,
+          "alpha_cum": -0.01400443,
+          "mdd": -0.16541983,
+          "worst_month": -0.08938397,
+          "n_panic_months": 0
+        },
+        "US_China_Trade": {
+          "name": "US_China_Trade",
+          "start": "2018-03-01",
+          "end": "2018-12-31",
+          "n_months": 10,
+          "coverage": 1,
+          "status": "OK",
+          "strat_cum": -0.21237595,
+          "bm_cum": -0.16493884,
+          "alpha_cum": -0.04743712,
+          "mdd": -0.33034793,
+          "worst_month": -0.21951999,
+          "n_panic_months": 0
+        },
+        "COVID": {
+          "name": "COVID",
+          "start": "2020-01-01",
+          "end": "2020-06-30",
+          "n_months": 6,
+          "coverage": 1,
+          "status": "OK",
+          "strat_cum": 0.07931697,
+          "bm_cum": -0.02836194,
+          "alpha_cum": 0.10767891,
+          "mdd": -0.16127889,
+          "worst_month": -0.11294793,
+          "n_panic_months": 4
+        },
+        "Rate_Hike": {
+          "name": "Rate_Hike",
+          "start": "2022-01-01",
+          "end": "2022-12-31",
+          "n_months": 12,
+          "coverage": 1,
+          "status": "OK",
+          "strat_cum": -0.33622007,
+          "bm_cum": -0.25465557,
+          "alpha_cum": -0.08156451,
+          "mdd": -0.2335235,
+          "worst_month": -0.19583635,
+          "n_panic_months": 3
+        },
+        "Iran_War": {
+          "name": "Iran_War",
+          "start": "2026-02-01",
+          "end": "2026-04-30",
+          "n_months": 3,
+          "coverage": 1,
+          "status": "OK",
+          "strat_cum": 0.14145525,
+          "bm_cum": 0.23391078,
+          "alpha_cum": -0.09245553,
+          "mdd": -0.15334927,
+          "worst_month": -0.15334927,
+          "n_panic_months": 0
+        },
+        "KR_Bear_2026H2": {
+          "name": "KR_Bear_2026H2",
+          "start": "2026-05-01",
+          "end": "2026-08-31",
+          "n_months": 4,
+          "coverage": 1,
+          "status": "OK",
+          "strat_cum": -0.15914549,
+          "bm_cum": 0.02228036,
+          "alpha_cum": -0.18142585,
+          "mdd": -0.37990919,
+          "worst_month": -0.28524965,
+          "n_panic_months": 0
+        }
+      },
+      "coverage_rule": "book coverage < 0.85 구간은 UNRELIABLE 명시(부분 상장 아티팩트 hard-fail 금지). 본 라운드는 전 구간 coverage 1.00 — 단 Terror_9_11 은 표본시작(2005-02) 이전이라 산출 자체가 없다.",
+      "reading": "GFC 에서 슬리브 -54.8% vs BM -36.5%, 구간 MDD -63.5% — 전체 MDD(-63.5%)가 이 한 구간에서 나온다. 2026H2(최근) 에서는 BM +2.2% 인데 슬리브 -15.9%, 구간 MDD -38.0% 로 현 vintage 에서도 하방이 열려 있다."
+    },
+    "tail_risk": {
+      "basis_daily": "슬리브 일간 gross(EW top-25, 법정한도 winsorize) n=5321 · 비용 미반영(꼬리 형상용)",
+      "basis_monthly": "period_returns_production.csv ret_net (15bps 반영) n=259",
+      "daily": {
+        "var95": 0.02938124,
+        "es95": 0.04593262,
+        "var99": 0.05445924,
+        "es99": 0.07590341,
+        "skew": -0.10529321,
+        "kurt": 11.55802545,
+        "hill_alpha_left": 2.59858244,
+        "hill_alpha_right": 2.78109004
+      },
+      "monthly": {
+        "var95": 0.11517568,
+        "es95": 0.18840068,
+        "var99": 0.20670884,
+        "es99": 0.29134474,
+        "worst": -0.36926458,
+        "skew": -0.00191716,
+        "kurt": 5.15840416
+      },
+      "evt_gpd_95": {
+        "var_evt": 0.02927885,
+        "es_evt": 0.04613139,
+        "shape_xi": 0.11637359,
+        "scale_beta": 0.01373763,
+        "threshold_u": 0.01936486,
+        "threshold_q": 0.9,
+        "n_exceedances": 532,
+        "method": "gpd_mle_selfimpl"
+      },
+      "evt_gpd_99": {
+        "var_evt": 0.05511283,
+        "es_evt": 0.07652286,
+        "shape_xi": 0.15569763,
+        "scale_beta": 0.01407019,
+        "threshold_u": 0.02938124,
+        "threshold_q": 0.95,
+        "n_exceedances": 266,
+        "method": "gpd_mle_selfimpl"
+      },
+      "cdar_95": {
+        "cdar": 0.57590013,
+        "dar": 0.54564631,
+        "max_dd": -0.69324963,
+        "alpha": 0.95
+      },
+      "tail_dependence_lower_vs_market_q05": 0.57883856,
+      "c9_lagged_drawdown": {
+        "rule": "dd_lag <- c(0, dd_pct[-n])",
+        "max_dd_lagged": -0.69324963,
+        "mean_dd_lagged": -0.24495689
+      },
+      "evt_threshold_stability": {
+        "method": "GPD(POT) MLE 의 shape xi 를 threshold 분위수 4점에서 재적합",
+        "table": [
+          {
+            "threshold_q": 0.9,
+            "xi": 0.11637359,
+            "beta": 0.01373763,
+            "n_exceed": 532
+          },
+          {
+            "threshold_q": 0.925,
+            "xi": 0.1271856,
+            "beta": 0.01395157,
+            "n_exceed": 399
+          },
+          {
+            "threshold_q": 0.95,
+            "xi": 0.15569763,
+            "beta": 0.01407019,
+            "n_exceed": 266
+          },
+          {
+            "threshold_q": 0.975,
+            "xi": 0.10061576,
+            "beta": 0.01690324,
+            "n_exceed": 133
+          }
+        ],
+        "xi_range": [
+          0.10061576,
+          0.15569763
+        ],
+        "reading": "xi 가 0.101~0.156 로 전 구간 양수 — 두꺼운 꼬리(Frechet) 판정은 threshold 선택의 아티팩트가 아니다. 초과관측 133~532 로 표본도 충분."
+      }
+    },
+    "top_common_risks_note": "요인-라벨 기준 분해. 종목집중/섹터집중의 실질 몫은 concentration.sector_block_variance_contribution 을 볼 것(반도체 블록 58.9%).",
+    "vol_centric_alpha_check": {
+      "trigger": "risk-style Cycle 2 교훈 — 본 라운드 factor_specs[[2]] 가 126d 실현변동성 신호(vol-centric)이므로 crowding/idio-vol tilt 점검 의무 발동",
+      "crowding_of_vol_factor": {
+        "factor": "LowVol_realized126d",
+        "crowding_score": 0.2687,
+        "hhi_top": 0.0625,
+        "alert": "none",
+        "reading": "4요인 중 최저 crowding. 저변동 축은 이 유니버스에서 붐비지 않는다 — 패닉 분기의 실행가능성은 crowding 쪽에서 막히지 않는다."
+      },
+      "total_vol_tilt": {
+        "by_regime": [
+          {
+            "panic": 0,
+            "n_months": 234,
+            "x_vol_mean": 1.04097768,
+            "raw_vol": 0.59243689,
+            "uni_vol": 0.41736917,
+            "ratio": 1.42090704
+          },
+          {
+            "panic": 1,
+            "n_months": 26,
+            "x_vol_mean": -0.64906241,
+            "raw_vol": 0.44742303,
+            "uni_vol": 0.53784475,
+            "ratio": 0.85230723
+          }
+        ],
+        "t_stat": -14.36655605,
+        "p_value": 1.62813242e-14,
+        "asof_x_vol": 1.27367278,
+        "asof_raw_vol_median": 1.15132869,
+        "asof_universe_vol_median": 0.74674898,
+        "asof_ratio": 1.5417881
+      },
+      "idio_vol_tilt": {
+        "by_regime": [
+          {
+            "panic": 0,
+            "n": 232,
+            "idio_ratio": 1.71574781
+          },
+          {
+            "panic": 1,
+            "n": 26,
+            "idio_ratio": 0.84573437
+          }
+        ],
+        "note": "신호는 총변동성(vol126)인데 Sigma 의 특이분산은 잔차 기준이다. 두 tilt 가 갈리면 '저변동 선택'이 실제로는 저-베타 선택이라는 뜻."
+      },
+      "crisis_periods": [
+        {
+          "period": "GFC",
+          "n": 18,
+          "x_vol": 0.00924998,
+          "vol_ratio": 1.02572972,
+          "n_panic": 5
+        },
+        {
+          "period": "COVID",
+          "n": 6,
+          "x_vol": 0.18348679,
+          "vol_ratio": 1.19996646,
+          "n_panic": 4
+        },
+        {
+          "period": "RateHike",
+          "n": 12,
+          "x_vol": 0.56247708,
+          "vol_ratio": 1.30721523,
+          "n_panic": 3
+        },
+        {
+          "period": "KR2026H2",
+          "n": 4,
+          "x_vol": 1.42727611,
+          "vol_ratio": 1.50163772,
+          "n_panic": 0
+        }
+      ],
+      "forge_recommendation": {
+        "id": "RISK->FORGE AX-001 v2",
+        "action": "crisis IC 재검 권고",
+        "reason": "vol-centric 신호는 crisis 구간에서 IC 부호가 뒤집히는 계열(Cycle 2 실측 교훈). 본 라운드의 패닉 분기는 26개월(에피소드 4)에서만 발화하므로 전기간 IC 로는 그 구간 거동이 희석된다. forge 는 GFC/COVID/RateHike/2026H2 각 구간에서 vol126 축의 IC 를 **구간별로** 재산출해 부호 안정성을 확인할 것.",
+        "scope_note": "risk 는 권고만 한다 — IC 재산출은 forge/alpha 영역이며 본 에이전트는 alpha 신호를 재해석하지 않는다."
+      },
+      "manipulation_check": {
+        "verdict": "TREATMENT_DELIVERED",
+        "x_vol_tilt_nonpanic": 1.0409777,
+        "x_vol_tilt_panic": -0.6490624,
+        "diff": -1.69,
+        "t_stat": -14.37,
+        "p_value": 0,
+        "idio_vol_ratio_nonpanic": 1.7157478,
+        "idio_vol_ratio_panic": 0.8457344,
+        "reading": "패닉월에 구성이 고변동(+1.04)에서 저변동(-0.65)으로 실제로 뒤집혔다(t -14.37). 특이분산도 1.72배->0.85배로 동반 하락하므로 '저베타 선택일 뿐'이라는 대안 설명은 배제된다. => alpha 의 음성 판정은 미결이 아니라 실측 negative 다.",
+        "recent_vintage_alert": "KR2026H2(2026-05~08) 구간 x_vol tilt +1.427(유니버스 1.50배)인데 패닉 분기 발화 0회. 그 구간 슬리브 -15.9% / MDD -38.0% (BM +2.2%). 최근 손상의 기전."
+      }
+    }
+  },
+  "diagnostics": {
+    "selection_objective": "condition_number",
+    "selection_rule": "① HARD: PSD ∧ cond(Sigma)<500 ② 구조보존: cond(Omega_live)>=10 (등방 붕괴 배제 — FQ-057 NP3 posterior) ③ 위험예측 캘리브레이션: 무작위 롱온리 25종 EW 포트 walk-forward bias statistic(sd(실현/예측), 이상치 1.0). ★알파 수익·SR·IR 참조 없음(R4 P3). ④ 동률 시 cond(Sigma) 최소.",
+    "selection_decisive_axis": "현 횡단면이 유니버스 변동성 상위 터셀에 있으므로 HIGH-vol 터셀 bias 를 결정축으로 사용: ewma_hl126 1.047 vs sample 1.123 / lw_nls 1.129 / ledoit_wolf 1.113 / gerber_rmt 1.199. 정적 창 추정기는 현 국면에서 위험을 12~20% 과소예측한다.",
+    "ledoit_wolf_rejected": "cond(Omega)=1.87 = 등방(mu*I) 붕괴 — 요인 분산 스케일이 이질적일 때 인라인 LW(OAS 변형)가 구조를 전멸시킨다(FQ-057 NP3 와 동형 병리). 슬리브 bias 0.623(60% 과대예측)이 그 귀결.",
+    "condition_number": 176.60375677,
+    "condition_number_before_floor": 163.06749383,
+    "condition_number_omega_before": 8903.04021676,
+    "condition_number_omega_after": 400,
+    "psd_verified": true,
+    "min_eigenvalue": 0.00593466,
+    "shrinkage_used": true,
+    "shrinkage_method": "ewma_hl126 + eigen-floor(lambda_min = lambda_max/400) on Omega",
+    "shrinkage_rationale": "Sigma cond 는 이미 163(<500)이었으나 Omega cond 8903 은 요인공간 준특이 — 소수 섹터 요인의 EWMA 분산이 0 에 근접. eigen-floor 로 400 으로 조인 뒤 Sigma cond 177(<500) 유지, PSD 확인.",
+    "method_shopping_log": {
+      "candidates_tried": 5,
+      "cap": 5,
+      "method_log": [
+        {
+          "name": "sample",
+          "cond_omega_live": 4582.45414156,
+          "cond_sigma": 104.11020384,
+          "psd_sigma": true,
+          "bias_stat_random_all": 1.04797682,
+          "bias_stat_random_highvol": 1.12340468,
+          "bias_stat_sleeve_all": 1.11886839,
+          "n_random": 896,
+          "implied_port_vol_ann_ew": 0.5177238,
+          "selected": false
+        },
+        {
+          "name": "ewma_hl126",
+          "cond_omega_live": 8903.04021676,
+          "cond_sigma": 163.06749383,
+          "psd_sigma": true,
+          "bias_stat_random_all": 1.04879429,
+          "bias_stat_random_highvol": 1.04711042,
+          "bias_stat_sleeve_all": 1.11408021,
+          "n_random": 896,
+          "implied_port_vol_ann_ew": 0.65287312,
+          "selected": true
+        },
+        {
+          "name": "ledoit_wolf",
+          "cond_omega_live": 1.8729806,
+          "cond_sigma": 397.96638619,
+          "psd_sigma": true,
+          "bias_stat_random_all": 1.01159932,
+          "bias_stat_random_highvol": 1.11311743,
+          "bias_stat_sleeve_all": 0.62351269,
+          "n_random": 896,
+          "implied_port_vol_ann_ew": 1.06871119,
+          "selected": false
+        },
+        {
+          "name": "lw_nls",
+          "cond_omega_live": 4023.64463165,
+          "cond_sigma": 102.72602806,
+          "psd_sigma": true,
+          "bias_stat_random_all": 1.04671553,
+          "bias_stat_random_highvol": 1.12879175,
+          "bias_stat_sleeve_all": 1.1075685,
+          "n_random": 896,
+          "implied_port_vol_ann_ew": 0.51496298,
+          "selected": false
+        },
+        {
+          "name": "gerber_rmt",
+          "cond_omega_live": 776.01539227,
+          "cond_sigma": 89.78330115,
+          "psd_sigma": true,
+          "bias_stat_random_all": 1.0810411,
+          "bias_stat_random_highvol": 1.19934111,
+          "bias_stat_sleeve_all": 1.14449496,
+          "n_random": 896,
+          "implied_port_vol_ann_ew": 0.48014995,
+          "selected": false
+        }
+      ]
+    },
+    "factor_correlation_warnings": [
+      {
+        "f1": "SEC_IT가전",
+        "f2": "SEC_철강",
+        "rho": 0.80340195
+      },
+      {
+        "f1": "SEC_건강관리",
+        "f2": "SEC_필수소비재",
+        "rho": 0.81585457
+      },
+      {
+        "f1": "SEC_은행",
+        "f2": "SEC_필수소비재",
+        "rho": 0.81315263
+      },
+      {
+        "f1": "SEC_필수소비재",
+        "f2": "SEC_호텔,레저서비스",
+        "rho": 0.81278656
+      },
+      {
+        "f1": "SEC_필수소비재",
+        "f2": "SEC_화장품,의류,완구",
+        "rho": 0.85553875
+      },
+      {
+        "f1": "SEC_IT가전",
+        "f2": "SEC_화학",
+        "rho": 0.90108458
+      },
+      {
+        "f1": "SEC_철강",
+        "f2": "SEC_화학",
+        "rho": 0.86655336
+      }
+    ],
+    "factor_correlation_note": "시장성분 제거 후에도 섹터 요인 간 |rho|>0.8 쌍이 7개 — 27개 섹터가 독립 요인이 아니라는 뜻. Omega 를 그대로 역행렬 하는 최적화(MVO)는 이 지점에서 불안정해진다(HRP/ERC 계열이 이 구조에 더 안전하다는 것은 optimizer 판단 영역).",
+    "tdc_summary": {
+      "sleeve_vs_market_lower_q05": 0.57883856
+    },
+    "model_fit": {
+      "spec_note": "Market 성분은 beta*BM 로 사전 제거 — 아래 R2 는 '시장 제거 후' 잔여를 Sector+Style 이 설명한 비율",
+      "mean_daily_r2_after_market": 0.21814799,
+      "median_daily_r2_after_market": 0.19838951,
+      "portfolio_specific_variance_share_asof": 0.0302915,
+      "portfolio_factor_variance_share_asof": 0.9697085,
+      "portfolio_specific_share_normal_regime": 0.12803251,
+      "portfolio_specific_share_panic_regime": 0.12551931
+    },
+    "regime_correlation_ref": "stage_artifacts/WT_R20260829_004/regime_correlation.parquet",
+    "covariance_freshness": {
+      "cache_used": false,
+      "computed_at": "2026-08-29T18:30:25",
+      "covariance_asof": "2026-08-28",
+      "stale": false,
+      "note": "R6 SLA — .cache/covariance 캐시 미사용, 본 WT 에서 직접 추정."
+    },
+    "data_integrity": {
+      "finding": "일간 수익 패널에 법정 가격제한폭 초과 관측 267건(0.00754%) — 무상증자/액면분할 미조정 아티팩트(+9.0=x10, +4.0=x5, 최대 +65.86=x66.9)",
+      "handling": "Sigma 추정 substrate 에 한해 KRX 일간 가격제한폭 규칙으로 winsorize(2015-06-15 이후 ±31%, 이전 ±16%). 규칙 기반이며 데이터 스누핑 아님. alpha 산출물은 수정하지 않음(read-only).",
+      "worst_dates": [
+        "2026-04-30 (17건, 최대 +6586%)",
+        "2026-08-28",
+        "2026-07-31",
+        "2026-07-21",
+        "2026-08-14",
+        "2026-08-25"
+      ],
+      "n_affected_obs": 267,
+      "pct_of_panel": 0.0000754,
+      "impact_on_alpha_selection": "형성창(J=6 skip1) 경유로 오염 종목이 그 달 top-25 에 진입한 사례 12건 / 6475 보유슬롯(0.19%). 현재 top-25 및 pool-50 에는 오염 종목 0건. 오염월 ∩ 패닉 신호월 = 공집합 → 패닉 분기(저변동 선택)의 26개월은 무오염.",
+      "impact_on_sigma": "winsorize 전후 as-of EW 연율 vol 62.8% -> 65.3% (요인 substrate 재추정). 방향은 결함 제거가 vol 을 낮추는 쪽이 아니었다 — 즉 현 vintage 의 고위험은 오염이 만든 것이 아니다.",
+      "market_vintage_check": {
+        "note": "BM(KOSPI200) 2026 연율 vol 69.5%(전기간 23.4%) 이 벤치 계열 결함인지 실제 국면인지 통제로 판별",
+        "bm_2026_vol_ann": 0.6953,
+        "cap_weighted_universe_2026_vol_ann": 0.6563,
+        "equal_weighted_universe_2026_vol_ann": 0.4094,
+        "corr_bm_vs_capweighted_2026": 0.9932,
+        "verdict": "BM 결함 아님 — 시가총액가중 유니버스가 동일하게 65.6% 이고 상관 0.993. 2026 고변동은 실데이터 국면이며 대형주 구간에 집중(EW 40.9% << CW 65.6%)."
+      },
+      "escalation": "Q-Lead/judge 판단 대상. risk 는 Sigma substrate 정정만 수행하고 alpha 값을 고치지 않았다(Charter 원칙 8)."
+    },
+    "specific_risk_sensitivity": {
+      "method": "D 의 EWMA halflife(3/6/12개월) x 하한(median의 0.10/0.25/0.50배) 9조합 재추정",
+      "table": [
+        {
+          "hl_months": 3,
+          "floor_x_median": 0.1,
+          "vol_ann": 0.68964713,
+          "spec_share": 0.03490241
+        },
+        {
+          "hl_months": 3,
+          "floor_x_median": 0.25,
+          "vol_ann": 0.68964713,
+          "spec_share": 0.03490241
+        },
+        {
+          "hl_months": 3,
+          "floor_x_median": 0.5,
+          "vol_ann": 0.68964713,
+          "spec_share": 0.03490241
+        },
+        {
+          "hl_months": 6,
+          "floor_x_median": 0.1,
+          "vol_ann": 0.68800556,
+          "spec_share": 0.0302915
+        },
+        {
+          "hl_months": 6,
+          "floor_x_median": 0.25,
+          "vol_ann": 0.68800556,
+          "spec_share": 0.0302915
+        },
+        {
+          "hl_months": 6,
+          "floor_x_median": 0.5,
+          "vol_ann": 0.68801158,
+          "spec_share": 0.03030845
+        },
+        {
+          "hl_months": 12,
+          "floor_x_median": 0.1,
+          "vol_ann": 0.68673862,
+          "spec_share": 0.02671023
+        },
+        {
+          "hl_months": 12,
+          "floor_x_median": 0.25,
+          "vol_ann": 0.68673862,
+          "spec_share": 0.02671023
+        },
+        {
+          "hl_months": 12,
+          "floor_x_median": 0.5,
+          "vol_ann": 0.68675111,
+          "spec_share": 0.02674562
+        }
+      ],
+      "vol_ann_range": [
+        0.68673862,
+        0.68964713
+      ],
+      "spec_share_range": [
+        0.02671023,
+        0.03490241
+      ],
+      "reading": "포트 연율 vol 0.687~0.690(스프레드 0.4%), 특이비중 2.67~3.49%. D 의 자유도 선택은 이 책의 위험 수준을 사실상 움직이지 않는다 — 25종 EW 집계에서 특이위험이 이미 상쇄되기 때문. 즉 특이분산 추정의 임의성은 결론의 약점이 아니다."
+    },
+    "reproducibility_note": {
+      "issue": "stage_artifacts/WT_R20260829_004/risk_calc_stage3.rds 의 mtime(18:56:16)이 이를 소비한 r6_emit(18:27:10)보다 뒤다 — 산출물 시간순서만 보면 '소비 후 입력이 바뀐' 것처럼 보인다.",
+      "cause": "r5_tail_stress.R 초판이 EXP 를 allow.cartesian 으로 조인해 2분 타임아웃 → 백그라운드로 이관됐고, 그 사이 조인을 (Ticker, hold_ym) 키로 수정해 전경에서 재실행했다. 뒤늦게 끝난 백그라운드 프로세스가 같은 파일을 다시 썼다.",
+      "why_harmless": "구판 조인은 cartesian 후 ym==hold_ym 로 필터하므로 **결과집합이 동일**하고 느리기만 했다. 실제로 두 실행의 콘솔 출력이 라인 단위로 일치했고(HHI 0.306 · 모형 R2 0.218 · tier/유동성 전부), 덮어쓴 rds 를 패키지·tail_risk.json 과 26개 항 전수 대조한 결과 최대 절대오차 4.696e-09 < 5e-09(write_json digits=8 = 소수 8자리 반올림 한계).",
+      "verification": "stage3.rds vs risk_package.json vs tail_risk.json 3자 대조 26항 · 불일치 0",
+      "audit_guidance": "mtime 역전은 이 사유이며 데이터 오염이 아니다. 재현 시 현재 디스크의 r5_tail_stress.R(수정판, allow.cartesian 0건)을 그대로 실행하면 동일 값이 나온다.",
+      "serialization_note": "risk_package.json / tail_risk.json 의 수치는 write_json(digits=8) = 소수점 이하 8자리로 반올림된다. 일간 분산처럼 1e-4 규모 값은 유효숫자 4자리만 남으므로, 정밀 소비는 반드시 parquet(배정밀도 원본)을 쓸 것 — Sigma·Omega·D 전부 parquet 으로 발행돼 있다."
+    }
+  },
+  "evaluation_criteria_selfcheck": {
+    "sigma_psd": true,
+    "cond_lt_500": true,
+    "factor_coverage_gt_80pct": true,
+    "factor_coverage_value": 0.9697085,
+    "factor_coverage_note": "포트 수준 요인분산 비중 97.0%(기준 충족). 단 개별종목 수준으로 보면 시장성분 제거 후 잔여를 섹터+스타일이 설명한 일간 R2 는 평균 21.8% — 종목 특이위험은 여전히 크고, 25종 EW 집계에서 상쇄되어 포트 비중이 낮게 보이는 것이다.",
+    "stress_policy_ok": true,
+    "ir_estimate_note": "alpha-risk 결합 IR 추정치는 산출하지 않는다 — alpha 수익 참조는 R4 P3 selection_objective 금지 대상이며, 결합 판정은 optimizer/forge 소관."
+  },
+  "red_flags": [
+    {
+      "id": "RF-R1",
+      "severity": "HIGH",
+      "message": "as-of 총위험의 68.8% 가 Market 단일 성분(문턱 40%). ★단일 스냅샷 아티팩트 방어: walk-forward 평균 시장share 42.7%(n=235), alpha F2 실현분산 분해 50.4% — 세 계기가 모두 40% 초과이므로 아티팩트가 아니라 구조다. as-of 값이 큰 것은 현 vintage 의 시장변동성 국면 탓."
+    },
+    {
+      "id": "RF-R5",
+      "severity": "MEDIUM",
+      "message": "요인 상관 |rho|>0.8 쌍 7개 (섹터 요인 간 — 시장 제거 후 잔여 공통성분 잔존)"
+    },
+    {
+      "id": "RF-R6-CONCENTRATION",
+      "severity": "HIGH",
+      "message": "섹터 집중 극단: 반도체 13/25종(비중 52%) · 섹터 HHI 0.306 · ★Sigma 내 분산 기여 58.9%(내부 공분산 36.9%p). failure_rules 의 '>50% 극단' 해당. 2026-08-29 체인완주 지시에 따라 ABORT 하지 않고 flag 로 이관."
+    },
+    {
+      "id": "RF-R7-VINTAGE",
+      "severity": "HIGH",
+      "message": "현 vintage 위험수준이 표본 최고치: as-of Sigma 함의 연율 vol 68.8% (표본 평균 실현 31.1%, 직전 12개월 실현 62.7%). Market factor EWMA 연율 vol 59.4% (전기간 23.4%). Sigma 수준을 through-the-cycle 로 소비하지 말 것."
+    }
+  ],
+  "challenge_flags": [
+    {
+      "id": "RISK-CH1",
+      "severity": "HIGH",
+      "to": "optimizer",
+      "message": "섹터 집중 반도체 52%(13/25). failure_rules 의 '섹터/스타일 집중 극단(>50%)' 조건에 해당한다. Rule 2 로는 STOP 권고 사안이나 2026-08-29 도훈 체인완주 지시에 따라 ABORT 하지 않고 flag 로 넘긴다 — optimizer 는 섹터 제약을 명시적으로 다루거나, 다루지 않기로 한 근거를 남길 것. (risk 는 비중을 제안하지 않는다)"
+    },
+    {
+      "id": "RISK-CH2",
+      "severity": "HIGH",
+      "to": "optimizer/forge",
+      "message": "as-of Sigma 는 표본 최고 변동성 vintage 에서 추정됐다(EW 함의 연율 vol 68.8%, 전기간 실현 31.1%). Sigma 수준을 through-the-cycle 위험으로 쓰면 과대 de-risking, 반대로 장기 평균 Sigma 를 쓰면 현 vintage 과소. 두 vintage 를 병기해 두었으니 어느 쪽을 소비했는지 forge 산출물에 명시할 것."
+    },
+    {
+      "id": "RISK-CH3",
+      "severity": "HIGH",
+      "to": "alpha/Q-Lead",
+      "message": "데이터 무결성: 법정 가격제한폭 초과 267건(무상증자·액면분할 미조정). alpha 선택 경로 침투는 12/6475 슬롯(0.19%)이고 패닉월과는 공집합이라 alpha 실측 판정은 바뀌지 않는다. 다만 원장 수준의 수리 대상이다 — risk 는 Sigma substrate 만 정정했고 alpha 값은 손대지 않았다."
+    },
+    {
+      "id": "RISK-CH4",
+      "severity": "MEDIUM",
+      "to": "optimizer",
+      "message": "국면-조건부 Sigma 배율은 사전 인지 불가(pred vs realized 상관 0.169, n=20). 패닉 Sigma 예측으로 위험회피를 스케일하는 설계는 근거 없음. 실현 패닉 vol 은 비패닉의 0.81배였고 그 개선은 전부 구성 전환(B)에서 왔다."
+    },
+    {
+      "id": "RISK-CH5",
+      "severity": "MEDIUM",
+      "to": "alpha",
+      "message": "alpha F2(시장성분 50.4%)에 대한 독립 확인: 요인모형 walk-forward 평균 시장분산 share 42.7%(n=235), as-of 68.8%. 두 계기가 방법이 다른데 같은 방향이므로 F2 의 시장지배 판정은 강화된다 — 이 축의 위험은 특이성분이 아니라 시장에 있다."
+    },
+    {
+      "id": "RISK-CH6",
+      "severity": "MEDIUM",
+      "to": "optimizer/forge",
+      "message": "꼬리: 좌측 Hill alpha 2.60(3차 적률 발산) · EVT-GPD xi 0.156>0(Frechet) · 시장과의 하방 tail dependence 0.579 · CDaR95 57.6%. 정규성 가정 위험모형(평균-분산 단독)은 이 책의 꼬리를 과소평가한다."
+    },
+    {
+      "id": "RISK-CH7",
+      "severity": "MEDIUM",
+      "to": "forge",
+      "message": "vol-centric alpha 점검(risk-style Cycle 2): 패닉 분기가 126d 실현변동성 신호다. crowding 은 최저(0.269)로 무해하나, crisis 구간별 IC 부호 안정성은 미검증이다. AX-001 v2 crisis IC 를 GFC/COVID/RateHike2022/2026H2 구간별로 재산출할 것. 상세 = risk_summary.vol_centric_alpha_check."
+    }
+  ],
+  "self_adversarial_challenge_ref": "qepm/mailbox/worktask/WT-R20260829_004/challenge_note.md (## risk 구간)",
+  "verdict": "risk_package_complete",
+  "self_adversarial": {
+    "performed": true,
+    "method": "Opus native adversarial reasoning (v8.2 — 외부 Codex 라운드 없음)",
+    "n_concerns": 8,
+    "classification": {
+      "ACCEPT": 4,
+      "PARTIAL": 1,
+      "REBUTTAL": 3
+    },
+    "concerns": [
+      {
+        "id": "SC1",
+        "axis": "PIT/C1",
+        "verdict": "ACCEPT",
+        "concern": "국면 Omega 를 sig_date 전 표본으로 추정 — 과거 시점에서 소비되면 미래참조",
+        "action": "regime_sigma_heterogeneity.consumption_restriction 신설 + forge 경고"
+      },
+      {
+        "id": "SC2",
+        "axis": "추정기 선택 R4 P3",
+        "verdict": "REBUTTAL",
+        "concern": "bias statistic 이 실현수익을 참조하므로 알파 기반 선택 아닌가",
+        "rebuttal": "1급 bias 는 유니버스에서 무작위 추출한 롱온리 25종 EW 포트 896 포트-월로 산출했다(알파 슬리브 아님). 측정 대상은 예측 vs 실현의 **산포 배율**이지 수익 수준이 아니며, SR/IR 는 이 라운드에서 단 한 번도 계산하지 않았다. 1급 게이트는 선언한 enum(PSD·cond)이고 ledoit_wolf 기각 사유도 등방 붕괴라는 구조 근거다. 슬리브 bias 는 진단 병기로만 실었다."
+      },
+      {
+        "id": "SC3",
+        "axis": "Sigma PD",
+        "verdict": "REBUTTAL",
+        "concern": "eigen-floor 로 PD 를 인위적으로 만든 것 아닌가",
+        "rebuttal": "floor 는 Omega 에만 걸었고 Sigma 는 floor 이전에도 min eig>0 · cond 163 이었다. floor 적용 후 Sigma cond 는 163->177 로 **악화**했다 — 유리한 수치를 만드는 방향이 아니다. 최종 PSD 는 발행된 covariance.parquet 을 다시 읽어 독립 고유분해로 재확인(min eig 5.93e-3)."
+      },
+      {
+        "id": "SC4",
+        "axis": "국면 소표본",
+        "verdict": "ACCEPT",
+        "concern": "26개월/4에피소드로 국면 Sigma 배율을 말할 수 있는가",
+        "action": "에피소드별 실현 배율 실측(0.53~1.36, sd 0.385) 등재 + 배율 주장 철회. 남기는 주장은 구조 share 이동·상관 불변·사전인지 불가 3건으로 축소"
+      },
+      {
+        "id": "SC5",
+        "axis": "꼬리 지표 선택",
+        "verdict": "PARTIAL",
+        "concern": "fExtremes 부재로 GPD 를 자체 구현했고 threshold 는 임의 아닌가",
+        "action": "threshold 4점 재적합으로 xi 안정성 실증(0.101~0.156 전부 양수). 다만 자체 구현이므로 fExtremes 파리티 검증은 미수행 — 그 한계를 명시"
+      },
+      {
+        "id": "SC6",
+        "axis": "D 추정 임의성",
+        "verdict": "REBUTTAL",
+        "concern": "halflife 6M·하한 0.25x median 은 임의 선택",
+        "rebuttal": "9조합 민감도에서 포트 vol 0.687~0.690, 특이비중 2.67~3.49%. 결론을 움직이지 않는다는 것을 수치로 보였다."
+      },
+      {
+        "id": "SC7",
+        "axis": "섹터 위험 누락",
+        "verdict": "ACCEPT",
+        "concern": "반도체 52% 집중이 요인 share 2.0% 로만 보이는 것은 모형이 집중을 놓친 것 아닌가",
+        "action": "Sigma 내 섹터 블록 기여 실측(반도체 58.9%, 내부 공분산 36.9%p) 등재 + top_common_risks 해석 주의 문구 삽입"
+      },
+      {
+        "id": "SC8",
+        "axis": "산출 의무 누락(risk-style Cycle 2)",
+        "verdict": "ACCEPT",
+        "concern": "vol-centric alpha 의 crowding/idio-vol tilt 점검 + Forge crisis IC 재검 권고를 빠뜨린 채 finalize 했다",
+        "action": "tilt 실측 등재(x_vol 비패닉 +1.041 vs 패닉 -0.649, t -14.37 · idio-vol 1.72배 vs 0.85배) + RISK-CH7 forge 권고 발행",
+        "side_finding": "조작확인 성립 — 처치가 t -14.37 로 확실히 전달됐고 특이분산도 동반 하락했으므로, alpha 의 음성은 '처치 미전달로 인한 미결'이 아니라 '전달된 처치의 실측 negative' 다."
+      }
+    ],
+    "self_rationalization_check": {
+      "forbidden_phrases_used": false,
+      "audit": "'영향 미미 / 관행적 허용 / 보수적이면 괜찮다 / 대부분 결과 동일' 사용 여부 자체 점검 — SC6 은 '미미'라고 쓰지 않고 9조합 수치 범위로 대체했고, SC4 는 '소표본이지만 방향은 맞다' 로 넘기지 않고 배율 주장 자체를 철회했다."
+    },
+    "escalation_check": {
+      "HIGH_count": 3,
+      "axiom_hard_fail": 0,
+      "pit_hard_violation": false,
+      "sigma_pd_violation": false,
+      "escalated": false,
+      "rule": "HIGH>=5 / AX hard FAIL>=3 / PIT hard violation / Sigma PD violation 중 해당 없음 → Q-Lead 자동 escalate 미발동. 단 challenge_flags 6건은 하류로 전달."
+    }
+  },
+  "handoff": {
+    "next_agent": "optimizer-research",
+    "consumes": [
+      "qepm/mailbox/worktask/WT-R20260829_004/risk_package.json",
+      "stage_artifacts/WT_R20260829_004/covariance.parquet",
+      "stage_artifacts/WT_R20260829_004/exposure_matrix.parquet",
+      "stage_artifacts/WT_R20260829_004/specific_risk.parquet",
+      "stage_artifacts/WT_R20260829_004/factor_covariance.parquet",
+      "stage_artifacts/WT_R20260829_004/covariance_panic.parquet (as-of 진단 전용 — consumption_restriction 준수)",
+      "stage_artifacts/WT_R20260829_004/covariance_normal.parquet (동일)",
+      "stage_artifacts/WT_R20260829_004/tail_risk.json",
+      "stage_artifacts/WT_R20260829_004/regime_correlation.parquet"
+    ],
+    "status_transition": {
+      "attempted": "ALPHA_DONE -> RISK_DONE",
+      "transition_allowed": true,
+      "artifacts_present": true,
+      "blocked_by": "schema validation",
+      "reason": "02_Infrastructure/worktask/schema.json 의 task_id 패턴 '^WT-[DPSH][0-9]{8}_[0-9]{3}$' 가 v10 reinforcement 접두 **R** 을 포함하지 않는다. 동일 검증에서 alpha_package.json 도 같은 사유로 INVALID — 본 라운드가 만든 결함이 아니라 선재하는 스키마 공백이며 _005/_006/_007 도 동일하게 걸린다.",
+      "action_taken": "status.json 을 손으로 쓰지 않았다(게이트 우회 금지). current_phase 는 ALPHA_DONE 으로 남는다.",
+      "downstream_impact": "worktask_sequence_enforcer 는 선행 패키지 **파일 존재**로 허용 판정하므로 optimizer 스폰은 막히지 않는다. 다만 상태기계 기록은 어긋난 채 남는다 — Q-Lead 판단 필요.",
+      "fix_location": "02_Infrastructure/worktask/schema.json:17 (패턴에 R 추가) — risk 권한 밖(WT_004 외부 쓰기 금지)"
+    },
+    "optimizer_reading_order": [
+      "1) risk_summary.top_common_risks_note → 요인 라벨이 아니라 concentration.sector_block_variance_contribution 으로 집중을 읽을 것",
+      "2) risk_summary.regime_sigma_heterogeneity.consumption_restriction → 국면 Sigma 는 as-of 진단 전용",
+      "3) diagnostics.factor_correlation_note → 섹터 요인 7쌍 |rho|>0.8, Omega 역행렬 기반 최적화 불안정 구간",
+      "4) challenge_flags RISK-CH1(섹터 52%) / RISK-CH2(vintage 위험수준) / RISK-CH4(국면 배율 사전인지 불가)",
+      "5) risk_summary.portfolio_beta → 노출가중 0.967 vs 회귀 1.035, 보수측은 회귀값"
+    ]
+  }
+}

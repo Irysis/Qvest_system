@@ -1,0 +1,211 @@
+{
+  "wt_id": "WT-R20260829_004",
+  "designed_by": "alpha-hypothesis",
+  "model_tier": "opus",
+  "created_at": "2026-08-29",
+  "spec_version": "ast_v1.1_design_section",
+  "keyword_axis": "risk_overlay",
+
+  "prechecks": {
+    "hypothesis_index_hits": [
+      "lookup 'momentum crash' = 30 hits (FAIL 4 · DISTILLED_NEG 2 · PASS 5 · MARGINAL 6). top: DIST-AS-008 / DIST-AR-036 / (본 WT 자신)",
+      "★DIST-AR-036 (DISTILLED_NEG, family=momentum_crash_selection, supporting=L-AR-20260718_212326 / WT-D20260718_001_crash_aware_momentum): 종목단 ex-ante 하방위험 페널티로 crash 종목을 선별 회피하는 축은 실측 실패 — 4 crash 축 개별 + composite × 4 lambda (20변형) 전부 OOS PORT_t<base, IS-best=OOS-worst 과적합 노출, dual-basis(EW-uni·cap-tier) 양 basis 공히 treatment<base. ★그 카드의 mechanism_draft 가 본 라운드의 착수 근거를 이미 적어놨다: '롱온리 모멘텀 크래시는 winner 동반 급락(systematic common-factor)이라 종목-레벨 식별 불가 — MDD 레버는 selection 이 아니라 timing(국면 스케일링, Barroso-Santa-Clara)에만 존재.' ⇒ 본 라운드는 selection 축이 아니라 그 카드가 지목한 잔여 축이다(재포장 아님).",
+      "★L-AS-BSC_20260611_153021 (STR_AS_BSC_20260611_153021_38500, grade B — 본 라운드의 최대 선례): BSC2015 KR 충실복제 실측이 이미 존재한다. faithful L/S SR 0.580→0.761(+31%) · MDD 52.9%→27.2% · managed~raw α +3.19%/yr t 2.96(NW lag-6, n=250). ★그러나 post-2017 α +0.17%/yr t 0.18 로 소멸(pre-2017 +5.73%/yr t 3.56). implementable long-only managed = SR 0.74 / CAGR 12.0% / MDD 38.6% / oos_retention 0.714 → 자본 게이트 미달(Calmar ≈ 0.31). next_probe 원문: '팩터-레벨 RV 타이밍 유효성은 pre-2017 의존 — overlay 후보 검증 시 post-2017 단독 구간 통과를 HARD 조건으로.' ⇒ 본 설계는 이 next_probe 를 사전등록 반증조건 F6 으로 흡수한다.",
+      "★L-AS-DM_20260612_080422 (STR_AS_DM_20260612_080422_49088, grade F): DM2016 동적 모멘텀(μ̂/σ̂²) KR 충실복제 실측이 이미 존재한다. 전구간 dyn SR 0.478 < raw 0.558 < cvol 0.596 · dyn~cvol α t 0.836 무유의 · post-2017 완전 역전(dyn −0.161, dyn~cvol t −1.575) · 롱온리 Win-leg 캡[0,1] SR 0.473 / CAGR 5.99% / MDD 23.44% / IR −0.23. 결론 원문: 'σ-타기팅(vol management)은 위험 재형성으로 강건(MDD 58→38%), μ-타이밍은 비강건(레짐 의존).' next_probe 원문: '순수 σ-타기팅만 채택할 것, μ-조건화 성분은 배제.' ⇒ 본 설계는 μ̂ 예측 성분을 전면 배제한다(후보 C2 로 보관·기각).",
+      "lookup 'overlay' = 30 hits (DISTILLED_NEG 28). 판정 부담이 큰 3건: ①DIST-AR-051 — 국면 라벨의 곱셈 노출 스케줄은 book carrier 269개월 paired NW3 t −1.85(−2.38%/yr, dIR −0.22)로 기각, 배제-필터는 스크리닝 통과 후 production 재측정에서 철회(dIR −0.1489, paired t −1.9763). ②DIST-QPM-034 — DD/국면 브레이크 문턱 조정은 MDD 를 조금 낮추고 수익을 더 많이 깎는 교환으로 일관(DD 7/22 는 SR 58% 삭감에 MDD 19% 개선). ★단 범위 명시: '문턱값 조정 축 한정이며 구조 판결이 아니다. 브레이크 최적 문턱이 위기 국면 특이적이라는 방향(국면-조건부 문턱)은 아직 정면으로 측정되지 않았다.' ③DIST-QPM-023 — KR long-only 에서 방어력의 실제 생산자는 팩터 선택이 아니라 DD overlay 이며, retry_condition (3) 이 '방어를 standalone sleeve 가 아니라 overlay 입력(국면 조건부 활성화)으로만 쓰는 구성' 을 명시 재도전 조건으로 지목한다.",
+      "종합 판정: 본 라운드가 재포장이 되는 경로는 정확히 3개(C2 μ-타이밍 / C3 현금 노출 스케일링 / C4 국면 라벨 스케줄)이며 셋 다 후보에서 명시 기각했다. 남는 셀 = 국면-조건부 · 현금 없는 구성(composition) de-risking 으로, 위 3장의 카드가 각각 '미측정' 또는 '재도전 조건' 으로 지목한 지점이다."
+    ],
+    "frontier_queue_refs": [
+      "alpha_frontier_queue.json (schema 2.0) 확인 — 본 WT 는 frontier 소비가 아니라 reinforce_ledger_l1 entry[0](base RP_20260829_122020_9192, paper_key ttl:jt1993) 의 attempt n=4(opened_at 2026-08-29T16:41:55+0900) 사전등록 소비다.",
+      "status=parked ∧ parked_reason ∈ {dohoon_decision, dohoon_data_work} 항목 임의 착수 없음(FQ-009 등 미접촉). 인프라 항목(infra_backlog.json)은 본 레인 대상이 아니다."
+    ],
+    "owner": "Q-Lead (reinforcement lane, WT-R20260829_004). 가설설계 = alpha-hypothesis(opus) / 측정·AST·팩터 소싱 = alpha-research 이하 — 설계자≠측정자 firewall.",
+    "prior_attempts_consumed": [
+      "1/20 L-RF-20260829_142955 (axis=multifactor, CJL1996 이익 서프라이즈 결합) — 음성. 이익 축이 가격 축에 포섭(T2 powered null NW-t 0.150 · FM t −0.024). joint2way 0.504 < mom_only 1.224.",
+      "2/20 L-RF-20260829_152717 (axis=weighting, IM2013 형태 분해) — 귀속=신호 확정. ★기저 음(−) PORT_t 의 정체 = basis 산술(β 0.199 → −9.38%/yr 자동 차감). 유일 실투형 cell4: β-통제 α +5.14%/yr t 1.205 · β 1.058 · OTHER tier 91.2% · EW-유니버스 PORT_t 1.426 · 무신호 대조 INDISTINGUISHABLE.",
+      "3/20 L-RF-20260829_163417 (axis=multifactor, LS2000 회전율 조건화) — reject. 승자 사이드 4사양 전부 비유의·3사양 부호 반대. 검정력 3.0~5.2%(착수금지구간)가 착수 후에야 산출 → 본 라운드부터 사전 검정력 게이트 의무.",
+      "도달가능성(2/20 실측): PORT_t 2.95 에 필요 활성수익 +13.25%/yr vs cell4 관측 +5.82%/yr(44%). 재료 추가·형태 교정·조건화 3축이 α 를 ±1%p 안에서만 움직였다."
+    ],
+    "paper_read_evidence": [
+      "DM2016 원문 직접 판독 (kentdaniel.net 공개 PDF, JFE 122(2):221-247, 27p 전문 추출). 확보: ①I_B,t−1 = 과거 24개월 누적 시장수익 < 0 (ex ante). 1927:01-2013:03 1,035개월 중 183개월 발화. ②Ĩ_U,t = 동시대(contemporaneous, ex ante 아님) up-market 더미 — 진단 회귀 전용이며 거래 가능 오버레이에 사용 불가(★이식 시 1급 PIT 함정). ③옵션성: 베어장 WML β 차이 −1.131(t −13.4), α 차이 −2.04%/월(t −3.4), β_BU −0.815(t −4.5) ⇒ 베어장 반등에서 WML β = −1.796. ④★레그 귀속(Table 4 Panel A): '옵션성의 지배적 원천은 패자 포트폴리오' — 패자 데실 down-beta 1.560 / up-beta 2.160(증분 +0.600), 승자 데실 up-market 증분은 −0.215 로 미미. ⑤동적 전략 w* = (1/2λ)·μ_{t−1}/σ²_{t−1}, μ̂ = γ0 + γ_int·I_B,t−1·σ²_m,t−1(직전 6개월 시장분산), σ̂ = GJR-GARCH + 직전 126일 실현 sd 의 선형결합. ⑥SR ≈ static WML 의 2배, cvol 보다 조금 높음. ⑦전 결과가 롱숏 WML(zero-investment) 구성.",
+      "BSC2015 원문 직접 판독 (공개 사본, JFE 116(1):111-120, 39p 전문 추출). 확보: ①σ̂²_WML,t = 21·Σ_{j=0..125} r²_WML,d(t−1−j)/126 — 직전 126 거래일 실현분산, 월 스케일. ②스케일 규칙 r*_t = (σ_target/σ̂_t)·r_t, σ_target = 연율 12%. weight 실측 범위 0.13~2.00, 평균 0.90 ⇒ 레버리지 2배까지 사용. ③★'As WML is a zero-investment and self-financing strategy, we can scale it without constraints' — 스케일 자유도의 근거가 롱숏 자기금융 구조임을 저자가 명시. ④SR 0.53→0.97 · 초과첨도 18.24→2.68 · 왜도 −2.47→−0.42 · 최악월 −78.96%→−28.40% · MDD −96.69%→−45.20%. ⑤예측가능성: 월간 실현분산 AR(1) OOS R² 모멘텀 57.82% vs 시장 38.81%. ⑥★위험 성분 분해(식 7): 시장성분 β²·RV_rmrf 는 총위험의 23% 뿐이고 특이성분이 약 77%. OOS R² — β² 5.33% / 시장 RV 6.70% / 시장성분 합 20.87% / 모멘텀 RV 43.82% / 특이성분 47.06%. ⑦각주 13: 'the persistence in risk of the winners-minus-losers strategy is more interesting than that of a long-only portfolio of assets, such as the market' — 저자 스스로 롱온리 대비 우위를 근거로 든다."
+    ],
+    "infra_precedent_noted": "02_Infrastructure/alpha_search/dm_engine.R + run_dm_momentum.R (2026-06-11/12 커밋)에 DM2016 raw/cvol/dyn 3-way + 'implementable long-only(Win leg, w_dyn 캡[0,1])' 구현이 이미 존재한다. 신규 구현 전 반드시 읽을 것 — 다만 그 캐리어는 12-2 형성·VW·데실이고 본 라운드의 실투형 캐리어는 J=6 형성·top-25 EW·월간 리밸이라 재사용은 부분적이다."
+  },
+
+  "candidates": [
+    {
+      "title": "C1 (선택) — 국면-조건부 구성(composition) de-risking: 현금·레버리지 없이 Σw=1 안에서만 위험을 줄인다",
+      "family": "risk_overlay / conditional_volatility_management",
+      "mechanism": {
+        "agent": "패닉 국면에서 레버리지 청산에 몰리는 KR 개인투자자(신용융자 반대매매 대상)와 그 반대편에서 저가 재진입하는 외국인·기관 — A6_investor_flow_stock_daily 의 Individual / Foreign / Institutional 순매수로 실명 관측 가능한 주체다.",
+        "friction": "① 개인 공매도 사실상 불가 + 소형주 차입 풀 부재 + 전면금지 구간 존재 ⇒ 청산 압력이 만든 가격 왜곡을 차익거래가 즉시 지우지 못한다. ② 우리 배포 제약: long-only · ≤25종 · Σw=1 ⇒ BSC 가 명시한 스케일 자유도(zero-investment self-financing)가 우리에게 없다 — 레버리지도 현금도 쓸 수 없으므로 위험 조절 수단이 '노출' 이 아니라 '구성' 뿐이다.",
+        "path": "패닉 국면(I_B ∧ 고변동성) → 청산·재진입이 종목 수익의 공통 변동성을 국면적으로 끌어올린다 → 그 변동성은 군집하므로 t−1 까지의 일간 수익만으로 사전 예측된다(BSC OOS R² 57.82% 앵커) → 예측된 고위험 월에 모멘텀 적격 pool 안에서 변동성 기여가 큰 종목을 낮은 종목으로 교체하면, 현금으로 빠지지 않으므로 기대수익 노출을 유지한 채 실현 낙폭만 줄어든다 → Calmar(=CAGR/|MDD|)와 SR 이 개선된다."
+      },
+      "why_not_selected": null
+    },
+    {
+      "title": "C2 — DM2016 동적 가중 완전판 (w ∝ μ̂/σ̂², μ̂ = I_B×σ²_m 회귀 + GJR-GARCH)",
+      "family": "risk_overlay / dynamic_weighting",
+      "mechanism": {
+        "agent": "DM2016 의 베어장 패자 옵션성 — 청산·distress 상태의 패자 보유자",
+        "friction": "미국 롱숏 WML 에서는 w<0 이 허용되어 기대수익 음(−) 국면에 역방향 배팅이 가능",
+        "path": "μ̂ 가 음이면 노출을 음으로 → 크래시 회피 + 타이밍 알파"
+      },
+      "why_not_selected": "★KR 실측으로 이미 기각 — L-AS-DM_20260612: 전구간 dyn SR 0.478 < raw 0.558 < cvol 0.596, dyn~cvol α t 0.836 무유의, post-2017 완전 역전(dyn −0.161 · t −1.575), 롱온리 SR 0.473 / IR −0.23 grade F. 구조적 이유도 명확하다: DM 의 이득 핵심인 음수 가중(전 표본 82개월)이 롱온리에서 봉쇄되고, μ̂ 회귀가 모멘텀 프리미엄 소멸 국면에서 구레짐을 외삽해 체계적으로 틀린다. 그 라운드 자신의 next_probe 가 'μ-조건화 성분은 배제하고 순수 σ-타기팅만 채택할 것' 이다. 재시도는 재포장이다."
+    },
+    {
+      "title": "C3 — BSC2015 노출 스케일링 직접 이식 (σ_target/σ̂, 캡 [0,1], 잔여는 현금)",
+      "family": "risk_overlay / exposure_scaling",
+      "mechanism": {
+        "agent": "동일(청산 압력) — 단 반응 수단이 노출 축소",
+        "friction": "레버리지 불가로 상방 절반(BSC 실측 weight 최대 2.00, 평균 0.90)이 소실",
+        "path": "고위험 예측 월에 주식 노출을 줄이고 현금 보유 → MDD 축소"
+      },
+      "why_not_selected": "3중 사유. ① KR 실측 이미 존재 — L-AS-BSC_20260611 implementable long-only: SR 0.74 / CAGR 12.0% / MDD 38.6% ⇒ Calmar ≈ 0.31 로 자본 문턱(0.64) 미달, post-2017 α t 0.18 로 소멸. ② 현금 보유가 Σw=1(absolute) 과 충돌 — 노출<1 의 허용 여부는 세션이 가정할 수 없는 도훈 판정 사항이다(INV-7: 제약 완화 레버 제시 금지). ③ 기전상 CAGR 을 함께 깎으므로 Calmar 개선이 자동이 아니다 — DIST-QPM-034 가 실측한 교환비(DD 7/22 = SR −58% 대 MDD −19%)가 정확히 이 문제다. ⇒ reference_only_not_verdict_bearing 참조 arm 으로만 보관하고 어떤 판정도 걸지 않는다."
+    },
+    {
+      "title": "C4 — 국면 라벨(E4 MRS / E5 MSM / E6 SJM-BearProb) 곱셈 노출 스케줄",
+      "family": "overlay_regime",
+      "mechanism": {
+        "agent": "국면 전환의 거시 주체(미상 — 라벨이 주체를 지목하지 않는다)",
+        "friction": "라벨 품질",
+        "path": "라벨이 위험을 예고 → 노출 축소"
+      },
+      "why_not_selected": "DIST-AR-051 이 실측 기각 — unified 국면 라벨의 곱셈 노출 스케줄은 book carrier 269개월 paired NW3 t −1.85(−2.38%/yr, dIR −0.22, EW기저 −2.04, lag2 −2.57). 더 근본적으로 메커니즘 3요건의 agent 를 명명하지 못한다(라벨은 주체가 아니다) — ① 기계 반려 대상. C1 의 차별점이 바로 트리거를 '외부 라벨' 에서 '전략 자신의 실현분산' 으로 옮긴 데 있다. 보관."
+    },
+    {
+      "title": "C5 — 반등월 β 부족의 직접 보정 (패닉 국면에서 고β 승자 쪽으로 구성 이동)",
+      "family": "conditional_beta_targeting",
+      "mechanism": {
+        "agent": "6개월 과거수익 정렬 규칙 자신 — 하락장 뒤에는 저β 방어주가 기계적으로 승자가 된다(BSC 각주 5 실증: 'after negative returns for the overall market, winners tend to be low-beta stocks')",
+        "friction": "롱온리·Σw=1 이 β 를 1 위로 올릴 레버리지 수단을 봉쇄",
+        "path": "패닉 국면 승자 슬리브의 β 부족 → 반등월 벤치 대비 활성 낙폭 → 이를 고β 승자 편입으로 보정하면 활성 낙폭이 줄어든다"
+      },
+      "why_not_selected": "부호가 통상 오버레이와 반대(위험을 늘려 활성위험을 줄인다)라 이 라운드의 표적(SR·Calmar = 절대위험 축)과 상충하며 MDD 를 악화시킬 개연이 높다. 다만 F3(패닉 국면 up-market β 증분 < 0)이 KR 실투형 arm 에서 확인되면 다음 라운드 1순위 후보다 — DM2016 승자 데실 증분 −0.215 가 KR 에서 얼마나 커지는지가 관건. challenge_flags 로 보관."
+    }
+  ],
+
+  "selected": {
+    "hypothesis_title": "JT1993 강화 4/20 — 국면-조건부 구성 de-risking: 롱온리에는 노출 레버가 없으므로 위험은 구성으로 줄인다 (Daniel-Moskowitz 2016 · Barroso-Santa-Clara 2015)",
+
+    "hypothesis_description": "기저 RP_20260829_122020_9192(JT1993 6-6 데실 롱숏) essence F 의 귀속은 2/20 에서 신호로 확정됐고, 유일 실투형 형태(승자 top-25 EW 롱온리)의 β-통제 α 는 +5.14%/yr(t 1.205)로 자본 문턱의 44% 다. 재료 추가(1/20)·형태 교정(2/20)·조건화(3/20)가 α 를 ±1%p 안에서만 흔들었으므로, 본 라운드는 분자(α)가 아니라 분모(위험)를 표적으로 삼는다.\n\n주장: KR 롱온리 승자 슬리브의 위험은 두 성분으로 나뉘고 둘의 사전 예측가능성이 다르다. ①군집하는 변동성 성분 — 청산 압력이 만든 공통 변동성으로, t−1 까지의 일간 수익만으로 예측된다(BSC2015 US 앵커: 모멘텀 실현분산 AR(1) OOS R² 57.82%, 특이성분 47.06% > 시장성분 20.87%). ②국면 조건부 β 성분 — DM2016 이 옵션형으로 실증한 부분이나, 그 옵션성의 지배적 원천은 패자 레그(up-beta 증분 +0.600)이고 승자 레그 증분은 −0.215 에 그친다. 우리는 승자만 보유하므로 ②의 대부분을 애초에 지니지 않는다.\n\n따라서 본 라운드가 노리는 것은 ① 하나다: 패닉 국면(I_B ∧ 고변동성)으로 조건화된 월에만, 현금으로 빠지지 않고 모멘텀 적격 pool 안에서 예측 변동성 기여가 큰 종목을 낮은 종목으로 교체한다. 이 형태를 고른 이유는 제약에서 도출된다 — BSC 는 스케일 자유도의 근거로 'zero-investment self-financing' 을 명시했는데 우리는 long-only · Σw=1 이라 레버리지도 현금도 없다. 노출 레버가 없는 곳에서 남는 위험 레버는 구성뿐이다.\n\n★표적 축 사전 고정: 이 축은 α 를 만들지 않는다. cell4 의 α +5.14%/yr 는 움직이지 않을 것으로 예상하며(F7 이 그 하한을 못박는다), 개선은 SR·Calmar 에 나타나야 한다. 'PORT_t 가 안 올랐으니 실패' 는 본 사전등록의 판정이 아니다.\n\n★도달가능성 정직 서술: Grade A 는 PORT_t ≥ 2.95 ∧ OOS retention ∧ SR ≥ 0.8 ∧ CAGR ≥ 16% ∧ Calmar ≥ 0.64 의 연언이다. 본 라운드가 성공해도 PORT_t 축이 열리지 않으므로 Grade A 도달은 이 라운드의 표적이 아니며 선언해서도 안 된다. 본 라운드의 성공 정의 = 위험 축(Calmar·SR)에서 사전등록 처치 효과가 유의하게 전달되는가, 그리고 그것이 알파를 파괴하지 않는가.",
+
+    "mechanism": {
+      "agent": "패닉 국면에서 신용융자 반대매매에 몰리는 KR 레버리지 개인투자자와 그 청산을 집행하는 증권사, 그리고 그 반대편에서 저가 재진입하는 외국인·기관. 이 주체들은 A6_investor_flow_stock_daily(Individual / Foreign / Institutional 일간 순매수대금)와 A8_investor_flow_market_aux(시장단위 투자자 10구분)로 실명 관측된다. ★단 신용잔고·대차 자체는 우리 데이터에 없다(F1_short_interest_lending = EXTERNAL, 실파일 0건) — 그래서 반증조건 F4 는 신용잔고가 아니라 관측 가능한 주체별 순매수 대비로 세운다.",
+
+      "friction": "① KR 공매도 제약 — 개인 접근 사실상 불가, 소형주 차입 풀 부재, 전면금지 구간 존재(2020-03~2021-05 등). 청산 압력이 만든 가격 왜곡을 차익거래가 즉시 지우지 못하므로 국면적 변동성 상승이 며칠~수주 지속(=군집)한다. ② 우리 배포 제약이 두 번째 마찰이다 — BSC2015 는 스케일 자유도의 근거로 'WML is a zero-investment and self-financing strategy, we can scale it without constraints' 를 명시했고 실제 weight 를 0.13~2.00 로 움직였다. 우리는 long-only · ≤25종 · Σw=1 이라 레버리지(상방)도 현금(하방)도 쓸 수 없다. 즉 논문의 레버 자체가 우리 환경에서 부재하고, 남는 레버는 구성뿐이다. 이 마찰이 본 설계의 형태를 결정하고 동시에 이득의 상한을 자른다(④ 경계의 출처).",
+
+      "path": "패닉 국면(I_B,t−1 = 과거 24개월 누적 KOSPI200 수익 < 0 ∧ 직전 126거래일 시장 실현변동성 상위 — DM2016 정의 이식) → 레버리지 청산과 저가 재진입이 교차하며 종목 수익의 공통 변동성을 끌어올린다 → 그 변동성은 군집하므로 홀딩월 시작 이전 일간 수익만으로 사전 예측된다(BSC 식 5: 직전 126 거래일 실현분산) → 예측 고위험 월에 모멘텀 적격 pool(=J6 형성 상위) 안에서 예측 변동성 기여 상위를 하위로 교체한다 → 현금으로 빠지지 않으므로 기대수익 노출(β≈1)이 유지된 채 실현 낙폭 경로만 완만해진다 → MDD 가 줄고 CAGR 은 보존되어 Calmar = CAGR/|MDD| 와 SR 이 개선된다. ★수익의 원천은 신호가 아니라 위험 경로의 재형성이며, 그 정당성은 우리 실측이 이미 절반 확인했다 — L-AS-DM_20260612 결론 원문 'σ-타기팅은 위험 재형성으로 강건(MDD 58→38%), μ-타이밍은 비강건'."
+    },
+
+    "falsification": {
+      "observable": "성과가 아니라 기전의 부수 관측 4종을 1급 반증면으로 둔다: ①실투형 슬리브 실현분산의 시계열 예측가능성(확장창 AR(1) OOS R²) ②그 예측가능성의 성분 귀속(특이 vs 시장) ③패닉 국면의 up-market β 증분(DM2016 옵션성의 승자 레그 이식 여부) ④패닉 월 투자자 주체별 순매수 대비(명명한 agent 의 실재). 이 넷은 전략 성과와 독립으로 관측되며, 넷 중 ①②가 죽으면 성과 대비를 볼 필요 없이 축이 기각된다.",
+
+      "field_dictionary_refs": [
+        "A1_RAWDATA_OHLCVS_daily:Ret",
+        "A1_RAWDATA_OHLCVS_daily:Vol",
+        "A1_RAWDATA_OHLCVS_daily:Size",
+        "A4_benchmark_kospi200:BM_Ret",
+        "A4_benchmark_kospi200:BM_Close",
+        "A3_universe_support_membership_panels",
+        "A9_liquidity_avgtv20_convention",
+        "A6_investor_flow_stock_daily:Individual",
+        "A6_investor_flow_stock_daily:Foreign",
+        "A6_investor_flow_stock_daily:Institutional",
+        "A8_investor_flow_market_aux"
+      ],
+
+      "reject_if": "F1~F8 사전등록. ★F1·F2 는 성과 이전 관문이고 실패 시 즉시 종결한다. / [F1 위험 예측가능성 — BSC 전제] 실투형 무오버레이 arm(A0)의 월간 실현분산에 대한 확장창 AR(1) OOS R² ≤ 0(역사평균 대비 무이득, BSC 식 4 정의)이면 스케일링 레버의 전제 자체가 KR 롱온리에 부재 → 기각. 양성 대조로 BSC US 앵커(모멘텀 57.82% / 시장 38.81%)와 KOSPI200 자신의 OOS R² 를 병기한다. / [F2 성분 귀속] A0 실현분산을 β²·RV_bm + 특이성분으로 분해(BSC 식 7, 6개월 일간 추정)했을 때 특이성분의 OOS R² 가 시장성분의 OOS R² 를 초과하지 못하면 이 축은 사실상 시장변동성 타이밍이며 그 경로는 우리 시스템 기실패(L-AS-VM_20260607 Moreira-Muir 시장레벨 무유의 · DIST-AR-051) → 기각. ★BSC 앵커: WML 은 특이 47.06% > 시장성분 20.87% 이고 시장성분은 총위험의 23% 뿐이다. 롱온리(β≈1.058)에서 이 비율이 뒤집히는지가 이 라운드의 핵심 미지수다. / [F3 DM 옵션성의 승자 레그 이식] I_B=1 국면에서 A0 의 up-market β 증분 β_BU ≥ 0 이면 '반등월 β 부족' 경로는 KR 롱온리에 이식되지 않음 → path 의 β 성분 기각(단 F1·F2 가 살면 변동성 군집 성분은 독립적으로 유지되며 라운드는 계속된다). 회귀는 DM 식 (3) 을 그대로 쓰되 Ĩ_U,t 는 동시대 변수이므로 진단 전용이고 거래 규칙에 절대 유입 금지. 승자 데실 US 앵커 = −0.215. / [F4 agent 실재] 패닉 국면 월에 A0 보유종목의 개인 순매수와 외국인·기관 순매수의 국면 대비가 비패닉 월과 부호·크기 모두에서 구별되지 않으면 명명한 주체(청산 압력·저가 재진입)가 관측되지 않는 것 → agent 기전 기각. 그 경우 path 를 다른 주체로 재지정하거나 economic_void 로 정직 산출. / [F5 1급 처치 — ★양 arm 전부 실투형 envelope] A1(처치) vs A0(대조)의 Calmar 차(1급)와 SR 차(2급)가 블록 부트스트랩(block=12) 신뢰구간에서 0 을 포함하면 처치 미전달 → reject. 두 arm 은 long-only · top-25 · K200∪KQ150 · 2005-01-01~ · 15bps(v2.4 delta) · Σw=1 · 노출 1(현금 0) · 레버리지 0 을 전부 지킨다. 차이는 패닉 월의 구성 선택 규칙 하나뿐이다. / [F6 post-2017 단독 HARD — 우리 자신의 next_probe] L-AS-BSC_20260611 의 next_probe 가 'overlay 후보 검증 시 post-2017 단독 구간 통과를 HARD 조건으로' 를 지정했다. post-2017 단독 구간에서 F5 대비의 부호가 음이면 전기간 통과와 무관하게 reject. / [F7 비-표적 축 훼손 한계 — 표적 분리의 반대편 못] A1 의 β-통제 α 가 A0 대비 −1.0%p 를 초과해 하락하면 위험 개선을 알파 파괴로 산 것이므로 reject. PORT_t 는 β 를 섞어 보므로 이 판정은 반드시 β-통제 α 로 한다(measurement-graduation §2). / [F8 오버레이 PIT — 무효화 조건, 이 축의 최대 위험] ①source('02_Infrastructure/validation/overlay_pit_guard.R') 후 assert_overlay_pit(used_cutoff, holding_start) HARD 미통과 = 결과 전량 무효(stop). ②lag1 스트레스 — 신호를 shift(1) 적용한 판이 base 대비 붕괴하면 동월 누출 의심. ③strict-PIT A/B — overlay_lookahead_ab(metric_current, metric_strict) 인플레 >5% 면 strict 값으로 재판정. ④신호는 홀딩월 시작 전 데이터만: 컷오프 = first-day-of-holding-month(overlay_signal_cutoff / holdings_signal_cutoff), anchor_date·realized_ym 라벨로 컷오프 잡지 말 것. 전례: BearProb 오버레이가 홀딩월 말 정보로 그 홀딩월을 스케일해 약 1개월 동월 look-ahead 를 만들었고 정정 시 Calmar 2.50→1.83 · SR 2.10→1.84 로 개선 전량이 소멸했다. placebo/OOS/DSR/subperiod 를 다 통과했고 lag1 + strict A/B 만 판별했다.",
+
+      "falsification_note": "F1~F4 는 성과와 독립인 부수 관측이므로 성과 동어반복이 아니다. F5~F7 은 사전등록 처치 효과 검정이며, 가설의 명제 자체가 '조건부 구성 교체가 위험 경로를 재형성하는가' 이므로 처치-대조 대비가 곧 기전 관측이다 — 금지 대상인 'PORT_t 가 낮으면 기각' 류(사후 성과 임계)와 다르다. ★F7 이 특히 중요하다: 표적 축만 적어두면 '위험은 줄었는데 알파를 다 태웠다' 를 성공으로 기록할 수 있다. 표적/비-표적 분리는 양방향으로 못박아야 성립한다.",
+
+      "envelope_discipline": "★2026-08-29 Q-Lead 착수 중 정정 반영: 판정을 지탱하는 모든 대비는 실투형 envelope 안에서만 정의한다. 본 설계의 1급(F5)·2급·F6·F7 은 전부 A0/A1 두 실투형 arm 사이의 대비다. envelope 밖 구성은 다음 셋뿐이고 전부 reference_only_not_verdict_bearing 라벨을 강제한다: (a) 기저 롱숏 데실 재현 arm — 충실구현 앵커로만(판정 대비의 양끝을 모두 envelope 밖에 두지 않는다), (b) C3 현금 노출 스케일링 arm(Σw<1), (c) DM/BSC 논문 원표(롱숏 WML) 수치. ★2/20 이 1급을 Δ(cell2−cell1) 위에 세웠던 것 — cell2 는 35종(>25), cell3 는 롱숏 — 이 정정의 대상이며 본 설계는 그 실수를 반복하지 않는다. 제약-귀속(실패를 종목수·long-only 탓으로 돌리기)과 완화 레버 제시는 금지(INV-7): 본 설계는 제약을 문제의 정의로 받아 형태를 거기서 도출했다.",
+
+      "power_contract_preregistered": {
+        "obligation": "★3/20 교훈(검정력 3.0~5.2% 착수금지구간이 착수 후에야 산출됨)의 직접 대응. alpha-research 는 Step 0 에서, 측정 착수 전에 아래를 산출·기록한다. 미산출 착수 금지.",
+        "target_metrics": "1급 = 실투형 arm 의 Calmar(=CAGR/|MDD|) 차. 2급 = SR 차. (PORT_t 는 표적이 아니다 — F7 의 하한 감시 대상일 뿐)",
+        "paper_implied_effect_size_roots": [
+          "US 상한 참조 (앵커로 사용 금지): BSC2015 SR 0.53→0.97(+83%), MDD −96.69%→−45.20%. DM2016 dyn SR ≈ static 의 2배. 둘 다 롱숏 WML 이고 레버리지 0.13~2.00 을 쓴다.",
+          "★사전등록 효과크기는 KR 실측 앵커에서 취한다: L-AS-BSC_20260611(KR, faithful L/S) SR 0.580→0.761 = +31%, MDD 52.9%→27.2%. 그리고 롱온리 구현판 SR 0.74 / CAGR 12.0% / MDD 38.6% ⇒ Calmar ≈ 0.31.",
+          "★그 KR 앵커조차 상한이다 — 앵커는 현금 노출 스케일링으로 얻은 값인데 본 라운드의 A1 은 현금을 쓰지 않는 구성 교체라 가동 범위가 더 좁다. 사전등록 효과크기는 KR 앵커의 부분(예: 절반)으로 잡고 그 감쇠율을 명시 기록할 것 — US 헤드라인을 앵커로 쓰면 약 2.7배 낙관이다."
+        ],
+        "computation_required": "MDE80 산출(t_threshold = z(0.80)+z(0.975) = 2.8016) → ratio = 기전-함의 효과크기 / MDE80 → 기대 t = ratio × 2.8016 → 검정력 = pnorm(ratio×2.8016 − 1.96). ★ratio 단독 기재 금지 — ratio · 기대 t · 검정력 3종 병기 의무(measurement-graduation 착수 크기산술 관문).",
+        "se_estimation_rule": "★SR·Calmar 는 비율 통계량이라 순열-MDE 가 무효다(추정기 표집분산 누락 모드 (ii), 실측 배율 10.34). 반드시 블록 부트스트랩(block=12) 실측 SE 또는 이중 재표집을 쓴다. 순열 95백분위를 MDE 로 부르는 것도 금지(모드 (i), 배율 1.4294 — 그건 임계값이지 MDE80 이 아니다). 연환산은 월평균 ×12(산술합)이며 ×sqrt(12) 는 3.46배 오류.",
+        "disposition_rule": "ratio < 0.15(검정력 <5%) = 착수 중단 · 설계 변경(Q-Lead 보고 후 C5 또는 대안 형태로 전환). 0.15 ≤ ratio < 0.70(검정력 5~50%) = 조건부 착수 — 사전등록에 '미결이 최빈 결말' 을 명시하고 미결일 때 이 라운드가 무엇을 남기는지(F1~F4 기전 반증 · 재사용 가능한 슬리브 일간 NAV 패널 · 도달가능성 상한)를 적어야 한다. 남길 것이 없으면 착수하지 않는다. ratio ≥ 0.70 = 통상 착수.",
+        "reachability_ceiling_obligation": "F5 미달을 보고할 때는 그 창에서 도달 가능한 상한을 양성 대조로 병기한다(measurement-graduation §3). 병기 없으면 그 미달은 '효과없음' 이 아니라 '미결' 로만 라벨 가능하다."
+      },
+
+      "pit_obligations_summary": "C5 오버레이 타이밍 4항(F8)이 이 축의 1급 위험이다. 추가로 C1(full-sample 통계 금지 — AR(1)·GJR 계열 파라미터는 확장창 walk-forward 로만; DM2016 본인이 전표본 MLE 를 OOS 절에서 문제로 인정했다) · C2(동일자 순환참조) · C9(DD/VT 동일자 사용 금지, dd_lag <- c(0, dd_pct[-n])) · C10(유동성 t−1) · C6(A3 시변 멤버십) 준수. ★DM2016 의 Ĩ_U,t(동시대 up-market 더미)는 진단 회귀 전용이며 거래 규칙 유입 시 즉시 C2 위반."
+    },
+
+    "regime_scope": {
+      "holds_in": [
+        "panic_state — I_B,t−1 = 1(과거 24개월 누적 KOSPI200 수익 < 0) ∧ 직전 126거래일 시장 실현변동성 상위. DM2016 정의의 직접 이식이며, 이 국면에서만 청산 압력이 공통 변동성을 끌어올려 예측 가능한 위험이 생긴다.",
+        "high_volatility_clustering — 슬리브 실현분산이 자기 분포의 상위 분위인 구간. BSC2015 의 AR(1) 지속성(모멘텀 실현분산 OOS R² 57.82%)이 발화하는 구간이며, 여기서만 t−1 정보로 t 의 위험을 맞힐 수 있다.",
+        "v_shaped_rebound — 급락 뒤 반등이 실제로 존재하는 국면. 우리 실측(2/20)이 잡은 recovery 더미 −0.0817/월(t −4.403), BM 수익 통제 후 −0.0427/월(t −2.367)의 국면이 여기다."
+      ],
+      "weakens_or_reverses_in": [
+        "sustained_bull_low_vol — ★마찰에서 직접 도출: BSC 는 저위험 국면에 weight 를 1 위로(최대 2.00) 올려 이득의 절반을 벌지만 우리는 레버리지 불가라 그 상방이 구조적으로 잘린다. 따라서 저위험 상승 국면에서 오버레이는 이득 없이 회전율 비용만 남긴다 — 이 라운드에서 오버레이는 비발화가 정상이다.",
+        "L_shaped_persistent_decline — 반등 없이 하락이 지속되는 국면. path 의 이득이 '반등월 β 부족의 완화' 와 '고변동 월의 낙폭 축소' 인데, 반등이 없으면 β 부족 자체가 이득이 되어 오버레이가 역작동한다.",
+        "post2017_kr_momentum_decay — 우리 실측(L-AS-BSC_20260611) post-2017 α +0.17%/yr t 0.18 로 효과 소멸. ★단 소멸한 것은 α 축이고 위험 축은 국면 무관하게 지속한다는 것이 L-AS-DM_20260612 의 기록('σ̂² 예측은 레짐 무관 지속 — 그래서 cvol 은 생존, dyn 은 사망')이다. 이 분리가 참인지가 F6 의 정확한 검정 대상이며, 거짓이면 본 축은 그 창에서 죽는다.",
+        "short_sale_ban_windows — 공매도 전면금지 구간(2020-03~2021-05 등)에서는 friction 자체가 바뀌어 청산·반등 비대칭의 강도가 달라진다. 국면 경계이자 subperiod 통제 대상."
+      ],
+      "boundary_rationale": "경계는 메커니즘 3요소에서 각각 도출된다. ①friction(레버리지·현금 불가)이 상방을 자르므로 저위험 상승 국면에서 순비용이 된다 — 보편타당이 아니라 한쪽으로만 작동하는 비대칭 장치다. ②path 의 이득이 '반등월' 과 '고변동 월' 에 묶여 있으므로 반등 없는 L 자 하락과 저변동 구간에서는 성립하지 않거나 역전한다. ③agent(청산 압력)가 제도(공매도 금지)에 따라 달라지므로 제도 변경 구간이 경계다. ★기저 MDD 86.7% 나 recovery 더미 t −4.403 은 이 경계와 정합하는 사후 관측이지 경계의 출처가 아니다 — 경계는 위 세 줄에서 먼저 나왔다."
+    },
+
+    "arms_preregistered": {
+      "A0_base_deploy": "무오버레이 실투형 대조 — JT1993 J=6 형성(skip 1M, 기저 엔진 fe_jt1993_momentum.R 규약 승계) 승자 top-25 EW, K200∪KQ150 시변 멤버십, 월간 리밸, 2005-01-01~, 15bps(v2.4 delta), long-only, Σw=1, 노출 1, 현금 0, 레버리지 0. (= 2/20 cell4 의 형태)",
+      "A1_conditional_composition": "1급 처치 — A0 와 모든 축이 동일하고 패닉 월(I_B ∧ 고변동성)에만 모멘텀 적격 pool 내에서 예측 변동성 기여 상위를 하위로 교체. 종목수 25 고정 · EW 고정 · Σw=1 · 노출 1 · 현금 0. 비패닉 월에는 A0 와 동일한 보유(비발화가 정상).",
+      "A1b_conditional_weighting": "2급 처치(선택) — 종목 집합은 A0 와 동일하게 두고 패닉 월에만 예측 변동성 기여 역수 비중(Σw=1, w≥0, v10 비중 상한 없음). ★weight_method_gate.R(EW 동치 차단) 통과 확인 의무 — 비패닉 월은 EW 이므로 게이트가 EW 동치로 오판할 수 있다.",
+      "REF_C3_exposure_scaling": "reference_only_not_verdict_bearing — BSC 형 σ_target/σ̂ 노출 스케일(캡 [0,1], 잔여 현금). Σw<1 이 되어 envelope 밖이므로 어떤 판정도 걸지 않는다. 존재 이유는 '구성 레버가 노출 레버 대비 어느 정도인가' 의 크기 감각과, L-AS-BSC_20260611 롱온리 앵커(SR 0.74/MDD 38.6%)와의 대조뿐이다. 현금 보유 허용 여부는 도훈 판정 사항이며 세션이 가정하지 않는다.",
+      "REF_base_replication": "reference_only_not_verdict_bearing — 기저 RP_20260829_122020_9192(6-6 데실 롱숏) 재현. 충실구현 앵커로만 사용하며 1급의 양끝 중 어느 쪽에도 두지 않는다."
+    },
+
+    "overlay_stage_boundary": {
+      "rule": "★pit.md S0/S1 오버레이 금지와의 관계를 명시한다: 오버레이의 적용은 alpha 구간이 아니다. 본 라운드의 alpha 구간이 하는 일은 ①패닉 국면 지시자 I_B,t−1 와 ②슬리브 예측 변동성 σ̂²_t 를 PIT-clean 월간 시계열로 산출하고 ③F1~F4 기전 반증을 수행하는 것까지다. 노출·비중으로의 적용은 하류(risk → optimizer → forge)다.",
+      "caveat": "A1(구성 교체)은 형태상 '조건부 종목 선택' 이라 alpha 의 score 를 건드리는 것으로 보일 수 있다. 이 경계는 alpha-research 가 자의로 정하지 말고 Q-Lead 에 확인할 것 — 안전한 기본값은 alpha 가 신호 시계열만 발행하고 A1/A1b 의 실제 구성은 optimizer 단계에서 적용하는 것이다. 국면을 알파 원천으로 쓰는 것이 아니라 위험 조건자로 쓴다는 점은 명시 기록 대상이다."
+    },
+
+    "chain_requirement_judgment": {
+      "verdict": "★조건부 필요 — F1·F2 통과 시 전체 체인(risk → optimizer → forge) 필요, 미통과 시 alpha 에서 종결.",
+      "rationale": "본 라운드의 표적은 SR·Calmar 이고 이 둘은 forge-authoritative 값으로만 판정된다(measurement-graduation §1·§2 — canonical_screen_bt 는 스크리닝 실측이지 SR/Calmar 판정 권위가 아니다). 따라서 F5~F7 의 판정은 forge 없이는 불가능하다. 반대로 F1(위험 예측가능성)·F2(성분 귀속)·F3(옵션성 이식)·F4(agent 실재)는 alpha 구간에서 전부 판정 가능하며, 이 넷 중 F1 또는 F2 가 기각되면 축의 전제가 부재하므로 하류를 스폰할 근거가 없다.",
+      "recommended_spawn_plan": "1단계 alpha-research 단독 — Step 0 검정력 계약(ratio<0.15 면 즉시 중단 보고) + F1~F4 + 신호 시계열 산출 + F8 PIT 4항. 2단계 조건부 — F1∧F2 생존 시에만 risk → optimizer → forge 스폰해 A0 vs A1 의 Calmar·SR 대비와 F5~F7 판정. ⇒ Q-Lead 는 1단계를 먼저 스폰하고 그 산출을 보고 2단계를 결정할 것을 권고한다(3/20 처럼 검정력 미달 라운드를 끝까지 태우는 낭비 방지)."
+    },
+
+    "long_short_to_long_only_gap": {
+      "statement": "★이 설계의 성패가 걸린 지점이며 논문 원문 실측 두 줄로 정량화된다.",
+      "evidence_1_dm2016": "옵션성의 지배적 원천은 패자 레그다 — 패자 데실 up-market β 증분 +0.600(down 1.560 → up 2.160) vs 승자 데실 증분 −0.215(DM2016 Table 4 Panel A). 우리는 승자만 보유하므로 DM 크래시 기전의 대부분을 애초에 지니지 않는다. ⇒ DM 의 SR 2배를 롱온리 기대치로 옮기는 것은 근거가 없다.",
+      "evidence_2_bsc2015": "BSC 의 예측력 원천은 특이위험이다 — WML 총위험의 시장성분은 23% 뿐이고, OOS R² 는 특이성분 47.06% vs 시장성분 20.87%(β² 단독 5.33%). 롱온리 승자 top-25 는 β≈1.058 이라 시장성분 비중이 훨씬 크고, 그 성분이 바로 가장 예측 안 되는 부분이다. 저자 각주 13 이 이를 명시한다('the persistence in risk of the winners-minus-losers strategy is more interesting than that of a long-only portfolio'). ⇒ F2 가 이 라운드의 진짜 관문이다.",
+      "evidence_3_lever_absence": "BSC 는 스케일 자유도의 근거를 'zero-investment and self-financing' 으로 명시하고 weight 를 0.13~2.00 로 움직인다. long-only · Σw=1 에서는 그 레버가 부재한다.",
+      "how_the_design_handles_it": "① 기전을 '패자 숏 크래시' 가 아니라 '승자 슬리브의 예측 가능한 공통 변동성' 으로 다시 세웠다 — 승자만 보유해도 남는 성분이다. ② 그 성분이 실제로 남는지를 F2 를 성과 이전 관문으로 두어 먼저 묻는다(죽으면 즉시 종결 — '해보니 안 됐다' 가 아니라 '전제가 없다' 로 종결). ③ 부재한 노출 레버 대신 구성 레버로 형태를 바꿨고, 그 형태 선택의 근거를 제약에서 도출했다(마찰 ②). ④ 사전등록 효과크기를 US 헤드라인이 아니라 KR 실측 앵커의 부분으로 잡아 낙관을 제거했다. ⑤ 승자 레그 옵션성(−0.215)의 KR 크기는 F3 로 직접 측정하고, 크면 C5(반대 부호 축)로 라운드를 넘긴다."
+    },
+
+    "target_axis_separation": {
+      "target": "SR · Calmar (위험 축). 개선은 여기에 나타나야 한다.",
+      "non_target_guarded": "PORT_t · β-통제 α (알파 축). 개선을 기대하지 않으며, 훼손 하한만 F7 로 못박는다(−1.0%p 초과 하락 시 reject). 'PORT_t 가 안 올랐으니 실패' 는 본 사전등록의 판정이 아니고, 동시에 '위험이 줄었으니 성공' 도 α 를 태웠다면 성립하지 않는다.",
+      "grade_a_statement": "Grade A(PORT_t ≥ 2.95 ∧ OOS retention ∧ SR ≥ 0.8 ∧ CAGR ≥ 16% ∧ Calmar ≥ 0.64)는 연언이며 PORT_t 축이 열리지 않으므로 본 라운드에서 Grade A 를 선언하는 것은 불가능하다. 성공해도 결과는 '위험 축 처치 효과 확인 + PORT_t 축 미해결' 이다. 이 문장을 사전에 적어두는 이유는, 위험 축 성공이 나왔을 때 등급을 과대 선언하거나 반대로 등급 미달을 이유로 위험 축 성과를 폐기하는 두 오판정을 모두 막기 위해서다."
+    }
+  },
+
+  "challenge_flags": [
+    "[대안 보관] C5 반등월 β 부족 직접 보정(패닉 국면 고β 승자 이동) — F3 에서 KR 승자 레그 β_BU 가 US 앵커 −0.215 보다 유의하게 크면 다음 라운드 1순위.",
+    "[대안 보관] C2 DM 동적 가중 μ̂/σ̂² — KR 실측 기각(L-AS-DM_20260612). 부활 조건 = 모멘텀 프리미엄이 post-2017 감쇠에서 회복된 증거가 독립 창에서 확인될 때.",
+    "[대안 보관] C3 현금 노출 스케일링 — Σw=1 허용 여부가 도훈 판정으로 열리면 즉시 1급 후보로 승격 가능(KR 앵커 SR 0.74/MDD 38.6% 존재).",
+    "[대안 보관] C4 국면 라벨 스케줄 — DIST-AR-051 기각. agent 무명명이라 ① 기계 반려 대상이기도 하다.",
+    "[위험 flag] 본 라운드는 BSC2015 KR 복제(L-AS-BSC_20260611, grade B)와 같은 논문·같은 시장·같은 레버 계열이다. 재포장이 아님을 지탱하는 것은 오직 ①형태(현금 없는 구성 교체) ②조건부 발화 ③캐리어(J6 top-25 EW 월간 리밸 vs 12-2 VW 데실) ④post-2017 HARD 흡수 네 가지다. alpha-research 는 이 넷 중 하나라도 무너지면(예: 구현 편의로 현금 스케일링으로 회귀) 재포장으로 자기 신고하고 중단할 것.",
+    "[위험 flag] F1·F2 가 통과해도 효과크기가 KR 앵커의 절반 이하일 개연이 높다(구성 레버 < 노출 레버). 검정력 계약에서 ratio<0.15 가 나올 가능성을 사전에 인지하며, 그 경우 착수 중단이 정상 결말이다.",
+    "[위험 flag] weight_method_gate.R(EW 동치 비중방법 차단) — A1b 는 비패닉 월에 EW 이므로 게이트가 EW 동치로 오판할 수 있다. 게이트 통과/차단 사유를 산출물에 기록할 것.",
+    "[위험 flag] dm_engine.R 재사용 유혹 — 기존 구현은 12-2 VW 데실 롱숏 캐리어이고 target_vol=0.19 · rv_win=126 이 하드코딩돼 있다. 본 라운드 캐리어(J6 top-25 EW)와 다르므로 무비판 재사용은 캐리어 오염이다.",
+    "[측정 규약] 슬리브 일간 NAV 가 필요하다(실현분산 산출). A4 benchmark.parquet 의 Date dtype 이 timestamp[ns] 이고 A1 RAWDATA 는 date32 라 by='Date' 조인이 silent all-NA 를 낸 실사고 전력이 있다 — 조인 전 dtype 정규화 필수.",
+    "[측정 규약] 다중라운드 판정이므로 pin_cache(measurement-graduation §7)로 스냅샷 고정 + pin tag 산출물 기록. RAWDATA 는 restatement_prone(수정주가 전기간 재작성)이다."
+  ],
+
+  "verdict": "designed",
+
+  "handoff": {
+    "to": "alpha-research",
+    "next_steps": "Step 1~7 + ⑤ AST 구성. ★승계 의무: ①본 파일의 mechanism / falsification / regime_scope 는 재작성 금지 — 결함 발견 시 수정이 아니라 challenge_note.md 기록 + 재설계 요청(Charter 원칙 8). ②Step 0 에서 검정력 계약을 먼저 산출하고 ratio<0.15 면 측정 착수 없이 Q-Lead 보고 후 중단. ③F1·F2 를 성과 이전 관문으로 먼저 돌리고, 죽으면 하류 스폰 없이 종결. ④모든 판정 대비는 A0/A1 실투형 arm 사이에서만 — envelope 밖 arm 은 reference_only_not_verdict_bearing 라벨 강제. ⑤F8 오버레이 PIT 4항(assert_overlay_pit HARD · lag1 스트레스 · strict-PIT A/B · first-day-of-holding-month 컷오프)을 신호 산출 코드에 직접 배선. ⑥β-통제 α 병기(measurement-graduation §2) + 무신호 대조(no_signal_gate) + EW-유니버스/cap-tier dual-basis 병기. ⑦AST ⑤ 구성 시 escape 리프 주의 — 슬리브 실현분산은 저장 패널이 아니라 A1 일간 Ret 에서 매 판정 재계산할 것(STORED_SCORE 위장 금지).",
+    "chain": "조건부 — 위 chain_requirement_judgment 참조. 1단계 alpha 단독 → F1∧F2 생존 시 2단계 risk→optimizer→forge."
+  }
+}

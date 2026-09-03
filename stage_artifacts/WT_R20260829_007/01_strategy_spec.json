@@ -1,0 +1,22 @@
+{
+  "run_id": "FORGE_WT-R20260829_007",
+  "strategy_id": "WTR20260829_007_GH2004_52WHIGH_EW25_BUF50",
+  "strategy_name": "GH2004 52-week high proximity top-25 EW + no-trade band 50 (WT-R20260829_007 reinforcement)",
+  "strategy_family": "momentum_52week_high",
+  "signal_description": "52-week high proximity z (log P - log 52w high), 시장-내 정규분위 -> alpha_hat = lambda_FM x z - 단면평균 (347종) -> 근접도 top-25 -> optimizer M2_EW25_buffer50: 등가중 + no-trade band(보유 종목은 근접도 순위<=50 동안 유지)",
+  "universe_rule": "KOSPI200 U KOSDAQ150, ADV20 >= 2e8 KRW (alpha t-1 PIT filter inherited, PIT 시변 멤버십)",
+  "rebalance_frequency": "monthly",
+  "signal_date_rule": "month_end as_of_date (260 dates, 2005-01-31 ~ 2026-08-28; 마지막 1건은 미실현 배포 스냅숏)",
+  "execution_date_rule": "month_end_signal_t_plus_1 (get_execution_date)",
+  "weighting_method": "EW top-25 with no-trade band 50 (optimization_package weights.csv as-is, 재선택 0회)",
+  "max_position_weight": 0.04,
+  "max_leverage": 1,
+  "cash_rule": "residual cash 0% return (integer-share rounding remainder only)",
+  "cost_model": "v2.4_kr_retail_15bps one-way, delta based (|delta notional| charged)",
+  "missing_data_rule": "exec_date close missing -> name excluded, remaining renormalized (logged)",
+  "risk_controls": "none (no overlay — S0/S1 prohibition observed). Sigma-free method: 채택 M2 는 covariance 미소비.",
+  "lookahead_prevention": "PIT C1-C15 검사: C1/C2/C3/C6/C10/C15 PASS, C4/C5/C8/C9/C13 N/A(상류 승계 또는 미적용). as_of_date 신호 -> t+1 종가 집행. weights.csv as-is 소비(재선택 0, top-N 재산출 0). detect_lookahead static scan on run_all.R = 아래 [10] 기록 참조. ★검출기 커버리지 한계: 비선언 idiom(전표본 cov()/mean(), shift(-1), 비중 재정규화) 주입 대조를 직접 수행해 기록했다 — CLEAN 은 PIT 증명이 아니라 선언 idiom 부재의 증거일 뿐이다.",
+  "survivorship_bias_control": "full RAWDATA panel + alpha monthly PIT membership inherited (ever-member 확장 0)",
+  "factor_engine_path": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/WT_R20260829_007/run_all.R",
+  "cost_model_version": "v2.4_delta"
+}

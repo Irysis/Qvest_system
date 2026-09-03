@@ -1,0 +1,47 @@
+{
+  "n_months_matched": 248,
+  "upstream_basis_reproduce": {
+    "n_months": 248,
+    "port_t_nw3": 1.22106999,
+    "net_ir": null,
+    "optimizer_declared_port_t": 1.219,
+    "optimizer_declared_net_ir": 0.2987,
+    "note": "weighted_screen_bt(weights.csv as-is, alpha 패널 forward 수익/벤치)로 상류 basis 를 재현 — 상류 수치를 forge 가 읽을 수 있는 양으로 확인한 것이지 권위 수치가 아니다."
+  },
+  "basis_table": {
+    "basis": ["forge_strategy x forge_BM (권위)", "forge_strategy x alpha_BM", "upstream_strategy x forge_BM", "upstream_strategy x alpha_BM (상류 보고)"],
+    "port_t": [0.86949972, 1.1880579, 0.89335529, 1.22106999],
+    "net_ir": [0.21649114, 0.2909548, 0.22234744, 0.2987432],
+    "alpha_ann": [0.04866156, 0.05961894, 0.04937901, 0.06033639]
+  },
+  "benchmark_series": {
+    "cor": 0.99220535,
+    "mean_abs_diff": 0.00575445,
+    "max_abs_diff": 0.07008643,
+    "cum_forge_bm": 4.98264817,
+    "cum_alpha_bm": 3.99584145,
+    "forge_source": ".cache/benchmark.parquet BM_Ret (production harness BM_DT)",
+    "alpha_source": "alpha engine build_monthly_forward_returns bench_dt"
+  },
+  "strategy_series": {
+    "cor": 0.99578186,
+    "mean_abs_diff": 0.00491864,
+    "max_abs_diff": 0.05167014,
+    "cum_forge": 11.146517,
+    "cum_upstream": 11.48382207,
+    "note": "forge = 정수 주식수 share-based 일별 NAV 월집계(집행 t+1, 라운딩 잔여현금). upstream = 연속 비중 x forward 수익(라운딩·집행지연 없음)."
+  },
+  "port_t_attribution": {
+    "upstream_reported_basis": 1.22106999,
+    "benchmark_leg_delta": -0.3277147,
+    "strategy_realization_leg_delta": -0.02385557,
+    "authoritative_monthly_basis": 0.86949972,
+    "authoritative_daily_basis_note": "권위 등급이 쓰는 PORT_t 는 daily(af=252) 계약값 — 아래 bt 값 참조."
+  },
+  "subperiod_ir": {
+    "sub": ["P1_pre2015", "P2_2015_2019", "P3_2020plus"],
+    "ir_forge": [0.83258746, 0.28290823, -0.36926281],
+    "ir_up": [0.87717148, 0.42947606, -0.32659591]
+  },
+  "verdict_invariance": "네 basis PORT_t = 0.8695 / 1.1881 / 0.8934 / 1.2211. A 문턱 2.95 · B 문턱 2.0 대비 전부 미달 -> 벤치·전략계열 선택은 등급을 옮기지 않는다."
+}

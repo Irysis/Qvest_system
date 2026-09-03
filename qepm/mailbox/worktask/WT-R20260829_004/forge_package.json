@@ -1,0 +1,89 @@
+{
+  "task_id": "WT-R20260829_004",
+  "wt_type": "reinforcement",
+  "keyword_axis": "risk_overlay",
+  "as_of_date": "2026-08-29",
+  "agent": "forge",
+  "method": "weights.csv_as_is_daily_share_based_NAV",
+  "method_selected_upstream": "W2_IV",
+  "sr_realized_share_based": 0.56988434,
+  "sr_factor_engine_continuous": 0.54205165,
+  "measurement_basis_primary": "forge_realized_share_based",
+  "divergence_factor_engine_vs_realized_pp": 0.02783269,
+  "vs_factor_engine": {
+    "factor_engine_claimed_sr": 0.54205165,
+    "factor_engine_basis": "optimization_package.realized_metrics.sr (weighted_screen_bt, monthly aggregation)",
+    "forge_realized_sr_daily": 0.56988434,
+    "forge_realized_sr_monthly_basis": 0.52636346,
+    "divergence_pp_daily_basis": 0.02783269,
+    "diagnosis_daily_basis": "NEGLIGIBLE",
+    "divergence_pp_same_frequency": -0.01568819,
+    "diagnosis_same_frequency": "NEGLIGIBLE",
+    "note": "일별 SR 과 월별 SR 은 집계빈도가 다르므로 same-frequency 대조가 fabrication 판정의 정본이다. daily-basis 격차는 빈도효과를 포함한다."
+  },
+  "weights_csv_unique_dates_count": 260,
+  "alpha_sig_dates_count": 260,
+  "schedule_density_ratio": 1,
+  "schedule_density_pass": true,
+  "schedule_density_source": "forge 재도출(훅 schedule_fidelity_check.sh 는 미등록·무발화 — 방어선으로 세지 않음)",
+  "rebalances_executed": 259,
+  "skipped_as_of": [
+    "2026-08-28"
+  ],
+  "skip_reason": "마지막 as_of 2026-08-28 의 홀딩월(2026-09) 미실현 — 집행일이 데이터 범위 밖",
+  "deploy_extension_days": 18,
+  "pure_function_violation": false,
+  "reselection_from_alpha_scores": false,
+  "weights_provenance_max_abs_diff_vs_optimizer_panel": 5.55111512e-17,
+  "portfolio_alpha_t_nw_lag3": 0.75465806,
+  "net_ir": 0.17193316,
+  "oos_retention": -0.66,
+  "dsr": 0.233,
+  "essence_grade": "C",
+  "grade_basis": "essence_score(bt_result) — 권위. hurdle_result.json proxy 미인용(2026-05-31 DEMOTED)",
+  "grade_A_conditions_passed": "0/5",
+  "structural_drawdown": true,
+  "structural_drawdown_is_label_not_verdict": true,
+  "hard_fail": false,
+  "backtest_summary": {
+    "full_period": {
+      "sr": 0.56988434,
+      "cagr": 0.13118059,
+      "mdd": 0.69586068,
+      "calmar": 0.18851559,
+      "start": "2005-02-03",
+      "end": "2026-08-28"
+    }
+  },
+  "hard_caps": {
+    "to_pass": true,
+    "turnover_ann_twoway_sum": 10.59092498,
+    "turnover_convention": "mean_t sum_i|w_it - w_i,t-1| x 12 (매수+매도 합산 — optimizer 계약과 동일)",
+    "holdings_cap_pass": true,
+    "n_max": 25,
+    "long_only_pass": true,
+    "sum_w_pass": true,
+    "cash_pass": true,
+    "leverage_pass": true
+  },
+  "audit": {
+    "total": 19,
+    "pass": 19,
+    "warn": 0,
+    "fail": 0
+  },
+  "hash_audit_pass": true,
+  "overlay_marginal_forge_reproduction": {
+    "verdict": "REPRODUCED",
+    "d_calmar_IV_on_minus_off": -0.0177518,
+    "d_sr_IV_on_minus_off": -0.0327813,
+    "dominant_construction": "C2_IV_off",
+    "headline": "채택 W2(오버레이 ON) 가 권위 등급의 정본이지만, 같은 basis 에서 오버레이를 끈 무조건화 IV 가 전 축 우위다."
+  },
+  "overlay_pit_verdict": "PASS",
+  "overlay_pit_strict_ab_inflation": 0,
+  "overlay_pit_violation_probe_inflation_calmar": 0.27538,
+  "authoritative_remeasure_ref": "stage_artifacts/WT_R20260829_004/authoritative_remeasure.json",
+  "challenge_note_ref": "stage_artifacts/WT_R20260829_004/challenge_note_forge.md",
+  "overlay_pit_ref": "stage_artifacts/WT_R20260829_004/forge_overlay_pit.json"
+}

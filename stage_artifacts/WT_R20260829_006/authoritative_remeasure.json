@@ -1,0 +1,419 @@
+{
+  "status": "OK",
+  "wt_id": "WT-R20260829_006",
+  "wt_type": "reinforcement",
+  "axis": "multifactor",
+  "round_label": "JT1993 강화 6/20 — 팩터 모멘텀 스패닝 검정 (Ehsani-Linnainmaa 2022)",
+  "strategy_id": "WTR20260829_006_EL2022_FACMOM_EWBAND40",
+  "strategy_name": "EL2022 factor-momentum spanning — EW_band40 (WT-R20260829_006)",
+  "remeasured_at": "2026-08-29 19:28:16",
+  "run_id": "FORGE_WT-R20260829_006",
+  "bt_result_path": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/WT_R20260829_006/bt_result.rds",
+  "measurement_basis_primary": "forge_realized_share_based",
+  "measurement_note": "weights.csv 역사 248 sig_date x 25종 as-is -> t+1 종가 집행 -> 정수 주식수 -> 일별 share-based NAV -> 15bps one-way(v2.4_delta). 빈도 daily, af=252. as_of(2026-08-28) 25행은 미래 집행분이라 백테스트에서 제외했다.",
+  "metric_type": "backtested",
+  "grade": "C",
+  "essence_grade": "C",
+  "grade_basis": "essence_score(bt_result) — 권위. hurdle_result.json proxy 미인용(2026-05-31 DEMOTED)",
+  "grade_a_conditions": {
+    "PORT_t": {
+      "value": 1.002,
+      "threshold": 2.95,
+      "pass": false
+    },
+    "OOS_retention": {
+      "value": -0.78,
+      "threshold": 0.7,
+      "floor": 0.5,
+      "band_status": "fail",
+      "splits": [-0.484, -0.78, -1.272],
+      "pass": false
+    },
+    "Sharpe": {
+      "value": 0.587,
+      "threshold": 0.8,
+      "pass": false
+    },
+    "CAGR": {
+      "value": 0.132,
+      "threshold": 0.16,
+      "pass": false
+    },
+    "Calmar": {
+      "value": 0.216,
+      "threshold": 0.64,
+      "pass": false
+    }
+  },
+  "grade_a_conditions_passed": 0,
+  "grade_a_conditions_total": 5,
+  "essence": {
+    "net_sharpe": 0.587,
+    "net_ir": 0.229,
+    "portfolio_alpha_t_nw_lag3": 1.002,
+    "oos_retention": -0.78,
+    "dsr": 0.436,
+    "mdd": 0.61,
+    "calmar": 0.216,
+    "cagr": 0.132,
+    "drawdown_profile": {
+      "severe45_count": 5,
+      "severe55_count": 5,
+      "severe45_total_periods": 123,
+      "severe45_max_periods": 77,
+      "severe45_period_frac": 0.0242,
+      "catastrophic_mdd_threshold": 0.7,
+      "severe45_hard_count": 15,
+      "severe55_hard_count": 6,
+      "severe45_period_hard_frac": 0.25,
+      "severe45_max_hard_periods": 252,
+      "tail_review": true,
+      "structural_hard_fail": false
+    }
+  },
+  "structural_drawdown": false,
+  "structural_drawdown_note": "MDD 는 어느 층에서도 등급을 접지 않는다(도훈 지시 2026-08-24). 위험 축은 Calmar 하나. 구조 낙폭은 라벨로만 남아 오버레이 라우팅 근거가 된다.",
+  "hard_fail": false,
+  "hard_fail_source": "none",
+  "reasons": "Ensemble: positive alpha이나 B 미달 (블렌드에서만 가치)",
+  "selection_type_primary": "sweep",
+  "selection_type_note": "optimizer 가 비중방법 5종을 열거하고 사전선언 net_ir 규칙으로 선택했다 -> sweep 로 보수 판정. chain 라벨 대조판도 병기(등급 동일 여부 확인용).",
+  "dsr_gate_applied": true,
+  "n_trials_cumulative": 5,
+  "grade_under_chain_label": "C",
+  "oos_stat_version": "v2",
+  "oos_band_status": "fail",
+  "oos_retention_splits": [-0.484, -0.78, -1.272],
+  "graduation_params": {
+    "port_t_min": 2.95,
+    "oos_min": 0.7,
+    "oos_floor": 0.5,
+    "calmar_min": 0.64,
+    "dsr_min": 0.5,
+    "mdd_hard": 0.45,
+    "sharpe_min": 0.8,
+    "cagr_min": 0.16,
+    "b_port_t_min": 2,
+    "b_net_ir_min": 0.2,
+    "source": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/02_Infrastructure/worktask/constraint_defaults.json",
+    "fallback_keys": []
+  },
+  "contract": {
+    "integrity_status": "PASS",
+    "audit_pass": 19,
+    "audit_fail": 0,
+    "audit_warn": 0,
+    "audit_total": 19,
+    "audit_non_pass": [],
+    "components_present": ["manifest", "strategy_spec", "nav", "period_returns", "holdings", "benchmark_returns", "metrics", "benchmark_compare", "rolling_metrics", "drawdowns", "audit"],
+    "cagr": 0.13167294,
+    "sharpe": 0.58739534,
+    "mdd": 0.60995098,
+    "calmar": 0.21587463,
+    "ann_vol": 0.27540531,
+    "net_ir": 0.22943169,
+    "tracking_error": 0.19776301,
+    "portfolio_alpha_t_nw_lag3": 1.00169151,
+    "portfolio_alpha_t_pvalue": 0.31649261,
+    "alpha_annualized": 0.06516155,
+    "beta_to_benchmark_full_sample": 0.82999424,
+    "beta_label": "전기간 CAPM 단일 추정치. risk 가 실측한 롤링 베타 범위와 함께 읽어야 하며 단일 수치로 소비하지 말 것.",
+    "correlation_vs_bm": 0.71103606,
+    "up_capture": 0.85150903,
+    "down_capture": 0.79747436,
+    "hit_ratio_vs_bm": 0.51856217,
+    "n_obs_daily": 5091,
+    "period": ["2006-01-04", "2026-08-28"]
+  },
+  "benchmark_basis": {
+    "authoritative_benchmark": "KOSPI200 — .cache/benchmark.parquet BM_Ret (production harness BM_DT)",
+    "authoritative_benchmark_scope": "canonical_screen_bt · run_alpha_search · essence 코퍼스 공통 벤치. 권위 등급은 이 벤치에서만 매겨진다.",
+    "upstream_benchmark": "alpha engine build_monthly_forward_returns bench_dt (알파 패널 구성)",
+    "upstream_port_t_reproduced_by_forge": 1.22106999,
+    "upstream_port_t_declared": 1.219,
+    "authoritative_port_t_daily": 1.00169151,
+    "authoritative_port_t_monthly": 0.86949972,
+    "attribution_2x2": {
+      "basis": ["forge_strategy x forge_BM (권위)", "forge_strategy x alpha_BM", "upstream_strategy x forge_BM", "upstream_strategy x alpha_BM (상류 보고)"],
+      "port_t": [0.86949972, 1.1880579, 0.89335529, 1.22106999],
+      "net_ir": [0.21649114, 0.2909548, 0.22234744, 0.2987432],
+      "alpha_ann": [0.04866156, 0.05961894, 0.04937901, 0.06033639]
+    },
+    "port_t_attribution": {
+      "upstream_reported_basis": 1.22106999,
+      "benchmark_leg_delta": -0.3277147,
+      "strategy_realization_leg_delta": -0.02385557,
+      "authoritative_monthly_basis": 0.86949972,
+      "authoritative_daily_basis_note": "권위 등급이 쓰는 PORT_t 는 daily(af=252) 계약값 — 아래 bt 값 참조."
+    },
+    "benchmark_series_diff": {
+      "cor": 0.99220535,
+      "mean_abs_diff": 0.00575445,
+      "max_abs_diff": 0.07008643,
+      "cum_forge_bm": 4.98264817,
+      "cum_alpha_bm": 3.99584145,
+      "forge_source": ".cache/benchmark.parquet BM_Ret (production harness BM_DT)",
+      "alpha_source": "alpha engine build_monthly_forward_returns bench_dt"
+    },
+    "strategy_series_diff": {
+      "cor": 0.99578186,
+      "mean_abs_diff": 0.00491864,
+      "max_abs_diff": 0.05167014,
+      "cum_forge": 11.146517,
+      "cum_upstream": 11.48382207,
+      "note": "forge = 정수 주식수 share-based 일별 NAV 월집계(집행 t+1, 라운딩 잔여현금). upstream = 연속 비중 x forward 수익(라운딩·집행지연 없음)."
+    },
+    "reading": "상류 PORT_t 와 권위 PORT_t 는 **다른 양**이다 — 벤치 계열이 다르다. 실측 귀속: 상류 basis 1.2211 -> 벤치 교체 -0.3277 -> 전략실현 교체 -0.0239 -> 권위(월별 basis) 0.8695. 지배항은 5/20 과 동일하게 **벤치 계열**이다. 248개월 누적 벤치가 4.983(production) vs 3.996(alpha panel) 로 서로 다른 구성물이다.",
+    "verdict_invariance": "네 basis PORT_t = 0.8695 / 1.1881 / 0.8934 / 1.2211. A 문턱 2.95 · B 문턱 2.0 대비 전부 미달 -> 벤치·전략계열 선택은 등급을 옮기지 않는다."
+  },
+  "upstream_residuals_reproduction": {
+    "port_t": {
+      "upstream_declared": 1.219,
+      "forge_reproduced_on_upstream_basis": 1.22106999,
+      "authoritative_daily": 1.00169151,
+      "authoritative_monthly": 0.86949972,
+      "reproduced": true,
+      "reading": "상류 잔여는 재현된다. 권위 basis 에서 더 낮아지지만 A 문턱 2.95 와의 거리는 어느 basis 에서도 본질적으로 같다."
+    },
+    "oos_retention": {
+      "upstream_approx": -0.458,
+      "upstream_method": "anchored 3분할 {55/65/75} 중앙값 진단 근사(상류 자칭 '권위 아님')",
+      "authoritative": -0.78,
+      "authoritative_method": "essence_score.R v2",
+      "band_status": "fail",
+      "splits": [-0.484, -0.78, -1.272],
+      "reproduced_sign": true,
+      "reading": "부호(음수)는 재현된다. 크기는 권위 산식에서 더 나쁘다 (-0.458 ->  -0.78 ). OOS 소멸이 이 후보의 구속 축이다."
+    },
+    "subperiod_ir": {
+      "sub": ["P1_pre2015", "P2_2015_2019", "P3_2020plus"],
+      "ir_forge": [0.83258746, 0.28290823, -0.36926281],
+      "ir_up": [0.87717148, 0.42947606, -0.32659591]
+    },
+    "subperiod_reading": "2020+ 부기간 IR 이 권위 basis 에서도 음수(-0.369)로 재현된다. 회전 제어는 감쇠를 완화만 했다는 상류 진술과 정합."
+  },
+  "implementation": {
+    "n_max_rebalance_distinct": 25,
+    "holdings_cap": 25,
+    "holdings_cap_pass": true,
+    "turnover_ann_oneway_realized": 9.38568134,
+    "turnover_upstream_declared": 8.739,
+    "turnover_cap": 11,
+    "turnover_pass": true,
+    "cost_ann_realized": 0.01407852,
+    "long_only": true,
+    "sum_w_max_dev": 2.22044605e-16,
+    "max_weight": 0.04,
+    "weight_cap_policy": "v10 — 종목별 비중 상한 폐지. Σw=1 · w>=0 · <=25종만 강제.",
+    "exec_drop_dates": 0,
+    "deploy_extension_days": 18,
+    "deploy_extension_note": "마지막 리밸(2026-07-31 신호 -> t+1 집행) 이후 보유 동결 상태로 18 거래일을 2026-08-28 까지 연장 측정했다."
+  },
+  "schedule_fidelity": {
+    "weights_csv_rows_total": 6225,
+    "weights_csv_unique_dates_total": 249,
+    "weights_csv_history_dates_count": 248,
+    "as_of_date": "2026-08-28",
+    "as_of_rows_excluded_from_backtest": 25,
+    "alpha_sig_dates_count": 248,
+    "alpha_canonical_n_months": 248,
+    "schedule_density_ratio_forge_recomputed": 1,
+    "schedule_density_ratio_optimizer_declared": 1,
+    "match": true,
+    "instrument_note": "schedule_fidelity_check.sh 는 .claude/settings.json 미등록 + 필드명 불일치 (sig_dates_count vs canonical_n_months)로 무발화 — 방어선으로 세지 않는다."
+  },
+  "as_of_handling": {
+    "as_of_date": "2026-08-28",
+    "as_of_rows": 25,
+    "excluded_from_backtest": true,
+    "reason": "as_of 비중은 다음 리밸까지 frozen 인 미래 집행분 — 실현수익이 존재하지 않는다.",
+    "history_rebalances_used": 248
+  },
+  "monthly_basis_diagnostic": {
+    "declared_as": "diagnostic — 권위 아님. 권위 = daily(af=252) 계약값(lean/alpha-search 레인 규약 동일).",
+    "n_months": 248,
+    "portfolio_alpha_t_nw_lag3": 0.86949972,
+    "portfolio_alpha_t_pvalue": 0.38457386,
+    "net_ir": 0.21649114,
+    "tracking_error": 0.22477391,
+    "alpha_annualized": 0.07471774,
+    "beta_to_benchmark": 0.77080046,
+    "sharpe_monthly_basis": 0.57168486,
+    "mdd_monthly_basis": -0.53820068,
+    "mdd_daily_basis": -0.60995098,
+    "mdd_basis_note": "월말 basis MDD 는 일중·월중 경로를 못 본다. 권위 MDD 는 일별 경로 기준이라 상류(월별) 값보다 깊게 나오는 것이 정상이다 — 알파 악화가 아니라 해상도 차이다. Calmar 는 이 MDD 를 분모로 쓰므로 같은 이유로 상류보다 낮다.",
+    "upstream_reported": {
+      "port_t": 1.219,
+      "net_ir": 0.2987,
+      "alpha_ann": 0.0722,
+      "cagr": 0.1299,
+      "mdd": -0.5341,
+      "calmar": 0.2432
+    },
+    "note": "NW lag-3 는 일별에서 월간 리밸런싱의 자기상관을 담지 못하므로 daily PORT_t 와 monthly PORT_t 는 다른 양이다. 두 basis 를 나란히 둔다."
+  },
+  "regime_decomposition_forge_operationalization": {
+    "definition": "벤치(KOSPI200) 누적 낙폭 <= -20% 인 일자 = drawdown state. forge 자체 조작화.",
+    "caveat": "risk / optimizer 의 국면 조작화와 다르다. 재현 주장 아님.",
+    "table": {
+      "state": ["normal", "bench_dd<=-20%"],
+      "n": [3844, 1247],
+      "sr_s": [1.29828821, -0.88013184],
+      "sr_b": [1.21381105, -0.86365785],
+      "cagr_s": [0.33087598, -0.31374561],
+      "cagr_b": [0.25038982, -0.27914743]
+    }
+  },
+  "vs_factor_engine": {
+    "factor_engine_claimed_sr": 0.57867699,
+    "factor_engine_basis": "weighted_screen_bt(weights.csv as-is, alpha 패널 forward 수익/벤치)로 forge 가 재현한 상류 연속수익 basis SR (monthly aggregation).",
+    "forge_realized_sr_daily": 0.58739534,
+    "forge_realized_sr_monthly_basis": 0.57168486,
+    "divergence_pp_daily_basis": -0.00871835,
+    "diagnosis_daily_basis": "NEGLIGIBLE",
+    "divergence_pp_same_frequency": 0.00699213,
+    "diagnosis_same_frequency": "NEGLIGIBLE",
+    "note": "same-frequency 대조가 fabrication 판정의 정본이다. daily-basis 격차는 집계빈도 효과를 포함한다."
+  },
+  "upstream_claims_carried_as_labels_not_metrics": {
+    "momentum_exposure": "x_f_momentum 이 밴드로 오히려 상승(+0.187 -> +0.226 sigma, as_of +0.615). 결함이 아니라 설계 산물 — EL2022 가설이 개별주 모멘텀을 팩터 모멘텀의 그림자로 보므로 x_mom 을 0 으로 묶으면 검정 대상 자체가 사라진다. 중립화 가격 실측: net -0.83%/yr, t -0.615, 회전 8.74 -> 11.45.",
+    "tail": "t(5)/GPD 인용. VaR1 0.2058(실측) / t5 0.2120 / GPD xi 0.0094 VaR99 0.2218 ES99 0.2894. 정규-Sigma 0.1892 는 8% 과소. Hill alpha 1.721 < 2 — 유한분산 경계 아래. forge 는 이 수치를 재계산하지 않고 라벨로 승계한다.",
+    "crowding": "판정 불가 — composite 구조 상한 0.7345 < 문턱 0.75 라 원리적으로 발화 불가. '군집 없음'으로 읽지 않는다.",
+    "stress": "risk 스트레스 6구간 커버리지 <85% (UNRELIABLE) — hard-fail 근거로 쓰지 않았다.",
+    "market_exposure": "RF-R1 시장 노출 68.8% 는 long-only + Σw=1 + 25종 하에서 optimizer 층이 닫을 수 없어 오버레이 층으로 이월. forge 는 오버레이 미적용(S0/S1 금지 준수).",
+    "band_width": "B=40 은 사전 고정. forge 도 B 를 바꾸지 않았다(사후 최적화 금지 준수).",
+    "turnover_tradeoff": "실증 명제는 '회전을 27% 줄여도 알파가 깎이는 증거가 없다'이지 '회전 제어가 알파를 만든다'가 아니다. 비용 절감 0.486%p 만 회계적으로 확정이고 gross +0.476%p 는 t 0.438 로 0 과 구별되지 않는다."
+  },
+  "pit": {
+    "detector": "02_Infrastructure/validation/lookahead_detector.R::detect_lookahead()",
+    "decision_path_file": "stage_artifacts/WT_R20260829_006/run_all.R",
+    "decision_path_result": "CLEAN (318 lines scanned, 0 violations)",
+    "expost_evaluator_files": ["stage_artifacts/WT_R20260829_006/forge_emit.R", "stage_artifacts/WT_R20260829_006/forge_diag_recon.R"],
+    "bidirectional_control": {
+      "positive_control": {
+        "injected": {
+          "P1": "  ann_sr <- mean(x) / sd(x) * sqrt(252)   # 선언 idiom: 연율화 Sharpe",
+          "P2": "  q <- quantile(dt$Ret_1m, 0.9)           # 선언 idiom: 전 표본 분위수",
+          "P3": "  s <- scale(dt$score)                    # 선언 idiom: 전 표본 표준화"
+        },
+        "fired": {
+          "P1": true,
+          "P2": false,
+          "P3": false
+        },
+        "n_fired": 1,
+        "n_total": 3,
+        "reading": "검출기가 이 실행 환경에서 살아 있는지의 증거. 발화 = 계기 생존."
+      },
+      "negative_coverage": {
+        "injected": {
+          "N1": "  mu_full <- mean(dt$Ret_1m, na.rm = TRUE)          # 전 표본 평균 (미래 포함)",
+          "N2": "  fwd <- shift(dt$Close, -1)                        # 미래 시점 참조 (lead)",
+          "N3": "  W[, w := w / sum(w)]                              # 비중 재정규화 (사후 개입)",
+          "N4": "  cvm <- cov(as.matrix(dt[, .(a, b)]))              # 전 표본 공분산",
+          "N5": "  best <- dt[which.max(cumret)]                     # 결과 최대점 선택"
+        },
+        "fired": {
+          "N1": false,
+          "N2": false,
+          "N3": false,
+          "N4": false,
+          "N5": false
+        },
+        "n_fired": 0,
+        "n_total": 5,
+        "reading": "미발화분은 검출기가 원리적으로 못 보는 idiom 계열이다. 따라서 baseline CLEAN 은 '선언 idiom 부재'의 증거일 뿐 PIT 증명이 아니다."
+      },
+      "verdict": "양성 1/3 · 음성 0/5. 검출기는 살아 있으나 커버리지가 **선언 idiom 중 sd()*sqrt() 계열 한 갈래**로 좁다 — quantile()·scale() 주입도 미발화했다. 5/20 forge 가 기록한 '선언 idiom 2/2 발화'보다 좁게 측정됐다. 따라서 CLEAN 은 PIT 증명이 아니며, 실제 논거는 아래 structural_argument 다."
+    },
+    "structural_argument": {
+      "t_plus_1_exec_gap_days": {
+        "min": 1,
+        "median": 3,
+        "max": 11,
+        "n_non_positive": 0
+      },
+      "weights_as_is": {
+        "weights_pairs": 6200,
+        "holdings_pairs": 6200,
+        "holdings_not_in_weights": 0,
+        "reading": "집행 명부가 weights.csv 의 부분집합 -> forge 는 종목을 고르지 않았다."
+      },
+      "reselection_scan": {
+        "alpha_scores_mentions": 1,
+        "setorder_calls": 2,
+        "head_calls": 0,
+        "reading": "top-N 재선택 패턴(setorder(-score)+head(N)) 부재."
+      },
+      "full_sample_statistics": "0 — 일별 NAV 는 보유 주식수 x 당일 종가만 사용. 경로 누적이라 표본 전체 통계 미사용."
+    },
+    "structural_argument_reading": "① 종목선택·비중을 forge 가 만들지 않는다 — 집행 6,200 (date,ticker) 쌍이 weights.csv 의 6,200 쌍과 완전 일치(초과 0). ② 신호 t -> 집행 t+1: exec-sig 간격 최소 1일·최대 11일, 0 이하 0건. ③ 전 표본 통계 0 — 일별 NAV 는 보유 주식수 x 당일 종가의 경로 누적. ④ 재선택 패턴 부재 — run_all.R 의 'alpha_scores' 1회는 금지 주석이고 setorder 2회는 (Date,-w,Ticker) 와 (nav,Date) 정렬로 score 기반 top-N 이 아니며 head() 0회.",
+    "c_checks": {
+      "C1": "PASS — forge 층에 전 표본 추정치 0. NAV 는 경로 누적.",
+      "C2": "PASS — sig_date 신호를 다음 거래일 종가로 집행(간격 >=1일).",
+      "C3": "PASS — 동기간 집계 후 소급적용 없음.",
+      "C4": "N/A — 재무제표 lag 는 alpha 소관(승계).",
+      "C5": "N/A — 오버레이 미적용.",
+      "C6": "PASS — RAWDATA 전종목 패널 + alpha 월별 PIT 멤버십 승계. 생존편향 도입 없음.",
+      "C7": "PASS — 검출기 정적 스캔 CLEAN(단 커버리지 한계 위 기록).",
+      "C8": "N/A — FM weight 미사용.",
+      "C9": "N/A — VT/DD 오버레이 미적용.",
+      "C10": "PASS — 유동성 필터는 alpha t-1 ADV20 승계. forge 추가 필터 0.",
+      "C11": "N/A — 외부 매크로 미사용.",
+      "C13": "N/A — 부호 반전 없음.",
+      "C14": "N/A — IC 재계산 없음.",
+      "C15": "PASS — Factor DB parquet 직접 load 0 (audit Check 14 실측: lmf=0/align=0 hits)."
+    }
+  },
+  "self_adversarial_challenge": {
+    "performed": true,
+    "items": 10,
+    "note_ref": "stage_artifacts/WT_R20260829_006/challenge_note_forge.md",
+    "escalate_to_qlead": false,
+    "escalate_reason": "Hard Constraint 위반 0 · fabrication 신호 0 · 미해결 HIGH 3건 전부 판정 불변",
+    "unresolved_high": {
+      "F01_detector_coverage": "detect_lookahead 양방향 대조 양성 1/3 · 음성 0/5 — CLEAN 은 PIT 증명이 아니다. 논거는 구조.",
+      "F02_dsr_trial_count": "n_trials_cumulative=5 는 optimizer 내부 열거만 센다. 본 건은 JT1993 강화 6/20 이므로 사다리 누적 시행은 최소 6라운드 x 내부 열거. DSR 0.436 은 낙관 방향. ★판정 불변 — PORT_t 1.002 가 B 문턱 2.0 에도 미달이라 등급은 시행수 가정과 무관하게 C.",
+      "F04_benchmark_basis": "상류 PORT_t 1.221 과 권위 1.002 는 다른 양(벤치 계열). 혼동 시 알파 소멸로 오독된다. 네 basis 전부 B 문턱 미만이라 등급 불변."
+    },
+    "accepted_medium": {
+      "F03_turnover_realization": "실현 회전 9.386 > 상류 선언 8.739 (+7.4%). 정수 주식수·비중 표류· 라운딩 탓. 실격게이트 11.0 은 실현치에서도 통과 — 선택 불변. 단 '회전 27% 감축'·'비용 -0.486%p' 는 연속 규약 값이며 실현 basis 에서는 축소된다.",
+      "F06_deploy_extension": "18거래일 — OOS 주장을 지탱하지 못한다. OOS 증거로 인용 금지.",
+      "F09_as_of_unmeasured": "as_of book(2026-08-28, 모멘텀 노출 +0.615σ)은 한 번도 측정되지 않았다. 역사 248개월의 성질을 as_of book 에 전이하지 말 것.",
+      "F08_sr_provenance_self_reference": "optimizer 가 SR 을 선언하지 않아 factor_engine SR 은 forge 가 weighted_screen_bt 로 재현한 값이다. divergence 는 '두 집행 규약' 대조이지 '두 독립 계열' 대조가 아니다. 상류 PORT_t 1.219 -> 1.2211 재현으로 검증력 보강."
+    }
+  },
+  "known_instrument_defects": {
+    "worktask_schema_json": "schema.json:17 task_id 정규식 ^WT-[DPSH][0-9]{8}_[0-9]{3}$ 에 v10 접두 'R' 이 없고(실측 match=FALSE) wt_type enum 에 'reinforcement' 가 없다(실측 FALSE). 우회하지 않았다 — 내용 기반 검증(10-component · audit 19 · essence)은 그대로 완주했고 사실만 기록한다. 수리는 별건 태스크. 증거: stage_artifacts/WT_R20260829_006/forge_schema_probe.json",
+    "wt_validate_package_no_forge_branch": "wt_validate_package(WT, 'forge_package') = valid TRUE 인데, 그 함수의 switch 에는 forge 분기가 **아예 없어** required_fields=character(0) 다 — 내용 무관 무조건 TRUE. 통과가 아니라 검사 부재다. 5/20 이 'required 필드만 봐서 valid=TRUE' 로 적은 것보다 한 단계 더 비어 있다. 실질 검증은 schema.json forge_package 정의의 required 10필드를 forge 가 직접 대조해 수행했다(missing = 0). 부수 발견: wt_list 정규식 ^WT-?[DP]?[0-9]{8}_[0-9]{3}$ 도 WT-R 을 못 본다.",
+    "schedule_fidelity_check_sh": ".claude/settings.json 미등록(무발화) + 필드명 불일치 (sig_dates_count vs canonical_n_months). 방어선으로 세지 않고 밀도를 산출물에서 직접 재도출했다 — 248/248 = 1.000.",
+    "audit_check16_vacuous": "Check 16(nav_cadence_label_consistency)은 manifest$frequency 가 strategy_spec$rebalance_frequency('monthly')에서 채워지므로 월간 리밸 전략에서는 daily-라벨 검사가 **원리적으로 발화하지 않는다**. 여기 PASS 는 공허 PASS 다. 실질 증거는 직접 재도출: nav 중앙 간격 1.0일 · 5,091 일별 관측 · af=252.",
+    "audit_check13_regex": "Check 13 정규식은 't+1'/'t1' 만 인식해서 'month_end_signal_t_plus_1' 표기로는 skip(공허 PASS)이 된다. execution_date_rule 에 'T+1' 을 명시해 실제로 발화시켰고(sample 1건 entry_date >= date), 부족한 표본 크기는 structural_argument 의 248건 간격 실측으로 보강했다.",
+    "lookahead_detector_coverage": "위 pit.bidirectional_control 참조 — 양성 1/3 · 음성 0/5."
+  },
+  "artifacts": {
+    "run_all": "stage_artifacts/WT_R20260829_006/run_all.R",
+    "bt_result_rds": "stage_artifacts/WT_R20260829_006/bt_result.rds",
+    "contract_csv": "stage_artifacts/WT_R20260829_006/00_manifest.csv ~ 10_audit.csv (10-component + audit)",
+    "baseline_reconciliation": "stage_artifacts/WT_R20260829_006/forge_baseline_reconciliation.json",
+    "schema_probe": "stage_artifacts/WT_R20260829_006/forge_schema_probe.json",
+    "pit_bidirectional": "stage_artifacts/WT_R20260829_006/forge_pit_bidirectional.json",
+    "challenge_note": "stage_artifacts/WT_R20260829_006/challenge_note_forge.md",
+    "charts": ["stage_artifacts/WT_R20260829_006/output/equity_curve.png", "stage_artifacts/WT_R20260829_006/output/annual_returns.png", "stage_artifacts/WT_R20260829_006/output/oos_zoom_chart.png", "stage_artifacts/WT_R20260829_006/output/regime_decomposition.png"],
+    "forge_package": "qepm/mailbox/worktask/WT-R20260829_006/forge_package.json"
+  },
+  "hash_audit": {
+    "start": {
+      "C:/Users/99922/OneDrive/Quant_Module_Moltbot/qepm/mailbox/worktask/WT-R20260829_006/alpha_package.json": "6b3633a27b92c46a22fff927bb53c50c",
+      "C:/Users/99922/OneDrive/Quant_Module_Moltbot/qepm/mailbox/worktask/WT-R20260829_006/risk_package.json": "80fff2d35c011975dfefe03b08443558",
+      "C:/Users/99922/OneDrive/Quant_Module_Moltbot/qepm/mailbox/worktask/WT-R20260829_006/optimization_package.json": "c139b716de730f8b688c4fd2aacc6fb4"
+    },
+    "end": {
+      "C:/Users/99922/OneDrive/Quant_Module_Moltbot/qepm/mailbox/worktask/WT-R20260829_006/alpha_package.json": "6b3633a27b92c46a22fff927bb53c50c",
+      "C:/Users/99922/OneDrive/Quant_Module_Moltbot/qepm/mailbox/worktask/WT-R20260829_006/risk_package.json": "80fff2d35c011975dfefe03b08443558",
+      "C:/Users/99922/OneDrive/Quant_Module_Moltbot/qepm/mailbox/worktask/WT-R20260829_006/optimization_package.json": "c139b716de730f8b688c4fd2aacc6fb4"
+    },
+    "identical": true,
+    "note": "3-package md5 시작/완료 동일 -> pure function 준수 실증"
+  }
+}

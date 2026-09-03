@@ -1,0 +1,5 @@
+suppressWarnings(suppressMessages({library(data.table)}))
+cat("data.table:", as.character(packageVersion("data.table")), "\n")
+cat("frollmax exists:", exists("frollmax"), "\n")
+cat("arrow:", as.character(packageVersion("arrow")), "\n")
+for (p in c("sandwich","lmtest","future.apply","RcppRoll","zoo")) cat(p, requireNamespace(p, quietly=TRUE), "\n")

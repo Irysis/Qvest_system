@@ -1,0 +1,26 @@
+{
+  "control": "detect_lookahead_two_sided",
+  "baseline": {
+    "file": "r4_regime.R",
+    "clean": true,
+    "n": 0
+  },
+  "probeA": {
+    "purpose": "검출기가 선언한 idiom(C1 full-sample vol / C5_VT / C5_DDshort)",
+    "n": 3,
+    "checks": [
+      "C1",
+      "C5_VT",
+      "C5_DDshort"
+    ],
+    "fired": true
+  },
+  "probeB": {
+    "purpose": "risk 레인 고유 위반(full-sample cov · 국면라벨 shift(-1))",
+    "n": 0,
+    "checks": [],
+    "fired": false
+  },
+  "interpretation": "A 가 발화하면 계기는 살아 있다. B 가 발화하지 않으면 detect_lookahead 의 R 경로에는 **전 표본 cov() 에 대한 일반 검사가 없다** 는 뜻이며, 그 축의 PIT 는 검출기가 아니라 설계·산출물 기록(Omega 추정창 선언 · ex_ante_knowability walk-forward)이 담보한다. risk_package.pit.C1 은 그 근거로 읽어야 하고, detect_lookahead PASS 를 C1 통과의 증거로 인용하면 안 된다.",
+  "risk_c1_evidence": ["Omega = 직전 504영업일 EWMA(rolling)", "D = 직전 24개월 EWMA(rolling)", "beta = 252일 rolling(Blume)", "국면 Omega 는 as-of 진단 전용 + consumption_restriction 명시", "사전 인지가능성은 시점별 재추정(walk-forward)으로 별도 실증"]
+}

@@ -1,0 +1,85 @@
+{
+  "meta": {
+    "wt_id": "WT-R20260829_007",
+    "tool": "02_Infrastructure/validation/lookahead_detector.R::detect_lookahead"
+  },
+  "per_file": {
+    "s1_panel.R": {
+      "file": "s1_panel.R",
+      "scanned": true,
+      "clean": true,
+      "n_violations": 0,
+      "violations": []
+    },
+    "s2_power.R": {
+      "file": "s2_power.R",
+      "scanned": true,
+      "clean": true,
+      "n_violations": 0,
+      "violations": []
+    },
+    "s3_primary_fm.R": {
+      "file": "s3_primary_fm.R",
+      "scanned": true,
+      "clean": true,
+      "n_violations": 0,
+      "violations": []
+    },
+    "s4_confound.R": {
+      "file": "s4_confound.R",
+      "scanned": true,
+      "clean": true,
+      "n_violations": 0,
+      "violations": []
+    },
+    "s4b_reattribution.R": {
+      "file": "s4b_reattribution.R",
+      "scanned": true,
+      "clean": true,
+      "n_violations": 0,
+      "violations": []
+    },
+    "s4c_prior_returnpath.R": {
+      "file": "s4c_prior_returnpath.R",
+      "scanned": true,
+      "clean": true,
+      "n_violations": 0,
+      "violations": []
+    },
+    "s4d_universe_reattribution.R": {
+      "file": "s4d_universe_reattribution.R",
+      "scanned": true,
+      "clean": true,
+      "n_violations": 0,
+      "violations": []
+    },
+    "s5_production.R": {
+      "file": "s5_production.R",
+      "scanned": true,
+      "clean": false,
+      "n_violations": 2,
+      "violations": [
+        {
+          "code": "cs$information_ratio %or% NA_real_, mean(act)/sd(act)*sqrt(12), cs$turnover_annual, nrow(pr)))",
+          "line": 34,
+          "text": ""
+        },
+        {
+          "code": "net_sr_active = mean(act)/sd(act)*sqrt(12),",
+          "line": 148,
+          "text": ""
+        }
+      ]
+    },
+    "s6_side.R": {
+      "file": "s6_side.R",
+      "scanned": true,
+      "clean": true,
+      "n_violations": 0,
+      "violations": []
+    }
+  },
+  "signal_path_files": ["s1_panel.R", "s3_primary_fm.R", "s4_confound.R", "s5_production.R"],
+  "signal_path_clean": false,
+  "note": "신호·선별 경로(s1/s3/s4/s5)가 clean 이어야 한다. 보고 경로(s2/s4b/s4c/s4d/s6)의 플래그는 사후 요약통계(sd()*sqrt() 등)일 수 있으므로 코드별로 판독한다."
+}

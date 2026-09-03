@@ -1,0 +1,87 @@
+{
+  "meta": {
+    "wt_id": "WT-R20260829_007",
+    "test_id": "F4b — 선행 런 재귀속",
+    "metric_type": "cross_sectional_regression",
+    "envelope_applicability": "NOT_APPLICABLE"
+  },
+  "prior_run_reported": {
+    "strategy_id": "STR_AS_20260612_132740_321992",
+    "fmb_score_lambda": 0.00494,
+    "fmb_score_t_nw": 3.199,
+    "fmb_size_t_nw": -3.225,
+    "fmb_momentum_t_nw": -1.886,
+    "n_months": 254,
+    "engine": "02_Infrastructure/alpha_search/fe_mom52w.R",
+    "analyzer": "02_Infrastructure/strategy_analyzer.R L170-250"
+  },
+  "definition_discrepancy": {
+    "prior_definition": "Score = Close_t / max(Close over [t-252, t-1]) - 1  (당일 종가를 최고가 창에서 **제외**) -> 신고가 경신일에 양(+), 상한 없음",
+    "gh2004_definition": "FH = P_{t-1} / high_{t-1}, high = **당월 포함** 12개월 최고가 -> FH <= 1",
+    "consequence": "선행 런이 잰 변수는 '준거점 대비 위치'가 아니라 '직전 고점 대비 초과폭'이다. 두 변수는 신고가 경신 코호트에서 갈린다.",
+    "prior_score_positive_share": 0.02879842,
+    "spearman_prior_vs_gh2004": 0.99953596
+  },
+  "reattribution_grid": {
+    "prior_def_prior_spec": {
+      "spec": "prior (strategy_analyzer.R): Ret ~ z(Score) + z(lnSize) + z(Ret_12m_noskip), NW L=floor(T^(1/3))",
+      "n_months": 259,
+      "lambda_score": 0.0000429,
+      "t_score_priorNW": 0.03161515,
+      "t_score_NWlag3": 0.02976883,
+      "lambda_size": -0.00198944,
+      "t_size_priorNW": -1.48451478,
+      "lambda_mom": 0.00247746,
+      "t_mom_priorNW": 1.86366297
+    },
+    "gh2004_def_prior_spec": {
+      "spec": "prior (strategy_analyzer.R): Ret ~ z(Score) + z(lnSize) + z(Ret_12m_noskip), NW L=floor(T^(1/3))",
+      "n_months": 259,
+      "lambda_score": 0.00006849,
+      "t_score_priorNW": 0.04993528,
+      "t_score_NWlag3": 0.0472328,
+      "lambda_size": -0.00201319,
+      "t_size_priorNW": -1.50919316,
+      "lambda_mom": 0.00249913,
+      "t_mom_priorNW": 1.88734177
+    }
+  },
+  "prior_definition_control_ladder": {
+    "T0_none": {
+      "step": "T0_none",
+      "controls": [],
+      "n_months": 259,
+      "lambda": 0.00113272,
+      "nw_t": 0.83004298
+    },
+    "T1_mom_size": {
+      "step": "T1_mom_size",
+      "controls": ["jt6", "logsize"],
+      "n_months": 259,
+      "lambda": 0.0020405,
+      "nw_t": 1.46047521
+    },
+    "T2_plus_ind": {
+      "step": "T2_plus_ind",
+      "controls": ["jt6", "logsize", "ind6"],
+      "n_months": 259,
+      "lambda": 0.00206163,
+      "nw_t": 1.48134379
+    },
+    "T3_plus_vol_L": {
+      "step": "T3_plus_vol_L",
+      "controls": ["jt6", "logsize", "ind6", "rv63", "L01_Amihud", "L09_Amihud_20d", "L11_Kyle_Lambda"],
+      "n_months": 259,
+      "lambda": 0.00143774,
+      "nw_t": 1.05680315
+    },
+    "T4_full": {
+      "step": "T4_full",
+      "controls": ["jt6", "logsize", "ind6", "rv63", "L01_Amihud", "L09_Amihud_20d", "L11_Kyle_Lambda", "D35_RealVol_63d", "lo52"],
+      "n_months": 259,
+      "lambda": 0.00008097,
+      "nw_t": 0.06209923
+    }
+  },
+  "reading": "정의(선행 vs GH2004) x 사양(선행 FM vs 본 라운드 사다리)의 4칸을 같은 표본 위에서 재고, 어느 축이 t 3.199 를 만들었는지 확정한다."
+}

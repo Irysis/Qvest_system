@@ -1,0 +1,55 @@
+{
+  "as_of_date": "2026-08-28",
+  "n_names": 347,
+  "published_signal": "fh_lag1d = Close_{t-1 거래일} / max(Close, 그 시점까지 252 거래일) — strict-PIT 판(S5b 판정 승계). ast_field_map A1 가용성 't1' 규칙 정합.",
+  "forecast_rule": "alpha_hat = lambda_FM * z(근접도, 시장-내 정규분위) - 단면평균. lambda_FM = 무통제 Fama-MacBeth 시계열 평균 기울기(데이터 추정). 병기 alpha_hat_full_control = 전 통제 사양 lambda 판.",
+  "lambda_no_control_monthly": 0.00153403,
+  "lambda_no_control_nw_t": 1.09476609,
+  "lambda_full_control_monthly": 0.00108828,
+  "lambda_full_control_nw_t": 0.81439052,
+  "lambda_attenuation": 0.70942615,
+  "confidence_rule": "0.35*랭크안정성 + 0.25*유동성 + 0.15*커버리지 + 0.25*변동성안정성",
+  "redundancy_check": {
+    "M06_High_52w": {
+      "factor": "M06_High_52w",
+      "mean_monthly_spearman": 0.98587576,
+      "n_months": 259
+    },
+    "M17_Low_52w": {
+      "factor": "M17_Low_52w",
+      "mean_monthly_spearman": -0.45551692,
+      "n_months": 259
+    },
+    "M02_Mom_6_1": {
+      "factor": "M02_Mom_6_1",
+      "mean_monthly_spearman": 0.57581481,
+      "n_months": 259
+    },
+    "M07_IndMom": {
+      "factor": "M07_IndMom",
+      "mean_monthly_spearman": 0.17554806,
+      "n_months": 259
+    },
+    "D35_RealVol_63d": {
+      "factor": "D35_RealVol_63d",
+      "mean_monthly_spearman": 0.19777738,
+      "n_months": 259
+    },
+    "L01_Amihud": {
+      "factor": "L01_Amihud",
+      "mean_monthly_spearman": 0.04185291,
+      "n_months": 259
+    },
+    "L09_Amihud_20d": {
+      "factor": "L09_Amihud_20d",
+      "mean_monthly_spearman": -0.03163687,
+      "n_months": 259
+    },
+    "L11_Kyle_Lambda": {
+      "factor": "L11_Kyle_Lambda",
+      "mean_monthly_spearman": 0.09239101,
+      "n_months": 259
+    }
+  },
+  "redundancy_reading": "발행 신호와 등재 M06_High_52w 의 월별 Spearman 이 ~1 이다 — 본 재료는 신규 발굴이 아니라 기존 등재 팩터의 재검증이다(Factor Zoo 축소 원칙 1 정합)."
+}

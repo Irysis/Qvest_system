@@ -1,0 +1,92 @@
+{
+  "l_code": "L-RF-20260829_190619",
+  "strategy_id": "WTR20260829_005_AMP2013_VALMOM_EW25",
+  "grade": "C",
+  "core_reference": "stage_artifacts/WT_R20260829_005/authoritative_remeasure.json | qepm/mailbox/worktask/WT-R20260829_005/forge_package.json",
+  "lesson_text": "AMP2013 value-momentum 결합의 KR 이식 — **essence C**(권위, forge). 5조건 전부 미달: PORT_t 0.646(<2.95) · OOS retention **-0.747**(<0.5 floor) · Sharpe 0.648(<0.8) · CAGR 13.4%(<16%) · Calmar 0.215(<0.64). ★★가장 큰 소득은 성과가 아니라 **전제 기각**이다 — AMP2013 의 핵심 전제인 value-momentum **음(-)상관이 KR 에서 구성 아티팩트**다. 신호수준 순위상관: contemporaneous ME **-0.184**(t -8.51) vs price-lagged ME **+0.085**(t +4.34) → 부호가 뒤집힌다. 수익수준(논문 basis): -0.466 vs -0.011, 비 **0.024 << 0.5** = CONSTRUCTION_ARTIFACT. 논문 일본 팩터 -0.64 와 우리 -0.466 은 같은 자리인데 **가격을 공유하지 않는 사양에서 전부 사라진다**(ME 분모와 momentum 분자가 같은 가격을 쓴다). 절단면도 병기 — 분위 양끝에서 오히려 더 강하게 뒤집힌다(value D1 rho_b +0.413 · D10 +0.343). ⇒ 결합의 근거였던 분산 축소 전제가 KR 에는 없다. ★사전 선언 적중: 설계가 측정 전에 '베타~0 롱숏 위의 분산축소는 베타~1 롱온리에 비상속되므로 1계층 결합은 Calmar 를 못 고친다' 고 선언했고 Calmar 0.215 로 확인됐다(사후 발견 아님). ★사이징은 net 기여가 없다: 사전선언 축 net_IR 로 5종 비교, 적격 3종 최대 격차 0.0091 << band 0.10 → 비결정 → tie-break 로 EW. book 기준 특이위험 8.5% 라 사이징이 건드릴 표면적 자체가 그만큼이다. ★★**벤치 basis 가 PORT_t 를 46% 옮긴다**: 상류(alpha 패널 벤치) basis 로 재구성하면 net_IR 0.2492 / PORT_t 1.1959 로 소수점까지 일치하는데 forge 권위 basis 는 0.1486 / 0.6933 이다. 귀속 실측 결과 지배항이 **벤치 계열**이었고, 같은 forge 수익에 상류 벤치를 씌우면 0.2336 / 1.1249 로 되돌아온다. 두 벤치는 동일 259개월 누적 **7.934 vs 6.271** 로 서로 다른 구성물이다. 세 basis 전부 PORT_t < 2.0 이라 등급은 안 움직이지만, **상류 PORT_t 와 권위 PORT_t 는 다른 양**이다. ★선행 런 대비 열위(자기신고): 본 후보 CAGR 13.42 / SR 0.619 / Calmar 0.253 vs 선행 2건 CAGR 20.76·20.09 / SR 0.825·0.799 / Calmar 0.344·0.331 — 성과 축에서 새 발견 없음. ★계기: detect_lookahead 선언 idiom 주입 **2/2 발화**, 비선언 idiom(전 표본 mean · shift(-1) · 비중 재정규화) **0/3 미발화** ⇒ CLEAN 은 PIT 증명이 아니라 **선언 idiom 부재의 증거**다. 3-package md5 시작==완료로 pure function 실증. structural_drawdown = FALSE(MDD 0.623 < 0.70, tail_review 만) — **MDD 직접 문턱 미사용, 위험 축은 Calmar 하나**.",
+  "tags": ["reinforcement", "L1_attempt_5_of_20", "combination", "value_momentum", "AMP2013", "premise_construction_artifact", "forge_authoritative", "benchmark_basis_shift", "sizing_no_contribution"],
+  "created_at": "2026-08-29",
+  "research_mode": "reinforcement",
+  "created_by": "emit:reinforcement",
+  "metric_type": "backtested",
+  "construction_type": "composite",
+  "mechanism_hypothesis": "결합의 이득은 두 축이 서로 다른 정보를 담을 때 나온다. KR 에서 관측된 음상관은 ME 분모와 momentum 분자가 같은 가격을 공유해 생긴 기계적 산물이고, 공유항을 제거하면 두 축은 오히려 같은 방향(+0.085)이다. 따라서 분산 축소가 발생할 구조가 애초에 없다.",
+  "lcode_schema_version": 3,
+  "port_t_nw_lag3": 0.646,
+  "net_sharpe": 0.648,
+  "cagr": 0.134,
+  "calmar": 0.215,
+  "net_ir": 0.143,
+  "mdd": 0.623,
+  "dsr": 0.297,
+  "beta": 0.7726,
+  "alpha_ann": 0.0535,
+  "turnover_yr": 9.46,
+  "cost_ann": 0.0142,
+  "rho_signal_contemporaneous_me": -0.184,
+  "rho_signal_price_lagged_me": 0.085,
+  "rho_return_contemporaneous": -0.466,
+  "rho_return_price_lagged": -0.011,
+  "artifact_ratio": 0.024,
+  "port_t_upstream_basis": 1.1959,
+  "net_ir_upstream_basis": 0.2492,
+  "bench_cum_upstream": 7.934,
+  "bench_cum_forge": 6.271,
+  "book_specific_risk_share": 0.085,
+  "n_months": 259,
+  "falsification_attempts": [
+    {
+      "test": "FAL-1 음(-)상관 전제 검정 — 기계/경제 분해 (contemporaneous ME vs price-lagged ME, 신호수준·수익수준 2층 + 연도별·분위 절단면)",
+      "result": "PREMISE_FULLY_REJECTED / CONSTRUCTION_ARTIFACT — 신호수준 rho -0.184(t -8.51) → +0.085(t +4.34) 부호 반전, 수익수준 -0.466 → -0.011(비 0.024 << 0.5)",
+      "effect_retained": false
+    },
+    {
+      "test": "axis_C 사전선언 검정 — 베타~0 롱숏 위의 분산축소가 베타~1 롱온리에 상속되는가 (측정 전 선언)",
+      "result": "선언 적중 — Calmar 0.215 로 문턱 0.64 는 물론 선행 런 0.331/0.344 에도 미달. 사후 발견 아님",
+      "effect_retained": false
+    },
+    {
+      "test": "OOS retention anchored 3분할 — 절단점 선택 민감도",
+      "result": "3분할 전부 음수(-0.588 / -0.747 / -0.895). band [0.5,0.7) 미진입으로 escalation 경로 미개방",
+      "effect_retained": false
+    },
+    {
+      "test": "벤치 basis 귀속 — 상류 basis / forge 권위 basis / 교차 basis 3종 대조",
+      "result": "지배항이 벤치 계열. 상류 1.1959, 권위 0.6933, 교차 1.1249. 두 벤치 누적 7.934 vs 6.271 로 서로 다른 구성물. **세 basis 전부 PORT_t < 2.0 이라 등급 결론은 basis 에 무관**",
+      "effect_retained": true
+    },
+    {
+      "test": "detect_lookahead 양방향 대조 — 선언 idiom 2종 · 비선언 idiom 3종 위반 주입",
+      "result": "선언 2/2 발화, 비선언(전 표본 mean · shift(-1) · 비중 재정규화) 0/3 미발화. CLEAN 은 PIT 증명이 아니라 선언 idiom 부재의 증거",
+      "effect_retained": false
+    },
+    {
+      "test": "선행 런 대비 좌표 병기 (STR_AS_20260605_221011_31932 · STR_AS_20260610_213712_20276)",
+      "result": "본 후보가 열위 — CAGR 13.42 vs 20.76/20.09, SR 0.619 vs 0.825/0.799, Calmar 0.253 vs 0.344/0.331. 성과 축 신규 발견 0, 자기신고",
+      "effect_retained": false
+    },
+    {
+      "test": "axis_A/axis_B (대조 arm 기반 증분 검정) — 단일 측정 규율 하 정의 가능성",
+      "result": "NOT_TESTABLE_UNDER_SINGLE_CANDIDATE_DISCIPLINE — 문구를 고치지 않고 미실행 신고(No Silent Override)",
+      "effect_retained": {}
+    },
+    {
+      "test": "3-package pure function 검사 — md5 시작/완료 대조",
+      "result": "hash_audit_pass TRUE, 3종 전부 read-only 확인",
+      "effect_retained": true
+    }
+  ],
+  "oos_retention": -0.747,
+  "portfolio_alpha_t": 0.646,
+  "selection_type": "chain",
+  "record_type": "performance",
+  "family": "value_momentum",
+  "next_probes": [
+    "C5 value 잔차화 모멘텀 — FAL-1 이 두 축의 음상관을 기계적 산물(가격 공유)로 판정했으므로, 공유항 제거 후에도 momentum 이 독립 기여하는지가 가장 직접적인 후속이다. 전제가 없는 상태에서 결합을 반복하는 것은 저EV.",
+    "★벤치 basis 정합 규약 — alpha 패널 벤치와 forge production BM 이 동일 259개월에서 누적 7.934 vs 6.271 로 갈린다. 상류가 보고하는 PORT_t 와 권위 PORT_t 가 다른 양이 되므로, 상류 보고에 basis 라벨을 의무화하거나 basis 를 통일해야 한다. 이번엔 세 basis 전부 문턱 아래라 등급이 안 움직였을 뿐이고, 문턱 근처 후보에서는 판정을 가른다.",
+    "detect_lookahead 음성 커버리지 — 비선언 idiom 3종(전 표본 mean · shift(-1) · 비중 재정규화) 주입이 0/3 미발화다. risk 층이 다른 축에서 낸 결론(전 표본 cov · 국면라벨 shift(-1) 0/3 미발화)과 동형이며, R 경로에 일반 검사가 없다는 뜻이다."
+  ],
+  "next_probe": "C5 value 잔차화 모멘텀 — FAL-1 이 두 축의 음상관을 기계적 산물(가격 공유)로 판정했으므로, 공유항 제거 후에도 momentum 이 독립 기여하는지가 가장 직접적인 후속이다. 전제가 없는 상태에서 결합을 반복하는 것은 저EV. | ★벤치 basis 정합 규약 — alpha 패널 벤치와 forge production BM 이 동일 259개월에서 누적 7.934 vs 6.271 로 갈린다. 상류가 보고하는 PORT_t 와 권위 PORT_t 가 다른 양이 되므로, 상류 보고에 basis 라벨을 의무화하거나 basis 를 통일해야 한다. 이번엔 세 basis 전부 문턱 아래라 등급이 안 움직였을 뿐이고, 문턱 근처 후보에서는 판정을 가른다. | detect_lookahead 음성 커버리지 — 비선언 idiom 3종(전 표본 mean · shift(-1) · 비중 재정규화) 주입이 0/3 미발화다. risk 층이 다른 축에서 낸 결론(전 표본 cov · 국면라벨 shift(-1) 0/3 미발화)과 동형이며, R 경로에 일반 검사가 없다는 뜻이다.",
+  "source_paper": "Asness, Moskowitz & Pedersen (2013), Value and Momentum Everywhere, JF 68(3):929-985 — https://onlinelibrary.wiley.com/doi/10.1111/jofi.12021",
+  "paper_assumption_broken": "AMP2013 의 value-momentum 음(-)상관이 KR 에서 성립하지 않는다 — 가격을 공유하지 않는 사양(price-lagged ME)에서 부호가 +0.085 로 뒤집히므로 관측된 -0.184/-0.466 은 구성 아티팩트다. 또한 논문의 분산 축소는 베타~0 롱숏 위에서 측정됐고 롱온리 top-25(베타 0.77)에는 비상속된다. 부수: 주식 value 정의는 book 6M lag + contemporaneous ME 이며 5년 시점 정의는 commodities/currencies/bonds 전용(원문 §I.B) — 5년 lag 로 구현하면 장기반전 팩터가 된다."
+}

@@ -1,0 +1,151 @@
+{
+  "meta": {
+    "wt_id": "WT-R20260829_005",
+    "stage": "single_production_candidate",
+    "discipline_note": "도훈 지시 2026-08-29 — arm 배터리 폐지. 한 시도 = 실투형 후보 하나.",
+    "spec": {
+      "value": "V01_BM (BE/ME, contemporaneous ME) via load_month_factors() [C15/C13/C14]",
+      "momentum_primary": "6-1 (t-2..t-7 로그누적, 기저 fe_jt1993_momentum.R 승계)",
+      "momentum_paper_fidelity": "MOM2-12 (t-2..t-13) — AMP2013 원문 정의, 지평 민감도로만 병기",
+      "combination": "시장-내(K200/KQ150) pct-rank 후 고정 50/50 평균 (rank_average · 가중 탐색 0)",
+      "selection": "pooled top-25",
+      "weighting": "EW (Sw=1, 개별 상한 없음 — v10)",
+      "cost": "15bps one-way delta (v2.4_kr_retail_15bps)",
+      "rebalance": "monthly",
+      "liquidity": "20d avg turnover value (t-1) >= 2e8 KRW, 랭킹 前 적용"
+    }
+  },
+  "candidate": {
+    "id": "AMP2013_valmom_rankavg_top25",
+    "metric_type": "canonical_screen",
+    "n_months": 259,
+    "n_names_max": 25,
+    "n_names_median": 25,
+    "kq150_share": 0.29374517,
+    "portfolio_alpha_t_nw_lag3": 1.19591606,
+    "portfolio_alpha_t_pvalue": 0.23172932,
+    "information_ratio": 0.24921272,
+    "alpha_annualized": 0.05782917,
+    "net_sr_active": 0.24921272,
+    "mean_active_net_ann": 0.04245702,
+    "turnover_annual": 8.81976834,
+    "selected_ret_coverage": 1,
+    "beta_controlled_alpha": {
+      "alpha_ann": 0.05782917,
+      "t_alpha": 1.79243336,
+      "beta": 0.86878443,
+      "t_beta": 7.97704597,
+      "beta_contrib_ann": -0.01537214,
+      "n": 259
+    },
+    "total_return_coords": {
+      "cagr": 0.13420011,
+      "mdd": -0.53034324,
+      "calmar": 0.25304387,
+      "sr_total": 0.61920322,
+      "vol_ann": 0.2577649
+    },
+    "benchmark_coords": {
+      "cagr": 0.09627812,
+      "mdd": -0.4707518,
+      "calmar": 0.20451991,
+      "sr_total": 0.52012331,
+      "vol_ann": 0.22523857
+    },
+    "diag_ew_universe": {
+      "port_t": 1.56766363,
+      "alpha_ann": 0.02962057,
+      "ir": 0.33888894,
+      "n_months": 259
+    },
+    "diag_cap_tier": {
+      "weight_share_avg": {
+        "MEGA": 0.02579151,
+        "MID": 0.04725869,
+        "OTHER": 0.92694981,
+        "UNRANKED": 0
+      },
+      "contrib_gross_annualized": {
+        "MEGA": 0.00625911,
+        "MID": 0.00133897,
+        "OTHER": 0.16524043,
+        "UNRANKED": 0
+      }
+    },
+    "liq_ruler": "none_no_liquidity_filter",
+    "liq_ruler_source": null
+  },
+  "horizon_sensitivity_preregistered": {
+    "id": "AMP2013_valmom_MOM2_12_top25",
+    "metric_type": "canonical_screen",
+    "n_months": 259,
+    "n_names_max": 25,
+    "n_names_median": 25,
+    "kq150_share": 0.27644788,
+    "portfolio_alpha_t_nw_lag3": 1.29566078,
+    "portfolio_alpha_t_pvalue": 0.19509238,
+    "information_ratio": 0.28871565,
+    "alpha_annualized": 0.06708134,
+    "net_sr_active": 0.28871565,
+    "mean_active_net_ann": 0.05021556,
+    "turnover_annual": 7.09250965,
+    "selected_ret_coverage": 1,
+    "beta_controlled_alpha": {
+      "alpha_ann": 0.06708134,
+      "t_alpha": 1.92242858,
+      "beta": 0.85603483,
+      "t_beta": 8.39927955,
+      "beta_contrib_ann": -0.01686578,
+      "n": 259
+    },
+    "total_return_coords": {
+      "cagr": 0.14310931,
+      "mdd": -0.5378075,
+      "calmar": 0.26609765,
+      "sr_total": 0.64963008,
+      "vol_ann": 0.25763491
+    },
+    "benchmark_coords": {
+      "cagr": 0.09627812,
+      "mdd": -0.4707518,
+      "calmar": 0.20451991,
+      "sr_total": 0.52012331,
+      "vol_ann": 0.22523857
+    },
+    "diag_ew_universe": {
+      "port_t": 1.80952935,
+      "alpha_ann": 0.03926496,
+      "ir": 0.38004568,
+      "n_months": 259
+    },
+    "diag_cap_tier": {
+      "weight_share_avg": {
+        "MEGA": 0.02980695,
+        "MID": 0.04540541,
+        "OTHER": 0.92478764,
+        "UNRANKED": 0
+      },
+      "contrib_gross_annualized": {
+        "MEGA": 0.00305687,
+        "MID": 0.00324944,
+        "OTHER": 0.17169984,
+        "UNRANKED": 0
+      }
+    },
+    "liq_ruler": "none_no_liquidity_filter",
+    "liq_ruler_source": null
+  },
+  "sign_agreement": {
+    "rule": "설계 사전고정: 두 지평 arm 의 부호가 갈리면 '미결(지평 민감)'",
+    "primary_beta_alpha": 0.05782917,
+    "fidelity_beta_alpha": 0.06708134,
+    "signs_agree": true
+  },
+  "oos_retention_approx": {
+    "splits": [-0.484777, -0.56107106, -0.62584162],
+    "median": -0.56107106
+  },
+  "artifacts": {
+    "period_returns_csv": "stage_artifacts/WT_R20260829_005/period_returns_production.csv"
+  }
+}

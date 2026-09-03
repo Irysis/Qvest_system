@@ -1,0 +1,39 @@
+{
+  "n_months": 259,
+  "strategy_series": {
+    "cor": 0.99649337,
+    "mean_abs_diff": 0.00426783,
+    "max_abs_diff": 0.05238401,
+    "forge_ann_mean": 0.15578759,
+    "alpha_ann_mean": 0.15960885,
+    "forge_cum": 13.28055901,
+    "alpha_cum": 14.14905968
+  },
+  "benchmark_series": {
+    "cor": 0.99253732,
+    "mean_abs_diff": 0.00562198,
+    "max_abs_diff": 0.07008643,
+    "forge_ann_mean": 0.12893203,
+    "alpha_ann_mean": 0.11715183,
+    "forge_cum": 7.93400132,
+    "alpha_cum": 6.27147885,
+    "forge_source": ".cache/benchmark.parquet BM_Ret (production harness BM_DT)",
+    "alpha_source": "period_returns_production.csv benchmark_ret (alpha 패널 구성)"
+  },
+  "ir_attribution": {
+    "forge_strategy_vs_forge_bm": 0.14859603,
+    "forge_strategy_vs_alpha_bm": 0.23358672,
+    "alpha_strategy_vs_alpha_bm": 0.24921272,
+    "upstream_reported": 0.2492,
+    "reading": "net_IR 격차 0.2492 -> 0.1486 의 지배항은 벤치 계열 차이다 (같은 forge 수익 계열에 상류 벤치를 쓰면 0.2336). 전략 실현 차이는 잔여분."
+  },
+  "port_t_by_basis": {
+    "forge_strategy_vs_forge_bm": 0.6932751,
+    "forge_strategy_vs_alpha_bm": 1.1249161,
+    "alpha_strategy_vs_alpha_bm": 1.19591606,
+    "b_threshold": 2,
+    "a_threshold": 2.95,
+    "all_below_b": true
+  },
+  "verdict_invariance": "세 basis 전부 PORT_t < 2.0 이므로 벤치 계열 선택은 등급을 옮기지 않는다. 권위 basis 는 production harness BM (계약/lean 레인 공통)."
+}

@@ -1,0 +1,66 @@
+{
+  "status": "OK",
+  "strategy_id": "RP_20260829_230424_9492",
+  "strategy_name": "RF_B1_2_MomQuality",
+  "remeasured_at": "2026-08-29T23:18:10+0900",
+  "run_id": "20260829_230424_9492",
+  "bt_result_path": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/04_Research/strategies/RF_B1_2_MomQuality/artifacts/20260829_230424_9492/bt_result.rds",
+  "metric_type": "backtested",
+  "essence_grade": "C",
+  "grade_basis": "replication_chain",
+  "essence": {
+    "net_sharpe": 0.704,
+    "net_ir": 0.286,
+    "portfolio_alpha_t_nw_lag3": 1.25,
+    "oos_retention": -0.405,
+    "dsr": null,
+    "mdd": 0.601,
+    "calmar": 0.272,
+    "cagr": 0.163,
+    "drawdown_profile": {
+      "severe45_count": 12,
+      "severe55_count": 1,
+      "severe45_total_periods": 71,
+      "severe45_max_periods": 28,
+      "severe45_period_frac": 0.0133,
+      "catastrophic_mdd_threshold": 0.7,
+      "severe45_hard_count": 15,
+      "severe55_hard_count": 6,
+      "severe45_period_hard_frac": 0.25,
+      "severe45_max_hard_periods": 252,
+      "tail_review": true,
+      "structural_hard_fail": false
+    }
+  },
+  "hard_fail": false,
+  "structural_drawdown": false,
+  "selection_type": "chain",
+  "dsr_gate_applied": false,
+  "reasons": "Ensemble: positive alpha이나 B 미달 (블렌드에서만 가치)",
+  "replication": {
+    "source_paper": {
+      "url": "https://www.sciencedirect.com/science/article/pii/S0304405X13000044",
+      "title": "Novy-Marx (2013) The Other Side of Value: The Gross Profitability Premium, JFE 108",
+      "paper_key": "rulefast_b1_2_momquality"
+    },
+    "commission_paper_bps": 15,
+    "paper_basis": {
+      "cagr": 0.163391,
+      "sharpe": 0.623217,
+      "mdd": 0.601,
+      "n_months": 259
+    },
+    "grade_basis_note": "등급은 15bps 순비용 판 (essence 문턱 15bps 보정 — gross 등급은 인플레)",
+    "fidelity": "universe 치환(K200∪KQ150)만 — 그 외 논문 그대로 (v10 완전 충실구현)",
+    "benchmark_note": "long_vs_long_bm",
+    "n_max": 25,
+    "has_short": false
+  },
+  "contract": {
+    "integrity_status": "OK",
+    "cagr": 0.163,
+    "sharpe": 0.704,
+    "mdd": 0.601,
+    "calmar": 0.272
+  }
+}

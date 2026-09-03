@@ -1,0 +1,274 @@
+{
+  "meta": {
+    "wt_id": "WT-R20260829_007",
+    "tests": ["F2", "F3"],
+    "tier": "side_observation",
+    "envelope_applicability": "NOT_APPLICABLE",
+    "metric_type": "cross_sectional_regression",
+    "note": "부수 관측은 성과와 독립적으로 실패할 수 있어야 기전 청구를 진다. 성과 판정 아님."
+  },
+  "F2_long_horizon_no_reversal": {
+    "spec": "GH2004 Table VI (6,k,12): 각 보유월 t 에 대해 j = k+1..k+12 시점 변수로 단면회귀 후 j 평균 -> 월별 계수 -> NW lag-3",
+    "reject_if": "근접도 winner 더미(FHH)가 k=12~48 에서 유의 음(반전)이면 anchoring 이 아니라 과거수익률 외삽의 재파라미터화 -> anchoring 라벨 철회",
+    "paper_reference": "GH2004: JT winner k=12 계수 -0.09 (t -2.63) 유의 반전 / MG winner -0.11 (t -2.42) / 52주 신고가 winner·loser 전 gap 비유의(무반전)",
+    "results": {
+      "gap_12": {
+        "gap_k": 12,
+        "j_range": [13, 24],
+        "n_months": 259,
+        "FHH": {
+          "mean_monthly": -0.00066329,
+          "mean_ann_pct": -0.79595281,
+          "nw_t": -0.98123554,
+          "n": 259
+        },
+        "FHL": {
+          "mean_monthly": -0.00192967,
+          "mean_ann_pct": -2.31559819,
+          "nw_t": -2.08337451,
+          "n": 259
+        },
+        "JH": {
+          "mean_monthly": -0.0020313,
+          "mean_ann_pct": -2.43756364,
+          "nw_t": -2.01036622,
+          "n": 259
+        },
+        "JL": {
+          "mean_monthly": 0.00042773,
+          "mean_ann_pct": 0.51327608,
+          "nw_t": 0.83225188,
+          "n": 259
+        },
+        "MH": {
+          "mean_monthly": -0.00239425,
+          "mean_ann_pct": -2.87310321,
+          "nw_t": -2.49221013,
+          "n": 259
+        },
+        "ML": {
+          "mean_monthly": -0.00046124,
+          "mean_ann_pct": -0.55348988,
+          "nw_t": -0.45485463,
+          "n": 259
+        },
+        "fh_spread": {
+          "mean_monthly": 0.00126637,
+          "nw_t": 0.99062978
+        },
+        "jt_spread": {
+          "mean_monthly": -0.00245903,
+          "nw_t": -1.97844529
+        },
+        "ind_spread": {
+          "mean_monthly": -0.00193301,
+          "nw_t": -1.56896948
+        }
+      },
+      "gap_24": {
+        "gap_k": 24,
+        "j_range": [25, 36],
+        "n_months": 259,
+        "FHH": {
+          "mean_monthly": -0.00018481,
+          "mean_ann_pct": -0.22177779,
+          "nw_t": -0.25641771,
+          "n": 259
+        },
+        "FHL": {
+          "mean_monthly": -0.00132412,
+          "mean_ann_pct": -1.58894057,
+          "nw_t": -1.15748884,
+          "n": 259
+        },
+        "JH": {
+          "mean_monthly": -0.00088245,
+          "mean_ann_pct": -1.05894466,
+          "nw_t": -0.98570941,
+          "n": 259
+        },
+        "JL": {
+          "mean_monthly": 0.00046495,
+          "mean_ann_pct": 0.55793908,
+          "nw_t": 0.70701281,
+          "n": 259
+        },
+        "MH": {
+          "mean_monthly": 0.00244019,
+          "mean_ann_pct": 2.92823099,
+          "nw_t": 2.01323998,
+          "n": 259
+        },
+        "ML": {
+          "mean_monthly": -0.00092032,
+          "mean_ann_pct": -1.10437964,
+          "nw_t": -0.77458246,
+          "n": 259
+        },
+        "fh_spread": {
+          "mean_monthly": 0.0011393,
+          "nw_t": 0.72975377
+        },
+        "jt_spread": {
+          "mean_monthly": -0.0013474,
+          "nw_t": -1.08913199
+        },
+        "ind_spread": {
+          "mean_monthly": 0.00336051,
+          "nw_t": 1.95902014
+        }
+      },
+      "gap_36": {
+        "gap_k": 36,
+        "j_range": [37, 48],
+        "n_months": 259,
+        "FHH": {
+          "mean_monthly": 0.0002496,
+          "mean_ann_pct": 0.29951663,
+          "nw_t": 0.36957756,
+          "n": 259
+        },
+        "FHL": {
+          "mean_monthly": -0.00177177,
+          "mean_ann_pct": -2.12611816,
+          "nw_t": -1.75561535,
+          "n": 259
+        },
+        "JH": {
+          "mean_monthly": -0.00107086,
+          "mean_ann_pct": -1.2850294,
+          "nw_t": -1.29722134,
+          "n": 259
+        },
+        "JL": {
+          "mean_monthly": 0.00103504,
+          "mean_ann_pct": 1.24205049,
+          "nw_t": 1.87794406,
+          "n": 259
+        },
+        "MH": {
+          "mean_monthly": -0.00063869,
+          "mean_ann_pct": -0.76643066,
+          "nw_t": -0.62745571,
+          "n": 259
+        },
+        "ML": {
+          "mean_monthly": -0.00056616,
+          "mean_ann_pct": -0.67938879,
+          "nw_t": -0.57348448,
+          "n": 259
+        },
+        "fh_spread": {
+          "mean_monthly": 0.00202136,
+          "nw_t": 1.50851785
+        },
+        "jt_spread": {
+          "mean_monthly": -0.0021059,
+          "nw_t": -1.95425437
+        },
+        "ind_spread": {
+          "mean_monthly": -0.00007253,
+          "nw_t": -0.0497796
+        }
+      },
+      "gap_48": {
+        "gap_k": 48,
+        "j_range": [49, 60],
+        "n_months": 259,
+        "FHH": {
+          "mean_monthly": -0.00032156,
+          "mean_ann_pct": -0.3858703,
+          "nw_t": -0.466658,
+          "n": 259
+        },
+        "FHL": {
+          "mean_monthly": -0.00153612,
+          "mean_ann_pct": -1.84334072,
+          "nw_t": -1.60721728,
+          "n": 259
+        },
+        "JH": {
+          "mean_monthly": -0.00259871,
+          "mean_ann_pct": -3.11845361,
+          "nw_t": -2.87452799,
+          "n": 259
+        },
+        "JL": {
+          "mean_monthly": -0.00008011,
+          "mean_ann_pct": -0.09613177,
+          "nw_t": -0.11754874,
+          "n": 259
+        },
+        "MH": {
+          "mean_monthly": -0.00074353,
+          "mean_ann_pct": -0.89224142,
+          "nw_t": -0.7042342,
+          "n": 259
+        },
+        "ML": {
+          "mean_monthly": -0.00042499,
+          "mean_ann_pct": -0.50998861,
+          "nw_t": -0.38329736,
+          "n": 259
+        },
+        "fh_spread": {
+          "mean_monthly": 0.00121456,
+          "nw_t": 0.90644949
+        },
+        "jt_spread": {
+          "mean_monthly": -0.0025186,
+          "nw_t": -2.23473041
+        },
+        "ind_spread": {
+          "mean_monthly": -0.00031854,
+          "nw_t": -0.18927747
+        }
+      }
+    }
+  },
+  "F3_individual_flow_near_high": {
+    "spec": "월간 투자자 순매수(원) / 시가총액. 근접도 시장-내 상위 30%(H) vs 하위 30%(L) 코호트 평균의 월별 시계열 -> NW lag-3. 회귀판 병기.",
+    "reject_if": "근접도 상위 코호트에서 개인 순매수가 유의 양(+)이면(추격매수) GH2004 가 서술한 주체·마찰 구조가 KR 에 없는 것 -> mechanism.agent 서술 철회",
+    "paper_reference": "Grinblatt & Keloharju (2001) — 투자자는 역사적 고가 부근 종목을 (보유·매수보다) 매도할 확률이 유의하게 높다 (GH2004 가 주체 증거로 인용)",
+    "data_caveat": "A6/A7 수동 QuantiWise export 계열 · 실효 지연 ~22일(비정기) · 데이터 종점 확인값 아래 기재. 미래참조는 t-1 집계로 막히나 스테일은 못 막는다. 기전 진단 전용이며 신호 경로에 미진입.",
+    "flow_data_end_ym": "2026-07",
+    "cohort_means": {
+      "individual": {
+        "variable": "ind_scaled",
+        "n_months": 259,
+        "top30_mean": -0.00510925,
+        "top30_nw_t": -21.42170827,
+        "bot30_mean": 0.00545869,
+        "bot30_nw_t": 22.33899995,
+        "HminusL_mean": -0.01056794,
+        "HminusL_nw_t": -35.29192606
+      },
+      "institutional": {
+        "variable": "inst_scaled",
+        "n_months": 259,
+        "top30_mean": 0.00303467,
+        "top30_nw_t": 12.0400221,
+        "bot30_mean": -0.0030021,
+        "bot30_nw_t": -13.68759514,
+        "HminusL_mean": 0.00603676,
+        "HminusL_nw_t": 19.75537364
+      },
+      "foreign": {
+        "variable": "frn_scaled",
+        "n_months": 259,
+        "top30_mean": 0.00213939,
+        "top30_nw_t": 9.50251525,
+        "bot30_mean": -0.00240953,
+        "bot30_nw_t": -12.92273685,
+        "HminusL_mean": 0.00454893,
+        "HminusL_nw_t": 20.25814328
+      }
+    },
+    "regression_form": {
+      "spec": "ind_net/Size ~ z(근접도) + z(log Size), 시장-내 랭킹, 월별 단면 -> NW lag-3",
+      "lambda": -0.00466951,
+      "nw_t": -34.97641205,
+      "n_months": 259
+    }
+  }
+}

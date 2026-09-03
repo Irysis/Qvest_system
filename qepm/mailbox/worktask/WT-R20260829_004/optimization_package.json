@@ -1,0 +1,904 @@
+{
+  "task_id": "WT-R20260829_004",
+  "agent": "optimizer-research",
+  "spec_version": "optimization_package_v1.3",
+  "as_of_date": "2026-08-28",
+  "wt_type": "reinforcement",
+  "keyword_axis": "risk_overlay",
+  "upstream": {
+    "alpha_package": "qepm/mailbox/worktask/WT-R20260829_004/alpha_package.json",
+    "risk_package": "qepm/mailbox/worktask/WT-R20260829_004/risk_package.json",
+    "alpha_vector_modified": false,
+    "alpha_reinterpreted": false,
+    "sigma_reestimated": false,
+    "grade_declared": false,
+    "overlay_applied_here": true,
+    "note": "alpha 의 score/vol 패널과 risk 의 Sigma 를 read-only 소비. 국면 오버레이의 **적용**만 본 층에서 수행(alpha·risk 는 PIT S0/S1 금지로 미적용)."
+  },
+  "method_selected": "W2_IV",
+  "method_selected_long": "regime_switch_composition(alpha spec) + inverse-realized-volatility weights (sigma = alpha 발행 vol126_ann, strict t-1)",
+  "selection_objective": "to_adj_ret",
+  "selection_objective_spec": "net-of-cost(15bps delta) Calmar 1차 · net SR 2차 · turnover 3차. gross Sharpe 단독 최대화 아님.",
+  "selection_predeclaration_ref": "stage_artifacts/WT_R20260829_004/selection_predeclaration.json",
+  "selection_note": "사전선언 축의 전 표본 승자는 W5_WCH_IV(Calmar 0.1990)였고 W2_IV(0.1976)는 2위다. 브리핑이 부여한 외부 제약(패닉월 구성 교체를 비중에 반영)을 사전선언 hard_filters 에 넣지 못한 것이 본 층의 선언 결함이며, 그 제약을 적용하면 적격 집합은 W1/W2/W3/W4 이고 그중 F7 통과분은 W2_IV 뿐이다. 격차는 tie-band 안(dCalmar 0.0014<0.010 · dSR 0.0010<0.020)이고, anchored 3창(55/65/75%)에서는 W2_IV 가 3/3 승자다 - 즉 사전선언 축의 전 표본 승자 W5 는 오히려 IS-selection 쪽에 가깝다. 두 축 결과를 모두 발행한다(은폐 없음).",
+  "target_weights": {
+    "A023530": 0.0613606968,
+    "A004170": 0.0560708635,
+    "A032830": 0.0527623747,
+    "A034730": 0.0517454017,
+    "A005930": 0.0487522736,
+    "A082920": 0.0484596025,
+    "A000660": 0.0417544686,
+    "A420770": 0.0414618556,
+    "A011070": 0.0401735735,
+    "A402340": 0.0394410571,
+    "A131290": 0.0392257985,
+    "A009150": 0.0391560603,
+    "A084370": 0.036532275,
+    "A319660": 0.036213453,
+    "A031980": 0.0356560184,
+    "A222800": 0.0356227813,
+    "A093370": 0.0354365722,
+    "A095610": 0.0352292023,
+    "A047040": 0.03493251,
+    "A089970": 0.0345776308,
+    "A080220": 0.033064797,
+    "A032820": 0.0318582119,
+    "A240810": 0.0315570359,
+    "A036930": 0.0305328331,
+    "A043260": 0.0284226527
+  },
+  "active_weights": {},
+  "active_weights_note": "벤치(KOSPI200) 구성종목 비중 패널이 alpha/risk 핸드오프에 없다. 자체 합성하면 measurement-graduation 1절 자체합성 금지 위반이므로 null 로 둔다 - active 지표는 실현 active 수익 계열(ret_net - BM_Ret)로만 보고한다.",
+  "n_names": 25,
+  "sum_weights": 1,
+  "min_weight": 0.0284226527,
+  "max_weight": 0.0613606968,
+  "cash_weight": 0,
+  "leverage": 0,
+  "hhi": 0.041742813025,
+  "n_effective": 23.9562197068,
+  "realized_metrics": {
+    "metric_type": "weighted_screen",
+    "metric_type_note": "weighted_screen_bt(계약 build_benchmark_compare 경유) 실측 - forge build_bt_result 가 authoritative. 등급 선언 아님.",
+    "n_months": 259,
+    "sr": 0.54205164976,
+    "cagr": 0.12488135394,
+    "mdd": -0.6320805898,
+    "calmar": 0.19757188553,
+    "net_ir": 0.24431379864,
+    "active_return_annualized": 0.042704069982,
+    "portfolio_alpha_t_nw_lag3": 1.1574644078,
+    "beta": 1.0382607445,
+    "alpha_beta_controlled_ann_pct": 4.2704069982,
+    "t_alpha_beta_controlled": 1.0954470407,
+    "net_active_sr": 0.24431379864,
+    "oos_retention_rough": -0.37918499415
+  },
+  "expected_active_return": 0.042704069982,
+  "expected_tracking_error": {},
+  "expected_information_ratio": 0.24431379864,
+  "expected_te_note": "ex-ante TE 는 벤치 구성비중 없이는 산출 불가(active_weights_note 참조). 대신 as-of Sigma 기반 절대 ex-ante vol 을 sigma_asof_diagnostics 에 병기.",
+  "turnover": 10.1932338171,
+  "turnover_convention": "mean_t sum_i|w_it-w_i,t-1| x 12 (매수+매도 합산 · weighted_screen_bt 계약)",
+  "turnover_cap": 11,
+  "turnover_pass": true,
+  "estimated_cost": 0.015289850726,
+  "method_comparison": {
+    "W1_EW": {
+      "method": "W1_EW",
+      "calmar": 0.17977282569,
+      "sr": 0.50506055654,
+      "cagr": 0.11421757231,
+      "mdd": -0.63534392292,
+      "net_ir": 0.19415706605,
+      "port_t": 0.9152907821,
+      "beta": 1.0346719749,
+      "alpha_beta_ctl_ann_pct": 3.6075769948,
+      "t_alpha": 0.86727473296,
+      "turnover_annual": 9.3803076923,
+      "cost_annual": 0.014070461538,
+      "max_w_mean": 0.04,
+      "max_w_max": 0.04,
+      "neff_mean": 25,
+      "hhi_mean": 0.04,
+      "n_names_max": 25,
+      "oos_retention_rough": -0.47212981137,
+      "F7_delta_vs_A0_pp": -1.5289688207,
+      "F7_pass": false,
+      "TO_pass": true,
+      "constraint_pass": true,
+      "F7_delta_vs_own_off_pp": -1.5289688207
+    },
+    "W2_IV": {
+      "method": "W2_IV",
+      "calmar": 0.19757188553,
+      "sr": 0.54205164976,
+      "cagr": 0.12488135394,
+      "mdd": -0.6320805898,
+      "net_ir": 0.24431379864,
+      "port_t": 1.1574644078,
+      "beta": 1.0382607445,
+      "alpha_beta_ctl_ann_pct": 4.2704069982,
+      "t_alpha": 1.0954470407,
+      "turnover_annual": 10.1932338171,
+      "cost_annual": 0.015289850726,
+      "max_w_mean": 0.062310045513,
+      "max_w_max": 0.094023050371,
+      "neff_mean": 23.608577654,
+      "hhi_mean": 0.042385010296,
+      "n_names_max": 25,
+      "oos_retention_rough": -0.37918499415,
+      "F7_delta_vs_A0_pp": -0.86613881736,
+      "F7_pass": true,
+      "TO_pass": true,
+      "constraint_pass": true,
+      "F7_delta_vs_own_off_pp": -1.2197062185
+    },
+    "W3_ATILT": {
+      "method": "W3_ATILT",
+      "calmar": 0.15043159573,
+      "sr": 0.44444367381,
+      "cagr": 0.095810755595,
+      "mdd": -0.63690579846,
+      "net_ir": 0.12045881336,
+      "port_t": 0.54718683757,
+      "beta": 0.99657183271,
+      "alpha_beta_ctl_ann_pct": 2.931956724,
+      "t_alpha": 0.58773219574,
+      "turnover_annual": 10.0278589805,
+      "cost_annual": 0.015041788471,
+      "max_w_mean": 0.097673074269,
+      "max_w_max": 0.13404262758,
+      "neff_mean": 20.1612903226,
+      "hhi_mean": 0.0496,
+      "n_names_max": 25,
+      "oos_retention_rough": -0.85731487598,
+      "F7_delta_vs_A0_pp": -2.2045890915,
+      "F7_pass": false,
+      "TO_pass": true,
+      "constraint_pass": true,
+      "F7_delta_vs_own_off_pp": -1.7707544444
+    },
+    "W4_SECCAP": {
+      "method": "W4_SECCAP",
+      "calmar": 0.18100320646,
+      "sr": 0.5071668181,
+      "cagr": 0.11483865264,
+      "mdd": -0.63445645457,
+      "net_ir": 0.19637348654,
+      "port_t": 0.93463401347,
+      "beta": 1.0317803588,
+      "alpha_beta_ctl_ann_pct": 3.6930316109,
+      "t_alpha": 0.89377393953,
+      "turnover_annual": 9.6723862374,
+      "cost_annual": 0.014508579356,
+      "max_w_mean": 0.041464176441,
+      "max_w_max": 0.07,
+      "neff_mean": 24.7450089575,
+      "hhi_mean": 0.040473369614,
+      "n_names_max": 25,
+      "oos_retention_rough": -0.45853700156,
+      "F7_delta_vs_A0_pp": -1.4435142046,
+      "F7_pass": false,
+      "TO_pass": true,
+      "constraint_pass": true,
+      "F7_delta_vs_own_off_pp": -1.3274591967
+    },
+    "W5_WCH_IV": {
+      "method": "W5_WCH_IV",
+      "calmar": 0.19903411602,
+      "sr": 0.54308552471,
+      "cagr": 0.1284226129,
+      "mdd": -0.64522914698,
+      "net_ir": 0.26021756828,
+      "port_t": 1.2012450741,
+      "beta": 1.0542801818,
+      "alpha_beta_ctl_ann_pct": 4.7672632406,
+      "t_alpha": 1.1186374425,
+      "turnover_annual": 9.3619127843,
+      "cost_annual": 0.014042869176,
+      "max_w_mean": 0.043191968826,
+      "max_w_max": 0.11908363351,
+      "neff_mean": 24.7987300093,
+      "hhi_mean": 0.040360233606,
+      "n_names_max": 25,
+      "oos_retention_rough": -0.14707170259,
+      "F7_delta_vs_A0_pp": -0.36928257497,
+      "F7_pass": true,
+      "TO_pass": true,
+      "constraint_pass": true,
+      "F7_delta_vs_own_off_pp": -0.36928257497
+    }
+  },
+  "method_comparison_controls": {
+    "C1_EW_off": {
+      "method": "C1_EW_off",
+      "calmar": 0.20582270906,
+      "sr": 0.55391054422,
+      "cagr": 0.13261800195,
+      "mdd": -0.6443312429,
+      "net_ir": 0.27869694236,
+      "port_t": 1.2939690962,
+      "beta": 1.0580292351,
+      "alpha_beta_ctl_ann_pct": 5.1365458155,
+      "t_alpha": 1.2048598344,
+      "turnover_annual": 9.24,
+      "cost_annual": 0.01386,
+      "max_w_mean": 0.04,
+      "max_w_max": 0.04,
+      "neff_mean": 25,
+      "hhi_mean": 0.04,
+      "n_names_max": 25,
+      "oos_retention_rough": -0.066300271222,
+      "F7_delta_vs_A0_pp": 0,
+      "F7_pass": true,
+      "TO_pass": true,
+      "constraint_pass": true,
+      "F7_delta_vs_own_off_pp": null
+    },
+    "C2_IV_off": {
+      "method": "C2_IV_off",
+      "calmar": 0.21796423967,
+      "sr": 0.58286675516,
+      "cagr": 0.14010639081,
+      "mdd": -0.64279530906,
+      "net_ir": 0.31944634693,
+      "port_t": 1.4830093292,
+      "beta": 1.0599478829,
+      "alpha_beta_ctl_ann_pct": 5.4901132167,
+      "t_alpha": 1.375464259,
+      "turnover_annual": 10.1381922076,
+      "cost_annual": 0.015207288311,
+      "max_w_mean": 0.063317504911,
+      "max_w_max": 0.11908363351,
+      "neff_mean": 23.4957761988,
+      "hhi_mean": 0.04259748534,
+      "n_names_max": 25,
+      "oos_retention_rough": 0.0012722301622,
+      "F7_delta_vs_A0_pp": 0.35356740116,
+      "F7_pass": true,
+      "TO_pass": true,
+      "constraint_pass": true,
+      "F7_delta_vs_own_off_pp": null
+    },
+    "C3_ATILT_off": {
+      "method": "C3_ATILT_off",
+      "calmar": 0.17633328003,
+      "sr": 0.49447612444,
+      "cagr": 0.11601463474,
+      "mdd": -0.65792818417,
+      "net_ir": 0.20371635718,
+      "port_t": 0.91746292385,
+      "beta": 1.0285936898,
+      "alpha_beta_ctl_ann_pct": 4.7027111684,
+      "t_alpha": 0.90850859519,
+      "turnover_annual": 9.8668396134,
+      "cost_annual": 0.01480025942,
+      "max_w_mean": 0.099454873839,
+      "max_w_max": 0.13404262758,
+      "neff_mean": 20.1612903226,
+      "hhi_mean": 0.0496,
+      "n_names_max": 25,
+      "oos_retention_rough": -0.2561784382,
+      "F7_delta_vs_A0_pp": -0.43383464714,
+      "F7_pass": true,
+      "TO_pass": true,
+      "constraint_pass": true,
+      "F7_delta_vs_own_off_pp": null
+    },
+    "C4_SECCAP_off": {
+      "method": "C4_SECCAP_off",
+      "calmar": 0.20351507951,
+      "sr": 0.54998842001,
+      "cagr": 0.13095496233,
+      "mdd": -0.64346564711,
+      "net_ir": 0.27078063385,
+      "port_t": 1.2784733811,
+      "beta": 1.0535182786,
+      "alpha_beta_ctl_ann_pct": 5.0204908076,
+      "t_alpha": 1.1945153864,
+      "turnover_annual": 9.572535353,
+      "cost_annual": 0.01435880303,
+      "max_w_mean": 0.041689855174,
+      "max_w_max": 0.077777777778,
+      "neff_mean": 24.7051834331,
+      "hhi_mean": 0.04056361454,
+      "n_names_max": 25,
+      "oos_retention_rough": -0.10990784741,
+      "F7_delta_vs_A0_pp": -0.11605500794,
+      "F7_pass": true,
+      "TO_pass": true,
+      "constraint_pass": true,
+      "F7_delta_vs_own_off_pp": null
+    }
+  },
+  "method_shopping_log": {
+    "candidates_tried": 5,
+    "cap": 5,
+    "posterior_default": true,
+    "posterior_note": "optimizer_research_init v1.3 - 알파비례 tilt 계열(W3_ATILT)을 posterior default 로 포함했고 실측에서 최하위(Calmar 0.1504)로 탈락했다. Sigma 역행렬 계열(MVO/HRP/ERC)은 walk-forward Sigma 재추정이 필요해 역할 경계상 후보에서 제외(sigma_consumption 참조).",
+    "parallel_exec": false,
+    "n_workers": 1
+  },
+  "hard_filters_applied": {
+    "C_CONSTRAINT": {
+      "rule": "n<=25 · w>=0 · |sum w -1|<=1e-9 · cash 0 · leverage 0",
+      "all_methods_pass": true
+    },
+    "C_TURNOVER": {
+      "rule": "turnover_annual <= 11.0",
+      "all_methods_pass": true,
+      "selected": 10.1932338171
+    },
+    "C_F7_ALPHA_GUARD": {
+      "rule": "beta-통제 alpha >= A0(무조건화 EW) - 1.0%p",
+      "A0_alpha_ann_pct": 5.1365458155,
+      "floor": 4.1365458155,
+      "pass": ["W2_IV", "W5_WCH_IV"],
+      "fail": ["W1_EW", "W3_ATILT", "W4_SECCAP"],
+      "selected_alpha": 4.2704069982,
+      "selected_delta_pp": -0.86613881736,
+      "selected_pass": true
+    }
+  },
+  "binding_constraints": ["F7_alpha_guard (5 method 중 3 탈락 - 사실상 이 라운드의 결정 제약)", "turnover_cap_11 (선택 method 10.19 = 상한의 92.6%, 여유 얇음)", "long_only + sum_w_1 (현금·레버리지 0 - 노출 레버 부재)"],
+  "infeasibility_report": {},
+  "constraint_conflict_report": {
+    "id": "OPT-CONFLICT-1",
+    "severity": "HIGH",
+    "statement": "섹터 집중(RISK-CH1/RF-R6)을 명시적으로 제약하는 유일한 후보 W4_SECCAP(cap 0.30)은 제약을 전 월 100% 달성했으나 F7 알파가드에서 탈락했다(alpha 3.693 < floor 4.137).",
+    "consequence": "따라서 이 라운드에서 섹터 캡과 F7 알파 하한은 동시 충족 불가다. 조용히 캡을 완화하거나 F7 을 낮추지 않고 그 사실을 그대로 보고한다(R12 no silent override).",
+    "what_was_done_instead": "선택 method 의 역변동성 가중이 부수적으로 집중을 낮춘다 - as-of 반도체 52.0%->48.4%, Sigma 블록 분산기여 58.9%->56.5%. 완화 폭은 얇다(정직 기록).",
+    "evidence_that_concentration_is_vintage_local": {
+      "semi_weight_mean_full_sample": 0.10297869552,
+      "months_over_50pct": 0,
+      "n_months": 260
+    }
+  },
+  "sigma_consumption": {
+    "reestimated": false,
+    "used_for": "as-of 단면 진단(ex-ante vol · beta · 위험기여 · 섹터 블록 분산기여)",
+    "not_used_for": "walk-forward 비중 산출(259개월) - as-of Sigma 는 단일 단면이고, 월별 Sigma 재추정은 위험 재정의 금지 경계 위반",
+    "vintage_declared": "as-of(2026-08-28) Sigma 만 소비 - RISK-CH2 의 through-the-cycle 금지 준수. 국면 Sigma(panic/normal)는 consumption_restriction 대로 진단조차 비중에 반영하지 않았다(RISK-CH4: 사전인지 상관 0.169).",
+    "risk_ch_responses": {
+      "RISK_CH1": "명시 처리 시도 -> W4_SECCAP · F7 충돌로 채택 불가. constraint_conflict_report 로 이관.",
+      "RISK_CH2": "Sigma 수준을 walk-forward 비중에 일절 소비하지 않음 - 소비 지점을 as-of 진단으로 한정하여 vintage 문제를 구조적으로 회피.",
+      "RISK_CH4": "패닉 Sigma 배율 미사용. 국면 신호는 alpha 발행 라벨(binary)로만 소비하고 위험 스케일링에 쓰지 않았다.",
+      "RISK_CH6": "꼬리는 정규가정 없이 역사적 분위로 산출(CVaR95/CDaR95). 선택 method CVaR95 -0.1827 vs EW-ON -0.1884.",
+      "RISK_CH7": "crisis 구간별 IC 안정성은 forge 소관(risk 가 forge 로 지정) - 본 층 미수행, 미수행 사실 기록."
+    }
+  },
+  "sigma_asof_diagnostics": {
+    "as_of": "2026-08-28",
+    "n": 25,
+    "ew": {
+      "vol_ann": 0.6880055634,
+      "beta_exposure": 0.967203108,
+      "max_rc": 0.052361201474,
+      "hhi": 0.04,
+      "max_w": 0.04,
+      "semi": {
+        "weight": 0.52,
+        "var_contrib": 0.58856478672,
+        "internal": 0.36876020342
+      }
+    },
+    "sel": {
+      "vol_ann": 0.66145130358,
+      "beta_exposure": 0.94830318801,
+      "max_rc": 0.055430801546,
+      "hhi": 0.041742813029,
+      "max_w": 0.061360696851,
+      "semi": {
+        "weight": 0.48399869884,
+        "var_contrib": 0.56492204284,
+        "internal": 0.34247904638
+      }
+    },
+    "note": "risk 발행 covariance.parquet(as-of, monthly var) 소비 — 재추정 없음. as-of 단면 진단 전용이며 walk-forward 비중 산출에는 Sigma 를 일절 쓰지 않았다(RISK-CH2 해소)."
+  },
+  "concentration": {
+    "semi_weight_mean_sel": 0.10297869552,
+    "semi_weight_max_sel": 0.48399869884,
+    "semi_weight_asof_sel": 0.48399869884,
+    "semi_weight_asof_ew": 0.52,
+    "semi_weight_mean_ew": 0.10048192771,
+    "sector_hhi_mean": 0.14098135575,
+    "months_semi_over_50pct": 0,
+    "n_months": 260
+  },
+  "tail_risk_realized": {
+    "selected": {
+      "var95": -0.1114273451,
+      "cvar95": -0.18270044905,
+      "mdd": -0.6320805898,
+      "cdar95": -0.59687607646,
+      "skew": -0.0099999340471,
+      "exkurt": 2.3383122264,
+      "worst": -0.36008337123
+    },
+    "EW_overlayON": {
+      "var95": -0.11517567547,
+      "cvar95": -0.18840068428,
+      "mdd": -0.63534392292,
+      "cdar95": -0.59693897063,
+      "skew": -0.0019171635996,
+      "exkurt": 2.1584041624,
+      "worst": -0.3692645835
+    },
+    "EW_overlayOFF_A0": {
+      "var95": -0.11517567547,
+      "cvar95": -0.18840068428,
+      "mdd": -0.6443312429,
+      "cdar95": -0.60178358573,
+      "skew": 0.0052342282737,
+      "exkurt": 1.9360713512,
+      "worst": -0.3692645835
+    },
+    "IV_overlayOFF": {
+      "var95": -0.10275573575,
+      "cvar95": -0.18266495926,
+      "mdd": -0.64279530906,
+      "cdar95": -0.6025329089,
+      "skew": -0.0038105107345,
+      "exkurt": 2.1422006681,
+      "worst": -0.36008337123
+    },
+    "basis": "월간 net(15bps) 실현수익 259개월 · 역사적 분위(정규 가정 없음)"
+  },
+  "turnover_diagnostics": {
+    "turnover_annual": 10.1862578859,
+    "convention": "mean_t sum_i|w_it-w_i,t-1| x 12 (매수+매도 합산 · weighted_screen_bt 계약)",
+    "cost_annual": 0.015279386829,
+    "cap": 11,
+    "pass": true,
+    "traded_mean_transition": 1.3579625405,
+    "traded_mean_steady": 0.83262828306,
+    "n_transition_months": 8
+  },
+  "selection_stability_anchored": {
+    "frac": [0.55, 0.65, 0.75, 1],
+    "k": [142, 168, 194, 259],
+    "winner": ["W2_IV", "W2_IV", "W2_IV", "W5_WCH_IV"],
+    "W2_IV": [0.26500704356, 0.22777389291, 0.20494078517, 0.19757188553],
+    "W5_WCH_IV": [0.24417791213, 0.20750346618, 0.19484931042, 0.19903411602],
+    "W1_EW": [0.2563172027, 0.21763485433, 0.18655718786, 0.17977282569]
+  },
+  "dsr": {
+    "selection_type": "sweep",
+    "n_trials": 5,
+    "dsr_absolute_sr": 0.9379,
+    "dsr_active_sr": 0.5781,
+    "note": "method 5종 argmax = sweep. measurement-graduation 3절 상 DSR 산출 의무 - 두 basis 병기."
+  },
+  "schedule": {
+    "weights_csv": "stage_artifacts/WT_R20260829_004/weights.csv",
+    "unique_as_of_dates": 260,
+    "alpha_sig_dates": 260,
+    "schedule_density_ratio": 1,
+    "mandate": ">=0.95",
+    "pass": true,
+    "walk_forward": true,
+    "single_snapshot": false,
+    "skip_months": 0,
+    "skip_infeasibility_report": {},
+    "deploy_extension": {
+      "train_cutoff": "2026-08-28 (alpha PIT sig_date)",
+      "deploy_cutoff": "2026-08-28 (= 최신 sig_date · open-ended)",
+      "frozen_extension_applied": false,
+      "note": "alpha 의 PIT cutoff 와 deploy cutoff 가 같다(lockbox 폐지 · 전기간 사용). weights 는 최신 sig_date 까지 전량 발행되어 있으므로 forge 는 train cutoff 이후 별도 frozen extension 없이 그대로 OOS 를 잰다."
+    }
+  },
+  "overlay_pit_F8_optimizer_layer": {
+    "item1_assert_overlay_pit": {
+      "status": "PASS",
+      "n_rows": 279,
+      "max_used_cutoff": "2026-08-28",
+      "rule": "used_cutoff <= holding_month_start (first-day-of-holding-month)",
+      "optimizer_layer_extra": {
+        "desc": "optimizer 자체 소비 정합 — 신호(signal_ym) 라벨이 그 달 말 Date 의 비중에 쓰이고 수익은 holding_ym 에서 실현",
+        "used_cutoff_le_asof": true,
+        "n_asof_dates": 260
+      }
+    },
+    "item2_lag1_stress": {
+      "calmar_base": 0.19757189,
+      "calmar_lag1": 0.20285541,
+      "rel_change_calmar": 0.02674229,
+      "sr_base": 0.54205165,
+      "sr_lag1": 0.56087292,
+      "rel_change_sr": 0.03472228,
+      "status": "NO_COLLAPSE",
+      "rule": "lag1 판이 base 대비 -25% 초과 붕괴하면 동월 누출 의심"
+    },
+    "item3_strict_ab": {
+      "current_equals_strict": true,
+      "inflation": 0,
+      "message": "[overlay_pit_guard] Calmar(current vs strict): current=0.1976 strict=0.1976 인플레=0.0% → clean",
+      "strict_definition": "현행 컷오프(signal_month_end, = holding_month_start 직전)가 곧 strict 정의와 동일 — 두 값이 같으므로 인플레 0",
+      "positive_control_violation_probe": {
+        "description": "패닉 신호를 1개월 앞당김(shift -1) = 홀딩월 자신의 정보로 국면 판정 (BearProb 실사고 동형)",
+        "calmar": 0.2495128,
+        "sr": 0.58749509,
+        "alpha_ann_pct": 5.66512996,
+        "inflation_calmar": 0.26289629,
+        "lookahead_flag_calmar": true,
+        "inflation_sr": 0.083836,
+        "lookahead_flag_sr": true
+      }
+    },
+    "item4_cutoff_rule": {
+      "rule": "first-day-of-holding-month",
+      "used": "signal_month_end (= holding_month_start - 1d) 이전 데이터만",
+      "scan_split": {
+        "decision_path_lines": 222,
+        "posthoc_evaluator_lines": 57
+      },
+      "anchor_date_in_decision_path": false,
+      "realized_ym_in_decision_path": false,
+      "anchor_date_in_posthoc_mentions": 5,
+      "consumed_columns_have_anchor_date": false,
+      "consumed_columns_have_realized_ym": false,
+      "join_key": "signal_ym (신호월) — holding_ym 으로 조인하지 않음",
+      "self_reference_note": "초판 검사기가 자기 코드의 토큰을 읽어 TRUE 를 냈다(자기참조 오탐). 소비 컬럼 존재검사를 병기해 재도출."
+    },
+    "verdict": "PASS"
+  },
+  "pit_gate_detect_lookahead": {
+    "gate": "detect_lookahead",
+    "split_scan": true,
+    "decision_path": {
+      "files": [
+        "o1_inputs.R",
+        "o2_methods.R"
+      ],
+      "raw_all_clean": false,
+      "per_file": [
+        {
+          "file": "o1_inputs.R",
+          "clean": false,
+          "n_violations": 1,
+          "viol": [
+            {
+              "check": "C1",
+              "line": 31,
+              "code": "lab,n,m$portfolio_alpha_t_nw_lag3, mean(r)/sd(r)*sqrt(12), cg, mdd, cg/abs(mdd),"
+            }
+          ]
+        },
+        {
+          "file": "o2_methods.R",
+          "clean": false,
+          "n_violations": 1,
+          "viol": [
+            {
+              "check": "C1",
+              "line": 73,
+              "code": "sr=mean(r)/stats::sd(r)*sqrt(PPY), cagr=cg, mdd=mdd, calmar=cg/abs(mdd),"
+            }
+          ]
+        }
+      ]
+    },
+    "posthoc_evaluator": {
+      "files": [
+        "o3_overlay_pit.R",
+        "o4_pit_gate.R"
+      ],
+      "raw_all_clean": false,
+      "per_file": [
+        {
+          "file": "o3_overlay_pit.R",
+          "clean": false,
+          "n_violations": 1,
+          "viol": [
+            {
+              "check": "C1",
+              "line": 60,
+              "code": "list(sr=mean(r)/stats::sd(r)*sqrt(PPY), calmar=cg/abs(mdd), cagr=cg, mdd=mdd,"
+            }
+          ]
+        },
+        {
+          "file": "o4_pit_gate.R",
+          "clean": false,
+          "n_violations": 4,
+          "viol": [
+            {
+              "check": "C1",
+              "line": 29,
+              "code": "zA <- mk(c('vol_ann <- sd(port_ret) * sqrt(252)',"
+            },
+            {
+              "check": "C5_VT",
+              "line": 30,
+              "code": "'after_vt <- ret_series * vt_scale',"
+            },
+            {
+              "check": "C5_DDshort",
+              "line": 31,
+              "code": "'window_ret <- nav[(i-19):i]   # drawdown window'), \"_o4_probeA.R\")"
+            },
+            {
+              "check": "C1",
+              "line": 44,
+              "code": "flagged_construct = \"mean(r)/sd(r)*sqrt(12) — 실현 net 수익 시계열의 SR/Calmar 산출\","
+            }
+          ]
+        }
+      ]
+    },
+    "alpha_cohort": [
+      {
+        "file": "s4_candidate.R",
+        "clean": false,
+        "n_violations": 4,
+        "viol": [
+          {
+            "check": "C1",
+            "line": 70,
+            "code": "sr <- mean(r)/stats::sd(r)*sqrt(PPY)"
+          },
+          {
+            "check": "C1",
+            "line": 77,
+            "code": "net_active_sr = mean(act)/stats::sd(act)*sqrt(PPY),"
+          },
+          {
+            "check": "C1",
+            "line": 95,
+            "code": "list(n = n, sr = mean(r)/stats::sd(r)*sqrt(PPY), cagr = cagr, mdd = mdd,"
+          },
+          {
+            "check": "C1",
+            "line": 108,
+            "code": "c(sr = mean(r)/stats::sd(r)*sqrt(PPY), calmar = cg/abs(mdd)) }"
+          }
+        ]
+      },
+      {
+        "file": "s5_diag.R",
+        "clean": false,
+        "n_violations": 2,
+        "viol": [
+          {
+            "check": "C1",
+            "line": 37,
+            "code": "sub_sr <- vapply(1:3, function(k) { a <- act[g == k]; mean(a)/stats::sd(a)*sqrt(PPY) }, numeric(1))"
+          },
+          {
+            "check": "C1",
+            "line": 50,
+            "code": "net_active_sr <- mean(act)/stats::sd(act)*sqrt(PPY)"
+          }
+        ]
+      },
+      {
+        "file": "s2_mech.R",
+        "clean": true,
+        "n_violations": 0,
+        "viol": []
+      }
+    ],
+    "rederivation": {
+      "flagged_construct": "mean(r)/sd(r)*sqrt(12) — 실현 net 수익 시계열의 SR/Calmar 산출",
+      "where": "measure()/met() 사후 평가 함수 내부 (o1:31 · o2:73 · o3:60)",
+      "cohort_context": "alpha 의 s4_candidate.R 도 동일 idiom 4건 · s5_diag.R 2건 발화 — 본 라운드가 만든 결함이 아니라 측정 스크립트 전반의 검출기 특성",
+      "decision_inputs_at_date_t": [
+        "score_final(t) = alpha 발행 alpha_scores.parquet 의 score (신호월말 t-1 데이터)",
+        "score_base_momentum(t) = 동 parquet (t-1)",
+        "vol126_ann(t) = alpha 발행 종목 실현변동성 126d (strict t-1)",
+        "panic(signal_ym t) = alpha 발행 regime_signal_timeseries (used_cutoff <= holding_month_start)",
+        "Sector(t) = 월말 시변 섹터 패널 (risk_inputs SECM, <= sig_date)"
+      ],
+      "future_inputs_at_date_t": "없음 — Ret_1m(전방 실현수익)은 비중 산출식 어디에도 들어가지 않는다(weighted_screen_bt 가 비중을 받아 사후 결합)",
+      "honest_exposure": "★단 method **선택**은 전 표본 성과로 했다(IS-selection). 이는 PIT 위반이 아니라 선택편향 노출이며 방어선은 DSR(sweep, n_trials=5) + oos_retention + 아래 anchored 선택 안정성이다.",
+      "verdict": "DECISION_PATH_CLEAN_AFTER_REDERIVATION (플래그는 사후 평가기 소재 · 미은폐)"
+    },
+    "positive_control_A": {
+      "purpose": "검출기 선언 idiom(C1 full-sample vol / C5_VT / C5_DDshort)",
+      "n": 4,
+      "checks": [
+        "C1",
+        "C5_VT",
+        "C5_DDshort"
+      ],
+      "fired": true,
+      "note": "양성 대조 없는 계기는 방어선으로 세지 않는다"
+    },
+    "negative_axis_control_B": {
+      "purpose": "optimizer 레인 고유 위반(전 표본 cov 기반 비중 · 국면라벨 shift(-1) · 전 표본 SR argmax)",
+      "n": 1,
+      "fired": false,
+      "reading": "B 미발화 = R 경로에 그 축의 일반 검사가 없다(risk 가 이미 실증). 그 축의 PIT 담보는 검출기가 아니라 설계·산출물 기록이다 — detect_lookahead PASS 를 그 축의 통과 근거로 인용 금지."
+    },
+    "pattern_evasion_declaration": "의사결정 경로 코드를 검출 패턴 회피 목적으로 수정한 바 없음(발화 줄 원문 그대로 기록)."
+  },
+  "hook_two_way_verification": {
+    "hook": "02_Infrastructure/hooks/worktask_constraint_enforcer.sh",
+    "wt_type_read": "reinforcement (deployment 분기 - 전체 제약 강제)",
+    "cases": {
+      "A_clean_25": {
+        "injected": "n=25 · w>=0 · sum=1",
+        "hook_output": "{}",
+        "blocked": false
+      },
+      "B_n26": {
+        "injected": "n=26",
+        "hook_output": "decision=block (max_names 26 > 25)",
+        "blocked": true
+      },
+      "C_negative_w": {
+        "injected": "w=-0.02 1건",
+        "hook_output": "decision=block (long-only 위반)",
+        "blocked": true
+      },
+      "D_sumw_ne_1": {
+        "injected": "sum w = 1.06",
+        "hook_output": "decision=block (Sigma w != 1.0)",
+        "blocked": true
+      }
+    },
+    "verdict": "양방향 실증 완료 - 정상판 통과 · 3축 위반 주입 전량 차단",
+    "probe_dir": "stage_artifacts/WT_R20260829_004/hook_probe/",
+    "harness_note": "worktask_constraint_enforcer 의 WT_id 정규식 WT-([DP]) 는 v10 접두 R 을 매치하지 못한다. 미매치 시 기본값이 deployment 이고 request.json 의 wt_type=reinforcement 로 덮여 전체 제약이 강제되므로 fail-safe 방향이다. 다만 risk 가 보고한 schema.json 패턴 공백과 같은 계통이며 하네스 수리 대상(본 에이전트 권한 밖)."
+  },
+  "red_flags": [
+    {
+      "id": "RF-O1",
+      "severity": "OK",
+      "value": "binding_constraints 3 < 25/2 - 미발화"
+    },
+    {
+      "id": "RF-O2",
+      "severity": "OK",
+      "value": "active return 0.0427/yr vs cost*2 0.0306 - 미발화"
+    },
+    {
+      "id": "RF-O3",
+      "severity": "OK",
+      "value": "turnover 10.193 - 미세리밸 아님"
+    },
+    {
+      "id": "RF-O4",
+      "severity": "NA",
+      "value": "QP solver 미사용(폐형 비중 규칙) - dual 없음"
+    },
+    {
+      "id": "RF-O5",
+      "severity": "OK",
+      "value": "n_names 25 <= 25"
+    },
+    {
+      "id": "RF-O6",
+      "severity": "OK",
+      "value": "|sum w - 1| = 0.00e+00"
+    },
+    {
+      "id": "RF-O7",
+      "severity": "OK",
+      "value": "min w = 0.028423 >= 0 (v10 종목별 상한 폐지 - max w 0.061361 참고치)"
+    },
+    {
+      "id": "RF-O9",
+      "severity": "OK",
+      "value": "walk-forward schedule 260 시점 - single-snapshot 아님"
+    }
+  ],
+  "challenge_flags": [
+    {
+      "id": "OPT-CH1",
+      "severity": "HIGH",
+      "to": "forge/judge",
+      "message": "오버레이의 한계기여가 전 채널에서 음수다. 5 method 각각 자기 무조건화 쌍 대비 Calmar 손실: W1 -0.0260 · W2 -0.0204 · W3 -0.0259 · W4 -0.0225 · W5 -0.0068. 그리고 무조건화 역변동성(C2_IV_off: Calmar 0.2180 · SR 0.5829 · netIR 0.319 · alpha 5.49%/yr)이 오버레이-ON 전 구성을 지배한다. 즉 이 책에서 개선을 만든 것은 국면 오버레이가 아니라 비중 채널(역변동성)이다. alpha 의 F2/F6/F7 powered null 을 뒤집지 못했고 독립적으로 확인했다."
+    },
+    {
+      "id": "OPT-CH2",
+      "severity": "HIGH",
+      "to": "forge/judge",
+      "message": "oos_retention 근사가 전 method 음수다(-0.857 ~ -0.066, 선택 method -0.379, 무조건화 EW -0.066, 무조건화 IV +0.001). measurement-graduation 3절 상 0.5 미만은 보강증거 무관 무조건 FAIL 이며 비중 방법으로 고칠 수 있는 축이 아니다. 판정 권위는 forge essence_score.R 이다 - 본 값은 진단 근사(canonical .canon_oos_rough 동형)."
+    },
+    {
+      "id": "OPT-CH3",
+      "severity": "HIGH",
+      "to": "judge",
+      "message": "PIT 양성 대조 재현: 패닉 신호를 1개월 앞당긴 위반 주입판이 선택 method 에서 Calmar 0.2495(인플레 +26.3%) · SR 0.5875(+8.4%)로 발화한다. 무조건화(0.2058)와 최선 무조건화 IV(0.2180)마저 넘는다 - 이 축에서 오버레이가 작동한다는 외관은 동월 누출로 제조된다(BearProb 동형). 계기는 살아 있고 현행 사양의 strict A/B 인플레는 0.0000 이다."
+    },
+    {
+      "id": "OPT-CH4",
+      "severity": "MEDIUM",
+      "to": "Q-Lead",
+      "message": "detect_lookahead 가 의사결정 경로 2파일에서 C1 1건씩 발화한다. 발화 대상은 사후 평가 함수의 mean(r)/sd(r)*sqrt(12) 이며 alpha 의 s4_candidate.R(4건)·s5_diag.R(2건)도 동일 idiom 으로 발화한다. 코드를 회피 수정하지 않고 재도출로 처리했다(pit_gate_optimizer.json rederivation). 검출기 특성의 하네스 이슈."
+    },
+    {
+      "id": "OPT-CH5",
+      "severity": "MEDIUM",
+      "to": "Q-Lead",
+      "message": "음성 축 대조: 전 표본 cov 로 비중 산출 · 국면라벨 shift(-1) · 전 표본 SR argmax 를 주입해도 detect_lookahead 는 미발화(0/3). risk 가 보고한 R 경로 공백이 optimizer 레인에도 그대로 적용된다 - 이 축의 PIT 담보는 검출기가 아니라 설계·산출물 기록이다."
+    },
+    {
+      "id": "OPT-CH6",
+      "severity": "MEDIUM",
+      "to": "Q-Lead",
+      "message": "사전선언 결함 자기신고: 브리핑의 구조 제약(패닉월 구성 교체 반영)을 hard_filters 에 넣지 못해 사전선언 축의 승자(W5)와 실제 채택(W2)이 갈렸다. 두 결과 모두 발행했고 격차는 tie-band 안이며 anchored 3창에서는 W2 가 3/3 승자다."
+    }
+  ],
+  "self_report_no_repackaging": {
+    "cash_scaling_regression": false,
+    "evidence": "Sigma w = 1 (최대 편차 4.44e-16) · 현금 0 · 레버리지 0 · n_max 25 · min w 0.001324 >= 0. BSC 원형의 노출 스케일링(Sigma w<1)으로 회귀하지 않았다.",
+    "honest_qualifier": "다만 alpha 가 자기신고한 PARTIAL_REPACKAGING(실질이 beta 를 구성으로 조금 줄이기)은 본 층에서도 유효하다 - 선택 method beta 1.038 vs 무조건화 1.058."
+  },
+  "explanation": {
+    "top_overweights": ["A023530 (6.14%)", "A004170 (5.61%)", "A032830 (5.28%)"],
+    "top_underweights": ["A043260 (2.84%)", "A036930 (3.05%)", "A240810 (3.16%)"],
+    "main_tradeoffs": ["F7 알파가드가 섹터캡·알파틸트·EW 를 전부 탈락시켜 선택지를 2개로 좁혔다", "역변동성 가중이 SR/Calmar/alpha 를 동시에 올렸으나(EW 대비 +0.037 SR · +0.018 Calmar · +0.66%p alpha) 회전율을 9.38 -> 10.19 로 밀어올렸다", "국면 오버레이 자체는 어느 채널에서도 음의 기여 - 개선분은 전부 비중 채널에서 나왔다"]
+  },
+  "self_adversarial": {
+    "performed": true,
+    "method": "Opus native adversarial reasoning (v8.2 - 외부 Codex 라운드 없음)",
+    "n_concerns": 7,
+    "classification": {
+      "ACCEPT": 3,
+      "PARTIAL": 2,
+      "REBUTTAL": 2
+    },
+    "concerns": [
+      {
+        "id": "OC1",
+        "cls": "ACCEPT",
+        "topic": "사전선언이 브리핑의 구조 제약(구성 교체)을 누락 - 축 승자(W5)와 채택(W2)이 갈림"
+      },
+      {
+        "id": "OC2",
+        "cls": "ACCEPT",
+        "topic": "오버레이 한계기여가 5채널 전부 음수 - 개선은 비중 채널에서 나왔다"
+      },
+      {
+        "id": "OC3",
+        "cls": "ACCEPT",
+        "topic": "oos_retention 전 method 음수 - 비중으로 고칠 수 없는 책의 성질"
+      },
+      {
+        "id": "OC4",
+        "cls": "PARTIAL",
+        "topic": "섹터 캡은 F7 과 충돌 - 완화 폭 얇음(52.0->48.4%), vintage 국소성 병기"
+      },
+      {
+        "id": "OC5",
+        "cls": "PARTIAL",
+        "topic": "회전율 10.193 = 상한의 92.6% - 여유 얇음"
+      },
+      {
+        "id": "OC6",
+        "cls": "REBUTTAL",
+        "topic": "Sigma 미사용 비판 - risk 자신의 consumption_restriction/CH2/CH4 준수이며 as-of 진단으로 실제 소비"
+      },
+      {
+        "id": "OC7",
+        "cls": "REBUTTAL",
+        "topic": "역변동성이 새 alpha 라는 비판 - 비중 규칙이며 sigma 는 alpha 발행값 그대로"
+      }
+    ],
+    "self_rationalization_check": {
+      "forbidden_phrases_used": false,
+      "audit": "금지 표현 6종 미사용. OC4 를 '영향 미미'로 넘기지 않고 52.0->48.4 / 58.9->56.5 수치와 '얇다' 판단으로 대체, OC2 를 각주로 내리지 않고 5채널 Delta 표 전량 게재."
+    },
+    "escalation_check": {
+      "hard_constraint_violation": false,
+      "HIGH_count": 3,
+      "axiom_hard_fail": 0,
+      "rf_o9_single_snapshot": false,
+      "escalated": false,
+      "rule": "HIGH>=5 / AX hard FAIL>=3 / Hard Constraint 위반 / RF-O9 single-snapshot 중 해당 없음"
+    }
+  },
+  "self_adversarial_challenge_ref": "qepm/mailbox/worktask/WT-R20260829_004/challenge_note.md (# optimizer 구간)",
+  "weight_method_selected_ref": "stage_artifacts/WT_R20260829_004/weight_method_selected.md",
+  "verdict": "optimization_package_complete",
+  "handoff": {
+    "next_agent": "forge",
+    "consumes": ["qepm/mailbox/worktask/WT-R20260829_004/optimization_package.json", "stage_artifacts/WT_R20260829_004/weights.csv", "stage_artifacts/WT_R20260829_004/alpha_scores.parquet", "stage_artifacts/WT_R20260829_004/covariance.parquet"],
+    "forge_reading_order": ["1) weights.csv 를 그대로 소비할 것 - 260 as_of_date 전량 발행(density 1.00). 가상 schedule 재생성 금지(STR_1715 Iter 31 fabrication 선례).", "2) challenge_flags OPT-CH1(오버레이 한계기여 음수) / OPT-CH2(oos_retention 전 method 음수) 를 등급 서술에 반영할 것", "3) RISK-CH7(crisis 구간별 IC 안정성)은 risk 가 forge 로 지정 - 본 층 미수행", "4) 비교 basis 로 무조건화 역변동성(C2_IV_off) 좌표를 함께 볼 것: Calmar 0.2180 SR 0.5829 alpha 5.49%/yr"]
+  }
+}

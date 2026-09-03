@@ -1,0 +1,12 @@
+suppressWarnings(suppressMessages({library(data.table); library(arrow); library(jsonlite)}))
+ROOT <- Sys.getenv("QM_ROOT"); if(!nzchar(ROOT)) ROOT <- getwd(); setwd(ROOT)
+OUT <- file.path(ROOT,"stage_artifacts/WT_R20260829_007")
+o3 <- readRDS(file.path(OUT,"rk3_objects.rds"))
+cat("rk3 names:", paste(names(o3),collapse=", "),"\n")
+for(nm in names(o3)){ x<-o3[[nm]]; cat(" ",nm,":",class(x)[1], paste(dim(x),collapse="x"), "\n") }
+cat("\nX cols:", paste(names(o3$X),collapse=", "),"\n")
+cat("STY:", paste(o3$STY,collapse=","),"\n")
+cat("Fw cols:", paste(names(o3$Fw),collapse=","),"\n")
+cat("Fw dates:", length(unique(o3$Fw$Date)), as.character(min(o3$Fw$Date)), as.character(max(o3$Fw$Date)),"\n")
+cat("RES cols:", paste(names(o3$RES),collapse=","),"\n")
+cat("\n--- tail_risk.json ---\n"); cat(substr(paste(readLines(file.path(OUT,"tail_risk.json")),collapse="\n"),1,2500),"\n")

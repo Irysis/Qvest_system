@@ -1,0 +1,65 @@
+{
+  "status": "OK",
+  "strategy_id": "RP_20260831_105827_3796",
+  "strategy_name": "RF_PAR_B4_17_LOO",
+  "remeasured_at": "2026-08-31T11:10:12+0900",
+  "run_id": "20260831_105827_3796",
+  "bt_result_path": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/replication/20260831_105827_3796/bt_result.rds",
+  "metric_type": "backtested",
+  "essence_grade": "B",
+  "grade_basis": "replication_chain",
+  "essence": {
+    "net_sharpe": 0.687,
+    "net_ir": 0.482,
+    "portfolio_alpha_t_nw_lag3": 2.241,
+    "oos_retention": 0.347,
+    "dsr": null,
+    "mdd": 0.616,
+    "calmar": 0.32,
+    "cagr": 0.198,
+    "drawdown_profile": {
+      "severe45_count": 17,
+      "severe55_count": 9,
+      "severe45_total_periods": 224,
+      "severe45_max_periods": 106,
+      "severe45_period_frac": 0.0421,
+      "catastrophic_mdd_threshold": 0.7,
+      "severe45_hard_count": 15,
+      "severe55_hard_count": 6,
+      "severe45_period_hard_frac": 0.25,
+      "severe45_max_hard_periods": 252,
+      "tail_review": false,
+      "structural_hard_fail": true
+    }
+  },
+  "hard_fail": false,
+  "structural_drawdown": true,
+  "selection_type": "chain",
+  "dsr_gate_applied": false,
+  "reasons": "Component: PORT_t>=2.0 & net_IR>0.2; A 미달[OOS_ret 0.35<0.7(band fail),Sharpe<0.8,Calmar<0.64]; structural_drawdown(판정 아님 — 라우팅 근거): MDD 61.6%, 45%+ episodes=17/15, 55%+ episodes=9/6, 수중 표본비 0.04/0.25",
+  "replication": {
+    "source_paper": {
+      "title": "Fama & French (1992), The Cross-Section of Expected Stock Returns, JF 47(2)",
+      "url": "https://onlinelibrary.wiley.com/doi/10.1111/j.1540-6261.1992.tb04398.x"
+    },
+    "commission_paper_bps": 15,
+    "paper_basis": {
+      "cagr": 0.196919,
+      "sharpe": 0.539438,
+      "mdd": 0.616485,
+      "n_months": 259
+    },
+    "grade_basis_note": "등급은 15bps 순비용 판 (essence 문턱 15bps 보정 — gross 등급은 인플레)",
+    "fidelity": "universe 치환(K200∪KQ150)만 — 그 외 논문 그대로 (v10 완전 충실구현)",
+    "benchmark_note": "long_vs_long_bm",
+    "n_max": 3,
+    "has_short": false
+  },
+  "contract": {
+    "integrity_status": "OK",
+    "cagr": 0.198,
+    "sharpe": 0.687,
+    "mdd": 0.616,
+    "calmar": 0.32
+  }
+}

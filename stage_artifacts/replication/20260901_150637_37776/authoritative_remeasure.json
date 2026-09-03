@@ -1,0 +1,65 @@
+{
+  "status": "OK",
+  "strategy_id": "RP_20260901_150637_37776",
+  "strategy_name": "RF_PAR_B1_5_Amihud",
+  "remeasured_at": "2026-09-01T15:26:20+0900",
+  "run_id": "20260901_150637_37776",
+  "bt_result_path": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/replication/20260901_150637_37776/bt_result.rds",
+  "metric_type": "backtested",
+  "essence_grade": "C",
+  "grade_basis": "replication_chain",
+  "essence": {
+    "net_sharpe": 0.533,
+    "net_ir": 0.169,
+    "portfolio_alpha_t_nw_lag3": 0.782,
+    "oos_retention": -0.353,
+    "dsr": null,
+    "mdd": 0.717,
+    "calmar": 0.18,
+    "cagr": 0.129,
+    "drawdown_profile": {
+      "severe45_count": 17,
+      "severe55_count": 8,
+      "severe45_total_periods": 493,
+      "severe45_max_periods": 242,
+      "severe45_period_frac": 0.0926,
+      "catastrophic_mdd_threshold": 0.7,
+      "severe45_hard_count": 15,
+      "severe55_hard_count": 6,
+      "severe45_period_hard_frac": 0.25,
+      "severe45_max_hard_periods": 252,
+      "tail_review": false,
+      "structural_hard_fail": true
+    }
+  },
+  "hard_fail": false,
+  "structural_drawdown": true,
+  "selection_type": "chain",
+  "dsr_gate_applied": false,
+  "reasons": "Ensemble: positive alpha이나 B 미달 (블렌드에서만 가치); structural_drawdown(판정 아님 — 라우팅 근거): MDD 71.7%, 45%+ episodes=17/15, 55%+ episodes=8/6, 수중 표본비 0.09/0.25",
+  "replication": {
+    "source_paper": {
+      "title": "Amihud (2002), Illiquidity and Stock Returns, JFM 5(1)",
+      "url": "https://www.sciencedirect.com/science/article/pii/S1386418101000246"
+    },
+    "commission_paper_bps": 15,
+    "paper_basis": {
+      "cagr": 0.12852,
+      "sharpe": 0.413024,
+      "mdd": 0.717138,
+      "n_months": 259
+    },
+    "grade_basis_note": "등급은 15bps 순비용 판 (essence 문턱 15bps 보정 — gross 등급은 인플레)",
+    "fidelity": "universe 치환(K200∪KQ150)만 — 그 외 논문 그대로 (v10 완전 충실구현)",
+    "benchmark_note": "long_vs_long_bm",
+    "n_max": 3,
+    "has_short": false
+  },
+  "contract": {
+    "integrity_status": "OK",
+    "cagr": 0.129,
+    "sharpe": 0.533,
+    "mdd": 0.717,
+    "calmar": 0.18
+  }
+}

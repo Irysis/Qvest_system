@@ -1,0 +1,140 @@
+{
+  "wt_id": "WT-R20260829_007",
+  "benchmark_basis_attribution": {
+    "note": "상류 PORT_t 와 forge 권위 PORT_t 는 **다른 양**이다. 상류는 alpha 발행 월별 M1(EW25 base) 계열을 alpha 자체 cap-w 벤치 프록시에 댄 값이고, forge 권위는 optimizer 채택 M2_buffer50 을 일별 share-based 로 재구성해 production KOSPI200 BM 에 댄 값이다.",
+    "cells_2x2": [
+      {
+        "S": "S_alpha",
+        "B": "B_alpha",
+        "port_t": 0.92857549,
+        "active_ann": 0.03914007,
+        "n": 259
+      },
+      {
+        "S": "S_alpha",
+        "B": "B_prod",
+        "port_t": 0.57089059,
+        "active_ann": 0.02735988,
+        "n": 259
+      },
+      {
+        "S": "S_forge",
+        "B": "B_alpha",
+        "port_t": 0.87679332,
+        "active_ann": 0.03394997,
+        "n": 259
+      },
+      {
+        "S": "S_forge",
+        "B": "B_prod",
+        "port_t": 0.50393246,
+        "active_ann": 0.02216977,
+        "n": 259
+      }
+    ],
+    "bench_cumulative_common_window": [
+      {
+        "basis": "B_prod (KOSPI200 production BM)",
+        "cum": 7.93400132,
+        "cagr": 0.10678664
+      },
+      {
+        "basis": "B_alpha (alpha 발행 cap-w 적격 유니버스 프록시)",
+        "cum": 6.27147885,
+        "cagr": 0.09627812
+      }
+    ],
+    "strategy_cumulative_common_window": [
+      {
+        "series": "S_forge (M2_buffer50, forge share-based)",
+        "cum": 14.44184098,
+        "cagr": 0.13520648
+      },
+      {
+        "series": "S_alpha (M1 EW25 base, alpha 발행 월별)",
+        "cum": 15.83525595,
+        "cagr": 0.13975963
+      }
+    ],
+    "attribution": {
+      "upstream_alpha_reported_port_t": 0.92857549,
+      "forge_authoritative_port_t": 0.63636592,
+      "cell_S_alpha_B_alpha": 0.92857549,
+      "cell_S_alpha_B_prod": 0.57089059,
+      "cell_S_forge_B_alpha": 0.87679332,
+      "cell_S_forge_B_prod": 0.50393246,
+      "delta_bench_only_at_alpha_strategy": -0.3576849,
+      "delta_strategy_only_at_alpha_bench": -0.05178217,
+      "delta_total": -0.42464303,
+      "dominant_term": "benchmark_basis"
+    },
+    "common_months": 259
+  },
+  "oos_retention": {
+    "essence_authoritative": -0.693,
+    "forge_vs_prodBM_median": -0.63670889,
+    "forge_vs_alphaBM_median": -0.36156959,
+    "alpha_M1_vs_alphaBM_median": -0.38305051,
+    "optimizer_proxy_M1": -0.38305051,
+    "optimizer_proxy_M2_B50": -0.425,
+    "per_frac_forge": {
+      "f55": -0.51875611,
+      "f65": -0.63670889,
+      "f75": -1.0494224
+    },
+    "per_frac_alpha": {
+      "f55": -0.38305051,
+      "f65": -0.34683561,
+      "f75": -0.79271617
+    },
+    "confirms_optimizer_direction": true
+  },
+  "subperiod": [
+    {
+      "sub": "2005-14",
+      "n": 119,
+      "forge_net_ann": 0.19580273,
+      "bm_ann": 0.07444409,
+      "active_forge_ann": 0.11033936,
+      "active_alpha_ann": 0.11324157,
+      "active_sr_forge": 0.7680048
+    },
+    {
+      "sub": "2015-19",
+      "n": 60,
+      "forge_net_ann": -0.00183563,
+      "bm_ann": 0.03778103,
+      "active_forge_ann": -0.03610307,
+      "active_alpha_ann": 0.00348407,
+      "active_sr_forge": -0.28772631
+    },
+    {
+      "sub": "2020-26",
+      "n": 80,
+      "forge_net_ann": 0.1571369,
+      "bm_ann": 0.21392449,
+      "active_forge_ann": -0.06527786,
+      "active_alpha_ann": -0.0443439,
+      "active_sr_forge": -0.28878535
+    }
+  ],
+  "regime": [
+    {
+      "regime": "BEAR(t-1 12M BM<0)",
+      "n": 97,
+      "forge_ann": 0.05362386,
+      "bm_ann": 0.01929198,
+      "active_ann": 0.03253454,
+      "sr": 0.21771791
+    },
+    {
+      "regime": "BULL(t-1 12M BM>=0)",
+      "n": 150,
+      "forge_ann": 0.16839104,
+      "bm_ann": 0.13875252,
+      "active_ann": 0.0206313,
+      "sr": 0.1099414
+    }
+  ],
+  "charts": ["output/equity_curve.png", "output/annual_returns.png", "output/oos_zoom_chart.png", "output/regime_decomposition.png"]
+}

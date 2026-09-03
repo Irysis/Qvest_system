@@ -1,0 +1,448 @@
+{
+  "task_id": "WT-R20260829_004",
+  "agent": "Forge",
+  "spec_version": "authoritative_remeasure_v1.0_forge_v10",
+  "as_of": "2026-08-29",
+  "wt_type": "reinforcement",
+  "keyword_axis": "risk_overlay",
+  "hypothesis_title": "JT1993 강화 4/20 — 모멘텀 크래시 관리 리스크 오버레이 (Daniel-Moskowitz 2016)",
+  "strategy_id": "WTR20260829_004_JT1993_CRASHOVL_IV25",
+  "measurement_basis_primary": "forge_realized_share_based",
+  "pure_function": {
+    "package_md5_start": {
+      "C:/Users/99922/OneDrive/Quant_Module_Moltbot/qepm/mailbox/worktask/WT-R20260829_004/alpha_package.json": "24b8507173dae09ec3fa819348b7e9fe",
+      "C:/Users/99922/OneDrive/Quant_Module_Moltbot/qepm/mailbox/worktask/WT-R20260829_004/risk_package.json": "0379befebd59d43658cc78eaa16b0cc7",
+      "C:/Users/99922/OneDrive/Quant_Module_Moltbot/qepm/mailbox/worktask/WT-R20260829_004/optimization_package.json": "e4a8a8d66a782ef7a3cdbee3e8df7866"
+    },
+    "package_md5_end": {
+      "C:/Users/99922/OneDrive/Quant_Module_Moltbot/qepm/mailbox/worktask/WT-R20260829_004/alpha_package.json": "24b8507173dae09ec3fa819348b7e9fe",
+      "C:/Users/99922/OneDrive/Quant_Module_Moltbot/qepm/mailbox/worktask/WT-R20260829_004/risk_package.json": "0379befebd59d43658cc78eaa16b0cc7",
+      "C:/Users/99922/OneDrive/Quant_Module_Moltbot/qepm/mailbox/worktask/WT-R20260829_004/optimization_package.json": "e4a8a8d66a782ef7a3cdbee3e8df7866"
+    },
+    "hash_match": true,
+    "alpha_vector_modified": false,
+    "sigma_reestimated": false,
+    "target_weights_modified": false,
+    "reselection_from_alpha_scores": false,
+    "weights_provenance": {
+      "source": "optimization_package method_selected=W2_IV -> stage_artifacts/.../weights.csv",
+      "unmatched_rows": 0,
+      "max_abs_weight_diff": 5.55111512e-17
+    },
+    "note": "run_all.R 은 alpha_scores.parquet 를 열지 않는다. 비중 소비는 weights.csv as-is."
+  },
+  "schedule_fidelity": {
+    "weights_csv_unique_as_of_dates": 260,
+    "alpha_sig_dates_count": 260,
+    "schedule_density_ratio_rederived": 1,
+    "schedule_density_ratio_declared": 1,
+    "skip_months": 0,
+    "reselection_from_alpha_scores": false,
+    "note": "run_all.R 은 alpha_scores.parquet 를 열지 않는다(재선택 0). 밀도는 weights.csv 에서 직접 재도출.",
+    "as_of_dates_consumed": 260,
+    "rebalances_executed": 259,
+    "skipped_as_of": [
+      "2026-08-28"
+    ],
+    "skip_reason": "마지막 as_of 2026-08-28 의 홀딩월(2026-09) 은 미실현 — get_execution_date 가 데이터 범위 밖이라 집행 불가. 직전 보유가 데이터 끝(2026-08-28)까지 유지된다(deploy extension 18 거래일).",
+    "exec_drop_events": 0,
+    "hook_note": "schedule_fidelity_check.sh 는 .claude/settings.json 미등록 + 필드명 불일치로 무발화다. 방어선으로 세지 않고 밀도를 본 산출물에서 직접 재도출했다."
+  },
+  "authoritative_metrics": {
+    "cagr": 0.13118059,
+    "sharpe": 0.56988434,
+    "mdd": 0.69586068,
+    "calmar": 0.18851559,
+    "volatility": 0.29149575,
+    "net_ir": 0.17193316,
+    "portfolio_alpha_t_nw_lag3": 0.75465806,
+    "dsr": 0.233,
+    "oos_retention": -0.66,
+    "n_days": 5319,
+    "n_rebalances": 259,
+    "n_max_holdings": 25,
+    "period": {
+      "start": "2005-02-03",
+      "end": "2026-08-28"
+    },
+    "cost": "15bps one-way, v2.4_kr_retail_15bps delta-based",
+    "sr_realized_share_based": 0.56988434,
+    "sr_factor_engine_continuous": 0.54205165,
+    "divergence_factor_engine_vs_realized_pp": 0.02783269,
+    "vs_factor_engine": {
+      "diagnosis": "NEGLIGIBLE",
+      "note": "상류 realized_metrics 는 weighted_screen(월별) basis, forge 는 share-based(일별) basis. SR 차 +0.028 은 basis 차이 범위이며 재선택·스케줄 조작은 없다(밀도 1.0000, 재선택 0)."
+    }
+  },
+  "grade": {
+    "authoritative_grade": "C",
+    "grade_basis": "essence_score.R (02_Infrastructure/contracts) — 권위 등급",
+    "metric_type": "backtested",
+    "selection_type_primary": "sweep",
+    "n_trials_cumulative": 9,
+    "n_trials_note": "alpha chain 4(강화 4/20) + optimizer 비중방법 argmax 5 = 9 보수 합산. optimizer 자체 선언은 5.",
+    "grade_sensitivity": {
+      "sweep_n9": "C",
+      "sweep_n5": "C",
+      "chain_n9": "C"
+    },
+    "grade_A_conditions": {
+      "port_t": {
+        "value": 0.755,
+        "threshold": 2.95,
+        "pass": false
+      },
+      "oos_retention": {
+        "value": -0.66,
+        "threshold": 0.7,
+        "pass": false
+      },
+      "sharpe": {
+        "value": 0.57,
+        "threshold": 0.8,
+        "pass": false
+      },
+      "cagr": {
+        "value": 0.131,
+        "threshold": 0.16,
+        "pass": false
+      },
+      "calmar": {
+        "value": 0.189,
+        "threshold": 0.64,
+        "pass": false
+      }
+    },
+    "conditions_passed": 0,
+    "hard_fail": false,
+    "hard_fail_source": "none",
+    "structural_drawdown": true,
+    "structural_drawdown_note": "라벨이지 판정이 아니다 — MDD 는 등급을 접지 않는다(도훈 지시 2026-08-24). 위험 축은 Calmar 하나. 이 라벨은 오버레이 라우팅 근거로만 쓴다.",
+    "drawdown_profile": {
+      "drawdown_profile": {
+        "severe45_count": 30,
+        "severe55_count": 12,
+        "severe45_total_periods": 665,
+        "severe45_max_periods": 444,
+        "severe45_period_frac": 0.125,
+        "catastrophic_mdd_threshold": 0.7,
+        "severe45_hard_count": 15,
+        "severe55_hard_count": 6,
+        "severe45_period_hard_frac": 0.25,
+        "severe45_max_hard_periods": 252,
+        "tail_review": false,
+        "structural_hard_fail": true
+      }
+    },
+    "reasons": "Ensemble: positive alpha이나 B 미달 (블렌드에서만 가치); structural_drawdown(판정 아님 — 라우팅 근거): MDD 69.6%, 45%+ episodes=30/15, 55%+ episodes=12/6, 수중 표본비 0.13/0.25",
+    "graduation_params": {
+      "port_t_min": 2.95,
+      "oos_min": 0.7,
+      "oos_floor": 0.5,
+      "calmar_min": 0.64,
+      "dsr_min": 0.5,
+      "mdd_hard": 0.45,
+      "sharpe_min": 0.8,
+      "cagr_min": 0.16,
+      "b_port_t_min": 2,
+      "b_net_ir_min": 0.2,
+      "source": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/02_Infrastructure/worktask/constraint_defaults.json",
+      "fallback_keys": []
+    },
+    "proxy_grade_cited": false,
+    "proxy_note": "hurdle_result.json proxy 등급은 인용하지 않았다(2026-05-31 DEMOTED)."
+  },
+  "audit": {
+    "total_checks": 19,
+    "pass": 19,
+    "warn": 0,
+    "fail": 0,
+    "integrity_status": "PASS",
+    "non_pass": "none",
+    "holdings_cap_n_max": 25,
+    "factor_engine_path_wired": true,
+    "factor_engine_path_note": "Check 8/14/15 가 WARN skip 으로 내려앉지 않도록 run_all.R 을 결정경로로 배선했다."
+  },
+  "overlay_pit": {
+    "item1_assert_overlay_pit": {
+      "status": "PASS",
+      "n_rows": 260,
+      "rule": "used_cutoff(as_of_date) <= holding_month_start (first-day-of-holding-month)",
+      "max_used_cutoff": "2026-08-28",
+      "max_gap_days": 5,
+      "min_gap_days": 1,
+      "exec_after_holding_start_all": true,
+      "n_exec_na": 1,
+      "note": "forge 는 오버레이를 새로 적용하지 않는다 — 상류가 확정한 패널의 소비 시점 정합만 검사."
+    },
+    "panel_rebuild_identity": {
+      "unmatched": 0,
+      "max_abs_diff": 5.55111512e-17
+    },
+    "item2_lag1_stress": {
+      "calmar_base": 0.18428225,
+      "calmar_lag1": 0.19476021,
+      "rel_change_calmar": 0.05685821,
+      "sr_base": 0.56988434,
+      "sr_lag1": 0.59070657,
+      "rel_change_sr": 0.03653764,
+      "rule": "lag1 판이 base 대비 -25% 초과 붕괴하면 동월 누출 의심",
+      "status": "NO_COLLAPSE",
+      "basis": "forge share-based daily NAV, 15bps delta"
+    },
+    "item3_strict_ab": {
+      "current_equals_strict": true,
+      "strict_definition": "현행 컷오프 = as_of_date(신호월말) = holding_month_start - 1d. strict 정의(홀딩월 시작 전 데이터만)와 동일 집합이므로 두 판이 같다.",
+      "inflation_calmar": 0,
+      "lookahead_suspected": false,
+      "message": "[overlay_pit_guard] Calmar(current vs strict): current=0.1843 strict=0.1843 인플레=0.0% → clean",
+      "positive_control_violation_probe": {
+        "description": "국면 신호를 1개월 앞당김(shift -1) = 홀딩월 자신의 국면으로 구성 교체 (BearProb 실사고 동형)",
+        "calmar": 0.23503713,
+        "sr": 0.61384667,
+        "cagr": 0.14017557,
+        "mdd": -0.59639756,
+        "inflation_calmar": 0.27541927,
+        "lookahead_flag_calmar": true,
+        "inflation_sr": 0.07714254,
+        "lookahead_flag_sr": true,
+        "interpretation": "계기가 살아있다는 양성 대조 — 위반을 주입하면 성과가 뛴다. 현행 판이 그 값을 내지 않는다는 것이 clean 의 내용이다."
+      }
+    },
+    "item4_cutoff_rule": {
+      "rule": "first-day-of-holding-month",
+      "used": "as_of_date(신호월말) 비중 -> get_execution_date() = 홀딩월 첫 거래일 종가 집행",
+      "consumed_columns": ["as_of_date", "signal_ym", "holding_ym", "ticker", "weight", "rank", "sector", "panic", "vol126_ann"],
+      "consumed_columns_have_anchor_date": false,
+      "consumed_columns_have_realized_ym": false,
+      "anchor_date_in_decision_path": false,
+      "realized_ym_in_decision_path": false,
+      "holding_ym_in_decision_path": false,
+      "join_key": "as_of_date (신호월말) — holding_ym 으로 조인하지 않는다",
+      "decision_path_code_lines": 123,
+      "decision_path_definition": ".replay() 함수 본문(deparse) + weights.csv 소비 블록 [2]",
+      "whole_file_scan_anchor_date": true,
+      "whole_file_scan_realized_ym": true,
+      "self_reference_note": "파일 전문 grep 은 TRUE 를 낸다 — 그 히트는 spec$lookahead_prevention 의 선언 문장('anchor_date/realized_ym 결정경로 미참조') 자기 자신이다. 초판 검사기가 그 오탐에 걸렸고, 결정경로를 함수 본문으로 한정해 재도출했다. 소비 컬럼 존재검사(weights.csv 헤더 = FALSE/FALSE)를 독립 증거로 병기한다.",
+      "note": "holding_ym 은 결정경로에서 쓰이지 않고 본 진단(사후)에서만 컷오프 검증에 쓰인다."
+    },
+    "item5_detect_lookahead_two_way": {
+      "base_run_all": {
+        "clean": true,
+        "scanned": true,
+        "n_violations": 0
+      },
+      "probe_declared_idioms": {
+        "clean": false,
+        "n_violations": 1,
+        "fired": true
+      },
+      "probe_nondeclared_idioms": {
+        "clean": true,
+        "n_violations": 0,
+        "fired": false
+      },
+      "negative_control_comment_only": {
+        "clean": true,
+        "n_violations": 0
+      },
+      "interpretation": "양성 대조(선언 idiom)가 발화하고 음성 대조가 조용해야 계기가 살아있다. 비선언 idiom 이 미발화하면 그 계통은 **미측정**이며 CLEAN 은 선언 idiom 부재의 증거일 뿐 PIT 증명이 아니다."
+    },
+    "item6_benchmark_basis": {
+      "upstream_basis": "weighted_screen_bt — 월별 가중수익 집계(259 months), benchmark_ret 월별",
+      "forge_basis": "share-based daily NAV(정수주 + 잔여현금) + BM_DT 일별 BM_Ret",
+      "upstream": {
+        "n_months": 259,
+        "strat_cum": 12.67807537,
+        "bench_cum": 7.27147885,
+        "strat_cagr": 0.12488135,
+        "bench_cagr": 0.09627812,
+        "port_t": 1.15746441,
+        "net_ir": 0.2443138
+      },
+      "forge": {
+        "n_days": 5319,
+        "strat_cum": 13.55012675,
+        "bench_cum": 8.93400132,
+        "strat_cagr": 0.13143198,
+        "bench_cagr": 0.109323,
+        "port_t": 0.75465806,
+        "net_ir": 0.17193316
+      },
+      "attribution": {
+        "d_port_t_total": -0.40280635,
+        "bench_cum_ratio_forge_over_upstream": 1.22863609,
+        "strat_cum_ratio_forge_over_upstream": 1.06878421,
+        "note": "상류 PORT_t 와 forge 권위 PORT_t 는 **다른 양**이다(월별 weighted_screen vs 일별 share-based + 다른 BM 계열). 어느 쪽이 높다고 상대를 반증하지 않으며, 판정에 쓰는 값은 forge 권위값 하나다."
+      }
+    },
+    "verdict": "PASS"
+  },
+  "overlay_marginal_reproduction": {
+    "claim_from_optimizer": "①오버레이 한계기여가 5채널 전부 음수(-0.0068 ~ -0.0260) ②무조건화 IV(C2_IV_off)가 모든 ON 구성을 지배",
+    "forge_basis_verdict": "REPRODUCED",
+    "method": "optimizer 가 o2_objects.rds 에 발행한 비중 패널(W1/W5/C1/C2)을 그대로 소비해 동일 기간·동일 15bps delta·동일 share-based NAV·동일 계약(build_bt_result)로 재측정. authoritative 는 W2_IV 하나이며 아래 표는 진단이다.",
+    "table": [
+      {
+        "tag": "W2_IV (ADOPTED, authoritative)",
+        "CAGR": 0.13118059,
+        "SR": 0.56988434,
+        "MDD": 0.69586068,
+        "Calmar": 0.18851559,
+        "net_IR": 0.17193316,
+        "PORT_t": 0.75465806,
+        "alpha_ann": 0.04848668,
+        "excess_tot": 4.61612543
+      },
+      {
+        "tag": "W1_EW",
+        "CAGR": 0.12127418,
+        "SR": 0.53153885,
+        "MDD": 0.69819331,
+        "Calmar": 0.17369713,
+        "net_IR": 0.13637859,
+        "PORT_t": 0.60059252,
+        "alpha_ann": 0.04101365,
+        "excess_tot": 2.3259276
+      },
+      {
+        "tag": "W5_WCH_IV",
+        "CAGR": 0.13248153,
+        "SR": 0.56138877,
+        "MDD": 0.69819331,
+        "Calmar": 0.18974906,
+        "net_IR": 0.18728172,
+        "PORT_t": 0.82556395,
+        "alpha_ann": 0.04975836,
+        "excess_tot": 4.95605053
+      },
+      {
+        "tag": "C1_EW_off",
+        "CAGR": 0.13613698,
+        "SR": 0.57062763,
+        "MDD": 0.69819331,
+        "Calmar": 0.19498465,
+        "net_IR": 0.20431747,
+        "PORT_t": 0.90118655,
+        "alpha_ann": 0.05240002,
+        "excess_tot": 5.93373181
+      },
+      {
+        "tag": "C2_IV_off",
+        "CAGR": 0.14353337,
+        "SR": 0.60266564,
+        "MDD": 0.69586068,
+        "Calmar": 0.2062674,
+        "net_IR": 0.23075657,
+        "PORT_t": 1.01490768,
+        "alpha_ann": 0.05786791,
+        "excess_tot": 8.10733388
+      }
+    ],
+    "marginal": [
+      {
+        "pair": "IV: overlay ON - OFF",
+        "d_Calmar": -0.0177518,
+        "d_SR": -0.0327813,
+        "d_netIR": -0.0588234,
+        "d_PORT_t": -0.26024962,
+        "d_CAGR": -0.01235278
+      },
+      {
+        "pair": "EW: overlay ON - OFF",
+        "d_Calmar": -0.02128752,
+        "d_SR": -0.03908878,
+        "d_netIR": -0.06793889,
+        "d_PORT_t": -0.30059403,
+        "d_CAGR": -0.0148628
+      }
+    ],
+    "dominant_construction": "C2_IV_off",
+    "headline": "채택된 W2(오버레이 ON) 의 등급이 정본이지만, 같은 basis 에서 오버레이를 끈 무조건화 IV 가 Calmar·SR·netIR·PORT_t·CAGR 전 축에서 앞선다. 즉 이 라운드의 실측 결론은 '오버레이 강화가 C 를 받았다'가 아니라 '오버레이가 없었으면 더 나았다'다."
+  },
+  "regime_attribution": {
+    "regime_label_source": "weights.csv::panic (상류 alpha/optimizer 확정 — forge 재정의 없음)",
+    "table": [
+      {
+        "regime": "PANIC",
+        "n_days": 540,
+        "n_months": 26,
+        "ann_ret": 0.35740969,
+        "bm_ann": 0.45524625,
+        "sr": 1.34490522,
+        "bm_sr": 1.43703228,
+        "active_mean_ann": -0.08050189,
+        "active_t": -0.60223506
+      },
+      {
+        "regime": "NORMAL",
+        "n_days": 4779,
+        "n_months": 233,
+        "ann_ret": 0.10838994,
+        "bm_ann": 0.07581703,
+        "sr": 0.4963639,
+        "bm_sr": 0.43628124,
+        "active_mean_ann": 0.04811958,
+        "active_t": 1.02299762
+      }
+    ],
+    "label_quality": {
+      "median_bm_drawdown_by_regime": [
+        {
+          "regime": "NORMAL",
+          "median_bm_drawdown": -0.12461922
+        },
+        {
+          "regime": "PANIC",
+          "median_bm_drawdown": -0.28534287
+        }
+      ],
+      "panic_fire_rate_when_bm_20pct_underwater": 0.34723336,
+      "panic_fire_rate_overall": 0.10152284,
+      "verdict": "라벨은 위기를 제대로 짚는다 — 패닉일의 BM 중앙 수중깊이가 정상일보다 깊고, BM 이 20% 이상 수중일 때 발화율이 전체 평균의 3배 이상이다."
+    },
+    "mechanism": "오버레이가 빼는 자리는 라벨이 틀려서가 아니다. 패닉으로 라벨된 구간에서 KR 시장 자체가 강하게 반등하고(BM 연율 +45.5%), 저변동성 구성으로 갈아탄 롱온리 book 이 그 반등 베타를 반납한다(액티브 연율 -8.05%p). 정상 구간에서 번 액티브(+4.81%p)를 패닉 구간에서 되돌려주는 구조다.",
+    "caveat": "★국면별 액티브의 t 는 패닉 -0.60 · 정상 +1.02 로 둘 다 유의하지 않다. 즉 '패닉 구간에서 진다'는 방향은 실측이되 그 크기는 표본(에피소드 26개월) 안에서 0 과 구분되지 않는다. 한계기여 음수는 전 표본 점추정으로 읽어야 한다."
+  },
+  "same_period_baseline": {
+    "baseline_id": "W1_EW (incumbent · 오버레이 ON · 동등가중)",
+    "basis": "동일 기간(2005-02-03~2026-08-28) · 동일 15bps delta · 동일 share-based NAV · 동일 계약",
+    "baseline": {
+      "tag": "W1_EW",
+      "CAGR": 0.12127418,
+      "SR": 0.53153885,
+      "MDD": 0.69819331,
+      "Calmar": 0.17369713,
+      "net_IR": 0.13637859,
+      "PORT_t": 0.60059252,
+      "alpha_ann": 0.04101365,
+      "excess_tot": 2.3259276
+    },
+    "adopted": {
+      "tag": "W2_IV (ADOPTED, authoritative)",
+      "CAGR": 0.13118059,
+      "SR": 0.56988434,
+      "MDD": 0.69586068,
+      "Calmar": 0.18851559,
+      "net_IR": 0.17193316,
+      "PORT_t": 0.75465806,
+      "alpha_ann": 0.04848668,
+      "excess_tot": 4.61612543
+    },
+    "delta_calmar": 0.01481846,
+    "delta_sr": 0.03834549,
+    "note": "외부 인용 baseline 은 쓰지 않았다 — 전부 본 세션에서 동일 조건으로 재측정."
+  },
+  "upstream_verdicts_carried": {
+    "alpha": "F2 FAIL(예측 성분이 특이위험 아닌 시장노출) · F6 FAIL(post-2017 Calmar 0.102<0.203) · F7 FAIL(α -1.53%p) · 검정력 0.876 = powered null",
+    "risk": "조작확인 통과(패닉월 x_vol tilt +1.041 -> -0.649, t -14.37) => 처치는 전달됐다. 실측 negative 이며 미결이 아니다.",
+    "optimizer": "오버레이 한계기여 5채널 전부 음수 · 무조건화 IV 지배 · W5 는 IS-selection 산물이라 채택 아님",
+    "forge": "위 셋과 같은 방향. 권위 등급 C, Grade A 5조건 0/5 통과."
+  },
+  "charts": [
+    "stage_artifacts/WT_R20260829_004/output/annual_returns.png",
+    "stage_artifacts/WT_R20260829_004/output/equity_curve.png",
+    "stage_artifacts/WT_R20260829_004/output/oos_zoom_chart.png",
+    "stage_artifacts/WT_R20260829_004/output/regime_decomposition.png"
+  ]
+}

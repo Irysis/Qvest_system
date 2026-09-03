@@ -1,0 +1,298 @@
+{
+  "wt_id": "WT-R20260829_016",
+  "designed_by": "alpha-hypothesis",
+  "model_tier": "opus",
+  "designed_at": "2026-08-29",
+  "wt_type": "reinforcement",
+  "axis": "combination",
+  "ledger_ref": {
+    "file": "06_Registry/reinforce_ledger_l1.json",
+    "entry": 0,
+    "base_id": "RP_20260829_122020_9192",
+    "base_grade": "F",
+    "paper_key": "ttl:jt1993",
+    "attempt": "16 of 20",
+    "opened_at": "2026-08-29T22:27:49+0900"
+  },
+
+  "prechecks": {
+    "hypothesis_index_hits": [
+      {"query_kind": "construction", "query": "value_momentum", "hits": 30, "breakdown": "DISTILLED_NEG 30 / PASS 0", "top": ["DIST-AR-027", "DIST-AR-041", "DIST-RAMP-026"], "reading": "가치x모멘텀 결합 구성은 우리 원장에서 전부 음성. 5/20(L-RF-20260829_190619)이 그 계열의 최신·최정밀 판정."},
+      {"query_kind": "construction", "query": "issuance", "hits": 5, "breakdown": "FAIL 1", "top": ["WT-D20260706_009_net_share_issuance"], "reading": "★결정적 — 순발행주식수(Daniel-Titman 2006 / Pontiff-Woodgate 2008, CEI 교차검증)를 우리 envelope(K200∪KQ150 top-25 EW long-only 2005~)에서 이미 실측: canonical PORT_t FULL 0.007 · PRE2017 +0.77 · POST2017 -0.58 · VALUEUP2024 -1.02. 72.3% 종목 zero-signal(주식수 불변)·실 소각기업 3.8%. L-code 명시 '재시도 금지: net-issuance/CEI long-only 대형주 배포'."},
+      {"query_kind": "construction", "query": "asset_growth", "hits": 1, "breakdown": "FAIL 1", "top": ["STR_AS_20260612_135316_470428"], "reading": "Asset Growth 단독 grade F."},
+      {"query_kind": "construction", "query": "accrual / 발생액", "hits": 30, "breakdown": "DISTILLED_NEG 7 · FAIL 1 · PASS 6", "top": ["DIST-AR-031", "DIST-QPM-035", "DIST-AR-021"], "reading": "발생액 계열은 이미 다층 탐색됨(compute_accrual.R 상시 가동). 신규 재료 아님."},
+      {"query_kind": "construction", "query": "turnover / 회전율", "hits": "11 / 3", "breakdown": "DISTILLED_NEG 4+1", "top": ["DIST-QPM-020", "DIST-RAMP-014", "WT-R20260829_003"], "reading": "회전율 축은 본 원장 3/20 에서 승자 사이드 기각(부호 반대·비단조). 11/20·13/20 이 인접 축으로 병렬 진행 중."},
+      {"query_kind": "construction", "query": "MAX", "hits": 24, "breakdown": "FAIL 7 · DISTILLED_NEG 6", "top": ["DIST-AR-060", "DIST-AR-051", "DIST-AR-050"], "reading": "Mdr(최대일간수익) 계열 음성 다수."},
+      {"query_kind": "name", "query": "이상현상", "hits": 2, "breakdown": "IN_PROGRESS 1", "top": ["WT-R20260829_016"], "reading": "본 라운드 자신. 이름 조회는 아무 선례도 못 잡는다 — 구성 조회가 잡은 것이 위 6건(11/20 교훈 준수)."},
+      {"query_kind": "construction", "query": "firm_age / 상장연수 / advertising / 광고", "hits": 0, "breakdown": "-", "top": [], "reading": "상장연수·광고 축은 우리 원장에 선례 0 — 유일하게 처녀 재료였다(그래서 후보 A 로 끝까지 남았다)."}
+    ],
+    "frontier_queue_refs": {
+      "file": "06_Registry/alpha_frontier_queue.json",
+      "schema_version": "2.0",
+      "n_entries": 118,
+      "status_counts": {"open": 92, "claimed": 5, "parked": 21},
+      "matching_open_item": null,
+      "note": "본 라운드는 frontier queue 항목이 아니라 reinforce_ledger_l1 entry[0] attempt 16 에서 나온다. parked(dohoon_decision/dohoon_data_work) 항목 임의 착수 없음 — 큐를 소비하지 않았다."
+    },
+    "owner": "reinforce_ledger_l1 entry[0] attempt 16 (JT1993 강화 레인) · 병렬 in-flight = WT-R20260829_011/013/014/015",
+    "parallel_collision_check": "13/20 = 'Illiquidity, duration and momentum profits: evidence from the Korean stock market'(JDQS 29(1):49) 가 유동성·회전율 축을 이미 점유 중 → 본 라운드가 trading-friction 축을 고르면 병렬 중복. 축 선정에서 배제 근거로 사용."
+  },
+
+  "source_paper_survey": {
+    "title": "Market anomalies in the Korean stock market",
+    "authors": "Han, Lee & Kang (2020)",
+    "journal": "Journal of Derivatives and Quantitative Studies 28(2):3-50",
+    "doi_url": "https://www.emerald.com/jdqs/article/28/2/3/206237/Market-anomalies-in-the-Korean-stock-market",
+    "sample": "2000-01 ~ 2019-06, KOSPI+KOSDAQ 전종목(금융 제외), 데실 H-L, VW/EW 양건, HAC t",
+    "n_anomalies": 148,
+    "categories": {"momentum": 15, "value": 13, "investment": 29, "profitability": 20, "intangible": 17, "trading_friction": 54},
+    "measured_survival_full_sample_vw": {"t>=1.96": "37.8%", "t>=2.78": "27.7%"},
+    "measured_survival_kospi_only_vw": {
+      "note": "★본 라운드의 판단 기준면 — 우리 유니버스(K200∪KQ150)는 KOSPI-only 보다도 더 대형주에 치우친다. 서베이 자신이 microcaps distort the result 라고 명시.",
+      "t>=1.96": {"value": "6/13", "trading_friction": "18/54", "investment": "8/29", "intangible": "4/17", "momentum": "3/15", "profitability": "0/20"},
+      "t>=2.78": {"value": "5/13 (38.46%)", "intangible": "2/17 (11.76%)", "trading_friction": "4/54 (7.41%)", "momentum": "0/15 (0.00%)", "investment": "0/29 (0.00%)", "profitability": "0/20 (0.00%)"},
+      "quoted": "In particular, anomalies related to momentum are barely significant in the restricted sample to the KOSPI, unlike the results obtained when considering the total Korean market."
+    },
+    "table5_kospi_only_significant": [
+      {"var": "Bmj", "cat": "value", "ret_mo_pct": 1.449, "t": 3.527},
+      {"var": "Sp", "cat": "value", "ret_mo_pct": 1.640, "t": 3.503},
+      {"var": "Am", "cat": "value", "ret_mo_pct": 1.444, "t": 3.149},
+      {"var": "Ocp", "cat": "value", "ret_mo_pct": 1.518, "t": 3.128},
+      {"var": "Bm", "cat": "value", "ret_mo_pct": 1.188, "t": 2.943},
+      {"var": "Em", "cat": "value", "ret_mo_pct": -1.075, "t": 2.521},
+      {"var": "Adm", "cat": "intangible", "ret_mo_pct": 1.748, "t": 3.744},
+      {"var": "AgeList", "cat": "intangible", "ret_mo_pct": 1.080, "t": 3.269},
+      {"var": "Rdm", "cat": "intangible", "ret_mo_pct": 1.502, "t": 2.585},
+      {"var": "Ol", "cat": "intangible", "ret_mo_pct": 0.702, "t": 2.137},
+      {"var": "Dtv_1", "cat": "trading_friction", "ret_mo_pct": -1.673, "t": 3.790},
+      {"var": "Dtv_6", "cat": "trading_friction", "ret_mo_pct": -1.491, "t": 3.268},
+      {"var": "Tur_1", "cat": "trading_friction", "ret_mo_pct": -2.008, "t": 3.105},
+      {"var": "Dtv_2", "cat": "trading_friction", "ret_mo_pct": -1.389, "t": 3.054},
+      {"var": "Cei", "cat": "investment", "ret_mo_pct": -1.332, "t": 2.761},
+      {"var": "Pta", "cat": "investment", "ret_mo_pct": -0.966, "t": 2.677},
+      {"var": "R_66", "cat": "momentum", "ret_mo_pct": 1.203, "t": 2.292},
+      {"var": "eps_66", "cat": "momentum", "ret_mo_pct": 0.803, "t": 2.364}
+    ],
+    "structural_limits_of_this_source": [
+      "★A. 상관 미보고 — The paper does not report correlation between anomalies. 2회 독립 확인. ⇒ 본 라운드의 존재 근거였던 'KR 서베이가 보고한 실측 상관을 가져온다' 가 원천적으로 불가능하다.",
+      "★B. 데실 미보고 — reports High-minus-Low returns only, not full decile-level breakdowns. 2회 독립 확인. ⇒ 축1 이 요구하는 승자-레그/데실 앵커를 이 논문에서 뽑을 수 없다. 남는 유일한 수치는 롱숏 헤드라인이고 그것은 축1 의 명시적 금지어다.",
+      "C. KOSPI-only 강임계(2.78) 생존자의 개별 이름을 논문이 나열하지 않는다(Table 3 = 집계 비율, Table 5 = 1.96 기준 목록). 강임계 생존자 11종의 신원은 Table 5 의 t 값 순위에서 역산된 것이며 그 역산 자체는 본 설계의 추론이다."
+    ]
+  },
+
+  "candidates": [
+    {
+      "rank": "A (최종까지 생존 — 그럼에도 HALT)",
+      "title": "상장연수(AgeList) x 가격모멘텀 — 점수수준 z 결합",
+      "family": "intangible / information_uncertainty",
+      "kr_measured_anchor": "Han-Lee-Kang Table 5, KOSPI-only VW: H-L +1.080%/mo, t 3.269 (KOSPI-only 강임계 2.78 통과 2종 중 하나)",
+      "root_paper_traced": "Jiang, Lee & Zhang (2005), Information Uncertainty and Expected Returns, Review of Accounting Studies 10:185-221 — https://link.springer.com/article/10.1007/s11142-005-1528-2 (HXZ2020 intangibles 범주의 Age 변수 원천)",
+      "mechanism": {
+        "agent": "KR 신규상장 종목의 개인 복권수요 매수군 — 리테일이 상장 초기 종목에 서사 프리미엄을 지불한다",
+        "friction": "KR 개별종목 공매도 제약 + 상장 초기 보호예수/유통물량 제한 → 과대평가를 지울 반대편 거래가 구조적으로 부재",
+        "path": "상장연수 누적 → 커버리지·공시이력·이익 실현치 축적으로 서사 프리미엄이 점진 소멸 → 노(老)상장 종목의 월별 상대 우위로 실현"
+      },
+      "why_survived_screening": "가격항 없음(달력변수) ⇒ 5/20 의 CONSTRUCTION_ARTIFACT 기전이 구조적으로 불가 · DIST-AR-041(가격-파생) 범주 밖 · hypothesis_index 선례 0건(처녀 재료) · KR 대형주 패널 강임계 통과",
+      "why_not_selected": "★축1 에서 죽는다. (i) KR 원천(서베이)은 롱숏 헤드라인만 준다 = 축1 금지어. (ii) 원 논문 JLZ2005 는 상장연수를 정보불확실성 대리변수 5종 중 하나로 쓰는 조건화 연구이지 단독 데실 전략 연구가 아니라 승자-레그 앵커가 없다. (iii) 설령 JLZ 의 미국 분위 수치를 쓰면 이 파가 5연속으로 죽은 미국 효과크기 이식으로 회귀한다 — 본 라운드의 선정 원칙 자체를 부정한다. (iv) 기전 축에서도 JLZ2005 의 중심 결과는 정보불확실성이 모멘텀을 증폭시킨다는 것 = 직교축이 아니라 조건화축이며, 조건화 계열은 3/20(회전율)에서 이미 승자 사이드 기각. (v) K200∪KQ150 에서 상장연수는 사실상 정적 성숙도 틸트라 회전율 ~0 이고 no_signal_control(시총 상위 N cap-w 대조)와 구별 불가 위험이 크다."
+    },
+    {
+      "rank": "B",
+      "title": "가치축(Ocp 영업현금흐름/주가 또는 Bmj/Sp) x 모멘텀 — 5/20 의 재시도",
+      "family": "value",
+      "kr_measured_anchor": "Han-Lee-Kang Table 5 KOSPI-only VW: Bmj t 3.527 · Sp 3.503 · Am 3.149 · Ocp 3.128 · Bm 2.943 — 대형주 KR 에서 유일하게 두터운 생존 범주(5/13)",
+      "root_paper_traced": "(미추적 — 아래 사유로 조기 배제)",
+      "why_not_selected": "★5/20 의 직접 재포장이다. 가치축 6종은 전부 X/시장가격 형태이고, 5/20 이 기각한 기전은 ME 분모와 momentum 분자가 같은 가격을 공유한다는 것이다 — 분자를 book 에서 영업현금흐름/매출로 바꿔도 분모가 그대로면 기전이 그대로 산다. 신호수준 rho -0.184(t -8.51) → price-lagged ME 로 +0.085(t +4.34) 부호 반전, 수익수준 비 0.024 << 0.5 = CONSTRUCTION_ARTIFACT. 게다가 서베이는 상관을 아예 보고하지 않으므로 '이번엔 KR 실측 상관을 쓴다' 는 교정이 성립하지 않는다 — 다시 미국 논문에서 전제를 빌려야 하고 그게 5/20 그 자체다. 부수: 서베이 자신의 FF3 검정에서 value 의 A(|ai|)/A(|ri|) 가 가장 낮다 = 가치 이상수익이 FF3 에 가장 많이 흡수된다(HML 포함이라 부분적으로 동어반복이지만 어느 쪽이든 축2 를 긍정 통과시키는 증거는 아니다)."
+    },
+    {
+      "rank": "C",
+      "title": "거래마찰축(Dtv 거래대금 / Tur 회전율) x 모멘텀",
+      "family": "trading_friction",
+      "kr_measured_anchor": "Dtv_1 -1.673%/mo t 3.790 (KOSPI-only 최대 t) · Dtv_6 t 3.268 · Tur_1 t 3.105 · Dtv_2 t 3.054",
+      "root_paper_traced": "(미추적 — 아래 사유로 조기 배제)",
+      "why_not_selected": "4중 배제. (i) 축3 범주: 가격x거래량 파생 = DIST-AR-041 IN_CATEGORY — 8/20~12/20 을 연속 중단시킨 바로 그 범주. (ii) 기답파: 3/20(LS2000 회전율 조건화)이 KR 승자 사이드에서 기각(부호 반대·비단조)했고 그 라운드의 유일한 |t|>2 관측은 시장 더미(KOSDAQ 14.1% vs 65.3%)였다. (iii) 병렬 충돌: 13/20 이 KR 유동성·듀레이션 x 모멘텀 논문을 지금 점유 중. (iv) 유동성 하한 2e8 KRW 가 걸린 K200∪KQ150 에서 거래대금 축은 사실상 규모/유동성 틸트라 no_signal_control 노출이 크다 — measurement-graduation §3 이 명시한 '제약형 롱온리는 형태 자체가 대형주 노출을 담는다'."
+    },
+    {
+      "rank": "D",
+      "title": "투자축 — 종합신주발행(Cei) / 총발생액(Pta) x 모멘텀",
+      "family": "investment",
+      "kr_measured_anchor": "Cei -1.332%/mo t 2.761 · Pta -0.966 t 2.677 — 그러나 서베이 집계는 KOSPI-only 강임계에서 investment 0/29",
+      "root_paper_traced": "Daniel & Titman (2006) / Pontiff & Woodgate (2008) — 발행주식수 축; Sloan (1996) — 발생액 축",
+      "why_not_selected": "★우리 envelope 에서 이미 실측 종결. WT-D20260706_009(L-QPM-20260706_095231): 순발행주식수(split-adjusted -dlog(shares) TTM + CEI 교차검증)를 K200∪KQ150 top-25 EW long-only 로 재서 canonical PORT_t FULL 0.007 · POST2017 -0.58 · VALUEUP2024 -1.02. 신호 자체는 실재(RETIRE 버킷 2.04%/월 vs FLAT 0.95%, rank-IC t 4.30, book 과 Spearman 0.064 고도 직교)했으나 72.3% 종목이 zero-signal 이고 실 소각기업이 3.8% 뿐이라 롱숏이 자연 표현이고 KR 무공매도가 그것을 죽인다. 그 L-code 가 '재시도 금지: net-issuance/CEI long-only 대형주 배포' 를 명시. 발생액 축은 hypothesis_index 30 hits(DISTILLED_NEG 7)로 기답파. 서베이 자신의 집계도 investment 0/29(강임계)."
+    },
+    {
+      "rank": "E",
+      "title": "수익성축 x 모멘텀",
+      "family": "profitability",
+      "kr_measured_anchor": "KOSPI-only: 0/20 at t>=1.96, 0/20 at t>=2.78 (전 범주 중 유일한 완전 소멸)",
+      "root_paper_traced": "-",
+      "why_not_selected": "서베이 자신의 KR 실측이 전멸을 보고한다(1.96 기준에서도 0/20). 추가로 15/20(Ha 2021, ROE x 모멘텀)이 이미 이 축을 점유 중. 착수 근거 부재."
+    }
+  ],
+
+  "selected": {
+    "launch_recommendation": "HALT — 착수 권고하지 않음",
+    "note": "아래는 '만약 착수했다면 무엇을 설계했을 것인가' 의 감사 기록이다. 후보 A 가 1~4 를 실제로 통과했음을 남겨 이 중단이 설계 실패가 아니라 게이트 판정임을 검증 가능하게 한다. 이 블록은 승인된 설계가 아니며 alpha-research 는 이것으로 Step 1~7 을 진행하지 않는다.",
+    "hypothesis_title": "JT1993 강화 16/20 — 상장연수(정보불확실성) x 가격모멘텀 점수수준 결합 [착수 불가]",
+    "hypothesis_description": "KR 대형주 패널(Han-Lee-Kang 2020, KOSPI-only VW)에서 강임계(|t|>=2.78)를 통과하는 11개 이상현상 중 유일하게 가격항을 포함하지 않는 축은 상장연수(AgeList, +1.080%/mo, t 3.269)다. 가격을 공유하지 않으므로 5/20 을 죽인 구성 아티팩트가 구조적으로 발생할 수 없다. 이 축을 가격모멘텀과 점수수준(z 랭크)에서 결합해 실투형 좌표의 beta-통제 alpha 를 +5.14%/yr 에서 +18.39%/yr 로 끌어올릴 수 있는지 검정하려 했다.",
+    "mechanism": {
+      "agent": "KR 신규상장 종목의 개인 복권수요 매수군(상장 초기 서사 프리미엄을 지불하는 리테일)",
+      "friction": "KR 개별종목 공매도 제약 + 상장 초기 보호예수/유통물량 제한 → 과대평가를 소거할 반대편 거래가 구조적으로 부재하고, 상장 성숙까지 수년이 걸려 차익거래 보유기간이 길다",
+      "path": "상장연수 누적 → 애널리스트 커버리지·공시 이력·이익 실현치가 축적되며 서사 프리미엄이 점진 소멸 → 노(老)상장 종목의 월별 상대 우위로 실현. 모멘텀과 달리 정보의 도착이 아니라 정보의 축적된 양이 가격을 움직인다"
+    },
+    "falsification": {
+      "observable": "1급(전제 검정) = 상장연수 z 와 모멘텀 z 의 KR 순위상관을 contemporaneous 사양과 price-lagged 사양 두 가지로 산출했을 때 두 값이 사실상 동일해야 한다(상장연수에는 가격항이 없으므로 사양 교체가 상관을 바꿀 수 없다). 두 사양에서 상관이 유의하게 달라지면 상장연수 구현에 가격 경유 경로가 숨어 있다는 뜻이고 그 경우 5/20 과 같은 구성 아티팩트로 판정한다. 2급 = 결합 arm 의 beta-통제 alpha 가 상장연수 단독 arm 대비 증분 <= 0 이면 모멘텀 기여 부재(모멘텀이 상장연수에 포섭됨)로 기전 기각.",
+      "field_dictionary_refs": [
+        "A1_RAWDATA_OHLCVS_daily (Date/Ticker/Ret — 모멘텀 형성 및 수익 실현, FIELD, availability 일배치 T+0)",
+        "A2_universe_krx_monthly (Ticker 최초 등장 월 = 상장 시점 대리, FIELD, 월말 스냅샷)",
+        "A3_universe_support_membership_panels (K200/KQ150 멤버십 — 유니버스 확정, FIELD)",
+        "A9_liquidity_avgtv20_convention (20일 평균 거래대금 >= 2e8 KRW 유동성 하한, FIELD)",
+        "A4_benchmark_kospi200 (beta-통제 alpha 의 벤치 계열 — 5/20 이 basis 가 PORT_t 를 46% 옮긴다고 실측했으므로 basis 라벨 의무)"
+      ],
+      "field_dictionary_gap_declared": "★상장연수의 정본 리프가 field_dictionary(ast_field_map_v0.json, 58 리프그룹)에 없다. A2_universe_krx_monthly 의 Ticker 최초 등장(월말 스냅샷)으로 대리해야 하는데 그러면 패널 시작 이전에 상장된 종목의 상장연수가 좌측절단(left-censored)되어 전 구간에서 하향 압축된다. 이것은 신호 정의 자체의 결함이며 축1 과 독립적으로 이 축을 약화시킨다 — 정직 신고.",
+      "reject_if": "1급: contemporaneous vs price-lagged 상관 차이가 유의하면 CONSTRUCTION_ARTIFACT 로 즉시 중단(성과 측정 이전, 결과 무관 선보고). 2급: 결합 arm 증분 beta-통제 alpha <= 0."
+    },
+    "regime_scope": {
+      "holds_in": ["KR IPO 활황 직후 코호트가 유니버스에 다수 존재하는 국면(신규상장 붐 이후 2~5년)", "리테일 거래비중이 높은 확장 국면"],
+      "weakens_or_reverses_in": ["위기 국면 — 유동성 청산이 성숙도와 무관하게 전 종목을 동시에 때리므로 상장연수 축의 단면 정보가 압도된다", "신규상장이 장기간 정체된 국면 — 유니버스 내 상장연수 분산 자체가 소멸해 축이 상수가 된다(K200 은 이미 이 상태에 가깝다)"],
+      "boundary_rationale": "기전이 상장 초기 서사 프리미엄의 소멸이므로 경계는 두 곳에서 도출된다. (a) 프리미엄을 지불할 주체(리테일)가 물러난 국면에서는 소멸시킬 프리미엄 자체가 없다. (b) 유니버스에 젊은 코호트가 없으면 축이 상수가 되어 z 결합에서 정보를 0 만큼 기여한다 — 이것이 K200∪KQ150 에서 이 축이 정적 성숙도 틸트로 퇴화하는 이유이고 no_signal_control 노출의 근원이다. 보편타당을 주장하지 않는다."
+    }
+  },
+
+  "gate_evaluation": {
+    "axis1_winner_leg_anchor": {
+      "verdict": "FAIL — 추출 불가",
+      "required": "선택 축의 원 논문에서 승자 레그 또는 데실 수준 앵커. 롱숏 헤드라인 금지어. 외부 승자 몫 곱셈 금지(12/20 선례). ratio < 0.15 = 중단.",
+      "finding": "KR 원천(Han-Lee-Kang 2020)은 데실 H-L 만 보고하고 데실별 분해를 제공하지 않는다(2회 독립 확인). 즉 KR 에서 얻을 수 있는 유일한 수치가 축1 의 명시적 금지어다. 원 논문 경로(JLZ2005)는 정보불확실성 조건화 설계라 단독 상장연수 데실 롱레그를 보고하지 않으며, 설령 미국 분위 수치를 쓰면 이 파가 5연속으로 죽은 미국 효과크기 이식으로 회귀한다.",
+      "illegitimate_best_case_arithmetic": {
+        "note": "★아래 수치는 금지된 계산이다(KR H-L x 외부 승자 몫). 정당한 앵커가 아님을 못박기 위해, 그리고 설령 우회했더라도 어디에 떨어지는가를 남기기 위해 기재한다. 인용 금지.",
+        "required_incremental_alpha_pct_yr": 13.25,
+        "identity": "기대 t = ratio x 2.8016 · 검정력 = pnorm(ratio x 2.8016 - 1.96)",
+        "AgeList_HL_pct_yr": 12.96,
+        "cases": [
+          {"assumed_winner_share": 0.20, "winner_leg_pct_yr": 2.592, "ratio": 0.1956, "expected_t": 0.548, "power_pct": 7.9},
+          {"assumed_winner_share": 0.30, "winner_leg_pct_yr": 3.888, "ratio": 0.2934, "expected_t": 0.822, "power_pct": 12.8},
+          {"assumed_winner_share": 0.50, "winner_leg_pct_yr": 6.480, "ratio": 0.4891, "expected_t": 1.370, "power_pct": 27.8}
+        ],
+        "reading": "정당화 불가한 최선의 가정(승자 몫 50%)에서조차 ratio 0.489 · 검정력 27.8% 로 미결이 최빈 결말인 구간(0.15~0.70)이다. 통상 착수 구간(ratio>=0.70)에 닿으려면 승자 몫 71.6% 를 가정해야 하는데 모멘텀 후속 문헌 전반의 실측 승자 몫은 13.2~52% 였다(8/20·10/20 교차논문 5편 실측). 즉 우회했어도 결론은 조건부 착수이지 통상 착수가 아니다."
+      }
+    },
+    "axis2_beta_compensation": {
+      "verdict": "MIXED — 후보 A 는 행태 기전으로 통과, 그러나 원문이 단독 위험조정 수익을 보고하지 않아 확정 불가",
+      "survey_side": "서베이는 FF(1993) 절편 alpha_FF3 · GRS F · A(|ai|)/A(|ri|) 를 범주 수준에서 보고한다 = 위험조정 수익 보고 요건은 범주 수준에서 충족. 다만 개별 축(AgeList)의 alpha_FF3 는 KOSPI-only 패널에서 확인 불가.",
+      "rational_vs_behavioral": "후보 A(상장연수) = 행태(리테일 서사 프리미엄 + 공매도 제약). ★부호가 이를 지지한다 — 노(老)상장 우위(+1.080)는 추정위험 프리미엄(젊은 기업이 더 벌어야 함)과 반대 방향이라 합리적 추정위험 보상으로 읽을 수 없다. 반면 후보군 중 Ol(영업레버리지, Novy-Marx 2011)은 명시적 합리·위험 기반이라 9/20(SS2007) 선례로 차단 대상이며 서베이 KOSPI-only t 2.137 로 강임계도 미달이다. 후보 B(가치)는 서베이 자신의 A(|ai|)/A(|ri|) 가 가장 낮아 FF3 흡수가 가장 크다 — HML 포함으로 인한 부분 동어반복을 감안해도 축2 를 긍정 통과시키는 증거는 아니다."
+    },
+    "axis3_category": {
+      "verdict": "후보 A = OUT_OF_CATEGORY (통과) / 후보 C = IN_CATEGORY (차단)",
+      "dist_ar_041": "DIST-AR-041 = family=momentum, tags MOMENTUM/KR_LONGONLY/NON_RETURN, supporting 17건 L-code — 가격·수익 파생 모멘텀 계열 탐색지도(DISTILLED_NEG).",
+      "determination": [
+        "후보 A 상장연수: 달력 변수. 가격·수익·거래량 어느 것도 입력이 아니다 ⇒ OUT_OF_CATEGORY. 명시 판단.",
+        "후보 B 가치(X/시장가격): 범주 밖이지만 가격 분모를 공유하므로 5/20 아티팩트 기전이 그대로 적용된다 — 범주 통과가 면죄가 아니다.",
+        "후보 C 거래마찰(Dtv/Tur/Ami/Ivol/Mdr): 가격x거래량 파생 ⇒ IN_CATEGORY, 8/20~12/20 연속 중단 사유와 동일.",
+        "후보 D 발행/발생액: OUT_OF_CATEGORY 이지만 우리 envelope 실측으로 이미 종결(PORT_t 0.007)."
+      ]
+    },
+    "target_fixed_before_anchor": true,
+    "target_fixed_before_anchor_note": "표적(KR 대형주 패널에서 가격항을 포함하지 않으면서 강임계를 통과하는 축)은 Table 5 의 개별 t 값을 보기 전에, 서베이의 KOSPI-only 범주 집계와 5/20 의 아티팩트 기전만으로 확정했다. Table 5 는 그 표적에 해당하는 축이 무엇인지 조회하는 데만 쓰였고 유리한 t 를 보고 표적을 바꾸지 않았다(8/20 이 자백한 사후 표적 교체를 회피)."
+  },
+
+  "premise_test_design_1st_class": {
+    "status": "설계 완료 · 미실행(HALT 로 인해 측정 예산 미집행)",
+    "purpose": "5/20 과 동일한 기계/경제 분해로 선택 축과 모멘텀의 KR 상관이 가격 공유 아티팩트가 아님을 성과 이전에 확인한다. 결과 무관 선보고.",
+    "design": [
+      "층1 신호수준: rho_Spearman(z_axis, z_momentum) 을 (a) contemporaneous 사양 (b) price-lagged 사양(축의 가격 성분을 모멘텀 형성창 이전 시점 가격으로 고정) 두 가지로 산출, NW t 병기.",
+      "층2 수익수준: 두 축 각각의 데실 스프레드 수익 시계열 간 상관을 같은 두 사양으로 산출.",
+      "판정: 비 = |rho_price_lagged| / |rho_contemporaneous| < 0.5 이면 CONSTRUCTION_ARTIFACT → 결합 근거 소멸 → 그 자체로 중단 사유.",
+      "★절단면 병기 의무: 전 구간 단일 수치 금지. 축 분위 D1~D10 별 rho 프로파일 + 연도별 rho 를 함께 산출한다 — 5/20 에서 전 구간이 -0.184 인데 분위 양끝(value D1 rho_b +0.413 · D10 +0.343)에서 더 강하게 뒤집혔다. 소비가 분위 절단(top-25)이므로 절단면이 판정면이다.",
+      "★후보 A 특이사항: 상장연수에는 가격항이 없으므로 두 사양의 rho 가 사실상 같아야 한다. 즉 이 검정은 후보 A 에 대해 통과 예상이며 검정의 실질 기능은 아티팩트 적발이 아니라 구현에 숨은 가격 경유 경로(예: 시총 대리로 상장연수를 추정하는 오구현)의 적발이다. 이 비대칭을 사전 선언한다 — 통과를 강건성의 증거로 과대해석하지 않기 위해서."
+    ]
+  },
+
+  "layer1_boundary_selfcheck": {
+    "verdict": "PASS (설계 수준)",
+    "checks": [
+      "결합 형태 = 점수수준 z 랭크 결합만. 수익 블렌드(w_a*r_a + w_b*r_b) 금지 — 5/20 에서 AMP2013 식 (3) COMBO 가 수익수준 롱숏 블렌드라 reference_only_not_verdict_bearing 으로 강등된 선례를 승계.",
+      "완성 모듈 배합 아님 — 2계층(전략 로테이션 Track2) 소관인 module_catalog 소비 0건.",
+      "롱숏 구성 금지 준수 — 양 arm 모두 실투형(long-only, <=25종, K200∪KQ150, 15bps, sigma w=1, 유동성 >=2e8). 대조군(선택 축 단독)도 데실·롱숏·>25종으로 잡지 않는다.",
+      "오버레이 미적용.",
+      "인접 최상위 전략 좌표는 인용만 — STR_AS_20260612_154914_1055315(PORT_t 2.52) · STR_AS_20260612_161342_1312338(2.35) · STR_AS_20260709_074129_30048(2.58). 어떤 산출물도 읽거나 쓰지 않았다."
+    ],
+    "novelty_correlation_obligation": {
+      "status": "미이행(측정 구간 진입 전 중단)",
+      "spec": "결합 arm 의 월별 액티브 수익 시계열과 위 3개 인접 최상위 전략의 액티브 수익 시계열 간 상관을 최종 보고에 병기. |cor| 가 높아 사실상 동일 좌표로 수렴하면 신규성 없음으로 판정. gross 상관이 아니라 액티브(-BM) 상관으로 재야 한다 — measurement-graduation 6절: KR long-only 슬리브는 gross 0.78~0.81 이지만 active 는 0.53 이다."
+    }
+  },
+
+  "idiosyncratic_variance_method": {
+    "status": "설계만 · 미실행(risk/optimizer 스폰 근거 없음)",
+    "rule": "optimizer 조건부 — 특이분산 비중 < 15% 이면 EW 확정, optimizer 미스폰.",
+    "definition": "risk-research 가 산출한 Sigma = B Omega B' + D 에서 후보 비중 w 하의 특이분산 비중 = (sum_i w_i^2 * D_ii) / (w' Sigma w). w 는 EW 기준(w_i = 1/N, N<=25)으로 평가한다 — 비중을 정하기 전에 비중 결정이 의미 있는지를 판정해야 하므로 EW 를 평가점으로 고정한다(순환 회피).",
+    "prior": "5/20 실측에서 book 기준 특이위험 8.5% 였다(<15%). 즉 사전 확률상 이 라운드도 EW 확정으로 떨어질 공산이 크고, 사이징이 건드릴 표면적이 8.5% 뿐이라는 5/20 의 결론이 그대로 승계된다.",
+    "role_boundary": "본 에이전트는 이 값을 산출하지 않는다 — 정의만 남긴다. 공분산·비중은 risk/optimizer 소관."
+  },
+
+  "self_adversarial_challenge": {
+    "protocol": "v8.2 축소판 — 설계 축 4문 + 중단 편의성 1문. finalize 직전 자기 반론 후 ACCEPT/PARTIAL/REBUTTAL 분류.",
+    "items": [
+      {
+        "id": "SAC-1",
+        "axis": "메커니즘이 사후 서술(story-fitting)인가",
+        "challenge": "후보 A 의 리테일 서사 프리미엄 소멸 기전은 AgeList 의 부호(노상장 우위)를 본 뒤 그 부호에 맞춰 지어낸 이야기 아닌가. 추정위험 프리미엄이라면 반대 부호가 나왔을 텐데 그 경우엔 추정위험 보상이라고 썼을 것이다 — 어느 부호가 나와도 설명 가능한 서술은 기전이 아니다.",
+        "classification": "PARTIAL ACCEPT",
+        "resolution": "부호를 먼저 본 것은 사실이다. 다만 두 서술은 검정 가능하게 구분된다 — 추정위험 보상이면 젊은 코호트의 실현 변동성·베타가 높아야 하고, 서사 프리미엄 소멸이면 젊은 코호트의 밸류에이션 배수가 상장 후 단조 하락해야 한다. 이 구분 검정을 반증조건에 넣지 않은 것은 설계 결함이며 인정한다. 착수하지 않으므로 미결로 남기되 부활 시 필수 조건으로 기록한다."
+      },
+      {
+        "id": "SAC-2",
+        "axis": "반증조건이 성과 동어반복으로 위장됐나",
+        "challenge": "2급 반증조건 '결합 arm 의 beta-통제 alpha 증분 <= 0 이면 모멘텀 기여 부재' 는 결국 성과가 낮으면 기각한다는 말 아닌가.",
+        "classification": "PARTIAL ACCEPT",
+        "resolution": "2급은 실제로 성과 인접 조건이며 단독으로는 부수 관측 요건을 만족하지 못한다. 그래서 1급(전제 검정 — contemporaneous vs price-lagged 상관 사양 대조)을 성과보다 먼저 두었고 그것이 진짜 반증축이다. 1급은 성과와 무관한 신호 구조 관측이며 field_dictionary 리프(A1/A2)로 확인 가능하다. 다만 2급을 반증이라 부른 것은 과칭이고 증분 진단이 정확하다 — 문구를 고치지 않고 신고한다(No Silent Override)."
+      },
+      {
+        "id": "SAC-3",
+        "axis": "국면 경계가 메커니즘에서 도출됐나(사후 데이터 관찰 아닌가)",
+        "challenge": "weakens_or_reverses_in 의 '신규상장 정체 국면에서 축이 상수가 된다' 는 데이터를 보고 쓴 것 아닌가.",
+        "classification": "REBUTTAL",
+        "resolution": "데이터를 보지 않고 기전에서 직접 도출된다 — 프리미엄을 지불하는 주체(젊은 코호트의 리테일 수요)가 유니버스에 없으면 소멸시킬 프리미엄이 없다는 것은 항등에 가깝다. 오히려 이 경계가 이 축의 치명상을 스스로 지목한다: K200∪KQ150 은 이미 성숙 종목 집합이라 경계 조건에 상시 근접해 있다. 경계가 기전을 죽이는 방향으로 작동했다는 점에서 사후 합리화가 아니다."
+      },
+      {
+        "id": "SAC-4",
+        "axis": "hypothesis_index 에 settled-negative 로 있는 가설의 재포장인가",
+        "challenge": "이 라운드 전체가 5/20(가치x모멘텀)의 재포장 아닌가. 그리고 처음에 가장 유망해 보였던 발행주식수 축은?",
+        "classification": "ACCEPT (그리고 그것이 이 중단의 절반이다)",
+        "resolution": "구성 조회가 두 건을 잡았다. (i) value_momentum 구성 = 30 hits 전부 DISTILLED_NEG — 후보 B 를 재포장으로 배제. (ii) issuance 구성 = WT-D20260706_009 순발행주식수, 우리 envelope 실측 PORT_t 0.007, L-code 에 재시도 금지 명시 — 설계 초기에 가장 구조적으로 깨끗해 보였던 후보 D 를 배제. 이름 조회(이상현상)로는 둘 다 안 잡혔다. 11/20 교훈(구성으로 조회)이 이 라운드에서 두 번 발화했다."
+      },
+      {
+        "id": "SAC-5",
+        "axis": "중단이 편의적인가 — 게이트를 핑계로 어려운 라운드를 회피하는가",
+        "challenge": "후보 A 는 강임계 통과·가격 무관·범주 밖·선례 0 으로 4/5 축을 통과했다. 축1 하나로 중단하는 것은 과잉 아닌가.",
+        "classification": "PARTIAL ACCEPT",
+        "resolution": "축1 단독이면 과잉일 수 있다. 그러나 세 겹이다. (a) 축1: KR 원천이 롱숏 헤드라인만 제공 = 명시적 금지어이고 우회는 12/20 이 실격시킨 외부 승자 몫 곱셈이다. (b) 라운드의 존재 근거 소멸: 이 라운드는 미국 논문 전제 대신 KR 서베이 실측 상관을 쓴다로 정의됐는데 서베이가 상관을 아예 보고하지 않는다(2회 확인) — 전제를 다시 미국에서 빌리면 5/20 반복이다. (c) 기전 축: AgeList 의 원 논문(JLZ2005)은 그것을 모멘텀 조건화 변수로 쓰며 조건화 계열은 3/20 에서 이미 기각됐다. 셋 중 어느 하나만 있었으면 조건부 착수를 권했을 것이다. ★그리고 정직하게: 우회했더라도 최선 가정에서 검정력 27.8% 였다."
+      }
+    ],
+    "forbidden_vocabulary_check": "미미 / 관행적 / 보수적이면 OK 류 합리화 어휘 미사용 — 자기 점검 완료."
+  },
+
+  "challenge_flags": [
+    "대안 보관 A — 상장연수 x 모멘텀: 부활 조건 = (i) 상장연수 정본 리프의 field_dictionary 등재(현재 A2 최초등장 대리는 좌측절단 결함) + (ii) KR 데이터로 자체 산출한 승자-레그 앵커(외부 승자 몫 곱셈이 아니라 우리 패널의 데실 분해) + (iii) SAC-1 이 지목한 추정위험 vs 서사프리미엄 구분 검정을 반증조건에 편입. 셋 다 갖추면 조건부 착수 가능(검정력 최빈 미결임을 사전등록).",
+    "대안 보관 B — 가치 x 모멘텀 재시도는 5/20 의 next_probe C5 value 잔차화 모멘텀(가격 공유항을 제거한 뒤에도 모멘텀이 독립 기여하는지)으로만 정당하다. 결합(combination)이 아니라 잔차화(multifactor) 축이며 그것이 5/20 이 스스로 지목한 유일한 후속이다.",
+    "★상위 처분 escalate — 이 서베이가 우리에게 준 가장 큰 정보는 어떤 이상현상도 아니다. KOSPI-only 강임계에서 모멘텀 15종 중 0종이 생존하고(investment·profitability 와 함께 완전 소멸) 148종 중 15종(10.1%)만 재현된다는 KR 실측이다. 우리 유니버스는 KOSPI-only 보다 더 대형주 쪽이다. 이는 base(JT1993) 의 F 와 강화 15회 연속 실패를 외부·독립·KR 실측으로 설명한다 — 모멘텀은 KR 에서 소형주 현상이고 우리 envelope 는 그것을 담을 수 없다. attempt 17 을 시도할 것인가 이 base 의 강화를 종결할 것인가는 Q-Lead/도훈 판단 사항이며 본 에이전트 권한 밖이다.",
+    "detect_lookahead 음성 커버리지 미해결 — 5/20 이 비선언 idiom 3종(전 표본 mean · shift(-1) · 비중 재정규화) 0/3 미발화를 실측했다. 본 라운드가 측정에 진입하지 않아 재확인하지 못했으나 미해결 상태로 승계된다.",
+    "벤치 basis 라벨 의무 승계 — 5/20·6/20 이 동일 패턴으로 상류 basis 와 forge 권위 basis 가 PORT_t 를 46% / 13.7배 옮긴다고 실측했다. 향후 이 원장의 어떤 라운드든 상류 PORT_t 를 권위 값과 같은 양으로 인용하면 안 된다."
+  ],
+
+  "verdict": "economic_void",
+  "void_rationale": "결합(combination)의 경제적 내용은 두 축이 서로 다른 정보를 담는다는 것이고, 본 라운드는 그 전제를 미국 논문이 아니라 KR 서베이의 실측에서 가져오도록 정의됐다. 그 전제가 지정 원천에서 구성 불가능하다. 세 겹으로 확인된다. (1) 서베이는 이상현상 간 상관을 전혀 보고하지 않는다(2회 독립 확인) — 가져올 KR 실측 상관이 존재하지 않으므로 전제를 다시 미국 논문에서 빌려야 하고 그것이 정확히 5/20 의 실패다. (2) 서베이는 데실 H-L 만 보고하고 데실별 분해가 없다(2회 독립 확인) — 축1 이 요구하는 승자-레그 앵커를 KR 에서 뽑을 수 없고 유일하게 남는 수치가 축1 의 명시적 금지어(롱숏 헤드라인)이며 외부 승자 몫을 곱하는 우회는 12/20 이 실격시킨 행위다. (3) 서베이의 대형주 패널(KOSPI-only VW)에서 강임계 |t|>=2.78 를 통과하는 11개 축을 전수 열거하면 예외 없이 셋 중 하나로 떨어진다 — 가격 분모를 모멘텀과 공유(value 5종 + Adm = 6종, 5/20 의 CONSTRUCTION_ARTIFACT 기전 그대로 적용) / 가격x거래량 파생으로 DIST-AR-041 IN_CATEGORY 이며 3/20 에서 기답파이고 13/20 과 병렬 충돌(Dtv_1·Dtv_6·Tur_1·Dtv_2 = 4종) / 원 논문이 스스로 모멘텀 조건화 변수로 규정(AgeList — JLZ2005, 조건화 계열은 3/20 기각). 강임계 미달 축 중 구조적으로 가장 깨끗했던 발행주식수(Cei)는 우리 envelope 에서 이미 실측 종결됐다(WT-D20260706_009, canonical PORT_t 0.007, 72.3% zero-signal, L-code 에 재시도 금지 명시). 결론: 메커니즘이 성립할 축이 남지 않는다. 억지 설계를 하지 않고 정직 산출한다.",
+
+  "halt_leaves_behind": [
+    "KR 대형주 패널의 이상현상 생존 지도(Han-Lee-Kang Table 3/5 발췌, KOSPI-only VW 기준) — 향후 KR 축 선정의 재사용 가능한 사전분포. 특히 강임계 생존 11종의 전수 분류(가격공유 6 / 가격·거래량파생 4 / 조건화 1)는 이 원장뿐 아니라 KR 단면 리서치 전반의 착수 필터로 쓸 수 있다.",
+    "가격-공유 아티팩트 필터의 일반화 — 5/20 이 value 1종에서 발견한 기전이 분모가 시장가격인 모든 축으로 확장 적용됨을 보였다. Ocp/Sp/Bmj/Am/Bm/Adm/Rdm 7종이 이 필터 하나로 사전 배제된다. 매번 측정해서 알아낼 필요가 없다.",
+    "축1 의 구조적 한계 노출 — 서베이·리플리케이션 논문은 원리적으로 축1(승자-레그 앵커)을 만족시킬 수 없다(H-L 만 보고하는 것이 그 장르의 표준). 앞으로 서베이/리플리케이션 논문을 강화 근거 논문으로 지정할 때는 착수 전에 이 논문이 데실 분해를 보고하는가를 먼저 확인해야 한다. 13/20~15/20 의 KR 논문 3편은 단일 연구라 이 문제가 없다.",
+    "측정 예산 0 소모 — 4번째 착수 전 중단(8/20·9/20·10/20·12/20 에 이어)."
+  ],
+
+  "handoff": {
+    "to": "alpha-research",
+    "next_steps": "진행 금지. verdict = economic_void 수신 시 Step 1~7 및 5단계 AST 구성 착수 금지(alpha_research_init.md pipeline Step 0 수신 검수 기준) — Q-Lead escalate.",
+    "escalation": "Q-Lead 판단 요청 2건 — (1) 본 라운드를 attempt 16 소진으로 기록하고 17 로 넘어갈 것인가, 아니면 근거 논문을 데실 분해를 보고하는 단일 연구로 교체해 재설계할 것인가. (2) 서베이가 준 KR 실측(KOSPI-only 강임계 momentum 0/15 · 148종 중 10.1% 재현)을 근거로 JT1993 base 강화 레인 자체의 존속 여부를 도훈 판단에 올릴 것인가."
+  }
+}

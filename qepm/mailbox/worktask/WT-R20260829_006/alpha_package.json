@@ -1,0 +1,3645 @@
+{
+  "task_id": "WT-R20260829_006",
+  "as_of_date": "2026-08-28",
+  "forecast_horizon": "1M",
+  "spec_version": "ast_v1.1",
+  "pit": {
+    "sig_date": "2026-08-28",
+    "decision_ts": "2026-08-28"
+  },
+  "hypothesis": {
+    "statement": "KR 개별주 모멘텀(기저 JT1993 6-6 데실 롱숏, essence F)의 약세는 신호 정의의 결함이 아니라 **전달식의 첫 항이 KR 에서 비어 있기 때문**이라는 기전 가설을 검정한다. EL2022 eq.(9): E[π^mom] = Σ_f cov(r^f_{−t}, r^f_t)·σ²_{β^f} + (교차항·잔차항·평균분산항). 즉 개별주 모멘텀 이익은 (팩터 수익 자기상관) × (팩터 베타의 횡단면 분산) 의 합이며, 앞 항이 0 이면 개별주 모멘텀은 신호 품질과 무관하게 죽는다. 따라서 우리 기저의 약세는 두 갈래로 갈린다 — (a) 개별주 모멘텀 신호 자체가 약하다(강화 2/20 이 도달한 귀속) vs (b) 개별주 모멘텀은 팩터 모멘텀의 그림자인데 KR 팩터들의 자기상관이 약하다. 본 시도는 (a)/(b) 를 가른다. ★이것은 알파 청구가 아니라 **기전 청구의 검정**이며, 설계는 성과 최대화가 아니라 판별로 잡혀 있다. 의사결정 가치: 1급이 음(-)이면 (b) 가 확정되고, 개별주 모멘텀 신호 변형을 계속 소싱하는 후속 라운드(DIST-AR-041 이 이미 17건 L-code 로 저EV 판정)는 근거를 완전히 잃는다. 1급이 양(+)이고 2급 스패닝이 성립하면 (b) 가 확정되되 경로가 열린다 — 팩터 수준에서 재료를 찾아야 한다는 뜻이다. 1급이 양(+)인데 2급 스패닝이 실패하면 (a) 로 회귀하며 개별주 모멘텀에 팩터 모멘텀 밖 정보가 있다는 뜻이다(EL2022 의 KR 이식 실패).",
+    "mechanism": {
+      "agent": "**지속적 스타일-단위 수요를 가진 투자자군**과 **그 수요를 상쇄하지 않는 국내 롱온리 차익거래자**. KR 실명: (i) 수요 측 — 스타일 단위로 지속 유입·유출되는 외국인·기관 배분 흐름(A6_investor_flow_stock_daily · FDB-B4_registry_investor_flow_monthly 의 INV01~INV06 계열이 관측하는 주체)과 그 반대편의 개인 순매수 군집(INV07_Retail_Contrarian). (ii) 차익 측 — 국내 연기금·공모펀드 등 롱온리 mandate 기관. Kozak-Shleifer-Vishny(2018) 틀에서 수요는 AR(1) 지속성 φ 를 갖고, 차익거래자는 그 수요 중 **공통 공분산에 정렬된 성분**만 상쇄하지 못한다. ★정직 고지: '감정수요 투자자' 는 KR 에서 직접 관측되지 않으며 INV 계열 flow 로 **대리**된다. EL2022 자신도 Baker-Wurgler 지수로 대리했고 게재판에서 그 실증절을 뺐다. 주체 특정의 강도는 friction·path 축보다 약하다.",
+      "friction": "**왜 지워지지 않는가 — 셋이 겹친다.** ① KR 공매도 제약: 개별주 공매도 금지 구간이 반복되고 대차 가용성이 제한되어, 팩터의 숏 레그를 직접 실행하는 상쇄 거래 자체가 성립하지 않는다(우리 고정 축이 long-only 인 것도 같은 현실의 반영이다). ② EL2022 의 근-차익 논리: 자기상관을 상쇄하려면 **고유값이 큰(=체계적) 팩터 위험**을 떠안아야 한다. 위험을 지지 않고 지울 수 있는 것(저고유값 팩터)은 이미 지워졌고, 남은 것은 위험을 져야만 지울 수 있는 것이다 — 그래서 자기상관이 고고유값 쪽에 집중된다(EL2022 Table 8: 상위 10 PC t 6.08 vs 하위 7 PC t 2.15). ③ 롱온리 mandate 의 추적오차 예산이 스타일 편차를 되돌리는 속도를 구조적으로 제한한다.",
+      "path": "**어떻게 수익이 되나 — 항등식이지 서술이 아니다.** 종목 수익이 R_{s,t} = Σ_f β^f_s r^f_t + ε_{s,t} 로 생성되면, 과거 12개월 승자는 최근 잘한 팩터에 양(+)으로, 패자는 음(-)으로 적재된다. 횡단면 모멘텀 전략의 기대 이익은 EL2022 eq.(9) 로 정확히 분해된다: **Σ_f cov(r^f_{−t}, r^f_t)·σ²_{β^f}** (팩터 자기상관 × 베타 분산) + Σ_{f≠g} cov(r^f_{−t}, r^g_t)·cov(β^g,β^f) (교차항 — EL2022 부록 A.3 이 부호 동시성 요구 때문에 무시가능 실증) + 잔차 자기상관 + 평균수익 분산. 시점·형태: 팩터 수익이 t−12~t−1 에 양(+)이면 t 월에도 평균 51bp(vs 하락년 뒤 6bp) 로 이어지고(EL2022 Table 2, 게재판 기울기 0.45%/월 t 4.22), 그 지속이 승자 종목의 유지된 팩터 노출을 통해 다음 달 수익으로 실현된다. 역으로 자기상관이 동시에 음으로 꺾이면 곱이 뒤집혀 모멘텀이 크래시한다(WP §4.5 probit z −6.78). ⇒ 이 경로가 KR 에서 끊긴 지점을 찾는 것이 본 라운드다."
+    },
+    "falsification": [
+      {
+        "fields": [
+          "FDB-B6_fdb_daily_store",
+          "FDB-B1_registry_fundamental_quarterly",
+          "FDB-B2_registry_rawdata_price_daily",
+          "FDB-B3_registry_consensus_daily",
+          "FDB-B4_registry_investor_flow_monthly",
+          "FDB-B5_registry_macro"
+        ],
+        "expectation": "1급(전제): pooled 기울기 β̂ ≤ 0 **또는** |t(β̂)| < 1.96 → EL2022 의 전제가 KR 에 없다. 이 경우 '개별주 모멘텀 약세' 는 팩터 모멘텀 부재의 **따름정리**로 귀속되며, 개별주 모멘텀 신호 변형 소싱의 EV 가 0 임이 확정된다."
+      },
+      {
+        "fields": [
+          "FDB-B7_ic_history_monthly",
+          "FDB-B8_daily_ic_panel_fq055"
+        ],
+        "expectation": "2급(스패닝): TS-FMOM 을 통제한 뒤에도 개별주 모멘텀 절편의 |t| ≥ 1.96 → spanned 아님 = **EL2022 의 KR 이식 실패**(개별주 모멘텀에 팩터 모멘텀 밖 정보가 있다). 귀속은 (a) 로 회귀. | 역방향 의무: 역방향 필수 — TS-FMOM 을 종속으로, 개별주 모멘텀 요인들을 독립으로. EL2022 에서는 이 방향이 성립하지 않았다(FMOM α t 4.30, 최저 4.07). KR 에서 **양방향 모두 spanned** 로 나오면 그건 스패닝이 아니라 두 계열이 같은 것을 재고 있다는 뜻이며 판정 무효."
+      },
+      {
+        "fields": [
+          "A1_RAWDATA_OHLCVS_daily",
+          "A3_universe_support_membership_panels",
+          "A4_benchmark_kospi200"
+        ],
+        "expectation": "(c) σ²_β 전달식: ★전달식 두 번째 요소 σ²_{β^f}(팩터 베타의 횡단면 분산)를 KR 에서 산출한다. 이것이 **(b) 안을 다시 두 갈래로 가른다**: ρ_auto > 0 인데 σ²_β 가 작아 전달이 안 되는 것이면 귀속은 '자기상관 부재'가 아니라 '전달 실패'다. 반대로 σ²_β 가 충분한데도 개별주 모멘텀이 없다면 첫 항이 범인이라는 귀속이 강화된다. EL2022 eq.(9)/(10) 을 그대로 쓴다."
+      },
+      {
+        "fields": [
+          "FDB-B6_fdb_daily_store",
+          "FDB-B10_registry_meta_and_caches"
+        ],
+        "expectation": "(d) 고유값 정렬: ★**성과와 독립인 가장 강한 기전 반증.** EL2022 의 근-차익 논리는 자기상관이 **고고유값** PC 쪽에 몰릴 것을 요구한다(상위 10 PC t 6.08 vs 하위 7 PC t 2.15). KR 팩터 상관행렬의 PC 를 고유값 순으로 정렬해 자기상관(또는 TS-FMOM 이익)을 재었을 때 **부호/순서가 반대(저고유값에 몰림)면 마찰 논리가 KR 에 없다 → 메커니즘 기각**. 자기상관이 관측되더라도 그렇다. PC 추출은 EL2022 5단계 out-of-sample 절차를 그대로 따른다(t 까지 데이터로 고유벡터 → t+1 수익 → t 까지로 demean/lever). ⚠ 일별 팩터수익 커버리지가 10년+ 에 미달하면 월별 대체 사양으로 강등하고 그 사실을 기록 — 1급·2급을 막지 않는다."
+      },
+      {
+        "fields": [
+          "E3_macro_regime_monthly",
+          "E7_unified_regime_3layer",
+          "A4_benchmark_kospi200"
+        ],
+        "expectation": "(e) 크래시 동시성: eq.(10) 의 ρ_auto 지수가 꺾이는 달과 KR 개별주 모멘텀 크래시 달이 겹치는가. 우리 기저는 MDD 86.7% 이고 2/20 이 패자 데실 손실의 **반등월 집중**을 BM 수익 통제 후에도 확인했다(−0.0427/월, t −2.367). 겹치지 않으면 '모멘텀이 팩터를 간접 타이밍한다' 는 주장이 KR 에서 성립하지 않는다."
+      },
+      {
+        "fields": [
+          "A3_universe_support_membership_panels",
+          "A9_liquidity_avgtv20_convention",
+          "A2_universe_krx_monthly"
+        ],
+        "expectation": "(f) 유니버스·유동성 PIT: 팩터 수익 패널의 유니버스·유동성 필터가 PIT 로 적용됐는지. KQ150 백필이 편입 22 / 퇴출 0 인 '퇴출 미기록 누적 명부' 라는 기존 실측이 있으므로 2015-07 이전 구간의 팩터 수익은 생존편향 의심 구간으로 별도 표기한다."
+      }
+    ],
+    "regime_scope": {
+      "holds_in": [
+        "normal / expansion — 스타일 배분 흐름이 지속되는 국면. KSV(2018) 에서 자기상관은 감정수요 AR(1) 지속성 φ 가 충분히 클 때 발생한다(EL2022 §6, φ > R_f 조건)",
+        "low-sentiment 국면 — EL2022 NBER WP 실측: 저-sentiment 에서 승자−패자 팩터 격차 71bp/월(t 4.79) vs 고-sentiment 18bp/월(t 1.32). KR 대응 라벨은 E3_macro_regime_monthly / E7_unified_regime_3layer 의 neutral·recovery"
+      ],
+      "weakens_or_reverses_in": [
+        "crisis — 유동성 청산이 스타일 지속성을 압도해 φ 가 붕괴한다. 팩터 부호가 **동시에** 반전하고, 전달식 첫 항의 곱이 뒤집혀 개별주 모멘텀이 크래시한다(EL2022: 'most of the autocorrelations sometimes, and abruptly, turn negative at the same time')",
+        "급반등(rebound) 국면 — 우리 실측: 강화 2/20 에서 기저 패자 데실 손실이 반등월에 집중되고 BM 수익 통제 후에도 생존(−0.0427/월, t −2.367). 즉 KR 에서 팩터 부호가 동시 반전하는 마디가 실존하며 그것이 반등월이다",
+        "high-sentiment 국면 — EL2022 WP 에서 격차가 18bp/월(t 1.32) 로 유의성 상실"
+      ],
+      "boundary_rationale": "경계는 성과 관찰이 아니라 **메커니즘의 구동 파라미터에서 도출된다**. 기전은 감정수요의 지속성 φ 에 전적으로 의존한다 — φ 가 크면 팩터 수익이 양(+)자기상관을 갖고, φ 가 깨지면 자기상관이 동시에 음으로 꺾인다(KSV 2018 의 AR(1) 수요 + EL2022 §6 의 φ > R_f 조건). 따라서 φ 가 붕괴하는 국면(위기 청산·정책 충격 후 급반등)에서 이 가설은 **약화가 아니라 역전**된다. 이는 EL2022 가 크래시를 ρ_auto 지수로 예측한 것(probit z −6.78)과 같은 진술이다. ★보편타당 주장을 하지 않는다: EL2022 자신도 자기상관이 상시 양(+)이라고 주장하지 않으며, 오히려 '왜 자기상관이 가끔, 그리고 갑자기, 동시에 음으로 꺾이는가' 를 이론이 설명해야 할 두 번째 과제로 남겼다. ⚠정직 고지: rebound 경계의 절반은 우리 자신의 2/20 실측에서 왔고 그건 이 기저와 **같은 데이터**다 — 사후 관찰 혐의를 완전히 벗지 못한다. 그래서 국면 조건부 판정은 사전등록 1급이 **아니며**(1급은 무조건부 pooled), 국면 분해는 진단으로만 낸다."
+    },
+    "inherited_verbatim_note": "mechanism / regime_scope 는 alpha-hypothesis 산출(alpha_hypothesis.json)을 재작성 없이 승계. falsification 은 내용 불변·형식만 schema 배열형으로 변환(원문은 alpha_hypothesis.json::selected.falsification).",
+    "inherited_falsification_source": "qepm/mailbox/worktask/WT-R20260829_006/alpha_hypothesis.json::selected.falsification"
+  },
+  "factors": [
+    {
+      "factor_id": "F_fam_accrual",
+      "ast": {
+        "op": "MUL",
+        "args": [
+          {
+            "op": "ADD",
+            "args": [
+              {
+                "leaf": "REGISTRY",
+                "factor": "AC01_Total_Accruals_CF"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "AC02_Total_Accruals_BS"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "AC03_WC_Accruals"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "AC04_NCO_Accruals"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "AC05_NOA"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "AC06_Comprehensive_Accruals"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "AC07_Operating_Accruals"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "AC08_Financial_Accruals"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "AC09_NNI"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "AC10_Pct_Accruals"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "AC11_Accruals_to_Assets"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "AC12_Inventory_Accruals"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "AC13_Abnormal_Accruals"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "AC14_Discretionary_Accruals"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "AC15_NonDiscretionary_Accruals"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "AC16_BS_vs_CF_Diff"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "AC17_Accrual_Reversal"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "AC18_Accrual_Quality"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "AC19_Receivables_Accruals"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "AC20_Payables_Accruals"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "AC21_CF_to_Accrual_Ratio"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "AC22_Accrual_Volatility"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "AC23_Accrual_Persistence"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "AC24_NOA_Growth"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "AC25_Accrual_Size_Interaction"
+              }
+            ]
+          },
+          0.04
+        ]
+      },
+      "role": "core_signal",
+      "restatement_exposure": 25
+    },
+    {
+      "factor_id": "F_fam_crowding",
+      "ast": {
+        "op": "MUL",
+        "args": [
+          {
+            "op": "ADD",
+            "args": [
+              {
+                "leaf": "REGISTRY",
+                "factor": "CR01_Sector_Comovement"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "CR02_Volume_Concentration"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "CR05_Short_Pressure_Proxy"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "CR06_DTC_Proxy"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "CR07_Momentum_Crowding"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "CR08_Volume_Price_Divergence"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "CR09_Money_Flow_Ratio"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "CR10_Convergence_Premium"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "CR11_Idiosyncratic_Return"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "SE01_Volatility_Uncertainty"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "TR01_ADX_Proxy"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "TR02_Trend_Consistency"
+              }
+            ]
+          },
+          0.083333333333
+        ]
+      },
+      "role": "core_signal",
+      "restatement_exposure": 12
+    },
+    {
+      "factor_id": "F_fam_defense",
+      "ast": {
+        "op": "MUL",
+        "args": [
+          {
+            "op": "ADD",
+            "args": [
+              {
+                "leaf": "REGISTRY",
+                "factor": "D01_IdioVol"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "D02_Beta"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "D03_RealVol"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "D04_Downside_Beta"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "D05_MaxRet"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "D06_Upside_Beta"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "D07_Beta_Asymmetry"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "D09_Dimson_Beta"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "D10_Blume_Adj_Beta"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "D11_FP_Beta"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "D12_Beta_126d"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "D13_Beta_63d"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "D14_Beta_Change"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "D15_Cond_Bear_Beta"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "D16_Coskewness"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "D17_Cokurtosis"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "D18_BAB_Rank"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "D19_EW_Beta_63"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "D20_EW_Beta_126"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "D21_CAPM_Alpha"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "D22_Tracking_Error"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "D23_Info_Ratio"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "D24_Systematic_Risk_Prop"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "D25_Left_Tail_Beta"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "D26_Right_Tail_Beta"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "D27_Beta_Stability"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "D28_Unlevered_Beta"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "D29_Accounting_Beta"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "D30_FM_Beta_21d"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "D31_Relative_Beta"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "D33_Beta_Persistence"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "D34_RealVol_21d"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "D35_RealVol_63d"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "D36_RealVol_126d"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "D37_Parkinson_Vol"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "D38_GarmanKlass_Vol"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "D39_RogersSatchell_Vol"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "D40_YangZhang_Vol"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "D41_Vol_of_Vol"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "D42_EWMA_Vol"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "D43_Skewness"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "D44_Kurtosis"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "D45_Downside_Dev"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "D46_Sortino"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "D47_CVaR_5pct"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "D48_VaR_5pct"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "D49_VaR_1pct"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "D50_MaxDrawdown"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "D51_Ulcer_Index"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "D52_MinRet"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "D53_Range_Vol"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "D54_Neg_Ret_Prop"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "D55_Vol_Trend"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "D56_Up_Vol"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "D57_Down_Vol"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "D58_Vol_Asymmetry"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "D60_Leverage"
+              }
+            ]
+          },
+          0.017543859649
+        ]
+      },
+      "role": "core_signal",
+      "restatement_exposure": 57
+    },
+    {
+      "factor_id": "F_fam_growth",
+      "ast": {
+        "op": "MUL",
+        "args": [
+          {
+            "op": "ADD",
+            "args": [
+              {
+                "leaf": "REGISTRY",
+                "factor": "GR01_Revenue_Growth"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "GR02_Earnings_Growth"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "GR03_Asset_Growth"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "GR04_GPA_Growth"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "GR05_ROE_Growth"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "GR06_OCF_Growth"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "GR07_Composite_Growth"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "IN01_CapEx_to_Assets"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "IN02_CapEx_to_Revenue"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "IN03_RD_to_Market"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "IN04_Net_Equity_Issuance"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "IN05_Net_Debt_Issuance"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "IN06_Investment_to_Assets"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "MK01_CAPM_Beta"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "Q21_Revenue_Growth"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "Q22_Earnings_Growth"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "Q34_GP_Growth"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "XF_GD01_GrossProfit_Growth"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "XF_GD02_OpProfit_Growth"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "XF_GD03_OCF_Growth"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "XF_GD04_Dividend_Growth"
+              }
+            ]
+          },
+          0.047619047619
+        ]
+      },
+      "role": "core_signal",
+      "restatement_exposure": 21
+    },
+    {
+      "factor_id": "F_fam_investor_flow",
+      "ast": {
+        "op": "MUL",
+        "args": [
+          {
+            "op": "ADD",
+            "args": [
+              {
+                "leaf": "REGISTRY",
+                "factor": "INV01_Foreign_NetBuy_20d"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "INV02_Foreign_NetBuy_60d"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "INV03_Inst_NetBuy_20d"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "INV04_Inst_NetBuy_60d"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "INV05_Foreign_Momentum"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "INV06_Inst_Momentum"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "INV07_Retail_Contrarian"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "INV08_Foreign_Inst_Agreement"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "INV09_Flow_Persistence"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "INV10_Smart_Money_Flow"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "INV11_Foreign_Concentration"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "INV12_Supply_Demand_Imbalance"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "INV13_Foreign_Resid_Individual_126d"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "INV13_Foreign_Resid_Individual_21d"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "INV13_Foreign_Resid_Individual_63d"
+              }
+            ]
+          },
+          0.066666666667
+        ]
+      },
+      "role": "core_signal",
+      "restatement_exposure": 0
+    },
+    {
+      "factor_id": "F_fam_leverage",
+      "ast": {
+        "op": "MUL",
+        "args": [
+          {
+            "op": "ADD",
+            "args": [
+              {
+                "leaf": "REGISTRY",
+                "factor": "XF_DU03_EquityMultiplier"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "XF_LL01_DebtToCapital"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "XF_LL02_NetDebt"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "XF_LL03_CashRatio"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "XF_LL04_QuickRatio"
+              }
+            ]
+          },
+          0.2
+        ]
+      },
+      "role": "core_signal",
+      "restatement_exposure": 5
+    },
+    {
+      "factor_id": "F_fam_liquidity",
+      "ast": {
+        "op": "MUL",
+        "args": [
+          {
+            "op": "ADD",
+            "args": [
+              {
+                "leaf": "REGISTRY",
+                "factor": "L01_Amihud"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "L02_Turnover"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "L03_Volume_Mom"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "L04_Bid_Ask_Proxy"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "L05_Dollar_Volume"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "L06_Zero_Trade_Days"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "L07_Zero_Return_Days"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "L08_Roll_Spread"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "L09_Amihud_20d"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "L10_Amihud_Ratio"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "L11_Kyle_Lambda"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "L12_PS_Gamma"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "L13_Vol_Variance_Ratio"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "L14_Price_Impact"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "L15_Turnover_252d"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "L16_Turnover_Vol"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "L17_LOT_Measure"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "L18_Eff_Spread_Proxy"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "L19_Price_Delay"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "L20_Trade_Frequency"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "L21_Market_Depth"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "L22_Ret_Autocorr"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "L23_Vol_Autocorr"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "L24_Range_per_Vol"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "L25_Amihud_Vol"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "L26_Log_MktCap"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "L27_Price_Level"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "L28_Vol_Mom_63d"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "L29_Illiq_Change"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "L31_Vol_Concentration"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "L32_Ret_Vol_Corr"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "L33_AbsRet_Vol_Corr"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "L34_Vol_Spike_Ratio"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "L35_Reversal_Intensity"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "L36_CLV_Stability"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "L37_Relative_Vol"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "L38_DolVol_Mom"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "L39_Overnight_Spread"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "L40_VWAP_Spread"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "L41_Intraday_Vol_Proxy"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "L42_Vol_Skewness"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "L43_Turnover_Change"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "L44_Vol_Ret_Asymmetry"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "L45_Composite_Liquidity"
+              }
+            ]
+          },
+          0.022727272727
+        ]
+      },
+      "role": "core_signal",
+      "restatement_exposure": 44
+    },
+    {
+      "factor_id": "F_fam_quality",
+      "ast": {
+        "op": "MUL",
+        "args": [
+          {
+            "op": "ADD",
+            "args": [
+              {
+                "leaf": "REGISTRY",
+                "factor": "Q01_GPA"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "Q02_ROE"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "Q03_ROA"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "Q04_Piotroski_F"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "Q05_Accrual"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "Q06_Asset_Growth"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "Q07_Earnings_Stability"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "Q08_Composite_Quality"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "Q09_CFOA"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "Q10_Gross_Margin"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "Q11_Net_Margin"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "Q12_Asset_Turnover"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "Q13_Fin_Leverage"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "Q14_Current_Ratio"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "Q15_Debt_to_Equity"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "Q16_Debt_to_Assets"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "Q17_ROIC"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "Q18_Op_Leverage"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "Q19_Cash_to_Assets"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "Q20_Net_Equity_Issuance"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "Q23_Sustainable_Growth"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "Q24_Altman_Z"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "Q25_Ohlson_O"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "Q26_RnD_Intensity"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "Q27_CapEx_to_Rev"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "Q28_Cash_Conversion"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "Q29_Inventory_Turnover"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "Q30_Receivables_Turnover"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "Q31_WC_to_Assets"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "Q32_Interest_Coverage"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "Q33_Earnings_Persistence"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "Q35_CashBased_OpProf"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "XF_DU01_NetMargin"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "XF_DU02_AssetTurnover"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "XF_EF01_InventoryTurnover"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "XF_EF02_DaysPayable"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "XF_EF03_DaysReceivable"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "XF_EF04_CCC"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "XF_PR01_EBITDA_Margin"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "XF_PR02_RetainedEarnings_Ratio"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "XF_PR03_TaxRate"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "XF_PR04_NetInterestMargin"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "XF_PR05_EBITDA_to_Assets"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "XF_Q06_Op_Margin"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "XF_RI01_RnD_to_Revenue"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "XF_RI02_CapEx_proxy"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "XF_RI03_SGA_to_Revenue"
+              }
+            ]
+          },
+          0.021276595745
+        ]
+      },
+      "role": "core_signal",
+      "restatement_exposure": 47
+    },
+    {
+      "factor_id": "F_fam_regime",
+      "ast": {
+        "op": "MUL",
+        "args": [
+          {
+            "op": "ADD",
+            "args": [
+              {
+                "leaf": "REGISTRY",
+                "factor": "RE04_HighVol_Beta"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "RE05_LowVol_Beta"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "RE06_Beta_Asymmetry"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "RE07_Crisis_Beta"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "RE08_Down_Market_Excess"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "RE09_Capture_Ratio"
+              }
+            ]
+          },
+          0.16666666667
+        ]
+      },
+      "role": "core_signal",
+      "restatement_exposure": 6
+    },
+    {
+      "factor_id": "F_fam_risk",
+      "ast": {
+        "op": "MUL",
+        "args": [
+          {
+            "op": "ADD",
+            "args": [
+              {
+                "leaf": "REGISTRY",
+                "factor": "R01_VaR_95"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "R02_VaR_99"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "R03_CVaR_95"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "R04_CVaR_99"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "R05_Tail_Risk"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "R06_MDD"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "R07_Downside_Dev"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "R08_Semi_Variance"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "R09_Coskewness"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "R10_Cokurtosis"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "R11_Systematic_Risk"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "R13_NCSKEW"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "R14_DUVOL"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "R15_Sortino"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "R16_Calmar"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "R17_Market_Leverage"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "R18_Book_Leverage"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "R19_Composite_Risk"
+              }
+            ]
+          },
+          0.055555555556
+        ]
+      },
+      "role": "core_signal",
+      "restatement_exposure": 18
+    },
+    {
+      "factor_id": "F_fam_size",
+      "ast": {
+        "op": "MUL",
+        "args": [
+          {
+            "op": "ADD",
+            "args": [
+              {
+                "leaf": "REGISTRY",
+                "factor": "S01_Size"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "S02_Float_Size"
+              }
+            ]
+          },
+          0.5
+        ]
+      },
+      "role": "core_signal",
+      "restatement_exposure": 2
+    },
+    {
+      "factor_id": "F_fam_value",
+      "ast": {
+        "op": "MUL",
+        "args": [
+          {
+            "op": "ADD",
+            "args": [
+              {
+                "leaf": "REGISTRY",
+                "factor": "V01_BM"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "V02_EP"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "V03_CFP"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "V07_EV_EBITDA"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "V08_PSR"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "V10_FCF_Yield"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "V11_Shareholder_Yield"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "V12_Composite_Value"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "V13_EV_Sales"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "V14_EBIT_EV"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "V15_NetDebt_Adj_EP"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "V16_Tobins_Q"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "V17_Payout_Ratio"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "V18_AM"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "V21_Composite_Equity_Issuance"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "V22_FCFF_EV"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "V23_RAFI_Weight"
+              },
+              {
+                "leaf": "REGISTRY",
+                "factor": "V24_Residual_Income"
+              }
+            ]
+          },
+          0.055555555556
+        ]
+      },
+      "role": "core_signal",
+      "restatement_exposure": 18
+    },
+    {
+      "factor_id": "F_tsfmom_weights",
+      "ast": {
+        "leaf": "SPECIAL_OP",
+        "op_code_path": "stage_artifacts/WT_R20260829_006/engine/phase5_candidate.R",
+        "walk_forward": true,
+        "escape_contract": {
+          "escape_type": "SPECIAL_OP",
+          "op_code_path": "stage_artifacts/WT_R20260829_006/engine/phase5_candidate.R",
+          "walk_forward": true
+        }
+      },
+      "role": "conditioning",
+      "restatement_exposure": 0
+    }
+  ],
+  "combination_rule": "z_score_aligned_weighted_sum",
+  "verdict": "designed",
+  "self_pit_check": {
+    "performed": true,
+    "leaves_checked": [
+      {
+        "leaf": "AC01_Total_Accruals_CF",
+        "availability_rule": "regulatory: quarterly+45d;annual_3/31",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "AC02_Total_Accruals_BS",
+        "availability_rule": "regulatory: quarterly+45d;annual_3/31",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "AC03_WC_Accruals",
+        "availability_rule": "regulatory: quarterly+45d;annual_3/31",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "AC04_NCO_Accruals",
+        "availability_rule": "regulatory: quarterly+45d;annual_3/31",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "AC05_NOA",
+        "availability_rule": "regulatory: quarterly+45d;annual_3/31",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "AC06_Comprehensive_Accruals",
+        "availability_rule": "regulatory: quarterly+45d;annual_3/31",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "AC07_Operating_Accruals",
+        "availability_rule": "regulatory: quarterly+45d;annual_3/31",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "AC08_Financial_Accruals",
+        "availability_rule": "regulatory: quarterly+45d;annual_3/31",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "AC09_NNI",
+        "availability_rule": "regulatory: quarterly+45d;annual_3/31",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "AC10_Pct_Accruals",
+        "availability_rule": "regulatory: quarterly+45d;annual_3/31",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "AC11_Accruals_to_Assets",
+        "availability_rule": "regulatory: quarterly+45d;annual_3/31",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "AC12_Inventory_Accruals",
+        "availability_rule": "regulatory: quarterly+45d;annual_3/31",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "AC13_Abnormal_Accruals",
+        "availability_rule": "regulatory: quarterly+45d;annual_3/31",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "AC14_Discretionary_Accruals",
+        "availability_rule": "regulatory: quarterly+45d;annual_3/31",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "AC15_NonDiscretionary_Accruals",
+        "availability_rule": "regulatory: quarterly+45d;annual_3/31",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "AC16_BS_vs_CF_Diff",
+        "availability_rule": "regulatory: quarterly+45d;annual_3/31",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "AC17_Accrual_Reversal",
+        "availability_rule": "regulatory: quarterly+45d;annual_3/31",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "AC18_Accrual_Quality",
+        "availability_rule": "regulatory: quarterly+45d;annual_3/31",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "AC19_Receivables_Accruals",
+        "availability_rule": "regulatory: quarterly+45d;annual_3/31",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "AC20_Payables_Accruals",
+        "availability_rule": "regulatory: quarterly+45d;annual_3/31",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "AC21_CF_to_Accrual_Ratio",
+        "availability_rule": "regulatory: quarterly+45d;annual_3/31",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "AC22_Accrual_Volatility",
+        "availability_rule": "regulatory: quarterly+45d;annual_3/31",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "AC23_Accrual_Persistence",
+        "availability_rule": "regulatory: quarterly+45d;annual_3/31",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "AC24_NOA_Growth",
+        "availability_rule": "regulatory: quarterly+45d;annual_3/31",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "AC25_Accrual_Size_Interaction",
+        "availability_rule": "regulatory: quarterly+45d;annual_3/31",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "CR01_Sector_Comovement",
+        "availability_rule": "fixed: T-1",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "CR02_Volume_Concentration",
+        "availability_rule": "fixed: T-1",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "CR05_Short_Pressure_Proxy",
+        "availability_rule": "fixed: T-1",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "CR06_DTC_Proxy",
+        "availability_rule": "fixed: T-1",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "CR07_Momentum_Crowding",
+        "availability_rule": "fixed: T-1",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "CR08_Volume_Price_Divergence",
+        "availability_rule": "fixed: T-1",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "CR09_Money_Flow_Ratio",
+        "availability_rule": "fixed: T-1",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "CR10_Convergence_Premium",
+        "availability_rule": "fixed: T-1",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "CR11_Idiosyncratic_Return",
+        "availability_rule": "fixed: T-1",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "D01_IdioVol",
+        "availability_rule": "fixed: T-1",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "D02_Beta",
+        "availability_rule": "fixed: T-1",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "D03_RealVol",
+        "availability_rule": "fixed: T-1",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "D04_Downside_Beta",
+        "availability_rule": "fixed: T-1",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "D05_MaxRet",
+        "availability_rule": "fixed: T-1",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "D06_Upside_Beta",
+        "availability_rule": "fixed: T-1",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "D07_Beta_Asymmetry",
+        "availability_rule": "fixed: T-1",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "D09_Dimson_Beta",
+        "availability_rule": "fixed: T-1",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "D10_Blume_Adj_Beta",
+        "availability_rule": "fixed: T-1",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "D11_FP_Beta",
+        "availability_rule": "fixed: T-1",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "D12_Beta_126d",
+        "availability_rule": "fixed: T-1",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "D13_Beta_63d",
+        "availability_rule": "fixed: T-1",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "D14_Beta_Change",
+        "availability_rule": "fixed: T-1",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "D15_Cond_Bear_Beta",
+        "availability_rule": "fixed: T-1",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "D16_Coskewness",
+        "availability_rule": "fixed: T-1",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "D17_Cokurtosis",
+        "availability_rule": "fixed: T-1",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "D18_BAB_Rank",
+        "availability_rule": "fixed: T-1",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "D19_EW_Beta_63",
+        "availability_rule": "fixed: T-1",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "D20_EW_Beta_126",
+        "availability_rule": "fixed: T-1",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "D21_CAPM_Alpha",
+        "availability_rule": "fixed: T-1",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "D22_Tracking_Error",
+        "availability_rule": "fixed: T-1",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "D23_Info_Ratio",
+        "availability_rule": "fixed: T-1",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "D24_Systematic_Risk_Prop",
+        "availability_rule": "fixed: T-1",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "D25_Left_Tail_Beta",
+        "availability_rule": "fixed: T-1",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "D26_Right_Tail_Beta",
+        "availability_rule": "fixed: T-1",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "D27_Beta_Stability",
+        "availability_rule": "fixed: T-1",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "D28_Unlevered_Beta",
+        "availability_rule": "regulatory: quarterly+45d;annual_3/31",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "D29_Accounting_Beta",
+        "availability_rule": "regulatory: quarterly+45d;annual_3/31",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "D30_FM_Beta_21d",
+        "availability_rule": "fixed: T-1",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "D31_Relative_Beta",
+        "availability_rule": "fixed: T-1",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "D33_Beta_Persistence",
+        "availability_rule": "fixed: T-1",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "D34_RealVol_21d",
+        "availability_rule": "fixed: T-1",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "D35_RealVol_63d",
+        "availability_rule": "fixed: T-1",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "D36_RealVol_126d",
+        "availability_rule": "fixed: T-1",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "D37_Parkinson_Vol",
+        "availability_rule": "fixed: T-1",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "D38_GarmanKlass_Vol",
+        "availability_rule": "fixed: T-1",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "D39_RogersSatchell_Vol",
+        "availability_rule": "fixed: T-1",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "D40_YangZhang_Vol",
+        "availability_rule": "fixed: T-1",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "D41_Vol_of_Vol",
+        "availability_rule": "fixed: T-1",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "D42_EWMA_Vol",
+        "availability_rule": "fixed: T-1",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "D43_Skewness",
+        "availability_rule": "fixed: T-1",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "D44_Kurtosis",
+        "availability_rule": "fixed: T-1",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "D45_Downside_Dev",
+        "availability_rule": "fixed: T-1",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "D46_Sortino",
+        "availability_rule": "fixed: T-1",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "D47_CVaR_5pct",
+        "availability_rule": "fixed: T-1",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "D48_VaR_5pct",
+        "availability_rule": "fixed: T-1",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "D49_VaR_1pct",
+        "availability_rule": "fixed: T-1",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "D50_MaxDrawdown",
+        "availability_rule": "fixed: T-1",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "D51_Ulcer_Index",
+        "availability_rule": "fixed: T-1",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "D52_MinRet",
+        "availability_rule": "fixed: T-1",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "D53_Range_Vol",
+        "availability_rule": "fixed: T-1",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "D54_Neg_Ret_Prop",
+        "availability_rule": "fixed: T-1",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "D55_Vol_Trend",
+        "availability_rule": "fixed: T-1",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "D56_Up_Vol",
+        "availability_rule": "fixed: T-1",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "D57_Down_Vol",
+        "availability_rule": "fixed: T-1",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "D58_Vol_Asymmetry",
+        "availability_rule": "fixed: T-1",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "D60_Leverage",
+        "availability_rule": "regulatory: quarterly+45d;annual_3/31",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "GR01_Revenue_Growth",
+        "availability_rule": "regulatory: quarterly+45d;annual_3/31",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "GR02_Earnings_Growth",
+        "availability_rule": "regulatory: quarterly+45d;annual_3/31",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "GR03_Asset_Growth",
+        "availability_rule": "regulatory: quarterly+45d;annual_3/31",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "GR04_GPA_Growth",
+        "availability_rule": "regulatory: quarterly+45d;annual_3/31",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "GR05_ROE_Growth",
+        "availability_rule": "regulatory: quarterly+45d;annual_3/31",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "GR06_OCF_Growth",
+        "availability_rule": "regulatory: quarterly+45d;annual_3/31",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "GR07_Composite_Growth",
+        "availability_rule": "regulatory: quarterly+45d;annual_3/31",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "IN01_CapEx_to_Assets",
+        "availability_rule": "regulatory: quarterly+45d;annual_3/31",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "IN02_CapEx_to_Revenue",
+        "availability_rule": "regulatory: quarterly+45d;annual_3/31",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "IN03_RD_to_Market",
+        "availability_rule": "regulatory: quarterly+45d;annual_3/31",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "IN04_Net_Equity_Issuance",
+        "availability_rule": "regulatory: quarterly+45d;annual_3/31",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "IN05_Net_Debt_Issuance",
+        "availability_rule": "regulatory: quarterly+45d;annual_3/31",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "IN06_Investment_to_Assets",
+        "availability_rule": "regulatory: quarterly+45d;annual_3/31",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "INV01_Foreign_NetBuy_20d",
+        "availability_rule": "manual_export: strict_t-1;effective_lag~22d",
+        "restatement_prone": false
+      },
+      {
+        "leaf": "INV02_Foreign_NetBuy_60d",
+        "availability_rule": "manual_export: strict_t-1;effective_lag~22d",
+        "restatement_prone": false
+      },
+      {
+        "leaf": "INV03_Inst_NetBuy_20d",
+        "availability_rule": "manual_export: strict_t-1;effective_lag~22d",
+        "restatement_prone": false
+      },
+      {
+        "leaf": "INV04_Inst_NetBuy_60d",
+        "availability_rule": "manual_export: strict_t-1;effective_lag~22d",
+        "restatement_prone": false
+      },
+      {
+        "leaf": "INV05_Foreign_Momentum",
+        "availability_rule": "manual_export: strict_t-1;effective_lag~22d",
+        "restatement_prone": false
+      },
+      {
+        "leaf": "INV06_Inst_Momentum",
+        "availability_rule": "manual_export: strict_t-1;effective_lag~22d",
+        "restatement_prone": false
+      },
+      {
+        "leaf": "INV07_Retail_Contrarian",
+        "availability_rule": "manual_export: strict_t-1;effective_lag~22d",
+        "restatement_prone": false
+      },
+      {
+        "leaf": "INV08_Foreign_Inst_Agreement",
+        "availability_rule": "manual_export: strict_t-1;effective_lag~22d",
+        "restatement_prone": false
+      },
+      {
+        "leaf": "INV09_Flow_Persistence",
+        "availability_rule": "manual_export: strict_t-1;effective_lag~22d",
+        "restatement_prone": false
+      },
+      {
+        "leaf": "INV10_Smart_Money_Flow",
+        "availability_rule": "manual_export: strict_t-1;effective_lag~22d",
+        "restatement_prone": false
+      },
+      {
+        "leaf": "INV11_Foreign_Concentration",
+        "availability_rule": "manual_export: strict_t-1;effective_lag~22d",
+        "restatement_prone": false
+      },
+      {
+        "leaf": "INV12_Supply_Demand_Imbalance",
+        "availability_rule": "manual_export: strict_t-1;effective_lag~22d",
+        "restatement_prone": false
+      },
+      {
+        "leaf": "INV13_Foreign_Resid_Individual_126d",
+        "availability_rule": "manual_export: strict_t-1;effective_lag~22d",
+        "restatement_prone": false
+      },
+      {
+        "leaf": "INV13_Foreign_Resid_Individual_21d",
+        "availability_rule": "manual_export: strict_t-1;effective_lag~22d",
+        "restatement_prone": false
+      },
+      {
+        "leaf": "INV13_Foreign_Resid_Individual_63d",
+        "availability_rule": "manual_export: strict_t-1;effective_lag~22d",
+        "restatement_prone": false
+      },
+      {
+        "leaf": "L01_Amihud",
+        "availability_rule": "fixed: T-1",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "L02_Turnover",
+        "availability_rule": "fixed: T-1",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "L03_Volume_Mom",
+        "availability_rule": "fixed: T-1",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "L04_Bid_Ask_Proxy",
+        "availability_rule": "fixed: T-1",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "L05_Dollar_Volume",
+        "availability_rule": "fixed: T-1",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "L06_Zero_Trade_Days",
+        "availability_rule": "fixed: T-1",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "L07_Zero_Return_Days",
+        "availability_rule": "fixed: T-1",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "L08_Roll_Spread",
+        "availability_rule": "fixed: T-1",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "L09_Amihud_20d",
+        "availability_rule": "fixed: T-1",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "L10_Amihud_Ratio",
+        "availability_rule": "fixed: T-1",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "L11_Kyle_Lambda",
+        "availability_rule": "fixed: T-1",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "L12_PS_Gamma",
+        "availability_rule": "fixed: T-1",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "L13_Vol_Variance_Ratio",
+        "availability_rule": "fixed: T-1",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "L14_Price_Impact",
+        "availability_rule": "fixed: T-1",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "L15_Turnover_252d",
+        "availability_rule": "fixed: T-1",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "L16_Turnover_Vol",
+        "availability_rule": "fixed: T-1",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "L17_LOT_Measure",
+        "availability_rule": "fixed: T-1",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "L18_Eff_Spread_Proxy",
+        "availability_rule": "fixed: T-1",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "L19_Price_Delay",
+        "availability_rule": "fixed: T-1",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "L20_Trade_Frequency",
+        "availability_rule": "fixed: T-1",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "L21_Market_Depth",
+        "availability_rule": "fixed: T-1",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "L22_Ret_Autocorr",
+        "availability_rule": "fixed: T-1",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "L23_Vol_Autocorr",
+        "availability_rule": "fixed: T-1",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "L24_Range_per_Vol",
+        "availability_rule": "fixed: T-1",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "L25_Amihud_Vol",
+        "availability_rule": "fixed: T-1",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "L26_Log_MktCap",
+        "availability_rule": "fixed: T-1",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "L27_Price_Level",
+        "availability_rule": "fixed: T-1",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "L28_Vol_Mom_63d",
+        "availability_rule": "fixed: T-1",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "L29_Illiq_Change",
+        "availability_rule": "fixed: T-1",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "L31_Vol_Concentration",
+        "availability_rule": "fixed: T-1",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "L32_Ret_Vol_Corr",
+        "availability_rule": "fixed: T-1",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "L33_AbsRet_Vol_Corr",
+        "availability_rule": "fixed: T-1",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "L34_Vol_Spike_Ratio",
+        "availability_rule": "fixed: T-1",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "L35_Reversal_Intensity",
+        "availability_rule": "fixed: T-1",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "L36_CLV_Stability",
+        "availability_rule": "fixed: T-1",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "L37_Relative_Vol",
+        "availability_rule": "fixed: T-1",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "L38_DolVol_Mom",
+        "availability_rule": "fixed: T-1",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "L39_Overnight_Spread",
+        "availability_rule": "fixed: T-1",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "L40_VWAP_Spread",
+        "availability_rule": "fixed: T-1",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "L41_Intraday_Vol_Proxy",
+        "availability_rule": "fixed: T-1",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "L42_Vol_Skewness",
+        "availability_rule": "fixed: T-1",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "L43_Turnover_Change",
+        "availability_rule": "fixed: T-1",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "L44_Vol_Ret_Asymmetry",
+        "availability_rule": "fixed: T-1",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "L45_Composite_Liquidity",
+        "availability_rule": "fixed: T-1",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "MK01_CAPM_Beta",
+        "availability_rule": "fixed: T-1",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "Q01_GPA",
+        "availability_rule": "regulatory: quarterly+45d;annual_3/31",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "Q02_ROE",
+        "availability_rule": "regulatory: quarterly+45d;annual_3/31",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "Q03_ROA",
+        "availability_rule": "regulatory: quarterly+45d;annual_3/31",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "Q04_Piotroski_F",
+        "availability_rule": "regulatory: quarterly+45d;annual_3/31",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "Q05_Accrual",
+        "availability_rule": "regulatory: quarterly+45d;annual_3/31",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "Q06_Asset_Growth",
+        "availability_rule": "regulatory: quarterly+45d;annual_3/31",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "Q07_Earnings_Stability",
+        "availability_rule": "regulatory: quarterly+45d;annual_3/31",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "Q08_Composite_Quality",
+        "availability_rule": "regulatory: quarterly+45d;annual_3/31",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "Q09_CFOA",
+        "availability_rule": "regulatory: quarterly+45d;annual_3/31",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "Q10_Gross_Margin",
+        "availability_rule": "regulatory: quarterly+45d;annual_3/31",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "Q11_Net_Margin",
+        "availability_rule": "regulatory: quarterly+45d;annual_3/31",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "Q12_Asset_Turnover",
+        "availability_rule": "regulatory: quarterly+45d;annual_3/31",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "Q13_Fin_Leverage",
+        "availability_rule": "regulatory: quarterly+45d;annual_3/31",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "Q14_Current_Ratio",
+        "availability_rule": "regulatory: quarterly+45d;annual_3/31",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "Q15_Debt_to_Equity",
+        "availability_rule": "regulatory: quarterly+45d;annual_3/31",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "Q16_Debt_to_Assets",
+        "availability_rule": "regulatory: quarterly+45d;annual_3/31",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "Q17_ROIC",
+        "availability_rule": "regulatory: quarterly+45d;annual_3/31",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "Q18_Op_Leverage",
+        "availability_rule": "regulatory: quarterly+45d;annual_3/31",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "Q19_Cash_to_Assets",
+        "availability_rule": "regulatory: quarterly+45d;annual_3/31",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "Q20_Net_Equity_Issuance",
+        "availability_rule": "regulatory: quarterly+45d;annual_3/31",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "Q21_Revenue_Growth",
+        "availability_rule": "regulatory: quarterly+45d;annual_3/31",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "Q22_Earnings_Growth",
+        "availability_rule": "regulatory: quarterly+45d;annual_3/31",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "Q23_Sustainable_Growth",
+        "availability_rule": "regulatory: quarterly+45d;annual_3/31",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "Q24_Altman_Z",
+        "availability_rule": "regulatory: quarterly+45d;annual_3/31",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "Q25_Ohlson_O",
+        "availability_rule": "regulatory: quarterly+45d;annual_3/31",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "Q26_RnD_Intensity",
+        "availability_rule": "regulatory: quarterly+45d;annual_3/31",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "Q27_CapEx_to_Rev",
+        "availability_rule": "regulatory: quarterly+45d;annual_3/31",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "Q28_Cash_Conversion",
+        "availability_rule": "regulatory: quarterly+45d;annual_3/31",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "Q29_Inventory_Turnover",
+        "availability_rule": "regulatory: quarterly+45d;annual_3/31",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "Q30_Receivables_Turnover",
+        "availability_rule": "regulatory: quarterly+45d;annual_3/31",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "Q31_WC_to_Assets",
+        "availability_rule": "regulatory: quarterly+45d;annual_3/31",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "Q32_Interest_Coverage",
+        "availability_rule": "regulatory: quarterly+45d;annual_3/31",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "Q33_Earnings_Persistence",
+        "availability_rule": "regulatory: quarterly+45d;annual_3/31",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "Q34_GP_Growth",
+        "availability_rule": "regulatory: quarterly+45d;annual_3/31",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "Q35_CashBased_OpProf",
+        "availability_rule": "regulatory: quarterly+45d;annual_3/31",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "R01_VaR_95",
+        "availability_rule": "fixed: T-1",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "R02_VaR_99",
+        "availability_rule": "fixed: T-1",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "R03_CVaR_95",
+        "availability_rule": "fixed: T-1",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "R04_CVaR_99",
+        "availability_rule": "fixed: T-1",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "R05_Tail_Risk",
+        "availability_rule": "fixed: T-1",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "R06_MDD",
+        "availability_rule": "fixed: T-1",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "R07_Downside_Dev",
+        "availability_rule": "fixed: T-1",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "R08_Semi_Variance",
+        "availability_rule": "fixed: T-1",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "R09_Coskewness",
+        "availability_rule": "fixed: T-1",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "R10_Cokurtosis",
+        "availability_rule": "fixed: T-1",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "R11_Systematic_Risk",
+        "availability_rule": "fixed: T-1",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "R13_NCSKEW",
+        "availability_rule": "fixed: T-1",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "R14_DUVOL",
+        "availability_rule": "fixed: T-1",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "R15_Sortino",
+        "availability_rule": "fixed: T-1",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "R16_Calmar",
+        "availability_rule": "fixed: T-1",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "R17_Market_Leverage",
+        "availability_rule": "regulatory: quarterly+45d;annual_3/31",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "R18_Book_Leverage",
+        "availability_rule": "regulatory: quarterly+45d;annual_3/31",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "R19_Composite_Risk",
+        "availability_rule": "regulatory: quarterly+45d;annual_3/31",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "RE04_HighVol_Beta",
+        "availability_rule": "fixed: T-1",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "RE05_LowVol_Beta",
+        "availability_rule": "fixed: T-1",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "RE06_Beta_Asymmetry",
+        "availability_rule": "fixed: T-1",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "RE07_Crisis_Beta",
+        "availability_rule": "fixed: T-1",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "RE08_Down_Market_Excess",
+        "availability_rule": "fixed: T-1",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "RE09_Capture_Ratio",
+        "availability_rule": "fixed: T-1",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "S01_Size",
+        "availability_rule": "fixed: T-1",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "S02_Float_Size",
+        "availability_rule": "regulatory: quarterly+45d;annual_3/31",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "SE01_Volatility_Uncertainty",
+        "availability_rule": "fixed: T-1",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "TR01_ADX_Proxy",
+        "availability_rule": "fixed: T-1",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "TR02_Trend_Consistency",
+        "availability_rule": "fixed: T-1",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "V01_BM",
+        "availability_rule": "regulatory: quarterly+45d;annual_3/31",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "V02_EP",
+        "availability_rule": "regulatory: quarterly+45d;annual_3/31",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "V03_CFP",
+        "availability_rule": "regulatory: quarterly+45d;annual_3/31",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "V07_EV_EBITDA",
+        "availability_rule": "regulatory: quarterly+45d;annual_3/31",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "V08_PSR",
+        "availability_rule": "regulatory: quarterly+45d;annual_3/31",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "V10_FCF_Yield",
+        "availability_rule": "regulatory: quarterly+45d;annual_3/31",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "V11_Shareholder_Yield",
+        "availability_rule": "regulatory: quarterly+45d;annual_3/31",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "V12_Composite_Value",
+        "availability_rule": "regulatory: quarterly+45d;annual_3/31",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "V13_EV_Sales",
+        "availability_rule": "regulatory: quarterly+45d;annual_3/31",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "V14_EBIT_EV",
+        "availability_rule": "regulatory: quarterly+45d;annual_3/31",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "V15_NetDebt_Adj_EP",
+        "availability_rule": "regulatory: quarterly+45d;annual_3/31",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "V16_Tobins_Q",
+        "availability_rule": "regulatory: quarterly+45d;annual_3/31",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "V17_Payout_Ratio",
+        "availability_rule": "regulatory: quarterly+45d;annual_3/31",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "V18_AM",
+        "availability_rule": "regulatory: quarterly+45d;annual_3/31",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "V21_Composite_Equity_Issuance",
+        "availability_rule": "fixed: T-1",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "V22_FCFF_EV",
+        "availability_rule": "regulatory: quarterly+45d;annual_3/31",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "V23_RAFI_Weight",
+        "availability_rule": "regulatory: quarterly+45d;annual_3/31",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "V24_Residual_Income",
+        "availability_rule": "regulatory: quarterly+45d;annual_3/31",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "XF_DU01_NetMargin",
+        "availability_rule": "regulatory: quarterly+45d;annual_3/31",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "XF_DU02_AssetTurnover",
+        "availability_rule": "regulatory: quarterly+45d;annual_3/31",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "XF_DU03_EquityMultiplier",
+        "availability_rule": "regulatory: quarterly+45d;annual_3/31",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "XF_EF01_InventoryTurnover",
+        "availability_rule": "regulatory: quarterly+45d;annual_3/31",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "XF_EF02_DaysPayable",
+        "availability_rule": "regulatory: quarterly+45d;annual_3/31",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "XF_EF03_DaysReceivable",
+        "availability_rule": "regulatory: quarterly+45d;annual_3/31",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "XF_EF04_CCC",
+        "availability_rule": "regulatory: quarterly+45d;annual_3/31",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "XF_GD01_GrossProfit_Growth",
+        "availability_rule": "regulatory: quarterly+45d;annual_3/31",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "XF_GD02_OpProfit_Growth",
+        "availability_rule": "regulatory: quarterly+45d;annual_3/31",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "XF_GD03_OCF_Growth",
+        "availability_rule": "regulatory: quarterly+45d;annual_3/31",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "XF_GD04_Dividend_Growth",
+        "availability_rule": "regulatory: quarterly+45d;annual_3/31",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "XF_LL01_DebtToCapital",
+        "availability_rule": "regulatory: quarterly+45d;annual_3/31",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "XF_LL02_NetDebt",
+        "availability_rule": "regulatory: quarterly+45d;annual_3/31",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "XF_LL03_CashRatio",
+        "availability_rule": "regulatory: quarterly+45d;annual_3/31",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "XF_LL04_QuickRatio",
+        "availability_rule": "regulatory: quarterly+45d;annual_3/31",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "XF_PR01_EBITDA_Margin",
+        "availability_rule": "regulatory: quarterly+45d;annual_3/31",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "XF_PR02_RetainedEarnings_Ratio",
+        "availability_rule": "regulatory: quarterly+45d;annual_3/31",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "XF_PR03_TaxRate",
+        "availability_rule": "regulatory: quarterly+45d;annual_3/31",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "XF_PR04_NetInterestMargin",
+        "availability_rule": "regulatory: quarterly+45d;annual_3/31",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "XF_PR05_EBITDA_to_Assets",
+        "availability_rule": "regulatory: quarterly+45d;annual_3/31",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "XF_Q06_Op_Margin",
+        "availability_rule": "regulatory: quarterly+45d;annual_3/31",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "XF_RI01_RnD_to_Revenue",
+        "availability_rule": "regulatory: quarterly+45d;annual_3/31",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "XF_RI02_CapEx_proxy",
+        "availability_rule": "regulatory: quarterly+45d;annual_3/31",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "XF_RI03_SGA_to_Revenue",
+        "availability_rule": "regulatory: quarterly+45d;annual_3/31",
+        "restatement_prone": true
+      },
+      {
+        "leaf": "SPECIAL_OP:F_tsfmom_weights",
+        "availability_rule": "walk-forward: 형성 부호·변동성 모두 t 이하 실현 팩터수익만 (확장창, full-sample 금지 C1)",
+        "restatement_prone": false
+      }
+    ],
+    "verdict": "warn_restatement",
+    "notes": "리프 271개 전수 점검. restatement_prone 255개 — 전부 factor_db 월간 승격분(load_month_factors 경유·Usable_Date <= sig_date 강제)이라 구조적 look-ahead 는 없고 재작성(restatement) 노출만 남는다. SPECIAL_OP 는 확장창 walk-forward."
+  },
+  "alpha_vector": {
+    "A032830": 0.00474809,
+    "A000270": 0.00458632,
+    "A003380": 0.00442918,
+    "A011200": 0.00416725,
+    "A012330": 0.00411932,
+    "A009970": 0.0040903,
+    "A066570": 0.00405111,
+    "A028260": 0.00400107,
+    "A000660": 0.00397762,
+    "A086280": 0.00396086,
+    "A018260": 0.00392966,
+    "A004990": 0.0039183,
+    "A000720": 0.00391033,
+    "A267250": 0.00390671,
+    "A031980": 0.00386534,
+    "A015760": 0.00385906,
+    "A005930": 0.00382011,
+    "A035420": 0.00377255,
+    "A003550": 0.00373086,
+    "A035720": 0.00370502,
+    "A108490": 0.00363041,
+    "A078930": 0.00361439,
+    "A034730": 0.00361145,
+    "A060370": 0.00361117,
+    "A028050": 0.00357972,
+    "A402340": 0.00355757,
+    "A051910": 0.00354722,
+    "A267260": 0.00346682,
+    "A064400": 0.00345327,
+    "A006800": 0.00342304,
+    "A375500": 0.00341981,
+    "A007660": 0.00341276,
+    "A068270": 0.00340146,
+    "A192080": 0.00339392,
+    "A016360": 0.00339237,
+    "A009150": 0.00338158,
+    "A042700": 0.00337238,
+    "A082920": 0.00333474,
+    "A096770": 0.00333043,
+    "A034020": 0.00331555,
+    "A377300": 0.00329841,
+    "A161390": 0.00327197,
+    "A011070": 0.00326268,
+    "A009540": 0.00325699,
+    "A316140": 0.00324279,
+    "A041190": 0.00318241,
+    "A005830": 0.00317832,
+    "A437730": 0.00316934,
+    "A047040": 0.00316344,
+    "A001800": 0.00314265,
+    "A329180": 0.00314041,
+    "A062040": 0.0031239,
+    "A000880": 0.00311348,
+    "A002790": 0.00308923,
+    "A088350": 0.00298571,
+    "A086520": 0.00298374,
+    "A007340": 0.00297083,
+    "A012450": 0.00294672,
+    "A277810": 0.00293826,
+    "A030200": 0.00291034,
+    "A010060": 0.0029083,
+    "A307950": 0.00289975,
+    "A000150": 0.00288802,
+    "A111770": 0.00288561,
+    "A319660": 0.00286837,
+    "A028670": 0.00286342,
+    "A051900": 0.00283932,
+    "A005940": 0.00282141,
+    "A058470": 0.00281917,
+    "A042660": 0.0028057,
+    "A373220": 0.00280038,
+    "A036930": 0.00276701,
+    "A240810": 0.00276403,
+    "A034220": 0.00275112,
+    "A039030": 0.00272633,
+    "A443060": 0.00266549,
+    "A000210": 0.00260194,
+    "A011170": 0.00260023,
+    "A064760": 0.00258284,
+    "A036570": 0.00257532,
+    "A064350": 0.00256024,
+    "A090430": 0.00255977,
+    "A145020": 0.00255328,
+    "A036620": 0.00254904,
+    "A214450": 0.00254342,
+    "A010950": 0.00253636,
+    "A036460": 0.00253051,
+    "A101490": 0.00251139,
+    "A015750": 0.00248102,
+    "A259960": 0.00246846,
+    "A098460": 0.00246751,
+    "A278470": 0.00244643,
+    "A253590": 0.00244503,
+    "A000810": 0.00243261,
+    "A326030": 0.00241899,
+    "A011210": 0.00239499,
+    "A081660": 0.00239496,
+    "A272210": 0.00236727,
+    "A033100": 0.00235928,
+    "A271560": 0.00234344,
+    "A060280": 0.00232911,
+    "A001450": 0.00231754,
+    "A005850": 0.00231478,
+    "A080220": 0.00230426,
+    "A403870": 0.0022816,
+    "A420770": 0.0022782,
+    "A096530": 0.00227525,
+    "A207940": 0.00226846,
+    "A298040": 0.0022626,
+    "A003230": 0.00225242,
+    "A039200": 0.00221934,
+    "A454910": 0.00221244,
+    "A082740": 0.00217458,
+    "A010120": 0.00216933,
+    "A003030": 0.00216392,
+    "A026960": 0.00214862,
+    "A035900": 0.00213869,
+    "A140860": 0.00212743,
+    "A000990": 0.00212538,
+    "A018880": 0.00212305,
+    "A014620": 0.00212105,
+    "A032640": 0.0021173,
+    "A001430": 0.00209061,
+    "A022100": 0.00208334,
+    "A003670": 0.00207236,
+    "A097950": 0.0020674,
+    "A030530": 0.00206222,
+    "A376300": 0.00205722,
+    "A095610": 0.00205634,
+    "A033780": 0.00205612,
+    "A041510": 0.00203884,
+    "A036540": 0.00203557,
+    "A011780": 0.00202307,
+    "A232140": 0.0020217,
+    "A257720": 0.00201786,
+    "A084370": 0.00201727,
+    "A004370": 0.00200921,
+    "A083650": 0.00197865,
+    "A357780": 0.00197649,
+    "A051600": 0.00196889,
+    "A000100": 0.00196615,
+    "A131290": 0.00195479,
+    "A272290": 0.00192982,
+    "A017800": 0.00192646,
+    "A052690": 0.00190522,
+    "A222080": 0.00190178,
+    "A166090": 0.00188898,
+    "A323280": 0.00188042,
+    "A001440": 0.00187033,
+    "A003240": 0.00186771,
+    "A010140": 0.00186494,
+    "A302440": 0.00185651,
+    "A263750": 0.00184916,
+    "A002380": 0.00182486,
+    "A214150": 0.00182269,
+    "A000120": 0.00182178,
+    "A071050": 0.00182125,
+    "A036830": 0.0018047,
+    "A042000": 0.00179639,
+    "A103140": 0.00178814,
+    "A310210": 0.00178475,
+    "A005490": 0.0017694,
+    "A214370": 0.00175993,
+    "A017960": 0.00175924,
+    "A095340": 0.00175577,
+    "A213420": 0.00175349,
+    "A006650": 0.00175315,
+    "A071320": 0.00174567,
+    "A067160": 0.00172231,
+    "A002840": 0.00171654,
+    "A035250": 0.00170914,
+    "A120110": 0.001694,
+    "A006260": 0.00168473,
+    "A030000": 0.00168154,
+    "A014680": 0.00166804,
+    "A285130": 0.00165317,
+    "A071970": 0.00165126,
+    "A000250": 0.00164952,
+    "A204320": 0.00164624,
+    "A079550": 0.00161618,
+    "A032820": 0.00160821,
+    "A112610": 0.00160817,
+    "A417200": 0.00160613,
+    "A178320": 0.00160149,
+    "A010130": 0.00159169,
+    "A450080": 0.0015801,
+    "A141080": 0.00156445,
+    "A065350": 0.00156241,
+    "A196170": 0.00154373,
+    "A012750": 0.00152589,
+    "A004000": 0.00150343,
+    "A023530": 0.00150187,
+    "A352820": 0.00150042,
+    "A383220": 0.00149681,
+    "A005380": 0.00148783,
+    "A060250": 0.00147154,
+    "A099320": 0.00144035,
+    "A466100": 0.00143084,
+    "A000240": 0.00141721,
+    "A005290": 0.00141227,
+    "A003090": 0.00139434,
+    "A122870": 0.00139432,
+    "A018290": 0.00137373,
+    "A457190": 0.00136757,
+    "A050890": 0.00136354,
+    "A222800": 0.00135955,
+    "A100790": 0.00134916,
+    "A180640": 0.0013484,
+    "A241560": 0.00130898,
+    "A347850": 0.00129766,
+    "A323410": 0.00128773,
+    "A185750": 0.0012876,
+    "A058610": 0.00128482,
+    "A138040": 0.00125558,
+    "A192820": 0.00125456,
+    "A089030": 0.00125197,
+    "A007070": 0.00124697,
+    "A067310": 0.00124432,
+    "A352480": 0.00123901,
+    "A069620": 0.00123798,
+    "A218410": 0.00123384,
+    "A052400": 0.00121663,
+    "A128940": 0.00121369,
+    "A017670": 0.00120458,
+    "A161890": 0.00119144,
+    "A101730": 0.00117217,
+    "A039490": 0.00112661,
+    "A087010": 0.00112525,
+    "A036810": 0.0010969,
+    "A161580": 0.00108414,
+    "A056190": 0.00107973,
+    "A124500": 0.0010739,
+    "A069260": 0.00106627,
+    "A171090": 0.00105247,
+    "A003490": 0.00103747,
+    "A095660": 0.00101354,
+    "A005300": 0.00100432,
+    "A280360": 0.00097537,
+    "A030520": 0.00096632,
+    "A033500": 0.00096473,
+    "A137310": 0.00093407,
+    "A251270": 0.0009283,
+    "A282330": 0.0009053,
+    "A011790": 0.00087757,
+    "A038500": 0.00087302,
+    "A215200": 0.00087005,
+    "A053800": 0.00086213,
+    "A007310": 0.000858,
+    "A056080": 0.00083779,
+    "A034230": 0.00081709,
+    "A226950": 0.00078828,
+    "A006400": 0.00077762,
+    "A000080": 0.00077167,
+    "A006280": 0.00076742,
+    "A251970": 0.00075908,
+    "A194480": 0.00075549,
+    "A025320": 0.00074977,
+    "A131970": 0.00074841,
+    "A008930": 0.00073908,
+    "A009420": 0.00072441,
+    "A348210": 0.00069873,
+    "A021240": 0.00069007,
+    "A295310": 0.00067501,
+    "A247540": 0.00066164,
+    "A073240": 0.00065218,
+    "A069080": 0.00064724,
+    "A047050": 0.00064541,
+    "A069960": 0.00063434,
+    "A189300": 0.00060299,
+    "A006040": 0.00059964,
+    "A007390": 0.00059709,
+    "A237690": 0.00058458,
+    "A121600": 0.00057115,
+    "A388720": 0.00057012,
+    "A253450": 0.00054522,
+    "A195940": 0.00054106,
+    "A137400": 0.00052969,
+    "A001040": 0.00052178,
+    "A048410": 0.00052095,
+    "A358570": 0.00051451,
+    "A298380": 0.00049886,
+    "A068760": 0.00048772,
+    "A000670": 0.00047663,
+    "A214430": 0.00046865,
+    "A225570": 0.0004663,
+    "A005420": 0.00045855,
+    "A093370": 0.00045192,
+    "A082270": 0.00042861,
+    "A483650": 0.00041717,
+    "A139480": 0.00041107,
+    "A006730": 0.00039467,
+    "A009520": 0.00038181,
+    "A281740": 0.00037619,
+    "A112040": 0.00036658,
+    "A241710": 0.00035371,
+    "A078340": 0.00033609,
+    "A004020": 0.0003257,
+    "A085660": 0.00030973,
+    "A204270": 0.00026702,
+    "A014820": 0.00026376,
+    "A009240": 0.00026347,
+    "A002030": 0.00024451,
+    "A008730": 0.00022645,
+    "A399720": 0.00021935,
+    "A183300": 0.00021296,
+    "A300720": 0.00020932,
+    "A268280": 0.00020719,
+    "A009830": 0.00018679,
+    "A298020": 0.00017168,
+    "A078600": 0.00016637,
+    "A090360": 0.00016559,
+    "A267270": 0.00015873,
+    "A047810": 0.00013036,
+    "A319400": 9.838e-05,
+    "A361610": 6.708e-05,
+    "A025900": 3.827e-05,
+    "A025980": 1.384e-05,
+    "A004170": 2.5e-06,
+    "A278280": -1.85e-05,
+    "A475830": -2.524e-05,
+    "A032500": -4.712e-05,
+    "A328130": -5.708e-05,
+    "A028300": -7.47e-05,
+    "A008770": -0.0001127,
+    "A066970": -0.00017597,
+    "A456040": -0.00017749,
+    "A298050": -0.00024234,
+    "A001680": -0.00027619,
+    "A348370": -0.00030555,
+    "A035760": -0.00031611,
+    "A029780": -0.00034426,
+    "A043260": -0.00035283,
+    "A032190": -0.00038,
+    "A211050": -0.00044132,
+    "A074600": -0.00047414,
+    "A445680": -0.00047974,
+    "A293490": -0.00052285,
+    "A290650": -0.00068445,
+    "A105560": -0.00070916,
+    "A090710": -0.00101487,
+    "A086790": -0.0010586,
+    "A138930": -0.00111539,
+    "A055550": -0.00127223,
+    "A089970": -0.00136546,
+    "A024110": -0.0015261,
+    "A139130": -0.00157344,
+    "A175330": -0.00180756
+  },
+  "confidence_vector": {
+    "A032830": 0.3451,
+    "A000270": 0.3993,
+    "A003380": 0.4479,
+    "A011200": 0.3231,
+    "A012330": 0.5362,
+    "A009970": 0.3751,
+    "A066570": 0.3559,
+    "A028260": 0.4231,
+    "A000660": 0.6276,
+    "A086280": 0.4357,
+    "A018260": 0.3231,
+    "A004990": 0.465,
+    "A000720": 0.464,
+    "A267250": 0.3662,
+    "A031980": 0.4077,
+    "A015760": 0.4663,
+    "A005930": 0.6405,
+    "A035420": 0.4156,
+    "A003550": 0.3536,
+    "A035720": 0.4057,
+    "A108490": 0.4409,
+    "A078930": 0.3357,
+    "A034730": 0.325,
+    "A060370": 0.5036,
+    "A028050": 0.3973,
+    "A402340": 0.5321,
+    "A051910": 0.4134,
+    "A267260": 0.5222,
+    "A064400": 0.4318,
+    "A006800": 0.5512,
+    "A375500": 0.4246,
+    "A007660": 0.5929,
+    "A068270": 0.3231,
+    "A192080": 0.3231,
+    "A016360": 0.496,
+    "A009150": 0.4985,
+    "A042700": 0.5302,
+    "A082920": 0.6262,
+    "A096770": 0.3579,
+    "A034020": 0.5449,
+    "A377300": 0.4677,
+    "A161390": 0.3235,
+    "A011070": 0.3893,
+    "A009540": 0.3942,
+    "A316140": 0.4962,
+    "A041190": 0.3231,
+    "A005830": 0.3964,
+    "A437730": 0.5508,
+    "A047040": 0.4161,
+    "A001800": 0.4407,
+    "A329180": 0.4252,
+    "A062040": 0.5129,
+    "A000880": 0.345,
+    "A002790": 0.4294,
+    "A088350": 0.4302,
+    "A086520": 0.4998,
+    "A007340": 0.3848,
+    "A012450": 0.5007,
+    "A277810": 0.4379,
+    "A030200": 0.4591,
+    "A010060": 0.4087,
+    "A307950": 0.5772,
+    "A000150": 0.6229,
+    "A111770": 0.4314,
+    "A319660": 0.5642,
+    "A028670": 0.4097,
+    "A051900": 0.3684,
+    "A005940": 0.4746,
+    "A058470": 0.4127,
+    "A042660": 0.5221,
+    "A373220": 0.3845,
+    "A036930": 0.4928,
+    "A240810": 0.518,
+    "A034220": 0.4135,
+    "A039030": 0.456,
+    "A443060": 0.4687,
+    "A000210": 0.3934,
+    "A011170": 0.4713,
+    "A064760": 0.501,
+    "A036570": 0.3249,
+    "A064350": 0.5194,
+    "A090430": 0.4893,
+    "A145020": 0.3892,
+    "A036620": 0.375,
+    "A214450": 0.4522,
+    "A010950": 0.4078,
+    "A036460": 0.3968,
+    "A101490": 0.585,
+    "A015750": 0.4749,
+    "A259960": 0.4783,
+    "A098460": 0.556,
+    "A278470": 0.5263,
+    "A253590": 0.4589,
+    "A000810": 0.5687,
+    "A326030": 0.454,
+    "A011210": 0.412,
+    "A081660": 0.4466,
+    "A272210": 0.6306,
+    "A033100": 0.5404,
+    "A271560": 0.3714,
+    "A060280": 0.3482,
+    "A001450": 0.3347,
+    "A005850": 0.5448,
+    "A080220": 0.5352,
+    "A403870": 0.419,
+    "A420770": 0.5121,
+    "A096530": 0.4239,
+    "A207940": 0.4349,
+    "A298040": 0.5519,
+    "A003230": 0.4339,
+    "A039200": 0.4835,
+    "A454910": 0.3604,
+    "A082740": 0.4893,
+    "A010120": 0.4805,
+    "A003030": 0.4505,
+    "A026960": 0.4749,
+    "A035900": 0.4225,
+    "A140860": 0.5181,
+    "A000990": 0.6445,
+    "A018880": 0.3943,
+    "A014620": 0.4235,
+    "A032640": 0.474,
+    "A001430": 0.5761,
+    "A022100": 0.5354,
+    "A003670": 0.6179,
+    "A097950": 0.447,
+    "A030530": 0.5447,
+    "A376300": 0.3918,
+    "A095610": 0.5404,
+    "A033780": 0.4414,
+    "A041510": 0.4165,
+    "A036540": 0.5812,
+    "A011780": 0.4167,
+    "A232140": 0.6118,
+    "A257720": 0.4445,
+    "A084370": 0.5438,
+    "A004370": 0.4791,
+    "A083650": 0.5009,
+    "A357780": 0.5062,
+    "A051600": 0.5623,
+    "A000100": 0.4916,
+    "A131290": 0.5699,
+    "A272290": 0.5626,
+    "A017800": 0.4763,
+    "A052690": 0.5874,
+    "A222080": 0.4977,
+    "A166090": 0.5656,
+    "A323280": 0.5081,
+    "A001440": 0.504,
+    "A003240": 0.5459,
+    "A010140": 0.3348,
+    "A302440": 0.5116,
+    "A263750": 0.5143,
+    "A002380": 0.4761,
+    "A214150": 0.5036,
+    "A000120": 0.4942,
+    "A071050": 0.4427,
+    "A036830": 0.542,
+    "A042000": 0.5129,
+    "A103140": 0.47,
+    "A310210": 0.3472,
+    "A005490": 0.3889,
+    "A214370": 0.4549,
+    "A017960": 0.5682,
+    "A095340": 0.5429,
+    "A213420": 0.5057,
+    "A006650": 0.5779,
+    "A071320": 0.4706,
+    "A067160": 0.5291,
+    "A002840": 0.5124,
+    "A035250": 0.5473,
+    "A120110": 0.5319,
+    "A006260": 0.3639,
+    "A030000": 0.5387,
+    "A014680": 0.5268,
+    "A285130": 0.5571,
+    "A071970": 0.5196,
+    "A000250": 0.5081,
+    "A204320": 0.5096,
+    "A079550": 0.4994,
+    "A032820": 0.5066,
+    "A112610": 0.5141,
+    "A417200": 0.5788,
+    "A178320": 0.558,
+    "A010130": 0.3914,
+    "A450080": 0.4587,
+    "A141080": 0.3647,
+    "A065350": 0.5292,
+    "A196170": 0.4828,
+    "A012750": 0.5604,
+    "A004000": 0.4783,
+    "A023530": 0.4919,
+    "A352820": 0.5166,
+    "A383220": 0.5226,
+    "A005380": 0.3231,
+    "A060250": 0.6029,
+    "A099320": 0.3694,
+    "A466100": 0.4875,
+    "A000240": 0.5778,
+    "A005290": 0.4914,
+    "A003090": 0.568,
+    "A122870": 0.5188,
+    "A018290": 0.5274,
+    "A457190": 0.4701,
+    "A050890": 0.524,
+    "A222800": 0.4319,
+    "A100790": 0.3231,
+    "A180640": 0.4495,
+    "A241560": 0.5269,
+    "A347850": 0.3373,
+    "A323410": 0.3954,
+    "A185750": 0.5322,
+    "A058610": 0.49,
+    "A138040": 0.354,
+    "A192820": 0.4971,
+    "A089030": 0.5352,
+    "A007070": 0.5502,
+    "A067310": 0.457,
+    "A352480": 0.535,
+    "A069620": 0.6094,
+    "A218410": 0.5032,
+    "A052400": 0.5503,
+    "A128940": 0.5525,
+    "A017670": 0.3752,
+    "A161890": 0.5309,
+    "A101730": 0.5321,
+    "A039490": 0.366,
+    "A087010": 0.3706,
+    "A036810": 0.5177,
+    "A161580": 0.4966,
+    "A056190": 0.5238,
+    "A124500": 0.5162,
+    "A069260": 0.5899,
+    "A171090": 0.5008,
+    "A003490": 0.4231,
+    "A095660": 0.5631,
+    "A005300": 0.5675,
+    "A280360": 0.5638,
+    "A030520": 0.5854,
+    "A033500": 0.5979,
+    "A137310": 0.5426,
+    "A251270": 0.5052,
+    "A282330": 0.5537,
+    "A011790": 0.4252,
+    "A038500": 0.5427,
+    "A215200": 0.5748,
+    "A053800": 0.5811,
+    "A007310": 0.5597,
+    "A056080": 0.5063,
+    "A034230": 0.4962,
+    "A226950": 0.3357,
+    "A006400": 0.3833,
+    "A000080": 0.5901,
+    "A006280": 0.6324,
+    "A251970": 0.3432,
+    "A194480": 0.6203,
+    "A025320": 0.6043,
+    "A131970": 0.5164,
+    "A008930": 0.5594,
+    "A009420": 0.423,
+    "A348210": 0.5381,
+    "A021240": 0.3231,
+    "A295310": 0.3231,
+    "A247540": 0.4036,
+    "A073240": 0.4514,
+    "A069080": 0.5571,
+    "A047050": 0.3231,
+    "A069960": 0.3914,
+    "A189300": 0.5198,
+    "A006040": 0.3515,
+    "A007390": 0.3282,
+    "A237690": 0.4522,
+    "A121600": 0.4418,
+    "A388720": 0.4122,
+    "A253450": 0.5726,
+    "A195940": 0.5217,
+    "A137400": 0.4644,
+    "A001040": 0.3751,
+    "A048410": 0.4044,
+    "A358570": 0.3903,
+    "A298380": 0.3231,
+    "A068760": 0.5337,
+    "A000670": 0.4986,
+    "A214430": 0.4723,
+    "A225570": 0.5388,
+    "A005420": 0.5472,
+    "A093370": 0.498,
+    "A082270": 0.4342,
+    "A483650": 0.2962,
+    "A139480": 0.3717,
+    "A006730": 0.4215,
+    "A009520": 0.594,
+    "A281740": 0.4191,
+    "A112040": 0.5412,
+    "A241710": 0.5318,
+    "A078340": 0.6144,
+    "A004020": 0.3231,
+    "A085660": 0.4801,
+    "A204270": 0.4351,
+    "A014820": 0.5153,
+    "A009240": 0.6159,
+    "A002030": 0.6216,
+    "A008730": 0.4359,
+    "A399720": 0.463,
+    "A183300": 0.4782,
+    "A300720": 0.5787,
+    "A268280": 0.5743,
+    "A009830": 0.3296,
+    "A298020": 0.3231,
+    "A078600": 0.3967,
+    "A090360": 0.3307,
+    "A267270": 0.3018,
+    "A047810": 0.3231,
+    "A319400": 0.3231,
+    "A361610": 0.4886,
+    "A025900": 0.5582,
+    "A025980": 0.4385,
+    "A004170": 0.3957,
+    "A278280": 0.491,
+    "A475830": 0.2962,
+    "A032500": 0.4511,
+    "A328130": 0.4567,
+    "A028300": 0.3815,
+    "A008770": 0.4124,
+    "A066970": 0.4027,
+    "A456040": 0.4668,
+    "A298050": 0.3479,
+    "A001680": 0.5506,
+    "A348370": 0.3842,
+    "A035760": 0.4688,
+    "A029780": 0.3231,
+    "A043260": 0.3231,
+    "A032190": 0.3231,
+    "A211050": 0.4361,
+    "A074600": 0.361,
+    "A445680": 0.3543,
+    "A293490": 0.4026,
+    "A290650": 0.4267,
+    "A105560": 0.3231,
+    "A090710": 0.3633,
+    "A086790": 0.3231,
+    "A138930": 0.3231,
+    "A055550": 0.3231,
+    "A089970": 0.4285,
+    "A024110": 0.3231,
+    "A139130": 0.3231,
+    "A175330": 0.3231
+  },
+  "signal_matrix_ref": "stage_artifacts/WT_R20260829_006/alpha_scores.parquet",
+  "factor_specs": [
+    {
+      "factor_family": "accrual",
+      "proxy": "계열 합성 z (등가중, 25개 팩터: AC01_Total_Accruals_CF, AC02_Total_Accruals_BS, AC03_WC_Accruals, AC04_NCO_Accruals, …)",
+      "formula": "z_fam(f,i,d) = mean_k Z_Score_Aligned(k,i,d), k ∈ family f",
+      "lag_rule": "load_month_factors(sig_date) 승격분만 — Usable_Date <= sig_date (C14/C15)",
+      "winsorization": "Factor DB 승격 규약(3std) 승계",
+      "neutralization": "none (계열 합성 단계). 진단으로 log(Size) 중립화 IC 병기",
+      "economic_rationale": "behavioral",
+      "weight_theta": 0.118512,
+      "references": [
+        "Ehsani & Linnainmaa (2022) JF 77:1877-1919",
+        "https://onlinelibrary.wiley.com/doi/abs/10.1111/jofi.13131"
+      ]
+    },
+    {
+      "factor_family": "crowding",
+      "proxy": "계열 합성 z (등가중, 12개 팩터: CR01_Sector_Comovement, CR02_Volume_Concentration, CR05_Short_Pressure_Proxy, CR06_DTC_Proxy, …)",
+      "formula": "z_fam(f,i,d) = mean_k Z_Score_Aligned(k,i,d), k ∈ family f",
+      "lag_rule": "load_month_factors(sig_date) 승격분만 — Usable_Date <= sig_date (C14/C15)",
+      "winsorization": "Factor DB 승격 규약(3std) 승계",
+      "neutralization": "none (계열 합성 단계). 진단으로 log(Size) 중립화 IC 병기",
+      "economic_rationale": "structural",
+      "weight_theta": 0.077077,
+      "references": [
+        "Ehsani & Linnainmaa (2022) JF 77:1877-1919",
+        "https://onlinelibrary.wiley.com/doi/abs/10.1111/jofi.13131"
+      ]
+    },
+    {
+      "factor_family": "defense",
+      "proxy": "계열 합성 z (등가중, 57개 팩터: D01_IdioVol, D02_Beta, D03_RealVol, D04_Downside_Beta, …)",
+      "formula": "z_fam(f,i,d) = mean_k Z_Score_Aligned(k,i,d), k ∈ family f",
+      "lag_rule": "load_month_factors(sig_date) 승격분만 — Usable_Date <= sig_date (C14/C15)",
+      "winsorization": "Factor DB 승격 규약(3std) 승계",
+      "neutralization": "none (계열 합성 단계). 진단으로 log(Size) 중립화 IC 병기",
+      "economic_rationale": "risk_premium",
+      "weight_theta": -0.056988,
+      "references": [
+        "Ehsani & Linnainmaa (2022) JF 77:1877-1919",
+        "https://onlinelibrary.wiley.com/doi/abs/10.1111/jofi.13131"
+      ]
+    },
+    {
+      "factor_family": "growth",
+      "proxy": "계열 합성 z (등가중, 21개 팩터: GR01_Revenue_Growth, GR02_Earnings_Growth, GR03_Asset_Growth, GR04_GPA_Growth, …)",
+      "formula": "z_fam(f,i,d) = mean_k Z_Score_Aligned(k,i,d), k ∈ family f",
+      "lag_rule": "load_month_factors(sig_date) 승격분만 — Usable_Date <= sig_date (C14/C15)",
+      "winsorization": "Factor DB 승격 규약(3std) 승계",
+      "neutralization": "none (계열 합성 단계). 진단으로 log(Size) 중립화 IC 병기",
+      "economic_rationale": "behavioral",
+      "weight_theta": 0.099506,
+      "references": [
+        "Ehsani & Linnainmaa (2022) JF 77:1877-1919",
+        "https://onlinelibrary.wiley.com/doi/abs/10.1111/jofi.13131"
+      ]
+    },
+    {
+      "factor_family": "investor_flow",
+      "proxy": "계열 합성 z (등가중, 15개 팩터: INV01_Foreign_NetBuy_20d, INV02_Foreign_NetBuy_60d, INV03_Inst_NetBuy_20d, INV04_Inst_NetBuy_60d, …)",
+      "formula": "z_fam(f,i,d) = mean_k Z_Score_Aligned(k,i,d), k ∈ family f",
+      "lag_rule": "load_month_factors(sig_date) 승격분만 — Usable_Date <= sig_date (C14/C15)",
+      "winsorization": "Factor DB 승격 규약(3std) 승계",
+      "neutralization": "none (계열 합성 단계). 진단으로 log(Size) 중립화 IC 병기",
+      "economic_rationale": "structural",
+      "weight_theta": -0.123379,
+      "references": [
+        "Ehsani & Linnainmaa (2022) JF 77:1877-1919",
+        "https://onlinelibrary.wiley.com/doi/abs/10.1111/jofi.13131"
+      ]
+    },
+    {
+      "factor_family": "leverage",
+      "proxy": "계열 합성 z (등가중, 5개 팩터: XF_DU03_EquityMultiplier, XF_LL01_DebtToCapital, XF_LL02_NetDebt, XF_LL03_CashRatio, …)",
+      "formula": "z_fam(f,i,d) = mean_k Z_Score_Aligned(k,i,d), k ∈ family f",
+      "lag_rule": "load_month_factors(sig_date) 승격분만 — Usable_Date <= sig_date (C14/C15)",
+      "winsorization": "Factor DB 승격 규약(3std) 승계",
+      "neutralization": "none (계열 합성 단계). 진단으로 log(Size) 중립화 IC 병기",
+      "economic_rationale": "risk_premium",
+      "weight_theta": 0.117581,
+      "references": [
+        "Ehsani & Linnainmaa (2022) JF 77:1877-1919",
+        "https://onlinelibrary.wiley.com/doi/abs/10.1111/jofi.13131"
+      ]
+    },
+    {
+      "factor_family": "liquidity",
+      "proxy": "계열 합성 z (등가중, 44개 팩터: L01_Amihud, L02_Turnover, L03_Volume_Mom, L04_Bid_Ask_Proxy, …)",
+      "formula": "z_fam(f,i,d) = mean_k Z_Score_Aligned(k,i,d), k ∈ family f",
+      "lag_rule": "load_month_factors(sig_date) 승격분만 — Usable_Date <= sig_date (C14/C15)",
+      "winsorization": "Factor DB 승격 규약(3std) 승계",
+      "neutralization": "none (계열 합성 단계). 진단으로 log(Size) 중립화 IC 병기",
+      "economic_rationale": "risk_premium",
+      "weight_theta": -0.059479,
+      "references": [
+        "Ehsani & Linnainmaa (2022) JF 77:1877-1919",
+        "https://onlinelibrary.wiley.com/doi/abs/10.1111/jofi.13131"
+      ]
+    },
+    {
+      "factor_family": "quality",
+      "proxy": "계열 합성 z (등가중, 47개 팩터: Q01_GPA, Q02_ROE, Q03_ROA, Q04_Piotroski_F, …)",
+      "formula": "z_fam(f,i,d) = mean_k Z_Score_Aligned(k,i,d), k ∈ family f",
+      "lag_rule": "load_month_factors(sig_date) 승격분만 — Usable_Date <= sig_date (C14/C15)",
+      "winsorization": "Factor DB 승격 규약(3std) 승계",
+      "neutralization": "none (계열 합성 단계). 진단으로 log(Size) 중립화 IC 병기",
+      "economic_rationale": "risk_premium",
+      "weight_theta": 0.093621,
+      "references": [
+        "Ehsani & Linnainmaa (2022) JF 77:1877-1919",
+        "https://onlinelibrary.wiley.com/doi/abs/10.1111/jofi.13131"
+      ]
+    },
+    {
+      "factor_family": "regime",
+      "proxy": "계열 합성 z (등가중, 6개 팩터: RE04_HighVol_Beta, RE05_LowVol_Beta, RE06_Beta_Asymmetry, RE07_Crisis_Beta, …)",
+      "formula": "z_fam(f,i,d) = mean_k Z_Score_Aligned(k,i,d), k ∈ family f",
+      "lag_rule": "load_month_factors(sig_date) 승격분만 — Usable_Date <= sig_date (C14/C15)",
+      "winsorization": "Factor DB 승격 규약(3std) 승계",
+      "neutralization": "none (계열 합성 단계). 진단으로 log(Size) 중립화 IC 병기",
+      "economic_rationale": "structural",
+      "weight_theta": -0.05813,
+      "references": [
+        "Ehsani & Linnainmaa (2022) JF 77:1877-1919",
+        "https://onlinelibrary.wiley.com/doi/abs/10.1111/jofi.13131"
+      ]
+    },
+    {
+      "factor_family": "risk",
+      "proxy": "계열 합성 z (등가중, 18개 팩터: R01_VaR_95, R02_VaR_99, R03_CVaR_95, R04_CVaR_99, …)",
+      "formula": "z_fam(f,i,d) = mean_k Z_Score_Aligned(k,i,d), k ∈ family f",
+      "lag_rule": "load_month_factors(sig_date) 승격분만 — Usable_Date <= sig_date (C14/C15)",
+      "winsorization": "Factor DB 승격 규약(3std) 승계",
+      "neutralization": "none (계열 합성 단계). 진단으로 log(Size) 중립화 IC 병기",
+      "economic_rationale": "risk_premium",
+      "weight_theta": 0.062106,
+      "references": [
+        "Ehsani & Linnainmaa (2022) JF 77:1877-1919",
+        "https://onlinelibrary.wiley.com/doi/abs/10.1111/jofi.13131"
+      ]
+    },
+    {
+      "factor_family": "size",
+      "proxy": "계열 합성 z (등가중, 2개 팩터: S01_Size, S02_Float_Size)",
+      "formula": "z_fam(f,i,d) = mean_k Z_Score_Aligned(k,i,d), k ∈ family f",
+      "lag_rule": "load_month_factors(sig_date) 승격분만 — Usable_Date <= sig_date (C14/C15)",
+      "winsorization": "Factor DB 승격 규약(3std) 승계",
+      "neutralization": "none (계열 합성 단계). 진단으로 log(Size) 중립화 IC 병기",
+      "economic_rationale": "risk_premium",
+      "weight_theta": -0.072257,
+      "references": [
+        "Ehsani & Linnainmaa (2022) JF 77:1877-1919",
+        "https://onlinelibrary.wiley.com/doi/abs/10.1111/jofi.13131"
+      ]
+    },
+    {
+      "factor_family": "value",
+      "proxy": "계열 합성 z (등가중, 18개 팩터: V01_BM, V02_EP, V03_CFP, V07_EV_EBITDA, …)",
+      "formula": "z_fam(f,i,d) = mean_k Z_Score_Aligned(k,i,d), k ∈ family f",
+      "lag_rule": "load_month_factors(sig_date) 승격분만 — Usable_Date <= sig_date (C14/C15)",
+      "winsorization": "Factor DB 승격 규약(3std) 승계",
+      "neutralization": "none (계열 합성 단계). 진단으로 log(Size) 중립화 IC 병기",
+      "economic_rationale": "risk_premium",
+      "weight_theta": 0.061363,
+      "references": [
+        "Ehsani & Linnainmaa (2022) JF 77:1877-1919",
+        "https://onlinelibrary.wiley.com/doi/abs/10.1111/jofi.13131"
+      ]
+    },
+    {
+      "factor_family": "factor_timing_overlay",
+      "proxy": "TS-FMOM 지시 계열 가중 w_f(d) = sign(mean r^f over 12-1) / sd_expanding(r^f)",
+      "formula": "score_i(d) = Σ_f w_f(d)·z_fam(f,i,d) / Σ_f |w_f(d)|",
+      "lag_rule": "형성창 = 홀딩월 m-12..m-1 실현 팩터수익만 (스킵월 없음, EL2022 게재판 Table 2 사양)",
+      "winsorization": "none",
+      "neutralization": "none",
+      "economic_rationale": "behavioral",
+      "weight_theta": 1,
+      "references": [
+        "Ehsani & Linnainmaa (2022) JF 77:1877-1919 Table 2·Table 6 Panel A",
+        "Kozak-Shleifer-Vishny (2018) AR(1) 감정수요"
+      ]
+    }
+  ],
+  "diagnostics": {
+    "canonical_port_t_nw_lag3": 1.043846,
+    "canonical_port_t_pvalue": 0.296557,
+    "canonical_n_months": 248,
+    "rank_ic": 0.009556,
+    "icir": 0.058921,
+    "monotonicity": 0.90303,
+    "subperiod_stability": -0.352763,
+    "turnover_proxy": 11.9826,
+    "harvey_t_stat": 0.9279,
+    "deflated_sharpe_ratio": 0.877813,
+    "post_neutralization_ic": 0.003311,
+    "alpha_inheritance_cor": 0.118789,
+    "portfolio_alpha_t_separate_note": "★rank-IC t(0.928) 와 portfolio-alpha t(1.044) 를 구분 보고 (Cycle 2 교훈). 권위 = portfolio-alpha t. forge 재측정이 authoritative.",
+    "beta_controlled_alpha_ann": 0.063581,
+    "beta_controlled_t_alpha": 1.3993,
+    "beta": 0.8747,
+    "net_sr_active": 0.257791,
+    "information_ratio": 0.257791,
+    "diag_ew_universe_port_t": 1.4615,
+    "diag_ew_universe_post2017_t": 0.1941,
+    "ast_verify_summary": "schema 방언 FAIL_CONTRACT(위반 0 · 계약실패 1) / children 방언 WARN_RESTATEMENT(위반 0 · 계약실패 0) · 순회 리프 271 · restatement 리프 25"
+  },
+  "selection_objective": "canonical_port_t",
+  "alpha_discovery_count": 1,
+  "challenge_flags": ["RF-A1 [HIGH] 논문 2편(EL2022 게재판 · KSV2018) + 부기간 IC 안정성 -0.353 < 0.5 (P1 0.0192 / P2 -0.0068 / P3 0.0086) — Red Flag 규칙 발화.", "WT006-01 [HIGH] 소비면 감쇠: EW-유니버스 대비 post-2017 PORT_t 0.194 (전기간 1.462), oos_retention_approx 0.089 — 최근 구간 신호 소멸.", "WT006-02 [HIGH] 기전 반증 (d) 미통과: PC 순위 vs 자기상관 t Spearman -0.287 (상위5 PC 기울기 0.0970 t 1.48 · 하위5 0.0001 t 0.00). EL2022 의 고고유값 집중 예측(상위10 t 6.08 vs 하위7 2.15)이 KR 에서 재현되지 않는다 — 근-차익 마찰 논리가 KR 에서 지지되지 않음. 1급 자기상관이 관측되더라도 기전은 별개로 기각된다(설계 (d) 조항).", "WT006-03 [HIGH] 2급 판정 무효(사전등록 조항): 양방향 흡수. M02 절편 0.0076(t 2.49)→0.0039(t 1.45) · TS-FMOM 절편 0.0040(t 2.56)→0.0024(t 1.77). 두 계열이 같은 것을 재고 있을 가능성 — 어느 쪽이 우선인지 판별 불가.", "WT006-04 [MEDIUM] 검정력: 1급 계열-대표 사양의 EL2022 효과크기(0.45%/월) 대비 power 0.220 · ratio 0.423 · MDE80 0.0106. 착수 게이트(ratio>=0.15)는 통과했으나 US 효과크기 기준으로는 저검정력 — KR 실측 효과(0.0082/월)가 EL2022 보다 커서 검출됐다.", "WT006-05 [MEDIUM] 해상도: 선언 계열 15 중 monthly factor_db 실재 14(technical 12팩터는 daily store 전용 — 월간 미승격). 비-모멘텀 13 계열의 평균 |rho| 0.2448 → 유효 독립 계열 3.25. 'F_eff≈15' 는 명목이고 실효 해상도는 3~4다.", "WT006-06 [MEDIUM] 회전율 11.98/yr > 구현 규율 권고 11.0/yr (research_philosophy ⑥). 비용은 15bps delta 로 이미 차감된 net 수치이나 용량·집행 부담은 별도 심사 대상.", "WT006-07 [MEDIUM] 설계의 1급 '계열-대표 1팩터' 를 **계열 내 등가중 합성(EW composite)** 으로 구현. 사유: 대표 1팩터 선택 규칙이 성과 기반이면 selection 오염, 임의면 자의적. 결정론적 대체(계열별 알파벳 첫 팩터)로 강건성 병기 — 기울기 0.00650 t 2.12 로 동일 방향. No Silent Override 로 challenge_note 기록.", "WT006-08 [MEDIUM] 기전 (d) 를 **월별 대체 사양**으로 산출. 설계 W6 은 '일별 커버리지 10년 미달 시 강등' 을 조건으로 걸었으나 실제 daily store 는 1990-01~2026-07 로 커버리지 미달이 아니다 — 강등 사유는 커버리지가 아니라 **일별 계열 L/S 수익 패널 부재(별도 파이프라인 필요)** 다. 조건을 사후에 맞추지 않고 실제 사유를 기록한다.", "WT006-09 [MEDIUM] DIST-RAMP-014 사전선언(소비면 증분 <=0) 대비: 실측 β-통제 α +0.0636/yr (t 1.399, β 0.875) vs cell4 +5.14%/yr (t 1.205, β 1.058) → 증분 +1.22pp. 방향은 사전선언과 어긋나나 **양쪽 다 |t|<2 로 무의미**하므로 반증으로 승격하지 않는다(DIST-AR-051 재현 의무 미발동).", "WT006-10 [MEDIUM] 전달식 (c): Σ_f cov(형성,당월)·σ²_β = 0.000185/월 vs 실측 M02 평균 0.004598/월 (비율 0.040). 부호는 양(+)이나 수준으로는 3.6%만 설명. ★단 EL2022 eq.(9)는 Lo-MacKinlay 가중상대강도 전략에 대한 항등식이고 본 M02 는 2×3 정렬 요인이라 **수준 비교는 동종이 아니다** — 부호·계열 순위만 인용 가능. 첫 항 기여의 71%가 size 계열 단독.", "WT006-11 [LOW] 무신호 대조(시총 상위25 cap-w / 무작위 25종)는 Q-Lead 규율 ①(arm 배터리 폐지)에 따라 **미실시**. 설계 3급의 mandatory_confounder_controls 중 해당 항목은 지시로 대체됨 — 승계 설계 대비 축소를 은닉하지 않고 기록한다. 검사기 양성대조(sham-FMOM · F-사다리)는 계약형이므로 유지·통과.", "WT006-12 [LOW] self_pit_check restatement_prone 리프 255/271 — registry 기준. 전부 load_month_factors() 승격분(Usable_Date <= sig_date)이라 구조적 look-ahead 는 없으나 judge WARN_RESTATEMENT 입력.", "WT006-14 [HIGH] PIT-strict 제외의 부작용: consensus 계열이 실질 소거됐다 — 등록 23팩터 중 12종이 ast_verify FAIL_LOOKAHEAD 로 빠지고 alias 3종이 dedup 되어 **소비 잔존 1팩터(C07_TP_Mom)**. 계열 해상도가 명목 13 이지만 한 계열은 단일 팩터다. 성과 사유가 아니라 PIT 사유의 제외이며 그 대가를 은닉하지 않는다.", "WT006-15 [HIGH] as_of(2026-08-28) 커버리지 결손: [] 계열이 그 달 월간 factor_db 에 부재 → as_of α̂ 는 13 계열로 구성(역사 스코어는 13 계열). 하류(risk/optimizer/forge)는 이 구성 차이를 인지하고 소비할 것.", "WT006-13 [HIGH] 자본 층 HARD 미달(진단): canonical PORT_t 1.044 (p 0.297) ≪ 2.95. 본 수치는 스크리닝 실측이며 판정 권위는 forge — alpha 단계에서 졸업 판정을 선언하지 않는다.", "WT006-16 [HIGH] 기간 절단 강건성: 전기간 α +6.36%/yr(t 1.399 · PORT_t 1.044) / ~2024 +8.45%(t 1.875 · PORT_t 1.977) / ~2019 +10.96%(t 1.985 · PORT_t 2.115) / 2015~ -0.05%(t -0.009 · PORT_t -0.408). 신호는 전반부에 집중되고 후반부에 소멸한다 — 감쇠가 본 후보의 1차 구속이다.", "WT006-17 [HIGH] 벤치마크 데이터 무결성 의심(상류): .cache/rawdata.parquet BM_Ret 의 월수익 변동성이 2025 sd 0.093 · 2026 sd 0.211 로 2004~2024 통상 대비 2~5배다(2026-06 −22.8%%, 2026-03 +28.8%%). 본 라운드가 만든 값이 아니며 수정 권한 밖이다. 최근구간 진단(post-2017 t · oos_retention_approx)과 전기간 α 의 신뢰도를 깎으므로 하류는 '~2024' 절단값을 병기해 읽을 것. 병렬 WT(_004/_005/_007)도 동일 벤치를 쓴다 — 공통 상류 점검 필요.", "WT006-18 [MEDIUM] PIT 수정의 blast radius: 제외 전(23리프 포함) 대비 월수익 상관 0.971428 · 완전동일 월 0/248 · β-통제 α +0.0566→+0.0636(t 1.300→1.399). PIT 사유의 제외가 성과를 **올렸다** — 제외된 리프가 성과를 부풀리고 있지 않았다는 실증(원판본 = period_returns_prePITfix.csv 로 보존).", "WT006-19 [MEDIUM] ast_verify 방언 분열 3건 실측 — ①자식 키: schema=args / 검증기=children(검증기는 args 도 수용, dialect_args_used=TRUE) ②나눗셈: schema enum=DIV_GUARD / 검증기 O_ALL=DIV(본 산출은 MUL+스칼라로 우회해 미의존) ③스칼라: schema 는 args 에 number 허용 / 검증기는 비-dict arg 를 FAIL_CONTRACT. 그래서 **정본(schema 방언)은 FAIL_CONTRACT(위반 0), children 방언 사본은 WARN_RESTATEMENT**. 순회 리프 = 팩터별 합 271(정본 선언 리프와 일치). 사본 = ast_verify_input_children_dialect.json."]
+}
