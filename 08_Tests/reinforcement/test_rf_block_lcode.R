@@ -48,8 +48,15 @@ if (!length(act)) {
       np <- np[nzchar(trimws(np))]
       if (length(np) >= 2L) ok(sprintf("next_probe %d건 (C/F 연속성 계약 >=2)", length(np)))
       else ng("next_probe", sprintf("%d건 — 연속성 계약 미달", length(np)))
-      if (!is.null(d$source_paper) && nzchar(as.character(d$source_paper)))
-        ok("source_paper 기록(근거 논문 의무)") else ng("source_paper 부재")
+      # ★근거 논문 의무는 **강화 레인에 한해** 2026-09-03 도훈이 해제했다
+      #   (CLAUDE.md · lean-loop.md §하지 않는 것). 축의 정당성은 격자와 팩터 등록부가 진다.
+      #   구판은 `source_paper` 부재를 실패로 봤는데, 이 검사는 오랫동안 skip 상태라
+      #   규칙이 폐지된 뒤에도 아무도 못 봤다. 대신 **레인 식별**을 잰다 —
+      #   이게 없으면 이 기록이 강화 산출인지 충실구현 산출인지 구분되지 않는다.
+      #   ★충실구현·2계층의 근거 의무는 불변이므로 그쪽 검사에서 따로 잰다.
+      if (identical(as.character(d$research_mode), "reinforcement"))
+        ok("research_mode=reinforcement (강화 레인 — 근거 논문 의무 해제 대상)")
+        else ng("research_mode", sprintf("%s — 레인 식별 불가", d$research_mode %||% "결측"))
     } else ng("적립 파일 부재", f)
   }
 }

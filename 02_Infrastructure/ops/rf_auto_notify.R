@@ -91,7 +91,9 @@ rf_notify_charts <- function(tab, outdir) {
   nm <- switch(id, "V01_BM" = "가치 B/M", "Q01_GPA" = "수익성 GP/A",
                    "L01_Amihud" = "비유동 Amihud", "C13_Revision_Breadth_3m" = "이익수정 3M",
                    "lowvol60" = "저변동 sigma60", id)
-  sprintf("%s (%s)", nm, id)
+  # 한글 라벨이 없으면 id 를 두 번 쓰지 않는다 — "D16_Coskewness (D16_Coskewness)" 는
+  # 30자를 먹고 정보가 0이다. 순위 줄이 48자로 잘리는 자리에서 이게 구분자를 밀어낸다.
+  if (identical(nm, id)) id else sprintf("%s (%s)", nm, id)
 }
 # 컴포짓 비율 — 기저 1 + 팩터 n 을 rankZ 등가중으로 섞는다. 이 한 줄이 희석의 크기다.
 .rf_mix <- function(nf) {
@@ -376,7 +378,12 @@ rf_auto_notify <- function(base_id, n, kind = "block") {
                    #   나쁠 때 지난 블록 칸이 상위를 차지해, 블록 완료 보고가 지난 얘기를 한다
                    #   (2026-08-31 실측: B2 다섯 칸이 전부 음수라 B2 메시지의 순위 4개 중 3개가
                    #   B1 칸이었고 "이번 축" 도 B1 로 표시됐다). 전체 최고는 [핵심 수치]가 준다.
-                   .curblk <- { .m <- tab[n <= S$used]
+                   # ★검사 이음매: QVEST_RF_FORCE_BLOCK 이 있으면 그 블록을 렌더한다.
+                   #   평시엔 빈 문자열이라 아무 영향이 없다. 이게 없으면 검사가 각 entry 의
+                   #   마지막 블록밖에 못 봐서, 나머지 블록의 서술 붕괴가 계속 새 나간다
+                   #   (2026-09-03: B5 -> B4 -> B1 순으로 세 번 다 안 보는 블록에서 났다).
+                   .fb <- Sys.getenv("QVEST_RF_FORCE_BLOCK", "")
+                   .curblk <- if (nzchar(.fb)) .fb else { .m <- tab[n <= S$used]
                                 if (nrow(.m)) sub("_.*$", "", .m[which.max(n)]$code) else NA_character_ }
                    .inblk <- if (!is.na(.curblk)) tab[grepl(paste0("^", .curblk, "_"), code)] else tab[0]
                    ord  <- (if (nrow(.inblk)) .inblk else tab)[order(-replace(port_t, !is.finite(port_t), -Inf))]
@@ -409,6 +416,32 @@ rf_auto_notify <- function(base_id, n, kind = "block") {
                    # ★순위 줄은 **그 칸이 바꾼 축**만 적는다. 전 축을 쓰면 승계와 겹치는
                    #   부분(비중·유니버스)이 자리를 다 먹고 등급·기준선 대비가 80자에서 잘린다
                    #   — 정작 판단에 쓰이는 두 값이 사라진다(2026-08-31 미리보기에서 적발).
+                   # ★서술의 기준은 **함께 순위에 오른 칸들**이다 (2026-09-03 도훈 3차 적발).
+                   #   구판은 carry 라는 고정 기준으로만 뺐다. 그래서 ①carry 가 없으면(최초 강화)
+                   #   전문을 그대로 자르고 ②B1 처럼 칸들이 팩터를 **누적**하면 공통 접두가 길어져
+                   #   앞에서 48자를 자르는 순간 1~4위가 글자까지 같아졌다(실측 nchar 62/94/142/194/238,
+                   #   구분자는 전부 문자열 **끝**에 있었다). 기준을 블록 공통분으로 옮기면
+                   #   남는 것이 곧 그 칸을 가르는 값이다.
+                   .prs <- lapply(ord$code, function(cd) {
+                     f <- dsc[[cd]] %||% ""
+                     p <- strsplit(f, " | ", fixed = TRUE)[[1]]
+                     if (length(p) %in% c(3L, 4L)) p else NULL })
+                   .prs <- Filter(Negate(is.null), .prs)
+                   .allsame <- function(j) length(unique(vapply(.prs, function(p) p[j], character(1)))) <= 1L
+                   .blkcom <- if (length(.prs) >= 2L)
+                     Reduce(intersect, lapply(.prs, function(p) trimws(strsplit(p[1], "+", fixed = TRUE)[[1]])))
+                     else character(0)
+                   .wt_same <- length(.prs) >= 2L && .allsame(2L)
+                   .un_same <- length(.prs) >= 2L && .allsame(3L)
+                   #' 팩터 추가분을 48자 안에서 **구분되게** 적는다. 누적형이면 항목을 다 쓰면
+                   #' 또 앞이 겹치므로, 앞머리에 개수를 세우고 마지막(가장 최근 추가)을 붙인다.
+                   .addtxt <- function(add) {
+                     if (!length(add)) return(character(0))
+                     j <- paste(add, collapse = "+")
+                     # 개수를 항상 앞세운다 — B1 처럼 칸이 누적형이면 개수가 사다리를 읽게 한다.
+                     if (nchar(j) <= 38L) return(sprintf("%d종 · %s", length(add), j))
+                     sprintf("%d종 · 막 %s", length(add), utils::tail(add, 1L))
+                   }
                    .delta_of <- function(code) {
                      # ★결합 칸은 부분집합이 곧 처치다 — 축 차집합 경로를 타지 않는다.
                      if (grepl("^B4_", code)) {
@@ -421,25 +454,26 @@ rf_auto_notify <- function(base_id, n, kind = "block") {
                      # 오버레이만 다른 칸을 가르는 유일한 값이라 반드시 살려야 한다.
                      if (!length(pr) %in% c(3L, 4L)) return(substr(full, 1, 48))
                      .ov4 <- if (length(pr) == 4L) pr[4] else NA_character_
+                     # 정규식 대신 분리·차집합 — 팩터 이름에 정규식 메타문자가 섞이면
+                     # 접두 제거가 조용히 빗나간다(2026-08-31: 이스케이프로 파싱 실패).
+                     cfs <- if (!is.null(cy)) trimws(vapply(cy$factors %||% list(), .rf_f2, character(1)))
+                            else character(0)
+                     fs  <- trimws(strsplit(pr[1], "+", fixed = TRUE)[[1]])
+                     ch  <- .addtxt(setdiff(fs, union(cfs, .blkcom)))
                      if (!is.null(cy)) {
-                       # 정규식 대신 분리·차집합 — 팩터 이름에 정규식 메타문자가 섞이면
-                       # 접두 제거가 조용히 빗나간다(2026-08-31: "\+" 이스케이프로 파싱 실패).
-                       cfs <- trimws(vapply(cy$factors %||% list(), .rf_f2, character(1)))
-                       fs  <- trimws(strsplit(pr[1], "+", fixed = TRUE)[[1]])
-                       add <- setdiff(fs, cfs)
-                       ch <- character(0)
-                       if (length(add)) ch <- c(ch, paste(add, collapse = "+"))
                        if (!identical(pr[2], .rf_wt(cy$weighting))) ch <- c(ch, pr[2])
                        if (!identical(pr[3], .rf_un(cy$universe)))  ch <- c(ch, pr[3])
                        .cov <- .rf_ov(cy$overlay)
                        if (!is.na(.ov4) && !identical(.ov4, .cov)) ch <- c(ch, .ov4)
-                       if (length(ch)) return(substr(paste(ch, collapse = " · "), 1, 48))
-                       return("승계와 동일")
+                     } else {
+                       # carry 가 없으면 블록 안에서 **갈리는** 축만 적는다 —
+                       # 모든 칸이 공유하는 값은 매 줄에 써봐야 구분에 기여하지 않는다.
+                       if (!.wt_same) ch <- c(ch, pr[2])
+                       if (!.un_same) ch <- c(ch, pr[3])
+                       if (!is.na(.ov4)) ch <- c(ch, .ov4)
                      }
-                     # carry 가 없으면 바뀐 축을 못 빼므로 전문을 자른다 —
-                     # 다만 오버레이가 있으면 **그 축을 앞세운다**(그게 이 칸의 처치다).
-                     if (!is.na(.ov4)) return(substr(.ov4, 1, 48))
-                     substr(full, 1, 48)
+                     if (!length(ch)) return(if (is.null(cy)) "이 블록의 공통 기저" else "승계와 동일")
+                     substr(paste(ch, collapse = " · "), 1, 48)
                    }
                    # ★칸별 미달 폭은 적지 않는다(도훈 2026-08-31). 기준선은 위에 한 번 서 있고
                    #   각 칸의 t 가 옆에 있으니 차이는 읽는 사람이 본다 — 줄마다 반복하면 소음이다.
