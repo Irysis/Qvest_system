@@ -114,6 +114,36 @@ rf_notify_charts <- function(tab, outdir) {
     "hrp"              = "계층 리스크패리티",
     k)
 }
+.RF_OV_ACT <- c(cross_sectional = "종목별", scalar_exposure = "총노출")
+.RF_OV_ST  <- c(drawdown = "낙폭", vol = "변동성", multivar = "다변량", ml = "학습",
+                trend = "추세", dispersion = "분산", holding_level = "종목상태")
+# 오버레이 축 — B5 다섯 칸을 가르는 유일한 값이다. 이게 없으면 순위 네 줄이 같은 문장이 된다.
+.rf_ov <- function(o) {
+  if (is.null(o) || identical(as.character(o$kind %||% "none"), "none")) return(NA_character_)
+  aid <- as.character(o$arm_id %||% "")
+  knd <- as.character(o$kind   %||% "?")
+  ax <- tryCatch({
+    d <- fromJSON(file.path(ROOT, "06_Registry/overlay_catalog.json"), simplifyVector = FALSE)
+    h <- Filter(function(a) identical(as.character(a$id %||% ""), aid), d$arms %||% list())
+    if (!length(h)) h <- Filter(function(a) identical(as.character(a$kind %||% ""), knd), d$arms %||% list())
+    if (length(h)) {
+      # ★action/state 가 비어 있는 구 arm 은 기전 지도의 계열 매핑으로 파생한다 —
+      #   축 라벨을 여기서 따로 만들면 픽커·지도와 갈린다(정본 하나 규율).
+      z <- tryCatch({
+        # ★cat() 배너는 suppressMessages 로 안 막힌다 — 출력을 통째로 삼킨다.
+        #   안 그러면 arm 하나당 한 줄씩 스케줄러 로그에 쌓인다.
+        invisible(utils::capture.output(suppressMessages(
+          source(file.path(ROOT, "02_Infrastructure/reinforcement/rf_mechanism_map.R"), local = TRUE))))
+        rfm_arm_axis(h[[1]])
+      }, error = function(e) list(action = "", state = ""))
+      a <- .RF_OV_ACT[[as.character(h[[1]]$action %||% z$action %||% "")]] %||% ""
+      s <- .RF_OV_ST[[ as.character(h[[1]]$state  %||% z$state  %||% "")]] %||% ""
+      paste(c(a, s)[nzchar(c(a, s))], collapse = "/")
+    } else ""
+  }, error = function(e) "")
+  nm <- if (nzchar(aid)) aid else knd
+  if (nzchar(ax)) sprintf("오버레이 %s (%s)", ax, nm) else sprintf("오버레이 %s", nm)
+}
 .rf_un <- function(u) {
   k <- u$kind %||% "k200_kq150"
   switch(k,
@@ -213,7 +243,12 @@ rf_cell_desc <- function(base_id = NULL) {
     wt <- if (!is.null(sp)) sp$weighting else (cl$weighting %||% list(kind = "ew"))
     un <- if (!is.null(sp)) sp$universe  else (cl$universe  %||% list(kind = "k200_kq150"))
     .f2txt <- if (is.character(f2)) f2 else .rf_f2(f2)
-    out[[cl$code]] <- sprintf("%s | %s | %s", .f2txt, .rf_wt(wt), .rf_un(un))
+    # ★오버레이는 있을 때만 4번째 축으로 붙인다 — B1~B3 문장은 3축 그대로다(하위호환).
+    ov <- if (!is.null(sp)) sp$overlay else cl$overlay
+    .ovtxt <- .rf_ov(ov)
+    out[[cl$code]] <- if (is.na(.ovtxt))
+      sprintf("%s | %s | %s", .f2txt, .rf_wt(wt), .rf_un(un)) else
+      sprintf("%s | %s | %s | %s", .f2txt, .rf_wt(wt), .rf_un(un), .ovtxt)
   }
   out
 }
@@ -342,7 +377,10 @@ rf_auto_notify <- function(base_id, n, kind = "block") {
                    .delta_of <- function(code) {
                      full <- dsc[[code]] %||% "격자 밖"
                      pr <- strsplit(full, " | ", fixed = TRUE)[[1]]
-                     if (length(pr) != 3L) return(substr(full, 1, 48))
+                     # 3축(팩터·비중·유니버스) 또는 4축(+오버레이). 4축은 B5 처럼
+                     # 오버레이만 다른 칸을 가르는 유일한 값이라 반드시 살려야 한다.
+                     if (!length(pr) %in% c(3L, 4L)) return(substr(full, 1, 48))
+                     .ov4 <- if (length(pr) == 4L) pr[4] else NA_character_
                      if (!is.null(cy)) {
                        # 정규식 대신 분리·차집합 — 팩터 이름에 정규식 메타문자가 섞이면
                        # 접두 제거가 조용히 빗나간다(2026-08-31: "\+" 이스케이프로 파싱 실패).
@@ -353,9 +391,14 @@ rf_auto_notify <- function(base_id, n, kind = "block") {
                        if (length(add)) ch <- c(ch, paste(add, collapse = "+"))
                        if (!identical(pr[2], .rf_wt(cy$weighting))) ch <- c(ch, pr[2])
                        if (!identical(pr[3], .rf_un(cy$universe)))  ch <- c(ch, pr[3])
+                       .cov <- .rf_ov(cy$overlay)
+                       if (!is.na(.ov4) && !identical(.ov4, .cov)) ch <- c(ch, .ov4)
                        if (length(ch)) return(substr(paste(ch, collapse = " · "), 1, 48))
                        return("승계와 동일")
                      }
+                     # carry 가 없으면 바뀐 축을 못 빼므로 전문을 자른다 —
+                     # 다만 오버레이가 있으면 **그 축을 앞세운다**(그게 이 칸의 처치다).
+                     if (!is.na(.ov4)) return(substr(.ov4, 1, 48))
                      substr(full, 1, 48)
                    }
                    # ★칸별 미달 폭은 적지 않는다(도훈 2026-08-31). 기준선은 위에 한 번 서 있고

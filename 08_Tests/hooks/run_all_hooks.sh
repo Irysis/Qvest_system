@@ -1243,6 +1243,7 @@ SUITES=(
   "08_Tests/hooks/test_arm_gen_read_guard.sh"
   "08_Tests/reinforcement/test_rf_coverage.R"
   "08_Tests/reinforcement/test_rf_block_order.R"
+  "08_Tests/reinforcement/test_rf_notify_overlay_axis.R"
 )
 
 
