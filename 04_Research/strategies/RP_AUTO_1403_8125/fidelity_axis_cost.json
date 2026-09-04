@@ -1,0 +1,14 @@
+{
+  "axis": "cost",
+  "verdict": "misdeclared",
+  "undeclared_changes": [
+    "FIDELITY.json:7 'commission_paper': null 및 engine.R:44-45 주석은 '원문 전체에 비용 공제 없음(gross)'을 선언한다(원문 재대조로도 확인 — 논문 전체에 transaction cost/commission/slippage/bps/round-trip 언급이 참고문헌 [19] Lesmond et al. 1건뿐이고 본문 방법론·성과표에 비용 공제 서술이 없어 gross 해석이 맞다). 그런데 이 전략의 측정 산출물 stage_artifacts/replication/20260904_163647_18444/authoritative_remeasure.json:46 'commission_paper_bps': 15 는 '논문기준(paper_basis)'으로 라벨된 성과(cagr 6.785%·sharpe 0.301·mdd 63.19%, 47-52행)가 실제로는 15bps 비용을 공제해 계산됐음을 보여준다. 즉 병기된 '논문기준' 수치가 선언(gross/0bps)과 다른 비용가정(15bps)으로 산출됐고, 이 전환이 FIDELITY.changed 어디에도 선언돼 있지 않다. run_paper_replication.R:304 comm_paper <- commission_paper %||% 0 설계상 호출자가 commission_paper 인자를 명시 전달하지 않으면 0(gross)이 되어야 하는데, 이 런은 15bps 로 전달된 채 실행됐다.",
+    "L-code stage_artifacts/l_code/paper_replication/l_code_RP_20260904_163647_18444.json:6 lesson_text '논문기준 SR 0.30 vs 15bps SR 0.43' 은 두 수치가 서로 다른 비용가정을 비교하는 것처럼 서술하지만, run_paper_replication.R:304-309 로직상 comm_paper=0.0015(15bps) 이면 sim_grade <- sim_paper(동일 시뮬레이션)이 되어 두 수치는 사실상 **같은 15bps 시뮬레이션**에서 파생됐다(SR 차이 0.30 vs 0.43 은 .rp_paper_summary 의 월간-Sharpe(SharpeRatio.annualized, scale=12) 대 계약 06_metrics.csv 의 일간-Sharpe(mean/sd*sqrt(N), Charter v1.4 §12) 계산방식 차이일 뿐이다 — CAGR·MDD 가 두 수치 간 거의 동일한 것이 그 방증). 이 비교 서술은 비용 축이 아니라 계산방식 축의 차이를 비용 차이로 오인시킨다."
+  ],
+  "signal_mismatch": [],
+  "counterexample": "authoritative_remeasure.json 의 paper_basis(commission_paper_bps=15 로 계산된 cagr 6.785%/sharpe 0.301/mdd 63.19%)를 FIDELITY.json 이 선언한 논문 실제 비용가정(gross, 0bps)으로 재계산하면 — 260개월간 매월 리밸런스에서 15bps 왕복비용을 전부 되돌려 받으므로 CAGR·Sharpe 는 이 병기값보다 명백히 높아진다. 즉 '논문 기준 성과를 병기'했다고 주장하는 지점에서 실제로는 병기값이 15bps 로 깎인 채 보고돼, 논문 원저자가 보고했을 gross 성과보다 낮은 수치가 '논문기준'이라는 이름으로 텔레그램·L-code·감사 원장에 유통된다. 반대로 이는 우리 15bps net 결과(SR 0.43)를 상대적으로 '논문기준'(SR 0.30)보다 우월해 보이게 만드는 방향으로 작동한다 — 실제로는 두 수치가 동일 비용가정이라 이 우월 비교 자체가 무의미하다.",
+  "evidence": "arxiv.org/html/1403.8125v1 전문 재대조: 거래비용/수수료/슬리피지/시장충격/bps/왕복비용에 대한 본문 서술 0건(참고문헌 [19] Lesmond et al. 1건 인용뿐, 자기 방법론에는 비용 미적용) — gross 해석이 옳다는 FIDELITY.json의 자체 선언과 일치. 다만 실측 산출물(authoritative_remeasure.json:46, l_code_RP_20260904_163647_18444.json:6)이 그 선언과 다른 비용(15bps)으로 '논문기준' 수치를 산출·유통한 것이 발견의 근거다.",
+  "confidence": "high",
+  "checked": "engine.R 비용 관련 주석(44-45행) · FIDELITY.json commission_paper 필드 · run_paper_replication.R 의 comm_paper/paper_sum/sim_grade 로직(304-313행) · authoritative_remeasure.json paper_basis 블록 · L-code lesson_text · arxiv.org/html/1403.8125v1 원문 비용 언급 전수 재확인",
+  "note": "engine.R/FIDELITY.json 자체의 축(비중·유니버스·기간) 선언은 이 축에서 문제 없음 — 결함은 엔진이 아니라 러너 호출 시점의 commission_paper 인자 전달(0 대신 0.0015)과 그 결과값의 '논문기준' 라벨링에 있다. 다른 축 조사자 참고: 이 라벨링 문제는 undeclared/portfolio 축에서도 같은 산출물을 볼 수 있음."
+}
