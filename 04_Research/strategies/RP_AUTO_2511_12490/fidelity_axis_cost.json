@@ -1,0 +1,11 @@
+{
+  "axis": "cost",
+  "verdict": "adapted",
+  "undeclared_changes": [],
+  "signal_mismatch": [],
+  "counterexample": "논문 Table 5(Daily Turnover 42%) → 연환산 ≈105.8회전/년. 구현은 월간 리밸(FIDELITY.changed①)이라 이번 산출물(replication/20260904_190039_22572/06_metrics.csv:24) Annualized_Turnover=2.304 — 연 ≈46배 낮다. 0.6bp 요율 자체는 정확히 일치(authoritative_remeasure.json:46 commission_paper_bps=0.6)하지만, 그 요율이 물리는 회전이 실제와 다르므로 논문 Table 6(0.6bp→SR13.2, 0.8bp→SR9.6 — 요율 0.2bp 변화에 SR 3.6 이동, 즉 paper 의 헤드라인 성과가 '요율×고회전'의 곱에 강하게 민감)과 병기값(authoritative_remeasure.json:47-52 paper_basis: SR −0.076, CAGR −0.7%)은 같은 비용축을 재는 값이 아니다. 요율 일치를 '논문 비용으로 계산됐다'는 근거로 오독하면 이 병기값이 논문의 실제 비용 강도를 대표한다고 잘못 읽게 된다 — 방향은 항상 구현에 유리(회전이 준 만큼 비용도 준다).",
+  "evidence": "WebFetch arxiv.org/html/2511.12490v1 §2.2 'Transaction costs of 0.6 basis points per unit traded reflect combined explicit and implicit costs' (+ 'conservatively charged against subsequent returns') · Table 5 'Daily Turnover: 42%' · Table 6 'Transaction Cost | 13.2 (0.6bp) | 12.1 (0.5bp) | 10.8 (0.7bp) | 9.6 (0.8bp)'",
+  "confidence": "high",
+  "checked": "논문 명시 비용요율(0.6bp/unit)과 engine.R:54 주석·run_paper_replication.R commission_paper 값 일치 여부 · 'unit traded' 정의(round-trip/one-way) 명시 여부 · replication_harness.R:107-118 비용 계산식(Σ|Δw_target|×commission, 양 레그 포함) · 이번 산출물 authoritative_remeasure.json 의 commission_paper_bps·paper_basis 값 · Table 5/6 회전율·비용감도 수치와의 교차대조",
+  "note": "요율(0.6bp) 자체는 faithful — misdeclared 근거 없음. FIDELITY.changed①이 리밸주기 변경과 그로 인한 비용 유리 편향을 이미 선언했으므로 adapted. 단 ①이 인용한 수치(1판 Annualized_Turnover=8.41 → 12.6배)는 이번 감사 대상 산출물(20260904_190039_22572)의 실측값(2.304 → ~46배)과 다르다 — 방향은 동일(구현이 논문보다 비용에 유리)하나 ①의 배율 서술이 최신 산출물 기준으로 갱신되지 않은 낡은 인용일 가능성. 원문 근거로 뒤집을 수 없어 misdeclared 로는 못 올리고 note 로만 남긴다."
+}
