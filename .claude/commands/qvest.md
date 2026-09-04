@@ -1,11 +1,11 @@
 ---
 name: qvest
-description: "Qvest v10.2 부팅 — 상태 5줄 후 진행 계층 질문(1계층/2계층/BOOK) → 해당 레인 진입"
+description: "Qvest v10.4 부팅 — 상태 5줄 후 진행 계층 질문(1계층/2계층/BOOK) → 해당 레인 진입"
 disable-model-invocation: true
 user-invocable: true
 ---
 
-# /qvest — 부팅 5줄 → 계층 질문 → 레인 진입 (v10.2 2026-09-03)
+# /qvest — 부팅 5줄 → 계층 질문 → 레인 진입 (v10.4 2026-09-04)
 
 1. `bash 02_Infrastructure/ops/boot_lean.sh` (≈5초 · 테스트 0 · 수리 0 · 백그라운드 0 · Rscript 0). 출력 5줄:
    - `Data:` — 키 캐시 4종 severity + 신선도 감사 나이(>36h면 `★audit stale`) + rawdata/benchmark mtime + K200/KQ150 멤버십 열(schema만). 결손 시에만 `→ daily_refresh` 조치.

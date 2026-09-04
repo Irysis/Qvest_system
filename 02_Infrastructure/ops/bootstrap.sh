@@ -58,7 +58,7 @@ case "${QVEST_BOOT_SANITIZED:-}" in
   *)      echo "[boot] WARN: utf8_output_guard INACTIVE (python3/guard 부재 또는 외부 QVEST_BOOT_SANITIZED 선점) — 이모지 포함 출력 시 API 400 위험" ;;
 esac
 
-echo "=== Qvest v10.2 부트스트랩 — health_full 전용 (Fable 5 · 2계층 리서치(팩터전략/전략로테이션)) ==="
+echo "=== Qvest v10.4 부트스트랩 — health_full 전용 (Fable 5 · 2계층 리서치(팩터전략/전략로테이션)) ==="
 
 # 1. (제거됨 v8.0 2026-05-29) tmux rc telegram inbound listener — outbound tg_agent_brief()는
 #    영향 없음. inbound 명령 listener 불필요 판단(도훈). 필요 시 persistent_remote_control.sh 수동 기동.
@@ -1046,7 +1046,8 @@ FACTOR_EVIDENCE_STATUS=""
 FEV_PY="$PROJECT/02_Infrastructure/factor_db/build_factor_evidence.py"
 if [ -f "$FEV_PY" ] && [ -n "${QVEST_PY:-}" ]; then
   ( cd "$PROJECT" && QM_ROOT="$PROJECT" "$QVEST_PY" "$FEV_PY" --if-stale >/dev/null 2>&1 ) || true
-  FACTOR_EVIDENCE_STATUS=$(cd "$PROJECT" && QM_ROOT="$PROJECT" "$QVEST_PY" "$FEV_PY" --status-line 2>/dev/null | tr -d '' | grep -m1 'FactorEvidence:' || true)
+  FACTOR_EVIDENCE_STATUS=$(cd "$PROJECT" && QM_ROOT="$PROJECT" "$QVEST_PY" "$FEV_PY" --status-line 2>/dev/null | tr -d '
+' | grep -m1 'FactorEvidence:' || true)
   [ -z "$FACTOR_EVIDENCE_STATUS" ] && FACTOR_EVIDENCE_STATUS="FactorEvidence: UNREPORTED — 상태라인 실패 ($FEV_PY --status-line 로 사유 확인)"
 fi
 
@@ -1057,7 +1058,8 @@ MODEQ_STATUS=""
 MODEQ_PRED="$PROJECT/02_Infrastructure/ops/research_pool_predicates.py"
 [ "${QVEST_LEGACY_MODEQ:-0}" = "1" ] || MODEQ_PRED="/nonexistent-v10-legacy-off"
 if [ -f "$MODEQ_PRED" ] && [ -n "${QVEST_PY:-}" ]; then
-  _mq=$(cd "$PROJECT" && "$QVEST_PY" "$MODEQ_PRED" research-queue-pending "$PROJECT/stage_artifacts/paper_recharge" "$PROJECT" 2>/dev/null | tr -d '' | tail -1)
+  _mq=$(cd "$PROJECT" && "$QVEST_PY" "$MODEQ_PRED" research-queue-pending "$PROJECT/stage_artifacts/paper_recharge" "$PROJECT" 2>/dev/null | tr -d '
+' | tail -1)
   case "$_mq" in
     ''|*[!0-9]*) MODEQ_STATUS="ModeQResearch: UNREPORTED — pending 계측 실패(출력='$_mq'). ★0 으로 읽지 말 것" ;;
     *) _sw=$( [ "${QVEST_MODE_QUEUE_ENABLE:-0}" = "1" ] && echo "무인 ON" || echo "무인 OFF(QVEST_MODE_QUEUE_ENABLE=1 로 개시)" )
@@ -1073,7 +1075,8 @@ fi
 SCHED_ALERT_STATUS=""
 SAS_SH="$PROJECT/02_Infrastructure/ops/scheduler_alert_status.sh"
 if [ -f "$SAS_SH" ]; then
-  SCHED_ALERT_STATUS=$(cd "$PROJECT" && bash "$SAS_SH" --status-line 2>/dev/null | tr -d '' | grep -m1 'SchedAlerts:' || true)
+  SCHED_ALERT_STATUS=$(cd "$PROJECT" && bash "$SAS_SH" --status-line 2>/dev/null | tr -d '
+' | grep -m1 'SchedAlerts:' || true)
   [ -z "$SCHED_ALERT_STATUS" ] && SCHED_ALERT_STATUS="SchedAlerts: UNREPORTED — 상태라인 실패 (bash $SAS_SH 로 사유 확인)"
 fi
 
@@ -1130,7 +1133,7 @@ echo ""
 if [ "${BOOT_FAILS:-0}" -gt 0 ]; then
   echo "=== 부트스트랩 DEGRADED — ${BOOT_FAILS}개 게이트 실패 (위 ERROR 라인 확인, '완료' 아님) ==="
 else
-  echo "=== 부트스트랩 완료 (Qvest v10.2 — Fable 5 · 2계층 리서치(팩터전략/전략로테이션) · health_full 경로) ==="
+  echo "=== 부트스트랩 완료 (Qvest v10.4 — Fable 5 · 2계층 리서치(팩터전략/전략로테이션) · health_full 경로) ==="
 fi
 
 # (2026-07-17 B2) 부트 스탬프 — SessionStart 카나리아(hooks/boot_stamp_check.sh)의 신선도 판정 원천.
@@ -1140,6 +1143,7 @@ printf '{"ts":"%s","ts_epoch":%s,"boot_fails":%s}\n' "$(date '+%Y-%m-%dT%H:%M:%S
 if [ -n "$PG2_INFO" ]; then
   echo "$PG2_INFO"
 fi
+echo "v10.4:      강화 격자의 LLM 설계·적응 순서·승격 사슬·롤링/방어형 구제(2026-09-04) — B1 = 블록 진입 시 LLM 설계 1회(검증 실패 = 규칙 폴백) · 충실도 6축 팬아웃 · SKILL §0.3 정본"
 echo "v10.2:      강화 LLM 재귀 루프(2026-09-03) — 오버레이 노출 종목별 벡터화 · 기전 지도 포화감지 · arm 생성 레인 + 오프라인 probe · 생성 세션 성과 열람 차단(arm_gen_read_guard)"
 echo "v10.1:      2계층 리서치(도훈 2026-08-29) + v9 잔재 하네스 정리(2026-09-03) — 1계층 충실구현+강화 · 2계층 로테이션 무한강화 · lockbox/governor 폐지 · Judge=PIT 전담 · BOOK · 무인=수집+강화"
 echo "계보:       CHANGELOG_constitution.md (v6.4~v9 아카이브 — 배너에 구판 서술을 재기입하지 말 것)"

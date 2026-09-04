@@ -2,7 +2,7 @@
 
 ## Active Version
 
-**Qvest v10.2 — 2계층 리서치(팩터전략/전략로테이션) · BOOK · Judge=PIT 전담 · 강화 LLM 재귀 루프(횡단면 오버레이 축)** (세션 모델 정본 `claude-fable-5`. 2026-08-29 도훈 지시. 플랜 `~/.claude/plans/qvest-2-moonlit-galaxy.md` · 등록 훅 13 · 직전 판 v9.21 · 롤백 태그 `pre-v10-2layer`)
+**Qvest v10.4 — 2계층 리서치(팩터전략/전략로테이션) · BOOK · Judge=PIT 전담 · 강화 LLM 재귀 루프(횡단면 오버레이 축)** (세션 모델 정본 `claude-fable-5`. 2026-08-29 도훈 지시. 플랜 `~/.claude/plans/qvest-2-moonlit-galaxy.md` · 등록 훅 13 · 직전 판 v10.3 · 롤백 태그 `pre-v10-2layer`)
 
 > **★버전·모델 표기 단일 출처**: 위 줄이 정본(`boot_currency_check.sh` C0 파생). 타 문서는 위임.
 
