@@ -6,7 +6,7 @@
   "run_id": "20260902_205711_10140",
   "bt_result_path": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/replication/20260902_205711_10140/bt_result.rds",
   "metric_type": "backtested",
-  "essence_grade": "F",
+  "essence_grade": "C",
   "grade_basis": "replication_chain",
   "essence": {
     "net_sharpe": 0.334,
@@ -36,7 +36,7 @@
   "structural_drawdown": false,
   "selection_type": "chain",
   "dsr_gate_applied": false,
-  "reasons": "non-positive alpha (PORT_t<=0 또는 net_IR<=0)",
+  "reasons": "non-positive alpha (PORT_t<=0 또는 net_IR<=0); [소급 2026-09-04] recent_regime 구제(F->C): 전기간 F 이나 롤링 36개월 기준 최근 12점 중 92% 가 절대문턱 통과 (현재 SR 0.88 · CAGR 23.4% · MDD 26.0% · Calmar 0.90). 생애 충족 8%. ★과거 회복→재붕괴 3회 — 이번 회복이 처음이 아니다",
   "replication": {
     "source_paper": {
       "title": "Ang, Hodrick, Xing & Zhang (2006), The Cross-Section of Volatility and Expected Returns, JF 61(1)",
@@ -61,5 +61,66 @@
     "sharpe": 0.334,
     "mdd": 0.605,
     "calmar": 0.086
+  },
+  "grade_base": "F",
+  "rolling_grade": {
+    "status": "ok",
+    "n_points": 201,
+    "window_months": 36,
+    "pass_life": 0.0846,
+    "pass_recent": 0.9167,
+    "current": {
+      "ym": "2026-09",
+      "sharpe": 0.88145198,
+      "cagr": 0.23431932,
+      "mdd": 0.26041064,
+      "calmar": 0.89980701,
+      "pass": true
+    },
+    "prior_recoveries": 3,
+    "current_run": 2,
+    "span": ["2010-01", "2026-09"]
+  },
+  "defensive_score": {
+    "status": "ok",
+    "defensive": false,
+    "convex": false,
+    "down": {
+      "n": 101,
+      "excess": 0.00430825,
+      "hit": 0.4950495,
+      "t": 1.11987791,
+      "capture": 0.90088902
+    },
+    "mid": {
+      "n": 26,
+      "excess": -0.00254079,
+      "hit": 0.38461538,
+      "t": -0.28374966,
+      "capture": 1.02508815
+    },
+    "deep": {
+      "n": 10,
+      "excess": 0.0022372,
+      "hit": 0.5,
+      "t": 0.10808061,
+      "capture": 0.98522503
+    },
+    "up": {
+      "n": 135,
+      "excess": -0.00902912,
+      "hit": 0.46666667,
+      "t": -1.8635285,
+      "capture": 0.8185186
+    },
+    "reason": "하락월 101개: 초과 +0.43%/월 (t 1.12 · 적중 50%) · 벤치-10% 이하 10개: 초과 +0.22%/월 · 상승월 초과 -0.90%/월"
+  },
+  "recent_regime_rescued": true,
+  "retro": {
+    "version": "rolling_defensive_v1",
+    "applied_at": "2026-09-04T17:48:09+0900",
+    "grade_before": "F",
+    "grade_after": "C",
+    "note": "롤링 등급 지표·방어형 스코어 소급 산출 + F 구제 적용. 원값은 grade_base 보존."
   }
 }

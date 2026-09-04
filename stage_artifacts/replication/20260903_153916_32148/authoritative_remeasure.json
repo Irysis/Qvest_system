@@ -6,7 +6,7 @@
   "run_id": "20260903_153916_32148",
   "bt_result_path": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/replication/20260903_153916_32148/bt_result.rds",
   "metric_type": "backtested",
-  "essence_grade": "F",
+  "essence_grade": "C",
   "grade_basis": "replication_chain",
   "essence": {
     "net_sharpe": 0.419,
@@ -36,7 +36,7 @@
   "structural_drawdown": true,
   "selection_type": "chain",
   "dsr_gate_applied": false,
-  "reasons": "non-positive alpha (PORT_t<=0 또는 net_IR<=0); structural_drawdown(판정 아님 — 라우팅 근거): MDD 65.2%, 45%+ episodes=26/15, 55%+ episodes=6/6, 수중 표본비 0.10/0.25",
+  "reasons": "non-positive alpha (PORT_t<=0 또는 net_IR<=0); structural_drawdown(판정 아님 — 라우팅 근거): MDD 65.2%, 45%+ episodes=26/15, 55%+ episodes=6/6, 수중 표본비 0.10/0.25; [소급 2026-09-04] recent_regime 구제(F->C): 전기간 F 이나 롤링 36개월 기준 최근 12점 중 92% 가 절대문턱 통과 (현재 SR 0.83 · CAGR 23.8% · MDD 29.2% · Calmar 0.82). 생애 충족 12%. ★과거 회복→재붕괴 3회 — 이번 회복이 처음이 아니다",
   "replication": {
     "source_paper": {
       "title": "Banz (1981), The Relationship Between Return and Market Value of Common Stocks, JFE 9(1)",
@@ -61,5 +61,66 @@
     "sharpe": 0.419,
     "mdd": 0.652,
     "calmar": 0.12
+  },
+  "grade_base": "F",
+  "rolling_grade": {
+    "status": "ok",
+    "n_points": 225,
+    "window_months": 36,
+    "pass_life": 0.1244,
+    "pass_recent": 0.9167,
+    "current": {
+      "ym": "2026-09",
+      "sharpe": 0.82538707,
+      "cagr": 0.23832069,
+      "mdd": 0.29173216,
+      "calmar": 0.81691606,
+      "pass": true
+    },
+    "prior_recoveries": 3,
+    "current_run": 2,
+    "span": ["2008-01", "2026-09"]
+  },
+  "defensive_score": {
+    "status": "ok",
+    "defensive": false,
+    "convex": false,
+    "down": {
+      "n": 111,
+      "excess": -0.00490026,
+      "hit": 0.42342342,
+      "t": -1.83374056,
+      "capture": 1.11459821
+    },
+    "mid": {
+      "n": 30,
+      "excess": -0.01725486,
+      "hit": 0.3,
+      "t": -3.2835712,
+      "capture": 1.18049445
+    },
+    "deep": {
+      "n": 10,
+      "excess": -0.01989062,
+      "hit": 0.3,
+      "t": -1.59520492,
+      "capture": 1.13136231
+    },
+    "up": {
+      "n": 149,
+      "excess": 0.00061932,
+      "hit": 0.54362416,
+      "t": 0.15625805,
+      "capture": 1.01232761
+    },
+    "reason": "하락월 111개: 초과 -0.49%/월 (t -1.83 · 적중 42%) · 벤치-10% 이하 10개: 초과 -1.99%/월 · 상승월 초과 +0.06%/월"
+  },
+  "recent_regime_rescued": true,
+  "retro": {
+    "version": "rolling_defensive_v1",
+    "applied_at": "2026-09-04T17:48:09+0900",
+    "grade_before": "F",
+    "grade_after": "C",
+    "note": "롤링 등급 지표·방어형 스코어 소급 산출 + F 구제 적용. 원값은 grade_base 보존."
   }
 }

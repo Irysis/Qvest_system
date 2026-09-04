@@ -6,7 +6,7 @@
   "run_id": "20260903_104237_16348",
   "bt_result_path": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/replication/20260903_104237_16348/bt_result.rds",
   "metric_type": "backtested",
-  "essence_grade": "F",
+  "essence_grade": "C",
   "grade_basis": "replication_chain",
   "essence": {
     "net_sharpe": 0.46,
@@ -36,7 +36,7 @@
   "structural_drawdown": false,
   "selection_type": "chain",
   "dsr_gate_applied": false,
-  "reasons": "non-positive alpha (PORT_t<=0 또는 net_IR<=0)",
+  "reasons": "non-positive alpha (PORT_t<=0 또는 net_IR<=0); [소급 2026-09-04] recent_regime 구제(F->C): 전기간 F 이나 롤링 36개월 기준 최근 12점 중 92% 가 절대문턱 통과 (현재 SR 1.15 · CAGR 26.4% · MDD 10.7% · Calmar 2.46). 생애 충족 10%. ★과거 회복→재붕괴 4회 — 이번 회복이 처음이 아니다",
   "replication": {
     "source_paper": {
       "title": "Chan, Jegadeesh & Lakonishok (1996), Momentum Strategies, JF 51(5)",
@@ -61,5 +61,66 @@
     "sharpe": 0.46,
     "mdd": 0.574,
     "calmar": 0.136
+  },
+  "grade_base": "F",
+  "rolling_grade": {
+    "status": "ok",
+    "n_points": 225,
+    "window_months": 36,
+    "pass_life": 0.1022,
+    "pass_recent": 0.9167,
+    "current": {
+      "ym": "2026-09",
+      "sharpe": 1.14516772,
+      "cagr": 0.26390123,
+      "mdd": 0.10724672,
+      "calmar": 2.46069284,
+      "pass": true
+    },
+    "prior_recoveries": 4,
+    "current_run": 10,
+    "span": ["2008-01", "2026-09"]
+  },
+  "defensive_score": {
+    "status": "ok",
+    "defensive": false,
+    "convex": true,
+    "down": {
+      "n": 111,
+      "excess": 0.00077207,
+      "hit": 0.46846847,
+      "t": 0.23766927,
+      "capture": 0.98194417
+    },
+    "mid": {
+      "n": 30,
+      "excess": 0.00346568,
+      "hit": 0.43333333,
+      "t": 0.38000565,
+      "capture": 0.96374722
+    },
+    "deep": {
+      "n": 10,
+      "excess": 0.02516306,
+      "hit": 0.6,
+      "t": 1.01931074,
+      "capture": 0.83381721
+    },
+    "up": {
+      "n": 149,
+      "excess": -0.00494203,
+      "hit": 0.47651007,
+      "t": -1.30239504,
+      "capture": 0.9016285
+    },
+    "reason": "하락월 111개: 초과 +0.08%/월 (t 0.24 · 적중 47%) · 벤치-10% 이하 10개: 초과 +2.52%/월 · 상승월 초과 -0.49%/월 · 볼록(심도↑ 우위↑)"
+  },
+  "recent_regime_rescued": true,
+  "retro": {
+    "version": "rolling_defensive_v1",
+    "applied_at": "2026-09-04T17:48:09+0900",
+    "grade_before": "F",
+    "grade_after": "C",
+    "note": "롤링 등급 지표·방어형 스코어 소급 산출 + F 구제 적용. 원값은 grade_base 보존."
   }
 }

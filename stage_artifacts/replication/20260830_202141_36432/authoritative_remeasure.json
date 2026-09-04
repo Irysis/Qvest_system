@@ -6,7 +6,7 @@
   "run_id": "20260830_202141_36432",
   "bt_result_path": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/replication/20260830_202141_36432/bt_result.rds",
   "metric_type": "backtested",
-  "essence_grade": "F",
+  "essence_grade": "C",
   "grade_basis": "replication_chain",
   "essence": {
     "net_sharpe": 0.423,
@@ -36,7 +36,7 @@
   "structural_drawdown": false,
   "selection_type": "chain",
   "dsr_gate_applied": false,
-  "reasons": "non-positive alpha (PORT_t<=0 또는 net_IR<=0)",
+  "reasons": "non-positive alpha (PORT_t<=0 또는 net_IR<=0); [소급 2026-09-04] recent_regime 구제(F->C): 전기간 F 이나 롤링 36개월 기준 최근 12점 중 75% 가 절대문턱 통과 (현재 SR 0.96 · CAGR 16.7% · MDD 13.7% · Calmar 1.22). 생애 충족 8%. ★과거 회복→재붕괴 4회 — 이번 회복이 처음이 아니다",
   "replication": {
     "source_paper": {
       "title": "Amihud (2002), Illiquidity and Stock Returns, JFM 5(1)",
@@ -61,5 +61,66 @@
     "sharpe": 0.423,
     "mdd": 0.563,
     "calmar": 0.125
+  },
+  "grade_base": "F",
+  "rolling_grade": {
+    "status": "ok",
+    "n_points": 224,
+    "window_months": 36,
+    "pass_life": 0.0804,
+    "pass_recent": 0.75,
+    "current": {
+      "ym": "2026-08",
+      "sharpe": 0.96190231,
+      "cagr": 0.16655956,
+      "mdd": 0.13683574,
+      "calmar": 1.21722263,
+      "pass": true
+    },
+    "prior_recoveries": 4,
+    "current_run": 1,
+    "span": ["2008-01", "2026-08"]
+  },
+  "defensive_score": {
+    "status": "ok",
+    "defensive": false,
+    "convex": true,
+    "down": {
+      "n": 110,
+      "excess": 0.00145088,
+      "hit": 0.39090909,
+      "t": 0.45475548,
+      "capture": 0.96610646
+    },
+    "mid": {
+      "n": 30,
+      "excess": 0.01302099,
+      "hit": 0.36666667,
+      "t": 1.27329889,
+      "capture": 0.86379392
+    },
+    "deep": {
+      "n": 10,
+      "excess": 0.03773334,
+      "hit": 0.4,
+      "t": 1.36224902,
+      "capture": 0.75080014
+    },
+    "up": {
+      "n": 149,
+      "excess": -0.00702546,
+      "hit": 0.4966443,
+      "t": -1.61608909,
+      "capture": 0.8600477
+    },
+    "reason": "하락월 110개: 초과 +0.15%/월 (t 0.45 · 적중 39%) · 벤치-10% 이하 10개: 초과 +3.77%/월 · 상승월 초과 -0.70%/월 · 볼록(심도↑ 우위↑)"
+  },
+  "recent_regime_rescued": true,
+  "retro": {
+    "version": "rolling_defensive_v1",
+    "applied_at": "2026-09-04T17:48:09+0900",
+    "grade_before": "F",
+    "grade_after": "C",
+    "note": "롤링 등급 지표·방어형 스코어 소급 산출 + F 구제 적용. 원값은 grade_base 보존."
   }
 }

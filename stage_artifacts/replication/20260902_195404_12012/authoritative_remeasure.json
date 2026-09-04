@@ -6,7 +6,7 @@
   "run_id": "20260902_195404_12012",
   "bt_result_path": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/replication/20260902_195404_12012/bt_result.rds",
   "metric_type": "backtested",
-  "essence_grade": "F",
+  "essence_grade": "C",
   "grade_basis": "replication_chain",
   "essence": {
     "net_sharpe": 0.531,
@@ -36,7 +36,7 @@
   "structural_drawdown": false,
   "selection_type": "chain",
   "dsr_gate_applied": false,
-  "reasons": "non-positive alpha (PORT_t<=0 또는 net_IR<=0)",
+  "reasons": "non-positive alpha (PORT_t<=0 또는 net_IR<=0); [소급 2026-09-04] recent_regime 구제(F->C): 전기간 F 이나 롤링 36개월 기준 최근 12점 중 83% 가 절대문턱 통과 (현재 SR 0.86 · CAGR 17.8% · MDD 14.9% · Calmar 1.20). 생애 충족 11%. ★과거 회복→재붕괴 6회 — 이번 회복이 처음이 아니다",
   "replication": {
     "source_paper": {
       "title": "Hong, Lim & Stein (2000), Bad News Travels Slowly, JF 55(1)",
@@ -61,5 +61,66 @@
     "sharpe": 0.531,
     "mdd": 0.514,
     "calmar": 0.197
+  },
+  "grade_base": "F",
+  "rolling_grade": {
+    "status": "ok",
+    "n_points": 225,
+    "window_months": 36,
+    "pass_life": 0.1111,
+    "pass_recent": 0.8333,
+    "current": {
+      "ym": "2026-09",
+      "sharpe": 0.85939565,
+      "cagr": 0.17834051,
+      "mdd": 0.1485276,
+      "calmar": 1.20072304,
+      "pass": true
+    },
+    "prior_recoveries": 6,
+    "current_run": 2,
+    "span": ["2008-01", "2026-09"]
+  },
+  "defensive_score": {
+    "status": "ok",
+    "defensive": false,
+    "convex": true,
+    "down": {
+      "n": 111,
+      "excess": 0.00389431,
+      "hit": 0.55855856,
+      "t": 1.05081385,
+      "capture": 0.90892701
+    },
+    "mid": {
+      "n": 30,
+      "excess": 0.00267221,
+      "hit": 0.43333333,
+      "t": 0.267693,
+      "capture": 0.9720473
+    },
+    "deep": {
+      "n": 10,
+      "excess": 0.01007029,
+      "hit": 0.4,
+      "t": 0.3532407,
+      "capture": 0.93349344
+    },
+    "up": {
+      "n": 149,
+      "excess": -0.00372669,
+      "hit": 0.53691275,
+      "t": -0.84746891,
+      "capture": 0.92581986
+    },
+    "reason": "하락월 111개: 초과 +0.39%/월 (t 1.05 · 적중 56%) · 벤치-10% 이하 10개: 초과 +1.01%/월 · 상승월 초과 -0.37%/월 · 볼록(심도↑ 우위↑)"
+  },
+  "recent_regime_rescued": true,
+  "retro": {
+    "version": "rolling_defensive_v1",
+    "applied_at": "2026-09-04T17:48:09+0900",
+    "grade_before": "F",
+    "grade_after": "C",
+    "note": "롤링 등급 지표·방어형 스코어 소급 산출 + F 구제 적용. 원값은 grade_base 보존."
   }
 }

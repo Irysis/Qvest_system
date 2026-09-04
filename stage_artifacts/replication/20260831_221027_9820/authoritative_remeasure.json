@@ -61,5 +61,65 @@
     "sharpe": 0.533,
     "mdd": 0.525,
     "calmar": 0.199
+  },
+  "rolling_grade": {
+    "status": "ok",
+    "n_points": 200,
+    "window_months": 36,
+    "pass_life": 0.21,
+    "pass_recent": 0.75,
+    "current": {
+      "ym": "2026-08",
+      "sharpe": 0.77853372,
+      "cagr": 0.1596943,
+      "mdd": 0.15232553,
+      "calmar": 1.04837514,
+      "pass": false
+    },
+    "prior_recoveries": 4,
+    "current_run": 0,
+    "span": ["2010-01", "2026-08"]
+  },
+  "defensive_score": {
+    "status": "ok",
+    "defensive": false,
+    "convex": true,
+    "down": {
+      "n": 100,
+      "excess": 0.00686305,
+      "hit": 0.55,
+      "t": 1.44170522,
+      "capture": 0.84232845
+    },
+    "mid": {
+      "n": 26,
+      "excess": 0.01162438,
+      "hit": 0.5,
+      "t": 0.92916793,
+      "capture": 0.88521916
+    },
+    "deep": {
+      "n": 10,
+      "excess": 0.03687254,
+      "hit": 0.7,
+      "t": 1.36870814,
+      "capture": 0.75648505
+    },
+    "up": {
+      "n": 135,
+      "excess": -0.00441451,
+      "hit": 0.48148148,
+      "t": -0.82592231,
+      "capture": 0.91119261
+    },
+    "reason": "하락월 100개: 초과 +0.69%/월 (t 1.44 · 적중 55%) · 벤치-10% 이하 10개: 초과 +3.69%/월 · 상승월 초과 -0.44%/월 · 볼록(심도↑ 우위↑)"
+  },
+  "recent_regime_rescued": false,
+  "retro": {
+    "version": "rolling_defensive_v1",
+    "applied_at": "2026-09-04T17:48:09+0900",
+    "grade_before": "C",
+    "grade_after": "C",
+    "note": "롤링 등급 지표·방어형 스코어 소급 산출 + F 구제 적용. 원값은 grade_base 보존."
   }
 }
