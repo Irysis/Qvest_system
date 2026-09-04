@@ -388,11 +388,26 @@ rf_auto_notify <- function(base_id, n, kind = "block") {
     .LD <- if (file.exists(.lcp)) tryCatch(fromJSON(.lcp, simplifyVector = TRUE),
                                            error = function(e) NULL) else NULL
     # 문장 경계에서 줄바꿈 — 한 단락이 한 화면을 잡아먹지 않게
+    ## ★기전 서술 줄바꿈 (도훈 2026-09-04 "무엇을 배웠는가 쪽도 줄바꿈 좀 해줘").
+    ##   구판은 공백을 **전부** 뭉개고 ". " 에서만 끊었다. 그런데 한국어 문장은 "…했다"
+    ##   로 끝나 마침표가 없는 경우가 많고, LLM 이 준 줄 구조까지 지워져서 한 줄이
+    ##   150~250자가 됐다 — 폰에서는 한 덩어리 벽으로 보인다.
+    ##   ⇒ ①LLM 의 줄 구조를 보존하고 ②90자 넘는 줄만 문장·절 경계에서 더 쪼개고
+    ##     ③문장 사이를 **빈 줄**로 띄운다.
     .wrap <- function(x) {
-      t <- trimws(gsub("[[:space:]]+", " ", as.character(x)[1]))
-      if (!nzchar(t)) return("")
-      gsub("([.!?。] )", "\1
-", t)
+      s0 <- as.character(x)[1]
+      if (is.na(s0) || !nzchar(trimws(s0))) return("")
+      ln <- unlist(strsplit(s0, "\r?\n"))
+      ln <- trimws(gsub("[ \t]+", " ", ln))
+      ln <- ln[nzchar(ln)]
+      out <- unlist(lapply(ln, function(s) {
+        if (nchar(s) <= 90L) return(s)
+        ## 마침표·물음표 뒤, 또는 한국어 종결어미 뒤 공백에서 끊는다
+        p <- unlist(strsplit(s, "(?<=[.!?。])\\s+|(?<=다)\\s+(?=[가-힣A-Za-z(\u2460-\u2473])",
+                             perl = TRUE))
+        p <- trimws(p); p[nzchar(p)]
+      }), use.names = FALSE)
+      paste(out, collapse = "\n\n")
     }
     .parts <- character(0)
     if (!is.null(.LD)) {
