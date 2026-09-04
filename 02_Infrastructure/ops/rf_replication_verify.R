@@ -283,7 +283,19 @@ tryCatch(system2("Rscript",
 .min_pt  <- suppressWarnings(as.numeric((tryCatch(fromJSON(file.path(ROOT,
               "06_Registry/reinforce_auto_config.json"), simplifyVector = TRUE),
               error = function(e) list())$base_min_port_t) %||% 0))
-if (is.finite(.base_pt) && .base_pt < .min_pt) {
+# ★구제된 기저는 이 문턱을 통과한다 (도훈 지시 2026-09-04).
+#   구제의 논지가 "전기간 통계량이 이 전략을 서술하지 못한다" 인데, 바로 그 통계량으로
+#   강화를 막으면 앞뒤가 안 맞는다. 실사례 1403.8125: 전기간 PORT_t -0.639 로 여기서
+#   park 됐는데, 롤링 36개월 기준 최근 12점 중 83%가 절대문턱을 넘고 현재 CAGR 26.0% ·
+#   Calmar 1.32 다. 전기간 MDD 61.1% 는 2012년 2월 사건이고 최근창 MDD 는 19.7% 다.
+#   ⇒ 구제된 건은 통과시키되 **경로를 라벨로 남긴다** — 무엇이 왜 들어왔는지 보이게.
+#   ★해제가 아니라 예외다: 구제 안 된 음수 알파는 여전히 막힌다(rg_rescue 가 F 에서만,
+#     최근 문턱 충족 + 롤링점 하한을 다 만족할 때만 참을 내므로 문이 넓어지지 않는다).
+.resc_ok <- isTRUE(AR$recent_regime_rescued)
+if (.resc_ok) jlog("base_gate_bypass_rescued", port_t = .base_pt,
+                   grade_base = as.character(AR$grade_base %||% ""), grade = G,
+                   note = "recent_regime 구제 — 전기간 PORT_t 문턱을 우회한다")
+if (is.finite(.base_pt) && .base_pt < .min_pt && !.resc_ok) {
   jlog("base_below_threshold", port_t = .base_pt, threshold = .min_pt,
        note = "기저 알파가 음수 — 강화 생략하고 다음 논문으로 이월(측정·기록은 남는다)")
   # ★원장에 **소비 기록**을 남긴다. 안 남기면 rf_next_paper_pick 이 원장 paper_key 로

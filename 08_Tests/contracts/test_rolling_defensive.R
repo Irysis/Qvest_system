@@ -154,6 +154,29 @@ if (grepl("QVEST_L2_DEFENSIVE_ROUTE", bsrc, fixed = TRUE))
 if (grepl("grade_floor", .bcode, fixed = TRUE) && grepl(".floor_ok", .bcode, fixed = TRUE))
   ok("J5 등급 floor 를 대체하지 않고 병렬 경로 (회귀)") else ng("J5 floor 손상")
 
+cat("
+=== K. 기저 품질 게이트가 구제를 존중하는가 ===
+")
+## 실사고 1403.8125: 등급은 F->C 로 구제됐는데 강화 게이트가 **같은 전기간 PORT_t**
+## (-0.639)를 보고 park 했다. 구제의 논지가 "전기간 통계량이 이 전략을 서술하지
+## 못한다" 인데 그 통계량으로 강화를 막으면 앞뒷이 안 맞는다.
+vsrc <- paste(readLines("02_Infrastructure/ops/rf_replication_verify.R", warn = FALSE), collapse = "
+")
+if (grepl(".resc_ok <- isTRUE(AR$recent_regime_rescued)", vsrc, fixed = TRUE))
+  ok("K1 게이트가 구제 플래그를 읽는다") else ng("K1 구제 미반영")
+if (grepl("&& !.resc_ok", vsrc, fixed = TRUE))
+  ok("K2 구제된 건은 PORT_t 문턱을 우회 ★실사고") else ng("K2 우회 미배선")
+if (grepl("base_gate_bypass_rescued", vsrc, fixed = TRUE))
+  ok("K3 우회가 로그에 남는다(조용한 통과 아님)") else ng("K3 우회 침묵")
+## ★해제가 아니라 예외임을 구조로 확인 — 구제 안 된 음수 알파는 여전히 막힌다
+if (grepl("is.finite(.base_pt) && .base_pt < .min_pt && !.resc_ok", vsrc, fixed = TRUE))
+  ok("K4 문턱 자체는 살아 있다 — 구제 안 된 음수는 여전히 park") else
+  ng("K4 문턴이 통째로 풀렸다", "문이 넓어졌다")
+## 구제 자체가 좁은지 재확인(B~D 절과 중복이 아니라 게이트 문폭의 근거)
+.narrow <- rg_rescue("F", r2, RP)$rescued
+if (!isTRUE(.narrow)) ok("K5 최근 악화 기저는 구제 안 된다 = 게이트 문이 안 넓어진다") else
+  ng("K5 구제가 넓다")
+
 cat(sprintf("\n합계: 통과 %d · 실패 %d\n", PASS, FAIL))
 cat(sprintf('{"test":"rolling_defensive","pass":%d,"fail":%d,"total":%d}\n', PASS, FAIL, PASS + FAIL))
 quit(status = if (FAIL > 0L) 1L else 0L)
