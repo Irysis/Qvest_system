@@ -1,0 +1,33 @@
+{
+  "strategy_id": "RP_AUTO_2302_10175",
+  "paper": {
+    "title": "Spatio-Temporal Momentum: Jointly Learning Time-Series and Cross-Sectional Strategies",
+    "authors": "Wee Ling Tan, Stephen Roberts, Stefan Zohren",
+    "url": "https://arxiv.org/abs/2302.10175",
+    "fulltext_checked": "https://arxiv.org/html/2302.10175v1",
+    "journal_ref": "The Journal of Financial Data Science, Summer 2023 (DOI 10.3905/jfds.2023.1.130)",
+    "checked_on": "2026-09-04"
+  },
+
+  "fidelity": "adapted",
+
+  "kept": "논문의 기전 전부 — 한 장의 가중행렬 W(m×N, m=N·τ·d)가 전 종목의 모멘텀 피처를 동시에 받아 전 종목 포지션을 한 번에 내는 SLP X_t=tanh(W'u_t+b), 피처 d=14(변동성정규화 수익 k∈{1,20,63,126,252} 5종 + MACD S∈{8,16,32}×L∈{24,48,96} 9종), 손실=자산별 −Sharpe 등가중합에 L1(α)과 회전율 c·TO 를 결합한 LASTR, 비중 w_i=(1/N)·X_i·σ_tgt/σ_i + 포트폴리오 레벨 연 15% 변동성 스케일링, 확장창 5년 재학습·시간순 90/10 학습검증 분할.",
+
+  "changed": "(1) 유니버스 = 미국 금융섹터 46종 → K200∪KQ150(패널 N=46 은 논문값 유지, 선정은 논문의 무작위 표집이 복제 불가라 반복별 PIT adv20 상위 46종 결정론 선정). (2) 집행 주기 = daily → monthly — 측정 계약의 집행일 규약 get_execution_date()(backtest_harness.R:316)가 시그널일→익월 첫 거래일로 하드와이어라 일별 비중을 내보내면 같은 달 행이 조용히 버려지고 월간으로 측정된다(replication_harness.R:84~89); 학습은 논문 그대로 일별이고 월말 포지션을 그대로 집행한다. (3) 하이퍼파라미터 탐색 = 랜덤서치 100회 → α 3점(1e-5/1e-4/1e-3)을 첫 확장창 반복의 검증손실로만 선정 후 고정, lr=1e-3·minibatch=128 은 논문 탐색공간 내 값으로 고정, epochs 500/patience 25 → 50/8 (전부 계산예산 사유이며 방법 변경 아님; dropout 은 은닉층 없는 SLP 에 정의되지 않아 미사용). (4) 학습 회전율 계수 c=0.0015 — 논문에서 c 는 거래비용 그 자체(0~10bps 시나리오)이고 우리 등급 기준 비용이 15bps 라 그 값을 넣었다.",
+
+  "paper_original_form": "고정 자산 패널(미국 금융섹터 주식 46종 1990-2022 · 주가지수선물 12종 2003-2020)에 대해 신경망이 매일 자산별 포지션 X_t^(i)∈[-1,1]을 동시에 출력하고, 이를 σ_tgt/σ_t^(i) 로 변동성 스케일링해 (1/N)Σ 로 합산하는 롱숏 일간 리밸런싱 포트폴리오(비중 합 제약·달러중립 제약 없음).",
+
+  "portfolio_spec": {
+    "construction": "engine_direct"
+  },
+
+  "commission_paper": null,
+
+  "notes": {
+    "engine_output": "PORTFOLIO(Date, Ticker, Weight, Leg) — 롱숏 양다리 + 논문의 변동성 타게팅 레버리지가 Weight 크기에 그대로 실려 있다. construction=engine_direct 가 아니면 러너가 숏 다리를 버리고 롱온리 top-N 으로 재구성하므로 이 값이 필수다.",
+    "commission_paper_null_reason": "원문은 왕복비용 단일 명시값이 없고 c ∈ {0, 0.5, 1, 2, 3, 4, 5, 10} bps 시나리오를 훑는다. 지어내지 않고 null 로 둔다 — 등급은 15bps 순비용 판이 낸다.",
+    "n_max": "패널 N=46 이라 보유 종목수가 고정 축 25 를 넘는다. 논문 비중 그대로가 engine_direct 의 존재 이유이므로 자르지 않았고, 축 초과는 계약 감사(constraint_profile=replication)에 남는다.",
+    "abort_not_taken": "데이터는 전부 있다(일별 종가·수익·거래대금). ABORT 사유 없음. 대리변수로 지어낸 패널 0건.",
+    "pit_structural": "학습 인덱스가 OOS 블록 행에 닿는 경로가 없고(반복 b 는 [2000-01-01, 블록시작 직전거래일]만 소비), 모든 창이 후향(align=right)이며, 표적 r_{t,t+1} 은 손실 안에서만 쓰이고 피처에 섞이지 않는다. 포트폴리오 변동성 스케일러는 시그널일까지 실현된 미스케일 수익만 보고 익월 첫 거래일에 집행되므로 C5 컷오프(홀딩월 시작 전)를 만족한다. 워밍업 60거래일 미충족 구간은 신호를 발행하지 않는다(첫 신호 ≈ 2005-03월말)."
+  }
+}

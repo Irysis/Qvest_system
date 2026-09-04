@@ -158,16 +158,12 @@ print('P_FDEF=%s'  % q((p.get('factor_def') or '')[:400]))
 print('P_FNAME=%s' % q(p.get('factor_name') or ''))
 c=d.get('combo') or {}
 print('IS_COMBO=%s' % q('1' if c else '0'))
-print('C_A=%s'       % q(c.get('a') or ''))
-print('C_B=%s'       % q(c.get('b') or ''))
-print('C_A_URL=%s'   % q(c.get('a_url') or ''))
-print('C_B_URL=%s'   % q(c.get('b_url') or ''))
-print('C_A_TITLE=%s' % q(c.get('a_title') or ''))
-print('C_B_TITLE=%s' % q(c.get('b_title') or ''))
-print('C_A_T=%s'     % q(c.get('a_t') if c.get('a_t') is not None else ''))
-print('C_B_T=%s'     % q(c.get('b_t') if c.get('b_t') is not None else ''))
-print('C_A_ENGINE=%s' % q(c.get('a_engine') or ''))
-print('C_B_ENGINE=%s' % q(c.get('b_engine') or ''))
+print('C_SETKEY=%s' % q(c.get('setkey') or ''))
+print('C_K=%s'      % q(c.get('k_items') or ''))
+print('C_NP=%s'     % q(c.get('n_papers') or ''))
+print('C_BEST_T=%s' % q(c.get('best_parent_t') if c.get('best_parent_t') is not None else ''))
+print('C_TRIES=%s'  % q(c.get('tries_before') if c.get('tries_before') is not None else '0'))
+print('C_COUNT=%s'  % q('1' if c.get('count_paper') else '0'))
 print('C_COUNT=%s'   % q('1' if c.get('count_paper') else '0'))")"
 [ -n "$P_URL" ] || { jl halt_no_url; exit 1; }
 
@@ -255,47 +251,51 @@ PROMPT="논문 1편의 **충실구현**을 수행하라. 산출은 **엔진 R �
 엔진을 쓰고 1~2줄로 무엇을 구현했는지만 보고하라."
 
 # --- KOMBO: 결합 설계 프롬프트 (2026-09-04 도훈 지시) -----------------------
-#   결합은 "두 엔진의 rank-Z 평균" 이 아니다. 두 논문을 읽고 **하나의 전략을 설계**하는 일이다.
-#   공통 꼬리(산출 형식·고정 축·실행 환경·금지)는 위 프롬프트에서 그대로 잘라 쓴다 —
-#   여기에 다시 적으면 두 벌이 갈라지고, 갈라지는 순간 한쪽만 고쳐진다.
+#   ★"조합 갯수도, 설계 방식도 제한하지 마라" (도훈). 그래서 이 프롬프트는 형태를 지정하지
+#   않는다 — 재료 논문과 실측 기록만 주고 **무엇을 어떻게 맞물릴지는 에이전트가 정한다**.
+#   구판(2026-09-04 오전)은 맞물림 4종 메뉴에서 고르게 하고 못 찾으면 ABORT 시켰다.
+#   그건 리서치를 규칙으로 환원한 것이고, 규칙으로 환원될 것이면 LLM 을 부를 이유가 없다.
+#   ★남는 제약은 설계 제약이 아니라 **계약**이다 — PIT C1~C15 · 고정 축 · 임의 상수 금지 ·
+#     산출 형식(engine.R + FIDELITY.json). 그건 공통 꼬리가 지고, 여기서 다시 적지 않는다.
 if [ "${IS_COMBO:-0}" = "1" ]; then
+  KOMBO_TXT="$ROOT/.cache/rf_combo_materials.txt"
+  "$PY" - "$REQ" "$KOMBO_TXT" <<'PYKOMBO'
+import io, json, sys
+REQ, OUT = sys.argv[1], sys.argv[2]
+d = json.loads(io.open(REQ, "rb").read().decode("utf-8"))
+c = d.get("combo") or {}
+L = []
+L.append("## 재료 논문 (%s편)" % len(c.get("papers") or []))
+for n, q in enumerate(c.get("papers") or [], 1):
+    L.append("%d. %s" % (n, q.get("title") or q.get("key") or "?"))
+    L.append("   원문: %s" % (q.get("url") or ""))
+L.append("")
+L.append("## 이 재료들의 이전 구현 (참고용 — 합치는 것이 설계가 아니다)")
+for it in c.get("item_engines") or []:
+    L.append("- %s : %s  (단독 다중검정 t %s)" % (it.get("key"), it.get("engine"), it.get("t")))
+io.open(OUT, "w", encoding="utf-8", newline="").write("\n".join(L))
+PYKOMBO
   PROMPT_TAIL=$(printf '%s\n' "$PROMPT" | sed -n '/^## 산출 (이것만)/,$p')
-  PROMPT="논문 **2편을 결합한 전략**을 설계하라. 산출은 **엔진 R 파일 하나**다.
+  PROMPT="논문 여러 편을 재료로 하는 **결합 전략**을 설계하라. 산출은 **엔진 R 파일 하나**다.
 
-## 논문 A
-제목: ${C_A_TITLE}
-원문: ${C_A_URL}
-단독 성적(다중검정 t, 현행 축): ${C_A_T}
+$(cat "$KOMBO_TXT")
 
-## 논문 B
-제목: ${C_B_TITLE}
-원문: ${C_B_URL}
-단독 성적(다중검정 t, 현행 축): ${C_B_T}
+## 설계 — 방식은 네가 정한다
+결합의 형태를 지정하지 않는다. 고를 목록도 없다. 논문을 읽고 **무엇이 어떻게 맞물리는지
+네가 판단하라.** 재료를 전부 쓸 필요도 없다 — 읽어 보고 일부만 쓰는 편이 낫다면 그렇게 하고
+그 판단을 적어라.
 
-## 설계 원칙 (★이게 이 작업의 전부다)
-- **두 신호를 평균하지 마라.** rank-Z 평균은 이미 다섯 번 돌렸고 전부 희석이었다
-  (결합 entry 5건 · 최고 t 0.766 · 부모 단독 성적을 한 번도 못 넘었다). 평균은 설계가 아니다.
-- 두 논문을 읽고 **기전이 어떻게 맞물리는지**를 먼저 정하라. 쓸 만한 맞물림의 예:
-  (1) 한쪽이 **자격**을 정하고 다른 쪽이 **순위**를 정한다 (조건부 선택)
-  (2) 한쪽이 **국면**을 말하고 다른 쪽 신호를 그 국면에서만 쓴다 (조건부 발화)
-  (3) 한쪽의 구조적 결함을 다른 쪽이 **직교 보완**한다 (잔차 위에 얹기)
-  (4) 두 논문이 같은 잠재변수를 다른 관측면으로 재고 있다 (측정 결합)
-  맞물림을 못 찾겠으면 **그렇다고 적고 ABORT** 하라 — 억지 결합은 희석 한 건을 더 만들 뿐이다.
-- 선택한 맞물림이 **왜 단독보다 나은지**를 한 줄로 적어라. 그 줄은 반증 가능해야 한다.
-- 파라미터는 논문에서 오거나 그 시점 데이터에서 추정한다. 임의 상수 금지.
+남길 것은 형식이 아니라 **근거**다. FIDELITY.json 의 changed 에 두 줄로:
+  (1) 무엇을 어떻게 결합했는가
+  (2) 그것이 각 재료 **단독보다 나을 것**이라 보는 이유 — 반증 가능한 형태로
 
-★산출에 \`${WDIR}/FIDELITY.json\` 을 함께 써라 — 결합은 키 값이 다르다:
-  fidelity(\"combination\" 고정) · kept(두 논문에서 각각 남긴 기전 1줄씩) ·
-  changed(맞물림 방식과 그 근거 1줄) · paper_original_form(두 논문의 원래 산출 형태) ·
-  portfolio_spec(기계 판독 객체 — 아래 형식) · commission_paper(null 가능).
-  결합 전략의 산출 형태는 네가 정한다:
-    PORTFOLIO 를 만들면 {\"construction\":\"engine_direct\"}
-    FACTORS 만 만들면 {\"construction\":\"top_n_long\",\"weighting\":\"ew\",\"rebalance\":\"monthly\",\"top_n\":25}
+## 실측 기록 (금지가 아니라 자료다)
+이 저장소는 결합 기저를 \"두 엔진 신호의 rank-Z 평균\" 으로 만든 판을 **5회** 측정했고,
+전부 재료 단독 성적을 못 넘었다(그 계보 최고 다중검정 t 0.766 · 합격선 2.95).
+이 재료 집합의 최고 단독 t 는 ${C_BEST_T} 이고, 같은 집합을 시도한 횟수는 ${C_TRIES} 회다.
+평균을 다시 고르는 것도 네 자유지만, 이 기록을 읽고 고르라는 뜻이다.
 
-## 참고 (베끼지 말 것 — 두 논문의 이전 단독 구현이다)
-- A: ${C_A_ENGINE:-없음}
-- B: ${C_B_ENGINE:-없음}
-읽어서 데이터 접근 방식을 참고하는 것은 좋다. 다만 **두 파일을 합치는 것은 설계가 아니다.**
+★FIDELITY.json 의 fidelity 는 \"combination\" 으로 적어라. 나머지 키는 아래 규약과 같다.
 
 ${PROMPT_TAIL}"
 fi

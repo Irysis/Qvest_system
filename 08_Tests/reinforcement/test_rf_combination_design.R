@@ -86,9 +86,10 @@ if (!is.null(r)) {
   if (identical(r$status, "pending")) ok("A2 status=pending — 러너가 집어간다") else ng("A2 status", r$status %||% "")
   if (identical(as.character(r$paper$paper_key), "combo:PA+PB")) ok("A3 paper_key = combo:a+b") else ng("A3 paper_key", as.character(r$paper$paper_key %||% ""))
   cb <- r$combo %||% list()
-  need <- c("a", "b", "a_url", "b_url", "a_t", "b_t", "a_engine", "b_engine", "count_paper")
+  need <- c("setkey", "k_items", "n_papers", "papers", "item_engines",
+            "best_parent_t", "tries_before", "axis", "dilution_test", "count_paper")
   miss <- need[!need %in% names(cb)]
-  if (!length(miss)) ok("A4 combo 키 9종 전부 — 설계자가 두 논문을 읽을 수 있다") else ng("A4 combo 키", paste(miss, collapse = ","))
+  if (!length(miss)) ok("A4 combo 키 10종 전부 — 설계자가 재료 논문 전부를 읽을 수 있다") else ng("A4 combo 키", paste(miss, collapse = ","))
   if (isFALSE(cb$count_paper)) ok("A5 count_paper=FALSE — 결합은 새 논문 소비가 아니다") else ng("A5 count_paper", as.character(cb$count_paper %||% ""))
   if (nzchar(as.character(cb$dilution_test %||% ""))) ok("A6 희석 판정 기준이 요청에 박힌다(사후 변경 차단)") else ng("A6 희석 판정 기준 부재")
 } else ng("A2~A6 요청 파일 자체가 없다")
@@ -96,6 +97,22 @@ if (!is.null(r)) {
 led_after <- fromJSON(file.path(TR, "06_Registry/reinforce_ledger_l1.json"), simplifyVector = FALSE)
 if (length(led_after$entries) == 2L) ok("A7 원장에 entry 를 열지 않는다 — 측정 전 개설 금지") else
   ng("A7 원장 무개설", sprintf("entries=%d", length(led_after$entries)))
+
+cat("\n=== A2. N편 결합 — 2편 고정이 아니다 (도훈 2026-09-04 '갯수 제한 두지마') ===\n")
+write_ledger(list(mk_paper("PA", 1.5, "n_max_25", "https://arxiv.org/abs/1111.1111"),
+                  mk_paper("PB", 1.2, "n_max_25", "https://arxiv.org/abs/2222.2222"),
+                  mk_paper("PC", 1.1, "n_max_25", "https://arxiv.org/abs/3333.3333")))
+o <- run(); r <- req()
+if (!is.null(r)) {
+  cb <- r$combo %||% list()
+  if (as.integer(cb$n_papers %||% 0L) >= 3L) ok(sprintf("N1 3편 결합이 나온다(n_papers=%s)", cb$n_papers)) else
+    ng("N1 3편 결합", sprintf("n_papers=%s — 2편에 갇혀 있다", cb$n_papers %||% "?"))
+  if (length(cb$papers %||% list()) == as.integer(cb$n_papers %||% 0L))
+    ok("N2 재료 논문 목록이 개수와 일치 — 설계자가 전부 읽는다") else ng("N2 논문 목록 길이 불일치")
+  if (identical(as.character(cb$setkey), "PA+PB+PC")) ok("N3 setkey 는 정렬된 구성 논문 집합") else
+    ng("N3 setkey", as.character(cb$setkey %||% ""))
+} else ng("N1~N3 요청 파일 없음")
+if (grepl("max_k=3", o, fixed = TRUE)) ok("N4 열거가 크기 3까지 간다") else ng("N4 열거 크기", substr(o, 1, 200))
 
 cat("\n=== B. 위반 주입 — 폐기 축 값은 앵커가 아니다 ===\n")
 write_ledger(list(mk_paper("PA", 1.5, "n_max_25", "https://arxiv.org/abs/1111.1111"),
@@ -109,7 +126,8 @@ cat("\n=== C. 위반 주입 — 원문 링크 없는 논문은 쌍을 못 이룬
 write_ledger(list(mk_paper("PA", 1.5, "n_max_25", "https://arxiv.org/abs/1111.1111"),
                   mk_paper("PN", 1.2, "n_max_25", "")))
 o <- run()
-if (grepl("halt_no_new_pair", o, fixed = TRUE)) ok("C1 링크 없으면 쌍 제외 — 설계자가 읽을 수 없다") else
+if (grepl("halt_no_new_pair", o, fixed = TRUE) || grepl("halt_too_few_papers", o, fixed = TRUE))
+  ok("C1 링크 없으면 재료 제외 — 설계자가 읽을 수 없다") else
   ng("C1 링크 필수", substr(o, 1, 200))
 
 cat("\n=== D. 게이트 — combination.enabled=false 면 즉시 물러난다 ===\n")
@@ -136,7 +154,15 @@ if (grepl("combination_design_requested", nx, fixed = TRUE))
   ok("E6 호출자가 설계 요청을 처리됨으로 본다(다음 논문이 덮지 않는다)") else ng("E6 호출자 인식")
 # 설계 원칙이 프롬프트에 실제로 있는가 — 평균 금지가 이 레인의 존재 이유다
 pr <- paste(readLines(file.path(ROOT, "02_Infrastructure/ops/rf_replication_auto.sh"), warn = FALSE), collapse = "\n")
-if (grepl("평균하지 마라", pr, fixed = TRUE)) ok("E7 프롬프트가 rank-Z 평균을 금지") else ng("E7 평균 금지 문구")
+# ★설계 방식은 열려 있어야 한다(도훈 2026-09-04 "LLM이 읽고 판단할테니 제약 안둬도 될 것 같아").
+#   구판 프롬프트는 맞물림 4종 메뉴에서 고르게 하고 못 찾으면 ABORT 시켰다 — 그건 리서치를
+#   규칙으로 환원한 것이고, 규칙으로 환원될 것이면 LLM 을 부를 이유가 없다.
+if (grepl("방식은 네가 정한다", pr, fixed = TRUE)) ok("E7 설계 방식을 에이전트에게 연다") else
+  ng("E7 설계 개방 문구 부재")
+if (grepl("평균하지 마라", pr, fixed = TRUE)) ng("E8 아직 형태를 금지하고 있다(설계 제약 잔존)") else
+  ok("E8 형태 금지 문구 제거 — 실측 기록만 준다")
+if (grepl("전부 재료 단독 성적을 못 넘었다", pr, fixed = TRUE))
+  ok("E9 실측 기록(5회 희석)은 그대로 전달 — 자료는 감추지 않는다") else ng("E9 실측 기록 부재")
 
 unlink(TR, recursive = TRUE, force = TRUE)
 cat(sprintf("\n합계: 통과 %d · 실패 %d\n", PASS, FAIL))

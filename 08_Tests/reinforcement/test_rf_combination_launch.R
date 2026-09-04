@@ -43,15 +43,20 @@ if (grepl("combo_opened", np, fixed = TRUE) && grepl("if (isTRUE(.combo_opened))
 
 cat("=== 3~5. 후보 풀 규칙 ===\n")
 la <- code(LA)
-if (grepl("by_paper[[pk]]", la, fixed = TRUE) && grepl("paper_key", la, fixed = TRUE))
-  ok("풀 단위 = 논문(paper_key)") else ng("entry 단위 풀", "승격 사슬이 별개 논문으로 세어진다")
+# ★2026-09-04 재편 — 풀의 단위가 "논문" 에서 **재료(item)** 로 넓어졌다.
+#   결합 entry 도 재료가 된다(결합의 결합). 같은 논문이 두 번 드는 것은 배제가 아니라
+#   **구성 논문 집합의 서로소 판정**으로 막는다. 그래서 아래 세 항의 판정 축이 바뀐다.
+if (grepl("by_item[[pk]]", la, fixed = TRUE) && grepl("paper_key", la, fixed = TRUE))
+  ok("풀 단위 = 재료 키(승격 사슬은 한 논문으로 접힌다)") else
+  ng("entry 단위 풀", "승격 사슬이 별개로 세어진다")
 if (grepl('identical(e$status, "parked")', la, fixed = TRUE))
   ok("parked/superseded 제외") else ng("무효 판이 후보에 든다")
-if (grepl('startsWith(pk, "combo:")', la, fixed = TRUE))
-  ok("결합 entry 는 풀에서 제외") else
-  ng("결합의 결합이 생긴다", "같은 논문이 두 번 든 조합")
-if (grepl(".done_pairs", la, fixed = TRUE) && grepl(".pairkey", la, fixed = TRUE))
-  ok("이미 돌린 쌍 제외(순서 무관)") else ng("같은 쌍을 매 주기 반복한다")
+if (grepl("anyDuplicated(.kk)", la, fixed = TRUE) && grepl(".papers_of_key", la, fixed = TRUE))
+  ok("같은 논문 중복은 서로소 판정이 막는다(결합의 결합은 허용)") else
+  ng("중복 논문 방어 없음", "결합의 결합에서 같은 논문이 두 번 들어간다")
+if (grepl(".ntry_of", la, fixed = TRUE) && grepl(".setkey", la, fixed = TRUE))
+  ok("기왕 착수분은 후순위(금지 아님 — 설계가 다르면 다른 전략)") else
+  ng("착수 이력을 안 본다", "같은 구성을 매 주기 1위로 반복한다")
 
 cat("=== 6. 러너가 entry$base_signal 을 존중하는가 ===\n")
 for (f in c(PAR, SEQ)) {
@@ -88,7 +93,7 @@ if (is.null(out)) ng("착수기 실행 실패") else {
   .guards <- c("halt_active_exists", "halt_no_new_pair", "halt_queue_empty", "halt_disabled",
                "halt_combination_disabled", "halt_too_few_papers", "halt_request_busy")
   .fired  <- .guards[vapply(.guards, function(g) grepl(g, txt, fixed = TRUE), logical(1))]
-  if (grepl("papers_pooled", txt, fixed = TRUE)) ok("풀 구성까지 도달")
+  if (grepl("items_pooled", txt, fixed = TRUE) || grepl("papers_pooled", txt, fixed = TRUE)) ok("풀 구성까지 도달")
   else if (length(.fired)) ok(sprintf("가드 정상 발화(%s) — 착수기가 설계대로 물러났다", .fired[1]))
   else ng("풀 구성 전에 멈춤(가드 발화도 아님)", substr(txt, 1, 120))
   if (grepl("combo_entry_opened", txt, fixed = TRUE))
