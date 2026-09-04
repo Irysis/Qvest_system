@@ -1,0 +1,14 @@
+{
+  "verdict": "misdeclared",
+  "undeclared_changes": [
+    "논문/자기신고는 CON = 롱 loser(최저 과거수익) · 숏 winner(최고 과거수익)인데, engine.R 의 실제 PORTFOLIO(construction=engine_direct — 정본 traded 비중)는 롱 winner · 숏 loser = 모멘텀으로 부호가 반전돼 있다. FIDELITY.changed 는 유니버스 치환(중국 A주→K200∪KQ150)+유동성 하한+기간(1997-2012→2005-)만 선언하고, 방향은 kept·changed 양쪽에서 '롱 loser/숏 winner'라고 명시한다 — 반전은 선언되지 않았고 선언과 정반대다.",
+    "엔진 내부도 자기모순이다: 진단 주석 L82 는 '롱(loser)+1/nL · 숏(winner)−1/nS'라 적고 FACTORS(L217) Score=-RF 도 contrarian 정렬(저-과거수익에 고점수)인데, 정작 traded PORTFOLIO(L209-210)만 모멘텀 부호다. FACTORS 패널(반전)과 PORTFOLIO(모멘텀)가 방향을 달리한다 — 계약이 소비하는 정본은 PORTFOLIO 이므로 실전 전략은 모멘텀이다."
+  ],
+  "signal_mismatch": [
+    "논문 정의: loser=worst past return, winner=best past return; CON = 'buying the loser portfolio and selling the winner portfolio'. engine.R:196 은 DEC=1=최저수익(loser)·DEC=10(.NDEC)=최고수익(winner)로 데실을 옳게 라벨하지만, engine.R:209 `D[DEC==.NDEC, ... Weight=1/NS, Leg=\"long\"]` 가 winner(DEC=10)를 +비중 롱으로, engine.R:210 `D[DEC==1L, ... Weight=-1/NL, Leg=\"short\"]` 가 loser(DEC=1)를 −비중 숏으로 배정한다. 부호가 논문 대비 정확히 반전(long/short 다리 스왑).",
+    "부호 반전 교차확증: authoritative_remeasure.json::essence.portfolio_alpha_t_nw_lag3 = -3.438 (강한 음수 t). contrarian 부호로 돌렸다면 나올 수 없는 방향이며, 반전 신호가 음수 알파 t 로 나타난다는 예측과 정합(등급 판정은 계약 소관 — 여기서는 부호 방향의 증거로만 인용)."
+  ],
+  "evidence": "arxiv.org/html/1505.00328v1 본문 정의절: 'the group of stocks with the worst performance ... loser portfolio LOS(J,K)' / 'the group with best performance ... winner portfolio WIN(J,K)' / 'One then adopts the contrarian strategy by buying the loser portfolio and selling the winner portfolio.' 대조 코드: engine.R:196(데실 라벨), engine.R:209-210(long/short 다리 배정 — 반전 지점), engine.R:217(FACTORS Score=-RF, 내부 모순), engine.R:82(주석은 반전을 서술). 선언: FIDELITY.json kept·changed(방향='롱 loser/숏 winner'로 선언, 반전 미선언).",
+  "confidence": "high",
+  "note": "원문 전문(html v1) 확인 완료. 논문은 롱 loser/숏 winner(반전전략)인데 구현 traded 포트폴리오는 롱 winner/숏 loser(모멘텀)로 부호가 뒤집혔고, FIDELITY.changed 에 선언되지 않아 misdeclared. 유니버스 교체는 허용 변경이라 별개다."
+}

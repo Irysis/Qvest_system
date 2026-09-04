@@ -58,6 +58,22 @@ HTMLLINE=""
 PROMPT="너는 **적대적 검증자**다. 아래 구현이 논문과 다르다는 것을 **입증하라.**
 일치를 확인하는 일이 아니다 — 다른 지점을 찾는 것이 임무다. 못 찾으면 그때 faithful 이다.
 
+## 페르소나 — 감정을 배제한 철저한 비평가 (도훈 지시 2026-09-04)
+너는 구현자에 대한 호의도 적의도 없다. 칭찬도 위로도 비난도 네 산출물에 들어가지 않는다.
+- **인상은 판정이 아니다.** \"대체로 맞아 보인다\" \"큰 문제는 없어 보인다\" 는 쓰지 마라.
+  모든 진술은 **원문 위치(절·식 번호·표)와 코드 행**으로 뒷받침하라. 못 대면 적지 마라.
+- **관대함은 미덕이 아니다.** 넘어가 준 불일치는 나중에 누군가가 잘못된 결론을 내리는 값으로
+  돌아온다. 특히 이 판정 뒤에는 논문을 영구 소비하는 경로가 있다.
+- **가혹함도 미덕이 아니다.** 근거 없는 기각은 감사가 아니라 잡음이고, 침묵과 같은 값어치다.
+  많이 찾는 것이 잘하는 것이 아니다 — 정확히 찾는 것이 잘하는 것이다.
+- **구현자의 의도를 추측하지 마라.** \"아마 …하려던 것 같다\" 는 감사가 아니다.
+  코드가 **하는 일**과 문서가 **말하는 일**의 차이만 기술하라.
+- **판정을 먼저 정하고 근거를 모으지 마라.** 대조를 끝낸 뒤에 판정이 따라 나온다.
+  중간에 유리한 근거가 보여도 나머지 축을 끝까지 대조하라.
+- **네가 틀릴 수 있다는 것도 기록하라.** 확신이 낮으면 confidence 를 낮춰 적고,
+  판정에 못 미치는 관찰은 note 에 남겨라 — 부풀리지도, 감추지도 않는다.
+- 물질적 차이와 문구·위치 문제를 구분하라. 전자는 지적이고, 후자는 note 다.
+
 ## 대상
 - 논문: ${PURL}
 ${HTMLLINE}
@@ -96,6 +112,7 @@ ${HTMLLINE}
   \"signal_mismatch\": [\"논문 식 (3) 의 부호는 …, engine.R:NN 은 …\"],
   \"evidence\": \"원문에서 근거를 찾은 위치(절·식 번호·표)\",
   \"confidence\": \"high|medium|low\",
+  \"_배열 규약\": \"undeclared_changes·signal_mismatch 는 **발견만** 담는다. 없으면 빈 배열 [] 로 두고, '불일치 없음' 같은 비발견을 항목으로 넣지 마라 — 근거 게이트가 배열 길이로 서므로 채움 항목이 게이트를 통과시킨다. 확인한 일치는 note 에 적어라.\",
   \"note\": \"1~2줄\"
 }
 
@@ -105,9 +122,13 @@ ${HTMLLINE}
 
 감사 파일을 쓰고 1줄로 판정만 보고하라."
 
-FA_MODEL="${QVEST_FA_MODEL:-opus}"
-FA_EFFORT="${QVEST_FA_EFFORT:-max}"
-jl start "paper=$PKEY" "wdir=$WDIR" "model=$FA_MODEL" "html=$HTMLU"
+# ★모델·노력수준은 설정의 llm 블록이 정본이다 (2026-09-04) — 네 레인이 각자 기본값을
+#   들고 있으면 한 곳을 바꿔도 나머지가 그대로 남는다. 환경변수는 그대로 최우선.
+. "$ROOT/02_Infrastructure/ops/rf_llm_env.sh"
+rf_llm_resolve fidelity_audit "${QVEST_FA_MODEL:-}" "${QVEST_FA_EFFORT:-}"
+FA_MODEL="$LLM_MODEL"
+FA_EFFORT="$LLM_EFFORT"
+jl start "paper=$PKEY" "wdir=$WDIR" "model=$FA_MODEL" "effort=$FA_EFFORT" "html=$HTMLU"
 timeout 1800 claude -p "$PROMPT" \
   --model "$FA_MODEL" --effort "$FA_EFFORT" \
   --permission-mode acceptEdits \

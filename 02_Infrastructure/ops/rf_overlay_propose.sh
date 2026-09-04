@@ -113,7 +113,12 @@ ${ADIR}/dbeta_tilt.R 를 읽어라 — 계약과 문체의 기준이다.
 
 파일 2개를 쓰고 무엇을 구현했는지 1~2줄로만 보고하라."
 
-RP_MODEL="${QVEST_OV_MODEL:-opus}"; RP_EFFORT="${QVEST_OV_EFFORT:-max}"
+# ★모델·노력수준은 설정의 llm 블록이 정본이다 (2026-09-04) — 네 레인이 각자 기본값을
+#   들고 있으면 한 곳을 바꿔도 나머지가 그대로 남는다. 환경변수는 그대로 최우선.
+. "$ROOT/02_Infrastructure/ops/rf_llm_env.sh"
+rf_llm_resolve overlay_propose "${QVEST_OV_MODEL:-}" "${QVEST_OV_EFFORT:-}"
+RP_MODEL="$LLM_MODEL"
+RP_EFFORT="$LLM_EFFORT"
 jl model_selected "model=$RP_MODEL" "effort=$RP_EFFORT" "kind=$KIND"
 QVEST_ARM_GEN=1 timeout 1800 claude -p "$PROMPT" \
   --model "$RP_MODEL" --effort "$RP_EFFORT" \

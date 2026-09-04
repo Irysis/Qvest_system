@@ -327,8 +327,12 @@ fi
 # ★모델·노력수준 명시 (도훈 지적 2026-08-30 — 구판은 미지정이라 CLI 기본값에 의존했다).
 #   충실구현은 **깊이** 문제다: 논문 하나를 정확히 읽고 기전을 이식할 수 있는지 판단한다.
 #   넓이(팬아웃)가 아니므로 울트라코드가 아니라 **단일 에이전트 · 최대 노력**이 맞다.
-RP_MODEL="${QVEST_RP_MODEL:-opus}"
-RP_EFFORT="${QVEST_RP_EFFORT:-max}"
+# ★모델·노력수준은 설정의 llm 블록이 정본이다 (2026-09-04) — 네 레인이 각자 기본값을
+#   들고 있으면 한 곳을 바꿔도 나머지가 그대로 남는다. 환경변수는 그대로 최우선.
+. "$ROOT/02_Infrastructure/ops/rf_llm_env.sh"
+rf_llm_resolve replication "${QVEST_RP_MODEL:-}" "${QVEST_RP_EFFORT:-}"
+RP_MODEL="$LLM_MODEL"
+RP_EFFORT="$LLM_EFFORT"
 jl model_selected "model=$RP_MODEL" "effort=$RP_EFFORT"
 timeout 3000 claude -p "$PROMPT" \
   --model "$RP_MODEL" --effort "$RP_EFFORT" \

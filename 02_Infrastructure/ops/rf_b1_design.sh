@@ -118,8 +118,12 @@ IC 시계열 상관이 최소가 되는 순서로 팩터를 하나씩 붙이고(
 
 설계 파일을 쓰고 1~2줄로 무엇을 시험하려는지만 보고하라."
 
-B1_MODEL="${QVEST_B1_MODEL:-opus}"
-B1_EFFORT="${QVEST_B1_EFFORT:-max}"
+# ★모델·노력수준은 설정의 llm 블록이 정본이다 (2026-09-04) — 네 레인이 각자 기본값을
+#   들고 있으면 한 곳을 바꿔도 나머지가 그대로 남는다. 환경변수는 그대로 최우선.
+. "$ROOT/02_Infrastructure/ops/rf_llm_env.sh"
+rf_llm_resolve b1_design "${QVEST_B1_MODEL:-}" "${QVEST_B1_EFFORT:-}"
+B1_MODEL="$LLM_MODEL"
+B1_EFFORT="$LLM_EFFORT"
 jl start "base_id=$BID" "model=$B1_MODEL" "effort=$B1_EFFORT" "max_cells=$MAXC"
 timeout 1800 claude -p "$PROMPT" \
   --model "$B1_MODEL" --effort "$B1_EFFORT" \

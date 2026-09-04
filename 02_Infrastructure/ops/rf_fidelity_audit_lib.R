@@ -48,6 +48,13 @@ rf_audit_verify <- function(audit_p) {
     n <- length(A$undeclared_changes %||% list()) + length(A$signal_mismatch %||% list())
     if (n < 1L) return(bad("misdeclared 인데 지적 항목이 0건 — 근거 없는 기각"))
     if (!nzchar(as.character(A$evidence %||% ""))) return(bad("misdeclared 인데 원문 근거가 없다"))
+    # ★채움 항목 차단 — 실측(2026-09-04): 감사가 signal_mismatch 배열에 "신호 불일치 없음" 을
+    #   넣었다. 근거 게이트가 **배열 길이**로 서있으므로 그런 비발견 하나가 게이트를 열어준다.
+    #   휴리스틱이다: 지적은 위치·원문을 가리키므로 짧을 수 없다. 전부 짧으면 근거로 안 센다.
+    .items <- c(vapply(A$undeclared_changes %||% list(), function(x) as.character(x)[1], character(1)),
+                vapply(A$signal_mismatch    %||% list(), function(x) as.character(x)[1], character(1)))
+    if (!any(nchar(.items) >= 25L))
+      return(bad("misdeclared 인데 지적이 전부 25자 미만 — 비발견 채움 항목으로 보인다"))
   }
   # ★unverifiable 은 faithful 이 아니다 — 원문을 못 읽었으면 "확인 못 함" 으로 남긴다.
   jlog("audit_verified", verdict = v,

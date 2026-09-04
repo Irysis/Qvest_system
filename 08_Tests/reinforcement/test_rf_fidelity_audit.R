@@ -31,8 +31,9 @@ for (v in c("faithful", "adapted", "unverifiable")) {
   wr(list(verdict = v, note = "n"))
   if (isTRUE(rf_audit_verify(AP))) ok(sprintf("A verdict=%s 통과", v)) else ng(sprintf("A verdict=%s 기각됨", v))
 }
-wr(list(verdict = "misdeclared", undeclared_changes = list("논문은 J=6 인데 구현은 J=12"),
-        evidence = "§3.1 식 (2)"))
+wr(list(verdict = "misdeclared",
+        undeclared_changes = list("논문 §3.1 식 (2) 는 형성기간 J=6 인데 engine.R:104 는 J=12 — FIDELITY.changed 에 없음"),
+        evidence = "§3.1 식 (2) 및 Table 2"))
 if (isTRUE(rf_audit_verify(AP))) ok("A 근거 있는 misdeclared 통과") else ng("A 근거 있는 misdeclared 가 기각됨")
 
 cat("\n=== B. 위반 주입 — 형식과 근거 ===\n")
@@ -48,6 +49,33 @@ if (!isTRUE(rf_audit_verify(AP))) ok("B4 파손 JSON 기각") else ng("B4 파손
 unlink(AP, force = TRUE)
 if (identical(rf_audit_read(AP)$verdict, "unverifiable"))
   ok("B5 감사 파일 부재 = unverifiable (침묵을 통과로 읽지 않는다)") else ng("B5 부재를 통과로 읽는다")
+
+cat("\n=== B2. 채움 항목 — 비발견을 근거로 세지 않는다 (2026-09-04 실측) ===\n")
+# 실측: 감사가 signal_mismatch 배열에 "신호 불일치 없음" 을 넣었다. 근거 게이트가 **배열 길이**로
+# 서 있어 그런 비발견 하나가 misdeclared 를 열어준다. 문턱은 휴리스틱이고, 아래 B7 이
+# "진짜 지적은 막지 않는다" 를 같이 잰다 — 한쪽만 재면 문턱이 과하게 조여도 안 보인다.
+wr(list(verdict = "misdeclared", signal_mismatch = list("신호 불일치 없음"), evidence = "§1"))
+if (!isTRUE(rf_audit_verify(AP))) ok("B6 짧은 비발견 채움 항목 기각") else ng("B6 채움 항목이 게이트를 통과")
+wr(list(verdict = "misdeclared",
+        signal_mismatch = list("논문 정의는 loser 롱인데 engine.R:209 는 winner 를 +비중 롱으로 배정"),
+        evidence = "§2 정의절"))
+if (isTRUE(rf_audit_verify(AP))) ok("B7 실제 지적은 통과 — 문턱이 진짜 발견을 막지 않는다") else
+  ng("B7 진짜 지적이 기각됨")
+
+cat("\n=== B3. 실측 픽스처 — 감사자가 실제로 낸 misdeclared ===\n")
+# ★손으로 쓴 payload 로만 재면 스키마가 실제 산출과 갈릴 수 있다. 2026-09-04 부호반전 프로브에서
+#   감사자가 낸 **진짜 산출물**을 픽스처로 둔다(LLM 발화 실증의 사료이기도 하다).
+FX <- file.path(ROOT, "08_Tests/fixtures/fidelity_audit/misdeclared_signflip_20260904.json")
+if (file.exists(FX)) {
+  file.copy(FX, AP, overwrite = TRUE)
+  if (isTRUE(rf_audit_verify(AP))) ok("B8 실측 misdeclared 산출물이 스키마를 통과") else
+    ng("B8 실제 감사 산출물이 스키마에 걸린다", "검증기가 현실과 갈렸다")
+  fx <- rf_audit_read(FX)
+  if (identical(fx$verdict, "misdeclared")) ok("B9 픽스처 판정 = misdeclared(부호 반전 주입 적발분)") else
+    ng("B9 픽스처 판정", fx$verdict)
+  if (identical(rf_audit_disposition(fx, 0L)$action, "reimplement"))
+    ok("B10 실측 산출물 → 재구현 처분") else ng("B10 실측 산출물 처분")
+} else cat("  SKIP 픽스처 부재\n")
 
 cat("\n=== C. 처분 — 도훈 선택(자동 재구현 1회 + 소비 보류) ===\n")
 d0 <- rf_audit_disposition(list(verdict = "faithful"), 0L)
@@ -92,6 +120,37 @@ if (grepl("반증하라", sh, fixed = TRUE)) ok("E4 임무가 반증이다(일�
 if (grepl('"Bash,Agent,Edit"', sh, fixed = TRUE)) ok("E5 감사자는 엔진을 못 고친다(읽기 전용)") else ng("E5 권한 축소 부재")
 if (grepl("fidelity_audit", code_of("06_Registry/reinforce_auto_config.json"), fixed = TRUE))
   ok("E6 kill switch 존재") else ng("E6 kill switch 부재")
+
+cat("\n=== F. 페르소나 — 감정을 배제한 철저한 비평가 (도훈 지시 2026-09-04) ===\n")
+if (grepl("감정을 배제한 철저한 비평가", sh, fixed = TRUE)) ok("F1 페르소나 선언") else ng("F1 페르소나 부재")
+if (grepl("인상은 판정이 아니다", sh, fixed = TRUE))
+  ok("F2 인상 금지 — 모든 진술에 원문 위치·코드 행") else ng("F2 인상 금지 조항 부재")
+if (grepl("관대함은 미덕이 아니다", sh, fixed = TRUE) && grepl("가혹함도 미덕이 아니다", sh, fixed = TRUE))
+  ok("F3 양쪽 편향을 다 막는다(관대·가혹)") else ng("F3 한쪽 편향만 막는다")
+if (grepl("의도를 추측하지 마라", sh, fixed = TRUE))
+  ok("F4 의도 추측 금지 — 코드가 하는 일과 문서가 말하는 일의 차이만") else ng("F4 의도 추측 금지 부재")
+if (grepl("판정을 먼저 정하고 근거를 모으지 마라", sh, fixed = TRUE))
+  ok("F5 결론 선취 금지(사후 근거 수집 차단)") else ng("F5 결론 선취 금지 부재")
+
+cat("\n=== G. 모델 정본 — 네 레인이 설정에서 읽는가 (2026-09-04) ===\n")
+# ★구판은 레인마다 `:-opus` / `:-max` 를 들고 있었고 config 의 llm 블록은 **읽는 코드가 0건**이었다.
+#   정책을 적어 둔 문서를 아무도 소비하지 않는 상태 — 한 곳을 바꿔도 나머지가 그대로 남는다.
+LANES <- c("rf_fidelity_audit.sh", "rf_b1_design.sh", "rf_replication_auto.sh", "rf_overlay_propose.sh")
+for (f in LANES) {
+  b <- code_of(file.path("02_Infrastructure/ops", f))
+  if (grepl("rf_llm_resolve", b, fixed = TRUE)) ok(sprintf("G %s — 설정 정본에서 읽는다", f)) else
+    ng(sprintf("G %s — 정본 미소비", f))
+  if (grepl(":-opus}", b, fixed = TRUE) || grepl(":-max}", b, fixed = TRUE))
+    ng(sprintf("G %s — 자기 기본값 잔존(표류 경로)", f)) else
+    ok(sprintf("G %s — 자기 기본값 없음", f))
+}
+cfgj <- tryCatch(fromJSON(file.path(ROOT, "06_Registry/reinforce_auto_config.json"), simplifyVector = FALSE),
+                 error = function(e) list())
+.ln <- (cfgj$llm %||% list())$lanes %||% list()
+if (length(.ln) >= 4L) ok(sprintf("G 설정에 레인 %d종 명시", length(.ln))) else ng("G 레인 명시 부족")
+if (identical(as.character((.ln$fidelity_audit %||% list())$model %||% ""), "opus") &&
+    identical(as.character((.ln$fidelity_audit %||% list())$effort %||% ""), "max"))
+  ok("G 감사 레인 = opus / max (도훈 지시)") else ng("G 감사 레인 모델 설정")
 
 cat(sprintf("\n합계: 통과 %d · 실패 %d\n", PASS, FAIL))
 cat(sprintf('{"test":"rf_fidelity_audit","pass":%d,"fail":%d,"total":%d}\n', PASS, FAIL, PASS + FAIL))
