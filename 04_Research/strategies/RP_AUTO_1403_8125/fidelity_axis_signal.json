@@ -1,0 +1,15 @@
+{
+  "axis": "signal",
+  "verdict": "misdeclared",
+  "undeclared_changes": [
+    "원문 §3.2 신호 구성에는 수익률 winsorize·절단·clipping·이상치 처리가 전혀 없다(전문 대조 결과 NONE FOUND). 그러나 engine.R:141-142 는 형성창 일별 로그수익 d 를 ±.DCAP=±log(3)(≈+200%/−67%)로 절단한 뒤 경로·MDD·회복·누적·CM 점수를 산출한다. 이 절단은 신호 산출식(.mdd_stats) 내부 단계인데, FIDELITY.changed 는 변경을 '유니버스만'으로 못박고 FIDELITY.kept 는 '신호…논문 그대로'라 진술한다 — 절단 단계가 선언에서 누락됐다."
+  ],
+  "signal_mismatch": [
+    "논문 MDD 는 식(1) MDD=max_{τ}(max_{t<τ}(P(t)−P(τ))) / 식(2) MDD=−min_{τ}(min_{t<τ}R(t,τ)) 로 untreated 로그가격 경로 위에 정의된다(절단 없음). engine.R:141-142 는 .mdd_stats 안에서 d[d>.DCAP]<-.DCAP · d[d<-.DCAP]<--.DCAP 로 먼저 절단한 경로(engine.R:143 path<-c(0,cumsum(d)))를 쓴다. 절단이 발화하는 관측(거래정지 갭·수정주가 아티팩트)에서 MDD·R_III·C·CM score(engine.R:207)가 논문 정의와 다른 값을 낸다."
+  ],
+  "counterexample": "6개월 형성창 중 일부 거래정지 후 큰 갭으로 재개된 종목. 예: 정지 전 종가 1,000 → 재개 첫 거래일 3,500 (연속 가용 거래일 간 일별 로그수익 ln(3.5)≈+1.253). 논문 식(1)/(2)는 이 +125.3% 로그점프를 경로에 그대로 반영하지만 engine.R:141-142 는 +log(3)≈+1.099 로 절단 → 그 종목의 C·R_III·CM score 가 논문 대비 약 0.154(로그) 낮아지고 peak/trough 구조가 바뀌어 데실 배정(롱 편입 여부)이 갈릴 수 있다. engine.R:202 .COV=0.80 이 창 거래일 20% 결측을 허용하므로 이런 갭 종목이 유니버스에 남는다. 단, 평상시 KRX ±15/30% 가격제한 하 단일 연속거래일 수익은 |로그|≤0.262 « log(3) 라 절단은 드물게만 발화한다 — 그러나 발화 시 MDD 를 직접 바꾸며(엔진 자신도 '단일 오손 프린트가 순위를 지배'라 인정, engine.R:127), 발화 빈도와 무관하게 '유니버스만' 선언은 사실과 어긋난다.",
+  "evidence": "원문 §3.2 방법론: MDD 식(1)/(2)(로그가격/로그수익, 양의 크기), 정렬 규칙 'assets…are sorted in ascending order…except for the maximum drawdown'; §1·표 표기 'monthly momentum and weekly contrarian'(월간=모멘텀·W−L); §4.1.2/Table 3 CM 월평균 1.433%(σ 7.036%)·'The best strategy is the momentum portfolio by the composite rule of cumulative return and maximum drawdown'; 3국면 분해 C=R_I+R_II+R_III=PP−MDD+R. ★이상치/winsorize/truncation/clipping 언급 = 원문 전무(NONE FOUND). 코드: engine.R:113(.W=c(1,2,1)), 122-127(.DCAP=log(3) 절단 상수), 141-142(일별수익 절단), 146-153(MDD/RI/RII/RIII), 207(score=RI+2RII+RIII=C−MDD), 214-216(오름차순·top데실 롱/bottom데실 숏).",
+  "confidence": "medium",
+  "checked": "MDD·회복·누적 식 재구성(식1/2 대조)·CM(1,2,1)=C−MDD 산술 검증·월간=모멘텀 부호(W−L, top롱/bottom숏, 부호반전 0)·10분위·'ascending except MDD'의 R_II=−MDD 부호처리·표준화(rank/z)無 여부·±log(3) 일별수익 절단",
+  "note": "신호식·부호·방향·데실 수·표준화無 는 전부 논문과 일치한다(특히 월간 모멘텀 부호가 정확 — F 지문인 부호반전 없음). 유일한 미선언 이탈은 신호 경로에 삽입된 ±log(3) 일별수익 절단(원문 무·FIDELITY '유니버스만/신호 그대로'와 모순)이며 실무상 발화 빈도는 낮다. [축 밖 note] 형성창 신호를 일별 가격으로 계산하나 원문은 창내 표본주기를 명시하지 않음 → 그 하위점은 unverifiable(일별 MDD 는 월별보다 체계적으로 큼)."
+}
