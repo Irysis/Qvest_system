@@ -50,6 +50,46 @@ rf_notify_table <- function(base_id) {
 }
 
 # ── 차트 2장 (원칙 9 — 실측 보고는 글만 보내지 않는다) ────────────────────────
+## ── 블록 코드 → 축 이름 (도훈 지시 2026-09-04) ──────────────────────────────
+##   "B1/B2/B5" 는 격자 내부 번호다. 받는 사람은 그게 무슨 축인지 모른다.
+##   ★셀 코드까지 함께 바꾼다 — 제목만 바꾸면 본문이 여전히 "B2_6" 이라 두 표기가
+##     한 메시지에 섞인다. 기전 서술(LLM 산출)도 같은 변환을 받아야 참조가 어긋나지 않는다.
+##   짧은 이름을 쓴다: "비중방법론 6" 보다 "비중 6" 이 표에서 안 밀린다.
+.RF_AXSHORT <- c(B1 = "팩터", B2 = "비중", B3 = "유니버스", B5 = "오버레이", B4 = "결합")
+.RF_AXLONG  <- c(B1 = "멀티팩터", B2 = "비중방법론", B3 = "유니버스",
+                 B5 = "리스크오버레이", B4 = "결합")
+.rf_axname <- function(x, long = FALSE) {
+  if (is.null(x) || !length(x)) return(x)
+  v <- as.character(x); tb <- if (isTRUE(long)) .RF_AXLONG else .RF_AXSHORT
+  for (k in names(tb)) {
+    ## 셀 코드 먼저 (B2_6 -> 비중 6), 그 다음 단독 블록 코드 (B2 -> 비중)
+    v <- gsub(sprintf("%s_([0-9]+)", k), sprintf("%s \\1", tb[[k]]), v)
+    v <- gsub(sprintf("(?<![A-Za-z0-9_])%s(?![A-Za-z0-9_])", k), tb[[k]], v, perl = TRUE)
+  }
+  ## 조사 정리 — "B3 는" 이 "유니버스 는" 으로 나오면 띄어쓰기가 어색하고,
+  ##   받침 유무에 따라 형태도 바뀐다. 목록으로 적지 않고 **유니코드로 계산**한다.
+  .has_jong <- function(w) {
+    ch <- utf8ToInt(substr(w, nchar(w), nchar(w)))
+    if (ch < 0xAC00 || ch > 0xD7A3) return(TRUE)
+    ((ch - 0xAC00) %% 28L) != 0L
+  }
+  for (nm in unname(tb)) {
+    J <- .has_jong(nm)
+    for (pr in list(c("는","은"), c("가","이"), c("를","을"), c("와","과"))) {
+      v <- gsub(sprintf("(?<=%s) (%s|%s)(?=[ .,)은는]|$)", nm, pr[1], pr[2]),
+                if (J) pr[2] else pr[1], v, perl = TRUE)
+    }
+    v <- gsub(sprintf("(?<=%s) (의|에|도|만|부터|까지)(?=[ .,)]|$)", nm), "\\1", v, perl = TRUE)
+  }
+  v
+}
+## 리스트 구조 안의 문자열을 전부 훑는다(섹션은 중첩 list 다)
+.rf_axname_deep <- function(x) {
+  if (is.character(x)) return(.rf_axname(x))
+  if (is.list(x)) return(lapply(x, .rf_axname_deep))
+  x
+}
+
 rf_notify_charts <- function(tab, outdir) {
   ok <- requireNamespace("ggplot2", quietly = TRUE)
   if (!ok || !nrow(tab)) return(character(0))
@@ -67,7 +107,7 @@ rf_notify_charts <- function(tab, outdir) {
   p1 <- ggplot(d, aes(x = lab, y = port_t, fill = blk)) +
     geom_col(width = 0.66) +
     geom_hline(yintercept = 2.95, linetype = "22", linewidth = 0.8, colour = "#B3261E") +
-    annotate("text", x = 1, y = 3.0, label = "A 문턱 2.95", hjust = 0, size = 3.2, colour = "#B3261E") +
+    annotate("text", x = 1, y = 3.0, label = "Grade A 문턱 PORT_t 2.95", hjust = 0, size = 3.2, colour = "#B3261E") +
     geom_text(aes(label = sprintf("%.3f", port_t)), hjust = -0.15, size = 3.1, colour = "#333333") +
     ## ★축 범위를 데이터에서 도출한다 (도훈 2026-09-04 "y축 좀 더 넓게").
     ##   구판은 상한이 3.4 로 박혀 있었다 — 값 라벨이 바깥으로 나가서 잘리고,
@@ -76,7 +116,7 @@ rf_notify_charts <- function(tab, outdir) {
     coord_flip(clip = "off") +
     ylim(min(0, min(d$port_t, na.rm = TRUE)) * 1.15 - 0.20,
          max(3.6, max(d$port_t, na.rm = TRUE) * 1.22)) +
-    labs(title = "무인 강화 — 셀별 다중검정 t값", subtitle = "규칙 격자 자동 실행 · 전 셀 실투형 동일 축",
+    labs(title = "무인 강화 — 셀별 PORT_t (NW lag-3)", subtitle = "규칙 격자 자동 실행 · 전 셀 실투형 동일 축",
          x = NULL, y = "PORT_t", caption = "출처: 각 셀 authoritative_remeasure.json (15bps 순비용 판)") +
     theme_minimal(base_size = 11) +
     theme(plot.title = element_text(face = "bold", size = 12.5), legend.position = "top",
@@ -98,8 +138,8 @@ rf_notify_charts <- function(tab, outdir) {
     geom_point(aes(size = port_t), alpha = 0.85) +
     geom_text(aes(label = code), vjust = -1.1, size = 2.9, show.legend = FALSE) +
     scale_size_continuous(name = "PORT_t", range = c(2.5, 7)) +
-    labs(title = "낙폭 대 표본외 유지율", subtitle = "왼쪽 = 낙폭 작음 · 위 = 표본 밖에서 유지. 0선 아래는 반전",
-         x = "최대낙폭", y = "표본외 유지율", caption = "점 크기 = 다중검정 t값") +
+    labs(title = "MDD 대 OOS retention", subtitle = "좌 = MDD 작음 · 상 = OOS 유지. 0선 아래는 부호 반전",
+         x = "MDD", y = "OOS retention", caption = "점 크기 = PORT_t") +
     theme_minimal(base_size = 11) +
     theme(plot.title = element_text(face = "bold", size = 12.5), legend.position = "top",
           plot.caption = element_text(size = 7.5, colour = "#666666"))
@@ -375,7 +415,8 @@ rf_auto_notify <- function(base_id, n, kind = "block") {
   ttl <- if (identical(kind, "grade_a"))
     sprintf("[1계층·강화 %d/%d] Grade A 도달 — 무인 정지, 확인 요망", n, S$maxa)
   else
-    sprintf("[1계층·강화 %d/%d] 무인 블록 완료 — %s", n, S$maxa, sub("_.*$", "", tab[n == max(tab$n)]$code))
+    sprintf("[1계층·강화 %d/%d] 무인 블록 완료 — %s", n, S$maxa,
+            .rf_axname(sub("_.*$", "", tab[n == max(tab$n)]$code), long = TRUE))
   suppressMessages(source(file.path(ROOT, "02_Infrastructure/telegram/telegram_notify.R")))
   .learn_sec <- NULL; .adapt_sec <- NULL
   # ★이번 블록에서 배운 것 (도훈 지시 2026-09-04) — LLM 기전 + 처방.
@@ -515,12 +556,12 @@ rf_auto_notify <- function(base_id, n, kind = "block") {
     list(type = "summary", emoji = "\U0001F4CC",
          body = if (identical(kind, "grade_a"))
            sprintf("Grade A 도달 — 러너가 스스로 멈췄습니다. 검증과 등재는 확인이 필요합니다")
-         else sprintf("최고 %s · 다중검정 t값 %.3f · 합격선 2.95", best$code, best$port_t)),
+         else sprintf("최고 %s · PORT_t %.3f · 문턱 2.95", best$code, best$port_t)),
     list(type = "kv", emoji = "\U0001F4CA", heading = "핵심 수치",
-         kv = list("최고 다중검정 t값" = sprintf("%.3f (%s)", best$port_t, best$code),
-                   "최고 연복리수익률" = sprintf("%.1f%%", 100 * max(tab$cagr, na.rm = TRUE)),
-                   "최고 칼마" = sprintf("%.3f (%s · 합격선 0.64)", bestC$calmar, bestC$code),
-                   "최대낙폭 대역" = sprintf("%.1f~%.1f%%", 100 * min(tab$mdd, na.rm = TRUE),
+         kv = list("PORT_t (NW lag-3)" = sprintf("%.3f (%s)", best$port_t, best$code),
+                   "CAGR" = sprintf("%.1f%%", 100 * max(tab$cagr, na.rm = TRUE)),
+                   "Calmar" = sprintf("%.3f (%s · 합격선 0.64)", bestC$calmar, bestC$code),
+                   "MDD 대역" = sprintf("%.1f~%.1f%%", 100 * min(tab$mdd, na.rm = TRUE),
                                              100 * max(tab$mdd, na.rm = TRUE)))),
     # ★승자 셀의 전체 지표 — 계약 산출물 읽기 전용(손계산 금지).
     #   산출물 경로가 없는 예전 entry 는 조용히 건너뛴다(NULL → 섹션 미추가).
@@ -696,6 +737,27 @@ rf_auto_notify <- function(base_id, n, kind = "block") {
                 sprintf("%d칸 소진 시 큐 다음 논문 착수 요청이 발송됩니다", S$maxa))))
   # ★NULL 섹션 제거 — 승자 산출물이 없는 예전 entry 는 그 칸이 NULL 로 남는다.
   secs <- Filter(Negate(is.null), secs)
+  ## ★여기서 한 번에 바꾼다 — 섹션마다 바꾸면 새 섹션이 늘 때 빠뜨린다.
+  ##   차트 경로(ch)는 건드리지 않는다: 파일명이 바뀌면 첨부가 깨진다.
+  secs <- .rf_axname_deep(secs)
+  ## ★데스크 읽는 순서로 재배열 (도훈 2026-09-04 "프런트 퀀트 데스크 매니저가 읽어도
+  ##   어색하지 않는 수준으로"). 구판은 상황(단계/대상/위치/등급분포)이 맨 위였는데
+  ##   그건 매번 같은 메타데이터다 — 데스크는 **판정과 다음 행동**을 먼저 본다.
+  ##   리스트 리터럴을 물리적으로 옮기지 않고 조립 후 정렬한다: 섹션이 늘어도 안 깨진다.
+  .ord_key <- function(s) {
+    h <- as.character(s$heading %||% ""); ty <- as.character(s$type %||% "")
+    if (identical(ty, "summary"))     return(1L)   # 판정 한 줄
+    if (grepl("핵심 수치", h))        return(2L)   # 숫자
+    if (grepl("승자 셀", h))          return(3L)   # 승자 상세
+    if (grepl("무엇을 강화", h))      return(4L)   # 구성 — 교훈이 이걸 전제로 쓰였다
+    if (grepl("배운 것", h))          return(5L)   # 기전·처방
+    if (grepl("적응형", h))           return(6L)
+    if (grepl("알게 된 것", h))       return(7L)
+    if (identical(h, "다음"))         return(8L)
+    if (grepl("현재 리서치 상황", h)) return(9L)   # 메타데이터는 맨 아래
+    50L
+  }
+  secs <- secs[order(vapply(secs, .ord_key, integer(1)), seq_along(secs))]
   ## ★relaxed — 기전 서술을 자르지 않기 위해 길이 계약을 면제한다 (도훈 2026-09-04
   ##   "교훈 글자수 제한은 없애").
   ##   실사고 18:32:37: "이번 블록에서 배운 것" 절의 bullet 이 80자 상한에 걸려
@@ -705,7 +767,11 @@ rf_auto_notify <- function(base_id, n, kind = "block") {
   ##   80자 상한은 **목록**의 모바일 가독성을 위한 것이고, 기전 서술은 목록이 아니다.
   ##   수신자 = 시스템 운용자라 용어 풀이(glossary)도 소음이다.
   .sent <- tg_agent_brief(agent = "AlphaSearch", title = ttl, sections = secs, charts = ch,
-                          relaxed = TRUE, glossary = FALSE)
+                          relaxed = TRUE, glossary = FALSE,
+                          ## ★용어 풀이 끄기 (도훈 2026-09-04) — 수신자는 퀀트다.
+                          ##   "CAGR (연복리수익률)" · "Σ (공분산)w=1" 같은 인라인 풀이가
+                          ##   본문을 끊는다. 표준 용어를 그대로 쓴다.
+                          decode_jargon = FALSE, decode_mode = "off")
   # ★승자 셀의 [팩터 분석] — FF3/FF5/Carhart + Fama-MacBeth
   if (!is.null(.win_dir) &&
       (file.exists(file.path(.win_dir, "analysis_multifactor.csv")) ||
