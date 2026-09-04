@@ -1,14 +1,93 @@
 {
-  "verdict": "adapted",
+  "verdict": "misdeclared",
   "undeclared_changes": [
-    "논문 Table 8(Appendix A.2)은 학습 하이퍼파라미터로 'Max gradient norm ∈ [1e-4, 1e1]'(그래디언트-노름 클리핑)을 탐색공간에 둔다 — engine.R 은 gradient clipping 이 전혀 없다(clip/grad-norm grep 0건; .train_slp 의 Adam 업데이트에 노름 클리핑 단계 부재). FIDELITY.changed 에 없고, C3 의 원문 탐색공간 서술('minibatch·hidden·lr·α·dropout')도 max gradient norm 을 누락한다. 단일층 SLP 라 실질 영향은 작음.",
-    "winsorize 범위 축소 — 원문 Appendix B 는 'we winsorize ALL data ...'인데 engine 은 14개 모델 입력 피처에만 적용하고 표적 수익률 r_{t,t+1}·σ_t 는 원본 유지. notes.winsorize_scope + engine K2b 에 근거(수익률 절단 시 백테스트가 실현치가 아니게 됨)와 함께 공개돼 있으나 changed[] 항목이 아니라 notes 에 있음(은닉 아님, 위치만 notes).",
-    "engine K4 의 'LASTR = 원문이 최적이라고 보고한 구성' 특성화는 부정확 — 원문은 'LASTR' 명명을 쓰지 않으며, 헤드라인 최고 성과(Table 2, US Equities, 목표변동성판)는 SLP+L1 수축 단독이고 회전율 정규화(SLP+Reg)는 거래비용 내성 축에서 우위. engine 은 L1+회전율을 함께 쓰며 그 사실 자체는 kept 에 투명히 선언 — 은닉 스펙 변경 아님, 특성화 문구만 부정확."
+    "[universe] 논문(Appendix B): 'All individual instruments in our datasets have less than 10% missing data' — 최대 10% 결측 허용(≥90% 관측 완전성 암묵 기준). engine.R:215 는 NOBS ≥ 0.95×ndays(≥95%)를 FULL 플래그로 설정해 상위 정렬 우선권 부여 — 5%p 더 엄격한 임계값. FIDELITY.changed 에 이 임계값 차이 미선언.",
+    "[undeclared] MACD 피처 수 확장: 원문 F.2 는 시간척도를 **쌍(paired)** (S_k,L_k)∈{(8,24),(16,48),(32,96)} 3개로 쓴다(§3 'X_t≔Ỹ_t=(1/3)∑_{k=1}^3 φ(Y(S_k,L_k))', §5.3). engine.R:126 `.DFEAT<-length(.KWIN)+length(.MACD_S)*length(.MACD_L)` + engine.R:290-291 이중루프(`for(si) for(li)`)는 S∈{8,16,32}×L∈{24,48,96} **전조합(cross) 9개**를 만든다 → 코드 d=5+9=14, 원문 d=5+3=8. FIDELITY.kept 는 이를 '전조합 9종 (5+9=14 ✓ 원문 d=14) … 원문 F.1/F.2 그대로'라 신고한다 — 피처 확장이 changed 에 없고(kept 로 위장), '원문 d=14' 는 원문 ∑_{k=1}^3 쌍(3항)과 정면으로 배치된다.",
+    "[undeclared] 저변동성 영점화: engine.R:152 `.SD_FLOOR<-0.01` + engine.R:431 `Sm[!is.finite(Sm) | .SANN[,ci]<.SD_FLOOR]<-0` — 사전 연율변동성 <1% 종목의 포지션을 0 으로 강제한다. 원문 식(1) σ_tgt/σ_t^(i) 에는 변동성 하한도 영점화도 없다. 코드 주석은 '수치 가드'라 하나 changed 에 없다(실영향은 <0.063%/일 종목뿐이라 경미).",
+    "[undeclared] 미신고 수치·데이터 처리 묶음(전부 저영향, 원문·changed 없음): engine.R:303,318 `.BIG<-1e6` — |피처|>1e6 을 0(중립) 치환(winsorize 후라 거의 무발화); engine.R:110 `set.seed(23021017L)` — 가중치 초기화·미니배치 순서를 단일 시드로 고정(원문은 랜덤서치 100회 Table 8+재시작, 코드는 단일 실현·앙상블 없음); engine.R:268-270 `nafill(locf)`·상장전 상수·`r[!is.finite]<-0` — 결측 종가/수익 처리 규약(원문 미명시)."
   ],
   "signal_mismatch": [
-    "신호 불일치 없음(적대 검증 결과). 최고위험 2건을 원문 대조: (1) MACD EWMA 감쇠 규약 — engine 은 α=1/j (감쇠계수 1−1/j)을 쓰는데, 원문 Eq(2) 문맥이 'm(i,t,j) ... time scale j that corresponds to a half-life of HL=log(0.5)/log(1−1/j)'라 감쇠=(1−1/j)가 정확히 원문값이다. 반감기 j 를 직접 감쇠(0.5^(1/j))로 오용한 흔적 없음 → 일치. (2) 응답함수 φ(y)=y·exp(−y²/4)/0.89 및 X_t^(i):=Ỹ_t^(i)=(1/3)Σφ(...) 는 원문 Section 3(벤치마크 MACD 전략) 정의이고, Section 5.3 F.2 는 신경망 입력을 'volatility normalised MACD signals Y_t^(i)(S_k,L_k) as per Eq(2) as input features'(φ 미적용·9종 개별)라 명시 → engine 이 φ 를 빼고 정규화 Y 를 그대로 피처로 쓴 것은 올바름. 부호는 손실(−Sharpe) 최소화로 학습된 W 가 산출하며 수동 반전 0건이라 부호반전 경로 자체가 없다."
+    "[undeclared] MACD 응답함수 φ 누락: 원문 §3 는 φ(y)=y·exp(−y²/4)/0.89 ('a response function as defined in [4]')를 MACD 신호에 적용한다. engine.R:292-294 는 q=(ms−ml)/std_63, Y=q/std_252 의 2단 정규화만 하고 φ 를 쓰지 않는다(engine.R 전체 `exp(`·`0.89`·response 0건, grep 확인). 큰 |y| 에서 φ 는 exp(−y²/4)로 포화·압축하는데 코드 피처는 5σ winsorize 전까지 선형이라 배출값이 다르다. ※φ 가 원문에서 벤치마크 위치신호 X_t≔Ỹ_t 정의에 붙어 있어, F.2 네트워크 입력이 pre-φ Y 인지 φ(Y) 인지의 최종 판별은 signal 축 소관 — 여기서는 코드에 φ 가 아예 부재함을 기록한다.",
+    "[undeclared] MACD 시간척도 페어링 vs 전조합: 원문 ∑_{k=1}^3 (S_k,L_k) 는 인덱스 k 하나로 S·L 을 동시 선택하는 3항 쌍이다. engine.R:290 `for(si in seq_along(.MACD_S)) for(li in seq_along(.MACD_L))` 는 3×3 전조합 9항 — (8,48)·(8,96)·(16,24)·(16,96)·(32,24)·(32,48) 6쌍은 원문이 구성하지 않는 피처다."
   ],
-  "evidence": "원문 전문 https://arxiv.org/html/2302.10175v1 대조(초록 아님). Section 3 벤치마크(Long-only/TSMOM/MACD/DMN/CSMOM — Eq 2 에 φ·(1/3)Σ, X_t^(i) 는 벤치 포지션 표기) · Section 4.2 Eq 6 SLP X_t=g(W'u_t+b), g=tanh, W∈R^{m×N}, m=N·τ·d · Section 4.3 손실 Eq 8-11: 자산별 −Sharpe 합 λ_i=1/N, R_i=X·(σtgt/σ)·r_{t,t+1}, +α·Σ|w_ij|; Eq 14 localized minibatch turnover TO=σtgt|X_t/σ_t−X_{t*}/σ_{t*}| · Section 5.2 확장창 5년 누적·직전10% 검증 90/10 · Section 5.3 F.1 r_{t-k,t}/(σ_t√k) k∈{1,20,63,126,252}, F.2 MACD S∈{8,16,32}×L∈{24,48,96} 9종 raw Y(std(p_{t-63:t})·std(·_{t-252:t}) 정규화) · Appendix A.2 Table 7 τ=5·500 epoch·patience 25 · Table 8 HP 탐색(lr[1e-5,1e0]·minibatch{32,64,128,256}·dropout 0.1-0.5·hidden 5-160·α[1e-5,1e0]·max grad norm[1e-4,1e1]) · Section 3/5.4 σ_tgt=15%·60일 EWMA std·포트폴리오 레벨 15% 추가 스케일링 · Appendix B winsorize 5×252일 EWMA. 유니버스=Financials 섹터 46종(CRSP,1990-2022). 거래비용 c∈{0,0.5,1,2,3,4,5,10}bps 스윕(단일 명시값 없음). 리밸=daily('rebalancing the portfolio daily'). engine 대조: .TAU=5·.KWIN{1,20,63,126,252}·.MACD_S{8,16,32}·.MACD_L{24,48,96}·.DFEAT=14·α=1/j EWMA·winsorize 5×252·손실/회전율 산식·확장창 5년·90/10·σtgt 0.15·60일 EWMA 전부 정합. 측정 산출물 10_audit.csv: monthly 256 리밸·commission_bps=15·N 42~46·has_short=true·construction=engine_direct — 선언 변경 4종이 실행과 일치.",
-  "confidence": "high",
-  "note": "핵심 기전(SLP tanh·d=14 피처·자산별 Sharpe 손실·비중 w=(1/N)X·σtgt/σ·확장창·MACD (1−1/j) 감쇠)과 4개 선언 변경(유니버스 46 US Fin→K200∪KQ150·daily→monthly 집행·HP 탐색 축소·학습 회전율 c=0.0015)이 모두 원문·산출물과 정합 → adapted. 유일한 실질 미선언은 gradient-norm clipping(Table 8) 생략이나 단일층 SLP 라 영향 미미하고 'HP 탐색 축소'(C3) 취지에 포섭됨. winsorize 범위는 notes 에 정직 공개. 신호·부호·유니버스·집행·비중 어디에도 은닉된 물질적 변경이 없어 misdeclared 로 격상할 근거는 성립하지 않음."
+  "evidence": "[signal] 원문 https://arxiv.org/html/2302.10175v1 — §5.3 'Momentum Features'(입력피처 = 변동성정규화 MACD 'Y_t^(i)(S_k,L_k) as per Equation (2) as input features', S_k∈{8,16,32}·L_k∈{24,48,96} 전 9조합, ϕ 응답함수 미적용 — ϕ 는 Baz 벤치 X_t:=Ỹ_t=(1/3)Σϕ 전용) · Eq.(2) Y=MACD_norm/std(MACD_norm_{t-252:t}), MACD=m(S)−m(L), HL=log(0.5)/log(1−1/j), std(p_{t-63:t}) · §5.3 수익피처 r_{t-k,t}/(σ_t√k), k∈{1,20,63,126,252} · §3/Eq.(1) σ_t = 60일 EWM std(일수익)·σ_tgt=15% · Eq.(6) X_t=g(W'u_t+b), g=tanh · 부록 B winsorize 5×252일 EWM std · Table 7 τ(SLP)=5. engine.R 대조: .DFEAT=14(126행)·.KWIN(123)·.MACD_S/L(124-125)·.STD_P=63/.STD_Q=252(128-129)·.VOL_SPAN=60(127)·.WIN_K=5/.WIN_SPAN=252(130-131)·.TAU=5(122)·피처식 279-294행·winsorize 301-307행·부호 rk=p/shift(p,k)-1(281행, 정방향). / [timing] Section 5.1 ('rebalancing the portfolio daily'); Table 7 / Appendix A.2 (τ=5 for SLP); Section 5.2 ('trained with every iteration of 5 additional years'); Section 4.3.2 ('earlier 90% of data for training, most recent 10% reserved for validation'). No skip period mentioned anywhere in the paper. / [universe] Appendix B: 'We screen for common stocks of domestic US companies listed on the NYSE, AMEX and NASDAQ with market capitalization from Small (300M-2B) to Mega (>200B) using the Stock Screener provided by Nasdaq. We perform a random sample of 46 stocks from the Financials sector. All individual instruments in our datasets have less than 10% missing data.' — 결측 기준이 데이터 전처리 절(Appendix B)에 명시돼 있으며 능동 선별 의도를 함축한다. 주식(46종)과 선물(12종) 실험은 Tables 1-2 vs 3-4 에서 독립 결과로 분리 보고됨(Section 5.1). / [portfolio] 원문(https://arxiv.org/html/2302.10175v1): 포지션 정의 eq(4)-(5) X_t=f(u_t;θ), X_t∈[-1,1]^{N_t}(연속·비랭킹) · §3 CSMOM 이 데실 상/하위 배분을 명시적으로 비판(랭킹 우회가 이 모델의 요지) · eq(1) r^TSMOM=(1/N_t)Σ X_i·(σ_tgt/σ_i)·r_i(1/N 등가중·자산별 변동성 스케일) · eq(10) R_i(t)=X_i·(σ_tgt/σ_i)·r_i · σ_tgt=연15%·사전변동성 60일 EWM · 가중치 제약(Σw=1·달러중립) NOT STATED · 데이터셋 = US Financials 46종(1990-2022) 고정 identity-indexed 패널 · '추가로 모든 전략에 포트폴리오 레벨 연15% 변동성 스케일링을 적용'. 구현 대조: engine.R:133(.NPANEL=46)·:473(tanh 포지션)·:474(비중산식)·:517(Leg long/short)·:511(포트폴리오 vol 스케일)·:479(적격 0화); 01_strategy_spec.json(construction=engine_direct·has_short=true·n_max=46·weight_method=paper). / [cost] 논문 Table 6 'Impact of Transactions Costs on Sharpe Ratio': c ∈ {0.0, 0.5, 1.0, 2.0, 3.0, 4.0, 5.0, 10.0} basis points 시나리오 전수 실험. Eq.12: TO_t^(i)=σ_tgt|X_t^(i)/σ_t^(i)−X_{t−1}^(i)/σ_{t−1}^(i)|. Eq.13: r̃=Σ(X·σ_tgt/σ·r−c·TO) 로 비용 차감 수익 정의. Eq.14: localized minibatch 버전 TO~ (t*=배치 내 직전 표본). 논문은 단일 c 명시값 없이 민감도 분석만 제시. 왕복/편도 구분 명시 없음. / [undeclared] 원문 https://arxiv.org/html/2302.10175v1 §3(MACD: MACD_norm=MACD/std(p_{t-63:t}); 결합신호 X_t≔Ỹ_t=(1/3)∑_{k=1}^3 φ(Y(S_k,L_k)); φ(y)=y·exp(−y²/4)/0.89) · §5.3 F.1(k∈{1,20,63,126,252}=5)·F.2(S_k∈{8,16,32}, L_k∈{24,48,96}, ∑_{k=1}^3 쌍=3 → d=8) · §5.4('we apply to all strategies an additional layer of volatility scaling at the portfolio level to target an annualized volatility of 15%' — 코드 §6 과 일치하므로 이 항목은 faithful, 반례 아님).",
+  "confidence": "medium",
+  "note": "축 팬아웃 6개(판독형 opus 3 · 대조형 sonnet 3) — 발견 6건. faithful/adapted/adapted/faithful/adapted/misdeclared",
+  "mode": "fanout",
+  "axis_verdicts": [
+    {
+      "axis": "signal",
+      "required": true,
+      "model": "opus",
+      "verdict": "faithful",
+      "admissible": true,
+      "reason": "",
+      "confidence": "high",
+      "checked": "d=14 구성·수익피처 식과 k집합·σ_t 일별 vol·MACD 3단 정규화(m_S−m_L÷std(p,63)÷std(·,252))·EWMA HL 감쇠(α=1/j)·9조합 S/L·ϕ 응답함수 네트워크입력 미적용(원문 명시)·winsorize 5×252일·τ=5·tanh·부호(momentum, 학습 W, 수동반전 0건, C13)",
+      "counterexample": "미신고 발산은 구성하지 못했다 — 핵심 신호가 식 수준에서 일치한다. 이론상 값이 갈리는 유일한 지점은 winsorize 적용 순서다: 원문 부록 B 'we winsorize all data ...'를 '원시 수익률을 먼저 절단'으로 읽으면, 갭업 +40% 같은 극단 일일 수익 종목에서 k=1 수익피처 r_{t-1,t}/(σ√1)의 입력 수익 자체가 클립되어 피처값이 달라진다. engine.R(279~307행)은 원시 수익으로 피처를 먼저 계산한 뒤 **피처 공간에서** 5×252일 EWM std 로 절단하므로, σ_t(60일 vol)가 그 시점 팽창해 있으면 절단점이 어긋나 값이 갈릴 수 있다. 그러나 이 차이는 FIDELITY.notes.winsorize_scope 에 '모델 입력 14종에만 적용'으로 선언돼 있고, deep-momentum 계보(Lim et al)의 실제 구현이 구성된 피처를 절단하는 것이라 engine 쪽이 오히려 원문 실구현에 더 가깝다. 부호·룩백·표준화 어디에서도 논문과 다른 값을 내는 미선언 상황은 구성 불가.",
+      "n_findings": 0
+    },
+    {
+      "axis": "timing",
+      "required": false,
+      "model": "sonnet",
+      "verdict": "adapted",
+      "admissible": true,
+      "reason": "",
+      "confidence": "high",
+      "checked": "rebalancing frequency (daily vs monthly), τ=5 temporal history, 5-year expanding window block size, 90/10 train/val split, absence of skip period — all against paper Sections 5.1, 5.2, 4.3.2, Table 7 and engine.R constants (.TAU, .BLOCK_Y, .VAL_FRAC, .SIGDATES construction)",
+      "counterexample": "Paper rebalances daily (Section 5.1: 'rebalancing the portfolio daily'); engine emits signal only on month-end trading dates (.SIGDATES = month-end, engine.R:185) and execution follows the harness get_execution_date() → first trading day of next month. A mid-month position change that the paper would make is absent in the implementation. This difference is declared in FIDELITY.changed(2) and is attributed to a harness constraint (replication_harness.R:84-89), not an undisclosed choice.",
+      "n_findings": 0
+    },
+    {
+      "axis": "universe",
+      "required": false,
+      "model": "sonnet",
+      "verdict": "adapted",
+      "admissible": true,
+      "reason": "",
+      "confidence": "high",
+      "checked": "유니버스 자산 종류(주식 vs 선물 독립 실험 여부), 거래소(NYSE/AMEX/NASDAQ), 섹터(Financials only), 시가총액 필터(Small~Mega), 무작위 표집 vs 결정론 선정, N=46 패널 크기 보존, 결측 데이터 기준(논문 ≥90% vs 엔진 ≥95% soft-priority), 유동성 필터(논문 미명시·엔진 adv20≥2e8), K200∪KQ150 교체 선언 정합성",
+      "counterexample": "K200∪KQ150 내 학습창 관측 완전성 90~94% 종목은 논문 기준(≥90%)을 통과하나 engine.R:215 에서 FULL=0 으로 하위 정렬돼 adv20 상위 46종 내에서 ≥95% 종목에 밀려 배제될 수 있다. 상장 초기·중간 편입 종목이 해당 구간에 걸릴 가능성이 있다. 실제 K200∪KQ150 구성종목은 대부분 관측 완전성 >99%라 실현 빈도는 낮을 것으로 보이나, 반례는 구성 가능하다.",
+      "n_findings": 1
+    },
+    {
+      "axis": "portfolio",
+      "required": true,
+      "model": "opus",
+      "verdict": "faithful",
+      "admissible": true,
+      "reason": "",
+      "confidence": "high",
+      "checked": "포지션 연속성 vs 데실랭킹 · 롱숏 양다리 존재/보존(engine_direct 통로·harness leg 결합·산출물 숏행 카운트) · 비중산식 (1/N)·X·σ_tgt/σ · σ_tgt=15% · 가중 제약 부재 · 패널 N=46 및 실현 종목수 분포 · 포트폴리오 레벨 변동성 스케일링",
+      "counterexample": "구성 못 함. 포트폴리오 구조(레그·종목수·비중산식)가 논문과 다른 값을 내는 상황을 찾지 못했다. 논문·구현 모두 (a) 랭킹/데실 없이 연속 포지션 X∈[-1,1]을 종목별로 동시 산출(engine.R:473 tanh, holdings 의 연속 비중 0.061/-0.031/0.101 …), (b) 롱숏 양다리(음수비중 5708행·2005-06-01 롱28/숏18·harness GL·L−GS·S line93~105), (c) w_i=(1/N)·X_i·σ_tgt/σ_i(engine.R:474 = 논문 eq(1)/(10)), (d) 제약 없음(Σw≠1·순노출≠0 확인), (e) 포트폴리오 레벨 연15% 변동성 스케일링(engine.R §6 kscale=σ_tgt/σ_port = 논문 명시)로 동일하다. 실현 종목수 43~46(2020-01·2026-08 = 43, 2005-06·2010-03 = 46)은 논문 46 패널을 그대로 겨냥하며, 하락분은 선언된 K200∪KQ150 PIT 멤버십/유동성 컷의 부산물(engine.R:479 적격 0화)이다 — top-N 이중절단으로 곱해져 줄어드는 형태 아님.",
+      "n_findings": 0
+    },
+    {
+      "axis": "cost",
+      "required": false,
+      "model": "sonnet",
+      "verdict": "adapted",
+      "admissible": true,
+      "reason": "",
+      "confidence": "high",
+      "checked": "c 파라미터 값(0.0015 vs 논문 0~0.001 범위), TO 산식(Eq.12·14) vs engine.R DXS 계산 일치 여부, commission_paper=null 선언의 정직성, 학습-평가 비용 일관성(둘 다 15bps 기준), 왕복·편도 처리 방식",
+      "counterexample": "c=0.0015 (decimal 15bps) 는 논문이 실험한 최대값 c=10bps (=0.001 decimal) 를 초과한다. 즉 논문이 한 번도 훈련하지 않은 비용 수준으로 모델을 학습한다. 그러나 이 차이는 FIDELITY.json changed (4) 에 명시적으로 선언돼 있고, commission_paper=null 로 논문 기준 성과 병기 주장이 없다. 반례 구성 가능하지만 선언된 적응이다.",
+      "n_findings": 0
+    },
+    {
+      "axis": "undeclared",
+      "required": true,
+      "model": "opus",
+      "verdict": "misdeclared",
+      "admissible": true,
+      "reason": "",
+      "confidence": "high",
+      "checked": "MACD 페어링(∑_{k=1}^3 쌍3) vs 코드 전조합(si×li 9)·응답함수 φ 부재(exp 0건)·피처수 d(원문 8 vs 코드 14, engine.R:126)·포트폴리오레벨 15% vol 스케일링(§5.4 명시=faithful 확인)·.SD_FLOOR 영점화·.BIG 캡·set.seed·NA/LOCF·winsorize 범위(notes 선언)",
+      "counterexample": "임의 종목의 (8,24) 정규화 MACD 가 y=3 인 날: 원문 피처 = φ(3)=3·exp(−2.25)/0.89 ≈ 0.355(응답함수가 큰 값을 압축·포화), 구현 피처(engine.R:294) = q/std_252 ≈ 3(비압축, 이후 5σ winsorize). 게다가 구현은 원문에 없는 6개 교차쌍을 추가하므로 입력벡터 u_t 차원이 14·N·τ(코드) vs 8·N·τ(원문)가 된다 — 학습되는 W(m×N, m=N·τ·d)가 더 크고 다르게 스케일된 피처공간 위에서 돈다. 피처 값·개수 양축에서 원문과 구체적으로 다른 값을 낸다.",
+      "n_findings": 5
+    }
+  ],
+  "flags": [],
+  "merged_at": "2026-09-04T16:19:27+0900"
 }
