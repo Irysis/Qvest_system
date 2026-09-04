@@ -1,0 +1,11 @@
+{
+  "axis": "universe",
+  "verdict": "adapted",
+  "undeclared_changes": [],
+  "signal_mismatch": [],
+  "counterexample": "K200∪KQ150 멤버십에는 들지만 adv20(t-1) < 2e8 KRW 인 저유동 종목은 engine.R:195 에서 그 날짜 시그널 횡단면 자체에서 배제된다. 논문 방법론(§2.1)은 '모든 current S&P500 구성종목'에 유동성 문턱을 두지 않으므로, 같은 종목·같은 날짜에 대해 논문 방법론은 EDGE 를 산출·편입하지만 본 구현은 산출조차 하지 않는다 — 단, 이 차이는 FIDELITY.changed ③에 '지시 축'으로 정직하게 선언돼 있다.",
+  "evidence": "§2.1(전문): 'We constructed our empirical analysis using daily data for all current constituents of the S&P 500 index spanning twenty years from January 2004 through December 2024' + 'deliberately choosing current constituents despite introducing survivorship bias ... to ensure results are based on the most liquid and economically significant segment'. 논문 전문(§2.1·§2.2·§3.2·§5.1·Table 12 포함)을 재검색해도 가격 하한·거래대금 문턱·거래소 상장요건·금융주/REIT/ADR 제외·시가총액 필터에 대한 명시적 선별규칙은 전무하다 — 'liquid large-cap' 은 비용 산정 근거 문장(§2.2)이지 선별 규칙이 아니며, Table 12 의 거래량 +30%는 국면 활성 시 부수 관측치이지 자격 조건이 아니다.",
+  "confidence": "high",
+  "checked": "engine.R:194-195 (K200∪KQ150 멤버십 OR + ADV20_L1≥2e8 AND) 를 논문 §2.1 유니버스 정의 문단 및 §2.2/§3.2/§5.1/Table 12 전수 재검색과 대조. FIDELITY.changed ②③ 선언 문구와 실제 코드 조건 일치 여부 확인.",
+  "note": "유니버스 교체(K200∪KQ150) 자체는 지시상 허용 축이라 판정에서 제외. 그 위에 신설된 유동성 필터(③)는 논문에 없는 진짜 차이지만 FIDELITY.changed 에 '지시 축·논문은 유동성 필터 없음'으로 정확히 자백돼 있어 misdeclared 가 아니라 adapted 다. 가격 하한(Close>0)·금융주 제외·거래소 요건은 논문·구현 양쪽 모두 없어 대조 대상이 아니다."
+}
