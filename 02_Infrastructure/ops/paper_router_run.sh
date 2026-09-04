@@ -271,7 +271,26 @@ def key_of(e):
         return k
     i = pn.norm_id(e)
     return ('axv:' + i) if i else ''
-seen = set(pn.registry_keys(os.path.join(base, '06_Registry', 'paper_registry.json')))
+def _registry_keys_excl_today(path, today):
+    # (2026-09-05 수리) registry_keys() 전건을 그대로 쓰면 **오늘 recharge 가 방금 등록한
+    #   신규 다운로드가 자기 자신과 매칭**돼 영구 redundant 로 스텁된다 — 09-02~09-05
+    #   4일 연속 재발(replication=0, 실제 신규 1편/일 존재). registry_added 는 다운로드
+    #   성공 표시이지 "이미 판정됨"이 아닌데 이 축이 그 둘을 같은 것으로 취급했다.
+    #   date_added==today 항목은 아직 이 런에서 미판정이므로 seen 에서 제외한다.
+    if not os.path.exists(path):
+        return set()
+    with io.open(path, 'r', encoding='utf-8-sig') as fh:
+        arr = json.load(fh)
+    out = set()
+    if isinstance(arr, list):
+        for e in arr:
+            if isinstance(e, dict) and str(e.get('date_added') or '').replace('-', '').strip() == today:
+                continue
+            k = pn.entry_paper_key(e) if isinstance(e, dict) else ''
+            if k:
+                out.add(k)
+    return out
+seen = _registry_keys_excl_today(os.path.join(base, '06_Registry', 'paper_registry.json'), today)
 for p in glob.glob(os.path.join(R, 'alpha_search_route_*.json')):
     if p.endswith('route_%s.json' % today):
         continue

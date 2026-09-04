@@ -91,6 +91,26 @@ else ok "B2 신규 있으면 스텁 없음"; fi
   || ng "B3 claude 미호출" "신규가 있는데도 LLM 이 안 떴다: $(tail -4 "$(LOGF "$TB")" 2>/dev/null | tr '\n' ' ')"
 rm -rf "$TB"
 
+echo "--- E. 회귀: 당일 등록된 신규 다운로드가 자기매칭으로 redundant 되지 않는다 (2026-09-05 수리) ---"
+# 실사고: paper_recharge 가 신규 PDF 를 다운로드하는 순간 paper_registry.json 에 즉시
+#   등록한다(date_added=오늘). 라우터가 그 registry 를 '이미 아는 논문' 판정에 그대로 쓰면
+#   방금 등록된 자기 자신과 매칭돼 영구 redundant 스텁이 된다 — 09-02~09-05 4일 연속 재발
+#   (replication=0, 실제 신규 1편/일). registry 항목의 paper_key 는 null 인 게 실제 패턴
+#   (entry_paper_key 가 source_url 에서 axv id 를 역산).
+TE="$(mktemp -d)"
+mkdir -p "$TE/02_Infrastructure/hooks" "$TE/02_Infrastructure/ops" "$TE/06_Registry" "$TE/stage_artifacts/paper_recharge" "$TE/.cache/scheduler_logs" "$TE/bin"
+: > "$TE/02_Infrastructure/hooks/qvest_hook_router.py"
+cp "$ROOT/02_Infrastructure/ops/paper_id_norm.py" "$TE/02_Infrastructure/ops/"
+cp "$ROOT/02_Infrastructure/ops/paper_router_prompt.md" "$TE/02_Infrastructure/ops/"
+printf '[{"id":"P9001","path":"01_Literature/Alpha_Search_Recharge/%s/mcp_arxiv/MCP_2609_03552.pdf","title":"Self Match Paper","source":"https://arxiv.org/pdf/2609.03552","date_added":"%s","paper_key":null,"arxiv_id":null,"duplicate_of":null}]\n' "$TODAY" "$TODAY" > "$TE/06_Registry/paper_registry.json"
+printf '{"date":"%s","candidates":[{"arxiv_id":"2609.03552","title":"Self Match Paper"}]}\n' "$TODAY" > "$TE/stage_artifacts/paper_recharge/mcp_discovery_${TODAY}.json"
+printf 'downloaded=1\nmcp_candidates=1\n' > "$TE/stage_artifacts/paper_recharge/paper_recharge_${TODAY}.done"
+printf '#!/bin/bash\necho called > "%s/claude_called"\nexit 0\n' "$TE" > "$TE/bin/claude"; chmod +x "$TE/bin/claude"
+run_router "$TE"
+grep -q 'prefilter: 신규 paper_key 1건' "$(LOGF "$TE")" 2>/dev/null && ok "E1 당일 등록 신규가 신규로 계수됨(자기매칭 아님)" || ng "E1 자기매칭 회귀" "$(grep prefilter "$(LOGF "$TE")" 2>/dev/null | tail -2 | tr '\n' ' ')"
+[ -f "$TE/claude_called" ] && ok "E2 claude 트리아지 호출됨(redundant 스텁으로 조기 종료 안 함)" || ng "E2 claude 미호출" "당일 신규가 자기매칭으로 redundant 처리돼 종료됐다: $(tail -6 "$(LOGF "$TE")" 2>/dev/null | tr '\n' ' ')"
+rm -rf "$TE"
+
 echo "--- C. DRYRUN=1 → 스텁 미기록 ---"
 TC="$(mktemp -d)"; mkfx "$TC" 0; run_router "$TC" QVEST_PAPER_ROUTER_DRYRUN=1
 [ -f "$TC/stage_artifacts/paper_recharge/alpha_search_route_${TODAY}.json" ] && ng "C1 DRYRUN 에서 스텁 기록" "DRYRUN 테스트가 stage_artifacts 를 오염한다" || ok "C1 DRYRUN 에서 스텁 없음"

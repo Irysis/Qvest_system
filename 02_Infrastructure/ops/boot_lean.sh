@@ -1,6 +1,6 @@
 #!/bin/bash
 #==============================================================================
-# boot_lean.sh — Qvest v9 "Lean Loop" 부팅 (2026-08-23)
+# boot_lean.sh — Qvest v10.4 부팅 (2026-08-23 신설 · 2026-09-05 v10 mode 정합)
 #   상태 5줄만 출력. 검사 0 · 수리 0 · R 실행 0 · 테스트 0 · 백그라운드 0 · 항상 exit 0.
 #   ★필드가 안 읽히면 '?' 로 두고 계속한다(fail-soft) — 부팅이 세션을 막지 않는다.
 #   전수 점검(구 bootstrap.sh 전문)은 주간/수동 ops/health_full.sh 로 분리됐다.
@@ -73,10 +73,19 @@ for e in ((J("06_Registry/alpha_frontier_queue.json") or {}).get("entries") or [
     if st=="parked" or not (st=="open" or ("open" in st and "dohoon_decision" not in ow)): continue
     fq.append("%s · %s"%(e.get("id") or "?",str(e.get("title") or "")[:50]))
     if len(fq)>=2: break
+# ★강화 active 해상도 (2026-09-05) — 개수만으로는 lean-loop 입력 규칙("L1 에 active 가
+#   있으면 그 강화가 우선")을 세션이 이행할 수 없다. 무엇을 이어받는지가 안 보였다.
+#   n/max · base_id 꼬리 · 승격 depth 를 붙인다. active 0 이면 "0" 그대로(소음 없음).
 def RF(l):
     d=J("06_Registry/reinforce_ledger_l%d.json"%l)
     if not d: return "?"
-    return str(sum(1 for e in (d.get("entries") or []) if (e.get("status") if isinstance(e,dict) else None)=="active"))
+    act=[e for e in (d.get("entries") or []) if isinstance(e,dict) and e.get("status")=="active"]
+    if not act: return "0"
+    e=act[-1]; mx=d.get("max_attempts")
+    dep=S(lambda: int((e.get("parent") or {}).get("depth")))
+    return "%d(%s %s/%s%s)"%(len(act),str(e.get("base_id") or "?")[-24:],
+        e.get("attempts_used") if e.get("attempts_used") is not None else "?",
+        mx if mx else "∞"," ·승격d%d"%dep if dep else "")
 dp=S(lambda: str(sum(1 for e in ((J("06_Registry/data_pipeline_queue.json") or {}).get("entries") or []) if (e.get("status") if isinstance(e,dict) else None)=="open")),"?")
 # ★무인 러너 핸드오프 노출 (2026-08-30) — cleaner 선례: 기계가 남긴 대기 상태를 부팅이 보여야
 #   세션이 소비한다. 텔레그램만 쓰면 놓쳤을 때 어디서도 안 보인다. 0 이면 표기하지 않는다(소음 방지).
@@ -91,6 +100,13 @@ def PEND():
     cc=J("06_Registry/combination_candidates.json")
     nc=len((cc or {}).get("candidates") or [])
     if nc: z.append("결합후보 %d"%nc)
+    # ★결합 검토 '의무' (2026-09-05) — 후보 수(candidates)와 다른 양이다. lean-loop 는
+    #   "논문 3편 소비마다 Q-Lead 가 결합 기회를 검토·기록"(착수 무관 의무)이라 못박는데,
+    #   부팅은 후보 개수만 보여줘 의무가 발동해도 아무 데서도 안 보였다. 원장이 정본.
+    _cr=(J("06_Registry/reinforce_ledger_l1.json") or {}).get("combination_review") or {}
+    _ps=S(lambda: int(_cr.get("papers_since_last_review")))
+    if _ps is not None and _ps>=3:
+        z.append("★결합검토 의무 %d/3(최종 %s)"%(_ps,str(_cr.get("last_review_date") or "?")))
     # 공리 리뷰(건식) 미소비 보고서 — 기계가 산출하고 세션이 판단한다(cleaner 선례).
     #   반증 축적분은 자동 deprecate 되지 않는다(metric_type=estimated 는 human-review 강제).
     rv=sorted(glob.glob(R("qepm","memory","axioms","review_log","dryrun","review_dryrun_*.json")))
@@ -99,11 +115,19 @@ def PEND():
         if age<=8: z.append("공리리뷰 %s(%.0f일)"%(os.path.basename(rv[-1])[14:22],age))
     return (" | "+" · ".join(z)) if z else ""
 o.append("Queue: alpha-pending %s · %s | 강화 L1 %s·L2 %s active · data-pipe %s%s"%(q," / ".join(fq) if fq else "frontier open 0",RF(1),RF(2),dp,S(PEND,"")))
-# ③ Last — 최신 alpha-search L-code (다음 라운드의 출발점)
-g=sorted(glob.glob(R("stage_artifacts","l_code","alpha_search","l_code_*.json")),key=os.path.getmtime)
-c=(J(g[-1]) or {}) if g else {}
+# ③ Last — 최신 리서치 1단위 L-code (다음 라운드의 출발점)
+#   ★v10 mode 정합 (2026-09-05): 구판은 `alpha_search/` 한 폴더만 봤다. v10 의 리서치
+#     1단위는 충실구현(`paper_replication/` — lean-loop 5단계가 명시한 mode)과 강화
+#     (`reinforcement/`)로 옮겨갔는데 경로가 v9 에 고정돼 **12일째 같은 값**을 냈다.
+#     세 mode 스키마는 동일(l_code·grade·next_probe) — 최신 하나를 mode 라벨과 함께 낸다.
+#     alpha_search 는 사료로 남기되 계속 후보에 둔다(발행되면 그날 것이 최신이 된다).
+_LM={"paper_replication":"RP","reinforcement":"RF","alpha_search":"AS"}
+_g=[(f,m) for m in _LM for f in glob.glob(R("stage_artifacts","l_code",m,"l_code_*.json"))]
+_g.sort(key=lambda t: os.path.getmtime(t[0]))
+c=(J(_g[-1][0]) or {}) if _g else {}; _md=_LM[_g[-1][1]] if _g else "?"
+_ag=HH(S(lambda: (time.time()-os.path.getmtime(_g[-1][0]))/3600.0)) if _g else "?"
 npb=c.get("next_probe"); npb=npb[0] if isinstance(npb,list) and npb else npb
-o.append("Last: %s %s · next %s"%(c.get("l_code") or "?",c.get("grade") or "?",str(npb or "?")[:80]))
+o.append("Last: [%s] %s %s (%s) · next %s"%(_md,c.get("l_code") or "?",c.get("grade") or "?",_ag,str(npb or "?")[:80]))
 # ④ Book — ★v10 정본 = 06_Registry/book/book_registry.json (governor/book_state 폐지)
 b=J("06_Registry/book/book_registry.json") or {}
 ents=[e for e in (b.get("entries") or []) if isinstance(e,dict)]
@@ -141,7 +165,7 @@ def CTX():
         if j.get("type")=="assistant":
             u=(j.get("message") or {}).get("usage") or {}
             return sum(int(u.get(k) or 0) for k in ("input_tokens","cache_creation_input_tokens","cache_read_input_tokens"))
-o.append("Alerts/Budget: open %s · %s · built %s | CLAUDE.md %s · rules %s · hooks %s · ctx %s"%(op,today_txt,bt,BG(S(lambda: os.path.getsize(R("CLAUDE.md"))),8192),BG(rb,25600),BG(hk,12),BG(S(CTX),50000)))
+o.append("Alerts/Budget: open %s · %s · built %s | CLAUDE.md %s · rules %s · hooks %s · ctx %s"%(op,today_txt,bt,BG(S(lambda: os.path.getsize(R("CLAUDE.md"))),8192),BG(rb,25600),BG(hk,13),BG(S(CTX),50000)))
 print("\n".join(o))
 PYEOF
 mkdir -p "$PROJECT/.cache" 2>/dev/null || true

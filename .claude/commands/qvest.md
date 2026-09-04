@@ -10,7 +10,7 @@ user-invocable: true
 1. `bash 02_Infrastructure/ops/boot_lean.sh` (≈5초 · 테스트 0 · 수리 0 · 백그라운드 0 · Rscript 0). 출력 5줄:
    - `Data:` — 키 캐시 4종 severity + 신선도 감사 나이(>36h면 `★audit stale`) + rawdata/benchmark mtime + K200/KQ150 멤버십 열(schema만). 결손 시에만 `→ daily_refresh` 조치.
    - `Queue:` — 미소비 논문 수(`alpha-pending`. 안 읽히면 `UNREPORTED` — **0으로 접지 않는다**) + frontier `open` 상위 2건 + ★v10 강화 원장 active(L1 · L2) + data-pipeline open 수.
-   - `Last:` — 최신 alpha-search L-code id · 등급 · `next_probe` 1항.
+   - `Last:` — 최신 **리서치 1단위** L-code(`[RP]` 충실구현 / `[RF]` 강화 / `[AS]` 사료 — 세 mode 중 최신) · 등급 · 나이 · `next_probe` 1항.
    - `Book:` — ★v10 BOOK 등록 수·최신 엔트리·트래킹일 (`06_Registry/book/book_registry.json` 정본. **쓰기 = writer 경유 + 도훈 confirm**).
    - `Alerts/Budget:` — 경보 digest + 예산 4종 `값/상한 ✓|✗`.
 2. 5줄을 **그대로 1회 전재**. 해석·수리·후속 점검 금지. `Data`에 `?`/부재가 있으면 1줄 보고 후 도훈 판단 대기.
@@ -44,7 +44,7 @@ user-invocable: true
 ## 정본 위임 (사본은 낙후한다 — 여기에 목록을 다시 적지 않는다)
 
 - agents / skills = `ls .claude/agents .claude/skills` (퇴역분 = `.claude/agents_retired_v10/`)
-- hooks = `.claude/settings.json` (예산 ≤12)
+- hooks = `.claude/settings.json` (예산 ≤13 — v10.2 arm_gen_read_guard 신설분 포함. 세는 건 distinct .sh)
 - **BOOK = `06_Registry/book/book_registry.json`** (writer = `02_Infrastructure/book/book_registry.R` 경유만 · 도훈 confirm)
 - 강화 원장 = `06_Registry/reinforce_ledger_l1.json`(≤25회) · `_l2.json`(무한)
 - alerts = `.cache/alerts_digest.md` · 헌법 = `CLAUDE.md` (예산 ≤8KB)
