@@ -44,6 +44,25 @@ import io,json
 try: print(json.loads(io.open(r'$CFG','rb').read().decode('utf-8')).get('enabled'))
 except Exception: print('False')" 2>/dev/null)
 [ "$EN" = "True" ] || { jl halt_disabled; exit 0; }
+# ── ★강화가 도는 동안 새 논문을 돌리지 않는다 (도훈 지적 2026-09-04) ────────
+#   가드가 **한쪽에만** 있었다: reinforce_auto_next_paper.R 은 active entry 를 보고
+#   halt_active_exists 로 멈추는데, 이 레인은 그걸 안 봐서 대기 중인 요청을
+#   그대로 집었다. 실사고: 2511.12490 이 18:34~19:15 에 에이전트+측정+감사 한 바퀴를
+#   강화(1403.8125 구제분)와 **나란히** 돌았다.
+#   ★요청을 지우지 않는다 — pending 으로 두면 강화가 끝난 뒤 그대로 집힌다.
+if [ "${QVEST_RP_ALLOW_CONCURRENT:-0}" != "1" ]; then
+  ACT=$("$PY" -c "
+import io,json
+try:
+    d=json.loads(io.open(r'$ROOT/06_Registry/reinforce_ledger_l1.json','rb').read().decode('utf-8'))
+    n=sum(1 for e in d.get('entries',[]) if e.get('status')=='active')
+    print(n)
+except Exception: print(0)" 2>/dev/null)
+  if [ "${ACT:-0}" != "0" ]; then
+    jl halt_reinforce_active "n=$ACT" "note=강화 entry 가 활성이다 — 새 논문 충실구현을 보류한다(요청은 pending 으로 보존)"
+    exit 0
+  fi
+fi
 # ── ★고아 claim 회수는 **상태 판정보다 먼저** 한다 (2026-09-01 수리) ────────────
 #   구판은 이 블록이 pending 게이트 *뒤에* 있었다. 그런데 아래 재시도 로직은 in_progress 를
 #   되살릴 때 "claim 이 없으면 죽은 실행" 이라는 조건을 쓴다 — 고아 claim 이 남아 있으면
