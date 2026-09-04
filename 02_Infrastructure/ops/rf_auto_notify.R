@@ -36,6 +36,10 @@ rf_notify_table <- function(base_id) {
     if (is.null(es) || is.null(es$port_t)) return(NULL)
     data.table(n = as.integer(a$n), code = es$cell_code %||% sprintf("n%02d", a$n),
                grade = as.character(a$grade), port_t = as.numeric(es$port_t),
+               ## ★승계 칸 표시 — 중복 스펙이라 측정을 생략하고 기존 결과를 받은 칸.
+               ##   순위·LOO 표에는 있어야 하지만 **등급 집계에서는 빼야 한다** —
+               ##   같은 포트폴리오를 두 번 세면 B 가 3에서 4로 부풀다(실측 2026-09-04).
+               inherited = !is.null(es$inherited_from),
                sr = as.numeric(es$net_sharpe %||% NA), cagr = as.numeric(es$cagr %||% NA),
                mdd = as.numeric(es$mdd %||% NA), calmar = as.numeric(es$calmar %||% NA),
                oos = as.numeric(es$oos_retention %||% NA))
@@ -399,7 +403,10 @@ rf_auto_notify <- function(base_id, n, kind = "block") {
   tab <- S$tab; blk <- sub("_.*$", "", tab$code)
   best <- tab[which.max(replace(port_t, !is.finite(port_t), -Inf))]
   bestC <- tab[which.max(replace(calmar, !is.finite(calmar), -Inf))]
-  gcnt <- table(factor(tab$grade, levels = c("A", "B", "C", "F")))
+  ## ★승계 칸은 등급 집계에서 제외 — 같은 포트폴리오를 두 번 세지 않는다.
+  ## data.table 의 i 는 NA 를 못 받는다 — which() 로 인덱스를 만든다
+  .tab_own <- if ("inherited" %in% names(tab)) tab[which(!isTRUE(NA) & !as.logical(tab$inherited))] else tab
+  gcnt <- table(factor(.tab_own$grade, levels = c("A", "B", "C", "F")))
   # 승자 셀의 산출물 디렉터리 (원장 attempts[].artifacts)
   .win_dir <- tryCatch({
     hit <- Filter(function(x) identical(as.integer(x$n %||% -1L), as.integer(best$n)),

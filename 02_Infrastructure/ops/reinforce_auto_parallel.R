@@ -652,6 +652,40 @@ if (!length(jobs)) for (CELL in batch) {
       .dup <- sprintf("%s/%s(전 entry · Grade %s)", .xh$base_id[1], .xh$cell_code[1], .xh$grade[1])
   }
   if (!isTRUE(.no_treatment) && !is.null(.dup)) {
+    ## ★같은 entry 안의 중복이면 **기존 결과를 승계**한다 (도훈 지시 2026-09-04).
+    ##   중복 판정은 옳다 — 같은 포트폴리오를 두 번 재지 않는다. 문제는 **답이 있는데
+    ##   NA 로 남는 것**이었다: B4 전결합(=B3_11)과 유니버스 LOO(=B2_6)가 NA 로 끝나
+    ##   35칸을 태운 결론(4축 LOO 표)을 사람이 손으로 재구성해야 했다.
+    ##   ★뿌리는 설계 모순이다 — block_accumulate 가 앞 승자를 물려주므로 마지막 블록의
+    ##     승자가 이미 전결합이고, B4 의 전결합 칸은 구조적으로 항상 중복이다.
+    ##     여기서 승계하면 그 모순이 정보 손실로 바뀌지 않는다(측정은 여전히 0회).
+    .prev_code <- if (!is.null(.seen_sig[[.sig]])) as.character(.seen_sig[[.sig]]) else NA_character_
+    .prev_att <- NULL
+    if (!is.na(.prev_code)) {
+      .E9 <- tryCatch(rf_load(1L, ROOT), error = function(e) NULL)
+      .i9 <- if (!is.null(.E9)) .rf_find(.E9, BID) else NA
+      if (!is.na(.i9)) {
+        .cands <- Filter(function(a) identical(as.character(a$cell_code %||% ""), .prev_code),
+                         .E9$entries[[.i9]]$attempts %||% list())
+        if (length(.cands)) .prev_att <- .cands[[length(.cands)]]
+      }
+    }
+    if (!is.null(.prev_att) && !is.null(.prev_att$essence) &&
+        is.finite(suppressWarnings(as.numeric(.prev_att$essence$port_t %||% NA)))) {
+      rf_record_result(1L, BID, att$n,
+        grade = as.character(.prev_att$grade %||% "NA (승계)"),
+        essence = c(.prev_att$essence, list(inherited_from = .prev_code)),
+        artifacts = .prev_att$artifacts,
+        lessons = sprintf("%s: 스펙이 %s 과 동일 — 측정하지 않고 그 결과를 승계한다(같은 포트폴리오다). block_accumulate 아래서 결합 칸이 앞 블록 승자와 같아지는 것은 구조적이다.",
+                          CELL$code, .prev_code),
+        terminal = TRUE,
+        terminal_reason = sprintf("스펙 중복(%s) — 측정 생략, 결과 승계", .prev_code),
+        root = ROOT)
+      jlog("cell_duplicate_inherited", n = att$n, code = CELL$code, same_as = .prev_code,
+           grade = as.character(.prev_att$grade %||% ""),
+           note = "같은 entry 안 중복 — 기존 결과 승계(측정 0회, 답은 남는다)")
+      next
+    }
     rf_record_result(1L, BID, att$n, grade = "NA (미결 — 기존 칸과 동일 스펙)",
       lessons = sprintf("%s: 스펙 서명이 %s 과 동일 — 같은 포트폴리오를 다시 재지 않는다", CELL$code, .dup),
       terminal = TRUE,
