@@ -1,6 +1,11 @@
 {
   "schema": "reinforce_auto_config_v1",
   "enabled": true,
+  "combination": {
+    "enabled": true,
+    "note": "★도훈 지시 2026-09-04 — 결합은 rank-Z 평균 blend 가 아니라 **LLM 이 두 논문을 읽고 설계한 전략(기저)**에서 출발한다. 그 기저를 충실구현 1회로 측정해 base_grade 를 얻고, base_min_port_t 가드를 통과한 뒤에야 강화 25칸을 열어야 한다. 그 레인이 서기 전까지 구판 blend 착수를 정지한다 — 정지 중에는 호출자가 다음 논문 충실구현으로 정상 이월한다.",
+    "gate": "base_min_port_t (단독 논문 레인과 동일). 희석 여부(blend t ≤ max(a_t,b_t))는 같은 축에서 재서 원장에 기록만 하고 차단하지 않는다 — 격자는 기저 **위에** 쌓는 구조라 부모보다 낮은 기저에서도 강화가 뒤집을 수 있다."
+  },
   "note": "강화 무인 러너 kill switch. enabled=false 면 reinforce_auto_run.R / _next_paper.R 가 즉시 정지한다. ★도훈 지시 2026-08-30 '모든 작업을 무인화' 로 v10 의 '무인은 수집까지' 경계가 해제됐다. 단 무인 개시는 **규칙 개시**다 — 셀은 reinforce_program.json 격자에서 나오고 엔진은 rf_cell_engine.R 하나이며 러너는 코드를 생성하지 않는다. LLM 무인 개시가 아니다.",
   "daily_cap": 120,
   "claim_stale_hours": 6,

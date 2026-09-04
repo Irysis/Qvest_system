@@ -83,7 +83,10 @@ if (is.null(out)) ng("착수기 실행 실패") else {
   #   구판은 papers_pooled 가 아니면 전부 실패로 셌고, 그러면 이 검사는 **루프가 일할 때마다**
   #   빨간불을 켠다 — 상시 오탐은 상시 침묵과 같다(저장소 반복 교훈).
   #   가드 발화(active entry / 새 쌍 없음)는 착수기가 설계대로 물러난 것이지 결함이 아니다.
-  .guards <- c("halt_active_exists", "halt_no_new_pair", "halt_queue_empty", "halt_disabled")
+  #   ★2026-09-04: 결합 레인이 설계(LLM) 방식으로 바뀌면서 게이트가 하나 늘었다 —
+  #   halt_combination_disabled 도 "설계대로 물러났다" 이지 결함이 아니다.
+  .guards <- c("halt_active_exists", "halt_no_new_pair", "halt_queue_empty", "halt_disabled",
+               "halt_combination_disabled", "halt_too_few_papers", "halt_request_busy")
   .fired  <- .guards[vapply(.guards, function(g) grepl(g, txt, fixed = TRUE), logical(1))]
   if (grepl("papers_pooled", txt, fixed = TRUE)) ok("풀 구성까지 도달")
   else if (length(.fired)) ok(sprintf("가드 정상 발화(%s) — 착수기가 설계대로 물러났다", .fired[1]))

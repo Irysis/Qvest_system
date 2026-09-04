@@ -24,6 +24,11 @@ if (!is.finite(.RF_MAXA)) .RF_MAXA <- 20L
 setwd(ROOT); Sys.setenv(QM_ROOT = ROOT, CLAUDE_PROJECT_DIR = ROOT)
 WDIR  <- Sys.getenv("RP_WDIR"); URL <- Sys.getenv("RP_URL")
 TITLE <- Sys.getenv("RP_TITLE"); PKEY <- Sys.getenv("RP_KEY")
+# ★결합 판 (2026-09-04) — 결합은 새 논문 소비가 아니라 기존 두 논문의 재조합이므로
+#   3편 주기(count_paper)를 건드리지 않는다. 나머지 경로는 단독 논문과 완전히 같다 —
+#   같은 계약이 재고 같은 게이트가 막는다. 그게 이 재사용의 요점이다.
+IS_COMBO <- identical(Sys.getenv("RP_IS_COMBO", "0"), "1")
+COUNT_PAPER <- !identical(Sys.getenv("RP_COUNT_PAPER", "1"), "0")
 REQ   <- file.path(ROOT, "06_Registry/replication_request.json")
 # ★성과 요약 kv·차트 = 예전 알파 서칭 포맷(도훈 지시 2026-08-30).
 #   ★수치를 재계산하지 않는다 — 계약 산출물에서 읽기만 한다(손계산 금지).
@@ -179,7 +184,9 @@ if (length(bad)) fail("pit_structural", paste(bad, collapse = "; "))
   if (file.exists(fp)) fromJSON(fp, simplifyVector = TRUE) else list(fidelity = "unlabeled")
 }, error = function(e) list(fidelity = "unlabeled"))
 .fidelity <- as.character(.fid$fidelity %||% "unlabeled")
-if (!.fidelity %in% c("faithful", "adapted", "unlabeled")) .fidelity <- "unlabeled"
+if (!.fidelity %in% c("faithful", "adapted", "combination", "unlabeled")) .fidelity <- "unlabeled"
+# ★결합 판은 라벨이 비어 와도 결합이다 — 요청이 그렇게 말했다(진술보다 요청이 정본).
+if (IS_COMBO && identical(.fidelity, "unlabeled")) .fidelity <- "combination"
 jlog("fidelity", label = .fidelity, kept = substr(.fid$kept %||% "", 1, 90),
      changed = substr(.fid$changed %||% "", 1, 90))
 
@@ -219,7 +226,7 @@ if (is.finite(.base_pt) && .base_pt < .min_pt) {
     .bid_sk <- sprintf("RP_%s_skipped_base", format(Sys.time(), "%Y%m%d_%H%M%S"))
     rf_open_entry(1L, .bid_sk, base_grade = G, paper_key = PKEY %||% "", paper_id = "",
                   base_artifacts = dirname(ar), engine_path = eng,
-                  count_paper = TRUE, root = ROOT)
+                  count_paper = COUNT_PAPER, root = ROOT)
     rf_park_entry(1L, .bid_sk, sprintf(
       "skipped_base_quality — 기저 PORT_t %.3f < %.2f. 음수 알파 위의 강화는 헛돈다(측정·기록은 보존). 논문 소비 처리.",
       .base_pt, .min_pt), root = ROOT)
@@ -276,9 +283,41 @@ suppressMessages(source(file.path(ROOT, "02_Infrastructure/reinforcement/reinfor
 BID <- paste0(AR$strategy_id %||% paste0("RP_AUTO_", format(Sys.time(), "%Y%m%d_%H%M%S")), "_rulefast")
 # ★귀속을 base_id 에 새긴다 — adapted 를 충실구현으로 오독하는 경로를 원천 차단
 BID <- if (identical(.fidelity, "adapted")) paste0(sub("_rulefast$", "", BID), "_adapted_rulefast") else BID
+BID <- if (identical(.fidelity, "combination")) paste0(sub("_rulefast$", "", BID), "_combo_rulefast") else BID
 tryCatch(rf_open_entry(1L, BID, base_grade = G, paper_key = PKEY,
-                       base_artifacts = dirname(ar), engine_path = eng, root = ROOT),
+                       base_artifacts = dirname(ar), engine_path = eng,
+                       count_paper = COUNT_PAPER, root = ROOT),
          error = function(e) fail("ledger_open_failed", conditionMessage(e)))
+
+# ★결합이면 원장 entry 에 앵커와 **희석 판정**을 남긴다 (2026-09-04).
+#   구판은 이 판정을 "첫 셀(B1_1)이 부모를 넘는가" 로 대리했는데, B1_1 은 순수 기저가
+#   아니라 기저+팩터1종(w0=0.5)이라 재려는 것과 재는 도구가 달랐다. 이제 기저를 직접 잰다.
+#   ★차단하지 않고 기록만 한다 — 격자는 기저 **위에** 쌓으므로 부모보다 낮은 기저에서도
+#   강화가 뒤집을 수 있다(도훈 선택, 2026-09-04). 차단은 base_min_port_t 하나뿐이다.
+if (IS_COMBO) tryCatch({
+  .rq <- tryCatch(fromJSON(REQ, simplifyVector = FALSE), error = function(e) list())
+  .cb <- .rq$combo %||% list()
+  .at <- suppressWarnings(as.numeric(.cb$a_t %||% NA))
+  .bt <- suppressWarnings(as.numeric(.cb$b_t %||% NA))
+  .pt <- suppressWarnings(as.numeric(es$portfolio_alpha_t_nw_lag3 %||% NA))
+  .best_parent <- suppressWarnings(max(c(.at, .bt), na.rm = TRUE))
+  .verdict <- if (!is.finite(.pt) || !is.finite(.best_parent)) "unmeasured"
+              else if (.pt > .best_parent) "additive" else "dilution"
+  .o <- fromJSON(file.path(ROOT, "06_Registry/reinforce_ledger_l1.json"), simplifyVector = FALSE)
+  .k <- which(vapply(.o$entries, function(z) identical(z$base_id, BID), logical(1)))[1]
+  if (!is.na(.k)) {
+    .o$entries[[.k]]$combo <- c(.cb, list(
+      base_port_t = if (is.finite(.pt)) round(.pt, 4) else NULL,
+      best_parent_t = if (is.finite(.best_parent)) round(.best_parent, 4) else NULL,
+      dilution_verdict = .verdict,
+      note = "LLM 결합 설계 → 충실구현 1회로 기저 측정 → base_min_port_t 통과분만 25칸(2026-09-04 도훈). 희석 판정은 기록 전용 — 차단하지 않는다."))
+    .txt <- toJSON(.o, auto_unbox = TRUE, pretty = TRUE, null = "null", na = "null", digits = 6)
+    stopifnot(length(fromJSON(.txt, simplifyVector = FALSE)$entries) == length(.o$entries))
+    writeLines(.txt, file.path(ROOT, "06_Registry/reinforce_ledger_l1.json"), useBytes = TRUE)
+    jlog("combo_verdict", base_id = BID, base_port_t = .pt,
+         best_parent_t = .best_parent, verdict = .verdict)
+  }
+}, error = function(e) jlog("combo_meta_failed", err = conditionMessage(e)))
 
 d <- tryCatch(fromJSON(REQ, simplifyVector = FALSE), error = function(e) list())
 d$status <- "done"; d$base_id <- BID; d$grade <- G; d$artifacts <- dirname(ar)

@@ -155,11 +155,27 @@ print('P_TITLE=%s' % q(p.get('paper_title') or p.get('title') or ''))
 print('P_URL=%s'   % q(p.get('url') or ''))
 print('P_KEY=%s'   % q(p.get('paper_key') or ''))
 print('P_FDEF=%s'  % q((p.get('factor_def') or '')[:400]))
-print('P_FNAME=%s' % q(p.get('factor_name') or ''))")"
+print('P_FNAME=%s' % q(p.get('factor_name') or ''))
+c=d.get('combo') or {}
+print('IS_COMBO=%s' % q('1' if c else '0'))
+print('C_A=%s'       % q(c.get('a') or ''))
+print('C_B=%s'       % q(c.get('b') or ''))
+print('C_A_URL=%s'   % q(c.get('a_url') or ''))
+print('C_B_URL=%s'   % q(c.get('b_url') or ''))
+print('C_A_TITLE=%s' % q(c.get('a_title') or ''))
+print('C_B_TITLE=%s' % q(c.get('b_title') or ''))
+print('C_A_T=%s'     % q(c.get('a_t') if c.get('a_t') is not None else ''))
+print('C_B_T=%s'     % q(c.get('b_t') if c.get('b_t') is not None else ''))
+print('C_A_ENGINE=%s' % q(c.get('a_engine') or ''))
+print('C_B_ENGINE=%s' % q(c.get('b_engine') or ''))
+print('C_COUNT=%s'   % q('1' if c.get('count_paper') else '0'))")"
 [ -n "$P_URL" ] || { jl halt_no_url; exit 1; }
 
 SLUG=$(printf '%s' "$P_KEY" | tr -c 'A-Za-z0-9' '_' | cut -c1-24)
 WDIR="$ROOT/04_Research/strategies/RP_AUTO_${SLUG}"
+# ★결합은 두 논문의 설계 산출물이라 단독 논문 작업본을 덮으면 안 된다.
+#   paper_key 가 "combo:a+b" 라 SLUG 이 이미 다르지만, 접두로 의도를 드러낸다.
+[ "${IS_COMBO:-0}" = "1" ] && WDIR="$ROOT/04_Research/strategies/RP_AUTO_COMBO_${SLUG}"
 mkdir -p "$WDIR"
 jl start "paper=$P_KEY" "url=$P_URL" "wdir=$WDIR"
 # ★상태 전이 pending → in_progress (cleaner 의 distill_status 선례).
@@ -238,6 +254,52 @@ PROMPT="논문 1편의 **충실구현**을 수행하라. 산출은 **엔진 R �
 
 엔진을 쓰고 1~2줄로 무엇을 구현했는지만 보고하라."
 
+# --- KOMBO: 결합 설계 프롬프트 (2026-09-04 도훈 지시) -----------------------
+#   결합은 "두 엔진의 rank-Z 평균" 이 아니다. 두 논문을 읽고 **하나의 전략을 설계**하는 일이다.
+#   공통 꼬리(산출 형식·고정 축·실행 환경·금지)는 위 프롬프트에서 그대로 잘라 쓴다 —
+#   여기에 다시 적으면 두 벌이 갈라지고, 갈라지는 순간 한쪽만 고쳐진다.
+if [ "${IS_COMBO:-0}" = "1" ]; then
+  PROMPT_TAIL=$(printf '%s\n' "$PROMPT" | sed -n '/^## 산출 (이것만)/,$p')
+  PROMPT="논문 **2편을 결합한 전략**을 설계하라. 산출은 **엔진 R 파일 하나**다.
+
+## 논문 A
+제목: ${C_A_TITLE}
+원문: ${C_A_URL}
+단독 성적(다중검정 t, 현행 축): ${C_A_T}
+
+## 논문 B
+제목: ${C_B_TITLE}
+원문: ${C_B_URL}
+단독 성적(다중검정 t, 현행 축): ${C_B_T}
+
+## 설계 원칙 (★이게 이 작업의 전부다)
+- **두 신호를 평균하지 마라.** rank-Z 평균은 이미 다섯 번 돌렸고 전부 희석이었다
+  (결합 entry 5건 · 최고 t 0.766 · 부모 단독 성적을 한 번도 못 넘었다). 평균은 설계가 아니다.
+- 두 논문을 읽고 **기전이 어떻게 맞물리는지**를 먼저 정하라. 쓸 만한 맞물림의 예:
+  (1) 한쪽이 **자격**을 정하고 다른 쪽이 **순위**를 정한다 (조건부 선택)
+  (2) 한쪽이 **국면**을 말하고 다른 쪽 신호를 그 국면에서만 쓴다 (조건부 발화)
+  (3) 한쪽의 구조적 결함을 다른 쪽이 **직교 보완**한다 (잔차 위에 얹기)
+  (4) 두 논문이 같은 잠재변수를 다른 관측면으로 재고 있다 (측정 결합)
+  맞물림을 못 찾겠으면 **그렇다고 적고 ABORT** 하라 — 억지 결합은 희석 한 건을 더 만들 뿐이다.
+- 선택한 맞물림이 **왜 단독보다 나은지**를 한 줄로 적어라. 그 줄은 반증 가능해야 한다.
+- 파라미터는 논문에서 오거나 그 시점 데이터에서 추정한다. 임의 상수 금지.
+
+★산출에 \`${WDIR}/FIDELITY.json\` 을 함께 써라 — 결합은 키 값이 다르다:
+  fidelity(\"combination\" 고정) · kept(두 논문에서 각각 남긴 기전 1줄씩) ·
+  changed(맞물림 방식과 그 근거 1줄) · paper_original_form(두 논문의 원래 산출 형태) ·
+  portfolio_spec(기계 판독 객체 — 아래 형식) · commission_paper(null 가능).
+  결합 전략의 산출 형태는 네가 정한다:
+    PORTFOLIO 를 만들면 {\"construction\":\"engine_direct\"}
+    FACTORS 만 만들면 {\"construction\":\"top_n_long\",\"weighting\":\"ew\",\"rebalance\":\"monthly\",\"top_n\":25}
+
+## 참고 (베끼지 말 것 — 두 논문의 이전 단독 구현이다)
+- A: ${C_A_ENGINE:-없음}
+- B: ${C_B_ENGINE:-없음}
+읽어서 데이터 접근 방식을 참고하는 것은 좋다. 다만 **두 파일을 합치는 것은 설계가 아니다.**
+
+${PROMPT_TAIL}"
+fi
+
 # ★모델·노력수준 명시 (도훈 지적 2026-08-30 — 구판은 미지정이라 CLI 기본값에 의존했다).
 #   충실구현은 **깊이** 문제다: 논문 하나를 정확히 읽고 기전을 이식할 수 있는지 판단한다.
 #   넓이(팬아웃)가 아니므로 울트라코드가 아니라 **단일 에이전트 · 최대 노력**이 맞다.
@@ -293,6 +355,7 @@ io.open(r'$REQ','wb').write(json.dumps(d,ensure_ascii=False,indent=1).encode('ut
 
 # ── 측정 + 검증 (계약이 판정한다 — 에이전트 진술은 근거가 아니다) ────────────
 QM_ROOT="$ROOT" RP_WDIR="$WDIR" RP_URL="$P_URL" RP_TITLE="$P_TITLE" RP_KEY="$P_KEY" \
+  RP_IS_COMBO="${IS_COMBO:-0}" RP_COUNT_PAPER="${C_COUNT:-1}" \
   Rscript "$ROOT/02_Infrastructure/ops/rf_replication_verify.R" >> "$LOG" 2>&1
 VRC=$?
 jl verify_done "rc=$VRC"

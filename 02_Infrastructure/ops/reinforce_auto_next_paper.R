@@ -187,9 +187,13 @@ tryCatch(system2("Rscript", shQuote(file.path(ROOT, "02_Infrastructure/ops/rf_co
 tryCatch({
   .out <- system2("Rscript", shQuote(file.path(ROOT, "02_Infrastructure/ops/rf_combination_launch.R")),
                   wait = TRUE, stdout = TRUE, stderr = TRUE)
-  .combo_opened <- any(grepl("combo_entry_opened", .out, fixed = TRUE))
+  # ★2026-09-04: 결합은 entry 를 여는 대신 **설계 요청**을 발행한다.
+  #   그 요청도 "처리됨" 이다 — 아래 이월이 같은 파일을 다음 논문으로 덮어쓰면
+  #   결합 설계가 발행 즉시 사라진다(생산자만 있고 소비자가 없던 구판 결함의 변종).
+  .combo_opened <- any(grepl("combo_entry_opened", .out, fixed = TRUE)) ||
+                   any(grepl("combination_design_requested", .out, fixed = TRUE))
   jlog("combination_launch", opened = .combo_opened,
-       note = if (.combo_opened) "결합 entry 개설 — 이월 생략" else "조건 미충족 — 이월 진행")
+       note = if (.combo_opened) "결합 처리(entry 개설 또는 설계 요청) — 이월 생략" else "조건 미충족 — 이월 진행")
 }, error = function(e) jlog("combination_launch_failed", err = conditionMessage(e)))
 if (isTRUE(.combo_opened)) return(invisible(0L))
 

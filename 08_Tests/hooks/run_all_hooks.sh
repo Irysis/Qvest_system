@@ -1246,6 +1246,8 @@ SUITES=(
   "08_Tests/reinforcement/test_rf_notify_overlay_axis.R"
   # 2026-09-04 — 격자 커서. 등록 거부 1건이 격자 위치를 영구히 어긋내던 자리(양방향).
   "08_Tests/reinforcement/test_rf_grid_cursor.R"
+  # 2026-09-04 — 결합 레인: 설계(LLM) → 측정 1회 → base 게이트 (양방향).
+  "08_Tests/reinforcement/test_rf_combination_design.R"
 )
 
 
