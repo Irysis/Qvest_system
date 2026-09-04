@@ -32,7 +32,40 @@ nk <- sum(vapply(cm5, function(x) nzchar(as.character(x$kind %||% "")), logical(
 if (nk == length(cm5)) ok("A2 전 항목이 kind 를 갖는다 ★실사고 지점") else
   ng("A2 kind 누락", sprintf("%d/%d", nk, length(cm5)))
 
-cat("\n=== B. 두 경로가 같은 모양인가 ===\n")
+cat("\n=== B. 두 경로가 같은 모양인가 — **세 분기 전부** ===\n")
+## ★실사고 2026-09-04: B5 의 스키마 불일치를 고치면서 **형제 분기를 안 봤다**.
+##   같은 함수(rfbd_cells) 안 세 줄이었는데 B2 에도 같은 병이 있었고(arm= vs catalog_id=)
+##   다섯 칸이 전멸한 뒤에야 드러났다. 그래서 이 검사는 블록을 하나씩 세지 않고
+##   **엔진이 읽는 필드**를 블록마다 재도출해 대조한다.
+ESRC <- paste(readLines(file.path(ROOT, "02_Infrastructure/reinforcement/rf_cell_engine.R"),
+                        warn = FALSE), collapse = "\n")
+## 엔진이 각 축에서 실제로 읽는 필드 (소스에서 재도출 — 목록을 손으로 적으면 낙후한다)
+NEED <- list(
+  B2 = c("catalog_id"),
+  B5 = c("kind"),
+  B3 = c("kind")
+)
+for (bk in names(NEED)) {
+  cmx <- rfbd_catalog(bk, ROOT)
+  if (!length(cmx)) { cat(sprintf("  SKIP %s 카탈로그 없음\n", bk)); next }
+  tb2 <- sprintf("TESTBASE_SCHEMA_%s_%d", bk, Sys.getpid())
+  dp2 <- rfbd_path(ROOT, tb2, bk)
+  dir.create(dirname(dp2), recursive = TRUE, showWarnings = FALSE)
+  write(toJSON(list(block = bk, rationale = "검사",
+                    cells = list(list(pick = cmx[[1]]$id, label = "t", why = "w"))),
+               auto_unbox = TRUE), dp2)
+  cs2 <- Filter(Negate(is.null), rfbd_cells(ROOT, tb2, bk))
+  if (!length(cs2)) { ng(sprintf("B %s 설계 셀 산출 실패", bk)); unlink(dp2, force = TRUE); next }
+  fld <- switch(bk, B2 = cs2[[1]]$weighting, B5 = cs2[[1]]$overlay, B3 = cs2[[1]]$universe)
+  missf <- NEED[[bk]][!(NEED[[bk]] %in% names(fld %||% list()))]
+  if (!length(missf))
+    ok(sprintf("B %s 설계 경로가 엔진이 읽는 필드를 낸다 (%s)", bk,
+               paste(names(fld), collapse = ","))) else
+    ng(sprintf("B %s 필드 누락", bk), sprintf("없음=%s · 있음=%s",
+       paste(missf, collapse = ","), paste(names(fld %||% list()), collapse = ",")))
+  unlink(c(dp2, paste0(dp2, ".bak")), force = TRUE)
+}
+
 suppressMessages(source("02_Infrastructure/ops/rf_overlay_arms.R"))
 pk <- tryCatch(rf_pick_overlay_arms(3L, root = ROOT), error = function(e) NULL)
 if (!is.null(pk) && length(pk$cells)) {

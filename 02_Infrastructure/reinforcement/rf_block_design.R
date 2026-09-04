@@ -103,7 +103,12 @@ rfbd_cells <- function(root, base_id, block) {
                 basis = sprintf("LLM 설계(블록 전이) · %s · %s", id,
                                 substr(as.character(ce$why %||% D$rationale %||% ""), 1, 200)),
                 note = "★설계 산출 — 카탈로그 실재성·중복은 rfbd_verify 가 재도출로 검증했다.")
-    if (identical(block, "B2")) out$weighting <- list(kind = "catalog", arm = id)
+    ## ★정상 경로(rf_weight_arms)와 **같은 모양** — 엔진은 weighting$catalog_id 를 읽는다.
+    ##   구판은 arm= 이라 B2 다섯 칸이 "카탈로그 arm 부재: " 로 전멸했다(2026-09-04 21:11).
+    ##   ★B5 에서 같은 병을 고치면서 **형제 분기를 안 봤다** — 같은 함수 안 세 줄이었는데.
+    if (identical(block, "B2"))
+      out$weighting <- list(kind = "catalog", catalog_id = id,
+                            label = as.character(cm$label %||% id))
     if (identical(block, "B5")) {
       ## ★정상 경로와 **같은 모양**을 낸다. 카탈로그에 없는 id 면 NULL 로 둠 —
       ##   그러면 rfbd_verify 가 재도출로 걸러낸다(없는 arm 을 지어내지 않는다).
