@@ -1,0 +1,52 @@
+{
+  "l_code": "L-RF-20260904_205939",
+  "strategy_id": "RP_20260904_163647_18444_rescued_rulefast_promo1_B5",
+  "grade": "B",
+  "core_reference": "",
+  "lesson_text": "[B5 risk_overlay] 5칸 실측 — 최고 B5_17 다중검정t 2.025 · 칼마 0.372 · 등급 A0/B1/C4/F0. 직전 최고 B1_2(2.171) 대비 열위 — 이 축은 기준선을 못 넘었다. 낙폭이 축을 바꿔도 46~56% 대역에 갇힘 (폭 9.9%p) · 칼마 최고 0.38 — 낙폭 46% 하에서 합격선은 연복리 29% 를 요구 · 표본외 유지율 최고 -0.46 — 5칸 전부 합격 구간 밖 · A등급 0건 — 5칸 측정 후 이 축 조합의 상한이 관측됨",
+  "tags": ["reinforcement", "rule_grid", "b5"],
+  "created_at": "2026-09-04",
+  "research_mode": "reinforcement",
+  "created_by": "emit:reinforcement",
+  "metric_type": "backtested",
+  "construction_type": "overlay_regime",
+  "mechanism_hypothesis": "",
+  "lcode_schema_version": 3,
+  "cagr": 0.206,
+  "mdd": 0.554,
+  "calmar": 0.372,
+  "oos_retention": -0.464,
+  "portfolio_alpha_t": 2.025,
+  "next_probes": ["다음 격자 축 B4(combination) — 이 블록 승자 위에서 측정", "B5_17(최고 2.025)는 B4 조합 후보로 고정 · B5_20(최저 0.885)는 축 역작동 여부를 조합 LOO 로 분리"],
+  "next_probe": "다음 격자 축 B4(combination) — 이 블록 승자 위에서 측정 | B5_17(최고 2.025)는 B4 조합 후보로 고정 · B5_20(최저 0.885)는 축 역작동 여부를 조합 LOO 로 분리",
+  "source_paper": "https://arxiv.org/abs/1403.8125",
+  "record_type": "performance",
+  "mechanism": "실측: B5 오버레이 5칸은 Calmar 를 0.339~0.375(폭 0.036)에 고정한 채 초과수익과 MDD 를 같은 비율로 깎았다 — 총노출 오버레이 B5_19(MDD 0.459 · PORT_t 1.137)와 B5_20(MDD 0.493 · PORT_t 0.885)은 기저 B1_2(PORT_t 2.171 · MDD 0.548~0.600 범위) 대비 MDD 를 가장 많이 낮췄지만 PORT_t 를 절반 아래로 떨어뜨렸고, Calmar 는 0.375/0.339 로 기저 0.351 과 사실상 같다. 이는 위기 타이밍이 아니라 노출 스케일 축소의 서명이다(스케일링은 CAGR 과 MDD 를 비례 축소해 Calmar 를 보존한다). 종목별 오버레이는 소비 지점이 달라 결과도 갈렸다: 고유분산 tilt B5_17(MDD 0.554 · CAGR 0.206)과 보유상태 tilt B5_18(MDD 0.558)은 MDD 가 B1 범위 안에 그대로 남아 낙폭 축을 전혀 건드리지 못했고, 베타 tilt B5_16 만 MDD 0.510 으로 내렸는데 그 대가로 PORT_t 1.587 — 역시 Calmar 0.362 로 스케일 축소와 같은 교환비다. 따라서 B1 의 미결(MDD 상수성이 cvar 특성인가 시장 베타 특성인가)은 베타 쪽으로 기운다: 시장 베타를 낮추는 처치(B5_16·19·20)만 MDD 를 움직였고, 고유 위험을 건드리는 처치(B5_17·18)는 움직이지 못했다. 정황: B5_20 은 B5_19 보다 MDD 를 덜 낮추면서 PORT_t 는 더 잃었다 — 낙폭·변동성 두 신호를 곱한 다변량 제동이 신호 잡음을 더해 교환비를 악화시켰을 가능성. 미결: B5_17 의 PORT_t 2.171→2.025 하락이 유의한지는 반복 측정이 없어 모른다 — 고유분산 tilt 가 무해한지 유해한지는 B2 에서 신호 가중(score_tilt)과 나란히 놓아야 갈린다. B1 처방(비중 축을 고정 팩터 셋 위에서 교체)은 이 블록이 지지한다 — 단, 기대는 수정된다: 비중 방법이 베타를 낮추지 않으면 MDD 는 안 움직이고, 베타를 낮추면 Calmar ≈0.35 교환비로 움직일 것이다. Calmar 를 올리려면 수익 분포의 형태(꼬리·비대칭)를 바꾸는 축이 필요하며, 스케일 축은 소진됐다.",
+  "mechanism_by": "llm:block_end",
+  "mechanism_at": "2026-09-04T21:01:36+0900",
+  "prior_lessons_used": "B1",
+  "next_block_actions": [
+    {
+      "action": "B2 에서 신호 무관 순수 위험 비중(minvar·hrp)과 신호 가중(score_tilt)을 같은 팩터 셋(B1_2) 위에 나란히 두고, 각 칸의 MDD 이동량이 실현 시장 베타 이동량에 비례하는지 확인한다.",
+      "why": "B5_16·19·20(베타/노출 축소)만 MDD 를 움직이고 B5_17·18(고유 위험)은 못 움직였다 — MDD = 시장 베타 가설.",
+      "expect": "가설이 맞으면 minvar(저베타 종목 편중)는 MDD 를 0.50 아래로 내리되 Calmar 는 0.34~0.38 에 머물고, hrp(베타 중립적 분산)는 MDD 가 0.548~0.600 범위에 남는다. hrp 가 MDD 를 유의하게 낮추면 가설 반증."
+    },
+    {
+      "action": "낙폭을 목적함수에 직접 넣는 CDaR_LP 1칸과 고차모멘트(higher_moment) 1칸으로 Calmar 가 0.339~0.375 범위를 벗어나는지 잰다 — 분포 형태 축의 존재 여부 검정.",
+      "why": "B5 5칸 전부 Calmar 폭 0.036 안에 갇혔다 — 스케일 축은 Calmar 를 못 올린다. 형태(꼬리·비대칭)를 바꾸는 축만 남았다.",
+      "expect": "형태 축이 실재하면 CDaR_LP 또는 higher_moment 가 Calmar ≥0.40 을 낸다. 둘 다 0.339~0.375 안이면 비중 축에서도 Calmar 상한은 스케일 교환비이며 다음 레버는 B3 유니버스 또는 B4 결합이다."
+    },
+    {
+      "action": "B5_17(csd_idio_tilt) 의 PORT_t −0.146 이 유의한지는 B2 의 score_tilt 칸을 기준점으로 삼아 사후 비교한다 — B5 재측정 칸은 쓰지 않는다.",
+      "why": "고유분산 tilt 가 무해(잡음)인지 유해(신호 희석)인지 B5 단독으로는 안 갈린다.",
+      "expect": "score_tilt 가 PORT_t ≥2.1 이면 B5_17 의 하락은 tilt 자체의 신호 잠식으로 읽고, score_tilt 도 2.0 근처면 가중 조정 일반의 잡음 폭으로 읽는다."
+    }
+  ],
+  "next_block_actions_by": "llm:block_end",
+  "avoid": ["총노출 스칼라 오버레이(dd_brake_q·vol_x_dd 유형) 추가 칸 — B5_19·B5_20 이 Calmar 불변(0.375/0.339 vs 기저 0.351)으로 스케일 축의 벽을 확인했다. 어떤 신호를 넣어도 노출 스케일로 소비되면 Calmar 는 안 움직인다.", "고유 위험 종목별 tilt(csd_idio·holdlvl 유형) 재시도 — B5_17·B5_18 은 MDD 0.554/0.558 로 낙폭 축을 전혀 못 건드렸다.", "cvar·CVaR_LP·omega 등 tail_aware 재선정 — 기저가 이미 cvar 라 계열 중복이며 B1·B5 에서 MDD 0.55 대역이 이 비중 아래 고정돼 있었다.", "score_blend 계열 중복(rank_tilt·softmax_tilt·winsor_tilt·regime_tilt·ic_tilt) — B1 처방대로 score_tilt 1칸이 계열을 대표한다.", "PPO_RL·DPL·Genetic — 저장소 실측에서 ML 결합기·사이징은 negative 이며 분포 표적 축이 아니다.", "gen:*shr_* 수축 변형 — 형태 축 검정이 끝나기 전에는 공분산 추정 정밀도 축은 2차 문제다."],
+  "next_block_design_for": "B2",
+  "next_block_design_n": 5,
+  "prior_action_status": "no_design",
+  "prior_action_detail": "그 블록에 설계가 없었다(규칙 선정)",
+  "mechanism_confidence": "medium"
+}

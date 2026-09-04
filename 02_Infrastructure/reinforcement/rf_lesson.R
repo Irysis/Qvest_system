@@ -115,13 +115,45 @@ rf_block_order_decide <- function(entry, prog, root = .RFL_ROOT()) {
   if (length(risk) && is.finite(cg) && cg >= th$cagr && (!is.finite(cl) || cl < th$calmar)) {
     rest <- setdiff(ids[-1L], c(risk, comb))
     return(list(order = c(ids[1L], risk, rest, comb), adaptive = TRUE,
+      ## ★처방이 다른 블록을 지목했어도 여기서는 위험 축이 이긴다. 다만 그 사실을
+      ##   기록한다 — 충돌이 보이지 않으면 다음에 판단할 수 없다(rf_lesson_pref_conflict).
       reason = sprintf(paste("CAGR %.3f >= %.2f 충족 · Calmar %.3f < %.2f 미달 →",
                              "위험 축(%s)을 2번째로. 비중·유니버스는 MDD 를 거의 안 움직이므로",
                              "그 축을 먼저 돌면 출하되지 않는 구성을 최적화하게 된다."),
                        cg, th$cagr, cl, th$calmar, paste(risk, collapse = ","))))
   }
-  list(order = ids, adaptive = FALSE,
-       reason = sprintf("기본 순서 — CAGR %.3f · Calmar %.3f (수익 축 미충족이면 위험 축을 앞당길 근거가 없다)",
-                        cg, cl))
+  ## ── 기전 처방을 읽는다 ((다)안 2026-09-04) ────────────────────────────────
+  ##   위험 축 규칙이 안 섰을 때만 본다 — 구속 축(Calmar)을 먼저 치는 건 예산 문제라
+  ##   그 규칙이 서면 그게 이긴다. 여기까지 왔다는 건 수익 축이 아직 미충족이라는 뜻이고,
+  ##   그때는 기전이 "무엇을 다음에 재야 하는가" 를 더 잘 안다.
+  pref <- NULL
+  if (!identical(tolower(Sys.getenv("QVEST_RF_ORDER_PREF", "on")), "off")) {
+    pref <- tryCatch({
+      ## ★기전이 **실제로 만든 설계 파일**을 본다 — L-code 본문에서 블록 코드를 긁으면
+      ##   과거 셀 언급(B1_10 등)을 목표로 오인한다(실측: 처방이 B1 로 잡혔다).
+      ##   .cache/rf_block_design/<base>_<BLK>.json 은 기전 레인이 "다음은 이 블록" 이라고
+      ##   판단해 칸까지 짜 놓은 산출물이다 — 의도가 가장 분명한 신호다.
+      d <- file.path(root, ".cache/rf_block_design")
+      fs <- list.files(d, pattern = "[.]json$", full.names = TRUE)
+      fs <- fs[startsWith(basename(fs), paste0(entry$base_id, "_"))]
+      if (!length(fs)) NULL else {
+        fs <- fs[order(file.info(fs)$mtime)]
+        b <- sub("^.*_(B[0-9]+)[.]json$", "\\1", basename(fs[length(fs)]))
+        if (nzchar(b) && b %in% ids) b else NULL
+      }
+    }, error = function(e) NULL)
+  }
+  if (!is.null(pref) && !identical(pref, ids[1L])) {
+    rest <- setdiff(ids[-1L], c(pref, comb))
+    return(list(order = c(ids[1L], pref, rest, comb), adaptive = TRUE,
+      mechanism_pref = pref,
+      reason = sprintf(paste("기전 처방이 %s 를 지목 — 위험 축 규칙(Calmar 미달)이 서지 않아",
+                             "처방을 따른다. CAGR %.3f · Calmar %.3f.",
+                             "★순서 결정기는 처방이 **시험하려는 명제**를 전제로 깔지 않는다."),
+                       pref, cg, cl)))
+  }
+  list(order = ids, adaptive = FALSE, mechanism_pref = pref %||% NA_character_,
+       reason = sprintf("기본 순서 — CAGR %.3f · Calmar %.3f (수익 축 미충족이면 위험 축을 앞당길 근거가 없다)%s",
+                        cg, cl, if (!is.null(pref)) sprintf(" · 기전 처방(%s)은 이미 1번째", pref) else ""))
 }
 cat("[rf_lesson.R] Loaded — rf_lesson_text() / rf_next_probes() / rfl_binding() / rfl_shift()\n")

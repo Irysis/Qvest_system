@@ -16448,7 +16448,7 @@
       "target_grade": "A",
       "measurement_axis": "n_max_25",
       "axis_valid": true,
-      "attempts_used": 5,
+      "attempts_used": 10,
       "attempts": [
         {
           "n": 1,
@@ -16696,6 +16696,261 @@
           "lessons": "[B1_5] Grade C · 구속 port_t(1.011/2.95)·calmar(0.268/0.64)·sharpe(0.699/0.80)·cagr(0.147/0.16)·oos(-0.326/0.70) (5조건 중 0 충족) · carry 없음(최초 칸)",
           "opened_at": "2026-09-04T20:34:46+0900",
           "closed_at": "2026-09-04T20:44:18+0900"
+        },
+        {
+          "n": 6,
+          "date": "20260904",
+          "cell_code": "B5_16",
+          "idea": "[무인 병렬 B5_16] dbeta_tilt_rank(cross_sectional) — B5/risk_overlay · factor2=none · weighting=catalog · universe=k200_kq150",
+          "keyword_axis": "risk_overlay",
+          "root_papers": [
+            {
+              "method": "낙폭의 확장창 경험분포 중앙 위에서만 개입하되, 축소량을 그 달 보유의 하방베타 횡단면 순위에 비례시킨다. 횡단면 평균 노출 1-g/2 로 스칼라판 1-g 보다 덜 깎으면서 축소 몫을 하방 기여가 큰 종목에 몰아준다. 근거: B5 50셀 실측에서 스칼라 축소가 MDD -10% 대비 CAGR -23% 로 상방을 더 잃어 Calmar 중앙값이 전 블록 최악(0.160)이었다 — 대칭 축소의 구조적 한계.",
+              "url": "https://arxiv.org/abs/1403.8125"
+            },
+            {
+              "url": "https://arxiv.org/abs/1403.8125",
+              "title": "Maximum drawdown, recovery, and momentum",
+              "paper_key": "1403.8125"
+            },
+            {
+              "title": "Banz (1981), The Relationship Between Return and Market Value of Common Stocks, JFE 9(1)",
+              "url": "https://www.sciencedirect.com/science/article/abs/pii/0304405X81900180"
+            },
+            {
+              "title": "Fama & French (1992), The Cross-Section of Expected Stock Returns, JF 47(2)",
+              "url": "https://onlinelibrary.wiley.com/doi/10.1111/j.1540-6261.1992.tb04398.x"
+            },
+            {
+              "title": "Amihud (2002), Illiquidity and Stock Returns, JFM 5(1)",
+              "url": "https://www.sciencedirect.com/science/article/pii/S1386418101000246"
+            }
+          ],
+          "wt_id": null,
+          "evidence": "paper",
+          "unmapped_families": [],
+          "axiom_injected": true,
+          "grade": "C",
+          "essence": {
+            "cell_code": "B5_16",
+            "block": "B5",
+            "port_t": 1.587,
+            "net_sharpe": 0.862,
+            "cagr": 0.185,
+            "mdd": 0.51,
+            "calmar": 0.362,
+            "oos_retention": -0.747,
+            "spec": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/.cache/rf_parallel/spec_B5_16__RP_20260904_163647_18444_rescued_rulefast_promo1.json",
+            "source": "authoritative_remeasure.json"
+          },
+          "artifacts": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/replication/20260904_205137_11628",
+          "lessons": "[B5_16] Grade C · 구속 port_t(1.587/2.95)·calmar(0.362/0.64)·oos(-0.747/0.70) (5조건 중 2 충족) · carry 대비 MDD 0.548→0.510(-6.9%) · CAGR 0.147→0.185(+25.9%) → 위험만 줄었다(비대칭 성공)",
+          "opened_at": "2026-09-04T20:50:47+0900",
+          "closed_at": "2026-09-04T20:59:37+0900"
+        },
+        {
+          "n": 7,
+          "date": "20260904",
+          "cell_code": "B5_17",
+          "idea": "[무인 병렬 B5_17] csd_idio_tilt(cross_sectional) — B5/risk_overlay · factor2=none · weighting=catalog · universe=k200_kq150",
+          "keyword_axis": "risk_overlay",
+          "root_papers": [
+            {
+              "method": "시장 횡단면분산(H$xs)의 확장창 경험분포 중앙 위에서만 개입하고, 축소 강도 g 를 그 달 보유의 특이변동 기여(ovol×sqrt(1−bcorr^2)) 횡단면 순위에 비례시킨다. 횡단면분산 국면을 키우는 건 시장 공통성분이 아니라 종목별 특이성분이므로, 상태는 분산으로 읽되 축소는 특이변동이 큰 종목에 몰아준다. 임의 상수 없이 강도는 분산의 자기 이력 분위, 종목 차등은 보유 내 순위에서 추정한다. 횡단면 평균 노출 1−g/2 로 스칼라 축소(1−g)보다 덜 깎으면서 대칭 축소의 한계를 종목축에서 깬다.",
+              "url": "https://arxiv.org/abs/1403.8125"
+            },
+            {
+              "url": "https://arxiv.org/abs/1403.8125",
+              "title": "Maximum drawdown, recovery, and momentum",
+              "paper_key": "1403.8125"
+            },
+            {
+              "title": "Banz (1981), The Relationship Between Return and Market Value of Common Stocks, JFE 9(1)",
+              "url": "https://www.sciencedirect.com/science/article/abs/pii/0304405X81900180"
+            },
+            {
+              "title": "Fama & French (1992), The Cross-Section of Expected Stock Returns, JF 47(2)",
+              "url": "https://onlinelibrary.wiley.com/doi/10.1111/j.1540-6261.1992.tb04398.x"
+            },
+            {
+              "title": "Amihud (2002), Illiquidity and Stock Returns, JFM 5(1)",
+              "url": "https://www.sciencedirect.com/science/article/pii/S1386418101000246"
+            }
+          ],
+          "wt_id": null,
+          "evidence": "paper",
+          "unmapped_families": [],
+          "axiom_injected": true,
+          "grade": "B",
+          "essence": {
+            "cell_code": "B5_17",
+            "block": "B5",
+            "port_t": 2.025,
+            "net_sharpe": 0.941,
+            "cagr": 0.206,
+            "mdd": 0.554,
+            "calmar": 0.372,
+            "oos_retention": -0.464,
+            "spec": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/.cache/rf_parallel/spec_B5_17__RP_20260904_163647_18444_rescued_rulefast_promo1.json",
+            "source": "authoritative_remeasure.json"
+          },
+          "artifacts": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/replication/20260904_205137_36104",
+          "lessons": "[B5_17] Grade B · 구속 port_t(2.025/2.95)·calmar(0.372/0.64)·oos(-0.464/0.70) (5조건 중 2 충족) · carry 대비 MDD 0.548→0.554(+1.1%) · CAGR 0.147→0.206(+40.1%) → 수익만 늘었다(위험 축 미개입)",
+          "opened_at": "2026-09-04T20:50:54+0900",
+          "closed_at": "2026-09-04T20:59:37+0900"
+        },
+        {
+          "n": 8,
+          "date": "20260904",
+          "cell_code": "B5_18",
+          "idea": "[무인 병렬 B5_18] holdlvl_syscrowd_tilt(cross_sectional) — B5/risk_overlay · factor2=none · weighting=catalog · universe=k200_kq150",
+          "keyword_axis": "risk_overlay",
+          "root_papers": [
+            {
+              "method": "상태를 시장 시계열이 아니라 그 달 보유 자체에서 읽는다(holding_level): 각 보유의 체계위험 비중 φ=bcorr²(시장 공통성분이 설명하는 변동 몫 R²)의 횡단면 중앙값을 개입 강도 g 로 삼아, 등가중 책이 얼마나 단일 시장베팅으로 수렴했는지를 잰다. 상관은 그 자체로 [0,1] 체계 비중이라 낙폭처럼 이력 센터링 없이 수준을 그대로 쓰고, 축소는 각 보유의 분산 불가능한 하방 기여 s=dbeta·(bcorr·ovol)(시장에 투영된 자체변동을 하방베타로 가중)의 보유 내 순위 r 에 비례해 e=1−g·r 로 차등한다 — 책을 시장베팅으로 만드는 종목은 많이, 시장상관이 낮거나 음인 진짜 분산원(헤지)은 적게 깎는다. 문턱·계수는 모두 보유 횡단면 추정에서 나오고(임의 상수 없음), 횡단면 평균 노출 1−g/2 로 스칼라 축소(1−g)의 대칭 한계를 종목축에서 깬다.",
+              "url": "https://arxiv.org/abs/1403.8125"
+            },
+            {
+              "url": "https://arxiv.org/abs/1403.8125",
+              "title": "Maximum drawdown, recovery, and momentum",
+              "paper_key": "1403.8125"
+            },
+            {
+              "title": "Banz (1981), The Relationship Between Return and Market Value of Common Stocks, JFE 9(1)",
+              "url": "https://www.sciencedirect.com/science/article/abs/pii/0304405X81900180"
+            },
+            {
+              "title": "Fama & French (1992), The Cross-Section of Expected Stock Returns, JF 47(2)",
+              "url": "https://onlinelibrary.wiley.com/doi/10.1111/j.1540-6261.1992.tb04398.x"
+            },
+            {
+              "title": "Amihud (2002), Illiquidity and Stock Returns, JFM 5(1)",
+              "url": "https://www.sciencedirect.com/science/article/pii/S1386418101000246"
+            }
+          ],
+          "wt_id": null,
+          "evidence": "paper",
+          "unmapped_families": [],
+          "axiom_injected": true,
+          "grade": "C",
+          "essence": {
+            "cell_code": "B5_18",
+            "block": "B5",
+            "port_t": 1.932,
+            "net_sharpe": 0.862,
+            "cagr": 0.196,
+            "mdd": 0.558,
+            "calmar": 0.352,
+            "oos_retention": -0.489,
+            "spec": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/.cache/rf_parallel/spec_B5_18__RP_20260904_163647_18444_rescued_rulefast_promo1.json",
+            "source": "authoritative_remeasure.json"
+          },
+          "artifacts": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/replication/20260904_205137_30132",
+          "lessons": "[B5_18] Grade C · 구속 port_t(1.932/2.95)·calmar(0.352/0.64)·oos(-0.489/0.70) (5조건 중 2 충족) · carry 대비 MDD 0.548→0.558(+1.8%) · CAGR 0.147→0.196(+33.3%) → 수익만 늘었다(위험 축 미개입)",
+          "opened_at": "2026-09-04T20:50:58+0900",
+          "closed_at": "2026-09-04T20:59:37+0900"
+        },
+        {
+          "n": 9,
+          "date": "20260904",
+          "cell_code": "B5_19",
+          "idea": "[무인 병렬 B5_19] dd_brake_q(drawdown) — B5/risk_overlay · factor2=none · weighting=catalog · universe=k200_kq150",
+          "keyword_axis": "risk_overlay",
+          "root_papers": [
+            {
+              "method": "낙폭이 확장창 중앙값(진입)~90분위(전량현금) 구간에서 선형 축소. 임계를 상수로 두지 않고 데이터에서 추정.",
+              "url": "https://arxiv.org/abs/1403.8125"
+            },
+            {
+              "url": "https://arxiv.org/abs/1403.8125",
+              "title": "Maximum drawdown, recovery, and momentum",
+              "paper_key": "1403.8125"
+            },
+            {
+              "title": "Banz (1981), The Relationship Between Return and Market Value of Common Stocks, JFE 9(1)",
+              "url": "https://www.sciencedirect.com/science/article/abs/pii/0304405X81900180"
+            },
+            {
+              "title": "Fama & French (1992), The Cross-Section of Expected Stock Returns, JF 47(2)",
+              "url": "https://onlinelibrary.wiley.com/doi/10.1111/j.1540-6261.1992.tb04398.x"
+            },
+            {
+              "title": "Amihud (2002), Illiquidity and Stock Returns, JFM 5(1)",
+              "url": "https://www.sciencedirect.com/science/article/pii/S1386418101000246"
+            }
+          ],
+          "wt_id": null,
+          "evidence": "paper",
+          "unmapped_families": [],
+          "axiom_injected": true,
+          "grade": "C",
+          "essence": {
+            "cell_code": "B5_19",
+            "block": "B5",
+            "port_t": 1.137,
+            "net_sharpe": 0.861,
+            "cagr": 0.172,
+            "mdd": 0.459,
+            "calmar": 0.375,
+            "oos_retention": -0.942,
+            "spec": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/.cache/rf_parallel/spec_B5_19__RP_20260904_163647_18444_rescued_rulefast_promo1.json",
+            "source": "authoritative_remeasure.json"
+          },
+          "artifacts": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/replication/20260904_205137_10852",
+          "lessons": "[B5_19] Grade C · 구속 port_t(1.137/2.95)·calmar(0.375/0.64)·oos(-0.942/0.70) (5조건 중 2 충족) · carry 대비 MDD 0.548→0.459(-16.2%) · CAGR 0.147→0.172(+17.0%) → 위험만 줄었다(비대칭 성공)",
+          "opened_at": "2026-09-04T20:51:02+0900",
+          "closed_at": "2026-09-04T20:59:38+0900"
+        },
+        {
+          "n": 10,
+          "date": "20260904",
+          "cell_code": "B5_20",
+          "idea": "[무인 병렬 B5_20] vol_x_dd(combo) — B5/risk_overlay · factor2=none · weighting=catalog · universe=k200_kq150",
+          "keyword_axis": "risk_overlay",
+          "root_papers": [
+            {
+              "method": "변동성 타게팅 노출 x 데이터주도 낙폭 브레이크 노출. 고변동과 깊은 낙폭은 다른 국면이다.",
+              "url": "https://arxiv.org/abs/1403.8125"
+            },
+            {
+              "url": "https://arxiv.org/abs/1403.8125",
+              "title": "Maximum drawdown, recovery, and momentum",
+              "paper_key": "1403.8125"
+            },
+            {
+              "title": "Banz (1981), The Relationship Between Return and Market Value of Common Stocks, JFE 9(1)",
+              "url": "https://www.sciencedirect.com/science/article/abs/pii/0304405X81900180"
+            },
+            {
+              "title": "Fama & French (1992), The Cross-Section of Expected Stock Returns, JF 47(2)",
+              "url": "https://onlinelibrary.wiley.com/doi/10.1111/j.1540-6261.1992.tb04398.x"
+            },
+            {
+              "title": "Amihud (2002), Illiquidity and Stock Returns, JFM 5(1)",
+              "url": "https://www.sciencedirect.com/science/article/pii/S1386418101000246"
+            }
+          ],
+          "wt_id": null,
+          "evidence": "paper",
+          "unmapped_families": [],
+          "axiom_injected": true,
+          "grade": "C",
+          "essence": {
+            "cell_code": "B5_20",
+            "block": "B5",
+            "port_t": 0.885,
+            "net_sharpe": 0.992,
+            "cagr": 0.167,
+            "mdd": 0.493,
+            "calmar": 0.339,
+            "oos_retention": -1.039,
+            "spec": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/.cache/rf_parallel/spec_B5_20__RP_20260904_163647_18444_rescued_rulefast_promo1.json",
+            "source": "authoritative_remeasure.json"
+          },
+          "artifacts": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/replication/20260904_205137_5212",
+          "lessons": "[B5_20] Grade C · 구속 port_t(0.885/2.95)·calmar(0.339/0.64)·oos(-1.039/0.70) (5조건 중 2 충족) · carry 대비 MDD 0.548→0.493(-10.0%) · CAGR 0.147→0.167(+13.6%) → 위험만 줄었다(비대칭 성공)",
+          "opened_at": "2026-09-04T20:51:07+0900",
+          "closed_at": "2026-09-04T20:59:38+0900"
         }
       ],
       "judge": {
@@ -16727,7 +16982,17 @@
         "cell": "B2_6",
         "best_port_t": 2.109,
         "promoted_at": "2026-09-04T20:26:05+0900"
-      }
+      },
+      "block_order": [
+        "B1",
+        "B5",
+        "B2",
+        "B3",
+        "B4"
+      ],
+      "block_order_reason": "CAGR 0.207 >= 0.16 충족 · Calmar 0.351 < 0.64 미달 → 위험 축(B5)을 2번째로. 비중·유니버스는 MDD 를 거의 안 움직이므로 그 축을 먼저 돌면 출하되지 않는 구성을 최적화하게 된다.",
+      "block_order_at": "2026-09-04T20:50:05+0900",
+      "search_adaptive": true
     }
   ],
   "combination_review": {
@@ -16828,7 +17093,7 @@
       }
     ]
   },
-  "last_updated": "2026-09-04T20:44:18+0900",
+  "last_updated": "2026-09-04T20:59:38+0900",
   "removed_entries": [
     {
       "removed_at": "2026-08-30T10:07:35+0900",
