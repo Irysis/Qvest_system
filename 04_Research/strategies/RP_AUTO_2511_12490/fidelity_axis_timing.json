@@ -1,0 +1,11 @@
+{
+  "axis": "timing",
+  "verdict": "adapted",
+  "undeclared_changes": [],
+  "signal_mismatch": [],
+  "counterexample": "논문 median holding 8일(Table 5)인 종목이 활성화 6영업일 뒤 UpFrac63이 0.60 문턱 아래로 내려가 REGIME=0 이 되는 경우: 논문(일간 리밸)은 그 다음 날 즉시 청산한다. engine.R 구현(월간 리밸 — .me 월말 격자 §2, 집행 §5 .exec=익월 첫 거래일)은 다음 월말 시그널일까지 최대 ~1개월 그 포지션을 그대로 들고 간다(월중 재평가 없음 — REGIME 재계산은 .sig가 .me 날짜에서만 도는 구조, engine.R:215). 이 괴리는 FIDELITY.changed①/⑨에 명시적으로 선언돼 있어 misdeclared 사유는 아니다.",
+  "evidence": "eq(2) 'UpFraction_{i,t} = (1/63)Σ_{k=1..63} I[r_{i,t-k}>0]' (t-k, k≥1 → 당일 t 제외) · §2.2/§6 'Each day we identify all stocks with valid, non-zero EDGE scores...' + 'Daily execution involves preliminary signal calculation at 3:30 PM...market-on-close participation at 4:00 PM' (일간 리밸) · §2.1 'trailing 10-day returns' · §2.1 'trailing 63 trading days'+'exceeds 60%' · Table 5 'Daily Turnover: 42%; Median Holding Period: 8 days' · §2.2 walk-forward 'five-year training periods...followed by one-year test periods...Window 1(train 2005–2010, test 2010–2011), Window 2(train 2010–2015, test 2015–2016), Window 3(train 2015–2020, test 2020–2021)' — 스킵 기간 언급 없음(WebFetch 확인, 문서 전체에 skip/formation-gap 서술 부재).",
+  "confidence": "high",
+  "checked": "리밸 주기(일간 vs 월간) · 형성창(reversal 10일·drift 63일, 문턱 0.60) 수치 대조 · UpFraction 인덱스 범위(t-k,k=1..63 = 당일 제외) 코드 정합(engine.R:200-204 shift(1) 처리) · 스킵 기간 유무 · walk-forward 창 구조(3개 이산 창 vs 엔진의 연속 연간 타일링, engine.R:328-347)",
+  "note": "이 축의 핵심 불일치(일간→월간 리밸)는 FIDELITY.json changed①에 원문 인용·코드 위치·정량 영향(회전율 배율)까지 이미 상세 선언돼 있다. 형성창 수치(10일·63일·0.60)와 인덱스 배제(t 제외) 자체는 코드가 논문 식(2)와 정확히 일치한다. FIDELITY item①의 '1판 Annualized_Turnover 8.41' 인용치가 이번 3판 측정(06_metrics.csv=2.304)과 다른 값인데, 이는 라운드 차이로 라벨링돼 있어 timing 축의 misdeclared 근거로 쓰지 않았다 — cost 축 검증자 참고용으로만 남긴다."
+}
