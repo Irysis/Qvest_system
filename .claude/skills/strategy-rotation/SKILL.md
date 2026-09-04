@@ -60,9 +60,22 @@ dohoon_mandate) — `build_module_performance.R` 전방 필터(env `QVEST_L2_GRA
 국면에 얼마나 쓸지의 국면조건부 심사. 근거 = v2.1 A/B 실측 교훈 "dispatcher RP-앵커는
 IR 무관이라 admission 이 유일한 품질 게이트" — 등급 floor 만으로는 국면별 표본·유의성
 검증이 사라진다.
+- ★**방어형 경로 (도훈 지시 2026-09-04 — 등급 floor 와 병렬)**: 등급이 B 미만이어도
+  **방어형**이면 풀에 편입한다. 방어형 = **벤치마크가 실제로 마이너스를 기록한 국면에서
+  아웃퍼폼한 전략**(국면엔진 라벨 기준 아님 — 라벨은 이 시스템의 병목이고, 라벨 품질이
+  방어형 판정의 상한을 정하면 전략이 아니라 계기를 재게 된다).
+  판정 = `02_Infrastructure/contracts/defensive_score.R::ds_score`(하락월 초과수익 > 0
+  ∧ t ≥ 1.5 ∧ 적중률 ≥ 0.5 · 수치 정본 `06_Registry/defensive_score.json`).
+  배선 = `build_module_performance.R` (`QVEST_L2_DEFENSIVE_ROUTE=OFF` 로 해제).
+  편입 경로는 산출물에 `defensive_specialist` 로 라벨링돼 등급 편입과 구분된다.
+  실측 근거(2026-09-04, 380건): 방어형 184건 중 **B 이상 0건** — 전부 C/F.
+  하락월 초과 +1.81% vs 비방어형 −0.12%, 벤치 −10% 이하에서 +5.64% vs −0.43%
+  (심도에 따라 우위가 커지는 볼록성 = 선형 베타가 아니라 실제 방어 기전).
+  ⇒ 아래 "F-overall specialist 풀 부적격"을 **방어형에 한해** 되돌린다.
 - ★구 "등급무관 specialist 차용"(2026-06-10 mandate) 조항은 **본 v10 지시("B등급
-  이상의 전략들을 활용")가 대체** — 폐기. F-overall specialist 는 이제 풀 부적격.
-  그 재료가 아깝다면 1계층 강화로 B 이상을 먼저 만든 뒤 편입하는 것이 경로다.
+  이상의 전략들을 활용")가 대체** — 폐기. F-overall specialist 는 풀 부적격
+  (**단 위 방어형 경로는 예외**). 그 재료가 아깝다면 1계층 강화로 B 이상을 먼저
+  만든 뒤 편입하는 것도 경로다.
 - 계약 floor 는 불변: `register_module()` — contract_pass ∧ metric_type=backtested ∧
   frozen ∧ provenance 4종. floor 미충족은 quarantine. 신규 등재분은 `essence_grade` +
   `grade_basis` 기록 의무.

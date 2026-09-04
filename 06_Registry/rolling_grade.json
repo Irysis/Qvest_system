@@ -1,0 +1,25 @@
+{
+  "schema_note": "롤링 등급 지표 + F 구제 — 수치 정본 (도훈 제안 2026-09-04 '스코어 측정 지표들을 롤링시계열로'). 소비 = 02_Infrastructure/contracts/rolling_grade.R::rg_params.",
+  "why": "전기간 1점은 오래된 사건에 지배된다. 실측(380건): 전기간 MDD 시점의 중앙값이 17.6년 전이고 56%가 10년 이상 전이다. Calmar 는 유일한 위험 게이트인데 그 분모가 대개 십수 년 전 사건이다. 사례 1403.8125: 전기간 Calmar 0.107(분모=2012-02 MDD 61.1%) vs 최근 롤링 36M Calmar 1.317(MDD 19.7%) — 같은 전략이 12배 갈린다.",
+  "why_rolling_not_one_recent_window": "창을 고르는 순간 그 선택이 판정을 만든다. 그리고 롤링이 아니면 못 보는 것이 있다 — 1403.8125 는 2015년에도 문턱을 넘었다가 6년을 다시 죽어 있었다. '지금 회복이 처음이 아니다'는 사실이 단일 최근창에서 사라진다. 그래서 prior_recoveries 를 함께 싣는다: 구제하되 감추지 않는다.",
+  "scope": "★essence 등급 산식을 대체하지 않는다. 궤적을 기록하고 F 구제 후보만 판정한다. 구제는 F → C 한 칸이며 그 위로 못 간다.",
+
+  "enabled": true,
+  "window_months": 36,
+  "step_months": 1,
+  "recent_points": 12,
+  "floor_sharpe": 0.8,
+  "floor_cagr": 0.16,
+  "floor_calmar": 0.64,
+  "rescue_enabled": true,
+  "rescue_from": "F",
+  "rescue_to": "C",
+  "rescue_min_recent_pass": 0.5,
+  "rescue_min_points": 24,
+
+  "param_notes": {
+    "floor_*": "essence Grade A 의 비-알파 floor 와 같은 값(constraint_defaults::tier_graduation). 알파 t 는 롤링 문턱에 넣지 않는다 — 벤치가 최근 3년 SR 1.231 로 폭주해 380건 중 최근창 알파 t>=2 가 0건이다.",
+    "rescue_to": "C 정의 = 'positive alpha 이나 B 미달 — 블렌드에서만 가치'. 구제 대상의 성격과 정확히 일치한다(단독으로는 벤치를 못 이기지만 조합 재료로는 값이 있다).",
+    "rescue_min_recent_pass": "실측: 이 값 0.5 에서 F 168건 중 74건이 후보."
+  }
+}

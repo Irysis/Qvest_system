@@ -537,6 +537,35 @@ essence_score <- function(bt_result, n_trials_cumulative = NULL,
     reasons <- "Ensemble: positive alpha이나 B 미달 (블렌드에서만 가치)"
   }
 
+  ## ── 롤링 등급 지표 · 방어형 스코어 · F 구제 (도훈 2026-09-04) ───────────────
+  ##   왜 여기인가: 등급이 확정된 **뒤**에 붙는다. 두 산출물은 essence 산식을 대체하지 않고,
+  ##   구제만이 등급을 한 칸(F -> C) 움직인다. 방어형은 등급을 아예 안 건드린다.
+  ##   ★기본 등급을 grade_base 로 보존한다 — 등급은 BOOK 등재·2계층 풀 자격을 거는 데 쓰이므로
+  ##     소비하는 쪽이 "어느 부분이 무엇에서 왔는지" 를 알아야 한다.
+  .grade_base <- grade
+  .roll <- NULL; .defn <- NULL; .rescue <- list(rescued = FALSE)
+  tryCatch({
+    .rt <- Sys.getenv("QM_ROOT", getwd())
+    suppressMessages(source(file.path(.rt, "02_Infrastructure/contracts/rolling_grade.R")))
+    suppressMessages(source(file.path(.rt, "02_Infrastructure/contracts/defensive_score.R")))
+    .pr <- bt_result$period_returns; .br <- bt_result$benchmark_returns
+    if (!is.null(.pr)) {
+      .roll <- rg_rolling(.pr, .br, rg_params(.rt))
+      if (!is.null(.br)) .defn <- ds_score(.pr, .br, ds_params(.rt))
+      if (!is.na(grade)) {
+        .rescue <- rg_rescue(grade, .roll, rg_params(.rt))
+        if (isTRUE(.rescue$rescued)) {
+          grade <- .rescue$new_grade
+          reasons <- paste0(reasons, "; recent_regime 구제(", .grade_base, "->", grade, "): ",
+                            .rescue$reason)
+        }
+      }
+    }
+  }, error = function(e)
+    ## ★<<- 이다. 핸들러 안의 <- 는 자기 프레임에 써서 조용한 no-op 이 된다 —
+    ##   실패가 사유에 안 남으면 '산출 안 됨'과 '산출 실패'가 같은 얼굴이 된다.
+    reasons <<- paste0(reasons, "; rolling/defensive 산출 실패: ", conditionMessage(e)))
+
   ## ★구조 drawdown 은 **판정에서 빠졌지만 사유에서 빠지지 않는다**(2026-08-24).
   ##   hurdle_gate.R:466-468 이 세운 규약과 같다 — "fail_reasons 는 그대로 남긴다. 이 문장이
   ##   사라지면 하류 소비자가 '구조 사유'를 식별할 근거를 잃고, 결합 층으로 보낼 재료와
@@ -582,6 +611,23 @@ essence_score <- function(bt_result, n_trials_cumulative = NULL,
         structural_hard_fail = isTRUE(dd_profile$structural_hard_fail)
       )
     ),
+    ## ★기본 등급 — 구제 전 값. 소비자가 출처를 구분할 수 있어야 한다(2026-09-04).
+    grade_base = .grade_base,
+    recent_regime_rescued = isTRUE(.rescue$rescued),
+    recent_regime_label = if (isTRUE(.rescue$rescued)) .rescue$label else NA_character_,
+    ## 롤링 궤적 — 전기간 1점이 오래된 사건에 지배될 때 그 사실을 드러낸다.
+    ##   prior_recoveries 를 반드시 함께 본다: 회복이 처음이 아닐 수 있다.
+    rolling_grade = if (is.null(.roll)) NULL else list(
+      status = .roll$status, n_points = .roll$n_points, window_months = .roll$window_months,
+      pass_life = .rn(.roll$pass_life, 4), pass_recent = .rn(.roll$pass_recent, 4),
+      current = .roll$current, prior_recoveries = .roll$history$prior_recoveries,
+      current_run = .roll$history$current_run, span = .roll$span),
+    ## 방어형 — 벤치가 **실제로 마이너스를 기록한 국면**에서 아웃퍼폼했는가(국면 라벨 비의존).
+    ##   ★essence 등급을 건드리지 않는다. 소비는 2계층 로테이션 풀 자격이다.
+    defensive_score = if (is.null(.defn)) NULL else list(
+      status = .defn$status, defensive = .defn$defensive, convex = .defn$convex,
+      down = .defn$down, mid = .defn$mid, deep = .defn$deep, up = .defn$up,
+      reason = .defn$reason),
     hard_fail = hard_fail,
     ## ★신설(2026-08-24): `hard_fail` 에서 MDD 를 걷어냈으므로 구조 정보를 담을 필드가
     ##   따로 필요하다. 없으면 22건의 구조 사유가 **조용히 사라진다**(하류가 오버레이

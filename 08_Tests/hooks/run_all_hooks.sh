@@ -1261,6 +1261,7 @@ SUITES=(
   "08_Tests/reinforcement/test_rf_retry_feedback.R"
   "08_Tests/reinforcement/test_rf_fidelity_fanout.R"
   "08_Tests/reinforcement/test_rf_queue_mirror.R"
+  "08_Tests/contracts/test_rolling_defensive.R"
 )
 
 

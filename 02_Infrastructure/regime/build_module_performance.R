@@ -51,6 +51,22 @@ RG <- RG[!is.na(regime_lag), .(Date, regime=regime_lag)]
   g <- toupper(as.character(grade %||% ""))
   g %in% (if (identical(.L2_FLOOR, "A")) "A" else c("A", "B"))
 }
+## ── 방어형 경로 (도훈 지시 2026-09-04) ───────────────────────────────────────
+##   등급 floor 를 **대체하지 않고 병렬로** 연다. 방어형 = 벤치마크가 **실제로 마이너스를
+##   기록한 국면**에서 아웃퍼폼한 전략(국면엔진 라벨 비의존 — 라벨은 이 시스템의 병목이고,
+##   라벨 품질이 방어형 판정의 상한을 정하면 전략이 아니라 계기를 재게 된다).
+##   실측 2026-09-04(380건): 방어형 184건 중 **B 이상 0건** — 전부 C/F 였다. 하락월 초과
+##   +1.81% vs 비방어형 -0.12%, 벤치 -10% 이하에서 +5.64% vs -0.43%(심도에 따라 우위가
+##   커지는 볼록성 = 선형 베타가 아니라 실제 방어 기전). 단독 알파가 약한 것은 사실이고
+##   값어치는 조합 안에서 나오므로, essence 등급이 아니라 **풀 자격에서만** 인정한다.
+##   ⇒ 2026-08-29 "F-overall specialist 풀 부적격" 을 **방어형에 한해** 되돌린다.
+.DEF_ROUTE <- !identical(toupper(Sys.getenv("QVEST_L2_DEFENSIVE_ROUTE", "ON")), "OFF")
+.defensive_ok <- function(rec) {
+  if (!.DEF_ROUTE) return(FALSE)
+  d <- rec$defensive_score %||% NULL
+  isTRUE(d$defensive)
+}
+.def_admitted <- 0L
 grade_lut <- new.env()
 eligible_lut <- new.env()
 eligible_paths <- character()
@@ -125,13 +141,22 @@ if(!is.null(gac) && nrow(gac)) for(i in seq_len(nrow(gac))) {
 if(!is.null(mc)) for(id in names(mc)) {
   .attach(id, mc[[id]]$grade, mc[[id]]$role, mc[[id]]$origin_mode)
   if(.is_fr_eligible(mc[[id]])) {
-    if(!.floor_ok(mc[[id]]$grade)) { .floor_excluded <- .floor_excluded + 1L; next }  # ★v10 B+ floor
+    ## ★등급 floor 미달이어도 **방어형**이면 편입한다 (도훈 2026-09-04).
+    ##   경로를 산출물에 기록해 소비자가 "왜 들어왔는지" 를 구분할 수 있게 한다.
+    .adm_route <- if (.floor_ok(mc[[id]]$grade)) "grade_floor"
+                  else if (.defensive_ok(mc[[id]])) "defensive_specialist" else NA_character_
+    if (is.na(.adm_route)) { .floor_excluded <- .floor_excluded + 1L; next }  # ★v10 B+ floor
+    if (identical(.adm_route, "defensive_specialist")) .def_admitted <- .def_admitted + 1L
     sim_path <- file.path(PROJ, mc[[id]]$sim_result_path)
     if(!.verify_module_hash(id, sim_path, mc[[id]]$module_hash)) next   # ★ hash 불일치 = frozen 파기 → skip
     .add_eligible(id, sim_path, mc[[id]]$grade,
                   mc[[id]]$role, mc[[id]]$origin_mode, "contract_fr_eligible")
   }
 }
+if (.DEF_ROUTE)
+  cat(sprintf("[build_module_performance] ★방어형 경로: 등급 floor 미달이지만 방어형으로 편입 %d건 (방어형 = 벤치가 실제로 마이너스를 기록한 국면에서 아웃퍼폼 — 국면 라벨 비의존). 해제 = QVEST_L2_DEFENSIVE_ROUTE=OFF
+",
+              .def_admitted))
 if(!identical(.L2_FLOOR, "OFF"))
   cat(sprintf("[build_module_performance] ★v10 grade floor %s: 계약 통과분 중 %d건 제외 · 풀 %d건 — 축소는 도훈 지시('B등급 이상')의 귀결. legacy 무등급 재편입 = 권위 재측정 후 grade 기입.\n",
               .L2_FLOOR, .floor_excluded, length(unique(eligible_paths))))
@@ -203,6 +228,8 @@ res <- list(schema_version="v3.1", generated=as.character(Sys.Date()),
             regimes=regimes, metric_type="backtested_realized (sim_result NAV, 실측-only)",
             grade_floor=.L2_FLOOR,                       # ★v10: 이 산출물에 실제로 쓰인 floor (검사 재도출용)
             n_floor_excluded=.floor_excluded,
+            n_defensive_admitted=.def_admitted,
+            defensive_route=.DEF_ROUTE,
             note="입력 2단 게이트(v10 2026-08-29 도훈): ①계약 floor = module_catalog fr_eligible=true(contract_pass+backtested+frozen+hash/build_version, legacy QEPM grade-A 이관 예외) ②grade floor = essence grade B 이상(QVEST_L2_GRADE_FLOOR, OFF=진단). module_hash는 실제 md5 대조(불일치=skip+quarantine, CAP-P1-2). 배치 심사=RCMA.",
             n_modules=kept, modules=out)
 dir.create(file.path(PROJ,"06_Registry"), showWarnings=FALSE)
