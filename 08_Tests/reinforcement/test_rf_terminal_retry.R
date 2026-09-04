@@ -34,8 +34,9 @@ ng <- function(m, d = "") { cat(sprintf("  FAIL %s — %s\n", m, d)); FAIL <<- F
 # ── 격리 root ────────────────────────────────────────────────────────────────
 TROOT <- file.path(tempdir(), sprintf("rf_term_%d", Sys.getpid()))
 dir.create(file.path(TROOT, "06_Registry"), recursive = TRUE, showWarnings = FALSE)
-on.exit(unlink(TROOT, recursive = TRUE, force = TRUE), add = TRUE)
-
+# ★최상위 on.exit 금지 — Rscript <file> 로는 조용한 no-op(정리가 아예 안 돌아 픽스처가
+#   남는다)이고, source() 로 부르면 프레임이 닫히며 **즉시 발화해 픽스처를 미리 지운다**.
+#   호출 방식에 따라 정반대로 틀린다. 정리는 끝에서 명시적으로 한다.
 mk <- function() {
   led <- list(schema_version = "reinforce_ledger_v2", layer = 1L, max_attempts = 20L,
               note = "test", entries = list(list(
@@ -128,4 +129,5 @@ if (!is.null(cfg$cell_max_retry) && as.integer(cfg$cell_max_retry) >= 1L)
 
 cat(sprintf("\n합계: 통과 %d · 실패 %d\n", PASS, FAIL))
 cat(sprintf('{"test":"rf_terminal_retry","pass":%d,"fail":%d,"total":%d}\n', PASS, FAIL, PASS + FAIL))
+unlink(TROOT, recursive = TRUE, force = TRUE)   # 명시적 정리(구 on.exit 대체)
 quit(status = if (FAIL == 0L) 0L else 1L)

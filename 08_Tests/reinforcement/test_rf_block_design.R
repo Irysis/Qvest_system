@@ -48,7 +48,9 @@ if (!isTRUE(rfbd_verify(d5, "B2", ROOT, max_cells = 15L))) ok("C5 상한 초과 
 cat("\n=== D. 소비 — 설계가 러너 셀 형태로 나오는가 ===\n")
 TB <- "TEST_BD_ENTRY"
 dir.create(dirname(rfbd_path(ROOT, TB, "B2")), recursive = TRUE, showWarnings = FALSE)
-on.exit(unlink(c(rfbd_path(ROOT, TB, "B2"), rfbd_path(ROOT, TB, "B5"), rfbd_path(ROOT, TB, "B3")), force = TRUE), add = TRUE)
+# ★최상위 on.exit 금지 — Rscript <file> 로는 조용한 no-op(정리가 아예 안 돌아 픽스처가
+#   남는다)이고, source() 로 부르면 프레임이 닫히며 **즉시 발화해 픽스처를 미리 지운다**.
+#   호출 방식에 따라 정반대로 틀린다. 정리는 끝에서 명시적으로 한다.
 write(toJSON(d_ok, auto_unbox = TRUE, null = "null"), rfbd_path(ROOT, TB, "B2"))
 cl <- rfbd_cells(ROOT, TB, "B2")
 if (length(cl) == 2L) ok("D1 셀 2개 생성") else ng("D1 셀 개수", as.character(length(cl)))
@@ -111,4 +113,5 @@ if (grepl("LOO 가 계약", sh, fixed = TRUE) || grepl("LOO 가 계약", mlib, f
 
 cat(sprintf("\n합계: 통과 %d · 실패 %d\n", PASS, FAIL))
 cat(sprintf('{"test":"rf_block_design","pass":%d,"fail":%d,"total":%d}\n', PASS, FAIL, PASS + FAIL))
+unlink(c(rfbd_path(ROOT, TB, "B2"), rfbd_path(ROOT, TB, "B5"), rfbd_path(ROOT, TB, "B3")), force = TRUE)   # 명시적 정리(구 on.exit 대체)
 quit(status = if (FAIL > 0L) 1L else 0L)

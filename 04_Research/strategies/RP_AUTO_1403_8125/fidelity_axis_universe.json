@@ -1,0 +1,14 @@
+{
+  "axis": "universe",
+  "verdict": "misdeclared",
+  "undeclared_changes": [
+    "커버리지 하한 .COV=0.80 — 형성창 거래일의 80% 이상 종가 데이터를 갖지 못한 종목을 데실 정렬에서 제외(engine.R:128, :202). 논문 Section 3.2는 개별 종목 데이터 커버리지 요건을 일절 명시하지 않는다. FIDELITY.changed에도 없다.",
+    "최소 횡단면 .NMIN=30 — 자격 통과 종목 수가 30 미만이면 해당 코호트 전체를 건너뜀(engine.R:130, :196, :203). 논문은 최소 종목 수 요건을 명시하지 않는다(Section 3.2: 'numbers of groups are 10'만 언급). FIDELITY.changed에도 없다."
+  ],
+  "signal_mismatch": [],
+  "counterexample": "형성일 f 에서 K200∪KQ150 멤버 중 adv20(t-1)≥2e8 을 충족하는 종목이 28개인 경우: 논문은 28종목을 10분위로 정렬해 데실당 2~3종목으로 롱숏을 구성하지만, 엔진은 length(elig)=28 < .NMIN=30 조건에서 해당 코호트를 건너뛴다(out[[k]] = NULL). 또한 K200∪KQ150 자격·adv20 조건을 모두 충족하지만 형성창 75 거래일 중 52일(≈69%)만 종가가 있는 종목은, 논문에서는 데실 정렬 대상에 포함되지만 엔진은 ceiling(0.80×75)=60 임계를 통과하지 못해 scoring 대상에서 제외된다.",
+  "evidence": "arxiv.org/html/1403.8125v1 Section 3.1.1: 'a stock benchmark index that is the value-weighted and sector-diversified index with 200 stocks in South Korea stock markets' — 유니버스 정의는 인덱스 멤버십만이며 추가 필터 없음. Section 3.2: 'assets in market universes are sorted in ascending order' / 'numbers of groups are 10' — 커버리지 요건·최소 종목 수 언급 없음.",
+  "confidence": "high",
+  "checked": "논문 유니버스 정의(Section 3.1.1), 종목 선별 절차(Section 3.2), 데이터 가용성·유동성·최소 횡단면 요건 유무; engine.R의 elig 필터(L194-196), 커버리지 필터(L128,L202), NMIN 게이트(L130,L196,L203,L210); FIDELITY.changed 선언 항목 전체",
+  "note": "adv20(t-1)≥2e8 유동성 하한은 FIDELITY.changed에 명시적으로 선언돼 있어 adapted에 해당하지만, 선언이 누락된 커버리지·NMIN 두 필터가 동일 축에서 실질적 선별 결과를 바꾸므로 축 전체 판정은 misdeclared다. 아티팩트 가드(.DCAP=log(3))는 신호 산출 경로 변경으로 signal 축 소관."
+}

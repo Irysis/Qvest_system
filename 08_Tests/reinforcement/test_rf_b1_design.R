@@ -22,8 +22,9 @@ LIB  <- file.path(ROOT, "02_Infrastructure/ops/rf_b1_design_lib.R")
 DDIR <- file.path(ROOT, ".cache/rf_b1_design"); dir.create(DDIR, recursive = TRUE, showWarnings = FALSE)
 BID  <- "TEST_B1_DESIGN"
 DES  <- file.path(DDIR, paste0(BID, ".json"))
-on.exit(unlink(c(DES, paste0(DES, ".bak")), force = TRUE), add = TRUE)
-
+# ★최상위 on.exit 금지 — Rscript <file> 로는 조용한 no-op(정리가 아예 안 돌아 픽스처가
+#   남는다)이고, source() 로 부르면 프레임이 닫히며 **즉시 발화해 픽스처를 미리 지운다**.
+#   호출 방식에 따라 정반대로 틀린다. 정리는 끝에서 명시적으로 한다.
 # 실재하는 팩터 id 두 개를 등록부에서 뽑는다 (검사가 자기 목록을 들고 있으면 낡는다)
 pool_ids <- tryCatch({
   suppressMessages(source(file.path(ROOT, "02_Infrastructure/ops/rf_factor_arms.R"), local = TRUE))
@@ -114,4 +115,5 @@ if (grepl("b1_design", code_of("06_Registry/reinforce_auto_config.json"), fixed 
 
 cat(sprintf("\n합계: 통과 %d · 실패 %d\n", PASS, FAIL))
 cat(sprintf('{"test":"rf_b1_design","pass":%d,"fail":%d,"total":%d}\n', PASS, FAIL, PASS + FAIL))
+unlink(c(DES, paste0(DES, ".bak")), force = TRUE)   # 명시적 정리(구 on.exit 대체)
 quit(status = if (FAIL > 0L) 1L else 0L)

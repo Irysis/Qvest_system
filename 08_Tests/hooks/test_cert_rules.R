@@ -79,8 +79,9 @@ check <- function(name, expect, actual) {
 
 TEST_DIR <- tempfile(pattern = "cert_test_")
 dir.create(TEST_DIR, recursive = TRUE)
-on.exit(unlink(TEST_DIR, recursive = TRUE))
-
+# ★최상위 on.exit 금지 — Rscript <file> 로는 조용한 no-op(정리가 아예 안 돌아 픽스처가
+#   남는다)이고, source() 로 부르면 프레임이 닫히며 **즉시 발화해 픽스처를 미리 지운다**.
+#   호출 방식에 따라 정반대로 틀린다. 정리는 끝에서 명시적으로 한다.
 # ─── Positive fixture: alpha_discovery eligible ───
 alpha_pos <- list(
   task_id = "WT-D20260601_001",
@@ -188,4 +189,5 @@ cat(toJSON(list(
   total = PASS + FAIL
 ), auto_unbox = TRUE), "\n")
 
+unlink(TEST_DIR, recursive = TRUE)   # 명시적 정리(구 on.exit 대체)
 quit(save = "no", status = FAIL)
