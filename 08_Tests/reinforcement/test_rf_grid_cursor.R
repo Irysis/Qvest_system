@@ -105,6 +105,32 @@ src <- paste(readLines(file.path(ROOT, "02_Infrastructure/ops/reinforce_auto_par
 if (grepl("halt_append_stuck", src, fixed = TRUE)) ok("F 등록 반복 거부에 출구가 있다(결정론적 실패 정지)") else
   ng("F 등록 반복 거부 상한")
 
+cat("\n=== G. 블록 경계 — 개수가 아니라 격자에서 재도출하는가 ===\n")
+# 실사고 2026-09-04 12:10: 커서를 코드 기반으로 고쳤는데 **알림 층에는 개수 판정이 남아 있었다**.
+#   조건이 `u2 %% 5L == 0L` 이라, B1 설계가 14칸이 되자 5칸·10칸(블록 한가운데)에 쏘고
+#   14칸(진짜 경계)에는 안 쐈다 — 그 블록의 텔레그램과 L-code 가 통째로 증발했다.
+#   같은 병이 층을 옮겨 살아남는다: 한 곳을 고칠 때 같은 판정 축을 쓰는 다른 곳을 함께 봐야 한다.
+.par <- paste(sub("#.*$", "", readLines(file.path(ROOT, "02_Infrastructure/ops/reinforce_auto_parallel.R"),
+                                        warn = FALSE)), collapse = "\n")
+if (grepl("u2 %% 5L == 0L", .par, fixed = TRUE))
+  ng("G1 알림이 아직 개수(%%5)로 경계를 판정한다", "가변 길이 블록에서 어긋난다") else
+  ok("G1 개수 기반 경계 판정 잔존 없음")
+if (grepl(".blk_left", .par, fixed = TRUE) && grepl(".rf_free_cells(cells, E2$attempts", .par, fixed = TRUE))
+  ok("G2 블록 잔여 칸을 격자에서 재도출") else ng("G2 격자 재도출 부재")
+
+# 로직 재도출 — 가변 길이 블록(B1 14칸)에서 중간과 끝을 구분하는가
+.mk14 <- c(lapply(seq_len(14L), function(i) list(code = sprintf("B1_%d", i), block = "B1")),
+           lapply(6:10, function(i) list(code = sprintf("B2_%d", i), block = "B2")))
+.att <- function(k) lapply(seq_len(k), function(i) list(n = i, cell_code = sprintf("B1_%d", i)))
+.left <- function(k) { fr <- .rf_free_cells(.mk14, .att(k))
+                       sum(vapply(.mk14[fr], function(c) identical(c$block, "B1"), logical(1))) }
+if (.left(10L) > 0L) ok(sprintf("G3 10칸 소비 = 블록 한가운데(잔여 %d) — 안 쏜다", .left(10L))) else
+  ng("G3 10칸을 경계로 오판")
+if (.left(14L) == 0L) ok("G4 14칸 소비 = 블록 경계(잔여 0) — 여기서 쏜다") else
+  ng("G4 14칸을 경계로 못 본다", sprintf("잔여 %d", .left(14L)))
+if (.left(5L) > 0L) ok("G5 5칸도 한가운데 — 구판이 여기서 쐈다") else ng("G5 5칸 오판")
+
+
 cat(sprintf("\n합계: 통과 %d · 실패 %d\n", PASS, FAIL))
 cat(sprintf('{"test":"rf_grid_cursor","pass":%d,"fail":%d,"total":%d}\n', PASS, FAIL, PASS + FAIL))
 quit(status = if (FAIL > 0L) 1L else 0L)

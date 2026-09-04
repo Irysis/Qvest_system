@@ -354,10 +354,18 @@ tryCatch(rf_open_entry(1L, BID, base_grade = G, paper_key = PKEY,
 if (IS_COMBO) tryCatch({
   .rq <- tryCatch(fromJSON(REQ, simplifyVector = FALSE), error = function(e) list())
   .cb <- .rq$combo %||% list()
-  .at <- suppressWarnings(as.numeric(.cb$a_t %||% NA))
-  .bt <- suppressWarnings(as.numeric(.cb$b_t %||% NA))
   .pt <- suppressWarnings(as.numeric(es$portfolio_alpha_t_nw_lag3 %||% NA))
-  .best_parent <- suppressWarnings(max(c(.at, .bt), na.rm = TRUE))
+  # ★N편 재편(2026-09-04)으로 앵커 키가 a_t/b_t -> best_parent_t/parent_t 로 바뀌었다.
+  #   구 키를 읽어 max(NA, na.rm=TRUE) = -Inf 가 나왔고 판정이 unmeasured 로 죽었다(11:39 실측).
+  #   구 키 폴백을 남긴다 — 이전 요청 형식으로 열린 건이 아직 흐를 수 있다.
+  .parents <- suppressWarnings(as.numeric(unlist(.cb$parent_t %||% list())))
+  .best_parent <- suppressWarnings(as.numeric(.cb$best_parent_t %||% NA))
+  if (!is.finite(.best_parent) && length(.parents) && any(is.finite(.parents)))
+    .best_parent <- max(.parents[is.finite(.parents)])
+  if (!is.finite(.best_parent)) {
+    .legacy <- suppressWarnings(as.numeric(c(.cb$a_t %||% NA, .cb$b_t %||% NA)))
+    if (any(is.finite(.legacy))) .best_parent <- max(.legacy[is.finite(.legacy)])
+  }
   .verdict <- if (!is.finite(.pt) || !is.finite(.best_parent)) "unmeasured"
               else if (.pt > .best_parent) "additive" else "dilution"
   .o <- fromJSON(file.path(ROOT, "06_Registry/reinforce_ledger_l1.json"), simplifyVector = FALSE)

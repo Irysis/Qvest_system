@@ -107,7 +107,12 @@ led <- rf_load(1L, ROOT)
 act <- Filter(function(e) identical(e$status, "active"), led$entries)
 if (!length(act)) { jlog("halt_no_active_entry"); return(0L) }
 E <- act[[1]]; BID <- E$base_id
-used <- as.integer(E$attempts_used %||% 0L); MAXA <- as.integer(led$max_attempts %||% 25L)
+used <- as.integer(E$attempts_used %||% 0L)
+# ★entry 별 상한 (2026-09-04 도훈 지시). B1 이 설계에 따라 가변 길이가 되면서,
+#   전역 25 를 그대로 두면 B1 이 쓴 만큼 뒤 블록이 잘린다 — 실측: B1 14칸 -> B4(결합)가
+#   아예 못 돌았다. 각 블록 승자를 합치는 칸을 못 보면 그 entry 는 A 로 갈 길이 없다.
+#   "칸 수 제한을 두지 마라" 를 B1 에만 적용하고 총예산에 안 적용한 비대칭을 닫는다.
+MAXA <- as.integer(E$max_attempts %||% led$max_attempts %||% 25L)
 cells <- do.call(c, lapply(PROG$blocks, function(b) lapply(b$cells, function(c) { c$block <- b$id; c$axis <- b$axis; c })))
 
 # ── ★B1 설계 소비 (도훈 지시 2026-09-04 "블록 진입 시 1회만 LLM 설계") ────────
@@ -124,6 +129,18 @@ if (length(.b1_design)) {
   cells <- c(lapply(.b1_design, function(c) { c$block <- "B1"; c$axis <- "multifactor"; c }), .rest)
   jlog("b1_design_applied", base_id = BID, cells = length(.b1_design),
        note = "설계 칸으로 B1 교체 — 칸 수는 설계가 정한다")
+  # ★총예산을 설계에 맞춰 늘린다 (도훈 2026-09-04). B1 이 기본 5칸보다 더 쓰면 그만큼
+  #   entry 상한을 올려, 뒤 블록(B5·B2·B3·B4)이 잘리지 않게 한다. 한 번만 쓰고 이후 불변.
+  .want <- as.integer(led$max_attempts %||% 25L) + max(0L, length(.b1_design) - 5L)
+  if (is.null(E$max_attempts) || as.integer(E$max_attempts) != .want) {
+    ok_b <- tryCatch({ rf_record_entry_budget(1L, BID, .want,
+              sprintf("B1 설계 %d칸(기본 5) — 뒤 블록이 잘리지 않도록 총예산 %d -> %d",
+                      length(.b1_design), as.integer(led$max_attempts %||% 25L), .want),
+              root = ROOT); TRUE },
+            error = function(e) { jlog("entry_budget_failed", err = conditionMessage(e)); FALSE })
+    if (isTRUE(ok_b)) { MAXA <- .want
+      jlog("entry_budget_raised", base_id = BID, max_attempts = .want, b1_cells = length(.b1_design)) }
+  } else MAXA <- as.integer(E$max_attempts)
 }
 
 # ★미측정(등록만 된) 칸 — **소진 판정보다 먼저** 본다. 등록됐는데 실행이 실패한 칸을
@@ -746,7 +763,22 @@ u2 <- as.integer(E2$attempts_used %||% 0L)
 # ★조건에 `u2 > used` 를 걸면 **재개 경로에서 영영 안 나간다**(재개는 used 가 이미 최종값).
 #   2026-08-30 실사고: 17~20 을 재개로 측정하고도 20/20 텔레그램이 0건이었다.
 #   판정 축을 "칸 수가 늘었나" 가 아니라 "이번 배치가 실제로 기록했나(nb>0)" 로 바꾼다.
-if (nb > 0L && (u2 %% 5L == 0L || u2 >= MAXA)) {
+# ★블록 경계는 **격자에서 재도출**한다 (2026-09-04). 구판은 `u2 %% 5L == 0L` — 개수였다.
+#   B1 이 설계에 따라 가변 길이가 된 순간 그 판정이 틀린다: 실측으로 B1 설계 14칸에서
+#   5칸·10칸(블록 **한가운데**)에 쏘고 14칸(진짜 경계)에는 **안 쐈다** — 그 블록의 텔레그램과
+#   L-code 가 통째로 증발했다. 격자 커서를 코드 기반으로 바꾼 것과 같은 병이 알림 층에 남아 있었다.
+#   판정 축: "이 블록에 아직 빈 칸이 남았는가". 남지 않았으면 그게 경계다.
+.blk_now <- if (!is.null(first)) as.character(first$block %||% "") else {
+  .cc <- vapply(E2$attempts %||% list(),
+                function(a) as.character(a$cell_code %||% (a$essence$cell_code %||% "")), character(1))
+  .cc <- .cc[nzchar(.cc)]
+  if (length(.cc)) sub("_.*$", "", .cc[length(.cc)]) else ""
+}
+.blk_left <- if (nzchar(.blk_now)) {
+  .fr2 <- .rf_free_cells(cells, E2$attempts %||% list())
+  sum(vapply(cells[.fr2], function(c) identical(as.character(c$block %||% ""), .blk_now), logical(1)))
+} else 0L
+if (nb > 0L && (.blk_left == 0L || u2 >= MAXA)) {
   # ★"보냈다" 를 예외 부재로 지어내지 않는다 — rf_auto_notify 가 실제 발송 결과를 돌려준다.
   #   구판은 429(레이트 리밋)로 메시지가 유실돼도 sent=true 를 기록했다(2026-08-30 실증 9건).
   ok <- tryCatch({ source(file.path(ROOT, "02_Infrastructure/ops/rf_auto_notify.R"))
@@ -761,6 +793,16 @@ if (nb > 0L && (u2 %% 5L == 0L || u2 >= MAXA)) {
                    rf_emit_block_lcode(BID, u2, root = ROOT) },
                  error = function(e) { jlog("lcode_failed", err = conditionMessage(e)); NULL })
   jlog("lcode_block", n = u2, l_code = as.character(lc %||% "NA"))
+  # ★기전 서술 (도훈 지시 2026-09-04) — 규칙이 적은 수치 척추 위에 "왜" 한 문단.
+  #   재료에 **이 전략의 앞선 블록 L-code** 를 함께 넣는다(누적 교훈 참조).
+  #   병합은 R 이 하고 검증(셀 인용·금칙어·길이)을 통과해야 얄힌다. 실패해도 L-code 는 그대로 남는다.
+  if (!is.null(lc) && nzchar(as.character(lc))) {
+    .mblk <- if (!is.na(.blk_now) && nzchar(.blk_now)) .blk_now else NA_character_
+    if (!is.na(.mblk)) tryCatch(system2("bash",
+        c(shQuote(file.path(ROOT, "02_Infrastructure/ops/rf_lcode_mechanism.sh")),
+          shQuote(BID), shQuote(.mblk)), wait = TRUE, stdout = TRUE, stderr = TRUE),
+      error = function(e) jlog("lcode_mechanism_failed", err = conditionMessage(e)))
+  }
 }
 jlog("batch_done", block = (if (!is.null(first)) first$block else "resume"), recorded = nb, used = u2)
 0L

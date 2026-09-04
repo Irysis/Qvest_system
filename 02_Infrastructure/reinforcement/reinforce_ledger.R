@@ -185,7 +185,11 @@ rf_append_attempt <- function(layer, base_id, idea, keyword_axis, root_papers,
   if (!identical(e$status, "active"))
     stop(sprintf("[reinforce_ledger] entry status=%s — active 아님", e$status))
   # ★25회 상한 (1계층만 — 원장 max_attempts)
-  maxa <- obj$max_attempts
+# ★entry 별 상한 (2026-09-04 도훈 지시). B1 이 설계에 따라 가변 길이가 되면서,
+#   전역 25 를 그대로 두면 B1 이 쓴 만큼 뒤 블록이 잘린다 — 실측: B1 14칸 -> B4(결합)가
+#   아예 못 돌았다. 각 블록 승자를 합치는 칸을 못 보면 그 entry 는 A 로 갈 길이 없다.
+#   "칸 수 제한을 두지 마라" 를 B1 에만 적용하고 총예산에 안 적용한 비대칭을 닫는다.
+  maxa <- e$max_attempts %||% obj$max_attempts
   if (!is.null(maxa) && e$attempts_used >= maxa) {
     e$status <- "exhausted"
     obj$entries[[i]] <- e
@@ -237,6 +241,24 @@ rf_append_attempt <- function(layer, base_id, idea, keyword_axis, root_papers,
 #' ★한 번만 쓴다. 이미 있으면 거부한다 — 결과를 보고 순서를 고쳐 쓰면 사후 선택이다.
 #' @param order  블록 id 벡터(격자 blocks 의 부분순열이 아니라 **전체 순열**이어야 한다)
 #' @param reason 결정 근거 — 진단 수치를 그대로 담는다(사후에 규칙을 재구성할 수 있게)
+#' entry 별 시도 상한 기록 (2026-09-04) — B1 설계가 기본 칸수보다 많이 쓰면 총예산을 늘린다.
+#'   ★전역 max_attempts 는 건드리지 않는다. 다른 논문의 예산까지 같이 움직이면 그건
+#'   "이 설계가 진 교환" 이 아니라 규율 완화가 된다.
+rf_record_entry_budget <- function(layer, base_id, max_attempts, reason, root = .rf_root()) {
+  stopifnot(is.numeric(max_attempts) || !is.na(suppressWarnings(as.integer(max_attempts))))
+  if (!nzchar(as.character(reason %||% ""))) stop("[reinforce_ledger] entry 상한 변경은 사유 필수")
+  obj <- rf_load(layer, root)
+  i <- .rf_find(obj, base_id)
+  if (is.na(i)) stop(sprintf("[reinforce_ledger] entry 부재: %s", base_id))
+  obj$entries[[i]]$max_attempts <- as.integer(max_attempts)
+  obj$entries[[i]]$max_attempts_reason <- as.character(reason)
+  obj$entries[[i]]$max_attempts_at <- format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z")
+  .rf_write(obj, layer, root)
+  cat(sprintf("[reinforce_ledger] entry 상한 %s -> %d (%s)\n", base_id,
+              as.integer(max_attempts), substr(reason, 1, 60)))
+  invisible(as.integer(max_attempts))
+}
+
 rf_record_block_order <- function(layer, base_id, order, reason, adaptive = FALSE,
                                   root = .rf_root()) {
   order <- as.character(order); order <- order[nzchar(order)]

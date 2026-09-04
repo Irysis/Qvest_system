@@ -23,8 +23,16 @@ rf_emit_block_lcode <- function(base_id, n_used, root = Sys.getenv("QM_ROOT",
   S <- tryCatch(rf_notify_table(base_id), error = function(e) NULL)
   if (is.null(S) || !nrow(S$tab)) return(invisible(NULL))
   tab <- S$tab
-  lo  <- max(1L, as.integer(n_used) - 4L)
-  blk <- tab[n >= lo & n <= as.integer(n_used)]
+  # ★블록은 **셀 코드**로 자른다 (2026-09-04). 구판은 `n_used-4 .. n_used` — 블록이 5칸이라는
+  #   가정이었다. B1 이 설계에 따라 가변 길이(실측 14칸)가 된 순간 뒤 5칸만 담기고,
+  #   그 L-code 가 스스로 "5칸 실측" 이라 적었으며 같은 블록의 B1_4 를 "직전 최고" 로 인용했다.
+  #   잘못된 교훈은 next_probe 로 다음 결정에 주입되고 주간 증류에도 그대로 들어간다 —
+  #   같은 개수 가정이 커서·알림·검사·발행기 **네 층**에 있었고 여기가 마지막이다.
+  .n_end <- as.integer(n_used)
+  .row   <- tab[n == .n_end]
+  .bid0  <- if (nrow(.row)) sub("_.*$", "", .row$code[1]) else NA_character_
+  blk <- if (!is.na(.bid0)) tab[grepl(paste0("^", .bid0, "_"), code) & n <= .n_end] else
+         tab[n >= max(1L, .n_end - 4L) & n <= .n_end]
   if (!nrow(blk)) return(invisible(NULL))
 
   # ★진행 중 블록에서는 발행하지 않는다 — 측정 없는 L-code 는 기록이 아니라 잡음이다.
@@ -44,7 +52,9 @@ rf_emit_block_lcode <- function(base_id, n_used, root = Sys.getenv("QM_ROOT",
                         k <- match(bid, ids); if (!is.na(k) && k < length(ids)) nxt <- ids[k + 1L] }
 
   # 기준선 = 이 블록 이전까지의 최고 (없으면 기저 등급)
-  pre <- tab[n < lo]
+  # ★기준선은 **이 블록 밖**의 최고다. 구판은 n < lo 로 잘라 같은 블록의 앞 칸이
+  #   "직전 최고" 로 인용됐다(B1_4 사례). 블록 코드로 배제한다.
+  pre <- tab[!grepl(paste0("^", bid, "_"), code) & n <= .n_end]
   base_line <- if (nrow(pre)) pre[which.max(replace(port_t, !is.finite(port_t), -Inf))] else NULL
 
   lesson <- sprintf("[%s %s] %d칸 실측 — 최고 %s 다중검정t %.3f · 칼마 %.3f · 등급 A%d/B%d/C%d/F%d.",

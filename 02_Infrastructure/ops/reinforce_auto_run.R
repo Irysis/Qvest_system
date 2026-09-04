@@ -103,7 +103,11 @@ act <- Filter(function(e) identical(e$status, "active"), led$entries)
 if (!length(act)) { jlog("halt_no_active_entry"); return(invisible(0L)) }
 E <- act[[1]]; BID <- E$base_id
 used <- as.integer(E$attempts_used %||% 0L)
-MAXA <- as.integer(led$max_attempts %||% 25L)
+# ★entry 별 상한 (2026-09-04 도훈 지시). B1 이 설계에 따라 가변 길이가 되면서,
+#   전역 25 를 그대로 두면 B1 이 쓴 만큼 뒤 블록이 잘린다 — 실측: B1 14칸 -> B4(결합)가
+#   아예 못 돌았다. 각 블록 승자를 합치는 칸을 못 보면 그 entry 는 A 로 갈 길이 없다.
+#   "칸 수 제한을 두지 마라" 를 B1 에만 적용하고 총예산에 안 적용한 비대칭을 닫는다.
+MAXA <- as.integer(E$max_attempts %||% led$max_attempts %||% 25L)
 
 if (used >= MAXA) {
   jlog("exhaust_reached", base_id = BID, used = used)

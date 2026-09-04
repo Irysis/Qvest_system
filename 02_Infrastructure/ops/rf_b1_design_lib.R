@@ -26,7 +26,7 @@ ROOT <- { .r <- Sys.getenv("QVEST_RF_ROOT", "")
 setwd(ROOT)
 LOG <- file.path(ROOT, ".cache/reinforce_auto_log.jsonl")
 dir.create(dirname(LOG), recursive = TRUE, showWarnings = FALSE)
-jlog <- function(event, ...) {
+.b1_log <- function(event, ...) {
   rec <- c(list(ts = format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z"), event = event, src = "b1_design"), list(...))
   cat(toJSON(rec, auto_unbox = TRUE, null = "null"), "\n", sep = "", file = LOG, append = TRUE)
   cat(sprintf("[b1_design] %s\n", event))
@@ -81,7 +81,7 @@ b1_materials <- function(base_id, out_p) {
            paste(strwrap(paste(ids, collapse = ", "), width = 110), collapse = "\n"))
   }
   writeLines(L, out_p, useBytes = TRUE)
-  jlog("materials_written", base_id = base_id, n_factors = nrow(pool), out = out_p)
+  .b1_log("materials_written", base_id = base_id, n_factors = nrow(pool), out = out_p)
   invisible(out_p)
 }
 
@@ -89,7 +89,7 @@ b1_materials <- function(base_id, out_p) {
 #   진술("좋은 조합이다")은 근거가 아니다. 여기서 보는 것은 **실재성과 형식**뿐이고,
 #   좋은지 나쁜지는 계약(측정)이 판정한다.
 b1_verify <- function(base_id, design_p) {
-  bad <- function(why) { jlog("design_rejected", base_id = base_id, why = why)
+  bad <- function(why) { .b1_log("design_rejected", base_id = base_id, why = why)
                          unlink(design_p, force = TRUE); quit(status = 1) }
   if (!file.exists(design_p) || file.size(design_p) == 0L) bad("설계 파일 부재")
   D <- tryCatch(fromJSON(design_p, simplifyVector = FALSE), error = function(e) NULL)
@@ -112,7 +112,7 @@ b1_verify <- function(base_id, design_p) {
     seen <- c(seen, k)
     if (!nzchar(as.character(ce$label %||% ""))) bad(sprintf("cell %d: label 없음", i))
   }
-  jlog("design_verified", base_id = base_id, cells = length(cells),
+  .b1_log("design_verified", base_id = base_id, cells = length(cells),
        max_depth = max(vapply(cells, function(c) length(unlist(c$factors %||% list())), integer(1))))
   invisible(TRUE)
 }

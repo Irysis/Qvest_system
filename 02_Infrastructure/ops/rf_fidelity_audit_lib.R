@@ -24,7 +24,7 @@ ROOT <- { .r <- Sys.getenv("QVEST_RF_ROOT", "")
           if (nzchar(.r)) .r else Sys.getenv("QM_ROOT", "C:/Users/99922/OneDrive/Quant_Module_Moltbot") }
 LOG <- file.path(ROOT, ".cache/reinforce_auto_log.jsonl")
 dir.create(dirname(LOG), recursive = TRUE, showWarnings = FALSE)
-jlog <- function(event, ...) {
+.fa_log <- function(event, ...) {
   rec <- c(list(ts = format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z"), event = event, src = "fidelity_audit"), list(...))
   cat(toJSON(rec, auto_unbox = TRUE, null = "null"), "\n", sep = "", file = LOG, append = TRUE)
   cat(sprintf("[fid_audit] %s\n", event))
@@ -34,7 +34,7 @@ RF_AUDIT_VERDICTS <- c("faithful", "adapted", "misdeclared", "unverifiable")
 
 #' 감사 산출물 스키마 검증 — 형식만 본다. 옳고 그름은 여기서 판정하지 않는다.
 rf_audit_verify <- function(audit_p) {
-  bad <- function(why) { jlog("audit_rejected", why = why, path = audit_p)
+  bad <- function(why) { .fa_log("audit_rejected", why = why, path = audit_p)
                          unlink(audit_p, force = TRUE); return(FALSE) }
   if (!file.exists(audit_p) || file.size(audit_p) == 0L) return(bad("감사 파일 부재"))
   A <- tryCatch(fromJSON(audit_p, simplifyVector = FALSE), error = function(e) NULL)
@@ -57,7 +57,7 @@ rf_audit_verify <- function(audit_p) {
       return(bad("misdeclared 인데 지적이 전부 25자 미만 — 비발견 채움 항목으로 보인다"))
   }
   # ★unverifiable 은 faithful 이 아니다 — 원문을 못 읽었으면 "확인 못 함" 으로 남긴다.
-  jlog("audit_verified", verdict = v,
+  .fa_log("audit_verified", verdict = v,
        undeclared = length(A$undeclared_changes %||% list()),
        mismatch = length(A$signal_mismatch %||% list()))
   TRUE

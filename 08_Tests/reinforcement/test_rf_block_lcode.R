@@ -21,10 +21,40 @@ if (!length(act)) {
   E <- act[[1]]
   # ★진행 중 블록을 집으면 "발행 실패" 로 오탐한다 — 등급이 찍힌 칸만 세서 마지막
   #   **완료된** 블록 경계를 고른다(2026-08-30: B3 가 도는 중에 이 검사가 붉게 떴다).
-  done <- sum(vapply(E$attempts, function(a)
-    isTRUE((a$grade %||% "") %in% c("A", "B", "C", "F")), logical(1)))
-  nb <- (as.integer(done) %/% 5L) * 5L
-  if (nb < 5L) {
+  # ★완료 블록은 **기록된 셀 코드**에서 고른다 (2026-09-04). 구판은 `done %/% 5 * 5` —
+  #   블록이 5칸이라는 가정이었다. B1 이 설계에 따라 가변 길이(실측 14칸)가 된 순간 틀린다:
+  #   done=14 -> nb=10 -> 격자 2번째 블록(B2) 의 L-code 를 찾아 "적립 파일 부재" 오탐을 냈다.
+  #   같은 개수 가정이 커서 · 알림 · 이 검사까지 **세 층**에 있었다. 판정 축은 하나여야 한다:
+  #   "그 블록의 칸이 전부 기록됐는가".
+  suppressMessages(source(file.path(ROOT, "02_Infrastructure/reinforcement/rf_spec_sig.R"), local = TRUE))
+  .prog0 <- tryCatch(jsonlite::fromJSON(file.path(ROOT, "06_Registry/reinforce_program.json"), simplifyVector = FALSE),
+                     error = function(e) NULL)
+  .cells <- if (is.null(.prog0)) list() else
+    do.call(c, lapply(.prog0$blocks, function(b) lapply(b$cells, function(c) { c$block <- b$id; c })))
+  # B1 설계가 있으면 러너가 쓰는 격자와 같아야 한다 — 아니면 이 검사가 다른 격자를 본다
+  .dz <- tryCatch({ suppressMessages(source(file.path(ROOT, "02_Infrastructure/ops/rf_b1_design_lib.R"), local = TRUE))
+                    rf_b1_design_cells(E$base_id, root = ROOT) }, error = function(e) NULL)
+  if (length(.dz))
+    .cells <- c(lapply(.dz, function(c) { c$block <- "B1"; c }),
+                Filter(function(c) !identical(as.character(c$block %||% ""), "B1"), .cells))
+  .graded <- Filter(function(a) isTRUE((a$grade %||% "") %in% c("A", "B", "C", "F")), E$attempts %||% list())
+  .rec <- vapply(.graded, function(a) as.character(a$cell_code %||% (a$essence$cell_code %||% "")), character(1))
+  .rec <- .rec[nzchar(.rec)]
+  .done_blocks <- Filter(function(bid) {
+    cc <- vapply(Filter(function(c) identical(as.character(c$block %||% ""), bid), .cells),
+                 function(c) as.character(c$code), character(1))
+    length(cc) > 0L && all(cc %in% .rec)
+  }, unique(vapply(.cells, function(c) as.character(c$block %||% ""), character(1))))
+  nb <- 0L; .bid <- ""
+  if (length(.done_blocks)) {
+    .bid <- .done_blocks[[length(.done_blocks)]]
+    .ns <- vapply(.graded, function(a) {
+      cc <- as.character(a$cell_code %||% (a$essence$cell_code %||% ""))
+      if (nzchar(cc) && identical(sub("_.*$", "", cc), .bid)) as.integer(a$n %||% 0L) else NA_integer_
+    }, integer(1))
+    nb <- suppressWarnings(max(.ns, na.rm = TRUE))
+  }
+  if (!length(.done_blocks) || !is.finite(nb) || nb < 1L) {
     writeLines("  SKIP  완료된 블록 없음")
   } else {
     r <- rf_emit_block_lcode(E$base_id, nb, root = ROOT, dry_run = TRUE)
@@ -33,11 +63,7 @@ if (!length(act)) {
     # ★블록 id 는 **격자 순서**에서 읽는다(발행기 rf_emit_block_lcode 와 같은 규칙). 구판은 sprintf("B%d", nb/5) 로
     #   위치=번호를 가정했는데 2026-09-01 재편으로 순서가 B1→B2→B3→B5→B4 가 되자 4번째 완료 블록(B5) 을
     #   B4 로 찾아 "적립 파일 부재" 오탐을 냈다(2026-09-02 실측). SKILL: 위치 의존 판정은 격자를 손보는 순간 어긋난다.
-    .prog <- tryCatch(jsonlite::fromJSON(file.path(ROOT, "06_Registry/reinforce_program.json"), simplifyVector = FALSE),
-                      error = function(e) NULL)
-    .bids <- if (!is.null(.prog)) vapply(.prog$blocks, function(b) as.character(b$id %||% ""), character(1)) else character(0)
-    .bi <- nb %/% 5L
-    .bid <- if (.bi >= 1L && .bi <= length(.bids) && nzchar(.bids[[.bi]])) .bids[[.bi]] else sprintf("B%d", .bi)
+    # .bid 는 위에서 **기록된 코드**로 이미 정해졌다 — 위치(nb %/% 5)로 되짚지 않는다.
     f <- file.path(ROOT, "stage_artifacts/l_code/reinforcement",
                    sprintf("l_code_%s_%s.json", E$base_id, .bid))
     if (file.exists(f)) {

@@ -138,6 +138,22 @@ o <- run()
 if (grepl("halt_combination_disabled", o, fixed = TRUE)) ok("D1 게이트 발화") else ng("D1 게이트", substr(o, 1, 160))
 if (is.null(req())) ok("D2 정지 중에는 요청도 안 쓴다") else ng("D2 정지 중 요청 발행됨")
 
+cat("\n=== D2. 희석 판정 앵커 — 스키마가 갈리면 조용히 unmeasured 가 된다 ===\n")
+# 실사고 2026-09-04 11:39: N편 재편으로 앵커 키가 a_t/b_t -> best_parent_t/parent_t 로 바뀌었는데
+# 판정 코드가 구 키를 읽어 max(NA, na.rm=TRUE) = -Inf, verdict=unmeasured 로 죽었다.
+# 앵커는 요청에 멀쩡히 있었다(parent_t [1.228, 1.11]) — 없어서가 아니라 **안 읽어서** 죽었다.
+# 그리고 unmeasured 는 실패처럼 안 보인다 — 그게 이 결함이 조용한 이유다.
+vfc <- paste(sub("#.*$", "", readLines(file.path(ROOT, "02_Infrastructure/ops/rf_replication_verify.R"), warn = FALSE)), collapse = "\n")
+lac <- paste(sub("#.*$", "", readLines(file.path(ROOT, "02_Infrastructure/ops/rf_combination_launch.R"), warn = FALSE)), collapse = "\n")
+if (grepl("best_parent_t", vfc, fixed = TRUE)) ok("D2a 판정이 현행 앵커 키를 읽는다") else ng("D2a 현행 키 미소비")
+if (grepl("parent_t", vfc, fixed = TRUE)) ok("D2b 배열 앵커 폴백") else ng("D2b 배열 폴백 부재")
+if (grepl("cb$a_t", vfc, fixed = TRUE)) ok("D2c 구 키 폴백 유지(이전 형식으로 열린 건)") else
+  ng("D2c 구 키 폴백 제거됨", "진행 중 요청이 있으면 그것만 unmeasured 가 된다")
+# ★발행부와 소비부의 키가 실제로 같은가 — 갈리면 위 셋이 다 통과해도 판정은 죽는다
+if (grepl("best_parent_t", lac, fixed = TRUE)) ok("D2d 발행부·소비부 앵커 키 일치") else
+  ng("D2d 발행/소비 키 불일치")
+
+
 cat("\n=== E. 배선 — 세 파일이 결합 판을 실제로 다루는가 ===\n")
 # ★주석은 걷어내고 본다 — 이 수리의 사연을 적은 주석이 검사를 발화시키면 안 된다.
 code_of <- function(f) paste(sub("#.*$", "", readLines(file.path(ROOT, f), warn = FALSE)), collapse = "\n")
