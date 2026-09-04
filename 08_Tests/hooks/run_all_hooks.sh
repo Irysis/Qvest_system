@@ -1259,6 +1259,8 @@ SUITES=(
   "08_Tests/reinforcement/test_rf_axiom_inject.R"
   # 2026-09-04 — 재시도가 실패 사유를 안고 가는가 (사유별 프레이밍).
   "08_Tests/reinforcement/test_rf_retry_feedback.R"
+  "08_Tests/reinforcement/test_rf_fidelity_fanout.R"
+  "08_Tests/reinforcement/test_rf_queue_mirror.R"
 )
 
 

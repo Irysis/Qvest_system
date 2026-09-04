@@ -22,7 +22,10 @@ LIB <- file.path(ROOT, "02_Infrastructure/ops/rf_fidelity_audit_lib.R")
 suppressMessages(source(LIB, local = TRUE))
 TMP <- file.path(tempdir(), sprintf("fid_audit_%d", Sys.getpid()))
 dir.create(TMP, recursive = TRUE, showWarnings = FALSE)
-on.exit(unlink(TMP, recursive = TRUE, force = TRUE), add = TRUE)
+# ★최상위 on.exit 을 쓰지 않는다 — Rscript <file> 로는 조용한 no-op 이고,
+#   source() 로 부르면 withVisible 프레임이 닫히며 **즉시 발화해 TMP 를 지운다**.
+#   두 호출 방식에서 정반대로 동작하는 정리 코드였다(2026-09-04 실측: 배터리는 초록,
+#   source 호출은 "cannot open the connection"). R 이 세션 종료 시 tempdir 을 청소한다.
 AP <- file.path(TMP, "fidelity_audit.json")
 wr <- function(x) write(toJSON(x, auto_unbox = TRUE, null = "null"), AP)
 

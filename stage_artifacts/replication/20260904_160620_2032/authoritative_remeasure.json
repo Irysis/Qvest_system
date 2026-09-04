@@ -1,0 +1,66 @@
+{
+  "status": "OK",
+  "strategy_id": "RP_20260904_160620_2032",
+  "strategy_name": "RP_AUTO_14038125",
+  "remeasured_at": "2026-09-04T16:09:16+0900",
+  "run_id": "20260904_160620_2032",
+  "bt_result_path": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/replication/20260904_160620_2032/bt_result.rds",
+  "metric_type": "backtested",
+  "essence_grade": "F",
+  "grade_basis": "replication_chain",
+  "essence": {
+    "net_sharpe": 0.44,
+    "net_ir": -0.138,
+    "portfolio_alpha_t_nw_lag3": -0.605,
+    "oos_retention": null,
+    "dsr": null,
+    "mdd": 0.631,
+    "calmar": 0.11,
+    "cagr": 0.07,
+    "drawdown_profile": {
+      "severe45_count": 41,
+      "severe55_count": 13,
+      "severe45_total_periods": 1877,
+      "severe45_max_periods": 505,
+      "severe45_period_frac": 0.3525,
+      "catastrophic_mdd_threshold": 0.7,
+      "severe45_hard_count": 15,
+      "severe55_hard_count": 6,
+      "severe45_period_hard_frac": 0.25,
+      "severe45_max_hard_periods": 252,
+      "tail_review": false,
+      "structural_hard_fail": true
+    }
+  },
+  "hard_fail": false,
+  "structural_drawdown": true,
+  "selection_type": "chain",
+  "dsr_gate_applied": false,
+  "reasons": "non-positive alpha (PORT_t<=0 또는 net_IR<=0); structural_drawdown(판정 아님 — 라우팅 근거): MDD 63.1%, 45%+ episodes=41/15, 55%+ episodes=13/6, 수중 표본비 0.35/0.25",
+  "replication": {
+    "source_paper": {
+      "url": "https://arxiv.org/abs/1403.8125",
+      "title": "Maximum drawdown, recovery, and momentum",
+      "paper_key": "1403.8125"
+    },
+    "commission_paper_bps": 15,
+    "paper_basis": {
+      "cagr": 0.070063,
+      "sharpe": 0.308915,
+      "mdd": 0.631079,
+      "n_months": 260
+    },
+    "grade_basis_note": "등급은 15bps 순비용 판 (essence 문턱 15bps 보정 — gross 등급은 인플레)",
+    "fidelity": "universe 치환(K200∪KQ150)만 — 그 외 논문 그대로 (v10 완전 충실구현)",
+    "benchmark_note": "long_short_vs_long_bm",
+    "n_max": 185,
+    "has_short": true
+  },
+  "contract": {
+    "integrity_status": "OK",
+    "cagr": 0.07,
+    "sharpe": 0.44,
+    "mdd": 0.631,
+    "calmar": 0.11
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "axis": "timing",
+  "verdict": "adapted",
+  "undeclared_changes": [],
+  "signal_mismatch": [],
+  "counterexample": "Paper rebalances daily (Section 5.1: 'rebalancing the portfolio daily'); engine emits signal only on month-end trading dates (.SIGDATES = month-end, engine.R:185) and execution follows the harness get_execution_date() → first trading day of next month. A mid-month position change that the paper would make is absent in the implementation. This difference is declared in FIDELITY.changed(2) and is attributed to a harness constraint (replication_harness.R:84-89), not an undisclosed choice.",
+  "evidence": "Section 5.1 ('rebalancing the portfolio daily'); Table 7 / Appendix A.2 (τ=5 for SLP); Section 5.2 ('trained with every iteration of 5 additional years'); Section 4.3.2 ('earlier 90% of data for training, most recent 10% reserved for validation'). No skip period mentioned anywhere in the paper.",
+  "confidence": "high",
+  "checked": "rebalancing frequency (daily vs monthly), τ=5 temporal history, 5-year expanding window block size, 90/10 train/val split, absence of skip period — all against paper Sections 5.1, 5.2, 4.3.2, Table 7 and engine.R constants (.TAU, .BLOCK_Y, .VAL_FRAC, .SIGDATES construction)",
+  "note": "All numeric timing parameters match faithfully (τ=5, block=5yr, val=10%). The sole timing departure — daily→monthly rebalancing — is disclosed in FIDELITY.changed(2) with the correct mechanistic explanation (harness execution-date constraint). Verdict is adapted, not misdeclared."
+}
