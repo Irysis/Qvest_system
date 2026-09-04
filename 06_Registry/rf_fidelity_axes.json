@@ -8,8 +8,8 @@
       "key": "signal",
       "required": true,
       "tier": "판독형",
-      "model": "claude-fable-5-1",
-      "effort": "xhigh",
+      "model": "opus",
+      "effort": "max",
       "title": "신호 정의 · 수식 · 부호 · 룩백 창 · 표준화",
       "focus": "논문이 정의한 신호를 **식 수준에서** 재구성하고 engine.R 이 계산하는 값과 대조하라. ★부호가 최우선이다 — 반전 전략의 부호를 뒤집으면 강한 음수 t 로 나타나고 그게 F 판정의 지문이 된다. 룩백 창의 길이와 **종점**(t-1 인가 t 인가), 표준화 방식(cross-sectional rank / z / winsorize 범위)까지 본다.",
       "counterexample": "이 신호가 논문의 신호와 **다른 값을 내는 구체적 상황**을 하나 구성하라(예: 특정 월·특정 종목에서 부호가 갈리는 경우). 구성하지 못하면 그 사실을 적어라."
@@ -38,8 +38,8 @@
       "key": "portfolio",
       "required": true,
       "tier": "판독형",
-      "model": "claude-fable-5-1",
-      "effort": "xhigh",
+      "model": "opus",
+      "effort": "max",
       "title": "롱온리/롱숏 · 종목수 · 비중 방법",
       "focus": "논문의 포트폴리오 구성(분위 몇 개로 자르는지, 롱숏인지 롱온리인지, EW 인지 VW 인지, 종목수)을 코드와 대조하라. ★고정 축(long-only · ≤25종)과 충돌하면 그건 **선언되어야 할 변경**이다 — 선언 없이 조용히 바뀌었으면 그게 발견이다. 두 층이 각자 상위 N 을 자르면 실현 종목수가 곱해져 줄어드는 형태도 본다.",
       "counterexample": "구현이 실제로 보유하는 종목수·레그 구성이 논문의 것과 갈리는 지점을 산출물(holdings)에서 확인하라."
@@ -58,8 +58,8 @@
       "key": "undeclared",
       "required": true,
       "tier": "판독형",
-      "model": "claude-fable-5-1",
-      "effort": "xhigh",
+      "model": "opus",
+      "effort": "max",
       "title": "FIDELITY.changed 에 없는 변경 (전수)",
       "focus": "FIDELITY.json 의 changed 목록을 읽고, **거기 없는 변경**을 코드에서 찾아라. 이 축은 다른 축과 반대 방향으로 움직인다 — 다른 축은 논문에서 출발해 코드를 보고, 이 축은 **코드에서 출발해** 논문에 없는 것을 찾는다. ★자기신고가 **하지도 않은 변경을 신고**하는 경우도 있다(2608.23944 실측) — 선언과 코드가 어긋나는 방향은 양쪽 다다.",
       "counterexample": "코드가 하는 일 중 논문에도 changed 에도 근거가 없는 것을 열거하라."

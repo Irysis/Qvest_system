@@ -65,7 +65,7 @@
   "axiom_max_active_per_mode": 6,
   "axiom_max_active_total": 20,
   "llm": {
-    "model": "claude-fable-5-1",
+    "model": "opus",
     "effort": "max",
     "env_override": [
       "QVEST_RP_MODEL",
@@ -75,25 +75,25 @@
     "consumed_by": "02_Infrastructure/ops/rf_llm_env.sh::rf_llm_resolve — 네 레인(replication·overlay_propose·b1_design·fidelity_audit)이 여기서 읽는다. ★2026-09-04 이전에는 이 블록을 **읽는 코드가 0건**이었고 각 레인이 자기 기본값(:-opus/:-max)을 들고 있었다 — 정책을 적어 둔 문서를 아무도 소비하지 않는 상태였다.",
     "lanes": {
       "replication": {
-        "model": "claude-fable-5-1",
+        "model": "opus",
         "effort": "max",
-        "note": "★실패가 사이클 하나를 태운다(재구현 10/28). 다만 재구현 지적 20건 중 9건이 **엔지니어링 가드 미신고**(.COV/.NMIN/.SD_FLOOR/set.seed) 라 노력을 올려도 안 고쳐진다 — 신고 체크리스트가 먼저다."
+        "note": "★실패가 사이클 하나를 태운다(재구현 10/28). 다만 지적 20건 중 9건이 가드 미신고라 노력수준으로는 안 고쳐진다 — 신고 체크리스트가 먼저다."
       },
       "fidelity_audit": {
-        "model": "claude-fable-5-1",
+        "model": "opus",
         "effort": "xhigh",
-        "note": "★팬아웃 축별 모델은 06_Registry/rf_fidelity_axes.json 이 정본이다. 이 값은 단일 감사자 폴백 경로용."
+        "note": "★팬아웃 축별 모델은 06_Registry/rf_fidelity_axes.json 이 정본. 이 값은 단일 감사자 폴백용."
       },
       "b1_design": {
-        "model": "claude-fable-5-1",
+        "model": "opus",
         "effort": "high"
       },
       "lcode_mechanism": {
-        "model": "claude-fable-5-1",
+        "model": "opus",
         "effort": "high"
       },
       "overlay_propose": {
-        "model": "claude-fable-5-1",
+        "model": "opus",
         "effort": "high"
       }
     },
@@ -123,7 +123,14 @@
         ]
       },
       "note": "되돌릴 때 이 값으로. 2026-09-04 이전 설정."
-    }
+    },
+    "rollback_note": "★2026-09-04 21:25 롤백 — claude-fable-5-1 은 이 환경에서 못 쓴다. API Error 400: 'Claude Code 2.1.170 does not support this model; version 2.1.251 or newer is required.' ★내 사전 검증이 부실했다: `claude -p --model claude-fable-5-1` 이 rc=0 을 내서 통과로 읽었는데, 종료 코드는 0 이고 API 는 400 이었다. 출력이 훅 컨텍스트에 섞여 에러가 안 보였고 그걸 넘어갔다. 실피해: lcode_mechanism 이 12초 만에 파일 없이 종료 -> mechanism_rejected(기전 파일 부재) -> B2 블록 메시지에 '배운 것' 절이 통째로 빠졌다. ★모델 검증은 rc 가 아니라 **산출물**로 해야 한다 — 그게 이 저장소가 반복해서 적은 규율이다. 노력수준 배분(레인별 max/xhigh/high)은 유지한다 — 그건 모델과 무관한 결정이었다.",
+    "blocked_model": {
+      "id": "claude-fable-5-1",
+      "reason": "CLI 2.1.170 < 2.1.251",
+      "retry_when": "claude update 후 재시도 가능"
+    },
+    "effort_rationale": "레인별 배분은 **모델과 무관한 결정**이다(도훈 승인안 2026-09-04). 한 번 실패의 대가가 레인마다 다르다: replication 은 실패가 에이전트 12분+측정+감사 6축을 다시 태우므로 max · b1_design/lcode_mechanism/overlay_propose 는 단발이고 폴백·probe 가 뒤에 있어 high · fidelity_audit 은 팬아웃으로 축이 좁아져 xhigh. 모델만 fable-5-1 -> opus 로 되돌렸다(CLI 미지원)."
   },
   "base_min_port_t": 0,
   "factor_analysis": {
