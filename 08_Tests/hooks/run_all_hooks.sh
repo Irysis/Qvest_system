@@ -1263,6 +1263,7 @@ SUITES=(
   "08_Tests/reinforcement/test_rf_queue_mirror.R"
   "08_Tests/contracts/test_rolling_defensive.R"
   "08_Tests/reinforcement/test_rf_block_design_schema.R"
+  "08_Tests/reinforcement/test_rf_mechanism_tone.R"
 )
 
 
