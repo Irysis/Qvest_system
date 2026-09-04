@@ -1,0 +1,11 @@
+{
+  "axis": "universe",
+  "verdict": "adapted",
+  "undeclared_changes": [],
+  "signal_mismatch": [],
+  "counterexample": "형성일 f 에 K200 회원이지만 adv20(t-1) < 2e8 KRW 인 종목 X 가 있다고 하자. 논문 규칙(§3.1: 'Historical price information and component-roster are downloaded from Korea Exchange' — 유동성·가격·회전 관련 사전 스크린 서술 전무)대로라면 X 는 그 달 횡단면(N)에 포함되어 CM-score 로 순위가 매겨지고 최하위/최상위 데실 배정 대상이 된다. engine.R:192-195 는 `ADV20_L1 >= .LIQ`(2e8) 를 자격 조건에 넣어 X 를 elig 에서 배제한다 — 논문판이면 X 를 포함해 N 이 다르고(따라서 ceiling(rank·10/N) 경계가 이동), X 가 극단 CM-score 를 가졌다면 롱/숏 다리 구성 자체가 달라진다. 이는 코드-레벨에서 구성 가능한 실제 반례이며(구성 못 한 것이 아님), 다만 FIDELITY.changed ②에 '유동성 하한 adv20(t-1)≥2e8 KRW 신설 — 논문은 유동성 필터 없음'으로 정직하게 선언돼 있어 misdeclared 는 아니다.",
+  "evidence": "§3.1 (arxiv.org/html/1403.8125v1): 'The KOSPI 200 is a stock benchmark index... Historical price information and component-roster are downloaded from Korea Exchange. The period from January 2003 to December 2012 is considered.' / §3.2: 'Based on given selection rules during 6 months (weeks) of estimation period, assets in market universes are sorted in ascending order... In the cases of the S&P 500 and KOSPI 200 universes, numbers of groups are 10.' — 이 두 절 전체에 가격 하한·유동성·거래대금·금융주 제외·최소 종목수 스크린에 대한 언급이 전무함(WebFetch 전문 대조, 2회 교차질의 동일 결론).",
+  "confidence": "high",
+  "checked": "논문 §3.1 데이터 절(KOSPI200/S&P500 구성·기간·출처) + §3.2 방법론(정렬·10분위) 전문 대조 vs engine.R:190-195(멤버십+유동성 자격 게이트) 및 FIDELITY.json::changed — 가격하한/거래소상장/유동성/금융주제외 5항목 각각 확인",
+  "note": "①유니버스 K200∪KQ150 교체는 지시상 허용 축이라 판정 대상 밖. ②adv20≥2e8 유동성 하한은 논문에 없는 필터이지만 FIDELITY.changed 에 명시 선언돼 adapted. 논문 자체엔 유니버스 관련 필터가 사실상 전무(구성종목=멤버십이 필터의 전부)해서, 코드에 있는데 논문에 없는 필터는 유동성 1건뿐이고 그 반대(논문에 있는데 코드에 없는 필터)는 대조 결과 0건."
+}
