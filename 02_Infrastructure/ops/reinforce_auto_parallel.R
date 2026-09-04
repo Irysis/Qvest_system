@@ -615,7 +615,20 @@ if (!length(jobs)) for (CELL in batch) {
   .avoid_hit <- tryCatch({
     lcd <- file.path(ROOT, "stage_artifacts/l_code/reinforcement")
     fs2 <- list.files(lcd, pattern = "[.]json$", full.names = TRUE)
-    fs2 <- fs2[startsWith(basename(fs2), paste0("l_code_", BID, "_B"))]
+    ## ★부모 사슬을 함께 본다 — 승격이 **구성은 물려받는데 교훈은 안 물려받았다**.
+    ##   실사고 2026-09-04 21:50: B3_11 회피가 부모(rescued_rulefast) L-code 에 있는데
+    ##   promo1 것만 보느라 안 걸렸고, 그 칸이 두 번 돌아 terminal 이 됐다.
+    ##   (같은 계통: "승계 목록에서 빠진 축은 없는 축이 된다" — 오버레이가 세대마다 리셋됐던 건)
+    .chain <- BID
+    { .e0 <- tryCatch(rf_load(1L, ROOT), error = function(e) NULL); .cur <- BID; .n <- 0L
+      while (!is.null(.e0) && .n < 5L) {
+        .k <- .rf_find(.e0, .cur); if (is.na(.k)) break
+        .pp <- as.character((.e0$entries[[.k]]$parent %||% list())$base_id %||% "")
+        if (!nzchar(.pp) || .pp %in% .chain) break
+        .chain <- c(.chain, .pp); .cur <- .pp; .n <- .n + 1L
+      } }
+    fs2 <- fs2[vapply(basename(fs2), function(b)
+                 any(startsWith(b, paste0("l_code_", .chain, "_B"))), logical(1))]
     hit <- NULL
     if (length(fs2)) {
       fs2 <- fs2[order(file.info(fs2)$mtime)]

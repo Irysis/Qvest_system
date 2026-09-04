@@ -157,6 +157,11 @@ lsrc <- paste(readLines("02_Infrastructure/ops/rf_b1_design_lib.R", warn = FALSE
 ")
 if (grepl("avoid", lsrc, fixed = TRUE))
   ok("G4 설계 프롬프트 주입은 보존(회귀)") else ng("G4 구 경로 손상")
+## ★승격이 구성은 물려받는데 교훈은 안 물려받았다 — 회피가 부모 L-code 에 있어서
+##   promo1 에서 안 걸렸고 그 칸이 두 번 돌아 terminal 이 됐다(2026-09-04 21:50).
+if (grepl(".chain <- BID", psrc2, fixed = TRUE) && grepl("parent", psrc2, fixed = TRUE))
+  ok("G5 회피 조회가 **부모 사슬**을 탄다 ★실사고") else
+  ng("G5 현재 entry 만 본다", "승격 세대마다 교훈이 리셋된다")
 
 cat(sprintf("\n합계: 통과 %d · 실패 %d\n", PASS, FAIL))
 cat(sprintf('{"test":"rf_block_design_schema","pass":%d,"fail":%d,"total":%d}\n', PASS, FAIL, PASS + FAIL))
