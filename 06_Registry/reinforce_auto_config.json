@@ -1,6 +1,6 @@
 {
   "schema": "reinforce_auto_config_v1",
-  "enabled": false,
+  "enabled": true,
   "combination": {
     "enabled": true,
     "note": "★도훈 지시 2026-09-04 — 결합은 rank-Z 평균 blend 가 아니라 **LLM 이 두 논문을 읽고 설계한 전략(기저)**에서 출발한다. 그 기저를 충실구현 1회로 측정해 base_grade 를 얻고, base_min_port_t 가드를 통과한 뒤에야 강화 25칸을 열어야 한다. 그 레인이 서기 전까지 구판 blend 착수를 정지한다 — 정지 중에는 호출자가 다음 논문 충실구현으로 정상 이월한다.",
@@ -190,5 +190,14 @@
   },
   "paused_reason": "도훈 지시 2026-09-04 22:2x — 아키텍처 검증",
   "paused_at": "2026-09-04T22:22:17+09:00",
-  "mode_note": "★퇴역 키 (2026-09-05 도훈 지시 '분기 제거 — parallel 로 단일화'). reinforce_auto_tick.sh 는 더 이상 이 값을 읽지 않고 항상 reinforce_auto_parallel.R 을 쓴다. 구판은 mode!=parallel 이면 reinforce_auto_run.R 로 갈랐는데, 그 러너에는 B1 LLM 설계·블록 전이 설계·entry 예산 상향(25+max(0,B1칸-5))이 없어 폴백 5칸·예산 25 고정 레인이 됐다. 순차 실행은 parallel_cells=1."
+  "mode_note": "★퇴역 키 (2026-09-05 도훈 지시 '분기 제거 — parallel 로 단일화'). reinforce_auto_tick.sh 는 더 이상 이 값을 읽지 않고 항상 reinforce_auto_parallel.R 을 쓴다. 구판은 mode!=parallel 이면 reinforce_auto_run.R 로 갈랐는데, 그 러너에는 B1 LLM 설계·블록 전이 설계·entry 예산 상향(25+max(0,B1칸-5))이 없어 폴백 5칸·예산 25 고정 레인이 됐다. 순차 실행은 parallel_cells=1.",
+  "resumed_at": "2026-09-05T08:56:29+0900",
+  "resumed_reason": "★도훈 지시 2026-09-05 /qvest 세션 — 무인 루프 전면 재개(config enabled + 예약작업 Qvest_ReinforceAutoLoop). 정지 사유(2026-09-04 22:22 '아키텍처 검증')는 09-05 러너 단일화(분기 제거·퇴역 가드)로 해소됐다. 재개 전 재도출 2종: ①kill switch 실물 — enabled=false 상태의 reinforce_auto_parallel.R 이 halt_disabled·rc=0·claim 미점유로 정지 ②claim mutex 양방향(격리 사본 QVEST_RF_CLAIM) — 살아있는 Windows 소유자 pid 는 인수 거부(reason=claimed), 사망 pid 는 즉시 회수. 계기 자체도 함께 쟀다(rf_claim_pid_alive: self=TRUE·999901=FALSE) — 첫 시도는 bash sleep 의 MSYS PID 를 썼다가 tasklist 에 안 잡혀 가짜 MUTEX_DEFECT 가 났다. 픽스처가 실제 PID 공간을 흉내내야 한다. ★남은 미검증: test_reinforce_auto.sh 실패 3건은 전부 퇴역된 reinforce_auto_run.R 을 겨냥한 낡은 검사이고, 그중 daily_cap=0 미발화는 현행 러너에서 아직 안 쟀다 — 폭주 backstop 이라 kill switch·mutex 보다 하위이지만 검사 이설 대상이다.",
+  "resume_state": {
+    "active_entry": "RP_20260904_163647_18444_rescued_rulefast_promo2",
+    "attempts_used": 5,
+    "next_block": "B5",
+    "next_block_source": "rf_block_order_decide 재도출 — CAGR 0.207 >= 0.16 · Calmar 0.364 < 0.64 → 위험 축 2번째 (B1 then B5 then B2 then B3 then B4)",
+    "note": "★블록 L-code 의 next_probe 는 'B2(weighting)' 라고 적혀 있다 — rf_block_lcode.R 이 격자 **정적 선언 순서**(ids[k+1])를 읽어서다. 실행은 적응 순서를 따르므로 서술과 집행이 갈린다(별건 수리 대상). 부팅 Last: 줄이 그 서술을 전재한다."
+  }
 }
