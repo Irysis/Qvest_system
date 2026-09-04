@@ -16,6 +16,10 @@ mkdir -p "$(dirname "$LOG")"
   # ★arm 생성 레인 (v10.2) — 기전 지도가 미측정 칸을 지목할 때만 발화한다.
   #   자체 claim·일 상한(1건)·포화 게이트를 갖고 있어 조건이 없으면 즉시 종료한다.
   bash "$ROOT/02_Infrastructure/ops/rf_overlay_propose.sh"
+  # ★B1 설계 레인 (2026-09-04) — 활성 entry 의 B1 이 아직 안 열렸을 때만 1회 발화한다.
+  #   자체 claim·게이트·검증을 갖고 있어 조건이 없으면 즉시 종료한다. 실패하면 러너가
+  #   규칙 선정으로 돌므로 루프가 서지 않는다.
+  bash "$ROOT/02_Infrastructure/ops/rf_b1_design.sh"
   MODE=$("${QVEST_PY:-$ROOT/.venv_qvest_ml/Scripts/python.exe}" -c "
 import io,json,sys
 try: print(json.loads(io.open(r'$ROOT/06_Registry/reinforce_auto_config.json','rb').read().decode('utf-8')).get('mode','sequential'))

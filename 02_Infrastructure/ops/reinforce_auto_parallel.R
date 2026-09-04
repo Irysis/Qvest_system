@@ -110,6 +110,22 @@ E <- act[[1]]; BID <- E$base_id
 used <- as.integer(E$attempts_used %||% 0L); MAXA <- as.integer(led$max_attempts %||% 25L)
 cells <- do.call(c, lapply(PROG$blocks, function(b) lapply(b$cells, function(c) { c$block <- b$id; c$axis <- b$axis; c })))
 
+# ── ★B1 설계 소비 (도훈 지시 2026-09-04 "블록 진입 시 1회만 LLM 설계") ────────
+#   설계가 있으면 격자의 B1 칸을 **통째로** 갈아 끼운다. 칸 수가 5가 아니어도 뒤 블록의
+#   코드(B2_6…)는 밀리지 않는다 — 커서가 위치가 아니라 **기록된 셀 코드**에서 나오기 때문이다
+#   (2026-09-04 커서 수리). 구판 개수 커서였다면 B1 이 6칸인 순간 격자가 통째로 어긋났다.
+#   설계가 없거나 검증에 떨어졌으면 이 블록은 아무것도 하지 않고, B1 은 규칙 선정으로 돈다.
+.b1_design <- tryCatch({
+  suppressMessages(source(file.path(ROOT, "02_Infrastructure/ops/rf_b1_design_lib.R"), local = TRUE))
+  rf_b1_design_cells(BID, root = ROOT)
+}, error = function(e) { jlog("b1_design_load_failed", err = conditionMessage(e)); NULL })
+if (length(.b1_design)) {
+  .rest <- Filter(function(c) !identical(as.character(c$block %||% ""), "B1"), cells)
+  cells <- c(lapply(.b1_design, function(c) { c$block <- "B1"; c$axis <- "multifactor"; c }), .rest)
+  jlog("b1_design_applied", base_id = BID, cells = length(.b1_design),
+       note = "설계 칸으로 B1 교체 — 칸 수는 설계가 정한다")
+}
+
 # ★미측정(등록만 된) 칸 — **소진 판정보다 먼저** 본다. 등록됐는데 실행이 실패한 칸을
 #   exhausted 로 넘기면 그 칸이 영구 소실된다(2026-08-30 실사고: 워커 4개 미기동으로 17~20 이 빈 채 소비).
 # ★단 terminal 로 닫힌 칸은 제외한다. 재개는 *일시적* 실패만 상정한 장치였는데, 구조적 실패
@@ -189,7 +205,8 @@ if (!length(pending) && used < length(cells)) {
 #   썼다 — 331종을 등록해 두고 5종만 쓴 셈이다. 격자의 B1 cells 는 스냅샷일 뿐 정본이 아니다.
 #   ★시드 오프셋 = 원장 누적 entry 수. 이게 없으면 그리디가 결정론이라 전 논문이 같은 사슬을
 #     받아 총 조합이 entry 수와 무관하게 5개로 고정된다(계열 라운드로빈으로 회전).
-if (length(batch) && identical(first$block, "B1")) {
+# ★설계가 있으면 규칙 선정기를 부르지 않는다 — 두 선정이 겹치면 설계가 조용히 덮인다.
+if (length(batch) && identical(first$block, "B1") && !length(.b1_design)) {
   .done_fsets <- unique(unlist(lapply(E$attempts, function(a) {
     sp <- a$essence$spec
     if (is.null(sp) || !nzchar(sp) || !file.exists(sp)) return(NULL)

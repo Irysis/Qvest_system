@@ -1248,6 +1248,8 @@ SUITES=(
   "08_Tests/reinforcement/test_rf_grid_cursor.R"
   # 2026-09-04 — 결합 레인: 설계(LLM) → 측정 1회 → base 게이트 (양방향).
   "08_Tests/reinforcement/test_rf_combination_design.R"
+  # 2026-09-04 — B1 블록 설계(LLM 1회): 등록부 실재성·중복·상한·폴백 (양방향).
+  "08_Tests/reinforcement/test_rf_b1_design.R"
 )
 
 

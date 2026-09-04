@@ -38,6 +38,11 @@
 #           S ∈ {8,16,32} × L ∈ {24,48,96} 전 조합 → 9개  (5 + 9 = 14 ✓ 원문 d=14)
 #       ★HL 정의를 풀면 EWMA 감쇠계수가 정확히 (1−1/j) 다 — 0.5^(1/HL) = 1−1/j.
 #         그래서 α = 1/j 인 단순 EWMA 이고, 자의적 수치가 들어갈 자리가 없다.
+#  (K2b) **winsorize** — 원문 전처리 명시: "we winsorize all data to limit values to be
+#       within 5 times its 252-day exponentially weighted moving standard deviation from
+#       its exponentially weighted moving average". 5 도 252 도 원문값이다.
+#       ★이건 장식이 아니다: 입력이 3220차원(τ·N·d)이라 몇 개만 O(100)이어도 tanh 가
+#         포화하고 (1−X²)≈0 으로 기울기가 죽는다. 빼면 학습이 조용히 멈춘다.
 #  (K3) **목적함수 = 자산별 Sharpe 손실의 등가중 합**. 원문:
 #       ℒ_sharpe^(i)(θ) = −√252·ΣR_i(t) / sqrt(ΣR_i(t)² − (ΣR_i(t))²),
 #       R_i(t) = X_t^(i)·(σ_tgt/σ_t^(i))·r_{t,t+1}^(i),  ℒ = Σ_i λ_i ℒ^(i), λ_i = 1/N.
@@ -122,6 +127,8 @@ stopifnot(all(c("Date", "Ticker", "Close", "Vol", "Ret", "K200", "KQ150")
 .VOL_SPAN <- 60L                         # 60일 EWM 표준편차(사전 변동성)
 .STD_P    <- 63L                         # std(p_{t−63:t})
 .STD_Q    <- 252L                        # std(MACD_norm_{t−252:t})
+.WIN_SPAN <- 252L                        # winsorize 기준 EWM span (원문 명시)
+.WIN_K    <- 5                           # winsorize 폭 = 5 × EWM std (원문 명시)
 .SIG_TGT  <- 0.15                        # σ_tgt = 연 15%
 .NPANEL   <- 46L                         # 논문 주식 패널 크기
 .VAL_FRAC <- 0.10                        # 학습/검증 = 앞 90% / 뒤 10%
@@ -242,6 +249,7 @@ for (j in seq_len(.DFEAT)) .FEAT[[j]] <- matrix(0, nrow = .NT, ncol = .NC)
 .SANN <- matrix(NA_real_, nrow = .NT, ncol = .NC)   # 사전 연율 변동성 σ_ann(t)
 
 .aVOL <- 2 / (.VOL_SPAN + 1)
+.aWIN <- 2 / (.WIN_SPAN + 1)
 
 # 후향 롤링 표준편차 (frollmean 2회 — 전 표본 통계 아님)
 .roll_sd <- function(x, w) {
@@ -284,6 +292,18 @@ for (cj in seq_len(.NC)) {
     q  <- (ms[[si]] - ml[[li]]) / ifelse(is.finite(sp) & sp > 0, sp, NA_real_)
     sq <- .roll_sd(q, .STD_Q)
     .FEAT[[ix]][, cj] <- q / ifelse(is.finite(sq) & sq > 0, sq, NA_real_)
+  }
+
+  # ---- (K2b) 원문 전처리 winsorize: |x − EWM평균| ≤ 5 × EWM표준편차 (span 252)
+  #      EWM 이 t 를 포함한 **후향 재귀**라 창 밖·미래를 보지 않는다(C1·C7 유지).
+  #      ★자르는 대상은 **모델 입력뿐**이다 — 표적 r_{t,t+1} 과 σ_t 는 건드리지 않는다.
+  #        수익 자체를 winsorize 하면 백테스트 수익이 실현치가 아니게 된다.
+  for (j in seq_len(.DFEAT)) {
+    x <- .FEAT[[j]][, cj]
+    x[!is.finite(x) | abs(x) > .BIG] <- 0
+    mx <- .ewma(x, .aWIN, 0)
+    sx <- sqrt(pmax(.ewma((x - mx)^2, .aWIN, 0), 0))
+    .FEAT[[j]][, cj] <- pmin(pmax(x, mx - .WIN_K * sx), mx + .WIN_K * sx)
   }
 
   # ---- 워밍업 마스킹: 상장 후 (63+252)거래일 미만 구간은 피처 미발행
