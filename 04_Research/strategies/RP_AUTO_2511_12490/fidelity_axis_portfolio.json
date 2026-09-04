@@ -1,0 +1,20 @@
+{
+  "axis": "portfolio",
+  "verdict": "adapted",
+
+  "undeclared_changes": [],
+
+  "signal_mismatch": [],
+
+  "counterexample": "구성했다 — 다만 그 괴리는 FIDELITY.changed ⑨ 에 이미 수치까지 선언돼 있다. 04_holdings.csv 의 집행일 2005-04-01: 롱 1종(A004830, w=+0.17643098219914) · 숏 5종(A003550 −0.131953870449421, A033530 −0.019805424693038, A025530 −0.0158440788184022, A009540 −0.00530303922524638, A010520 −0.0035245690130317). 숏 합 = −0.176430983 으로 롱과 정확히 상쇄(net=0 ✓) · gross = 0.352861964(= s*). 최대 포지션 = 0.176431/0.352862 = **50.00% of gross** 이고 롱 사이드 전체가 **단 1종**이다. 논문 Table 5 는 'Average Positions 187 long, 189 short' · 'Largest Position 2–3% of gross'. 즉 이 달의 롱 레그 집중도는 논문 상한의 약 17~25배, 종목수는 1/187 이다. 전 구간 실측도 같은 방향이다: 홀딩 1,186행 / 201 리밸일 = 리밸당 5.90종(롱 621행=3.09종 · 숏 565행=2.81종), 10_audit.csv 'holdings_cap' 은 리밸일별 distinct ticker 2~24종, 01_strategy_spec.json n_max=24. 논문 376종 대비 30~60배 축소. 이 값들은 FIDELITY ⑨ 의 선언('월평균 롱 3/숏 3종' · '최대 비중 평균 39.8% of gross' · '리밸일별 2~24종')과 3판 산출물에서도 일치한다 — 선언이 낡지 않았다.",
+
+  "evidence": "arxiv.org/html/2511.12490v1 §2.2 'Portfolio Implementation and Risk Management' 원문: 'Each day we identify all stocks with valid, non-zero EDGE scores, compute standardized z-scores ensuring zero mean and unit variance, then construct market-neutral long-short portfolios by separating stocks into long and short buckets based on z-scores. We normalize within each side to control gross exposure, with long positions summing to 50% and short positions to 50%, ensuring constant gross exposure of 100% and approximately zero net exposure for market neutrality.' · 식(5) 'all portfolio weights multiplied by this factor determined once during training and applied without modification during testing' · Table 5 (Average Positions 187 long/189 short · Largest Position 2–3% of gross · Top Decile Weight 35% of gross · Sector Deviation ±10% typical/±15% max · Active Stock-Days 35% of universe) · §3.2 본문 'The strategy maintains substantial diversification with 150–300 positions typically'. ★두 축 결정적 확인: (i) 논문 전문 어디에도 사이드 **내부** 개별 비중 결정 규칙(EW/z비례/EDGE비례)이 없다 — 별도 질의 2회 모두 '해당 문장 부재' 로 회수. (ii) 분위 절단(데실·퀸타일) 문장이 없다 — 'decile' 은 Table 5 의 사후 보고 지표 'Top Decile Weight' 한 곳뿐이고 선택 규칙이 아니다. (iii) 'Largest Position 2–3%' · 'Sector Deviation ±15% max' 는 구성 제약문이 아니라 §3.2/Table 5 의 사후 관측 특성으로 제시된다(제약형 동사 we cap/limit/constrain 부재) — FIDELITY ⑫ 의 '제약 문장 부재' 주장이 원문과 일치한다.",
+
+  "confidence": "high",
+
+  "checked": "롱숏 여부(paper 시장중립 롱숏 = engine.R:373 Leg · manifest has_short=true) · 버킷 분할 규칙(paper z 부호 = engine.R:257 fifelse(Z>0,...)) · 분위 절단 유무(원문 부재 = 구현 부재) · 사이드별 그로스 50/50(engine.R:127 .SIDE_G=0.5, engine.R:253-257 GP/GN 정규화 → 롱 합 +0.5·s*, 숏 합 −0.5·s*, net 0 · 홀딩 산술로 재도출 확인) · 사이드 내부 배분(paper 미명시 → engine |z| 비례, FIDELITY ⑩ 선언) · 식(5) 노출 스칼라의 그로스 전달(engine.R:372 Weight=SCALE*W0 → replication_harness.R:57 gross=sum|w| → :105 Rg=GL·Lr−GS·Sr) · 실현 종목수·레그 구성(04_holdings.csv 1,186행/201 리밸일, 롱 621/숏 565) · 최대 비중 of gross(2005-04-01 50.00% 등 3개월 재계산) · ★2층 top-N 절단 여부(run_paper_replication.R:283-292 engine_direct 는 무절단이고 경고만, :224-235 .apply_universe 는 엔진이 이미 같은 d 멤버십을 건 뒤라 무효과, replication_harness.R:45 는 Weight!=0 만 — **곱해지는 상위 N 절단 없음**) · 고정 축 충돌(롱숏 = 충실구현 축상 허용 · 실현 n_max 24 ≤ 25 로 훅 미발화, FIDELITY ⑨ 가 이를 정합 근거로 삼지 말라고 명시)",
+
+  "_배열 규약": "undeclared_changes·signal_mismatch 는 **발견만** 담는다. 없으면 빈 배열 [] 로 두고 '불일치 없음' 같은 비발견을 항목으로 넣지 마라 - 근거 게이트가 배열 길이로 선다.",
+
+  "note": "이 축의 형태 괴리(376종→5.9종 · 2–3%→50%)는 크지만 전부 FIDELITY ⑨⑩⑫ 에 수치와 함께 선언돼 있고 3판 산출물로 재검증했다 — 그래서 misdeclared 가 아니라 adapted 다. ★축 밖 한 줄: replication_harness.R:58-68 은 보유월 내내 finite Ret 이 한 행도 없는 종목을 레그에서 떨어뜨린 뒤 wnorm 을 생존 종목으로 재정규화한다(GL/GS 는 원래 gross 유지). 레그가 1종인 달이 실재하므로(2005-04-01) 그 1종이 통째로 빠지면 GL=0 이 되어 그 달 책이 편측(net≠0)으로 변한다 — 논문이 명시 제약으로 건 'approximately zero net exposure' 를 깨는 경로이고 FIDELITY ⑪ 의 전달 차이 4건에 없다. 다만 실제 발화 여부를 이 세션에서 측정하지 못해(RAWDATA 조인 불가) 발견으로 올리지 않는다 — 미측정으로 남긴다. ★또 하나 축 밖 사실: 논문 Table 5 자체가 내부 모순이다(Active Stock-Days 35% × S&P500 ≈ 175종 vs Average Positions 376종, §3.2 는 '150–300'). 종목수 대조 표적이 논문 안에서 175~376 으로 흔들리므로 이 축의 비교 배수는 30~60배 구간으로 읽어야 한다."
+}
