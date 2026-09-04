@@ -1,0 +1,97 @@
+{
+  "verdict": "misdeclared",
+  "undeclared_changes": [
+    "[signal] 원문 §3.2 신호 구성에는 수익률 winsorize·절단·clipping·이상치 처리가 전혀 없다(전문 대조 결과 NONE FOUND). 그러나 engine.R:141-142 는 형성창 일별 로그수익 d 를 ±.DCAP=±log(3)(≈+200%/−67%)로 절단한 뒤 경로·MDD·회복·누적·CM 점수를 산출한다. 이 절단은 신호 산출식(.mdd_stats) 내부 단계인데, FIDELITY.changed 는 변경을 '유니버스만'으로 못박고 FIDELITY.kept 는 '신호…논문 그대로'라 진술한다 — 절단 단계가 선언에서 누락됐다.",
+    "[universe] 커버리지 하한 .COV=0.80 — 형성창 거래일의 80% 이상 종가 데이터를 갖지 못한 종목을 데실 정렬에서 제외(engine.R:128, :202). 논문 Section 3.2는 개별 종목 데이터 커버리지 요건을 일절 명시하지 않는다. FIDELITY.changed에도 없다.",
+    "[universe] 최소 횡단면 .NMIN=30 — 자격 통과 종목 수가 30 미만이면 해당 코호트 전체를 건너뜀(engine.R:130, :196, :203). 논문은 최소 종목 수 요건을 명시하지 않는다(Section 3.2: 'numbers of groups are 10'만 언급). FIDELITY.changed에도 없다.",
+    "[undeclared] 논문은 로그가격 경로에 아무런 이상치 처리를 하지 않는다(원문 데이터 절 — winsorize/truncate/clip 언급 '없음', 2소스 확인). engine.R:122-127 은 .DCAP=log(3) 을 정의하고 engine.R:141-142 는 형성창 내 연속거래일 로그수익 증분 d 를 ±log(3)(≈+200%/−67%)로 절단한 뒤 C·MDD·R_II·R_III 를 계산한다. FIDELITY.changed 에 이 절단이 없을 뿐 아니라 오히려 '신호…논문 그대로'라 선언한다 — 미서술 신호 변경.",
+    "[undeclared] 논문은 종목 편입에 창 커버리지 요건이 없다(원문: 최소 거래일/커버리지 요건 '없음'). engine.R:128-129(.COV=0.80)·engine.R:202 는 6개월 창 거래일의 80% 미만인 종목을 데실 산정에서 제거한다. FIDELITY.changed 의 유동성 항목은 adv20(t-1)≥2e8 뿐 — 커버리지 하한은 미서술 편입 스크린.",
+    "[undeclared] 논문은 최소 횡단면/최소 창길이 요건이 없다. engine.R:130(.NMIN=30)·196·203·210 은 적격 종목 <30 이면 코호트를 생성하지 않고, engine.R:191 은 창 거래일 <40 이면 형성일을 건너뛴다. 둘 다 FIDELITY.changed 에 없음(실제 ~350종 유니버스에서는 대개 비구속이나, 코호트 미형성 시 오버래핑 블렌드의 코호트 수를 조용히 줄인다).",
+    "[undeclared] 논문 KOSPI 200 표본기간은 'January 2003 to December 2012'(원문 직접 인용). engine.R:120(.START=2005-01-01)·230-231(f<.START 출력 배제)에 따라 산출물 02_nav.csv 는 2005-02-01~2026-09-03(5,325 일간 관측·260 리밸)로, 논문 시작을 ~2년 잘라내고 종점을 ~14년 연장한 다른 기간이다. FIDELITY.changed 는 유니버스만 선언하고 기간 변경을 서술하지 않는다. ※.START 는 하네스 '실투형' 축값이며 충실구현 축(논문 그대로)에도 self-report 에도 근거가 없다.",
+    "[undeclared] 오버래핑 정규화가 고정 K=6 이 아니라 가용 코호트 수 nc 로 나눈다(engine.R:234 nc=length(chs)·237 sum(w)/nc). 코호트 결측(편입 게이트 실패)이나 램프업으로 nc<6 이면, 논문 J-T 의 1/K(=1/6) 대신 생존 코호트를 총노출 만액으로 재스케일한다 — 미서술 정규화 선택(논문이 1/K 세부를 명시하지 않아 저강도)."
+  ],
+  "signal_mismatch": [
+    "[signal] 논문 MDD 는 식(1) MDD=max_{τ}(max_{t<τ}(P(t)−P(τ))) / 식(2) MDD=−min_{τ}(min_{t<τ}R(t,τ)) 로 untreated 로그가격 경로 위에 정의된다(절단 없음). engine.R:141-142 는 .mdd_stats 안에서 d[d>.DCAP]<-.DCAP · d[d<-.DCAP]<--.DCAP 로 먼저 절단한 경로(engine.R:143 path<-c(0,cumsum(d)))를 쓴다. 절단이 발화하는 관측(거래정지 갭·수정주가 아티팩트)에서 MDD·R_III·C·CM score(engine.R:207)가 논문 정의와 다른 값을 낸다.",
+    "[undeclared] 논문 MDD/누적/회복은 로그가격 경로 위에서 직접 정의된다(MDD = −min_τ(min_t R(t,τ)), 원문 정의절; C = R_I+R_II+R_III). engine.R:141-142 는 경로 구성 전 증분 diff(log Close) 를 ±log(3) 으로 절단하므로, 절단이 발동하는 종목의 C·MDD·R_III 가 논문 정의값과 달라진다(부호 규약 자체는 정상 — 쟁점은 값의 절단)."
+  ],
+  "evidence": "[signal] 원문 §3.2 방법론: MDD 식(1)/(2)(로그가격/로그수익, 양의 크기), 정렬 규칙 'assets…are sorted in ascending order…except for the maximum drawdown'; §1·표 표기 'monthly momentum and weekly contrarian'(월간=모멘텀·W−L); §4.1.2/Table 3 CM 월평균 1.433%(σ 7.036%)·'The best strategy is the momentum portfolio by the composite rule of cumulative return and maximum drawdown'; 3국면 분해 C=R_I+R_II+R_III=PP−MDD+R. ★이상치/winsorize/truncation/clipping 언급 = 원문 전무(NONE FOUND). 코드: engine.R:113(.W=c(1,2,1)), 122-127(.DCAP=log(3) 절단 상수), 141-142(일별수익 절단), 146-153(MDD/RI/RII/RIII), 207(score=RI+2RII+RIII=C−MDD), 214-216(오름차순·top데실 롱/bottom데실 숏). / [timing] Section 3.2: '6 months (weeks) of estimation period ... After 6 months (weeks) of the holding period, each basket is liquidated ... The portfolio is constructed at the beginning of every month, i.e. it is the overlapping portfolio.' — J=6·K=6·스킵 없음·월간 오버래핑이 명시적으로 선언돼 있고 (J,K) 다중 조합 표는 존재하지 않음(단일 6/6). 코드: .FORM_M=6L(line 114) · .HOLD=6L(line 115) · 스킵 로직 없음 · idx=(k-.HOLD+1L):k 로 최근 K=6 코호트 1/K 평균(J-T, lines 230-237). / [universe] arxiv.org/html/1403.8125v1 Section 3.1.1: 'a stock benchmark index that is the value-weighted and sector-diversified index with 200 stocks in South Korea stock markets' — 유니버스 정의는 인덱스 멤버십만이며 추가 필터 없음. Section 3.2: 'assets in market universes are sorted in ascending order' / 'numbers of groups are 10' — 커버리지 요건·최소 종목 수 언급 없음. / [portfolio] arxiv.org/html/1403.8125v1 §3.2: (1) 분위 — 'In the cases of the S&P 500 and KOSPI 200 universes, numbers of groups are 10' → 10-decile (code .NDEC=10L, engine.R:116). (2) 방향 — 'The winner group is at long (short) position and the loser group is at short (long) position' → 모멘텀 롱숏, 승자 데실 롱·패자 데실 숏 (code setorder(st,score) 오름차순 후 long_tk=최상위/short_tk=최하위, engine.R:214-216). (3) 비중 — 'Each group is constructed as an equal-weighted portfolio' → EW (code w=±1/n_dec, engine.R:219-220). (4) 오버래핑 — 'The portfolio is constructed at the beginning of every month, i.e. it is the overlapping portfolio' + J-T 인용 → 6코호트 1/K 평균 + 종목별 netting (engine.R:229-241). 데실당 종목수는 원문 미명시(유니버스 크기만 200종 제시). / [cost] arxiv.org/html/1403.8125v1 본문 전체. 'transaction cost'는 잠재적 설명 목록 내 참조([19]) 한 건뿐이며 실증 분석에 비용 공제 없음. Table 1·본문 수익률 수치 어디에도 net/after-cost 표기 없음. 논문 자체 표현: gross returns implied throughout. / [undeclared] 원문 arxiv.org/html/1403.8125v1 (2소스 확인): MDD 정의 'MDD = −min_τ(min_t R(t,τ))'(로그수익); 데이터/방법 절 — winsorize/truncate/clip·최소 거래일/커버리지·최소 종목수 언급 전무('No such sentence exists'); KOSPI 200 표본 'The period from January 2003 to December 2012 is considered.'. 코드: engine.R:120(.START)·122-127(.DCAP)·128-129(.COV)·130(.NMIN)·141-142(증분 절단)·191(n_win<40)·202(커버리지)·234,237(nc 정규화). 산출물: 01_strategy_spec.json(freq=daily)·02_nav.csv(2005-02-01~2026-09-03, 5,325 obs).",
+  "confidence": "medium",
+  "note": "축 팬아웃 6개(판독형 opus 3 · 대조형 sonnet 3) — 발견 10건. misdeclared/faithful/misdeclared/faithful/faithful/misdeclared",
+  "mode": "fanout",
+  "axis_verdicts": [
+    {
+      "axis": "signal",
+      "required": true,
+      "model": "opus",
+      "verdict": "misdeclared",
+      "admissible": true,
+      "reason": "",
+      "confidence": "medium",
+      "checked": "MDD·회복·누적 식 재구성(식1/2 대조)·CM(1,2,1)=C−MDD 산술 검증·월간=모멘텀 부호(W−L, top롱/bottom숏, 부호반전 0)·10분위·'ascending except MDD'의 R_II=−MDD 부호처리·표준화(rank/z)無 여부·±log(3) 일별수익 절단",
+      "counterexample": "6개월 형성창 중 일부 거래정지 후 큰 갭으로 재개된 종목. 예: 정지 전 종가 1,000 → 재개 첫 거래일 3,500 (연속 가용 거래일 간 일별 로그수익 ln(3.5)≈+1.253). 논문 식(1)/(2)는 이 +125.3% 로그점프를 경로에 그대로 반영하지만 engine.R:141-142 는 +log(3)≈+1.099 로 절단 → 그 종목의 C·R_III·CM score 가 논문 대비 약 0.154(로그) 낮아지고 peak/trough 구조가 바뀌어 데실 배정(롱 편입 여부)이 갈릴 수 있다. engine.R:202 .COV=0.80 이 창 거래일 20% 결측을 허용하므로 이런 갭 종목이 유니버스에 남는다. 단, 평상시 KRX ±15/30% 가격제한 하 단일 연속거래일 수익은 |로그|≤0.262 « log(3) 라 절단은 드물게만 발화한다 — 그러나 발화 시 MDD 를 직접 바꾸며(엔진 자신도 '단일 오손 프린트가 순위를 지배'라 인정, engine.R:127), 발화 빈도와 무관하게 '유니버스만' 선언은 사실과 어긋난다.",
+      "n_findings": 2
+    },
+    {
+      "axis": "timing",
+      "required": false,
+      "model": "sonnet",
+      "verdict": "faithful",
+      "admissible": true,
+      "reason": "",
+      "confidence": "high",
+      "checked": "형성창 6개월(FORM_M=6 vs 논문 '6 months') · 보유 6개월(HOLD=6 vs '6 months') · 스킵 0(코드 스킵 로직 없음 vs 논문 스킵 언급 없음) · 월간 오버래핑 리밸(me_dates 월말 격자 + 코호트 블렌드 idx vs '오버래핑 포트폴리오, 매월 초') · 단일 (J,K)=(6,6) 조합(다중 조합 표 없음)",
+      "counterexample": "구성 불가. J·K·스킵·리밸 주기 모두 어긋나는 숫자 지점 없음.",
+      "n_findings": 0
+    },
+    {
+      "axis": "universe",
+      "required": false,
+      "model": "sonnet",
+      "verdict": "misdeclared",
+      "admissible": true,
+      "reason": "",
+      "confidence": "high",
+      "checked": "논문 유니버스 정의(Section 3.1.1), 종목 선별 절차(Section 3.2), 데이터 가용성·유동성·최소 횡단면 요건 유무; engine.R의 elig 필터(L194-196), 커버리지 필터(L128,L202), NMIN 게이트(L130,L196,L203,L210); FIDELITY.changed 선언 항목 전체",
+      "counterexample": "형성일 f 에서 K200∪KQ150 멤버 중 adv20(t-1)≥2e8 을 충족하는 종목이 28개인 경우: 논문은 28종목을 10분위로 정렬해 데실당 2~3종목으로 롱숏을 구성하지만, 엔진은 length(elig)=28 < .NMIN=30 조건에서 해당 코호트를 건너뛴다(out[[k]] = NULL). 또한 K200∪KQ150 자격·adv20 조건을 모두 충족하지만 형성창 75 거래일 중 52일(≈69%)만 종가가 있는 종목은, 논문에서는 데실 정렬 대상에 포함되지만 엔진은 ceiling(0.80×75)=60 임계를 통과하지 못해 scoring 대상에서 제외된다.",
+      "n_findings": 2
+    },
+    {
+      "axis": "portfolio",
+      "required": true,
+      "model": "opus",
+      "verdict": "faithful",
+      "admissible": true,
+      "reason": "",
+      "confidence": "high",
+      "checked": "분위 수(10-decile)·레그 구성(승자롱/패자숏 롱숏)·비중(데실내 EW=1/n_dec)·오버래핑 netting·실현 종목수(holdings 81종 45L/36S, n_max=185, has_short=true, 이중절단·top-N 재구성 부재)를 원문 §3.2·engine.R·04_holdings.csv 로 대조",
+      "counterexample": "구성 못 함. 논문과 갈리는 지점을 산출물에서 찾지 못했다. 실현 holdings(04_holdings.csv, 2005-02-01) = 81종(롱 45 / 숏 36) — 롱숏 양 레그가 그대로 살아 있고(has_short=true, n_max=185, construction=engine_direct) 롱온리 top-N 으로 재구성되지 않았다. 종목수가 논문 KOSPI200 ~20/데실보다 많은 것(~35/데실→오버래핑 netting 후 최대 185)은 선언된 유니버스 확장(K200∪KQ150)의 산술적 산물이며, faithful 판정이 명시적으로 제외하는 '허용된 유니버스 교체'에 해당한다. 롱숏/10분위/EW/오버래핑 규칙 자체는 논문과 동일.",
+      "n_findings": 0
+    },
+    {
+      "axis": "cost",
+      "required": false,
+      "model": "sonnet",
+      "verdict": "faithful",
+      "admissible": true,
+      "reason": "",
+      "confidence": "high",
+      "checked": "논문 내 transaction cost 언급 전수·성과표(Table 1, KOSPI200 수익률) gross/net 표기·commission 명시 여부·FIDELITY.json commission_paper 값·engine.R 내 비용 공제 코드 존부",
+      "counterexample": "구성 못 했다. 논문이 비용을 전혀 명시하지 않아 비교 기준 자체가 없다. 논문은 'transaction cost [19]'를 모멘텀 설명 후보 중 하나로 인용(참조 번호만)할 뿐, 실제 분석에서 비용을 공제하지 않는다. 모든 성과 수치(KOSPI200 월평균 1.433% 등)는 gross 기준이다. 구현도 engine 안에서 비용을 공제하지 않으며, FIDELITY.json::commission_paper=null 이 이를 정직하게 선언한다. 15bps 판은 Qvest 측정 규약이 runner 단에서 적용하는 것으로, 논문 값과의 불일치가 아니라 규약상 추가이며 FIDELITY.json::paper_original_form 에 '거래비용 미명시(gross)'로 명기돼 있다.",
+      "n_findings": 0
+    },
+    {
+      "axis": "undeclared",
+      "required": true,
+      "model": "opus",
+      "verdict": "misdeclared",
+      "admissible": true,
+      "reason": "",
+      "confidence": "high",
+      "checked": ".DCAP 로그수익 절단 · .COV 커버리지 하한 · .NMIN/n_win<40 최소요건 · 표본기간(.START=2005 vs 논문 2003~2012) · 오버래핑 nc 정규화 — 전부 FIDELITY.changed(유니버스 K200∪KQ150 + adv20≥2e8)에 없음, 원문 데이터/방법 절과 대조",
+      "counterexample": "DCAP: 형성창 내 ~10거래일 거래정지 후 4배로 재개된 종목 → 재개일 단일 증분 = log(4)≈1.386 > log(3)=1.099 → 1.099 로 절단. 논문 정의는 log(4) 전액을 C·R_III 에 반영해 이 종목을 최상위 데실(롱)에 넣지만, 엔진은 ~0.287 로그포인트 축소로 데실 밖으로 밀어 롱 구성·수익이 달라진다. COV: adv20≥2e8 를 통과해도 창의 24%(≈30/123일) 정지된 종목은 커버리지 75.6%<80% 로 통째 제외되어 데실 경계가 이동 — 논문에는 이 스크린이 없다. 두 상황 모두 실 KRX 데이터(거래정지·수정주가 아티팩트)에서 구성 가능.",
+      "n_findings": 6
+    }
+  ],
+  "flags": [],
+  "merged_at": "2026-09-04T16:17:55+0900"
+}

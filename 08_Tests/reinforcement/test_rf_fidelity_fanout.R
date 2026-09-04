@@ -157,6 +157,34 @@ if (grepl("rf_fidelity_merge.R", fsrc, fixed = TRUE)) ok("F4 병합은 R 이 한
 if (grepl("wait", fsrc, fixed = TRUE)) ok("F5 레인이 병렬로 돌고 전부 기다린다") else
   ng("F5 병렬/대기 없음")
 
+cat("
+=== G. 채움 필터가 실질 발견을 죽이지 않는가 (실사고 회귀) ===
+")
+# 실측 2026-09-04 1403.8125: 필터가 "없다|없음" 을 **포함하면** 버려서
+#   156~331자짜리 실질 발견 4건이 전부 사라졌고, flags 가 "required 축 2/3만
+#   원문 확인" 이라는 **거짓을** 냈다. 발견의 정상 서술이 "논문은 … 명시하지
+#   않는다. changed 에도 없다." 이기 때문이다.
+.long <- paste0("커버리지 하한 .COV=0.80 — 형성창 거래일의 80% 이상 종가 데이터를 갖지 못한 ",
+                "종목을 데실 정렬에서 제외(engine.R:128). 논문 Section 3.2는 개별 종목 데이터 ",
+                "커버리지 요건을 일절 명시하지 않는다. FIDELITY.changed에도 없다.")
+f <- .all_faith(); f[[REQ[1]]] <- list(axis = REQ[1], verdict = "misdeclared",
+  undeclared_changes = list(.long), signal_mismatch = list(),
+  evidence = "Section 3.2", confidence = "high", checked = "유니버스 필터 전수", note = "")
+r <- .run(f)
+if (!is.null(r) && identical(r$verdict, "misdeclared") && length(r$undeclared_changes) == 1L)
+  ok("G1 본문에 '없다' 가 들어간 실질 발견은 살아남는다 ★실사고") else
+  ng("G1 실질 발견이 채움로 오판됐다", as.character(r$verdict %||% "NULL"))
+if (!is.null(r) && length(r$flags %||% list()) == 0L)
+  ok("G2 정상 발견에 허위 flag 가 안 붙는다") else
+  ng("G2 허위 flag", paste(unlist(r$flags), collapse = " | "))
+f <- .all_faith(); f[[REQ[1]]] <- list(axis = REQ[1], verdict = "misdeclared",
+  undeclared_changes = list("미신고 변경 없음", "  불일치 없다.  "), signal_mismatch = list("N/A"),
+  evidence = "3절", confidence = "high", checked = "", note = "")
+r <- .run(f)
+if (!is.null(r) && !identical(r$verdict, "misdeclared"))
+  ok("G3 항목 전체가 비발견이면 여전히 걸러낸다(공백·불릿 포함)") else
+  ng("G3 채움이 통과했다")
+
 cat(sprintf("\n합계: 통과 %d · 실패 %d\n", PASS, FAIL))
 cat(sprintf('{"test":"rf_fidelity_fanout","pass":%d,"fail":%d,"total":%d}\n', PASS, FAIL, PASS + FAIL))
 quit(status = if (FAIL > 0L) 1L else 0L)

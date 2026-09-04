@@ -24,10 +24,17 @@ if (is.null(AXES) || !length(AXES)) { cat("merge: 축 등록부를 못 읽었다
 RANK <- c(faithful = 0L, unverifiable = 1L, adapted = 2L, misdeclared = 3L)
 .chr <- function(x) vapply(x %||% list(), function(y) as.character(y)[1], character(1))
 
-# ★채움 항목 차단 — 실측(2026-09-04): 감사가 배열에 "신호 불일치 없음" 을 넣어 근거 게이트를
-#   통과시켰다. 게이트가 **배열 길이**로 서므로 비발견 문장이 발견으로 세어진다.
-.filler <- function(s) grepl("없음|없다|해당[[:space:]]*없|불일치[[:space:]]*없|^N/?A$|none|no[[:space:]]+(mismatch|finding|change)",
-                             s, ignore.case = TRUE)
+# ★채움 항목 차단 — 항목 **전체**가 비발견 문장일 때만 걸러낸다.
+#   실측(2026-09-04 1403.8125): 첫 판은 "없다|없음" 을 **포함하면** 버렸고, 그 바람에
+#   156~331자짜리 실질 발견 4건이 전부 사라졌다 — "논문 3.2절은 … 명시하지 않는다.
+#   FIDELITY.changed 에도 없다." 는 발견의 **정상 서술**이다. 계기가 재야 것을 안 재고
+#   재기 쉬운 것을 재 형태다. 이제 길이 가드 + 전체 일치로만 걸러낸다.
+.filler <- function(s) {
+  t <- trimws(gsub("[[:space:]]+", " ", s))
+  nchar(t) <= 40L & grepl(paste0("^[-*• ]*(미신고 ?변경|신호 ?불일치|불일치|변경 ?사항|해당 ?사항|해당)? ?",
+                              "(없음|없다|없습니다|N/?A|none|no [a-z]+)[.。]?$"),
+                       t, ignore.case = TRUE)
+}
 
 rows <- list(); mergedU <- character(0); mergedS <- character(0); evid <- character(0)
 for (ax in AXES) {

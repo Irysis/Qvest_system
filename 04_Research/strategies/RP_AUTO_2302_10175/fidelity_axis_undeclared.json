@@ -1,0 +1,18 @@
+{
+  "axis": "undeclared",
+  "verdict": "misdeclared",
+  "undeclared_changes": [
+    "MACD 피처 수 확장: 원문 F.2 는 시간척도를 **쌍(paired)** (S_k,L_k)∈{(8,24),(16,48),(32,96)} 3개로 쓴다(§3 'X_t≔Ỹ_t=(1/3)∑_{k=1}^3 φ(Y(S_k,L_k))', §5.3). engine.R:126 `.DFEAT<-length(.KWIN)+length(.MACD_S)*length(.MACD_L)` + engine.R:290-291 이중루프(`for(si) for(li)`)는 S∈{8,16,32}×L∈{24,48,96} **전조합(cross) 9개**를 만든다 → 코드 d=5+9=14, 원문 d=5+3=8. FIDELITY.kept 는 이를 '전조합 9종 (5+9=14 ✓ 원문 d=14) … 원문 F.1/F.2 그대로'라 신고한다 — 피처 확장이 changed 에 없고(kept 로 위장), '원문 d=14' 는 원문 ∑_{k=1}^3 쌍(3항)과 정면으로 배치된다.",
+    "저변동성 영점화: engine.R:152 `.SD_FLOOR<-0.01` + engine.R:431 `Sm[!is.finite(Sm) | .SANN[,ci]<.SD_FLOOR]<-0` — 사전 연율변동성 <1% 종목의 포지션을 0 으로 강제한다. 원문 식(1) σ_tgt/σ_t^(i) 에는 변동성 하한도 영점화도 없다. 코드 주석은 '수치 가드'라 하나 changed 에 없다(실영향은 <0.063%/일 종목뿐이라 경미).",
+    "미신고 수치·데이터 처리 묶음(전부 저영향, 원문·changed 없음): engine.R:303,318 `.BIG<-1e6` — |피처|>1e6 을 0(중립) 치환(winsorize 후라 거의 무발화); engine.R:110 `set.seed(23021017L)` — 가중치 초기화·미니배치 순서를 단일 시드로 고정(원문은 랜덤서치 100회 Table 8+재시작, 코드는 단일 실현·앙상블 없음); engine.R:268-270 `nafill(locf)`·상장전 상수·`r[!is.finite]<-0` — 결측 종가/수익 처리 규약(원문 미명시)."
+  ],
+  "signal_mismatch": [
+    "MACD 응답함수 φ 누락: 원문 §3 는 φ(y)=y·exp(−y²/4)/0.89 ('a response function as defined in [4]')를 MACD 신호에 적용한다. engine.R:292-294 는 q=(ms−ml)/std_63, Y=q/std_252 의 2단 정규화만 하고 φ 를 쓰지 않는다(engine.R 전체 `exp(`·`0.89`·response 0건, grep 확인). 큰 |y| 에서 φ 는 exp(−y²/4)로 포화·압축하는데 코드 피처는 5σ winsorize 전까지 선형이라 배출값이 다르다. ※φ 가 원문에서 벤치마크 위치신호 X_t≔Ỹ_t 정의에 붙어 있어, F.2 네트워크 입력이 pre-φ Y 인지 φ(Y) 인지의 최종 판별은 signal 축 소관 — 여기서는 코드에 φ 가 아예 부재함을 기록한다.",
+    "MACD 시간척도 페어링 vs 전조합: 원문 ∑_{k=1}^3 (S_k,L_k) 는 인덱스 k 하나로 S·L 을 동시 선택하는 3항 쌍이다. engine.R:290 `for(si in seq_along(.MACD_S)) for(li in seq_along(.MACD_L))` 는 3×3 전조합 9항 — (8,48)·(8,96)·(16,24)·(16,96)·(32,24)·(32,48) 6쌍은 원문이 구성하지 않는 피처다."
+  ],
+  "counterexample": "임의 종목의 (8,24) 정규화 MACD 가 y=3 인 날: 원문 피처 = φ(3)=3·exp(−2.25)/0.89 ≈ 0.355(응답함수가 큰 값을 압축·포화), 구현 피처(engine.R:294) = q/std_252 ≈ 3(비압축, 이후 5σ winsorize). 게다가 구현은 원문에 없는 6개 교차쌍을 추가하므로 입력벡터 u_t 차원이 14·N·τ(코드) vs 8·N·τ(원문)가 된다 — 학습되는 W(m×N, m=N·τ·d)가 더 크고 다르게 스케일된 피처공간 위에서 돈다. 피처 값·개수 양축에서 원문과 구체적으로 다른 값을 낸다.",
+  "evidence": "원문 https://arxiv.org/html/2302.10175v1 §3(MACD: MACD_norm=MACD/std(p_{t-63:t}); 결합신호 X_t≔Ỹ_t=(1/3)∑_{k=1}^3 φ(Y(S_k,L_k)); φ(y)=y·exp(−y²/4)/0.89) · §5.3 F.1(k∈{1,20,63,126,252}=5)·F.2(S_k∈{8,16,32}, L_k∈{24,48,96}, ∑_{k=1}^3 쌍=3 → d=8) · §5.4('we apply to all strategies an additional layer of volatility scaling at the portfolio level to target an annualized volatility of 15%' — 코드 §6 과 일치하므로 이 항목은 faithful, 반례 아님).",
+  "confidence": "high",
+  "checked": "MACD 페어링(∑_{k=1}^3 쌍3) vs 코드 전조합(si×li 9)·응답함수 φ 부재(exp 0건)·피처수 d(원문 8 vs 코드 14, engine.R:126)·포트폴리오레벨 15% vol 스케일링(§5.4 명시=faithful 확인)·.SD_FLOOR 영점화·.BIG 캡·set.seed·NA/LOCF·winsorize 범위(notes 선언)",
+  "note": "핵심 미신고 변경은 MACD 피처 구성(원문 3쌍+φ → 코드 9전조합·φ부재, 결과 d=8→14)이 kept 로 위장되고 '✓ 원문 d=14' 로 오신고된 점이다. 포트폴리오레벨 15% vol 스케일링은 §5.4 에 명시돼 미신고 아님(엔진 line495 '논문에 포트폴리오 레벨 산식이 없으므로'는 부정확하나 동작은 faithful) · winsorize '모델 입력에만'은 원문 'all data'와 다르나 FIDELITY.notes.winsorize_scope 에 정직 선언됨. φ/부호/HL 감쇠 규약의 신호정의 판정은 signal 축 전담."
+}

@@ -1,29 +1,33 @@
 {
- "requested_at": "2026-09-04T15:50:27+0900",
- "source": "reinforce_auto_next_paper",
- "reason": "직전 논문 강화 25회 소진 — 큐 다음 논문 충실구현 대기",
- "prev": {
-  "base_id": "RP_20260904_112446_10544_combo_rulefast",
-  "n": 21,
-  "port_t": 1.472,
-  "grade": "C",
-  "base_grade": "C",
-  "cell_code": "B2_7",
-  "spec": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/.cache/rf_parallel/spec_B2_7__RP_20260904_112446_10544_combo_rulefast.json",
-  "artifacts": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/replication/20260904_122712_37196"
- },
- "paper": {
-  "title": "MDD 기반 크로스섹셔널",
-  "paper_title": "Maximum drawdown, recovery, and momentum",
-  "url": "https://arxiv.org/abs/1403.8125",
-  "paper_key": "1403.8125",
-  "source": "arxiv",
-  "reason": "최대낙폭 기반 종목 선택 — OHLCV 가용",
-  "factor_name": "MDD 기반 크로스섹셔널",
-  "factor_def": "We empirically test predictability on asset price by using stock selection rules based on maximum drawdown and its consecutive recovery. In various equity markets, monthly momentum- and weekly contrar",
-  "kr_feasible": null,
-  "skipped_no_url": 0
- },
- "status": "in_progress",
- "started_at": "2026-09-04T15:50:35+0900"
+  "requested_at": "2026-09-04T15:50:27+0900",
+  "source": "reinforce_auto_next_paper",
+  "reason": "직전 논문 강화 25회 소진 — 큐 다음 논문 충실구현 대기",
+  "prev": {
+    "base_id": "RP_20260904_112446_10544_combo_rulefast",
+    "n": 21,
+    "port_t": 1.472,
+    "grade": "C",
+    "base_grade": "C",
+    "cell_code": "B2_7",
+    "spec": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/.cache/rf_parallel/spec_B2_7__RP_20260904_112446_10544_combo_rulefast.json",
+    "artifacts": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/replication/20260904_122712_37196"
+  },
+  "paper": {
+    "title": "MDD 기반 크로스섹셔널",
+    "paper_title": "Maximum drawdown, recovery, and momentum",
+    "url": "https://arxiv.org/abs/1403.8125",
+    "paper_key": "1403.8125",
+    "source": "arxiv",
+    "reason": "최대낙폭 기반 종목 선택 — OHLCV 가용",
+    "factor_name": "MDD 기반 크로스섹셔널",
+    "factor_def": "We empirically test predictability on asset price by using stock selection rules based on maximum drawdown and its consecutive recovery. In various equity markets, monthly momentum- and weekly contrar",
+    "kr_feasible": null,
+    "skipped_no_url": 0
+  },
+  "status": "pending",
+  "started_at": "2026-09-04T15:50:35+0900",
+  "audit_retries": 1,
+  "audit_feedback": "- 미신고 변경: [undeclared] 오버래핑 정규화가 고정 K=6 이 아니라 가용 코호트 수 nc 로 나눈다(engine.R:234 nc=length(chs)·237 sum(w)/nc). 코호트 결측(편입 게이트 실패)이나 램프업으로 nc<6 이면, 논문 J-T 의 1/K(=1/6) 대신 생존 코호트를 총노출 만액으로 재스케일한다 — 미서술 정규화 선택(논문이 1/K 세부를 명시하지 않아 저강도).\n- 신호 불일치: [undeclared] 논문 MDD/누적/회복은 로그가격 경로 위에서 직접 정의된다(MDD = −min_τ(min_t R(t,τ)), 원문 정의절; C = R_I+R_II+R_III). engine.R:141-142 는 경로 구성 전 증분 diff(log Close) 를 ±log(3) 으로 절단하므로, 절단이 발동하는 종목의 C·MDD·R_III 가 논문 정의값과 달라진다(부호 규약 자체는 정상 — 쟁점은 값의 절단).\n원문 근거: [timing] Section 3.2: '6 months (weeks) of estimation period ... After 6 months (weeks) of the holding period, each basket is liquidated ... The portfolio is constructed at the beginning of every month, i.e. it is the overlapping portfolio.' — J=6·K=6·스킵 없음·월간 오버래핑이 명시적으로 선언돼 있고 (J,K) 다중 조합 표는 존재하지 않음(단일 6/6). 코드: .FORM_M=6L(line 114) · .HOLD=6L(line 115) · 스킵 로직 없음 · idx=(k-.HOLD+1L):k 로 최근 K=6 코호트 1/K 평균(J-T, lines 230-237). / [portfolio] arxiv.org/html/1403.8125v1 §3.2: (1) 분위 — 'In the cases of the S&P 500 and KOSPI 200 universes, numbers of groups are 10' → 10-decile (code .NDEC=10L, engine.R:116). (2) 방향 — 'The winner group is at long (short) position and the loser group is at short (long) position' → 모멘텀 롱숏, 승자 데실 롱·패자 데실 숏 (code setorder(st,score) 오름차순 후 long_tk=최상위/short_tk=최하위, engine.R:214-216). (3) 비중 — 'Each group is constructed as an equal-weighted portfolio' → EW (code w=±1/n_dec, engine.R:219-220). (4) 오버래핑 — 'The portfolio is constructed at the beginning of every month, i.e. it is the overlapping portfolio' + J-T 인용 → 6코호트 1/K 평균 + 종목별 netting (engine.R:229-241). 데실당 종목수는 원문 미명시(유니버스 크기만 200종 제시). / [cost] arxiv.org/html/1403.8125v1 본문 전체. 'transaction cost'는 잠재적 설명 목록 내 참조([19]) 한 건뿐이며 실증 분석에 비용 공제 없음. Table 1·본문 수익률 수치 어디에도 net/after-cost 표기 없음. 논문 자체 표현: gross returns implied throughout. / [undeclared] 원문 arxiv.org/html/1403.8125v1 (2소스 확인): MDD 정의 'MDD = −min_τ(min_t R(t,τ))'(로그수익); 데이터/방법 절 — winsorize/truncate/clip·최소 거래일/커버리지·최소 종목수 언급 전무('No such sentence exists'); KOSPI 200 표본 'The period from January 2003 to December 2012 is considered.'. 코드: engine.R:120(.START)·122-127(.DCAP)·128-129(.COV)·130(.NMIN)·141-142(증분 절단)·191(n_win<40)·202(커버리지)·234,237(nc 정규화). 산출물: 01_strategy_spec.json(freq=daily)·02_nav.csv(2005-02-01~2026-09-03, 5,325 obs).",
+  "audit_verdict": "misdeclared",
+  "audit_at": "2026-09-04T16:16:33+0900"
 }
