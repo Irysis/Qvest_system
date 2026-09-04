@@ -1,0 +1,14 @@
+{
+  "axis": "universe",
+  "verdict": "adapted",
+  "undeclared_changes": [
+    "논문(Appendix B): 'All individual instruments in our datasets have less than 10% missing data' — 최대 10% 결측 허용(≥90% 관측 완전성 암묵 기준). engine.R:215 는 NOBS ≥ 0.95×ndays(≥95%)를 FULL 플래그로 설정해 상위 정렬 우선권 부여 — 5%p 더 엄격한 임계값. FIDELITY.changed 에 이 임계값 차이 미선언."
+  ],
+  "signal_mismatch": [],
+  "counterexample": "K200∪KQ150 내 학습창 관측 완전성 90~94% 종목은 논문 기준(≥90%)을 통과하나 engine.R:215 에서 FULL=0 으로 하위 정렬돼 adv20 상위 46종 내에서 ≥95% 종목에 밀려 배제될 수 있다. 상장 초기·중간 편입 종목이 해당 구간에 걸릴 가능성이 있다. 실제 K200∪KQ150 구성종목은 대부분 관측 완전성 >99%라 실현 빈도는 낮을 것으로 보이나, 반례는 구성 가능하다.",
+  "evidence": "Appendix B: 'We screen for common stocks of domestic US companies listed on the NYSE, AMEX and NASDAQ with market capitalization from Small (300M-2B) to Mega (>200B) using the Stock Screener provided by Nasdaq. We perform a random sample of 46 stocks from the Financials sector. All individual instruments in our datasets have less than 10% missing data.' — 결측 기준이 데이터 전처리 절(Appendix B)에 명시돼 있으며 능동 선별 의도를 함축한다. 주식(46종)과 선물(12종) 실험은 Tables 1-2 vs 3-4 에서 독립 결과로 분리 보고됨(Section 5.1).",
+  "confidence": "high",
+  "checked": "유니버스 자산 종류(주식 vs 선물 독립 실험 여부), 거래소(NYSE/AMEX/NASDAQ), 섹터(Financials only), 시가총액 필터(Small~Mega), 무작위 표집 vs 결정론 선정, N=46 패널 크기 보존, 결측 데이터 기준(논문 ≥90% vs 엔진 ≥95% soft-priority), 유동성 필터(논문 미명시·엔진 adv20≥2e8), K200∪KQ150 교체 선언 정합성",
+  "_배열 규약": "undeclared_changes·signal_mismatch 는 발견만 담는다. 없으면 빈 배열 [] 로 두고 '불일치 없음' 같은 비발견을 항목으로 넣지 마라 - 근거 게이트가 배열 길이로 선다.",
+  "note": "주식·선물 실험이 독립적이므로 주식 전용 구현(K200∪KQ150)은 범위 이탈이 아니다. 결측 임계값 5%p 차이(≥90%→≥95%)가 이 축에서 확인된 유일한 미선언 항목이며, 논문 맥락('we winsorize all data' 절 바로 앞 품질 설명)을 감안하면 능동 필터보다는 데이터셋 특성 서술에 가까워 판정 등급을 misdeclared 로 올리지 않았다."
+}
