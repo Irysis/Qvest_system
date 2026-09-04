@@ -1,5 +1,30 @@
 #!/usr/bin/env Rscript
 #==============================================================================
+# ★퇴역 (2026-09-05 도훈 지시 "분기 제거 — parallel 로 단일화")
+#   실행 경로는 reinforce_auto_parallel.R 하나다. 이 파일은 **사료**로 남는다
+#   (회귀 가드 8종이 문자열로 참조 중 — 08_Tests/reinforcement/*, 08_Tests/worktask/).
+#
+#   왜 퇴역했나: v10.4 핵심 3종이 여기 안 들어왔다 —
+#     ① B1 LLM 설계 소비(rf_b1_design_cells)  ② 블록 전이 설계(rfbd_cells)
+#     ③ entry 예산 상향(25 + max(0, B1 설계칸 − 5) · rf_record_entry_budget)
+#   그래서 이 러너로 도는 entry 는 항상 폴백 5칸 · 예산 25 고정이었다. 같은 도훈 지시를
+#   인용한 주석만 아래 105~109 행에 복사돼 있어 **읽으면 있는 것처럼 보였다**.
+#   순차 실행이 필요하면 reinforce_auto_config.json::parallel_cells = 1 로 둔다.
+#
+#   탈출구: QVEST_RF_ALLOW_SEQ=1 이면 이 가드를 넘긴다(디버깅 전용 — 측정에 쓰지 말 것).
+#==============================================================================
+if (!nzchar(Sys.getenv("QVEST_RF_ALLOW_SEQ"))) {
+  cat("[reinforce_auto_run] ★퇴역된 러너입니다 — 실행 경로는 reinforce_auto_parallel.R 하나입니다.
+")
+  cat("  이 러너에는 B1 LLM 설계 · 블록 전이 설계 · entry 예산 상향(25+max(0,B1칸-5))이 없어
+")
+  cat("  폴백 5칸 · 예산 25 고정으로 돕니다. 순차가 필요하면 parallel_cells=1 을 쓰세요.
+")
+  cat("  디버깅 목적이면 QVEST_RF_ALLOW_SEQ=1 로 실행하십시오.
+")
+  quit(status = 3L)
+}
+#==============================================================================
 # reinforce_auto_run.R — 강화 프로세스 **무인 러너** (도훈 지시 2026-08-30 "모든 작업을 무인화")
 #
 # ★헌법 변경점: v10 은 "무인 파이프라인은 수집까지만"(CLAUDE.md · alpha_search_queue_run.sh:2 ·

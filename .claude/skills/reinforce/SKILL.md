@@ -37,7 +37,7 @@ v10 의 "무인 파이프라인은 수집까지만" 경계가 **해제**됐다. 
 |---|---|---|
 | 격자 | `06_Registry/reinforce_program.json` | 25칸 정의(5블록×5 · 실행 순서 B1→B2→B3→B5→B4). **논문 독립** — 기저 신호만 논문에서 온다 |
 | 엔진 | `02_Infrastructure/reinforcement/rf_cell_engine.R` | **단 하나**. 셀 스펙(JSON)을 읽어 FACTORS/PORTFOLIO 산출 |
-| 러너 | `02_Infrastructure/ops/reinforce_auto_parallel.R` (`mode=parallel` · 블록 5칸 병렬) | 1 tick = 1블록. 칸 결정 → 워커 실행 → 등급 → 원장 → 기전 → 텔레그램 → 누적 → 다음 블록. `reinforce_auto_run.R` 은 순차 폴백 |
+| 러너 | `02_Infrastructure/ops/reinforce_auto_parallel.R` (`mode=parallel` · 블록 5칸 병렬) | 1 tick = 1블록. 칸 결정 → 워커 실행 → 등급 → 원장 → 기전 → 텔레그램 → 누적 → 다음 블록. `reinforce_auto_run.R` 은 **퇴역**(2026-09-05 — v10.4 핵심 3종 미탑재로 분기 제거. 순차가 필요하면 `parallel_cells=1`) |
 | 이월 | `02_Infrastructure/ops/reinforce_auto_next_paper.R` | 25칸 소진 → exhausted → 큐 다음 논문 착수 요청 |
 | 선택 | `02_Infrastructure/ops/rf_next_paper_pick.py` | 큐 상단 1편(술어 정본 import — 재구현 금지) |
 | 스위치 | `06_Registry/reinforce_auto_config.json` | `{enabled:false}` → 전면 정지 · `daily_cap` 폭주 backstop |

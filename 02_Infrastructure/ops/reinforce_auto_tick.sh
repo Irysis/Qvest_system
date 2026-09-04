@@ -20,14 +20,14 @@ mkdir -p "$(dirname "$LOG")"
   #   자체 claim·게이트·검증을 갖고 있어 조건이 없으면 즉시 종료한다. 실패하면 러너가
   #   규칙 선정으로 돌므로 루프가 서지 않는다.
   bash "$ROOT/02_Infrastructure/ops/rf_b1_design.sh"
-  MODE=$("${QVEST_PY:-$ROOT/.venv_qvest_ml/Scripts/python.exe}" -c "
-import io,json,sys
-try: print(json.loads(io.open(r'$ROOT/06_Registry/reinforce_auto_config.json','rb').read().decode('utf-8')).get('mode','sequential'))
-except Exception: print('sequential')" 2>/dev/null)
-  if [ "$MODE" = "parallel" ]; then
-    Rscript "$ROOT/02_Infrastructure/ops/reinforce_auto_parallel.R"
-  else
-    Rscript "$ROOT/02_Infrastructure/ops/reinforce_auto_run.R"
-  fi
+  # ★러너 단일화 (2026-09-05 도훈 지시 "분기 제거 — parallel 로 단일화").
+  #   구판은 config 의 mode 로 두 러너를 갈랐다. 그런데 v10.4 의 핵심 3종
+  #   (B1 LLM 설계 · 블록 전이 설계 · entry 예산 상향 = 25 + max(0, B1칸 − 5))이
+  #   parallel 러너에만 들어갔고 순차 러너에는 **같은 도훈 지시를 인용한 주석만** 남았다.
+  #   회귀 가드 8종이 두 러너를 문자열로 대조하고 있었는데도 못 막았다 — 그 가드들은
+  #   "구판이 남았나"는 보지만 "신판이 안 왔나"는 안 본다. config 가 한 글자 바뀌면
+  #   예산 25 고정 · 설계 없는 레인으로 조용히 내려앉는 구조라 분기 자체를 없앤다.
+  #   순차 실행이 필요하면 reinforce_auto_config.json::parallel_cells 를 1 로 둔다.
+  Rscript "$ROOT/02_Infrastructure/ops/reinforce_auto_parallel.R"
   echo "=== $(date -Iseconds) tick 종료 rc=$? ==="
 } >> "$LOG" 2>&1
