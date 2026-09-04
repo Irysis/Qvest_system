@@ -1,0 +1,12 @@
+{
+  "axis": "signal",
+  "verdict": "faithful",
+  "undeclared_changes": [],
+  "signal_mismatch": [],
+  "counterexample": "미신고 발산은 구성하지 못했다 — 핵심 신호가 식 수준에서 일치한다. 이론상 값이 갈리는 유일한 지점은 winsorize 적용 순서다: 원문 부록 B 'we winsorize all data ...'를 '원시 수익률을 먼저 절단'으로 읽으면, 갭업 +40% 같은 극단 일일 수익 종목에서 k=1 수익피처 r_{t-1,t}/(σ√1)의 입력 수익 자체가 클립되어 피처값이 달라진다. engine.R(279~307행)은 원시 수익으로 피처를 먼저 계산한 뒤 **피처 공간에서** 5×252일 EWM std 로 절단하므로, σ_t(60일 vol)가 그 시점 팽창해 있으면 절단점이 어긋나 값이 갈릴 수 있다. 그러나 이 차이는 FIDELITY.notes.winsorize_scope 에 '모델 입력 14종에만 적용'으로 선언돼 있고, deep-momentum 계보(Lim et al)의 실제 구현이 구성된 피처를 절단하는 것이라 engine 쪽이 오히려 원문 실구현에 더 가깝다. 부호·룩백·표준화 어디에서도 논문과 다른 값을 내는 미선언 상황은 구성 불가.",
+  "evidence": "원문 https://arxiv.org/html/2302.10175v1 — §5.3 'Momentum Features'(입력피처 = 변동성정규화 MACD 'Y_t^(i)(S_k,L_k) as per Equation (2) as input features', S_k∈{8,16,32}·L_k∈{24,48,96} 전 9조합, ϕ 응답함수 미적용 — ϕ 는 Baz 벤치 X_t:=Ỹ_t=(1/3)Σϕ 전용) · Eq.(2) Y=MACD_norm/std(MACD_norm_{t-252:t}), MACD=m(S)−m(L), HL=log(0.5)/log(1−1/j), std(p_{t-63:t}) · §5.3 수익피처 r_{t-k,t}/(σ_t√k), k∈{1,20,63,126,252} · §3/Eq.(1) σ_t = 60일 EWM std(일수익)·σ_tgt=15% · Eq.(6) X_t=g(W'u_t+b), g=tanh · 부록 B winsorize 5×252일 EWM std · Table 7 τ(SLP)=5. engine.R 대조: .DFEAT=14(126행)·.KWIN(123)·.MACD_S/L(124-125)·.STD_P=63/.STD_Q=252(128-129)·.VOL_SPAN=60(127)·.WIN_K=5/.WIN_SPAN=252(130-131)·.TAU=5(122)·피처식 279-294행·winsorize 301-307행·부호 rk=p/shift(p,k)-1(281행, 정방향).",
+  "confidence": "high",
+  "checked": "d=14 구성·수익피처 식과 k집합·σ_t 일별 vol·MACD 3단 정규화(m_S−m_L÷std(p,63)÷std(·,252))·EWMA HL 감쇠(α=1/j)·9조합 S/L·ϕ 응답함수 네트워크입력 미적용(원문 명시)·winsorize 5×252일·τ=5·tanh·부호(momentum, 학습 W, 수동반전 0건, C13)",
+  "_배열 규약": "undeclared_changes·signal_mismatch 는 발견만 담는다. 없으면 빈 배열 [] 로 두고 '불일치 없음' 같은 비발견을 항목으로 넣지 마라 - 근거 게이트가 배열 길이로 선다.",
+  "note": "신호 정의 6요소(식·부호·룩백·종점·표준화·피처수) 전부 원문 식과 일치. 최대 함정이던 ϕ 응답함수는 원문이 네트워크 입력(raw Y_t)과 Baz 벤치(ϕ 적용 Ỹ_t)를 명확히 구분하고 engine 은 입력쪽(ϕ 미적용)을 따라 정합. winsorize 'all data' 범위해석만 notes 에 선언된 미세축이나 신호값 자체는 faithful."
+}
