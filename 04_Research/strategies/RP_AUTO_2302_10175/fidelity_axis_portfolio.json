@@ -1,0 +1,11 @@
+{
+  "axis": "portfolio",
+  "verdict": "faithful",
+  "undeclared_changes": [],
+  "signal_mismatch": [],
+  "counterexample": "구성 못 함. 포트폴리오 구조(레그·종목수·비중산식)가 논문과 다른 값을 내는 상황을 찾지 못했다. 논문·구현 모두 (a) 랭킹/데실 없이 연속 포지션 X∈[-1,1]을 종목별로 동시 산출(engine.R:473 tanh, holdings 의 연속 비중 0.061/-0.031/0.101 …), (b) 롱숏 양다리(음수비중 5708행·2005-06-01 롱28/숏18·harness GL·L−GS·S line93~105), (c) w_i=(1/N)·X_i·σ_tgt/σ_i(engine.R:474 = 논문 eq(1)/(10)), (d) 제약 없음(Σw≠1·순노출≠0 확인), (e) 포트폴리오 레벨 연15% 변동성 스케일링(engine.R §6 kscale=σ_tgt/σ_port = 논문 명시)로 동일하다. 실현 종목수 43~46(2020-01·2026-08 = 43, 2005-06·2010-03 = 46)은 논문 46 패널을 그대로 겨냥하며, 하락분은 선언된 K200∪KQ150 PIT 멤버십/유동성 컷의 부산물(engine.R:479 적격 0화)이다 — top-N 이중절단으로 곱해져 줄어드는 형태 아님.",
+  "evidence": "원문(https://arxiv.org/html/2302.10175v1): 포지션 정의 eq(4)-(5) X_t=f(u_t;θ), X_t∈[-1,1]^{N_t}(연속·비랭킹) · §3 CSMOM 이 데실 상/하위 배분을 명시적으로 비판(랭킹 우회가 이 모델의 요지) · eq(1) r^TSMOM=(1/N_t)Σ X_i·(σ_tgt/σ_i)·r_i(1/N 등가중·자산별 변동성 스케일) · eq(10) R_i(t)=X_i·(σ_tgt/σ_i)·r_i · σ_tgt=연15%·사전변동성 60일 EWM · 가중치 제약(Σw=1·달러중립) NOT STATED · 데이터셋 = US Financials 46종(1990-2022) 고정 identity-indexed 패널 · '추가로 모든 전략에 포트폴리오 레벨 연15% 변동성 스케일링을 적용'. 구현 대조: engine.R:133(.NPANEL=46)·:473(tanh 포지션)·:474(비중산식)·:517(Leg long/short)·:511(포트폴리오 vol 스케일)·:479(적격 0화); 01_strategy_spec.json(construction=engine_direct·has_short=true·n_max=46·weight_method=paper).",
+  "confidence": "high",
+  "checked": "포지션 연속성 vs 데실랭킹 · 롱숏 양다리 존재/보존(engine_direct 통로·harness leg 결합·산출물 숏행 카운트) · 비중산식 (1/N)·X·σ_tgt/σ · σ_tgt=15% · 가중 제약 부재 · 패널 N=46 및 실현 종목수 분포 · 포트폴리오 레벨 변동성 스케일링",
+  "note": "이 축은 논문 충실. 고정 축(long-only·≤25)과의 두 충돌(롱숏·N=46)은 모두 논문과 일치하며 FIDELITY(paper_original_form·changed·notes.n_max)와 spec(has_short/n_max=46)에 정직히 선언됨. [타 축 참고] 46종 선정 방식(논문 random-46 → 결정론 adv20-top46)과 월간 drift 보유는 universe/timing 축 소관이라 여기서 판정하지 않음."
+}
