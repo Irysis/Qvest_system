@@ -1,0 +1,8 @@
+{
+  "verdict": "faithful",
+  "undeclared_changes": [],
+  "signal_mismatch": [],
+  "evidence": "arxiv.org/html/1505.00328v1 전문(초록 아님) verbatim 대조 — ①순위변수=원시 누적수익(본문 'all the stocks are sorted according to their returns in the past J months from t=-J to t=0'; 시장조정/abnormal/CAR 아님을 직접 확인) = engine.R:157 RF=prod(1+Ret)-1, J=1. ②방향 C=Loser-Winner(본문 'buying the loser portfolio and selling the winner portfolio') = engine.R:208-211 롱 DEC==1(+1/NL)·숏 DEC==.NDEC(-1/NS), 04_holdings.csv 2005-02-01 롱18@+1/18·숏19@-1/19 확증. ③등가중(본문 'equal-weighted average returns per annum') = 위 +1/NL,-1/NS. ④decile(본문 'decile grouping outperforms quintile grouping and tertile grouping, which is more evident and robust in the long run') = engine.R:108 .NDEC=10 극단 데실. ⑤IPO 첫 달 제외(본문 'the first-month return data of individual stocks are excluded from our analysis') = engine.R:159-167. ⑥skip=0 baseline(1개월 skip 은 강건성 확인) = engine.R:108 .SKIP=0. ⑦J=K=1 이 실재 보고 셀(초록 'short-term ... contrarian profitability ... when the estimation and holding horizons are 1 month or longer than 12 months' + Table 2 decile CON(1,1) 유의 양수) — 격자 한 셀의 충실 인스턴스.",
+  "confidence": "high",
+  "note": "선언 안 된 방법론 변경·거짓 선언 0건. 차이는 전부 FIDELITY.changed/kept 명시(허용 유니버스 K200∪KQ150+adv20≥2e8 · 기간 2005~ · 단일 셀 J=K=1 · 15bps net 등급판·commission_paper=null). 강한 음수 t(-3.438)는 부호반전 아님 — 엔진은 정확히 반전형(loser 롱)이고 음의 성과는 대형·유동주 한정에서 단기반전이 소멸/역전한 선언된 유니버스 효과. 유일한 잔여 관찰(비지적): 월수익을 논문의 RESSET 월별 adjusted return 대신 일별 Ret 복리로 재구성 — 동일 양(월 총수익) 재현이라 misdeclare 근거 미달."
+}
