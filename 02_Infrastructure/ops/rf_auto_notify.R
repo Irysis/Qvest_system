@@ -55,7 +55,14 @@ rf_notify_charts <- function(tab, outdir) {
   if (!ok || !nrow(tab)) return(character(0))
   suppressMessages(library(ggplot2))
   dir.create(outdir, recursive = TRUE, showWarnings = FALSE)
+  ## ★범례를 코드가 아니라 **축 이름**으로 (도훈 지시 2026-09-04).
+  ##   "B1/B2/B5" 는 격자 내부 번호라 보는 사람이 무엇을 갔는지 모른다.
+  .BLKNM <- c(B1 = "멀티팩터", B2 = "비중방법론", B3 = "유니버스",
+              B5 = "리스크오버레이", B4 = "결합")
   d <- copy(tab); d[, blk := sub("_.*$", "", code)]
+  d[, blk := fifelse(blk %in% names(.BLKNM), unname(.BLKNM[blk]), blk)]
+  d[, blk := factor(blk, levels = unique(c(unname(.BLKNM), unique(blk))))]
+  d[, blk := droplevels(blk)]
   d[, lab := factor(sprintf("%s %s", code, grade), levels = rev(sprintf("%s %s", code, grade)))]
   p1 <- ggplot(d, aes(x = lab, y = port_t, fill = blk)) +
     geom_col(width = 0.66) +
@@ -340,7 +347,9 @@ rf_insights <- function(tab) {
     out <- c(out, sprintf("표본외 유지율 최고 %.2f — %d칸 전부 합격 구간 밖", max(o2), length(o2)))
   if (!any(tab$grade == "A", na.rm = TRUE) && nrow(tab) >= 5)
     out <- c(out, sprintf("A등급 0건 — %d칸 측정 후 이 축 조합의 상한이 관측됨", nrow(tab)))
-  substr(out, 1, 78)
+  ## ★절단 해제 (도훈 2026-09-04 "분량 제한은 없애") — 78자는 bullet 80자
+  ##   상한에 맞춘 값이었고, 그 상한은 relaxed 가 면제한다.
+  out
 }
 
 # ── 발송 ──────────────────────────────────────────────────────────────────────
@@ -388,7 +397,7 @@ rf_auto_notify <- function(base_id, n, kind = "block") {
     .parts <- character(0)
     if (!is.null(.LD)) {
       .m <- .wrap(.LD$mechanism %||% "")
-      if (nzchar(.m)) .parts <- c(.parts, paste0("【기전】
+      if (nzchar(.m)) .parts <- c(.parts, paste0("<b>▸ 기전</b>
 ", .m))
       .na <- .LD$next_block_actions
       if (!is.null(.na) && length(.na)) {
@@ -396,22 +405,28 @@ rf_auto_notify <- function(base_id, n, kind = "block") {
                vapply(.na, function(x) as.character(x$action %||% "")[1], character(1))
         .at <- .at[nzchar(.at)]
         if (length(.at))
-          .parts <- c(.parts, paste0("【다음 블록 처방】
+          .parts <- c(.parts, paste0("<b>▸ 다음 블록 처방</b>
 ",
-                                     paste(sprintf("  %d) %s", seq_along(.at), .at), collapse = "
+                                     paste(sprintf("  %d． %s", seq_along(.at), .at), collapse = "
+
 ")))
       }
       .av <- .LD$avoid
       if (!is.null(.av) && length(.av)) {
         .avv <- as.character(unlist(.av)); .avv <- .avv[nzchar(.avv)]
         if (length(.avv))
-          .parts <- c(.parts, paste0("【쓰지 말 것】
+          .parts <- c(.parts, paste0("<b>▸ 쓰지 말 것</b>
 ",
-                                     paste(sprintf("  · %s", .avv), collapse = "
+                                     paste(sprintf("  ✕ %s", .avv), collapse = "
+
 ")))
       }
+      ## ★원시 토큰을 그대로 보내지 않는다 — "no_design" 이 메시지에 그대로 찍혔다.
       .ps <- .wrap(.LD$prior_action_status %||% "")
-      if (nzchar(.ps)) .parts <- c(.parts, paste0("【앞 처방 집행】
+      .ps <- switch(trimws(.ps),
+        "no_design" = "앞 블록 설계가 없어 대조할 처방이 없다(첫 블록).",
+        "no_prior"  = "앞 처방 없음.", .ps)
+      if (nzchar(.ps)) .parts <- c(.parts, paste0("<b>▸ 앞 처방 집행</b>
 ", .ps))
     }
     if (length(.parts))
@@ -419,6 +434,7 @@ rf_auto_notify <- function(base_id, n, kind = "block") {
                          heading = "이번 블록에서 배운 것",
                          body = paste(.parts, collapse = "
 
+─────
 "))
   }
 
@@ -427,22 +443,44 @@ rf_auto_notify <- function(base_id, n, kind = "block") {
   #   메시지에 안 실려서, 격자가 스스로 바뀌어도 도훈은 몰랐다.
   { .jl <- file.path(ROOT, ".cache/reinforce_auto_log.jsonl")
     .ad <- character(0)
+    ## ★**이번 블록에서 발동한 것만** 싣는다 (도훈 지시 2026-09-04
+    ##   "발동할때만 텔레그램에 보내줘"). 구판은 로그 꺼리 4000줄을 무조건 훑어서,
+    ##   한 번 순서가 바뀌면 **그 뒤 모든 블록 메시지에** 같은 줄이 따라붙었다 —
+    ##   둘째 번부터는 새 소식이 아니라 소음이다.
+    ##   창 = 이번 블록 첫 칸의 opened_at 이후. 그 전 사건은 앞 메시지가 이미 알렸다.
+    .blk_now2 <- sub("_.*$", "", as.character(tab[n == max(tab[n <= S$used]$n)]$code[1]))
+    .since <- { .oa <- vapply(S$entry$attempts %||% list(), function(a) {
+                     cc <- as.character(a$cell_code %||% "")
+                     if (nzchar(cc) && startsWith(cc, paste0(.blk_now2, "_")))
+                       as.character(a$opened_at %||% "") else NA_character_ }, character(1))
+                .oa <- .oa[!is.na(.oa) & nzchar(.oa)]
+                if (length(.oa)) min(.oa) else "" }
     if (file.exists(.jl)) tryCatch({
       .ln <- tail(readLines(.jl, warn = FALSE), 4000L)
       for (x in .ln) {
         r <- tryCatch(fromJSON(x, simplifyVector = TRUE), error = function(e) NULL)
         if (is.null(r)) next
         ev <- as.character(r$event %||% "")
+        ## 창 밖 사건은 버린다 — 앞 블록이 이미 보고한 것이다
+        if (nzchar(.since) && as.character(r$ts %||% "") < .since) next
         if (identical(ev, "block_order_decided") && isTRUE(as.logical(r$adaptive %||% FALSE)))
-          .ad <- c(.ad, sprintf("【실행 순서 변경】 %s
+          .ad <- c(.ad, sprintf("<b>▸ 실행 순서 변경</b>  %s
   사유: %s",
                                 as.character(r$order %||% "?"), as.character(r$reason %||% "")))
         if (identical(ev, "block_design_saved") &&
             identical(as.character(r$base_id %||% ""), base_id))
-          .ad <- c(.ad, sprintf("【다음 블록 설계】 %s 를 %s칸으로 재설계 — 이번 교훈을 읽고 격자가 바뀜다",
+          .ad <- c(.ad, sprintf("<b>▸ 다음 블록 재설계</b>  %s → %s칸\n  이번 블록 교훈을 읽고 격자가 스스로 바꿈",
                                 as.character(r$block %||% "?"), as.character(r$cells %||% "?")))
       }
     }, error = function(e) NULL)
+    ## ★같은 종류의 변경은 **마지막 하나만** — 사유 문자열이 달라 중복이 살아남았다
+    ##   (실측: "실행 순서 변경" 이 한 메시지에 두 번 찍혔다).
+    if (length(.ad)) {
+      .key <- sub("[<]b[>][^<]*[<]/b[>].*$", "", .ad)
+      .key <- vapply(seq_along(.ad), function(i) substr(.ad[i], 1, 28), character(1))
+      .ad <- vapply(unique(.key), function(k) tail(.ad[.key == k], 1L), character(1),
+                    USE.NAMES = FALSE)
+    }
     .ad <- unique(.ad)
     if (length(.ad))
       .adapt_sec <- list(type = "text", emoji = "🔄",
@@ -496,7 +534,7 @@ rf_auto_notify <- function(base_id, n, kind = "block") {
                                 if (nrow(.m)) sub("_.*$", "", .m[which.max(n)]$code) else NA_character_ }
                    .inblk <- if (!is.na(.curblk)) tab[grepl(paste0("^", .curblk, "_"), code)] else tab[0]
                    ord  <- (if (nrow(.inblk)) .inblk else tab)[order(-replace(port_t, !is.finite(port_t), -Inf))]
-                   .cut <- function(x) substr(x, 1, 78)
+                   .cut <- function(x) x   # ★절단 해제 (2026-09-04) — relaxed 가 80자 상한을 면제한다
                    EN   <- S$entry
                    cy   <- EN$carry
                    .cb  <- if (!is.null(cy)) suppressWarnings(as.numeric(EN$parent$best_port_t %||% NA)) else NA_real_

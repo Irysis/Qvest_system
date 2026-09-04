@@ -1398,7 +1398,11 @@ tg_agent_brief <- function(agent,
         .items_esc <- tg_html_escape(item_chars)
         .items_esc <- gsub("&lt;b&gt;", "<b>", .items_esc, fixed = TRUE)
         .items_esc <- gsub("&lt;/b&gt;", "</b>", .items_esc, fixed = TRUE)
-        paste0("  • ", .items_esc, collapse = if (isTRUE(relaxed)) "\n\n" else "\n")
+        ## ★이중개행은 **긴 항목일 때만** (2026-09-04 도훈 지적). relaxed 는 원래
+        ##   긴 영어 논문 제목을 위한 스위치였는데, 운용 메시지에 켜자 "단계/대상/위치"
+        ##   같은 짧은 줄 사이까지 벌어져 상단이 성기게 보였다.
+        paste0("  • ", .items_esc,
+               collapse = if (isTRUE(relaxed) && any(nchar(.items_esc) > 60L)) "\n\n" else "\n")
       },
       "kv" = {
         kv <- s$kv
