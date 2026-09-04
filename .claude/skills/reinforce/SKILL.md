@@ -25,18 +25,34 @@ LLM 주도 심층 리서치이며, "후속 연구까지 포함하여 인뎁스 �
 
 v10 의 "무인 파이프라인은 수집까지만" 경계가 **해제**됐다. 강화는 사람 지시 없이 돈다.
 
-★단 **규칙 개시이지 LLM 개시가 아니다.** 무인 상태의 LLM 은 감독할 수 없고, 엔진을 잘못 써도
-아무도 안 본다. 그래서 셀은 격자에서 나오고 엔진은 하나이며 러너는 코드를 생성하지 않는다.
+★**규칙 개시 위에 LLM 이 닿는 지점 4곳** (2026-09-04 현행 — 구판 "루프에 LLM 없음" 서술 폐기):
+① **B1 설계** — 블록 진입 시 entry 당 1회(`rf_b1_design.sh` → `rf_b1_design_lib::b1_verify` 가 등록부 실재성·중복·칸 수 ≤15 를
+   재도출로 검증, 실패 = 규칙 선정 폴백 `rf_factor_arms.R`). ② **블록 기전 + 다음 블록 설계** — 블록 종료 시 1회
+   (`rf_lcode_mechanism.sh` → `next_block_design` 이 있으면 다음 블록의 셀 목록이 된다, `rf_block_design.R` 검증). ③ **충실도 감사**
+   6축 팬아웃(`rf_fidelity_fanout.sh` · `06_Registry/rf_fidelity_axes.json` · 병합 `rf_fidelity_merge.R` 결정론). ④ **arm 생성**(§0.2).
+   ★LLM 은 **제안**만 한다 — 등재·집행·판정은 전부 R 이 재도출로 검증한 뒤에만 일어나고, 셀 엔진은 하나이며 러너는 코드를 생성하지 않는다.
+   ★프롬프트는 **stdin**(`printf %s "$PROMPT" > "$PF"; claude -p < "$PF"`) — argv 는 Windows 32K 에서 조용히 죽는다(승격 entry 실사고).
 
 | 조각 | 파일 | 역할 |
 |---|---|---|
 | 격자 | `06_Registry/reinforce_program.json` | 25칸 정의(5블록×5 · 실행 순서 B1→B2→B3→B5→B4). **논문 독립** — 기저 신호만 논문에서 온다 |
 | 엔진 | `02_Infrastructure/reinforcement/rf_cell_engine.R` | **단 하나**. 셀 스펙(JSON)을 읽어 FACTORS/PORTFOLIO 산출 |
-| 러너 | `02_Infrastructure/ops/reinforce_auto_run.R` | 1회 호출 = 1칸. 다음 칸 결정 → 실행 → 등급 → 원장 기입 → 분기 |
+| 러너 | `02_Infrastructure/ops/reinforce_auto_parallel.R` (`mode=parallel` · 블록 5칸 병렬) | 1 tick = 1블록. 칸 결정 → 워커 실행 → 등급 → 원장 → 기전 → 텔레그램 → 누적 → 다음 블록. `reinforce_auto_run.R` 은 순차 폴백 |
 | 이월 | `02_Infrastructure/ops/reinforce_auto_next_paper.R` | 25칸 소진 → exhausted → 큐 다음 논문 착수 요청 |
 | 선택 | `02_Infrastructure/ops/rf_next_paper_pick.py` | 큐 상단 1편(술어 정본 import — 재구현 금지) |
 | 스위치 | `06_Registry/reinforce_auto_config.json` | `{enabled:false}` → 전면 정지 · `daily_cap` 폭주 backstop |
 | 검사 | `08_Tests/ops/test_reinforce_auto.sh` | **양방향** 15항 (가드마다 정상+위반주입) |
+| B1 설계 | `02_Infrastructure/ops/rf_b1_design.sh` + `rf_b1_design_lib.R` | LLM 1회/entry · 검증 실패 = 규칙 폴백 · 재료 상한(교훈 기전 700자) |
+| 기전·설계 | `02_Infrastructure/ops/rf_lcode_mechanism.sh` + `_lib.R` · `rf_block_design.R` | 블록 종료 시 기전 서술 + `next_block_design`/`avoid` · 빈 블록은 `rf_mech_backfill.R` 이 재시도(상한 2) |
+| 순서 | `02_Infrastructure/reinforcement/rf_lesson.R::rf_block_order_decide` | CAGR ≥ 0.16 ∧ Calmar < 0.64 → 위험 축(B5) 2번째 · 기전 `mechanism_pref` 우선 · `QVEST_RF_ORDER_PREF=off` |
+| 누적 | 러너 `block_accumulate` | B2·B3·B5 는 **직전까지 최고 구성**을 바닥으로(자기 축만 교체) · B4 = 이 entry 승자 결합 + LOO |
+| 승격 | `02_Infrastructure/reinforcement/rf_promote.R` | 소진 시 최고 ≥ B ∧ 부모 최고 PORT_t 초과 ∧ 깊이 ≤ 3 → 승자 구성 carry(팩터·비중·유니버스·오버레이)로 새 25칸 · `count_paper=FALSE` |
+| 구제 | `02_Infrastructure/contracts/rolling_grade.R` · `defensive_score.R` | 36M 롤링 창 최근 통과율 ≥ 0.5(롤링점 ≥ 24) → F→C 구제(회복→붕괴 이력 경고) · 벤치 하락월 기준 방어형 → 2계층 풀 `defensive_specialist` |
+| 양립·강등 | `02_Infrastructure/reinforcement/rf_arm_compat.R` | arm×유니버스 커버리지 장부 · 승계 비중이 시험 축이 아닌 블록에서 불가면 EW 강등(`rac_degrade_plan`, B2/B4 제외) |
+| 회피 집행 | 러너 (`avoid_enforced` / `avoid_noted`) | 기전 `avoid` 중 **측정 무효 사유**만 건너뜀 · 성과 사유는 기록 후 실행(AX-000) · 부모 사슬 walk |
+| 결합 | `02_Infrastructure/ops/rf_combination_launch.R` | 재료 풀 → 설계 요청(`replication_request.json` combo) → 충실구현 레인이 LLM 결합 엔진을 1회 측정 → `_combo_rulefast` entry → 같은 격자 · 희석 판정 기록 |
+| 텔레그램 | `rf_auto_notify.R` · `rf_block_insights.R` · `rf_grade_fanfare.R` · `rf_round_review.R` | 블록 본문(+`이번 배치에서 알게 된 것` 요약) · 후속 전체판 · B/A 팬파레 · 라운드 종료 리뷰(궤적·LOO·벽) |
+| LLM 레인 | `02_Infrastructure/ops/rf_llm_env.sh` · config `llm.lanes` | 모델 = `llm.model`(opus · fable-5-1 은 CLI 차단 기록) · 노력 replication max / fidelity_audit xhigh / b1_design·lcode_mechanism·overlay_propose high |
 
 **자동 정지 지점 2곳** — 무인이 넘으면 안 되는 선:
 1. **충실구현 필요** → 논문 원문 판독(롱숏·종목수·비중·리밸 복제)은 규칙으로 환원되지 않는다.
@@ -53,10 +69,10 @@ BOOK 에 들어가는 경로는 없다(헌법 불변).
 **승자 판정은 셀 코드 기반**(`essence$cell_code`) — 위치 의존(n번째=격자 n번째)이면 격자를 손보는
 순간 조용히 엇갈린다. 그래서 원장 `essence` 에 기계 판독 가능한 수치를 반드시 남긴다.
 
-★**노력수준**: 무인 루프에는 LLM 이 없다. 남는 LLM 지점(충실구현·Judge)은 **깊이** 문제이므로
-**최대 노력 · 단일 에이전트**가 맞고 울트라코드(넓이)는 부적합하다 — 2026-08-29 실증에서
-최고 산출(sigma 허수 버그 적발 · 위기구간 폴백 51.5% 진단 · Market 열 날조 발견)이 전부
-깊은 프롬프트를 받은 단일 에이전트에서 나왔다.
+★**노력수준 (2026-09-04 도훈 승인 레인 배분)**: 한 값으로 정하면 손해다 — 레인마다 한 번 실패의 대가가 다르다.
+replication **max**(실패 1회 = 에이전트 12분 + 측정 + 팬아웃 6축) · fidelity_audit **xhigh** · b1_design / lcode_mechanism /
+overlay_propose **high**. 정본 = `reinforce_auto_config.json::llm.lanes`(문서 아님). 충실구현·Judge 는 여전히 **깊이 · 단일 에이전트**
+(2026-08-29 실증) — 팬아웃은 분류(6축 대조)이지 넓이 탐색이 아니다.
 
 ## §0 규칙기반 고속 강화 프로그램 (도훈 지시 2026-08-29 — 현행 정본)
 
@@ -70,10 +86,10 @@ BOOK 에 들어가는 경로는 없다(헌법 불변).
 
 | 블록 | 축 | 내용 | 선행 조건 |
 |---|---|---|---|
-| B1 (1~5) | 멀티팩터 | 기저 신호(w0=0.5 고정) + 팩터 등록부에서 뽑은 N종(깊이 1~5 · IC 시계열 상관 최소 사슬 · 계열 라운드로빈, `rf_factor_arms.R`)을 횡단면 rank-Z 결합 | 없음 — 즉시 |
-| B2 (6~10) | 비중방법론 | B1 최고 PORT_t 컴포짓 위에서 `weight_catalog.json` 계열당 1종(`rf_weight_arms.R` — 낙폭 축 계열 우선) | B1 착지 |
-| B3 (11~15) | 유니버스 | B1 최고 컴포짓 + EW 로 **적용 유니버스 교체**: 시장별(KOSPI 전수/KOSDAQ 전수)·시가총액별(소형/대형)·섹터 중립 | B1 착지 |
-| B5 (16~20) | 리스크 오버레이 | B1 최고 컴포짓 + EW 위에 `overlay_catalog.json` 계열당 1종(`rf_overlay_arms.R` — 낙폭/combo 계열 우선) · 승자 = Calmar | B1 착지 |
+| B1 (1~5) | 멀티팩터 | **블록 진입 시 LLM 설계 1회**(`rf_b1_design.sh` — 칸 수·팩터 수·조합 방식을 설계가 정하고, 등록부 331종 안에서 `b1_verify` 가 실재성·중복·≤15칸을 검증) · 실패 = 규칙 선정 폴백(깊이 1~5 · IC 시계열 상관 최소 사슬 · 계열 라운드로빈, `rf_factor_arms.R`) · 승격 entry 는 carry 팩터 위에 얹는다 | 없음 — 즉시 |
+| B2 (6~10) | 비중방법론 | B1 최고 PORT_t 컴포짓 위에서 `weight_catalog.json` 계열당 1종(`rf_weight_arms.R` — 낙폭 축 계열 우선) ★직전 블록 기전의 `next_block_design` 이 있으면 그 셀 목록 · 바닥 = 직전까지 최고 구성(block_accumulate) | B1 착지 |
+| B3 (11~15) | 유니버스 | B1 최고 컴포짓 + EW 로 **적용 유니버스 교체**: 시장별(KOSPI 전수/KOSDAQ 전수)·시가총액별(소형/대형)·섹터 중립 ★기전 설계 우선 · 바닥 = 직전까지 최고 구성 · 승계 비중 불가 시 EW 강등 | B1 착지 |
+| B5 (16~20) | 리스크 오버레이 | B1 최고 컴포짓 + EW 위에 `overlay_catalog.json` 계열당 1종(`rf_overlay_arms.R` — 낙폭/combo 계열 우선) · 승자 = Calmar ★기전 설계 우선 · 오버레이는 carry 위에 중첩(`.ov_stack`) · 순서 규칙이 Calmar 미달이면 2번째로 당긴다 | B1 착지 |
 | B4 (21~25) | 조합 | B1·B2·B3·B5 승자의 **4축 전체 결합 1칸 + 축별 leave-one-out 4칸** | B1~B3·B5 착지 |
 
 **규율 — 폐기된 것과 불변인 것**:
@@ -90,6 +106,35 @@ BOOK 에 들어가는 경로는 없다(헌법 불변).
 - 실행 = engine 1파일(FACTORS 또는 PORTFOLIO) + `run_paper_replication(portfolio_spec=실투형)`
   → `authoritative_remeasure.json::essence_grade`. WT 미사용(원장 wt_id=NULL 허용).
 - 보고 단위 = **블록**(시도 5건 등급 일괄 텔레그램 + L-code 1건). Grade A 발생 시 즉시 Judge.
+
+## §0.3 격자 위의 판정 규칙 — 실행 정본 (2026-09-04 · 코드가 정본, 이 절은 지도)
+
+격자(25칸)는 그대로다. 오늘 바뀐 것은 **칸을 채우는 주체와 칸 사이의 이음매**다.
+
+1. **블록 순서 적응** — `rf_block_order_decide`: 기저가 CAGR ≥ 0.16 인데 Calmar < 0.64 면 위험 축 B5 를 2번째로(비중·유니버스는
+   MDD 를 거의 안 움직인다 — 그 축을 먼저 돌면 출하되지 않는 구성을 최적화한다). 직전 블록 기전이 `next_block_design` 으로 다음
+   블록을 지목하면 그것이 우선(`mechanism_pref`). 실측 09-04: 4 entry 전부 `B1>B5>B2>B3>B4`.
+2. **블록 누적** — B2·B3·B5 는 직전까지 최고 구성을 바닥으로 자기 축만 바꾼다. 승계 arm 이 그 블록의 유니버스에서 불가(커버리지 < 80%)면
+   시험 축이 아닌 승계 비중만 EW 로 강등해 측정한다(`rac_degrade_plan` · B2/B4 는 그대로 판정). 미측정 칸은 절약이 아니라 헌법 위반이다.
+3. **기전 → 설계 → 집행 대조** — 블록 L-code 에 LLM 기전(`mechanism`)·처방(`next_block_actions`)·회피(`avoid`)·다음 블록 설계가
+   실린다. 회피는 **측정 무효 사유**(편의·누출·PIT)만 집행하고 성과 사유는 기록만 한다(AX-000). 앞 블록 처방의 집행 여부는
+   `rfbd_action_status` 가 재도출한다(executed/partial/ignored/no_design). 기전이 빈 블록은 다음 tick 에 백필(상한 2회).
+4. **승격 사슬** — 소진 시 최고 등급 ≥ B 이고 **부모 최고 PORT_t 를 넘었을 때만** 승자 구성(팩터·비중·유니버스·오버레이)을 carry 로
+   물려 새 25칸(깊이 ≤ 3, `rf_promote.R`). 승격 entry 의 B1 은 carry 팩터 위에 **더 얹는** 칸이라 단조 희석이 구조적으로 나온다
+   (promo1: 2.171 → 1.011, Spearman −0.90) — 재고 항목. 실측 09-04 두 라운드: 최고 칸은 항상 첫 두 블록, 유니버스·오버레이는 LOO 순손실.
+5. **구제** — 충실구현 F 라도 36M 롤링 창의 최근 통과율 ≥ 0.5(롤링점 ≥ 24)면 C 로 구제해 강화를 연다(`rg_rescue`; 회복→붕괴 이력은
+   경고로 병기). 벤치 **실현 하락월** 기준 방어형(`ds_score`)은 등급 floor 미달이라도 2계층 풀 `defensive_specialist` 경로. 기저 게이트
+   (`base_min_port_t`)는 구제된 entry 를 우회한다. 소급 09-04: F 74 → C · 방어형 182.
+6. **결합 레인** — 논문 3편마다 검토(`combination_review_every`), 재료 풀에서 쌍을 골라 **LLM 이 두 논문을 읽고 설계한 결합 엔진**을
+   충실구현 1회로 측정 → 기저 등급 → `_combo_rulefast` entry 로 같은 격자. 새 논문 소비가 아니므로 `count_paper=FALSE`.
+7. **텔레그램** — 블록마다 본문(순위·궤적·LLM 기전·`이번 배치에서 알게 된 것` 요약) + 후속 전체판(판정·갈린 처치·위험·수익 교환·
+   군집/단조·경계까지(롤링 창·방어형)·앞 처방 대비·미측정/강등·승격 사슬 — `rf_block_insights.R`, 규칙 기반) · B/A 팬파레 · 라운드
+   종료 리뷰(블록별 궤적 · LOO · 무엇이 벽이었나). 계약은 `relaxed` · 미리보기는 `QVEST_TG_DRY_RUN=1`.
+
+★2026-09-04 실사고 목록(재발 방지 검사 = `08_Tests/reinforcement/test_rf_lane_parity.R` · `test_rf_block_insights.R` ·
+`test_rf_carry_degrade.R` · `test_rf_jlog_isolation.R` · `test_rf_summarize_once.R` · `08_Tests/ops/test_rp_count_paper.R`):
+승격 B1 설계가 argv 상한에서 두 세대 연속 미기동 · 승격 carry 에 오버레이 누락 · 승계 비중이 소형주에서 불가 → 미측정 ·
+기전 6/15 빈 채 재시도 없음 · `count_paper` 키 부재 = "세지 말라" · 검사 픽스처가 운영 로그 오염 · 미리보기가 실제 발송.
 
 ## 시도 1회의 절차 (원장 writer = `02_Infrastructure/reinforcement/reinforce_ledger.R`)
 

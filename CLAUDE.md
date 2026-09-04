@@ -25,7 +25,7 @@
 ## 2계층 파이프라인 (v10)
 
 ```
-[무인] 수집(paper_recharge→dedup→트리아지→큐) + **강화**(reinforce_auto_run · 규칙격자 · reinforce SKILL §0.1)
+[무인] 수집(paper_recharge→dedup→트리아지→큐) + **강화**(격자+LLM설계·기전·승격 · SKILL §0.1·§0.3)
 [1계층] 충실구현(run_paper_replication — 논문 그대로·유니버스만 KR) → 권위 등급
         → 미달: 강화 ≤25회(Skill reinforce — QEPM→등급, 논문 3편마다 결합 검토)
         → A: Judge(PIT) → PASS → BOOK          (B 이상 = 2계층 풀 공급)

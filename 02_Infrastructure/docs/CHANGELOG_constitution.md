@@ -3,6 +3,31 @@
 > CLAUDE.md는 "현재 유효한 헌법"만 담는다. 버전 연혁·릴리스 상세는 본 파일이 SOT.
 > 최신 릴리스 상세: `qvest_v8_4_asymmetry_ml_sot.md` (**v8.4 — 주력 SOT**) · `qvest_v8_3_alpha_discovery_sot.md` (v8.3) · `qvest_v8_1_sot.md` (v8.1) · `qvest_v8_0_upgrade_plan.md` (v8.0)
 
+## v10.4 — 강화 격자의 LLM 설계 · 적응 순서 · 승격 사슬 · 롤링/방어형 구제 (2026-09-04)
+
+**도훈 지시**: "빠른 규칙 반복" 위에 (다)안 — B1 을 블록 진입 시 1회 LLM 설계로 · 최근 성과·개선 추세를 등급에 반영(F 확실히 구제) ·
+방어형은 실제 벤치 하락월 기준으로 2계층 풀 자격 · LLM 레인별 노력수준 분리 · 텔레그램은 데스크가 읽는 물건으로.
+
+### 결정
+- **B1 = LLM 설계 1회/entry**, R 검증 실패 시 규칙 폴백. 기전이 낸 `next_block_design` 이 다음 블록의 셀 목록이 된다.
+- **블록 순서 적응** (`rf_block_order_decide`): CAGR ≥ 0.16 ∧ Calmar < 0.64 → 위험 축 먼저. 기전 선호 우선.
+- **승격 사슬** (`rf_promote.R`): 최고 ≥ B ∧ 부모 초과 ∧ 깊이 ≤ 3. carry = 팩터·비중·유니버스·오버레이. `count_paper=FALSE`.
+- **구제** (`rolling_grade.R`·`defensive_score.R`): 36M 롤링 최근 통과율 ≥ 0.5 → F→C · 벤치 하락월 방어형 → `defensive_specialist` 풀 경로. 소급 F 74→C · 방어형 182.
+- **충실도 감사 6축 팬아웃** (`rf_fidelity_fanout.sh`, 판독형 opus/max · 대조형 sonnet/high, R 결정론 병합).
+- **LLM 레인** (`llm.lanes`): replication max · fidelity_audit xhigh · 나머지 high. fable-5-1 은 CLI 2.1.170 미지원으로 차단 기록.
+- **회피 집행**: 기전 `avoid` 중 측정 무효 사유만 건너뜀(AX-000) · 부모 사슬 walk. **강등**: 승계 비중이 뒤 블록 유니버스에서 불가면 EW.
+- **텔레그램**: relaxed 계약 · 블록 본문 + `이번 배치에서 알게 된 것` 후속 전체판(규칙, `rf_block_insights.R`) · 팬파레 · 라운드 리뷰.
+
+### 실측 (09-04)
+- 두 라운드(35+25칸) 최고 칸은 항상 첫 두 블록(B2_6 2.109 · B1_2 2.171). 유니버스·오버레이는 LOO 두 번 연속 순손실. MDD 45.9% 아래로 못 내려감.
+- 승격 entry 두 세대의 B1 LLM 설계가 **argv 32K 상한**에서 미기동("설계 파일 부재") → 여섯 레인 stdin 전달로 수리.
+- 파이프라인 점검: `count_paper` 키 부재 = 세지 말라 · 충실도 기각 안내 결정론적 유실 · 검사 픽스처가 운영 로그 오염 · 기전 6/15 빈 채 재시도 없음.
+
+### 파일
+`rf_b1_design.sh`·`rf_b1_design_lib.R` · `rf_lcode_mechanism.sh`·`_lib.R` · `rf_block_design.R` · `rf_lesson.R` · `rf_promote.R` ·
+`rolling_grade.R` · `defensive_score.R` · `rf_fidelity_fanout.sh`·`rf_fidelity_merge.R` · `rf_arm_compat.R` · `rf_mech_backfill.R` ·
+`rf_block_insights.R` · `rf_round_review.R` · `rf_grade_fanfare.R` · `rf_llm_env.sh`. 검사 = reinforce SKILL §0.3 끝의 목록.
+
 ## v10.3 — 강화 LLM 재귀 루프 · 횡단면 오버레이 축 신설 (2026-09-03)
 
 **도훈 지시**: "강화프로세스에 LLM을 어떻게 활용할지 계획. 재귀적 자가발전이 가능한 형태로. 실제 전략 성과 개선이 가능하게."

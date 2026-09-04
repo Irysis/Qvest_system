@@ -29,6 +29,8 @@
 6. **분기** —
    - **Grade A** → **Judge(PIT 전담) 스폰**(`judge_request.json` 발행됨) → PASS → BOOK 등록 후보(도훈 confirm) / FAIL → 결과 무효·수리·재측정.
    - **미달(B/C/F)** → **강화 프로세스**(`Skill(reinforce)` — 원장 `reinforce_ledger_l1.json` open 자동). 논문당 최대 25회(격자 5블록×5), 축 = 멀티팩터/비중방법론/유니버스/리스크오버레이/결합. 매 시도 = QEPM(alpha→risk→optimizer→forge→등급) + L-code. ★근거 논문은 **의무 아님**(도훈 2026-09-03 해제) — 있으면 기록하고 없으면 `evidence=none` 으로 남긴다. 25회 소진 → exhausted → 큐 다음 논문.
+     ★현행(2026-09-04): B1 = 블록 진입 시 LLM 설계 1회(검증 실패 = 규칙 폴백) · 블록 순서 적응(Calmar 미달 → 위험 축 먼저) ·
+       블록 누적 · 소진 시 B+ 승자는 부모를 넘으면 승격 사슬(깊이 ≤ 3) · F 도 롤링 구제 시 강화 개시. 정본 = reinforce SKILL §0.3.
    - **논문 3편 소비마다** Q-Lead 가 논문 간 아이디어 결합 기회를 검토·기록(`rf_record_combination_review` — 착수 무관 의무).
 
 ## 예산 (라운드 1건)

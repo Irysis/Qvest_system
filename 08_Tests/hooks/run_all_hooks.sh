@@ -1280,6 +1280,7 @@ SUITES=(
   # 2026-09-04 — 승격·결합 레인 정합(stdin 프롬프트 · carry overlay · B1 재료 상한 · 기전 백필) + '알게 된 것' 규칙 생성기
   "08_Tests/reinforcement/test_rf_lane_parity.R"
   "08_Tests/reinforcement/test_rf_block_insights.R"
+  "08_Tests/reinforcement/test_rf_skill_reflects_runtime.R"
 )
 
 
