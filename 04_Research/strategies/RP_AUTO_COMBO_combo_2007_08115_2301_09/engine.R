@@ -223,19 +223,24 @@ if (!inherits(RAWDATA$Date, "Date")) RAWDATA[, Date := as.Date(Date)]
 .AD  <- data.table(Date = sort(unique(RAWDATA$Date)))
 .AD[, ymi := year(Date) * 12L + month(Date)]
 .MEA <- .AD[, .(me = max(Date)), by = ymi]$me                   # 시장 전체 월말 거래일
-.EOM <- RAWDATA[Date %in% .MEA & is.finite(Size) & Size > 0 & !is.na(Sector_Lv2),
+# ★섹터 라벨을 여기서 거르지 않는다. 재료 1 의 R_MKT 는 "all firms" 이고 산업 라벨은
+#   **산업 포트폴리오에만** 필요하다(§2 IPF). 여기서 걸면 라벨 없는 종목이 시장에서도
+#   빠져 Eq.1 의 시장 다리가 논문 정의보다 좁아진다.
+.EOM <- RAWDATA[Date %in% .MEA & is.finite(Size) & Size > 0,
                 .(Ticker, ymi_w = year(Date) * 12L + month(Date),
                   w = as.numeric(Size), ind = Sector_Lv2)]
 .EOM <- unique(.EOM, by = c("Ticker", "ymi_w"))
 rm(.AD, .MEA); gc(verbose = FALSE)
-if (!nrow(.EOM)) stop("[COMBO_CIDSTEP] 월말 시총/섹터 관측 0건 — Size/Sector_Lv2 확인")
+if (!nrow(.EOM)) stop("[COMBO_CIDSTEP] 월말 시총 관측 0건 — Size 확인")
+if (all(is.na(.EOM$ind)))
+  stop("[COMBO_CIDSTEP] 월말 산업라벨 0건 — Sector_Lv2 확인 (Eq.1 산업 다리 불가)")
 
 .DD <- RAWDATA[is.finite(Ret), .(Date, Ticker, rr = as.numeric(Ret))]
 .DD <- .DD[abs(rr) <= .RET_CAP]            # rr 은 위에서 finite 로 걸러져 NA 첨자가 없다
 .DD[, ymi := year(Date) * 12L + month(Date)]
 .DD[, ymi_w := ymi - 1L]                                        # ★전월말 (동월 경로 없음)
 .DD[.EOM, on = .(Ticker, ymi_w), c("w", "ind") := .(i.w, i.ind)]
-.DD <- .DD[is.finite(w) & w > 0 & !is.na(ind)]
+.DD <- .DD[is.finite(w) & w > 0]              # 가중치만 요구 — 산업 라벨은 IPF 에서만 건다
 if (!nrow(.DD)) stop("[COMBO_CIDSTEP] 전월말 가중치 결합 후 0행 — 월말 격자 확인")
 
 # 일간 VW 시장 (>=10사 필터 **전**, 전 상장종목) — 시장 통제항의 원천
@@ -249,7 +254,9 @@ MON <- .DD[, .(mret = prod(1 + rr) - 1, nd = .N, w = w[1], ind = ind[1]),
            by = .(Ticker, ymi)]
 rm(.DD); gc(verbose = FALSE)
 
-IPF  <- MON[, .(r_ind = sum(w * mret) / sum(w), nf = .N), by = .(ymi, ind)][nf >= .MIN_FIRMS]
+# 산업 다리만 라벨을 요구한다("industries with at least 10 firms"). 시장 다리는 전 상장종목.
+IPF  <- MON[!is.na(ind), .(r_ind = sum(w * mret) / sum(w), nf = .N),
+            by = .(ymi, ind)][nf >= .MIN_FIRMS]
 MKTM <- MON[, .(r_mktm = sum(w * mret) / sum(w)), by = ymi]
 CIDM <- merge(IPF[, .(ymi, r_ind)], MKTM, by = "ymi")
 CIDM <- CIDM[, .(CID = mean(abs(r_ind - r_mktm)), n_ind = .N), by = ymi]
@@ -323,9 +330,15 @@ if (anyNA(.mvec)) stop("[COMBO_CIDSTEP] 시장 계열 정렬 실패 — 격자 �
 .MW  <- dcast(MON[Ticker %chin% .tick, .(ymi, Ticker, mret)], ymi ~ Ticker, value.var = "mret")
 setorder(.MW, ymi)
 .mym <- .MW$ymi
-RETM <- as.matrix(.MW[, -1L, with = FALSE])
-RETM <- RETM[, match(.tick, colnames(RETM)), drop = FALSE]     # 열 순서 = RETD 와 동일
-rm(.MW); gc(verbose = FALSE)
+.MWm <- as.matrix(.MW[, -1L, with = FALSE])
+# ★열 정렬은 **이름으로** 채운다. match(.tick, colnames) 은 월간 패널에 없는 종목에서
+#   NA 첨자를 만들고(일간엔 있지만 전월말 시총이 한 번도 없던 종목), NA 첨자 인덱싱은
+#   진단 한 줄 때문에 라운드를 통째로 죽일 수 있다. 없는 열은 NA 로 남기면 (a) 계기가
+#   그 종목에서만 조용히 빠진다(.sp 가 비유한값을 버린다).
+RETM <- matrix(NA_real_, nrow(.MWm), length(.tick), dimnames = list(NULL, .tick))
+.hit <- intersect(.tick, colnames(.MWm))
+if (length(.hit)) RETM[, .hit] <- .MWm[, .hit, drop = FALSE]
+rm(.MW, .MWm); gc(verbose = FALSE)
 
 .SEC <- unique(.EOM[, .(Ticker, ymi_w, ind)], by = c("Ticker", "ymi_w"))
 setkey(.SEC, ymi_w, Ticker)
