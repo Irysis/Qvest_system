@@ -62,15 +62,31 @@ rf_notify_charts <- function(tab, outdir) {
     geom_hline(yintercept = 2.95, linetype = "22", linewidth = 0.8, colour = "#B3261E") +
     annotate("text", x = 1, y = 3.0, label = "A 문턱 2.95", hjust = 0, size = 3.2, colour = "#B3261E") +
     geom_text(aes(label = sprintf("%.3f", port_t)), hjust = -0.15, size = 3.1, colour = "#333333") +
-    coord_flip(clip = "off") + ylim(min(0, min(d$port_t, na.rm = TRUE)) - 0.1, 3.4) +
+    ## ★축 범위를 데이터에서 도출한다 (도훈 2026-09-04 "y축 좀 더 넓게").
+    ##   구판은 상한이 3.4 로 박혀 있었다 — 값 라벨이 바깥으로 나가서 잘리고,
+    ##   더 나쁘게는 PORT_t > 3.4 인 칸이 생기면 **막대가 통째로 사라진다**
+    ##   (Grade A 문턴이 2.95 이니 실제로 밟을 수 있는 함정이다).
+    coord_flip(clip = "off") +
+    ylim(min(0, min(d$port_t, na.rm = TRUE)) * 1.15 - 0.20,
+         max(3.6, max(d$port_t, na.rm = TRUE) * 1.22)) +
     labs(title = "무인 강화 — 셀별 다중검정 t값", subtitle = "규칙 격자 자동 실행 · 전 셀 실투형 동일 축",
          x = NULL, y = "PORT_t", caption = "출처: 각 셀 authoritative_remeasure.json (15bps 순비용 판)") +
     theme_minimal(base_size = 11) +
     theme(plot.title = element_text(face = "bold", size = 12.5), legend.position = "top",
           panel.grid.major.y = element_blank(), plot.margin = margin(10, 28, 8, 8),
           plot.caption = element_text(size = 7.5, colour = "#666666"))
-  f1 <- file.path(outdir, "auto_port_t.png"); ggsave(f1, p1, width = 8.4, height = 5.4, dpi = 150)
-  p2 <- ggplot(d[is.finite(mdd) & is.finite(oos)], aes(x = mdd, y = oos, colour = blk)) +
+  ## ★높이도 칸 수에 따라 늘린다 — B1 이 LLM 설계로 15칸이 되면서 5.4in 에
+  ##   막대 15개가 들어가 라벨이 미어붙었다. 칸당 약 0.34in 확보.
+  .h1 <- max(5.4, 1.6 + 0.34 * nrow(d))
+  f1 <- file.path(outdir, "auto_port_t.png"); ggsave(f1, p1, width = 8.4, height = .h1, dpi = 150)
+  ## ★제2차트 축 여백 (도훈 2026-09-04). 산점도라 ylim 이 없었고 ggplot 자동축을
+  ##   썼는데, 라벨을 점 **위**에 그리므로(vjust=-1.1) 최상단 점의 라벨이 패널 밖으로
+  ##   잘렸다. 위쪽을 더 벌려 라벨 자리를 확보하고, 0선(반전 경계)은 항상 포함한다.
+  .d2 <- d[is.finite(mdd) & is.finite(oos)]
+  .yr <- if (nrow(.d2)) range(c(0, .d2$oos), na.rm = TRUE) else c(0, 1)
+  .yp <- max(0.06, diff(.yr) * 0.10)
+  p2 <- ggplot(.d2, aes(x = mdd, y = oos, colour = blk)) +
+    ylim(.yr[1] - .yp, .yr[2] + .yp * 1.8) +
     geom_hline(yintercept = 0, linetype = "22", colour = "#999999") +
     geom_point(aes(size = port_t), alpha = 0.85) +
     geom_text(aes(label = code), vjust = -1.1, size = 2.9, show.legend = FALSE) +
@@ -80,7 +96,8 @@ rf_notify_charts <- function(tab, outdir) {
     theme_minimal(base_size = 11) +
     theme(plot.title = element_text(face = "bold", size = 12.5), legend.position = "top",
           plot.caption = element_text(size = 7.5, colour = "#666666"))
-  f2 <- file.path(outdir, "auto_mdd_oos.png"); ggsave(f2, p2, width = 8.4, height = 4.8, dpi = 150)
+  .h2 <- max(4.8, 3.6 + 0.12 * nrow(.d2))
+  f2 <- file.path(outdir, "auto_mdd_oos.png"); ggsave(f2, p2, width = 8.4, height = .h2, dpi = 150)
   c(f1, f2)
 }
 
@@ -351,34 +368,88 @@ rf_auto_notify <- function(base_id, n, kind = "block") {
   else
     sprintf("[1계층·강화 %d/%d] 무인 블록 완료 — %s", n, S$maxa, sub("_.*$", "", tab[n == max(tab$n)]$code))
   suppressMessages(source(file.path(ROOT, "02_Infrastructure/telegram/telegram_notify.R")))
-  .learn_sec <- NULL
-  # ★이번 블록에서 배운 것 (도훈 지시 2026-09-04) — 규칙 요약 + LLM 기전 + 처방.
+  .learn_sec <- NULL; .adapt_sec <- NULL
+  # ★이번 블록에서 배운 것 (도훈 지시 2026-09-04) — LLM 기전 + 처방.
   #   L-code 에 있을 때만 낸다. 없으면 그 줄을 안 낸다(없는 것을 지어내지 않는다).
-  #   ★발송이 L-code·기전보다 **뒤로** 옮겨졌기에 이 절이 채워질 수 있다 — 구판 순서에서는
-  #     텔레그램이 먼저 나가서 기전이 영원히 메시지에 못 들어갔다.
+  #   ★길이로 자르지 않는다(relaxed). 대신 **가독성**으로 다룬다 — 도훈 지시:
+  #     bullet 로 뭉뚱그리지 말고 라벨링된 문단으로. 기전은 목록이 아니라 서술이다.
   { .lcp <- file.path(ROOT, "stage_artifacts/l_code/reinforcement",
                       sprintf("l_code_%s_%s.json", base_id,
                               sub("_.*$", "", tab[n == max(tab[n <= S$used]$n)]$code[1])))
     .LD <- if (file.exists(.lcp)) tryCatch(fromJSON(.lcp, simplifyVector = TRUE),
                                            error = function(e) NULL) else NULL
-    .items <- character(0)
+    # 문장 경계에서 줄바꿈 — 한 단락이 한 화면을 잡아먹지 않게
+    .wrap <- function(x) {
+      t <- trimws(gsub("[[:space:]]+", " ", as.character(x)[1]))
+      if (!nzchar(t)) return("")
+      gsub("([.!?。] )", "\1
+", t)
+    }
+    .parts <- character(0)
     if (!is.null(.LD)) {
-      if (nzchar(as.character(.LD$mechanism %||% "")))
-        .items <- c(.items, paste0("기전: ", as.character(.LD$mechanism)))
+      .m <- .wrap(.LD$mechanism %||% "")
+      if (nzchar(.m)) .parts <- c(.parts, paste0("【기전】
+", .m))
       .na <- .LD$next_block_actions
       if (!is.null(.na) && length(.na)) {
         .at <- if (is.data.frame(.na)) as.character(.na$action) else
                vapply(.na, function(x) as.character(x$action %||% "")[1], character(1))
-        .items <- c(.items, paste0("다음 블록 처방: ", paste(.at, collapse = " / ")))
+        .at <- .at[nzchar(.at)]
+        if (length(.at))
+          .parts <- c(.parts, paste0("【다음 블록 처방】
+",
+                                     paste(sprintf("  %d) %s", seq_along(.at), .at), collapse = "
+")))
       }
       .av <- .LD$avoid
-      if (!is.null(.av) && length(.av))
-        .items <- c(.items, paste0("쓰지 말 것: ", paste(as.character(unlist(.av)), collapse = " / ")))
-      if (nzchar(as.character(.LD$prior_action_status %||% "")))
-        .items <- c(.items, paste0("앞 처방 집행: ", as.character(.LD$prior_action_status)))
+      if (!is.null(.av) && length(.av)) {
+        .avv <- as.character(unlist(.av)); .avv <- .avv[nzchar(.avv)]
+        if (length(.avv))
+          .parts <- c(.parts, paste0("【쓰지 말 것】
+",
+                                     paste(sprintf("  · %s", .avv), collapse = "
+")))
+      }
+      .ps <- .wrap(.LD$prior_action_status %||% "")
+      if (nzchar(.ps)) .parts <- c(.parts, paste0("【앞 처방 집행】
+", .ps))
     }
-    .learn_sec <- if (length(.items)) list(type = "bullet", emoji = "\U0001F9E0",
-      heading = "이번 블록에서 배운 것", items = .items) else NULL
+    if (length(.parts))
+      .learn_sec <- list(type = "text", emoji = "🧠",
+                         heading = "이번 블록에서 배운 것",
+                         body = paste(.parts, collapse = "
+
+"))
+  }
+
+  # ★적응형 설계 변경 (도훈 지시 2026-09-04) — 블록 순서가 바뀜거나
+  #   다음 블록이 새로 설계됐으면 보고한다. 그것들은 이미 로그에 있는데
+  #   메시지에 안 실려서, 격자가 스스로 바뀌어도 도훈은 몰랐다.
+  { .jl <- file.path(ROOT, ".cache/reinforce_auto_log.jsonl")
+    .ad <- character(0)
+    if (file.exists(.jl)) tryCatch({
+      .ln <- tail(readLines(.jl, warn = FALSE), 4000L)
+      for (x in .ln) {
+        r <- tryCatch(fromJSON(x, simplifyVector = TRUE), error = function(e) NULL)
+        if (is.null(r)) next
+        ev <- as.character(r$event %||% "")
+        if (identical(ev, "block_order_decided") && isTRUE(as.logical(r$adaptive %||% FALSE)))
+          .ad <- c(.ad, sprintf("【실행 순서 변경】 %s
+  사유: %s",
+                                as.character(r$order %||% "?"), as.character(r$reason %||% "")))
+        if (identical(ev, "block_design_saved") &&
+            identical(as.character(r$base_id %||% ""), base_id))
+          .ad <- c(.ad, sprintf("【다음 블록 설계】 %s 를 %s칸으로 재설계 — 이번 교훈을 읽고 격자가 바뀜다",
+                                as.character(r$block %||% "?"), as.character(r$cells %||% "?")))
+      }
+    }, error = function(e) NULL)
+    .ad <- unique(.ad)
+    if (length(.ad))
+      .adapt_sec <- list(type = "text", emoji = "🔄",
+                         heading = "적응형 설계 변경",
+                         body = paste(tail(.ad, 4L), collapse = "
+
+"))
   }
 
   secs <- list(
@@ -405,6 +476,7 @@ rf_auto_notify <- function(base_id, n, kind = "block") {
            heading = sprintf("승자 셀 성과 요약 (%s)", best$code),
            kv = .win_kv) else NULL,
     .learn_sec,
+    .adapt_sec,
     # ★"무엇을 강화했나" — 순위표만으로는 **무엇 위에 무엇을 얹었는지**가 안 읽힌다
     #   (도훈 2026-08-31 "무엇을 강화했나 파트 설명을 좀 더"). 네 줄을 먼저 세운다:
     #   ①기저(무엇 위에) ②컴포짓 비율(희석의 크기) ③승계 구성과 그 성능(=이번 기준선)
@@ -571,7 +643,16 @@ rf_auto_notify <- function(base_id, n, kind = "block") {
                 sprintf("%d칸 소진 시 큐 다음 논문 착수 요청이 발송됩니다", S$maxa))))
   # ★NULL 섹션 제거 — 승자 산출물이 없는 예전 entry 는 그 칸이 NULL 로 남는다.
   secs <- Filter(Negate(is.null), secs)
-  .sent <- tg_agent_brief(agent = "AlphaSearch", title = ttl, sections = secs, charts = ch)
+  ## ★relaxed — 기전 서술을 자르지 않기 위해 길이 계약을 면제한다 (도훈 2026-09-04
+  ##   "교훈 글자수 제한은 없애").
+  ##   실사고 18:32:37: "이번 블록에서 배운 것" 절의 bullet 이 80자 상한에 걸려
+  ##   발송이 통째로 실패했다(기전 882자). 그리고 **결정론적 실패**라 다음 tick 도
+  ##   똑같이 실패한다 — 재시도가 출구가 안 된다.
+  ##   ★절단은 답이 아니다: 기전은 "무엇이 켜졌고 다음 블록에 뭐를 할 것인가" 가 본문이다.
+  ##   80자 상한은 **목록**의 모바일 가독성을 위한 것이고, 기전 서술은 목록이 아니다.
+  ##   수신자 = 시스템 운용자라 용어 풀이(glossary)도 소음이다.
+  .sent <- tg_agent_brief(agent = "AlphaSearch", title = ttl, sections = secs, charts = ch,
+                          relaxed = TRUE, glossary = FALSE)
   # ★승자 셀의 [팩터 분석] — FF3/FF5/Carhart + Fama-MacBeth
   if (!is.null(.win_dir) &&
       (file.exists(file.path(.win_dir, "analysis_multifactor.csv")) ||
