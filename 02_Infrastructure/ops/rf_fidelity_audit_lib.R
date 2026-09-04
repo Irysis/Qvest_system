@@ -22,7 +22,8 @@ suppressMessages({ library(jsonlite) })
 `%||%` <- function(a, b) if (is.null(a) || length(a) == 0L) b else a
 ROOT <- { .r <- Sys.getenv("QVEST_RF_ROOT", "")
           if (nzchar(.r)) .r else Sys.getenv("QM_ROOT", "C:/Users/99922/OneDrive/Quant_Module_Moltbot") }
-LOG <- file.path(ROOT, ".cache/reinforce_auto_log.jsonl")
+## ★jlog 싱크는 QVEST_RP_JLOG 로 돌린다 (2026-09-04: 검사 픽스처가 운영 로그를 오염시켰다)
+LOG <- Sys.getenv("QVEST_RP_JLOG", file.path(ROOT, ".cache/reinforce_auto_log.jsonl"))
 dir.create(dirname(LOG), recursive = TRUE, showWarnings = FALSE)
 .fa_log <- function(event, ...) {
   rec <- c(list(ts = format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z"), event = event, src = "fidelity_audit"), list(...))

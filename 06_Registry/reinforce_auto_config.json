@@ -1,6 +1,6 @@
 {
   "schema": "reinforce_auto_config_v1",
-  "enabled": true,
+  "enabled": false,
   "combination": {
     "enabled": true,
     "note": "★도훈 지시 2026-09-04 — 결합은 rank-Z 평균 blend 가 아니라 **LLM 이 두 논문을 읽고 설계한 전략(기저)**에서 출발한다. 그 기저를 충실구현 1회로 측정해 base_grade 를 얻고, base_min_port_t 가드를 통과한 뒤에야 강화 25칸을 열어야 한다. 그 레인이 서기 전까지 구판 blend 착수를 정지한다 — 정지 중에는 호출자가 다음 논문 충실구현으로 정상 이월한다.",
@@ -187,5 +187,7 @@
   "distill_on_block": {
     "enabled": true,
     "note": "★도훈 지시 2026-09-04 — corpus(lcode_harvester)는 부팅마다, 증류(cluster_extractor)는 주간 cleaner 안에서만 돌았다. 강화는 하루 블록 L-code 5~6건이라 주기가 안 맞았다: 실측으로 강화 75건이 corpus 에 있는데 distilled 0건 → 수동 실행하자 후보 7건 즉시 생성. 이제 블록 L-code 발행 직후 같이 돈다."
-  }
+  },
+  "paused_reason": "도훈 지시 2026-09-04 22:2x — 아키텍처 검증",
+  "paused_at": "2026-09-04T22:22:17+09:00"
 }

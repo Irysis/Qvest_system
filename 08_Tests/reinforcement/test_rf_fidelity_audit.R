@@ -14,6 +14,8 @@
 suppressMessages({ library(jsonlite) })
 `%||%` <- function(a, b) if (is.null(a) || length(a) == 0L) b else a
 ROOT <- Sys.getenv("QM_ROOT", "C:/Users/99922/OneDrive/Quant_Module_Moltbot"); setwd(ROOT)
+## ★이 검사는 위반 주입(NO_SUCH_FACTOR 등)을 하므로 운영 jlog 에 박히면 기각률 계기가 죽는다 (2026-09-04 실사고).
+Sys.setenv(QVEST_RP_JLOG = file.path(tempdir(), sprintf("rf_test_jlog_%d.jsonl", Sys.getpid())))
 PASS <- 0L; FAIL <- 0L
 ok <- function(m) { PASS <<- PASS + 1L; cat(sprintf("  OK   %s\n", m)) }
 ng <- function(m, d = "") { FAIL <<- FAIL + 1L; cat(sprintf("  FAIL %s%s\n", m, if (nzchar(d)) paste0(" — ", d) else "")) }
@@ -151,9 +153,14 @@ cfgj <- tryCatch(fromJSON(file.path(ROOT, "06_Registry/reinforce_auto_config.jso
                  error = function(e) list())
 .ln <- (cfgj$llm %||% list())$lanes %||% list()
 if (length(.ln) >= 4L) ok(sprintf("G 설정에 레인 %d종 명시", length(.ln))) else ng("G 레인 명시 부족")
-if (identical(as.character((.ln$fidelity_audit %||% list())$model %||% ""), "opus") &&
-    identical(as.character((.ln$fidelity_audit %||% list())$effort %||% ""), "max"))
-  ok("G 감사 레인 = opus / max (도훈 지시)") else ng("G 감사 레인 모델 설정")
+## ★도훈 2026-09-04 레인 배분: fidelity_audit = xhigh (replication 만 max). 모델은 전역 llm.model 을 따른다
+##   (fable-5-1 은 CLI 미지원으로 blocked_model 에 기록 — 이름을 검사에 박으면 전환 때 또 낡는다).
+.fa <- .ln$fidelity_audit %||% list()
+.gm <- as.character((cfgj$llm %||% list())$model %||% "")
+if (nzchar(.gm) && identical(as.character(.fa$model %||% ""), .gm) &&
+    identical(as.character(.fa$effort %||% ""), "xhigh"))
+  ok(sprintf("G 감사 레인 = %s / xhigh (도훈 레인 배분 2026-09-04)", .gm)) else
+  ng("G 감사 레인 모델 설정", sprintf("model=%s effort=%s (기대 %s/xhigh)", .fa$model %||% "?", .fa$effort %||% "?", .gm))
 
 cat(sprintf("\n합계: 통과 %d · 실패 %d\n", PASS, FAIL))
 cat(sprintf('{"test":"rf_fidelity_audit","pass":%d,"fail":%d,"total":%d}\n', PASS, FAIL, PASS + FAIL))

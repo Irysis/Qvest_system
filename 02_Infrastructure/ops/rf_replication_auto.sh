@@ -210,8 +210,12 @@ print('C_K=%s'      % q(c.get('k_items') or ''))
 print('C_NP=%s'     % q(c.get('n_papers') or ''))
 print('C_BEST_T=%s' % q(c.get('best_parent_t') if c.get('best_parent_t') is not None else ''))
 print('C_TRIES=%s'  % q(c.get('tries_before') if c.get('tries_before') is not None else '0'))
-print('C_COUNT=%s'  % q('1' if c.get('count_paper') else '0'))
-print('C_COUNT=%s'   % q('1' if c.get('count_paper') else '0'))")"
+# ★비결합 요청은 새 논문이다 — count_paper 키가 없다고 '세지 말라' 로 읽지 않는다 (2026-09-04 실사고:
+#   무인 충실구현 전부 count_paper=0 → 결합 검토 카운터 정지 · 큐 미러 영구 침묵 · alpha-pending 과대).
+#   결합만 combo.count_paper 를 명시하며(기본 FALSE), 최상위 count_paper 가 있으면 그것이 이긴다.
+_cp = d.get('count_paper')
+if _cp is None: _cp = (c.get('count_paper') if c else True)
+print('C_COUNT=%s'  % q('1' if _cp else '0'))")"
 [ -n "$P_URL" ] || { jl halt_no_url; exit 1; }
 
 SLUG=$(printf '%s' "$P_KEY" | tr -c 'A-Za-z0-9' '_' | cut -c1-24)
@@ -499,7 +503,7 @@ io.open(r'$REQ','wb').write(json.dumps(d,ensure_ascii=False,indent=1).encode('ut
 
 # ── 측정 + 검증 (계약이 판정한다 — 에이전트 진술은 근거가 아니다) ────────────
 QM_ROOT="$ROOT" RP_WDIR="$WDIR" RP_URL="$P_URL" RP_TITLE="$P_TITLE" RP_KEY="$P_KEY" \
-  RP_IS_COMBO="${IS_COMBO:-0}" RP_COUNT_PAPER="${C_COUNT:-1}" \
+  QVEST_RP_JLOG="$JLOG" RP_IS_COMBO="${IS_COMBO:-0}" RP_COUNT_PAPER="${C_COUNT:-1}" \
   Rscript "$ROOT/02_Infrastructure/ops/rf_replication_verify.R" >> "$LOG" 2>&1
 VRC=$?
 jl verify_done "rc=$VRC"

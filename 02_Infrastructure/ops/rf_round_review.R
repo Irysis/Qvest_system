@@ -99,8 +99,13 @@ rf_round_review <- function(entry, promo = NULL, root = Sys.getenv("QM_ROOT", ge
          kv = list("최고 PORT_t" = sprintf("%.3f (%s · %s)", best$port_t, best$code, best$grade),
                    "최고 Calmar" = sprintf("%.3f (%s)", bestC$calmar, bestC$code),
                    "CAGR / MDD" = sprintf("%.1f%% / %.1f%%", 100*best$cagr, 100*best$mdd),
-                   "등급 분포" = sprintf("A %d · B %d · C %d · F %d (승계 %d칸 제외)",
-                                     gc2[["A"]], gc2[["B"]], gc2[["C"]], gc2[["F"]], sum(M$inh)))),
+                   "등급 분포" = sprintf("A %d · B %d · C %d · F %d%s (승계 %d칸 제외)",
+                                     gc2[["A"]], gc2[["B"]], gc2[["C"]], gc2[["F"]],
+                                     ## ★미측정 칸을 분포에서 빼면 헤더(nrow(D))와 합이 안 맞는다.
+                                     ##   계약 미경유 = NA 이지 F 가 아니다(헌법: 미측정은 실패가 아니다).
+                                     if (nrow(D) - nrow(M) > 0L)
+                                       sprintf(" · 미측정 %d", nrow(D) - nrow(M)) else "",
+                                     sum(M$inh)))),
     list(type = "bullet", emoji = "\U0001F9ED", heading = "블록별 궤적", items = unname(trace)),
     if (length(loo)) list(type = "bullet", emoji = "\U00002696", heading = "축별 기여 (LOO)",
                           items = loo) else NULL,

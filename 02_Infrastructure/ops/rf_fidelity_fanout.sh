@@ -27,7 +27,8 @@ ROOT="${QVEST_RF_ROOT:-${QM_ROOT:-C:/Users/99922/OneDrive/Quant_Module_Moltbot}}
 cd "$ROOT" || exit 1
 PY="${QVEST_PY:-$ROOT/.venv_qvest_ml/Scripts/python.exe}"
 AXES="${QVEST_RF_AXES:-$ROOT/06_Registry/rf_fidelity_axes.json}"
-JLOG="$ROOT/.cache/reinforce_auto_log.jsonl"
+# ★jlog 싱크는 QVEST_RP_JLOG 로 돌린다 (2026-09-04: 검사 픽스처가 운영 로그에 design_rejected 60·audit_rejected 44건을 박았다)
+JLOG="${QVEST_RP_JLOG:-$ROOT/.cache/reinforce_auto_log.jsonl}"
 LOG="$ROOT/.cache/scheduler_logs/fidelity_fanout_$(date +%Y%m%d).log"
 mkdir -p "$(dirname "$LOG")"
 

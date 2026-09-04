@@ -92,6 +92,19 @@ rf_load <- function(layer, root = .rf_root()) {
   NA_integer_
 }
 
+#' 소진 요약 표식 — 요약·승격 판정은 entry 당 한 번이다 (2026-09-04).
+#'   실측: 결합 설계 요청이 진행 중이면 handed_off 가 안 서서(둘 중 하나만 간다) exhausted_summary·
+#'   promote_skipped 가 tick 마다 다시 찍혔다(combo_rulefast 3회). 이월은 handed_off 가, 요약은 이 표식이 막는다.
+rf_is_summarized <- function(entry) nzchar(as.character(entry$summarized_at %||% ""))
+rf_mark_summarized <- function(layer, base_id, root = .rf_root()) {
+  obj <- rf_load(layer, root)
+  k <- which(vapply(obj$entries, function(e) identical(e$base_id, base_id), logical(1)))
+  if (!length(k)) stop("[reinforce_ledger] entry not found: ", base_id)
+  obj$entries[[k[1]]]$summarized_at <- format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z")
+  .rf_write(obj, layer, root)
+  invisible(TRUE)
+}
+
 #' 강화 대상 등록 (충실구현/로테이션 라운드가 A 미달로 끝났을 때)
 #' @param carry  승격 entry 전용 — 부모의 승자 구성(factors/weighting/universe).
 #'   러너가 매 셀 스펙에 이것을 먼저 깔고 그 위에 격자 축을 얹는다.

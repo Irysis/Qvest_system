@@ -32,6 +32,9 @@ else
   [[ -x "$QVEST_PY_BIN" ]] || QVEST_PY_BIN="$(command -v python.exe 2>/dev/null || echo python3)"
   export QVEST_PY_BIN
 fi
+# ★검사 픽스처가 운영 이벤트 로그를 오염시켰다 (2026-09-04: design_rejected 62건 중 60·audit_rejected 44건 전부가 검사).
+#   배터리 전체의 jlog 싱크를 임시 파일로 돌린다. 개별 검사가 자기 값을 주면 그것이 이긴다.
+export QVEST_RP_JLOG="${QVEST_RP_JLOG:-${TMPDIR:-/tmp}/qvest_hooks_jlog_$$.jsonl}"
 
 # PROJ_DIR 해석 (2026-07-25 수리): 구 폴백은 WSL 전용 glob 이라 이 머신에선 빈 문자열이
 # 되고 TEST_DIR="/08_Tests/hooks" 로 전 suite 가 죽었다. 후보를 **표지 검증**으로 확인한다
@@ -1264,6 +1267,14 @@ SUITES=(
   "08_Tests/contracts/test_rolling_defensive.R"
   "08_Tests/reinforcement/test_rf_block_design_schema.R"
   "08_Tests/reinforcement/test_rf_mechanism_tone.R"
+  # 2026-09-04 — 논문 명시 비용의 전달: 무명시를 15bps 로 덮으면 병기판이 등급판과 같아진다.
+  "08_Tests/ops/test_rp_commission_basis.R"
+  # 2026-09-04 — 1계층 파이프라인 점검 수리 5종: count_paper · relaxed 텔레그램 · 소진 요약 1회 · jlog 격리 · 승계 arm 강등
+  "08_Tests/ops/test_rp_count_paper.R"
+  "08_Tests/ops/test_rp_telegram_relaxed.R"
+  "08_Tests/reinforcement/test_rf_summarize_once.R"
+  "08_Tests/reinforcement/test_rf_jlog_isolation.R"
+  "08_Tests/reinforcement/test_rf_carry_degrade.R"
 )
 
 

@@ -45,7 +45,8 @@ REQ   <- file.path(ROOT, "06_Registry/replication_request.json")
 # ★성과 요약 kv·차트 = 예전 알파 서칭 포맷(도훈 지시 2026-08-30).
 #   ★수치를 재계산하지 않는다 — 계약 산출물에서 읽기만 한다(손계산 금지).
 suppressMessages(source(file.path(ROOT, "02_Infrastructure/ops/rf_perf_summary.R")))
-LOG_P <- file.path(ROOT, ".cache/reinforce_auto_log.jsonl")
+## ★jlog 싱크는 QVEST_RP_JLOG 로 돌린다 (2026-09-04: 검사 픽스처가 운영 로그를 오염시켰다)
+LOG_P <- Sys.getenv("QVEST_RP_JLOG", file.path(ROOT, ".cache/reinforce_auto_log.jsonl"))
 
 jlog <- function(event, ...) {
   rec <- c(list(ts = format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z"), event = event, src = "replication_verify"), list(...))
@@ -58,7 +59,7 @@ fail <- function(why, detail = "") {
   d$status <- "failed_needs_session"; d$failure <- why; d$failure_detail <- substr(detail, 1, 400)
   write(toJSON(d, auto_unbox = TRUE, pretty = TRUE, null = "null"), REQ)
   tryCatch({ suppressMessages(source(file.path(ROOT, "02_Infrastructure/telegram/telegram_notify.R")))
-    tg_agent_brief(agent = "AlphaSearch", title = "[1계층] 무인 충실구현 실패 — 세션 착수 필요",
+    tg_agent_brief(agent = "AlphaSearch", relaxed = TRUE, glossary = FALSE, decode_jargon = FALSE, decode_mode = "off", title = "[1계층] 무인 충실구현 실패 — 세션 착수 필요",
       lock_scope = sprintf("rf_replication_fail_%s", PKEY %||% "unknown"),
       sections = list(
         list(type = "bullet", emoji = "\U0001F3AF", heading = "현재 리서치 상황",
@@ -144,11 +145,17 @@ suppressMessages(source(file.path(ROOT, "02_Infrastructure/alpha_search/run_pape
 .fid_o <- if (file.exists(.fid_p)) tryCatch(fromJSON(.fid_p, simplifyVector = FALSE),
                                             error = function(e) NULL) else NULL
 .pspec <- .fid_o$portfolio_spec %||% NULL
+## ★보수적 대체값을 넣으면 병기판이 사라진다 (2026-09-04 수리).
+##   구판은 논문 무명시(null/부재)를 0.0015 로 덮어썬는데, 그것은 **등급 기준과
+##   같은 수**다 — "논문 기준 성과 병기"(헌법)가 동어반복이 돼 서로를 받치는 두 판으로
+##   읽힌다. 러너(run_paper_replication.R:180)의 계약이 이미 `NULL = 무명시 -> gross(0)` 이므로
+##   덮지 말고 그 기본값에 맡긴다. 0 은 "gross 로 명시" 이므로 그대로 살린다.
 .cmsn  <- suppressWarnings(as.numeric(.fid_o$commission_paper %||% NA))
-if (!is.finite(.cmsn)) .cmsn <- 0.0015
+.cmsn_known <- is.finite(.cmsn)
+if (!.cmsn_known) .cmsn <- NULL
 if (!is.null(.pspec)) jlog("portfolio_spec_from_fidelity",
                            construction = .pspec$construction %||% "?",
-                           commission = .cmsn)
+                           commission = if (.cmsn_known) .cmsn else "무명시(gross 병기)")
 res <- tryCatch(do.call(run_paper_replication, c(list(
   strategy_name = paste0("RP_AUTO_", gsub("[^A-Za-z0-9]", "", substr(PKEY, 1, 20))),
   strategy_idea = paste0("[무인 충실구현] ", substr(TITLE, 1, 120)),
@@ -242,7 +249,7 @@ if (identical(.disp$action, "reimplement")) {
   jlog("fidelity_reimplement_requested", paper_key = PKEY %||% "", grade = G,
        note = "충실도 기각 — 소비 보류. 다음 tick 이 지적사항을 안고 재구현한다")
   tryCatch({ suppressMessages(source(file.path(ROOT, "02_Infrastructure/telegram/telegram_notify.R")))
-    tg_agent_brief(agent = "AlphaSearch",
+    tg_agent_brief(agent = "AlphaSearch", relaxed = TRUE, glossary = FALSE, decode_jargon = FALSE, decode_mode = "off",
       lock_scope = sprintf("rf_fidelity_%s", PKEY %||% "unknown"),
       title = sprintf("[1계층] 충실도 감사 기각 — 재구현 (측정 등급 %s)", G),
       sections = list(
@@ -253,8 +260,15 @@ if (identical(.disp$action, "reimplement")) {
                                length(.aud$undeclared_changes %||% list()) +
                                length(.aud$signal_mismatch %||% list())),
                        "처분: 소비 보류 + 자동 재구현 1회 — 논문을 잘못된 이유로 버리지 않는다")),
+        ## ★summary 는 [20,100]자 헤드라인 계약이고 relaxed 로도 안 풀린다 — 500자 지적을 여기 넣어
+        ##   오늘 3/3 유실됐다(13:56·16:16·17:28). 지적은 text 섹션(relaxed 면 길이 면제)으로.
         list(type = "summary", emoji = "\U0001F4CC",
-             body = substr(.disp$feedback, 1, 500)))) },
+             body = sprintf("충실도 감사 기각 — %s · 지적 %d건 · 자동 재구현 1회",
+                            substr(as.character(.aud$verdict %||% "?"), 1, 20),
+                            length(.aud$undeclared_changes %||% list()) +
+                              length(.aud$signal_mismatch %||% list()))),
+        list(type = "text", emoji = "\U0001F4DD", heading = "감사 지적사항",
+             body = substr(as.character(.disp$feedback %||% ""), 1, 1500)))) },
     error = function(e) jlog("telegram_failed", err = conditionMessage(e)))
   quit(status = 0)
 }
@@ -322,7 +336,7 @@ if (is.finite(.base_pt) && .base_pt < .min_pt && !.resc_ok) {
   d$skip_reason <- sprintf("기저 PORT_t %.3f < %.2f — 음수 알파 위의 강화는 헛돈다", .base_pt, .min_pt)
   write(toJSON(d, auto_unbox = TRUE, pretty = TRUE, null = "null"), REQ)
   tryCatch({ suppressMessages(source(file.path(ROOT, "02_Infrastructure/telegram/telegram_notify.R")))
-    tg_agent_brief(agent = "AlphaSearch",
+    tg_agent_brief(agent = "AlphaSearch", relaxed = TRUE, glossary = FALSE, decode_jargon = FALSE, decode_mode = "off",
       lock_scope = sprintf("rf_replication_%s", PKEY %||% "unknown"),
       title = sprintf("[1계층] 무인 %s 완료 — 등급 %s · 강화 생략",
                       if (identical(.fidelity, "adapted")) "변형구현(착안)" else "충실구현", G),
@@ -418,7 +432,7 @@ d$completed_at <- format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z")
 write(toJSON(d, auto_unbox = TRUE, pretty = TRUE, null = "null"), REQ)
 
 tryCatch({ suppressMessages(source(file.path(ROOT, "02_Infrastructure/telegram/telegram_notify.R")))
-  tg_agent_brief(agent = "AlphaSearch",
+  tg_agent_brief(agent = "AlphaSearch", relaxed = TRUE, glossary = FALSE, decode_jargon = FALSE, decode_mode = "off",
     lock_scope = sprintf("rf_replication_%s", PKEY %||% "unknown"),
     title = sprintf("[1계층] 무인 %s 완료 — 등급 %s · 강화 개시",
                     if (identical(.fidelity, "adapted")) "변형구현(착안)" else "충실구현", G),

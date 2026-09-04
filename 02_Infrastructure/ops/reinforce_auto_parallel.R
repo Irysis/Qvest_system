@@ -775,6 +775,23 @@ if (!length(jobs)) for (CELL in batch) {
   #     뿐이고 추정하지 않는다 — 첫 조합은 여전히 한 번 태운다(정직한 비용).
   .rac <- tryCatch({ suppressMessages(source(file.path(ROOT, "02_Infrastructure/reinforcement/rf_arm_compat.R"), local = TRUE))
                      rac_blocked(SPEC, ROOT) }, error = function(e) NULL)
+  ## ★승계 비중이 이 유니버스에서 불가면 칸을 닫지 않고 EW 로 강등해 측정한다 (2026-09-04).
+  ##   판정 = rf_arm_compat::rac_degrade_plan (순수 함수 — 시험 축이 비중/결합이면 강등 없음).
+  if (!is.null(.rac)) {
+    .dp <- tryCatch({ suppressMessages(source(file.path(ROOT, "02_Infrastructure/reinforcement/rf_arm_compat.R"), local = TRUE))
+                      rac_degrade_plan(SPEC, CELL$block, .rac) }, error = function(e) list(degrade = FALSE))
+    if (isTRUE(.dp$degrade)) {
+      .rac2 <- tryCatch(rac_blocked(.dp$spec, ROOT), error = function(e) NULL)
+      if (is.null(.rac2)) {
+        SPEC <- .dp$spec
+        write(toJSON(SPEC, auto_unbox = TRUE, pretty = TRUE, null = "null"), sp)
+        jlog("carry_degraded", n = att$n, code = CELL$code, own_axis = .dp$own_axis,
+             from = .dp$arm, to = "ew",
+             note = "승계 비중이 이 유니버스에서 불가 — EW 로 강등해 측정한다(시험 축 보존 · 블록 내 비교는 비중이 다름을 spec.carry_degraded 로 명시)")
+        .rac <- NULL
+      } else .rac <- .rac2
+    }
+  }
   if (!is.null(.rac)) {
     rf_record_result(1L, BID, att$n, grade = "NA (미결 — arm×유니버스 양립 불가)",
       lessons = sprintf("%s: %s", CELL$code, .rac), terminal = TRUE,

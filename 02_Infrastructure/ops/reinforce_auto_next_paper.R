@@ -54,6 +54,7 @@ if (length(Filter(function(e) identical(e$status, "active"), led$entries))) {
 #   온다" 고 지적한 소음의 절반이 이것이다).
 ex <- Filter(function(e) identical(e$status, "exhausted") && !isTRUE(e$handed_off), led$entries)
 best <- NULL
+.already <- FALSE
 if (length(ex)) {
   E <- ex[[length(ex)]]
   # ★예산은 **entry 별**이다 (2026-09-04 도훈 지적: 텔레그램이 계속 "25회" 라고 말했다).
@@ -74,9 +75,14 @@ if (length(ex)) {
                  spec      = E$attempts[[i]]$essence$spec %||% NA_character_,
                  artifacts = E$attempts[[i]]$artifacts %||% NA_character_)
   }
-  jlog("exhausted_summary", base_id = E$base_id, attempts = length(E$attempts),
-       best_port_t = best$port_t %||% NA, best_grade = best$grade %||% "NA",
-       improved = isTRUE(!identical(best$grade %||% "F", E$base_grade %||% "F")))
+  .already <- rf_is_summarized(E)
+  if (!.already) {
+    jlog("exhausted_summary", base_id = E$base_id, attempts = length(E$attempts),
+         best_port_t = best$port_t %||% NA, best_grade = best$grade %||% "NA",
+         improved = isTRUE(!identical(best$grade %||% "F", E$base_grade %||% "F")))
+    tryCatch(rf_mark_summarized(1L, E$base_id, ROOT),
+             error = function(e) jlog("summarized_mark_failed", err = conditionMessage(e)))
+  }
 }
 
 # ── ★1.5 B등급 이상 승격 분기 (도훈 지시 2026-08-30) ─────────────────────────
@@ -95,7 +101,9 @@ if (length(ex)) {
   depth <- PD$depth
   sp    <- best$spec %||% NA_character_
 
-  if (!isTRUE(PD$ok)) {
+  if (!isTRUE(PD$ok) && isTRUE(.already)) {
+    # 이미 한 번 판정한 entry — 이월만 다시 시도한다(아래 합류). 로그는 반복하지 않는다.
+  } else if (!isTRUE(PD$ok)) {
     # ★조용히 넘어가지 않는다 — 자격이 있었는데 못 한 것(스펙 부재)과 자격이 없어서
     #   안 한 것(등급 미달)은 다른 사건이고, 사유가 없으면 둘을 구분할 수 없다.
     jlog("promote_skipped", reason = PD$reason, base_id = E2$base_id, depth = PD$depth,
@@ -216,7 +224,7 @@ jlog("replication_requested", path = REQ)
 
 tryCatch({
   suppressMessages(source(file.path(ROOT, "02_Infrastructure/telegram/telegram_notify.R")))
-  tg_agent_brief(agent = "AlphaSearch",
+  tg_agent_brief(agent = "AlphaSearch", relaxed = TRUE, glossary = FALSE, decode_jargon = FALSE, decode_mode = "off",
     # ★lock_scope 를 논문별로 준다 — 기본 scope 는 "agent + 표제 40자"인데 이 표제가
     #   고정이라 서로 다른 논문의 이월이 30분 창 안에서 한 건으로 뭉갰다(2026-08-30 실측:
     #   2608.24703 이월이 차단됨). 중복 차단은 재발송을 막으라는 장치이지 **다른 사건을**

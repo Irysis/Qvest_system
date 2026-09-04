@@ -85,9 +85,34 @@ rac_blocked <- function(spec, root) {
     k <- which(vapply(obj$entries, function(e)
       identical(e$arm, pr$arm) && identical(e$universe, pr$universe) &&
       identical(e$status, "coverage_fail"), logical(1)))
-    if (length(k)) return(sprintf("%s × %s — 앞서 커버리지로 막힌 조합(%s, %s)",
-      pr$arm, pr$universe, as.character(obj$entries[[k[1]]]$cell %||% "?"),
-      substr(as.character(obj$entries[[k[1]]]$detail %||% ""), 1, 80)))
+    if (length(k)) {
+      .r <- sprintf("%s × %s — 앞서 커버리지로 막힌 조합(%s, %s)",
+        pr$arm, pr$universe, as.character(obj$entries[[k[1]]]$cell %||% "?"),
+        substr(as.character(obj$entries[[k[1]]]$detail %||% ""), 1, 80))
+      attr(.r, "arm") <- pr$arm; attr(.r, "universe") <- pr$universe   # 강등 판정이 어느 arm 인지 읽는다
+      return(.r)
+    }
   }
   NULL
+}
+
+#' 막힌 arm 을 강등할 수 있는가 — **승계된 비중이 이 칸의 시험 축이 아닐 때만** EW 로 (2026-09-04)
+#'   실사고: 1라운드 승자 비중 lean:cvar 가 소형주 유니버스에서 커버리지 77% 로 막혀 B3_11 이 두 번
+#'   죽고 미측정으로 남았다. B3 의 시험 축은 유니버스지 비중이 아니다 — 비중 때문에 유니버스 칸이
+#'   비는 것은 "미측정 시도 금지"(헌법) 위반이다. 강등은 spec 에 carry_degraded 로 남겨 블록 내
+#'   비교에서 비중이 다른 칸임을 읽을 수 있게 한다.
+#'   ★강등하지 않는 것: 자기 축이 막힌 칸(B2 비중·B5 오버레이 = 그게 판정) · B4(승자를 그대로 결합하는
+#'     블록이라 강등하면 LOO 의 '−비중' 칸과 같아진다) · 오버레이 arm(강등 대상은 비중뿐).
+#' @return list(degrade, own_axis, arm, spec)
+rac_degrade_plan <- function(spec, block, blocked) {
+  own <- switch(as.character(block %||% ""), B1 = "factors", B2 = "weighting", B3 = "universe",
+                B5 = "overlay", B4 = "combination", "?")
+  arm <- as.character(attr(blocked, "arm") %||% "")
+  ok  <- nzchar(arm) && startsWith(arm, "weight:") && !(own %in% c("weighting", "combination", "?"))
+  if (!ok) return(list(degrade = FALSE, own_axis = own, arm = arm, spec = spec))
+  spec$weighting <- list(kind = "ew")
+  spec$carry_degraded <- list(axis = "weighting", from = arm, to = "ew",
+                              why = substr(as.character(blocked), 1, 200),
+                              at = format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z"))
+  list(degrade = TRUE, own_axis = own, arm = arm, spec = spec)
 }
